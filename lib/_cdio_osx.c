@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.49 2004/08/13 11:54:15 rocky Exp $
+    $Id: _cdio_osx.c,v 1.50 2004/08/15 13:53:03 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.49 2004/08/13 11:54:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.50 2004/08/15 13:53:03 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -446,7 +446,7 @@ _cdio_read_toc (_img_private_t *env)
      */
     for( i = 0; i <= env->i_descriptors; i++ )
       {
-	i_track = pTrackDescriptors[i].point;
+	track_t i_track = pTrackDescriptors[i].point;
 
 	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
 	  continue;
