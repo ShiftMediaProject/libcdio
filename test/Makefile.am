@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.32 2004/10/28 11:13:40 rocky Exp $
+#   $Id: Makefile.am,v 1.33 2004/10/28 11:14:50 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -59,7 +59,8 @@ check_DATA = vcd_demo.right \
 	     bad-mode1.toc bad-msf-1.toc bad-msf-2.toc bad-msf-3.toc \
 	     bad-cat1.cue bad-cat2.cue bad-cat3.cue \
 	     bad-cat1.toc bad-cat2.toc bad-cat3.toc \
-	     copying.iso copying.right joliet.iso
+	     copying.iso copying.right \
+	     joliet.iso joliet.right joliet-nojoliet.right
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in check_iso.sh.in
