@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.30 2005/03/19 06:42:24 rocky Exp $
+    $Id: types.h,v 1.31 2005/03/21 10:43:08 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -177,12 +177,17 @@ extern "C" {
     One CD-ROMs addressing scheme especially used in audio formats
     (Red Book) is an address by minute, sector and frame which
     BCD-encoded in three bytes. An alternative format is an lba_t.
+
+    Note: the fields in this structure are BCD encoded. Use
+    cdio_to_bcd8() or cdio_from_bcd8() to convert an integer into or
+    out of this format. The format specifier %x (not %d) can be used
+    if you need to format or print values in this structure.
     
     @see lba_t
   */
   PRAGMA_BEGIN_PACKED
   struct msf_s {
-    uint8_t m, s, f;
+    uint8_t m, s, f; /* BCD encoded! */
   } GNUC_PACKED;
   PRAGMA_END_PACKED
   
