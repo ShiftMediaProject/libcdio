@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.43 2004/06/22 04:35:50 thesin Exp $
+    $Id: _cdio_osx.c,v 1.44 2004/06/22 15:05:39 thesin Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.43 2004/06/22 04:35:50 thesin Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.44 2004/06/22 15:05:39 thesin Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -601,7 +601,7 @@ _get_mcn_osx (const void *user_data) {
 
   if( ioctl( env->gen.fd, DKIOCCDREADMCN, &cd_read ) < 0 )
   {
-    cdio_warn( "could not read MCN, %s", strerror(errno) );
+    cdio_debug( "could not read MCN, %s", strerror(errno) );
     return NULL;
   }
   return strdup((char*)cd_read.mcn);
@@ -650,7 +650,7 @@ _get_track_format_osx(void *user_data, track_t i_track)
     return TRACK_FORMAT_ERROR;
   }
 
-  /*cdio_warn( "trackinfo trackMode: %x dataMode: %x", a_track.trackMode, a_track.dataMode );*/
+  cdio_debug( "%d: trackinfo trackMode: %x dataMode: %x", i_track, a_track.trackMode, a_track.dataMode );
 
   if (a_track.trackMode == CDIO_CDROM_DATA_TRACK) {
     if (a_track.dataMode == CDROM_CDI_TRACK) {
