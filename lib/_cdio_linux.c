@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.15 2003/09/01 02:02:03 rocky Exp $
+    $Id: _cdio_linux.c,v 1.16 2003/09/01 15:11:36 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.15 2003/09/01 02:02:03 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.16 2003/09/01 15:11:36 rocky Exp $";
 
 #include <string.h>
 
@@ -328,10 +328,10 @@ __read_packet_mode2_sectors (int fd, void *buf, lba_t lba,
 }
 
 static int
-_read_packet_mode2_sectors (int fd, void *buf, lba_t lba, unsigned nblocks, 
-	     bool use_read_10)
+_read_packet_mode2_sectors (int fd, void *buf, lba_t lba, 
+			    unsigned int nblocks, bool use_read_10)
 {
-  unsigned l = 0;
+  unsigned int l = 0;
   int retval = 0;
 
   while (nblocks > 0)
@@ -482,7 +482,7 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
  */
 static int
 _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
-			  bool mode2_form2, unsigned nblocks)
+			  bool mode2_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = user_data;
   int i;

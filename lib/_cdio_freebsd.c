@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.14 2003/05/27 02:58:22 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.15 2003/09/01 15:11:36 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.14 2003/05/27 02:58:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.15 2003/09/01 15:11:36 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -90,15 +90,15 @@ _set_bsize (int fd, unsigned int bsize)
 }
 
 static int
-_read_mode2 (int fd, void *buf, lba_t lba, unsigned nblocks, 
+_read_mode2 (int fd, void *buf, lba_t lba, unsigned int nblocks, 
 	     bool _workaround)
 {
-  unsigned l = 0;
+  unsigned int l = 0;
   int retval = 0;
 
   while (nblocks > 0)
     {
-      const unsigned nblocks2 = (nblocks > 25) ? 25 : nblocks;
+      const unsigned int nblocks2 = (nblocks > 25) ? 25 : nblocks;
       void *buf2 = ((char *)buf ) + (l * M2RAW_SECTOR_SIZE);
       
       retval |= __read_mode2 (fd, buf2, lba + l, nblocks2, _workaround);
@@ -206,7 +206,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
-		     bool mode2_form2, unsigned nblocks)
+		     bool mode2_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = user_data;
   int i;
