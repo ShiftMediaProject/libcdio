@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.7 2005/01/20 12:36:21 rocky Exp $
+    $Id: _cdio_osx.c,v 1.8 2005/01/21 03:15:36 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.7 2005/01/20 12:36:21 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.8 2005/01/21 03:15:36 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -165,7 +165,7 @@ GetRegistryEntryProperties ( io_service_t service )
   return dict;
 }
 
-
+#ifdef GET_SCSI_FIXED
 static bool
 get_scsi(_img_private_t *p_env)
 {
@@ -243,6 +243,7 @@ get_scsi(_img_private_t *p_env)
   
   return true;
 }
+#endif
 
 static bool 
 init_osx(_img_private_t *p_env) {
@@ -325,7 +326,7 @@ init_osx(_img_private_t *p_env) {
    */
   IORegistryEntryGetPath(p_env->MediaClass_service, kIOServicePlane, 
 			 p_env->psz_MediaClass_service);
-#if 0
+#ifdef GET_SCSI_FIXED
   return get_scsi(p_env);
 #else 
   return true;
@@ -1690,8 +1691,8 @@ cdio_open_osx (const char *psz_orig_source)
     .stat_size             = _stat_size_osx
   };
 
-  _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->access_mode    = _AM_OSX;
+  _data                     = _cdio_malloc (sizeof (_img_private_t));
+  _data->access_mode        = _AM_OSX;
   _data->MediaClass_service = 0;
   _data->gen.init           = false;
   _data->gen.fd             = -1;
