@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.9 2003/06/12 03:38:31 rocky Exp $
+    $Id: _cdio_win32.c,v 1.10 2003/08/11 09:19:18 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.9 2003/06/12 03:38:31 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.10 2003/08/11 09:19:18 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -1069,7 +1069,7 @@ cdio_is_device_win32(const char *source_name)
     return ((len == 2) && isalpha(source_name[0]) 
 	    && (source_name[len-1] == ':'));
 #else 
-  return NULL;
+  return false;
 #endif
 }
 
