@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.56 2004/04/24 11:48:37 rocky Exp $
+    $Id: cd-info.c,v 1.57 2004/04/24 19:16:57 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -841,13 +841,13 @@ main(int argc, const char *argv[])
 	       i_drive_cap & CDIO_DRIVE_CD         ? "Yes"  : "No");
 	printf("   Can play audio    : %s\n", 
 	       i_drive_cap & CDIO_DRIVE_CD_AUDIO   ?  "Yes" : "No");
-	printf("   Can write CD-R    : %s\n", 
+	printf("   Can read  CD-RW   : %s\n", 
+	       i_drive_cap & CDIO_DRIVE_CD_RW      ?  "Yes" : "No");
+	printf("   Can write CD-R    : %s\n\n", 
 	       i_drive_cap & CDIO_DRIVE_CD_R       ?  "Yes" : "No");
-	printf("   Can write CD-RW   : %s\n\n", 
-	       i_drive_cap & CDIO_DRIVE_CD_RW      ?  "Yes"  : "No");
 
 	printf("Digital Versital Disc: %s\n", 
-	       i_drive_cap & CDIO_DRIVE_DVD        ?  "Yes"  : "No");
+	       i_drive_cap & CDIO_DRIVE_DVD        ?  "Yes" : "No");
 	printf("   Can write DVD-R   : %s\n", 
 	       i_drive_cap & CDIO_DRIVE_DVD_R      ?  "Yes" : "No");
 	printf("   Can write DVD-RAM : %s\n", 
