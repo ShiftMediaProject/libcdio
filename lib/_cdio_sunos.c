@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.38 2004/06/06 11:44:51 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.39 2004/06/13 20:38:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -26,9 +26,6 @@
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
-#ifdef HAVE_GLOB_H
-#include <glob.h>
-#endif
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -41,7 +38,11 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.38 2004/06/06 11:44:51 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.39 2004/06/13 20:38:58 rocky Exp $";
+
+#ifdef HAVE_GLOB_H
+#include <glob.h>
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
