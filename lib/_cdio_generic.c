@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.18 2004/06/25 21:10:43 rocky Exp $
+    $Id: _cdio_generic.c,v 1.19 2004/06/26 00:39:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.18 2004/06/25 21:10:43 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.19 2004/06/26 00:39:00 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -101,6 +101,20 @@ cdio_generic_init (void *user_data)
   _env->init = true;
   _env->toc_init = false;
   return true;
+}
+
+/*!
+   Reads a single form1 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+int
+cdio_generic_read_form1_sector (void * user_data, void *data, lsn_t lsn)
+{
+  if (0 > cdio_generic_lseek(user_data, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
+    return -1;
+  if (0 > cdio_generic_read(user_data, data, CDIO_CD_FRAMESIZE))
+    return -1;
+  return 0;
 }
 
 /*!

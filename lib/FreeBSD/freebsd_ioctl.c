@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.8 2004/06/25 20:45:41 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.9 2004/06/26 00:39:01 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.8 2004/06/25 20:45:41 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.9 2004/06/26 00:39:01 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -96,32 +96,18 @@ read_audio_sectors_freebsd_ioctl (_img_private_t *_obj, void *data, lsn_t lsn,
 }
 
 /*!
-   Reads a single form1 sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
- */
-int
-read_form1_sector_freebsd_ioctl (_img_private_t *env, void *data, lsn_t lsn)
-{
-  if (0 > cdio_generic_lseek(env, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
-    return -1;
-  if (0 > cdio_generic_read(env, data, CDIO_CD_FRAMESIZE))
-    return -1;
-  return 0;
-}
-
-/*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
 int
 read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data, lsn_t lsn, 
-				  bool b_form2)
+				 bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   int retval;
 
   if ( !b_form2 )
-    return read_form1_sector_freebsd_ioctl (env, buf, lsn);
+    return cdio_generic_read_form1_sector (env, buf, lsn);
   
   if ( (retval = read_audio_sectors_freebsd_ioctl (env, buf, lsn, 1)) )
     return retval;

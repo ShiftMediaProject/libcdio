@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.27 2004/06/25 21:10:43 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.28 2004/06/26 00:39:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.27 2004/06/25 21:10:43 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.28 2004/06/26 00:39:00 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -204,15 +204,11 @@ _read_mode1_sector_bsdi (void *user_data, void *data, lsn_t lsn,
 			 bool b_form2)
 {
 
-  char buf[M2RAW_SECTOR_SIZE] = { 0, };
 #if FIXED
+  char buf[M2RAW_SECTOR_SIZE] = { 0, };
   do something here. 
 #else
-  if (0 > cdio_generic_lseek(user_data, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
-    return -1;
-  if (0 > cdio_generic_read(user_data, buf, CDIO_CD_FRAMESIZE))
-    return -1;
-  memcpy (data, buf, b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
+  return cdio_generic_read_form1_sector(user_data, data, lsn);
 #endif
   return 0;
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.23 2004/05/27 01:11:50 rocky Exp $
+    $Id: cdio_private.h,v 1.24 2004/06/26 00:39:01 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -296,6 +296,13 @@ extern "C" {
   */
   ssize_t cdio_generic_read (void *env, void *buf, size_t size);
 
+  /*!
+    Reads a single form1 sector from cd device into data starting
+    from lsn. Returns 0 if no error. 
+  */
+  int cdio_generic_read_form1_sector (void * user_data, void *data, 
+				      lsn_t lsn);
+  
   /*!
     Release and free resources associated with stream or disk image.
   */

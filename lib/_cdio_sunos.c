@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.40 2004/06/25 21:10:44 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.41 2004/06/26 00:39:01 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.40 2004/06/25 21:10:44 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.41 2004/06/26 00:39:01 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -186,15 +186,10 @@ _cdio_read_mode1_sector (void *env, void *data, lsn_t lsn,
 			 bool b_form2)
 {
 
-  char buf[M2RAW_SECTOR_SIZE] = { 0, };
 #if FIXED
   do something here. 
 #else
-  if (0 > cdio_generic_lseek(env, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
-    return -1;
-  if (0 > cdio_generic_read(env, buf, CDIO_CD_FRAMESIZE))
-    return -1;
-  memcpy (data, buf, b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
+  return cdio_generic_read_form1_sector(env_data, data, lsn);
 #endif
   return 0;
 }
