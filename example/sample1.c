@@ -1,5 +1,5 @@
 /*
-  $Id: sample1.c,v 1.3 2003/09/28 22:11:00 rocky Exp $
+  $Id: sample1.c,v 1.4 2003/10/03 01:09:43 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -29,7 +29,7 @@
 int
 main(int argc, const char *argv[])
 {
-  CdIo *cdio = cdio_open ("/dev/cdrom", DRIVER_UNKNOWN);
+  CdIo *cdio = cdio_open (NULL, DRIVER_UNKNOWN);
   track_t first_track_num = cdio_get_first_track_num(cdio);
   track_t num_tracks      = cdio_get_num_tracks(cdio);
   int j, i=first_track_num;
@@ -41,10 +41,10 @@ main(int argc, const char *argv[])
   for (j = 0; j < num_tracks; i++, j++) {
     lsn_t lsn = cdio_get_track_lsn(cdio, i);
     if (CDIO_INVALID_LSN != lsn)
-	printf("%3d: %06d\n", (int) i, lsn);
+	printf("%3d: %06lu\n", (int) i, (long unsigned int) lsn);
   }
-  printf("%3X: %06d  leadout\n", CDIO_CDROM_LEADOUT_TRACK, 
-	 cdio_get_track_lsn(cdio, CDIO_CDROM_LEADOUT_TRACK));
+  printf("%3X: %06lu  leadout\n", CDIO_CDROM_LEADOUT_TRACK, 
+       (long unsigned int) cdio_get_track_lsn(cdio, CDIO_CDROM_LEADOUT_TRACK));
   cdio_destroy(cdio);
   return 0;
 }
