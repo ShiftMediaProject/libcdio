@@ -19,7 +19,7 @@ define(RELEASE_NUM, 71)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.103 2004/10/30 00:38:43 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.104 2004/10/30 02:55:17 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -114,7 +114,7 @@ AM_PATH_LIBPOPT(,
 dnl headers
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(glob.h stdbool.h)
+AC_CHECK_HEADERS(glob.h stdbool.h langinfo.h)
 
 dnl compiler
 AC_C_BIGENDIAN
@@ -317,7 +317,7 @@ AC_DEFINE_UNQUOTED(LICDIO_SOURCE_PATH, "$LIBCDIO_SOURCE_PATH",
 	[Full path to libcdio top_sourcedir.])
 AC_SUBST(LIBCDIO_SOURCE_PATH)
 
-AC_CHECK_FUNCS( memset bzero memcpy tzset )
+AC_CHECK_FUNCS( memset bzero memcpy tzset nl_langinfo )
 
 AC_CHECK_MEMBER([struct tm.tm_gmtoff],
                 [AC_DEFINE(HAVE_TM_GMTOFF, 1,
@@ -343,7 +343,23 @@ int
    [Define if time.h defines extern long timezone and int daylight vars.])
    has_daylight=yes
    ],[has_daylight=no])
-   AC_MSG_RESULT($has_daylight)
+  AC_MSG_RESULT($has_daylight)
+  AC_MSG_CHECKING([whether time.h defines tzname variable])
+  AC_TRY_RUN([
+#include <time.h>
+
+
+       extern char *tzname[2];
+
+int
+ main() {
+  return (tzname != NULL);
+}
+  ],[AC_DEFINE(HAVE_TZNAME, 1,
+   [Define if time.h defines extern extern char *tzname[2] variable])
+   has_tzname=yes
+   ],[has_tzname=no])
+   AC_MSG_RESULT($has_tzname)
 fi
 
 if test x$enable_joliet = x; then

@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.15 2004/10/29 02:11:48 rocky Exp $
+    $Id: iso-info.c,v 1.16 2004/10/30 02:55:17 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -288,7 +288,7 @@ main(int argc, const char *argv[])
   }
 
   if (source_name==NULL) {
-    err_exit("No input device given/found\n");
+    err_exit("No input device given/found%s\n", "");
   } 
 
   if (opts.no_joliet) {
@@ -299,7 +299,7 @@ main(int argc, const char *argv[])
 
   if (p_iso==NULL) {
     free(source_name);
-    err_exit("Error in opening ISO-9660 image\n");
+    err_exit("Error in opening ISO-9660 image%s\n", "");
   } 
 
   if (opts.silent == 0) {

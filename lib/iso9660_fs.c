@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.37 2004/10/29 02:11:48 rocky Exp $
+    $Id: iso9660_fs.c,v 1.38 2004/10/30 02:55:17 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -35,7 +35,9 @@
 # include <iconv.h>
 #endif
 
+#ifdef HAVE_LANGINFO
 #include <langinfo.h>
+#endif
 
 #include <cdio/cdio.h>
 #include <cdio/bytesex.h>
@@ -49,7 +51,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.37 2004/10/29 02:11:48 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.38 2004/10/30 02:55:17 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -144,7 +146,11 @@ static bool
 ucs2be_to_locale(ICONV_CONST char *psz_ucs2be,  size_t i_inlen, 
 		 char **p_psz_out,  size_t i_outlen)
 {
+#ifdef HAVE_NL_LANGINFO
   iconv_t ic = iconv_open(nl_langinfo(CODESET), "UCS-2BE");
+#else 
+  iconv_t ic = iconv_open("ASCII", "UCS-2BE");
+#endif
   int rc;
   char *psz_buf = NULL;
   char *psz_buf2;

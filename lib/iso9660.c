@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.23 2004/10/30 00:38:43 rocky Exp $
+    $Id: iso9660.c,v 1.24 2004/10/30 02:55:17 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.23 2004/10/30 00:38:43 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.24 2004/10/30 02:55:17 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -101,7 +101,9 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
 #if defined(HAVE_TM_GMTOFF) && defined(HAVE_TZSET)
   if (b_localtime) {
     tzset();
+#if defined(HAVE_TZNAME)
     p_tm->tm_zone   = (char *) tzname;
+#endif
 #if defined(HAVE_DAYLIGHT)
     p_tm->tm_isdst  = daylight;
     p_tm->tm_gmtoff = timezone;
