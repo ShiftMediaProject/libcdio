@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.45 2004/05/04 02:06:48 rocky Exp $
+    $Id: cdio.h,v 1.46 2004/05/09 16:54:12 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -676,20 +676,25 @@ extern "C" {
 
   char **cdio_get_devices_nrg(void);
 
+  /*! Return corresponding CUE file if bin_name is a fin file or NULL
+    if not a BIN file. 
+  */
+  char *cdio_is_binfile(const char *bin_name);
+  
   /*! Return corresponding BIN file if cue_name is a cue file or NULL
     if not a CUE file.
   */
   char *cdio_is_cuefile(const char *cue_name);
   
+  /*! Return true if psz_nrg is a Nero NRG image or false
+    if not a NRG image.
+  */
+  bool cdio_is_nrg(const char *psz_nrg);
+  
   /*! Return true if toc_name is a cdrdao TOC file or false
     if not a TOC file.
   */
-  bool cdio_is_tocfile(const char *toc_name);
-  
-  /*! Return corresponding CUE file if bin_name is a fin file or NULL
-    if not a BIN file. 
-  */
-  char *cdio_is_binfile(const char *bin_name);
+  bool cdio_is_tocfile(const char *paz_toc);
   
   /*! Return true if source name is a device.
   */
