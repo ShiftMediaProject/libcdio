@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.8 2004/05/31 14:53:08 rocky Exp $
+    $Id: freebsd.h,v 1.9 2004/06/05 02:47:49 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -137,16 +137,40 @@ int  eject_media_freebsd_cam (_img_private_t *env);
 
 void free_freebsd_cam (void *obj);
 
+/*!
+   Using the ioctl method, r nblocks of audio sectors from cd device
+   into data starting from lsn.  Returns 0 if no error.
+ */
 int  read_audio_sectors_freebsd_ioctl (_img_private_t *env, void *data, 
 				       lsn_t lsn, unsigned int nblocks);
+/*! 
+   Using the CAM method, reads nblocks of mode2 sectors from
+   cd device using into data starting from lsn.  Returns 0 if no
+   error.
+*/
+int  read_mode2_sector_freebsd_cam (_img_private_t *env, void *data, 
+				    lsn_t lsn, bool b_form2);
+
+/*! 
+   Using the ioctl method, reads nblocks of mode2 sectors from
+   cd device using into data starting from lsn.  Returns 0 if no
+   error.
+*/
 int  read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data, 
 				      lsn_t lsn, bool b_form2);
 
-int  read_mode2_sectors_freebsd_cam (_img_private_t *env, void *buf, 
-				     uint32_t lba, unsigned int nblocks, 
-				     bool b_form2);
+/*! 
+   Using the CAM method, reads nblocks of mode2 form2 sectors from
+   cd device using into data starting from lsn.  Returns 0 if no
+   error.
 
-bool read_toc_freebsd_ioctl (_img_private_t *_obj);
+   Note: if you want form1 sectors, the caller has to pick out the
+   appropriate piece.
+*/
+int  read_mode2_sectors_freebsd_cam (_img_private_t *env, void *buf, 
+				     lsn_t lsn, unsigned int nblocks);
+
+bool read_toc_freebsd_ioctl (_img_private_t *env);
 
 /*!
    Return the size of the CD in logical block address (LBA) units.
@@ -154,7 +178,7 @@ bool read_toc_freebsd_ioctl (_img_private_t *_obj);
 uint32_t stat_size_freebsd_cam (_img_private_t *env);
 uint32_t stat_size_freebsd_ioctl (_img_private_t *env);
 
-bool init_freebsd_cam (_img_private_t *_obj);
-void free_freebsd_cam (void *obj);
+bool init_freebsd_cam (_img_private_t *env);
+void free_freebsd_cam (void *user_data);
 
 #endif /*HAVE_FREEBSD_CDROM*/

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.17 2004/06/02 00:43:53 rocky Exp $
+    $Id: freebsd.c,v 1.18 2004/06/05 02:47:49 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.17 2004/06/02 00:43:53 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.18 2004/06/05 02:47:49 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -79,7 +79,7 @@ cdio_is_cdrom(char *drive, char *mnttype)
 }
 
 /*!
-   Reads a single mode2 sector from cd device into data starting from lsn.
+   Reads nblocks of audio sectors from cd device into data starting from lsn.
    Returns 0 if no error. 
  */
 static int
@@ -98,8 +98,9 @@ _read_mode2_sector_freebsd (void *user_data, void *data, lsn_t lsn,
 			    bool b_form2)
 {
   _img_private_t *env = user_data;
+
   if ( env->access_mode == _AM_CAM )
-    return read_mode2_sectors_freebsd_cam(env, data, lsn, 1, b_form2);
+    return read_mode2_sector_freebsd_cam(env, data, lsn, b_form2);
   else
     return read_mode2_sector_freebsd_ioctl(env, data, lsn, b_form2);
 }
@@ -114,26 +115,21 @@ _read_mode2_sectors_freebsd (void *user_data, void *data, lsn_t lsn,
 			  bool b_form2, unsigned int nblocks)
 {
   _img_private_t *env = user_data;
-  int i;
-  int retval;
 
-  if ( env->access_mode == _AM_CAM )
-    return read_mode2_sectors_freebsd_cam(env, data, lsn, nblocks, b_form2);
+  if ( env->access_mode == _AM_CAM  && b_form2) {
+    /* We have a routine that covers this case without looping. */
+    return read_mode2_sectors_freebsd_cam(env, data, lsn, nblocks);
+  } else {
+    unsigned int i;
+    unsigned int i_blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
   
-  for (i = 0; i < nblocks; i++) {
-    if (b_form2) {
-      if ( (retval = read_mode2_sector_freebsd_ioctl (env, 
-					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
-					  lsn + i, true)) )
-	return retval;
-    } else {
-      char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = read_mode2_sector_freebsd_ioctl (env, buf, 
-						      lsn + i, true)) )
-	return retval;
-      
-      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
-	      buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
+    /* For each frame, pick out the data part we need */
+    for (i = 0; i < nblocks; i++) {
+      int retval = _read_mode2_sector_freebsd (env, 
+					       ((char *)data) + 
+					       (i_blocksize * i),
+					       lsn + i, b_form2);
+      if (retval) return retval;
     }
   }
   return 0;
@@ -446,6 +442,13 @@ cdio_get_devices_freebsd (void)
   /* Scan the system for CD-ROM drives.
      Not always 100% reliable, so use the USE_MNTENT code above first.
   */
+  for ( c='0'; exists && c <='9'; c++ ) {
+    sprintf(drive, "/dev/cd%cc", c);
+    exists = cdio_is_cdrom(drive, NULL);
+    if ( exists ) {
+      cdio_add_device_list(&drives, drive, &num_drives);
+    }
+  }
   for ( c='0'; exists && c <='9'; c++ ) {
     sprintf(drive, "/dev/acd%cc", c);
     exists = cdio_is_cdrom(drive, NULL);

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.9 2004/05/31 12:05:12 rocky Exp $
+    $Id: freebsd_cam.c,v 1.10 2004/06/05 02:47:49 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.9 2004/05/31 12:05:12 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.10 2004/06/05 02:47:49 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -36,58 +36,58 @@ static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.9 2004/05/31 12:05:12 rocky
 static const u_char scsi_cdblen[8] = {6, 10, 10, 12, 12, 12, 10, 10};
 
 static int
-_scsi_cmd (_img_private_t * _obj)
+_scsi_cmd (_img_private_t * env)
 {
   int retval;
-  _obj->ccb.csio.cdb_len = scsi_cdblen[(_obj->ccb.csio.cdb_io.cdb_bytes[0] >> 5) & 7];
-  if ((retval = cam_send_ccb(_obj->cam, &_obj->ccb)) < 0)
+  env->ccb.csio.cdb_len = scsi_cdblen[(env->ccb.csio.cdb_io.cdb_bytes[0] >> 5) & 7];
+  if ((retval = cam_send_ccb(env->cam, &env->ccb)) < 0)
     {
       cdio_warn ("transport failed: ", retval);
       return -1;
     }
-  if ((_obj->ccb.ccb_h.status & CAM_STATUS_MASK) == CAM_REQ_CMP)
+  if ((env->ccb.ccb_h.status & CAM_STATUS_MASK) == CAM_REQ_CMP)
     {
       return 0;
     }
   errno = EIO;
-  retval = ERRCODE(((unsigned char *)&_obj->ccb.csio.sense_data));
+  retval = ERRCODE(((unsigned char *)&env->ccb.csio.sense_data));
   if (retval == 0)
     retval = -1;
   else
-    CREAM_ON_ERRNO(((unsigned char *)&_obj->ccb.csio.sense_data));
+    CREAM_ON_ERRNO(((unsigned char *)&env->ccb.csio.sense_data));
   cdio_error ("transport failed: ", retval);
   return retval;
 }
 
 bool
-init_freebsd_cam (_img_private_t *_obj)
+init_freebsd_cam (_img_private_t *env)
 {
   char pass[100];
   
-  _obj->cam=NULL;
-  memset (&_obj->ccb, 0, sizeof(_obj->ccb));
-  _obj->ccb.ccb_h.func_code = XPT_GDEVLIST;
+  env->cam=NULL;
+  memset (&env->ccb, 0, sizeof(env->ccb));
+  env->ccb.ccb_h.func_code = XPT_GDEVLIST;
 
-  if (-1 == _obj->gen.fd) 
-    _obj->gen.fd = open (_obj->device, O_RDONLY, 0);
+  if (-1 == env->gen.fd) 
+    env->gen.fd = open (env->device, O_RDONLY, 0);
 
-  if (_obj->gen.fd < 0)
+  if (env->gen.fd < 0)
     {
-      cdio_error ("open (%s): %s", _obj->device, strerror (errno));
+      cdio_error ("open (%s): %s", env->device, strerror (errno));
       return false;
     }
 
-  if (ioctl (_obj->gen.fd, CAMGETPASSTHRU, &_obj->ccb) < 0)
+  if (ioctl (env->gen.fd, CAMGETPASSTHRU, &env->ccb) < 0)
     {
       cdio_error ("open: %s", strerror (errno));
       return false;
     }
   sprintf (pass,"/dev/%.15s%u",
-	   _obj->ccb.cgdl.periph_name,
-	   _obj->ccb.cgdl.unit_number);
-  _obj->cam = cam_open_pass (pass,O_RDWR,NULL);
-  _obj->gen.init   = true;
-  _obj->b_cam_init = true;
+	   env->ccb.cgdl.periph_name,
+	   env->ccb.cgdl.unit_number);
+  env->cam = cam_open_pass (pass,O_RDWR,NULL);
+  env->gen.init   = true;
+  env->b_cam_init = true;
   return true;
 }
 
@@ -122,40 +122,40 @@ free_freebsd_cam (void *user_data)
 
  */
 static char *
-get_drive_mcn_freebsd_cam (void *env) 
+get_drive_mcn_freebsd_cam (void *user_data)
 {
   char buf[192] = { 0, };
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int rc;
   
-  memset(&_obj->ccb, 0, sizeof(_obj->ccb));
+  memset(&env->ccb, 0, sizeof(env->ccb));
 
-  _obj->ccb.ccb_h.path_id    = _obj->cam->path_id;
-  _obj->ccb.ccb_h.target_id  = _obj->cam->target_id;
-  _obj->ccb.ccb_h.target_lun = _obj->cam->target_lun;
-  cam_fill_csio (&(_obj->ccb.csio), 1, NULL, 
+  env->ccb.ccb_h.path_id    = env->cam->path_id;
+  env->ccb.ccb_h.target_id  = env->cam->target_id;
+  env->ccb.ccb_h.target_lun = env->cam->target_lun;
+  cam_fill_csio (&(env->ccb.csio), 1, NULL, 
 		 CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, NULL, 0, 
-		 sizeof(_obj->ccb.csio.sense_data), 0, 30*1000);
+		 sizeof(env->ccb.csio.sense_data), 0, 30*1000);
 
   /* Initialize my_scsi_cdb as a Mode Select(6) */
-  CDIO_MMC_SET_COMMAND(_obj->ccb.csio.cdb_io.cdb_bytes, 
+  CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, 
 		       CDIO_MMC_GPCMD_READ_SUBCHANNEL);
-  _obj->ccb.csio.cdb_io.cdb_bytes[1] = 0x0;  
-  _obj->ccb.csio.cdb_io.cdb_bytes[2] = 0x40;
-  _obj->ccb.csio.cdb_io.cdb_bytes[3] = 02;    /* Get media catalog number. */
-  _obj->ccb.csio.cdb_io.cdb_bytes[4] = 0;    /* Not used */
-  _obj->ccb.csio.cdb_io.cdb_bytes[5] = 0;    /* Not used */
-  _obj->ccb.csio.cdb_io.cdb_bytes[6] = 0;    /* Not used */
-  _obj->ccb.csio.cdb_io.cdb_bytes[7] = 0;    /* Not used */
-  _obj->ccb.csio.cdb_io.cdb_bytes[8] = 28; 
-  _obj->ccb.csio.cdb_io.cdb_bytes[9] = 0;    /* Not used */
+  env->ccb.csio.cdb_io.cdb_bytes[1] = 0x0;  
+  env->ccb.csio.cdb_io.cdb_bytes[2] = 0x40;
+  env->ccb.csio.cdb_io.cdb_bytes[3] = 02;    /* Get media catalog number. */
+  env->ccb.csio.cdb_io.cdb_bytes[4] = 0;    /* Not used */
+  env->ccb.csio.cdb_io.cdb_bytes[5] = 0;    /* Not used */
+  env->ccb.csio.cdb_io.cdb_bytes[6] = 0;    /* Not used */
+  env->ccb.csio.cdb_io.cdb_bytes[7] = 0;    /* Not used */
+  env->ccb.csio.cdb_io.cdb_bytes[8] = 28; 
+  env->ccb.csio.cdb_io.cdb_bytes[9] = 0;    /* Not used */
   
   /* suc.suc_timeout = 500; */
-  _obj->ccb.csio.ccb_h.flags = CAM_DIR_OUT;
-  _obj->ccb.csio.data_ptr  = buf;
-  _obj->ccb.csio.dxfer_len = sizeof(buf);
+  env->ccb.csio.ccb_h.flags = CAM_DIR_OUT;
+  env->ccb.csio.data_ptr  = buf;
+  env->ccb.csio.dxfer_len = sizeof(buf);
 
-  rc =  _scsi_cmd (_obj);
+  rc =  _scsi_cmd (env);
 
   if(rc == 0) {
     return strdup(&buf[9]);
@@ -171,36 +171,36 @@ get_drive_mcn_freebsd_cam (void *env)
 
  */
 static cdio_drive_cap_t
-get_drive_cap_freebsd_cam (void *env) 
+get_drive_cap_freebsd_cam (void *user_data) 
 {
   int32_t i_drivetype = 0;
   char buf[192] = { 0, };
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int rc;
   
-  memset(&_obj->ccb, 0, sizeof(_obj->ccb));
+  memset(&env->ccb, 0, sizeof(env->ccb));
 
-  _obj->ccb.ccb_h.path_id    = _obj->cam->path_id;
-  _obj->ccb.ccb_h.target_id  = _obj->cam->target_id;
-  _obj->ccb.ccb_h.target_lun = _obj->cam->target_lun;
-  cam_fill_csio (&(_obj->ccb.csio), 1, NULL, 
+  env->ccb.ccb_h.path_id    = env->cam->path_id;
+  env->ccb.ccb_h.target_id  = env->cam->target_id;
+  env->ccb.ccb_h.target_lun = env->cam->target_lun;
+  cam_fill_csio (&(env->ccb.csio), 1, NULL, 
 		 CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, NULL, 0, 
-		 sizeof(_obj->ccb.csio.sense_data), 0, 30*1000);
+		 sizeof(env->ccb.csio.sense_data), 0, 30*1000);
 
   /* Initialize my_scsi_cdb as a Mode Select(6) */
-  CDIO_MMC_SET_COMMAND(_obj->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_MODE_SENSE);
-  _obj->ccb.csio.cdb_io.cdb_bytes[1] = 0x0;  
-  _obj->ccb.csio.cdb_io.cdb_bytes[2] = 0x2a; /* MODE_PAGE_CAPABILITIES*/
-  _obj->ccb.csio.cdb_io.cdb_bytes[3] = 0;    /* Not used */
-  _obj->ccb.csio.cdb_io.cdb_bytes[4] = 128; 
-  _obj->ccb.csio.cdb_io.cdb_bytes[5] = 0;    /* Not used */
+  CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_MODE_SENSE);
+  env->ccb.csio.cdb_io.cdb_bytes[1] = 0x0;  
+  env->ccb.csio.cdb_io.cdb_bytes[2] = 0x2a; /* MODE_PAGE_CAPABILITIES*/
+  env->ccb.csio.cdb_io.cdb_bytes[3] = 0;    /* Not used */
+  env->ccb.csio.cdb_io.cdb_bytes[4] = 128; 
+  env->ccb.csio.cdb_io.cdb_bytes[5] = 0;    /* Not used */
   
   /* suc.suc_timeout = 500; */
-  _obj->ccb.csio.ccb_h.flags = CAM_DIR_OUT;
-  _obj->ccb.csio.data_ptr  = buf;
-  _obj->ccb.csio.dxfer_len = sizeof(buf);
+  env->ccb.csio.ccb_h.flags = CAM_DIR_OUT;
+  env->ccb.csio.data_ptr  = buf;
+  env->ccb.csio.dxfer_len = sizeof(buf);
 
-  rc =  _scsi_cmd (_obj);
+  rc =  _scsi_cmd (env);
 
   if(rc == 0) {
     unsigned int n=buf[3]+4;
@@ -225,7 +225,7 @@ get_drive_cap_freebsd_cam (void *env)
 #endif
 
 static int
-_set_bsize (_img_private_t *_obj, unsigned int bsize)
+_set_bsize (_img_private_t *env, unsigned int bsize)
 {
   struct
   {
@@ -243,84 +243,100 @@ _set_bsize (_img_private_t *_obj, unsigned int bsize)
     uint8_t block_length_lo;
   } mh;
 
-  memset(&_obj->ccb, 0, sizeof(_obj->ccb));
+  memset(&env->ccb, 0, sizeof(env->ccb));
   memset (&mh, 0, sizeof (mh));
 
-  _obj->ccb.ccb_h.path_id    = _obj->cam->path_id;
-  _obj->ccb.ccb_h.target_id  = _obj->cam->target_id;
-  _obj->ccb.ccb_h.target_lun = _obj->cam->target_lun;
-  cam_fill_csio (&(_obj->ccb.csio), 1, NULL, 
+  env->ccb.ccb_h.path_id    = env->cam->path_id;
+  env->ccb.ccb_h.target_id  = env->cam->target_id;
+  env->ccb.ccb_h.target_lun = env->cam->target_lun;
+  cam_fill_csio (&(env->ccb.csio), 1, NULL, 
 		 CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, NULL, 0, 
-		 sizeof(_obj->ccb.csio.sense_data), 0, 30*1000);
-  _obj->ccb.csio.cdb_len = 4+1;
+		 sizeof(env->ccb.csio.sense_data), 0, 30*1000);
+  env->ccb.csio.cdb_len = 4+1;
   
   
-  _obj->ccb.csio.cdb_io.cdb_bytes[0] = 0x15;
-  _obj->ccb.csio.cdb_io.cdb_bytes[1] = 1 << 4;
-  _obj->ccb.csio.cdb_io.cdb_bytes[4] = 12;
+  env->ccb.csio.cdb_io.cdb_bytes[0] = 0x15;
+  env->ccb.csio.cdb_io.cdb_bytes[1] = 1 << 4;
+  env->ccb.csio.cdb_io.cdb_bytes[4] = 12;
   
-  _obj->ccb.csio.data_ptr = (u_char *)&mh;
-  _obj->ccb.csio.dxfer_len = sizeof (mh);;
+  env->ccb.csio.data_ptr = (u_char *)&mh;
+  env->ccb.csio.dxfer_len = sizeof (mh);;
   
   /* suc.suc_timeout = 500; */
-  _obj->ccb.csio.ccb_h.flags = CAM_DIR_OUT;
+  env->ccb.csio.ccb_h.flags = CAM_DIR_OUT;
   
   mh.block_desc_length = 0x08;
   mh.block_length_hi   = (bsize >> 16) & 0xff;
   mh.block_length_med  = (bsize >> 8) & 0xff;
   mh.block_length_lo   = (bsize >> 0) & 0xff;
   
-  return _scsi_cmd (_obj);
+  return _scsi_cmd (env);
 }
 
 int
-read_mode2_sectors_freebsd_cam (_img_private_t *_obj, void *buf, uint32_t lba, 
-				unsigned int nblocks, bool b_form2)
+read_mode2_sector_freebsd_cam (_img_private_t *env, void *data, lsn_t lsn, 
+			       bool b_form2)
+{
+  if ( b_form2 )
+    return read_mode2_sectors_freebsd_cam(env, data, lsn, 1);
+  else {
+    /* Need to pick out the data portion from a mode2 form2 frame */
+    char buf[M2RAW_SECTOR_SIZE] = { 0, };
+    int retval = read_mode2_sectors_freebsd_cam(env, buf, lsn, 1);
+    if ( retval ) return retval;
+    memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
+    return 0;
+  }
+}
+
+int
+read_mode2_sectors_freebsd_cam (_img_private_t *env, void *buf, lsn_t lsn, 
+				unsigned int nblocks)
 {
   int retval = 0;
   bool b_read_10 = false;
 
-  memset(&_obj->ccb,0,sizeof(_obj->ccb));
+  memset(&env->ccb,0,sizeof(env->ccb));
 
-  _obj->ccb.ccb_h.path_id    = _obj->cam->path_id;
-  _obj->ccb.ccb_h.target_id  = _obj->cam->target_id;
-  _obj->ccb.ccb_h.target_lun = _obj->cam->target_lun;
-  cam_fill_csio (&(_obj->ccb.csio), 1, NULL, 
+  env->ccb.ccb_h.path_id    = env->cam->path_id;
+  env->ccb.ccb_h.target_id  = env->cam->target_id;
+  env->ccb.ccb_h.target_lun = env->cam->target_lun;
+  cam_fill_csio (&(env->ccb.csio), 1, NULL, 
 		 CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, NULL, 0, 
-		 sizeof(_obj->ccb.csio.sense_data), 0, 30*1000);
-  _obj->ccb.csio.cdb_len = (b_read_10 ? 8 : 9) + 1;
+		 sizeof(env->ccb.csio.sense_data), 0, 30*1000);
+  env->ccb.csio.cdb_len = (b_read_10 ? 8 : 9) + 1;
   
-  CDIO_MMC_SET_COMMAND(_obj->ccb.csio.cdb_io.cdb_bytes, b_read_10
+  CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, b_read_10
 		       ? CDIO_MMC_GPCMD_READ_10 : CDIO_MMC_GPCMD_READ_CD);
 
-  CDIO_MMC_SET_READ_LBA(_obj->ccb.csio.cdb_io.cdb_bytes, lba);
-  CDIO_MMC_SET_READ_LENGTH(_obj->ccb.csio.cdb_io.cdb_bytes, nblocks);
+  CDIO_MMC_SET_READ_LBA(env->ccb.csio.cdb_io.cdb_bytes, lsn);
+  CDIO_MMC_SET_READ_LENGTH(env->ccb.csio.cdb_io.cdb_bytes, nblocks);
   
   if (!b_read_10) {
-    _obj->ccb.csio.cdb_io.cdb_bytes[1] = 0; /* sector size mode2 */
-    _obj->ccb.csio.cdb_io.cdb_bytes[9] = 0x58; /* 2336 mode2 mixed form */
+    env->ccb.csio.cdb_io.cdb_bytes[1] = 0; /* sector size mode2 */
+    env->ccb.csio.cdb_io.cdb_bytes[9] = 0x58; /* 2336 mode2 mixed form */
   }
 
-  _obj->ccb.csio.dxfer_len = M2RAW_SECTOR_SIZE * nblocks;
-  _obj->ccb.csio.data_ptr  = buf;
+  env->ccb.csio.dxfer_len = M2RAW_SECTOR_SIZE * nblocks;
+  env->ccb.csio.data_ptr  = buf;
   
   /* suc.suc_timeout = 500; */
-  _obj->ccb.csio.ccb_h.flags = CAM_DIR_IN;
+  env->ccb.csio.ccb_h.flags = CAM_DIR_IN;
   
   if (b_read_10)
     {
-      if ((retval = _set_bsize (_obj, M2RAW_SECTOR_SIZE)))
+      if ((retval = _set_bsize (env, M2RAW_SECTOR_SIZE)))
 	goto out;
       
-      if ((retval = _scsi_cmd(_obj)))
+      if ((retval = _scsi_cmd(env)))
 	{
-	  _set_bsize (_obj, CDIO_CD_FRAMESIZE);
+	  _set_bsize (env, CDIO_CD_FRAMESIZE);
 	  goto out;
 	}
-      retval = _set_bsize (_obj, CDIO_CD_FRAMESIZE);
+      retval = _set_bsize (env, CDIO_CD_FRAMESIZE);
     }
   else
-    retval = _scsi_cmd(_obj);
+    retval = _scsi_cmd(env);
   
  out:
   return retval;
@@ -330,34 +346,34 @@ read_mode2_sectors_freebsd_cam (_img_private_t *_obj, void *buf, uint32_t lba,
    Return the size of the CD in logical block address (LBA) units.
  */
 uint32_t
-stat_size_freebsd_cam (_img_private_t *_obj)
+stat_size_freebsd_cam (_img_private_t *env)
 {
   uint8_t buf[12] = { 0, };
 
   uint32_t retval;
 
-  memset(&_obj->ccb,0,sizeof(_obj->ccb));
-  _obj->ccb.ccb_h.path_id    = _obj->cam->path_id;
-  _obj->ccb.ccb_h.target_id  = _obj->cam->target_id;
-  _obj->ccb.ccb_h.target_lun = _obj->cam->target_lun;
-  cam_fill_csio (&(_obj->ccb.csio), 1, NULL, CAM_DEV_QFRZDIS, 
+  memset(&env->ccb,0,sizeof(env->ccb));
+  env->ccb.ccb_h.path_id    = env->cam->path_id;
+  env->ccb.ccb_h.target_id  = env->cam->target_id;
+  env->ccb.ccb_h.target_lun = env->cam->target_lun;
+  cam_fill_csio (&(env->ccb.csio), 1, NULL, CAM_DEV_QFRZDIS, 
 		 MSG_SIMPLE_Q_TAG, NULL, 0, 
-		 sizeof(_obj->ccb.csio.sense_data), 0, 30*1000);
-  _obj->ccb.csio.cdb_len = 8+1;
+		 sizeof(env->ccb.csio.sense_data), 0, 30*1000);
+  env->ccb.csio.cdb_len = 8+1;
   
-  CDIO_MMC_SET_COMMAND(_obj->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_READ_TOC);
-  _obj->ccb.csio.cdb_io.cdb_bytes[1] = 0; /* lba; msf: 0x2 */
-  CDIO_MMC_SET_START_TRACK(_obj->ccb.csio.cdb_io.cdb_bytes, 
+  CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_READ_TOC);
+  env->ccb.csio.cdb_io.cdb_bytes[1] = 0; /* lba; msf: 0x2 */
+  CDIO_MMC_SET_START_TRACK(env->ccb.csio.cdb_io.cdb_bytes, 
 			   CDIO_CDROM_LEADOUT_TRACK);
-  _obj->ccb.csio.cdb_io.cdb_bytes[8] = 12; /* ? */
+  env->ccb.csio.cdb_io.cdb_bytes[8] = 12; /* ? */
   
-  _obj->ccb.csio.data_ptr = buf;
-  _obj->ccb.csio.dxfer_len = sizeof (buf);
+  env->ccb.csio.data_ptr = buf;
+  env->ccb.csio.dxfer_len = sizeof (buf);
 
   /*suc.suc_timeout = 500; */
-  _obj->ccb.csio.ccb_h.flags = CAM_DIR_IN;
+  env->ccb.csio.ccb_h.flags = CAM_DIR_IN;
 
-  if (_scsi_cmd(_obj))
+  if (_scsi_cmd(env))
     return 0;
 
   {
@@ -375,31 +391,31 @@ stat_size_freebsd_cam (_img_private_t *_obj)
 }
 
 int
-eject_media_freebsd_cam (_img_private_t *_obj) 
+eject_media_freebsd_cam (_img_private_t *env) 
 {
   
-  if (_obj->gen.fd == -1)
+  if (env->gen.fd == -1)
     return 2;
   
-  memset(&_obj->ccb,0,sizeof(_obj->ccb));
-  _obj->ccb.ccb_h.path_id    = _obj->cam->path_id;
-  _obj->ccb.ccb_h.target_id  = _obj->cam->target_id;
-  _obj->ccb.ccb_h.target_lun = _obj->cam->target_lun;
-  cam_fill_csio (&(_obj->ccb.csio), 1, NULL, CAM_DEV_QFRZDIS, 
-		 MSG_SIMPLE_Q_TAG, NULL, 0, sizeof(_obj->ccb.csio.sense_data), 
+  memset(&env->ccb,0,sizeof(env->ccb));
+  env->ccb.ccb_h.path_id    = env->cam->path_id;
+  env->ccb.ccb_h.target_id  = env->cam->target_id;
+  env->ccb.ccb_h.target_lun = env->cam->target_lun;
+  cam_fill_csio (&(env->ccb.csio), 1, NULL, CAM_DEV_QFRZDIS, 
+		 MSG_SIMPLE_Q_TAG, NULL, 0, sizeof(env->ccb.csio.sense_data), 
 		 0, 30*1000);
-  _obj->ccb.csio.cdb_len = 5+1;
+  env->ccb.csio.cdb_len = 5+1;
   
-  _obj->ccb.csio.cdb_io.cdb_bytes[0] = CDIO_MMC_START_STOP;
-  _obj->ccb.csio.cdb_io.cdb_bytes[1] = 0x1;	/* immediate */
-  _obj->ccb.csio.cdb_io.cdb_bytes[4] = 0x2;	/* eject */
+  env->ccb.csio.cdb_io.cdb_bytes[0] = CDIO_MMC_START_STOP;
+  env->ccb.csio.cdb_io.cdb_bytes[1] = 0x1;	/* immediate */
+  env->ccb.csio.cdb_io.cdb_bytes[4] = 0x2;	/* eject */
   
-  _obj->ccb.csio.data_ptr = 0;
-  _obj->ccb.csio.dxfer_len = 0;
+  env->ccb.csio.data_ptr = 0;
+  env->ccb.csio.dxfer_len = 0;
   
   /* suc.suc_timeout = 500; */
-  _obj->ccb.csio.ccb_h.flags = CAM_DIR_IN;
-  return(_scsi_cmd(_obj));
+  env->ccb.csio.ccb_h.flags = CAM_DIR_IN;
+  return(_scsi_cmd(env));
 }
 
 #endif /* HAVE_FREEBSD_CDROM */

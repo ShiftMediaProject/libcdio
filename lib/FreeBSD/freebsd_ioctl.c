@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.5 2004/05/13 04:32:14 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.6 2004/06/05 02:47:49 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.5 2004/05/13 04:32:14 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.6 2004/06/05 02:47:49 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -112,7 +112,7 @@ read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data, lsn_t lsn,
   if (b_form2)
     memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, M2RAW_SECTOR_SIZE);
   else
-    memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, CDIO_CD_FRAMESIZE);
+    memcpy (data, buf + CDIO_CD_XA_HEADER, CDIO_CD_FRAMESIZE);
   
   return 0;
 }
