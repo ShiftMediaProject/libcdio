@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.3 2003/03/29 17:32:00 rocky Exp $
+    $Id: cdio.c,v 1.4 2003/03/30 13:01:22 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -28,7 +28,7 @@
 #include "logging.h"
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.3 2003/03/29 17:32:00 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.4 2003/03/30 13:01:22 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -97,20 +97,20 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    &cdio_open_solaris
   },
 
-  {DRIVER_NRG,
-   CDIO_SRC_IS_DISK_IMAGE_MASK,
-   "NRG",
-   "Nero NRG disk image driver",
-   &cdio_have_nrg,
-   &cdio_open_nrg
-  },
-
   {DRIVER_BINCUE,
    CDIO_SRC_IS_DISK_IMAGE_MASK,
    "BIN/CUE",
    "bin/cuesheet disk image driver",
    &cdio_have_bincue,
    &cdio_open_bincue
+  },
+
+  {DRIVER_NRG,
+   CDIO_SRC_IS_DISK_IMAGE_MASK,
+   "NRG",
+   "Nero NRG disk image driver",
+   &cdio_have_nrg,
+   &cdio_open_nrg
   }
 
 };

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.4 2003/03/29 21:13:55 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.5 2003/03/30 13:01:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -31,7 +31,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.4 2003/03/29 21:13:55 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.5 2003/03/30 13:01:22 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,10 +77,7 @@ typedef struct {
   } access_mode;
 
 
-  int ioctls_debugged; /* for debugging */
-
   /* Track information */
-  bool toc_init;                         /* if true, info below is valid. */
   struct cdrom_tochdr    tochdr;
   struct cdrom_tocentry  tocent[100];    /* entry info for each track */
 
@@ -95,14 +92,8 @@ _cdio_init (_img_private_t *_obj)
 
   struct dk_cinfo cinfo;
 
-  _obj->gen.fd = open (_obj->gen.source_name, O_RDONLY, 0);
-
-  if (_obj->gen.fd < 0)
-    {
-      cdio_error ("open (%s): %s", _obj->gen.source_name, strerror (errno));
-      return false;
-    }
-
+  if (!cdio_generic_init(_obj)) return false;
+  
   /*
    * CDROMCDXA/CDROMREADMODE2 are broken on IDE/ATAPI devices.
    * Try to send MMC3 SCSI commands via the uscsi interface on
@@ -115,9 +106,6 @@ _cdio_init (_img_private_t *_obj)
   } else {
       _obj->access_mode = _AM_SUN_CTRL_SCSI;    
   }
-
-  _obj->gen.init = true;
-  _obj->toc_init = false;
 
   return true;
 }
@@ -141,20 +129,20 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   msf->cdmsf_sec0 = from_bcd8(_msf.s);
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
   
-  if (_obj->ioctls_debugged == 75)
+  if (_obj->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
   
-  if (_obj->ioctls_debugged == 30 * 75)
+  if (_obj->gen.ioctls_debugged == 30 * 75)
     cdio_debug ("only displaying every 30*75th ioctl from now on");
   
-  if (_obj->ioctls_debugged < 75 
-      || (_obj->ioctls_debugged < (30 * 75)  
-	  && _obj->ioctls_debugged % 75 == 0)
-      || _obj->ioctls_debugged % (30 * 75) == 0)
+  if (_obj->gen.ioctls_debugged < 75 
+      || (_obj->gen.ioctls_debugged < (30 * 75)  
+	  && _obj->gen.ioctls_debugged % 75 == 0)
+      || _obj->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %2.2d:%2.2d:%2.2d",
 	       msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
   
-  _obj->ioctls_debugged++;
+  _obj->gen.ioctls_debugged++;
   
   switch (_obj->access_mode)
     {
@@ -470,7 +458,7 @@ _cdio_get_first_track_num(void *user_data)
 {
   _img_private_t *_obj = user_data;
   
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
   return FIRST_TRACK_NUM;
 }
@@ -483,7 +471,7 @@ _cdio_get_num_tracks(void *user_data)
 {
   _img_private_t *_obj = user_data;
   
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
   return TOTAL_TRACKS;
 }
@@ -497,7 +485,7 @@ _cdio_get_track_format(void *user_data, track_t track_num)
   _img_private_t *_obj = user_data;
   
   if (!_obj->gen.init) _cdio_init(_obj);
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
   if (track_num > TOTAL_TRACKS || track_num == 0)
     return TRACK_FORMAT_ERROR;
@@ -531,7 +519,7 @@ _cdio_get_track_green(void *user_data, track_t track_num)
   _img_private_t *_obj = user_data;
   
   if (!_obj->gen.init) _cdio_init(_obj);
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
   if (track_num == CDIO_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
 
@@ -559,7 +547,7 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
   if (NULL == msf) return false;
 
   if (!_obj->gen.init) _cdio_init(_obj);
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
   if (track_num == CDIO_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
 

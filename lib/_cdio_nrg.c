@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.3 2003/03/29 21:13:55 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.4 2003/03/30 13:01:22 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "util.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.3 2003/03/29 21:13:55 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.4 2003/03/30 13:01:22 rocky Exp $";
 
 /* structures used */
 
@@ -121,15 +121,17 @@ typedef struct {
 
 
 typedef struct {
+  /* Things common to all drivers like this. 
+     This must be first. */
+  generic_img_private_t gen; 
+
   bool sector_2336_flag;
   CdioDataSource *data_source;
-  char           *source_name;
   track_info_t    tocent[100];     /* entry info for each track */
   track_t         total_tracks;    /* number of tracks in image */
   track_t         first_track_num; /* track number of first track */
   CdioList       *mapping;         /* List of track information */
   uint32_t size;
-  bool init;
 } _img_private_t;
 
 static bool     _cdio_parse_nero_footer (_img_private_t *_obj);
@@ -143,7 +145,7 @@ _cdio_free (void *user_data)
 {
   _img_private_t *_obj = user_data;
 
-  free(_obj->source_name);
+  free(_obj->gen.source_name);
 
   if (_obj->data_source)
     cdio_stream_destroy (_obj->data_source);
@@ -481,18 +483,18 @@ PRAGMA_END_PACKED
 static bool
 _cdio_init (_img_private_t *_obj)
 {
-  if (_obj->init) {
+  if (_obj->gen.init) {
     cdio_error ("init called more than once");
     return false;
   }
   
-  if (!(_obj->data_source = cdio_stdio_new (_obj->source_name))) {
+  if (!(_obj->data_source = cdio_stdio_new (_obj->gen.source_name))) {
     cdio_error ("init failed");
     return false;
   }
 
   _cdio_parse_nero_footer (_obj);
-  _obj->init = true;
+  _obj->gen.init = true;
   return true;
 
 }
@@ -663,27 +665,17 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
 
   if (!strcmp (key, "source"))
     {
-      free (_obj->source_name);
+      free (_obj->gen.source_name);
 
       if (!value)
 	return -2;
 
-      _obj->source_name = strdup (value);
+      _obj->gen.source_name = strdup (value);
     }
   else
     return -1;
 
   return 0;
-}
-
-/*!
-  Eject media -- there's nothing to do here. We always return 2.
-  also free obj.
- */
-static int 
-_cdio_eject_media (void *user_data) {
-  /* Sort of a stub here. Perhaps log a message? */
-  return 2;
 }
 
 /*!
@@ -695,7 +687,7 @@ _cdio_get_arg (void *user_data, const char key[])
   _img_private_t *_obj = user_data;
 
   if (!strcmp (key, "source")) {
-    return _obj->source_name;
+    return _obj->gen.source_name;
   } 
   return NULL;
 }
@@ -796,7 +788,7 @@ cdio_open_nrg (const char *source_name)
   _img_private_t *_data;
 
   cdio_funcs _funcs = {
-    .eject_media        = _cdio_eject_media,
+    .eject_media        = cdio_generic_bogus_eject_media,
     .free               = _cdio_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = _cdio_get_default_device,
@@ -815,7 +807,7 @@ cdio_open_nrg (const char *source_name)
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->init           = false;
+  _data->gen.init       = false;
 
 
   _data->total_tracks   = 0;

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.2 2003/03/29 17:32:00 rocky Exp $
+    $Id: cdio_private.h,v 1.3 2003/03/30 13:01:22 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -147,11 +147,21 @@ extern "C" {
   } cdio_funcs;
 
 
-  /* Things that just about all private device structures have. */
+  /*!
+    Things common to private device structures. Even though not all
+    devices may have some of these fields, by listing common ones
+    we facilitate writing generic routines and even cut-and-paste
+    code.
+   */
   typedef struct {
-    char *source_name;     /* Name used in open. */
-    bool init;             /* True if structure has been initialized */
-    int fd;                /* File descriptor of device */
+    char *source_name;      /* Name used in open. */
+    bool  init;             /* True if structure has been initialized */
+    bool  toc_init;         /* True TOC read in */
+    int   ioctls_debugged;  /* for debugging */
+    int   fd;               /* File descriptor of device */
+    off_t buff_offset;      /* buffer offset in disk-image seeks.
+			       (Not used in CD device access)
+			     */
   } generic_img_private_t;
 
   CdIo * cdio_new (void *user_data, const cdio_funcs *funcs);
@@ -181,9 +191,20 @@ extern "C" {
   extern CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1];
 
   /*!
+    Bogus eject media when there is no ejectable media, e.g. a disk image
+    We always return 2. Should we also free resources? 
+  */
+  int cdio_generic_bogus_eject_media (void *user_data);
+
+  /*!
     Release and free resources associated with cd. 
   */
   void cdio_generic_free (void *user_data);
+
+  /*!
+    Initialize CD device.
+  */
+  bool cdio_generic_init (void *user_data);
 
   /*!
     Reads into buf the next size bytes.
@@ -211,7 +232,6 @@ extern "C" {
     void *user_data;
     cdio_funcs op;
   };
-
 
 #ifdef __cplusplus
 }

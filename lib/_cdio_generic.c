@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.2 2003/03/29 21:13:55 rocky Exp $
+    $Id: _cdio_generic.c,v 1.3 2003/03/30 13:01:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.2 2003/03/29 21:13:55 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.3 2003/03/30 13:01:22 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -46,6 +46,17 @@ static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.2 2003/03/29 21:13:55 roc
 #include <sys/ioctl.h>
 
 /*!
+  Eject media -- there's nothing to do here. We always return 2.
+  Should we also free resources? 
+ */
+int 
+cdio_generic_bogus_eject_media (void *user_data) {
+  /* Sort of a stub here. Perhaps log a message? */
+  return 2;
+}
+
+
+/*!
   Release and free resources associated with cd. 
  */
 void
@@ -60,6 +71,31 @@ cdio_generic_free (void *user_data)
     close (_obj->fd);
 
   free (_obj);
+}
+
+/*!
+  Initialize CD device.
+ */
+bool
+cdio_generic_init (void *user_data)
+{
+  generic_img_private_t *_obj = user_data;
+  if (_obj->init) {
+    cdio_error ("init called more than once");
+    return false;
+  }
+  
+  _obj->fd = open (_obj->source_name, O_RDONLY, 0);
+
+  if (_obj->fd < 0)
+    {
+      cdio_error ("open (%s): %s", _obj->source_name, strerror (errno));
+      return false;
+    }
+
+  _obj->init = true;
+  _obj->toc_init = false;
+  return true;
 }
 
 /*!

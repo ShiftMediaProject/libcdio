@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.h,v 1.3 2003/03/29 17:32:00 rocky Exp $
+    $Id: cdio.h,v 1.4 2003/03/30 13:01:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -51,6 +51,15 @@ extern "C" {
   /* The below enumerations may be used to tag a specific driver
      that is opened or is desired to be opened. Note that this is
      different than what is available on a given host. 
+
+     Order is a little significant since the order is used in scans.
+     We have to start with UNKNOWN and devices should come before
+     disk-image readers. By putting something towards the top (a lower
+     enumeration number), in an iterative scan we prefer that to something
+     with a higher enumeration number.
+
+     NOTE: IF YOU MODIFY ENUM MAKE SURE INITIALIZATION IN CDIO.C AGREES.
+     
   */
   typedef enum  {
     DRIVER_UNKNOWN, 
@@ -58,15 +67,15 @@ extern "C" {
     DRIVER_FREEBSD, 
     DRIVER_LINUX,
     DRIVER_SOLARIS, 
-    DRIVER_NRG,
-    DRIVER_BINCUE,
-    DRIVER_DEVICE,
+    DRIVER_BINCUE, /* Prefer bincue over nrg when both exist */
+    DRIVER_NRG,    
+    DRIVER_DEVICE, /* Is really a set of the above; should come last */
   } driver_id_t;
 
   /* Make sure what's listed below is the last one above. Since we have
      a bogus (but useful) 0th entry above we don't have to add one below.
    */
-#define MAX_DRIVER DRIVER_BINCUE
+#define MAX_DRIVER DRIVER_NRG
 
 
   typedef enum  {

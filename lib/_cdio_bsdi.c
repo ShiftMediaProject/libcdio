@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.4 2003/03/30 01:11:35 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.5 2003/03/30 13:01:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.4 2003/03/30 01:11:35 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.5 2003/03/30 13:01:22 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -48,7 +48,7 @@ static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.4 2003/03/30 01:11:35 rocky 
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-#define DEFAULT_CDIO_DEVICE "/dev/sr0"
+#define DEFAULT_CDIO_DEVICE "/dev/rsr0c"
 
 #define TOTAL_TRACKS    (_obj->tochdr.cdth_trk1)
 #define FIRST_TRACK_NUM (_obj->tochdr.cdth_trk0)

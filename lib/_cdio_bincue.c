@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.3 2003/03/29 21:13:55 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.4 2003/03/30 13:01:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.3 2003/03/29 21:13:55 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.4 2003/03/30 13:01:22 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -64,8 +64,10 @@ typedef struct {
 
 
 typedef struct {
-  char         *source_name;
-  bool init;
+  /* Things common to all drivers like this. 
+     This must be first. */
+  generic_img_private_t gen; 
+  
   bool sector_2336_flag;
 
   CdioDataSource *data_source;
@@ -87,10 +89,10 @@ _cdio_init (_img_private_t *_obj)
 {
   lsn_t lead_lsn;
 
-  if (_obj->init)
+  if (_obj->gen.init)
     return false;
 
-  if (!(_obj->data_source = cdio_stdio_new (_obj->source_name))) {
+  if (!(_obj->data_source = cdio_stdio_new (_obj->gen.source_name))) {
     cdio_error ("init failed");
     return false;
   }
@@ -98,7 +100,7 @@ _cdio_init (_img_private_t *_obj)
   /* Have to set init before calling _cdio_stat_size() or we will
      get into infinite recursion calling passing right here.
    */
-  _obj->init = true;  
+  _obj->gen.init = true;  
 
   lead_lsn = _cdio_stat_size( (_img_private_t *) _obj);
 
@@ -364,7 +366,7 @@ _cdio_free (void *user_data)
 {
   _img_private_t *_obj = user_data;
 
-  free (_obj->source_name);
+  free (_obj->gen.source_name);
 
   if (_obj->data_source)
     cdio_stream_destroy (_obj->data_source);
@@ -438,12 +440,12 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
 
   if (!strcmp (key, "source"))
     {
-      free (_obj->source_name);
+      free (_obj->gen.source_name);
 
       if (!value)
 	return -2;
 
-      _obj->source_name = strdup (value);
+      _obj->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "sector"))
     {
@@ -470,16 +472,6 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
 }
 
 /*!
-  Eject media -- there's nothing to do here. We always return 2.
-  also free obj.
- */
-static int 
-_cdio_eject_media (void *user_data) {
-  /* Sort of a stub here. Perhaps log a message? */
-  return 2;
-}
-
-/*!
   Return the value associated with the key "arg".
 */
 static const char *
@@ -488,7 +480,7 @@ _cdio_get_arg (void *user_data, const char key[])
   _img_private_t *_obj = user_data;
 
   if (!strcmp (key, "source")) {
-    return _obj->source_name;
+    return _obj->gen.source_name;
   } else if (!strcmp (key, "cue")) {
     return _obj->cue_name;
   } 
@@ -542,7 +534,7 @@ _cdio_get_track_format(void *user_data, track_t track_num)
 {
   _img_private_t *_obj = user_data;
   
-  if (!_obj->init) _cdio_init(_obj);
+  if (!_obj->gen.init) _cdio_init(_obj);
 
   if (track_num > _obj->total_tracks || track_num == 0) 
     return TRACK_FORMAT_ERROR;
@@ -563,7 +555,7 @@ _cdio_get_track_green(void *user_data, track_t track_num)
 {
   _img_private_t *_obj = user_data;
   
-  if (!_obj->init) _cdio_init(_obj);
+  if (!_obj->gen.init) _cdio_init(_obj);
 
   if (track_num > _obj->total_tracks || track_num == 0) 
     return false;
@@ -623,7 +615,7 @@ cdio_open_bincue (const char *source_name)
   _img_private_t *_data;
 
   cdio_funcs _funcs = {
-    .eject_media        = _cdio_eject_media,
+    .eject_media        = cdio_generic_bogus_eject_media,
     .free               = _cdio_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = _cdio_get_default_device,
@@ -640,7 +632,7 @@ cdio_open_bincue (const char *source_name)
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->init           = false;
+  _data->gen.init       = false;
 
   /* FIXME: should set cue initially.  */
   _data->cue_name       = NULL;
@@ -661,7 +653,7 @@ cdio_open_cue (const char *cue_name)
   _img_private_t *_data;
 
   cdio_funcs _funcs = {
-    .eject_media        = _cdio_eject_media,
+    .eject_media        = cdio_generic_bogus_eject_media,
     .free               = _cdio_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = _cdio_get_default_device,
@@ -680,7 +672,7 @@ cdio_open_cue (const char *cue_name)
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->init           = false;
+  _data->gen.init       = false;
 
   if (cue_name != NULL) {
     char *source_name=strdup(cue_name);
