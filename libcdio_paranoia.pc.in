@@ -3,8 +3,8 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: @PACKAGE_NAME@
-Description: Portable CD-ROM I/O library
+Name: libcdio_paranoia
+Description: CD paranoia library from libcdio
 Version: @PACKAGE_VERSION@
 #Requires: glib-2.0 
 Libs: -L${libdir} -lcdio_paranoia -lcdda_interface

@@ -5,7 +5,7 @@ includedir=@includedir@
 libiconv=@LIBICONV@
 
 Name: libiso9660
-Description: ISO-9660 library
+Description: ISO-9660 library of libcdio
 Version: @PACKAGE_VERSION@
 Requires: libcdio 
 Libs: -L${libdir} -liso9660 @LIBICONV@
