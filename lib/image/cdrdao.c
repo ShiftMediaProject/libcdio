@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.10 2004/06/27 15:29:22 rocky Exp $
+    $Id: cdrdao.c,v 1.11 2004/07/09 01:05:32 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,11 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.10 2004/06/27 15:29:22 rocky Exp $";
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.11 2004/07/09 01:05:32 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -34,6 +38,7 @@ static const char _rcsid[] = "$Id: cdrdao.c,v 1.10 2004/06/27 15:29:22 rocky Exp
 #include <cdio/logging.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
+#include <cdio/cdtext.h>
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -118,37 +123,6 @@ static uint32_t _stat_size_cdrdao (void *user_data);
 static bool parse_tocfile (_img_private_t *cd, const char *toc_name);
 
 #include "image_common.h"
-
-/* returns 0 if field is a CD-TEXT keyword, returns non-zero otherwise */
-static int 
-cdtext_is_keyword (char *key)
-{
-  const char *cdtext_keywords[] = 
-    {
-      "ARRANGER",     /* name(s) of the arranger(s) */
-      "COMPOSER",     /* name(s) of the composer(s) */
-      "DISC ID",      /* disc identification information */
-      "GENRE",        /* genre identification and genre information */
-      "ISRC",         /* ISRC code of each track */
-      "MESSAGE",      /* message(s) from the content provider and/or artist */
-      "PERFORMER",    /* name(s) of the performer(s) */
-      "SIZE_INFO",    /* size information of the block */
-      "SONGWRITER",   /* name(s) of the songwriter(s) */
-      "TITLE",        /* title of album name or track titles */
-      "TOC_INFO",     /* table of contents information */
-      "TOC_INFO2"     /* second table of contents information */
-      "UPC_EAN",
-    };
-  
-  char *item;
-  
-  item = bsearch(key, 
-		 cdtext_keywords, 12,
-		 sizeof (char *), 
-		 (int (*)(const void *, const void *))
-		 strcmp);
-  return (NULL != item) ? 0 : 1;
-}
 
 static lba_t
 msf_to_lba (int minutes, int seconds, int frames)

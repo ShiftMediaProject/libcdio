@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.h,v 1.2 2004/07/09 01:05:31 rocky Exp $
+    $Id: cdtext_private.h,v 1.1 2004/07/09 01:05:32 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -17,46 +17,47 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-/*!
- * \file cdtext.h 
- * \brief Header CDTEXT information
-*/
-
 
-#ifndef __CDIO_CDTEXT_H__
-#define __CDIO_CDTEXT_H__
+#ifndef __CDIO_CDTEXT_PRIVATE_H__
+#define __CDIO_CDTEXT_PRIVATE_H__
 
 #include <cdio/cdio.h>
 
-typedef struct cdtext cdtext_t;
+#define CDIO_CDTEXT_MAX_PACK_DATA  255
+#define CDIO_CDTEXT_MAX_TEXT_DATA  12
 
-/*! Initialize and allocate a new cdtext structure and return a
-  pointer to that. When the structure is no longer needed, release the 
-  resources using cdtext_delete.
-*/
-cdtext_t *cdtext_init (void);
+#define CDIO_CDTEXT_TITLE      0x80
+#define CDIO_CDTEXT_PERFORMER  0x81
+#define CDIO_CDTEXT_SONGWRITER 0x82
+#define CDIO_CDTEXT_COMPOSER   0x83
+#define CDIO_CDTEXT_ARRANGER   0x84
+#define CDIO_CDTEXT_MESSAGE    0x85
+#define CDIO_CDTEXT_DISCID     0x86
+#define CDIO_CDTEXT_GENRE      0x87
 
-/*! Free memory assocated with cdtext*/
-void cdtext_delete (cdtext_t *cdtext);
-
-/*!
-  returns 0 if field is a CD-TEXT keyword, returns non-zero otherwise.
-*/
-int cdtext_is_keyword (char *key);
-
-/*! 
-  sets cdtext's keyword entry to field 
- */
-void cdtext_set (char *key, char *value, cdtext_t *cdtext);
-
-char *cdtext_get (char *key, cdtext_t *cdtext);
-
+PRAGMA_BEGIN_PACKED
 
 #ifdef __cplusplus
-}
+extern "C" {
 #endif /* __cplusplus */
 
-#endif /* __CDIO_ISO9660_H__ */
+struct CDText_data
+{
+  uint8_t  type;
+  track_t  i_track;
+  uint8_t  seq;
+  uint8_t  characterPosition:4;  /* character position */
+  uint8_t  block:3;		 /* block number 0..7 */
+  uint8_t  bDBC:1;		 /* double byte character */
+  char     text[12];
+  uint8_t  crc[2];
+} GNUC_PACKED;
+
+PRAGMA_END_PACKED
+
+typedef struct CDText_data CDText_data_t;
+
+#endif /* __CDIO_CDTEXT_PRIVATE_H__ */
 
 /* 
  * Local variables:

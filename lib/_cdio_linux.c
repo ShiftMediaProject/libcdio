@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.60 2004/07/08 01:27:59 rocky Exp $
+    $Id: _cdio_linux.c,v 1.61 2004/07/09 01:05:32 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.60 2004/07/08 01:27:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.61 2004/07/09 01:05:32 rocky Exp $";
 
 #include <string.h>
 
@@ -35,6 +35,7 @@ static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.60 2004/07/08 01:27:59 rock
 #include <cdio/util.h>
 #include <cdio/scsi_mmc.h>
 #include <cdio/cdtext.h>
+#include "cdtext_private.h"
 #include "cdio_assert.h"
 #include "cdio_private.h"
 
@@ -674,11 +675,11 @@ _cdio_read_toc (_img_private_t *env)
   return true;
 }
 
+#ifdef CDTEXT_FIXED
 static CDText_data_t *
-_cdtext_query( void *user_data )
+cdtext_init( void *user_data )
 {
 
-#ifdef CDTEXT_FIXED
   _img_private_t *env = user_data;
   CDText_data_t  *pdata;
   int             i;
@@ -778,9 +779,9 @@ _cdtext_query( void *user_data )
     }
     pdata++;
   }
-#endif
   return NULL; /* FIXME */
 }
+#endif
 
 /*
  * Eject using SCSI commands. Return 1 if successful, 0 otherwise.
@@ -1212,7 +1213,6 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   char *psz_source;
 
   cdio_funcs _funcs = {
-    .cdtext_query       = _cdtext_query,
     .eject_media        = _eject_media_linux,
     .free               = cdio_generic_free,
     .get_arg            = _get_arg_linux,

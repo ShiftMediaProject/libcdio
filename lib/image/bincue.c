@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.23 2004/06/27 15:29:22 rocky Exp $
+    $Id: bincue.c,v 1.24 2004/07/09 01:05:32 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.23 2004/06/27 15:29:22 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.24 2004/07/09 01:05:32 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -33,6 +33,7 @@ static const char _rcsid[] = "$Id: bincue.c,v 1.23 2004/06/27 15:29:22 rocky Exp
 #include <cdio/logging.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
+#include <cdio/cdtext.h>
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -65,6 +66,37 @@ static const char _rcsid[] = "$Id: bincue.c,v 1.23 2004/06/27 15:29:22 rocky Exp
 #define DEFAULT_CDIO_DEVICE "videocd.bin"
 #define DEFAULT_CDIO_CUE    "videocd.cue"
 
+/* track modes (Table 350) */
+typedef enum {
+	AUDIO,				/* 2352 byte block length */
+	MODE1,				/* 2048 byte block length */
+	MODE1_RAW,			/* 2352 byte block length */
+	MODE2,				/* 2336 byte block length */
+	MODE2_FORM1,			/* 2048 byte block length */
+	MODE2_FORM2,			/* 2324 byte block length */
+	MODE2_FORM_MIX,			/* 2336 byte block length */
+	MODE2_RAW			/* 2352 byte block length */
+} trackmode_t;
+
+/* disc modes (5.29.2.8) */
+typedef enum {
+	CD_DA,				/* CD-DA */
+	CD_ROM,				/* CD-ROM mode 1 */
+	CD_ROM_XA			/* CD-ROM XA and CD-I */
+} discmode_t;
+
+/* track flags
+ * Q Sub-channel Control Field (4.2.3.3)
+ */
+typedef enum {
+	NONE = 			0x00,	/* no flags set */
+	PRE_EMPHASIS =		0x01,	/* audio track recorded with pre-emphasis */
+	COPY_PERMITTED =	0x02,	/* digital copy permitted */
+	DATA =			0x04,	/* data track */
+	FOUR_CHANNEL_AUDIO =	0x08,	/* 4 audio channels */
+	SCMS =			0x10	/* SCMS (5.29.2.7) */
+} flag_t;
+
 typedef struct {
   track_t        track_num;   /* Probably is index+1 */
   msf_t          start_msf;
@@ -73,9 +105,15 @@ typedef struct {
   int            sec_count;  /* Number of sectors in this track. Does not
 				include pregap */
   int            num_indices;
-  int            flags;      /* "DCP", "4CH", "PRE" */
+  flag_t         flags;      /* "DCP", "4CH", "PRE" */
   track_format_t track_format;
+  char           *filename;
   bool           track_green;
+  long int       pregap;	/* pre-gap with zero audio data */
+  char          *isrc;		/* IRSC Code (5.22.4) exactly 12 bytes */
+  cdtext_t      *cdtext;	/* CD-TEXT */
+
+  trackmode_t    mode;
   uint16_t  datasize;        /* How much is in the portion we return back? */
   uint16_t  datastart;       /* Offset from begining that data starts */
   uint16_t  endsize;         /* How much stuff at the end to skip over. This
@@ -99,6 +137,8 @@ typedef struct {
 					         add 1 for leadout. */
   track_t       i_tracks;    /* number of tracks in image */
   track_t       i_first_track;   /* track number of first track */
+  char         *catalog;
+  cdtext_t      *cdtext;	/* CD-TEXT */
   bool have_cue;
 } _img_private_t;
 
@@ -301,7 +341,154 @@ _stat_size_bincue (void *user_data)
   return size;
 }
 
-#define MAXLINE 512
+#define MAXLINE 4096		/* maximum line length + 1 */
+
+static void 
+parse_cue (_img_private_t *cd, char *line, int line_num)
+{
+  char *keyword, *field;
+  int i = cd->i_tracks - 1;
+  
+  if (NULL != (keyword = strtok (line, " \t\n\r"))) {
+    /* REM remarks ... */
+    if (0 == strcmp ("REM", keyword)) {
+      ;
+      
+      /* global section */
+      /* CATALOG ddddddddddddd */
+    } else if (0 == strcmp ("CATALOG", keyword)) {
+      if (-1 == i) {
+	if (NULL != (field = strtok (NULL, " \t\n\r")))
+	  cd->catalog = strdup (field);
+	if (NULL != (field = strtok (NULL, " \t\n\r")))
+	  fprintf (stderr, "%s: format error\n", keyword);
+      } else {
+	fprintf (stderr, "%d: only allowed in global section: %s\n", 
+		 line_num, keyword);
+      }
+      
+      /* FILE "<filename>" <BINARY|WAVE|other?> */
+    } else if (0 == strcmp ("FILE", keyword)) {
+      if (NULL != (field = strtok (NULL, "\"\t\n\r")))
+	cd->tocent[i + 1].filename = strdup (field);
+      else
+	fprintf (stderr, "%d: format error: %s\n", line_num, keyword);
+      
+      /* TRACK N <mode> */
+    } else if (0 == strcmp ("TRACK", keyword)) {
+      i++;
+      cd->tocent[i].cdtext = NULL;
+      if (NULL != (field = strtok (NULL, " \t\n\r")))
+	; /* skip index number */
+      if (NULL != (field = strtok (NULL, " \t\n\r"))) {
+	if (0 == strcmp ("AUDIO", field))
+	  cd->tocent[i].mode = AUDIO;
+	else if (0 == strcmp ("MODE1/2048", field))
+	  cd->tocent[i].mode = MODE1;
+	else if (0 == strcmp ("MODE1/2352", field))
+	  cd->tocent[i].mode = MODE1_RAW;
+	else if (0 == strcmp ("MODE2/2336", field))
+	  cd->tocent[i].mode = MODE2;
+	else if (0 == strcmp ("MODE2/2048", field))
+	  cd->tocent[i].mode = MODE2_FORM1;
+	else if (0 == strcmp ("MODE2/2324", field))
+	  cd->tocent[i].mode = MODE2_FORM2;
+	else if (0 == strcmp ("MODE2/2336", field))
+	  cd->tocent[i].mode = MODE2_FORM_MIX;
+	else if (0 == strcmp ("MODE2/2352", field))
+	  cd->tocent[i].mode = MODE2_RAW;
+	else
+	  fprintf (stderr, "%d: format error: %s\n", line_num, keyword);
+      } else {
+	fprintf (stderr, "%d: format error: %s\n", line_num, keyword);
+      }
+      
+      /* FLAGS flag1 flag2 ... */
+    } else if (0 == strcmp ("FLAGS", keyword)) {
+      if (0 <= i) {
+	while (NULL != (field = strtok (NULL, " \t\n\r"))) {
+	  if (0 == strcmp ("PRE", field)) {
+	    cd->tocent[i].flags |= PRE_EMPHASIS;
+	  } else if (0 == strcmp ("DCP", field)) {
+	    cd->tocent[i].flags |= COPY_PERMITTED;
+	  } else if (0 == strcmp ("4CH", field)) {
+	    cd->tocent[i].flags |= FOUR_CHANNEL_AUDIO;
+	  } else if (0 == strcmp ("SCMS", field)) {
+	    cd->tocent[i].flags |= SCMS;
+	  } else {
+	    fprintf (stderr, "%d: format error: %s\n", line_num, keyword);
+	  }
+	}
+      } else {
+	fprintf (stderr, "%d: not allowed in global section: %s\n", line_num, 
+		 keyword);
+      }
+      
+      /* ISRC CCOOOYYSSSSS */
+    } else if (0 == strcmp ("ISRC", keyword)) {
+      if (0 <= i) {
+	if (NULL != (field = strtok (NULL, " \t\n\r")))
+	  cd->tocent[i].isrc = strdup (field);
+	else
+	  fprintf (stderr, "%d: format error: %s\n", line_num, keyword);
+      } else {
+	fprintf (stderr, "%d: not allowed in global section: %s\n", 
+		 line_num, keyword);
+      }
+      
+      /* PREGAP MM:SS:FF */
+    } else if (0 == strcmp ("PREGAP", keyword)) {
+      if (0 <= i) {
+	if (NULL != (field = strtok (NULL, " \t\n\r")))
+	  cd->tocent[i].pregap = msf_frame_from_mmssff (field);
+	else
+	  fprintf (stderr, "%d: format error: %s\n", line_num, keyword);
+	if (NULL != (field = strtok (NULL, " \t\n\r")))
+	  fprintf (stderr, "%d: format error: %s\n", line_num, keyword);
+      } else {
+	fprintf (stderr, "%d: not allowed in global section: %s\n", 
+		 line_num, keyword);
+      }
+      
+      /* INDEX [##] MM:SS:FF */
+    } else if (0 == strcmp ("INDEX", keyword)) {
+      if (0 <= i) {
+	if (NULL != (field = strtok (NULL, " \t\n\r")))
+	  ; /* skip index number */
+	if (NULL != (field = strtok (NULL, " \t\n\r")))
+#if 0	  
+	  // cd->tocent[i].indexes[cd->tocent[i].nindex++] = msf_frame_from_mmssff (field);
+#else     
+	  ;	
+#endif  
+	else
+	  fprintf (stderr, "%d: format error: %s\n", line_num, keyword);
+      } else {
+	fprintf (stderr, "%d: not allowed in global section: %s\n", 
+		 line_num, keyword);
+      }
+      
+      /* CD-TEXT */
+    } else if (0 == cdtext_is_keyword (keyword)) {
+      if (-1 == i) {
+	if (NULL == cd->cdtext)
+	  cd->cdtext = cdtext_init ();
+	cdtext_set (keyword, strtok (NULL, "\"\t\n\r"), cd->cdtext);
+      } else {
+	if (NULL == cd->tocent[i].cdtext)
+	  cd->tocent[i].cdtext = cdtext_init ();
+	cdtext_set (keyword, strtok (NULL, "\"\t\n\r"), cd->tocent[i].cdtext);
+      }
+      
+      /* unrecognized line */
+    } else {
+      fprintf(stderr, "%d: warning: unrecognized keyword: %s\n", 
+	      line_num, keyword);
+    }
+  }
+  
+  cd->i_tracks = i + 1;
+}
 
 static bool
 _bincue_image_read_cue (_img_private_t *env)
