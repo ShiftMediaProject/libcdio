@@ -19,7 +19,7 @@ define(RELEASE_NUM, 71)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.110 2004/11/06 12:29:37 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.111 2004/11/06 16:10:27 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -114,7 +114,7 @@ AM_PATH_LIBPOPT(,
 dnl headers
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(glob.h stdbool.h stdarg.h)
+AC_CHECK_HEADERS(errno.h fcntl.h stdio.h sys/cdio.h glob.h stdbool.h stdarg.h)
 
 dnl compiler
 AC_C_BIGENDIAN
@@ -223,10 +223,7 @@ AM_CONDITIONAL(BUILD_CDIOTEST, test "x$enable_cdiotest" = "xyes")
 AM_CONDITIONAL(BUILD_VERSIONED_LIBS, test "x$enable_versioned_libs" = "xyes")
 
 dnl Checks for header files.
-AC_STDC_HEADERS
      
-AC_HAVE_HEADERS( errno.h fcntl.h stdio.h linux/version.h )
-
 LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/ -I$(top_srcdir)/include/'
 LIBCDIO_LIBS='$(top_builddir)/lib/libcdio.la'
 LIBISO9660_LIBS='$(top_builddir)/lib/libiso9660.la'
@@ -271,7 +268,6 @@ int has_timeout=sizeof(test.timeout);],
 	fi
 	;;
      sunos*|sun*|solaris*)
-        AC_CHECK_HEADERS(sys/cdio.h)
      	AC_DEFINE([HAVE_SOLARIS_CDROM], [1], 
                   [Define 1 if you have Solaris CD-ROM support])
 	  cd_drivers="${cd_drivers}, Solaris"
