@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.28 2004/04/30 06:54:15 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.29 2004/04/30 07:07:49 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -41,7 +41,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.28 2004/04/30 06:54:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.29 2004/04/30 07:07:49 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -95,15 +95,14 @@ typedef struct {
 static access_mode_t 
 str_to_access_mode_sunos(const char *psz_access_mode) 
 {
-  const access_mode_t default_access_mode = _AM_SUN_CTRL_SCSI_;
+  const access_mode_t default_access_mode = _AM_SUN_CTRL_SCSI;
 
   if (NULL==psz_access_mode) return default_access_mode;
   
-  if (!strcmp(value, "ATAPI"))
-    _obj->access_mode = _AM_SUN_CTRL_SCSI; /* force ATAPI to be SCSI */
-  else if (!strcmp(value, "SCSI"))
-    _obj->access_mode = _AM_SUN_CTRL_SCSI;
-  else
+  if (!strcmp(psz_access_mode, "ATAPI"))
+    return _AM_SUN_CTRL_SCSI; /* force ATAPI to be SCSI */
+  else if (!strcmp(psz_access_mode, "SCSI"))
+    return _AM_SUN_CTRL_SCSI;
   else {
     cdio_warn ("unknown access type: %s. Default SCSI used.", 
 	       psz_access_mode);
@@ -821,7 +820,7 @@ cdio_open_am_solaris (const char *source_name, const char *access_mode)
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
 
-  _data->access_mode    = _AM_SUN_SCSI;
+  _data->access_mode    = _AM_SUN_CTRL_SCSI;
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
