@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.28 2005/03/01 09:33:52 rocky Exp $
+    $Id: types.h,v 1.29 2005/03/18 01:15:49 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -102,15 +102,9 @@ extern "C" {
   /* ISO/IEC 9899:1999 <stdbool.h> missing -- enabling workaround */
   
 # ifndef __cplusplus
-  typedef enum
-    {
-      false = 0,
-      true = 1
-    } _cdio_Bool;
-  
-#  define false   false
-#  define true    true
-#  define bool _cdio_Bool
+#  define false   0
+#  define true    1
+#  define bool uint8_t
 # endif
 #endif
   
