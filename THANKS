@@ -1,5 +1,5 @@
 Nicolas Boullis <nboullis@debian.org>
-  Build issues and Debian 
+  Build issues, library symbol versioning, Debian packaging and issues
 
 Kris Verbeeck <airborne@advalvas.be>:
   CDDB library support from libcddb http://libcddb.sourceforge.net
