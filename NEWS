@@ -1,13 +1,18 @@
 0.69
 - Add interface returning drive capabilityes (cdio_get_drive_cap).
-- Minimal cdrdao image reading
+- Minimal cdrdao image reading (thanks to Svend S. sorensen)
 - Some important (I think) bug fixes
 - Redo types of lsn and lba to allow negative values. Should model MMC3
   specs. Add max/min values for lsn.
 - More complete MMC command set
 - FreeBSD drive reading works better (thanks to Heiner)
+- OSX drive reading works better (thanks to thesin)
 - cd-read allows dumping bytes to stdout and hexdumps to a file
   via options --no-hexdump and --hexdump
+- cd-read allows dumping bytes to stdout and hexdumps to a file
+  via options --no-hexdump and --hexdump
+- better NRG reading (thanks to Michael Kukat via extractnrg.pl)
+- better tracking of allocated variables (cd-read, cd-info, FreeBSD)
 
 0.68
 - More honest about mode1 reading in backends. Remove some of the bogusness.
@@ -116,4 +121,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.41 2004/05/26 01:40:47 rocky Exp $
+$Id: NEWS,v 1.42 2004/05/31 21:23:05 rocky Exp $
