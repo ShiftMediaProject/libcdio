@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.2 2005/01/02 22:43:41 rocky Exp $
+    $Id: scsi_mmc.c,v 1.3 2005/01/09 16:26:51 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -250,12 +250,12 @@ scsi_mmc_eject_media( const CdIo_t *p_cdio )
   
 }
 
-/*! Packet driver to read mode2 sectors. 
+/*! Read sectors using SCSI-MMC GPCMD_READ_CD.
    Can read only up to 25 blocks.
 */
 int
 scsi_mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba, 
-			int sector_type, unsigned int nblocks )
+			int sector_type, unsigned int i_blocks )
 {
   scsi_mmc_cdb_t cdb = {{0, }};
 
@@ -269,14 +269,14 @@ scsi_mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba,
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
   CDIO_MMC_SET_READ_TYPE    (cdb.field, sector_type);
   CDIO_MMC_SET_READ_LBA     (cdb.field, lba);
-  CDIO_MMC_SET_READ_LENGTH24(cdb.field, nblocks);
+  CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks);
   CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb.field, 
 					   CDIO_MMC_MCSB_ALL_HEADERS);
 
   return run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
 			   scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
 			   SCSI_MMC_DATA_READ, 
-			   CDIO_CD_FRAMESIZE_RAW * nblocks,
+			   CDIO_CD_FRAMESIZE_RAW * i_blocks,
 			   p_buf);
 }
 
