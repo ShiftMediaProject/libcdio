@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.39 2003/09/27 23:29:29 rocky Exp $
+    $Id: cd-info.c,v 1.40 2003/09/28 14:16:01 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -167,7 +167,7 @@ parse_options (int argc, const char *argv[])
     {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 0,
      "Don't look up Video CD information"},
 #else 
-    {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 0,
+    {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 1,
      "Don't look up Video CD information - for this build, this is always set"},
 #endif
     {"no-ioctl",  'I', POPT_ARG_NONE,  &opts.no_ioctl, 0,
@@ -672,18 +672,20 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
     need_lf += printf("bootable CD   ");
   if (fs & CDIO_FS_ANAL_VIDEOCDI && num_audio == 0) {
     need_lf += printf("Video CD   ");
-#ifdef HAVE_VCDINFO
-    if (!opts.no_vcd) {
-      printf("\n");
-      print_vcd_info();
-    }
-#endif    
   }
   if (fs & CDIO_FS_ANAL_SVCD)
     need_lf += printf("Super Video CD (SVCD) or Chaoji Video CD (CVD)");
   if (fs & CDIO_FS_ANAL_CVD)
     need_lf += printf("Chaoji Video CD (CVD)");
   if (need_lf) printf("\n");
+#ifdef HAVE_VCDINFO
+  if (fs & (CDIO_FS_ANAL_VIDEOCDI|CDIO_FS_ANAL_CVD|CDIO_FS_ANAL_SVCD)) 
+    if (!opts.no_vcd) {
+      printf("\n");
+      print_vcd_info();
+    }
+#endif    
+
 }
 
 /* Initialize global variables. */
