@@ -1,7 +1,7 @@
 /*
-    $Id: cdtext_private.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: cdtext_private.h,v 1.2 2005/03/23 11:15:25 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,28 @@
 
 #include <cdio/cdio.h>
 #include <cdio/cdtext.h>
+
+/*! An enumeration for some of the CDIO_CDTEXT_* #defines below. This isn't
+    really an enumeration one would really use in a program it is here
+    to be helpful in debuggers where wants just to refer to the
+    ISO_*_ names and get something.
+  */
+extern enum cdtext_enum1_s {
+  CDIO_CDTEXT_MAX_PACK_DATA = 255,
+  CDIO_CDTEXT_MAX_TEXT_DATA = 12,
+  CDIO_CDTEXT_TITLE         = 0x80,
+  CDIO_CDTEXT_PERFORMER     = 0x81,
+  CDIO_CDTEXT_SONGWRITER    = 0x82,
+  CDIO_CDTEXT_COMPOSER      = 0x83,
+  CDIO_CDTEXT_ARRANGER      = 0x84,
+  CDIO_CDTEXT_MESSAGE       = 0x85,
+  CDIO_CDTEXT_DISCID        = 0x86,
+  CDIO_CDTEXT_GENRE         = 0x87,
+  CDIO_CDTEXT_TOC           = 0x88,
+  CDIO_CDTEXT_TOC2          = 0x89,
+  CDIO_CDTEXT_UPC           = 0x8E,
+  CDIO_CDTEXT_BLOCKSIZE     = 0x8F
+} cdtext_enums1;
 
 #define CDIO_CDTEXT_MAX_PACK_DATA  255
 #define CDIO_CDTEXT_MAX_TEXT_DATA  12
@@ -70,7 +92,6 @@
 /* Size information of the Block */
 #define CDIO_CDTEXT_BLOCKSIZE  0x8F
 
-
 PRAGMA_BEGIN_PACKED
 
 struct CDText_data
@@ -104,7 +125,7 @@ typedef void (*set_cdtext_field_fn_t) (void *user_data, track_t i_track,
    Internal routine to parse all CD-TEXT data retrieved.
 */       
 bool cdtext_data_init(void *user_data, track_t i_first_track, 
-                      unsigned char *wdata, 
+                      unsigned char *wdata, int i_data,
                       set_cdtext_field_fn_t set_cdtext_field_fn);
 
 

@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.c,v 1.3 2005/02/24 06:32:57 rocky Exp $
+    $Id: cdtext.c,v 1.4 2005/03/23 11:15:25 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -153,11 +153,11 @@ cdtext_set (cdtext_field_t key, const char *p_value, cdtext_t *p_cdtext)
 */       
 bool
 cdtext_data_init(void *p_user_data, track_t i_first_track, 
-		 unsigned char *wdata, 
+		 unsigned char *wdata, int i_data,
 		 set_cdtext_field_fn_t set_cdtext_field_fn) 
 {
   CDText_data_t *p_data;
-  int           i;
+  int           i = -1;
   int           j;
   char          buffer[256];
   int           idx;
@@ -168,8 +168,23 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
   idx = 0;
   
   p_data = (CDText_data_t *) (&wdata[4]);
-  for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ ) {
 
+  /* For reasons I don't understand - incorrect CDROM TOC reading?
+     we are off sometimes by 4.
+   */
+  if( (p_data->type < 0x80) || (p_data->type > 0x85) 
+      || (p_data->block == 0) ) {
+    CDText_data_t *p_data_test = (CDText_data_t *) (&wdata[8]);
+    if( (p_data_test->type >= 0x80) 
+	&& (p_data_test->type <= 0x85) && (p_data_test->block == 0) ) {
+      p_data = p_data_test;
+      i_data -= 4;
+    }
+  }
+  
+  for( ; i_data > 0; 
+       i_data -= sizeof(CDText_data_t), p_data++ ) {
+    
 #if TESTED
     if ( p_data->bDBC ) {
       cdio_warn("Double-byte characters not supported");
@@ -177,13 +192,13 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
     }
 #endif
     
-    if( p_data->seq != i )
-      break;
-    
     if( (p_data->type >= 0x80) 
 	&& (p_data->type <= 0x85) && (p_data->block == 0) ) {
       i_track = p_data->i_track;
-      
+
+      i++;
+      if( p_data->seq != i ) break;
+
       for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++ ) {
 	if( p_data->text[j] == 0x00 ) {
 	  bool b_field_set=true;
@@ -225,7 +240,6 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
 	buffer[idx] = 0x00;
       }
     }
-    p_data++;
   }
   return b_ret;
 }

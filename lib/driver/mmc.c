@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.24 2005/03/19 16:17:13 rocky Exp $
+    $Id: mmc.c,v 1.25 2005/03/23 11:15:25 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -470,7 +470,7 @@ mmc_init_cdtext_private ( void *p_user_data,
       return false;
     }
     p_env->b_cdtext_init = true;
-    return cdtext_data_init(p_env, p_env->i_first_track, wdata, 
+    return cdtext_data_init(p_env, p_env->i_first_track, wdata, i_cdtext-2,
 			    set_cdtext_field_fn);
   }
 }
