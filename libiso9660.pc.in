@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: libvcdinfo
 Description: ISO9660 library
 Version: @VERSION@
-Requires: glib-2.0 libcdio libvcd
+Requires: libcdio 
 Libs: -L${libdir} -liso9660
 Cflags: -I${includedir}
