@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.15 2004/02/04 10:23:01 rocky Exp $
+#   $Id: Makefile.am,v 1.16 2004/02/07 00:35:18 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -48,7 +48,8 @@ libcdio_sources = \
 	scsi_mmc.h \
 	sector.c \
 	util.c \
-	win32ioctl.c
+	win32ioctl.c \
+	wnaspi32.c \
 	wnaspi32.h
 
 lib_LTLIBRARIES     = libcdio.la libiso9660.la

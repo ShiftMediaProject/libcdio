@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.24 2004/02/05 03:02:16 rocky Exp $
+    $Id: _cdio_win32.c,v 1.25 2004/02/07 00:35:18 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.24 2004/02/05 03:02:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.25 2004/02/07 00:35:18 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -73,109 +73,11 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
 
 static const char *
 cdio_is_cdrom(const char drive_letter) {
-  static char psz_win32_drive[7];
-
   if ( WIN_NT ) {
     return win32ioctl_is_cdrom(drive_letter);
   } else {
-    HMODULE hASPI = NULL;
-    long (*lpGetSupport)( void ) = NULL;
-    long (*lpSendCommand)( void* ) = NULL;
-    DWORD dwSupportInfo;
-    int i_adapter, i_num_adapters;
-    char c_drive;
-    
-    hASPI = LoadLibrary( "wnaspi32.dll" );
-    if( hASPI != NULL ) {
-      (FARPROC) lpGetSupport = GetProcAddress( hASPI,
-					       "GetASPI32SupportInfo" );
-      (FARPROC) lpSendCommand = GetProcAddress( hASPI,
-						"SendASPI32Command" );
-    }
-    
-    if( hASPI == NULL || lpGetSupport == NULL || lpSendCommand == NULL ) {
-      cdio_debug("Unable to load ASPI or get ASPI function pointers");
-      if( hASPI ) FreeLibrary( hASPI );
-      return NULL;
-    }
-    
-    /* ASPI support seems to be there */
-    
-    dwSupportInfo = lpGetSupport();
-    
-    if( HIBYTE( LOWORD ( dwSupportInfo ) ) == SS_NO_ADAPTERS ) {
-      cdio_debug("no host adapters found (ASPI)");
-      FreeLibrary( hASPI );
-      return NULL;
-    }
-    
-    if( HIBYTE( LOWORD ( dwSupportInfo ) ) != SS_COMP ) {
-      cdio_debug("Unable to initalize ASPI layer");
-      FreeLibrary( hASPI );
-      return NULL;
-    }
-    
-    i_num_adapters = LOBYTE( LOWORD( dwSupportInfo ) );
-    if( i_num_adapters == 0 ) {
-      FreeLibrary( hASPI );
-      return NULL;
-    }
-    
-    c_drive = toupper(drive_letter) - 'A';
-    
-    for( i_adapter = 0; i_adapter < i_num_adapters; i_adapter++ ) {
-      struct SRB_GetDiskInfo srbDiskInfo;
-      int i_target;
-      SRB_HAInquiry srbInquiry;
-      
-      srbInquiry.SRB_Cmd         = SC_HA_INQUIRY;
-      srbInquiry.SRB_HaId        = i_adapter;
-      
-      lpSendCommand( (void*) &srbInquiry );
-      
-      if( srbInquiry.SRB_Status != SS_COMP ) continue;
-      if( !srbInquiry.HA_Unique[3]) srbInquiry.HA_Unique[3]=8;
-      
-      for(i_target=0; i_target < srbInquiry.HA_Unique[3]; i_target++)
-	{
-	  int i_lun;
-	  for( i_lun=0; i_lun<8; i_lun++)
-	    {
-	      srbDiskInfo.SRB_Cmd         = SC_GET_DISK_INFO;
-	      srbDiskInfo.SRB_Flags       = 0;
-	      srbDiskInfo.SRB_Hdr_Rsvd    = 0;
-	      srbDiskInfo.SRB_HaId        = i_adapter;
-	      srbDiskInfo.SRB_Target      = i_target;
-	      srbDiskInfo.SRB_Lun         = i_lun;
-	      
-	      lpSendCommand( (void*) &srbDiskInfo );
-	      
-	      if( (srbDiskInfo.SRB_Status == SS_COMP) &&
-		  (srbDiskInfo.SRB_Int13HDriveInfo == c_drive) ) {
-		/* Make sure this is a cdrom device */
-		struct SRB_GDEVBlock   srbGDEVBlock;
-		
-		memset( &srbGDEVBlock, 0, sizeof(struct SRB_GDEVBlock) );
-		srbGDEVBlock.SRB_Cmd    = SC_GET_DEV_TYPE;
-		srbDiskInfo.SRB_HaId    = i_adapter;
-		srbGDEVBlock.SRB_Target = i_target;
-		
-		lpSendCommand( (void*) &srbGDEVBlock );
-		
-		if( ( srbGDEVBlock.SRB_Status == SS_COMP ) &&
-		    ( srbGDEVBlock.SRB_DeviceType == DTYPE_CDROM ) ) {
-		  sprintf( psz_win32_drive, "%c:", drive_letter );
-		  FreeLibrary( hASPI );
-		  return(psz_win32_drive);
-		}
-	      }
-	    }
-	}
-    }
-    FreeLibrary( hASPI );
+    return wnaspi32_is_cdrom(drive_letter);
   }
-  return NULL;
-
 }
 
 /*!
@@ -184,127 +86,27 @@ cdio_is_cdrom(const char drive_letter) {
 static bool
 _cdio_init_win32 (void *user_data)
 {
-  _img_private_t *_obj = user_data;
-  if (_obj->gen.init) {
+  _img_private_t *env = user_data;
+  if (env->gen.init) {
     cdio_error ("init called more than once");
     return false;
   }
   
-  _obj->gen.init = true;
-  _obj->toc_init = false;
+  env->gen.init = true;
+  env->toc_init = false;
 
 
   /* Initializations */
-  _obj->h_device_handle = NULL;
-  _obj->i_sid = 0;
-  _obj->hASPI = 0;
-  _obj->lpSendCommand = 0;
+  env->h_device_handle = NULL;
+  env->i_sid = 0;
+  env->hASPI = 0;
+  env->lpSendCommand = 0;
   
   if ( WIN_NT ) {
-    return win32ioctl_init_win32(_obj);
+    return win32ioctl_init_win32(env);
   } else {
-    HMODULE hASPI = NULL;
-    long (*lpGetSupport)( void ) = NULL;
-    long (*lpSendCommand)( void* ) = NULL;
-    DWORD dwSupportInfo;
-    int i, j, i_num_adapters;
-    char c_drive = _obj->gen.source_name[0];
-    
-    hASPI = LoadLibrary( "wnaspi32.dll" );
-    if( hASPI != NULL ) {
-      (FARPROC) lpGetSupport = GetProcAddress( hASPI,
-					       "GetASPI32SupportInfo" );
-      (FARPROC) lpSendCommand = GetProcAddress( hASPI,
-						"SendASPI32Command" );
-    }
-    
-    if( hASPI == NULL || lpGetSupport == NULL || lpSendCommand == NULL ) {
-      cdio_debug("Unable to load ASPI or get ASPI function pointers");
-      if( hASPI ) FreeLibrary( hASPI );
-      return false;
-    }
-    
-    /* ASPI support seems to be there */
-    
-    dwSupportInfo = lpGetSupport();
-    
-    if( HIBYTE( LOWORD ( dwSupportInfo ) ) == SS_NO_ADAPTERS ) {
-      cdio_debug("no host adapters found (ASPI)");
-      FreeLibrary( hASPI );
-      return -1;
-    }
-    
-    if( HIBYTE( LOWORD ( dwSupportInfo ) ) != SS_COMP ) {
-      cdio_debug("unable to initalize ASPI layer");
-      FreeLibrary( hASPI );
-      return -1;
-    }
-    
-    i_num_adapters = LOBYTE( LOWORD( dwSupportInfo ) );
-    if( i_num_adapters == 0 ) {
-      FreeLibrary( hASPI );
-      return -1;
-    }
-    
-    c_drive = toupper(c_drive) - 'A';
-    
-    for( i = 0; i < i_num_adapters; i++ ) {
-      for( j = 0; j < 15; j++ ) {
-	struct SRB_GetDiskInfo srbDiskInfo;
-	int lun;
-
-	for (lun = 0; lun < 8; lun++ ) {
-	  srbDiskInfo.SRB_Cmd         = SC_GET_DISK_INFO;
-	  srbDiskInfo.SRB_HaId        = i;
-	  srbDiskInfo.SRB_Flags       = 0;
-	  srbDiskInfo.SRB_Hdr_Rsvd    = 0;
-	  srbDiskInfo.SRB_Target      = j;
-	  srbDiskInfo.SRB_Lun         = lun;
-	  
-	  lpSendCommand( (void*) &srbDiskInfo );
-	  
-	  if( (srbDiskInfo.SRB_Status == SS_COMP) ) {
-	    
-	    if (srbDiskInfo.SRB_Int13HDriveInfo != c_drive)
-	      {
-		continue;
-	      } else {
-		/* Make sure this is a cdrom device */
-		struct SRB_GDEVBlock   srbGDEVBlock;
-		
-		memset( &srbGDEVBlock, 0, sizeof(struct SRB_GDEVBlock) );
-		srbGDEVBlock.SRB_Cmd    = SC_GET_DEV_TYPE;
-		srbGDEVBlock.SRB_HaId   = i;
-		srbGDEVBlock.SRB_Target = j;
-		
-		lpSendCommand( (void*) &srbGDEVBlock );
-	      
-		if( ( srbGDEVBlock.SRB_Status == SS_COMP ) &&
-		    ( srbGDEVBlock.SRB_DeviceType == DTYPE_CDROM ) ) {
-		  _obj->i_sid = MAKEWORD( i, j );
-		  _obj->hASPI = (long)hASPI;
-		  _obj->lpSendCommand = lpSendCommand;
-		  cdio_debug("Using ASPI layer");
-		  
-		  return true;
-		} else {
-		  FreeLibrary( hASPI );
-		  cdio_debug( "%c: is not a CD-ROM drive",
-			      _obj->gen.source_name[0] );
-		  return false;
-		}
-	      }
-	  }
-	}
-      }
-    }
-    
-    FreeLibrary( hASPI );
-    cdio_debug( "Unable to get HaId and target (ASPI)" );
-    
+    return wnaspi32_init_win32(env);
   }
-  
-  return false;
 }
 
 /*!
@@ -313,104 +115,17 @@ _cdio_init_win32 (void *user_data)
 static void
 _cdio_win32_free (void *user_data)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *env = user_data;
 
-  if (NULL == _obj) return;
-  free (_obj->gen.source_name);
+  if (NULL == env) return;
+  free (env->gen.source_name);
 
-  if( _obj->h_device_handle )
-    CloseHandle( _obj->h_device_handle );
-  if( _obj->hASPI )
-    FreeLibrary( (HMODULE)_obj->hASPI );
+  if( env->h_device_handle )
+    CloseHandle( env->h_device_handle );
+  if( env->hASPI )
+    FreeLibrary( (HMODULE)env->hASPI );
 
-  free (_obj);
-}
-
-/*!
-   Reads a single mode2 sector from cd device into data starting from lsn.
-   Returns 0 if no error. 
- */
-static int
-_cdio_mmc_read_sectors (void *user_data, void *data, lsn_t lsn, 
-			int sector_type, unsigned int nblocks)
-{
-  _img_private_t *_obj = user_data;
-  unsigned char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  HANDLE hEvent;
-  struct SRB_ExecSCSICmd ssc;
-  
-#if 1
-  sector_type = 0; /*all types */
-  int sync        = 0;
-  int header_code = 2;
-  int i_user_data   = 1;
-  int edc_ecc     = 0;
-  int error_field = 0;
-#endif
-  
-  
-  /* Create the transfer completion event */
-  hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-  if( hEvent == NULL ) {
-    return 1;
-  }
-  
-  /* Data selection */
-  
-  memset( &ssc, 0, sizeof( ssc ) );
-  
-  ssc.SRB_Cmd         = SC_EXEC_SCSI_CMD;
-  ssc.SRB_Flags       = SRB_DIR_IN | SRB_EVENT_NOTIFY;
-  ssc.SRB_HaId        = LOBYTE( _obj->i_sid );
-  ssc.SRB_Target      = HIBYTE( _obj->i_sid );
-  ssc.SRB_SenseLen    = SENSE_LEN;
-  
-  ssc.SRB_PostProc = (LPVOID) hEvent;
-  ssc.SRB_CDBLen      = 12;
-  
-  /* Operation code */
-  ssc.CDBByte[ 0 ] = CDIO_MMC_GPCMD_READ_CD;
-  
-  CDIO_MMC_SET_READ_TYPE(ssc.CDBByte, sector_type);
-  CDIO_MMC_SET_READ_LBA(ssc.CDBByte, lsn);
-  CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, nblocks);
-  
-#if 1
-  ssc.CDBByte[ 9 ] = (sync << 7) |
-    (header_code << 5) |
-    (i_user_data << 4) |
-    (edc_ecc << 3) |
-    (error_field << 1);
-  /* ssc.CDBByte[ 9 ] = READ_CD_USERDATA_MODE2; */
-#else 
-  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(ssc.CDBByte,
-					   CDIO_MMC_MCSB_ALL_HEADERS);
-#endif
-  
-  /* Result buffer */
-  ssc.SRB_BufPointer  = buf;
-  ssc.SRB_BufLen = CDIO_CD_FRAMESIZE_RAW;
-  
-  /* Initiate transfer */
-  ResetEvent( hEvent );
-  _obj->lpSendCommand( (void*) &ssc );
-  
-  /* If the command has still not been processed, wait until it's
-   * finished */
-  if( ssc.SRB_Status == SS_PENDING ) {
-    WaitForSingleObject( hEvent, INFINITE );
-  }
-  CloseHandle( hEvent );
-  
-  /* check that the transfer went as planned */
-  if( ssc.SRB_Status != SS_COMP ) {
-    return 1;
-  }
-  
-  /* FIXME! remove the 8 (SUBHEADER size) below... */
-  memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
-  
-  return 0;
+  free (env);
 }
 
 /*!
@@ -421,12 +136,11 @@ static int
 _cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks) 
 {
-  _img_private_t *_obj = user_data;
-  if ( _obj->hASPI ) {
-    return _cdio_mmc_read_sectors( user_data, data, lsn, 
-				   CDIO_MMC_READ_TYPE_CDDA, nblocks );
+  _img_private_t *env = user_data;
+  if ( env->hASPI ) {
+    return wnaspi32_read_audio_sectors( env, data, lsn, nblocks );
   } else {
-    return win32ioctl_read_audio_sectors( _obj, data, lsn, nblocks );
+    return win32ioctl_read_audio_sectors( env, data, lsn, nblocks );
   }
 }
 
@@ -439,26 +153,25 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 		    bool mode2_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  _img_private_t *_obj = user_data;
+  _img_private_t *env = user_data;
 
-  if (_obj->gen.ioctls_debugged == 75)
+  if (env->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
 
-  if (_obj->gen.ioctls_debugged == 30 * 75)
+  if (env->gen.ioctls_debugged == 30 * 75)
     cdio_debug ("only displaying every 30*75th ioctl from now on");
   
-  if (_obj->gen.ioctls_debugged < 75 
-      || (_obj->gen.ioctls_debugged < (30 * 75)  
-	  && _obj->gen.ioctls_debugged % 75 == 0)
-      || _obj->gen.ioctls_debugged % (30 * 75) == 0)
+  if (env->gen.ioctls_debugged < 75 
+      || (env->gen.ioctls_debugged < (30 * 75)  
+	  && env->gen.ioctls_debugged % 75 == 0)
+      || env->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %lu", (unsigned long int) lsn);
   
-  _obj->gen.ioctls_debugged++;
+  env->gen.ioctls_debugged++;
 
-  if ( _obj->hASPI ) {
+  if ( env->hASPI ) {
     int ret;
-    ret = _cdio_mmc_read_sectors(user_data, buf, lsn, 
-				 CDIO_MMC_READ_TYPE_ANY, 1);
+    ret = wnaspi32_read_mode2_sector(user_data, buf, lsn);
     if( ret != 0 ) return ret;
     if (mode2_form2)
       memcpy (data, buf, M2RAW_SECTOR_SIZE);
@@ -466,7 +179,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
       memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
     return 0;
   } else {
-    return win32ioctl_read_mode2_sector( _obj, data, lsn, mode2_form2 );
+    return win32ioctl_read_mode2_sector( env, data, lsn, mode2_form2 );
   }
 }
 
@@ -479,19 +192,19 @@ static int
 _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
 		     bool mode2_form2, unsigned int nblocks)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *env = user_data;
   int i;
   int retval;
 
   for (i = 0; i < nblocks; i++) {
     if (mode2_form2) {
-      if ( (retval = _cdio_read_mode2_sector (_obj, 
+      if ( (retval = _cdio_read_mode2_sector (env, 
 					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
 					  lsn + i, true)) )
 	return retval;
     } else {
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _cdio_read_mode2_sector (_obj, buf, lsn + i, true)) )
+      if ( (retval = _cdio_read_mode2_sector (env, buf, lsn + i, true)) )
 	return retval;
       
       memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
@@ -507,9 +220,9 @@ _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
 static uint32_t 
 _cdio_stat_size (void *user_data)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *env = user_data;
 
-  return _obj->tocent[_obj->total_tracks].start_lsn;
+  return env->tocent[env->total_tracks].start_lsn;
 }
 
 /*!
@@ -518,16 +231,16 @@ _cdio_stat_size (void *user_data)
 static int
 _cdio_set_arg (void *user_data, const char key[], const char value[])
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *env = user_data;
 
   if (!strcmp (key, "source"))
     {
       if (!value)
 	return -2;
 
-      free (_obj->gen.source_name);
+      free (env->gen.source_name);
       
-      _obj->gen.source_name = strdup (value);
+      env->gen.source_name = strdup (value);
     }
   else 
     return -1;
@@ -540,121 +253,15 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
   Return true if successful or false if an error.
 */
 static bool
-_cdio_read_toc (_img_private_t *_obj) 
+_cdio_read_toc (_img_private_t *env) 
 {
-
-  if( _obj->hASPI ) {
-    HANDLE hEvent;
-    struct SRB_ExecSCSICmd ssc;
-    unsigned char p_tocheader[ 4 ];
-    
-    /* Create the transfer completion event */
-    hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-    if( hEvent == NULL ) {
-      return false;
-    }
-    
-    memset( &ssc, 0, sizeof( ssc ) );
-    
-    ssc.SRB_Cmd         = SC_EXEC_SCSI_CMD;
-    ssc.SRB_Flags       = SRB_DIR_IN | SRB_EVENT_NOTIFY;
-    ssc.SRB_HaId        = LOBYTE( _obj->i_sid );
-    ssc.SRB_Target      = HIBYTE( _obj->i_sid );
-    ssc.SRB_SenseLen    = SENSE_LEN;
-    
-    ssc.SRB_PostProc = (LPVOID) hEvent;
-    ssc.SRB_CDBLen      = 10;
-    
-    /* Operation code */
-    ssc.CDBByte[ 0 ] = READ_TOC;
-    
-    /* Format */
-    ssc.CDBByte[ 2 ] = READ_TOC_FORMAT_TOC;
-    
-    /* Starting track */
-    ssc.CDBByte[ 6 ] = 0;
-    
-    /* Allocation length and buffer */
-    ssc.SRB_BufLen = sizeof( p_tocheader );
-    ssc.SRB_BufPointer  = p_tocheader;
-    ssc.CDBByte[ 7 ] = ( ssc.SRB_BufLen >>  8 ) & 0xff;
-    ssc.CDBByte[ 8 ] = ( ssc.SRB_BufLen       ) & 0xff;
-    
-    /* Initiate transfer */
-    ResetEvent( hEvent );
-    _obj->lpSendCommand( (void*) &ssc );
-    
-    /* If the command has still not been processed, wait until it's
-     * finished */
-    if( ssc.SRB_Status == SS_PENDING )
-      WaitForSingleObject( hEvent, INFINITE );
-    
-    /* check that the transfer went as planned */
-    if( ssc.SRB_Status != SS_COMP ) {
-      CloseHandle( hEvent );
-      return false;
-    }
-
-    _obj->first_track_num = p_tocheader[2];
-    _obj->total_tracks    = p_tocheader[3] - p_tocheader[2] + 1;
-    
-    {
-      int i, i_toclength;
-      unsigned char *p_fulltoc;
-      
-      i_toclength = 4 /* header */ + p_tocheader[0] +
-	((unsigned int)p_tocheader[1] << 8);
-      
-      p_fulltoc = malloc( i_toclength );
-      
-      if( p_fulltoc == NULL ) {
-	cdio_error( "out of memory" );
-	CloseHandle( hEvent );
-	return false;
-      }
-      
-      /* Allocation length and buffer */
-      ssc.SRB_BufLen = i_toclength;
-      ssc.SRB_BufPointer  = p_fulltoc;
-      ssc.CDBByte[ 7 ] = ( ssc.SRB_BufLen >>  8 ) & 0xff;
-      ssc.CDBByte[ 8 ] = ( ssc.SRB_BufLen       ) & 0xff;
-      
-      /* Initiate transfer */
-      ResetEvent( hEvent );
-      _obj->lpSendCommand( (void*) &ssc );
-      
-      /* If the command has still not been processed, wait until it's
-       * finished */
-      if( ssc.SRB_Status == SS_PENDING )
-	WaitForSingleObject( hEvent, INFINITE );
-      
-      /* check that the transfer went as planned */
-      if( ssc.SRB_Status != SS_COMP )
-	_obj->total_tracks = 0;
-      
-      for( i = 0 ; i <= _obj->total_tracks ; i++ ) {
-	int i_index = 8 + 8 * i;
-	_obj->tocent[ i ].start_lsn = ((int)p_fulltoc[ i_index ] << 24) +
-	  ((int)p_fulltoc[ i_index+1 ] << 16) +
-	  ((int)p_fulltoc[ i_index+2 ] << 8) +
-	  (int)p_fulltoc[ i_index+3 ];
-	_obj->tocent[ i ].Control   = (UCHAR)p_fulltoc[ 1 + 8 * i ];
-	
-	cdio_debug( "p_sectors: %i %lu", 
-		    i, (unsigned long int) _obj->tocent[i].start_lsn );
-      }
-	
-      free( p_fulltoc );
-    }
-    
-    CloseHandle( hEvent );
-    _obj->gen.toc_init = true;
-    return true;
-    
+  bool ret;
+  if( env->hASPI ) {
+    ret = wnaspi32_read_toc( env );
   } else {
-    return win32ioctl_read_toc(_obj);
+    ret =win32ioctl_read_toc(env);
   }
-  _obj->gen.toc_init = true;
+  if (ret) env->gen.toc_init = true ;
   return true;
 }
 
@@ -664,7 +271,7 @@ _cdio_read_toc (_img_private_t *_obj)
 static int 
 _cdio_eject_media (void *user_data) {
 
-  _img_private_t *_obj = user_data;
+  _img_private_t *env = user_data;
 
 
   MCI_OPEN_PARMS op;
@@ -676,7 +283,7 @@ _cdio_eject_media (void *user_data) {
   memset( &op, 0, sizeof(MCI_OPEN_PARMS) );
   op.lpstrDeviceType = (LPCSTR)MCI_DEVTYPE_CD_AUDIO;
   strcpy( psz_drive, "X:" );
-  psz_drive[0] = _obj->gen.source_name[0];
+  psz_drive[0] = env->gen.source_name[0];
   op.lpstrElementName = psz_drive;
   
   /* Set the flags for the device type */
@@ -701,12 +308,12 @@ _cdio_eject_media (void *user_data) {
 static const char *
 _cdio_get_arg (void *user_data, const char key[])
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *env = user_data;
 
   if (!strcmp (key, "source")) {
-    return _obj->gen.source_name;
+    return env->gen.source_name;
   } else if (!strcmp (key, "access-mode")) {
-    if (_obj->hASPI) 
+    if (env->hASPI) 
       return "ASPI";
     else if ( WIN_NT ) 
       return "winNT/2K/XP ioctl";
@@ -723,11 +330,11 @@ _cdio_get_arg (void *user_data, const char key[])
 static track_t
 _cdio_get_first_track_num(void *user_data) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *env = user_data;
   
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!env->toc_init) _cdio_read_toc (env) ;
 
-  return _obj->first_track_num;
+  return env->first_track_num;
 }
 
 /*!
@@ -755,64 +362,31 @@ _cdio_get_mcn (void *env) {
 static track_t
 _cdio_get_num_tracks(void *user_data) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *env = user_data;
   
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!env->toc_init) _cdio_read_toc (env) ;
 
-  return _obj->total_tracks;
+  return env->total_tracks;
 }
 
 /*!  
   Get format of track. 
 */
 static track_format_t
-_cdio_get_track_format(void *env, track_t track_num) 
+_cdio_get_track_format(void *obj, track_t track_num) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = obj;
   
-  if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
+  if (!env->gen.toc_init) _cdio_read_toc (env) ;
 
-  if (track_num > _obj->total_tracks || track_num == 0)
+  if (track_num > env->total_tracks || track_num == 0)
     return TRACK_FORMAT_ERROR;
 
-  MCI_OPEN_PARMS op;
-  MCI_STATUS_PARMS st;
-  DWORD i_flags;
-  int ret;
-
-  if( _obj->hASPI ) {
-    memset( &op, 0, sizeof(MCI_OPEN_PARMS) );
-    op.lpstrDeviceType = (LPCSTR)MCI_DEVTYPE_CD_AUDIO;
-    op.lpstrElementName = _obj->gen.source_name;
-    
-    /* Set the flags for the device type */
-    i_flags = MCI_OPEN_TYPE | MCI_OPEN_TYPE_ID |
-      MCI_OPEN_ELEMENT | MCI_OPEN_SHAREABLE;
-    
-    if( _cdio_mciSendCommand( 0, MCI_OPEN, i_flags, &op ) ) {
-      st.dwItem  = MCI_CDA_STATUS_TYPE_TRACK;
-      st.dwTrack = track_num;
-      i_flags = MCI_TRACK | MCI_STATUS_ITEM ;
-      ret = _cdio_mciSendCommand( op.wDeviceID, MCI_STATUS, i_flags, &st );
-      
-      /* Release access to the device */
-      _cdio_mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
-      
-      switch(st.dwReturn) {
-      case MCI_CDA_TRACK_AUDIO:
-	return TRACK_FORMAT_AUDIO;
-      case MCI_CDA_TRACK_OTHER:
-	return TRACK_FORMAT_DATA;
-      default:
-	return TRACK_FORMAT_XA;
-      }
-    }
+  if( env->hASPI ) {
+    return wnaspi32_get_track_format(env, track_num);
   } else {
-    return win32ioctl_get_track_format(_obj, track_num);
+    return win32ioctl_get_track_format(env, track_num);
   }
-
-  return TRACK_FORMAT_ERROR;
-  
 }
 
 /*!
@@ -824,15 +398,15 @@ _cdio_get_track_format(void *env, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *env, track_t track_num) 
+_cdio_get_track_green(void *obj, track_t track_num) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = obj;
   
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!env->toc_init) _cdio_read_toc (env) ;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = env->total_tracks+1;
 
-  if (track_num > _obj->total_tracks+1 || track_num == 0)
+  if (track_num > env->total_tracks+1 || track_num == 0)
     return false;
 
   switch (_cdio_get_track_format(env, track_num)) {
@@ -847,7 +421,7 @@ _cdio_get_track_green(void *env, track_t track_num)
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cd-info for a while.
    */
-  return ((_obj->tocent[track_num-1].Control & 2) != 0);
+  return ((env->tocent[track_num-1].Control & 2) != 0);
 }
 
 /*!  

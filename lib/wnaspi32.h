@@ -1,6 +1,6 @@
 /* Win32 aspi specific */
 /*
-    $Id: wnaspi32.h,v 1.1 2004/02/02 03:56:46 rocky Exp $
+    $Id: wnaspi32.h,v 1.2 2004/02/07 00:35:18 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -113,3 +113,34 @@ typedef struct                     // Offset
     WORD        HA_Rsvd1;          // 3A/058 Reserved, MUST = 0
 }
 SRB_HAInquiry;
+
+const char * wnaspi32_is_cdrom(const char drive_letter);
+
+/*!
+  Initialize CD device.
+ */
+bool wnaspi32_init_win32 (_img_private_t *env);
+
+/*!
+   Reads an audio device into data starting from lsn.
+   Returns 0 if no error. 
+ */
+int wnaspi32_read_audio_sectors (_img_private_t *env, void *data, lsn_t lsn, 
+			       unsigned int nblocks);
+/*!
+   Reads a single mode2 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+int wnaspi32_read_mode2_sector (_img_private_t *env, void *data, lsn_t lsn);
+
+/*! 
+  Read and cache the CD's Track Table of Contents and track info.
+  Return true if successful or false if an error.
+*/
+bool wnaspi32_read_toc (_img_private_t *env);
+
+/*!  
+  Get format of track. 
+*/
+track_format_t wnaspi32_get_track_format(_img_private_t *env, 
+					 track_t track_num);
