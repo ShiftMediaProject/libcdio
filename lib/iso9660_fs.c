@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.17 2004/02/26 00:13:24 rocky Exp $
+    $Id: iso9660_fs.c,v 1.18 2004/02/26 01:33:01 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -40,7 +40,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.17 2004/02/26 00:13:24 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.18 2004/02/26 01:33:01 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -290,7 +290,8 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
 	int trans_len;
 	
 	if (trans_fname == NULL) {
-	  cdio_warn("can't allocate %u bytes", strlen(stat->filename));
+	  cdio_warn("can't allocate %lu bytes", 
+		    (long unsigned int) strlen(stat->filename));
 	  return NULL;
 	}
 	trans_len = iso9660_name_translate(stat->filename, trans_fname);
@@ -374,7 +375,8 @@ _fs_iso_stat_traverse (iso9660_t *iso, const iso9660_stat_t *_root,
 	int trans_len;
 	
 	if (trans_fname == NULL) {
-	  cdio_warn("can't allocate %u bytes", strlen(stat->filename));
+	  cdio_warn("can't allocate %lu bytes", 
+		    (long unsigned int) strlen(stat->filename));
 	  return NULL;
 	}
 	trans_len = iso9660_name_translate(stat->filename, trans_fname);
