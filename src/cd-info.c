@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.14 2003/06/22 22:41:29 rocky Exp $
+    $Id: cd-info.c,v 1.15 2003/08/10 02:27:49 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -46,7 +46,6 @@
 #ifdef HAVE_VCDINFO
 #include <libvcd/files.h>
 #include <libvcd/info.h>
-#include <libvcd/info_private.h>
 #endif
 
 #include <cdio/cdio.h>
@@ -865,26 +864,26 @@ print_cddb_info() {
 static void 
 print_vcd_info(void) {
   vcdinfo_open_return_t open_rc;
-  vcdinfo_obj_t obj;
+  vcdinfo_obj_t *obj;
   open_rc = vcdinfo_open(&obj, &source_name, DRIVER_UNKNOWN, NULL);
   switch (open_rc) {
   case VCDINFO_OPEN_VCD: 
-    if (vcdinfo_get_format_version (&obj) == VCD_TYPE_INVALID) {
+    if (vcdinfo_get_format_version (obj) == VCD_TYPE_INVALID) {
       fprintf(stderr, "VCD format detection failed");
-      vcdinfo_close(&obj);
+      vcdinfo_close(obj);
       return;
     }
-    fprintf (stdout, "format: %s\n", vcdinfo_get_format_version_str(&obj));
-    fprintf (stdout, "album id: `%.16s'\n", vcdinfo_get_album_id(&obj));
-    fprintf (stdout, "volume count: %d\n", vcdinfo_get_volume_count(&obj));
-    fprintf (stdout, "volume number: %d\n", vcdinfo_get_volume_num(&obj));
-    fprintf (stdout, "system id: `%s'\n",    vcdinfo_get_system_id(&obj));
-    fprintf (stdout, "volume id: `%s'\n",    vcdinfo_get_volume_id(&obj));
-    fprintf (stdout, "volumeset id: `%s'\n", vcdinfo_get_volumeset_id(&obj));
-    fprintf (stdout, "publisher id: `%s'\n", vcdinfo_get_publisher_id(&obj));
-    fprintf (stdout, "preparer id: `%s'\n",  vcdinfo_get_preparer_id(&obj));
+    fprintf (stdout, "format: %s\n", vcdinfo_get_format_version_str(obj));
+    fprintf (stdout, "album id: `%.16s'\n", vcdinfo_get_album_id(obj));
+    fprintf (stdout, "volume count: %d\n", vcdinfo_get_volume_count(obj));
+    fprintf (stdout, "volume number: %d\n", vcdinfo_get_volume_num(obj));
+    fprintf (stdout, "system id: `%s'\n",    vcdinfo_get_system_id(obj));
+    fprintf (stdout, "volume id: `%s'\n",    vcdinfo_get_volume_id(obj));
+    fprintf (stdout, "volumeset id: `%s'\n", vcdinfo_get_volumeset_id(obj));
+    fprintf (stdout, "publisher id: `%s'\n", vcdinfo_get_publisher_id(obj));
+    fprintf (stdout, "preparer id: `%s'\n",  vcdinfo_get_preparer_id(obj));
     fprintf (stdout, "application id: `%s'\n", 
-	     vcdinfo_get_application_id(&obj));
+	     vcdinfo_get_application_id(obj));
 
     break;
   case VCDINFO_OPEN_ERROR:
@@ -896,7 +895,7 @@ print_vcd_info(void) {
 	     " further inspection says it is not.\n");
     break;
   }
-  vcdinfo_close(&obj);
+  vcdinfo_close(obj);
     
 }
 #endif 
