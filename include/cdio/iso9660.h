@@ -1,8 +1,13 @@
 /*
-    $Id: iso9660.h,v 1.13 2003/08/31 14:26:06 rocky Exp $
+    $Id: iso9660.h,v 1.14 2003/09/01 02:08:59 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+
+    See also iso9660.h by Eric Youngdale (1993).
+
+    Copyright 1993 Yggdrasil Computing, Incorporated
+    Copyright (c) 1999,2000 J. Schilling
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +23,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+/*
+ * Header file iso9660.h - assorted structure definitions and typecasts.
+  specific to iso9660 filesystem.
+*/
+
 
 #ifndef __CDIO_ISO9660_H__
 #define __CDIO_ISO9660_H__
@@ -26,22 +36,46 @@
 #include <cdio/xa.h>
 
 #define MIN_TRACK_SIZE 4*75
-
 #define MIN_ISO_SIZE MIN_TRACK_SIZE
 
-
+/*
+   A ISO filename is: "abcde.eee;1" -> <filename> '.' <ext> ';' <version #>
+  
+    The maximum needed string length is:
+  	 30 chars (filename + ext)
+    +	  2 chars ('.' + ';')
+    +	   strlen("32767")
+    +	   null byte
+   ================================
+    =	38 chars
+*/
 #define LEN_ISONAME     31
 #define MAX_ISONAME     37
 
 #define MAX_ISOPATHNAME 255
 
-#define ISO_FILE        0       
-#define ISO_VD_PRIMARY  1
-#define ISO_DIRECTORY   2
+/*
+ * ISO 9660 directory flags.
+ */
+#define	ISO_FILE	  0	/* Not really a flag...			*/
+#define	ISO_EXISTENCE	  1	/* Do not make existence known (hidden)	*/
+#define	ISO_DIRECTORY	  2	/* This file is a directory		*/
+#define	ISO_ASSOCIATED	  4	/* This file is an assiciated file	*/
+#define	ISO_RECORD	  8	/* Record format in extended attr. != 0	*/
+#define	ISO_PROTECTION	 16	/* No read/execute perm. in ext. attr.	*/
+#define	ISO_DRESERVED1	 32	/* Reserved bit 5			*/
+#define	ISO_DRESERVED2	 64	/* Reserved bit 6			*/
+#define	ISO_MULTIEXTENT	128	/* Not final entry of a mult. ext. file	*/
+
+/* Volume descriptor types */
+#define ISO_VD_PRIMARY             1
+#define ISO_VD_SUPPLEMENTARY	   2  /* Used by Joliet */
+#define ISO_VD_END	         255
+
 #define ISO_PVD_SECTOR  16
 #define ISO_EVD_SECTOR  17
 
-#define ISO_STANDARD_ID         "CD001"
+#define ISO_STANDARD_ID      "CD001"
 #define ISO_BLOCKSIZE           2048
 
 enum strncpy_pad_check {
@@ -51,73 +85,83 @@ enum strncpy_pad_check {
   ISO9660_DCHARS
 };
 
-typedef struct iso9660_pvd  iso9660_pvd_t;
-typedef struct iso9660_dir  iso9660_dir_t;
-typedef struct iso9660_stat iso9660_stat_t;
-
 PRAGMA_BEGIN_PACKED
 
-struct iso9660_pvd {
-  uint8_t  type; /* 711 */
+/* ISO-9660 Primary Volume Descriptor.
+ */
+typedef struct iso9660_pvd {
+  uint8_t  type;                      /* 711 */
   char     id[5];
-  uint8_t  version; /* 711 */
+  uint8_t  version;                   /* 711 */
   char     unused1[1];
-  char     system_id[32]; /* achars */
-  char     volume_id[32]; /* dchars */
+  char     system_id[32];             /* achars */
+  char     volume_id[32];             /* dchars */
   char     unused2[8];
-  uint64_t volume_space_size; /* 733 */
+  uint64_t volume_space_size;         /* 733 */
   char     escape_sequences[32];
-  uint32_t volume_set_size; /* 723 */
-  uint32_t volume_sequence_number; /* 723 */
-  uint32_t logical_block_size; /* 723 */
-  uint64_t path_table_size; /* 733 */
-  uint32_t type_l_path_table; /* 731 */
-  uint32_t opt_type_l_path_table; /* 731 */
-  uint32_t type_m_path_table; /* 732 */
-  uint32_t opt_type_m_path_table; /* 732 */
+  uint32_t volume_set_size;           /* 723 */
+  uint32_t volume_sequence_number;    /* 723 */
+  uint32_t logical_block_size;        /* 723 */
+  uint64_t path_table_size;           /* 733 */
+  uint32_t type_l_path_table;         /* 731 */
+  uint32_t opt_type_l_path_table;     /* 731 */
+  uint32_t type_m_path_table;         /* 732 */
+  uint32_t opt_type_m_path_table;     /* 732 */
   char     root_directory_record[34]; /* 9.1 */
-  char     volume_set_id[128]; /* dchars */
-  char     publisher_id[128]; /* achars */
-  char     preparer_id[128]; /* achars */
-  char     application_id[128]; /* achars */
-  char     copyright_file_id[37]; /* 7.5 dchars */
-  char     abstract_file_id[37]; /* 7.5 dchars */
+  char     volume_set_id[128];        /* dchars */
+  char     publisher_id[128];         /* achars */
+  char     preparer_id[128];          /* achars */
+  char     application_id[128];       /* achars */
+  char     copyright_file_id[37];     /* 7.5 dchars */
+  char     abstract_file_id[37];      /* 7.5 dchars */
   char     bibliographic_file_id[37]; /* 7.5 dchars */
-  char     creation_date[17]; /* 8.4.26.1 */
-  char     modification_date[17]; /* 8.4.26.1 */
-  char     expiration_date[17]; /* 8.4.26.1 */
-  char     effective_date[17]; /* 8.4.26.1 */
-  uint8_t  file_structure_version; /* 711 */
+  char     creation_date[17];         /* 8.4.26.1 */
+  char     modification_date[17];     /* 8.4.26.1 */
+  char     expiration_date[17];       /* 8.4.26.1 */
+  char     effective_date[17];        /* 8.4.26.1 */
+  uint8_t  file_structure_version;    /* 711 */
   char     unused4[1];
   char     application_data[512];
   char     unused5[653];
-} GNUC_PACKED;
+} iso9660_pvd_t GNUC_PACKED;
+
+typedef struct iso9660_dir  iso9660_dir_t;
 
 #ifndef  EMPTY_ARRAY_SIZE
 #define EMPTY_ARRAY_SIZE 0
 #endif
 
+/*
+ * XXX JS: The next structure may have an odd length!
+ * Some compilers (e.g. on Sun3/mc68020) padd the structures to even length.
+ * For this reason, we cannot use sizeof (struct iso_path_table) or
+ * sizeof (struct iso_directory_record) to compute on disk sizes.
+ * Instead, we use offsetof(..., name) and add the name size.
+ * See mkisofs.h
+ */
+
+/* Format of an ISO-9660 directory record */
 struct iso9660_dir {
-  uint8_t  length; /* 711 */
-  uint8_t  ext_attr_length; /* 711 */
-  uint64_t extent; /* 733 */
-  uint64_t size; /* 733 */
-  uint8_t  date[7]; /* 7 by 711 */
+  uint8_t  length;                    /* 711 */
+  uint8_t  ext_attr_length;           /* 711 */
+  uint64_t extent;                    /* 733 */
+  uint64_t size;                      /* 733 */
+  uint8_t  date[7];                   /* 7 by 711 */
   uint8_t  flags;
-  uint8_t  file_unit_size; /* 711 */
-  uint8_t  interleave; /* 711 */
-  uint32_t volume_sequence_number; /* 723 */
-  uint8_t  name_len; /* 711 */
+  uint8_t  file_unit_size;            /* 711 */
+  uint8_t  interleave;                /* 711 */
+  uint32_t volume_sequence_number;    /* 723 */
+  uint8_t  name_len;                  /* 711 */
   char     name[EMPTY_ARRAY_SIZE];
 } GNUC_PACKED;
 
-struct iso9660_stat { /* big endian!! */
+typedef struct iso9660_stat { /* big endian!! */
   enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;
-  lsn_t        lsn;     /* start logical sector number */
-  uint32_t     size;    /* total size in bytes */
-  uint32_t     secsize; /* number of sectors allocated */
-  iso9660_xa_t xa;      /* XA attributes */
-};
+  lsn_t        lsn;                   /* start logical sector number */
+  uint32_t     size;                  /* total size in bytes */
+  uint32_t     secsize;               /* number of sectors allocated */
+  iso9660_xa_t xa;                    /* XA attributes */
+} iso9660_stat_t;
 
 PRAGMA_END_PACKED
 
@@ -140,18 +184,6 @@ iso9660_dirname_valid_p (const char pathname[]);
 
 char *
 iso9660_pathname_isofy (const char pathname[], uint16_t version);
-
-/* volume descriptors */
-
-void
-iso9660_set_pvd (void *pd, const char volume_id[], const char application_id[],
-                 const char publisher_id[], const char preparer_id[],
-                 uint32_t iso_size, const void *root_dir, 
-                 uint32_t path_table_l_extent, uint32_t path_table_m_extent,
-                 uint32_t path_table_size);
-
-void 
-iso9660_set_evd (void *pd);
 
 /* directory tree */
 
@@ -224,6 +256,18 @@ iso9660_pathtable_l_add_entry (void *pt, const char name[], uint32_t extent,
 uint16_t
 iso9660_pathtable_m_add_entry (void *pt, const char name[], uint32_t extent,
                        uint16_t parent);
+
+/* volume descriptors */
+
+void
+iso9660_set_pvd (void *pd, const char volume_id[], const char application_id[],
+                 const char publisher_id[], const char preparer_id[],
+                 uint32_t iso_size, const void *root_dir, 
+                 uint32_t path_table_l_extent, uint32_t path_table_m_extent,
+                 uint32_t path_table_size);
+
+void 
+iso9660_set_evd (void *pd);
 
 #endif /* __CDIO_ISO9660_H__ */
 

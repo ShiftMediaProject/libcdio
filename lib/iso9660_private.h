@@ -1,8 +1,13 @@
 /*
-    $Id: iso9660_private.h,v 1.4 2003/08/31 05:00:44 rocky Exp $
+    $Id: iso9660_private.h,v 1.5 2003/09/01 02:08:59 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+
+    See also iso9660.h by Eric Youngdale (1993).
+
+    Copyright 1993 Yggdrasil Computing, Incorporated
+    Copyright (c) 1999,2000 J. Schilling
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,16 +29,14 @@
 
 #include <cdio/types.h>
 
-#define ISO_VD_END              255
-
 #define ISO_VERSION             1
 
 PRAGMA_BEGIN_PACKED
 
 struct iso_volume_descriptor {
-  uint8_t  type; /* 711 */
+  uint8_t  type;      /* 711 */
   char     id[5];
-  uint8_t  version; /* 711 */
+  uint8_t  version;   /* 711 */
   char     data[2041];
 } GNUC_PACKED;
 
@@ -41,11 +44,22 @@ struct iso_volume_descriptor {
 
 #define struct_iso9660_pvd_SIZEOF ISO_BLOCKSIZE
 
+/*
+ * XXX JS: The next structure has an odd length!
+ * Some compilers (e.g. on Sun3/mc68020) padd the structures to even length.
+ * For this reason, we cannot use sizeof (struct iso_path_table) or
+ * sizeof (struct iso_directory_record) to compute on disk sizes.
+ * Instead, we use offsetof(..., name) and add the name size.
+ * See mkisofs.h
+ */
+
+/* We use this to help us look up the parent inode numbers. */
+
 struct iso_path_table {
   uint8_t  name_len; /* 711 */
-  uint8_t  xa_len; /* 711 */
-  uint32_t extent; /* 731/732 */
-  uint16_t parent; /* 721/722 */
+  uint8_t  xa_len;   /* 711 */
+  uint32_t extent;   /* 731/732 */
+  uint16_t parent;   /* 721/722 */
   char     name[EMPTY_ARRAY_SIZE];
 } GNUC_PACKED;
 

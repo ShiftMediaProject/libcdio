@@ -1,8 +1,13 @@
 /*
-    $Id: xa.h,v 1.3 2003/08/31 09:11:25 rocky Exp $
+    $Id: xa.h,v 1.4 2003/09/01 02:08:59 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+
+    See also iso9660.h by Eric Youngdale (1993).
+
+    Copyright 1993 Yggdrasil Computing, Incorporated
+    Copyright (c) 1999,2000 J. Schilling
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,21 +27,23 @@
 #ifndef __CDIO_XA_H__
 #define __CDIO_XA_H__
 
+#include <cdio/types.h>
+
 #define ISO_XA_MARKER_STRING    "CD-XA001"
 #define ISO_XA_MARKER_OFFSET    1024
 
 /* XA attribute definitions */
-#define XA_ATTR_U_READ         (1 << 0)
-/* reserved */
-#define XA_ATTR_U_EXEC         (1 << 2)
-/* reserved */
-#define XA_ATTR_G_READ         (1 << 4)
-/* reserved */
-#define XA_ATTR_G_EXEC         (1 << 6)
-/* reserved */
-#define XA_ATTR_O_READ         (1 << 8)
-/* reserved */
-#define XA_ATTR_O_EXEC         (1 << 10)
+#define XA_ATTR_G_READ          0x0001   /* System Group Read */
+#define XA_ATTR_G_EXEC          0x0004   /* System Group Execute */
+
+#define XA_ATTR_U_READ          0x0010   /* Owner Read */
+#define XA_ATTR_U_EXEC          0x0040   /* Owner Execute */
+
+#define XA_ATTR_O_READ          0x0100   /* Group Read */
+#define XA_ATTR_O_EXEC          0x0400   /* Group Execute */
+
+#define	XA_ATTR_W_READ		0x1000	  /* World (other) Read */
+#define	XA_ATTR_W_EXEC		0x4000	  /* World (other) Execute */
 
 #define XA_ATTR_MODE2FORM1     (1 << 11)
 #define XA_ATTR_MODE2FORM2     (1 << 12)
@@ -53,17 +60,18 @@
 #define XA_FORM1_FILE   (XA_ATTR_MODE2FORM1 | XA_PERM_ALL_ALL)
 #define XA_FORM2_FILE   (XA_ATTR_MODE2FORM2 | XA_PERM_ALL_ALL)
 
-typedef struct iso9660_xa  iso9660_xa_t;
-
-struct iso9660_xa /* big endian!! */
+/*
+ * Extended Attributes record according to Yellow Book.
+ */
+typedef struct iso9660_xa /* big endian!! */
 {
-  uint16_t user_id;       /* 0 */
   uint16_t group_id;      /* 0 */
+  uint16_t user_id;       /* 0 */
   uint16_t attributes;    /* XA_ATTR_ */ 
   uint8_t  signature[2];  /* { 'X', 'A' } */
   uint8_t  filenum;       /* file number, see also XA subheader */
   uint8_t  reserved[5];   /* zero */
-} GNUC_PACKED;
+} iso9660_xa_t GNUC_PACKED;
 
 
 /*!
