@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.8 2005/01/09 00:47:07 rocky Exp $
+  $Id: cooked_interface.c,v 1.9 2005/01/09 01:50:56 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -246,6 +246,14 @@ cooked_init_drive (cdrom_drive_t *d){
   default:
     d->nsectors=25;  /* The max for SCSI MMC2 */
   }
+#else
+  { 	 
+    char buffer[256]; 	 
+    d->nsectors = 8; 	 
+    sprintf(buffer,"\tSetting read block size at %d sectors (%ld bytes).\n", 	 
+	    d->nsectors,(long)d->nsectors*CDIO_CD_FRAMESIZE_RAW); 	 
+    cdmessage(d,buffer); 	 
+  } 	 
 #endif /*HAVE_LINUX_MAJOR_H*/
 
   d->enable_cdda = Dummy;

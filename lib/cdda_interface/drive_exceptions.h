@@ -1,5 +1,5 @@
 /*
-  $Id: drive_exceptions.h,v 1.3 2005/01/08 20:39:40 rocky Exp $
+  $Id: drive_exceptions.h,v 1.4 2005/01/09 01:50:56 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -44,6 +44,7 @@ extern long scsi_read_mmc2(cdrom_drive_t *d, void *,long,long);
 #define scsi_read_mmc2 NULL
 #endif
 
+#if HAVE_LINUX_MAJOR_H
 /* list of drives that affect autosensing in ATAPI specific portions of code 
    (force drives to detect as ATAPI or SCSI, force ATAPI read command */
 
@@ -53,6 +54,7 @@ static exception_t atapi_list[]={
   {"SONY CD-ROM CDU-561",            0,   0,         Dummy,          NULL,0},
   {"Chinon CD-ROM CDS-525",          0,   0,         Dummy,          NULL,0},
   {NULL,0,0,NULL,NULL,0}};
+#endif /*HAVE_LINUX_MAJOR_H*/
 
 /* list of drives that affect MMC default settings */
 

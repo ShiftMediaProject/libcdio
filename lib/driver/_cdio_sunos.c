@@ -1,8 +1,8 @@
 /*
-    $Id: _cdio_sunos.c,v 1.4 2005/01/09 00:47:07 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.5 2005/01/09 01:50:56 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.4 2005/01/09 00:47:07 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.5 2005/01/09 01:50:56 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -179,7 +179,7 @@ run_scsi_cmd_solaris( const void *p_user_data, unsigned int i_timeout_ms,
 
 static int
 _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn, 
-			  unsigned int nblocks)
+			     unsigned int i_blocks)
 {
   struct cdrom_msf solaris_msf;
   msf_t _msf;
@@ -206,20 +206,20 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
   
   p_env->gen.ioctls_debugged++;
 
-  if (nblocks > 60) {
+  if (i_blocks > 60) {
     cdio_warn("%s:\n", 
 	      "we can't handle reading more than 60 blocks. Reset to 60");
   }
 
   cdda.cdda_addr    = lsn;
-  cdda.cdda_length  = nblocks;
+  cdda.cdda_length  = i_blocks;
   cdda.cdda_data    = (caddr_t) data;
   cdda.cdda_subcode = CDROM_DA_NO_SUBCODE;
   
   if (ioctl (p_env->gen.fd, CDROMCDDA, &cdda) == -1) {
     perror ("ioctl(..,CDROMCDDA,..)");
-	return 1;
-	/* exit (EXIT_FAILURE); */
+    return 1;
+    /* exit (EXIT_FAILURE); */
   }
   
   return 0;
@@ -230,32 +230,32 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_mode1_sector_solaris (void *env, void *data, lsn_t lsn, 
+_read_mode1_sector_solaris (void *p_env, void *data, lsn_t lsn, 
 			    bool b_form2)
 {
 
 #if FIXED
   do something here. 
 #else
-  return cdio_generic_read_form1_sector(env, data, lsn);
+  return cdio_generic_read_form1_sector(p_env, data, lsn);
 #endif
 }
 
 /*!
-   Reads nblocks of mode2 sectors from cd device into data starting
+   Reads i_blocks of mode2 sectors from cd device into data starting
    from lsn.
    Returns 0 if no error. 
  */
 static int
 _read_mode1_sectors_solaris (void *p_user_data, void *p_data, lsn_t lsn, 
-			     bool b_form2, unsigned int nblocks)
+			     bool b_form2, unsigned int i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   unsigned int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
-  for (i = 0; i < nblocks; i++) {
+  for (i = 0; i < i_blocks; i++) {
     if ( (retval = _read_mode1_sector_solaris (p_env, 
 					    ((char *)p_data) + (blocksize * i),
 					       lsn + i, b_form2)) )
@@ -324,21 +324,21 @@ _read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t lsn,
 }
 
 /*!
-   Reads nblocks of mode2 sectors from cd device into data starting
+   Reads i_blocks of mode2 sectors from cd device into data starting
    from lsn.
    Returns 0 if no error. 
  */
 static int
 _read_mode2_sectors_solaris (void *p_user_data, void *data, lsn_t lsn, 
-			     bool b_form2, unsigned int nblocks)
+			     bool b_form2, unsigned int i_blocks)
 {
-  _img_private_t *env = p_user_data;
+  _img_private_t *p_env = p_user_data;
   unsigned int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
-  for (i = 0; i < nblocks; i++) {
-    if ( (retval = _read_mode2_sector_solaris (env, 
+  for (i = 0; i < i_blocks; i++) {
+    if ( (retval = _read_mode2_sector_solaris (p_env, 
 					    ((char *)data) + (blocksize * i),
 					       lsn + i, b_form2)) )
       return retval;
@@ -353,14 +353,14 @@ _read_mode2_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
 static uint32_t 
 _cdio_stat_size (void *p_user_data)
 {
-  _img_private_t *env = p_user_data;
+  _img_private_t *p_env = p_user_data;
 
   struct cdrom_tocentry tocent;
   uint32_t size;
 
   tocent.cdte_track  = CDIO_CDROM_LEADOUT_TRACK;
   tocent.cdte_format = CDIO_CDROM_LBA;
-  if (ioctl (env->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
+  if (ioctl (p_env->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
       perror ("ioctl(CDROMREADTOCENTRY)");
       exit (EXIT_FAILURE);
@@ -382,20 +382,20 @@ _cdio_stat_size (void *p_user_data)
 static int
 _set_arg_solaris (void *p_user_data, const char key[], const char value[])
 {
-  _img_private_t *env = p_user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (!strcmp (key, "source"))
     {
       if (!value)
 	return -2;
 
-      free (env->gen.source_name);
+      free (p_env->gen.source_name);
       
-      env->gen.source_name = strdup (value);
+      p_env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
-      env->access_mode = str_to_access_mode_sunos(key);
+      p_env->access_mode = str_to_access_mode_sunos(key);
     }
   else 
     return -1;
@@ -463,14 +463,14 @@ read_toc_solaris (void *p_user_data)
 static int 
 eject_media_solaris (void *p_user_data) {
 
-  _img_private_t *env = p_user_data;
+  _img_private_t *p_env = p_user_data;
   int ret;
 
-  close(env->gen.fd);
-  env->gen.fd = -1;
-  if (env->gen.fd > -1) {
-    if ((ret = ioctl(env->gen.fd, CDROMEJECT)) != 0) {
-      cdio_generic_free((void *) env);
+  close(p_env->gen.fd);
+  p_env->gen.fd = -1;
+  if (p_env->gen.fd > -1) {
+    if ((ret = ioctl(p_env->gen.fd, CDROMEJECT)) != 0) {
+      cdio_generic_free((void *) p_env);
       cdio_warn ("CDROMEJECT failed: %s\n", strerror(errno));
       return 1;
     } else {
@@ -502,12 +502,12 @@ _cdio_malloc_and_zero(size_t size) {
 static const char *
 get_arg_solaris (void *p_user_data, const char key[])
 {
-  _img_private_t *env = p_user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (!strcmp (key, "source")) {
-    return env->gen.source_name;
+    return p_env->gen.source_name;
   } else if (!strcmp (key, "access-mode")) {
-    switch (env->access_mode) {
+    switch (p_env->access_mode) {
     case _AM_SUN_CTRL_ATAPI:
       return "ATAPI";
     case _AM_SUN_CTRL_SCSI:

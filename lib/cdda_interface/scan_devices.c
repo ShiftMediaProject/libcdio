@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.8 2005/01/08 20:47:03 rocky Exp $
+  $Id: scan_devices.c,v 1.9 2005/01/09 01:50:56 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -156,11 +156,13 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
 {
 
   cdrom_drive_t *d=NULL;
-  struct stat st;
   int drive_type = 0;
   char *description=NULL;
   char *device = NULL;
   CdIo_t *p_cdio = NULL;
+#ifdef HAVE_LINUX_MAJOR_H
+  struct stat st;
+#endif
 
   if (dev) {
     device = test_resolve_symlink(dev,messagedest,messages);
@@ -239,7 +241,7 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
       }
     }
   }
-#endif /* HAVE_LINUX_MAJOR_H */
+#endif /*HAVE_LINUX_MAJOR_H*/
 
   /* Minimum init */
   
