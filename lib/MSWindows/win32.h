@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.4 2004/04/30 07:33:51 rocky Exp $
+    $Id: win32.h,v 1.5 2004/06/20 15:06:42 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -53,7 +53,7 @@ typedef struct {
   bool toc_init;                 /* if true, info below is valid. */
   track_info_t  tocent[100];     /* entry info for each track */
   track_t       total_tracks;    /* number of tracks in image */
-  track_t       first_track_num; /* track number of first track */
+  track_t       i_first_track;   /* track number of first track */
 
 } _img_private_t;
 
@@ -61,38 +61,49 @@ typedef struct {
    Reads an audio device using the DeviceIoControl method into data
    starting from lsn.  Returns 0 if no error.
  */
-int win32ioctl_read_audio_sectors (_img_private_t *obj, void *data, lsn_t lsn, 
+int read_audio_sectors_aspi (_img_private_t *obj, void *data, lsn_t lsn, 
+			     unsigned int nblocks);
+/*!
+   Reads an audio device using the DeviceIoControl method into data
+   starting from lsn.  Returns 0 if no error.
+ */
+int read_audio_sectors_win32ioctl (_img_private_t *obj, void *data, lsn_t lsn, 
 				   unsigned int nblocks);
 /*!
    Reads a single mode2 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int
-win32ioctl_read_mode2_sector (_img_private_t *env, void *data, lsn_t lsn, 
-			      bool mode2_form2);
+int read_mode2_sector_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
+			    bool b_form2);
+int read_mode2_sector_win32ioctl (const _img_private_t *env, void *data, 
+				  lsn_t lsn, bool b_form2);
 
 /*!
    Reads a single mode1 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int
-win32ioctl_read_mode1_sector (_img_private_t *env, void *data, lsn_t lsn, 
-			      bool mode2_form2);
+int read_mode1_sector_aspi (const _img_private_t *env, void *data, 
+			    lsn_t lsn, bool b_form2);
+int read_mode1_sector_win32ioctl (const _img_private_t *env, void *data, 
+				  lsn_t lsn, bool b_form2);
 
-const char *win32ioctl_is_cdrom(const char drive_letter);
+const char *is_cdrom_aspi(const char drive_letter);
+const char *is_cdrom_win32ioctl (const char drive_letter);
 
 /*!
   Initialize internal structures for CD device.
  */
-bool win32ioctl_init_win32 (_img_private_t *env);
+bool init_aspi (_img_private_t *env);
+bool init_win32ioctl (_img_private_t *env);
 
 /*! 
   Read and cache the CD's Track Table of Contents and track info.
   Return true if successful or false if an error.
 */
-bool win32ioctl_read_toc (_img_private_t *env);
+bool read_toc_win32ioctl (_img_private_t *env);
+bool read_toc_aspi (_img_private_t *env);
 
-char *win32ioctl_get_mcn (const _img_private_t *env);
+char *get_mcn_win32ioctl (const _img_private_t *env);
 
 /*!
   Return the the kind of drive capabilities of device.
@@ -101,10 +112,22 @@ char *win32ioctl_get_mcn (const _img_private_t *env);
   string when done with it.
 
  */
-cdio_drive_cap_t win32ioctl_get_drive_cap (const void *env);
+cdio_drive_cap_t get_drive_cap_aspi (const _img_private_t *env);
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+cdio_drive_cap_t get_drive_cap_win32ioctl (const _img_private_t *env);
 
 /*!  
   Get the format (XA, DATA, AUDIO) of a track. 
 */
-track_format_t win32ioctl_get_track_format(_img_private_t *env, 
-					   track_t track_num); 
+track_format_t get_track_format_win32ioctl(const _img_private_t *env, 
+					   track_t i_track); 
+
+track_format_t get_track_format_aspi(const _img_private_t *env, 
+				     track_t i_track); 

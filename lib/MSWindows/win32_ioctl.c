@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.3 2004/05/10 03:28:57 rocky Exp $
+    $Id: win32_ioctl.c,v 1.4 2004/06/20 15:06:42 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.3 2004/05/10 03:28:57 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.4 2004/06/20 15:06:42 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -135,7 +135,7 @@ typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
  */
 
 const char *
-win32ioctl_is_cdrom(const char c_drive_letter) 
+is_cdrom_win32ioctl(const char c_drive_letter) 
 {
 
     UINT uDriveType;
@@ -165,7 +165,7 @@ win32ioctl_is_cdrom(const char c_drive_letter)
    starting from lsn.  Returns 0 if no error.
  */
 int
-win32ioctl_read_audio_sectors (_img_private_t *env, void *data, lsn_t lsn, 
+read_audio_sectors_win32ioctl (_img_private_t *env, void *data, lsn_t lsn, 
 			       unsigned int nblocks) 
 {
   DWORD dwBytesReturned;
@@ -193,7 +193,7 @@ win32ioctl_read_audio_sectors (_img_private_t *env, void *data, lsn_t lsn,
    data starting from lsn. Returns 0 if no error.
  */
 static int
-win32ioctl_read_raw_sector (_img_private_t *env, void *buf, lsn_t lsn) 
+read_raw_sector (const _img_private_t *env, void *buf, lsn_t lsn) 
 {
   SCSI_PASS_THROUGH_DIRECT sptd;
   BOOL success;
@@ -249,17 +249,17 @@ win32ioctl_read_raw_sector (_img_private_t *env, void *buf, lsn_t lsn)
    data starting from lsn. Returns 0 if no error.
  */
 int
-win32ioctl_read_mode2_sector (_img_private_t *env, void *data, lsn_t lsn, 
-			      bool mode2_form2)
+read_mode2_sector_win32ioctl (const _img_private_t *env, void *data, 
+			      lsn_t lsn, bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  int ret = win32ioctl_read_raw_sector (env, buf, lsn);
+  int ret = read_raw_sector (env, buf, lsn);
 
   if ( 0 != ret) return ret;
 
   memcpy (data, 
 	  buf + CDIO_CD_SYNC_SIZE + CDIO_CD_XA_HEADER,
-	  mode2_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
+	  b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
   
   return 0;
 
@@ -270,17 +270,17 @@ win32ioctl_read_mode2_sector (_img_private_t *env, void *data, lsn_t lsn,
    data starting from lsn. Returns 0 if no error.
  */
 int
-win32ioctl_read_mode1_sector (_img_private_t *env, void *data, lsn_t lsn, 
-			      bool mode2_form2)
+read_mode1_sector_win32ioctl (const _img_private_t *env, void *data, 
+			      lsn_t lsn, bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  int ret = win32ioctl_read_raw_sector (env, buf, lsn);
+  int ret = read_raw_sector (env, buf, lsn);
 
   if ( 0 != ret) return ret;
 
   memcpy (data, 
 	  buf + CDIO_CD_SYNC_SIZE+CDIO_CD_HEADER_SIZE, 
-	  mode2_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
+	  b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
   
   return 0;
 
@@ -290,7 +290,7 @@ win32ioctl_read_mode1_sector (_img_private_t *env, void *data, lsn_t lsn,
   Initialize internal structures for CD device.
  */
 bool
-win32ioctl_init_win32 (_img_private_t *env)
+init_win32ioctl (_img_private_t *env)
 {
   char psz_win32_drive[7];
   unsigned int len=strlen(env->gen.source_name);
@@ -346,7 +346,7 @@ win32ioctl_init_win32 (_img_private_t *env)
   Return true if successful or false if an error.
 */
 bool
-win32ioctl_read_toc (_img_private_t *env) 
+read_toc_win32ioctl (_img_private_t *env) 
 {
 
   DWORD dwBytesReturned;
@@ -361,8 +361,8 @@ win32ioctl_read_toc (_img_private_t *env)
     return false;
   }
   
-  env->first_track_num = cdrom_toc.FirstTrack;
-  env->total_tracks    = cdrom_toc.LastTrack - cdrom_toc.FirstTrack + 1;
+  env->i_first_track = cdrom_toc.FirstTrack;
+  env->total_tracks  = cdrom_toc.LastTrack - cdrom_toc.FirstTrack + 1;
   
   
   for( i = 0 ; i <= env->total_tracks ; i++ ) {
@@ -387,7 +387,7 @@ win32ioctl_read_toc (_img_private_t *env)
 
  */
 char *
-win32ioctl_get_mcn (const _img_private_t *env) {
+get_mcn_win32ioctl (const _img_private_t *env) {
 
   DWORD dwBytesReturned;
   SUB_Q_MEDIA_CATALOG_NUMBER mcn;
@@ -414,15 +414,15 @@ win32ioctl_get_mcn (const _img_private_t *env) {
   Get the format (XA, DATA, AUDIO) of a track. 
 */
 track_format_t
-win32ioctl_get_track_format(_img_private_t *env, track_t track_num) 
+get_track_format_win32ioctl(const _img_private_t *env, track_t i_track) 
 {
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
   */
-  if (env->tocent[track_num-1].Control & 0x04) {
-    if (env->tocent[track_num-1].Format == 0x10)
+  if (env->tocent[i_track - env->i_first_track].Control & 0x04) {
+    if (env->tocent[i_track - env->i_first_track].Format == 0x10)
       return TRACK_FORMAT_CDI;
-    else if (env->tocent[track_num-1].Format == 0x20) 
+    else if (env->tocent[i_track - env->i_first_track].Format == 0x20) 
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;
@@ -439,9 +439,8 @@ win32ioctl_get_track_format(_img_private_t *env, track_t track_num)
 
  */
 cdio_drive_cap_t
-win32ioctl_get_drive_cap (const void *env) 
+get_drive_cap_win32ioctl (const _img_private_t *env) 
 {
-  const _img_private_t *_obj = env;
   int32_t i_drivetype = 0;
   SCSI_PASS_THROUGH_WITH_BUFFERS      sptwb;
   ULONG                               returned = 0;
@@ -477,7 +476,7 @@ win32ioctl_get_drive_cap (const void *env)
   length = offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,DataBuf) +
     sptwb.Spt.DataTransferLength;
   
-  if ( DeviceIoControl(_obj->h_device_handle,
+  if ( DeviceIoControl(env->h_device_handle,
 		       IOCTL_SCSI_PASS_THROUGH,
 		       &sptwb,
 		       sizeof(SCSI_PASS_THROUGH),
