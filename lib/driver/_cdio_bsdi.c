@@ -1,8 +1,8 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.3 2005/01/17 17:20:09 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.4 2005/01/19 09:42:32 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.3 2005/01/17 17:20:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.4 2005/01/19 09:42:32 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -298,17 +298,17 @@ _read_mode1_sector_bsdi (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode1_sectors_bsdi (void *user_data, void *data, lsn_t lsn, 
+_read_mode1_sectors_bsdi (void *p_user_data, void *p_data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   unsigned int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
     if ( (retval = _read_mode1_sector_bsdi (p_env, 
-					    ((char *)data) + (blocksize * i),
+					    ((char *)p_data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
   }
@@ -320,14 +320,14 @@ _read_mode1_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_mode2_sector_bsdi (void *user_data, void *data, lsn_t lsn, 
+_read_mode2_sector_bsdi (void *p_user_data, void *p_data, lsn_t lsn, 
 			 bool b_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
 
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
   msf->cdmsf_min0 = cdio_from_bcd8(_msf.m);
@@ -367,9 +367,9 @@ _read_mode2_sector_bsdi (void *user_data, void *data, lsn_t lsn,
     }
 
   if (b_form2)
-    memcpy (data, buf, M2RAW_SECTOR_SIZE);
+    memcpy (p_data, buf, M2RAW_SECTOR_SIZE);
   else
-    memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
+    memcpy (((char *)p_data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
   
   return 0;
 }
@@ -425,18 +425,15 @@ _stat_size_bsdi (void *user_data)
 /*!
   Set the key "arg" to "value" in source device.
 */
-static int
+static driver_return_code_t
 _set_arg_bsdi (void *user_data, const char key[], const char value[])
 {
   _img_private_t *p_env = user_data;
 
   if (!strcmp (key, "source"))
     {
-      if (!value)
-	return -2;
-
+      if (!value) return DRIVER_OP_ERROR;
       free (p_env->gen.source_name);
-      
       p_env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
@@ -446,10 +443,8 @@ _set_arg_bsdi (void *user_data, const char key[], const char value[])
       else
 	cdio_warn ("unknown access type: %s. ignored.", value);
     }
-  else 
-    return -1;
-
-  return 0;
+  else return DRIVER_OP_ERROR;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*! 
@@ -518,11 +513,11 @@ read_toc_bsdi (void *p_user_data)
   Eject media in CD drive. If successful, as a side effect we 
   also free obj.
  */
-static int 
-_eject_media_bsdi (void *user_data) {
+static driver_return_code_t
+_eject_media_bsdi (void *p_user_data) {
 
-  _img_private_t *p_env = user_data;
-  int ret=2;
+  _img_private_t *p_env = p_user_data;
+  int ret=DRIVER_OP_ERROR;
   int status;
   int fd;
 
@@ -542,14 +537,14 @@ _eject_media_bsdi (void *user_data) {
 	}
 	break;
       }
-      ret=0;
+      ret=DRIVER_OP_SUCCESS;
     } else {
       cdio_warn ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
-      ret=1;
+      ret=DRIVER_OP_ERROR;
     }
     close(fd);
   }
-  return 2;
+  return ret;
 }
 
 /*!
