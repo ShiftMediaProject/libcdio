@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.5 2003/08/31 02:51:41 rocky Exp $
+    $Id: iso9660.h,v 1.6 2003/08/31 03:35:36 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -29,7 +29,6 @@
 
 #define MIN_ISO_SIZE MIN_TRACK_SIZE
 
-#define ISO_BLOCKSIZE 2048
 
 #define LEN_ISONAME     31
 #define MAX_ISONAME     37
@@ -39,11 +38,13 @@
 #define ISO_FILE        0       
 #define ISO_VD_PRIMARY  1
 #define ISO_DIRECTORY   2
-#define ISO_STANDARD_ID         "CD001"
-
-
 #define ISO_PVD_SECTOR  16
 #define ISO_EVD_SECTOR  17
+
+#define ISO_STANDARD_ID         "CD001"
+#define ISO_XA_MARKER_STRING    "CD-XA001"
+#define ISO_XA_MARKER_OFFSET    1024
+#define ISO_BLOCKSIZE           2048
 
 enum strncpy_pad_check {
   ISO9660_NOCHECK = 0,

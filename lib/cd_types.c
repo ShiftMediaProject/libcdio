@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.c,v 1.1 2003/08/17 05:31:19 rocky Exp $
+    $Id: cd_types.c,v 1.2 2003/08/31 03:35:36 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -40,6 +40,7 @@
 #endif
 
 #include <cdio/cdio.h>
+#include <cdio/iso9660.h>
 #include <cdio/logging.h>
 #include <cdio/util.h>
 #include <cdio/cd_types.h>
@@ -62,7 +63,6 @@ and
 static char buffer[6][CDIO_CD_FRAMESIZE_RAW];  /* for CD-Data */
 
 /* Some interesting sector numbers stored in the above buffer. */
-#define ISO_SUPERBLOCK_SECTOR  16  /* buffer[0] */
 #define UFS_SUPERBLOCK_SECTOR   4  /* buffer[2] */
 #define BOOT_SECTOR            17  /* buffer[3] */
 #define VCD_INFO_SECTOR       150  /* buffer[4] */
@@ -79,13 +79,13 @@ typedef struct signature
 static signature_t sigs[] =
   {
 /*buffer[x] off look for     description */
-    {0,     1, "CD001",      "ISO 9660"}, 
+    {0,     1, ISO_STANDARD_ID,      "ISO 9660"}, 
     {0,     1, "CD-I",       "CD-I"}, 
     {0,     8, "CDTV",       "CDTV"}, 
     {0,     8, "CD-RTOS",    "CD-RTOS"}, 
     {0,     9, "CDROM",      "HIGH SIERRA"}, 
     {0,    16, "CD-BRIDGE",  "BRIDGE"}, 
-    {0,  1024, "CD-XA001",   "XA"}, 
+    {0,  ISO_XA_MARKER_OFFSET, ISO_XA_MARKER_STRING,   "XA"}, 
     {1,    64, "PPPPHHHHOOOOTTTTOOOO____CCCCDDDD",  "PHOTO CD"}, 
     {1, 0x438, "\x53\xef",   "EXT2 FS"}, 
     {2,  1372, "\x54\x19\x01\x0", "UFS"}, 
@@ -211,7 +211,7 @@ cdio_guess_cd_type(/*in*/ CdIo *cdio, int start_session, track_t track_num,
 {
   int ret = 0;
   
-  if ( _cdio_read_block(cdio, ISO_SUPERBLOCK_SECTOR, start_session, 
+  if ( _cdio_read_block(cdio, ISO_PVD_SECTOR, start_session, 
 			0, track_num) < 0 )
     return CDIO_FS_UNKNOWN;
   

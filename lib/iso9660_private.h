@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_private.h,v 1.2 2003/08/29 02:38:07 rocky Exp $
+    $Id: iso9660_private.h,v 1.3 2003/08/31 03:35:36 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -27,9 +27,6 @@
 #define ISO_VD_END              255
 
 #define ISO_VERSION             1
-
-#define ISO_XA_MARKER_STRING    "CD-XA001"
-#define ISO_XA_MARKER_OFFSET    1024
 
 PRAGMA_BEGIN_PACKED
 
