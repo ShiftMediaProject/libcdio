@@ -1,7 +1,7 @@
 /*
-  $Id: sample8.c,v 1.10 2004/07/28 22:03:35 rocky Exp $
+  $Id: sample8.c,v 1.11 2004/07/29 05:26:46 rocky Exp $
 
-  Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,8 +29,8 @@
 
 
 static void 
-print_cdtext_track_info(CdIo *cdio, track_t i_track, const char *message) {
-  const cdtext_t *cdtext    = cdio_get_cdtext(cdio, 0);
+print_cdtext_track_info(CdIo *p_cdio, track_t i_track, const char *message) {
+  const cdtext_t *cdtext    = cdio_get_cdtext(p_cdio, 0);
   if (NULL != cdtext) {
     cdtext_field_t i;
     
@@ -46,17 +46,17 @@ print_cdtext_track_info(CdIo *cdio, track_t i_track, const char *message) {
 }
     
 static void 
-print_disc_info(CdIo *cdio, track_t i_tracks, track_t i_first_track) {
+print_disc_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) {
   track_t i_last_track = i_first_track+i_tracks;
-  discmode_t cd_discmode = cdio_get_discmode(cdio);
+  discmode_t cd_discmode = cdio_get_discmode(p_cdio);
 
   printf("%s\n", discmode2str[cd_discmode]);
   
-  print_cdtext_track_info(cdio, 0, "\nCD-TEXT for Disc:");
+  print_cdtext_track_info(p_cdio, 0, "\nCD-TEXT for Disc:");
   for ( ; i_first_track < i_last_track; i_first_track++ ) {
     char msg[50];
     sprintf(msg, "CD-TEXT for Track %d:", i_first_track);
-    print_cdtext_track_info(cdio, i_first_track, msg);
+    print_cdtext_track_info(p_cdio, i_first_track, msg);
   }
 }
 
@@ -65,30 +65,30 @@ main(int argc, const char *argv[])
 {
   track_t i_first_track;
   track_t i_tracks;
-  CdIo *cdio       = cdio_open ("../test/cdda.cue", DRIVER_BINCUE);
+  CdIo *p_cdio       = cdio_open ("../test/cdda.cue", DRIVER_BINCUE);
 
 
-  if (NULL == cdio) {
+  if (NULL == p_cdio) {
     printf("Couldn't open ../test/cdda.cue with BIN/CUE driver.\n");
   } else {
-    i_first_track = cdio_get_first_track_num(cdio);
-    i_tracks      = cdio_get_num_tracks(cdio);
-    print_disc_info(cdio, i_tracks, i_first_track);
-    cdio_destroy(cdio);
+    i_first_track = cdio_get_first_track_num(p_cdio);
+    i_tracks      = cdio_get_num_tracks(p_cdio);
+    print_disc_info(p_cdio, i_tracks, i_first_track);
+    cdio_destroy(p_cdio);
   }
 
-  cdio = cdio_open (NULL, DRIVER_UNKNOWN);
-  i_first_track = cdio_get_first_track_num(cdio);
-  i_tracks      = cdio_get_num_tracks(cdio);
+  p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  i_first_track = cdio_get_first_track_num(p_cdio);
+  i_tracks      = cdio_get_num_tracks(p_cdio);
 
-  if (NULL == cdio) {
+  if (NULL == p_cdio) {
     printf("Couldn't find CD\n");
     return 1;
   } else {
-    print_disc_info(cdio, i_tracks, i_first_track);
+    print_disc_info(p_cdio, i_tracks, i_first_track);
   }
 
-  cdio_destroy(cdio);
+  cdio_destroy(p_cdio);
   
   return 0;
 }
