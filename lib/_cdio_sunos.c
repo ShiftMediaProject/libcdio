@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.52 2004/07/17 15:43:57 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.53 2004/07/17 22:16:47 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.52 2004/07/17 15:43:57 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.53 2004/07/17 22:16:47 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -142,7 +142,7 @@ _cdio_init (_img_private_t *env)
 */
 
 static int
-_cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn, 
+_read_audio_sectors_solaris (void *user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -189,8 +189,8 @@ _cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_mode1_sector (void *env, void *data, lsn_t lsn, 
-			 bool b_form2)
+_read_mode1_sector_solaris (void *env, void *data, lsn_t lsn, 
+			    bool b_form2)
 {
 
 #if FIXED
@@ -207,8 +207,8 @@ _cdio_read_mode1_sector (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode1_sectors (void *user_data, void *data, lsn_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+_read_mode1_sectors_solaris (void *user_data, void *data, lsn_t lsn, 
+			     bool b_form2, unsigned int nblocks)
 {
   _img_private_t *env = user_data;
   unsigned int i;
@@ -216,9 +216,9 @@ _cdio_read_mode1_sectors (void *user_data, void *data, lsn_t lsn,
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _cdio_read_mode1_sector (env, 
+    if ( (retval = _read_mode1_sector_solaris (env, 
 					    ((char *)data) + (blocksize * i),
-					    lsn + i, b_form2)) )
+					       lsn + i, b_form2)) )
       return retval;
   }
   return 0;
@@ -229,8 +229,8 @@ _cdio_read_mode1_sectors (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
-			 bool b_form2)
+_read_mode2_sector_solaris (void *user_data, void *data, lsn_t lsn, 
+			    bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
@@ -288,8 +288,8 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+_read_mode2_sectors_solaris (void *user_data, void *data, lsn_t lsn, 
+			     bool b_form2, unsigned int nblocks)
 {
   _img_private_t *env = user_data;
   unsigned int i;
@@ -297,9 +297,9 @@ _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _cdio_read_mode2_sector (env, 
+    if ( (retval = _read_mode2_sector_solaris (env, 
 					    ((char *)data) + (blocksize * i),
-					    lsn + i, b_form2)) )
+					       lsn + i, b_form2)) )
       return retval;
   }
   return 0;
@@ -497,7 +497,7 @@ _get_cdtext_solaris (void *user_data, track_t i_track)
   also free obj.
  */
 static int 
-_cdio_eject_media (void *user_data) {
+_eject_media_solaris (void *user_data) {
 
   _img_private_t *env = user_data;
   int ret;
@@ -536,7 +536,7 @@ _cdio_malloc_and_zero(size_t size) {
   Return the value associated with the key "arg".
 */
 static const char *
-_cdio_get_arg (void *user_data, const char key[])
+_get_arg_solaris (void *user_data, const char key[])
 {
   _img_private_t *env = user_data;
 
@@ -593,13 +593,15 @@ cdio_get_default_device_solaris(void)
   string when done with it.
 
  */
-static cdio_drive_cap_t
-_cdio_get_drive_cap_solaris (const void *user_data)
+static void
+_get_drive_cap_solaris (const void *user_data,
+			cdio_drive_read_cap_t  *p_read_cap,
+			cdio_drive_write_cap_t *p_write_cap,
+			cdio_drive_misc_cap_t  *p_misc_cap)
 {
   const _img_private_t *env = user_data;
   int status;
   struct uscsi_cmd my_cmd;
-  int32_t i_drivetype = 0;
   uint8_t buf[192] = { 0, };
   unsigned char my_rq_buf[26] = {0, };
 
@@ -643,7 +645,7 @@ _cdio_get_drive_cap_solaris (const void *user_data)
 	  /* Don't handle these yet. */
 	  break;
 	case CDIO_MMC_CAPABILITIES_PAGE:
-	  i_drivetype |= cdio_get_drive_cap_mmc(p);
+	  cdio_get_drive_cap_mmc(p, p_read_cap, p_write_cap, p_misc_cap);
 	  break;
 	default: ;
 	}
@@ -665,7 +667,7 @@ _cdio_get_drive_cap_solaris (const void *user_data)
 
  */
 static char *
-_cdio_get_mcn_solaris (const void *user_data)
+_get_mcn_solaris (const void *user_data)
 {
   const _img_private_t *env = user_data;
   struct uscsi_cmd my_cmd;
@@ -885,15 +887,15 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   char *psz_source;
 
   cdio_funcs _funcs = {
-    .eject_media        = _cdio_eject_media,
+    .eject_media        = _eject_media_solaris,
     .free               = cdio_generic_free,
-    .get_arg            = _cdio_get_arg,
+    .get_arg            = _get_arg_solaris,
     .get_cdtext         = _get_cdtext_solaris,
     .get_devices        = cdio_get_devices_solaris,
     .get_default_device = cdio_get_default_device_solaris,
-    .get_drive_cap      = _cdio_get_drive_cap_solaris,
+    .get_drive_cap      = _get_drive_cap_solaris,
     .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = _cdio_get_mcn_solaris,
+    .get_mcn            = _get_mcn_solaris,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,
@@ -901,11 +903,11 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
-    .read_audio_sectors = _cdio_read_audio_sectors,
-    .read_mode1_sector  = _cdio_read_mode1_sector,
-    .read_mode1_sectors = _cdio_read_mode1_sectors,
-    .read_mode2_sector  = _cdio_read_mode2_sector,
-    .read_mode2_sectors = _cdio_read_mode2_sectors,
+    .read_audio_sectors = _read_audio_sectors_solaris,
+    .read_mode1_sector  = _read_mode1_sector_solaris,
+    .read_mode1_sectors = _read_mode1_sectors_solaris,
+    .read_mode2_sector  = _read_mode2_sector_solaris,
+    .read_mode2_sectors = _read_mode2_sectors_solaris,
     .stat_size          = _cdio_stat_size,
     .set_arg            = _set_arg_solaris
   };
@@ -918,7 +920,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _data->b_cdtext_init  = false;
 
   if (NULL == psz_orig_source) {
-    psz_source=cdio_get_default_device_solaris();
+    psz_source=_get_default_device_solaris();
     if (NULL == psz_source) return NULL;
     _set_arg_solaris(_data, "source", psz_source);
     free(psz_source);

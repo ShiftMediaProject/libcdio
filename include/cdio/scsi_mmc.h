@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.7 2004/07/08 06:29:45 rocky Exp $
+    $Id: scsi_mmc.h,v 1.8 2004/07/17 22:16:47 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -100,6 +100,9 @@
   in p. We interpret this and return a bit mask set according to the 
   capabilities.
  */
-cdio_drive_cap_t cdio_get_drive_cap_mmc(const uint8_t *p);
+void cdio_get_drive_cap_mmc(const uint8_t *p,
+			    cdio_drive_read_cap_t  *p_read_cap,
+			    cdio_drive_write_cap_t *p_write_cap,
+			    cdio_drive_misc_cap_t  *p_misc_cap);
 
 #endif /* __SCSI_MMC_H__ */

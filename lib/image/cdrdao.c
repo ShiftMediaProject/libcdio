@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.19 2004/07/11 14:25:07 rocky Exp $
+    $Id: cdrdao.c,v 1.20 2004/07/17 22:16:47 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.19 2004/07/11 14:25:07 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.20 2004/07/17 22:16:47 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -879,23 +879,6 @@ cdio_get_default_device_cdrdao(void)
 }
 
 /*!
-  Return the the kind of drive capabilities of device.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
- */
-static cdio_drive_cap_t
-_get_drive_cap_cdrdao (const void *user_data) {
-
-  /* There may be more in the future but these we can handle now. 
-     Also, we know we can't handle 
-     LOCK, OPEN_TRAY, CLOSE_TRAY, SELECT_SPEED, SELECT_DISC
-  */
-  return CDIO_DRIVE_CAP_FILE | CDIO_DRIVE_CAP_MCN | CDIO_DRIVE_CAP_CD_AUDIO ;
-}
-
-/*!
   Return the number of tracks in the current medium.
   CDIO_INVALID_TRACK is returned on error.
 */
@@ -1008,7 +991,7 @@ cdio_open_cdrdao (const char *psz_cue_name)
     .get_cdtext         = _get_cdtext_image,
     .get_devices        = cdio_get_devices_cdrdao,
     .get_default_device = cdio_get_default_device_cdrdao,
-    .get_drive_cap      = _get_drive_cap_cdrdao,
+    .get_drive_cap      = _get_drive_cap_image,
     .get_first_track_num= _get_first_track_num_image,
     .get_mcn            = _get_mcn_image,
     .get_num_tracks     = _get_num_tracks_image,

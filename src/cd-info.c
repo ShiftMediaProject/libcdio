@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.72 2004/07/17 02:18:28 rocky Exp $
+    $Id: cd-info.c,v 1.73 2004/07/17 22:16:47 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -966,8 +966,12 @@ main(int argc, const char *argv[])
   } 
 
   {
-    cdio_drive_cap_t i_drive_cap =  cdio_get_drive_cap(cdio);
-    print_drive_capabilities(i_drive_cap);
+    cdio_drive_read_cap_t  i_read_cap;
+    cdio_drive_write_cap_t i_write_cap;
+    cdio_drive_misc_cap_t  i_misc_cap;
+
+    cdio_get_drive_cap(cdio, &i_read_cap, &i_write_cap, &i_misc_cap);
+    print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
   }
 
   if (opts.list_drives) {

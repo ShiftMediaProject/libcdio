@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.2 2004/04/25 03:52:37 rocky Exp $
+  $Id: cd-drive.c,v 1.3 2004/07/17 22:16:47 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -229,10 +229,14 @@ main(int argc, const char *argv[])
     cd_drives = cdio_get_devices(DRIVER_DEVICE);
     if (NULL != cd_drives) 
       for( cd = cd_drives; *cd != NULL; cd++ ) {
-	cdio_drive_cap_t i_drive_cap =  cdio_get_drive_cap_dev(*cd);
+	cdio_drive_read_cap_t  i_read_cap;
+	cdio_drive_write_cap_t i_write_cap;
+	cdio_drive_misc_cap_t  i_misc_cap;
+
+	cdio_get_drive_cap_dev(*cd, &i_read_cap, &i_write_cap, &i_misc_cap);
 
 	printf("Drive %s\n", *cd);
-	print_drive_capabilities(i_drive_cap);
+	print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
 	printf("\n");
       }
     
@@ -241,11 +245,15 @@ main(int argc, const char *argv[])
     cd_drives = NULL;
   } else {
     /* Print CD-drive info for given source */
+    cdio_drive_read_cap_t  i_read_cap;
+    cdio_drive_write_cap_t i_write_cap;
+    cdio_drive_misc_cap_t  i_misc_cap;
 
-    cdio_drive_cap_t i_drive_cap =  cdio_get_drive_cap_dev(source_name);
+    cdio_get_drive_cap_dev(source_name, &i_read_cap, &i_write_cap, 
+			   &i_misc_cap);
     
     printf("Drive %s\n", source_name);
-    print_drive_capabilities(i_drive_cap);
+    print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
     printf("\n");
   }
 

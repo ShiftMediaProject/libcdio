@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.31 2004/07/11 14:25:07 rocky Exp $
+    $Id: nrg.c,v 1.32 2004/07/17 22:16:47 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -45,7 +45,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.31 2004/07/11 14:25:07 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.32 2004/07/17 22:16:47 rocky Exp $";
 
 
 /* reader */
@@ -1089,23 +1089,6 @@ cdio_get_default_device_nrg(void)
 }
 
 /*!
-  Return the the kind of drive capabilities of device.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
- */
-static cdio_drive_cap_t
-_get_drive_cap_nrg (const void *user_data) {
-
-  /* There may be more in the future but these we can handle now. 
-     Also, we know we can't handle 
-     LOCK, OPEN_TRAY, CLOSE_TRAY, SELECT_SPEED, SELECT_DISC
-  */
-  return CDIO_DRIVE_CAP_FILE | CDIO_DRIVE_CAP_MCN | CDIO_DRIVE_CAP_CD_AUDIO ;
-}
-
-/*!
   Return the number of tracks in the current medium.
   CDIO_INVALID_TRACK is returned on error.
 */
@@ -1206,7 +1189,7 @@ cdio_open_nrg (const char *psz_source)
     .get_cdtext         = _get_cdtext_image,
     .get_devices        = cdio_get_devices_nrg,
     .get_default_device = cdio_get_default_device_nrg,
-    .get_drive_cap      = _get_drive_cap_nrg,
+    .get_drive_cap      = _get_drive_cap_image,
     .get_first_track_num= _get_first_track_num_image,
     .get_mcn            = _get_mcn_image,
     .get_num_tracks     = _get_num_tracks_image,

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.67 2004/07/17 08:59:44 rocky Exp $
+    $Id: _cdio_linux.c,v 1.68 2004/07/17 22:16:47 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.67 2004/07/17 08:59:44 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.68 2004/07/17 22:16:47 rocky Exp $";
 
 #include <string.h>
 
@@ -930,17 +930,63 @@ _get_mcn_linux (const void *env) {
   string when done with it.
 
  */
-static cdio_drive_cap_t
-_get_drive_cap_linux (const void *env) {
+static void
+_get_drive_cap_linux (const void *env,
+                    cdio_drive_read_cap_t  *p_read_cap,
+                    cdio_drive_write_cap_t *p_write_cap,
+                    cdio_drive_misc_cap_t  *p_misc_cap)
+{
   const _img_private_t *_obj = env;
   int32_t i_drivetype;
 
   i_drivetype = ioctl (_obj->gen.fd, CDROM_GET_CAPABILITY, CDSL_CURRENT);
 
-  if (i_drivetype < 0) return CDIO_DRIVE_CAP_ERROR;
+  if (i_drivetype < 0) {
+    *p_read_cap  = CDIO_DRIVE_CAP_ERROR;
+    *p_write_cap = CDIO_DRIVE_CAP_ERROR;
+    *p_misc_cap  = CDIO_DRIVE_CAP_ERROR;
+    return;
+  }
+  
+  *p_read_cap  = 0;
+  *p_write_cap = 0;
+  *p_misc_cap  = 0;
 
-  /* If >= 0 we can safely cast as cdio_drive_cap_t and return */
-  return (cdio_drive_cap_t) i_drivetype;
+  /* Reader */
+  if (i_drivetype & CDC_PLAY_AUDIO) 
+    *p_read_cap  |= CDIO_DRIVE_CAP_READ_AUDIO;
+  if (i_drivetype & CDC_CD_R) 
+    *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_R;
+  if (i_drivetype & CDC_CD_RW) 
+    *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_RW;
+  if (i_drivetype & CDC_DVD) 
+    *p_read_cap  |= CDIO_DRIVE_CAP_READ_DVD_ROM;
+
+  /* Writer */
+  if (i_drivetype & CDC_CD_RW) 
+    *p_read_cap  |= CDIO_DRIVE_CAP_WRITE_CD_RW;
+  if (i_drivetype & CDC_DVD_R) 
+    *p_read_cap  |= CDIO_DRIVE_CAP_WRITE_DVD_R;
+  if (i_drivetype & CDC_DVD_RAM) 
+    *p_read_cap  |= CDIO_DRIVE_CAP_WRITE_DVD_RAM;
+
+  /* Misc */
+  if (i_drivetype & CDC_CLOSE_TRAY) 
+    *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_CLOSE_TRAY;
+  if (i_drivetype & CDC_OPEN_TRAY) 
+    *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_OPEN_TRAY;
+  if (i_drivetype & CDC_LOCK) 
+    *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_LOCK;
+  if (i_drivetype & CDC_SELECT_SPEED) 
+    *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_SELECT_SPEED;
+  if (i_drivetype & CDC_SELECT_DISC) 
+    *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_SELECT_DISC;
+  if (i_drivetype & CDC_MULTI_SESSION) 
+    *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_MULTI_SESSION;
+  if (i_drivetype & CDC_MEDIA_CHANGED) 
+    *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED;
+  if (i_drivetype & CDC_RESET) 
+    *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_RESET;
 }
 
 /*!

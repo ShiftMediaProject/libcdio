@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.61 2004/07/17 02:18:28 rocky Exp $
+    $Id: cdio.c,v 1.62 2004/07/17 22:16:47 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.61 2004/07/17 02:18:28 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.62 2004/07/17 22:16:47 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -427,18 +427,21 @@ cdio_get_devices_with_cap (char* search_devices[],
   string when done with it.
 
  */
-cdio_drive_cap_t
-cdio_get_drive_cap (const CdIo *cdio)
+void
+cdio_get_drive_cap (const CdIo *cdio, 
+                    cdio_drive_read_cap_t  *p_read_cap,
+                    cdio_drive_write_cap_t *p_write_cap,
+                    cdio_drive_misc_cap_t  *p_misc_cap)
 {
-  cdio_drive_cap_t i_drivetype = 
-    CDIO_DRIVE_CAP_UNKNOWN | CDIO_DRIVE_CAP_CD_AUDIO; /* A safe guess. */
+  /* This seems like a safe bet. */
+  *p_read_cap  = CDIO_DRIVE_CAP_UNKNOWN;
+  *p_write_cap = CDIO_DRIVE_CAP_UNKNOWN;
+  *p_misc_cap  = CDIO_DRIVE_CAP_UNKNOWN;
   
   if (cdio && cdio->op.get_drive_cap) {
-    i_drivetype=cdio->op.get_drive_cap(cdio->env);
+    cdio->op.get_drive_cap(cdio->env, p_read_cap, p_write_cap, p_misc_cap);
   }
-  return i_drivetype;
 }
-
 
 /*!
   Return the the kind of drive capabilities of device.
@@ -447,18 +450,23 @@ cdio_get_drive_cap (const CdIo *cdio)
   string when done with it.
 
  */
-cdio_drive_cap_t
-cdio_get_drive_cap_dev (const char *device) 
+void
+cdio_get_drive_cap_dev (const char *device,
+			cdio_drive_read_cap_t  *p_read_cap,
+			cdio_drive_write_cap_t *p_write_cap,
+			cdio_drive_misc_cap_t  *p_misc_cap)
 {
-  cdio_drive_cap_t i_drivetype = CDIO_DRIVE_CAP_UNKNOWN;
+  /* This seems like a safe bet. */
+  *p_read_cap  = CDIO_DRIVE_CAP_UNKNOWN;
+  *p_write_cap = CDIO_DRIVE_CAP_UNKNOWN;
+  *p_misc_cap  = CDIO_DRIVE_CAP_UNKNOWN;
   
   CdIo *cdio=scan_for_driver(CDIO_MIN_DRIVER, CDIO_MAX_DRIVER, 
                              device, NULL);
   if (cdio) {
-    i_drivetype=cdio_get_drive_cap(cdio);
+    cdio_get_drive_cap(cdio, p_read_cap, p_write_cap, p_misc_cap);
     cdio_destroy(cdio);
   }
-  return i_drivetype;
 }
 
 

@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.12 2004/07/17 02:18:28 rocky Exp $
+    $Id: image_common.h,v 1.13 2004/07/17 22:16:47 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -215,6 +215,31 @@ _set_arg_image (void *user_data, const char key[], const char value[])
     return -1;
 
   return 0;
+}
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+ */
+static void
+_get_drive_cap_image (const void *user_data,
+		      cdio_drive_read_cap_t  *p_read_cap,
+		      cdio_drive_write_cap_t *p_write_cap,
+		      cdio_drive_misc_cap_t  *p_misc_cap)
+{
+
+  *p_read_cap  = CDIO_DRIVE_CAP_READ_AUDIO 
+    | CDIO_DRIVE_CAP_READ_CD_G
+    | CDIO_DRIVE_CAP_READ_CD_R
+    | CDIO_DRIVE_CAP_READ_CD_RW
+    ;
+
+  *p_write_cap = 0;
+
+  /* In the future we may want to simulate
+     LOCK, OPEN_TRAY, CLOSE_TRAY, SELECT_SPEED, etc.
+  */
+  *p_misc_cap  = CDIO_DRIVE_CAP_MISC_FILE;
 }
 
 #endif /* __CDIO_IMAGE_COMMON_H__ */

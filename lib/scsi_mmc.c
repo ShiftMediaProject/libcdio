@@ -1,6 +1,6 @@
 /*  Common MMC routines.
 
-    $Id: scsi_mmc.c,v 1.3 2004/06/28 00:39:21 rocky Exp $
+    $Id: scsi_mmc.c,v 1.4 2004/07/17 22:16:47 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -31,25 +31,27 @@
   in p. We interpret this and return a bit mask set according to the 
   capabilities.
  */
-cdio_drive_cap_t
-cdio_get_drive_cap_mmc(const uint8_t *p) 
+void
+cdio_get_drive_cap_mmc(const uint8_t *p,
+		       cdio_drive_read_cap_t  *p_read_cap,
+		       cdio_drive_write_cap_t *p_write_cap,
+		       cdio_drive_misc_cap_t  *p_misc_cap)
 {
-  cdio_drive_cap_t i_drivetype=0;
   /* Reader */
-  if (p[2] & 0x02) i_drivetype |= CDIO_DRIVE_CAP_CD_RW;
-  if (p[2] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_DVD;
-  if (p[5] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_AUDIO;
+  if (p[2] & 0x02) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_RW;
+  if (p[2] & 0x08) *p_read_cap  |= CDIO_DRIVE_CAP_READ_DVD_ROM;
+  if (p[5] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_AUDIO;
   
   /* Writer */
-  if (p[3] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_R;
-  if (p[3] & 0x10) i_drivetype |= CDIO_DRIVE_CAP_DVD_R;
-  if (p[3] & 0x20) i_drivetype |= CDIO_DRIVE_CAP_DVD_RAM;
+  if (p[3] & 0x01) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_R;
+  if (p[3] & 0x10) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_R;
+  if (p[3] & 0x20) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RAM;
 
-  if (p[4] & 0x40) i_drivetype |= CDIO_DRIVE_CAP_MULTI_SESSION;
+  /* Misc */
+  if (p[4] & 0x40) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_MULTI_SESSION;
   
-  if (p[6] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_LOCK;
-  if (p[6] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_OPEN_TRAY;
+  if (p[6] & 0x01) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_LOCK;
+  if (p[6] & 0x08) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_OPEN_TRAY;
   if (p[6] >> 5 != 0) 
-    i_drivetype |= CDIO_DRIVE_CAP_CLOSE_TRAY;
-  return i_drivetype;
+    *p_misc_cap |= CDIO_DRIVE_CAP_MISC_CLOSE_TRAY;
 }

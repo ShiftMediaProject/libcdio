@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.57 2004/07/17 02:18:27 rocky Exp $
+    $Id: cdio.h,v 1.58 2004/07/17 22:16:46 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -224,8 +224,11 @@ extern "C" {
     there is no media in it and it is possible for this routine to return
     NULL even though there may be a hardware CD-ROM.
   */
-  cdio_drive_cap_t cdio_get_drive_cap (const CdIo *obj);
-
+  void cdio_get_drive_cap (const CdIo *obj,
+			   cdio_drive_read_cap_t  *p_read_cap,
+			   cdio_drive_write_cap_t *p_write_cap,
+			   cdio_drive_misc_cap_t  *p_misc_cap);
+  
   /*!
     Get the drive capabilities for a specified device.
 
@@ -235,7 +238,10 @@ extern "C" {
     there is no media in it and it is possible for this routine to return
     NULL even though there may be a hardware CD-ROM.
   */
-  cdio_drive_cap_t cdio_get_drive_cap_dev (const char *device);
+  void cdio_get_drive_cap_dev (const char *device,
+			       cdio_drive_read_cap_t  *p_read_cap,
+			       cdio_drive_write_cap_t *p_write_cap,
+			       cdio_drive_misc_cap_t  *p_misc_cap);
 
   /*!
     Get the media catalog number (MCN) from the CD.
