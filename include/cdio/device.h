@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.13 2005/02/10 01:59:06 rocky Exp $
+    $Id: device.h,v 1.14 2005/02/12 15:27:22 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -762,8 +762,6 @@ extern "C" {
 
   /*!
     Set the drive speed. 
-
-    @see cdio_get_speed
   */
   driver_return_code_t cdio_set_speed ( const CdIo_t *p_cdio, int i_speed );
 

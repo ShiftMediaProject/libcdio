@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.8 2005/02/12 02:05:02 rocky Exp $
+    $Id: mmc.h,v 1.9 2005/02/12 15:27:22 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -524,13 +524,8 @@ driver_return_code_t mmc_set_blocksize ( const CdIo_t *p_cdio,
 
 /*!
   Set the drive speed. 
-  
-  @return -1 if we had an error. is -2 returned if this is not
-  implemented for the current driver.
-  
-  @see scsi_mmc_get_speed
 */
-int mmc_set_speed( const CdIo_t *p_cdio, int i_speed );
+driver_return_code_t mmc_set_speed( const CdIo_t *p_cdio, int i_speed );
 
 /** For backward compatibility. */
 #define scsi_mmc_get_cmd_len             mmc_get_cmd_len
