@@ -1,6 +1,6 @@
 /* Win32 aspi specific */
 /*
-    $Id: aspi32.h,v 1.2 2004/06/21 03:22:58 rocky Exp $
+    $Id: aspi32.h,v 1.3 2004/06/28 00:24:03 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -28,8 +28,59 @@
 #define SC_GET_DEV_TYPE     0x01
 #define SC_EXEC_SCSI_CMD    0x02
 #define SC_GET_DISK_INFO    0x06
-#define SS_COMP             0x01
-#define SS_PENDING          0x00
+
+//*****************************************************************************
+//      %%% SRB Status %%%
+//*****************************************************************************
+
+#define SS_PENDING                0x00  // SRB being processed
+#define SS_COMP                   0x01  // SRB completed without error
+#define SS_ABORTED                0x02  // SRB aborted
+#define SS_ABORT_FAIL             0x03  // Unable to abort SRB
+#define SS_ERR                    0x04  // SRB completed with error
+
+#define SS_INVALID_CMD            0x80  // Invalid ASPI command
+#define SS_INVALID_HA             0x81  // Invalid host adapter number
+#define SS_NO_DEVICE              0x82  // SCSI device not installed
+
+#define SS_INVALID_SRB            0xE0  // Invalid parameter set in SRB
+#define SS_OLD_MANAGER            0xE1  // ASPI manager doesn't support Windows
+#define SS_BUFFER_ALIGN           0xE1  // Buffer not aligned (replaces 
+                                        // OLD_MANAGER in Win32)
+#define SS_ILLEGAL_MODE           0xE2  // Unsupported Windows mode
+#define SS_NO_ASPI                0xE3  // No ASPI managers resident
+#define SS_FAILED_INIT            0xE4  // ASPI for windows failed init
+#define SS_ASPI_IS_BUSY           0xE5  // No resources available to execute 
+                                        // cmd
+#define SS_BUFFER_TOO_BIG         0xE6  // Buffer size to big to handle!
+#define SS_MISMATCHED_COMPONENTS  0xE7  // The DLLs/EXEs of ASPI don't version 
+                                        // check
+#define SS_NO_ADAPTERS            0xE8  // No host adapters to manage
+#define SS_INSUFFICIENT_RESOURCES 0xE9  // Couldn't allocate resources needed 
+                                        // to init
+#define SS_ASPI_IS_SHUTDOWN       0xEA  // Call came to ASPI after 
+                                        // PROCESS_DETACH
+#define SS_BAD_INSTALL            0xEB  // The DLL or other components are installed wrong
+
+//*****************************************************************************
+//      %%% Host Adapter Status %%%
+//*****************************************************************************
+
+#define HASTAT_OK                 0x00    // Host adapter did not detect an
+                                          // error
+#define HASTAT_SEL_TO             0x11    // Selection Timeout
+#define HASTAT_DO_DU              0x12    // Data overrun data underrun
+#define HASTAT_BUS_FREE           0x13    // Unexpected bus free
+#define HASTAT_PHASE_ERR          0x14    // Target bus phase sequence
+                                          // failure
+#define HASTAT_TIMEOUT            0x09    // Timed out while SRB was
+                                          // waiting to beprocessed.
+#define HASTAT_COMMAND_TIMEOUT    0x0B    // Adapter timed out processing SRB.
+#define HASTAT_MESSAGE_REJECT     0x0D    // While processing SRB, the
+                                          // adapter received a MESSAGE
+#define HASTAT_BUS_RESET            0x0E  // A bus reset was detected.
+#define HASTAT_PARITY_ERROR         0x0F  // A parity error was detected.
+#define HASTAT_REQUEST_SENSE_FAILED 0x10  // The adapter failed in issuing
 #define SS_NO_ADAPTERS      0xE8
 #define SRB_DIR_IN          0x08
 #define SRB_DIR_OUT         0x10

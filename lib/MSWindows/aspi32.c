@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.11 2004/06/27 22:00:10 rocky Exp $
+    $Id: aspi32.c,v 1.12 2004/06/28 00:24:00 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.11 2004/06/27 22:00:10 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.12 2004/06/28 00:24:00 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -53,7 +53,8 @@ static const char _rcsid[] = "$Id: aspi32.c,v 1.11 2004/06/27 22:00:10 rocky Exp
 #include <sys/types.h>
 #include "aspi32.h"
 
-const char *aspierror(int nErrorCode) 
+static const 
+char *aspierror(int nErrorCode) 
 {
   switch (nErrorCode)
     {
@@ -118,7 +119,7 @@ const char *aspierror(int nErrorCode)
       return "The DLL or other components are installed wrong";
       break;
     default: 
-      return "Unknow ASPI error");
+      return "Unknown ASPI error";
     }
 }
 
@@ -191,7 +192,7 @@ is_cdrom_aspi(const char drive_letter)
 
   i_rc = HIBYTE( LOWORD ( dwSupportInfo ) );
 
-  if( SS_COMP != rc ) {
+  if( SS_COMP != i_rc ) {
     cdio_debug("ASPI: %s", aspierror(i_rc));
     FreeLibrary( hASPI );
     return NULL;
@@ -290,7 +291,7 @@ init_aspi (_img_private_t *env)
   
   i_rc = HIBYTE( LOWORD ( dwSupportInfo ) );
 
-  if( SS_COMP != rc ) {
+  if( SS_COMP != i_rc ) {
     cdio_info("ASPI: %s", aspierror(i_rc));
     FreeLibrary( hASPI );
     return false;
