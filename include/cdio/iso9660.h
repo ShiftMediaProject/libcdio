@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.8 2003/08/31 06:59:23 rocky Exp $
+    $Id: iso9660.h,v 1.9 2003/08/31 07:39:45 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -26,6 +26,7 @@
 #include <cdio/types.h>
 
 #include <cdio/cdio.h>
+#include <cdio/xa.h>
 
 #define MIN_TRACK_SIZE 4*75
 
@@ -54,6 +55,10 @@ enum strncpy_pad_check {
   ISO9660_ACHARS,
   ISO9660_DCHARS
 };
+
+typedef struct iso9660_pvd  iso9660_pvd_t;
+typedef struct iso9660_dir  iso9660_dir_t;
+typedef struct iso9660_stat iso9660_stat_t;
 
 PRAGMA_BEGIN_PACKED
 
@@ -93,8 +98,6 @@ struct iso9660_pvd {
   char     unused5[653];
 } GNUC_PACKED;
 
-typedef struct iso9660_pvd iso9660_pvd_t;
-
 struct iso9660_dir {
   uint8_t  length; /* 711 */
   uint8_t  ext_attr_length; /* 711 */
@@ -109,11 +112,15 @@ struct iso9660_dir {
   char     name[EMPTY_ARRAY_SIZE];
 } GNUC_PACKED;
 
-typedef struct iso9660_dir iso9660_dir_t;
+struct iso9660_stat { /* big endian!! */
+  enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;
+  lsn_t        lsn;     /* start logical sector number */
+  uint32_t     size;    /* total size in bytes */
+  uint32_t     secsize; /* number of sectors allocated */
+  iso9660_xa_t xa;      /* XA attributes */
+};
 
 PRAGMA_END_PACKED
-
-typedef struct iso9660_stat iso9660_stat_t;
 
 char *
 iso9660_strncpy_pad(char dst[], const char src[], size_t len, 
@@ -217,7 +224,6 @@ iso9660_pathtable_l_add_entry (void *pt, const char name[], uint32_t extent,
 uint16_t
 iso9660_pathtable_m_add_entry (void *pt, const char name[], uint32_t extent,
                        uint16_t parent);
-
 
 /*!
   Returns a string which interpreting the extended attribute xa_attr. 
