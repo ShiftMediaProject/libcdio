@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.48 2005/03/06 00:03:53 rocky Exp $
+  $Id: util.c,v 1.49 2005/03/17 09:13:36 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -430,8 +430,10 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
     report( stdout, "Uknown drive writing properties\n" );
   } else {
     report( stdout, "\nWriting....\n");
+#if FIXED
     report( stdout, _("  Can write using Burn Proof              : %s\n"), 
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_BURN_PROOF ? "Yes" : "No" );
+#endif
     report( stdout, _("  Can write CD-RW                         : %s\n"), 
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_CD_RW      ? "Yes" : "No" );
     report( stdout, _("  Can write DVD-R                         : %s\n"), 
