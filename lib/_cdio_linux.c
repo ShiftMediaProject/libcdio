@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.99 2004/11/20 12:41:21 rocky Exp $
+    $Id: _cdio_linux.c,v 1.100 2004/12/04 05:49:25 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.99 2004/11/20 12:41:21 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.100 2004/12/04 05:49:25 rocky Exp $";
 
 #include <string.h>
 
@@ -477,8 +477,40 @@ get_discmode_linux (void *p_user_data)
     }
   }
 
-  i_discmode = ioctl (p_env->gen.fd, CDROM_DISC_STATUS);
-  
+  uint32_t bufsize = 14;
+  uint8_t buf[bufsize];
+  memset(buf, 0, bufsize);
+  scsi_mmc_cdb_t cdb;
+
+
+  /* Justin B Ruggles <jruggle@earthlink.net> reports: 
+  GNU/Linux ioctl(.., CDROM_DISC_STATUS does not return "CD DATA Form
+  2" for SVCD's when I know they are form 2, so we read a FULL TOC in
+  an attempt to make it more accurate.  Most of the info was obtained
+  the SCSI MMC draft spec revision 10a from
+  http://www.t10.org/ftp/t10/drafts/mmc/mmc-r10a.pdf
+
+  Pages 56 to 62 give more details.  Libcdio does not have CD-i as a
+  discmode, so I just have it treat CD-i as if it is CD-XA.
+  */
+
+  memset(&cdb, 0, sizeof(scsi_mmc_cdb_t));
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
+  cdb.field[2] = CDIO_MMC_READTOC_FMT_FULTOC;
+  CDIO_MMC_SET_READ_LENGTH8(cdb.field, bufsize);
+  scsi_mmc_run_cmd(p_env->gen.cdio, 2000, &cdb, SCSI_MMC_DATA_READ, 
+		   bufsize, buf);
+  i_discmode = -1;
+  if (buf[7] == 0xA0) {
+    if (buf[13] == 0x00) {
+      if (buf[5] & 0x04) i_discmode = CDS_DATA_1;
+      else i_discmode = CDS_AUDIO;
+    }
+    else if (buf[13] == 0x10 || buf[13] == 0x20) i_discmode = CDS_XA_2_1;
+  }
+  if (i_discmode < 0)
+    i_discmode = ioctl (p_env->gen.fd, CDROM_DISC_STATUS);
+
   if (i_discmode < 0) return CDIO_DISC_MODE_ERROR;
 
   /* FIXME Need to add getting DVD types. */
