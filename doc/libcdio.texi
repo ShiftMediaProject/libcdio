@@ -31,7 +31,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.2 2003/07/28 10:46:24 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.3 2003/07/30 02:05:22 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -67,6 +67,7 @@ Copyright (C) 2003 Herbert Valerio Riedel and Rocky Bernstein
 * History::             How this came about
 * Purpose::             Why this library?
 * CD Formats::          A tour through the CD-specification spectrum
+* CD Terms::            Limitations and terminology used in CD's and libcdio
 * How to use::          Okay enough babble, lemme at the library!
 
 Indices
@@ -181,25 +182,25 @@ to by the color of the cover on the specification.
 
 @node Red Book
 @section Red Book
-The first type of CD that was produced was the Compact Disc
-Digital Audio (CD-DA) or just plain "audio CD". The specification for
-that is covered in what is called the Red Book. Music CD's are
-recorded in this format which basically allows for around 74 minutes
-of audio per disc and for that information to be split up into
-tracks. Tracks are broken up into "sectors" and each sector contains
-2,352 bytes. To play one 44.1 kHz CD-DA sampled audio second, 75
-sectors are used.
+The first type of CD that was produced was the Compact Disc Digital
+Audio (CD-DA) or just plain ``audio CD''. The specification is
+commonly called the ``Red Book''. Music CD's are recorded in this
+format which basically allows for around 74 minutes of audio per disc
+and for that information to be split up into tracks. Tracks are broken
+up into "sectors" and each sector contains 2,352 bytes. To play one
+44.1 kHz CD-DA sampled audio second, 75 sectors are used.
 
 In @value{libcdio} when you you want to read an audio sector, you call the
 routine @code{cdio_read_audio_sector()}.
 
 @node Yellow Book
 @section Yellow Book
-The CD-ROM specification or "Yellow Book" followed a few years later
+The CD-ROM specification or the ``Yellow Book'' followed a few years later
 and describes the extension of CD's to store computer data,
 i.e. CD-ROM (Compact Disk Read Only Memory).  
 
-The Yellow book CD standard defines two modes: Mode1 and Mode1.
+The specification in the Yellow Book defines two modes: Mode1 and
+Mode2.
 
 @menu
 * Mode1::           Mode 1 Format
@@ -207,16 +208,16 @@ The Yellow book CD standard defines two modes: Mode1 and Mode1.
 @end menu
 
 @subsection ISO-9660
-The Yellow Book does not actually specify how data is to be stored on
-or retrieved from a CD-ROM.  It was feared that many different
-companies would implement proprietary data storage formats using this
-specification, resulting in many different incompatible data CDs. To
-prevent this, representatives of major manufacturers met at the High
-Sierra Hotel and Casino in Lake Tahoe, NV, in 1985, to define a
-standard for storing data on CDs. This format was nicknamed High
-Sierra Format. In a slightly modified form it was later adopted as ISO
-the ISO 9660 standard. This standard is further broken down into 
-3 "levels", the higher the level, the more permissive.
+Nowhere in the Yellow Book ist specified how data is to be stored on a
+CD-ROM.  It was feared that different companies would implement
+proprietary data storage formats using this specification, resulting
+in incompatible data CDs. To prevent this, representatives of major
+manufacturers met at the High Sierra Hotel and Casino in Lake Tahoe,
+NV, in 1985, to define a standard for storing data on CDs. This format
+was nicknamed High Sierra Format. In a slightly modified form it was
+later adopted as ISO the ISO 9660 standard. This standard is further
+broken down into 3 "levels", the higher the level, the more
+permissive.
 
 @subsubsection Level1
 Level 1 ISO 9660 defines names in the 8+3 convention so familiar to
@@ -266,26 +267,95 @@ example, graphics and video can use this format. But in contrast to
 the Red book standard, different modes can be mixed together; this is
 the basis for the extensions to the original data CD standards known
 as CD-ROM Extended Architecture, or CD-ROM XA.  CD-ROM XA formats
-currently in use are CD-I Bridge formats, Photo CD and VideoCD plus
+currently in use are CD-I Bridge formats, Photo CD and Video CD plus
 Sony's Playstation.
 
 @node White Book
 @section White Book
-The White Book, finalized in 1993, defines the VideoCD specification
-The White Book is also known as Digital Video (DV). A VideoCD disc
-contains one data track recorded in CD-ROM XA Mode 2 Form 2. It is
-always the first track on the disc (Track 1). The ISO 9660 file
-structure and a CD-i application program are recorded in this track,
-as well as the VideoCD Information Area which gives general
-information about the VideoCD disc. After the data track, video is
-written in one or more subsequent tracks within the same
-session. These tracks are also recorded in Mode 2 Form 2.
+The White Book was released by Sony, Philips, Matsushita, and JVC
+in 1993, defines the Video CD specification. The White Book
+is also known as Digital Video (DV). A Video CD contains one data
+track recorded in CD-ROM XA Mode 2 Form 2. It is always the first
+track on the disc (Track 1). The ISO-9660 file structure and a CD-i
+application program are recorded in this track, as well as the Video
+CD Information Area which gives general information about the Video
+Compact Disc. After the data track, video is written in one or more
+subsequent tracks within the same session. These tracks are also
+recorded in Mode 2 Form 2.
 
 In @value{libcdio} when you you want to read a mode2 format 2 audio
 sector you call the routine @code{cdio_read_mode2_sector()}.
 
+@node CD Terms
+@chapter CD Terminology
+
+@section tracks --- disc subdivisions
+In this section we describe CD properties and terms that we make use
+of in @value{libcdio}.
+
+A CD is formated into a number of @emph{tracks}, and a CD can hold at
+most 99 such tracks. Between the tracks CD specifications require a
+``2 second'' in gap (called a @emph{lead-in} gap. This is unused space
+with no ``data'' similar to the space between tracks on an old
+phonograph. The word ``second'' here really refers to a measure of
+space and not really necessarily an amount of time. However in the
+special case that the CD encodes an audio CD or CD-DA, the amount of
+time to play a gap of this size will take 2 seconds.
+
+The beginning (or inner edge) of the CD is supposed to have a ``2
+second'' lead-in gap and there is supposed to be another ``2 second''
+@emph{Lead-out} gap at the end (or outer edge) of the CD.
+
+People have discovered that they can put useful data in the various
+gaps and their equipment can read this, violating the standards but
+allowing a CD to store more data.
+
+@section block addressing (MSF, LSN, LBA)
+A track is broken up into a number of 2352-byte @emph{blocks} which we
+sometimes call @emph{sectors}. Whereas tracks have to have a gap
+between them, a block or sector does not.
+
+One can addressing a block in one of three formats. The oldest format
+is by it's minute/second/frame number, also referred to as @emph{MSF}
+and written in time-like format MM:SS:FF (e.g. 30:01:40). In this
+notation there are 75 ``frames'' in a ``second,'' and the familiar (if
+awkward) 60 seconds in a minute. @emph{Frame} here is what we called a
+@emph{block} above. The CD specification defines ``frame'' to be
+@emph{another} unit which makes up a block. Very confusing.
+
+Even more confusing is is using this time-like notation for an address
+or for a length. Too often people confuse the MSF notation this with
+an amount of time. A ``second'' (or 75 blocks) in this notation is
+only a second of playing time for something encoded as CD-DA. It does
+@emph{not} necessarily represent the amount time that it will take to
+play a of Video CD---usually you need more blocks than this. Nor does
+it represent the amount of data used to play a second of an
+MP3---usually you need fewer blocks than this. It is also not the
+amount of time your CD-ROM will take to read a ``second'' of data off
+a Compact Disc: for example a 12x CD player will read 12x75 2352-byte
+blocks in a one second of time.
+
+Furthermore when programming, it is generally more cumbersome to use
+an MSF rather than a LBA or LSN described below, since subtraction of
+two MSF's has the awkwardness akin to subtraction using Roman
+Numerals.
+
+Probably the simplest way to address a block is to use its @emph{LSN}
+or ``logical sector number.'' This just numbers the blocks from 0
+on. The Lead-in and Lead-out gaps described above have LSNs just like
+any other space on a CD. The last unit of address is a @emph{LBA}. It
+is the same as a LSN but the 150 blocks assocated with the initial
+lead-in is are not counted. So to convert a LBA into an LSN you just
+add 150. Why the distinction between LBA and LSN, I don't know.
+
+@emph{Finish. describe TOC, 0xAA --- LEADOUT}.
+
 @node How to use
 @chapter How to use
+
+@emph{Basically do a cdio_open, cdio_read_xxx or cdio_seek, and cdio_close. 
+There's a lot of complication in selecting the appropriate driver,
+getting the default drive.}
 
 @node General Index
 @unnumbered General Index
