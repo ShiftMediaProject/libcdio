@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.17 2004/05/06 01:22:13 rocky Exp $
+#$Id: check_cue.sh.in,v 1.18 2004/05/06 11:12:10 rocky Exp $
 # Tests to see that BIN/CUE and BIN/TOC file iamge reading is correct
 # (via cd-info).
 
@@ -7,7 +7,7 @@ if test -n "@VCDINFO_LIBS@" ; then
   vcd_opt='--no-vcd'
 fi
 
-if test -z $srcdir ; then
+if test -z "$srcdir" ; then
   srcdir=`pwd`
 fi
 
