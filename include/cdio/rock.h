@@ -1,5 +1,5 @@
 /*
-    $Id: rock.h,v 1.7 2005/02/22 04:32:52 rocky Exp $
+    $Id: rock.h,v 1.8 2005/02/22 10:42:50 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -38,7 +38,7 @@
   be helpful in debuggers where wants just to refer to the ISO_ROCK_*
   names and get something.
 */
-extern enum cdio_rock_enums {
+extern enum iso_rock_enums {
   ISO_ROCK_IRUSR  = 000400,   /**< read permission (owner) */
   ISO_ROCK_IWUSR  = 000200,   /**< write permission (owner) */
   ISO_ROCK_IXUSR  = 000100,   /**< execute permission (owner) */
@@ -60,7 +60,7 @@ extern enum cdio_rock_enums {
   ISO_ROCK_ISCHR  = 020000,   /**< character special */
   ISO_ROCK_ISDIR  = 040000,   /**< directory */
   ISO_ROCK_ISFIFO = 010000    /**< pipe or FIFO */
-} cdio_rock_enums;
+} iso_rock_enums;
 
 #define ISO_ROCK_IRUSR    000400  /** read permission (owner) */
 #define ISO_ROCK_IWUSR    000200  /** write permission (owner) */
@@ -349,6 +349,14 @@ int parse_rock_ridge_stat(iso9660_dir_t *de, /*out*/ iso9660_stat_t *p_stat);
   holds the "-" indicates this.
 */
 const char *iso9660_get_rock_attr_str(posix_mode_t st_mode);
+
+/** These variables are not used, but are defined to facilatate debugging
+    by letting us use enumerations values (which also correspond to 
+    #define's inside a debugged program.
+ */
+extern iso_rock_nm_flag_t iso_rock_nm_flag;
+extern iso_rock_sl_flag_t iso_rock_sl_flag;
+extern iso_rock_tf_flag_t iso_rock_tf_flag;
 
 #endif /* __ISO_ROCK_H__ */
 

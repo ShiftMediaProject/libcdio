@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.73 2005/02/22 04:32:52 rocky Exp $
+    $Id: iso9660.h,v 1.74 2005/02/22 10:42:50 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -77,7 +77,7 @@ typedef char     dchar_t;  /*! See section 7.4.1 */
     to be helpful in debuggers where wants just to refer to the
     ISO_*_ names and get something.
   */
-extern enum iso_enums1 {
+extern enum iso_enum1_s {
   ISO_PVD_SECTOR      =   16, /**< Sector of Primary Volume Descriptor */
   ISO_EVD_SECTOR      =   17, /**< Sector of End Volume Descriptor */
   LEN_ISONAME         =   31, /**<  size in bytes of the filename 
@@ -98,7 +98,7 @@ extern enum iso_enums1 {
     to be helpful in debuggers where wants just to refer to the
     ISO_*_ names and get something.
   */
-extern enum iso_flag_enums {
+extern enum iso_flag_enum_s {
   ISO_FILE	      =   0,   /**<  Not really a flag...	         */
   ISO_EXISTENCE	      =   1,   /**< Do not make existence known (hidden) */
   ISO_DIRECTORY	      =   2,   /**< This file is a directory		 */
@@ -110,7 +110,7 @@ extern enum iso_flag_enums {
   ISO_MULTIEXTENT     = 128,   /**< Not final entry of a mult. ext. file */
 } iso_flag_enums;
 
-extern enum iso_vd_enums {
+extern enum iso_vd_enum_s {
   ISO_VD_BOOT_RECORD  =  0,  /**< CD is bootable */
   ISO_VD_PRIMARY      =  1,  /**< Is in any ISO-9660 */
   ISO_VD_SUPPLEMENARY =  2,  /**< Used by Joliet, for example */
@@ -554,7 +554,7 @@ typedef uint8_t iso_extension_mask_t;
     to be helpful in debuggers where wants just to refer to the
     ISO_EXTENSION_*_ names and get something.
   */
-extern enum iso_extension_enums {
+extern enum iso_extension_enum_s {
   ISO_EXTENSION_JOLIET_LEVEL1 = 0x01,
   ISO_EXTENSION_JOLIET_LEVEL2 = 0x02,
   ISO_EXTENSION_JOLIET_LEVEL3 = 0x04,

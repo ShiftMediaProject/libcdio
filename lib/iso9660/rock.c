@@ -1,5 +1,5 @@
 /*
-  $Id: rock.c,v 1.10 2005/02/22 02:02:46 rocky Exp $
+  $Id: rock.c,v 1.11 2005/02/22 10:42:50 rocky Exp $
  
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -41,6 +41,10 @@
 #include <cdio/logging.h>
 #include <cdio/bytesex.h>
 
+enum iso_rock_enums iso_rock_enums;
+iso_rock_nm_flag_t iso_rock_nm_flag;
+iso_rock_sl_flag_t iso_rock_sl_flag;
+iso_rock_tf_flag_t iso_rock_tf_flag;
 
 /* Our own realloc routine tailored for the iso9660_stat_t symlink
    field.  I can't figure out how to make realloc() work without

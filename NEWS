@@ -1,3 +1,15 @@
+0.73cvs 
+
+- Rock Ridge Extension support added
+- file time/size attributes fixes
+- cd-info/iso-info show more ls-like attributes and more often
+- ISO 9660 more accurate more often
+- Add ability to look for ISO 9660 filesystem in unknown Disc image formats
+- Add routine for getting ISO9660 long date
+- remove memory leaks
+- Add enumerations and symbols to facilitate debugging
+- Break out C++ example programs into a separate directory. More C++ programs.
+
 0.72
 
 - cdparanoia included -  with regression tests and sample library programs
@@ -171,4 +183,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.63 2005/01/24 00:06:31 rocky Exp $
+$Id: NEWS,v 1.64 2005/02/22 10:42:50 rocky Exp $

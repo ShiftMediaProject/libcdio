@@ -2,7 +2,9 @@ The libcdio package contains a library which encapsulates CD-ROM
 reading and control. Applications wishing to be oblivious of the OS-
 and device-dependent properties of a CD-ROM can use this library.
 
-Also included is a library for working with ISO-9660 filesystems.
+Also included is a library for working with ISO-9660 filesystems as is
+also the CD-DA error/jitter correction library from cdparanoia
+(http://www.xiph.org/paranoia).
 
 Some support for disk image types like CDRWin's BIN/CUE format,
 cdrdao's TOC format, and Nero's NRG format are available. Therefore,
@@ -14,7 +16,9 @@ VCDImager (http://vcdimager.org), a navigation-capable Video CD plugin
 and CD-DA plugins for the media players xine (http://xinehq.de),
 videolan's vlc (http://videolan.org), and kiso, a KDE GUI for
 creating, extracting and editing of ISO-Images
-(http://kiso.sourceforge.net).
+(http://kiso.sourceforge.net), and a Samba vfs module that allows you
+to export a CD without mounting it
+(http://ontologistics.net/OpenSource/Samba/index.php).
 
 Also included in the libcdio package is a utility program cd-info which
 displays CD information: number of tracks, CD-format and if possible
@@ -26,8 +30,9 @@ shows basic VCD information.
 
 Other utility programs in the libcdio package are cd-read, for
 performing low-level block reading of a CD or CD image, iso-info for
-displaying ISO-9660 information from an ISO-9660 image, and iso-read
-for extracting files from an ISO-9660 image.
+displaying ISO-9660 information from an ISO-9660 image, iso-read for
+extracting files from an ISO-9660 image, and a version of the CD-DA
+extraction tool cdparanoia which corrects for CD-ROM jitter.
 
 At present, there is no support for directing CD Audio control,
 e.g. playing, stopping, or pausing of a CD-CA where the blocks are not
@@ -41,4 +46,4 @@ libcdio. However at present there are already many gaps in this
 library so narrowing its scope in order to focus on these things I
 think is a good idea.
 
-$Id: README,v 1.6 2004/06/26 10:01:09 rocky Exp $
+$Id: README,v 1.7 2005/02/22 10:42:50 rocky Exp $

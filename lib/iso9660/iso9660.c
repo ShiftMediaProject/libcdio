@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.8 2005/02/22 09:55:47 rocky Exp $
+    $Id: iso9660.c,v 1.9 2005/02/22 10:42:50 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -48,12 +48,13 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.8 2005/02/22 09:55:47 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.9 2005/02/22 10:42:50 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
-enum iso_enums1     iso_enums1;
-enum iso_flag_enums iso_flag_enums;
-enum iso_vd_enums   iso_vd_enums;
+enum iso_enum1_s     iso_enums1;
+enum iso_flag_enum_s iso_flag_enums;
+enum iso_vd_enum_s   iso_vd_enums;
+enum iso_extension_enum_s iso_extension_enums;
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"

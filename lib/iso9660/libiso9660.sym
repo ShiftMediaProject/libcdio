@@ -1,3 +1,11 @@
+iso_enums1
+iso_extension_enums
+iso_flag_enums
+iso_vd_enums
+iso_rock_enums
+iso_rock_nm_flag
+iso_rock_sl_flag
+iso_rock_tf_flag
 iso9660_close
 iso9660_dir_add_entry_su
 iso9660_dir_calc_record_size
