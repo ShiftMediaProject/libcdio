@@ -13,9 +13,19 @@ and feature requests.
   - complete the image readers, e.g. "silence" and ability to use
     more than one file in cdrdao.
   - multi-session CDs 
+
+* Exclusive access of CD-ROM versus non-exclusive? 
    
-* Use libcdio as a cdparanoia back-end and add API for CD-DA reading
-  with paranoia support.
+* Is paranoia correct? Get a better handle on it. Ensure more of the
+  drive and OS-specific features that work on GNU/Linux work
+  elsewhere. Regression tests over more kinds of failures.
+
+* Adjusting operations based on known models. Via MMC, We often have
+  the ability to find out what drive is in use. That could be used (as
+  it was in cdparanoia) to customize the method used for various
+  operations. Alternatively it could be read from a configuration
+  file, but right now there's no internal structure for holding all of
+  the capabilities.
 
 * Handle Rock Ridge Extensions
 
@@ -39,10 +49,17 @@ and feature requests.
   Given the mismatch between DVD and CD meanings in discmode, the
   discmode type probably needs to be redone.
 
-* Write a real cue parser and TOC parser using flex and bison (partly done). 
+* Write a real cue parser and TOC parser using bison.
   A pcct grammar is given in cdrdao's trackdb TocParser.g and CueParser.g
+  The parsing is pretty much done, need to fold in semantic routines and
+  improve error reporting.
 
-* More disk image types in regression testing, like CD-I.
+* conversion tools. Assuming parser done, it should be simple to use
+  write simple conversion routines: 
+   - CD images's to iso9660 .iso's
+   - TOC <=> CUE
+
+* Test more disc image types in regression testing, like CD-I.
 
 * Convert to use glib, removing ds.h 
   (Revise vcdimager too)
@@ -65,7 +82,8 @@ and feature requests.
   -  writing applications (use cdrdao or cdrtools)
   -  analog CD  (but this one I've been tempted to add for a while)
   -  more proprietary undocumented image format (unless someone else is willing
-     to do the work)
+     to do the work). But the fuzzy ISO 9660 detection may help here.
+
 
 If there is something you really want done on the above list or have
 something else you want done, it will go a lot faster if you attempt
@@ -73,4 +91,4 @@ to undertake doing it. Patches are always welcome (and CVS write
 access is available for those who have demonstrated reasonable ability
 through contributions.)
 
-$Id: TODO,v 1.8 2004/12/01 12:33:49 rocky Exp $
+$Id: TODO,v 1.9 2005/02/07 04:15:22 rocky Exp $
