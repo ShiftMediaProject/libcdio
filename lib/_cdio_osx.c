@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.11 2003/10/05 14:55:34 rocky Exp $
+    $Id: _cdio_osx.c,v 1.12 2003/10/08 01:06:19 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com> from vcdimager code
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -7,6 +7,7 @@
       Authors: Johan Bilien <jobi@via.ecp.fr>
                Gildas Bazin <gbazin@netcourrier.com>
                Jon Lech Johansen <jon-vl@nanocrew.net>
+               Derk-Jan Hartman <hartman at videolan.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,15 +32,12 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.11 2003/10/05 14:55:34 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.12 2003/10/08 01:06:19 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
 #include "cdio_assert.h"
 #include "cdio_private.h"
-
-/* Is this the right default? */
-#define DEFAULT_CDIO_DEVICE "/dev/rdisk2"
 
 #include <string.h>
 
@@ -55,9 +53,14 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.11 2003/10/05 14:55:34 rocky 
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
+#include <paths.h>
 #include <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFString.h>
+#include <CoreFoundation/CFNumber.h>
 #include <IOKit/IOKitLib.h>
+#include <IOKit/IOBSD.h>
 #include <IOKit/storage/IOCDTypes.h>
+#include <IOKit/storage/IOMedia.h>
 #include <IOKit/storage/IOCDMedia.h>
 #include <IOKit/storage/IOCDMediaBSDClient.h>
 
@@ -131,20 +134,18 @@ _cdio_read_mode2_form2_sectors (int device_handle, void *data, lsn_t lsn,
   
   memset( &cd_read, 0, sizeof(cd_read) );
   
-  cd_read.offset = lsn * CDIO_CD_FRAMESIZE_RAW;
-  cd_read.sectorArea = kCDSectorAreaSync | kCDSectorAreaHeader |
-    kCDSectorAreaSubHeader | kCDSectorAreaUser |
-    kCDSectorAreaAuxiliary;
-  cd_read.sectorType = kCDSectorTypeUnknown;
+  cd_read.offset = lsn * kCDSectorSizeMode2Form2;
+  cd_read.sectorArea = kCDSectorAreaUser;
+  cd_read.sectorType = kCDSectorTypeMode2Form2;
   
   cd_read.buffer = data;
-  cd_read.bufferLength = CDIO_CD_FRAMESIZE_RAW * nblocks;
+  cd_read.bufferLength = kCDSectorSizeMode2Form2 * nblocks;
   
   if( ioctl( device_handle, DKIOCCDREAD, &cd_read ) == -1 )
-    {
-      cdio_error( "could not read block %d", lsn );
-      return -1;
-    }
+  {
+    cdio_error( "could not read block %d, %s", lsn, strerror(errno) );
+    return -1;
+  }
   return 0;
 }
 
@@ -159,22 +160,27 @@ _cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn,
 			  bool mode2_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
-  int i;
-  int retval;
 
   if (mode2_form2) {
     return _cdio_read_mode2_form2_sectors(_obj->gen.fd, data, lsn, 
 					  mode2_form2, nblocks);
   }
   
-  for (i = 0; i < nblocks; i++) {
-    char buf[M2RAW_SECTOR_SIZE] = { 0, };
-    retval = _cdio_read_mode2_form2_sectors (_obj->gen.fd, buf, lsn + i, 
-					     mode2_form2, 1);
-    if ( retval ) return retval;
-    
-    memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
-	    buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
+  dk_cd_read_t cd_read;
+  
+  memset( &cd_read, 0, sizeof(cd_read) );
+  
+  cd_read.offset = lsn * kCDSectorSizeMode2Form1;
+  cd_read.sectorArea = kCDSectorAreaUser;
+  cd_read.sectorType = kCDSectorTypeMode2Form1;
+  
+  cd_read.buffer = data;
+  cd_read.bufferLength = kCDSectorSizeMode2Form1 * nblocks;
+  
+  if( ioctl( _obj->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
+  {
+    cdio_error( "could not read block %d, %s", lsn, strerror(errno) );
+    return -1;
   }
   return 0;
 }
@@ -187,7 +193,24 @@ static int
 _cdio_read_audio_sectors (void *env, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
-  return _cdio_read_mode2_sectors(env, data, lsn, true, nblocks);
+  _img_private_t *_obj = env;
+  dk_cd_read_t cd_read;
+  
+  memset( &cd_read, 0, sizeof(cd_read) );
+  
+  cd_read.offset = lsn * kCDSectorSizeCDDA;
+  cd_read.sectorArea = kCDSectorAreaUser;
+  cd_read.sectorType = kCDSectorTypeCDDA;
+  
+  cd_read.buffer = data;
+  cd_read.bufferLength = kCDSectorSizeCDDA * nblocks;
+  
+  if( ioctl( _obj->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
+  {
+    cdio_error( "could not read block %d", lsn );
+    return -1;
+  }
+  return 0;
 }
 
 /*!
@@ -534,22 +557,23 @@ _cdio_get_first_track_num(void *env)
 }
 
 /*!
-   Return the media catalog number MCN.
-  */
+  Return the media catalog number MCN.
+ */
 static char *
 _cdio_get_mcn (void *env) {
-   _img_private_t *_obj = env;
-   dk_cd_read_mcn_t cd_read;
+  _img_private_t *_obj = env;
+  dk_cd_read_mcn_t cd_read;
 
-   memset( &cd_read, 0, sizeof(cd_read) );
+  memset( &cd_read, 0, sizeof(cd_read) );
 
-   if( ioctl( _obj->gen.fd, DKIOCCDREADMCN, &cd_read ) < 0 )
-   {
-     cdio_error( "could not read MCN, %s", strerror(errno) );
-     return -1;
-   }
-   return strdup((char*)cd_read.mcn);
+  if( ioctl( _obj->gen.fd, DKIOCCDREADMCN, &cd_read ) < 0 )
+  {
+    cdio_error( "could not read MCN, %s", strerror(errno) );
+    return "";
+  }
+  return strdup((char*)cd_read.mcn);
 }
+
 
 /*!
   Return the number of tracks in the current medium.
@@ -572,27 +596,31 @@ static track_format_t
 _cdio_get_track_format(void *env, track_t track_num) 
 {
   _img_private_t *_obj = env;
+  CDTrackInfo a_track;
   
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
   if (track_num > TOTAL_TRACKS || track_num == 0)
     return TRACK_FORMAT_ERROR;
+    
+  dk_cd_read_track_info_t cd_read;
+  memset( &cd_read, 0, sizeof(cd_read) );
 
-#if 0
-  if (_obj->tocent[track_num-1].entry.control & CDROM_DATA_TRACK) {
-    if (_obj->tocent[track_num-1].cdte_format == 0x10)
-      return TRACK_FORMAT_CDI;
-    else if (_obj->tocent[track_num-1].cdte_format == 0x20) 
-      return TRACK_FORMAT_XA;
-    else
-      return TRACK_FORMAT_DATA;
-  } else
-    return TRACK_FORMAT_AUDIO;
-#else
-  /* FIXME! Figure out how to do. */
-  return TRACK_FORMAT_DATA;
-#endif
+  cd_read.address = track_num;
+  cd_read.addressType = kCDTrackInfoAddressTypeTrackNumber;
   
+  cd_read.buffer = &a_track;
+  cd_read.bufferLength = sizeof(CDTrackInfo);
+  
+  if( ioctl( _obj->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
+  {
+    cdio_error( "could not read trackinfo for track %d", track_num );
+    return -1;
+  }
+
+  cdio_warn( "trackinfo trackMode: %x dataMode: %x", a_track.trackMode, a_track.dataMode );
+
+  return TRACK_FORMAT_AUDIO;
 }
 
 /*!
@@ -812,7 +840,7 @@ cdio_open_osx (const char *source_name)
     .get_default_device = cdio_get_default_device_osx,
     .get_devices        = cdio_get_devices_osx,
     .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = _cdio_get_mcn, 
+    .get_mcn            = _cdio_get_mcn,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,
@@ -860,5 +888,3 @@ cdio_have_osx (void)
   return false;
 #endif /* HAVE_DARWIN_CDROM */
 }
-
-

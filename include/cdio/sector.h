@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.5 2003/09/13 06:25:37 rocky Exp $
+    $Id: sector.h,v 1.6 2003/10/08 01:06:19 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -89,8 +89,8 @@
 #define CDIO_CD_FRAMESIZE    2048 /* bytes per frame, "cooked" mode */
 #define CDIO_CD_FRAMESIZE_RAW 2352/* bytes per frame, "raw" mode */
 #define CDIO_CD_FRAMESIZE_RAWER 2646 /* The maximum possible returned bytes */ 
-#define CDIO_CD_FRAMESIZE_RAW1 (CD_FRAMESIZE_RAW-CD_SYNC_SIZE) /*2340*/
-#define CDIO_CD_FRAMESIZE_RAW0 (CD_FRAMESIZE_RAW-CD_SYNC_SIZE-CD_HEAD_SIZE) /*2336*/
+#define CDIO_CD_FRAMESIZE_RAW1 (CDIO_CD_CD_FRAMESIZE_RAW-CDIO_CD_SYNC_SIZE) /*2340*/
+#define CDIO_CD_FRAMESIZE_RAW0 (CDIO_CD_FRAMESIZE_RAW-CDIO_CD_SYNC_SIZE-CDIO_CD__HEAD_SIZE) /*2336*/
 
 /* "before data" part of raw XA (green, mode2) frame */
 #define CDIO_CD_XA_HEADER (CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE) 
