@@ -19,7 +19,7 @@ define(RELEASE_NUM, 73)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.145 2005/03/02 12:49:28 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.146 2005/03/03 10:34:14 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -27,7 +27,7 @@ dnl For multilanguage manual pages (e.g. japanese cdparaoia) we use
 dnl $make_p and according to Steve Schultz this is a make_p is a 1.8
 dnl feature.
 
-AM_INIT_AUTOMAKE([1.8])
+AM_INIT_AUTOMAKE([1.7])
 
 AC_CANONICAL_HOST
 AM_CONFIG_HEADER(config.h)
@@ -363,6 +363,7 @@ int has_timeout=sizeof(test.timeout);],
      	  AC_DEFINE([HAVE_BSDI_CDROM], [1], 
                     [Define 1 if you have BSDI-type CD-ROM support])
 	  LIBS="$LIBS -ldvd"
+         LIBCDIO_LIBS="$LIBCDIO_LIBS  -lcdrom"
 	  cd_drivers="${cd_drivers}, BSDI"
 	fi
 	;;
