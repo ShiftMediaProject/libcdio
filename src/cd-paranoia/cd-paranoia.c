@@ -888,15 +888,20 @@ main(int argc,char *argv[])
 							    CDIO_FS_AUDIO, 
 							    false,
 							    &driver_id);
-      if (NULL != ppsz_cd_drives) 
+      if (ppsz_cd_drives) {
 	d=cdda_identify(*ppsz_cd_drives,verbose, NULL);
+      } else {
+	report("\nUnable find a CD-ROM drive with an audio CD in it.");
+	exit(1);
+      }
+
       cdio_free_device_list(ppsz_cd_drives);
       free(ppsz_cd_drives);
     }
 
   if(!d){
     if(!verbose)
-      report("\nUnable to open cdrom drive; -v will give more information.");
+      report("\nUnable to open cdrom drive; -v might give more information.");
     exit(1);
   }
 
