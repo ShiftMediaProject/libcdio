@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.16 2005/03/05 09:11:44 rocky Exp $
+    $Id: win32_ioctl.c,v 1.17 2005/03/05 22:10:20 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.16 2005/03/05 09:11:44 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.17 2005/03/05 22:10:20 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -180,6 +180,7 @@ audio_read_subchannel_win32ioctl (void *p_user_data,
   const _img_private_t *p_env = p_user_data;
   DWORD dw_bytes_returned;
   CDROM_SUB_Q_DATA_FORMAT q_data_format;
+  SUB_Q_CHANNEL_DATA q_subchannel_data;
   
   q_data_format.Format = CDIO_SUBCHANNEL_CURRENT_POSITION;
   q_data_format.Track=0; /* Not sure if this has to be set or if so what
@@ -188,7 +189,7 @@ audio_read_subchannel_win32ioctl (void *p_user_data,
   if( ! DeviceIoControl( p_env->h_device_handle,
 		       IOCTL_CDROM_READ_Q_CHANNEL,
 		       &q_data_format, sizeof(q_data_format), 
-		       p_subchannel, sizeof(cdio_subchannel_t),
+		       &q_subchannel_data, sizeof(q_subchannel_data),
 		       &dw_bytes_returned, NULL ) ) {
     char *psz_msg = NULL;
     long int i_err = GetLastError();
@@ -200,6 +201,8 @@ audio_read_subchannel_win32ioctl (void *p_user_data,
     LocalFree(psz_msg);
     return DRIVER_OP_ERROR;
   }
+  memcpy(p_subchannel, &q_subchannel_data.CurrentPosition, 
+	 sizeof(cdio_subchannel_t));
   return DRIVER_OP_SUCCESS;
 }
 
@@ -207,7 +210,7 @@ audio_read_subchannel_win32ioctl (void *p_user_data,
 /*!
   Resume playing an audio CD.
   
-  @param p_cdio the CD object to be acted upon.
+  @param p_user_data the CD object to be acted upon.
   
 */
 driver_return_code_t
@@ -237,12 +240,13 @@ audio_resume_win32ioctl (void *p_user_data)
 /*!
   Set the volume of an audio CD.
   
-  @param p_cdio the CD object to be acted upon.
+  @param p_user_data pointer to the CD object to be acted upon.
+  @param p_volume pointer to the volume levels
   
 */
 driver_return_code_t
 audio_set_volume_win32ioctl (void *p_user_data, 
-			     cdio_audio_volume_t *p_volume)
+			     /*in*/ cdio_audio_volume_t *p_volume)
 {
   const _img_private_t *p_env = p_user_data;
   DWORD dw_bytes_returned;
