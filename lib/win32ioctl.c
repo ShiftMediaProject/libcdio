@@ -1,5 +1,5 @@
 /*
-    $Id: win32ioctl.c,v 1.3 2004/02/05 03:02:16 rocky Exp $
+    $Id: win32ioctl.c,v 1.4 2004/03/03 02:41:18 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32ioctl.c,v 1.3 2004/02/05 03:02:16 rocky Exp $";
+static const char _rcsid[] = "$Id: win32ioctl.c,v 1.4 2004/03/03 02:41:18 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -45,6 +45,44 @@ static const char _rcsid[] = "$Id: win32ioctl.c,v 1.3 2004/02/05 03:02:16 rocky 
 /***** FIXME: #include ntddcdrm.h from Wine, but probably need to 
    modify it a little.
 */
+
+#define SCSI_IOCTL_DATA_OUT             0 //Give data to SCSI device (e.g. for writing)
+#define SCSI_IOCTL_DATA_IN              1 //Get data from SCSI device (e.g. for reading)
+#define SCSI_IOCTL_DATA_UNSPECIFIED     2 //No data (e.g. for ejecting)
+
+#define IOCTL_SCSI_PASS_THROUGH         0x4D004
+typedef struct ScsiPassThrough {
+        unsigned short  Length;
+        unsigned char   ScsiStatus;
+        unsigned char   PathId;
+        unsigned char   TargetId;
+        unsigned char   Lun;
+        unsigned char   CdbLength;
+        unsigned char   SenseInfoLength;
+        unsigned char   DataIn;
+        unsigned int    DataTransferLength;
+        unsigned int    TimeOutValue;
+        unsigned int    DataBufferOffset;
+        unsigned int    SenseInfoOffset;
+        unsigned char   Cdb[16];
+} SCSI_PASS_THROUGH;
+
+#define IOCTL_SCSI_PASS_THROUGH_DIRECT  0x4D014
+typedef struct _SCSI_PASS_THROUGH_DIRECT {
+	USHORT Length;
+	UCHAR ScsiStatus;
+	UCHAR PathId;
+	UCHAR TargetId;
+	UCHAR Lun;
+	UCHAR CdbLength;
+	UCHAR SenseInfoLength;
+	UCHAR DataIn;
+	ULONG DataTransferLength;
+	ULONG TimeOutValue;
+	PVOID DataBuffer;
+	ULONG SenseInfoOffset;
+	UCHAR Cdb[16];
+}SCSI_PASS_THROUGH_DIRECT, *PSCSI_PASS_THROUGH_DIRECT;
 
 #ifndef IOCTL_CDROM_BASE
 #    define IOCTL_CDROM_BASE FILE_DEVICE_CD_ROM
@@ -125,35 +163,34 @@ typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
 
 #include "_cdio_win32.h"
 
-const char *
-win32ioctl_is_cdrom(const char drive_letter) 
-{
-  static char psz_win32_drive[7];
-  static char root_path_name[8];
-  _img_private_t env;
+/*
+  Returns a string that can be used in a CreateFile call if 
+  c_drive letter is a character. If not NULL is returned.
+ */
 
-  /* Initializations */
-  env.h_device_handle = NULL;
-  env.i_sid = 0;
-  env.hASPI = 0;
-  env.lpSendCommand = 0;
-  
-  sprintf( psz_win32_drive, "\\\\.\\%c:", drive_letter );
-  sprintf( root_path_name, "\\\\.\\%c:\\", drive_letter );
-  
-  env.h_device_handle = CreateFile( psz_win32_drive, GENERIC_READ,
-				    FILE_SHARE_READ | FILE_SHARE_WRITE,
-				    NULL, OPEN_EXISTING,
-				    FILE_FLAG_NO_BUFFERING |
-				    FILE_FLAG_RANDOM_ACCESS, NULL );
-  if (env.h_device_handle != NULL 
-      && (DRIVE_CDROM == GetDriveType(root_path_name))) {
-    CloseHandle(env.h_device_handle);
-    return strdup(psz_win32_drive);
-  } else {
-    CloseHandle(env.h_device_handle);
-    return NULL;
-  }
+const char *
+win32ioctl_is_cdrom(const char c_drive_letter) 
+{
+
+    UINT uDriveType;
+    char sz_win32_drive[5];
+    DWORD dwAccessFlags;
+    
+    sz_win32_drive[0]= c_drive_letter;
+    sz_win32_drive[1]=':';
+    sz_win32_drive[2]='\\';
+    sz_win32_drive[3]='\0';
+
+    uDriveType = GetDriveType(sz_win32_drive);
+
+    switch(uDriveType) {
+    case DRIVE_CDROM:        
+        dwAccessFlags = GENERIC_READ | GENERIC_WRITE; 
+	return strdup(sz_win32_drive);
+    default:
+        cdio_debug("Drive %c is not a CD-ROM", c_drive_letter);
+        return NULL;
+    }
 }
   
 /*!
@@ -248,7 +285,7 @@ win32ioctl_init_win32 (_img_private_t *env)
   char psz_win32_drive[7];
   unsigned int len=strlen(env->gen.source_name);
   OSVERSIONINFO ov;
-  DWORD dwFlags;
+  DWORD dw_access_flags;
   
   cdio_debug("using winNT/2K/XP ioctl layer");
   
@@ -258,22 +295,30 @@ win32ioctl_init_win32 (_img_private_t *env)
   
   if((ov.dwPlatformId==VER_PLATFORM_WIN32_NT) &&        
      (ov.dwMajorVersion>4))
-    dwFlags = GENERIC_READ|GENERIC_WRITE;  /* add gen write on W2k/XP */
-  else dwFlags = GENERIC_READ;
+    dw_access_flags = GENERIC_READ|GENERIC_WRITE;  /* add gen write on W2k/XP */
+  else dw_access_flags = GENERIC_READ;
   
   if (cdio_is_device_win32(env->gen.source_name)) {
     sprintf( psz_win32_drive, "\\\\.\\%c:", env->gen.source_name[len-2] );
     
-    env->h_device_handle = CreateFile( psz_win32_drive, dwFlags,
-				       FILE_SHARE_READ, NULL, OPEN_EXISTING,
-				       0, NULL );
+    env->h_device_handle = CreateFile( psz_win32_drive, 
+				       dw_access_flags,
+				       FILE_SHARE_READ | FILE_SHARE_WRITE, 
+				       NULL, 
+				       OPEN_EXISTING,
+				       FILE_ATTRIBUTE_NORMAL, 
+				       NULL );
     if( env->h_device_handle == INVALID_HANDLE_VALUE )
       {
 	/* No good. try toggle write. */
-	dwFlags ^= GENERIC_WRITE;  
-	env->h_device_handle = CreateFile( psz_win32_drive, dwFlags, 
-					   FILE_SHARE_READ,  NULL, 
-					   OPEN_EXISTING, 0, NULL );
+	dw_access_flags ^= GENERIC_WRITE;  
+	env->h_device_handle = CreateFile( psz_win32_drive, 
+					   dw_access_flags, 
+					   FILE_SHARE_READ,  
+					   NULL, 
+					   OPEN_EXISTING, 
+					   FILE_ATTRIBUTE_NORMAL, 
+					   NULL );
 	return (env->h_device_handle == NULL) ? false : true;
       }
     return true;

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.26 2004/02/08 23:49:17 rocky Exp $
+    $Id: _cdio_win32.c,v 1.27 2004/03/03 02:41:18 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.26 2004/02/08 23:49:17 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.27 2004/03/03 02:41:18 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -531,14 +531,18 @@ cdio_is_device_win32(const char *source_name)
   if (NULL == source_name) return false;
 
 #ifdef HAVE_WIN32_CDROM
-  if ( WIN_NT )
-    /* Really should test to see if of form: \\.\x: */
-    return ((len == 6) && isalpha(source_name[len-2])
-	    && (source_name[len-1] == ':'));
-  else
-    /* See if is of form: x: */
-    return ((len == 2) && isalpha(source_name[0]) 
-	    && (source_name[len-1] == ':'));
+  if ((len == 2) && isalpha(source_name[0]) 
+	    && (source_name[len-1] == ':'))
+    return true;
+
+  if ( ! WIN_NT ) return false;
+
+  /* Test to see if of form: \\.\x: */
+  return ( (len == 6) 
+	   && source_name[0] == '\\' && source_name[1] == '\\'
+	   && source_name[2] == '.'  && source_name[3] == '\\'
+	   && isalpha(source_name[len-2])
+	   && (source_name[len-1] == ':') );
 #else 
   return false;
 #endif
