@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.8 2004/07/13 03:45:26 rocky Exp $
+    $Id: win32.h,v 1.9 2004/07/15 02:24:29 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -40,11 +40,12 @@ typedef struct {
      This must be first. */
   generic_img_private_t gen; 
 
-  /* Things generally common to all image drivers. */
-  track_info_t  tocent[100];     /* entry info for each track */
+  /* Entry info for each track, add 1 for leadout. */
+  track_info_t  tocent[CDIO_CD_MAX_TRACKS+1];
+
+  cdtext_t      cdtext;	         /* CD-TEXT */
   track_t       i_tracks;        /* number of tracks in image */
   track_t       i_first_track;   /* track number of first track */
-  cdtext_t      cdtext;	         /* CD-TEXT */
 
   access_mode_t access_mode;
 

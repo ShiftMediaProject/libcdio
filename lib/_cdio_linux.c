@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.62 2004/07/13 04:33:05 rocky Exp $
+    $Id: _cdio_linux.c,v 1.63 2004/07/15 02:24:29 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.62 2004/07/13 04:33:05 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.63 2004/07/15 02:24:29 rocky Exp $";
 
 #include <string.h>
 
@@ -86,12 +86,17 @@ typedef struct {
      This must be first. */
   generic_img_private_t gen; 
 
-  access_mode_t access_mode;
-
-  /* Track information */
-  struct cdrom_tochdr    tochdr;
   /* Entry info for each track, add 1 for leadout. */
   struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1]; 
+
+  cdtext_t      cdtext;	         /* CD-TEXT */
+
+  access_mode_t access_mode;
+  bool b_cdtext_init;
+
+  /* Some of the more OS specific things. */
+  cdtext_t      cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/
+  struct cdrom_tochdr    tochdr;
 
 } _img_private_t;
 
@@ -675,112 +680,116 @@ _cdio_read_toc (_img_private_t *env)
   return true;
 }
 
-#ifdef CDTEXT_FIXED
-static CDText_data_t *
-cdtext_init( void *user_data )
+#if 1
+
+#define set_cdtext_field(FIELD)						\
+  if( i_track == 0 )							\
+    env->cdtext.field[FIELD] = strdup(buffer);				\
+  else									\
+    env->cdtext_track[i_track-1].field[FIELD]				\
+      = strdup(buffer);							\
+  i_track++;								\
+  idx = 0;
+
+/*! 
+  Get cdtext information for a CdIo object .
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return the CD-TEXT object or NULL if obj is NULL
+  or CD-TEXT information does not exist.
+*/
+static const cdtext_t *
+_get_cdtext_linux (void *user_data)
 {
 
   _img_private_t *env = user_data;
-  CDText_data_t  *pdata;
-  int             i;
-  int             j;
-  char            buffer[5000];
-  char            buf[256];
-  int             idx;
-  track_t         i_track;
-  cgc_t           cgc;
-  int             status;
+  int status;
+  struct scsi_cmd {
+    unsigned int inlen;         /* Length of data written to device  */
+    unsigned int outlen;        /* Length of data read from device   */
+    unsigned char cmd[10];      /* SCSI command (6 <= x <= 16)       */
+    unsigned char wdata[5000];  /* Data read from device starts here   
+				   On error, sense buffer starts here   */     
+  } scsi_cmd;
 
-  memset (&cgc,    0, sizeof (cgc));
-  memset (&buffer, 0, sizeof (buffer));
+  memset( scsi_cmd.cmd, 0, sizeof(scsi_cmd.cmd) );
+  CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_GPCMD_READ_TOC); 
+  scsi_cmd.cmd[1] = 0x02;   /* MSF mode */
+  scsi_cmd.cmd[2] = 0x05;   /* CD text  */
+  CDIO_MMC_SET_READ_LENGTH(scsi_cmd.cmd, sizeof(scsi_cmd.wdata));
 
-  cgc.cmd[0]   = CDIO_MMC_GPCMD_READ_TOC; 
-  cgc.cmd[1]   = 0x02;   /* MSF mode */
-  cgc.cmd[2]   = 0x05;   /* CD text */
-  CDIO_MMC_SET_READ_LENGTH( cgc.cmd, sizeof(buffer) );
-
-  status = ioctl( env->gen.fd, CDROM_SEND_PACKET, &cgc );
-
-  if( status != 0 ) {
+  scsi_cmd.inlen  = sizeof(scsi_cmd.cmd);
+  scsi_cmd.outlen = sizeof(scsi_cmd.wdata);
+  status = ioctl(env->gen.fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
+  if (status != 0) {
     cdio_warn ("CDTEXT reading failed: %s\n", strerror(errno));  
     return NULL;
-  }
+  } else {
+    
+    CDText_data_t *pdata;
+    int           i;
+    int           j;
+    char          buffer[256];
+    int           idx;
+    int           i_track;
 
-  memset (&buf, 0, sizeof (buffer));
-  idx = 0;
-
-  pdata = (CDText_data_t *) (&buffer[4]);
-  for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ )
-  {
-    if( pdata->seq != i )
-      break;
-
-    if( (pdata->type >= 0x80) && (pdata->type <= 0x87) && (pdata->block == 0) )
-    {
-      i_track = pdata->i_track;
-
-      for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++ ) {
-        if( pdata->text[j] == 0x00 ) {
-          switch( pdata->type) {
-          case CDIO_CDTEXT_TITLE:
-            if( i_track == 0 )
-              printf("Album Title: %s\n", buf);
-            else
-              printf("Title track %d: %s\n", i_track, buf);
-            i_track++;
-            idx = 0;
-            break;
-	    
-          case CDIO_CDTEXT_PERFORMER: 
-            if( i_track == 0 )
-              printf("Album Performer %s\n", buf);
-            else
-              printf("Performer track %d: %s\n", i_track, buf);
-            i_track++;
-            idx = 0;
-            break;
-          case CDIO_CDTEXT_COMPOSER: 
-            if( i_track == 0 )
-              printf("Album Composer %s\n", buf);
-            else
-              printf("Composer track %d: %s\n", i_track, buf);
-            i_track++;
-            idx = 0;
-            break;
-          case CDIO_CDTEXT_ARRANGER: 
-            if( i_track == 0 )
-              printf("Album Arranger %s\n", buf);
-            else
-              printf("Arranger track %d: %s\n", i_track, buf);
-            i_track++;
-            idx = 0;
-            break;
-          case CDIO_CDTEXT_MESSAGE: 
-	    printf("Extended data: %s\n", buf);
-            i_track++;
-            idx = 0;
-            break;
-          case CDIO_CDTEXT_GENRE: 
-	    printf("Genre %s\n", buf);
-            i_track++;
-            idx = 0;
-            break;
-          case CDIO_CDTEXT_DISCID: 
-	    printf("Discid track%s\n", buf);
-            idx = 0;
-            break;
-          }
+    printf("READ CDTEXT!\n");
+    memset( buffer, 0x00, sizeof(buffer) );
+    idx = 0;
+  
+    pdata = (CDText_data_t *) (&scsi_cmd.wdata[4]);
+    for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ ) {
+      if( pdata->seq != i )
+	break;
+      
+      if( (pdata->type >= 0x80) 
+	  && (pdata->type <= 0x85) && (pdata->block == 0) ) {
+	i_track = pdata->i_track;
+	
+	for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++ ) {
+	  if( pdata->text[j] == 0x00 )
+	    {
+	      switch( pdata->type) {
+	      case CDIO_CDTEXT_TITLE: 
+		set_cdtext_field(CDTEXT_TITLE);
+		break;
+	      case CDIO_CDTEXT_PERFORMER:  
+		set_cdtext_field(CDTEXT_PERFORMER);
+		break;
+	      case CDIO_CDTEXT_SONGWRITER:
+		set_cdtext_field(CDTEXT_SONGWRITER);
+		break;
+	      case CDIO_CDTEXT_COMPOSER:
+		set_cdtext_field(CDTEXT_COMPOSER);
+		break;
+	      case CDIO_CDTEXT_ARRANGER:
+		set_cdtext_field(CDTEXT_ARRANGER);
+		break;
+	      case CDIO_CDTEXT_MESSAGE:
+		set_cdtext_field(CDTEXT_MESSAGE);
+		break;
+	      case CDIO_CDTEXT_DISCID: 
+		set_cdtext_field(CDTEXT_DISCID);
+		break;
+	      case CDIO_CDTEXT_GENRE: 
+		set_cdtext_field(CDTEXT_GENRE);
+		break;
+	      }
+	    }
+	  else 	    {
+	    buffer[idx++] = pdata->text[j];
+	  }
+	  buffer[idx] = 0x00;
 	}
-	else {
-          buffer[idx++] = pdata->text[j];
-        }
-        buffer[idx] = 0x00;
       }
+      pdata++;
     }
-    pdata++;
   }
-  return NULL; /* FIXME */
+
+  env->b_cdtext_init = true;
+  return &(env->cdtext);
 }
+
 #endif
 
 /*
@@ -791,9 +800,9 @@ _eject_media_mmc(int fd)
 {
   int status;
   struct sdata {
-    int  inlen;
-    int  outlen;
-    char cmd[256];
+    unsigned int inlen;     /* input: Length of data written to device  */
+    unsigned int outlen;    /* input: Length of data read from device   */
+    char cmd[10];           /* input: SCSI command (6 <= x <= 16)       */
   } scsi_cmd;
   
   CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
@@ -1216,6 +1225,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .eject_media        = _eject_media_linux,
     .free               = cdio_generic_free,
     .get_arg            = _get_arg_linux,
+    .get_cdtext         = _get_cdtext_linux,
     .get_devices        = cdio_get_devices_linux,
     .get_default_device = cdio_get_default_device_linux,
     .get_drive_cap      = _get_drive_cap_linux,
@@ -1242,6 +1252,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   _data->access_mode    = str_to_access_mode_linux(access_mode);
   _data->gen.init       = false;
   _data->gen.fd         = -1;
+  _data->b_cdtext_init  = false;
 
   if (NULL == psz_orig_source) {
     psz_source=cdio_get_default_device_linux();

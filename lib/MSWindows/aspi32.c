@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.21 2004/07/14 04:42:11 rocky Exp $
+    $Id: aspi32.c,v 1.22 2004/07/15 02:24:29 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.21 2004/07/14 04:42:11 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.22 2004/07/15 02:24:29 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -711,8 +711,12 @@ wnaspi32_eject_media (void *user_data) {
   i_track++;								\
   idx = 0;
 
-/*!
-  Return the value associated with the key "arg".
+/*! 
+  Get cdtext information for a CdIo object .
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return the CD-TEXT object or NULL if obj is NULL
+  or CD-TEXT information does not exist.
 */
 const cdtext_t *
 get_cdtext_aspi (_img_private_t *env)
