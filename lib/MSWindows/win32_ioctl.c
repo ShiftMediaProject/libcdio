@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.42 2004/11/07 06:22:49 rocky Exp $
+    $Id: win32_ioctl.c,v 1.43 2004/11/07 06:36:53 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.42 2004/11/07 06:22:49 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.43 2004/11/07 06:36:53 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -548,7 +548,7 @@ init_win32ioctl (_img_private_t *env)
   false if an error.
 */
 static bool
-read_toc_win32mmc (_img_private_t *p_env) 
+read_fulltoc_win32mmc (_img_private_t *p_env) 
 {
   scsi_mmc_cdb_t  cdb = {{0, }};
   CDROM_TOC_FULL  cdrom_toc_full;
@@ -648,9 +648,10 @@ read_toc_win32ioctl (_img_private_t *p_env)
 
   if ( ! p_env ) return false;
 
-  if ( read_toc_win32mmc(p_env) ) return true;
+  if ( read_fulltoc_win32mmc(p_env) ) return true;
 
-  /* No SCSI MMC READ_TOC (FULTOC) read via DeviceIoControl as fallback */
+  /* SCSI-MMC READ_TOC (FULTOC) read failed.  Try reading TOC via
+     DeviceIoControl instead */
   if( DeviceIoControl( p_env->h_device_handle,
 		       IOCTL_CDROM_READ_TOC,
 		       NULL, 0, &cdrom_toc, sizeof(CDROM_TOC),
