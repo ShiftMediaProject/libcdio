@@ -1,8 +1,8 @@
 /*
-    $Id: util.h,v 1.5 2004/11/15 19:41:25 nboullis Exp $
+    $Id: util.h,v 1.6 2005/02/03 07:36:51 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -81,9 +81,6 @@ _cdio_bool_str (bool b)
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-void *
-_cdio_malloc (size_t size);
 
 void *
 _cdio_memdup (const void *mem, size_t count);
