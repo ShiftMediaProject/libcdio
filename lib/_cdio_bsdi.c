@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.29 2004/07/27 01:06:02 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.30 2004/07/27 13:10:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.29 2004/07/27 01:06:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.30 2004/07/27 13:10:20 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -499,7 +499,7 @@ _get_first_track_num_bsdi(void *user_data)
   
   if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
-  return p_p_env->gen.i_first_track;
+  return p_env->gen.i_first_track;
 }
 
 /*!
@@ -544,7 +544,7 @@ _get_track_format_bsdi(void *user_data, track_t i_track)
   if (i_track > TOTAL_TRACKS || i_track == 0)
     return TRACK_FORMAT_ERROR;
 
-  i_track -= p_p_env->gen.i_first_track;
+  i_track -= p_env->gen.i_first_track;
 
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
@@ -609,7 +609,7 @@ _get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
     return false;
   } 
 
-  i_track -= p_p_env->gen.i_first_track;
+  i_track -= p_env->gen.i_first_track;
 
   {
     struct cdrom_msf0  *msf0= &p_env->tocent[i_track].cdte_addr.msf;
