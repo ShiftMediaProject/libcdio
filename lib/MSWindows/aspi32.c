@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.3 2004/04/30 21:36:54 rocky Exp $
+    $Id: aspi32.c,v 1.4 2004/04/30 22:28:00 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.3 2004/04/30 21:36:54 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.4 2004/04/30 22:28:00 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -320,7 +320,7 @@ wnaspi32_mmc_read_sectors (_img_private_t *env, void *data, lsn_t lsn,
   ssc.SRB_PostProc = (LPVOID) hEvent;
   ssc.SRB_CDBLen      = 12;
   
-  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_GPCMD_READ_CD));
+  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_GPCMD_READ_CD);
   CDIO_MMC_SET_READ_TYPE(ssc.CDBByte, sector_type);
   CDIO_MMC_SET_READ_LBA(ssc.CDBByte, lsn);
   CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, nblocks);

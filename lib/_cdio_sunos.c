@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.29 2004/04/30 07:07:49 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.30 2004/04/30 22:27:59 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -41,7 +41,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.29 2004/04/30 07:07:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.30 2004/04/30 22:27:59 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -520,7 +520,7 @@ _cdio_get_drive_cap_solaris (const void *env)
   memset(&my_rq_buf,   0, sizeof(my_rq_buf));
   
   /* Initialize my_scsi_cdb as a Mode Select(6) */
-  my_scsi_cdb[0] = CDIO_MMC_MODE_SENSE;
+  CDIO_MMC_SET_COMMAND(my_scsi_cdb, CDIO_MMC_MODE_SENSE);
   my_scsi_cdb[1] = 0x0;  
   my_scsi_cdb[2] = 0x2a; /* MODE_PAGE_CAPABILITIES*/;
   my_scsi_cdb[3] = 0;    /* Not used */
@@ -584,7 +584,7 @@ _cdio_get_mcn_solaris (const void *env)
   memset(&my_scsi_cdb, 0, sizeof(my_scsi_cdb));
   memset(&my_rq_buf,   0, sizeof(my_rq_buf));
   
-  my_scsi_cdb[0] = CDIO_MMC_GPCMD_READ_SUBCHANNEL;
+  CDIO_MMC_SET_COMMAND(my_scsi_cdb, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
   my_scsi_cdb[1] = 0x0;  
   my_scsi_cdb[2] = 0x40; 
   my_scsi_cdb[3] = 02;    /* Give media catalog number. */

@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.10 2004/04/30 21:36:54 rocky Exp $
+    $Id: win32.c,v 1.11 2004/04/30 22:28:00 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.10 2004/04/30 21:36:54 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.11 2004/04/30 22:28:00 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -337,11 +337,11 @@ _set_arg_win32 (void *user_data, const char key[], const char value[])
     }
   else if (!strcmp (key, "access-mode"))
     {
-      _obj->access_mode = str_to_access_mode_win32(value);
-      if (_obj->access_mode == _AM_ASPI && !_obj->b_aspi_init) 
-	return winaspi_init_win32(_obj) ? 1 : -3;
-      else if (_obj->access_mode == _AM_IOCTL && !_obj->b_ioctl_init) 
-	return win32ioctl_init_win32(_obj) ? 1 : -3;
+      env->access_mode = str_to_access_mode_win32(value);
+      if (env->access_mode == _AM_ASPI && !env->b_aspi_init) 
+	return wnaspi32_init_win32(env) ? 1 : -3;
+      else if (env->access_mode == _AM_IOCTL && !env->b_ioctl_init) 
+	return win32ioctl_init_win32(env) ? 1 : -3;
       else
 	return -4;
       return 0;
