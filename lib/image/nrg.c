@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.16 2004/05/31 04:00:01 rocky Exp $
+    $Id: nrg.c,v 1.17 2004/05/31 14:16:34 rocky Exp $
 
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.16 2004/05/31 04:00:01 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.17 2004/05/31 14:16:34 rocky Exp $";
 
 /* structures used */
 
@@ -80,10 +80,13 @@ typedef struct {
 } _etn2_array_t;
 
 typedef struct {
-  uint8_t  _unknown1  GNUC_PACKED; /* 0x41 == 'A' */
+  uint8_t  type       GNUC_PACKED; /* has track copy bit and whether audiofile
+				      or datafile. Is often 0x41 == 'A' */
   uint8_t  track      GNUC_PACKED; /* binary or BCD?? */
-  uint8_t  index      GNUC_PACKED; /* makes 0->1 transitions */
-  uint8_t  _unknown2  GNUC_PACKED; /* ?? */
+  uint8_t  addr_ctrl  GNUC_PACKED; /* addresstype: MSF or LBA in lower 4 bits
+				      control in upper 4 bits. 
+				      makes 0->1 transitions */
+  uint8_t  res        GNUC_PACKED; /* ?? */
   uint32_t lsn        GNUC_PACKED; 
 } _cuex_array_t;
 
@@ -91,13 +94,13 @@ typedef struct {
   uint32_t _unknown1  GNUC_PACKED;
   char      mcn[CDIO_MCN_SIZE]  GNUC_PACKED;
   uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint32_t)]  GNUC_PACKED;
-} _daoi_array_t;
+} _daox_array_t;
 
 typedef struct {
-  uint64_t _unknown1  GNUC_PACKED;
+  uint32_t _unknown1  GNUC_PACKED;
   char      mcn[CDIO_MCN_SIZE]  GNUC_PACKED;
-  uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint64_t)]  GNUC_PACKED;
-} _daox_array_t;
+  uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint32_t)]  GNUC_PACKED;
+} _daoi_array_t;
 
 typedef struct {
   uint32_t id                    GNUC_PACKED;
@@ -107,16 +110,16 @@ typedef struct {
 
 PRAGMA_END_PACKED
 
-/* to be converted into BE. Nero Image are Big Endian. */
+/* Nero images are Big Endian. */
 #define CUEX_ID  0x43554558  /* Nero version 5.5 */
-#define CUES_ID  0x43554553  /* Nero pre version 5.5 */
-#define DAOX_ID  0x44414f58  /* Nero version 5.5 */
+#define CUES_ID  0x43554553  /* Nero pre version 5.5.x */
+#define DAOX_ID  0x44414f58  /* Nero version 5.5.x */
 #define DAOI_ID  0x44414f49
 #define END1_ID  0x454e4421
 #define ETN2_ID  0x45544e32
 #define ETNF_ID  0x45544e46
-#define NER5_ID  0x4e455235  /* Nero version 5.5 */
-#define NERO_ID  0x4e45524f  /* Nero pre 5.5 */
+#define NER5_ID  0x4e455235  /* Nero version 5.5.x */
+#define NERO_ID  0x4e45524f  /* Nero pre 5.5.x */
 #define SINF_ID  0x53494e46  /* Session information */
 #define MTYP_ID  0x4d545950  /* Disc Media type? */
 
@@ -140,7 +143,7 @@ typedef struct {
   int            start_index;
   int            sec_count;  /* Number of sectors in track. Does not 
 				 include pregap before next entry. */
-  int            flags;      /* "DCP", "4CH", "PRE" */
+  int            flags;      /* don't copy, 4 channel audio, pre emphasis */
   track_format_t track_format;
   bool           track_green;
   uint16_t  datasize;        /* How much is in the portion we return back? */
@@ -327,13 +330,13 @@ PRAGMA_END_PACKED
       }
     else if (buf.v55.ID == UINT32_TO_BE (NER5_ID)) 
       {
-	cdio_info ("detected Nero version 5.5 (64-bit offsets) NRG magic");
+	cdio_info ("detected Nero version 5.5.x (64-bit offsets) NRG magic");
 	footer_start = uint64_from_be (buf.v55.footer_ofs);
       }
     else
       {
 	cdio_warn ("Image not recognized as either version 5.0 or "
-		   "version 5.5 type NRG");
+		   "version 5.5.x type NRG");
 	return false;
       }
 
@@ -388,7 +391,7 @@ PRAGMA_END_PACKED
 	    for (idx = 1; idx < entries-1; idx += 2) {
 	      lsn_t sec_count;
 	      
-	      cdio_assert (_entries[idx].index == 0);
+	      cdio_assert (_entries[idx].addr_ctrl == 0);
 	      cdio_assert (_entries[idx].track == _entries[idx + 1].track);
 	      
 	      /* lsn and sec_count*2 aren't correct, but it comes closer on the
@@ -414,7 +417,7 @@ PRAGMA_END_PACKED
 	    for (idx = 2; idx < entries; idx += 2) {
 	      lsn_t sec_count;
 	      
-	      cdio_assert (_entries[idx].index == 1);
+	      cdio_assert (_entries[idx].addr_ctrl == 1);
 	      cdio_assert (_entries[idx].track != _entries[idx + 1].track);
 	      
 	      lsn       = UINT32_FROM_BE (_entries[idx].lsn);
@@ -435,6 +438,7 @@ PRAGMA_END_PACKED
 	  int form;
 
 	  _obj->mcn      = _cdio_malloc (CDIO_MCN_SIZE);
+
 	  if (DAOX_ID == opcode) {
 	    _daox_array_t *_entries = (void *) chunk->data;
 	    form         = _entries->_unknown[1];
@@ -446,7 +450,7 @@ PRAGMA_END_PACKED
 	    _obj->dtyp   = _entries->_unknown[19];
 	    memcpy(_obj->mcn, &(_entries->mcn), CDIO_MCN_SIZE);
 	  }
-	  
+
 	  _obj->is_dao = true;
 	  cdio_debug ("DAO%c tag detected, track format %d, form %x\n", 
 		      opcode==DAOX_ID ? 'X': 'I', _obj->dtyp, form);
