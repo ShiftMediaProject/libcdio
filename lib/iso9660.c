@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.8 2003/09/06 14:50:50 rocky Exp $
+    $Id: iso9660.c,v 1.9 2003/09/07 18:15:26 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.8 2003/09/06 14:50:50 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.9 2003/09/07 18:15:26 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -47,21 +47,42 @@ static void
 pathtable_get_size_and_entries(const void *pt, unsigned int *size, 
                                unsigned int *entries);
 
-static void
-_idr_set_time (uint8_t _idr_date[], const struct tm *_tm)
+/* Get time structure from structure in an ISO 9660 directory index 
+   record. 
+*/
+/* FIXME? What do we do about the other fields.*/
+void
+iso9660_get_time (const uint8_t idr_date[], /*out*/ struct tm *tm)
 {
-  memset (_idr_date, 0, 7);
+  if (!idr_date) return;
 
-  if (!_tm)
-    return;
+  tm->tm_year = idr_date[0];
+  tm->tm_mon  = idr_date[1] - 1;
+  tm->tm_mday = idr_date[2];
+  tm->tm_hour = idr_date[3];
+  tm->tm_min  = idr_date[4];
+  tm->tm_sec  = idr_date[5];
+  /* Recompute tm_wday and tm_yday */
+  mktime(tm);
+}
 
-  _idr_date[0] = _tm->tm_year;
-  _idr_date[1] = _tm->tm_mon + 1;
-  _idr_date[2] = _tm->tm_mday;
-  _idr_date[3] = _tm->tm_hour;
-  _idr_date[4] = _tm->tm_min;
-  _idr_date[5] = _tm->tm_sec;
-  _idr_date[6] = 0x00; /* tz, GMT -48 +52 in 15min intervals */
+/*!
+  Set time in format used in ISO 9660 directory index record
+  from a Unix time structure. */
+void
+iso9660_set_time (const struct tm *tm, /*out*/ uint8_t idr_date[])
+{
+  memset (idr_date, 0, 7);
+
+  if (!tm) return;
+
+  idr_date[0] = tm->tm_year;
+  idr_date[1] = tm->tm_mon + 1;
+  idr_date[2] = tm->tm_mday;
+  idr_date[3] = tm->tm_hour;
+  idr_date[4] = tm->tm_min;
+  idr_date[5] = tm->tm_sec;
+  idr_date[6] = 0x00; /* tz, GMT -48 +52 in 15min intervals */
 }
 
 static void
@@ -248,21 +269,19 @@ iso9660_set_evd(void *pd)
   memcpy(pd, &ied, sizeof(ied));
 }
 
-/* important date to celebrate (for me at least =)
-   -- until user customization is implemented... */
-static const time_t _vcd_time = 269222400L;
-                                       
 void
 iso9660_set_pvd(void *pd,
-            const char volume_id[],
-            const char publisher_id[],
-            const char preparer_id[],
-            const char application_id[],
-            uint32_t iso_size,
-            const void *root_dir,
-            uint32_t path_table_l_extent,
-            uint32_t path_table_m_extent,
-            uint32_t path_table_size)
+                const char volume_id[],
+                const char publisher_id[],
+                const char preparer_id[],
+                const char application_id[],
+                uint32_t iso_size,
+                const void *root_dir,
+                uint32_t path_table_l_extent,
+                uint32_t path_table_m_extent,
+                uint32_t path_table_size,
+                const time_t *pvd_time
+                )
 {
   iso9660_pvd_t ipd;
 
@@ -308,8 +327,8 @@ iso9660_set_pvd(void *pd,
   iso9660_strncpy_pad (ipd.abstract_file_id     , "", 37, ISO9660_DCHARS);
   iso9660_strncpy_pad (ipd.bibliographic_file_id, "", 37, ISO9660_DCHARS);
 
-  _pvd_set_time (ipd.creation_date, gmtime (&_vcd_time));
-  _pvd_set_time (ipd.modification_date, gmtime (&_vcd_time));
+  _pvd_set_time (ipd.creation_date, gmtime (pvd_time));
+  _pvd_set_time (ipd.modification_date, gmtime (pvd_time));
   _pvd_set_time (ipd.expiration_date, NULL);
   _pvd_set_time (ipd.effective_date, NULL);
 
@@ -343,14 +362,14 @@ iso9660_dir_add_entry_su(void *dir,
                          uint32_t size,
                          uint8_t flags,
                          const void *su_data,
-                         unsigned int su_size)
+                         unsigned int su_size,
+                         const time_t *entry_time)
 {
   iso9660_dir_t *idr = dir;
   uint8_t *dir8 = dir;
   unsigned int offset = 0;
   uint32_t dsize = from_733(idr->size);
   int length, su_offset;
-
   cdio_assert (sizeof(iso9660_dir_t) == 33);
 
   if (!dsize && !idr->length)
@@ -407,7 +426,7 @@ iso9660_dir_add_entry_su(void *dir,
   idr->extent = to_733(extent);
   idr->size = to_733(size);
   
-  _idr_set_time (idr->date, gmtime (&_vcd_time));
+  iso9660_set_time (gmtime(entry_time), idr->date);
   
   idr->flags = to_711(flags);
 
@@ -424,9 +443,11 @@ iso9660_dir_init_new (void *dir,
                       uint32_t self,
                       uint32_t ssize,
                       uint32_t parent,
-                      uint32_t psize)
+                      uint32_t psize,
+                      const time_t *dir_time)
 {
-  iso9660_dir_init_new_su (dir, self, ssize, NULL, 0, parent, psize, NULL, 0);
+  iso9660_dir_init_new_su (dir, self, ssize, NULL, 0, parent, psize, NULL, 
+                           0, dir_time);
 }
 
 void 
@@ -438,7 +459,8 @@ iso9660_dir_init_new_su (void *dir,
                          uint32_t parent,
                          uint32_t psize,
                          const void *psu_data,
-                         unsigned int psu_size)
+                         unsigned int psu_size,
+                         const time_t *dir_time)
 {
   cdio_assert (ssize > 0 && !(ssize % ISO_BLOCKSIZE));
   cdio_assert (psize > 0 && !(psize % ISO_BLOCKSIZE));
@@ -448,10 +470,10 @@ iso9660_dir_init_new_su (void *dir,
 
   /* "\0" -- working hack due to padding  */
   iso9660_dir_add_entry_su (dir, "\0", self, ssize, ISO_DIRECTORY, ssu_data, 
-                            ssu_size); 
+                            ssu_size, dir_time); 
 
   iso9660_dir_add_entry_su (dir, "\1", parent, psize, ISO_DIRECTORY, psu_data, 
-                            psu_size);
+                            psu_size, dir_time);
 }
 
 void 

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.18 2003/09/06 14:50:50 rocky Exp $
+    $Id: iso9660.h,v 1.19 2003/09/07 18:15:26 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -34,6 +34,8 @@
 
 #include <cdio/cdio.h>
 #include <cdio/xa.h>
+
+#include <time.h>
 
 #define MIN_TRACK_SIZE 4*75
 #define MIN_ISO_SIZE MIN_TRACK_SIZE
@@ -127,6 +129,7 @@ struct iso9660_pvd {
 
 typedef struct iso9660_dir  iso9660_dir_t;
 typedef struct iso9660_pvd  iso9660_pvd_t;
+typedef struct iso9660_stat iso9660_stat_t;
 
 #ifndef  EMPTY_ARRAY_SIZE
 #define EMPTY_ARRAY_SIZE 0
@@ -156,13 +159,14 @@ struct iso9660_dir {
   char     name[EMPTY_ARRAY_SIZE];
 } GNUC_PACKED;
 
-typedef struct iso9660_stat { /* big endian!! */
+struct iso9660_stat { /* big endian!! */
   enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;
   lsn_t        lsn;                   /* start logical sector number */
   uint32_t     size;                  /* total size in bytes */
   uint32_t     secsize;               /* number of sectors allocated */
   iso9660_xa_t xa;                    /* XA attributes */
-} iso9660_stat_t;
+  struct tm    tm;                    /* time on entry */
+} ;
 
 PRAGMA_END_PACKED
 
@@ -208,6 +212,19 @@ int iso9660_name_translate(const char *old, char *new);
 char *iso9660_strncpy_pad(char dst[], const char src[], size_t len, 
                           enum strncpy_pad_check _check);
 
+/*!
+  Set time in format used in ISO 9660 directory index record
+  from a Unix time structure. */
+void iso9660_set_time (const struct tm *tm, /*out*/ uint8_t idr_date[]);
+
+
+/* Get time structure from structure in an ISO 9660 directory index 
+   record. 
+*/
+/* FIXME? What do we do about the other fields.*/
+void iso9660_get_time (const uint8_t idr_date[], /*out*/ struct tm *tm);
+
+
 /*=====================================================================
   file/dirname's 
 ======================================================================*/
@@ -251,18 +268,20 @@ bool iso9660_pathname_valid_p (const char pathname[]);
 
 void
 iso9660_dir_init_new (void *dir, uint32_t self, uint32_t ssize, 
-                      uint32_t parent, uint32_t psize);
+                      uint32_t parent, uint32_t psize, 
+                      const time_t *dir_time);
 
 void
 iso9660_dir_init_new_su (void *dir, uint32_t self, uint32_t ssize, 
                          const void *ssu_data, unsigned int ssu_size, 
                          uint32_t parent, uint32_t psize, 
-                         const void *psu_data, unsigned int psu_size);
+                         const void *psu_data, unsigned int psu_size,
+                         const time_t *dir_time);
 
 void
 iso9660_dir_add_entry_su (void *dir, const char name[], uint32_t extent,
                           uint32_t size, uint8_t flags, const void *su_data,
-                          unsigned int su_size);
+                          unsigned int su_size, const time_t *entry_time);
 
 unsigned int 
 iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
@@ -338,7 +357,7 @@ iso9660_set_pvd (void *pd, const char volume_id[], const char application_id[],
                  const char publisher_id[], const char preparer_id[],
                  uint32_t iso_size, const void *root_dir, 
                  uint32_t path_table_l_extent, uint32_t path_table_m_extent,
-                 uint32_t path_table_size);
+                 uint32_t path_table_size, const time_t *pvd_time);
 
 void 
 iso9660_set_evd (void *pd);

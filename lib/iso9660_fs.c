@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.7 2003/09/06 14:50:50 rocky Exp $
+    $Id: iso9660_fs.c,v 1.8 2003/09/07 18:15:26 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -38,22 +38,24 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.7 2003/09/06 14:50:50 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.8 2003/09/07 18:15:26 rocky Exp $";
 
 static void
-_idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *buf, bool is_mode2)
+_idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *stat, bool is_mode2)
 {
   iso9660_xa_t *xa_data = NULL;
   uint8_t dir_len= iso9660_get_dir_len(idr);
 
-  memset ((void *) buf, 0, sizeof (iso9660_stat_t));
+  memset ((void *) stat, 0, sizeof (iso9660_stat_t));
 
   if (!dir_len) return;
 
-  buf->type    = (idr->flags & ISO_DIRECTORY) ? _STAT_DIR : _STAT_FILE;
-  buf->lsn     = from_733 (idr->extent);
-  buf->size    = from_733 (idr->size);
-  buf->secsize = _cdio_len2blocks (buf->size, ISO_BLOCKSIZE);
+  stat->type    = (idr->flags & ISO_DIRECTORY) ? _STAT_DIR : _STAT_FILE;
+  stat->lsn     = from_733 (idr->extent);
+  stat->size    = from_733 (idr->size);
+  stat->secsize = _cdio_len2blocks (stat->size, ISO_BLOCKSIZE);
+
+  iso9660_get_time(idr->date, &(stat->tm));
 
   cdio_assert (dir_len >= sizeof (iso9660_dir_t));
 
@@ -81,7 +83,7 @@ _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *buf, bool is_mode2)
 		  xa_data->signature[0], xa_data->signature[1]);
       return;
     }
-    buf->xa = *xa_data;
+    stat->xa = *xa_data;
   }
     
 }
@@ -110,7 +112,7 @@ _idr2name (const iso9660_dir_t *idr)
 
 
 static void
-_fs_stat_root (const CdIo *cdio, iso9660_stat_t *buf, bool is_mode2)
+_fs_stat_root (const CdIo *cdio, iso9660_stat_t *stat, bool is_mode2)
 {
   char block[ISO_BLOCKSIZE] = { 0, };
   const iso9660_pvd_t *pvd = (void *) &block;
@@ -124,12 +126,13 @@ _fs_stat_root (const CdIo *cdio, iso9660_stat_t *buf, bool is_mode2)
       cdio_assert_not_reached ();
   }
 
-  _idr2statbuf (idr, buf, is_mode2);
+  _idr2statbuf (idr, stat, is_mode2);
 }
 
 static int
 _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root, 
-		   char **splitpath, iso9660_stat_t *buf, bool is_mode2)
+		   char **splitpath, /*out*/ iso9660_stat_t *buf, 
+		   bool is_mode2)
 {
   unsigned offset = 0;
   uint8_t *_dirbuf = NULL;
@@ -165,11 +168,9 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
   
   while (offset < (_root->secsize * ISO_BLOCKSIZE))
     {
-      const iso9660_dir_t *idr 
-	= (void *) &_dirbuf[offset];
-      iso9660_stat_t _stat;
-
-      char *_name;
+      const iso9660_dir_t *idr = (void *) &_dirbuf[offset];
+      iso9660_stat_t stat;
+      char *name;
 
       if (!iso9660_get_dir_len(idr))
 	{
@@ -177,19 +178,19 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
 	  continue;
 	}
       
-      _name = _idr2name (idr);
-      _idr2statbuf (idr, &_stat, is_mode2);
+      name = _idr2name (idr);
+      _idr2statbuf (idr, &stat, is_mode2);
 
-      if (!strcmp (splitpath[0], _name))
+      if (!strcmp (splitpath[0], name))
 	{
-	  int retval = _fs_stat_traverse (cdio, &_stat, &splitpath[1], buf,
+	  int retval = _fs_stat_traverse (cdio, &stat, &splitpath[1], buf,
 					  is_mode2);
-	  free (_name);
+	  free (name);
 	  free (_dirbuf);
 	  return retval;
 	}
 
-      free (_name);
+      free (name);
 
       offset += iso9660_get_dir_len(idr);
     }
@@ -229,15 +230,15 @@ iso9660_fs_stat (const CdIo *cdio, const char pathname[],
 void * /* list of char* -- caller must free it */
 iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool is_mode2)
 {
-  iso9660_stat_t _stat;
+  iso9660_stat_t stat;
 
   cdio_assert (cdio != NULL);
   cdio_assert (pathname != NULL);
 
-  if (iso9660_fs_stat (cdio, pathname, &_stat, is_mode2))
+  if (iso9660_fs_stat (cdio, pathname, &stat, is_mode2))
     return NULL;
 
-  if (_stat.type != _STAT_DIR)
+  if (stat.type != _STAT_DIR)
     return NULL;
 
   {
@@ -245,25 +246,25 @@ iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool is_mode2)
     uint8_t *_dirbuf = NULL;
     CdioList *retval = _cdio_list_new ();
 
-    if (_stat.size != ISO_BLOCKSIZE * _stat.secsize)
+    if (stat.size != ISO_BLOCKSIZE * stat.secsize)
       {
 	cdio_warn ("bad size for ISO9660 directory (%ud) should be (%d)!",
-		  (unsigned) _stat.size, ISO_BLOCKSIZE * _stat.secsize);
+		  (unsigned) stat.size, ISO_BLOCKSIZE * stat.secsize);
       }
 
-    _dirbuf = _cdio_malloc (_stat.secsize * ISO_BLOCKSIZE);
+    _dirbuf = _cdio_malloc (stat.secsize * ISO_BLOCKSIZE);
 
     if (is_mode2) {
-      if (cdio_read_mode2_sectors (cdio, _dirbuf, _stat.lsn, false, 
-				 _stat.secsize))
+      if (cdio_read_mode2_sectors (cdio, _dirbuf, stat.lsn, false, 
+				 stat.secsize))
 	cdio_assert_not_reached ();
     } else {
-      if (cdio_read_mode1_sectors (cdio, _dirbuf, _stat.lsn, false,
-				   _stat.secsize))
+      if (cdio_read_mode1_sectors (cdio, _dirbuf, stat.lsn, false,
+				   stat.secsize))
 	cdio_assert_not_reached ();
     }
 
-    while (offset < (_stat.secsize * ISO_BLOCKSIZE))
+    while (offset < (stat.secsize * ISO_BLOCKSIZE))
       {
 	const iso9660_dir_t *idr = (void *) &_dirbuf[offset];
 
@@ -278,7 +279,7 @@ iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool is_mode2)
 	offset += iso9660_get_dir_len(idr);
       }
 
-    cdio_assert (offset == (_stat.secsize * ISO_BLOCKSIZE));
+    cdio_assert (offset == (stat.secsize * ISO_BLOCKSIZE));
 
     free (_dirbuf);
     return retval;
@@ -299,10 +300,10 @@ find_fs_lsn_recurse (const CdIo *cdio, const char pathname[],
   
   _CDIO_LIST_FOREACH (entnode, entlist)
     {
-      char *_name = _cdio_list_node_data (entnode);
+      char *name = _cdio_list_node_data (entnode);
       char _fullname[4096] = { 0, };
 
-      snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, _name);
+      snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, name);
   
       if (iso9660_fs_stat (cdio, _fullname, statbuf, true))
         cdio_assert_not_reached ();
@@ -310,8 +311,8 @@ find_fs_lsn_recurse (const CdIo *cdio, const char pathname[],
       strncat (_fullname, "/", sizeof (_fullname));
 
       if (statbuf->type == _STAT_DIR
-          && strcmp (_name, ".") 
-          && strcmp (_name, ".."))
+          && strcmp (name, ".") 
+          && strcmp (name, ".."))
         _cdio_list_append (dirlist, strdup (_fullname));
 
       if (statbuf->lsn == lsn) {
