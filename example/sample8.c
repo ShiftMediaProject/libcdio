@@ -1,5 +1,5 @@
 /*
-  $Id: sample8.c,v 1.6 2004/07/21 11:01:23 rocky Exp $
+  $Id: sample8.c,v 1.7 2004/07/24 06:11:30 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -46,7 +46,7 @@ print_cdtext_track_info(CdIo *cdio, track_t i_track, const char *message) {
 }
     
 static void 
-print_cdtext_info(CdIo *cdio, track_t i_tracks, track_t i_first_track) {
+print_disc_info(CdIo *cdio, track_t i_tracks, track_t i_first_track) {
   track_t i_last_track = i_first_track+i_tracks;
   discmode_t cd_discmode = cdio_get_discmode(cdio);
 
@@ -101,7 +101,7 @@ main(int argc, const char *argv[])
   } else {
     i_first_track = cdio_get_first_track_num(cdio);
     i_tracks      = cdio_get_num_tracks(cdio);
-    print_cdtext_info(cdio, i_tracks, i_first_track);
+    print_disc_info(cdio, i_tracks, i_first_track);
     cdio_destroy(cdio);
   }
 
@@ -113,7 +113,7 @@ main(int argc, const char *argv[])
     printf("Couldn't find CD\n");
     return 1;
   } else {
-    print_cdtext_info(cdio, i_tracks, i_first_track);
+    print_disc_info(cdio, i_tracks, i_first_track);
   }
 
   cdio_destroy(cdio);
