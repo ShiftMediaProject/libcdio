@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.21 2004/02/02 03:55:19 rocky Exp $
+    $Id: _cdio_win32.c,v 1.22 2004/02/04 10:23:01 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,13 +26,12 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.21 2004/02/02 03:55:19 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.22 2004/02/04 10:23:01 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
 #include "cdio_assert.h"
-#include "cdio_private.h"
 #include "scsi_mmc.h"
 
 /* LBA = msf.frame + 75 * ( msf.second - 2 + 60 * msf.minute ) */
@@ -51,6 +50,7 @@ static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.21 2004/02/02 03:55:19 rock
 
 #include <windows.h>
 #include <winioctl.h>
+#include "_cdio_win32.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -132,32 +132,6 @@ typedef struct __RAW_READ_INFO {
     TRACK_MODE_TYPE TrackMode;
 } RAW_READ_INFO, *PRAW_READ_INFO;
 
-#pragma pack()
-
-typedef struct {
-  lsn_t          start_lsn;
-  UCHAR          Control : 4;
-  UCHAR          Format;
-} track_info_t;
-
-typedef struct {
-  /* Things common to all drivers like this. 
-     This must be first. */
-  generic_img_private_t gen; 
-
-  HANDLE h_device_handle; /* device descriptor */
-  long  hASPI;
-  short i_sid;
-  long  (*lpSendCommand)( void* );
-
-  /* Track information */
-  bool toc_init;                 /* if true, info below is valid. */
-  track_info_t  tocent[100];     /* entry info for each track */
-  track_t       total_tracks;    /* number of tracks in image */
-  track_t       first_track_num; /* track number of first track */
-
-} _img_private_t;
-
 /* General ioctl() CD-ROM command function */
 static bool 
 _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
@@ -175,42 +149,11 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
 }
 
 static const char *
-cdio_winnt_is_cdrom(const char drive_letter) 
-{
-  static char psz_win32_drive[7];
-  static char root_path_name[8];
-  _img_private_t obj;
-
-  /* Initializations */
-  obj.h_device_handle = NULL;
-  obj.i_sid = 0;
-  obj.hASPI = 0;
-  obj.lpSendCommand = 0;
-  
-  sprintf( psz_win32_drive, "\\\\.\\%c:", drive_letter );
-  sprintf( root_path_name, "\\\\.\\%c:\\", drive_letter );
-  
-  obj.h_device_handle = CreateFile( psz_win32_drive, GENERIC_READ,
-				    FILE_SHARE_READ | FILE_SHARE_WRITE,
-				    NULL, OPEN_EXISTING,
-				    FILE_FLAG_NO_BUFFERING |
-				    FILE_FLAG_RANDOM_ACCESS, NULL );
-  if (obj.h_device_handle != NULL 
-      && (DRIVE_CDROM == GetDriveType(root_path_name))) {
-    CloseHandle(obj.h_device_handle);
-    return strdup(psz_win32_drive);
-  } else {
-    CloseHandle(obj.h_device_handle);
-    return NULL;
-  }
-}
-  
-static const char *
 cdio_is_cdrom(const char drive_letter) {
   static char psz_win32_drive[7];
 
   if ( WIN_NT ) {
-    return cdio_winnt_is_cdrom(drive_letter);
+    return win32ioctl_is_cdrom(drive_letter);
   } else {
     HMODULE hASPI = NULL;
     long (*lpGetSupport)( void ) = NULL;
@@ -335,22 +278,7 @@ _cdio_init_win32 (void *user_data)
   _obj->lpSendCommand = 0;
   
   if ( WIN_NT ) {
-    char psz_win32_drive[7];
-    unsigned int len=strlen(_obj->gen.source_name);
-    
-    cdio_debug("using winNT/2K/XP ioctl layer");
-
-    if (cdio_is_device_win32(_obj->gen.source_name)) {
-      sprintf( psz_win32_drive, "\\\\.\\%c:", _obj->gen.source_name[len-2] );
-    
-      _obj->h_device_handle = CreateFile( psz_win32_drive, GENERIC_READ,
-					  FILE_SHARE_READ | FILE_SHARE_WRITE,
-					  NULL, OPEN_EXISTING,
-					  FILE_FLAG_NO_BUFFERING |
-					  FILE_FLAG_RANDOM_ACCESS, NULL );
-      return (_obj->h_device_handle == NULL) ? false : true;
-    } else
-      return false;
+    return win32ioctl_init_win32(_obj);
   } else {
     HMODULE hASPI = NULL;
     long (*lpGetSupport)( void ) = NULL;
@@ -591,8 +519,13 @@ static int
 _cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks) 
 {
-  return _cdio_mmc_read_sectors( user_data, data, lsn, 
-				 CDIO_MMC_READ_TYPE_CDDA, nblocks );
+  _img_private_t *_obj = user_data;
+  if ( _obj->hASPI ) {
+    return _cdio_mmc_read_sectors( user_data, data, lsn, 
+				   CDIO_MMC_READ_TYPE_CDDA, nblocks );
+  } else {
+    return win32ioctl_read_audio_sectors( _obj, data, lsn, nblocks );
+  }
 }
 
 /*!
@@ -605,7 +538,6 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   _img_private_t *_obj = user_data;
-  int ret;
 
   if (_obj->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
@@ -622,44 +554,18 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   _obj->gen.ioctls_debugged++;
 
   if ( _obj->hASPI ) {
+    int ret;
     ret = _cdio_mmc_read_sectors(user_data, buf, lsn, 
 				 CDIO_MMC_READ_TYPE_ANY, 1);
+    if( ret != 0 ) return ret;
+    if (mode2_form2)
+      memcpy (data, buf, M2RAW_SECTOR_SIZE);
+    else
+      memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
+    return 0;
   } else {
-    DWORD dwBytesReturned;
-    RAW_READ_INFO cdrom_raw;
-
-    /* Initialize CDROM_RAW_READ structure */
-    cdrom_raw.DiskOffset.QuadPart = CDIO_CD_FRAMESIZE * lsn;
-    cdrom_raw.SectorCount = 1;
-    cdrom_raw.TrackMode = XAForm2;
-    
-    if( DeviceIoControl( _obj->h_device_handle,
-			 IOCTL_CDROM_RAW_READ, &cdrom_raw,
-			 sizeof(RAW_READ_INFO), buf,
-			 sizeof(buf), &dwBytesReturned, NULL )
-	== 0 ) {
-      /* Retry in Yellowmode2 */
-      cdrom_raw.TrackMode = YellowMode2;
-      if( DeviceIoControl( _obj->h_device_handle,
-			 IOCTL_CDROM_RAW_READ, &cdrom_raw,
-			 sizeof(RAW_READ_INFO), buf,
-			 sizeof(buf), &dwBytesReturned, NULL )
-	  == 0 ) {
-	cdio_info("Error reading %lu (%ld)\n", lsn, GetLastError());
-	return 1;
-      }
-    }
-    ret = 0;
+    return win32ioctl_read_mode2_sector( _obj, data, lsn, mode2_form2 );
   }
-    
-  if( ret != 0 ) return ret;
-  
-  if (mode2_form2)
-    memcpy (data, buf, M2RAW_SECTOR_SIZE);
-  else
-    memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
-  
-  return 0;
 }
 
 /*!
@@ -923,10 +829,10 @@ _cdio_get_arg (void *user_data, const char key[])
   if (!strcmp (key, "source")) {
     return _obj->gen.source_name;
   } else if (!strcmp (key, "access-mode")) {
-    if ( WIN_NT ) 
-      return "winNT/2K/XP ioctl";
-    else if (_obj->hASPI) 
+    if (_obj->hASPI) 
       return "ASPI";
+    else if ( WIN_NT ) 
+      return "winNT/2K/XP ioctl";
     else 
       return "undefined WIN32";
   } 
