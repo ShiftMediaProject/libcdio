@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.6 2005/03/06 15:59:20 rocky Exp $
+    $Id: audio.c,v 1.7 2005/03/06 22:36:27 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -30,7 +30,7 @@
 #include "cdio_private.h"
 
 /* Return the number of seconds (discarding frame portion) of an MSF */
-unsigned int
+uint32_t
 cdio_audio_get_msf_seconds(msf_t *p_msf) 
 {
   return 
