@@ -1,6 +1,7 @@
 Makefile
 Makefile.in
 check_cue.sh
+check_common_fn
 check_nrg.sh
 *.dump
 *.cue
