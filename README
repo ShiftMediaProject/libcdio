@@ -1,6 +1,6 @@
 The libcdio package contains a library which encapsulates CD-ROM
 reading and control. Applications wishing to be oblivious of the OS-
-and device-dependant properties of a CD-ROM can use this library.
+and device-dependent properties of a CD-ROM can use this library.
 
 Also included is a library for working with ISO-9660 filesystems.
 
@@ -39,4 +39,4 @@ libcdio. However at present there are already many gaps in this
 library so narrowing its scope in order to focus on these things I
 think is a good idea.
 
-$Id: README,v 1.4 2004/02/27 02:35:24 rocky Exp $
+$Id: README,v 1.5 2004/04/21 09:26:37 rocky Exp $
