@@ -1,5 +1,5 @@
 /*
-  $Id: sample3.c,v 1.3 2003/08/17 07:16:10 rocky Exp $
+  $Id: sample3.c,v 1.4 2003/09/28 22:11:00 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -22,6 +22,9 @@
    A somewhat simplified program to show the use of cdio_guess_cd_type().
    Figure out the kind of CD image we've got.
 */
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -34,7 +37,7 @@ print_analysis(cdio_analysis_t cdio_analysis,
 	       track_t num_tracks, track_t first_track_num, CdIo *cdio)
 {
   switch(CDIO_FSTYPE(fs)) {
-  case CDIO_FS_NO_DATA:
+  case CDIO_FS_AUDIO:
     break;
   case CDIO_FS_ISO_9660:
     printf("CD-ROM with ISO 9660 filesystem");
@@ -98,7 +101,7 @@ print_analysis(cdio_analysis_t cdio_analysis,
     printf("CD-Plus/Extra   ");
   if (fs & CDIO_FS_ANAL_BOOTABLE)
     printf("bootable CD   ");
-  if (fs & CDIO_FS_ANAL_VIDEOCDI && num_audio == 0) {
+  if (fs & CDIO_FS_ANAL_VIDEOCD && num_audio == 0) {
     printf("Video CD   ");
   }
   if (fs & CDIO_FS_ANAL_SVCD)

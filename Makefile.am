@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.15 2003/09/19 04:38:39 rocky Exp $
+#   $Id: Makefile.am,v 1.16 2003/09/28 22:11:00 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -21,14 +21,9 @@
 ##     which make can then use to produce stuff. Isn't configuration simple? 
 
 EXTRA_DIST = libpopt.m4 THANKS libcdio.spec.in libcdio.spec \
-	     example/Makefile \
-	     example/README \
-	     example/sample1.c \
-	     example/sample2.c \
-	     example/sample3.c \
-	     example/sample4.c 
+	     example/README
 
-SUBDIRS =  doc include lib src test
+SUBDIRS =  doc include lib src test example
 
 # pkg-config(1) related rules
 pkgconfigdir = $(libdir)/pkgconfig

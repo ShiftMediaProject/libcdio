@@ -1,5 +1,5 @@
 /*
-  $Id: sample5.c,v 1.1 2003/09/28 17:14:20 rocky Exp $
+  $Id: sample5.c,v 1.2 2003/09/28 22:11:00 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -20,6 +20,9 @@
 
 /* Simple program to show drivers installed and what the default 
    CD-ROM drive is and what CD drives are available. */
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 #include <stdio.h>
 #include <sys/types.h>
 #include <cdio/cdio.h>
