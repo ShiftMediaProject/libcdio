@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.11 2004/10/26 08:32:29 rocky Exp $
+#   $Id: Makefile.am,v 1.12 2004/11/22 01:03:53 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,8 +20,13 @@
 # Things to regression testing
 ####################################################
 #
+if DISABLE_CPP
 noinst_PROGRAMS = cdtext drives iso1 iso2 iso3 scsi-mmc1 scsi-mmc2 \
 		  tracks sample2 sample3 sample4 
+else  
+noinst_PROGRAMS = cdtext drives iso1 iso2 iso3 scsi-mmc1 scsi-mmc2 \
+		  tracks sample2 sample3 sample4 iso1cpp iso2cpp iso3cpp
+endif
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
@@ -33,6 +38,15 @@ iso1_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 iso2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 iso3_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
+if !DISABLE_CPP
+iso1cpp_SOURCES  = iso1cpp.cpp
+iso1cpp_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso2cpp_SOURCES  = iso2cpp.cpp
+iso2cpp_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso3cpp_SOURCES  = iso3cpp.cpp
+iso3cpp_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+endif
+
 scsi_mmc1_LDADD = $(LIBCDIO_LIBS)
 scsi_mmc2_LDADD = $(LIBCDIO_LIBS)
 
@@ -41,3 +55,6 @@ sample3_LDADD = $(LIBCDIO_LIBS)
 sample4_LDADD = $(LIBCDIO_LIBS)
 
 tracks_LDADD  = $(LIBCDIO_LIBS)
+
+# iso programs create file "copying"
+MOSTLYCLEANFILES = copying

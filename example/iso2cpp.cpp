@@ -1,5 +1,5 @@
 /*
-  $Id: iso2.c,v 1.4 2004/11/22 01:03:53 rocky Exp $
+  $Id: iso2cpp.cpp,v 1.1 2004/11/22 01:03:53 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -20,6 +20,10 @@
 
 /* Simple program to show using libiso9660 to extract a file from a
    cue/bin CD-IMAGE.
+
+   This program can be compiled with either a C or C++ compiler. In 
+   the distributuion we perfer C++ just to make sure we haven't broken
+   things on the C++ side.
  */
 
 /* This is the CD-image with an ISO-9660 filesystem */

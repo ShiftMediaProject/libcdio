@@ -1,5 +1,5 @@
 /*
-    $Id: ds.h,v 1.1 2004/10/09 03:20:28 rocky Exp $
+    $Id: ds.h,v 1.2 2004/11/22 01:03:53 rocky Exp $
 
     Copyright (C) 2000, 2004 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -34,6 +34,10 @@ typedef int (*_cdio_list_cmp_func) (void *data1, void *data2);
 
 typedef int (*_cdio_list_iterfunc) (void *data, void *user_data);
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* methods */
 CdioList *_cdio_list_new (void);
 
@@ -63,6 +67,10 @@ CdioListNode *_cdio_list_node_next (CdioListNode *node);
 void _cdio_list_node_free (CdioListNode *node, int free_data);
 
 void *_cdio_list_node_data (CdioListNode *node);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* __CDIO_DS_H__ */
 

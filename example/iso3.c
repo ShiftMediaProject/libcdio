@@ -1,5 +1,5 @@
 /*
-  $Id: iso3.c,v 1.2 2004/10/31 13:58:44 rocky Exp $
+  $Id: iso3.c,v 1.3 2004/11/22 01:03:53 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -128,6 +128,8 @@ main(int argc, const char *argv[])
    */
   if (ftruncate (fileno (p_outfd), p_statbuf->size))
     perror ("ftruncate()");
+
+  printf("Extraction of file 'copying' from %s successful.\n", ISO9660_IMAGE);
 
   my_exit(0);
 }

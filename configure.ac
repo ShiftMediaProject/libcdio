@@ -19,7 +19,7 @@ define(RELEASE_NUM, 72)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.115 2004/11/21 22:32:03 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.116 2004/11/22 01:03:52 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -52,10 +52,17 @@ AC_ARG_WITH(cd_info,
 [  --without-cd-info	build program cd-info (enabled by default)],
 enable_cd_info="${withval}", enable_cd_info=yes)
 
+AC_ARG_ENABLE(vcd_info,
+	[  --disable-cpp        don't make C++ example programs],
+		enable_cpp=no,
+		enable_cpp=yes)
 
+dnl We use C 
+AC_PROG_CC
+dnl We also use C++ in example programs
+AC_PROG_CXX
 
 dnl Checks for programs.
-AC_PROG_CC
 AC_AIX
 
 cd_drivers='cdrdao, BIN/CUE, NRG'
@@ -224,6 +231,7 @@ AM_CONDITIONAL(BUILD_CDINFO, test "x$enable_cd_info" = "xyes")
 AM_CONDITIONAL(BUILD_CDINFO_LINUX, test "x$enable_cd_info_linux" = "xyes")
 AM_CONDITIONAL(BUILD_CDIOTEST, test "x$enable_cdiotest" = "xyes")
 AM_CONDITIONAL(BUILD_VERSIONED_LIBS, test "x$enable_versioned_libs" = "xyes")
+AM_CONDITIONAL(DISABLE_CPP, test "x$disable_cpp" = "xyes")
 
 dnl Checks for header files.
      
