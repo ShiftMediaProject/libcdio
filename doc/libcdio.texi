@@ -31,7 +31,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.3 2003/07/30 02:05:22 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.4 2003/08/02 03:41:07 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -346,7 +346,7 @@ on. The Lead-in and Lead-out gaps described above have LSNs just like
 any other space on a CD. The last unit of address is a @emph{LBA}. It
 is the same as a LSN but the 150 blocks assocated with the initial
 lead-in is are not counted. So to convert a LBA into an LSN you just
-add 150. Why the distinction between LBA and LSN, I don't know.
+add 150. Why the distinction between LBA and LSN? I don't know.
 
 @emph{Finish. describe TOC, 0xAA --- LEADOUT}.
 
