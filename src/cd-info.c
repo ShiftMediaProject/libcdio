@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.70 2004/06/23 09:28:02 rocky Exp $
+    $Id: cd-info.c,v 1.71 2004/07/16 21:29:25 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -39,6 +39,7 @@
 
 #include <cdio/util.h>
 #include <cdio/cd_types.h>
+#include <cdio/cdtext.h>
 #include <cdio/iso9660.h>
 
 #include "cdio_assert.h"
@@ -380,7 +381,25 @@ _log_handler (cdio_log_level_t level, const char message[])
   gl_default_cdio_log_handler (level, message);
 }
 
+static void 
+print_cdtext_info(CdIo *cdio) {
+    const cdtext_t *cdtext = cdio_get_cdtext(cdio);
 
+    if (NULL != cdtext) {
+      cdtext_field_t i;
+      
+      printf("\nCD-TEXT info:\n");
+
+      for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
+	if (cdtext->field[i]) {
+	  printf("\t%s: %s\n", cdtext_field2str(i), cdtext->field[i]);
+	}
+      }
+    } else {
+      printf("Didn't get CD-TEXT info.\n");
+    }
+}
+    
 #ifdef HAVE_CDDB
 static void 
 print_cddb_info(CdIo *cdio, track_t num_tracks, track_t first_track_num) {
@@ -637,6 +656,7 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
 #ifdef HAVE_CDDB
       if (!opts.no_cddb) print_cddb_info(p_cdio, num_tracks, first_track_num);
 #endif      
+      print_cdtext_info(p_cdio);
     }
     break;
   case CDIO_FS_ISO_9660:

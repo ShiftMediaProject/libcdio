@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.h,v 1.4 2004/07/11 14:25:07 rocky Exp $
+    $Id: cdtext.h,v 1.5 2004/07/16 21:29:24 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     adapted from cuetools
@@ -41,23 +41,25 @@ extern "C" {
   };
   
   typedef enum {
-    CDTEXT_ARRANGER   =  0,
-    CDTEXT_COMPOSER   =  1,
-    CDTEXT_DISCID     =  2,
-    CDTEXT_GENRE      =  3,
-    CDTEXT_MESSAGE    =  4,
-    CDTEXT_ISRC       =  5,
-    CDTEXT_PERFORMER  =  6,
-    CDTEXT_SIZE_INFO  =  7,
-    CDTEXT_SONGWRITER =  8,
-    CDTEXT_TITLE      =  9,
-    CDTEXT_TOC_INFO   = 10,
-    CDTEXT_TOC_INFO2  = 10,
+    CDTEXT_ARRANGER   =  0,   /**< name(s) of the arranger(s) */
+    CDTEXT_COMPOSER   =  1,   /**< name(s) of the composer(s) */
+    CDTEXT_DISCID     =  2,   /**< disc identification information */
+    CDTEXT_GENRE      =  3,   /**< genre identification and genre information */
+    CDTEXT_MESSAGE    =  4,   /**< ISRC code of each track */
+    CDTEXT_ISRC       =  5,   /**< message(s) from the content provider or artist */
+    CDTEXT_PERFORMER  =  6,   /**< name(s) of the performer(s) */
+    CDTEXT_SIZE_INFO  =  7,   /**< size information of the block */
+    CDTEXT_SONGWRITER =  8,   /**< name(s) of the songwriter(s) */
+    CDTEXT_TITLE      =  9,   /**< title of album name or track titles */
+    CDTEXT_TOC_INFO   = 10,   /**< table of contents information */
+    CDTEXT_TOC_INFO2  = 11,   /**< second table of contents information */
     CDTEXT_UPC_EAN    = 12,
     CDTEXT_INVALID    = MAX_CDTEXT_FIELDS
   } cdtext_field_t;
 
-
+/*! Return string representation of the enum values above */
+const char *cdtext_field2str (cdtext_field_t i);
+  
 /*! Initialize a new cdtext structure.
   When the structure is no longer needed, release the 
   resources using cdtext_delete.

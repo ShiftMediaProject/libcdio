@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.c,v 1.4 2004/07/11 14:25:07 rocky Exp $
+    $Id: cdtext.c,v 1.5 2004/07/16 21:29:25 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -34,6 +34,37 @@
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
+
+/*! Note: the order and number items (except CDTEXT_INVALID) should
+  match the cdtext_field_t enumeration. */
+const char *cdtext_keywords[] = 
+  {
+    "ARRANGER",
+    "COMPOSER",
+    "DISC_ID",
+    "GENRE",
+    "ISRC",
+    "MESSAGE",
+    "PERFORMER",
+    "SIZE_INFO",
+    "SONGWRITER",
+    "TITLE",
+    "TOC_INFO",
+    "TOC_INFO2",
+    "UPC_EAN",
+  };
+
+
+/*! Return string representation of the enum values above */
+const char *
+cdtext_field2str (cdtext_field_t i)
+{
+  if (i == 0 || i >= MAX_CDTEXT_FIELDS)
+    return "Invalid CDTEXT field index";
+  else 
+    return cdtext_keywords[i];
+}
+
 
 /*! Free memory assocated with cdtext*/
 void 
@@ -77,25 +108,6 @@ cdtext_init (cdtext_t *cdtext)
 cdtext_field_t
 cdtext_is_keyword (const char *key)
 {
-  /* Note: the order and number items (except CDTEXT_INVALID) should
-     match the cdtext_field_t enumeration. */
-  const char *cdtext_keywords[] = 
-    {
-      "ARRANGER",     /* name(s) of the arranger(s) */
-      "COMPOSER",     /* name(s) of the composer(s) */
-      "DISC_ID",      /* disc identification information */
-      "GENRE",        /* genre identification and genre information */
-      "ISRC",         /* ISRC code of each track */
-      "MESSAGE",      /* message(s) from the content provider and/or artist */
-      "PERFORMER",    /* name(s) of the performer(s) */
-      "SIZE_INFO",    /* size information of the block */
-      "SONGWRITER",   /* name(s) of the songwriter(s) */
-      "TITLE",        /* title of album name or track titles */
-      "TOC_INFO",     /* table of contents information */
-      "TOC_INFO2",    /* second table of contents information */
-      "UPC_EAN",
-    };
-
 #if 0  
   char *item;
   

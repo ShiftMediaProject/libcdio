@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.19 2004/05/31 14:52:04 rocky Exp $
+  $Id: cd-read.c,v 1.20 2004/07/16 21:29:35 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -484,7 +484,7 @@ main(int argc, const char *argv[])
     cdio = cdio_open (source_name, DRIVER_DEVICE);
     if (cdio==NULL) {
       err_exit("Error in automatically selecting device with input %s\n",
-	       source_name);
+	       source_name ? source_name : "(null)");
 
     } 
     break;
@@ -492,21 +492,21 @@ main(int argc, const char *argv[])
     cdio = cdio_open (source_name, DRIVER_BINCUE);
     if (cdio==NULL) {
       err_exit("Error in opening bin/cue file %s\n", 
-	       source_name);
+	       source_name ? source_name : "(null)");
     } 
     break;
   case IMAGE_CUE:
     cdio = cdio_open_cue(source_name);
     if (cdio==NULL) {
       err_exit("Error in opening cue/bin file %s with input\n", 
-	       source_name);
+	       source_name ? source_name : "(null)");
     } 
     break;
   case IMAGE_NRG:
     cdio = cdio_open (source_name, DRIVER_NRG);
     if (cdio==NULL) {
       err_exit("Error in opening NRG file %s for input\n", 
-	       source_name);
+	       source_name ? source_name : "(null)");
     } 
     break;
 
@@ -514,7 +514,7 @@ main(int argc, const char *argv[])
     cdio = cdio_open (source_name, DRIVER_CDRDAO);
     if (cdio==NULL) {
       err_exit("Error in opening TOC file %s for input\n", 
-	       source_name);
+	       source_name ? source_name : "(null)");
     } 
     break;
   }
