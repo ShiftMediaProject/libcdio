@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.10 2003/05/16 07:18:27 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.11 2003/05/25 10:34:16 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.10 2003/05/16 07:18:27 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.11 2003/05/25 10:34:16 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -75,30 +75,6 @@ typedef struct {
   struct ioc_read_toc_single_entry tocent[100]; /* entry info for each track */
 
 } _img_private_t;
-
-/*!
-  Initialize CD device.
- */
-static bool
-_cdio_init (_img_private_t *_obj)
-{
-  if (_obj->gen.init) {
-    cdio_error ("init called more than once");
-    return false;
-  }
-  
-  _obj->gen.fd = open (_obj->gen.source_name, O_RDONLY, 0);
-
-  if (_obj->gen.fd < 0)
-    {
-      cdio_error ("open (%s): %s", _obj->gen.source_name, strerror (errno));
-      return false;
-    }
-
-  _obj->gen.init = true;
-  _obj->toc_init = false;
-  return true;
-}
 
 static int 
 _set_bsize (int fd, unsigned int bsize)
@@ -340,8 +316,7 @@ _cdio_read_toc (_img_private_t *_obj)
 }
 
 /*!
-  Eject media in CD drive. If successful, as a side effect we 
-  also free obj.
+  Eject media. Return 1 if successful, 0 otherwise.
  */
 static int 
 _cdio_eject_media (void *user_data) {
@@ -550,7 +525,7 @@ cdio_open_freebsd (const char *source_name)
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;
 
-  if (_cdio_init(_data))
+  if (_cdio_generic_init(_data))
     return ret;
   else {
     _cdio_generic_free (_data);
