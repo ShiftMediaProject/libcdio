@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.51 2004/06/06 11:45:37 rocky Exp $
+    $Id: cdio.h,v 1.52 2004/06/06 11:47:39 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -241,7 +241,7 @@ extern "C" {
     @return the track number or CDIO_INVALID_TRACK 
     on error.
   */
-  track_t cdio_get_first_num_track(const CdIo *obj);
+  track_t cdio_get_first_track_num(const CdIo *obj);
   
   /*!
     Get the number of tracks on the CD.
