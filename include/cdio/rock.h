@@ -1,5 +1,5 @@
 /*
-    $Id: rock.h,v 1.4 2005/02/20 16:21:06 rocky Exp $
+    $Id: rock.h,v 1.5 2005/02/21 02:02:12 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -156,8 +156,8 @@ typedef enum {
 #define	ISO_ROCK_SL_ROOT     8
 
 typedef struct iso_rock_sl_part_s {
-  unsigned char flags;
-  unsigned char len;
+  uint8_t flags;
+  uint8_t len;
   char text[EMPTY_ARRAY_SIZE];
 } GNUC_PACKED iso_rock_sl_part_t ;
 

@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.26 2005/02/20 16:21:06 rocky Exp $
+    $Id: iso-info.c,v 1.27 2005/02/21 02:02:12 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -199,35 +199,40 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
   _CDIO_LIST_FOREACH (entnode, entlist)
     {
       iso9660_stat_t *p_statbuf = _cdio_list_node_data (entnode);
-      char *iso_name = p_statbuf->filename;
+      char *psz_iso_name = p_statbuf->filename;
       char _fullname[4096] = { 0, };
       char translated_name[MAX_ISONAME+1];
 
-      if (yep != p_statbuf->b_rock || 1 == opts.no_rock_ridge) {
-	iso9660_name_translate_ext(iso_name, translated_name, i_joliet_level);
+      if (yep != p_statbuf->b3_rock || 1 == opts.no_rock_ridge) {
+	iso9660_name_translate_ext(psz_iso_name, translated_name, 
+				   i_joliet_level);
 	snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
 		  translated_name);
       } else {
 	snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
-		  iso_name);
+		  psz_iso_name);
       }
       
       strncat (_fullname, "/", sizeof (_fullname));
 
       if (p_statbuf->type == _STAT_DIR
-          && strcmp (iso_name, ".") 
-          && strcmp (iso_name, ".."))
+          && strcmp (psz_iso_name, ".") 
+          && strcmp (psz_iso_name, ".."))
         _cdio_list_append (dirlist, strdup (_fullname));
 
       if (opts.print_iso9660) {
 	print_fs_attrs(p_statbuf, 
 		       0 == opts.no_rock_ridge,
 		       iso9660_ifs_is_xa(p_iso) && 0 == opts.no_xa,
-		       iso_name, translated_name);
+		       psz_iso_name, translated_name);
       } else 
-	if ( strcmp (iso_name, ".") && strcmp (iso_name, ".."))
+	if ( strcmp (psz_iso_name, ".") && strcmp (psz_iso_name, ".."))
 	  printf("%9u %s%s\n", p_statbuf->size, pathname, 
-		 yep == p_statbuf->b_rock ? iso_name : translated_name);
+		 yep == p_statbuf->b3_rock ? psz_iso_name : translated_name);
+      if (p_statbuf->i_symlink) {
+	free(p_statbuf->psz_symlink);
+	p_statbuf->i_symlink = 0;
+      }
     }
 
   _cdio_list_free (entlist, true);
@@ -275,9 +280,9 @@ init(void)
 #define print_vd_info(title, fn)	  \
   if (fn(p_iso, &psz_str)) {		  \
     printf(title ": %s\n", psz_str);	  \
-    free(psz_str);			  \
-    psz_str = NULL;			  \
-  }
+  }					  \
+  free(psz_str);			  \
+  psz_str = NULL;			  
 
 /* ------------------------------------------------------------------------ */
 

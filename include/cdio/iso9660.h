@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.69 2005/02/20 10:21:01 rocky Exp $
+    $Id: iso9660.h,v 1.70 2005/02/21 02:02:12 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -526,7 +526,7 @@ PRAGMA_END_PACKED
    @see iso9660_dir
 */
 struct iso9660_stat_s { /* big endian!! */
-  bool_3way_t   b_rock;               /**< has Rock Ridge extension. 
+  bool_3way_t   b3_rock;              /**< has Rock Ridge extension. 
                                          If not true then the next 9 fields
                                          aren't used.
                                       */
@@ -535,8 +535,11 @@ struct iso9660_stat_s { /* big endian!! */
   posix_uid_t   st_uid;               /**< user ID of owner */
   posix_gid_t   st_gid;               /**< group ID of owner */
   uint8_t       s_rock_offset;
-  int           i_size;               /**< FIXME: Is this one of the
-                                         size fields below? */
+  int           i_symlink;            /**< size of psz_symlink */
+  int           i_symlink_max;        /**< max allocated to psz_symlink */
+  char         *psz_symlink;          /**< if symbolic link, name
+                                           of pointed to file.
+                                       */
   struct tm     atime;                /**< time of last access */
   struct tm     mtime;                /**< time of last modification */
   struct tm     ctime;                /**< create time */

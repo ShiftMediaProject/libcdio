@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.40 2005/02/20 16:21:06 rocky Exp $
+  $Id: util.c,v 1.41 2005/02/21 02:02:12 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -23,6 +23,10 @@
 #include "util.h"
 #include <cdio/mmc.h>
 #include <cdio/bytesex.h>
+
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
 
 cdio_log_handler_t gl_default_cdio_log_handler = NULL;
 char *source_name = NULL;
@@ -459,7 +463,7 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
 {
   char date_str[30];
 
-  if (yep == p_statbuf->b_rock && b_rock) {
+  if (yep == p_statbuf->b3_rock && b_rock) {
     report (stdout, "  %s %d %d %d [LSN %6lu] %9u",
 	    iso9660_get_rock_attr_str (p_statbuf->st_mode),
 	    p_statbuf->st_nlinks,
@@ -489,9 +493,15 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
 	    (unsigned int) p_statbuf->size);
   }
   strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &p_statbuf->tm);
-  report (stdout," %s %s\n", date_str, 
-	  yep == p_statbuf->b_rock && b_rock
+  report (stdout," %s %s", date_str, 
+	  yep == p_statbuf->b3_rock && b_rock
 	  ? psz_name_untranslated : psz_name_translated);
+
+  if (yep == p_statbuf->b3_rock && b_rock && S_ISLNK(p_statbuf->st_mode)) {
+    report(stdout, " -> %s", p_statbuf->psz_symlink);
+  }
+  
+  report(stdout, "\n");
 
 }
 
