@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.2 2005/01/01 04:17:41 rocky Exp $
+    $Id: aspi32.c,v 1.3 2005/01/01 15:08:48 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.2 2005/01/01 04:17:41 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.3 2005/01/01 15:08:48 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -712,16 +712,7 @@ read_toc_aspi (_img_private_t *p_env)
 	(int)p_fulltoc[ i_index+3 ];
       p_env->tocent[i].Control   = (UCHAR)p_fulltoc[ 1 + 8 * i ];
       
-      p_env->gen.track_flags[j].preemphasis = 
-	p_env->tocent[i].Control & 0x1 
-	? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
-      
-      p_env->gen.track_flags[j].copy_permit = 
-	p_env->tocent[i].Control & 0x2 
-	? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
-      
-      p_env->gen.track_flags[j].channels = 
-	p_env->tocent[i].Control & 0x8 ? 4 : 2;
+      set_track_flags(&(p_env->gen.track_flags[j]), p_env->tocent[i].Control);
     
       cdio_debug( "p_sectors: %i %lu", 
 		  i, (unsigned long int) p_env->tocent[i].start_lsn );

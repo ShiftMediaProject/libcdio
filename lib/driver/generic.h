@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.3 2004/12/31 05:47:36 rocky Exp $
+    $Id: generic.h,v 1.4 2005/01/01 15:08:48 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -191,6 +191,8 @@ extern "C" {
     not exist.
   */
   bool init_cdtext_generic (generic_img_private_t *p_env);
+  
+  void set_track_flags(track_flags_t *p_track_flag, uint8_t flag);
   
 #ifdef __cplusplus
 }

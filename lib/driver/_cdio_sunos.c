@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.2 2004/12/31 08:27:49 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.3 2005/01/01 15:08:48 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.2 2004/12/31 08:27:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.3 2005/01/01 15:08:48 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -432,16 +432,7 @@ read_toc_solaris (void *p_user_data)
       return false;
     }
 
-    /** FIXME: Do in a more generic place? **/
-    p_env->gen.track_flags[i].preemphasis = 
-      p_toc->cdte_ctrl & 0x1 ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
-
-    p_env->gen.track_flags[i].copy_permit = 
-      p_toc->cdte_ctrl & 0x2 ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
-    
-    p_env->gen.track_flags[i].channels = 
-      p_toc->cdte_ctrl & 0x8 ? 4 : 2;
-
+    set_track_flags(&(p_env->gen.track_flags[i]), p_toc->cdte_ctrl);
   }
 
   /* read the lead-out track */

@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.c,v 1.1 2004/12/31 07:51:43 rocky Exp $
+    $Id: image_common.c,v 1.2 2005/01/01 15:08:48 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -116,10 +116,13 @@ _get_drive_cap_image (const void *user_data,
 		      cdio_drive_misc_cap_t  *p_misc_cap)
 {
 
-  *p_read_cap  = CDIO_DRIVE_CAP_READ_AUDIO 
+  *p_read_cap  = CDIO_DRIVE_CAP_READ_CD_DA
     | CDIO_DRIVE_CAP_READ_CD_G
     | CDIO_DRIVE_CAP_READ_CD_R
     | CDIO_DRIVE_CAP_READ_CD_RW
+    | CDIO_DRIVE_CAP_READ_MODE2_FORM1
+    | CDIO_DRIVE_CAP_READ_MODE2_FORM2
+    | CDIO_DRIVE_CAP_READ_MCN
     ;
 
   *p_write_cap = 0;

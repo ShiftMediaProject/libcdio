@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.3 2004/12/31 05:47:36 rocky Exp $
+    $Id: _cdio_generic.c,v 1.4 2005/01/01 15:08:48 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.3 2004/12/31 05:47:36 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.4 2005/01/01 15:08:48 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -456,6 +456,20 @@ get_track_preemphasis_generic(const void *p_user_data, track_t i_track)
   const generic_img_private_t *p_env = p_user_data;
   return p_env->track_flags[i_track].preemphasis;
 }
+
+void 
+set_track_flags(track_flags_t *p_track_flag, uint8_t i_flag) 
+{
+  p_track_flag->preemphasis = ( i_flag & CDIO_TRACK_FLAG_PRE_EMPHASIS )
+    ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
+
+  p_track_flag->copy_permit = ( i_flag & CDIO_TRACK_FLAG_COPY_PERMITTED )
+    ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
+  
+  p_track_flag->channels = ( i_flag & CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO )
+    ? 4 : 2;
+}
+
 
 
 /* 
