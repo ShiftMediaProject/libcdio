@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.25 2005/03/22 01:57:22 rocky Exp $
+    $Id: cdda-player.c,v 1.26 2005/03/22 09:19:47 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -1338,24 +1338,25 @@ main(int argc, char *argv[])
     nostop=1;
   }
 
-  /* open device */
-  if (b_verbose)
-    fprintf(stderr,"open %s... ", psz_device);
-
-  p_cdio = cdio_open (psz_device, driver_id);
-  if (!p_cdio && cd_op != EJECT_CD) {
-    cd_close(psz_device);
-    p_cdio = cdio_open (psz_device, driver_id);
-  }
-
-  if (p_cdio && b_verbose)
-      fprintf(stderr,"ok\n");
-  
   tty_raw();
   signal(SIGINT,ctrlc);
   signal(SIGQUIT,ctrlc);
   signal(SIGTERM,ctrlc);
   signal(SIGHUP,ctrlc);
+
+  if (CLOSE_CD != cd_op) {
+    /* open device */
+    if (b_verbose)
+      fprintf(stderr, "open %s... ", psz_device);
+    p_cdio = cdio_open (psz_device, driver_id);
+    if (!p_cdio && cd_op != EJECT_CD) {
+      cd_close(psz_device);
+      p_cdio = cdio_open (psz_device, driver_id);
+    }
+    
+    if (p_cdio && b_verbose)
+      fprintf(stderr,"ok\n");
+  }
   
   if (!interactive) {
     b_sig = true;
@@ -1396,9 +1397,6 @@ main(int argc, char *argv[])
 	    printf("%s / %s\n", artist, title);
 	  play_track(1,CDIO_CDROM_LEADOUT_TRACK);
 	  break;
-	case CLOSE_CD:
-	  i_rc = cdio_close_tray(psz_device, NULL) ? 0 : 1;
-	  break;
 	case SET_VOLUME:
 	  {
 	    cdio_audio_volume_t volume;
@@ -1424,6 +1422,7 @@ main(int argc, char *argv[])
 	    i_rc = 1;
 	  }
 	  break;
+	case CLOSE_CD: /* Handled below */
 	case LIST_KEYS:
 	case LIST_TRACKS:
 	case TOGGLE_PAUSE:
@@ -1431,7 +1430,10 @@ main(int argc, char *argv[])
 	case NO_OP:
 	  break;
 	}
-      else {
+      else if (CLOSE_CD == cd_op) {
+	i_rc = (DRIVER_OP_SUCCESS == cdio_close_tray(psz_device, NULL))
+		? 0 : 1;
+      } else {
 	fprintf(stderr,"no CD in drive (%s)\n", psz_device);
       }
     }
