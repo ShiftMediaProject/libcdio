@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.10 2003/05/27 02:55:58 rocky Exp $
+    $Id: cdio.h,v 1.11 2003/06/07 01:19:47 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -258,6 +258,9 @@ extern "C" {
 
   /* Like above but uses the enumeration instead. */
   bool cdio_have_driver (driver_id_t driver_id);
+  
+  /* Return a string decribing driver_id. */
+  const char *cdio_driver_describe (driver_id_t driver_id);
   
   /*! Sets up to read from place specified by source_name and
      driver_id This should be called before using any other routine,

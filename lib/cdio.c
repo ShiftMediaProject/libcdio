@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.16 2003/05/27 02:55:58 rocky Exp $
+    $Id: cdio.c,v 1.17 2003/06/07 01:19:46 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.16 2003/05/27 02:55:58 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.17 2003/06/07 01:19:46 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -373,6 +373,12 @@ bool
 cdio_have_driver(driver_id_t driver_id)
 {
   return (*CdIo_all_drivers[driver_id].have_driver)();
+}
+
+const char *
+cdio_driver_describe(driver_id_t driver_id)
+{
+  return CdIo_all_drivers[driver_id].describe;
 }
 
 
