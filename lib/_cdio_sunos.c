@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.44 2004/07/08 06:29:58 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.45 2004/07/08 06:33:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.44 2004/07/08 06:29:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.45 2004/07/08 06:33:22 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -504,7 +504,6 @@ cdio_get_default_device_solaris(void)
 static cdio_drive_cap_t
 _cdio_get_drive_cap_solaris (const void *user_data)
 {
-#if 1
   struct uscsi_cmd my_cmd;
   int32_t i_drivetype = 0;
   uint8_t buf[192] = { 0, };
@@ -516,7 +515,6 @@ _cdio_get_drive_cap_solaris (const void *user_data)
   memset(&my_scsi_cdb, 0, sizeof(my_scsi_cdb));
   memset(&my_rq_buf,   0, sizeof(my_rq_buf));
   
-  /* Initialize my_scsi_cdb as a Mode Select(6) */
   CDIO_MMC_SET_COMMAND(my_scsi_cdb, CDIO_MMC_GPCMD_MODE_SENSE_10);
   my_scsi_cdb[1] = 0x0;  
   my_scsi_cdb[2] = CDIO_MMC_ALL_PAGES; 
@@ -565,11 +563,6 @@ _cdio_get_drive_cap_solaris (const void *user_data)
     i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
   }
   return i_drivetype;
-
-#else
-  return CDIO_DRIVE_CAP_UNKNOWN | CDIO_DRIVE_CAP_CD_AUDIO 
-    | CDIO_DRIVE_CAP_CD_RW;
-#endif
 }
 
 /*!
