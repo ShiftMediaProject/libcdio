@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.22 2005/02/18 22:36:29 rocky Exp $
+    $Id: iso-info.c,v 1.23 2005/02/18 23:25:45 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -223,16 +223,16 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
 	    printf ("%9u (%9u)",
 		    (unsigned int) p_statbuf->secsize * M2F2_SECTOR_SIZE,
 		    (unsigned int) p_statbuf->size);
-	  } else {
-	    printf ("%9u", (unsigned int) p_statbuf->size);
 	  }
+	} else {
+	  printf ("%9u", (unsigned int) p_statbuf->size);
 	}
 	strftime(date_str, DATESTR_SIZE, "%b %d %Y %H:%M ", &p_statbuf->tm);
 	printf (" %s %s\n", date_str, 
 		yep == p_statbuf->b_rock ? iso_name : translated_name);
       } else 
 	if ( strcmp (iso_name, ".") && strcmp (iso_name, ".."))
-	  printf("%s%s\n", pathname, 
+	  printf("%9u %s%s\n", p_statbuf->size, pathname, 
 		 yep == p_statbuf->b_rock ? iso_name : translated_name);
     }
 
