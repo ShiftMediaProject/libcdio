@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.9 2003/09/07 18:15:26 rocky Exp $
+    $Id: iso9660.c,v 1.10 2003/09/10 08:39:00 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.9 2003/09/07 18:15:26 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.10 2003/09/10 08:39:00 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -47,10 +47,11 @@ static void
 pathtable_get_size_and_entries(const void *pt, unsigned int *size, 
                                unsigned int *entries);
 
-/* Get time structure from structure in an ISO 9660 directory index 
-   record. 
+/*!
+  Get time structure from structure in an ISO 9660 directory index 
+  record. Even though tm_wday and tm_yday fields are not explicitly in
+  idr_date, the are calculated from the other fields.
 */
-/* FIXME? What do we do about the other fields.*/
 void
 iso9660_get_time (const uint8_t idr_date[], /*out*/ struct tm *tm)
 {

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.20 2003/09/10 08:31:19 rocky Exp $
+    $Id: iso9660.h,v 1.21 2003/09/10 08:39:00 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -222,10 +222,11 @@ char *iso9660_strncpy_pad(char dst[], const char src[], size_t len,
 void iso9660_set_time (const struct tm *tm, /*out*/ uint8_t idr_date[]);
 
 
-/* Get time structure from structure in an ISO 9660 directory index 
-   record. 
+/*!
+  Get time structure from structure in an ISO 9660 directory index 
+  record. Even though tm_wday and tm_yday fields are not explicitly in
+  idr_date, the are calculated from the other fields.
 */
-/* FIXME? What do we do about the other fields.*/
 void iso9660_get_time (const uint8_t idr_date[], /*out*/ struct tm *tm);
 
 
