@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.c,v 1.9 2004/09/03 23:20:11 rocky Exp $
+    $Id: cdtext.c,v 1.10 2004/11/08 04:13:27 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -60,7 +60,7 @@ const char *cdtext_keywords[] =
 const char *
 cdtext_field2str (cdtext_field_t i)
 {
-  if (i == 0 || i >= MAX_CDTEXT_FIELDS)
+  if (i >= MAX_CDTEXT_FIELDS)
     return "Invalid CDTEXT field index";
   else 
     return cdtext_keywords[i];
