@@ -188,7 +188,7 @@ Media Catalog Number. A identification number on an audio CD.  Also
 called a UPC. Another identification number is ISRC.
 
 @item MMC
-@cindex MMC
+@cindex MMC (Multimedia Commands)
 
 MMC (Multimedia Commands). A SCSI programming specification made by
 the SCSI committee T10 organization @url{http://www.t10.org/}.  MMC
@@ -234,12 +234,6 @@ Yet another way of issuing MMC commands for accessing a CD-ROM. As
 with MMC or ASPI, the CD-ROM doesn't necessarily have to be a
 SCSI-attached drive. See also @acronym{MMC} and @acronym{ASPI}.
 
-
-@item SPTI 
-@cindex SPTI 
-
-SCSI Pass Through Interface. See SCSI Pass Through Interface
-
 @item Session
 
 A fully readable complete recording that contains one or more tracks
@@ -248,16 +242,28 @@ of computer data or audio on a CD.
 @item SVCD
 @cindex Super VCD (SVCD)
 
-Super @acronym{VCD} @uref{http://www.dvdrhelp.com/svcd}
+Super @acronym{VCD} 
+
+An improvement of Video CD 2.0 specification which includes most
+notably a switch from @acronym{MPEG}-1 (constant bit rate encoding) to
+@acronym{MPEG}-2 (variable bit rate encoding) for the video stream.
+
+Also added was higher video-stream resolution, up to 4 overlay
+graphics and text (@dfn{OGT}) sub-channels for user switchable
+subtitle displaying, closed caption text, and command lists for
+controlling the @acronym{SVCD} virtual machine.
+
+See @uref{http://www.dvdrhelp.com/svcd}
 
 @item TOC
-@cindex TOC
+@cindex TOC (CD Table of Contents)
 
-Table of Contents. The TOC contains the starting track number, last
-track number individual track starting time, format of track: CDDA or
-CDROM. Every CD must have at least 1 TOC, the first TOC is always
-recorded at the start of the CD (lead-in area).  A multi-session CD
-may have several TOCs.
+(Compact Disc) Table of Contents. The TOC contains the starting track
+number, last track number individual track starting time, and some
+track flags (copy protection, linear audio preemphasis, track format:
+CDDA or data).  Every CD must have at least 1 TOC, the first TOC is
+always recorded at the start of the CD (lead-in area).  A
+multi-session CD may have several TOCs.
 
 @item Track 
 @cindex track

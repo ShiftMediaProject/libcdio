@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.35 2005/01/29 20:54:20 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.36 2005/01/31 09:22:35 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -669,7 +669,9 @@ format.
 
 @subsection CDRDAO Grammar
 
-Here is a list of lexical tokens taken from the cdrdao grammar.
+Below are the lexical tokens and grammar for a cdrdao TOC. It was
+taken from the cdrdao's pacct grammar; the token and nonterminal names
+are the same.
 
 @example
 #lexclass START
@@ -679,7 +681,6 @@ Here is a list of lexical tokens taken from the cdrdao grammar.
 #token                  "\n"       
 #token BeginString      "\""       
 #token Integer          "[0-9]+"
-#token Index            "INDEX"
 #tokclass AudioFile     @{ "AUDIOFILE" "FILE" @}
 
 #lexclass STRING
@@ -693,73 +694,73 @@ Here is a list of lexical tokens taken from the cdrdao grammar.
 
 @example
 
-toc  ::= ( "CATALOG" string | tocType )* @{ cdTextGlobal @} ( track )+ Eof 
+<toc>  ::= ( "CATALOG" <string> | <tocType> )* @{ <cdTextGlobal> @} 
+           ( <track> )+ Eof 
 
-track ::= "TRACK" trackMode 
-    @{ subChannelMode @}
-    (  "ISRC" string | @{ "NO" @} "COPY" | @{ "NO" @} "PRE_EMPHASIS" 
+<track> ::= "TRACK" <trackMode> 
+    @{ <subChannelMode> @}
+    (  "ISRC" <string> | @{ "NO" @} "COPY" | @{ "NO" @} "PRE_EMPHASIS" 
     | "TWO_CHANNEL_AUDIO"  | "FOUR_CHANNEL_AUDIO" )*
-    @{ cdTextTrack  @}
-    @{ "PREGAP" msf @}
-    ( subTrack | "START" | "END" )+
-    ( Index msf )*
+    @{ <cdTextTrack>  @}
+    @{ "PREGAP" <msf> @}
+    ( <subTrack> | "START" | "END" )+
+    ( "INDEX" <msf> )*
 
-subTrack ::= 
-    (  AudioFile string @{ "SWAP"  @} @{ "#" sLong  @}  samples
-     | "DATAFILE" string @{ "#" sLong @{ dataLength @} @}
-     | "FIFO" string dataLength 
-     | "SILENCE" samples 
-     | "ZERO" @{ dataMode  @} @{ subChannelMode  @} dataLength 
-    )
+<subTrack> ::= 
+     AudioFile <string> @{ "SWAP"  @} @{ "#" <sLong>  @}  <samples>
+     | "DATAFILE" <string> @{ "#" <sLong> @{ <dataLength> @} @}
+     | "FIFO" <string> <dataLength> 
+     | "SILENCE" <samples> 
+     | "ZERO" @{ dataMode  @} @{ <subChannelMode>  @} <dataLength> 
+  
 
-string ::=  BeginString ( (  String | StringQuote | StringOctal ) )+ 
+<string> ::=  BeginString ( String | StringQuote | StringOctal )+ 
             EndString
 
-stringEmpty ::= BeginString ( (  String | StringQuote | StringOctal ) )*
+<stringEmpty> ::= BeginString ( String | StringQuote | StringOctal )*
                 EndString
 
-uLong ::= Integer 
+<uLong> ::= Integer 
 
-sLong ::= Integer 
+<sLong> ::= Integer 
 
-msf ::= Integer ":" Integer ":" Integer 
+<msf> ::= Integer ":" Integer ":" Integer 
 
-samples ::= ( msf | uLong )
+<samples> ::= <msf> | <uLong>
 
-dataLength ::= ( msf | uLong )
+<dataLength> ::= <msf> | <uLong>
 
-dataMode ::= ( "AUDIO" | "MODE0" | "MODE1" | "MODE1_RAW" | "MODE2" 
-     | "MODE2_RAW" | "MODE2_FORM1" | "MODE2_FORM2" | "MODE2_FORM_MIX" )
+<dataMode> ::=  "AUDIO" | "MODE0" | "MODE1" | "MODE1_RAW" | "MODE2" 
+     | "MODE2_RAW" | "MODE2_FORM1" | "MODE2_FORM2" | "MODE2_FORM_MIX"
 
-trackMode ::= ( "AUDIO" | "MODE1" | "MODE1_RAW" | "MODE2"
-     | "MODE2_RAW"  | "MODE2_FORM1" | "MODE2_FORM2" | "MODE2_FORM_MIX" )
+<trackMode> ::= "AUDIO" | "MODE1" | "MODE1_RAW" | "MODE2"
+     | "MODE2_RAW"  | "MODE2_FORM1" | "MODE2_FORM2" | "MODE2_FORM_MIX"
 
-subChannelMode ::= (  "RW" | "RW_RAW"  )
+<subChannelMode> ::= "RW" | "RW_RAW"
 
-tocType ::= ( "CD_DA" | "CD_ROM" | "CD_ROM_XA" | "CD_I" )
+<tocType> ::= "CD_DA" | "CD_ROM" | "CD_ROM_XA" | "CD_I"
 
-packType ::= ( "TITLE" | "PERFORMER" | "SONGWRITER" | "COMPOSER" | "ARRANGER"  
+<packType> ::= "TITLE" | "PERFORMER" | "SONGWRITER" | "COMPOSER" | "ARRANGER"  
      | "MESSAGE" | "DISC_ID" | "GENRE" | "TOC_INFO1" | "TOC_INFO2"  
      | "RESERVED1" | "RESERVED2" | "RESERVED3" | "RESERVED4" | "UPC_EAN" |
-     "ISRC" | "SIZE_INFO"   )
+     "ISRC" | "SIZE_INFO"
 
-binaryData ::=  "\@{"
+<binaryData> ::=  "@{"
     @{ Integer ( "," Integer  )* @}
-    "\@}"
+    "@}"
          
-cdTextItem ::= packType  (  stringEmpty | binaryData )
+<cdTextItem> ::= <packType>  ( <stringEmpty> | <binaryData> )
  
-cdTextBlock ::=  "LANGUAGE" Integer "\@{" ( cdTextItem )* "\@}"
+<cdTextBlock> ::=  "LANGUAGE" Integer "@{" ( <cdTextItem> )* "@}"
 
-
-cdTextLanguageMap ::= 
-    LanguageMap "\@{"
+<cdTextLanguageMap> ::= 
+    "LANGUAGE_MAP" "@{"
     ( Integer  ":" (  Integer | "EN"  ) )+
-    "\@}"
+    "@}"
 
-cdTextTrack ::=  "CD_TEXT" "\@{" ( cdTextBlock )*  "\@}"
+<cdTextTrack> ::=  "CD_TEXT" "@{" ( <cdTextBlock> )*  "@}"
 
-cdTextGlobal ::= "CD_TEXT" "\@{" @{ cdTextLanguageMap  @} ( cdTextBlock )*  "\@}"
+<cdTextGlobal> ::= "CD_TEXT" "@{" @{ <cdTextLanguageMap> @} ( <cdTextBlock> )* "@}"
 @end example
 
 
@@ -1825,9 +1826,9 @@ bit misleading because a drive can understand ``SCSI MMC'' commands
 but not use a SCSI interface. In fact there are drivers to
 ``encapsulate'' non-SCSI drive or a non-MMC-compliant drive and make
 it act like a MMC drive. I believe that many OS SCSI ``pass-through''
-mechanisms do the same thing.
+mechanisms do roughly the same thing.
 
-The name ``SCSI MMC'' is no doubt do to the fact that these commands
+The name ``SCSI MMC'' is no doubt due to the fact that these commands
 grew out of the SCSI command set and thus were bundled in them. 
 
 For clarity and precision we will use the term ``MMC'' rather than
@@ -1849,17 +1850,18 @@ standards is the variation in the commands themselves and there are
 perhaps two or three ways to do many of the basic commands like read a
 CD frame.
 
-There seems to be a fascination in the MMC specification world with
-the number of bytes a command takes. (Size matters?) So often the name
-of an operation will have a suffix with the number of bytes of the
-command (actually in MMC jargon this is called a ``cdb'' 
+There seems to be a fascination with the number of bytes a command
+takes in the MMC-specification world. (Size matters?) So often the
+name of an operation will have a suffix with the number of bytes of
+the command (actually in MMC jargon this is called a ``cdb''
 @cindex cdb (Command Descriptor Buffer)
 or command descriptor buffer). So for example there is a 6-byte ``MODE
 SELECT'' often called ``MODE SELECT 6'' and a 10-byte ``MODE SELECT''
-sometimes called ``MODE SELECT 10''. Presumably the 6-byte command
-came first and it was discovered that there was some deficiency
-causing the longer command. In @value{libcdio} often in the later or
-more common name we drop the size suffix.
+often called ``MODE SELECT 10''. Presumably the 6-byte command came
+first and it was discovered that there was some deficiency causing the
+longer command. In @value{libcdio} where there are two formats we add
+the suffix in the name, e.g. @code{CDIO_MMC_GPCMD_MODE_SELECT_6} or
+@code{CDIO_MMC_GPCMD_MODE_SELECT_10}.
 
 If the fascination and emphasis in the MMC specifications of cdb size
 is a bit odd, equally so is the fact that this too often has bled
