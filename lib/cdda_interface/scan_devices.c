@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.9 2005/01/09 01:50:56 rocky Exp $
+  $Id: scan_devices.c,v 1.10 2005/01/14 03:41:11 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -154,7 +154,6 @@ test_resolve_symlink(const char *file,int messagedest,char **messages)
 cdrom_drive_t *
 cdda_identify_cooked(const char *dev, int messagedest, char **messages)
 {
-
   cdrom_drive_t *d=NULL;
   int drive_type = 0;
   char *description=NULL;
