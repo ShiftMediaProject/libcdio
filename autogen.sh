@@ -37,22 +37,20 @@ grep "^AM_GNU_GETTEXT" $srcdir/configure.ac >/dev/null && {
 
 (automake --version) < /dev/null > /dev/null 2>&1 || {
   echo
-  echo "**Error**: You must have \`automake' installed."
-  echo "Get ftp://ftp.gnu.org/pub/gnu/automake-1.3.tar.gz"
-  echo "(or a newer version if it is available)"
-  DIE=1
-  NO_AUTOMAKE=yes
 }
 
-# if no automake, don't bother testing for aclocal
-test -n "$NO_AUTOMAKE" || (aclocal --version) < /dev/null > /dev/null 2>&1 || {
-  echo
-  echo "**Error**: Missing \`aclocal'.  The version of \`automake'"
-  echo "installed doesn't appear recent enough."
-  echo "Get ftp://ftp.gnu.org/pub/gnu/automake-1.3.tar.gz"
-  echo "(or a newer version if it is available)"
-  DIE=1
-}
+if automake --version > /dev/null 2>&1; then
+  case "`automake --version | sed -e '1s/[^0-9]*//' -e q`" in
+    1.[6789]|1.[6789][-.]*)
+     ;;
+    0|0.*|1|1.[012345]|1.[012345][-.]*|*)
+      echo "**Error**: You must have \`automake' 1.6 or greater installed."
+      echo "Get it from ftp://ftp.gnu.org/pub/gnu/automake"
+      DIE=1
+      NO_AUTOMAKE=yes
+    ;;
+  esac
+fi
 
 if test "$DIE" -eq 1; then
   exit 1
