@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.24 2005/03/21 09:00:20 rocky Exp $
+    $Id: cdda-player.c,v 1.25 2005/03/22 01:57:22 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -81,7 +81,7 @@ static void display_cdinfo(CdIo_t *p_cdio, track_t i_tracks,
 static void get_cddb_track_info(track_t i_track);
 static void get_cdtext_track_info(track_t i_track);
 static void get_track_info(track_t i_track);
-static void list_tracks(bool b_keypress_wait);
+static void display_tracks(void);
 
 CdIo_t             *p_cdio;               /* libcdio handle */
 driver_id_t        driver_id = DRIVER_DEVICE;
@@ -115,6 +115,7 @@ bool               b_cddb   = false; /* CDDB database present */
 bool               b_db     = false; /* we have a database at all */
 bool               b_record = false; /* we have a record for
 					the inserted CD */
+bool               b_all_tracks = false; /* True if we display all tracks*/
 
 char *psz_device=NULL;
 char *psz_program;
@@ -160,7 +161,7 @@ const char key_bindings[][MAX_KEY_STR] = {
   "    F1-F20    jump to track 11-30",
   " ",
   "    k, h, ?   show this key help",
-  "    l,        list tracks",
+  "    l,        toggle listing all tracks",
   "    e         eject",
   "    c         close tray",
   "    p, space  pause / resume",
@@ -170,24 +171,6 @@ const char key_bindings[][MAX_KEY_STR] = {
   "    a         toggle auto-mode",
 };
 
-typedef enum {
-  NO_OP=0,
-  PLAY_CD=1,
-  PLAY_TRACK=2,
-  STOP_PLAYING=3,
-  EJECT_CD=4,
-  CLOSE_CD=5,
-  SET_VOLUME=6,
-  LIST_SUBCHANNEL=7,
-  LIST_KEYS=8,
-  LIST_TRACKS=9,
-  PS_LIST_TRACKS=10,
-  TOGGLE_PAUSE=11,
-  EXIT_PROGRAM=12
-} cd_operation_t;
-
-cd_operation_t cd_op; /* operation to do in non-interactive mode */
-  
 const unsigned int i_key_bindings = sizeof(key_bindings) / MAX_KEY_STR;
 
 /* ---------------------------------------------------------------------- */
@@ -325,6 +308,7 @@ cd_stop(CdIo_t *p_cdio)
     b_ok = DRIVER_OP_SUCCESS == cdio_audio_stop(p_cdio);
     if ( !b_ok )
       xperror("stop");
+    if (b_all_tracks) display_tracks();
   }
   return b_ok;
 }
@@ -521,7 +505,8 @@ read_toc(CdIo_t *p_cdio)
       play_track(1, CDIO_CDROM_LEADOUT_TRACK);
   }
   action(NULL);
-  display_cdinfo(p_cdio, i_tracks, i_first_track);
+  if (!b_all_tracks)
+    display_cdinfo(p_cdio, i_tracks, i_first_track);
 }
 
 /*! Play an audio track. */
@@ -647,44 +632,48 @@ display_status(bool b_status_only)
   if ( !b_status_only && b_db && i_last_display_track != sub.track && 
        (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
 	sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY)  &&
-	b_cd ) {
-    const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track];
-    i_last_display_track = sub.track;
-    if (i_first_audio_track != sub.track && 
-	strlen(cd_info[sub.track-1].title)) {
-      const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track-1];
-      mvprintw(LINE_TRACK_PREV, 0, (char *) " track %2d title : %s [%s]",
-	       sub.track-1, p_cd_info->title, 
-	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
-      clrtoeol();
-    } else {
-      mvprintw(LINE_TRACK_PREV, 0, (char *) "%s","");
-      clrtoeol();
+	b_cd) {
+
+    if (b_all_tracks) display_tracks();
+    else {
+      const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track];
+      i_last_display_track = sub.track;
+      if (i_first_audio_track != sub.track && 
+	  strlen(cd_info[sub.track-1].title)) {
+	const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track-1];
+	mvprintw(LINE_TRACK_PREV, 0, (char *) " track %2d title : %s [%s]",
+		 sub.track-1, p_cd_info->title, 
+		 p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
+	clrtoeol();
+      } else {
+	mvprintw(LINE_TRACK_PREV, 0, (char *) "%s","");
+	clrtoeol();
+      }
+      if (strlen(p_cd_info->title)) {
+	mvprintw(LINE_TRACK_TITLE,  0, (char *) ">track %2d title : %s [%s]", 
+		 sub.track, p_cd_info->title, 
+		 (char *) p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
+	clrtoeol();
+      }
+      if (strlen(p_cd_info->artist)) {
+	mvprintw(LINE_TRACK_ARTIST, 0, (char *) ">track %2d artist: %s [%s]",
+		 sub.track, p_cd_info->artist,
+		 p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
+	clrtoeol();
+      }
+      if (i_last_audio_track != sub.track && 
+	  strlen(cd_info[sub.track+1].title)) {
+	const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track+1];
+	mvprintw(LINE_TRACK_NEXT, 0, (char *) " track %2d title : %s [%s]", 
+		 sub.track+1, p_cd_info->title,
+		 p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
+	clrtoeol();
+      } else {
+	mvprintw(LINE_TRACK_NEXT, 0, (char *) "%s","");
+	clrtoeol();
+      }
+      clrtobot();
     }
-    if (strlen(p_cd_info->title)) {
-      mvprintw(LINE_TRACK_TITLE,  0, (char *) ">track %2d title : %s [%s]", 
-	       sub.track, p_cd_info->title, 
-	       (char *) p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
-      clrtoeol();
-    }
-    if (strlen(p_cd_info->artist)) {
-      mvprintw(LINE_TRACK_ARTIST, 0, (char *) ">track %2d artist: %s [%s]",
-	       sub.track, p_cd_info->artist,
-	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
-      clrtoeol();
-    }
-    if (i_last_audio_track != sub.track && 
-	strlen(cd_info[sub.track+1].title)) {
-      const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track+1];
-      mvprintw(LINE_TRACK_NEXT, 0, (char *) " track %2d title : %s [%s]", 
-	       sub.track+1, p_cd_info->title,
-	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
-      clrtoeol();
-    } else {
-      mvprintw(LINE_TRACK_NEXT, 0, (char *) "%s","");
-      clrtoeol();
-    }
-    clrtobot();
   }
 
   refresh();
@@ -842,13 +831,12 @@ keypress_wait(CdIo_t *p_cdio)
     while (1 != select_wait(b_cd ? 1 : 5)) {
       read_subchannel(p_cdio);
       display_status(true);
-      if (LIST_TRACKS == cd_op && i_last_display_track != sub.track) 
-	list_tracks(false);
     }
     key = getch();
     clrtobot();
     action(NULL);
-    display_cdinfo(p_cdio, i_tracks, i_first_track);
+    if (!b_all_tracks)
+      display_cdinfo(p_cdio, i_tracks, i_first_track);
     i_last_display_track = CDIO_INVALID_TRACK;
   }
 
@@ -864,7 +852,7 @@ list_keys()
 }
 
 static void
-list_tracks(bool b_keypress_wait)
+display_tracks(void)
 {
   track_t i;
   int i_line=0;
@@ -876,10 +864,12 @@ list_tracks(bool b_keypress_wait)
       char line[80];
       s = cdio_audio_get_msf_seconds(&toc[i+1]) 
 	- cdio_audio_get_msf_seconds(&toc[i]);
+      read_subchannel(p_cdio);
       sprintf(line, "%2d  %02d:%02d  %s ", i, 
 	      s / CDIO_CD_SECS_PER_MIN,  s % CDIO_CD_SECS_PER_MIN,
-	      (sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY &&
-	       sub.track == i) ? "->" : " |");
+	      ( ( sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY ||
+		  sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ) &&
+		sub.track == i ) ? "->" : " |");
       if (b_record) {
 	if ( strlen(cd_info[i].title) )
 	  strcat(line, cd_info[i].title);
@@ -892,7 +882,6 @@ list_tracks(bool b_keypress_wait)
       mvprintw(i_line++, 0, line);
       clrtoeol();
     }
-    if (b_keypress_wait) keypress_wait(p_cdio);
   }
 }
 
@@ -1213,6 +1202,22 @@ ps_list_tracks(void)
   printf("showpage\n");
 }
 
+typedef enum {
+  NO_OP=0,
+  PLAY_CD=1,
+  PLAY_TRACK=2,
+  STOP_PLAYING=3,
+  EJECT_CD=4,
+  CLOSE_CD=5,
+  SET_VOLUME=6,
+  LIST_SUBCHANNEL=7,
+  LIST_KEYS=8,
+  LIST_TRACKS=9,
+  PS_LIST_TRACKS=10,
+  TOGGLE_PAUSE=11,
+  EXIT_PROGRAM=12
+} cd_operation_t;
+
 int
 main(int argc, char *argv[])
 {    
@@ -1220,6 +1225,9 @@ main(int argc, char *argv[])
   char *h;
   int  i_rc = 0;
   int  i_volume_level = 0;
+  cd_operation_t cd_op; /* operation to do in non-interactive mode */
+  
+  
   psz_program = strrchr(argv[0],'/');
   psz_program = psz_program ? psz_program+1 : argv[0];
 
@@ -1447,34 +1455,35 @@ main(int argc, char *argv[])
 	/* fall through */
       case 'Q':
       case 'q':
-	cd_op  = EXIT_PROGRAM;
 	b_sig = true;
 	break;
       case 'E':
       case 'e':
-	cd_op = EJECT_CD;
 	cd_eject();
 	break;
       case 's':
-	cd_op = STOP_PLAYING;
 	cd_stop(p_cdio);
 	break;
       case 'C':
       case 'c':
-	cd_op = CLOSE_CD;
 	cd_close(psz_device);
 	break;
       case 'L':
       case 'l':
-	cd_op = LIST_TRACKS;
-	list_tracks(true);
+	b_all_tracks = !b_all_tracks;
+	if (b_all_tracks)
+	  display_tracks();
+	else {
+	  i_last_display_track = CDIO_INVALID_TRACK;
+	  display_cdinfo(p_cdio, i_tracks, i_first_track);
+	}
+	
 	break;
       case 'K':
       case 'k':
       case 'h':
       case 'H':
       case '?':
-	cd_op = LIST_KEYS;
 	list_keys();
 	break;
       case ' ':
