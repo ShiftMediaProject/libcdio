@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.44 2004/06/22 15:05:39 thesin Exp $
+    $Id: _cdio_osx.c,v 1.45 2004/06/23 00:37:19 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.44 2004/06/22 15:05:39 thesin Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.45 2004/06/23 00:37:19 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -68,7 +68,8 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.44 2004/06/22 15:05:39 thesin
 #include <IOKit/storage/IOCDMediaBSDClient.h>
 #include <IOKit/storage/IODVDMediaBSDClient.h>
 
-/* Note leadout should be 0xAA, But OSX seems to use 0xA2. */
+/* Note leadout is normally defined 0xAA, But on OSX 0xA0 is "lead in" while
+   0xA2 is "lead out". Don't ask me why. */
 #define	OSX_CDROM_LEADOUT_TRACK 0xA2
 
 #define TOTAL_TRACKS    (env->i_last_track - env->i_first_track + 1)
@@ -417,7 +418,6 @@ _cdio_read_toc (_img_private_t *env)
 	  continue;
 
 	if( i_track == OSX_CDROM_LEADOUT_TRACK )
-	  /* Note leadout should be 0xAA, But OSX seems to use 0xA2. */
 	  i_leadout = i;
 
 	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
