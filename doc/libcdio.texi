@@ -1,4 +1,4 @@
-\input texinfo @c -*-texinfo-*-
+o\input texinfo @c -*-texinfo-*-
 
 @c %**start of header
 @setfilename libcdio.info
@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.25 2004/07/29 05:32:11 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.26 2004/08/07 11:27:03 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -143,15 +143,17 @@ If around the year 2002 you were to look at the code for a number of
 open-source CD or media players that work on several platforms such as
 vlc, MPlayer, xine, or xmms to name but a few, you'd find the code to
 read a CD sprinked with conditional compilation for this or that
-platform. That is there was OS-independent programmer library for CD
-reading and control even though the technology was over 10 years old!
+platform. That is there was @emph{no} OS-independent programmer
+library for CD reading and control even though the technology was over
+10 years old; yet there are media players which strive for OS
+independence.
 
-One CD player, @kbd{xmcd} by Ti Kan, was I think a bit better than
-most in that it tried to @emph{encapsulate} the kinds of CD control
-mechanisms (SCSI, Linux ioctl, Toshiba, etc.) in a "CD Audio Device
-Interface Library" called libdi.  However this library is for Audio
-CD's only and I don't believe this library has been used outside of
-xmcd.
+One early CD player, @kbd{xmcd} by Ti Kan, was I think a bit better
+than most in that it tried to @emph{encapsulate} the kinds of CD
+control mechanisms (SCSI, Linux ioctl, Toshiba, etc.) in a "CD Audio
+Device Interface Library" called libdi.  However this library is for
+Audio CD's only and I don't believe this library has been used outside
+of xmcd.
 
 Another project, Simple DirectMedia Layer also encapsulates CD
 reading. 
@@ -180,12 +182,16 @@ along the way to creating such a SCSI library a library similar to
 @value{libcdio} wasn't created which could be used. Were that the
 case, this library certainly never would have been written.
 
-At the OS level there is the "A Linux CD-ROM Standard" by David van
+At the OS level there is the ``A Linux CD-ROM Standard'' by David van
 Leeuwen from around 1999. This defines a set of definitions and
 ioctl's that mask hardware differences of various Compact Disc
 hardware. It is a great idea, however this ``standard'' lacked
-adoption on OS's other than GNU/Linux. (Or maybe it's the case that
-the standard on other OS's lacked adoption on GNU/Linux.)
+adoption on OS's other than GNU/Linux. Or maybe it's the case that the
+standard on other OS's lacked adoption on GNU/Linux. For example on
+FreeBSD there ia a ``Common Access Method'' (CAM) used for all SCSI
+access which seem adopted by GNU/Linux.@footnote{And I'm thankful for
+that since, at least for SCSI MMC commands, it is inordinately
+complicated and in some places arcane.}
 
 Finally at the hardware level where a similar chaos exists, there has
 been an attempt to do something similar with the SCSI MMC (multimedia
@@ -203,12 +209,13 @@ library or API for issuing MMC-commands which a programmer would need
 to use. Instead each Operating System has its own interface.  For
 example Adaptec's ASPI or the Microsoft's DeviceIoControl on Microsoft
 Windows, or IOKit for Apple's OS/X, or FreeBSD's CAM. I've been
-postively amazed at how many different variations for doing basically
-the same thing there are. And how easy it is to issue an SCSI-MMC
-command from a program varies from easy to very difficult. Mastering
-the boilerplate code to issue a command on one OS really doesn't help
-in figuring out how to do it on another OS. So in @value{libcdio} we
-provide a common API to issue SCSI-MMC commands.
+positively awed at how many different variations and differing levels
+of complexity there are for doing basically the same thing. How easy
+it is to issue an SCSI-MMC command from a program varies from easy to
+very difficult. And mastering the boilerplate code to issue an MMC
+command on one OS really doesn't help much in figuring out how to do
+it on another OS. So in @value{libcdio} we provide a common (and
+hopefully simple) API to issue SCSI-MMC commands.
 
 @node Purpose
 @chapter What is in this package (and what's not)
@@ -538,9 +545,9 @@ perhaps this has something to do with ``multisession'' CDs.
 @chapter How to use
 
 The @value{libcdio} package comes with a number of small example
-programs in @file{example} which demonstrate different aspects of the
-library and show how to use the library. The source code to all of the
-examples here are contained on the package. 
+programs in the directory @file{example} which demonstrate different
+aspects of the library and show how to use the library. The source
+code to all of the examples here are contained on the package.
 
 Other sources for examples would be the larger utility programs
 @command{cd-drive}, @command{cd-info}, @command{cd-read},
@@ -553,7 +560,8 @@ Other sources for examples would be the larger utility programs
 * Example 2::        list drivers available and default CD device 
 * Example 3::        list out tracks and LSNs
 * Example 4::        use libiso9660 to extract a file from an ISO-9660 image
-* Example 5::        list CD-TEXT and CD disc mode info
+* Example 5::        list CD-Text and CD disc mode info
+* All sample programs:: list of all programs in the example directory
 @end menu
 
 @node Example 1
@@ -568,9 +576,9 @@ distribution as @file{example/sample1.c}.
  4: int
  5: main(int argc, const char *argv[])
  6: @{
- 7:  CdIo *cdio = cdio_open ("/dev/cdrom", DRIVER_UNKNOWN);
- 8:  track_t first_track_num = cdio_get_first_track_num(cdio);
- 9:  track_t num_tracks      = cdio_get_num_tracks(cdio);
+ 7:  CdIo *p_cdio = cdio_open ("/dev/cdrom", DRIVER_UNKNOWN);
+ 8:  track_t first_track_num = cdio_get_first_track_num(p_cdio);
+ 9:  track_t num_tracks      = cdio_get_num_tracks(p_cdio);
 10:  int j, i=first_track_num;
 11:
 12:  printf("CD-ROM Track List (%i - %i)\n", first_track_num, num_tracks);
@@ -578,13 +586,13 @@ distribution as @file{example/sample1.c}.
 14:  printf("  #:  LSN\n");
 15:  
 16:  for (j = 0; j < num_tracks; i++, j++) @{
-17:    lsn_t lsn = cdio_get_track_lsn(cdio, i);
+17:    lsn_t lsn = cdio_get_track_lsn(p_cdio, i);
 18:    if (CDIO_INVALID_LSN != lsn)
 19:      printf("%3d: %06d\n", (int) i, lsn);
 20:  @}
 21:  printf("%3X: %06d  leadout\n", CDIO_CDROM_LEADOUT_TRACK, 
-22:         cdio_get_track_lsn(cdio, CDIO_CDROM_LEADOUT_TRACK));
-23:  cdio_destroy(cdio);
+22:         cdio_get_track_lsn(p_cdio, CDIO_CDROM_LEADOUT_TRACK));
+23:  cdio_destroy(p_cdio);
 24:  return 0;
 25: @}
 @end smallexample 
@@ -776,7 +784,7 @@ print_analysis(cdio_iso_analysis_t cdio_iso_analysis,
 int
 main(int argc, const char *argv[])
 @{
-  CdIo *cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  CdIo *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
   cdio_fs_anal_t fs=0;
   
   track_t num_tracks;
@@ -790,17 +798,17 @@ main(int argc, const char *argv[])
   unsigned int num_audio = 0; /* # of audio tracks */
   unsigned int i;
 
-  if (NULL == cdio) @{
+  if (NULL == p_cdio) @{
     printf("Problem in trying to find a driver.\n\n");
     return 1;
   @}
 
-  first_track_num = cdio_get_first_track_num(cdio);
-  num_tracks      = cdio_get_num_tracks(cdio);
+  first_track_num = cdio_get_first_track_num(p_cdio);
+  num_tracks      = cdio_get_num_tracks(p_cdio);
 
   /* Count the number of data and audio tracks. */
   for (i = first_track_num; i <= num_tracks; i++) @{
-    if (TRACK_FORMAT_AUDIO == cdio_get_track_format(cdio, i)) @{
+    if (TRACK_FORMAT_AUDIO == cdio_get_track_format(p_cdio, i)) @{
       num_audio++;
       if (-1 == first_audio) first_audio = i;
     @} else @{
@@ -821,9 +829,9 @@ main(int argc, const char *argv[])
     
     for (j = 2, i = first_data; i <= num_tracks; i++) @{
       lsn_t lsn;
-      track_format_t track_format = cdio_get_track_format(cdio, i);
+      track_format_t track_format = cdio_get_track_format(p_cdio, i);
       
-      lsn = cdio_get_track_lsn(cdio, i);
+      lsn = cdio_get_track_lsn(p_cdio, i);
       
       switch ( track_format ) @{
       case TRACK_FORMAT_AUDIO:
@@ -846,10 +854,10 @@ main(int argc, const char *argv[])
       if (start_track < data_start + cdio_iso_analysis.isofs_size)
 	continue;
       
-      fs = cdio_guess_cd_type(cdio, start_track, i, &cdio_iso_analysis);
+      fs = cdio_guess_cd_type(p_cdio, start_track, i, &cdio_iso_analysis);
       
       print_analysis(cdio_iso_analysis, fs, first_data, num_audio,
-		     num_tracks, first_track_num, cdio);
+		     num_tracks, first_track_num, p_cdio);
       
       if ( !(CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660 ||
 	     CDIO_FSTYPE(fs) == CDIO_FS_ISO_HFS  ||
@@ -858,7 +866,7 @@ main(int argc, const char *argv[])
 	break;	
     @}
   @}
-  cdio_destroy(cdio);
+  cdio_destroy(p_cdio);
   return 0;
 @}
 @end smallexample
@@ -956,13 +964,13 @@ main(int argc, const char *argv[])
       @}
       
       
-      fwrite (buf, ISO_BLOCKSIZE, 1, outfd);
+     fwrite (buf, ISO_BLOCKSIZE, 1, outfd);
       
-      if (ferror (outfd))
-	@{
-	  perror ("fwrite()");
-	  my_exit(5);
-	@}
+     if (ferror (outfd))
+        @{
+          perror ("fwrite()");
+          my_exit(5);
+        @}
     @}
   
   fflush (outfd);
@@ -978,7 +986,7 @@ main(int argc, const char *argv[])
 @end smallexample 
 
 @node Example 5
-@section Example 5: list CD-TEXT and disc mode info
+@section Example 5: list CD-Text and disc mode info
 
 Next a program to show using @command{libcdio} to list CD-TEXT data.
 This can be in the distribution as @file{example/sample8.c}.
@@ -995,8 +1003,8 @@ This can be in the distribution as @file{example/sample8.c}.
 
 
 static void 
-print_cdtext_track_info(CdIo *cdio, track_t i_track, const char *message) @{
-  const cdtext_t *cdtext    = cdio_get_cdtext(cdio, 0);
+print_cdtext_track_info(CdIo *p_cdio, track_t i_track, const char *message) @{
+  const cdtext_t *cdtext    = cdio_get_cdtext(p_cdio, 0);
   if (NULL != cdtext) @{
     cdtext_field_t i;
     
@@ -1004,7 +1012,7 @@ print_cdtext_track_info(CdIo *cdio, track_t i_track, const char *message) @{
     
     for (i=0; i < MAX_CDTEXT_FIELDS; i++) @{
       if (cdtext->field[i]) @{
-	printf("\t%s: %s\n", cdtext_field2str(i), cdtext->field[i]);
+        printf("\t%s: %s\n", cdtext_field2str(i), cdtext->field[i]);
       @}
     @}
   @}
@@ -1018,7 +1026,7 @@ print_disc_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) @{
 
   printf("%s\n", discmode2str[cd_discmode]);
   
-  print_cdtext_track_info(cdio, 0, "\nCD-TEXT for Disc:");
+  print_cdtext_track_info(p_cdio, 0, "\nCD-TEXT for Disc:");
   for ( ; i_first_track < i_last_track; i_first_track++ ) @{
     char psz_msg[50];
     sprintf(msg, "CD-TEXT for Track %d:", i_first_track);
@@ -1048,6 +1056,70 @@ main(int argc, const char *argv[])
   return 0;
 @}
 @end smallexample 
+
+@node All sample programs
+@section A list of all sample progrmas in the @code{example} directory
+
+The @code{exmaple} directory contains some simple examples of the use
+of the @value{libcdio} library.
+
+A larger more-complicated example are the @command{cd-drive},
+@command{cd-info}, @command{cd-read}, @command{iso-info} and
+@command{iso-info} programs in the @command{src} directory.
+
+Descriptions of the sample are as follows...
+
+@table @code 
+
+@item @code{sample1.c}
+
+A simple program to list track numbers and logical sector numbers of a
+Compact Disc using @value{libcdio}.
+
+@item @code{sample2.c}
+
+A simple program to show drivers installed and what the default CD-ROM
+drive is.
+
+@item @code{sample3.c}
+
+A simple program to show the use of @code{cdio_guess_cd_type()}.  Figures out
+the kind of CD image we've got.
+
+@item @code{sample4.c}
+
+ A slightly improved sample3 program: we handle cdio logging and take
+an optional CD-location.
+
+@item @code{sample5.c}
+
+A program to show drivers installed and what the default CD-ROM drive
+is and what CD drives are available.
+
+@item @code{sample6.c}
+
+A simple program to show using @code{libiso9660} to extract a file from a
+CDRWIN cue/bin CD image.
+
+@item @code{sample7.c}
+
+A program to show using libiso9660 to extract a file from an ISO-9660
+image.
+
+@item @code{sample8.c}
+
+A program to show CD-Text and CD disc mode info.
+
+@item @code{sample9.c}
+
+A program to show issuing a simple SCSI-MMC command (@code{INQUIRY}).
+
+@item @code{sample10.c}
+
+A more involved SCSI-MMC command to list features from a SCSI-MMC
+@code{GET_CONFIGURATION} command.
+
+@end table
 
 @node Utility Programs
 @chapter Diagnostic programs (@samp{cd-info}, @samp{cd-read}, @samp{iso-info}, @samp{iso-read})
@@ -1213,7 +1285,7 @@ f |     / ? O _
 
 @menu
 * CDRDAO TOC Format::           
-* BIN/CUE Format::              
+* CDRWIN BIN/CUE Format::              
 * NRG Format::              
 @end menu
 
@@ -1231,19 +1303,19 @@ and sub-channel information.  It is a simple text file, use your
 favorite text editor to create it.
 @end quotation
 
-@node  BIN/CUE Format
-@appendixsec BIN/CUE Format
+@node  CDRWIN BIN/CUE Format
+@appendixsec CDRWIN BIN/CUE Format
 @cindex BIN/CUE, CD Image Format
 
-The format referred to as @emph{BIN/CUE Format} in this manual is a
-popular CD image format used in the @acronym{PC} world. Not unlike
-@command{cdrdao}'s toc file, the @emph{cue} file describes the track
-layout, i.e. how the sectors are to be placed on the CD media. The
-@emph{cue} file usually contains a reference to a file traditionally
-having the @file{.bin} extension in its filename, the @emph{bin}
-file. This @emph{bin} file contains the sector data payload which is
-to be written to the CD medium according to the description in the
-@emph{cue} file.
+The format referred to as @emph{CDRWIN BIN/CUE Format} in this manual
+is a popular CD image format used in the @acronym{PC} world. Not
+unlike @command{cdrdao}'s toc file, the @emph{cue} file describes the
+track layout, i.e. how the sectors are to be placed on the CD
+media. The @emph{cue} file usually contains a reference to a file
+traditionally having the @file{.bin} extension in its filename, the
+@emph{bin} file. This @emph{bin} file contains the sector data payload
+which is to be written to the CD medium according to the description
+in the @emph{cue} file.
 
 The following is an attempt to describe the subset of the @file{.cue} 
 file syntax as used in vcdimager in an EBNF-like notation:
