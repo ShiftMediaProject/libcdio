@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.25 2004/07/01 09:50:59 rocky Exp $
+    $Id: nrg.c,v 1.26 2004/07/09 02:46:42 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -49,7 +49,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.25 2004/07/01 09:50:59 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.26 2004/07/09 02:46:42 rocky Exp $";
 
 
 /* reader */
@@ -99,7 +99,7 @@ typedef struct {
   /* This is a hack because I don't really understnad NERO better. */
   bool            is_cues;
 
-  char         *mcn;             /* Media Catalog Number (5.22.3) */
+  char         *psz_mcn;         /* Media Catalog Number (5.22.3) */
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
 					         add 1 for leadout. */
   track_t       i_tracks;        /* number of tracks in image */
@@ -386,20 +386,20 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	  int form2;
 
 	  /* We include an extra 0 byte so these can be used as C strings.*/
-	  env->mcn      = _cdio_malloc (CDIO_MCN_SIZE+1);
+	  env->psz_mcn    = _cdio_malloc (CDIO_MCN_SIZE+1);
 
 	  if (DAOX_ID == opcode) {
 	    _daox_array_t *_entries = (void *) chunk->data;
 	    form2         = _entries->_unknown[1];
 	    env->dtyp   = _entries->_unknown[19];
-	    memcpy(env->mcn, &(_entries->mcn), CDIO_MCN_SIZE);
-	    env->mcn[CDIO_MCN_SIZE] = '\0';
+	    memcpy(env->psz_mcn, &(_entries->psz_mcn), CDIO_MCN_SIZE);
+	    env->psz_mcn[CDIO_MCN_SIZE] = '\0';
 	  } else {
 	    _daoi_array_t *_entries = (void *) chunk->data;
 	    form2         = _entries->_unknown[1];
 	    env->dtyp   = _entries->_unknown[19];
-	    memcpy(env->mcn, &(_entries->mcn), CDIO_MCN_SIZE);
-	    env->mcn[CDIO_MCN_SIZE] = '\0';
+	    memcpy(env->psz_mcn, &(_entries->psz_mcn), CDIO_MCN_SIZE);
+	    env->psz_mcn[CDIO_MCN_SIZE] = '\0';
 	  }
 
 	  env->is_dao = true;

@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.c,v 1.1 2004/07/09 01:05:32 rocky Exp $
+    $Id: cdtext.c,v 1.2 2004/07/09 02:46:42 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -89,7 +89,7 @@ void cdtext_delete (cdtext_t *cdtext)
   returns 0 if field is a CD-TEXT keyword, returns non-zero otherwise 
 */
 int 
-cdtext_is_keyword (char *key)
+cdtext_is_keyword (const char *key)
 {
   const char *cdtext_keywords[] = 
     {
@@ -120,7 +120,7 @@ cdtext_is_keyword (char *key)
 
 /*! sets cdtext's keyword entry to field.
  */
-void cdtext_set (char *key, char *value, cdtext_t *cdtext)
+void cdtext_set (const char *key, const char *value, cdtext_t *cdtext)
 {
   if (NULL != value)	/* don't pass NULL to strdup! */
     for (; NULL != cdtext->key; cdtext++)
@@ -128,5 +128,15 @@ void cdtext_set (char *key, char *value, cdtext_t *cdtext)
 	free (cdtext->value);
 	cdtext->value = strdup (value);
       }
+}
+
+/* returns value for key, NULL if key is not found */
+const char *cdtext_get (const char *key, const cdtext_t *cdtext)
+{
+	for (; NULL != cdtext->key; cdtext++)
+		if (0 == strcmp (cdtext->key, key))
+			return (cdtext->value);
+
+	return (NULL);
 }
 

@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.h,v 1.2 2004/07/01 09:50:59 rocky Exp $
+    $Id: nrg.h,v 1.3 2004/07/09 02:46:42 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -73,13 +73,13 @@ typedef struct {
 
 typedef struct {
   uint32_t _unknown1  GNUC_PACKED;
-  char      mcn[CDIO_MCN_SIZE]  GNUC_PACKED;
+  char      psz_mcn[CDIO_MCN_SIZE]  GNUC_PACKED;
   uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint32_t)]  GNUC_PACKED;
 } _daox_array_t;
 
 typedef struct {
   uint32_t _unknown1  GNUC_PACKED;
-  char      mcn[CDIO_MCN_SIZE]  GNUC_PACKED;
+  char      psz_mcn[CDIO_MCN_SIZE]  GNUC_PACKED;
   uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint32_t)]  GNUC_PACKED;
 } _daoi_array_t;
 

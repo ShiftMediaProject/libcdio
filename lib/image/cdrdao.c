@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.11 2004/07/09 01:05:32 rocky Exp $
+    $Id: cdrdao.c,v 1.12 2004/07/09 02:46:42 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -29,7 +29,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.11 2004/07/09 01:05:32 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.12 2004/07/09 02:46:42 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -109,8 +109,8 @@ typedef struct {
   bool sector_2336;              /* Playstation (PSX) uses 2336-byte sectors */
 
   char         *toc_name;
-  char         *mcn;             /* Media Catalog Number (5.22.3) 
-				    exactly 13 bytes */
+  char         *psz_mcn;        /* Media Catalog Number (5.22.3) 
+				   exactly 13 bytes */
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
 					         add 1 for leadout. */
   track_t       i_tracks;    /* number of tracks in image */
@@ -217,7 +217,7 @@ _init_cdrdao (_img_private_t *env)
    */
   env->gen.init      = true;  
   env->i_first_track = 1;
-  env->mcn           = NULL;
+  env->psz_mcn       = NULL;
 
   /* Read in TOC sheet. */
   if ( !parse_tocfile(env, env->toc_name) ) return false;
@@ -429,7 +429,7 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 		    goto err_exit;
 		}
 	      }
-	      if (NULL != cd) cd->mcn = strdup (field); 
+	      if (NULL != cd) cd->psz_mcn = strdup (field); 
 	    }
 	  } else {
 	    cdio_log(log_level, 
@@ -950,7 +950,7 @@ _free_cdrdao (void *obj)
   int i;
 
   if (NULL == env) return;
-  free_if_notnull(env->mcn);
+  free_if_notnull(env->psz_mcn);
   for (i=0; i<env->i_tracks; i++) {
     if (env->tocent[i].data_source)
       cdio_stdio_destroy (env->tocent[i].data_source);

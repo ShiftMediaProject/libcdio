@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.5 2004/06/02 00:43:53 rocky Exp $
+    $Id: image_common.h,v 1.6 2004/07/09 02:46:42 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -32,8 +32,8 @@ _get_mcn_image(const void *user_data)
 {
   const _img_private_t *env = user_data;
   
-  if (NULL == env->mcn) return NULL;
-  return strdup(env->mcn);
+  if (NULL == env->psz_mcn) return NULL;
+  return strdup(env->psz_mcn);
 }
 
 /*!  
