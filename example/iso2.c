@@ -1,5 +1,5 @@
 /*
-  $Id: iso2.c,v 1.6 2005/02/03 07:32:32 rocky Exp $
+  $Id: iso2.c,v 1.7 2005/02/20 03:15:42 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -19,14 +19,19 @@
 */
 
 /* Simple program to show using libiso9660 to extract a file from a
-   cue/bin CD image.
+   cue/bin CD-IMAGE.
+
+   This program can be compiled with either a C or C++ compiler. In 
+   the distributuion we perfer C++ just to make sure we haven't broken
+   things on the C++ side.
  */
 
 /* This is the CD-image with an ISO-9660 filesystem */
 #define ISO9660_IMAGE_PATH "../"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/isofs-m1.cue"
 
-#define ISO9660_FILENAME "/COPYING.;1"
+#define ISO9660_PATH "/"
+#define ISO9660_FILENAME "COPYING"
 #define LOCAL_FILENAME "copying"
 
 #ifdef HAVE_CONFIG_H
@@ -73,33 +78,45 @@ main(int argc, const char *argv[])
   iso9660_stat_t *p_statbuf;
   FILE *p_outfd;
   int i;
+  char const *psz_image;
   char const *psz_fname;
+  char translated_name[256];
+  char untranslated_name[256] = ISO9660_PATH;
   CdIo_t *p_cdio;
   
   if (argc > 1) 
-    psz_fname = argv[1];
+    psz_image = argv[1];
   else 
-    psz_fname = ISO9660_IMAGE;
+    psz_image = ISO9660_IMAGE;
 
-  p_cdio = cdio_open (psz_fname, DRIVER_BINCUE);
+  if (argc > 2) 
+    psz_fname = argv[2];
+  else 
+    psz_fname = ISO9660_FILENAME;
+
+  strcat(untranslated_name, psz_fname);
+
+  p_cdio = cdio_open (psz_image, DRIVER_BINCUE);
   if (NULL == p_cdio) {
     fprintf(stderr, "Sorry, couldn't open %s as a BIN/CUE image\n", 
-	    psz_fname);
+	    psz_image);
     return 1;
   }
 
-  p_statbuf = iso9660_fs_stat (p_cdio, psz_fname);
+  p_statbuf = iso9660_fs_stat (p_cdio, untranslated_name);
 
   if (NULL == p_statbuf) 
     {
       fprintf(stderr, 
 	      "Could not get ISO-9660 file information for file %s\n",
-	      psz_fname);
+	      untranslated_name);
       cdio_destroy(p_cdio);
       return 2;
     }
 
-  if (!(p_outfd = fopen ("copying", "wb")))
+  iso9660_name_translate(psz_fname, translated_name);
+  
+  if (!(p_outfd = fopen (translated_name, "wb")))
     {
       perror ("fopen()");
       cdio_destroy(p_cdio);
@@ -114,9 +131,9 @@ main(int argc, const char *argv[])
 
       memset (buf, 0, ISO_BLOCKSIZE);
       
-      if ( 0 != cdio_read_mode1_sector (p_cdio, buf, 
+      if ( 0 != cdio_read_data_sectors (p_cdio, buf, 
 					p_statbuf->lsn + (i / ISO_BLOCKSIZE),
-					false) )
+					ISO_BLOCKSIZE, 1) )
       {
 	fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
 		(long unsigned int) p_statbuf->lsn + (i / ISO_BLOCKSIZE));
@@ -141,8 +158,8 @@ main(int argc, const char *argv[])
   if (ftruncate (fileno (p_outfd), p_statbuf->size))
     perror ("ftruncate()");
 
-  printf("Extraction of file 'copying' from %s successful.\n", 
-	 psz_fname);
+  printf("Extraction of file '%s' from '%s' successful.\n", 
+	 translated_name, untranslated_name);
 
   my_exit(0);
 }
