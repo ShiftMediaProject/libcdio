@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.60 2004/07/23 03:48:16 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.61 2004/07/23 10:37:17 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.60 2004/07/23 03:48:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.61 2004/07/23 10:37:17 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -707,14 +707,15 @@ _get_mcn_solaris (const void *p_user_data)
   const _img_private_t *p_env = p_user_data;
   scsi_mmc_cdb_t cdb = {{0, }};
 
-  char buf[25] = { 0, };
+  char buf[28] = { 0, };
   int i_status;
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
   cdb.field[1] = 0x0;  
   cdb.field[2] = 0x40; 
   cdb.field[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
-  cdb.field[8] = 28; 
+
+  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(buf));
   
   i_status = scsi_mmc_run_cmd_solaris (p_env, DEFAULT_TIMEOUT,
 				       scsi_mmc_get_cmd_len(cdb.field[0]), 
