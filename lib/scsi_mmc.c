@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.13 2004/07/27 02:45:16 rocky Exp $
+    $Id: scsi_mmc.c,v 1.14 2004/07/27 18:57:04 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -333,7 +333,7 @@ scsi_mmc_get_dvd_struct_physical_private ( void *p_env, const
 					   cdio_dvd_struct_t *s)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
-  unsigned char buf[20], *base;
+  unsigned char buf[4 + 4 * 20], *base;
   int i_status;
   uint8_t layer_num = s->physical.layer_num;
   
