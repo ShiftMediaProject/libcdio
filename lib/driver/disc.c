@@ -1,5 +1,5 @@
 /*
-    $Id: disc.c,v 1.2 2005/01/04 10:58:03 rocky Exp $
+    $Id: disc.c,v 1.3 2005/01/09 16:07:46 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,6 +26,24 @@
 
 #include <cdio/cdio.h>
 #include "cdio_private.h"
+
+/* Must match discmode enumeration */
+const char *discmode2str[] = {
+  "CD-DA", 
+  "CD-DATA (Mode 1)", 
+  "CD DATA (Mode 2)", 
+  "CD-ROM Mixed",
+  "DVD-ROM", 
+  "DVD-RAM", 
+  "DVD-R", 
+  "DVD-RW", 
+  "DVD+R",
+  "DVD+RW", 
+  "Unknown/unclassified DVD", 
+  "No information",
+  "Error in getting information",
+  "CD-i" 
+};
 
 unsigned int 
 cdio_get_disc_last_lsn(const CdIo *p_cdio)
@@ -63,3 +81,16 @@ cdio_get_mcn (const CdIo *p_cdio)
   }
 }
 
+/*!
+  Get the size of the CD in logical block address (LBA) units.
+  
+  @param p_cdio the CD object queried
+  @return the size or 0 if there was an error.
+*/
+uint32_t
+cdio_stat_size (const CdIo_t *p_cdio)
+{
+  if (!p_cdio) return 0;
+
+  return p_cdio->op.stat_size (p_cdio->env);
+}

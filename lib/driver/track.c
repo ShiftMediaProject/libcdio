@@ -1,5 +1,5 @@
 /*
-    $Id: track.c,v 1.2 2005/01/05 04:16:11 rocky Exp $
+    $Id: track.c,v 1.3 2005/01/09 16:07:46 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -18,6 +18,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+/*! Track-related routines. */
 
 
 #ifdef HAVE_CONFIG_H
@@ -26,6 +27,11 @@
 
 #include <cdio/cdio.h>
 #include "cdio_private.h"
+
+const char *track_format2str[6] = 
+  {
+    "audio", "CD-i", "XA", "data", "PSX", "error"
+  };
 
 /*!
   Return the number of the first track. 

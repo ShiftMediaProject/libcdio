@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.3 2005/01/04 04:33:36 rocky Exp $
+#   $Id: Makefile.am,v 1.4 2005/01/09 16:07:46 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -66,6 +66,7 @@ libcdio_sources = \
 	cdio.c \
 	cdtext.c \
 	cdtext_private.h \
+	device.c \
 	disc.c \
 	ds.c \
         FreeBSD/freebsd.c \
@@ -86,6 +87,7 @@ libcdio_sources = \
 	MSWindows/win32.c \
 	MSWindows/win32.h \
 	logging.c \
+	read.c \
 	scsi_mmc.c \
 	scsi_mmc_private.h \
 	sector.c \

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.74 2005/01/05 04:16:11 rocky Exp $
+    $Id: cdio.h,v 1.75 2005/01/09 16:07:46 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -30,7 +30,7 @@
 /** Application Interface or Protocol version number. If the public
  *  interface changes, we increase this number.
  */
-#define CDIO_API_VERSION 3
+#define CDIO_API_VERSION 4
 
 #include <cdio/version.h>
 
@@ -67,98 +67,6 @@ extern "C" {
   */
   const char * cdio_get_arg (const CdIo_t *p_cdio,  const char key[]);
 
-  off_t cdio_lseek(const CdIo_t *p_cdio, off_t offset, int whence);
-    
-  /*!
-    Reads into buf the next size bytes.
-    Similar to (if not the same as) libc's read()
-
-    @return (ssize_t) -1 on error. 
-  */
-  ssize_t cdio_read(const CdIo_t *p_cdio, void *buf, size_t size);
-    
-  /*!
-    Read an audio sector
-
-    @param p_cdio object to read from
-    @param buf place to read data into
-    @param lsn sector to read
-
-    @return 0 if no error, nonzero otherwise.
-  */
-  int cdio_read_audio_sector (const CdIo_t *p_cdio, void *buf, lsn_t lsn);
-
-  /*!
-    Reads audio sectors
-
-    @param p_cdio object to read from
-    @param buf place to read data into
-    @param lsn sector to read
-    @param i_sectors number of sectors to read
-
-    @return 0 if no error, nonzero otherwise.
-  */
-  int cdio_read_audio_sectors (const CdIo_t *p_cdio, void *buf, lsn_t lsn,
-			       unsigned int i_sectors);
-
-  /*!
-    Reads a mode 1 sector
-
-    @param p_cdio object to read from
-    @param buf place to read data into
-    @param lsn sector to read
-    @param b_form2 true for reading mode1 form 2 sectors or false for 
-    mode 1 form 1 sectors.
-
-    @return 0 if no error, nonzero otherwise.
-  */
-  int cdio_read_mode1_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-			      bool b_form2);
-  
-  /*!
-    Reads mode 1 sectors
-
-    @param p_cdio object to read from
-    @param buf place to read data into
-    @param lsn sector to read
-    @param b_form2 true for reading mode 1 form 2 sectors or false for 
-    mode 1 form 1 sectors.
-    @param i_sectors number of sectors to read
-
-    @return 0 if no error, nonzero otherwise.
-  */
-  int cdio_read_mode1_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-			       bool b_form2, unsigned int i_sectors);
-  
-  /*!
-    Reads a mode 2 sector
-
-    @param p_cdio object to read from
-    @param buf place to read data into
-    @param lsn sector to read
-    @param b_form2 true for reading mode 2 form 2 sectors or false for 
-    mode 2 form 1 sectors.
-
-    @return 0 if no error, nonzero otherwise.
-  */
-  int cdio_read_mode2_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-			      bool b_form2);
-  
-  /*!
-    Reads mode 2 sectors
-
-    @param p_cdio object to read from
-    @param buf place to read data into
-    @param lsn sector to read
-    @param b_form2 true for reading mode2 form 2 sectors or false for 
-    mode 2  form 1 sectors.
-    @param i_sectors number of sectors to read
-
-    @return 0 if no error, nonzero otherwise.
-  */
-  int cdio_read_mode2_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-			       bool b_form2, unsigned int i_sectors);
-  
   /*!
     Set the arg "key" with "value" in "p_cdio".
 
@@ -170,14 +78,6 @@ extern "C" {
   int cdio_set_arg (CdIo_t *p_cdio, const char key[], const char value[]);
   
   /*!
-    Get the size of the CD in logical block address (LBA) units.
-
-    @param p_cdio the CD object queried
-    @return the size
-  */
-  uint32_t cdio_stat_size (const CdIo_t *p_cdio);
-  
-  /*!
     Initialize CD Reading and control routines. Should be called first.
   */
   bool cdio_init(void);
@@ -185,6 +85,9 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+/* Sector (frame, or block)-related functions. */
+#include <cdio/read.h>
 
 /* CD-Text-related functions. */
 #include <cdio/cdtext.h>

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: disc.h,v 1.2 2005/01/04 10:58:03 rocky Exp $
+    $Id: disc.h,v 1.3 2005/01/09 16:07:46 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -71,15 +71,13 @@ extern "C" {
   track_t cdio_get_num_tracks (const CdIo_t *p_cdio);
   
   /*!
-    Reposition read offset
-    Similar to (if not the same as) libc's lseek()
+    Get the size of the CD in logical block address (LBA) units.
 
-    @param p_cdio object to get information from
-    @param offset amount to seek
-    @param whence  like corresponding parameter in libc's lseek, e.g. 
-                   SEEK_SET or SEEK_END.
-    @return (off_t) -1 on error. 
+    @param p_cdio the CD object queried
+    @return the size or 0 if there was an error.
   */
+  uint32_t cdio_stat_size (const CdIo_t *p_cdio);
+  
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
