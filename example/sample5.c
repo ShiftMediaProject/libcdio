@@ -1,5 +1,5 @@
 /*
-  $Id: sample5.c,v 1.6 2004/03/21 03:42:06 rocky Exp $
+  $Id: sample5.c,v 1.7 2004/08/27 11:32:12 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -51,64 +51,64 @@ log_handler (cdio_log_level_t level, const char message[])
 int
 main(int argc, const char *argv[])
 {
-  char **cd_drives=NULL, **c;
+  char **ppsz_cd_drives=NULL, **c;
   
   cdio_log_set_handler (log_handler);
 
   /* Print out a list of CD-drives */
-  cd_drives = cdio_get_devices(DRIVER_DEVICE);
-  if (NULL != cd_drives) 
-    for( c = cd_drives; *c != NULL; c++ ) {
+  ppsz_cd_drives = cdio_get_devices(DRIVER_DEVICE);
+  if (NULL != ppsz_cd_drives) 
+    for( c = ppsz_cd_drives; *c != NULL; c++ ) {
       printf("Drive %s\n", *c);
     }
 
-  cdio_free_device_list(cd_drives);
-  free(cd_drives);
-  cd_drives = NULL;
+  cdio_free_device_list(ppsz_cd_drives);
+  free(ppsz_cd_drives);
+  ppsz_cd_drives = NULL;
   
   printf("-----\n");
 
   /* Print out a list of CD-drives the harder way. */
-  cd_drives = cdio_get_devices_with_cap(NULL, CDIO_FS_MATCH_ALL, false);
+  ppsz_cd_drives = cdio_get_devices_with_cap(NULL, CDIO_FS_MATCH_ALL, false);
 
-  if (NULL != cd_drives) {
-    for( c = cd_drives; *c != NULL; c++ ) {
+  if (NULL != ppsz_cd_drives) {
+    for( c = ppsz_cd_drives; *c != NULL; c++ ) {
       printf("Drive %s\n", *c);
     }
     
   }
-  cdio_free_device_list(cd_drives);
-  free(cd_drives);
+  cdio_free_device_list(ppsz_cd_drives);
+  free(ppsz_cd_drives);
 
   printf("-----\n");
   printf("CD-DA drives...\n");
-  cd_drives = NULL;
+  ppsz_cd_drives = NULL;
   /* Print out a list of CD-drives with CD-DA's in them. */
-  cd_drives = cdio_get_devices_with_cap(NULL,  CDIO_FS_AUDIO, false);
+  ppsz_cd_drives = cdio_get_devices_with_cap(NULL,  CDIO_FS_AUDIO, false);
 
-  if (NULL != cd_drives) {
-    for( c = cd_drives; *c != NULL; c++ ) {
+  if (NULL != ppsz_cd_drives) {
+    for( c = ppsz_cd_drives; *c != NULL; c++ ) {
       printf("drive: %s\n", *c);
     }
   }
-  cdio_free_device_list(cd_drives);
-  free(cd_drives);
+  cdio_free_device_list(ppsz_cd_drives);
+  free(ppsz_cd_drives);
     
   printf("-----\n");
-  cd_drives = NULL;
+  ppsz_cd_drives = NULL;
   printf("VCD drives...\n");
   /* Print out a list of CD-drives with VCD's in them. */
-  cd_drives = cdio_get_devices_with_cap(NULL, 
+  ppsz_cd_drives = cdio_get_devices_with_cap(NULL, 
 (CDIO_FS_ANAL_SVCD|CDIO_FS_ANAL_CVD|CDIO_FS_ANAL_VIDEOCD|CDIO_FS_UNKNOWN),
 					true);
-  if (NULL != cd_drives) {
-    for( c = cd_drives; *c != NULL; c++ ) {
+  if (NULL != ppsz_cd_drives) {
+    for( c = ppsz_cd_drives; *c != NULL; c++ ) {
       printf("drive: %s\n", *c);
     }
   }
 
-  cdio_free_device_list(cd_drives);
-  free(cd_drives);
+  cdio_free_device_list(ppsz_cd_drives);
+  free(ppsz_cd_drives);
   
   return 0;
   
