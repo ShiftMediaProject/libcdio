@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.61 2004/11/16 00:58:10 nboullis Exp $
+#   $Id: Makefile.am,v 1.62 2004/11/22 11:03:28 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -105,7 +105,6 @@ libiso9660_la_SOURCES = \
 
 libiso9660_la_LIBADD = libcdio.la
 libiso9660_la_ldflags = -version-info $(libiso9660_la_CURRENT):$(libiso9660_la_REVISION):$(libiso9660_la_AGE)
-libiso9660_la_dependencies = libcdio.la
 
 INCLUDES = $(LIBCDIO_CFLAGS)
 
@@ -186,7 +185,7 @@ endif
 libiso9660_la_MAJOR := $(shell expr $(libiso9660_la_CURRENT) - $(libiso9660_la_AGE))
 if BUILD_VERSIONED_LIBS
 libiso9660_la_LDFLAGS = $(libiso9660_la_ldflags) -Wl,--version-script=libiso9660.la.ver
-libiso9660_la_DEPENDENCIES = $(libcdio9660_la_dependencies) libiso9660.la.ver
+libiso9660_la_DEPENDENCIES = libcdio.la libiso9660.la.ver
 
 libiso9660.la.ver: $(libiso9660_la_OBJECTS) $(srcdir)/libiso9660.sym
 	echo 'ISO9660_$(libiso9660_la_MAJOR) {' > $@
@@ -199,5 +198,5 @@ libiso9660.la.ver: $(libiso9660_la_OBJECTS) $(srcdir)/libiso9660.sym
 MOSTLYCLEANFILES = libcdio.la.ver libiso9660.la.ver
 else 
 libiso9660_la_LDFLAGS = $(libiso9660_la_ldflags)
-libiso9660_la_DEPENDENCIES = $(libcdio9660_la_dependencies)
+libiso9660_la_DEPENDENCIES = libcdio.la
 endif
