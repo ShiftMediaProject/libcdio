@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.15 2004/07/28 01:09:59 rocky Exp $
+    $Id: scsi_mmc.c,v 1.16 2004/07/28 11:45:21 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -171,9 +171,9 @@ scsi_mmc_read_sectors ( const CdIo *cdio, void *p_buf, lba_t lba,
   run_scsi_mmc_cmd = cdio->op.run_scsi_mmc_cmd;
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
-  CDIO_MMC_SET_READ_TYPE  (cdb.field, sector_type);
-  CDIO_MMC_SET_READ_LBA   (cdb.field, lba);
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, nblocks);
+  CDIO_MMC_SET_READ_TYPE    (cdb.field, sector_type);
+  CDIO_MMC_SET_READ_LBA     (cdb.field, lba);
+  CDIO_MMC_SET_READ_LENGTH24(cdb.field, nblocks);
   CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb.field, 
 					   CDIO_MMC_MCSB_ALL_HEADERS);
 
@@ -419,7 +419,7 @@ scsi_mmc_get_mcn_private ( void *p_env,
   cdb.field[1] = 0x0;  
   cdb.field[2] = 0x40; 
   cdb.field[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(buf));
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(buf));
 
   i_status = run_scsi_mmc_cmd(p_env, DEFAULT_TIMEOUT_MS, 
 			      scsi_mmc_get_cmd_len(cdb.field[0]), 
@@ -473,7 +473,7 @@ scsi_mmc_init_cdtext_private ( void *p_user_data,
   /* Format */
   cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
 
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(wdata));
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(wdata));
 
   errno = 0;
   i_status = run_scsi_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.25 2004/07/28 01:09:59 rocky Exp $
+    $Id: freebsd_cam.c,v 1.26 2004/07/28 11:45:21 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.25 2004/07/28 01:09:59 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.26 2004/07/28 11:45:21 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -163,36 +163,6 @@ free_freebsd_cam (void *user_data)
 /*!
   Return the the kind of drive capabilities of device.
 
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
- */
-char *
-get_mcn_freebsd_cam (const _img_private_t *p_env)
-{
-  scsi_mmc_cdb_t cdb = {{0, }};
-  char buf[28] = { 0, };
-  int i_status;
-  
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
-  cdb.field[1] = 0x0;  
-  cdb.field[2] = 0x40; 
-  cdb.field[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(buf));
-
-  i_status = scsi_mmc_run_cmd_freebsd_cam(p_env, DEFAULT_TIMEOUT_MSECS,
-					  scsi_mmc_get_cmd_len(cdb.field[0]), 
-					  &cdb, SCSI_MMC_DATA_READ, 
-					  sizeof(buf), buf);
-  if(i_status == 0) {
-    return strdup(&buf[9]);
-  }
-  return NULL;
-}
-
-/*!
-  Return the the kind of drive capabilities of device.
-
  */
 void
 get_drive_cap_freebsd_cam (const _img_private_t *p_env,
@@ -322,20 +292,13 @@ read_mode2_sectors_freebsd_cam (_img_private_t *p_env, void *p_buf,
 
   bool b_read_10 = false;
 
-  CDIO_MMC_SET_COMMAND(p_env->ccb.csio.cdb_io.cdb_bytes, b_read_10
-		       ? CDIO_MMC_GPCMD_READ_10 : CDIO_MMC_GPCMD_READ_CD);
-
   CDIO_MMC_SET_READ_LBA(cdb.field, lsn);
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, nblocks);
   
-  if (!b_read_10) {
-    cdb.field[1] = 0; /* sector size mode2 */
-    cdb.field[9] = 0x58; /* 2336 mode2 */
-  }
-
   if (b_read_10) {
     int retval;
     
+    CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_10);
+    CDIO_MMC_SET_READ_LENGTH16(cdb.field, nblocks);
     if ((retval = _set_bsize (p_env, M2RAW_SECTOR_SIZE)))
       return retval;
     
@@ -353,6 +316,10 @@ read_mode2_sectors_freebsd_cam (_img_private_t *p_env, void *p_buf,
     if ((retval = _set_bsize (p_env, CDIO_CD_FRAMESIZE)))
       return retval;
   } else
+    CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
+    CDIO_MMC_SET_READ_LENGTH24(cdb.field, nblocks);
+    cdb.field[1] = 0; /* sector size mode2 */
+    cdb.field[9] = 0x58; /* 2336 mode2 */
     return scsi_mmc_run_cmd_freebsd_cam (p_env, 0, 
 					 scsi_mmc_get_cmd_len(cdb.field[0]), 
 					 &cdb, 
@@ -384,7 +351,7 @@ stat_size_freebsd_cam (_img_private_t *p_env)
 
   CDIO_MMC_SET_START_TRACK(cdb.field, CDIO_CDROM_LEADOUT_TRACK);
 
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(buf));
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(buf));
   
   p_env->ccb.csio.data_ptr = buf;
   p_env->ccb.csio.dxfer_len = sizeof (buf);

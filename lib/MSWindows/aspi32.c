@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.44 2004/07/28 03:17:56 rocky Exp $
+    $Id: aspi32.c,v 1.45 2004/07/28 11:45:22 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.44 2004/07/28 03:17:56 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.45 2004/07/28 11:45:22 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -567,10 +567,10 @@ read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
 #endif
   
   /* Set up passthrough command */
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
-  CDIO_MMC_SET_READ_TYPE(cdb.field, sector_type);
-  CDIO_MMC_SET_READ_LBA(cdb.field, lsn);
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, nblocks);
+  CDIO_MMC_SET_COMMAND      (cdb.field, CDIO_MMC_GPCMD_READ_CD);
+  CDIO_MMC_SET_READ_TYPE    (cdb.field, sector_type);
+  CDIO_MMC_SET_READ_LBA     (cdb.field, lsn);
+  CDIO_MMC_SET_READ_LENGTH24(cdb.field, nblocks);
   
 #if 1
   cdb.field[ 9 ] = (sync << 7) |
@@ -666,7 +666,7 @@ read_toc_aspi (_img_private_t *p_env)
   /* Starting track */
   CDIO_MMC_SET_START_TRACK(cdb.field, 0);
   
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(tocheader));
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(tocheader));
 
   i_status = run_scsi_cmd_aspi (p_env, OP_TIMEOUT_MS,
 				    scsi_mmc_get_cmd_len(cdb.field[0]), 
@@ -692,7 +692,7 @@ read_toc_aspi (_img_private_t *p_env)
       return false;
     }
     
-    CDIO_MMC_SET_READ_LENGTH(cdb.field, i_toclength);
+    CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_toclength);
 
     i_status = run_scsi_cmd_aspi (p_env, OP_TIMEOUT_MS,
 				      scsi_mmc_get_cmd_len(cdb.field[0]), 

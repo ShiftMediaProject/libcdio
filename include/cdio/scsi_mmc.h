@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.20 2004/07/28 01:09:59 rocky Exp $
+    $Id: scsi_mmc.h,v 1.21 2004/07/28 11:45:21 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -148,9 +148,16 @@ typedef enum scsi_mmc_direction {
 #define CDIO_MMC_SET_START_TRACK(cdb, command) \
   cdb[6] = command
 
-#define CDIO_MMC_SET_READ_LENGTH(cdb, len) \
+#define CDIO_MMC_SET_READ_LENGTH24(cdb, len) \
   cdb[6] = (len >> 16) & 0xff; \
   cdb[7] = (len >>  8) & 0xff; \
+  cdb[8] = (len      ) & 0xff
+
+#define CDIO_MMC_SET_READ_LENGTH16(cdb, len) \
+  cdb[7] = (len >>  8) & 0xff; \
+  cdb[8] = (len      ) & 0xff
+
+#define CDIO_MMC_SET_READ_LENGTH8(cdb, len) \
   cdb[8] = (len      ) & 0xff
 
 #define CDIO_MMC_MCSB_ALL_HEADERS 0x78

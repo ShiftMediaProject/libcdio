@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.30 2004/07/25 15:40:02 rocky Exp $
+    $Id: freebsd.c,v 1.31 2004/07/28 11:45:21 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.30 2004/07/25 15:40:02 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.31 2004/07/28 11:45:21 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -288,7 +288,7 @@ _get_mcn_freebsd (const void *p_user_data) {
 
   return (p_env->access_mode == _AM_IOCTL) 
     ? get_mcn_freebsd_ioctl(p_env) 
-    : get_mcn_freebsd_cam(p_env);
+    : scs_mmc_get_mcn(p_env);
 
 }
 

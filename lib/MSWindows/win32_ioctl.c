@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.30 2004/07/28 03:17:56 rocky Exp $
+    $Id: win32_ioctl.c,v 1.31 2004/07/28 11:45:22 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.30 2004/07/28 03:17:56 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.31 2004/07/28 11:45:22 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -358,9 +358,9 @@ read_raw_sector (const _img_private_t *p_env, void *p_buf, lsn_t lsn)
   scsi_mmc_cdb_t cdb = {{0, }};
 
   /* ReadCD CDB12 command.  The values were taken from MMC1 draft paper. */
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
-  CDIO_MMC_SET_READ_LBA(cdb.field, lsn);
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, 1);
+  CDIO_MMC_SET_COMMAND      (cdb.field, CDIO_MMC_GPCMD_READ_CD);
+  CDIO_MMC_SET_READ_LBA     (cdb.field, lsn);
+  CDIO_MMC_SET_READ_LENGTH24(cdb.field, 1);
 
   cdb.field[9]=0xF8;  /* Raw read, 2352 bytes per sector */
   
