@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.15 2005/02/03 07:35:15 rocky Exp $
+    $Id: win32.c,v 1.16 2005/02/06 17:36:17 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.15 2005/02/03 07:35:15 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.16 2005/02/06 17:36:17 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -166,19 +166,19 @@ is_cdrom_win32(const char drive_letter) {
   Return 0 if command completed successfully.
  */
 static int
-run_scsi_cmd_win32( void *p_user_data, unsigned int i_timeout_ms,
-		    unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-		    scsi_mmc_direction_t e_direction, 
-		    unsigned int i_buf, /*in/out*/ void *p_buf )
+run_mmc_cmd_win32( void *p_user_data, unsigned int i_timeout_ms,
+		   unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		   scsi_mmc_direction_t e_direction, 
+		   unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;
 
   if (p_env->hASPI) {
-    return run_scsi_cmd_aspi( p_env, i_timeout_ms, i_cdb, p_cdb,  
-			      e_direction, i_buf, p_buf );
+    return run_mmc_cmd_aspi( p_env, i_timeout_ms, i_cdb, p_cdb,  
+			     e_direction, i_buf, p_buf );
   } else {
-    return run_scsi_cmd_win32ioctl( p_env, i_timeout_ms, i_cdb, p_cdb,  
-				    e_direction, i_buf, p_buf );
+    return run_mmc_cmd_win32ioctl( p_env, i_timeout_ms, i_cdb, p_cdb,  
+				   e_direction, i_buf, p_buf );
   }
 }
 
@@ -746,6 +746,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.get_drive_cap         = get_drive_cap_mmc;
   _funcs.get_first_track_num   = get_first_track_num_generic;
   _funcs.get_hwinfo            = NULL;
+  _funcs.get_media_changed     = get_media_changed_mmc;
   _funcs.get_mcn               = _cdio_get_mcn;
   _funcs.get_num_tracks        = get_num_tracks_generic;
   _funcs.get_track_channels    = get_track_channels_generic,
@@ -763,7 +764,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.read_mode2_sector     = _cdio_read_mode2_sector;
   _funcs.read_mode2_sectors    = _cdio_read_mode2_sectors;
   _funcs.read_toc              = &read_toc_win32;
-  _funcs.run_scsi_mmc_cmd      = &run_scsi_cmd_win32;
+  _funcs.run_mmc_cmd           = &run_mmc_cmd_win32;
   _funcs.set_arg               = set_arg_win32;
   _funcs.set_blocksize         = set_blocksize_mmc;
   _funcs.set_speed             = set_speed_mmc;

@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.5 2005/02/05 13:13:31 rocky Exp $
+    $Id: aspi32.c,v 1.6 2005/02/06 17:36:17 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.5 2005/02/05 13:13:31 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.6 2005/02/06 17:36:17 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -191,7 +191,7 @@ get_discmode_aspi (_img_private_t *p_env)
 
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
-  if (0 == mmc_get_dvd_struct_physical_private (p_env, &run_scsi_cmd_aspi,
+  if (0 == mmc_get_dvd_struct_physical_private (p_env, &run_mmc_cmd_aspi,
 						&dvd)) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
@@ -487,10 +487,10 @@ init_aspi (_img_private_t *env)
   We return 0 if command completed successfully.
  */
 int
-run_scsi_cmd_aspi( void *p_user_data, unsigned int i_timeout_ms,
-		   unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,  
-		   scsi_mmc_direction_t e_direction, 
-		   unsigned int i_buf, /*in/out*/ void *p_buf )
+run_mmc_cmd_aspi( void *p_user_data, unsigned int i_timeout_ms,
+		  unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,  
+		  scsi_mmc_direction_t e_direction, 
+		  unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   HANDLE hEvent;
@@ -601,9 +601,9 @@ read_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
     i_buf = CDIO_CD_FRAMESIZE_RAW;
   }
 
-  return run_scsi_cmd_aspi(p_env, OP_TIMEOUT_MS, 
-			       scsi_mmc_get_cmd_len(cdb.field[0]), 
-			       &cdb, SCSI_MMC_DATA_READ, i_buf*nblocks, data);
+  return run_mmc_cmd_aspi(p_env, OP_TIMEOUT_MS, 
+			  scsi_mmc_get_cmd_len(cdb.field[0]), 
+			  &cdb, SCSI_MMC_DATA_READ, i_buf*nblocks, data);
 }
 
 /*!
@@ -668,10 +668,10 @@ read_toc_aspi (_img_private_t *p_env)
   
   CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(tocheader));
 
-  i_status = run_scsi_cmd_aspi (p_env, OP_TIMEOUT_MS,
-				    scsi_mmc_get_cmd_len(cdb.field[0]), 
-				    &cdb, SCSI_MMC_DATA_READ, 
-				    sizeof(tocheader), &tocheader);
+  i_status = run_mmc_cmd_aspi (p_env, OP_TIMEOUT_MS,
+			       scsi_mmc_get_cmd_len(cdb.field[0]), 
+			       &cdb, SCSI_MMC_DATA_READ, 
+			       sizeof(tocheader), &tocheader);
   
   if (0 != i_status) return false;
   
@@ -694,10 +694,10 @@ read_toc_aspi (_img_private_t *p_env)
     
     CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_toclength);
 
-    i_status = run_scsi_cmd_aspi (p_env, OP_TIMEOUT_MS,
-				      scsi_mmc_get_cmd_len(cdb.field[0]), 
-				      &cdb, SCSI_MMC_DATA_READ, 
-				      i_toclength, p_fulltoc);
+    i_status = run_mmc_cmd_aspi (p_env, OP_TIMEOUT_MS,
+				 scsi_mmc_get_cmd_len(cdb.field[0]), 
+				 &cdb, SCSI_MMC_DATA_READ, 
+				 i_toclength, p_fulltoc);
     if( 0 != i_status ) {
       p_env->gen.i_tracks = 0;
     }

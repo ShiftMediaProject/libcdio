@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.11 2005/02/06 11:13:37 rocky Exp $
+    $Id: win32_ioctl.c,v 1.12 2005/02/06 17:36:17 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.11 2005/02/06 11:13:37 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.12 2005/02/06 17:36:17 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -233,10 +233,9 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 /*! 
   Get disc type associated with cd object.
 */
-discmode_t
-get_discmode_win32ioctl (_img_private_t *p_env)
+static discmode_t
+dvd_discmode_win32ioctl (_img_private_t *p_env)
 {
-  track_t i_track;
   discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
 
   /* See if this is a DVD. */
@@ -257,12 +256,28 @@ get_discmode_win32ioctl (_img_private_t *p_env)
     default: return CDIO_DISC_MODE_DVD_OTHER;
     }
   }
+  return discmode;
+}
 
-  if (!p_env->gen.toc_init) 
-    read_toc_win32ioctl (p_env);
 
-  if (!p_env->gen.toc_init) 
-    return CDIO_DISC_MODE_NO_INFO;
+/*! 
+  Get disc type associated with cd object.
+*/
+discmode_t
+get_discmode_win32ioctl (_img_private_t *p_env)
+{
+  track_t i_track;
+  discmode_t discmode;
+
+  if (!p_env) return CDIO_DISC_MODE_ERROR;
+  
+  discmode = dvd_discmode_win32ioctl(p_env);
+
+  if (CDIO_DISC_MODE_NO_INFO != discmode) return discmode;
+  
+  if (!p_env->gen.toc_init) read_toc_win32ioctl (p_env);
+
+  if (!p_env->gen.toc_init) return CDIO_DISC_MODE_ERROR;
 
   for (i_track = p_env->gen.i_first_track; 
        i_track < p_env->gen.i_first_track + p_env->gen.i_tracks ; 
@@ -661,10 +676,24 @@ read_toc_win32ioctl (_img_private_t *p_env)
   CDROM_TOC    cdrom_toc;
   DWORD        dwBytesReturned;
   unsigned int i, j;
-
+  bool         b_fulltoc_first;  /* Do we do fulltoc or DeviceIoControl 
+				    first? */
   if ( ! p_env ) return false;
 
-  if ( read_fulltoc_win32mmc(p_env) ) return true;
+  /* 
+     The MMC5 spec says:
+       For media other than CD, information may be fabricated in order
+                                            ^^^ ^^
+       to emulate a CD structure for teh specific media.
+
+     There is no requirement though that it *has* to and some DVD
+     drives like one by Thompson for XBOX don't support a
+     IOCTL_CDROM_READ_TOC for DVD's. So if we have a DVD we will not
+     prefer getting the TOC via MMC.
+   */
+  b_fulltoc_first = (CDIO_DISC_MODE_NO_INFO == dvd_discmode_win32ioctl(p_env));
+
+  if ( b_fulltoc_first && read_fulltoc_win32mmc(p_env) ) return true;
 
   /* SCSI-MMC READ_TOC (FULTOC) read failed.  Try reading TOC via
      DeviceIoControl instead */
@@ -674,12 +703,17 @@ read_toc_win32ioctl (_img_private_t *p_env)
 		       &dwBytesReturned, NULL ) == 0 ) {
     char *psz_msg = NULL;
     long int i_err = GetLastError();
+    cdio_log_level_t loglevel = b_fulltoc_first 
+      ? CDIO_LOG_WARN : CDIO_LOG_DEBUG;
+
     FORMAT_ERROR(i_err, psz_msg);
     if (psz_msg) {
-      cdio_warn("could not read TOC (%ld): %s", i_err, psz_msg);
+      cdio_log(loglevel, "could not read TOC (%ld): %s", i_err, psz_msg);
       LocalFree(psz_msg);
     } else 
-      cdio_warn("could not read TOC (%ld)", i_err);
+      cdio_log(loglevel, "could not read TOC (%ld)", i_err);
+
+    if ( !b_fulltoc_first && read_fulltoc_win32mmc(p_env) ) return true;
     return false;
   }
   
