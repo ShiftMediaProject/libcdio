@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.58 2004/08/26 10:43:36 rocky Exp $
+    $Id: _cdio_osx.c,v 1.59 2004/08/27 00:03:05 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.58 2004/08/26 10:43:36 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.59 2004/08/27 00:03:05 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -46,10 +46,14 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.58 2004/08/26 10:43:36 rocky 
 #ifdef HAVE_DARWIN_CDROM
 #undef VERSION 
 
+#include <CoreFoundation/CoreFoundation.h>
+#include <IOKit/IOKitLib.h>
+#include <IOKit/storage/IOStorageDeviceCharacteristics.h>
+#include <IOKit/scsi/IOSCSIMultimediaCommandsDevice.h>
+
 #include <mach/mach.h>
 #include <Carbon/Carbon.h>
 #include <IOKit/scsi-commands/SCSITaskLib.h>
-#include <IOKit/IOKitLib.h>
 #include <IOKit/IOCFPlugIn.h>
 #include <mach/mach_error.h>
 
@@ -110,12 +114,34 @@ typedef struct {
   track_t i_first_session;   /* first session number */
   lsn_t   *pp_lba;
   CFMutableDictionaryRef dict;
-  io_service_t service;
+  io_service_t MediaClass_service;
   SCSITaskDeviceInterface **pp_scsiTaskDeviceInterface;
 
 } _img_private_t;
 
 static bool read_toc_osx (void *p_user_data);
+
+/****
+ * GetRegistryEntryProperties - Gets the registry entry properties for
+ *  an io_service_t.
+ *****/
+
+static CFMutableDictionaryRef
+GetRegistryEntryProperties ( io_service_t service )
+{
+  
+  IOReturn			err	= kIOReturnSuccess;
+  CFMutableDictionaryRef	dict	= 0;
+  
+  err = IORegistryEntryCreateCFProperties (	service,
+						&dict,
+						kCFAllocatorDefault,
+						0 );		
+  check ( err == kIOReturnSuccess );
+  return dict;
+  
+}
+
 
 static bool 
 init_osx(_img_private_t *p_env) {
@@ -152,7 +178,7 @@ init_osx(_img_private_t *p_env) {
     }
   
   ret = IOServiceGetMatchingServices( port, 
-				      IOBSDNameMatching(port, 0, psz_devname);
+				      IOBSDNameMatching(port, 0, psz_devname),
 				      &iterator );
   
   /* get service iterator for the device */
@@ -163,42 +189,45 @@ init_osx(_img_private_t *p_env) {
     }
   
   /* first service */
-  p_env->service = IOIteratorNext( iterator );
+  p_env->MediaClass_service = IOIteratorNext( iterator );
   IOObjectRelease( iterator );
   
   /* search for kIOCDMediaClass */ 
-  while( p_env->service && 
-	 !IOObjectConformsTo( p_env->service, kIOCDMediaClass ) )
+  while( p_env->MediaClass_service && 
+	 !IOObjectConformsTo( p_env->MediaClass_service, kIOCDMediaClass ) )
     {
 
-      ret = IORegistryEntryGetParentIterator( p_env->service, kIOServicePlane, 
+      ret = IORegistryEntryGetParentIterator( p_env->MediaClass_service, 
+					      kIOServicePlane, 
 					      &iterator );
       if( ret != KERN_SUCCESS )
         {
 	  cdio_warn( "IORegistryEntryGetParentIterator: 0x%08x", ret );
-	  IOObjectRelease( p_env->service );
+	  IOObjectRelease( p_env->MediaClass_service );
 	  return false;
         }
       
-      IOObjectRelease( p_env->service );
-      p_env->service = IOIteratorNext( iterator );
+      IOObjectRelease( p_env->MediaClass_service );
+      p_env->MediaClass_service = IOIteratorNext( iterator );
       IOObjectRelease( iterator );
     }
   
-  if( p_env->service == 0 )
+  if( p_env->MediaClass_service == 0 )
     {
       cdio_warn( "search for kIOCDMediaClass came up empty" );
       return false;
     }
 
   /* create a CF dictionary containing the TOC */
-  ret = IORegistryEntryCreateCFProperties( p_env->service, &(p_env->dict),
-					   kCFAllocatorDefault, kNilOptions );
+  ret = IORegistryEntryCreateCFProperties( p_env->MediaClass_service, 
+					   &(p_env->dict),
+					   kCFAllocatorDefault, 
+					   kNilOptions );
   
   if(  ret != KERN_SUCCESS )
     {
       cdio_warn( "IORegistryEntryCreateCFProperties: 0x%08x", ret );
-      IOObjectRelease( p_env->service );
+      IOObjectRelease( p_env->MediaClass_service );
       return false;
     }
   return true;
@@ -306,7 +335,7 @@ run_scsi_cmd_osx( const void *p_user_data,
  ***************************************************************************/
 
 static bool
-GetFeaturesFlagsForDrive ( CFMutableDictionaryRef dict,
+GetFeaturesFlagsForDrive ( CFDictionaryRef dict,
 			   uint32_t *i_cdFlags,
 			   uint32_t *i_dvdFlags )
 {
@@ -319,6 +348,7 @@ GetFeaturesFlagsForDrive ( CFMutableDictionaryRef dict,
   propertiesDict = ( CFDictionaryRef ) 
     CFDictionaryGetValue ( dict, 
 			   CFSTR ( kIOPropertyDeviceCharacteristicsKey ) );
+
   if ( propertiesDict == 0 ) return false;
   
   /* Get the CD features */
@@ -346,11 +376,17 @@ get_drive_cap_osx(const void *p_user_data,
 		  /*out*/ cdio_drive_write_cap_t *p_write_cap,
 		  /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
+#if 1
+  p_misc_cap = p_write_cap = p_read_cap = CDIO_DRIVE_CAP_UNKNOWN;
+  return;
+#else 
   const _img_private_t *p_env = p_user_data;
   uint32_t i_cdFlags;
   uint32_t i_dvdFlags;
 
-  if (! GetFeaturesFlagsForDrive ( p_env->dict, &i_cdFlags, &i_dvdFlags ) )
+  properties  = GetRegistryEntryProperties ( ??service );
+
+  if (! GetFeaturesFlagsForDrive ( properties, &i_cdFlags, &i_dvdFlags ) )
     return;
 
   /* Reader */
@@ -386,6 +422,7 @@ get_drive_cap_osx(const void *p_user_data,
   if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRWMask )
     *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PRW;
     ***/
+#endif
 
 }
 
@@ -465,7 +502,7 @@ _free_osx (void *p_user_data) {
   if (NULL != p_env->pp_lba)  free((void *) p_env->pp_lba);
   if (NULL != p_env->pTOC)    free((void *) p_env->pTOC);
   if (NULL != p_env->dict)    CFRelease( p_env->dict ); 
-  IOObjectRelease( p_env->service );
+  IOObjectRelease( p_env->MediaClass_service );
 
   if (NULL != p_env->pp_scsiTaskDeviceInterface) 
     ( *(p_env->pp_scsiTaskDeviceInterface) )->
@@ -702,7 +739,7 @@ read_toc_osx (void *p_user_data)
     }
 
   /* TestDevice(p_env, service); */
-  IOObjectRelease( p_env->service ); 
+  IOObjectRelease( p_env->MediaClass_service ); 
 
   p_env->i_descriptors = CDTOCGetDescriptorCount ( p_env->pTOC );
 
@@ -1115,7 +1152,7 @@ cdio_get_devices_osx(void)
 	      CFRelease( str_bsd_path );
 	      IOObjectRelease( next_media );
 	      IOObjectRelease( media_iterator );
-	      cdio_add_device_list(&drives, psz_buf, &num_drives);
+	      cdio_add_device_list(&drives, strdup(psz_buf), &num_drives);
 	    }
 	  
 	  CFRelease( str_bsd_path );
@@ -1248,13 +1285,8 @@ cdio_open_osx (const char *psz_orig_source)
     .get_default_device = cdio_get_default_device_osx,
     .get_devices        = cdio_get_devices_osx,
     .get_discmode       = get_discmode_generic,
-#if SCSI_MMC_FIXED
-    .get_cdtext         = get_cdtext_generic,
-    .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
-#else
     .get_cdtext         = get_cdtext_osx,
     .get_drive_cap      = get_drive_cap_osx,
-#endif
     .get_first_track_num= _get_first_track_num_osx,
     .get_mcn            = get_mcn_osx,
     .get_num_tracks     = _get_num_tracks_osx,
@@ -1277,10 +1309,10 @@ cdio_open_osx (const char *psz_orig_source)
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
   _data->access_mode    = _AM_OSX;
-  _data->service        = 0;
-  _data->gen.init       = false;
-  _data->gen.fd         = -1;
-  _data->gen.toc_init   = false;
+  _data->MediaClass_service = 0;
+  _data->gen.init           = false;
+  _data->gen.fd             = -1;
+  _data->gen.toc_init       = false;
   _data->gen.b_cdtext_init  = false;
   _data->gen.b_cdtext_error = false;
 
