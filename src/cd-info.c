@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.105 2004/12/31 07:51:43 rocky Exp $
+    $Id: cd-info.c,v 1.106 2005/01/01 14:20:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1052,6 +1052,8 @@ main(int argc, const char *argv[])
     printf("\n");
   }
 
+  start_track_lsn = cdio_get_track_lsn(p_cdio, i_first_track);
+
   /* Read and possibly print track information. */
   for (i = i_first_track; i <= CDIO_CDROM_LEADOUT_TRACK; i++) {
     msf_t msf;
@@ -1067,17 +1069,51 @@ main(int argc, const char *argv[])
     if (i == CDIO_CDROM_LEADOUT_TRACK) {
       if (!opts.no_tracks) {
 	lsn_t lsn= cdio_msf_to_lsn(&msf);
-        long unsigned int i_bytes = lsn * CDIO_CD_FRAMESIZE_RAW;
+        long unsigned int i_bytes_raw = lsn * CDIO_CD_FRAMESIZE_RAW;
+        long unsigned int i_bytes_formatted = lsn - start_track_lsn;
 
-	printf( "%3d: %8s  %06lu  leadout ", (int) i, psz_msf,
+	printf( "%3d: %8s  %06lu leadout ", (int) i, psz_msf,
 		(long unsigned int) lsn );
+
+	switch (discmode) {
+        case CDIO_DISC_MODE_DVD_ROM:
+        case CDIO_DISC_MODE_DVD_RAM:
+        case CDIO_DISC_MODE_DVD_R:
+        case CDIO_DISC_MODE_DVD_RW:
+        case CDIO_DISC_MODE_DVD_PR:
+        case CDIO_DISC_MODE_DVD_PRW:
+        case CDIO_DISC_MODE_DVD_OTHER:
+	case CDIO_DISC_MODE_CD_DATA:
+	  i_bytes_formatted *= CDIO_CD_FRAMESIZE;
+	  break;
+	case CDIO_DISC_MODE_CD_DA:
+	  i_bytes_formatted *= CDIO_CD_FRAMESIZE_RAW;
+	  break;
+	case CDIO_DISC_MODE_CD_XA:
+	case CDIO_DISC_MODE_CD_MIXED:
+	  i_bytes_formatted *= CDIO_CD_FRAMESIZE_RAW0;
+	  break;
+	default:
+	  i_bytes_formatted *= CDIO_CD_FRAMESIZE_RAW;
+	}
 	
-	if (i_bytes < 1024) 
-	  printf( "(%lu bytes)\n", i_bytes );
-	if (i_bytes < 1024 * 1024) 
-	  printf( "(%lu KB)\n", i_bytes / 1024 );
+	if (i_bytes_raw < 1024) 
+	  printf( "(%lu bytes", i_bytes_raw );
+	if (i_bytes_raw < 1024 * 1024) 
+	  printf( "(%lu KB", i_bytes_raw / 1024 );
 	else 
-	  printf( "(%lu MB)\n", i_bytes / (1024 * 1024) );
+	  printf( "(%lu MB", i_bytes_raw / (1024 * 1024) );
+
+	printf(" raw, ");
+	if (i_bytes_formatted < 1024) 
+	  printf( "%lu bytes", i_bytes_formatted );
+	if (i_bytes_formatted < 1024 * 1024) 
+	  printf( "%lu KB", i_bytes_formatted / 1024 );
+	else 
+	  printf( "%lu MB", i_bytes_formatted / (1024 * 1024) );
+
+	printf(" formatted)\n");
+
       }
       free(psz_msf);
       break;
@@ -1214,8 +1250,7 @@ main(int argc, const char *argv[])
       /* no data track, may be a "real" audio CD or hidden track CD */
       
       msf_t msf;
-      cdio_get_track_msf(p_cdio, 1, &msf);
-      start_track_lsn = cdio_msf_to_lsn(&msf);
+      cdio_get_track_msf(p_cdio, i_first_track, &msf);
       
       /* CD-I/Ready says start_track_lsn <= 30*75 then CDDA */
       if (start_track_lsn > 100 /* 100 is just a guess */) {
