@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.29 2004/12/04 11:50:40 rocky Exp $
+    $Id: sector.h,v 1.30 2005/01/01 14:19:19 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -152,7 +152,7 @@ typedef enum {
 #define CDIO_CD_FRAMESIZE_RAWER 2646   /**< The maximum possible returned 
                                           bytes */ 
 #define CDIO_CD_FRAMESIZE_RAW1 (CDIO_CD_CD_FRAMESIZE_RAW-CDIO_CD_SYNC_SIZE) /*2340*/
-#define CDIO_CD_FRAMESIZE_RAW0 (CDIO_CD_FRAMESIZE_RAW-CDIO_CD_SYNC_SIZE-CDIO_CD__HEAD_SIZE) /*2336*/
+#define CDIO_CD_FRAMESIZE_RAW0 (CDIO_CD_FRAMESIZE_RAW-CDIO_CD_SYNC_SIZE-CDIO_CD_HEADER_SIZE) /*2336*/
 
 /*! "before data" part of raw XA (green, mode2) frame */
 #define CDIO_CD_XA_HEADER (CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE) 
