@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.2 2005/03/01 02:49:43 rocky Exp $
+    $Id: audio.c,v 1.3 2005/03/05 09:11:44 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -138,7 +138,7 @@ cdio_audio_resume (CdIo_t *p_cdio)
   
 */
 driver_return_code_t 
-cdio_audio_set_volume (CdIo_t *p_cdio,  const cdio_audio_volume_t *p_volume)
+cdio_audio_set_volume (CdIo_t *p_cdio, cdio_audio_volume_t *p_volume)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
 

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: audio.h,v 1.3 2005/03/02 04:23:59 rocky Exp $
+    $Id: audio.h,v 1.4 2005/03/05 09:11:44 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -116,7 +116,7 @@ extern "C" {
     @param p_cdio the CD object to be acted upon.
 
   */
-  driver_return_code_t cdio_audio_set_volume (CdIo_t *p_cdio,  const
+  driver_return_code_t cdio_audio_set_volume (CdIo_t *p_cdio,
 					      cdio_audio_volume_t *p_volume);
 
 #ifdef __cplusplus

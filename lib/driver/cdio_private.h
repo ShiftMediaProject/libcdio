@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.17 2005/03/01 00:41:34 rocky Exp $
+    $Id: cdio_private.h,v 1.18 2005/03/05 09:11:44 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -108,7 +108,7 @@ extern "C" {
       
     */
     driver_return_code_t (*audio_set_volume) 
-	 ( void *p_env,  const cdio_audio_volume_t *p_volume );
+	 ( void *p_env,  cdio_audio_volume_t *p_volume );
     /*!
       Eject media in CD drive. If successful, as a side effect we 
       also free obj. Return 0 if success and 1 for failure.

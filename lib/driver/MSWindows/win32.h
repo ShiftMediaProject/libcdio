@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.4 2005/02/06 17:36:17 rocky Exp $
+    $Id: win32.h,v 1.5 2005/03/05 09:11:44 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -57,10 +57,53 @@ typedef struct {
 
 } _img_private_t;
 
+/*!
+  Pause playing CD through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+driver_return_code_t audio_pause_win32ioctl (void *p_user_data);
+
+/*!
+  Playing starting at given MSF through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+driver_return_code_t audio_play_msf_win32ioctl (void *p_user_data, 
+						msf_t *p_start_msf, 
+						msf_t *p_end_msf);
+/*!
+  Resume playing an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+driver_return_code_t audio_resume_win32ioctl (void *p_user_data);
+
 /*! 
   Get disc type associated with cd object.
 */
 discmode_t get_discmode_win32ioctl (_img_private_t *p_env);
+
+/*!
+  Read Audio Subchannel information
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+driver_return_code_t
+audio_read_subchannel_win32ioctl (void *p_user_data, 
+				  cdio_subchannel_t *p_subchannel);
+
+/*!
+  Set the volume of an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+driver_return_code_t 
+audio_set_volume_win32ioctl ( void *p_user_data, 
+			      cdio_audio_volume_t *p_volume);
 
 /*!
    Reads an audio device using the DeviceIoControl method into data

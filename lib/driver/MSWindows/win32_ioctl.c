@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.15 2005/02/11 03:30:12 rocky Exp $
+    $Id: win32_ioctl.c,v 1.16 2005/03/05 09:11:44 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.15 2005/02/11 03:30:12 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.16 2005/03/05 09:11:44 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -39,7 +39,7 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.15 2005/02/11 03:30:12 rock
    sprintf(psz_msg, "error file %s: line %d (%s) %d\n", 
 	   _FILE__, __LINE__, __PRETTY_FUNCTION__, i_err)
 #else
-#include <ddk/ntddstor.h>
+#include <ddk/ntddcdrm.h>
 #include <ddk/ntddscsi.h>
 #include <ddk/scsi.h>
 #define FORMAT_ERROR(i_err, psz_msg) \
@@ -65,51 +65,6 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.15 2005/02/11 03:30:12 rock
 #include "cdtext_private.h"
 #include "cdio/logging.h"
 
-/* Win32 DeviceIoControl specifics */
-/***** FIXME: #include ntddcdrm.h from Wine, but probably need to 
-   modify it a little.
-*/
-
-#ifndef IOCTL_CDROM_BASE
-#    define IOCTL_CDROM_BASE FILE_DEVICE_CD_ROM
-#endif
-#ifndef IOCTL_CDROM_READ_TOC
-#define IOCTL_CDROM_READ_TOC \
-  CTL_CODE(IOCTL_CDROM_BASE, 0x0000, METHOD_BUFFERED, FILE_READ_ACCESS)
-#endif
-#ifndef IOCTL_CDROM_RAW_READ
-#define IOCTL_CDROM_RAW_READ CTL_CODE(IOCTL_CDROM_BASE, 0x000F, \
-                                      METHOD_OUT_DIRECT, FILE_READ_ACCESS)
-#endif
-
-#ifndef IOCTL_CDROM_READ_Q_CHANNEL
-#define IOCTL_CDROM_READ_Q_CHANNEL \
-  CTL_CODE(IOCTL_CDROM_BASE, 0x000B, METHOD_BUFFERED, FILE_READ_ACCESS)
-#endif
-
-typedef struct {
-   SCSI_PASS_THROUGH Spt;
-   ULONG Filler;
-   UCHAR SenseBuf[32];
-   UCHAR DataBuf[512];
-} SCSI_PASS_THROUGH_WITH_BUFFERS;
-
-typedef struct _TRACK_DATA {
-    UCHAR Format;
-    UCHAR Control : 4;
-    UCHAR Adr : 4;
-    UCHAR TrackNumber;
-    UCHAR Reserved1;
-    UCHAR Address[4];
-} TRACK_DATA, *PTRACK_DATA;
-
-typedef struct _CDROM_TOC {
-    UCHAR Length[2];
-    UCHAR FirstTrack;
-    UCHAR LastTrack;
-    TRACK_DATA TrackData[CDIO_CD_MAX_TRACKS+1];
-} CDROM_TOC, *PCDROM_TOC;
-
 typedef struct _TRACK_DATA_FULL {
     UCHAR SessionNumber;
     UCHAR Control : 4;
@@ -132,41 +87,184 @@ typedef struct _CDROM_TOC_FULL {
     TRACK_DATA_FULL TrackData[CDIO_CD_MAX_TRACKS+3];
 } CDROM_TOC_FULL, *PCDROM_TOC_FULL;
 
-typedef enum _TRACK_MODE_TYPE {
-    YellowMode2,
-    XAForm2,
-    CDDA
-} TRACK_MODE_TYPE, *PTRACK_MODE_TYPE;
-
-typedef struct __RAW_READ_INFO {
-    LARGE_INTEGER DiskOffset;
-    ULONG SectorCount;
-    TRACK_MODE_TYPE TrackMode;
-} RAW_READ_INFO, *PRAW_READ_INFO;
-
-typedef struct _CDROM_SUB_Q_DATA_FORMAT {
-    UCHAR               Format;
-    UCHAR               Track;
-} CDROM_SUB_Q_DATA_FORMAT, *PCDROM_SUB_Q_DATA_FORMAT;
-
-typedef struct _SUB_Q_HEADER {
-  UCHAR Reserved;
-  UCHAR AudioStatus;
-  UCHAR DataLength[2];
-} SUB_Q_HEADER, *PSUB_Q_HEADER;
-
-typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
-  SUB_Q_HEADER Header;
-  UCHAR FormatCode;
-  UCHAR Reserved[3];
-  UCHAR Reserved1 : 7;
-  UCHAR Mcval :1;
-  UCHAR MediaCatalog[15];
-} SUB_Q_MEDIA_CATALOG_NUMBER, *PSUB_Q_MEDIA_CATALOG_NUMBER;
+typedef struct {
+   SCSI_PASS_THROUGH Spt;
+   ULONG Filler;
+   UCHAR SenseBuf[32];
+   UCHAR DataBuf[512];
+} SCSI_PASS_THROUGH_WITH_BUFFERS;
 
 #include "win32.h"
 
 #define OP_TIMEOUT_MS 60 
+
+/*!
+  Pause playing CD through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+driver_return_code_t
+audio_pause_win32ioctl (void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+  DWORD dw_bytes_returned;
+  
+  bool b_success = 
+    DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_PAUSE_AUDIO,
+		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, 0);
+
+  if ( ! b_success ) {
+    char *psz_msg = NULL;
+    long int i_err = GetLastError();
+    FORMAT_ERROR(i_err, psz_msg);
+    if (psz_msg) 
+      cdio_info("Error: %s", psz_msg);
+    else 
+      cdio_info("Error: %ld", i_err);
+    LocalFree(psz_msg);
+    return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_SUCCESS;
+}
+
+/*!
+  Playing starting at given MSF through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+driver_return_code_t
+audio_play_msf_win32ioctl (void *p_user_data, msf_t *p_start_msf, 
+			   msf_t *p_end_msf)
+{
+  const _img_private_t *p_env = p_user_data;
+  CDROM_PLAY_AUDIO_MSF play;
+  DWORD dw_bytes_returned;
+
+  play.StartingM = p_start_msf->m;
+  play.StartingS = p_start_msf->s;
+  play.StartingF = p_start_msf->f;
+
+  play.EndingM   = p_end_msf->m;
+  play.EndingS   = p_end_msf->s;
+  play.EndingF   = p_end_msf->f;
+
+  bool b_success = 
+    DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_PLAY_AUDIO_MSF,
+		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, 0);
+  
+  if ( ! b_success ) {
+    char *psz_msg = NULL;
+    long int i_err = GetLastError();
+    FORMAT_ERROR(i_err, psz_msg);
+    if (psz_msg) 
+      cdio_info("Error: %s", psz_msg);
+    else 
+      cdio_info("Error: %ld", i_err);
+    LocalFree(psz_msg);
+    return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_SUCCESS;
+  
+}
+
+/*!
+  Read Audio Subchannel information
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+driver_return_code_t
+audio_read_subchannel_win32ioctl (void *p_user_data, 
+				  cdio_subchannel_t *p_subchannel)
+{
+  const _img_private_t *p_env = p_user_data;
+  DWORD dw_bytes_returned;
+  CDROM_SUB_Q_DATA_FORMAT q_data_format;
+  
+  q_data_format.Format = CDIO_SUBCHANNEL_CURRENT_POSITION;
+  q_data_format.Track=0; /* Not sure if this has to be set or if so what
+			    it should be. */
+  
+  if( ! DeviceIoControl( p_env->h_device_handle,
+		       IOCTL_CDROM_READ_Q_CHANNEL,
+		       &q_data_format, sizeof(q_data_format), 
+		       p_subchannel, sizeof(cdio_subchannel_t),
+		       &dw_bytes_returned, NULL ) ) {
+    char *psz_msg = NULL;
+    long int i_err = GetLastError();
+    FORMAT_ERROR(i_err, psz_msg);
+    if (psz_msg) 
+      cdio_info("Error: %s", psz_msg);
+    else 
+      cdio_info("Error: %ld", i_err);
+    LocalFree(psz_msg);
+    return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_SUCCESS;
+}
+
+
+/*!
+  Resume playing an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+driver_return_code_t
+audio_resume_win32ioctl (void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+  DWORD dw_bytes_returned;
+  
+  bool b_success = 
+    DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_RESUME_AUDIO,
+		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, 0);
+
+  if ( ! b_success ) {
+    char *psz_msg = NULL;
+    long int i_err = GetLastError();
+    FORMAT_ERROR(i_err, psz_msg);
+    if (psz_msg) 
+      cdio_info("Error: %s", psz_msg);
+    else 
+      cdio_info("Error: %ld", i_err);
+    LocalFree(psz_msg);
+    return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_SUCCESS;
+}
+
+/*!
+  Set the volume of an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+driver_return_code_t
+audio_set_volume_win32ioctl (void *p_user_data, 
+			     cdio_audio_volume_t *p_volume)
+{
+  const _img_private_t *p_env = p_user_data;
+  DWORD dw_bytes_returned;
+  
+  bool b_success = 
+    DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_SET_VOLUME,
+		    p_volume, (DWORD) sizeof(cdio_audio_volume_t), 
+		    NULL, 0, &dw_bytes_returned, 0);
+
+  if ( ! b_success ) {
+    char *psz_msg = NULL;
+    long int i_err = GetLastError();
+    FORMAT_ERROR(i_err, psz_msg);
+    if (psz_msg) 
+      cdio_info("Error: %s", psz_msg);
+    else 
+      cdio_info("Error: %ld", i_err);
+    LocalFree(psz_msg);
+    return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_SUCCESS;
+}
 
 /*!
   Run a SCSI MMC command. 
@@ -192,8 +290,8 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 {
   const _img_private_t *p_env = p_user_data;
   SCSI_PASS_THROUGH_DIRECT sptd;
-  bool success;
-  DWORD dwBytesReturned;
+  bool b_success;
+  DWORD dw_bytes_returned;
   
   sptd.Length  = sizeof(sptd);
   sptd.PathId  = 0;      /* SCSI card ID will be filled in automatically */
@@ -211,15 +309,15 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   memcpy(sptd.Cdb, p_cdb, i_cdb);
 
   /* Send the command to drive */
-  success=DeviceIoControl(p_env->h_device_handle,
-			  IOCTL_SCSI_PASS_THROUGH_DIRECT,               
-			  (void *)&sptd, 
-			  (DWORD)sizeof(SCSI_PASS_THROUGH_DIRECT),
-			  NULL, 0,                        
-			  &dwBytesReturned,
-			  NULL);
+  b_success = DeviceIoControl(p_env->h_device_handle,
+			      IOCTL_SCSI_PASS_THROUGH_DIRECT,               
+			      (void *)&sptd, 
+			      (DWORD)sizeof(SCSI_PASS_THROUGH_DIRECT),
+			      NULL, 0,                        
+			      &dw_bytes_returned,
+			      NULL);
 
-  if(! success) {
+  if ( !b_success ) {
     char *psz_msg = NULL;
     long int i_err = GetLastError();
     FORMAT_ERROR(i_err, psz_msg);
@@ -378,11 +476,11 @@ is_cdrom_win32ioctl(const char c_drive_letter)
    Reads an audio device using the DeviceIoControl method into data
    starting from lsn.  Returns 0 if no error.
  */
-int
+driver_return_code_t
 read_audio_sectors_win32ioctl (_img_private_t *p_env, void *data, lsn_t lsn, 
 			       unsigned int nblocks) 
 {
-  DWORD dwBytesReturned;
+  DWORD dw_bytes_returned;
   RAW_READ_INFO cdrom_raw;
   
   /* Initialize CDROM_RAW_READ structure */
@@ -394,7 +492,7 @@ read_audio_sectors_win32ioctl (_img_private_t *p_env, void *data, lsn_t lsn,
 		       IOCTL_CDROM_RAW_READ, &cdrom_raw,
 		       sizeof(RAW_READ_INFO), data,
 		       CDIO_CD_FRAMESIZE_RAW * nblocks,
-		       &dwBytesReturned, NULL ) == 0 ) {
+		       &dw_bytes_returned, NULL ) == 0 ) {
     char *psz_msg = NULL;
     long int i_err = GetLastError();
     FORMAT_ERROR(i_err, psz_msg);
@@ -406,9 +504,9 @@ read_audio_sectors_win32ioctl (_img_private_t *p_env, void *data, lsn_t lsn,
 		(long unsigned int) lsn, i_err);
     }
     LocalFree(psz_msg);
-    return 1;
+    return DRIVER_OP_ERROR;
   }
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
@@ -677,7 +775,7 @@ bool
 read_toc_win32ioctl (_img_private_t *p_env) 
 {
   CDROM_TOC    cdrom_toc;
-  DWORD        dwBytesReturned;
+  DWORD        dw_bytes_returned;
   unsigned int i, j;
   bool         b_fulltoc_first;  /* Do we do fulltoc or DeviceIoControl 
 				    first? */
@@ -712,7 +810,7 @@ read_toc_win32ioctl (_img_private_t *p_env)
   if( DeviceIoControl( p_env->h_device_handle,
 		       IOCTL_CDROM_READ_TOC,
 		       NULL, 0, &cdrom_toc, sizeof(CDROM_TOC),
-		       &dwBytesReturned, NULL ) == 0 ) {
+		       &dw_bytes_returned, NULL ) == 0 ) {
     char *psz_msg = NULL;
     long int i_err = GetLastError();
     cdio_log_level_t loglevel = b_fulltoc_first 
@@ -741,7 +839,7 @@ read_toc_win32ioctl (_img_private_t *p_env)
 					cdrom_toc.TrackData[i].Address[3] )
 		      );
     p_env->tocent[i].Control   = cdrom_toc.TrackData[i].Control;
-    p_env->tocent[i].Format    = cdrom_toc.TrackData[i].Format;
+    p_env->tocent[i].Format    = cdrom_toc.TrackData[i].Adr;
 
     p_env->gen.track_flags[j].preemphasis = 
       p_env->tocent[i].Control & 0x1 
@@ -770,9 +868,9 @@ read_toc_win32ioctl (_img_private_t *p_env)
 
  */
 char *
-get_mcn_win32ioctl (const _img_private_t *env) {
+get_mcn_win32ioctl (const _img_private_t *p_env) {
 
-  DWORD dwBytesReturned;
+  DWORD dw_bytes_returned;
   SUB_Q_MEDIA_CATALOG_NUMBER mcn;
   CDROM_SUB_Q_DATA_FORMAT q_data_format;
   
@@ -780,13 +878,16 @@ get_mcn_win32ioctl (const _img_private_t *env) {
   
   q_data_format.Format = CDIO_SUBCHANNEL_MEDIA_CATALOG;
 
-  q_data_format.Track=1;
+  /* MSDN info on CDROM_SUB_Q_DATA_FORMAT says if Format is set to 
+     get MCN, track must be set 0.
+   */
+  q_data_format.Track=0; 
   
-  if( DeviceIoControl( env->h_device_handle,
+  if( ! DeviceIoControl( p_env->h_device_handle,
 		       IOCTL_CDROM_READ_Q_CHANNEL,
 		       &q_data_format, sizeof(q_data_format), 
 		       &mcn, sizeof(mcn),
-		       &dwBytesReturned, NULL ) == 0 ) {
+		       &dw_bytes_returned, NULL ) ) {
     cdio_warn( "could not read Q Channel at track %d", 1);
   } else if (mcn.Mcval) 
     return strdup(mcn.MediaCatalog);

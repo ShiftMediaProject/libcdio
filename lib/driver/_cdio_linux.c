@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.35 2005/03/02 04:24:00 rocky Exp $
+    $Id: _cdio_linux.c,v 1.36 2005/03/05 09:11:44 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.35 2005/03/02 04:24:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.36 2005/03/05 09:11:44 rocky Exp $";
 
 #include <string.h>
 
@@ -285,8 +285,7 @@ audio_resume_linux (void *p_user_data)
   
 */
 static driver_return_code_t
-audio_set_volume_linux (void *p_user_data, 
-                        const cdio_audio_volume_t *p_volume)
+audio_set_volume_linux (void *p_user_data, cdio_audio_volume_t *p_volume)
 {
 
   const _img_private_t *p_env = p_user_data;
