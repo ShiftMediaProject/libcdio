@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.54 2004/06/27 15:29:21 rocky Exp $
+    $Id: cdio.h,v 1.55 2004/07/09 10:05:36 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -30,7 +30,7 @@
 /** Application Interface or Protocol version number. If the public
  *  interface changes, we increase this number.
  */
-#define CDIO_API_VERSION 1
+#define CDIO_API_VERSION 2
 
 #include <cdio/version.h>
 
