@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.18 2005/02/24 00:25:52 rocky Exp $
+    $Id: _cdio_osx.c,v 1.19 2005/02/25 09:17:41 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.18 2005/02/24 00:25:52 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.19 2005/02/25 09:17:41 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -138,6 +138,8 @@ typedef struct {
 } _img_private_t;
 
 static bool read_toc_osx (void *p_user_data);
+static track_format_t get_track_format_osx(void *p_user_data, 
+					   track_t i_track);
 
 /****
  * GetRegistryEntryProperties - Gets the registry entry properties for
@@ -892,43 +894,62 @@ _free_osx (void *p_user_data) {
 }
 
 /*!
-   Reads i_blocks of mode2 form2 sectors from cd device into data starting
-   from lsn.
-   Returns 0 if no error. 
+   Reads i_blocks of data sectors from cd device into p_data starting
+   from i_lsn.
+   Returns DRIVER_OP_SUCCESS if no error. 
  */
-static int
-read_data_sectors_osx (void *p_user_data, void *p_data, lsn_t lsn, 
-			    uint16_t i_blocksize, unsigned int i_blocks)
+static driver_return_code_t
+read_data_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn, 
+		       uint16_t i_blocksize, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
-  dk_cd_read_t cd_read;
-  
-  memset( &cd_read, 0, sizeof(cd_read) );
-  
-  cd_read.sectorArea  = kCDSectorAreaUser;
-  cd_read.buffer      = p_data;
-  cd_read.sectorType  = kCDSectorTypeUnknown;
-  
-  cd_read.offset       = lsn * i_blocksize;
-  cd_read.bufferLength = i_blocksize * i_blocks;
-  
-   if( ioctl( p_env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
+
+  if (!p_user_data) return DRIVER_OP_UNINIT;
+
   {
-    cdio_info( "could not read block %d, %s", lsn, strerror(errno) );
-    return -1;
+    dk_cd_read_t cd_read;
+    track_t i_track = cdio_get_track(p_env->gen.cdio, i_lsn);
+    
+    memset( &cd_read, 0, sizeof(cd_read) );
+    
+    cd_read.sectorArea  = kCDSectorAreaUser;
+    cd_read.buffer      = p_data;
+
+    /* FIXME: Do I have to put use get_track_green_osx? */
+    switch(get_track_format_osx(p_user_data, i_track)) {
+    case TRACK_FORMAT_CDI:
+    case TRACK_FORMAT_DATA:
+      cd_read.sectorType  = kCDSectorTypeMode1;
+      cd_read.offset      = i_lsn * kCDSectorSizeMode1;
+      break;
+    case TRACK_FORMAT_XA:
+      cd_read.sectorType  = kCDSectorTypeMode2;
+      cd_read.offset      = i_lsn * kCDSectorSizeMode2;
+      break;
+    default:
+      return DRIVER_OP_ERROR;
+    }
+    
+    cd_read.bufferLength = i_blocksize * i_blocks;
+    
+    if( ioctl( p_env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
+      {
+	cdio_info( "could not read block %d, %s", i_lsn, strerror(errno) );
+	return DRIVER_OP_ERROR;
+      }
+    return DRIVER_OP_SUCCESS;
   }
-  return 0;
 }
 
   
 /*!
    Reads i_blocks of mode2 form2 sectors from cd device into data starting
-   from lsn.
+   from i_lsn.
    Returns 0 if no error. 
  */
 static driver_return_code_t
 read_mode1_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn, 
-			     bool b_form2, unsigned int i_blocks)
+			bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   dk_cd_read_t cd_read;
@@ -955,7 +976,6 @@ read_mode1_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
   return DRIVER_OP_SUCCESS;
 }
 
-  
 /*!
    Reads i_blocks of mode2 form2 sectors from cd device into data starting
    from lsn.
@@ -963,7 +983,7 @@ read_mode1_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
  */
 static driver_return_code_t
 read_mode2_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
-			bool b_form2, unsigned int i_blocks)
+			bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   dk_cd_read_t cd_read;

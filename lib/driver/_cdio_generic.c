@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.16 2005/02/17 04:57:21 rocky Exp $
+    $Id: _cdio_generic.c,v 1.17 2005/02/25 09:17:41 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.16 2005/02/17 04:57:21 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.17 2005/02/25 09:17:41 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -357,6 +357,7 @@ get_discmode_cd_generic (void *p_user_data )
 	discmode = CDIO_DISC_MODE_CD_MIXED;
       }
       break;
+    case TRACK_FORMAT_CDI:
     case TRACK_FORMAT_DATA:
       switch(discmode) {
 	case CDIO_DISC_MODE_NO_INFO:
