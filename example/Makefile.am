@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.6 2004/07/29 05:26:46 rocky Exp $
+#   $Id: Makefile.am,v 1.7 2004/08/06 22:05:16 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -21,7 +21,7 @@
 ####################################################
 #
 noinst_PROGRAMS = sample1 sample2 sample3 sample4 sample5 sample6 \
-	          sample7 sample8 sample9
+	          sample7 sample8 sample9 sample10
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
@@ -34,3 +34,4 @@ sample6_LDADD = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 sample7_LDADD = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 sample8_LDADD = $(LIBCDIO_LIBS)
 sample9_LDADD = $(LIBCDIO_LIBS)
+sample10_LDADD = $(LIBCDIO_LIBS)
