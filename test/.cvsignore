@@ -9,6 +9,7 @@ check_sizeof
 testassert
 testischar
 testiso9660
+testdefault
 *.dump
 *.cue
 *.bin
