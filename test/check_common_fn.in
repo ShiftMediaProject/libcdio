@@ -1,4 +1,21 @@
-# $Id: check_common_fn.in,v 1.3 2003/09/07 18:10:55 rocky Exp $
+# $Id: check_common_fn.in,v 1.4 2003/09/19 04:09:47 rocky Exp $
+#
+#    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
 # Common routines and setup for regression testing.
 SKIP_TEST_EXITCODE=77
 
@@ -30,14 +47,14 @@ test_cdinfo() {
   outfile="$2"
   rightfile="$3"
 
-  CDINFO="../src/cd-info"
+  CD_INFO="../src/cd-info"
 
-  if [ ! -x ${CDINFO} ]; then
-    echo "$0: No ${CDINFO}"
+  if [ ! -x ${CD_INFO} ]; then
+    echo "$0: No ${CD_INFO}"
     return 1
   fi
 
-  if ${CDINFO} --no-header ${opts} >${outfile} 2>&1 ; then 
+  if ${CD_INFO} --no-header ${opts} >${outfile} 2>&1 ; then 
     if test "@DIFF@" != no; then
       if @DIFF@ @DIFF_OPTS@ ${outfile} ${rightfile} ; then
 	rm -f $outfile
@@ -46,12 +63,45 @@ test_cdinfo() {
 	return 3
       fi
     else
-      echo "$0: No diff(1) or cmp(1 found - cannot test ${CDINFO}"
+      echo "$0: No diff(1) or cmp(1 found - cannot test ${CD_INFO}"
       rm -f $outfile
       return 77
     fi
   else
-    echo "$0: ${CDINFO} ${opts} failed"
+    echo "$0: ${CD_INFO} ${opts} failed"
+    return 2
+  fi
+
+}
+
+test_cd_read() {
+
+  opts="$1"
+  outfile="$2"
+  rightfile="$3"
+
+  CD_READ="../src/cd-read"
+
+  if [ ! -x ${CD_READ} ]; then
+    echo "$0: No ${CD_READ}"
+    return 1
+  fi
+
+  if ${CD_READ} ${opts} >${outfile} 2>&1 ; then 
+    if test "@DIFF@" != no; then
+      if @DIFF@ @DIFF_OPTS@ ${outfile} ${rightfile} ; then
+	rm -f $outfile
+	return 0
+      else
+	return 3
+      fi
+    else
+      echo "$0: No diff(1) or cmp(1 found - cannot test ${CD_READ}"
+      rm -f $outfile
+      return 77
+    fi
+  else
+    echo "$0: ${CD_READ} ${opts} failed"
     return 2
   fi
 
