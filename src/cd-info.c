@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.88 2004/08/30 01:25:09 rocky Exp $
+    $Id: cd-info.c,v 1.89 2004/09/02 01:33:57 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1042,13 +1042,13 @@ main(int argc, const char *argv[])
   i_first_track = cdio_get_first_track_num(p_cdio);
 
   if (CDIO_INVALID_TRACK == i_first_track) {
-    err_exit("Can't get first track number. I give up.\n");
+    err_exit("Can't get first track number. I give up%s.\n", "");
   }
 
   i_tracks = cdio_get_num_tracks(p_cdio);
 
   if (CDIO_INVALID_TRACK == i_tracks) {
-    err_exit("Can't get number of tracks. I give up.\n");
+    err_exit("Can't get number of tracks. I give up.%s\n", "");
   }
 
   if (!opts.no_tracks) {
