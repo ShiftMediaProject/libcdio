@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.41 2005/02/12 10:21:31 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.42 2005/02/13 16:05:27 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -1753,7 +1753,7 @@ an optional CD-location.
 @end table
 
 @node Utility Programs
-@chapter Diagnostic programs (@samp{cd-info}, @samp{cd-read}, @samp{iso-info}, @samp{iso-read})
+@chapter Diagnostic programs (@samp{cd-drive}, @samp{cd-info}, @samp{cd-read}, @samp{iso-info}, @samp{iso-read})
 
 @menu
 * cd-drive::       list out CD-ROM drive information
@@ -1766,8 +1766,8 @@ an optional CD-location.
 @node cd-drive
 @section @samp{cd-drive}
 
-@samp{cd-drive} lists out drive information and information about
-what hardware drivers are available.
+@samp{cd-drive} lists out drive information, what features drive
+supports, and information about what hardware drivers are available.
 
 @node cd-info
 @section @samp{cd-info}
