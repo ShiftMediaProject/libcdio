@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.h,v 1.8 2003/04/10 04:13:41 rocky Exp $
+    $Id: cdio.h,v 1.9 2003/04/12 03:38:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -303,6 +303,9 @@ extern "C" {
   CdIo * cdio_open_nrg (const char *source_name);
   
   char * cdio_get_default_device_nrg(void);
+
+  /*! Return true if cue_name is a cue file. */
+  char *cdio_is_cuefile(const char *cue_name);
   
 #ifdef __cplusplus
 }

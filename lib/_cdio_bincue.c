@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.14 2003/04/11 17:30:30 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.15 2003/04/12 03:38:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.14 2003/04/11 17:30:30 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.15 2003/04/12 03:38:00 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -524,6 +524,9 @@ _cdio_read_mode2_sectors (void *user_data, void *data, uint32_t lsn,
   return 0;
 }
 
+#define free_if_notnull(obj) \
+  if (NULL != obj) free(obj);
+
 /*!
   Set the device to use in I/O operations.
 */
@@ -534,7 +537,7 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
 
   if (!strcmp (key, "source"))
     {
-      free (_obj->gen.source_name);
+      free_if_notnull (_obj->gen.source_name);
 
       if (!value)
 	return -2;
@@ -552,7 +555,7 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
     }
   else if (!strcmp (key, "cue"))
     {
-      free (_obj->cue_name);
+      free_if_notnull (_obj->cue_name);
 
       if (!value)
 	return -2;
@@ -702,52 +705,42 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
     return false;
 }
 
-CdIo *
-cdio_open_bincue (const char *source_name)
+/*! 
+  Return corresponding BIN file if cue_name is a cue file or NULL
+  if not a CUE file.
+
+*/
+/* We can imagine more elaborate checks later. But this gets us 
+   started for now.
+*/
+char *
+cdio_is_cuefile(const char *cue_name) 
 {
-  CdIo *ret;
-  _img_private_t *_data;
+  int   i;
+  char *source_name;
+  
+  if (cue_name == NULL) return false;
 
-  cdio_funcs _funcs = {
-    .eject_media        = cdio_generic_bogus_eject_media,
-    .free               = cdio_generic_stream_free,
-    .get_arg            = _cdio_get_arg,
-    .get_default_device = cdio_get_default_device_bincue,
-    .get_first_track_num= _cdio_get_first_track_num,
-    .get_num_tracks     = _cdio_get_num_tracks,
-    .get_track_format   = _cdio_get_track_format,
-    .get_track_green    = _cdio_get_track_green,
-    .get_track_lba      = _cdio_get_track_lba, 
-    .get_track_msf      = _cdio_get_track_msf,
-    .read_audio_sector  = _cdio_read_audio_sector,
-    .read_mode2_sector  = _cdio_read_mode2_sector,
-    .read_mode2_sectors = _cdio_read_mode2_sectors,
-    .set_arg            = _cdio_set_arg,
-    .stat_size          = _cdio_stat_size
-  };
-
-  _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->gen.init       = false;
-  _data->sector_2336    = false;
-
-  /* FIXME: should set cue initially.  */
-  _data->cue_name       = NULL;
-
-  ret = cdio_new (_data, &_funcs);
-  if (ret == NULL) return NULL;
-
-  _cdio_set_arg(_data, "source", (NULL == source_name) 
-		? DEFAULT_CDIO_DEVICE: source_name);
-
-  return ret;
+  source_name=strdup(cue_name);
+  i=strlen(source_name)-strlen("cue");
+  
+  if (i>0) {
+    if (cue_name[i]=='c' && cue_name[i+1]=='u' && cue_name[i+2]=='e') {
+      source_name[i++]='b'; source_name[i++]='i'; source_name[i++]='n';
+      return source_name;
+    } 
+    else if (cue_name[i]=='C' && cue_name[i+1]=='U' && cue_name[i+2]=='E') {
+      source_name[i++]='B'; source_name[i++]='I'; source_name[i++]='N';
+      return source_name;
+    }
+  }
+  free(source_name);
+  return NULL;
 }
 
-CdIo *
-cdio_open_cue (const char *cue_name)
+static CdIo *
+cdio_open_common (_img_private_t **_data)
 {
-  CdIo *ret;
-  _img_private_t *_data;
-
   cdio_funcs _funcs = {
     .eject_media        = cdio_generic_bogus_eject_media,
     .free               = cdio_generic_stream_free,
@@ -768,32 +761,56 @@ cdio_open_cue (const char *cue_name)
     .stat_size          = _cdio_stat_size
   };
 
-  _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->gen.init       = false;
+  *_data                = _cdio_malloc (sizeof (_img_private_t));
+  (*_data)->gen.init    = false;
+  (*_data)->sector_2336 = false;
+  (*_data)->cue_name    = NULL;
 
-  if (cue_name != NULL) {
-    char *source_name=strdup(cue_name);
-    int i=strlen(source_name)-strlen("cue");
+  return cdio_new (*_data, &_funcs);
+}
 
-    if (i>0) {
-      if (cue_name[i]=='c' && cue_name[i+1]=='u' && cue_name[i+2]=='e') {
-	source_name[i++]='b'; source_name[i++]='i'; source_name[i++]='n';
-      } 
-      else if (cue_name[i]=='C' && cue_name[i+1]=='U' && cue_name[i+2]=='E') {
-	source_name[i++]='B'; source_name[i++]='I'; source_name[i++]='N';
-      }
-    }
+CdIo *
+cdio_open_bincue (const char *source_name)
+{
+  CdIo *ret;
+  _img_private_t *_data;
+
+  char *bin_name = cdio_is_cuefile(source_name);
+
+  if (NULL != bin_name) {
+    return cdio_open_cue(source_name);
+  }
+  
+  ret = cdio_open_common(&_data);
+  if (ret == NULL) return NULL;
+
+  _cdio_set_arg(_data, "source", (NULL == source_name) 
+		? DEFAULT_CDIO_DEVICE: source_name);
+
+  return ret;
+}
+
+CdIo *
+cdio_open_cue (const char *cue_name)
+{
+  CdIo *ret;
+  _img_private_t *_data;
+  char *source_name;
+
+  ret = cdio_open_common(&_data);
+  if (ret == NULL) return NULL;
+
+  source_name = cdio_is_cuefile(cue_name);
+
+  if (NULL != source_name) {
     _cdio_set_arg (_data, "cue", cue_name);
     _cdio_set_arg (_data, "source", source_name);
     free(source_name);
   }
 
-  ret = cdio_new (_data, &_funcs);
-  if (ret == NULL) return NULL;
-
-  if (_cdio_init(_data))
+  if (_cdio_init(_data)) {
     return ret;
-  else {
+  } else {
     cdio_generic_stream_free (_data);
     return NULL;
   }

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.7 2003/04/10 04:13:41 rocky Exp $
+    $Id: cdio.c,v 1.8 2003/04/12 03:38:00 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -19,16 +19,23 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
 
 #include "cdio_assert.h"
 #include "util.h"
 #include "logging.h"
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.7 2003/04/10 04:13:41 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.8 2003/04/12 03:38:00 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -522,8 +529,38 @@ cdio_open (const char *source_name, driver_id_t driver_id)
 {
   if (CdIo_last_driver == -1) cdio_init();
 
+  if (NULL == source_name) return NULL;
+
+ retry:
   switch (driver_id) {
-  case DRIVER_UNKNOWN:
+  case DRIVER_UNKNOWN: 
+    {
+      struct stat buf;
+      if (0 != stat(source_name, &buf)) {
+        cdio_error ("Can't stat file %s:", strerror(errno));
+        return NULL;
+      }
+      if (S_ISBLK(buf.st_mode) || S_ISCHR(buf.st_mode)) {
+        driver_id = DRIVER_DEVICE;
+      } else if (S_ISREG(buf.st_mode)) {
+        /* FIXME: check to see if is a text file. If so, then 
+           set SOURCE_CUE. */
+        int i=strlen(source_name)-strlen("bin");
+        if (i > 0
+            && ( (source_name)[i]   =='n' || (source_name)[i]   =='N' )
+            && ( (source_name)[i+1] =='r' || (source_name)[i+1] =='R' )
+            && ( (source_name)[i+2] =='g' || (source_name)[i+2] =='G' ) )
+          driver_id = DRIVER_NRG;
+        else if (i > 0
+            && ( (source_name)[i]   =='c' || (source_name)[i]   =='C')
+            && ( (source_name)[i+1] =='u' || (source_name)[i+1] =='U')
+            && ( (source_name)[i+2] =='e' || (source_name)[i+2] =='E') ) 
+          driver_id = DRIVER_BINCUE;
+        else
+          driver_id = DRIVER_BINCUE;
+      }
+      goto retry;
+    }
   case DRIVER_DEVICE: 
     {  
       /* Scan for a driver. */
