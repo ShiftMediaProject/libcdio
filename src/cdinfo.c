@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.8 2003/04/14 04:26:17 rocky Exp $
+    $Id: cdinfo.c,v 1.9 2003/04/14 04:58:49 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -40,6 +40,16 @@
 #define POPT_ARGFLAG_OPTIONAL 0
 #endif
 
+#include "config.h"
+
+#ifdef HAVE_CDDB
+#include <cddb/cddb.h>
+#endif
+
+#include "cdio.h"
+#include "logging.h"
+#include "util.h"
+
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #ifdef __linux__
@@ -52,15 +62,6 @@
  
 #include <sys/ioctl.h>
 #include <errno.h>
-
-#include "config.h"
-#include "cdio.h"
-#include "logging.h"
-#include "util.h"
-
-#ifdef HAVE_CDDB
-#include <cddb/cddb.h>
-#endif
 
 #ifdef ENABLE_NLS
 #include <locale.h>
@@ -232,18 +233,20 @@ typedef enum
 } source_image_t;
 
 #ifdef HAVE_CDDB
-bool no_cddb = false;
 #endif
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
 struct arguments
 {
-  bool no_tracks;
-  bool no_ioctl;
-  bool no_analysis;
+  int no_tracks;
+  int no_ioctl;
+  int no_analysis;
+#ifdef HAVE_CDDB
+  int no_cddb;
+#endif
   int debug_level;
-  bool silent;
+  int silent;
   source_image_t source_image;
 } opts;
      
@@ -286,7 +289,7 @@ struct poptOption optionsTable[] = {
    "Don't filesystem analysis"},
   
 #ifdef HAVE_CDDB
-  {"nocddb",   'a', POPT_ARG_NONE, &no_cddb, 0,
+  {"nocddb",   'a', POPT_ARG_NONE, &opts.no_cddb, 0,
    "Don't look up audio CDDB information or print that"},
 #endif
   
@@ -754,7 +757,7 @@ print_analysis(int fs, int num_audio)
     if (num_audio > 0) {
       printf("Audio CD, CDDB disc ID is %08lx\n", cddb_discid());
 #ifdef HAVE_CDDB
-      if (!no_cddb) print_cddb_info();
+      if (!opts.no_cddb) print_cddb_info();
 #endif      
     }
     break;
@@ -842,9 +845,10 @@ main(int argc, const char *argv[])
   /* Default option values. */
   opts.silent         = false;
   opts.debug_level    = 0;
-  opts.no_tracks      = false;
-  opts.no_ioctl       = false;
-  opts.no_analysis    = false;
+  opts.no_tracks      = 0;
+  opts.no_cddb        = 0;
+  opts.no_ioctl       = 0;
+  opts.no_analysis    = 0;
   opts.source_image   = IMAGE_UNKNOWN;
      
 
