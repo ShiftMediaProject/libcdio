@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.18 2003/08/14 13:41:26 rocky Exp $
+    $Id: cd-info.c,v 1.19 2003/08/16 12:59:03 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -109,8 +109,7 @@
 #endif
 
 CdIo *cdio; 
-track_t num_tracks;
-track_t first_track_num;
+cdio_analysis_t cdio_analysis;
 
 #if CDIO_IOCTL_FINISHED
 struct cdrom_mcn           mcn;
@@ -480,7 +479,7 @@ _log_handler (cdio_log_level_t level, const char message[])
 
 #ifdef HAVE_CDDB
 static void 
-print_cddb_info() {
+print_cddb_info(track_t num_tracks, track_t first_track_num) {
   int i, matches;
   
   cddb_conn_t *conn =  cddb_new();
@@ -600,21 +599,21 @@ print_vcd_info(void) {
 static void
 print_analysis(int ms_offset, cdio_analysis_t cdio_analysis, 
 	       int fs, int first_data, int num_audio, 
-	       int num_tracks, CdIo *cdio)
+	       track_t num_tracks, track_t first_track_num, CdIo *cdio)
 {
   int need_lf;
   
-  switch(fs & FS_MASK) {
-  case FS_NO_DATA:
+  switch(fs & CDIO_FS_MASK) {
+  case CDIO_FS_NO_DATA:
     if (num_audio > 0) {
       printf("Audio CD, CDDB disc ID is %08lx\n", 
 	     cddb_discid(cdio, num_tracks));
 #ifdef HAVE_CDDB
-      if (!opts.no_cddb) print_cddb_info();
+      if (!opts.no_cddb) print_cddb_info(num_tracks, first_track_num);
 #endif      
     }
     break;
-  case FS_ISO_9660:
+  case CDIO_FS_ISO_9660:
     printf("CD-ROM with ISO 9660 filesystem");
     if (fs & JOLIET) {
       printf(" and joliet extension level %d", cdio_analysis.joliet_level);
@@ -623,38 +622,38 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
       printf(" and rockridge extensions");
     printf("\n");
     break;
-  case FS_ISO_9660_INTERACTIVE:
+  case CDIO_FS_ISO_9660_INTERACTIVE:
     printf("CD-ROM with CD-RTOS and ISO 9660 filesystem\n");
     break;
-  case FS_HIGH_SIERRA:
+  case CDIO_FS_HIGH_SIERRA:
     printf("CD-ROM with High Sierra filesystem\n");
     break;
-  case FS_INTERACTIVE:
+  case CDIO_FS_INTERACTIVE:
     printf("CD-Interactive%s\n", num_audio > 0 ? "/Ready" : "");
     break;
-  case FS_HFS:
+  case CDIO_FS_HFS:
     printf("CD-ROM with Macintosh HFS\n");
     break;
-  case FS_ISO_HFS:
+  case CDIO_FS_ISO_HFS:
     printf("CD-ROM with both Macintosh HFS and ISO 9660 filesystem\n");
     break;
-  case FS_UFS:
+  case CDIO_FS_UFS:
     printf("CD-ROM with Unix UFS\n");
     break;
-  case FS_EXT2:
+  case CDIO_FS_EXT2:
     printf("CD-ROM with Linux second extended filesystem\n");
 	  break;
-  case FS_3DO:
+  case CDIO_FS_3DO:
     printf("CD-ROM with Panasonic 3DO filesystem\n");
     break;
-  case FS_UNKNOWN:
+  case CDIO_FS_UNKNOWN:
     printf("CD-ROM with unknown filesystem\n");
     break;
   }
-  switch(fs & FS_MASK) {
-  case FS_ISO_9660:
-  case FS_ISO_9660_INTERACTIVE:
-  case FS_ISO_HFS:
+  switch(fs & CDIO_FS_MASK) {
+  case CDIO_FS_ISO_9660:
+  case CDIO_FS_ISO_9660_INTERACTIVE:
+  case CDIO_FS_ISO_HFS:
     printf("ISO 9660: %i blocks, label `%.32s'\n",
 	   cdio_analysis.isofs_size, cdio_analysis.iso_label);
     break;
@@ -688,6 +687,8 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
   }
   if (fs & SVCD)
     need_lf += printf("Super Video CD (SVCD) or Chaoji Video CD (CVD)");
+  if (fs & CVD)
+    need_lf += printf("Chaoji Video CD (CVD)");
   if (need_lf) printf("\n");
 }
 
@@ -699,9 +700,11 @@ main(int argc, const char *argv[])
 
   int fs=0;
   int i;
-  lsn_t start_track;          /* first sector of track */
-  lsn_t data_start =0;        /* start of data area */
-  int ms_offset = 0;
+  lsn_t   start_track;          /* first sector of track */
+  lsn_t   data_start =0;        /* start of data area */
+  int     ms_offset = 0;
+  track_t num_tracks=0;
+  track_t first_track_num=0;
   
   poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
@@ -925,18 +928,18 @@ main(int argc, const char *argv[])
       
       /* CD-I/Ready says start_track <= 30*75 then CDDA */
       if (start_track > 100 /* 100 is just a guess */) {
-	fs = guess_filesystem(cdio, 0, 1);
-	if ((fs & FS_MASK) != FS_UNKNOWN)
+	fs = cdio_guess_filesystem(cdio, 0, 1, &cdio_analysis);
+	if ((fs & CDIO_FS_MASK) != CDIO_FS_UNKNOWN)
 	  fs |= HIDDEN_TRACK;
 	else {
-	  fs &= ~FS_MASK; /* del filesystem info */
+	  fs &= ~CDIO_FS_MASK; /* del filesystem info */
 	  printf("Oops: %i unused sectors at start, "
 		 "but hidden track check failed.\n",
 		 start_track);
 	}
       }
       print_analysis(ms_offset, cdio_analysis, fs, first_data, num_audio,
-		     num_tracks, cdio);
+		     num_tracks, first_track_num, cdio);
     } else {
       /* we have data track(s) */
       int j;
@@ -968,7 +971,7 @@ main(int argc, const char *argv[])
 	if (start_track < data_start + cdio_analysis.isofs_size)
 	  continue;
 	
-	fs = guess_filesystem(cdio, start_track, i);
+	fs = cdio_guess_filesystem(cdio, start_track, i, &cdio_analysis);
 
 	if (i > 1) {
 	  /* track is beyond last session -> new session found */
@@ -981,13 +984,14 @@ main(int argc, const char *argv[])
 	  fs |= MULTISESSION;
 	} else {
 	  print_analysis(ms_offset, cdio_analysis, fs, first_data, num_audio,
-			 num_tracks, cdio);
+			 num_tracks, first_track_num, cdio);
 	}
 	
-	if (!(((fs & FS_MASK) == FS_ISO_9660 ||
-	       (fs & FS_MASK) == FS_ISO_HFS ||
-	       /* (fs & FS_MASK) == FS_ISO_9660_INTERACTIVE) && (fs & XA))) */
-	       (fs & FS_MASK) == FS_ISO_9660_INTERACTIVE)))
+	if (!(((fs & CDIO_FS_MASK) == CDIO_FS_ISO_9660 ||
+	       (fs & CDIO_FS_MASK) == CDIO_FS_ISO_HFS ||
+	       /* (fs & CDIO_FS_MASK) == CDIO_FS_ISO_9660_INTERACTIVE) 
+		  && (fs & XA))) */
+	       (fs & CDIO_FS_MASK) == CDIO_FS_ISO_9660_INTERACTIVE)))
 	  break;	/* no method for non-iso9660 multisessions */
       }
     }

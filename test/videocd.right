@@ -14,6 +14,6 @@ __________________________________
 CD Analysis Report
 CD-ROM with CD-RTOS and ISO 9660 filesystem
 ISO 9660: 676 blocks, label `SVIDEOCD                        '
-XA sectors   
+XA sectors   Super Video CD (SVCD) or Chaoji Video CD (CVD)
 session #2 starts at track  2, LSN:    826, ISO 9660 blocks:    676
-ISO 9660: 676 blocks, label `Ç‡9P	†Åú@M4H'
+ISO 9660: 676 blocks, label `SVIDEOCD                        '

@@ -1,9 +1,9 @@
 /*
-    $Id: analyze.c,v 1.1 2003/08/14 13:41:26 rocky Exp $
+    $Id: analyze.c,v 1.2 2003/08/16 12:59:03 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
-         and       Heiko Eiﬂfeldt <heiko@hexco.de>
+                                  and Heiko Eiﬂfeldt <heiko@hexco.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -117,9 +117,8 @@ static signature_t sigs[] =
 #define IS_UFS       9
 #define IS_BOOTABLE 10
 #define IS_VIDEO_CD 11 /* Video CD */
-#define IS_SVCD      12 /* Chinese Video CD - slightly incompatible with SVCD */
-
-cdio_analysis_t cdio_analysis;
+#define IS_SVCD     12 /* CVD *or* SVCD */
+#define IS_CVD      13 /* CVD - slightly incompatible with SVCD */
 
 /* ------------------------------------------------------------------------ */
 /* some ISO 9660 fiddling                                                   */
@@ -153,7 +152,7 @@ read_block(CdIo *cdio, int superblock, uint32_t offset, uint8_t bufnum,
 }
 
 static bool 
-is_it(int num) 
+_cdio_is_it(int num) 
 {
   signature_t *sigp=&sigs[num];
   int len=strlen(sigp->sig_str);
@@ -163,7 +162,7 @@ is_it(int num)
 }
 
 static int 
-is_hfs(void)
+_cdio_is_hfs(void)
 {
   return (0 == memcmp(&buffer[1][512],"PM",2)) ||
     (0 == memcmp(&buffer[1][512],"TS",2)) ||
@@ -171,29 +170,32 @@ is_hfs(void)
 }
 
 static int 
-is_3do(void)
+_cdio_is_3do(void)
 {
   return (0 == memcmp(&buffer[1][0],"\x01\x5a\x5a\x5a\x5a\x5a\x01", 7)) &&
     (0 == memcmp(&buffer[1][40], "CD-ROM", 6));
 }
 
-static int is_joliet(void)
+static int 
+_cdio_is_joliet(void)
 {
   return 2 == buffer[3][0] && buffer[3][88] == 0x25 && buffer[3][89] == 0x2f;
 }
 
 /* ISO 9660 volume space in M2F1_SECTOR_SIZE byte units */
 static int 
-get_size(void)
+_cdio_get_iso9660_fs_sec_count(void)
 {
-  return ((buffer[0][80] & 0xff) |
-	  ((buffer[0][81] & 0xff) << 8) |
-	  ((buffer[0][82] & 0xff) << 16) |
-	  ((buffer[0][83] & 0xff) << 24));
+  int sec_count = 
+     ((buffer[0][80] & 0xff) |
+     ((buffer[0][81] & 0xff) << 8) |
+     ((buffer[0][82] & 0xff) << 16) |
+     ((buffer[0][83] & 0xff) << 24));
+  return sec_count;
 }
 
 static int 
-get_joliet_level( void )
+_cdio_get_joliet_level( void )
 {
   switch (buffer[3][90]) {
   case 0x40: return 1;
@@ -207,78 +209,81 @@ get_joliet_level( void )
     if (is_it(sig)) printf("%s, ", sigs[sig].description)
 
 int 
-guess_filesystem(CdIo *cdio, int start_session, track_t track_num)
+cdio_guess_filesystem(/*in*/ CdIo *cdio, int start_session, track_t track_num, 
+		      /*out*/ cdio_analysis_t *cdio_analysis)
 {
   int ret = 0;
   
   if (read_block(cdio, ISO_SUPERBLOCK_SECTOR, start_session, 0, track_num) < 0)
-    return FS_UNKNOWN;
+    return CDIO_FS_UNKNOWN;
   
   /* filesystem */
-  if (is_it(IS_CD_I) && is_it(IS_CD_RTOS) 
-      && !is_it(IS_BRIDGE) && !is_it(IS_XA)) {
-    return FS_INTERACTIVE;
-  } else {	/* read sector 0 ONLY, when NO greenbook CD-I !!!! */
+  if (_cdio_is_it(IS_CD_I) && _cdio_is_it(IS_CD_RTOS) 
+      && !_cdio_is_it(IS_BRIDGE) && !_cdio_is_it(IS_XA)) {
+    return CDIO_FS_INTERACTIVE;
+  } else {	
+    /* read sector 0 ONLY, when NO greenbook CD-I !!!! */
 
     if (read_block(cdio, 0, start_session, 1, track_num) < 0)
       return ret;
     
-    if (is_it(IS_HS))
-      ret |= FS_HIGH_SIERRA;
-    else if (is_it(IS_ISOFS)) {
-      if (is_it(IS_CD_RTOS) && is_it(IS_BRIDGE))
-	ret = FS_ISO_9660_INTERACTIVE;
-      else if (is_hfs())
-	ret = FS_ISO_HFS;
+    if (_cdio_is_it(IS_HS))
+      ret |= CDIO_FS_HIGH_SIERRA;
+    else if (_cdio_is_it(IS_ISOFS)) {
+      if (_cdio_is_it(IS_CD_RTOS) && _cdio_is_it(IS_BRIDGE))
+	ret = CDIO_FS_ISO_9660_INTERACTIVE;
+      else if (_cdio_is_hfs())
+	ret = CDIO_FS_ISO_HFS;
       else
-	ret = FS_ISO_9660;
-      cdio_analysis.isofs_size = get_size();
-      sprintf(cdio_analysis.iso_label, buffer[0]+40);
+	ret = CDIO_FS_ISO_9660;
+      cdio_analysis->isofs_size = _cdio_get_iso9660_fs_sec_count();
+      sprintf(cdio_analysis->iso_label, buffer[0]+40);
       
 #if 0
-      if (is_rockridge())
+      if (_cdio_is_rockridge())
 	ret |= ROCKRIDGE;
 #endif
 
       if (read_block(cdio, BOOT_SECTOR, start_session, 3, track_num) < 0)
 	return ret;
       
-      if (is_joliet()) {
-	cdio_analysis.joliet_level = get_joliet_level();
+      if (_cdio_is_joliet()) {
+	cdio_analysis->joliet_level = _cdio_get_joliet_level();
 	ret |= JOLIET;
       }
-      if (is_it(IS_BOOTABLE))
+      if (_cdio_is_it(IS_BOOTABLE))
 	ret |= BOOTABLE;
       
-      if (is_it(IS_XA) && is_it(IS_ISOFS) 
-	  && !is_it(IS_PHOTO_CD)) {
+      if (_cdio_is_it(IS_XA) && _cdio_is_it(IS_ISOFS) 
+	  && !_cdio_is_it(IS_PHOTO_CD)) {
 
         if (read_block(cdio, VCD_INFO_SECTOR, start_session, 4, track_num) < 0)
 	  return ret;
 	
-	if (is_it(IS_BRIDGE) && is_it(IS_CD_RTOS)) {
-	  if (is_it(IS_VIDEO_CD))  ret |= VIDEOCDI;
-	  else if (is_it(IS_SVCD)) ret |= SVCD;
-	}
+	if (_cdio_is_it(IS_BRIDGE) && _cdio_is_it(IS_CD_RTOS)) {
+	  if (_cdio_is_it(IS_VIDEO_CD))  ret |= VIDEOCDI;
+	  else if (_cdio_is_it(IS_SVCD)) ret |= SVCD;
+	} else if (_cdio_is_it(IS_SVCD)) ret |= CVD;
+
       }
     } 
-    else if (is_hfs())       ret |= FS_HFS;
-    else if (is_it(IS_EXT2)) ret |= FS_EXT2;
-    else if (is_3do())       ret |= FS_3DO;
+    else if (_cdio_is_hfs())       ret |= CDIO_FS_HFS;
+    else if (_cdio_is_it(IS_EXT2)) ret |= CDIO_FS_EXT2;
+    else if (_cdio_is_3do())       ret |= CDIO_FS_3DO;
     else {
       if (read_block(cdio, UFS_SUPERBLOCK_SECTOR, start_session, 2, track_num) < 0)
 	return ret;
       
-      if (is_it(IS_UFS)) 
-	ret |= FS_UFS;
+      if (_cdio_is_it(IS_UFS)) 
+	ret |= CDIO_FS_UFS;
       else
-	ret |= FS_UNKNOWN;
+	ret |= CDIO_FS_UNKNOWN;
     }
   }
   
   /* other checks */
-  if (is_it(IS_XA))       ret |= XA;
-  if (is_it(IS_PHOTO_CD)) ret |= PHOTO_CD;
-  if (is_it(IS_CDTV))     ret |= CDTV;
+  if (_cdio_is_it(IS_XA))       ret |= XA;
+  if (_cdio_is_it(IS_PHOTO_CD)) ret |= PHOTO_CD;
+  if (_cdio_is_it(IS_CDTV))     ret |= CDTV;
   return ret;
 }

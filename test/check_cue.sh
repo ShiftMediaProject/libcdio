@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh,v 1.1 2003/08/10 14:33:28 rocky Exp $
+#$Id: check_cue.sh,v 1.2 2003/08/16 12:59:03 rocky Exp $
 if test -n "@CDDB_LIB@" ; then
   cddb_opt='--no-cddb'
 fi
@@ -21,12 +21,12 @@ testnum=CD-DA
 test_cdinfo "--cue-file ${srcdir}/${fname}.cue $cddb_opt" \
   ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
-check_result $RC "cd-info CUE test $testnum"
+check_result $RC "cdinfo CUE test $testnum"
 
 test_cdinfo "--bin-file ${srcdir}/${fname}.bin $cddb_opt" \
   ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
-check_result $RC "cd-info BIN test $testnum"
+check_result $RC "cdinfo BIN test $testnum"
 
 fname=isofs-m1
 testnum='ISO 9660 mode1'
@@ -34,7 +34,7 @@ if test -f  ${srcdir}/${fname}.bin ; then
   test_cdinfo "--cue-file ${srcdir}/${fname}.cue" \
     ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
-  check_result $RC "cd-info CUE test $testnum"
+  check_result $RC "cdinfo CUE test $testnum"
 else 
   echo "Don't see CUE file ${srcdir}/${fname}.bin. Test $testum skipped."
 fi
@@ -45,7 +45,7 @@ if test -f ${srcdir}/${fname}.cue ; then
   test_cdinfo "-c ${srcdir}/vcd_demo.cue $vcd_opt" \
       ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
-  check_result $RC "cd-info CUE test $testnum"
+  check_result $RC "cdinfo CUE test $testnum"
 else 
   echo "Don't see CUE file ${srcdir}/${fname}.cue. Test $testum skipped."
 fi
@@ -56,7 +56,7 @@ if test -f ${srcdir}/${fname}.bin ; then
   test_cdinfo "--cue-file ${srcdir}/${fname}.cue $vcd_opt" \
     ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
-  check_result $RC "cd-info CUE test $testnum"
+  check_result $RC "cdinfo CUE test $testnum"
 else 
   echo "Don't see CUE file ${srcdir}/${fname}.bin. Test $testnum skipped."
 fi
