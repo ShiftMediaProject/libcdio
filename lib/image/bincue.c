@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.8 2004/03/20 22:46:57 rocky Exp $
+    $Id: bincue.c,v 1.9 2004/03/22 01:01:50 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.8 2004/03/20 22:46:57 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.9 2004/03/22 01:01:50 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -959,8 +959,6 @@ cdio_open_cue (const char *cue_name)
   _img_private_t *_data;
   char *bin_name;
 
-  if (NULL == cue_name) return NULL;
-
   cdio_funcs _funcs = {
     .eject_media        = cdio_generic_bogus_eject_media,
     .free               = _cdio_bincue_destroy,
@@ -983,6 +981,8 @@ cdio_open_cue (const char *cue_name)
     .set_arg            = _cdio_set_arg,
     .stat_size          = _cdio_stat_size
   };
+
+  if (NULL == cue_name) return NULL;
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
   (_data)->gen.init    = false;
