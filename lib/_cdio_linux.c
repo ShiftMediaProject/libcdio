@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.26 2003/09/30 03:26:11 rocky Exp $
+    $Id: _cdio_linux.c,v 1.27 2003/10/03 01:26:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.26 2003/09/30 03:26:11 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.27 2003/10/03 01:26:52 rocky Exp $";
 
 #include <string.h>
 
@@ -97,7 +97,7 @@ typedef struct {
    Return 1 if a CD-ROM. 0 if it exists but isn't a CD-ROM drive
    and -1 if no device exists .
 */
-static int
+static bool
 cdio_is_cdrom(char *drive, char *mnttype)
 {
   bool is_cd=false;
@@ -851,7 +851,7 @@ cdio_get_devices_linux (void)
   unsigned int i;
   char drive[40];
   char *ret_drive;
-  int exists;
+  bool exists;
   char **drives = NULL;
   unsigned int num_drives=0;
   
@@ -880,7 +880,7 @@ cdio_get_devices_linux (void)
   for ( i=0; strlen(checklist2[i]) > 0; ++i ) {
     unsigned int j;
     char *insert;
-    exists = 1;
+    exists = true;
     for ( j=checklist2[i][1]; exists; ++j ) {
       sprintf(drive, "/dev/%s", &checklist2[i][3]);
       insert = strchr(drive, '?');
@@ -909,7 +909,7 @@ cdio_get_default_device_linux(void)
 #else
   unsigned int i;
   char drive[40];
-  int exists;
+  bool exists;
   char *ret_drive;
 
   /* Scan the system for CD-ROM drives.
@@ -935,7 +935,7 @@ cdio_get_default_device_linux(void)
   for ( i=0; strlen(checklist2[i]) > 0; ++i ) {
     unsigned int j;
     char *insert;
-    exists = 1;
+    exists = true;
     for ( j=checklist2[i][1]; exists; ++j ) {
       sprintf(drive, "/dev/%s", &checklist2[i][3]);
       insert = strchr(drive, '?');
