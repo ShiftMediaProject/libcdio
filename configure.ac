@@ -1,4 +1,4 @@
-AC_REVISION([$Id: configure.ac,v 1.4 2003/03/30 01:31:06 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.5 2003/03/30 12:59:37 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.1)
@@ -157,8 +157,12 @@ int has_timeout=sizeof(test.timeout);],
 	fi
 	;;
      bsdi*)
-     	AC_DEFINE([HAVE_BSDI_CDROM], [1], 
-                  [Define 1 if you have BSDI-type CD-ROM support])
+        AC_CHECK_HEADERS(dvd.h, [have_bsdi_dvd_h="yes"])
+	if test "x$have_bsdi_dvd_h" = "xyes" ; then
+     	  AC_DEFINE([HAVE_BSDI_CDROM], [1], 
+                    [Define 1 if you have BSDI-type CD-ROM support])
+	  LIBS="$LIBS -ldvd"
+	fi
 	;;
      sunos*|sun*|solaris*)
         AC_CHECK_HEADERS(sys/cdio.h)
