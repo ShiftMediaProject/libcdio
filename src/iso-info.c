@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.3 2004/02/08 03:35:24 rocky Exp $
+    $Id: iso-info.c,v 1.4 2004/02/21 18:31:48 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -114,8 +114,6 @@ parse_options (int argc, const char *argv[])
   {
     const char *remaining_arg = poptGetArg(optCon);
     if ( remaining_arg != NULL) {
-      source_name = strdup(remaining_arg);
-      
       if ( (poptGetArgs(optCon)) != NULL) {
 	fprintf (stderr, 
 		 "%s: Source specified in previously %s and %s\n", 
@@ -123,6 +121,7 @@ parse_options (int argc, const char *argv[])
 	poptFreeContext(optCon);
 	exit (EXIT_FAILURE);
       }
+      source_name = strdup(remaining_arg);
     }
   }
   
@@ -276,6 +275,7 @@ main(int argc, const char *argv[])
   iso = iso9660_open (source_name);
 
   if (iso==NULL) {
+    free(source_name);
     err_exit("%s: Error in opening device driver\n", program_name);
   } 
 
@@ -288,6 +288,7 @@ main(int argc, const char *argv[])
     print_iso9660_fs(iso);
   }
 
+  free(source_name);
   iso9660_close(iso);
   /* Not reached:*/
   free(program_name);
