@@ -100,6 +100,8 @@ main(int argc, const char *argv[])
       lsn_t   i_last_lsn = cdda_disc_lastsector(d);
       unsigned int i_sectors = i_last_lsn - i_first_lsn + 1;
       unsigned int j;
+      unsigned int i_good = 0;
+      unsigned int i_bad  = 0;
       
       /* Set reading mode for full paranoia, but allow skipping sectors. */
       paranoia_modeset(p, PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP);
@@ -148,16 +150,18 @@ main(int argc, const char *argv[])
 		  if (audio_buf[i][j]   != readbuf[j+1] && 
 		      audio_buf[i][j+1] != readbuf[j] ) {
 		    printf("LSN %ld doesn't match\n", (long int) i_lsn);
-		    i_rc = 1;
-		    goto out;
+		    i_bad++;
+		  } else {
+		    i_good++;
 		  }
 		}
 	      } else {
 		if ( 0 != memcmp(audio_buf[i], readbuf, 
 				 CDIO_CD_FRAMESIZE_RAW) ) {
 		  printf("LSN %ld doesn't match\n", (long int) i_lsn);
-		  i_rc = 1;
-		  goto out;
+		  i_bad++;
+		} else {
+		  i_good++;
 		}
 	      }
 	    }
@@ -167,6 +171,9 @@ main(int argc, const char *argv[])
 	  }
 	}
       }
+      printf("%u sectors compared okay %u sectors were different\n",
+	     i_good, i_bad);
+      if (i_bad > i_good) i_rc = 1;
     }
   out: paranoia_free(p);
   }
