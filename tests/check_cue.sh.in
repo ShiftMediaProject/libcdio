@@ -1,6 +1,6 @@
 #!/bin/sh
-#$Id: check_cue.sh,v 1.7 2003/04/20 17:24:49 rocky Exp $
-if test -n "-lcddb" ; then
+#$Id: check_cue.sh.in,v 1.1 2003/04/20 19:23:23 rocky Exp $
+if test -n "@CDDB_LIB@" ; then
   cddb_opt='--no-cddb'
 fi
 
