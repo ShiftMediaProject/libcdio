@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.24 2004/10/30 02:55:17 rocky Exp $
+    $Id: iso9660.c,v 1.25 2004/11/21 22:32:03 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.24 2004/10/30 02:55:17 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.25 2004/11/21 22:32:03 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -192,9 +192,9 @@ iso9660_set_ltime (const struct tm *_tm, /*out*/ iso9660_ltime_t *pvd_date)
    The length of the translated string is returned.
 */
 int 
-iso9660_name_translate(const char *old, char *new)
+iso9660_name_translate(const char *psz_old, char *psz_new)
 {
-  return iso9660_name_translate_ext(old, new, 0);
+  return iso9660_name_translate_ext(psz_old, psz_new, 0);
 }
 
 /*!

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.54 2004/10/28 00:03:17 rocky Exp $
+    $Id: iso9660.h,v 1.55 2004/11/21 22:32:03 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -479,7 +479,7 @@ int iso9660_name_translate(const char *psz_oldname, char *psz_newname);
 
    The length of the translated string is returned.
 */
-int iso9660_name_translate_ext(const char *old, char *new, 
+int iso9660_name_translate_ext(const char *psz_old, char *psz_new, 
                                uint8_t i_joliet_level);
   
 /*!  

@@ -1,3 +1,6 @@
+0.72
+- Update doc
+
 0.71
 
 - Some Joliet support.
@@ -154,4 +157,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.57 2004/11/07 21:13:10 rocky Exp $
+$Id: NEWS,v 1.58 2004/11/21 22:32:03 rocky Exp $
