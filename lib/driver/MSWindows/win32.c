@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.18 2005/02/11 01:34:12 rocky Exp $
+    $Id: win32.c,v 1.19 2005/02/11 02:18:15 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.18 2005/02/11 01:34:12 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.19 2005/02/11 02:18:15 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -186,9 +186,9 @@ run_mmc_cmd_win32( void *p_user_data, unsigned int i_timeout_ms,
   Initialize CD device.
  */
 static bool
-_init_win32 (void *user_data)
+init_win32 (void *p_user_data)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   bool b_ret;
   if (p_env->gen.init) {
     cdio_error ("init called more than once");
@@ -227,9 +227,9 @@ _init_win32 (void *user_data)
   Release and free resources associated with cd. 
  */
 static void
-_free_win32 (void *user_data)
+free_win32 (void *p_user_data)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (NULL == p_env) return;
   free (p_env->gen.source_name);
@@ -559,9 +559,9 @@ _cdio_get_track_format(void *p_obj, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *obj, track_t i_track) 
+_cdio_get_track_green(void *p_obj, track_t i_track) 
 {
-  _img_private_t *p_env = obj;
+  _img_private_t *p_env = p_obj;
   
   switch (_cdio_get_track_format(p_env, i_track)) {
   case TRACK_FORMAT_XA:
@@ -591,11 +591,11 @@ _cdio_get_track_green(void *obj, track_t i_track)
   False is returned if there is no track entry.
 */
 static bool
-_cdio_get_track_msf(void *p_user_data, track_t i_tracks, msf_t *msf)
+_cdio_get_track_msf(void *p_user_data, track_t i_tracks, msf_t *p_msf)
 {
   _img_private_t *p_env = p_user_data;
 
-  if (NULL == msf) return false;
+  if (!p_msf) return false;
 
   if (!p_env->gen.toc_init) 
     if (!read_toc_win32 (p_env)) return false;
@@ -605,7 +605,7 @@ _cdio_get_track_msf(void *p_user_data, track_t i_tracks, msf_t *msf)
   if (i_tracks > p_env->gen.i_tracks+1 || i_tracks == 0) {
     return false;
   } else {
-    cdio_lsn_to_msf(p_env->tocent[i_tracks-1].start_lsn, msf);
+    cdio_lsn_to_msf(p_env->tocent[i_tracks-1].start_lsn, p_msf);
     return true;
   }
 }
@@ -745,7 +745,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   memset( &_funcs, 0, sizeof(_funcs) );
 
   _funcs.eject_media           = _cdio_eject_media;
-  _funcs.free                  = _free_win32;
+  _funcs.free                  = free_win32;
   _funcs.get_arg               = _get_arg_win32;
   _funcs.get_cdtext            = get_cdtext_generic;
   _funcs.get_default_device    = cdio_get_default_device_win32;
@@ -804,10 +804,10 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   ret = cdio_new ((void *)_data, &_funcs);
   if (ret == NULL) return NULL;
 
-  if (_init_win32(_data))
+  if (init_win32(_data))
     return ret;
   else {
-    _free_win32 (_data);
+    free_win32 (_data);
     return NULL;
   }
   
