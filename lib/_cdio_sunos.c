@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.8 2003/04/08 10:17:56 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.9 2003/04/10 04:13:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -29,9 +29,11 @@
 #include "sector.h"
 #include "util.h"
 
+#define DEFAULT_CDIO_DEVICE "/vol/dev/aliases/cdrom0"
+
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.8 2003/04/08 10:17:56 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.9 2003/04/10 04:13:41 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,8 +55,6 @@ static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.8 2003/04/08 10:17:56 rocky
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
-
-#define DEFAULT_CDIO_DEVICE "/vol/dev/aliases/cdrom0"
 
 #define TOTAL_TRACKS    (_obj->tochdr.cdth_trk1)
 #define FIRST_TRACK_NUM (_obj->tochdr.cdth_trk0)
@@ -115,7 +115,7 @@ _cdio_init (_img_private_t *_obj)
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
 		    bool mode2_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
@@ -227,12 +227,116 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 }
 
 /*!
+   Reads a single mode2 sector from cd device into data starting from lsn.
+   Returns 0 if no error. 
+ */
+static int
+_cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
+{
+  struct cdrom_msf *msf = (struct cdrom_msf *) &data;
+  msf_t _msf;
+
+  _img_private_t *_obj = user_data;
+
+  cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
+  msf->cdmsf_min0   = from_bcd8(_msf.m);
+  msf->cdmsf_sec0   = from_bcd8(_msf.s);
+  msf->cdmsf_frame0 = from_bcd8(_msf.f);
+  
+  if (_obj->gen.ioctls_debugged == 75)
+    cdio_debug ("only displaying every 75th ioctl from now on");
+  
+  if (_obj->gen.ioctls_debugged == 30 * 75)
+    cdio_debug ("only displaying every 30*75th ioctl from now on");
+  
+  if (_obj->gen.ioctls_debugged < 75 
+      || (_obj->gen.ioctls_debugged < (30 * 75)  
+	  && _obj->gen.ioctls_debugged % 75 == 0)
+      || _obj->gen.ioctls_debugged % (30 * 75) == 0)
+    cdio_debug ("reading %2.2d:%2.2d:%2.2d",
+	       msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
+  
+  _obj->gen.ioctls_debugged++;
+  
+  switch (_obj->access_mode)
+    {
+    case _AM_NONE:
+      cdio_error ("No way to read CD audio");
+      return 1;
+      break;
+      
+    case _AM_SUN_CTRL_SCSI:
+      if (ioctl (_obj->gen.fd, CDROMCDDA, &data) == -1) {
+	perror ("ioctl(..,CDROMCDDA,..)");
+	return 1;
+	/* exit (EXIT_FAILURE); */
+      }
+      break;
+      
+    case _AM_SUN_CTRL_ATAPI:
+      {
+	struct uscsi_cmd sc;
+	union scsi_cdb cdb;
+	int blocks = 1;
+	int sector_type;
+	int sync, header_code, user_data, edc_ecc, error_field;
+	int sub_channel;
+	
+	sector_type = 1;
+	sync = 0;
+	header_code = 2;
+	user_data = 1;
+	edc_ecc = 0;
+	error_field = 0;
+	sub_channel = 0;
+	
+	memset(&cdb, 0, sizeof(cdb));
+	memset(&sc, 0, sizeof(sc));
+	cdb.scc_cmd = 0xBE;
+	cdb.cdb_opaque[1] = (sector_type) << 2;
+	cdb.cdb_opaque[2] = (lsn >> 24) & 0xff;
+	cdb.cdb_opaque[3] = (lsn >> 16) & 0xff;
+	cdb.cdb_opaque[4] = (lsn >>  8) & 0xff;
+	cdb.cdb_opaque[5] =  lsn & 0xff;
+	cdb.cdb_opaque[6] = (blocks >> 16) & 0xff;
+	cdb.cdb_opaque[7] = (blocks >>  8) & 0xff;
+	cdb.cdb_opaque[8] =  blocks & 0xff;
+	cdb.cdb_opaque[9] = (sync << 7) |
+	  (header_code << 5) |
+	  (user_data << 4) |
+	  (edc_ecc << 3) |
+	  (error_field << 1);
+	cdb.cdb_opaque[10] = sub_channel;
+	
+	sc.uscsi_cdb = (caddr_t)&cdb;
+	sc.uscsi_cdblen = 12;
+	sc.uscsi_bufaddr = (caddr_t) data;
+	sc.uscsi_buflen = CDIO_CD_FRAMESIZE;
+	sc.uscsi_flags = USCSI_ISOLATE | USCSI_READ;
+	sc.uscsi_timeout = 20;
+	if (ioctl(_obj->gen.fd, USCSICMD, &sc)) {
+	  perror("USCSICMD: READ CD");
+	  return 1;
+	}
+	if (sc.uscsi_status) {
+	  cdio_error("SCSI command failed with status %d\n", 
+		    sc.uscsi_status);
+	  return 1;
+	}
+	break;
+      }
+    }
+  
+  return 0;
+}
+
+/*!
    Reads nblocks of mode2 sectors from cd device into data starting
    from lsn.
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors (void *user_data, void *data, uint32_t lsn, 
+_cdio_read_mode2_sectors (void *user_data, void *data, uint32_t lsn, 
 		     bool mode2_form2, unsigned nblocks)
 {
   _img_private_t *_obj = user_data;
@@ -241,13 +345,13 @@ _read_mode2_sectors (void *user_data, void *data, uint32_t lsn,
 
   for (i = 0; i < nblocks; i++) {
     if (mode2_form2) {
-      if ( (retval = _read_mode2_sector (_obj, 
+      if ( (retval = _cdio_read_mode2_sector (_obj, 
 					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
 					  lsn + i, true)) )
 	return retval;
     } else {
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _read_mode2_sector (_obj, buf, lsn + i, true)) )
+      if ( (retval = _cdio_read_mode2_sector (_obj, buf, lsn + i, true)) )
 	return retval;
       
       memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
@@ -421,8 +525,8 @@ _cdio_get_arg (void *user_data, const char key[])
 /*!
   Return a string containing the default VCD device if none is specified.
  */
-static char *
-_cdio_get_default_device(void)
+char *
+cdio_get_default_device_solaris(void)
 {
   char *volume_device;
   char *volume_name;
@@ -562,6 +666,15 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
   }
 }
 
+#else 
+/*!
+  Return a string containing the default VCD device if none is specified.
+ */
+char *
+cdio_get_default_device_solaris(void)
+{
+  return strdup(DEFAULT_CDIO_DEVICE);
+}
 #endif /* HAVE_SOLARIS_CDROM */
 
 /*!
@@ -581,7 +694,7 @@ cdio_open_solaris (const char *source_name)
     .eject_media        = _cdio_eject_media,
     .free               = cdio_generic_free,
     .get_arg            = _cdio_get_arg,
-    .get_default_device = _cdio_get_default_device,
+    .get_default_device = cdio_get_default_device_solaris,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
@@ -590,8 +703,9 @@ cdio_open_solaris (const char *source_name)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
-    .read_mode2_sector  = _read_mode2_sector,
-    .read_mode2_sectors = _read_mode2_sectors,
+    .read_audio_sector  = _cdio_read_audio_sector,
+    .read_mode2_sector  = _cdio_read_mode2_sector,
+    .read_mode2_sectors = _cdio_read_mode2_sectors,
     .stat_size          = _cdio_stat_size,
     .set_arg            = _cdio_set_arg
   };

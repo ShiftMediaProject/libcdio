@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.5 2003/04/07 11:31:19 rocky Exp $
+    $Id: cdio_private.h,v 1.6 2003/04/10 04:13:41 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -126,6 +126,12 @@ extern "C" {
       Reads a single mode2 sector from cd device into buf starting
       from lsn. Returns 0 if no error. 
     */
+    int (*read_audio_sector) (void *user_data, void *buf, lsn_t lsn);
+    
+    /*!
+      Reads a single mode2 sector from cd device into buf starting
+      from lsn. Returns 0 if no error. 
+    */
     int (*read_mode2_sector) (void *user_data, void *buf, lsn_t lsn, 
 			      bool mode2raw);
     
@@ -191,6 +197,7 @@ extern "C" {
     const char  *describe;
     bool (*have_driver) (void); 
     CdIo *(*driver_open) (const char *source_name); 
+    char *(*get_default_device) (void); 
   } CdIo_driver_t;
 
   /* The below array gives of the drivers that are currently available for 

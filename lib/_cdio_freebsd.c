@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.5 2003/03/30 00:40:29 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.6 2003/04/10 04:13:41 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,18 +26,22 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.5 2003/03/30 00:40:29 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.6 2003/04/10 04:13:41 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
 #include "sector.h"
 #include "util.h"
 
+/* Is this the right default? */
+#define DEFAULT_CDIO_DEVICE "/dev/acd0c"
+
+#include <string.h>
+
 #ifdef HAVE_FREEBSD_CDROM
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -50,9 +54,6 @@ static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.5 2003/03/30 00:40:29 roc
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
-
-/* Is this the right default? */
-#define DEFAULT_CDIO_DEVICE "/dev/acd0c"
 
 #define TOTAL_TRACKS    (_obj->tochdr.ending_track \
 			- obj->tochdr.starting_track + 1)
@@ -366,15 +367,6 @@ _cdio_get_arg (void *user_data, const char key[])
 }
 
 /*!
-  Return a string containing the default VCD device if none is specified.
- */
-static char *
-_cdio_get_default_device()
-{
-  return strdup(DEFAULT_CDIO_DEVICE);
-}
-
-/*!
   Return the number of of the first track. 
   CDIO_INVALID_TRACK is returned on error.
 */
@@ -488,6 +480,15 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
 #endif /* HAVE_FREEBSD_CDROM */
 
 /*!
+  Return a string containing the default VCD device if none is specified.
+ */
+char *
+cdio_get_default_device_freebsd()
+{
+  return strdup(DEFAULT_CDIO_DEVICE);
+}
+
+/*!
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
   ones to set that up.
@@ -552,4 +553,5 @@ cdio_have_freebsd (void)
   return false;
 #endif /* HAVE_FREEBSD_CDROM */
 }
+
 

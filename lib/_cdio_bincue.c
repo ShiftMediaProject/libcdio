@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.11 2003/04/07 11:24:55 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.12 2003/04/10 04:13:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.11 2003/04/07 11:24:55 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.12 2003/04/10 04:13:41 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -564,8 +564,8 @@ _cdio_get_arg (void *user_data, const char key[])
 /*!
   Return a string containing the default VCD device if none is specified.
  */
-static char *
-_cdio_get_default_device()
+char *
+cdio_get_default_device_bincue(void)
 {
   return strdup(DEFAULT_CDIO_DEVICE);
 }
@@ -692,7 +692,7 @@ cdio_open_bincue (const char *source_name)
     .eject_media        = cdio_generic_bogus_eject_media,
     .free               = cdio_generic_stream_free,
     .get_arg            = _cdio_get_arg,
-    .get_default_device = _cdio_get_default_device,
+    .get_default_device = cdio_get_default_device_bincue,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
@@ -731,7 +731,7 @@ cdio_open_cue (const char *cue_name)
     .eject_media        = cdio_generic_bogus_eject_media,
     .free               = cdio_generic_stream_free,
     .get_arg            = _cdio_get_arg,
-    .get_default_device = _cdio_get_default_device,
+    .get_default_device = cdio_get_default_device_bincue,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,

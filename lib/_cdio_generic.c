@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.5 2003/04/07 11:24:04 rocky Exp $
+    $Id: _cdio_generic.c,v 1.6 2003/04/10 04:13:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.5 2003/04/07 11:24:04 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.6 2003/04/10 04:13:41 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -90,7 +90,7 @@ cdio_generic_init (void *user_data)
 
   if (_obj->fd < 0)
     {
-      cdio_error ("open (%s): %s", _obj->source_name, strerror (errno));
+      cdio_warn ("open (%s): %s", _obj->source_name, strerror (errno));
       return false;
     }
 

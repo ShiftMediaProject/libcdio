@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.6 2003/04/04 00:41:10 rocky Exp $
+    $Id: cdio.c,v 1.7 2003/04/10 04:13:41 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -28,7 +28,7 @@
 #include "logging.h"
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.6 2003/04/04 00:41:10 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.7 2003/04/10 04:13:41 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -65,6 +65,7 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "Unknown", 
    "No driver",
    &cdio_have_false,
+   NULL,
    NULL
   },
 
@@ -73,7 +74,8 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "BSDI",
    "BSDI ATAPI and SCSI driver",
    &cdio_have_bsdi,
-   cdio_open_bsdi
+   cdio_open_bsdi,
+   &cdio_get_default_device_bsdi
   },
 
   {DRIVER_FREEBSD, 
@@ -81,7 +83,8 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "FreeBSD",
    "FreeBSD driver",
    &cdio_have_freebsd,
-   cdio_open_freebsd
+   &cdio_open_freebsd,
+   &cdio_get_default_device_freebsd
   },
 
   {DRIVER_LINUX, 
@@ -89,7 +92,8 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "Linux", 
    "Linux ioctl and packet driver",
    &cdio_have_linux,
-   &cdio_open_linux
+   &cdio_open_linux,
+   &cdio_get_default_device_freebsd
   },
 
   {DRIVER_SOLARIS, 
@@ -97,7 +101,8 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "Solaris",
    "Solaris ATAPI and SCSI driver",
    &cdio_have_solaris,
-   &cdio_open_solaris
+   &cdio_open_solaris,
+   &cdio_get_default_device_solaris
   },
 
   {DRIVER_BINCUE,
@@ -105,7 +110,8 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "BIN/CUE",
    "bin/cuesheet disk image driver",
    &cdio_have_bincue,
-   &cdio_open_bincue
+   &cdio_open_bincue,
+   &cdio_get_default_device_bincue
   },
 
   {DRIVER_NRG,
@@ -113,7 +119,8 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "NRG",
    "Nero NRG disk image driver",
    &cdio_have_nrg,
-   &cdio_open_nrg
+   &cdio_open_nrg,
+   &cdio_get_default_device_nrg
   }
 
 };
@@ -151,14 +158,26 @@ cdio_get_arg (const CdIo *obj, const char key[])
 
 /*!
   Return a string containing the default CD device if none is specified.
+  if CdIo is NULL (we haven't initialized a specific device driver), 
+  then find a suitable one and return the default device for that.
 
   NULL is returned if we couldn't get a default device.
  */
 char *
 cdio_get_default_device (const CdIo *obj)
 {
-  cdio_assert (obj != NULL);
-
+  if (obj == NULL) {
+    driver_id_t driver_id;
+    /* Scan for driver */
+    for (driver_id=DRIVER_UNKNOWN; driver_id<=MAX_DRIVER; driver_id++) {
+      if ( (*CdIo_all_drivers[driver_id].have_driver)() &&
+           *CdIo_all_drivers[driver_id].get_default_device ) {
+        return (*CdIo_all_drivers[driver_id].get_default_device)();
+      }
+    }
+    return NULL;
+  }
+  
   if (obj->op.get_default_device) {
     return obj->op.get_default_device ();
   } else {
@@ -252,6 +271,28 @@ cdio_get_track_lba(const CdIo *obj, track_t track_num)
     if (cdio_get_track_msf(obj, track_num, &msf))
       return cdio_msf_to_lba(&msf);
     return CDIO_INVALID_LBA;
+  }
+}
+
+/*!  
+  Return the starting LSN for track number
+  track_num in obj.  Tracks numbers start at 1.
+  The "leadout" track is specified either by
+  using track_num LEADOUT_TRACK or the total tracks+1.
+  CDIO_INVALID_LBA is returned on error.
+*/
+lsn_t
+cdio_get_track_lsn(const CdIo *obj, track_t track_num)
+{
+  if (obj == NULL) return CDIO_INVALID_LBA;
+
+  if (obj->op.get_track_lba) {
+    return cdio_lba_to_lsn(obj->op.get_track_lba (obj->user_data, track_num));
+  } else {
+    msf_t msf;
+    if (cdio_get_track_msf(obj, track_num, &msf))
+      return cdio_msf_to_lsn(&msf);
+    return CDIO_INVALID_LSN;
   }
 }
 
@@ -383,6 +424,17 @@ cdio_read (CdIo *obj, void *buf, size_t size)
 }
 
 int
+cdio_read_audio_sector (CdIo *obj, void *buf, lsn_t lsn) 
+{
+  cdio_assert (obj != NULL);
+  cdio_assert (buf != NULL);
+
+  if  (obj->op.read_audio_sector != NULL)
+    return obj->op.read_audio_sector (obj->user_data, buf, lsn);
+  return -1;
+}
+
+int
 cdio_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, bool mode2raw, 
                          unsigned num_sectors)
 {
@@ -436,6 +488,20 @@ cdio_set_arg (CdIo *obj, const char key[], const char value[])
   return obj->op.set_arg (obj->user_data, key, value);
 }
 
+static CdIo *
+scan_for_driver(driver_id_t start, driver_id_t end, const char *source_name) 
+{
+  driver_id_t driver_id;
+  
+  for (driver_id=start; driver_id<=end; driver_id++) {
+    if ((*CdIo_all_drivers[driver_id].have_driver)()) {
+      CdIo *ret=(*CdIo_all_drivers[driver_id].driver_open)(source_name);
+      if (ret != NULL) return ret;
+    }
+  }
+  return NULL;
+}
+
 /*! Sets up to read from place specified by source_name and
   driver_id This should be called before using any other routine,
   except cdio_init. This will call cdio_init, if that hasn't been
@@ -461,13 +527,8 @@ cdio_open (const char *source_name, driver_id_t driver_id)
   case DRIVER_DEVICE: 
     {  
       /* Scan for a driver. */
-      for (driver_id=DRIVER_UNKNOWN; driver_id<=MAX_DRIVER; driver_id++) {
-        if ((*CdIo_all_drivers[driver_id].have_driver)()) {
-          CdIo *ret=(*CdIo_all_drivers[driver_id].driver_open)(source_name);
-          if (ret != NULL) return ret;
-        }
-      }
-      return NULL;
+      CdIo *ret = scan_for_driver(DRIVER_UNKNOWN, MAX_DRIVER, source_name);
+      return ret;
     }
     break;
   case DRIVER_BSDI:
@@ -496,18 +557,10 @@ cdio_open (const char *source_name, driver_id_t driver_id)
 CdIo *
 cdio_open_cd (const char *source_name)
 {
-  driver_id_t driver_id;
-  
   if (CdIo_last_driver == -1) cdio_init();
 
   /* Scan for a driver. */
-  for (driver_id=DRIVER_UNKNOWN; driver_id<=MAX_DRIVER; driver_id++) {
-    if ((*CdIo_all_drivers[driver_id].have_driver)()) {
-      CdIo *ret=(*CdIo_all_drivers[driver_id].driver_open)(source_name);
-      if (ret != NULL) return ret;
-    }
-  }
-  return NULL;
+  return scan_for_driver(DRIVER_UNKNOWN, MAX_DRIVER, source_name);
 }
 
 

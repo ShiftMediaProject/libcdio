@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.7 2003/04/08 10:35:09 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.8 2003/04/10 04:13:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,18 +27,20 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.7 2003/04/08 10:35:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.8 2003/04/10 04:13:41 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
 #include "sector.h"
 #include "util.h"
 
+#define DEFAULT_CDIO_DEVICE "/dev/rsr0c"
+#include <string.h>
+
 #ifdef HAVE_BSDI_CDROM
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -47,8 +49,6 @@ static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.7 2003/04/08 10:35:09 rocky 
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
-
-#define DEFAULT_CDIO_DEVICE "/dev/rsr0c"
 
 #define TOTAL_TRACKS    (_obj->tochdr.cdth_trk1)
 #define FIRST_TRACK_NUM (_obj->tochdr.cdth_trk0)
@@ -361,15 +361,6 @@ _cdio_get_arg (void *user_data, const char key[])
 }
 
 /*!
-  Return a string containing the default VCD device if none is specified.
- */
-static char *
-_cdio_get_default_device()
-{
-  return strdup(DEFAULT_CDIO_DEVICE);
-}
-
-/*!
   Return the number of of the first track. 
   CDIO_INVALID_TRACK is returned on error.
 */
@@ -483,6 +474,15 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
 #endif /* HAVE_BSDI_CDROM */
 
 /*!
+  Return a string containing the default VCD device if none is specified.
+ */
+char *
+cdio_get_default_device_bsdi(void)
+{
+  return strdup(DEFAULT_CDIO_DEVICE);
+}
+
+/*!
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
   ones to set that up.
@@ -499,7 +499,7 @@ cdio_open_bsdi (const char *source_name)
     .eject_media        = _cdio_eject_media,
     .free               = cdio_generic_free,
     .get_arg            = _cdio_get_arg,
-    .get_default_device = _cdio_get_default_device,
+    .get_default_device = cdio_get_default_device_bsdi,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,

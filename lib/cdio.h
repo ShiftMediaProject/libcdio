@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.h,v 1.7 2003/04/06 06:45:13 rocky Exp $
+    $Id: cdio.h,v 1.8 2003/04/10 04:13:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -110,7 +110,9 @@ extern "C" {
 
   /*!
     Return a string containing the default CD device if none is specified.
-
+    if CdIo is NULL (we haven't initialized a specific device driver), 
+    then find a suitable one and return the default device for that.
+    
     NULL is returned if we couldn't get a default device.
   */
   char * cdio_get_default_device (const CdIo *obj);
@@ -151,6 +153,15 @@ extern "C" {
   lba_t cdio_get_track_lba(const CdIo *obj, track_t track_num);
   
   /*!  
+    Return the starting LSN for track number
+    track_num in obj.  Tracks numbers start at 1.
+    The "leadout" track is specified either by
+    using track_num LEADOUT_TRACK or the total tracks+1.
+    CDIO_INVALID_LBA is returned on error.
+  */
+  lsn_t cdio_get_track_lsn(const CdIo *obj, track_t track_num);
+  
+  /*!  
     Return the starting MSF (minutes/secs/frames) for track number
     track_num in obj.  Track numbers start at 1.
     The "leadout" track is specified either by
@@ -182,6 +193,12 @@ extern "C" {
   */
   ssize_t cdio_read(CdIo *obj, void *buf, size_t size);
     
+  /*!
+   Reads a single mode2 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+  int cdio_read_audio_sector (CdIo *obj, void *buf, lsn_t lsn);
+
   /*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
@@ -238,7 +255,9 @@ extern "C" {
    */
   CdIo * cdio_open_bincue (const char *bin_name);
   
-  /*! cdrao CD routines. Source is the some sort of device.
+  char * cdio_get_default_device_bincue(void);
+
+  /*! CD routines. Source is the some sort of device.
 
      NULL is returned on error.
    */
@@ -255,25 +274,35 @@ extern "C" {
   */
   CdIo * cdio_open_bsdi (const char *source_name);
   
+  char * cdio_get_default_device_bsdi(void);
+
   /*! BSDI CD-reading routines. 
      NULL is returned on error.
   */
   CdIo * cdio_open_freebsd (const char *source_name);
   
+  char * cdio_get_default_device_freebsd(void);
+
   /*! Linux CD-reading routines. 
      NULL is returned on error.
    */
   CdIo * cdio_open_linux (const char *source_name);
+
+  char * cdio_get_default_device_linux(void);
   
   /*! Solaris CD-reading routines. 
      NULL is returned on error.
    */
   CdIo * cdio_open_solaris (const char *soruce_name);
   
+  char * cdio_get_default_device_solaris(void);
+  
   /*! Nero CD disk-image routines. 
      NULL is returned on error.
    */
   CdIo * cdio_open_nrg (const char *source_name);
+  
+  char * cdio_get_default_device_nrg(void);
   
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.8 2003/04/07 11:25:40 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.9 2003/04/10 04:13:41 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "util.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.8 2003/04/07 11:25:40 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.9 2003/04/10 04:13:41 rocky Exp $";
 
 /* structures used */
 
@@ -691,8 +691,8 @@ _cdio_get_arg (void *user_data, const char key[])
 /*!
   Return a string containing the default VCD device if none is specified.
  */
-static char *
-_cdio_get_default_device()
+char *
+cdio_get_default_device_nrg()
 {
   return strdup(DEFAULT_CDIO_DEVICE);
 }
@@ -787,7 +787,7 @@ cdio_open_nrg (const char *source_name)
     .eject_media        = cdio_generic_bogus_eject_media,
     .free               = cdio_generic_stream_free,
     .get_arg            = _cdio_get_arg,
-    .get_default_device = _cdio_get_default_device,
+    .get_default_device = cdio_get_default_device_nrg,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
