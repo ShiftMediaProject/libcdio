@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.57 2004/08/22 00:43:07 rocky Exp $
+    $Id: _cdio_osx.c,v 1.58 2004/08/26 10:43:36 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.57 2004/08/22 00:43:07 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.58 2004/08/26 10:43:36 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -132,7 +132,8 @@ init_osx(_img_private_t *p_env) {
   }
 
   /* get the device name */
-  if( ( psz_devname = strrchr( p_env->gen.source_name, '/') ) != NULL )
+  psz_devname = strrchr( p_env->gen.source_name, '/');
+  if( NULL != psz_devname )
     ++psz_devname;
   else
     psz_devname = p_env->gen.source_name;
@@ -142,16 +143,20 @@ init_osx(_img_private_t *p_env) {
     ++psz_devname;
   
   /* get port for IOKit communication */
-  if( ( ret = IOMasterPort( MACH_PORT_NULL, &port ) ) != KERN_SUCCESS )
+  ret = IOMasterPort( MACH_PORT_NULL, &port );
+  
+  if( ret != KERN_SUCCESS )
     {
       cdio_warn( "IOMasterPort: 0x%08x", ret );
       return false;
     }
   
+  ret = IOServiceGetMatchingServices( port, 
+				      IOBSDNameMatching(port, 0, psz_devname);
+				      &iterator );
+  
   /* get service iterator for the device */
-  if( ( ret = IOServiceGetMatchingServices( 
-					   port, IOBSDNameMatching( port, 0, psz_devname ),
-					   &iterator ) ) != KERN_SUCCESS )
+  if( ret != KERN_SUCCESS )
     {
         cdio_warn( "IOServiceGetMatchingServices: 0x%08x", ret );
         return false;
@@ -162,7 +167,8 @@ init_osx(_img_private_t *p_env) {
   IOObjectRelease( iterator );
   
   /* search for kIOCDMediaClass */ 
-  while( p_env->service && !IOObjectConformsTo( p_env->service, kIOCDMediaClass ) )
+  while( p_env->service && 
+	 !IOObjectConformsTo( p_env->service, kIOCDMediaClass ) )
     {
 
       ret = IORegistryEntryGetParentIterator( p_env->service, kIOServicePlane, 
@@ -278,8 +284,8 @@ run_scsi_cmd_osx( const void *p_user_data,
 
   memset(&senseData, 0, sizeof(senseData));
 
-  ioReturnValue = (*cmd)->ExecuteTaskSync(cmd,
-					  &senseData, &status, &bytesTransferred);
+  ioReturnValue = (*cmd)->ExecuteTaskSync(cmd,&senseData, &status, &
+					  bytesTransferred);
 
   if (ioReturnValue != kIOReturnSuccess) {
     cdio_warn("Command execution failed with status %x", ioReturnValue);
