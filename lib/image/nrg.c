@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.39 2004/09/03 23:20:11 rocky Exp $
+    $Id: nrg.c,v 1.40 2004/09/04 00:06:50 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,13 +39,14 @@
 
 #include <cdio/logging.h>
 #include <cdio/util.h>
+#include <cdio/version.h>
 #include "cdio_assert.h"
 #include "bytesex.h"
 #include "ds.h"
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.39 2004/09/03 23:20:11 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.40 2004/09/04 00:06:50 rocky Exp $";
 
 
 /* reader */
@@ -1091,12 +1092,22 @@ cdio_get_default_device_nrg(void)
   return drive;
 }
 
+static bool
+get_hwinfo_nrg ( const CdIo *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
+{
+  strcpy(hw_info->psz_vendor, "libcdio");
+  strcpy(hw_info->psz_model, "Nero");
+  strcpy(hw_info->psz_revision, CDIO_VERSION);
+  return true;
+  
+}
+
 /*!
   Return the number of tracks in the current medium.
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_format_t
-_get_track_format_nrg(void *user_data, track_t track_num) 
+get_track_format_nrg(void *user_data, track_t track_num) 
 {
   _img_private_t *env = user_data;
   
@@ -1196,9 +1207,10 @@ cdio_open_nrg (const char *psz_source)
   _funcs.get_discmode       = _get_discmode_image;
   _funcs.get_drive_cap      = _get_drive_cap_image;
   _funcs.get_first_track_num= _get_first_track_num_image;
+  _funcs.get_hwinfo         = get_hwinfo_nrg;
   _funcs.get_mcn            = _get_mcn_image;
   _funcs.get_num_tracks     = _get_num_tracks_image;
-  _funcs.get_track_format   = _get_track_format_nrg;
+  _funcs.get_track_format   = get_track_format_nrg;
   _funcs.get_track_green    = _get_track_green_nrg;
   _funcs.get_track_lba      = NULL; /* Will use generic routine via msf */
   _funcs.get_track_msf      = _get_track_msf_image;

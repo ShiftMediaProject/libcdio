@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.27 2004/09/03 23:20:11 rocky Exp $
+    $Id: cdrdao.c,v 1.28 2004/09/04 00:06:50 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.27 2004/09/03 23:20:11 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.28 2004/09/04 00:06:50 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -34,6 +34,7 @@ static const char _rcsid[] = "$Id: cdrdao.c,v 1.27 2004/09/03 23:20:11 rocky Exp
 #include <cdio/logging.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
+#include <cdio/version.h>
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -1017,6 +1018,16 @@ cdio_get_default_device_cdrdao(void)
   return drive;
 }
 
+static bool
+get_hwinfo_cdrdao ( const CdIo *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
+{
+  strcpy(hw_info->psz_vendor, "libcdio");
+  strcpy(hw_info->psz_model, "cdrdao");
+  strcpy(hw_info->psz_revision, CDIO_VERSION);
+  return true;
+  
+}
+
 /*!
   Return the number of tracks in the current medium.
   CDIO_INVALID_TRACK is returned on error.
@@ -1135,6 +1146,7 @@ cdio_open_cdrdao (const char *psz_cue_name)
  _funcs.get_discmode       = _get_discmode_image;
  _funcs.get_drive_cap      = _get_drive_cap_image;
  _funcs.get_first_track_num= _get_first_track_num_image;
+ _funcs.get_hwinfo         = get_hwinfo_cdrdao;
  _funcs.get_mcn            = _get_mcn_image;
  _funcs.get_num_tracks     = _get_num_tracks_image;
  _funcs.get_track_format   = _get_track_format_cdrdao;

@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.20 2004/07/24 14:23:39 rocky Exp $
+#$Id: check_cue.sh.in,v 1.21 2004/09/04 00:06:50 rocky Exp $
 # Tests to see that BIN/CUE and cdrdao TOC file iamge reading is correct
 # (via cd-info).
 
@@ -21,18 +21,18 @@ BASE=`basename $0 .sh`
 
 fname=cdda
 testnum=CD-DA
-opts="--quiet --cue-file ${srcdir}/${fname}.cue --no-cddb"
+opts="--quiet --no-device-info --cue-file ${srcdir}/${fname}.cue --no-cddb"
 test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC "cd-info CUE test $testnum" "cd-info $opts"
   
 
-opts="--quiet --bin-file ${srcdir}/${fname}.bin --no-cddb"
+opts="--quiet --no-device-info --bin-file ${srcdir}/${fname}.bin --no-cddb"
 test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC "cd-info BIN test $testnum" "cd-info $opts"
 
-opts="--quiet --toc-file ${srcdir}/${fname}.toc --no-cddb"
+opts="--quiet --no-device-info --toc-file ${srcdir}/${fname}.toc --no-cddb"
 test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC "cd-info TOC test $testnum" "cd-info $opts"
@@ -40,7 +40,7 @@ check_result $RC "cd-info TOC test $testnum" "cd-info $opts"
 fname=isofs-m1
 testnum='ISO 9660 mode1 CUE'
 if test -f  ${srcdir}/${fname}.bin ; then
-  opts="-q --no-disc-mode --cue-file ${srcdir}/${fname}.cue --iso9660"
+  opts="-q --no-device-info --no-disc-mode --cue-file ${srcdir}/${fname}.cue --iso9660"
   test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
   check_result $RC "cd-info CUE test $testnum" "$opts"
@@ -50,7 +50,7 @@ fi
 
 testnum='ISO 9660 mode1 TOC'
 if test -f  ${srcdir}/${fname}.bin ; then
-  opts="-q --no-disc-mode --toc-file ${srcdir}/${fname}.toc --iso9660"
+  opts="-q --no-device-info --no-disc-mode --toc-file ${srcdir}/${fname}.toc --iso9660"
   test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
   check_result $RC "cd-info TOC test $testnum" "cd-info $opts"
@@ -66,12 +66,12 @@ else
 fi
 testnum='Video CD'
 if test -f ${srcdir}/${fname}.bin ; then
-  opts="-q --no-disc-mode -c ${srcdir}/${fname}.cue --iso9660"
+  opts="-q --no-device-info --no-disc-mode -c ${srcdir}/${fname}.cue --iso9660"
   test_cdinfo "$opts" ${fname}.dump $right
   RC=$?
   check_result $RC "cd-info CUE test $testnum" "cd-info $opts" 
 
-  opts="-q --no-disc-mode -t ${srcdir}/${fname}.toc --iso9660"
+  opts="-q --no-device-info --no-disc-mode -t ${srcdir}/${fname}.toc --iso9660"
   if test -f ${srcdir}/${fname}.toc ; then
     test_cdinfo "$opts" ${fname}.dump $right
     RC=$?
@@ -86,7 +86,7 @@ fi
 fname=svcd_ogt_test_ntsc
 testnum='Super Video CD'
 if test -f ${srcdir}/${fname}.bin ; then
-  opts="-q --no-disc-mode --cue-file ${srcdir}/${fname}.cue $vcd_opt --iso9660"
+  opts="-q --no-device-info --no-disc-mode --cue-file ${srcdir}/${fname}.cue $vcd_opt --iso9660"
   test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
   check_result $RC "cd-info CUE test $testnum" "cd-info $opts"
