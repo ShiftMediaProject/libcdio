@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.13 2003/05/27 02:22:06 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.14 2003/05/27 02:58:22 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.13 2003/05/27 02:22:06 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.14 2003/05/27 02:58:22 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -223,8 +223,8 @@ _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
       if ( (retval = _cdio_read_mode2_sector (_obj, buf, lsn + i, true)) )
 	return retval;
       
-      memcpy (((char *)data) + (M2F1_SECTOR_SIZE * i), buf + 8, 
-	      M2F1_SECTOR_SIZE);
+      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
+	      buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
     }
   }
   return 0;
