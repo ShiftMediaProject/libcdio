@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: scsi_mmc_private.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: scsi_mmc_private.h,v 1.2 2005/01/21 02:59:32 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -62,8 +62,6 @@ char *scsi_mmc_get_mcn_private ( void *p_env,
 				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd
 				 );
 
-char *scsi_mmc_get_mcn_generic (const void *p_user_data);
-
 bool scsi_mmc_init_cdtext_private ( void *user_data, const 
 				    scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
 				    set_cdtext_field_fn_t set_cdtext_field_fn
@@ -92,14 +90,26 @@ scsi_mmc_get_drive_cap_private (const void *p_env,
 				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
 				/*out*/ cdio_drive_write_cap_t *p_write_cap,
 				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
-void
-scsi_mmc_get_drive_cap_generic (const void *p_user_data,
-				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
-				/*out*/ cdio_drive_write_cap_t *p_write_cap,
-				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
-
 int
 scsi_mmc_set_blocksize_private ( const void *p_env, 
 				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
 				 unsigned int i_bsize);
 
+/*!
+  Get the block size for subsequest read requests, via a SCSI MMC 
+  MODE_SENSE 6 command.
+*/
+int get_blocksize_mmc (void *p_user_data);
+
+void get_drive_cap_mmc (const void *p_user_data,
+			/*out*/ cdio_drive_read_cap_t  *p_read_cap,
+			/*out*/ cdio_drive_write_cap_t *p_write_cap,
+			/*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
+
+char *get_mcn_mmc (const void *p_user_data);
+
+/* Set read blocksize (via MMC) */
+driver_return_code_t set_blocksize_mmc (void *p_user_data, int i_blocksize);
+
+/* Set CD-ROM drive speed (via MMC) */
+driver_return_code_t set_speed_mmc (void *p_user_data, int i_speed);

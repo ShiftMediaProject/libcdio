@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.9 2005/01/20 05:07:00 rocky Exp $
+    $Id: generic.h,v 1.10 2005/01/21 02:59:32 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -158,12 +158,6 @@ extern "C" {
   const cdtext_t *get_cdtext_generic (void *p_user_data, track_t i_track);
 
   /*!
-    Get the block size for subsequest read requests, via a SCSI MMC 
-    MODE_SENSE 6 command.
-  */
-  int get_blocksize_generic (void *p_user_data);
-
-  /*!
     Return the number of of the first track. 
     CDIO_INVALID_TRACK is returned on error.
   */
@@ -204,13 +198,6 @@ extern "C" {
   track_flag_t get_track_preemphasis_generic(const void *p_user_data, 
 					     track_t i_track);
   
-  /* Set read blocksize (via MMC) */
-  driver_return_code_t set_blocksize_generic (void *p_user_data, 
-					      int i_blocksize);
-
-  /* Set CD-ROM drive speed (via MMC) */
-  driver_return_code_t set_speed_generic (void *p_user_data, int i_speed);
-
   void set_cdtext_field_generic(void *user_data, track_t i_track, 
 				track_t i_first_track,
 				cdtext_field_t e_field, const char *psz_value);

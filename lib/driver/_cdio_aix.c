@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_aix.c,v 1.3 2005/01/17 17:20:09 rocky Exp $
+    $Id: _cdio_aix.c,v 1.4 2005/01/21 02:59:32 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -37,7 +37,7 @@
 
 #ifdef HAVE_AIX_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.3 2005/01/17 17:20:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.4 2005/01/21 02:59:32 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -949,10 +949,10 @@ cdio_open_am_aix (const char *psz_orig_source, const char *access_mode)
   _funcs.get_default_device = cdio_get_default_device_aix;
   _funcs.get_devices        = cdio_get_devices_aix;
   _funcs.get_discmode       = get_discmode_aix;
-  _funcs.get_drive_cap      = scsi_mmc_get_drive_cap_generic;
+  _funcs.get_drive_cap      = get_drive_cap_mmc;
   _funcs.get_first_track_num= get_first_track_num_generic;
   _funcs.get_hwinfo         = NULL;
-  _funcs.get_mcn            = scsi_mmc_get_mcn_generic,
+  _funcs.get_mcn            = get_mcn_mmc,
   _funcs.get_num_tracks     = get_num_tracks_generic;
   _funcs.get_track_format   = get_track_format_aix;
   _funcs.get_track_green    = _cdio_get_track_green;
@@ -1023,3 +1023,12 @@ cdio_have_aix (void)
   return false;
 #endif /* HAVE_AIX_CDROM */
 }
+
+
+/* 
+ * Local variables:
+ *  c-file-style: "gnu"
+ *  tab-width: 8
+ *  indent-tabs-mode: nil
+ * End:
+ */

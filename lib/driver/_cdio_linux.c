@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.14 2005/01/20 05:07:00 rocky Exp $
+    $Id: _cdio_linux.c,v 1.15 2005/01/21 02:59:32 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.14 2005/01/20 05:07:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.15 2005/01/21 02:59:32 rocky Exp $";
 
 #include <string.h>
 
@@ -1136,7 +1136,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .eject_media           = eject_media_linux,
     .free                  = cdio_generic_free,
     .get_arg               = get_arg_linux,
-    .get_blocksize         = get_blocksize_generic,
+    .get_blocksize         = get_blocksize_mmc,
     .get_cdtext            = get_cdtext_generic,
     .get_default_device    = cdio_get_default_device_linux,
     .get_devices           = cdio_get_devices_linux,
@@ -1144,7 +1144,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
 #if USE_LINUX_CAP
     .get_drive_cap         = get_drive_cap_linux,
 #else
-    .get_drive_cap         = scsi_mmc_get_drive_cap_generic,
+    .get_drive_cap         = get_drive_cap_mmc,
 #endif
     .get_first_track_num   = get_first_track_num_generic,
     .get_hwinfo            = NULL,
@@ -1167,7 +1167,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .read_toc              = read_toc_linux,
     .run_scsi_mmc_cmd      = run_scsi_cmd_linux,
     .set_arg               = set_arg_linux,
-    .set_blocksize         = set_blocksize_generic,
+    .set_blocksize         = set_blocksize_mmc,
     .set_speed             = set_speed_linux,
     .stat_size             = stat_size_linux
   };
@@ -1225,3 +1225,12 @@ cdio_have_linux (void)
   return false;
 #endif /* HAVE_LINUX_CDROM */
 }
+
+
+/* 
+ * Local variables:
+ *  c-file-style: "gnu"
+ *  tab-width: 8
+ *  indent-tabs-mode: nil
+ * End:
+ */

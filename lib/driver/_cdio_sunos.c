@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.11 2005/01/20 05:07:00 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.12 2005/01/21 02:59:32 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.11 2005/01/20 05:07:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.12 2005/01/21 02:59:32 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -866,15 +866,15 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.eject_media            = eject_media_solaris;
   _funcs.free                   = cdio_generic_free;
   _funcs.get_arg                = get_arg_solaris;
-  _funcs.get_blocksize          = get_blocksize_generic,
+  _funcs.get_blocksize          = get_blocksize_mmc,
   _funcs.get_cdtext             = get_cdtext_generic;
   _funcs.get_default_device     = cdio_get_default_device_solaris;
   _funcs.get_devices            = cdio_get_devices_solaris;
   _funcs.get_discmode           = get_discmode_solaris;
-  _funcs.get_drive_cap          = scsi_mmc_get_drive_cap_generic;
+  _funcs.get_drive_cap          = get_drive_cap_mmc;
   _funcs.get_first_track_num    = get_first_track_num_generic;
   _funcs.get_hwinfo             = NULL;
-  _funcs.get_mcn                = scsi_mmc_get_mcn_generic,
+  _funcs.get_mcn                = get_mcn_mmc,
   _funcs.get_num_tracks         = get_num_tracks_generic;
   _funcs.get_track_channels     = get_track_channels_generic,
   _funcs.get_track_copy_permit  = get_track_copy_permit_generic,
@@ -894,7 +894,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.run_scsi_mmc_cmd       = run_scsi_cmd_solaris;
   _funcs.stat_size              = _cdio_stat_size;
   _funcs.set_arg                = _set_arg_solaris;
-  _funcs.set_blocksize          = set_blocksize_generic;
+  _funcs.set_blocksize          = set_blocksize_mmc;
   _funcs.set_speed              = set_speed_solaris;
   _funcs.stat_size              = _cdio_stat_size;
 

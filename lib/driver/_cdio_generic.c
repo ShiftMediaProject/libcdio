@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.9 2005/01/20 05:07:00 rocky Exp $
+    $Id: _cdio_generic.c,v 1.10 2005/01/21 02:59:32 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.9 2005/01/20 05:07:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.10 2005/01/21 02:59:32 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -279,15 +279,6 @@ get_cdtext_generic (void *p_user_data, track_t i_track)
 
 }
 
-/* Set read blocksize (via MMC) */
-int
-get_blocksize_generic (void *p_user_data)
-{
-  generic_img_private_t *p_env = p_user_data;
-  if (!p_env) return DRIVER_OP_UNINIT;
-  return scsi_mmc_get_blocksize(p_env->cdio);
-}
-
 /*! 
   Get disc type associated with cd object.
 */
@@ -496,25 +487,6 @@ set_track_flags(track_flags_t *p_track_flag, uint8_t i_flag)
   p_track_flag->channels = ( i_flag & CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO )
     ? 4 : 2;
 }
-
-/* Set read blocksize (via MMC) */
-driver_return_code_t
-set_blocksize_generic (void *p_user_data, int i_blocksize)
-{
-  generic_img_private_t *p_env = p_user_data;
-  if (!p_env) return DRIVER_OP_UNINIT;
-  return scsi_mmc_set_blocksize(p_env->cdio, i_blocksize);
-}
-
-/* Set CD-ROM drive speed (via MMC) */
-driver_return_code_t
-set_speed_generic (void *p_user_data, int i_speed)
-{
-  generic_img_private_t *p_env = p_user_data;
-  if (!p_env) return DRIVER_OP_UNINIT;
-  return scsi_mmc_set_speed( p_env->cdio, i_speed );
-}
-
 
 
 /* 

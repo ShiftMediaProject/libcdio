@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.8 2005/01/20 05:07:00 rocky Exp $
+    $Id: cdio_private.h,v 1.9 2005/01/21 02:59:32 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -125,7 +125,7 @@ extern "C" {
       Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
       False is returned if we had an error getting the information.
     */
-    bool (*get_hwinfo) ( const CdIo *p_cdio, 
+    bool (*get_hwinfo) ( const CdIo_t *p_cdio, 
 			 /* out*/ cdio_hwinfo_t *p_hw_info );
 
     /*!  

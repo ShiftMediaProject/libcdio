@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.7 2005/01/20 00:36:38 rocky Exp $
+    $Id: scsi_mmc.c,v 1.8 2005/01/21 02:59:32 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -465,18 +465,6 @@ scsi_mmc_get_drive_cap (const CdIo_t *p_cdio,
 				  p_read_cap, p_write_cap, p_misc_cap);
 }
 
-void
-scsi_mmc_get_drive_cap_generic (const void *p_user_data,
-				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
-				/*out*/ cdio_drive_write_cap_t *p_write_cap,
-				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
-{
-  const generic_img_private_t *p_env = p_user_data;
-  scsi_mmc_get_drive_cap( p_env->cdio,
-			  p_read_cap, p_write_cap, p_misc_cap );
-}
-
-
 /*! 
   Get the DVD type associated with cd object.
 */
@@ -631,13 +619,6 @@ scsi_mmc_get_mcn ( const CdIo_t *p_cdio )
 				   p_cdio->op.run_scsi_mmc_cmd );
 }
 
-char *
-scsi_mmc_get_mcn_generic (const void *p_user_data)
-{
-  const generic_img_private_t *p_env = p_user_data;
-  return scsi_mmc_get_mcn( p_env->cdio );
-}
-
 /*
   Read cdtext information for a CdIo_t object .
   
@@ -709,3 +690,56 @@ scsi_mmc_init_cdtext_private ( void *p_user_data,
   }
 }
 
+/* Set read blocksize (via MMC) */
+int
+get_blocksize_mmc (void *p_user_data)
+{
+  generic_img_private_t *p_env = p_user_data;
+  if (!p_env) return DRIVER_OP_UNINIT;
+  return scsi_mmc_get_blocksize(p_env->cdio);
+}
+
+void
+get_drive_cap_mmc (const void *p_user_data,
+		   /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+		   /*out*/ cdio_drive_write_cap_t *p_write_cap,
+		   /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
+{
+  const generic_img_private_t *p_env = p_user_data;
+  scsi_mmc_get_drive_cap( p_env->cdio,
+			  p_read_cap, p_write_cap, p_misc_cap );
+}
+
+char *
+get_mcn_mmc (const void *p_user_data)
+{
+  const generic_img_private_t *p_env = p_user_data;
+  return scsi_mmc_get_mcn( p_env->cdio );
+}
+
+/* Set read blocksize (via MMC) */
+driver_return_code_t
+set_blocksize_mmc (void *p_user_data, int i_blocksize)
+{
+  generic_img_private_t *p_env = p_user_data;
+  if (!p_env) return DRIVER_OP_UNINIT;
+  return scsi_mmc_set_blocksize(p_env->cdio, i_blocksize);
+}
+
+/* Set CD-ROM drive speed (via MMC) */
+driver_return_code_t
+set_speed_mmc (void *p_user_data, int i_speed)
+{
+  generic_img_private_t *p_env = p_user_data;
+  if (!p_env) return DRIVER_OP_UNINIT;
+  return scsi_mmc_set_speed( p_env->cdio, i_speed );
+}
+
+
+/* 
+ * Local variables:
+ *  c-file-style: "gnu"
+ *  tab-width: 8
+ *  indent-tabs-mode: nil
+ * End:
+ */
