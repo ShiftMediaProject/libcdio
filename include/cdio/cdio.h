@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.30 2003/10/03 07:54:59 rocky Exp $
+    $Id: cdio.h,v 1.31 2003/10/04 23:11:50 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -402,6 +402,8 @@ extern "C" {
   CdIo * cdio_open_osx (const char *source_name);
 
   char * cdio_get_default_device_osx(void);
+  
+  char **cdio_get_devices_osx(void);
   
   /*! Win32 CD-reading routines. 
      NULL is returned on error.
