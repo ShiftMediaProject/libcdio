@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.49 2004/10/31 17:18:08 rocky Exp $
+    $Id: win32.c,v 1.50 2004/10/31 17:43:30 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.49 2004/10/31 17:18:08 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.50 2004/10/31 17:43:30 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -114,17 +114,17 @@ str_to_access_mode_win32(const char *psz_access_mode)
   
   if (!strcmp(psz_access_mode, "ioctl"))
     return _AM_IOCTL;
-  else if (!strcmp(psz_access_mode, "ASPI"))
+  else if (!strcmp(psz_access_mode, "ASPI")) {
 #ifdef _XBOX
     return _AM_ASPI;
 #else 
-    cdio_warn ("XBOX doesn't support % access: %s. Default %s used instead.", 
-	       psz_access_mode, psz_default_access_mode);
+    cdio_warn ("XBOX doesn't support access type: %s. Default used instead.", 
+	       psz_access_mode);
     return default_access_mode;
 #endif    
-  else {
-    cdio_warn ("unknown access type: %s. Default % used instead.", 
-	       psz_access_mode, psz_default_access_mode);
+  } else {
+    cdio_warn ("unknown access type: %s. Default used instead.", 
+	       psz_access_mode);
     return default_access_mode;
   }
 }
