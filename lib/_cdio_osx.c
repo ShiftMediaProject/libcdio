@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.35 2004/06/16 04:51:29 thesin Exp $
+    $Id: _cdio_osx.c,v 1.36 2004/06/17 01:15:17 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.35 2004/06/16 04:51:29 thesin Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.36 2004/06/17 01:15:17 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -66,6 +66,9 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.35 2004/06/16 04:51:29 thesin
 #include <IOKit/storage/IOCDMedia.h>
 #include <IOKit/storage/IOCDMediaBSDClient.h>
 #include <IOKit/storage/IODVDMediaBSDClient.h>
+
+/* Note leadout should be 0xAA, But OSX seems to use 0xA2. */
+#define	OSX_CDROM_LEADOUT_TRACK 0xA2
 
 #define TOTAL_TRACKS    (env->i_last_track - env->i_first_track)
 
@@ -101,57 +104,6 @@ _free_osx (void *user_data) {
   cdio_generic_free(env);
   if (NULL != env->pp_lba) free((void *) env->pp_lba);
   if (NULL != env->pTOC) free((void *) env->pTOC);
-}
-
-/****************************************************************************
-  cdio_getNumberOfTracks: get number of tracks in TOC 
-  This is an internal routine and is called once per CD open.
- ****************************************************************************/
-static track_t
-getNumberOfTracks_osx( CDTOC *pTOC, int i_descriptors )
-{
-    track_t i_track = CDIO_INVALID_TRACK; 
-    int i;
-    int i_tracks = 0;
-    CDTOCDescriptor *pTrackDescriptors;
-
-    pTrackDescriptors = pTOC->descriptors;
-
-    for( i = i_descriptors; i >= 0; i-- )
-    {
-        i_track = pTrackDescriptors[i].point;
-
-	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO || i_track == 0xA2 )
-            continue;
-
-        i_tracks++; 
-    }
-
-    return( i_tracks );
-}
-
-/*!
-  Return the number of the first track. 
-  CDIO_INVALID_TRACK is returned on error.
-*/
-static track_t
-getFirstTrack_osx( CDTOC *pTOC, int i_descriptors )
-{
-  track_t i_track = CDIO_INVALID_TRACK;
-  int i;
-  CDTOCDescriptor *pTrackDescriptors;
-  
-  pTrackDescriptors = pTOC->descriptors;
-  
-  for( i = 0; i <= i_descriptors; i++ )
-    {
-      i_track = pTrackDescriptors[i].point;
-      
-      if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO || i_track == 0xA2 )
-	continue;
-      return ( i_track );
-    }
-  return CDIO_INVALID_TRACK;
 }
 
 /*!
@@ -419,15 +371,16 @@ _cdio_read_toc (_img_private_t *env)
   IOObjectRelease( service ); 
 
   env->i_descriptors = CDTOCGetDescriptorCount ( env->pTOC );
-  env->i_first_track = getFirstTrack_osx(env->pTOC, env->i_descriptors);
-  env->i_last_track  = getNumberOfTracks_osx(env->pTOC, env->i_descriptors);
 
-  /* Read in starting sectors */
+  /* Read in starting sectors. There may be non-tracks mixed in with
+     the real tracks.  So find the first and last track number by
+     scanning. Also find the lead-out track position.
+   */
   {
     int i, i_leadout = -1;
+    
     CDTOCDescriptor *pTrackDescriptors;
     track_t i_track;
-    int i_tracks;
     
     env->pp_lba = malloc( TOTAL_TRACKS * sizeof(int) );
     if( env->pp_lba == NULL )
@@ -438,19 +391,43 @@ _cdio_read_toc (_img_private_t *env)
       }
     
     pTrackDescriptors = env->pTOC->descriptors;
+
+    env->i_first_track = CDIO_CD_MAX_TRACKS+1;
+    env->i_last_track  = CDIO_CD_MIN_TRACK_NO-1;
     
-    for( i_tracks = 0, i = 0; i <= env->i_descriptors; i++ )
+    for( i = 0; i <= env->i_descriptors; i++ )
       {
 	i_track = pTrackDescriptors[i].point;
 
-	if( i_track == 0xA2 )
+	if( i_track == OSX_CDROM_LEADOUT_TRACK )
 	  /* Note leadout should be 0xAA, But OSX seems to use 0xA2. */
 	  i_leadout = i;
-	
+
 	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
 	  continue;
 	
-	env->pp_lba[i_tracks--] =
+	if (env->i_first_track > i_track) 
+	  env->i_first_track = i_track;
+	
+	if (env->i_last_track < i_track) 
+	  env->i_last_track = i_track;
+	
+      }
+
+    /* Now that we know what the first track number is, we can make sure
+       index positions are ordered starting at 0.
+     */
+    for( i = 0; i <= env->i_descriptors; i++ )
+      {
+	i_track = pTrackDescriptors[i].point;
+
+	if( i_track == OSX_CDROM_LEADOUT_TRACK )
+	  i_leadout = i;
+
+	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
+	  continue;
+	
+	env->pp_lba[i_track - env->i_first_track] =
 	  cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i].p ));
       }
     
