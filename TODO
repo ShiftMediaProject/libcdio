@@ -1,34 +1,67 @@
-Intelligent setting of --without-versioned-libs? 
+One doesn't have to look hard to find a gap in libcdio or libiso9660. 
+All of the API should be finished on all OS's (or the API adjusted).
 
-Use libcdio as a cdparanoia back-end and add API for CD-DA reading
-with paranoia support.
+* Fix the current gaps:
 
-Add API to show what kind of media (DVD, CDW, CD) is currently in a
-drive.
+  - SCSI-MMC on OSX,
+  - CD-Text support working more often
+  - more accurate drive capabilities 
+  - more accurate CD track classification (Form 1/2, Mode 1/2)
+  - complete the image readers, e.g. "silence" and ability to use
+    more than one file in cdrdao.
+  - multi-session CDs 
+   
+* Use libcdio as a cdparanoia back-end and add API for CD-DA reading
+  with paranoia support.
 
-Add capability flag to indicate that whether driver has a real "eject"
-command. (Right now, it is false for image drivers and true for
-everything else.)
+* Joliet support for libiso9660.
 
-A parse mode for cue files - similar to what's there for cdrdao.
-May be based on Svend S. Sorensen's cuetools.
+* Delete files in an iso9660 image (mephisto75 at web.de)
 
-Finish extracting NRG support hints from Michael Kukat's extractnrg.pl
+* Add something to show what kind of CD media is in a drive. Ideally: CD
+  (purchased), CD Write Once, CD Read/Write, but what is there is
+  probably something like Cyanine, PhthaloCyanine, Metallized Azo,
+  Advanced PhthaloCyanine, Formazan. See
+  http://www.cdmediaworld.com/hardware/cdrom/cd_dye.shtml or
+  http://www.cd-info.com/CDIC/History/Commentary/Parker/stcroix.html
 
-Write a real cue parser and TOC parser using flex and bison (partly done). 
-A pcct grammar is given in cdrdao's trackdb TocParser.g and CueParser.g
 
-Stat CUE/BIN files in is_{bin,cue}file? 
+  The discmode type can be used to classify DVD media and it also
+  classifies for CD track formats (in addition to CD *content*
+  classification). Note there is nothing for DVD content; see the below
+  list of things which probably won't get added.
 
-More disk image types in regression testing, like CD-I.
+  Given the mismatch between DVD and CD meanings in discmode, the
+  discmode type probably needs to be redone.
 
-convert to use glib, removing ds.h and common routines from vcdimager.
+* Write a real cue parser and TOC parser using flex and bison (partly done). 
+  A pcct grammar is given in cdrdao's trackdb TocParser.g and CueParser.g
 
-API overhaul (hvr). 
+* More disk image types in regression testing, like CD-I.
 
-There is some FreeBSD, Win32, and OS/X support but there are gaps of
-varying degrees All of the API should be finished.
+* Convert to use glib, removing ds.h and common routines from vcdimager.
 
-Write more documentation.
+* API overhaul. hvr has expressed interest but it's unlikely he'll ever
+  have hthe time to do. It could be done in conjunction with a wrappers
+  for C++, Perl, Python, ... The idea is that those interfaces would not
+  show the ugliness of the current C interface. For example instead of 
+  read_mode2, read_mode1, read_audio, there might be a read(mode, ...).
 
-$Id: TODO,v 1.3 2004/06/05 03:08:12 rocky Exp $
+  - Address static loglevel variable (nboullis at debian.org)
+
+* Some things where libcdio will probably not expand in:
+ 
+  -  DVD things, especially DVD-ROM (use libdvdread) 
+  -  writing applications (use cdrdao or cdrtools)
+  -  analog CD  (but this one I've been tempted to add for a while)
+  -  more proprietary undocumented image format (unless someone else is willing
+     to do the work)
+
+It should go without saying, but I'll say it anyway...  if there is
+something you really want done on the above list or have something
+else you want done, it may go a lot faster if you undertake doing it
+yourself. Patches are always welcome (and CVS write access is
+available for those who have demonstrated reasonable ability through
+contributions.)
+
+$Id: TODO,v 1.4 2004/09/06 10:50:01 rocky Exp $
