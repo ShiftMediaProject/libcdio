@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.17 2004/05/04 02:06:48 rocky Exp $
+  $Id: cd-read.c,v 1.18 2004/05/26 00:52:53 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -92,6 +92,11 @@ struct arguments
   char          *access_mode; /* Access method driver should use for control */
   char          *output_file; /* file to output blocks if not NULL. */
   int            debug_level;
+  int            hexdump;     /* Show output as a hexdump */
+  int            nohexdump;   /* Don't output as a hexdump. I don't know
+				 how to get popt to combine these as 
+				 one variable.
+			       */
   read_mode_t    read_mode;
   int            version_only;
   int            no_header;
@@ -103,26 +108,27 @@ struct arguments
 } opts;
      
 static void
-hexdump (uint8_t * buffer, unsigned int len)
+hexdump (FILE *stream,  uint8_t * buffer, unsigned int len)
 {
   unsigned int i;
   for (i = 0; i < len; i++, buffer++)
     {
       if (i % 16 == 0)
-	printf ("0x%04x: ", i);
-      printf ("%02x", *buffer);
+	fprintf (stream, "0x%04x: ", i);
+      fprintf (stream, "%02x", *buffer);
       if (i % 2 == 1)
-	printf (" ");
+	fprintf (stream, " ");
       if (i % 16 == 15) {
 	uint8_t *p; 
-	printf ("  ");
+	fprintf (stream, "  ");
 	for (p=buffer-15; p <= buffer; p++) {
-	  printf("%c", isprint(*p) ?  *p : '.');
+	  fprintf(stream, "%c", isprint(*p) ?  *p : '.');
 	}
-	printf ("\n");
+	fprintf (stream, "\n");
       }
     }
-  printf ("\n");
+  fprintf (stream, "\n");
+  fflush (stream);
 }
 
 /* Comparison function called by bearch() to find sub-option record. */
@@ -191,6 +197,13 @@ parse_options (int argc, const char *argv[])
      POPT_ARG_INT, &opts.debug_level, 0,
      "Set debugging to LEVEL"},
     
+    {"hexdump",  'x', POPT_ARG_NONE, &opts.hexdump, 0,
+     "Show output as a hex dump. The default is a hex dump when "
+     "output goes to stdout and no hex dump when output is to a file."},
+
+    {"no-hexdump",  '\0', POPT_ARG_NONE, &opts.nohexdump, 0,
+     "Don't show output as a hex dump."},
+
     {"start",       's', 
      POPT_ARG_INT, &opts.start_lsn, 0,
      "Set LBA to start reading from"},
@@ -224,7 +237,7 @@ parse_options (int argc, const char *argv[])
      OP_SOURCE_CDRDAO, "set \"TOC\" CD-ROM disk image file as source", "FILE"},
     
     {"output-file",     'o', POPT_ARG_STRING, &opts.output_file, 0,
-     "Output blocks to file rather than give a hexdump."},
+     "Output blocks to file rather than give a hexdump.", "FILE"},
     
     {"version", 'V', POPT_ARG_NONE, NULL, OP_VERSION,
      "display version and copyright information and exit"},
@@ -339,6 +352,15 @@ parse_options (int argc, const char *argv[])
 
   /* Check consistency between start_lsn, end_lsn and num_sectors. */
 
+  if (opts.nohexdump && opts.hexdump != 2) {
+    fprintf(stderr, 
+	    "%s: don't give both --hexdump and --no-hexdump together\n",
+	    program_name);
+    exit(13);
+  }
+
+  if (opts.nohexdump) opts.hexdump = 0;
+  
   if (opts.start_lsn == CDIO_INVALID_LSN) {
     /* Maybe we derive the start from the end and num sectors. */
     if (opts.end_lsn == CDIO_INVALID_LSN) {
@@ -418,6 +440,7 @@ init(void)
   opts.num_sectors   = 0;
   opts.read_mode     = READ_MODE_UNINIT;
   opts.source_image  = IMAGE_UNKNOWN;
+  opts.hexdump       = 2;         /* Not set. */
 
   gl_default_cdio_log_handler = cdio_log_set_handler (log_handler);
 }
@@ -429,6 +452,7 @@ main(int argc, const char *argv[])
   unsigned int blocklen=CDIO_CD_FRAMESIZE_RAW;
   CdIo *cdio=NULL;
   int output_fd=-1;
+  FILE *output_stream;
   
   init();
 
@@ -491,13 +515,23 @@ main(int argc, const char *argv[])
   } 
 
   if (opts.output_file!=NULL) {
+    
+    /* If hexdump not explicitly set, then don't produce hexdump 
+       when writing to a file.
+     */
+    if (opts.hexdump == 2) opts.hexdump = 0;
+
     output_fd = open(opts.output_file, O_WRONLY|O_CREAT|O_TRUNC, 0644);
     if (-1 == output_fd) {
       err_exit("Error opening output file %s: %s\n",
 	       opts.output_file, strerror(errno));
 
     }
-  } 
+  } else 
+    /* If we are writing to stdout, then the default is to produce 
+       a hexdump.
+     */
+    if (opts.hexdump == 2) opts.hexdump = 1;
 
 
   for ( ; opts.start_lsn <= opts.end_lsn; opts.start_lsn++ ) {
@@ -555,11 +589,21 @@ main(int argc, const char *argv[])
       break;
     }
 
-    if (opts.output_file) {
-      write(output_fd, buffer, blocklen);
+    if (!opts.output_file) {
+      output_stream = stdout;
     } else {
-      hexdump(buffer, blocklen);
+      output_stream = fdopen(output_fd, "w");
     }
+    
+    if (opts.hexdump)
+      hexdump(output_stream, buffer, blocklen);
+    else if (opts.output_file)
+      write(output_fd, buffer, blocklen);
+    else {
+      unsigned int i;
+      for (i=0; i<blocklen; i++) printf("%c", buffer[i]);
+    }
+    
   }
 
   if (opts.output_file) close(output_fd);
