@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: scsi_mmc_private.h,v 1.1 2004/07/26 02:54:37 rocky Exp $
+    $Id: scsi_mmc_private.h,v 1.2 2004/07/26 03:39:55 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -28,3 +28,6 @@ int (*scsi_mmc_run_cmd_fn_t) ( const void *p_user_data, int i_timeout,
 			       scsi_mmc_direction_t e_direction, 
 			       unsigned int i_buf, /*in/out*/ void *p_buf );
 			     
+int set_bsize_mmc ( const void *p_env, 
+		    const scsi_mmc_run_cmd_fn_t *run_scsi_mmc_cmd, 
+		    unsigned int bsize);

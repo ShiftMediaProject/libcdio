@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.8 2004/07/26 02:54:37 rocky Exp $
+    $Id: scsi_mmc.c,v 1.9 2004/07/26 03:39:55 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -179,8 +179,10 @@ scsi_mmc_read_sectors ( const CdIo *cdio, void *p_buf, lba_t lba,
 			   p_buf);
 }
 
-int 
-scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize)
+int
+set_bsize_mmc ( const void *p_env, 
+		const scsi_mmc_run_cmd_fn_t *run_scsi_mmc_cmd, 
+		unsigned int bsize)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
 
@@ -200,12 +202,8 @@ scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize)
     uint8_t block_length_lo;
   } mh;
 
-  scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd;
-
-  if ( ! cdio || ! cdio->op.run_scsi_mmc_cmd )
+  if ( ! p_env || ! run_scsi_mmc_cmd )
     return -2;
-
-  run_scsi_mmc_cmd = cdio->op.run_scsi_mmc_cmd;
 
   memset (&mh, 0, sizeof (mh));
   mh.block_desc_length = 0x08;
@@ -218,7 +216,14 @@ scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize)
   cdb.field[1] = 1 << 4;
   cdb.field[4] = 12;
   
-  return run_scsi_mmc_cmd (cdio->env, DEFAULT_TIMEOUT_MS,
-			   scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-			   SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
+  return (*run_scsi_mmc_cmd) (p_env, DEFAULT_TIMEOUT_MS,
+			      scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+			      SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
+}
+
+int 
+scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize)
+{
+  if ( ! cdio )  return -2;
+  return set_bsize_mmc (cdio->env, (&cdio->op.run_scsi_mmc_cmd), bsize);
 }
