@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.28 2004/11/15 19:51:56 rocky Exp $
+#   $Id: Makefile.am,v 1.29 2004/11/16 00:10:55 nboullis Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,7 +20,7 @@
 ##   which configure then turns into a Makefile  ...
 ##     which make can then use to produce stuff. Isn't configuration simple? 
 
-EXTRA_DIST = codeset.m4 gettext.m4 glibc21.m4 iconv.m4 intdiv0.m4 intmax.m4 inttypes.m4 inttypes_h.m4 inttypes-pri.m4 isc-posix.m4 lcmessage.m4 lib-ld.m4 lib-link.m4 lib-prefix.m4 longdouble.m4 longlong.m4 nls.m4 po.m4 progtest.m4 stdint_h.m4 uintmax_t.m4 ulonglong.m4 libpopt.m4 THANKS README.libcdio libcdio.spec.in libcdio.spec \
+EXTRA_DIST = libpopt.m4 THANKS README.libcdio libcdio.spec.in libcdio.spec \
 	     example/README \
 	     MSVC/config.h    MSVC/README MSVC/cd-info.vcproj \
              MSVC/libcdio.sln MSVC/libcdio.vcproj 
