@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.15 2003/07/27 22:52:22 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.16 2003/09/14 07:02:17 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.15 2003/07/27 22:52:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.16 2003/09/14 07:02:17 rocky Exp $";
 
 /* structures used */
 
@@ -457,12 +457,14 @@ PRAGMA_END_PACKED
 	
 	cdio_assert (UINT32_FROM_BE (chunk->len) == 4);
 	
-	cdio_debug ("SINF: %d sessions", UINT32_FROM_BE (*_sessions));
+	cdio_debug ("SINF: %lu sessions", 
+		    (long unsigned int) UINT32_FROM_BE (*_sessions));
       }
 	break;
 	
       default:
-	cdio_warn ("unknown tag %8.8x seen", UINT32_FROM_BE (chunk->id));
+	cdio_warn ("unknown tag %8.8x seen", 
+		   (unsigned int) UINT32_FROM_BE (chunk->id));
 	break;
       }
 	
@@ -601,8 +603,8 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 
   if (lsn >= _obj->size)
     {
-      cdio_warn ("trying to read beyond image size (%d >= %u)", lsn, 
-		_obj->size);
+      cdio_warn ("trying to read beyond image size (%lu >= %lu)", 
+		 (long unsigned int) lsn, (long unsigned int) _obj->size);
       return -1;
     }
 
@@ -625,7 +627,8 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
     }
   }
 
-  if (!node) cdio_warn ("reading into pre gap (lsn %d)", lsn);
+  if (!node) cdio_warn ("reading into pre gap (lsn %lu)", 
+			(long unsigned int) lsn);
 
   return 0;
 }
@@ -643,8 +646,8 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 
   if (lsn >= _obj->size)
     {
-      cdio_warn ("trying to read beyond image size (%d >= %u)", lsn, 
-		_obj->size);
+      cdio_warn ("trying to read beyond image size (%lu >= %lu)", 
+		 (long unsigned int) lsn, (long unsigned int) _obj->size);
       return -1;
     }
 
@@ -670,7 +673,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   }
 
   if (!node)
-    cdio_warn ("reading into pre gap (lsn %d)", lsn);
+    cdio_warn ("reading into pre gap (lsn %lu)", (long unsigned int) lsn);
 
   if (mode2_form2)
     memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 

@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.c,v 1.3 2003/08/31 14:26:06 rocky Exp $
+    $Id: cd_types.c,v 1.4 2003/09/14 07:05:34 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -129,7 +129,8 @@ _cdio_read_block(CdIo *cdio, int superblock, uint32_t offset, uint8_t bufnum,
     return -1;
   }
   
-  cdio_debug("about to read sector %u\n", offset+superblock);
+  cdio_debug("about to read sector %lu\n", 
+	     (long unsigned int) offset+superblock);
 
   if (cdio_get_track_green(cdio,  track_num)) {
     if (0 > cdio_read_mode2_sector(cdio, buffer[bufnum], 
