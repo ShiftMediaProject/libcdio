@@ -3,6 +3,7 @@
 *.cps
 *.dvi 
 *.info
+*.info-?
 *.fn
 *.ky
 *.log
