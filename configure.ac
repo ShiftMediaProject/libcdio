@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.54)
-AC_REVISION([$Id: configure.ac,v 1.49 2003/10/03 07:54:58 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.50 2003/10/04 17:01:10 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
 AM_CONFIG_HEADER(config.h)
@@ -303,7 +303,7 @@ AC_ARG_ENABLE(vcd_info,
 		enable_vcd_info=yes)
 fi
 if test x$enable_vcd_info = xyes; then
-  PKG_CHECK_MODULES(VCDINFO, libvcdinfo >= 0.7.18-cdio, 
+  PKG_CHECK_MODULES(VCDINFO, libvcdinfo >= 0.7.19-cdio, 
   [AC_DEFINE([HAVE_VCDINFO],1, 
   [Define this if you have libvcdinfo installed])], 
   [enable_vcd_info=no])
