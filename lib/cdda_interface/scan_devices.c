@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.18 2005/01/27 03:10:06 rocky Exp $
+  $Id: scan_devices.c,v 1.19 2005/02/03 07:52:15 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -26,17 +26,13 @@
  ******************************************************************/
 
 #include "common_interface.h"
-#include <limits.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <pwd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include "low_interface.h"
 #include "utils.h"
 #include "cdio/scsi_mmc.h"
+#include <limits.h>
+#include <ctype.h>
+#include <pwd.h>
+#include <sys/stat.h>
 
 #define MAX_DEV_LEN 20 /* Safe because strings only come from below */
 /* must be absolute paths! */
@@ -153,6 +149,7 @@ cdio_cddap_identify_cdio(CdIo_t *p_cdio, int messagedest, char **ppsz_messages)
 
 }
 
+#ifdef HAVE_LSTAT
 static char *
 test_resolve_symlink(const char *file, int messagedest, char **ppsz_messages)
 {
@@ -170,6 +167,7 @@ test_resolve_symlink(const char *file, int messagedest, char **ppsz_messages)
 	   file);
   return(NULL);
 }
+#endif
 
 static cdrom_drive_t *
 cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device, 
@@ -304,6 +302,7 @@ cdio_cddap_identify_cooked(const char *psz_dev, int messagedest,
 {
   CdIo_t *p_cdio = NULL;
 
+#ifdef HAVE_LSTAT
   if (psz_dev) {
     char *psz_device = test_resolve_symlink(psz_dev, messagedest, 
 					    ppsz_messages);
@@ -316,6 +315,7 @@ cdio_cddap_identify_cooked(const char *psz_dev, int messagedest,
       return d;
     }
   }
+#endif
   p_cdio = cdio_open(psz_dev, DRIVER_UNKNOWN);
   return cdda_identify_device_cdio(p_cdio, psz_dev, messagedest, 
 				   ppsz_messages);
