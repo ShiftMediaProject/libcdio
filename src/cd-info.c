@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.36 2003/09/21 04:21:39 rocky Exp $
+    $Id: cd-info.c,v 1.37 2003/09/21 04:36:41 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -26,8 +26,6 @@
 */
 
 #include "util.h"
-
-#define PROGRAM_NAME "CD Info"
 
 #ifdef HAVE_CDDB
 #include <cddb/cddb.h>
@@ -73,9 +71,6 @@ struct cdrom_multisession  ms;
 struct cdrom_subchnl       sub;
 #endif
 
-const char *argp_program_version     = PROGRAM_NAME " " VERSION;
-const char *argp_program_bug_address = "rocky@panix.com";
-
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
 struct arguments
@@ -102,14 +97,6 @@ struct arguments
   source_image_t source_image;
 } opts;
      
-/* Program documentation. */
-const char doc[] = 
-  PROGRAM_NAME " -- Get information about a Compact Disk or CD image.";
-
-/* A description of the arguments we accept. */
-const char args_doc[] = "[DEVICE or DISK-IMAGE]";
-
-
 /* Configuration option codes */
 enum {
   
@@ -214,6 +201,9 @@ parse_options (int argc, const char *argv[])
     POPT_AUTOHELP {NULL, 0, 0, NULL, 0}
   };
   poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
+
+  program_name = strrchr(argv[0],'/');
+  program_name = program_name ? program_name+1 : strdup(argv[0]);
 
   while ((opt = poptGetNextOpt (optCon)) != -1) {
     switch (opt) {
@@ -693,6 +683,40 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
   if (need_lf) printf("\n");
 }
 
+/* Initialize global variables. */
+static void 
+init(void) 
+{
+  gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
+#ifdef HAVE_CDDB
+  gl_default_cddb_log_handler = cddb_log_set_handler (_log_handler);
+#endif
+
+#ifdef HAVE_VCDINFO
+  gl_default_vcd_log_handler = vcd_log_set_handler (_log_handler);
+#endif
+
+  /* Default option values. */
+  opts.silent        = false;
+  opts.no_header     = false;
+  opts.debug_level   = 0;
+  opts.no_tracks     = 0;
+  opts.print_iso9660 = 0;
+#ifdef HAVE_CDDB
+  opts.no_cddb       = 0;
+  opts.cddb_port     = 8880;
+  opts.cddb_http     = 0;
+  opts.cddb_cachedir = NULL;
+  opts.cddb_server   = NULL;
+  opts.cddb_timeout = -1;
+  opts.cddb_disable_cache = false;
+  
+#endif
+  opts.no_ioctl      = 0;
+  opts.no_analysis   = 0;
+  opts.source_image  = IMAGE_UNKNOWN;
+}
+
 /* ------------------------------------------------------------------------ */
 
 int
@@ -714,39 +738,7 @@ main(int argc, const char *argv[])
   cdio_analysis_t cdio_analysis; 
       
   memset(&cdio_analysis, 0, sizeof(cdio_analysis));
-
-  gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
-#ifdef HAVE_CDDB
-  gl_default_cddb_log_handler = cddb_log_set_handler (_log_handler);
-#endif
-
-#ifdef HAVE_VCDINFO
-  gl_default_vcd_log_handler = vcd_log_set_handler (_log_handler);
-#endif
-
-  program_name = strrchr(argv[0],'/');
-  program_name = program_name ? program_name+1 : strdup(argv[0]);
-
-  /* Default option values. */
-  opts.silent        = false;
-  opts.no_header     = false;
-  opts.debug_level   = 0;
-  opts.no_tracks     = 0;
-  opts.print_iso9660 = 0;
-#ifdef HAVE_CDDB
-  opts.no_cddb       = 0;
-  opts.cddb_port     = 8880;
-  opts.cddb_http     = 0;
-  opts.cddb_cachedir = NULL;
-  opts.cddb_server   = NULL;
-  opts.cddb_timeout = -1;
-  opts.cddb_disable_cache = false;
-  
-#endif
-  opts.no_ioctl      = 0;
-  opts.no_analysis   = 0;
-  opts.source_image  = IMAGE_UNKNOWN;
-     
+  init();
 
   /* Parse our arguments; every option seen by `parse_opt' will
      be reflected in `arguments'. */
