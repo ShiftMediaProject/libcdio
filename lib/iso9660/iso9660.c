@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.10 2005/02/23 00:43:05 rocky Exp $
+    $Id: iso9660.c,v 1.11 2005/02/26 14:58:53 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.10 2005/02/23 00:43:05 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.11 2005/02/26 14:58:53 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -104,7 +104,6 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
 {
   if (!idr_date) return false;
 
-
   /* 
      Section 9.1.5 of ECMA 119 says: 
      If all seven numbers are zero, it shall mean that the date and
@@ -121,39 +120,43 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
        0 == idr_date->dt_minute && 0 == idr_date->dt_second ) {
     time_t t = 0;
     struct tm *p_temp_tm;
-    p_temp_tm = gmtime(&t);
+    p_temp_tm = localtime(&t);
     
     memcpy(p_tm, p_temp_tm, sizeof(struct tm));
     return true;
   }
   
-
   memset(p_tm, 0, sizeof(struct tm));
+
   p_tm->tm_year   = idr_date->dt_year;
   p_tm->tm_mon    = idr_date->dt_month - 1;
   p_tm->tm_mday   = idr_date->dt_day;
   p_tm->tm_hour   = idr_date->dt_hour;
   p_tm->tm_min    = idr_date->dt_minute;
   p_tm->tm_sec    = idr_date->dt_second;
-#ifdef HAVE_TM_GMTOFF
-  p_tm->tm_gmtoff = - idr_date->dt_gmtoff * (15 * 60);
-#endif
   p_tm->tm_isdst  = -1; /* information not available */
-  
+#ifdef HAVE_TM_GMTOFF
   {
-    time_t t;
-    struct tm *p_temp_tm;
+    time_t t = 0;
+    struct tm *p_temp_tm = localtime(&t);
     
-    /* Recompute tm_wday and tm_yday via mktime. */
+    /* Recompute tm_wday and tm_yday via mktime. Also adjust for 
+       time-zone differences */
     t = mktime(p_tm);
+    t -= idr_date->dt_gmtoff * (15 * 60) - p_temp_tm->tm_gmtoff;
     
-    if (b_localtime)
+    p_temp_tm = localtime(&t);
+
+    if (p_temp_tm->tm_isdst) {
+      t += 60*60;
       p_temp_tm = localtime(&t);
-    else
-      p_temp_tm = gmtime(&t);
+    }
     
     memcpy(p_tm, p_temp_tm, sizeof(struct tm));
   }
+
+#endif
+
   return true;
 }
 
