@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.99 2004/11/19 02:16:21 rocky Exp $
+    $Id: cd-info.c,v 1.100 2004/11/19 22:10:21 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -337,7 +337,7 @@ cddb_dec_digit_sum(int n)
 static inline unsigned int
 msf_seconds(msf_t *msf) 
 {
-  return from_bcd8(msf->m)*CDIO_CD_SECS_PER_MIN + from_bcd8(msf->s);
+  return cdio_from_bcd8(msf->m)*CDIO_CD_SECS_PER_MIN + cdio_from_bcd8(msf->s);
 }
 
 /* 
