@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.59 2004/05/04 02:06:48 rocky Exp $
+    $Id: cd-info.c,v 1.60 2004/05/09 17:05:34 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -877,28 +877,26 @@ main(int argc, const char *argv[])
     printf(STRONG "CD-ROM Track List (%i - %i)\n" NORMAL, 
 	   first_track_num, num_tracks);
 
-    printf("  #: MSF       LSN     Type  Green?\n");
+    printf("  #: MSF        LSN     Type  Green?\n");
   }
   
   /* Read and possibly print track information. */
   for (i = first_track_num; i <= CDIO_CDROM_LEADOUT_TRACK; i++) {
     msf_t msf;
-    
+    char *psz_msf;
+
     if (!cdio_get_track_msf(cdio, i, &msf)) {
       err_exit("cdio_track_msf for track %i failed, I give up.\n", i);
     }
 
+    psz_msf = cdio_msf_to_str(&msf);
     if (i == CDIO_CDROM_LEADOUT_TRACK) {
       if (!opts.no_tracks)
-	printf("%3d: %2.2x:%2.2x:%2.2x  %06lu  leadout\n",
-	       (int) i, 
-	       msf.m, msf.s, msf.f, 
+	printf("%3d: %9s  %06lu  leadout\n", (int) i, psz_msf,
 	       (long unsigned int) cdio_msf_to_lsn(&msf));
       break;
     } else if (!opts.no_tracks) {
-      printf("%3d: %2.2x:%2.2x:%2.2x  %06lu  %-5s %s\n",
-	     (int) i, 
-	     msf.m, msf.s, msf.f, 
+      printf("%3d: %9s  %06lu  %-5s %s\n", (int) i, psz_msf,
 	     (long unsigned int) cdio_msf_to_lsn(&msf),
 	     track_format2str[cdio_get_track_format(cdio, i)],
 	     cdio_get_track_green(cdio, i)? "true" : "false");

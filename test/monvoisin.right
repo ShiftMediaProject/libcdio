@@ -15,10 +15,10 @@ Digital Versital Disc: No
    Can write DVD-RAM : No
 __________________________________
 CD-ROM Track List (1 - 2)
-  #: MSF       LSN     Type  Green?
-  1: 00:02:00  000000  XA    true
-  2: 00:18:51  001251  XA    true
-170: 00:39:71  002846  leadout
+  #: MSF        LSN     Type  Green?
+  1: 000:02.00  000000  XA    true
+  2: 000:18.51  001251  XA    true
+170: 000:39.71  002846  leadout
 Media Catalog Number (MCN): not available
 __________________________________
 CD Analysis Report
