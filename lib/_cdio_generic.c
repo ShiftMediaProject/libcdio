@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.28 2004/10/31 13:58:44 rocky Exp $
+    $Id: _cdio_generic.c,v 1.29 2004/11/01 09:14:21 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.28 2004/10/31 13:58:44 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.29 2004/11/01 09:14:21 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,6 +47,7 @@ static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.28 2004/10/31 13:58:44 ro
 #include "cdio_assert.h"
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
+#include "portable.h"
 
 /*!
   Eject media -- there's nothing to do here. We always return 2.

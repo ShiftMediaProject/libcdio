@@ -1,5 +1,5 @@
 /*
-    $Id: portable.h,v 1.2 2004/10/31 14:55:35 rocky Exp $
+    $Id: portable.h,v 1.3 2004/11/01 09:14:21 rocky Exp $
 
     Copyright (C) Rocky Bernstein <rocky@panix.com>
 
@@ -24,6 +24,9 @@
    included other routines can be more portable.
 */
 
+#ifndef __CDIO_PORTABLE_H__
+#define __CDIO_PORTABLE_H__
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -46,3 +49,18 @@
 #endif
 #endif /*HAVE_SNPRINTF*/
 
+#ifdef MSVC
+#include <io.h>
+
+#ifndef S_ISBLK
+#define _S_IFBLK        0060000  /* Block Special */
+#define S_ISBLK(x) (x & _S_IFBLK)
+#endif
+
+#ifndef S_ISCHR
+#define	_S_IFCHR		0020000	/* character special */
+#define S_ISCHR(x) (x & _S_IFCHR)
+#endif
+#endif /*MSVC*/
+
+#endif /* __CDIO_PORTABLE_H__ */
