@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.10 2004/07/16 02:48:49 rocky Exp $
+    $Id: win32.h,v 1.11 2004/07/17 09:12:21 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -105,14 +105,13 @@ bool read_toc_win32ioctl (_img_private_t *env);
  */
 char *get_mcn_win32ioctl (const _img_private_t *env);
 
-/*! 
-  Get cdtext information for a CdIo object .
+/*
+  Read cdtext information for a CdIo object .
   
-  @param obj the CD object that may contain CD-TEXT information.
-  @return the CD-TEXT object or NULL if obj is NULL
-  or CD-TEXT information does not exist.
+  return true on success, false on error or CD-TEXT information does
+  not exist.
 */
-const cdtext_t * get_cdtext_win32ioctl (_img_private_t *env);
+bool init_cdtext_win32ioctl (_img_private_t *env);
 
 /*!
   Return the the kind of drive capabilities of device.

@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.14 2004/07/16 03:06:53 rocky Exp $
+    $Id: win32_ioctl.c,v 1.15 2004/07/17 09:12:21 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.14 2004/07/16 03:06:53 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.15 2004/07/17 09:12:21 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -403,12 +403,9 @@ read_toc_win32ioctl (_img_private_t *env)
   @return the CD-TEXT object or NULL if obj is NULL
   or CD-TEXT information does not exist.
 */
-const cdtext_t *
-get_cdtext_win32ioctl (_img_private_t *env)
+bool
+init_cdtext_win32ioctl (_img_private_t *env)
 {
-#if 0
-  return NULL;
-#else  
   uint8_t  wdata[5000] = { 0, };
 
   SCSI_PASS_THROUGH_DIRECT sptd;
@@ -451,7 +448,7 @@ get_cdtext_win32ioctl (_img_private_t *env)
 		  (LPSTR) psz_msg, 0, NULL);
     cdio_info("Error reading cdtext: %s", psz_msg);
     LocalFree(psz_msg);
-    return NULL;
+    return false;
   }
 
   {
@@ -513,10 +510,7 @@ get_cdtext_win32ioctl (_img_private_t *env)
       pdata++;
     }
   }
-
-  env->b_cdtext_init = true;
-  return &(env->cdtext);
-#endif
+  return true;
 }
 
 /*!

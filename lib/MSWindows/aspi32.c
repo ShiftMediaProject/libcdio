@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.25 2004/07/17 02:43:41 rocky Exp $
+    $Id: aspi32.c,v 1.26 2004/07/17 09:12:21 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.25 2004/07/17 02:43:41 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.26 2004/07/17 09:12:21 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -716,15 +716,8 @@ wnaspi32_eject_media (void *user_data) {
   return true on success, false on error or CD-TEXT information does
   not exist.
 */
-/*! 
-  Get cdtext information for a CdIo object .
-  
-  @param obj the CD object that may contain CD-TEXT information.
-  @return the CD-TEXT object or NULL if obj is NULL
-  or CD-TEXT information does not exist.
-*/
-static const cdtext_t *
-_init_cdtext_aspi (_img_private_t *env)
+bool
+init_cdtext_aspi (_img_private_t *env)
 {
   uint8_t  wdata[5000] = { 0, };
   uint8_t  scsi_cdb[10] = { 0, };
@@ -800,27 +793,6 @@ _init_cdtext_aspi (_img_private_t *env)
 
   return true;
 }
-
-/*! 
-  Get cdtext information for a CdIo object .
-  
-  @param obj the CD object that may contain CD-TEXT information.
-  @return the CD-TEXT object or NULL if obj is NULL
-  or CD-TEXT information does not exist.
-*/
-const cdtext_t *
-get_cdtext_aspi (_img_private_t *env, track_t i_track)
-{
-
-  env->b_cdtext_init = _init_cdtext_aspi(env);
-  if (!env->b_cdtext_init) return NULL;
-
-  if (0 == i_track) 
-    return &(env->cdtext);
-  else 
-    return &(env->cdtext_track[i_track-env->i_first_track]);
-}
-
 
 /*!
   Return the the kind of drive capabilities of device.

@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.22 2004/07/17 02:43:41 rocky Exp $
+    $Id: win32.c,v 1.23 2004/07/17 09:12:21 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.22 2004/07/17 02:43:41 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.23 2004/07/17 09:12:21 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -442,11 +442,17 @@ _get_cdtext_win32 (void *user_data, track_t i_track)
        && i_track >= env->i_tracks + env->i_first_track ) )
     return NULL;
 
-
   if (env->hASPI) {
-    return get_cdtext_aspi(env, i_track);
-  } else 
-    return get_cdtext_win32ioctl(env, i_track);
+    env->b_cdtext_init = init_cdtext_aspi(env);
+  }  else 
+    env->b_cdtext_init = init_cdtext_win32ioctl(env);
+    
+  if (!env->b_cdtext_init) return NULL;
+
+  if (0 == i_track) 
+    return &(env->cdtext);
+  else 
+    return &(env->tocent[i_track-env->i_first_track].cdtext);
 
   return NULL;
 }
@@ -501,7 +507,7 @@ _cdio_get_num_tracks(void *user_data)
   Get format of track. 
 */
 static track_format_t
-_cdio_get_track_format(void *obj, track_t i_tracks) 
+_cdio_get_track_format(void *obj, track_t i_track) 
 {
   _img_private_t *env = obj;
   
@@ -511,9 +517,9 @@ _cdio_get_track_format(void *obj, track_t i_tracks)
     return TRACK_FORMAT_ERROR;
 
   if( env->hASPI ) {
-    return get_track_format_aspi(env, i_tracks);
+    return get_track_format_aspi(env, i_track);
   } else {
-    return get_track_format_win32ioctl(env, i_tracks);
+    return get_track_format_win32ioctl(env, i_track);
   }
 }
 
