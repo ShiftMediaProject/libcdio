@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.13 2005/01/24 00:23:18 rocky Exp $
+    $Id: win32.c,v 1.14 2005/01/27 11:08:55 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.13 2005/01/24 00:23:18 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.14 2005/01/27 11:08:55 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -171,7 +171,7 @@ run_scsi_cmd_win32( void *p_user_data, unsigned int i_timeout_ms,
 		    scsi_mmc_direction_t e_direction, 
 		    unsigned int i_buf, /*in/out*/ void *p_buf )
 {
-  const _img_private_t *p_env = p_user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (p_env->hASPI) {
     return run_scsi_cmd_aspi( p_env, i_timeout_ms, i_cdb, p_cdb,  

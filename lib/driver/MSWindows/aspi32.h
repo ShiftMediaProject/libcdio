@@ -1,8 +1,8 @@
 /* Win32 aspi specific */
 /*
-    $Id: aspi32.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: aspi32.h,v 1.2 2005/01/27 11:08:55 rocky Exp $
 
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -210,13 +210,13 @@ int read_audio_sectors_aspi (_img_private_t *obj, void *data, lsn_t lsn,
    Reads a single mode1 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int read_mode1_sector_aspi (const _img_private_t *env, void *data, 
+int read_mode1_sector_aspi (_img_private_t *env, void *data, 
 			    lsn_t lsn, bool b_form2);
 /*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-int read_mode2_sector_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
+int read_mode2_sector_aspi (_img_private_t *env, void *data, lsn_t lsn, 
 			    bool b_form2);
 
 /*! 
@@ -240,7 +240,7 @@ bool read_toc_aspi (_img_private_t *env);
 
   Return 0 if command completed successfully.
  */
-int run_scsi_cmd_aspi( const void *p_user_data, 
+int run_scsi_cmd_aspi( void *p_user_data, 
 		       unsigned int i_timeout,
 		       unsigned int i_cdb, 
 		       const scsi_mmc_cdb_t * p_cdb,

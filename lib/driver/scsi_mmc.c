@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.11 2005/01/24 00:06:31 rocky Exp $
+    $Id: scsi_mmc.c,v 1.12 2005/01/27 11:08:55 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -288,7 +288,7 @@ scsi_mmc_get_drive_cap_private (void *p_env,
   Get the DVD type associated with cd object.
 */
 discmode_t
-scsi_mmc_get_dvd_struct_physical_private ( void *p_env, const 
+scsi_mmc_get_dvd_struct_physical_private ( void *p_env, 
 					   scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
 					   cdio_dvd_struct_t *s)
 {

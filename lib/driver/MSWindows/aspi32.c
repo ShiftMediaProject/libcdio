@@ -1,7 +1,7 @@
 /*
-    $Id: aspi32.c,v 1.3 2005/01/01 15:08:48 rocky Exp $
+    $Id: aspi32.c,v 1.4 2005/01/27 11:08:55 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.3 2005/01/01 15:08:48 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.4 2005/01/27 11:08:55 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -488,7 +488,7 @@ init_aspi (_img_private_t *env)
   We return 0 if command completed successfully.
  */
 int
-run_scsi_cmd_aspi( const void *p_user_data, unsigned int i_timeout_ms,
+run_scsi_cmd_aspi( void *p_user_data, unsigned int i_timeout_ms,
 		   unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,  
 		   scsi_mmc_direction_t e_direction, 
 		   unsigned int i_buf, /*in/out*/ void *p_buf )
@@ -550,7 +550,7 @@ run_scsi_cmd_aspi( const void *p_user_data, unsigned int i_timeout_ms,
    Returns 0 if no error. 
  */
 static int
-read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
+read_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn, 
 		   int sector_type, unsigned int nblocks)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
@@ -602,7 +602,7 @@ read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
     i_buf = CDIO_CD_FRAMESIZE_RAW;
   }
 
-  return run_scsi_cmd_aspi(env, OP_TIMEOUT_MS, 
+  return run_scsi_cmd_aspi(p_env, OP_TIMEOUT_MS, 
 			       scsi_mmc_get_cmd_len(cdb.field[0]), 
 			       &cdb, SCSI_MMC_DATA_READ, i_buf*nblocks, data);
 }
@@ -612,11 +612,12 @@ read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 int
-read_audio_sectors_aspi (_img_private_t *env, void *data, lsn_t lsn, 
-			     unsigned int nblocks) 
+read_audio_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn, 
+			 unsigned int i_blocks) 
 {
-  if (read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_CDDA, 1)) {
-    return read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_ANY, 1);
+  if (read_sectors_aspi(p_env, data, lsn, CDIO_MMC_READ_TYPE_CDDA, i_blocks)) {
+    return read_sectors_aspi(p_env, data, lsn, 
+			     CDIO_MMC_READ_TYPE_ANY, i_blocks);
   }
   return 0;
 }
@@ -626,10 +627,10 @@ read_audio_sectors_aspi (_img_private_t *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 int
-read_mode2_sector_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
+read_mode2_sector_aspi (_img_private_t *p_env, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  return read_sectors_aspi(env, data, lsn, b_form2 
+  return read_sectors_aspi(p_env, data, lsn, b_form2 
 			       ? CDIO_MMC_READ_TYPE_M2F2 
 			       : CDIO_MMC_READ_TYPE_M2F1, 
 			       1);
@@ -640,10 +641,10 @@ read_mode2_sector_aspi (const _img_private_t *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 int
-read_mode1_sector_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
+read_mode1_sector_aspi (_img_private_t *p_env, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  return read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_MODE1, 1);
+  return read_sectors_aspi(p_env, data, lsn, CDIO_MMC_READ_TYPE_MODE1, 1);
 }
 
 /*! 

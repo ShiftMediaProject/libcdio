@@ -1,7 +1,7 @@
 /*
-    $Id: win32.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: win32.h,v 1.2 2005/01/27 11:08:55 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ const char *is_cdrom_win32ioctl (const char drive_letter);
 
   Return 0 if command completed successfully.
  */
-int run_scsi_cmd_win32ioctl( const void *p_user_data, 
+int run_scsi_cmd_win32ioctl( void *p_user_data, 
 			     unsigned int i_timeout,
 			     unsigned int i_cdb, 
 			     const scsi_mmc_cdb_t * p_cdb,
@@ -109,13 +109,13 @@ int run_scsi_cmd_win32ioctl( const void *p_user_data,
 /*!
   Initialize internal structures for CD device.
  */
-bool init_win32ioctl (_img_private_t *env);
+bool init_win32ioctl (_img_private_t *p_env);
 
 /*! 
   Read and cache the CD's Track Table of Contents and track info.
   Return true if successful or false if an error.
 */
-bool read_toc_win32ioctl (_img_private_t *env);
+bool read_toc_win32ioctl (_img_private_t *p_env);
 
 /*!
   Return the media catalog number MCN.
@@ -124,7 +124,7 @@ bool read_toc_win32ioctl (_img_private_t *env);
   string when done with it.
 
  */
-char *get_mcn_win32ioctl (const _img_private_t *env);
+char *get_mcn_win32ioctl (const _img_private_t *p_env);
 
 /*
   Read cdtext information for a CdIo object .
@@ -132,7 +132,7 @@ char *get_mcn_win32ioctl (const _img_private_t *env);
   return true on success, false on error or CD-TEXT information does
   not exist.
 */
-bool init_cdtext_win32ioctl (_img_private_t *env);
+bool init_cdtext_win32ioctl (_img_private_t *p_env);
 
 /*!
   Return the the kind of drive capabilities of device.
@@ -141,7 +141,7 @@ bool init_cdtext_win32ioctl (_img_private_t *env);
   string when done with it.
 
  */
-void get_drive_cap_aspi (const _img_private_t *env,
+void get_drive_cap_aspi (const _img_private_t *p_env,
 			 cdio_drive_read_cap_t  *p_read_cap,
 			 cdio_drive_write_cap_t *p_write_cap,
 			 cdio_drive_misc_cap_t  *p_misc_cap);
@@ -153,7 +153,7 @@ void get_drive_cap_aspi (const _img_private_t *env,
   string when done with it.
 
  */
-void get_drive_cap_win32ioctl (const _img_private_t *env,
+void get_drive_cap_win32ioctl (const _img_private_t *p_env,
 			       cdio_drive_read_cap_t  *p_read_cap,
 			       cdio_drive_write_cap_t *p_write_cap,
 			       cdio_drive_misc_cap_t  *p_misc_cap);
@@ -161,7 +161,7 @@ void get_drive_cap_win32ioctl (const _img_private_t *env,
 /*!  
   Get the format (XA, DATA, AUDIO) of a track. 
 */
-track_format_t get_track_format_win32ioctl(const _img_private_t *env, 
+track_format_t get_track_format_win32ioctl(const _img_private_t *p_env, 
 					   track_t i_track); 
 
 void set_cdtext_field_win32(void *user_data, track_t i_track, 

@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.7 2005/01/19 17:25:50 rocky Exp $
+    $Id: win32_ioctl.c,v 1.8 2005/01/27 11:08:55 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.7 2005/01/19 17:25:50 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.8 2005/01/27 11:08:55 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -184,7 +184,7 @@ typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
   Return 0 if command completed successfully.
  */
 int
-run_scsi_cmd_win32ioctl( const void *p_user_data, 
+run_scsi_cmd_win32ioctl( void *p_user_data, 
 			 unsigned int i_timeout_ms,
 			 unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,
 			 scsi_mmc_direction_t e_direction, 
@@ -398,7 +398,7 @@ read_audio_sectors_win32ioctl (_img_private_t *p_env, void *data, lsn_t lsn,
    data starting from lsn. Returns 0 if no error.
  */
 static int
-read_raw_sector (const _img_private_t *p_env, void *p_buf, lsn_t lsn) 
+read_raw_sector (_img_private_t *p_env, void *p_buf, lsn_t lsn) 
 {
   scsi_mmc_cdb_t cdb = {{0, }};
 
