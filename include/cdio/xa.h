@@ -1,10 +1,11 @@
 /*
-    $Id: xa.h,v 1.4 2003/09/01 02:08:59 rocky Exp $
+    $Id: xa.h,v 1.5 2003/09/21 01:14:30 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
-    See also iso9660.h by Eric Youngdale (1993).
+    See also iso9660.h by Eric Youngdale (1993) and in cdrtools. These
+    are 
 
     Copyright 1993 Yggdrasil Computing, Incorporated
     Copyright (c) 1999,2000 J. Schilling
@@ -33,17 +34,17 @@
 #define ISO_XA_MARKER_OFFSET    1024
 
 /* XA attribute definitions */
-#define XA_ATTR_G_READ          0x0001   /* System Group Read */
-#define XA_ATTR_G_EXEC          0x0004   /* System Group Execute */
+#define XA_PERM_RSYS          0x0001   /* System Group Read */
+#define XA_PERM_XSYS          0x0004   /* System Group Execute */
 
-#define XA_ATTR_U_READ          0x0010   /* Owner Read */
-#define XA_ATTR_U_EXEC          0x0040   /* Owner Execute */
+#define XA_PERM_RUSR          0x0010   /* User (owner) Read */
+#define XA_PERM_XUSR          0x0040   /* User (owner) Execute */
 
-#define XA_ATTR_O_READ          0x0100   /* Group Read */
-#define XA_ATTR_O_EXEC          0x0400   /* Group Execute */
+#define XA_PERM_RGRP          0x0100   /* Group Read */
+#define XA_PERM_XGRP          0x0400   /* Group Execute */
 
-#define	XA_ATTR_W_READ		0x1000	  /* World (other) Read */
-#define	XA_ATTR_W_EXEC		0x4000	  /* World (other) Execute */
+#define	XA_PERM_ROTH	      0x1000   /* Other (world) Read */
+#define	XA_PERM_XOTH	      0x4000   /* Other (world) Execute */
 
 #define XA_ATTR_MODE2FORM1     (1 << 11)
 #define XA_ATTR_MODE2FORM2     (1 << 12)
@@ -52,8 +53,8 @@
 #define XA_ATTR_DIRECTORY      (1 << 15)
 
 /* some aggregations */
-#define XA_PERM_ALL_READ       (XA_ATTR_U_READ | XA_ATTR_G_READ | XA_ATTR_O_READ)
-#define XA_PERM_ALL_EXEC       (XA_ATTR_U_EXEC | XA_ATTR_G_EXEC | XA_ATTR_O_EXEC)
+#define XA_PERM_ALL_READ       (XA_PERM_RUSR | XA_PERM_RSYS | XA_PERM_RGRP)
+#define XA_PERM_ALL_EXEC       (XA_PERM_XUSR | XA_PERM_XSYS | XA_PERM_XGRP)
 #define XA_PERM_ALL_ALL        (XA_PERM_ALL_READ | XA_PERM_ALL_EXEC)
 
 #define XA_FORM1_DIR    (XA_ATTR_DIRECTORY | XA_ATTR_MODE2FORM1 | XA_PERM_ALL_ALL)
@@ -92,9 +93,9 @@ typedef struct iso9660_xa /* big endian!! */
   Note that an entry will either be in mode2 form1 or mode form2. That
   is you will either see "2-" or "-1" in the 4th & 5th positions.
   
-  The 6th and 7th characters refer to permissions for everyone while the
+  The 6th and 7th characters refer to permissions for a user while the
   the 8th and 9th characters refer to permissions for a group while, and 
-  the 10th and 11th characters refer to permissions for a user. 
+  the 10th and 11th characters refer to permissions for everyone. 
   
   In each of these pairs the first character (6, 8, 10) is "x" if the 
   entry is executable. For a directory this means the directory is

@@ -1,5 +1,5 @@
 /*
-    $Id: testiso9660.c,v 1.1 2003/09/01 15:08:15 rocky Exp $
+    $Id: testiso9660.c,v 1.2 2003/09/21 01:14:30 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -41,8 +41,6 @@ main (int argc, const char *argv[])
   char *dst_p;
   int achars[] = {'!', '"', '%', '&', '(', ')', '*', '+', ',', '-', '.',
                   '/', '?', '<', '=', '>'};
-  
-  
   for (c='A'; c<='Z'; c++ ) {
     if (!iso9660_isdchar(c)) {
       printf("Failed iso9660_isdchar test on %d\n", c);
@@ -124,6 +122,31 @@ main (int argc, const char *argv[])
   if ( 0 != strncmp(dst_p, "this/file.ext;1", 16) ) {
     printf("Failed iso9660_pathname_isofy\n");
     return 10;
+  }
+
+  /* Test get/set date */
+  {
+    struct tm *p_tm, tm;
+    iso9660_dtime_t dtime;
+    time_t now = time(NULL);
+
+    memset(&dtime, 0, sizeof(dtime));
+    p_tm = localtime(&now);
+    iso9660_set_dtime(p_tm, &dtime);
+    iso9660_get_dtime(&dtime, true, &tm);
+    if ( memcmp(p_tm, &tm, sizeof(tm)) != 0 ) {
+      printf("Time retrieved with iso0660_get_dtime not same as that set with "
+             "iso9660_set_dtime.\n");
+      return 11;
+    }
+    p_tm = gmtime(&now);
+    iso9660_set_dtime(p_tm, &dtime);
+    iso9660_get_dtime(&dtime, false, &tm);
+    if ( memcmp(p_tm, &tm, sizeof(tm)) != 0 ) {
+      printf("Time retrieved with iso0660_get_dtime not same as that set with "
+             "iso9660_set_dtime.\n");
+      return 12;
+    }
   }
 
   return 0;

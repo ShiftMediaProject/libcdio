@@ -1,5 +1,5 @@
 /*
-    $Id: xa.c,v 1.3 2003/08/31 09:11:25 rocky Exp $
+    $Id: xa.c,v 1.4 2003/09/21 01:14:30 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -72,9 +72,9 @@ _getbuf (void)
    Note that an entry will either be in mode2 form1 or mode form2. That
    is you will either see "2-" or "-1" in the 4th & 5th positions.
 
-  The 6th and 7th characters refer to permissions for everyone while the
+  The 6th and 7th characters refer to permissions for a user while the
   the 8th and 9th characters refer to permissions for a group while, and 
-  the 10th and 11th characters refer to permissions for a user. 
+  the 10th and 11th characters refer to permissions for a others. 
  
   In each of these pairs the first character (6, 8, 10) is "x" if the 
   entry is executable. For a directory this means the directory is
@@ -90,20 +90,21 @@ iso9660_get_xa_attr_str (uint16_t xa_attr)
 
   xa_attr = uint16_from_be (xa_attr);
 
-  result[0] = (xa_attr & XA_ATTR_DIRECTORY) ? 'd' : '-';
-  result[1] = (xa_attr & XA_ATTR_CDDA) ? 'a' : '-';
-  result[2] = (xa_attr & XA_ATTR_INTERLEAVED) ? 'i' : '-';
-  result[3] = (xa_attr & XA_ATTR_MODE2FORM2) ? '2' : '-';
-  result[4] = (xa_attr & XA_ATTR_MODE2FORM1) ? '1' : '-';
+  result[ 0] = (xa_attr & XA_ATTR_DIRECTORY) ? 'd' : '-';
+  result[ 1] = (xa_attr & XA_ATTR_CDDA) ? 'a' : '-';
+  result[ 2] = (xa_attr & XA_ATTR_INTERLEAVED) ? 'i' : '-';
+  result[ 3] = (xa_attr & XA_ATTR_MODE2FORM2) ? '2' : '-';
+  result[ 4] = (xa_attr & XA_ATTR_MODE2FORM1) ? '1' : '-';
 
-  result[5] = (xa_attr & XA_ATTR_O_EXEC) ? 'x' : '-';
-  result[6] = (xa_attr & XA_ATTR_O_READ) ? 'r' : '-';
+  result[ 5] = (xa_attr & XA_PERM_XUSR) ? 'x' : '-';
+  result[ 6] = (xa_attr & XA_PERM_RUSR) ? 'r' : '-';
 
-  result[7] = (xa_attr & XA_ATTR_G_EXEC) ? 'x' : '-';
-  result[8] = (xa_attr & XA_ATTR_G_READ) ? 'r' : '-';
+  result[ 7] = (xa_attr & XA_PERM_XGRP) ? 'x' : '-';
+  result[ 8] = (xa_attr & XA_PERM_RGRP) ? 'r' : '-';
 
-  result[9] = (xa_attr & XA_ATTR_U_EXEC) ? 'x' : '-';
-  result[10] = (xa_attr & XA_ATTR_U_READ) ? 'r' : '-';
+  /* Hack alert: wonder if this should be ROTH and XOTH? */
+  result[ 9] = (xa_attr & XA_PERM_XSYS) ? 'x' : '-';
+  result[10] = (xa_attr & XA_PERM_RSYS) ? 'r' : '-';
 
   result[11] = '\0';
 

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.10 2003/09/20 11:53:09 rocky Exp $
+    $Id: iso9660_fs.c,v 1.11 2003/09/21 01:14:30 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.10 2003/09/20 11:53:09 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.11 2003/09/21 01:14:30 rocky Exp $";
 
 static void
 _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *stat, bool is_mode2)
@@ -50,18 +50,18 @@ _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *stat, bool is_mode2)
 
   if (!dir_len) return;
 
-  stat->type    = (idr->flags & ISO_DIRECTORY) ? _STAT_DIR : _STAT_FILE;
+  stat->type    = (idr->file_flags & ISO_DIRECTORY) ? _STAT_DIR : _STAT_FILE;
   stat->lsn     = from_733 (idr->extent);
   stat->size    = from_733 (idr->size);
   stat->secsize = _cdio_len2blocks (stat->size, ISO_BLOCKSIZE);
 
-  iso9660_get_time(&(idr->date), &(stat->tm));
+  iso9660_get_dtime(&(idr->recording_time), true, &(stat->tm));
 
   cdio_assert (dir_len >= sizeof (iso9660_dir_t));
 
   if (is_mode2) {
     int su_length = iso9660_get_dir_len(idr) - sizeof (iso9660_dir_t);
-    su_length -= idr->name_len;
+    su_length -= idr->filename_len;
     
     if (su_length % 2)
       su_length--;
@@ -77,7 +77,7 @@ _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *stat, bool is_mode2)
       cdio_warn ("XA signature not found in ISO9660's system use area;"
 		 " ignoring XA attributes for this file entry.");
       cdio_debug ("%d %d %d, '%c%c' (%d, %d)", iso9660_get_dir_len(idr), 
-		  idr->name_len,
+		  idr->filename_len,
 		  su_length,
 		  xa_data->signature[0], xa_data->signature[1],
 		  xa_data->signature[0], xa_data->signature[1]);
@@ -98,14 +98,14 @@ _idr2name (const iso9660_dir_t *idr)
 
   cdio_assert (len >= sizeof (iso9660_dir_t));
 
-  /* (idr->flags & ISO_DIRECTORY) */
+  /* (idr->file_flags & ISO_DIRECTORY) */
   
-  if (idr->name[0] == '\0')
+  if (idr->filename[0] == '\0')
     strcpy (namebuf, ".");
-  else if (idr->name[0] == '\1')
+  else if (idr->filename[0] == '\1')
     strcpy (namebuf, "..");
   else
-    strncpy (namebuf, idr->name, idr->name_len);
+    strncpy (namebuf, idr->filename, idr->filename_len);
 
   return strdup (namebuf);
 }

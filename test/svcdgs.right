@@ -54,13 +54,13 @@ ISO9660 filesystem
 /SVCD/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     26]      2048 Jan  6 2001 21:29  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan  6 2001 21:29  ..
-  - ----1-rxrxr 0 0 [fn 00] [LSN    151]      2048 Jan  6 2001 21:29  entries.svd
-  - ----1-rxrxr 0 0 [fn 00] [LSN    150]      2048 Jan  6 2001 21:29  info.svd
-  - ----1-rxrxr 0 0 [fn 00] [LSN    152]     65536 Jan  6 2001 21:29  lot.svd
-  - ----1-rxrxr 0 0 [fn 00] [LSN    184]        16 Jan  6 2001 21:29  psd.svd
-  - ----1-rxrxr 0 0 [fn 00] [LSN    188]       427 Jan  6 2001 21:29  search.dat
-  - ----1-rxrxr 0 0 [fn 00] [LSN    186]      4096 Jan  6 2001 21:29  spicontx.svd
-  - ----1-rxrxr 0 0 [fn 00] [LSN    185]      2048 Jan  6 2001 21:29  tracks.svd
+  - ----1xr-rxr 0 0 [fn 00] [LSN    151]      2048 Jan  6 2001 21:29  entries.svd
+  - ----1xr-rxr 0 0 [fn 00] [LSN    150]      2048 Jan  6 2001 21:29  info.svd
+  - ----1xr-rxr 0 0 [fn 00] [LSN    152]     65536 Jan  6 2001 21:29  lot.svd
+  - ----1xr-rxr 0 0 [fn 00] [LSN    184]        16 Jan  6 2001 21:29  psd.svd
+  - ----1xr-rxr 0 0 [fn 00] [LSN    188]       427 Jan  6 2001 21:29  search.dat
+  - ----1xr-rxr 0 0 [fn 00] [LSN    186]      4096 Jan  6 2001 21:29  spicontx.svd
+  - ----1xr-rxr 0 0 [fn 00] [LSN    185]      2048 Jan  6 2001 21:29  tracks.svd
 
 /VMP/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048 Jan  6 2001 21:29  .

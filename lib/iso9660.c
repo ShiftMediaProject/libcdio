@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.13 2003/09/20 17:47:29 rocky Exp $
+    $Id: iso9660.c,v 1.14 2003/09/21 01:14:30 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.13 2003/09/20 17:47:29 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.14 2003/09/21 01:14:30 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -51,10 +51,17 @@ pathtable_get_size_and_entries(const void *pt, unsigned int *size,
   Get time structure from structure in an ISO 9660 directory index 
   record. Even though tm_wday and tm_yday fields are not explicitly in
   idr_date, the are calculated from the other fields.
+
+  If tm is to reflect the localtime set use_localtime true, otherwise
+  tm will reported in GMT.
 */
 void
-iso9660_get_time (const iso9660_dtime_t *idr_date, /*out*/ struct tm *tm)
+iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool use_localtime,
+                   /*out*/ struct tm *tm)
 {
+  time_t t;
+  struct tm *temp_tm;
+  
   if (!idr_date) return;
 
   tm->tm_year   = idr_date->dt_year;
@@ -63,10 +70,16 @@ iso9660_get_time (const iso9660_dtime_t *idr_date, /*out*/ struct tm *tm)
   tm->tm_hour   = idr_date->dt_hour;
   tm->tm_min    = idr_date->dt_minute;
   tm->tm_sec    = idr_date->dt_second;
-  tm->tm_gmtoff = 0;
-  
-  /* Recompute tm_wday and tm_yday */
-  mktime(tm);
+
+  /* Recompute tm_wday and tm_yday via mktime. */
+  t = mktime(tm);
+
+  if (use_localtime)
+    temp_tm = localtime(&t);
+  else
+    temp_tm = gmtime(&t);
+
+  memcpy(tm, temp_tm, sizeof(struct tm));
 }
 
 /*!
@@ -85,7 +98,23 @@ iso9660_set_dtime (const struct tm *tm, /*out*/ iso9660_dtime_t *idr_date)
   idr_date->dt_hour   = tm->tm_hour;
   idr_date->dt_minute = tm->tm_min;
   idr_date->dt_second = tm->tm_sec;
-  idr_date->dt_gmtoff = 0x00; /* tz, GMT -48 +52 in 15min intervals */
+
+  /* The ISO 9660 timezone is in the range -48..+52 and each unit
+     represents a 15-minute interval. */
+  idr_date->dt_gmtoff = tm->tm_gmtoff / (15 * 60);
+
+  if (tm->tm_isdst) idr_date->dt_gmtoff -= 4;
+
+  if (idr_date->dt_gmtoff < -48 ) {
+    
+    cdio_warn ("Converted ISO 9660 timezone %d is less than -48. Adjusted", 
+               idr_date->dt_gmtoff);
+    idr_date->dt_gmtoff = -48;
+  } else if (idr_date->dt_gmtoff > 52) {
+    cdio_warn ("Converted ISO 9660 timezone %d is over 52. Adjusted", 
+               idr_date->dt_gmtoff);
+    idr_date->dt_gmtoff = 52;
+  }
 }
 
 /*!
@@ -364,10 +393,10 @@ iso9660_dir_calc_record_size(unsigned int namelen, unsigned int su_len)
 
 void
 iso9660_dir_add_entry_su(void *dir,
-                         const char name[], 
+                         const char filename[], 
                          uint32_t extent,
                          uint32_t size,
-                         uint8_t flags,
+                         uint8_t file_flags,
                          const void *su_data,
                          unsigned int su_size,
                          const time_t *entry_time)
@@ -385,11 +414,11 @@ iso9660_dir_add_entry_su(void *dir,
   cdio_assert (dsize > 0 && !(dsize % ISO_BLOCKSIZE));
   cdio_assert (dir != NULL);
   cdio_assert (extent > 17);
-  cdio_assert (name != NULL);
-  cdio_assert (strlen(name) <= MAX_ISOPATHNAME);
+  cdio_assert (filename != NULL);
+  cdio_assert (strlen(filename) <= MAX_ISOPATHNAME);
 
   length = sizeof(iso9660_dir_t);
-  length += strlen(name);
+  length += strlen(filename);
   length = _cdio_ceil2block (length, 2); /* pad to word boundary */
   su_offset = length;
   length += su_size;
@@ -433,15 +462,16 @@ iso9660_dir_add_entry_su(void *dir,
   idr->extent = to_733(extent);
   idr->size = to_733(size);
   
-  iso9660_set_dtime (gmtime(entry_time), &(idr->date));
+  iso9660_set_dtime (gmtime(entry_time), &(idr->recording_time));
   
-  idr->flags = to_711(flags);
+  idr->file_flags = to_711(file_flags);
 
   idr->volume_sequence_number = to_723(1);
 
-  idr->name_len = to_711(strlen(name) ? strlen(name) : 1); /* working hack! */
+  idr->filename_len = to_711(strlen(filename) 
+                             ? strlen(filename) : 1); /* working hack! */
 
-  memcpy(idr->name, name, from_711(idr->name_len));
+  memcpy(idr->filename, filename, from_711(idr->filename_len));
   memcpy(&dir8[offset] + su_offset, su_data, su_size);
 }
 
@@ -483,6 +513,7 @@ iso9660_dir_init_new_su (void *dir,
                             psu_size, dir_time);
 }
 
+/* Zero's out pathable. Do this first.  */
 void 
 iso9660_pathtable_init (void *pt)
 {
@@ -815,6 +846,9 @@ iso9660_get_pvd_block_size(const iso9660_pvd_t *pvd)
   return from_723(pvd->logical_block_size);
 }
 
+/*! Return the primary volume id version number (of pvd).
+    If there is an error 0 is returned. 
+ */
 int
 iso9660_get_pvd_version(const iso9660_pvd_t *pvd) 
 {
@@ -822,6 +856,9 @@ iso9660_get_pvd_version(const iso9660_pvd_t *pvd)
   return pvd->version;
 }
 
+/*! Return the LSN of the root directory for pvd.
+    If there is an error CDIO_INVALID_LSN is returned. 
+ */
 lsn_t
 iso9660_get_root_lsn(const iso9660_pvd_t *pvd) 
 {

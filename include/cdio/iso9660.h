@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.23 2003/09/20 12:33:14 rocky Exp $
+    $Id: iso9660.h,v 1.24 2003/09/21 01:14:30 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -178,18 +178,22 @@ typedef struct iso9660_stat iso9660_stat_t;
 /* Format of an ISO-9660 directory record */
 struct iso9660_dir {
   uint8_t          length;            /* 711 */
-  uint8_t          ext_attr_length;   /* 711 */
+  uint8_t          xa_length;         /* 711 */
   uint64_t         extent;            /* 733 */
   uint64_t         size;              /* 733 */
-  iso9660_dtime_t  date;              /* 7 by 711 */
-  uint8_t          flags;
+  iso9660_dtime_t  recording_time;    /* 7 by 711 */
+  uint8_t          file_flags;
   uint8_t          file_unit_size;    /* 711 */
-  uint8_t          interleave;        /* 711 */
+  uint8_t          interleave_gap;    /* 711 */
   uint32_t volume_sequence_number;    /* 723 */
-  uint8_t          name_len;          /* 711 */
-  char             name[EMPTY_ARRAY_SIZE];
+  uint8_t          filename_len;      /* 711 */
+  char             filename[EMPTY_ARRAY_SIZE];
 } GNUC_PACKED;
 
+
+/* The following structure is not part of ISO 9660. We just use it
+   for our own purposes for communicating info back that's pulled out.
+*/
 struct iso9660_stat { /* big endian!! */
   enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;
   lsn_t        lsn;                   /* start logical sector number */
@@ -260,9 +264,12 @@ char *iso9660_strncpy_pad(char dst[], const char src[], size_t len,
   Get time structure from structure in an ISO 9660 directory index 
   record. Even though tm_wday and tm_yday fields are not explicitly in
   idr_date, the are calculated from the other fields.
+
+  If tm is to reflect the localtime set use_localtime true, otherwise
+  tm will reported in GMT.
 */
-void iso9660_get_time (const iso9660_dtime_t *idr_date, 
-                       /*out*/ struct tm *tm);
+  void iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool use_localtime,
+                          /*out*/ struct tm *tm);
 
 
 /*=====================================================================
@@ -319,8 +326,9 @@ iso9660_dir_init_new_su (void *dir, uint32_t self, uint32_t ssize,
                          const time_t *dir_time);
 
 void
-iso9660_dir_add_entry_su (void *dir, const char name[], uint32_t extent,
-                          uint32_t size, uint8_t flags, const void *su_data,
+iso9660_dir_add_entry_su (void *dir, const char filename[], uint32_t extent,
+                          uint32_t size, uint8_t file_flags, 
+                          const void *su_data,
                           unsigned int su_size, const time_t *entry_time);
 
 unsigned int 
@@ -368,19 +376,22 @@ iso9660_get_pvd_space_size(const iso9660_pvd_t *pvd);
 int
 iso9660_get_pvd_block_size(const iso9660_pvd_t *pvd) ;
 
-int
-iso9660_get_pvd_version(const iso9660_pvd_t *pvd) ;
+/*! Return the primary volume id version number (of pvd).
+    If there is an error 0 is returned. 
+ */
+int iso9660_get_pvd_version(const iso9660_pvd_t *pvd) ;
 
-lsn_t
-iso9660_get_root_lsn(const iso9660_pvd_t *pvd);
+/*! Return the LSN of the root directory for pvd.
+    If there is an error CDIO_INVALID_LSN is returned. 
+ */
+lsn_t iso9660_get_root_lsn(const iso9660_pvd_t *pvd);
 
 /* pathtable */
 
-void
-iso9660_pathtable_init (void *pt);
+/*! Zero's out pathable. Do this first. */
+void iso9660_pathtable_init (void *pt);
 
-unsigned int
-iso9660_pathtable_get_size (const void *pt);
+unsigned int iso9660_pathtable_get_size (const void *pt);
 
 uint16_t
 iso9660_pathtable_l_add_entry (void *pt, const char name[], uint32_t extent,
@@ -388,7 +399,7 @@ iso9660_pathtable_l_add_entry (void *pt, const char name[], uint32_t extent,
 
 uint16_t
 iso9660_pathtable_m_add_entry (void *pt, const char name[], uint32_t extent,
-                       uint16_t parent);
+                               uint16_t parent);
 
 /* volume descriptors */
 
