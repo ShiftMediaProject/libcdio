@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.5 2004/05/07 10:59:12 rocky Exp $
+    $Id: sector.c,v 1.6 2004/05/09 16:53:01 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -32,12 +32,13 @@
 #endif
 
 
-static const char _rcsid[] = "$Id: sector.c,v 1.5 2004/05/07 10:59:12 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.6 2004/05/09 16:53:01 rocky Exp $";
 
 lba_t
 cdio_lba_to_lsn (lba_t lba)
 {
-  if (CDIO_INVALID_LBA  == lba) return CDIO_INVALID_LSN;
+  if (CDIO_INVALID_LBA     == lba) return CDIO_INVALID_LSN;
+  if (CDIO_PREGAP_SECTORS  >  lba) return lba; /* Assume no pregap?*/
   return lba - CDIO_PREGAP_SECTORS; 
 }
 
@@ -55,14 +56,14 @@ cdio_lba_to_msf (lba_t lba, msf_t *msf)
 char *
 cdio_lba_to_msf_str (lba_t lba)
 {
-  char buf[16];
-  msf_t _msf = { .m = 0, .s = 0, .f = 0 };
 
-  cdio_lba_to_msf (lba, &_msf);
-
-  snprintf (buf, sizeof (buf), "%.2x:%.2x.%.2x", _msf.m, _msf.s, _msf.f);
-
-  return strdup (buf);
+  if (CDIO_INVALID_LBA == lba) {
+    return strdup("*INVALID");
+  } else {
+    msf_t msf = { .m = 0, .s = 0, .f = 0 };
+    cdio_lba_to_msf (lba, &msf);
+    return cdio_msf_to_str(&msf);
+  }
 }
 
 lba_t
@@ -101,6 +102,16 @@ uint32_t
 cdio_msf_to_lsn (const msf_t *msf)
 {
   return cdio_lba_to_lsn(cdio_msf_to_lba (msf));
+}
+
+/* warning, returns new allocated string */
+char *
+cdio_msf_to_str (const msf_t *msf)
+{
+  char buf[16];
+  
+  snprintf (buf, sizeof (buf), "%.3x:%.2x.%.2x", msf->m, msf->s, msf->f);
+  return strdup (buf);
 }
 
 
