@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.36 2003/10/03 07:55:00 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.37 2003/11/04 04:44:43 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.36 2003/10/03 07:55:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.37 2003/11/04 04:44:43 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -502,7 +502,8 @@ _cdio_read_audio_sectors (void *env, void *data, lsn_t lsn,
 			    CDIO_CD_FRAMESIZE_RAW - 272, nblocks);
   }
 
-  return ret;
+  /* ret is number of bytes if okay, but we need to return 0 okay. */
+  return ret == 0;
 }
 
 /*!
