@@ -15,10 +15,10 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.37 2003/09/01 22:50:25 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.38 2003/09/07 18:11:35 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(libcdio, 0.63)
+AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
      
 AM_SANITY_CHECK
 
