@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.49 2004/08/27 04:12:29 rocky Exp $
+    $Id: aspi32.c,v 1.50 2004/10/27 01:16:39 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.49 2004/08/27 04:12:29 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.50 2004/10/27 01:16:39 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -381,7 +381,7 @@ init_aspi (_img_private_t *env)
   }
   
   if ( !have_aspi(&hASPI, &lpGetSupport, &lpSendCommand) )
-    return NULL;
+    return false;
 
   /* ASPI support seems to be there. */
   

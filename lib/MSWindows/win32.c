@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.46 2004/10/26 07:34:41 rocky Exp $
+    $Id: win32.c,v 1.47 2004/10/27 01:16:39 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.46 2004/10/26 07:34:41 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.47 2004/10/27 01:16:39 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -484,7 +484,7 @@ _cdio_get_track_format(void *p_obj, track_t i_track)
   if (!p_env->gen.toc_init) read_toc_win32 (p_env) ;
 
   if ( i_track < p_env->gen.i_first_track
-       || i_track >= p_env->gen.i_tracks + p_env->gen.i_first_track ) )
+       || i_track >= p_env->gen.i_tracks + p_env->gen.i_first_track )
     return TRACK_FORMAT_ERROR;
 
   if( p_env->hASPI ) {
