@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.32 2004/04/23 02:18:07 rocky Exp $
+#   $Id: Makefile.am,v 1.33 2004/04/30 09:59:54 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -53,7 +53,6 @@ noinst_HEADERS = cdio_assert.h bytesex.h bytesex_asm.h \
 
 libcdio_sources = \
 	_cdio_bsdi.c \
-	_cdio_freebsd.c \
 	_cdio_generic.c \
 	_cdio_linux.c \
 	_cdio_osx.c \
@@ -68,13 +67,17 @@ libcdio_sources = \
 	cd_types.c \
 	ds.c \
 	ds.h \
+        FreeBSD/freebsd.c \
+        FreeBSD/freebsd.h \
+        FreeBSD/freebsd_cam.c \
+	FreeBSD/freebsd_ioctl.c \
 	image/bincue.c \
 	image_common.h \
 	image/nrg.c \
 	logging.c \
 	MSWindows/aspi32.c \
 	MSWindows/aspi32.h \
-	MSWindows/ioctl.c \
+	MSWindows/win32_ioctl.c \
 	MSWindows/win32.c \
 	MSWindows/win32.h \
 	scsi_mmc.h \
