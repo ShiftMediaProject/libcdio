@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.20 2003/08/16 15:34:58 rocky Exp $
+    $Id: cd-info.c,v 1.21 2003/08/16 17:31:40 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -107,9 +107,6 @@
 #define STRONG "__________________________________\n"
 #define NORMAL ""
 #endif
-
-/* Used figure out what type of filesystem or CD image we've got. */
-cdio_analysis_t cdio_analysis; 
 
 #if CDIO_IOCTL_FINISHED
 struct cdrom_mcn           mcn;
@@ -592,7 +589,7 @@ print_vcd_info(void) {
 
 static void
 print_analysis(int ms_offset, cdio_analysis_t cdio_analysis, 
-	       int fs, int first_data, int num_audio, 
+	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
 	       track_t num_tracks, track_t first_track_num, CdIo *cdio)
 {
   int need_lf;
@@ -704,6 +701,9 @@ main(int argc, const char *argv[])
   unsigned int   num_data    =  0;  /* # of data tracks */
   int            first_data  = -1;  /* # of first data track */
   int            first_audio = -1;  /* # of first audio track */
+  cdio_analysis_t cdio_analysis; 
+      
+  memset(&cdio_analysis, 0, sizeof(cdio_analysis));
 
   poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
@@ -835,12 +835,10 @@ main(int argc, const char *argv[])
     
     if (TRACK_FORMAT_AUDIO == cdio_get_track_format(cdio, i)) {
       num_audio++;
-      if (-1 == first_audio)
-	first_audio = i;
+      if (-1 == first_audio) first_audio = i;
     } else {
       num_data++;
-      if (-1 == first_data)
-	first_data = i;
+      if (-1 == first_data)  first_data = i;
     }
     /* skip to leadout? */
     if (i == num_tracks) i = CDIO_CDROM_LEADOUT_TRACK-1;
@@ -942,7 +940,7 @@ main(int argc, const char *argv[])
     } else {
       /* we have data track(s) */
       int j;
-      
+
       for (j = 2, i = first_data; i <= num_tracks; i++) {
 	msf_t msf;
 	track_format_t track_format = cdio_get_track_format(cdio, i);
