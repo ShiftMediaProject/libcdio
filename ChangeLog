@@ -1,3 +1,56 @@
+2003-04-27 22:02  rocky
+
+	* test/: Makefile.am, check_nrg.sh, check_nrg.sh.in: check_nrg.sh
+	is now derived since we may or may not have Video CD info
+	displayed.
+
+2003-04-26 10:24  rocky
+
+	* configure.ac, src/Makefile.am, src/cd-info.c, test/cdda.right,
+	test/check_cue.sh.in, test/check_nrg.sh, test/check_opts0.right,
+	test/check_opts1.right, test/check_opts4.right,
+	test/check_opts5.right, test/check_opts6.right,
+	test/check_opts7.right, test/isofs-m1.right, test/monvoisin.right,
+	test/svcd_ogt_test_ntsc.right, test/svcdgs.right,
+	test/vcd_demo.right, test/videocd.right: cd-info: Use libvcdinfo if
+	it is around to list out general Video CD properties (format
+	version, album description, preparer id, volume number and count).
+	cd-info output changed slightly.
+
+2003-04-25 18:06  rocky
+
+	* .cvsignore, src/.cvsignore: [no log message]
+
+2003-04-25 17:28  rocky
+
+	* ChangeLog, Makefile.am, src/Makefile.am, src/cd-info.c,
+	src/cdinfo.c, test/check_common_fn, test/check_opts.sh: rename
+	cdinfo to cd-info to accomodate previously existing cdinfo
+	programs.  Thanks to Manfred Tremmel <Manfred.Tremmel@iiv.de> for
+	reporting the problem.
+
+2003-04-25 17:26  rocky
+
+	* configure.ac: Make RPM spec file.
+
+2003-04-25 17:24  rocky
+
+	* THANKS: Add Manfred Tremmel
+
+2003-04-25 17:23  rocky
+
+	* libcdio.spec.in: First RPM spec thanks to Manfred Tremmel
+	<Manfred.Tremmel@iiv.de>.
+
+2003-04-23 22:45  rocky
+
+	* test/: Makefile.am, check_nrg.sh, videocd.right: Add a single NRG
+	test.
+
+2003-04-23 22:02  rocky
+
+	* NEWS: [no log message]
+
 2003-04-23 18:05  rocky
 
 	* lib/_cdio_nrg.c, test/svcdgs.right: More blind guesses to CUES
