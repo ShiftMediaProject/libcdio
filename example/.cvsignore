@@ -5,6 +5,7 @@ Makefile
 Makefile.in
 cdtext
 copying
+device
 drives
 iso?
 iso?cpp
