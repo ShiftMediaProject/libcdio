@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.12 2003/05/16 07:18:27 rocky Exp $
+    $Id: cdio.c,v 1.13 2003/05/16 07:36:48 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.12 2003/05/16 07:18:27 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.13 2003/05/16 07:36:48 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -141,18 +141,18 @@ int
 cdio_eject_media (CdIo **obj)
 {
   
-  if ((obj == NULL) || (*obj != NULL)) return 1;
+  if ((obj == NULL) || (*obj == NULL)) return 1;
 
   if ((*obj)->op.eject_media) {
     int ret = (*obj)->op.eject_media ((*obj)->user_data);
     if (0 == ret) {
       cdio_destroy(*obj);
-      obj = NULL;
+      *obj = NULL;
     }
     return ret;
   } else {
     cdio_destroy(*obj);
-    obj = NULL;
+    *obj = NULL;
     return 2;
   }
 }
