@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.51 2004/11/07 06:36:53 rocky Exp $
+    $Id: aspi32.c,v 1.52 2004/11/07 06:42:16 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.51 2004/11/07 06:36:53 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.52 2004/11/07 06:42:16 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -704,7 +704,7 @@ read_toc_aspi (_img_private_t *p_env)
     for( i = 0 ; i <= p_env->gen.i_tracks ; i++ ) {
       int i_index = 8 + 8 * i;
       unsigned char *p = &(p_fulltoc[ i_index ]);
-      p_env->tocent[ i ].start_lsn = CDIO_GET_LEN_32(p);
+      p_env->tocent[ i ].start_lsn = CDIO_MMC_GET_LEN32(p);
       p_env->tocent[ i ].Control   = (UCHAR)p_fulltoc[ 1 + 8 * i ];
       
       cdio_debug( "p_sectors: %i %lu", 
