@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.14 2003/09/29 02:56:23 rocky Exp $
+#   $Id: Makefile.am,v 1.15 2003/10/03 01:10:50 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,7 +20,11 @@
 # Things to regression testing
 ####################################################
 #
-noinst_PROGRAMS = testassert testischar testdefault testiso9660 check_sizeof
+#
+# There's a problem with doing make distcheck for testdefault. 
+# A reminder of why I hate automake.
+hack = testassert testischar testiso9660 check_sizeof
+noinst_PROGRAMS = $(hack) testdefault 
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
@@ -32,7 +36,7 @@ check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 
 check_SCRIPTS = check_nrg.sh check_cue.sh check_cd_read.sh check_opts.sh
 
-check_PROGRAMS = $(noinst_PROGRAMS)
+check_PROGRAMS = $(hack)
 
 check_DATA = vcd_demo.right \
 	     videocd.right videocd.nrg \
