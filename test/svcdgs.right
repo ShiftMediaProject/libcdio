@@ -11,4 +11,64 @@ __________________________________
 CD Analysis Report
 CD-ROM with ISO 9660 filesystem
 ISO 9660: 6610 blocks, label `SVCD                            '
+ISO9660 filesystem
+ root dir in PVD set to lsn 20
+
+/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  AUTORUN
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  DATA
+  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048  EXT
+  d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048  MPEGAV
+  d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048  SEGMENT
+  d d---1xrxrxr 0 0 [fn 00] [LSN     26]      2048  SVCD
+  d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048  VMP
+
+/AUTORUN/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
+
+/DATA/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN    300]      2048  SVCDDATA
+
+/DATA/SVCDDATA/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN    300]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  ..
+
+/EXT/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
+
+/MPEGAV/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
+  - ---2--r-r-r 0 0 [fn 01] [LSN    463]  13909140 ( 12257280)  AVSEQ01.MPG;1
+
+/SEGMENT/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
+
+/SVCD/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     26]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
+  - ----1-rxrxr 0 0 [fn 00] [LSN    151]      2048  ENTRIES.SVD;1
+  - ----1-rxrxr 0 0 [fn 00] [LSN    150]      2048  INFO.SVD;1
+  - ----1-rxrxr 0 0 [fn 00] [LSN    152]     65536  LOT.SVD;1
+  - ----1-rxrxr 0 0 [fn 00] [LSN    184]        16  PSD.SVD;1
+  - ----1-rxrxr 0 0 [fn 00] [LSN    188]       427  SEARCH.DAT;1
+  - ----1-rxrxr 0 0 [fn 00] [LSN    186]      4096  SPICONTX.SVD;1
+  - ----1-rxrxr 0 0 [fn 00] [LSN    185]      2048  TRACKS.SVD;1
+
+/VMP/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN     28]      2048  SVCDJ
+
+/VMP/SVCDJ/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     28]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048  ..
+
 XA sectors   Chaoji Video CD (CVD)

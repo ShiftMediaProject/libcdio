@@ -12,6 +12,74 @@ __________________________________
 CD Analysis Report
 CD-ROM with CD-RTOS and ISO 9660 filesystem
 ISO 9660: 1032 blocks, label `V0469                           '
+ISO9660 filesystem
+ root dir in PVD set to lsn 18
+
+/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048  EXT
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  MPEGAV
+  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  SEGMENT
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  Sources
+  d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048  VCD
+
+/EXT/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
+  - ----1xrxrxr 0 0 [fn 01] [LSN    375]     65536  LOT_X.VCD;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    407]       144  PSD_X.VCD;1
+
+/MPEGAV/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
+  - ---2-xrxrxr 0 0 [fn 01] [LSN   1182]    904036 (   796672)  AVSEQ01.DAT;1
+  - ---2-xrxrxr 0 0 [fn 02] [LSN   1721]    904036 (   796672)  AVSEQ02.DAT;1
+
+/SEGMENT/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
+  - ---2-xrxrxr 0 0 [fn 01] [LSN    225]    220780 (   194560)  ITEM0001.DAT;1
+
+/Sources/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048  HTML
+  - ----1xrxrxr 0 0 [fn 01] [LSN    434]       842  index.htm;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    435]   1216557  menu.ppm;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN   1030]      2793  source.xml;1
+
+/Sources/HTML/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  ..
+  - ----1xrxrxr 0 0 [fn 01] [LSN    425]      1067  0.xml;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    426]      1067  1.xml;1
+  d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048  img
+  - ----1xrxrxr 0 0 [fn 01] [LSN    427]      1327  movies.css;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    428]     12024  toc.xsl;1
+
+/Sources/HTML/img/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048  ..
+  - ----1xrxrxr 0 0 [fn 01] [LSN    408]      1999  AL.gif;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    409]      7626  Loeki_Groep_01.gif;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    413]      9986  Loeki_Groep_02.gif;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    418]       207  a_left.gif;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    419]       207  a_right.gif;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    420]       441  animatie.gif;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    421]       250  face_up2.gif;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    422]       259  familie.gif;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    423]      1010  goldstar2.gif;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    424]      1783  vcd.gif;1
+
+/VCD/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
+  - ----1xrxrxr 0 0 [fn 00] [LSN    151]      2048  ENTRIES.VCD;1
+  - ----1xrxrxr 0 0 [fn 00] [LSN    150]      2048  INFO.VCD;1
+  - ----1xrxrxr 0 0 [fn 00] [LSN    152]     65536  LOT.VCD;1
+  - ----1xrxrxr 0 0 [fn 00] [LSN    184]        72  PSD.VCD;1
+
 XA sectors   Video CD   
 session #2 starts at track  2, LSN:   1182, ISO 9660 blocks:   1032
 ISO 9660: 1032 blocks, label `V0469                           '

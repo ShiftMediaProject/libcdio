@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.7 2003/08/31 05:00:44 rocky Exp $
+    $Id: iso9660.h,v 1.8 2003/08/31 06:59:23 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -24,6 +24,8 @@
 
 /* Will eventually need/use glib.h */
 #include <cdio/types.h>
+
+#include <cdio/cdio.h>
 
 #define MIN_TRACK_SIZE 4*75
 
@@ -111,6 +113,8 @@ typedef struct iso9660_dir iso9660_dir_t;
 
 PRAGMA_END_PACKED
 
+typedef struct iso9660_stat iso9660_stat_t;
+
 char *
 iso9660_strncpy_pad(char dst[], const char src[], size_t len, 
                     enum strncpy_pad_check _check);
@@ -163,21 +167,11 @@ iso9660_dir_add_entry_su (void *dir, const char name[], uint32_t extent,
 unsigned
 iso9660_dir_calc_record_size (unsigned namelen, unsigned int su_len);
 
-/* pathtable */
+int
+iso9660_fs_stat (CdIo *obj,const char pathname[], iso9660_stat_t *buf);
 
-void
-iso9660_pathtable_init (void *pt);
-
-unsigned int
-iso9660_pathtable_get_size (const void *pt);
-
-uint16_t
-iso9660_pathtable_l_add_entry (void *pt, const char name[], uint32_t extent,
-                               uint16_t parent);
-
-uint16_t
-iso9660_pathtable_m_add_entry (void *pt, const char name[], uint32_t extent,
-                       uint16_t parent);
+void * /* list of char* -- caller must free it */
+iso9660_fs_readdir (CdIo *obj, const char pathname[]);
 
 uint8_t
 iso9660_get_dir_len(const iso9660_dir_t *idr);
@@ -208,7 +202,54 @@ iso9660_get_pvd_version(const iso9660_pvd_t *pvd) ;
 lsn_t
 iso9660_get_root_lsn(const iso9660_pvd_t *pvd);
 
+/* pathtable */
 
+void
+iso9660_pathtable_init (void *pt);
+
+unsigned int
+iso9660_pathtable_get_size (const void *pt);
+
+uint16_t
+iso9660_pathtable_l_add_entry (void *pt, const char name[], uint32_t extent,
+                               uint16_t parent);
+
+uint16_t
+iso9660_pathtable_m_add_entry (void *pt, const char name[], uint32_t extent,
+                       uint16_t parent);
+
+
+/*!
+  Returns a string which interpreting the extended attribute xa_attr. 
+  For example:
+  \verbatim
+  d---1xrxrxr
+  ---2--r-r-r
+  -a--1xrxrxr
+  \endverbatim
+  
+  A description of the characters in the string follows
+  The 1st character is either "d" if the entry is a directory, or "-" if not
+  The 2nd character is either "a" if the entry is CDDA (audio), or "-" if not
+  The 3rd character is either "i" if the entry is interleaved, or "-" if not
+  The 4th character is either "2" if the entry is mode2 form2 or "-" if not
+  The 5th character is either "1" if the entry is mode2 form1 or "-" if not
+  Note that an entry will either be in mode2 form1 or mode form2. That
+  is you will either see "2-" or "-1" in the 4th & 5th positions.
+  
+  The 6th and 7th characters refer to permissions for everyone while the
+  the 8th and 9th characters refer to permissions for a group while, and 
+  the 10th and 11th characters refer to permissions for a user. 
+  
+  In each of these pairs the first character (6, 8, 10) is "x" if the 
+  entry is executable. For a directory this means the directory is
+  allowed to be listed or "searched".
+  The second character of a pair (7, 9, 11) is "r" if the entry is allowed
+  to be read. 
+*/
+const char *
+iso9660_get_xa_attr_str (uint16_t xa_attr);
+  
 #endif /* __CDIO_ISO9660_H__ */
 
 

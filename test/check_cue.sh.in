@@ -1,11 +1,13 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.4 2003/08/29 11:10:01 rocky Exp $
+#$Id: check_cue.sh.in,v 1.5 2003/08/31 06:59:23 rocky Exp $
 if test -n "@CDDB_LIB@" ; then
   cddb_opt='--no-cddb'
 fi
 
 if test -n "@VCDINFO_LIBS@" ; then
   vcd_opt='--no-vcd'
+else 
+  vcd_opt='--iso9660'
 fi
 
 if test -z $srcdir ; then

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.24 2003/08/31 04:02:05 rocky Exp $
+    $Id: cd-info.c,v 1.25 2003/08/31 06:59:23 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -53,8 +53,10 @@
 #include <cdio/logging.h>
 #include <cdio/util.h>
 #include <cdio/cd_types.h>
+#include <cdio/iso9660.h>
 
 #include "ds.h"
+#include "xa.h"
 #include "iso9660_private.h"
 
 #include <fcntl.h>
@@ -157,6 +159,7 @@ struct arguments
   int            silent;
   int            version_only;
   int            no_header;
+  int            print_iso9660;
   source_image_t source_image;
 } opts;
      
@@ -242,6 +245,9 @@ struct poptOption optionsTable[] = {
    OP_SOURCE_AUTO,
    "set source and determine if \"bin\" image or device", "FILE"},
   
+  {"iso9660",  '\0', POPT_ARG_NONE, &opts.print_iso9660, 0,
+   "print directory contents of any ISO-9660 filesystems"},
+
   {"cdrom-device", 'C', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
    OP_SOURCE_DEVICE,
    "set CD-ROM device as source", "DEVICE"},
@@ -590,15 +596,14 @@ print_vcd_info(void) {
 }
 #endif 
 
-#if ISO9600_FINISHED
 static void
-print_iso9660_recurse (const CdIo *cdio, const char pathname[])
+print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs)
 {
   CdioList *entlist;
   CdioList *dirlist =  _cdio_list_new ();
   CdioListNode *entnode;
 
-  entlist = vcd_image_source_fs_readdir (cdio, pathname);
+  entlist = iso9660_fs_readdir (cdio, pathname);
     
   printf ("%s:\n", pathname);
 
@@ -610,11 +615,11 @@ print_iso9660_recurse (const CdIo *cdio, const char pathname[])
     {
       char *_name = _cdio_list_node_data (entnode);
       char _fullname[4096] = { 0, };
-      vcd_image_stat_t statbuf;
+      iso9660_stat_t statbuf;
 
       snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, _name);
   
-      if (vcd_image_source_fs_stat (cdio, _fullname, &statbuf))
+      if (iso9660_fs_stat (cdio, _fullname, &statbuf))
         cdio_assert_not_reached ();
 
       strncat (_fullname, "/", sizeof (_fullname));
@@ -624,23 +629,24 @@ print_iso9660_recurse (const CdIo *cdio, const char pathname[])
           && strcmp (_name, ".."))
         _cdio_list_append (dirlist, strdup (_fullname));
 
-      printf ( "  %c %s %d %d [fn %.2d] [LSN %6d] ",
-               (statbuf.type == _STAT_DIR) ? 'd' : '-',
-               vcdinfo_get_xa_attr_str (statbuf.xa.attributes),
-               uint16_from_be (statbuf.xa.user_id),
-               uint16_from_be (statbuf.xa.group_id),
-               statbuf.xa.filenum,
-               statbuf.lsn);
-
-      if (uint16_from_be(statbuf.xa.attributes) & XA_ATTR_MODE2FORM2) {
-        printf ("%9d (%9d)",
-                 statbuf.secsize * M2F2_SECTOR_SIZE,
-                 statbuf.size);
-      } else {
-        printf ("%9d", statbuf.size);
+      if (fs & CDIO_FS_ANAL_XA) {
+	printf ( "  %c %s %d %d [fn %.2d] [LSN %6d] ",
+		 (statbuf.type == _STAT_DIR) ? 'd' : '-',
+		 iso9660_get_xa_attr_str (statbuf.xa.attributes),
+		 uint16_from_be (statbuf.xa.user_id),
+		 uint16_from_be (statbuf.xa.group_id),
+		 statbuf.xa.filenum,
+		 statbuf.lsn);
+	
+	if (uint16_from_be(statbuf.xa.attributes) & XA_ATTR_MODE2FORM2) {
+	  printf ("%9d (%9d)",
+		  statbuf.secsize * M2F2_SECTOR_SIZE,
+		  statbuf.size);
+	} else {
+	  printf ("%9d", statbuf.size);
+	}
       }
       printf ("  %s\n", _name);
-
     }
 
   _cdio_list_free (entlist, true);
@@ -653,14 +659,14 @@ print_iso9660_recurse (const CdIo *cdio, const char pathname[])
     {
       char *_fullname = _cdio_list_node_data (entnode);
 
-      print_iso9660_recurse (cdio, _fullname);
+      print_iso9660_recurse (cdio, _fullname, fs);
     }
 
   _cdio_list_free (dirlist, true);
 }
 
 static void
-print_iso9660_fs (CdIo *cdio)
+print_iso9660_fs (CdIo *cdio, cdio_fs_anal_t fs)
 {
   iso9660_pvd_t pvd;
 
@@ -672,10 +678,9 @@ print_iso9660_fs (CdIo *cdio)
     printf ("ISO9660 filesystem\n");
     printf (" root dir in PVD set to lsn %d\n\n", extent);
     
-    print_iso9660_recurse (cdio, "/");
+    print_iso9660_recurse (cdio, "/", fs);
   }
 }
-#endif /*ISO9600_FINISHED*/
 
 static void
 print_analysis(int ms_offset, cdio_analysis_t cdio_analysis, 
@@ -737,6 +742,8 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
   case CDIO_FS_ISO_HFS:
     printf("ISO 9660: %i blocks, label `%.32s'\n",
 	   cdio_analysis.isofs_size, cdio_analysis.iso_label);
+    if (opts.print_iso9660) 
+      print_iso9660_fs(cdio, fs);
     break;
   }
   need_lf = 0;
@@ -813,6 +820,7 @@ main(int argc, const char *argv[])
   opts.no_header     = false;
   opts.debug_level   = 0;
   opts.no_tracks     = 0;
+  opts.print_iso9660 = 0;
 #ifdef HAVE_CDDB
   opts.no_cddb       = 0;
   opts.cddb_port     = 8880;

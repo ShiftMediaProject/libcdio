@@ -11,6 +11,42 @@ __________________________________
 CD Analysis Report
 CD-ROM with CD-RTOS and ISO 9660 filesystem
 ISO 9660: 376 blocks, label `SVCD_OGT_TEST_NTSC              '
+ISO9660 filesystem
+ root dir in PVD set to lsn 18
+
+/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048  EXT
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  MPEG2
+  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  SEGMENT
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  SVCD
+
+/EXT/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
+  - ----1xrxrxr 0 0 [fn 00] [LSN    375]       201  SCANDATA.DAT;1
+
+/MPEG2/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
+  - ---2-xrxrxr 0 0 [fn 00] [LSN    526]   7971320 (  7024640)  AVSEQ01.MPG;1
+
+/SEGMENT/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
+  - ---2-xrxrxr 0 0 [fn 00] [LSN    225]    183596 (   161792)  ITEM0001.MPG;1
+
+/SVCD/:
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
+  - ----1xrxrxr 0 0 [fn 00] [LSN    151]      2048  ENTRIES.SVD;1
+  - ----1xrxrxr 0 0 [fn 00] [LSN    150]      2048  INFO.SVD;1
+  - ----1xrxrxr 0 0 [fn 00] [LSN    152]     65536  LOT.SVD;1
+  - ----1xrxrxr 0 0 [fn 00] [LSN    184]        40  PSD.SVD;1
+  - ----1xrxrxr 0 0 [fn 00] [LSN    186]       190  SEARCH.DAT;1
+  - ----1xrxrxr 0 0 [fn 00] [LSN    185]      2048  TRACKS.SVD;1
+
 XA sectors   Super Video CD (SVCD) or Chaoji Video CD (CVD)
 session #2 starts at track  2, LSN:    526, ISO 9660 blocks:    376
 ISO 9660: 376 blocks, label `SVCD_OGT_TEST_NTSC              '
