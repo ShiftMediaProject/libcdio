@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.9 2005/01/24 00:06:31 rocky Exp $
+    $Id: nrg.c,v 1.10 2005/02/03 07:35:16 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.9 2005/01/24 00:06:31 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.10 2005/02/03 07:35:16 rocky Exp $";
 
 
 /* reader */
@@ -81,7 +81,7 @@ _register_mapping (_img_private_t *env, lsn_t start_lsn, uint32_t sec_count,
 {
   const int track_num=env->gen.i_tracks;
   track_info_t  *this_track=&(env->tocent[env->gen.i_tracks]);
-  _mapping_t *_map = _cdio_malloc (sizeof (_mapping_t));
+  _mapping_t *_map = calloc(1, sizeof (_mapping_t));
 
   _map->start_lsn  = start_lsn;
   _map->sec_count  = sec_count;
@@ -208,7 +208,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 
     cdio_assert (IN ((size - footer_start), 0, 4096));
 
-    footer_buf = _cdio_malloc (size - footer_start);
+    footer_buf = calloc(1, size - footer_start);
 
     cdio_stream_seek (p_env->gen.data_source, footer_start, SEEK_SET);
     cdio_stream_read (p_env->gen.data_source, footer_buf, 
@@ -372,7 +372,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	  int disc_mode;
 
 	  /* We include an extra 0 byte so these can be used as C strings.*/
-	  p_env->psz_mcn    = _cdio_malloc (CDIO_MCN_SIZE+1);
+	  p_env->psz_mcn    = calloc(1, CDIO_MCN_SIZE+1);
 
 	  if (DAOX_ID == opcode) {
 	    _daox_array_t *_entries = (void *) chunk->data;
@@ -517,6 +517,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	      track_green    = false; /* ?? */
 	      blocksize      = CDIO_CD_FRAMESIZE;
 	      p_env->disc_mode = CDIO_DISC_MODE_CD_DATA;
+	      cdio_info ("Format DATA, blocksize %u", CDIO_CD_FRAMESIZE);
 	      break;
 	    case 2:
 	      /* Mode 2 form 1 */
@@ -524,6 +525,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	      track_green    = false; /* ?? */
 	      blocksize      = CDIO_CD_FRAMESIZE;
 	      p_env->disc_mode = CDIO_DISC_MODE_CD_XA;
+	      cdio_info ("Format XA, blocksize %u", CDIO_CD_FRAMESIZE);
 	      break;
 	    case 3:
 	      /* Mode 2 */
@@ -531,6 +533,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	      track_green    = true;
 	      blocksize      = M2RAW_SECTOR_SIZE;
 	      p_env->disc_mode = CDIO_DISC_MODE_CD_XA; /* ?? */
+	      cdio_info ("Format XA, blocksize %u", M2RAW_SECTOR_SIZE);
 	      break;
 	    case 06:
 	      /* Mode2 form mix */
@@ -538,18 +541,21 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	      track_green    = true;
 	      blocksize      = M2RAW_SECTOR_SIZE;
 	      p_env->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+	      cdio_info ("Format MIXED CD, blocksize %u", M2RAW_SECTOR_SIZE);
 	      break;
 	    case 0x20: /* ??? Mode2 form 2, Mode2 raw?? */
 	      track_format   = TRACK_FORMAT_XA;
 	      track_green    = true;
 	      blocksize      = M2RAW_SECTOR_SIZE;
 	      p_env->disc_mode = CDIO_DISC_MODE_CD_XA; /* ??. */
+	      cdio_info ("Format MIXED CD, blocksize %u", M2RAW_SECTOR_SIZE);
 	      break;
 	    case 7:
 	      track_format   = TRACK_FORMAT_AUDIO;
 	      track_green    = false;
 	      blocksize      = CDIO_CD_FRAMESIZE_RAW;
 	      p_env->disc_mode = CDIO_DISC_MODE_CD_DA;
+	      cdio_info ("Format CD_DA, blocksize %u", CDIO_CD_FRAMESIZE_RAW);
 	      break;
 	    default:
 	      cdio_log (log_level, 
@@ -1238,7 +1244,7 @@ cdio_open_nrg (const char *psz_source)
   _funcs.read_mode2_sectors    = _read_mode2_sectors_nrg;
   _funcs.set_arg               = _set_arg_image;
 
-  _data                   = _cdio_malloc (sizeof (_img_private_t));
+  _data                   = calloc(1, sizeof (_img_private_t));
   _data->gen.init         = false;
 
   _data->gen.i_tracks     = 0;

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.17 2005/01/24 00:10:46 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.18 2005/02/03 07:35:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.17 2005/01/24 00:10:46 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.18 2005/02/03 07:35:15 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -473,22 +473,6 @@ eject_media_solaris (void *p_user_data) {
   return DRIVER_OP_ERROR;
 }
 
-
-static void *
-_cdio_malloc_and_zero(size_t size) {
-  void *ptr;
-
-  if( !size ) size++;
-    
-  if((ptr = malloc(size)) == NULL) {
-    cdio_warn("malloc() failed: %s", strerror(errno));
-    return NULL;
-  }
-
-  memset(ptr, 0, size);
-  return ptr;
-}
-
 /*!
   Return the value associated with the key "arg".
 */
@@ -529,7 +513,7 @@ cdio_get_default_device_solaris(void)
       (volume_action = getenv("VOLUME_ACTION")) != NULL &&
       strcmp(volume_action, "insert") == 0) {
 
-    device = _cdio_malloc_and_zero(strlen(volume_device) 
+    device = calloc(1, strlen(volume_device) 
 				  + strlen(volume_name) + 2);
     if (device == NULL)
       return strdup(DEFAULT_CDIO_DEVICE);
@@ -542,7 +526,7 @@ cdio_get_default_device_solaris(void)
   }
   /* Check if it could be a Solaris media*/
   if((stat(DEFAULT_CDIO_DEVICE, &stb) == 0) && S_ISDIR(stb.st_mode)) {
-    device = _cdio_malloc_and_zero(strlen(DEFAULT_CDIO_DEVICE) + 4);
+    device = calloc(1, strlen(DEFAULT_CDIO_DEVICE) + 4);
     sprintf(device, "%s/s0", DEFAULT_CDIO_DEVICE);
     return device;
   }
@@ -893,7 +877,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.set_blocksize          = set_blocksize_mmc;
   _funcs.set_speed              = set_speed_solaris;
 
-  _data                 = _cdio_malloc (sizeof (_img_private_t));
+  _data                 = calloc(1, sizeof (_img_private_t));
 
   _data->access_mode    = _AM_SUN_CTRL_SCSI;
   _data->gen.init       = false;

@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.11 2005/01/24 00:06:31 rocky Exp $
+    $Id: cdrdao.c,v 1.12 2005/02/03 07:35:16 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.11 2005/01/24 00:06:31 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.12 2005/02/03 07:35:16 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1142,7 +1142,7 @@ cdio_get_default_device_cdrdao(void)
 }
 
 static bool
-get_hwinfo_cdrdao ( const CdIo *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
+get_hwinfo_cdrdao ( const CdIo_t *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
 {
   strcpy(hw_info->psz_vendor, "libcdio");
   strcpy(hw_info->psz_model, "cdrdao");
@@ -1238,7 +1238,7 @@ cdio_is_tocfile(const char *psz_cue_name)
   get called via a function pointer. In fact *we* are the
   ones to set that up.
  */
-CdIo *
+CdIo_t *
 cdio_open_am_cdrdao (const char *psz_source_name, const char *psz_access_mode)
 {
   if (psz_access_mode != NULL && strcmp(psz_access_mode, "image"))
@@ -1252,11 +1252,11 @@ cdio_open_am_cdrdao (const char *psz_source_name, const char *psz_access_mode)
   get called via a function pointer. In fact *we* are the
   ones to set that up.
  */
-CdIo *
+CdIo_t *
 cdio_open_cdrdao (const char *psz_cue_name)
 {
-  CdIo *ret;
-  _img_private_t *_data;
+  CdIo_t *ret;
+  _img_private_t *p_data;
 
   cdio_funcs_t _funcs;
   
@@ -1295,16 +1295,16 @@ cdio_open_cdrdao (const char *psz_cue_name)
 
   if (NULL == psz_cue_name) return NULL;
   
-  _data                  = _cdio_malloc (sizeof (_img_private_t));
-  _data->gen.init        = false;
-  _data->psz_cue_name    = NULL;
-  _data->gen.data_source = NULL;
-  _data->gen.source_name = NULL;
+  p_data                  = calloc(1, sizeof (_img_private_t));
+  p_data->gen.init        = false;
+  p_data->psz_cue_name    = NULL;
+  p_data->gen.data_source = NULL;
+  p_data->gen.source_name = NULL;
 
-  ret = cdio_new ((void *)_data, &_funcs);
+  ret = cdio_new ((void *)p_data, &_funcs);
 
   if (ret == NULL) {
-    free(_data);
+    free(p_data);
     return NULL;
   }
 
@@ -1315,14 +1315,14 @@ cdio_open_cdrdao (const char *psz_cue_name)
     return NULL;
   }
   
-  _set_arg_image (_data, "cue", psz_cue_name);
-  _set_arg_image (_data, "source", psz_cue_name);
-  _set_arg_image (_data, "access-mode", "cdrdao");
+  _set_arg_image (p_data, "cue", psz_cue_name);
+  _set_arg_image (p_data, "source", psz_cue_name);
+  _set_arg_image (p_data, "access-mode", "cdrdao");
 
-  if (_init_cdrdao(_data)) {
+  if (_init_cdrdao(p_data)) {
     return ret;
   } else {
-    _free_image(_data);
+    _free_image(p_data);
     free(ret);
     return NULL;
   }

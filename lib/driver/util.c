@@ -1,8 +1,8 @@
 /*
-    $Id: util.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: util.c,v 1.2 2005/02/03 07:35:15 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@
 #include <cdio/types.h>
 #include <cdio/util.h>
 
-static const char _rcsid[] = "$Id: util.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: util.c,v 1.2 2005/02/03 07:35:15 rocky Exp $";
 
 size_t
 _cdio_strlenv(char **str_array)
@@ -81,7 +81,7 @@ _cdio_strjoin (char *strv[], unsigned count, const char delim[])
 
   len++;
 
-  new_str = _cdio_malloc (len);
+  new_str = calloc (1, len);
   new_str[0] = '\0';
 
   for (n = 0;n < count;n++)
@@ -115,7 +115,7 @@ _cdio_strsplit(const char str[], char delim) /* fixme -- non-reentrant */
     if (*(p++) == delim)
       n++;
 
-  strv = _cdio_malloc (sizeof (char *) * (n+1));
+  strv = calloc (1, sizeof (char *) * (n+1));
   
   n = 0;
   while((p = strtok(n ? NULL : _str, _delim)) != NULL) 
@@ -127,25 +127,13 @@ _cdio_strsplit(const char str[], char delim) /* fixme -- non-reentrant */
 }
 
 void *
-_cdio_malloc (size_t size)
-{
-  void *new_mem = malloc (size);
-
-  cdio_assert (new_mem != NULL);
-
-  memset (new_mem, 0, size);
-
-  return new_mem;
-}
-
-void *
 _cdio_memdup (const void *mem, size_t count)
 {
   void *new_mem = NULL;
 
   if (mem)
     {
-      new_mem = _cdio_malloc (count);
+      new_mem = calloc (1, count);
       memcpy (new_mem, mem, count);
     }
   

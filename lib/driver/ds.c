@@ -1,5 +1,5 @@
 /*
-    $Id: ds.c,v 1.2 2005/01/12 11:34:52 rocky Exp $
+    $Id: ds.c,v 1.3 2005/02/03 07:35:15 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
@@ -31,7 +31,7 @@
 #include <cdio/types.h>
 #include "cdio_assert.h"
 
-static const char _rcsid[] = "$Id: ds.c,v 1.2 2005/01/12 11:34:52 rocky Exp $";
+static const char _rcsid[] = "$Id: ds.c,v 1.3 2005/02/03 07:35:15 rocky Exp $";
 
 struct _CdioList
 {
@@ -55,7 +55,7 @@ struct _CdioListNode
 CdioList_t *
 _cdio_list_new (void)
 {
-  CdioList_t *p_new_obj = _cdio_malloc (sizeof (CdioList_t));
+  CdioList_t *p_new_obj = calloc (1, sizeof (CdioList_t));
 
   return p_new_obj;
 }
@@ -84,7 +84,7 @@ _cdio_list_prepend (CdioList_t *p_list, void *p_data)
 
   cdio_assert (p_list != NULL);
 
-  p_new_node = _cdio_malloc (sizeof (CdioListNode_t));
+  p_new_node = calloc (1, sizeof (CdioListNode_t));
   
   p_new_node->list = p_list;
   p_new_node->next = p_list->begin;
@@ -108,7 +108,7 @@ _cdio_list_append (CdioList_t *p_list, void *p_data)
     }
   else
     {
-      CdioListNode_t *p_new_node = _cdio_malloc (sizeof (CdioListNode_t));
+      CdioListNode_t *p_new_node = calloc (1, sizeof (CdioListNode_t));
       
       p_new_node->list = p_list;
       p_new_node->next = NULL;

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.19 2005/01/24 00:06:31 rocky Exp $
+    $Id: _cdio_linux.c,v 1.20 2005/02/03 07:35:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.19 2005/01/24 00:06:31 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.20 2005/02/03 07:35:15 rocky Exp $";
 
 #include <string.h>
 
@@ -1171,7 +1171,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .set_speed             = set_speed_linux,
   };
 
-  _data                 = _cdio_malloc (sizeof (_img_private_t));
+  _data                 = calloc (1, sizeof (_img_private_t));
 
   _data->access_mode    = str_to_access_mode_linux(access_mode);
   _data->gen.init       = false;

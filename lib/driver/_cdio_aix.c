@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_aix.c,v 1.8 2005/01/24 17:36:56 rocky Exp $
+    $Id: _cdio_aix.c,v 1.9 2005/02/03 07:35:14 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -37,7 +37,7 @@
 
 #ifdef HAVE_AIX_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.8 2005/01/24 17:36:56 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.9 2005/02/03 07:35:14 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -963,7 +963,7 @@ cdio_open_am_aix (const char *psz_orig_source, const char *access_mode)
   _funcs.run_scsi_mmc_cmd   = run_scsi_cmd_aix;
   _funcs.set_arg            = _set_arg_aix;
 
-  _data                 = _cdio_malloc (sizeof (_img_private_t));
+  _data                 = calloc (1, sizeof (_img_private_t));
 
   _data->access_mode    = _AM_CTRL_SCSI;
   _data->gen.init       = false;

@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.10 2005/01/30 10:05:37 rocky Exp $
+    $Id: bincue.c,v 1.11 2005/02/03 07:35:16 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.10 2005/01/30 10:05:37 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.11 2005/02/03 07:35:16 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1128,7 +1128,7 @@ CdIo_t *
 cdio_open_cue (const char *psz_cue_name)
 {
   CdIo_t *ret;
-  _img_private_t *_data;
+  _img_private_t *p_data;
   char *psz_bin_name;
   
   cdio_funcs_t _funcs;
@@ -1166,14 +1166,14 @@ cdio_open_cue (const char *psz_cue_name)
   
   if (NULL == psz_cue_name) return NULL;
   
-  _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->gen.init       = false;
-  _data->psz_cue_name   = NULL;
+  p_data                 = calloc(1, sizeof (_img_private_t));
+  p_data->gen.init       = false;
+  p_data->psz_cue_name   = NULL;
   
-  ret = cdio_new ((void *)_data, &_funcs);
+  ret = cdio_new ((void *)p_data, &_funcs);
   
   if (ret == NULL) {
-    free(_data);
+    free(p_data);
     return NULL;
   }
   
@@ -1185,15 +1185,15 @@ cdio_open_cue (const char *psz_cue_name)
 		psz_cue_name);
   }
   
-  _set_arg_image (_data, "cue", psz_cue_name);
-  _set_arg_image (_data, "source", psz_bin_name);
-  _set_arg_image (_data, "access-mode", "bincue");
+  _set_arg_image (p_data, "cue", psz_cue_name);
+  _set_arg_image (p_data, "source", psz_bin_name);
+  _set_arg_image (p_data, "access-mode", "bincue");
   free(psz_bin_name);
   
-  if (_init_bincue(_data)) {
+  if (_init_bincue(p_data)) {
     return ret;
   } else {
-    _free_image(_data);
+    _free_image(p_data);
     free(ret);
     return NULL;
   }

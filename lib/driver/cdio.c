@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.12 2005/01/27 03:10:06 rocky Exp $
+    $Id: cdio.c,v 1.13 2005/02/03 07:35:15 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/util.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.12 2005/01/27 03:10:06 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.13 2005/02/03 07:35:15 rocky Exp $";
 
 
 /*!
@@ -76,7 +76,7 @@ cdio_get_cdtext (CdIo *obj, track_t i_track)
 CdIo_t *
 cdio_new (generic_img_private_t *p_env, cdio_funcs_t *p_funcs)
 {
-  CdIo_t *p_new_cdio = _cdio_malloc (sizeof (CdIo_t));
+  CdIo_t *p_new_cdio = calloc(1, sizeof (CdIo_t));
 
   if (NULL == p_new_cdio) return NULL;
   

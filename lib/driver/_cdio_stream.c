@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.c,v 1.4 2005/01/22 11:22:00 rocky Exp $
+    $Id: _cdio_stream.c,v 1.5 2005/02/03 07:35:15 rocky Exp $
 
     Copyright (C) 2000, 2004, 2005 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
@@ -35,7 +35,7 @@
 #include <cdio/util.h>
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.4 2005/01/22 11:22:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.5 2005/02/03 07:35:15 rocky Exp $";
 
 /* 
  * DataSource implementations
@@ -114,7 +114,7 @@ cdio_stream_new(void *user_data, const cdio_stream_io_functions *funcs)
 {
   CdioDataSource_t *new_obj;
 
-  new_obj = _cdio_malloc (sizeof (CdioDataSource_t));
+  new_obj = calloc (1, sizeof (CdioDataSource_t));
 
   new_obj->user_data = user_data;
   memcpy(&(new_obj->op), funcs, sizeof(cdio_stream_io_functions));

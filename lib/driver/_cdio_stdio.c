@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stdio.c,v 1.2 2005/01/20 01:00:52 rocky Exp $
+    $Id: _cdio_stdio.c,v 1.3 2005/02/03 07:35:15 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -39,7 +39,7 @@
 #include "_cdio_stream.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.2 2005/01/20 01:00:52 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.3 2005/02/03 07:35:15 rocky Exp $";
 
 #define CDIO_STDIO_BUFSIZE (128*1024)
 
@@ -57,7 +57,7 @@ _stdio_open (void *user_data)
   
   if ((ud->fd = fopen (ud->pathname, "rb")))
     {
-      ud->fd_buf = _cdio_malloc (CDIO_STDIO_BUFSIZE);
+      ud->fd_buf = calloc (1, CDIO_STDIO_BUFSIZE);
       setvbuf (ud->fd, ud->fd_buf, _IOFBF, CDIO_STDIO_BUFSIZE);
     }
 
@@ -199,7 +199,7 @@ cdio_stdio_new(const char pathname[])
       return NULL;
     }
 
-  ud = _cdio_malloc (sizeof (_UserData));
+  ud = calloc (1, sizeof (_UserData));
 
   ud->pathname = strdup(pathname);
   ud->st_size  = statbuf.st_size; /* let's hope it doesn't change... */

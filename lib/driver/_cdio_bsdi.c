@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.10 2005/01/24 00:13:22 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.11 2005/02/03 07:35:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.10 2005/01/24 00:13:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.11 2005/02/03 07:35:15 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -788,7 +788,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .set_arg            = _set_arg_bsdi,
   };
 
-  _data                 = _cdio_malloc (sizeof (_img_private_t));
+  _data                 = calloc (1, sizeof (_img_private_t));
   _data->access_mode    = _AM_IOCTL;
   _data->gen.init       = false;
   _data->gen.fd         = -1;
