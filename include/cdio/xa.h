@@ -1,5 +1,5 @@
 /*
-    $Id: xa.h,v 1.8 2004/03/04 04:48:37 rocky Exp $
+    $Id: xa.h,v 1.9 2004/06/26 00:47:50 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -66,7 +66,7 @@
 #define XA_FORM1_FILE   (XA_ATTR_MODE2FORM1 | XA_PERM_ALL_ALL)
 #define XA_FORM2_FILE   (XA_ATTR_MODE2FORM2 | XA_PERM_ALL_ALL)
 
-/*! \brief "Extended Architecture according t the Philips Yellow Book.
+/*! \brief "Extended Architecture according to the Philips Yellow Book.
  
 CD-ROM EXtended Architecture is a modification to the CD-ROM
 specification that defines two new types of sectors.  CD-ROM XA was
