@@ -1,7 +1,7 @@
 /*
-    $Id: _cdio_osx.c,v 1.2 2004/12/22 09:09:55 rocky Exp $
+    $Id: _cdio_osx.c,v 1.3 2005/01/06 04:09:47 rocky Exp $
 
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     and VideoLAN code Copyright (C) 1998-2001 VideoLAN
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.2 2004/12/22 09:09:55 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.3 2005/01/06 04:09:47 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -957,6 +957,8 @@ read_toc_osx (void *p_user_data)
 	 */
 	p_env->pp_lba[i_track - p_env->gen.i_first_track] =
 	  cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i].p ));
+	set_track_flags(&(p_env->gen.track_flags[i_track]), 
+			pTrackDescriptors[i].control);
       }
     
     if( i_leadout == -1 )
@@ -1393,28 +1395,31 @@ cdio_open_osx (const char *psz_orig_source)
     .get_arg            = _get_arg_osx,
     .get_cdtext         = get_cdtext_osx,
     .get_default_device = cdio_get_default_device_osx,
-    .get_devices        = cdio_get_devices_osx,
-    .get_discmode       = get_discmode_osx,
-    .get_drive_cap      = get_drive_cap_osx,
-    .get_first_track_num= get_first_track_num_generic,
-    .get_hwinfo         = get_hwinfo_osx,
-    .get_mcn            = get_mcn_osx,
-    .get_num_tracks     = get_num_tracks_generic,
-    .get_track_format   = get_track_format_osx,
-    .get_track_green    = get_track_green_osx,
-    .get_track_lba      = get_track_lba_osx,
-    .get_track_msf      = NULL,
-    .lseek              = cdio_generic_lseek,
-    .read               = cdio_generic_read,
-    .read_audio_sectors = _get_read_audio_sectors_osx,
-    .read_mode1_sector  = _get_read_mode1_sector_osx,
-    .read_mode1_sectors = _get_read_mode1_sectors_osx,
-    .read_mode2_sector  = _get_read_mode2_sector_osx,
-    .read_mode2_sectors = _get_read_mode2_sectors_osx,
-    .read_toc           =  read_toc_osx,
-    .run_scsi_mmc_cmd   =  run_scsi_cmd_osx,
-    .set_arg            = _set_arg_osx,
-    .stat_size          = _stat_size_osx
+    .get_devices           = cdio_get_devices_osx,
+    .get_discmode          = get_discmode_osx,
+    .get_drive_cap         = get_drive_cap_osx,
+    .get_first_track_num   = get_first_track_num_generic,
+    .get_hwinfo            = get_hwinfo_osx,
+    .get_mcn               = get_mcn_osx,
+    .get_num_tracks        = get_num_tracks_generic,
+    .get_track_channels    = get_track_channels_generic,
+    .get_track_copy_permit = get_track_copy_permit_generic,
+    .get_track_format      = get_track_format_osx,
+    .get_track_green       = get_track_green_osx,
+    .get_track_lba         = get_track_lba_osx,
+    .get_track_msf         = NULL,
+    .get_track_preemphasis = get_track_preemphasis_generic,
+    .lseek                 = cdio_generic_lseek,
+    .read                  = cdio_generic_read,
+    .read_audio_sectors    = _get_read_audio_sectors_osx,
+    .read_mode1_sector     = _get_read_mode1_sector_osx,
+    .read_mode1_sectors    = _get_read_mode1_sectors_osx,
+    .read_mode2_sector     = _get_read_mode2_sector_osx,
+    .read_mode2_sectors    = _get_read_mode2_sectors_osx,
+    .read_toc              =  read_toc_osx,
+    .run_scsi_mmc_cmd      =  run_scsi_cmd_osx,
+    .set_arg               = _set_arg_osx,
+    .stat_size             = _stat_size_osx
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
