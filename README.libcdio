@@ -22,13 +22,21 @@ the VCD reporting portion and you don't already have vcdimager
 installed, build and install libcdio, then vcdimager, then configure
 libcdio again and it should find libvcdinfo. 
 
-BSD make vs GNU make
+BSD
+---
 
 Unless you use --without-versioned-libs (not recommended), you need to
 use GNU make which usually can be found under the name "gmake".
 
 If you use another make you are likely to get problems linking libcdio
 and libiso9660.
+
+
+Solaris
+-------
+
+You may need to use --without-versioned-libs if you get a problem
+building libcdio or libiso9660.
 
 OS Support
 ---------------
@@ -48,4 +56,4 @@ spent far more time on this platform than I care for. If someone is
 interested in fixing the Microsoft OS support great.
 
 
-$Id: README.libcdio,v 1.3 2004/03/01 01:32:39 rocky Exp $
+$Id: README.libcdio,v 1.4 2004/03/01 01:34:37 rocky Exp $
