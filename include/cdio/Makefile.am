@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.22 2005/02/13 00:20:04 rocky Exp $
+#   $Id: Makefile.am,v 1.23 2005/03/01 00:41:34 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,6 +23,7 @@
 
 libcdioincludedir=$(includedir)/cdio
 libcdioinclude_HEADERS = \
+	audio.h \
 	bytesex.h \
 	bytesex_asm.h \
 	paranoia.h \

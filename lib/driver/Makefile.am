@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.7 2005/02/05 13:07:02 rocky Exp $
+#   $Id: Makefile.am,v 1.8 2005/03/01 00:41:34 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -62,6 +62,7 @@ libcdio_sources = \
 	_cdio_stream.c \
 	_cdio_stream.h \
 	_cdio_sunos.c \
+	audio.c \
 	cd_types.c \
 	cdio.c \
 	cdtext.c \

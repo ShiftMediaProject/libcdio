@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.26 2005/02/10 01:59:06 rocky Exp $
+    $Id: types.h,v 1.27 2005/03/01 00:41:34 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -183,12 +183,12 @@ extern "C" {
     @see lba_t
   */
   PRAGMA_BEGIN_PACKED
-  struct msf_rec {
+  struct msf_s {
     uint8_t m, s, f;
   } GNUC_PACKED;
   PRAGMA_END_PACKED
   
-  typedef struct msf_rec msf_t;
+  typedef struct msf_s msf_t;
 
 #define msf_t_SIZEOF 3
   
@@ -217,13 +217,20 @@ extern "C" {
    */
   typedef int32_t lba_t;
   
-  /*! The type of a Logical Sector Number. Note that an lba lsn be negative
-    and the MMC3 specs allow for a conversion of a negative lba
+  /*! The type of a Logical Sector Number. Note that an lba can be negative
+    and the MMC3 specs allow for a conversion of a negative lba.
 
     @see msf_t
   */
   typedef int32_t lsn_t;
   
+  /* Address in either MSF or logical format */
+  union cdio_cdrom_addr		
+  {
+    msf_t	msf;
+    lba_t	lba;
+  };
+
   /*! The type of a track number 0..99. */
   typedef uint8_t track_t;
   

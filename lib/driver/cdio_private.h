@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.16 2005/02/17 07:03:37 rocky Exp $
+    $Id: cdio_private.h,v 1.17 2005/03/01 00:41:34 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -29,6 +29,7 @@
 #endif
 
 #include <cdio/cdio.h>
+#include <cdio/audio.h>
 #include <cdio/cdtext.h>
 #include "mmc_private.h"
 
@@ -54,11 +55,66 @@ extern "C" {
   typedef struct {
     
     /*!
+      Get volume of an audio CD.
+      
+      @param p_env the CD object to be acted upon.
+      
+    */
+    driver_return_code_t (*audio_get_volume) 
+	 (void *p_env,  /*out*/ cdio_audio_volume_t *p_volume);
+
+    /*!
+      Pause playing CD through analog output
+      
+      @param p_env the CD object to be acted upon.
+    */
+    driver_return_code_t (*audio_pause) (void *p_env);
+    
+    /*!
+      Playing CD through analog output
+      
+      @param p_env the CD object to be acted upon.
+    */
+    driver_return_code_t (*audio_play_msf) ( void *p_env, msf_t *p_msf );
+
+    /*!
+      Playing CD through analog output
+      
+      @param p_env the CD object to be acted upon.
+    */
+    driver_return_code_t (*audio_play_track_index) 
+	 ( void *p_env, cdio_track_index_t *p_track_index );
+
+    /*!
+      Get subchannel information.
+      
+      @param p_env the CD object to be acted upon.
+    */
+    driver_return_code_t (*audio_read_subchannel) 
+	 ( void *p_env, cdio_subchannel_t *subchannel );
+
+    /*!
+      Resume playing an audio CD.
+      
+      @param p_env the CD object to be acted upon.
+      
+    */
+    driver_return_code_t (*audio_resume) ( void *p_env );
+    
+    /*!
+      Set volume of an audio CD.
+      
+      @param p_env the CD object to be acted upon.
+      
+    */
+    driver_return_code_t (*audio_set_volume) 
+	 ( void *p_env,  const cdio_audio_volume_t *p_volume );
+    /*!
       Eject media in CD drive. If successful, as a side effect we 
       also free obj. Return 0 if success and 1 for failure.
 
-      @param p_cdio the CD object to be acted upon.
-      If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
+      @param p_env the CD object to be acted upon.
+      If the CD is ejected *p_env is freed and p_env set to NULL.
     */
     int (*eject_media) (void *p_env);
     
@@ -141,8 +197,8 @@ extern "C" {
       Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
       False is returned if we had an error getting the information.
     */
-    bool (*get_hwinfo) ( const CdIo_t *p_cdio, 
-			 /* out*/ cdio_hwinfo_t *p_hw_info );
+    bool (*get_hwinfo) 
+	 ( const CdIo_t *p_cdio, /* out*/ cdio_hwinfo_t *p_hw_info );
 
     /*! 
       Find out if media has changed since the last call.
@@ -213,8 +269,8 @@ extern "C" {
       or -2 if not implimented (yet). Is this meaningful if not an
       audio track?
     */
-    track_flag_t (*get_track_preemphasis) (const void  *p_env, 
-					   track_t i_track);
+    track_flag_t (*get_track_preemphasis) 
+	 ( const void  *p_env, track_t i_track );
   
     /*!
       lseek - reposition read/write file offset
@@ -254,40 +310,41 @@ extern "C" {
       @param i_blocksize size of block. Should be either CDIO_CD_FRAMESIZE, 
       M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE. See comment above under p_buf.
     */
-    driver_return_code_t (*read_data_sectors) (void *p_env, void *p_buf, 
-					       lsn_t i_lsn, 
-					       uint16_t i_blocksize,
-					       uint32_t i_blocks);
+    driver_return_code_t (*read_data_sectors) 
+	 ( void *p_env, void *p_buf, lsn_t i_lsn, uint16_t i_blocksize,
+	   uint32_t i_blocks );
     
     /*!
       Reads a single mode2 sector from cd device into buf starting
       from lsn. Returns 0 if no error. 
     */
-    int (*read_mode2_sector) (void *p_env, void *p_buf, lsn_t i_lsn, 
-			      bool b_mode2_form2);
+    int (*read_mode2_sector) 
+	 ( void *p_env, void *p_buf, lsn_t i_lsn, bool b_mode2_form2 );
     
     /*!
       Reads i_blocks of mode2 sectors from cd device into data starting
       from lsn.
       Returns 0 if no error. 
     */
-    int (*read_mode2_sectors) (void *p_env, void *p_buf, lsn_t i_lsn,
-			       bool b_mode2_form2, unsigned int i_blocks);
+    int (*read_mode2_sectors) 
+	 ( void *p_env, void *p_buf, lsn_t i_lsn, bool b_mode2_form2, 
+	   unsigned int i_blocks );
     
     /*!
       Reads a single mode1 sector from cd device into buf starting
       from lsn. Returns 0 if no error. 
     */
-    int (*read_mode1_sector) (void *p_env, void *p_buf, lsn_t i_lsn,
-			      bool mode1_form2);
+    int (*read_mode1_sector) 
+	 ( void *p_env, void *p_buf, lsn_t i_lsn, bool mode1_form2 );
     
     /*!
       Reads i_blocks of mode1 sectors from cd device into data starting
       from lsn.
       Returns 0 if no error. 
     */
-    int (*read_mode1_sectors) (void *p_env, void *p_buf, lsn_t i_lsn,
-			       bool mode1_form2, unsigned int i_blocks);
+    int (*read_mode1_sectors) 
+	 ( void *p_env, void *p_buf, lsn_t i_lsn, bool mode1_form2, 
+	   unsigned int i_blocks );
     
     bool (*read_toc) ( void *p_env ) ;
 

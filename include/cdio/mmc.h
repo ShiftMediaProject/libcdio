@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.12 2005/02/19 11:45:03 rocky Exp $
+    $Id: mmc.h,v 1.13 2005/03/01 00:41:34 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -146,6 +146,20 @@ typedef enum {
   } cdio_mmc_gpcmd_t;
 
 
+  /** Read Subchannel states */
+  typedef enum {
+    CDIO_MMC_READ_SUB_ST_INVALID   = 0x00, /**< audio status not supported */
+    CDIO_MMC_READ_SUB_ST_PLAY      = 0x11, /**< audio play operation in 
+                                              progress */
+    CDIO_MMC_READ_SUB_ST_PAUSED    = 0x12, /**< audio play operation paused */
+    CDIO_MMC_READ_SUB_ST_COMPLETED = 0x13, /**< audio play successfully 
+                                              completed */
+    CDIO_MMC_READ_SUB_ST_ERROR     = 0x14, /**< audio play stopped due to 
+                                              error */
+    CDIO_MMC_READ_SUB_ST_NO_STATUS = 0x15, /**< no current audio status to
+                                              return */
+  } cdio_mmc_read_sub_state_t;
+  
 /*! Level values that can go into READ_CD */
 #define CDIO_MMC_READ_TYPE_ANY   0  /**< All types */
 #define CDIO_MMC_READ_TYPE_CDDA  1  /**< Only CD-DA sectors */
