@@ -1,5 +1,5 @@
 /*
-  $Id: isort.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: isort.c,v 1.2 2004/12/22 09:41:58 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -23,8 +23,16 @@
 /* Old isort got a bit complex.  This re-constrains complexity to
    give a go at speed through a more alpha-6-like mechanism. */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
 #include "p_block.h"
 #include "isort.h"
 

@@ -1,5 +1,5 @@
 /*
-    $Id: p_block.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: p_block.c,v 1.2 2004/12/22 09:41:58 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -19,9 +19,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
 #include <stdio.h>
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
 #include <limits.h>
 #include "p_block.h"
 #include <cdio/cdda_interface.h>

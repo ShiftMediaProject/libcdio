@@ -1,5 +1,5 @@
 /*
-  $Id: overlap.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: overlap.c,v 1.2 2004/12/22 09:41:58 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -24,9 +24,17 @@
  *
  ***/
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
 #include <stdio.h>
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
 #include <cdio/paranoia.h>
 #include "p_block.h"
 #include "overlap.h"
