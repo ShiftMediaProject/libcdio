@@ -1,5 +1,5 @@
 /*
-    $Id: disc.c,v 1.3 2005/01/09 16:07:46 rocky Exp $
+    $Id: disc.c,v 1.4 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -45,19 +45,26 @@ const char *discmode2str[] = {
   "CD-i" 
 };
 
-unsigned int 
-cdio_get_disc_last_lsn(const CdIo *p_cdio)
+/*!
+  Get the size of the CD in logical block address (LBA) units.
+  
+  @param p_cdio the CD object queried
+  @return the lsn. On error 0 or CDIO_INVALD_LSN.
+*/
+lsn_t 
+cdio_get_disc_last_lsn(const CdIo_t *p_cdio)
 {
-  return cdio_get_track_lsn(p_cdio, CDIO_CDROM_LEADOUT_TRACK);
+  if (!p_cdio) return CDIO_INVALID_LSN;
+  return p_cdio->op.get_disc_last_lsn (p_cdio->env);
 }
 
 /*! 
   Get medium associated with cd_obj.
 */
 discmode_t
-cdio_get_discmode (CdIo *cd_obj)
+cdio_get_discmode (CdIo_t *cd_obj)
 {
-  if (cd_obj == NULL) return CDIO_DISC_MODE_ERROR;
+  if (!cd_obj) return CDIO_DISC_MODE_ERROR;
   
   if (cd_obj->op.get_discmode) {
     return cd_obj->op.get_discmode (cd_obj->env);
@@ -72,25 +79,11 @@ cdio_get_discmode (CdIo *cd_obj)
   then return NULL.
 */
 char *
-cdio_get_mcn (const CdIo *p_cdio) 
+cdio_get_mcn (const CdIo_t *p_cdio) 
 {
   if (p_cdio->op.get_mcn) {
     return p_cdio->op.get_mcn (p_cdio->env);
   } else {
     return NULL;
   }
-}
-
-/*!
-  Get the size of the CD in logical block address (LBA) units.
-  
-  @param p_cdio the CD object queried
-  @return the size or 0 if there was an error.
-*/
-uint32_t
-cdio_stat_size (const CdIo_t *p_cdio)
-{
-  if (!p_cdio) return 0;
-
-  return p_cdio->op.stat_size (p_cdio->env);
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.11 2005/01/23 17:14:33 rocky Exp $
+    $Id: win32.c,v 1.12 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.11 2005/01/23 17:14:33 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.12 2005/01/24 00:06:31 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -381,7 +381,7 @@ _cdio_read_mode2_sectors (void *p_user_data, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-stat_size_win32 (void *p_user_data)
+get_disc_last_lsn_win32 (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -741,6 +741,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.get_cdtext            = get_cdtext_generic;
   _funcs.get_default_device    = cdio_get_default_device_win32;
   _funcs.get_devices           = cdio_get_devices_win32;
+  _funcs.get_disc_last_lsn     = get_disc_last_lsn_win32;
   _funcs.get_discmode          = get_discmode_win32;
   _funcs.get_drive_cap         = get_drive_cap_mmc;
   _funcs.get_first_track_num   = get_first_track_num_generic;
@@ -766,7 +767,6 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.set_arg               = set_arg_win32;
   _funcs.set_blocksize         = set_blocksize_mmc;
   _funcs.set_speed             = set_speed_mmc;
-  _funcs.stat_size             = stat_size_win32;
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
   _data->access_mode    = str_to_access_mode_win32(psz_access_mode);

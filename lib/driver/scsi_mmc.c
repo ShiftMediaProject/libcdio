@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.10 2005/01/23 19:16:58 rocky Exp $
+    $Id: scsi_mmc.c,v 1.11 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -40,151 +40,79 @@
 #include <errno.h>
 #endif
 
-/*! 
-  Return the discmode as reported by the SCSI-MMC Read (FULL) TOC
-  command.
+#define DEFAULT_TIMEOUT_MS 6000
+  
+/*************************************************************************
+  MMC CdIo Operations which a driver may use. 
+  These are not accessible directly.
 
-  Information was obtained from Section 5.1.13 (Read TOC/PMA/ATIP)
-  pages 56-62 from the SCSI MMC draft specification, revision 10a
-  at http://www.t10.org/ftp/t10/drafts/mmc/mmc-r10a.pdf See
-  especially tables 72, 73 and 75.
- */
-discmode_t
-scsi_mmc_get_discmode( const CdIo_t *p_cdio )
+  Most of these routines just pick out the cdio pointer and call the
+  corresponding publically-accessible routine.
+*************************************************************************/
 
+/* Set read blocksize (via MMC) */
+driver_return_code_t
+get_blocksize_mmc (void *p_user_data)
 {
-  uint8_t buf[14] = { 0, };
-  scsi_mmc_cdb_t cdb;
-
-  memset(&cdb, 0, sizeof(scsi_mmc_cdb_t));
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
-  cdb.field[1] = CDIO_CDROM_MSF; /* The MMC-5 spec may require this. */
-  cdb.field[2] = CDIO_MMC_READTOC_FMT_FULTOC;
-  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
-  scsi_mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), buf);
-  if (buf[7] == 0xA0) {
-    if (buf[13] == 0x00) {
-      if (buf[5] & 0x04) 
-	return CDIO_DISC_MODE_CD_DATA;
-      else 
-	return CDIO_DISC_MODE_CD_DA;
-    }
-    else if (buf[13] == 0x10)
-      return CDIO_DISC_MODE_CD_I;
-    else if (buf[13] == 0x20) 
-    return CDIO_DISC_MODE_CD_XA;
-  }
-  return CDIO_DISC_MODE_NO_INFO;
-}
-
-/*!
-  Set the drive speed. 
-  
-  @return the drive speed if greater than 0. -1 if we had an error. is -2
-  returned if this is not implemented for the current driver.
-  
-  @see scsi_mmc_set_speed
-*/
-int
-scsi_mmc_set_speed( const CdIo_t *p_cdio, int i_speed )
-
-{
-  uint8_t buf[14] = { 0, };
-  scsi_mmc_cdb_t cdb;
-
-  /* If the requested speed is less than 1x 176 kb/s this command
-     will return an error - it's part of the ATAPI specs. Therefore, 
-     test and stop early. */
-
-  if ( i_speed < 1 ) return -1;
-  
-  memset(&cdb, 0, sizeof(scsi_mmc_cdb_t));
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_SET_SPEED);
-  CDIO_MMC_SET_LEN16(cdb.field, 2, i_speed);
-  /* Some drives like the Creative 24x CDRW require one to set a nonzero
-     write speed. So we set to the maximum value. */
-  CDIO_MMC_SET_LEN16(cdb.field, 4, 0xffff);
-  return scsi_mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_READ, 
-			  sizeof(buf), buf);
-}
-
-/*!
-  On input a MODE_SENSE command was issued and we have the results
-  in p. We interpret this and return a bit mask set according to the 
-  capabilities.
- */
-void
-scsi_mmc_get_drive_cap_buf(const uint8_t *p,
-			   /*out*/ cdio_drive_read_cap_t  *p_read_cap,
-			   /*out*/ cdio_drive_write_cap_t *p_write_cap,
-			   /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
-{
-  /* Reader */
-  if (p[2] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_R;
-  if (p[2] & 0x02) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_RW;
-  if (p[2] & 0x08) *p_read_cap  |= CDIO_DRIVE_CAP_READ_DVD_ROM;
-  if (p[4] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_AUDIO;
-  if (p[4] & 0x10) *p_read_cap  |= CDIO_DRIVE_CAP_READ_MODE2_FORM1;
-  if (p[4] & 0x20) *p_read_cap  |= CDIO_DRIVE_CAP_READ_MODE2_FORM2;
-  if (p[5] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_DA;
-  if (p[5] & 0x10) *p_read_cap  |= CDIO_DRIVE_CAP_READ_C2_ERRS;
-  if (p[5] & 0x20) *p_read_cap  |= CDIO_DRIVE_CAP_READ_ISRC;
-  
-  /* Writer */
-  if (p[3] & 0x01) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_R;
-  if (p[3] & 0x02) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_RW;
-  if (p[3] & 0x10) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_R;
-  if (p[3] & 0x20) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RAM;
-  if (p[4] & 0x80) *p_misc_cap  |= CDIO_DRIVE_CAP_WRITE_BURN_PROOF;
-
-  /* Misc */
-  if (p[4] & 0x40) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_MULTI_SESSION;
-  if (p[6] & 0x01) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_LOCK;
-  if (p[6] & 0x08) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_EJECT;
-  if (p[6] >> 5 != 0) 
-    *p_misc_cap |= CDIO_DRIVE_CAP_MISC_CLOSE_TRAY;
+  generic_img_private_t *p_env = p_user_data;
+  if (!p_env) return DRIVER_OP_UNINIT;
+  return scsi_mmc_get_blocksize(p_env->cdio);
 }
 
 /*!  
-  Return the number of length in bytes of the Command Descriptor
-  buffer (CDB) for a given SCSI MMC command. The length will be 
-  either 6, 10, or 12. 
-*/
-uint8_t
-scsi_mmc_get_cmd_len(uint8_t scsi_cmd) 
-{
-  static const uint8_t scsi_cdblen[8] = {6, 10, 10, 12, 12, 12, 10, 10};
-  return scsi_cdblen[((scsi_cmd >> 5) & 7)];
-}
-
-/*!
-  Run a SCSI MMC command. 
- 
-  cdio	        CD structure set by cdio_open().
-  i_timeout     time in milliseconds we will wait for the command
-                to complete. If this value is -1, use the default 
-		time-out value.
-  buf	        Buffer for data, both sending and receiving
-  len	        Size of buffer
-  e_direction	direction the transfer is to go
-  cdb	        CDB bytes. All values that are needed should be set on 
-                input. We'll figure out what the right CDB length should be.
- */
-driver_return_code_t
-scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms, 
-		  const scsi_mmc_cdb_t *p_cdb,
-		  scsi_mmc_direction_t e_direction, unsigned int i_buf, 
-		  /*in/out*/ void *p_buf )
-{
-  if (!p_cdio) return DRIVER_OP_UNINIT;
-  if (!p_cdio->op.run_scsi_mmc_cmd) return DRIVER_OP_UNSUPPORTED;
-  return p_cdio->op.run_scsi_mmc_cmd(p_cdio->env, i_timeout_ms,
-				     scsi_mmc_get_cmd_len(p_cdb->field[0]),
-				     p_cdb, e_direction, i_buf, p_buf);
-}
-
-#define DEFAULT_TIMEOUT_MS 6000
+  Get the lsn of the end of the CD (via MMC).
   
+  @return the lsn. On error return CDIO_INVALID_LSN.
+*/
+lsn_t
+get_disc_last_lsn_mmc (void *p_user_data)
+{
+  generic_img_private_t *p_env = p_user_data;
+  if (!p_env) return CDIO_INVALID_LSN;
+  return scsi_mmc_get_disc_last_lsn(p_env->cdio);
+}
+
+void
+get_drive_cap_mmc (const void *p_user_data,
+		   /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+		   /*out*/ cdio_drive_write_cap_t *p_write_cap,
+		   /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
+{
+  const generic_img_private_t *p_env = p_user_data;
+  scsi_mmc_get_drive_cap( p_env->cdio,
+			  p_read_cap, p_write_cap, p_misc_cap );
+}
+
+char *
+get_mcn_mmc (const void *p_user_data)
+{
+  const generic_img_private_t *p_env = p_user_data;
+  return scsi_mmc_get_mcn( p_env->cdio );
+}
+
+/* Set read blocksize (via MMC) */
+driver_return_code_t
+set_blocksize_mmc (void *p_user_data, int i_blocksize)
+{
+  generic_img_private_t *p_env = p_user_data;
+  if (!p_env) return DRIVER_OP_UNINIT;
+  return scsi_mmc_set_blocksize(p_env->cdio, i_blocksize);
+}
+
+/* Set CD-ROM drive speed (via MMC) */
+driver_return_code_t
+set_speed_mmc (void *p_user_data, int i_speed)
+{
+  generic_img_private_t *p_env = p_user_data;
+  if (!p_env) return DRIVER_OP_UNINIT;
+  return scsi_mmc_set_speed( p_env->cdio, i_speed );
+}
+
+/*************************************************************************
+  Miscellaenous other "private" routines. Probably need to better
+  classify these.
+*************************************************************************/
+
 int
 scsi_mmc_get_blocksize_private ( void *p_env, 
 				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd)
@@ -228,137 +156,42 @@ scsi_mmc_get_blocksize_private ( void *p_env,
   return CDIO_MMC_GET_LEN16(p);
 }
 
-int 
-scsi_mmc_get_blocksize ( const CdIo_t *p_cdio)
-{
-  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
-  return 
-    scsi_mmc_get_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd);
-
-}
-
-
 /*!
- * Eject using SCSI MMC commands. Return 0 if successful.
+  On input a MODE_SENSE command was issued and we have the results
+  in p. We interpret this and return a bit mask set according to the 
+  capabilities.
  */
-driver_return_code_t
-scsi_mmc_eject_media( const CdIo_t *p_cdio )
+void
+scsi_mmc_get_drive_cap_buf(const uint8_t *p,
+			   /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+			   /*out*/ cdio_drive_write_cap_t *p_write_cap,
+			   /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
-  int i_status = 0;
-  scsi_mmc_cdb_t cdb = {{0, }};
-  uint8_t buf[1];
-  scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd;
-
-  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
-  if ( ! p_cdio->op.run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
-
-  run_scsi_mmc_cmd = p_cdio->op.run_scsi_mmc_cmd;
+  /* Reader */
+  if (p[2] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_R;
+  if (p[2] & 0x02) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_RW;
+  if (p[2] & 0x08) *p_read_cap  |= CDIO_DRIVE_CAP_READ_DVD_ROM;
+  if (p[4] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_AUDIO;
+  if (p[4] & 0x10) *p_read_cap  |= CDIO_DRIVE_CAP_READ_MODE2_FORM1;
+  if (p[4] & 0x20) *p_read_cap  |= CDIO_DRIVE_CAP_READ_MODE2_FORM2;
+  if (p[5] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_DA;
+  if (p[5] & 0x10) *p_read_cap  |= CDIO_DRIVE_CAP_READ_C2_ERRS;
+  if (p[5] & 0x20) *p_read_cap  |= CDIO_DRIVE_CAP_READ_ISRC;
   
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
+  /* Writer */
+  if (p[3] & 0x01) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_R;
+  if (p[3] & 0x02) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_RW;
+  if (p[3] & 0x10) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_R;
+  if (p[3] & 0x20) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RAM;
+  if (p[4] & 0x80) *p_misc_cap  |= CDIO_DRIVE_CAP_WRITE_BURN_PROOF;
 
-  i_status = run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
-			       scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-			       SCSI_MMC_DATA_WRITE, 0, &buf);
-  if (0 != i_status) return i_status;
-  
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
-  cdb.field[4] = 1;
-  i_status = run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
-			       scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-			       SCSI_MMC_DATA_WRITE, 0, &buf);
-  if (0 != i_status)
-    return i_status;
-  
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
-  cdb.field[4] = 2; /* eject */
-
-  return run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
-			   scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-			   SCSI_MMC_DATA_WRITE, 0, &buf);
-  
+  /* Misc */
+  if (p[4] & 0x40) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_MULTI_SESSION;
+  if (p[6] & 0x01) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_LOCK;
+  if (p[6] & 0x08) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_EJECT;
+  if (p[6] >> 5 != 0) 
+    *p_misc_cap |= CDIO_DRIVE_CAP_MISC_CLOSE_TRAY;
 }
-
-/*! Read sectors using SCSI-MMC GPCMD_READ_CD.
-   Can read only up to 25 blocks.
-*/
-driver_return_code_t
-scsi_mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba, 
-			int sector_type, unsigned int i_blocks )
-{
-  scsi_mmc_cdb_t cdb = {{0, }};
-
-  scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd;
-
-  if (!p_cdio) return DRIVER_OP_UNINIT;
-  if (!p_cdio->op.run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
-
-  run_scsi_mmc_cmd = p_cdio->op.run_scsi_mmc_cmd;
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
-  CDIO_MMC_SET_READ_TYPE    (cdb.field, sector_type);
-  CDIO_MMC_SET_READ_LBA     (cdb.field, lba);
-  CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks);
-  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb.field, 
-					   CDIO_MMC_MCSB_ALL_HEADERS);
-
-  return run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
-			   scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-			   SCSI_MMC_DATA_READ, 
-			   CDIO_CD_FRAMESIZE_RAW * i_blocks,
-			   p_buf);
-}
-
-driver_return_code_t
-scsi_mmc_set_blocksize_private ( void *p_env, 
-				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
-				 unsigned int i_bsize)
-{
-  scsi_mmc_cdb_t cdb = {{0, }};
-
-  struct
-  {
-    uint8_t reserved1;
-    uint8_t medium;
-    uint8_t reserved2;
-    uint8_t block_desc_length;
-    uint8_t density;
-    uint8_t number_of_blocks_hi;
-    uint8_t number_of_blocks_med;
-    uint8_t number_of_blocks_lo;
-    uint8_t reserved3;
-    uint8_t block_length_hi;
-    uint8_t block_length_med;
-    uint8_t block_length_lo;
-  } mh;
-
-  if ( ! p_env ) return DRIVER_OP_UNINIT;
-  if ( ! run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
-
-  memset (&mh, 0, sizeof (mh));
-  mh.block_desc_length = 0x08;
-  mh.block_length_hi   = (i_bsize >> 16) & 0xff;
-  mh.block_length_med  = (i_bsize >>  8) & 0xff;
-  mh.block_length_lo   = (i_bsize >>  0) & 0xff;
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SELECT_6);
-
-  cdb.field[1] = 1 << 4;
-  cdb.field[4] = 12;
-  
-  return run_scsi_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
-			      scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-			      SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
-}
-
-driver_return_code_t
-scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_blocksize)
-{
-  if ( ! p_cdio )  return DRIVER_OP_UNINIT;
-  return 
-    scsi_mmc_set_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd, 
-				    i_blocksize);
-}
-
 
 /*!
   Return the the kind of drive capabilities of device.
@@ -451,18 +284,6 @@ scsi_mmc_get_drive_cap_private (void *p_env,
   return;
 }
 
-void
-scsi_mmc_get_drive_cap (const CdIo_t *p_cdio,
-			/*out*/ cdio_drive_read_cap_t  *p_read_cap,
-			/*out*/ cdio_drive_write_cap_t *p_write_cap,
-			/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
-{
-  if ( ! p_cdio )  return;
-  scsi_mmc_get_drive_cap_private (p_cdio->env, 
-				  p_cdio->op.run_scsi_mmc_cmd, 
-				  p_read_cap, p_write_cap, p_misc_cap);
-}
-
 /*! 
   Get the DVD type associated with cd object.
 */
@@ -521,59 +342,6 @@ scsi_mmc_get_dvd_struct_physical_private ( void *p_env, const
   return DRIVER_OP_SUCCESS;
 }
 
-
-/*! 
-  Get the DVD type associated with cd object.
-*/
-discmode_t
-scsi_mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, cdio_dvd_struct_t *s)
-{
-  if ( ! p_cdio )  return -2;
-  return 
-    scsi_mmc_get_dvd_struct_physical_private (p_cdio->env, 
-					      p_cdio->op.run_scsi_mmc_cmd, 
-					      s);
-}
-
-/*! 
-  Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
-  False is returned if we had an error getting the information.
-*/
-bool 
-scsi_mmc_get_hwinfo ( const CdIo_t *p_cdio, 
-		      /*out*/ cdio_hwinfo_t *hw_info )
-{
-  int i_status;                  /* Result of SCSI MMC command */
-  char buf[36] = { 0, };         /* Place to hold returned data */
-  scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Block */
-  
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_INQUIRY);
-  cdb.field[4] = sizeof(buf);
-
-  if (! p_cdio || ! hw_info ) return false;
-  
-  i_status = scsi_mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, 
-			      &cdb, SCSI_MMC_DATA_READ, 
-			      sizeof(buf), &buf);
-  if (i_status == 0) {
-      
-      memcpy(hw_info->psz_vendor, 
-	     buf + 8, 
-	     sizeof(hw_info->psz_vendor)-1);
-      hw_info->psz_vendor[sizeof(hw_info->psz_vendor)-1] = '\0';
-      memcpy(hw_info->psz_model,  
-	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN, 
-	     sizeof(hw_info->psz_model)-1);
-      hw_info->psz_model[sizeof(hw_info->psz_model)-1] = '\0';
-      memcpy(hw_info->psz_revision, 
-	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN + CDIO_MMC_HW_MODEL_LEN,
-	     sizeof(hw_info->psz_revision)-1);
-      hw_info->psz_revision[sizeof(hw_info->psz_revision)-1] = '\0';
-      return true;
-    }
-  return false;
-}
-
 /*!
   Return the media catalog number MCN.
 
@@ -607,14 +375,6 @@ scsi_mmc_get_mcn_private ( void *p_env,
     return strdup(&buf[9]);
   }
   return NULL;
-}
-
-char *
-scsi_mmc_get_mcn ( const CdIo_t *p_cdio )
-{
-  if ( ! p_cdio )  return NULL;
-  return scsi_mmc_get_mcn_private (p_cdio->env, 
-				   p_cdio->op.run_scsi_mmc_cmd );
 }
 
 /*
@@ -688,49 +448,362 @@ scsi_mmc_init_cdtext_private ( void *p_user_data,
   }
 }
 
-/* Set read blocksize (via MMC) */
 driver_return_code_t
-get_blocksize_mmc (void *p_user_data)
+scsi_mmc_set_blocksize_private ( void *p_env, 
+				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+				 unsigned int i_bsize)
 {
-  generic_img_private_t *p_env = p_user_data;
-  if (!p_env) return DRIVER_OP_UNINIT;
-  return scsi_mmc_get_blocksize(p_env->cdio);
+  scsi_mmc_cdb_t cdb = {{0, }};
+
+  struct
+  {
+    uint8_t reserved1;
+    uint8_t medium;
+    uint8_t reserved2;
+    uint8_t block_desc_length;
+    uint8_t density;
+    uint8_t number_of_blocks_hi;
+    uint8_t number_of_blocks_med;
+    uint8_t number_of_blocks_lo;
+    uint8_t reserved3;
+    uint8_t block_length_hi;
+    uint8_t block_length_med;
+    uint8_t block_length_lo;
+  } mh;
+
+  if ( ! p_env ) return DRIVER_OP_UNINIT;
+  if ( ! run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
+
+  memset (&mh, 0, sizeof (mh));
+  mh.block_desc_length = 0x08;
+  mh.block_length_hi   = (i_bsize >> 16) & 0xff;
+  mh.block_length_med  = (i_bsize >>  8) & 0xff;
+  mh.block_length_lo   = (i_bsize >>  0) & 0xff;
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SELECT_6);
+
+  cdb.field[1] = 1 << 4;
+  cdb.field[4] = 12;
+  
+  return run_scsi_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
+			      scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+			      SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
+}
+
+/***********************************************************
+  User-accessible Operations.
+************************************************************/
+/*!  
+  Return the number of length in bytes of the Command Descriptor
+  buffer (CDB) for a given SCSI MMC command. The length will be 
+  either 6, 10, or 12. 
+*/
+uint8_t
+scsi_mmc_get_cmd_len(uint8_t scsi_cmd) 
+{
+  static const uint8_t scsi_cdblen[8] = {6, 10, 10, 12, 12, 12, 10, 10};
+  return scsi_cdblen[((scsi_cmd >> 5) & 7)];
+}
+
+/*!
+   Return the size of the CD in logical block address (LBA) units.
+   @return the lsn. On error 0 or CDIO_INVALD_LSN.
+ */
+lsn_t
+scsi_mmc_get_disc_last_lsn ( const CdIo_t *p_cdio )
+{
+  scsi_mmc_cdb_t cdb = {{0, }};
+  uint8_t buf[12] = { 0, };
+
+  lsn_t retval = 0;
+  int i_status;
+
+  /* Operation code */
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
+
+  cdb.field[1] = 0; /* lba; msf: 0x2 */
+
+  /* Format */
+  cdb.field[2] = CDIO_MMC_READTOC_FMT_TOC;
+
+  CDIO_MMC_SET_START_TRACK(cdb.field, CDIO_CDROM_LEADOUT_TRACK);
+
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(buf));
+  
+  i_status = scsi_mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, &cdb, 
+                              SCSI_MMC_DATA_READ, 
+                              sizeof(buf), buf);
+
+  if (i_status) return CDIO_INVALID_LSN;
+
+  {
+    int i;
+    for (i = 8; i < 12; i++) {
+      retval <<= 8;
+      retval += buf[i];
+    }
+  }
+
+  return retval;
+}
+
+/*! 
+  Return the discmode as reported by the SCSI-MMC Read (FULL) TOC
+  command.
+
+  Information was obtained from Section 5.1.13 (Read TOC/PMA/ATIP)
+  pages 56-62 from the SCSI MMC draft specification, revision 10a
+  at http://www.t10.org/ftp/t10/drafts/mmc/mmc-r10a.pdf See
+  especially tables 72, 73 and 75.
+ */
+discmode_t
+scsi_mmc_get_discmode( const CdIo_t *p_cdio )
+
+{
+  uint8_t buf[14] = { 0, };
+  scsi_mmc_cdb_t cdb;
+
+  memset(&cdb, 0, sizeof(scsi_mmc_cdb_t));
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
+  cdb.field[1] = CDIO_CDROM_MSF; /* The MMC-5 spec may require this. */
+  cdb.field[2] = CDIO_MMC_READTOC_FMT_FULTOC;
+  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
+  scsi_mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), buf);
+  if (buf[7] == 0xA0) {
+    if (buf[13] == 0x00) {
+      if (buf[5] & 0x04) 
+	return CDIO_DISC_MODE_CD_DATA;
+      else 
+	return CDIO_DISC_MODE_CD_DA;
+    }
+    else if (buf[13] == 0x10)
+      return CDIO_DISC_MODE_CD_I;
+    else if (buf[13] == 0x20) 
+    return CDIO_DISC_MODE_CD_XA;
+  }
+  return CDIO_DISC_MODE_NO_INFO;
 }
 
 void
-get_drive_cap_mmc (const void *p_user_data,
-		   /*out*/ cdio_drive_read_cap_t  *p_read_cap,
-		   /*out*/ cdio_drive_write_cap_t *p_write_cap,
-		   /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
+scsi_mmc_get_drive_cap (const CdIo_t *p_cdio,
+			/*out*/ cdio_drive_read_cap_t  *p_read_cap,
+			/*out*/ cdio_drive_write_cap_t *p_write_cap,
+			/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
-  const generic_img_private_t *p_env = p_user_data;
-  scsi_mmc_get_drive_cap( p_env->cdio,
-			  p_read_cap, p_write_cap, p_misc_cap );
+  if ( ! p_cdio )  return;
+  scsi_mmc_get_drive_cap_private (p_cdio->env, 
+				  p_cdio->op.run_scsi_mmc_cmd, 
+				  p_read_cap, p_write_cap, p_misc_cap);
+}
+
+/*! 
+  Get the DVD type associated with cd object.
+*/
+discmode_t
+scsi_mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, cdio_dvd_struct_t *s)
+{
+  if ( ! p_cdio )  return -2;
+  return 
+    scsi_mmc_get_dvd_struct_physical_private (p_cdio->env, 
+					      p_cdio->op.run_scsi_mmc_cmd, 
+					      s);
+}
+
+/*! 
+  Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
+  False is returned if we had an error getting the information.
+*/
+bool 
+scsi_mmc_get_hwinfo ( const CdIo_t *p_cdio, 
+		      /*out*/ cdio_hwinfo_t *hw_info )
+{
+  int i_status;                  /* Result of SCSI MMC command */
+  char buf[36] = { 0, };         /* Place to hold returned data */
+  scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Block */
+  
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_INQUIRY);
+  cdb.field[4] = sizeof(buf);
+
+  if (! p_cdio || ! hw_info ) return false;
+  
+  i_status = scsi_mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, 
+			      &cdb, SCSI_MMC_DATA_READ, 
+			      sizeof(buf), &buf);
+  if (i_status == 0) {
+      
+      memcpy(hw_info->psz_vendor, 
+	     buf + 8, 
+	     sizeof(hw_info->psz_vendor)-1);
+      hw_info->psz_vendor[sizeof(hw_info->psz_vendor)-1] = '\0';
+      memcpy(hw_info->psz_model,  
+	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN, 
+	     sizeof(hw_info->psz_model)-1);
+      hw_info->psz_model[sizeof(hw_info->psz_model)-1] = '\0';
+      memcpy(hw_info->psz_revision, 
+	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN + CDIO_MMC_HW_MODEL_LEN,
+	     sizeof(hw_info->psz_revision)-1);
+      hw_info->psz_revision[sizeof(hw_info->psz_revision)-1] = '\0';
+      return true;
+    }
+  return false;
 }
 
 char *
-get_mcn_mmc (const void *p_user_data)
+scsi_mmc_get_mcn ( const CdIo_t *p_cdio )
 {
-  const generic_img_private_t *p_env = p_user_data;
-  return scsi_mmc_get_mcn( p_env->cdio );
+  if ( ! p_cdio )  return NULL;
+  return scsi_mmc_get_mcn_private (p_cdio->env, 
+				   p_cdio->op.run_scsi_mmc_cmd );
 }
 
-/* Set read blocksize (via MMC) */
+/*!
+  Run a SCSI MMC command. 
+ 
+  cdio	        CD structure set by cdio_open().
+  i_timeout     time in milliseconds we will wait for the command
+                to complete. If this value is -1, use the default 
+		time-out value.
+  buf	        Buffer for data, both sending and receiving
+  len	        Size of buffer
+  e_direction	direction the transfer is to go
+  cdb	        CDB bytes. All values that are needed should be set on 
+                input. We'll figure out what the right CDB length should be.
+ */
 driver_return_code_t
-set_blocksize_mmc (void *p_user_data, int i_blocksize)
+scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms, 
+		  const scsi_mmc_cdb_t *p_cdb,
+		  scsi_mmc_direction_t e_direction, unsigned int i_buf, 
+		  /*in/out*/ void *p_buf )
 {
-  generic_img_private_t *p_env = p_user_data;
-  if (!p_env) return DRIVER_OP_UNINIT;
-  return scsi_mmc_set_blocksize(p_env->cdio, i_blocksize);
+  if (!p_cdio) return DRIVER_OP_UNINIT;
+  if (!p_cdio->op.run_scsi_mmc_cmd) return DRIVER_OP_UNSUPPORTED;
+  return p_cdio->op.run_scsi_mmc_cmd(p_cdio->env, i_timeout_ms,
+				     scsi_mmc_get_cmd_len(p_cdb->field[0]),
+				     p_cdb, e_direction, i_buf, p_buf);
 }
 
-/* Set CD-ROM drive speed (via MMC) */
-driver_return_code_t
-set_speed_mmc (void *p_user_data, int i_speed)
+int 
+scsi_mmc_get_blocksize ( const CdIo_t *p_cdio)
 {
-  generic_img_private_t *p_env = p_user_data;
-  if (!p_env) return DRIVER_OP_UNINIT;
-  return scsi_mmc_set_speed( p_env->cdio, i_speed );
+  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
+  return 
+    scsi_mmc_get_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd);
+
+}
+
+
+/*!
+ * Eject using SCSI MMC commands. Return 0 if successful.
+ */
+driver_return_code_t
+scsi_mmc_eject_media( const CdIo_t *p_cdio )
+{
+  int i_status = 0;
+  scsi_mmc_cdb_t cdb = {{0, }};
+  uint8_t buf[1];
+  scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd;
+
+  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
+  if ( ! p_cdio->op.run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
+
+  run_scsi_mmc_cmd = p_cdio->op.run_scsi_mmc_cmd;
+  
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
+
+  i_status = run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
+			       scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+			       SCSI_MMC_DATA_WRITE, 0, &buf);
+  if (0 != i_status) return i_status;
+  
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
+  cdb.field[4] = 1;
+  i_status = run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
+			       scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+			       SCSI_MMC_DATA_WRITE, 0, &buf);
+  if (0 != i_status)
+    return i_status;
+  
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
+  cdb.field[4] = 2; /* eject */
+
+  return run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
+			   scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+			   SCSI_MMC_DATA_WRITE, 0, &buf);
+  
+}
+
+/*! Read sectors using SCSI-MMC GPCMD_READ_CD.
+   Can read only up to 25 blocks.
+*/
+driver_return_code_t
+scsi_mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba, 
+			int sector_type, unsigned int i_blocks )
+{
+  scsi_mmc_cdb_t cdb = {{0, }};
+
+  scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd;
+
+  if (!p_cdio) return DRIVER_OP_UNINIT;
+  if (!p_cdio->op.run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
+
+  run_scsi_mmc_cmd = p_cdio->op.run_scsi_mmc_cmd;
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
+  CDIO_MMC_SET_READ_TYPE    (cdb.field, sector_type);
+  CDIO_MMC_SET_READ_LBA     (cdb.field, lba);
+  CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks);
+  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb.field, 
+					   CDIO_MMC_MCSB_ALL_HEADERS);
+
+  return run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
+			   scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+			   SCSI_MMC_DATA_READ, 
+			   CDIO_CD_FRAMESIZE_RAW * i_blocks,
+			   p_buf);
+}
+
+driver_return_code_t
+scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_blocksize)
+{
+  if ( ! p_cdio )  return DRIVER_OP_UNINIT;
+  return 
+    scsi_mmc_set_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd, 
+				    i_blocksize);
+}
+
+
+/*!
+  Set the drive speed. 
+  
+  @return the drive speed if greater than 0. -1 if we had an error. is -2
+  returned if this is not implemented for the current driver.
+  
+  @see scsi_mmc_set_speed
+*/
+int
+scsi_mmc_set_speed( const CdIo_t *p_cdio, int i_speed )
+
+{
+  uint8_t buf[14] = { 0, };
+  scsi_mmc_cdb_t cdb;
+
+  /* If the requested speed is less than 1x 176 kb/s this command
+     will return an error - it's part of the ATAPI specs. Therefore, 
+     test and stop early. */
+
+  if ( i_speed < 1 ) return -1;
+  
+  memset(&cdb, 0, sizeof(scsi_mmc_cdb_t));
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_SET_SPEED);
+  CDIO_MMC_SET_LEN16(cdb.field, 2, i_speed);
+  /* Some drives like the Creative 24x CDRW require one to set a
+     nonzero write speed or else one gets an error back.  Some
+     specifications have setting the value 0xfffff indicate setting to
+     the maximum allowable speed.
+  */
+  CDIO_MMC_SET_LEN16(cdb.field, 4, 0xffff);
+  return scsi_mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_READ, 
+			  sizeof(buf), buf);
 }
 
 

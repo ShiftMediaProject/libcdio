@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: disc.h,v 1.3 2005/01/09 16:07:46 rocky Exp $
+    $Id: disc.h,v 1.4 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -40,9 +40,9 @@ extern "C" {
   /*!  
     Get the lsn of the end of the CD
 
-    @return the leadout LSN or CDIO_INVALID_LSN if there is an error.
+    @return the lsn. On error 0 or CDIO_INVALD_LSN.
   */
-  unsigned int cdio_get_disc_last_lsn(const CdIo_t *p_cdio);
+  lsn_t cdio_get_disc_last_lsn(const CdIo_t *p_cdio);
   
 
   /*!  
@@ -70,13 +70,8 @@ extern "C" {
   */
   track_t cdio_get_num_tracks (const CdIo_t *p_cdio);
   
-  /*!
-    Get the size of the CD in logical block address (LBA) units.
-
-    @param p_cdio the CD object queried
-    @return the size or 0 if there was an error.
-  */
-  uint32_t cdio_stat_size (const CdIo_t *p_cdio);
+  /*! cdio_stat_size is deprecated. @see cdio_get_disc_last_lsn  */
+#define cdio_stat_size cdio_get_disc_last_lsn
   
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.10 2005/01/23 19:16:58 rocky Exp $
+    $Id: cdrdao.c,v 1.11 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.10 2005/01/23 19:16:58 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.11 2005/01/24 00:06:31 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -66,7 +66,7 @@ static const char _rcsid[] = "$Id: cdrdao.c,v 1.10 2005/01/23 19:16:58 rocky Exp
 
 #include "image_common.h"
 
-static uint32_t _stat_size_cdrdao (void *p_user_data);
+static lsn_t get_disc_last_lsn_cdrdao (void *p_user_data);
 static bool parse_tocfile (_img_private_t *cd, const char *p_toc_name);
 
 
@@ -100,7 +100,7 @@ _init_cdrdao (_img_private_t *env)
   if (env->gen.init)
     return false;
 
-  /* Have to set init before calling _stat_size_cdrdao() or we will
+  /* Have to set init before calling get_disc_last_lsn_cdrdao() or we will
      get into infinite recursion calling passing right here.
    */
   env->gen.init          = true;  
@@ -113,7 +113,7 @@ _init_cdrdao (_img_private_t *env)
   /* Read in TOC sheet. */
   if ( !parse_tocfile(env, env->psz_cue_name) ) return false;
   
-  lead_lsn = _stat_size_cdrdao( (_img_private_t *) env);
+  lead_lsn = get_disc_last_lsn_cdrdao( (_img_private_t *) env);
 
   if (-1 == lead_lsn) 
     return false;
@@ -231,8 +231,8 @@ _read_cdrdao (void *user_data, void *data, size_t size)
 /*!
    Return the size of the CD in logical block address (LBA) units.
  */
-static uint32_t 
-_stat_size_cdrdao (void *p_user_data)
+static lsn_t
+get_disc_last_lsn_cdrdao (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
   track_t i_leadout = p_env->gen.i_tracks;
@@ -1268,6 +1268,7 @@ cdio_open_cdrdao (const char *psz_cue_name)
   _funcs.get_cdtext            = get_cdtext_generic;
   _funcs.get_devices           = cdio_get_devices_cdrdao;
   _funcs.get_default_device    = cdio_get_default_device_cdrdao;
+  _funcs.get_disc_last_lsn     = get_disc_last_lsn_cdrdao;
   _funcs.get_discmode          = _get_discmode_image;
   _funcs.get_drive_cap         = _get_drive_cap_image;
   _funcs.get_first_track_num   = _get_first_track_num_image;
@@ -1291,7 +1292,6 @@ cdio_open_cdrdao (const char *psz_cue_name)
   _funcs.set_arg               = _set_arg_image;
   _funcs.set_speed             = cdio_generic_unimplemented_set_speed;
   _funcs.set_blocksize         = cdio_generic_unimplemented_set_blocksize;
-  _funcs.stat_size             = _stat_size_cdrdao;
 
   if (NULL == psz_cue_name) return NULL;
   

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.10 2005/01/21 23:12:54 rocky Exp $
+    $Id: _cdio_osx.c,v 1.11 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.10 2005/01/21 23:12:54 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.11 2005/01/24 00:06:31 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -1321,7 +1321,7 @@ _eject_media_osx (void *user_data) {
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_stat_size_osx (void *user_data)
+_get_disc_last_lsn_osx (void *user_data)
 {
   return get_track_lba_osx(user_data, CDIO_CDROM_LEADOUT_TRACK);
 }
@@ -1667,6 +1667,7 @@ cdio_open_osx (const char *psz_orig_source)
     .get_cdtext            = get_cdtext_osx,
     .get_default_device    = cdio_get_default_device_osx,
     .get_devices           = cdio_get_devices_osx,
+    .get_disc_last_lsn     = _get_disc_last_lsn_osx
     .get_discmode          = get_discmode_osx,
     .get_drive_cap         = get_drive_cap_osx,
     .get_first_track_num   = get_first_track_num_generic,
@@ -1691,7 +1692,6 @@ cdio_open_osx (const char *psz_orig_source)
     .run_scsi_mmc_cmd      =  run_scsi_cmd_osx,
     .set_arg               = _set_arg_osx,
     .set_speed             = set_speed_osx,
-    .stat_size             = _stat_size_osx
   };
 
   _data                     = _cdio_malloc (sizeof (_img_private_t));

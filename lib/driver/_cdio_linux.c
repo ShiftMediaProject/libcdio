@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.18 2005/01/23 19:16:58 rocky Exp $
+    $Id: _cdio_linux.c,v 1.19 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.18 2005/01/23 19:16:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.19 2005/01/24 00:06:31 rocky Exp $";
 
 #include <string.h>
 
@@ -921,9 +921,10 @@ run_scsi_cmd_linux( void *p_user_data,
 
 /*!
    Return the size of the CD in logical block address (LBA) units.
+   @return the lsn. On error return CDIO_INVALID_LSN.
  */
-static uint32_t 
-stat_size_linux (void *p_user_data)
+static lsn_t
+get_disc_last_lsn_linux (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -935,7 +936,7 @@ stat_size_linux (void *p_user_data)
   if (ioctl (p_env->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
       perror ("ioctl(CDROMREADTOCENTRY)");
-      exit (EXIT_FAILURE);
+      return CDIO_INVALID_LSN;
     }
 
   i_size = tocent.cdte_addr.lba;
@@ -1138,6 +1139,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .get_cdtext            = get_cdtext_generic,
     .get_default_device    = cdio_get_default_device_linux,
     .get_devices           = cdio_get_devices_linux,
+    .get_disc_last_lsn     = get_disc_last_lsn_linux,
     .get_discmode          = get_discmode_linux,
 #if USE_LINUX_CAP
     .get_drive_cap         = get_drive_cap_linux,
@@ -1167,7 +1169,6 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .set_arg               = set_arg_linux,
     .set_blocksize         = set_blocksize_mmc,
     .set_speed             = set_speed_linux,
-    .stat_size             = stat_size_linux
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.9 2005/01/21 02:59:32 rocky Exp $
+    $Id: cdio_private.h,v 1.10 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -101,6 +101,12 @@ extern "C" {
     */
     char * (*get_default_device)(void);
     
+    /*!
+      Return the size of the CD in logical block address (LBA) units.
+      @return the lsn. On error 0 or CDIO_INVALD_LSN.
+    */
+    lsn_t (*get_disc_last_lsn) (void *p_env);
+
     /*! 
       Get disc mode associated with cd_obj.
     */
@@ -170,7 +176,7 @@ extern "C" {
       Set the drive speed. -1 is returned if we had an error.
       -2 is returned if this is not implemented for the current driver.
     */
-    int (*p_get_speed) (void *p_env);
+    int (*get_speed) (void *p_env);
     
     /*!
       Return true if we have XA data (green, mode2 form1) or
@@ -289,11 +295,6 @@ extern "C" {
       returned if this is not implemented for the current driver.
     */
     int (*set_speed) ( void *p_env, int i_speed );
-
-    /*!
-      Return the size of the CD in logical block address (LBA) units.
-    */
-    uint32_t (*stat_size) (void *p_env);
 
   } cdio_funcs_t;
 

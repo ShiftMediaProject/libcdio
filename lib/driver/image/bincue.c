@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.6 2005/01/23 19:16:58 rocky Exp $
+    $Id: bincue.c,v 1.7 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.6 2005/01/23 19:16:58 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.7 2005/01/24 00:06:31 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -63,7 +63,7 @@ static const char _rcsid[] = "$Id: bincue.c,v 1.6 2005/01/23 19:16:58 rocky Exp 
 #define DEFAULT_CDIO_DEVICE "videocd.bin"
 #define DEFAULT_CDIO_CUE    "videocd.cue"
 
-static uint32_t _stat_size_bincue (void *user_data);
+static lsn_t get_disc_last_lsn_bincue (void *user_data);
 #include "image_common.h"
 static bool     parse_cuefile (_img_private_t *cd, const char *toc_name);
 
@@ -83,7 +83,7 @@ _init_bincue (_img_private_t *env)
     return false;
   }
 
-  /* Have to set init before calling _stat_size_bincue() or we will
+  /* Have to set init before calling get_disc_last_lsn_bincue() or we will
      get into infinite recursion calling passing right here.
    */
   env->gen.init      = true;  
@@ -93,7 +93,7 @@ _init_bincue (_img_private_t *env)
 
   cdtext_init (&(env->gen.cdtext));
 
-  lead_lsn = _stat_size_bincue( (_img_private_t *) env);
+  lead_lsn = get_disc_last_lsn_bincue( (_img_private_t *) env);
 
   if (-1 == lead_lsn) return false;
 
@@ -216,10 +216,10 @@ _read_bincue (void *user_data, void *data, size_t size)
 /*!
    Return the size of the CD in logical block address (LBA) units.
  */
-static uint32_t 
-_stat_size_bincue (void *user_data)
+static lsn_t
+get_disc_last_lsn_bincue (void *p_user_data)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *env = p_user_data;
   long size;
 
   size = cdio_stream_stat (env->gen.data_source);
@@ -1140,6 +1140,7 @@ cdio_open_cue (const char *psz_cue_name)
   _funcs.get_cdtext            = get_cdtext_generic;
   _funcs.get_devices           = cdio_get_devices_bincue;
   _funcs.get_default_device    = cdio_get_default_device_bincue;
+  _funcs.get_disc_last_lsn     = get_disc_last_lsn_bincue;
   _funcs.get_discmode          = _get_discmode_image;
   _funcs.get_drive_cap         = _get_drive_cap_image;
   _funcs.get_first_track_num   = _get_first_track_num_image;
@@ -1161,7 +1162,6 @@ cdio_open_cue (const char *psz_cue_name)
   _funcs.read_mode2_sector     = _read_mode2_sector_bincue;
   _funcs.read_mode2_sectors    = _read_mode2_sectors_bincue;
   _funcs.set_arg               = _set_arg_image;
-  _funcs.stat_size             = _stat_size_bincue;
   
   if (NULL == psz_cue_name) return NULL;
   

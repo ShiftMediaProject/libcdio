@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.11 2005/01/23 19:16:58 rocky Exp $
+    $Id: freebsd.c,v 1.12 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.11 2005/01/23 19:16:58 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.12 2005/01/24 00:06:31 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -142,18 +142,19 @@ _read_mode2_sectors_freebsd (void *user_data, void *data, lsn_t lsn,
 
 /*!
    Return the size of the CD in logical block address (LBA) units.
+  @return the lsn. On error return CDIO_INVALID_LSN.
  */
-static uint32_t 
-_stat_size_freebsd (void *p_obj)
+static lsn_t 
+get_disc_last_lsn_freebsd (void *p_obj)
 {
   _img_private_t *p_env = p_obj;
 
-  if (NULL == p_env) return CDIO_INVALID_LBA;
+  if (!p_env) return CDIO_INVALID_LSN;
 
   if (_AM_CAM == p_env->access_mode) 
-    return stat_size_freebsd_cam(p_env);
+    return get_disc_last_lsn_mmc(p_env);
   else 
-    return stat_size_freebsd_ioctl(p_env);
+    return get_disc_last_lsn_freebsd_ioctl(p_env);
 }
 
 /*!
@@ -582,6 +583,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .get_cdtext             = get_cdtext_generic,
     .get_default_device     = cdio_get_default_device_freebsd,
     .get_devices            = cdio_get_devices_freebsd,
+    .get_disc_last_lsn      = get_disc_last_lsn_freebsd
     .get_discmode           = get_discmode_generic,
     .get_drive_cap          = get_drive_cap_freebsd,
     .get_first_track_num    = get_first_track_num_generic,
@@ -604,7 +606,6 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .set_arg                = _set_arg_freebsd,
     .set_blocksize         = set_blocksize_mmc,
     .set_speed              = set_speed_freebsd,
-    .stat_size              = _stat_size_freebsd
   };
 
   _data                     = _cdio_malloc (sizeof (_img_private_t));

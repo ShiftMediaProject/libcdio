@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.15 2005/01/23 19:16:58 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.16 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.15 2005/01/23 19:16:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.16 2005/01/24 00:06:31 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -346,7 +346,7 @@ _read_mode2_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_cdio_stat_size (void *p_user_data)
+get_disc_last_lsn_sunos (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -865,6 +865,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.get_cdtext             = get_cdtext_generic;
   _funcs.get_default_device     = cdio_get_default_device_solaris;
   _funcs.get_devices            = cdio_get_devices_solaris;
+  _funcs.get_disc_last_lsn      = get_disc_last_lsn_sunos;
   _funcs.get_discmode           = get_discmode_solaris;
   _funcs.get_drive_cap          = get_drive_cap_mmc;
   _funcs.get_first_track_num    = get_first_track_num_generic;
@@ -887,11 +888,9 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.read_mode2_sectors     = _read_mode2_sectors_solaris;
   _funcs.read_toc               = read_toc_solaris;
   _funcs.run_scsi_mmc_cmd       = run_scsi_cmd_solaris;
-  _funcs.stat_size              = _cdio_stat_size;
   _funcs.set_arg                = _set_arg_solaris;
   _funcs.set_blocksize          = set_blocksize_mmc;
   _funcs.set_speed              = set_speed_solaris;
-  _funcs.stat_size              = _cdio_stat_size;
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
 

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_aix.c,v 1.6 2005/01/23 19:16:58 rocky Exp $
+    $Id: _cdio_aix.c,v 1.7 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -37,7 +37,7 @@
 
 #ifdef HAVE_AIX_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.6 2005/01/23 19:16:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.7 2005/01/24 00:06:31 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -413,7 +413,7 @@ _read_mode2_sectors_aix (void *p_user_data, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_cdio_stat_size (void *p_user_data)
+get_disc_last_lsn_aix (void *p_user_data)
 {
   uint32_t i_size=0;
 #ifdef FINISHED
@@ -941,6 +941,7 @@ cdio_open_am_aix (const char *psz_orig_source, const char *access_mode)
   _funcs.get_cdtext         = get_cdtext_generic;
   _funcs.get_default_device = cdio_get_default_device_aix;
   _funcs.get_devices        = cdio_get_devices_aix;
+  _funcs.get_disc_last_lsn  = get_disc_last_lsn_aix;
   _funcs.get_discmode       = get_discmode_aix;
   _funcs.get_drive_cap      = get_drive_cap_mmc;
   _funcs.get_first_track_num= get_first_track_num_generic;
@@ -960,7 +961,6 @@ cdio_open_am_aix (const char *psz_orig_source, const char *access_mode)
   _funcs.read_mode2_sectors = _read_mode2_sectors_aix;
   _funcs.read_toc           = read_toc_aix;
   _funcs.run_scsi_mmc_cmd   = run_scsi_cmd_aix;
-  _funcs.stat_size          = _cdio_stat_size;
   _funcs.set_arg            = _set_arg_aix;
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));

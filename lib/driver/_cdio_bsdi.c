@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.8 2005/01/23 19:16:58 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.9 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.8 2005/01/23 19:16:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.9 2005/01/24 00:06:31 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -271,7 +271,7 @@ _read_audio_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
     }
   }
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
@@ -289,7 +289,6 @@ _read_mode1_sector_bsdi (void *user_data, void *data, lsn_t lsn,
 #else
   return cdio_generic_read_form1_sector(user_data, data, lsn);
 #endif
-  return 0;
 }
 
 /*!
@@ -312,7 +311,7 @@ _read_mode1_sectors_bsdi (void *p_user_data, void *p_data, lsn_t lsn,
 					    lsn + i, b_form2)) )
       return retval;
   }
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
@@ -371,7 +370,7 @@ _read_mode2_sector_bsdi (void *p_user_data, void *p_data, lsn_t lsn,
   else
     memcpy (((char *)p_data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
   
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
@@ -395,14 +394,14 @@ _read_mode2_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
 					 lsn + i, b_form2);
     if (retval) return retval;
   }
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_stat_size_bsdi (void *user_data)
+get_disc_last_lsn_bsdi (void *user_data)
 {
   _img_private_t *p_env = user_data;
 
@@ -767,6 +766,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .get_default_device = cdio_get_default_device_bsdi,
     .get_devices        = cdio_get_devices_bsdi,
     .get_drive_cap      = get_drive_cap_mmc,
+    .get_disc_last_lsn  = get_disc_last_lsn_bsdi
     .get_discmode       = get_discmode_generic,
     .get_first_track_num= get_first_track_num_generic,
     .get_hwinfo         = NULL,
@@ -786,7 +786,6 @@ cdio_open_bsdi (const char *psz_orig_source)
     .read_toc           = &read_toc_bsdi,
     .run_scsi_mmc_cmd   = &run_scsi_cmd_bsdi,
     .set_arg            = _set_arg_bsdi,
-    .stat_size          = _stat_size_bsdi
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));

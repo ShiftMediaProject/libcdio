@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.8 2005/01/23 19:16:58 rocky Exp $
+    $Id: nrg.c,v 1.9 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.8 2005/01/23 19:16:58 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.9 2005/01/24 00:06:31 rocky Exp $";
 
 
 /* reader */
@@ -68,8 +68,8 @@ typedef struct {
 #define NEED_NERO_STRUCT
 #include "image_common.h"
 
-static bool     parse_nrg (_img_private_t *env, const char *psz_cue_name);
-static uint32_t _stat_size_nrg (void *p_user_data);
+static bool  parse_nrg (_img_private_t *env, const char *psz_cue_name);
+static lsn_t get_disc_last_lsn_nrg (void *p_user_data);
 
 /* Updates internal track TOC, so we can later 
    simulate ioctl(CDROMREADTOCENTRY).
@@ -730,7 +730,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
   }
 
   /* Fake out leadout track. */
-  /* Don't use _stat_size_nrg since that will lead to recursion since
+  /* Don't use get_disc_last_lsn_nrg since that will lead to recursion since
      we haven't fully initialized things yet.
   */
   cdio_lsn_to_msf (p_env->size, &p_env->tocent[p_env->gen.i_tracks].start_msf);
@@ -835,8 +835,14 @@ _read_nrg (void *p_user_data, void *buf, size_t size)
   return cdio_stream_read(p_env->gen.data_source, buf, size, 1);
 }
 
-static uint32_t 
-_stat_size_nrg (void *p_user_data)
+/*!
+  Get the size of the CD in logical block address (LBA) units.
+  
+  @param p_cdio the CD object queried
+  @return the lsn. On error 0 or CDIO_INVALD_LSN.
+*/
+static lsn_t
+get_disc_last_lsn_nrg (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -1209,6 +1215,7 @@ cdio_open_nrg (const char *psz_source)
   _funcs.get_cdtext            = get_cdtext_generic;
   _funcs.get_devices           = cdio_get_devices_nrg;
   _funcs.get_default_device    = cdio_get_default_device_nrg;
+  _funcs.get_disc_last_lsn     = get_disc_last_lsn_nrg;
   _funcs.get_discmode          = _get_discmode_image;
   _funcs.get_drive_cap         = _get_drive_cap_image;
   _funcs.get_first_track_num   = _get_first_track_num_image;
@@ -1230,7 +1237,6 @@ cdio_open_nrg (const char *psz_source)
   _funcs.read_mode2_sector     = _read_mode2_sector_nrg;
   _funcs.read_mode2_sectors    = _read_mode2_sectors_nrg;
   _funcs.set_arg               = _set_arg_image;
-  _funcs.stat_size             = _stat_size_nrg;
 
   _data                   = _cdio_malloc (sizeof (_img_private_t));
   _data->gen.init         = false;

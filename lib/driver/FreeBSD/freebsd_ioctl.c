@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.2 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.2 2005/01/24 00:06:31 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -120,8 +120,8 @@ read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data, lsn_t lsn,
 /*!
    Return the size of the CD in logical block address (LBA) units.
  */
-uint32_t 
-stat_size_freebsd_ioctl (_img_private_t *_obj)
+lsn_t
+get_disc_last_lsn_freebsd_ioctl (_img_private_t *_obj)
 {
   struct ioc_read_toc_single_entry tocent;
   uint32_t size;

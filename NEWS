@@ -8,7 +8,7 @@
 - cd-info now shows the total disc size.
 - Filesystem reorganization to better support growth and paranoia inclusion
 - FreeBSD 6 tolerated, CAM audio read mode works.
-- improve Win32 driver
+- improve Win32 driver, e.g. audio read mode works better for ioctl.
 - mode detection fixes
 - all read routines check and adjust the lsn so we don't try to access
   beyond the end of the disc
@@ -171,4 +171,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.62 2005/01/23 00:02:15 rocky Exp $
+$Id: NEWS,v 1.63 2005/01/24 00:06:31 rocky Exp $

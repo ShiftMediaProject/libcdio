@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.40 2005/01/20 04:46:25 rocky Exp $
+    $Id: scsi_mmc.h,v 1.41 2005/01/24 00:06:31 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -378,8 +378,15 @@ int scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 
  @return 0 if successful.
  */
-int scsi_mmc_eject_media( const CdIo_t *p_cdio);
+int scsi_mmc_eject_media( const CdIo_t *p_cdio );
 
+/*!  
+  Get the lsn of the end of the CD
+  
+  @return the lsn. On error return CDIO_INVALID_LSN.
+*/
+lsn_t scsi_mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
+  
 /*! 
   Return the discmode as reported by the SCSI-MMC Read (FULL) TOC
   command.
