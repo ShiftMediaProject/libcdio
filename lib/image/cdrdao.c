@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.20 2004/07/17 22:16:47 rocky Exp $
+    $Id: cdrdao.c,v 1.21 2004/07/24 14:23:39 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.20 2004/07/17 22:16:47 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.21 2004/07/24 14:23:39 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -84,7 +84,7 @@ typedef struct {
   track_t       i_tracks;      /* number of tracks in image */
   track_t       i_first_track; /* track number of first track */
   cdtext_t      cdtext;	       /* CD-TEXT */
-  track_format_t mode;
+  discmode_t    disc_mode;
 } _img_private_t;
 
 static uint32_t _stat_size_cdrdao (void *user_data);
@@ -110,6 +110,7 @@ _init_cdrdao (_img_private_t *env)
   env->gen.init      = true;  
   env->i_first_track = 1;
   env->psz_mcn       = NULL;
+  env->disc_mode     = CDIO_DISC_MODE_NO_INFO;
 
   cdtext_init (&(env->cdtext));
 
@@ -346,14 +347,14 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
       } else if (0 == strcmp ("CD_DA", psz_keyword)) {
 	if (-1 == i) {
 	  if (NULL != cd)
-	    cd->mode = TRACK_FORMAT_AUDIO;
+	    cd->disc_mode = CDIO_DISC_MODE_CD_DA;
 	} else {
 	  goto not_in_global_section;
 	}
       } else if (0 == strcmp ("CD_ROM", psz_keyword)) {
 	if (-1 == i) {
 	  if (NULL != cd)
-	    cd->mode = TRACK_FORMAT_DATA;
+	    cd->disc_mode = CDIO_DISC_MODE_CD_DATA_1;
 	} else {
 	  goto not_in_global_section;
 	}
@@ -361,7 +362,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
       } else if (0 == strcmp ("CD_ROM_XA", psz_keyword)) {
 	if (-1 == i) {
 	  if (NULL != cd)
-	    cd->mode = TRACK_FORMAT_XA;
+	    cd->disc_mode = CDIO_DISC_MODE_CD_XA_2_1;
 	} else {
 	  goto not_in_global_section;
 	}
@@ -991,6 +992,7 @@ cdio_open_cdrdao (const char *psz_cue_name)
     .get_cdtext         = _get_cdtext_image,
     .get_devices        = cdio_get_devices_cdrdao,
     .get_default_device = cdio_get_default_device_cdrdao,
+    .get_discmode       = _get_discmode_image,
     .get_drive_cap      = _get_drive_cap_image,
     .get_first_track_num= _get_first_track_num_image,
     .get_mcn            = _get_mcn_image,

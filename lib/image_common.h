@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.13 2004/07/17 22:16:47 rocky Exp $
+    $Id: image_common.h,v 1.14 2004/07/24 14:23:37 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -117,6 +117,16 @@ _get_cdtext_image (void *user_data, track_t i_track)
   else 
     return &(env->tocent[i_track-env->i_first_track].cdtext);
   
+}
+
+/*! 
+  Get disc type associated with cd_obj.
+*/
+static discmode_t
+_get_discmode_image (void *p_user_data)
+{
+  _img_private_t *p_env = p_user_data;
+  return p_env->disc_mode;
 }
 
 /*!

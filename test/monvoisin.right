@@ -23,6 +23,8 @@ Writing....
   Can write DVD-R           : No
   Can write DVD-RAM         : No
 __________________________________
+
+Disc mode is listed as: CD-ROM XA form2 mode 1
 CD-ROM Track List (1 - 2)
   #: MSF       LSN     Type  Green?
   1: 00:02:00  000000  XA    true

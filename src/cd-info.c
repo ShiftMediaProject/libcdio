@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.73 2004/07/17 22:16:47 rocky Exp $
+    $Id: cd-info.c,v 1.74 2004/07/24 14:23:39 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -79,8 +79,8 @@ struct arguments
   int            no_ioctl;
   int            no_analysis;
   char          *access_mode; /* Access method driver should use for control */
-#ifdef HAVE_CDDB
   int            no_cddb;     /* If set the below are meaningless. */
+#ifdef HAVE_CDDB
   char          *cddb_email;  /* email to report to CDDB server. */
   char          *cddb_server; /* CDDB server to contact */
   int            cddb_port;   /* port number to contact CDDB server. */
@@ -90,6 +90,8 @@ struct arguments
   char          *cddb_cachedir;
 #endif
   int            no_vcd;
+  int            no_device;
+  int            no_disc_mode;
   uint32_t       debug_level;
   int            version_only;
   int            silent;
@@ -162,8 +164,17 @@ parse_options (int argc, const char *argv[])
     
     {"cddb-timeout",  '\0', POPT_ARG_INT, &opts.cddb_timeout, 0,
      "CDDB timeout value in seconds (default 10 seconds)"},
+#else 
+    {"no-cddb",     '\0', POPT_ARG_NONE, &opts.no_cddb, 1,
+     "Don't look up audio CDDB information - for this build, this is always set"},
 #endif
   
+    {"no-device-info", '\0', POPT_ARG_NONE, &opts.no_device, 0,
+     "Don't show device info, just CD info"},
+    
+    {"no-disc-mode", '\0', POPT_ARG_NONE, &opts.no_disc_mode, 0,
+     "Don't show disc-mode info"},
+    
 #ifdef HAVE_VCDINFO
     {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 0,
      "Don't look up Video CD information"},
@@ -803,6 +814,8 @@ init(void)
   opts.silent        = false;
   opts.list_drives   = false;
   opts.no_header     = false;
+  opts.no_device     = 0;
+  opts.no_disc_mode  = 0;
   opts.debug_level   = 0;
   opts.no_tracks     = 0;
   opts.print_iso9660 = 0;
@@ -814,7 +827,13 @@ init(void)
   opts.cddb_server   = NULL;
   opts.cddb_timeout = -1;
   opts.cddb_disable_cache = false;
-  
+#else  
+  opts.no_cddb       = 1;
+#endif
+#ifdef HAVE_VCDINFO
+  opts.no_vcd        = 0;
+#else
+  opts.no_vcd        = 1;
 #endif
   opts.no_ioctl      = 0;
   opts.no_analysis   = 0;
@@ -959,13 +978,13 @@ main(int argc, const char *argv[])
     }
   } 
 
-  if (opts.silent == 0) {
+  if (0 == opts.silent) {
     printf("CD location   : %s\n",   source_name);
     printf("CD driver name: %s\n",   cdio_get_driver_name(cdio));
     printf("   access mode: %s\n\n", cdio_get_arg(cdio, "access-mode"));
   } 
 
-  {
+  if (0 == opts.no_device) {
     cdio_drive_read_cap_t  i_read_cap;
     cdio_drive_write_cap_t i_write_cap;
     cdio_drive_misc_cap_t  i_misc_cap;
@@ -988,16 +1007,53 @@ main(int argc, const char *argv[])
     if (device_list) free(device_list);
   }
 
+  printf(STRONG "\n");
+  
+
+  if ( 0 == opts.no_disc_mode ) {
+    printf("Disc mode is listed as: ");
+    switch(cdio_get_discmode(cdio)) {
+    case CDIO_DISC_MODE_CD_DA:
+      printf("CD-DA\n");
+      break;
+    case CDIO_DISC_MODE_CD_DATA_1:
+      printf("CD-ROM form 1 mode 1");
+      break;
+    case CDIO_DISC_MODE_CD_DATA_2:
+      printf("CD-ROM form 1 mode 2");
+      break;
+    case CDIO_DISC_MODE_CD_XA_2_1:
+      printf("CD-ROM XA form2 mode 1");
+      break;
+    case CDIO_DISC_MODE_CD_XA_2_2:
+    printf("CD-ROM XA form2 mode 2");
+    break;
+    case CDIO_DISC_MODE_CD_MIXED:
+      printf("CD-ROM mixed mode");
+      break;
+    case CDIO_DISC_MODE_DVD:
+      printf("some sort of DVD");
+      break;
+    case CDIO_DISC_MODE_NO_INFO:
+      printf("No information");
+      break;
+    case CDIO_DISC_MODE_ERROR:
+      printf("No error");
+      break;
+    }
+    printf("\n");
+  }
+  
   i_first_track = cdio_get_first_track_num(cdio);
   i_tracks      = cdio_get_num_tracks(cdio);
 
   if (!opts.no_tracks) {
-    printf(STRONG "CD-ROM Track List (%i - %i)\n" NORMAL, 
+    printf("CD-ROM Track List (%i - %i)\n" NORMAL, 
 	   i_first_track, i_tracks);
 
     printf("  #: MSF       LSN     Type  Green?\n");
   }
-  
+
   /* Read and possibly print track information. */
   for (i = i_first_track; i <= CDIO_CDROM_LEADOUT_TRACK; i++) {
     msf_t msf;

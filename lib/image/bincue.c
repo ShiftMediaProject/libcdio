@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.35 2004/07/17 22:16:47 rocky Exp $
+    $Id: bincue.c,v 1.36 2004/07/24 14:23:38 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.35 2004/07/17 22:16:47 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.36 2004/07/24 14:23:38 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -84,7 +84,7 @@ typedef struct {
   track_t       i_tracks;        /* number of tracks in image */
   track_t       i_first_track;   /* track number of first track */
   cdtext_t      cdtext;	         /* CD-TEXT */
-  track_format_t mode;
+  discmode_t    disc_mode;
 } _img_private_t;
 
 static uint32_t _stat_size_bincue (void *user_data);
@@ -97,7 +97,7 @@ static bool     parse_cuefile (_img_private_t *cd, const char *toc_name);
   Initialize image structures.
  */
 static bool
-_bincue_init (_img_private_t *env)
+_init_bincue (_img_private_t *env)
 {
   lsn_t lead_lsn;
 
@@ -115,6 +115,7 @@ _bincue_init (_img_private_t *env)
   env->gen.init      = true;  
   env->i_first_track = 1;
   env->psz_mcn       = NULL;
+  env->disc_mode     = CDIO_DISC_MODE_NO_INFO;
 
   cdtext_init (&(env->cdtext));
 
@@ -397,6 +398,24 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->endsize        = 0;
 	      this_track->track_format   = TRACK_FORMAT_AUDIO;
 	      this_track->track_green    = false;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_DA;
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DATA_1:
+	      case CDIO_DISC_MODE_CD_DATA_2:
+	      case CDIO_DISC_MODE_CD_XA_2_1:
+	      case CDIO_DISC_MODE_CD_XA_2_2:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE1/2048", psz_field)) {
 	    if (cd) {
@@ -408,6 +427,24 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->datastart   = 0;         
 	      this_track->datasize    = CDIO_CD_FRAMESIZE;
 	      this_track->endsize     = 0;  
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_DATA_1;
+		break;
+	      case CDIO_DISC_MODE_CD_DATA_1:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_DATA_2:
+	      case CDIO_DISC_MODE_CD_XA_2_1:
+	      case CDIO_DISC_MODE_CD_XA_2_2:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE1/2352", psz_field)) {
 	    if (cd) {
@@ -420,6 +457,24 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->endsize     = CDIO_CD_EDC_SIZE 
 		+ CDIO_CD_M1F1_ZERO_SIZE + CDIO_CD_ECC_SIZE;
 	      this_track->mode        = MODE1_RAW; 
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_DATA_2;
+		break;
+	      case CDIO_DISC_MODE_CD_DATA_2:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_DATA_1:
+	      case CDIO_DISC_MODE_CD_XA_2_1:
+	      case CDIO_DISC_MODE_CD_XA_2_2:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE2/2336", psz_field)) {
 	    if (cd) {
@@ -431,6 +486,24 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 		+ CDIO_CD_HEADER_SIZE;
 	      this_track->datasize    = M2RAW_SECTOR_SIZE;  
 	      this_track->endsize     = 0;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_DATA_2;
+		break;
+	      case CDIO_DISC_MODE_CD_DATA_2:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_DATA_1:
+	      case CDIO_DISC_MODE_CD_XA_2_1:
+	      case CDIO_DISC_MODE_CD_XA_2_2:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE2/2048", psz_field)) {
 	    if (cd) {
@@ -438,6 +511,24 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->track_format= TRACK_FORMAT_XA;
 	      this_track->track_green = true;
 	      this_track->mode        = MODE2_FORM1;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA_2_1;
+		break;
+	      case CDIO_DISC_MODE_CD_XA_2_1:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_DATA_1:
+	      case CDIO_DISC_MODE_CD_DATA_2:
+	      case CDIO_DISC_MODE_CD_XA_2_2:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE2/2324", psz_field)) {
 	    if (cd) {
@@ -445,6 +536,24 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->track_format= TRACK_FORMAT_XA;
 	      this_track->track_green = true;
 	      this_track->mode        = MODE2_FORM2;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA_2_2;
+		break;
+	      case CDIO_DISC_MODE_CD_XA_2_2:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_DATA_1:
+	      case CDIO_DISC_MODE_CD_DATA_2:
+	      case CDIO_DISC_MODE_CD_XA_2_1:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE2/2336", psz_field)) {
 	    if (cd) {
@@ -456,6 +565,24 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 		+ CDIO_CD_HEADER_SIZE;
 	      this_track->datasize    = M2RAW_SECTOR_SIZE;  
 	      this_track->endsize     = 0;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA_2_2;
+		break;
+	      case CDIO_DISC_MODE_CD_XA_2_2:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_DATA_1:
+	      case CDIO_DISC_MODE_CD_DATA_2:
+	      case CDIO_DISC_MODE_CD_XA_2_1:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE2/2352", psz_field)) {
 	    if (cd) {
@@ -467,6 +594,24 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 		+ CDIO_CD_HEADER_SIZE + CDIO_CD_SUBHEADER_SIZE;
 	      this_track->datasize    = CDIO_CD_FRAMESIZE;
 	      this_track->endsize     = CDIO_CD_SYNC_SIZE + CDIO_CD_ECC_SIZE;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA_2_2;
+		break;
+	      case CDIO_DISC_MODE_CD_XA_2_2:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_DATA_1:
+	      case CDIO_DISC_MODE_CD_DATA_2:
+	      case CDIO_DISC_MODE_CD_XA_2_1:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else {
 	    cdio_log(log_level, 
@@ -1012,6 +1157,7 @@ cdio_open_cue (const char *psz_cue_name)
     .get_cdtext         = _get_cdtext_image,
     .get_devices        = cdio_get_devices_bincue,
     .get_default_device = cdio_get_default_device_bincue,
+    .get_discmode       = _get_discmode_image,
     .get_drive_cap      = _get_drive_cap_image,
     .get_first_track_num= _get_first_track_num_image,
     .get_mcn            = _get_mcn_image,
@@ -1055,7 +1201,7 @@ cdio_open_cue (const char *psz_cue_name)
   _set_arg_image (_data, "source", psz_bin_name);
   free(psz_bin_name);
 
-  if (_bincue_init(_data)) {
+  if (_init_bincue(_data)) {
     return ret;
   } else {
     _free_image(_data);
