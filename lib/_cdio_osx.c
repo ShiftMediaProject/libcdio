@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.10 2003/10/05 14:47:45 rocky Exp $
+    $Id: _cdio_osx.c,v 1.11 2003/10/05 14:55:34 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com> from vcdimager code
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -31,7 +31,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.10 2003/10/05 14:47:45 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.11 2003/10/05 14:55:34 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -534,6 +534,24 @@ _cdio_get_first_track_num(void *env)
 }
 
 /*!
+   Return the media catalog number MCN.
+  */
+static char *
+_cdio_get_mcn (void *env) {
+   _img_private_t *_obj = env;
+   dk_cd_read_mcn_t cd_read;
+
+   memset( &cd_read, 0, sizeof(cd_read) );
+
+   if( ioctl( _obj->gen.fd, DKIOCCDREADMCN, &cd_read ) < 0 )
+   {
+     cdio_error( "could not read MCN, %s", strerror(errno) );
+     return -1;
+   }
+   return strdup((char*)cd_read.mcn);
+}
+
+/*!
   Return the number of tracks in the current medium.
   CDIO_INVALID_TRACK is returned on error.
   This is the externally called interface.
@@ -794,7 +812,7 @@ cdio_open_osx (const char *source_name)
     .get_default_device = cdio_get_default_device_osx,
     .get_devices        = cdio_get_devices_osx,
     .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = NULL, /*there is a readMCN, but how to use? */
+    .get_mcn            = _cdio_get_mcn, 
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,
