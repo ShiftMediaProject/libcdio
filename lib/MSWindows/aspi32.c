@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.19 2004/07/13 12:28:21 rocky Exp $
+    $Id: aspi32.c,v 1.20 2004/07/14 04:34:25 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.19 2004/07/13 12:28:21 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.20 2004/07/14 04:34:25 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -382,37 +382,28 @@ init_aspi (_img_private_t *env)
   return false;
 }
 
-/*!
-   Reads a single mode2 sector from cd device into data starting from lsn.
-   Returns 0 if no error. 
+
+/* 
+   Issue a SCSI passthrough command.
  */
-static int
-read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
-		       int sector_type, unsigned int nblocks)
+static bool 
+scsi_mmc_command( const _img_private_t *env, 
+		  void * indata,  unsigned int i_indata, 
+		  void * outdata, unsigned int i_outdata )
 {
   HANDLE hEvent;
   struct SRB_ExecSCSICmd ssc;
 
-#if 0  
-  sector_type = 0; /*all types */
-#endif
-  int sync        = 0;
-  int header_code = 2;
-  int i_user_data = 1;
-  int edc_ecc     = 0;
-  int error_field = 0;
-  
-  
   /* Create the transfer completion event */
   hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
   if( hEvent == NULL ) {
-    return 1;
+    return false;
   }
   
   /* Data selection */
   
   memset( &ssc, 0, sizeof( ssc ) );
-  
+
   ssc.SRB_Cmd         = SC_EXEC_SCSI_CMD;
   ssc.SRB_Flags       = SRB_DIR_IN | SRB_EVENT_NOTIFY;
   ssc.SRB_HaId        = LOBYTE( env->i_sid );
@@ -421,47 +412,16 @@ read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
   ssc.SRB_SenseLen    = SENSE_LEN;
   
   ssc.SRB_PostProc = (LPVOID) hEvent;
-  ssc.SRB_CDBLen      = 12;
+  ssc.SRB_CDBLen      = i_indata;
   
-  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_GPCMD_READ_CD);
-  CDIO_MMC_SET_READ_TYPE(ssc.CDBByte, sector_type);
-  CDIO_MMC_SET_READ_LBA(ssc.CDBByte, lsn);
-  CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, nblocks);
-  
-#if 1
-  ssc.CDBByte[ 9 ] = (sync << 7) |
-    (header_code << 5) |
-    (i_user_data << 4) |
-    (edc_ecc << 3) |
-    (error_field << 1);
-  /* ssc.CDBByte[ 9 ] = READ_CD_USERDATA_MODE2; */
-#else 
-  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(ssc.CDBByte,
-					   CDIO_MMC_MCSB_ALL_HEADERS);
-#endif
-  
-  /* Result buffer */
-  ssc.SRB_BufPointer  = data;
+  ssc.SRB_Flags       = SRB_DIR_IN | SRB_EVENT_NOTIFY;
 
-  switch (sector_type) {
-  case CDIO_MMC_READ_TYPE_ANY: 
-  case CDIO_MMC_READ_TYPE_CDDA: 
-    ssc.SRB_BufLen = CDIO_CD_FRAMESIZE_RAW;
-    break;
-  case CDIO_MMC_READ_TYPE_M2F1:
-    ssc.SRB_BufLen = CDIO_CD_FRAMESIZE;
-    break;
-  case CDIO_MMC_READ_TYPE_M2F2:
-    ssc.SRB_BufLen = 2324;
-    break;
-  case CDIO_MMC_READ_TYPE_MODE1:
-    ssc.SRB_BufLen = CDIO_CD_FRAMESIZE;
-    break;
-  default:
-    ssc.SRB_BufLen = CDIO_CD_FRAMESIZE_RAW;
-  }
+  /* Result buffer */
+  ssc.SRB_BufPointer  = outdata;
+  ssc.SRB_BufLen      = i_outdata;
+
+  memcpy( ssc.CDBByte, indata, i_indata );
   
-  /* Initiate transfer */
   ResetEvent( hEvent );
   env->lpSendCommand( (void*) &ssc );
   
@@ -475,10 +435,74 @@ read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
   /* check that the transfer went as planned */
   if( ssc.SRB_Status != SS_COMP ) {
     cdio_info("ASPI: %s", aspierror(ssc.SRB_Status));
-    return 1;
+    return false;
   }
 
-  return 0;
+  return true;
+}
+
+
+/*!
+   Reads a single mode2 sector from cd device into data starting from lsn.
+   Returns 0 if no error. 
+ */
+static int
+read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
+		   int sector_type, unsigned int nblocks)
+{
+  uint8_t cmd[10] = {0, };
+  unsigned int i_outdata;
+
+  int sync        = 0;
+  int header_code = 2;
+  int i_user_data = 1;
+  int edc_ecc     = 0;
+  int error_field = 0;
+  
+#if 0  
+  sector_type = 0; /*all types */
+#endif
+  
+  /* Set up passthrough command */
+  CDIO_MMC_SET_COMMAND(cmd, CDIO_MMC_GPCMD_READ_CD);
+  CDIO_MMC_SET_READ_TYPE(cmd, sector_type);
+  CDIO_MMC_SET_READ_LBA(cmd, lsn);
+  CDIO_MMC_SET_READ_LENGTH(cmd, nblocks);
+  
+#if 1
+  cmd[ 9 ] = (sync << 7) |
+    (header_code << 5) |
+    (i_user_data << 4) |
+    (edc_ecc << 3) |
+    (error_field << 1);
+  /* ssc.CDBByte[ 9 ] = READ_CD_USERDATA_MODE2; */
+#else 
+  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cmd,
+					   CDIO_MMC_MCSB_ALL_HEADERS);
+#endif
+  
+  switch (sector_type) {
+  case CDIO_MMC_READ_TYPE_ANY: 
+  case CDIO_MMC_READ_TYPE_CDDA: 
+    i_outdata = CDIO_CD_FRAMESIZE_RAW;
+    break;
+  case CDIO_MMC_READ_TYPE_M2F1:
+    i_outdata = CDIO_CD_FRAMESIZE;
+    break;
+  case CDIO_MMC_READ_TYPE_M2F2:
+    i_outdata = 2324;
+    break;
+  case CDIO_MMC_READ_TYPE_MODE1:
+    i_outdata = CDIO_CD_FRAMESIZE;
+    break;
+  default:
+    i_outdata = CDIO_CD_FRAMESIZE_RAW;
+  }
+
+  if (scsi_mmc_command(env, cmd, sizeof(cmd), data, i_outdata*nblocks)) 
+    return 0;
+  else 
+    return 1;
 }
 
 /*!
@@ -694,55 +718,16 @@ wnaspi32_eject_media (void *user_data) {
 const cdtext_t *
 get_cdtext_aspi (_img_private_t *env)
 {
-  uint8_t  bigbuffer[5000];
-  HANDLE hEvent;
-  struct SRB_ExecSCSICmd ssc;
+  uint8_t  bigbuffer[5000] = { 0, };
+  uint8_t  cmd[10] = { 0, };
 
-  /* Create the transfer completion event */
-  hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-  if( hEvent == NULL ) {
-    return NULL;
-  }
-  
-  memset( &ssc, 0, sizeof( ssc ) );
+  CDIO_MMC_SET_COMMAND(cmd, CDIO_MMC_GPCMD_READ_TOC); 
+  cmd[1] = 0x02;   /* MSF mode */
+  cmd[2] = 0x05;   /* CD text  */
+  CDIO_MMC_SET_READ_LENGTH(cmd, sizeof(bigbuffer));
 
-  ssc.SRB_Cmd         = SC_EXEC_SCSI_CMD;
-  ssc.SRB_Flags       = SRB_DIR_IN | SRB_EVENT_NOTIFY;
-  ssc.SRB_HaId        = LOBYTE( env->i_sid );
-  ssc.SRB_Target      = HIBYTE( env->i_sid );
-  ssc.SRB_Lun         = env->i_lun;
-  ssc.SRB_SenseLen    = SENSE_LEN;
-  
-  ssc.SRB_PostProc = (LPVOID) hEvent;
-  ssc.SRB_CDBLen      = 10;
-  
-  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_GPCMD_READ_TOC); 
-  ssc.CDBByte[1]   = 0x02;   // MSF mode 
-  ssc.CDBByte[2]   = 0x05;   // CD text
-  CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, sizeof(bigbuffer));
-
-  /* Result buffer */
-  ssc.SRB_BufPointer  = bigbuffer;
-  ssc.SRB_BufLen      = sizeof(bigbuffer);
-
-  memset ( bigbuffer, 0, sizeof(bigbuffer) );
-
-  /* Initiate transfer */
-  ResetEvent( hEvent );
-  env->lpSendCommand( (void*) &ssc );
-  
-  /* If the command has still not been processed, wait until it's
-   * finished */
-  if( ssc.SRB_Status == SS_PENDING ) {
-    WaitForSingleObject( hEvent, OP_TIMEOUT_MS );
-  }
-  CloseHandle( hEvent );
-  
-  /* check that the transfer went as planned */
-  if( ssc.SRB_Status != SS_COMP ) {
-    cdio_info("ASPI: %s", aspierror(ssc.SRB_Status));
-    return NULL;
-  }
+  if (!scsi_mmc_command(env, cmd, sizeof(cmd), bigbuffer, sizeof(bigbuffer)))
+      return NULL;
 
   {
     CDText_data_t *pdata;
@@ -814,58 +799,18 @@ get_cdtext_aspi (_img_private_t *env)
 cdio_drive_cap_t
 get_drive_cap_aspi (const _img_private_t *env) 
 {
-  int32_t i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
-  BYTE        buf[256] = { 0, };
-  HANDLE hEvent;
-  struct SRB_ExecSCSICmd ssc;
+  uint8_t  cmd[10] = { 0, };
+  int32_t  i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
+  uint8_t  buf[256] = { 0, };
 
-  /* Create the transfer completion event */
-  hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-  if( hEvent == NULL ) {
-    return CDIO_DRIVE_CAP_ERROR;
-  }
+  /* Set up passthrough command */
+  CDIO_MMC_SET_COMMAND(cmd, CDIO_MMC_GPCMD_MODE_SENSE_10);
+  cmd[1]  = 0x0;
+  cmd[2]  = CDIO_MMC_ALL_PAGES;
+  cmd[7]  = 0x01;
+  cmd[8]  = 0x00; 
 
-  memset( &ssc, 0, sizeof( ssc ) );
-  
-  /* If device supports SCSI-3, then we can get the CD drive
-     capabilities, i.e. ability to read/write to CD-ROM/R/RW
-     or/and read/write to DVD-ROM/R/RW.   */
-  
-  ssc.SRB_Cmd      = SC_EXEC_SCSI_CMD;
-  ssc.SRB_Flags    = SRB_DIR_IN | SRB_EVENT_NOTIFY;
-  ssc.SRB_HaId     = LOBYTE( env->i_sid );
-  ssc.SRB_Target   = HIBYTE( env->i_sid );
-  ssc.SRB_Lun      = env->i_lun;
-  ssc.SRB_SenseLen = SENSE_LEN;
-
-  ssc.SRB_PostProc = (LPVOID) hEvent;
-  ssc.SRB_CDBLen   = 12;
-
-  /* Operation code */
-  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_GPCMD_MODE_SENSE_10);
-  ssc.CDBByte[1]             = 0x0;
-  ssc.CDBByte[2]             = CDIO_MMC_ALL_PAGES;
-  ssc.CDBByte[7]             = 0x01;
-  ssc.CDBByte[8]             = 0x00; 
-
-  /* Allocation length and buffer */
-  ssc.SRB_BufPointer  = buf;
-  ssc.SRB_BufLen = sizeof( buf );
-  
-  /* Initiate transfer */
-  ResetEvent( hEvent );
-  env->lpSendCommand( (void*) &ssc );
-  
-  /* If the command has still not been processed, wait until it's
-   * finished */
-  if( ssc.SRB_Status == SS_PENDING )
-    WaitForSingleObject( hEvent, OP_TIMEOUT_MS );
-  
-  CloseHandle( hEvent );
-
-  /* check that the transfer went as planned */
-  if( ssc.SRB_Status != SS_COMP ) {
-    cdio_info("ASPI: %s", aspierror(ssc.SRB_Status));
+  if (!scsi_mmc_command(env, cmd, sizeof(cmd), buf, sizeof(buf))) {
     return i_drivetype;
   } else {
     BYTE *p;
@@ -938,5 +883,3 @@ get_track_format_aspi(const _img_private_t *env, track_t track_num)
 }
 
 #endif /* HAVE_WIN32_CDROM */
-
-
