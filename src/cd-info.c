@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.106 2005/01/01 14:20:41 rocky Exp $
+    $Id: cd-info.c,v 1.107 2005/01/02 22:49:31 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -347,7 +347,7 @@ msf_seconds(msf_t *msf)
       the number of tracks.
 */
 static unsigned long
-cddb_discid(CdIo *p_cdio, int i_tracks)
+cddb_discid(CdIo_t *p_cdio, int i_tracks)
 {
   int i,t,n=0;
   msf_t start_msf;
@@ -393,7 +393,7 @@ _log_handler (cdio_log_level_t level, const char message[])
 }
 
 static void 
-print_cdtext_track_info(CdIo *p_cdio, track_t i_track, const char *message) {
+print_cdtext_track_info(CdIo_t *p_cdio, track_t i_track, const char *message) {
   const cdtext_t *cdtext = cdio_get_cdtext(p_cdio, i_track);
 
   if (NULL != cdtext) {
@@ -410,7 +410,7 @@ print_cdtext_track_info(CdIo *p_cdio, track_t i_track, const char *message) {
 }
     
 static void 
-print_cdtext_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) {
+print_cdtext_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
   track_t i_last_track = i_first_track+i_tracks;
   
   print_cdtext_track_info(p_cdio, 0, "\nCD-TEXT for Disc:");
@@ -423,7 +423,7 @@ print_cdtext_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) {
 
 #ifdef HAVE_CDDB
 static void 
-print_cddb_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) {
+print_cddb_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
   int i, matches;
   
   cddb_conn_t *conn =  cddb_new();
@@ -534,7 +534,7 @@ print_vcd_info(driver_id_t driver) {
 #endif 
 
 static void
-print_iso9660_recurse (CdIo *p_cdio, const char pathname[], 
+print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[], 
 		       cdio_fs_anal_t fs, 
 		       bool b_mode2)
 {
@@ -617,7 +617,7 @@ print_iso9660_recurse (CdIo *p_cdio, const char pathname[],
 }
 
 static void
-print_iso9660_fs (CdIo *p_cdio, cdio_fs_anal_t fs, 
+print_iso9660_fs (CdIo_t *p_cdio, cdio_fs_anal_t fs, 
 		  track_format_t track_format)
 {
   bool b_mode2 = false;
@@ -653,7 +653,7 @@ static void
 print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis, 
 	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
 	       track_t i_tracks, track_t i_first_track, 
-	       track_format_t track_format, CdIo *p_cdio)
+	       track_format_t track_format, CdIo_t *p_cdio)
 {
   int need_lf;
   
@@ -837,7 +837,7 @@ int
 main(int argc, const char *argv[])
 {
 
-  CdIo                *p_cdio=NULL;
+  CdIo_t                *p_cdio=NULL;
   cdio_fs_anal_t       fs=CDIO_FS_AUDIO;
   int i;
   lsn_t                start_track_lsn;      /* lsn of first track */
@@ -998,7 +998,7 @@ main(int argc, const char *argv[])
     printf("list of devices found:\n");
     if (NULL != d) {
       for ( ; *d != NULL ; d++ ) {
-	CdIo *p_cdio = cdio_open(source_name, driver_id); 
+	CdIo_t *p_cdio = cdio_open(source_name, driver_id); 
 	cdio_hwinfo_t hwinfo;
 	printf("Drive %s\n", *d);
 	if (scsi_mmc_get_hwinfo(p_cdio, &hwinfo)) {

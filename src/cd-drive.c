@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.11 2004/11/14 00:03:52 rocky Exp $
+  $Id: cd-drive.c,v 1.12 2005/01/02 22:49:31 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -169,7 +169,7 @@ init(void)
 int
 main(int argc, const char *argv[])
 {
-  CdIo *p_cdio=NULL;
+  CdIo_t *p_cdio=NULL;
   
   init();
 
@@ -232,7 +232,7 @@ main(int argc, const char *argv[])
 	cdio_drive_write_cap_t i_write_cap;
 	cdio_drive_misc_cap_t  i_misc_cap;
 	cdio_hwinfo_t          hwinfo;
-	CdIo *p_cdio = cdio_open(*ppsz_cd, driver_id); 
+	CdIo_t *p_cdio = cdio_open(*ppsz_cd, driver_id); 
 
 	printf("%28s: %s\n", "Drive", *ppsz_cd);
 
