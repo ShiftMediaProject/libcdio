@@ -16,6 +16,11 @@
 @settitle The GNU libcdio library
 @setchapternewpage on
 
+@dircategory Libraries
+@direntry
+* libcdio: (libcdio).      Compact Disc input and control library.
+@end direntry
+
 @ifinfo
 This file documents GNU CD input and control library
 
@@ -37,7 +42,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.6 2003/10/28 16:23:49 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.7 2003/11/11 12:46:20 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
