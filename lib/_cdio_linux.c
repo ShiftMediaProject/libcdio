@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.93 2004/08/16 01:47:49 rocky Exp $
+    $Id: _cdio_linux.c,v 1.94 2004/08/26 10:44:38 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.93 2004/08/16 01:47:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.94 2004/08/26 10:44:38 rocky Exp $";
 
 #include <string.h>
 
@@ -292,10 +292,10 @@ get_drive_cap_linux (const void *p_user_data,
 
  */
 static char *
-_get_mcn_linux (const void *env) {
+get_mcn_linux (const void *p_user_data) {
 
   struct cdrom_mcn mcn;
-  const _img_private_t *p_env = env;
+  const _img_private_t *p_env = p_user_data;
   memset(&mcn, 0, sizeof(mcn));
   if (ioctl(p_env->gen.fd, CDROM_GET_MCN, &mcn) != 0)
     return NULL;
@@ -306,7 +306,7 @@ _get_mcn_linux (const void *env) {
   Get format of track. 
 */
 static track_format_t
-_get_track_format_linux(void *p_user_data, track_t i_track) 
+get_track_format_linux(void *p_user_data, track_t i_track) 
 {
   _img_private_t *p_env = p_user_data;
   
@@ -340,7 +340,7 @@ _get_track_format_linux(void *p_user_data, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_get_track_green_linux(void *p_user_data, track_t i_track) 
+get_track_green_linux(void *p_user_data, track_t i_track) 
 {
   _img_private_t *p_env = p_user_data;
   
@@ -368,7 +368,7 @@ _get_track_green_linux(void *p_user_data, track_t i_track)
   False is returned if there is no track entry.
 */
 static bool
-_get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
+get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -1109,12 +1109,12 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .get_discmode       = get_discmode_linux,
     .get_drive_cap      = get_drive_cap_linux,
     .get_first_track_num= get_first_track_num_generic,
-    .get_mcn            = _get_mcn_linux,
+    .get_mcn            = get_mcn_linux,
     .get_num_tracks     = get_num_tracks_generic,
-    .get_track_format   = _get_track_format_linux,
-    .get_track_green    = _get_track_green_linux,
+    .get_track_format   = get_track_format_linux,
+    .get_track_green    = get_track_green_linux,
     .get_track_lba      = NULL, /* This could be implemented if need be. */
-    .get_track_msf      = _get_track_msf_linux,
+    .get_track_msf      = get_track_msf_linux,
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
     .read_audio_sectors = _read_audio_sectors_linux,
