@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.5 2003/09/21 04:21:39 rocky Exp $
+  $Id: cd-read.c,v 1.6 2003/09/21 18:43:36 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -54,7 +54,6 @@ typedef struct
 {
   char name[30];
   read_mode_t read_mode;
-  lsn_t       start_lsn;
 } subopt_entry_t;
 
 
@@ -83,6 +82,8 @@ struct arguments
   int            print_iso9660;
   source_image_t source_image;
   lsn_t          start_lsn;
+  lsn_t          end_lsn;
+  int            num_sectors;
 } opts;
      
 static void
@@ -175,6 +176,14 @@ parse_options (int argc, const char *argv[])
      POPT_ARG_INT, &opts.start_lsn, 0,
      "Set LBA to start reading from"},
     
+    {"end",       'e', 
+     POPT_ARG_INT, &opts.end_lsn, 0,
+     "Set LBA to end reading from"},
+    
+    {"number",    'n', 
+     POPT_ARG_INT, &opts.num_sectors, 0,
+     "Set number of sectors to read"},
+    
     {"bin-file", 'b', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
      OP_SOURCE_BIN, "set \"bin\" CD-ROM disk image file as source", "FILE"},
     
@@ -198,6 +207,9 @@ parse_options (int argc, const char *argv[])
   };
   poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
   
+  program_name = strrchr(argv[0],'/');
+  program_name = program_name ? program_name+1 : strdup(argv[0]);
+
   while ((opt = poptGetNextOpt (optCon)) != -1)
     switch (opt)
       {
@@ -252,12 +264,6 @@ parse_options (int argc, const char *argv[])
         exit (EXIT_FAILURE);
       }
 
-  if (poptGetArgs (optCon) != NULL)
-    {
-      fprintf (stderr, "error - no arguments expected! - try --help\n");
-      exit (EXIT_FAILURE);
-    }
-
   {
     const char *remaining_arg = poptGetArg(optCon);
     if ( remaining_arg != NULL) {
@@ -270,6 +276,8 @@ parse_options (int argc, const char *argv[])
       
       if (opts.source_image == OP_SOURCE_DEVICE)
 	source_name = fillout_device_name(remaining_arg);
+      else 
+	source_name = strdup(remaining_arg);
       
       if ( (poptGetArgs(optCon)) != NULL) {
 	fprintf (stderr, 
@@ -288,13 +296,31 @@ parse_options (int argc, const char *argv[])
     exit(10);
   }
 
-  if (opts.start_lsn == CDIO_INVALID_LSN) {
-    fprintf(stderr, 
-	    "%s: Need to give a starting LBA\n",
-	    program_name);
-    exit(11);
+  /* Check consistency between start_lsn, end_lsn and num_sectors. */
+  if (opts.end_lsn == CDIO_INVALID_LSN) {
+    if (0 == opts.num_sectors) {
+      opts.num_sectors = 1;
+    }
+    opts.end_lsn = opts.start_lsn + opts.num_sectors - 1;
+  } else {
+    /* We were given an end lsn. */
+    if (opts.end_lsn < opts.start_lsn) {
+      fprintf(stderr, 
+	      "%s: end LSN (%d) needs to be less than start LSN (%d)\n",
+	      program_name, opts.start_lsn, opts.end_lsn);
+      exit(12);
+    }
+    if (opts.num_sectors != opts.end_lsn - opts.start_lsn + 1)
+      if (opts.num_sectors != 0) {
+	 fprintf(stderr, 
+		 "%s: inconsistency between start LSN (%d), end (%d), "
+		 "and count (%d)\n",
+		 program_name, opts.start_lsn, opts.end_lsn, opts.num_sectors);
+	 exit(13);
+	}
+    opts.num_sectors = opts.end_lsn - opts.start_lsn + 1;
   }
-
+  
 
   return true;
 }
@@ -315,6 +341,19 @@ log_handler (cdio_log_level_t level, const char message[])
 }
 
 
+static void 
+init(void) 
+{
+  opts.debug_level   = 0;
+  opts.start_lsn     = 0;
+  opts.end_lsn       = CDIO_INVALID_LSN;
+  opts.num_sectors   = 0;
+  opts.read_mode     = READ_MODE_UNINIT;
+  opts.source_image  = IMAGE_UNKNOWN;
+
+  gl_default_cdio_log_handler = cdio_log_set_handler (log_handler);
+}
+
 int
 main(int argc, const char *argv[])
 {
@@ -322,15 +361,7 @@ main(int argc, const char *argv[])
   unsigned int blocklen=CDIO_CD_FRAMESIZE_RAW;
   CdIo *cdio=NULL;
   
-  program_name = strrchr(argv[0],'/');
-  program_name = program_name ? program_name+1 : strdup(argv[0]);
-
-  opts.debug_level   = 0;
-  opts.start_lsn     = CDIO_INVALID_LSN;
-  opts.read_mode     = READ_MODE_UNINIT;
-  opts.source_image  = IMAGE_UNKNOWN;
-
-  gl_default_cdio_log_handler = cdio_log_set_handler (log_handler);
+  init();
 
   /* Parse our arguments; every option seen by `parse_opt' will
      be reflected in `arguments'. */
@@ -377,29 +408,36 @@ main(int argc, const char *argv[])
     break;
   }
 
-  switch (opts.read_mode) {
-  case READ_AUDIO:
-    cdio_read_audio_sector(cdio, &buffer, opts.start_lsn);
-    break;
-  case READ_M1F1:
-    cdio_read_mode1_sector(cdio, &buffer, opts.start_lsn, false);
-    blocklen=CDIO_CD_FRAMESIZE;
-    break;
-  case READ_M1F2:
-    cdio_read_mode1_sector(cdio, &buffer, opts.start_lsn, true);
-    break;
-  case READ_M2F1:
-    cdio_read_mode2_sector(cdio, &buffer, opts.start_lsn, false);
-    break;
-  case READ_M2F2:
-    cdio_read_mode2_sector(cdio, &buffer, opts.start_lsn, true);
-    break;
-  case READ_MODE_UNINIT:
-    err_exit("%s: Reading mode not set\n", program_name);
-    break;
+
+  for ( ; opts.start_lsn <= opts.end_lsn; opts.start_lsn++ ) {
+    switch (opts.read_mode) {
+    case READ_AUDIO:
+      cdio_read_audio_sector(cdio, &buffer, opts.start_lsn);
+      break;
+    case READ_M1F1:
+      cdio_read_mode1_sector(cdio, &buffer, opts.start_lsn, false);
+      blocklen=CDIO_CD_FRAMESIZE;
+      break;
+    case READ_M1F2:
+      cdio_read_mode1_sector(cdio, &buffer, opts.start_lsn, true);
+      blocklen=M2RAW_SECTOR_SIZE;
+      break;
+    case READ_M2F1:
+      cdio_read_mode2_sector(cdio, &buffer, opts.start_lsn, false);
+      blocklen=CDIO_CD_FRAMESIZE;
+      break;
+    case READ_M2F2:
+      blocklen=M2F2_SECTOR_SIZE;
+      cdio_read_mode2_sector(cdio, &buffer, opts.start_lsn, true);
+      break;
+    case READ_MODE_UNINIT:
+      err_exit("%s: Reading mode not set\n", program_name);
+      break;
+    }
+
+    hexdump(buffer, blocklen);
   }
 
-  hexdump(buffer, blocklen);
   cdio_destroy(cdio);
   return 0;
 }

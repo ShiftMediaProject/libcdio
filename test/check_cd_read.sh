@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cd_read.sh,v 1.4 2003/09/21 03:35:40 rocky Exp $
+#$Id: check_cd_read.sh,v 1.5 2003/09/21 18:43:36 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -40,7 +40,7 @@ check_result $RC "cd-read CUE test $testnum"
 
 fname=isofs-m1
 testnum=MODE1
-test_cd_read "-i ${srcdir}/${fname}.cue --mode m1f1 -s 26" \
+test_cd_read "-i ${srcdir}/${fname}.cue --mode m1f1 -s 26 -n 2" \
   ${fname}-read.dump ${srcdir}/${fname}-read.right
 RC=$?
 check_result $RC "cd-read CUE test $testnum"
