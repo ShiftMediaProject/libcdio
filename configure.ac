@@ -1,4 +1,4 @@
-AC_REVISION([$Id: configure.ac,v 1.6 2003/04/10 07:22:56 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.7 2003/04/14 04:29:24 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.2)
@@ -47,6 +47,11 @@ dnl headers
 
 AC_STDC_HEADERS
 AC_CHECK_HEADERS(stdint.h inttypes.h stdbool.h)
+
+AC_CHECK_HEADER(cddb/cddb.h, , 
+           [ AC_MSG_RESULT([*** CDDB support be disabled from cdinfo program])
+           enable_cddb=no ], 
+	        )	   
 
 dnl compiler
 AC_C_BIGENDIAN
@@ -178,6 +183,22 @@ AC_SUBST(LINUX_CDROM_TIMEOUT)
 AC_SUBST(HAVE_LINUX_CDROM)
 AC_SUBST(HAVE_BSDI_CDROM)
 AC_SUBST(HAVE_SOLARIS_CDROM)
+
+if test x$enable_cddb = x; then
+AC_ARG_ENABLE(cddb,
+	[  --disable-cddb          don't include CDDB lookups in cdinfo],
+		enable_cddb=no,
+		enable_cddb=yes)
+fi
+if test x$enable_cddb = xyes; then
+    AC_CHECK_LIB(cddb, cddb_disc_calc_discid,
+                 [ CDDB_LIB="-lcddb"; ac_have_cddb=yes ])
+    AC_DEFINE([HAVE_CDDB],1,
+	      [Define this if you have libcddb installed])
+fi
+
+
+AC_SUBST(CDDB_LIB)
 
 AC_OUTPUT([ \
        Makefile \
