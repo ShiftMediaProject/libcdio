@@ -8,9 +8,9 @@ cdparanoia 9.8 (Paranoia release III libcdio) \- an audio CD reading utility whi
 .RB [ outfile ]
 .SH DESCRIPTION
 .B @CDPARANOIA_NAME@
-retrieves audio tracks from CDDA capable CDROM drives.  The data can
+retrieves audio tracks from CDDA capable CD-ROM drives.  The data can
 be saved to a file or directed to standard output in WAV, AIFF, AIFF-C
-or raw format.  Most ATAPI, SCSI and several proprietary CDROM drive
+or raw format.  Most ATAPI, SCSI and several proprietary CD-ROM drive
 makes are supported;
 .B @CDPARANOIA_NAME@
 can determine if the target drive is CDDA capable.
@@ -40,7 +40,7 @@ Print the program version and quit.
 
 .TP
 .B \-Q --query
-Perform CDROM drive autosense, query and print the CDROM table of
+Perform CD-ROM drive autosense, query and print the CD-ROM table of
 contents, then quit.
 
 .TP
@@ -93,7 +93,7 @@ prepended with 'track#.'
 
 .TP
 .B \-c --force-cdrom-little-endian
-Some CDROM drives misreport their endianness (or do not report it at
+Some CD-ROM drives misreport their endianness (or do not report it at
 all); it's possible that @CDPARANOIA_NAME@ will guess wrong.  Use
 .B \-c
 to force @CDPARANOIA_NAME@ to treat the drive as a little endian device.
@@ -116,17 +116,15 @@ range.
 .BI "\-d --force-cdrom-device " device
 Force the interface backend to read from
 .B device
-rather than the first readable CDROM drive it finds.  This can be used
-to specify devices of any valid interface type (ATAPI, SCSI or
-proprietary).
+rather than the first readable CD-ROM drive it finds containing a
+CD-DA disc.  This can be used to specify devices of any valid
+interface type (ATAPI, SCSI or proprietary).
 
 .TP
 .BI "\-g --force-generic-device " device
-This option is used along with
+This option is an alias for
 .B \-d
-when one wants explicit control in setting both the SCSI cdrom and
-generic devices seperately. This option is only useful on
-non-standard SCSI setups.
+and is retained for compatibility.
 
 .TP
 .BI "\-S --force-read-speed " number
