@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.14 2005/03/15 15:56:13 rocky Exp $
+    $Id: cdda-player.c,v 1.15 2005/03/16 02:19:20 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -67,23 +67,12 @@
 
 #include "cddb.h"
 
-static void play_track(track_t t1, track_t t2);
+static bool play_track(track_t t1, track_t t2);
 static void display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, 
 			   track_t i_first_track);
 static void get_cddb_track_info(track_t i_track);
 static void get_cdtext_track_info(track_t i_track);
 static void get_track_info(track_t i_track);
-
-typedef enum {
-  PLAY_CD=1,
-  PLAY_TRACK=2,
-  STOP_PLAYING=3,
-  EJECT_CD=4,
-  CLOSE_CD=5,
-  LIST_KEYS=6,
-  LIST_TRACKS=7,
-  PS_LIST_TRACKS=8
-} cd_operation_t;
 
 CdIo_t             *p_cdio;               /* libcdio handle */
 driver_id_t        driver_id = DRIVER_DEVICE;
@@ -97,7 +86,6 @@ track_t            i_last_audio_track;
 track_t            i_last_display_track = CDIO_INVALID_TRACK;
 track_t            i_tracks;
 msf_t              toc[CDIO_CDROM_LEADOUT_TRACK+1];
-cd_operation_t     todo; /* operation to do in non-interactive mode */
 cdio_subchannel_t  sub;      /* subchannel last time read */
 int                i_data;     /* # of data tracks present ? */
 int                start_track = 0;
@@ -537,12 +525,11 @@ play_track(track_t i_start_track, track_t i_end_track)
   cd_pause(p_cdio);
   sprintf(line,"play track %d...", i_start_track);
   action(line);
-  b_okay = (DRIVER_OP_SUCCESS == cdio_audio_play_msf(p_cdio, 
-						     &(toc[i_start_track]),
-						     &(toc[i_end_track])) );
-  if (!b_okay)
-    xperror("play");
-  return b_okay;
+  b_ok = (DRIVER_OP_SUCCESS == cdio_audio_play_msf(p_cdio, 
+						   &(toc[i_start_track]),
+						   &(toc[i_end_track])) );
+  if (!b_ok) xperror("play");
+  return b_ok;
 }
 
 static void
@@ -796,7 +783,7 @@ usage(char *prog)
 	    "  -a      start up in auto-mode\n"
 	    "  -v      verbose\n"
 	    "\n"
-	    "for non-interactive use (only one of them):\n"
+	    "for non-interactive use (only one) of these:\n"
 	    "  -l      list tracks\n"
 	    "  -c      print cover (PostScript to stdout)\n"
 	    "  -C      close CD-ROM tray. If you use this option,\n"
@@ -804,10 +791,12 @@ usage(char *prog)
 	    "  -p      play the whole CD\n"
 	    "  -t n    play track >n<\n"
 	    "  -t a-b  play all tracks between a and b (inclusive)\n"
+	    "  -L      set volume level\n"
 	    "  -s      stop playing\n"
+	    "  -S      list audio subchannel information\n"
 	    "  -e      eject cdrom\n"
             "\n"
-	    "Thats all. Oh, maybe a few words more about the auto-mode. This\n"
+	    "That's all. Oh, maybe a few words more about the auto-mode. This\n"
 	    "is the 'dont-touch-any-key' feature. You load a CD, player starts\n"
 	    "to play it, and when it is done it ejects the CD. Start it that\n"
 	    "way on a spare console and forget about it...\n"
@@ -1202,12 +1191,27 @@ ps_list_tracks(void)
   printf("showpage\n");
 }
 
+typedef enum {
+  PLAY_CD=1,
+  PLAY_TRACK=2,
+  STOP_PLAYING=3,
+  EJECT_CD=4,
+  CLOSE_CD=5,
+  SET_VOLUME=6,
+  LIST_SUBCHANNEL=7,
+  LIST_KEYS=8,
+  LIST_TRACKS=9,
+  PS_LIST_TRACKS=10
+} cd_operation_t;
+
 int
 main(int argc, char *argv[])
 {    
-  int             c, nostop=0;
-  char            *h;
-  int             i_rc = 0;
+  int  c, nostop=0;
+  char *h;
+  int  i_rc = 0;
+  int  i_volume_level;
+  cd_operation_t todo; /* operation to do in non-interactive mode */
   
   psz_program = strrchr(argv[0],'/');
   psz_program = psz_program ? psz_program+1 : argv[0];
@@ -1217,7 +1221,7 @@ main(int argc, char *argv[])
   cdio_loglevel_default = CDIO_LOG_WARN;
   /* parse options */
   while ( 1 ) {
-    if (-1 == (c = getopt(argc, argv, "xdhkvcCpset:la")))
+    if (-1 == (c = getopt(argc, argv, "acCdehkplL:sSt:vx")))
       break;
     switch (c) {
     case 'v':
@@ -1233,6 +1237,11 @@ main(int argc, char *argv[])
     case 'a':
       auto_mode = 1;
       break;
+    case 'L':
+      if (NULL != (h = strchr(optarg,'-'))) {
+	i_volume_level = atoi(optarg);
+	todo = SET_VOLUME;
+      }
     case 't':
       if (NULL != (h = strchr(optarg,'-'))) {
 	*h = 0;
@@ -1267,6 +1276,9 @@ main(int argc, char *argv[])
     case 's':
       interactive = 0;
       todo = STOP_PLAYING;
+      break;
+    case 'S':
+      todo = LIST_SUBCHANNEL;
       break;
     case 'e':
       interactive = 0;
@@ -1368,6 +1380,34 @@ main(int argc, char *argv[])
 	case CLOSE_CD:
 	  i_rc = cdio_close_tray(psz_device, NULL) ? 0 : 1;
 	  break;
+	case SET_VOLUME:
+	  {
+	    cdio_audio_volume_t volume;
+	    volume.level[0] = i_volume_level;
+	    i_rc = (DRIVER_OP_SUCCESS == cdio_audio_set_volume(p_cdio, 
+							       &volume))
+	      ? 0 : 1;
+	    break;
+	  }
+	case LIST_SUBCHANNEL: 
+	  if (read_subchannel(p_cdio)) {
+	    if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
+		sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
+	      {
+		printf("track %2d - %02d:%02d (%02d:%02d abs) ",
+		       sub.track,
+		       sub.rel_addr.msf.m,
+		       sub.rel_addr.msf.s,
+		       sub.abs_addr.msf.m,
+		       sub.abs_addr.msf.s);
+	      }
+	    }
+	    printf("drive state: %s\n", 
+		   mmc_audio_state2str(sub.audio_status));
+	  } else {
+	    i_rc = 1;
+	  }
+	  break;
 	case LIST_KEYS:
 	case LIST_TRACKS:
 	  break;
@@ -1402,7 +1442,6 @@ main(int argc, char *argv[])
       case 'e':
 	cd_eject();
 	break;
-      case 'S':
       case 's':
 	cd_stop(p_cdio);
 	break;
