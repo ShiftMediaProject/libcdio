@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.37 2004/01/18 02:11:14 rocky Exp $
+    $Id: iso9660.h,v 1.38 2004/01/18 15:07:57 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -230,6 +230,8 @@ struct iso9660_dir {
 } GNUC_PACKED;
 
 
+PRAGMA_END_PACKED
+
 /*! \brief Unix stat-like version of iso9660_dir
 
    The iso9660_stat structure is not part of the ISO-9660
@@ -247,9 +249,7 @@ struct iso9660_stat { /* big endian!! */
   iso9660_xa_t xa;                    /**< XA attributes */
   enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;
   char         filename[EMPTY_ARRAY_SIZE]; /**< filename */
-} GNUC_PACKED;
-
-PRAGMA_END_PACKED
+};
 
 
 /** This is an opaque structure. */
