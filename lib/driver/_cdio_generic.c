@@ -1,7 +1,7 @@
 /*
-    $Id: _cdio_generic.c,v 1.7 2005/01/19 09:23:24 rocky Exp $
+    $Id: _cdio_generic.c,v 1.8 2005/01/20 01:00:52 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.7 2005/01/19 09:23:24 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.8 2005/01/20 01:00:52 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -170,9 +170,9 @@ cdio_generic_read (void *user_data, void *buf, size_t size)
   Release and free resources associated with stream or disk image.
 */
 void
-cdio_generic_stdio_free (void *user_data)
+cdio_generic_stdio_free (void *p_user_data)
 {
-  generic_img_private_t *p_env = user_data;
+  generic_img_private_t *p_env = p_user_data;
 
   if (NULL == p_env) return;
   if (NULL != p_env->source_name) 
@@ -486,6 +486,24 @@ set_track_flags(track_flags_t *p_track_flag, uint8_t i_flag)
   
   p_track_flag->channels = ( i_flag & CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO )
     ? 4 : 2;
+}
+
+/* Set read blocksize (via MMC) */
+driver_return_code_t
+set_blocksize_generic (void *p_user_data, int i_blocksize)
+{
+  generic_img_private_t *p_env = p_user_data;
+  if (!p_env) return DRIVER_OP_UNINIT;
+  return scsi_mmc_set_blocksize(p_env->cdio, i_blocksize);
+}
+
+/* Set CD-ROM drive speed (via MMC) */
+driver_return_code_t
+set_speed_generic (void *p_user_data, int i_speed)
+{
+  generic_img_private_t *p_env = p_user_data;
+  if (!p_env) return DRIVER_OP_UNINIT;
+  return scsi_mmc_set_speed( p_env->cdio, i_speed );
 }
 
 

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.12 2005/01/20 00:36:38 rocky Exp $
+    $Id: _cdio_linux.c,v 1.13 2005/01/20 01:00:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.12 2005/01/20 00:36:38 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.13 2005/01/20 01:00:52 rocky Exp $";
 
 #include <string.h>
 
@@ -982,14 +982,6 @@ static char checklist2[][40] = {
   {"?a hd?"}, {"?0 scd?"}, {"?0 sr?"}, {""}
 };
 
-/* Set read blocksize */
-static driver_return_code_t
-set_blocksize_linux (void *p_user_data, int i_blocksize)
-{
-  const _img_private_t *p_env = p_user_data;
-  return scsi_mmc_set_blocksize(p_env->gen.cdio, i_blocksize);
-}
-
 /* Set CD-ROM drive speed */
 static driver_return_code_t
 set_speed_linux (void *p_user_data, int i_speed)
@@ -1174,7 +1166,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .read_toc              = read_toc_linux,
     .run_scsi_mmc_cmd      = run_scsi_cmd_linux,
     .set_arg               = set_arg_linux,
-    .set_blocksize         = set_blocksize_linux,
+    .set_blocksize         = set_blocksize_generic,
     .set_speed             = set_speed_linux,
     .stat_size             = stat_size_linux
   };

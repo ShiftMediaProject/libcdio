@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.7 2005/01/19 09:23:24 rocky Exp $
+    $Id: generic.h,v 1.8 2005/01/20 01:00:52 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -55,7 +55,7 @@ extern "C" {
        devices and the data_source for stream reading (bincue, nrg, toc,
        network).
      */
-    CdioDataSource *data_source;
+    CdioDataSource_t *data_source;
     int     fd;             /**< File descriptor of device */
     track_t i_first_track;  /**< The starting track number. */
     track_t i_tracks;       /**< The number of tracks. */
@@ -198,6 +198,13 @@ extern "C" {
   track_flag_t get_track_preemphasis_generic(const void *p_user_data, 
 					     track_t i_track);
   
+  /* Set read blocksize (via MMC) */
+  driver_return_code_t set_blocksize_generic (void *p_user_data, 
+					      int i_blocksize);
+
+  /* Set CD-ROM drive speed (via MMC) */
+  driver_return_code_t set_speed_generic (void *p_user_data, int i_speed);
+
   void set_cdtext_field_generic(void *user_data, track_t i_track, 
 				track_t i_first_track,
 				cdtext_field_t e_field, const char *psz_value);

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.9 2005/01/20 00:36:38 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.10 2005/01/20 01:00:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.9 2005/01/20 00:36:38 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.10 2005/01/20 01:00:52 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -766,14 +766,6 @@ _cdio_get_track_msf(void *p_user_data, track_t i_track, msf_t *msf)
   }
 }
 
-/* Set read blocksize */
-static driver_return_code_t
-set_blocksize_solaris (void *p_user_data, int i_blocksize)
-{
-  const _img_private_t *p_env = p_user_data;
-  return scsi_mmc_set_blocksize(p_env->gen.cdio, i_blocksize);
-}
-
 /* Set CD-ROM drive speed */
 static driver_return_code_t
 set_speed_solaris (void *p_user_data, int i_speed)
@@ -901,7 +893,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.run_scsi_mmc_cmd       = run_scsi_cmd_solaris;
   _funcs.stat_size              = _cdio_stat_size;
   _funcs.set_arg                = _set_arg_solaris;
-  _funcs.set_blocksize          = set_blocksize_solaris;
+  _funcs.set_blocksize          = set_blocksize_generic;
   _funcs.set_speed              = set_speed_solaris;
   _funcs.stat_size              = _cdio_stat_size;
 

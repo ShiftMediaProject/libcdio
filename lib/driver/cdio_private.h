@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.6 2005/01/18 00:57:20 rocky Exp $
+    $Id: cdio_private.h,v 1.7 2005/01/20 01:00:52 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -37,7 +37,7 @@ extern "C" {
 #endif /* __cplusplus */
 
   /* Opaque type */
-  typedef struct _CdioDataSource CdioDataSource;
+  typedef struct _CdioDataSource CdioDataSource_t;
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: image.h,v 1.3 2005/01/16 04:25:16 rocky Exp $
+    $Id: image.h,v 1.4 2005/01/20 01:00:52 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -56,7 +56,7 @@ typedef struct {
   flag_t         flags;         /**< "[NO] COPY", "4CH", "[NO] PREMPAHSIS" */
   char          *isrc;		/**< IRSC Code (5.22.4) exactly 12 bytes */
   char           *filename;
-  CdioDataSource *data_source;
+  CdioDataSource_t *data_source;
   track_format_t track_format;
   bool           track_green;
   cdtext_t       cdtext;	/**< CD-TEXT */

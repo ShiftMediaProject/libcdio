@@ -1,8 +1,8 @@
 /*
-    $Id: _cdio_stdio.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: _cdio_stdio.c,v 1.2 2005/01/20 01:00:52 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@
 #include "_cdio_stream.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.2 2005/01/20 01:00:52 rocky Exp $";
 
 #define CDIO_STDIO_BUFSIZE (128*1024)
 
@@ -179,15 +179,15 @@ _stdio_read(void *user_data, void *buf, long int count)
   Deallocate resources assocaited with obj. After this obj is unusable.
 */
 void
-cdio_stdio_destroy(CdioDataSource *obj)
+cdio_stdio_destroy(CdioDataSource_t *p_obj)
 {
-  cdio_stream_destroy(obj);
+  cdio_stream_destroy(p_obj);
 }
 
-CdioDataSource*
+CdioDataSource_t *
 cdio_stdio_new(const char pathname[])
 {
-  CdioDataSource *new_obj = NULL;
+  CdioDataSource_t *new_obj = NULL;
   cdio_stream_io_functions funcs = { 0, };
   _UserData *ud = NULL;
   struct stat statbuf;

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: _cdio_stream.h,v 1.2 2005/01/20 01:00:52 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -56,7 +56,7 @@ extern "C" {
     cdio_data_free_t free;
   } cdio_stream_io_functions;
   
-  CdioDataSource*
+  CdioDataSource_t *
   cdio_stream_new(void *user_data, const cdio_stream_io_functions *funcs);
 
   /*!
@@ -76,8 +76,8 @@ extern "C" {
      We do not distinguish between end-of-file and error, and callers
      must use feof(3) and ferror(3) to determine which occurred.
   */
-  long
-  cdio_stream_read(CdioDataSource* obj, void *ptr, long size, long nmemb);
+  long cdio_stream_read(CdioDataSource_t* p_obj, void *ptr, long size, 
+                        long nmemb);
   
   /*! 
     Like fseek(3) and in fact may be the same.
@@ -96,20 +96,20 @@ extern "C" {
     Otherwise, -1 is returned and the global variable errno is set to indi-
     cate the error.
    */
-  long int cdio_stream_seek(CdioDataSource* obj, long offset, int whence);
+  long int cdio_stream_seek(CdioDataSource_t *p_obj, long offset, int whence);
   
   /*!
     Return whatever size of stream reports, I guess unit size is bytes. 
     On error return -1;
   */
-  long int cdio_stream_stat(CdioDataSource* obj);
+  long int cdio_stream_stat(CdioDataSource_t *p_obj);
   
   /*!
-    Deallocate resources assocaited with obj. After this obj is unusable.
+    Deallocate resources assocaited with p_obj. After this p_obj is unusable.
   */
-  void cdio_stream_destroy(CdioDataSource* obj);
+  void cdio_stream_destroy(CdioDataSource_t *p_obj);
   
-  void cdio_stream_close(CdioDataSource* obj);
+  void cdio_stream_close(CdioDataSource_t *p_obj);
   
 #ifdef __cplusplus
 }

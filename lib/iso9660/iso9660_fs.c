@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.3 2005/01/12 11:34:52 rocky Exp $
+    $Id: iso9660_fs.c,v 1.4 2005/01/20 01:00:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -51,11 +51,11 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.3 2005/01/12 11:34:52 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.4 2005/01/20 01:00:52 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
-  CdioDataSource *stream; /* Stream pointer */
+  CdioDataSource_t *stream; /* Stream pointer */
   bool b_xa;              /* true if has XA attributes. */
   uint8_t  i_joliet_level;/* 0 = no Joliet extensions.
 			     1-3: Joliet level. */

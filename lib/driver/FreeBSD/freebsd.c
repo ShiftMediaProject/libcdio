@@ -1,7 +1,7 @@
 /*
-    $Id: freebsd.c,v 1.4 2005/01/18 04:03:06 rocky Exp $
+    $Id: freebsd.c,v 1.5 2005/01/20 01:00:52 rocky Exp $
 
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.4 2005/01/18 04:03:06 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.5 2005/01/20 01:00:52 rocky Exp $";
 
 #include "freebsd.h"
 
