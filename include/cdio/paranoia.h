@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.h,v 1.7 2005/01/27 03:10:06 rocky Exp $
+  $Id: paranoia.h,v 1.8 2005/01/29 20:54:20 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -20,8 +20,10 @@
 */
 
 /** \file paranoia.h 
- *  \brief  The top-level header for libcdda_paranoia: 
-    a library for reading CD-DA with error tolerance and repair.
+ *
+ *  \brief The top-level header for libcdda_paranoia: a device- and OS-
+ *  independent library for reading CD-DA with error tolerance and
+ *  repair. Applications include this for paranoia access.
  */
 
 #ifndef _CDIO_PARANOIA_H_
@@ -119,8 +121,20 @@ extern int16_t *cdio_paranoia_read(cdrom_paranoia_t *p,
 			      void(*callback)(long int, paranoia_cb_mode_t));
 
   /*! The same as cdio_paranoia_read but the number of retries is set.
+    @param p paranoia object.
+
+
+    @param callback callback routine which gets called with the status
+    on each read.
+
     @param maxretries number of times to try re-reading a block before
-    failing. @see cdio_paranoia_read.
+    failing.
+
+    @return the block of CDIO_FRAMEIZE_RAW bytes (or
+    CDIO_FRAMESIZE_RAW / 2 16-bit integers). Unless byte-swapping has
+    been turned off the 16-bit integers Endian independent order.
+
+    @see cdio_paranoia_read.
     
   */
 extern int16_t *cdio_paranoia_read_limited(cdrom_paranoia_t *p,

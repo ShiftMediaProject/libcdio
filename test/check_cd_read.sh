@@ -1,7 +1,7 @@
 #!/bin/sh
-#$Id: check_cd_read.sh,v 1.6 2004/05/07 02:15:49 rocky Exp $
+#$Id: check_cd_read.sh,v 1.7 2005/01/29 20:54:20 rocky Exp $
 #
-#    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2005 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ testnum=MODE1
 opts="-i ${srcdir}/${fname}.cue --mode m1f1 -s 26 -n 2"
 test_cd_read "$opts" ${fname}-read.dump ${srcdir}/${fname}-read.right
 RC=$?
-check_result $RC "cd-read CUE test $testnum" "cd-read $opts"
+check_result $RC "cd-read CUE test $testnum" "$CD_READ $opts"
 
 exit $RC
 

@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.41 2005/01/24 00:06:31 rocky Exp $
+    $Id: scsi_mmc.h,v 1.42 2005/01/29 20:54:20 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -19,8 +19,10 @@
 */
 
 /*!
-   \file scsi_mmc.h 
-   \brief Common definitions for SCSI MMC (Multi-Media Commands).
+ *  \file scsi_mmc.h 
+ * 
+ *  \brief Common definitions for MMC (Multimedia Commands). Applications
+ *  include this for direct MMC access.
 */
 
 #ifndef __SCSI_MMC_H__
@@ -30,7 +32,7 @@
 #include <cdio/types.h>
 #include <cdio/dvd.h>
 
-/*! \brief The opcode-portion (generic packet commands) of a SCSI-MMC command.
+/*! \brief The opcode-portion (generic packet commands) of an MMC command.
 
 
 In general, those opcodes that end in 6 take a 6-byte command
@@ -38,55 +40,103 @@ descriptor, those that end in 10 take a 10-byte
 descriptor and those that in in 12 take a 12-byte descriptor. 
 
 (Not that you need to know that, but it seems to be a
-big deal in the SCSI-MMC specification.)
+big deal in the MMC specification.)
 
 */
 typedef enum {
-  CDIO_MMC_GPCMD_INQUIRY 	        = 0x12,
-  CDIO_MMC_GPCMD_MODE_SELECT_6	        = 0x15,
-  CDIO_MMC_GPCMD_MODE_SENSE 	        = 0x1a,
-  CDIO_MMC_GPCMD_START_STOP             = 0x1b,
-  CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL   = 0x1e,
-  CDIO_MMC_GPCMD_READ_10	        = 0x28,
+  CDIO_MMC_GPCMD_INQUIRY 	        = 0x12, /**< Request drive 
+						   information. */
+  CDIO_MMC_GPCMD_MODE_SELECT_6	        = 0x15, /**< Select medium 
+						   (6 bytes). */
+  CDIO_MMC_GPCMD_MODE_SENSE_6 	        = 0x1a, /**< Get medium or device
+						 information. Should be issued
+						 before MODE SELECT to get
+						 mode support or save current
+						 settings. (6 bytes). */
+  CDIO_MMC_GPCMD_START_STOP             = 0x1b, /**< Enable/disable Disc
+						     operations. (6 bytes). */
+  CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL   = 0x1e, /**< Enable/disable Disc 
+						   removal. (6 bytes). */
 
   /** Group 2 Commands (CDB's here are 10-bytes)   
-   * @{
    */
-  CDIO_MMC_GPCMD_READ_SUBCHANNEL	= 0x42,
-  CDIO_MMC_GPCMD_READ_TOC               = 0x43,
+  CDIO_MMC_GPCMD_READ_10	        = 0x28, /**< Read data from drive 
+						   (10 bytes). */
+  CDIO_MMC_GPCMD_READ_SUBCHANNEL	= 0x42, /**< Read Sub-Channel data.
+						   (10 bytes). */
+  CDIO_MMC_GPCMD_READ_TOC               = 0x43, /**< Read CD TOC. 
+						   (10 bytes). */
   CDIO_MMC_GPCMD_READ_HEADER            = 0x44,
-  CDIO_MMC_GPCMD_PLAY_AUDIO_10          = 0x45,
-  CDIO_MMC_GPCMD_GET_CONFIGURATION      = 0x46,
-  CDIO_MMC_GPCMD_PLAY_AUDIO_MSF         = 0x47,
+  CDIO_MMC_GPCMD_PLAY_AUDIO_10	        = 0x45, /**< Begin audio playing at
+						   current position
+						   (10 bytes). */
+  CDIO_MMC_GPCMD_GET_CONFIGURATION      = 0x46, /**< Get drive Capabilities 
+						 (10 bytes) */
+  CDIO_MMC_GPCMD_PLAY_AUDIO_MSF	        = 0x47, /**< Begin audio playing at
+						   specified MSF (10
+						   bytes). */
   CDIO_MMC_GPCMD_PLAY_AUDIO_TI          = 0x48,
-  CDIO_MMC_GPCMD_PLAY_TRACK_REL_10      = 0x49,
-  CDIO_MMC_GPCMD_PAUSE_RESUME           = 0x4b,
+  CDIO_MMC_GPCMD_PLAY_TRACK_REL_10      = 0x49, /**< Play audio at the track
+						   relative LBA. (10 bytes).
+						   Doesn't seem to be part
+						   of MMC standards but is
+						   handled by Plextor drives.
+						*/
+						   
+  CDIO_MMC_GPCMD_PAUSE_RESUME           = 0x4b, /**< Stop or restart audio 
+						   playback. (10 bytes). 
+						   Used with a PLAY command. */
 
-  CDIO_MMC_GPCMD_READ_DISC_INFO	        = 0x51,
-  CDIO_MMC_GPCMD_MODE_SELECT	        = 0x55,
-  CDIO_MMC_GPCMD_MODE_SENSE_10	        = 0x5a,
-  /**@}*/ 
+  CDIO_MMC_GPCMD_READ_DISC_INFO	        = 0x51, /**< Get CD information.
+						   (10 bytes). */
+  CDIO_MMC_GPCMD_MODE_SELECT_10	        = 0x55, /**< Select medium 
+						   (10-bytes). */
+  CDIO_MMC_GPCMD_MODE_SENSE_10	        = 0x5a, /**< Get medium or device
+						 information. Should be issued
+						 before MODE SELECT to get
+						 mode support or save current
+						 settings. (6 bytes). */
 
   /** Group 5 Commands (CDB's here are 12-bytes) 
-   * @{
    */
-  CDIO_MMC_GPCMD_PLAY_AUDIO_12	        = 0xa5,
-  CDIO_MMC_GPCMD_READ_12	        = 0xa8,
-  CDIO_MMC_GPCMD_PLAY_TRACK_REL_12      = 0xa9,
-  CDIO_MMC_GPCMD_READ_DVD_STRUCTURE     = 0xad,
-  CDIO_MMC_GPCMD_READ_CD	        = 0xbe,
-  CDIO_MMC_GPCMD_READ_MSF	        = 0xb9,
-  /**@}*/ 
-
+  CDIO_MMC_GPCMD_PLAY_AUDIO_12	        = 0xa5, /**< Begin audio playing at
+						   current position
+						 (12 bytes) */
+  CDIO_MMC_GPCMD_LOAD_UNLOAD	        = 0xa6, /**< Load/unload a Disc
+						 (12 bytes) */
+  CDIO_MMC_GPCMD_READ_12	        = 0xa8, /**< Read data from drive 
+						   (12 bytes). */
+  CDIO_MMC_GPCMD_PLAY_TRACK_REL_12      = 0xa9, /**< Play audio at the track
+						   relative LBA. (12 bytes).
+						   Doesn't seem to be part
+						   of MMC standards but is
+						   handled by Plextor drives.
+						*/
+  CDIO_MMC_GPCMD_READ_DVD_STRUCTURE     = 0xad, /**< Get DVD structure info
+						   from media (12 bytes). */
+  CDIO_MMC_GPCMD_READ_MSF	        = 0xb9, /**< Read almost any field 
+						   of a CD sector at specified
+						   MSF. (12 bytes). */
+  CDIO_MMC_GPCMD_SET_SPEED	        = 0xbb, /**< Set drive speed 
+						   (12 bytes). This is listed 
+						   as optional in ATAPI 2.6, 
+						   but is (curiously)
+						   missing from Mt. Fuji, 
+						   Table 57. It is mentioned
+						   in Mt. Fuji Table 377 as an 
+						   MMC command for SCSI
+						   devices though...  Most
+						   ATAPI drives support it. */
+  CDIO_MMC_GPCMD_READ_CD	        = 0xbe, /**< Read almost any field 
+						   of a CD sector at current
+						   location. (12 bytes). */
   /** Vendor-unique Commands  
-   * @{
    */
   CDIO_MMC_GPCMD_CD_PLAYBACK_STATUS  = 0xc4 /**< SONY unique  = command */,
   CDIO_MMC_GPCMD_PLAYBACK_CONTROL    = 0xc9 /**< SONY unique  = command */,
   CDIO_MMC_GPCMD_READ_CDDA	     = 0xd8 /**< Vendor unique  = command */,
   CDIO_MMC_GPCMD_READ_CDXA	     = 0xdb /**< Vendor unique  = command */,
   CDIO_MMC_GPCMD_READ_ALL_SUBCODES   = 0xdf /**< Vendor unique  = command */
-  /**@}*/ 
   } cdio_mmc_gpcmd_t;
 
 
@@ -264,26 +314,19 @@ typedef enum {
 						      conform to any
 						      Profile. */
 
-/*! This is listed as optional in ATAPI 2.6, but is (curiously) 
-  missing from Mt. Fuji, Table 57.  It _is_ mentioned in Mt. Fuji
-  Table 377 as an MMC command for SCSi devices though...  Most ATAPI
-  drives support it. */
-#define CDIO_MMC_GPCMD_SET_SPEED	0xbb
-
-
 /*! The largest Command Descriptor Buffer (CDB) size.
     The possible sizes are 6, 10, and 12 bytes.
  */
 #define MAX_CDB_LEN 12
 
-/*! \brief A Command Descriptor Buffer (CDB) used in sending SCSI MMC 
+/*! \brief A Command Descriptor Buffer (CDB) used in sending MMC 
     commands.
  */
 typedef struct scsi_mmc_cdb {
   uint8_t field[MAX_CDB_LEN];
 } scsi_mmc_cdb_t;
 
-/*! \brief Format of header block in data returned from a SCSI-MMC
+/*! \brief Format of header block in data returned from an MMC
     GET_CONFIGURATION command.
  */
 typedef struct scsi_mmc_feature_list_header {
@@ -297,7 +340,7 @@ typedef struct scsi_mmc_feature_list_header {
   unsigned char profile_lsb;
 } scs_mmc_feature_list_header_t;
 
-/*! An enumeration indicating whether a SCSI MMC command is sending
+/*! An enumeration indicating whether an MMC command is sending
     data or getting data.
  */
 typedef enum scsi_mmc_direction {
@@ -348,14 +391,14 @@ typedef enum scsi_mmc_direction {
 
 /*!  
   Return the length in bytes of the Command Descriptor
-  Buffer (CDB) for a given SCSI MMC command. The length will be 
+  Buffer (CDB) for a given MMC command. The length will be 
   either 6, 10, or 12. 
 */
 uint8_t scsi_mmc_get_cmd_len(uint8_t scsi_cmd);
 
 
 /*!
-  Run a SCSI MMC command. 
+  Run an MMC command. 
  
   @param p_cdio	       CD structure set by cdio_open().
   @param i_timeout_ms  time in milliseconds we will wait for the command
@@ -374,7 +417,7 @@ int scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 		      scsi_mmc_direction_t e_direction, unsigned int i_buf, 
 		      /*in/out*/ void *p_buf );
 /*!
- * Eject using SCSI MMC commands. 
+ * Eject using MMC commands. 
 
  @return 0 if successful.
  */
@@ -388,11 +431,11 @@ int scsi_mmc_eject_media( const CdIo_t *p_cdio );
 lsn_t scsi_mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
   
 /*! 
-  Return the discmode as reported by the SCSI-MMC Read (FULL) TOC
+  Return the discmode as reported by the MMC Read (FULL) TOC
   command.
 
   Information was obtained from Section 5.1.13 (Read TOC/PMA/ATIP)
-  pages 56-62 from the SCSI MMC draft specification, revision 10a
+  pages 56-62 from the MMC draft specification, revision 10a
   at http://www.t10.org/ftp/t10/drafts/mmc/mmc-r10a.pdf See
   especially tables 72, 73 and 75.
  */
@@ -413,11 +456,11 @@ void scsi_mmc_get_drive_cap (const CdIo_t *p_cdio,
 
   @return the DVD discmode.
 */
-discmode_t scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio, 
+discmode_t scsi_mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, 
 					      cdio_dvd_struct_t *s);
 
 /*! 
-  Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
+  Get the CD-ROM hardware info via an MMC INQUIRY command.
 
   @return true if we were able to get hardware info, false if we had
   an error.
@@ -445,13 +488,13 @@ int scsi_mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba,
 			    int sector_type, unsigned int i_blocks);
 
 /*!
-  Set the block size for subsequest read requests, via a SCSI MMC 
+  Set the block size for subsequest read requests, via an MMC 
   MODE_SELECT 6 command.
  */
 int scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_bsize);
 
 /*!
-  Set the block size for subsequest read requests, via a SCSI MMC 
+  Set the block size for subsequest read requests, via an MMC 
   MODE_SENSE 6 command.
  */
 int scsi_mmc_get_blocksize ( const CdIo_t *p_cdio );

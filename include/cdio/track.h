@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: track.h,v 1.5 2005/01/27 03:10:06 rocky Exp $
+    $Id: track.h,v 1.6 2005/01/29 20:54:20 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -67,10 +67,13 @@ extern "C" {
     CDIO_TRACK_FLAG_UNKNOWN
   } track_flag_t;
 
+  /*! \brief Structure containing attributes associated with a track */
   typedef struct {
-    track_flag_t preemphasis;
-    track_flag_t copy_permit;
-    int channels;
+    track_flag_t preemphasis; /**< Linear preemphasis on an audio track */
+    track_flag_t copy_permit; /**< Whether copying is permitted */
+    int channels;             /**< Number of audio channels, 2, 4. -2 if not
+				   implemented or -1 for error.
+			      */
   } track_flags_t;
     
   /*! 
@@ -114,17 +117,18 @@ extern "C" {
       implemented or -1 for error.
       Not meaningful if track is not an audio track.
   */
-  int cdio_get_track_channels(const CdIo *p_cdio, track_t i_track);
+  int cdio_get_track_channels(const CdIo_t *p_cdio, track_t i_track);
   
   /*! Return copy protection status on a track. Is this meaningful
       if not an audio track?
    */
-  track_flag_t cdio_get_track_copy_permit(const CdIo *p_cdio, track_t i_track);
+  track_flag_t cdio_get_track_copy_permit(const CdIo_t *p_cdio, 
+					  track_t i_track);
   
   /*!  
     Get the format (audio, mode2, mode1) of track. 
   */
-  track_format_t cdio_get_track_format(const CdIo *p_cdio, track_t i_track);
+  track_format_t cdio_get_track_format(const CdIo_t *p_cdio, track_t i_track);
   
   /*!
     Return true if we have XA data (green, mode2 form1) or

@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.34 2005/01/29 15:43:28 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.35 2005/01/29 20:54:20 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -1498,7 +1498,7 @@ main(int argc, const char *argv[])
   @} else @{
     int i_status;                  /* Result of MMC command */
     char buf[36] = @{ 0, @};         /* Place to hold returned data */
-    scsi_mmc_cdb_t cdb = @{@{0, @}@};  /* Command Descriptor Block */
+    scsi_mmc_cdb_t cdb = @{@{0, @}@};  /* Command Descriptor Buffer */
 
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_INQUIRY);
     cdb.field[4] = sizeof(buf);
@@ -1852,13 +1852,14 @@ CD frame.
 There seems to be a fascination in the MMC specification world with
 the number of bytes a command takes. (Size matters?) So often the name
 of an operation will have a suffix with the number of bytes of the
-command (actually in MMC jargon this is called a ``cdb'' or command
-descriptor block). So for example there is a 6-byte ``MODE SELECT''
-often called ``MODE SELECT 6'' and a 10-byte ``MODE SELECT'' sometimes
-called ``MODE SELECT 10''. Presumably the 6-byte command came first
-and it was discovered that there was some deficiency causing the
-longer command. In @value{libcdio} often in the later or more common
-name we drop the size suffix. 
+command (actually in MMC jargon this is called a ``cdb'' 
+@cindex cdb (Command Descriptor Buffer)
+or command descriptor buffer). So for example there is a 6-byte ``MODE
+SELECT'' often called ``MODE SELECT 6'' and a 10-byte ``MODE SELECT''
+sometimes called ``MODE SELECT 10''. Presumably the 6-byte command
+came first and it was discovered that there was some deficiency
+causing the longer command. In @value{libcdio} often in the later or
+more common name we drop the size suffix.
 
 If the fascination and emphasis in the MMC specifications of cdb size
 is a bit odd, equally so is the fact that this too often has bled

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.8 2005/01/23 19:16:58 rocky Exp $
+    $Id: device.h,v 1.9 2005/01/29 20:54:20 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -464,19 +464,6 @@ extern "C" {
       NULL even though there may be a hardware CD-ROM.
    */
   char **cdio_get_devices_aix(void);
-  
-  /*! Set up CD-ROM for reading using the BSDI driver. The device_name is
-      the some sort of device name.
-
-     @param psz_source the name of the device to open
-     @param am         the preferred access mode to use 
-     @return the cdio object for subsequent operations. 
-     NULL on error or there is no BSDI driver.
-
-     @see cdio_open
-   */
-  CdIo_t * cdio_open_am_bsdi (const char *psz_source,
-			      const char *psz_access_mode);
   
   /*! Set up CD-ROM for reading using the BSDI driver. The device_name is
       the some sort of device name.

@@ -1,5 +1,5 @@
 /*
-    $Id: bytesex.h,v 1.2 2005/01/12 11:34:52 rocky Exp $
+    $Id: bytesex.h,v 1.3 2005/01/29 20:54:20 rocky Exp $
 
     Copyright (C) 2000, 2004 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
@@ -19,19 +19,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+/** \file bytesex.h 
+ *  \brief  Generic Byte-swapping routines.
+ *
+ *   Note: this header will is slated to get removed and libcdio will
+ *   use glib.h routines instead.
+*/
+
 #ifndef __CDIO_BYTESEX_H__
 #define __CDIO_BYTESEX_H__
 
 #include <cdio/types.h>
 #include <cdio/bytesex_asm.h>
 #include <cdio/logging.h>
-
-/** \file bytesex.h 
- *  \brief  Generic Byte-swapping routines.
-
-    Note: this header will is slated to get removed and libcdio will use 
-    glib.h routines instead. 
-*/
 
 /** 16-bit big-endian to little-endian */
 #define UINT16_SWAP_LE_BE_C(val) ((uint16_t) ( \

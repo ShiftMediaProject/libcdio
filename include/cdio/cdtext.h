@@ -1,7 +1,7 @@
 /*
-    $Id: cdtext.h,v 1.9 2005/01/27 03:10:06 rocky Exp $
+    $Id: cdtext.h,v 1.10 2005/01/29 20:54:20 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     adapted from cuetools
     Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
@@ -21,7 +21,9 @@
 */
 /*!
  * \file cdtext.h 
- * \brief Header CD-Text information
+ *
+ * \brief The top-level header for CD-Text information. Applications
+ *  include this for CD-Text access.
 */
 
 

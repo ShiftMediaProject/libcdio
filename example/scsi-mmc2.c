@@ -1,5 +1,5 @@
 /*
-  $Id: scsi-mmc2.c,v 1.2 2005/01/29 10:05:33 rocky Exp $
+  $Id: scsi-mmc2.c,v 1.3 2005/01/29 20:54:20 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -45,7 +45,7 @@ main(int argc, const char *argv[])
   } else {
     int i_status;                  /* Result of MMC command */
     uint8_t buf[500] = { 0, };     /* Place to hold returned data */
-    scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Block */
+    scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Buffer */
 
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_CONFIGURATION);
     CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));

@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.12 2005/01/27 11:08:55 rocky Exp $
+    $Id: scsi_mmc.c,v 1.13 2005/01/29 20:54:20 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -143,7 +143,7 @@ scsi_mmc_get_blocksize_private ( void *p_env,
 
   memset (&mh, 0, sizeof (mh));
 
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE);
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_6);
 
   cdb.field[1] = 0x3F&1;
   cdb.field[4] = 12;

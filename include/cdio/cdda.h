@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.13 2005/01/27 03:10:06 rocky Exp $
+  $Id: cdda.h,v 1.14 2005/01/29 20:54:20 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -20,8 +20,9 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /** \file cdda.h
- *  \brief The top-level interface header for cd-paranoia; applications 
- *  include this.
+ *
+ *  \brief The top-level interface header for libcdio_cdda.
+ *  Applications include this for paranoia access.
  *
  ******************************************************************/
 
@@ -41,7 +42,8 @@
 */
 #define MAXTRK (CDIO_CD_MAX_TRACKS+1)
 
-typedef struct TOC {	/* structure of table of contents */
+/** \brief Structure for cdparanoia's CD Table of Contents */
+typedef struct TOC_s {	
   unsigned char bTrack;
   int32_t       dwStartSector;
 } TOC_t;
@@ -58,8 +60,7 @@ typedef struct TOC {	/* structure of table of contents */
 #define CDDA_MESSAGE_PRINTIT 1
 #define CDDA_MESSAGE_LOGIT 2
 
-/** cdrom access function pointer */
-
+/** \brief Structure for cdparanoia's CD-ROM access */
 struct cdrom_drive_s {
 
   CdIo_t *p_cdio;

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.57 2005/01/20 04:51:14 rocky Exp $
+    $Id: iso9660.h,v 1.58 2005/01/29 20:54:20 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -25,7 +25,9 @@
 */
 /*!
  * \file iso9660.h 
- * \brief Header for libiso9660: the ISO-9660 filesystem library.
+ *
+ * \brief The top-level interface eader for libiso9660: the ISO-9660
+ * filesystem library; applications include this.
 */
 
 
@@ -48,41 +50,43 @@
 
     For ISO-9660 Level 1, the maximum needed string length is:
 
-\verbatim  
+@code
   	 30 chars (filename + ext)
     +	  2 chars ('.' + ';')
     +	  5 chars (strlen("32767"))
     +	  1 null byte
    ================================
     =	 38 chars
-\endverbatim 
+@endcode
+
 */
 
-/*! size in bytes of the filename portion + null byte */
+
+/*! \brief size in bytes of the filename portion + null byte */
 #define LEN_ISONAME      31
 
-/*! Max # characters in the entire ISO 9660 filename. */
+/*! \brief Maximum number of characters in the entire ISO 9660 filename. */
 #define MAX_ISONAME      37
 
-/*! Max # characters in the entire ISO 9660 filename. */
+/*! \brief Maximum number of characters in the entire ISO 9660 filename. */
 #define MAX_ISOPATHNAME 255
 
-/*! Max # characters in an perparer id. */
+/*! \brief Maximum number of characters in an perparer id. */
 #define ISO_MAX_PREPARER_ID 128
 
-/*! Max # characters in an publisher id. */
+/*! \brief Maximum number of characters in an publisher id. */
 #define ISO_MAX_PUBLISHER_ID 128
 
-/*! Max # characters in an application id. */
+/*! \brief Maximum number of characters in an application id. */
 #define ISO_MAX_APPLICATION_ID 128
 
-/*! Max # characters in an system id. */
+/*! \brief Maximum number of characters in an system id. */
 #define ISO_MAX_SYSTEM_ID 32
 
-/*! Max # characters in an volume id. */
+/*! \brief Maximum number of characters in an volume id. */
 #define ISO_MAX_VOLUME_ID 32
 
-/*! Max # characters in an volume-set id. */
+/*! \brief Maximum number of characters in an volume-set id. */
 #define ISO_MAX_VOLUMESET_ID 128
 
 /**! ISO 9660 directory flags. */
@@ -389,7 +393,7 @@ typedef struct _iso9660 iso9660_t;
   Read the Primary Volume Descriptor for a CD.
   True is returned if read, and false if there was an error.
 */
-  bool iso9660_fs_read_pvd ( const CdIo *p_cdio, 
+  bool iso9660_fs_read_pvd ( const CdIo_t *p_cdio, 
                              /*out*/ iso9660_pvd_t *p_pvd );
 
 /*!
@@ -404,7 +408,7 @@ typedef struct _iso9660 iso9660_t;
   Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
   Descriptor if (Joliet) extensions are acceptable.
 */
-  bool iso9660_fs_read_superblock (CdIo *p_cdio, 
+  bool iso9660_fs_read_superblock (CdIo_t *p_cdio, 
                                    iso_extension_mask_t iso_extension_mask);
 
 /*!
@@ -564,7 +568,7 @@ iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
 
    Returns stat_t of entry if we found lsn, or NULL otherwise.
  */
-iso9660_stat_t *iso9660_find_fs_lsn(CdIo *p_cdio, lsn_t i_lsn);
+iso9660_stat_t *iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
 
 
 /*!
@@ -579,7 +583,7 @@ iso9660_stat_t *iso9660_find_ifs_lsn(const iso9660_t *p_iso, lsn_t i_lsn);
 /*!
   Return file status for psz_path. NULL is returned on error.
  */
-iso9660_stat_t *iso9660_fs_stat (CdIo *p_cdio, const char psz_path[]);
+iso9660_stat_t *iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[]);
   
 
 /*!  
@@ -587,7 +591,7 @@ iso9660_stat_t *iso9660_fs_stat (CdIo *p_cdio, const char psz_path[]);
   pathname version numbers in the ISO 9660 name are dropped, i.e. ;1
   is removed and if level 1 ISO-9660 names are lowercased.
  */
-iso9660_stat_t *iso9660_fs_stat_translate (CdIo *p_cdio, 
+iso9660_stat_t *iso9660_fs_stat_translate (CdIo_t *p_cdio, 
                                            const char psz_path[], 
                                            bool b_mode2);
 
@@ -608,7 +612,7 @@ iso9660_stat_t *iso9660_ifs_stat_translate (iso9660_t *p_iso,
   pointers for the files inside that directory. The caller must free the
   returned result.
 */
-CdioList_t * iso9660_fs_readdir (CdIo *p_cdio, const char psz_path[], 
+CdioList_t * iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], 
                                  bool b_mode2);
 
 /*!  Read psz_path (a directory) and return a list of iso9660_stat_t

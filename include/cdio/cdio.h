@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.77 2005/01/23 19:16:58 rocky Exp $
+    $Id: cdio.h,v 1.78 2005/01/29 20:54:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -20,7 +20,9 @@
 */
 
 /** \file cdio.h 
- *  \brief  The top-level header for libcdio: the CD Input and Control library.
+ *
+ *  \brief The top-level header for libcdio: the CD Input and Control
+ *  library. Applications include this for anything regarding libcdio.
  */
 
 
