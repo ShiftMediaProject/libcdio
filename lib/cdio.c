@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.62 2004/07/17 22:16:47 rocky Exp $
+    $Id: cdio.c,v 1.63 2004/07/18 05:12:03 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.62 2004/07/17 22:16:47 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.63 2004/07/18 05:12:03 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -457,15 +457,15 @@ cdio_get_drive_cap_dev (const char *device,
 			cdio_drive_misc_cap_t  *p_misc_cap)
 {
   /* This seems like a safe bet. */
-  *p_read_cap  = CDIO_DRIVE_CAP_UNKNOWN;
-  *p_write_cap = CDIO_DRIVE_CAP_UNKNOWN;
-  *p_misc_cap  = CDIO_DRIVE_CAP_UNKNOWN;
-  
   CdIo *cdio=scan_for_driver(CDIO_MIN_DRIVER, CDIO_MAX_DRIVER, 
                              device, NULL);
   if (cdio) {
     cdio_get_drive_cap(cdio, p_read_cap, p_write_cap, p_misc_cap);
     cdio_destroy(cdio);
+  } else {
+    *p_read_cap  = CDIO_DRIVE_CAP_UNKNOWN;
+    *p_write_cap = CDIO_DRIVE_CAP_UNKNOWN;
+    *p_misc_cap  = CDIO_DRIVE_CAP_UNKNOWN;
   }
 }
 
