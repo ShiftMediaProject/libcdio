@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.41 2004/10/31 13:58:44 rocky Exp $
+    $Id: iso9660_fs.c,v 1.42 2004/11/06 17:50:05 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -51,7 +51,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.41 2004/10/31 13:58:44 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.42 2004/11/06 17:50:05 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -146,11 +146,14 @@ static bool
 ucs2be_to_locale(ICONV_CONST char *psz_ucs2be,  size_t i_inlen, 
 		 char **p_psz_out,  size_t i_outlen)
 {
+
+  iconv_t ic = 
 #if defined(HAVE_LANGINFO_CODESET)
-  iconv_t ic = iconv_open(nl_langinfo(CODESET), "UCS-2BE");
+    iconv_open(nl_langinfo(CODESET), "UCS-2BE");
 #else 
-  iconv_t ic = iconv_open("ASCII", "UCS-2BE");
+    iconv_open("ASCII", "UCS-2BE");
 #endif
+
   int rc;
   char *psz_buf = NULL;
   char *psz_buf2;
@@ -158,12 +161,17 @@ ucs2be_to_locale(ICONV_CONST char *psz_ucs2be,  size_t i_inlen,
   int i_outlen_actual;
 
   if (-1 == (size_t) ic) {
+#if defined(HAVE_LANGINFO_CODESET)
     cdio_info("Failed to get conversion table for locale, trying ASCII");
     ic = iconv_open("ASCII", "UCS-2BE");
     if (-1 == (size_t) ic) {
       cdio_info("Failed to get conversion table for ASCII too");
       return false;
     }
+#else 
+    cdio_info("Failed to get conversion table for locale");
+    return false;
+#endif
   }
   
   psz_buf = (char *) realloc(psz_buf, i_outlen);
