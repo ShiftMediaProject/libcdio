@@ -1,18 +1,26 @@
 This is free software; see the source for copying conditions.
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.
-Hardware             : Disk Image
-Can open tray        : No
-Can close tray       : No
+Hardware                : Disk Image
+Can open tray           : No
+Can close tray          : No
+Can disable manual eject: No
+Can select juke-box disc: No
 
-Compact Disc         : Yes
-   Can play audio    : Yes
-   Can read  CD-RW   : No
-   Can write CD-R    : No
+Can set drive speed     : No
+Can detect if CD changed: No
+Can read Media Cat. No. : Yes
+Can read sessions > 1 . : No
+Can hard reset device   : No
 
-Digital Versital Disc: No
-   Can write DVD-R   : No
-   Can write DVD-RAM : No
+Compact Disc            : Yes
+   Can play audio       : Yes
+   Can read  CD-RW      : No
+   Can write CD-R       : No
+
+Digital Versital Disc   : No
+   Can write DVD-R      : No
+   Can write DVD-RAM    : No
 __________________________________
 CD-ROM Track List (1 - 1)
   #: MSF       LSN     Type  Green?
