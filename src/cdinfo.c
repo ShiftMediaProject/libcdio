@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.13 2003/04/20 01:39:23 rocky Exp $
+    $Id: cdinfo.c,v 1.14 2003/04/20 17:24:49 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -232,9 +232,6 @@ typedef enum
   IMAGE_UNKNOWN
 } source_image_t;
 
-#ifdef HAVE_CDDB
-#endif
-
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
 struct arguments
@@ -244,6 +241,8 @@ struct arguments
   int no_analysis;
 #ifdef HAVE_CDDB
   int no_cddb;
+  int cddb_port;  /* port number to contact CDDB server. */
+  int cddb_http;  /* 1 if use http proxy */
 #endif
   int debug_level;
   int silent;
@@ -291,6 +290,12 @@ struct poptOption optionsTable[] = {
 #ifdef HAVE_CDDB
   {"no-cddb",   'a', POPT_ARG_NONE, &opts.no_cddb, 0,
    "Don't look up audio CDDB information or print that"},
+
+  {"cddb-port",   'P', POPT_ARG_INT, &opts.cddb_port, 0,
+   "CDDB port number to use (default 8880)"},
+
+  {"cddb-http",   'H', POPT_ARG_NONE, &opts.cddb_http, 0,
+   "Lookup CDDB via HTTP proxy (default no proxy)"},
 #endif
   
   {"no-ioctl",  'I', POPT_ARG_NONE,  &opts.no_ioctl, 0,
@@ -623,7 +628,8 @@ guess_filesystem(int start_session, track_t track_num)
 static void 
 myexit(int rc) 
 {
-  cdio_destroy(cdio);
+  if (NULL != cdio) 
+    cdio_destroy(cdio);
   exit(rc);
 }
 
@@ -717,8 +723,11 @@ print_cddb_info() {
 
   cddb_set_email_address(conn, "me@home");
   cddb_set_server_name(conn, "freedb.freedb.org");
-  cddb_set_server_port(conn, 8880);
-  cddb_http_disable(conn);
+  cddb_set_server_port(conn, opts.cddb_port);
+  if (opts.cddb_http) 
+    cddb_http_enable(conn);
+  else 
+    cddb_http_disable(conn);
     
   disc = cddb_disc_new();
   if (!disc) {
@@ -743,13 +752,17 @@ print_cddb_info() {
 
   matches = cddb_query(conn, disc);
 
-  printf("%s: Found %d matches in CDDB\n", program_name, matches);
-  for (i=1; i<=matches; i++) {
-    cddb_read(conn, disc);
-    cddb_disc_print(disc);
-    cddb_query_next(conn, disc);
+  if (-1 == matches) 
+    printf("%s: %s\n", program_name, cddb_error_str(errno));
+  else {
+    printf("%s: Found %d matches in CDDB\n", program_name, matches);
+    for (i=1; i<=matches; i++) {
+      cddb_read(conn, disc);
+      cddb_disc_print(disc);
+      cddb_query_next(conn, disc);
+    }
   }
-
+  
   cddb_disc_destroy(disc);
   cddb_destroy:
   cddb_destroy(conn);
@@ -853,15 +866,17 @@ main(int argc, const char *argv[])
   program_name = program_name ? program_name+1 : strdup(argv[0]);
 
   /* Default option values. */
-  opts.silent         = false;
-  opts.debug_level    = 0;
-  opts.no_tracks      = 0;
+  opts.silent       = false;
+  opts.debug_level  = 0;
+  opts.no_tracks    = 0;
 #ifdef HAVE_CDDB
-  opts.no_cddb        = 0;
+  opts.no_cddb      = 0;
+  opts.cddb_port    = 8880;
+  opts.cddb_http    = 0;
 #endif
-  opts.no_ioctl       = 0;
-  opts.no_analysis    = 0;
-  opts.source_image   = IMAGE_UNKNOWN;
+  opts.no_ioctl     = 0;
+  opts.no_analysis  = 0;
+  opts.source_image = IMAGE_UNKNOWN;
      
 
   /* Parse our arguments; every option seen by `parse_opt' will

@@ -6,8 +6,8 @@ __________________________________
 CD-ROM Track List (1 - 1)
   #: MSF       LSN     Type
   1: 00:02:00  000000  data
-170: 00:25:34  001759  leadout
+170: 00:06:02  000302  leadout
 __________________________________
 try to find out what sort of CD this is
-CD-ROM with ISO 9660 filesystem and joliet extension level 3
-ISO 9660: 1744 blocks, label `Free Software Song              '
+CD-ROM with ISO 9660 filesystem
+ISO 9660: 64 blocks, label `CDROM                           '

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.h.in,v 1.1 2003/04/19 09:13:06 rocky Exp $
+    $Id: cdio.h.in,v 1.2 2003/04/20 17:24:49 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -84,7 +84,8 @@ extern "C" {
      a bogus (but useful) 0th entry above we don't have to add one below.
    */
 #define MAX_DRIVER DRIVER_NRG
-
+#define MAX_DEVICE_DRIVER DRIVER_SOLARIS
+#define MIN_DEVICE_DRIVER DRIVER_BSDI
 
   typedef enum  {
     TRACK_FORMAT_AUDIO,   /* Audio track, e.g. CD-DA */

@@ -1,10 +1,6 @@
 #!/bin/sh
-#$Id: check_opts.sh.in,v 1.2 2003/04/19 19:12:06 rocky Exp $
+#$Id: check_opts.sh,v 1.3 2003/04/20 17:24:49 rocky Exp $
 # Check cdinfo options
-if test -n "@CDDB_LIB@" ; then
-  cddb_opt='--no-cddb'
-fi
-
 if test -z "$srcdir" ; then
   srcdir=`pwd`
 fi
@@ -13,15 +9,15 @@ fi
 
 BASE=`basename $0 .sh`
 
-fname=fsf-tompox
+fname=isofs-m1
 i=0
 for opt in '-T' '--no-tracks' '-A' '--no-analyze' '-I' '-no-ioctl' \
       '-q' '--quiet' ; do 
   testname=${BASE}$i
-  test_cdinfo "--cue-file ${srcdir}/${fname}.cue $cddb_opt $opt" \
+  test_cdinfo "--cue-file ${srcdir}/${fname}.cue $opt" \
     ${testname}.dump ${srcdir}/${testname}.right
   RC=$?
-  check_result $RC "cdinfo option test $i"
+  check_result $RC "cdinfo option test $opt"
   i=`expr $i + 1`
 done
 

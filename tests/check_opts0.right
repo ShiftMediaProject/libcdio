@@ -4,5 +4,5 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.
 __________________________________
 try to find out what sort of CD this is
-CD-ROM with ISO 9660 filesystem and joliet extension level 3
-ISO 9660: 1744 blocks, label `Free Software Song              '
+CD-ROM with ISO 9660 filesystem
+ISO 9660: 64 blocks, label `CDROM                           '

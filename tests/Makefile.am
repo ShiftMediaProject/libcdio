@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.8 2003/04/20 15:34:31 rocky Exp $
+#   $Id: Makefile.am,v 1.9 2003/04/20 17:24:49 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -24,13 +24,13 @@ check_SCRIPTS = check_nrg.sh check_cue.sh check_opts.sh
 
 check_DATA = vcd_demo.right \
 	     cdda.right cdda.cue cdda.bin \
-	     fsf-tompox.right fsf-tompox.cue fsf-tompox.bin \
+	     isofs-m1.right isofs-m1.cue isofs-m1.bin \
 	     check_opts0.right check_opts1.right check_opts2.right \
              check_opts3.right check_opts4.right check_opts5.right \
              check_opts6.right check_opts7.right	
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
-	check_common_fn check_opts.sh.in
+	check_common_fn check_cue.sh.in
 
 TESTS = $(check_SCRIPTS)
 

@@ -1,4 +1,4 @@
-AC_REVISION([$Id: configure.ac,v 1.13 2003/04/20 15:34:31 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.14 2003/04/20 17:24:48 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.3)
@@ -210,8 +210,7 @@ fi
 AC_SUBST(CDDB_LIB)
 
 AC_CONFIG_COMMANDS([checks], 
-		   [chmod +x tests/check_opts.sh; 
-		    chmod +x tests/check_cue.sh; 
+		   [chmod +x tests/check_cue.sh
 		   ])
 
 AC_OUTPUT([ \
@@ -221,7 +220,6 @@ AC_OUTPUT([ \
        include/cdio/cdio.h \
        lib/Makefile \
        src/Makefile \
-       tests/check_opts.sh \
        tests/check_cue.sh \
        tests/Makefile \
        ])
