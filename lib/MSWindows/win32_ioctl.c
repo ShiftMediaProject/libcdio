@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.10 2004/07/13 12:28:21 rocky Exp $
+    $Id: win32_ioctl.c,v 1.11 2004/07/16 02:06:40 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.10 2004/07/13 12:28:21 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.11 2004/07/16 02:06:40 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -204,7 +204,7 @@ static int
 read_raw_sector (const _img_private_t *env, void *buf, lsn_t lsn) 
 {
   SCSI_PASS_THROUGH_DIRECT sptd;
-  BOOL success;
+  bool success;
   DWORD dwBytesReturned;
   
   sptd.Length=sizeof(sptd);
@@ -217,7 +217,7 @@ read_raw_sector (const _img_private_t *env, void *buf, lsn_t lsn)
   sptd.DataTransferLength= CDIO_CD_FRAMESIZE_RAW; 
   sptd.TimeOutValue=60;  /*SCSI timeout value (60 seconds - 
 			   maybe it should be longer) */
-  sptd.DataBuffer= (PVOID) buf;
+  sptd.DataBuffer= (void *) buf;
   sptd.SenseInfoOffset=0;
 
   /* ReadCD CDB12 command.  The values were taken from MMC1 draft paper. */
@@ -237,7 +237,7 @@ read_raw_sector (const _img_private_t *env, void *buf, lsn_t lsn)
   /* Send the command to drive */
   success=DeviceIoControl(env->h_device_handle,
 			  IOCTL_SCSI_PASS_THROUGH_DIRECT,               
-			  (PVOID)&sptd, 
+			  (void *)&sptd, 
 			  (DWORD)sizeof(SCSI_PASS_THROUGH_DIRECT),
 			  NULL, 0,                        
 			  &dwBytesReturned,
