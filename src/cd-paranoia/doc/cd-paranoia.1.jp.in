@@ -1,26 +1,26 @@
-.TH CDPARANOIA 1
+.TH @CDPARANOIA_NAME@ 1
 .\" Translated Sun Aug 22 18:02:41 JST 1999
 .\"         by FUJIWARA Teruyoshi <fujiwara@linux.or.jp>
 .SH 名前
-cdparanoia (Paranoia release III) \- オーディオ CD 読み取りユーティリティ。特別なデータ照合機能を持つ。
+@CDPARANOIA_NAME@ (Paranoia release III libcdio) \- オーディオ CD 読み取りユーティリティ。特別なデータ照合機能を持つ。
 .SH 日付
 バージョンIII リリースα9.6 (17 Aug 1999)
 .SH 書式
-.B cdparanoia
+.B @CDPARANOIA_NAME@
 .RB [ options ]
 .B span 
 .RB [ outfile ]
 .SH 説明
-.B cdparanoia
+.B @CDPARANOIA_NAME@
 は CD-DA 機能を持つ CD-ROM ドライブからオーディオトラックを取り出しま
 す。このデータは WAV, AIFF, AIFF-C, raw 形式でファイルにセーブすること
 や、標準出力に送ることができます。ほとんどの ATAPI, SCSI, メーカー独自
 の CD-ROM ドライブがサポートされています。
-.B cdparanoia
+.B @CDPARANOIA_NAME@
 は対象のドライブが CD-DA 機能を持っているかどうかを判別できます。
 .P
 単純な読み取りだけでなく、
-.B cdparanoia
+.B @CDPARANOIA_NAME@
 は特別に頑健なデータ照合機能、同期機能、エラー処理機能、破損データの再
 構成機能を持っています。
 .SH オプション
@@ -54,7 +54,7 @@ CD-ROM ドライブの自動検出を行い、CD-ROM の TOC の問い合わせと表示を行
 
 .TP
 .B \-h --help
-.B cdparanoia 
+.B @CDPARANOIA_NAME@ 
 の使い方とオプションを簡単な説明を出力します。
 
 .TP
@@ -95,23 +95,23 @@ MSB first である点に注意)。
 
 .TP
 .BI "\-B --batch "
-cdda2wav 形式のバッチ出力を行います。cdparanoia は出力をトラック境界で
+cdda2wav 形式のバッチ出力を行います。@CDPARANOIA_NAME@ は出力をトラック境界で
 複数ファイルに分割します。出力ファイルのファイル名の先頭部分は、'track(番号)' 
 となります。
 
 .TP
 .B \-c --force-cdrom-little-endian
 一部の CD-ROM は間違ったエンディアンを報告します(あるいはエンディアン
-に関する情報を全く報告しません)。そのため、cdparanoia がエンディアンを
+に関する情報を全く報告しません)。そのため、@CDPARANOIA_NAME@ がエンディアンを
 間違えることがあります。ドライブをリトルエンディアンのデバイスとして
-cdparanoia に扱わせるには、
+@CDPARANOIA_NAME@ に扱わせるには、
 .B \-c
 オプションを使います。
 
 .TP
 .B \-C --force-cdrom-big-endian
 前のオプションの逆で、デバイスをビッグエンディアンのデバイスとして
-cdparanoia に扱わせます。
+@CDPARANOIA_NAME@ に扱わせます。
 
 .TP
 .BI "\-n --force-default-sectors " n
@@ -119,7 +119,7 @@ cdparanoia に扱わせます。
 1 回の読み取りごとに
 .B n
 セクタとします。この数は問題を起こすおそれがあります。カーネルは多くの
-場合、読み取り要求を最小単位の読み取り(cdparanoia による自動処理はこれ
+場合、読み取り要求を最小単位の読み取り(@CDPARANOIA_NAME@ による自動処理はこれ
 に対応しています)複数個に分割するか、制限された大きさの範囲でしか
 読み取りを許可しません。
 .B 普通はこのオプションを使うべきではありません。
@@ -152,7 +152,7 @@ CD ドライブからの読み込み速度を設定するには、このオプションを明示的に
 .B \-Z --disable-paranoia
 データ照合と訂正機能を
 .b 全て
-無効にします。-Z オプションを用いると、cdparanoia は
+無効にします。-Z オプションを用いると、@CDPARANOIA_NAME@ は
 オーバーラップの設定が 0 である cdda2wav と全く同じようにデータの
 読み取りを行います。
 このオプションを指定すると
@@ -179,7 +179,7 @@ CD ドライブからの読み込み速度を設定するには、このオプションを明示的に
 .B \-X --disable-scratch-detection
 照合の途中では傷の探査も行わず、傷に対して頑健な同期処理も行いません。
 .B \-X
-オプションを指定した場合、傷ついた CD を与えると cdparanoia は読み取り
+オプションを指定した場合、傷ついた CD を与えると @CDPARANOIA_NAME@ は読み取り
 の失敗を起こします。
 
 .TP
@@ -245,7 +245,7 @@ SCSI/ATAPI のデータ転送エラー
 .B
    !  
 ステージ 1 訂正の後にエラーが見つかった。読み取りを複数回繰り返しても
-同じエラーが発生し、cdparanoia はそのエラーをうまく検出できない。
+同じエラーが発生し、@CDPARANOIA_NAME@ はそのエラーをうまく検出できない。
 .TP
 .B
    e    
@@ -307,24 +307,24 @@ span が単なる数字でなければ、シェルが引き数 span を展開してしまわない
 .TP
 ドライブの調査だけを徹底的に行い、自動検出の結果を全て報告します:
 .P
-       cdparanoia -vsQ
+       @CDPARANOIA_NAME@ -vsQ
 .TP
 ディスク全体を吸い出します。それぞれのトラックは別々のファイルにします:
 .P
-       cdparanoia -B "1-"
+       @CDPARANOIA_NAME@ -B "1-"
 .TP
 トラック 1 の時刻 0:30.12 から時刻 1:10.00 までを吸い出します:
 .P
-       cdparanoia "1[:30.12]-1[1:10]"
+       @CDPARANOIA_NAME@ "1[:30.12]-1[1:10]"
 .TP
 トラック 1 の時刻 0:30.12 から 1 分間のデータを吸い出します:
 .P
-       cdparanoia "1[:30.12]-[1:00]"
+       @CDPARANOIA_NAME@ "1[:30.12]-[1:00]"
 
 .SH 出力
 
 出力ファイルを指定する引き数は省略可能です。指定されていなければ、
-cdparanoia はサンプル音声を
+@CDPARANOIA_NAME@ はサンプル音声を
 .BR cdda.wav ", " cdda.aifc ", " cdda.raw
 のいずれかに出力します。どのファイルに出力されるのかは、オプション
 .BR \-w ", " \-a ", " \-r "," \-R
@@ -336,10 +336,10 @@ cdparanoia はサンプル音声を
 ることができます。
 
 .SH 謝辞
-cdparanoia の基となったのは Heiko Eissfeldt さん
+@CDPARANOIA_NAME@ の基となったのは Heiko Eissfeldt さん
 (heiko@colossus.escape.de)が作成した 'cdda2wav' パッケージであり、
-以前は cdparanoia のインタフェースの大部分は cdda2wav からもらってきた
-ものでした。cdda2wav がなければ、cdparanoia が作られることはなかったで
+以前は @CDPARANOIA_NAME@ のインタフェースの大部分は cdda2wav からもらってきた
+ものでした。cdda2wav がなければ、@CDPARANOIA_NAME@ が作られることはなかったで
 しょう。
 .P
 Joerg Schilling さんが作成した汎用 SCSI データ転送ライブラリから、SCSI 
@@ -352,3 +352,8 @@ cdparanoia のホームページは以下の場所にあります:
 .P
 .ce 
 http://www.xiph.org/paranoia/
+.P
+libcdio のホームページは以下の場所にあります:
+.P
+.ce 
+http://www.gnu.org/libcdio/

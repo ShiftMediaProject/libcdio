@@ -20,7 +20,6 @@
  * See ChangeLog for recent changes.
  *
  * last changes:
- *   09.04.04 - conversion to use libcdio. 
  *   22.01.98 - first version
  *   15.02.98 - alpha 2: juggled two includes from interface/low_interface.h
  *                       that move contents in Linux 2.1
@@ -44,6 +43,9 @@
  *                       AIFF support (in addition to AIFC)
  *                       Path parsing fixes
  *   Changes are becoming TNTC. Will resume the log at beta.
+ *
+ *   09.04.04 - conversion to use libcdio. See top-level Changelog for
+ *              libcdio history.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -867,10 +869,23 @@ main(int argc,char *argv[])
 
   if (query_only) exit(0);
 
-  /* bias the disc.  A hack.  Of course. */
-  /* we may need to read before or past user area; this is never
-     default, and we do it because the [allegedly informed] user told
-     us to */
+  /* bias the disc.  A hack.  Of course. this is never the default. */
+  /* 
+     Some CD-ROM/CD-R drives will add an offset to the position on
+     reading audio data. This is usually around 500-700 audio samples
+     (ca. 1/75 second) on reading. So when this program queries a
+     specific sector, it might not receive exactly that sector, but
+     shifted by some amount.
+
+     Note that if ripping includes the end of the CD, this will this
+     cause this program to attempt to read partial sectors before or
+     past the known user data area of the disc, probably causing read
+     errors on most drives and possibly even hard lockups on some
+     buggy hardware. 
+
+     [Note to libcdio driver hackers: make sure all CD-drivers don't
+     try to read outside of the stated disc boundaries.]
+  */
   if(sample_offset){
     toc_offset+=sample_offset/588;
     sample_offset%=588;

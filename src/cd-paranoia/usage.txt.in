@@ -47,6 +47,8 @@ OPTIONS:
   -Z --disable-paranoia           : disable all paranoia checking
   -Y --disable-extra-paranoia     : only do cdda2wav-style overlap checking
   -X --abort-on-skip              : abort on imperfect reads/skips
+  -x --test-flags=mask            : simulate CD-reading errors of ilk-mask n
+                                    mask & 0x10  - simulate underrun errors
 
 OUTPUT SMILIES:
   :-)   Normal operation, low/no jitter

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.11 2005/01/16 11:47:45 rocky Exp $
+#   $Id: Makefile.am,v 1.12 2005/01/16 13:08:25 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -27,8 +27,10 @@ endif
 man_MANS = doc/cd-paranoia.1 doc/cd-paranoia.1.jp
 
 EXTRA_DIST = $(man_MANS) getopt.c getopt1.c \
-	      usage.txt.in pod2c.pl \
-	      doc/FAQ.txt doc/overlapdef.txt
+	     usage.txt.in pod2c.pl \
+             doc/FAQ.txt doc/overlapdef.txt \
+             doc/cd-paranoia.1.in doc/cd-paranoia.1.jp.in
+
 
 noinst_HEADERS = getopt.h header.h report.h 
 
