@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.21 2004/06/19 11:07:55 rocky Exp $
+    $Id: freebsd.c,v 1.22 2004/06/19 16:34:45 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.21 2004/06/19 11:07:55 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.22 2004/06/19 16:34:45 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -442,6 +442,8 @@ cdio_get_devices_freebsd (void)
   /* Scan the system for CD-ROM drives.
      Not always 100% reliable, so use the USE_MNTENT code above first.
   */
+
+  /* Scan SCSI and CAM devices */
   for ( c='0'; exists && c <='9'; c++ ) {
     sprintf(drive, "/dev/cd%c%s", c, DEVICE_POSTFIX);
     exists = cdio_is_cdrom(drive, NULL);
@@ -449,8 +451,10 @@ cdio_get_devices_freebsd (void)
       cdio_add_device_list(&drives, drive, &num_drives);
     }
   }
+
+  /* Scan are ATAPI devices */
   for ( c='0'; exists && c <='9'; c++ ) {
-    sprintf(drive, "/dev/acd%cc", c);
+    sprintf(drive, "/dev/acd%c%s", c, DEVICE_POSTFIX);
     exists = cdio_is_cdrom(drive, NULL);
     if ( exists ) {
       cdio_add_device_list(&drives, drive, &num_drives);
@@ -494,6 +498,8 @@ cdio_get_default_device_freebsd()
   /* Scan the system for CD-ROM drives.
      Not always 100% reliable, so use the USE_MNTENT code above first.
   */
+
+  /* Scan SCSI and CAM devices */
   for ( c='0'; exists && c <='9'; c++ ) {
     sprintf(drive, "/dev/cd%c%s", c, DEVICE_POSTFIX);
     exists = cdio_is_cdrom(drive, NULL);
@@ -501,8 +507,10 @@ cdio_get_default_device_freebsd()
       return strdup(drive);
     }
   }
+
+  /* Scan are ATAPI devices */
   for ( c='0'; exists && c <='9'; c++ ) {
-    sprintf(drive, "/dev/acd%cc", c);
+    sprintf(drive, "/dev/acd%c%s", c, DEVICE_POSTFIX);
     exists = cdio_is_cdrom(drive, NULL);
     if ( exists ) {
       return strdup(drive);

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.11 2004/06/19 11:07:56 rocky Exp $
+    $Id: freebsd.h,v 1.12 2004/06/19 16:34:45 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -146,10 +146,12 @@ typedef struct {
 
 bool cdio_is_cdrom_freebsd_ioctl(char *drive, char *mnttype);
 
-char *get_mcn_freebsd_ioctl (const void *env);
+char *get_mcn_freebsd_ioctl (const _img_private_t *env);
 
-track_format_t get_track_format_freebsd_ioctl(void *env, track_t track_num);
-bool get_track_green_freebsd_ioctl(void *env, track_t track_num);
+track_format_t get_track_format_freebsd_ioctl(const _img_private_t *env, 
+					      track_t i_track);
+bool get_track_green_freebsd_ioctl(const _img_private_t *env, 
+				   track_t i_track);
 
 int  eject_media_freebsd_ioctl (_img_private_t *env);
 int  eject_media_freebsd_cam (_img_private_t *env);

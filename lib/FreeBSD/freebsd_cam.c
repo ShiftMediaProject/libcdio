@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.11 2004/06/09 10:59:42 rocky Exp $
+    $Id: freebsd_cam.c,v 1.12 2004/06/19 16:34:45 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.11 2004/06/09 10:59:42 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.12 2004/06/19 16:34:45 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -122,10 +122,9 @@ free_freebsd_cam (void *user_data)
 
  */
 static char *
-get_drive_mcn_freebsd_cam (void *user_data)
+get_drive_mcn_freebsd_cam (img_private_t *env)
 {
   char buf[192] = { 0, };
-  _img_private_t *env = user_data;
   int rc;
   
   memset(&env->ccb, 0, sizeof(env->ccb));
@@ -171,11 +170,10 @@ get_drive_mcn_freebsd_cam (void *user_data)
 
  */
 static cdio_drive_cap_t
-get_drive_cap_freebsd_cam (void *user_data) 
+get_drive_cap_freebsd_cam (img_private_t *env) 
 {
   int32_t i_drivetype = 0;
   char buf[192] = { 0, };
-  _img_private_t *env = user_data;
   int rc;
   
   memset(&env->ccb, 0, sizeof(env->ccb));

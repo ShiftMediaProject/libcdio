@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.6 2004/06/05 02:47:49 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.7 2004/06/19 16:34:45 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.6 2004/06/05 02:47:49 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.7 2004/06/19 16:34:45 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -174,9 +174,8 @@ eject_media_freebsd_ioctl (_img_private_t *env)
 
  */
 char *
-get_mcn_freebsd_ioctl (const void *env) {
+get_mcn_freebsd_ioctl (const _img_private_t *env) {
 
-  const _img_private_t *_obj = env;
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
 
@@ -186,7 +185,7 @@ get_mcn_freebsd_ioctl (const void *env) {
   subchannel.data_len       = 1;
   subchannel.data           = &subchannel_info;
 
-  if(ioctl(_obj->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
+  if(ioctl(env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
     perror("CDIOCREADSUBCHANNEL");
     return NULL;
   }
@@ -207,19 +206,18 @@ get_mcn_freebsd_ioctl (const void *env) {
   
 */
 track_format_t
-get_track_format_freebsd_ioctl(void *env, track_t track_num) 
+get_track_format_freebsd_ioctl(const _img_private_t *env, track_t i_track) 
 {
-  _img_private_t *_obj = env;
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
 
   subchannel.address_format = CD_LBA_FORMAT;
   subchannel.data_format    = CD_CURRENT_POSITION;
-  subchannel.track          = track_num;
+  subchannel.track          = i_track;
   subchannel.data_len       = 1;
   subchannel.data           = &subchannel_info;
 
-  if(ioctl(_obj->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
+  if(ioctl(env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
     perror("CDIOCREADSUBCHANNEL");
     return 1;
   }
@@ -244,19 +242,18 @@ get_track_format_freebsd_ioctl(void *env, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 bool
-get_track_green_freebsd_ioctl(void *env, track_t track_num) 
+get_track_green_freebsd_ioctl(const _img_private_t *env, track_t i_track) 
 {
-  _img_private_t *_obj = env;
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
 
   subchannel.address_format = CD_LBA_FORMAT;
   subchannel.data_format    = CD_CURRENT_POSITION;
-  subchannel.track          = track_num;
+  subchannel.track          = i_track;
   subchannel.data_len       = 1;
   subchannel.data           = &subchannel_info;
 
-  if(ioctl(_obj->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
+  if(ioctl(env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
     perror("CDIOCREADSUBCHANNEL");
     return 1;
   }
