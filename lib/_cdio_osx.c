@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.64 2004/08/29 03:45:34 rocky Exp $
+    $Id: _cdio_osx.c,v 1.65 2004/08/30 01:14:14 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.64 2004/08/29 03:45:34 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.65 2004/08/30 01:14:14 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -1097,6 +1097,7 @@ _get_first_track_num_osx(void *user_data)
   _img_private_t *p_env = user_data;
   
   if (!p_env->gen.toc_init) read_toc_osx (p_env) ;
+  if (!p_env->gen.toc_init) return CDIO_INVALID_TRACK;
 
   return p_env->i_first_track;
 }
@@ -1131,6 +1132,7 @@ _get_num_tracks_osx(void *user_data)
   _img_private_t *p_env = user_data;
   
   if (!p_env->gen.toc_init) read_toc_osx (p_env) ;
+  if (!p_env->gen.toc_init) return CDIO_INVALID_TRACK;
 
   return( TOTAL_TRACKS );
 }

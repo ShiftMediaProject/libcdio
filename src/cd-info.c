@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.86 2004/08/30 01:01:14 rocky Exp $
+    $Id: cd-info.c,v 1.87 2004/08/30 01:14:14 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1040,7 +1040,12 @@ main(int argc, const char *argv[])
   }
   
   i_first_track = cdio_get_first_track_num(p_cdio);
-  i_tracks      = cdio_get_num_tracks(p_cdio);
+
+  if (CDIO_INVALID_TRACK == i_first_track) {
+    err_exit("Can't number of tracks, I give up.\n");
+  }
+
+  i_tracks = cdio_get_num_tracks(p_cdio);
 
   if (!opts.no_tracks) {
     printf("CD-ROM Track List (%i - %i)\n" NORMAL, 
