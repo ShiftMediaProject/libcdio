@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.56 2004/11/14 16:35:17 nboullis Exp $
+#   $Id: Makefile.am,v 1.57 2004/11/14 17:06:01 nboullis Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -190,11 +190,13 @@ libiso9660_la_DEPENDENCIES = $(libcdio9660_la_dependencies) libiso9660.la.ver
 libiso9660.la.ver: $(libiso9660_la_OBJECTS)
 	echo 'ISO9660_$(libiso9660_la_MAJOR) {' > $@
 	echo "  global:" >> $@
-	nm $(patsubst %.lo,%.o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/    \1;/p' | sort | uniq >> $@
+	nm $(patsubst %.lo,%.o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" libiso9660.sym; then echo "    $${symbol};"; fi; done >> $@
+	echo "  local:" >> $@
+	nm $(patsubst %.lo,%.o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" libiso9660.sym; then :; else echo "    $${symbol};"; fi; done >> $@
 	echo '};' >> $@
 
 MOSTLYCLEANFILES = libcdio.la.ver libiso9660.la.ver
 else 
-libiso9660_la_LDFLAGS = $(libiso9660_la_ldflags)
+libiso9660_la_LDFLAGS = $(libiso9660_la_ldflags) -export-symbols libiso9660.sym
 libiso9660_la_DEPENDENCIES = $(libcdio9660_la_dependencies)
 endif
