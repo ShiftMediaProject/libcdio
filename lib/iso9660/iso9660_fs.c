@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.18 2005/02/18 01:31:08 rocky Exp $
+    $Id: iso9660_fs.c,v 1.19 2005/02/18 22:35:48 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.18 2005/02/18 01:31:08 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.19 2005/02/18 22:35:48 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -827,7 +827,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
       strncpy(p_stat->filename, rr_fname, i_rr_fname+1);
     } else {
 #ifdef HAVE_JOLIET
-      if (i_joliet_level && i_rr_fname > 0) {
+      if (i_joliet_level) {
 	int i_inlen = i_fname;
 	int i_outlen = (i_inlen / 2);
 	char *p_psz_out = NULL;
