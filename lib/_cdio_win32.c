@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.23 2004/02/04 11:08:10 rocky Exp $
+    $Id: _cdio_win32.c,v 1.24 2004/02/05 03:02:16 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.23 2004/02/04 11:08:10 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.24 2004/02/05 03:02:16 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -251,41 +251,49 @@ _cdio_init_win32 (void *user_data)
     for( i = 0; i < i_num_adapters; i++ ) {
       for( j = 0; j < 15; j++ ) {
 	struct SRB_GetDiskInfo srbDiskInfo;
+	int lun;
+
+	for (lun = 0; lun < 8; lun++ ) {
+	  srbDiskInfo.SRB_Cmd         = SC_GET_DISK_INFO;
+	  srbDiskInfo.SRB_HaId        = i;
+	  srbDiskInfo.SRB_Flags       = 0;
+	  srbDiskInfo.SRB_Hdr_Rsvd    = 0;
+	  srbDiskInfo.SRB_Target      = j;
+	  srbDiskInfo.SRB_Lun         = lun;
 	  
-	srbDiskInfo.SRB_Cmd         = SC_GET_DISK_INFO;
-	srbDiskInfo.SRB_HaId        = i;
-	srbDiskInfo.SRB_Flags       = 0;
-	srbDiskInfo.SRB_Hdr_Rsvd    = 0;
-	srbDiskInfo.SRB_Target      = j;
-	srbDiskInfo.SRB_Lun         = 0;
-	
-	lpSendCommand( (void*) &srbDiskInfo );
-	
-	if( (srbDiskInfo.SRB_Status == SS_COMP) &&
-	    (srbDiskInfo.SRB_Int13HDriveInfo == c_drive) ) {
-	  /* Make sure this is a cdrom device */
-	  struct SRB_GDEVBlock   srbGDEVBlock;
+	  lpSendCommand( (void*) &srbDiskInfo );
 	  
-	  memset( &srbGDEVBlock, 0, sizeof(struct SRB_GDEVBlock) );
-	  srbGDEVBlock.SRB_Cmd    = SC_GET_DEV_TYPE;
-	  srbGDEVBlock.SRB_HaId   = i;
-	  srbGDEVBlock.SRB_Target = j;
-	  
-	  lpSendCommand( (void*) &srbGDEVBlock );
-	  
-	  if( ( srbGDEVBlock.SRB_Status == SS_COMP ) &&
-	      ( srbGDEVBlock.SRB_DeviceType == DTYPE_CDROM ) ) {
-	    _obj->i_sid = MAKEWORD( i, j );
-	    _obj->hASPI = (long)hASPI;
-	    _obj->lpSendCommand = lpSendCommand;
-	    cdio_debug("Using ASPI layer");
+	  if( (srbDiskInfo.SRB_Status == SS_COMP) ) {
 	    
-	    return true;
-	  } else {
-	    FreeLibrary( hASPI );
-	    cdio_debug( "%c: is not a CD-ROM drive",
-			_obj->gen.source_name[0] );
-	    return false;
+	    if (srbDiskInfo.SRB_Int13HDriveInfo != c_drive)
+	      {
+		continue;
+	      } else {
+		/* Make sure this is a cdrom device */
+		struct SRB_GDEVBlock   srbGDEVBlock;
+		
+		memset( &srbGDEVBlock, 0, sizeof(struct SRB_GDEVBlock) );
+		srbGDEVBlock.SRB_Cmd    = SC_GET_DEV_TYPE;
+		srbGDEVBlock.SRB_HaId   = i;
+		srbGDEVBlock.SRB_Target = j;
+		
+		lpSendCommand( (void*) &srbGDEVBlock );
+	      
+		if( ( srbGDEVBlock.SRB_Status == SS_COMP ) &&
+		    ( srbGDEVBlock.SRB_DeviceType == DTYPE_CDROM ) ) {
+		  _obj->i_sid = MAKEWORD( i, j );
+		  _obj->hASPI = (long)hASPI;
+		  _obj->lpSendCommand = lpSendCommand;
+		  cdio_debug("Using ASPI layer");
+		  
+		  return true;
+		} else {
+		  FreeLibrary( hASPI );
+		  cdio_debug( "%c: is not a CD-ROM drive",
+			      _obj->gen.source_name[0] );
+		  return false;
+		}
+	      }
 	  }
 	}
       }
@@ -800,18 +808,7 @@ _cdio_get_track_format(void *env, track_t track_num)
       }
     }
   } else {
-    /* This is pretty much copied from the "badly broken" cdrom_count_tracks
-       in linux/cdrom.c.
-    */
-    if (_obj->tocent[track_num-1].Control & 0x04) {
-      if (_obj->tocent[track_num-1].Format == 0x10)
-	return TRACK_FORMAT_CDI;
-      else if (_obj->tocent[track_num-1].Format == 0x20) 
-	return TRACK_FORMAT_XA;
-      else
-	return TRACK_FORMAT_DATA;
-    } else
-      return TRACK_FORMAT_AUDIO;
+    return win32ioctl_get_track_format(_obj, track_num);
   }
 
   return TRACK_FORMAT_ERROR;

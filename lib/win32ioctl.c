@@ -1,5 +1,5 @@
 /*
-    $Id: win32ioctl.c,v 1.2 2004/02/04 11:08:10 rocky Exp $
+    $Id: win32ioctl.c,v 1.3 2004/02/05 03:02:16 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32ioctl.c,v 1.2 2004/02/04 11:08:10 rocky Exp $";
+static const char _rcsid[] = "$Id: win32ioctl.c,v 1.3 2004/02/05 03:02:16 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -247,18 +247,36 @@ win32ioctl_init_win32 (_img_private_t *env)
 {
   char psz_win32_drive[7];
   unsigned int len=strlen(env->gen.source_name);
+  OSVERSIONINFO ov;
+  DWORD dwFlags;
   
   cdio_debug("using winNT/2K/XP ioctl layer");
+  
+  memset(&ov,0,sizeof(OSVERSIONINFO));
+  ov.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
+  GetVersionEx(&ov);
+  
+  if((ov.dwPlatformId==VER_PLATFORM_WIN32_NT) &&        
+     (ov.dwMajorVersion>4))
+    dwFlags = GENERIC_READ|GENERIC_WRITE;  /* add gen write on W2k/XP */
+  else dwFlags = GENERIC_READ;
   
   if (cdio_is_device_win32(env->gen.source_name)) {
     sprintf( psz_win32_drive, "\\\\.\\%c:", env->gen.source_name[len-2] );
     
-    env->h_device_handle = CreateFile( psz_win32_drive, GENERIC_READ,
-					FILE_SHARE_READ | FILE_SHARE_WRITE,
-					NULL, OPEN_EXISTING,
-					FILE_FLAG_NO_BUFFERING |
-					FILE_FLAG_RANDOM_ACCESS, NULL );
-    return (env->h_device_handle == NULL) ? false : true;
+    env->h_device_handle = CreateFile( psz_win32_drive, dwFlags,
+				       FILE_SHARE_READ, NULL, OPEN_EXISTING,
+				       0, NULL );
+    if( env->h_device_handle == INVALID_HANDLE_VALUE )
+      {
+	/* No good. try toggle write. */
+	dwFlags ^= GENERIC_WRITE;  
+	env->h_device_handle = CreateFile( psz_win32_drive, dwFlags, 
+					   FILE_SHARE_READ,  NULL, 
+					   OPEN_EXISTING, 0, NULL );
+	return (env->h_device_handle == NULL) ? false : true;
+      }
+    return true;
   }
   return false;
 }
@@ -334,5 +352,26 @@ win32ioctl_get_mcn (_img_private_t *env) {
     return strdup(mcn.MediaCatalog);
   return NULL;
 }
+
+/*!  
+  Get the format (XA, DATA, AUDIO) of a track. 
+*/
+track_format_t
+win32ioctl_get_track_format(_img_private_t *env, track_t track_num) 
+{
+  /* This is pretty much copied from the "badly broken" cdrom_count_tracks
+     in linux/cdrom.c.
+  */
+  if (env->tocent[track_num-1].Control & 0x04) {
+    if (env->tocent[track_num-1].Format == 0x10)
+      return TRACK_FORMAT_CDI;
+    else if (env->tocent[track_num-1].Format == 0x20) 
+      return TRACK_FORMAT_XA;
+    else
+      return TRACK_FORMAT_DATA;
+  } else
+    return TRACK_FORMAT_AUDIO;
+}
+
 
 #endif /*HAVE_WIN32_CDROM*/

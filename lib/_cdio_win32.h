@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.h,v 1.2 2004/02/04 11:08:10 rocky Exp $
+    $Id: _cdio_win32.h,v 1.3 2004/02/05 03:02:16 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -75,3 +75,8 @@ bool win32ioctl_read_toc (_img_private_t *env);
 
 char *win32ioctl_get_mcn (_img_private_t *env);
 
+/*!  
+  Get the format (XA, DATA, AUDIO) of a track. 
+*/
+track_format_t win32ioctl_get_track_format(_img_private_t *env, 
+					   track_t track_num); 
