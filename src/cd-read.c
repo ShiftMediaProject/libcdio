@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.23 2005/01/09 00:10:49 rocky Exp $
+  $Id: cd-read.c,v 1.24 2005/02/19 11:43:05 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -178,7 +178,7 @@ static bool
 parse_options (int argc, const char *argv[])
 {
 
-  int opt;
+  char opt;
   char *psz_my_source;
   char *opt_arg;
 
@@ -252,7 +252,7 @@ parse_options (int argc, const char *argv[])
   program_name = strrchr(argv[0],'/');
   program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
-  while ((opt = poptGetNextOpt (optCon)) != -1)
+  while ((opt = poptGetNextOpt (optCon)) >= 0)
     switch (opt)
       {
       case OP_SOURCE_AUTO:
@@ -306,17 +306,16 @@ parse_options (int argc, const char *argv[])
 	free(program_name);
         exit (EXIT_SUCCESS);
         break;
-
-      default:
-        report( stderr, "%s: %s\n", 
-		poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
-		poptStrerror(opt) );
-        report( stderr, "error while parsing command line - try --help\n" );
-	poptFreeContext(optCon);
-	free(program_name);
-        exit (EXIT_FAILURE);
       }
 
+  if (opt < -1) {
+    report( stderr, "%s: %s\n", 
+	    poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
+	    poptStrerror(opt) );
+    free(program_name);
+    exit (EXIT_FAILURE);
+  }
+  
   {
     const char *remaining_arg = poptGetArg(optCon);
     if ( remaining_arg != NULL) {

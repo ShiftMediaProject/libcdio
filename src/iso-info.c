@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.23 2005/02/18 23:25:45 rocky Exp $
+    $Id: iso-info.c,v 1.24 2005/02/19 11:43:05 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -65,6 +65,8 @@ struct arguments
   int            silent;
   int            no_header;
   int            no_joliet;
+  int            no_xa;
+  int            no_rock_ridge;
   int            print_iso9660;
   int            print_iso9660_short;
 } opts;
@@ -104,9 +106,15 @@ parse_options (int argc, const char *argv[])
 
 #ifdef HAVE_JOLIET    
     {"no-joliet", '\0', POPT_ARG_NONE, &opts.no_joliet, 
-     0, "Don't use Joliet extensions"},
+     0, "Don't use Joliet-extension information"},
 #endif /*HAVE_JOLIET*/
     
+    {"no-rock-ridge", '\0', POPT_ARG_NONE, &opts.no_rock_ridge, 
+     0, "Don't use Rock-Ridge-extension information"},
+
+    {"no-xa", '\0', POPT_ARG_NONE, &opts.no_xa, 
+     0, "Don't use XA-extension information"},
+
     {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
      "Don't produce warning output" },
     
@@ -119,12 +127,16 @@ parse_options (int argc, const char *argv[])
   program_name = strrchr(argv[0],'/');
   program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
-  while ((opt = poptGetNextOpt (optCon)) != -1) {
-    switch (opt) {
-    default:
-      poptFreeContext(optCon);
-      return false;
-    }
+  while ((opt = poptGetNextOpt (optCon)) >= 0) {
+    ;
+  }
+  if (opt < -1) {
+    /* an error occurred during option processing */
+    report(stderr, "%s: %s\n",
+	    poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
+	    poptStrerror(opt));
+    free(program_name);
+    exit (EXIT_FAILURE);
   }
   {
     const char *remaining_arg = poptGetArg(optCon);
@@ -133,6 +145,7 @@ parse_options (int argc, const char *argv[])
 	report( stderr, "%s: Source specified in previously %s and %s\n", 
 		    program_name, source_name, remaining_arg );
 	poptFreeContext(optCon);
+	free(program_name);
 	exit (EXIT_FAILURE);
       }
       source_name = strdup(remaining_arg);
@@ -210,7 +223,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
         _cdio_list_append (dirlist, strdup (_fullname));
 
       if (opts.print_iso9660) {
-	if (iso9660_ifs_is_xa(p_iso)) {
+	if (iso9660_ifs_is_xa(p_iso) && 0 == opts.no_xa) {
 	  printf ( "  %c %s %d %d [fn %.2d] [LSN %6lu] ",
 		   (p_statbuf->type == _STAT_DIR) ? 'd' : '-',
 		   iso9660_get_xa_attr_str (p_statbuf->xa.attributes),
@@ -270,7 +283,9 @@ init(void)
   /* Default option values. */
   opts.silent              = false;
   opts.no_header           = false;
-  opts.no_joliet           = false;
+  opts.no_joliet           = 0;
+  opts.no_rock_ridge       = 0;
+  opts.no_xa               = 0;
   opts.debug_level         = 0;
   opts.print_iso9660       = 0;
   opts.print_iso9660_short = 0;
@@ -297,7 +312,7 @@ main(int argc, const char *argv[])
   /* Parse our arguments; every option seen by `parse_opt' will
      be reflected in `arguments'. */
   parse_options(argc, argv);
-     
+  
   print_version(program_name, CDIO_VERSION, opts.no_header, opts.version_only);
 
   if (opts.debug_level == 3) {

@@ -1,5 +1,5 @@
 /*
-  $Id: iso-read.c,v 1.8 2005/01/22 22:21:36 rocky Exp $
+  $Id: iso-read.c,v 1.9 2005/02/19 11:43:05 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -53,6 +53,7 @@ struct arguments
   char          *output_file; 
   char          *iso9660_image; 
   int            debug_level;
+  int            no_header;
 } opts;
 
 /* Parse a options. */
@@ -83,6 +84,9 @@ parse_options (int argc, const char *argv[])
      "Extract FILE from ISO-9660 image. This option is mandatory.", 
      "FILE"},
     
+    {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
+     0, "Don't display header and copyright (for regression testing)"},
+
     {"output-file",     'o', POPT_ARG_STRING, &opts.output_file, 0,
      "Output file. This option is mandatory.", "FILE"},
     
@@ -192,7 +196,11 @@ main(int argc, const char *argv[])
 
   /* Parse our arguments; every option seen by `parse_opt' will
      be reflected in `arguments'. */
-  parse_options(argc, argv);
+  if (!parse_options(argc, argv)) {
+    report(stderr, 
+	   "error while parsing command line - try --help\n");
+    return 2;
+  }
      
   iso = iso9660_open (opts.iso9660_image);
   

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.114 2005/02/18 01:31:08 rocky Exp $
+    $Id: cd-info.c,v 1.115 2005/02/19 11:43:05 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -75,7 +75,6 @@ struct arguments
   int            no_ioctl;
   int            no_analysis;
   char          *access_mode; /* Access method driver should use for control */
-#ifdef HAVE_CDDB
   int            no_cddb;     /* If set the below are meaningless. */
   char          *cddb_email;  /* email to report to CDDB server. */
   char          *cddb_server; /* CDDB server to contact */
@@ -84,7 +83,6 @@ struct arguments
   int            cddb_timeout;
   bool           cddb_disable_cache; /* If set the below is meaningless. */
   char          *cddb_cachedir;
-#endif
   int            no_vcd;
   int            show_dvd;
   int            no_device;
@@ -122,7 +120,7 @@ char *temp_str;
 static bool
 parse_options (int argc, const char *argv[])
 {
-  int opt;
+  char opt; /* used for argument parsing */
   char *psz_my_source;
   
   struct poptOption optionsTable[] = {
@@ -162,6 +160,30 @@ parse_options (int argc, const char *argv[])
     
     {"cddb-timeout",  '\0', POPT_ARG_INT, &opts.cddb_timeout, 0,
      "CDDB timeout value in seconds (default 10 seconds)"},
+#else 
+    {"no-cddb",     '\0', POPT_ARG_NONE, &opts.no_cddb, 0,
+     "Does nothing since this program is not CDDB-enabled"},
+    
+    {"cddb-port",   'P', POPT_ARG_INT, &opts.cddb_port, 8880,
+     "Does nothing since this program is not CDDB-enabled"},
+    
+    {"cddb-http",   'H', POPT_ARG_NONE, &opts.cddb_http, 0,
+     "Does nothing since this program is not CDDB-enabled"},
+    
+    {"cddb-server", '\0', POPT_ARG_STRING, &opts.cddb_server, 0,
+     "Does nothing since this program is not CDDB-enabled"},
+    
+    {"cddb-cache",  '\0', POPT_ARG_STRING, &opts.cddb_cachedir, 0,
+     "Does nothing since this program is not CDDB-enabled"},
+    
+    {"cddb-email",  '\0', POPT_ARG_STRING, &opts.cddb_email, 0,
+     "Does nothing since this program is not CDDB-enabled"},
+    
+    {"no-cddb-cache", '\0', POPT_ARG_NONE, &opts.cddb_disable_cache, 0,
+     "Does nothing since this program is not CDDB-enabled"},
+    
+    {"cddb-timeout",  '\0', POPT_ARG_INT, &opts.cddb_timeout, 0,
+     "Does nothing since this program is not CDDB-enabled"},
 #endif
   
     {"no-device-info", '\0', POPT_ARG_NONE, &opts.no_device, 0,
@@ -229,7 +251,7 @@ parse_options (int argc, const char *argv[])
   program_name = strrchr(argv[0],'/');
   program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
-  while ((opt = poptGetNextOpt (optCon)) != -1) {
+  while ((opt = poptGetNextOpt (optCon)) >= 0) {
     switch (opt) {
       
     case OP_SOURCE_AUTO:
@@ -275,12 +297,17 @@ parse_options (int argc, const char *argv[])
 	break;
       }
       break;
-      
-    default:
-      poptFreeContext(optCon);
-      return false;
     }
   }
+  if (opt < -1) {
+    /* an error occurred during option processing */
+    report(stderr, "%s: %s\n",
+	    poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
+	    poptStrerror(opt));
+    free(program_name);
+    exit (EXIT_FAILURE);
+  }
+
   {
     const char *remaining_arg = poptGetArg(optCon);
     if ( remaining_arg != NULL) {
