@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.4 2003/04/04 05:15:33 rocky Exp $
+    $Id: cdio_private.h,v 1.5 2003/04/07 11:31:19 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -36,6 +36,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+  /* Opaque types ... */
+  typedef struct _CdioDataSource CdioDataSource;
 
   typedef struct {
     
@@ -132,7 +135,7 @@ extern "C" {
       Returns 0 if no error. 
     */
     int (*read_mode2_sectors) (void *user_data, void *buf, lsn_t lsn, 
-			       bool mode2raw, unsigned nblocks);
+			       bool mode2raw, unsigned int nblocks);
     
     /*!
       Set the arg "key" with "value" in the source device.
@@ -158,9 +161,25 @@ extern "C" {
     bool  init;             /* True if structure has been initialized */
     bool  toc_init;         /* True TOC read in */
     int   ioctls_debugged;  /* for debugging */
+
+    /* Only one of the below is used. The first is for CD-ROM devices 
+       and the second for stream reading (bincue, nrg, toc, network).
+     */
     int   fd;               /* File descriptor of device */
+    CdioDataSource *data_source;
   } generic_img_private_t;
 
+  /* This is used in drivers that must keep their own internal 
+     position pointer for doing seeks. Stream-based drivers (like bincue,
+     nrg, toc, network) would use this. 
+   */
+  typedef struct 
+  {
+    off_t   buff_offset;      /* buffer offset in disk-image seeks. */
+    track_t index;            /* Current track index in tocent. */
+    lba_t   lba;              /* Current LBA */
+  } internal_position_t;
+  
   CdIo * cdio_new (void *user_data, const cdio_funcs *funcs);
 
   /* The below structure describes a specific CD Input driver  */
@@ -218,13 +237,10 @@ extern "C" {
   ssize_t cdio_generic_read (void *user_data, void *buf, size_t size);
 
   /*!
-    Reads nblocks of mode2 sectors from cd device into data starting
-    from lsn.
-    Returns 0 if no error. 
+    Release and free resources associated with stream or disk image.
   */
-  int cdio_generic_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, 
-				       bool mode2raw,  unsigned num_sectors);
-
+  void cdio_generic_stream_free (void *user_data);
+  
   struct _CdIo {
     void *user_data;
     cdio_funcs op;
