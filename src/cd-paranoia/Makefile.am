@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.13 2005/01/29 08:03:23 rocky Exp $
+#   $Id: Makefile.am,v 1.14 2005/03/02 12:49:28 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -50,11 +50,7 @@ INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 # These are the implict rules we've got here.
 SUFFIXES = .txt .h
 
-# The dependency on usage.h is by cd-paranoia.o or cd-paranoia.lo or
-# is it cd-paranoia.obj? Since we have all of that variation and no
-# variation with cd-paranoia.c we'll use that, even  though it is a not
-# really correct.
-cd-paranoia.c: usage.h
+cd-paranoia.$(OBJEXT): usage.h
 
 .txt.h:  $(srcdir)/pod2c.pl
 	$(PERL) $(srcdir)/pod2c.pl $< >$@
