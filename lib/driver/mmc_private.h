@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: mmc_private.h,v 1.3 2005/02/07 03:36:02 rocky Exp $
+    $Id: mmc_private.h,v 1.4 2005/02/09 02:50:47 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -91,10 +91,6 @@ mmc_get_dvd_struct_physical_private ( void *p_env,
 				      cdio_dvd_struct_t *s );
 
 
-int
-mmc_get_blocksize_private ( void *p_env, 
-			    mmc_run_cmd_fn_t run_mmc_cmd);
-
 char *mmc_get_mcn_private ( void *p_env,
 			    mmc_run_cmd_fn_t run_mmc_cmd
 			    );
@@ -114,19 +110,6 @@ void mmc_get_drive_cap_buf(const uint8_t *p,
 			   /*out*/ cdio_drive_write_cap_t *p_write_cap,
 			   /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
 
-/*!
-  Return the the kind of drive capabilities of device.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
- */
-void
-mmc_get_drive_cap_private ( void *p_env,
-			    const mmc_run_cmd_fn_t run_mmc_cmd, 
-			    /*out*/ cdio_drive_read_cap_t  *p_read_cap,
-			    /*out*/ cdio_drive_write_cap_t *p_write_cap,
-			    /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
 driver_return_code_t
 mmc_set_blocksize_private ( void *p_env, 
 			    const mmc_run_cmd_fn_t run_mmc_cmd, 

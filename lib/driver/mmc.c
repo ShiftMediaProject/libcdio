@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.5 2005/02/09 01:24:17 rocky Exp $
+    $Id: mmc.c,v 1.6 2005/02/09 02:50:47 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -84,7 +84,7 @@ get_drive_cap_mmc (const void *p_user_data,
 {
   const generic_img_private_t *p_env = p_user_data;
   mmc_get_drive_cap( p_env->cdio,
-			  p_read_cap, p_write_cap, p_misc_cap );
+                     p_read_cap, p_write_cap, p_misc_cap );
 }
 
 int
@@ -117,54 +117,6 @@ set_speed_mmc (void *p_user_data, int i_speed)
   generic_img_private_t *p_env = p_user_data;
   if (!p_env) return DRIVER_OP_UNINIT;
   return mmc_set_speed( p_env->cdio, i_speed );
-}
-
-/*************************************************************************
-  Miscellaenous other "private" routines. Probably need to better
-  classify these.
-*************************************************************************/
-
-int
-mmc_get_blocksize_private ( void *p_env, 
-                            const mmc_run_cmd_fn_t run_mmc_cmd)
-{
-  int i_status = 0;
-  scsi_mmc_cdb_t cdb = {{0, }};
-
-  struct
-  {
-    uint8_t reserved1;
-    uint8_t medium;
-    uint8_t reserved2;
-    uint8_t block_desc_length;
-    uint8_t density;
-    uint8_t number_of_blocks_hi;
-    uint8_t number_of_blocks_med;
-    uint8_t number_of_blocks_lo;
-    uint8_t reserved3;
-    uint8_t block_length_hi;
-    uint8_t block_length_med;
-    uint8_t block_length_lo;
-  } mh;
-
-  uint8_t *p = &mh.block_length_med;
-
-  if ( ! p_env ) return DRIVER_OP_UNINIT;
-  if ( ! run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
-
-  memset (&mh, 0, sizeof (mh));
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_6);
-
-  cdb.field[1] = 0x3F&1;
-  cdb.field[4] = 12;
-  
-  i_status = run_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
-                          mmc_get_cmd_len(cdb.field[0]), &cdb, 
-                          SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
-  if (DRIVER_OP_SUCCESS != i_status) return i_status;
-
-  return CDIO_MMC_GET_LEN16(p);
 }
 
 /*!
@@ -202,97 +154,6 @@ mmc_get_drive_cap_buf(const uint8_t *p,
   if (p[6] & 0x08) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_EJECT;
   if (p[6] >> 5 != 0) 
     *p_misc_cap |= CDIO_DRIVE_CAP_MISC_CLOSE_TRAY;
-}
-
-/*!
-  Return the the kind of drive capabilities of device.
- */
-void
-mmc_get_drive_cap_private (void *p_env,
-                           const mmc_run_cmd_fn_t run_mmc_cmd, 
-                           /*out*/ cdio_drive_read_cap_t  *p_read_cap,
-                           /*out*/ cdio_drive_write_cap_t *p_write_cap,
-                           /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
-{
-  /* Largest buffer size we use. */
-#define BUF_MAX 2048
-  uint8_t buf[BUF_MAX] = { 0, };
-
-  scsi_mmc_cdb_t cdb = {{0, }};
-  int i_status;
-  uint16_t i_data = BUF_MAX;
-  
-  if ( ! p_env || ! run_mmc_cmd )
-    return;
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_10);
-  cdb.field[1] = 0x0;  
-  cdb.field[2] = CDIO_MMC_ALL_PAGES; 
-
- retry:
-  CDIO_MMC_SET_READ_LENGTH16(cdb.field, 8);
-
-  /* In the first run we run MODE SENSE 10 we are trying to get the
-     length of the data features. */
-  i_status = run_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
-                          mmc_get_cmd_len(cdb.field[0]), 
-                          &cdb, SCSI_MMC_DATA_READ, 
-                          sizeof(buf), &buf);
-  if (0 == i_status) {
-    uint16_t i_data_try = (uint16_t) CDIO_MMC_GET_LEN16(buf);
-    if (i_data_try < BUF_MAX) i_data = i_data_try;
-  }
-
-  /* Now try getting all features with length set above, possibly
-     truncated or the default length if we couldn't get the proper
-     length. */
-  CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_data);
-
-  i_status = run_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
-                          mmc_get_cmd_len(cdb.field[0]), 
-                          &cdb, SCSI_MMC_DATA_READ, 
-                          sizeof(buf), &buf);
-
-  if (0 != i_status && CDIO_MMC_CAPABILITIES_PAGE != cdb.field[2]) {
-    cdb.field[2] =  CDIO_MMC_CAPABILITIES_PAGE; 
-    goto retry;
-  }
-
-  if (0 == i_status) {
-    uint8_t *p;
-    uint8_t *p_max = buf + 256;
-    
-    *p_read_cap  = 0;
-    *p_write_cap = 0;
-    *p_misc_cap  = 0;
-
-    /* set to first sense mask, and then walk through the masks */
-    p = buf + 8;
-    while( (p < &(buf[2+i_data])) && (p < p_max) )       {
-      uint8_t which_page;
-      
-      which_page = p[0] & 0x3F;
-      switch( which_page )
-	{
-	case CDIO_MMC_AUDIO_CTL_PAGE:
-	case CDIO_MMC_R_W_ERROR_PAGE:
-	case CDIO_MMC_CDR_PARMS_PAGE:
-	  /* Don't handle these yet. */
-	  break;
-	case CDIO_MMC_CAPABILITIES_PAGE:
-	  mmc_get_drive_cap_buf(p, p_read_cap, p_write_cap, p_misc_cap);
-	  break;
-	default: ;
-	}
-      p += (p[1] + 2);
-    }
-  } else {
-    cdio_info("%s: %s\n", "error in MODE_SELECT", strerror(errno));
-    *p_read_cap  = CDIO_DRIVE_CAP_ERROR;
-    *p_write_cap = CDIO_DRIVE_CAP_ERROR;
-    *p_misc_cap  = CDIO_DRIVE_CAP_ERROR;
-  }
-  return;
 }
 
 /*! 
@@ -387,6 +248,50 @@ mmc_get_mcn_private ( void *p_env,
   }
   return NULL;
 }
+
+int 
+mmc_mode_sense_6( const CdIo_t *p_cdio, void *p_buf, int i_size, int page)
+{
+  scsi_mmc_cdb_t cdb = {{0, }};
+
+  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
+  if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
+
+  memset (p_buf, 0, i_size);
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_6);
+
+  cdb.field[2] = 0x3F & page;
+  cdb.field[4] = i_size;
+  
+  return p_cdio->op.run_mmc_cmd (p_cdio->env, 
+                                 DEFAULT_TIMEOUT_MS,
+                                 mmc_get_cmd_len(cdb.field[0]), &cdb, 
+                                 SCSI_MMC_DATA_WRITE, i_size, p_buf);
+}
+
+
+int 
+mmc_mode_sense_10( const CdIo_t *p_cdio, void *p_buf, int i_size, int page)
+{
+  scsi_mmc_cdb_t cdb = {{0, }};
+
+  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
+  if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
+
+  memset (p_buf, 0, i_size);
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_10);
+
+  cdb.field[2] = 0x3F & page;
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_size);
+  
+  return p_cdio->op.run_mmc_cmd (p_cdio->env, 
+                                 DEFAULT_TIMEOUT_MS,
+                                 mmc_get_cmd_len(cdb.field[0]), &cdb, 
+                                 SCSI_MMC_DATA_WRITE, i_size, p_buf);
+}
+
 
 /*
   Read cdtext information for a CdIo_t object .
@@ -601,9 +506,69 @@ mmc_get_drive_cap (const CdIo_t *p_cdio,
 			/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
   if ( ! p_cdio )  return;
-  mmc_get_drive_cap_private (p_cdio->env, 
-                             p_cdio->op.run_mmc_cmd, 
-                             p_read_cap, p_write_cap, p_misc_cap);
+  /* Largest buffer size we use. */
+#define BUF_MAX 2048
+  uint8_t buf[BUF_MAX] = { 0, };
+
+  int i_status;
+  uint16_t i_data = BUF_MAX;
+  int page = CDIO_MMC_ALL_PAGES;
+
+ retry:
+
+  /* In the first run we run MODE SENSE 10 we are trying to get the
+     length of the data features. */
+  i_status = mmc_mode_sense_10(p_cdio, buf, 8, CDIO_MMC_ALL_PAGES);
+
+  if (DRIVER_OP_SUCCESS == i_status) {
+    uint16_t i_data_try = (uint16_t) CDIO_MMC_GET_LEN16(buf);
+    if (i_data_try < BUF_MAX) i_data = i_data_try;
+  }
+
+  /* Now try getting all features with length set above, possibly
+     truncated or the default length if we couldn't get the proper
+     length. */
+  i_status = mmc_mode_sense_10(p_cdio, buf, i_data, CDIO_MMC_ALL_PAGES);
+  if (0 != i_status && CDIO_MMC_CAPABILITIES_PAGE != page) {
+    page =  CDIO_MMC_CAPABILITIES_PAGE; 
+    goto retry;
+  }
+
+  if (DRIVER_OP_SUCCESS == i_status) {
+    uint8_t *p;
+    uint8_t *p_max = buf + 256;
+    
+    *p_read_cap  = 0;
+    *p_write_cap = 0;
+    *p_misc_cap  = 0;
+
+    /* set to first sense mask, and then walk through the masks */
+    p = buf + 8;
+    while( (p < &(buf[2+i_data])) && (p < p_max) )       {
+      uint8_t which_page;
+      
+      which_page = p[0] & 0x3F;
+      switch( which_page )
+	{
+	case CDIO_MMC_AUDIO_CTL_PAGE:
+	case CDIO_MMC_R_W_ERROR_PAGE:
+	case CDIO_MMC_CDR_PARMS_PAGE:
+	  /* Don't handle these yet. */
+	  break;
+	case CDIO_MMC_CAPABILITIES_PAGE:
+	  mmc_get_drive_cap_buf(p, p_read_cap, p_write_cap, p_misc_cap);
+	  break;
+	default: ;
+	}
+      p += (p[1] + 2);
+    }
+  } else {
+    cdio_info("%s: %s\n", "error in MODE_SELECT", strerror(errno));
+    *p_read_cap  = CDIO_DRIVE_CAP_ERROR;
+    *p_write_cap = CDIO_DRIVE_CAP_ERROR;
+    *p_misc_cap  = CDIO_DRIVE_CAP_ERROR;
+  }
+  return;
 }
 
 /*! 
@@ -725,9 +690,34 @@ mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 int 
 mmc_get_blocksize ( const CdIo_t *p_cdio)
 {
-  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
-  return 
-    mmc_get_blocksize_private (p_cdio->env, p_cdio->op.run_mmc_cmd);
+  int i_status;
+
+  struct
+  {
+    uint8_t reserved1;
+    uint8_t medium;
+    uint8_t reserved2;
+    uint8_t block_desc_length;
+    uint8_t density;
+    uint8_t number_of_blocks_hi;
+    uint8_t number_of_blocks_med;
+    uint8_t number_of_blocks_lo;
+    uint8_t reserved3;
+    uint8_t block_length_hi;
+    uint8_t block_length_med;
+    uint8_t block_length_lo;
+  } mh;
+
+  uint8_t *p = &mh.block_length_med;
+
+  memset (&mh, 0, sizeof (mh));
+
+  i_status = mmc_mode_sense_6(p_cdio, &mh, sizeof(&mh), 
+                              CDIO_MMC_R_W_ERROR_PAGE);
+  
+  if (DRIVER_OP_SUCCESS != i_status) return i_status;
+
+  return CDIO_MMC_GET_LEN16(p);
 }
 
 

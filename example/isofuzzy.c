@@ -1,5 +1,5 @@
 /*
-  $Id: iso4.c,v 1.2 2005/02/05 18:58:36 rocky Exp $
+  $Id: isofuzzy.c,v 1.1 2005/02/09 02:50:47 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   

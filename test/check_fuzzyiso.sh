@@ -1,11 +1,11 @@
 #!/bin/sh
-#$Id: check_fuzzyiso.sh,v 1.1 2005/02/08 04:38:05 rocky Exp $
+#$Id: check_fuzzyiso.sh,v 1.2 2005/02/09 02:50:47 rocky Exp $
 
 if test -z $srcdir ; then
   srcdir=`pwd`
 fi
 
-check_program="../example/iso4"
+check_program="../example/isofuzzy"
 
 if test ! -x $check_program ; then
   exit 77

@@ -9,6 +9,7 @@ device
 drives
 iso?
 iso?cpp
+isofuzzy
 mmc1
 mmc2
 paranoia

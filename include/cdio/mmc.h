@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.4 2005/02/08 04:14:28 rocky Exp $
+    $Id: mmc.h,v 1.5 2005/02/09 02:50:47 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -467,6 +467,15 @@ char * mmc_get_mcn ( const CdIo_t *p_cdio );
  */
 bool mmc_have_interface( const CdIo_t *p_cdio, 
 			 mmc_feature_interface_t e_interface );
+
+/*! Run a MODE_SENSE_10 and put the results in p_buf */
+int  mmc_mode_sense_10( const CdIo_t *p_cdio, void *p_buf, int i_size, 
+			int page);
+
+/*! Run a MODE_SENSE_6 and put the results in p_buf */
+int  mmc_mode_sense_6( const CdIo_t *p_cdio, void *p_buf, int i_size, 
+		       int page);
+
 
 /*! Packet driver to read mode2 sectors. 
    Can read only up to 25 blocks.

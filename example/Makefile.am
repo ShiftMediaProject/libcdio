@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.17 2005/02/06 15:09:10 rocky Exp $
+#   $Id: Makefile.am,v 1.18 2005/02/09 02:50:47 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -21,10 +21,10 @@
 ####################################################
 #
 if DISABLE_CPP
-noinst_PROGRAMS = cdtext device drives iso1 iso2 iso3 iso4 mmc1 mmc2 \
+noinst_PROGRAMS = cdtext device drives iso1 iso2 iso3 isofuzzy mmc1 mmc2 \
 		  paranoia paranoia2 tracks sample3 sample4 
 else  
-noinst_PROGRAMS = cdtext device drives iso1 iso2 iso3 iso4 mmc1 mmc2 \
+noinst_PROGRAMS = cdtext device drives iso1 iso2 iso3 isofuzzy mmc1 mmc2 \
 		  paranoia paranoia2 tracks sample3 sample4 \
 	          iso1cpp iso2cpp iso3cpp
 endif
@@ -37,13 +37,13 @@ device_LDADD = $(LIBCDIO_LIBS)
 
 drives_LDADD = $(LIBCDIO_LIBS)
 
-paranoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
+paranoia_LDADD  = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
 paranoia2_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
 
-iso1_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-iso2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-iso3_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-iso4_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso1_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso2_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso3_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+isofuzzy_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
 if !DISABLE_CPP
 iso1cpp_SOURCES  = iso1cpp.cpp
