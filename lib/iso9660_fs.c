@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.22 2004/06/19 02:27:20 rocky Exp $
+    $Id: iso9660_fs.c,v 1.23 2004/06/21 16:18:08 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -40,7 +40,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.22 2004/06/19 02:27:20 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.23 2004/06/21 16:18:08 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -240,7 +240,9 @@ iso9660_dir_to_name (const iso9660_dir_t *iso9660_dir)
   return strdup (namebuf);
 }
 
-
+/* 
+   Return a pointer to a ISO 9660 stat buffer or NULL if there's an error
+*/
 static iso9660_stat_t *
 _fs_stat_root (const CdIo *cdio, bool is_mode2)
 {
@@ -250,11 +252,15 @@ _fs_stat_root (const CdIo *cdio, bool is_mode2)
   iso9660_stat_t *stat;
 
   if (is_mode2) {
-    if (cdio_read_mode2_sector (cdio, &block, ISO_PVD_SECTOR, false))
-      cdio_assert_not_reached ();
+    if (cdio_read_mode2_sector (cdio, &block, ISO_PVD_SECTOR, false)) {
+      cdio_warn("Could not read Primary Volume descriptor (PVD).");
+      return NULL;
+    }
   } else {
-    if (cdio_read_mode1_sector (cdio, &block, ISO_PVD_SECTOR, false))
-      cdio_assert_not_reached ();
+    if (cdio_read_mode1_sector (cdio, &block, ISO_PVD_SECTOR, false)) {
+      cdio_warn("Could not read Primary Volume descriptor (PVD).");
+      return NULL;
+    }
   }
 
   stat = _iso9660_dir_to_statbuf (iso9660_dir, is_mode2);
