@@ -1,5 +1,5 @@
 /*
-    $Id: read.c,v 1.1 2005/01/09 16:07:46 rocky Exp $
+    $Id: read.c,v 1.2 2005/01/21 02:57:59 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -28,12 +28,48 @@
 #endif
 
 #include <cdio/cdio.h>
+#include <cdio/logging.h>
 #include "cdio_private.h"
 #include "cdio_assert.h"
 
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
+
+#define check_read_parms(p_cdio, p_buf, i_lsn)                          \
+  if (!p_cdio || !p_buf || CDIO_INVALID_LSN == i_lsn )                  \
+    return -1; 
+
+#define check_lsn(i_lsn)                                                \
+  check_read_parms(p_cdio, p_buf, i_lsn);                               \
+  {                                                                     \
+    lsn_t end_lsn =                                                     \
+      cdio_get_track_lsn(p_cdio, CDIO_CDROM_LEADOUT_TRACK);             \
+    if ( i_lsn > end_lsn ) {                                            \
+      cdio_info("Trying to access past end of disk lsn: %ld, end lsn: %ld", \
+                (long int) i_lsn, (long int) end_lsn);                  \
+      return -1;                                                        \
+    }                                                                   \
+  }
+
+#define check_lsn_blocks(i_lsn, i_blocks)                               \
+  check_read_parms(p_cdio, p_buf, i_lsn);                               \
+  {                                                                     \
+    lsn_t end_lsn =                                                     \
+      cdio_get_track_lsn(p_cdio, CDIO_CDROM_LEADOUT_TRACK);             \
+    if ( i_lsn > end_lsn ) {                                            \
+      cdio_info("Trying to access past end of disk lsn: %ld, end lsn: %ld", \
+                (long int) i_lsn, (long int) end_lsn);                  \
+      return -1;                                                        \
+    }                                                                   \
+    if ( i_lsn + i_blocks -1 > end_lsn ) {                              \
+      cdio_info("Request truncated to end disk; lsn: %ld, end lsn: %ld", \
+                (long int) i_lsn, (long int) end_lsn);                  \
+      i_blocks = end_lsn - i_lsn + 1;                                   \
+    }                                                                   \
+  }
+
+
 
 /*!
   lseek - reposition read/write file offset
@@ -70,14 +106,11 @@ cdio_read (const CdIo_t *p_cdio, void *p_buf, size_t size)
   from lsn. Returns 0 if no error. 
 */
 int
-cdio_read_audio_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t lsn) 
+cdio_read_audio_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn) 
 {
-
-  if (NULL == p_cdio || NULL == p_buf || CDIO_INVALID_LSN == lsn )
-    return 0;
-
+  check_lsn(i_lsn);
   if  (p_cdio->op.read_audio_sectors != NULL)
-    return p_cdio->op.read_audio_sectors (p_cdio->env, p_buf, lsn, 1);
+    return p_cdio->op.read_audio_sectors (p_cdio->env, p_buf, i_lsn, 1);
   return -1;
 }
 
@@ -86,14 +119,12 @@ cdio_read_audio_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t lsn)
   from lsn. Returns 0 if no error. 
 */
 int
-cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t lsn,
-                         unsigned int nblocks) 
+cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
+                         unsigned int i_blocks) 
 {
-  if ( NULL == p_cdio || NULL == p_buf || CDIO_INVALID_LSN == lsn )
-    return 0;
-
-  if  (p_cdio->op.read_audio_sectors != NULL)
-    return p_cdio->op.read_audio_sectors (p_cdio->env, p_buf, lsn, nblocks);
+  check_lsn_blocks(i_lsn, i_blocks);
+  if (p_cdio->op.read_audio_sectors != NULL)
+    return p_cdio->op.read_audio_sectors (p_cdio->env, p_buf, i_lsn, i_blocks);
   return -1;
 }
 
@@ -106,27 +137,25 @@ cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t lsn,
    into data starting from lsn. Returns 0 if no error. 
  */
 int
-cdio_read_mode1_sector (const CdIo_t *p_cdio, void *data, lsn_t lsn, 
+cdio_read_mode1_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
                         bool b_form2)
 {
   uint32_t size = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE ;
-  
-  if (NULL == p_cdio || NULL == data || CDIO_INVALID_LSN == lsn )
-    return 0;
 
+  check_lsn(i_lsn);
   if (p_cdio->op.read_mode1_sector) {
-    return p_cdio->op.read_mode1_sector(p_cdio->env, data, lsn, b_form2);
+    return p_cdio->op.read_mode1_sector(p_cdio->env, p_buf, i_lsn, b_form2);
   } else if (p_cdio->op.lseek && p_cdio->op.read) {
     char buf[CDIO_CD_FRAMESIZE] = { 0, };
-    if (0 > cdio_lseek(p_cdio, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
+    if (0 > cdio_lseek(p_cdio, CDIO_CD_FRAMESIZE*i_lsn, SEEK_SET))
       return -1;
     if (0 > cdio_read(p_cdio, buf, CDIO_CD_FRAMESIZE))
       return -1;
-    memcpy (data, buf, size);
+    memcpy (p_buf, buf, size);
     return 0;
   } 
 
-  return 1;
+  return -1;
 
 }
 
@@ -143,17 +172,14 @@ cdio_read_mode1_sector (const CdIo_t *p_cdio, void *data, lsn_t lsn,
   @return 0 if no error, nonzero otherwise.
 */
 int
-cdio_read_mode1_sectors (const CdIo_t *cdio, void *p_buf, lsn_t lsn, 
-                         bool b_form2,  unsigned int num_sectors)
+cdio_read_mode1_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
+                         bool b_form2,  unsigned int i_blocks)
 {
-
-  if (NULL == cdio || NULL == p_buf || CDIO_INVALID_LSN == lsn )
-    return 0;
-
-  cdio_assert (cdio->op.read_mode1_sectors != NULL);
-  
-  return cdio->op.read_mode1_sectors (cdio->env, p_buf, lsn, b_form2, 
-                                      num_sectors);
+  check_lsn_blocks(i_lsn, i_blocks);
+  if (p_cdio->op.read_mode1_sectors)
+    return p_cdio->op.read_mode1_sectors (p_cdio->env, p_buf, i_lsn, b_form2, 
+                                          i_blocks);
+  return -1;
 }
 
 /*!
@@ -168,22 +194,17 @@ cdio_read_mode1_sectors (const CdIo_t *cdio, void *p_buf, lsn_t lsn,
   @return 0 if no error, nonzero otherwise.
 */
 int
-cdio_read_mode2_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t lsn, 
+cdio_read_mode2_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
                         bool b_form2)
 {
-  if (NULL == p_cdio || NULL == p_buf || CDIO_INVALID_LSN == lsn )
-    return 0;
-
-  cdio_assert (p_cdio->op.read_mode2_sector != NULL 
-	      || p_cdio->op.read_mode2_sectors != NULL);
-
+  check_lsn(i_lsn);
   if (p_cdio->op.read_mode2_sector)
-    return p_cdio->op.read_mode2_sector (p_cdio->env, p_buf, lsn, b_form2);
+    return p_cdio->op.read_mode2_sector (p_cdio->env, p_buf, i_lsn, b_form2);
 
   /* fallback */
   if (p_cdio->op.read_mode2_sectors != NULL)
-    return cdio_read_mode2_sectors (p_cdio, p_buf, lsn, b_form2, 1);
-  return 1;
+    return cdio_read_mode2_sectors (p_cdio, p_buf, i_lsn, b_form2, 1);
+  return -1;
 }
 
 /*!
@@ -200,16 +221,14 @@ cdio_read_mode2_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t lsn,
 */
 int
 cdio_read_mode2_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-                         bool b_form2, unsigned int i_sectors)
+                         bool b_form2, unsigned int i_blocks)
 {
-
-  if (NULL == p_cdio || NULL == p_buf || CDIO_INVALID_LSN == i_lsn )
-    return 0;
-
-  cdio_assert (p_cdio->op.read_mode2_sectors != NULL);
+  check_lsn_blocks(i_lsn, i_blocks);
+  if (p_cdio->op.read_mode2_sectors) 
+    return p_cdio->op.read_mode2_sectors (p_cdio->env, p_buf, i_lsn,
+                                          b_form2, i_blocks);
+  return -1;
   
-  return p_cdio->op.read_mode2_sectors (p_cdio->env, p_buf, i_lsn,
-					b_form2, i_sectors);
 }
 
 
