@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.9 2005/03/13 03:37:18 rocky Exp $
+    $Id: cdda-player.c,v 1.10 2005/03/13 03:52:15 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -245,9 +245,9 @@ action(const char *psz_action)
   }
   
   if (psz_action && strlen(psz_action))
-    mvprintw(LINE_ACTION,0,"action : %s\n", psz_action);
+    mvprintw(LINE_ACTION, 0, (char *) "action : %s\n", psz_action);
   else
-    mvprintw(LINE_ACTION,0,"");
+    mvprintw(LINE_ACTION, 0, (char *) "");
   clrtoeol();
   refresh();
 }
@@ -267,7 +267,7 @@ xperror(const char *psz_msg)
   
   if (b_verbose) {
     sprintf(line,"%s: %s",psz_msg,strerror(errno));
-    mvprintw(LINE_ACTION, 0, "error  : %-70s", line);
+    mvprintw(LINE_ACTION, 0, (char *) "error  : %-70s", line);
     refresh();
     select_wait(3);
     action(NULL);
@@ -278,7 +278,7 @@ static void
 oops(const char *psz_msg, int rc)
 {
   if (interactive) {
-    mvprintw(LINE_LAST, 0, "%s, exiting...\n", psz_msg);
+    mvprintw(LINE_LAST, 0, (char *) "%s, exiting...\n", psz_msg);
     refresh();
   }
   tty_restore();
@@ -569,7 +569,7 @@ display_status()
     sprintf(line,"%s", mmc_audio_state2str(sub.audio_status));
     
   }
-  mvprintw(LINE_STATUS, 0, "status%s: %s",auto_mode ? "*" : " ", line);
+  mvprintw(LINE_STATUS, 0, (char *) "status%s: %s",auto_mode ? "*" : " ", line);
   clrtoeol();
   
   if (b_db && i_last_display_track != sub.track && 
@@ -581,22 +581,22 @@ display_status()
     if (i_first_audio_track != sub.track && 
 	strlen(cd_info[sub.track-1].title)) {
       const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track-1];
-      mvprintw(LINE_TRACK_PREV, 0, "track %2d title  : %s [%s]",
-	       sub.track-1, p_cd_info->title,
+      mvprintw(LINE_TRACK_PREV, 0, (char *) "track %2d title  : %s [%s]",
+	       sub.track-1, p_cd_info->title, 
 	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
       clrtoeol();
     } else {
-      mvprintw(LINE_TRACK_PREV, 0, "%s","");
+      mvprintw(LINE_TRACK_PREV, 0, (char *) "%s","");
       clrtoeol();
     }
     if (strlen(p_cd_info->title)) {
-      mvprintw(LINE_TRACK_TITLE, 0, "track %2d title  : %s [%s]", 
+      mvprintw(LINE_TRACK_TITLE, 0, (char *) "track %2d title  : %s [%s]", 
 	       sub.track, p_cd_info->title, 
-	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
+	       (char *) p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
       clrtoeol();
     }
     if (strlen(p_cd_info->artist)) {
-      mvprintw(LINE_TRACK_ARTIST, 0, "track %2d artist : %s [%s]",
+      mvprintw(LINE_TRACK_ARTIST, 0, (char *) "track %2d artist : %s [%s]",
 	       sub.track, p_cd_info->artist,
 	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
       clrtoeol();
@@ -604,12 +604,12 @@ display_status()
     if (i_last_audio_track != sub.track && 
 	strlen(cd_info[sub.track+1].title)) {
       const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track+1];
-      mvprintw(LINE_TRACK_NEXT, 0, "track %2d title  : %s [%s]", 
+      mvprintw(LINE_TRACK_NEXT, 0, (char *) "track %2d title  : %s [%s]", 
 	       sub.track+1, p_cd_info->title,
 	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
       clrtoeol();
     } else {
-      mvprintw(LINE_TRACK_NEXT, 0, "%s","");
+      mvprintw(LINE_TRACK_NEXT, 0, (char *) "%s","");
       clrtoeol();
     }
     clrtobot();
@@ -677,7 +677,7 @@ get_track_info(track_t i_track)
 
 #define display_line(LINE_NO, COL_NO, format_str, field) \
   if (field && field[0]) \
-    mvprintw(LINE_NO, COL_NO, format_str, field);
+    mvprintw(LINE_NO, COL_NO, (char *) format_str, field);
     
 static void
 display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track)
@@ -702,7 +702,8 @@ display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track)
     display_line(LINE_YEAR,   0, "CD Year         : %4s",   year);
   }
   
-  mvprintw(LINE_CDINFO, 0, "CD info: %-70s", line);
+  mvprintw(LINE_CDINFO, 0, (char *) "CD info: %0s", line);
+  clrtoeol();
   refresh();
 }
     
@@ -763,7 +764,7 @@ list_keys()
 {
   unsigned int i;
   for (i=0; i < i_key_bindings; i++) {
-    mvprintw(LINE_TRACK_PREV+i, 0, "%s", key_bindings[i]);
+    mvprintw(LINE_TRACK_PREV+i, 0, (char *) "%s", key_bindings[i]);
     clrtoeol();
   }
   {
