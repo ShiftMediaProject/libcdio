@@ -3,6 +3,8 @@
 -  More sample programs.
 -  add library routine cdio_guess_cd_type to analyze/guess what type of 
    CD or CD image we've got.
+-  cd-info can list the files of a ISO-9660 filesystem via libiso9660 
+   with option --iso9660
 
 0.62
 -  Some minimal documentation. More will follow.
