@@ -19,7 +19,7 @@ define(RELEASE_NUM, 69)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.81 2004/06/02 04:52:55 thesin Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.82 2004/06/02 08:23:55 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -222,7 +222,7 @@ AC_HAVE_HEADERS( errno.h fcntl.h \
 		 strings.h linux/version.h sys/cdio.h sys/stat.h \
 		 sys/types.h )
 
-LIBCDIO_CFLAGS='$(top_srcdir)/lib/ -I$(top_srcdir)/include/'
+LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/ -I$(top_srcdir)/include/'
 LIBCDIO_LIBS='$(top_builddir)/lib/libcdio.la'
 LIBISO9660_LIBS='$(top_builddir)/lib/libiso9660.la'
 AC_SUBST(LIBCDIO_CFLAGS)
