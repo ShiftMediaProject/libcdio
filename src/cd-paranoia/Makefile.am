@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.8 2005/01/11 10:51:02 rocky Exp $
+#   $Id: Makefile.am,v 1.9 2005/01/12 02:39:17 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -49,7 +49,7 @@ INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 # These are the implict rules we've got here.
 SUFFIXES = .txt .h
 
-.txt.h:    $(srcdir)/pod2c.pl
+usage.h:  usage.txt  $(srcdir)/pod2c.pl
 	$(PERL) $(srcdir)/pod2c.pl $< >$@
 
 endif
