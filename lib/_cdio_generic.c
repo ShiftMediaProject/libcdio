@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.26 2004/09/03 23:20:11 rocky Exp $
+    $Id: _cdio_generic.c,v 1.27 2004/10/24 23:42:39 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.26 2004/09/03 23:20:11 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.27 2004/10/24 23:42:39 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,6 +107,7 @@ cdio_generic_init (void *user_data)
   p_env->toc_init = false;
   p_env->b_cdtext_init  = false;
   p_env->b_cdtext_error = false;
+  p_env->i_joliet_level = 0;  /* Assume no Joliet extensions initally */
   return true;
 }
 

@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.2 2004/08/28 09:15:41 rocky Exp $
+    $Id: generic.h,v 1.3 2004/10/24 23:42:39 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -30,6 +30,7 @@
 
 #include <cdio/cdio.h>
 #include <cdio/cdtext.h>
+#include <cdio/iso9660.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,13 +51,19 @@ extern "C" {
     
     int   ioctls_debugged;  /**< for debugging */
 
-    /* Only one of the below is used. The first is for CD-ROM devices 
-       and the second for stream reading (bincue, nrg, toc, network).
+    /* Only one of data_source or fd is used; fd  is for CD-ROM
+       devices and the data_source for stream reading (bincue, nrg, toc,
+       network).
      */
-    int   fd;               /**< File descriptor of device */
+    CdioDataSource *data_source;
+    int     fd;             /**< File descriptor of device */
     track_t i_first_track;  /**< The starting track number. */
     track_t i_tracks;       /**< The number of tracks. */
-    CdioDataSource *data_source;
+
+    uint8_t i_joliet_level; /**< 0 = no Joliet extensions.
+			       1-3: Joliet level. */
+    iso9660_pvd_t pvd;      
+    iso9660_svd_t svd;      
     CdIo *cdio;             /**< a way to call general cdio routines. */
     cdtext_t  cdtext;       /**< CD-Text for disc. */
     cdtext_t  cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/

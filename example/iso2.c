@@ -1,5 +1,5 @@
 /*
-  $Id: iso2.c,v 1.1 2004/10/10 00:21:08 rocky Exp $
+  $Id: iso2.c,v 1.2 2004/10/24 23:42:39 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -83,7 +83,7 @@ main(int argc, const char *argv[])
     return 1;
   }
 
-  p_statbuf = iso9660_fs_stat (p_cdio, ISO9660_FILENAME, false);
+  p_statbuf = iso9660_fs_stat (p_cdio, ISO9660_FILENAME);
 
   if (NULL == p_statbuf) 
     {

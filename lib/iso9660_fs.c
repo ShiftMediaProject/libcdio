@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.30 2004/10/24 13:01:44 rocky Exp $
+    $Id: iso9660_fs.c,v 1.31 2004/10/24 23:42:39 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -49,7 +49,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.30 2004/10/24 13:01:44 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.31 2004/10/24 23:42:39 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -89,7 +89,7 @@ iso9660_open_ext (const char *pathname,
   if (NULL == p_iso->stream) 
     goto error;
   
-  if ( !iso9660_ifs_read_super(p_iso, iso_extension_mask) )
+  if ( !iso9660_ifs_read_superblock(p_iso, iso_extension_mask) )
     goto error;
   
   /* Determine if image has XA attributes. */
@@ -219,7 +219,6 @@ uint8_t iso9660_ifs_get_joliet_level(iso9660_t *p_iso)
   if (!p_iso) return 0;
   return p_iso->i_joliet_level;
 }
-
 
 /*!
    Return a string containing the preparer id with trailing
@@ -374,13 +373,13 @@ iso9660_ifs_read_pvd (const iso9660_t *p_iso, /*out*/ iso9660_pvd_t *p_pvd)
 
 
 /*!
-  Read the Supper block of an ISO 9660 image. This is the 
+  Read the Super block of an ISO 9660 image. This is the 
   Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
   Descriptor if (Joliet) extensions are acceptable.
 */
 bool 
-iso9660_ifs_read_super (iso9660_t *p_iso, 
-			iso_extension_mask_t iso_extension_mask)
+iso9660_ifs_read_superblock (iso9660_t *p_iso, 
+			     iso_extension_mask_t iso_extension_mask)
 {
   iso9660_svd_t *p_svd;  /* Secondary volume descriptor. */
   
@@ -425,17 +424,101 @@ iso9660_ifs_read_super (iso9660_t *p_iso,
   Read the Primary Volume Descriptor for of CD.
 */
 bool 
-iso9660_fs_read_mode2_pvd(const CdIo *cdio, /*out*/ iso9660_pvd_t *p_pvd, 
-			  bool b_form2) 
+iso9660_fs_read_pvd(const CdIo *p_cdio, /*out*/ iso9660_pvd_t *p_pvd)
 {
-  if (cdio_read_mode2_sector (cdio, p_pvd, ISO_PVD_SECTOR, b_form2)) {
+  /* A bit of a hack, we'll assume track 1 contains ISO_PVD_SECTOR.*/
+  bool b_mode2  = cdio_get_track_green(p_cdio, 1);
+  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+  int i_rc;
+
+  i_rc = b_mode2 
+      ? cdio_read_mode2_sector (p_cdio, buf, ISO_PVD_SECTOR, false)
+      : cdio_read_mode1_sector (p_cdio, buf, ISO_PVD_SECTOR, false);
+  
+  if (i_rc) {
     cdio_warn ("error reading PVD sector (%d)", ISO_PVD_SECTOR);
     return false;
   }
+
+  /* The size of a PVD or SVD is smaller than a sector. So we
+     allocated a bigger block above (buf) and now we'll copy just
+     the part we need to save.
+   */
+  cdio_assert (sizeof(buf) >= sizeof (iso9660_pvd_t));
+  memcpy(p_pvd, buf, sizeof(iso9660_pvd_t));
   
   return check_pvd(p_pvd);
 }
 
+
+/*!
+  Read the Super block of an ISO 9660 image. This is the 
+  Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
+  Descriptor if (Joliet) extensions are acceptable.
+*/
+bool 
+iso9660_fs_read_superblock (CdIo *p_cdio, 
+			    iso_extension_mask_t iso_extension_mask)
+{
+  if (!p_cdio) return false;
+  
+  {
+    generic_img_private_t *p_env = (generic_img_private_t *) p_cdio->env;
+    iso9660_pvd_t         *p_pvd = &(p_env->pvd);
+    iso9660_svd_t         *p_svd = &(p_env->svd);
+    char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+
+    /* A bit of a hack, we'll assume track 1 contains ISO_PVD_SECTOR.*/
+    bool                  b_mode2  = cdio_get_track_green(p_cdio, 1);
+    int i_rc;
+
+    if ( !iso9660_fs_read_pvd(p_cdio, p_pvd) )
+      return false;
+    
+    p_env->i_joliet_level = 0;
+    
+    i_rc = (b_mode2)
+      ? cdio_read_mode2_sector (p_cdio, buf, ISO_PVD_SECTOR+1, false)
+      : cdio_read_mode1_sector (p_cdio, buf, ISO_PVD_SECTOR+1, false);
+
+    if (0 != i_rc) {
+      /* The size of a PVD or SVD is smaller than a sector. So we
+	 allocated a bigger block above (buf) and now we'll copy just
+	 the part we need to save.
+      */
+      cdio_assert (sizeof(buf) >= sizeof (iso9660_svd_t));
+      memcpy(p_svd, buf, sizeof(iso9660_svd_t));
+  
+      if ( ISO_VD_SUPPLEMENTARY == from_711(p_svd->type) ) {
+	if (p_svd->escape_sequences[0] == 0x25 
+	    && p_svd->escape_sequences[1] == 0x2f) {
+	  switch (p_svd->escape_sequences[2]) {
+	  case 0x40:
+	    if (iso_extension_mask & ISO_EXTENSION_JOLIET_LEVEL1) 
+	      p_env->i_joliet_level = 1;
+	    break;
+	  case 0x43:
+	    if (iso_extension_mask & ISO_EXTENSION_JOLIET_LEVEL2) 
+	      p_env->i_joliet_level = 2;
+	    break;
+	  case 0x45:
+	    if (iso_extension_mask & ISO_EXTENSION_JOLIET_LEVEL3) 
+	      p_env->i_joliet_level = 3;
+	    break;
+	  default:
+	    cdio_info("Supplementary Volume Descriptor found, but not Joliet");
+	  }
+	  if (p_env->i_joliet_level > 0) {
+	    cdio_info("Found Extension: Joliet Level %d", 
+		      p_env->i_joliet_level);
+	  }
+	}
+      }
+    }
+  }
+
+  return true;
+}
 
 /*!
   Seek to a position and then read n blocks. Size read is returned.
@@ -562,27 +645,27 @@ iso9660_dir_to_name (const iso9660_dir_t *iso9660_dir)
    Return a pointer to a ISO 9660 stat buffer or NULL if there's an error
 */
 static iso9660_stat_t *
-_fs_stat_root (const CdIo *cdio, bool b_mode2)
+_fs_stat_root (CdIo *p_cdio)
 {
-  char block[ISO_BLOCKSIZE] = { 0, };
-  const iso9660_pvd_t *pvd = (void *) &block;
-  iso9660_dir_t *iso9660_dir = (void *) pvd->root_directory_record;
-  iso9660_stat_t *stat;
+  generic_img_private_t *p_env;
+  iso9660_dir_t *p_iso9660_dir;
+  iso9660_stat_t *p_stat;
+  bool b_mode2 = cdio_get_track_green(p_cdio, 1);
 
-  if (b_mode2) {
-    if (cdio_read_mode2_sector (cdio, &block, ISO_PVD_SECTOR, false)) {
-      cdio_warn("Could not read Primary Volume descriptor (PVD).");
-      return NULL;
-    }
-  } else {
-    if (cdio_read_mode1_sector (cdio, &block, ISO_PVD_SECTOR, false)) {
-      cdio_warn("Could not read Primary Volume descriptor (PVD).");
-      return NULL;
-    }
+  /* FIXME try also with Joliet.*/
+  if ( !iso9660_fs_read_superblock (p_cdio, 0 /*ISO_EXTENSION_ALL*/) ) {
+    cdio_warn("Could not read ISO-9660 Superblock.");
+    return NULL;
   }
 
-  stat = _iso9660_dir_to_statbuf (iso9660_dir, b_mode2, 0);
-  return stat;
+  p_env = (generic_img_private_t *) p_cdio->env;
+  p_iso9660_dir = p_env->i_joliet_level 
+    ? &(p_env->svd.root_directory_record) 
+    : &(p_env->pvd.root_directory_record) ;
+
+  p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, 
+				    p_env->i_joliet_level);
+  return p_stat;
 }
 
 static iso9660_stat_t *
@@ -592,9 +675,9 @@ _fs_stat_iso_root (iso9660_t *p_iso)
   iso9660_dir_t *p_iso9660_dir;
 
   p_iso9660_dir = p_iso->i_joliet_level 
-    ? (iso9660_dir_t *) p_iso->svd.root_directory_record 
-    : (iso9660_dir_t *) p_iso->pvd.root_directory_record ;
-
+    ? &(p_iso->svd.root_directory_record)
+    : &(p_iso->pvd.root_directory_record) ;
+  
   p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, true, 
 				    p_iso->i_joliet_level);
   return p_stat;
@@ -781,24 +864,27 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
   Get file status for pathname into stat. NULL is returned on error.
  */
 iso9660_stat_t *
-iso9660_fs_stat (const CdIo *cdio, const char pathname[], bool b_mode2)
+iso9660_fs_stat (CdIo *p_cdio, const char pathname[])
 {
-  iso9660_stat_t *root;
-  char **splitpath;
-  iso9660_stat_t *stat;
+  iso9660_stat_t *p_root;
+  char **p_psz_splitpath;
+  iso9660_stat_t *p_stat;
+  /* A bit of a hack, we'll assume track 1 contains ISO_PVD_SECTOR.*/
+  bool b_mode2;
 
-  if (cdio == NULL)     return NULL;
-  if (pathname == NULL) return NULL;
+  if (!p_cdio)   return NULL;
+  if (!pathname) return NULL;
 
-  root = _fs_stat_root (cdio, b_mode2);
-  if (NULL == root) return NULL;
+  p_root = _fs_stat_root (p_cdio);
+  if (!p_root) return NULL;
 
-  splitpath = _cdio_strsplit (pathname, '/');
-  stat = _fs_stat_traverse (cdio, root, splitpath, b_mode2, false);
-  free(root);
-  _cdio_strfreev (splitpath);
+  b_mode2 = cdio_get_track_green(p_cdio, 1);
+  p_psz_splitpath = _cdio_strsplit (pathname, '/');
+  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath, b_mode2, false);
+  free(p_root);
+  _cdio_strfreev (p_psz_splitpath);
 
-  return stat;
+  return p_stat;
 }
 
 /*!
@@ -808,25 +894,25 @@ iso9660_fs_stat (const CdIo *cdio, const char pathname[], bool b_mode2)
   are lowercased.
  */
 iso9660_stat_t *
-iso9660_fs_stat_translate (const CdIo *cdio, const char pathname[], 
+iso9660_fs_stat_translate (CdIo *p_cdio, const char pathname[], 
 			   bool b_mode2)
 {
-  iso9660_stat_t *root;
-  char **splitpath;
-  iso9660_stat_t *stat;
+  iso9660_stat_t *p_root;
+  char **p_psz_splitpath;
+  iso9660_stat_t *p_stat;
 
-  if (cdio == NULL)     return NULL;
-  if (pathname == NULL) return NULL;
+  if (!p_cdio)  return NULL;
+  if (pathname) return NULL;
 
-  root = _fs_stat_root (cdio, b_mode2);
-  if (NULL == root) return NULL;
+  p_root = _fs_stat_root (p_cdio);
+  if (!p_root) return NULL;
 
-  splitpath = _cdio_strsplit (pathname, '/');
-  stat = _fs_stat_traverse (cdio, root, splitpath, b_mode2, true);
-  free(root);
-  _cdio_strfreev (splitpath);
+  p_psz_splitpath = _cdio_strsplit (pathname, '/');
+  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath, b_mode2, true);
+  free(p_root);
+  _cdio_strfreev (p_psz_splitpath);
 
-  return stat;
+  return p_stat;
 }
 
 /*!
@@ -860,24 +946,24 @@ iso9660_ifs_stat (iso9660_t *p_iso, const char pathname[])
   are lowercased.
  */
 iso9660_stat_t *
-iso9660_ifs_stat_translate (iso9660_t *iso, const char pathname[])
+iso9660_ifs_stat_translate (iso9660_t *p_iso, const char pathname[])
 {
   iso9660_stat_t *p_root;
-  char **splitpath;
-  iso9660_stat_t *stat;
+  char **p_psz_splitpath;
+  iso9660_stat_t *p_stat;
 
-  if (iso == NULL)      return NULL;
-  if (pathname == NULL) return NULL;
+  if (!p_iso)    return NULL;
+  if (!pathname) return NULL;
 
-  p_root = _fs_stat_iso_root (iso);
+  p_root = _fs_stat_iso_root (p_iso);
   if (NULL == p_root) return NULL;
 
-  splitpath = _cdio_strsplit (pathname, '/');
-  stat = _fs_iso_stat_traverse (iso, p_root, splitpath, true);
+  p_psz_splitpath = _cdio_strsplit (pathname, '/');
+  p_stat = _fs_iso_stat_traverse (p_iso, p_root, p_psz_splitpath, true);
   free(p_root);
-  _cdio_strfreev (splitpath);
+  _cdio_strfreev (p_psz_splitpath);
 
-  return stat;
+  return p_stat;
 }
 
 /*! 
@@ -885,14 +971,14 @@ iso9660_ifs_stat_translate (iso9660_t *iso, const char pathname[])
   of the files inside that. The caller must free the returned result.
 */
 CdioList * 
-iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool b_mode2)
+iso9660_fs_readdir (CdIo *p_cdio, const char pathname[], bool b_mode2)
 {
   iso9660_stat_t *p_stat;
 
-  if (NULL == cdio)     return NULL;
-  if (NULL == pathname) return NULL;
+  if (!p_cdio)   return NULL;
+  if (!pathname) return NULL;
 
-  p_stat = iso9660_fs_stat (cdio, pathname, b_mode2);
+  p_stat = iso9660_fs_stat (p_cdio, pathname);
   if (!p_stat) return NULL;
 
   if (p_stat->type != _STAT_DIR) {
@@ -915,11 +1001,11 @@ iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool b_mode2)
     _dirbuf = _cdio_malloc (p_stat->secsize * ISO_BLOCKSIZE);
 
     if (b_mode2) {
-      if (cdio_read_mode2_sectors (cdio, _dirbuf, p_stat->lsn, false, 
+      if (cdio_read_mode2_sectors (p_cdio, _dirbuf, p_stat->lsn, false, 
 				   p_stat->secsize))
 	cdio_assert_not_reached ();
     } else {
-      if (cdio_read_mode1_sectors (cdio, _dirbuf, p_stat->lsn, false,
+      if (cdio_read_mode1_sectors (p_cdio, _dirbuf, p_stat->lsn, false,
 				   p_stat->secsize))
 	cdio_assert_not_reached ();
     }
@@ -1014,9 +1100,9 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char pathname[])
 }
 
 static iso9660_stat_t *
-find_fs_lsn_recurse (const CdIo *cdio, const char pathname[], lsn_t lsn)
+find_fs_lsn_recurse (CdIo *p_cdio, const char pathname[], lsn_t lsn)
 {
-  CdioList *entlist = iso9660_fs_readdir (cdio, pathname, true);
+  CdioList *entlist = iso9660_fs_readdir (p_cdio, pathname, true);
   CdioList *dirlist =  _cdio_list_new ();
   CdioListNode *entnode;
     
@@ -1057,7 +1143,7 @@ find_fs_lsn_recurse (const CdIo *cdio, const char pathname[], lsn_t lsn)
   _CDIO_LIST_FOREACH (entnode, dirlist)
     {
       char *_fullname = _cdio_list_node_data (entnode);
-      iso9660_stat_t *ret_stat = find_fs_lsn_recurse (cdio, _fullname, lsn);
+      iso9660_stat_t *ret_stat = find_fs_lsn_recurse (p_cdio, _fullname, lsn);
 
       if (NULL != ret_stat) {
         _cdio_list_free (dirlist, true);
@@ -1076,9 +1162,9 @@ find_fs_lsn_recurse (const CdIo *cdio, const char pathname[], lsn_t lsn)
    Returns stat_t of entry if we found lsn, or NULL otherwise.
  */
 iso9660_stat_t *
-iso9660_find_fs_lsn(const CdIo *cdio, lsn_t lsn)
+iso9660_find_fs_lsn(CdIo *p_cdio, lsn_t i_lsn)
 {
-  return find_fs_lsn_recurse (cdio, "/", lsn);
+  return find_fs_lsn_recurse (p_cdio, "/", i_lsn);
 }
 
 /*!

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.18 2004/10/23 20:55:09 rocky Exp $
+    $Id: iso9660.c,v 1.19 2004/10/24 23:42:39 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.18 2004/10/23 20:55:09 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.19 2004/10/24 23:42:39 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -394,8 +394,9 @@ iso9660_set_pvd(void *pd,
   ipd.type_m_path_table = to_732(path_table_m_extent); 
   
   cdio_assert (sizeof(ipd.root_directory_record) == 34);
-  memcpy(ipd.root_directory_record, root_dir, sizeof(ipd.root_directory_record));
-  ipd.root_directory_record[0] = 34;
+  memcpy(&(ipd.root_directory_record), root_dir, 
+         sizeof(ipd.root_directory_record));
+  ipd.root_directory_record.length = 34;
 
   iso9660_strncpy_pad (ipd.volume_set_id, VOLUME_SET_ID, 128, ISO9660_DCHARS);
 
@@ -920,7 +921,7 @@ iso9660_get_root_lsn(const iso9660_pvd_t *pvd)
   if (NULL == pvd) 
     return CDIO_INVALID_LSN;
   else {
-    iso9660_dir_t *idr = (void *) pvd->root_directory_record;
+    const iso9660_dir_t *idr = &(pvd->root_directory_record);
     if (NULL == idr) return CDIO_INVALID_LSN;
     return(from_733 (idr->extent));
   }

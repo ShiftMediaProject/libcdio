@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.43 2004/09/04 00:06:50 rocky Exp $
+    $Id: bincue.c,v 1.44 2004/10/24 23:42:39 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.43 2004/09/04 00:06:50 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.44 2004/10/24 23:42:39 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -835,18 +835,18 @@ _read_audio_sectors_bincue (void *user_data, void *data, lsn_t lsn,
  */
 static int
 _read_mode1_sector_bincue (void *user_data, void *data, lsn_t lsn, 
-			 bool b_form2)
+			   bool b_form2)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   int blocksize = CDIO_CD_FRAMESIZE_RAW;
 
-  ret = cdio_stream_seek (env->gen.data_source, lsn * blocksize, SEEK_SET);
+  ret = cdio_stream_seek (p_env->gen.data_source, lsn * blocksize, SEEK_SET);
   if (ret!=0) return ret;
 
   /* FIXME: Not completely sure the below is correct. */
-  ret = cdio_stream_read (env->gen.data_source, buf, CDIO_CD_FRAMESIZE_RAW, 1);
+  ret = cdio_stream_read (p_env->gen.data_source, buf, CDIO_CD_FRAMESIZE_RAW, 1);
   if (ret==0) return ret;
 
   memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
@@ -864,13 +864,13 @@ static int
 _read_mode1_sectors_bincue (void *user_data, void *data, lsn_t lsn, 
 			    bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _read_mode1_sector_bincue (env, 
+    if ( (retval = _read_mode1_sector_bincue (p_env, 
 					    ((char *)data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -886,7 +886,7 @@ static int
 _read_mode2_sector_bincue (void *user_data, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
 
@@ -898,10 +898,10 @@ _read_mode2_sector_bincue (void *user_data, void *data, lsn_t lsn,
 
   int blocksize = CDIO_CD_FRAMESIZE_RAW;
 
-  ret = cdio_stream_seek (env->gen.data_source, lsn * blocksize, SEEK_SET);
+  ret = cdio_stream_seek (p_env->gen.data_source, lsn * blocksize, SEEK_SET);
   if (ret!=0) return ret;
 
-  ret = cdio_stream_read (env->gen.data_source, buf, CDIO_CD_FRAMESIZE_RAW, 1);
+  ret = cdio_stream_read (p_env->gen.data_source, buf, CDIO_CD_FRAMESIZE_RAW, 1);
   if (ret==0) return ret;
 
 
@@ -924,13 +924,13 @@ static int
 _read_mode2_sectors_bincue (void *user_data, void *data, lsn_t lsn, 
 			    bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _read_mode2_sector_bincue (env, 
+    if ( (retval = _read_mode2_sector_bincue (p_env, 
 					    ((char *)data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -991,12 +991,12 @@ get_hwinfo_bincue ( const CdIo *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
 static track_format_t
 _get_track_format_bincue(void *user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   
-  if (i_track > env->gen.i_tracks || i_track == 0) 
+  if (i_track > p_env->gen.i_tracks || i_track == 0) 
     return TRACK_FORMAT_ERROR;
 
-  return env->tocent[i_track-env->gen.i_first_track].track_format;
+  return p_env->tocent[i_track-p_env->gen.i_first_track].track_format;
 }
 
 /*!
@@ -1010,14 +1010,14 @@ _get_track_format_bincue(void *user_data, track_t i_track)
 static bool
 _get_track_green_bincue(void *user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   
-  if ( NULL == env || 
-       ( i_track < env->gen.i_first_track
-	 || i_track >= env->gen.i_tracks + env->gen.i_first_track ) )
+  if ( NULL == p_env || 
+       ( i_track < p_env->gen.i_first_track
+	 || i_track >= p_env->gen.i_tracks + p_env->gen.i_first_track ) )
     return false;
 
-  return env->tocent[i_track-env->gen.i_first_track].track_green;
+  return p_env->tocent[i_track-p_env->gen.i_first_track].track_green;
 }
 
 /*!  
@@ -1030,12 +1030,12 @@ _get_track_green_bincue(void *user_data, track_t i_track)
 static lba_t
 _get_lba_track_bincue(void *user_data, track_t i_track)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = env->gen.i_tracks+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = p_env->gen.i_tracks+1;
 
-  if (i_track <= env->gen.i_tracks + env->gen.i_first_track && i_track != 0) {
-    return env->tocent[i_track-env->gen.i_first_track].start_lba;
+  if (i_track <= p_env->gen.i_tracks + p_env->gen.i_first_track && i_track != 0) {
+    return p_env->tocent[i_track-p_env->gen.i_first_track].start_lba;
   } else 
     return CDIO_INVALID_LBA;
 }

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.65 2004/09/04 23:49:47 rocky Exp $
+    $Id: cdio.h,v 1.66 2004/10/24 23:42:39 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -194,6 +194,34 @@ extern "C" {
   const cdtext_t *cdio_get_cdtext (CdIo *p_cdio, track_t i_track);
 
   /*!
+    Get the default CD device.
+    if p_cdio is NULL (we haven't initialized a specific device driver), 
+    then find a suitable one and return the default device for that.
+    
+    @param p_cdio the CD object queried
+    @return a string containing the default CD device or NULL is
+    if we couldn't get a default device.
+
+    In some situations of drivers or OS's we can't find a CD device if
+    there is no media in it and it is possible for this routine to return
+    NULL even though there may be a hardware CD-ROM.
+  */
+  char * cdio_get_default_device (const CdIo *p_cdio);
+
+  /*! Return an array of device names. If you want a specific
+    devices for a driver, give that device. If you want hardware
+    devices, give DRIVER_DEVICE and if you want all possible devices,
+    image drivers and hardware drivers give DRIVER_UNKNOWN.
+    
+    NULL is returned if we couldn't return a list of devices.
+
+    In some situations of drivers or OS's we can't find a CD device if
+    there is no media in it and it is possible for this routine to return
+    NULL even though there may be a hardware CD-ROM.
+  */
+  char ** cdio_get_devices (driver_id_t driver_id);
+
+  /*!
     Get an array of device names in search_devices that have at least
     the capabilities listed by the capabities parameter.  If
     search_devices is NULL, then we'll search all possible CD drives.
@@ -224,19 +252,6 @@ extern "C" {
 					 bool b_any,
 					 /*out*/ driver_id_t *p_driver_id);
 
-  /*! Return an array of device names. If you want a specific
-    devices for a driver, give that device. If you want hardware
-    devices, give DRIVER_DEVICE and if you want all possible devices,
-    image drivers and hardware drivers give DRIVER_UNKNOWN.
-    
-    NULL is returned if we couldn't return a list of devices.
-
-    In some situations of drivers or OS's we can't find a CD device if
-    there is no media in it and it is possible for this routine to return
-    NULL even though there may be a hardware CD-ROM.
-  */
-  char ** cdio_get_devices (driver_id_t driver_id);
-
   /*! Like cdio_get_devices, but we may change the p_driver_id if we
       were given DRIVER_DEVICE or DRIVER_UNKNOWN. This is because
       often one wants to get a drive name and then *open* it
@@ -246,20 +261,12 @@ extern "C" {
     
   char ** cdio_get_devices_ret (/*in/out*/ driver_id_t *p_driver_id);
 
-  /*!
-    Get the default CD device.
-    if p_cdio is NULL (we haven't initialized a specific device driver), 
-    then find a suitable one and return the default device for that.
-    
-    @param p_cdio the CD object queried
-    @return a string containing the default CD device or NULL is
-    if we couldn't get a default device.
-
-    In some situations of drivers or OS's we can't find a CD device if
-    there is no media in it and it is possible for this routine to return
-    NULL even though there may be a hardware CD-ROM.
+  /*! 
+    Get disc mode - the kind of CD (CD-DA, CD-ROM mode 1, CD-MIXED, etc.
+    that we've got. The notion of "CD" is extended a little to include
+    DVD's.
   */
-  char * cdio_get_default_device (const CdIo *p_cdio);
+  discmode_t cdio_get_discmode (CdIo *p_cdio);
 
   /*!
     Get the what kind of device we've got.
@@ -292,26 +299,6 @@ extern "C" {
 			       cdio_drive_write_cap_t *p_write_cap,
 			       cdio_drive_misc_cap_t  *p_misc_cap);
 
-  /*! 
-    Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
-    False is returned if we had an error getting the information.
-  */
-  bool cdio_get_hwinfo ( const CdIo *p_cdio, 
-			 /* out*/ cdio_hwinfo_t *p_hw_info );
-
-
-  /*!
-    Get the media catalog number (MCN) from the CD.
-
-    @return the media catalog number r NULL if there is none or we
-    don't have the ability to get it.
-
-    Note: string is malloc'd so caller has to free() the returned
-    string when done with it.
-
-  */
-  char * cdio_get_mcn (const CdIo *p_cdio);
-
   /*!
     Get a string containing the name of the driver in use.
 
@@ -338,11 +325,29 @@ extern "C" {
   track_t cdio_get_first_track_num(const CdIo *p_cdio);
   
   /*! 
-    Get disc mode - the kind of CD (CD-DA, CD-ROM mode 1, CD-MIXED, etc.
-    that we've got. The notion of "CD" is extended a little to include
-    DVD's.
+    Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
+    False is returned if we had an error getting the information.
   */
-  discmode_t cdio_get_discmode (CdIo *p_cdio);
+  bool cdio_get_hwinfo ( const CdIo *p_cdio, 
+			 /* out*/ cdio_hwinfo_t *p_hw_info );
+
+
+  /*!  
+    Return the Joliet level recognized for p_cdio.
+  */
+  uint8_t cdio_get_joliet_level(const CdIo *p_cdio);
+
+  /*!
+    Get the media catalog number (MCN) from the CD.
+
+    @return the media catalog number r NULL if there is none or we
+    don't have the ability to get it.
+
+    Note: string is malloc'd so caller has to free() the returned
+    string when done with it.
+
+  */
+  char * cdio_get_mcn (const CdIo *p_cdio);
 
   /*!
     Get the number of tracks on the CD.

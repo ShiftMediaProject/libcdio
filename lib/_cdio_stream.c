@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.c,v 1.9 2004/02/07 18:53:02 rocky Exp $
+    $Id: _cdio_stream.c,v 1.10 2004/10/24 23:42:39 rocky Exp $
 
     Copyright (C) 2000, 2004 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -34,7 +34,7 @@
 #include <cdio/util.h>
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.9 2004/02/07 18:53:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.10 2004/10/24 23:42:39 rocky Exp $";
 
 /* 
  * DataSource implementations
@@ -52,18 +52,18 @@ struct _CdioDataSource {
    Return false if we hit an error. Errno should be set for that error.
 */
 static bool
-_cdio_stream_open_if_necessary(CdioDataSource *obj)
+_cdio_stream_open_if_necessary(CdioDataSource *p_obj)
 {
-  cdio_assert (obj != NULL);
+  cdio_assert (p_obj != NULL);
 
-  if (!obj->is_open) {
-    if (obj->op.open(obj->user_data)) {
+  if (!p_obj->is_open) {
+    if (p_obj->op.open(p_obj->user_data)) {
       cdio_warn ("could not open input stream...");
       return false;
     } else {
       cdio_debug ("opened source...");
-      obj->is_open = 1;
-      obj->position = 0;
+      p_obj->is_open = 1;
+      p_obj->position = 0;
     }
   }
   return true;
@@ -87,20 +87,20 @@ _cdio_stream_open_if_necessary(CdioDataSource *obj)
   cate the error.
 */
 long
-cdio_stream_seek(CdioDataSource* obj, long offset, int whence)
+cdio_stream_seek(CdioDataSource* p_obj, long int offset, int whence)
 {
-  cdio_assert (obj != NULL);
+  cdio_assert (p_obj != NULL);
 
-  if (!_cdio_stream_open_if_necessary(obj)) 
+  if (!_cdio_stream_open_if_necessary(p_obj)) 
     /* errno is set by _cdio_stream_open_if necessary. */
     return -1;
 
-  if (obj->position != offset) {
+  if (p_obj->position != offset) {
 #ifdef STREAM_DEBUG
     cdio_warn("had to reposition DataSource from %ld to %ld!", obj->position, offset);
 #endif
-    obj->position = offset;
-    return obj->op.seek(obj->user_data, offset, whence);
+    p_obj->position = offset;
+    return p_obj->op.seek(p_obj->user_data, offset, whence);
   }
 
   return 0;

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.73 2004/09/03 23:20:11 rocky Exp $
+    $Id: cdio.c,v 1.74 2004/10/24 23:42:39 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.73 2004/09/03 23:20:11 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.74 2004/10/24 23:42:39 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -756,6 +756,20 @@ cdio_have_driver(driver_id_t driver_id)
   return (*CdIo_all_drivers[driver_id].have_driver)();
 }
 
+/*!  
+  Return the Joliet level recognized for p_cdio.
+*/
+uint8_t 
+cdio_get_joliet_level(const CdIo *p_cdio)
+{
+  if (!p_cdio) return 0;
+  {
+    const generic_img_private_t *p_env 
+      = (generic_img_private_t *)&(p_cdio->env);
+    return p_env->i_joliet_level;
+  }
+}
+
 bool
 cdio_is_device(const char *psz_source, driver_id_t driver_id)
 {
@@ -843,12 +857,12 @@ cdio_lseek (const CdIo *cdio, off_t offset, int whence)
   Similar to (if not the same as) libc's read()
 */
 ssize_t
-cdio_read (const CdIo *cdio, void *buf, size_t size)
+cdio_read (const CdIo *p_cdio, void *buf, size_t size)
 {
-  if (cdio == NULL) return -1;
+  if (p_cdio == NULL) return -1;
   
-  if (cdio->op.read)
-    return cdio->op.read (cdio->env, buf, size);
+  if (p_cdio->op.read)
+    return p_cdio->op.read (p_cdio->env, buf, size);
   return -1;
 }
 
@@ -857,14 +871,14 @@ cdio_read (const CdIo *cdio, void *buf, size_t size)
   from lsn. Returns 0 if no error. 
 */
 int
-cdio_read_audio_sector (const CdIo *cdio, void *buf, lsn_t lsn) 
+cdio_read_audio_sector (const CdIo *p_cdio, void *buf, lsn_t lsn) 
 {
 
-  if (NULL == cdio || NULL == buf || CDIO_INVALID_LSN == lsn )
+  if (NULL == p_cdio || NULL == buf || CDIO_INVALID_LSN == lsn )
     return 0;
 
-  if  (cdio->op.read_audio_sectors != NULL)
-    return cdio->op.read_audio_sectors (cdio->env, buf, lsn, 1);
+  if  (p_cdio->op.read_audio_sectors != NULL)
+    return p_cdio->op.read_audio_sectors (p_cdio->env, buf, lsn, 1);
   return -1;
 }
 
@@ -873,14 +887,14 @@ cdio_read_audio_sector (const CdIo *cdio, void *buf, lsn_t lsn)
   from lsn. Returns 0 if no error. 
 */
 int
-cdio_read_audio_sectors (const CdIo *cdio, void *buf, lsn_t lsn,
+cdio_read_audio_sectors (const CdIo *p_cdio, void *buf, lsn_t lsn,
                          unsigned int nblocks) 
 {
-  if ( NULL == cdio || NULL == buf || CDIO_INVALID_LSN == lsn )
+  if ( NULL == p_cdio || NULL == buf || CDIO_INVALID_LSN == lsn )
     return 0;
 
-  if  (cdio->op.read_audio_sectors != NULL)
-    return cdio->op.read_audio_sectors (cdio->env, buf, lsn, nblocks);
+  if  (p_cdio->op.read_audio_sectors != NULL)
+    return p_cdio->op.read_audio_sectors (p_cdio->env, buf, lsn, nblocks);
   return -1;
 }
 
@@ -893,20 +907,21 @@ cdio_read_audio_sectors (const CdIo *cdio, void *buf, lsn_t lsn,
    into data starting from lsn. Returns 0 if no error. 
  */
 int
-cdio_read_mode1_sector (const CdIo *cdio, void *data, lsn_t lsn, bool b_form2)
+cdio_read_mode1_sector (const CdIo *p_cdio, void *data, lsn_t lsn, 
+                        bool b_form2)
 {
   uint32_t size = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE ;
-  char buf[M2RAW_SECTOR_SIZE] = { 0, };
   
-  if (NULL == cdio || NULL == data || CDIO_INVALID_LSN == lsn )
+  if (NULL == p_cdio || NULL == data || CDIO_INVALID_LSN == lsn )
     return 0;
 
-  if (cdio->op.read_mode1_sector && cdio->op.read_mode1_sector) {
-    return cdio->op.read_mode1_sector(cdio->env, data, lsn, b_form2);
-  } else if (cdio->op.lseek && cdio->op.read) {
-    if (0 > cdio_lseek(cdio, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
+  if (p_cdio->op.read_mode1_sector) {
+    return p_cdio->op.read_mode1_sector(p_cdio->env, data, lsn, b_form2);
+  } else if (p_cdio->op.lseek && p_cdio->op.read) {
+    char buf[CDIO_CD_FRAMESIZE] = { 0, };
+    if (0 > cdio_lseek(p_cdio, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
       return -1;
-    if (0 > cdio_read(cdio, buf, CDIO_CD_FRAMESIZE))
+    if (0 > cdio_read(p_cdio, buf, CDIO_CD_FRAMESIZE))
       return -1;
     memcpy (data, buf, size);
     return 0;

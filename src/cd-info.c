@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.91 2004/10/22 01:13:38 rocky Exp $
+    $Id: cd-info.c,v 1.92 2004/10/24 23:42:39 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -537,7 +537,7 @@ print_vcd_info(driver_id_t driver) {
 #endif 
 
 static void
-print_iso9660_recurse (const CdIo *p_cdio, const char pathname[], 
+print_iso9660_recurse (CdIo *p_cdio, const char pathname[], 
 		       cdio_fs_anal_t fs, 
 		       bool b_mode2)
 {
@@ -639,7 +639,7 @@ read_iso9660_pvd(const CdIo *p_cdio, track_format_t track_format, /*out*/
 		 
 
 static void
-print_iso9660_fs (const CdIo *p_cdio, cdio_fs_anal_t fs, 
+print_iso9660_fs (CdIo *p_cdio, cdio_fs_anal_t fs, 
 		  track_format_t track_format)
 {
   iso9660_pvd_t pvd;
