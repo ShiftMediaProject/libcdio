@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.22 2004/07/29 02:16:20 rocky Exp $
+    $Id: scsi_mmc.h,v 1.23 2004/07/29 05:31:27 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -103,6 +103,11 @@
 #define CDIO_MMC_TO_PROTECT_PAGE	0x1d
 #define CDIO_MMC_CAPABILITIES_PAGE	0x2a
 #define CDIO_MMC_ALL_PAGES		0x3f
+
+/*! Size of fields returned by an INQUIRY command */
+#define CDIO_MMC_HW_VENDOR_LEN    8 /**< length of vendor field */
+#define CDIO_MMC_HW_MODEL_LEN    16 /**< length of model field */
+#define CDIO_MMC_HW_REVISION_LEN  4 /**< length of revision field */
 
 
 /*! This is listed as optional in ATAPI 2.6, but is (curiously) 
