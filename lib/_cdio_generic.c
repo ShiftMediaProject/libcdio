@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.13 2004/03/20 22:46:57 rocky Exp $
+    $Id: _cdio_generic.c,v 1.14 2004/05/05 10:34:55 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.13 2004/03/20 22:46:57 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.14 2004/05/05 10:34:55 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -131,7 +131,8 @@ cdio_generic_stdio_free (void *user_data)
   generic_img_private_t *_obj = user_data;
 
   if (NULL == _obj) return;
-  free (_obj->source_name);
+  if (NULL != _obj->source_name) 
+    free (_obj->source_name);
 
   if (_obj->data_source)
     cdio_stdio_destroy (_obj->data_source);
