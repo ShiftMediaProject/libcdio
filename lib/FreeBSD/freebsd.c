@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.25 2004/07/23 23:46:53 rocky Exp $
+    $Id: freebsd.c,v 1.26 2004/07/24 05:57:20 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.25 2004/07/23 23:46:53 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.26 2004/07/24 05:57:20 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -228,11 +228,11 @@ _cdio_read_toc (_img_private_t *env)
 static int 
 _eject_media_freebsd (void *user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
 
   return (env->access_mode == _AM_IOCTL) 
-    ? eject_media_freebsd_ioctl(env) 
-    : eject_media_freebsd_cam(env);
+    ? eject_media_freebsd_ioctl(p_env) 
+    : eject_media_freebsd_cam(p_env);
 }
 
 /*!
@@ -284,34 +284,27 @@ _get_first_track_num_freebsd(void *user_data)
 static char *
 _get_mcn_freebsd (const void *p_user_data) {
 
-#if 1
   const _img_private_t *p_env = p_user_data;
-  struct ioc_read_subchannel subchannel;
-  struct cd_sub_channel_info subchannel_info;
 
-  subchannel.address_format = CD_LBA_FORMAT;
-  subchannel.data_format    = CDIO_SUBCHANNEL_MEDIA_CATALOG;
-  subchannel.track          = 0;
-  subchannel.data_len       = 28;
-  subchannel.data           = &subchannel_info;
-
-  if(ioctl(p_env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
-    perror("CDIOCREADSUBCHANNEL");
-    return NULL;
-  }
-
-  /* Probably need a loop over tracks rather than give up if we 
-     can't find in track 0.
-   */
-  if (subchannel_info.what.media_catalog.mc_valid)
-    return strdup(subchannel_info.what.media_catalog.mc_number);
-  else 
-    return NULL;
-#else 
-    return NULL;
-#endif
+  return (p_env->access_mode == _AM_IOCTL) 
+    ? get_mcn_freebsd_ioctl(p_env) 
+    : get_mcn_freebsd_cam(p_env);
 
 }
+
+static void
+get_drive_cap_freebsd (const void *p_user_data,
+		       cdio_drive_read_cap_t  *p_read_cap,
+		       cdio_drive_write_cap_t *p_write_cap,
+		       cdio_drive_misc_cap_t  *p_misc_cap) 
+{
+
+  const _img_private_t *p_env = p_user_data;
+
+  if (p_env->access_mode == _AM_CAM) 
+    get_drive_cap_freebsd_cam (p_env, p_read_cap, p_write_cap, p_misc_cap);
+  
+}  
 
 /*!
   Return the number of tracks in the current medium.
@@ -553,7 +546,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .get_arg            = _get_arg_freebsd,
     .get_default_device = cdio_get_default_device_freebsd,
     .get_devices        = cdio_get_devices_freebsd,
-    .get_drive_cap      = NULL,
+    .get_drive_cap      = get_drive_cap_freebsd,
     .get_first_track_num= _get_first_track_num_freebsd,
     .get_mcn            = _get_mcn_freebsd,
     .get_num_tracks     = _get_num_tracks_freebsd,
