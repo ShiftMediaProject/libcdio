@@ -1,7 +1,7 @@
 /*
-  $Id: common_interface.h,v 1.3 2005/01/06 03:38:58 rocky Exp $
+  $Id: common_interface.h,v 1.4 2005/01/09 12:32:19 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,24 @@
 extern int ioctl_ping_cdrom(int fd);
 
 extern char *atapi_drive_info(int fd);
+
+/*! Determine endian-ness of the CD-drive based on reading data from
+  it. 
+
+  rocky: As someone who didn't write the code, I have to say this is nothing
+  less than brilliant. An FFT is done bigendian and little endian and the
+  the transform is looked at to see which has data in the FFT (or audible)
+  portion. (Or so that's how I understand it.)
+ */
 extern int data_bigendianp(cdrom_drive_t *d);
+
+/*! Here we fix up a couple of things that will never happen.  yeah,
+   right.  
+
+   rocky OMITTED FOR NOW:
+   The multisession stuff is from Hannu's code; it assumes it knows
+   the leadout/leadin size.
+*/
 extern int FixupTOC(cdrom_drive_t *d, track_t tracks);
 
 #endif /*_CDDA_COMMON_INTERFACE_H_*/

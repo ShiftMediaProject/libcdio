@@ -1,7 +1,7 @@
 /*
-  $Id: common_interface.c,v 1.5 2005/01/07 02:40:57 rocky Exp $
+  $Id: common_interface.c,v 1.6 2005/01/09 12:32:19 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
   
   This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,14 @@
 #include "utils.h"
 #include "smallft.h"
 
+/*! Determine endian-ness of the CD-drive based on reading data from
+  it. 
+
+  rocky: As someone who didn't write the code, I have to say this is nothing
+  less than brilliant. An FFT is done bigendian and little endian and the
+  the transform is looked at to see which has data in the FFT (or audible)
+  portion. (Or so that's how I understand it.)
+ */
 int 
 data_bigendianp(cdrom_drive_t *d)
 {
@@ -94,14 +102,14 @@ data_bigendianp(cdrom_drive_t *d)
 
       beginsec*=CDIO_CD_FRAMESIZE_RAW/2;
       
-      /* un-interleave for an fft */
+      /* un-interleave for an FFT */
       if(!zeroflag){
 	int j;
 	
 	for(j=0;j<128;j++)
-	  a[j]=UINT16_FROM_LE(buff[j*2+beginsec+460]);
+	  a[j]=UINT16_FROM_BE(buff[j*2+beginsec+460]);
 	for(j=0;j<128;j++)
-	  b[j]=UINT16_FROM_LE(buff[j*2+beginsec+461]);
+	  b[j]=UINT16_FROM_BE(buff[j*2+beginsec+461]);
 
 	fft_forward(128,a,NULL,NULL);
 	fft_forward(128,b,NULL,NULL);
@@ -110,14 +118,16 @@ data_bigendianp(cdrom_drive_t *d)
 	  lsb_energy+=fabs(a[j])+fabs(b[j]);
 	
 	for(j=0;j<128;j++)
-	  a[j]=UINT16_FROM_BE(buff[j*2+beginsec+460]);
+	  a[j]=UINT16_FROM_LE(buff[j*2+beginsec+460]);
 
 	for(j=0;j<128;j++)
-	  b[j]=UINT16_FROM_BE(buff[j*2+beginsec+461]);
+	  b[j]=UINT16_FROM_LE(buff[j*2+beginsec+461]);
 
 	fft_forward(128,a,NULL,NULL);
 	fft_forward(128,b,NULL,NULL);
-	for(j=0;j<128;j++)msb_energy+=fabs(a[j])+fabs(b[j]);
+
+	for(j=0;j<128;j++)
+	  msb_energy+=fabs(a[j])+fabs(b[j]);
       }
     }
     if(lsb_energy<msb_energy){
@@ -164,10 +174,14 @@ data_bigendianp(cdrom_drive_t *d)
 }
 
 /************************************************************************/
-/* Here we fix up a couple of things that will never happen.  yeah,
-   right.  The multisession stuff is from Hannu's code; it assumes it
-   knows the leadoud/leadin size. */
 
+/*! Here we fix up a couple of things that will never happen.  yeah,
+   right.  
+
+   rocky OMITTED FOR NOW:
+   The multisession stuff is from Hannu's code; it assumes it knows
+   the leadout/leadin size.
+*/
 int 
 FixupTOC(cdrom_drive_t *d, track_t i_tracks)
 {
