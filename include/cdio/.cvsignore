@@ -1,4 +1,3 @@
 Makefile
 Makefile.in
-cdio.h
-
+version.h
