@@ -74,9 +74,7 @@
 #include <fcntl.h>
 #endif
 
-#ifdef HAVE_GETOPT_H
-# include <getopt.h>
-#endif
+#include <getopt.h>
 
 #ifdef HAVE_ERRNO_H
 #include <errno.h>

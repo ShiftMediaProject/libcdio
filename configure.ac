@@ -19,7 +19,7 @@ define(RELEASE_NUM, 72)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.123 2005/01/06 03:09:11 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.124 2005/01/06 11:39:40 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -145,7 +145,7 @@ AM_PATH_LIBPOPT(,
 dnl headers
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(errno.h fcntl.h getopt.h glob.h)
+AC_CHECK_HEADERS(errno.h fcntl.h glob.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h)
 AC_CHECK_HEADERS(linux/sbpcd.h, SBPCD_H="-DSBPCD_H='1' ")
 AC_CHECK_HEADERS(linux/ucdrom.h, UCDROM_H="-DUCDROM_H='1' ")
@@ -166,6 +166,38 @@ AC_TRY_COMPILE([],[_Pragma("pack(1)")], [
   AC_DEFINE(HAVE_ISOC99_PRAGMA, [], [Supports ISO _Pragma() macro])
 ],ISOC99_PRAGMA=no)
 AC_MSG_RESULT($ISOC99_PRAGMA)
+
+##
+## Check for GNU getopt_long()
+##
+AC_MSG_CHECKING(for GNU getopt_long)
+AC_TRY_RUN([
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
+
+static struct option long_options[] = {
+  {"help"    , no_argument, 0, 1 },
+  {"version" , no_argument, 0, 2 },
+  {0         , no_argument, 0, 0 }
+};
+
+int main(int argc, char **argv) {
+  int option_index = 0;
+  int c;
+
+  opterr = 0;
+  while((c = getopt_long(argc, argv, "?hv", 
+			 long_options, &option_index)) != EOF) {
+  }
+  return 0;
+}
+], [AC_MSG_RESULT(yes); ac_getopt_long=yes; 
+     AC_DEFINE(HAVE_GETOPT_LONG, [], 
+     [Define this if you have GNU getopt_long()])],
+   [AC_MSG_RESULT(no); ac_getopt_long=no],
+   [AC_MSG_RESULT(no); ac_getopt_long=no])
+AM_CONDITIONAL(HAVE_GETOPT_LONG, test x"$ac_getopt_long" = "xyes")
 
 dnl empty_array_size
 AC_MSG_CHECKING([how to create empty arrays])
@@ -215,7 +247,7 @@ main() {
 ], bf_lsbf=0, AC_MSG_ERROR([unsupported bitfield ordering])))
 if test "x$bf_lsbf" = "x1"; then
  AC_MSG_RESULT(LSBF)
- AC_DEFINE(BITFIELD_LSBF, [], [compiler does lsbf in struct bitfields])
+ AC_DEFINE(BITFIELD_LSBF, [], [compiler does least-significant bit first in struct bitfields])
 else
  AC_MSG_RESULT(MSBF)
 fi
