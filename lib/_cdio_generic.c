@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.3 2003/03/30 13:01:22 rocky Exp $
+    $Id: _cdio_generic.c,v 1.4 2003/04/06 18:12:37 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.3 2003/03/30 13:01:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.4 2003/04/06 18:12:37 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -128,7 +128,7 @@ cdio_generic_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn,
 				 bool mode2raw, unsigned num_sectors)
 {
   char *_buf = buf;
-  const int blocksize = mode2raw ? M2RAW_SECTOR_SIZE : M2F1_SECTOR_SIZE;
+  const int blocksize = mode2raw ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
   int n, rc;
 
   cdio_assert (obj != NULL);

@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.5 2003/04/06 17:57:20 rocky Exp $
+    $Id: sector.h,v 1.6 2003/04/06 18:12:37 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -106,9 +106,6 @@
 /* The leadout track is always 0xAA, regardless of # of tracks on disc */
 #define	CDIO_CDROM_LEADOUT_TRACK 0xAA
 
-#define M1F1_SECTOR_SIZE    2048
-#define M2F1_SECTOR_SIZE    2048
-#define FORM1_DATA_SIZE     2048  /* Mode 1 or Mode 2 user data */
 #define M2F2_SECTOR_SIZE    2324
 #define M2SUB_SECTOR_SIZE   2332
 #define M2RAW_SECTOR_SIZE   2336
@@ -118,10 +115,12 @@
 #define CDIO_CD_FRAMES_PER_MINUTE \
    (CDIO_CD_FRAMES_PER_SEC*CDIO_CD_SECS_PER_MINUTE)
 
-#define CD_74MIN_SECTORS (UINT32_C(74)*CDIO_CD_FRAMES_PER_MINUTE)
-#define CD_80MIN_SECTORS (UINT32_C(80)*CDIO_CD_FRAMES_PER_MINUTE)
-#define CD_90MIN_SECTORS (UINT32_C(90)*CD_FRAMES_PER_MINUTE)
-#define CD_MAX_SECTORS   (UINT32_C(100)*CD_FRAMES_PER_MINUTE-CDIO_PREGAP_SECTORS)
+#define CDIO_CD_74MIN_SECTORS (UINT32_C(74)*CDIO_CD_FRAMES_PER_MINUTE)
+#define CDIO_CD_80MIN_SECTORS (UINT32_C(80)*CDIO_CD_FRAMES_PER_MINUTE)
+#define CDIO_CD_90MIN_SECTORS (UINT32_C(90)*CDIO_CD_FRAMES_PER_MINUTE)
+
+#define CDIO_CD_MAX_SECTORS  \
+   (UINT32_C(100)*CDIO_CD_FRAMES_PER_MINUTE-CDIO_PREGAP_SECTORS)
 
 #define msf_t_SIZEOF 3
 

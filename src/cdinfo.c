@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.6 2003/04/06 17:57:20 rocky Exp $
+    $Id: cdinfo.c,v 1.7 2003/04/06 18:12:37 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -411,7 +411,7 @@ static int
 read_block(int superblock, uint32_t offset, uint8_t bufnum, track_t track_num)
 {
   unsigned int track_sec_count = cdio_get_track_sec_count(img, track_num);
-  memset(buffer[bufnum],0,M2F1_SECTOR_SIZE);
+  memset(buffer[bufnum], 0, CDIO_CD_FRAMESIZE);
 
   if ( track_sec_count < superblock) {
     dbg_print(1, "reading block %u skipped track %d has only %u sectors\n", 
@@ -421,11 +421,11 @@ read_block(int superblock, uint32_t offset, uint8_t bufnum, track_t track_num)
   
   dbg_print(2, "about to read sector %u\n", offset+superblock);
 
-  if (0 > cdio_lseek(img, FORM1_DATA_SIZE*(offset+superblock),SEEK_SET))
+  if (0 > cdio_lseek(img, CDIO_CD_FRAMESIZE*(offset+superblock),SEEK_SET))
     return -1;
   
 
-  if (0 > cdio_read(img, buffer[bufnum], FORM1_DATA_SIZE))
+  if (0 > cdio_read(img, buffer[bufnum], CDIO_CD_FRAMESIZE))
     return -1;
 
   return 0;

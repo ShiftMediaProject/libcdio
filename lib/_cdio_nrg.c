@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.6 2003/04/06 17:57:20 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.7 2003/04/06 18:12:37 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "util.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.6 2003/04/06 17:57:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.7 2003/04/06 18:12:37 rocky Exp $";
 
 /* structures used */
 
@@ -526,10 +526,10 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
       user_datasize=CDIO_CD_FRAMESIZE_RAW;
       break;
     case TRACK_FORMAT_CDI:
-      user_datasize=FORM1_DATA_SIZE;
+      user_datasize=CDIO_CD_FRAMESIZE;
       break;
     case TRACK_FORMAT_XA:
-      user_datasize=FORM1_DATA_SIZE;
+      user_datasize=CDIO_CD_FRAMESIZE;
       break;
     default:
       user_datasize=CDIO_CD_FRAMESIZE_RAW;
@@ -617,9 +617,10 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn, bool form2)
     cdio_warn ("reading into pre gap (lsn %d)", lsn);
 
   if (form2)
-    memcpy (data, buf + 12 + 4, M2RAW_SECTOR_SIZE);
+    memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
+	    M2RAW_SECTOR_SIZE);
   else
-    memcpy (data, buf + 12 + 4 + 8, FORM1_DATA_SIZE);
+    memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, CDIO_CD_FRAMESIZE);
 
   return 0;
 }
@@ -648,8 +649,8 @@ _read_mode2_sectors (void *user_data, void *data, uint32_t lsn,
       if ( (retval = _read_mode2_sector (_obj, buf, lsn + i, true)) )
 	return retval;
       
-      memcpy (((char *)data) + (FORM1_DATA_SIZE * i), buf + 8, 
-	      FORM1_DATA_SIZE);
+      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
+	      buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
     }
   }
   return 0;
