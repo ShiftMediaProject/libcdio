@@ -14,13 +14,13 @@ ISO9660 filesystem
  root dir in PVD set to lsn 23
 
 /:
-  .
-  ..
-  copying
-  doc
+ Apr 20 2003 07:26  .
+ Apr 20 2003 07:26  ..
+ Jul 29 2002 08:39  copying
+ Apr 20 2003 12:18  doc
 
 /DOC/:
-  .
-  ..
-  readme.txt
+ Apr 20 2003 12:18  .
+ Apr 20 2003 07:26  ..
+ Apr 20 2003 12:18  readme.txt
 

@@ -15,60 +15,60 @@ ISO9660 filesystem
  root dir in PVD set to lsn 20
 
 /:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
-  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  autorun
-  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  data
-  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048  ext
-  d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048  mpegav
-  d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048  segment
-  d d---1xrxrxr 0 0 [fn 00] [LSN     26]      2048  svcd
-  d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048  vmp
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan  6 2001 21:29  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan  6 2001 21:29  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Jan  6 2001 21:29  autorun
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jan  6 2001 21:29  data
+  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jan  6 2001 21:29  ext
+  d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048 Jan  6 2001 21:29  mpegav
+  d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048 Jan  6 2001 21:29  segment
+  d d---1xrxrxr 0 0 [fn 00] [LSN     26]      2048 Jan  6 2001 21:29  svcd
+  d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048 Jan  6 2001 21:29  vmp
 
 /AUTORUN/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Jan  6 2001 21:29  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan  6 2001 21:29  ..
 
 /DATA/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
-  d d---1xrxrxr 0 0 [fn 00] [LSN    300]      2048  svcddata
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jan  6 2001 21:29  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan  6 2001 21:29  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN    300]      2048 Jan  6 2001 21:29  svcddata
 
 /DATA/SVCDDATA/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN    300]      2048  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN    300]      2048 Jan  6 2001 21:29  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jan  6 2001 21:29  ..
 
 /EXT/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jan  6 2001 21:29  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan  6 2001 21:29  ..
 
 /MPEGAV/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
-  - ---2--r-r-r 0 0 [fn 01] [LSN    463]  13909140 ( 12257280)  avseq01.mpg
+  d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048 Jan  6 2001 21:29  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan  6 2001 21:29  ..
+  - ---2--r-r-r 0 0 [fn 01] [LSN    463]  13909140 ( 12257280) Jan  6 2001 21:29  avseq01.mpg
 
 /SEGMENT/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048 Jan  6 2001 21:29  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan  6 2001 21:29  ..
 
 /SVCD/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     26]      2048  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
-  - ----1-rxrxr 0 0 [fn 00] [LSN    151]      2048  entries.svd
-  - ----1-rxrxr 0 0 [fn 00] [LSN    150]      2048  info.svd
-  - ----1-rxrxr 0 0 [fn 00] [LSN    152]     65536  lot.svd
-  - ----1-rxrxr 0 0 [fn 00] [LSN    184]        16  psd.svd
-  - ----1-rxrxr 0 0 [fn 00] [LSN    188]       427  search.dat
-  - ----1-rxrxr 0 0 [fn 00] [LSN    186]      4096  spicontx.svd
-  - ----1-rxrxr 0 0 [fn 00] [LSN    185]      2048  tracks.svd
+  d d---1xrxrxr 0 0 [fn 00] [LSN     26]      2048 Jan  6 2001 21:29  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan  6 2001 21:29  ..
+  - ----1-rxrxr 0 0 [fn 00] [LSN    151]      2048 Jan  6 2001 21:29  entries.svd
+  - ----1-rxrxr 0 0 [fn 00] [LSN    150]      2048 Jan  6 2001 21:29  info.svd
+  - ----1-rxrxr 0 0 [fn 00] [LSN    152]     65536 Jan  6 2001 21:29  lot.svd
+  - ----1-rxrxr 0 0 [fn 00] [LSN    184]        16 Jan  6 2001 21:29  psd.svd
+  - ----1-rxrxr 0 0 [fn 00] [LSN    188]       427 Jan  6 2001 21:29  search.dat
+  - ----1-rxrxr 0 0 [fn 00] [LSN    186]      4096 Jan  6 2001 21:29  spicontx.svd
+  - ----1-rxrxr 0 0 [fn 00] [LSN    185]      2048 Jan  6 2001 21:29  tracks.svd
 
 /VMP/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
-  d d---1xrxrxr 0 0 [fn 00] [LSN     28]      2048  svcdj
+  d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048 Jan  6 2001 21:29  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan  6 2001 21:29  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN     28]      2048 Jan  6 2001 21:29  svcdj
 
 /VMP/SVCDJ/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     28]      2048  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048  ..
+  d d---1xrxrxr 0 0 [fn 00] [LSN     28]      2048 Jan  6 2001 21:29  .
+  d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048 Jan  6 2001 21:29  ..
 
 XA sectors   Chaoji Video CD (CVD)

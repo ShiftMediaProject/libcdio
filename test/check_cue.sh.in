@@ -1,9 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.8 2003/09/01 02:02:59 rocky Exp $
-if test -z "@CDDB_LIBS@" ; then
-  cddb_opt='--no-cddb'
-fi
-
+#$Id: check_cue.sh.in,v 1.9 2003/09/07 18:14:26 rocky Exp $
 if test -z "@VCDINFO_LIBS@" ; then
   vcd_opt='--no-vcd'
 fi
@@ -22,12 +18,12 @@ BASE=`basename $0 .sh`
 
 fname=cdda
 testnum=CD-DA
-test_cdinfo "--cue-file ${srcdir}/${fname}.cue $cddb_opt" \
+test_cdinfo "--cue-file ${srcdir}/${fname}.cue --no-cddb" \
   ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC "cdinfo CUE test $testnum"
 
-test_cdinfo "--bin-file ${srcdir}/${fname}.bin $cddb_opt" \
+test_cdinfo "--bin-file ${srcdir}/${fname}.bin --no-cddb" \
   ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC "cdinfo BIN test $testnum"
