@@ -30,9 +30,15 @@ Compact Disc Digital Audio, described in the ``Red Book'' or ICE
 people think of when you play a @acronym{CD} as it was the first to
 use the @acronym{CD} medium.
 
-@item CD-i
+@item CD+G
 
-Compact Disc interactive. An extension of the CD format designed
+Compact Disc + Graphics. An extension of the CD audio format contains
+a limited amount of graphics in subcode channels. This disc works in
+all audio players but the graphics portion is only available in a
+special CD+G or Karaoke player.
+
+@item CD-i
+Compact Disc Interactive. An extension of the CD format designed
 around a set-top computer that connects to a TV to provide interactive
 home entertainment, including digital audio and video, video games,
 and software applications. Defined by the ``Green Book'' standard.
@@ -138,6 +144,11 @@ single number it is often easier to work with in programming than an
 MSF. Because it starts at 0 rather than -150 as is the case of an LBA
 it can be represented as an unsigned value.
 
+@item MCN
+
+Media Catalog Number. A identification number on an audio CD.  Also
+called a UPC. Another identification number is ISRC.
+
 @item MMC
 
 MMC (MultiMedia Commands). A SCSI programming specification made by
@@ -147,18 +158,19 @@ communicating with CDROM drives, CD-Rewriters, DVD-Rewriters, etc.
 Many manufacturers have adopted this standard and it also applies to
 ATAPI versions of their drives.
 
-@item Mixed Mode 
+@item Mixed Mode CD
 
-A CD that contains tracks of differing CD-ROM Mode formats. For
-example a discs could contain both computer data (Yellow Book) and
-audio (Red Book) tracks. 
+A Mixed Mode is a CD that contains tracks of differing CD-ROM Mode
+formats. In particular the first track may contain both computer data
+(Yellow Book) CD ROM data while the remaining tracks are audio or
+video data. Video CD's can be Mixed Mode CDs. 
 
 @item Multisession 
 
 A way of writing to a CD that allows more data to be
 added to readable discs at a later time.
 
-@item NRG format file
+@item Nero NRG format file
 
 A proprietary CD image file format use by a popular program for
 Microsoft Windows, Ahead Nero. The specification of this format is
@@ -224,8 +236,8 @@ See also @acronym{MMC}
 @item Win32 ioctl driver
 
 Ioctl (Input Output ConTroLs). A Win32 function, implemented in all
-Windows.  It is used for sending commands to devices using defined
-codes and structures.
+Microsoft Windows.  It is used for sending commands to devices using
+defined codes and structures.
 
 @item XA
 See @acronym{CD-ROM XA}
