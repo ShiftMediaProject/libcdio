@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.12 2003/09/20 12:34:02 rocky Exp $
+    $Id: _cdio_win32.c,v 1.13 2003/09/21 06:10:59 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.12 2003/09/20 12:34:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.13 2003/09/21 06:10:59 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -519,7 +519,7 @@ _cdio_mmc_read_sectors (void *user_data, void *data, lsn_t lsn,
 
     CDIO_MMC_SET_READ_TYPE(ssc.CDBByte, sector_type);
     CDIO_MMC_SET_READ_LBA(ssc.CDBByte, lsn);
-    CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, blocks);
+    CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, nblocks);
     CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(ssc.CDBByte,
 					     CDIO_MMC_MCSB_ALL_HEADERS);
     
@@ -575,7 +575,6 @@ static int
 _cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks) 
 {
-  _img_private_t *_obj = user_data;
   return _cdio_mmc_read_sectors( user_data, data, lsn, 
 				 CDIO_MMC_READ_TYPE_CDDA, nblocks );
 }
