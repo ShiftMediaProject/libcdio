@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.40 2005/02/12 02:04:34 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.41 2005/02/12 10:21:31 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -2049,7 +2049,29 @@ In @value{libcdio} there are a number of conventions used. If you
 understand some of these conventions it may facilitate understanding
 the code a little. 
 
-@subsubsection variable names
+@subsubsection suffixes (type and structure names)
+
+A few suffixes are used in type and structure names:
+
+@itemize
+
+@item @code{_e}
+
+An enumeration tag. Generally though the same name will appear with the
+@code{_t} suffix and probably that should be used instead.
+
+@item @code{_s}
+
+A structure tag. Generally though the same name will appear with the
+@code{_t} suffix and probably that should be used instead.
+
+@item @code{_t}
+
+A type suffix. 
+
+@end itemize
+
+@subsubsection prefixes (variable names)
 
 A number of prefixes are used in variable names here's what they mean
 
