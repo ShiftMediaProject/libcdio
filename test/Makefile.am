@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.39 2005/01/13 03:58:47 rocky Exp $
+#   $Id: Makefile.am,v 1.40 2005/01/14 21:40:33 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -26,7 +26,7 @@
 
 if BUILD_CD_PARANOIA
 testparanoia=testparanoia
-testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS)
+testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
 endif
 
 hack = check_sizeof testassert  testbincue testischar testiso9660 \
