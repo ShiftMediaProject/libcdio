@@ -1,0 +1,298 @@
+\input texinfo @c -*-texinfo-*-
+
+@paragraphindent 0
+@exampleindent 0
+
+@c %**start of header
+@setfilename libcdio.info
+@set libcdio @code{libcdio}
+
+@settitle The GNU libcdio library
+@setchapternewpage on
+
+@ifinfo
+This file documents GNU CD input and control library
+
+Copyright (C) Herbert Valerio Riedel @email{<hvr@@gnu.org>} and Rocky
+Bernstein @email{<rocky@@panix.com>}
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``Free Software'' and ``Free Software Needs
+Free Documentation'', with the Front-Cover Texts being ``A GNU Manual,''
+and with the Back-Cover Texts as in (a) below.
+
+(a) The Free Software Foundation's Back-Cover Text is: ``You have
+freedom to copy and modify this GNU Manual, like GNU software.  Copies
+published by the Free Software Foundation raise funds for GNU
+development.''
+@end ifinfo
+
+@titlepage
+@title GNU libcdio library
+@subtitle $Id: libcdio.texi,v 1.1 2003/07/28 02:25:37 rocky Exp $
+@author Rocky Bernstein et al.
+@page
+
+@vskip 0pt plus 1filll
+
+Copyright @copyright{} 2003 Herbert Valerio Riedel
+@email{<hvr@@gnu.org>} and Rocky Bernstein @email{<rocky@@panix.com>}
+@sp 1
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``Free Software'' and ``Free Software Needs
+Free Documentation'', with the Front-Cover Texts being ``A GNU Manual,''
+and with the Back-Cover Texts as in (a) below.
+
+(a) The Free Software Foundation's Back-Cover Text is: ``You have
+freedom to copy and modify this GNU Manual, like GNU software.  Copies
+published by the Free Software Foundation raise funds for GNU
+development.''
+@end titlepage
+@page
+
+@ifnottex
+@node Top, History, (dir), (dir)
+
+@top The GNU Video CD Ripping Program (@value{program})
+
+This file documents GNU CD input and control library
+
+Copyright (C) 2003 Herbert Valerio Riedel and Rocky Bernstein
+
+@menu
+* History::             How this came about
+* Purpose::             Why this library?
+* CD Formats::          A tour through the CD-specification spectrum
+* How to use::          Okay enough babble, lemme at the library!
+
+Indices
+* General Index::       Overall index
+@end menu
+@end ifnottex
+
+@contents
+
+@node History
+@chapter History
+
+As a result of the repressive Digital Millenium Copyright Act (DMCA)
+I became aware of Video CD's (VCD's). Video CD's are not subject to
+the DMCA and therefore enjoy the protection afforded by copyright but
+no more. But in order for VCD's to be competitive with DVD's, good
+tools (including GPL tools) are needed for authoring and playing
+them. And so through VCD's I became aware of the excellent Video CD
+tools by Herbert Valerio Riedel which form the @kbd{vcdimager} package.
+
+Although vcdimager is great for authoring, examining and extracting
+parts of a Video CD, it is not a VCD player. And when I looked at the
+state of Video CD handling in existing VCD players: @code{xine},
+@code{MPlayer}, and @code{vlc}, I was a bit disappointed. None handled
+playback control, menu selections, or playing still frames and
+segments from track 1.
+
+Version 0.7.12 of vcdimager was very impressive, however it lacked
+exportable libraries that could be used in other projects. So with the
+blessing and encouragement of Herbert Valerio Riedel, I took to
+extract and create libraries from this code base. The result was two
+libraries: one to extract information from a VCD which I called
+libvcdinfo, and another to do the reading and control of a VCD. Well,
+actually, at this point I should say that a Video CD is really just
+Video put on a existing well-established Compact Disc or CD format. So
+the library for this is called @value{libcdio} rather than
+@kbd{libvcdio}.
+
+While on the topic of the name @value{libcdio}, I should also explain that
+the library really doesn't handle writing or output (the final "o" in
+the name). However it was felt that if I put libcdi that might be
+confused with a particular CD format called CD-I.
+
+@node Purpose
+@chapter The problem and previous work
+
+If around the year 2002 you were to look at the code for a number of
+open-source CD or media players that work on several platforms such as
+vlc, MPlayer, xine, or xmms to name but a few, you'd find the code to
+read a CD sprinked with conditional compilation for this or that
+platform. 
+
+One CD player, @kbd{xmcd} by Ti Kan, was I think a bit better than
+most in that it tried to @emph{encapsulate} the kinds of CD control
+mechanisms (SCSI, Linux ioctl, Toshiba, etc.) in a "CD Audio Device
+Interface Library" called libdi.  However this library is for Audio
+CD's only and I don't believe this library has been used outside of
+xmcd.
+
+Another project, Simple DirectMedia Layer also encapsulates CD
+reading. 
+
+@quotation
+SDL is a library that allows you portable low-level access to a video
+framebuffer, audio output, mouse, and keyboard. With SDL, it is easy
+to write portable games which run on ...
+@end quotation
+
+Many of the media players mentioned above do in fact can make use of
+the SDL library but for @emph{video} output only. Because the encapsulation
+is over @emph{many} kinds of I/O (video, joysticks, mice, as well as CD's),
+I believe that the level of control provided for CD a little bit
+limited. (However to be fair, it may have only been intended for games
+and may be suitable for that).  Applications that just want the CD
+reading and control portion I think will find quite a bit overhead.
+
+At the OS level there is the "A Linux CD-ROM Standard" by David van
+Leeuwen from around 1999. This defines a set of definitions and
+ioctl's that mask hardware differences of various Compact Disc
+hardware. It is a great idea and no doubt something similar exists on
+other platforms. However this "standard" lacked adoption on OS's other
+than GNU/Linux.
+
+The library ``The Compact Disc Input and Control Library'' encapsulates
+CD-ROM reading and control. Applications wishing to be oblivious of
+the OS- and device-dependent properties of a CD-ROM can use this
+library. Some support for disk image types like BIN/CUE and NRG is
+available, so applications that use this library also have the ability
+to read disc images as though they were CDs. 
+
+A sample utility for displaying CD info is included.
+
+@node CD Formats
+@chapter CD Formats
+
+Much of what I write in this section can be found elsewhere. See for
+example @url{http://www.pctechguide.com/08cd-rom.htm} or
+@url{http://www.pcguide.com/ref/cd/format.htm}
+
+We give just enough background here to cover Compact Discs and Compact
+Disc formats that are handled by this library.
+
+The Sony and Philips Corporations invented and Compact Disc (CD) in
+the early 1980s. The specifications for the layout is often referred
+to by the color of the cover on the specification. 
+
+@menu
+* Red Book::        Red Book (CD-DA)
+* Yellow Book::     Yellow Book (CD-ROM Digital Data)
+* White Book::      White Book (Video CD)
+@end menu
+
+@node Red Book
+@section Red Book
+The first type of CD that was produced was the Compact Disc
+Digital Audio (CD-DA) or just plain "audio CD". The specification for
+that is covered in what is called the Red Book. Music CD's are
+recorded in this format which basically allows for around 74 minutes
+of audio per disc and for that information to be split up into
+tracks. Tracks are broken up into "sectors" and each sector contains
+2,352 bytes. To play one 44.1 kHz CD-DA sampled audio second, 75
+sectors are used.
+
+In @value{libcdio} when you you want to read an audio sector, you call the
+routine @code{cdio_read_audio_sector()}.
+
+@node Yellow Book
+@section Yellow Book
+The CD-ROM specification or "Yellow Book" followed a few years later
+and describes the extension of CD's to store computer data,
+i.e. CD-ROM (Compact Disk Read Only Memory).  
+
+The Yellow book CD standard defines two modes:
+
+@subsection Mode1
+ Mode 1 is the data storage mode used by to store computer
+ data. The data is laid out in basically the same way as in and audio
+ CD format, except that the 2,352 bytes of data in each block are
+ broken down further. 2,048 of these bytes are for "real" data. The
+ other 304 bytes are used for an additional level of error detecting
+ and correcting code. This is necessary because data CDs cannot
+ tolerate the loss of a handful of bits now and then, the way audio
+ CDs can.
+
+@subsection Mode2
+ Mode 2 data CDs are the same as mode 1 CDs except that the error
+ detecting and correcting codes are omitted. This is similar to audio
+ CDs, i.e. the mode 2 format provides a more flexible vehicle for
+ storing types of data that do not require high data integrity: for
+ example, graphics and video can use this format. But in contrast to
+ the Red book standard, different modes can be mixed together; this is
+ the basis for the extensions to the original data CD standards known
+ as CD-ROM Extended Architecture, or CD-ROM XA.  CD-ROM XA formats
+ currently in use are CD-I Bridge formats, Photo CD and VideoCD plus
+ Sony's Playstation.
+
+@subsection ISO-9660
+The Yellow Book does not actually specify how data is to be stored on
+or retrieved from a CD-ROM.  It was feared that many different
+companies would implement proprietary data storage formats using this
+specification, resulting in many different incompatible data CDs. To
+try to prevent this, representatives of major manufacturers met at the
+High Sierra Hotel and Casino in Lake Tahoe, NV, in 1985, to come
+together on a common standard for data CDs. This format was nicknamed
+High Sierra Format. It was later modified slightly and adopted as ISO
+standard 9660. ISO 9660 consists of several "levels":
+
+Level 1 ISO 9660 defines names in the 8+3 convention so familiar to
+MS-DOS: eight characters for the filename, a period, and
+then three characters for the file type, all in upper case. The
+allowed characters are A-Z, 0-9, ".", and "_".Level 1 ISO 9660
+requires that files occupy a contiguous range of sectors. This allows
+a file to be specified with a start block and a count. The maximum
+directory depth is 8.
+
+Level 2 ISO 9660 allows far more flexibility in filenames, but isn't
+usable on some systems, notably MS-DOS.
+
+Level 3 ISO-9660 allows non-contiguous files, useful if the file was
+written in multiple packets with packet-writing software.
+
+There have been a number of extensions to the ISO 9660 CD-ROM file
+format. One extension is Microsoft's Joliet specification, designed to
+resolve a number of deficiencies in the original ISO 9660 Level 1 file
+system, and in particular to support the long file names used in
+Windows 95 and subsequent versions of Windows.
+
+Another extension is the Rock Ridge Interchange Protocol (RRIP), which
+enables the recording of sufficient information to support POSIX File
+System semantics.
+
+@node White Book
+@section White Book
+The White Book, finalized in 1993, defines the VideoCD specification
+The White Book is also known as Digital Video (DV). A VideoCD disc
+contains one data track recorded in CD-ROM XA Mode 2 Form 2. It is
+always the first track on the disc (Track 1). The ISO 9660 file
+structure and a CD-i application program are recorded in this track,
+as well as the VideoCD Information Area which gives general
+information about the VideoCD disc. After the data track, video is
+written in one or more subsequent tracks within the same
+session. These tracks are also recorded in Mode 2 Form 2.
+
+In @value{libcdio} when you you want to read a mode2 format 2 audio
+sector you call the routine @code{cdio_read_mode2_sector()}.
+
+@node How to use
+@chapter How to use
+
+@node General Index
+@unnumbered General Index
+@printindex cp
+
+@tex
+% I think something like @colophon should be in texinfo.  In the
+% meantime:
+\long\def\colophon{\hbox to0pt{}\vfill
+\centerline{The body of this manual is set in}
+\centerline{\fontname\tenrm,}
+\centerline{with headings in {\bf\fontname\tenbf}}
+\centerline{and examples in {\tt\fontname\tentt}.}
+\centerline{{\it\fontname\tenit\/},}
+\centerline{{\bf\fontname\tenbf}, and}
+\centerline{{\sl\fontname\tensl\/}}
+\centerline{are used for emphasis.}\vfill}
+\page\colophon
+% Blame: doc@cygnus.com, 1991.
+@end tex
+@bye

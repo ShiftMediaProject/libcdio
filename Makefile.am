@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.8 2003/04/25 21:28:39 rocky Exp $
+#   $Id: Makefile.am,v 1.9 2003/07/28 02:25:37 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -22,8 +22,7 @@
 
 EXTRA_DIST = libpopt.m4 THANKS libcdio.spec.in
 
-# SUBDIRS =  doc include lib src test
-SUBDIRS =  include lib src test
+SUBDIRS =  doc include lib src test
 
 # pkg-config(1) related rules
 pkgconfigdir = $(libdir)/pkgconfig
