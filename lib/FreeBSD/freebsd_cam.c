@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.17 2004/07/17 15:31:00 rocky Exp $
+    $Id: freebsd_cam.c,v 1.18 2004/07/18 04:19:48 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.17 2004/07/17 15:31:00 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.18 2004/07/18 04:19:48 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -170,7 +170,10 @@ get_drive_mcn_freebsd_cam (img_private_t *env)
 
  */
 static cdio_drive_cap_t
-get_drive_cap_freebsd_cam (img_private_t *env) 
+get_drive_cap_freebsd_cam (img_private_t *env,
+			   cdio_drive_read_cap_t  *p_read_cap,
+			   cdio_drive_write_cap_t *p_write_cap,
+			   cdio_drive_misc_cap_t  *p_misc_cap)
 {
   int32_t i_drivetype = 0;
   uint8_t buf[192] = { 0, };
@@ -186,7 +189,8 @@ get_drive_cap_freebsd_cam (img_private_t *env)
 		 sizeof(env->ccb.csio.sense_data), 0, 30*1000);
 
   /* Initialize my_scsi_cdb as a Mode Select(6) */
-  CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_GPCMD_MODE_SENSE);
+  CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, 
+		       CDIO_MMC_GPCMD_MODE_SENSE6);
   env->ccb.csio.cdb_io.cdb_bytes[1] = 0x0;  
                                       /* use ALL_PAGES?*/
   env->ccb.csio.cdb_io.cdb_bytes[2] = CDIO_MMC_CAPABILITIES_PAGE; 
@@ -203,11 +207,12 @@ get_drive_cap_freebsd_cam (img_private_t *env)
 
   if(rc == 0) {
     unsigned int n=buf[3]+4;
-    i_drivetype |= cdio_get_drive_cap_mmc(&(buf[n]));
+    cdio_get_drive_cap_mmc(&(buf[n], p_read_cap, p_write_cap, p_misc_cap));
   } else {
-    i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
+    *p_read_cap  = CDIO_DRIVE_CAP_ERROR;
+    *p_write_cap = CDIO_DRIVE_CAP_ERROR;
+    *p_misc_cap  = CDIO_DRIVE_CAP_ERROR;
   }
-  return i_drivetype;
 }
 #endif
 
@@ -241,8 +246,8 @@ _set_bsize (_img_private_t *env, unsigned int bsize)
 		 sizeof(env->ccb.csio.sense_data), 0, 30*1000);
   env->ccb.csio.cdb_len = 4+1;
   
-  
-  CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_MODE_SELECT_6);
+  CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, 
+		       CDIO_MMC_GPCMD_MODE_SELECT_6);
   env->ccb.csio.cdb_io.cdb_bytes[1] = 1 << 4;
   env->ccb.csio.cdb_io.cdb_bytes[4] = 12;
   
