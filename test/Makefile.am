@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.12 2003/09/20 00:28:31 rocky Exp $
+#   $Id: Makefile.am,v 1.13 2003/09/28 22:14:44 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -50,7 +50,7 @@ XFAIL_TESTS = testassert
 
 MOSTLYCLEANFILES = core.* *.dump
 
-# This is a really back hack to make sure check_nrg and check_cue.sh
+# This is a really bad hack to make sure check_nrg and check_cue.sh
 # are executable. Automake will remake check_nrg.sh and check_cue.sh
 # but not run the configure default commands for them to make sure
 # they are executable. You know it would be nice one could just set
