@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.14 2004/05/04 02:06:48 rocky Exp $
+    $Id: types.h,v 1.15 2004/05/08 14:07:09 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -262,7 +262,7 @@ typedef int cdio_fs_anal_t;
 #define CDIO_DRIVE_CAP_GENERIC_PACKET 0x01000 /**< driver implements generic 
                                                    packets */
 #define CDIO_DRIVE_CAP_CD_R	      0x02000 /**< drive can write CD-R */
-#define CDIO_DRIVE_CAP_CD_RW	      0x04000 /**< drive can write CD-RW */
+#define CDIO_DRIVE_CAP_CD_RW	      0x04000 /**< drive can read CD-RW */
 #define CDIO_DRIVE_CAP_DVD	      0x08000 /**< drive can read DVD */
 #define CDIO_DRIVE_CAP_DVD_R	      0x10000 /**< drive can write DVD-R */
 #define CDIO_DRIVE_CAP_DVD_RAM	      0x20000 /**< drive can write DVD-RAM */
