@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.17 2004/02/08 03:35:24 rocky Exp $
+#   $Id: Makefile.am,v 1.18 2004/02/08 04:24:53 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -62,6 +62,6 @@ libiso9660_la_SOURCES = \
 	iso9660_fs.c \
 	xa.c
 
-libiso9660_la_LDFLAGS = -no-undefined -version-info 0:1:0
+libiso9660_la_LDFLAGS = $(LIBCDIO_LIBS) -no-undefined -version-info 0:1:0
 
 INCLUDES = -I$(LIBCDIO_CFLAGS)
