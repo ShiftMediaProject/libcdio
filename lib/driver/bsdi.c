@@ -1,5 +1,5 @@
 /*
-    $Id: bsdi.c,v 1.7 2005/03/19 07:28:56 rocky Exp $
+    $Id: bsdi.c,v 1.8 2005/03/19 16:17:13 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: bsdi.c,v 1.7 2005/03/19 07:28:56 rocky Exp $";
+static const char _rcsid[] = "$Id: bsdi.c,v 1.8 2005/03/19 16:17:13 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -335,14 +335,14 @@ audio_read_subchannel_bsdi (void *p_user_data, cdio_subchannel_t *p_subchannel)
     p_subchannel->index        = cdstat.index_num;
 
     cdio_lba_to_msf(cdstat.abs_frame, &msf);
-    p_subchannel->abs_addr.m = cdio_from_bcd8 (msf.m);
-    p_subchannel->abs_addr.s = cdio_from_bcd8 (msf.s);
-    p_subchannel->abs_addr.f = cdio_from_bcd8 (msf.f);
+    p_subchannel->abs_addr.m = msf.m;
+    p_subchannel->abs_addr.s = msf.s;
+    p_subchannel->abs_addr.f = msf.f;
 
     cdio_lsn_to_msf(cdstat.rel_frame, &msf);
-    p_subchannel->rel_addr.m = cdio_from_bcd8 (msf.m);
-    p_subchannel->rel_addr.s = cdio_from_bcd8 (msf.s);
-    p_subchannel->rel_addr.f = cdio_from_bcd8 (msf.f);
+    p_subchannel->rel_addr.m = msf.m;
+    p_subchannel->rel_addr.s = msf.s;
+    p_subchannel->rel_addr.f = msf.f;
 
     switch(cdstat.state) {
     case cdstate_unknown:

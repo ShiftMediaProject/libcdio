@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.10 2005/03/15 12:11:53 rocky Exp $
+    $Id: gnu_linux.c,v 1.11 2005/03/19 16:17:13 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.10 2005/03/15 12:11:53 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.11 2005/03/19 16:17:13 rocky Exp $";
 
 #include <string.h>
 
@@ -271,8 +271,35 @@ audio_read_subchannel_linux (void *p_user_data,
 {
 
   const _img_private_t *p_env = p_user_data;
-  p_subchannel->format = CDIO_CDROM_MSF;
-  return ioctl(p_env->gen.fd, CDROMSUBCHNL, p_subchannel);
+  struct cdrom_subchnl subchannel;
+  int   i_rc;
+
+  subchannel.cdsc_format = CDIO_CDROM_MSF;
+  i_rc = ioctl(p_env->gen.fd, CDROMSUBCHNL, &subchannel);
+  if (0 == i_rc) {
+    p_subchannel->control      = subchannel.cdsc_ctrl;
+    p_subchannel->track        = subchannel.cdsc_trk;
+    p_subchannel->index        = subchannel.cdsc_ind;
+
+    p_subchannel->abs_addr.m   = 
+      cdio_to_bcd8(subchannel.cdsc_absaddr.msf.minute);
+    p_subchannel->abs_addr.s   = 
+      cdio_to_bcd8(subchannel.cdsc_absaddr.msf.second);
+    p_subchannel->abs_addr.f   = 
+      cdio_to_bcd8(subchannel.cdsc_absaddr.msf.frame);
+    p_subchannel->rel_addr.m   = 
+      cdio_to_bcd8(subchannel.cdsc_reladdr.msf.minute);
+    p_subchannel->rel_addr.s   = 
+      cdio_to_bcd8(subchannel.cdsc_reladdr.msf.second);
+    p_subchannel->rel_addr.f   = 
+      cdio_to_bcd8(subchannel.cdsc_reladdr.msf.frame);
+    p_subchannel->audio_status = subchannel.cdsc_audiostatus;
+
+    return DRIVER_OP_SUCCESS;
+  } else {
+    cdio_info ("ioctl CDROMSUBCHNL failed: %s\n", strerror(errno));  
+    return DRIVER_OP_ERROR;
+  }
 }
 
 /*!

@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.4 2005/03/19 06:42:24 rocky Exp $
+    $Id: audio.c,v 1.5 2005/03/19 16:17:13 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -463,7 +463,7 @@ main(int argc, char *argv[])
 	    if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
 		sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
 	      {
-		printf("track %2d - %02d:%02d (%02d:%02d abs) ",
+		printf("track %2d - %02x:%02x (%02x:%02x abs) ",
 		       sub.track, sub.rel_addr.m, sub.rel_addr.s,
 		       sub.abs_addr.m, sub.abs_addr.s);
 	      }

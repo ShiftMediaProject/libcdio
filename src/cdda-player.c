@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.20 2005/03/19 06:42:24 rocky Exp $
+    $Id: cdda-player.c,v 1.21 2005/03/19 16:17:13 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -606,7 +606,7 @@ display_status(bool b_status_only)
       {
 	uint8_t i_level = audio_volume.level[i_vol_port];
 	sprintf(line,
-		"track %2d - %02d:%02d of %s (%02d:%02d abs) %s volume: %d",
+		"track %2d - %02x:%02x of %s (%02x:%02x abs) %s volume: %d",
 		sub.track, sub.rel_addr.m, sub.rel_addr.s, 
 		cd_info[sub.track].length,
 		sub.abs_addr.m, sub.abs_addr.s,
@@ -614,7 +614,7 @@ display_status(bool b_status_only)
 		(i_level*100+128) / 256 );
       
       } else 
-	sprintf(line,"track %2d - %02d:%02d of %s (%02d:%02d abs) %s",
+	sprintf(line,"track %2d - %02x:%02x of %s (%02x:%02x abs) %s",
 		sub.track, sub.rel_addr.m, sub.rel_addr.s,
 		cd_info[sub.track].length, sub.abs_addr.m, sub.abs_addr.s,
 		mmc_audio_state2str(sub.audio_status));
@@ -1255,34 +1255,35 @@ main(int argc, char *argv[])
 	stop_track = start_track+1;
 	one_track = 1;
       }
-      interactive = 0;
+      interactive = false;
       todo = PLAY_TRACK;
       break;
     case 'p':
-      interactive = 0;
+      interactive = false;
       todo = PLAY_CD;
       break;
     case 'l':
-      interactive = 0;
+      interactive = false;
       todo = LIST_TRACKS;
       break;
     case 'C':
-      interactive = 0;
+      interactive = false;
       todo = CLOSE_CD;
       break;
     case 'c':
-      interactive = 0;
+      interactive = false;
       todo = PS_LIST_TRACKS;
       break;
     case 's':
-      interactive = 0;
+      interactive = false;
       todo = STOP_PLAYING;
       break;
     case 'S':
+      interactive = false;
       todo = LIST_SUBCHANNEL;
       break;
     case 'e':
-      interactive = 0;
+      interactive = false;
       todo = EJECT_CD;
       break;
     case 'k':
@@ -1395,7 +1396,7 @@ main(int argc, char *argv[])
 	    if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
 		sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
 	      {
-		printf("track %2d - %02d:%02d (%02d:%02d abs) ",
+		printf("track %2d - %02x:%02x (%02x:%02x abs) ",
 		       sub.track, sub.rel_addr.m, sub.rel_addr.s,
 		       sub.abs_addr.m, sub.abs_addr.s);
 	      }

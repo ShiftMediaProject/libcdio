@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.25 2005/03/19 06:42:24 rocky Exp $
+    $Id: win32_ioctl.c,v 1.26 2005/03/19 16:17:13 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.25 2005/03/19 06:42:24 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.26 2005/03/19 16:17:13 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -219,12 +219,12 @@ audio_read_subchannel_win32ioctl (void *p_user_data,
     const UCHAR *rel_addr = 
       q_subchannel_data.CurrentPosition.TrackRelativeAddress;
 
-    p_subchannel->abs_addr.m = abs_addr[1];
-    p_subchannel->abs_addr.s = abs_addr[2];
-    p_subchannel->abs_addr.f = abs_addr[3];
-    p_subchannel->rel_addr.m = rel_addr[1];
-    p_subchannel->rel_addr.s = rel_addr[2];
-    p_subchannel->rel_addr.f = rel_addr[3];
+    p_subchannel->abs_addr.m = cdio_to_bcd8(abs_addr[1]);
+    p_subchannel->abs_addr.s = cdio_to_bcd8(abs_addr[2]);
+    p_subchannel->abs_addr.f = cdio_to_bcd8(abs_addr[3]);
+    p_subchannel->rel_addr.m = cdio_to_bcd8(rel_addr[1]);
+    p_subchannel->rel_addr.s = cdio_to_bcd8(rel_addr[2]);
+    p_subchannel->rel_addr.f = cdio_to_bcd8(rel_addr[3]);
   }
 
   return DRIVER_OP_SUCCESS;

@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.23 2005/03/19 06:42:24 rocky Exp $
+    $Id: mmc.c,v 1.24 2005/03/19 16:17:13 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,6 +26,7 @@
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
 #include <cdio/mmc.h>
+#include <cdio/util.h>
 #include "cdio_private.h"
 
 #ifdef HAVE_STRING_H
@@ -608,12 +609,12 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
     p_subchannel->control      = mmc_subchannel.control;
     p_subchannel->track        = mmc_subchannel.track;
     p_subchannel->index        = mmc_subchannel.index;
-    p_subchannel->abs_addr.m   = mmc_subchannel.abs_addr[1];
-    p_subchannel->abs_addr.s   = mmc_subchannel.abs_addr[2];
-    p_subchannel->abs_addr.f   = mmc_subchannel.abs_addr[3];
-    p_subchannel->rel_addr.m   = mmc_subchannel.rel_addr[1];
-    p_subchannel->rel_addr.s   = mmc_subchannel.rel_addr[2];
-    p_subchannel->rel_addr.f   = mmc_subchannel.rel_addr[3];
+    p_subchannel->abs_addr.m   = cdio_to_bcd8(mmc_subchannel.abs_addr[1]);
+    p_subchannel->abs_addr.s   = cdio_to_bcd8(mmc_subchannel.abs_addr[2]);
+    p_subchannel->abs_addr.f   = cdio_to_bcd8(mmc_subchannel.abs_addr[3]);
+    p_subchannel->rel_addr.m   = cdio_to_bcd8(mmc_subchannel.rel_addr[1]);
+    p_subchannel->rel_addr.s   = cdio_to_bcd8(mmc_subchannel.rel_addr[2]);
+    p_subchannel->rel_addr.f   = cdio_to_bcd8(mmc_subchannel.rel_addr[3]);
   }
   return i_rc;
 }
