@@ -5,6 +5,7 @@ Makefile.in
 check_cue.sh
 check_common_fn
 check_nrg.sh
+check_sizeof
 testassert
 testischar
 *.dump
