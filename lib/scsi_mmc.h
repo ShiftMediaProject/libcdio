@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.8 2004/04/26 07:54:47 rocky Exp $
+    $Id: scsi_mmc.h,v 1.9 2004/04/27 03:05:23 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -40,6 +40,7 @@
 #define CDIO_MMC_START_STOP             0x1b
 #define CDIO_MMC_GPCMD_READ_10	        0x28
 #define CDIO_MMC_GPCMD_READ_SUBCHANNEL	0x42
+#define CDIO_MMC_READ_TOC               0x43
 #define CDIO_MMC_MODE_SENSE_10	        0x5a
 #define CDIO_MMC_GPCMD_READ_12	        0xa8
 #define CDIO_MMC_GPCMD_READ_CD	        0xbe
