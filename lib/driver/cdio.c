@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.9 2005/01/17 17:20:09 rocky Exp $
+    $Id: cdio.c,v 1.10 2005/01/19 09:23:24 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/util.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.9 2005/01/17 17:20:09 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.10 2005/01/19 09:23:24 rocky Exp $";
 
 
 /*!
@@ -92,14 +92,14 @@ cdio_new (generic_img_private_t *p_env, cdio_funcs_t *p_funcs)
 /*!
   Set the arg "key" with "value" in the source device.
 */
-int
-cdio_set_arg (CdIo_t *cdio, const char key[], const char value[])
+driver_return_code_t
+cdio_set_arg (CdIo_t *p_cdio, const char key[], const char value[])
 {
-  cdio_assert (cdio != NULL);
-  cdio_assert (cdio->op.set_arg != NULL);
-  cdio_assert (key != NULL);
+  if (!p_cdio) return DRIVER_OP_ERROR;
+  if (!p_cdio->op.set_arg) return DRIVER_OP_UNSUPPORTED;
+  if (!key) return DRIVER_OP_ERROR;
 
-  return cdio->op.set_arg (cdio->env, key, value);
+  return p_cdio->op.set_arg (p_cdio->env, key, value);
 }
 
 

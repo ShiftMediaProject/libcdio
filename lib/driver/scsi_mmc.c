@@ -1,8 +1,8 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.5 2005/01/18 05:41:58 rocky Exp $
+    $Id: scsi_mmc.c,v 1.6 2005/01/19 09:23:24 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -170,7 +170,7 @@ scsi_mmc_get_cmd_len(uint8_t scsi_cmd)
   cdb	        CDB bytes. All values that are needed should be set on 
                 input. We'll figure out what the right CDB length should be.
 
-  We return 0 if command completed successfully and 1 if not.
+  We return 0 if command completed successfully and DRIVER_OP_ERROR if not.
  */
 int
 scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms, 
@@ -178,12 +178,11 @@ scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 		  scsi_mmc_direction_t e_direction, unsigned int i_buf, 
 		  /*in/out*/ void *p_buf )
 {
-  if (p_cdio && p_cdio->op.run_scsi_mmc_cmd) {
-    return p_cdio->op.run_scsi_mmc_cmd(p_cdio->env, i_timeout_ms,
-				       scsi_mmc_get_cmd_len(p_cdb->field[0]),
-				       p_cdb, e_direction, i_buf, p_buf);
-  } else 
-    return 1;
+  if (!p_cdio) return DRIVER_OP_ERROR;
+  if (!p_cdio->op.run_scsi_mmc_cmd) return DRIVER_OP_UNSUPPORTED;
+  return p_cdio->op.run_scsi_mmc_cmd(p_cdio->env, i_timeout_ms,
+				     scsi_mmc_get_cmd_len(p_cdb->field[0]),
+				     p_cdb, e_direction, i_buf, p_buf);
 }
 
 #define DEFAULT_TIMEOUT_MS 6000
@@ -213,8 +212,8 @@ scsi_mmc_get_blocksize_private ( const void *p_env,
 
   uint8_t *p = &mh.block_length_med;
 
-  if ( ! p_env || ! run_scsi_mmc_cmd )
-    return -2;
+  if ( ! p_env ) return DRIVER_OP_ERROR;
+  if ( ! run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
 
   memset (&mh, 0, sizeof (mh));
 
@@ -234,7 +233,7 @@ scsi_mmc_get_blocksize_private ( const void *p_env,
 int 
 scsi_mmc_get_blocksize ( const CdIo_t *p_cdio)
 {
-  if ( ! p_cdio )  return -2;
+  if ( ! p_cdio )  return DRIVER_OP_ERROR;
   return 
     scsi_mmc_get_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd);
 
@@ -244,7 +243,7 @@ scsi_mmc_get_blocksize ( const CdIo_t *p_cdio)
 /*!
  * Eject using SCSI MMC commands. Return 0 if successful.
  */
-int 
+driver_return_code_t
 scsi_mmc_eject_media( const CdIo_t *p_cdio )
 {
   int i_status = 0;
@@ -252,8 +251,8 @@ scsi_mmc_eject_media( const CdIo_t *p_cdio )
   uint8_t buf[1];
   scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd;
 
-  if ( ! p_cdio || ! p_cdio->op.run_scsi_mmc_cmd )
-    return -2;
+  if ( ! p_cdio ) return DRIVER_OP_ERROR;
+  if ( ! p_cdio->op.run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
 
   run_scsi_mmc_cmd = p_cdio->op.run_scsi_mmc_cmd;
   
@@ -311,7 +310,7 @@ scsi_mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba,
 			   p_buf);
 }
 
-int
+driver_return_code_t
 scsi_mmc_set_blocksize_private ( const void *p_env, 
 				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
 				 unsigned int i_bsize)
@@ -334,8 +333,8 @@ scsi_mmc_set_blocksize_private ( const void *p_env,
     uint8_t block_length_lo;
   } mh;
 
-  if ( ! p_env || ! run_scsi_mmc_cmd )
-    return -2;
+  if ( ! p_env ) return DRIVER_OP_ERROR;
+  if ( ! run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
 
   memset (&mh, 0, sizeof (mh));
   mh.block_desc_length = 0x08;
@@ -353,10 +352,10 @@ scsi_mmc_set_blocksize_private ( const void *p_env,
 			      SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
 }
 
-int 
+driver_return_code_t
 scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_blocksize)
 {
-  if ( ! p_cdio )  return -2;
+  if ( ! p_cdio )  return DRIVER_OP_ERROR;
   return 
     scsi_mmc_set_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd, 
 				    i_blocksize);

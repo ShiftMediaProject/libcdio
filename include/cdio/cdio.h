@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.75 2005/01/09 16:07:46 rocky Exp $
+    $Id: cdio.h,v 1.76 2005/01/19 09:23:24 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -57,31 +57,6 @@ extern "C" {
   /** This is an opaque structure for the CD-Text object. */
   typedef struct cdtext cdtext_t;
 
-  /*!
-    Get the value associatied with key. 
-
-    @param p_cdio the CD object queried
-    @param key the key to retrieve
-    @return the value associatd with "key" or NULL if p_cdio is NULL
-    or "key" does not exist.
-  */
-  const char * cdio_get_arg (const CdIo_t *p_cdio,  const char key[]);
-
-  /*!
-    Set the arg "key" with "value" in "p_cdio".
-
-    @param p_cdio the CD object to set
-    @param key the key to set
-    @param value the value to assocaiate with key
-    @return 0 if no error was found, and nonzero otherwise.
-  */
-  int cdio_set_arg (CdIo_t *p_cdio, const char key[], const char value[]);
-  
-  /*!
-    Initialize CD Reading and control routines. Should be called first.
-  */
-  bool cdio_init(void);
-  
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

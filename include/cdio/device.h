@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.4 2005/01/18 00:57:19 rocky Exp $
+    $Id: device.h,v 1.5 2005/01/19 09:23:24 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -102,14 +102,31 @@ extern "C" {
 #define CDIO_MAX_DRIVER        DRIVER_NRG
 #define CDIO_MAX_DEVICE_DRIVER DRIVER_WIN32
 
+  /** There will generally be only one hardware for a given
+     build/platform from the list above. You can use the variable
+     below to determine which you've got. If the build doesn't make an
+     hardware driver, then the value will be DRIVER_UNKNOWN.
+  */
+  typedef enum  {
+    DRIVER_OP_UNSUPPORTED = -2, /**< returned when a particular driver
+				   doesn't support a particular operation.
+				   For example an image driver which doesn't
+				   really "eject" a CD.
+				*/
+    DRIVER_OP_ERROR = -1,       /**< operation returned an error */
+    DRIVER_OP_SUCCESS = 0,      /**< in cases where an int is returned,
+				     like cdio_set_speed, more the negative
+				     return codes are for errors and the 
+				     positive ones for success. */
+  } driver_return_code_t;
+
   /*!
     Eject media in CD drive if there is a routine to do so. 
 
     @param p_cdio the CD object to be acted upon.
-    @return 0 if success and 1 for failure, and -2 if no routine.
     If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
   */
-  int cdio_eject_media (CdIo_t **p_cdio);
+  driver_return_code_t cdio_eject_media (CdIo_t **p_cdio);
 
   /*!
     Free device list returned by cdio_get_devices or
@@ -250,8 +267,9 @@ extern "C" {
   /*!
     Get the drive speed. 
 
-    @return the drive speed if greater than 0. -1 if we had an error. is -2
-    returned if this is not implemented for the current driver.
+    @return the drive speed if greater than 0. DRIVER_OP_ERROR if we
+    had an error, DRIVER_OP_UNSUPPORTED if this is not implemented for
+    the current driver.
     
     @see cdio_set_speed
   */
@@ -467,7 +485,7 @@ extern "C" {
      @see cdio_open
    */
   CdIo_t * cdio_open_am_bsdi (const char *psz_source,
-			    const char *psz_access_mode);
+			      const char *psz_access_mode);
   
   /*! Return a string containing the default device name that the 
       BSDI driver would use when none is specified.
@@ -538,7 +556,7 @@ extern "C" {
      NULL on error or there is no GNU/Linux driver.
    */
   CdIo_t * cdio_open_am_linux (const char *psz_source,
-			     const char *access_mode);
+			       const char *access_mode);
 
   /*! Return a string containing the default device name that the 
       GNU/Linux driver would use when none is specified. A scan is made
@@ -739,22 +757,42 @@ extern "C" {
 
   /*!
     Set the blocksize for subsequent reads. 
-    
-    @return 0 if everything went okay, -1 if we had an error. is -2
-    returned if this is not implemented for the current driver.
   */
-  int cdio_set_blocksize ( const CdIo_t *p_cdio, int i_blocksize );
+  driver_return_code_t cdio_set_blocksize ( const CdIo_t *p_cdio, 
+					    int i_blocksize );
 
   /*!
     Set the drive speed. 
 
-    @return 0 if everything went okay, -1 if we had an error. is -2
-    returned if this is not implemented for the current driver.
-
     @see cdio_get_speed
   */
-  int cdio_set_speed ( const CdIo_t *p_cdio, int i_speed );
+  driver_return_code_t cdio_set_speed ( const CdIo_t *p_cdio, int i_speed );
 
+  /*!
+    Get the value associatied with key. 
+
+    @param p_cdio the CD object queried
+    @param key the key to retrieve
+    @return the value associatd with "key" or NULL if p_cdio is NULL
+    or "key" does not exist.
+  */
+  const char * cdio_get_arg (const CdIo_t *p_cdio,  const char key[]);
+
+  /*!
+    Set the arg "key" with "value" in "p_cdio".
+
+    @param p_cdio the CD object to set
+    @param key the key to set
+    @param value the value to assocaiate with key
+  */
+  driver_return_code_t cdio_set_arg (CdIo_t *p_cdio, const char key[], 
+				     const char value[]);
+  
+  /*!
+    Initialize CD Reading and control routines. Should be called first.
+  */
+  bool cdio_init(void);
+  
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

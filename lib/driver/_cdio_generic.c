@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.6 2005/01/18 00:57:20 rocky Exp $
+    $Id: _cdio_generic.c,v 1.7 2005/01/19 09:23:24 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.6 2005/01/18 00:57:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.7 2005/01/19 09:23:24 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,29 +56,25 @@ static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.6 2005/01/18 00:57:20 roc
 int 
 cdio_generic_unimplemented_eject_media (void *p_user_data) {
   /* Sort of a stub here. Perhaps log a message? */
-  return -2;
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!
   Set the blocksize for subsequent reads. 
-  
-  @return -2 since it's not implemented.
 */
 int 
 cdio_generic_unimplemented_set_blocksize (void *p_user_data, int i_blocksize) {
   /* Sort of a stub here. Perhaps log a message? */
-  return -2;
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!
   Set the drive speed.
-  
-  @return -2 since it's not implemented.
 */
 int 
 cdio_generic_unimplemented_set_speed (void *p_user_data, int i_speed) {
   /* Sort of a stub here. Perhaps log a message? */
-  return -2;
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 

@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.5 2005/01/18 12:34:21 rocky Exp $
+    $Id: device.c,v 1.6 2005/01/19 09:23:24 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -279,12 +279,13 @@ cdio_destroy (CdIo_t *p_cdio)
   free (p_cdio);
 }
 
-/*!
-  Eject media in CD drive if there is a routine to do so. 
-  Return 0 if success and 1 for failure, and 2 if no routine.
-  If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
- */
-int
+  /*!
+    Eject media in CD drive if there is a routine to do so. 
+
+    @param p_cdio the CD object to be acted upon.
+    If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
+  */
+driver_return_code_t
 cdio_eject_media (CdIo_t **pp_cdio)
 {
   
@@ -300,7 +301,7 @@ cdio_eject_media (CdIo_t **pp_cdio)
   } else {
     cdio_destroy(*pp_cdio);
     *pp_cdio = NULL;
-    return 2;
+    return DRIVER_OP_UNSUPPORTED;
   }
 }
 
@@ -693,30 +694,25 @@ cdio_open_am_cd (const char *psz_source, const char *psz_access_mode)
 
 /*!
   Set the blocksize for subsequent reads. 
-  
-  @return 0 if everything went okay, -1 if we had an error. is -2
-  returned if this is not implemented for the current driver.
 */
-int cdio_set_blocksize ( const CdIo_t *p_cdio, int i_blocksize )
+driver_return_code_t 
+cdio_set_blocksize ( const CdIo_t *p_cdio, int i_blocksize )
 {
-  if (!p_cdio) return -1;
-  if (p_cdio->op.set_blocksize) return -2;
+  if (!p_cdio) return DRIVER_OP_ERROR;
+  if (p_cdio->op.set_blocksize) return DRIVER_OP_UNSUPPORTED;
   return p_cdio->op.set_blocksize(p_cdio->env, i_blocksize);
 }
 
 /*!
   Set the drive speed. 
   
-  @return 0 if everything went okay, -1 if we had an error. is -2
-  returned if this is not implemented for the current driver.
-  
   @see cdio_get_speed
 */
-int
+driver_return_code_t
 cdio_set_speed (const CdIo_t *p_cdio, int i_speed) 
 {
-  if (!p_cdio) return -1;
-  if (!p_cdio->op.set_speed) return -2;
+  if (!p_cdio) return DRIVER_OP_ERROR;
+  if (!p_cdio->op.set_speed) return DRIVER_OP_UNSUPPORTED;
   return p_cdio->op.set_speed(p_cdio->env, i_speed);
 }
 

@@ -1,8 +1,8 @@
 /*
-    $Id: _cdio_linux.c,v 1.9 2005/01/18 01:48:42 rocky Exp $
+    $Id: _cdio_linux.c,v 1.10 2005/01/19 09:23:24 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.9 2005/01/18 01:48:42 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.10 2005/01/19 09:23:24 rocky Exp $";
 
 #include <string.h>
 
@@ -403,11 +403,11 @@ get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
   Eject media in CD drive. 
   Return 0 if success and 1 for failure, and 2 if no routine.
  */
-static int 
+static driver_return_code_t
 eject_media_linux (void *p_user_data) {
 
   _img_private_t *p_env = p_user_data;
-  int ret=2;
+  int ret=DRIVER_OP_SUCCESS;
   int status;
   int fd;
 
@@ -417,7 +417,7 @@ eject_media_linux (void *p_user_data) {
       case CDS_TRAY_OPEN:
 	if((ret = ioctl(fd, CDROMCLOSETRAY)) != 0) {
 	  cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
-	  ret = 1;
+	  ret = DRIVER_OP_ERROR;
 	}
 	break;
       case CDS_DISC_OK:
@@ -428,7 +428,7 @@ eject_media_linux (void *p_user_data) {
 	  if (0 != ret) {
 	    cdio_warn("ioctl CDROMEJECT failed: %s\n", 
 		      strerror(eject_error));
-	    ret = 1;
+	    ret = DRIVER_OP_ERROR;
 	  }
 	}
 	/* force kernel to reread partition table when new disc inserted */
@@ -436,15 +436,15 @@ eject_media_linux (void *p_user_data) {
 	break;
       default:
 	cdio_warn ("Unknown CD-ROM (%d)\n", status);
-	ret = 1;
+	ret = DRIVER_OP_ERROR;
       }
     } else {
       cdio_warn ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
-      ret=1;
+      ret=DRIVER_OP_ERROR;
     }
     close(fd);
   } else
-    ret = 2;
+    ret = DRIVER_OP_ERROR;
   close(p_env->gen.fd);
   p_env->gen.fd = -1;
   return ret;
@@ -953,15 +953,14 @@ stat_size_linux (void *p_user_data)
 
   0 is returned if no error was found, and nonzero if there as an error.
 */
-static int
+static driver_return_code_t
 set_arg_linux (void *p_user_data, const char key[], const char value[])
 {
   _img_private_t *p_env = p_user_data;
 
   if (!strcmp (key, "source"))
     {
-      if (!value)
-	return -2;
+      if (!value) return DRIVER_OP_ERROR;
 
       free (p_env->gen.source_name);
       
@@ -971,10 +970,9 @@ set_arg_linux (void *p_user_data, const char key[], const char value[])
     {
       return str_to_access_mode_linux(value);
     }
-  else 
-    return -1;
+  else return DRIVER_OP_ERROR;
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /* checklist: /dev/cdrom, /dev/dvd /dev/hd?, /dev/scd? /dev/sr? */
@@ -986,7 +984,7 @@ static char checklist2[][40] = {
 };
 
 /* Set read blocksize */
-static int 
+static driver_return_code_t
 set_blocksize_linux (void *p_user_data, int i_blocksize)
 {
   const _img_private_t *p_env = p_user_data;
@@ -994,12 +992,12 @@ set_blocksize_linux (void *p_user_data, int i_blocksize)
 }
 
 /* Set CD-ROM drive speed */
-static int 
+static driver_return_code_t
 set_speed_linux (void *p_user_data, int i_speed)
 {
   const _img_private_t *p_env = p_user_data;
 
-  if (!p_env) return -1;
+  if (!p_env) return DRIVER_OP_ERROR;
   return ioctl(p_env->gen.fd, CDROM_SELECT_SPEED, i_speed);
 }
 

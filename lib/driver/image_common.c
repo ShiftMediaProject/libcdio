@@ -1,7 +1,7 @@
 /*
-    $Id: image_common.c,v 1.4 2005/01/18 00:57:20 rocky Exp $
+    $Id: image_common.c,v 1.5 2005/01/19 09:23:24 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -42,11 +42,11 @@
   Eject media -- there's nothing to do here except free resources.
   We always return -2.
  */
-int
+driver_return_code_t
 _eject_media_image(void *p_user_data)
 {
   _free_image (p_user_data);
-  return -2;
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!
@@ -234,9 +234,8 @@ get_track_preemphasis_image(const void *p_user_data, track_t i_track)
   Currently "source" to set the source device in I/O operations 
   is the only valid key.
 
-  0 is returned if no error was found, and nonzero if there as an error.
 */
-int
+driver_return_code_t
 _set_arg_image (void *p_user_data, const char key[], const char value[])
 {
   _img_private_t *p_env = p_user_data;
@@ -245,8 +244,7 @@ _set_arg_image (void *p_user_data, const char key[], const char value[])
     {
       free_if_notnull (p_env->gen.source_name);
 
-      if (!value)
-	return -2;
+      if (!value) return DRIVER_OP_ERROR;
 
       p_env->gen.source_name = strdup (value);
     }
@@ -254,8 +252,7 @@ _set_arg_image (void *p_user_data, const char key[], const char value[])
     {
       free_if_notnull (p_env->psz_cue_name);
 
-      if (!value)
-	return -2;
+      if (!value) return DRIVER_OP_ERROR;
 
       p_env->psz_cue_name = strdup (value);
     }
@@ -263,14 +260,13 @@ _set_arg_image (void *p_user_data, const char key[], const char value[])
     {
       free_if_notnull (p_env->psz_access_mode);
 
-      if (!value)
-	return -2;
+      if (!value) return DRIVER_OP_ERROR;
 
       p_env->psz_access_mode = strdup (value);
     }
   else
-    return -1;
+    return DRIVER_OP_ERROR;
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 

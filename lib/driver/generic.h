@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.6 2005/01/18 00:57:20 rocky Exp $
+    $Id: generic.h,v 1.7 2005/01/19 09:23:24 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -74,46 +74,48 @@ extern "C" {
     Bogus eject media when there is no ejectable media, e.g. a disk image
     We always return 2. Should we also free resources? 
   */
-  int cdio_generic_unimplemented_eject_media (void *p_env);
+  driver_return_code_t cdio_generic_unimplemented_eject_media (void *p_env);
 
   /*!
     Set the blocksize for subsequent reads. 
     
     @return -2 since it's not implemented.
   */
-  int cdio_generic_unimplemented_set_blocksize (void *p_user_data, 
-						int i_blocksize);
+  driver_return_code_t 
+  cdio_generic_unimplemented_set_blocksize (void *p_user_data, 
+					    int i_blocksize);
 
   /*!
     Set the drive speed.
     
     @return -2 since it's not implemented.
   */
-  int cdio_generic_unimplemented_set_speed (void *p_user_data, int i_speed);
+  driver_return_code_t cdio_generic_unimplemented_set_speed (void *p_user_data,
+							     int i_speed);
   
   /*!
     Release and free resources associated with cd. 
   */
-  void cdio_generic_free (void *env);
+  void cdio_generic_free (void *p_env);
 
   /*!
     Initialize CD device.
   */
-  bool cdio_generic_init (void *env);
+  bool cdio_generic_init (void *p_env);
 
   /*!
     Reads into buf the next size bytes.
     Returns -1 on error. 
     Is in fact libc's read().
   */
-  off_t cdio_generic_lseek (void *env, off_t offset, int whence);
+  off_t cdio_generic_lseek (void *p_env, off_t offset, int whence);
 
   /*!
     Reads into buf the next size bytes.
     Returns -1 on error. 
     Is in fact libc's read().
   */
-  ssize_t cdio_generic_read (void *env, void *buf, size_t size);
+  ssize_t cdio_generic_read (void *p_env, void *p_buf, size_t size);
 
   /*!
     Reads a single form1 sector from cd device into data starting
