@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.26 2003/09/18 13:32:19 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.27 2003/09/18 13:42:01 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -24,23 +24,26 @@
    (*.cue).
 */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.27 2003/09/18 13:42:01 rocky Exp $";
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.26 2003/09/18 13:32:19 rocky Exp $";
-
-#include <stdio.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
+#include "cdio_assert.h"
+#include "cdio_private.h"
+#include "_cdio_stdio.h"
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
-#include "cdio_assert.h"
-#include "cdio_private.h"
-#include "_cdio_stdio.h"
+
+#ifdef HAVE_STDIO_H
+#include <stdio.h>
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+#include <ctype.h>
 
 /* reader */
 
