@@ -1,5 +1,9 @@
 0.71
 
+- Some Joliet support.
+- Portability fixes for C++ and older C compilers. 
+- Work towards XBOX support.
+- TOC for DVD's works more often
 - Make generic list routines and declarations and byte swapping
   routines public. Eventually everything will use glib.
 - list-returning routines like iso9660_fs_readdir and
@@ -10,9 +14,6 @@
 - Add iso9660_ifs_is_xa() a routine to determine if an iso image has
   XA attributes.
 - iso-info now shows XA attributes if that is available. 
-- Some Joliet support.
-- Portability fixes for C++ and older C compilers. 
-- Work towards XBOX support.
 - Some bug fixes
 
 
@@ -153,4 +154,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.56 2004/11/06 09:16:04 rocky Exp $
+$Id: NEWS,v 1.57 2004/11/07 21:13:10 rocky Exp $

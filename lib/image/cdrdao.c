@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.29 2004/10/31 06:07:26 rocky Exp $
+    $Id: cdrdao.c,v 1.30 2004/11/07 21:13:10 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.29 2004/10/31 06:07:26 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.30 2004/11/07 21:13:10 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -57,14 +57,7 @@ static const char _rcsid[] = "$Id: cdrdao.c,v 1.29 2004/10/31 06:07:26 rocky Exp
 
 #include <ctype.h>
 
-/* FIXME: should put in a common definition somewhere. */
-#ifdef HAVE_MEMSET
-#define BZERO(ptr, size) memset(ptr, 0, size)
-#elif  HAVE_BZERO
-#define BZERO(ptr, size) bzero(ptr, size)
-#else 
-  Error -- you need either memset or bzero
-#endif
+#include "portable.h"
 
 /* reader */
 

@@ -1,5 +1,5 @@
 /*
-    $Id: portable.h,v 1.3 2004/11/01 09:14:21 rocky Exp $
+    $Id: portable.h,v 1.4 2004/11/07 21:13:10 rocky Exp $
 
     Copyright (C) Rocky Bernstein <rocky@panix.com>
 
@@ -32,35 +32,43 @@
 #endif
 
 #if !defined(HAVE_FTRUNCATE)
-#if defined ( WIN32 )
-#define ftruncate chsize
-#endif
+# if defined ( WIN32 )
+#  define ftruncate chsize
+# endif
 #endif /*HAVE_FTRUNCATE*/
 
 #if !defined(HAVE_SNPRINTF)
-#if defined ( MSVC )
-#define snprintf _snprintf
-#endif
+# if defined ( MSVC )
+#  define snprintf _snprintf
+# endif
 #endif /*HAVE_SNPRINTF*/
 
 #if !defined(HAVE_VSNPRINTF)
-#if defined ( MSVC )
-#define snprintf _vsnprintf
-#endif
+# if defined ( MSVC )
+#  define snprintf _vsnprintf
+# endif
 #endif /*HAVE_SNPRINTF*/
 
 #ifdef MSVC
-#include <io.h>
+# include <io.h>
 
-#ifndef S_ISBLK
-#define _S_IFBLK        0060000  /* Block Special */
-#define S_ISBLK(x) (x & _S_IFBLK)
-#endif
+# ifndef S_ISBLK
+#  define _S_IFBLK        0060000  /* Block Special */
+#  define S_ISBLK(x) (x & _S_IFBLK)
+# endif
 
-#ifndef S_ISCHR
-#define	_S_IFCHR		0020000	/* character special */
-#define S_ISCHR(x) (x & _S_IFCHR)
-#endif
+# ifndef S_ISCHR
+#  define	_S_IFCHR 0020000	/* character special */
+#  define S_ISCHR(x) (x & _S_IFCHR)
+# endif
 #endif /*MSVC*/
+
+#ifdef HAVE_MEMSET
+# define BZERO(ptr, size) memset(ptr, 0, size)
+#elif  HAVE_BZERO
+# define BZERO(ptr, size) bzero(ptr, size)
+#else 
+  Error -- you need either memset or bzero
+#endif
 
 #endif /* __CDIO_PORTABLE_H__ */

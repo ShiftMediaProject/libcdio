@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.46 2004/10/31 06:07:26 rocky Exp $
+    $Id: bincue.c,v 1.47 2004/11/07 21:13:10 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.46 2004/10/31 06:07:26 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.47 2004/11/07 21:13:10 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -57,15 +57,7 @@ static const char _rcsid[] = "$Id: bincue.c,v 1.46 2004/10/31 06:07:26 rocky Exp
 #endif
 #include <ctype.h>
 
-/* FIXME: should put in a common definition somewhere. */
-#ifdef HAVE_MEMSET
-#define BZERO(ptr, size) memset(ptr, 0, size)
-#elif  HAVE_BZERO
-#define BZERO(ptr, size) bzero(ptr, size)
-#else 
-  Error -- you need either memset or bzero
-#endif
-
+#include "portable.h"
 /* reader */
 
 #define DEFAULT_CDIO_DEVICE "videocd.bin"
