@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.4 2005/01/04 04:33:36 rocky Exp $
+    $Id: cdrdao.c,v 1.5 2005/01/16 04:28:02 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.4 2005/01/04 04:33:36 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.5 2005/01/16 04:28:02 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -625,11 +625,12 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
       } else if (0 == strcmp ("ZERO", psz_keyword)) {
 	UNIMPLIMENTED_MSG;
 	
-	/* [FILE|AUDIOFILE] "<filename>" <start> [<length>] */
+	/* [FILE|AUDIOFILE] "<filename>" <start-msf> [<length-msf>] */
       } else if (0 == strcmp ("FILE", psz_keyword) 
 		 || 0 == strcmp ("AUDIOFILE", psz_keyword)) {
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
+	    /* Handle "<filename>" */
 	    if (NULL != cd) {
 	      cd->tocent[i].filename = strdup (psz_field);
 	      /* Todo: do something about reusing existing files. */
@@ -643,6 +644,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  }
 	  
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+	    /* Handle <start-msf> */
 	    lba_t lba = cdio_lsn_to_lba(cdio_mmssff_to_lba (psz_field));
 	    if (CDIO_INVALID_LBA == lba) {
 	      cdio_log(log_level, "%s line %d: invalid MSF string %s", 
@@ -656,6 +658,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	    }
 	  }
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r")))
+	    /* Handle <length-msf> */
 	    if (NULL != cd)
 	      cd->tocent[i].length = cdio_mmssff_to_lba (psz_field);
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
@@ -665,9 +668,59 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  goto not_in_global_section;
 	}
 	
-	/* DATAFILE "<filename>" <start> [<length>] */
+	/* DATAFILE "<filename>" #byte-offset <start-msf> */
       } else if (0 == strcmp ("DATAFILE", psz_keyword)) {
-	goto unimplimented_error;
+	if (0 <= i) {
+	  if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
+	    /* Handle <filename> */
+	    if (NULL != cd) {
+	      cd->tocent[i].filename = strdup (psz_field);
+	      /* Todo: do something about reusing existing files. */
+	      if (!(cd->tocent[i].data_source = cdio_stdio_new (psz_field))) {
+		cdio_log (log_level, 
+			  "%s line %d: can't open file `%s' for reading", 
+			  psz_cue_name, i_line, psz_field);
+		goto err_exit;
+	      }
+	    }
+	  }
+	  
+	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+	    /* Handle optional #byte-offset */
+	    if ( psz_field[0] == '#') {
+	      long int datastart;
+	      psz_field++;
+	      datastart = strtol(psz_field, (char **)NULL, 10);
+	      if ( 0 != errno ) {
+		cdio_log (log_level, 
+			  "%s line %d: can't convert `%s' to byte offset", 
+			  psz_cue_name, i_line, psz_field);
+		goto err_exit;
+	      } else {
+		if (NULL != cd) {
+		  cd->tocent[i].datastart = datastart;
+		}
+	      }
+	      psz_field = strtok (NULL, " \t\n\r");
+	    }
+	  }
+	  if (NULL != psz_field) {
+	    /* Handle start-msf */
+	    lba_t lba = cdio_mmssff_to_lba (psz_field);
+	    if (CDIO_INVALID_LBA == lba) {
+	      cdio_log(log_level, "%s line %d: invalid MSF string %s", 
+		       psz_cue_name, i_line, psz_field);
+	      goto err_exit;
+	    }
+	    if (NULL != cd) {
+	      cd->tocent[i].start_lba = lba;
+	      cdio_lba_to_msf(cd->tocent[i].start_lba, 
+			      &(cd->tocent[i].start_msf));
+	    }
+	  }
+	} else {
+	  goto not_in_global_section;
+	}
 	
 	/* FIFO "<fifo path>" [<length>] */
       } else if (0 == strcmp ("FIFO", psz_keyword)) {
@@ -913,15 +966,20 @@ _read_mode2_sector_cdrdao (void *user_data, void *data, lsn_t lsn,
   _img_private_t *env = user_data;
   int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+  long unsigned int i_off = lsn * CDIO_CD_FRAMESIZE_RAW;
 
+  /* For sms's VCD's (mwc1.toc) it is more like this:
+     if (i_off > 272) i_off -= 272; 
+     There is that magic 272 that we find in read_audio_sectors_cdrdao again.
+  */
+  
   /* NOTE: The logic below seems a bit wrong and convoluted
      to me, but passes the regression tests. (Perhaps it is why we get
      valgrind errors in vcdxrip). Leave it the way it was for now.
      Review this sector 2336 stuff later.
   */
 
-  ret = cdio_stream_seek (env->tocent[0].data_source, 
-			  lsn * CDIO_CD_FRAMESIZE_RAW, SEEK_SET);
+  ret = cdio_stream_seek (env->tocent[0].data_source, i_off, SEEK_SET);
   if (ret!=0) return ret;
 
   ret = cdio_stream_read (env->tocent[0].data_source, buf, 
@@ -1053,16 +1111,16 @@ _get_track_green_cdrdao(void *user_data, track_t i_track)
   False is returned if there is no track entry.
 */
 static lba_t
-_get_lba_track_cdrdao(void *user_data, track_t i_track)
+_get_lba_track_cdrdao(void *p_user_data, track_t i_track)
 {
-  _img_private_t *env = user_data;
-  _init_cdrdao (env);
+  _img_private_t *p_env = p_user_data;
+  _init_cdrdao (p_env);
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) 
-    i_track = env->gen.i_tracks+1;
+    i_track = p_env->gen.i_tracks+1;
 
-  if (i_track <= env->gen.i_tracks+1 && i_track != 0) {
-    return env->tocent[i_track-1].start_lba;
+  if (i_track <= p_env->gen.i_tracks+1 && i_track != 0) {
+    return p_env->tocent[i_track-1].start_lba;
   } else 
     return CDIO_INVALID_LBA;
 }
