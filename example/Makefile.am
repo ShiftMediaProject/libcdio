@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.13 2005/01/12 04:36:57 rocky Exp $
+#   $Id: Makefile.am,v 1.14 2005/01/18 02:18:49 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -34,7 +34,7 @@ cdtext_LDADD  = $(LIBCDIO_LIBS)
 
 drives_LDADD = $(LIBCDIO_LIBS)
 
-paranoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS)
+paranoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
 
 iso1_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 iso2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)

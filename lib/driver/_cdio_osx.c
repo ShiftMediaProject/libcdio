@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.5 2005/01/17 17:20:09 rocky Exp $
+    $Id: _cdio_osx.c,v 1.6 2005/01/18 02:18:49 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.5 2005/01/17 17:20:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.6 2005/01/18 02:18:49 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -1192,6 +1192,16 @@ get_track_green_osx(void *user_data, track_t i_track)
   }
 }
 
+/* Set CD-ROM drive speed */
+static int 
+set_speed_osx (void *p_user_data, int i_speed)
+{
+  const _img_private_t *p_env = p_user_data;
+
+  if (!p_env) return -1;
+  return ioctl(p_env->gen.fd, DKIOCCDSETSPEED, i_speed);
+}
+
 #endif /* HAVE_DARWIN_CDROM */
 
 /*!
@@ -1419,6 +1429,7 @@ cdio_open_osx (const char *psz_orig_source)
     .read_toc              =  read_toc_osx,
     .run_scsi_mmc_cmd      =  run_scsi_cmd_osx,
     .set_arg               = _set_arg_osx,
+    .set_speed             = set_speed_osx,
     .stat_size             = _stat_size_osx
   };
 
