@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.40 2004/08/08 00:20:21 rocky Exp $
+    $Id: win32.c,v 1.41 2004/08/10 03:03:27 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.40 2004/08/08 00:20:21 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.41 2004/08/10 03:03:27 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -482,23 +482,6 @@ _get_arg_win32 (void *user_data, const char key[])
   return NULL;
 }
 
-void
-set_cdtext_field_win32(void *user_data, track_t i_track, 
-		       track_t i_first_track,
-		       cdtext_field_t e_field, const char *psz_value)
-{
-  char **pp_field;
-  _img_private_t *env = user_data;
-  
-  if( i_track == 0 )
-    pp_field = &(env->cdtext.field[e_field]);
-  
-  else
-    pp_field = &(env->tocent[i_track-i_first_track].cdtext.field[e_field]);
-
-  *pp_field = strdup(psz_value);
-}
-
 /*!
   Return the value associated with the key "arg".
 */
@@ -514,19 +497,15 @@ _get_cdtext_win32 (void *user_data, track_t i_track)
        && i_track >= p_env->gen.i_tracks + p_env->gen.i_first_track ) )
     return NULL;
 
-  if (!p_env->gen.b_cdtext_init) {
-    if (p_env->hASPI) {
-      p_env->gen.b_cdtext_init = init_cdtext_aspi(p_env);
-    }  else 
-      p_env->gen.b_cdtext_init = init_cdtext_win32ioctl(p_env);
-  }
+  if (!p_env->gen.b_cdtext_init) 
+    init_cdtext_generic(p_env);
     
   if (!p_env->gen.b_cdtext_init) return NULL;
 
   if (0 == i_track) 
-    return &(p_env->cdtext);
+    return &(p_env->gen.cdtext);
   else 
-    return &(p_env->tocent[i_track-p_env->gen.i_first_track].cdtext);
+    return &(p_env->gen.cdtext_track[i_track-p_env->gen.i_first_track]);
 
   return NULL;
 }

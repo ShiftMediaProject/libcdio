@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.19 2004/08/07 22:58:51 rocky Exp $
+    $Id: win32.h,v 1.20 2004/08/10 03:03:27 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -40,10 +40,6 @@ typedef struct {
      This must be first. */
   generic_img_private_t gen; 
 
-  /* Entry info for each track, add 1 for leadout. */
-  track_info_t  tocent[CDIO_CD_MAX_TRACKS+1];
-
-  cdtext_t      cdtext;	         /* CD-TEXT */
   access_mode_t access_mode;
 
   /* Some of the more OS specific things. */

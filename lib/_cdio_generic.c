@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.21 2004/08/07 22:58:51 rocky Exp $
+    $Id: _cdio_generic.c,v 1.22 2004/08/10 03:03:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.21 2004/08/07 22:58:51 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.22 2004/08/10 03:03:27 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -345,5 +345,37 @@ get_num_tracks_generic(void *p_user_data)
     p_env->cdio->op.read_toc (p_user_data);
 
   return p_env->toc_init ? p_env->i_tracks : CDIO_INVALID_TRACK;
+}
+
+void
+set_cdtext_field_generic(void *user_data, track_t i_track, 
+		       track_t i_first_track,
+		       cdtext_field_t e_field, const char *psz_value)
+{
+  char **pp_field;
+  generic_img_private_t *env = user_data;
+  
+  if( i_track == 0 )
+    pp_field = &(env->cdtext.field[e_field]);
+  
+  else
+    pp_field = &(env->cdtext_track[i_track-i_first_track].field[e_field]);
+
+  *pp_field = strdup(psz_value);
+}
+
+/*!
+  Read cdtext information for a CdIo object .
+  
+  return true on success, false on error or CD-TEXT information does
+  not exist.
+*/
+bool
+init_cdtext_generic (generic_img_private_t *p_env)
+{
+  return scsi_mmc_init_cdtext_private( p_env,
+				       p_env->cdio->op.run_scsi_mmc_cmd, 
+				       set_cdtext_field_generic
+				       );
 }
 

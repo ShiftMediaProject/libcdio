@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.37 2004/08/07 22:58:51 rocky Exp $
+    $Id: cdio_private.h,v 1.38 2004/08/10 03:03:27 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -262,6 +262,9 @@ extern "C" {
     track_t i_tracks;       /**< The number of tracks. */
     CdioDataSource *data_source;
     CdIo *cdio;             /**< a way to call general cdio routines. */
+    cdtext_t  cdtext;       /**< CD-Text for disc. */
+    cdtext_t  cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/
+
   } generic_img_private_t;
 
   /* This is used in drivers that must keep their own internal 
@@ -389,6 +392,17 @@ extern "C" {
     Get disc type associated with cd object.
   */
   discmode_t get_discmode_generic (void *p_user_data );
+  
+  void set_cdtext_field_generic(void *user_data, track_t i_track, 
+				track_t i_first_track,
+				cdtext_field_t e_field, const char *psz_value);
+  /*!
+    Read cdtext information for a CdIo object .
+  
+    return true on success, false on error or CD-Text information does
+    not exist.
+  */
+  bool init_cdtext_generic (generic_img_private_t *p_env);
   
 #ifdef __cplusplus
 }

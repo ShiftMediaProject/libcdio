@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.47 2004/08/05 02:58:46 rocky Exp $
+    $Id: aspi32.c,v 1.48 2004/08/10 03:03:27 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.47 2004/08/05 02:58:46 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.48 2004/08/10 03:03:27 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -761,21 +761,6 @@ wnaspi32_eject_media (void *user_data) {
   return ret;
 }
 #endif
-
-/*
-  Read cdtext information for a CdIo object .
-  
-  return true on success, false on error or CD-TEXT information does
-  not exist.
-*/
-bool
-init_cdtext_aspi (_img_private_t *p_env)
-{
-  return scsi_mmc_init_cdtext_private( p_env,
-				       &run_scsi_cmd_aspi, 
-				       set_cdtext_field_win32
-				       );
-}
 
 /*!
   Return the the kind of drive capabilities of device.

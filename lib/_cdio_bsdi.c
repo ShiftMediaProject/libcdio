@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.37 2004/08/07 23:17:36 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.38 2004/08/10 03:03:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.37 2004/08/07 23:17:36 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.38 2004/08/10 03:03:27 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -68,20 +68,12 @@ typedef struct {
      This must be first. */
   generic_img_private_t gen; 
 
-  char *source_name;
-  
   access_mode_t access_mode;
 
+  /* Some of the more OS specific things. */
   /* Track information */
-  bool toc_init;                         /* if true, info below is valid. */
   struct cdrom_tochdr    tochdr;
   struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1]; 
-
-  cdtext_t      cdtext;	         /* CD-TEXT */
-
-  /* Some of the more OS specific things. */
-  cdtext_t      cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/
-  /* Track information */
 
 } _img_private_t;
 
@@ -521,38 +513,6 @@ read_toc_bsdi (void *p_user_data)
   return true;
 }
 
-static void
-set_cdtext_field_bsdi(void *p_user_data, track_t i_track, 
-		      track_t i_first_track,
-		      cdtext_field_t e_field, const char *psz_value)
-{
-  char **pp_field;
-  _img_private_t *p_env = p_user_data;
-  
-  if( i_track == 0 )
-    pp_field = &(p_env->cdtext.field[e_field]);
-  
-  else
-    pp_field = &(p_env->cdtext_track[i_track-i_first_track].field[e_field]);
-
-  *pp_field = strdup(psz_value);
-}
-
-/*
-  Read cdtext information for a CdIo object .
-  
-  return true on success, false on error or CD-TEXT information does
-  not exist.
-*/
-static bool
-init_cdtext_bsdi (_img_private_t *p_env)
-{
-  return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
-				       &run_scsi_cmd_bsdi, 
-				       set_cdtext_field_bsdi
-				       );
-}
-
 /*! 
   Get cdtext information for a CdIo object .
   
@@ -571,13 +531,13 @@ get_cdtext_bsdi (void *p_user_data, track_t i_track)
     return NULL;
 
   if (!p_env->gen.b_cdtext_init)
-    init_cdtext_bsdi(p_env);
+    init_cdtext_generic(&(p_env->gen));
   if (!p_env->gen.b_cdtext_init) return NULL;
 
   if (0 == i_track) 
-    return &(p_env->cdtext);
+    return &(p_env->gen.cdtext);
   else 
-    return &(p_env->cdtext_track[i_track-p_env->gen.i_first_track]);
+    return &(p_env->gen.cdtext_track[i_track-p_env->gen.i_first_track]);
 }
 
 /*!

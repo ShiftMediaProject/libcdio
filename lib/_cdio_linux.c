@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.89 2004/08/07 22:58:51 rocky Exp $
+    $Id: _cdio_linux.c,v 1.90 2004/08/10 03:03:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.89 2004/08/07 22:58:51 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.90 2004/08/10 03:03:27 rocky Exp $";
 
 #include <string.h>
 
@@ -82,15 +82,12 @@ typedef struct {
      This must be first. */
   generic_img_private_t gen; 
 
-  /* Entry info for each track, add 1 for leadout. */
-  struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1]; 
-
-  cdtext_t      cdtext;	         /* CD-TEXT */
-
   access_mode_t access_mode;
 
   /* Some of the more OS specific things. */
-  cdtext_t      cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/
+  /* Entry info for each track, add 1 for leadout. */
+  struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1]; 
+
   struct cdrom_tochdr    tochdr;
 
 } _img_private_t;
@@ -954,38 +951,6 @@ set_arg_linux (void *p_user_data, const char key[], const char value[])
   return 0;
 }
 
-static void
-set_cdtext_field_linux(void *user_data, track_t i_track, 
-		       track_t i_first_track,
-		       cdtext_field_t e_field, const char *psz_value)
-{
-  char **pp_field;
-  _img_private_t *env = user_data;
-  
-  if( i_track == 0 )
-    pp_field = &(env->cdtext.field[e_field]);
-  
-  else
-    pp_field = &(env->cdtext_track[i_track-i_first_track].field[e_field]);
-
-  *pp_field = strdup(psz_value);
-}
-
-/*
-  Read cdtext information for a CdIo object .
-  
-  return true on success, false on error or CD-TEXT information does
-  not exist.
-*/
-static bool
-init_cdtext_linux (_img_private_t *p_env)
-{
-  return scsi_mmc_init_cdtext_private( p_env,
-				       &run_scsi_cmd_linux, 
-				       set_cdtext_field_linux
-				       );
-}
-
 /*! 
   Get cdtext information for a CdIo object .
   
@@ -1004,13 +969,13 @@ get_cdtext_linux (void *p_user_data, track_t i_track)
     return NULL;
 
   if (!p_env->gen.b_cdtext_init)
-    init_cdtext_linux(p_env);
+    init_cdtext_generic(&(p_env->gen));
   if (!p_env->gen.b_cdtext_init) return NULL;
 
   if (0 == i_track) 
-    return &(p_env->cdtext);
+    return &(p_env->gen.cdtext);
   else 
-    return &(p_env->cdtext_track[i_track-p_env->gen.i_first_track]);
+    return &(p_env->gen.cdtext_track[i_track-p_env->gen.i_first_track]);
 
 }
 

@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.34 2004/08/05 02:58:46 rocky Exp $
+    $Id: win32_ioctl.c,v 1.35 2004/08/10 03:03:27 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.34 2004/08/05 02:58:46 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.35 2004/08/10 03:03:27 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -501,22 +501,6 @@ read_toc_win32ioctl (_img_private_t *env)
   }
   env->gen.toc_init = true;
   return true;
-}
-
-/*! 
-  Get cdtext information for a CdIo object .
-  
-  @param obj the CD object that may contain CD-TEXT information.
-  @return the CD-TEXT object or NULL if obj is NULL
-  or CD-TEXT information does not exist.
-*/
-bool
-init_cdtext_win32ioctl (_img_private_t *p_env)
-{
-  return scsi_mmc_init_cdtext_private( p_env,
-				       &run_scsi_cmd_win32ioctl, 
-				       set_cdtext_field_win32
-				       );
 }
 
 /*!
