@@ -2,6 +2,7 @@
 -  Add RPM spec file. Thanks to Manfred Tremmel <Manfred.Tremmel@iiv.de>
 -  cdinfo renamed to cd-info to avoid conflicts with other existing programs
 -  bug in ejecting CD's fixed
+-  find cue file if given bin. 
 -  cd-info: If libvcdinfo is installed show general Video CD properties   
 0.4
 -  More regression tests. 

@@ -1,3 +1,29 @@
+2003-05-18 01:59  rocky
+
+	* NEWS: [no log message]
+
+2003-05-17 22:31  rocky
+
+	* test/check_cue.sh.in: Add a test using --bin
+
+2003-05-17 22:28  rocky
+
+	* lib/_cdio_bincue.c: Wasn't handling bin correctly.
+
+2003-05-17 22:19  rocky
+
+	* TODO: [no log message]
+
+2003-05-17 21:50  rocky
+
+	* include/cdio/cdio.h, lib/_cdio_bincue.c, lib/cdio.c: Add routine
+	to open check for bin file (cdio_is_binfile). Code simplified a
+	little.
+
+2003-05-17 00:08  rocky
+
+	* NEWS, ChangeLog: [no log message]
+
 2003-05-16 23:53  rocky
 
 	* libcdio.pc.in: We don't really use glib-2.0 for now. BSDI test
