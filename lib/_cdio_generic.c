@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.8 2003/05/30 10:21:11 rocky Exp $
+    $Id: _cdio_generic.c,v 1.9 2003/06/07 16:49:50 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.8 2003/05/30 10:21:11 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.9 2003/06/07 16:49:50 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -139,3 +139,18 @@ cdio_generic_stream_free (void *user_data)
   free (_obj);
 }
 
+
+/*!  
+  Return true if source_name could be a device containing a CD-ROM.
+*/
+bool
+cdio_is_device_generic(const char *source_name)
+{
+  struct stat buf;
+  if (0 != stat(source_name, &buf)) {
+    cdio_error ("Can't get file status for %s:\n%s", source_name, 
+		strerror(errno));
+    return false;
+  }
+  return (S_ISBLK(buf.st_mode) || S_ISCHR(buf.st_mode));
+}
