@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.5 2004/03/13 03:31:47 rocky Exp $
+    $Id: iso-info.c,v 1.6 2004/06/19 00:10:23 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 
 #define err_exit(fmt, args...) \
   fprintf(stderr, "%s: "fmt, program_name, ##args); \
-  iso9660_close(iso);				    \
+  iso9660_close(p_iso);				    \
   return(EXIT_FAILURE);
 
 #ifdef HAVE_CONFIG_H
@@ -252,7 +252,7 @@ int
 main(int argc, const char *argv[])
 {
 
-  iso9660_t           *iso=NULL;
+  iso9660_t           *p_iso=NULL;
       
   init();
 
@@ -272,24 +272,33 @@ main(int argc, const char *argv[])
     err_exit("%s: No input device given/found\n", program_name);
   } 
 
-  iso = iso9660_open (source_name);
+  p_iso = iso9660_open (source_name);
 
-  if (iso==NULL) {
+  if (p_iso==NULL) {
     free(source_name);
     err_exit("%s: Error in opening device driver\n", program_name);
   } 
 
   if (opts.silent == 0) {
-    printf("ISO 9660 image: %s\n", source_name);
+    iso9660_pvd_t pvd;
+
+    printf(STRONG "ISO 9660 image: %s\n", source_name);
+
+    if (iso9660_iso_read_pvd(p_iso, &pvd)) {
+      printf("Application ID: %s\n", iso9660_get_application_id(&pvd));
+      printf("System ID     : %s\n", iso9660_get_system_id(&pvd));
+      printf("Volume ID     : %s\n", iso9660_get_volume_id(&pvd));
+      printf("Volume Set ID : %s\n", iso9660_get_volumeset_id(&pvd));
+    }
   }
   
   if (!opts.no_analysis) {
     printf(STRONG "ISO-9660 Information\n" NORMAL);
-    print_iso9660_fs(iso);
+    print_iso9660_fs(p_iso);
   }
 
   free(source_name);
-  iso9660_close(iso);
+  iso9660_close(p_iso);
   /* Not reached:*/
   free(program_name);
   return(EXIT_SUCCESS);

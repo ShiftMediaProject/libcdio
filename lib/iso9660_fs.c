@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.19 2004/03/21 00:51:49 rocky Exp $
+    $Id: iso9660_fs.c,v 1.20 2004/06/19 00:10:23 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -40,7 +40,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.19 2004/03/21 00:51:49 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.20 2004/06/19 00:10:23 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -76,28 +76,50 @@ iso9660_open (const char *pathname /*flags, mode */)
   be returned.
 */
 bool 
-iso9660_close (iso9660_t *iso)
+iso9660_close (iso9660_t *p_iso)
 {
-  if (NULL != iso) {
-    cdio_stdio_destroy(iso->stream);
-    free(iso);
+  if (NULL != p_iso) {
+    cdio_stdio_destroy(p_iso->stream);
+    free(p_iso);
   }
   return true;
 }
 
-
+/*!
+  Read the Primary Volume Descriptor for an ISO 9660 image.
+*/
+  bool iso9660_iso_read_pvd (iso9660_t *p_iso, iso9660_pvd_t *p_pvd)
+{
+  if (0 == iso9660_iso_seek_read (p_iso, p_pvd, ISO_PVD_SECTOR, 1)) {
+    cdio_warn ("error reading PVD sector (%d)", ISO_PVD_SECTOR);
+    return false;
+  }
+  
+  if (p_pvd->type != ISO_VD_PRIMARY) {
+    cdio_warn ("unexpected PVD type %d", p_pvd->type);
+    return false;
+  }
+  
+  if (strncmp (p_pvd->id, ISO_STANDARD_ID, strlen (ISO_STANDARD_ID)))
+    {
+      cdio_warn ("unexpected ID encountered (expected `"
+		ISO_STANDARD_ID "', got `%.5s'", p_pvd->id);
+      return false;
+    }
+  return true;
+}
 
 /*!
   Seek to a position and then read n blocks. Size read is returned.
 */
 long int 
-iso9660_iso_seek_read (iso9660_t *iso, void *ptr, lsn_t start, long int size)
+iso9660_iso_seek_read (iso9660_t *p_iso, void *ptr, lsn_t start, long int size)
 {
   long int ret;
-  if (NULL == iso) return 0;
-  ret = cdio_stream_seek (iso->stream, start * ISO_BLOCKSIZE, SEEK_SET);
+  if (NULL == p_iso) return 0;
+  ret = cdio_stream_seek (p_iso->stream, start * ISO_BLOCKSIZE, SEEK_SET);
   if (ret!=0) return 0;
-  return cdio_stream_read (iso->stream, ptr, ISO_BLOCKSIZE, size);
+  return cdio_stream_read (p_iso->stream, ptr, ISO_BLOCKSIZE, size);
 }
 
 
