@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.c,v 1.7 2004/08/30 00:26:59 rocky Exp $
+    $Id: cdtext.c,v 1.8 2004/08/30 01:59:13 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -166,10 +166,12 @@ cdtext_data_init(void *user_data, track_t i_first_track,
   pdata = (CDText_data_t *) (&wdata[4]);
   for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ ) {
 
+#if TESTED
     if ( pdata->bDBC ) {
       cdio_warn("Double-byte characters not supported");
       return false;
     }
+#endif
     
     if( pdata->seq != i )
       break;
