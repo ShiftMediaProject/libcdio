@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.8 2003/06/07 10:43:32 rocky Exp $
+    $Id: cd-info.c,v 1.9 2003/06/07 20:40:47 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -25,7 +25,6 @@
  
 */
 #define PROGRAM_NAME "CD Info"
-#define CDINFO_VERSION "2.0"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -224,7 +223,7 @@ int                        num_audio = 0;              /* # of audio tracks */
 char *source_name = NULL;
 char *program_name;
 
-const char *argp_program_version     = PROGRAM_NAME CDINFO_VERSION;
+const char *argp_program_version     = PROGRAM_NAME " " VERSION;
 const char *argp_program_bug_address = "rocky@panix.com";
 
 typedef enum
@@ -259,7 +258,8 @@ struct arguments
 #endif
   uint32_t       debug_level;
   int            silent;
-  bool           version_only;
+  int            version_only;
+  int            no_header;
   source_image_t source_image;
 } opts;
      
@@ -349,6 +349,9 @@ struct poptOption optionsTable[] = {
    OP_SOURCE_DEVICE,
    "set CD-ROM device as source", "DEVICE"},
 
+  {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
+   0, "Don't display header and copyright (for regression testing)"},
+  
   {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
    OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
   
@@ -457,12 +460,13 @@ print_version (bool version_only)
   
   driver_id_t driver_id;
 
-  printf( _("CD Info %s | (c) 2003 Gerd Knorr, Heiko Eiﬂfeldt & R. Bernstein\n\
-This is free software; see the source for copying conditions.\n\
+  if (!opts.no_header)
+    printf( _("CD Info %s (c) 2003 Gerd Knorr, Heiko Eiﬂfeldt & R. Bernstein\n"),
+	    VERSION);
+  printf( _("This is free software; see the source for copying conditions.\n\
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n\
 PARTICULAR PURPOSE.\n\
-"),
-	 CDINFO_VERSION);
+"));
 
   if (version_only) {
     for (driver_id=DRIVER_UNKNOWN+1; driver_id<=MAX_DRIVER; driver_id++) {
@@ -493,12 +497,15 @@ read_block(int superblock, uint32_t offset, uint8_t bufnum, track_t track_num)
   
   dbg_print(2, "about to read sector %u\n", offset+superblock);
 
-  if (0 > cdio_lseek(cdio, CDIO_CD_FRAMESIZE*(offset+superblock),SEEK_SET))
-    return -1;
-  
-
-  if (0 > cdio_read(cdio, buffer[bufnum], CDIO_CD_FRAMESIZE))
-    return -1;
+  if (cdio_get_track_green(cdio,  track_num)) {
+    if (0 > cdio_read_mode2_sector(cdio, buffer[bufnum], 
+				   offset+superblock, false))
+      return -1;
+  } else {
+    if (0 > cdio_read_yellow_sector(cdio, buffer[bufnum], 
+				    offset+superblock, false))
+      return -1;
+  }
 
   return 0;
 }
@@ -506,15 +513,11 @@ read_block(int superblock, uint32_t offset, uint8_t bufnum, track_t track_num)
 static bool 
 is_it(int num) 
 {
-  signature_t *sigp;
-  int len;
+  signature_t *sigp=&sigs[num];
+  int len=strlen(sigp->sig_str);
 
   /* TODO: check that num < largest sig. */
-  sigp = &sigs[num];
-
-  len = strlen(sigp->sig_str);
-  return 0 == memcmp(&buffer[sigp->buf_num][sigp->offset], 
-		     sigp->sig_str, len);
+  return 0 == memcmp(&buffer[sigp->buf_num][sigp->offset], sigp->sig_str, len);
 }
 
 static int 
@@ -1002,6 +1005,7 @@ main(int argc, const char *argv[])
 
   /* Default option values. */
   opts.silent        = false;
+  opts.no_header     = false;
   opts.debug_level   = 0;
   opts.no_tracks     = 0;
 #ifdef HAVE_CDDB
