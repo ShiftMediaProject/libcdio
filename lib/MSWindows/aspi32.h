@@ -1,6 +1,6 @@
 /* Win32 aspi specific */
 /*
-    $Id: aspi32.h,v 1.6 2004/07/13 04:33:08 rocky Exp $
+    $Id: aspi32.h,v 1.7 2004/07/16 01:25:59 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -173,6 +173,15 @@ SRB_HAInquiry;
 
  */
 cdio_drive_cap_t get_drive_cap_aspi (const _img_private_t *env);
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+char * get_mcn_aspi (const _img_private_t *env);
 
 /*!  
   Get the format (XA, DATA, AUDIO) of a track. 

@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.22 2004/07/15 02:24:29 rocky Exp $
+    $Id: aspi32.c,v 1.23 2004/07/16 01:25:57 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.22 2004/07/15 02:24:29 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.23 2004/07/16 01:25:57 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -382,13 +382,12 @@ init_aspi (_img_private_t *env)
   return false;
 }
 
-
-/* 
+/*! 
    Issue a SCSI passthrough command.
  */
 static bool 
 scsi_mmc_command( const _img_private_t *env, 
-		  void * indata,  unsigned int i_indata, 
+		  void * scsi_cdb,  unsigned int i_scsi_cdb, 
 		  void * outdata, unsigned int i_outdata )
 {
   HANDLE hEvent;
@@ -411,7 +410,7 @@ scsi_mmc_command( const _img_private_t *env,
   ssc.SRB_SenseLen    = SENSE_LEN;
   
   ssc.SRB_PostProc = (LPVOID) hEvent;
-  ssc.SRB_CDBLen      = i_indata;
+  ssc.SRB_CDBLen      = i_scsi_cdb;
   
   ssc.SRB_Flags       = SRB_DIR_IN | SRB_EVENT_NOTIFY;
 
@@ -419,7 +418,7 @@ scsi_mmc_command( const _img_private_t *env,
   ssc.SRB_BufPointer  = outdata;
   ssc.SRB_BufLen      = i_outdata;
 
-  memcpy( ssc.CDBByte, indata, i_indata );
+  memcpy( ssc.CDBByte, scsi_cdb, i_scsi_cdb );
   
   ResetEvent( hEvent );
   env->lpSendCommand( (void*) &ssc );
@@ -721,15 +720,15 @@ wnaspi32_eject_media (void *user_data) {
 const cdtext_t *
 get_cdtext_aspi (_img_private_t *env)
 {
-  uint8_t  bigbuffer[5000] = { 0, };
-  uint8_t  cmd[10] = { 0, };
+  uint8_t  wdata[5000] = { 0, };
+  uint8_t  scsi_cdb[10] = { 0, };
 
-  CDIO_MMC_SET_COMMAND(cmd, CDIO_MMC_GPCMD_READ_TOC); 
-  cmd[1] = 0x02;   /* MSF mode */
-  cmd[2] = 0x05;   /* CD text  */
-  CDIO_MMC_SET_READ_LENGTH(cmd, sizeof(bigbuffer));
+  CDIO_MMC_SET_COMMAND(scsi_cdb, CDIO_MMC_GPCMD_READ_TOC); 
+  scsi_cdb[1] = 0x02;   /* MSF mode */
+  scsi_cdb[2] = 0x05;   /* CD text  */
+  CDIO_MMC_SET_READ_LENGTH(scsi_cdb, sizeof(wdata));
 
-  if (!scsi_mmc_command(env, cmd, sizeof(cmd), bigbuffer, sizeof(bigbuffer)))
+  if (!scsi_mmc_command(env, scsi_cdb, sizeof(scsi_cdb), wdata, sizeof(wdata)))
       return NULL;
 
   {
@@ -743,7 +742,7 @@ get_cdtext_aspi (_img_private_t *env)
     memset( buffer, 0x00, sizeof(buffer) );
     idx = 0;
   
-    pdata = (CDText_data_t *) (&bigbuffer[4]);
+    pdata = (CDText_data_t *) (&wdata[4]);
     for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ ) {
       if( pdata->seq != i )
 	break;
@@ -802,18 +801,18 @@ get_cdtext_aspi (_img_private_t *env)
 cdio_drive_cap_t
 get_drive_cap_aspi (const _img_private_t *env) 
 {
-  uint8_t  cmd[10] = { 0, };
+  uint8_t  scsi_cdb[10] = { 0, };
   int32_t  i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
   uint8_t  buf[256] = { 0, };
 
   /* Set up passthrough command */
-  CDIO_MMC_SET_COMMAND(cmd, CDIO_MMC_GPCMD_MODE_SENSE_10);
-  cmd[1]  = 0x0;
-  cmd[2]  = CDIO_MMC_ALL_PAGES;
-  cmd[7]  = 0x01;
-  cmd[8]  = 0x00; 
+  CDIO_MMC_SET_COMMAND(scsi_cdb, CDIO_MMC_GPCMD_MODE_SENSE_10);
+  scsi_cdb[1]  = 0x0;
+  scsi_cdb[2]  = CDIO_MMC_ALL_PAGES;
+  scsi_cdb[7]  = 0x01;
+  scsi_cdb[8]  = 0x00; 
 
-  if (!scsi_mmc_command(env, cmd, sizeof(cmd), buf, sizeof(buf))) {
+  if (!scsi_mmc_command(env, scsi_cdb, sizeof(scsi_cdb), buf, sizeof(buf))) {
     return i_drivetype;
   } else {
     BYTE *p;
@@ -843,6 +842,43 @@ get_drive_cap_aspi (const _img_private_t *env)
     }
   }
   return i_drivetype;
+}
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+char *
+get_mcn_aspi (const _img_private_t *env)
+{
+#if 1
+  char buf[192] = { 0, };
+
+  /* Sizes for commands are set by the SCSI opcode. *
+     The size for READ SUBCHANNEL is 10. */
+  unsigned char scsi_cdb[10] = {0, };
+  
+  CDIO_MMC_SET_COMMAND(scsi_cdb, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
+  scsi_cdb[1] = 0x0;  
+  scsi_cdb[2] = 0x40; 
+  scsi_cdb[3] = 02;    /* Give media catalog number. */
+  scsi_cdb[4] = 0;    /* Not used */
+  scsi_cdb[5] = 0;    /* Not used */
+  scsi_cdb[6] = 0;    /* Not used */
+  scsi_cdb[7] = 0;    /* Not used */
+  scsi_cdb[8] = 28; 
+  scsi_cdb[9] = 0;    /* Not used */
+  
+  if (!scsi_mmc_command(env, scsi_cdb, sizeof(scsi_cdb), buf, sizeof(buf)))
+      return NULL;
+
+  return strdup(&buf[9]);
+#else
+  return NULL;
+#endif
 }
 
 /*!  

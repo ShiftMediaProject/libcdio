@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.19 2004/07/13 03:59:10 rocky Exp $
+    $Id: win32.c,v 1.20 2004/07/16 01:26:00 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.19 2004/07/13 03:59:10 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.20 2004/07/16 01:26:00 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -474,8 +474,8 @@ _cdio_get_mcn (const void *env) {
 
   if( ! _env->hASPI ) {
     return get_mcn_win32ioctl(_env);
-  }
-  return NULL;
+  } else 
+    return get_mcn_aspi(_env);
 }
 
 /*!
