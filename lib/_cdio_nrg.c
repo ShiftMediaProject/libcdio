@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.33 2004/02/26 02:31:24 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.34 2004/02/26 03:57:42 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.33 2004/02/26 02:31:24 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.34 2004/02/26 03:57:42 rocky Exp $";
 
 /* structures used */
 
@@ -722,7 +722,7 @@ _cdio_init (_img_private_t *_obj)
   }
   
   if (!(_obj->gen.data_source = cdio_stdio_new (_obj->gen.source_name))) {
-    cdio_error ("init failed");
+    cdio_warn ("init failed");
     return false;
   }
 

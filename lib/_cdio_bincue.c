@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.41 2004/02/08 03:35:24 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.42 2004/02/26 03:57:42 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.41 2004/02/08 03:35:24 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.42 2004/02/26 03:57:42 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -116,7 +116,7 @@ _cdio_init (_img_private_t *_obj)
     return false;
 
   if (!(_obj->gen.data_source = cdio_stdio_new (_obj->gen.source_name))) {
-    cdio_error ("init failed");
+    cdio_warn ("init failed");
     return false;
   }
 
