@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.2 2003/04/19 08:29:14 rocky Exp $
+#   $Id: Makefile.am,v 1.1 2003/04/19 08:29:14 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -16,15 +16,11 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-## Process this file with automake to produce Makefile.in
-##   which configure then turns into a Makefile  ...
-##     which make can then use to produce stuff. Isn't configuration simple? 
+########################################################
+# Things to make the install (public) libcdio headers
+########################################################
+#
+pkgincludedir=$(includedir)/cdio
 
-EXTRA_DIST = libpopt.m4 THANKS
-
-# SUBDIRS =  doc include lib src tests
-SUBDIRS =  include lib src tests
-
-
-
+pkginclude_HEADERS = cdio.h logging.h sector.h types.h util.h
 

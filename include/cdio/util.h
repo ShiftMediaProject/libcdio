@@ -1,5 +1,5 @@
 /*
-    $Id: util.h,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: util.h,v 1.1 2003/04/19 08:29:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 

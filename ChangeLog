@@ -1,3 +1,116 @@
+2003-04-14 19:11  rocky
+
+	* lib/_cdio_bincue.c: Bug-causing typo.
+
+2003-04-14 06:03  rocky
+
+	* configure.ac, tests/Makefile.am, tests/check_opts.sh,
+	tests/check_opts.sh.in: Need to conditionally add --no-cddb so we
+	added check_opts.sh.in.  Rewrite for loop in lower-level
+	Bourne-shell style.
+
+2003-04-14 06:01  rocky
+
+	* src/cdinfo.c: One cddb reference not conditionally included.
+
+2003-04-14 04:54  rocky
+
+	* tests/Makefile.am: Add check files to distribution.
+
+2003-04-14 04:51  rocky
+
+	* tests/: Makefile.am, check_cue.sh, check_opts.sh,
+	check_opts0.right, check_opts1.right, check_opts2.right,
+	check_opts3.right, check_opts4.right, check_opts5.right,
+	check_opts6.right, check_opts7.right: Add regression test to check
+	cdinfo options processing.
+
+2003-04-14 00:58  rocky
+
+	* src/cdinfo.c: libpopt options need to be integers. Change order
+	of include to accomodate libcddb. Make distcheck now works.
+
+2003-04-14 00:29  rocky
+
+	* src/Makefile.am: Add CDDB_LIB for cdinfo.
+
+2003-04-14 00:29  rocky
+
+	* configure.ac: Check for libcddb and use that if it's there.
+
+2003-04-14 00:28  rocky
+
+	* tests/check_cue.sh: Don't give CDDB info for audio test since
+	it's not valid and we can't assume we're connected to the Internet.
+
+2003-04-14 00:27  rocky
+
+	* lib/_cdio_bincue.c: If we don't think this is a cue file, we now
+	report that rather than give the cryptic message about a null
+	source.
+
+2003-04-14 00:26  rocky
+
+	* src/cdinfo.c: CDDB lookup for audio CD via libcddb.
+
+2003-04-14 00:24  rocky
+
+	* lib/cdio.c: Bad linux default_device initialization.
+
+2003-04-11 23:38  rocky
+
+	* lib/: _cdio_bincue.c, _cdio_bsdi.h, cdio.c, cdio.h: Add routine
+	cdio_is_bincue to test if file is a cue file.  cdio_open does a
+	better job in automatically determining the type of file.
+
+2003-04-11 13:33  rocky
+
+	* lib/: sector.c, sector.h: Tired of all those unused warings.
+	Remove the static inline stuff.  It's probably not worth the
+	performance gains. (And if it is we can turn into a #define)
+
+2003-04-11 13:31  rocky
+
+	* lib/_cdio_sunos.c: Move used #include <string.h> outside of
+	conditional compilation since strdup's used to get default device.
+
+2003-04-11 13:30  rocky
+
+	* lib/: _cdio_bincue.c, _cdio_nrg.c: Forgot to add recently added
+	read_audio_sector to op structure.
+
+2003-04-10 03:22  rocky
+
+	* configure.ac, lib/_cdio_bincue.c, lib/_cdio_nrg.c: configure.ac:
+	bump version bincue/nrg: add cdio_read_audio_sector
+
+2003-04-10 03:19  rocky
+
+	* lib/_cdio_sunos.c: read_mode_audio_sector now works.
+
+2003-04-10 00:13  rocky
+
+	* lib/: _cdio_bincue.c, _cdio_bsdi.c, _cdio_freebsd.c,
+	_cdio_generic.c, _cdio_nrg.c, _cdio_sunos.c, cdio.c, cdio.h,
+	cdio_private.h: get_default_device with NULL will get device
+	*without* trying to open cd. Add read_audio call.
+
+2003-04-10 00:11  rocky
+
+	* lib/_cdio_linux.c: Add ability to read audio (CD-DA) sector.
+
+2003-04-10 00:10  rocky
+
+	* lib/types.h: Add CDIO_INVALID_LSN definition
+
+2003-04-09 07:15  rocky
+
+	* lib/sector.h: CD_MAX_TRACKS -> CDIO_CD_MAX_TRACKS
+
+2003-04-08 17:30  rocky
+
+	* ChangeLog: [no log message]
+
 2003-04-08 17:12  rocky
 
 	* lib/_cdio_linux.c: Small name changes.

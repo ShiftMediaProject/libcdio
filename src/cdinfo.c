@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.11 2003/04/19 00:53:27 rocky Exp $
+    $Id: cdinfo.c,v 1.12 2003/04/19 08:29:14 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -718,11 +718,11 @@ print_cddb_info() {
   cddb_set_email_address(conn, "me@home");
   cddb_set_server_name(conn, "freedb.freedb.org");
   cddb_set_server_port(conn, 8880);
-  cddb_http_enable(conn);
+  cddb_http_enable(conn, 0);
     
   disc = cddb_disc_new();
   if (!disc) {
-    fprintf(stderr, "%s unable to create CDDB disc structure", program_name);
+    fprintf(stderr, "%s: unable to create CDDB disc structure", program_name);
     goto cddb_destroy;
   }
   for(i = 0; i < num_tracks; i++) {
@@ -743,6 +743,7 @@ print_cddb_info() {
 
   matches = cddb_query(conn, disc);
 
+  printf("%s: Found %d matches in CDDB\n", program_name, matches);
   for (i=1; i<=matches; i++) {
     cddb_read(conn, disc);
     cddb_disc_print(disc);

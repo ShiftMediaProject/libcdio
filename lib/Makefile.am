@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.4 2003/04/03 12:16:27 rocky Exp $
+#   $Id: Makefile.am,v 1.5 2003/04/19 08:29:14 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,8 +23,6 @@
 noinst_HEADERS = cdio_assert.h bytesex.h bytesex_asm.h \
 	cdio_private.h ds.h 
 
-include_HEADERS = cdio.h logging.h sector.h types.h util.h
-
 libcdio_sources = \
 	_cdio_bincue.c \
 	_cdio_bsdi.c \
@@ -40,21 +38,16 @@ libcdio_sources = \
 	bytesex.h \
 	bytesex_asm.h \
 	cdio.c \
-	cdio.h \
 	ds.c \
 	ds.h \
-	types.h \
 	logging.c \
-	logging.h \
 	sector.c \
-	sector.h \
-	util.c \
-	util.h 
-
+	util.c
 
 lib_LTLIBRARIES     = libcdio.la 
 libcdio_la_SOURCES = $(libcdio_sources)
 
+INCLUDES = -I$(LIBCDIO_CFLAGS)
 ###
 # Install header files (default=$includedir/cdio)
 #
