@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.66 2004/10/24 23:42:39 rocky Exp $
+    $Id: cdio.h,v 1.67 2004/12/15 01:45:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -30,7 +30,7 @@
 /** Application Interface or Protocol version number. If the public
  *  interface changes, we increase this number.
  */
-#define CDIO_API_VERSION 2
+#define CDIO_API_VERSION 3
 
 #include <cdio/version.h>
 
@@ -91,6 +91,7 @@ extern "C" {
   typedef enum  {
     DRIVER_UNKNOWN, /**< Used as input when we don't care what kind 
 		         of driver to use. */
+    DRIVER_AIX,     /**< AIX driver */
     DRIVER_BSDI,    /**< BSDI driver */
     DRIVER_FREEBSD, /**< FreeBSD driver - includes CAM and ioctl access */
     DRIVER_LINUX,   /**< GNU/Linux Driver */
@@ -120,7 +121,7 @@ extern "C" {
     enumeration in driver_id_t. Since we have a bogus (but useful) 0th
     entry above we don't have to add one.
 */
-#define CDIO_MIN_DRIVER        DRIVER_BSDI
+#define CDIO_MIN_DRIVER        DRIVER_AIX
 #define CDIO_MIN_DEVICE_DRIVER CDIO_MIN_DRIVER
 #define CDIO_MAX_DRIVER        DRIVER_NRG
 #define CDIO_MAX_DEVICE_DRIVER DRIVER_WIN32
@@ -551,6 +552,9 @@ extern "C" {
   /* True if xxx driver is available. where xxx=linux, solaris, nrg, ...
    */
 
+  /*! True if AIX driver is available. */
+  bool cdio_have_aix    (void);
+
   /*! True if BSDI driver is available. */
   bool cdio_have_bsdi    (void);
 
@@ -680,6 +684,57 @@ extern "C" {
    */
   CdIo * cdio_open_cue (const char *cue_name);
 
+  /*! Set up CD-ROM for reading using the AIX driver. The device_name is
+      the some sort of device name.
+
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no BSDI driver.
+
+     @see cdio_open
+   */
+  CdIo * cdio_open_am_aix (const char *psz_source_name,
+			   const char *psz_access_mode);
+  
+  /*! Set up CD-ROM for reading using the AIX driver. The device_name is
+      the some sort of device name.
+
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no BSDI driver.
+
+     @see cdio_open
+   */
+  CdIo * cdio_open_aix (const char *psz_source_name);
+  
+  /*! Return a string containing the default device name that the 
+      BSDI driver would use when none is specified.
+
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no AIX driver.
+
+     @see cdio_open_cd, cdio_open
+   */
+  char * cdio_get_default_device_aix(void);
+
+  /*! Return a list of all of the CD-ROM devices that the AIX driver
+      can find.
+
+      In some situations of drivers or OS's we can't find a CD device if
+      there is no media in it and it is possible for this routine to return
+      NULL even though there may be a hardware CD-ROM.
+   */
+  char **cdio_get_devices_aix(void);
+  
+  /*! Set up CD-ROM for reading using the BSDI driver. The device_name is
+      the some sort of device name.
+
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no BSDI driver.
+
+     @see cdio_open
+   */
+  CdIo * cdio_open_am_bsdi (const char *psz_source_name,
+			    const char *psz_access_mode);
+  
   /*! Set up CD-ROM for reading using the BSDI driver. The device_name is
       the some sort of device name.
 

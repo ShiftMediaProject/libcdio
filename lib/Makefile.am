@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.63 2004/12/04 05:20:35 rocky Exp $
+#   $Id: Makefile.am,v 1.64 2004/12/15 01:45:15 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -56,6 +56,7 @@ EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile \
 noinst_HEADERS = cdio_assert.h cdio_private.h portable.h
 
 libcdio_sources = \
+	_cdio_aix.c \
 	_cdio_bsdi.c \
 	_cdio_generic.c \
 	_cdio_linux.c \

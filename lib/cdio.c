@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.76 2004/12/04 11:50:40 rocky Exp $
+    $Id: cdio.c,v 1.77 2004/12/15 01:45:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.76 2004/12/04 11:50:40 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.77 2004/12/15 01:45:15 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -79,7 +79,9 @@ CdIo_driver_t CdIo_driver[CDIO_MAX_DRIVER] = { {0} };
 #define CDIO_DRIVER_UNINIT -1
 int CdIo_last_driver = CDIO_DRIVER_UNINIT;
 
-#ifdef HAVE_BSDI_CDROM
+#ifdef HAVE_AIX_CDROM
+const driver_id_t cdio_os_driver = DRIVER_AIX;
+#elif HAVE_BSDI_CDROM
 const driver_id_t cdio_os_driver = DRIVER_BSDI;
 #elif  HAVE_FREEBSD_CDROM
 const driver_id_t cdio_os_driver = DRIVER_FREEBSD;
@@ -115,6 +117,18 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    NULL,
    NULL,
    NULL
+  },
+
+  {DRIVER_BSDI, 
+   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
+   "AIX",
+   "AIX SCSI driver",
+   &cdio_have_aix,
+   &cdio_open_aix,
+   &cdio_open_am_aix,
+   &cdio_get_default_device_aix,
+   &cdio_is_device_generic,
+   &cdio_get_devices_aix
   },
 
   {DRIVER_BSDI, 
@@ -1053,6 +1067,7 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
       return ret;
     }
     break;
+  case DRIVER_AIX:
   case DRIVER_BSDI:
   case DRIVER_FREEBSD:
   case DRIVER_LINUX:
