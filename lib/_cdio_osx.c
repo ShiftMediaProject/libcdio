@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.2 2003/09/14 01:21:41 rocky Exp $
+    $Id: _cdio_osx.c,v 1.3 2003/09/14 14:44:26 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com> from vcdimager code
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -31,7 +31,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.2 2003/09/14 01:21:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.3 2003/09/14 14:44:26 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -388,7 +388,8 @@ _cdio_read_toc (_img_private_t *_obj)
       {
 	track = pTrackDescriptors[i].point;
 
-	if( track == CDIO_CDROM_LEADOUT_TRACK )
+	if( track == 0xA2 )
+	  /* Note leadout should be 0xAA, But OSX seems to use 0xA2. */
 	  i_leadout = i;
 	
 	if( track > CDIO_CD_MAX_TRACKS || track < CDIO_CD_MIN_TRACK_NO )
@@ -522,7 +523,7 @@ _cdio_get_arg (void *user_data, const char key[])
 }
 
 /*!
-  Return the number of of the first track. 
+  Return the number of the first track. 
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
