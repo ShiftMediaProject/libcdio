@@ -1,3 +1,580 @@
+2003-10-07 21:06  rocky
+
+	* include/cdio/sector.h, lib/_cdio_osx.c: OSX fixups and #define
+	bugs from thedj.
+
+2003-10-06 23:11  rocky
+
+	* lib/_cdio_nrg.c: Detect Audio CDs (probably).
+
+2003-10-06 00:04  rocky
+
+	* lib/cd_types.c, src/cd-info.c, test/check_cue.sh.in,
+	test/check_nrg.sh.in, test/check_opts.sh: cd_types: sector 0 rarely
+	needs to be read, and when it doesn't, it's not 	  an error
+	if it can't be read cd-info:  give more info by default - source
+	location and driver.  test/*:	as a result of cd-info changes need
+	now to pass option --quiet.
+
+2003-10-05 10:55  rocky
+
+	* lib/_cdio_osx.c: Get Media Catalog Number - courtesy of thedj!
+
+2003-10-05 10:49  rocky
+
+	* configure.ac: Accept more freebsd versions.
+
+2003-10-05 10:47  rocky
+
+	* lib/_cdio_osx.c, lib/logging.c, include/cdio/logging.h: Default
+	logger now allows level to be set and we use a reasonable setting,
+	e.g. no DEBUG
+
+2003-10-04 19:11  rocky
+
+	* include/cdio/cdio.h, lib/cdio.c: Add OSX device scanning.
+
+2003-10-04 17:28  rocky
+
+	* lib/cdio.c: Clean up comment.
+
+2003-10-04 16:32  rocky
+
+	* lib/cdio.c: A better fix by Gildas Bazin.
+
+2003-10-04 16:30  rocky
+
+	* lib/cdio.c: Check on open that we didn't hit an error.
+
+2003-10-04 16:11  rocky
+
+	* lib/_cdio_osx.c: Wrong define. Thanks thedj!
+
+2003-10-04 15:16  rocky
+
+	* configure.ac: Back to 2.52 for our OSX users.
+
+2003-10-04 13:01  rocky
+
+	* configure.ac: Force vcdimager 0.7.19 to be used because that uses
+	iso9660 and an earlier one will cause our use of iso9660 to fail.
+	Is there a better way to do this?
+
+2003-10-03 17:37  rocky
+
+	* libcdio.spec.in: Update Spec file.
+
+2003-10-03 17:19  rocky
+
+	* lib/_cdio_bsdi_old.c: This shouldn't have been in CVS.
+
+2003-10-03 13:29  rocky
+
+	* lib/_cdio_bsdi.c: Small BSDI fix from Steve Schultz
+	<sms@2BSD.COM>
+
+2003-10-03 05:22  rocky
+
+	* NEWS: [no log message]
+
+2003-10-03 04:36  rocky
+
+	* example/: sample1.c, sample3.c: Practice more defensive
+	programming.
+
+2003-10-03 04:32  rocky
+
+	* lib/: _cdio_nrg.c, _cdio_stream.c: 
+	Abort less often - just report an error.
+
+2003-10-03 03:54  rocky
+
+	* configure.ac, include/cdio/cdio.h, lib/_cdio_bincue.c,
+	lib/_cdio_freebsd.c: FreeBSD fixes mostlyh.
+
+2003-10-03 00:36  rocky
+
+	* lib/_cdio_freebsd.c: Closer....
+
+2003-10-03 00:04  rocky
+
+	* lib/: _cdio_bsdi.c, _cdio_freebsd.c: OS fixes.
+
+2003-10-02 23:46  rocky
+
+	* lib/_cdio_bsdi.c: [no log message]
+
+2003-10-02 23:45  rocky
+
+	* lib/_cdio_bsdi.c: Cosmetic changes to Make it look more like the
+	others.
+
+2003-10-02 22:46  rocky
+
+	* lib/_cdio_sunos.c: Need to provide get_devices when not compiling
+	for Solaris too.
+
+2003-10-02 22:37  rocky
+
+	* test/.cvsignore: [no log message]
+
+2003-10-02 22:36  rocky
+
+	* NEWS, include/cdio/cdio.h, lib/_cdio_bincue.c, lib/cdio.c:
+	cdio.{c,h}: update initializations for get_devices.
+
+2003-10-02 22:35  rocky
+
+	* lib/_cdio_sunos.c: Add Solaris get_devices.
+
+2003-10-02 21:43  rocky
+
+	* lib/_cdio_bsdi.c: BSDI fixes.
+
+2003-10-02 21:42  rocky
+
+	* example/sample4.c: Lint found by BSDI.
+
+2003-10-02 21:33  rocky
+
+	* test/testdefault.c, src/cd-read.c: Lint that BSDI caught.
+
+2003-10-02 21:26  rocky
+
+	* lib/_cdio_linux.c: Use bool where appropriate.
+
+2003-10-02 21:11  rocky
+
+	* lib/_cdio_win32.c, include/cdio/cdio.h: Add get_devices.
+
+2003-10-02 21:10  rocky
+
+	* test/Makefile.am: Remove testdefault until I can figure out how
+	to make work via make distcheck.
+
+2003-10-02 21:09  rocky
+
+	* example/sample1.c: More platform independent and no less complex.
+
+2003-10-01 22:59  rocky
+
+	* example/sample5.c, include/cdio/cd_types.h, include/cdio/cdio.h,
+	lib/_cdio_bincue.c, lib/_cdio_bsdi.c, lib/cdio.c, src/cd-read.c,
+	test/testdefault.c: BSDI Fixes.
+
+2003-09-30 22:44  rocky
+
+	* test/testdefault.c: Regression test for cdio_get_devices,
+	cdio_get_devices_with_cap(), and cdio_free_device_list().
+
+2003-09-29 23:26  rocky
+
+	* include/cdio/cdio.h, lib/_cdio_bincue.c, lib/_cdio_linux.c,
+	lib/_cdio_nrg.c, lib/cdio.c, lib/cdio_private.h,
+	test/check_cue.sh.in, test/check_nrg.sh.in: Fill out autoscan
+	devices/images to image drivers. API is probably closer to more
+	complete.
+
+2003-09-28 22:56  rocky
+
+	* example/.cvsignore: [no log message]
+
+2003-09-28 22:56  rocky
+
+	* configure.ac, example/.cvsignore, example/sample5.c,
+	include/cdio/cdio.h, lib/_cdio_linux.c, lib/_cdio_nrg.c,
+	lib/cdio.c, lib/cdio_private.h, test/Makefile.am,
+	test/check_cue.sh.in, test/vcd_demo_vcdinfo.right: Closer to
+	autoscan working better. globbing for *.nrg in NRG.  Will probably
+	do likewise in bin/cue when NRG is working.
+
+2003-09-28 18:14  rocky
+
+	* example/Makefile, test/Makefile.am: Misc lint.
+
+2003-09-28 18:11  rocky
+
+	* Makefile.am, configure.ac, example/.cvsignore, example/Makefile,
+	example/Makefile.am, example/sample1.c, example/sample2.c,
+	example/sample3.c, example/sample4.c, example/sample5.c: Use
+	automake to build sample programs.
+
+2003-09-28 17:55  rocky
+
+	* example/README: typo.
+
+2003-09-28 17:52  rocky
+
+	* NEWS: [no log message]
+
+2003-09-28 15:05  rocky
+
+	* NEWS: [no log message]
+
+2003-09-28 13:14  rocky
+
+	* example/Makefile, example/sample5.c, include/cdio/cd_types.h,
+	include/cdio/cdio.h, include/cdio/types.h, lib/_cdio_generic.c,
+	lib/_cdio_linux.c, lib/cd_types.c, lib/cdio.c, lib/cdio_private.h,
+	src/cd-info.c: First-cut to auto-scan for device capabilities
+
+2003-09-28 10:16  rocky
+
+	* src/cd-info.c: Wasn't respecting --no-vcd, Or vcd-info when SVCD
+	or CVD.
+
+2003-09-28 10:15  rocky
+
+	* test/: monvoisin.right, vcd_demo.right: Wasn't respecting
+	--no-vcd
+
+2003-09-27 21:22  rocky
+
+	* test/: cdda.cue, cdda.right, check_opts0.right,
+	check_opts1.right, check_opts2.right, check_opts3.right,
+	check_opts4.right, check_opts5.right, check_opts6.right,
+	check_opts7.right, isofs-m1.cue, isofs-m1.right: Not sure if MCN
+	can be on a CD-DA so move it to iso 9660 image.
+
+2003-09-27 21:04  rocky
+
+	* include/cdio/cdio.h, lib/_cdio_bincue.c, test/cdda.cue,
+	test/cdda.right: Impliment MCN for bincue.
+
+2003-09-27 19:29  rocky
+
+	* configure.ac, include/cdio/cdio.h, lib/_cdio_bincue.c,
+	lib/_cdio_linux.c, lib/_cdio_sunos.c, src/cd-info.c, src/cd-read.c,
+	test/cdda.right, test/check_opts0.right, test/check_opts1.right,
+	test/check_opts2.right, test/check_opts3.right,
+	test/check_opts4.right, test/check_opts5.right,
+	test/check_opts6.right, test/check_opts7.right,
+	test/isofs-m1.right, test/monvoisin.right,
+	test/svcd_ogt_test_ntsc.right, test/svcdgs.right,
+	test/vcd_demo.right, test/videocd.right: Replace techno-wizard
+	message "Get MCN" with more layman "Media Catalog Number"
+
+2003-09-26 05:11  rocky
+
+	* lib/_cdio_sunos.c: read_audio_sectors done better.
+
+2003-09-25 06:28  rocky
+
+	* src/cdinfo-linux.c: Fix up so this works again.
+
+2003-09-25 05:38  rocky
+
+	* include/cdio/cdio.h, lib/_cdio_bincue.c, lib/_cdio_bsdi.c,
+	lib/_cdio_freebsd.c, lib/_cdio_linux.c, lib/_cdio_nrg.c,
+	lib/_cdio_osx.c, lib/_cdio_win32.c, lib/cdio.c, lib/cdio_private.h,
+	src/cd-info.c, test/cdda.right, test/check_opts0.right,
+	test/check_opts1.right, test/check_opts2.right,
+	test/check_opts3.right, test/check_opts4.right,
+	test/check_opts5.right, test/check_opts6.right,
+	test/check_opts7.right, test/isofs-m1.right, test/monvoisin.right,
+	test/svcd_ogt_test_ntsc.right, test/svcdgs.right,
+	test/vcd_demo.right, test/videocd.right: Add get_mcn, although it
+	really only works on GNU/Linux right now.
+
+2003-09-21 21:05  rocky
+
+	* configure.ac: Add manpage generation.
+
+2003-09-21 21:00  rocky
+
+	* src/.cvsignore: [no log message]
+
+2003-09-21 21:00  rocky
+
+	* src/: Makefile.am, cd-read.c: More flexibility: allow any two of
+	start, end, count. If only one or none are given, we'll supply
+	default values.
+
+2003-09-21 14:43  rocky
+
+	* src/cd-read.c, test/check_cd_read.sh, test/isofs-m1-read.right:
+	Make cd-read more user-friendly and do more things:   Add
+	start/end/count options for cd-read,   Input argument doesn't need
+	a specifier (-i or --cue-file) now.    block sizes for various
+	formats have been set correctly now.
+
+2003-09-21 03:43  rocky
+
+	* configure.ac, lib/iso9660.c: Test for presence of gmtoff for
+	braindead cygwin
+
+2003-09-21 02:10  rocky
+
+	* lib/_cdio_win32.c: Compilation problems.
+
+2003-09-21 00:36  rocky
+
+	* src/cd-info.c: More tidy.
+
+2003-09-21 00:21  rocky
+
+	* src/: Makefile.am, cd-info.c, cd-read.c, util.c, util.h: Break
+	out common standalone routines from cd-info and cd-read.
+
+2003-09-20 23:35  rocky
+
+	* NEWS, src/cd-info.c, src/cd-read.c, test/check_cd_read.sh,
+	test/isofs-m1-read.right: Add options processing to cd-read. Had
+	not very useful output on mode1 format1 test.
+
+2003-09-20 21:26  rocky
+
+	* include/cdio/iso9660.h: [no log message]
+
+2003-09-20 21:14  rocky
+
+	* include/cdio/iso9660.h, include/cdio/xa.h, lib/iso9660.c,
+	lib/iso9660_fs.c, lib/xa.c, test/monvoisin.right,
+	test/svcdgs.right, test/testiso9660.c: More ISO 9660 date cleanup.
+	Hopefully cleaner structure definitions and more function
+	documentation.
+
+2003-09-20 13:47  rocky
+
+	* lib/iso9660.c: Bug in iso9660_set_ltime. Probably snprintf
+	putting in \0 at the end of each string messed up internal format
+	(which doesn't have the \0's.
+
+2003-09-20 08:34  rocky
+
+	* include/cdio/cdio.h, lib/_cdio_bincue.c, lib/_cdio_bsdi.c,
+	lib/_cdio_linux.c, lib/_cdio_nrg.c, lib/_cdio_osx.c,
+	lib/_cdio_sunos.c, lib/_cdio_win32.c, lib/cdio.c,
+	lib/cdio_private.h, lib/scsi_mmc.h: Change interface for
+	read_audio_sectors.
+
+2003-09-20 08:33  rocky
+
+	* include/cdio/iso9660.h, lib/iso9660.c: Add "long" date setting
+	routine and more precise definitions there as well.
+
+2003-09-20 07:53  rocky
+
+	* include/cdio/iso9660.h, lib/iso9660.c, lib/iso9660_fs.c: More
+	precise ISO9660 date definition
+
+2003-09-19 20:28  rocky
+
+	* test/: Makefile.am, check_cd_read.sh, check_cue.sh.in,
+	check_nrg.sh.in, check_opts.sh: incorrect usage of cd test/ if !
+	test -> if test !
+
+2003-09-19 00:39  rocky
+
+	* configure.ac: {v,}cdinfo -> {v,}cd-info.  Configure for cd-read.
+	Test for memset and bzero.
+
+2003-09-19 00:38  rocky
+
+	* Makefile.am: Hack to make sure check_nrg.sh and check_cue.sh are
+	executable.
+
+2003-09-19 00:37  rocky
+
+	* lib/_cdio_linux.c: Clean up mmc code a bit
+
+2003-09-19 00:36  rocky
+
+	* lib/scsi_mmc.h: Add some of the read types and macro to set it
+
+2003-09-19 00:36  rocky
+
+	* src/cd-read.c: Adjust block length for mode1 read
+
+2003-09-19 00:34  rocky
+
+	* test/: check_cd_read.sh, isofs-m1-read.right: add mode1 test
+
+2003-09-19 00:11  rocky
+
+	* src/cd-read.c: Silence cdio output
+
+2003-09-19 00:09  rocky
+
+	* test/: Makefile.am, cdda-read.right, check_cd_read.sh,
+	check_common_fn.in, check_cue.sh.in: Add CD-DA reading test via
+	cd-read; Add GPL
+
+2003-09-18 09:49  rocky
+
+	* lib/_cdio_bincue.c: Use macro definition of bzero
+
+2003-09-18 09:42  rocky
+
+	* lib/_cdio_bincue.c: Tidy up #includes a bit
+
+2003-09-18 09:40  rocky
+
+	* lib/: cdio_assert.h, cdio_private.h: Check and include config.h
+	so includer's don't.
+
+2003-09-18 09:32  rocky
+
+	* lib/_cdio_bincue.c: Adjustment for reading audio cd. Also break
+	out MMC stuff a little bit better.
+
+2003-09-18 09:31  rocky
+
+	* lib/: _cdio_linux.c, scsi_mmc.h: Put more into scsi_mmc.h
+
+2003-09-17 08:18  rocky
+
+	* src/.cvsignore: [no log message]
+
+2003-09-17 08:16  rocky
+
+	* lib/_cdio_linux.c: Don't turn a LSN into an LBA when reading
+	audio.
+
+2003-09-17 08:13  rocky
+
+	* example/: Makefile, dbg_read.c: Moved into src/cd-read.
+
+2003-09-17 08:13  rocky
+
+	* src/: Makefile.am, cd-read.c: Add cd-read.c for debugging CD
+	reading problems.
+
+2003-09-17 00:18  rocky
+
+	* example/dbg_read.c: Do it!
+
+2003-09-16 22:51  rocky
+
+	* test/Makefile.am: Use a bigger hammer to get automess to what
+	really should be a simple simple thing - specify mode and
+	permissions of the files it creates.
+
+2003-09-15 08:05  rocky
+
+	* configure.ac: Test for OSX presense of IOKit and CoreFoundation
+	and add to list of libraries.  Change format of drivers reported.
+
+2003-09-14 21:37  rocky
+
+	* lib/_cdio_osx.c: More lba, lsn confusion.
+
+2003-09-14 13:04  rocky
+
+	* configure.ac, lib/_cdio_osx.c: Changes from Derk-Jan Hartman
+	<thedj@users.sourceforge.net> for OSX support.
+
+2003-09-14 11:26  rocky
+
+	* lib/_cdio_osx.c: Loop went the wrong way.
+
+2003-09-14 10:44  rocky
+
+	* lib/_cdio_osx.c: Go back to 0xa2 for "leadout"
+
+2003-09-14 10:34  rocky
+
+	* lib/cdio.c: Bug if we had a get_track_lba but no get_track_msf.
+	Guard against that.
+
+2003-09-14 05:36  rocky
+
+	* lib/scsi_mmc.h: A place right now for common SCSI MMC (multimedia
+	command).
+
+2003-09-14 05:34  rocky
+
+	* lib/Makefile.am, lib/_cdio_linux.c, lib/_cdio_sunos.c,
+	lib/_cdio_win32.c, src/cd-info.c, test/Makefile.am: Use new common
+	scsi_mmc.h.
+
+2003-09-14 03:49  rocky
+
+	* configure.ac, test/Makefile.am: Finally get regression testing to
+	work with expected failure and on cygwin.
+
+2003-09-14 03:05  rocky
+
+	* lib/cd_types.c: More I/O format lint.
+
+2003-09-14 03:02  rocky
+
+	* lib/_cdio_nrg.c: More I/O format lint.
+
+2003-09-14 02:35  rocky
+
+	* lib/iso9660_fs.c: More I/O format lint.
+
+2003-09-14 02:24  rocky
+
+	* lib/_cdio_bincue.c: I/O lint.
+
+2003-09-14 00:59  rocky
+
+	* test/Makefile.am: Reuse noinst_PROGRAMS variable.
+
+2003-09-14 00:56  rocky
+
+	* test/check_cue.sh.in: The program is now called cd-info.
+
+2003-09-13 21:21  rocky
+
+	* lib/_cdio_osx.c: Change default device, use normal leadout track,
+	fix doc typo(s).
+
+2003-09-13 02:25  rocky
+
+	* configure.ac, include/cdio/cdio.h, include/cdio/sector.h,
+	lib/Makefile.am, lib/_cdio_osx.c, lib/cdio.c: Rudimentary
+	beginnings for Darwin OS X CD support.
+
+2003-09-10 22:50  rocky
+
+	* lib/sector.c: _vcd_lba_to_msf_str -> cdio_lba_to_msf_str;
+
+2003-09-10 04:39  rocky
+
+	* include/cdio/iso9660.h, lib/iso9660.c: Documentation update
+
+2003-09-10 04:31  rocky
+
+	* include/cdio/iso9660.h: Allow C++ to call.
+
+2003-09-09 22:03  rocky
+
+	* libcdio.spec.in: small fixes really from Frantisek Dvorak
+	<valtri@atlas.cz>
+
+2003-09-07 14:15  rocky
+
+	* include/cdio/iso9660.h, lib/iso9660.c, lib/iso9660_fs.c: add
+	parameters to set times on directory entries, pvd's.
+
+2003-09-07 14:14  rocky
+
+	* test/: cdda.right, check_cue.sh.in, isofs-m1.right,
+	monvoisin.right, svcd_ogt_test_ntsc.right, svcdgs.right,
+	vcd_demo.right, videocd.right: Output time format change in
+	cd-info. Hopefully the last one.
+
+2003-09-07 14:13  rocky
+
+	* ChangeLog, NEWS: [no log message]
+
+2003-09-07 14:12  rocky
+
+	* src/cd-info.c: Yet another time format output change on listing.
+	Hopefully the last one
+
+2003-09-07 14:11  rocky
+
+	* configure.ac: Change version to note another CVS version
+
+2003-09-07 14:10  rocky
+
+	* test/check_common_fn.in: Make sure to set TZ and LC_TIME so we
+	get predictable results
+
 2003-09-06 10:54  rocky
 
 	* test/: isofs-m1.right, monvoisin.right, svcd_ogt_test_ntsc.right,
