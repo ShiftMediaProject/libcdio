@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.45 2004/07/08 06:33:22 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.46 2004/07/15 04:03:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.45 2004/07/08 06:33:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.46 2004/07/15 04:03:52 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -63,6 +63,7 @@ static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.45 2004/07/08 06:33:22 rock
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include "cdtext_private.h"
 
 #define TOTAL_TRACKS    (env->tochdr.cdth_trk1)
 #define FIRST_TRACK_NUM (env->tochdr.cdth_trk0)
@@ -85,13 +86,18 @@ typedef struct {
      This must be first. */
   generic_img_private_t gen; 
   
-  access_mode_t access_mode;
-
-  /* Track information */
-  struct cdrom_tochdr    tochdr;
   /* Entry info for each track, add 1 for leadout. */
   struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1]; 
 
+  cdtext_t      cdtext;	         /* CD-TEXT */
+
+  access_mode_t access_mode;
+  bool b_cdtext_init;
+
+  /* Some of the more OS specific things. */
+  cdtext_t      cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/
+  /* Track information */
+  struct cdrom_tochdr    tochdr;
 } _img_private_t;
 
 static access_mode_t 
@@ -400,6 +406,121 @@ _cdio_read_toc (_img_private_t *env)
   return true;
 }
 
+
+#define set_cdtext_field(FIELD)						\
+  if( i_track == 0 )							\
+    env->cdtext.field[FIELD] = strdup(buffer);				\
+  else									\
+    env->cdtext_track[i_track-1].field[FIELD]				\
+      = strdup(buffer);							\
+  i_track++;								\
+  idx = 0;
+
+/*! 
+  Get cdtext information for a CdIo object .
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return the CD-TEXT object or NULL if obj is NULL
+  or CD-TEXT information does not exist.
+*/
+static const cdtext_t *
+_get_cdtext_solaris (void *user_data)
+{
+
+  _img_private_t *env = user_data;
+  int             status;
+  char            wdata[5000];
+  struct uscsi_cmd my_cmd;
+  unsigned char my_scsi_cdb[10];
+  unsigned char my_rq_buf[26];
+
+  memset(&my_scsi_cdb, 0, sizeof(my_scsi_cdb));
+  memset(&my_rq_buf,   0, sizeof(my_rq_buf));
+  memset (&wdata, 0, sizeof (wdata));
+
+  CDIO_MMC_SET_COMMAND(my_scsi_cdb, CDIO_MMC_GPCMD_READ_TOC);
+  my_scsi_cdb[1]   = 0x02;   /* MSF mode */
+  my_scsi_cdb[2]   = 0x05;   /* CD text */
+  CDIO_MMC_SET_READ_LENGTH( my_scsi_cdb, sizeof(wdata) );
+
+  my_cmd.uscsi_flags = (USCSI_READ|USCSI_RQENABLE);  /* We're going get data */
+  my_cmd.uscsi_timeout = 15;             /* Allow 15 seconds for completion */
+  my_cmd.uscsi_cdb = my_scsi_cdb;        /* We'll be using the array above for the CDB */
+  my_cmd.uscsi_bufaddr = wdata;   
+  my_cmd.uscsi_buflen = sizeof(wdata); 
+  my_cmd.uscsi_cdblen = 10;              
+  my_cmd.uscsi_rqlen =  24;        /* The request sense buffer (only valid on a check condition) is 26 bytes long */
+  my_cmd.uscsi_rqbuf = my_rq_buf;        /* Pointer to the request sense buffer */
+  
+  status = ioctl(env->gen.fd, USCSICMD, &my_cmd);
+  if(status != 0) {
+    cdio_warn ("CDTEXT reading failed: %s\n", strerror(errno));  
+    return NULL;
+  } else {
+    
+    CDText_data_t *pdata;
+    int           i;
+    int           j;
+    char          buffer[256];
+    int           idx;
+    int           i_track;
+
+    printf("READ CDTEXT!\n");
+    memset( buffer, 0x00, sizeof(buffer) );
+    idx = 0;
+  
+    pdata = (CDText_data_t *) (wdata[4]);
+    for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ ) {
+      if( pdata->seq != i )
+	break;
+      
+      if( (pdata->type >= 0x80) 
+	  && (pdata->type <= 0x85) && (pdata->block == 0) ) {
+	i_track = pdata->i_track;
+	
+	for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++ ) {
+	  if( pdata->text[j] == 0x00 )
+	    {
+	      switch( pdata->type) {
+	      case CDIO_CDTEXT_TITLE: 
+		set_cdtext_field(CDTEXT_TITLE);
+		break;
+	      case CDIO_CDTEXT_PERFORMER:  
+		set_cdtext_field(CDTEXT_PERFORMER);
+		break;
+	      case CDIO_CDTEXT_SONGWRITER:
+		set_cdtext_field(CDTEXT_SONGWRITER);
+		break;
+	      case CDIO_CDTEXT_COMPOSER:
+		set_cdtext_field(CDTEXT_COMPOSER);
+		break;
+	      case CDIO_CDTEXT_ARRANGER:
+		set_cdtext_field(CDTEXT_ARRANGER);
+		break;
+	      case CDIO_CDTEXT_MESSAGE:
+		set_cdtext_field(CDTEXT_MESSAGE);
+		break;
+	      case CDIO_CDTEXT_DISCID: 
+		set_cdtext_field(CDTEXT_DISCID);
+		break;
+	      case CDIO_CDTEXT_GENRE: 
+		set_cdtext_field(CDTEXT_GENRE);
+		break;
+	      }
+	    }
+	  else 	    {
+	    buffer[idx++] = pdata->text[j];
+	  }
+	  buffer[idx] = 0x00;
+	}
+      }
+      pdata++;
+    }
+  }
+  env->b_cdtext_init = true;
+  return &(env->cdtext);
+}
+
 /*!
   Eject media in CD drive. If successful, as a side effect we 
   also free obj.
@@ -510,7 +631,7 @@ _cdio_get_drive_cap_solaris (const void *user_data)
   unsigned char my_rq_buf[26];
   unsigned char my_scsi_cdb[6];
   const _img_private_t *env = user_data;
-  int rc;
+  int status;
   
   memset(&my_scsi_cdb, 0, sizeof(my_scsi_cdb));
   memset(&my_rq_buf,   0, sizeof(my_rq_buf));
@@ -530,8 +651,8 @@ _cdio_get_drive_cap_solaris (const void *user_data)
   my_cmd.uscsi_rqlen =  24;              /* The request sense buffer (only valid on a check condition) is 26 bytes long */
   my_cmd.uscsi_rqbuf = my_rq_buf;        /* Pointer to the request sense buffer */
   
-  rc = ioctl(env->gen.fd, USCSICMD, &my_cmd);
-  if(rc == 0) {
+  status = ioctl(env->gen.fd, USCSICMD, &my_cmd);
+  if(status == 0) {
     uint8_t *p;
     int lenData  = ((unsigned int)buf[0] << 8) + buf[1];
     uint8_t *pMax = buf + 256;
@@ -800,6 +921,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
     .eject_media        = _cdio_eject_media,
     .free               = cdio_generic_free,
     .get_arg            = _cdio_get_arg,
+    .get_cdtext         = _get_cdtext_solaris,
     .get_devices        = cdio_get_devices_solaris,
     .get_default_device = cdio_get_default_device_solaris,
     .get_drive_cap      = _cdio_get_drive_cap_solaris,
@@ -826,6 +948,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _data->access_mode    = _AM_SUN_CTRL_SCSI;
   _data->gen.init       = false;
   _data->gen.fd         = -1;
+  _data->b_cdtext_init  = false;
 
   if (NULL == psz_orig_source) {
     psz_source=cdio_get_default_device_solaris();
