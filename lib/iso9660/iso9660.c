@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.5 2005/02/20 17:47:01 rocky Exp $
+    $Id: iso9660.c,v 1.6 2005/02/22 02:02:46 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -44,7 +44,11 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.5 2005/02/20 17:47:01 rocky Exp $";
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
+
+static const char _rcsid[] = "$Id: iso9660.c,v 1.6 2005/02/22 02:02:46 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enums1     iso_enums1;
@@ -93,14 +97,11 @@ pathtable_get_size_and_entries(const void *pt, unsigned int *size,
   If tm is to reflect the localtime set b_localtime true, otherwise
   tm will reported in GMT.
 */
-void
+bool
 iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
                    /*out*/ struct tm *p_tm)
 {
-  time_t t;
-  struct tm *p_temp_tm;
-  
-  if (!idr_date) return;
+  if (!idr_date) return false;
 
   memset(p_tm, 0, sizeof(struct tm));
   p_tm->tm_year   = idr_date->dt_year;
@@ -109,30 +110,68 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
   p_tm->tm_hour   = idr_date->dt_hour;
   p_tm->tm_min    = idr_date->dt_minute;
   p_tm->tm_sec    = idr_date->dt_second;
+  p_tm->tm_gmtoff = - timezone * 15;
+  p_tm->tm_isdst  = -1; /* information not available */
 
-#if defined(HAVE_TM_GMTOFF) && defined(HAVE_TZSET)
-  if (b_localtime) {
-    tzset();
-#if defined(HAVE_TZNAME)
-    p_tm->tm_zone   = (char *) tzname;
-#endif
-#if defined(HAVE_DAYLIGHT)
-    p_tm->tm_isdst  = daylight;
-    p_tm->tm_gmtoff = timezone;
-#endif
+  
+  {
+    
+    time_t t;
+    struct tm *p_temp_tm;
+    
+    /* Recompute tm_wday and tm_yday via mktime. */
+    t = mktime(p_tm);
+    
+    if (b_localtime)
+      p_temp_tm = localtime(&t);
+    else
+      p_temp_tm = gmtime(&t);
+    
+    memcpy(p_tm, p_temp_tm, sizeof(struct tm));
   }
-#endif
+  return true;
+}
+
+#define set_ltime_field(TM_FIELD, LT_FIELD, ADD_CONSTANT)               \
+  {                                                                     \
+    p_tm->TM_FIELD = strtol(p_ldate->LT_FIELD,                          \
+                            (char **)NULL, 10)+ADD_CONSTANT;            \
+    if (0 != errno) return false;                                       \
+  }
+    
+/*!
+  Get "long" time in format used in ISO 9660 primary volume descriptor
+  from a Unix time structure. 
+*/
+bool
+iso9660_get_ltime (const iso9660_ltime_t *p_ldate, 
+                   /*out*/ struct tm *p_tm)
+{
+  if (!p_tm) return false;
+  memset(p_tm, 0, sizeof(struct tm));
+  set_ltime_field(tm_year, lt_year,   0);
+  set_ltime_field(tm_mon,  lt_month, -1);
+  set_ltime_field(tm_mday, lt_day,    0);
+  set_ltime_field(tm_hour, lt_hour,   0);
+  set_ltime_field(tm_min,  lt_minute, 0);
+  set_ltime_field(tm_sec,  lt_second, 0);
+  p_tm->tm_isdst= -1; /* information not available */
+  p_tm->tm_gmtoff = - timezone * 15;
 
   /* Recompute tm_wday and tm_yday via mktime. */
-  t = mktime(p_tm);
-
-  if (b_localtime)
-    p_temp_tm = localtime(&t);
-  else
+  {
+    time_t t;
+    struct tm *p_temp_tm;
+    
+    t = mktime(p_tm);
     p_temp_tm = gmtime(&t);
-
-  memcpy(p_tm, p_temp_tm, sizeof(struct tm));
+    
+    p_tm->tm_wday = p_temp_tm->tm_wday;
+    p_tm->tm_yday = p_temp_tm->tm_yday;
+  }
+  return true;
 }
+
 
 /*!
   Set time in format used in ISO 9660 directory index record

@@ -1,5 +1,5 @@
 /*
-  $Id: rock.c,v 1.9 2005/02/21 09:00:53 rocky Exp $
+  $Id: rock.c,v 1.10 2005/02/22 02:02:46 rocky Exp $
  
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -117,6 +117,7 @@ realloc_symlink(/*in/out*/ iso9660_stat_t *p_stat, uint8_t i_grow)
 */
 #define add_time(FLAG, TIME_FIELD)				  \
   if (rr->u.TF.flags & FLAG) {					  \
+    p_stat->rr.TIME_FIELD.b_used = true;			  \
     p_stat->rr.TIME_FIELD.b_longdate =				  \
       (0 != (rr->u.TF.flags & ISO_ROCK_TF_LONG_FORM));		  \
     if (p_stat->rr.TIME_FIELD.b_longdate) {			  \
@@ -262,9 +263,9 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
 	    p_oldsl = p_sl;
 	    p_sl = (iso_rock_sl_part_t *) (((char *) p_sl) + p_sl->len + 2);
 	    
-	    if(slen < 2) {
-	      if (((rr->u.SL.flags & 1) != 0) 
-		     && ((p_oldsl->flags & 1) == 0) ) p_stat->rr.i_symlink += 1;
+	    if (slen < 2) {
+	      if (((rr->u.SL.flags & 1) != 0) && ((p_oldsl->flags & 1) == 0)) 
+		p_stat->rr.i_symlink += 1;
 	      break;
 	    }
 	    
@@ -383,39 +384,26 @@ parse_rock_ridge_stat_internal(iso9660_dir_t *p_iso9660_dir,
 	}
 	break;
 #endif
-#ifdef TIME_FIXED
       case SIG('T','F'): 
+	/* Time stamp(s) for a file */
 	{
-	  int cnt = 0; /* Rock ridge never appears on a High Sierra disk */
-	  /* Some RRIP writers incorrectly place ctime in the
-	     ISO_ROCK_TF_CREATE field.  Try to handle this correctly for
-	     either case. */
-	  /*** FIXME: 
-	       Test on long format or not and use 
-	       iso9660_get_dtime or iso9660_get_ltime - which needs to be
-	       written.
-	  */
-	  if (rr->u.TF.flags & ISO_ROCK_TF_CREATE) { 
-	    p_stat->rr.st_ctime = rr->u.TF.times[cnt++].time;
-	  }
-	  if(rr->u.TF.flags & ISO_ROCK_TF_MODIFY) {
-	    p_stat->rr.st_mtime = rr->u.TF.times[cnt++].time;
-	  }
-	  if(rr->u.TF.flags & ISO_ROCK_TF_ACCESS) {
-	    p_stat->rr.st_atime = rr->u.TF.times[cnt++].time;
-	  }
-	  if(rr->u.TF.flags & ISO_ROCK_TF_ATTRIBUTES) { 
-	    p_stat->rr.st_ctime = rr->u.TF.times[cnt++].time;
-	  } 
+	  int cnt = 0;
+	  add_time(ISO_ROCK_TF_CREATE,     create);
+	  add_time(ISO_ROCK_TF_MODIFY,     modify);
+	  add_time(ISO_ROCK_TF_ACCESS,     access);
+	  add_time(ISO_ROCK_TF_ATTRIBUTES, attributes);
+	  add_time(ISO_ROCK_TF_BACKUP,     backup);
+	  add_time(ISO_ROCK_TF_EXPIRATION, expiration);
+	  add_time(ISO_ROCK_TF_EFFECTIVE,  effective);
+	  p_stat->rr.b3_rock = yep;
 	  break;
 	}
-#endif
       case SIG('S','L'):
-	/* Symbolic link.  */
 	{
-	  int slen;
-	  iso_rock_sl_part_t *p_sl;
-	  iso_rock_sl_part_t *p_oldsl;
+	  /* Symbolic link */
+	  uint8_t slen;
+	  iso_rock_sl_part_t * p_sl;
+	  iso_rock_sl_part_t * p_oldsl;
 	  slen = rr->len - 5;
 	  p_sl = &rr->u.SL.link;
 	  p_stat->rr.i_symlink = symlink_len;
@@ -423,45 +411,54 @@ parse_rock_ridge_stat_internal(iso9660_dir_t *p_iso9660_dir,
 	    rootflag = 0;
 	    switch(p_sl->flags &~1){
 	    case 0:
+	      realloc_symlink(p_stat, p_sl->len);
+	      memcpy(&(p_stat->rr.psz_symlink[p_stat->rr.i_symlink]),
+		     p_sl->text, p_sl->len);
 	      p_stat->rr.i_symlink += p_sl->len;
-	      /*memcpy(psz_rsymlink, p_sl->text, p_sl->len);
-		psz_rsymlink+=p_sl->len;*/
 	      break;
 	    case 4:
-	      /**psz_rsymlink++='.';*/
+	      realloc_symlink(p_stat, 1);
+	      p_stat->rr.psz_symlink[p_stat->rr.i_symlink++] = '.';
 	      p_stat->rr.i_symlink++;
 	      /* continue into next case. */
 	      break;
 	    case 2:
-	      /**psz_rsymlink++='.';*/
+	      realloc_symlink(p_stat, 1);
+	      p_stat->rr.psz_symlink[p_stat->rr.i_symlink++] = '.';
 	      p_stat->rr.i_symlink++;
 	      break;
 	    case 8:
 	      rootflag = 1;
-	      /**rootflag = 1;*/
-	      p_stat->rr.i_symlink += 1;
+	      realloc_symlink(p_stat, 1);
+	      p_stat->rr.psz_symlink[p_stat->rr.i_symlink++] = '/';
+	      p_stat->rr.i_symlink++;
 	      break;
 	    default:
-	      cdio_info("Symlink component flag not implemented");
+	      cdio_warn("Symlink component flag not implemented");
 	    }
 	    slen -= p_sl->len + 2;
 	    p_oldsl = p_sl;
 	    p_sl = (iso_rock_sl_part_t *) (((char *) p_sl) + p_sl->len + 2);
 	    
-	    if(slen < 2) {
-	      if(    ((rr->u.SL.flags & 1) != 0) 
-		     && ((p_oldsl->flags & 1) == 0) ) p_stat->rr.i_symlink += 1;
+	    if (slen < 2) {
+	      if (((rr->u.SL.flags & 1) != 0) && ((p_oldsl->flags & 1) == 0)) 
+		p_stat->rr.i_symlink += 1;
 	      break;
 	    }
 	    
 	    /*
 	     * If this component record isn't continued, then append a '/'.
 	     */
-	    if (!rootflag && (p_oldsl->flags & 1) == 0)
-	      p_stat->rr.i_symlink += 1;
+	    if (!rootflag && (p_oldsl->flags & 1) == 0) {
+	      realloc_symlink(p_stat, 1);
+	      p_stat->rr.psz_symlink[p_stat->rr.i_symlink++] = '/';
+	      p_stat->rr.i_symlink++;
+	    }
 	  }
 	}
 	symlink_len = p_stat->rr.i_symlink;
+	realloc_symlink(p_stat, 1);
+	p_stat->rr.psz_symlink[symlink_len]='\0';
 	break;
       case SIG('R','E'):
 	cdio_warn("Attempt to read p_stat for relocated directory");

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.119 2005/02/21 09:00:53 rocky Exp $
+    $Id: cd-info.c,v 1.120 2005/02/22 02:02:46 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -857,7 +857,7 @@ int
 main(int argc, const char *argv[])
 {
 
-  CdIo_t                *p_cdio=NULL;
+  CdIo_t              *p_cdio=NULL;
   cdio_fs_anal_t       fs=CDIO_FS_AUDIO;
   int i;
   lsn_t                start_track_lsn;      /* lsn of first track */

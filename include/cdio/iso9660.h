@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.71 2005/02/21 09:00:53 rocky Exp $
+    $Id: iso9660.h,v 1.72 2005/02/22 02:02:46 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -49,6 +49,7 @@ specification.
 */
 
 typedef uint8_t  iso711_t; /*! See section 7.1.1 */
+typedef int8_t   iso712_t; /*! See section 7.1.2 */
 typedef uint16_t iso721_t; /*! See section 7.2.1 */
 typedef uint16_t iso722_t; /*! See section 7.2.2 */
 typedef uint32_t iso723_t; /*! See section 7.2.3 */
@@ -232,7 +233,9 @@ typedef struct iso9660_dtime_s  iso9660_dtime_t;
 /*! 
   \brief ISO-9660 longer-format time structure.
 
-  Section 8.4.26.1 of ECMA 119
+  Section 8.4.26.1 of ECMA 119. All values are encoded as character
+  arrays, eg. '1', '9', '5', '5' for the year 1955 (no null terminated
+  byte).
   
   @see iso9660_ltime
  */
@@ -244,14 +247,17 @@ struct	iso9660_ltime_s {
                                                   1..12. Note starts
                                                   at 1, not 0 like a
                                                   tm struct. */
-  char	 lt_day		[_delta(   7,	8)];
-  char	 lt_hour	[_delta(   9,	10)];
-  char	 lt_minute	[_delta(  11,	12)];
-  char	 lt_second	[_delta(  13,	14)];
-  char	 lt_hsecond	[_delta(  15,	16)];  /**<! The value is in
+  char	 lt_day		[_delta(   7,	8)];   /**< Day of month: 1..31 */
+  char	 lt_hour	[_delta(   9,	10)];  /**< hour: 0..23 */
+  char	 lt_minute	[_delta(  11,	12)];  /**< minute: 0..59 */
+  char	 lt_second	[_delta(  13,	14)];  /**< second: 0..59 */
+  char	 lt_hsecond	[_delta(  15,	16)];  /**< The value is in
                                                   units of 1/100's of
                                                   a second */
-  int8_t lt_gmtoff	[_delta(  17,	17)];
+  iso712_t lt_gmtoff;  /**< Offset from Greenwich Mean Time in number
+                          of 15 min intervals from -48 (West) to +52
+                          (East) recorded according to 7.1.2 numerical
+                          value */
 } GNUC_PACKED;
 
 typedef struct iso9660_ltime_s  iso9660_ltime_t;
@@ -693,9 +699,16 @@ typedef struct _iso9660_s iso9660_t;
   If tm is to reflect the localtime, set "use_localtime" true, otherwise
   tm will reported in GMT.
 */
-  void iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool use_localtime,
+  bool iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool use_localtime,
                           /*out*/ struct tm *tm);
 
+
+/*!
+  Get "long" time in format used in ISO 9660 primary volume descriptor
+  from a Unix time structure. 
+*/
+  bool iso9660_get_ltime (const iso9660_ltime_t *p_ldate, 
+                          /*out*/ struct tm *p_tm);
 
 /*====================================================
   Characters used in file and directory and manipulation

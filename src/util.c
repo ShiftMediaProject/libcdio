@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.42 2005/02/21 09:00:53 rocky Exp $
+  $Id: util.c,v 1.43 2005/02/22 02:02:46 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -464,44 +464,73 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
   char date_str[30];
 
   if (yep == p_statbuf->rr.b3_rock && b_rock) {
-    report (stdout, "  %s %d %d %d [LSN %6lu] %9u",
-	    iso9660_get_rock_attr_str (p_statbuf->rr.st_mode),
-	    p_statbuf->rr.st_nlinks,
-	    p_statbuf->rr.st_uid,
-	    p_statbuf->rr.st_gid,
-	    (long unsigned int) p_statbuf->lsn,
-	    (unsigned int) p_statbuf->size);
+    report ( stdout, "  %s %3d %d %d [LSN %6lu] %9u",
+	     iso9660_get_rock_attr_str (p_statbuf->rr.st_mode),
+	     p_statbuf->rr.st_nlinks,
+	     p_statbuf->rr.st_uid,
+	     p_statbuf->rr.st_gid,
+	     (long unsigned int) p_statbuf->lsn,
+	     S_ISLNK(p_statbuf->rr.st_mode) 
+	     ? strlen(p_statbuf->rr.psz_symlink)
+	     : (unsigned int) p_statbuf->size );
 
   } else if (b_xa) {
-    report (stdout, "  %s %d %d [fn %.2d] [LSN %6lu] ",
+    report ( stdout, "  %s %d %d [fn %.2d] [LSN %6lu] ",
 	     iso9660_get_xa_attr_str (p_statbuf->xa.attributes),
 	     uint16_from_be (p_statbuf->xa.user_id),
 	     uint16_from_be (p_statbuf->xa.group_id),
 	     p_statbuf->xa.filenum,
-	     (long unsigned int) p_statbuf->lsn);
+	     (long unsigned int) p_statbuf->lsn );
     
     if (uint16_from_be(p_statbuf->xa.attributes) & XA_ATTR_MODE2FORM2) {
-      report (stdout, "%9u (%9u)",
-	      (unsigned int) p_statbuf->secsize * M2F2_SECTOR_SIZE,
-	      (unsigned int) p_statbuf->size);
+      report ( stdout, "%9u (%9u)",
+	       (unsigned int) p_statbuf->secsize * M2F2_SECTOR_SIZE,
+	       (unsigned int) p_statbuf->size );
     } else 
       report (stdout, "%9u", (unsigned int) p_statbuf->size);
   } else {
-    report (stdout,"  %c [LSN %6lu] %9u", 
-	    (p_statbuf->type == _STAT_DIR) ? 'd' : '-',
-	    (long unsigned int) p_statbuf->lsn,
-	    (unsigned int) p_statbuf->size);
+    report ( stdout,"  %c [LSN %6lu] %9u", 
+	     (p_statbuf->type == _STAT_DIR) ? 'd' : '-',
+	     (long unsigned int) p_statbuf->lsn,
+	     (unsigned int) p_statbuf->size );
   }
-  strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &p_statbuf->tm);
-  report (stdout," %s %s", date_str, 
-	  yep == p_statbuf->rr.b3_rock && b_rock
-	  ? psz_name_untranslated : psz_name_translated);
 
-  if (yep == p_statbuf->rr.b3_rock && b_rock 
-      && S_ISLNK(p_statbuf->rr.st_mode)) {
-    report(stdout, " -> %s", p_statbuf->rr.psz_symlink);
+  if (yep == p_statbuf->rr.b3_rock && b_rock) {
+    struct tm tm;
+
+    strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &p_statbuf->tm);
+
+    /* Some RRIP writers incorrectly place ctime in the TF_CREATE field.
+       Try to handle this correctly for either case. */
+    if (p_statbuf->rr.create.b_used) {
+      if (p_statbuf->rr.create.b_longdate) {
+	iso9660_get_ltime(&p_statbuf->rr.create.t.ltime, &tm);
+      } else {
+	iso9660_get_dtime(&p_statbuf->rr.create.t.dtime, true, &tm);
+      }
+      strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &p_statbuf->tm);
+    }
+    
+    /* Now try the proper field for ctime: attributes  */
+    if (p_statbuf->rr.attributes.b_used) {
+      if (p_statbuf->rr.create.b_longdate) {
+	iso9660_get_ltime(&p_statbuf->rr.attributes.t.ltime, &tm);
+      } else {
+	iso9660_get_dtime(&p_statbuf->rr.attributes.t.dtime, true, &tm);
+      }
+      strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &tm);
+    }
+    
+    report (stdout," %s %s", date_str, psz_name_untranslated );
+
+    if (S_ISLNK(p_statbuf->rr.st_mode)) {
+      report(stdout, " -> %s", p_statbuf->rr.psz_symlink);
+    }
+
+  } else {
+    strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &p_statbuf->tm);
+    report (stdout," %s %s", date_str, psz_name_translated);
   }
-  
+
   report(stdout, "\n");
-
 }
