@@ -2,6 +2,9 @@ See also @uref{http://www.dvdrhelp.com/glossary}.
 
 @table @acronym
 
+@item ASPI
+See @acronym{Win32 ASPI}
+
 @item ATAPI
 
 Advanced Technology Attachment Packet Interface. An interface to
@@ -161,6 +164,16 @@ interfaces (originally developed at Apple Computer) that allow
 personal computers to communicate with peripheral hardware such as
 CD-ROM drives, disk drives, printers, etc.
 
+@item SCSI Pass Through Interface.
+
+Yet another way of issuing MMC commands for accessing a CD-ROM. As
+with MMC or ASPI, the CD-ROM doesn't necessarily have to be a
+SCSI-attached drive. See also @acronym{MMC} and @acronym{ASPI}.
+
+
+@item SPTI 
+SCSI Pass Through Interface. See SCSI Pass Through Interface
+
 @item Session
 
 A fully readable complete recording that contains one or more tracks
@@ -186,7 +199,7 @@ tracks have a 150 frame (or ``2 second'') lead-in gap.
 @item VCD
 Video @acronym{CD} @uref{http://www.dvdrhelp.com/vcd}
 
-@item Win32 ASPI driver
+@item Win32 ASPI
 
 The ASPI interface specification was developed by Adaptec for 
 sending commands to a SCSI host adapter (such as those controlling CD
@@ -199,7 +212,9 @@ However in Windows NT/2K/XP, Microsoft provides their Win32 ioctl
 interface, and has take steps to make using ASPI more inaccessible
 (e.g. requiring adminstrative access to use ASPI).
 
-@item Win32 Ioctl driver
+See also @acronym{MMC}
+
+@item Win32 ioctl driver
 
 Ioctl (Input Output ConTroLs). A Win32 function, implemented in all
 Windows.  It is used for sending commands to devices using defined
