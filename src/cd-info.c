@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.30 2003/09/01 02:04:33 rocky Exp $
+    $Id: cd-info.c,v 1.31 2003/09/01 22:31:46 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -153,9 +153,7 @@ struct arguments
   bool           cddb_disable_cache; /* If set the below is meaningless. */
   char          *cddb_cachedir;
 #endif
-#ifdef HAVE_VCDINFO
   int            no_vcd;
-#endif
   uint32_t       debug_level;
   int            silent;
   int            version_only;
@@ -232,6 +230,9 @@ struct poptOption optionsTable[] = {
 #ifdef HAVE_VCDINFO
   {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 0,
    "Don't look up Video CD information"},
+#else 
+  {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 0,
+   "Don't look up Video CD information - for this build, this is always set"},
 #endif
   {"no-ioctl",  'I', POPT_ARG_NONE,  &opts.no_ioctl, 0,
    "Don't show ioctl() information"},
