@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.29 2004/07/25 22:33:54 rocky Exp $
+    $Id: win32.c,v 1.30 2004/07/25 23:32:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.29 2004/07/25 22:33:54 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.30 2004/07/25 23:32:15 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -97,9 +97,9 @@ get_discmode_win32(void *p_user_data)
   _img_private_t *p_env = p_user_data;
 
   if (p_env->hASPI) {
-    return get_discmode_win32ioctl (p_env);
-  } else {
     return get_discmode_aspi (p_env);
+  } else {
+    return get_discmode_win32ioctl (p_env);
   }
 }
 
