@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.98 2004/11/06 03:12:34 rocky Exp $
+    $Id: cd-info.c,v 1.99 2004/11/19 02:16:21 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -190,6 +190,12 @@ parse_options (int argc, const char *argv[])
     {"cue-file", 'c', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_CUE, "set \"cue\" CD-ROM disk image file as source", "FILE"},
     
+    {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
+     OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
+    
+    {"toc-file", 't', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
+     OP_SOURCE_CDRDAO, "set cdrdao CD-ROM disk image file as source", "FILE"},
+    
     {"input", 'i', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_AUTO,
      "set source and determine if \"bin\" image or device", "FILE"},
@@ -211,12 +217,6 @@ parse_options (int argc, const char *argv[])
     {"no-joliet", '\0', POPT_ARG_NONE, &opts.no_joliet, 
      0, "Don't use Joliet extensions"},
 #endif /*HAVE_JOLIET*/
-    
-    {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
-     OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
-    
-    {"toc-file", 't', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
-     OP_SOURCE_CDRDAO, "set cdrdao CD-ROM disk image file as source", "FILE"},
     
     {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
      "Don't produce warning output" },
