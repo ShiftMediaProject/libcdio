@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stdio.c,v 1.2 2003/03/29 17:32:00 rocky Exp $
+    $Id: _cdio_stdio.c,v 1.3 2003/04/06 23:40:21 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -35,7 +35,7 @@
 #include "_cdio_stream.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.2 2003/03/29 17:32:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.3 2003/04/06 23:40:21 rocky Exp $";
 
 #define CDIO_STDIO_BUFSIZE (128*1024)
 
@@ -90,18 +90,36 @@ _stdio_free(void *user_data)
   free(ud);
 }
 
+/*! 
+  Like fseek(3) and in fact may be the same.
+  
+  This  function sets the file position indicator for the stream
+  pointed to by stream.  The new position, measured in bytes, is obtained
+  by  adding offset bytes to the position specified by whence.  If whence
+  is set to SEEK_SET, SEEK_CUR, or SEEK_END, the offset  is  relative  to
+  the  start of the file, the current position indicator, or end-of-file,
+  respectively.  A successful call to the fseek function clears the end-
+  of-file indicator for the stream and undoes any effects of the
+  ungetc(3) function on the same stream.
+  
+  RETURN VALUE
+  Upon successful completion, return 0,
+  Otherwise, -1 is returned and the global variable errno is set to indi-
+  cate the error.
+*/
 static long
 _stdio_seek(void *user_data, long offset, int whence)
 {
   _UserData *const ud = user_data;
 
-  if (fseek (ud->fd, offset, whence))
+  if ( (offset=fseek (ud->fd, offset, whence)) ) {
     cdio_error ("fseek (): %s", strerror (errno));
+  }
 
   return offset;
 }
 
-static long
+static long int
 _stdio_stat(void *user_data)
 {
   const _UserData *const ud = user_data;
@@ -109,6 +127,23 @@ _stdio_stat(void *user_data)
   return ud->st_size;
 }
 
+/*!
+  Like fread(3) and in fact is about the same.
+  
+  DESCRIPTION:
+  The function fread reads nmemb elements of data, each size bytes long,
+  from the stream pointed to by stream, storing them at the location
+  given by ptr.
+  
+  RETURN VALUE:
+  return the number of items successfully read or written (i.e.,
+  not the number of characters).  If an error occurs, or the
+  end-of-file is reached, the return value is a short item count
+  (or zero).
+  
+  We do not distinguish between end-of-file and error, and callers
+  must use feof(3) and ferror(3) to determine which occurred.
+  */
 static long
 _stdio_read(void *user_data, void *buf, long count)
 {

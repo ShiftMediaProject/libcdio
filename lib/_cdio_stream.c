@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.c,v 1.3 2003/04/06 17:57:20 rocky Exp $
+    $Id: _cdio_stream.c,v 1.4 2003/04/06 23:40:21 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -34,7 +34,7 @@
 #include "util.h"
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.3 2003/04/06 17:57:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.4 2003/04/06 23:40:21 rocky Exp $";
 
 /* 
  * DataSource implementations
@@ -47,6 +47,10 @@ struct _CdioDataSource {
   long position;
 };
 
+/* 
+   Open if not already open. 
+   Return false if we hit an error. Errno should be set for that error.
+*/
 static bool
 _cdio_stream_open_if_necessary(CdioDataSource *obj)
 {
@@ -65,12 +69,31 @@ _cdio_stream_open_if_necessary(CdioDataSource *obj)
   return true;
 }
 
+/*! 
+  Like 3 fseek and in fact may be the same.
+  
+  This  function sets the file position indicator for the stream
+  pointed to by stream.  The new position, measured in bytes, is obtained
+  by  adding offset bytes to the position specified by whence.  If whence
+  is set to SEEK_SET, SEEK_CUR, or SEEK_END, the offset  is  relative  to
+  the  start of the file, the current position indicator, or end-of-file,
+  respectively.  A successful call to the fseek function clears the end-
+  of-file indicator for the stream and undoes any effects of the
+  ungetc(3) function on the same stream.
+  
+  RETURN VALUE
+  Upon successful completion, return 0,
+  Otherwise, -1 is returned and the global variable errno is set to indi-
+  cate the error.
+*/
 long
 cdio_stream_seek(CdioDataSource* obj, long offset, int whence)
 {
   cdio_assert (obj != NULL);
 
-  if (!_cdio_stream_open_if_necessary(obj)) return 0;
+  if (!_cdio_stream_open_if_necessary(obj)) 
+    /* errno is set by _cdio_stream_open_if necessary. */
+    return -1;
 
   if (obj->position != offset) {
 #ifdef STREAM_DEBUG
@@ -96,6 +119,23 @@ cdio_stream_new(void *user_data, const cdio_stream_io_functions *funcs)
   return new_obj;
 }
 
+/*!
+  Like fread(3) and in fact may be the same.
+  
+  DESCRIPTION:
+  The function fread reads nmemb elements of data, each size bytes long,
+  from the stream pointed to by stream, storing them at the location
+  given by ptr.
+  
+  RETURN VALUE:
+  return the number of items successfully read or written (i.e.,
+  not the number of characters).  If an error occurs, or the
+  end-of-file is reached, the return value is a short item count
+  (or zero).
+  
+  We do not distinguish between end-of-file and error, and callers
+  must use feof(3) and ferror(3) to determine which occurred.
+*/
 long
 cdio_stream_read(CdioDataSource* obj, void *ptr, long size, long nmemb)
 {
@@ -111,12 +151,16 @@ cdio_stream_read(CdioDataSource* obj, void *ptr, long size, long nmemb)
   return read_bytes;
 }
 
-long
+/*!
+  Return whatever size of stream reports, I guess unit size is bytes. 
+  On error return -1;
+ */
+long int
 cdio_stream_stat(CdioDataSource* obj)
 {
   cdio_assert (obj != NULL);
 
-  if (!_cdio_stream_open_if_necessary(obj)) return 0;
+  if (!_cdio_stream_open_if_necessary(obj)) return -1;
 
   return obj->op.stat(obj->user_data);
 }
