@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.41 2004/06/22 03:38:59 rocky Exp $
+    $Id: _cdio_osx.c,v 1.42 2004/06/22 04:31:17 thesin Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -9,6 +9,7 @@
                Gildas Bazin <gbazin@netcourrier.com>
                Jon Lech Johansen <jon-vl@nanocrew.net>
                Derk-Jan Hartman <hartman at videolan.org>
+               Justin F. Hallett <thesin@southofheaven.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.41 2004/06/22 03:38:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.42 2004/06/22 04:31:17 thesin Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -70,7 +71,7 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.41 2004/06/22 03:38:59 rocky 
 /* Note leadout should be 0xAA, But OSX seems to use 0xA2. */
 #define	OSX_CDROM_LEADOUT_TRACK 0xA2
 
-#define TOTAL_TRACKS    (env->i_last_track - env->i_first_track)
+#define TOTAL_TRACKS    (env->i_last_track - env->i_first_track + 1)
 
 #define CDROM_CDI_TRACK 0x1
 #define CDROM_XA_TRACK  0x2
@@ -382,7 +383,7 @@ _cdio_read_toc (_img_private_t *env)
     CDTOCDescriptor *pTrackDescriptors;
     track_t i_track;
     
-    env->pp_lba = malloc( TOTAL_TRACKS * sizeof(int) );
+    env->pp_lba = malloc( env->i_descriptors * sizeof(int) );
     if( env->pp_lba == NULL )
       {
 	cdio_error("Out of memory in allocating track starting LSNs" );
@@ -460,7 +461,7 @@ _cdio_read_toc (_img_private_t *env)
        Note what OSX calls a LBA we call an LSN. So below re we 
        really have have MSF -> LSN -> LBA.
     */
-    env->pp_lba[env->i_last_track+1] =
+    env->pp_lba[TOTAL_TRACKS] =
       cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i_leadout].p ));
   }
 
