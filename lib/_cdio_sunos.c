@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.75 2004/09/03 23:20:11 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.76 2004/10/26 07:34:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.75 2004/09/03 23:20:11 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.76 2004/10/26 07:34:41 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -660,6 +660,10 @@ get_track_format_solaris(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
   
+  if ( !p_env ) return TRACK_FORMAT_ERROR;
+  if (!p_env->gen.init) init_solaris(p_env);
+  if (!p_env->gen.toc_init) read_toc_solaris (p_user_data) ;
+
   if ( (i_track > p_env->gen.i_tracks+p_env->gen.i_first_track) 
        || i_track < p_env->gen.i_first_track)
     return TRACK_FORMAT_ERROR;
@@ -694,6 +698,7 @@ _cdio_get_track_green(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
   
+  if ( !p_env ) return false;
   if (!p_env->gen.init) init_solaris(p_env);
   if (!p_env->gen.toc_init) read_toc_solaris (p_env) ;
 

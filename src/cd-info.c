@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.93 2004/10/26 01:21:05 rocky Exp $
+    $Id: cd-info.c,v 1.94 2004/10/26 07:34:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -506,32 +506,31 @@ print_cddb_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) {
 static void 
 print_vcd_info(driver_id_t driver) {
   vcdinfo_open_return_t open_rc;
-  vcdinfo_obj_t *obj;
-  open_rc = vcdinfo_open(&obj, &source_name, driver, NULL);
+  vcdinfo_obj_t *p_vcd = NULL;
+  open_rc = vcdinfo_open(&p_vcd, &source_name, driver, NULL);
   switch (open_rc) {
   case VCDINFO_OPEN_VCD: 
-    if (vcdinfo_get_format_version (obj) == VCD_TYPE_INVALID) {
+    if (vcdinfo_get_format_version (p_vcd) == VCD_TYPE_INVALID) {
       fprintf(stderr, "VCD format detection failed");
-      vcdinfo_close(obj);
+      vcdinfo_close(p_vcd);
       return;
     }
     fprintf (stdout, "Format      : %s\n", 
-	     vcdinfo_get_format_version_str(obj));
-    fprintf (stdout, "Album       : `%.16s'\n",  vcdinfo_get_album_id(obj));
-    fprintf (stdout, "Volume count: %d\n",   vcdinfo_get_volume_count(obj));
-    fprintf (stdout, "volume number: %d\n",  vcdinfo_get_volume_num(obj));
+	     vcdinfo_get_format_version_str(p_vcd));
+    fprintf (stdout, "Album       : `%.16s'\n",  vcdinfo_get_album_id(p_vcd));
+    fprintf (stdout, "Volume count: %d\n",   vcdinfo_get_volume_count(p_vcd));
+    fprintf (stdout, "volume number: %d\n",  vcdinfo_get_volume_num(p_vcd));
 
     break;
   case VCDINFO_OPEN_ERROR:
     fprintf (stderr, "Error in Video CD opening of %s\n", source_name);
-    return;
     break;
   case VCDINFO_OPEN_OTHER:
     fprintf (stderr, "Even though we thought this was a Video CD, "
 	     " further inspection says it is not.\n");
     break;
   }
-  vcdinfo_close(obj);
+  if (p_vcd) vcdinfo_close(p_vcd);
     
 }
 #endif 
@@ -635,6 +634,14 @@ print_iso9660_fs (CdIo *p_cdio, cdio_fs_anal_t fs,
   }
 }
 
+#define print_vd_info(title, fn)		\
+  psz_str = fn(&pvd);				\
+  if (psz_str) {				\
+    fprintf(stdout, title ": %s\n", psz_str);	\
+    free(psz_str);				\
+    psz_str = NULL;				\
+  }
+
 static void
 print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis, 
 	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
@@ -709,15 +716,14 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
       iso9660_pvd_t pvd;
 
       if ( iso9660_fs_read_pvd(p_cdio, &pvd) ) {
-	fprintf(stdout, "Application: %s\n", 
-		iso9660_get_application_id(&pvd));
-	fprintf(stdout, "Preparer   : %s\n", iso9660_get_preparer_id(&pvd));
-	fprintf(stdout, "Publisher  : %s\n", iso9660_get_publisher_id(&pvd));
-	fprintf(stdout, "System     : %s\n", iso9660_get_system_id(&pvd));
-	fprintf(stdout, "Volume     : %s\n", iso9660_get_volume_id(&pvd));
-	fprintf(stdout, "Volume Set : %s\n", iso9660_get_volumeset_id(&pvd));
+	char *psz_str;
+	print_vd_info("Application", iso9660_get_application_id);
+	print_vd_info("Preparer   ", iso9660_get_preparer_id);
+	print_vd_info("Publisher  ", iso9660_get_publisher_id);
+	print_vd_info("System     ", iso9660_get_system_id);
+	print_vd_info("Volume     ", iso9660_get_volume_id);
+	print_vd_info("Volume Set ", iso9660_get_volumeset_id);
       }
-      
     }
     
     if (opts.print_iso9660) 
@@ -1044,6 +1050,7 @@ main(int argc, const char *argv[])
       if (!opts.no_tracks)
 	printf("%3d: %8s  %06lu  leadout\n", (int) i, psz_msf,
 	       (long unsigned int) cdio_msf_to_lsn(&msf));
+      free(psz_msf);
       break;
     } else if (!opts.no_tracks) {
       printf("%3d: %8s  %06lu  %-5s %s\n", (int) i, psz_msf,
@@ -1051,6 +1058,7 @@ main(int argc, const char *argv[])
 	     track_format2str[cdio_get_track_format(p_cdio, i)],
 	     cdio_get_track_green(p_cdio, i)? "true" : "false");
     }
+    free(psz_msf);
     
     if (TRACK_FORMAT_AUDIO == cdio_get_track_format(p_cdio, i)) {
       num_audio++;

@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.45 2004/08/27 04:12:29 rocky Exp $
+    $Id: win32.c,v 1.46 2004/10/26 07:34:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.45 2004/08/27 04:12:29 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.46 2004/10/26 07:34:41 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -475,13 +475,16 @@ _cdio_get_mcn (const void *p_user_data) {
   Get format of track. 
 */
 static track_format_t
-_cdio_get_track_format(void *obj, track_t i_track) 
+_cdio_get_track_format(void *p_obj, track_t i_track) 
 {
-  _img_private_t *p_env = obj;
+  _img_private_t *p_env = p_obj;
   
-  if ( NULL == p_env ||
-       ( i_track < p_env->gen.i_first_track
-	 || i_track >= p_env->gen.i_tracks + p_env->gen.i_first_track ) )
+  if ( !p_env ) return TRACK_FORMAT_ERROR;
+  
+  if (!p_env->gen.toc_init) read_toc_win32 (p_env) ;
+
+  if ( i_track < p_env->gen.i_first_track
+       || i_track >= p_env->gen.i_tracks + p_env->gen.i_first_track ) )
     return TRACK_FORMAT_ERROR;
 
   if( p_env->hASPI ) {

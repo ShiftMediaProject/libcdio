@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.41 2004/08/16 01:47:49 rocky Exp $
+    $Id: freebsd.c,v 1.42 2004/10/26 07:34:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.41 2004/08/16 01:47:49 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.42 2004/10/26 07:34:41 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -334,9 +334,11 @@ run_scsi_cmd_freebsd( const void *p_user_data, unsigned int i_timeout_ms,
   
 */
 static track_format_t
-_get_track_format_freebsd(void *user_data, track_t i_track) 
+_get_track_format_freebsd(void *p_user_data, track_t i_track) 
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
+
+  if (!p_env->gen.toc_init) read_toc_freebsd (p_user_data) ;
 
   if (i_track > TOTAL_TRACKS || i_track == 0)
     return TRACK_FORMAT_ERROR;

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.69 2004/09/03 23:20:11 rocky Exp $
+    $Id: _cdio_osx.c,v 1.70 2004/10/26 07:34:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.69 2004/09/03 23:20:11 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.70 2004/10/26 07:34:41 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -1115,6 +1115,8 @@ get_track_format_osx(void *user_data, track_t i_track)
   _img_private_t *p_env = user_data;
   dk_cd_read_track_info_t cd_read;
   CDTrackInfo a_track;
+
+  if (!p_env->gen.toc_init) read_toc_osx (p_env) ;
 
   if (i_track > p_env->i_last_track || i_track < p_env->gen.i_first_track)
     return TRACK_FORMAT_ERROR;

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.97 2004/09/03 23:20:11 rocky Exp $
+    $Id: _cdio_linux.c,v 1.98 2004/10/26 07:34:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.97 2004/09/03 23:20:11 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.98 2004/10/26 07:34:41 rocky Exp $";
 
 #include <string.h>
 
@@ -313,6 +313,10 @@ get_track_format_linux(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
   
+  if ( !p_env ) return TRACK_FORMAT_ERROR;
+
+  if (!p_env->gen.toc_init) read_toc_linux (p_user_data) ;
+
   if (i_track > (p_env->gen.i_tracks+p_env->gen.i_first_track) 
       || i_track < p_env->gen.i_first_track)
     return TRACK_FORMAT_ERROR;
