@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.7 2005/02/22 04:32:52 rocky Exp $
+    $Id: iso9660.c,v 1.8 2005/02/22 09:55:47 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.7 2005/02/22 04:32:52 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.8 2005/02/22 09:55:47 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enums1     iso_enums1;
@@ -102,6 +102,30 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
                    /*out*/ struct tm *p_tm)
 {
   if (!idr_date) return false;
+
+
+  /* 
+     Section 9.1.5 of ECMA 119 says: 
+     If all seven numbers are zero, it shall mean that the date and
+     time are not specified. 
+
+     HACK: However we've seen it happen that everything except gmtoff
+     is zero and the expected date is the beginning of the epoch. So
+     we accept 6 numbers being zero. I'm also not sure if using the
+     beginning of the Epoch is also the right thing to do either.
+  */
+
+  if ( 0 == idr_date->dt_year   && 0 == idr_date->dt_month &&
+       0 == idr_date->dt_day    && 0 == idr_date->dt_hour  &&
+       0 == idr_date->dt_minute && 0 == idr_date->dt_second ) {
+    time_t t = 0;
+    struct tm *p_temp_tm;
+    p_temp_tm = gmtime(&t);
+    
+    memcpy(p_tm, p_temp_tm, sizeof(struct tm));
+    return true;
+  }
+  
 
   memset(p_tm, 0, sizeof(struct tm));
   p_tm->tm_year   = idr_date->dt_year;
