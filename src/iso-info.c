@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.14 2004/10/24 11:20:30 rocky Exp $
+    $Id: iso-info.c,v 1.15 2004/10/29 02:11:48 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -95,9 +95,11 @@ parse_options (int argc, const char *argv[])
     
     {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
      0, "Don't display header and copyright (for regression testing)"},
-    
+
+#ifdef HAVE_JOLIET    
     {"no-joliet", '\0', POPT_ARG_NONE, &opts.no_joliet, 
      0, "Don't use Joliet extensions"},
+#endif /*HAVE_JOLIET*/
     
     {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
      "Don't produce warning output" },

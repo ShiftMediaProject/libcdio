@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.95 2004/10/26 07:51:49 rocky Exp $
+    $Id: cd-info.c,v 1.96 2004/10/29 02:11:48 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -210,9 +210,11 @@ parse_options (int argc, const char *argv[])
     
     {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
      0, "Don't display header and copyright (for regression testing)"},
-    
+
+#ifdef HAVE_JOLIET    
     {"no-joliet", '\0', POPT_ARG_NONE, &opts.no_joliet, 
      0, "Don't use Joliet extensions"},
+#endif /*HAVE_JOLIET*/
     
     {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},

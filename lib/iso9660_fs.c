@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.36 2004/10/28 11:13:40 rocky Exp $
+    $Id: iso9660_fs.c,v 1.37 2004/10/29 02:11:48 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -49,7 +49,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.36 2004/10/28 11:13:40 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.37 2004/10/29 02:11:48 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -139,6 +139,7 @@ check_pvd (const iso9660_pvd_t *p_pvd)
   return true;
 }
 
+#ifdef HAVE_JOLIET
 static bool
 ucs2be_to_locale(ICONV_CONST char *psz_ucs2be,  size_t i_inlen, 
 		 char **p_psz_out,  size_t i_outlen)
@@ -182,7 +183,7 @@ ucs2be_to_locale(ICONV_CONST char *psz_ucs2be,  size_t i_inlen,
   *p_psz_out = NULL; 
   return false;
 }
-
+#endif /*HAVE_JOLIET*/
 
 /*!  
   Return the application ID.  NULL is returned in psz_app_id if there
@@ -196,7 +197,8 @@ iso9660_ifs_get_application_id(iso9660_t *p_iso,
     *p_psz_app_id = NULL;
     return false;
   }
-  
+
+#ifdef HAVE_JOLIET  
   if (p_iso->i_joliet_level) {
     /* TODO: check that we haven't reached the maximum size.
        If we have, perhaps we've truncated and if we can get 
@@ -208,7 +210,8 @@ iso9660_ifs_get_application_id(iso9660_t *p_iso,
 			  p_psz_app_id, 
 			  ISO_MAX_APPLICATION_ID))
       return true;
-  } 
+  }
+#endif /*HAVE_JOLIET*/ 
   *p_psz_app_id = iso9660_get_application_id( &(p_iso->pvd) );
   return *p_psz_app_id != NULL && strlen(*p_psz_app_id);
 }
@@ -234,7 +237,8 @@ iso9660_ifs_get_preparer_id(iso9660_t *p_iso,
     *p_psz_preparer_id = NULL;
     return false;
   }
-  
+
+#ifdef HAVE_JOLIET  
   if (p_iso->i_joliet_level) {
     /* TODO: check that we haven't reached the maximum size.
        If we have, perhaps we've truncated and if we can get 
@@ -244,7 +248,8 @@ iso9660_ifs_get_preparer_id(iso9660_t *p_iso,
     if ( ucs2be_to_locale(p_iso->svd.preparer_id, ISO_MAX_PREPARER_ID, 
 			  p_psz_preparer_id, ISO_MAX_PREPARER_ID) )
       return true;
-  } 
+  }
+#endif /*HAVE_JOLIET*/
   *p_psz_preparer_id = iso9660_get_preparer_id( &(p_iso->pvd) );
   return *p_psz_preparer_id != NULL && strlen(*p_psz_preparer_id);
 }
@@ -260,7 +265,8 @@ bool iso9660_ifs_get_publisher_id(iso9660_t *p_iso,
     *p_psz_publisher_id = NULL;
     return false;
   }
-  
+
+#ifdef HAVE_JOLIET  
   if (p_iso->i_joliet_level) {
     /* TODO: check that we haven't reached the maximum size.
        If we have, perhaps we've truncated and if we can get 
@@ -270,7 +276,8 @@ bool iso9660_ifs_get_publisher_id(iso9660_t *p_iso,
     if( ucs2be_to_locale(p_iso->svd.publisher_id, ISO_MAX_PUBLISHER_ID, 
 			 p_psz_publisher_id, ISO_MAX_PUBLISHER_ID) )
       return true;
-  } 
+  }
+#endif /*HAVE_JOLIET*/
   *p_psz_publisher_id = iso9660_get_publisher_id( &(p_iso->pvd) );
   return *p_psz_publisher_id != NULL && strlen(*p_psz_publisher_id);
 }
@@ -287,7 +294,8 @@ bool iso9660_ifs_get_system_id(iso9660_t *p_iso,
     *p_psz_system_id = NULL;
     return false;
   }
-  
+
+#ifdef HAVE_JOLIET  
   if (p_iso->i_joliet_level) {
     /* TODO: check that we haven't reached the maximum size.
        If we have, perhaps we've truncated and if we can get 
@@ -298,6 +306,7 @@ bool iso9660_ifs_get_system_id(iso9660_t *p_iso,
 			  p_psz_system_id, ISO_MAX_SYSTEM_ID) )
       return true;
   }
+#endif /*HAVE_JOLIET*/
   *p_psz_system_id = iso9660_get_system_id( &(p_iso->pvd) );
   return *p_psz_system_id != NULL && strlen(*p_psz_system_id);
 }
@@ -314,7 +323,8 @@ bool iso9660_ifs_get_volume_id(iso9660_t *p_iso,
     *p_psz_volume_id = NULL;
     return false;
   }
-  
+
+#ifdef HAVE_JOLIET  
   if (p_iso->i_joliet_level) {
     /* TODO: check that we haven't reached the maximum size.
        If we have, perhaps we've truncated and if we can get 
@@ -324,7 +334,8 @@ bool iso9660_ifs_get_volume_id(iso9660_t *p_iso,
     if ( ucs2be_to_locale(p_iso->svd.volume_id, ISO_MAX_VOLUME_ID, 
 			  p_psz_volume_id, ISO_MAX_VOLUME_ID) )
       return true;
-  } 
+  }
+#endif /* HAVE_JOLIET */
   *p_psz_volume_id = iso9660_get_volume_id( &(p_iso->pvd) );
   return *p_psz_volume_id != NULL && strlen(*p_psz_volume_id);
 }
@@ -341,7 +352,8 @@ bool iso9660_ifs_get_volumeset_id(iso9660_t *p_iso,
     *p_psz_volumeset_id = NULL;
     return false;
   }
-  
+
+#ifdef HAVE_JOLIET  
   if (p_iso->i_joliet_level) {
     /* TODO: check that we haven't reached the maximum size.
        If we have, perhaps we've truncated and if we can get 
@@ -354,6 +366,7 @@ bool iso9660_ifs_get_volumeset_id(iso9660_t *p_iso,
 			  ISO_MAX_VOLUMESET_ID) )
       return true;
   }
+#endif /*HAVE_JOLIET*/
   *p_psz_volumeset_id = iso9660_get_volume_id( &(p_iso->pvd) );
   return *p_psz_volumeset_id != NULL && strlen(*p_psz_volumeset_id);
 }
@@ -595,6 +608,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir,
   else if ('\1' == p_iso9660_dir->filename[0] && 1 == filename_len)
     strcpy (stat->filename, "..");
   else {
+#ifdef HAVE_JOLIET
     if (i_joliet_level) {
       int i_inlen = filename_len;
       int i_outlen = (i_inlen / 2);
@@ -604,6 +618,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir,
       strncpy(stat->filename, p_psz_out, filename_len);
       free(p_psz_out);
     } else
+#endif /*HAVE_JOLIET*/
       strncpy (stat->filename, p_iso9660_dir->filename, filename_len);
   }
   
