@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.16 2005/02/06 11:13:37 rocky Exp $
+    $Id: freebsd.c,v 1.17 2005/02/06 13:05:42 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.16 2005/02/06 11:13:37 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.17 2005/02/06 13:05:42 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -344,14 +344,14 @@ get_drive_cap_freebsd (const void *p_user_data,
  */
 static driver_return_code_t
 run_mmc_cmd_freebsd( void *p_user_data, unsigned int i_timeout_ms,
-		     unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		     mmc_direction_t e_direction, 
+		     unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		     scsi_mmc_direction_t e_direction, 
 		     unsigned int i_buf, /*in/out*/ void *p_buf ) 
 {
   const _img_private_t *p_env = p_user_data;
 
   if (p_env->access_mode == _AM_CAM) 
-    return run_scsi_cmd_freebsd_cam( p_user_data, i_timeout_ms, i_cdb, p_cdb, 
+    return run_mmc_cmd_freebsd_cam( p_user_data, i_timeout_ms, i_cdb, p_cdb, 
 				     e_direction, i_buf, p_buf );
   else 
     return DRIVER_OP_UNSUPPORTED;

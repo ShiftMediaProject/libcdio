@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.5 2005/02/06 11:13:37 rocky Exp $
+    $Id: freebsd_cam.c,v 1.6 2005/02/06 13:05:42 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.5 2005/02/06 11:13:37 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.6 2005/02/06 13:05:42 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -227,7 +227,7 @@ int
 eject_media_freebsd_cam (_img_private_t *p_env) 
 {
   int i_status;
-  mmc_cdb_t cdb = {{0, }};
+  scsi_mmc_cdb_t cdb = {{0, }};
   uint8_t buf[1];
   
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
