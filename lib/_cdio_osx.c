@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.32 2004/06/06 11:25:13 rocky Exp $
+    $Id: _cdio_osx.c,v 1.33 2004/06/13 21:43:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.32 2004/06/06 11:25:13 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.33 2004/06/13 21:43:41 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -143,11 +143,12 @@ getFirstTrack_osx( CDTOC *pTOC, int i_descriptors )
   
   pTrackDescriptors = pTOC->descriptors;
   
-  for( i = 0; i < i_descriptors; i++ )
+  for( i = 0; i <= i_descriptors; i++ )
     {
       i_track = pTrackDescriptors[i].point;
       
-      if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
+      if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO 
+	  || i_track == 0xA2 )
 	continue;
       return ( i_track );
     }
