@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.4 2004/06/20 15:06:42 rocky Exp $
+    $Id: win32_ioctl.c,v 1.5 2004/06/21 16:17:22 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.4 2004/06/20 15:06:42 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.5 2004/06/21 16:17:22 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -181,8 +181,16 @@ read_audio_sectors_win32ioctl (_img_private_t *env, void *data, lsn_t lsn,
 		       sizeof(RAW_READ_INFO), data,
 		       CDIO_CD_FRAMESIZE_RAW * nblocks,
 		       &dwBytesReturned, NULL ) == 0 ) {
-    cdio_info("Error reading audio-mode %lu (%ld)\n", 
-	      (long unsigned int) lsn, GetLastError());
+    char *psz_msg;
+    DWORD dw = GetLastError();
+
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
+		  NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		  (LPSTR) psz_msg, 0, NULL);
+
+    cdio_info("Error reading audio-mode %lu\n%s)", 
+	      (long unsigned int) lsn, psz_msg);
+    LocalFree(psz_msg);
     return 1;
   }
   return 0;
@@ -236,8 +244,15 @@ read_raw_sector (const _img_private_t *env, void *buf, lsn_t lsn)
 			  NULL);
 
   if(! success) {
-    cdio_info("Error reading %lu (%ld)\n", (long unsigned) lsn, 
-	      GetLastError());
+    char *psz_msg;
+    DWORD dw = GetLastError();
+
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
+		  NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		  (LPSTR) psz_msg, 0, NULL);
+    cdio_info("Error reading %lu:\n%s", (long unsigned int) lsn, 
+	      psz_msg);
+    LocalFree(psz_msg);
     return 1;
   }
 
