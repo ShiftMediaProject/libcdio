@@ -15,16 +15,20 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.42 2003/09/15 12:05:10 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.43 2003/09/19 04:39:50 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
      
 AM_SANITY_CHECK
 
-AC_ARG_WITH(cdinfo,
-[  --without-cdinfo	build sample program cdinfo (enabled by default)],
-enable_cdinfo="${withval}", enable_cdinfo=yes)
+AC_ARG_WITH(cd_info,
+[  --without-cd-info	build program cd-info (enabled by default)],
+enable_cd_info="${withval}", enable_cd_info=yes)
+
+AC_ARG_WITH(cd_read,
+[  --without-cd-read	build program cd-read (enabled by default)],
+enable_cd_read="${withval}", enable_cd_read=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -80,7 +84,7 @@ AC_SUBST(DIFF)
 AC_SUBST(DIFF_OPTS)
 
 
-AM_PATH_LIBPOPT(, [enable_cdinfo=no])
+AM_PATH_LIBPOPT(, [enable_cd_info=no])
 
 dnl headers
 
@@ -160,8 +164,8 @@ LIBS="$LIBS -lm"
 CFLAGS="$CFLAGS $WARN_CFLAGS"
 
 AM_CONDITIONAL(CYGWIN, test "x$CYGWIN" = "xyes")
-AM_CONDITIONAL(BUILD_CDINFO, test "x$enable_cdinfo" = "xyes")
-AM_CONDITIONAL(BUILD_CDINFO_LINUX, test "x$enable_cdinfo_linux" = "xyes")
+AM_CONDITIONAL(BUILD_CDINFO, test "x$enable_cd_info" = "xyes")
+AM_CONDITIONAL(BUILD_CDINFO_LINUX, test "x$enable_cd_info_linux" = "xyes")
 AM_CONDITIONAL(BUILD_CDIOTEST, test "x$enable_cdiotest" = "xyes")
 
 AM_PROG_LIBTOOL
@@ -251,9 +255,11 @@ AC_SUBST(HAVE_SOLARIS_CDROM)
 AC_SUBST(HAVE_WIN32_CDROM)
 AC_SUBST(HAVE_DARWIN_CDROM)
 
+AC_CHECK_FUNCS( bzero memcpy )
+
 if test x$enable_cddb = x; then
 AC_ARG_ENABLE(cddb,
-	[  --disable-cddb          don't include CDDB lookups in cdinfo],
+	[  --disable-cddb          don't include CDDB lookups in cd_info],
 		enable_cddb=no,
 		enable_cddb=yes)
 fi
@@ -271,17 +277,17 @@ fi
 
 AC_SUBST(CDDB_LIBS)
 
-if test x$enable_vcdinfo = x; then
-AC_ARG_ENABLE(vcdinfo,
-	[  --disable-vcdinfo        don't include Video CD Info from libvcd],
-		enable_vcdinfo=no,
-		enable_vcdinfo=yes)
+if test x$enable_vcd_info = x; then
+AC_ARG_ENABLE(vcd_info,
+	[  --disable-vcd-info        don't include Video CD Info from libvcd],
+		enable_vcd_info=no,
+		enable_vcd_info=yes)
 fi
-if test x$enable_vcdinfo = xyes; then
+if test x$enable_vcd_info = xyes; then
   PKG_CHECK_MODULES(VCDINFO, libvcdinfo >= 0.7.18-cdio, 
   [AC_DEFINE([HAVE_VCDINFO],1, 
   [Define this if you have libvcdinfo installed])], 
-  [enable_vcdinfo=no])
+  [enable_vcd_info=no])
 fi
 
 AC_SUBST(VCDINFO_LIBS)
