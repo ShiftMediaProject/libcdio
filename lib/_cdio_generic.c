@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.4 2003/04/06 18:12:37 rocky Exp $
+    $Id: _cdio_generic.c,v 1.5 2003/04/07 11:24:04 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,12 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.4 2003/04/06 18:12:37 rocky Exp $";
-
-#include "cdio_assert.h"
-#include "cdio_private.h"
-#include "sector.h"
-#include "util.h"
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.5 2003/04/07 11:24:04 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +39,12 @@ static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.4 2003/04/06 18:12:37 roc
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+
+#include "cdio_assert.h"
+#include "cdio_private.h"
+#include "sector.h"
+#include "util.h"
+#include "_cdio_stdio.h"
 
 /*!
   Eject media -- there's nothing to do here. We always return 2.
@@ -122,24 +123,20 @@ cdio_generic_read (void *user_data, void *buf, size_t size)
   return read(_obj->fd, buf, size);
 }
 
-
-int
-cdio_generic_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, 
-				 bool mode2raw, unsigned num_sectors)
+/*!
+  Release and free resources associated with stream or disk image.
+*/
+void
+cdio_generic_stream_free (void *user_data)
 {
-  char *_buf = buf;
-  const int blocksize = mode2raw ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
-  int n, rc;
+  generic_img_private_t *_obj = user_data;
 
-  cdio_assert (obj != NULL);
-  cdio_assert (buf != NULL);
-  cdio_assert (obj->op.read_mode2_sector != NULL);
+  if (NULL == _obj) return;
+  free (_obj->source_name);
 
-  for (n = 0; n < num_sectors; n++)
-    if ((rc = cdio_read_mode2_sector (obj, &_buf[n * blocksize],
-				      lsn + n, mode2raw)))
-      return rc;
-  
-  return 0;
+  if (_obj->data_source)
+    cdio_stream_destroy (_obj->data_source);
+
+  free (_obj);
 }
 
