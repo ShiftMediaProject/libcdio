@@ -1,13 +1,11 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.7 2003/08/31 15:52:56 rocky Exp $
-if test -z "@CDDB_LIB@" ; then
+#$Id: check_cue.sh.in,v 1.8 2003/09/01 02:02:59 rocky Exp $
+if test -z "@CDDB_LIBS@" ; then
   cddb_opt='--no-cddb'
 fi
 
 if test -z "@VCDINFO_LIBS@" ; then
   vcd_opt='--no-vcd'
-else 
-  vcd_opt='--iso9660'
 fi
 
 if test -z $srcdir ; then
@@ -48,7 +46,7 @@ fi
 fname=vcd_demo
 testnum='Video CD'
 if test -f ${srcdir}/${fname}.cue ; then
-  test_cdinfo "-c ${srcdir}/vcd_demo.cue $vcd_opt" \
+  test_cdinfo "-c ${srcdir}/vcd_demo.cue $vcd_opt --iso9660" \
       ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
   check_result $RC "cdinfo CUE test $testnum"
@@ -59,7 +57,7 @@ fi
 fname=svcd_ogt_test_ntsc
 testnum='Super Video CD'
 if test -f ${srcdir}/${fname}.bin ; then
-  test_cdinfo "--cue-file ${srcdir}/${fname}.cue $vcd_opt" \
+  test_cdinfo "--cue-file ${srcdir}/${fname}.cue $vcd_opt --iso9660 " \
     ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
   check_result $RC "cdinfo CUE test $testnum"
