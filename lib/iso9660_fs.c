@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.11 2003/09/21 01:14:30 rocky Exp $
+    $Id: iso9660_fs.c,v 1.12 2003/11/10 04:01:16 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -38,30 +38,32 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.11 2003/09/21 01:14:30 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.12 2003/11/10 04:01:16 rocky Exp $";
 
 static void
-_idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *stat, bool is_mode2)
+_iso9660_dir_to_statbuf (const iso9660_dir_t *iso9660_dir, 
+			 iso9660_stat_t *stat, bool is_mode2)
 {
   iso9660_xa_t *xa_data = NULL;
-  uint8_t dir_len= iso9660_get_dir_len(idr);
+  uint8_t dir_len= iso9660_get_dir_len(iso9660_dir);
 
   memset ((void *) stat, 0, sizeof (iso9660_stat_t));
 
   if (!dir_len) return;
 
-  stat->type    = (idr->file_flags & ISO_DIRECTORY) ? _STAT_DIR : _STAT_FILE;
-  stat->lsn     = from_733 (idr->extent);
-  stat->size    = from_733 (idr->size);
+  stat->type    = (iso9660_dir->file_flags & ISO_DIRECTORY) 
+    ? _STAT_DIR : _STAT_FILE;
+  stat->lsn     = from_733 (iso9660_dir->extent);
+  stat->size    = from_733 (iso9660_dir->size);
   stat->secsize = _cdio_len2blocks (stat->size, ISO_BLOCKSIZE);
 
-  iso9660_get_dtime(&(idr->recording_time), true, &(stat->tm));
+  iso9660_get_dtime(&(iso9660_dir->recording_time), true, &(stat->tm));
 
   cdio_assert (dir_len >= sizeof (iso9660_dir_t));
 
   if (is_mode2) {
-    int su_length = iso9660_get_dir_len(idr) - sizeof (iso9660_dir_t);
-    su_length -= idr->filename_len;
+    int su_length = iso9660_get_dir_len(iso9660_dir) - sizeof (iso9660_dir_t);
+    su_length -= iso9660_dir->filename_len;
     
     if (su_length % 2)
       su_length--;
@@ -69,15 +71,17 @@ _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *stat, bool is_mode2)
     if (su_length < 0 || su_length < sizeof (iso9660_xa_t))
       return;
     
-    xa_data = (void *) (((char *) idr) + (iso9660_get_dir_len(idr) - su_length));
+    xa_data = (void *) (((char *) iso9660_dir) 
+			+ (iso9660_get_dir_len(iso9660_dir) - su_length));
     
     if (xa_data->signature[0] != 'X' 
 	|| xa_data->signature[1] != 'A')
     {
       cdio_warn ("XA signature not found in ISO9660's system use area;"
 		 " ignoring XA attributes for this file entry.");
-      cdio_debug ("%d %d %d, '%c%c' (%d, %d)", iso9660_get_dir_len(idr), 
-		  idr->filename_len,
+      cdio_debug ("%d %d %d, '%c%c' (%d, %d)", 
+		  iso9660_get_dir_len(iso9660_dir), 
+		  iso9660_dir->filename_len,
 		  su_length,
 		  xa_data->signature[0], xa_data->signature[1],
 		  xa_data->signature[0], xa_data->signature[1]);
@@ -88,24 +92,29 @@ _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *stat, bool is_mode2)
     
 }
 
-static char *
-_idr2name (const iso9660_dir_t *idr)
+/*!
+  Return the directory name stored in the iso9660_dir_t
+
+  A string is allocated: the caller must deallocate.
+ */
+char *
+iso9660_dir_to_name (const iso9660_dir_t *iso9660_dir)
 {
   char namebuf[256] = { 0, };
-  uint8_t len=iso9660_get_dir_len(idr);
+  uint8_t len=iso9660_get_dir_len(iso9660_dir);
 
   if (!len) return NULL;
 
   cdio_assert (len >= sizeof (iso9660_dir_t));
 
-  /* (idr->file_flags & ISO_DIRECTORY) */
+  /* (iso9660_dir->file_flags & ISO_DIRECTORY) */
   
-  if (idr->filename[0] == '\0')
+  if (iso9660_dir->filename[0] == '\0')
     strcpy (namebuf, ".");
-  else if (idr->filename[0] == '\1')
+  else if (iso9660_dir->filename[0] == '\1')
     strcpy (namebuf, "..");
   else
-    strncpy (namebuf, idr->filename, idr->filename_len);
+    strncpy (namebuf, iso9660_dir->filename, iso9660_dir->filename_len);
 
   return strdup (namebuf);
 }
@@ -116,7 +125,7 @@ _fs_stat_root (const CdIo *cdio, iso9660_stat_t *stat, bool is_mode2)
 {
   char block[ISO_BLOCKSIZE] = { 0, };
   const iso9660_pvd_t *pvd = (void *) &block;
-  const iso9660_dir_t *idr = (void *) pvd->root_directory_record;
+  const iso9660_dir_t *iso9660_dir = (void *) pvd->root_directory_record;
 
   if (is_mode2) {
     if (cdio_read_mode2_sector (cdio, &block, ISO_PVD_SECTOR, false))
@@ -126,7 +135,7 @@ _fs_stat_root (const CdIo *cdio, iso9660_stat_t *stat, bool is_mode2)
       cdio_assert_not_reached ();
   }
 
-  _idr2statbuf (idr, stat, is_mode2);
+  _iso9660_dir_to_statbuf (iso9660_dir, stat, is_mode2);
 }
 
 static int
@@ -169,18 +178,18 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
   
   while (offset < (_root->secsize * ISO_BLOCKSIZE))
     {
-      const iso9660_dir_t *idr = (void *) &_dirbuf[offset];
+      const iso9660_dir_t *iso9660_dir = (void *) &_dirbuf[offset];
       iso9660_stat_t stat;
       char *name;
 
-      if (!iso9660_get_dir_len(idr))
+      if (!iso9660_get_dir_len(iso9660_dir))
 	{
 	  offset++;
 	  continue;
 	}
       
-      name = _idr2name (idr);
-      _idr2statbuf (idr, &stat, is_mode2);
+      name = iso9660_dir_to_name (iso9660_dir);
+      _iso9660_dir_to_statbuf (iso9660_dir, &stat, is_mode2);
 
       if (!strcmp (splitpath[0], name))
 	{
@@ -193,7 +202,7 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
 
       free (name);
 
-      offset += iso9660_get_dir_len(idr);
+      offset += iso9660_get_dir_len(iso9660_dir);
     }
 
   cdio_assert (offset == (_root->secsize * ISO_BLOCKSIZE));
@@ -228,7 +237,11 @@ iso9660_fs_stat (const CdIo *cdio, const char pathname[],
   return retval;
 }
 
-void * /* list of char* -- caller must free it */
+
+/*!  Read pathname (a directory) and return a list of of the files
+  inside that (char *). The caller must free the returned result.
+*/
+void * 
 iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool is_mode2)
 {
   iso9660_stat_t stat;
@@ -276,7 +289,7 @@ iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool is_mode2)
 	    continue;
 	  }
 
-	_cdio_list_append (retval, _idr2name (idr));
+	_cdio_list_append (retval, iso9660_dir_to_name (idr));
 
 	offset += iso9660_get_dir_len(idr);
       }

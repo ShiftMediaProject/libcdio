@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.29 2003/11/09 13:53:28 rocky Exp $
+    $Id: iso9660.h,v 1.30 2003/11/10 04:01:16 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -82,7 +82,7 @@
 #define ISO_PVD_SECTOR  16      /**< Sector of Primary Volume Descriptor */
 #define ISO_EVD_SECTOR  17      /**< Sector of End Volume Descriptor */
 
-#define ISO_STANDARD_ID      "CD001" /**< String inside track identifiying an 
+#define ISO_STANDARD_ID      "CD001" /**< String inside track identifying an 
                                         ISO 9660 filesystem. */
 #define ISO_BLOCKSIZE           2048 /**< Number of bytes in an ISO
                                         9660 block */
@@ -381,31 +381,33 @@ bool iso9660_find_fs_lsn(const CdIo *cdio, lsn_t lsn,
 int iso9660_fs_stat (const CdIo *obj, const char pathname[], 
                      /*out*/ iso9660_stat_t *stat, bool is_mode2);
 
-void * /* list of char* -- caller must free it */
-iso9660_fs_readdir (const CdIo *obj, const char pathname[], bool mode2);
+/*!  Read pathname (a directory) and return a list of of the files
+  inside that (char *). The caller must free the returned result.
+*/
+void * iso9660_fs_readdir (const CdIo *obj, const char pathname[], bool mode2);
 
-uint8_t
-iso9660_get_dir_len(const iso9660_dir_t *idr);
+uint8_t iso9660_get_dir_len(const iso9660_dir_t *idr);
 
 #if FIXME
-uint8_t
-iso9660_get_dir_size(const iso9660_dir_t *idr);
+uint8_t iso9660_get_dir_size(const iso9660_dir_t *idr);
 
-lsn_t
-iso9660_get_dir_extent(const iso9660_dir_t *idr);
+lsn_t iso9660_get_dir_extent(const iso9660_dir_t *idr);
 #endif
 
-uint8_t
-iso9660_get_pvd_type(const iso9660_pvd_t *pvd);
+/*!
+  Return the directory name stored in the iso9660_dir_t
 
-const char *
-iso9660_get_pvd_id(const iso9660_pvd_t *pvd);
+  A string is allocated: the caller must deallocate.
+*/
+char * iso9660_dir_to_name (const iso9660_dir_t *iso9660_dir);
+  
+uint8_t iso9660_get_pvd_type(const iso9660_pvd_t *pvd);
 
-int
-iso9660_get_pvd_space_size(const iso9660_pvd_t *pvd);
+const char * iso9660_get_pvd_id(const iso9660_pvd_t *pvd);
 
-int
-iso9660_get_pvd_block_size(const iso9660_pvd_t *pvd) ;
+int iso9660_get_pvd_space_size(const iso9660_pvd_t *pvd);
+
+int iso9660_get_pvd_block_size(const iso9660_pvd_t *pvd) ;
 
 /*! Return the primary volume id version number (of pvd).
     If there is an error 0 is returned. 
