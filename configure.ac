@@ -19,7 +19,7 @@ define(RELEASE_NUM, 69)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.82 2004/06/02 08:23:55 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.83 2004/06/11 02:22:13 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -202,7 +202,8 @@ if test "x$enable_versioned_libs" = "xyes" ; then
     else 
       # Do we have GNU ld? We need that too.
       if test "$with_gnu_ld" != yes; then
-        AC_MSG_ERROR(I don't see GNU ld. Use the --without-versioned-libs option)
+        AC_MSG_WARN(I don't see GNU ld. I'm going to assume --without-versioned-libs)
+	enable_versioned_libs='no'
       fi
     fi
   fi
