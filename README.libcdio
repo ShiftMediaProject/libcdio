@@ -20,7 +20,7 @@ VCD dependency:
 ---------------
 One thing that confuses people is the "dependency" on libvcdinfo from
 vcdimager, while vcdimager has a dependency on libcdio.  This libcdio
-dependency on vcdimager is optional (i.e. not mandatory) dependency,
+dependency on vcdimager is an optional (i.e. not mandatory) dependency,
 while the vcdimager dependency right now is mandatory. libvcdinfo is
 used only by the utility program cd-info. If you want cd-info to use
 the VCD reporting portion and you don't already have vcdimager
@@ -71,4 +71,4 @@ spent far more time on this platform than I care for. If someone is
 interested in fixing the Microsoft OS support great.
 
 
-$Id: README.libcdio,v 1.8 2004/08/12 09:22:23 rocky Exp $
+$Id: README.libcdio,v 1.9 2005/01/30 09:48:59 rocky Exp $
