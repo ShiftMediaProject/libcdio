@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.19 2005/03/14 02:02:49 rocky Exp $
+    $Id: device.c,v 1.20 2005/03/17 09:01:58 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -310,7 +310,7 @@ driver_return_code_t
 cdio_close_tray (const char *psz_drive, /*in/out*/ driver_id_t
                  *p_driver_id)
 {
-  const driver_id_t temp_driver_id = DRIVER_DEVICE;
+  driver_id_t temp_driver_id = DRIVER_DEVICE;
 
   if (!p_driver_id) p_driver_id = &temp_driver_id;
   
