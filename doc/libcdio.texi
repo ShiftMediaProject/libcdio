@@ -2,7 +2,7 @@
 
 @c %**start of header
 @setfilename libcdio.info
-@settitle The GNU Compact Disck Input and Control library
+@settitle The GNU Compact Disc Input and Control library
 @setchapternewpage on
 @c %**end of header
 
@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.12 2004/02/22 13:27:18 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.13 2004/02/25 02:04:22 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -209,8 +209,8 @@ to by the color of the cover on the specification.
 @node Red Book
 @section Red Book
 The first type of CD that was produced was the Compact Disc Digital
-Audio (CD-DA) or just plain ``audio CD''. The specification is
-commonly called the ``Red Book''. Music CD's are recorded in this
+Audio (CD-DA) or just plain ``audio CD''. The specification, ICE 908,
+is commonly called the ``Red Book''. Music CD's are recorded in this
 format which basically allows for around 74 minutes of audio per disc
 and for that information to be split up into tracks. Tracks are broken
 up into "sectors" and each sector contains 2,352 bytes. To play one
@@ -221,9 +221,9 @@ routine @code{cdio_read_audio_sector()}.
 
 @node Yellow Book
 @section Yellow Book
-The CD-ROM specification or the ``Yellow Book'' followed a few years later
-and describes the extension of CD's to store computer data,
-i.e. CD-ROM (Compact Disk Read Only Memory).  
+The CD-ROM specification or the ``Yellow Book'' followed a few years
+later (Standards ISO/IEC 10149), and describes the extension of CD's
+to store computer data, i.e. CD-ROM (Compact Disk Read Only Memory).
 
 The specification in the Yellow Book defines two modes: Mode1 and
 Mode2.
@@ -288,27 +288,29 @@ System semantics.
 
 @node Mode1
 @subsection Mode1
-Mode 1 is the data storage mode used by to store computer
-data. The data is laid out in basically the same way as in and audio
-CD format, except that the 2,352 bytes of data in each block are
-broken down further. 2,048 of these bytes are for "real" data. The
-other 304 bytes are used for an additional level of error detecting
-and correcting code. This is necessary because data CDs cannot
-tolerate the loss of a handful of bits now and then, the way audio
-CDs can.
+Mode 1 is the data storage mode used by to store computer data. There
+are 3 layers of error correction. A Compact Disc using only this format can
+hold at most 650 MB. The data is laid out in basically the same way as
+in and audio CD format, except that the 2,352 bytes of data in each
+block are broken down further. 2,048 of these bytes are for "real"
+data. The other 304 bytes are used for an additional level of error
+detecting and correcting code. This is necessary because data CDs
+cannot tolerate the loss of a handful of bits now and then, the way
+audio CDs can.
 
 @node Mode2
 @subsection Mode2
 Mode 2 data CDs are the same as mode 1 CDs except that the error
-detecting and correcting codes are omitted. This is similar to audio
-CDs, i.e. the mode 2 format provides a more flexible vehicle for
-storing types of data that do not require high data integrity: for
-example, graphics and video can use this format. But in contrast to
-the Red book standard, different modes can be mixed together; this is
-the basis for the extensions to the original data CD standards known
-as CD-ROM Extended Architecture, or CD-ROM XA.  CD-ROM XA formats
-currently in use are CD-I Bridge formats, Photo CD and Video CD plus
-Sony's Playstation.
+detecting and correcting codes are omitted. So still there are 2
+layers of error correction. A Compact Disc using only this mode can
+thus hold at most 742 MB. Similar to audio CDs, the mode 2 format
+provides a more flexible vehicle for storing types of data that do not
+require high data integrity: for example, graphics and video can use
+this format. But in contrast to the Red Book standard, different modes
+can be mixed together; this is the basis for the extensions to the
+original data CD standards known as CD-ROM Extended Architecture, or
+CD-ROM XA.  CD-ROM XA formats currently in use are CD-I Bridge
+formats, Photo CD and Video CD plus Sony's Playstation.
 
 @node White Book
 @section White Book
