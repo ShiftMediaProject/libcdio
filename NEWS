@@ -1,3 +1,7 @@
+0.4
+-  More regression tests. 
+-  Use pkg-config(1) support
+-  NRG may be closer to being correct.
 0.3 
 -  reduced overall size of package. Some regression moved to a separate (large)
    package.
