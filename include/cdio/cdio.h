@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.26 2003/09/30 03:26:11 rocky Exp $
+    $Id: cdio.h,v 1.27 2003/10/02 02:59:57 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -367,6 +367,8 @@ extern "C" {
   
   char * cdio_get_default_device_bsdi(void);
 
+  char **cdio_get_devices_bsdi(void);
+  
   /*! BSDI CD-reading routines. 
      NULL is returned on error.
   */

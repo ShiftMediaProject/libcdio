@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.8 2003/09/27 23:29:29 rocky Exp $
+  $Id: cd-read.c,v 1.9 2003/10/02 02:59:58 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -110,8 +110,8 @@ hexdump (uint8_t * buffer, unsigned int len)
       if (i % 2 == 1)
 	printf (" ");
       if (i % 16 == 15) {
-	printf ("  ");
 	uint8_t *p; 
+	printf ("  ");
 	for (p=buffer-15; p <= buffer; p++) {
 	  printf("%c", isprint(*p) ?  *p : '.');
 	}

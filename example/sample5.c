@@ -1,5 +1,5 @@
 /*
-  $Id: sample5.c,v 1.3 2003/09/29 02:56:22 rocky Exp $
+  $Id: sample5.c,v 1.4 2003/10/02 02:59:57 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -50,9 +50,10 @@ main(int argc, const char *argv[])
 
   /* Print out a list of CD-drives */
   cd_drives = cdio_get_devices(DRIVER_DEVICE);
-  for( c = cd_drives; *c != NULL; *c++ ) {
-    printf("Drive %s\n", *c);
-  }
+  if (NULL != cd_drives) 
+    for( c = cd_drives; *c != NULL; c++ ) {
+      printf("Drive %s\n", *c);
+    }
 
   cdio_free_device_list(cd_drives);
   printf("-----\n");
@@ -62,7 +63,7 @@ main(int argc, const char *argv[])
   cd_drives = cdio_get_devices_with_cap(NULL, CDIO_FS_MATCH_ALL, false);
 
   if (NULL != cd_drives) {
-    for( c = cd_drives; *c != NULL; *c++ ) {
+    for( c = cd_drives; *c != NULL; c++ ) {
       printf("Drive %s\n", *c);
     }
     
@@ -77,7 +78,7 @@ main(int argc, const char *argv[])
   cd_drives = cdio_get_devices_with_cap(NULL,  CDIO_FS_AUDIO, false);
 
   if (NULL != cd_drives) {
-    for( c = cd_drives; *c != NULL; *c++ ) {
+    for( c = cd_drives; *c != NULL; c++ ) {
       printf("drive: %s\n", *c);
     }
     
@@ -92,7 +93,7 @@ main(int argc, const char *argv[])
 (CDIO_FS_ANAL_SVCD|CDIO_FS_ANAL_CVD|CDIO_FS_ANAL_VIDEOCD|CDIO_FS_UNKNOWN),
 					true);
   if (NULL != cd_drives) {
-    for( c = cd_drives; *c != NULL; *c++ ) {
+    for( c = cd_drives; *c != NULL; c++ ) {
       printf("drive: %s\n", *c);
     }
   }

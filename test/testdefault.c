@@ -1,5 +1,5 @@
 /*
-  $Id: testdefault.c,v 1.1 2003/10/01 02:44:21 rocky Exp $
+  $Id: testdefault.c,v 1.2 2003/10/02 02:59:58 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -87,7 +87,7 @@ main(int argc, const char *argv[])
 
   nrg_images = cdio_get_devices(DRIVER_NRG);
 
-  for (imgs=nrg_images; *imgs != NULL; *imgs++) {
+  for (imgs=nrg_images; *imgs != NULL; imgs++) {
     printf("NRG image %s\n", *imgs);
   }
 
@@ -97,7 +97,7 @@ main(int argc, const char *argv[])
       
   bincue_images = cdio_get_devices(DRIVER_BINCUE);
   
-  for (imgs=bincue_images; *imgs != NULL; *imgs++) {
+  for (imgs=bincue_images; *imgs != NULL; imgs++) {
     printf("bincue image %s\n", *imgs);
   }
   
@@ -118,7 +118,7 @@ main(int argc, const char *argv[])
     return 3;
   }
     
-  for( c = imgs; *c != NULL; *c++ ) {
+  for( c = imgs; *c != NULL; c++ ) {
     printf("%s\n", *c);
   }
     

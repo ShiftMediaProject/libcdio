@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.30 2003/09/30 03:26:11 rocky Exp $
+    $Id: cdio.c,v 1.31 2003/10/02 02:59:58 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.30 2003/09/30 03:26:11 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.31 2003/10/02 02:59:58 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -225,7 +225,7 @@ cdio_eject_media (CdIo **obj)
 void cdio_free_device_list (char * device_list[]) 
 {
   if (NULL == device_list) return;
-  for ( ; *device_list != NULL ; *device_list++ )
+  for ( ; *device_list != NULL ; device_list++ )
     free(*device_list);
 }
 
@@ -328,10 +328,11 @@ cdio_get_devices_with_cap (char* search_devices[],
   int num_drives=0;
 
   if (NULL == drives) drives=cdio_get_devices(DRIVER_DEVICE);
+  if (NULL == drives) return NULL;
 
   if (capabilities == CDIO_FS_MATCH_ALL) {
     /* Duplicate drives into drives_ret. */
-    for( ; *drives != NULL; *drives++ ) {
+    for( ; *drives != NULL; drives++ ) {
       cdio_add_device_list(&drives_ret, *drives, &num_drives);
     }
   } else {

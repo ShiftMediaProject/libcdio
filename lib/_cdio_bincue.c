@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.33 2003/09/30 03:26:11 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.34 2003/10/02 02:59:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.33 2003/09/30 03:26:11 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.34 2003/10/02 02:59:58 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -321,19 +321,19 @@ _cdio_image_read_cue (_img_private_t *_obj)
   _obj->mcn=NULL;
   
   while ((fgets(line, MAXLINE, fp)) != NULL) {
-    char *s=NULL;
+    char s[80];
     char *p;
     /*printf("Retrieved line of length %zu :\n", read);
       printf("%s", line); */
     for (p=line; isspace(*p); p++) ;
-    if (1==sscanf(p, "FILE \"%a[^\"]", &s)) {
+    if (1==sscanf(p, "FILE \"%80s[^\"]", s)) {
       /* Should expand file name based on cue file basename.
       free(_obj->bin_file);
-      _obj->bin_file = s;
+      _obj->bin_file = strdup(s);
       */
       /* printf("Found file name %s\n", s); */
-    } else if (1==sscanf(p, "CATALOG %as", &s)) {
-      _obj->mcn = s;
+    } else if (1==sscanf(p, "CATALOG %80s", s)) {
+      _obj->mcn = strdup(s);
     } else if (2==sscanf(p, "TRACK %d MODE2/%d", &track_num, &blocksize)) {
       track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
       this_track->track_num   = track_num;

@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.h,v 1.2 2003/09/28 17:14:20 rocky Exp $
+    $Id: cd_types.h,v 1.3 2003/10/02 02:59:57 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -38,9 +38,19 @@ extern "C" {
 #define CDIO_FS_INTERACTIVE	     4
 #define CDIO_FS_HFS		     5
 #define CDIO_FS_UFS		     6
+
+/* EXT2 was the GNU/Linux native filesystem for early kernels. Newer
+   GNU/Linux OS's may use EXT3 which EXT2 with a journal. */
 #define CDIO_FS_EXT2		     7
+
 #define CDIO_FS_ISO_HFS              8  /* both hfs & isofs filesystem */
 #define CDIO_FS_ISO_9660_INTERACTIVE 9  /* both CD-RTOS and isofs filesystem */
+
+
+/* The 3DO is, technically, a set of specifications created by the 3DO
+company.  These specs are for making a 3DO Interactive Multiplayer
+which uses a CD-player. Panasonic in the early 90's was the first
+company to manufacture and market a 3DO player. */
 #define CDIO_FS_3DO		    10
 
 #define CDIO_FS_MASK		    15  /* Should be 2*n-1 and > above */

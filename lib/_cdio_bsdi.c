@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.13 2003/09/25 09:38:16 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.14 2003/10/02 02:59:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -19,7 +19,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* This file contains Linux-specific code and implements low-level 
+/* This file contains BSDI-specific code and implements low-level 
    control of the CD drive.
 */
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.13 2003/09/25 09:38:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.14 2003/10/02 02:59:58 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -76,6 +76,37 @@ typedef struct {
 
 } _img_private_t;
 
+/* Check a drive to see if it is a CD-ROM 
+   Return 1 if a CD-ROM. 0 if it exists but isn't a CD-ROM drive
+   and -1 if no device exists .
+*/
+static int
+cdio_is_cdrom(char *drive, char *mnttype)
+{
+  bool is_cd=false;
+  int cdfd;
+  struct cdrom_tochdr    tochdr;
+  
+  /* If it doesn't exist, return -1 */
+  if ( !cdio_is_device_quiet_generic(drive) ) {
+    return(false);
+  }
+  
+  /* If it does exist, verify that it's an available CD-ROM */
+  cdfd = open(drive, (O_RDONLY|O_EXCL|O_NONBLOCK), 0);
+  if ( cdfd >= 0 ) {
+    if ( ioctl(cdfd, CDROMREADTOCHDR, &tochdr) != -1 ) {
+      is_cd = true;
+    }
+    close(cdfd);
+    }
+  /* Even if we can't read it, it might be mounted */
+  else if ( mnttype && (strcmp(mnttype, "iso9660") == 0) ) {
+    is_cd = true;
+  }
+  return(is_cd);
+}
+
 /*!
   Initialize CD device.
  */
@@ -98,6 +129,62 @@ _cdio_init (_img_private_t *_obj)
   _obj->gen.init = true;
   _obj->toc_init = false;
   return true;
+}
+
+/* Read audio sectors
+*/
+static int
+_read_audio_sectors (void *user_data, void *data, lsn_t lsn,
+		     unsigned int nblocks)
+{
+  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+  struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
+  msf_t _msf;
+
+  _img_private_t *_obj = user_data;
+
+  cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
+  msf->cdmsf_min0 = from_bcd8(_msf.m);
+  msf->cdmsf_sec0 = from_bcd8(_msf.s);
+  msf->cdmsf_frame0 = from_bcd8(_msf.f);
+
+  if (_obj->ioctls_debugged == 75)
+    cdio_debug ("only displaying every 75th ioctl from now on");
+
+  if (_obj->ioctls_debugged == 30 * 75)
+    cdio_debug ("only displaying every 30*75th ioctl from now on");
+  
+  if (_obj->ioctls_debugged < 75 
+      || (_obj->ioctls_debugged < (30 * 75)  
+	  && _obj->ioctls_debugged % 75 == 0)
+      || _obj->ioctls_debugged % (30 * 75) == 0)
+    cdio_debug ("reading %2.2d:%2.2d:%2.2d",
+	       msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
+  
+  _obj->ioctls_debugged++;
+ 
+  switch (_obj->access_mode) {
+    case _AM_NONE:
+      cdio_error ("no way to read audio");
+      return 1;
+      break;
+      
+    case _AM_IOCTL: {
+      unsigned int i;
+      for (i=0; i < nblocks; i++) {
+	if (ioctl (_obj->gen.fd, CDROMREADRAW, &buf) == -1)  {
+	  perror ("ioctl()");
+	  return 1;
+	  /* exit (EXIT_FAILURE); */
+	}
+	memcpy (((char *)data) + (CDIO_CD_FRAMESIZE_RAW * i), buf, 
+		CDIO_CD_FRAMESIZE_RAW);
+      }
+      break;
+    }
+  }
+
+  return 0;
 }
 
 /*!
@@ -475,7 +562,50 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
 #endif /* HAVE_BSDI_CDROM */
 
 /*!
-  Return a string containing the default VCD device if none is specified.
+  Return an array of strings giving possible CD devices.
+ */
+char **
+cdio_get_devices_bsdi (void)
+{
+#ifndef HAVE_BSDI_CDROM
+  return NULL;
+#else
+  char drive[40];
+  char **drives = NULL;
+  unsigned int num_drives=0;
+  char c;
+  
+  /* Scan the system for CD-ROM drives.
+  */
+
+#if FINISHED
+  /* Now check the currently mounted CD drives */
+  if (NULL != (ret_drive = cdio_check_mounts("/etc/mtab"))) {
+    cdio_add_device_list(&drives, drive, &num_drives);
+  }
+  
+  /* Finally check possible mountable drives in /etc/fstab */
+  if (NULL != (ret_drive = cdio_check_mounts("/etc/fstab"))) {
+    cdio_add_device_list(&drives, drive, &num_drives);
+  }
+#endif
+
+  /* Scan the system for CD-ROM drives.
+     Not always 100% reliable, so use the USE_MNTENT code above first.
+  */
+  for ( c='c'; c <='h'; c++ ) {
+    sprintf(drive, "/dev/rsr0%c", c);
+    if ( cdio_is_cdrom(drive, NULL) > 0 ) {
+      cdio_add_device_list(&drives, drive, &num_drives);
+    }
+  }
+  cdio_add_device_list(&drives, NULL, &num_drives);
+  return drives;
+#endif /*HAVE_BSDI_CDROM*/
+}
+
+/*!
+  Return a string containing the default CD device if none is specified.
  */
 char *
 cdio_get_default_device_bsdi(void)
@@ -501,6 +631,7 @@ cdio_open_bsdi (const char *source_name)
     .free               = cdio_generic_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = cdio_get_default_device_bsdi,
+    .get_devices        = cdio_get_devices_bsdi,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_mcn            = NULL, 
     .get_num_tracks     = _cdio_get_num_tracks,
@@ -511,7 +642,7 @@ cdio_open_bsdi (const char *source_name)
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
     .read_mode2_sector  = _read_mode2_sector,
-    .read_audio_sectors = NULL,
+    .read_audio_sectors = _read_audio_sectors,
     .read_mode2_sectors = _read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
     .stat_size          = _cdio_stat_size
