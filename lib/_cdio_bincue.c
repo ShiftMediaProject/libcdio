@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.23 2003/08/31 14:26:06 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.24 2003/09/01 22:51:50 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.23 2003/08/31 14:26:06 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.24 2003/09/01 22:51:50 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -832,6 +832,7 @@ cdio_open_cue (const char *cue_name)
   _img_private_t *_data;
   char *bin_name;
 
+  if (NULL == cue_name) return NULL;
   ret = cdio_open_common(&_data);
   if (ret == NULL) return NULL;
 
