@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.3 2004/01/10 03:03:08 rocky Exp $
+#   $Id: Makefile.am,v 1.4 2004/02/01 17:12:33 rocky Exp $
 #
-#    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -29,5 +29,5 @@ sample2_LDADD = $(LIBCDIO_LIBS)
 sample3_LDADD = $(LIBCDIO_LIBS)
 sample4_LDADD = $(LIBCDIO_LIBS)
 sample5_LDADD = $(LIBCDIO_LIBS)
-sample6_LDADD = $(LIBCDIO_LIBS) $(LIBISO9660_LIBS)
-sample7_LDADD = $(LIBCDIO_LIBS) $(LIBISO9660_LIBS)
+sample6_LDADD = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
+sample7_LDADD = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
