@@ -7,5 +7,5 @@ Name: @PACKAGE_NAME@
 Description: Portable CD-ROM I/O library
 Version: @PACKAGE_VERSION@
 #Requires: glib-2.0 
-Libs: -L${libdir} -lcdda_interface
+Libs: -L${libdir} -lcdio_cdda
 Cflags: -I${includedir}

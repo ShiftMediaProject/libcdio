@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.h,v 1.4 2005/01/20 04:51:14 rocky Exp $
+  $Id: paranoia.h,v 1.5 2005/01/25 11:04:45 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -82,20 +82,20 @@ extern "C" {
     @return new cdrom_paranoia object Call paranoia_free() when you are
     done with it
    */
-extern cdrom_paranoia_t *paranoia_init(cdrom_drive_t *d);
+extern cdrom_paranoia_t *cdio_paranoia_init(cdrom_drive_t *d);
 
   /*!
     Free any resources associated with obj.
 
     @see paranoia_init.
    */
-extern void paranoia_free(cdrom_paranoia_t *p);
+extern void cdio_paranoia_free(cdrom_paranoia_t *p);
 
   /*! 
     Set the kind of repair you want to on for reading. 
     The modes are listed above
    */
-extern void paranoia_modeset(cdrom_paranoia_t *p, int mode);
+extern void cdio_paranoia_modeset(cdrom_paranoia_t *p, int mode);
 
   /*!
     reposition reading offset. 
@@ -105,30 +105,40 @@ extern void paranoia_modeset(cdrom_paranoia_t *p, int mode);
     @param whence  like corresponding parameter in libc's lseek, e.g. 
                    SEEK_SET or SEEK_END.
   */
-extern lsn_t paranoia_seek(cdrom_paranoia_t *p, off_t seek, int whence);
+extern lsn_t cdio_paranoia_seek(cdrom_paranoia_t *p, off_t seek, int whence);
 
   /*!  @return the audio data read CDIO_CD_FRAMESIZE_RAW bytes. This data
        is not freed by the caller, but will persist only until the next
        call.
   */
-extern int16_t *paranoia_read(cdrom_paranoia_t *p,
+extern int16_t *cdio_paranoia_read(cdrom_paranoia_t *p,
 			      void(*callback)(long int, paranoia_cb_mode_t));
 
-  /*! The same as paranoia_read but the number of retries is set.
+  /*! The same as cdio_paranoia_read but the number of retries is set.
     @param maxretries number of times to try re-reading a block before
-    failing. @see paranoia_read.
+    failing. @see cdio_paranoia_read.
     
   */
-extern int16_t *paranoia_read_limited(cdrom_paranoia_t *p,
-				      void(*callback)(long int, 
-						      paranoia_cb_mode_t),
-				      int maxretries);
+extern int16_t *cdio_paranoia_read_limited(cdrom_paranoia_t *p,
+					   void(*callback)(long int, 
+							   paranoia_cb_mode_t),
+					   int maxretries);
 
 
-extern void paranoia_overlapset(cdrom_paranoia_t *p,long overlap);
+extern void cdio_paranoia_overlapset(cdrom_paranoia_t *p,long overlap);
 
-extern void paranoia_set_range(cdrom_paranoia_t *p, long int start, 
-			       long int end);
+extern void cdio_paranoia_set_range(cdrom_paranoia_t *p, long int start, 
+				    long int end);
+
+/** For compatibility with good ol' paranoia */
+#define paranoia_init         cdio_paranoia_init
+#define paranoia_free         cdio_paranoia_free
+#define paranoia_modeset      cdio_paranoia_modeset
+#define paranoia_seek         cdio_paranoia_seek
+#define paranoia_read         cdio_paranoia_read
+#define paranoia_read_limited cdio_paranoia_read_limited
+#define paranoia_overlapset   cdio_paranoia_overlapset
+#define paranoia_set_range    cdio_paranoia_read_overlapset
 
 #ifdef __cplusplus
 }

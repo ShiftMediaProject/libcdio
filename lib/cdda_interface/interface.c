@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.15 2005/01/23 14:05:19 rocky Exp $
+  $Id: interface.c,v 1.16 2005/01/25 11:04:45 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -43,7 +43,7 @@ static void _clean_messages(cdrom_drive_t *d)
 
 /* doubles as "cdrom_drive_free()" */
 int 
-cdda_close(cdrom_drive_t *d)
+cdio_cddap_close(cdrom_drive_t *d)
 {
   if(d){
     if(d->opened)
@@ -61,7 +61,7 @@ cdda_close(cdrom_drive_t *d)
 
 /* finish initializing the drive! */
 int 
-cdda_open(cdrom_drive_t *d)
+cdio_cddap_open(cdrom_drive_t *d)
 {
   int ret;
   if(d->opened)return(0);
@@ -111,12 +111,14 @@ cdda_open(cdrom_drive_t *d)
 }
 
 int 
-cdda_speed_set(cdrom_drive_t *d, int speed)
+cdio_cddap_speed_set(cdrom_drive_t *d, int speed)
 {
   return d->set_speed ? d->set_speed(d, speed) : 0;
 }
 
-long cdda_read(cdrom_drive_t *d, void *buffer, lsn_t beginsector, long sectors)
+long 
+cdio_cddap_read(cdrom_drive_t *d, void *buffer, lsn_t beginsector, 
+		long sectors)
 {
   if (d->opened) {
     if (sectors>0) {
@@ -152,20 +154,22 @@ long cdda_read(cdrom_drive_t *d, void *buffer, lsn_t beginsector, long sectors)
 }
 
 void 
-cdda_verbose_set(cdrom_drive_t *d,int err_action, int mes_action)
+cdio_cddap_verbose_set(cdrom_drive_t *d,int err_action, int mes_action)
 {
   d->messagedest=mes_action;
   d->errordest=err_action;
 }
 
-extern char *cdda_messages(cdrom_drive_t *d)
+extern char *
+cdio_cddap_messages(cdrom_drive_t *d)
 {
   char *ret=d->messagebuf;
   d->messagebuf=NULL;
   return(ret);
 }
 
-extern char *cdda_errors(cdrom_drive_t *d)
+extern char *
+cdio_cddap_errors(cdrom_drive_t *d)
 {
   char *ret=d->errorbuf;
   d->errorbuf=NULL;

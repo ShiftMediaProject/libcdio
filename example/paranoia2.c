@@ -49,7 +49,7 @@ main(int argc, const char *argv[])
     /* Found such a CD-ROM with a CD-DA loaded. Use the first drive in
        the list. */
     p_cdio = cdio_open(*ppsz_cd_drives, DRIVER_UNKNOWN);
-    d=cdda_identify_cdio(p_cdio, 1, NULL);
+    d=cdio_cddap_identify_cdio(p_cdio, 1, NULL);
   } else {
     printf("Unable find or access a CD-ROM drive with an audio CD in it.\n");
     exit(1);
@@ -60,9 +60,9 @@ main(int argc, const char *argv[])
   free(ppsz_cd_drives);
 
   /* We'll set for verbose paranoia messages. */
-  cdda_verbose_set(d, CDDA_MESSAGE_PRINTIT, CDDA_MESSAGE_PRINTIT);
+  cdio_cddap_verbose_set(d, CDDA_MESSAGE_PRINTIT, CDDA_MESSAGE_PRINTIT);
 
-  if ( 0 != cdda_open(d) ) {
+  if ( 0 != cdio_cddap_open(d) ) {
     printf("Unable to open disc.\n");
     exit(1);
   }
@@ -90,7 +90,7 @@ main(int argc, const char *argv[])
     }
   }
 
-  cdda_close(d);
+  cdio_cddap_close(d);
 
   exit(0);
 }

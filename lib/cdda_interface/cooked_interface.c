@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.13 2005/01/22 18:11:32 rocky Exp $
+  $Id: cooked_interface.c,v 1.14 2005/01/25 11:04:45 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -297,7 +297,8 @@ check_exceptions(cdrom_drive_t *d, const exception_t *list)
 
 /* set function pointers to use the ioctl routines */
 int 
-cooked_init_drive (cdrom_drive_t *d){
+cooked_init_drive (cdrom_drive_t *d)
+{
   int ret;
 
 #if HAVE_LINUX_MAJOR_H

@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.9 2005/01/22 18:11:32 rocky Exp $
+  $Id: cdda.h,v 1.10 2005/01/25 11:04:45 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -148,13 +148,15 @@ struct cdrom_drive_s {
     If mesagedest is 1, then any messages in the process will be stored 
     in message.
 */
-extern cdrom_drive_t *cdda_find_a_cdrom(int messagedest, char **ppsz_message);
+extern cdrom_drive_t *cdio_cddap_find_a_cdrom(int messagedest, 
+					      char **ppsz_message);
 
 /** Returns a paranoia CD-ROM drive object with a CD-DA in it.  
     @see cdda_identify_cdio
  */
-extern cdrom_drive_t *cdda_identify(const char *psz_device, int messagedest,
-				    char **ppsz_message);
+extern cdrom_drive_t *cdio_cddap_identify(const char *psz_device, 
+					  int messagedest, 
+					  char **ppsz_message);
 
 /** Returns a paranoia CD-ROM drive ojbect with a CD-DA in it.  
     In contrast to cdda_identify, we start out with an initialzed p_cdio
@@ -162,25 +164,25 @@ extern cdrom_drive_t *cdda_identify(const char *psz_device, int messagedest,
     as to get CDDB/CD-Text information.
     @see cdda_identify
  */
-cdrom_drive_t *cdda_identify_cdio(CdIo_t *p_cdio, 
-				  int messagedest, char **ppsz_messages);
+cdrom_drive_t *cdio_cddap_identify_cdio(CdIo_t *p_cdio, 
+					int messagedest, char **ppsz_messages);
 
 /** Obsolete interface. Don't use. @see cdda_identify */
-extern cdrom_drive_t *cdda_identify_cooked(const char *ppsz_device,
-					   int messagedest, 
-					   char **ppsz_message);
+extern cdrom_drive_t *cdio_cddap_identify_cooked(const char *ppsz_device,
+						 int messagedest, 
+						 char **ppsz_message);
 /** drive-oriented functions */
 
-extern int     cdda_speed_set(cdrom_drive_t *d, int speed);
-extern void    cdda_verbose_set(cdrom_drive_t *d, int err_action, 
-				int mes_action);
-extern char   *cdda_messages(cdrom_drive_t *d);
-extern char   *cdda_errors(cdrom_drive_t *d);
+extern int     cdio_cddap_speed_set(cdrom_drive_t *d, int speed);
+extern void    cdio_cddap_verbose_set(cdrom_drive_t *d, int err_action, 
+				     int mes_action);
+extern char   *cdio_cddap_messages(cdrom_drive_t *d);
+extern char   *cdio_cddap_errors(cdrom_drive_t *d);
 
-extern int     cdda_close(cdrom_drive_t *d);
-extern int     cdda_open(cdrom_drive_t *d);
-extern long    cdda_read(cdrom_drive_t *d, void *p_buffer,
-			 lsn_t beginsector, long sectors);
+extern int     cdio_cddap_close(cdrom_drive_t *d);
+extern int     cdio_cddap_open(cdrom_drive_t *d);
+extern long    cdio_cddap_read(cdrom_drive_t *d, void *p_buffer,
+			       lsn_t beginsector, long sectors);
 
 /*! Return the lsn for the start of track i_track */
 extern lsn_t   cdda_track_firstsector(cdrom_drive_t *d, track_t i_track);
@@ -298,5 +300,17 @@ const char *strerror_tr[]={
 403: No audio tracks on disc
 
 */
+
+/** For compatibility with good ol' paranoia */
+#define cdda_cddap_find_a_cdrom cdio_cddap_find_a_cdrom
+#define cdda_identify           cdio_cddap_identify
+#define cdda_speed_set          cdio_cddap_speed_set
+#define cdda_verbose_set        cdio_cddap_verbose_set
+#define cdda_messages           cdio_cddap_messages
+#define cdda_errors             cdio_cddap_errors
+#define cdda_close              cdio_cddap_close
+#define cdda_open               cdio_cddap_open
+#define cdda_read               cdio_cddap_read
+
 #endif /*_CDDA_INTERFACE_H_*/
 

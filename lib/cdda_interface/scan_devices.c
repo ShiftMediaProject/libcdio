@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.16 2005/01/23 05:31:03 rocky Exp $
+  $Id: scan_devices.c,v 1.17 2005/01/25 11:04:45 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -77,7 +77,7 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
    happens in interface.c */
 
 cdrom_drive_t *
-cdda_find_a_cdrom(int messagedest, char **ppsz_messages){
+cdio_cddap_find_a_cdrom(int messagedest, char **ppsz_messages){
   /* Brute force... */
   
   int i=0;
@@ -134,13 +134,13 @@ cdda_identify(const char *psz_device, int messagedest,char **ppsz_messages)
   else 
     idmessage(messagedest, ppsz_messages, "Checking for cdrom...", NULL );
 
-  d=cdda_identify_cooked(psz_device, messagedest, ppsz_messages);
+  d=cdio_cddap_identify_cooked(psz_device, messagedest, ppsz_messages);
 
   return(d);
 }
 
 cdrom_drive_t *
-cdda_identify_cdio(CdIo_t *p_cdio, int messagedest, char **ppsz_messages)
+cdio_cddap_identify_cdio(CdIo_t *p_cdio, int messagedest, char **ppsz_messages)
 {
   if (!p_cdio) return NULL;
   { 
@@ -298,8 +298,8 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
    with such folks, perhaps this routine should be renamed.
 */
 cdrom_drive_t *
-cdda_identify_cooked(const char *psz_dev, int messagedest, 
-		     char **ppsz_messages)
+cdio_cddap_identify_cooked(const char *psz_dev, int messagedest, 
+			   char **ppsz_messages)
 {
   CdIo_t *p_cdio = NULL;
 

@@ -82,7 +82,7 @@ main(int argc, const char *argv[])
   /* We'll set for verbose paranoia messages. */
   cdda_verbose_set(d, CDDA_MESSAGE_PRINTIT, CDDA_MESSAGE_PRINTIT);
 
-  if ( 0 != cdda_open(d) ) {
+  if ( 0 != cdio_cddap_open(d) ) {
     printf("Unable to open disc.\n");
     exit(SKIP_TEST_RC);
   }
@@ -119,8 +119,8 @@ main(int argc, const char *argv[])
 	      i++, i_lsn++ ) {
 	  /* read a sector */
 	  int16_t *p_readbuf = paranoia_read(p, callback);
-	  char *psz_err=cdda_errors(d);
-	  char *psz_mes=cdda_messages(d);
+	  char *psz_err=cdio_cddap_errors(d);
+	  char *psz_mes=cdio_cddap_messages(d);
 
 	  memcpy(audio_buf[i], p_readbuf, CDIO_CD_FRAMESIZE_RAW);
 	  
@@ -179,7 +179,7 @@ main(int argc, const char *argv[])
   out: paranoia_free(p);
   }
   
-  cdda_close(d);
+  cdio_cddap_close(d);
 
   exit(i_rc);
 }
