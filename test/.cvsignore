@@ -8,6 +8,7 @@ check_nrg.sh
 check_sizeof
 testassert
 testischar
+testiso9660
 *.dump
 *.cue
 *.bin
