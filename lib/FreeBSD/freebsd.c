@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.5 2004/05/03 03:22:24 rocky Exp $
+    $Id: freebsd.c,v 1.6 2004/05/04 04:39:31 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.5 2004/05/03 03:22:24 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.6 2004/05/04 04:39:31 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -114,7 +114,7 @@ _read_mode2_sectors_freebsd (void *env, void *data, lsn_t lsn,
   int retval;
 
   if ( _obj->access_mode == _AM_CAM )
-    return read_mode2_sectors_freebsd_cam(_obj, data, lsn, b_form2);
+    return read_mode2_sectors_freebsd_cam(_obj, data, lsn, nblocks, b_form2);
   
   for (i = 0; i < nblocks; i++) {
     if (b_form2) {
@@ -510,6 +510,7 @@ cdio_open_am_freebsd (const char *psz_source_name, const char *psz_access_mode)
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
   _data->access_mode    = str_to_access_mode_freebsd(psz_access_mode);
+  _data->device         = psz_source_name;
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
