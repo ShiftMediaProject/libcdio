@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.29 2004/07/25 11:15:08 rocky Exp $
+    $Id: freebsd.c,v 1.30 2004/07/25 15:40:02 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.29 2004/07/25 11:15:08 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.30 2004/07/25 15:40:02 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -186,7 +186,7 @@ _set_arg_freebsd (void *user_data, const char key[], const char value[])
   Return false if unsuccessful;
 */
 static bool
-_cdio_read_toc (_img_private_t *p_env) 
+read_toc_freebsd (_img_private_t *p_env) 
 {
   track_t i, j;
 
@@ -197,8 +197,7 @@ _cdio_read_toc (_img_private_t *p_env)
   }
 
   j=0;
-  for ( i = p_env->tochdr.starting_track; i <= p_env->tochdr.ending_track; 
-       i++, j++) {
+  for ( i = FIRST_TRACK_NUM; i <= p_env->tochdr.ending_track; i++, j++) {
     p_env->tocent[j].track = i;
     p_env->tocent[j].address_format = CD_LBA_FORMAT;
 
@@ -219,7 +218,7 @@ _cdio_read_toc (_img_private_t *p_env)
     return false;
   }
 
-  p_env->toc_init = true;
+  p_env->gen.toc_init = true;
   return true;
 }
 
@@ -268,9 +267,9 @@ _get_first_track_num_freebsd(void *user_data)
 {
   _img_private_t *p_env = user_data;
   
-  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
+  if (!p_env->gen.toc_init) read_toc_freebsd (p_env) ;
 
-  return p_env->toc_init ? FIRST_TRACK_NUM : CDIO_INVALID_TRACK;
+  return p_env->gen.toc_init ? FIRST_TRACK_NUM : CDIO_INVALID_TRACK;
 }
 
 /*!
@@ -347,9 +346,9 @@ _get_num_tracks_freebsd(void *user_data)
 {
   _img_private_t *p_env = user_data;
   
-  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
+  if (!p_env->gen.toc_init) read_toc_freebsd (p_env) ;
 
-  return p_env->toc_init ? TOTAL_TRACKS : CDIO_INVALID_TRACK;
+  return p_env->gen.toc_init ? TOTAL_TRACKS : CDIO_INVALID_TRACK;
 }
 
 /*!  
@@ -419,11 +418,11 @@ _get_track_lba_freebsd(void *user_data, track_t i_track)
 {
   _img_private_t *p_env = user_data;
 
-  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
+  if (!p_env->gen.toc_init) read_toc_freebsd (p_env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
-  if (i_track > TOTAL_TRACKS+1 || i_track == 0 || !p_env->toc_init) {
+  if (i_track > TOTAL_TRACKS+1 || i_track == 0 || !p_env->gen.toc_init) {
     return CDIO_INVALID_LBA;
   } else {
     return cdio_lsn_to_lba(ntohl(p_env->tocent[i_track-FIRST_TRACK_NUM].entry.addr.lba));
