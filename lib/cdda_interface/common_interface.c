@@ -1,5 +1,5 @@
 /*
-  $Id: common_interface.c,v 1.10 2005/01/23 00:20:43 rocky Exp $
+  $Id: common_interface.c,v 1.11 2005/01/23 00:27:11 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
@@ -111,9 +111,9 @@ data_bigendianp(cdrom_drive_t *d)
 	int j;
 	
 	for(j=0;j<128;j++)
-	  a[j] = UINT16_TO_LE(buff[j*2+beginsec+460]);
+	  a[j] = le16_to_cpu(buff[j*2+beginsec+460]);
 	for(j=0;j<128;j++)
-	  b[j] = UINT16_TO_LE(buff[j*2+beginsec+461]);
+	  b[j] = le16_to_cpu(buff[j*2+beginsec+461]);
 
 	fft_forward(128,a,NULL,NULL);
 	fft_forward(128,b,NULL,NULL);
@@ -122,10 +122,10 @@ data_bigendianp(cdrom_drive_t *d)
 	  lsb_energy+=fabs(a[j])+fabs(b[j]);
 	
 	for(j=0;j<128;j++)
-	  a[j] = UINT16_TO_BE(buff[j*2+beginsec+460]);
+	  a[j] = be16_to_cpu(buff[j*2+beginsec+460]);
 
 	for(j=0;j<128;j++)
-	  b[j] = UINT16_TO_BE(buff[j*2+beginsec+461]);
+	  b[j] = be16_to_cpu(buff[j*2+beginsec+461]);
 
 	fft_forward(128,a,NULL,NULL);
 	fft_forward(128,b,NULL,NULL);

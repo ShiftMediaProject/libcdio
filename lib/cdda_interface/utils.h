@@ -1,5 +1,5 @@
 /*
-  $Id: utils.h,v 1.6 2005/01/23 00:20:43 rocky Exp $
+  $Id: utils.h,v 1.7 2005/01/23 00:27:11 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -35,6 +35,40 @@ bigendianp(void)
 }
 
 extern char *catstring(char *buff, const char *s);
+
+
+/*#if BYTE_ORDER == LITTLE_ENDIAN*/
+
+#ifndef WORDS_BIGENDIAN
+
+static inline int16_t be16_to_cpu(int16_t x){
+  return(UINT16_SWAP_LE_BE_C(x));
+}
+
+static inline int16_t le16_to_cpu(int16_t x){
+  return(x);
+}
+
+#else
+
+static inline int16_t be16_to_cpu(int16_t x){
+  return(x);
+}
+
+static inline int16_t le16_to_cpu(int16_t x){
+  return(UINT16_SWAP_LE_BE_C(x));
+}
+
+
+#endif
+
+static inline int16_t cpu_to_be16(int16_t x){
+  return(be16_to_cpu(x));
+}
+
+static inline int16_t cpu_to_le16(int16_t x){
+  return(le16_to_cpu(x));
+}
 
 void cderror(cdrom_drive_t *d, const char *s);
 
