@@ -19,10 +19,15 @@ define(RELEASE_NUM, 72)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.136 2005/01/31 23:55:23 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.137 2005/02/01 00:31:53 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
-AM_INIT_AUTOMAKE
+
+dnl For multilanguage manual pages (e.g. japanese cdparaoia) we use
+dnl $make_p and according to Steve Schultz this is a make_p is a 1.8
+dnl feature.
+
+AM_INIT_AUTOMAKE([1.8])
 
 AC_CANONICAL_HOST
 AM_CONFIG_HEADER(config.h)
