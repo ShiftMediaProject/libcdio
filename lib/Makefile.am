@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.13 2003/09/14 09:34:17 rocky Exp $
+#   $Id: Makefile.am,v 1.14 2004/02/02 03:56:46 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -46,7 +46,8 @@ libcdio_sources = \
 	logging.c \
 	scsi_mmc.h \
 	sector.c \
-	util.c
+	util.c \
+	wnaspi32.h
 
 lib_LTLIBRARIES     = libcdio.la libiso9660.la
 libcdio_la_SOURCES = $(libcdio_sources)
