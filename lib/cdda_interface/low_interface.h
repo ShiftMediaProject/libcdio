@@ -1,5 +1,5 @@
 /*
-  $Id: low_interface.h,v 1.2 2005/01/05 04:16:11 rocky Exp $
+  $Id: low_interface.h,v 1.3 2005/01/05 22:28:53 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -38,8 +38,14 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
+#ifdef HAVE_LINUX_MAJOR_H
 #include <linux/major.h>
+#endif
+
+#ifdef HAVE_LINUX_VERSION_H
 #include <linux/version.h>
+#endif
+
 #include <cdio/paranoia.h>
 #include <cdio/cdda.h>
 
