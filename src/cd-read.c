@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.11 2003/10/15 01:59:51 rocky Exp $
+  $Id: cd-read.c,v 1.12 2003/10/15 02:35:19 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -328,9 +328,10 @@ parse_options (int argc, const char *argv[])
     } else if (opts.num_sectors != 0) {
       if (opts.end_lsn <= opts.num_sectors) {
 	fprintf(stderr, 
-		"%s: end LSN (%d) needs to be greater than "
-		" the sector to read (%d)\n",
-		program_name, opts.end_lsn, opts.num_sectors);
+		"%s: end LSN (%lu) needs to be greater than "
+		" the sector to read (%lu)\n",
+		program_name, (unsigned long) opts.end_lsn, 
+		(unsigned long) opts.num_sectors);
 	exit(12);
       }
       opts.start_lsn = opts.end_lsn - opts.num_sectors + 1;
@@ -346,16 +347,18 @@ parse_options (int argc, const char *argv[])
     /* We were given an end lsn. */
     if (opts.end_lsn < opts.start_lsn) {
       fprintf(stderr, 
-	      "%s: end LSN (%d) needs to be less than start LSN (%d)\n",
-	      program_name, opts.start_lsn, opts.end_lsn);
+	      "%s: end LSN (%lu) needs to be less than start LSN (%lu)\n",
+	      program_name, (unsigned long) opts.start_lsn, 
+	      (unsigned long) opts.end_lsn);
       exit(13);
     }
     if (opts.num_sectors != opts.end_lsn - opts.start_lsn + 1)
       if (opts.num_sectors != 0) {
 	 fprintf(stderr, 
-		 "%s: inconsistency between start LSN (%d), end (%d), "
+		 "%s: inconsistency between start LSN (%lu), end (%lu), "
 		 "and count (%d)\n",
-		 program_name, opts.start_lsn, opts.end_lsn, opts.num_sectors);
+		 program_name, (unsigned long) opts.start_lsn, 
+		 (unsigned long) opts.end_lsn, opts.num_sectors);
 	 exit(14);
 	}
     opts.num_sectors = opts.end_lsn - opts.start_lsn + 1;
