@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.31 2004/12/04 11:50:40 rocky Exp $
+    $Id: scsi_mmc.c,v 1.32 2004/12/06 04:47:57 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -58,6 +58,7 @@ scsi_mmc_get_discmode( const CdIo *p_cdio )
 
   memset(&cdb, 0, sizeof(scsi_mmc_cdb_t));
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
+  cdb.field[1] = CDIO_CDROM_MSF; /* The MMC-5 spec may require this. */
   cdb.field[2] = CDIO_MMC_READTOC_FMT_FULTOC;
   CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
   scsi_mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), buf);
