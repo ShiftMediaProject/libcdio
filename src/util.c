@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.18 2004/08/08 03:03:10 rocky Exp $
+  $Id: util.c,v 1.19 2004/08/08 03:11:11 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -344,12 +344,12 @@ print_mmc_drive_features(CdIo *p_cdio)
 	  printf("\t\n");
 	  break;
 	case CDIO_MMC_FEATURE_LU_SN: {
-	  char *psz_serial_num = (char *) p+4;
+	  uint8_t i_serial = *(p+3);
+	  char serial[257] = { '\0', };
+	      
 	  printf("The Logical Unit has a unique identifier:\n");
-#if 0
-	  buf[499] = '\0';
-	  printf("\t%s\n\n", psz_serial_num);
-#endif
+	  memcpy(serial, p+4, i_serial);
+	  printf("\t%s\n\n", serial);
 
 	  break;
 	}

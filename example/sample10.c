@@ -1,5 +1,5 @@
 /*
-  $Id: sample10.c,v 1.5 2004/08/07 09:42:34 rocky Exp $
+  $Id: sample10.c,v 1.6 2004/08/08 03:11:11 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -286,9 +286,16 @@ main(int argc, const char *argv[])
 	    printf("Ability to perform DVD CSS/CPPM authentication and"
 		   " RPC\n");
 	    break;
-          case CDIO_MMC_FEATURE_LU_SN:
-	    printf("The Logical Unit has a unique identifier\n");
+	  case CDIO_MMC_FEATURE_LU_SN: {
+	    uint8_t i_serial = *(p+3);
+	    char serial[257] = { '\0', };
+	    
+	    printf("The Logical Unit has a unique identifier:\n");
+	    memcpy(serial, p+4, i_serial);
+	    printf("\t%s\n\n", serial);
+	    
 	    break;
+	  }
 	  default: 
 	    printf("Unknown feature code %x\n", i_feature);
 	  }
