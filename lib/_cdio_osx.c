@@ -1,7 +1,8 @@
 /*
-    $Id: _cdio_osx.c,v 1.13 2003/10/13 23:41:42 rocky Exp $
+    $Id: _cdio_osx.c,v 1.14 2004/03/09 02:55:37 rocky Exp $
 
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com> from vcdimager code
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
+    from vcdimager code: 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     and VideoLAN code Copyright (C) 1998-2001 VideoLAN
       Authors: Johan Bilien <jobi@via.ecp.fr>
@@ -32,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.13 2003/10/13 23:41:42 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.14 2004/03/09 02:55:37 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -127,19 +128,25 @@ _cdio_getNumberOfTracks( CDTOC *pTOC, int i_descriptors )
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_form2_sectors (int device_handle, void *data, lsn_t lsn, 
-				bool mode2_form2, unsigned int nblocks)
+_cdio_read_mode1_sectors (void *env, void *data, lsn_t lsn, 
+			  bool is_form2, unsigned int nblocks)
 {
+  _img_private_t *_obj = env;
   dk_cd_read_t cd_read;
   
   memset( &cd_read, 0, sizeof(cd_read) );
   
-  cd_read.offset = lsn * kCDSectorSizeMode2Form2;
-  cd_read.sectorArea = kCDSectorAreaUser;
-  cd_read.sectorType = kCDSectorTypeMode2Form2;
+  cd_read.sectorArea  = kCDSectorAreaUser;
+  cd_read.buffer      = data;
+  cd_read.sectorType  = kCDSectorTypeMode1;
   
-  cd_read.buffer = data;
-  cd_read.bufferLength = kCDSectorSizeMode2Form2 * nblocks;
+  if (is_form2) {
+    cd_read.offset       = lsn * kCDSectorSizeMode2;
+    cd_read.bufferLength = kCDSectorSizeMode2 * nblocks;
+  } else {
+    cd_read.offset       = lsn * kCDSectorSizeMode1;
+    cd_read.bufferLength = kCDSectorSizeMode1 * nblocks;
+  }
   
   if( ioctl( device_handle, DKIOCCDREAD, &cd_read ) == -1 )
   {
@@ -151,31 +158,31 @@ _cdio_read_mode2_form2_sectors (int device_handle, void *data, lsn_t lsn,
 
   
 /*!
-   Reads nblocks of mode2 sectors from cd device into data starting
+   Reads nblocks of mode2 form2 sectors from cd device into data starting
    from lsn.
    Returns 0 if no error. 
  */
 static int
 _cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn, 
-			  bool mode2_form2, unsigned int nblocks)
+			  bool is_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
-
-  if (mode2_form2) {
-    return _cdio_read_mode2_form2_sectors(_obj->gen.fd, data, lsn, 
-					  mode2_form2, nblocks);
-  }
-  
   dk_cd_read_t cd_read;
   
   memset( &cd_read, 0, sizeof(cd_read) );
   
-  cd_read.offset = lsn * kCDSectorSizeMode2Form1;
   cd_read.sectorArea = kCDSectorAreaUser;
-  cd_read.sectorType = kCDSectorTypeMode2Form1;
-  
   cd_read.buffer = data;
-  cd_read.bufferLength = kCDSectorSizeMode2Form1 * nblocks;
+  
+  if (is_form2) {
+    cd_read.offset       = lsn * kCDSectorSizeMode2Form2;
+    cd_read.sectorType   = kCDSectorTypeMode2Form2;
+    cd_read.bufferLength = kCDSectorSizeMode2Form2 * nblocks;
+  } else {
+    cd_read.offset       = lsn * kCDSectorSizeMode2Form1;
+    cd_read.sectorType   = kCDSectorTypeMode2Form1;
+    cd_read.bufferLength = kCDSectorSizeMode2Form1 * nblocks;
+  }
   
   if( ioctl( _obj->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
@@ -185,6 +192,7 @@ _cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn,
   return 0;
 }
 
+  
 /*!
    Reads a single audio sector from CD device into data starting from lsn.
    Returns 0 if no error. 
@@ -218,10 +226,21 @@ _cdio_read_audio_sectors (void *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
-			 bool mode2_form2)
+_cdio_read_mode1_sector (void *env, void *data, lsn_t lsn, 
+			 bool is_form2)
 {
-  return _cdio_read_mode2_sectors(env, data, lsn, mode2_form2, 1);
+  return _cdio_read_mode1_sectors(env, data, lsn, is_form2, 1);
+}
+
+/*!
+   Reads a single mode2 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+static int
+_cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
+			 bool is_form2)
+{
+  return _cdio_read_mode2_sectors(env, data, lsn, is_form2, 1);
 }
 
 /*!
@@ -850,6 +869,8 @@ cdio_open_osx (const char *orig_source_name)
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
     .read_audio_sectors = _cdio_read_audio_sectors,
+    .read_mode1_sector  = _cdio_read_mode1_sector,
+    .read_mode1_sectors = _cdio_read_mode1_sectors,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
