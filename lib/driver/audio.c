@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.5 2005/03/06 11:21:52 rocky Exp $
+    $Id: audio.c,v 1.6 2005/03/06 15:59:20 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,8 +25,17 @@
 #endif
 
 #include <cdio/cdio.h>
+#include <cdio/util.h>
 #include <cdio/audio.h>
 #include "cdio_private.h"
+
+/* Return the number of seconds (discarding frame portion) of an MSF */
+unsigned int
+cdio_audio_get_msf_seconds(msf_t *p_msf) 
+{
+  return 
+    cdio_from_bcd8(p_msf->m)*CDIO_CD_SECS_PER_MIN + cdio_from_bcd8(p_msf->s);
+}
 
 /*!
   Get volume of an audio CD.
@@ -124,7 +133,7 @@ cdio_audio_resume (CdIo_t *p_cdio)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
 
-  if (!p_cdio->op.audio_resume) {
+  if (p_cdio->op.audio_resume) {
     return p_cdio->op.audio_resume(p_cdio->env);
   } else {
     return DRIVER_OP_UNSUPPORTED;
@@ -160,7 +169,7 @@ cdio_audio_stop (CdIo_t *p_cdio)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
 
-  if (!p_cdio->op.audio_stop) {
+  if (p_cdio->op.audio_stop) {
     return p_cdio->op.audio_stop(p_cdio->env);
   } else {
     return DRIVER_OP_UNSUPPORTED;

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: audio.h,v 1.6 2005/03/06 11:21:52 rocky Exp $
+    $Id: audio.h,v 1.7 2005/03/06 15:59:20 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -70,6 +70,18 @@ extern "C" {
   */
   driver_return_code_t cdio_audio_get_volume (CdIo_t *p_cdio,  /*out*/
 					      cdio_audio_volume_t *p_volume);
+
+  /*! 
+    Return the number of seconds (discarding frame portion) of an MSF 
+  */
+  uint32_t cdio_audio_get_msf_seconds(msf_t *p_msf);
+
+  /*!
+    Pause playing CD through analog output
+
+    @param p_cdio the CD object to be acted upon.
+  */
+  driver_return_code_t cdio_audio_pause (CdIo_t *p_cdio);
 
   /*!
     Pause playing CD through analog output
