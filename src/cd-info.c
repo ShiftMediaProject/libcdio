@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.78 2004/07/25 18:37:09 rocky Exp $
+    $Id: cd-info.c,v 1.79 2004/07/28 22:03:35 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1007,49 +1007,8 @@ main(int argc, const char *argv[])
   
 
   if ( 0 == opts.no_disc_mode ) {
-    printf("Disc mode is listed as: ");
-    switch( (discmode = cdio_get_discmode(cdio)) ) {
-    case CDIO_DISC_MODE_CD_DA:
-      printf("CD-DA\n");
-      break;
-    case CDIO_DISC_MODE_CD_DATA:
-      printf("CD-ROM form 1");
-      break;
-    case CDIO_DISC_MODE_CD_XA:
-      printf("CD-ROM XA form2");
-      break;
-    case CDIO_DISC_MODE_CD_MIXED:
-      printf("CD-ROM mixed mode");
-      break;
-    case CDIO_DISC_MODE_DVD_ROM:
-      printf("DVD-ROM");
-      break;
-    case CDIO_DISC_MODE_DVD_RAM:
-      printf("DVD-RAM");
-      break;
-    case CDIO_DISC_MODE_DVD_R:
-      printf("DVD-R");
-      break;
-    case CDIO_DISC_MODE_DVD_RW:
-      printf("DVD-RW");
-      break;
-    case CDIO_DISC_MODE_DVD_PR:
-      printf("DVD+R");
-      break;
-    case CDIO_DISC_MODE_DVD_PRW:
-      printf("DVD+RW");
-      break;
-    case CDIO_DISC_MODE_DVD_OTHER:
-      printf("Unknown/unclassified DVD");
-      break;
-    case CDIO_DISC_MODE_NO_INFO:
-      printf("No information");
-      break;
-    case CDIO_DISC_MODE_ERROR:
-      printf("Error in getting information");
-      break;
-    }
-    printf("\n");
+    printf("Disc mode is listed as: %s\n", 
+	   discmode2str[cdio_get_discmode(cdio)]);
   }
   
   i_first_track = cdio_get_first_track_num(cdio);

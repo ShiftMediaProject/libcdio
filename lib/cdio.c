@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.66 2004/07/26 02:54:37 rocky Exp $
+    $Id: cdio.c,v 1.67 2004/07/28 22:03:35 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,13 +39,24 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.66 2004/07/26 02:54:37 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.67 2004/07/28 22:03:35 rocky Exp $";
 
 
 const char *track_format2str[6] = 
   {
     "audio", "CD-i", "XA", "data", "PSX", "error"
   };
+
+/* Must match discmode enumeration */
+const char *discmode2str[] = {
+  "CD-DA", 
+  "CD-DATA Form 1", "CD DATA Form 2", "CD-ROM Mixed",
+  "DVD-ROM", "DVD-RAM", "DVD-R", "DVD-RW", "DVD+RW", 
+  "Unknown/unclassified DVD", 
+  "No information",
+  "Error in getting information"
+};
+
 
 /* The below array gives of the drivers that are currently available for 
    on a particular host. */

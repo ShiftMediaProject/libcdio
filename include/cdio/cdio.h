@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.59 2004/07/21 10:19:20 rocky Exp $
+    $Id: cdio.h,v 1.60 2004/07/28 22:03:35 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -112,6 +112,8 @@ extern "C" {
     TRACK_FORMAT_ERROR    /**< Dunno what is, or some other error. */
   } track_format_t;
 
+  extern const char *discmode2str[];
+  
   /*! Printable tags for track_format_t enumeration.  */
   extern const char *track_format2str[6];
   
