@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.2 2003/08/31 08:32:40 rocky Exp $
+    $Id: iso9660_fs.c,v 1.3 2003/08/31 09:11:25 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -23,7 +23,9 @@
 # include "config.h"
 #endif
 
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
 
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
@@ -34,25 +36,7 @@
 #include "bytesex.h"
 #include "ds.h"
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.2 2003/08/31 08:32:40 rocky Exp $";
-
-#define BUF_COUNT 16
-#define BUF_SIZE 80
-
-/* Return a pointer to a internal free buffer */
-static char *
-_getbuf (void)
-{
-  static char _buf[BUF_COUNT][BUF_SIZE];
-  static int _num = -1;
-  
-  _num++;
-  _num %= BUF_COUNT;
-
-  memset (_buf[_num], 0, BUF_SIZE);
-
-  return _buf[_num];
-}
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.3 2003/08/31 09:11:25 rocky Exp $";
 
 static void
 _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *buf)
@@ -274,61 +258,5 @@ iso9660_fs_readdir (CdIo *obj, const char pathname[])
     free (_dirbuf);
     return retval;
   }
-}
-
-/*!
-  Returns a string which interpreting the extended attribute xa_attr. 
-  For example:
-  \verbatim
-  d---1xrxrxr
-  ---2--r-r-r
-  -a--1xrxrxr
-  \endverbatim
-
-  A description of the characters in the string follows
-  The 1st character is either "d" if the entry is a directory, or "-" if not.
-  The 2nd character is either "a" if the entry is CDDA (audio), or "-" if not.
-  The 3rd character is either "i" if the entry is interleaved, or "-" if not.
-  The 4th character is either "2" if the entry is mode2 form2 or "-" if not.
-  The 5th character is either "1" if the entry is mode2 form1 or "-" if not.
-   Note that an entry will either be in mode2 form1 or mode form2. That
-   is you will either see "2-" or "-1" in the 4th & 5th positions.
-
-  The 6th and 7th characters refer to permissions for everyone while the
-  the 8th and 9th characters refer to permissions for a group while, and 
-  the 10th and 11th characters refer to permissions for a user. 
- 
-  In each of these pairs the first character (6, 8, 10) is "x" if the 
-  entry is executable. For a directory this means the directory is
-  allowed to be listed or "searched".
-  The second character of a pair (7, 9, 11) is "r" if the entry is allowed
-  to be read. 
-*/
-
-const char *
-iso9660_get_xa_attr_str (uint16_t xa_attr)
-{
-  char *result = _getbuf();
-
-  xa_attr = uint16_from_be (xa_attr);
-
-  result[0] = (xa_attr & XA_ATTR_DIRECTORY) ? 'd' : '-';
-  result[1] = (xa_attr & XA_ATTR_CDDA) ? 'a' : '-';
-  result[2] = (xa_attr & XA_ATTR_INTERLEAVED) ? 'i' : '-';
-  result[3] = (xa_attr & XA_ATTR_MODE2FORM2) ? '2' : '-';
-  result[4] = (xa_attr & XA_ATTR_MODE2FORM1) ? '1' : '-';
-
-  result[5] = (xa_attr & XA_ATTR_O_EXEC) ? 'x' : '-';
-  result[6] = (xa_attr & XA_ATTR_O_READ) ? 'r' : '-';
-
-  result[7] = (xa_attr & XA_ATTR_G_EXEC) ? 'x' : '-';
-  result[8] = (xa_attr & XA_ATTR_G_READ) ? 'r' : '-';
-
-  result[9] = (xa_attr & XA_ATTR_U_EXEC) ? 'x' : '-';
-  result[10] = (xa_attr & XA_ATTR_U_READ) ? 'r' : '-';
-
-  result[11] = '\0';
-
-  return result;
 }
 
