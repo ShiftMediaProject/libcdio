@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.20 2004/06/01 11:15:58 rocky Exp $
+    $Id: nrg.c,v 1.21 2004/06/02 00:35:32 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -23,7 +23,7 @@
 */
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include "config.h"
 #endif
 
 #ifdef HAVE_STDIO_H
@@ -49,7 +49,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.20 2004/06/01 11:15:58 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.21 2004/06/02 00:35:32 rocky Exp $";
 
 
 /* reader */
