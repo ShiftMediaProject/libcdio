@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.11 2005/02/06 11:13:37 rocky Exp $
+    $Id: nrg.c,v 1.12 2005/02/09 09:55:38 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.11 2005/02/06 11:13:37 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.12 2005/02/09 09:55:38 rocky Exp $";
 
 
 /* reader */
@@ -192,10 +192,10 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
     cdio_stream_read (p_env->gen.data_source, (void *) &buf, sizeof (buf), 1);
     
     if (buf.v50.ID == UINT32_TO_BE (NERO_ID)) {
-      cdio_info ("detected Nero version 5.0 (32-bit offsets) NRG magic");
+      cdio_debug ("detected Nero version 5.0 (32-bit offsets) NRG magic");
       footer_start = uint32_to_be (buf.v50.footer_ofs); 
     } else if (buf.v55.ID == UINT32_TO_BE (NER5_ID)) {
-      cdio_info ("detected Nero version 5.5.x (64-bit offsets) NRG magic");
+      cdio_debug ("detected Nero version 5.5.x (64-bit offsets) NRG magic");
       footer_start = uint64_from_be (buf.v55.footer_ofs);
     } else {
       cdio_log (log_level, "Image not recognized as either version 5.0 or "
@@ -246,7 +246,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	    unsigned int idx;
 	    unsigned int i = 0;
 	    
-	    cdio_info ("CUES type image detected" );
+	    cdio_debug ("CUES type image detected" );
 
 	    /* CUES LSN has 150 pregap include at beginning? -/
 	       cdio_assert (lsn == 0?);
@@ -317,7 +317,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	    unsigned int idx;
 	    unsigned int i = 0;
 	    
-	    cdio_info ("CUEX type image detected");
+	    cdio_debug ("CUEX type image detected");
 
 	    /* LSN must start at -150 (LBA 0)? */
 	    cdio_assert (lsn == -150); 
@@ -497,7 +497,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	
 	entries /= sizeof (_etnf_array_t);
 	
-	cdio_info ("SAO type image (ETNF) detected");
+	cdio_debug ("SAO type image (ETNF) detected");
 	
 	{
 	  int idx;
@@ -517,7 +517,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	      track_green    = false; /* ?? */
 	      blocksize      = CDIO_CD_FRAMESIZE;
 	      p_env->disc_mode = CDIO_DISC_MODE_CD_DATA;
-	      cdio_info ("Format DATA, blocksize %u", CDIO_CD_FRAMESIZE);
+	      cdio_debug ("Format DATA, blocksize %u", CDIO_CD_FRAMESIZE);
 	      break;
 	    case 2:
 	      /* Mode 2 form 1 */
@@ -525,7 +525,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	      track_green    = false; /* ?? */
 	      blocksize      = CDIO_CD_FRAMESIZE;
 	      p_env->disc_mode = CDIO_DISC_MODE_CD_XA;
-	      cdio_info ("Format XA, blocksize %u", CDIO_CD_FRAMESIZE);
+	      cdio_debug ("Format XA, blocksize %u", CDIO_CD_FRAMESIZE);
 	      break;
 	    case 3:
 	      /* Mode 2 */
@@ -533,7 +533,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	      track_green    = true;
 	      blocksize      = M2RAW_SECTOR_SIZE;
 	      p_env->disc_mode = CDIO_DISC_MODE_CD_XA; /* ?? */
-	      cdio_info ("Format XA, blocksize %u", M2RAW_SECTOR_SIZE);
+	      cdio_debug ("Format XA, blocksize %u", M2RAW_SECTOR_SIZE);
 	      break;
 	    case 06:
 	      /* Mode2 form mix */
@@ -541,21 +541,21 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	      track_green    = true;
 	      blocksize      = M2RAW_SECTOR_SIZE;
 	      p_env->disc_mode = CDIO_DISC_MODE_CD_MIXED;
-	      cdio_info ("Format MIXED CD, blocksize %u", M2RAW_SECTOR_SIZE);
+	      cdio_debug ("Format MIXED CD, blocksize %u", M2RAW_SECTOR_SIZE);
 	      break;
 	    case 0x20: /* ??? Mode2 form 2, Mode2 raw?? */
 	      track_format   = TRACK_FORMAT_XA;
 	      track_green    = true;
 	      blocksize      = M2RAW_SECTOR_SIZE;
 	      p_env->disc_mode = CDIO_DISC_MODE_CD_XA; /* ??. */
-	      cdio_info ("Format MIXED CD, blocksize %u", M2RAW_SECTOR_SIZE);
+	      cdio_debug ("Format MIXED CD, blocksize %u", M2RAW_SECTOR_SIZE);
 	      break;
 	    case 7:
 	      track_format   = TRACK_FORMAT_AUDIO;
 	      track_green    = false;
 	      blocksize      = CDIO_CD_FRAMESIZE_RAW;
 	      p_env->disc_mode = CDIO_DISC_MODE_CD_DA;
-	      cdio_info ("Format CD_DA, blocksize %u", CDIO_CD_FRAMESIZE_RAW);
+	      cdio_debug ("Format CD_DA, blocksize %u", CDIO_CD_FRAMESIZE_RAW);
 	      break;
 	    default:
 	      cdio_log (log_level, 
@@ -591,7 +591,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	
 	entries /= sizeof (_etn2_array_t);
 	
-	cdio_info ("SAO type image (ETN2) detected");
+	cdio_debug ("SAO type image (ETN2) detected");
 
 	{
 	  int idx;
