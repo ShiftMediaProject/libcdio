@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.19 2004/05/04 02:06:48 rocky Exp $
+#   $Id: Makefile.am,v 1.20 2004/05/04 11:47:53 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -42,7 +42,7 @@ check_PROGRAMS = $(hack)
 check_DATA = vcd_demo.right \
 	     videocd.right videocd.nrg \
 	     cdda.right cdda.toc cdda.cue cdda.bin \
-	     isofs-m1.right isfs-m1.toc isofs-m1.cue isofs-m1.bin \
+	     isofs-m1.right isofs-m1.toc isofs-m1.cue isofs-m1.bin \
 	     check_opts0.right check_opts1.right check_opts2.right \
              check_opts3.right check_opts4.right check_opts5.right \
              check_opts6.right check_opts7.right \
