@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.4 2003/05/24 15:46:28 rocky Exp $
+    $Id: cd-info.c,v 1.5 2003/06/01 21:05:45 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -243,19 +243,24 @@ typedef enum
  */
 struct arguments
 {
-  int no_tracks;
-  int no_ioctl;
-  int no_analysis;
+  int            no_tracks;
+  int            no_ioctl;
+  int            no_analysis;
 #ifdef HAVE_CDDB
-  int no_cddb;
-  int cddb_port;  /* port number to contact CDDB server. */
-  int cddb_http;  /* 1 if use http proxy */
+  int            no_cddb;     /* If set the below are meaningless. */
+  char          *cddb_email;  /* email to report to CDDB server. */
+  char          *cddb_server; /* CDDB server to contact */
+  int            cddb_port;   /* port number to contact CDDB server. */
+  int            cddb_http;   /* 1 if use http proxy */
+  int            cddb_timeout;
+  bool           cddb_disable_cache; /* If set the below is meaningless. */
+  char          *cddb_cachedir;
 #endif
 #ifdef HAVE_VCDINFO
-  int no_vcd;
+  int            no_vcd;
 #endif
-  int debug_level;
-  int silent;
+  uint32_t       debug_level;
+  int            silent;
   source_image_t source_image;
 } opts;
      
@@ -285,20 +290,20 @@ enum {
 char *temp_str;
 
 struct poptOption optionsTable[] = {
-  {"debug",    'd', POPT_ARG_INT, &opts.debug_level, 0,
+  {"debug",       'd', POPT_ARG_INT, &opts.debug_level, 0,
    "Set debugging to LEVEL"},
   
-  {"quiet",    'q', POPT_ARG_NONE, &opts.silent, 0,
+  {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
    "Don't produce warning output" },
   
-  {"no-tracks", 'T', POPT_ARG_NONE, &opts.no_tracks, 0,
+  {"no-tracks",   'T', POPT_ARG_NONE, &opts.no_tracks, 0,
    "Don't show track information"},
   
-  {"no-analyze",'A', POPT_ARG_NONE, &opts.no_analysis, 0,
+  {"no-analyze",  'A', POPT_ARG_NONE, &opts.no_analysis, 0,
    "Don't filesystem analysis"},
   
 #ifdef HAVE_CDDB
-  {"no-cddb",   'a', POPT_ARG_NONE, &opts.no_cddb, 0,
+  {"no-cddb",     'a', POPT_ARG_NONE, &opts.no_cddb, 0,
    "Don't look up audio CDDB information or print that"},
 
   {"cddb-port",   'P', POPT_ARG_INT, &opts.cddb_port, 0,
@@ -306,6 +311,22 @@ struct poptOption optionsTable[] = {
 
   {"cddb-http",   'H', POPT_ARG_NONE, &opts.cddb_http, 0,
    "Lookup CDDB via HTTP proxy (default no proxy)"},
+
+  {"cddb-server", '\0', POPT_ARG_STRING, &opts.cddb_server, 0,
+   "CDDB server to contact for information (default: freedb.freedb.org)"},
+
+  {"cddb-cache",  '\0', POPT_ARG_STRING, &opts.cddb_cachedir, 0,
+   "Location of CDDB cache directory (default ~/.cddbclient)"},
+
+  {"cddb-email",  '\0', POPT_ARG_STRING, &opts.cddb_email, 0,
+   "Email address to give CDDB server (default me@home"},
+
+  {"no-cddb-cache", '\0', POPT_ARG_NONE, &opts.cddb_disable_cache, 0,
+   "Lookup CDDB via HTTP proxy (default no proxy)"},
+
+  {"cddb-timeout",  '\0', POPT_ARG_INT, &opts.cddb_timeout, 0,
+   "CDDB timeout value in seconds (default 10 seconds)"},
+
 #endif
   
 #ifdef HAVE_VCDINFO
@@ -714,7 +735,8 @@ cddb_discid()
 
 /* CDIO logging routines */
 
-static cdio_log_handler_t gl_default_log_handler = NULL;
+static cdio_log_handler_t gl_default_cdio_log_handler = NULL;
+static cddb_log_handler_t gl_default_cddb_log_handler = NULL;
 
 static void 
 _log_handler (cdio_log_level_t level, const char message[])
@@ -728,7 +750,7 @@ _log_handler (cdio_log_level_t level, const char message[])
   if (level == CDIO_LOG_WARN  && opts.silent)
     return;
   
-  gl_default_log_handler (level, message);
+  gl_default_cdio_log_handler (level, message);
 }
 
 
@@ -745,13 +767,31 @@ print_cddb_info() {
     goto cddb_destroy;
   }
 
-  cddb_set_email_address(conn, "me@home");
-  cddb_set_server_name(conn, "freedb.freedb.org");
+  if (NULL == opts.cddb_email) 
+    cddb_set_email_address(conn, "me@home");
+  else 
+    cddb_set_email_address(conn, opts.cddb_email);
+
+  if (NULL == opts.cddb_server) 
+    cddb_set_server_name(conn, "freedb.freedb.org");
+  else 
+    cddb_set_server_name(conn, opts.cddb_server);
+
+  if (opts.cddb_timeout >= 0) 
+    cddb_set_timeout(conn, opts.cddb_timeout);
+
   cddb_set_server_port(conn, opts.cddb_port);
+
   if (opts.cddb_http) 
     cddb_http_enable(conn);
   else 
     cddb_http_disable(conn);
+
+  if (NULL != opts.cddb_cachedir) 
+    cddb_cache_set_dir(conn, opts.cddb_cachedir);
+    
+  if (opts.cddb_disable_cache) 
+    cddb_cache_disable(conn);
     
   disc = cddb_disc_new();
   if (!disc) {
@@ -933,23 +973,29 @@ main(int argc, const char *argv[])
   int fs=0;
   poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
-  gl_default_log_handler = cdio_log_set_handler (_log_handler);
+  gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
+  gl_default_cddb_log_handler = cddb_log_set_handler (_log_handler);
 
   program_name = strrchr(argv[0],'/');
   program_name = program_name ? program_name+1 : strdup(argv[0]);
 
   /* Default option values. */
-  opts.silent       = false;
-  opts.debug_level  = 0;
-  opts.no_tracks    = 0;
+  opts.silent        = false;
+  opts.debug_level   = 0;
+  opts.no_tracks     = 0;
 #ifdef HAVE_CDDB
-  opts.no_cddb      = 0;
-  opts.cddb_port    = 8880;
-  opts.cddb_http    = 0;
+  opts.no_cddb       = 0;
+  opts.cddb_port     = 8880;
+  opts.cddb_http     = 0;
+  opts.cddb_cachedir = NULL;
+  opts.cddb_server   = NULL;
+  opts.cddb_timeout = -1;
+  opts.cddb_disable_cache = false;
+  
 #endif
-  opts.no_ioctl     = 0;
-  opts.no_analysis  = 0;
-  opts.source_image = IMAGE_UNKNOWN;
+  opts.no_ioctl      = 0;
+  opts.no_analysis   = 0;
+  opts.source_image  = IMAGE_UNKNOWN;
      
 
   /* Parse our arguments; every option seen by `parse_opt' will

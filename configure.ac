@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.22 2003/05/27 02:55:58 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.23 2003/06/01 21:05:45 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.61)
@@ -196,7 +196,7 @@ int has_timeout=sizeof(test.timeout);],
      	AC_DEFINE([HAVE_SOLARIS_CDROM], [1], 
                   [Define 1 if you have Solaris CD-ROM support])
 	;;
-     cygwin*)
+     mingw*)
      	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
                   [Define 1 if you have cywin MinGW CD-ROM support])
 	;;
@@ -218,25 +218,18 @@ AC_ARG_ENABLE(cddb,
 		enable_cddb=yes)
 fi
 if test x$enable_cddb = xyes; then
-    AC_CHECK_LIB(cddb, cddb_disc_calc_discid,
-                 [ CDDB_LIB="-lcddb"; ac_have_cddb=yes ])
-dnl    AC_DEFINE([HAVE_CDDB],[],
-dnl	      [Define this if you have libcddb installed])
-    AC_TRY_COMPILE([#include <cddb/cddb.h>],[
- cddb_conn_t *conn;
- cddb_http_enable(conn);
- ], [
+   PKG_CHECK_MODULES(CDDB, libcddb >= 0.9.4, [
     HAVE_CDDB=yes 
     AC_DEFINE(HAVE_CDDB, [], [Define this if you have libcddb installed])
     ],
- AC_MSG_WARN(libcddb library might not be new enough; need version 0.90 or greater), 
-    HAVE_CDDB=no)
+    [AC_MSG_WARN(new enough libcddb not found. CDDB access disabled) 
+    HAVE_CDDB=no])
     AC_CHECK_LIB(socket, connect)
     AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
 fi
 
 
-AC_SUBST(CDDB_LIB)
+AC_SUBST(CDDB)
 
 if test x$enable_vcdinfo = x; then
 AC_ARG_ENABLE(vcdinfo,
