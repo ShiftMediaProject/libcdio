@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.15 2005/01/13 19:30:24 rocky Exp $
+  $Id: cd-drive.c,v 1.16 2005/01/13 19:58:17 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -22,14 +22,8 @@
 
 #include "util.h"
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
-#endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
 #endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
