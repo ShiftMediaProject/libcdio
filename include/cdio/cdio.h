@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.52 2004/06/06 11:47:39 rocky Exp $
+    $Id: cdio.h,v 1.53 2004/06/19 10:39:30 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -177,6 +177,10 @@ extern "C" {
     image drivers and hardware drivers give DRIVER_UNKNOWN.
     
     NULL is returned if we couldn't return a list of devices.
+
+    In some situations of drivers or OS's we can't find a CD device if
+    there is no media in it and it is possible for this routine to return
+    NULL even though there may be a hardware CD-ROM.
   */
   char ** cdio_get_devices (driver_id_t driver);
 
@@ -188,6 +192,10 @@ extern "C" {
     @param obj the CD object queried
     @return a string containing the default CD device or NULL is
     if we couldn't get a default device.
+
+    In some situations of drivers or OS's we can't find a CD device if
+    there is no media in it and it is possible for this routine to return
+    NULL even though there may be a hardware CD-ROM.
   */
   char * cdio_get_default_device (const CdIo *obj);
 
@@ -196,6 +204,10 @@ extern "C" {
 
     @param obj the CD object queried
     @return a list of device capabilities.
+
+    In some situations of drivers or OS's we can't find a CD device if
+    there is no media in it and it is possible for this routine to return
+    NULL even though there may be a hardware CD-ROM.
   */
   cdio_drive_cap_t cdio_get_drive_cap (const CdIo *obj);
 
@@ -203,6 +215,10 @@ extern "C" {
     Get the drive capabilities for a specified device.
 
     @return a list of device capabilities.
+
+    In some situations of drivers or OS's we can't find a CD device if
+    there is no media in it and it is possible for this routine to return
+    NULL even though there may be a hardware CD-ROM.
   */
   cdio_drive_cap_t cdio_get_drive_cap_dev (const char *device);
 
@@ -607,6 +623,10 @@ extern "C" {
 
   /*! Return a list of all of the CD-ROM devices that the BSDI driver
       can find.
+
+      In some situations of drivers or OS's we can't find a CD device if
+      there is no media in it and it is possible for this routine to return
+      NULL even though there may be a hardware CD-ROM.
    */
   char **cdio_get_devices_bsdi(void);
   
@@ -646,6 +666,10 @@ extern "C" {
 
      @return the cdio object for subsequent operations. 
      NULL on error or there is no GNU/Linux driver.
+
+     In some situations of drivers or OS's we can't find a CD device if
+     there is no media in it and it is possible for this routine to return
+     NULL even though there may be a hardware CD-ROM.
    */
   CdIo * cdio_open_linux (const char *source_name);
 
@@ -663,6 +687,10 @@ extern "C" {
       for CD-ROM drives with CDs in them.
 
      NULL is returned on error or there is no CD-ROM device.
+
+     In some situations of drivers or OS's we can't find a CD device if
+     there is no media in it and it is possible for this routine to return
+     NULL even though there may be a hardware CD-ROM.
 
      @see cdio_open_cd, cdio_open
    */
@@ -696,6 +724,10 @@ extern "C" {
 
      NULL is returned on error or there is no CD-ROM device.
 
+     In some situations of drivers or OS's we can't find a CD device if
+     there is no media in it and it is possible for this routine to return
+     NULL even though there may be a hardware CD-ROM.
+
      @see cdio_open_cd, cdio_open
    */
   char * cdio_get_default_device_solaris(void);
@@ -709,6 +741,10 @@ extern "C" {
       device_name is the some sort of device name.
 
      NULL is returned on error or there is no OSX driver.
+
+     In some situations of drivers or OS's we can't find a CD device if
+     there is no media in it and it is possible for this routine to return
+     NULL even though there may be a hardware CD-ROM.
 
      @see cdio_open_cd, cdio_open
    */
@@ -728,7 +764,9 @@ extern "C" {
       OSX driver would use when none is specified. A scan is made
       for CD-ROM drives with CDs in them.
 
-     NULL is returned on error or there is no CD-ROM device 
+     In some situations of drivers or OS's we can't find a CD device if
+     there is no media in it and it is possible for this routine to return
+     NULL even though there may be a hardware CD-ROM.
    */
   char * cdio_get_default_device_osx(void);
   
@@ -740,7 +778,9 @@ extern "C" {
   /*! Set up CD-ROM for reading using the Microsoft Windows driver. The
       device_name is the some sort of device name.
 
-     NULL is returned on error or there is no Microsof Windows driver.
+     In some situations of drivers or OS's we can't find a CD device if
+     there is no media in it and it is possible for this routine to return
+     NULL even though there may be a hardware CD-ROM.
    */
   CdIo * cdio_open_win32 (const char *source_name);
   
@@ -756,7 +796,9 @@ extern "C" {
       Win32 driver would use when none is specified. A scan is made
       for CD-ROM drives with CDs in them.
 
-     NULL is returned on error or there is no CD-ROM device.
+     In some situations of drivers or OS's we can't find a CD device if
+     there is no media in it and it is possible for this routine to return
+     NULL even though there may be a hardware CD-ROM.
 
      @see cdio_open_cd, cdio_open
    */
