@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.11 2003/09/14 09:34:18 rocky Exp $
+    $Id: _cdio_win32.c,v 1.12 2003/09/20 12:34:02 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.11 2003/09/14 09:34:18 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.12 2003/09/20 12:34:02 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -113,7 +113,6 @@ typedef struct __RAW_READ_INFO {
 #define SRB_DIR_OUT         0x10
 #define SRB_EVENT_NOTIFY    0x40
 
-#define READ_CD 0xbe
 #define SECTOR_TYPE_MODE2 0x14
 #define READ_CD_USERDATA_MODE2 0x10
 
@@ -486,18 +485,15 @@ _cdio_win32_free (void *user_data)
    Returns 0 if no error. 
  */
 static int
-_cdio_read_raw_sector (void *user_data, void *data, lsn_t lsn)
+_cdio_mmc_read_sectors (void *user_data, void *data, lsn_t lsn, 
+			int sector_type, unsigned int nblocks)
 {
-  unsigned char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   _img_private_t *_obj = user_data;
+  unsigned char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
 
   if( _obj->hASPI ) {
     HANDLE hEvent;
     struct SRB_ExecSCSICmd ssc;
-    int blocks = 1;
-    int sector_type;
-    int sync, header_code, user_data, edc_ecc, error_field;
-    int sub_channel;
     
     /* Create the transfer completion event */
     hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -506,18 +502,6 @@ _cdio_read_raw_sector (void *user_data, void *data, lsn_t lsn)
     }
 
     /* Data selection */
-    sector_type = 0;		/* all types */
-    /*sector_type = 1;*/	/* CD-DA */
-    /*sector_type = 2;*/	/* mode1 */
-    /*sector_type = 3;*/	/* mode2 */
-    /*sector_type = 4;*/	/* mode2/form1 */
-    /*sector_type = 5;*/	/* mode2/form2 */
-    sync = 0;
-    header_code = 2;
-    user_data = 1;
-    edc_ecc = 0;
-    error_field = 0;
-    sub_channel = 0;
 
     memset( &ssc, 0, sizeof( ssc ) );
     
@@ -531,20 +515,13 @@ _cdio_read_raw_sector (void *user_data, void *data, lsn_t lsn)
     ssc.SRB_CDBLen      = 12;
     
     /* Operation code */
-    ssc.CDBByte[ 0 ] = READ_CD;
+    ssc.CDBByte[ 0 ] = CDIO_MMC_GPCMD_READ_CD;
 
-    /* Start of LSN */
-    ssc.CDBByte[ 1 ] = (sector_type) << 2;
-
-    SCSI_MMC_SET_READ_LBA(ssc.CDBByte, lsn);
-    SCSI_MMC_SET_READ_LENGTH(ssc.CDBByte, blocks);
-    
-    ssc.CDBByte[ 9 ] = (sync << 7) |
-      (header_code << 5) |
-      (user_data << 4) |
-      (edc_ecc << 3) |
-      (error_field << 1);
-    /* ssc.CDBByte[ 9 ] = READ_CD_USERDATA_MODE2; */
+    CDIO_MMC_SET_READ_TYPE(ssc.CDBByte, sector_type);
+    CDIO_MMC_SET_READ_LBA(ssc.CDBByte, lsn);
+    CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, blocks);
+    CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(ssc.CDBByte,
+					     CDIO_MMC_MCSB_ALL_HEADERS);
     
     /* Result buffer */
     ssc.SRB_BufPointer  = buf;
@@ -591,6 +568,19 @@ _cdio_read_raw_sector (void *user_data, void *data, lsn_t lsn)
 }
 
 /*!
+   Reads an audio device into data starting from lsn.
+   Returns 0 if no error. 
+ */
+static int
+_cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn, 
+			  unsigned int nblocks) 
+{
+  _img_private_t *_obj = user_data;
+  return _cdio_mmc_read_sectors( user_data, data, lsn, 
+				 CDIO_MMC_READ_TYPE_CDDA, nblocks );
+}
+
+/*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
@@ -616,7 +606,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   
   _obj->gen.ioctls_debugged++;
  
-  ret = _cdio_read_raw_sector(user_data, buf, lsn);
+  ret = _cdio_mmc_read_sectors(user_data, buf, lsn, CDIO_MMC_READ_TYPE_ANY, 1);
 
   if( ret != 0 ) return ret;
   
@@ -635,7 +625,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
-		     bool mode2_form2, unsigned nblocks)
+		     bool mode2_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = user_data;
   int i;
@@ -1094,7 +1084,7 @@ cdio_open_win32 (const char *source_name)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = NULL,
     .read               = NULL,
-    .read_audio_sector  = _cdio_read_raw_sector,
+    .read_audio_sectors = _cdio_read_audio_sectors,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,

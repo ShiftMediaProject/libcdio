@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.12 2003/09/18 13:40:54 rocky Exp $
+    $Id: cdio_private.h,v 1.13 2003/09/20 12:34:02 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -123,7 +123,8 @@ extern "C" {
       Reads a single mode2 sector from cd device into buf starting
       from lsn. Returns 0 if no error. 
     */
-    int (*read_audio_sector) (void *user_data, void *buf, lsn_t lsn);
+    int (*read_audio_sectors) (void *user_data, void *buf, lsn_t lsn,
+			       unsigned int nblocks);
     
     /*!
       Reads a single mode2 sector from cd device into buf starting

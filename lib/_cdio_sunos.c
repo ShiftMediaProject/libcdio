@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.16 2003/09/14 09:34:17 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.17 2003/09/20 12:34:02 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -36,7 +36,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.16 2003/09/14 09:34:17 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.17 2003/09/20 12:34:02 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -112,6 +112,43 @@ _cdio_init (_img_private_t *_obj)
   return true;
 }
 
+static int
+_cdio_mmc_read_sectors (int fd, void *buf, lsn_t lsn, int sector_type,
+			unsigned int nblocks)
+{
+  struct uscsi_cmd sc;
+  union scsi_cdb cdb;
+  int sub_channel = 0;
+  
+  memset(&cdb, 0, sizeof(cdb));
+  memset(&sc, 0, sizeof(sc));
+
+  cdb.scc_cmd = CDIO_MMC_GPCMD_READ_CD;
+  CDIO_MMC_SET_READ_TYPE(cdb.cdb_opaque, sector_type);
+  CDIO_MMC_SET_READ_LBA(cdb.cdb_opaque, lsn);
+  CDIO_MMC_SET_READ_LENGTH(cdb.cdb_opaque, blocks);
+  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb.cdb_opaque, 
+					   CDIO_MMC_MCSB_ALL_HEADERS);
+  cdb.cdb_opaque[10] = sub_channel;
+  
+  sc.uscsi_cdb = (caddr_t)&cdb;
+  sc.uscsi_cdblen = 12;
+  sc.uscsi_bufaddr = (caddr_t) buf;
+  sc.uscsi_buflen = CDIO_CD_FRAMESIZE_RAW;
+  sc.uscsi_flags = USCSI_ISOLATE | USCSI_READ;
+  sc.uscsi_timeout = 20;
+  if (ioctl(fd, USCSICMD, &sc)) {
+    perror("USCSICMD: READ CD");
+    return 1;
+  }
+  if (sc.uscsi_status) {
+    cdio_error("SCSI command failed with status %d\n", 
+	       sc.uscsi_status);
+  }
+  
+  return sc.uscsi_status;
+}
+
 /*!
    Reads a single mode2 sector from cd device into data starting from lsn.
    Returns 0 if no error. 
@@ -163,54 +200,8 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
       
     case _AM_SUN_CTRL_ATAPI:
       {
-	struct uscsi_cmd sc;
-	union scsi_cdb cdb;
-	int blocks = 1;
-	int sector_type;
-	int sync, header_code, user_data, edc_ecc, error_field;
-	int sub_channel;
-	
-	sector_type = 0;		/* all types */
-	/*sector_type = 1;*/	/* CD-DA */
-	/*sector_type = 2;*/	/* mode1 */
-	/*sector_type = 3;*/	/* mode2 */
-	/*sector_type = 4;*/	/* mode2/form1 */
-	/*sector_type = 5;*/	/* mode2/form2 */
-	sync = 0;
-	header_code = 2;
-	user_data = 1;
-	edc_ecc = 0;
-	error_field = 0;
-	sub_channel = 0;
-	
-	memset(&cdb, 0, sizeof(cdb));
-	memset(&sc, 0, sizeof(sc));
-	cdb.scc_cmd = 0xBE;
-	cdb.cdb_opaque[1] = (sector_type) << 2;
-	
-	SCSI_MMC_SET_READ_LBA(cdb.cdb_opaque, lsn);
-	SCSI_MMC_SET_READ_LENGTH(cdb.cdb_opaque, blocks);
-
-	cdb.cdb_opaque[9] = (sync << 7) |
-	  (header_code << 5) |
-	  (user_data << 4) |
-	  (edc_ecc << 3) |
-	  (error_field << 1);
-	cdb.cdb_opaque[10] = sub_channel;
-	
-	sc.uscsi_cdb = (caddr_t)&cdb;
-	sc.uscsi_cdblen = 12;
-	sc.uscsi_bufaddr = (caddr_t) buf;
-	sc.uscsi_buflen = M2RAW_SECTOR_SIZE;
-	sc.uscsi_flags = USCSI_ISOLATE | USCSI_READ;
-	sc.uscsi_timeout = 20;
-	if (ioctl(_obj->gen.fd, USCSICMD, &sc)) {
-	  perror("USCSICMD: READ CD");
-	  return 1;
-	}
-	if (sc.uscsi_status) {
-	  cdio_error("SCSI command failed with status %d\n", 
-		    sc.uscsi_status);
+	if (_cdio_mmc_read_sectors(_obj->gen.fd, &data, lsn, 
+				   CDIO_MMC_READ_TYPE_MODE2, 1)) {
 	  return 1;
 	}
 	break;
@@ -225,6 +216,18 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   return 0;
 }
 
+/* MMC driver to read audio sectors. 
+   Can read only up to 25 blocks.
+*/
+static int
+_cdio_read_audio_sectors (void *user_data, void *buf, lsn_t lsn, 
+			  unsigned int nblocks)
+{
+  _img_private_t *_obj = user_data;
+  return _cdio_mmc_read_sectors( _obj->gen.fd, buf, lsn, 
+				 CDIO_MMC_READ_TYPE_CDDA, nblocks);
+}
+
 /*!
    Reads a single audio sector from CD device into data starting from lsn.
    Returns 0 if no error. 
@@ -232,13 +235,12 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 static int
 _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 {
+  _img_private_t *_obj = user_data;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
 
-  _img_private_t *_obj = user_data;
-
-  cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
+  cdio_lsn_to_msf (lsn, &_msf);
   msf->cdmsf_min0   = from_bcd8(_msf.m);
   msf->cdmsf_sec0   = from_bcd8(_msf.s);
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
@@ -275,49 +277,8 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
       
     case _AM_SUN_CTRL_ATAPI:
       {
-	struct uscsi_cmd sc;
-	union scsi_cdb cdb;
-	int blocks = 1;
-	int sector_type;
-	int sync, header_code, user_data, edc_ecc, error_field;
-	int sub_channel;
-	
-	sector_type = 1;
-	sync = 0;
-	header_code = 2;
-	user_data = 1;
-	edc_ecc = 0;
-	error_field = 0;
-	sub_channel = 0;
-	
-	memset(&cdb, 0, sizeof(cdb));
-	memset(&sc, 0, sizeof(sc));
-	cdb.scc_cmd = 0xBE;
-	cdb.cdb_opaque[1] = (sector_type) << 2;
-
-	SCSI_MMC_SET_READ_LBA(cdb.cdb_opaque, lsn);
-	SCSI_MMC_SET_READ_LENGTH(cdb.cdb_opaque, blocks);
-
-	cdb.cdb_opaque[9] = (sync << 7) |
-	  (header_code << 5) |
-	  (user_data << 4) |
-	  (edc_ecc << 3) |
-	  (error_field << 1);
-	cdb.cdb_opaque[10] = sub_channel;
-	
-	sc.uscsi_cdb = (caddr_t)&cdb;
-	sc.uscsi_cdblen = 12;
-	sc.uscsi_bufaddr = (caddr_t) buf;
-	sc.uscsi_buflen = CDIO_CD_FRAMESIZE_RAW;
-	sc.uscsi_flags = USCSI_ISOLATE | USCSI_READ;
-	sc.uscsi_timeout = 20;
-	if (ioctl(_obj->gen.fd, USCSICMD, &sc)) {
-	  perror("USCSICMD: READ CD");
-	  return 1;
-	}
-	if (sc.uscsi_status) {
-	  cdio_error("SCSI command failed with status %d\n", 
-		    sc.uscsi_status);
+	if (_cdio_mmc_read_sectors(_obj->gen.fd, &data, lsn, 
+				   CDIO_MMC_READ_TYPE_CDDA, 1)) {
 	  return 1;
 	}
 	break;
@@ -703,7 +664,7 @@ cdio_open_solaris (const char *source_name)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
-    .read_audio_sector  = _cdio_read_audio_sector,
+    .read_audio_sectors = _cdio_read_audio_sectors,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .stat_size          = _cdio_stat_size,

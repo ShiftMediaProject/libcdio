@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.20 2003/09/19 04:37:31 rocky Exp $
+    $Id: _cdio_linux.c,v 1.21 2003/09/20 12:34:02 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.20 2003/09/19 04:37:31 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.21 2003/09/20 12:34:02 rocky Exp $";
 
 #include <string.h>
 
@@ -236,19 +236,19 @@ _set_bsize (int fd, unsigned int bsize)
    Can read only up to 25 blocks.
 */
 static int
-_cdio_read_mmc_sector (int fd, void *buf, lba_t lba, int sector_type)
+_cdio_mmc_read_sectors (int fd, void *buf, lba_t lba, int sector_type, 
+			unsigned int nblocks)
 {
-  struct cdrom_generic_command cgc;
-  const int nblocks = 1;
+  typedef struct cdrom_generic_command cgc_t;
+  cgc_t cgc;
 
-  memset (&cgc, 0, sizeof (struct cdrom_generic_command));
+  memset (&cgc, 0, sizeof (cgc_t));
 
   cgc.cmd[0] = CDIO_MMC_GPCMD_READ_CD;
   CDIO_MMC_SET_READ_TYPE  (cgc.cmd, sector_type);
   CDIO_MMC_SET_READ_LBA   (cgc.cmd, lba);
   CDIO_MMC_SET_READ_LENGTH(cgc.cmd, nblocks);
-
-  cgc.cmd[9] = 0x78; /* All headers  */
+  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cgc.cmd, CDIO_MMC_MCSB_ALL_HEADERS);
 
   cgc.buflen = CDIO_CD_FRAMESIZE_RAW * nblocks; 
   cgc.buffer = buf;
@@ -263,13 +263,16 @@ _cdio_read_mmc_sector (int fd, void *buf, lba_t lba, int sector_type)
   return 0;
 }
 
-/* Packet driver to read mode2 sectors. 
+/* MMC driver to read audio sectors. 
    Can read only up to 25 blocks.
 */
 static int
-_read_packet_audio_sector (int fd, void *buf, lsn_t lsn)
+_cdio_read_audio_sectors (void *user_data, void *buf, lsn_t lsn, 
+			  unsigned int nblocks)
 {
-  return _cdio_read_mmc_sector( fd, buf, lsn, CDIO_MMC_READ_TYPE_CDDA);
+  _img_private_t *_obj = user_data;
+  return _cdio_mmc_read_sectors( _obj->gen.fd, buf, lsn, 
+				 CDIO_MMC_READ_TYPE_CDDA, nblocks);
 }
 
 /* Packet driver to read mode2 sectors. 
@@ -453,8 +456,8 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 
     case _AM_READ_CD:
     case _AM_READ_10:
-      if (_cdio_read_mmc_sector (_obj->gen.fd, buf, lsn, 
-				 CDIO_MMC_READ_TYPE_ANY)) {
+      if (_cdio_mmc_read_sectors (_obj->gen.fd, buf, lsn, 
+				  CDIO_MMC_READ_TYPE_ANY, 1)) {
 	perror ("ioctl()");
 	if (_obj->access_mode == _AM_READ_CD) {
 	  cdio_info ("READ_CD failed; switching to READ_10 mode...");
@@ -949,7 +952,7 @@ cdio_open_linux (const char *orig_source_name)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
-    .read_audio_sector  = _cdio_read_audio_sector,
+    .read_audio_sectors = _cdio_read_audio_sectors,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,

@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.3 2003/09/19 04:36:41 rocky Exp $
+    $Id: scsi_mmc.h,v 1.4 2003/09/20 12:34:02 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -54,5 +54,10 @@
   rec[6] = (len >> 16) & 0xff; \
   rec[7] = (len >>  8) & 0xff; \
   rec[8] = (len      ) & 0xff
+
+#define CDIO_MMC_MCSB_ALL_HEADERS 0x78
+
+#define CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(rec, val) \
+  rec[9] = val;
 
 #endif /* __SCSI_MMC_H__ */

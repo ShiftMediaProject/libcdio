@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.19 2003/09/13 06:25:36 rocky Exp $
+    $Id: cdio.h,v 1.20 2003/09/20 12:34:02 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -218,6 +218,13 @@ extern "C" {
    from lsn. Returns 0 if no error. 
  */
   int cdio_read_audio_sector (const CdIo *obj, void *buf, lsn_t lsn);
+
+  /*!
+   Reads a audio sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+  int cdio_read_audio_sectors (const CdIo *obj, void *buf, lsn_t lsn,
+			       unsigned int nblocks);
 
   /*!
    Reads a single mode1 sector from cd device into data starting

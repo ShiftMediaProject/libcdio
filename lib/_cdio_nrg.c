@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.16 2003/09/14 07:02:17 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.17 2003/09/20 12:34:02 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.16 2003/09/14 07:02:17 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.17 2003/09/20 12:34:02 rocky Exp $";
 
 /* structures used */
 
@@ -595,7 +595,8 @@ _cdio_stat_size (void *user_data)
    from LSN. Returns 0 if no error. 
  */
 static int
-_cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
+_cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn, 
+			  unsigned int nblocks)
 {
   _img_private_t *_obj = user_data;
 
@@ -621,7 +622,7 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 			      SEEK_SET); 
       if (ret!=0) return ret;
       ret = cdio_stream_read (_obj->gen.data_source, data, 
-			      CDIO_CD_FRAMESIZE_RAW, 1);
+			      CDIO_CD_FRAMESIZE_RAW, nblocks);
       if (ret==0) return ret;
       break;
     }
@@ -860,7 +861,7 @@ cdio_open_nrg (const char *source_name)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = _cdio_lseek,
     .read               = _cdio_read,
-    .read_audio_sector  = _cdio_read_audio_sector,
+    .read_audio_sectors = _cdio_read_audio_sectors,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.25 2003/09/14 14:34:51 rocky Exp $
+    $Id: cdio.c,v 1.26 2003/09/20 12:34:02 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.25 2003/09/14 14:34:51 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.26 2003/09/20 12:34:02 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -505,8 +505,20 @@ cdio_read_audio_sector (const CdIo *obj, void *buf, lsn_t lsn)
   cdio_assert (obj != NULL);
   cdio_assert (buf != NULL);
 
-  if  (obj->op.read_audio_sector != NULL)
-    return obj->op.read_audio_sector (obj->user_data, buf, lsn);
+  if  (obj->op.read_audio_sectors != NULL)
+    return obj->op.read_audio_sectors (obj->user_data, buf, lsn, 1);
+  return -1;
+}
+
+int
+cdio_read_audio_sectors (const CdIo *obj, void *buf, lsn_t lsn,
+                         unsigned int nblocks) 
+{
+  cdio_assert (obj != NULL);
+  cdio_assert (buf != NULL);
+
+  if  (obj->op.read_audio_sectors != NULL)
+    return obj->op.read_audio_sectors (obj->user_data, buf, lsn, nblocks);
   return -1;
 }
 

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.28 2003/09/18 13:49:59 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.29 2003/09/20 12:34:02 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.28 2003/09/18 13:49:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.29 2003/09/20 12:34:02 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -463,7 +463,8 @@ _cdio_image_read_cue (_img_private_t *_obj)
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
+_cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn, 
+			  unsigned int nblocks)
 {
   _img_private_t *_obj = user_data;
   int ret;
@@ -477,7 +478,7 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
     if (ret!=0) return ret;
 
     ret = cdio_stream_read (_obj->gen.data_source, data, 
-			    CDIO_CD_FRAMESIZE_RAW, 1);
+			    CDIO_CD_FRAMESIZE_RAW, nblocks);
   } else {
     /* We need to pad out the first 272 bytes with 0's */
     BZERO(data, 272);
@@ -487,7 +488,7 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
     if (ret!=0) return ret;
 
     ret = cdio_stream_read (_obj->gen.data_source, (uint8_t *) data+272, 
-			    CDIO_CD_FRAMESIZE_RAW - 272, 1);
+			    CDIO_CD_FRAMESIZE_RAW - 272, nblocks);
   }
 
   return ret;
@@ -822,7 +823,7 @@ cdio_open_common (_img_private_t **_data)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = _cdio_lseek,
     .read               = _cdio_read,
-    .read_audio_sector  = _cdio_read_audio_sector,
+    .read_audio_sectors = _cdio_read_audio_sectors,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
