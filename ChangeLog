@@ -1,3 +1,37 @@
+2003-04-20 15:23  rocky
+
+	* tests/: check_cue.sh, check_cue.sh.in: May need --no-cddb option.
+
+2003-04-20 13:24  rocky
+
+	* configure.ac, include/cdio/cdio.h, include/cdio/cdio.h.in,
+	src/cdinfo.c, tests/Makefile.am, tests/check_cue.sh,
+	tests/check_opts.sh, tests/check_opts.sh.in,
+	tests/check_opts0.right, tests/check_opts1.right,
+	tests/check_opts2.right, tests/check_opts3.right,
+	tests/check_opts4.right, tests/check_opts5.right,
+	tests/check_opts6.right, tests/check_opts7.right,
+	tests/fsf-tompox.bin, tests/fsf-tompox.right, tests/isofs-m1.bin,
+	tests/isofs-m1.cue: Reduce overall size yet again by replaing
+	isofs-m1 for fsf-tompox.  cdinfo: Add options for CDDB port and
+	CDDB http enable	 fix bug if no CD in cdrom drive.
+
+2003-04-20 11:35  rocky
+
+	* include/cdio/cdio.h: add min/max device driver
+
+2003-04-20 11:34  rocky
+
+	* Makefile.am, configure.ac, lib/cdio.c, tests/Makefile.am,
+	tests/cdda.bin, tests/cdda.cue, tests/cdda.right,
+	tests/check_cue.sh: Add small cdda test.  cdio.c: cdio_open was
+	opening image drivers.
+
+2003-04-19 21:39  rocky
+
+	* ChangeLog, configure.ac, lib/Makefile.am, src/cdinfo.c: Put back
+	in libcddb 0.9.0 checking and use cddb_http_disable().
+
 2003-04-19 16:49  rocky
 
 	* lib/_cdio_freebsd.c: Add _cdio_read_audio_sector. Try to sync up

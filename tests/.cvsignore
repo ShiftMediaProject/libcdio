@@ -1,6 +1,5 @@
 Makefile
 Makefile.in
-check_opts.sh
 *.dump
 *.cue
 *.bin
