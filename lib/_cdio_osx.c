@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.8 2003/09/25 09:38:16 rocky Exp $
+    $Id: _cdio_osx.c,v 1.9 2003/10/04 20:11:27 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com> from vcdimager code
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -31,7 +31,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.8 2003/09/25 09:38:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.9 2003/10/04 20:11:27 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -43,7 +43,7 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.8 2003/09/25 09:38:16 rocky E
 
 #include <string.h>
 
-#ifdef HAVE_OSX_CDROM
+#ifdef HAVE_DARWIN_CDROM
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -607,7 +607,7 @@ _cdio_get_track_green(void *env, track_t track_num)
 #endif
 }
 
-#endif /* HAVE_OSX_CDROM */
+#endif /* HAVE_DARWIN_CDROM */
 
 /*!
   Return a string containing the default CD device if none is specified.
@@ -627,7 +627,7 @@ CdIo *
 cdio_open_osx (const char *source_name)
 {
 
-#ifdef HAVE_OSX_CDROM
+#ifdef HAVE_DARWIN_CDROM
   CdIo *ret;
   _img_private_t *_data;
 
@@ -672,18 +672,18 @@ cdio_open_osx (const char *source_name)
   
 #else 
   return NULL;
-#endif /* HAVE_OSX_CDROM */
+#endif /* HAVE_DARWIN_CDROM */
 
 }
 
 bool
 cdio_have_osx (void)
 {
-#ifdef HAVE_OSX_CDROM
+#ifdef HAVE_DARWIN_CDROM
   return true;
 #else 
   return false;
-#endif /* HAVE_OSX_CDROM */
+#endif /* HAVE_DARWIN_CDROM */
 }
 
 
