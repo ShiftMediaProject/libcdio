@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.11 2003/08/31 09:11:25 rocky Exp $
+    $Id: iso9660.h,v 1.12 2003/08/31 09:32:24 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -92,6 +92,10 @@ struct iso9660_pvd {
   char     application_data[512];
   char     unused5[653];
 } GNUC_PACKED;
+
+#ifndef  EMPTY_ARRAY_SIZE
+#define EMPTY_ARRAY_SIZE 0
+#endif
 
 struct iso9660_dir {
   uint8_t  length; /* 711 */
