@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.4 2003/03/30 13:01:22 rocky Exp $
+    $Id: cdio.c,v 1.5 2003/04/02 14:54:52 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -28,7 +28,7 @@
 #include "logging.h"
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.4 2003/03/30 13:01:22 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.5 2003/04/02 14:54:52 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -41,10 +41,13 @@ const char *track_format2str[5] =
 
 CdIo_driver_t CdIo_driver[MAX_DRIVER] = { {0} };
 
-/* The last valid entry of Cdio_driver. -1 means uninitialzed. -2 
-   means some sort of error.
+/* The last valid entry of Cdio_driver. 
+   -1 or (CDIO_DRIVER_UNINIT) means uninitialzed. 
+   -2 means some sort of error.
 */
-int CdIo_last_driver = -1; 
+
+#define CDIO_DRIVER_UNINIT -1
+int CdIo_last_driver = CDIO_DRIVER_UNINIT;
 
 static bool 
 cdio_have_false(void)
@@ -305,7 +308,7 @@ cdio_init(void)
   CdIo_driver_t *dp = CdIo_driver;
   driver_id_t driver_id;
 
-  if (CdIo_last_driver != -1) {
+  if (CdIo_last_driver != CDIO_DRIVER_UNINIT) {
     cdio_warn ("Init routine called more than once.");
     return false;
   }
@@ -344,6 +347,7 @@ cdio_destroy (CdIo *obj)
   
   obj->op.free (obj->user_data);
   free (obj);
+  CdIo_last_driver = CDIO_DRIVER_UNINIT;
 }
 
 /*!
