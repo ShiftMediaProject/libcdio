@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.35 2004/06/06 10:50:55 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.36 2004/06/06 10:54:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -41,7 +41,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.35 2004/06/06 10:50:55 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.36 2004/06/06 10:54:22 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -678,14 +678,14 @@ _cdio_get_track_format(void *user_data, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *user_data, track_t track_num) 
+_cdio_get_track_green(void *user_data, track_t i_track) 
 {
   _img_private_t *env = user_data;
   
   if (!env->gen.init) _cdio_init(env);
   if (!env->gen.toc_init) _cdio_read_toc (env) ;
 
-  if (track_num > TOTAL_TRACKS+FIRST_TRACK_NUM || track_num < FIRST_TRACK_NUM)
+  if (i_track > TOTAL_TRACKS+FIRST_TRACK_NUM || i_track < FIRST_TRACK_NUM)
     return false;
 
   i_track -= FIRST_TRACK_NUM;
@@ -693,7 +693,7 @@ _cdio_get_track_green(void *user_data, track_t track_num)
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cd-info for a while.
    */
-  return ((env->tocent[track_num-1].cdte_ctrl & 2) != 0);
+  return ((env->tocent[i_track].cdte_ctrl & 2) != 0);
 }
 
 /*!  
