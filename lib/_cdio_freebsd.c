@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.3 2003/03/29 20:28:05 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.4 2003/03/30 00:38:11 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.3 2003/03/29 20:28:05 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.4 2003/03/30 00:38:11 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -51,8 +51,8 @@ static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.3 2003/03/29 20:28:05 roc
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-/* for FreeBSD make a link to the right devnode, like /dev/acd0c */
-#define DEFAULT_CDIO_DEVICE "/dev/cdrom"
+/* Is this the right default? */
+#define DEFAULT_CDIO_DEVICE "/dev/acd0c"
 
 #define TOTAL_TRACKS    (_obj->tochdr.ending_track \
 			- obj->tochdr.starting_track + 1)
@@ -75,7 +75,7 @@ typedef struct {
   /* Track information */
   bool toc_init;                         /* if true, info below is valid. */
   struct ioc_toc_header  tochdr;
-  struct ioc_read_toc_seinge_entry tocent[100]; /* entry info for each track */
+  struct ioc_read_toc_single_entry tocent[100]; /* entry info for each track */
 
 } _img_private_t;
 
@@ -125,7 +125,7 @@ _read_mode2 (int fd, void *buf, lba_t lba, unsigned nblocks,
   while (nblocks > 0)
     {
       const unsigned nblocks2 = (nblocks > 25) ? 25 : nblocks;
-      void *buf2 = ((char *)buf ) + (l * 2336);
+      void *buf2 = ((char *)buf ) + (l * M2RAW_SECTOR_SIZE);
       
       retval |= __read_mode2 (fd, buf2, lba + l, nblocks2, _workaround);
 
@@ -275,10 +275,6 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
     {
       if (!strcmp(value, "IOCTL"))
 	_obj->access_mode = _AM_IOCTL;
-      else if (!strcmp(value, "READ_CD"))
-	_obj->access_mode = _AM_READ_CD;
-      else if (!strcmp(value, "READ_10"))
-	_obj->access_mode = _AM_READ_10;
       else
 	cdio_error ("unknown access type: %s. ignored.", value);
     }
