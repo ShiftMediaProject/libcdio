@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.24 2003/09/21 01:14:30 rocky Exp $
+    $Id: iso9660.h,v 1.25 2003/09/21 01:26:31 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -261,11 +261,11 @@ char *iso9660_strncpy_pad(char dst[], const char src[], size_t len,
                           /*out*/ iso9660_ltime_t *pvd_date);
 
 /*!
-  Get time structure from structure in an ISO 9660 directory index 
+  Get Unix time structure from format use in an ISO 9660 directory index 
   record. Even though tm_wday and tm_yday fields are not explicitly in
-  idr_date, the are calculated from the other fields.
+  idr_date, they are calculated from the other fields.
 
-  If tm is to reflect the localtime set use_localtime true, otherwise
+  If tm is to reflect the localtime, set "use_localtime" true, otherwise
   tm will reported in GMT.
 */
   void iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool use_localtime,
