@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.21 2005/02/05 04:23:56 rocky Exp $
+  $Id: scan_devices.c,v 1.22 2005/02/05 23:16:34 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -312,7 +312,7 @@ cdio_cddap_identify_cooked(const char *psz_dev, int messagedest,
 {
   CdIo_t *p_cdio = NULL;
 
-#ifdef HAVE_LSTAT
+#ifdef DEVICE_IN_FILESYSTEM
   if (psz_dev) {
     char *psz_device = test_resolve_symlink(psz_dev, messagedest, 
 					    ppsz_messages);

@@ -1,5 +1,5 @@
 /*
-  $Id: common_interface.h,v 1.5 2005/01/22 03:45:19 rocky Exp $
+  $Id: common_interface.h,v 1.6 2005/02/05 23:16:34 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -28,6 +28,15 @@
 
 #include <cdio/types.h>
 #include "low_interface.h"
+
+#if defined(HAVE_LSTAT) && !defined(HAVE_WIN32_CDROM)
+/* Define this if the CD-ROM device is a file in the filesystem
+   that can be lstat'd
+*/
+#define DEVICE_IN_FILESYSTEM 1
+#else 
+#undef DEVICE_IN_FILESYSTEM
+#endif
 
 /** Test for presence of a cdrom by pinging with the 'CDROMVOLREAD' ioctl() */
 extern int ioctl_ping_cdrom(int fd);
