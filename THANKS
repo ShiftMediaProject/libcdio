@@ -1,3 +1,6 @@
+Nicolas Boullis <nboullis@debian.org>
+  Build issues and Debian 
+
 Kris Verbeeck <airborne@advalvas.be>:
   CDDB library support from libcddb http://libcddb.sourceforge.net
   Gentoo ebuild-file
