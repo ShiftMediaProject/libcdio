@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.34 2004/02/26 03:57:42 rocky Exp $
+    $Id: nrg.c,v 1.1 2004/03/05 12:32:45 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.34 2004/02/26 03:57:42 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.1 2004/03/05 12:32:45 rocky Exp $";
 
 /* structures used */
 

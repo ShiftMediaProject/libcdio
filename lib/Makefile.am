@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.26 2004/03/01 02:17:56 rocky Exp $
+#   $Id: Makefile.am,v 1.27 2004/03/05 12:32:45 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -52,33 +52,33 @@ noinst_HEADERS = cdio_assert.h bytesex.h bytesex_asm.h \
 	cdio_private.h ds.h 
 
 libcdio_sources = \
-	_cdio_bincue.c \
 	_cdio_bsdi.c \
 	_cdio_freebsd.c \
 	_cdio_generic.c \
 	_cdio_linux.c \
 	_cdio_osx.c \
-	_cdio_nrg.c \
 	_cdio_stdio.c \
 	_cdio_stdio.h \
 	_cdio_stream.c \
 	_cdio_stream.h \
 	_cdio_sunos.c \
-	_cdio_win32.c \
-	_cdio_win32.h \
 	bytesex.h \
 	bytesex_asm.h \
 	cdio.c \
 	cd_types.c \
 	ds.c \
 	ds.h \
+	image/bincue.c \
+	image/nrg.c \
 	logging.c \
+	MSWindows/aspi32.c \
+	MSWindows/aspi32.h \
+	MSWindows/ioctl.c \
+	MSWindows/win32.c \
+	MSWindows/win32.h \
 	scsi_mmc.h \
 	sector.c \
-	util.c \
-	win32ioctl.c \
-	wnaspi32.c \
-	wnaspi32.h
+	util.c
 
 lib_LTLIBRARIES    = libcdio.la libiso9660.la
 

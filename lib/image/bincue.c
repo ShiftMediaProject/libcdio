@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.43 2004/03/05 04:23:52 rocky Exp $
+    $Id: bincue.c,v 1.1 2004/03/05 12:32:45 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.43 2004/03/05 04:23:52 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.1 2004/03/05 12:32:45 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -549,22 +549,13 @@ _cdio_read_mode1_sectors (void *env, void *data, uint32_t lsn,
   _img_private_t *_obj = env;
   int i;
   int retval;
+  unsigned int blocksize = mode1_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if (mode1_form2) {
-      if ( (retval = _cdio_read_mode1_sector (_obj, 
-					      ((char *)data) 
-					      + (M2RAW_SECTOR_SIZE * i),
-					      lsn + i, true)) )
-	return retval;
-    } else {
-      char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _cdio_read_mode1_sector (_obj, buf, lsn + i, false)) )
-	return retval;
-      
-      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
-	      buf, CDIO_CD_FRAMESIZE);
-    }
+    if ( (retval = _cdio_read_mode1_sector (_obj, 
+					    ((char *)data) + (blocksize * i),
+					    lsn + i, mode1_form2)) )
+      return retval;
   }
   return 0;
 }
@@ -613,21 +604,13 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
   _img_private_t *_obj = env;
   int i;
   int retval;
+  unsigned int blocksize = mode2_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if (mode2_form2) {
-      if ( (retval = _cdio_read_mode2_sector (_obj, 
-					 ((char *)data) + (M2RAW_SECTOR_SIZE * i),
-					 lsn + i, true)) )
-	return retval;
-    } else {
-      char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _cdio_read_mode2_sector (_obj, buf, lsn + i, true)) )
-	return retval;
-      
-      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
-	      buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
-    }
+    if ( (retval = _cdio_read_mode2_sector (_obj, 
+					    ((char *)data) + (blocksize * i),
+					    lsn + i, mode2_form2)) )
+      return retval;
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: wnaspi32.c,v 1.1 2004/02/07 00:38:12 rocky Exp $
+    $Id: aspi32.c,v 1.1 2004/03/05 12:32:45 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: wnaspi32.c,v 1.1 2004/02/07 00:38:12 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.1 2004/03/05 12:32:45 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -47,11 +47,11 @@ static const char _rcsid[] = "$Id: wnaspi32.c,v 1.1 2004/02/07 00:38:12 rocky Ex
 #include <fcntl.h>
 
 #include <windows.h>
-#include "_cdio_win32.h"
+#include "win32.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "wnaspi32.h"
+#include "aspi32.h"
 
 /* General ioctl() CD-ROM command function */
 static bool 

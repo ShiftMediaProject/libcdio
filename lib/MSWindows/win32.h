@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.h,v 1.4 2004/03/05 04:23:52 rocky Exp $
+    $Id: win32.h,v 1.1 2004/03/05 12:32:45 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.28 2004/03/05 04:23:52 rocky Exp $
+    $Id: win32.c,v 1.1 2004/03/05 12:32:45 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.28 2004/03/05 04:23:52 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.1 2004/03/05 12:32:45 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -48,11 +48,11 @@ static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.28 2004/03/05 04:23:52 rock
 
 #include <windows.h>
 #include <winioctl.h>
-#include "_cdio_win32.h"
+#include "win32.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "wnaspi32.h"
+#include "aspi32.h"
 
 #define WIN_NT               ( GetVersion() < 0x80000000 )
 

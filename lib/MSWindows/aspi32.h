@@ -1,6 +1,6 @@
 /* Win32 aspi specific */
 /*
-    $Id: wnaspi32.h,v 1.2 2004/02/07 00:35:18 rocky Exp $
+    $Id: aspi32.h,v 1.1 2004/03/05 12:32:45 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
