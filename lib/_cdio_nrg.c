@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.11 2003/04/11 17:30:30 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.12 2003/04/21 23:24:46 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "util.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.11 2003/04/11 17:30:30 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.12 2003/04/21 23:24:46 rocky Exp $";
 
 /* structures used */
 
@@ -108,7 +108,7 @@ typedef struct {
   track_format_t track_format;
   bool           track_green;
   uint16_t  datasize;        /* How much is in the portion we return back? */
-  uint16_t  datastart;       /* Offset from begining that data starts */
+  long int  datastart;       /* Offset from begining that data starts */
   uint16_t  endsize;         /* How much stuff at the end to skip over. This
 			       stuff may have error correction (EDC, or ECC).*/
   uint16_t  blocksize;       /* total block size = start + size + end */
@@ -131,7 +131,10 @@ typedef struct {
   generic_img_private_t gen; 
   internal_position_t pos; 
 
-  bool sector_2336;
+  /* This is a hack because I don't really understnad NERO better. */
+  bool            is_cues;
+
+  bool            sector_2336;
   track_info_t    tocent[100];     /* entry info for each track */
   track_t         total_tracks;    /* number of tracks in image */
   track_t         first_track_num; /* track number of first track */
@@ -159,6 +162,7 @@ _register_mapping (_img_private_t *_obj, lsn_t start_lsn, uint32_t sec_count,
   _cdio_list_append (_obj->mapping, _map);
   _map->start_lsn  = start_lsn;
   _map->sec_count  = sec_count;
+
   _map->img_offset = img_offset;
 
   _obj->size = MAX (_obj->size, (start_lsn + sec_count));
@@ -172,6 +176,11 @@ _register_mapping (_img_private_t *_obj, lsn_t start_lsn, uint32_t sec_count,
   this_track->start_lba = cdio_msf_to_lba(&this_track->start_msf);
   this_track->track_num = track_num+1;
   this_track->blocksize = blocksize;
+  if (_obj->is_cues) 
+    this_track->datastart = img_offset + 8;
+  else 
+    this_track->datastart = 8;
+      
   this_track->sec_count = sec_count;
 
   _obj->total_tracks++;
@@ -258,7 +267,11 @@ PRAGMA_END_PACKED
       bool break_out = false;
       
       switch (UINT32_FROM_BE (chunk->id)) {
-      case CUES_ID: { /* "CUES" */
+      case CUES_ID: { /* "CUES" Seems to have sector size 2336 and 150 sector
+			 pregap seems to be included at beginning of image.
+		       */
+
+
 	unsigned entries = UINT32_FROM_BE (chunk->len);
 	_cuex_array_t *_entries = (void *) chunk->data;
 	
@@ -277,7 +290,9 @@ PRAGMA_END_PACKED
 	  int idx;
 	  
 	  /*cdio_assert (lsn == 0?);*/
-	  
+
+	  _obj->is_cues         = true; /* HACK alert. */
+	  _obj->sector_2336     = true;
 	  _obj->total_tracks    = 0;
 	  _obj->first_track_num = 1;
 	  for (idx = 1; idx < entries-1; idx += 2) {
@@ -290,8 +305,8 @@ PRAGMA_END_PACKED
 	    lsn2 = UINT32_FROM_BE (_entries[idx + 1].lsn);
 
 	    _register_mapping (_obj, lsn, lsn2 - lsn, 
-              (lsn+CDIO_PREGAP_SECTORS) * CDIO_CD_FRAMESIZE_RAW,
-	      CDIO_CD_FRAMESIZE_RAW);
+              (lsn+CDIO_PREGAP_SECTORS) * M2RAW_SECTOR_SIZE, 
+	       M2RAW_SECTOR_SIZE);
 	  }
 	} 
 	break;
@@ -387,8 +402,8 @@ PRAGMA_END_PACKED
 	    cdio_assert (_start * M2RAW_SECTOR_SIZE == _start2);
 	    
 	    _start += idx * CDIO_PREGAP_SECTORS;
-	    
 	    _register_mapping (_obj, _start, _len, _start2, M2RAW_SECTOR_SIZE);
+
 	  }
 	}
 	break;
@@ -424,7 +439,6 @@ PRAGMA_END_PACKED
 	    cdio_assert (_start * M2RAW_SECTOR_SIZE == _start2);
 	    
 	    _start += idx * CDIO_PREGAP_SECTORS;
-	    
 	    _register_mapping (_obj, _start, _len, _start2, M2RAW_SECTOR_SIZE);
 	  }
 	}
@@ -503,7 +517,7 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
      The number below was determined empirically. I'm guessing
      the 1st 24 bytes of a bin file are used for something.
   */
-  off_t real_offset=8;
+  off_t real_offset=0;
 
   unsigned int i;
   unsigned int user_datasize;
@@ -542,6 +556,7 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
     cdio_warn ("seeking outside range of disk image");
     return -1;
   } else
+    real_offset += _obj->tocent[i].datastart;
     return cdio_stream_seek(_obj->gen.data_source, real_offset, whence);
 }
 
@@ -845,7 +860,9 @@ cdio_open_nrg (const char *source_name)
 
   _data->total_tracks   = 0;
   _data->first_track_num= 1;
-  _data->sector_2336     = false;
+  _data->sector_2336    = false; /* FIXME: remove sector_2336 */
+  _data->is_cues        = false; /* FIXME: remove is_cues. */
+
 
   _cdio_set_arg(_data, "source", (NULL == source_name) 
 		? DEFAULT_CDIO_DEVICE: source_name);
