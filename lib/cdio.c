@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.65 2004/07/21 11:28:32 rocky Exp $
+    $Id: cdio.c,v 1.66 2004/07/26 02:54:37 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.65 2004/07/21 11:28:32 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.66 2004/07/26 02:54:37 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -721,16 +721,19 @@ cdio_init(void)
 }
 
 CdIo *
-cdio_new (void *env, const cdio_funcs *funcs)
+cdio_new (generic_img_private_t *p_env, cdio_funcs *p_funcs)
 {
-  CdIo *new_cdio;
+  CdIo *p_new_cdio = _cdio_malloc (sizeof (CdIo));
 
-  new_cdio = _cdio_malloc (sizeof (CdIo));
-
-  new_cdio->env = env;
-  new_cdio->op = *funcs;
-
-  return new_cdio;
+  if (NULL == p_new_cdio) return NULL;
+  
+  p_new_cdio->env = p_env;      /* This is the private "environment" that
+                                   driver-dependent routines use. */
+  p_new_cdio->op  = *p_funcs;
+  p_env->cdio     = p_new_cdio; /* A way for the driver-dependent routines 
+                                   to access the higher-level general cdio 
+                                   object. */
+  return p_new_cdio;
 }
 
 /*!

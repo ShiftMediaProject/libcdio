@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.37 2004/07/25 18:37:09 rocky Exp $
+    $Id: bincue.c,v 1.38 2004/07/26 02:54:37 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.37 2004/07/25 18:37:09 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.38 2004/07/26 02:54:37 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1167,7 +1167,7 @@ cdio_open_cue (const char *psz_cue_name)
   _data->gen.init       = false;
   _data->psz_cue_name   = NULL;
 
-  ret = cdio_new (_data, &_funcs);
+  ret = cdio_new ((void *)_data, &_funcs);
 
   if (ret == NULL) {
     free(_data);

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.80 2004/07/25 18:37:09 rocky Exp $
+    $Id: _cdio_linux.c,v 1.81 2004/07/26 02:54:37 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.80 2004/07/25 18:37:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.81 2004/07/26 02:54:37 rocky Exp $";
 
 #include <string.h>
 
@@ -118,7 +118,6 @@ static int  scsi_mmc_run_cmd_linux( const void *p_user_data, int i_timeout,
 				    scsi_mmc_direction_t e_direction, 
 				    unsigned int i_buf, 
 				    /*in/out*/ void *p_buf );
-static int  set_bsize (_img_private_t *p_env, unsigned int bsize);
 static access_mode_t 
 
 str_to_access_mode_linux(const char *psz_access_mode) 
@@ -432,47 +431,6 @@ _get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
 }
 
 /*!
- * Eject using SCSI MMC commands. Return 0 if successful.
- */
-static int 
-eject_media_mmc(_img_private_t *p_env)
-{
-  int i_status;
-  scsi_mmc_cdb_t cdb = {{0, }};
-  uint8_t buf[1];
-  
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
-
-  i_status = scsi_mmc_run_cmd_linux (p_env, DEFAULT_TIMEOUT,
-				 scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-				 SCSI_MMC_DATA_WRITE, 0, &buf);
-  if (0 != i_status)
-    return i_status;
-  
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
-  cdb.field[4] = 1;
-  i_status = scsi_mmc_run_cmd_linux (p_env, DEFAULT_TIMEOUT,
-				 scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-				 SCSI_MMC_DATA_WRITE, 0, &buf);
-  if (0 != i_status)
-    return i_status;
-  
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
-  cdb.field[4] = 2; /* eject */
-
-  i_status = scsi_mmc_run_cmd_linux (p_env, DEFAULT_TIMEOUT,
-				 scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-				 SCSI_MMC_DATA_WRITE, 0, &buf);
-  if (0 != i_status)
-    return i_status;
-  
-  /* force kernel to reread partition table when new disc inserted */
-  i_status = ioctl(p_env->gen.fd, BLKRRPART);
-  return (i_status);
-  
-}
-
-/*!
   Eject media in CD drive. 
   Return 0 if success and 1 for failure, and 2 if no routine.
  */
@@ -497,13 +455,15 @@ eject_media_linux (void *p_user_data) {
 	if((ret = ioctl(fd, CDROMEJECT)) != 0) {
 	  int eject_error = errno;
 	  /* Try ejecting the MMC way... */
-	  ret = eject_media_mmc(p_env);
+	  ret = scsi_mmc_eject_media(p_env->gen.cdio);
 	  if (0 != ret) {
 	    cdio_warn("ioctl CDROMEJECT failed: %s\n", 
 		      strerror(eject_error));
 	    ret = 1;
 	  }
 	}
+	/* force kernel to reread partition table when new disc inserted */
+	ret = ioctl(p_env->gen.fd, BLKRRPART);
 	break;
       default:
 	cdio_warn ("Unknown CD-ROM (%d)\n", status);
@@ -602,29 +562,6 @@ is_cdrom_linux(const char *drive, char *mnttype)
   return(is_cd);
 }
 
-/* Packet driver to read mode2 sectors. 
-   Can read only up to 25 blocks.
-*/
-static int
-_read_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba, 
-		   int sector_type, unsigned int nblocks)
-{
-  scsi_mmc_cdb_t cdb = {{0, }};
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
-  CDIO_MMC_SET_READ_TYPE  (cdb.field, sector_type);
-  CDIO_MMC_SET_READ_LBA   (cdb.field, lba);
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, nblocks);
-  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb.field, 
-					   CDIO_MMC_MCSB_ALL_HEADERS);
-
-  return scsi_mmc_run_cmd_linux (p_env, DEFAULT_TIMEOUT, 
-				 scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-				 SCSI_MMC_DATA_READ, 
-				 CDIO_CD_FRAMESIZE_RAW * nblocks,
-				 p_buf);
-}
-
 /* MMC driver to read audio sectors. 
    Can read only up to 25 blocks.
 */
@@ -633,8 +570,8 @@ _read_audio_sectors_linux (void *p_user_data, void *buf, lsn_t lsn,
 			   unsigned int nblocks)
 {
   _img_private_t *p_env = p_user_data;
-  return _read_sectors_mmc( p_env, buf, lsn, 
-			    CDIO_MMC_READ_TYPE_CDDA, nblocks);
+  return scsi_mmc_read_sectors( p_env->gen.cdio, buf, lsn, 
+				CDIO_MMC_READ_TYPE_CDDA, nblocks);
 }
 
 /* Packet driver to read mode2 sectors. 
@@ -660,7 +597,7 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
   if (b_read_10) {
     int retval;
     
-    if ((retval = set_bsize (p_env, M2RAW_SECTOR_SIZE)))
+    if ((retval = scsi_mmc_set_bsize (p_env->gen.cdio, M2RAW_SECTOR_SIZE)))
       return retval;
     
     if ((retval = scsi_mmc_run_cmd_linux (p_env, 0, 
@@ -670,11 +607,11 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
 					  M2RAW_SECTOR_SIZE * nblocks, 
 					  p_buf)))
       {
-	set_bsize (p_env, CDIO_CD_FRAMESIZE);
+	scsi_mmc_set_bsize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
 	return retval;
       }
     
-    if ((retval = set_bsize (p_env, CDIO_CD_FRAMESIZE)))
+    if ((retval = scsi_mmc_set_bsize (p_env->gen.cdio, CDIO_CD_FRAMESIZE)))
       return retval;
   } else
     return scsi_mmc_run_cmd_linux (p_env, 0, 
@@ -989,43 +926,6 @@ scsi_mmc_run_cmd_linux( const void *p_user_data, int i_timeout,
 #endif
 
   return ioctl (p_env->gen.fd, CDROM_SEND_PACKET, &cgc);
-}
-
-static int 
-set_bsize (_img_private_t *p_env, unsigned int bsize)
-{
-  scsi_mmc_cdb_t cdb = {{0, }};
-
-  struct
-  {
-    uint8_t reserved1;
-    uint8_t medium;
-    uint8_t reserved2;
-    uint8_t block_desc_length;
-    uint8_t density;
-    uint8_t number_of_blocks_hi;
-    uint8_t number_of_blocks_med;
-    uint8_t number_of_blocks_lo;
-    uint8_t reserved3;
-    uint8_t block_length_hi;
-    uint8_t block_length_med;
-    uint8_t block_length_lo;
-  } mh;
-
-  memset (&mh, 0, sizeof (mh));
-  mh.block_desc_length = 0x08;
-  mh.block_length_hi   = (bsize >> 16) & 0xff;
-  mh.block_length_med  = (bsize >>  8) & 0xff;
-  mh.block_length_lo   = (bsize >>  0) & 0xff;
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SELECT_6);
-
-  cdb.field[1] = 1 << 4;
-  cdb.field[4] = 12;
-  
-  return scsi_mmc_run_cmd_linux (p_env, DEFAULT_TIMEOUT,
-				 scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-				 SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
 }
 
 /*!
@@ -1362,12 +1262,12 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     }
   }
 
-  ret = cdio_new (_data, &_funcs);
+  ret = cdio_new ((void *)_data, &_funcs);
   if (ret == NULL) return NULL;
 
-  if (cdio_generic_init(_data))
+  if (cdio_generic_init(_data)) {
     return ret;
-  else {
+  } else {
     cdio_generic_free (_data);
     return NULL;
   }

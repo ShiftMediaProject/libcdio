@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.33 2004/07/22 11:00:59 rocky Exp $
+    $Id: cdio_private.h,v 1.34 2004/07/26 02:54:37 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -30,7 +30,7 @@
 
 #include <cdio/cdio.h>
 #include <cdio/cdtext.h>
-#include <cdio/scsi_mmc.h>
+#include "scsi_mmc_private.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -216,11 +216,7 @@ extern "C" {
       
       Returns 0 if command completed successfully.
     */
-    int (*run_scsi_mmc_cmd)  ( const void *env, int i_timeout,
-			       unsigned int cdb_len,
-			       const scsi_mmc_cdb_t *p_cdb, 
-			       scsi_mmc_direction_t e_direction,
-			       unsigned int len, /*in/out*/ void *p_buf );
+    scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd;
 
     /*!
       Set the arg "key" with "value" in the source device.
@@ -231,6 +227,9 @@ extern "C" {
       Return the size of the CD in logical block address (LBA) units.
     */
     uint32_t (*stat_size) (void *env);
+
+    /*! Pointer to parent container object. */
+    CdIo *cdio;
     
   } cdio_funcs;
 
@@ -249,16 +248,17 @@ extern "C" {
     code.
    */
   typedef struct {
-    char *source_name;      /* Name used in open. */
-    bool  init;             /* True if structure has been initialized */
-    bool  toc_init;         /* True TOC read in */
-    int   ioctls_debugged;  /* for debugging */
+    char *source_name;      /**< Name used in open. */
+    bool  init;             /**< True if structure has been initialized */
+    bool  toc_init;         /**< True TOC read in */
+    int   ioctls_debugged;  /**< for debugging */
 
     /* Only one of the below is used. The first is for CD-ROM devices 
        and the second for stream reading (bincue, nrg, toc, network).
      */
-    int   fd;               /* File descriptor of device */
+    int   fd;               /**< File descriptor of device */
     CdioDataSource *data_source;
+    CdIo *cdio;             /**< a way to call general cdio routines. */
   } generic_img_private_t;
 
   /* This is used in drivers that must keep their own internal 
@@ -272,7 +272,7 @@ extern "C" {
     lba_t   lba;              /* Current LBA */
   } internal_position_t;
   
-  CdIo * cdio_new (void *env, const cdio_funcs *funcs);
+  CdIo * cdio_new (generic_img_private_t *p_env, cdio_funcs *funcs);
 
   /* The below structure describes a specific CD Input driver  */
   typedef struct 

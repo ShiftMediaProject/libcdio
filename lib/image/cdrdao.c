@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.22 2004/07/25 18:37:09 rocky Exp $
+    $Id: cdrdao.c,v 1.23 2004/07/26 02:54:37 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.22 2004/07/25 18:37:09 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.23 2004/07/26 02:54:37 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1149,7 +1149,7 @@ cdio_open_cdrdao (const char *psz_cue_name)
   _data->gen.data_source = NULL;
   _data->gen.source_name = NULL;
 
-  ret = cdio_new (_data, &_funcs);
+  ret = cdio_new ((void *)_data, &_funcs);
 
   if (ret == NULL) {
     free(_data);

@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.15 2004/07/25 16:38:05 rocky Exp $
+    $Id: scsi_mmc.h,v 1.16 2004/07/26 02:54:37 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -194,5 +194,19 @@ void scsi_mmc_get_drive_cap(const uint8_t *p,
 			    /*out*/ cdio_drive_read_cap_t  *p_read_cap,
 			    /*out*/ cdio_drive_write_cap_t *p_write_cap,
 			    /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
+
+/*!
+ * Eject using SCSI MMC commands. Return 0 if successful.
+ */
+int scsi_mmc_eject_media( const CdIo *cdio);
+
+/*! Packet driver to read mode2 sectors. 
+   Can read only up to 25 blocks.
+*/
+int scsi_mmc_read_sectors ( const CdIo *cdio, void *p_buf, lba_t lba, 
+			    int sector_type, unsigned int nblocks);
+
+int scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize);
+
 
 #endif /* __SCSI_MMC_H__ */
