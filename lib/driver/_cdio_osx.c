@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: _cdio_osx.c,v 1.2 2004/12/22 09:09:55 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.2 2004/12/22 09:09:55 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -537,8 +537,8 @@ get_drive_cap_osx(const void *p_user_data,
 		     | CDIO_DRIVE_CAP_MISC_MULTI_SESSION
 		     | CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED
 		     | CDIO_DRIVE_CAP_MISC_RESET
-		     | CDIO_DRIVE_CAP_MCN
-		     | CDIO_DRIVE_CAP_ISRC
+		     | CDIO_DRIVE_CAP_READ_MCN
+		     | CDIO_DRIVE_CAP_READ_ISRC
 		     );
 
     IOObjectRelease( service );
