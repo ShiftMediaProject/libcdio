@@ -1,7 +1,7 @@
 0.71
 
-- Make generic list routines and declarations public. Eventually
-  everything will use glib.
+- Make generic list routines and declarations and byte swapping
+  routines public. Eventually everything will use glib.
 
 - list-returning routines like iso9660_fs_readdir and
   iso9660_ifs_readdir no longer return void * (and require casting)
@@ -9,6 +9,12 @@
 
 - Some exmaple programs have been renamed to more give meaningful
   names.
+
+- Add iso9660_ifs_is_xa() a routine to determine if an iso image has
+  XA attributes.
+
+- iso-info now shows XA attributes what that is available. 
+
 
 0.70
 
@@ -147,4 +153,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.52 2004/10/10 20:28:25 rocky Exp $
+$Id: NEWS,v 1.53 2004/10/22 01:14:08 rocky Exp $
