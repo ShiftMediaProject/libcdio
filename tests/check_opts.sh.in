@@ -1,8 +1,11 @@
 #!/bin/sh
-#$Id: check_opts.sh,v 1.1 2003/04/14 08:51:14 rocky Exp $
+#$Id: check_opts.sh.in,v 1.1 2003/04/14 10:03:27 rocky Exp $
 # Check cdinfo options
+if test -n "@CDDB_LIB@" ; then
+  cddb_opt='--no-cddb'
+fi
 
-if test -z $srcdir ; then
+if test -z "$srcdir" ; then
   srcdir=`pwd`
 fi
 
@@ -11,15 +14,15 @@ fi
 BASE=`basename $0 .sh`
 
 fname=fsf
-opts=('-T' '--no-tracks' '-A', '--no-analyze' '-I' '-no-ioctl' 
-      '-q' '--quiet')
-
-for (( i=0 ; i<${#opts[@]} ; i++ )) ; do 
+i=0
+for opt in '-T' '--no-tracks' '-A' '--no-analyze' '-I' '-no-ioctl' \
+      '-q' '--quiet' ; do 
   testname=${BASE}$i
-  test_cdinfo "--cue-file ${srcdir}/${fname}.cue --no-cddb ${opts[$i]}" \
+  test_cdinfo "--cue-file ${srcdir}/${fname}.cue $cddb_opt $opt" \
     ${testname}.dump ${srcdir}/${testname}.right
   RC=$?
   check_result $RC "cdinfo option test $i"
+  i=`expr $i + 1`
 done
 
 exit $RC
