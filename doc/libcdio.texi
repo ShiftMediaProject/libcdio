@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.30 2005/01/24 05:01:14 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.31 2005/01/24 08:33:57 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -137,7 +137,9 @@ the name). However it was felt that if I put libcdi that might be
 confused with a particular CD format called CD-I.
 
 Later on, the ISO-9660 filesystem handling component from
-@kbd{vcdimager} was extracted, expanded and made a separate library.
+@kbd{vcdimager} was extracted, expanded and made a separate
+library. Next the ability to add SCSI-MMC commands was added, and then
+CD paranoia support. And from there, the rest is history.
 
 @node Previous Work
 @chapter The problem and previous work
@@ -192,9 +194,9 @@ hardware. It is a great idea, however this ``standard'' lacked
 adoption on OS's other than GNU/Linux. Or maybe it's the case that the
 standard on other OS's lacked adoption on GNU/Linux. For example on
 FreeBSD there ia a ``Common Access Method'' (CAM) used for all SCSI
-access which seem adopted by GNU/Linux.@footnote{And I'm thankful for
-that since, at least for SCSI MMC commands, it is inordinately
-complicated and in some places arcane.}
+access which seems not to be adopted in GNU/Linux.@footnote{And I'm
+thankful for that since, at least for SCSI MMC commands, it is
+inordinately complicated and in some places arcane.}
 
 Finally at the hardware level where a similar chaos exists, there has
 been an attempt to do something similar with the SCSI MMC (multimedia
@@ -357,6 +359,7 @@ to by the color of the cover on the specification.
 
 @node Red Book
 @section Red Book (CD-DA)
+@cindex Red Book
 
 @menu
 * CD Text::         CD Text and CD+G
@@ -389,6 +392,8 @@ called @term{CD+G}.
 
 @node CD Text
 @subsection CD Text, CD+G
+@cindex CD Text
+@cindex CD+G
 
 CD Text is an extension to the CD-DA standard that adds the ability to
 album and track meta data (titles, artist/performer names, song
@@ -423,10 +428,11 @@ SFF8020 spec covers the reading of the RW subcodes.
 
 Not all drives support reading the RW subcodes from the program
 area. However for those that do, @value{libcdio} provides a way to get
-at this information.
+at this information via @code{cdtext_get()} and its friends.
 
 @node CDDB
 @subsection Internet CD Database (CDDB)
+@cindex CDDB
 
 CDDB is an database on the Internet of of CD album/track, artist, and
 genre information similar to CD Text information. Using track
@@ -470,7 +476,7 @@ Mode 2.
 
 @node ISO 9660
 @subsection ISO 9660
-
+@cindex ISO 9660
 
 @menu
 * ISO 9660 Level 1::
@@ -523,6 +529,7 @@ System semantics.
 
 @node Joliet Extensions
 @subsubsection Joliet Extensions
+@cindex Joliet Extensions
 
 Joliet extensions were an upward-compatible extension to the ISO 9660
 specification that removes the limitation initially put in to deal
@@ -543,6 +550,7 @@ fields getting used and with the filename encoding changed to UCS-BE.
 
 @node Mode 1
 @subsection Mode 1 (2048 data bytes per sector)
+@cindex Mode 1
 Mode 1 is the data storage mode used by to store computer data. There
 are 3 layers of error correction. A Compact Disc using only this format can
 hold at most 650 MB. The data is laid out in basically the same way as
@@ -559,6 +567,7 @@ sector you call the @code{cdio_read_mode1_sector()} or
 
 @node Mode 2
 @subsection Mode 2 (2336 data bytes per sector)
+@cindex Mode 2
 Mode 2 data CDs are the same as mode 1 CDs except that the error
 detecting and correcting codes are omitted. So still there are 2
 layers of error correction. A Compact Disc using only this mode can
@@ -577,6 +586,7 @@ sector you call the @code{cdio_read_mode2_sector()} or
 
 @node Green Book
 @section Green Book (CD-i)
+@cindex Green Book
 
 This was a CD-ROM format developed by Philips for CD-i (an obsolete
 embedded CD-ROM application allowing limited user user interaction
@@ -593,6 +603,8 @@ CD-ROM which draws on this specification.
 
 @node White Book
 @section White Book (DV, Video CD)
+@cindex Green Book
+
 The White Book was released by Sony, Philips, Matsushita, and JVC in
 1993, defines the Video CD specification. The White Book is also known
 as Digital Video (DV). 
@@ -656,10 +668,14 @@ largest legal track position. In @value{libcdio},
 @cindex MSF
 @cindex LSN
 @cindex LBA
+@cindex sectors
+@cindex frames
+
 A track is broken up into a number of 2352-byte @emph{blocks} which we
-sometimes call @emph{sectors}. Whereas tracks have to have a gap
-between them, a block or sector does not. (In @value{libcdio} the
-block size constant is defined using @code{CDIO_CD_FRAMESIZE_RAW}).
+sometimes call @emph{sectors} or @emph{frames}. Whereas tracks have to
+have a gap between them, a block or sector does not. (In
+@value{libcdio} the block size constant is defined using
+@code{CDIO_CD_FRAMESIZE_RAW}).
 
 A Compact Disc has a limit on the number of blocks or sectors.  This
 values is defined by constant @code{CDIO_CD_MAX_LSN} in
@@ -723,6 +739,7 @@ Other sources for examples would be the larger utility programs
 * Example 4::        use libiso9660 to extract a file from an ISO-9660 image
 * Example 5::        list CD-Text and CD disc mode info
 * Example 6::        run a SCSI-MMC INQUIRY command
+* Example 7::        using the CD Paranoia library for CD-DA reading
 * All sample programs:: list of all programs in the example directory
 @end menu
 
@@ -740,14 +757,14 @@ distribution as @file{example/tracks.c}.
  6: @{
  7:  CdIo_t *p_cdio = cdio_open ("/dev/cdrom", DRIVER_UNKNOWN);
  8:  track_t first_track_num = cdio_get_first_track_num(p_cdio);
- 9:  track_t num_tracks      = cdio_get_num_tracks(p_cdio);
+ 9:  track_t i_tracks        = cdio_get_num_tracks(p_cdio);
 10:  int j, i=first_track_num;
 11:
-12:  printf("CD-ROM Track List (%i - %i)\n", first_track_num, num_tracks);
+12:  printf("CD-ROM Track List (%i - %i)\n", first_track_num, i_tracks);
 13
 14:  printf("  #:  LSN\n");
 15:  
-16:  for (j = 0; j < num_tracks; i++, j++) @{
+16:  for (j = 0; j < i_tracks; i++, j++) @{
 17:    lsn_t lsn = cdio_get_track_lsn(p_cdio, i);
 18:    if (CDIO_INVALID_LSN != lsn)
 19:      printf("%3d: %06d\n", (int) i, lsn);
@@ -762,7 +779,7 @@ distribution as @file{example/tracks.c}.
 Already from the beginning on line 2 we see something odd. The
 @code{#include <sys/types.h>} is needed because @value{libcdio}
 assumes type definitions exist for @code{uint32_t}, @code{uint16_t}
-and so on.  Alternatively you change line 2to:
+and so on.  Alternatively you change line 2 to:
 
 @smallexample
 #define HAVE_SYS_TYPES_H
@@ -791,7 +808,14 @@ that can read CD disk-image formats as well as a driver that handles
 some CD-ROM piece of hardware. Using DRIVER_UNKNOWN as that second
 parameter we let the library select a driver amongst those that are
 available; generally the first hardware driver that is available is
-the one selected.
+the one selected. 
+
+If there is no CD in any of the CD-ROM drives or one does not have
+access to the CD-ROM, it is possible that @value{libcdio} will find a
+CD image in the directory you run this program and will pick a
+suitable CD-image driver. If this is not what you want, but always
+want some sort of CD-ROM driver (or failure if none), then use
+DRIVER_DEVICE instead of DRIVER_UNKNOWN.
 
 Note that in contrast to what is typically done using ioctls to read a
 CD, you don't issue any sort of CD-ROM read TOC command---that is all
@@ -824,14 +848,14 @@ device that is right for it.
  4: int
  5: main(int argc, const char *argv[])
  6: @{
- 7:   CdIo_t *cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+ 7:   CdIo_t *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
  8:   driver_id_t driver_id;
  9:  
-10:  if (NULL != cdio) @{
-11:    printf("The driver selected is %s\n", cdio_get_driver_name(cdio));
+10:  if (NULL != p_cdio) @{
+11:    printf("The driver selected is %s\n", cdio_get_driver_name(p_cdio));
 12:    printf("The default device for this driver is %s\n\n", 
-13:           cdio_get_default_device(cdio));
-14:    cdio_destroy(cdio);
+13:           cdio_get_default_device(p_cdio));
+14:    cdio_destroy(p_cdio);
 15:  @} else @{
 16:    printf("Problem in trying to find a driver.\n\n");
 17:  @}
@@ -866,7 +890,7 @@ we've got. This can be found in the distribution as @file{example/sample3.c}.
 static void
 print_analysis(cdio_iso_analysis_t cdio_iso_analysis, 
 	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
-	       track_t num_tracks, track_t first_track_num, CdIo_t *cdio)
+	       track_t i_tracks, track_t first_track_num, CdIo_t *cdio)
 @{
   switch(CDIO_FSTYPE(fs)) @{
   case CDIO_FS_AUDIO:
@@ -949,7 +973,7 @@ main(int argc, const char *argv[])
   CdIo_t *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
   cdio_fs_anal_t fs=0;
   
-  track_t num_tracks;
+  track_t i_tracks;
   track_t first_track_num;
   lsn_t start_track;          /* first sector of track */
   lsn_t data_start =0;        /* start of data area */
@@ -966,10 +990,10 @@ main(int argc, const char *argv[])
   @}
 
   first_track_num = cdio_get_first_track_num(p_cdio);
-  num_tracks      = cdio_get_num_tracks(p_cdio);
+  i_tracks      = cdio_get_num_tracks(p_cdio);
 
   /* Count the number of data and audio tracks. */
-  for (i = first_track_num; i <= num_tracks; i++) @{
+  for (i = first_track_num; i <= i_tracks; i++) @{
     if (TRACK_FORMAT_AUDIO == cdio_get_track_format(p_cdio, i)) @{
       num_audio++;
       if (-1 == first_audio) first_audio = i;
@@ -989,7 +1013,7 @@ main(int argc, const char *argv[])
 
     memset(&cdio_iso_analysis, 0, sizeof(cdio_iso_analysis));
     
-    for (j = 2, i = first_data; i <= num_tracks; i++) @{
+    for (j = 2, i = first_data; i <= i_tracks; i++) @{
       lsn_t lsn;
       track_format_t track_format = cdio_get_track_format(p_cdio, i);
       
@@ -1019,7 +1043,7 @@ main(int argc, const char *argv[])
       fs = cdio_guess_cd_type(p_cdio, start_track, i, &cdio_iso_analysis);
       
       print_analysis(cdio_iso_analysis, fs, first_data, num_audio,
-		     num_tracks, first_track_num, p_cdio);
+		     i_tracks, first_track_num, p_cdio);
       
       if ( !(CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660 ||
 	     CDIO_FSTYPE(fs) == CDIO_FS_ISO_HFS  ||
@@ -1051,6 +1075,7 @@ is @command{iso-read}, part of this distribution.
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
 #include <sys/types.h>
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
@@ -1071,81 +1096,81 @@ is @command{iso-read}, part of this distribution.
 #endif
 
 #define my_exit(rc)				\
-  fclose (outfd);				\
-  free(statbuf);				\
-  iso9660_close(iso);				\
+  fclose (p_outfd);				\
+  free(p_statbuf);				\
+  iso9660_close(p_iso);				\
   return rc;					\
 
 int
 main(int argc, const char *argv[])
 @{
-  iso9660_stat_t *statbuf;
-  FILE *outfd;
+  iso9660_stat_t *p_statbuf;
+  FILE *p_outfd;
   int i;
   
-  iso9660_t *iso = iso9660_open (ISO9660_IMAGE);
+  iso9660_t *p_iso = iso9660_open (ISO9660_IMAGE);
   
-  if (NULL == iso) @{
+  if (NULL == p_iso) @{
     fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", ISO9660_IMAGE);
     return 1;
   @}
 
-  statbuf = iso9660_ifs_stat_translate (iso, LOCAL_FILENAME);
+  p_statbuf = iso9660_ifs_stat_translate (p_iso, LOCAL_FILENAME);
 
-  if (NULL == statbuf) 
+  if (NULL == p_statbuf) 
     @{
       fprintf(stderr, 
 	      "Could not get ISO-9660 file information for file %s\n",
 	      LOCAL_FILENAME);
-      iso9660_close(iso);
+      iso9660_close(p_iso);
       return 2;
     @}
 
-  if (!(outfd = fopen (LOCAL_FILENAME, "wb")))
+  if (!(p_outfd = fopen (LOCAL_FILENAME, "wb")))
     @{
       perror ("fopen()");
-      free(statbuf);
-      iso9660_close(iso);
+      free(p_statbuf);
+      iso9660_close(p_iso);
       return 3;
     @}
 
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
-  for (i = 0; i < statbuf->size; i += ISO_BLOCKSIZE)
+  for (i = 0; i < p_statbuf->size; i += ISO_BLOCKSIZE)
     @{
       char buf[ISO_BLOCKSIZE];
 
       memset (buf, 0, ISO_BLOCKSIZE);
       
-      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (iso, buf, statbuf->lsn 
+      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (p_iso, buf, p_statbuf->lsn 
 						   + (i / ISO_BLOCKSIZE),
 						   1) )
       @{
 	fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
-		(long unsigned int) statbuf->lsn + (i / ISO_BLOCKSIZE));
+		(long unsigned int) p_statbuf->lsn + (i / ISO_BLOCKSIZE));
 	my_exit(4);
       @}
       
       
-     fwrite (buf, ISO_BLOCKSIZE, 1, outfd);
+     fwrite (buf, ISO_BLOCKSIZE, 1, p_outfd);
       
-     if (ferror (outfd))
+     if (ferror (p_outfd))
         @{
           perror ("fwrite()");
           my_exit(5);
         @}
     @}
   
-  fflush (outfd);
+  fflush (p_outfd);
 
   /* Make sure the file size has the exact same byte size. Without the
      truncate below, the file will a multiple of ISO_BLOCKSIZE.
    */
-  if (ftruncate (fileno (outfd), statbuf->size))
+  if (ftruncate (fileno (p_outfd), p_statbuf->size))
     perror ("ftruncate()");
 
   my_exit(0);
 @}
-@end smallexample 
+@end smallexample
 
 @node Example 5
 @section Example 5: list CD-Text and disc mode info
@@ -1293,6 +1318,106 @@ main(int argc, const char *argv[])
 @}
 @end smallexample 
 
+@node Example 7
+@section Example 7: Using the CD Paranoia library for CD-DA reading
+
+@smallexample
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#include <cdio/cdda.h>
+#include <cdio/cd_types.h>
+#include <stdio.h>
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+int
+main(int argc, const char *argv[])
+@{
+  cdrom_drive_t *d = NULL; /* Place to store handle given by cd-parapnioa. */
+  char **ppsz_cd_drives;   /* List of all drives with a loaded CDDA in it. */
+
+  /* See if we can find a device with a loaded CD-DA in it. */
+  ppsz_cd_drives = cdio_get_devices_with_cap(NULL, CDIO_FS_AUDIO, false);
+
+  if (ppsz_cd_drives) @{
+    /* Found such a CD-ROM with a CD-DA loaded. Use the first drive in
+       the list. */
+    d=cdda_identify(*ppsz_cd_drives, 1, NULL);
+  @} else @{
+    printf("Unable find or access a CD-ROM drive with an audio CD in it.\n");
+    exit(1);
+  @}
+
+  /* Don't need a list of CD's with CD-DA's any more. */
+  cdio_free_device_list(ppsz_cd_drives);
+  free(ppsz_cd_drives);
+
+  /* We'll set for verbose paranoia messages. */
+  cdda_verbose_set(d, CDDA_MESSAGE_PRINTIT, CDDA_MESSAGE_PRINTIT);
+
+  if ( 0 != cdda_open(d) ) @{
+    printf("Unable to open disc.\n");
+    exit(1);
+  @}
+
+  /* Okay now set up to read up to the first 300 frames of the first
+     audio track of the Audio CD. */
+  @{ 
+    cdrom_paranoia_t *p = paranoia_init(d);
+    lsn_t i_first_lsn = cdda_disc_firstsector(d);
+
+    if ( -1 == i_first_lsn ) @{
+      printf("Trouble getting starting LSN\n");
+    @} else @{
+      lsn_t   i_cursor;
+      track_t i_track    = cdda_sector_gettrack(d, i_first_lsn);
+      lsn_t   i_last_lsn = cdda_track_lastsector(d, i_track);
+
+      /* For demo purposes we'll read only 300 frames (about 4
+	 seconds).  We don't want this to take too long. On the other
+	 hand, I suppose it should be something close to a real test.
+       */
+      if ( i_last_lsn - i_first_lsn > 300) i_last_lsn = i_first_lsn + 299;
+
+      printf("Reading track %d from LSN %ld to LSN %ld\n", i_track, 
+	     (long int) i_first_lsn, (long int) i_last_lsn);
+
+      /* Set reading mode for full paranoia, but allow skipping sectors. */
+      paranoia_modeset(p, PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP);
+
+      paranoia_seek(p, i_first_lsn, SEEK_SET);
+
+      for ( i_cursor = i_first_lsn; i_cursor <= i_last_lsn; i_cursor ++) @{
+	/* read a sector */
+	int16_t *p_readbuf=paranoia_read(p, NULL);
+	char *psz_err=cdda_errors(d);
+	char *psz_mes=cdda_messages(d);
+
+	if (psz_mes || psz_err)
+	  printf("%s%s\n", psz_mes ? psz_mes: "", psz_err ? psz_err: "");
+
+	if (psz_err) free(psz_err);
+	if (psz_mes) free(psz_mes);
+	if( !p_readbuf ) @{
+	  printf("paranoia read error. Stopping.\n");
+	  break;
+	@}
+      @}
+    @}
+    paranoia_free(p);
+  @}
+
+  cdda_close(d);
+
+  exit(0);
+@}
+@end smallexample 
+
+
 @node All sample programs
 @section A list of all sample progrmas in the @code{example} directory
 
@@ -1312,15 +1437,27 @@ Descriptions of the sample are as follows...
 A program to show using @code{libiso9660} to list files in a
 	directory of an ISO-9660 image.
 
+@item @code{iso1cpp.cpp}
+
+The same program as @code{iso1.c} written in C++.
+
 @item @code{iso2.c}
 
 A program to show using @code{libiso9660} to extract a file from a
 CDRWIN cue/bin CD image.
 
+@item @code{iso2cpp.cpp}
+
+The same program as @code{iso2.c} written in C++.
+
 @item @code{iso3.c}
 
 A program to show using libiso9660 to extract a file from an ISO-9660
 image.
+
+@item @code{iso3cpp.cpp}
+
+The same program as @code{iso3.c} written in C++.
 
 @item @code{cdtext.c}
 
@@ -1330,6 +1467,18 @@ A program to show CD-Text and CD disc mode info.
 
 A program to show drivers installed and what the default CD-ROM drive
 is and what CD drives are available.
+
+@item @code{paranoia.c}
+
+A program to show using libcdio's version of the CD-DA paranoia. 
+
+@item @code{paranoia2.c}
+
+A program to show using libcdio's version of the CD-DA paranoia
+library. But in this version, we'll open a cdio object before calling
+paranoia's open. I imagine in many cases such as media players this
+may be what will be done since, one may want to get CDDB/CD-Text info
+beforehand. 
 
 @item @code{scsi-mmc1.c}
 
@@ -1541,9 +1690,13 @@ f |     / ? O _
 @node CDRDAO TOC Format
 @appendixsec CDRDAO TOC Format
 
-This is @command{cdrdao}'s own cd image description format. A snippet
-from the @cite{cdrdao(1) manual page}, which you should refer to for
-more information about this format:
+This is @command{cdrdao}'s own cd image description format. Since this
+program is GPL and everything about it is in the open, it is the
+preferred format to use. (Alas, at present it isn't as well supported
+in @value{libcdio} as the BIN/CUE format.)
+
+A snippet from the @cite{cdrdao(1) manual page}, which you should
+refer to for more information about this format:
 
 @quotation
 The @emph{toc}-file describes what data is written to the
@@ -1551,6 +1704,101 @@ The @emph{toc}-file describes what data is written to the
 and sub-channel information.  It is a simple text file, use your
 favorite text editor to create it.
 @end quotation
+
+Here is a list of lexical tokens taken from the cdrdao grammar.
+
+@example
+#lexclass START
+#token Eof		"@@"
+#token                  "[\t\r\ ]+"
+#token Comment          "//~[\n@@]*"
+#token                  "\n"       
+#token BeginString      "\""       
+#token Integer          "[0-9]+"
+#token Index            "INDEX"
+#tokclass AudioFile     @{ "AUDIOFILE" "FILE" @}
+
+#lexclass STRING
+#token EndString        "\""
+#token StringQuote      "\\\""
+#token StringOctal      "\\[0-9][0-9][0-9]"
+#token String           "\\"
+#token String           "[ ]+"
+#token String           "~[\\\n\"\t ]*"
+@end example
+
+@example
+
+toc  ::= ( "CATALOG" string | tocType )* @{ cdTextGlobal @} ( track )+ Eof 
+
+track ::= "TRACK" trackMode 
+    @{ subChannelMode @}
+    (  "ISRC" string | @{ "NO" @} "COPY" | @{ "NO" @} "PRE_EMPHASIS" 
+    | "TWO_CHANNEL_AUDIO"  | "FOUR_CHANNEL_AUDIO" )*
+    @{ cdTextTrack  @}
+    @{ "PREGAP" msf @}
+    ( subTrack | "START" | "END" )+
+    ( Index msf )*
+
+subTrack ::= 
+    (  AudioFile string @{ "SWAP"  @} @{ "#" sLong  @}  samples
+     | "DATAFILE" string @{ "#" sLong @{ dataLength @} @}
+     | "FIFO" string dataLength 
+     | "SILENCE" samples 
+     | "ZERO" @{ dataMode  @} @{ subChannelMode  @} dataLength 
+    )
+
+string ::=  BeginString ( (  String | StringQuote | StringOctal ) )+ 
+            EndString
+
+stringEmpty ::= BeginString ( (  String | StringQuote | StringOctal ) )*
+                EndString
+
+uLong ::= Integer 
+
+sLong ::= Integer 
+
+msf ::= Integer ":" Integer ":" Integer 
+
+samples ::= ( msf | uLong )
+
+dataLength ::= ( msf | uLong )
+
+dataMode ::= ( "AUDIO" | "MODE0" | "MODE1" | "MODE1_RAW" | "MODE2" 
+     | "MODE2_RAW" | "MODE2_FORM1" | "MODE2_FORM2" | "MODE2_FORM_MIX" )
+
+trackMode ::= ( "AUDIO" | "MODE1" | "MODE1_RAW" | "MODE2"
+     | "MODE2_RAW"  | "MODE2_FORM1" | "MODE2_FORM2" | "MODE2_FORM_MIX" )
+
+subChannelMode ::= (  "RW" | "RW_RAW"  )
+
+tocType ::= ( "CD_DA" | "CD_ROM" | "CD_ROM_XA" | "CD_I" )
+
+packType ::= ( "TITLE" | "PERFORMER" | "SONGWRITER" | "COMPOSER" | "ARRANGER"  
+     | "MESSAGE" | "DISC_ID" | "GENRE" | "TOC_INFO1" | "TOC_INFO2"  
+     | "RESERVED1" | "RESERVED2" | "RESERVED3" | "RESERVED4" | "UPC_EAN" |
+     "ISRC" | "SIZE_INFO"   )
+
+binaryData ::=  "\@{"
+    @{ Integer ( "," Integer  )* @}
+    "\@}"
+         
+cdTextItem ::= packType  (  stringEmpty | binaryData )
+ 
+cdTextBlock ::=  "LANGUAGE" Integer "\@{" ( cdTextItem )* "\@}"
+
+
+cdTextLanguageMap ::= 
+    LanguageMap "\@{"
+    ( Integer  ":" (  Integer | "EN"  ) )+
+    "\@}"
+
+cdTextTrack ::=  "CD_TEXT" "\@{" ( cdTextBlock )*  "\@}"
+
+cdTextGlobal ::= "CD_TEXT" "\@{" @{ cdTextLanguageMap  @} ( cdTextBlock )*  "\@}"
+@end example
+
+
 
 @node  CDRWIN BIN/CUE Format
 @appendixsec CDRWIN BIN/CUE Format
