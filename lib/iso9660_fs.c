@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.8 2003/09/07 18:15:26 rocky Exp $
+    $Id: iso9660_fs.c,v 1.9 2003/09/14 06:35:59 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.8 2003/09/07 18:15:26 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.9 2003/09/14 06:35:59 rocky Exp $";
 
 static void
 _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *stat, bool is_mode2)
@@ -92,11 +92,11 @@ static char *
 _idr2name (const iso9660_dir_t *idr)
 {
   char namebuf[256] = { 0, };
+  uint8_t len=iso9660_get_dir_len(idr);
 
-  if (!iso9660_get_dir_len(idr))
-    return NULL;
+  if (!len) return NULL;
 
-  cdio_assert (iso9660_get_dir_len(idr) >= sizeof (iso9660_dir_t));
+  cdio_assert (len >= sizeof (iso9660_dir_t));
 
   /* (idr->flags & ISO_DIRECTORY) */
   
@@ -150,8 +150,9 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
 
   if (_root->size != ISO_BLOCKSIZE * _root->secsize)
     {
-      cdio_warn ("bad size for ISO9660 directory (%ud) should be (%d)!",
-		(unsigned) _root->size, ISO_BLOCKSIZE * _root->secsize);
+      cdio_warn ("bad size for ISO9660 directory (%ud) should be (%lu)!",
+		 (unsigned) _root->size, 
+		 (unsigned long int) ISO_BLOCKSIZE * _root->secsize);
     }
   
   _dirbuf = _cdio_malloc (_root->secsize * ISO_BLOCKSIZE);
@@ -248,15 +249,16 @@ iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool is_mode2)
 
     if (stat.size != ISO_BLOCKSIZE * stat.secsize)
       {
-	cdio_warn ("bad size for ISO9660 directory (%ud) should be (%d)!",
-		  (unsigned) stat.size, ISO_BLOCKSIZE * stat.secsize);
+	cdio_warn ("bad size for ISO9660 directory (%ud) should be (%lu)!",
+		   (unsigned) stat.size, 
+		   (unsigned long int) ISO_BLOCKSIZE * stat.secsize);
       }
 
     _dirbuf = _cdio_malloc (stat.secsize * ISO_BLOCKSIZE);
 
     if (is_mode2) {
       if (cdio_read_mode2_sectors (cdio, _dirbuf, stat.lsn, false, 
-				 stat.secsize))
+				   stat.secsize))
 	cdio_assert_not_reached ();
     } else {
       if (cdio_read_mode1_sectors (cdio, _dirbuf, stat.lsn, false,
