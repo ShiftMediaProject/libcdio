@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.15 2003/04/12 03:38:00 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.16 2003/04/14 04:27:11 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.15 2003/04/12 03:38:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.16 2003/04/14 04:27:11 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -802,11 +802,13 @@ cdio_open_cue (const char *cue_name)
 
   source_name = cdio_is_cuefile(cue_name);
 
-  if (NULL != source_name) {
-    _cdio_set_arg (_data, "cue", cue_name);
-    _cdio_set_arg (_data, "source", source_name);
-    free(source_name);
+  if (NULL == source_name) {
+    cdio_error ("source name %s is not recognized as a cue file", cue_name);
   }
+  
+  _cdio_set_arg (_data, "cue", cue_name);
+  _cdio_set_arg (_data, "source", source_name);
+  free(source_name);
 
   if (_cdio_init(_data)) {
     return ret;
