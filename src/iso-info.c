@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.12 2004/10/22 09:51:40 rocky Exp $
+    $Id: iso-info.c,v 1.13 2004/10/23 20:55:09 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -157,6 +157,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
   CdioList *entlist;
   CdioList *dirlist =  _cdio_list_new ();
   CdioListNode *entnode;
+  uint8_t i_joliet_level = iso9660_ifs_get_joliet_level(p_iso);
 
   entlist = iso9660_ifs_readdir (p_iso, pathname);
     
@@ -178,7 +179,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
 #define DATESTR_SIZE 30
       char date_str[DATESTR_SIZE];
 
-      iso9660_name_translate(iso_name, translated_name);
+      iso9660_name_translate_ext(iso_name, translated_name, i_joliet_level);
       
       snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
 		iso_name);
@@ -249,6 +250,13 @@ init(void)
   opts.print_iso9660 = 0;
 }
 
+#define print_vd_info(title, fn)	  \
+  if (fn(p_iso, &psz_str)) {		  \
+    printf(title ": %s\n", psz_str);	  \
+    free(psz_str);			  \
+    psz_str = NULL;			  \
+  }
+
 /* ------------------------------------------------------------------------ */
 
 int
@@ -275,7 +283,7 @@ main(int argc, const char *argv[])
     err_exit("No input device given/found\n");
   } 
 
-  p_iso = iso9660_open (source_name);
+  p_iso = iso9660_open_ext (source_name, ISO_EXTENSION_ALL);
 
   if (p_iso==NULL) {
     free(source_name);
@@ -283,18 +291,15 @@ main(int argc, const char *argv[])
   } 
 
   if (opts.silent == 0) {
-    iso9660_pvd_t pvd;
-
+    char *psz_str = NULL;
+    
     printf(STRONG "ISO 9660 image: %s\n", source_name);
-
-    if (iso9660_ifs_read_pvd(p_iso, &pvd)) {
-      printf("Application: %s\n", iso9660_get_application_id(&pvd));
-      printf("Preparer   : %s\n", iso9660_get_preparer_id(&pvd));
-      printf("Publisher  : %s\n", iso9660_get_publisher_id(&pvd));
-      printf("System     : %s\n", iso9660_get_system_id(&pvd));
-      printf("Volume     : %s\n", iso9660_get_volume_id(&pvd));
-      printf("Volume Set : %s\n", iso9660_get_volumeset_id(&pvd));
-    }
+    print_vd_info("Application", iso9660_ifs_get_application_id);
+    print_vd_info("Preparer   ", iso9660_ifs_get_preparer_id);
+    print_vd_info("Publisher  ", iso9660_ifs_get_publisher_id);
+    print_vd_info("System     ", iso9660_ifs_get_system_id);
+    print_vd_info("Volume     ", iso9660_ifs_get_volume_id);
+    print_vd_info("Volume Set ", iso9660_ifs_get_volumeset_id);
   }
   
   if (!opts.no_analysis) {

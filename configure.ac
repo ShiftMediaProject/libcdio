@@ -19,10 +19,11 @@ define(RELEASE_NUM, 71)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.94 2004/09/03 23:20:11 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.95 2004/10/23 20:55:08 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
+
 AC_CANONICAL_HOST
 AM_CONFIG_HEADER(config.h)
 
@@ -46,6 +47,11 @@ enable_cd_read="${withval}", enable_cd_read=yes)
 AC_ARG_WITH(versioned_libs,
 [  --without-versioned-libs build versioned library symbols (enabled by default if you have GNU ld)],
 enable_versioned_libs="${withval}", enable_versioned_libs=yes)
+
+AC_ARG_WITH([iconv],
+            AC_HELP_STRING([--without-iconv],
+                           [do not include character set conversion support using ]
+                           [the iconv library (default = enabled if found)]))
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -76,6 +82,14 @@ else
   WARNING_FLAGS="$warning_flags"
   unset warning_flags
 fi
+
+dnl Check for iconv
+if test x$with_iconv != xno; then
+    AC_CHECK_HEADERS([iconv.h], [with_iconv=1], [with_iconv=0])
+else
+    with_iconv=0
+fi
+AC_SUBST(with_iconv)
 
 # We use Perl for documentation and regression tests
 AC_PATH_PROG(PERL, perl, no)

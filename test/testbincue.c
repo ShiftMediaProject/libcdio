@@ -1,5 +1,5 @@
 /*
-  $Id: testbincue.c,v 1.3 2004/09/05 13:03:46 rocky Exp $
+  $Id: testbincue.c,v 1.4 2004/10/23 20:55:09 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -79,7 +79,6 @@ main(int argc, const char *argv[])
       printf("Correct: %s parses as a CDRWin CUE file.\n", 
 	     cue_file[i]);
     }
-    free(psz_cuefile);
   }
 
   for (i=0; i<NUM_BAD_CUES; i++) {
@@ -89,12 +88,10 @@ main(int argc, const char *argv[])
     if (!cdio_is_cuefile(psz_cuefile)) {
       printf("Correct: %s doesn't parse as a CDRWin CUE file.\n", 
 	     badcue_file[i]);
-      free(psz_cuefile);
     } else {
       printf("Incorrect: %s parses as a CDRWin CUE file.\n", 
 	     badcue_file[i]);
       ret+=50*i+1;
-      free(psz_cuefile);
       break;
     }
   }

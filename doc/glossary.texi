@@ -124,6 +124,9 @@ This standard was developed for Windows 95 and Windows NT by Microsoft
 as an extension of ISO 9600 which allows the use of Unicode characters
 and supports file names up to 64 characters.
 
+See @uref{http://bmrc.berkeley.edu/people/chaffee/jolspec.html} for
+the Joliet Specification.
+
 @item LBA
 
 Logical Block Addressing. Mapped integer numbers from CD Red Book

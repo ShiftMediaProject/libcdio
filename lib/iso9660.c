@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660.c,v 1.17 2004/10/22 01:13:38 rocky Exp $
+    $Id: iso9660.c,v 1.18 2004/10/23 20:55:09 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.17 2004/10/22 01:13:38 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.18 2004/10/23 20:55:09 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -47,7 +47,7 @@ static const char _rcsid[] = "$Id: iso9660.c,v 1.17 2004/10/22 01:13:38 rocky Ex
    Change trailing blanks in str to nulls.  Str has a maximum size of
    n characters.
 */
-static const char *
+static char *
 strip_trail (const char str[], size_t n)
 {
   static char buf[1024];
@@ -78,72 +78,72 @@ pathtable_get_size_and_entries(const void *pt, unsigned int *size,
   record. Even though tm_wday and tm_yday fields are not explicitly in
   idr_date, the are calculated from the other fields.
 
-  If tm is to reflect the localtime set use_localtime true, otherwise
+  If tm is to reflect the localtime set b_localtime true, otherwise
   tm will reported in GMT.
 */
 void
-iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool use_localtime,
-                   /*out*/ struct tm *tm)
+iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
+                   /*out*/ struct tm *p_tm)
 {
   time_t t;
-  struct tm *temp_tm;
+  struct tm *p_temp_tm;
   
   if (!idr_date) return;
 
-  tm->tm_year   = idr_date->dt_year;
-  tm->tm_mon    = idr_date->dt_month - 1;
-  tm->tm_mday   = idr_date->dt_day;
-  tm->tm_hour   = idr_date->dt_hour;
-  tm->tm_min    = idr_date->dt_minute;
-  tm->tm_sec    = idr_date->dt_second;
+  p_tm->tm_year   = idr_date->dt_year;
+  p_tm->tm_mon    = idr_date->dt_month - 1;
+  p_tm->tm_mday   = idr_date->dt_day;
+  p_tm->tm_hour   = idr_date->dt_hour;
+  p_tm->tm_min    = idr_date->dt_minute;
+  p_tm->tm_sec    = idr_date->dt_second;
 
   /* Recompute tm_wday and tm_yday via mktime. */
-  t = mktime(tm);
+  t = mktime(p_tm);
 
-  if (use_localtime)
-    temp_tm = localtime(&t);
+  if (b_localtime)
+    p_temp_tm = localtime(&t);
   else
-    temp_tm = gmtime(&t);
+    p_temp_tm = gmtime(&t);
 
-  memcpy(tm, temp_tm, sizeof(struct tm));
+  memcpy(p_tm, p_temp_tm, sizeof(struct tm));
 }
 
 /*!
   Set time in format used in ISO 9660 directory index record
   from a Unix time structure. */
 void
-iso9660_set_dtime (const struct tm *tm, /*out*/ iso9660_dtime_t *idr_date)
+iso9660_set_dtime (const struct tm *p_tm, /*out*/ iso9660_dtime_t *p_idr_date)
 {
-  memset (idr_date, 0, 7);
+  memset (p_idr_date, 0, 7);
 
-  if (!tm) return;
+  if (!p_tm) return;
 
-  idr_date->dt_year   = tm->tm_year;
-  idr_date->dt_month  = tm->tm_mon + 1;
-  idr_date->dt_day    = tm->tm_mday;
-  idr_date->dt_hour   = tm->tm_hour;
-  idr_date->dt_minute = tm->tm_min;
-  idr_date->dt_second = tm->tm_sec;
+  p_idr_date->dt_year   = p_tm->tm_year;
+  p_idr_date->dt_month  = p_tm->tm_mon + 1;
+  p_idr_date->dt_day    = p_tm->tm_mday;
+  p_idr_date->dt_hour   = p_tm->tm_hour;
+  p_idr_date->dt_minute = p_tm->tm_min;
+  p_idr_date->dt_second = p_tm->tm_sec;
 
 #ifdef HAVE_TM_GMTOFF
   /* The ISO 9660 timezone is in the range -48..+52 and each unit
      represents a 15-minute interval. */
-  idr_date->dt_gmtoff = tm->tm_gmtoff / (15 * 60);
+  p_idr_date->dt_gmtoff = p_tm->tm_gmtoff / (15 * 60);
 
-  if (tm->tm_isdst) idr_date->dt_gmtoff -= 4;
+  if (p_tm->tm_isdst) p_idr_date->dt_gmtoff -= 4;
 
-  if (idr_date->dt_gmtoff < -48 ) {
+  if (p_idr_date->dt_gmtoff < -48 ) {
     
     cdio_warn ("Converted ISO 9660 timezone %d is less than -48. Adjusted", 
-               idr_date->dt_gmtoff);
-    idr_date->dt_gmtoff = -48;
-  } else if (idr_date->dt_gmtoff > 52) {
+               p_idr_date->dt_gmtoff);
+    p_idr_date->dt_gmtoff = -48;
+  } else if (p_idr_date->dt_gmtoff > 52) {
     cdio_warn ("Converted ISO 9660 timezone %d is over 52. Adjusted", 
-               idr_date->dt_gmtoff);
-    idr_date->dt_gmtoff = 52;
+               p_idr_date->dt_gmtoff);
+    p_idr_date->dt_gmtoff = 52;
   }
 #else 
-  idr_date->dt_gmtoff = 0;
+  p_idr_date->dt_gmtoff = 0;
 #endif
 }
 
@@ -172,13 +172,27 @@ iso9660_set_ltime (const struct tm *_tm, /*out*/ iso9660_ltime_t *pvd_date)
 /*!
    Convert ISO-9660 file name that stored in a directory entry into 
    what's usually listed as the file name in a listing.
-   Lowercase name, and trailing ;1's or .;1's and turn the
-   other ;'s into version numbers.
+   Lowercase name, and remove trailing ;1's or .;1's and
+   turn the other ;'s into version numbers.
 
    The length of the translated string is returned.
 */
 int 
 iso9660_name_translate(const char *old, char *new)
+{
+  return iso9660_name_translate_ext(old, new, 0);
+}
+
+/*!
+   Convert ISO-9660 file name that stored in a directory entry into
+   what's usually listed as the file name in a listing.  Lowercase
+   name if not using Joliet extension. Remove trailing ;1's or .;1's and
+   turn the other ;'s into version numbers.
+
+   The length of the translated string is returned.
+*/
+int 
+iso9660_name_translate_ext(const char *old, char *new, uint8_t i_joliet_level)
 {
   int len = strlen(old);
   int i;
@@ -188,8 +202,8 @@ iso9660_name_translate(const char *old, char *new)
     if (!c)
       break;
     
-    /* lower case */
-    if (isupper(c)) c = tolower(c);	
+    /* Lower case, unless we have Joliet extensions.  */
+    if (!i_joliet_level && isupper(c)) c = tolower(c);
     
     /* Drop trailing '.;1' (ISO 9660:1988 7.5.1 requires period) */
     if (c == '.' && i == len - 3 && old[i + 1] == ';' && old[i + 2] == '1')
@@ -827,11 +841,11 @@ iso9660_pathname_isofy (const char pathname[], uint16_t version)
   Return the PVD's application ID.
   NULL is returned if there is some problem in getting this. 
 */
-const char * 
-iso9660_get_application_id(const iso9660_pvd_t *pvd)
+char * 
+iso9660_get_application_id(iso9660_pvd_t *p_pvd)
 {
-  if (NULL==pvd) return NULL;
-  return(strip_trail(pvd->application_id, ISO_MAX_APPLICATION_ID));
+  if (NULL==p_pvd) return NULL;
+  return strdup(strip_trail(p_pvd->application_id, ISO_MAX_APPLICATION_ID));
 }
 
 #if FIXME
@@ -916,54 +930,54 @@ iso9660_get_root_lsn(const iso9660_pvd_t *pvd)
    Return a string containing the preparer id with trailing
    blanks removed.
 */
-const char *
+char *
 iso9660_get_preparer_id(const iso9660_pvd_t *pvd)
 {
   if (NULL==pvd) return NULL;
-  return(strip_trail(pvd->preparer_id, ISO_MAX_PREPARER_ID));
+  return strdup(strip_trail(pvd->preparer_id, ISO_MAX_PREPARER_ID));
 }
 
 /*!
    Return a string containing the publisher id with trailing
    blanks removed.
 */
-const char *
+char *
 iso9660_get_publisher_id(const iso9660_pvd_t *pvd)
 {
   if (NULL==pvd) return NULL;
-  return(strip_trail(pvd->publisher_id, ISO_MAX_PUBLISHER_ID));
+  return strdup(strip_trail(pvd->publisher_id, ISO_MAX_PUBLISHER_ID));
 }
 
 /*!
    Return a string containing the PVD's system id with trailing
    blanks removed.
 */
-const char *
+char *
 iso9660_get_system_id(const iso9660_pvd_t *pvd)
 {
   if (NULL==pvd) return NULL;
-  return(strip_trail(pvd->system_id, ISO_MAX_SYSTEM_ID));
+  return strdup(strip_trail(pvd->system_id, ISO_MAX_SYSTEM_ID));
 }
 
 /*!
   Return the PVD's volume ID.
 */
-const char *
+char *
 iso9660_get_volume_id(const iso9660_pvd_t *pvd) 
 {
   if (NULL == pvd) return NULL;
-  return(strip_trail(pvd->volume_id, ISO_MAX_VOLUME_ID));
+  return strdup(strip_trail(pvd->volume_id, ISO_MAX_VOLUME_ID));
 }
 
 /*!
   Return the PVD's volumeset ID.
   NULL is returned if there is some problem in getting this. 
 */
-const char *
+char *
 iso9660_get_volumeset_id(const iso9660_pvd_t *pvd)
 {
   if ( NULL == pvd ) return NULL;
-  return strip_trail(pvd->volume_set_id, ISO_MAX_VOLUMESET_ID);
+  return strdup(strip_trail(pvd->volume_set_id, ISO_MAX_VOLUMESET_ID));
 }
 
 
