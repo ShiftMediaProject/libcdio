@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.18 2005/02/17 04:57:21 rocky Exp $
+    $Id: freebsd.c,v 1.19 2005/03/03 13:48:47 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.18 2005/02/17 04:57:21 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.19 2005/03/03 13:48:47 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -38,6 +38,8 @@ static const char _rcsid[] = "$Id: freebsd.c,v 1.18 2005/02/17 04:57:21 rocky Ex
 #endif
 
 #include <cdio/sector.h>
+
+static lba_t get_track_lba_freebsd(void *p_user_data, track_t i_track);
 
 static access_mode_t 
 str_to_access_mode_freebsd(const char *psz_access_mode) 
@@ -261,6 +263,114 @@ read_toc_freebsd (void *p_user_data)
 }
 
 /*!
+  Get the volume of an audio CD.
+
+  @param p_cdio the CD object to be acted upon.
+*/
+static driver_return_code_t
+audio_get_volume_freebsd (void *p_user_data,
+			  /*out*/ cdio_audio_volume_t *p_volume)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDIOCGETVOL, p_volume);
+}
+
+/*!
+  Pause playing CD through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+static driver_return_code_t
+audio_pause_freebsd (void *p_user_data)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDIOCPAUSE);
+}
+
+/*!
+  Playing starting at given MSF through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+static driver_return_code_t
+audio_play_msf_freebsd (void *p_user_data, msf_t *p_msf)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDIOCPLAYMSF, p_msf);
+}
+
+/*!
+  Playing CD through analog output at the desired track and index
+  
+  @param p_cdio the CD object to be acted upon.
+  @param p_track_index location to start/end.
+*/
+static driver_return_code_t
+audio_play_track_index_freebsd (void *p_user_data, 
+				cdio_track_index_t *p_track_index)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  msf_t start_msf;
+  /* msf_t end_msf; */
+  lsn_t i_lsn = get_track_lba_freebsd(p_user_data, p_track_index->i_start_track);
+  /* lsn_t i_end_lsn   = cdio_msf_to_lsn(&end_msf); */
+
+  /*get_track_msf_bsdi(p_user_data, p_track_index->i_end_track, &end_msf);*/
+  return ioctl(p_env->gen.fd, CDIOCPLAYMSF, &start_msf);
+
+}
+
+/*!
+  Read Audio Subchannel information
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+#if 0
+static driver_return_code_t
+audio_read_subchannel_freebsd (void *p_user_data, 
+			       cdio_subchannel_t *p_subchannel)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMSUBCHNL, p_subchannel);
+}
+#endif
+
+/*!
+  Resume playing an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_resume_freebsd (void *p_user_data)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDIOCRESUME, 0);
+}
+
+/*!
+  Set the volume of an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_set_volume_freebsd (void *p_user_data, 
+			  const cdio_audio_volume_t *p_volume)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDIOCSETVOL, p_volume);
+}
+
+/*!
   Eject media. Return 1 if successful, 0 otherwise.
  */
 static int 
@@ -422,7 +532,7 @@ _get_track_green_freebsd(void *user_data, track_t i_track)
   CDIO_INVALID_LBA is returned if there is no track entry.
 */
 static lba_t
-_get_track_lba_freebsd(void *user_data, track_t i_track)
+get_track_lba_freebsd(void *user_data, track_t i_track)
 {
   _img_private_t *p_env = user_data;
 
@@ -580,6 +690,12 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
   char *psz_source_name;
 
   cdio_funcs_t _funcs = {
+    .audio_get_volume       = audio_get_volume_freebsd,
+    .audio_pause            = audio_pause_freebsd,
+    .audio_play_msf         = audio_play_msf_freebsd,
+    .audio_play_track_index = audio_play_track_index_freebsd,
+    .audio_resume           = audio_resume_freebsd,
+    .audio_set_volume       = audio_set_volume_freebsd,
     .eject_media            = _eject_media_freebsd,
     .free                   = _free_freebsd,
     .get_arg                = _get_arg_freebsd,
@@ -597,7 +713,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .get_track_copy_permit  = get_track_copy_permit_generic,
     .get_track_format       = _get_track_format_freebsd,
     .get_track_green        = _get_track_green_freebsd,
-    .get_track_lba          = _get_track_lba_freebsd, 
+    .get_track_lba          = get_track_lba_freebsd, 
     .get_track_preemphasis  = get_track_preemphasis_generic,
     .get_track_msf          = NULL,
     .lseek                  = cdio_generic_lseek,
