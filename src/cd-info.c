@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.69 2004/06/23 03:56:25 rocky Exp $
+    $Id: cd-info.c,v 1.70 2004/06/23 09:28:02 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -709,8 +709,17 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
       print_iso9660_fs(p_cdio, fs, track_format);
     
     break;
-
   }
+  
+  switch(CDIO_FSTYPE(fs)) {
+  case CDIO_FS_UDF:
+  case CDIO_FS_ISO_UDF:
+    fprintf(stdout, "UDF: version %x.%2.2x\n",
+	    cdio_iso_analysis.UDFVerMajor, cdio_iso_analysis.UDFVerMinor);
+    break;
+  default: ;
+  }
+
   need_lf = 0;
   if (first_data == 1 && num_audio > 0)
     need_lf += printf("mixed mode CD   ");

@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.h,v 1.10 2004/06/23 03:56:25 rocky Exp $
+    $Id: cd_types.h,v 1.11 2004/06/23 09:28:02 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -127,6 +127,8 @@ typedef struct
   char          iso_label[33]; /**< This is 32 + 1 for null byte at the end in 
 				    formatting the string */
   unsigned int  isofs_size;
+  uint8_t       UDFVerMinor;   /**< For UDF filesystems only */
+  uint8_t       UDFVerMajor;   /**< For UDF filesystems only */
 } cdio_iso_analysis_t;
 
 /**

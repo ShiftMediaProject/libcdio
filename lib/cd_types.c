@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.c,v 1.9 2004/06/23 03:56:25 rocky Exp $
+    $Id: cd_types.c,v 1.10 2004/06/23 09:28:02 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -83,6 +83,8 @@ typedef struct signature
 static signature_t sigs[] =
   {
 /*buffer[x] off look for     description */
+    {0,     0, "MICROSOFT*XBOX*MEDIA", "XBOX CD"},
+    {0,     1, "BEA01",      "UDF"}, 
     {0,     1, ISO_STANDARD_ID,      "ISO 9660"}, 
     {0,     1, "CD-I",       "CD-I"}, 
     {0,     8, "CDTV",       "CDTV"}, 
@@ -96,28 +98,26 @@ static signature_t sigs[] =
     {3,     7, "EL TORITO",  "BOOTABLE"}, 
     {4,     0, "VIDEO_CD",   "VIDEO CD"}, 
     {4,     0, "SUPERVCD",   "SVCD or Chaoji VCD"}, 
-    {0,     0, "MICROSOFT*XBOX*MEDIA", "XBOX CD"},
-    {0,     1, "BEA01",      "UDF"}, 
     { 0 }
   };
 
 
 /* The below index into the above sigs array. Make sure things match. */
-#define INDEX_ISOFS     0
-#define INDEX_CD_I      1
-#define INDEX_CDTV      2
-#define INDEX_CD_RTOS   3
-#define INDEX_HS        4
-#define INDEX_BRIDGE    5
-#define INDEX_XA        6
-#define INDEX_PHOTO_CD  7
-#define INDEX_EXT2      8
-#define INDEX_UFS       9
-#define INDEX_BOOTABLE 10
-#define INDEX_VIDEO_CD 11 /* Video CD */
-#define INDEX_SVCD     12 /* CVD *or* SVCD */
-#define INDEX_XISO     13 /* Microsoft X-BOX filesystem */
-#define INDEX_UDF      14
+#define INDEX_XISO      0 /* Microsoft X-BOX filesystem */
+#define INDEX_UDF       1
+#define INDEX_ISOFS     2
+#define INDEX_CD_I      3
+#define INDEX_CDTV      4 
+#define INDEX_CD_RTOS   5
+#define INDEX_HS        6
+#define INDEX_BRIDGE    7
+#define INDEX_XA        8
+#define INDEX_PHOTO_CD  9
+#define INDEX_EXT2     10 
+#define INDEX_UFS      11
+#define INDEX_BOOTABLE 12
+#define INDEX_VIDEO_CD 13 /* Video CD */
+#define INDEX_SVCD     14 /* CVD *or* SVCD */
 
 
 /* 
@@ -247,14 +247,14 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t i_track,
     if (_cdio_read_block(cdio, 35, start_session, 5, i_track) < 0)
       return CDIO_FS_UNKNOWN;
 
-#if 0    
-     m_nUDFVerMinor=(int)buffer[5][240];
-     m_nUDFVerMajor=(int)buffer[5][241];
+     iso_analysis->UDFVerMinor=(unsigned int)buffer[5][240];
+     iso_analysis->UDFVerMajor=(unsigned int)buffer[5][241];
      /*	Read disc label */
      if (_cdio_read_block(cdio, 32, start_session, 5, i_track) < 0)
        return CDIO_FS_UDF;
-     m_strDiscLabel=buffer[5]+25;
-#endif
+
+     strncpy(iso_analysis->iso_label, buffer[5]+25, 33);
+     iso_analysis->iso_label[32] = '\0';
      return CDIO_FS_UDF;
    }
 
@@ -278,8 +278,34 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t i_track,
       else
 	ret = CDIO_FS_ISO_9660;
       iso_analysis->isofs_size = _cdio_get_iso9660_fs_sec_count();
-      sprintf(iso_analysis->iso_label, buffer[0]+40);
+      strncpy(iso_analysis->iso_label, buffer[0]+40,33);
+      iso_analysis->iso_label[32] = '\0';
       
+      if ( _cdio_read_block(cdio, UDF_ANCHOR_SECTOR, start_session, 5, 
+			    i_track) < 0)
+	return ret;
+      
+      /* Maybe there is an UDF anchor in IOS session
+	 so its ISO/UDF session and we prefere UDF */
+      if ( _cdio_is_UDF() ) {
+	/* Detect UDF version.
+	   Test if we have a valid version of UDF the xbox can read natively */
+	if ( _cdio_read_block(cdio, 35, start_session, 5, i_track) < 0)
+	  return ret;
+	  
+	  iso_analysis->UDFVerMinor=(unsigned int)buffer[5][240];
+	  iso_analysis->UDFVerMajor=(unsigned int)buffer[5][241];
+#if 0
+	  /*  We are using ISO/UDF cd's as iso,
+	      no need to get UDF disc label */
+	  if (_cdio_read_block(cdio, 32, start_session, 5, i_track) < 0)
+	    return ret;
+	  stnrcpy(iso_analysis->iso_label, buffer[5]+25, 33);
+	  iso_analysis->iso_label[32] = '\0';
+#endif
+	  ret=CDIO_FS_ISO_UDF;
+	}
+
 #if 0
       if (_cdio_is_rockridge())
 	ret |= CDIO_FS_ANAL_ROCKRIDGE;
