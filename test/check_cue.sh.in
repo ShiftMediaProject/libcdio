@@ -1,6 +1,6 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.18 2004/05/06 11:12:10 rocky Exp $
-# Tests to see that BIN/CUE and BIN/TOC file iamge reading is correct
+#$Id: check_cue.sh.in,v 1.19 2004/05/06 12:05:50 rocky Exp $
+# Tests to see that BIN/CUE and cdrdao TOC file iamge reading is correct
 # (via cd-info).
 
 if test -n "@VCDINFO_LIBS@" ; then
@@ -21,38 +21,39 @@ BASE=`basename $0 .sh`
 
 fname=cdda
 testnum=CD-DA
-test_cdinfo "--quiet --cue-file ${srcdir}/${fname}.cue --no-cddb" \
-  ${fname}.dump ${srcdir}/${fname}.right
+opts="--quiet --cue-file ${srcdir}/${fname}.cue --no-cddb"
+test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
-check_result $RC "cd-info CUE test $testnum"
+check_result $RC "cd-info CUE test $testnum" "cd-info $opts"
+  
 
-test_cdinfo "--quiet --bin-file ${srcdir}/${fname}.bin --no-cddb" \
-  ${fname}.dump ${srcdir}/${fname}.right
+opts="--quiet --bin-file ${srcdir}/${fname}.bin --no-cddb"
+test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
-check_result $RC "cd-info BIN test $testnum"
+check_result $RC "cd-info BIN test $testnum" "cd-info $opts"
 
-test_cdinfo "--quiet --toc-file ${srcdir}/${fname}.toc --no-cddb" \
-  ${fname}.dump ${srcdir}/${fname}.right
+opts="--quiet --toc-file ${srcdir}/${fname}.toc --no-cddb"
+test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
-check_result $RC "cd-info TOC test $testnum"
+check_result $RC "cd-info TOC test $testnum" "cd-info $opts"
 
 fname=isofs-m1
 testnum='ISO 9660 mode1 CUE'
 if test -f  ${srcdir}/${fname}.bin ; then
-  test_cdinfo "-q --cue-file ${srcdir}/${fname}.cue --iso9660" \
-    ${fname}.dump ${srcdir}/${fname}.right
+  opts="-q --cue-file ${srcdir}/${fname}.cue --iso9660"
+  test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
-  check_result $RC "cd-info CUE test $testnum"
+  check_result $RC "cd-info CUE test $testnum" "$opts"
 else 
   echo "Don't see CUE file ${srcdir}/${fname}.bin. Test $testnum skipped."
 fi
 
 testnum='ISO 9660 mode1 TOC'
 if test -f  ${srcdir}/${fname}.bin ; then
-  test_cdinfo "-q --toc-file ${srcdir}/${fname}.toc --iso9660" \
-    ${fname}.dump ${srcdir}/${fname}.right
+  opts="-q --toc-file ${srcdir}/${fname}.toc --iso9660"
+  test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
-  check_result $RC "cd-info TOC test $testnum"
+  check_result $RC "cd-info TOC test $testnum" "cd-info $opts"
 else 
   echo "Don't see TOC file ${srcdir}/${fname}.bin. Test $testnum skipped."
 fi
@@ -65,16 +66,16 @@ else
 fi
 testnum='Video CD'
 if test -f ${srcdir}/${fname}.bin ; then
-  test_cdinfo "-q -c ${srcdir}/vcd_demo.cue --iso9660" \
-      ${fname}.dump $right
+  opts="-q -c ${srcdir}/${fname}.cue --iso9660"
+  test_cdinfo "$opts" ${fname}.dump $right
   RC=$?
-  check_result $RC "cd-info CUE test $testnum"
+  check_result $RC "cd-info CUE test $testnum" "cd-info $opts" 
 
+  opts="-q -t ${srcdir}/${fname}.toc --iso9660"
   if test -f ${srcdir}/${fname}.toc ; then
-    test_cdinfo "-q -t ${srcdir}/vcd_demo.toc --iso9660" \
-      ${fname}.dump $right
+    test_cdinfo "$opts" ${fname}.dump $right
     RC=$?
-    check_result $RC "cd-info TOC test $testnum"
+    check_result $RC "cd-info TOC test $testnum" "cd-info $opts"
   else 
     echo "Don't see TOC file ${srcdir}/${fname}.toc. Test $testnum skipped."
   fi
@@ -85,10 +86,10 @@ fi
 fname=svcd_ogt_test_ntsc
 testnum='Super Video CD'
 if test -f ${srcdir}/${fname}.bin ; then
-  test_cdinfo "-q --cue-file ${srcdir}/${fname}.cue $vcd_opt --iso9660" \
-    ${fname}.dump ${srcdir}/${fname}.right
+  opts="-q --cue-file ${srcdir}/${fname}.cue $vcd_opt --iso9660"
+  test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
-  check_result $RC "cd-info CUE test $testnum"
+  check_result $RC "cd-info CUE test $testnum" "cd-info $opts"
 else 
   echo "Don't see CUE file ${srcdir}/${fname}.bin. Test $testnum skipped."
 fi

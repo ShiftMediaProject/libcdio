@@ -1,4 +1,4 @@
-# $Id: check_common_fn.in,v 1.7 2004/03/06 03:51:52 rocky Exp $
+# $Id: check_common_fn.in,v 1.8 2004/05/06 12:05:49 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -28,10 +28,17 @@ export TZ LC_TIME
 check_result() {
   RC=$1
   shift
-  msg=$*
+  msg=$1
+  shift
+  cmdline=$*
   if test $RC -ne 0 ; then 
     if test $RC -ne $SKIP_TEST_EXITCODE ; then
-      echo "$0: $msg failed."
+      if test -z "$cmdline" ; then 
+        echo "$0: $msg failed."
+      else 
+        echo "$0: $msg failed running:"
+        echo "	$cmdline"
+      fi
       exit $RC
     else 
       echo "$0: $msg skipped."
@@ -68,7 +75,7 @@ test_cdinfo() {
       return 77
     fi
   else
-    echo "$0: ${CD_INFO} ${opts} failed"
+    echo "$0 failed running: ${CD_INFO} ${opts}"
     return 2
   fi
 
@@ -101,7 +108,7 @@ test_iso_info() {
       return 77
     fi
   else
-    echo "$0: ${ISO_INFO} ${opts} failed"
+    echo "$0 failed running: ${ISO_INFO} ${opts}"
     return 2
   fi
 
@@ -134,7 +141,7 @@ test_iso_read() {
       return 77
     fi
   else
-    echo "$0: ${ISO_READ} ${opts} failed"
+    echo "$0 failed running: ${ISO_READ} ${opts}"
     return 2
   fi
 
@@ -167,7 +174,7 @@ test_cd_read() {
       return 77
     fi
   else
-    echo "$0: ${CD_READ} ${opts} failed"
+    echo "$0 failed running: ${CD_READ} ${opts}"
     return 2
   fi
 
