@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.67 2005/02/14 07:49:46 rocky Exp $
+    $Id: iso9660.h,v 1.68 2005/02/19 11:47:05 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -555,6 +555,20 @@ struct iso9660_stat_s { /* big endian!! */
 /** A mask used in iso9660_ifs_read_vd which allows what kinds 
     of extensions we allow, eg. Joliet, Rock Ridge, etc. */
 typedef uint8_t iso_extension_mask_t;
+
+/*! An enumeration for some of the ISO_EXTENSION_* #defines below. This isn't
+    really an enumeration one would really use in a program it is here
+    to be helpful in debuggers where wants just to refer to the
+    ISO_EXTENSION_*_ names and get something.
+  */
+extern enum iso_extension_enums {
+  ISO_EXTENSION_JOLIET_LEVEL1 = 0x01,
+  ISO_EXTENSION_JOLIET_LEVEL2 = 0x02,
+  ISO_EXTENSION_JOLIET_LEVEL3 = 0x04,
+  ISO_EXTENSION_ROCK_RIDGE    = 0x08,
+  ISO_EXTENSION_HIGH_SIERRA   = 0x10
+} iso_extension_enums;
+  
 
 #define ISO_EXTENSION_JOLIET_LEVEL1 0x01
 #define ISO_EXTENSION_JOLIET_LEVEL2 0x02
