@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.75 2004/07/25 03:05:18 rocky Exp $
+    $Id: cd-info.c,v 1.76 2004/07/25 11:32:33 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -79,8 +79,8 @@ struct arguments
   int            no_ioctl;
   int            no_analysis;
   char          *access_mode; /* Access method driver should use for control */
-  int            no_cddb;     /* If set the below are meaningless. */
 #ifdef HAVE_CDDB
+  int            no_cddb;     /* If set the below are meaningless. */
   char          *cddb_email;  /* email to report to CDDB server. */
   char          *cddb_server; /* CDDB server to contact */
   int            cddb_port;   /* port number to contact CDDB server. */
@@ -164,9 +164,6 @@ parse_options (int argc, const char *argv[])
     
     {"cddb-timeout",  '\0', POPT_ARG_INT, &opts.cddb_timeout, 0,
      "CDDB timeout value in seconds (default 10 seconds)"},
-#else 
-    {"no-cddb",     '\0', POPT_ARG_NONE, &opts.no_cddb, 1,
-     "Don't look up audio CDDB information - for this build, this is always set"},
 #endif
   
     {"no-device-info", '\0', POPT_ARG_NONE, &opts.no_device, 0,
@@ -827,8 +824,6 @@ init(void)
   opts.cddb_server   = NULL;
   opts.cddb_timeout = -1;
   opts.cddb_disable_cache = false;
-#else  
-  opts.no_cddb       = 1;
 #endif
 #ifdef HAVE_VCDINFO
   opts.no_vcd        = 0;
