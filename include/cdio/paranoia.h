@@ -1,7 +1,7 @@
 /*
-  $Id: paranoia.h,v 1.2 2005/01/11 04:00:26 rocky Exp $
+  $Id: paranoia.h,v 1.3 2005/01/13 04:00:15 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -68,6 +68,8 @@ typedef enum  {
   PARANOIA_CB_FIXUP_DUPED,
   PARANOIA_CB_READERR
 } paranoia_cb_mode_t;
+
+  extern const char *paranoia_cb_mode2str[];
   
 #ifdef __cplusplus
 extern "C" {
@@ -103,12 +105,18 @@ extern void paranoia_modeset(cdrom_paranoia_t *p, int mode);
   */
 extern lsn_t paranoia_seek(cdrom_paranoia_t *p, off_t seek, int whence);
 
-  /*! The returned buffer is *not* to be freed by the caller.  It will
-    persist only until the next call to paranoia_read() for this p 
+  /*!  @return the audio data read CDIO_CD_FRAMESIZE_RAW bytes. This data
+       is not freed by the caller, but will persist only until the next
+       call.
   */
 extern int16_t *paranoia_read(cdrom_paranoia_t *p,
 			      void(*callback)(long int, paranoia_cb_mode_t));
 
+  /*! The same as paranoia_read but the number of retries is set.
+    @param maxretries number of times to try re-reading a block before
+    failing. @see paranoia_read.
+    
+  */
 extern int16_t *paranoia_read_limited(cdrom_paranoia_t *p,
 				      void(*callback)(long int, 
 						      paranoia_cb_mode_t),

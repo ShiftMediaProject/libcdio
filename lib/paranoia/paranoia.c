@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.5 2005/01/07 02:42:29 rocky Exp $
+  $Id: paranoia.c,v 1.6 2005/01/13 04:00:15 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -84,6 +84,22 @@
 #include "gap.h"
 #include "isort.h"
 
+const char *paranoia_cb_mode2str[] = {
+  "read",
+  "verify",
+  "fixup edge",
+  "fixup atom",
+  "scratch",
+  "repair",
+  "skip",
+  "drift",
+  "backoff",
+  "overlap",
+  "fixup dropped",
+  "fixup duplicated",
+  "read error"
+};
+  
 static inline long 
 re(root_block *root)
 {
@@ -288,22 +304,23 @@ stage1_matched(c_block_t *old, c_block_t *new,
   long newadjbegin=matchbegin-matchoffset-cb(new);
   long newadjend=matchend-matchoffset-cb(new);
   
-  if (matchbegin-matchoffset<=cb(new) ||
-      matchbegin<=cb(old) ||
-     (new->flags[newadjbegin]&1) ||
-     (old->flags[oldadjbegin]&1)) {
-    if(matchoffset)
-      if(callback)(*callback)(matchbegin,PARANOIA_CB_FIXUP_EDGE);
+  if ( matchbegin-matchoffset<=cb(new)
+       || matchbegin<=cb(old)
+       || (new->flags[newadjbegin]&1) 
+       || (old->flags[oldadjbegin]&1) ) {
+    if ( matchoffset && callback )
+	(*callback)(matchbegin,PARANOIA_CB_FIXUP_EDGE);
   } else
-    if(callback)(*callback)(matchbegin,PARANOIA_CB_FIXUP_ATOM);
+    if (callback)
+      (*callback)(matchbegin,PARANOIA_CB_FIXUP_ATOM);
   
-  if(matchend-matchoffset>=ce(new) ||
-     (new->flags[newadjend]&1) ||
-     matchend>=ce(old) ||
-     (old->flags[oldadjend]&1)){
-    if(matchoffset)
-      if(callback)(*callback)(matchend,PARANOIA_CB_FIXUP_EDGE);
-  }else
+  if ( matchend-matchoffset>=ce(new) ||
+       (new->flags[newadjend]&1) ||
+       matchend>=ce(old) ||
+       (old->flags[oldadjend]&1) ) {
+    if ( matchoffset && callback )
+      (*callback)(matchend,PARANOIA_CB_FIXUP_EDGE);
+  } else
     if (callback) 
       (*callback)(matchend, PARANOIA_CB_FIXUP_ATOM);
   
@@ -380,38 +397,42 @@ i_iterate_stage1(cdrom_paranoia_t *p, c_block_t *old, c_block_t *new,
 }
 
 static long int
-i_stage1(cdrom_paranoia_t *p, c_block_t *new, 
+i_stage1(cdrom_paranoia_t *p, c_block_t *p_new, 
 	 void (*callback)(long int, paranoia_cb_mode_t))
 {
-  long size=cs(new);
+  long size=cs(p_new);
   c_block_t *ptr=c_last(p);
   int ret=0;
-  long begin=0,end;
+  long int begin=0;
+  long int end;
   
   if (ptr) 
-    sort_setup( p->sortcache, cv(new), &cb(new), cs(new), cb(new), ce(new) );
+    sort_setup( p->sortcache, cv(p_new), &cb(p_new), cs(p_new), cb(p_new), 
+		ce(p_new) );
 
-  while(ptr && ptr!=new){
-
-    if(callback)(*callback)(cb(new),PARANOIA_CB_VERIFY);
-    i_iterate_stage1(p,ptr,new,callback);
+  while( ptr && ptr != p_new ) {
+    if (callback)
+      (*callback)(cb(p_new), PARANOIA_CB_VERIFY);
+    i_iterate_stage1(p,ptr,p_new,callback);
 
     ptr=c_prev(ptr);
   }
 
-  /* parse the verified areas of new into v_fragments */
+  /* parse the verified areas of p_new into v_fragments */
   
   begin=0;
-  while(begin<size){
-    for(;begin<size;begin++)if(new->flags[begin]&4)break;
-    for(end=begin;end<size;end++)if((new->flags[end]&4)==0)break;
-    if(begin>=size)break;
+  while (begin<size) {
+    for ( ; begin < size; begin++)
+      if(p_new->flags[begin]&4) break;
+    for (end=begin; end < size; end++)
+      if((p_new->flags[end]&4)==0) break;
+    if (begin>=size) break;
     
     ret++;
 
-    new_v_fragment(p,new,cb(new)+max(0,begin-OVERLAP_ADJ),
-		   cb(new)+min(size,end+OVERLAP_ADJ),
-		   (end+OVERLAP_ADJ>=size && new->lastsector));
+    new_v_fragment(p,p_new,cb(p_new)+max(0,begin-OVERLAP_ADJ),
+		   cb(p_new)+min(size,end+OVERLAP_ADJ),
+		   (end+OVERLAP_ADJ>=size && p_new->lastsector));
 
     begin=end;
   }
@@ -446,7 +467,8 @@ i_iterate_stage2(cdrom_paranoia_t *p,
   if(min(fe(v)+p->dynoverlap,re(root))-
     max(fb(v)-p->dynoverlap,rb(root))<=0)return(0);
 
-  if(callback)(*callback)(fb(v),PARANOIA_CB_VERIFY);
+  if (callback)
+    (*callback)(fb(v),PARANOIA_CB_VERIFY);
 
   /* just a bit of v; determine the correct area */
   fbv=max(fb(v),rb(root)-p->dynoverlap);
