@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.6 2004/03/10 11:53:10 rocky Exp $
+    $Id: bincue.c,v 1.7 2004/03/20 21:54:38 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.6 2004/03/10 11:53:10 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.7 2004/03/20 21:54:38 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -629,7 +629,7 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
 }
 
 #define free_if_notnull(obj) \
-  if (NULL != obj) free(obj);
+  if (NULL != obj) { free(obj); obj=NULL; };
 
 static void 
 _cdio_bincue_destroy (void *obj) 
@@ -638,8 +638,9 @@ _cdio_bincue_destroy (void *obj)
 
   if (NULL == env) return;
   free_if_notnull(env->mcn);
-  free(env->cue_name);
+  free_if_notnull(env->cue_name);
   cdio_generic_stdio_free(env);
+  free(env);
 }
 
 /*!
@@ -735,7 +736,7 @@ cdio_get_default_device_bincue(void)
 {
   char **drives = cdio_get_devices_nrg();
   char *drive = (drives[0] == NULL) ? NULL : strdup(drives[0]);
-  cdio_free_device_list(drives);
+  cdio_free_device_list(&drives);
   return drive;
 }
 
@@ -935,40 +936,6 @@ cdio_is_binfile(const char *bin_name)
   return NULL;
 }
 
-static CdIo *
-cdio_open_common (_img_private_t **_data)
-{
-  cdio_funcs _funcs = {
-    .eject_media        = cdio_generic_bogus_eject_media,
-    .free               = _cdio_bincue_destroy,
-    .get_arg            = _cdio_get_arg,
-    .get_default_device = cdio_get_default_device_bincue,
-    .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = _cdio_get_mcn,
-    .get_num_tracks     = _cdio_get_num_tracks,
-    .get_track_format   = _cdio_get_track_format,
-    .get_track_green    = _cdio_get_track_green,
-    .get_track_lba      = _cdio_get_track_lba, 
-    .get_track_msf      = _cdio_get_track_msf,
-    .lseek              = _cdio_lseek,
-    .read               = _cdio_read,
-    .read_audio_sectors = _cdio_read_audio_sectors,
-    .read_mode1_sector  = _cdio_read_mode1_sector,
-    .read_mode1_sectors = _cdio_read_mode1_sectors,
-    .read_mode2_sector  = _cdio_read_mode2_sector,
-    .read_mode2_sectors = _cdio_read_mode2_sectors,
-    .set_arg            = _cdio_set_arg,
-    .stat_size          = _cdio_stat_size
-  };
-
-  *_data                = _cdio_malloc (sizeof (_img_private_t));
-  (*_data)->gen.init    = false;
-  (*_data)->sector_2336 = false;
-  (*_data)->cue_name    = NULL;
-
-  return cdio_new (*_data, &_funcs);
-}
-
 CdIo *
 cdio_open_bincue (const char *source_name)
 {
@@ -993,7 +960,37 @@ cdio_open_cue (const char *cue_name)
   char *bin_name;
 
   if (NULL == cue_name) return NULL;
-  ret = cdio_open_common(&_data);
+
+  cdio_funcs _funcs = {
+    .eject_media        = cdio_generic_bogus_eject_media,
+    .free               = _cdio_bincue_destroy,
+    .get_arg            = _cdio_get_arg,
+    .get_default_device = cdio_get_default_device_bincue,
+    .get_first_track_num= _cdio_get_first_track_num,
+    .get_mcn            = _cdio_get_mcn,
+    .get_num_tracks     = _cdio_get_num_tracks,
+    .get_track_format   = _cdio_get_track_format,
+    .get_track_green    = _cdio_get_track_green,
+    .get_track_lba      = _cdio_get_track_lba, 
+    .get_track_msf      = _cdio_get_track_msf,
+    .lseek              = _cdio_lseek,
+    .read               = _cdio_read,
+    .read_audio_sectors = _cdio_read_audio_sectors,
+    .read_mode1_sector  = _cdio_read_mode1_sector,
+    .read_mode1_sectors = _cdio_read_mode1_sectors,
+    .read_mode2_sector  = _cdio_read_mode2_sector,
+    .read_mode2_sectors = _cdio_read_mode2_sectors,
+    .set_arg            = _cdio_set_arg,
+    .stat_size          = _cdio_stat_size
+  };
+
+  _data                 = _cdio_malloc (sizeof (_img_private_t));
+  (_data)->gen.init    = false;
+  (_data)->sector_2336 = false;
+  (_data)->cue_name    = NULL;
+
+  ret = cdio_new (_data, &_funcs);
+
   if (ret == NULL) return NULL;
 
   bin_name = cdio_is_cuefile(cue_name);
@@ -1009,7 +1006,8 @@ cdio_open_cue (const char *cue_name)
   if (_cdio_init(_data)) {
     return ret;
   } else {
-    cdio_generic_stdio_free (_data);
+    _cdio_bincue_destroy(_data);
+    free(ret);
     return NULL;
   }
 }
