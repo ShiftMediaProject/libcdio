@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.32 2004/07/27 16:36:59 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.33 2004/07/27 16:51:14 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.32 2004/07/27 16:36:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.33 2004/07/27 16:51:14 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -56,6 +56,7 @@ static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.32 2004/07/27 16:36:59 rocky
 #include <sys/ioctl.h>
 #include </sys/dev/scsi/scsi.h>
 #include </sys/dev/scsi/scsi_ioctl.h>
+#include "cdtext_private.h"
 
 #define TOTAL_TRACKS    (p_env->tochdr.cdth_trk1)
 
@@ -76,7 +77,16 @@ typedef struct {
   /* Track information */
   bool toc_init;                         /* if true, info below is valid. */
   struct cdrom_tochdr    tochdr;
-  struct cdrom_tocentry  tocent[100];    /* entry info for each track */
+  struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1]; 
+
+  cdtext_t      cdtext;	         /* CD-TEXT */
+
+  bool b_cdtext_init;
+  bool b_cdtext_error;
+
+  /* Some of the more OS specific things. */
+  cdtext_t      cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/
+  /* Track information */
 
 } _img_private_t;
 
@@ -514,6 +524,67 @@ read_toc_bsdi (_img_private_t *p_env)
   return true;
 }
 
+static void
+set_cdtext_field_bsdi(void *p_user_data, track_t i_track, 
+		      track_t i_first_track,
+		      cdtext_field_t e_field, const char *psz_value)
+{
+  char **pp_field;
+  _img_private_t *p_env = p_user_data;
+  
+  if( i_track == 0 )
+    pp_field = &(p_env->cdtext.field[e_field]);
+  
+  else
+    pp_field = &(p_env->cdtext_track[i_track-i_first_track].field[e_field]);
+
+  *pp_field = strdup(psz_value);
+}
+
+/*
+  Read cdtext information for a CdIo object .
+  
+  return true on success, false on error or CD-TEXT information does
+  not exist.
+*/
+static bool
+_init_cdtext_bsdi (_img_private_t *p_env)
+{
+  return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
+				       &scsi_mmc_run_cmd_bsdi, 
+				       set_cdtext_field_bsdi
+				       );
+}
+
+/*! 
+  Get cdtext information for a CdIo object .
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return the CD-TEXT object or NULL if obj is NULL
+  or CD-TEXT information does not exist.
+*/
+static const cdtext_t *
+get_cdtext_bsdi (void *p_user_data, track_t i_track)
+{
+  _img_private_t *p_env = p_user_data;
+
+  if ( NULL == p_env ||
+       (0 != i_track 
+       && i_track >= TOTAL_TRACKS+p_env->gen.i_first_track )
+       || p_env ->b_cdtext_error )
+    return NULL;
+
+  if (!p_env->b_cdtext_init)
+    p_env->b_cdtext_init = _init_cdtext_bsdi(p_env);
+
+  if (!p_env->b_cdtext_init) return NULL;
+
+  if (0 == i_track) 
+    return &(p_env->cdtext);
+  else 
+    return &(p_env->cdtext_track[i_track-p_env->gen.i_first_track]);
+}
+
 /*!
   Eject media in CD drive. If successful, as a side effect we 
   also free obj.
@@ -887,6 +958,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .eject_media        = _eject_media_bsdi,
     .free               = cdio_generic_free,
     .get_arg            = _get_arg_bsdi,
+    .get_cdtext         = get_cdtext_bsdi,
     .get_default_device = cdio_get_default_device_bsdi,
     .get_devices        = cdio_get_devices_bsdi,
     .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
