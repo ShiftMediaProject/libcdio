@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.33 2005/03/01 10:53:15 rocky Exp $
+    $Id: _cdio_linux.c,v 1.34 2005/03/01 11:00:49 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.33 2005/03/01 10:53:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.34 2005/03/01 11:00:49 rocky Exp $";
 
 #include <string.h>
 
@@ -1272,7 +1272,11 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .audio_pause           = audio_pause_linux,
     .audio_play_msf        = audio_play_msf_linux,
     .audio_play_track_index= audio_play_track_index_linux,
+#if USE_MMC_SUBCHANNEL
     .audio_read_subchannel = audio_read_subchannel_mmc,
+#else
+    .audio_read_subchannel = audio_read_subchannel_linux,
+#endif
     .audio_resume          = audio_resume_linux,
     .audio_set_volume      = audio_set_volume_linux,
     .eject_media           = eject_media_linux,
