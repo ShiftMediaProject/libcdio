@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.5 2005/03/06 11:21:52 rocky Exp $
+    $Id: gnu_linux.c,v 1.6 2005/03/06 22:53:50 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.5 2005/03/06 11:21:52 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.6 2005/03/06 22:53:50 rocky Exp $";
 
 #include <string.h>
 
@@ -314,7 +314,7 @@ audio_stop_linux (void *p_user_data)
 }
 
 /*!
-  Stop playing an audio CD.
+  Close tray on CD-ROM.
   
   @param p_user_data the CD object to be acted upon.
   

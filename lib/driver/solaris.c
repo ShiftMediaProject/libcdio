@@ -1,5 +1,5 @@
 /*
-    $Id: solaris.c,v 1.4 2005/03/06 11:21:52 rocky Exp $
+    $Id: solaris.c,v 1.5 2005/03/06 22:53:50 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: solaris.c,v 1.4 2005/03/06 11:21:52 rocky Exp $";
+static const char _rcsid[] = "$Id: solaris.c,v 1.5 2005/03/06 22:53:50 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -210,6 +210,19 @@ audio_set_volume_solaris (void *p_user_data,
 
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROMVOLCTRL, p_volume);
+}
+
+/*!
+  Stop playing an audio CD.
+  
+  @param p_user_data the CD object to be acted upon.
+  
+*/
+static driver_return_code_t 
+audio_stop_solaris (void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMSTOP);
 }
 
 /*!
@@ -1004,6 +1017,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.audio_read_subchannel  = audio_read_subchannel_solaris;
   _funcs.audio_resume           = audio_resume_solaris;
   _funcs.audio_set_volume       = audio_set_volume_solaris;
+  _funcs.audio_stop             = audio_stop_solaris,
   _funcs.eject_media            = eject_media_solaris;
   _funcs.free                   = cdio_generic_free;
   _funcs.get_arg                = get_arg_solaris;
