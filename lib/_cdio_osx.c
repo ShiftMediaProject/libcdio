@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.12 2003/10/08 01:06:19 rocky Exp $
+    $Id: _cdio_osx.c,v 1.13 2003/10/13 23:41:42 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com> from vcdimager code
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -32,7 +32,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.12 2003/10/08 01:06:19 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.13 2003/10/13 23:41:42 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -569,7 +569,7 @@ _cdio_get_mcn (void *env) {
   if( ioctl( _obj->gen.fd, DKIOCCDREADMCN, &cd_read ) < 0 )
   {
     cdio_error( "could not read MCN, %s", strerror(errno) );
-    return "";
+    return NULL;
   }
   return strdup((char*)cd_read.mcn);
 }
@@ -826,12 +826,13 @@ cdio_get_default_device_osx(void)
   ones to set that up.
  */
 CdIo *
-cdio_open_osx (const char *source_name)
+cdio_open_osx (const char *orig_source_name)
 {
 
 #ifdef HAVE_DARWIN_CDROM
   CdIo *ret;
   _img_private_t *_data;
+  char *source_name;
 
   cdio_funcs _funcs = {
     .eject_media        = _cdio_eject_media,
@@ -860,8 +861,13 @@ cdio_open_osx (const char *source_name)
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
-  _cdio_set_arg(_data, "source", (NULL == source_name) 
-		? DEFAULT_CDIO_DEVICE: source_name);
+  if (NULL == orig_source_name) {
+    source_name=cdio_get_default_device_linux();
+    if (NULL == source_name) return NULL;
+    _cdio_set_arg(_data, "source", source_name);
+    free(source_name);
+  } else 
+    _cdio_set_arg(_data, "source", orig_source_name);
 
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;
