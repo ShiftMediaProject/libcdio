@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.53 2004/10/24 23:42:39 rocky Exp $
+    $Id: iso9660.h,v 1.54 2004/10/28 00:03:17 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -308,7 +308,7 @@ struct iso9660_svd {
   char             unused4[1];
   char             application_data[512];
   char             unused5[653];
-};
+} GNUC_PACKED;
 
 typedef struct iso9660_svd  iso9660_svd_t;
 
