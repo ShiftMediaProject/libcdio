@@ -47,24 +47,24 @@ ISO9660 filesystem
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
   d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jul 14 1978 00:00  html
   - ----1xrxrxr 0 0 [fn 01] [LSN    434]       842 Dec 11 2002 10:33  index.htm
-  - ----1xrxrxr 0 0 [fn 01] [LSN    435]   1216557 Jan  7 2003 18:01  menu.ppm
-  - ----1xrxrxr 0 0 [fn 01] [LSN   1030]      2793 Jan  7 2003 18:08  source.xml
+  - ----1xrxrxr 0 0 [fn 01] [LSN    435]   1216557 Jan 07 2003 18:01  menu.ppm
+  - ----1xrxrxr 0 0 [fn 01] [LSN   1030]      2793 Jan 07 2003 18:08  source.xml
 
 /Sources/HTML/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jul 14 1978 00:00  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jul 14 1978 00:00  ..
-  - ----1xrxrxr 0 0 [fn 01] [LSN    425]      1067 Jan  7 2003 17:51  0.xml
-  - ----1xrxrxr 0 0 [fn 01] [LSN    426]      1067 Jan  7 2003 17:51  1.xml
+  - ----1xrxrxr 0 0 [fn 01] [LSN    425]      1067 Jan 07 2003 17:51  0.xml
+  - ----1xrxrxr 0 0 [fn 01] [LSN    426]      1067 Jan 07 2003 17:51  1.xml
   d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048 Jul 14 1978 00:00  img
-  - ----1xrxrxr 0 0 [fn 01] [LSN    427]      1327 Jan  7 2003 17:51  movies.css
-  - ----1xrxrxr 0 0 [fn 01] [LSN    428]     12024 Jan  7 2003 17:51  toc.xsl
+  - ----1xrxrxr 0 0 [fn 01] [LSN    427]      1327 Jan 07 2003 17:51  movies.css
+  - ----1xrxrxr 0 0 [fn 01] [LSN    428]     12024 Jan 07 2003 17:51  toc.xsl
 
 /Sources/HTML/img/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048 Jul 14 1978 00:00  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jul 14 1978 00:00  ..
   - ----1xrxrxr 0 0 [fn 01] [LSN    408]      1999 Nov 13 2002 07:27  al.gif
-  - ----1xrxrxr 0 0 [fn 01] [LSN    409]      7626 Jan  7 2003 17:42  loeki_groep_01.gif
-  - ----1xrxrxr 0 0 [fn 01] [LSN    413]      9986 Jan  7 2003 17:42  loeki_groep_02.gif
+  - ----1xrxrxr 0 0 [fn 01] [LSN    409]      7626 Jan 07 2003 17:42  loeki_groep_01.gif
+  - ----1xrxrxr 0 0 [fn 01] [LSN    413]      9986 Jan 07 2003 17:42  loeki_groep_02.gif
   - ----1xrxrxr 0 0 [fn 01] [LSN    418]       207 Nov 14 2002 19:33  a_left.gif
   - ----1xrxrxr 0 0 [fn 01] [LSN    419]       207 Nov 14 2002 19:33  a_right.gif
   - ----1xrxrxr 0 0 [fn 01] [LSN    420]       441 Nov 13 2002 10:54  animatie.gif
