@@ -19,7 +19,7 @@ define(RELEASE_NUM, 71)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.102 2004/10/28 11:13:40 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.103 2004/10/30 00:38:43 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -114,7 +114,7 @@ AM_PATH_LIBPOPT(,
 dnl headers
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(glob.h)
+AC_CHECK_HEADERS(glob.h stdbool.h)
 
 dnl compiler
 AC_C_BIGENDIAN
@@ -324,6 +324,27 @@ AC_CHECK_MEMBER([struct tm.tm_gmtoff],
                         [Define if struct tm has the tm_gmtoff member.])],
                  ,
                  [#include <time.h>])
+
+if test $ac_cv_member_struct_tm_tm_gmtoff = yes ; then
+  AC_MSG_CHECKING([whether time.h defines daylight and timezone variables])
+  AC_TRY_RUN([
+#include <time.h>
+
+
+       extern char *tzname[2];
+       extern long timezone;
+       extern int daylight;
+
+int
+ main() {
+  return (timezone != 0) + daylight;
+}
+  ],[AC_DEFINE(HAVE_DAYLIGHT, 1,
+   [Define if time.h defines extern long timezone and int daylight vars.])
+   has_daylight=yes
+   ],[has_daylight=no])
+   AC_MSG_RESULT($has_daylight)
+fi
 
 if test x$enable_joliet = x; then
 AC_ARG_ENABLE(joliet,
