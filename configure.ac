@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.28 2003/06/10 01:19:15 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.29 2003/06/13 04:47:20 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.61)
@@ -276,7 +276,7 @@ AC_ARG_ENABLE(vcdinfo,
 fi
 if test x$enable_vcdinfo = xyes; then
    AC_DEFINE([HAVE_VCDINFO],1, [Define this if you have libvcdinfo installed])
-   VCDINFO_LIB="-lvcd -lvcdinfo"
+   VCDINFO_LIB="-lvcdinfo -lvcd"
 fi
 
 AC_SUBST(VCDINFO_LIB)
