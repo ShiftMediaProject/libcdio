@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.7 2005/01/16 04:23:41 rocky Exp $
+  $Id: cdda.h,v 1.8 2005/01/22 03:43:03 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -135,17 +135,31 @@ struct cdrom_drive_s {
 
 /** autosense functions */
 
-/** Returns a CD-ROM drive with a CD-DA in it. 
+/** Get a CD-ROM drive with a CD-DA in it. 
     If mesagedest is 1, then any messages in the process will be stored 
     in message.
 */
-extern cdrom_drive_t *cdda_find_a_cdrom(int messagedest, char **message);
+extern cdrom_drive_t *cdda_find_a_cdrom(int messagedest, char **ppsz_message);
 
-/** Returns a CD-ROM drive with a CD-DA in it.  */
-extern cdrom_drive_t *cdda_identify(const char *device, int messagedest,
-				  char **message);
-extern cdrom_drive_t *cdda_identify_cooked(const char *device,int messagedest,
-					 char **message);
+/** Returns a paranoia CD-ROM drive object with a CD-DA in it.  
+    @see cdda_identify_cdio
+ */
+extern cdrom_drive_t *cdda_identify(const char *psz_device, int messagedest,
+				    char **ppsz_message);
+
+/** Returns a paranoia CD-ROM drive ojbect with a CD-DA in it.  
+    In contrast to cdda_identify, we start out with an initialzed p_cdio
+    object. For example you may have used that for other purposes such
+    as to get CDDB/CD-Text information.
+    @see cdda_identify
+ */
+cdrom_drive_t *cdda_identify_cdio(CdIo_t *p_cdio, 
+				  int messagedest, char **ppsz_messages);
+
+/** Obsolete interface. Don't use. @see cdda_identify */
+extern cdrom_drive_t *cdda_identify_cooked(const char *ppsz_device,
+					   int messagedest, 
+					   char **ppsz_message);
 /** drive-oriented functions */
 
 extern int     cdda_speed_set(cdrom_drive_t *d, int speed);
@@ -200,6 +214,22 @@ extern lsn_t   cdda_disc_firstsector(cdrom_drive_t *d);
   less than the start of the next track after the audio track. -1 is
   returned on error. */
 extern lsn_t   cdda_disc_lastsector(cdrom_drive_t *d);
+
+/*! Determine Endian-ness of the CD-drive based on reading data from
+  it. Some drives return audio data Big Endian while some (most)
+  return data Little Endian. Drives known to return data bigendian are
+  SCSI drives from Kodak, Ricoh, HP, Philips, Plasmon, Grundig
+  CDR100IPW, and Mitsumi CD-R. ATAPI and MMC drives are little endian.
+
+  rocky: As someone who didn't write the code, I have to say this is
+  nothing less than brilliant. An FFT is done both ways and the the
+  transform is looked at to see which has data in the FFT (or audible)
+  portion. (Or so that's how I understand it.)
+
+  @return 1 if big-endian, 0 if little-endian, -1 if we couldn't
+  figure things out or some error.
+ */
+extern int data_bigendianp(cdrom_drive_t *d);
 
 /** transport errors: */
 
