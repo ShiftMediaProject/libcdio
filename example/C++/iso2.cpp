@@ -1,5 +1,5 @@
 /*
-  $Id: iso2.cpp,v 1.2 2005/02/20 03:15:42 rocky Exp $
+  $Id: iso2.cpp,v 1.3 2005/02/20 03:20:05 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -96,10 +96,9 @@ main(int argc, const char *argv[])
 
   strcat(untranslated_name, psz_fname);
 
-  p_cdio = cdio_open (psz_image, DRIVER_BINCUE);
-  if (NULL == p_cdio) {
-    fprintf(stderr, "Sorry, couldn't open %s as a BIN/CUE image\n", 
-	    psz_image);
+  p_cdio = cdio_open (psz_image, DRIVER_UNKNOWN);
+  if (!p_cdio) {
+    fprintf(stderr, "Sorry, couldn't open %s\n", psz_image);
     return 1;
   }
 
