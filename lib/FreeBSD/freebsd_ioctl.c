@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.3 2004/05/08 20:36:01 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.4 2004/05/12 20:06:10 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.3 2004/05/08 20:36:01 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.4 2004/05/12 20:06:10 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -103,7 +103,7 @@ int
 read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data, lsn_t lsn, 
 				  bool b_form2)
 {
-  char buf[CDIO_CD_FRAMESIZE] = { 0, };
+  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   int retval;
 
   if ( (retval = read_audio_sectors_freebsd_ioctl (env, buf, lsn, 1)) )
