@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.20 2005/03/17 09:01:58 rocky Exp $
+    $Id: device.c,v 1.21 2005/03/19 07:28:56 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -414,12 +414,12 @@ cdio_get_default_device_driver (/*in/out*/ driver_id_t *p_driver_id)
 {
   if (DRIVER_UNKNOWN == *p_driver_id || DRIVER_DEVICE == *p_driver_id) {
     if (DRIVER_UNKNOWN == *p_driver_id) 
-      *p_driver_id++;
+      (*p_driver_id)++;
     else 
       *p_driver_id = CDIO_MIN_DEVICE_DRIVER;
     
     /* Scan for driver */
-    for ( ; *p_driver_id<=CDIO_MAX_DRIVER; *p_driver_id++) {
+    for ( ; *p_driver_id<=CDIO_MAX_DRIVER; (*p_driver_id)++) {
       if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
            *CdIo_all_drivers[*p_driver_id].get_default_device ) {
         return (*CdIo_all_drivers[*p_driver_id].get_default_device)();

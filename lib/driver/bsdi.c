@@ -1,5 +1,5 @@
 /*
-    $Id: bsdi.c,v 1.6 2005/03/19 06:42:24 rocky Exp $
+    $Id: bsdi.c,v 1.7 2005/03/19 07:28:56 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: bsdi.c,v 1.6 2005/03/19 06:42:24 rocky Exp $";
+static const char _rcsid[] = "$Id: bsdi.c,v 1.7 2005/03/19 07:28:56 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -989,7 +989,6 @@ cdio_open_bsdi (const char *psz_orig_source)
     .audio_resume          = audio_resume_bsdi,
     .audio_set_volume      = audio_set_volume_bsdi,
     .audio_stop            = audio_stop_bsdi,
-    .close_tray            = close_tray_bsdi,
     .eject_media           = eject_media_bsdi,
     .free                  = cdio_generic_free,
     .get_arg               = _get_arg_bsdi,
