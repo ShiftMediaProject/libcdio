@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.14 2003/10/20 04:28:38 rocky Exp $
+  $Id: cd-read.c,v 1.15 2003/11/10 03:47:37 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -310,6 +310,12 @@ parse_options (int argc, const char *argv[])
     }
   }
   
+  if (opts.debug_level == 3) {
+    cdio_loglevel_default = CDIO_LOG_INFO;
+  } else if (opts.debug_level >= 4) {
+    cdio_loglevel_default = CDIO_LOG_DEBUG;
+  }
+
   if (opts.read_mode == READ_MODE_UNINIT) {
     fprintf(stderr, 
 	    "%s: Need to give a read mode (audio, m1f1, m1f2, m2f1 or m2f2)\n",
