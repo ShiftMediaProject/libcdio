@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.14 2004/05/13 01:50:25 rocky Exp $
+    $Id: nrg.c,v 1.15 2004/05/26 06:27:03 rocky Exp $
 
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.14 2004/05/13 01:50:25 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.15 2004/05/26 06:27:03 rocky Exp $";
 
 /* structures used */
 
@@ -87,7 +87,9 @@ typedef struct {
 } _cuex_array_t;
 
 typedef struct {
-  uint8_t  _unknown[64]  GNUC_PACKED;
+  uint64_t _unknown1  GNUC_PACKED;
+  char      mcn[CDIO_MCN_SIZE]  GNUC_PACKED;
+  uint8_t  _unknown[64-17]  GNUC_PACKED;
 } _daox_array_t;
 
 typedef struct {
@@ -98,16 +100,16 @@ typedef struct {
 
 PRAGMA_END_PACKED
 
-/* to be converted into BE */
-#define CUEX_ID  0x43554558
-#define CUES_ID  0x43554553
-#define DAOX_ID  0x44414f58
+/* to be converted into BE. Nero Image are Big Endian. */
+#define CUEX_ID  0x43554558  /* Nero version 5.5 */
+#define CUES_ID  0x43554553  /* Nero pre version 5.5 */
+#define DAOX_ID  0x44414f58  /* Nero version 5.5 */
 #define DAOI_ID  0x44414f49
 #define END1_ID  0x454e4421
 #define ETN2_ID  0x45544e32
 #define ETNF_ID  0x45544e46
-#define NER5_ID  0x4e455235
-#define NERO_ID  0x4e45524f
+#define NER5_ID  0x4e455235  /* Nero version 5.5 */
+#define NERO_ID  0x4e45524f  /* Nero pre 5.5 */
 #define SINF_ID  0x53494e46  /* Session information */
 #define MTYP_ID  0x4d545950  /* Disc Media type? */
 
@@ -311,14 +313,14 @@ PRAGMA_END_PACKED
     cdio_stream_seek (_obj->gen.data_source, size - sizeof (buf), SEEK_SET);
     cdio_stream_read (_obj->gen.data_source, (void *) &buf, sizeof (buf), 1);
     
-    if (buf.v50.ID == UINT32_TO_BE (0x4e45524f)) /* "NERO" */
+    if (buf.v50.ID == UINT32_TO_BE (NERO_ID)) 
       {
-	cdio_info ("detected v50 (32bit offsets) NRG magic");
+	cdio_info ("detected Nero version 5.0 (32bit offsets) NRG magic");
 	footer_start = uint32_to_be (buf.v50.footer_ofs); 
       }
-    else if (buf.v55.ID == UINT32_TO_BE (0x4e455235)) /* "NER5" */
+    else if (buf.v55.ID == UINT32_TO_BE (NER5_ID)) 
       {
-	cdio_info ("detected v55 (64bit offsets) NRG magic");
+	cdio_info ("detected Nero version 5.5 (64bit offsets) NRG magic");
 	footer_start = uint64_from_be (buf.v55.footer_ofs);
       }
     else
@@ -418,21 +420,34 @@ PRAGMA_END_PACKED
 	  break;
 	}
 	
-      case DAOI_ID: /* "DAOI" */
       case DAOX_ID: /* "DAOX" */ 
+	/* Fall through... */
+
+      case DAOI_ID: /* "DAOI" */
 	{
 	  _daox_array_t *_entries = (void *) chunk->data;
 	  track_format_t track_format;
-	  int form     = _entries->_unknown[18];
-	  _obj->dtyp   = _entries->_unknown[36];
+	  int form     = _entries->_unknown[1];
+	  _obj->dtyp   = _entries->_unknown[19];
 	  _obj->is_dao = true;
+	  _obj->mcn      = _cdio_malloc (CDIO_MCN_SIZE);
+	  memcpy(_obj->mcn, &(_entries->mcn), CDIO_MCN_SIZE);
+
 	  cdio_debug ("DAO%c tag detected, track format %d, form %x\n", 
 		      opcode==DAOX_ID ? 'X': 'I', _obj->dtyp, form);
 	  switch (_obj->dtyp) {
 	  case 0:
+	    /* Mode 1 */
 	    track_format = TRACK_FORMAT_DATA;
 	    break;
+	  case 2:
+	    /* Mode 2 form 1 */
+	    break;
+	  case 3:
+	    /* Mode 2 */
+	    break;
 	  case 0x6:
+	    /* Mode2 form mix */
 	  case 0x20:
 	    track_format = TRACK_FORMAT_XA;
 	    break;
@@ -481,8 +496,8 @@ PRAGMA_END_PACKED
 	  }
 	  break;
 	}
-      case NERO_ID: /* "NER0" */
-      case NER5_ID: /* "NER5" */
+      case NERO_ID: 
+      case NER5_ID: 
 	cdio_error ("unexpected nrg magic ID NER%c detected",
 		    opcode==NERO_ID ? 'O': '5');
 	free(footer_buf);
