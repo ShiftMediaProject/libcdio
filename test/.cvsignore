@@ -2,7 +2,10 @@
 .libs
 Makefile
 Makefile.in
+cdda-orig.wav
+cdda-try.wav
 check_cue.sh
+check_paranoia.sh
 check_common_fn
 check_iso.sh
 check_nrg.sh
