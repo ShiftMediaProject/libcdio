@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.22 2003/10/07 03:11:38 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.23 2003/11/09 15:50:50 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -47,7 +47,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.22 2003/10/07 03:11:38 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.23 2003/11/09 15:50:50 rocky Exp $";
 
 /* structures used */
 
@@ -103,7 +103,9 @@ PRAGMA_END_PACKED
 #define SINF_ID  0x53494e46
 #define MTYP_ID  0x4d545950  /* Media type? */
 
-#define MTYP_AUDIO_CD 1
+#define MTYP_AUDIO_CD 1 /* This isn't correct. But I don't know the
+			   the right thing is and it sometimes works (and
+			   sometimes is wrong). */
 
 /* reader */
 
@@ -482,8 +484,11 @@ PRAGMA_END_PACKED
 	
 	cdio_assert (UINT32_FROM_BE (chunk->len) == 4);
 
+	cdio_debug ("MTYP: %lu", 
+		    (long unsigned int) UINT32_FROM_BE (*mtyp_p));
+
 	if (mtyp != MTYP_AUDIO_CD) {
-	  cdio_warn ("Unknown media type: %u", (unsigned int) mtyp);
+	  cdio_warn ("Unknown MTYP value: %u", (unsigned int) mtyp);
 	}
 	_obj->mtyp = mtyp;
       }
