@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.47 2004/07/15 11:55:45 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.48 2004/07/16 11:37:12 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.47 2004/07/15 11:55:45 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.48 2004/07/16 11:37:12 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -432,7 +432,7 @@ _get_cdtext_solaris (void *user_data)
   struct uscsi_cmd my_cmd;
   unsigned char my_rq_buf[26] = { 0, };
 
-  /* Sizes for commands are set by the SCSI opcode. *
+  /* Sizes for command descriptor buffer (CDB) are set by the SCSI opcode. 
      The size for READ TOC is 10. */
   unsigned char scsi_cdb[10] = {0, }; 
 
@@ -442,7 +442,7 @@ _get_cdtext_solaris (void *user_data)
   CDIO_MMC_SET_READ_LENGTH( scsi_cdb, sizeof(wdata) );
 
   my_cmd.uscsi_flags = (USCSI_READ|USCSI_RQENABLE);  /* We're going get data */
-  my_cmd.uscsi_timeout = 15;             /* Allow 15 seconds for completion */
+  my_cmd.uscsi_timeout = 30;          /* # of seconds for completion */
   my_cmd.uscsi_cdb = scsi_cdb;        /* We'll be using the array above for the CDB */
   my_cmd.uscsi_bufaddr = wdata;   
   my_cmd.uscsi_buflen = sizeof(wdata); 
@@ -628,7 +628,7 @@ _cdio_get_drive_cap_solaris (const void *user_data)
   uint8_t buf[192] = { 0, };
   unsigned char my_rq_buf[26] = {0, };
 
-  /* Sizes for commands are set by the SCSI opcode. *
+  /* Sizes for command descriptor buffer (CDB) are set by the SCSI opcode. 
      The size for MODE SENSE 10. */
   unsigned char scsi_cdb[10] = {0, };
   
@@ -699,7 +699,7 @@ _cdio_get_mcn_solaris (const void *user_data)
   unsigned char my_rq_buf[32] = {0, };
   int rc;
 
-  /* Sizes for commands are set by the SCSI opcode. *
+  /* Sizes for command descriptor buffer (CDB) are set by the SCSI opcode. 
      The size for READ SUBCHANNEL is 10. */
   unsigned char scsi_cdb[10] = {0, };
   
