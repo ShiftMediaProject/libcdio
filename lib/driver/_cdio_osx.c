@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.9 2005/01/21 20:54:55 rocky Exp $
+    $Id: _cdio_osx.c,v 1.10 2005/01/21 23:12:54 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.9 2005/01/21 20:54:55 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.10 2005/01/21 23:12:54 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -992,7 +992,8 @@ _get_read_audio_sectors_osx (void *user_data, void *data, lsn_t lsn,
   
   if( ioctl( env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
-    cdio_info( "could not read block %d", lsn );
+    cdio_info( "could not read block %d\n%s", lsn,
+	       strerror(errno));
     return -1;
   }
   return 0;
@@ -1369,9 +1370,9 @@ get_mcn_osx (const void *user_data) {
   Get format of track. 
 */
 static track_format_t
-get_track_format_osx(void *user_data, track_t i_track) 
+get_track_format_osx(void *p_user_data, track_t i_track) 
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   dk_cd_read_track_info_t cd_read;
   CDTrackInfo a_track;
 
@@ -1390,7 +1391,8 @@ get_track_format_osx(void *user_data, track_t i_track)
   
   if( ioctl( p_env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
   {
-    cdio_warn( "could not read trackinfo for track %d", i_track );
+    cdio_warn( "could not read trackinfo for track %d:\n%s", i_track,
+	       strerror(errno));
     return TRACK_FORMAT_ERROR;
   }
 
@@ -1420,9 +1422,9 @@ get_track_format_osx(void *user_data, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-get_track_green_osx(void *user_data, track_t i_track) 
+get_track_green_osx(void *p_user_data, track_t i_track) 
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   CDTrackInfo a_track;
 
   if (!p_env->gen.toc_init) read_toc_osx (p_env) ;
@@ -1443,7 +1445,8 @@ get_track_green_osx(void *user_data, track_t i_track)
     cd_read.bufferLength = sizeof(CDTrackInfo);
     
     if( ioctl( p_env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 ) {
-      cdio_warn( "could not read trackinfo for track %d", i_track );
+      cdio_warn( "could not read trackinfo for track %d:\n%s", i_track,
+		 strerror(errno));
       return false;
     }
     return ((a_track.trackMode & CDIO_CDROM_DATA_TRACK) != 0);
