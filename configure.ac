@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.27 2003/06/08 13:08:37 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.28 2003/06/10 01:19:15 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.61)
@@ -28,6 +28,8 @@ enable_cdinfo="${withval}", enable_cdinfo=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
+
+cd_drivers='bin/cue NRG '
 
 if test "x$GCC" != "xyes" 
 then
@@ -62,7 +64,7 @@ dnl We use a diff in regression testing
 AC_PATH_PROG(DIFF, diff, no)
 DIFF_OPTS=
 
-if test "$DIFF" == no ; then
+if test "$DIFF" = no ; then
    AC_PATH_PROG(DIFF, cmp, no)
 else 
    dnl Try for GNU diff options.
@@ -198,8 +200,9 @@ struct cdrom_generic_command test;
 int has_timeout=sizeof(test.timeout);],
             [AC_DEFINE([HAVE_LINUX_CDROM_TIMEOUT], [1], 
                    [Define 1 if timeout is in cdrom_generic_command struct])])
-	AC_DEFINE([HAVE_LINUX_CDROM], [1], 
-                  [Define 1 if you have Linux-type CD-ROM support])
+	   AC_DEFINE([HAVE_LINUX_CDROM], [1], 
+                     [Define 1 if you have Linux-type CD-ROM support])
+	   cd_drivers="${cd_drivers}GNU/Linux "
 	fi
 	;;
      bsdi*)
@@ -208,26 +211,31 @@ int has_timeout=sizeof(test.timeout);],
      	  AC_DEFINE([HAVE_BSDI_CDROM], [1], 
                     [Define 1 if you have BSDI-type CD-ROM support])
 	  LIBS="$LIBS -ldvd"
+	  cd_drivers="${cd_drivers}BSDI "
 	fi
 	;;
      sunos*|sun*|solaris*)
         AC_CHECK_HEADERS(sys/cdio.h)
      	AC_DEFINE([HAVE_SOLARIS_CDROM], [1], 
                   [Define 1 if you have Solaris CD-ROM support])
+	  cd_drivers="${cd_drivers}Solaris "
 	;;
      cygwin*)
-     	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
-                  [Define 1 if you have cywin MinGW CD-ROM support])
- 	LIBS="$LIBS -lwinmm -mwindows"
+ 	LIBS="$LIBS -mcygwin"
 	AC_DEFINE([CYGWIN], [1], 
                   [Define 1 if you are compiling using cygwin])
+     	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
+                  [Define 1 if you have MinGW CD-ROM support])
+ 	LIBS="$LIBS -lwinmm -mcygwin"
+  	cd_drivers="${cd_drivers}MinGW "
 	;;
      mingw*)
 	AC_DEFINE([MINGW32], [1], 
                   [Define 1 if you are compiling using MinGW])
      	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
-                  [Define 1 if you have cywin MinGW CD-ROM support])
+                  [Define 1 if you have MinGW CD-ROM support])
  	LIBS="$LIBS -lwinmm -mwindows"
+  	cd_drivers="${cd_drivers}MinGW "
 	;;
      *)
 	AC_MSG_WARN(Don't have OS CD-reading support for ${host_os}...)
@@ -292,3 +300,4 @@ AC_OUTPUT([ \
        test/Makefile \
        ])
 
+echo "Using CD-ROM drivers: $cd_drivers"
