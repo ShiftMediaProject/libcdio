@@ -1,4 +1,4 @@
-$Id: README,v 1.16 2005/02/20 03:13:31 rocky Exp $
+$Id: README,v 1.17 2005/03/15 04:18:29 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -14,6 +14,8 @@ src/cd-paranoia), and "real-world' code in the xine VCD plugin, vlc
 CD-DA plugin which are part of those distributions.
 
 Descriptions of the programs in this example directory are as follows...
+
+audio.c:  Sample program to show audio controls.
 
 cdtext.c: A program to show CD-Text and CD disc mode info.
 
