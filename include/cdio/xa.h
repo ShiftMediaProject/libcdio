@@ -1,8 +1,8 @@
 /*
-    $Id: xa.h,v 1.7 2004/02/25 09:33:31 rocky Exp $
+    $Id: xa.h,v 1.8 2004/03/04 04:48:37 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     See also iso9660.h by Eric Youngdale (1993) and in cdrtools. These
     are 
@@ -66,10 +66,28 @@
 #define XA_FORM1_FILE   (XA_ATTR_MODE2FORM1 | XA_PERM_ALL_ALL)
 #define XA_FORM2_FILE   (XA_ATTR_MODE2FORM2 | XA_PERM_ALL_ALL)
 
-/*!
- * An "Extended Attributes" record according to the Philips Yellow Book.
- * Note structure is big-endian.
- */
+/*! \brief "Extended Architecture according t the Philips Yellow Book.
+ 
+CD-ROM EXtended Architecture is a modification to the CD-ROM
+specification that defines two new types of sectors.  CD-ROM XA was
+developed jointly by Sony, Philips, and Microsoft, and announced in
+August 1988. Its specifications were published in an extension to the
+Yellow Book.  CD-i, Photo CD, Video CD and CD-EXTRA have all
+subsequently been based on CD-ROM XA.
+
+CD-XA defines another way of formatting sectors on a CD-ROM, including
+headers in the sectors that describe the type (audio, video, data) and
+some additional info (markers, resolution in case of a video or audio
+sector, file numbers, etc).
+
+The data written on a CD-XA is consistent with and can be in ISO-9660
+file system format and therefore be readable by ISO-9660 file system
+translators. But also a CD-I player can also read CD-XA discs even if
+its own `Green Book' file system only resembles ISO 9660 and isn't
+fully compatible. 
+
+ Note structure is big-endian.
+*/
 typedef struct iso9660_xa 
 {
   uint16_t group_id;      /**< 0 */
