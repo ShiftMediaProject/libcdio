@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.40 2004/11/01 09:48:34 rocky Exp $
+    $Id: win32_ioctl.c,v 1.41 2004/11/01 10:39:30 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.40 2004/11/01 09:48:34 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.41 2004/11/01 10:39:30 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -36,7 +36,8 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.40 2004/11/01 09:48:34 rock
 #include "undocumented.h"
 #define FORMAT_ERROR(i_err, psz_msg) \
    psz_msg=(char *)LocalAlloc(LMEM_ZEROINIT, 255); \
-   sprintf(psz_msg, "error %d\n", i_err)
+   sprintf(psz_msg, "error file %s: line %d (%s) %d\n", 
+	   _FILE__, __LINE__, __PRETTY_FUNCTION__, i_err)
 #else
 #include <ddk/ntddstor.h>
 #include <ddk/ntddscsi.h>
@@ -377,7 +378,7 @@ read_audio_sectors_win32ioctl (_img_private_t *env, void *data, lsn_t lsn,
 		       CDIO_CD_FRAMESIZE_RAW * nblocks,
 		       &dwBytesReturned, NULL ) == 0 ) {
     char *psz_msg = NULL;
-    DWORD dw = GetLastError();
+    long int i_err = GetLastError();
     FORMAT_ERROR(i_err, psz_msg);
     cdio_info("Error reading audio-mode %lu\n%s)", 
 	      (long unsigned int) lsn, psz_msg);
