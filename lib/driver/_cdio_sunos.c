@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.25 2005/03/01 01:09:53 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.26 2005/03/01 08:14:09 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.25 2005/03/01 01:09:53 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.26 2005/03/01 08:14:09 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -117,6 +117,90 @@ str_to_access_mode_sunos(const char *psz_access_mode)
   }
 }
 
+
+/*!
+  Pause playing CD through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+static driver_return_code_t
+audio_pause_solaris (void *p_user_data) 
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMPAUSE);
+}
+
+/*!
+  Playing starting at given MSF through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+static driver_return_code_t
+audio_play_msf_solaris (void *p_user_data, msf_t *p_msf)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMPLAYMSF, p_msf);
+}
+
+/*!
+  Playing CD through analog output at the desired track and index
+  
+  @param p_cdio the CD object to be acted upon.
+  @param p_track_index location to start/end.
+*/
+static driver_return_code_t
+audio_play_track_index_solaris (void *p_user_data, 
+				cdio_track_index_t *p_track_index)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMPLAYTRKIND, p_track_index);
+}
+
+/*!
+  Resume playing an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_read_subchannel_solaris (void *p_user_data, 
+                             cdio_subchannel_t *p_subchannel)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMSUBCHNL, p_subchannel);
+}
+
+/*!
+  Resume playing an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_resume_solaris (void *p_user_data)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMRESUME, 0);
+}
+
+/*!
+  Resume playing an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_set_volume_solaris (void *p_user_data, 
+			  const cdio_audio_volume_t *p_volume) {
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMVOLCTRL, p_volume);
+}
 
 /*!
   Initialize CD device.
@@ -882,6 +966,12 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
 
   cdio_funcs_t _funcs;
 
+  _funcs.audio_pause            = audio_pause_solaris;
+  _funcs.audio_play_msf         = audio_play_msf_solaris;
+  _funcs.audio_play_track_index = audio_play_track_index_solaris;
+  _funcs.audio_read_subchannel  = audio_read_subchannel_solaris;
+  _funcs.audio_resume           = audio_resume_solaris;
+  _funcs.audio_set_volume       = audio_set_volume_solaris;
   _funcs.eject_media            = eject_media_solaris;
   _funcs.free                   = cdio_generic_free;
   _funcs.get_arg                = get_arg_solaris;

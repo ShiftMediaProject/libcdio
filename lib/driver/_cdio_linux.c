@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.30 2005/03/01 02:49:43 rocky Exp $
+    $Id: _cdio_linux.c,v 1.31 2005/03/01 08:14:09 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.30 2005/03/01 02:49:43 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.31 2005/03/01 08:14:09 rocky Exp $";
 
 #include <string.h>
 
@@ -200,19 +200,21 @@ check_mounts_linux(const char *mtab)
   @param p_cdio the CD object to be acted upon.
 */
 static driver_return_code_t
-audio_pause_linux (void *p_user_data) {
+audio_pause_linux (void *p_user_data)
+{
 
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROMPAUSE);
 }
 
 /*!
-  Pause playing CD through analog output
+  Playing starting at given MSF through analog output
   
   @param p_cdio the CD object to be acted upon.
 */
 static driver_return_code_t
-audio_play_msf_linux (void *p_user_data, msf_t *p_msf) {
+audio_play_msf_linux (void *p_user_data, msf_t *p_msf)
+{
 
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROMPLAYMSF, p_msf);
@@ -226,7 +228,8 @@ audio_play_msf_linux (void *p_user_data, msf_t *p_msf) {
 */
 static driver_return_code_t
 audio_play_track_index_linux (void *p_user_data, 
-                              cdio_track_index_t *p_track_index) {
+                              cdio_track_index_t *p_track_index)
+{
 
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROMPLAYTRKIND, p_track_index);
@@ -240,7 +243,8 @@ audio_play_track_index_linux (void *p_user_data,
 */
 static driver_return_code_t
 audio_read_subchannel_linux (void *p_user_data, 
-                             cdio_subchannel_t *p_subchannel) {
+                             cdio_subchannel_t *p_subchannel)
+{
 
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROMSUBCHNL, p_subchannel);
@@ -253,7 +257,8 @@ audio_read_subchannel_linux (void *p_user_data,
   
 */
 static driver_return_code_t
-audio_resume_linux (void *p_user_data) {
+audio_resume_linux (void *p_user_data)
+{
 
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROMRESUME, 0);
@@ -267,7 +272,8 @@ audio_resume_linux (void *p_user_data) {
 */
 static driver_return_code_t
 audio_set_volume_linux (void *p_user_data, 
-                        const cdio_audio_volume_t *p_volume) {
+                        const cdio_audio_volume_t *p_volume)
+{
 
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROMVOLCTRL, p_volume);
