@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.15 2003/08/10 02:27:49 rocky Exp $
+    $Id: cd-info.c,v 1.16 2003/08/13 12:18:49 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -44,6 +44,7 @@
 #endif
 
 #ifdef HAVE_VCDINFO
+#include <libvcd/logging.h>
 #include <libvcd/files.h>
 #include <libvcd/info.h>
 #endif
@@ -764,6 +765,9 @@ static cdio_log_handler_t gl_default_cdio_log_handler = NULL;
 #ifdef HAVE_CDDB
 static cddb_log_handler_t gl_default_cddb_log_handler = NULL;
 #endif
+#ifdef HAVE_VCDINFO
+static vcd_log_handler_t gl_default_vcd_log_handler = NULL;
+#endif
 
 static void 
 _log_handler (cdio_log_level_t level, const char message[])
@@ -1003,6 +1007,10 @@ main(int argc, const char *argv[])
   gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
 #ifdef HAVE_CDDB
   gl_default_cddb_log_handler = cddb_log_set_handler (_log_handler);
+#endif
+
+#ifdef HAVE_VCDINFO
+  gl_default_vcd_log_handler = vcd_log_set_handler (_log_handler);
 #endif
 
   program_name = strrchr(argv[0],'/');
