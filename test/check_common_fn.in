@@ -1,4 +1,4 @@
-# $Id: check_common_fn.in,v 1.4 2003/09/19 04:09:47 rocky Exp $
+# $Id: check_common_fn.in,v 1.5 2004/02/29 15:42:30 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -69,6 +69,72 @@ test_cdinfo() {
     fi
   else
     echo "$0: ${CD_INFO} ${opts} failed"
+    return 2
+  fi
+
+}
+
+test_iso_info() {
+
+  opts="$1"
+  outfile="$2"
+  rightfile="$3"
+
+  ISO_INFO="../src/iso-info"
+
+  if [ ! -x ${ISO_INFO} ]; then
+    echo "$0: No ${ISO_INFO}"
+    return 1
+  fi
+
+  if ${ISO_INFO} --no-header ${opts} >${outfile} 2>&1 ; then 
+    if test "/usr/bin/diff" != no; then
+      if /usr/bin/diff  -w --unified ${outfile} ${rightfile} ; then
+	rm -f $outfile
+	return 0
+      else
+	return 3
+      fi
+    else
+      echo "$0: No diff(1) or cmp(1 found - cannot test ${ISO_INFO}"
+      rm -f $outfile
+      return 77
+    fi
+  else
+    echo "$0: ${ISO_INFO} ${opts} failed"
+    return 2
+  fi
+
+}
+
+test_iso_read() {
+
+  opts="$1"
+  outfile="$2"
+  rightfile="$3"
+
+  ISO_READ="../src/iso-read"
+
+  if [ ! -x ${ISO_READ} ]; then
+    echo "$0: No ${ISO_READ}"
+    return 1
+  fi
+
+  if ${ISO_READ} ${opts} -o ${outfile} 2>&1 ; then 
+    if test "@DIFF@" != no; then
+      if @DIFF@ @DIFF_OPTS@ ${outfile} ${rightfile} ; then
+	rm -f $outfile
+	return 0
+      else
+	return 3
+      fi
+    else
+      echo "$0: No diff(1) or cmp(1 found - cannot test ${ISO_READ}"
+      rm -f $outfile
+      return 77
+    fi
+  else
+    echo "$0: ${ISO_READ} ${opts} failed"
     return 2
   fi
 

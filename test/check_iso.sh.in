@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_iso.sh.in,v 1.1 2004/02/29 04:41:57 rocky Exp $
+#$Id: check_iso.sh.in,v 1.2 2004/02/29 15:42:30 rocky Exp $
 
 if test -z $srcdir ; then
   srcdir=`pwd`
@@ -14,10 +14,15 @@ fi
 BASE=`basename $0 .sh`
 fname=copying
 
-test_isoinfo "--quiet ${srcdir}/${fname}.iso --iso9660 " \
+test_iso_info "--quiet ${srcdir}/${fname}.iso --iso9660 " \
   ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC 'iso-info test 1'
+
+test_iso_read "--image ${srcdir}/${fname}.iso --extract $fname " \
+  ${fname} ${srcdir}/../COPYING
+RC=$?
+check_result $RC 'iso-read test 1'
 
 exit $RC
 

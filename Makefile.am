@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.19 2004/02/25 10:11:06 rocky Exp $
+#   $Id: Makefile.am,v 1.20 2004/02/29 15:42:30 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -85,7 +85,11 @@ check_nrg.sh: $(top_builddir)/config.status check_nrg.sh.in
 	chmod +x config_nrg.sh
 check_cue.sh: $(top_builddir)/config.status check_cue.sh.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
-	chmod +x config_cue.csh
+	chmod +x config_cue.sh
+
+check_iso.sh: $(top_builddir)/config.status check_iso.sh.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+	chmod +x config_iso.sh
 
 make-executable:
 
