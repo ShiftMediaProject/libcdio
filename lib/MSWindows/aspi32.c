@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.40 2004/07/27 01:06:02 rocky Exp $
+    $Id: aspi32.c,v 1.41 2004/07/27 01:23:27 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.40 2004/07/27 01:06:02 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.41 2004/07/27 01:23:27 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -191,9 +191,9 @@ get_discmode_aspi (_img_private_t *p_env)
 
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
-  if (0 == get_dvd_struct_physical_mmc (p_env, 
-					scsi_mmc_run_cmd_aspi,
-					&dvd)) {
+  if (0 == scsi_mmc_get_dvd_struct_physical_private (p_env, 
+						     &scsi_mmc_run_cmd_aspi,
+						     &dvd)) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
