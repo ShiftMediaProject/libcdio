@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.98 2004/10/26 07:34:41 rocky Exp $
+    $Id: _cdio_linux.c,v 1.99 2004/11/20 12:41:21 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.98 2004/10/26 07:34:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.99 2004/11/20 12:41:21 rocky Exp $";
 
 #include <string.h>
 
@@ -392,9 +392,9 @@ get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
   } else {
     struct cdrom_msf0  *msf0= 
       &p_env->tocent[i_track-p_env->gen.i_first_track].cdte_addr.msf;
-    msf->m = to_bcd8(msf0->minute);
-    msf->s = to_bcd8(msf0->second);
-    msf->f = to_bcd8(msf0->frame);
+    msf->m = cdio_to_bcd8(msf0->minute);
+    msf->s = cdio_to_bcd8(msf0->second);
+    msf->f = cdio_to_bcd8(msf0->frame);
     return true;
   }
 }
@@ -634,9 +634,9 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
   _img_private_t *p_env = p_user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
-  msf->cdmsf_min0 = from_bcd8(_msf.m);
-  msf->cdmsf_sec0 = from_bcd8(_msf.s);
-  msf->cdmsf_frame0 = from_bcd8(_msf.f);
+  msf->cdmsf_min0 = cdio_from_bcd8(_msf.m);
+  msf->cdmsf_sec0 = cdio_from_bcd8(_msf.s);
+  msf->cdmsf_frame0 = cdio_from_bcd8(_msf.f);
 
  retry:
   switch (p_env->access_mode)
@@ -725,9 +725,9 @@ _read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
   _img_private_t *p_env = p_user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
-  msf->cdmsf_min0 = from_bcd8(_msf.m);
-  msf->cdmsf_sec0 = from_bcd8(_msf.s);
-  msf->cdmsf_frame0 = from_bcd8(_msf.f);
+  msf->cdmsf_min0 = cdio_from_bcd8(_msf.m);
+  msf->cdmsf_sec0 = cdio_from_bcd8(_msf.s);
+  msf->cdmsf_frame0 = cdio_from_bcd8(_msf.f);
 
  retry:
   switch (p_env->access_mode)
@@ -1120,6 +1120,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
 #endif
     .get_first_track_num= get_first_track_num_generic,
+    .get_hwinfo         = NULL,
     .get_mcn            = get_mcn_linux,
     .get_num_tracks     = get_num_tracks_generic,
     .get_track_format   = get_track_format_linux,
