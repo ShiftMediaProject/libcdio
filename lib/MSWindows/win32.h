@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.12 2004/07/17 10:05:54 rocky Exp $
+    $Id: win32.h,v 1.13 2004/07/18 06:51:49 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -120,7 +120,10 @@ bool init_cdtext_win32ioctl (_img_private_t *env);
   string when done with it.
 
  */
-cdio_drive_cap_t get_drive_cap_aspi (const _img_private_t *env);
+void get_drive_cap_aspi (const _img_private_t *env,
+			 cdio_drive_read_cap_t  *p_read_cap,
+			 cdio_drive_write_cap_t *p_write_cap,
+			 cdio_drive_misc_cap_t  *p_misc_cap);
 
 /*!
   Return the the kind of drive capabilities of device.
@@ -129,7 +132,10 @@ cdio_drive_cap_t get_drive_cap_aspi (const _img_private_t *env);
   string when done with it.
 
  */
-cdio_drive_cap_t get_drive_cap_win32ioctl (const _img_private_t *env);
+void get_drive_cap_win32ioctl (const _img_private_t *env,
+			       cdio_drive_read_cap_t  *p_read_cap,
+			       cdio_drive_write_cap_t *p_write_cap,
+			       cdio_drive_misc_cap_t  *p_misc_cap);
 
 /*!  
   Get the format (XA, DATA, AUDIO) of a track. 

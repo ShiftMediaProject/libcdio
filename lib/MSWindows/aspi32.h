@@ -1,6 +1,6 @@
 /* Win32 aspi specific */
 /*
-    $Id: aspi32.h,v 1.8 2004/07/17 09:12:21 rocky Exp $
+    $Id: aspi32.h,v 1.9 2004/07/18 06:51:49 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -172,7 +172,10 @@ SRB_HAInquiry;
   string when done with it.
 
  */
-cdio_drive_cap_t get_drive_cap_aspi (const _img_private_t *env);
+void get_drive_cap_aspi (const _img_private_t *env,
+			 cdio_drive_read_cap_t  *p_read_cap,
+			 cdio_drive_write_cap_t *p_write_cap,
+			 cdio_drive_misc_cap_t  *p_misc_cap);
 
 /*!
   Return the the kind of drive capabilities of device.

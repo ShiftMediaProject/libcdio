@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.17 2004/07/17 15:31:00 rocky Exp $
+    $Id: win32_ioctl.c,v 1.18 2004/07/18 06:51:49 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.17 2004/07/17 15:31:00 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.18 2004/07/18 06:51:49 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -514,10 +514,12 @@ get_track_format_win32ioctl(const _img_private_t *env, track_t i_track)
   string when done with it.
 
  */
-cdio_drive_cap_t
-get_drive_cap_win32ioctl (const _img_private_t *env) 
+void
+get_drive_cap_win32ioctl (const _img_private_t *env,
+			  cdio_drive_read_cap_t  *p_read_cap,
+			  cdio_drive_write_cap_t *p_write_cap,
+			  cdio_drive_misc_cap_t  *p_misc_cap)
 {
-  int32_t i_drivetype = 0;
   SCSI_PASS_THROUGH_WITH_BUFFERS      sptwb;
   ULONG                               returned = 0;
   ULONG                               length;
@@ -559,16 +561,17 @@ get_drive_cap_win32ioctl (const _img_private_t *env)
 		       &sptwb,
 		       length,
 		       &returned,
-		       FALSE) )
-    {
-      unsigned int n=sptwb.DataBuf[3]+4;
-      /* Reader? */
-      i_drivetype |= cdio_get_drive_cap_mmc(&(sptwb.DataBuf[n]));
-      return i_drivetype;
-    } else {
-      i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
-    }
-  return CDIO_DRIVE_CAP_ERROR;
+		       FALSE) )     {
+    unsigned int n=sptwb.DataBuf[3]+4;
+    /* Reader? */
+    cdio_get_drive_cap_mmc(&(sptwb.DataBuf[n]), p_read_cap, 
+			   p_write_cap, p_misc_cap);
+  } else {
+    *p_read_cap  = CDIO_DRIVE_CAP_UNKNOWN;
+    *p_write_cap = CDIO_DRIVE_CAP_UNKNOWN;
+    *p_misc_cap  = CDIO_DRIVE_CAP_UNKNOWN;
+  }
+  return;
 }
 
 #endif /*HAVE_WIN32_CDROM*/

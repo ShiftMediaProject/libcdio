@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.28 2004/07/17 15:31:00 rocky Exp $
+    $Id: aspi32.c,v 1.29 2004/07/18 06:51:49 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.28 2004/07/17 15:31:00 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.29 2004/07/18 06:51:49 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -730,11 +730,13 @@ init_cdtext_aspi (_img_private_t *env)
   Return the the kind of drive capabilities of device.
 
  */
-cdio_drive_cap_t
-get_drive_cap_aspi (const _img_private_t *env) 
+void
+get_drive_cap_aspi (const _img_private_t *env,
+		    cdio_drive_read_cap_t  *p_read_cap,
+		    cdio_drive_write_cap_t *p_write_cap,
+		    cdio_drive_misc_cap_t  *p_misc_cap)
 {
   uint8_t  scsi_cdb[10] = { 0, };
-  int32_t  i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
   uint8_t  buf[256] = { 0, };
 
   /* Set up passthrough command */
@@ -746,13 +748,14 @@ get_drive_cap_aspi (const _img_private_t *env)
 
   if (!scsi_passthrough_aspi(env, scsi_cdb, sizeof(scsi_cdb), 
 			     buf, sizeof(buf))) {
-    return i_drivetype;
+    *p_read_cap  = CDIO_DRIVE_CAP_UNKNOWN;
+    *p_write_cap = CDIO_DRIVE_CAP_UNKNOWN;
+    *p_misc_cap  = CDIO_DRIVE_CAP_UNKNOWN;
   } else {
     BYTE *p;
     int lenData  = ((unsigned int)buf[0] << 8) + buf[1];
     BYTE *pMax = buf + 256;
 
-    i_drivetype = 0;
     /* set to first sense mask, and then walk through the masks */
     p = buf + 8;
     while( (p < &(buf[2+lenData])) && (p < pMax) )       {
@@ -767,14 +770,13 @@ get_drive_cap_aspi (const _img_private_t *env)
 	  /* Don't handle these yet. */
 	  break;
 	case CDIO_MMC_CAPABILITIES_PAGE:
-	  i_drivetype |= cdio_get_drive_cap_mmc(p);
+	  cdio_get_drive_cap_mmc(p, p_read_cap, p_write_cap, p_misc_cap);
 	  break;
 	default: ;
 	}
       p += (p[1] + 2);
     }
   }
-  return i_drivetype;
 }
 
 /*!

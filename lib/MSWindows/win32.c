@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.24 2004/07/17 10:05:54 rocky Exp $
+    $Id: win32.c,v 1.25 2004/07/18 06:51:49 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.24 2004/07/17 10:05:54 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.25 2004/07/18 06:51:49 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -107,16 +107,20 @@ cdio_is_cdrom(const char drive_letter) {
   string when done with it.
 
  */
-static cdio_drive_cap_t
-_cdio_get_drive_cap (const void *env) {
+static void
+_cdio_get_drive_cap (const void *env,
+		     cdio_drive_read_cap_t  *p_read_cap,
+		     cdio_drive_write_cap_t *p_write_cap,
+		     cdio_drive_misc_cap_t  *p_misc_cap)
+{
   const _img_private_t *_obj = env;
 
   if (_obj->hASPI) {
     /* A safe guess */ 
 
-    return get_drive_cap_aspi (env);
+    get_drive_cap_aspi (env, p_read_cap, p_write_cap, p_misc_cap);
   } else {
-    return get_drive_cap_win32ioctl (env);
+    get_drive_cap_win32ioctl (env, p_read_cap, p_write_cap, p_misc_cap);
   }
 }
 
