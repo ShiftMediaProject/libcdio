@@ -1,7 +1,7 @@
 /*
-    $Id: _cdio_win32.c,v 1.20 2003/10/20 04:29:17 rocky Exp $
+    $Id: _cdio_win32.c,v 1.21 2004/02/02 03:55:19 rocky Exp $
 
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.20 2003/10/20 04:29:17 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.21 2004/02/02 03:55:19 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -54,6 +54,9 @@ static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.20 2003/10/20 04:29:17 rock
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include "wnaspi32.h"
+
+#define WIN_NT               ( GetVersion() < 0x80000000 )
 
 /* Win32 DeviceIoControl specifics */
 /***** FIXME: #include ntddcdrm.h from Wine, but probably need to 
@@ -129,82 +132,6 @@ typedef struct __RAW_READ_INFO {
     TRACK_MODE_TYPE TrackMode;
 } RAW_READ_INFO, *PRAW_READ_INFO;
 
-/* Win32 aspi specific */
-#define WIN_NT               ( GetVersion() < 0x80000000 )
-#define ASPI_HAID           0
-#define ASPI_TARGET         0
-#define DTYPE_CDROM         0x05
-
-#define SENSE_LEN           0x0E
-#define SC_GET_DEV_TYPE     0x01
-#define SC_EXEC_SCSI_CMD    0x02
-#define SC_GET_DISK_INFO    0x06
-#define SS_COMP             0x01
-#define SS_PENDING          0x00
-#define SS_NO_ADAPTERS      0xE8
-#define SRB_DIR_IN          0x08
-#define SRB_DIR_OUT         0x10
-#define SRB_EVENT_NOTIFY    0x40
-
-#define SECTOR_TYPE_MODE2 0x14
-#define READ_CD_USERDATA_MODE2 0x10
-
-#define READ_TOC 0x43
-#define READ_TOC_FORMAT_TOC 0x0
-
-#pragma pack(1)
-
-struct SRB_GetDiskInfo
-{
-    unsigned char   SRB_Cmd;
-    unsigned char   SRB_Status;
-    unsigned char   SRB_HaId;
-    unsigned char   SRB_Flags;
-    unsigned long   SRB_Hdr_Rsvd;
-    unsigned char   SRB_Target;
-    unsigned char   SRB_Lun;
-    unsigned char   SRB_DriveFlags;
-    unsigned char   SRB_Int13HDriveInfo;
-    unsigned char   SRB_Heads;
-    unsigned char   SRB_Sectors;
-    unsigned char   SRB_Rsvd1[22];
-};
-
-struct SRB_GDEVBlock
-{
-    unsigned char SRB_Cmd;
-    unsigned char SRB_Status;
-    unsigned char SRB_HaId;
-    unsigned char SRB_Flags;
-    unsigned long SRB_Hdr_Rsvd;
-    unsigned char SRB_Target;
-    unsigned char SRB_Lun;
-    unsigned char SRB_DeviceType;
-    unsigned char SRB_Rsvd1;
-};
-
-struct SRB_ExecSCSICmd
-{
-    unsigned char   SRB_Cmd;
-    unsigned char   SRB_Status;
-    unsigned char   SRB_HaId;
-    unsigned char   SRB_Flags;
-    unsigned long   SRB_Hdr_Rsvd;
-    unsigned char   SRB_Target;
-    unsigned char   SRB_Lun;
-    unsigned short  SRB_Rsvd1;
-    unsigned long   SRB_BufLen;
-    unsigned char   *SRB_BufPointer;
-    unsigned char   SRB_SenseLen;
-    unsigned char   SRB_CDBLen;
-    unsigned char   SRB_HaStat;
-    unsigned char   SRB_TargStat;
-    unsigned long   *SRB_PostProc;
-    unsigned char   SRB_Rsvd2[20];
-    unsigned char   CDBByte[16];
-    unsigned char   SenseArea[SENSE_LEN+2];
-};
-
 #pragma pack()
 
 typedef struct {
@@ -248,7 +175,8 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
 }
 
 static const char *
-cdio_is_cdrom(const char drive_letter) {
+cdio_winnt_is_cdrom(const char drive_letter) 
+{
   static char psz_win32_drive[7];
   static char root_path_name[8];
   _img_private_t obj;
@@ -259,29 +187,36 @@ cdio_is_cdrom(const char drive_letter) {
   obj.hASPI = 0;
   obj.lpSendCommand = 0;
   
+  sprintf( psz_win32_drive, "\\\\.\\%c:", drive_letter );
+  sprintf( root_path_name, "\\\\.\\%c:\\", drive_letter );
+  
+  obj.h_device_handle = CreateFile( psz_win32_drive, GENERIC_READ,
+				    FILE_SHARE_READ | FILE_SHARE_WRITE,
+				    NULL, OPEN_EXISTING,
+				    FILE_FLAG_NO_BUFFERING |
+				    FILE_FLAG_RANDOM_ACCESS, NULL );
+  if (obj.h_device_handle != NULL 
+      && (DRIVE_CDROM == GetDriveType(root_path_name))) {
+    CloseHandle(obj.h_device_handle);
+    return strdup(psz_win32_drive);
+  } else {
+    CloseHandle(obj.h_device_handle);
+    return NULL;
+  }
+}
+  
+static const char *
+cdio_is_cdrom(const char drive_letter) {
+  static char psz_win32_drive[7];
+
   if ( WIN_NT ) {
-    sprintf( psz_win32_drive, "\\\\.\\%c:", drive_letter );
-    sprintf( root_path_name, "\\\\.\\%c:\\", drive_letter );
-    
-    obj.h_device_handle = CreateFile( psz_win32_drive, GENERIC_READ,
-				      FILE_SHARE_READ | FILE_SHARE_WRITE,
-				      NULL, OPEN_EXISTING,
-				      FILE_FLAG_NO_BUFFERING |
-				      FILE_FLAG_RANDOM_ACCESS, NULL );
-    if (obj.h_device_handle != NULL 
-	&& (DRIVE_CDROM == GetDriveType(root_path_name))) {
-      CloseHandle(obj.h_device_handle);
-      return strdup(psz_win32_drive);
-    } else {
-      CloseHandle(obj.h_device_handle);
-      return NULL;
-    }
+    return cdio_winnt_is_cdrom(drive_letter);
   } else {
     HMODULE hASPI = NULL;
     long (*lpGetSupport)( void ) = NULL;
     long (*lpSendCommand)( void* ) = NULL;
     DWORD dwSupportInfo;
-    int j, i_hostadapters;
+    int i_adapter, i_num_adapters;
     char c_drive;
     
     hASPI = LoadLibrary( "wnaspi32.dll" );
@@ -314,45 +249,62 @@ cdio_is_cdrom(const char drive_letter) {
       return NULL;
     }
     
-    i_hostadapters = LOBYTE( LOWORD( dwSupportInfo ) );
-    if( i_hostadapters == 0 ) {
+    i_num_adapters = LOBYTE( LOWORD( dwSupportInfo ) );
+    if( i_num_adapters == 0 ) {
       FreeLibrary( hASPI );
       return NULL;
     }
     
     c_drive = toupper(drive_letter) - 'A';
     
-    for( j = 0; j < 15; j++ ) {
+    for( i_adapter = 0; i_adapter < i_num_adapters; i_adapter++ ) {
       struct SRB_GetDiskInfo srbDiskInfo;
+      int i_target;
+      SRB_HAInquiry srbInquiry;
       
-      srbDiskInfo.SRB_Cmd         = SC_GET_DISK_INFO;
-      srbDiskInfo.SRB_HaId        = 0;
-      srbDiskInfo.SRB_Flags       = 0;
-      srbDiskInfo.SRB_Hdr_Rsvd    = 0;
-      srbDiskInfo.SRB_Target      = j;
-      srbDiskInfo.SRB_Lun         = 0;
+      srbInquiry.SRB_Cmd         = SC_HA_INQUIRY;
+      srbInquiry.SRB_HaId        = i_adapter;
       
-      lpSendCommand( (void*) &srbDiskInfo );
+      lpSendCommand( (void*) &srbInquiry );
       
-      if( (srbDiskInfo.SRB_Status == SS_COMP) &&
-	  (srbDiskInfo.SRB_Int13HDriveInfo == c_drive) ) {
-	/* Make sure this is a cdrom device */
-	struct SRB_GDEVBlock   srbGDEVBlock;
-	
-	memset( &srbGDEVBlock, 0, sizeof(struct SRB_GDEVBlock) );
-	srbGDEVBlock.SRB_Cmd    = SC_GET_DEV_TYPE;
-	srbGDEVBlock.SRB_HaId   = 0;
-	srbGDEVBlock.SRB_Target = j;
-	
-	lpSendCommand( (void*) &srbGDEVBlock );
-	
-	if( ( srbGDEVBlock.SRB_Status == SS_COMP ) &&
-	    ( srbGDEVBlock.SRB_DeviceType == DTYPE_CDROM ) ) {
-	  sprintf( psz_win32_drive, "%c:", drive_letter );
-	  FreeLibrary( hASPI );
-	  return(psz_win32_drive);
+      if( srbInquiry.SRB_Status != SS_COMP ) continue;
+      if( !srbInquiry.HA_Unique[3]) srbInquiry.HA_Unique[3]=8;
+      
+      for(i_target=0; i_target < srbInquiry.HA_Unique[3]; i_target++)
+	{
+	  int i_lun;
+	  for( i_lun=0; i_lun<8; i_lun++)
+	    {
+	      srbDiskInfo.SRB_Cmd         = SC_GET_DISK_INFO;
+	      srbDiskInfo.SRB_Flags       = 0;
+	      srbDiskInfo.SRB_Hdr_Rsvd    = 0;
+	      srbDiskInfo.SRB_HaId        = i_adapter;
+	      srbDiskInfo.SRB_Target      = i_target;
+	      srbDiskInfo.SRB_Lun         = i_lun;
+	      
+	      lpSendCommand( (void*) &srbDiskInfo );
+	      
+	      if( (srbDiskInfo.SRB_Status == SS_COMP) &&
+		  (srbDiskInfo.SRB_Int13HDriveInfo == c_drive) ) {
+		/* Make sure this is a cdrom device */
+		struct SRB_GDEVBlock   srbGDEVBlock;
+		
+		memset( &srbGDEVBlock, 0, sizeof(struct SRB_GDEVBlock) );
+		srbGDEVBlock.SRB_Cmd    = SC_GET_DEV_TYPE;
+		srbDiskInfo.SRB_HaId    = i_adapter;
+		srbGDEVBlock.SRB_Target = i_target;
+		
+		lpSendCommand( (void*) &srbGDEVBlock );
+		
+		if( ( srbGDEVBlock.SRB_Status == SS_COMP ) &&
+		    ( srbGDEVBlock.SRB_DeviceType == DTYPE_CDROM ) ) {
+		  sprintf( psz_win32_drive, "%c:", drive_letter );
+		  FreeLibrary( hASPI );
+		  return(psz_win32_drive);
+		}
+	      }
+	    }
 	}
-      }
     }
     FreeLibrary( hASPI );
   }
@@ -404,7 +356,7 @@ _cdio_init_win32 (void *user_data)
     long (*lpGetSupport)( void ) = NULL;
     long (*lpSendCommand)( void* ) = NULL;
     DWORD dwSupportInfo;
-    int i, j, i_hostadapters;
+    int i, j, i_num_adapters;
     char c_drive = _obj->gen.source_name[0];
     
     hASPI = LoadLibrary( "wnaspi32.dll" );
@@ -437,15 +389,15 @@ _cdio_init_win32 (void *user_data)
       return -1;
     }
     
-    i_hostadapters = LOBYTE( LOWORD( dwSupportInfo ) );
-    if( i_hostadapters == 0 ) {
+    i_num_adapters = LOBYTE( LOWORD( dwSupportInfo ) );
+    if( i_num_adapters == 0 ) {
       FreeLibrary( hASPI );
       return -1;
     }
     
     c_drive = toupper(c_drive) - 'A';
     
-    for( i = 0; i < i_hostadapters; i++ ) {
+    for( i = 0; i < i_num_adapters; i++ ) {
       for( j = 0; j < 15; j++ ) {
 	struct SRB_GetDiskInfo srbDiskInfo;
 	  
@@ -900,7 +852,7 @@ _cdio_read_toc (_img_private_t *_obj)
 			 IOCTL_CDROM_READ_TOC,
 			 NULL, 0, &cdrom_toc, sizeof(CDROM_TOC),
 			 &dwBytesReturned, NULL ) == 0 ) {
-      cdio_warn( "could not read TOCHDR" );
+      cdio_warn( "could not read TOCHDR: %ld" , (long int) GetLastError());
       return false;
     }
     
