@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.30 2004/04/30 22:27:59 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.31 2004/05/06 01:08:43 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -41,7 +41,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.30 2004/04/30 22:27:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.31 2004/05/06 01:08:43 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -336,7 +336,7 @@ _cdio_stat_size (void *env)
   0 is returned if no error was found, and nonzero if there as an error.
 */
 static int
-_cdio_set_arg (void *env, const char key[], const char value[])
+_set_arg_solaris (void *env, const char key[], const char value[])
 {
   _img_private_t *_obj = env;
 
@@ -786,12 +786,13 @@ cdio_open_solaris (const char *psz_source_name)
   ones to set that up.
  */
 CdIo *
-cdio_open_am_solaris (const char *source_name, const char *access_mode)
+cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
 {
 
 #ifdef HAVE_SOLARIS_CDROM
   CdIo *ret;
   _img_private_t *_data;
+  char *psz_source;
 
   cdio_funcs _funcs = {
     .eject_media        = _cdio_eject_media,
@@ -815,7 +816,7 @@ cdio_open_am_solaris (const char *source_name, const char *access_mode)
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .stat_size          = _cdio_stat_size,
-    .set_arg            = _cdio_set_arg
+    .set_arg            = _set_arg_solaris
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
@@ -824,8 +825,22 @@ cdio_open_am_solaris (const char *source_name, const char *access_mode)
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
-  _cdio_set_arg(_data, "source", (NULL == source_name) 
-		? DEFAULT_CDIO_DEVICE: source_name);
+  if (NULL == psz_orig_source) {
+    psz_source=cdio_get_default_device_solaris();
+    if (NULL == psz_source) return NULL;
+    _set_arg_solaris(_data, "source", psz_source);
+    free(psz_source);
+  } else {
+    if (cdio_is_device_generic(psz_orig_source))
+      _set_arg_solaris(_data, "source", psz_orig_source);
+    else {
+      /* The below would be okay if all device drivers worked this way. */
+#if 0
+      cdio_info ("source %s is a not a device", psz_orig_source);
+#endif
+      return NULL;
+    }
+  }
 
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;
@@ -852,4 +867,3 @@ cdio_have_solaris (void)
   return false;
 #endif /* HAVE_SOLARIS_CDROM */
 }
-
