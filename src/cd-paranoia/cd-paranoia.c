@@ -585,7 +585,6 @@ static cdrom_drive_t    *d        = NULL;
 static cdrom_paranoia_t *p        = NULL;
 static char             *span     = NULL;
 static char *force_cdrom_device   = NULL;
-static char *force_generic_device = NULL;
 static char *info_file            = NULL;
 
 #define free_and_null(p) \
@@ -598,7 +597,6 @@ cleanup (void)
   if (p) paranoia_free(p);
   if (d) cdda_close(d);
   free_and_null(force_cdrom_device);
-  free_and_null(force_generic_device);
   free_and_null(span);
   free_and_null(info_file);
 }
@@ -647,13 +645,15 @@ main(int argc,char *argv[])
     case 'o':
       force_cdrom_overlap=atoi(optarg);
       break;
-    case 'd':
-      if(force_cdrom_device)free(force_cdrom_device);
-      force_cdrom_device=strdup(optarg);
-      break;
     case 'g':
-      if (force_generic_device) free(force_generic_device);
-      force_generic_device=strdup(optarg);
+    case 'd':
+      if (force_cdrom_device) {
+	fprintf(stderr,
+		"Multiple cdrom devices given. Previous device %s ignored\n",
+		force_cdrom_device);
+	free(force_cdrom_device);
+      }
+      force_cdrom_device=strdup(optarg);
       break;
     case 'S':
       force_cdrom_speed=atoi(optarg);
@@ -695,7 +695,8 @@ main(int argc,char *argv[])
       break;
     case 'e':
       callscript=1;
-      fprintf(stderr,"Sending all callcaks to stderr for wrapper script\n");
+      fprintf(stderr,
+	      "Sending all callback output to stderr for wrapper script\n");
       break;
     case 'V':
       fprintf(stderr,PARANOIA_VERSION);
@@ -771,37 +772,34 @@ main(int argc,char *argv[])
 
   /* Query the cdrom/disc; we may need to override some settings */
 
-  if (force_generic_device)
-    d = cdda_identify (force_generic_device, verbose, NULL);
-  else
-    if(force_cdrom_device)
-      d=cdda_identify(force_cdrom_device,verbose,NULL);
-    else {
-      driver_id_t driver_id;
-      char **ppsz_cd_drives = cdio_get_devices_with_cap_ret(NULL,  
-							    CDIO_FS_AUDIO, 
-							    false,
-							    &driver_id);
-      if (ppsz_cd_drives && *ppsz_cd_drives) {
-	d=cdda_identify(*ppsz_cd_drives,verbose, NULL);
-      } else {
-	report("\nUnable find or access a CD-ROM drive with an audio CD"
-	       " in it.");
-	report("\nYou might try specifying the drive, especially if it has"
-	       " mixed-mode (and non-audio) format tracks");
-	exit(1);
-      }
-
-      cdio_free_device_list(ppsz_cd_drives);
-      free(ppsz_cd_drives);
+  if(force_cdrom_device)
+    d=cdda_identify(force_cdrom_device,verbose,NULL);
+  else {
+    driver_id_t driver_id;
+    char **ppsz_cd_drives = cdio_get_devices_with_cap_ret(NULL,  
+							  CDIO_FS_AUDIO, 
+							  false,
+							  &driver_id);
+    if (ppsz_cd_drives && *ppsz_cd_drives) {
+      d=cdda_identify(*ppsz_cd_drives,verbose, NULL);
+    } else {
+      report("\nUnable find or access a CD-ROM drive with an audio CD"
+	     " in it.");
+      report("\nYou might try specifying the drive, especially if it has"
+	     " mixed-mode (and non-audio) format tracks");
+      exit(1);
     }
-
+    
+    cdio_free_device_list(ppsz_cd_drives);
+    free(ppsz_cd_drives);
+  }
+  
   if(!d){
     if(!verbose)
       report("\nUnable to open cdrom drive; -v might give more information.");
     exit(1);
   }
-
+  
   if(verbose)
     cdda_verbose_set(d,CDDA_MESSAGE_PRINTIT,CDDA_MESSAGE_PRINTIT);
   else

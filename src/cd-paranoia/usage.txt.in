@@ -29,7 +29,8 @@ OPTIONS:
                                     verification to n sectors
   -d --force-cdrom-device   <dev> : use specified device; disallow 
                                     autosense
-  -g --force-generic-device <dev> : use specified generic scsi device
+  -g --force-generic-device <dev> : really an alias for -d. Kept for 
+                                    compatibility.
   -S --force-read-speed <n>       : read from device at specified speed
   -t --toc-offset <n>             : Add <n> sectors to the values reported
                                     when addressing tracks. May be negative
