@@ -1,8 +1,8 @@
 /*
-    $Id: logging.c,v 1.5 2003/11/09 13:57:51 rocky Exp $
+    $Id: logging.c,v 1.6 2004/03/10 11:53:10 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,8 +30,7 @@
 #include <cdio/logging.h>
 #include "cdio_assert.h"
 
-
-static const char _rcsid[] = "$Id: logging.c,v 1.5 2003/11/09 13:57:51 rocky Exp $";
+static const char _rcsid[] = "$Id: logging.c,v 1.6 2004/03/10 11:53:10 rocky Exp $";
 
 cdio_log_level_t cdio_loglevel_default = CDIO_LOG_WARN;
 

@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.5 2004/03/06 18:22:07 rocky Exp $
+    $Id: bincue.c,v 1.6 2004/03/10 11:53:10 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.5 2004/03/06 18:22:07 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.6 2004/03/10 11:53:10 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -52,10 +52,10 @@ static const char _rcsid[] = "$Id: bincue.c,v 1.5 2004/03/06 18:22:07 rocky Exp 
 #include <ctype.h>
 
 /* FIXME: should put in a common definition somewhere. */
-#ifdef HAVE_BZERO
-#define BZERO(ptr, size) bzero(ptr, size)
-#elif  HAVE_MEMSET
+#ifdef HAVE_MEMSET
 #define BZERO(ptr, size) memset(ptr, 0, size)
+#elif  HAVE_BZERO
+#define BZERO(ptr, size) bzero(ptr, size)
 #else 
   Error -- you need either memset or bzero
 #endif

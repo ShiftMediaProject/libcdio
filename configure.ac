@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.69 2004/03/06 03:51:19 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.70 2004/03/10 11:53:10 rocky Exp $])dnl
 AC_INIT(libcdio, 0.68cvs)
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -259,7 +259,7 @@ int has_timeout=sizeof(test.timeout);],
                   [Define 1 if you are compiling using cygwin])
      	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
                   [Define 1 if you have MinGW CD-ROM support])
- 	LIBS="$LIBS -lwinmm -mcygwin"
+ 	LIBS="$LIBS -lwinmm"
   	cd_drivers="${cd_drivers}, MinGW"
 	;;
      mingw*)
@@ -288,7 +288,7 @@ AC_SUBST(HAVE_LINUX_CDROM)
 AC_SUBST(HAVE_SOLARIS_CDROM)
 AC_SUBST(HAVE_WIN32_CDROM)
 
-AC_CHECK_FUNCS( bzero memcpy )
+AC_CHECK_FUNCS( memset bzero memcpy )
 
 AC_CHECK_MEMBER([struct tm.tm_gmtoff],
                 [AC_DEFINE(HAVE_TM_GMTOFF, 1,
