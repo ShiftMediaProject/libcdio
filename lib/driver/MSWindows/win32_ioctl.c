@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.5 2005/01/13 19:35:42 rocky Exp $
+    $Id: win32_ioctl.c,v 1.6 2005/01/13 19:39:24 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.5 2005/01/13 19:35:42 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.6 2005/01/13 19:39:24 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -552,7 +552,7 @@ read_fulltoc_win32mmc (_img_private_t *p_env)
 {
   scsi_mmc_cdb_t  cdb = {{0, }};
   CDROM_TOC_FULL  cdrom_toc_full;
-  int             i_status, i, j, 
+  int             i_status, i, j;
   int             i_track_format = 0;
   int             i_seen_flag;
 
