@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.28 2005/03/23 16:22:16 rocky Exp $
+    $Id: cdda-player.c,v 1.29 2005/03/23 16:32:49 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -517,7 +517,6 @@ play_track(track_t i_start_track, track_t i_end_track)
   char line[80];
   
   if (!b_cd) {
-    cd_close(psz_device);
     read_toc(p_cdio);
   }
   
