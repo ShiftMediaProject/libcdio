@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.14 2005/02/12 15:27:22 rocky Exp $
+    $Id: device.h,v 1.15 2005/02/28 02:00:20 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -114,20 +114,26 @@ extern "C" {
      integer.  C seems to tolerate this.
   */
   typedef enum  {
-    DRIVER_OP_UNINIT = -3,     /**< returned when a particular driver
-				   hasn't been initialized or a null
-				   pointer has been passed.
-				*/
-    DRIVER_OP_UNSUPPORTED = -2, /**< returned when a particular driver
-				   doesn't support a particular operation.
-				   For example an image driver which doesn't
-				   really "eject" a CD.
-				*/
-    DRIVER_OP_ERROR = -1,       /**< operation returned an error */
-    DRIVER_OP_SUCCESS = 0,      /**< in cases where an int is returned,
-				     like cdio_set_speed, more the negative
-				     return codes are for errors and the 
-				     positive ones for success. */
+    DRIVER_OP_SUCCESS = 0,       /**< in cases where an int is returned,
+				    like cdio_set_speed, more the negative
+				    return codes are for errors and the 
+				    positive ones for success. */
+    DRIVER_OP_ERROR = -1,        /**< operation returned an error */
+    DRIVER_OP_UNSUPPORTED = -2,  /**< returned when a particular driver
+				    doesn't support a particular operation.
+				    For example an image driver which doesn't
+				    really "eject" a CD.
+				 */
+    DRIVER_OP_UNINIT = -3,       /**< returned when a particular driver
+				    hasn't been initialized or a null
+				    pointer has been passed.
+				 */
+    DRIVER_OP_NOT_PERMITTED = -4, /**< Operation not permitted.
+				    For example might be a permission
+				    problem.
+				 */
+    DRIVER_OP_BAD_PARAMETER = -5, /**< Bad parameter passed  */
+    DRIVER_OP_BAD_POINTER =   -6, /**< Bad pointer to memory area  */
   } driver_return_code_t;
 
   /*!
@@ -794,4 +800,4 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#endif /* __CDIO_TRACK_H__ */
+#endif /* __CDIO_DEVICE_H__ */

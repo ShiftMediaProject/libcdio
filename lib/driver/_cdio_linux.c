@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.26 2005/02/17 07:03:37 rocky Exp $
+    $Id: _cdio_linux.c,v 1.27 2005/02/28 02:00:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.26 2005/02/17 07:03:37 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.27 2005/02/28 02:00:20 rocky Exp $";
 
 #include <string.h>
 
@@ -191,6 +191,71 @@ check_mounts_linux(const char *mtab)
     endmntent(mntfp);
   }
   return NULL;
+}
+
+/*!
+  Pause playing CD through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+static driver_return_code_t
+audio_pause_linux (void *p_user_data) {
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMPAUSE);
+}
+
+/*!
+  Pause playing CD through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+static driver_return_code_t
+audio_play_msf_linux (void *p_user_data, msf_t *p_msf) {
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMPLAYMSF, p_msf);
+}
+
+/*!
+  Playing CD through analog output at the desired track and index
+  
+  @param p_cdio the CD object to be acted upon.
+  @param p_track_index location to start/end.
+*/
+static driver_return_code_t
+audio_play_track_index_linux (void *p_user_data, 
+                              cdio_track_index_t *p_track_index) {
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMPLAYTRKIND, p_track_index);
+}
+
+/*!
+  Resume playing an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_resume_linux (void *p_user_data) {
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMRESUME, 0);
+}
+
+/*!
+  Resume playing an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_set_volume_linux (void *p_user_data, 
+                        const cdio_audio_volume_t *p_volume) {
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMVOLCTRL, p_volume);
 }
 
 /*!
@@ -926,10 +991,10 @@ read_toc_linux (void *p_user_data)
  */
 static driver_return_code_t
 run_mmc_cmd_linux( void *p_user_data, 
-		    unsigned int i_timeout_ms,
-		    unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-		    scsi_mmc_direction_t e_direction, 
-		    unsigned int i_buf, /*in/out*/ void *p_buf )
+                   unsigned int i_timeout_ms,
+                   unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+                   scsi_mmc_direction_t e_direction, 
+                   unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   struct cdrom_generic_command cgc;
@@ -944,7 +1009,29 @@ run_mmc_cmd_linux( void *p_user_data,
   cgc.timeout = i_timeout_ms;
 #endif
 
-  return ioctl (p_env->gen.fd, CDROM_SEND_PACKET, &cgc);
+  { 
+    int i_rc = ioctl (p_env->gen.fd, CDROM_SEND_PACKET, &cgc);
+    if (0 == i_rc) return DRIVER_OP_SUCCESS;
+    if (-1 == i_rc) {
+      cdio_warn ("ioctl CDROM_SEND_PACKET failed: %s\n", strerror(errno));  
+      switch (errno) {
+      case EPERM:
+        return DRIVER_OP_NOT_PERMITTED;
+        break;
+      case EINVAL:
+        return DRIVER_OP_BAD_PARAMETER;
+        break;
+      case EFAULT:
+        return DRIVER_OP_BAD_POINTER;
+        break;
+      case EIO: 
+      default:
+        return DRIVER_OP_ERROR;
+        break;
+      }
+    }
+    return DRIVER_OP_ERROR;
+  }
 }
 
 /*!
@@ -963,7 +1050,7 @@ get_disc_last_lsn_linux (void *p_user_data)
   tocent.cdte_format = CDROM_LBA;
   if (ioctl (p_env->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
-      perror ("ioctl(CDROMREADTOCENTRY)");
+      cdio_warn ("ioctl CDROMREADTOCENTRY failed: %s\n", strerror(errno));  
       return CDIO_INVALID_LSN;
     }
 
@@ -1160,6 +1247,12 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   char *psz_source;
 
   cdio_funcs_t _funcs = {
+    //  .audio_get_volume      = audio_get_volume_linux,
+    .audio_pause           = audio_pause_linux,
+    .audio_play_msf        = audio_play_msf_linux,
+    .audio_play_track_index= audio_play_track_index_linux,
+    .audio_resume          = audio_resume_linux,
+    .audio_set_volume      = audio_set_volume_linux,
     .eject_media           = eject_media_linux,
     .free                  = cdio_generic_free,
     .get_arg               = get_arg_linux,
