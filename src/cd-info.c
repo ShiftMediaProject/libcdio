@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.129 2005/03/05 18:53:13 rocky Exp $
+    $Id: cd-info.c,v 1.130 2005/03/05 19:27:28 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1154,7 +1154,7 @@ main(int argc, const char *argv[])
 	{
 	  report(stdout, "%d\n", i_last_session);
 	} else {
-	  if (i_read_cap & CDIO_DRIVE_CAP_MISC_MULTI_SESSION)
+	  if (i_misc_cap & CDIO_DRIVE_CAP_MISC_MULTI_SESSION)
 	    report(stdout, "failed\n");
 	  else
 	    report(stdout, "not supported by drive/driver\n");

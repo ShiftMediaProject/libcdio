@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.22 2005/03/01 09:33:52 rocky Exp $
+    $Id: win32.c,v 1.23 2005/03/05 19:27:28 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.22 2005/03/01 09:33:52 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.23 2005/03/05 19:27:28 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -83,6 +83,85 @@ static const char _rcsid[] = "$Id: win32.c,v 1.22 2005/03/01 09:33:52 rocky Exp 
 #else
 #define WIN_NT               ( GetVersion() < 0x80000000 )
 #endif
+
+/*!
+  Pause playing CD through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+static driver_return_code_t 
+audio_pause_win32 (void *p_user_data)
+{
+  if ( WIN_NT ) {
+    return audio_pause_win32ioctl (p_user_data);
+  } else {
+    return DRIVER_OP_UNSUPPORTED; /* not yet, but soon I hope */
+  }
+}
+
+/*!
+  Playing CD through analog output at the given MSF.
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+static driver_return_code_t 
+audio_play_msf_win32 (void *p_user_data, msf_t *p_start_msf, msf_t *p_end_msf)
+{
+  if ( WIN_NT ) {
+    return audio_play_msf_win32ioctl (p_user_data, p_start_msf, p_end_msf);
+  } else {
+    return DRIVER_OP_UNSUPPORTED; /* not yet, but soon I hope */
+  }
+}
+
+/*!
+  Read Audio Subchannel information
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_read_subchannel_win32 (void *p_user_data, 
+			     cdio_subchannel_t *p_subchannel)
+{
+  if ( WIN_NT ) {
+    return audio_read_subchannel_win32ioctl (p_user_data, p_subchannel);
+  } else {
+    return audio_read_subchannel_mmc(p_user_data, p_subchannel);
+  }
+}
+
+  /*!
+    Resume playing an audio CD.
+    
+    @param p_cdio the CD object to be acted upon.
+
+  */
+static driver_return_code_t 
+audio_resume_win32 (void *p_user_data)
+{
+  if ( WIN_NT ) {
+    return audio_resume_win32ioctl (p_user_data);
+  } else {
+    return DRIVER_OP_UNSUPPORTED; /* not yet, but soon I hope */
+  }
+}
+
+/*!
+  Set the volume of an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_set_volume_win32 ( void *p_user_data, cdio_audio_volume_t *p_volume)
+{
+  if ( WIN_NT ) {
+    return audio_set_volume_win32ioctl (p_user_data, p_volume);
+  } else {
+    return DRIVER_OP_UNSUPPORTED; /* not yet, but soon I hope */
+  }
+}
 
 /* General ioctl() CD-ROM command function */
 static bool 
@@ -251,8 +330,8 @@ free_win32 (void *p_user_data)
    Returns 0 if no error. 
  */
 static int
-_cdio_read_audio_sectors (void *p_user_data, void *p_buf, lsn_t i_lsn, 
-			  unsigned int i_blocks) 
+read_audio_sectors (void *p_user_data, void *p_buf, lsn_t i_lsn, 
+		    unsigned int i_blocks) 
 {
   _img_private_t *p_env = p_user_data;
   if ( p_env->hASPI ) {
@@ -272,8 +351,8 @@ _cdio_read_audio_sectors (void *p_user_data, void *p_buf, lsn_t i_lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_mode1_sector (void *p_user_data, void *p_buf, lsn_t lsn, 
-			 bool b_form2)
+read_mode1_sector (void *p_user_data, void *p_buf, lsn_t lsn, 
+		   bool b_form2)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -304,8 +383,8 @@ _cdio_read_mode1_sector (void *p_user_data, void *p_buf, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode1_sectors (void *p_user_data, void *p_buf, lsn_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+read_mode1_sectors (void *p_user_data, void *p_buf, lsn_t lsn, 
+		    bool b_form2, unsigned int nblocks)
 {
   _img_private_t *p_env = p_user_data;
   int i;
@@ -313,13 +392,13 @@ _cdio_read_mode1_sectors (void *p_user_data, void *p_buf, lsn_t lsn,
 
   for (i = 0; i < nblocks; i++) {
     if (b_form2) {
-      if ( (retval = _cdio_read_mode1_sector (p_env, 
+      if ( (retval = read_mode1_sector (p_env, 
 					  ((char *)p_buf) + (M2RAW_SECTOR_SIZE * i),
 					  lsn + i, true)) )
 	return retval;
     } else {
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _cdio_read_mode1_sector (p_env, buf, lsn + i, false)) )
+      if ( (retval = read_mode1_sector (p_env, buf, lsn + i, false)) )
 	return retval;
       
       memcpy (((char *)p_buf) + (CDIO_CD_FRAMESIZE * i), 
@@ -334,7 +413,7 @@ _cdio_read_mode1_sectors (void *p_user_data, void *p_buf, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sector (void *p_user_data, void *data, lsn_t lsn, 
+read_mode2_sector (void *p_user_data, void *data, lsn_t lsn, 
 		    bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -374,17 +453,17 @@ _cdio_read_mode2_sector (void *p_user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sectors (void *p_user_data, void *data, lsn_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+read_mode2_sectors (void *p_user_data, void *data, lsn_t lsn, 
+		    bool b_form2, unsigned int i_blocks)
 {
   int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
-  for (i = 0; i < nblocks; i++) {
-    if ( (retval = _cdio_read_mode2_sector (p_user_data, 
-					    ((char *)data) + (blocksize * i),
-					    lsn + i, b_form2)) )
+  for (i = 0; i < i_blocks; i++) {
+    if ( (retval = read_mode2_sector (p_user_data, 
+				      ((char *)data) + (blocksize * i),
+				      lsn + i, b_form2)) )
       return retval;
   }
   return 0;
@@ -748,41 +827,48 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
 
   memset( &_funcs, 0, sizeof(_funcs) );
 
-  _funcs.audio_read_subchannel = audio_read_subchannel_mmc;
-  _funcs.eject_media           = _cdio_eject_media;
-  _funcs.free                  = free_win32;
-  _funcs.get_arg               = _get_arg_win32;
-  _funcs.get_cdtext            = get_cdtext_generic;
-  _funcs.get_default_device    = cdio_get_default_device_win32;
-  _funcs.get_devices           = cdio_get_devices_win32;
-  _funcs.get_disc_last_lsn     = get_disc_last_lsn_win32;
-  _funcs.get_discmode          = get_discmode_win32;
-  _funcs.get_drive_cap         = get_drive_cap_mmc;
-  _funcs.get_first_track_num   = get_first_track_num_generic;
-  _funcs.get_hwinfo            = NULL;
-  _funcs.get_media_changed     = get_media_changed_mmc;
-  _funcs.get_mcn               = _cdio_get_mcn;
-  _funcs.get_num_tracks        = get_num_tracks_generic;
-  _funcs.get_track_channels    = get_track_channels_generic,
-  _funcs.get_track_copy_permit = get_track_copy_permit_generic,
-  _funcs.get_track_format      = _cdio_get_track_format;
-  _funcs.get_track_green       = _cdio_get_track_green;
-  _funcs.get_track_lba         = NULL; /* This could be done if need be. */
-  _funcs.get_track_msf         = _cdio_get_track_msf;
-  _funcs.get_track_preemphasis = get_track_preemphasis_generic,
-  _funcs.lseek                 = NULL;
-  _funcs.read                  = NULL;
-  _funcs.read_audio_sectors    = _cdio_read_audio_sectors;
-  _funcs.read_data_sectors     = read_data_sectors_generic;
-  _funcs.read_mode1_sector     = _cdio_read_mode1_sector;
-  _funcs.read_mode1_sectors    = _cdio_read_mode1_sectors;
-  _funcs.read_mode2_sector     = _cdio_read_mode2_sector;
-  _funcs.read_mode2_sectors    = _cdio_read_mode2_sectors;
-  _funcs.read_toc              = &read_toc_win32;
-  _funcs.run_mmc_cmd           = &run_mmc_cmd_win32;
-  _funcs.set_arg               = set_arg_win32;
-  _funcs.set_blocksize         = set_blocksize_mmc;
-  _funcs.set_speed             = set_speed_mmc;
+  _funcs.audio_pause            = audio_pause_win32;
+  _funcs.audio_play_msf         = audio_play_msf_win32;
+#if 0
+  _funcs.audio_play_track_index = audio_play_track_index_win32;
+#endif
+  _funcs.audio_read_subchannel  = audio_read_subchannel_win32;
+  _funcs.audio_resume           = audio_resume_win32;
+  _funcs.audio_set_volume       = audio_set_volume_win32;
+  _funcs.eject_media            = _cdio_eject_media;
+  _funcs.free                   = free_win32;
+  _funcs.get_arg                = _get_arg_win32;
+  _funcs.get_cdtext             = get_cdtext_generic;
+  _funcs.get_default_device     = cdio_get_default_device_win32;
+  _funcs.get_devices            = cdio_get_devices_win32;
+  _funcs.get_disc_last_lsn      = get_disc_last_lsn_win32;
+  _funcs.get_discmode           = get_discmode_win32;
+  _funcs.get_drive_cap          = get_drive_cap_mmc;
+  _funcs.get_first_track_num    = get_first_track_num_generic;
+  _funcs.get_hwinfo             = NULL;
+  _funcs.get_media_changed      = get_media_changed_mmc;
+  _funcs.get_mcn                = _cdio_get_mcn;
+  _funcs.get_num_tracks         = get_num_tracks_generic;
+  _funcs.get_track_channels     = get_track_channels_generic,
+  _funcs.get_track_copy_permit  = get_track_copy_permit_generic,
+  _funcs.get_track_format       = _cdio_get_track_format;
+  _funcs.get_track_green        = _cdio_get_track_green;
+  _funcs.get_track_lba          = NULL; /* This could be done if need be. */
+  _funcs.get_track_msf          = _cdio_get_track_msf;
+  _funcs.get_track_preemphasis  = get_track_preemphasis_generic,
+  _funcs.lseek                  = NULL;
+  _funcs.read                   = NULL;
+  _funcs.read_audio_sectors     = read_audio_sectors;
+  _funcs.read_data_sectors      = read_data_sectors_generic;
+  _funcs.read_mode1_sector      = read_mode1_sector;
+  _funcs.read_mode1_sectors     = read_mode1_sectors;
+  _funcs.read_mode2_sector      = read_mode2_sector;
+  _funcs.read_mode2_sectors     = read_mode2_sectors;
+  _funcs.read_toc               = read_toc_win32;
+  _funcs.run_mmc_cmd            = run_mmc_cmd_win32;
+  _funcs.set_arg                = set_arg_win32;
+  _funcs.set_blocksize          = set_blocksize_mmc;
+  _funcs.set_speed              = set_speed_mmc;
 
   _data                 = calloc(1, sizeof (_img_private_t));
   _data->access_mode    = str_to_access_mode_win32(psz_access_mode);
