@@ -1,7 +1,7 @@
 /*
-  $Id: sample4.c,v 1.4 2003/11/05 04:12:58 rocky Exp $
+  $Id: sample4.c,v 1.5 2004/03/20 13:18:31 rocky Exp $
 
-  Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -217,5 +217,6 @@ main(int argc, const char *argv[])
 	break;	
     }
   }
+  cdio_destroy(cdio);
   return 0;
 }

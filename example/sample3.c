@@ -1,5 +1,5 @@
 /*
-  $Id: sample3.c,v 1.6 2003/11/05 04:12:57 rocky Exp $
+  $Id: sample3.c,v 1.7 2004/03/20 13:16:19 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -196,5 +196,6 @@ main(int argc, const char *argv[])
 	break;	
     }
   }
+  cdio_destroy(cdio);
   return 0;
 }
