@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.h,v 1.5 2003/04/03 12:16:27 rocky Exp $
+    $Id: cdio.h,v 1.6 2003/04/04 00:41:10 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -107,6 +107,8 @@ extern "C" {
 
   /*!
     Return a string containing the default CD device if none is specified.
+
+    NULL is returned if we couldn't get a default device.
   */
   char * cdio_get_default_device (const CdIo *obj);
 

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.5 2003/04/02 14:54:52 rocky Exp $
+    $Id: cdio.c,v 1.6 2003/04/04 00:41:10 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -28,7 +28,7 @@
 #include "logging.h"
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.5 2003/04/02 14:54:52 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.6 2003/04/04 00:41:10 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -151,6 +151,8 @@ cdio_get_arg (const CdIo *obj, const char key[])
 
 /*!
   Return a string containing the default CD device if none is specified.
+
+  NULL is returned if we couldn't get a default device.
  */
 char *
 cdio_get_default_device (const CdIo *obj)
