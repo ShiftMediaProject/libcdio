@@ -8,6 +8,7 @@ check_iso.sh
 check_nrg.sh
 check_sizeof
 testassert
+testbincue
 testdefault
 testischar
 testiso9660

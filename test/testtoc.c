@@ -1,5 +1,5 @@
 /*
-  $Id: testtoc.c,v 1.2 2004/05/08 20:36:02 rocky Exp $
+  $Id: testtoc.c,v 1.3 2004/07/10 01:18:02 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -39,7 +39,7 @@
 #include <string.h>
 
 #define NUM_GOOD_TOCS 14
-#define NUM_BAD_TOCS 6
+#define NUM_BAD_TOCS 7
 int
 main(int argc, const char *argv[])
 {
@@ -63,6 +63,7 @@ main(int argc, const char *argv[])
   const char *badtoc_file[NUM_BAD_TOCS] = {
     "bad-msf-1.toc", 
     "bad-msf-2.toc",
+    "bad-msf-3.toc",
     "bad-cat1.toc", 
     "bad-cat2.toc",
     "bad-cat3.toc",
@@ -71,7 +72,7 @@ main(int argc, const char *argv[])
   int ret=0;
   unsigned int i;
   
-  cdio_loglevel_default = CDIO_LOG_INFO;
+  cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
   for (i=0; i<NUM_GOOD_TOCS; i++) {
     if (!cdio_is_tocfile(toc_file[i])) {
       printf("Incorrect: %s doesn't parse as a cdrdao TOC file.\n", 

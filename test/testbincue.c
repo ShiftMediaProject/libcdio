@@ -1,5 +1,5 @@
 /*
-  $Id: testbincue.c,v 1.1 2004/07/09 20:47:08 rocky Exp $
+  $Id: testbincue.c,v 1.2 2004/07/10 01:18:02 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -39,7 +39,7 @@
 #include <string.h>
 
 #define NUM_GOOD_CUES 2
-#define NUM_BAD_CUES 3
+#define NUM_BAD_CUES 7
 int
 main(int argc, const char *argv[])
 {
@@ -52,6 +52,10 @@ main(int argc, const char *argv[])
     "bad-cat1.cue", 
     "bad-cat2.cue", 
     "bad-cat3.cue", 
+    "bad-mode1.cue", 
+    "bad-msf-1.cue", 
+    "bad-msf-2.cue", 
+    "bad-msf-3.cue", 
   };
   int ret=0;
   unsigned int i;

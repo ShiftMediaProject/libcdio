@@ -1,7 +1,7 @@
-REM $Id: bad-cat3.cue,v 1.1 2004/07/09 20:47:08 rocky Exp $
-REM test catalog number. -- not enough digits
+REM $Id: bad-cat3.cue,v 1.2 2004/07/10 01:18:02 rocky Exp $
+REM test catalog number. -- invalid decimal digit
 
-CATALOG 123456789A123
+CATALOG 123456789b123
 
 FILE "cdda.bin" BINARY
 
