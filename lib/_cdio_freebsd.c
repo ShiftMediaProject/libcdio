@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.23 2004/04/26 06:40:16 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.24 2004/04/26 07:54:47 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.23 2004/04/26 06:40:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.24 2004/04/26 07:54:47 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -287,8 +287,8 @@ _cdio_read_toc (_img_private_t *_obj)
   Eject media. Return 1 if successful, 0 otherwise.
  */
 static int 
-_eject_media_freebsd (void *env) {
-
+_eject_media_freebsd (void *env) 
+{
   _img_private_t *_obj = env;
   int ret=2;
   int fd;

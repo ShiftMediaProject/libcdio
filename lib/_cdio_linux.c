@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.38 2004/04/25 15:41:26 rocky Exp $
+    $Id: _cdio_linux.c,v 1.39 2004/04/26 07:54:47 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.38 2004/04/25 15:41:26 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.39 2004/04/26 07:54:47 rocky Exp $";
 
 #include <string.h>
 
@@ -278,7 +278,7 @@ _read_audio_sectors_linux (void *env, void *buf, lsn_t lsn,
    Can read only up to 25 blocks.
 */
 static int
-__read_packet_mode2_sectors (int fd, void *buf, lba_t lba, 
+_read_packet_mode2_sectors_mmc (int fd, void *buf, lba_t lba, 
 			     unsigned int nblocks, bool use_read_10)
 {
   struct cdrom_generic_command cgc;
@@ -297,7 +297,7 @@ __read_packet_mode2_sectors (int fd, void *buf, lba_t lba,
       cgc.cmd[9] = 0x58; /* 2336 mode2 */
     }
 
-  cgc.buflen = 2336 * nblocks;
+  cgc.buflen = M2RAW_SECTOR_SIZE * nblocks;
   cgc.buffer = buf;
 
 #ifdef HAVE_LINUX_CDROM_TIMEOUT
@@ -309,16 +309,16 @@ __read_packet_mode2_sectors (int fd, void *buf, lba_t lba,
     {
       int retval;
 
-      if ((retval = _set_bsize (fd, 2336)))
+      if ((retval = _set_bsize (fd, M2RAW_SECTOR_SIZE)))
 	return retval;
 
       if ((retval = ioctl (fd, CDROM_SEND_PACKET, &cgc)))
 	{
-	  _set_bsize (fd, 2048);
+	  _set_bsize (fd, CDIO_CD_FRAMESIZE);
 	  return retval;
 	}
 
-      if ((retval = _set_bsize (fd, 2048)))
+      if ((retval = _set_bsize (fd, CDIO_CD_FRAMESIZE)))
 	return retval;
     }
   else
@@ -337,10 +337,10 @@ _read_packet_mode2_sectors (int fd, void *buf, lba_t lba,
   while (nblocks > 0)
     {
       const unsigned nblocks2 = (nblocks > 25) ? 25 : nblocks;
-      void *buf2 = ((char *)buf ) + (l * 2336);
+      void *buf2 = ((char *)buf ) + (l * M2RAW_SECTOR_SIZE);
       
-      retval |= __read_packet_mode2_sectors (fd, buf2, lba + l, nblocks2, 
-					     use_read_10);
+      retval |= _read_packet_mode2_sectors_mmc (fd, buf2, lba + l, nblocks2, 
+						use_read_10);
 
       if (retval)
 	break;
@@ -665,7 +665,7 @@ _cdio_read_toc (_img_private_t *_obj)
  * Eject using SCSI commands. Return 1 if successful, 0 otherwise.
  */
 static int 
-_cdio_eject_scsi(int fd)
+_eject_media_mmc(int fd)
 {
   int status;
   struct sdata {
@@ -741,8 +741,8 @@ _eject_media_linux (void *env) {
       case CDS_DISC_OK:
 	if((ret = ioctl(fd, CDROMEJECT)) != 0) {
 	  int eject_error = errno;
-	  /* Try ejecting the SCSI way... */
-	  ret = _cdio_eject_scsi(fd);
+	  /* Try ejecting the MMC way... */
+	  ret = _eject_media_mmc(fd);
 	  if (0 != ret) {
 	    cdio_error("ioctl CDROMEJECT failed: %s\n", strerror(eject_error));
 	    ret = 1;

@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.7 2004/04/25 03:52:37 rocky Exp $
+    $Id: scsi_mmc.h,v 1.8 2004/04/26 07:54:47 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -37,6 +37,7 @@
 /*! The generic packet command opcodes for CD/DVD Logical Units. */
 
 #define CDIO_MMC_MODE_SENSE 	        0x1a
+#define CDIO_MMC_START_STOP             0x1b
 #define CDIO_MMC_GPCMD_READ_10	        0x28
 #define CDIO_MMC_GPCMD_READ_SUBCHANNEL	0x42
 #define CDIO_MMC_MODE_SENSE_10	        0x5a
