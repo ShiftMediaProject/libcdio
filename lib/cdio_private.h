@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.7 2003/04/22 12:09:09 rocky Exp $
+    $Id: cdio_private.h,v 1.8 2003/05/24 15:43:06 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -37,7 +37,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-  /* Opaque types ... */
+  /* Opaque type */
   typedef struct _CdioDataSource CdioDataSource;
 
   typedef struct {
@@ -156,6 +156,13 @@ extern "C" {
   } cdio_funcs;
 
 
+  /* Implementation of CdIo type */
+  struct _CdIo {
+    driver_id_t driver_id; /* Particular driver opened. */
+    cdio_funcs op;         /* driver-specific routines handling implimentatin*/
+    void *user_data;       /* environment. Passed to routine above. */
+  };
+
   /*!
     Things common to private device structures. Even though not all
     devices may have some of these fields, by listing common ones
@@ -248,11 +255,6 @@ extern "C" {
   */
   void cdio_generic_stream_free (void *user_data);
   
-  struct _CdIo {
-    void *user_data;
-    cdio_funcs op;
-  };
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
