@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.34 2003/10/04 20:32:54 rocky Exp $
+    $Id: cdio.c,v 1.35 2003/10/04 21:28:27 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.34 2003/10/04 20:32:54 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.35 2003/10/04 21:28:27 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -774,19 +774,11 @@ cdio_set_arg (CdIo *cdio, const char key[], const char value[])
 }
 
 /*! Sets up to read from place specified by source_name and
-  driver_id This should be called before using any other routine,
+  driver_id. This should be called before using any other routine,
   except cdio_init. This will call cdio_init, if that hasn't been
-  done previously.  to call one of the specific routines below. 
+  done previously.
   
   NULL is returned on error.
-*/
-/* In the future we'll have more complicated code to allow selection
-   of an I/O routine as well as code to find an appropriate default
-   routine among the "registered" routines. Possibly classes too
-   disk-based, SCSI-based, native-based, vendor (e.g. Sony, or
-   Plextor) based 
-
-   For now though, we'll start more simply...
 */
 CdIo *
 cdio_open (const char *orig_source_name, driver_id_t driver_id)
