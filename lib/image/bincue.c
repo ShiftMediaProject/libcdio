@@ -1,8 +1,10 @@
 /*
-    $Id: bincue.c,v 1.24 2004/07/09 01:05:32 rocky Exp $
+    $Id: bincue.c,v 1.25 2004/07/09 01:23:46 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
+    toc parsing routine adapted from cuetools
+    Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.24 2004/07/09 01:05:32 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.25 2004/07/09 01:23:46 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -341,6 +343,83 @@ _stat_size_bincue (void *user_data)
   return size;
 }
 
+static lba_t 
+msf_msf_to_lba (int minutes, int seconds, int frames)
+{
+  return ( (minutes * CDIO_CD_SECS_PER_MIN + seconds) 
+	   * CDIO_CD_FRAMES_PER_SEC + frames );
+}
+
+static lba_t
+mmssff_to_lba (char *s)
+{
+  int field;
+  long ret;
+  char c;
+  
+  if (0 == strcmp (s, "0"))
+    return 0;
+  
+  c = *s++;
+  if(c >= '0' && c <= '9')
+    field = (c - '0');
+  else
+    return CDIO_INVALID_LBA;
+  while(':' != (c = *s++)) {
+    if(c >= '0' && c <= '9')
+      field = field * 10 + (c - '0');
+    else
+      return CDIO_INVALID_LBA;
+  }
+  
+  ret = msf_msf_to_lba (field, 0, 0);
+  
+  c = *s++;
+  if(c >= '0' && c <= '9')
+    field = (c - '0');
+  else
+    return CDIO_INVALID_LBA;
+  if(':' != (c = *s++)) {
+    if(c >= '0' && c <= '9') {
+      field = field * 10 + (c - '0');
+      c = *s++;
+      if(c != ':')
+	return CDIO_INVALID_LBA;
+    }
+    else
+      return CDIO_INVALID_LBA;
+  }
+  
+  if(field >= CDIO_CD_SECS_PER_MIN)
+    return CDIO_INVALID_LBA;
+  
+  ret += msf_msf_to_lba (0, field, 0);
+  
+  c = *s++;
+  if(c >= '0' && c <= '9')
+    field = (c - '0');
+  else
+    return CDIO_INVALID_LBA;
+  if('\0' != (c = *s++)) {
+    if(c >= '0' && c <= '9') {
+      field = field * 10 + (c - '0');
+      c = *s++;
+    }
+    else
+      return CDIO_INVALID_LBA;
+  }
+  
+  if('\0' != c)
+    return CDIO_INVALID_LBA;
+  
+  if(field >= CDIO_CD_FRAMES_PER_SEC)
+    return CDIO_INVALID_LBA;
+  
+  ret += field;
+  
+  return ret;
+}
+
 #define MAXLINE 4096		/* maximum line length + 1 */
 
 static void 
@@ -440,7 +519,7 @@ parse_cue (_img_private_t *cd, char *line, int line_num)
     } else if (0 == strcmp ("PREGAP", keyword)) {
       if (0 <= i) {
 	if (NULL != (field = strtok (NULL, " \t\n\r")))
-	  cd->tocent[i].pregap = msf_frame_from_mmssff (field);
+	  cd->tocent[i].pregap = mmssff_to_lba (field);
 	else
 	  fprintf (stderr, "%d: format error: %s\n", line_num, keyword);
 	if (NULL != (field = strtok (NULL, " \t\n\r")))
@@ -457,7 +536,7 @@ parse_cue (_img_private_t *cd, char *line, int line_num)
 	  ; /* skip index number */
 	if (NULL != (field = strtok (NULL, " \t\n\r")))
 #if 0	  
-	  // cd->tocent[i].indexes[cd->tocent[i].nindex++] = msf_frame_from_mmssff (field);
+	  // cd->tocent[i].indexes[cd->tocent[i].nindex++] = mmssff_to_lba (field);
 #else     
 	  ;	
 #endif  
