@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.4 2004/02/21 18:31:48 rocky Exp $
+    $Id: iso-info.c,v 1.5 2004/03/13 03:31:47 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -206,7 +206,7 @@ print_iso9660_recurse (iso9660_t *iso, const char pathname[])
 	}
       }
 #endif
-      strftime(date_str, DATESTR_SIZE, "%b %e %Y %H:%M ", &statbuf->tm);
+      strftime(date_str, DATESTR_SIZE, "%b %d %Y %H:%M ", &statbuf->tm);
       printf (" %s %s\n", date_str, translated_name);
     }
 
