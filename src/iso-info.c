@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.13 2004/10/23 20:55:09 rocky Exp $
+    $Id: iso-info.c,v 1.14 2004/10/24 11:20:30 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -65,6 +65,7 @@ struct arguments
   int            version_only;
   int            silent;
   int            no_header;
+  int            no_joliet;
   int            print_iso9660;
 } opts;
      
@@ -94,6 +95,9 @@ parse_options (int argc, const char *argv[])
     
     {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
      0, "Don't display header and copyright (for regression testing)"},
+    
+    {"no-joliet", '\0', POPT_ARG_NONE, &opts.no_joliet, 
+     0, "Don't use Joliet extensions"},
     
     {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
      "Don't produce warning output" },
@@ -246,6 +250,7 @@ init(void)
   /* Default option values. */
   opts.silent        = false;
   opts.no_header     = false;
+  opts.no_joliet     = false;
   opts.debug_level   = 0;
   opts.print_iso9660 = 0;
 }
@@ -264,6 +269,7 @@ main(int argc, const char *argv[])
 {
 
   iso9660_t           *p_iso=NULL;
+  iso_extension_mask_t iso_extension_mask = ISO_EXTENSION_ALL;
       
   init();
 
@@ -283,7 +289,11 @@ main(int argc, const char *argv[])
     err_exit("No input device given/found\n");
   } 
 
-  p_iso = iso9660_open_ext (source_name, ISO_EXTENSION_ALL);
+  if (opts.no_joliet) {
+    iso_extension_mask &= ~ISO_EXTENSION_JOLIET;
+  }
+  
+  p_iso = iso9660_open_ext (source_name, iso_extension_mask);
 
   if (p_iso==NULL) {
     free(source_name);

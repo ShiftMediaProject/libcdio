@@ -19,7 +19,7 @@ define(RELEASE_NUM, 71)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.95 2004/10/23 20:55:08 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.96 2004/10/24 11:20:30 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -47,11 +47,6 @@ enable_cd_read="${withval}", enable_cd_read=yes)
 AC_ARG_WITH(versioned_libs,
 [  --without-versioned-libs build versioned library symbols (enabled by default if you have GNU ld)],
 enable_versioned_libs="${withval}", enable_versioned_libs=yes)
-
-AC_ARG_WITH([iconv],
-            AC_HELP_STRING([--without-iconv],
-                           [do not include character set conversion support using ]
-                           [the iconv library (default = enabled if found)]))
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -82,14 +77,6 @@ else
   WARNING_FLAGS="$warning_flags"
   unset warning_flags
 fi
-
-dnl Check for iconv
-if test x$with_iconv != xno; then
-    AC_CHECK_HEADERS([iconv.h], [with_iconv=1], [with_iconv=0])
-else
-    with_iconv=0
-fi
-AC_SUBST(with_iconv)
 
 # We use Perl for documentation and regression tests
 AC_PATH_PROG(PERL, perl, no)
@@ -232,10 +219,7 @@ AM_CONDITIONAL(BUILD_VERSIONED_LIBS, test "x$enable_versioned_libs" = "xyes")
 dnl Checks for header files.
 AC_STDC_HEADERS
      
-AC_HAVE_HEADERS( errno.h fcntl.h \
-		 stdbool.h  stdlib.h stdio.h  \
-		 strings.h linux/version.h sys/cdio.h sys/stat.h \
-		 sys/types.h )
+AC_HAVE_HEADERS( errno.h fcntl.h stdio.h linux/version.h )
 
 LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/ -I$(top_srcdir)/include/'
 LIBCDIO_LIBS='$(top_builddir)/lib/libcdio.la'
@@ -322,6 +306,13 @@ AC_SUBST(HAVE_LINUX_CDROM)
 AC_SUBST(HAVE_SOLARIS_CDROM)
 AC_SUBST(HAVE_WIN32_CDROM)
 
+AM_GNU_GETTEXT([external])
+
+LIBCDIO_SOURCE_PATH="`pwd`"
+AC_DEFINE_UNQUOTED(LICDIO_SOURCE_PATH, "$LIBCDIO_SOURCE_PATH",
+	[Full path to libcdio top_sourcedir.])
+AC_SUBST(LIBCDIO_SOURCE_PATH)
+
 AC_CHECK_FUNCS( memset bzero memcpy )
 
 AC_CHECK_MEMBER([struct tm.tm_gmtoff],
@@ -373,7 +364,7 @@ AC_CONFIG_COMMANDS([checks],
 		   [chmod +x test/check_cue.sh; chmod +x test/check_nrg.sh
 		   ])
 
-AC_CONFIG_FILES([ \
+AC_CONFIG_FILES([  po/Makefile.in \
        Makefile \
        libcdio.pc \
        libcdio.spec \
@@ -382,6 +373,7 @@ AC_CONFIG_FILES([ \
        include/Makefile \
        include/cdio/Makefile \
        include/cdio/version.h \
+       doc/doxygen/Doxyfile \
        doc/Makefile \
        lib/Makefile \
        src/Makefile \
