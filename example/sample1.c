@@ -1,5 +1,5 @@
 /*
-  $Id: sample1.c,v 1.1 2003/08/02 03:43:19 rocky Exp $
+  $Id: sample1.c,v 1.2 2003/08/09 11:52:00 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -20,6 +20,7 @@
 
 /* Simple program to list track numbers and logical sector numbers of
    a Compact Disc using libcdio. */
+#include <stdio.h>
 #include <sys/types.h>
 #include <cdio/cdio.h>
 int
@@ -28,20 +29,19 @@ main(int argc, const char *argv[])
   CdIo *cdio = cdio_open ("/dev/cdrom", DRIVER_UNKNOWN);
   track_t first_track_num = cdio_get_first_track_num(cdio);
   track_t num_tracks      = cdio_get_num_tracks(cdio);
-  int i;
+  int j, i=first_track_num;
 
   printf("CD-ROM Track List (%i - %i)\n", first_track_num, num_tracks);
 
   printf("  #:  LSN\n");
   
-  for (i = first_track_num; i <= CDIO_CDROM_LEADOUT_TRACK; i++) {
+  for (j = 0; j < num_tracks; i++, j++) {
     lsn_t lsn = cdio_get_track_lsn(cdio, i);
-    if (CDIO_INVALID_LSN != lsn) {
-      if (i == CDIO_CDROM_LEADOUT_TRACK) {
-	printf("%3d: %06d  leadout\n", (int) i, lsn);
-      } else 
+    if (CDIO_INVALID_LSN != lsn)
 	printf("%3d: %06d\n", (int) i, lsn);
-    }
   }
+  printf("%3X: %06d  leadout\n", CDIO_CDROM_LEADOUT_TRACK, 
+	 cdio_get_track_lsn(cdio, CDIO_CDROM_LEADOUT_TRACK));
+  cdio_destroy(cdio);
+  return 0;
 }
-

@@ -1,5 +1,5 @@
 /*
-  $Id: sample2.c,v 1.1 2003/08/03 20:02:04 rocky Exp $
+  $Id: sample2.c,v 1.2 2003/08/09 11:52:00 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -45,5 +45,3 @@ main(int argc, const char *argv[])
       printf("We don't have: %s\n", cdio_driver_describe(driver_id));
   return 0;
 }
-
-

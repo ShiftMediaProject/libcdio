@@ -1,3 +1,58 @@
+2003-08-01 23:47  rocky
+
+	* Makefile.am: Remove that directory in EXTRA_DIST!
+
+2003-08-01 23:43  rocky
+
+	* example/: README, sample1.c: Add a sample program. More will
+	follow later...
+
+2003-08-01 23:41  rocky
+
+	* doc/libcdio.texi: typo.
+
+2003-07-29 22:05  rocky
+
+	* doc/libcdio.texi: More verbiage. Alas not on how to use *this*
+	package, but we are getting there if by virtue of not being able to
+	postpone it too much more.
+
+2003-07-28 06:46  rocky
+
+	* doc/libcdio.texi: Small additions and edits.
+
+2003-07-28 06:31  rocky
+
+	* doc/.cvsignore: [no log message]
+
+2003-07-27 22:25  rocky
+
+	* Makefile.am, configure.ac, doc/Makefile.am, doc/libcdio.texi:
+	First feeble attempt at documentation.
+
+2003-07-27 18:52  rocky
+
+	* include/cdio/cdio.h, lib/_cdio_bincue.c, lib/_cdio_linux.c,
+	lib/_cdio_nrg.c, lib/_cdio_sunos.c: Small comment change.
+
+2003-07-11 20:26  rocky
+
+	* parse/: Makefile, test/runall: Add simple regression testing
+	driver.
+
+2003-06-22 18:41  rocky
+
+	* ChangeLog, include/cdio/cdio.h, lib/cdio.c, lib/cdio_private.h,
+	src/cd-info.c: MIN_DRIVER, MIN_DEVICE_DRIVER, MAX_DEVICE_DRIVER ->
+	CDIO_...  Add CDIO_MAX_DRIVER (distinct from CDIO_MAX_DEVICE_DRIVER
+	
+	cdio.c (cdio_open): was only scanning devices. Change to scan disk
+	image files as well.
+
+2003-06-15 21:21  rocky
+
+	* NEWS: [no log message]
+
 2003-06-13 00:47  rocky
 
 	* configure.ac: Order of libraries is important in cygwin (and

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.10 2003/08/02 03:47:24 rocky Exp $
+#   $Id: Makefile.am,v 1.11 2003/08/09 11:52:00 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -21,7 +21,7 @@
 ##     which make can then use to produce stuff. Isn't configuration simple? 
 
 EXTRA_DIST = libpopt.m4 THANKS libcdio.spec.in \
-	     example/README example/sample1.c
+	     example/README example/sample1.c example/sample2.c
 
 SUBDIRS =  doc include lib src test
 

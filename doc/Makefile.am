@@ -1,4 +1,12 @@
-libcdio_TEXINFOS = libcdio.texi 
+info_TEXINFOS = libcdio.texi 
+
+pdf: libcdio.pdf 
+
+txt: libcdio.txt
+
+ps: libcdio.ps
+
+html: libcdio.html
 
 %.ps.gz: %.ps
 	gzip -9c $< > $@
@@ -12,6 +20,6 @@ libcdio_TEXINFOS = libcdio.texi
 .texi.txt:
 	makeinfo --no-headers $< > $@
 
-all-formats: libcdio.pdf libcdio.dvi libcdio.txt libcdio.ps libcdio.html
+all-formats: pdf dvi txt ps html
 
 MOSTLYCLEANFILES = libcdio.html libcdio.pdf libcdio.ps.gz
