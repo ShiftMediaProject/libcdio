@@ -1,6 +1,9 @@
-/* $Id: version.h.in,v 1.2 2003/11/17 11:50:37 rocky Exp $ */
+/* $Id: version.h.in,v 1.3 2004/03/20 12:41:23 rocky Exp $ */
 /** \file version.h 
  *  \brief  A file simply containing the library version number.
  */
 
 #define CDIO_VERSION "@VERSION@"
+
+/* This can be used for testing in the C preprocessor */
+#define LIBCDIO_VERSION_NUM @LIBCDIO_VERSION_NUM@
