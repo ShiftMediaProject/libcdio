@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.33 2004/07/27 02:21:23 rocky Exp $
+    $Id: win32.c,v 1.34 2004/07/28 01:55:03 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.33 2004/07/27 02:21:23 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.34 2004/07/28 01:55:03 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -611,7 +611,7 @@ _cdio_get_track_green(void *obj, track_t i_track)
     return false;
   case TRACK_FORMAT_DATA:
     if (_AM_ASPI == p_env->access_mode ) 
-      return false;
+      return ((p_env->tocent[i_track-p_env->gen.i_first_track].Control & 8) != 0);
   default:
     break;
   }

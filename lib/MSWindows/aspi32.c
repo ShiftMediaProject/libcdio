@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.42 2004/07/28 01:09:59 rocky Exp $
+    $Id: aspi32.c,v 1.43 2004/07/28 01:55:03 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,12 +27,12 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.42 2004/07/28 01:09:59 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.43 2004/07/28 01:55:03 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
-#include <cdio/util.h>
-#include <cdio/scsi_mmc.h>
+#include <cdio/util.include>
+#h <cdio/scsi_mmc.h>
 #include "cdio_assert.h"
 
 #include <string.h>
@@ -192,7 +192,7 @@ get_discmode_aspi (_img_private_t *p_env)
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
   if (0 == scsi_mmc_get_dvd_struct_physical_private (p_env, 
-						     &scsi_mmc_run_cmd_aspi,
+						     &run_scsi_cmd_aspi,
 						     &dvd)) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
@@ -488,9 +488,9 @@ init_aspi (_img_private_t *env)
   We return 0 if command completed successfully.
  */
 int
-scsi_mmc_run_cmd_aspi( const void *p_user_data, int i_timeout,
-		       unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,  
-		       scsi_mmc_direction_t e_direction, 
+run_scsi_cmd_aspi( const void *p_user_data, unsigned int i_timeout_ms,
+		   unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,  
+		   scsi_mmc_direction_t e_direction, 
 		       unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
@@ -531,7 +531,7 @@ scsi_mmc_run_cmd_aspi( const void *p_user_data, int i_timeout,
   /* If the command has still not been processed, wait until it's
    * finished */
   if( ssc.SRB_Status == SS_PENDING ) {
-    WaitForSingleObject( hEvent, OP_TIMEOUT_MS );
+    WaitForSingleObject( hEvent, msecs2secs(i_timeout_ms) );
   }
   CloseHandle( hEvent );
   
@@ -602,7 +602,7 @@ read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
     i_buf = CDIO_CD_FRAMESIZE_RAW;
   }
 
-  return scsi_mmc_run_cmd_aspi(env, OP_TIMEOUT_MS, 
+  return run_scsi_cmd_aspi(env, OP_TIMEOUT_MS, 
 			       scsi_mmc_get_cmd_len(cdb.field[0]), 
 			       &cdb, SCSI_MMC_DATA_READ, i_buf*nblocks, data);
 }
@@ -668,7 +668,7 @@ read_toc_aspi (_img_private_t *p_env)
   
   CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(tocheader));
 
-  i_status = scsi_mmc_run_cmd_aspi (p_env, OP_TIMEOUT_MS,
+  i_status = run_scsi_cmd_aspi (p_env, OP_TIMEOUT_MS,
 				    scsi_mmc_get_cmd_len(cdb.field[0]), 
 				    &cdb, SCSI_MMC_DATA_READ, 
 				    sizeof(tocheader), &tocheader);
@@ -694,7 +694,7 @@ read_toc_aspi (_img_private_t *p_env)
     
     CDIO_MMC_SET_READ_LENGTH(cdb.field, i_toclength);
 
-    i_status = scsi_mmc_run_cmd_aspi (p_env, OP_TIMEOUT_MS,
+    i_status = run_scsi_cmd_aspi (p_env, OP_TIMEOUT_MS,
 				      scsi_mmc_get_cmd_len(cdb.field[0]), 
 				      &cdb, SCSI_MMC_DATA_READ, 
 				      i_toclength, p_fulltoc);
@@ -772,7 +772,7 @@ bool
 init_cdtext_aspi (_img_private_t *p_env)
 {
   return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
-				       &scsi_mmc_run_cmd_aspi, 
+				       &run_scsi_cmd_aspi, 
 				       set_cdtext_field_win32
 				       );
 }
@@ -798,10 +798,10 @@ get_drive_cap_aspi (const _img_private_t *p_env,
   cdb.field[7]  = 0x01;
   cdb.field[8]  = 0x00; 
 
-  i_status = scsi_mmc_run_cmd_aspi(p_env, OP_TIMEOUT_MS, 
-				   scsi_mmc_get_cmd_len(cdb.field[0]),
-				   &cdb, SCSI_MMC_DATA_READ, 
-				   sizeof(buf), buf);
+  i_status = run_scsi_cmd_aspi(p_env, OP_TIMEOUT_MS, 
+			       scsi_mmc_get_cmd_len(cdb.field[0]),
+			       &cdb, SCSI_MMC_DATA_READ, 
+			       sizeof(buf), buf);
   if (0 == i_status) {
     uint8_t *p;
     int lenData  = ((unsigned int)buf[0] << 8) + buf[1];

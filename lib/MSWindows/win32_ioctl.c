@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.28 2004/07/28 01:09:59 rocky Exp $
+    $Id: win32_ioctl.c,v 1.29 2004/07/28 01:55:03 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.28 2004/07/28 01:09:59 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.29 2004/07/28 01:55:03 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -144,7 +144,8 @@ typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
   Return 0 if command completed successfully.
  */
 int
-scsi_mmc_run_cmd_win32ioctl( const void *p_user_data, int i_timeout,
+scsi_mmc_run_cmd_win32ioctl( const void *p_user_data, 
+			     unsigned int i_timeout_ms,
 			     unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,
 			     scsi_mmc_direction_t e_direction, 
 			     unsigned int i_buf, /*in/out*/ void *p_buf )
@@ -163,7 +164,7 @@ scsi_mmc_run_cmd_win32ioctl( const void *p_user_data, int i_timeout,
   sptd.DataIn            = SCSI_MMC_DATA_READ == e_direction ? 
     SCSI_IOCTL_DATA_IN : SCSI_IOCTL_DATA_OUT; 
   sptd.DataTransferLength= i_buf; 
-  sptd.TimeOutValue=i_timeout;
+  sptd.TimeOutValue      = msecs2secs(i_timeout_ms);
   sptd.DataBuffer= (void *) p_buf;
   sptd.SenseInfoOffset=0;
 
