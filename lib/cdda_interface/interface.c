@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.18 2005/01/27 03:10:06 rocky Exp $
+  $Id: interface.c,v 1.19 2005/02/05 04:23:56 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -97,25 +97,8 @@ cdio_cddap_open(cdrom_drive_t *d)
   int ret;
   if(d->opened)return(0);
 
-#if HAVE_SCSI_HANDLING
-  switch(d->interface){
-  case GENERIC_SCSI:  
-    if((ret=scsi_init_drive(d)))
-      return(ret);
-    break;
-  case COOKED_IOCTL:  
-    if((ret=cooked_init_drive(d)))
-      return(ret);
-    break;
-  default:
-    cderror(d, "100: Interface not supported\n");
-    return(-100);
-  }
-#else 
-  d->interface = COOKED_IOCTL;
   if ( (ret=cooked_init_drive(d)) )
     return(ret);
-#endif
   
   /* Check TOC, enable for CDDA */
   
