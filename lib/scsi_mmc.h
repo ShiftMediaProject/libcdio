@@ -1,7 +1,7 @@
 /*
-    $Id: scsi_mmc.h,v 1.5 2004/04/24 11:48:37 rocky Exp $
+    $Id: scsi_mmc.h,v 1.6 2004/04/24 19:18:52 rocky Exp $
 
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,8 +34,8 @@
 #define CDIO_MMC_READ_TYPE_M2F1  4  /* mode2 sectors form1 */
 #define CDIO_MMC_READ_TYPE_M2F2  5  /* mode2 sectors form2 */
 
-/* The generic packet command opcodes for CD/DVD Logical Units,
- * From Table 57 of the SFF8090 Ver. 3 (Mt. Fuji) draft standard. */
+/*! The generic packet command opcodes for CD/DVD Logical Units. */
+
 #define CDIO_MMC_MODE_SENSE_10	0x5a
 #define CDIO_MMC_MODE_SENSE 	0x1a
 #define CDIO_MMC_GPCMD_READ_CD	0xbe
