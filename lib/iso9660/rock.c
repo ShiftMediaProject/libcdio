@@ -1,5 +1,5 @@
 /*
-  $Id: rock.c,v 1.12 2005/02/26 17:20:33 rocky Exp $
+  $Id: rock.c,v 1.13 2005/02/26 17:54:49 rocky Exp $
  
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -420,13 +420,10 @@ parse_rock_ridge_stat_internal(iso9660_dir_t *p_iso9660_dir,
 	    case 4:
 	      realloc_symlink(p_stat, 1);
 	      p_stat->rr.psz_symlink[p_stat->rr.i_symlink++] = '.';
-	      p_stat->rr.i_symlink++;
 	      /* continue into next case. */
-	      break;
 	    case 2:
 	      realloc_symlink(p_stat, 1);
 	      p_stat->rr.psz_symlink[p_stat->rr.i_symlink++] = '.';
-	      p_stat->rr.i_symlink++;
 	      break;
 	    case 8:
 	      rootflag = 1;
@@ -453,7 +450,6 @@ parse_rock_ridge_stat_internal(iso9660_dir_t *p_iso9660_dir,
 	    if (!rootflag && (p_oldsl->flags & 1) == 0) {
 	      realloc_symlink(p_stat, 1);
 	      p_stat->rr.psz_symlink[p_stat->rr.i_symlink++] = '/';
-	      p_stat->rr.i_symlink++;
 	    }
 	  }
 	}
