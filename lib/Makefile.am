@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.20 2004/02/10 01:38:54 rocky Exp $
+#   $Id: Makefile.am,v 1.21 2004/02/11 03:09:43 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -83,7 +83,7 @@ libcdio_sources = \
 lib_LTLIBRARIES    = libcdio.la libiso9660.la
 
 libcdio_la_SOURCES = $(libcdio_sources)
-libcdio_la_LDFLAGS = -version-info $(libcdio_la_CURRENT):$(libcdio_la_REVISION):$(libcdio_la_AGE) -Wl,--version-script=libcdio.la.ver
+libcdio_la_ldflags = -version-info $(libcdio_la_CURRENT):$(libcdio_la_REVISION):$(libcdio_la_AGE)
 
 libiso9660_la_SOURCES = \
 	iso9660.c \
@@ -91,8 +91,16 @@ libiso9660_la_SOURCES = \
 	iso9660_fs.c \
 	xa.c
 
-libiso9660_la_LIBADD = $(LIBCDIO_LIBS)
-libiso9660_la_LDFLAGS = -version-info $(libiso9660_la_CURRENT):$(libiso9660_la_REVISION):$(libiso9660_la_AGE) -Wl,--version-script=libiso9660.la.ver
+libiso9660_la_LIBADD = libcdio.la
+libiso9660_la_ldflags = -version-info $(libiso9660_la_CURRENT):$(libiso9660_la_REVISION):$(libiso9660_la_AGE)
+
+INCLUDES = -I$(LIBCDIO_CFLAGS)
+
+MOSTLYCLEANFILES := $(MOSTLYCLEANFILES) libcdio.la.ver libiso9660.la.ver
+
+########################################################
+# Things to version the symbols in the libraries
+########################################################
 
 # An explanation of the versioning problem from Nicolas Boullis and
 # the versioned symbol solution he uses below...
@@ -149,7 +157,8 @@ libiso9660_la_LDFLAGS = -version-info $(libiso9660_la_CURRENT):$(libiso9660_la_R
 # command comes from libtool.)
 
 libcdio_la_MAJOR := $(shell expr $(libcdio_la_CURRENT) - $(libcdio_la_AGE))
-libcdio_la_DEPENDENCIES = libcdio.la.ver
+libcdio_la_LDFLAGS := $(libcdio_la_ldflags) -Wl,--version-script=libcdio.la.ver
+libcdio_la_DEPENDENCIES := $(libcdio_la_DEPENDENCIES) libcdio.la.ver
 
 libcdio.la.ver: $(libcdio_la_OBJECTS)
 	echo 'CDIO_$(libcdio_la_MAJOR) { ' > $@
@@ -158,14 +167,11 @@ libcdio.la.ver: $(libcdio_la_OBJECTS)
 	echo '};' >> $@
 
 libiso9660_la_MAJOR := $(shell expr $(libiso9660_la_CURRENT) - $(libiso9660_la_AGE))
-libiso9660_la_DEPENDENCIES = $(LIBCDIO_LIBS) libiso9660.la.ver
+libiso9660_la_LDFLAGS := $(libiso9660_la_ldflags) -Wl,--version-script=libiso9660.la.ver
+libiso9660_la_DEPENDENCIES := libcdio.la libiso9660.la.ver
 
 libiso9660.la.ver: $(libiso9660_la_OBJECTS)
 	echo 'ISO9660_$(libiso9660_la_MAJOR) {' > $@
 	echo "  global:" >> $@
 	nm $(patsubst %lo,%o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/    \1;/p' | sort | uniq >> $@
 	echo '};' >> $@
-
-MOSTLYCLEANFILES = libcdio.la.ver libiso9660.la.ver
-
-INCLUDES = -I$(LIBCDIO_CFLAGS)
