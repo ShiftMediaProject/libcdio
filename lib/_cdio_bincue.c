@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.12 2003/04/10 04:13:41 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.13 2003/04/10 07:22:56 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.12 2003/04/10 04:13:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.13 2003/04/10 07:22:56 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -444,7 +444,27 @@ _cdio_image_read_cue (_img_private_t *_obj)
 }
 
 static int
-_read_mode2_sector (void *user_data, void *data, lsn_t lsn, bool mode2_form2)
+_cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
+{
+  _img_private_t *_obj = user_data;
+  int ret;
+
+  _cdio_init (_obj);
+
+  ret = cdio_stream_seek (_obj->gen.data_source, lsn * CDIO_CD_FRAMESIZE_RAW, 
+			  SEEK_SET);
+  if (ret!=0) return ret;
+
+  ret = cdio_stream_read (_obj->gen.data_source, data, CDIO_CD_FRAMESIZE_RAW, 
+			  1);
+  if (ret==0) return ret;
+
+  return 0;
+}
+
+static int
+_cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
+		    bool mode2_form2)
 {
   _img_private_t *_obj = user_data;
   int ret;
@@ -479,7 +499,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn, bool mode2_form2)
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors (void *user_data, void *data, uint32_t lsn, 
+_cdio_read_mode2_sectors (void *user_data, void *data, uint32_t lsn, 
 		     bool mode2_form2, unsigned nblocks)
 {
   _img_private_t *_obj = user_data;
@@ -488,13 +508,13 @@ _read_mode2_sectors (void *user_data, void *data, uint32_t lsn,
 
   for (i = 0; i < nblocks; i++) {
     if (mode2_form2) {
-      if ( (retval = _read_mode2_sector (_obj, 
+      if ( (retval = _cdio_read_mode2_sector (_obj, 
 					 ((char *)data) + (M2RAW_SECTOR_SIZE * i),
 					 lsn + i, true)) )
 	return retval;
     } else {
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _read_mode2_sector (_obj, buf, lsn + i, true)) )
+      if ( (retval = _cdio_read_mode2_sector (_obj, buf, lsn + i, true)) )
 	return retval;
       
       memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
@@ -699,8 +719,9 @@ cdio_open_bincue (const char *source_name)
     .get_track_green    = _cdio_get_track_green,
     .get_track_lba      = _cdio_get_track_lba, 
     .get_track_msf      = _cdio_get_track_msf,
-    .read_mode2_sector  = _read_mode2_sector,
-    .read_mode2_sectors = _read_mode2_sectors,
+    .read_audio_sector  = _cdio_read_audio_sector,
+    .read_mode2_sector  = _cdio_read_mode2_sector,
+    .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
     .stat_size          = _cdio_stat_size
   };
@@ -740,8 +761,8 @@ cdio_open_cue (const char *cue_name)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = _cdio_lseek,
     .read               = _cdio_read,
-    .read_mode2_sector  = _read_mode2_sector,
-    .read_mode2_sectors = _read_mode2_sectors,
+    .read_mode2_sector  = _cdio_read_mode2_sector,
+    .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
     .stat_size          = _cdio_stat_size
   };

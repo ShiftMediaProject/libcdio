@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.9 2003/04/10 04:13:41 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.10 2003/04/10 07:22:56 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "util.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.9 2003/04/10 04:13:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.10 2003/04/10 07:22:56 rocky Exp $";
 
 /* structures used */
 
@@ -568,7 +568,46 @@ _cdio_stat_size (void *user_data)
 }
 
 static int
-_read_mode2_sector (void *user_data, void *data, lsn_t lsn, bool mode2_form2)
+_cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
+{
+  _img_private_t *_obj = user_data;
+
+  CdioListNode *node;
+
+  if (lsn >= _obj->size)
+    {
+      cdio_warn ("trying to read beyond image size (%d >= %u)", lsn, 
+		_obj->size);
+      return -1;
+    }
+
+  _CDIO_LIST_FOREACH (node, _obj->mapping) {
+    _mapping_t *_map = _cdio_list_node_data (node);
+    
+    if (IN (lsn, _map->start_lsn, (_map->start_lsn + _map->sec_count - 1))) {
+      int ret;
+      long int img_offset = _map->img_offset;
+      
+      img_offset += (lsn - _map->start_lsn) * CDIO_CD_FRAMESIZE_RAW;
+      
+      ret = cdio_stream_seek (_obj->gen.data_source, img_offset, 
+			      SEEK_SET); 
+      if (ret!=0) return ret;
+      ret = cdio_stream_read (_obj->gen.data_source, data, 
+			      CDIO_CD_FRAMESIZE_RAW, 1);
+      if (ret==0) return ret;
+      break;
+    }
+  }
+
+  if (!node) cdio_warn ("reading into pre gap (lsn %d)", lsn);
+
+  return 0;
+}
+
+static int
+_cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
+			 bool mode2_form2)
 {
   _img_private_t *_obj = user_data;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -584,29 +623,26 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn, bool mode2_form2)
       return -1;
     }
 
-  _CDIO_LIST_FOREACH (node, _obj->mapping)
-    {
-      _mapping_t *_map = _cdio_list_node_data (node);
-
-      if (IN (lsn, _map->start_lsn, (_map->start_lsn + _map->sec_count - 1)))
-	{
-	  int ret;
-	  long int img_offset = _map->img_offset;
-
-	  img_offset += (lsn - _map->start_lsn) * blocksize;
-	  
-	  ret = cdio_stream_seek (_obj->gen.data_source, img_offset, 
-				  SEEK_SET); 
-	  if (ret!=0) return ret;
-	  ret = cdio_stream_read (_obj->gen.data_source, 
-			    _obj->sector_2336 
-			    ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE) 
-			    : buf,
-			    blocksize, 1); 
-	  if (ret==0) return ret;
-	  break;
-	}
+  _CDIO_LIST_FOREACH (node, _obj->mapping) {
+    _mapping_t *_map = _cdio_list_node_data (node);
+    
+    if (IN (lsn, _map->start_lsn, (_map->start_lsn + _map->sec_count - 1))) {
+      int ret;
+      long int img_offset = _map->img_offset;
+      
+      img_offset += (lsn - _map->start_lsn) * blocksize;
+      
+      ret = cdio_stream_seek (_obj->gen.data_source, img_offset, 
+			      SEEK_SET); 
+      if (ret!=0) return ret;
+      ret = cdio_stream_read (_obj->gen.data_source, _obj->sector_2336 
+			      ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE)
+			      : buf,
+			      blocksize, 1); 
+      if (ret==0) return ret;
+      break;
     }
+  }
 
   if (!node)
     cdio_warn ("reading into pre gap (lsn %d)", lsn);
@@ -626,7 +662,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn, bool mode2_form2)
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors (void *user_data, void *data, uint32_t lsn, 
+_cdio_read_mode2_sectors (void *user_data, void *data, uint32_t lsn, 
 		     bool mode2_form2, unsigned nblocks)
 {
   _img_private_t *_obj = user_data;
@@ -635,13 +671,13 @@ _read_mode2_sectors (void *user_data, void *data, uint32_t lsn,
 
   for (i = 0; i < nblocks; i++) {
     if (mode2_form2) {
-      if ( (retval = _read_mode2_sector (_obj, 
+      if ( (retval = _cdio_read_mode2_sector (_obj, 
 					 ((char *)data) + (M2RAW_SECTOR_SIZE * i),
 					 lsn + i, true)) )
 	return retval;
     } else {
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _read_mode2_sector (_obj, buf, lsn + i, true)) )
+      if ( (retval = _cdio_read_mode2_sector (_obj, buf, lsn + i, true)) )
 	return retval;
       
       memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
@@ -796,8 +832,8 @@ cdio_open_nrg (const char *source_name)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = _cdio_lseek,
     .read               = _cdio_read,
-    .read_mode2_sector  = _read_mode2_sector,
-    .read_mode2_sectors = _read_mode2_sectors,
+    .read_mode2_sector  = _cdio_read_mode2_sector,
+    .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
     .stat_size          = _cdio_stat_size,
   };
