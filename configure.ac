@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.70 2004/03/10 11:53:10 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.71 2004/03/20 03:15:35 rocky Exp $])dnl
 AC_INIT(libcdio, 0.68cvs)
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -38,7 +38,7 @@ AC_ARG_WITH(cd_read,
 enable_cd_read="${withval}", enable_cd_read=yes)
 
 AC_ARG_WITH(versioned_libs,
-[  --without-versioned-libs build versioned library symbols (enabled by default)],
+[  --without-versioned-libs build versioned library symbols (enabled by default if you have GNU ld)],
 enable_versioned_libs="${withval}", enable_versioned_libs=yes)
 
 dnl Checks for programs.
@@ -168,6 +168,11 @@ else
 fi
 dnl
 
+dnl AM_PROG_LIBTOOL tests whether we have GNU ld
+dnl this must come before checking --with-versioned-libs
+dnl which requires GNU ld.
+AM_PROG_LIBTOOL
+     
 dnl system
 
 LIBS="$LIBS -lm"
@@ -186,6 +191,11 @@ if test "x$enable_versioned_libs" = "xyes" ; then
     if test "$?" -ne 0 ; then
        AC_MSG_ERROR(Either set MAKE variable to GNU make or use 
    --without-versioned-libs option)
+    else 
+      # Do we have GNU ld? We need that too.
+      if test "$with_gnu_ld" != yes; then
+        AC_MSG_ERROR(I don't see GNU ld. Use the --without-versioned-libs option)
+      fi
     fi
   fi
 fi
@@ -196,8 +206,6 @@ AM_CONDITIONAL(BUILD_CDINFO_LINUX, test "x$enable_cd_info_linux" = "xyes")
 AM_CONDITIONAL(BUILD_CDIOTEST, test "x$enable_cdiotest" = "xyes")
 AM_CONDITIONAL(BUILD_VERSIONED_LIBS, test "x$enable_versioned_libs" = "xyes")
 
-AM_PROG_LIBTOOL
-     
 dnl Checks for header files.
 AC_STDC_HEADERS
      
