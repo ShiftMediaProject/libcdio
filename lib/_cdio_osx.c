@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.25 2004/06/01 03:44:55 thesin Exp $
+    $Id: _cdio_osx.c,v 1.26 2004/06/01 16:02:46 thesin Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.25 2004/06/01 03:44:55 thesin Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.26 2004/06/01 16:02:46 thesin Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -68,10 +68,10 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.25 2004/06/01 03:44:55 thesin
 #include <IOKit/storage/IODVDMediaBSDClient.h>
 
 
-#define TOTAL_TRACKS    (_obj->num_tracks)
+#define TOTAL_TRACKS    (_obj->num_tracks-1)
 #define CDROM_DATA_TRACK CDIO_CDROM_DATA_TRACK
-#define CDROM_CDI_TRACK 0x10
-#define CDROM_XA_TRACK 0x20
+#define CDROM_CDI_TRACK 0x1
+#define CDROM_XA_TRACK 0x2
 
 typedef enum {
   _AM_NONE,
@@ -462,12 +462,12 @@ _get_track_lba_osx(void *env, track_t track_num)
 
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS;
 
-  if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
+  if (track_num > TOTAL_TRACKS || track_num == 0) {
     return CDIO_INVALID_LSN;
   } else {
-    return _obj->pp_lba[track_num-1];
+    return _obj->pp_lba[track_num];
   }
 }
 
@@ -613,7 +613,8 @@ _get_num_tracks_osx(void *env)
   _img_private_t *_obj = env;
   
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
-  return( _obj->num_tracks );
+
+  return( _obj->num_tracks-1 );
 }
 
 /*!  
@@ -645,7 +646,7 @@ _get_track_format_osx(void *env, track_t track_num)
     return -1;
   }
 
-  cdio_warn( "trackinfo trackMode: %x dataMode: %x", a_track.trackMode, a_track.dataMode );
+  /*cdio_warn( "trackinfo trackMode: %x dataMode: %x", a_track.trackMode, a_track.dataMode );*/
 
   if (a_track.trackMode == CDROM_DATA_TRACK) {
     if (a_track.dataMode == CDROM_CDI_TRACK) {
@@ -672,23 +673,32 @@ _get_track_format_osx(void *env, track_t track_num)
 static bool
 _get_track_green_osx(void *env, track_t track_num) 
 {
-
-#if 0  
+  _img_private_t *_obj = env;
+  CDTrackInfo a_track;
+ 
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDIO_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS;
 
-  if (track_num > TOTAL_TRACKS+1 || track_num == 0)
+  if (track_num > TOTAL_TRACKS || track_num == 0)
     return false;
 
-  /* FIXME: Dunno if this is the right way, but it's what 
-     I was using in cdinfo for a while.
-   */
-  return ((_obj->tocent[track_num-1].cdte_ctrl & 2) != 0);
-#else 
-  /* FIXME! Figure out how to do. */
-  return true;
-#endif
+  dk_cd_read_track_info_t cd_read;
+  memset( &cd_read, 0, sizeof(cd_read) );
+
+  cd_read.address = track_num;
+  cd_read.addressType = kCDTrackInfoAddressTypeTrackNumber;
+
+  cd_read.buffer = &a_track;
+  cd_read.bufferLength = sizeof(CDTrackInfo);
+
+  if( ioctl( _obj->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
+  {
+    cdio_error( "could not read trackinfo for track %d", track_num );
+    return -1;
+  }
+
+  return ((a_track.trackMode & 2) != 0);
 }
 
 #endif /* HAVE_DARWIN_CDROM */
