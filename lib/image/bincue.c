@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.39 2004/07/29 02:16:20 rocky Exp $
+    $Id: bincue.c,v 1.40 2004/08/13 13:04:37 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.39 2004/07/29 02:16:20 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.40 2004/08/13 13:04:37 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -81,7 +81,6 @@ typedef struct {
 				   exactly 13 bytes */
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
 					         add 1 for leadout. */
-  cdtext_t      cdtext;	         /* CD-TEXT */
   discmode_t    disc_mode;
 } _img_private_t;
 
@@ -115,7 +114,7 @@ _init_bincue (_img_private_t *env)
   env->psz_mcn       = NULL;
   env->disc_mode     = CDIO_DISC_MODE_NO_INFO;
 
-  cdtext_init (&(env->cdtext));
+  cdtext_init (&(env->gen.cdtext));
 
   lead_lsn = _stat_size_bincue( (_img_private_t *) env);
 
@@ -296,6 +295,8 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   if (cd) {
     cd->gen.i_tracks=0;
     cd->gen.i_first_track=1;
+    cd->gen.b_cdtext_init  = true;
+    cd->gen.b_cdtext_error = false;
     cd->psz_mcn=NULL;
   }
   
@@ -383,7 +384,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	    this_track->track_num   = cd->gen.i_tracks;
 	    this_track->num_indices = 0;
 	    b_first_index_for_track = false;
-	    cdtext_init (&(cd->tocent[cd->gen.i_tracks].cdtext));
+	    cdtext_init (&(cd->gen.cdtext_track[cd->gen.i_tracks]));
 	    cd->gen.i_tracks++;
 	  }
 	  i++;
@@ -745,12 +746,14 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 		  (cdtext_key = cdtext_is_keyword (psz_keyword)) ) {
 	if (-1 == i) {
 	  if (cd) {
-	    cdtext_set (cdtext_key, strtok (NULL, "\"\t\n\r"), &(cd->cdtext));
+	    cdtext_set (cdtext_key, 
+			strtok (NULL, "\"\t\n\r"), 
+			&(cd->gen.cdtext));
 	  }
 	} else {
 	  if (cd) {
 	    cdtext_set (cdtext_key, strtok (NULL, "\"\t\n\r"), 
-			&(cd->tocent[i].cdtext));
+			&(cd->gen.cdtext_track[i]));
 	  }
 	}
 	
@@ -1137,7 +1140,7 @@ cdio_open_cue (const char *psz_cue_name)
     .eject_media        = _eject_media_image,
     .free               = _free_image,
     .get_arg            = _get_arg_image,
-    .get_cdtext         = _get_cdtext_image,
+    .get_cdtext         = get_cdtext_generic,
     .get_devices        = cdio_get_devices_bincue,
     .get_default_device = cdio_get_default_device_bincue,
     .get_discmode       = _get_discmode_image,

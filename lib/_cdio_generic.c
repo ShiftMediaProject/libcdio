@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.23 2004/08/10 11:58:15 rocky Exp $
+    $Id: _cdio_generic.c,v 1.24 2004/08/13 13:04:37 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.23 2004/08/10 11:58:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.24 2004/08/13 13:04:37 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,17 +65,22 @@ cdio_generic_bogus_eject_media (void *user_data) {
   Release and free resources associated with cd. 
  */
 void
-cdio_generic_free (void *user_data)
+cdio_generic_free (void *p_user_data)
 {
-  generic_img_private_t *env = user_data;
+  generic_img_private_t *p_env = p_user_data;
+  track_t i_track;
 
-  if (NULL == env) return;
-  free (env->source_name);
+  if (NULL == p_env) return;
+  free (p_env->source_name);
 
-  if (env->fd >= 0)
-    close (env->fd);
+  for (i_track=0; i_track < p_env->i_tracks; i_track++) {
+    cdtext_destroy(&(p_env->cdtext_track[i_track]));
+  }
 
-  free (env);
+  if (p_env->fd >= 0)
+    close (p_env->fd);
+
+  free (p_env);
 }
 
 /*!

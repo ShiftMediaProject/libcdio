@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.15 2004/07/29 02:16:20 rocky Exp $
+    $Id: image_common.h,v 1.16 2004/08/13 13:04:37 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -53,7 +53,7 @@ _free_image (void *user_data)
 
   free_if_notnull(env->psz_mcn);
   free_if_notnull(env->psz_cue_name);
-  cdtext_destroy(&(env->cdtext));
+  cdtext_destroy(&(env->gen.cdtext));
   cdio_generic_stdio_free(env);
   free(env);
 }
@@ -87,36 +87,6 @@ _get_arg_image (void *user_data, const char key[])
     return "image";
   } 
   return NULL;
-}
-
-/*! 
-  Get cdtext information for a CdIo object.
-  
-  @param obj the CD object that may contain CD-TEXT information.
-  @return the CD-TEXT object or NULL if obj is NULL
-  or CD-TEXT information does not exist.
-  
-  If i_track is 0 or CDIO_CDROM_LEADOUT_TRACK the track returned
-  is the information assocated with the CD. 
-*/
-static const cdtext_t *
-_get_cdtext_image (void *user_data, track_t i_track)
-{
-  const _img_private_t *env = user_data;
-
-  if ( NULL == env || 
-       ( 0 != i_track
-	 && i_track >= env->gen.i_tracks + env->gen.i_first_track ) )
-    return NULL;
-
-  if (CDIO_CDROM_LEADOUT_TRACK == i_track) 
-    i_track = 0;
-  
-  if (0 == i_track) 
-    return &(env->cdtext);
-  else 
-    return &(env->tocent[i_track-env->gen.i_first_track].cdtext);
-  
 }
 
 /*! 

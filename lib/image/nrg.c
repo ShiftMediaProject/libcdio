@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.36 2004/07/29 02:16:20 rocky Exp $
+    $Id: nrg.c,v 1.37 2004/08/13 13:04:37 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -45,7 +45,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.36 2004/07/29 02:16:20 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.37 2004/08/13 13:04:37 rocky Exp $";
 
 
 /* reader */
@@ -77,7 +77,6 @@ typedef struct {
 
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
 					         add 1 for leadout. */
-  cdtext_t      cdtext;	         /* CD-TEXT */
   discmode_t    disc_mode;
 
   /* Nero Specific stuff. Note: for the image_free to work, this *must*
@@ -429,6 +428,7 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	  if (0 == form2) {
 	    int i;
 	    for (i=0; i<env->gen.i_tracks; i++) {
+	      cdtext_init (&(env->gen.cdtext_track[i]));
 	      env->tocent[i].track_format= track_format;
 	      env->tocent[i].datastart   = 0;
 	      env->tocent[i].track_green = false;
@@ -444,6 +444,7 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	  } else if (2 == form2) {
 	    int i;
 	    for (i=0; i<env->gen.i_tracks; i++) {
+	      cdtext_init (&(env->gen.cdtext_track[i]));
 	      env->tocent[i].track_green = true;
 	      env->tocent[i].track_format= track_format;
 	      env->tocent[i].datasize    = CDIO_CD_FRAMESIZE;
@@ -732,6 +733,8 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
   env->tocent[env->gen.i_tracks-1].sec_count = 
     cdio_lsn_to_lba(env->size - env->tocent[env->gen.i_tracks-1].start_lba);
 
+  env->gen.b_cdtext_init  = true;
+  env->gen.b_cdtext_error = false;
   free(footer_buf);
   return true;
 }
@@ -756,7 +759,7 @@ _init_nrg (_img_private_t *env)
   env->psz_mcn       = NULL;
   env->disc_mode     = CDIO_DISC_MODE_NO_INFO;
 
-  cdtext_init (&(env->cdtext));
+  cdtext_init (&(env->gen.cdtext));
 
   if ( !parse_nrg (env, env->gen.source_name) ) {
     cdio_warn ("image file %s is not a Nero image", 
@@ -1185,7 +1188,7 @@ cdio_open_nrg (const char *psz_source)
     .eject_media        = _eject_media_nrg,
     .free               = _free_nrg,
     .get_arg            = _get_arg_image,
-    .get_cdtext         = _get_cdtext_image,
+    .get_cdtext         = get_cdtext_generic,
     .get_devices        = cdio_get_devices_nrg,
     .get_default_device = cdio_get_default_device_nrg,
     .get_discmode       = _get_discmode_image,
