@@ -7,7 +7,7 @@
 -  cd-read: new program to help diagnose reading problems.
 -  Document more functions.
 -  add routines to return a list of devices or scan a list of devices
-   which satisfy and or all things in a capability mask. Should be useful
+   which satisfy any/all things in a capability mask. Should be useful
    for plugins that want to find a CD-DA to play or find a plugin that handles
    a particular device. 
 -  Start Darwin driver.
