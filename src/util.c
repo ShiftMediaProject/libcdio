@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.22 2004/08/10 03:47:57 rocky Exp $
+  $Id: util.c,v 1.23 2004/08/10 11:58:15 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -348,7 +348,7 @@ print_mmc_drive_features(CdIo *p_cdio)
 	  printf("\t\n");
 	  break;
 	case CDIO_MMC_FEATURE_RT_STREAMING:
-	  printf("\tAbility to read and write using Initiator requested performance parameters\n");
+	  printf("Ability to read and write using Initiator requested performance parameters\n");
 	  break;
 	case CDIO_MMC_FEATURE_LU_SN: {
 	  uint8_t i_serial = *(p+3);

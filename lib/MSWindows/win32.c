@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.42 2004/08/10 03:44:55 rocky Exp $
+    $Id: win32.c,v 1.43 2004/08/10 11:58:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.42 2004/08/10 03:44:55 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.43 2004/08/10 11:58:15 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -483,34 +483,6 @@ _get_arg_win32 (void *user_data, const char key[])
 }
 
 /*!
-  Return the value associated with the key "arg".
-*/
-static const cdtext_t *
-_get_cdtext_win32 (void *user_data, track_t i_track)
-{
-  _img_private_t *p_env = user_data;
-
-  if (NULL == p_env) return NULL;
-
-  if ( NULL == p_env ||
-       (0 != i_track 
-       && i_track >= p_env->gen.i_tracks + p_env->gen.i_first_track ) )
-    return NULL;
-
-  if (!p_env->gen.b_cdtext_init) 
-    init_cdtext_generic( &(p_env->gen) );
-    
-  if (!p_env->gen.b_cdtext_init) return NULL;
-
-  if (0 == i_track) 
-    return &(p_env->gen.cdtext);
-  else 
-    return &(p_env->gen.cdtext_track[i_track-p_env->gen.i_first_track]);
-
-  return NULL;
-}
-
-/*!
   Return the media catalog number MCN.
 
   Note: string is malloc'd so caller should free() then returned
@@ -741,7 +713,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
     .eject_media        = _cdio_eject_media,
     .free               = _free_win32,
     .get_arg            = _get_arg_win32,
-    .get_cdtext         = _get_cdtext_win32,
+    .get_cdtext         = _get_cdtext_generic,
     .get_default_device = cdio_get_default_device_win32,
     .get_devices        = cdio_get_devices_win32,
     .get_discmode       = get_discmode_win32,

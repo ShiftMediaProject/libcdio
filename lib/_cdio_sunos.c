@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.71 2004/08/10 03:10:46 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.72 2004/08/10 11:58:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.71 2004/08/10 03:10:46 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.72 2004/08/10 11:58:15 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -445,34 +445,6 @@ read_toc_solaris (void *p_user_data)
   return true;
 }
 
-/*! 
-  Get cdtext information for a CdIo object .
-  
-  @param obj the CD object that may contain CD-TEXT information.
-  @return the CD-TEXT object or NULL if obj is NULL
-  or CD-TEXT information does not exist.
-*/
-static const cdtext_t *
-get_cdtext_solaris (void *p_user_data, track_t i_track)
-{
-  _img_private_t *p_env = p_user_data;
-
-  if ( NULL == p_env ||
-       (0 != i_track 
-	&& i_track >= p_env->gen.i_tracks+p_env->gen.i_first_track ) )
-    return NULL;
-
-  if (!p_env->gen.b_cdtext_init)
-    init_cdtext_generic( (&p_env->gen) );
-
-  if (!p_env->gen.b_cdtext_init) return NULL;
-
-  if (0 == i_track) 
-    return &(p_env->gen.cdtext);
-  else 
-    return &(p_env->gen.cdtext_track[i_track-p_env->gen.i_first_track]);
-}
-
 /*!
   Eject media in CD drive. If successful, as a side effect we 
   also free obj.
@@ -860,7 +832,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
     .eject_media        = eject_media_solaris,
     .free               = cdio_generic_free,
     .get_arg            = get_arg_solaris,
-    .get_cdtext         = get_cdtext_solaris,
+    .get_cdtext         = get_cdtext_generic,
     .get_default_device = cdio_get_default_device_solaris,
     .get_devices        = cdio_get_devices_solaris,
     .get_discmode       = get_discmode_solaris,

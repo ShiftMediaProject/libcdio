@@ -1,5 +1,5 @@
 /*
-  $Id: sample10.c,v 1.7 2004/08/10 02:29:46 rocky Exp $
+  $Id: sample10.c,v 1.8 2004/08/10 11:58:14 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -291,7 +291,7 @@ main(int argc, const char *argv[])
 		   " RPC\n");
 	    break;
 	  case CDIO_MMC_FEATURE_RT_STREAMING:
-	    printf("\tAbility to read and write using Initiator requested performance parameters\n");
+	    printf("Ability to read and write using Initiator requested performance parameters\n");
 	    break;
 	  case CDIO_MMC_FEATURE_LU_SN: {
 	    uint8_t i_serial = *(p+3);

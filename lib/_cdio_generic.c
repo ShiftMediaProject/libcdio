@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.22 2004/08/10 03:03:27 rocky Exp $
+    $Id: _cdio_generic.c,v 1.23 2004/08/10 11:58:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.22 2004/08/10 03:03:27 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.23 2004/08/10 11:58:15 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -228,6 +228,34 @@ cdio_add_device_list(char **device_list[], const char *drive, int *num_drives)
 
 
 /*! 
+  Get cdtext information for a CdIo object .
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return the CD-TEXT object or NULL if obj is NULL
+  or CD-TEXT information does not exist.
+*/
+const cdtext_t *
+get_cdtext_generic (void *p_user_data, track_t i_track)
+{
+  generic_img_private_t *p_env = p_user_data;
+
+  if ( NULL == p_env ||
+       (0 != i_track 
+	&& i_track >= p_env->i_tracks+p_env->i_first_track ) )
+    return NULL;
+
+  if (!p_env->b_cdtext_init)
+    init_cdtext_generic(p_env);
+  if (!p_env->b_cdtext_init) return NULL;
+
+  if (0 == i_track) 
+    return &(p_env->cdtext);
+  else 
+    return &(p_env->cdtext_track[i_track-p_env->i_first_track]);
+
+}
+
+/*! 
   Get disc type associated with cd object.
 */
 discmode_t
@@ -365,7 +393,7 @@ set_cdtext_field_generic(void *user_data, track_t i_track,
 }
 
 /*!
-  Read cdtext information for a CdIo object .
+  Read CD-Text information for a CdIo object .
   
   return true on success, false on error or CD-TEXT information does
   not exist.

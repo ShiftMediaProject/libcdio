@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.38 2004/08/10 03:03:27 rocky Exp $
+    $Id: cdio_private.h,v 1.39 2004/08/10 11:58:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -38,6 +38,18 @@ extern "C" {
 
   /* Opaque type */
   typedef struct _CdioDataSource CdioDataSource;
+
+#ifdef __cplusplus
+}
+
+#endif /* __cplusplus */
+
+#include "generic.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 
   typedef struct {
     
@@ -232,40 +244,13 @@ extern "C" {
   } cdio_funcs;
 
 
-  /* Implementation of CdIo type */
+  /*! Implementation of CdIo type */
   struct _CdIo {
-    driver_id_t driver_id; /* Particular driver opened. */
-    cdio_funcs op;         /* driver-specific routines handling implimentatin*/
-    void *env;       /* environment. Passed to routine above. */
+    driver_id_t driver_id; /**< Particular driver opened. */
+    cdio_funcs op;         /**< driver-specific routines handling
+			      implementation*/
+    void *env;             /**< environment. Passed to routine above. */
   };
-
-  /*!
-    Things common to private device structures. Even though not all
-    devices may have some of these fields, by listing common ones
-    we facilitate writing generic routines and even cut-and-paste
-    code.
-   */
-  typedef struct {
-    char *source_name;      /**< Name used in open. */
-    bool  init;             /**< True if structure has been initialized */
-    bool  toc_init;         /**< True if TOC read in */
-    bool  b_cdtext_init;    /**< True if CD-Text read in */
-    bool  b_cdtext_error;   /**< True if trouble reading CD-Text */
-    
-    int   ioctls_debugged;  /**< for debugging */
-
-    /* Only one of the below is used. The first is for CD-ROM devices 
-       and the second for stream reading (bincue, nrg, toc, network).
-     */
-    int   fd;               /**< File descriptor of device */
-    track_t i_first_track;  /**< The starting track number. */
-    track_t i_tracks;       /**< The number of tracks. */
-    CdioDataSource *data_source;
-    CdIo *cdio;             /**< a way to call general cdio routines. */
-    cdtext_t  cdtext;       /**< CD-Text for disc. */
-    cdtext_t  cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/
-
-  } generic_img_private_t;
 
   /* This is used in drivers that must keep their own internal 
      position pointer for doing seeks. Stream-based drivers (like bincue,
@@ -316,94 +301,6 @@ extern "C" {
   void cdio_add_device_list(char **device_list[], const char *drive, 
 			    int *num_drives);
 
-  /*!
-    Bogus eject media when there is no ejectable media, e.g. a disk image
-    We always return 2. Should we also free resources? 
-  */
-  int cdio_generic_bogus_eject_media (void *env);
-
-  /*!
-    Release and free resources associated with cd. 
-  */
-  void cdio_generic_free (void *env);
-
-  /*!
-    Initialize CD device.
-  */
-  bool cdio_generic_init (void *env);
-
-  /*!
-    Reads into buf the next size bytes.
-    Returns -1 on error. 
-    Is in fact libc's read().
-  */
-  off_t cdio_generic_lseek (void *env, off_t offset, int whence);
-
-  /*!
-    Reads into buf the next size bytes.
-    Returns -1 on error. 
-    Is in fact libc's read().
-  */
-  ssize_t cdio_generic_read (void *env, void *buf, size_t size);
-
-  /*!
-    Reads a single form1 sector from cd device into data starting
-    from lsn. Returns 0 if no error. 
-  */
-  int cdio_generic_read_form1_sector (void * user_data, void *data, 
-				      lsn_t lsn);
-  
-  /*!
-    Release and free resources associated with stream or disk image.
-  */
-  void cdio_generic_stdio_free (void *env);
-
-  /*!  
-    Return true if source_name could be a device containing a CD-ROM on
-    Win32
-  */
-  bool cdio_is_device_win32(const char *source_name);
-
-  
-  /*!  
-    Return true if source_name could be a device containing a CD-ROM on
-    most Unix servers with block and character devices.
-  */
-  bool cdio_is_device_generic(const char *source_name);
-
-  
-  /*!  
-    Like above, but don't give a warning device doesn't exist.
-  */
-  bool cdio_is_device_quiet_generic(const char *source_name);
-
-  /*!
-    Return the number of of the first track. 
-    CDIO_INVALID_TRACK is returned on error.
-  */
-  track_t get_first_track_num_generic(void *p_user_data);
-
-  /*!
-    Return the number of tracks in the current medium.
-  */
-  track_t get_num_tracks_generic(void *p_user_data);
-  
-  /*! 
-    Get disc type associated with cd object.
-  */
-  discmode_t get_discmode_generic (void *p_user_data );
-  
-  void set_cdtext_field_generic(void *user_data, track_t i_track, 
-				track_t i_first_track,
-				cdtext_field_t e_field, const char *psz_value);
-  /*!
-    Read cdtext information for a CdIo object .
-  
-    return true on success, false on error or CD-Text information does
-    not exist.
-  */
-  bool init_cdtext_generic (generic_img_private_t *p_env);
-  
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
