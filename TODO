@@ -1,21 +1,34 @@
+Intelligent setting of --without-versioned-libs? 
+
+Use libcdio as a cdparanoia back-end and add API for CD-DA reading
+with paranoia support.
+
+Add API to show what kind of media (DVD, CDW, CD) is currently in a
+drive.
+
+Add capability flag to indicate that whether driver has a real "eject"
+command. (Right now, it is false for image drivers and true for
+everything else.)
+
+A parse mode for cue files - similar to what's there for cdrdao.
+May be based on Svend S. Sorensen's cuetools.
+
+Finish extracting NRG support hints from Michael Kukat's extractnrg.pl
+
 Write a real cue parser and TOC parser using flex and bison (partly done). 
 A pcct grammar is given in cdrdao's trackdb TocParser.g and CueParser.g
 
-Once this is done CUE/TOC files can be checked and better automatic
-disk-image detection can be done.
-
 Stat CUE/BIN files in is_{bin,cue}file? 
-
-Fill in FreeBSD support. Other OS's (Win32 and OS/X)? 
-
-Better NRG support. TOC.
 
 More disk image types in regression testing, like CD-I.
 
 convert to use glib, removing ds.h and common routines from vcdimager.
 
-API overhaul (HVR). 
+API overhaul (hvr). 
 
-Write documentation.
+There is some FreeBSD, Win32, and OS/X support but there are gaps of
+varying degrees All of the API should be finished.
 
-$Id: TODO,v 1.2 2003/05/18 02:19:55 rocky Exp $
+Write more documentation.
+
+$Id: TODO,v 1.3 2004/06/05 03:08:12 rocky Exp $
