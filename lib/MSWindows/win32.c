@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.17 2004/06/20 15:06:42 rocky Exp $
+    $Id: win32.c,v 1.18 2004/07/13 03:45:26 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.17 2004/06/20 15:06:42 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.18 2004/07/13 03:45:26 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -135,7 +135,6 @@ _cdio_init_win32 (void *user_data)
   env->gen.init = true;
   env->toc_init = false;
 
-
   /* Initializations */
   env->h_device_handle = NULL;
   env->i_sid           = 0;
@@ -143,6 +142,7 @@ _cdio_init_win32 (void *user_data)
   env->lpSendCommand   = 0;
   env->b_aspi_init     = false;
   env->b_ioctl_init    = false;
+  env->b_cdtext_init   = false;
 
   if ( _AM_IOCTL == env->access_mode ) {
     return init_win32ioctl(env);
@@ -317,7 +317,7 @@ _cdio_stat_size (void *user_data)
 {
   _img_private_t *env = user_data;
 
-  return env->tocent[env->total_tracks].start_lsn;
+  return env->tocent[env->i_tracks].start_lsn;
 }
 
 /*!
@@ -412,7 +412,7 @@ _cdio_eject_media (void *user_data) {
   Return the value associated with the key "arg".
 */
 static const char *
-_cdio_get_arg (void *user_data, const char key[])
+_get_arg_win32 (void *user_data, const char key[])
 {
   _img_private_t *env = user_data;
 
@@ -425,6 +425,25 @@ _cdio_get_arg (void *user_data, const char key[])
       return "ioctl";
   } 
   return NULL;
+}
+
+/*!
+  Return the value associated with the key "arg".
+*/
+static const cdtext_t *
+_get_cdtext_win32 (void *user_data)
+{
+  _img_private_t *env = user_data;
+
+  if (NULL == env) return NULL;
+  if (env->b_cdtext_init)
+    return &(env->cdtext);
+  
+  if (env->hASPI) {
+    get_cdtext_aspi(env);
+  }
+
+  return &(env->cdtext);
 }
 
 /*!
@@ -470,7 +489,7 @@ _cdio_get_num_tracks(void *user_data)
   
   if (!env->toc_init) _cdio_read_toc (env) ;
 
-  return env->total_tracks;
+  return env->i_tracks;
 }
 
 /*!  
@@ -483,7 +502,7 @@ _cdio_get_track_format(void *obj, track_t track_num)
   
   if (!env->gen.toc_init) _cdio_read_toc (env) ;
 
-  if (track_num > env->total_tracks || track_num == 0)
+  if (track_num > env->i_tracks || track_num == 0)
     return TRACK_FORMAT_ERROR;
 
   if( env->hASPI ) {
@@ -508,9 +527,9 @@ _cdio_get_track_green(void *obj, track_t i_track)
   
   if (!env->toc_init) _cdio_read_toc (env) ;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = env->total_tracks+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = env->i_tracks+1;
 
-  if (i_track > env->total_tracks+1 || i_track == 0)
+  if (i_track > env->i_tracks+1 || i_track == 0)
     return false;
 
   switch (_cdio_get_track_format(env, i_track)) {
@@ -549,9 +568,9 @@ _cdio_get_track_msf(void *env, track_t track_num, msf_t *msf)
 
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = _obj->i_tracks+1;
 
-  if (track_num > _obj->total_tracks+1 || track_num == 0) {
+  if (track_num > _obj->i_tracks+1 || track_num == 0) {
     return false;
   } else {
     cdio_lsn_to_msf(_obj->tocent[track_num-1].start_lsn, msf);
@@ -692,7 +711,8 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   cdio_funcs _funcs = {
     .eject_media        = _cdio_eject_media,
     .free               = _free_win32,
-    .get_arg            = _cdio_get_arg,
+    .get_arg            = _get_arg_win32,
+    .get_cdtext         = _get_cdtext_win32,
     .get_default_device = cdio_get_default_device_win32,
     .get_devices        = cdio_get_devices_win32,
     .get_drive_cap      = _cdio_get_drive_cap,

@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.7 2004/06/25 01:47:06 rocky Exp $
+    $Id: win32.h,v 1.8 2004/07/13 03:45:26 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,6 +26,7 @@ typedef struct {
   lsn_t          start_lsn;
   UCHAR          Control : 4;
   UCHAR          Format;
+  cdtext_t       cdtext;	         /* CD-TEXT */
 } track_info_t;
 
 typedef enum {
@@ -39,22 +40,25 @@ typedef struct {
      This must be first. */
   generic_img_private_t gen; 
 
+  /* Things generally common to all image drivers. */
+  track_info_t  tocent[100];     /* entry info for each track */
+  track_t       i_tracks;        /* number of tracks in image */
+  track_t       i_first_track;   /* track number of first track */
+  cdtext_t      cdtext;	         /* CD-TEXT */
+
   access_mode_t access_mode;
 
-  bool b_ioctl_init;
-  bool b_aspi_init;
-
+  /* Some of the more OS specific things. */
+  bool toc_init;                 /* if true, info below is valid. */
   HANDLE h_device_handle; /* device descriptor */
   long  hASPI;
   short i_sid;
   short i_lun;
   long  (*lpSendCommand)( void* );
 
-  /* Track information */
-  bool toc_init;                 /* if true, info below is valid. */
-  track_info_t  tocent[100];     /* entry info for each track */
-  track_t       total_tracks;    /* number of tracks in image */
-  track_t       i_first_track;   /* track number of first track */
+  bool b_ioctl_init;
+  bool b_aspi_init;
+  bool b_cdtext_init;
 
 } _img_private_t;
 

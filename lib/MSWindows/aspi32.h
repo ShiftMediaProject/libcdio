@@ -1,6 +1,6 @@
 /* Win32 aspi specific */
 /*
-    $Id: aspi32.h,v 1.4 2004/07/08 06:30:17 rocky Exp $
+    $Id: aspi32.h,v 1.5 2004/07/13 03:45:26 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -184,6 +184,11 @@ track_format_t get_track_format_aspi(const _img_private_t *env,
   Initialize internal structures for CD device.
  */
 bool init_aspi (_img_private_t *env);
+
+/*!
+  Return the value associated with the key "arg".
+*/
+const cdtext_t *get_cdtext_aspi (_img_private_t *env);
 
 const char *is_cdrom_aspi(const char drive_letter);
 

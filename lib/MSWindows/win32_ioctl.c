@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.8 2004/07/12 03:34:14 rocky Exp $
+    $Id: win32_ioctl.c,v 1.9 2004/07/13 03:45:26 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.8 2004/07/12 03:34:14 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.9 2004/07/13 03:45:26 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -373,10 +373,10 @@ read_toc_win32ioctl (_img_private_t *env)
   }
   
   env->i_first_track = cdrom_toc.FirstTrack;
-  env->total_tracks  = cdrom_toc.LastTrack - cdrom_toc.FirstTrack + 1;
+  env->i_tracks  = cdrom_toc.LastTrack - cdrom_toc.FirstTrack + 1;
   
   
-  for( i = 0 ; i <= env->total_tracks ; i++ ) {
+  for( i = 0 ; i <= env->i_tracks ; i++ ) {
     env->tocent[ i ].start_lsn = cdio_msf3_to_lba(
 					     cdrom_toc.TrackData[i].Address[1],
 					     cdrom_toc.TrackData[i].Address[2],

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.27 2004/07/11 14:25:07 rocky Exp $
+    $Id: cdio_private.h,v 1.28 2004/07/13 03:45:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -59,7 +59,7 @@ extern "C" {
     /*!
       Return cdtext information.
     */
-    const cdtext_t * (*get_cdtext) (const void *env);
+    const cdtext_t * (*get_cdtext) (void *env);
     
     /*!
       Return an array of device names. if CdIo is NULL (we haven't

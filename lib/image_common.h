@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.9 2004/07/11 14:25:07 rocky Exp $
+    $Id: image_common.h,v 1.10 2004/07/13 03:45:25 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -93,7 +93,7 @@ _get_arg_image (void *user_data, const char key[])
   Return the value associated with the key "arg".
 */
 static const cdtext_t *
-_get_cdtext_image (const void *user_data)
+_get_cdtext_image (void *user_data)
 {
   const _img_private_t *env = user_data;
 

@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.15 2004/07/12 03:34:14 rocky Exp $
+    $Id: aspi32.c,v 1.16 2004/07/13 03:45:25 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.15 2004/07/12 03:34:14 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.16 2004/07/13 03:45:25 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -52,6 +52,12 @@ static const char _rcsid[] = "$Id: aspi32.c,v 1.15 2004/07/12 03:34:14 rocky Exp
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "aspi32.h"
+#include "cdtext_private.h"
+
+/* Amount of time we are willing to wait for an operation to complete.
+   10 seconds? 
+*/
+#define OP_TIMEOUT_MS 10000
 
 static const 
 char *aspierror(int nErrorCode) 
@@ -89,7 +95,7 @@ char *aspierror(int nErrorCode)
       return "ASPI manager doesn't support";
       break;
     case SS_ILLEGAL_MODE:
-      return "Unsupported Windows mode";
+      return "Unsupported MS Windows mode";
       break;
     case SS_NO_ASPI:
       return "No ASPI managers";
@@ -98,10 +104,10 @@ char *aspierror(int nErrorCode)
       return "ASPI for windows failed init";
       break;
     case SS_ASPI_IS_BUSY:
-      return "No resources available to execute command";
+      return "No resources available to execute command.";
       break;
     case SS_BUFFER_TOO_BIG:
-      return "Buffer size too big to handle";
+      return "Buffer size is too big to handle.";
       break;
     case SS_MISMATCHED_COMPONENTS:
       return "The DLLs/EXEs of ASPI don't version check";
@@ -116,10 +122,10 @@ char *aspierror(int nErrorCode)
       return "Call came to ASPI after PROCESS_DETACH";
       break;
     case SS_BAD_INSTALL:
-      return "The DLL or other components are installed wrong";
+      return "The DLL or other components are installed wrong.";
       break;
     default: 
-      return "Unknown ASPI error";
+      return "Unknown ASPI error.";
     }
 }
 
@@ -460,7 +466,7 @@ mmc_read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
   /* If the command has still not been processed, wait until it's
    * finished */
   if( ssc.SRB_Status == SS_PENDING ) {
-    WaitForSingleObject( hEvent, INFINITE );
+    WaitForSingleObject( hEvent, OP_TIMEOUT_MS );
   }
   CloseHandle( hEvent );
   
@@ -551,10 +557,9 @@ read_toc_aspi (_img_private_t *env)
   CDIO_MMC_SET_START_TRACK(ssc.CDBByte, 0);
   
   /* Allocation length and buffer */
-  ssc.SRB_BufLen = sizeof( p_tocheader );
+  ssc.SRB_BufLen      = sizeof( p_tocheader );
   ssc.SRB_BufPointer  = p_tocheader;
-  ssc.CDBByte[ 7 ] = (unsigned char) ( ssc.SRB_BufLen >>  8 ) & 0xff;
-  ssc.CDBByte[ 8 ] = (unsigned char) ( ssc.SRB_BufLen       ) & 0xff;
+  CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, ssc.SRB_BufLen);
   
   /* Initiate transfer */
   ResetEvent( hEvent );
@@ -563,7 +568,7 @@ read_toc_aspi (_img_private_t *env)
   /* If the command has still not been processed, wait until it's
    * finished */
   if( ssc.SRB_Status == SS_PENDING )
-    WaitForSingleObject( hEvent, INFINITE );
+    WaitForSingleObject( hEvent, OP_TIMEOUT_MS );
   
   /* check that the transfer went as planned */
   if( ssc.SRB_Status != SS_COMP ) {
@@ -573,7 +578,7 @@ read_toc_aspi (_img_private_t *env)
   }
   
   env->i_first_track = p_tocheader[2];
-  env->total_tracks  = p_tocheader[3] - p_tocheader[2] + 1;
+  env->i_tracks  = p_tocheader[3] - p_tocheader[2] + 1;
   
   {
     int i, i_toclength;
@@ -603,15 +608,15 @@ read_toc_aspi (_img_private_t *env)
     /* If the command has still not been processed, wait until it's
      * finished */
     if( ssc.SRB_Status == SS_PENDING )
-      WaitForSingleObject( hEvent, INFINITE );
+      WaitForSingleObject( hEvent, OP_TIMEOUT_MS );
     
     /* check that the transfer went as planned */
     if( ssc.SRB_Status != SS_COMP ) {
       cdio_info("ASPI: %s", aspierror(ssc.SRB_Status));
-      env->total_tracks = 0;
+      env->i_tracks = 0;
     }
     
-    for( i = 0 ; i <= env->total_tracks ; i++ ) {
+    for( i = 0 ; i <= env->i_tracks ; i++ ) {
       int i_index = 8 + 8 * i;
       env->tocent[ i ].start_lsn = ((int)p_fulltoc[ i_index ] << 24) +
 	((int)p_fulltoc[ i_index+1 ] << 16) +
@@ -673,6 +678,172 @@ wnaspi32_eject_media (void *user_data) {
 #endif
 
 /*!
+  Return the value associated with the key "arg".
+*/
+const cdtext_t *
+get_cdtext_aspi (_img_private_t *env)
+{
+  uint8_t  bigbuffer[5000];
+  HANDLE hEvent;
+  struct SRB_ExecSCSICmd ssc;
+
+  /* Create the transfer completion event */
+  hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+  if( hEvent == NULL ) {
+    return NULL;
+  }
+  
+  memset( &ssc, 0, sizeof( ssc ) );
+
+  ssc.SRB_Cmd         = SC_EXEC_SCSI_CMD;
+  ssc.SRB_Flags       = SRB_DIR_IN | SRB_EVENT_NOTIFY;
+  ssc.SRB_HaId        = LOBYTE( env->i_sid );
+  ssc.SRB_Target      = HIBYTE( env->i_sid );
+  ssc.SRB_Lun         = env->i_lun;
+  ssc.SRB_SenseLen    = SENSE_LEN;
+  
+  ssc.SRB_PostProc = (LPVOID) hEvent;
+  ssc.SRB_CDBLen      = 10;
+  
+  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_GPCMD_READ_TOC); 
+  ssc.CDBByte[1]   = 0x02;   // MSF mode 
+  ssc.CDBByte[2]   = 0x05;   // CD text
+  CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, sizeof(bigbuffer));
+
+  /* Result buffer */
+  ssc.SRB_BufPointer  = bigbuffer;
+  ssc.SRB_BufLen      = sizeof(bigbuffer);
+
+  memset ( bigbuffer, 0, sizeof(bigbuffer) );
+
+  /* Initiate transfer */
+  ResetEvent( hEvent );
+  env->lpSendCommand( (void*) &ssc );
+  
+  /* If the command has still not been processed, wait until it's
+   * finished */
+  if( ssc.SRB_Status == SS_PENDING ) {
+    WaitForSingleObject( hEvent, OP_TIMEOUT_MS );
+  }
+  CloseHandle( hEvent );
+  
+  /* check that the transfer went as planned */
+  if( ssc.SRB_Status != SS_COMP ) {
+    cdio_info("ASPI: %s", aspierror(ssc.SRB_Status));
+    return NULL;
+  }
+
+  {
+    CDText_data_t *pdata;
+    int           i;
+    int           j;
+    char          buffer[256];
+    int           idx;
+    int           track;
+
+    memset( buffer, 0x00, sizeof(buffer) );
+    idx = 0;
+  
+    pdata = (CDText_data_t *) (&bigbuffer[4]);
+    for( i=0; i<0xFF; i++ ) {
+      if( pdata->seq != i )
+	break;
+      
+      if( (pdata->type >= 0x80) 
+	  && (pdata->type <= 0x85) && (pdata->block == 0) ) {
+	track = pdata->i_track;
+	
+	for( j=0; j<12; j++ ) 	  {
+	  if( pdata->text[j] == 0x00 )
+	    {
+	      switch( pdata->type) 		{
+	      case CDIO_CDTEXT_TITLE: 
+		if( track == 0 )
+		  env->cdtext.field[CDTEXT_TITLE] = strdup(buffer);
+		else
+		  env->tocent[track-1].cdtext.field[CDTEXT_TITLE] 
+		    = strdup(buffer);
+		track++;
+		idx = 0;
+		break;
+		
+	      case CDIO_CDTEXT_PERFORMER:  // artist
+		if( track == 0 )
+		  env->cdtext.field[CDTEXT_PERFORMER] = strdup(buffer);
+		else
+		  env->tocent[track-1].cdtext.field[CDTEXT_PERFORMER] =
+		    strdup(buffer);
+		track++;
+		idx = 0;
+		break;
+	      case CDIO_CDTEXT_SONGWRITER:
+		if( track == 0 )
+		  env->cdtext.field[CDTEXT_SONGWRITER]= strdup(buffer);
+		else
+		  env->tocent[track-1].cdtext.field[CDTEXT_SONGWRITER] = 
+		    strdup( buffer );
+		track++;
+		idx = 0;
+		break;
+	      case CDIO_CDTEXT_COMPOSER:
+		if( track == 0 )
+		  env->cdtext.field[CDTEXT_COMPOSER] = strdup(buffer);
+		else
+		  env->tocent[track-1].cdtext.field[CDTEXT_COMPOSER] =
+		    strdup(buffer);
+		track++;
+		idx = 0;
+		break;
+	      case CDIO_CDTEXT_ARRANGER:
+		if( track == 0 )
+		  env->cdtext.field[CDTEXT_ARRANGER] = strdup(buffer);
+		else
+		  env->tocent[track-1].cdtext.field[CDTEXT_ARRANGER] = 
+		    strdup(buffer);
+		track++;
+		idx = 0;
+		break;
+	      case CDIO_CDTEXT_MESSAGE:
+		if( track == 0 )
+		  env->cdtext.field[CDTEXT_MESSAGE] = strdup(buffer);
+		else
+		  env->tocent[track-1].cdtext.field[CDTEXT_MESSAGE] = 
+		    strdup(buffer);
+		track++;
+		idx = 0;
+		break;
+	      case CDIO_CDTEXT_DISCID: 
+		if( track == 0 )
+		  env->cdtext.field[CDTEXT_DISCID] = strdup(buffer);
+		else
+		  env->tocent[track-1].cdtext.field[CDTEXT_DISCID] = 
+		    strdup(buffer);
+		track++;
+		idx = 0;
+		break;
+	      case CDIO_CDTEXT_GENRE: 
+		if( track == 0 )
+		  env->cdtext.field[CDTEXT_GENRE] = strdup(buffer);
+		else
+		  env->tocent[track-1].cdtext.field[CDTEXT_GENRE] = 
+		    strdup(buffer);
+		track++;
+		idx = 0;
+		break;
+	      }
+	    }
+	  else 	    {
+	    buffer[idx++] = pdata->text[j];
+	  }
+	  buffer[idx] = 0x00;
+	}
+      }
+      pdata++;
+    }
+  }
+  return NULL;
+}
+/*!
   Return the the kind of drive capabilities of device.
 
  */
@@ -724,7 +895,7 @@ get_drive_cap_aspi (const _img_private_t *env)
   /* If the command has still not been processed, wait until it's
    * finished */
   if( ssc.SRB_Status == SS_PENDING )
-    WaitForSingleObject( hEvent, INFINITE );
+    WaitForSingleObject( hEvent, OP_TIMEOUT_MS );
   
   CloseHandle( hEvent );
 
