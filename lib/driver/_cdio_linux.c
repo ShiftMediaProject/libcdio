@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.27 2005/02/28 02:00:20 rocky Exp $
+    $Id: _cdio_linux.c,v 1.28 2005/02/28 04:05:17 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.27 2005/02/28 02:00:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.28 2005/02/28 04:05:17 rocky Exp $";
 
 #include <string.h>
 
@@ -640,13 +640,49 @@ is_cdrom_linux(const char *drive, char *mnttype)
    Can read only up to 25 blocks.
 */
 static driver_return_code_t
-_read_audio_sectors_linux (void *p_user_data, void *buf, lsn_t lsn, 
+read_audio_sectors_linux (void *p_user_data, void *p_buf, lsn_t i_lsn, 
 			   uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
-  return mmc_read_sectors( p_env->gen.cdio, buf, lsn, CDIO_MMC_READ_TYPE_CDDA, 
-                           i_blocks);
+  return mmc_read_sectors( p_env->gen.cdio, p_buf, i_lsn, 
+                           CDIO_MMC_READ_TYPE_CDDA, i_blocks);
 }
+
+#if 0
+/* MMC driver to read audio sectors. 
+   Can read only up to 25 blocks.
+*/
+static driver_return_code_t
+read_data_sectors_linux (void *p_user_data, void *p_buf, lsn_t i_lsn, 
+                          uint16_t i_blocksize, uint32_t i_blocks)
+{
+  _img_private_t *p_env = p_user_data;
+  if (ISO_BLOCKSIZE == i_blocksize) {
+    msf_t msf;
+    struct cdrom_msf0 linux_msf;
+    int i_rc;
+    cdio_lsn_to_msf(i_lsn, &msf);
+    linux_msf.minute = msf.m;
+    linux_msf.second = msf.s;
+    linux_msf.frame  = msf.f;
+    i_rc = ioctl(p_env->gen.fd, CDROMSEEK, &linux_msf);
+    // cdio_warn("%s: %s\n", 
+    //     "error in ioctl CDROMREADTOCHDR", strerror(errno));
+    if (0 == i_rc) {
+      unsigned int j = 0;
+      for (j=0; j<i_blocks; j++) {
+        void *p_buf2 = ((char *)p_buf ) + (j * ISO_BLOCKSIZE);
+        if (0 != ioctl(p_env->gen.fd, CDROMREADCOOKED, p_buf2))
+          break;
+      }
+      if (j==i_blocks) return DRIVER_OP_SUCCESS;
+    }
+  }
+
+  return read_data_sectors_mmc( p_env->gen.cdio, p_buf, i_lsn, i_blocksize, 
+                                i_blocks );
+}
+#endif
 
 /* Packet driver to read mode2 sectors. 
    Can read only up to 25 blocks.
@@ -738,7 +774,7 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
 
   _img_private_t *p_env = p_user_data;
 
-  cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
+  cdio_lsn_to_msf (lsn, &_msf);
   p_msf->cdmsf_min0 = cdio_from_bcd8(_msf.m);
   p_msf->cdmsf_sec0 = cdio_from_bcd8(_msf.s);
   p_msf->cdmsf_frame0 = cdio_from_bcd8(_msf.f);
@@ -1281,8 +1317,12 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .get_track_msf         = get_track_msf_linux,
     .lseek                 = cdio_generic_lseek,
     .read                  = cdio_generic_read,
-    .read_audio_sectors    = _read_audio_sectors_linux,
+    .read_audio_sectors    = read_audio_sectors_linux,
+#if 0
+    .read_data_sectors     = read_data_sectors_linux,
+#else 
     .read_data_sectors     = read_data_sectors_mmc,
+#endif
     .read_mode1_sector     = _read_mode1_sector_linux,
     .read_mode1_sectors    = _read_mode1_sectors_linux,
     .read_mode2_sector     = _read_mode2_sector_linux,
