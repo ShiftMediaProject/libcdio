@@ -1,5 +1,5 @@
 /*
-  $Id: version.h,v 1.3 2005/01/06 03:09:11 rocky Exp $
+  $Id: version.h,v 1.4 2005/01/22 19:39:16 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Monty xiphmont@mit.edu
@@ -21,9 +21,10 @@
 /******************************************************************
  * cdda_paranoia generation III release 9.8 libcdio
  ******************************************************************/
+#include <cdio/version.h>
 
-
-#define PARANOIA_VERSION "cdparanoia III release 9.8 libcdio\n"\
-                "(C) 2001 Monty <monty@xiph.org> and Xiphophorus\n"\
-                "(C) 2004, 2005 Rocky Bernstein <rocky@panix.com>\n\n"\
-		"Report bugs to bug-libcdio@gnu.org\n"
+#define PARANOIA_VERSION \
+  "cdparanoia III release 9.8 libcdio " CDIO_VERSION "\n"		\
+  "(C) 2001 Monty <monty@xiph.org> and Xiphophorus\n"			\
+  "(C) 2004, 2005 Rocky Bernstein <rocky@panix.com>\n\n"		\
+  "Report bugs to bug-libcdio@gnu.org\n"
