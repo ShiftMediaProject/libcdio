@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.14 2005/01/19 17:24:58 rocky Exp $
+  $Id: scan_devices.c,v 1.15 2005/01/22 03:45:19 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -69,11 +69,15 @@ const char *cdrom_devices[]={
   "/dev/gscd",
   "/dev/optcd",NULL};
 
+static cdrom_drive_t *
+cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device, 
+			  int messagedest, char **ppsz_messages);
+
 /* Functions here look for a cdrom drive; full init of a drive type
    happens in interface.c */
 
 cdrom_drive_t *
-cdda_find_a_cdrom(int messagedest, char **messages){
+cdda_find_a_cdrom(int messagedest, char **ppsz_messages){
   /* Brute force... */
   
   int i=0;
@@ -92,27 +96,27 @@ cdda_find_a_cdrom(int messagedest, char **messages){
 	/* number, then letter */
 	
 	buffer[pos-(cdrom_devices[i])]=j+48;
-	if((d=cdda_identify(buffer,messagedest,messages)))
+	if((d=cdda_identify(buffer, messagedest, ppsz_messages)))
 	  return(d);
-	idmessage(messagedest,messages,"",NULL);
+	idmessage(messagedest, ppsz_messages, "", NULL);
 	buffer[pos-(cdrom_devices[i])]=j+97;
-	if((d=cdda_identify(buffer,messagedest,messages)))
+	if((d=cdda_identify(buffer, messagedest, ppsz_messages)))
 	  return(d);
-	idmessage(messagedest,messages,"",NULL);
+	idmessage(messagedest, ppsz_messages, "", NULL);
       }
     }else{
       /* Name.  Go for it. */
-      if((d=cdda_identify(cdrom_devices[i],messagedest,messages)))
+      if((d=cdda_identify(cdrom_devices[i], messagedest, ppsz_messages)))
 	return(d);
       
-      idmessage(messagedest,messages,"",NULL);
+      idmessage(messagedest, ppsz_messages, "", NULL);
     }
     i++;
   }
   {
     struct passwd *temp;
     temp=getpwuid(geteuid());
-    idmessage(messagedest,messages,
+    idmessage(messagedest, ppsz_messages,
 	      "\n\nNo cdrom drives accessible to %s found.\n",
 	      temp->pw_name);
   }
@@ -120,60 +124,71 @@ cdda_find_a_cdrom(int messagedest, char **messages){
 }
 
 cdrom_drive_t *
-cdda_identify(const char *device, int messagedest,char **messages)
+cdda_identify(const char *psz_device, int messagedest,char **ppsz_messages)
 {
   cdrom_drive_t *d=NULL;
-  idmessage(messagedest,messages,"Checking %s for cdrom...",device);
 
-  d=cdda_identify_cooked(device,messagedest,messages);
+  if (psz_device) 
+    idmessage(messagedest, ppsz_messages, "Checking %s for cdrom...", 
+	      psz_device);
+  else 
+    idmessage(messagedest, ppsz_messages, "Checking for cdrom...", NULL );
+
+  d=cdda_identify_cooked(psz_device, messagedest, ppsz_messages);
 
   return(d);
 }
 
+cdrom_drive_t *
+cdda_identify_cdio(CdIo_t *p_cdio, int messagedest, char **ppsz_messages)
+{
+  if (!p_cdio) return NULL;
+  { 
+    const char *psz_device = cdio_get_arg(p_cdio, "source");
+    idmessage(messagedest, ppsz_messages, "Checking %s for cdrom...", 
+	      psz_device);
+    return cdda_identify_device_cdio(p_cdio, psz_device, messagedest, 
+				     ppsz_messages);
+  }
+
+}
+
 static char *
-test_resolve_symlink(const char *file,int messagedest,char **messages)
+test_resolve_symlink(const char *file, int messagedest, char **ppsz_messages)
 {
   char resolved[PATH_MAX];
   struct stat st;
-  if(lstat(file,&st)){
-    idperror(messagedest,messages,"\t\tCould not stat %s",file);
+  if (lstat(file,&st)){
+    idperror(messagedest, ppsz_messages, "\t\tCould not stat %s",file);
     return(NULL);
   }
 
-  if(realpath(file,resolved))
+  if (realpath(file,resolved))
     return(strdup(resolved));
 
-  idperror(messagedest,messages,"\t\tCould not resolve symlink %s",file);
+  idperror(messagedest, ppsz_messages, "\t\tCould not resolve symlink %s",
+	   file);
   return(NULL);
 }
 
-cdrom_drive_t *
-cdda_identify_cooked(const char *dev, int messagedest, char **messages)
+static cdrom_drive_t *
+cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device, 
+			  int messagedest, char **ppsz_messages)
 {
   cdrom_drive_t *d=NULL;
   int drive_type = 0;
   char *description=NULL;
-  char *device = NULL;
-  CdIo_t *p_cdio = NULL;
 #ifdef HAVE_LINUX_MAJOR_H
   struct stat st;
 #endif
 
-  if (dev) {
-    device = test_resolve_symlink(dev,messagedest,messages);
-    if ( !device ) device = strdup(dev);
-  }
-
-  p_cdio = cdio_open(device, DRIVER_UNKNOWN);
-  
   if (!p_cdio) {
-    idperror(messagedest,messages,"\t\tUnable to open %s", dev);
-    if (device) free(device);
+    idperror(messagedest, ppsz_messages, "\t\tUnable to open %s", psz_device);
     return NULL;
   }
   
 #ifdef HAVE_LINUX_MAJOR_H
-  if ( 0 == stat(device, &st) ) {
+  if ( 0 == stat(psz_device, &st) ) {
     if (S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode)) {
       drive_type=(int)(st.st_rdev>>8);
       switch (drive_type) {
@@ -223,15 +238,15 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
       case SCSI_CDROM_MAJOR:   
       case SCSI_GENERIC_MAJOR: 
 	/* Nope nope nope */
-	idmessage(messagedest,messages,"\t\t%s is not a cooked ioctl CDROM.",
-		  device);
-	free(device);
+	idmessage(messagedest, ppsz_messages,
+		  "\t\t%s is not a cooked ioctl CDROM.",
+		  psz_device);
 	return(NULL);
       default:
 	/* What the hell is this? */
-	idmessage(messagedest,messages,"\t\t%s is not a cooked ioctl CDROM.",
-		  device);
-	free(device);
+	idmessage(messagedest, ppsz_messages,
+		  "\t\t%s is not a cooked ioctl CDROM.",
+		  psz_device);
 	return(NULL);
       }
     }
@@ -242,7 +257,7 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
   
   d=calloc(1,sizeof(cdrom_drive_t));
   d->p_cdio           = p_cdio;
-  d->cdda_device_name = device;
+  d->cdda_device_name = strdup(psz_device);
   d->drive_type       = drive_type;
   d->interface        = COOKED_IOCTL;
   d->bigendianp       = -1; /* We don't know yet... */
@@ -269,10 +284,35 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
 		  hw_info.psz_vendor, hw_info.psz_model, hw_info.psz_revision 
 		  );
       }
-      idmessage(messagedest,messages,"\t\tCDROM sensed: %s\n", 
+      idmessage(messagedest, ppsz_messages, "\t\tCDROM sensed: %s\n", 
 		d->drive_model);
     }
   }
   
   return(d);
+}
+
+/* Really has nothing to with "cooked" mode. This is historical stuff
+   put in to fool folks who love to give opinions based on a
+   superficial reading of code. Down the line when we're ready to deal
+   with such folks, perhaps this routine should be renamed.
+*/
+cdrom_drive_t *
+cdda_identify_cooked(const char *psz_dev, int messagedest, 
+		     char **ppsz_messages)
+{
+  CdIo_t *p_cdio = NULL;
+
+  if (psz_dev) {
+    char *psz_device = test_resolve_symlink(psz_dev, messagedest, 
+					    ppsz_messages);
+    if ( psz_device ) {
+      p_cdio = cdio_open(psz_device, DRIVER_UNKNOWN);
+      return cdda_identify_device_cdio(p_cdio, psz_device, messagedest, 
+				       ppsz_messages);
+    }
+  }
+  p_cdio = cdio_open(psz_dev, DRIVER_UNKNOWN);
+  return cdda_identify_device_cdio(p_cdio, psz_dev, messagedest, 
+				   ppsz_messages);
 }

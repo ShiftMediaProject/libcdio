@@ -1,5 +1,5 @@
 /*
-  $Id: common_interface.c,v 1.8 2005/01/14 01:36:11 rocky Exp $
+  $Id: common_interface.c,v 1.9 2005/01/22 03:45:18 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
@@ -31,15 +31,20 @@
 #include "utils.h"
 #include "smallft.h"
 
-/*! Determine endian-ness of the CD-drive based on reading data from
-  it. 
+/*! Determine Endian-ness of the CD-drive based on reading data from
+  it. Some drives return audio data Big Endian while some (most)
+  return data Little Endian. Drives known to return data bigendian are
+  SCSI drives from Kodak, Ricoh, HP, Philips, Plasmon, Grundig
+  CDR100IPW, and Mitsumi CD-R. ATAPI and MMC drives are little endian.
 
-  rocky: As someone who didn't write the code, I have to say this is nothing
-  less than brilliant. An FFT is done bigendian and little endian and the
-  the transform is looked at to see which has data in the FFT (or audible)
+  rocky: As someone who didn't write the code, I have to say this is
+  nothing less than brilliant. An FFT is done both ways and the the
+  transform is looked at to see which has data in the FFT (or audible)
   portion. (Or so that's how I understand it.)
- */
 
+  @return 1 if big-endian, 0 if little-endian, -1 if we couldn't
+  figure things out or some error.
+ */
 int 
 data_bigendianp(cdrom_drive_t *d)
 {
@@ -149,17 +154,17 @@ data_bigendianp(cdrom_drive_t *d)
   d->enable_cdda(d,0);
 
   /* How did we vote?  Be potentially noisy */
-  if(lsb_votes>msb_votes){
+  if (lsb_votes>msb_votes) {
     char buffer[256];
-    cdmessage(d,"\n\tData appears to be coming back little endian.\n");
+    cdmessage(d,"\n\tData appears to be coming back Little Endian.\n");
     sprintf(buffer,"\tcertainty: %d%%\n",(int)
 	    (100.*lsb_votes/(lsb_votes+msb_votes)+.5));
     cdmessage(d,buffer);
     return(0);
-  }else{
+  } else {
     if(msb_votes>lsb_votes){
       char buffer[256];
-      cdmessage(d,"\n\tData appears to be coming back big endian.\n");
+      cdmessage(d,"\n\tData appears to be coming back Big Endian.\n");
       sprintf(buffer,"\tcertainty: %d%%\n",(int)
 	      (100.*msb_votes/(lsb_votes+msb_votes)+.5));
       cdmessage(d,buffer);
