@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.2 2004/02/07 02:40:20 rocky Exp $
+    $Id: iso-info.c,v 1.3 2004/02/08 03:35:24 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -107,6 +107,7 @@ parse_options (int argc, const char *argv[])
   while ((opt = poptGetNextOpt (optCon)) != -1) {
     switch (opt) {
     default:
+      poptFreeContext(optCon);
       return false;
     }
   }

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.40 2004/02/08 02:00:22 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.41 2004/02/08 03:35:24 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.40 2004/02/08 02:00:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.41 2004/02/08 03:35:24 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -575,7 +575,8 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
   if (NULL != obj) free(obj);
 
 static void 
-_cdio_bincue_destroy (void *obj) {
+_cdio_bincue_destroy (void *obj) 
+{
   _img_private_t *env = obj;
 
   if (NULL == env) return;
