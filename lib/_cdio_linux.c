@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.49 2004/06/02 00:43:53 rocky Exp $
+    $Id: _cdio_linux.c,v 1.50 2004/06/03 08:50:30 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.49 2004/06/02 00:43:53 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.50 2004/06/03 08:50:30 rocky Exp $";
 
 #include <string.h>
 
@@ -475,7 +475,7 @@ _read_mode1_sectors_linux (void *user_data, void *data, lsn_t lsn,
  */
 static int
 _read_mode2_sector_linux (void *user_data, void *data, lsn_t lsn, 
-			 bool b_form2)
+			  bool b_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
@@ -547,12 +547,13 @@ _read_mode2_sectors_linux (void *user_data, void *data, lsn_t lsn,
 {
   _img_private_t *env = user_data;
   unsigned int i;
-  int retval;
-  unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
+  unsigned int i_blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
+  /* For each frame, pick out the data part we need */
   for (i = 0; i < nblocks; i++) {
+    int retval;
     if ( (retval = _read_mode2_sector_linux (env, 
-					    ((char *)data) + (blocksize * i),
+					    ((char *)data) + (i_blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
   }
