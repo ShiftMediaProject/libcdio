@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.2 2005/03/05 10:10:16 rocky Exp $
+    $Id: gnu_linux.c,v 1.3 2005/03/05 10:48:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.2 2005/03/05 10:10:16 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.3 2005/03/05 10:48:41 rocky Exp $";
 
 #include <string.h>
 
@@ -396,15 +396,15 @@ get_drive_cap_linux (const void *p_user_data,
 }
 #endif
 
-/*!
-  Return the session number of the last on the CD. 
+/*! Get the LSN of the first track of the last session of
+  on the CD.
   
   @param p_cdio the CD object to be acted upon.
   @param i_last_session pointer to the session number to be returned.
 */
 static driver_return_code_t 
 get_last_session_linux (void *p_user_data, 
-                        /*out*/ unsigned int *i_last_session)
+                        /*out*/ lsn_t *i_last_session)
 {
   const _img_private_t *p_env = p_user_data;
   struct cdrom_multisession ms;

@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.11 2005/03/05 10:10:16 rocky Exp $
+    $Id: device.c,v 1.12 2005/03/05 10:48:41 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -582,8 +582,8 @@ cdio_get_hwinfo (const CdIo_t *p_cdio, cdio_hwinfo_t *hw_info)
   @param p_cdio the CD object to be acted upon.
   @param i_last_session pointer to the session number to be returned.
 */
-driver_return_code_t cdio_get_last_session (CdIo_t *p_cdio, /*out*/ unsigned 
-                                            int *i_last_session)
+driver_return_code_t cdio_get_last_session (CdIo_t *p_cdio,
+                                            /*out*/ lsn_t *i_last_session)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
   if (p_cdio->op.get_last_session)

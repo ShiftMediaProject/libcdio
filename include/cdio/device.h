@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.17 2005/03/05 10:10:16 rocky Exp $
+    $Id: device.h,v 1.18 2005/03/05 10:48:41 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -360,14 +360,14 @@ extern "C" {
 			 /* out*/ cdio_hwinfo_t *p_hw_info );
 
 
-  /*!
-    Return the session number of the last on the CD. 
+  /*! Get the LSN of the first track of the last session of
+    on the CD.
 
     @param p_cdio the CD object to be acted upon.
     @param i_last_session pointer to the session number to be returned.
   */
-  driver_return_code_t cdio_get_last_session (CdIo_t *p_cdio, /*out*/ unsigned 
-					      int *i_last_session);
+  driver_return_code_t cdio_get_last_session (CdIo_t *p_cdio,
+					      /*out*/ lsn_t *i_last_session);
 
   /*! 
       Find out if media has changed since the last call.
