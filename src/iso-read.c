@@ -1,5 +1,5 @@
 /*
-  $Id: iso-read.c,v 1.3 2004/02/29 16:02:48 rocky Exp $
+  $Id: iso-read.c,v 1.4 2004/03/11 01:01:15 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -42,6 +42,10 @@
 #endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+
+#if defined ( WIN32 )
+#define ftruncate chsize
 #endif
 
 /* Used by `main' to communicate with `parse_opt'. And global options
