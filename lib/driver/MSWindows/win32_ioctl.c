@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.19 2005/03/06 11:21:52 rocky Exp $
+    $Id: win32_ioctl.c,v 1.20 2005/03/07 00:55:31 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.19 2005/03/06 11:21:52 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.20 2005/03/07 00:55:31 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -60,6 +60,7 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.19 2005/03/06 11:21:52 rock
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
+#include <cdio/util.h>
 #include "cdio_assert.h"
 #include <cdio/mmc.h>
 #include "cdtext_private.h"
@@ -111,7 +112,7 @@ audio_pause_win32ioctl (void *p_user_data)
   
   bool b_success = 
     DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_PAUSE_AUDIO,
-		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, 0);
+		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, NULL);
 
   if ( ! b_success ) {
     char *psz_msg = NULL;
@@ -150,7 +151,7 @@ audio_play_msf_win32ioctl (void *p_user_data, msf_t *p_start_msf,
 
   bool b_success = 
     DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_PLAY_AUDIO_MSF,
-		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, 0);
+		    &play, sizeof(play), NULL, 0, &dw_bytes_returned, NULL);
   
   if ( ! b_success ) {
     char *psz_msg = NULL;
@@ -167,6 +168,39 @@ audio_play_msf_win32ioctl (void *p_user_data, msf_t *p_start_msf,
   
 }
 
+
+/* Like cdio_lsn_to_msf bout without the to_bcd8 encoding */
+static void
+lsn_to_msf (lsn_t lsn, msf_t *msf)
+{
+  int m, s, f;
+  
+  cdio_assert (msf != 0);
+
+  if ( lsn >= -CDIO_PREGAP_SECTORS ){
+    m    = (lsn + CDIO_PREGAP_SECTORS) / CDIO_CD_FRAMES_PER_MIN;
+    lsn -= m * CDIO_CD_FRAMES_PER_MIN;
+    s    = (lsn + CDIO_PREGAP_SECTORS) / CDIO_CD_FRAMES_PER_SEC;
+    lsn -= s * CDIO_CD_FRAMES_PER_SEC;
+    f    = lsn + CDIO_PREGAP_SECTORS;
+  } else {
+    m    = (lsn + CDIO_CD_MAX_LSN)     / CDIO_CD_FRAMES_PER_MIN;
+    lsn -= m * (CDIO_CD_FRAMES_PER_MIN);
+    s    = (lsn+CDIO_CD_MAX_LSN)       / CDIO_CD_FRAMES_PER_SEC;
+    lsn -= s * CDIO_CD_FRAMES_PER_SEC;
+    f    = lsn + CDIO_CD_MAX_LSN;
+  }
+
+  if (m > 99) {
+    cdio_warn ("number of minutes (%d) truncated to 99.", m);
+    m = 99;
+  }
+  
+  msf->m = m;
+  msf->s = s;
+  msf->f = f;
+}
+
 /*!
   Read Audio Subchannel information
   
@@ -178,6 +212,8 @@ audio_read_subchannel_win32ioctl (void *p_user_data,
 				  cdio_subchannel_t *p_subchannel)
 {
   const _img_private_t *p_env = p_user_data;
+  lba_t abs_lba;
+  lba_t rel_lba;
   DWORD dw_bytes_returned;
   CDROM_SUB_Q_DATA_FORMAT q_data_format;
   SUB_Q_CHANNEL_DATA q_subchannel_data;
@@ -201,8 +237,25 @@ audio_read_subchannel_win32ioctl (void *p_user_data,
     LocalFree(psz_msg);
     return DRIVER_OP_ERROR;
   }
-  memcpy(p_subchannel, &q_subchannel_data.CurrentPosition, 
-	 sizeof(cdio_subchannel_t));
+  p_subchannel->audio_status = 
+    q_subchannel_data.CurrentPosition.Header.AudioStatus;
+  p_subchannel->track = 
+    q_subchannel_data.CurrentPosition.TrackNumber;
+  p_subchannel->index = 
+    q_subchannel_data.CurrentPosition.IndexNumber;
+  p_subchannel->index = 
+    q_subchannel_data.CurrentPosition.IndexNumber;
+  p_subchannel->address = q_subchannel_data.CurrentPosition.ADR;
+  p_subchannel->control = q_subchannel_data.CurrentPosition.Control;
+
+  abs_lba = 
+    CDIO_MMC_GET_LEN32(q_subchannel_data.CurrentPosition.AbsoluteAddress);
+  rel_lba = 
+    CDIO_MMC_GET_LEN32(q_subchannel_data.CurrentPosition.TrackRelativeAddress);
+
+  lsn_to_msf(abs_lba, &p_subchannel->abs_addr.msf);
+  lsn_to_msf(rel_lba, &p_subchannel->rel_addr.msf);
+
   return DRIVER_OP_SUCCESS;
 }
 
@@ -221,7 +274,7 @@ audio_resume_win32ioctl (void *p_user_data)
   
   bool b_success = 
     DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_RESUME_AUDIO,
-		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, 0);
+		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, NULL);
 
   if ( ! b_success ) {
     char *psz_msg = NULL;
@@ -254,7 +307,67 @@ audio_set_volume_win32ioctl (void *p_user_data,
   bool b_success = 
     DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_SET_VOLUME,
 		    p_volume, (DWORD) sizeof(cdio_audio_volume_t), 
-		    NULL, 0, &dw_bytes_returned, 0);
+		    NULL, 0, &dw_bytes_returned, NULL);
+
+  if ( ! b_success ) {
+    char *psz_msg = NULL;
+    long int i_err = GetLastError();
+    FORMAT_ERROR(i_err, psz_msg);
+    if (psz_msg) 
+      cdio_info("Error: %s", psz_msg);
+    else 
+      cdio_info("Error: %ld", i_err);
+    LocalFree(psz_msg);
+    return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_SUCCESS;
+}
+
+/*!
+  Stop playing an audio CD.
+  
+  @param p_user_data the CD object to be acted upon.
+  
+*/
+driver_return_code_t 
+audio_stop_win32ioctl (void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+  DWORD dw_bytes_returned;
+  
+  bool b_success = 
+    DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_STOP_AUDIO,
+		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, NULL);
+
+  if ( ! b_success ) {
+    char *psz_msg = NULL;
+    long int i_err = GetLastError();
+    FORMAT_ERROR(i_err, psz_msg);
+    if (psz_msg) 
+      cdio_info("Error: %s", psz_msg);
+    else 
+      cdio_info("Error: %ld", i_err);
+    LocalFree(psz_msg);
+    return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_SUCCESS;
+}
+
+/*!
+  Close the tray of a CD-ROM
+  
+  @param p_user_data the CD object to be acted upon.
+  
+*/
+driver_return_code_t 
+close_tray_win32ioctl (void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+  DWORD dw_bytes_returned;
+  
+  bool b_success = 
+    DeviceIoControl(p_env->h_device_handle, IOCTL_STORAGE_LOAD_MEDIA2,
+		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, NULL);
 
   if ( ! b_success ) {
     char *psz_msg = NULL;

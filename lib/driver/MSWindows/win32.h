@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.6 2005/03/06 00:54:50 rocky Exp $
+    $Id: win32.h,v 1.7 2005/03/07 00:55:31 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -102,8 +102,25 @@ audio_read_subchannel_win32ioctl (void *p_user_data,
   
 */
 driver_return_code_t 
+audio_stop_win32ioctl ( void *p_user_data );
+
+/*!
+  Set the volume of an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+driver_return_code_t 
 audio_set_volume_win32ioctl ( void *p_user_data, 
 			      cdio_audio_volume_t *p_volume);
+
+/*!
+  Close the tray of a CD-ROM
+  
+  @param p_user_data the CD object to be acted upon.
+  
+*/
+driver_return_code_t close_tray_win32ioctl (void *p_user_data);
 
 /*!
    Reads an audio device using the DeviceIoControl method into data
