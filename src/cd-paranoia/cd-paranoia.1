@@ -1,4 +1,4 @@
-.TH CDPARANOIA 1 "02 Mar 2001"
+.TH CD-PARANOIA 1 "version III release alpha 9.8 libcdio"
 .SH NAME
 cdparanoia 9.8 (Paranoia release III) \- an audio CD reading utility which includes extra data verification features
 .SH SYNOPSIS
@@ -7,16 +7,16 @@ cdparanoia 9.8 (Paranoia release III) \- an audio CD reading utility which inclu
 .B span 
 .RB [ outfile ]
 .SH DESCRIPTION
-.B cdparanoia
+.B cd-paranoia
 retrieves audio tracks from CDDA capable CDROM drives.  The data can
 be saved to a file or directed to standard output in WAV, AIFF, AIFF-C
 or raw format.  Most ATAPI, SCSI and several proprietary CDROM drive
 makes are supported;
-.B cdparanoia
+.B cd-paranoia
 can determine if the target drive is CDDA capable.
 .P
 In addition to simple reading, 
-.B cdparanoia
+.B cd-paranoia
 adds extra-robust data verification, synchronization, error handling
 and scratch reconstruction capability.
 .SH OPTIONS
@@ -50,7 +50,7 @@ Forces a complete search for a cdrom drive, even if the /dev/cdrom link exists.
 .TP
 .B \-h --help
 Print a brief synopsis of 
-.B cdparanoia 
+.B cd-paranoia 
 usage and options.
 
 .TP
@@ -87,20 +87,20 @@ always in MSB first byte order).
 .TP
 .BI "\-B --batch "
 
-Cdda2wav-style batch output flag; cdparanoia will split the output
+Cdda2wav-style batch output flag; cd-paranoia will split the output
 into multiple files at track boundaries.  Output file names are
 prepended with 'track#.'
 
 .TP
 .B \-c --force-cdrom-little-endian
 Some CDROM drives misreport their endianness (or do not report it at
-all); it's possible that cdparanoia will guess wrong.  Use
+all); it's possible that cd-paranoia will guess wrong.  Use
 .B \-c
-to force cdparanoia to treat the drive as a little endian device.
+to force cd-paranoia to treat the drive as a little endian device.
 
 .TP
 .B \-C --force-cdrom-big-endian
-As above but force cdparanoia to treat the drive as a big endian device.
+As above but force cd-paranoia to treat the drive as a big endian device.
 
 .TP
 .BI "\-n --force-default-sectors " n
@@ -151,7 +151,7 @@ every track seeming to start too late (losing a bit of the beginning
 and catching a bit of the next track).
 .B \-T
 accounts for this behavior.  Note that this option will cause
-cdparanoia to attempt to read sectors before or past the known user
+cd-paranoia to attempt to read sectors before or past the known user
 data area of the disc, resulting in read errors at disc edges on most
 drives and possibly even hard lockups on some buggy hardware.
 
@@ -160,7 +160,7 @@ drives and possibly even hard lockups on some buggy hardware.
 Use this option to force the entire disc to shift sample position
 output by the given amount; This can be used to shift track boundaries
 for the whole disc manually on sample granularity. Note that this will
-cause cdparanoia to attempt to read partial sectors before or past the
+cause cd-paranoia to attempt to read partial sectors before or past the
 known user data area of the disc, probably causing read errors on most
 drives and possibly even hard lockups on some buggy hardware.
 
@@ -169,7 +169,7 @@ drives and possibly even hard lockups on some buggy hardware.
 .B \-Z --disable-paranoia
 Disable 
 .B all
-data verification and correction features.  When using -Z, cdparanoia
+data verification and correction features.  When using -Z, cd-paranoia
 reads data exactly as would cdda2wav with an overlap setting of zero.
 This option implies that 
 .B \-Y
@@ -249,7 +249,7 @@ Unreported loss of streaming/other error in read
 .B
    !  
 Errors found after stage 1 correction; the drive is making the
-same error through multiple re-reads, and cdparanoia is having trouble
+same error through multiple re-reads, and cd-paranoia is having trouble
 detecting them.
 .TP
 .B
@@ -311,25 +311,25 @@ A few examples, protected from the shell:
 .TP
 Query only with exhaustive search for a drive and full reporting of autosense:
 .P
-       cdparanoia -vsQ
+       cd-paranoia -vsQ
 .TP
 Extract an entire disc, putting each track in a seperate file:
 .P
-       cdparanoia -B 
+       cd-paranoia -B 
 .TP
 Extract from track 1, time 0:30.12 to 1:10.00:
 .P
-       cdparanoia "1[:30.12]-1[1:10]"
+       cd-paranoia "1[:30.12]-1[1:10]"
 .TP
 Extract from the beginning of the disc up to track 3:
 .P
-       cdparanoia -- "-3"
+       cd-paranoia -- "-3"
 .TP
 The "--" above is to distinguish "-3" from an option flag.
 .SH OUTPUT
 
 The output file argument is optional; if it is not specified,
-cdparanoia will output samples to one of
+cd-paranoia will output samples to one of
 .BR cdda.wav ", " cdda.aifc ", or " cdda.raw
 depending on whether 
 .BR \-w ", " \-a ", " \-r " or " \-R " is used (" \-w 
@@ -338,9 +338,9 @@ is the implicit default).  The output file argument of
 specifies standard output; all data formats may be piped. 
 
 .SH ACKNOWLEDGEMENTS
-Cdparanoia sprang from and once drew heavily from the interface of
+Cd-Paranoia sprang from and once drew heavily from the interface of
 Heiko Eissfeldt's (heiko@colossus.escape.de) 'cdda2wav'
-package. Cdparanoia would not have happened without it.
+package. Cd-Paranoia would not have happened without it.
 .P
 Joerg Schilling has also contributed SCSI expertise through his
 generic SCSI transport library.
@@ -348,5 +348,5 @@ generic SCSI transport library.
 .SH AUTHOR
 Monty <monty@xiph.org>
 .P
-Cdparanoia's homepage may be found at:
+Cd-Paranoia's homepage may be found at:
 http://www.xiph.org/paranoia/
