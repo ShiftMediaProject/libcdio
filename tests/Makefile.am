@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.6 2003/04/14 10:03:27 rocky Exp $
+#   $Id: Makefile.am,v 1.7 2003/04/19 19:12:06 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -22,9 +22,8 @@
 #
 check_SCRIPTS = check_nrg.sh check_cue.sh check_opts.sh
 
-check_DATA = monvoisin.right svcd_ogt_test_ntsc.right vcd_demo.right \
-	     fsf-tompox.right fsf-tompox.cue fsf-tompox.bin monvoisin.nrg \
-	     fsf.right fsf.bin fsf.cue \
+check_DATA = vcd_demo.right \
+	     fsf-tompox.right fsf-tompox.cue fsf-tompox.bin \
 	     check_opts0.right check_opts1.right check_opts2.right \
              check_opts3.right check_opts4.right check_opts5.right \
              check_opts6.right check_opts7.right	

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.2 2003/04/19 08:29:14 rocky Exp $
+#   $Id: Makefile.am,v 1.3 2003/04/19 19:12:06 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -25,6 +25,46 @@ EXTRA_DIST = libpopt.m4 THANKS
 # SUBDIRS =  doc include lib src tests
 SUBDIRS =  include lib src tests
 
+# List of additional files for expanded regression tests
+DISTFILES_REGRESSION = tests/monvoisin.nrg  tests/monvoisin.right \
+	               tests/svcd_ogt_test_ntsc.bin \
+	               tests/svcd_ogt_test_ntsc.cue \
+	               tests/svcd_ogt_test_ntsc.right \
+		       tests/fsf.bin tests/fsf.cue tests/fsf.right
 
+REGRESSION_VERSION = 1.0
 
+distdir_regression = ../$(PACKAGE)-$(REGRESSION_VERSION)-tests
 
+dist-regression: distdir-regression
+	cd $(distdir) && $(AMTAR) chof - tests | GZIP=$(GZIP_ENV) gzip -c >$(distdir_regression).tar.gz
+	$(am__remove_distdir)
+
+distdir-regression: $(DISTFILES_REGRESSION)
+	$(am__remove_distdir)
+	mkdir $(distdir)
+	@list='$(DISTFILES_REGRESSION)'; for file in $$list; do \
+	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
+	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \
+	  if test "$$dir" != "$$file" && test "$$dir" != "."; then \
+	    dir="/$$dir"; \
+	    $(mkinstalldirs) "$(distdir)$$dir"; \
+	  else \
+	    dir=''; \
+	  fi; \
+	  if test -d $$d/$$file; then \
+	    if test -d $(srcdir)/$$file && test $$d != $(srcdir); then \
+	      cp -pR $(srcdir)/$$file $(distdir)$$dir || exit 1; \
+	    fi; \
+	    cp -pR $$d/$$file $(distdir)$$dir || exit 1; \
+	  else \
+	    test -f $(distdir_regressoin)/$$file \
+	    || cp -p $$d/$$file $(distdir)/$$file \
+	    || exit 1; \
+	  fi; \
+	done
+	-find $(distdir) -type d ! -perm -777 -exec chmod a+rwx {} \; -o \
+	  ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
+	  ! -type d ! -perm -400 -exec chmod a+r {} \; -o \
+	  ! -type d ! -perm -444 -exec $(SHELL) $(install_sh) -c -m a+r {} {} \; \
+	|| chmod -R a+r $(distdir)

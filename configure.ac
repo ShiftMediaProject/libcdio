@@ -1,7 +1,7 @@
-AC_REVISION([$Id: configure.ac,v 1.10 2003/04/19 08:29:14 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.11 2003/04/19 19:12:06 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(libcdio, 0.2)
+AM_INIT_AUTOMAKE(libcdio, 0.3)
      
 AM_SANITY_CHECK
 
@@ -215,6 +215,7 @@ AC_OUTPUT([ \
        Makefile \
        include/Makefile \
        include/cdio/Makefile \
+       include/cdio/cdio.h \
        lib/Makefile \
        src/Makefile \
        tests/check_opts.sh \

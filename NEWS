@@ -1,3 +1,9 @@
+0.3 
+-  facilitate inclusion into another project's local source tree (e.g. xine)
+-  version number in include
+-  cdinfo: lists number of CDDB matches
+-  fix some small compile warnings and configure bugs
+
 0.2 
 -  Added Support for reading audio sectors
 -  cdinfo can use libcddb (http://libcddb.sourceforge.net). If installed and
@@ -6,5 +12,6 @@
 -  Don't need to open device to give get a default device.
 -  Better device driver selection: We test for file/device-ness. 
 -  Bugs fixed (default device name on linux), 
+
 0.1
   Routines split off from VCDImager.
