@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.87 2004/07/31 07:43:26 rocky Exp $
+    $Id: _cdio_linux.c,v 1.88 2004/08/05 03:58:46 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.87 2004/07/31 07:43:26 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.88 2004/08/05 03:58:46 rocky Exp $";
 
 #include <string.h>
 
@@ -982,7 +982,7 @@ set_cdtext_field_linux(void *user_data, track_t i_track,
 static bool
 init_cdtext_linux (_img_private_t *p_env)
 {
-  return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
+  return scsi_mmc_init_cdtext_private( p_env,
 				       &run_scsi_cmd_linux, 
 				       set_cdtext_field_linux
 				       );
