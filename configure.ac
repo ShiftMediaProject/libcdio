@@ -1,4 +1,4 @@
-AC_REVISION([$Id: configure.ac,v 1.8 2003/04/14 10:03:27 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.9 2003/04/19 00:50:39 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.2)
@@ -193,12 +193,21 @@ fi
 if test x$enable_cddb = xyes; then
     AC_CHECK_LIB(cddb, cddb_disc_calc_discid,
                  [ CDDB_LIB="-lcddb"; ac_have_cddb=yes ])
-    AC_DEFINE([HAVE_CDDB],1,
-	      [Define this if you have libcddb installed])
+    AC_TRY_COMPILE([#include <cddb/cddb.h>],[
+cddb_conn_t *conn;
+cddb_http_enable(conn);
+], [
+    HAVE_CDDB=yes 
+    AC_DEFINE(HAVE_CDDB, [], [Define this if you have libcddb installed])
+    ],
+AC_MSG_WARN(libcddb library might not be new enough; need version 0.90 or greater), 
+    HAVE_CDDB=no)
 fi
 
 
 AC_SUBST(CDDB_LIB)
+
+AC_CONFIG_COMMANDS([check-opts], [chmod +x tests/check_opts.sh])
 
 AC_OUTPUT([ \
        Makefile \
@@ -208,4 +217,3 @@ AC_OUTPUT([ \
        tests/Makefile \
        ])
 
-chmod +x tests/check_opts.sh
