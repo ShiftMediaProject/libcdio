@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.16 2004/05/04 02:06:49 rocky Exp $
+#$Id: check_cue.sh.in,v 1.17 2004/05/06 01:22:13 rocky Exp $
 # Tests to see that BIN/CUE and BIN/TOC file iamge reading is correct
 # (via cd-info).
 
@@ -64,22 +64,22 @@ else
   right=${srcdir}/${fname}_vcdinfo.right
 fi
 testnum='Video CD'
-if test -f ${srcdir}/${fname}.cue ; then
+if test -f ${srcdir}/${fname}.bin ; then
   test_cdinfo "-q -c ${srcdir}/vcd_demo.cue --iso9660" \
       ${fname}.dump $right
   RC=$?
   check_result $RC "cd-info CUE test $testnum"
+
+  if test -f ${srcdir}/${fname}.toc ; then
+    test_cdinfo "-q -t ${srcdir}/vcd_demo.toc --iso9660" \
+      ${fname}.dump $right
+    RC=$?
+    check_result $RC "cd-info TOC test $testnum"
+  else 
+    echo "Don't see TOC file ${srcdir}/${fname}.toc. Test $testnum skipped."
+  fi
 else 
   echo "Don't see CUE file ${srcdir}/${fname}.cue. Test $testnum skipped."
-fi
-
-if test -f ${srcdir}/${fname}.toc ; then
-  test_cdinfo "-q -t ${srcdir}/vcd_demo.toc --iso9660" \
-      ${fname}.dump $right
-  RC=$?
-  check_result $RC "cd-info TOC test $testnum"
-else 
-  echo "Don't see TOC file ${srcdir}/${fname}.toc. Test $testnum skipped."
 fi
 
 fname=svcd_ogt_test_ntsc
