@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.17 2005/02/24 00:18:34 rocky Exp $
+    $Id: _cdio_osx.c,v 1.18 2005/02/24 00:25:52 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,11 +34,15 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.17 2005/02/24 00:18:34 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.18 2005/02/24 00:25:52 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
+
+/* For SCSI TR_* enumerations */
+#include <cdio/cdda.h>
+
 #include "cdio_assert.h"
 #include "cdio_private.h"
 
@@ -84,18 +88,6 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.17 2005/02/24 00:18:34 rocky 
 
 /* FIXME */
 #define MAX_BIG_BUFF_SIZE  65535
-#define TR_OK            0
-#define TR_EWRITE        1  /* Error writing packet command (transport) */
-#define TR_EREAD         2  /* Error reading packet data (transport) */
-#define TR_UNDERRUN      3  /* Read underrun */
-#define TR_OVERRUN       4  /* Read overrun */
-#define TR_ILLEGAL       5  /* Illegal/rejected request */
-#define TR_MEDIUM        6  /* Medium error */
-#define TR_BUSY          7  /* Device busy */
-#define TR_NOTREADY      8  /* Device not ready */
-#define TR_FAULT         9  /* Devive failure */
-#define TR_UNKNOWN      10  /* Unspecified error */
-#define TR_STREAMING    11  /* loss of streaming */
 
 #define kIOCDBlockStorageDeviceClassString		"IOCDBlockStorageDevice"
 
