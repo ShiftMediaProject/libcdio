@@ -1,5 +1,5 @@
 /*
-    $Id: bsdi.c,v 1.9 2005/03/21 07:59:13 rocky Exp $
+    $Id: bsdi.c,v 1.10 2005/03/22 08:59:54 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: bsdi.c,v 1.9 2005/03/21 07:59:13 rocky Exp $";
+static const char _rcsid[] = "$Id: bsdi.c,v 1.10 2005/03/22 08:59:54 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -272,8 +272,8 @@ audio_play_msf_bsdi (void *p_user_data, msf_t *p_start_msf, msf_t *p_end_msf)
 {
 
   _img_private_t *p_env = p_user_data;
-  lsn_t i_start_lsn = cdio_msf_to_lsn(p_start_msf);
-  lsn_t i_end_lsn   = cdio_msf_to_lsn(p_end_msf);
+  lsn_t i_start_lsn = cdio_msf_to_lba(p_start_msf);
+  lsn_t i_end_lsn   = cdio_msf_to_lba(p_end_msf);
 
   if (!p_env->p_cdinfo) {
     p_env->p_cdinfo = cdopen(p_env->gen.source_name);
@@ -881,12 +881,12 @@ driver_return_code_t
 close_tray_bsdi (char *psz_device)
 {
 #ifdef HAVE_BSDI_CDROM
-  struct cdinfo *p_cdinfo;
-  int i_rc;
-  p_cdinfo = cdopen(psz_device);
-  i_rc = cdload(p_cdinfo);
-  cdclose(p_cdinfo);
-  return i_rc;
+  int fd = open(psz_device, O_RDONLY | O_NONBLOCK, 0);
+
+  if (fd < 0) return DRIVER_OP_ERROR;
+  cdrom_tray_move(fd, 0);
+  close(fd);
+  return DRIVER_OP_SUCCESS;
 #else 
   return DRIVER_OP_NO_DRIVER;
 #endif /*HAVE_BSDI_CDROM*/
