@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.23 2003/09/05 22:48:16 rocky Exp $
+    $Id: cdio.c,v 1.24 2003/09/13 06:25:37 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.23 2003/09/05 22:48:16 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.24 2003/09/13 06:25:37 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -114,6 +114,16 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_have_solaris,
    &cdio_open_solaris,
    &cdio_get_default_device_solaris,
+   &cdio_is_device_generic
+  },
+
+  {DRIVER_OSX, 
+   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
+   "OS X",
+   "Apple Darwin OS X driver",
+   &cdio_have_osx,
+   &cdio_open_osx,
+   &cdio_get_default_device_osx,
    &cdio_is_device_generic
   },
 
@@ -693,6 +703,7 @@ cdio_open (const char *orig_source_name, driver_id_t driver_id)
   case DRIVER_LINUX:
   case DRIVER_SOLARIS:
   case DRIVER_WIN32:
+  case DRIVER_OSX:
   case DRIVER_NRG:
   case DRIVER_BINCUE:
     if ((*CdIo_all_drivers[driver_id].have_driver)()) {

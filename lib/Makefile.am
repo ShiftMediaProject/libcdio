@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.11 2003/08/31 08:32:40 rocky Exp $
+#   $Id: Makefile.am,v 1.12 2003/09/13 06:25:37 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -29,6 +29,7 @@ libcdio_sources = \
 	_cdio_freebsd.c \
 	_cdio_generic.c \
 	_cdio_linux.c \
+	_cdio_osx.c \
 	_cdio_nrg.c \
 	_cdio_stdio.c \
 	_cdio_stdio.h \

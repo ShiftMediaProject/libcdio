@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.38 2003/09/07 18:11:35 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.39 2003/09/13 06:25:36 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
@@ -182,6 +182,12 @@ ACLOCAL_AMFLAGS='-I .'
 AC_SUBST(ACLOCAL_AMFLAGS)
 
 case $host_os in
+     darwin6*)
+       AC_CHECK_HEADERS(IOKit/IOKitLib.h, [have_osx_cdrom="yes"])
+       AC_DEFINE([HAVE_OSX_CDROM], [1], 
+	     [Define 1 if you have OSX-type CD-ROM support])
+       cd_drivers="${cd_drivers}OS X "
+     ;;
      linux*)
         AC_CHECK_HEADERS(linux/version.h)
         AC_CHECK_HEADERS(linux/cdrom.h, [have_linux_cdrom_h="yes"])

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.18 2003/09/05 22:48:16 rocky Exp $
+    $Id: cdio.h,v 1.19 2003/09/13 06:25:36 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -74,6 +74,7 @@ extern "C" {
     DRIVER_FREEBSD, 
     DRIVER_LINUX,
     DRIVER_SOLARIS, 
+    DRIVER_OSX, 
     DRIVER_WIN32,
     DRIVER_BINCUE, /* Prefer bincue over nrg when both exist */
     DRIVER_NRG,    
@@ -268,6 +269,7 @@ extern "C" {
   bool cdio_have_freebsd (void);
   bool cdio_have_linux   (void);
   bool cdio_have_solaris (void);
+  bool cdio_have_osx     (void);
   bool cdio_have_win32   (void);
   bool cdio_have_nrg     (void);
   bool cdio_have_bincue  (void);
@@ -334,6 +336,13 @@ extern "C" {
   CdIo * cdio_open_solaris (const char *source_name);
   
   char * cdio_get_default_device_solaris(void);
+  
+  /*! Darwin OS X CD-reading routines. 
+     NULL is returned on error.
+   */
+  CdIo * cdio_open_osx (const char *source_name);
+
+  char * cdio_get_default_device_osx(void);
   
   /*! Win32 CD-reading routines. 
      NULL is returned on error.
