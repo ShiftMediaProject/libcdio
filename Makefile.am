@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.32 2005/01/25 02:13:47 rocky Exp $
+#   $Id: Makefile.am,v 1.33 2005/01/27 03:26:37 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,9 +23,9 @@
 EXTRA_DIST = libpopt.m4 THANKS README.libcdio \
 	     package/libcdio-suse.spec.in package/libcdio-suse.spec \
 	     package/libcdio.spec.in package/libcdio.spec \
-	     package/libcdio.pc.in package/libcdio.pc \
-	     package/libcdio_cdda.pc.in package/libcdio_cdda.pc \
-	     package/libiso9660.pc.in package/libiso9660.pc \
+	     libcdio.pc.in libcdio.pc \
+	     libcdio_cdda.pc.in libcdio_cdda.pc \
+	     libiso9660.pc.in libiso9660.pc \
 	     example/README \
 	     MSVC/config.h    MSVC/README MSVC/cd-info.vcproj \
              MSVC/libcdio.sln MSVC/libcdio.vcproj 

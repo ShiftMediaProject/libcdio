@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.3 2005/01/11 00:34:10 rocky Exp $
+#   $Id: Makefile.am,v 1.4 2005/01/27 03:26:37 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -43,7 +43,7 @@
 #     incompatibility with previous versions.
 
 libiso9660_la_CURRENT := 3
-libiso9660_la_REVISION := 0
+libiso9660_la_REVISION := 1
 libiso9660_la_AGE := 0
 
 EXTRA_DIST = libiso9660.sym
