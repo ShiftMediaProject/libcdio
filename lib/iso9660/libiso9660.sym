@@ -1,7 +1,7 @@
 iso9660_close
 iso9660_dir_add_entry_su
 iso9660_dir_calc_record_size
-iso9660_dir_init_new
+iso9660_dir_init_new;
 iso9660_dir_init_new_su
 iso9660_dir_to_name
 iso9660_dirname_valid_p
