@@ -3,5 +3,6 @@
 .libs
 Makefile.in
 Makefile
+copying
 sample?
 sample??
