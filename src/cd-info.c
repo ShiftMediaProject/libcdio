@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.10 2003/06/07 22:13:30 rocky Exp $
+    $Id: cd-info.c,v 1.11 2003/06/07 22:16:10 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -499,7 +499,7 @@ read_block(int superblock, uint32_t offset, uint8_t bufnum, track_t track_num)
 
   if (cdio_get_track_green(cdio,  track_num)) {
     if (0 > cdio_read_mode2_sector(cdio, buffer[bufnum], 
-				   offset+superblock, true))
+				   offset+superblock, false))
       return -1;
   } else {
     if (0 > cdio_read_yellow_sector(cdio, buffer[bufnum], 
