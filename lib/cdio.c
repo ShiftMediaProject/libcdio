@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.42 2004/03/20 22:46:57 rocky Exp $
+    $Id: cdio.c,v 1.43 2004/03/21 03:43:06 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.42 2004/03/20 22:46:57 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.43 2004/03/21 03:43:06 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -336,17 +336,20 @@ cdio_get_devices_with_cap (char* search_devices[],
 
   if (capabilities == CDIO_FS_MATCH_ALL) {
     /* Duplicate drives into drives_ret. */
-    for( ; *drives != NULL; drives++ ) {
-      cdio_add_device_list(&drives_ret, *drives, &num_drives);
+    char **d = drives;
+    
+    for( ; *d != NULL; d++ ) {
+      cdio_add_device_list(&drives_ret, *d, &num_drives);
     }
   } else {
     cdio_fs_anal_t got_fs=0;
     cdio_fs_anal_t need_fs = CDIO_FSTYPE(capabilities);
     cdio_fs_anal_t need_fs_ext;
+    char **d = drives;
     need_fs_ext = capabilities & ~CDIO_FS_MASK;
       
-    for( ;  *drives != NULL; drives++ ) {
-      CdIo *cdio = cdio_open(*drives, DRIVER_UNKNOWN);
+    for( ;  *d != NULL; d++ ) {
+      CdIo *cdio = cdio_open(*d, DRIVER_UNKNOWN);
       
       if (NULL != cdio) {
         track_t first_track = cdio_get_first_track_num(cdio);
@@ -368,6 +371,8 @@ cdio_get_devices_with_cap (char* search_devices[],
     }
   }
   cdio_add_device_list(&drives_ret, NULL, &num_drives);
+  cdio_free_device_list(drives);
+  free(drives);
   return drives_ret;
 }
 
