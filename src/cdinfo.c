@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.4 2003/03/29 17:32:00 rocky Exp $
+    $Id: cdinfo.c,v 1.5 2003/04/06 06:46:06 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -130,7 +130,7 @@ and
 #define ROCKRIDGE            2048
 #define JOLIET               4096
 
-char buffer[6][CDDA_SECTOR_SIZE];  /* for CD-Data */
+char buffer[6][CD_FRAMESIZE_RAW];  /* for CD-Data */
 
 /* Some interesting sector numbers stored in the above buffer. */
 #define ISO_SUPERBLOCK_SECTOR  16  /* buffer[0] */
@@ -659,7 +659,7 @@ cddb_discid()
   }
 
   cdio_get_track_msf(img, 1, &start_msf);
-  cdio_get_track_msf(img, CDIO_LEADOUT_TRACK, &msf);
+  cdio_get_track_msf(img, CDROM_LEADOUT, &msf);
   
   t = msf_seconds(&msf) - msf_seconds(&start_msf);
   
@@ -826,14 +826,14 @@ main(int argc, const char *argv[])
   }
   
   /* Read and possibly print track information. */
-  for (i = first_track_num; i <= CDIO_LEADOUT_TRACK; i++) {
+  for (i = first_track_num; i <= CDROM_LEADOUT; i++) {
     msf_t msf;
     
     if (!cdio_get_track_msf(img, i, &msf)) {
       err_exit("cdio_track_msf for track %i failed, I give up.\n", i);
     }
 
-    if (i == CDIO_LEADOUT_TRACK) {
+    if (i == CDROM_LEADOUT) {
       if (!opts.no_tracks)
 	printf("%3d: %2.2x:%2.2x:%2.2x  %06d  leadout\n",
 	       (int) i, 
@@ -859,7 +859,7 @@ main(int argc, const char *argv[])
 	first_data = i;
     }
     /* skip to leadout? */
-    if (i == num_tracks) i = CDIO_LEADOUT_TRACK-1;
+    if (i == num_tracks) i = CDROM_LEADOUT-1;
   }
 
 #if CDIO_IOCTL_FINISHED
@@ -970,6 +970,7 @@ main(int argc, const char *argv[])
 	case TRACK_FORMAT_CDI:
 	case TRACK_FORMAT_XA:
 	case TRACK_FORMAT_DATA: 
+	case TRACK_FORMAT_PSX: 
 	  ;
 	}
 	
