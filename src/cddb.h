@@ -1,5 +1,5 @@
 /*
-  $Id: cddb.h,v 1.1 2005/03/06 11:21:52 rocky Exp $
+  $Id: cddb.h,v 1.2 2005/03/11 10:34:28 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -17,6 +17,19 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
+typedef struct cddb_opts_s 
+{
+  char          *email;  /* email to report to CDDB server. */
+  char          *server; /* CDDB server to contact */
+  int            port;   /* port number to contact CDDB server. */
+  int            http;   /* 1 if use http proxy */
+  int            timeout;
+  bool           disable_cache; /* If set the below is meaningless. */
+  char          *cachedir;
+} cddb_opts_t;
+
+cddb_opts_t cddb_opts;
 
 /*!
    Compute the CDDB disk ID for an Audio disk.  This is a funny checksum

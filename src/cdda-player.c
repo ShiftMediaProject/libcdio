@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.3 2005/03/09 02:19:54 rocky Exp $
+    $Id: cdda-player.c,v 1.4 2005/03/11 10:34:28 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -69,9 +69,7 @@
 static void play_track(track_t t1, track_t t2);
 static void display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, 
 			   track_t i_first_track);
-static bool init_cddb(CdIo_t *p_cdio, track_t i_tracks);
 static void get_cddb_track_info(track_t i_track);
-
 
 CdIo_t             *p_cdio;               /* libcdio handle */
 driver_id_t        driver_id = DRIVER_DEVICE;
@@ -116,17 +114,6 @@ typedef enum {
 char *psz_device=NULL;
 char *psz_program;
 
-struct opts_s
-{
-  char          *cddb_email;  /* email to report to CDDB server. */
-  char          *cddb_server; /* CDDB server to contact */
-  int            cddb_port;   /* port number to contact CDDB server. */
-  int            cddb_http;   /* 1 if use http proxy */
-  int            cddb_timeout;
-  bool           cddb_disable_cache; /* If set the below is meaningless. */
-  char          *cddb_cachedir;
-} opts;
-
 /* Info about songs and titles. The 0 entry will contain the disc info.
  */
 typedef struct 
@@ -134,6 +121,7 @@ typedef struct
   char title[80];
   char artist[80];
   char ext_data[80];
+  bool b_cdtext;  /* true if from CD-Text, false if from CDDB */
 } cd_track_info_rec_t;
 
 cd_track_info_rec_t cd_info[CDIO_CD_MAX_TRACKS+2];
@@ -144,7 +132,14 @@ char genre[40];
 char category[40];
 char year[5];
 
+bool b_cdtext_title;     /* true if from CD-Text, false if from CDDB */
+bool b_cdtext_artist;    /* true if from CD-Text, false if from CDDB */
+bool b_cdtext_genre;     /* true if from CD-Text, false if from CDDB */
+bool b_cdtext_category;  /* true if from CD-Text, false if from CDDB */
+
 #ifdef HAVE_CDDB
+static bool init_cddb(CdIo_t *p_cdio, cddb_conn_t *p_conn, track_t i_tracks);
+
 cddb_conn_t *p_conn = NULL;
 cddb_disc_t *p_cddb_disc = NULL;
 int i_cddb_matches = 0;
@@ -360,7 +355,13 @@ read_toc(CdIo_t *p_cdio)
   } else {
     b_cd = true;
     data = 0;
-    b_db = init_cddb(p_cdio, i_tracks);
+    b_db = 
+#ifdef HAVE_CDDB
+      init_cddb(p_cdio, p_conn, i_tracks)
+#else
+      false
+#endif
+      ;
     for (i = i_first_track; i <= i_last_track+1; i++) {
       if ( !cdio_get_track_msf(p_cdio, i, &(toc[i])) )
       {
@@ -506,10 +507,10 @@ display_status()
   if (p_cddb_disc->field) \
     snprintf(field, sizeof(field)-1, format_str, p_cddb_disc->field);
 
-static bool
-init_cddb(CdIo_t *p_cdio, track_t i_tracks)
-{
 #ifdef HAVE_CDDB
+static bool
+init_cddb(CdIo_t *p_cdio, cddb_conn_t *p_conn, track_t i_tracks)
+{
   track_t i;
   
   if (p_conn) cddb_destroy(p_conn);
@@ -521,30 +522,30 @@ init_cddb(CdIo_t *p_cdio, track_t i_tracks)
     return false;
   }
   
-  if (NULL == opts.cddb_email) 
+  if (NULL == cddb_opts.email) 
     cddb_set_email_address(p_conn, "me@home");
   else 
-    cddb_set_email_address(p_conn, opts.cddb_email);
+    cddb_set_email_address(p_conn, cddb_opts.email);
   
-  if (NULL == opts.cddb_server) 
+  if (NULL == cddb_opts.server) 
     cddb_set_server_name(p_conn, "freedb.freedb.org");
   else 
-    cddb_set_server_name(p_conn, opts.cddb_server);
+    cddb_set_server_name(p_conn, cddb_opts.server);
   
-  if (opts.cddb_timeout >= 0) 
-    cddb_set_timeout(p_conn, opts.cddb_timeout);
+  if (cddb_opts.timeout >= 0) 
+    cddb_set_timeout(p_conn, cddb_opts.timeout);
   
-  cddb_set_server_port(p_conn, opts.cddb_port);
+  cddb_set_server_port(p_conn, cddb_opts.port);
   
-  if (opts.cddb_http) 
+  if (cddb_opts.http) 
     cddb_http_enable(p_conn);
   else 
     cddb_http_disable(p_conn);
   
-  if (NULL != opts.cddb_cachedir) 
-    cddb_cache_set_dir(p_conn, opts.cddb_cachedir);
+  if (NULL != cddb_opts.cachedir) 
+    cddb_cache_set_dir(p_conn, cddb_opts.cachedir);
   
-  if (opts.cddb_disable_cache) 
+  if (cddb_opts.disable_cache) 
     cddb_cache_disable(p_conn);
   
   p_cddb_disc = cddb_disc_new();
@@ -579,10 +580,8 @@ init_cddb(CdIo_t *p_cdio, track_t i_tracks)
   add_cddb_disc_info("%s",  genre);
   add_cddb_disc_info("%5d", year);
   return true;
-#else
-    return false;
-#endif      
 }
+#endif /*HAVE_CDDB*/
 
 #define add_cddb_track_info(format_str, field) \
   if (t->field) \
@@ -1052,7 +1051,7 @@ main(int argc, char *argv[])
   psz_program = strrchr(argv[0],'/');
   psz_program = psz_program ? psz_program+1 : argv[0];
 
-  memset(&opts, 0, sizeof(opts));
+  memset(&cddb_opts, 0, sizeof(cddb_opts));
   
   /* parse options */
   while ( 1 ) {

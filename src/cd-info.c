@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.132 2005/03/06 11:21:52 rocky Exp $
+    $Id: cd-info.c,v 1.133 2005/03/11 10:34:28 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -22,7 +22,6 @@
 /*
   CD Info - prints various information about a CD, and detects the type of 
   the CD.
- 
 */
 
 #include "util.h"
@@ -71,20 +70,13 @@ struct cdrom_subchnl       sub;
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
-struct arguments
+struct opts_s
 {
   int            no_tracks;
   int            no_ioctl;
   int            no_analysis;
   char          *access_mode; /* Access method driver should use for control */
   int            no_cddb;     /* If set the below are meaningless. */
-  char          *cddb_email;  /* email to report to CDDB server. */
-  char          *cddb_server; /* CDDB server to contact */
-  int            cddb_port;   /* port number to contact CDDB server. */
-  int            cddb_http;   /* 1 if use http proxy */
-  int            cddb_timeout;
-  bool           cddb_disable_cache; /* If set the below is meaningless. */
-  char          *cddb_cachedir;
   int            no_vcd;
   int            show_dvd;
   int            no_device;
@@ -119,7 +111,6 @@ enum {
 
 char *temp_str;
 
-
 /* Parse a all options. */
 static bool
 parse_options (int argc, const char *argv[])
@@ -144,49 +135,49 @@ parse_options (int argc, const char *argv[])
     {"no-cddb",     '\0', POPT_ARG_NONE, &opts.no_cddb, 0,
      "Don't look up audio CDDB information or print that"},
     
-    {"cddb-port",   'P', POPT_ARG_INT, &opts.cddb_port, 8880,
+    {"cddb-port",   'P', POPT_ARG_INT, &cddb_opts.port, 8880,
      "CDDB port number to use (default 8880)"},
     
-    {"cddb-http",   'H', POPT_ARG_NONE, &opts.cddb_http, 0,
+    {"cddb-http",   'H', POPT_ARG_NONE, &cddb_opts.http, 0,
      "Lookup CDDB via HTTP proxy (default no proxy)"},
     
-    {"cddb-server", '\0', POPT_ARG_STRING, &opts.cddb_server, 0,
+    {"cddb-server", '\0', POPT_ARG_STRING, &cddb_opts.server, 0,
      "CDDB server to contact for information (default: freedb.freedb.org)"},
     
-    {"cddb-cache",  '\0', POPT_ARG_STRING, &opts.cddb_cachedir, 0,
+    {"cddb-cache",  '\0', POPT_ARG_STRING, &cddb_opts.cachedir, 0,
      "Location of CDDB cache directory (default ~/.cddbclient)"},
     
-    {"cddb-email",  '\0', POPT_ARG_STRING, &opts.cddb_email, 0,
+    {"cddb-email",  '\0', POPT_ARG_STRING, &cddb_opts.email, 0,
      "Email address to give CDDB server (default me@home"},
     
-    {"no-cddb-cache", '\0', POPT_ARG_NONE, &opts.cddb_disable_cache, 0,
+    {"no-cddb-cache", '\0', POPT_ARG_NONE, &cddb_opts.disable_cache, 0,
      "Lookup CDDB via HTTP proxy (default no proxy)"},
     
-    {"cddb-timeout",  '\0', POPT_ARG_INT, &opts.cddb_timeout, 0,
+    {"cddb-timeout",  '\0', POPT_ARG_INT, &cddb_opts.timeout, 0,
      "CDDB timeout value in seconds (default 10 seconds)"},
 #else 
     {"no-cddb",     '\0', POPT_ARG_NONE, &opts.no_cddb, 0,
      "Does nothing since this program is not CDDB-enabled"},
     
-    {"cddb-port",   'P', POPT_ARG_INT, &opts.cddb_port, 8880,
+    {"cddb-port",   'P', POPT_ARG_INT, &cddb_opts.port, 8880,
      "Does nothing since this program is not CDDB-enabled"},
     
-    {"cddb-http",   'H', POPT_ARG_NONE, &opts.cddb_http, 0,
+    {"cddb-http",   'H', POPT_ARG_NONE, &cddb_opts.http, 0,
      "Does nothing since this program is not CDDB-enabled"},
     
-    {"cddb-server", '\0', POPT_ARG_STRING, &opts.cddb_server, 0,
+    {"cddb-server", '\0', POPT_ARG_STRING, &cddb_opts.server, 0,
      "Does nothing since this program is not CDDB-enabled"},
     
-    {"cddb-cache",  '\0', POPT_ARG_STRING, &opts.cddb_cachedir, 0,
+    {"cddb-cache",  '\0', POPT_ARG_STRING, &cddb_opts.cachedir, 0,
      "Does nothing since this program is not CDDB-enabled"},
     
-    {"cddb-email",  '\0', POPT_ARG_STRING, &opts.cddb_email, 0,
+    {"cddb-email",  '\0', POPT_ARG_STRING, &cddb_opts.email, 0,
      "Does nothing since this program is not CDDB-enabled"},
     
-    {"no-cddb-cache", '\0', POPT_ARG_NONE, &opts.cddb_disable_cache, 0,
+    {"no-cddb-cache", '\0', POPT_ARG_NONE, &cddb_opts.disable_cache, 0,
      "Does nothing since this program is not CDDB-enabled"},
     
-    {"cddb-timeout",  '\0', POPT_ARG_INT, &opts.cddb_timeout, 0,
+    {"cddb-timeout",  '\0', POPT_ARG_INT, &cddb_opts.timeout, 0,
      "Does nothing since this program is not CDDB-enabled"},
 #endif
   
@@ -410,39 +401,39 @@ static void
 print_cddb_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
   int i, matches;
   
-  cddb_conn_t *conn =  cddb_new();
+  cddb_conn_t *p_conn =  cddb_new();
   cddb_disc_t *disc = NULL;
 
-  if (!conn) {
+  if (!p_conn) {
     report(stderr,  "%s: unable to initialize libcddb\n", program_name);
     goto cddb_destroy;
   }
 
-  if (NULL == opts.cddb_email) 
-    cddb_set_email_address(conn, "me@home");
+  if (NULL == cddb_opts.email) 
+    cddb_set_email_address(p_conn, "me@home");
   else 
-    cddb_set_email_address(conn, opts.cddb_email);
+    cddb_set_email_address(p_conn, cddb_opts.email);
 
-  if (NULL == opts.cddb_server) 
-    cddb_set_server_name(conn, "freedb.freedb.org");
+  if (NULL == cddb_opts.server) 
+    cddb_set_server_name(p_conn, "freedb.freedb.org");
   else 
-    cddb_set_server_name(conn, opts.cddb_server);
+    cddb_set_server_name(p_conn, cddb_opts.server);
 
-  if (opts.cddb_timeout >= 0) 
-    cddb_set_timeout(conn, opts.cddb_timeout);
+  if (cddb_opts.timeout >= 0) 
+    cddb_set_timeout(p_conn, cddb_opts.timeout);
 
-  cddb_set_server_port(conn, opts.cddb_port);
+  cddb_set_server_port(p_conn, cddb_opts.port);
 
-  if (opts.cddb_http) 
-    cddb_http_enable(conn);
+  if (cddb_opts.http) 
+    cddb_http_enable(p_conn);
   else 
-    cddb_http_disable(conn);
+    cddb_http_disable(p_conn);
 
-  if (NULL != opts.cddb_cachedir) 
-    cddb_cache_set_dir(conn, opts.cddb_cachedir);
+  if (NULL != cddb_opts.cachedir) 
+    cddb_cache_set_dir(p_conn, cddb_opts.cachedir);
     
-  if (opts.cddb_disable_cache) 
-    cddb_cache_disable(conn);
+  if (cddb_opts.disable_cache) 
+    cddb_cache_disable(p_conn);
     
   disc = cddb_disc_new();
   if (!disc) {
@@ -465,22 +456,22 @@ print_cddb_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
     goto cddb_destroy;
   }
 
-  matches = cddb_query(conn, disc);
+  matches = cddb_query(p_conn, disc);
 
   if (-1 == matches) 
-    printf("%s: %s\n", program_name, cddb_error_str(cddb_errno(conn)));
+    printf("%s: %s\n", program_name, cddb_error_str(cddb_errno(p_conn)));
   else {
     printf("%s: Found %d matches in CDDB\n", program_name, matches);
     for (i=1; i<=matches; i++) {
-      cddb_read(conn, disc);
+      cddb_read(p_conn, disc);
       cddb_disc_print(disc);
-      cddb_query_next(conn, disc);
+      cddb_query_next(p_conn, disc);
     }
   }
   
   cddb_disc_destroy(disc);
   cddb_destroy:
-  cddb_destroy(conn);
+  cddb_destroy(p_conn);
 }
 #endif
 
@@ -781,12 +772,12 @@ init(void)
   opts.print_iso9660 = 0;
 #ifdef HAVE_CDDB
   opts.no_cddb       = 0;
-  opts.cddb_port     = 8880;
-  opts.cddb_http     = 0;
-  opts.cddb_cachedir = NULL;
-  opts.cddb_server   = NULL;
-  opts.cddb_timeout = -1;
-  opts.cddb_disable_cache = false;
+  cddb_opts.port     = 8880;
+  cddb_opts.http     = 0;
+  cddb_opts.cachedir = NULL;
+  cddb_opts.server   = NULL;
+  cddb_opts.timeout  = -1;
+  cddb_opts.disable_cache = false;
 #endif
 #ifdef HAVE_VCDINFO
   opts.no_vcd        = 0;
