@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.58 2004/07/09 01:05:32 rocky Exp $
+    $Id: cdio.c,v 1.59 2004/07/11 14:25:07 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.58 2004/07/09 01:05:32 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.59 2004/07/11 14:25:07 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -266,6 +266,25 @@ cdio_get_arg (const CdIo *obj, const char key[])
   
   if (obj->op.get_arg) {
     return obj->op.get_arg (obj->env, key);
+  } else {
+    return NULL;
+  }
+}
+
+  /*! 
+    Get cdtext information for a CdIo object .
+
+    @param obj the CD object that may contain CD-TEXT information.
+    @return the CD-TEXT object or NULL if obj is NULL
+    or CD-TEXT information does not exist.
+  */
+const cdtext_t *
+cdio_get_cdtext (const CdIo *obj)
+{
+  if (obj == NULL) return NULL;
+  
+  if (obj->op.get_cdtext) {
+    return obj->op.get_cdtext (obj->env);
   } else {
     return NULL;
   }

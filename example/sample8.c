@@ -1,5 +1,5 @@
 /*
-  $Id: sample8.c,v 1.1 2004/07/09 01:05:31 rocky Exp $
+  $Id: sample8.c,v 1.2 2004/07/11 14:25:07 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -29,16 +29,27 @@
 int
 main(int argc, const char *argv[])
 {
-  CdIo *cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  CdIo *cdio = cdio_open ("../test/cdda.cue", DRIVER_BINCUE);
 
   if (NULL == cdio) {
-    printf("Couldn't find a driver.. leaving.\n");
+    printf("Couldn't open ../test/cdda.cue with BIN/CUE driver \n");
     return 1;
+  } else {
+    const cdtext_t *cdtext = cdio_get_cdtext(cdio);
+
+    if (NULL != cdtext) {
+      printf("CD-TEXT Title: %s\n", 
+	     cdtext->field[CDTEXT_TITLE]     ? 
+	     cdtext->field[CDTEXT_TITLE]     : "not set");
+      printf("CD-TEXT Performer: %s\n", 
+	     cdtext->field[CDTEXT_PERFORMER] ? 
+	     cdtext->field[CDTEXT_PERFORMER] : "not set"
+	     );
+    } else {
+      printf("Didn't get CD-TEXT info.\n");
+    }
   }
 
-#if 0
-  cdio_cdtext_query(cdio);
-#endif
   cdio_destroy(cdio);
   
   return 0;

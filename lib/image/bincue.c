@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.32 2004/07/11 02:28:06 rocky Exp $
+    $Id: bincue.c,v 1.33 2004/07/11 14:25:07 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.32 2004/07/11 02:28:06 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.33 2004/07/11 14:25:07 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -81,15 +81,16 @@ typedef struct {
 				   exactly 13 bytes */
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
 					         add 1 for leadout. */
-  track_t       i_tracks;    /* number of tracks in image */
+  track_t       i_tracks;        /* number of tracks in image */
   track_t       i_first_track;   /* track number of first track */
-  cdtext_t      *cdtext;	/* CD-TEXT */
+  cdtext_t      cdtext;	         /* CD-TEXT */
   track_format_t mode;
 } _img_private_t;
 
 static uint32_t _stat_size_bincue (void *user_data);
 static bool     parse_cuefile (_img_private_t *cd, const char *toc_name);
 
+#define NEED_MEDIA_EJECT_IMAGE
 #include "image_common.h"
 
 /*!
@@ -114,7 +115,8 @@ _bincue_init (_img_private_t *env)
   env->gen.init      = true;  
   env->i_first_track = 1;
   env->psz_mcn       = NULL;
-  env->cdtext        = NULL;
+
+  cdtext_init (&(env->cdtext));
 
   lead_lsn = _stat_size_bincue( (_img_private_t *) env);
 
@@ -267,14 +269,19 @@ _stat_size_bincue (void *user_data)
 static bool
 parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 {
+  /* The below declarations may be common in other image-parse routines. */
   FILE *fp;
-  char psz_line[MAXLINE];
-  unsigned int i_line=0;
-  int start_index;
+  char         psz_line[MAXLINE];   /* text of current line read in file fp. */
+  unsigned int i_line=0;            /* line number in file of psz_line. */
+  int          i = -1;              /* Position in tocent. Same as 
+				       cd->i_tracks - 1 */
   char *psz_keyword, *psz_field;
   cdio_log_level_t log_level = (NULL == cd) ? CDIO_LOG_INFO : CDIO_LOG_WARN;
+  cdtext_field_t cdtext_key;
+
+  /* The below declarations may be unique to this image-parse routine. */
+  int start_index;
   bool b_first_index_for_track=false;
-  int i = -1;   /* Position in tocent. Same as cd->i_tracks - 1 */
 
   if (NULL == psz_cue_name) 
     return false;
@@ -357,8 +364,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	/* TRACK N <mode> */
       } else if (0 == strcmp ("TRACK", psz_keyword)) {
 	int i_track;
-	i++;
-	if (cd) cd->tocent[i].cdtext = NULL;
+
 	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	  if (1!=sscanf(psz_field, "%d", &i_track)) {
 	    cdio_log(log_level, 
@@ -377,6 +383,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	    this_track->track_num   = cd->i_tracks;
 	    this_track->num_indices = 0;
 	    b_first_index_for_track = false;
+	    cdtext_init (&(cd->tocent[cd->i_tracks].cdtext));
 	    cd->i_tracks++;
 	  }
 	  i++;
@@ -606,20 +613,17 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	}
 	
 	/* CD-TEXT */
-      } else if (0 == cdtext_is_keyword (psz_keyword)) {
+      } else if ( CDTEXT_INVALID != 
+		  (cdtext_key = cdtext_is_keyword (psz_keyword)) ) {
 	if (-1 == i) {
-	  if (NULL == cd->cdtext)
-	    if (cd) {
-	      cd->cdtext = cdtext_init ();
-	      cdtext_set (psz_keyword, strtok (NULL, "\"\t\n\r"), cd->cdtext);
-	    }
+	  if (cd) {
+	    cdtext_set (cdtext_key, strtok (NULL, "\"\t\n\r"), &(cd->cdtext));
+	  }
 	} else {
-	  if (NULL == cd->tocent[i].cdtext)
-	    if (cd) {
-	      cd->tocent[i].cdtext = cdtext_init ();
-	      cdtext_set (psz_keyword, strtok (NULL, "\"\t\n\r"), 
-			  cd->tocent[i].cdtext);
-	    }
+	  if (cd) {
+	    cdtext_set (cdtext_key, strtok (NULL, "\"\t\n\r"), 
+			&(cd->tocent[i].cdtext));
+	  }
 	}
 	
 	/* unrecognized line */
@@ -1020,6 +1024,7 @@ cdio_open_cue (const char *psz_cue_name)
     .eject_media        = _eject_media_image,
     .free               = _free_image,
     .get_arg            = _get_arg_image,
+    .get_cdtext         = _get_cdtext_image,
     .get_devices        = cdio_get_devices_bincue,
     .get_default_device = cdio_get_default_device_bincue,
     .get_drive_cap      = _get_drive_cap_bincue,

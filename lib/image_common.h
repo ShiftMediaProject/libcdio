@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.8 2004/07/10 11:06:00 rocky Exp $
+    $Id: image_common.h,v 1.9 2004/07/11 14:25:07 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -40,24 +40,25 @@
 static void 
 _free_image (void *user_data) 
 {
-  _img_private_t *cd = user_data;
+  _img_private_t *env = user_data;
   track_t i_track;
 
-  if (NULL == cd) return;
+  if (NULL == env) return;
 
-  for (i_track=0; i_track < cd->i_tracks; i_track++) {
-    free_if_notnull(cd->tocent[i_track].filename);
-    free_if_notnull(cd->tocent[i_track].isrc);
-    cdtext_delete(cd->tocent[i_track].cdtext);
+  for (i_track=0; i_track < env->i_tracks; i_track++) {
+    free_if_notnull(env->tocent[i_track].filename);
+    free_if_notnull(env->tocent[i_track].isrc);
+    cdtext_destroy(&(env->tocent[i_track].cdtext));
   }
 
-  free_if_notnull(cd->psz_mcn);
-  free_if_notnull(cd->psz_cue_name);
-  cdtext_delete(cd->cdtext);
-  cdio_generic_stdio_free(cd);
-  free(cd);
+  free_if_notnull(env->psz_mcn);
+  free_if_notnull(env->psz_cue_name);
+  cdtext_destroy(&(env->cdtext));
+  cdio_generic_stdio_free(env);
+  free(env);
 }
 
+#ifdef NEED_MEDIA_EJECT_IMAGE
 /*!
   Eject media -- there's nothing to do here except free resources.
   We always return 2.
@@ -68,6 +69,7 @@ _eject_media_image(void *user_data)
   _free_image (user_data);
   return 2;
 }
+#endif
 
 /*!
   Return the value associated with the key "arg".
@@ -88,6 +90,18 @@ _get_arg_image (void *user_data, const char key[])
 }
 
 /*!
+  Return the value associated with the key "arg".
+*/
+static const cdtext_t *
+_get_cdtext_image (const void *user_data)
+{
+  const _img_private_t *env = user_data;
+
+  if (NULL == env) return NULL;
+  return &(env->cdtext);
+}
+
+/*!
   Return the media catalog number (MCN) from the CD or NULL if there
   is none or we don't have the ability to get it.
 
@@ -99,7 +113,7 @@ _get_mcn_image(const void *user_data)
 {
   const _img_private_t *env = user_data;
   
-  if (NULL == env->psz_mcn) return NULL;
+  if (NULL == env || NULL == env->psz_mcn) return NULL;
   return strdup(env->psz_mcn);
 }
 

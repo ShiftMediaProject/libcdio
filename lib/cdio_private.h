@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.26 2004/07/09 01:05:32 rocky Exp $
+    $Id: cdio_private.h,v 1.27 2004/07/11 14:25:07 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -55,6 +55,11 @@ extern "C" {
       Return the value associated with the key "arg".
     */
     const char * (*get_arg) (void *env, const char key[]);
+    
+    /*!
+      Return cdtext information.
+    */
+    const cdtext_t * (*get_cdtext) (const void *env);
     
     /*!
       Return an array of device names. if CdIo is NULL (we haven't

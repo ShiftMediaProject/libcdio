@@ -1,5 +1,5 @@
 /*
-    $Id: image.h,v 1.2 2004/07/10 11:06:00 rocky Exp $
+    $Id: image.h,v 1.3 2004/07/11 14:25:07 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -59,7 +59,7 @@ typedef struct {
   CdioDataSource *data_source;
   track_format_t track_format;
   bool           track_green;
-  cdtext_t      *cdtext;	/**< CD-TEXT */
+  cdtext_t       cdtext;	/**< CD-TEXT */
 
   trackmode_t    mode;
   uint16_t       datasize;      /**< How much is in the portion we return 

@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.18 2004/07/11 02:28:07 rocky Exp $
+    $Id: cdrdao.c,v 1.19 2004/07/11 14:25:07 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.18 2004/07/11 02:28:07 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.19 2004/07/11 14:25:07 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -81,15 +81,16 @@ typedef struct {
 				   exactly 13 bytes */
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
 					         add 1 for leadout. */
-  track_t       i_tracks;    /* number of tracks in image */
+  track_t       i_tracks;      /* number of tracks in image */
   track_t       i_first_track; /* track number of first track */
-  cdtext_t      *cdtext;	/* CD-TEXT */
+  cdtext_t      cdtext;	       /* CD-TEXT */
   track_format_t mode;
 } _img_private_t;
 
 static uint32_t _stat_size_cdrdao (void *user_data);
 static bool parse_tocfile (_img_private_t *cd, const char *toc_name);
 
+#define NEED_MEDIA_EJECT_IMAGE
 #include "image_common.h"
 
 /*!
@@ -109,7 +110,8 @@ _init_cdrdao (_img_private_t *env)
   env->gen.init      = true;  
   env->i_first_track = 1;
   env->psz_mcn       = NULL;
-  env->cdtext        = NULL;
+
+  cdtext_init (&(env->cdtext));
 
   /* Read in TOC sheet. */
   if ( !parse_tocfile(env, env->psz_cue_name) ) return false;
@@ -259,19 +261,24 @@ _stat_size_cdrdao (void *user_data)
 #define MAXLINE 512
 #define UNIMPLIMENTED_MSG \
   cdio_log(log_level, "%s line %d: unimplimented keyword: %s",  \
-	   psz_cue_name, i_line, keyword)
+	   psz_cue_name, i_line, psz_keyword)
 
 
 static bool
 parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 {
-  char psz_line[MAXLINE];
-  unsigned int i_cdtext_nest = 0;
-  FILE *fp;
-  unsigned int i_line=0;
-  char *keyword, *psz_field;
-  int i =  -1;
+  /* The below declarations may be common in other image-parse routines. */
+  FILE        *fp;
+  char         psz_line[MAXLINE];   /* text of current line read in file fp. */
+  unsigned int i_line=0;            /* line number in file of psz_line. */
+  int          i = -1;              /* Position in tocent. Same as 
+				       cd->i_tracks - 1 */
+  char *psz_keyword, *psz_field;
   cdio_log_level_t log_level = (NULL == cd) ? CDIO_LOG_INFO : CDIO_LOG_WARN;
+  cdtext_field_t cdtext_key;
+
+  /* The below declaration(s) may be unique to this image-parse routine. */
+  unsigned int i_cdtext_nest = 0;
 
   if (NULL == psz_cue_name) 
     return false;
@@ -293,9 +300,9 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
     if (NULL != (psz_field = strstr (psz_line, "//")))
       *psz_field = '\0';
     
-    if (NULL != (keyword = strtok (psz_line, " \t\n\r"))) {
+    if (NULL != (psz_keyword = strtok (psz_line, " \t\n\r"))) {
       /* CATALOG "ddddddddddddd" */
-      if (0 == strcmp ("CATALOG", keyword)) {
+      if (0 == strcmp ("CATALOG", psz_keyword)) {
 	if (-1 == i) {
 	  if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
 	    if (13 != strlen(psz_field)) {
@@ -336,14 +343,14 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	}
 	
 	/* CD_DA | CD_ROM | CD_ROM_XA */
-      } else if (0 == strcmp ("CD_DA", keyword)) {
+      } else if (0 == strcmp ("CD_DA", psz_keyword)) {
 	if (-1 == i) {
 	  if (NULL != cd)
 	    cd->mode = TRACK_FORMAT_AUDIO;
 	} else {
 	  goto not_in_global_section;
 	}
-      } else if (0 == strcmp ("CD_ROM", keyword)) {
+      } else if (0 == strcmp ("CD_ROM", psz_keyword)) {
 	if (-1 == i) {
 	  if (NULL != cd)
 	    cd->mode = TRACK_FORMAT_DATA;
@@ -351,7 +358,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  goto not_in_global_section;
 	}
 	
-      } else if (0 == strcmp ("CD_ROM_XA", keyword)) {
+      } else if (0 == strcmp ("CD_ROM_XA", psz_keyword)) {
 	if (-1 == i) {
 	  if (NULL != cd)
 	    cd->mode = TRACK_FORMAT_XA;
@@ -360,9 +367,9 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	}
 	
 	/* TRACK <track-mode> [<sub-channel-mode>] */
-      } else if (0 == strcmp ("TRACK", keyword)) {
+      } else if (0 == strcmp ("TRACK", psz_keyword)) {
 	i++;
-	if (NULL != cd) cd->tocent[i].cdtext = NULL;
+	if (NULL != cd) cdtext_init (&(cd->tocent[i].cdtext));
 	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	  if (0 == strcmp ("AUDIO", psz_field)) {
 	    if (NULL != cd) {
@@ -457,7 +464,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	
 	/* track flags */
 	/* [NO] COPY | [NO] PRE_EMPHASIS */
-      } else if (0 == strcmp ("NO", keyword)) {
+      } else if (0 == strcmp ("NO", psz_keyword)) {
 	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	  if (0 == strcmp ("COPY", psz_field)) {
 	    if (NULL != cd) 
@@ -474,23 +481,23 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	  goto format_error;
 	}
-      } else if (0 == strcmp ("COPY", keyword)) {
+      } else if (0 == strcmp ("COPY", psz_keyword)) {
 	if (NULL != cd)
 	  cd->tocent[i].flags |= CDIO_TRACK_FLAG_COPY_PERMITTED;
-      } else if (0 == strcmp ("PRE_EMPHASIS", keyword)) {
+      } else if (0 == strcmp ("PRE_EMPHASIS", psz_keyword)) {
 	if (NULL != cd)
 	  cd->tocent[i].flags |= CDIO_TRACK_FLAG_PRE_EMPHASIS;
 	/* TWO_CHANNEL_AUDIO */
-      } else if (0 == strcmp ("TWO_CHANNEL_AUDIO", keyword)) {
+      } else if (0 == strcmp ("TWO_CHANNEL_AUDIO", psz_keyword)) {
 	if (NULL != cd)
 	  cd->tocent[i].flags &= ~CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO;
 	/* FOUR_CHANNEL_AUDIO */
-      } else if (0 == strcmp ("FOUR_CHANNEL_AUDIO", keyword)) {
+      } else if (0 == strcmp ("FOUR_CHANNEL_AUDIO", psz_keyword)) {
 	if (NULL != cd)
 	  cd->tocent[i].flags |= CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO;
 	
 	/* ISRC "CCOOOYYSSSSS" */
-      } else if (0 == strcmp ("ISRC", keyword)) {
+      } else if (0 == strcmp ("ISRC", psz_keyword)) {
 	if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
 	  if (NULL != cd) 
 	    cd->tocent[i].isrc = strdup(psz_field);
@@ -499,16 +506,16 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	}
 	
 	/* SILENCE <length> */
-      } else if (0 == strcmp ("SILENCE", keyword)) {
+      } else if (0 == strcmp ("SILENCE", psz_keyword)) {
 	UNIMPLIMENTED_MSG;
 	
 	/* ZERO <length> */
-      } else if (0 == strcmp ("ZERO", keyword)) {
+      } else if (0 == strcmp ("ZERO", psz_keyword)) {
 	UNIMPLIMENTED_MSG;
 	
 	/* [FILE|AUDIOFILE] "<filename>" <start> [<length>] */
-      } else if (0 == strcmp ("FILE", keyword) 
-		 || 0 == strcmp ("AUDIOFILE", keyword)) {
+      } else if (0 == strcmp ("FILE", psz_keyword) 
+		 || 0 == strcmp ("AUDIOFILE", psz_keyword)) {
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
 	    if (NULL != cd) {
@@ -547,15 +554,15 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	}
 	
 	/* DATAFILE "<filename>" <start> [<length>] */
-      } else if (0 == strcmp ("DATAFILE", keyword)) {
+      } else if (0 == strcmp ("DATAFILE", psz_keyword)) {
 	goto unimplimented_error;
 	
 	/* FIFO "<fifo path>" [<length>] */
-      } else if (0 == strcmp ("FIFO", keyword)) {
+      } else if (0 == strcmp ("FIFO", psz_keyword)) {
 	goto unimplimented_error;
 	
 	/* START MM:SS:FF */
-      } else if (0 == strcmp ("START", keyword)) {
+      } else if (0 == strcmp ("START", psz_keyword)) {
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    /* todo: line is too long! */
@@ -574,7 +581,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	}
 	
 	/* PREGAP MM:SS:FF */
-      } else if (0 == strcmp ("PREGAP", keyword)) {
+      } else if (0 == strcmp ("PREGAP", psz_keyword)) {
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    if (NULL != cd) 
@@ -590,7 +597,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	}
 	  
 	  /* INDEX MM:SS:FF */
-      } else if (0 == strcmp ("INDEX", keyword)) {
+      } else if (0 == strcmp ("INDEX", psz_keyword)) {
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    if (NULL != cd) {
@@ -618,7 +625,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  
 	  /* CD_TEXT { ... } */
 	  /* todo: opening { must be on same line as CD_TEXT */
-      } else if (0 == strcmp ("CD_TEXT", keyword)) {
+      } else if (0 == strcmp ("CD_TEXT", psz_keyword)) {
 	  if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
 	    goto format_error;
 	  }
@@ -630,8 +637,9 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	    goto err_exit;
 	  }
 	       
-      } else if (0 == strcmp ("LANGUAGE_MAP", keyword)) {
-      } else if (0 == strcmp ("LANGUAGE", keyword)) {
+      } else if (0 == strcmp ("LANGUAGE_MAP", psz_keyword)) {
+	/* LANGUAGE d { ... } */
+      } else if (0 == strcmp ("LANGUAGE", psz_keyword)) {
 	  if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
 	    goto format_error;
 	  }
@@ -641,33 +649,28 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  }
 	  if ( 0 == strcmp( "{", psz_field ) ) {
 	    i_cdtext_nest++;
-	  } else {
-	    cdio_log (log_level, 
-		      "%s line %d: expecting '{'", psz_cue_name, i_line);
-	    goto err_exit;
 	  }
-      } else if (0 == strcmp ("}", keyword)) {
+      } else if (0 == strcmp ("{", psz_keyword)) {
+	i_cdtext_nest++;
+      } else if (0 == strcmp ("}", psz_keyword)) {
 	if (i_cdtext_nest > 0) i_cdtext_nest--;
-      } else if (0 == cdtext_is_keyword (keyword)) {
+      } else if ( CDTEXT_INVALID != 
+		  (cdtext_key = cdtext_is_keyword (psz_keyword)) ) {
 	if (-1 == i) {
 	  if (NULL != cd) {
-	    if (NULL == cd->cdtext)
-	      cd->cdtext = cdtext_init ();
-	    cdtext_set (keyword, strtok (NULL, "\"\t\n\r"), cd->cdtext);
+	    cdtext_set (cdtext_key, strtok (NULL, "\"\t\n\r"), &(cd->cdtext));
 	  }
 	} else {
 	  if (NULL != cd) {
-	    if (NULL == cd->tocent[i].cdtext)
-	      cd->tocent[i].cdtext = cdtext_init ();
-	    cdtext_set (keyword, strtok (NULL, "\"\t\n\r"), 
-			cd->tocent[i].cdtext);
+	    cdtext_set (cdtext_key, strtok (NULL, "\"\t\n\r"), 
+			&(cd->tocent[i].cdtext));
 	  }
 	}
 
-	  /* unrecognized line */
+	/* unrecognized line */
       } else {
-	cdio_log(log_level, "%s line %d: warning: unrecognized keyword: %s", 
-		 psz_cue_name, i_line, keyword);
+	cdio_log(log_level, "%s line %d: warning: unrecognized word: %s", 
+		 psz_cue_name, i_line, psz_keyword);
 	goto err_exit;
       }
     }
@@ -682,13 +685,13 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
   goto err_exit;
   
  format_error:
-  cdio_log(log_level, "%s line %d after keyword %s", 
-	   psz_cue_name, i_line, keyword);
+  cdio_log(log_level, "%s line %d after word %s", 
+	   psz_cue_name, i_line, psz_keyword);
   goto err_exit;
   
  not_in_global_section:
-  cdio_log(log_level, "%s line %d: keyword %s only allowed in global section", 
-	   psz_cue_name, i_line, keyword);
+  cdio_log(log_level, "%s line %d: word %s only allowed in global section", 
+	   psz_cue_name, i_line, psz_keyword);
 
  err_exit: 
   fclose (fp);
@@ -1002,6 +1005,7 @@ cdio_open_cdrdao (const char *psz_cue_name)
     .eject_media        = _eject_media_image,
     .free               = _free_image,
     .get_arg            = _get_arg_image,
+    .get_cdtext         = _get_cdtext_image,
     .get_devices        = cdio_get_devices_cdrdao,
     .get_default_device = cdio_get_default_device_cdrdao,
     .get_drive_cap      = _get_drive_cap_cdrdao,

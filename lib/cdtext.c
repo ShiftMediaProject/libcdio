@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.c,v 1.3 2004/07/11 02:26:15 rocky Exp $
+    $Id: cdtext.c,v 1.4 2004/07/11 14:25:07 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -35,62 +35,50 @@
 #include <string.h>
 #endif
 
-/* Private type */
-struct cdtext {
-	const char *key;
-	char *value;
-};
-
-const cdtext_t cdtext[] = {
-    {"TITLE",      NULL},
-    {"PERFORMER",  NULL},
-    {"SONGWRITER", NULL},
-    {"COMPOSER",   NULL},
-    {"ARRANGER",   NULL},
-    {"MESSAGE",    NULL},
-    {"DISC_ID",    NULL},
-    {"GENRE",      NULL},
-    {"TOC_INFO",   NULL},
-    {"TOC_INFO2",  NULL},
-    {"UPC_EAN",    NULL},
-    {"ISRC",       NULL},
-    {"SIZE_INFO",  NULL},
-    {NULL,         NULL}
-  };
-  
-cdtext_t *cdtext_init ()
+/*! Free memory assocated with cdtext*/
+void 
+cdtext_destroy (cdtext_t *cdtext)
 {
-  cdtext_t *new_cdtext = NULL;
-  
-  new_cdtext = (cdtext_t *) calloc (sizeof (cdtext) / sizeof (cdtext_t), 
-				    sizeof (cdtext_t));
-  if (NULL == new_cdtext)
-    cdio_warn("problem allocating memory");
-  else
-    memcpy (new_cdtext, cdtext, sizeof(cdtext));
-  
-  return (new_cdtext);
+  cdtext_field_t i;
+
+  for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
+    if (cdtext->field[i]) free(cdtext->field[i]);
+  }
 }
 
-
-/*! Free memory assocated with cdtext*/
-void cdtext_delete (cdtext_t *cdtext)
+/*! 
+  returns the CDTEXT value associated with key. NULL is returned
+  if key is CDTEXT_INVALID or the field is not set.
+ */
+const char *
+cdtext_get (cdtext_field_t key, const cdtext_t *cdtext)
 {
-  int i;
-  
-  if (NULL != cdtext) {
-    for (i = 0; NULL != cdtext[i].key; i++)
-      free (cdtext[i].value);
-    free (cdtext);
+  if (key == CDTEXT_INVALID) return NULL;
+  return cdtext->field[key];
+}
+
+/*! Initialize a new cdtext structure.
+  When the structure is no longer needed, release the 
+  resources using cdtext_delete.
+*/
+void 
+cdtext_init (cdtext_t *cdtext)
+{
+  cdtext_field_t i;
+
+  for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
+    cdtext->field[i] = NULL;
   }
 }
 
 /*!
   returns 0 if field is a CD-TEXT keyword, returns non-zero otherwise 
 */
-int 
+cdtext_field_t
 cdtext_is_keyword (const char *key)
 {
+  /* Note: the order and number items (except CDTEXT_INVALID) should
+     match the cdtext_field_t enumeration. */
   const char *cdtext_keywords[] = 
     {
       "ARRANGER",     /* name(s) of the arranger(s) */
@@ -122,31 +110,20 @@ cdtext_is_keyword (const char *key)
   
   for (i = 0; i < 13 ; i++)
     if (0 == strcmp (cdtext_keywords[i], key)) {
-      return 0;
+      return i;
     }
-  return 1;
+  return CDTEXT_INVALID;
 #endif
 }
 
 /*! sets cdtext's keyword entry to field.
  */
-void cdtext_set (const char *key, const char *value, cdtext_t *cdtext)
+void cdtext_set (cdtext_field_t key, const char *value, cdtext_t *cdtext)
 {
-  if (NULL != value)	/* don't pass NULL to strdup! */
-    for (; NULL != cdtext->key; cdtext++)
-      if (0 == strcmp (cdtext->key, key)) {
-	free (cdtext->value);
-	cdtext->value = strdup (value);
-      }
-}
-
-/* returns value for key, NULL if key is not found */
-const char *cdtext_get (const char *key, const cdtext_t *cdtext)
-{
-	for (; NULL != cdtext->key; cdtext++)
-		if (0 == strcmp (cdtext->key, key))
-			return (cdtext->value);
-
-	return (NULL);
+  if (NULL == value || key == CDTEXT_INVALID) return;
+  
+  if (cdtext->field[key]) free (cdtext->field[key]);
+  cdtext->field[key] = strdup (value);
+  
 }
 

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.55 2004/07/09 10:05:36 rocky Exp $
+    $Id: cdio.h,v 1.56 2004/07/11 14:25:07 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -55,8 +55,11 @@
 extern "C" {
 #endif /* __cplusplus */
 
-  /** This is an opaque structure. */
+  /** This is an opaque structure for the CD object. */
   typedef struct _CdIo CdIo; 
+
+  /** This is an opaque structure for the CDTEXT object. */
+  typedef struct cdtext cdtext_t;
 
   /** The driver_id_t enumerations may be used to tag a specific driver
    * that is opened or is desired to be opened. Note that this is
@@ -82,9 +85,9 @@ extern "C" {
     DRIVER_CDRDAO,  /**< cdrdao format CD image. This is listed
 		         before BINCUE, to make the code prefer cdrdao
 		         over BINCUE when both exist. */
-    DRIVER_BINCUE,  /**< BIN/CUE format CD image. This is listed before NRG, 
-		         to make the code prefer BINCUE over NRG when both 
-			 exist. */
+    DRIVER_BINCUE,  /**< CDRWIN BIN/CUE format CD image. This is
+		         listed before NRG, to make the code prefer
+		         BINCUE over NRG when both exist. */
     DRIVER_NRG,     /**< Nero NRG format CD image. */
     DRIVER_DEVICE   /**< Is really a set of the above; should come last */
   } driver_id_t;
@@ -150,6 +153,15 @@ extern "C" {
     or "key" does not exist.
   */
   const char * cdio_get_arg (const CdIo *obj,  const char key[]);
+
+  /*! 
+    Get cdtext information for a CdIo object.
+
+    @param obj the CD object that may contain CD-TEXT information.
+    @return the CD-TEXT object or NULL if obj is NULL
+    or CD-TEXT information does not exist.
+  */
+  const cdtext_t *cdio_get_cdtext (const CdIo *obj);
 
   /*!
     Get an array of device names in search_devices that have at

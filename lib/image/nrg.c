@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.30 2004/07/11 02:28:07 rocky Exp $
+    $Id: nrg.c,v 1.31 2004/07/11 14:25:07 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -45,7 +45,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.30 2004/07/11 02:28:07 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.31 2004/07/11 14:25:07 rocky Exp $";
 
 
 /* reader */
@@ -79,7 +79,7 @@ typedef struct {
 					         add 1 for leadout. */
   track_t       i_tracks;        /* number of tracks in image */
   track_t       i_first_track;   /* track number of first track */
-  cdtext_t      *cdtext;	/* CD-TEXT */
+  cdtext_t      cdtext;	         /* CD-TEXT */
   track_format_t mode;
 
   /* Nero Specific stuff. Note: for the image_free to work, this *must*
@@ -756,7 +756,8 @@ _init_nrg (_img_private_t *env)
   }
 
   env->psz_mcn       = NULL;
-  env->cdtext        = NULL;
+
+  cdtext_init (&(env->cdtext));
 
   if ( !parse_nrg (env, env->gen.source_name) ) {
     cdio_warn ("image file %s is not a Nero image", 
@@ -1202,6 +1203,7 @@ cdio_open_nrg (const char *psz_source)
     .eject_media        = _eject_media_nrg,
     .free               = _free_nrg,
     .get_arg            = _get_arg_image,
+    .get_cdtext         = _get_cdtext_image,
     .get_devices        = cdio_get_devices_nrg,
     .get_default_device = cdio_get_default_device_nrg,
     .get_drive_cap      = _get_drive_cap_nrg,
