@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.6 2003/06/07 01:20:40 rocky Exp $
+    $Id: cd-info.c,v 1.7 2003/06/07 08:53:16 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -55,7 +55,6 @@
 #include <cdio/util.h>
 
 #include <fcntl.h>
-#include <sys/ioctl.h>
 #ifdef __linux__
 # include <linux/version.h>
 # include <linux/cdrom.h>
@@ -64,7 +63,6 @@
 # endif
 #endif
  
-#include <sys/ioctl.h>
 #include <errno.h>
 
 #ifdef ENABLE_NLS

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.1 2003/05/27 02:55:58 rocky Exp $
+    $Id: _cdio_win32.c,v 1.2 2003/06/07 08:53:16 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.1 2003/05/27 02:55:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.2 2003/06/07 08:53:16 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -42,8 +42,9 @@ static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.1 2003/05/27 02:55:58 rocky
 
 #include <string.h>
 
-/* NOT COMPLETE YET.... */
+/* NOT COMPLETE YET.... 
 #undef HAVE_WIN32_CDROM
+*/
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -58,7 +59,6 @@ static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.1 2003/05/27 02:55:58 rocky
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/ioctl.h>
 
 /* Win32 DeviceIoControl specifics */
 #ifndef MAXIMUM_NUMBER_TRACKS
