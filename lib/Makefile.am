@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.62 2004/11/22 11:03:28 rocky Exp $
+#   $Id: Makefile.am,v 1.63 2004/12/04 05:20:35 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -40,7 +40,7 @@
 #
 #  6. If any interfaces have been removed or changed since the last
 #     public release, then set AGE to 0. A changed interface means an
-#     incompatibility with previous versions..
+#     incompatibility with previous versions.
 
 libcdio_la_CURRENT := 3
 libcdio_la_REVISION := 0
