@@ -773,7 +773,7 @@ main(int argc,char *argv[])
 							    CDIO_FS_AUDIO, 
 							    false,
 							    &driver_id);
-      if (ppsz_cd_drives) {
+      if (ppsz_cd_drives && *ppsz_cd_drives) {
 	d=cdda_identify(*ppsz_cd_drives,verbose, NULL);
       } else {
 	report("\nUnable find or access a CD-ROM drive with an audio CD"

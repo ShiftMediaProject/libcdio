@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.9 2005/01/09 01:50:56 rocky Exp $
+  $Id: cooked_interface.c,v 1.10 2005/01/15 02:23:04 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -31,6 +31,9 @@
 #include "low_interface.h"
 #include "utils.h"
 
+/*! reads TOC via libcdio and returns the number of tracks in the disc. 
+    0 is returned if there was an error.
+*/
 static int 
 cooked_readtoc (cdrom_drive_t *d)
 {
@@ -39,6 +42,9 @@ cooked_readtoc (cdrom_drive_t *d)
 
   /* Save TOC Entries */
   d->tracks = cdio_get_num_tracks(d->p_cdio) ;
+
+  if (CDIO_INVALID_TRACK == d->tracks) return 0;
+
   i_track   = cdio_get_first_track_num(d->p_cdio);
   
   for ( i=0; i < d->tracks; i++) {
