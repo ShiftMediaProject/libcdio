@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.2 2004/04/30 21:36:54 rocky Exp $
+    $Id: freebsd.h,v 1.3 2004/05/05 02:47:18 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -32,7 +32,7 @@
 #include "cdio_private.h"
 
 /* Is this the right default? */
-#define DEFAULT_CDIO_DEVICE "/dev/acd0c"
+#define DEFAULT_CDIO_DEVICE "/dev/cd0c"
 
 #include <string.h>
 

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.3 2004/05/05 02:39:16 rocky Exp $
+    $Id: freebsd_cam.c,v 1.4 2004/05/05 02:47:18 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.3 2004/05/05 02:39:16 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.4 2004/05/05 02:47:18 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -172,7 +172,7 @@ read_mode2_sectors_freebsd_cam (_img_private_t *_obj, void *buf, uint32_t lba,
   cam_fill_csio (&(_obj->ccb.csio), 1, NULL, 
 		 CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, NULL, 0, 
 		 sizeof(_obj->ccb.csio.sense_data), 0, 30*1000);
-  _obj->ccb.csio.cdb_len = (8)+1;
+  _obj->ccb.csio.cdb_len = (b_read_10 ? 8 : 9) + 1;
   
   CDIO_MMC_SET_COMMAND(_obj->ccb.csio.cdb_io.cdb_bytes, b_read_10
 		       ? CDIO_MMC_GPCMD_READ_10 : CDIO_MMC_GPCMD_READ_CD);

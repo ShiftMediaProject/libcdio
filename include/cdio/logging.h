@@ -1,5 +1,5 @@
 /*
-    $Id: logging.h,v 1.7 2004/05/05 01:50:46 rocky Exp $
+    $Id: logging.h,v 1.8 2004/05/05 02:47:18 rocky Exp $
 
     Copyright (C) 2000, Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, Rocky Bernstein <rocky@panix.com>
@@ -111,7 +111,7 @@ void cdio_info (const char format[], ...) GNUC_PRINTF(1,2);
 void cdio_warn (const char format[], ...) GNUC_PRINTF(1,2);
 
 /**
- * Handle an error message. Execution is terminated
+ * Handle an error message. Execution is terminated.
  *
  * @see cdio_log for a more generic routine.
  */

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.42 2004/05/04 01:57:23 rocky Exp $
+    $Id: _cdio_linux.c,v 1.43 2004/05/05 02:47:18 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.42 2004/05/04 01:57:23 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.43 2004/05/05 02:47:18 rocky Exp $";
 
 #include <string.h>
 
@@ -300,24 +300,22 @@ _read_audio_sectors_linux (void *env, void *buf, lsn_t lsn,
 */
 static int
 _read_packet_mode2_sectors_mmc (int fd, void *buf, lba_t lba, 
-			     unsigned int nblocks, bool use_read_10)
+				unsigned int nblocks, bool b_read_10)
 {
   struct cdrom_generic_command cgc;
 
   memset (&cgc, 0, sizeof (struct cdrom_generic_command));
 
-  CDIO_MMC_SET_COMMAND(cgc.cmd, 
-		       use_read_10 ? GPCMD_READ_10 : CDIO_MMC_GPCMD_READ_CD);
+  CDIO_MMC_SET_COMMAND(cgc.cmd, b_read_10 
+		       ? CDIO_MMC_GPCMD_READ_10 : CDIO_MMC_GPCMD_READ_CD);
 
   CDIO_MMC_SET_READ_LBA(cgc.cmd, lba);
   CDIO_MMC_SET_READ_LENGTH(cgc.cmd, nblocks);
 
-  if (!use_read_10)
-    {
-      cgc.cmd[1] = 0; /* sector size mode2 */
-
-      cgc.cmd[9] = 0x58; /* 2336 mode2 */
-    }
+  if (!b_read_10) {
+    cgc.cmd[1] = 0; /* sector size mode2 */
+    cgc.cmd[9] = 0x58; /* 2336 mode2 */
+  }
 
   cgc.buflen = M2RAW_SECTOR_SIZE * nblocks;
   cgc.buffer = buf;
@@ -327,7 +325,7 @@ _read_packet_mode2_sectors_mmc (int fd, void *buf, lba_t lba,
 #endif
   cgc.data_direction = CGC_DATA_READ;
 
-  if (use_read_10)
+  if (b_read_10)
     {
       int retval;
 
@@ -351,7 +349,7 @@ _read_packet_mode2_sectors_mmc (int fd, void *buf, lba_t lba,
 
 static int
 _read_packet_mode2_sectors (int fd, void *buf, lba_t lba, 
-			    unsigned int nblocks, bool use_read_10)
+			    unsigned int nblocks, bool b_read_10)
 {
   unsigned int l = 0;
   int retval = 0;
@@ -362,7 +360,7 @@ _read_packet_mode2_sectors (int fd, void *buf, lba_t lba,
       void *buf2 = ((char *)buf ) + (l * M2RAW_SECTOR_SIZE);
       
       retval |= _read_packet_mode2_sectors_mmc (fd, buf2, lba + l, nblocks2, 
-						use_read_10);
+						b_read_10);
 
       if (retval)
 	break;
