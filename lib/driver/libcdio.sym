@@ -145,6 +145,6 @@ cdtext_init
 cdtext_is_keyword
 cdtext_set
 discmode2str
-scsi_mmc_get_hwinfo
-scsi_mmc_run_cmd
+mmc_get_hwinfo
+mmc_run_cmd
 track_format2str
