@@ -13,6 +13,13 @@ _cdio_list_prepend
 _cdio_malloc
 _cdio_strfreev
 _cdio_strsplit
+cdio_audio_get_volume
+cdio_audio_pause
+cdio_audio_play_msf
+cdio_audio_play_track_index 
+cdio_audio_read_subchannel
+cdio_audio_resume
+cdio_audio_set_volume
 cdio_debug
 cdio_destroy
 cdio_driver_describe
