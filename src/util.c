@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.46 2005/03/01 09:33:52 rocky Exp $
+  $Id: util.c,v 1.47 2005/03/02 01:00:48 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -367,28 +367,28 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
   }  else if (CDIO_DRIVE_CAP_UNKNOWN == i_misc_cap) {
     report( stdout, "Uknown drive hardware properties\n");
   } else {
-    report( stdout, _("Hardware                    : %s\n"), 
+    report( stdout, _("Hardware                                  : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_FILE  
 	   ? "Disk Image"  : "CD-ROM or DVD");
-    report( stdout, _("Can eject                   : %s\n"), 
-	   i_misc_cap & CDIO_DRIVE_CAP_MISC_EJECT         ? "Yes" : "No" );
-    report( stdout, _("Can close tray              : %s\n"), 
-	   i_misc_cap & CDIO_DRIVE_CAP_MISC_CLOSE_TRAY    ? "Yes" : "No" );
-    report( stdout, _("Can disable manual eject    : %s\n"), 
-	   i_misc_cap & CDIO_DRIVE_CAP_MISC_LOCK          ? "Yes" : "No" );
-    report( stdout, _("Can select juke-box disc    : %s\n\n"), 
-	   i_misc_cap & CDIO_DRIVE_CAP_MISC_SELECT_DISC   ? "Yes" : "No" );
+    report( stdout, _("Can eject                                 : %s\n"), 
+	   i_misc_cap & CDIO_DRIVE_CAP_MISC_EJECT        ? "Yes" : "No" );
+    report( stdout, _("Can close tray                            : %s\n"), 
+	   i_misc_cap & CDIO_DRIVE_CAP_MISC_CLOSE_TRAY   ? "Yes" : "No" );
+    report( stdout, _("Can disable manual eject                  : %s\n"), 
+	   i_misc_cap & CDIO_DRIVE_CAP_MISC_LOCK         ? "Yes" : "No" );
+    report( stdout, _("Can select juke-box disc                  : %s\n\n"), 
+	   i_misc_cap & CDIO_DRIVE_CAP_MISC_SELECT_DISC  ? "Yes" : "No" );
 
-    report( stdout, _("Can set drive speed         : %s\n"), 
-	   i_misc_cap & CDIO_DRIVE_CAP_MISC_SELECT_SPEED  ? "Yes" : "No" );
+    report( stdout, _("Can set drive speed                       : %s\n"), 
+	   i_misc_cap & CDIO_DRIVE_CAP_MISC_SELECT_SPEED ? "Yes" : "No" );
 #if FIXED
-    report( stdout, _("Can detect if CD changed    : %s\n"), 
+    report( stdout, _("Can detect if CD changed                  : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED ? "Yes" : "No" );
 #endif
-    report( stdout, _("Can read multiple sessions  : %s\n"), 
+    report( stdout, _("Can read multiple sessions (e.g. PhotoCD) : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_MULTI_SESSION ? "Yes" : "No" );
-    report( stdout, _("Can hard reset device       : %s\n\n"), 
-	   i_misc_cap & CDIO_DRIVE_CAP_MISC_RESET         ? "Yes" : "No" );
+    report( stdout, _("Can hard reset device                     : %s\n\n"), 
+	   i_misc_cap & CDIO_DRIVE_CAP_MISC_RESET        ? "Yes" : "No" );
   }
   
     
@@ -398,26 +398,30 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
     report( stdout, "Uknown drive reading properties\n" );
   } else {
     report( stdout, "Reading....\n");
-    report( stdout, _("  Can read Mode 2 Form 1    : %s\n"), 
-	   i_read_cap & CDIO_DRIVE_CAP_READ_MODE2_FORM1 ? "Yes" : "No" );
-    report( stdout, _("  Can read Mode 2 Form 2    : %s\n"), 
-	   i_read_cap & CDIO_DRIVE_CAP_READ_MODE2_FORM2 ? "Yes" : "No" );
-    report( stdout, _("  Can read C2 Errors        : %s\n"), 
-	   i_read_cap & CDIO_DRIVE_CAP_READ_C2_ERRS     ? "Yes" : "No" );
-    report( stdout, _("  Can read IRSC             : %s\n"), 
-	   i_read_cap & CDIO_DRIVE_CAP_READ_ISRC        ? "Yes" : "No" );
-    report( stdout, _("  Can read MCN              : %s\n"), 
-	   i_read_cap & CDIO_DRIVE_CAP_READ_MCN         ? "Yes" : "No" );
-    report( stdout, _("  Can play audio            : %s\n"), 
-	   i_read_cap & CDIO_DRIVE_CAP_READ_AUDIO       ? "Yes" : "No" );
-    report( stdout, _("  Can read CD-DA            : %s\n"), 
-	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_DA       ? "Yes" : "No" );
-    report( stdout, _("  Can read CD-R             : %s\n"), 
-	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_R        ? "Yes" : "No" );
-    report( stdout, _("  Can read CD-RW            : %s\n"), 
-	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_RW       ? "Yes" : "No" );
-    report( stdout, _("  Can read DVD-ROM          : %s\n"), 
-	   i_read_cap & CDIO_DRIVE_CAP_READ_DVD_ROM     ? "Yes" : "No" );
+    report( stdout, _("  Can read Mode 2 Form 1                  : %s\n"), 
+	   i_read_cap & CDIO_DRIVE_CAP_READ_MODE2_FORM1  ? "Yes" : "No" );
+    report( stdout, _("  Can read Mode 2 Form 2                  : %s\n"), 
+	   i_read_cap & CDIO_DRIVE_CAP_READ_MODE2_FORM2  ? "Yes" : "No" );
+    report( stdout, _("  Can read (S)VCD (i.e. Mode 2 Form 1/2)  : %s\n"), 
+	   i_read_cap & 
+	    (CDIO_DRIVE_CAP_READ_MODE2_FORM1|CDIO_DRIVE_CAP_READ_MODE2_FORM2)
+	    ? "Yes" : "No" );
+    report( stdout, _("  Can read C2 Errors                      : %s\n"), 
+	   i_read_cap & CDIO_DRIVE_CAP_READ_C2_ERRS      ? "Yes" : "No" );
+    report( stdout, _("  Can read IRSC                           : %s\n"), 
+	   i_read_cap & CDIO_DRIVE_CAP_READ_ISRC         ? "Yes" : "No" );
+    report( stdout, _("  Can read Media Channel Number (or UPC)  : %s\n"), 
+	   i_read_cap & CDIO_DRIVE_CAP_READ_MCN          ? "Yes" : "No" );
+    report( stdout, _("  Can play audio                          : %s\n"), 
+	   i_read_cap & CDIO_DRIVE_CAP_READ_AUDIO        ? "Yes" : "No" );
+    report( stdout, _("  Can read CD-DA                          : %s\n"), 
+	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_DA        ? "Yes" : "No" );
+    report( stdout, _("  Can read CD-R                           : %s\n"), 
+	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_R         ? "Yes" : "No" );
+    report( stdout, _("  Can read CD-RW                          : %s\n"), 
+	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_RW        ? "Yes" : "No" );
+    report( stdout, _("  Can read DVD-ROM                        : %s\n"), 
+	   i_read_cap & CDIO_DRIVE_CAP_READ_DVD_ROM      ? "Yes" : "No" );
   }
   
 
@@ -427,17 +431,17 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
     report( stdout, "Uknown drive writing properties\n" );
   } else {
     report( stdout, "\nWriting....\n");
-    report( stdout, _("  Can write using Burn Proof: %s\n"), 
+    report( stdout, _("  Can write using Burn Proof              : %s\n"), 
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_BURN_PROOF ? "Yes" : "No" );
-    report( stdout, _("  Can write CD-RW           : %s\n"), 
+    report( stdout, _("  Can write CD-RW                         : %s\n"), 
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_CD_RW      ? "Yes" : "No" );
-    report( stdout, _("  Can write DVD-R           : %s\n"), 
+    report( stdout, _("  Can write DVD-R                         : %s\n"), 
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_DVD_R      ? "Yes" : "No" );
-    report( stdout, _("  Can write DVD-RAM         : %s\n"), 
+    report( stdout, _("  Can write DVD-RAM                       : %s\n"), 
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_DVD_RAM    ? "Yes" : "No" );
-    report( stdout, _("  Can write DVD-RW          : %s\n"), 
+    report( stdout, _("  Can write DVD-RW                        : %s\n"), 
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_DVD_RW     ? "Yes" : "No" );
-    report( stdout, _("  Can write DVD+RW          : %s\n"), 
+    report( stdout, _("  Can write DVD+RW                        : %s\n"), 
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_DVD_RPW    ? "Yes" : "No" );
   }
 }
