@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.8 2003/04/09 11:15:06 rocky Exp $
+    $Id: sector.h,v 1.9 2003/04/11 17:33:03 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -24,6 +24,10 @@
 
 #ifndef _CDIO_SECTOR_H_
 #define _CDIO_SECTOR_H_
+
+#ifdef __cplusplus
+    extern "C" {
+#endif
 
 #include "types.h"
 
@@ -125,32 +129,25 @@
 #define msf_t_SIZEOF 3
 
 /* warning, returns new allocated string */
-char *
-cdio_lba_to_msf_str (lba_t lba);
+char *cdio_lba_to_msf_str (lba_t lba);
 
-static inline lba_t
-cdio_lba_to_lsn (lba_t lba)
-{
-  return lba - CDIO_PREGAP_SECTORS; 
-}
+lba_t cdio_lba_to_lsn (lba_t lba);
 
-void
-cdio_lba_to_msf(lba_t lba, msf_t *msf);
+void  cdio_lba_to_msf(lba_t lba, msf_t *msf);
 
-static inline lba_t
-cdio_lsn_to_lba (lsn_t lsn)
-{
-  return lsn + CDIO_PREGAP_SECTORS; 
-}
+lba_t cdio_lsn_to_lba (lsn_t lsn);
 
-void
-cdio_lsn_to_msf (lsn_t lsn, msf_t *msf);
+void  cdio_lsn_to_msf (lsn_t lsn, msf_t *msf);
 
 uint32_t
 cdio_msf_to_lba (const msf_t *msf);
 
 uint32_t
 cdio_msf_to_lsn (const msf_t *msf);
+
+#ifdef __cplusplus
+    }
+#endif
 
 #endif /* _CDIO_SECTOR_H_ */
 

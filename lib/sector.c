@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: sector.c,v 1.2 2003/04/11 17:33:03 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -26,7 +26,7 @@
 #include "sector.h"
 #include "util.h"
 
-static const char _rcsid[] = "$Id: sector.c,v 1.1 2003/03/24 19:01:09 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.2 2003/04/11 17:33:03 rocky Exp $";
 
 void
 cdio_lba_to_msf (uint32_t lba, msf_t *msf)
@@ -36,6 +36,18 @@ cdio_lba_to_msf (uint32_t lba, msf_t *msf)
   msf->m = to_bcd8 (lba / (60 * 75));
   msf->s = to_bcd8 ((lba / 75) % 60);
   msf->f = to_bcd8 (lba % 75);
+}
+
+lba_t
+cdio_lba_to_lsn (lba_t lba)
+{
+  return lba - CDIO_PREGAP_SECTORS; 
+}
+
+lba_t
+cdio_lsn_to_lba (lsn_t lsn)
+{
+  return lsn + CDIO_PREGAP_SECTORS; 
 }
 
 void
