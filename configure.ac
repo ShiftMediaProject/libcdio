@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.66 2004/02/29 04:41:57 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.67 2004/03/01 01:29:13 rocky Exp $])dnl
 AC_INIT(libcdio, 0.67cvs)
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -172,13 +172,6 @@ dnl system
 
 LIBS="$LIBS -lm"
 CFLAGS="$CFLAGS $WARN_CFLAGS"
-
-case "$host_os" in
-  freebsd4* | netbsd*  ) 
-     enable_versioned_libs=no
-     ;;
-  * )
-esac
 
 # We need either GNU make or --without-versioned-libs
 if test "x$enable_versioned_libs" = "xyes" ; then 
