@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.23 2005/02/19 00:58:12 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.24 2005/02/25 10:22:48 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.23 2005/02/19 00:58:12 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.24 2005/02/25 10:22:48 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -771,11 +771,10 @@ get_track_msf_solaris(void *p_user_data, track_t i_track, msf_t *msf)
   @return the blocksize if > 0; error if <= 0
  */
 static driver_return_code_t
-set_blocksize_solaris (void *p_user_data) {
+set_blocksize_solaris (void *p_user_data, uint16_t i_blocksize) {
 
   _img_private_t *p_env = p_user_data;
   int ret;
-  int i_blocksize;
 
   if ( !p_env || p_env->gen.fd <=0 ) return DRIVER_OP_UNINIT;
   if ((ret = ioctl(p_env->gen.fd,  CDROMSBLKMODE, i_blocksize)) != 0) {
