@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.1 2003/09/17 12:13:07 rocky Exp $
+  $Id: cd-read.c,v 1.2 2003/09/19 04:11:23 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -27,8 +27,30 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <cdio/cdio.h>
+#include <cdio/logging.h>
 #include <stdlib.h>
 #include <ctype.h>
+
+/* CDIO logging routines */
+static cdio_log_handler_t gl_default_cdio_log_handler = NULL;
+
+static int debug_level = 0;
+
+static void 
+_log_handler (cdio_log_level_t level, const char message[])
+{
+  if (level == CDIO_LOG_DEBUG && debug_level < 3)
+    return;
+
+  if (level == CDIO_LOG_INFO  && debug_level < 2)
+    return;
+  
+  if (level == CDIO_LOG_WARN  && debug_level < 1)
+    return;
+  
+  gl_default_cdio_log_handler (level, message);
+}
+
 
 static void
 hexdump (uint8_t * buffer, unsigned int len)
@@ -59,6 +81,8 @@ main(int argc, const char *argv[])
   uint8_t buffer[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   lsn_t lsn;
   
+  gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
+
   if (argc != 4) {
     printf("need to give 3 things: device/filename, type of read, & lsn\n");
     return 10;
