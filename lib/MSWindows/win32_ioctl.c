@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.20 2004/07/22 09:52:17 rocky Exp $
+    $Id: win32_ioctl.c,v 1.21 2004/07/23 14:28:42 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.20 2004/07/22 09:52:17 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.21 2004/07/23 14:28:42 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -91,11 +91,6 @@ typedef struct _CDROM_TOC {
     TRACK_DATA TrackData[CDIO_CD_MAX_TRACKS+1];
 } CDROM_TOC, *PCDROM_TOC;
 
-#define IOCTL_CDROM_SUB_Q_CHANNEL    0x00
-#define IOCTL_CDROM_CURRENT_POSITION 0x01
-#define IOCTL_CDROM_MEDIA_CATALOG    0x02
-#define IOCTL_CDROM_TRACK_ISRC       0x03
-
 typedef enum _TRACK_MODE_TYPE {
     YellowMode2,
     XAForm2,
@@ -129,6 +124,70 @@ typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
 } SUB_Q_MEDIA_CATALOG_NUMBER, *PSUB_Q_MEDIA_CATALOG_NUMBER;
 
 #include "win32.h"
+
+#define OP_TIMEOUT_MS 60 
+
+/*!
+  Run a SCSI MMC command. 
+ 
+  env	        private CD structure 
+  i_timeout     time in milliseconds we will wait for the command
+                to complete. If this value is -1, use the default 
+		time-out value.
+  p_buf	        Buffer for data, both sending and receiving
+  i_buf	        Size of buffer
+  e_direction	direction the transfer is to go.
+  cdb	        CDB bytes. All values that are needed should be set on 
+                input. We'll figure out what the right CDB length should be.
+
+  Return 0 if command completed successfully.
+ */
+static int
+scsi_mmc_run_cmd_win32ioctl( const void *p_user_data, int i_timeout,
+			     unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,
+			     scsi_mmc_direction_t e_direction, 
+			     unsigned int i_buf, /*in/out*/ void *p_buf )
+{
+  const _img_private_t *p_env = p_user_data;
+  SCSI_PASS_THROUGH_DIRECT sptd;
+  bool success;
+  DWORD dwBytesReturned;
+  
+  sptd.Length=sizeof(sptd);
+  sptd.PathId=0;     /* SCSI card ID will be filled in automatically */
+  sptd.TargetId=0;   /* SCSI target ID will also be filled in */
+  sptd.Lun=0;        /* SCSI lun ID will also be filled in */
+  sptd.CdbLength=12; /* CDB size is 12 for ReadCD MMC1 command */
+  sptd.SenseInfoLength=0; /* Don't return any sense data */
+  sptd.DataIn            = SCSI_MMC_DATA_READ == e_direction ? 
+    SCSI_IOCTL_DATA_IN : SCSI_IOCTL_DATA_OUT; 
+  sptd.DataTransferLength= i_buf; 
+  sptd.TimeOutValue=i_timeout;
+  sptd.DataBuffer= (void *) p_buf;
+  sptd.SenseInfoOffset=0;
+
+  /* Send the command to drive */
+  success=DeviceIoControl(p_env->h_device_handle,
+			  IOCTL_SCSI_PASS_THROUGH_DIRECT,               
+			  (void *)&sptd, 
+			  (DWORD)sizeof(SCSI_PASS_THROUGH_DIRECT),
+			  NULL, 0,                        
+			  &dwBytesReturned,
+			  NULL);
+
+  if(! success) {
+    char *psz_msg = NULL;
+    DWORD dw = GetLastError();
+
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
+		  NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		  (LPSTR) psz_msg, 0, NULL);
+    cdio_info("Error: %s", psz_msg);
+    LocalFree(psz_msg);
+    return 1;
+  }
+  return 0;
+}
 
 /*
   Returns a string that can be used in a CreateFile call if 
@@ -202,58 +261,21 @@ read_audio_sectors_win32ioctl (_img_private_t *env, void *data, lsn_t lsn,
    data starting from lsn. Returns 0 if no error.
  */
 static int
-read_raw_sector (const _img_private_t *env, void *buf, lsn_t lsn) 
+read_raw_sector (const _img_private_t *p_env, void *p_buf, lsn_t lsn) 
 {
-  SCSI_PASS_THROUGH_DIRECT sptd;
-  bool success;
-  DWORD dwBytesReturned;
-  
-  sptd.Length=sizeof(sptd);
-  sptd.PathId=0;     /* SCSI card ID will be filled in automatically */
-  sptd.TargetId=0;   /* SCSI target ID will also be filled in */
-  sptd.Lun=0;        /* SCSI lun ID will also be filled in */
-  sptd.CdbLength=12; /* CDB size is 12 for ReadCD MMC1 command */
-  sptd.SenseInfoLength=0; /* Don't return any sense data */
-  sptd.DataIn            = SCSI_IOCTL_DATA_IN; 
-  sptd.DataTransferLength= CDIO_CD_FRAMESIZE_RAW; 
-  sptd.TimeOutValue=60;  /*SCSI timeout value (60 seconds - 
-			   maybe it should be longer) */
-  sptd.DataBuffer= (void *) buf;
-  sptd.SenseInfoOffset=0;
+  scsi_mmc_cdb_t cdb = {{0, }};
 
   /* ReadCD CDB12 command.  The values were taken from MMC1 draft paper. */
-  CDIO_MMC_SET_COMMAND(sptd.Cdb, CDIO_MMC_GPCMD_READ_CD);
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
+  CDIO_MMC_SET_READ_LBA(cdb.field, lsn);
+  CDIO_MMC_SET_READ_LENGTH(cdb.field, 1);
 
-  CDIO_MMC_SET_READ_LBA(sptd.Cdb, lsn);
-  CDIO_MMC_SET_READ_LENGTH(sptd.Cdb, 1);
-
-  sptd.Cdb[9]=0xF8;  /* Raw read, 2352 bytes per sector */
-  sptd.Cdb[10]=0;   
-  sptd.Cdb[11]=0;
+  cdb.field[9]=0xF8;  /* Raw read, 2352 bytes per sector */
   
-  /* Send the command to drive */
-  success=DeviceIoControl(env->h_device_handle,
-			  IOCTL_SCSI_PASS_THROUGH_DIRECT,               
-			  (void *)&sptd, 
-			  (DWORD)sizeof(SCSI_PASS_THROUGH_DIRECT),
-			  NULL, 0,                        
-			  &dwBytesReturned,
-			  NULL);
-
-  if(! success) {
-    char *psz_msg = NULL;
-    DWORD dw = GetLastError();
-
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
-		  NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		  (LPSTR) psz_msg, 0, NULL);
-    cdio_info("Error reading %lu:\n%s", (long unsigned int) lsn, 
-	      psz_msg);
-    LocalFree(psz_msg);
-    return 1;
-  }
-
-  return 0;
+  return scsi_mmc_run_cmd_win32ioctl(p_env, OP_TIMEOUT_MS,
+				     scsi_mmc_get_cmd_len(cdb.field[0]), 
+				     &cdb, SCSI_MMC_DATA_READ, 
+				     CDIO_CD_FRAMESIZE_RAW, p_buf);
 }
 
 /*!
@@ -261,15 +283,15 @@ read_raw_sector (const _img_private_t *env, void *buf, lsn_t lsn)
    data starting from lsn. Returns 0 if no error.
  */
 int
-read_mode2_sector_win32ioctl (const _img_private_t *env, void *data, 
+read_mode2_sector_win32ioctl (const _img_private_t *p_env, void *p_data, 
 			      lsn_t lsn, bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  int ret = read_raw_sector (env, buf, lsn);
+  int ret = read_raw_sector (p_env, buf, lsn);
 
   if ( 0 != ret) return ret;
 
-  memcpy (data, 
+  memcpy (p_data,
 	  buf + CDIO_CD_SYNC_SIZE + CDIO_CD_XA_HEADER,
 	  b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
   
@@ -404,58 +426,31 @@ read_toc_win32ioctl (_img_private_t *env)
   or CD-TEXT information does not exist.
 */
 bool
-init_cdtext_win32ioctl (_img_private_t *env)
+init_cdtext_win32ioctl (_img_private_t *p_env)
 {
+  scsi_mmc_cdb_t cdb = {{ 0, }};
   uint8_t  wdata[5000] = { 0, };
-
-  SCSI_PASS_THROUGH_DIRECT sptd;
-  bool success;
-  DWORD dwBytesReturned;
-  
-  sptd.Length=sizeof(sptd);
-  sptd.PathId=0;     /* SCSI card ID will be filled in automatically */
-  sptd.TargetId=0;   /* SCSI target ID will also be filled in */
-  sptd.Lun=0;        /* SCSI lun ID will also be filled in */
-  sptd.CdbLength=10; /* CDB size is 10 for READ TOC MMC1 command */
-  sptd.SenseInfoLength=0; /* Don't return any sense data */
-  sptd.DataIn            = SCSI_IOCTL_DATA_IN; 
-  sptd.DataTransferLength= sizeof(wdata); 
-  sptd.TimeOutValue=60;  /*SCSI timeout value (60 seconds - 
-			   maybe it should be longer) */
-  sptd.DataBuffer= (void *) wdata;
-  sptd.SenseInfoOffset=0;
+  int      i_status;
 
   /* Operation code */
-  CDIO_MMC_SET_COMMAND(sptd.Cdb, CDIO_MMC_GPCMD_READ_TOC); 
-
-  sptd.Cdb[1] = 0x02;   /* MSF mode */
+  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(wdata));
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC); 
 
   /* Format */
-  sptd.Cdb[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
+  cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
 
-  CDIO_MMC_SET_READ_LENGTH(sptd.Cdb, sizeof(wdata));
+  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(wdata));
 
-  /* Send the command to drive */
-  success=DeviceIoControl(env->h_device_handle,
-			  IOCTL_SCSI_PASS_THROUGH_DIRECT,               
-			  (void *)&sptd, 
-			  (DWORD)sizeof(SCSI_PASS_THROUGH_DIRECT),
-			  NULL, 0,                        
-			  &dwBytesReturned,
-			  NULL);
+  i_status = scsi_mmc_run_cmd_win32ioctl (p_env, OP_TIMEOUT_MS,
+					  scsi_mmc_get_cmd_len(cdb.field[0]), 
+					  &cdb, SCSI_MMC_DATA_READ, 
+					  sizeof(wdata), &wdata);
 
-  if(! success) {
-    char *psz_msg = NULL;
-    DWORD dw = GetLastError();
-
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
-		  NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		  (LPSTR) psz_msg, 0, NULL);
-    cdio_info("Error reading cdtext: %s", psz_msg);
-    LocalFree(psz_msg);
+  if(0 != i_status) {
+    cdio_info ("CD-TEXT reading failed\n");
     return false;
   } else {
-    return cdtext_data_init(env, env->i_first_track, wdata, 
+    return cdtext_data_init(p_env, p_env->i_first_track, wdata, 
 			    set_cdtext_field_win32);
   }
 }
@@ -520,7 +515,7 @@ get_track_format_win32ioctl(const _img_private_t *env, track_t i_track)
 
  */
 void
-get_drive_cap_win32ioctl (const _img_private_t *env,
+get_drive_cap_win32ioctl (const _img_private_t *p_env,
 			  cdio_drive_read_cap_t  *p_read_cap,
 			  cdio_drive_write_cap_t *p_write_cap,
 			  cdio_drive_misc_cap_t  *p_misc_cap)
@@ -559,7 +554,7 @@ get_drive_cap_win32ioctl (const _img_private_t *env,
   length = offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,DataBuf) +
     sptwb.Spt.DataTransferLength;
   
-  if ( DeviceIoControl(env->h_device_handle,
+  if ( DeviceIoControl(p_env->h_device_handle,
 		       IOCTL_SCSI_PASS_THROUGH,
 		       &sptwb,
 		       sizeof(SCSI_PASS_THROUGH),
