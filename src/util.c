@@ -1,7 +1,7 @@
 /*
-  $Id: util.c,v 1.28 2004/12/18 17:29:32 rocky Exp $
+  $Id: util.c,v 1.29 2005/01/04 04:42:17 rocky Exp $
 
-  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ char *source_name = NULL;
 char *program_name;
 
 void 
-myexit(CdIo *cdio, int rc) 
+myexit(CdIo_t *cdio, int rc) 
 {
   if (NULL != cdio) cdio_destroy(cdio);
   if (NULL != program_name) free(program_name);
@@ -90,11 +90,11 @@ fillout_device_name(const char *device_name)
 
 /*! Prints out SCSI-MMC drive features  */
 void 
-print_mmc_drive_features(CdIo *p_cdio)
+print_mmc_drive_features(CdIo_t *p_cdio)
 {
   
   int i_status;                  /* Result of SCSI MMC command */
-  uint8_t buf[500] = { 0, };         /* Place to hold returned data */
+  uint8_t buf[500] = { 0, };     /* Place to hold returned data */
   scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Block */
   
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_CONFIGURATION);
