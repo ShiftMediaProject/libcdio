@@ -1,7 +1,7 @@
 /*
-  $Id: cddb.h,v 1.2 2005/03/11 10:34:28 rocky Exp $
+  $Id: cddb.h,v 1.3 2005/03/12 06:02:36 rocky Exp $
 
-  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -39,3 +39,13 @@ cddb_opts_t cddb_opts;
       the number of tracks.
 */
 unsigned long cddb_discid(CdIo_t *p_cdio, track_t i_tracks);
+
+#ifdef HAVE_CDDB
+#include <cddb/cddb.h>
+
+typedef void (*error_fn_t) (const char *msg);
+
+bool init_cddb(CdIo_t *p_cdio, cddb_conn_t **pp_conn, 
+	       cddb_disc_t **pp_cddb_disc, error_fn_t errmsg,  
+	       track_t i_first_track, track_t i_tracks, int *i_cddb_matches);
+#endif

@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.4 2005/03/11 10:34:28 rocky Exp $
+    $Id: cdda-player.c,v 1.5 2005/03/12 06:02:36 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -138,8 +138,6 @@ bool b_cdtext_genre;     /* true if from CD-Text, false if from CDDB */
 bool b_cdtext_category;  /* true if from CD-Text, false if from CDDB */
 
 #ifdef HAVE_CDDB
-static bool init_cddb(CdIo_t *p_cdio, cddb_conn_t *p_conn, track_t i_tracks);
-
 cddb_conn_t *p_conn = NULL;
 cddb_disc_t *p_cddb_disc = NULL;
 int i_cddb_matches = 0;
@@ -331,6 +329,10 @@ read_subchannel(CdIo_t *p_cdio)
     cd_eject();
 }
 
+#define add_cddb_disc_info(format_str, field) \
+  if (p_cddb_disc->field) \
+    snprintf(field, sizeof(field)-1, format_str, p_cddb_disc->field);
+
 static void
 read_toc(CdIo_t *p_cdio)
 {
@@ -355,13 +357,19 @@ read_toc(CdIo_t *p_cdio)
   } else {
     b_cd = true;
     data = 0;
-    b_db = 
 #ifdef HAVE_CDDB
-      init_cddb(p_cdio, p_conn, i_tracks)
+    b_db = init_cddb(p_cdio, &p_conn, &p_cddb_disc, xperror, i_first_track, 
+		     i_tracks, &i_cddb_matches);
+    if (b_db) {
+      add_cddb_disc_info("%s",  artist);
+      add_cddb_disc_info("%s",  title);
+      add_cddb_disc_info("%s",  genre);
+      add_cddb_disc_info("%5d", year);
+    }
+    
 #else
-      false
+    b_db = false;
 #endif
-      ;
     for (i = i_first_track; i <= i_last_track+1; i++) {
       if ( !cdio_get_track_msf(p_cdio, i, &(toc[i])) )
       {
@@ -502,86 +510,6 @@ display_status()
   refresh();
   action(NULL);
 }
-
-#define add_cddb_disc_info(format_str, field) \
-  if (p_cddb_disc->field) \
-    snprintf(field, sizeof(field)-1, format_str, p_cddb_disc->field);
-
-#ifdef HAVE_CDDB
-static bool
-init_cddb(CdIo_t *p_cdio, cddb_conn_t *p_conn, track_t i_tracks)
-{
-  track_t i;
-  
-  if (p_conn) cddb_destroy(p_conn);
-  p_conn =  cddb_new();
-  p_cddb_disc = NULL;
-  
-  if (!p_conn) {
-    xperror("unable to initialize libcddb");
-    return false;
-  }
-  
-  if (NULL == cddb_opts.email) 
-    cddb_set_email_address(p_conn, "me@home");
-  else 
-    cddb_set_email_address(p_conn, cddb_opts.email);
-  
-  if (NULL == cddb_opts.server) 
-    cddb_set_server_name(p_conn, "freedb.freedb.org");
-  else 
-    cddb_set_server_name(p_conn, cddb_opts.server);
-  
-  if (cddb_opts.timeout >= 0) 
-    cddb_set_timeout(p_conn, cddb_opts.timeout);
-  
-  cddb_set_server_port(p_conn, cddb_opts.port);
-  
-  if (cddb_opts.http) 
-    cddb_http_enable(p_conn);
-  else 
-    cddb_http_disable(p_conn);
-  
-  if (NULL != cddb_opts.cachedir) 
-    cddb_cache_set_dir(p_conn, cddb_opts.cachedir);
-  
-  if (cddb_opts.disable_cache) 
-    cddb_cache_disable(p_conn);
-  
-  p_cddb_disc = cddb_disc_new();
-  if (!p_cddb_disc) {
-    xperror("unable to create CDDB disc structure");
-    return false;
-  }
-  for(i = 0; i < i_tracks; i++) {
-    cddb_track_t *t = cddb_track_new(); 
-    t->frame_offset = cdio_get_track_lba(p_cdio, i+i_first_track);
-    cddb_disc_add_track(p_cddb_disc, t);
-  }
-  
-  p_cddb_disc->length = 
-    cdio_get_track_lba(p_cdio, CDIO_CDROM_LEADOUT_TRACK) 
-    / CDIO_CD_FRAMES_PER_SEC;
-  
-  if (!cddb_disc_calc_discid(p_cddb_disc)) {
-    xperror("libcddb calc discid failed.");
-    return false;
-  }
-  
-  i_cddb_matches = cddb_query(p_conn, p_cddb_disc);
-  
-  if (-1 == i_cddb_matches) 
-    xperror(cddb_error_str(cddb_errno(p_conn)));
-
-  cddb_read(p_conn, p_cddb_disc);
-
-  add_cddb_disc_info("%s",  artist);
-  add_cddb_disc_info("%s",  title);
-  add_cddb_disc_info("%s",  genre);
-  add_cddb_disc_info("%5d", year);
-  return true;
-}
-#endif /*HAVE_CDDB*/
 
 #define add_cddb_track_info(format_str, field) \
   if (t->field) \

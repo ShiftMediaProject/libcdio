@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.133 2005/03/11 10:34:28 rocky Exp $
+    $Id: cd-info.c,v 1.134 2005/03/12 06:02:36 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -397,81 +397,39 @@ print_cdtext_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
 }
 
 #ifdef HAVE_CDDB
+
 static void 
-print_cddb_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
-  int i, matches;
+cddb_errmsg(const char *msg)
+{
+  report(stderr, "%s: %s\n", program_name, msg);
+}
+
+
+static void 
+print_cddb_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) 
+{
+  int i, i_cddb_matches = 0;
   
-  cddb_conn_t *p_conn =  cddb_new();
-  cddb_disc_t *disc = NULL;
+  cddb_conn_t *p_conn = NULL;
+  cddb_disc_t *p_cddb_disc = NULL;
 
-  if (!p_conn) {
-    report(stderr,  "%s: unable to initialize libcddb\n", program_name);
-    goto cddb_destroy;
-  }
+  if ( init_cddb(p_cdio, &p_conn, &p_cddb_disc, cddb_errmsg, i_first_track, 
+		 i_tracks, &i_cddb_matches) ) {
 
-  if (NULL == cddb_opts.email) 
-    cddb_set_email_address(p_conn, "me@home");
-  else 
-    cddb_set_email_address(p_conn, cddb_opts.email);
-
-  if (NULL == cddb_opts.server) 
-    cddb_set_server_name(p_conn, "freedb.freedb.org");
-  else 
-    cddb_set_server_name(p_conn, cddb_opts.server);
-
-  if (cddb_opts.timeout >= 0) 
-    cddb_set_timeout(p_conn, cddb_opts.timeout);
-
-  cddb_set_server_port(p_conn, cddb_opts.port);
-
-  if (cddb_opts.http) 
-    cddb_http_enable(p_conn);
-  else 
-    cddb_http_disable(p_conn);
-
-  if (NULL != cddb_opts.cachedir) 
-    cddb_cache_set_dir(p_conn, cddb_opts.cachedir);
-    
-  if (cddb_opts.disable_cache) 
-    cddb_cache_disable(p_conn);
-    
-  disc = cddb_disc_new();
-  if (!disc) {
-    report(stderr, "%s: unable to create CDDB disc structure", program_name);
-    goto cddb_destroy;
-  }
-  for(i = 0; i < i_tracks; i++) {
-    cddb_track_t *t = cddb_track_new(); 
-    t->frame_offset = cdio_get_track_lba(p_cdio, i+i_first_track);
-    cddb_disc_add_track(disc, t);
-  }
-    
-  disc->length = 
-    cdio_get_track_lba(p_cdio, CDIO_CDROM_LEADOUT_TRACK) 
-    / CDIO_CD_FRAMES_PER_SEC;
-
-  if (!cddb_disc_calc_discid(disc)) {
-    report(stderr, "%s: libcddb calc discid failed.\n", 
-	       program_name);
-    goto cddb_destroy;
-  }
-
-  matches = cddb_query(p_conn, disc);
-
-  if (-1 == matches) 
-    printf("%s: %s\n", program_name, cddb_error_str(cddb_errno(p_conn)));
-  else {
-    printf("%s: Found %d matches in CDDB\n", program_name, matches);
-    for (i=1; i<=matches; i++) {
-      cddb_read(p_conn, disc);
-      cddb_disc_print(disc);
-      cddb_query_next(p_conn, disc);
+    if (-1 == i_cddb_matches) 
+      printf("%s: %s\n", program_name, cddb_error_str(cddb_errno(p_conn)));
+    else {
+      printf("%s: Found %d matches in CDDB\n", program_name, i_cddb_matches);
+      for (i=1; i<=i_cddb_matches; i++) {
+	cddb_disc_print(p_cddb_disc);
+	cddb_query_next(p_conn, p_cddb_disc);
+	if (i != i_cddb_matches) cddb_read(p_conn, p_cddb_disc);
+      }
     }
-  }
   
-  cddb_disc_destroy(disc);
-  cddb_destroy:
-  cddb_destroy(p_conn);
+    cddb_disc_destroy(p_cddb_disc);
+    cddb_destroy(p_conn);
+  }
 }
 #endif
 

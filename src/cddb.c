@@ -1,5 +1,5 @@
 /*
-  $Id: cddb.c,v 1.2 2005/03/06 16:00:35 rocky Exp $
+  $Id: cddb.c,v 1.3 2005/03/12 06:02:36 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -67,3 +67,75 @@ cddb_discid(CdIo_t *p_cdio, track_t i_tracks)
   
   return ((n % 0xff) << 24 | t << 8 | i_tracks);
 }
+
+#ifdef HAVE_CDDB
+bool 
+init_cddb(CdIo_t *p_cdio, cddb_conn_t **pp_conn, cddb_disc_t **pp_cddb_disc, 
+	  error_fn_t errmsg, track_t i_first_track, track_t i_tracks,
+	  int *i_cddb_matches)
+{
+  track_t i;
+  
+  *pp_conn =  cddb_new();
+  *pp_cddb_disc = NULL;
+  
+  if (!*pp_conn) {
+    errmsg("unable to initialize libcddb");
+    return false;
+  }
+  
+  if (NULL == cddb_opts.email) 
+    cddb_set_email_address(*pp_conn, "me@home");
+  else 
+    cddb_set_email_address(*pp_conn, cddb_opts.email);
+  
+  if (NULL == cddb_opts.server) 
+    cddb_set_server_name(*pp_conn, "freedb.freedb.org");
+  else 
+    cddb_set_server_name(*pp_conn, cddb_opts.server);
+  
+  if (cddb_opts.timeout >= 0) 
+    cddb_set_timeout(*pp_conn, cddb_opts.timeout);
+  
+  cddb_set_server_port(*pp_conn, cddb_opts.port);
+  
+  if (cddb_opts.http) 
+    cddb_http_enable(*pp_conn);
+  else 
+    cddb_http_disable(*pp_conn);
+  
+  if (NULL != cddb_opts.cachedir) 
+    cddb_cache_set_dir(*pp_conn, cddb_opts.cachedir);
+  
+  if (cddb_opts.disable_cache) 
+    cddb_cache_disable(*pp_conn);
+  
+  *pp_cddb_disc = cddb_disc_new();
+  if (!*pp_cddb_disc) {
+    errmsg("unable to create CDDB disc structure");
+    return false;
+  }
+  for(i = 0; i < i_tracks; i++) {
+    cddb_track_t *t = cddb_track_new(); 
+    t->frame_offset = cdio_get_track_lba(p_cdio, i+i_first_track);
+    cddb_disc_add_track(*pp_cddb_disc, t);
+  }
+  
+  (*pp_cddb_disc)->length = 
+    cdio_get_track_lba(p_cdio, CDIO_CDROM_LEADOUT_TRACK) 
+    / CDIO_CD_FRAMES_PER_SEC;
+  
+  if (!cddb_disc_calc_discid(*pp_cddb_disc)) {
+    errmsg("libcddb calc discid failed.");
+    return false;
+  }
+  
+  *i_cddb_matches = cddb_query(*pp_conn, *pp_cddb_disc);
+  
+  if (-1 == *i_cddb_matches) 
+    errmsg(cddb_error_str(cddb_errno(*pp_conn)));
+
+  cddb_read(*pp_conn, *pp_cddb_disc);
+  return true;
+}
+#endif /*HAVE_CDDB*/
