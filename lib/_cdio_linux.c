@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.43 2004/05/05 02:47:18 rocky Exp $
+    $Id: _cdio_linux.c,v 1.44 2004/05/06 01:21:29 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.43 2004/05/05 02:47:18 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.44 2004/05/06 01:21:29 rocky Exp $";
 
 #include <string.h>
 
@@ -1089,13 +1089,13 @@ cdio_open_linux (const char *psz_source_name)
   ones to set that up.
  */
 CdIo *
-cdio_open_am_linux (const char *orig_source_name, const char *access_mode)
+cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
 {
 
 #ifdef HAVE_LINUX_CDROM
   CdIo *ret;
   _img_private_t *_data;
-  char *source_name;
+  char *psz_source;
 
   cdio_funcs _funcs = {
     .eject_media        = _eject_media_linux,
@@ -1128,18 +1128,18 @@ cdio_open_am_linux (const char *orig_source_name, const char *access_mode)
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
-  if (NULL == orig_source_name) {
-    source_name=cdio_get_default_device_linux();
-    if (NULL == source_name) return NULL;
-    _set_arg_linux(_data, "source", source_name);
-    free(source_name);
+  if (NULL == psz_orig_source) {
+    psz_source=cdio_get_default_device_linux();
+    if (NULL == psz_source) return NULL;
+    _set_arg_linux(_data, "source", psz_source);
+    free(psz_source);
   } else {
-    if (cdio_is_device_generic(orig_source_name))
-      _set_arg_linux(_data, "source", orig_source_name);
+    if (cdio_is_device_generic(psz_orig_source))
+      _set_arg_linux(_data, "source", psz_orig_source);
     else {
       /* The below would be okay if all device drivers worked this way. */
 #if 0
-      cdio_info ("source %s is a not a device", orig_source_name);
+      cdio_info ("source %s is a not a device", psz_orig_source);
 #endif
       return NULL;
     }
