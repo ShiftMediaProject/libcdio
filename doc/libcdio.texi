@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.17 2004/02/28 20:54:31 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.18 2004/02/29 02:13:46 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -79,13 +79,14 @@ This file documents GNU CD input and control library
 Copyright (C) 2003, 2004 Herbert Valerio Riedel and Rocky Bernstein
 
 @menu
-* History::         How this came about
-* Previous Work::   The problem and previous work
-* Purpose::         What is in this package (and what's not)
-* CD Formats::      A tour through the CD-specification spectrum
-* CD Terms::        Limitations and terminology used in CD's and libcdio
-* How to use::      Okay enough babble, lemme at the library!
-* Utility Programs:: Diagnostic programs that come with this library
+* History::           How this came about
+* Previous Work::     The problem and previous work
+* Purpose::           What is in this package (and what's not)
+* CD Formats::        A tour through the CD-specification spectrum
+* CD Terms::          Limitations and terminology used in CD's and libcdio
+* How to use::        Okay enough babble, lemme at the library!
+* Utility Programs::  Diagnostic programs that come with this library
+* OS Considerations:: Operating System Considerations and Drivers
 
 Appendices
 * ISO-9660 Character Sets::
@@ -899,6 +900,46 @@ image.
 @section @samp{iso-read}
 
 @samp{iso-info} can be used to extract a file in an ISO-9660 image.
+
+@node OS Considerations
+@chapter Operating System Considerations and Drivers
+
+@menu
+* GNU/Linux::
+* Microsoft::
+* Solaris::
+@end menu
+
+@node GNU/Linux
+@section GNU/Linux
+
+There are two CD drive access methods on GNU/Linux: ioctl and SCSI
+MMC.  GNU/Linux has a rather nice and complete ioctl mechanism. On the
+other hand, the SCSI mechanism is more universal. 
+
+@node Microsoft
+@section Microsoft
+
+There are two CD drive access methods on Microsoft Windows platforms:
+ioctl and ASPI. 
+
+The ASPI interface specification was developed by Adaptec for 
+sending commands to a SCSI host adapter (such as those controlling CD
+and DVD drives) and used on Window 9x/NT and later. Emulation for
+ATAPI drives was added so that the same sets of commands worked those
+even though the drives might not be SCSI nor might there even be a
+SCSI controller attached.
+
+However in Windows NT/2K/XP, Microsoft provides their Win32 ioctl
+interface, and has take steps to make using ASPI more inaccessible
+(e.g. requiring adminstrative access to use ASPI).
+
+
+@node Solaris
+@section Solaris
+
+There are two CD drive access methods on Solaris:
+ATAPI and SCSI. SCSI is preferred when possible.
 
 @node ISO-9660 Character Sets
 @appendix ISO-9660 Character Sets
