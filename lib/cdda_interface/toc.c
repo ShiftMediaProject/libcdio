@@ -1,5 +1,5 @@
 /*
-  $Id: toc.c,v 1.3 2005/01/06 03:38:58 rocky Exp $
+  $Id: toc.c,v 1.4 2005/01/06 23:32:58 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -130,6 +130,7 @@ cdda_disc_lastsector(cdrom_drive_t *d)
   return -1;
 }
 
+/*! Return the number of tracks on the CD. */
 track_t
 cdda_tracks(cdrom_drive_t *d)
 {
@@ -140,6 +141,11 @@ cdda_tracks(cdrom_drive_t *d)
   return(d->tracks);
 }
 
+/*! Return the track containing the given LSN. If the LSN is before
+    the first track (in the pregap), 0 is returned. If there was an
+    error or the LSN after the LEADOUT (beyond the end of the CD), then
+    CDIO_INVALID_TRACK is returned.
+ */
 int 
 cdda_sector_gettrack(cdrom_drive_t *d, lsn_t lsn)
 {
@@ -154,7 +160,7 @@ cdda_sector_gettrack(cdrom_drive_t *d, lsn_t lsn)
   }
 }
 
-/*! Return number of channels in track: 2 or 4; -2 if not
+/*! Return the number of channels in track: 2 or 4; -2 if not
   implemented or -1 for error.
   Not meaningful if track is not an audio track.
 */
