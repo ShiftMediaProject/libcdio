@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.51 2004/03/24 11:24:44 rocky Exp $
+    $Id: cd-info.c,v 1.52 2004/04/21 09:23:38 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -136,8 +136,8 @@ parse_options (int argc, const char *argv[])
      "Don't filesystem analysis"},
     
 #ifdef HAVE_CDDB
-  {"no-cddb",     'a', POPT_ARG_NONE, &opts.no_cddb, 0,
-   "Don't look up audio CDDB information or print that"},
+    {"no-cddb",     '\0', POPT_ARG_NONE, &opts.no_cddb, 0,
+     "Don't look up audio CDDB information or print that"},
     
     {"cddb-port",   'P', POPT_ARG_INT, &opts.cddb_port, 8880,
      "CDDB port number to use (default 8880)"},
@@ -426,7 +426,7 @@ print_cddb_info(CdIo *cdio, track_t num_tracks, track_t first_track_num) {
   matches = cddb_query(conn, disc);
 
   if (-1 == matches) 
-    printf("%s: %s\n", program_name, cddb_error_str(errno));
+    printf("%s: %s\n", program_name, cddb_error_str(cddb_errno(conn)));
   else {
     printf("%s: Found %d matches in CDDB\n", program_name, matches);
     for (i=1; i<=matches; i++) {
