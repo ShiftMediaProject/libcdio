@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.63 2004/07/18 05:12:03 rocky Exp $
+    $Id: cdio.c,v 1.64 2004/07/21 10:19:21 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.63 2004/07/18 05:12:03 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.64 2004/07/21 10:19:21 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -508,6 +508,21 @@ cdio_get_first_track_num (const CdIo *cdio)
     return cdio->op.get_first_track_num (cdio->env);
   } else {
     return CDIO_INVALID_TRACK;
+  }
+}
+
+/*! 
+  Get medium associated with cd_obj.
+*/
+discmode_t
+cdio_get_discmode (CdIo *cd_obj)
+{
+  if (cd_obj == NULL) return CDIO_DISC_MODE_ERROR;
+  
+  if (cd_obj->op.get_discmode) {
+    return cd_obj->op.get_discmode (cd_obj->env);
+  } else {
+    return CDIO_DISC_MODE_NO_INFO;
   }
 }
 

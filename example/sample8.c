@@ -1,5 +1,5 @@
 /*
-  $Id: sample8.c,v 1.4 2004/07/17 02:18:26 rocky Exp $
+  $Id: sample8.c,v 1.5 2004/07/21 10:19:20 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -30,8 +30,7 @@
 
 static void 
 print_cdtext_track_info(CdIo *cdio, track_t i_track, const char *message) {
-  const cdtext_t *cdtext = cdio_get_cdtext(cdio, 0);
-
+  const cdtext_t *cdtext    = cdio_get_cdtext(cdio, 0);
   if (NULL != cdtext) {
     cdtext_field_t i;
     
@@ -43,11 +42,31 @@ print_cdtext_track_info(CdIo *cdio, track_t i_track, const char *message) {
       }
     }
   }
+  
 }
     
 static void 
 print_cdtext_info(CdIo *cdio, track_t i_tracks, track_t i_first_track) {
   track_t i_last_track = i_first_track+i_tracks;
+  cd_disctype_t cd_disctype = cdio_get_disctype(cdio);
+
+  switch (cd_disctype) {
+  case CDIO_DISC_TYPE_CD: 
+    printf("Disc is CD-DA or CD-ROM.\n");
+    break;
+  case CDIO_DISC_TYPE_CD_I: 
+    printf("Disc is CD-i.\n");
+    break;
+  case CDIO_DISC_TYPE_XA: 
+    printf("Disc is CD-XA or DDCD.\n");
+    break;
+  case CDIO_DISC_TYPE_UNDEF: 
+    printf("Not a CD - perhaps a DVD.\n");
+    break;
+  case CDIO_DISC_TYPE_ERROR: 
+    printf("Error getting CD info or request not supported by drive.\n");
+    break;
+  }
   
   print_cdtext_track_info(cdio, 0, "\nCD-TEXT for Disc:");
   for ( ; i_first_track < i_last_track; i_first_track++ ) {
@@ -60,20 +79,20 @@ print_cdtext_info(CdIo *cdio, track_t i_tracks, track_t i_first_track) {
 int
 main(int argc, const char *argv[])
 {
+  track_t i_first_track;
+  track_t i_tracks;
   CdIo *cdio       = cdio_open ("../test/cdda.cue", DRIVER_BINCUE);
-  track_t i_first_track = cdio_get_first_track_num(cdio);
-  track_t i_tracks      = cdio_get_num_tracks(cdio);
 
 
   if (NULL == cdio) {
-    printf("Couldn't open ../test/cdda.cue with BIN/CUE driver \n");
-    return 1;
+    printf("Couldn't open ../test/cdda.cue with BIN/CUE driver.\n");
   } else {
+    i_first_track = cdio_get_first_track_num(cdio);
+    i_tracks      = cdio_get_num_tracks(cdio);
     print_cdtext_info(cdio, i_tracks, i_first_track);
+    cdio_destroy(cdio);
   }
 
-  cdio_destroy(cdio);
-  
   cdio = cdio_open (NULL, DRIVER_UNKNOWN);
   i_first_track = cdio_get_first_track_num(cdio);
   i_tracks      = cdio_get_num_tracks(cdio);

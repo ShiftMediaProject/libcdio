@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.70 2004/07/19 01:13:31 rocky Exp $
+    $Id: _cdio_linux.c,v 1.71 2004/07/21 10:19:21 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.70 2004/07/19 01:13:31 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.71 2004/07/21 10:19:21 rocky Exp $";
 
 #include <string.h>
 
@@ -153,6 +153,40 @@ cdio_is_cdrom(char *drive, char *mnttype)
     is_cd = true;
   }
   return(is_cd);
+}
+
+/*! 
+  Get disc tyhpe associated with cd_obj.
+*/
+static discmode_t
+_get_discmode_linux (void *user_data)
+{
+  _img_private_t *env = user_data;
+
+  int32_t i_discmode;
+  i_discmode = ioctl (env->gen.fd, CDROM_DISC_STATUS);
+  
+  if (i_discmode < 0) return CDIO_DISC_MODE_ERROR;
+
+  /* FIXME Need to add getting DVD types. */
+  switch(i_discmode) {
+  case CDS_AUDIO:
+    return CDIO_DISC_MODE_CD_DA;
+  case CDS_DATA_1:
+    return CDIO_DISC_MODE_CD_DATA_1;
+  case CDS_DATA_2:
+    return CDIO_DISC_MODE_CD_DATA_2;
+  case CDS_MIXED:
+    return CDIO_DISC_MODE_CD_MIXED;
+  case CDS_XA_2_1:
+    return CDIO_DISC_MODE_CD_XA_2_1;
+  case CDS_XA_2_2:
+    return CDIO_DISC_MODE_CD_XA_2_2;
+  case CDS_NO_INFO:
+    return CDIO_DISC_MODE_NO_INFO;
+  default:
+    return CDIO_DISC_MODE_ERROR;
+  }
 }
 
 static char *
@@ -708,35 +742,32 @@ static bool
 _init_cdtext_linux (_img_private_t *env)
 {
 
+  struct cdrom_generic_command cdc;
+  struct request_sense sense;
+  unsigned char wdata[2000]= {0, };  /* Data read from device starts here */
   int status;
-  struct scsi_cmd {
-    unsigned int inlen;         /* Length of data written to device     */
-    unsigned int outlen;        /* Length of data read from device      */
-    unsigned char cdb[10];      /* SCSI command bytes (6 <= x <= 16)    */
-    unsigned char wdata[5000];  /* Data read from device starts here   
-				   On error, sense buffer starts here   */     
-  } scsi_cmd;
 
-  memset( scsi_cmd.cdb, 0, sizeof(scsi_cmd.cdb) );
+  memset(&cdc, 0, sizeof(struct cdrom_generic_command));
+  memset(&sense, 0, sizeof(struct request_sense));
 
   /* Operation code */
-  CDIO_MMC_SET_COMMAND(scsi_cmd.cdb, CDIO_MMC_GPCMD_READ_TOC); 
-
-  scsi_cmd.cdb[1] = 0x02;   /* MSF mode */
+  CDIO_MMC_SET_COMMAND(cdc.cmd, CDIO_MMC_GPCMD_READ_TOC); 
 
   /* Format */
-  scsi_cmd.cdb[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
+  cdc.cmd[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
 
-  CDIO_MMC_SET_READ_LENGTH(scsi_cmd.cdb, sizeof(scsi_cmd.wdata));
+  cdc.buffer = wdata;
+  cdc.buflen = sizeof(wdata);
+  cdc.stat = 0;
+  cdc.sense = &sense;
+  cdc.data_direction = CGC_DATA_READ;
 
-  scsi_cmd.inlen  = sizeof(scsi_cmd.cdb);
-  scsi_cmd.outlen = sizeof(scsi_cmd.wdata);
-  status = ioctl(env->gen.fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
-  if (status != 0) {
-    cdio_warn ("CDTEXT reading failed: %s\n", strerror(errno));  
+  status = ioctl(env->gen.fd, CDROM_SEND_PACKET, (void *)&cdc);
+  if (status < 0) {
+    cdio_info ("CDTEXT reading failed\n");  
     return false;
   } else {
-    return cdtext_data_init(env, FIRST_TRACK_NUM, scsi_cmd.wdata, 
+    return cdtext_data_init(env, FIRST_TRACK_NUM, wdata, 
 			    set_cdtext_field_linux);
   }
 }
@@ -1250,6 +1281,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .get_cdtext         = _get_cdtext_linux,
     .get_devices        = cdio_get_devices_linux,
     .get_default_device = cdio_get_default_device_linux,
+    .get_discmode       = _get_discmode_linux,
     .get_drive_cap      = _get_drive_cap_linux,
     .get_first_track_num= _get_first_track_num_linux,
     .get_mcn            = _get_mcn_linux,
@@ -1286,9 +1318,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
       _set_arg_linux(_data, "source", psz_orig_source);
     else {
       /* The below would be okay if all device drivers worked this way. */
-#if 0
       cdio_info ("source %s is a not a device", psz_orig_source);
-#endif
       return NULL;
     }
   }

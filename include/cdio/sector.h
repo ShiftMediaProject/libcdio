@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.18 2004/07/17 15:31:00 rocky Exp $
+    $Id: sector.h,v 1.19 2004/07/21 10:19:21 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -81,11 +81,19 @@ typedef enum {
 	MODE2_RAW			/**< 2352 byte block length */
 } trackmode_t;
 
-/*! disc modes (5.29.2.8) */
+/*! disc modes. The first combined from MMC-3 5.29.2.8 and
+  GNU/Linux /usr/include/linux/cdrom.h and we've added DVD.
+ */
 typedef enum {
-	CDIO_DISC_MODE_CD_DA,			/* CD-DA */
-	CDIO_DISC_MODE_CD_ROM,			/* CD-ROM mode 1 */
-	CDIO_DISC_MODE_CD_ROM_XA		/* CD-ROM XA and CD-I */
+	CDIO_DISC_MODE_CD_DA,			/**< CD-DA */
+	CDIO_DISC_MODE_CD_DATA_1,		/**< CD-ROM mode 1 */
+	CDIO_DISC_MODE_CD_DATA_2,		/**< CD-ROM mode 2 */
+	CDIO_DISC_MODE_CD_XA_2_1,		/**< CD-ROM mode 1 */
+	CDIO_DISC_MODE_CD_XA_2_2,		/**< CD-ROM mode 2 */
+	CDIO_DISC_MODE_CD_MIXED,		/**< CD-ROM XA and CD-I */
+        CDIO_DISC_MODE_DVD,                     /**< some sort of DVD */
+        CDIO_DISC_MODE_NO_INFO,
+        CDIO_DISC_MODE_ERROR
 } discmode_t;
 
 /*! Information that can be obtained through a Read Subchannel

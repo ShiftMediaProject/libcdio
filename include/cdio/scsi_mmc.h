@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.9 2004/07/19 01:13:31 rocky Exp $
+    $Id: scsi_mmc.h,v 1.10 2004/07/21 10:19:20 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,6 +26,23 @@
 #ifndef __SCSI_MMC_H__
 #define __SCSI_MMC_H__
 
+/*! The generic packet command opcodes for CD/DVD Logical Units. */
+
+#define CDIO_MMC_GPCMD_MODE_SENSE 	     0x1a
+#define CDIO_MMC_GPCMD_START_STOP            0x1b
+#define CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL  0x1e
+#define CDIO_MMC_GPCMD_READ_10	             0x28
+#define CDIO_MMC_GPCMD_READ_SUBCHANNEL	     0x42
+#define CDIO_MMC_GPCMD_READ_TOC              0x43
+#define CDIO_MMC_GPCMD_READ_DISC_INFO	     0x51
+#define CDIO_MMC_GPCMD_MODE_SELECT	     0x55
+#define CDIO_MMC_GPCMD_MODE_SELECT_6	     0x15
+#define CDIO_MMC_GPCMD_MODE_SENSE_10	     0x5a
+#define CDIO_MMC_GPCMD_READ_12	             0xa8
+#define CDIO_MMC_GPCMD_READ_CD	             0xbe
+#define CDIO_MMC_GPCMD_READ_MSF	             0xb9
+
+
 /*! Level values that can go into READ_CD */
 #define CDIO_MMC_READ_TYPE_ANY   0  /**< All types */
 #define CDIO_MMC_READ_TYPE_CDDA  1  /**< Only CD-DA sectors */
@@ -41,22 +58,6 @@
 #define CDIO_MMC_READTOC_FMT_PMA      3  /**< Q subcode data */
 #define CDIO_MMC_READTOC_FMT_ATIP     4  /**< includes media type */
 #define CDIO_MMC_READTOC_FMT_CDTEXT   5  /**< CD-TEXT info  */
-
-/*! The generic packet command opcodes for CD/DVD Logical Units. */
-
-#define CDIO_MMC_GPCMD_MODE_SENSE 	     0x1a
-#define CDIO_MMC_GPCMD_START_STOP            0x1b
-#define CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL  0x1e
-#define CDIO_MMC_GPCMD_READ_10	             0x28
-#define CDIO_MMC_GPCMD_READ_SUBCHANNEL	     0x42
-#define CDIO_MMC_GPCMD_READ_TOC              0x43
-#define CDIO_MMC_GPCMD_MODE_SELECT	     0x55
-#define CDIO_MMC_GPCMD_MODE_SELECT_6	     0x15
-#define CDIO_MMC_GPCMD_MODE_SENSE_10	     0x5a
-#define CDIO_MMC_GPCMD_READ_12	             0xa8
-#define CDIO_MMC_GPCMD_READ_CD	             0xbe
-#define CDIO_MMC_GPCMD_READ_MSF	             0xb9
-
 
 /*! Page codes for MODE SENSE and MODE SET. */
 #define CDIO_MMC_R_W_ERROR_PAGE		0x01

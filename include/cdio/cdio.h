@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.58 2004/07/17 22:16:46 rocky Exp $
+    $Id: cdio.h,v 1.59 2004/07/21 10:19:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -118,19 +118,19 @@ extern "C" {
   /*!
     Eject media in CD drive if there is a routine to do so. 
 
-    @param obj the CD object to be acted upon.
+    @param cd_obj the CD object to be acted upon.
     @return 0 if success and 1 for failure, and 2 if no routine.
-    If the CD is ejected *obj is freed and obj set to NULL.
+    If the CD is ejected *cd_obj is freed and cd_obj set to NULL.
   */
-  int cdio_eject_media (CdIo **obj);
+  int cdio_eject_media (CdIo **cd_obj);
 
   /*!
-    Free any resources associated with obj. Call this when done using obj
+    Free any resources associated with cd_obj. Call this when done using cd_obj
     and using CD reading/control operations.
 
-    @param obj the CD object to eliminated.
+    @param cd_obj the CD object to eliminated.
    */
-  void cdio_destroy (CdIo *obj);
+  void cdio_destroy (CdIo *cd_obj);
 
   /*!
     Free device list returned by cdio_get_devices or
@@ -147,24 +147,24 @@ extern "C" {
   /*!
     Get the value associatied with key. 
 
-    @param obj the CD object queried
+    @param cd_obj the CD object queried
     @param key the key to retrieve
-    @return the value associatd with "key" or NULL if obj is NULL
+    @return the value associatd with "key" or NULL if cd_obj is NULL
     or "key" does not exist.
   */
-  const char * cdio_get_arg (const CdIo *obj,  const char key[]);
+  const char * cdio_get_arg (const CdIo *cd_obj,  const char key[]);
 
   /*! 
     Get cdtext information for a CdIo object.
 
-    @param obj the CD object that may contain CD-TEXT information.
+    @param cd_obj the CD object that may contain CD-TEXT information.
     @return the CD-TEXT object or NULL if obj is NULL
     or CD-TEXT information does not exist.
 
     If i_track is 0 or CDIO_CDROM_LEADOUT_TRACK the track returned
     is the information assocated with the CD. 
   */
-  const cdtext_t *cdio_get_cdtext (CdIo *obj, track_t i_track);
+  const cdtext_t *cdio_get_cdtext (CdIo *cd_obj, track_t i_track);
 
   /*!
     Get an array of device names in search_devices that have at
@@ -201,10 +201,10 @@ extern "C" {
 
   /*!
     Get the default CD device.
-    if obj is NULL (we haven't initialized a specific device driver), 
+    if cd_obj is NULL (we haven't initialized a specific device driver), 
     then find a suitable one and return the default device for that.
     
-    @param obj the CD object queried
+    @param cd_obj the CD object queried
     @return a string containing the default CD device or NULL is
     if we couldn't get a default device.
 
@@ -212,19 +212,19 @@ extern "C" {
     there is no media in it and it is possible for this routine to return
     NULL even though there may be a hardware CD-ROM.
   */
-  char * cdio_get_default_device (const CdIo *obj);
+  char * cdio_get_default_device (const CdIo *cd_obj);
 
   /*!
     Get the what kind of device we've got.
 
-    @param obj the CD object queried
+    @param cd_obj the CD object queried
     @return a list of device capabilities.
 
     In some situations of drivers or OS's we can't find a CD device if
     there is no media in it and it is possible for this routine to return
     NULL even though there may be a hardware CD-ROM.
   */
-  void cdio_get_drive_cap (const CdIo *obj,
+  void cdio_get_drive_cap (const CdIo *cd_obj,
 			   cdio_drive_read_cap_t  *p_read_cap,
 			   cdio_drive_write_cap_t *p_write_cap,
 			   cdio_drive_misc_cap_t  *p_misc_cap);
@@ -253,7 +253,7 @@ extern "C" {
     string when done with it.
 
   */
-  char * cdio_get_mcn (const CdIo *obj);
+  char * cdio_get_mcn (const CdIo *cd_obj);
 
   /*!
     Get a string containing the name of the driver in use.
@@ -261,7 +261,7 @@ extern "C" {
     @return a string with driver name or NULL if CdIo is NULL (we
     haven't initialized a specific device.
   */
-  const char * cdio_get_driver_name (const CdIo *obj);
+  const char * cdio_get_driver_name (const CdIo *cd_obj);
 
   /*!
     Get the driver id. 
@@ -270,7 +270,7 @@ extern "C" {
 
     @return the driver id..
   */
-  driver_id_t cdio_get_driver_id (const CdIo *obj);
+  driver_id_t cdio_get_driver_id (const CdIo *cd_obj);
 
   /*!
     Get the number of the first track. 
@@ -278,20 +278,27 @@ extern "C" {
     @return the track number or CDIO_INVALID_TRACK 
     on error.
   */
-  track_t cdio_get_first_track_num(const CdIo *obj);
+  track_t cdio_get_first_track_num(const CdIo *cd_obj);
   
+  /*! 
+    Get disc mode - the kind of CD (CD-DA, CD-ROM mode 1, CD-MIXED, etc.
+    that we've got. The notion of "CD" is extended a little to include
+    DVD's.
+  */
+  discmode_t cdio_get_discmode (CdIo *cd_obj);
+
   /*!
     Get the number of tracks on the CD.
 
     @return the number of tracks, or CDIO_INVALID_TRACK if there is
     an error.
   */
-  track_t cdio_get_num_tracks (const CdIo *obj);
+  track_t cdio_get_num_tracks (const CdIo *cd_obj);
   
   /*!  
     Get the format (audio, mode2, mode1) of track. 
   */
-  track_format_t cdio_get_track_format(const CdIo *obj, track_t i_track);
+  track_format_t cdio_get_track_format(const CdIo *cd_obj, track_t i_track);
   
   /*!
     Return true if we have XA data (green, mode2 form1) or
@@ -301,25 +308,25 @@ extern "C" {
     
     FIXME: there's gotta be a better design for this and get_track_format?
   */
-  bool cdio_get_track_green(const CdIo *obj, track_t i_track);
+  bool cdio_get_track_green(const CdIo *cd_obj, track_t i_track);
     
   /*!  
     Get the starting LBA for track number
-    i_track in obj.  Track numbers usually start at something 
+    i_track in cd_obj.  Track numbers usually start at something 
     greater than 0, usually 1.
 
     The "leadout" track is specified either by
     using i_track CDIO_CDROM_LEADOUT_TRACK or the total tracks+1.
 
-    @param obj object to get information from
+    @param cd_obj object to get information from
     @param i_track  the track number we want the LSN for
     @return the starting LBA or CDIO_INVALID_LBA on error.
   */
-  lba_t cdio_get_track_lba(const CdIo *obj, track_t i_track);
+  lba_t cdio_get_track_lba(const CdIo *cd_obj, track_t i_track);
   
   /*!  
     Return the starting MSF (minutes/secs/frames) for track number
-    i_track in obj.  Track numbers usually start at something 
+    i_track in cd_obj.  Track numbers usually start at something 
     greater than 0, usually 1.
 
     The "leadout" track is specified either by
@@ -329,11 +336,11 @@ extern "C" {
     @param i_track  the track number we want the LSN for
     @return the starting LSN or CDIO_INVALID_LSN on error.
   */
-  lsn_t cdio_get_track_lsn(const CdIo *obj, track_t i_track);
+  lsn_t cdio_get_track_lsn(const CdIo *cd_obj, track_t i_track);
   
   /*!  
     Return the starting MSF (minutes/secs/frames) for track number
-    i_track in obj.  Track numbers usually start at something 
+    i_track in cd_obj.  Track numbers usually start at something 
     greater than 0, usually 1.
 
     The "leadout" track is specified either by
@@ -341,7 +348,7 @@ extern "C" {
     
     @return true if things worked or false if there is no track entry.
   */
-  bool cdio_get_track_msf(const CdIo *obj, track_t i_track, 
+  bool cdio_get_track_msf(const CdIo *cd_obj, track_t i_track, 
 			  /*out*/ msf_t *msf);
   
   /*!  
@@ -352,19 +359,19 @@ extern "C" {
 
     @return the number of sectors or 0 if there is an error.
   */
-  unsigned int cdio_get_track_sec_count(const CdIo *obj, track_t i_track);
+  unsigned int cdio_get_track_sec_count(const CdIo *cd_obj, track_t i_track);
 
   /*!
     Reposition read offset
     Similar to (if not the same as) libc's lseek()
 
-    @param obj object to get information from
+    @param cd_obj object to get information from
     @param offset amount to seek
     @param whence  like corresponding parameter in libc's lseek, e.g. 
                    SEEK_SET or SEEK_END.
     @return (off_t) -1 on error. 
   */
-  off_t cdio_lseek(const CdIo *obj, off_t offset, int whence);
+  off_t cdio_lseek(const CdIo *cd_obj, off_t offset, int whence);
     
   /*!
     Reads into buf the next size bytes.
@@ -372,36 +379,36 @@ extern "C" {
 
     @return (ssize_t) -1 on error. 
   */
-  ssize_t cdio_read(const CdIo *obj, void *buf, size_t size);
+  ssize_t cdio_read(const CdIo *cd_obj, void *buf, size_t size);
     
   /*!
     Read an audio sector
 
-    @param obj object to read from
+    @param cd_obj object to read from
     @param buf place to read data into
     @param lsn sector to read
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_audio_sector (const CdIo *obj, void *buf, lsn_t lsn);
+  int cdio_read_audio_sector (const CdIo *cd_obj, void *buf, lsn_t lsn);
 
   /*!
     Reads audio sectors
 
-    @param obj object to read from
+    @param cd_obj object to read from
     @param buf place to read data into
     @param lsn sector to read
     @param i_sectors number of sectors to read
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_audio_sectors (const CdIo *obj, void *buf, lsn_t lsn,
+  int cdio_read_audio_sectors (const CdIo *cd_obj, void *buf, lsn_t lsn,
 			       unsigned int i_sectors);
 
   /*!
     Reads a mode1 sector
 
-    @param obj object to read from
+    @param cd_obj object to read from
     @param buf place to read data into
     @param lsn sector to read
     @param b_form2 true for reading mode1 form2 sectors or false for 
@@ -409,13 +416,13 @@ extern "C" {
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_mode1_sector (const CdIo *obj, void *buf, lsn_t lsn, 
+  int cdio_read_mode1_sector (const CdIo *cd_obj, void *buf, lsn_t lsn, 
 			      bool b_form2);
   
   /*!
     Reads mode1 sectors
 
-    @param obj object to read from
+    @param cd_obj object to read from
     @param buf place to read data into
     @param lsn sector to read
     @param b_form2 true for reading mode1 form2 sectors or false for 
@@ -424,13 +431,13 @@ extern "C" {
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_mode1_sectors (const CdIo *obj, void *buf, lsn_t lsn, 
+  int cdio_read_mode1_sectors (const CdIo *cd_obj, void *buf, lsn_t lsn, 
 			       bool b_form2, unsigned int i_sectors);
   
   /*!
     Reads a mode1 sector
 
-    @param obj object to read from
+    @param cd_obj object to read from
     @param buf place to read data into
     @param lsn sector to read
     @param b_form2 true for reading mode1 form2 sectors or false for 
@@ -438,13 +445,13 @@ extern "C" {
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_mode2_sector (const CdIo *obj, void *buf, lsn_t lsn, 
+  int cdio_read_mode2_sector (const CdIo *cd_obj, void *buf, lsn_t lsn, 
 			      bool b_form2);
   
   /*!
     Reads mode2 sectors
 
-    @param obj object to read from
+    @param cd_obj object to read from
     @param buf place to read data into
     @param lsn sector to read
     @param b_form2 true for reading mode1 form2 sectors or false for 
@@ -453,26 +460,26 @@ extern "C" {
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_mode2_sectors (const CdIo *obj, void *buf, lsn_t lsn, 
+  int cdio_read_mode2_sectors (const CdIo *cd_obj, void *buf, lsn_t lsn, 
 			       bool b_form2, unsigned int i_sectors);
   
   /*!
     Set the arg "key" with "value" in "obj".
 
-    @param obj the CD object to set
+    @param cd_obj the CD object to set
     @param key the key to set
     @param value the value to assocaiate with key
     @return 0 if no error was found, and nonzero otherwise.
   */
-  int cdio_set_arg (CdIo *obj, const char key[], const char value[]);
+  int cdio_set_arg (CdIo *cd_obj, const char key[], const char value[]);
   
   /*!
     Get the size of the CD in logical block address (LBA) units.
 
-    @param obj the CD object queried
+    @param cd_obj the CD object queried
     @return the size
   */
-  uint32_t cdio_stat_size (const CdIo *obj);
+  uint32_t cdio_stat_size (const CdIo *cd_obj);
   
   /*!
     Initialize CD Reading and control routines. Should be called first.
@@ -604,7 +611,7 @@ extern "C" {
   CdIo * cdio_open_am_cd (const char *psz_device,
 			  const char *psz_access_mode);
 
-  /*! CDRWIN BIN/CUE CD disk-image routines. Source is the .cue file
+  /*! CDRWIN BIN/CUE CD disc-image routines. Source is the .cue file
 
      @return the cdio object for subsequent operations. 
      NULL on error.

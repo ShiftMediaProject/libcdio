@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.30 2004/07/17 22:16:47 rocky Exp $
+    $Id: cdio_private.h,v 1.31 2004/07/21 10:19:21 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -82,6 +82,11 @@ extern "C" {
     */
     char * (*get_default_device)(void);
     
+    /*! 
+      Get disc mode associated with cd_obj.
+    */
+    discmode_t (*get_discmode) (void *env);
+
     /*!
       Return the what kind of device we've got.
       
