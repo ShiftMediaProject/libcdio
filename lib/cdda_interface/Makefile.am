@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.2 2005/01/05 04:16:11 rocky Exp $
+#   $Id: Makefile.am,v 1.3 2005/01/15 16:05:44 rocky Exp $
 #
-#    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -51,8 +51,7 @@ noinst_HEADERS  = common_interface.h drive_exceptions.h low_interface.h \
 		  smallft.h utils.h
 
 libcdio_cdda_sources =  common_interface.c cooked_interface.c interface.c \
-	scan_devices.c	smallft.c test_interface.c \
-	toc.c utils.c
+	scan_devices.c	smallft.c toc.c utils.c
 
 lib_LTLIBRARIES = libcdio_cdda.la
 

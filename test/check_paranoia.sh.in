@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_paranoia.sh.in,v 1.2 2005/01/15 10:17:17 rocky Exp $
+# $Id: check_paranoia.sh.in,v 1.3 2005/01/15 16:05:44 rocky Exp $
 # Compare our cd-paranoia with an installed cdparanoia
 
 if test "@CMP@" != no -a "@BUILD_CD_PARANOIA_TRUE@"X = X ; then
@@ -10,6 +10,15 @@ if test "@CMP@" != no -a "@BUILD_CD_PARANOIA_TRUE@"X = X ; then
     echo "** Raw cdda.bin extraction okay"
   else
     echo "** Raw cdda.bin extraction differ"
+    exit 3
+  fi
+  ../src/cd-paranoia/cd-paranoia -d ./cdda.cue -x 1 -v -r -- "1-"
+  mv cdda.raw cdda-underrun.raw
+  ../src/cd-paranoia/cd-paranoia -d ./cdda.cue -r -- "1-"
+  if @CMP@ ./cdda-underrun.raw ./cdda.raw ; then
+    echo "** Under-run correction okay"
+  else
+    echo "** Under-run correction problem"
     exit 3
   fi
   exit 0

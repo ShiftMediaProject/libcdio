@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.4 2005/01/10 02:10:46 rocky Exp $
+  $Id: cdda.h,v 1.5 2005/01/15 16:05:44 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -110,21 +110,37 @@ struct cdrom_drive_s {
   unsigned int orgsize;
   long bigbuff;
   int adjust_ssize;
+
+  int i_test_flags; /**< Normally set 0. But if we are testing
+		       paranoia operation this can be set to one of
+		       the flag masks to simulate a particular kind of
+		       failure.    */
+
 };
+
+#define CDDA_TEST_UNDERRUN 1 /**< Define if you want underrun testing */
+#if TESTING_IS_FINISHED
+#define CDDA_TEST_JITTER   2 /**< Define if you want jitter testing */
+#define CDDA_TEST_FRAGMENT 4 /**< Define if you want fragment testing */
+#define CDDA_TEST_SCRATCH  8 /**< Define if you want scratch testing */
+#undef  CDDA_TEST_BOGUS_BYTES
+#undef  CDDA_TEST_DROPDUPE_BYTES
+#endif /* TESTING_IS_FINISHED */
 
 /** autosense functions */
 
+/** Returns a CD-ROM drive with a CD-DA in it. 
+    If mesagedest is 1, then any messages in the process will be stored 
+    in message.
+*/
 extern cdrom_drive_t *cdda_find_a_cdrom(int messagedest, char **message);
+
+/** Returns a CD-ROM drive with a CD-DA in it.  */
 extern cdrom_drive_t *cdda_identify(const char *device, int messagedest,
 				  char **message);
 extern cdrom_drive_t *cdda_identify_cooked(const char *device,int messagedest,
 					 char **message);
-#ifdef CDDA_TEST
-extern cdrom_drive_t *cdda_identify_test(const char *filename,
-				       int messagedest, char **message);
-#endif
-
-/**  oriented functions */
+/** drive-oriented functions */
 
 extern int     cdda_speed_set(cdrom_drive_t *d, int speed);
 extern void    cdda_verbose_set(cdrom_drive_t *d, int err_action, 

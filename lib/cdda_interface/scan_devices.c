@@ -1,7 +1,7 @@
 /*
-  $Id: scan_devices.c,v 1.11 2005/01/15 03:22:48 rocky Exp $
+  $Id: scan_devices.c,v 1.12 2005/01/15 16:05:44 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 
 /******************************************************************
  * 
- * Autoscan for or verify presence of a cdrom device
+ * Autoscan for or verify presence of a CD-ROM device
  * 
  ******************************************************************/
 
@@ -127,10 +127,6 @@ cdda_identify(const char *device, int messagedest,char **messages)
 
   d=cdda_identify_cooked(device,messagedest,messages);
 
-#ifdef CDDA_TEST
-  if(!d)d=cdda_identify_test(device,messagedest,messages);
-#endif
-  
   return(d);
 }
 
@@ -273,52 +269,3 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
   
   return(d);
 }
-
-#ifdef CDDA_TEST
-
-cdrom_drive_t *cdda_identify_test(const char *filename, int messagedest,
-				  char **messages){
-  
-  cdrom_drive_t *d=NULL;
-  struct stat st;
-  int fd=-1;
-
-  idmessage(messagedest,messages,"\tTesting %s for file/test interface",
-	    filename);
-
-  if(stat(filename,&st)){
-    idperror(messagedest,messages,"\t\tCould not access file %s",
-	     filename);
-    return(NULL);
-  }
-
-  if(!S_ISREG(st.st_mode)){
-    idmessage(messagedest,messages,"\t\t%s is not a regular file",
-		  filename);
-    return(NULL);
-  }
-
-  fd=open(filename,O_RDONLY);
-  
-  if(fd==-1){
-    idperror(messagedest,messages,"\t\tCould not open file %s",filename);
-    return(NULL);
-  }
-  
-  d=calloc(1,sizeof(cdrom_drive_t));
-
-  d->cdda_device_name=strdup(filename);
-  d->ioctl_device_name=strdup(filename);
-  d->drive_type=-1;
-  d->cdda_fd=fd;
-  d->ioctl_fd=fd;
-  d->interface=TEST_INTERFACE;
-  d->bigendianp=-1; /* We don't know yet... */
-  d->nsectors=-1;
-  d->drive_model=strdup("File based test interface");
-  idmessage(messagedest,messages,"\t\tCDROM sensed: %s\n",d->drive_model);
-  
-  return(d);
-}
-
-#endif

@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.12 2005/01/14 04:09:30 rocky Exp $
+  $Id: interface.c,v 1.13 2005/01/15 16:05:44 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -76,12 +76,6 @@ cdda_open(cdrom_drive_t *d)
     if((ret=cooked_init_drive(d)))
       return(ret);
     break;
-#ifdef CDDA_TEST
-  case TEST_INTERFACE:  
-    if((ret=test_init_drive(d)))
-      return(ret);
-    break;
-#endif
   default:
     cderror(d, "100: Interface not supported\n");
     return(-100);

@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.10 2005/01/15 02:23:04 rocky Exp $
+  $Id: cooked_interface.c,v 1.11 2005/01/15 16:05:44 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -74,7 +74,6 @@ cooked_setspeed(cdrom_drive_t *d, int speed)
     return 0;
 }
 
-
 /* read 'SectorBurst' adjacent sectors of audio sectors 
  * to Buffer '*p' beginning at sector 'lSector'
  */
@@ -87,6 +86,11 @@ cooked_read (cdrom_drive_t *d, void *p, lsn_t begin, long sectors)
 
   /* read d->nsectors at a time, max. */
   sectors=( sectors > d->nsectors && d->nsectors > 0 ? d->nsectors : sectors);
+
+  /* If we are testing under-run correction, we will deliberately set
+     what we read a frame short.  */
+  if (d->i_test_flags & CDDA_TEST_UNDERRUN ) 
+    sectors--;
 
   retry_count=0;
 
@@ -138,6 +142,9 @@ verify_read_command(cdrom_drive_t *d)
   int i;
   int16_t *buff=malloc(CDIO_CD_FRAMESIZE_RAW);
   int audioflag=0;
+  int i_test_flags = d->i_test_flags;
+
+  d->i_test_flags = 0;
 
   cdmessage(d,"Verifying drive can read CDDA...\n");
 
@@ -154,6 +161,7 @@ verify_read_command(cdrom_drive_t *d)
 	cdmessage(d,"\tExpected command set reads OK.\n");
 	d->enable_cdda(d,0);
 	free(buff);
+	d->i_test_flags = i_test_flags;
 	return(0);
       }
     }
@@ -263,16 +271,20 @@ cooked_init_drive (cdrom_drive_t *d){
 #endif /*HAVE_LINUX_MAJOR_H*/
 
   d->enable_cdda = Dummy;
-  d->read_audio = cooked_read;
-  d->set_speed = cooked_setspeed;
-  d->read_toc = cooked_readtoc;
-  ret=d->tracks=d->read_toc(d);
+  d->set_speed   = cooked_setspeed;
+  d->read_toc    = cooked_readtoc;
+  d->read_audio  = cooked_read;
+
+  ret = d->tracks = d->read_toc(d);
   if(d->tracks<1)
     return(ret);
 
   d->opened=1;
-  if((ret=verify_read_command(d)))return(ret);
+
+  if( (ret=verify_read_command(d)) ) return(ret);
+
   d->error_retry=1;
+
   return(0);
 }
 

@@ -541,7 +541,7 @@ callback(long int inpos, paranoia_cb_mode_t function)
     memset(dispcache,' ',graph);
 }
 
-const char *optstring = "escCn:o:O:d:g:S:prRwafvqVQhZz::YXWBi:Tt:";
+const char *optstring = "escCn:o:O:d:g:S:prRwafvqVQhZz::YXWBi:Tt:x:";
 
 struct option options [] = {
 	{"stderr-progress",           no_argument,       NULL, 'e'},
@@ -571,6 +571,7 @@ struct option options [] = {
 	{"disable-paranoia",          no_argument,       NULL, 'Z'},
 	{"disable-extra-paranoia",    no_argument,       NULL, 'Y'},
 	{"abort-on-skip",             no_argument,       NULL, 'X'},
+	{"test-mode",                 required_argument, NULL, 'x'},
 	{"disable-fragmentation",     no_argument,       NULL, 'F'},
 	{"output-info",               required_argument, NULL, 'i'},
 	{"never-skip",                optional_argument, NULL, 'z'},
@@ -610,11 +611,12 @@ main(int argc,char *argv[])
   int   force_cdrom_sectors  = -1;
   int   force_cdrom_overlap  = -1;
   int   force_cdrom_speed    = -1;
+  int   test_flags           =  0;
   int   max_retries          = 20;
-  int   output_type          = 1; /* 0=raw, 1=wav, 2=aifc */
-  int   output_endian        = 0; /* -1=host, 0=little, 1=big */
-  int   query_only           = 0;
-  int   batch                = 0;
+  int   output_type          =  1; /* 0=raw, 1=wav, 2=aifc */
+  int   output_endian        =  0; /* -1=host, 0=little, 1=big */
+  int   query_only           =  0;
+  int   batch                =  0;
 
   /* full paranoia, but allow skipping */
   int paranoia_mode=PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP; 
@@ -743,6 +745,9 @@ main(int argc,char *argv[])
     case 'O':
       sample_offset=atoi(optarg);
       break;
+    case 'x':
+      test_flags=atoi(optarg);
+      break;
     default:
       usage(stderr);
       exit(1);
@@ -843,6 +848,7 @@ main(int argc,char *argv[])
     }
   }
 
+  d->i_test_flags = test_flags;
   switch( cdda_open(d) ) {
   case -2:case -3:case -4:case -5:
     report("\nUnable to open disc.  Is there an audio CD in the drive?");
