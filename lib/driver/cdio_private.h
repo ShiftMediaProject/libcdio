@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.15 2005/02/17 04:57:21 rocky Exp $
+    $Id: cdio_private.h,v 1.16 2005/02/17 07:03:37 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -254,9 +254,10 @@ extern "C" {
       @param i_blocksize size of block. Should be either CDIO_CD_FRAMESIZE, 
       M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE. See comment above under p_buf.
     */
-    driver_return_code_t (*read_data_sector) (void *p_env, void *p_buf, 
-					      lsn_t i_lsn, 
-					      uint16_t i_blocksize);
+    driver_return_code_t (*read_data_sectors) (void *p_env, void *p_buf, 
+					       lsn_t i_lsn, 
+					       uint16_t i_blocksize,
+					       uint32_t i_blocks);
     
     /*!
       Reads a single mode2 sector from cd device into buf starting

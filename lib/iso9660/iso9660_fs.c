@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.15 2005/02/17 04:57:21 rocky Exp $
+    $Id: iso9660_fs.c,v 1.16 2005/02/17 07:03:37 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.15 2005/02/17 04:57:21 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.16 2005/02/17 07:03:37 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -674,7 +674,7 @@ iso9660_fs_read_pvd(const CdIo_t *p_cdio, /*out*/ iso9660_pvd_t *p_pvd)
   /* A bit of a hack, we'll assume track 1 contains ISO_PVD_SECTOR.*/
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   driver_return_code_t driver_return = 
-    cdio_read_data_sector (p_cdio, buf, ISO_PVD_SECTOR, ISO_BLOCKSIZE);
+    cdio_read_data_sectors (p_cdio, buf, ISO_PVD_SECTOR, ISO_BLOCKSIZE, 1);
 
   if (DRIVER_OP_SUCCESS != driver_return) {
     cdio_warn ("error reading PVD sector (%d) error %d", ISO_PVD_SECTOR,
@@ -709,8 +709,7 @@ iso9660_fs_read_superblock (CdIo_t *p_cdio,
     iso9660_pvd_t         *p_pvd = &(p_env->pvd);
     iso9660_svd_t         *p_svd = &(p_env->svd);
     char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-    driver_return_code_t driver_return = 
-      cdio_read_data_sector (p_cdio, buf, ISO_PVD_SECTOR, ISO_BLOCKSIZE);
+    driver_return_code_t driver_return;
 
     if ( !iso9660_fs_read_pvd(p_cdio, p_pvd) )
       return false;
@@ -718,7 +717,8 @@ iso9660_fs_read_superblock (CdIo_t *p_cdio,
     p_env->i_joliet_level = 0;
     
     driver_return = 
-      cdio_read_data_sector (p_cdio, buf, ISO_PVD_SECTOR+1, ISO_BLOCKSIZE);
+      cdio_read_data_sectors ( p_cdio, buf, ISO_PVD_SECTOR+1, ISO_BLOCKSIZE,
+			       1 );
 
   if (DRIVER_OP_SUCCESS == driver_return) {
       /* The size of a PVD or SVD is smaller than a sector. So we
@@ -1340,15 +1340,9 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
 
     _dirbuf = calloc(1, p_stat->secsize * ISO_BLOCKSIZE);
 
-    if (b_mode2) {
-      if (cdio_read_mode2_sectors (p_cdio, _dirbuf, p_stat->lsn, false, 
-				   p_stat->secsize))
+    if (cdio_read_data_sectors (p_cdio, _dirbuf, p_stat->lsn, false, 
+				p_stat->secsize))
 	cdio_assert_not_reached ();
-    } else {
-      if (cdio_read_mode1_sectors (p_cdio, _dirbuf, p_stat->lsn, false,
-				   p_stat->secsize))
-	cdio_assert_not_reached ();
-    }
 
     while (offset < (p_stat->secsize * ISO_BLOCKSIZE))
       {

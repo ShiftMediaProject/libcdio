@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: mmc_private.h,v 1.5 2005/02/17 04:57:21 rocky Exp $
+    $Id: mmc_private.h,v 1.6 2005/02/17 07:03:37 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -77,9 +77,10 @@ char *get_mcn_mmc (const void *p_user_data);
     M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE. See comment above under p_buf.
 
 */
-driver_return_code_t read_data_sector_mmc ( void *p_user_data, 
-					    void *p_buf,  lsn_t i_lsn,
-					    uint16_t i_blocksize );
+driver_return_code_t read_data_sectors_mmc ( void *p_user_data, 
+					     void *p_buf,  lsn_t i_lsn,
+					     uint16_t i_blocksize,
+					     uint32_t i_blocks );
 char *get_mcn_mmc (const void *p_user_data);
 
 /* Set read blocksize (via MMC) */

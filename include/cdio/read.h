@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: read.h,v 1.4 2005/02/17 04:57:21 rocky Exp $
+    $Id: read.h,v 1.5 2005/02/17 07:03:37 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -98,10 +98,10 @@ extern "C" {
     @param i_blocksize size of block. Should be either CDIO_CD_FRAMESIZE, 
     M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE. See comment above under p_buf.
   */
-  driver_return_code_t cdio_read_data_sector (const CdIo_t *p_cdio, 
-					      void *p_buf, lsn_t i_lsn,
-					      uint16_t i_blocksize
-					      );
+  driver_return_code_t cdio_read_data_sectors ( const CdIo_t *p_cdio, 
+						void *p_buf, lsn_t i_lsn,
+						uint16_t i_blocksize,
+						uint32_t i_blocks );
 
   /*!
     Reads a mode 1 sector

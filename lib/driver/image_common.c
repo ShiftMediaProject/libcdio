@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.c,v 1.11 2005/02/17 04:57:21 rocky Exp $
+    $Id: image_common.c,v 1.12 2005/02/17 07:03:37 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -264,8 +264,9 @@ get_track_preemphasis_image(const void *p_user_data, track_t i_track)
   p_buf.
   */
 driver_return_code_t 
-read_data_sector_image ( void *p_user_data, void *p_buf, 
-                       lsn_t i_lsn,  uint16_t i_blocksize )
+read_data_sectors_image ( void *p_user_data, void *p_buf, 
+			  lsn_t i_lsn,  uint16_t i_blocksize,
+			  uint32_t i_blocks )
 {
   const _img_private_t *p_env = p_user_data;
 
@@ -281,11 +282,11 @@ read_data_sector_image ( void *p_user_data, void *p_buf,
     case TRACK_FORMAT_AUDIO:
     case TRACK_FORMAT_ERROR:
       return DRIVER_OP_ERROR;
-    case TRACK_FORMAT_CDI:
     case TRACK_FORMAT_DATA:
-      return cdio_read_mode1_sector (p_cdio, p_buf, i_lsn, false);
+      return cdio_read_mode1_sectors (p_cdio, p_buf, i_lsn, false, i_blocks);
+    case TRACK_FORMAT_CDI:
     case TRACK_FORMAT_XA:
-      return cdio_read_mode2_sector (p_cdio, p_buf, i_lsn, false);
+      return cdio_read_mode2_sectors (p_cdio, p_buf, i_lsn, false, i_blocks);
     }
   }
   return DRIVER_OP_ERROR;

@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.10 2005/02/17 04:57:21 rocky Exp $
+    $Id: mmc.h,v 1.11 2005/02/17 07:03:36 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -610,11 +610,13 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
                  M2RAW_SECTOR_SIZE.
 
     @param i_lsn sector to read
+    @param i_blocksize
 
 */
-driver_return_code_t mmc_read_data_sector ( CdIo_t *p_cdio, void *p_buf, 
-					    lsn_t i_lsn, 
-					    uint16_t i_blocksize );
+driver_return_code_t mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf, 
+					     lsn_t i_lsn, 
+					     uint16_t i_blocksize,
+					     uint32_t i_blocks );
 
 /*! issue a MMC read mode2 sectors. - depricated.
 */

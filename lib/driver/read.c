@@ -1,5 +1,5 @@
 /*
-    $Id: read.c,v 1.5 2005/02/17 04:57:21 rocky Exp $
+    $Id: read.c,v 1.6 2005/02/17 07:03:37 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -126,18 +126,19 @@ cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
     return p_cdio->op.read_audio_sectors (p_cdio->env, p_buf, i_lsn, i_blocks);
   return DRIVER_OP_UNSUPPORTED;
 }
+
 /*!
   Reads an audio sector from cd device into data starting
   from lsn. Returns DRIVER_OP_SUCCESS if no error. 
 */
 driver_return_code_t
-cdio_read_data_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
-                       uint16_t i_blocksize) 
+cdio_read_data_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
+                        uint16_t i_blocksize, uint32_t i_blocks) 
 {
   check_lsn(i_lsn);
-  if  (p_cdio->op.read_data_sector)
-    return p_cdio->op.read_data_sector (p_cdio->env, p_buf, i_lsn, 
-                                        i_blocksize);
+  if  (p_cdio->op.read_data_sectors)
+    return p_cdio->op.read_data_sectors (p_cdio->env, p_buf, i_lsn, 
+                                         i_blocksize, i_blocks);
   return DRIVER_OP_UNSUPPORTED;
 }
 

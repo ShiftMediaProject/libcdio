@@ -165,6 +165,7 @@ mmc_mode_sense
 mmc_mode_sense_10
 mmc_mode_sense_6
 mmc_read_cd
+mmc_read_data_sectors
 mmc_read_sectors
 mmc_run_cmd
 mmc_set_blocksize

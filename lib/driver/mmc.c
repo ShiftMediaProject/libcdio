@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.13 2005/02/17 04:57:21 rocky Exp $
+    $Id: mmc.c,v 1.14 2005/02/17 07:03:37 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -113,11 +113,13 @@ get_mcn_mmc (const void *p_user_data)
    Can read only up to 25 blocks.
 */
 driver_return_code_t 
-read_data_sector_mmc ( void *p_user_data, void *p_buf, 
-                       lba_t i_lba,  uint16_t i_blocksize )
+read_data_sectors_mmc ( void *p_user_data, void *p_buf, 
+                        lsn_t i_lsn,  uint16_t i_blocksize,
+                        uint32_t i_blocks )
 {
   const generic_img_private_t *p_env = p_user_data;
-  return mmc_read_data_sector( p_env->cdio, p_buf, i_lba, i_blocksize );
+  return mmc_read_data_sectors( p_env->cdio, p_buf, i_lsn, i_blocksize,
+                                i_blocks );
 }
 
 /* Set read blocksize (via MMC) */
@@ -1051,8 +1053,9 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 /*! Read sectors using SCSI-MMC GPCMD_READ_CD.
 */
 driver_return_code_t 
-mmc_read_data_sector ( CdIo_t *p_cdio, void *p_buf, 
-                       lsn_t i_lsn,  uint16_t i_blocksize )
+mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf, 
+                        lsn_t i_lsn,  uint16_t i_blocksize,
+                        uint32_t i_blocks )
 {
   return mmc_read_cd(p_cdio, 
                      p_buf, /* place to store data */
@@ -1066,7 +1069,7 @@ mmc_read_data_sector ( CdIo_t *p_cdio, void *p_buf,
                      false, /* return C2 Error information */
                      0,     /* suchannel selection bits */
                      ISO_BLOCKSIZE, /* blocksize*/ 
-                     1      /* Number of blocks. */);
+                     i_blocks       /* Number of blocks. */);
 
 }
 
