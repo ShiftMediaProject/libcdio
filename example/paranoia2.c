@@ -16,8 +16,11 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
-/* Simple program to show using libcdio's version of the CD-DA paranoia. 
-   library. 
+/* Simple program to show using libcdio's version of the CD-DA
+   paranoia library. In this version, we'll open a cdio object before
+   calling paranoia's open. I image in many cases such as media
+   players this may be what will be done since, one may want to get
+   CDDB/CD-Text info beforehand.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -37,6 +40,7 @@ main(int argc, const char *argv[])
 {
   cdrom_drive_t *d = NULL; /* Place to store handle given by cd-parapnioa. */
   char **ppsz_cd_drives;  /* List of all drives with a loaded CDDA in it. */
+  CdIo_t *p_cdio = NULL;
 
   /* See if we can find a device with a loaded CD-DA in it. */
   ppsz_cd_drives = cdio_get_devices_with_cap(NULL, CDIO_FS_AUDIO, false);
@@ -44,7 +48,8 @@ main(int argc, const char *argv[])
   if (ppsz_cd_drives) {
     /* Found such a CD-ROM with a CD-DA loaded. Use the first drive in
        the list. */
-    d=cdda_identify(*ppsz_cd_drives, 1, NULL);
+    p_cdio = cdio_open(*ppsz_cd_drives, DRIVER_UNKNOWN);
+    d=cdda_identify_cdio(p_cdio, 1, NULL);
   } else {
     printf("Unable find or access a CD-ROM drive with an audio CD in it.\n");
     exit(1);
@@ -62,51 +67,27 @@ main(int argc, const char *argv[])
     exit(1);
   }
 
-  /* Okay now set up to read up to the first 300 frames of the first
-     audio track of the Audio CD. */
-  { 
-    cdrom_paranoia_t *p = paranoia_init(d);
-    lsn_t i_first_lsn = cdda_disc_firstsector(d);
-
-    if ( -1 == i_first_lsn ) {
-      printf("Trouble getting starting LSN\n");
-    } else {
-      lsn_t   i_cursor;
-      track_t i_track    = cdda_sector_gettrack(d, i_first_lsn);
-      lsn_t   i_last_lsn = cdda_track_lastsector(d, i_track);
-
-      /* For demo purposes we'll read only 300 frames (about 4
-	 seconds).  We don't want this to take too long. On the other
-	 hand, I suppose it should be something close to a real test.
-       */
-      if ( i_last_lsn - i_first_lsn > 300) i_last_lsn = i_first_lsn + 299;
-
-      printf("Reading track %d from LSN %ld to LSN %ld\n", i_track, 
-	     (long int) i_first_lsn, (long int) i_last_lsn);
-
-      /* Set reading mode for full paranoia, but allow skipping sectors. */
-      paranoia_modeset(p, PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP);
-
-      paranoia_seek(p, i_first_lsn, SEEK_SET);
-
-      for ( i_cursor = i_first_lsn; i_cursor <= i_last_lsn; i_cursor ++) {
-	/* read a sector */
-	int16_t *p_readbuf=paranoia_read(p, NULL);
-	char *psz_err=cdda_errors(d);
-	char *psz_mes=cdda_messages(d);
-
-	if (psz_mes || psz_err)
-	  printf("%s%s\n", psz_mes ? psz_mes: "", psz_err ? psz_err: "");
-
-	if (psz_err) free(psz_err);
-	if (psz_mes) free(psz_mes);
-	if( !p_readbuf ) {
-	  printf("paranoia read error. Stopping.\n");
-	  break;
-	}
-      }
+  /* In the paranoia example was a reading. Here we are going to do
+     something trivial (but I think neat any way - get the Endian-ness
+     of the drive. */
+  {
+    const int i_endian = data_bigendianp(d);
+    switch (i_endian) {
+    case 0:
+      printf("Drive returns audio data Little Endian."
+	     " Your drive is like most.\n");
+      break;
+    case 1:
+      printf("Drive returns audio data Big Endian.\n");
+      break;
+    case -1:
+      printf("Don't know whether drive is Big or Little Endian.\n");
+      break;
+    default:
+      printf("Whoah - got a return result I'm not expecting %d.\n",
+	     i_endian);
+      break;
     }
-    paranoia_free(p);
   }
 
   cdda_close(d);
