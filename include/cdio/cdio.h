@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.78 2005/01/29 20:54:20 rocky Exp $
+    $Id: cdio.h,v 1.79 2005/02/05 14:42:28 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -68,6 +68,9 @@ extern "C" {
 */
 #include <cdio/device.h>
 
+/* Disc-related functions. */
+#include <cdio/disc.h>
+
 /* Sector (frame, or block)-related functions. Uses driver_return_code_t
    from <cdio/device.h> so it should come after that. 
 */
@@ -78,8 +81,5 @@ extern "C" {
 
 /* Track-related functions. */
 #include <cdio/track.h>
-
-/* Disc-related functions. */
-#include <cdio/disc.h>
 
 #endif /* __CDIO_H__ */

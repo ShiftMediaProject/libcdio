@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: disc.h,v 1.4 2005/01/24 00:06:31 rocky Exp $
+    $Id: disc.h,v 1.5 2005/02/05 14:42:28 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,6 +27,26 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+  /*! disc modes. The first combined from MMC-3 5.29.2.8 (Send CUESHEET)
+    and GNU/Linux /usr/include/linux/cdrom.h and we've added DVD.
+  */
+  typedef enum {
+    CDIO_DISC_MODE_CD_DA,	    /**< CD-DA */
+    CDIO_DISC_MODE_CD_DATA,	    /**< CD-ROM form 1 */
+    CDIO_DISC_MODE_CD_XA,	    /**< CD-ROM XA form2 */
+    CDIO_DISC_MODE_CD_MIXED,	    /**< Some combo of above. */
+    CDIO_DISC_MODE_DVD_ROM,         /**< DVD ROM (e.g. movies) */
+    CDIO_DISC_MODE_DVD_RAM,         /**< DVD-RAM */
+    CDIO_DISC_MODE_DVD_R,           /**< DVD-R */
+    CDIO_DISC_MODE_DVD_RW,          /**< DVD-RW */
+    CDIO_DISC_MODE_DVD_PR,          /**< DVD+R */
+    CDIO_DISC_MODE_DVD_PRW,         /**< DVD+RW */
+    CDIO_DISC_MODE_DVD_OTHER,       /**< Unknown/unclassified DVD type */
+    CDIO_DISC_MODE_NO_INFO,
+    CDIO_DISC_MODE_ERROR,
+    CDIO_DISC_MODE_CD_I	        /**< CD-i. */
+  } discmode_t;
 
   extern const char *discmode2str[];
   
@@ -70,6 +90,17 @@ extern "C" {
   */
   track_t cdio_get_num_tracks (const CdIo_t *p_cdio);
   
+  /*! 
+    Return true if discmode is some sort of CD.
+  */
+  bool cdio_is_discmode_cdrom (discmode_t discmode);
+  
+  /*! 
+    Return true if discmode is some sort of DVD.
+  */
+  bool cdio_is_discmode_dvd (discmode_t discmode);
+  
+      
   /*! cdio_stat_size is deprecated. @see cdio_get_disc_last_lsn  */
 #define cdio_stat_size cdio_get_disc_last_lsn
   

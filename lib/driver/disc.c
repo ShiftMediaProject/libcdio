@@ -1,5 +1,5 @@
 /*
-    $Id: disc.c,v 1.4 2005/01/24 00:06:31 rocky Exp $
+    $Id: disc.c,v 1.5 2005/02/05 14:42:28 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -85,5 +85,36 @@ cdio_get_mcn (const CdIo_t *p_cdio)
     return p_cdio->op.get_mcn (p_cdio->env);
   } else {
     return NULL;
+  }
+}
+
+bool
+cdio_is_discmode_cdrom(discmode_t discmode) 
+{
+  switch (discmode) {
+  case CDIO_DISC_MODE_CD_DA:
+  case CDIO_DISC_MODE_CD_DATA:
+  case CDIO_DISC_MODE_CD_XA:
+  case CDIO_DISC_MODE_CD_MIXED:
+  case CDIO_DISC_MODE_NO_INFO:
+    return true;
+  default:
+    return false;
+  }
+}
+
+bool
+cdio_is_discmode_dvd(discmode_t discmode) 
+{
+  switch (discmode) {
+  case CDIO_DISC_MODE_DVD_ROM:
+  case CDIO_DISC_MODE_DVD_RAM:
+  case CDIO_DISC_MODE_DVD_R:
+  case CDIO_DISC_MODE_DVD_RW:
+  case CDIO_DISC_MODE_DVD_PR:
+  case CDIO_DISC_MODE_DVD_PRW:
+    return true;
+  default:
+    return false;
   }
 }

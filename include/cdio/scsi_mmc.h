@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.42 2005/01/29 20:54:20 rocky Exp $
+    $Id: scsi_mmc.h,v 1.43 2005/02/05 14:42:28 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -64,7 +64,7 @@ typedef enum {
 						   (10 bytes). */
   CDIO_MMC_GPCMD_READ_SUBCHANNEL	= 0x42, /**< Read Sub-Channel data.
 						   (10 bytes). */
-  CDIO_MMC_GPCMD_READ_TOC               = 0x43, /**< Read CD TOC. 
+  CDIO_MMC_GPCMD_READ_TOC               = 0x43, /**< READ TOC/PMA/ATIP. 
 						   (10 bytes). */
   CDIO_MMC_GPCMD_READ_HEADER            = 0x44,
   CDIO_MMC_GPCMD_PLAY_AUDIO_10	        = 0x45, /**< Begin audio playing at

@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.33 2005/02/05 12:37:35 rocky Exp $
+    $Id: sector.h,v 1.34 2005/02/05 14:42:28 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -81,26 +81,6 @@
 	MODE2_RAW			/**< 2352 byte block length */
       } trackmode_t;
       
-      /*! disc modes. The first combined from MMC-3 5.29.2.8 (Send CUESHEET)
-        and GNU/Linux /usr/include/linux/cdrom.h and we've added DVD.
-      */
-      typedef enum {
-	CDIO_DISC_MODE_CD_DA,		/**< CD-DA */
-	CDIO_DISC_MODE_CD_DATA,	        /**< CD-ROM form 1 */
-	CDIO_DISC_MODE_CD_XA,	        /**< CD-ROM XA form2 */
-	CDIO_DISC_MODE_CD_MIXED,	/**< Some combo of above. */
-        CDIO_DISC_MODE_DVD_ROM,         /**< DVD ROM (e.g. movies) */
-        CDIO_DISC_MODE_DVD_RAM,         /**< DVD-RAM */
-        CDIO_DISC_MODE_DVD_R,           /**< DVD-R */
-        CDIO_DISC_MODE_DVD_RW,          /**< DVD-RW */
-        CDIO_DISC_MODE_DVD_PR,          /**< DVD+R */
-        CDIO_DISC_MODE_DVD_PRW,         /**< DVD+RW */
-        CDIO_DISC_MODE_DVD_OTHER,       /**< Unknown/unclassified DVD type */
-        CDIO_DISC_MODE_NO_INFO,
-        CDIO_DISC_MODE_ERROR,
-	CDIO_DISC_MODE_CD_I	        /**< CD-i. */
-      } discmode_t;
-
       /*! Information that can be obtained through a Read Subchannel
         command.
       */
@@ -324,51 +304,9 @@
       */
       lba_t cdio_mmssff_to_lba (const char *psz_mmssff);
       
-      /*! 
-        Return true if discmode is some sort of CD.
-      */
-      bool cdio_is_discmode_cdrom (discmode_t discmode);
-      
-      /*! 
-        Return true if discmode is some sort of DVD.
-      */
-      bool cdio_is_discmode_dvd (discmode_t discmode);
-      
-      
 #ifdef __cplusplus
     }
 #endif
-
-static inline bool discmode_is_cd(discmode_t discmode) 
-{
-  switch (discmode) {
-  case CDIO_DISC_MODE_CD_DA:
-  case CDIO_DISC_MODE_CD_DATA:
-  case CDIO_DISC_MODE_CD_XA:
-  case CDIO_DISC_MODE_CD_MIXED:
-  case CDIO_DISC_MODE_CD_I:
-    return true;
-  default: 
-    return false;
-  }
-}
-
-static inline bool discmode_is_dvd(discmode_t discmode) 
-{
-  switch (discmode) {
-  case CDIO_DISC_MODE_DVD_ROM:
-  case CDIO_DISC_MODE_DVD_RAM:
-  case CDIO_DISC_MODE_DVD_R:
-  case CDIO_DISC_MODE_DVD_RW:
-  case CDIO_DISC_MODE_DVD_PR:
-  case CDIO_DISC_MODE_DVD_PRW:
-  case CDIO_DISC_MODE_DVD_OTHER:
-    return true;
-  default: 
-    return false;
-  }
-}
-
 
 #endif /* _CDIO_SECTOR_H_ */
 

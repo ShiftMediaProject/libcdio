@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.3 2005/02/05 12:37:35 rocky Exp $
+    $Id: sector.c,v 1.4 2005/02/05 14:42:28 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 
 #include <ctype.h>
 
-static const char _rcsid[] = "$Id: sector.c,v 1.3 2005/02/05 12:37:35 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.4 2005/02/05 14:42:28 rocky Exp $";
 
 /*! String of bytes used to identify the beginning of a Mode 1 or
   Mode 2 sector. */
@@ -257,37 +257,6 @@ cdio_mmssff_to_lba (const char *psz_mmssff)
   ret += psz_field;
   
   return ret;
-}
-
-bool
-cdio_is_discmode_cdrom(discmode_t discmode) 
-{
-  switch (discmode) {
-  case CDIO_DISC_MODE_CD_DA:
-  case CDIO_DISC_MODE_CD_DATA:
-  case CDIO_DISC_MODE_CD_XA:
-  case CDIO_DISC_MODE_CD_MIXED:
-  case CDIO_DISC_MODE_NO_INFO:
-    return true;
-  default:
-    return false;
-  }
-}
-
-bool
-cdio_is_discmode_dvd(discmode_t discmode) 
-{
-  switch (discmode) {
-  case CDIO_DISC_MODE_DVD_ROM:
-  case CDIO_DISC_MODE_DVD_RAM:
-  case CDIO_DISC_MODE_DVD_R:
-  case CDIO_DISC_MODE_DVD_RW:
-  case CDIO_DISC_MODE_DVD_PR:
-  case CDIO_DISC_MODE_DVD_PRW:
-    return true;
-  default:
-    return false;
-  }
 }
 
 
