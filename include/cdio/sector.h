@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.25 2004/07/25 03:17:47 rocky Exp $
+    $Id: sector.h,v 1.26 2004/07/25 18:37:09 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -86,11 +86,9 @@ typedef enum {
  */
 typedef enum {
 	CDIO_DISC_MODE_CD_DA,		/**< CD-DA */
-	CDIO_DISC_MODE_CD_DATA_1,	/**< CD-ROM form 1 mode 1 */
-	CDIO_DISC_MODE_CD_DATA_2,	/**< CD-ROM form 1 mode 2 */
-	CDIO_DISC_MODE_CD_XA_2_1,	/**< CD-ROM XA form2 mode 1 */
-	CDIO_DISC_MODE_CD_XA_2_2,	/**< CD-ROM XA form2 mode 2 */
-	CDIO_DISC_MODE_CD_MIXED,	/**< CD-ROM XA and CD-I */
+	CDIO_DISC_MODE_CD_DATA,	        /**< CD-ROM form 1 */
+	CDIO_DISC_MODE_CD_XA,	        /**< CD-ROM XA form2 */
+	CDIO_DISC_MODE_CD_MIXED,	/**< Some combo of above. */
         CDIO_DISC_MODE_DVD_ROM,         /**< DVD ROM (e.g. movies) */
         CDIO_DISC_MODE_DVD_RAM,         /**< DVD-RAM */
         CDIO_DISC_MODE_DVD_R,           /**< DVD-R */
@@ -101,23 +99,6 @@ typedef enum {
         CDIO_DISC_MODE_NO_INFO,
         CDIO_DISC_MODE_ERROR
 } discmode_t;
-
-#define CDIO_DISC_MODE_DVD                        \
-      (CDIO_DISC_MODE_DVD_ROM                     \
-       || CDIO_DISC_MODE_DVD_RAM                  \
-       || CDIO_DISC_MODE_DVD_R                    \
-       || CDIO_DISC_MODE_DVD_RW                   \
-       || CDIO_DISC_MODE_DVD_PR                   \
-       || CDIO_DISC_MODE_DVD_PRW                  \
-       || CDIO_DISC_MODE_DVD_OTHER)               
-
-#define CDIO_DISC_MODE_CD                         \
-      (CDIO_DISC_MODE_CD_DA                       \
-       || CDIO_DISC_MODE_CD_DATA_1                \
-       || CDIO_DISC_MODE_CD_DATA_2                \
-       || CDIO_DISC_MODE_CD_XA_2_1                \
-       || CDIO_DISC_MODE_CD_XA_2_2                \
-       || CDIO_DISC_MODE_CD_MIXED)                
 
 /*! Information that can be obtained through a Read Subchannel
     command.
@@ -287,6 +268,16 @@ lba_t cdio_msf3_to_lba (unsigned int minutes, unsigned int seconds,
   CDIO_INVALID_LBA is returned if there is an error.
 */
 lba_t cdio_mmssff_to_lba (const char *psz_mmssff);
+      
+/*! 
+  Return true if discmode is some sort of CD.
+*/
+bool cdio_is_discmode_cdrom (discmode_t discmode);
+      
+/*! 
+  Return true if discmode is some sort of DVD.
+*/
+bool cdio_is_discmode_dvd (discmode_t discmode);
       
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.21 2004/07/24 14:23:39 rocky Exp $
+    $Id: cdrdao.c,v 1.22 2004/07/25 18:37:09 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.21 2004/07/24 14:23:39 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.22 2004/07/25 18:37:09 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -354,7 +354,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
       } else if (0 == strcmp ("CD_ROM", psz_keyword)) {
 	if (-1 == i) {
 	  if (NULL != cd)
-	    cd->disc_mode = CDIO_DISC_MODE_CD_DATA_1;
+	    cd->disc_mode = CDIO_DISC_MODE_CD_DATA;
 	} else {
 	  goto not_in_global_section;
 	}
@@ -362,7 +362,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
       } else if (0 == strcmp ("CD_ROM_XA", psz_keyword)) {
 	if (-1 == i) {
 	  if (NULL != cd)
-	    cd->disc_mode = CDIO_DISC_MODE_CD_XA_2_1;
+	    cd->disc_mode = CDIO_DISC_MODE_CD_XA;
 	} else {
 	  goto not_in_global_section;
 	}
@@ -379,6 +379,23 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	      cd->tocent[i].datasize     = CDIO_CD_FRAMESIZE_RAW;
 	      cd->tocent[i].datastart    = 0;
 	      cd->tocent[i].endsize      = 0;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_DA;
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DATA:
+	      case CDIO_DISC_MODE_CD_XA:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
+
 	    }
 	  } else if (0 == strcmp ("MODE1", psz_field)) {
 	    if (NULL != cd) {
@@ -389,6 +406,22 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	      cd->tocent[i].datasize     = CDIO_CD_FRAMESIZE; 
 	      cd->tocent[i].endsize      = CDIO_CD_EDC_SIZE 
 		+ CDIO_CD_M1F1_ZERO_SIZE + CDIO_CD_ECC_SIZE;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_DATA;
+		break;
+	      case CDIO_DISC_MODE_CD_DATA:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_XA:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE1_RAW", psz_field)) {
 	    if (NULL != cd) {
@@ -399,6 +432,22 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	      cd->tocent[i].datasize  = CDIO_CD_FRAMESIZE; 
 	      cd->tocent[i].endsize   = CDIO_CD_EDC_SIZE 
 		+ CDIO_CD_M1F1_ZERO_SIZE + CDIO_CD_ECC_SIZE;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_DATA;
+		break;
+	      case CDIO_DISC_MODE_CD_DATA:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_XA:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE2", psz_field)) {
 	    if (NULL != cd) {
@@ -407,6 +456,22 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 		+ CDIO_CD_HEADER_SIZE;
 	      cd->tocent[i].datasize = M2RAW_SECTOR_SIZE;
 	      cd->tocent[i].endsize   = 0;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
+		break;
+	      case CDIO_DISC_MODE_CD_XA:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_DATA:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE2_FORM1", psz_field)) {
 	    if (NULL != cd) {
@@ -415,6 +480,22 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 		+ CDIO_CD_HEADER_SIZE;
 	      cd->tocent[i].datasize  = CDIO_CD_FRAMESIZE_RAW;  
 	      cd->tocent[i].endsize   = 0;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
+		break;
+	      case CDIO_DISC_MODE_CD_XA:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_DATA:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE2_FORM2", psz_field)) {
 	    if (NULL != cd) {
@@ -424,6 +505,22 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	      cd->tocent[i].datasize     = CDIO_CD_FRAMESIZE;
 	      cd->tocent[i].endsize      = CDIO_CD_SYNC_SIZE 
 		+ CDIO_CD_ECC_SIZE;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
+		break;
+	      case CDIO_DISC_MODE_CD_XA:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_DATA:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE2_FORM_MIX", psz_field)) {
 	    if (NULL != cd) {
@@ -434,6 +531,22 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 		CDIO_CD_HEADER_SIZE + CDIO_CD_SUBHEADER_SIZE;
 	      cd->tocent[i].track_green  = true;
 	      cd->tocent[i].endsize      = 0;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
+		break;
+	      case CDIO_DISC_MODE_CD_XA:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_DATA:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else if (0 == strcmp ("MODE2_RAW", psz_field)) {
 	    if (NULL != cd) {
@@ -444,6 +557,22 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	      cd->tocent[i].datasize     = CDIO_CD_FRAMESIZE;
 	      cd->tocent[i].track_green  = true;
 	      cd->tocent[i].endsize      = 0;
+	      switch(cd->disc_mode) {
+	      case CDIO_DISC_MODE_NO_INFO:
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
+		break;
+	      case CDIO_DISC_MODE_CD_XA:
+	      case CDIO_DISC_MODE_CD_MIXED:
+	      case CDIO_DISC_MODE_ERROR:
+		/* Disc type stays the same. */
+		break;
+	      case CDIO_DISC_MODE_CD_DA:
+	      case CDIO_DISC_MODE_CD_DATA:
+		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+		break;
+	      default:
+		cd->disc_mode = CDIO_DISC_MODE_ERROR;
+	      }
 	    }
 	  } else {
 	    cdio_log(log_level, "%s line %d after TRACK:",

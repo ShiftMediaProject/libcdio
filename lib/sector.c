@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.12 2004/07/10 01:21:19 rocky Exp $
+    $Id: sector.c,v 1.13 2004/07/25 18:37:09 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 
 #include <ctype.h>
 
-static const char _rcsid[] = "$Id: sector.c,v 1.12 2004/07/10 01:21:19 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.13 2004/07/25 18:37:09 rocky Exp $";
 
 lba_t
 cdio_lba_to_lsn (lba_t lba)
@@ -246,6 +246,37 @@ cdio_mmssff_to_lba (const char *psz_mmssff)
   ret += psz_field;
   
   return ret;
+}
+
+bool
+cdio_is_discmode_cdrom(discmode_t discmode) 
+{
+  switch (discmode) {
+  case CDIO_DISC_MODE_CD_DA:
+  case CDIO_DISC_MODE_CD_DATA:
+  case CDIO_DISC_MODE_CD_XA:
+  case CDIO_DISC_MODE_CD_MIXED:
+  case CDIO_DISC_MODE_NO_INFO:
+    return true;
+  default:
+    return false;
+  }
+}
+
+bool
+cdio_is_discmode_dvd(discmode_t discmode) 
+{
+  switch (discmode) {
+  case CDIO_DISC_MODE_DVD_ROM:
+  case CDIO_DISC_MODE_DVD_RAM:
+  case CDIO_DISC_MODE_DVD_R:
+  case CDIO_DISC_MODE_DVD_RW:
+  case CDIO_DISC_MODE_DVD_PR:
+  case CDIO_DISC_MODE_DVD_PRW:
+    return true;
+  default:
+    return false;
+  }
 }
 
 

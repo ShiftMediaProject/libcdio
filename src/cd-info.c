@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.77 2004/07/25 17:32:19 rocky Exp $
+    $Id: cd-info.c,v 1.78 2004/07/25 18:37:09 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -856,6 +856,7 @@ main(int argc, const char *argv[])
   int                 first_audio    = -1;  /* # of first audio track */
   cdio_iso_analysis_t cdio_iso_analysis; 
   char                *media_catalog_number;  
+  discmode_t          discmode = CDIO_DISC_MODE_NO_INFO;
       
   memset(&cdio_iso_analysis, 0, sizeof(cdio_iso_analysis));
   init();
@@ -1007,22 +1008,16 @@ main(int argc, const char *argv[])
 
   if ( 0 == opts.no_disc_mode ) {
     printf("Disc mode is listed as: ");
-    switch(cdio_get_discmode(cdio)) {
+    switch( (discmode = cdio_get_discmode(cdio)) ) {
     case CDIO_DISC_MODE_CD_DA:
       printf("CD-DA\n");
       break;
-    case CDIO_DISC_MODE_CD_DATA_1:
-      printf("CD-ROM form 1 mode 1");
+    case CDIO_DISC_MODE_CD_DATA:
+      printf("CD-ROM form 1");
       break;
-    case CDIO_DISC_MODE_CD_DATA_2:
-      printf("CD-ROM form 1 mode 2");
+    case CDIO_DISC_MODE_CD_XA:
+      printf("CD-ROM XA form2");
       break;
-    case CDIO_DISC_MODE_CD_XA_2_1:
-      printf("CD-ROM XA form2 mode 1");
-      break;
-    case CDIO_DISC_MODE_CD_XA_2_2:
-    printf("CD-ROM XA form2 mode 2");
-    break;
     case CDIO_DISC_MODE_CD_MIXED:
       printf("CD-ROM mixed mode");
       break;
@@ -1100,36 +1095,25 @@ main(int argc, const char *argv[])
     if (i == i_tracks) i = CDIO_CDROM_LEADOUT_TRACK-1;
   }
 
-  /* get MCN */
-  media_catalog_number = cdio_get_mcn(cdio);
-  printf("Media Catalog Number (MCN): "); fflush(stdout);
-  if (NULL == media_catalog_number)
-    printf("not available\n");
-  else {
+  if (cdio_is_discmode_cdrom(discmode)) {
+    /* get and print MCN */
+    media_catalog_number = cdio_get_mcn(cdio);
+  
+    printf("Media Catalog Number (MCN): "); fflush(stdout);
+    if (NULL == media_catalog_number)
+      printf("not available\n");
+    else {
     printf("%s\n", media_catalog_number);
     free(media_catalog_number);
+    }
   }
+  
   
     
 #if CDIO_IOCTL_FINISHED
   if (!opts.no_ioctl) {
     printf(STRONG "What ioctl's report...\n" NORMAL);
   
-#ifdef CDROM_DISC_STATUS
-    /* get disk status */
-    printf("disc status : "); fflush(stdout);
-    switch (ioctl(filehandle,CDROM_DISC_STATUS,0)) {
-    case CDS_NO_INFO: printf("no info\n"); break;
-    case CDS_NO_DISC: printf("no disc\n"); break;
-    case CDS_AUDIO:   printf("audio\n"); break;
-    case CDS_DATA_1:  printf("data mode 1\n"); break;
-    case CDS_DATA_2:  printf("data mode 2\n"); break;
-    case CDS_XA_2_1:  printf("XA mode 1\n"); break;
-    case CDS_XA_2_2:  printf("XA mode 2\n"); break;
-    default:          printf("unknown (failed?)\n");
-    }
-#endif 
-    
 #ifdef CDROMMULTISESSION
     /* get multisession */
     printf("multisession: "); fflush(stdout);

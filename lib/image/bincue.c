@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.36 2004/07/24 14:23:38 rocky Exp $
+    $Id: bincue.c,v 1.37 2004/07/25 18:37:09 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.36 2004/07/24 14:23:38 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.37 2004/07/25 18:37:09 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -407,10 +407,8 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      case CDIO_DISC_MODE_ERROR:
 		/* Disc type stays the same. */
 		break;
-	      case CDIO_DISC_MODE_CD_DATA_1:
-	      case CDIO_DISC_MODE_CD_DATA_2:
-	      case CDIO_DISC_MODE_CD_XA_2_1:
-	      case CDIO_DISC_MODE_CD_XA_2_2:
+	      case CDIO_DISC_MODE_CD_DATA:
+	      case CDIO_DISC_MODE_CD_XA:
 		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
 		break;
 	      default:
@@ -429,17 +427,15 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->endsize     = 0;  
 	      switch(cd->disc_mode) {
 	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_DATA_1;
+		cd->disc_mode = CDIO_DISC_MODE_CD_DATA;
 		break;
-	      case CDIO_DISC_MODE_CD_DATA_1:
+	      case CDIO_DISC_MODE_CD_DATA:
 	      case CDIO_DISC_MODE_CD_MIXED:
 	      case CDIO_DISC_MODE_ERROR:
 		/* Disc type stays the same. */
 		break;
 	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_DATA_2:
-	      case CDIO_DISC_MODE_CD_XA_2_1:
-	      case CDIO_DISC_MODE_CD_XA_2_2:
+	      case CDIO_DISC_MODE_CD_XA:
 		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
 		break;
 	      default:
@@ -459,17 +455,15 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->mode        = MODE1_RAW; 
 	      switch(cd->disc_mode) {
 	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_DATA_2;
+		cd->disc_mode = CDIO_DISC_MODE_CD_DATA;
 		break;
-	      case CDIO_DISC_MODE_CD_DATA_2:
+	      case CDIO_DISC_MODE_CD_DATA:
 	      case CDIO_DISC_MODE_CD_MIXED:
 	      case CDIO_DISC_MODE_ERROR:
 		/* Disc type stays the same. */
 		break;
 	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_DATA_1:
-	      case CDIO_DISC_MODE_CD_XA_2_1:
-	      case CDIO_DISC_MODE_CD_XA_2_2:
+	      case CDIO_DISC_MODE_CD_XA:
 		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
 		break;
 	      default:
@@ -488,17 +482,15 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->endsize     = 0;
 	      switch(cd->disc_mode) {
 	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_DATA_2;
+		cd->disc_mode = CDIO_DISC_MODE_CD_DATA;
 		break;
-	      case CDIO_DISC_MODE_CD_DATA_2:
+	      case CDIO_DISC_MODE_CD_DATA:
 	      case CDIO_DISC_MODE_CD_MIXED:
 	      case CDIO_DISC_MODE_ERROR:
 		/* Disc type stays the same. */
 		break;
 	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_DATA_1:
-	      case CDIO_DISC_MODE_CD_XA_2_1:
-	      case CDIO_DISC_MODE_CD_XA_2_2:
+	      case CDIO_DISC_MODE_CD_XA:
 		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
 		break;
 	      default:
@@ -513,17 +505,15 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->mode        = MODE2_FORM1;
 	      switch(cd->disc_mode) {
 	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_XA_2_1;
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
 		break;
-	      case CDIO_DISC_MODE_CD_XA_2_1:
+	      case CDIO_DISC_MODE_CD_XA:
 	      case CDIO_DISC_MODE_CD_MIXED:
 	      case CDIO_DISC_MODE_ERROR:
 		/* Disc type stays the same. */
 		break;
 	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_DATA_1:
-	      case CDIO_DISC_MODE_CD_DATA_2:
-	      case CDIO_DISC_MODE_CD_XA_2_2:
+	      case CDIO_DISC_MODE_CD_DATA:
 		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
 		break;
 	      default:
@@ -538,17 +528,15 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->mode        = MODE2_FORM2;
 	      switch(cd->disc_mode) {
 	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_XA_2_2;
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
 		break;
-	      case CDIO_DISC_MODE_CD_XA_2_2:
+	      case CDIO_DISC_MODE_CD_XA:
 	      case CDIO_DISC_MODE_CD_MIXED:
 	      case CDIO_DISC_MODE_ERROR:
 		/* Disc type stays the same. */
 		break;
 	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_DATA_1:
-	      case CDIO_DISC_MODE_CD_DATA_2:
-	      case CDIO_DISC_MODE_CD_XA_2_1:
+	      case CDIO_DISC_MODE_CD_DATA:
 		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
 		break;
 	      default:
@@ -567,17 +555,15 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->endsize     = 0;
 	      switch(cd->disc_mode) {
 	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_XA_2_2;
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
 		break;
-	      case CDIO_DISC_MODE_CD_XA_2_2:
+	      case CDIO_DISC_MODE_CD_XA:
 	      case CDIO_DISC_MODE_CD_MIXED:
 	      case CDIO_DISC_MODE_ERROR:
 		/* Disc type stays the same. */
 		break;
 	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_DATA_1:
-	      case CDIO_DISC_MODE_CD_DATA_2:
-	      case CDIO_DISC_MODE_CD_XA_2_1:
+	      case CDIO_DISC_MODE_CD_DATA:
 		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
 		break;
 	      default:
@@ -596,17 +582,15 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->endsize     = CDIO_CD_SYNC_SIZE + CDIO_CD_ECC_SIZE;
 	      switch(cd->disc_mode) {
 	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_XA_2_2;
+		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
 		break;
-	      case CDIO_DISC_MODE_CD_XA_2_2:
+	      case CDIO_DISC_MODE_CD_XA:
 	      case CDIO_DISC_MODE_CD_MIXED:
 	      case CDIO_DISC_MODE_ERROR:
 		/* Disc type stays the same. */
 		break;
 	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_DATA_1:
-	      case CDIO_DISC_MODE_CD_DATA_2:
-	      case CDIO_DISC_MODE_CD_XA_2_1:
+	      case CDIO_DISC_MODE_CD_DATA:
 		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
 		break;
 	      default:

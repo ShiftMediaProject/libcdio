@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.33 2004/07/24 14:23:39 rocky Exp $
+    $Id: nrg.c,v 1.34 2004/07/25 18:37:09 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -45,7 +45,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.33 2004/07/24 14:23:39 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.34 2004/07/25 18:37:09 rocky Exp $";
 
 
 /* reader */
@@ -397,18 +397,18 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	  case 0:
 	    /* Mode 1 */
 	    track_format   = TRACK_FORMAT_DATA;
-	    env->disc_mode = CDIO_DISC_MODE_CD_DATA_1;
+	    env->disc_mode = CDIO_DISC_MODE_CD_DATA;
 	    break;
 	  case 2:
 	    /* Mode 2 form 1 */
 	    form2          = 0;
 	    track_format   = TRACK_FORMAT_XA;
-	    env->disc_mode = CDIO_DISC_MODE_CD_XA_2_1;
+	    env->disc_mode = CDIO_DISC_MODE_CD_XA;
 	    break;
 	  case 3:
 	    /* Mode 2 */
 	    track_format   = TRACK_FORMAT_XA;
-	    env->disc_mode = CDIO_DISC_MODE_CD_XA_2_1; /* ?? */
+	    env->disc_mode = CDIO_DISC_MODE_CD_XA; /* ?? */
 	    break;
 	  case 0x6:
 	    /* Mode2 form mix */
@@ -417,7 +417,7 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	    break;
 	  case 0x20: /* ??? Mode2 form 2, Mode2 raw?? */
 	    track_format   = TRACK_FORMAT_XA;
-	    env->disc_mode = CDIO_DISC_MODE_CD_XA_2_2; /* ??. */
+	    env->disc_mode = CDIO_DISC_MODE_CD_XA; /* ??. */
 	    break;
 	  case 0x7:
 	    track_format   = TRACK_FORMAT_AUDIO;
@@ -512,21 +512,21 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	      track_format   = TRACK_FORMAT_DATA;
 	      track_green    = false; /* ?? */
 	      blocksize      = CDIO_CD_FRAMESIZE;
-	      env->disc_mode = CDIO_DISC_MODE_CD_DATA_1;
+	      env->disc_mode = CDIO_DISC_MODE_CD_DATA;
 	      break;
 	    case 2:
 	      /* Mode 2 form 1 */
 	      track_format   = TRACK_FORMAT_XA;
 	      track_green    = false; /* ?? */
 	      blocksize      = CDIO_CD_FRAMESIZE;
-	      env->disc_mode = CDIO_DISC_MODE_CD_XA_2_1;
+	      env->disc_mode = CDIO_DISC_MODE_CD_XA;
 	      break;
 	    case 3:
 	      /* Mode 2 */
 	      track_format   = TRACK_FORMAT_XA;
 	      track_green    = true;
 	      blocksize      = M2RAW_SECTOR_SIZE;
-	      env->disc_mode = CDIO_DISC_MODE_CD_XA_2_1; /* ?? */
+	      env->disc_mode = CDIO_DISC_MODE_CD_XA; /* ?? */
 	      break;
 	    case 06:
 	      /* Mode2 form mix */
@@ -539,7 +539,7 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	      track_format   = TRACK_FORMAT_XA;
 	      track_green    = true;
 	      blocksize      = M2RAW_SECTOR_SIZE;
-	      env->disc_mode = CDIO_DISC_MODE_CD_XA_2_2; /* ??. */
+	      env->disc_mode = CDIO_DISC_MODE_CD_XA; /* ??. */
 	      break;
 	    case 7:
 	      track_format   = TRACK_FORMAT_AUDIO;

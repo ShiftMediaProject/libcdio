@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.79 2004/07/25 17:35:02 rocky Exp $
+    $Id: _cdio_linux.c,v 1.80 2004/07/25 18:37:09 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.79 2004/07/25 17:35:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.80 2004/07/25 18:37:09 rocky Exp $";
 
 #include <string.h>
 
@@ -557,15 +557,13 @@ get_discmode_linux (void *p_user_data)
   case CDS_AUDIO:
     return CDIO_DISC_MODE_CD_DA;
   case CDS_DATA_1:
-    return CDIO_DISC_MODE_CD_DATA_1;
   case CDS_DATA_2:
-    return CDIO_DISC_MODE_CD_DATA_2;
+    return CDIO_DISC_MODE_CD_DATA;
   case CDS_MIXED:
     return CDIO_DISC_MODE_CD_MIXED;
   case CDS_XA_2_1:
-    return CDIO_DISC_MODE_CD_XA_2_1;
   case CDS_XA_2_2:
-    return CDIO_DISC_MODE_CD_XA_2_2;
+    return CDIO_DISC_MODE_CD_XA;
   case CDS_NO_INFO:
     return CDIO_DISC_MODE_NO_INFO;
   default:
