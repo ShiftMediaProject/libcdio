@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.3 2004/03/06 18:30:44 rocky Exp $
+    $Id: win32.c,v 1.4 2004/03/07 02:40:58 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.3 2004/03/06 18:30:44 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.4 2004/03/07 02:40:58 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -255,25 +255,15 @@ static int
 _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *env = user_data;
   int i;
   int retval;
+  unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if (b_form2) {
-      if ( (retval = _cdio_read_mode2_sector (env, 
-					  ((char *)data) 
-					  + (M2RAW_SECTOR_SIZE * i),
-					  lsn + i, true)) )
-	return retval;
-    } else {
-      char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _cdio_read_mode2_sector (env, buf, lsn + i, false)) )
-	return retval;
-      
-      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
-	      buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
-    }
+    if ( (retval = _cdio_read_mode2_sector (user_data, 
+					    ((char *)data) + (blocksize * i),
+					    lsn + i, b_form2)) )
+      return retval;
   }
   return 0;
 }
