@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.58 2004/07/23 02:23:49 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.59 2004/07/23 02:54:34 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.58 2004/07/23 02:23:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.59 2004/07/23 02:54:34 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -514,10 +514,13 @@ _get_cdtext_solaris (void *p_user_data, track_t i_track)
 
   if ( NULL == p_env ||
        (0 != i_track 
-       && i_track >= TOTAL_TRACKS+FIRST_TRACK_NUM ) )
+       && i_track >= TOTAL_TRACKS+FIRST_TRACK_NUM )
+       || p_env ->b_cdtext_error )
     return NULL;
 
-  p_env->b_cdtext_init = _init_cdtext_solaris(p_env);
+  if (!p_env->b_cdtext_init)
+    p_env->b_cdtext_init = _init_cdtext_solaris(p_env);
+
   if (!p_env->b_cdtext_init) return NULL;
 
   if (0 == i_track) 
@@ -702,7 +705,7 @@ _get_mcn_solaris (const void *p_user_data)
   const _img_private_t *p_env = p_user_data;
   scsi_mmc_cdb_t cdb = {{0, }};
 
-  char buf[192] = { 0, };
+  char buf[25] = { 0, };
   int i_status;
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
