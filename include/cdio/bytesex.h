@@ -1,5 +1,5 @@
 /*
-    $Id: bytesex.h,v 1.3 2005/01/29 20:54:20 rocky Exp $
+    $Id: bytesex.h,v 1.4 2005/02/12 09:48:18 rocky Exp $
 
     Copyright (C) 2000, 2004 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
@@ -145,24 +145,32 @@ CVT_TO_FUNC(64)
 
 /** ISO9660-related field conversion routines */
 
+/** Convert from uint8_t to ISO 9660 7.1.1 format */
 #define to_711(i)   uint8_to_le(i)
+
+/** Convert from ISO 9660 7.1.1 format to uint8_t */
 #define from_711(i) uint8_from_le(i)
 
+/** Convert from uint16_t to ISO 9669 7.2.1 format */
 #define to_721(i)   uint16_to_le(i)
+
+/** Convert from ISO 9660 7.2.1 format to uint16_t */
 #define from_721(i) uint16_from_le(i)
 
-#define to_721(i)   uint16_to_le(i)
-#define from_721(i) uint16_from_le(i)
-
+/** Convert from uint16_t to ISO 9669 7.2.2 format */
 #define to_722(i)   uint16_to_be(i)
+
+/** Convert from ISO 9660 7.2.2 format to uint16_t */
 #define from_722(i) uint16_from_be(i)
 
+/** Convert from uint16_t to ISO 9669 7.2.3 format */
 static inline uint32_t
 to_723(uint16_t i)
 {
   return uint32_swap_le_be(i) | i;
 }
 
+/** Convert from ISO 9660 7.2.3 format to uint16_t */
 static inline uint16_t 
 from_723 (uint32_t p)
 {
@@ -172,18 +180,26 @@ from_723 (uint32_t p)
   return (0xFFFF & p);
 }
 
+/** Convert from uint16_t to ISO 9669 7.3.1 format */
 #define to_731(i)   uint32_to_le(i)
+
+/** Convert from ISO 9660 7.3.1 format to uint32_t */
 #define from_731(i) uint32_from_le(i)
 
+/** Convert from uint32_t to ISO 9669 7.3.2 format */
 #define to_732(i)   uint32_to_be(i)
+
+/** Convert from ISO 9660 7.3.2 format to uint32_t */
 #define from_732(i) uint32_from_be(i)
 
+/** Convert from uint16_t to ISO 9669 7.3.3 format */
 static inline uint64_t
 to_733(uint32_t i)
 {
   return uint64_swap_le_be(i) | i;
 }
 
+/** Convert from ISO 9660 7.3.3 format to uint32_t */
 static inline uint32_t 
 from_733 (uint64_t p)
 {
