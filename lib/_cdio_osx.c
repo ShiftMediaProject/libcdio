@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.27 2004/06/02 00:43:53 rocky Exp $
+    $Id: _cdio_osx.c,v 1.28 2004/06/02 01:01:18 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.27 2004/06/02 00:43:53 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.28 2004/06/02 01:01:18 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -236,7 +236,7 @@ static int
 _get_read_mode1_sector_osx (void *user_data, void *data, lsn_t lsn, 
 			    bool b_form2)
 {
-  return _get_read_mode1_sectors_osx(env, data, lsn, b_form2, 1);
+  return _get_read_mode1_sectors_osx(user_data, data, lsn, b_form2, 1);
 }
 
 /*!
@@ -247,7 +247,7 @@ static int
 _get_read_mode2_sector_osx (void *user_data, void *data, lsn_t lsn, 
 			    bool b_form2)
 {
-  return _get_read_mode2_sectors_osx(env, data, lsn, b_form2, 1);
+  return _get_read_mode2_sectors_osx(user_data, data, lsn, b_form2, 1);
 }
 
 /*!
@@ -527,7 +527,7 @@ _eject_media_osx (void *user_data) {
 static uint32_t 
 _stat_size_osx (void *user_data)
 {
-  return _get_track_lba_osx(env, CDIO_CDROM_LEADOUT_TRACK);
+  return _get_track_lba_osx(user_data, CDIO_CDROM_LEADOUT_TRACK);
 }
 
 /*!
