@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.3 2005/01/01 15:08:48 rocky Exp $
+    $Id: win32_ioctl.c,v 1.4 2005/01/06 16:37:31 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.3 2005/01/01 15:08:48 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.4 2005/01/06 16:37:31 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -380,8 +380,8 @@ read_audio_sectors_win32ioctl (_img_private_t *env, void *data, lsn_t lsn,
     char *psz_msg = NULL;
     long int i_err = GetLastError();
     FORMAT_ERROR(i_err, psz_msg);
-    cdio_info("Error reading audio-mode %lu\n%s)", 
-	      (long unsigned int) lsn, psz_msg);
+    cdio_info("Error reading audio-mode lsn %lu\n%s (%d))", 
+	      (long unsigned int) lsn, psz_msg, i_err);
     LocalFree(psz_msg);
     return 1;
   }

@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.4 2005/01/06 03:38:58 rocky Exp $
+  $Id: scan_devices.c,v 1.5 2005/01/06 16:37:30 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -122,22 +122,8 @@ cdda_find_a_cdrom(int messagedest, char **messages){
 cdrom_drive_t *
 cdda_identify(const char *device, int messagedest,char **messages)
 {
-  struct stat st;
   cdrom_drive_t *d=NULL;
   idmessage(messagedest,messages,"Checking %s for cdrom...",device);
-
-  if(stat(device,&st)){
-    idperror(messagedest,messages,"\tCould not stat %s",device);
-    return(NULL);
-  }
-    
-#ifndef CDDA_TEST
-  if (!S_ISCHR(st.st_mode) &&
-      !S_ISBLK(st.st_mode)){
-    idmessage(messagedest,messages,"\t%s is not a block or character device",device);
-    return(NULL);
-  }
-#endif
 
   d=cdda_identify_cooked(device,messagedest,messages);
 
@@ -174,7 +160,7 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
   CdIo_t *p_cdio = NULL;
 
   device = test_resolve_symlink(dev,messagedest,messages);
-  if ( !device ) return NULL;
+  if ( !device ) device = strdup(dev);
 
   p_cdio = cdio_open(device, DRIVER_UNKNOWN);
   
