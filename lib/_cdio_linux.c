@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.77 2004/07/25 15:29:51 rocky Exp $
+    $Id: _cdio_linux.c,v 1.78 2004/07/25 15:47:11 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.77 2004/07/25 15:29:51 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.78 2004/07/25 15:47:11 rocky Exp $";
 
 #include <string.h>
 
@@ -522,7 +522,7 @@ eject_media_linux (void *p_user_data) {
 }
 
 /*! 
-  Get disc tyhpe associated with cd_obj.
+  Get disc type associated with the cd object.
 */
 static discmode_t
 get_discmode_linux (void *p_user_data)
@@ -534,17 +534,17 @@ get_discmode_linux (void *p_user_data)
   /* See if this is a DVD. */
   cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
 
-  dvd.physical.type = DVD_STRUCT_PHYSICAL;
+  dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
   if (0 == ioctl (p_env->gen.fd, DVD_READ_STRUCT, &dvd)) {
     switch(dvd.physical.layer[0].book_type) {
-    case CDIO_DVD_BOOT_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
+    case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
-    case CDIO_DVD_BOOK_DVD_R:  return CDIO_DISC_MODE_DVD_R;
-    case CDIO_DVD_BOOK_DVD_RW:  return CDIO_DISC_MODE_DVD_RW;
-    case CDIO_DVD_BOOK_DVD_PW:  return CDIO_DISC_MODE_DVD_PR;
+    case CDIO_DVD_BOOK_DVD_R:    return CDIO_DISC_MODE_DVD_R;
+    case CDIO_DVD_BOOK_DVD_RW:   return CDIO_DISC_MODE_DVD_RW;
+    case CDIO_DVD_BOOK_DVD_PW:   return CDIO_DISC_MODE_DVD_PR;
     case CDIO_DVD_BOOK_DVD_PRW:  return CDIO_DISC_MODE_DVD_PRW;
-    default: return CDIO_DISC_MODE_DVD_OTHER;
+    default:                     return CDIO_DISC_MODE_DVD_OTHER;
     }
   }
 
