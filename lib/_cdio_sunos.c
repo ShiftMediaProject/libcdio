@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.36 2004/06/06 10:54:22 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.37 2004/06/06 11:37:59 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -41,7 +41,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.36 2004/06/06 10:54:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.37 2004/06/06 11:37:59 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -698,13 +698,15 @@ _cdio_get_track_green(void *user_data, track_t i_track)
 
 /*!  
   Return the starting MSF (minutes/secs/frames) for track number
-  track_num in obj.  Tracks numbers start at 1.
+  track_num in obj.  Tracks numbers usually start at something 
+  greater than 0, usually 1.
+
   The "leadout" track is specified either by
   using track_num LEADOUT_TRACK or the total tracks+1.
   False is returned if there is no entry.
 */
 static bool
-_cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
+_cdio_get_track_msf(void *user_data, track_t i_track, msf_t *msf)
 {
   _img_private_t *env = user_data;
 
@@ -713,12 +715,13 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
   if (!env->gen.init) _cdio_init(env);
   if (!env->gen.toc_init) _cdio_read_toc (env) ;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) 
+    i_track = TOTAL_TRACKS + FIRST_TRACK_NUM;
 
-  if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
+  if (i_track > (TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM) {
     return false;
   } else {
-    struct cdrom_tocentry *msf0 = &env->tocent[track_num-1];
+    struct cdrom_tocentry *msf0 = &env->tocent[i_track-1];
     msf->m = to_bcd8(msf0->cdte_addr.msf.minute);
     msf->s = to_bcd8(msf0->cdte_addr.msf.second);
     msf->f = to_bcd8(msf0->cdte_addr.msf.frame);
