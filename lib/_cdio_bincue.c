@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.39 2004/02/07 18:53:02 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.40 2004/02/08 02:00:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.39 2004/02/07 18:53:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.40 2004/02/08 02:00:22 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -575,12 +575,13 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
   if (NULL != obj) free(obj);
 
 static void 
-_cdio_bincue_free (void *env) {
-  _img_private_t *_obj = env;
+_cdio_bincue_destroy (void *obj) {
+  _img_private_t *env = obj;
 
-  if (NULL == _obj) return;
-  free_if_notnull(_obj->mcn);
-  cdio_generic_stdio_free(_obj);
+  if (NULL == env) return;
+  free_if_notnull(env->mcn);
+  free(env->cue_name);
+  cdio_generic_stdio_free(env);
 }
 
 /*!
@@ -589,9 +590,6 @@ _cdio_bincue_free (void *env) {
   is the only valid key.
 
   0 is returned if no error was found, and nonzero if there as an error.
-*/
-/*!
-  Set the device to use in I/O operations.
 */
 static int
 _cdio_set_arg (void *env, const char key[], const char value[])
@@ -884,7 +882,7 @@ cdio_open_common (_img_private_t **_data)
 {
   cdio_funcs _funcs = {
     .eject_media        = cdio_generic_bogus_eject_media,
-    .free               = _cdio_bincue_free,
+    .free               = _cdio_bincue_destroy,
     .get_arg            = _cdio_get_arg,
     .get_default_device = cdio_get_default_device_bincue,
     .get_first_track_num= _cdio_get_first_track_num,
