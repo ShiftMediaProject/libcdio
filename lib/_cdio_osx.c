@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.53 2004/08/16 01:04:26 rocky Exp $
+    $Id: _cdio_osx.c,v 1.54 2004/08/16 01:47:49 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.53 2004/08/16 01:04:26 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.54 2004/08/16 01:47:49 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -102,7 +102,6 @@ typedef struct {
   access_mode_t access_mode;
 
   /* Track information */
-  bool toc_init;             /* if true, info below is valid. */
   CDTOC *pTOC;
   int i_descriptors;
   track_t i_last_track;      /* highest track number */
@@ -757,7 +756,7 @@ read_toc_osx (void *p_user_data)
       cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i_leadout].p ));
   }
 
-  p_env->toc_init   = true;
+  p_env->gen.toc_init   = true;
 
   return( true ); 
 
@@ -775,7 +774,7 @@ _get_track_lba_osx(void *user_data, track_t i_track)
 {
   _img_private_t *p_env = user_data;
 
-  if (!p_env->toc_init) read_toc_osx (p_env) ;
+  if (!p_env->gen.toc_init) read_toc_osx (p_env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = p_env->i_last_track+1;
 
@@ -876,7 +875,7 @@ _get_first_track_num_osx(void *user_data)
 {
   _img_private_t *p_env = user_data;
   
-  if (!p_env->toc_init) read_toc_osx (p_env) ;
+  if (!p_env->gen.toc_init) read_toc_osx (p_env) ;
 
   return p_env->i_first_track;
 }
@@ -910,7 +909,7 @@ _get_num_tracks_osx(void *user_data)
 {
   _img_private_t *p_env = user_data;
   
-  if (!p_env->toc_init) read_toc_osx (p_env) ;
+  if (!p_env->gen.toc_init) read_toc_osx (p_env) ;
 
   return( TOTAL_TRACKS );
 }
@@ -972,7 +971,7 @@ _get_track_green_osx(void *user_data, track_t i_track)
   _img_private_t *p_env = user_data;
   CDTrackInfo a_track;
 
-  if (!p_env->toc_init) read_toc_osx (p_env) ;
+  if (!p_env->gen.toc_init) read_toc_osx (p_env) ;
 
   if ( i_track > p_env->i_last_track || i_track < p_env->i_first_track )
     return false;
@@ -1227,6 +1226,7 @@ cdio_open_osx (const char *psz_orig_source)
   _data->access_mode    = _AM_OSX;
   _data->gen.init       = false;
   _data->gen.fd         = -1;
+  _data->gen.toc_init   = false;
   _data->gen.b_cdtext_init  = false;
   _data->gen.b_cdtext_error = false;
 
