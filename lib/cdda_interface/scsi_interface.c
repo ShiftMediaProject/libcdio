@@ -1,5 +1,5 @@
 /*
-  $Id: scsi_interface.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: scsi_interface.c,v 1.2 2004/12/19 01:43:38 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -35,6 +35,7 @@
 #include "common_interface.h"
 #include "utils.h"
 #include <cdio/scsi_mmc.h>
+#include <cdio/bytesex.h>
 
 /* hook */
 static int 
@@ -504,7 +505,7 @@ static int
 scsi_read_toc (cdrom_drive_t *d)
 {
   int i,first,last;
-  unsigned tracks;
+  track_t i_tracks;
 
   /* READTOC, MSF format flag, res, res, res, res, Start track, len msb,
      len lsb, flags */
@@ -521,7 +522,7 @@ scsi_read_toc (cdrom_drive_t *d)
 
   first=d->sg_buffer[2];
   last=d->sg_buffer[3];
-  tracks=last-first+1;
+  i_tracks=last-first+1;
 
   if (last > MAXTRK || first > MAXTRK || last<0 || first<0) {
     cderror(d,"003: CDROM reporting illegal number of tracks\n");
@@ -572,8 +573,8 @@ scsi_read_toc (cdrom_drive_t *d)
 	 (toc->start_LSB));
   }
 
-  d->cd_extra = FixupTOC(d,tracks+1); /* include lead-out */
-  return(tracks);
+  d->cd_extra = FixupTOC(d,i_tracks+1); /* include lead-out */
+  return(i_tracks);
 }
 
 /* a contribution from Boris for IMS cdd 522 */
@@ -584,7 +585,7 @@ scsi_read_toc2 (cdrom_drive_t *d)
   u_int32_t foo,bar;
 
   int i;
-  unsigned tracks;
+  track_t i_tracks;
 
   memcpy(d->sg_buffer, (char[]){ 0xe5, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 10);
   d->sg_buffer[5]=1;
@@ -596,13 +597,13 @@ scsi_read_toc2 (cdrom_drive_t *d)
   }
 
   /* copy to our structure and convert start sector */
-  tracks = d->sg_buffer[1];
-  if (tracks > MAXTRK) {
+  i_tracks = d->sg_buffer[1];
+  if (i_tracks > MAXTRK) {
     cderror(d,"003: CDROM reporting illegal number of tracks\n");
     return(-3);
   }
 
-  for (i = 0; i < tracks; i++){
+  for (i = 0; i < i_tracks; i++){
     memcpy(d->sg_buffer, (char[]){ 0xe5, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 10);
     d->sg_buffer[5]=i+1;
     d->sg_buffer[8]=255;
@@ -626,8 +627,8 @@ scsi_read_toc2 (cdrom_drive_t *d)
   d->disc_toc[i].bTrack = i + 1;
   memcpy (&foo, d->sg_buffer+2, 4);
   memcpy (&bar, d->sg_buffer+6, 4);
-  d->disc_toc[i].dwStartSector = d->adjust_ssize * (be32_to_cpu(foo) +
-						    be32_to_cpu(bar));
+  d->disc_toc[i].dwStartSector = 
+    d->adjust_ssize * (UINT32_FROM_BE(foo) + UINT32_FROM_BE(bar));
 
   d->disc_toc[i].dwStartSector= d->adjust_ssize * 
     ((((signed char)(d->sg_buffer[2])<<24) | 
@@ -641,8 +642,8 @@ scsi_read_toc2 (cdrom_drive_t *d)
        (d->sg_buffer[9]))));
 
 
-  d->cd_extra = FixupTOC(d,tracks+1);
-  return(tracks);
+  d->cd_extra = FixupTOC(d,i_tracks+1);
+  return(i_tracks);
 }
 
 /* These do one 'extra' copy in the name of clean code */
@@ -835,7 +836,7 @@ i_read_mmc3 (cdrom_drive_t *d, void *p, long int begin, long int sectors)
 
 /* straight from the MMC3 spec */
 static inline void 
-LBA_to_MSF(long int lba, unsigned char *M, unsigned char *S, unsigned char *F)
+LBA_to_MSF(lba_t lba, unsigned char *M, unsigned char *S, unsigned char *F)
 {
   if (lba>=-CDIO_PREGAP_SECTORS){
     *M   = ( lba+CDIO_PREGAP_SECTORS)/(CDIO_CD_FRAMES_PER_MIN);

@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: scan_devices.c,v 1.2 2004/12/19 01:43:38 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -86,7 +86,7 @@ cdda_find_a_cdrom(int messagedest, char **messages){
       int j;
       /* try first eight of each device */
       for(j=0;j<4;j++){
-	char *buffer=copystring(cdrom_devices[i]);
+	char *buffer=strdup(cdrom_devices[i]);
 
 	/* number, then letter */
 	
@@ -227,11 +227,11 @@ cdda_identify_cooked(const char *dev, int messagedest,
     break;
   case CDU31A_CDROM_MAJOR:
     /* major indicates this is a cdrom; no ping necessary. */
-    description=copystring("Sony CDU31A or compatible");
+    description=strdup("Sony CDU31A or compatible");
     break;
   case CDU535_CDROM_MAJOR:
     /* major indicates this is a cdrom; no ping necessary. */
-    description=copystring("Sony CDU535 or compatible");
+    description=strdup("Sony CDU535 or compatible");
     break;
 
   case MATSUSHITA_CDROM_MAJOR:
@@ -239,26 +239,26 @@ cdda_identify_cooked(const char *dev, int messagedest,
   case MATSUSHITA_CDROM3_MAJOR:
   case MATSUSHITA_CDROM4_MAJOR:
     /* major indicates this is a cdrom; no ping necessary. */
-    description=copystring("non-ATAPI IDE-style Matsushita/Panasonic CR-5xx or compatible");
+    description=strdup("non-ATAPI IDE-style Matsushita/Panasonic CR-5xx or compatible");
     break;
   case SANYO_CDROM_MAJOR:
-    description=copystring("Sanyo proprietary or compatible: NOT CDDA CAPABLE");
+    description=strdup("Sanyo proprietary or compatible: NOT CDDA CAPABLE");
     break;
   case MITSUMI_CDROM_MAJOR:
   case MITSUMI_X_CDROM_MAJOR:
-    description=copystring("Mitsumi proprietary or compatible: NOT CDDA CAPABLE");
+    description=strdup("Mitsumi proprietary or compatible: NOT CDDA CAPABLE");
     break;
   case OPTICS_CDROM_MAJOR:
-    description=copystring("Optics Dolphin or compatible: NOT CDDA CAPABLE");
+    description=strdup("Optics Dolphin or compatible: NOT CDDA CAPABLE");
     break;
   case AZTECH_CDROM_MAJOR:
-    description=copystring("Aztech proprietary or compatible: NOT CDDA CAPABLE");
+    description=strdup("Aztech proprietary or compatible: NOT CDDA CAPABLE");
     break;
   case GOLDSTAR_CDROM_MAJOR:
-    description=copystring("Goldstar proprietary: NOT CDDA CAPABLE");
+    description=strdup("Goldstar proprietary: NOT CDDA CAPABLE");
     break;
   case CM206_CDROM_MAJOR:
-    description=copystring("Philips/LMS CM206 proprietary: NOT CDDA CAPABLE");
+    description=strdup("Philips/LMS CM206 proprietary: NOT CDDA CAPABLE");
     break;
 
   case SCSI_CDROM_MAJOR:   
@@ -286,7 +286,7 @@ cdda_identify_cooked(const char *dev, int messagedest,
   
   d=calloc(1,sizeof(cdrom_drive_t));
   d->cdda_device_name=device;
-  d->ioctl_device_name=copystring(device);
+  d->ioctl_device_name=strdup(device);
   d->drive_model=description;
   d->drive_type=type;
   d->cdda_fd=fd;
@@ -663,8 +663,8 @@ cdda_identify_scsi(const char *generic_device,
 
   d->drive_model=calloc(36,1);
   memcpy(d->inqbytes,p,4);
-  d->cdda_device_name=copystring(generic_device);
-  d->ioctl_device_name=copystring(ioctl_device);
+  d->cdda_device_name=strdup(generic_device);
+  d->ioctl_device_name=strdup(ioctl_device);
 
   d->drive_model=calloc(36,1);
   strscat(d->drive_model,p+8,8);
@@ -716,15 +716,15 @@ cdrom_drive_t *cdda_identify_test(const char *filename, int messagedest,
   
   d=calloc(1,sizeof(cdrom_drive_t));
 
-  d->cdda_device_name=copystring(filename);
-  d->ioctl_device_name=copystring(filename);
+  d->cdda_device_name=strdup(filename);
+  d->ioctl_device_name=strdup(filename);
   d->drive_type=-1;
   d->cdda_fd=fd;
   d->ioctl_fd=fd;
   d->interface=TEST_INTERFACE;
   d->bigendianp=-1; /* We don't know yet... */
   d->nsectors=-1;
-  d->drive_model=copystring("File based test interface");
+  d->drive_model=strdup("File based test interface");
   idmessage(messagedest,messages,"\t\tCDROM sensed: %s\n",d->drive_model);
   
   return(d);

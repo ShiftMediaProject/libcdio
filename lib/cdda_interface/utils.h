@@ -1,5 +1,5 @@
 /*
-  $Id: utils.h,v 1.2 2004/12/19 00:02:09 rocky Exp $
+  $Id: utils.h,v 1.3 2004/12/19 01:43:38 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -19,89 +19,22 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include <endian.h>
 #include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <cdio/types.h>
-#include <cdio/bytesex.h>
 
 /* I wonder how many alignment issues this is gonna trip in the
    future...  it shouldn't trip any...  I guess we'll find out :) */
 
-static inline int bigendianp(void){
+static inline int 
+bigendianp(void)
+{
   int test=1;
   char *hack=(char *)(&test);
   if(hack[0])return(0);
   return(1);
 }
 
-#if BYTE_ORDER == LITTLE_ENDIAN
-
-static inline int32_t be32_to_cpu(int32_t x){
-  return(UINT32_SWAP_LE_BE_C(x));
-}
-
-static inline int16_t be16_to_cpu(int16_t x){
-  return(UINT16_SWAP_LE_BE_C(x));
-}
-
-static inline int32_t le32_to_cpu(int32_t x){
-  return(x);
-}
-
-static inline int16_t le16_to_cpu(int16_t x){
-  return(x);
-}
-
-#else
-
-static inline int32_t be32_to_cpu(int32_t x){
-  return(x);
-}
-
-static inline int16_t be16_to_cpu(int16_t x){
-  return(x);
-}
-
-static inline int32_t le32_to_cpu(int32_t x){
-  return(UINT32_SWAP_LE_BE_C(x));
-}
-
-static inline int16_t le16_to_cpu(int16_t x){
-  return(UINT16_SWAP_LE_BE_C(x));
-}
-
-
-#endif
-
-static inline int32_t cpu_to_be32(int32_t x){
-  return(be32_to_cpu(x));
-}
-
-static inline int32_t cpu_to_le32(int32_t x){
-  return(le32_to_cpu(x));
-}
-
-static inline int16_t cpu_to_be16(int16_t x){
-  return(be16_to_cpu(x));
-}
-
-static inline int16_t cpu_to_le16(int16_t x){
-  return(le16_to_cpu(x));
-}
-
-static inline char *copystring(const char *s){
-  if(s){
-    char *ret=malloc((strlen(s)+9)*sizeof(char)); /* +9 to get around a linux
-						     libc 5 bug. below too */
-    strcpy(ret,s);
-    return(ret);
-  }
-  return(NULL);
-}
-
-static inline char *catstring(char *buff,const char *s){
+static inline char *
+catstring(char *buff,const char *s){
   if(s){
     if(buff)
       buff=realloc(buff,strlen(buff)+strlen(s)+9);

@@ -1,5 +1,5 @@
 /*
-  $Id: common_interface.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: common_interface.c,v 1.2 2004/12/19 01:43:38 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
@@ -28,6 +28,7 @@
 
 #include <math.h>
 #include "common_interface.h"
+#include <cdio/bytesex.h>
 #include "utils.h"
 #include "smallft.h"
 
@@ -57,11 +58,11 @@ char *atapi_drive_info(int fd){
   if (!(ioctl(fd, HDIO_GET_IDENTITY, id))) {
 
     if(id->model==0 || id->model[0]==0)
-      ret=copystring("Generic Unidentifiable ATAPI CDROM");
+      ret=strdup("Generic Unidentifiable ATAPI CDROM");
     else
-      ret=copystring(id->model);
+      ret=strdup(id->model);
   }else
-    ret=copystring("Generic Unidentifiable CDROM");
+    ret=strdup("Generic Unidentifiable CDROM");
 
   free(id);
   return(ret);
@@ -131,14 +132,23 @@ data_bigendianp(cdrom_drive_t *d)
       if(!zeroflag){
 	int j;
 	
-	for(j=0;j<128;j++)a[j]=le16_to_cpu(buff[j*2+beginsec+460]);
-	for(j=0;j<128;j++)b[j]=le16_to_cpu(buff[j*2+beginsec+461]);
+	for(j=0;j<128;j++)
+	  a[j]=UINT16_FROM_LE(buff[j*2+beginsec+460]);
+	for(j=0;j<128;j++)
+	  b[j]=UINT16_FROM_LE(buff[j*2+beginsec+461]);
+
 	fft_forward(128,a,NULL,NULL);
 	fft_forward(128,b,NULL,NULL);
-	for(j=0;j<128;j++)lsb_energy+=fabs(a[j])+fabs(b[j]);
+
+	for(j=0;j<128;j++)
+	  lsb_energy+=fabs(a[j])+fabs(b[j]);
 	
-	for(j=0;j<128;j++)a[j]=be16_to_cpu(buff[j*2+beginsec+460]);
-	for(j=0;j<128;j++)b[j]=be16_to_cpu(buff[j*2+beginsec+461]);
+	for(j=0;j<128;j++)
+	  a[j]=UINT16_FROM_BE(buff[j*2+beginsec+460]);
+
+	for(j=0;j<128;j++)
+	  b[j]=UINT16_FROM_BE(buff[j*2+beginsec+461]);
+
 	fft_forward(128,a,NULL,NULL);
 	fft_forward(128,b,NULL,NULL);
 	for(j=0;j<128;j++)msb_energy+=fabs(a[j])+fabs(b[j]);
@@ -193,20 +203,20 @@ data_bigendianp(cdrom_drive_t *d)
    knows the leadoud/leadin size. */
 
 int 
-FixupTOC(cdrom_drive_t *d,int tracks)
+FixupTOC(cdrom_drive_t *d, track_t i_tracks)
 {
   struct cdrom_multisession ms_str;
   int j;
   
   /* First off, make sure the 'starting sector' is >=0 */
   
-  for(j=0;j<tracks;j++){
+  for(j=0;j<i_tracks;j++){
     if(d->disc_toc[j].dwStartSector<0){
       cdmessage(d,"\n\tTOC entry claims a negative start offset: massaging"
 		".\n");
       d->disc_toc[j].dwStartSector=0;
     }
-    if(j<tracks-1 && d->disc_toc[j].dwStartSector>
+    if(j<i_tracks-1 && d->disc_toc[j].dwStartSector>
        d->disc_toc[j+1].dwStartSector){
       cdmessage(d,"\n\tTOC entry claims an overly large start offset: massaging"
 		".\n");
@@ -218,7 +228,7 @@ FixupTOC(cdrom_drive_t *d,int tracks)
      Flag things that are blatant/stupid/wrong */
   {
     long last=d->disc_toc[0].dwStartSector;
-    for(j=1;j<tracks;j++){
+    for(j=1;j<i_tracks;j++){
       if(d->disc_toc[j].dwStartSector<last){
 	cdmessage(d,"\n\tTOC entries claim non-increasing offsets: massaging"
 		  ".\n");
@@ -245,7 +255,7 @@ FixupTOC(cdrom_drive_t *d,int tracks)
 
       /* believe the multisession offset :-) */
       /* adjust end of last audio track to be in the first session */
-      for (j = tracks-1; j >= 0; j--) {
+      for (j = i_tracks-1; j >= 0; j--) {
 	if (j > 0 && !IS_AUDIO(d,j) && IS_AUDIO(d,j-1)) {
 	  if ((d->disc_toc[j].dwStartSector > ms_str.addr.lba - 11400) &&
 	      (ms_str.addr.lba - 11400 > d->disc_toc[j-1].dwStartSector))

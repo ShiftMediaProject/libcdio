@@ -1,5 +1,6 @@
 /*
- * Copyright: GNU Public License 2 applies
+ * Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+ *           (C) 1998 Monty <xiphmont@mit.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -15,8 +16,6 @@
  *   along with this program; if not, write to the Free Software
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
- *           (C) 1998 Monty <xiphmont@mit.edu>
  *
  * See ChangeLog for recent changes.
  *
@@ -70,6 +69,17 @@
 
 extern int verbose;
 extern int quiet;
+
+/* I wonder how many alignment issues this is gonna trip in the
+   future...  it shouldn't trip any...  I guess we'll find out :) */
+
+static int bigendianp(void)
+{
+  int test=1;
+  char *hack=(char *)(&test);
+  if(hack[0])return(0);
+  return(1);
+}
 
 static long parse_offset(cdrom_drive_t *d, char *offset, int begin){
   long track=-1;
@@ -196,7 +206,7 @@ static long parse_offset(cdrom_drive_t *d, char *offset, int begin){
 
 static void display_toc(cdrom_drive_t *d){
   long audiolen=0;
-  int i;
+  track_t i;
   report("\nTable of contents (audio tracks only):\n"
 	 "track        length               begin        copy pre ch\n"
 	 "===========================================================");
@@ -642,21 +652,6 @@ struct option options [] = {
 	{NULL,0,NULL,0}
 };
 
-long blocking_write(int outf, char *buffer, long num){
-  long words=0,temp;
-
-  while(words<num){
-    temp=write(outf,buffer+words,num-words);
-    if(temp==-1){
-      if(errno!=EINTR && errno!=EAGAIN)
-	return(-1);
-      temp=0;
-    }
-    words+=temp;
-  }
-  return(0);
-}
-
 static cdrom_drive_t *d=NULL;
 static cdrom_paranoia_t *p=NULL;
 
@@ -665,22 +660,25 @@ static void cleanup(void){
   if(d)cdda_close(d);
 }
 
-int main(int argc,char *argv[]){
-  int toc_bias=0;
-  int toc_offset=0;
-  int sample_offset=0;
-  int force_cdrom_endian=-1;
-  int force_cdrom_sectors=-1;
-  int force_cdrom_overlap=-1;
-  char *force_cdrom_device=NULL;
-  char *force_generic_device=NULL;
-  int force_cdrom_speed=-1;
-  int max_retries=20;
-  char *span=NULL;
-  int output_type=1; /* 0=raw, 1=wav, 2=aifc */
-  int output_endian=0; /* -1=host, 0=little, 1=big */
-  int query_only=0;
-  int batch=0,i;
+int 
+main(int argc,char *argv[])
+{
+  int   toc_bias             =  0;
+  int   toc_offset           =  0;
+  int   sample_offset        =  0;
+  int   force_cdrom_endian   = -1;
+  int   force_cdrom_sectors  = -1;
+  int   force_cdrom_overlap  = -1;
+  char *force_cdrom_device   = NULL;
+  char *force_generic_device = NULL;
+  int   force_cdrom_speed    = -1;
+  int   max_retries          = 20;
+  char *span                 = NULL;
+  int   output_type          = 1; /* 0=raw, 1=wav, 2=aifc */
+  int   output_endian        = 0; /* -1=host, 0=little, 1=big */
+  int   query_only           = 0;
+  int   batch                = 0;
+  int   i;
 
   /* full paranoia, but allow skipping */
   int paranoia_mode=PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP; 
@@ -712,11 +710,11 @@ int main(int argc,char *argv[]){
       break;
     case 'd':
       if(force_cdrom_device)free(force_cdrom_device);
-      force_cdrom_device=copystring(optarg);
+      force_cdrom_device=strdup(optarg);
       break;
     case 'g':
       if(force_generic_device)free(force_generic_device);
-      force_generic_device=copystring(optarg);
+      force_generic_device=strdup(optarg);
       break;
     case 'S':
       force_cdrom_speed=atoi(optarg);
@@ -799,7 +797,7 @@ int main(int argc,char *argv[]){
       break;
     case 'i':
       if(info_file)free(info_file);
-      info_file=copystring(info_file);
+      info_file=strdup(info_file);
       break;
     case 'T':
       toc_bias=-1;
@@ -825,7 +823,7 @@ int main(int argc,char *argv[]){
       exit(1);
     }
   }else
-    span=copystring(argv[optind]);
+    span=strdup(argv[optind]);
 
   report(VERSION);
 
@@ -979,6 +977,7 @@ int main(int argc,char *argv[]){
       char *span2=strchr(span,'-');
       if(strrchr(span,'-')!=span2){
 	report("Error parsing span argument");
+	free(span);
 	cdda_close(d);
 	d=NULL;
 	exit(1);
@@ -1322,6 +1321,9 @@ int main(int argc,char *argv[]){
   report("Done.\n\n");
   
   cdda_close(d);
+  if (span) free(span);
+  if (force_cdrom_device) free(force_cdrom_device);
+  if (force_generic_device) free(force_generic_device);
   d=NULL;
   return 0;
 }

@@ -1,5 +1,5 @@
 /*
-  $Id: common_interface.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: common_interface.h,v 1.2 2004/12/19 01:43:38 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -23,12 +23,13 @@
 #define _CDDA_COMMON_INTERFACE_H_
 
 #include "low_interface.h"
+#include <cdio/types.h>
 
-/* Test for presence of a cdrom by pinging with the 'CDROMVOLREAD' ioctl() */
+/** Test for presence of a cdrom by pinging with the 'CDROMVOLREAD' ioctl() */
 extern int ioctl_ping_cdrom(int fd);
 
 extern char *atapi_drive_info(int fd);
 extern int data_bigendianp(cdrom_drive_t *d);
-extern int FixupTOC(cdrom_drive_t *d,int tracks);
+extern int FixupTOC(cdrom_drive_t *d, track_t tracks);
 
 #endif /*_CDDA_COMMON_INTERFACE_H_*/

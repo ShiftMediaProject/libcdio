@@ -12,6 +12,7 @@
 #include "low_interface.h"
 #include "common_interface.h"
 #include "utils.h"
+#include <cdio/bytesex.h>
 
 static void _clean_messages(cdrom_drive_t *d)
 {
@@ -76,7 +77,7 @@ cdda_open(cdrom_drive_t *d)
   /* Some drives happily return a TOC even if there is no disc... */
   {
     int i;
-    for(i=0;i<d->tracks;i++)
+    for(i=0; i<d->tracks; i++)
       if(d->disc_toc[i].dwStartSector<0 ||
 	 d->disc_toc[i+1].dwStartSector==0){
 	d->opened=0;
@@ -115,7 +116,8 @@ long cdda_read(cdrom_drive_t *d, void *buffer, long beginsector, long sectors)
 	  u_int16_t *p=(u_int16_t *)buffer;
 	  long els=sectors*CD_FRAMESIZE_RAW/2;
 	  
-	  for(i=0;i<els;i++)p[i]=UINT16_SWAP_LE_BE_C(p[i]);
+	  for(i=0;i<els;i++)
+	    p[i]=UINT16_SWAP_LE_BE_C(p[i]);
 	}
       }
     }

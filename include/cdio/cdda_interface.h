@@ -1,5 +1,5 @@
 /*
-  $Id: cdda_interface.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: cdda_interface.h,v 1.2 2004/12/19 01:43:38 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -28,6 +28,7 @@
 #define _CDDA_INTERFACE_H_
 
 #include <cdio/paranoia.h>
+#include <cdio/types.h>
 
 #define CD_FRAMESAMPLES (CDIO_CD_FRAMESIZE_RAW / 4)
 

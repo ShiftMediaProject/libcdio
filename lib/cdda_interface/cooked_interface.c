@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: cooked_interface.c,v 1.2 2004/12/19 01:43:38 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -35,7 +35,7 @@ static int
 cooked_readtoc (cdrom_drive_t *d)
 {
   int i;
-  int tracks;
+  track_t i_tracks;
   struct cdrom_tochdr hdr;
   struct cdrom_tocentry entry;
 
@@ -74,9 +74,9 @@ cooked_readtoc (cdrom_drive_t *d)
   d->disc_toc[i].bTrack = entry.cdte_track;
   d->disc_toc[i].dwStartSector = entry.cdte_addr.lba;
 
-  tracks=hdr.cdth_trk1+1;
-  d->cd_extra=FixupTOC(d,tracks);
-  return(--tracks);  /* without lead-out */
+  i_tracks=hdr.cdth_trk1+1;
+  d->cd_extra=FixupTOC(d,i_tracks);
+  return(--i_tracks);  /* without lead-out */
 }
 
 
