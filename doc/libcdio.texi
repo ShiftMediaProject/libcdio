@@ -6,6 +6,7 @@
 @c %**start of header
 @setfilename libcdio.info
 @set libcdio @code{libcdio}
+@set program @kbd{libcdio}
 
 @c A macro for defining terms variables.
 @macro term{varname}
@@ -18,11 +19,11 @@
 
 @dircategory Libraries
 @direntry
-* libcdio: (libcdio).      Compact Disc input and control library.
+* libcdio: (libcdio).      Compact Disc Input and Control Library.
 @end direntry
 
 @ifinfo
-This file documents GNU CD input and control library
+This file documents GNU CD Input and Control Library
 
 Copyright (C) 2003, 2004 Herbert Valerio Riedel @email{<hvr@@gnu.org>}
 and Rocky Bernstein @email{<rocky@@panix.com>}
@@ -42,13 +43,13 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.8 2004/01/29 04:23:38 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.9 2004/02/14 17:04:40 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
 @vskip 0pt plus 1filll
 
-Copyright @copyright{} 2003 Herbert Valerio Riedel
+Copyright @copyright{} 2003, 2004 Herbert Valerio Riedel
 @email{<hvr@@gnu.org>} and Rocky Bernstein @email{<rocky@@panix.com>}
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
@@ -68,18 +69,25 @@ development.''
 @ifnottex
 @node Top, History, (dir), (dir)
 
-@top The GNU Video CD Ripping Program (@value{program})
+@top The GNU Compact Disc Input and Control Library (@value{program})
 
 This file documents GNU CD input and control library
 
-Copyright (C) 2003 Herbert Valerio Riedel and Rocky Bernstein
+Copyright (C) 2003, 2004 Herbert Valerio Riedel and Rocky Bernstein
 
 @menu
-* History::             How this came about
-* Purpose::             Why this library?
-* CD Formats::          A tour through the CD-specification spectrum
-* CD Terms::            Limitations and terminology used in CD's and libcdio
-* How to use::          Okay enough babble, lemme at the library!
+* History::         How this came about
+* Purpose::         Why this library?
+* CD Formats::      A tour through the CD-specification spectrum
+* CD Terms::        Limitations and terminology used in CD's and libcdio
+* How to use::      Okay enough babble, lemme at the library!
+
+Appendices
+* ISO-9660 Character Sets::
+* CD Image Formats::
+* Glossary::          
+* GNU General Public License::
+* GNU Free Documentation License::
 
 Indices
 * General Index::       Overall index
@@ -214,11 +222,21 @@ The specification in the Yellow Book defines two modes: Mode1 and
 Mode2.
 
 @menu
+* ISO 9660::
 * Mode1::           Mode 1 Format
 * Mode2::           Mode 2 Format
 @end menu
 
-@subsection ISO-9660
+@node ISO 9660
+@subsection ISO 9660
+
+
+@menu
+* ISO 9660 Level 1::
+* ISO 9660 Level 2::
+* ISO 9660 Level 3::
+@end menu
+
 The Yellow Book doesn't specify how data is to be stored on a CD-ROM.
 It was feared that different companies would implement proprietary
 data storage formats using this specification, resulting in
@@ -230,20 +248,24 @@ later adopted as ISO the ISO 9660 standard. This standard is further
 broken down into 3 "levels", the higher the level, the more
 permissive.
 
-@subsubsection Level1
+@node ISO 9660 Level 1
+@subsubsection ISO 9660 Level 1
 Level 1 ISO 9660 defines names in the 8+3 convention so familiar to
-MS-DOS: eight characters for the filename, a period, and
-then three characters for the file type, all in upper case. The
-allowed characters are A-Z, 0-9, ".", and "_".Level 1 ISO 9660
-requires that files occupy a contiguous range of sectors. This allows
-a file to be specified with a start block and a count. The maximum
-directory depth is 8.
+MS-DOS: eight characters for the filename, a period, and then three
+characters for the file type, all in upper case. The allowed
+characters are A-Z, 0-9, ".", and "_".Level 1 ISO 9660 requires that
+files occupy a contiguous range of sectors. This allows a file to be
+specified with a start block and a count. The maximum directory depth
+is 8. For a table of the characters, see @xref{ISO-9660 Character
+Sets}.
 
-@subsubsection Level2
+@node ISO 9660 Level 2
+@subsubsection ISO 9660 Level 2
 Level 2 ISO 9660 allows far more flexibility in filenames, but isn't
 usable on some systems, notably MS-DOS.
 
-@subsubsection Level3
+@node ISO 9660 Level 3
+@subsubsection ISO 9660 Level 3
 Level 3 ISO-9660 allows non-contiguous files, useful if the file was
 written in multiple packets with packet-writing software.
 
@@ -490,6 +512,179 @@ device that is right for it.
 
 @emph{Fill out examples for cdio_read_xxx or cdio_seek, More on 
 drivers?.}
+
+@node ISO-9660 Character Sets
+@appendix ISO-9660 Character Sets
+
+For a description of where are used see @xref{ISO 9660 Level1}
+
+@menu
+* ISO646 d-Characters::         
+* ISO646 a-Characters::         
+@end menu
+
+@node ISO646 d-Characters
+@appendixsec ISO646 d-Characters
+
+@example
+  | 0 1 2 3 4 5 6 7 
+--+-----------------
+0 |       0   P     
+1 |       1 A Q     
+2 |       2 B R     
+3 |       3 C S     
+4 |       4 D T     
+5 |       5 E U     
+6 |       6 F V     
+7 |       7 G W     
+8 |       8 H X     
+9 |       9 I Y     
+a |         J Z     
+b |         K       
+c |         L       
+d |         M       
+e |         N       
+f |         O _     
+@end example
+
+@node ISO646 a-Characters
+@appendixsec ISO646 a-Characters
+
+@example
+  | 0 1 2 3 4 5 6 7
+--+-----------------
+0 |       0   P                    
+1 |     ! 1 A Q                    
+2 |     " 2 B R                    
+3 |       3 C S                    
+4 |       4 D T                    
+5 |     % 5 E U                    
+6 |     & 6 F V                    
+7 |     ' 7 G W                    
+8 |     ( 8 H X                    
+9 |     ) 9 I Y                    
+a |     * : J Z                    
+b |     + ; K                      
+c |     , < L                      
+d |     - = M                      
+e |     . > N                      
+f |     / ? O _                    
+@end example
+
+@node CD Image Formats
+@appendix CD Image Formats 
+
+@menu
+* CDRDAO TOC Format::           
+* BIN/CUE Format::              
+* NRG Format::              
+@end menu
+
+@node CDRDAO TOC Format
+@appendixsec CDRDAO TOC Format
+
+This is @command{cdrdao}'s own cd image description format. A snippet
+from the @cite{cdrdao(1) manual page}, which you should refer to for
+more information about this format:
+
+@quotation
+The @emph{toc}-file describes what data is written to the
+@acronym{CD-R} and allows control over track/index positions, pre-gaps
+and sub-channel information.  It is a simple text file, use your
+favorite text editor to create it.
+@end quotation
+
+We don't support this image format currently, but intend to in the
+future. Anyone want to volunteer? 
+
+@node  BIN/CUE Format
+@appendixsec BIN/CUE Format
+@cindex BIN/CUE, CD Image Format
+
+The format referred to as @emph{BIN/CUE Format} in this manual is a
+popular CD image format used in the @acronym{PC} world. Not unlike
+@command{cdrdao}'s toc file, the @emph{cue} file describes the track
+layout, i.e. how the sectors are to be placed on the CD media. The
+@emph{cue} file usually contains a reference to a file traditionally
+having the @file{.bin} extension in its filename, the @emph{bin}
+file. This @emph{bin} file contains the sector data payload which is
+to be written to the CD medium according to the description in the
+@emph{cue} file.
+
+The following is an attempt to describe the subset of the @file{.cue} 
+file syntax as used in vcdimager in an EBNF-like notation:
+
+@example
+@cartouche
+<cue-document> ::= +( <file-line> +<track-expr> )
+
+<digit> ::= "0" | "1" ... "8" | "9"
+<number> ::= +<digit>
+<msf> ::= <digit><digit> ":" <digit><digit> ":" <digit><digit>
+
+<file-line> ::= "FILE" <pathname-expr> <file-type> <EOL>
+
+<pathname-expr> ::= [ "\"" ] <pathname-str-without-spaces> [ "\"" ] 
+                  | "\"" <pathname-str> "\""  
+
+<file-type> ::= "BINARY" 
+
+<track-expr> ::= <track-line> [ <flag-line> ]
+                 [ <pregap-line> ] *<index-line> [ <postgap-line> ]
+
+<flag-line> ::= "FLAGS" *<flag-type> <EOL>
+<flag-type> ::= "DCP"
+
+<track-line> ::= "TRACK" <number> <track-type> <EOL>
+
+<pregap-line> ::= "PREGAP" <msf> <EOL>
+
+<index-line> ::= "INDEX" <number> <msf> <EOL>
+
+<postgap-line> ::= "POSTGAP" <msf> <EOL>
+
+<track-type> ::= "AUDIO" | "MODE1/2048" | "MODE1/2352" 
+               | "MODE2/2336" | "MODE2/2352"
+
+<comment-line> ::= "REM" *<char> <EOL>
+@end cartouche
+@end example
+
+@node  NRG Format
+@appendixsec NRG Format
+@cindex NRG, CD Image Format
+
+The format referred to as @emph{NRG Format} in this manual is another
+popular CD image format. It is available only on using Nero software
+on a Microsoft Windows Operating System. It is proprietary and not
+generally published, so the information we have comes from guessing
+based on sample CD images. So support for this is incomplete and using
+this format is not recommended.
+
+Unlike @command{cdrdao}'s TOC file the BIN/CUE format everything is
+contained in one file. that one can edit Meta information such as the
+number of tracks and track format is contained at the end of the
+file. This information is not inteded to be edited through a text
+editor.
+
+@node Glossary, GNU General Public License, CD Image Formats, Top
+@appendix Glossary
+
+@include glossary.texi
+
+@node GNU General Public License
+@appendix GNU General Public License
+@cindex GPL, GNU General Public License
+@center Version 2, June 1991
+
+@include gpl.texi
+
+@node GNU Free Documentation License
+@appendix GNU Free Documentation License
+@cindex FDL, GNU Free Documentation License
+@center Version 1.1, March 2000
+
+@include fdl.texi
 
 @node General Index
 @unnumbered General Index
