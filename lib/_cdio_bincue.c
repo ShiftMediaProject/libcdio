@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.35 2003/10/03 02:36:52 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.36 2003/10/03 07:55:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.35 2003/10/03 02:36:52 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.36 2003/10/03 07:55:00 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -769,11 +769,11 @@ _cdio_get_track_green(void *env, track_t track_num)
 }
 
 /*!  
-  Return the starting MSF (minutes/secs/frames) for track number
-  track_num in obj.  Tracks numbers start at 1.
+  Return the starting LSN track number
+  track_num in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
   using track_num LEADOUT_TRACK or the total tracks+1.
-  1 is returned on error.
+  False is returned if there is no track entry.
 */
 static lba_t
 _cdio_get_track_lba(void *env, track_t track_num)

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.18 2003/10/03 04:36:51 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.19 2003/10/03 07:55:01 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.18 2003/10/03 04:36:51 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.19 2003/10/03 07:55:01 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -77,7 +77,7 @@ typedef struct {
   /* Track information */
   bool toc_init;                         /* if true, info below is valid. */
   struct ioc_toc_header  tochdr;
-  struct ioc_read_toc_single_entry tocent[100]; /* entry info for each track */
+  struct cd_toc_entry tocent[100];       /* entry info for each track */
 
 } _img_private_t;
 
@@ -117,18 +117,6 @@ cdio_is_cdrom(char *drive, char *mnttype)
   return(is_cd);
 }
 
-static int 
-_set_bsize (int fd, unsigned int bsize)
-{
-  struct cdrom_generic_command cgc;
-
-  if (ioctl (fd, CDRIOCSETBLOCKSIZE, &bsize) == -1) {
-    cdio_error("error in ioctl(CDRIOCSETBLOCKSIZE): %s\n", strerror(errno));
-    return 0;
-  }
-  return 1;
-}
-
 static int
 _read_mode2 (int fd, void *buf, lba_t lba, unsigned int nblocks, 
 	     bool _workaround)
@@ -161,19 +149,18 @@ static int
 _cdio_read_audio_sectors (void *env, void *data, lsn_t lsn,
 			  unsigned int nblocks)
 {
-  unsigned char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-
-  struct cdrom_cdda cdda;
   _img_private_t *_obj = env;
+  unsigned char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+  struct ioc_read_audio cdda;
 
-  cdda.address.lba = lsn;
+  cdda.address.lba    = lsn;
   cdda.buffer         = buf;
   cdda.nframes        = nblocks;
   cdda.address_format = CD_LBA_FORMAT;
 
   /* read a frame */
-  if(ioctl(_obj->gen.fd, CDROMCDREADAUDIO, &cdda) < 0) {
-    perror("CDROMCDDA");
+  if(ioctl(_obj->gen.fd, CDIOCREADAUDIO, &cdda) < 0) {
+    perror("CDIOCREADAUDIO");
     return 1;
   }
   memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
@@ -187,56 +174,18 @@ _cdio_read_audio_sectors (void *env, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
-		    bool mode2_form2)
+			 bool mode2_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
-  struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
-  msf_t _msf;
+  int retval;
 
-  _img_private_t *_obj = env;
-
-  cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
-  msf->cdmsf_min0 = from_bcd8(_msf.m);
-  msf->cdmsf_sec0 = from_bcd8(_msf.s);
-  msf->cdmsf_frame0 = from_bcd8(_msf.f);
-
-  if (_obj->gen.ioctls_debugged == 75)
-    cdio_debug ("only displaying every 75th ioctl from now on");
-
-  if (_obj->gen.ioctls_debugged == 30 * 75)
-    cdio_debug ("only displaying every 30*75th ioctl from now on");
-  
-  if (_obj->gen.ioctls_debugged < 75 
-      || (_obj->gen.ioctls_debugged < (30 * 75)  
-	  && _obj->gen.ioctls_debugged % 75 == 0)
-      || _obj->ioctls_debugged % (30 * 75) == 0)
-    cdio_debug ("reading %2.2d:%2.2d:%2.2d",
-	       msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
-  
-  _obj->gen.ioctls_debugged++;
- 
- retry:
-  switch (_obj->access_mode)
-    {
-    case _AM_NONE:
-      cdio_error ("no way to read mode2");
-      return 1;
-      break;
-      
-    case _AM_IOCTL:
-      if (ioctl (_obj->gen.fd, CDROMREADMODE2, &buf) == -1)
-	{
-	  perror ("ioctl()");
-	  return 1;
-	  /* exit (EXIT_FAILURE); */
-	}
-      break;
-    }
-
+  if ( (retval = _cdio_read_audio_sectors (env, buf, lsn, 1)) )
+    return retval;
+    
   if (mode2_form2)
-    memcpy (data, buf, M2RAW_SECTOR_SIZE);
+    memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, M2RAW_SECTOR_SIZE);
   else
-    memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
+    memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, CDIO_CD_FRAMESIZE);
   
   return 0;
 }
@@ -283,15 +232,15 @@ _cdio_stat_size (void *env)
   struct ioc_read_toc_single_entry tocent;
   uint32_t size;
 
-  tocent.cdte_track = CDIO_CDROM_LEADOUT_TRACK;
-  tocent.cdte_format = CD_LBA_FORMAT;
-  if (ioctl (_obj->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
+  tocent.track = CDIO_CDROM_LEADOUT_TRACK;
+  tocent.address_format = CD_LBA_FORMAT;
+  if (ioctl (_obj->gen.fd, CDIOREADTOCENTRY, &tocent) == -1)
     {
       perror ("ioctl(CDROMREADTOCENTRY)");
       exit (EXIT_FAILURE);
     }
 
-  size = tocent.cdte_addr.lba;
+  size = tocent.entry.addr.lba;
 
   return size;
 }
@@ -337,12 +286,12 @@ _cdio_read_toc (_img_private_t *_obj)
   struct ioc_read_toc_entry te;
 
   /* read TOC header */
-  if ( ioctl(_obj->gen.fd, CDROMREADTOCHDR, &_obj->tochdr) == -1 ) {
-    cdio_error("error in ioctl(CDROMREADTOCHDR): %s\n", strerror(errno));
+  if ( ioctl(_obj->gen.fd, CDIOREADTOCHEADER, &_obj->tochdr) == -1 ) {
+    cdio_error("error in ioctl(CDIOREADTOCHEADER): %s\n", strerror(errno));
     return false;
   }
 
-  te.address_format = CD_MSF_FORMAT;
+  te.address_format = CD_LBA_FORMAT;
   te.starting_track = 0;
   te.data_len = (TOTAL_TRACKS+1) * sizeof(struct cd_toc_entry);
 
@@ -350,7 +299,7 @@ _cdio_read_toc (_img_private_t *_obj)
   
   if ( ioctl(_obj->gen.fd, CDIOREADTOCENTRYS, &te) == -1 ) {
     cdio_error("%s %d: %s\n",
-	       "error in ioctl CDROMREADTOCENTRY for track", 
+	       "error in ioctl CDROMREADTOCENTRYS for track", 
 	       i, strerror(errno));
     return false;
   }
@@ -366,7 +315,6 @@ _cdio_eject_media (void *env) {
 
   _img_private_t *_obj = env;
   int ret=2;
-  int status;
   int fd;
 
   if ((fd = open(_obj->gen.source_name, O_RDONLY|O_NONBLOCK)) > -1) {
@@ -374,7 +322,7 @@ _cdio_eject_media (void *env) {
     if (ioctl(fd, CDIOCALLOW) == -1) {
       cdio_error("ioctl(fd, CDIOCALLOW) failed: %s\n", strerror(errno));
     } else if (ioctl(fd, CDIOCEJECT) == -1) {
-      cdio_error("ioctl(CDIOCEJECT) failed: %s\n" strerror(errno));
+      cdio_error("ioctl(CDIOCEJECT) failed: %s\n", strerror(errno));
     } else {
       ret = 0;
     }
@@ -420,6 +368,42 @@ _cdio_get_first_track_num(void *env)
 }
 
 /*!
+  Return the media catalog number MCN.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+  FIXME: This is just a guess. 
+
+ */
+static char *
+_cdio_get_mcn (void *env) {
+
+  _img_private_t *_obj = env;
+  struct ioc_read_subchannel subchannel;
+  struct cd_sub_channel_info subchannel_info;
+
+  subchannel.address_format = CD_LBA_FORMAT;
+  subchannel.data_format    = CD_MEDIA_CATALOG;
+  subchannel.track          = 0;
+  subchannel.data_len       = 1;
+  subchannel.data           = &subchannel_info;
+
+  if(ioctl(_obj->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
+    perror("CDIOCREADSUBCHANNEL");
+    return NULL;
+  }
+
+  /* Probably need a loop over tracks rather than give up if we 
+     can't find in track 0.
+   */
+  if (subchannel_info.what.media_catalog.mc_valid)
+    return strdup(subchannel_info.what.media_catalog.mc_number);
+  else 
+    return NULL;
+}
+
+/*!
   Return the number of tracks in the current medium.
   CDIO_INVALID_TRACK is returned on error.
 */
@@ -435,27 +419,37 @@ _cdio_get_num_tracks(void *env)
 
 /*!  
   Get format of track. 
+
+  FIXME: We're just guessing this from the GNU/Linux code.
+  
 */
 static track_format_t
 _cdio_get_track_format(void *env, track_t track_num) 
 {
   _img_private_t *_obj = env;
+  struct ioc_read_subchannel subchannel;
+  struct cd_sub_channel_info subchannel_info;
+
+  subchannel.address_format = CD_LBA_FORMAT;
+  subchannel.data_format    = CD_CURRENT_POSITION;
+  subchannel.track          = track_num;
+  subchannel.data_len       = 1;
+  subchannel.data           = &subchannel_info;
+
+  if(ioctl(_obj->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
+    perror("CDIOCREADSUBCHANNEL");
+    return 1;
+  }
   
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
-
-  if (track_num > TOTAL_TRACKS || track_num == 0)
-    return TRACK_FORMAT_ERROR;
-
-  if (_obj->tocent[track_num-1].entry.control & CDROM_DATA_TRACK) {
-    if (_obj->tocent[track_num-1].cdte_format == 0x10)
+  if (subchannel_info.what.position.control == 0x04) {
+    if (subchannel_info.what.position.data_format == 0x10)
       return TRACK_FORMAT_CDI;
-    else if (_obj->tocent[track_num-1].cdte_format == 0x20) 
+    else if (subchannel_info.what.position.data_format == 0x20) 
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;
   } else
     return TRACK_FORMAT_AUDIO;
-  
 }
 
 /*!
@@ -470,46 +464,46 @@ static bool
 _cdio_get_track_green(void *env, track_t track_num) 
 {
   _img_private_t *_obj = env;
+  struct ioc_read_subchannel subchannel;
+  struct cd_sub_channel_info subchannel_info;
+
+  subchannel.address_format = CD_LBA_FORMAT;
+  subchannel.data_format    = CD_CURRENT_POSITION;
+  subchannel.track          = track_num;
+  subchannel.data_len       = 1;
+  subchannel.data           = &subchannel_info;
+
+  if(ioctl(_obj->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
+    perror("CDIOCREADSUBCHANNEL");
+    return 1;
+  }
   
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
-
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
-
-  if (track_num > TOTAL_TRACKS+1 || track_num == 0)
-    return false;
-
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cdinfo for a while.
    */
-  return ((_obj->tocent[track_num-1].cdte_ctrl & 2) != 0);
+  return (subchannel_info.what.position.control & 2) != 0;
 }
 
 /*!  
-  Return the starting MSF (minutes/secs/frames) for track number
+  Return the starting LSN track number
   track_num in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
   using track_num LEADOUT_TRACK or the total tracks+1.
   False is returned if there is no track entry.
 */
-static bool
-_cdio_get_track_msf(void *env, track_t track_num, msf_t *msf)
+static lba_t
+_cdio_get_track_lba(void *env, track_t track_num)
 {
   _img_private_t *_obj = env;
-
-  if (NULL == msf) return false;
 
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
   if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
 
   if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
-    return false;
+    return CDIO_INVALID_LBA;
   } else {
-    struct cdrom_msf0  *msf0= &_obj->tocent[track_num-1].cdte_addr.msf;
-    msf->m = to_bcd8(msf0->minute);
-    msf->s = to_bcd8(msf0->second);
-    msf->f = to_bcd8(msf0->frame);
-    return true;
+    return _obj->tocent[track_num-1].addr.lba;
   }
 }
 
@@ -588,15 +582,15 @@ cdio_open_freebsd (const char *source_name)
     .eject_media        = _cdio_eject_media,
     .free               = cdio_generic_free,
     .get_arg            = _cdio_get_arg,
-    .get_default_device = _cdio_get_default_device_freebsd,
+    .get_default_device = cdio_get_default_device_freebsd,
     .get_devices        = cdio_get_devices_freebsd,
     .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = NULL,
+    .get_mcn            = _cdio_get_mcn,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,
-    .get_track_lba      = NULL, /* This could be implemented if need be. */
-    .get_track_msf      = _cdio_get_track_msf,
+    .get_track_lba      = _cdio_get_track_lba, 
+    .get_track_msf      = NULL,
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
     .read_audio_sectors = _cdio_read_audio_sectors,
@@ -617,7 +611,7 @@ cdio_open_freebsd (const char *source_name)
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;
 
-  if (_cdio_generic_init(_data))
+  if (cdio_generic_init(_data))
     return ret;
   else {
     cdio_generic_free (_data);
@@ -639,5 +633,3 @@ cdio_have_freebsd (void)
   return false;
 #endif /* HAVE_FREEBSD_CDROM */
 }
-
-

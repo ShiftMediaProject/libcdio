@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.54)
-AC_REVISION([$Id: configure.ac,v 1.48 2003/09/29 02:56:22 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.49 2003/10/03 07:54:58 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
 AM_CONFIG_HEADER(config.h)
@@ -250,17 +250,23 @@ int has_timeout=sizeof(test.timeout);],
  	LIBS="$LIBS -lwinmm -mwindows"
   	cd_drivers="${cd_drivers}, MinGW "
 	;;
+     freebsd4.9)
+     	AC_DEFINE([HAVE_FREEBSD_CDROM], [1], 
+                  [Define 1 if you have FreeBSD CD-ROM support])
+  	cd_drivers="${cd_drivers}, FreeBSD "
+	;;
      *)
 	AC_MSG_WARN(Don't have OS CD-reading support for ${host_os}...)
 	AC_MSG_WARN(Will use generic support.)
 	;;
 esac
 AC_SUBST(LINUX_CDROM_TIMEOUT)
-AC_SUBST(HAVE_LINUX_CDROM)
 AC_SUBST(HAVE_BSDI_CDROM)
+AC_SUBST(HAVE_DARWIN_CDROM)
+AC_SUBST(HAVE_FREEBSD_CDROM)
+AC_SUBST(HAVE_LINUX_CDROM)
 AC_SUBST(HAVE_SOLARIS_CDROM)
 AC_SUBST(HAVE_WIN32_CDROM)
-AC_SUBST(HAVE_DARWIN_CDROM)
 
 AC_CHECK_FUNCS( bzero memcpy )
 
