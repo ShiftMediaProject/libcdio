@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.7 2005/01/06 03:38:58 rocky Exp $
+  $Id: interface.c,v 1.8 2005/01/08 20:39:40 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -53,7 +53,6 @@ cdda_close(cdrom_drive_t *d)
     _clean_messages(d);
     if (d->cdda_device_name) free(d->cdda_device_name);
     if (d->drive_model)      free(d->drive_model);
-    if (d->sg)               free(d->sg);
     
     free(d);
   }

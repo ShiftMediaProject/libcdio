@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.6 2005/01/08 00:56:09 rocky Exp $
+  $Id: scan_devices.c,v 1.7 2005/01/08 20:39:40 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -156,6 +156,11 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
 {
 
   cdrom_drive_t *d=NULL;
+  struct stat st;
+#ifdef HAVE_LINUX_MAJOR_H
+  int drive_type = 0;
+#endif
+  char *description=NULL;
   char *device = NULL;
   CdIo_t *p_cdio = NULL;
 
@@ -172,11 +177,78 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
     return NULL;
   }
   
+#ifdef HAVE_LINUX_MAJOR_H
+  if ( 0 == stat(device, &st) ) {
+    if (S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode)) {
+      drive_type=(int)(st.st_rdev>>8);
+      switch (drive_type) {
+      case IDE0_MAJOR:
+      case IDE1_MAJOR:
+      case IDE2_MAJOR:
+      case IDE3_MAJOR:
+	/* Yay, ATAPI... */
+	description=strdup("ATAPI compatible ");
+	break;
+      case CDU31A_CDROM_MAJOR:
+	/* major indicates this is a cdrom; no ping necessary. */
+	description=strdup("Sony CDU31A or compatible");
+	break;
+      case CDU535_CDROM_MAJOR:
+	/* major indicates this is a cdrom; no ping necessary. */
+	description=strdup("Sony CDU535 or compatible");
+	break;
+	
+      case MATSUSHITA_CDROM_MAJOR:
+      case MATSUSHITA_CDROM2_MAJOR:
+      case MATSUSHITA_CDROM3_MAJOR:
+      case MATSUSHITA_CDROM4_MAJOR:
+	/* major indicates this is a cdrom; no ping necessary. */
+	description=strdup("non-ATAPI IDE-style Matsushita/Panasonic CR-5xx or compatible");
+	break;
+      case SANYO_CDROM_MAJOR:
+	description=strdup("Sanyo proprietary or compatible: NOT CDDA CAPABLE");
+	break;
+      case MITSUMI_CDROM_MAJOR:
+      case MITSUMI_X_CDROM_MAJOR:
+	description=strdup("Mitsumi proprietary or compatible: NOT CDDA CAPABLE");
+	break;
+      case OPTICS_CDROM_MAJOR:
+	description=strdup("Optics Dolphin or compatible: NOT CDDA CAPABLE");
+	break;
+      case AZTECH_CDROM_MAJOR:
+	description=strdup("Aztech proprietary or compatible: NOT CDDA CAPABLE");
+	break;
+      case GOLDSTAR_CDROM_MAJOR:
+	description=strdup("Goldstar proprietary: NOT CDDA CAPABLE");
+	break;
+      case CM206_CDROM_MAJOR:
+	description=strdup("Philips/LMS CM206 proprietary: NOT CDDA CAPABLE");
+	break;
+	
+      case SCSI_CDROM_MAJOR:   
+      case SCSI_GENERIC_MAJOR: 
+	/* Nope nope nope */
+	idmessage(messagedest,messages,"\t\t%s is not a cooked ioctl CDROM.",
+		  device);
+	free(device);
+	return(NULL);
+      default:
+	/* What the hell is this? */
+	idmessage(messagedest,messages,"\t\t%s is not a cooked ioctl CDROM.",
+		  device);
+	free(device);
+	return(NULL);
+      }
+    }
+  }
+#endif /* HAVE_LINUX_MAJOR_H */
+
   /* Minimum init */
   
   d=calloc(1,sizeof(cdrom_drive_t));
-  d->p_cdio = p_cdio;
+  d->p_cdio           = p_cdio;
   d->cdda_device_name = device;
+  d->drive_type       = drive_type;
   d->interface        = COOKED_IOCTL;
   d->bigendianp       = -1; /* We don't know yet... */
   d->nsectors         = -1;
@@ -185,27 +257,18 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
     cdio_hwinfo_t hw_info;
 
     if ( scsi_mmc_get_hwinfo( p_cdio, &hw_info ) ) {
-      d->drive_model=calloc(38,1);
-      snprintf(d->drive_model, 38, "%s %s %s", 
+      d->drive_model=calloc(36,1);
+      snprintf(d->drive_model, 36, "%s%s%s ", 
 	       hw_info.psz_vendor, hw_info.psz_model, hw_info.psz_revision );
+      catstring(d->drive_model, description);
       idmessage(messagedest,messages,"\t\tCDROM sensed: %s\n", 
 		d->drive_model);
+      if (description) free(description);
     }
   }
   
   return(d);
 }
-
-struct  sg_id {
-  long    l1; /* target | lun << 8 | channel << 16 | low_ino << 24 */
-  long    l2; /* Unique id */
-} sg_id;
-
-typedef struct scsiid{
-  int bus;
-  int id;
-  int lun;
-} scsiid;
 
 #ifdef CDDA_TEST
 

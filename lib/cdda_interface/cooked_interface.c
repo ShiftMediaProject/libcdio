@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.6 2005/01/06 03:38:58 rocky Exp $
+  $Id: cooked_interface.c,v 1.7 2005/01/08 20:39:40 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -171,7 +171,7 @@ verify_read_command(cdrom_drive_t *d)
 
 #include "drive_exceptions.h"
 
-#if CHECK_EXCEPTIONS_FIXED
+#ifdef HAVE_LINUX_MAJOR_H
 static void 
 check_exceptions(cdrom_drive_t *d, const exception_t *list)
 {
@@ -185,14 +185,14 @@ check_exceptions(cdrom_drive_t *d, const exception_t *list)
     i++;
   }
 }
-#endif
+#endif /* HAVE_LINUX_MAJOR_H */
 
 /* set function pointers to use the ioctl routines */
 int 
 cooked_init_drive (cdrom_drive_t *d){
   int ret;
 
-#if BUFSIZE_DETERMINATION_FIXED
+#if HAVE_LINUX_MAJOR_H
   switch(d->drive_type){
   case MATSUSHITA_CDROM_MAJOR:	/* sbpcd 1 */
   case MATSUSHITA_CDROM2_MAJOR:	/* sbpcd 2 */
@@ -203,6 +203,8 @@ cooked_init_drive (cdrom_drive_t *d){
     cdmessage(d,"Attempting to set sbpcd buffer size...\n");
 
     d->nsectors=8;
+
+#if BUFSIZE_DETERMINATION_FIXED
     while(1){
 
       /* this ioctl returns zero on error; exactly wrong, but that's
@@ -226,6 +228,7 @@ cooked_init_drive (cdrom_drive_t *d){
 	break;
       }
     }
+#endif /* BUFSIZE_DETERMINATION_FIXED */
 
     break;
   case IDE0_MAJOR:
@@ -241,18 +244,9 @@ cooked_init_drive (cdrom_drive_t *d){
 
     break;
   default:
-    d->nsectors=40; 
+    d->nsectors=25;  /* The max for SCSI MMC2 */
   }
-#else 
-  {
-    char buffer[256];
-    d->nsectors = 8; 
-    sprintf(buffer,"\tSetting read block size at %d sectors (%ld bytes).\n",
-	    d->nsectors,(long)d->nsectors*CDIO_CD_FRAMESIZE_RAW);
-    cdmessage(d,buffer);
-  }
-  
-#endif
+#endif /*HAVE_LINUX_MAJOR_H*/
 
   d->enable_cdda = Dummy;
   d->read_audio = cooked_read;

@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.2 2005/01/06 23:34:13 rocky Exp $
+  $Id: cdda.h,v 1.3 2005/01/08 20:39:40 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -63,13 +63,17 @@ typedef struct TOC {	/* structure of table of contents */
 struct cdrom_drive_s {
 
   CdIo_t *p_cdio;
-  int opened; /* This struct may just represent a candidate for opening */
+  int opened; /**< This struct may just represent a candidate for opening */
 
   char *cdda_device_name;
 
   char *drive_model;
+  int drive_type;
   int interface;
-  int bigendianp;
+  int bigendianp; /**< Whether data returned on the CDDA is bigendian or
+		       not. 1 if big endian, 0 if little endian and -1 if
+		       we don't know.
+		   */
   int nsectors;
 
   int cd_extra;
@@ -83,7 +87,7 @@ struct cdrom_drive_s {
   char *errorbuf;
   char *messagebuf;
 
-  /* functions specific to particular drives/interrfaces */
+  /* functions specific to particular drives/interfaces */
 
   int  (*enable_cdda)  (cdrom_drive_t *d, int onoff);
   int  (*read_toc)     (cdrom_drive_t *d);
@@ -96,23 +100,12 @@ struct cdrom_drive_s {
   int is_atapi;
   int is_mmc;
 
-  /* SCSI command buffer and offset pointers */
-  unsigned char *sg;
-  unsigned char *sg_buffer;
-  unsigned char inqbytes[4];
-
   /* Scsi parameters and state */
   unsigned char density;
   unsigned char orgdens;
   unsigned int orgsize;
   long bigbuff;
   int adjust_ssize;
-
-  int fua;
-  int lun;
-
-  sigset_t sigset;
-
 };
 
 /** autosense functions */

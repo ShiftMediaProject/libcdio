@@ -19,7 +19,7 @@ define(RELEASE_NUM, 72)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.125 2005/01/07 22:15:24 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.126 2005/01/08 20:39:40 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -331,7 +331,7 @@ case $host_os in
        fi
      ;;
      linux*)
-        AC_CHECK_HEADERS(linux/version.h)
+        AC_CHECK_HEADERS(linux/version.h linux/major.h)
         AC_CHECK_HEADERS(linux/cdrom.h, [have_linux_cdrom_h="yes"])
 	if test "x$have_linux_cdrom_h" = "xyes" ; then
 	   AC_TRY_COMPILE(,[
