@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.18 2004/02/26 01:33:01 rocky Exp $
+    $Id: iso9660_fs.c,v 1.19 2004/03/21 00:51:49 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -40,7 +40,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.18 2004/02/26 01:33:01 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.19 2004/03/21 00:51:49 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -371,7 +371,7 @@ _fs_iso_stat_traverse (iso9660_t *iso, const iso9660_stat_t *_root,
       stat = _iso9660_dir_to_statbuf (iso9660_dir, true);
 
       if (translate) {
-	char *trans_fname = malloc(strlen(stat->filename));
+	char *trans_fname = malloc(strlen(stat->filename)+1);
 	int trans_len;
 	
 	if (trans_fname == NULL) {
