@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.6 2003/04/20 01:39:23 rocky Exp $
+#   $Id: Makefile.am,v 1.7 2003/05/27 02:55:58 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -35,6 +35,7 @@ libcdio_sources = \
 	_cdio_stream.c \
 	_cdio_stream.h \
 	_cdio_sunos.c \
+	_cdio_win32.c \
 	bytesex.h \
 	bytesex_asm.h \
 	cdio.c \

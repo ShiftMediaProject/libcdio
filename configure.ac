@@ -15,10 +15,10 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.21 2003/05/20 08:10:45 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.22 2003/05/27 02:55:58 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(libcdio, 0.6)
+AM_INIT_AUTOMAKE(libcdio, 0.61)
      
 AM_SANITY_CHECK
 
@@ -196,6 +196,10 @@ int has_timeout=sizeof(test.timeout);],
      	AC_DEFINE([HAVE_SOLARIS_CDROM], [1], 
                   [Define 1 if you have Solaris CD-ROM support])
 	;;
+     cygwin*)
+     	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
+                  [Define 1 if you have cywin MinGW CD-ROM support])
+	;;
      *)
 	AC_MSG_WARN(Don't have OS CD-reading support for ${host_os}...)
 	AC_MSG_WARN(Will use generic support.)
@@ -205,6 +209,7 @@ AC_SUBST(LINUX_CDROM_TIMEOUT)
 AC_SUBST(HAVE_LINUX_CDROM)
 AC_SUBST(HAVE_BSDI_CDROM)
 AC_SUBST(HAVE_SOLARIS_CDROM)
+AC_SUBST(HAVE_WIN32_CDROM)
 
 if test x$enable_cddb = x; then
 AC_ARG_ENABLE(cddb,

@@ -3,3 +3,4 @@ cue.tab.h
 cuelexer
 cueparser
 lex.cuelex.c
+lex.cue.c

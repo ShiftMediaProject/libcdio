@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.9 2003/05/24 15:24:15 rocky Exp $
+    $Id: cdio.h,v 1.10 2003/05/27 02:55:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -74,6 +74,7 @@ extern "C" {
     DRIVER_FREEBSD, 
     DRIVER_LINUX,
     DRIVER_SOLARIS, 
+    DRIVER_WIN32,
     DRIVER_BINCUE, /* Prefer bincue over nrg when both exist */
     DRIVER_NRG,    
     DRIVER_DEVICE  /* Is really a set of the above; should come last */
@@ -83,7 +84,7 @@ extern "C" {
      a bogus (but useful) 0th entry above we don't have to add one below.
    */
 #define MAX_DRIVER DRIVER_NRG
-#define MAX_DEVICE_DRIVER DRIVER_SOLARIS
+#define MAX_DEVICE_DRIVER DRIVER_WIN32
 #define MIN_DEVICE_DRIVER DRIVER_BSDI
 
   typedef enum  {
@@ -251,6 +252,7 @@ extern "C" {
   bool cdio_have_freebsd (void);
   bool cdio_have_linux   (void);
   bool cdio_have_solaris (void);
+  bool cdio_have_win32   (void);
   bool cdio_have_nrg     (void);
   bool cdio_have_bincue  (void);
 
@@ -310,10 +312,17 @@ extern "C" {
   /*! Solaris CD-reading routines. 
      NULL is returned on error.
    */
-  CdIo * cdio_open_solaris (const char *soruce_name);
+  CdIo * cdio_open_solaris (const char *source_name);
   
   char * cdio_get_default_device_solaris(void);
   
+  /*! Win32 CD-reading routines. 
+     NULL is returned on error.
+   */
+  CdIo * cdio_open_win32 (const char *source_name);
+  
+  char * cdio_get_default_device_win32(void);
+
   /*! Nero CD disk-image routines. 
      NULL is returned on error.
    */

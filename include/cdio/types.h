@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.1 2003/04/19 08:29:14 rocky Exp $
+    $Id: types.h,v 1.2 2003/05/27 02:55:58 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,12 +28,15 @@ extern "C" {
 
   /* provide some C99 definitions */
 
+#if defined(HAVE_SYS_TYPES_H) 
+#include <sys/types.h>
+#endif 
+
 #if defined(HAVE_STDINT_H)
 # include <stdint.h>
 #elif defined(HAVE_INTTYPES_H)
 # include <inttypes.h>
-#elif defined(__CYGWIN__) || defined(AMIGA) || defined(__linux__)
-# include <sys/types.h>
+#elif defined(AMIGA) || defined(__linux__)
   typedef u_int8_t uint8_t;
   typedef u_int16_t uint16_t;
   typedef u_int32_t uint32_t;
