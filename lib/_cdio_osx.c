@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.66 2004/08/30 01:21:59 rocky Exp $
+    $Id: _cdio_osx.c,v 1.67 2004/09/02 02:33:54 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.66 2004/08/30 01:21:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.67 2004/09/02 02:33:54 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -49,7 +49,6 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.66 2004/08/30 01:21:59 rocky 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/storage/IOStorageDeviceCharacteristics.h>
-#include <IOKit/scsi/IOSCSIMultimediaCommandsDevice.h>
 
 #include <mach/mach.h>
 #include <Carbon/Carbon.h>
