@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.16 2004/02/27 02:35:24 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.17 2004/02/28 20:54:31 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -85,6 +85,7 @@ Copyright (C) 2003, 2004 Herbert Valerio Riedel and Rocky Bernstein
 * CD Formats::      A tour through the CD-specification spectrum
 * CD Terms::        Limitations and terminology used in CD's and libcdio
 * How to use::      Okay enough babble, lemme at the library!
+* Utility Programs:: Diagnostic programs that come with this library
 
 Appendices
 * ISO-9660 Character Sets::
@@ -861,8 +862,43 @@ main(int argc, const char *argv[])
 @}
 @end smallexample 
 
-@emph{Fill out examples for cdio_read_xxx or cdio_seek, More on 
-drivers?.}
+@node Utility Programs
+@chapter Diagnostic programs (@samp{cd-info}, @samp{cd-read}, @samp{iso-info}, @samp{iso-read})
+
+@menu
+* cd-info::        list out CD or CD-image information
+* cd-read::        read blocks of a CD or CD image
+* iso-info::       list out ISO-9600 image information
+* iso-read::       extract a file from an ISO 9660 image
+@end menu
+
+@node cd-info
+@section @samp{cd-info}
+
+@samp{cd-info} will print out the structure of a CD medium which could
+either be a Compact Disc in a CD ROM or an CD image. It can try to
+analyze the medium to give characteristics of the medium, such as how
+many tracks are in the CD and the format of each track, whether a CD
+contains a Video CD, CD-DA, PhotoCD, whether a track has an ISO-9660
+filesystem.
+
+@node cd-read
+@section @samp{cd-read}
+
+@samp{cd-info} can be used to read blocks a CD medium which could
+either be a Compact Disc in a CD ROM or an CD image. You specify the
+beginning and ending LSN and what mode format to use in the reading.
+
+@node iso-info
+@section @samp{iso-info}
+
+@samp{iso-info} can be used to print out the structure of an ISO 9660 
+image.
+
+@node iso-read
+@section @samp{iso-read}
+
+@samp{iso-info} can be used to extract a file in an ISO-9660 image.
 
 @node ISO-9660 Character Sets
 @appendix ISO-9660 Character Sets
