@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.6 2005/01/19 09:23:24 rocky Exp $
+    $Id: device.c,v 1.7 2005/01/20 00:36:38 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -698,7 +698,7 @@ cdio_open_am_cd (const char *psz_source, const char *psz_access_mode)
 driver_return_code_t 
 cdio_set_blocksize ( const CdIo_t *p_cdio, int i_blocksize )
 {
-  if (!p_cdio) return DRIVER_OP_ERROR;
+  if (!p_cdio) return DRIVER_OP_UNINIT;
   if (p_cdio->op.set_blocksize) return DRIVER_OP_UNSUPPORTED;
   return p_cdio->op.set_blocksize(p_cdio->env, i_blocksize);
 }
@@ -711,7 +711,7 @@ cdio_set_blocksize ( const CdIo_t *p_cdio, int i_blocksize )
 driver_return_code_t
 cdio_set_speed (const CdIo_t *p_cdio, int i_speed) 
 {
-  if (!p_cdio) return DRIVER_OP_ERROR;
+  if (!p_cdio) return DRIVER_OP_UNINIT;
   if (!p_cdio->op.set_speed) return DRIVER_OP_UNSUPPORTED;
   return p_cdio->op.set_speed(p_cdio->env, i_speed);
 }

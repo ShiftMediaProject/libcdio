@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.8 2005/01/19 09:40:50 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.9 2005/01/20 00:36:38 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.8 2005/01/19 09:40:50 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.9 2005/01/20 00:36:38 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -780,7 +780,7 @@ set_speed_solaris (void *p_user_data, int i_speed)
 {
   const _img_private_t *p_env = p_user_data;
 
-  if (!p_env) return DRIVER_OP_ERROR;
+  if (!p_env) return DRIVER_OP_UNINIT;
   return ioctl(p_env->gen.fd, CDROMSDRVSPEED, i_speed);
 }
 

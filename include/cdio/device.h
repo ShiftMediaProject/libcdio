@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.5 2005/01/19 09:23:24 rocky Exp $
+    $Id: device.h,v 1.6 2005/01/20 00:36:38 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -108,6 +108,10 @@ extern "C" {
      hardware driver, then the value will be DRIVER_UNKNOWN.
   */
   typedef enum  {
+    DRIVER_OP_UNINIT = -3,     /**< returned when a particular driver
+				   hasn't been initialized or a null
+				   CdIo_t pointer has been passed.
+				*/
     DRIVER_OP_UNSUPPORTED = -2, /**< returned when a particular driver
 				   doesn't support a particular operation.
 				   For example an image driver which doesn't

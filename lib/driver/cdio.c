@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.10 2005/01/19 09:23:24 rocky Exp $
+    $Id: cdio.c,v 1.11 2005/01/20 00:36:38 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/util.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.10 2005/01/19 09:23:24 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.11 2005/01/20 00:36:38 rocky Exp $";
 
 
 /*!
@@ -95,7 +95,7 @@ cdio_new (generic_img_private_t *p_env, cdio_funcs_t *p_funcs)
 driver_return_code_t
 cdio_set_arg (CdIo_t *p_cdio, const char key[], const char value[])
 {
-  if (!p_cdio) return DRIVER_OP_ERROR;
+  if (!p_cdio) return DRIVER_OP_UNINIT;
   if (!p_cdio->op.set_arg) return DRIVER_OP_UNSUPPORTED;
   if (!key) return DRIVER_OP_ERROR;
 

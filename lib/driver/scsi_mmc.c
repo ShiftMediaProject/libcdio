@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.6 2005/01/19 09:23:24 rocky Exp $
+    $Id: scsi_mmc.c,v 1.7 2005/01/20 00:36:38 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -178,7 +178,7 @@ scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 		  scsi_mmc_direction_t e_direction, unsigned int i_buf, 
 		  /*in/out*/ void *p_buf )
 {
-  if (!p_cdio) return DRIVER_OP_ERROR;
+  if (!p_cdio) return DRIVER_OP_UNINIT;
   if (!p_cdio->op.run_scsi_mmc_cmd) return DRIVER_OP_UNSUPPORTED;
   return p_cdio->op.run_scsi_mmc_cmd(p_cdio->env, i_timeout_ms,
 				     scsi_mmc_get_cmd_len(p_cdb->field[0]),
@@ -212,7 +212,7 @@ scsi_mmc_get_blocksize_private ( const void *p_env,
 
   uint8_t *p = &mh.block_length_med;
 
-  if ( ! p_env ) return DRIVER_OP_ERROR;
+  if ( ! p_env ) return DRIVER_OP_UNINIT;
   if ( ! run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
 
   memset (&mh, 0, sizeof (mh));
@@ -233,7 +233,7 @@ scsi_mmc_get_blocksize_private ( const void *p_env,
 int 
 scsi_mmc_get_blocksize ( const CdIo_t *p_cdio)
 {
-  if ( ! p_cdio )  return DRIVER_OP_ERROR;
+  if ( ! p_cdio )  return DRIVER_OP_UNINIT;
   return 
     scsi_mmc_get_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd);
 
@@ -251,7 +251,7 @@ scsi_mmc_eject_media( const CdIo_t *p_cdio )
   uint8_t buf[1];
   scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd;
 
-  if ( ! p_cdio ) return DRIVER_OP_ERROR;
+  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
   if ( ! p_cdio->op.run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
 
   run_scsi_mmc_cmd = p_cdio->op.run_scsi_mmc_cmd;
@@ -333,7 +333,7 @@ scsi_mmc_set_blocksize_private ( const void *p_env,
     uint8_t block_length_lo;
   } mh;
 
-  if ( ! p_env ) return DRIVER_OP_ERROR;
+  if ( ! p_env ) return DRIVER_OP_UNINIT;
   if ( ! run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
 
   memset (&mh, 0, sizeof (mh));
@@ -355,7 +355,7 @@ scsi_mmc_set_blocksize_private ( const void *p_env,
 driver_return_code_t
 scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_blocksize)
 {
-  if ( ! p_cdio )  return DRIVER_OP_ERROR;
+  if ( ! p_cdio )  return DRIVER_OP_UNINIT;
   return 
     scsi_mmc_set_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd, 
 				    i_blocksize);
