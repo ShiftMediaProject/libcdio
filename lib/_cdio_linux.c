@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.8 2003/04/08 21:12:45 rocky Exp $
+    $Id: _cdio_linux.c,v 1.9 2003/04/10 04:11:45 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,12 +27,14 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.8 2003/04/08 21:12:45 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.9 2003/04/10 04:11:45 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
 #include "sector.h"
 #include "util.h"
+
+#define DEFAULT_CDIO_DEVICE "/dev/cdrom"
 
 #ifdef HAVE_LINUX_CDROM
 
@@ -58,8 +60,6 @@ static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.8 2003/04/08 21:12:45 rocky
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
-
-#define DEFAULT_CDIO_DEVICE "/dev/cdrom"
 
 #define TOTAL_TRACKS    (_obj->tochdr.cdth_trk1)
 #define FIRST_TRACK_NUM (_obj->tochdr.cdth_trk0)
@@ -121,6 +121,43 @@ _set_bsize (int fd, unsigned int bsize)
   mh.block_length_lo   = (bsize >>  0) & 0xff;
 
   return ioctl (fd, CDROM_SEND_PACKET, &cgc);
+}
+
+/* Packet driver to read mode2 sectors. 
+   Can read only up to 25 blocks.
+*/
+static int
+_read_packet_audio_sector (int fd, void *buf, lba_t lba)
+{
+  struct cdrom_generic_command cgc;
+  const int nblocks = 1;
+
+  memset (&cgc, 0, sizeof (struct cdrom_generic_command));
+
+  cgc.cmd[0] = GPCMD_READ_CD;
+  cgc.cmd[1] = 0; /* Any type of sectors returned */
+  
+  cgc.cmd[2] = (lba >> 24) & 0xff;
+  cgc.cmd[3] = (lba >> 16) & 0xff;
+  cgc.cmd[4] = (lba >> 8) & 0xff;
+  cgc.cmd[5] = (lba >> 0) & 0xff;
+
+  cgc.cmd[6] = (nblocks >> 16) & 0xff;
+  cgc.cmd[7] = (nblocks >> 8) & 0xff;
+  cgc.cmd[8] = (nblocks >> 0) & 0xff;
+  cgc.cmd[9] = 0x78; /* All headers  */
+
+  cgc.buflen = CDIO_CD_FRAMESIZE_RAW * nblocks; 
+  cgc.buffer = buf;
+
+#ifdef HAVE_LINUX_CDROM_TIMEOUT
+  cgc.timeout = 500;
+#endif
+  cgc.data_direction = CGC_DATA_READ;
+
+  return ioctl (fd, CDROM_SEND_PACKET, &cgc);
+
+  return 0;
 }
 
 /* Packet driver to read mode2 sectors. 
@@ -226,21 +263,6 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   msf->cdmsf_sec0 = from_bcd8(_msf.s);
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
 
-  if (_obj->gen.ioctls_debugged == 75)
-    cdio_debug ("only displaying every 75th ioctl from now on");
-
-  if (_obj->gen.ioctls_debugged == 30 * 75)
-    cdio_debug ("only displaying every 30*75th ioctl from now on");
-  
-  if (_obj->gen.ioctls_debugged < 75 
-      || (_obj->gen.ioctls_debugged < (30 * 75)  
-	  && _obj->gen.ioctls_debugged % 75 == 0)
-      || _obj->gen.ioctls_debugged % (30 * 75) == 0)
-    cdio_debug ("reading %2.2d:%2.2d:%2.2d",
-	       msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
-  
-  _obj->gen.ioctls_debugged++;
- 
  retry:
   switch (_obj->access_mode)
     {
@@ -286,6 +308,62 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   else
     memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
   
+  return 0;
+}
+
+/*!
+   Reads a single mode2 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+static int
+_cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
+{
+  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+  struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
+  msf_t _msf;
+
+  _img_private_t *_obj = user_data;
+
+  cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
+  msf->cdmsf_min0 = from_bcd8(_msf.m);
+  msf->cdmsf_sec0 = from_bcd8(_msf.s);
+  msf->cdmsf_frame0 = from_bcd8(_msf.f);
+
+ retry:
+  switch (_obj->access_mode)
+    {
+    case _AM_NONE:
+      cdio_error ("no way to read audio");
+      return 1;
+      break;
+
+    case _AM_IOCTL:
+      if (ioctl (_obj->gen.fd, CDROMREADRAW, &buf) == -1) {
+	perror ("ioctl()");
+	return 1;
+	/* exit (EXIT_FAILURE); */
+      }
+      break;
+
+    case _AM_READ_CD:
+    case _AM_READ_10:
+      if (_read_packet_audio_sector (_obj->gen.fd, buf, lsn)) {
+	perror ("ioctl()");
+	if (_obj->access_mode == _AM_READ_CD) {
+	  cdio_info ("READ_CD failed; switching to READ_10 mode...");
+	  _obj->access_mode = _AM_READ_10;
+	  goto retry;
+	} else {
+	  cdio_info ("READ_10 failed; switching to ioctl(CDROMREADAUDIO) mode...");
+	  _obj->access_mode = _AM_IOCTL;
+	  goto retry;
+	}
+	return 1;
+      }
+      break;
+    }
+
+  memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
   return 0;
 }
 
@@ -499,15 +577,6 @@ _cdio_get_arg (void *user_data, const char key[])
 }
 
 /*!
-  Return a string containing the default VCD device if none is specified.
- */
-static char *
-_cdio_get_default_device()
-{
-  return strdup(DEFAULT_CDIO_DEVICE);
-}
-
-/*!
   Return the number of of the first track. 
   CDIO_INVALID_TRACK is returned on error.
 */
@@ -621,6 +690,14 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
 #endif /* HAVE_LINUX_CDROM */
 
 /*!
+  Return a string containing the default VCD device if none is specified.
+ */
+char *
+cdio_get_default_device_linux(void)
+{
+  return strdup(DEFAULT_CDIO_DEVICE);
+}
+/*!
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
   ones to set that up.
@@ -637,7 +714,7 @@ cdio_open_linux (const char *source_name)
     .eject_media        = _cdio_eject_media,
     .free               = cdio_generic_free,
     .get_arg            = _cdio_get_arg,
-    .get_default_device = _cdio_get_default_device,
+    .get_default_device = cdio_get_default_device_linux,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
@@ -646,6 +723,7 @@ cdio_open_linux (const char *source_name)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
+    .read_audio_sector  = _cdio_read_audio_sector,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
@@ -685,4 +763,5 @@ cdio_have_linux (void)
   return false;
 #endif /* HAVE_LINUX_CDROM */
 }
+
 
