@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.33 2005/02/07 12:06:29 rocky Exp $
+  $Id: util.c,v 1.34 2005/02/07 12:12:14 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -337,12 +337,12 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 	case CDIO_MMC_FEATURE_MORPHING:
 	  report( stdout, "Morphing Feature\n" );
 	  report( stdout, 
-		  "\tOperational Change Request/Notification %ssupported "
-		  "via GET EVENT/STATUS NOTIFICATION\n", 
+		  "\tOperational Change Request/Notification %ssupported\n",
 		  (p[4] & 2) ? "": "not " );
-	  report( stdout, "\tAsynchronous GET EVENT/STATUS NOTIFICATION "
-		  "%ssupported\n", 
-		 (p[4] & 1) ? "": "not " );
+	  report( stdout, "\t%synchronous GET EVENT/STATUS NOTIFICATION "
+		  "supported\n", 
+		 (p[4] & 1) ? "As": "S" );
+	  report( stdout, "\n");
 	  break;
 	  ;
 	  
