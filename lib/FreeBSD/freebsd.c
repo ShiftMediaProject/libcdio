@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.16 2004/05/31 14:53:07 rocky Exp $
+    $Id: freebsd.c,v 1.17 2004/06/02 00:43:53 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.16 2004/05/31 14:53:07 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.17 2004/06/02 00:43:53 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -342,13 +342,18 @@ _get_track_format_freebsd(void *user_data, track_t i_track)
 {
   _img_private_t *env = user_data;
 
+  if (i_track > TOTAL_TRACKS || i_track == 0)
+    return TRACK_FORMAT_ERROR;
+
+  i_track -= FIRST_TRACK_NUM;
+
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
    */
-  if (env->tocent[i_track-FIRST_TRACK_NUM].entry.control & CDIO_CDROM_DATA_TRACK) {
-    if (env->tocent[i_track-FIRST_TRACK_NUM].address_format == 0x10)
+  if (env->tocent[i_track].entry.control & CDIO_CDROM_DATA_TRACK) {
+    if (env->tocent[i_track].address_format == CDIO_CDROM_CDI_TRACK)
       return TRACK_FORMAT_CDI;
-    else if (env->tocent[i_track-FIRST_TRACK_NUM].address_format == 0x20) 
+    else if (env->tocent[i_track].address_format == CDIO_CDROM_XA_TRACK)
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;

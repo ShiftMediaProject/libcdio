@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.26 2004/06/01 16:02:46 thesin Exp $
+    $Id: _cdio_osx.c,v 1.27 2004/06/02 00:43:53 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.26 2004/06/01 16:02:46 thesin Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.27 2004/06/02 00:43:53 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -68,8 +68,7 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.26 2004/06/01 16:02:46 thesin
 #include <IOKit/storage/IODVDMediaBSDClient.h>
 
 
-#define TOTAL_TRACKS    (_obj->num_tracks-1)
-#define CDROM_DATA_TRACK CDIO_CDROM_DATA_TRACK
+#define TOTAL_TRACKS    (env->num_tracks-1)
 #define CDROM_CDI_TRACK 0x1
 #define CDROM_XA_TRACK 0x2
 
@@ -96,11 +95,11 @@ typedef struct {
 
 static void 
 _free_osx (void *env) {
-  _img_private_t *_obj = env;
-  if (NULL == _obj) return;
-  cdio_generic_free(_obj);
-  if (NULL != _obj->pp_lba) free((void *) _obj->pp_lba);
-  if (NULL != _obj->pTOC) free((void *) _obj->pTOC);
+  _img_private_t *env = user_data;
+  if (NULL == env) return;
+  cdio_generic_free(env);
+  if (NULL != env->pp_lba) free((void *) env->pp_lba);
+  if (NULL != env->pTOC) free((void *) env->pTOC);
 }
 
 /****************************************************************************
@@ -136,10 +135,10 @@ _cdio_getNumberOfTracks( CDTOC *pTOC, int i_descriptors )
    Returns 0 if no error. 
  */
 static int
-_get_read_mode1_sectors_osx (void *env, void *data, lsn_t lsn, 
+_get_read_mode1_sectors_osx (void *user_data, void *data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   dk_cd_read_t cd_read;
   
   memset( &cd_read, 0, sizeof(cd_read) );
@@ -156,7 +155,7 @@ _get_read_mode1_sectors_osx (void *env, void *data, lsn_t lsn,
     cd_read.bufferLength = kCDSectorSizeMode1 * nblocks;
   }
   
-   if( ioctl( _obj->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
+   if( ioctl( env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
     cdio_error( "could not read block %d, %s", lsn, strerror(errno) );
     return -1;
@@ -171,10 +170,10 @@ _get_read_mode1_sectors_osx (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_get_read_mode2_sectors_osx (void *env, void *data, lsn_t lsn, 
+_get_read_mode2_sectors_osx (void *user_data, void *data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   dk_cd_read_t cd_read;
   
   memset( &cd_read, 0, sizeof(cd_read) );
@@ -192,7 +191,7 @@ _get_read_mode2_sectors_osx (void *env, void *data, lsn_t lsn,
     cd_read.bufferLength = kCDSectorSizeMode2Form1 * nblocks;
   }
   
-  if( ioctl( _obj->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
+  if( ioctl( env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
     cdio_error( "could not read block %d, %s", lsn, strerror(errno) );
     return -1;
@@ -206,10 +205,10 @@ _get_read_mode2_sectors_osx (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_get_read_audio_sectors_osx (void *env, void *data, lsn_t lsn, 
+_get_read_audio_sectors_osx (void *user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   dk_cd_read_t cd_read;
   
   memset( &cd_read, 0, sizeof(cd_read) );
@@ -221,7 +220,7 @@ _get_read_audio_sectors_osx (void *env, void *data, lsn_t lsn,
   cd_read.buffer = data;
   cd_read.bufferLength = kCDSectorSizeCDDA * nblocks;
   
-  if( ioctl( _obj->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
+  if( ioctl( env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
     cdio_error( "could not read block %d", lsn );
     return -1;
@@ -234,8 +233,8 @@ _get_read_audio_sectors_osx (void *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_get_read_mode1_sector_osx (void *env, void *data, lsn_t lsn, 
-			 bool b_form2)
+_get_read_mode1_sector_osx (void *user_data, void *data, lsn_t lsn, 
+			    bool b_form2)
 {
   return _get_read_mode1_sectors_osx(env, data, lsn, b_form2, 1);
 }
@@ -245,8 +244,8 @@ _get_read_mode1_sector_osx (void *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_get_read_mode2_sector_osx (void *env, void *data, lsn_t lsn, 
-			 bool b_form2)
+_get_read_mode2_sector_osx (void *user_data, void *data, lsn_t lsn, 
+			    bool b_form2)
 {
   return _get_read_mode2_sectors_osx(env, data, lsn, b_form2, 1);
 }
@@ -255,23 +254,23 @@ _get_read_mode2_sector_osx (void *env, void *data, lsn_t lsn,
   Set the key "arg" to "value" in source device.
 */
 static int
-_set_arg_osx (void *env, const char key[], const char value[])
+_set_arg_osx (void *user_data, const char key[], const char value[])
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   if (!strcmp (key, "source"))
     {
       if (!value)
 	return -2;
 
-      free (_obj->gen.source_name);
+      free (env->gen.source_name);
       
-      _obj->gen.source_name = strdup (value);
+      env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
       if (!strcmp(value, "OSX"))
-	_obj->access_mode = _AM_OSX;
+	env->access_mode = _AM_OSX;
       else
 	cdio_error ("unknown access type: %s. ignored.", value);
     }
@@ -286,7 +285,7 @@ _set_arg_osx (void *env, const char key[], const char value[])
   Return false if successful or true if an error.
 */
 static bool
-_cdio_read_toc (_img_private_t *_obj) 
+_cdio_read_toc (_img_private_t *env) 
 {
   mach_port_t port;
   char *psz_devname;
@@ -296,18 +295,18 @@ _cdio_read_toc (_img_private_t *_obj)
   CFMutableDictionaryRef properties;
   CFDataRef data;
   
-  _obj->gen.fd = open( _obj->gen.source_name, O_RDONLY | O_NONBLOCK );
-  if (-1 == _obj->gen.fd) {
-    cdio_error("Failed to open %s: %s", _obj->gen.source_name,
+  env->gen.fd = open( env->gen.source_name, O_RDONLY | O_NONBLOCK );
+  if (-1 == env->gen.fd) {
+    cdio_error("Failed to open %s: %s", env->gen.source_name,
 	       strerror(errno));
     return false;
   }
 
   /* get the device name */
-  if( ( psz_devname = strrchr( _obj->gen.source_name, '/') ) != NULL )
+  if( ( psz_devname = strrchr( env->gen.source_name, '/') ) != NULL )
     ++psz_devname;
   else
-    psz_devname = _obj->gen.source_name;
+    psz_devname = env->gen.source_name;
   
   /* unraw the device name */
   if( *psz_devname == 'r' )
@@ -379,8 +378,8 @@ _cdio_read_toc (_img_private_t *_obj)
       buf_len = CFDataGetLength( data ) + 1;
       range = CFRangeMake( 0, buf_len );
       
-      if( ( _obj->pTOC = (CDTOC *)malloc( buf_len ) ) != NULL ) {
-	CFDataGetBytes( data, range, (u_char *) _obj->pTOC );
+      if( ( env->pTOC = (CDTOC *)malloc( buf_len ) ) != NULL ) {
+	CFDataGetBytes( data, range, (u_char *) env->pTOC );
       } else {
 	cdio_error( "Trouble allocating CDROM TOC" );
 	return false;
@@ -394,8 +393,8 @@ _cdio_read_toc (_img_private_t *_obj)
   CFRelease( properties );
   IOObjectRelease( service ); 
 
-  _obj->i_descriptors = CDTOCGetDescriptorCount ( _obj->pTOC );
-  _obj->num_tracks = _cdio_getNumberOfTracks(_obj->pTOC, _obj->i_descriptors);
+  env->i_descriptors = CDTOCGetDescriptorCount ( env->pTOC );
+  env->num_tracks = _cdio_getNumberOfTracks(env->pTOC, env->i_descriptors);
 
   /* Read in starting sectors */
   {
@@ -404,17 +403,17 @@ _cdio_read_toc (_img_private_t *_obj)
     track_t track;
     int i_tracks;
     
-    _obj->pp_lba = malloc( (_obj->num_tracks + 1) * sizeof(int) );
-    if( _obj->pp_lba == NULL )
+    env->pp_lba = malloc( (env->num_tracks + 1) * sizeof(int) );
+    if( env->pp_lba == NULL )
       {
 	cdio_error("Out of memory in allocating track starting LSNs" );
-	free( _obj->pTOC );
+	free( env->pTOC );
 	return false;
       }
     
-    pTrackDescriptors = _obj->pTOC->descriptors;
+    pTrackDescriptors = env->pTOC->descriptors;
     
-    for( i_tracks = 0, i = 0; i <= _obj->i_descriptors; i++ )
+    for( i_tracks = 0, i = 0; i <= env->i_descriptors; i++ )
       {
 	track = pTrackDescriptors[i].point;
 
@@ -425,24 +424,24 @@ _cdio_read_toc (_img_private_t *_obj)
 	if( track > CDIO_CD_MAX_TRACKS || track < CDIO_CD_MIN_TRACK_NO )
 	  continue;
 	
-	_obj->pp_lba[i_tracks++] =
+	env->pp_lba[i_tracks++] =
 	  cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i].p ));
       }
     
     if( i_leadout == -1 )
       {
 	cdio_error( "CD leadout not found" );
-	free( _obj->pp_lba );
-	free( (void *) _obj->pTOC );
+	free( env->pp_lba );
+	free( (void *) env->pTOC );
 	return false;
       }
     
     /* set leadout sector */
-    _obj->pp_lba[i_tracks] =
+    env->pp_lba[i_tracks] =
       cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i_leadout].p ));
   }
 
-  _obj->toc_init   = true;
+  env->toc_init   = true;
 
   return( true ); 
 
@@ -450,24 +449,24 @@ _cdio_read_toc (_img_private_t *_obj)
 
 /*!  
   Return the starting LSN track number
-  track_num in obj.  Track numbers start at 1.
+  i_track in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
-  using track_num LEADOUT_TRACK or the total tracks+1.
+  using i_track LEADOUT_TRACK or the total tracks+1.
   False is returned if there is no track entry.
 */
 static lsn_t
-_get_track_lba_osx(void *env, track_t track_num)
+_get_track_lba_osx(void *user_data, track_t i_track)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!env->toc_init) _cdio_read_toc (env) ;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS;
 
-  if (track_num > TOTAL_TRACKS || track_num == 0) {
+  if (i_track > TOTAL_TRACKS || i_track == 0) {
     return CDIO_INVALID_LSN;
   } else {
-    return _obj->pp_lba[track_num];
+    return env->pp_lba[i_track];
   }
 }
 
@@ -482,15 +481,15 @@ _get_track_lba_osx(void *env, track_t track_num)
  */
 
 static int 
-_eject_media_osx (void *env) {
+_eject_media_osx (void *user_data) {
 
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   FILE *p_eject;
   char *psz_disk;
   char sz_cmd[32];
 
-  if( ( psz_disk = (char *)strstr( _obj->gen.source_name, "disk" ) ) != NULL &&
+  if( ( psz_disk = (char *)strstr( env->gen.source_name, "disk" ) ) != NULL &&
       strlen( psz_disk ) > 4 )
     {
 #define EJECT_CMD "/usr/sbin/hdiutil eject %s"
@@ -526,7 +525,7 @@ _eject_media_osx (void *env) {
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_stat_size_osx (void *env)
+_stat_size_osx (void *user_data)
 {
   return _get_track_lba_osx(env, CDIO_CDROM_LEADOUT_TRACK);
 }
@@ -535,14 +534,14 @@ _stat_size_osx (void *env)
   Return the value associated with the key "arg".
 */
 static const char *
-_get_arg_osx (void *env, const char key[])
+_get_arg_osx (void *user_data, const char key[])
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   if (!strcmp (key, "source")) {
-    return _obj->gen.source_name;
+    return env->gen.source_name;
   } else if (!strcmp (key, "access-mode")) {
-    switch (_obj->access_mode) {
+    switch (env->access_mode) {
     case _AM_OSX:
       return "OS X";
     case _AM_NONE:
@@ -557,20 +556,20 @@ _get_arg_osx (void *env, const char key[])
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_get_first_track_num_osx(void *env) 
+_get_first_track_num_osx(void *user_data) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!env->toc_init) _cdio_read_toc (env) ;
   
   {
     track_t track = CDIO_INVALID_TRACK;
     int i;
     CDTOCDescriptor *pTrackDescriptors;
 
-    pTrackDescriptors = _obj->pTOC->descriptors;
+    pTrackDescriptors = env->pTOC->descriptors;
 
-    for( i = 0; i < _obj->i_descriptors; i++ )
+    for( i = 0; i < env->i_descriptors; i++ )
     {
         track = pTrackDescriptors[i].point;
 
@@ -587,13 +586,13 @@ _get_first_track_num_osx(void *env)
   Return the media catalog number MCN.
  */
 static char *
-_get_mcn_osx (const void *env) {
-  const _img_private_t *_obj = env;
+_get_mcn_osx (const void *user_data) {
+  const _img_private_t *env = user_data;
   dk_cd_read_mcn_t cd_read;
 
   memset( &cd_read, 0, sizeof(cd_read) );
 
-  if( ioctl( _obj->gen.fd, DKIOCCDREADMCN, &cd_read ) < 0 )
+  if( ioctl( env->gen.fd, DKIOCCDREADMCN, &cd_read ) < 0 )
   {
     cdio_warn( "could not read MCN, %s", strerror(errno) );
     return NULL;
@@ -608,47 +607,49 @@ _get_mcn_osx (const void *env) {
   This is the externally called interface.
 */
 static track_t
-_get_num_tracks_osx(void *env) 
+_get_num_tracks_osx(void *user_data) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!env->toc_init) _cdio_read_toc (env) ;
 
-  return( _obj->num_tracks-1 );
+  return( env->num_tracks-1 );
 }
 
 /*!  
   Get format of track. 
 */
 static track_format_t
-_get_track_format_osx(void *env, track_t track_num) 
+_get_track_format_osx(void *user_data, track_t i_track) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
+  dk_cd_read_track_info_t cd_read;
   CDTrackInfo a_track;
   
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!env->toc_init) _cdio_read_toc (env) ;
 
-  if (track_num > TOTAL_TRACKS || track_num == 0)
+  if (i_track > TOTAL_TRACKS || i_track == 0)
     return TRACK_FORMAT_ERROR;
     
-  dk_cd_read_track_info_t cd_read;
+  i_track -= 1; /* should be FIRST_TRACK_NUM */
+
   memset( &cd_read, 0, sizeof(cd_read) );
 
-  cd_read.address = track_num;
+  cd_read.address = i_track;
   cd_read.addressType = kCDTrackInfoAddressTypeTrackNumber;
   
   cd_read.buffer = &a_track;
   cd_read.bufferLength = sizeof(CDTrackInfo);
   
-  if( ioctl( _obj->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
+  if( ioctl( env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
   {
-    cdio_error( "could not read trackinfo for track %d", track_num );
+    cdio_error( "could not read trackinfo for track %d", i_track );
     return -1;
   }
 
   /*cdio_warn( "trackinfo trackMode: %x dataMode: %x", a_track.trackMode, a_track.dataMode );*/
 
-  if (a_track.trackMode == CDROM_DATA_TRACK) {
+  if (a_track.trackMode == CDIO_CDROM_DATA_TRACK) {
     if (a_track.dataMode == CDROM_CDI_TRACK) {
       return TRACK_FORMAT_CDI;
     } else if (a_track.dataMode == CDROM_XA_TRACK) {
@@ -671,30 +672,30 @@ _get_track_format_osx(void *env, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_get_track_green_osx(void *env, track_t track_num) 
+_get_track_green_osx(void *user_data, track_t i_track) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   CDTrackInfo a_track;
  
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!env->toc_init) _cdio_read_toc (env) ;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS;
 
-  if (track_num > TOTAL_TRACKS || track_num == 0)
+  if (i_track > TOTAL_TRACKS || i_track == 0)
     return false;
 
   dk_cd_read_track_info_t cd_read;
   memset( &cd_read, 0, sizeof(cd_read) );
 
-  cd_read.address = track_num;
+  cd_read.address = i_track;
   cd_read.addressType = kCDTrackInfoAddressTypeTrackNumber;
 
   cd_read.buffer = &a_track;
   cd_read.bufferLength = sizeof(CDTrackInfo);
 
-  if( ioctl( _obj->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
+  if( ioctl( env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
   {
-    cdio_error( "could not read trackinfo for track %d", track_num );
+    cdio_error( "could not read trackinfo for track %d", i_track );
     return -1;
   }
 
@@ -712,7 +713,7 @@ cdio_get_devices_osx(void)
 #ifndef HAVE_DARWIN_CDROM
   return NULL;
 #else
-  io_object_t   next_media;
+  ioenvect_t   next_media;
   mach_port_t   master_port;
   kern_return_t kern_result;
   io_iterator_t media_iterator;

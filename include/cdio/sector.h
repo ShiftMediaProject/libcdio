@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.12 2004/05/11 02:15:49 rocky Exp $
+    $Id: sector.h,v 1.13 2004/06/02 00:43:53 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -109,12 +109,15 @@
 /*! "before data" sync bytes + header of XA (green, mode2) frame */
 #define CDIO_CD_XA_SYNC_HEADER   (CDIO_CD_SYNC_SIZE+CDIO_CD_XA_HEADER) 
 
-/* CD-ROM address types (Linux cdrom_tocentry.cdte_format) */
+/*! CD-ROM address types (GNU/Linux e.g. cdrom_tocentry.cdte_format) */
 #define	CDIO_CDROM_LBA 0x01 /**< "logical block": first frame is #0 */
 #define	CDIO_CDROM_MSF 0x02 /**< "minute-second-frame": binary, not
                                BCD here! */
 
+/*! CD-ROM track format types (GNU/Linux cdte_ctrl) */
 #define	CDIO_CDROM_DATA_TRACK	0x04
+#define	CDIO_CDROM_CDI_TRACK	0x10
+#define	CDIO_CDROM_XA_TRACK	0x20
 
 /*! The leadout track is always 0xAA, regardless of # of tracks on disc */
 #define	CDIO_CDROM_LEADOUT_TRACK 0xAA

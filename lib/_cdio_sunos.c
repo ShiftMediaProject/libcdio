@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.33 2004/05/31 12:29:09 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.34 2004/06/02 00:43:53 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -41,7 +41,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.33 2004/05/31 12:29:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.34 2004/06/02 00:43:53 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -647,23 +647,25 @@ _cdio_get_num_tracks(void *user_data)
   Get format of track. 
 */
 static track_format_t
-_cdio_get_track_format(void *user_data, track_t track_num) 
+_cdio_get_track_format(void *user_data, track_t i_track) 
 {
   _img_private_t *env = user_data;
   
   if (!env->gen.init) _cdio_init(env);
   if (!env->gen.toc_init) _cdio_read_toc (env) ;
 
-  if (track_num > TOTAL_TRACKS || track_num == 0)
+  if (i_track > TOTAL_TRACKS || i_track == 0)
     return TRACK_FORMAT_ERROR;
+
+  i_track -= FIRST_TRACK_NUM;
 
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
    */
-  if (env->tocent[track_num-1].cdte_ctrl & CDROM_DATA_TRACK) {
-    if (env->tocent[track_num-1].cdte_format == 0x10)
+  if (env->tocent[i_track].cdte_ctrl & CDROM_DATA_TRACK) {
+    if (env->tocent[i_track].cdte_format == CDIO_CDROM_CDI_TRACK)
       return TRACK_FORMAT_CDI;
-    else if (env->tocent[track_num-1].cdte_format == 0x20) 
+    else if (env->tocent[i_track].cdte_format == CDIO_CDROM_XA_TRACK) 
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;

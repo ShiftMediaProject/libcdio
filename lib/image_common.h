@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.4 2004/04/25 14:48:17 rocky Exp $
+    $Id: image_common.h,v 1.5 2004/06/02 00:43:53 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -28,12 +28,12 @@
   string when done with it.
   */
 static char *
-_get_mcn_image(const void *env)
+_get_mcn_image(const void *user_data)
 {
-  const _img_private_t *_obj = env;
+  const _img_private_t *env = user_data;
   
-  if (NULL == _obj->mcn) return NULL;
-  return strdup(_obj->mcn);
+  if (NULL == env->mcn) return NULL;
+  return strdup(env->mcn);
 }
 
 /*!  
@@ -44,16 +44,16 @@ _get_mcn_image(const void *env)
 
 */
 static bool
-_get_track_msf_image(void *env, track_t track_num, msf_t *msf)
+_get_track_msf_image(void *user_data, track_t track_num, msf_t *msf)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   if (NULL == msf) return false;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = env->i_tracks+1;
 
-  if (track_num <= _obj->total_tracks+1 && track_num != 0) {
-    *msf = _obj->tocent[track_num-1].start_msf;
+  if (track_num <= env->i_tracks+1 && track_num != 0) {
+    *msf = env->tocent[track_num-env->i_first_track].start_msf;
     return true;
   } else 
     return false;
@@ -64,11 +64,11 @@ _get_track_msf_image(void *env, track_t track_num, msf_t *msf)
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_get_first_track_num_image(void *env) 
+_get_first_track_num_image(void *user_data) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   
-  return _obj->first_track_num;
+  return env->i_first_track;
 }
 
 /*!
@@ -76,10 +76,9 @@ _get_first_track_num_image(void *env)
   one big track. 
 */
 static track_t
-_get_num_tracks_image(void *env) 
+_get_num_tracks_image(void *user_data) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
-  return _obj->total_tracks;
+  return env->i_tracks;
 }
-
