@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.12 2003/09/20 12:33:14 rocky Exp $
+    $Id: iso9660.c,v 1.13 2003/09/20 17:47:29 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.12 2003/09/20 12:33:14 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.13 2003/09/20 17:47:29 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -94,38 +94,20 @@ iso9660_set_dtime (const struct tm *tm, /*out*/ iso9660_dtime_t *idr_date)
 void
 iso9660_set_ltime (const struct tm *_tm, /*out*/ iso9660_ltime_t *pvd_date)
 {
-  memset (pvd_date->lt_year,    '0', sizeof(pvd_date->lt_year));
-  memset (pvd_date->lt_month,   '0', sizeof(pvd_date->lt_month));
-  memset (pvd_date->lt_day,     '0', sizeof(pvd_date->lt_day));
-  memset (pvd_date->lt_hour,    '0', sizeof(pvd_date->lt_hour));
-  memset (pvd_date->lt_minute,  '0', sizeof(pvd_date->lt_minute));
-  memset (pvd_date->lt_second,  '0', sizeof(pvd_date->lt_second));
-  memset (pvd_date->lt_hsecond, '0', sizeof(pvd_date->lt_hsecond));
-  memset (pvd_date->lt_gmtoff,   0,  sizeof(pvd_date->lt_gmtoff));
+  char *_pvd_date = (char *) pvd_date; 
 
-  if (!_tm)
-    return;
+  memset (_pvd_date, '0', 16);
+  _pvd_date[16] = (int8_t) 0; /* tz */
 
-  snprintf(pvd_date->lt_year,    sizeof(pvd_date->lt_year), 
-           "%4.4d", _tm->tm_year + 1900);
+  if (!_tm) return;
 
-  snprintf(pvd_date->lt_month,   sizeof(pvd_date->lt_month), 
-           "%2.2d", _tm->tm_mon + 1);
-
-  snprintf(pvd_date->lt_day,     sizeof(pvd_date->lt_day), 
-           "%2.2d", _tm->tm_mday);
-
-  snprintf(pvd_date->lt_hour,    sizeof(pvd_date->lt_hour), 
-           "%2.2d", _tm->tm_hour);
-
-  snprintf(pvd_date->lt_minute,  sizeof(pvd_date->lt_minute), 
-           "%2.2d", _tm->tm_min);
-
-  snprintf(pvd_date->lt_second,  sizeof(pvd_date->lt_second), 
-           "%2.2d", _tm->tm_sec);
-
-  snprintf(pvd_date->lt_hsecond, sizeof(pvd_date->lt_hsecond), 
-           "%2.2d", 0);
+  snprintf(_pvd_date, 17, 
+           "%4.4d%2.2d%2.2d" "%2.2d%2.2d%2.2d" "%2.2d",
+           _tm->tm_year + 1900, _tm->tm_mon + 1, _tm->tm_mday,
+           _tm->tm_hour, _tm->tm_min, _tm->tm_sec,
+           0 /* 1/100 secs */ );
+  
+  _pvd_date[16] = (int8_t) 0; /* tz */
 }
 
 /*!
