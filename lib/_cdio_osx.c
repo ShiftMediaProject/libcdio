@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.62 2004/08/28 16:06:25 rocky Exp $
+    $Id: _cdio_osx.c,v 1.63 2004/08/29 03:05:53 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.62 2004/08/28 16:06:25 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.63 2004/08/29 03:05:53 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -414,7 +414,7 @@ get_discmode_osx (void *p_user_data)
     else if (0 == strncmp(str, "DVD-RAM", sizeof(str)) ) 
       i_discmode = CDIO_DISC_MODE_DVD_RAM;
     else if (0 == strncmp(str, "CD-ROM", sizeof(str)) )
-      i_discmode = CDIO_DISC_MODE_CD_DA;
+      i_discmode = CDIO_DISC_MODE_CD_DATA;
     else if (0 == strncmp(str, "CDR", sizeof(str)) ) 
       i_discmode = CDIO_DISC_MODE_CD_DATA;
     else if (0 == strncmp(str, "CDRW", sizeof(str)) ) 
