@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.42 2004/09/03 23:20:11 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.43 2004/11/19 13:04:25 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.42 2004/09/03 23:20:11 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.43 2004/11/19 13:04:25 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -231,9 +231,9 @@ _read_audio_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
   _img_private_t *p_env = user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
-  msf->cdmsf_min0 = from_bcd8(_msf.m);
-  msf->cdmsf_sec0 = from_bcd8(_msf.s);
-  msf->cdmsf_frame0 = from_bcd8(_msf.f);
+  msf->cdmsf_min0 = cdio_from_bcd8(_msf.m);
+  msf->cdmsf_sec0 = cdio_from_bcd8(_msf.s);
+  msf->cdmsf_frame0 = cdio_from_bcd8(_msf.f);
 
   if (p_env->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
@@ -330,9 +330,9 @@ _read_mode2_sector_bsdi (void *user_data, void *data, lsn_t lsn,
   _img_private_t *p_env = user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
-  msf->cdmsf_min0 = from_bcd8(_msf.m);
-  msf->cdmsf_sec0 = from_bcd8(_msf.s);
-  msf->cdmsf_frame0 = from_bcd8(_msf.f);
+  msf->cdmsf_min0 = cdio_from_bcd8(_msf.m);
+  msf->cdmsf_sec0 = cdio_from_bcd8(_msf.s);
+  msf->cdmsf_frame0 = cdio_from_bcd8(_msf.f);
 
   if (p_env->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
@@ -670,9 +670,9 @@ _get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
 
   {
     struct cdrom_msf0  *msf0= &p_env->tocent[i_track].cdte_addr.msf;
-    msf->m = to_bcd8(msf0->minute);
-    msf->s = to_bcd8(msf0->second);
-    msf->f = to_bcd8(msf0->frame);
+    msf->m = cdio_to_bcd8(msf0->minute);
+    msf->s = cdio_to_bcd8(msf0->second);
+    msf->f = cdio_to_bcd8(msf0->frame);
     return true;
   }
 }
