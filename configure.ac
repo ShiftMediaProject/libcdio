@@ -19,7 +19,7 @@ define(RELEASE_NUM, 71)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.113 2004/11/14 18:33:13 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.114 2004/11/16 00:12:24 nboullis Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -197,7 +197,12 @@ dnl system
 AC_CHECK_LIB(m, cos, [LIBS="$LIBS -lm"])
 CFLAGS="$CFLAGS $WARN_CFLAGS"
 
-# We need either GNU make or --without-versioned-libs
+# Do we have GNU ld? If we don't, we can't build versioned symbols.
+if test "$with_gnu_ld" != yes; then
+   AC_MSG_WARN([I don't see GNU ld. I'm going to assume --without-versioned-libs])
+   enable_versioned_libs='no'
+fi
+# We also need GNU make to build versioned symbols.
 if test "x$enable_versioned_libs" = "xyes" ; then 
   if test -n "$MAKE" ; then
     $MAKE --version 2>/dev/null >/dev/null
@@ -210,12 +215,6 @@ if test "x$enable_versioned_libs" = "xyes" ; then
     if test "$?" -ne 0 ; then
        AC_MSG_ERROR(Either set MAKE variable to GNU make or use 
    --without-versioned-libs option)
-    else 
-      # Do we have GNU ld? We need that too.
-      if test "$with_gnu_ld" != yes; then
-        AC_MSG_WARN([I don't see GNU ld. I'm going to assume --without-versioned-libs])
-	enable_versioned_libs='no'
-      fi
     fi
   fi
 fi
