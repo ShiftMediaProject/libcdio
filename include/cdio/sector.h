@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.16 2004/07/10 02:17:57 rocky Exp $
+    $Id: sector.h,v 1.17 2004/07/12 03:34:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -83,9 +83,9 @@ typedef enum {
 
 /*! disc modes (5.29.2.8) */
 typedef enum {
-	CD_DA,				/* CD-DA */
-	CD_ROM,				/* CD-ROM mode 1 */
-	CD_ROM_XA			/* CD-ROM XA and CD-I */
+	CDIO_DISC_MODE_CD_DA,			/* CD-DA */
+	CDIO_DISC_MODE_CD_ROM,			/* CD-ROM mode 1 */
+	CDIO_DISC_MODE_CD_ROM_XA		/* CD-ROM XA and CD-I */
 } discmode_t;
 
 /*! track flags

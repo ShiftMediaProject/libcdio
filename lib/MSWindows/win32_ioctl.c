@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.7 2004/07/10 01:21:20 rocky Exp $
+    $Id: win32_ioctl.c,v 1.8 2004/07/12 03:34:14 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.7 2004/07/10 01:21:20 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.8 2004/07/12 03:34:14 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -477,7 +477,7 @@ get_drive_cap_win32ioctl (const _img_private_t *env)
   sptwb.Spt.SenseInfoOffset    = 
     offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,SenseBuf);
 
-  CDIO_MMC_SET_COMMAND(sptwb.Spt.Cdb, CDIO_MMC_MODE_SENSE);
+  CDIO_MMC_SET_COMMAND(sptwb.Spt.Cdb, CDIO_MMC_GPCMD_MODE_SENSE);
   /*sptwb.Spt.Cdb[1]           = 0x08;  /+ doesn't return block descriptors */
   sptwb.Spt.Cdb[1]             = 0x0;
   sptwb.Spt.Cdb[2]             = CDIO_MMC_CAPABILITIES_PAGE;

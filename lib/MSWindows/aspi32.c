@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.14 2004/07/08 06:30:01 rocky Exp $
+    $Id: aspi32.c,v 1.15 2004/07/12 03:34:14 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.14 2004/07/08 06:30:01 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.15 2004/07/12 03:34:14 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -542,7 +542,7 @@ read_toc_aspi (_img_private_t *env)
   ssc.SRB_CDBLen      = 10;
   
   /* Operation code */
-  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_CPCMD_READ_TOC);
+  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_GPCMD_READ_TOC);
   
   /* Format */
   ssc.CDBByte[ 2 ] = READ_TOC_FORMAT_TOC;
