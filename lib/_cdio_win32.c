@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.17 2003/10/17 02:25:36 rocky Exp $
+    $Id: _cdio_win32.c,v 1.18 2003/10/18 04:08:46 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.17 2003/10/17 02:25:36 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.18 2003/10/18 04:08:46 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -83,6 +83,21 @@ typedef struct __RAW_READ_INFO {
     ULONG SectorCount;
     TRACK_MODE_TYPE TrackMode;
 } RAW_READ_INFO, *PRAW_READ_INFO;
+
+typedef struct _SUB_Q_HEADER {
+  UCHAR Reserved;
+  UCHAR AudioStatus;
+  UCHAR DataLength[2];
+} SUB_Q_HEADER, *PSUB_Q_HEADER;
+
+typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
+  SUB_Q_HEADER Header;
+  UCHAR FormatCode;
+  UCHAR Reserved[3];
+  UCHAR Reserved1 : 7;
+  UCHAR Mcval :1;
+  UCHAR MediaCatalog[15];
+} SUB_Q_MEDIA_CATALOG_NUMBER, *PSUB_Q_MEDIA_CATALOG_NUMBER;
 
 #ifndef IOCTL_CDROM_BASE
 #    define IOCTL_CDROM_BASE FILE_DEVICE_CD_ROM
@@ -209,7 +224,7 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
     char error[256];
     
     mciGetErrorString(mci_error, error, 256);
-    cdio_error("mciSendCommand() error: %s", error);
+    cdio_warn("mciSendCommand() error: %s", error);
   }
   return(mci_error == 0);
 }
@@ -850,7 +865,7 @@ _cdio_read_toc (_img_private_t *_obj)
 			 IOCTL_CDROM_READ_TOC,
 			 NULL, 0, &cdrom_toc, sizeof(CDROM_TOC),
 			 &dwBytesReturned, NULL ) == 0 ) {
-      cdio_debug( "could not read TOCHDR" );
+      cdio_warn( "could not read TOCHDR" );
       return false;
     }
     
@@ -898,12 +913,12 @@ _cdio_eject_media (void *user_data) {
   i_flags = MCI_OPEN_TYPE | MCI_OPEN_TYPE_ID |
     MCI_OPEN_ELEMENT | MCI_OPEN_SHAREABLE;
   
-  if( !mciSendCommand( 0, MCI_OPEN, i_flags, (unsigned long)&op ) ) {
+  if( _cdio_mciSendCommand( 0, MCI_OPEN, i_flags, &op ) ) {
     st.dwItem = MCI_STATUS_READY;
     /* Eject disc */
-    ret = mciSendCommand( op.wDeviceID, MCI_SET, MCI_SET_DOOR_OPEN, 0 ) != 0;
+    ret = _cdio_mciSendCommand( op.wDeviceID, MCI_SET, MCI_SET_DOOR_OPEN, 0 ) != 0;
     /* Release access to the device */
-    mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
+    _cdio_mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
   } else 
     ret = 0;
   
@@ -943,6 +958,36 @@ _cdio_get_first_track_num(void *user_data)
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
   return _obj->first_track_num;
+}
+
+/*!
+  Return the media catalog number MCN.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static char *
+_cdio_get_mcn (void *env) {
+
+#if 0
+  _img_private_t *_obj = env;
+
+  if( !_obj->hASPI ) {
+    DWORD dwBytesReturned;
+    SUB_Q_MEDIA_CATALOG_NUMBER mcn;
+
+    if( DeviceIoControl( _obj->h_device_handle,
+			 IOCTL_CDROM_READ_Q_CHANNEL,
+			 NULL, 0, &mcn, sizeof(mcn),
+			 &dwBytesReturned, NULL ) == 0 ) {
+      cdio_warn( "could not read Q Channel" );
+      return NULL;
+    }
+    return strdup(mcn.MediaCatalog);
+  }
+#endif
+  return NULL;
 }
 
 /*!
@@ -986,15 +1031,14 @@ _cdio_get_track_format(void *env, track_t track_num)
     i_flags = MCI_OPEN_TYPE | MCI_OPEN_TYPE_ID |
       MCI_OPEN_ELEMENT | MCI_OPEN_SHAREABLE;
     
-    if( !_cdio_mciSendCommand( 0, MCI_OPEN, i_flags, &op ) ) {
+    if( _cdio_mciSendCommand( 0, MCI_OPEN, i_flags, &op ) ) {
       st.dwItem  = MCI_CDA_STATUS_TYPE_TRACK;
       st.dwTrack = track_num;
       i_flags = MCI_TRACK | MCI_STATUS_ITEM ;
-      ret = mciSendCommand( op.wDeviceID, MCI_STATUS, i_flags, 
-			    (unsigned long) &st );
+      ret = _cdio_mciSendCommand( op.wDeviceID, MCI_STATUS, i_flags, &st );
       
       /* Release access to the device */
-      mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
+      _cdio_mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
       
       switch(st.dwReturn) {
       case MCI_CDA_TRACK_AUDIO:
@@ -1189,7 +1233,7 @@ cdio_open_win32 (const char *source_name)
     .get_default_device = cdio_get_default_device_win32,
     .get_devices        = cdio_get_devices_win32,
     .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = NULL, 
+    .get_mcn            = _cdio_get_mcn, 
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,
