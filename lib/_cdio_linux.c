@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.7 2003/04/06 18:12:37 rocky Exp $
+    $Id: _cdio_linux.c,v 1.8 2003/04/08 21:12:45 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.7 2003/04/06 18:12:37 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.8 2003/04/08 21:12:45 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -116,22 +116,25 @@ _set_bsize (int fd, unsigned int bsize)
   cgc.data_direction = CGC_DATA_WRITE;
 
   mh.block_desc_length = 0x08;
-  mh.block_length_hi = (bsize >> 16) & 0xff;
-  mh.block_length_med = (bsize >> 8) & 0xff;
-  mh.block_length_lo = (bsize >> 0) & 0xff;
+  mh.block_length_hi   = (bsize >> 16) & 0xff;
+  mh.block_length_med  = (bsize >>  8) & 0xff;
+  mh.block_length_lo   = (bsize >>  0) & 0xff;
 
   return ioctl (fd, CDROM_SEND_PACKET, &cgc);
 }
 
+/* Packet driver to read mode2 sectors. 
+   Can read only up to 25 blocks.
+*/
 static int
-__read_mode2 (int fd, void *buf, lba_t lba, unsigned nblocks, 
-		 bool _workaround)
+__read_packet_mode2_sectors (int fd, void *buf, lba_t lba, 
+			     unsigned int nblocks, bool use_read_10)
 {
   struct cdrom_generic_command cgc;
 
   memset (&cgc, 0, sizeof (struct cdrom_generic_command));
 
-  cgc.cmd[0] = _workaround ? GPCMD_READ_10 : GPCMD_READ_CD;
+  cgc.cmd[0] = use_read_10 ? GPCMD_READ_10 : GPCMD_READ_CD;
   
   cgc.cmd[2] = (lba >> 24) & 0xff;
   cgc.cmd[3] = (lba >> 16) & 0xff;
@@ -142,7 +145,7 @@ __read_mode2 (int fd, void *buf, lba_t lba, unsigned nblocks,
   cgc.cmd[7] = (nblocks >> 8) & 0xff;
   cgc.cmd[8] = (nblocks >> 0) & 0xff;
 
-  if (!_workaround)
+  if (!use_read_10)
     {
       cgc.cmd[1] = 0; /* sector size mode2 */
 
@@ -157,7 +160,7 @@ __read_mode2 (int fd, void *buf, lba_t lba, unsigned nblocks,
 #endif
   cgc.data_direction = CGC_DATA_READ;
 
-  if (_workaround)
+  if (use_read_10)
     {
       int retval;
 
@@ -180,8 +183,8 @@ __read_mode2 (int fd, void *buf, lba_t lba, unsigned nblocks,
 }
 
 static int
-_read_mode2 (int fd, void *buf, lba_t lba, unsigned nblocks, 
-	     bool _workaround)
+_read_packet_mode2_sectors (int fd, void *buf, lba_t lba, unsigned nblocks, 
+	     bool use_read_10)
 {
   unsigned l = 0;
   int retval = 0;
@@ -191,7 +194,8 @@ _read_mode2 (int fd, void *buf, lba_t lba, unsigned nblocks,
       const unsigned nblocks2 = (nblocks > 25) ? 25 : nblocks;
       void *buf2 = ((char *)buf ) + (l * 2336);
       
-      retval |= __read_mode2 (fd, buf2, lba + l, nblocks2, _workaround);
+      retval |= __read_packet_mode2_sectors (fd, buf2, lba + l, nblocks2, 
+					     use_read_10);
 
       if (retval)
 	break;
@@ -256,8 +260,8 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
       
     case _AM_READ_CD:
     case _AM_READ_10:
-      if (_read_mode2 (_obj->gen.fd, buf, lsn, 1, 
-		       (_obj->access_mode == _AM_READ_10)))
+      if (_read_packet_mode2_sectors (_obj->gen.fd, buf, lsn, 1, 
+				      (_obj->access_mode == _AM_READ_10)))
 	{
 	  perror ("ioctl()");
 	  if (_obj->access_mode == _AM_READ_CD)
