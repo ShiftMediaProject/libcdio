@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.30 2004/08/07 03:25:25 rocky Exp $
+    $Id: scsi_mmc.h,v 1.31 2004/08/10 02:29:46 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -140,6 +140,13 @@
 						   Feature */
 #define CDIO_MMC_FEATURE_FORMATABLE       0x023 /**< Formattable
 						   Feature */
+#define CDIO_MMC_FEATURE_DEFECT_MGMT      0x024 /**< Management
+						   Ability of the
+						   Logical Unit/media
+						   system to provide
+						   an apparently
+						   defect-free
+						   space.*/
 #define CDIO_MMC_FEATURE_WRITE_ONCE       0x025 /**< Write Once
 						   Feature */
 #define CDIO_MMC_FEATURE_RESTRICT_OVERW   0x026 /**< Restricted
@@ -172,6 +179,12 @@
 						   CSS/CPPM
 						   authentication and
 						   RPC */
+#define CDIO_MMC_FEATURE_RT_STREAMING     0x107 /**< Ability to read
+						   and write using
+						   Initiator requested
+						   performance
+						   parameters
+						   */
 #define CDIO_MMC_FEATURE_LU_SN            0x108 /**< The Logical Unit
 						   has a unique
 						   identifier. */

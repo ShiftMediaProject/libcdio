@@ -1,5 +1,5 @@
 /*
-  $Id: sample10.c,v 1.6 2004/08/08 03:11:11 rocky Exp $
+  $Id: sample10.c,v 1.7 2004/08/10 02:29:46 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -232,8 +232,18 @@ main(int argc, const char *argv[])
 	  case CDIO_MMC_FEATURE_FORMATABLE:
 	    printf("Formattable Feature\n");
 	    break;
+	  case CDIO_MMC_FEATURE_DEFECT_MGMT:
+	    printf("Management Ability of the Logical Unit/media system "
+		 "to provide an apparently defect-free space.\n");
+	    break;
 	  case CDIO_MMC_FEATURE_WRITE_ONCE:
 	    printf("Write Once Feature\n");
+	    break;
+	  case CDIO_MMC_FEATURE_RESTRICT_OVERW:
+	    printf("Restricted Overwrite Feature\n");
+	    break;
+	  case CDIO_MMC_FEATURE_CD_RW_CAV:
+	    printf("CD-RW CAV Write Feature\n");
 	    break;
 	  case CDIO_MMC_FEATURE_MRW:
 	    printf("MRW Feature\n");
@@ -244,17 +254,14 @@ main(int argc, const char *argv[])
 	  case CDIO_MMC_FEATURE_DVD_PR:
 	    printf("DVD+R Feature\n");
 	    break;
-	  case CDIO_MMC_FEATURE_CD_RW_CAV:
-	    printf("CD-RW CAV Write Feature\n");
-	    break;
-	  case CDIO_MMC_FEATURE_RESTRICT_OVERW:
-	    printf("Restricted Overwrite Feature\n");
-	    break;
 	  case CDIO_MMC_FEATURE_CD_TAO:
 	    printf("CD Track at Once Feature\n");
 	    break;
 	  case CDIO_MMC_FEATURE_CD_SAO:
 	    printf("CD Mastering (Session at Once) Feature\n");
+	    break;
+	  case CDIO_MMC_FEATURE_POWER_MGMT:
+	    printf("Initiator and device directed power management\n");
 	    break;
 	  case CDIO_MMC_FEATURE_CDDA_EXT_PLAY:
 	    printf("CD Audio External Play Feature\n");
@@ -271,9 +278,6 @@ main(int argc, const char *argv[])
 	    }
 	    printf("\n");
 	    break;
-	  case CDIO_MMC_FEATURE_POWER_MGMT:
-	    printf("Initiator and device directed power management\n");
-	    break;
 	  case CDIO_MMC_FEATURE_MCODE_UPGRADE:
 	    printf("Ability for the device to accept new microcode via "
 		   "the interface\n");
@@ -286,6 +290,9 @@ main(int argc, const char *argv[])
 	    printf("Ability to perform DVD CSS/CPPM authentication and"
 		   " RPC\n");
 	    break;
+	  case CDIO_MMC_FEATURE_RT_STREAMING:
+	    printf("\tAbility to read and write using Initiator requested performance parameters\n");
+	    break;
 	  case CDIO_MMC_FEATURE_LU_SN: {
 	    uint8_t i_serial = *(p+3);
 	    char serial[257] = { '\0', };
@@ -297,7 +304,11 @@ main(int argc, const char *argv[])
 	    break;
 	  }
 	  default: 
-	    printf("Unknown feature code %x\n", i_feature);
+	    if ( 0 != (i_feature & 0xFF00) ) {
+	      printf("Vendor-specific feature code %x\n", i_feature);
+	    } else {
+	      printf("Unknown feature code %x\n", i_feature);
+	    }
 	  }
 	p += i_feature_additional + 4;
       }

@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.19 2004/08/08 03:11:11 rocky Exp $
+  $Id: util.c,v 1.20 2004/08/10 02:29:46 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -283,8 +283,18 @@ print_mmc_drive_features(CdIo *p_cdio)
 	case CDIO_MMC_FEATURE_FORMATABLE:
 	  printf("Formattable Feature\n");
 	  break;
+	case CDIO_MMC_FEATURE_DEFECT_MGMT:
+	  printf("Management Ability of the Logical Unit/media system "
+		 "to provide an apparently defect-free space.\n");
+	  break;
 	case CDIO_MMC_FEATURE_WRITE_ONCE:
 	  printf("Write Once Feature\n");
+	  break;
+	case CDIO_MMC_FEATURE_RESTRICT_OVERW:
+	  printf("Restricted Overwrite Feature\n");
+	  break;
+	case CDIO_MMC_FEATURE_CD_RW_CAV:
+	  printf("CD-RW CAV Write Feature\n");
 	  break;
 	case CDIO_MMC_FEATURE_MRW:
 	  printf("MRW Feature\n");
@@ -294,12 +304,6 @@ print_mmc_drive_features(CdIo *p_cdio)
 	  break;
 	case CDIO_MMC_FEATURE_DVD_PR:
 	  printf("DVD+R Feature\n");
-	  break;
-	case CDIO_MMC_FEATURE_CD_RW_CAV:
-	  printf("CD-RW CAV Write Feature\n");
-	  break;
-	case CDIO_MMC_FEATURE_RESTRICT_OVERW:
-	  printf("Restricted Overwrite Feature\n");
 	  break;
 	case CDIO_MMC_FEATURE_CD_TAO:
 	  printf("CD Track at Once Feature\n");
@@ -343,6 +347,9 @@ print_mmc_drive_features(CdIo *p_cdio)
 	  printf("\tCSS version %d\n", p[7]);
 	  printf("\t\n");
 	  break;
+	case CDIO_MMC_FEATURE_RT_STREAMING:
+	  printf("\tAbility to read and write using Initiator requested performance parameters\n");
+	  break;
 	case CDIO_MMC_FEATURE_LU_SN: {
 	  uint8_t i_serial = *(p+3);
 	  char serial[257] = { '\0', };
@@ -354,7 +361,12 @@ print_mmc_drive_features(CdIo *p_cdio)
 	  break;
 	}
 	default: 
-	  printf("Unknown feature code %x\n", i_feature);
+	  if ( 0 != (i_feature & 0xFF00) ) {
+	    printf("Vendor-specific feature code %x\n", i_feature);
+	  } else {
+	    printf("Unknown feature code %x\n", i_feature);
+	  }
+	  
 	}
       p += i_feature_additional + 4;
     }

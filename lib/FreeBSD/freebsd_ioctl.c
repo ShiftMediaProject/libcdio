@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.11 2004/07/28 11:45:21 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.12 2004/08/10 02:29:46 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.11 2004/07/28 11:45:21 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.12 2004/08/10 02:29:46 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -182,7 +182,7 @@ get_mcn_freebsd_ioctl (const _img_private_t *env) {
   subchannel.address_format = CDIO_CDROM_MSF;
   subchannel.data_format    = CDIO_SUBCHANNEL_MEDIA_CATALOG;
   subchannel.track          = 0;
-  subchannel.data_len       = 28;
+  subchannel.data_len       = sizeof(subchannel_info);
   subchannel.data           = &subchannel_info;
 
   if(ioctl(env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
