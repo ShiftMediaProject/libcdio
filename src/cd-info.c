@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.121 2005/03/01 02:49:43 rocky Exp $
+    $Id: cd-info.c,v 1.122 2005/03/01 07:54:09 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -870,6 +870,8 @@ main(int argc, const char *argv[])
   unsigned int         num_data       =  0;  /* # of data tracks */
   int                  first_data     = -1;  /* # of first data track */
   int                  first_audio    = -1;  /* # of first audio track */
+  bool                 b_playing_audio = false; /* currently playing a 
+						   CD-DA */
   cdio_iso_analysis_t  cdio_iso_analysis; 
   char                *media_catalog_number;  
   discmode_t           discmode = CDIO_DISC_MODE_NO_INFO;
@@ -1160,6 +1162,7 @@ main(int argc, const char *argv[])
 	case CDIO_MMC_READ_SUB_ST_INVALID:
 	  report( stdout, "invalid\n" );   break;
 	case CDIO_MMC_READ_SUB_ST_PLAY:
+	  b_playing_audio = true;
 	  report( stdout, "playing" );     break;
 	case CDIO_MMC_READ_SUB_ST_PAUSED:
 	  report( stdout, "paused" );      break;
@@ -1207,6 +1210,14 @@ main(int argc, const char *argv[])
 #endif /*CDIO_IOCTL_FINISHED*/
   
   if (!opts.no_analysis) {
+    if (b_playing_audio) {
+      /* Running a CD Analysis would mess up audio playback.*/
+      report(stdout, 
+	     "CD Analysis Report omitted because audio is currently "
+	     "playing.\n");
+      myexit(p_cdio, EXIT_SUCCESS);
+    }
+
     report(stdout, STRONG "CD Analysis Report\n" NORMAL);
     
     /* try to find out what sort of CD we have */
