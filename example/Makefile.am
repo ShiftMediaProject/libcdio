@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.12 2004/11/22 01:03:53 rocky Exp $
+#   $Id: Makefile.am,v 1.13 2005/01/12 04:36:57 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -24,7 +24,7 @@ if DISABLE_CPP
 noinst_PROGRAMS = cdtext drives iso1 iso2 iso3 scsi-mmc1 scsi-mmc2 \
 		  tracks sample2 sample3 sample4 
 else  
-noinst_PROGRAMS = cdtext drives iso1 iso2 iso3 scsi-mmc1 scsi-mmc2 \
+noinst_PROGRAMS = cdtext drives iso1 iso2 iso3 paranoia scsi-mmc1 scsi-mmc2 \
 		  tracks sample2 sample3 sample4 iso1cpp iso2cpp iso3cpp
 endif
 
@@ -33,6 +33,8 @@ INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 cdtext_LDADD  = $(LIBCDIO_LIBS)
 
 drives_LDADD = $(LIBCDIO_LIBS)
+
+paranoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS)
 
 iso1_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 iso2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
