@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.12 2005/02/27 20:16:08 rocky Exp $
+    $Id: iso9660.c,v 1.13 2005/03/03 10:32:01 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.12 2005/02/27 20:16:08 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.13 2005/03/03 10:32:01 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -137,7 +137,7 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
   p_tm->tm_isdst  = -1; /* information not available */
   {
     time_t t = 0;
-    struct tm *p_temp_tm = localtime(&t);
+    struct tm *p_temp_tm = b_localtime ? localtime(&t): gmtime(&t);
     
     /* Recompute tm_wday and tm_yday via mktime. Also adjust for 
        time-zone differences */
@@ -160,11 +160,11 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
     }
 #endif
     
-    p_temp_tm = localtime(&t);
+    p_temp_tm = b_localtime ? localtime(&t) : gmtime(&t);
 
     if (p_temp_tm->tm_isdst) {
       t += 60*60;
-      p_temp_tm = localtime(&t);
+      p_temp_tm = b_localtime ? localtime(&t) : gmtime(&t);
     }
     
     memcpy(p_tm, p_temp_tm, sizeof(struct tm));
