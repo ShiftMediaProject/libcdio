@@ -9,8 +9,6 @@
 - OSX drive reading works better (thanks to Justin F. Hallett)
 - cd-read allows dumping bytes to stdout and hexdumps to a file
   via options --no-hexdump and --hexdump
-- cd-read allows dumping bytes to stdout and hexdumps to a file
-  via options --no-hexdump and --hexdump
 - better NRG reading (thanks to Michael Kukat via extractnrg.pl)
 - better tracking of allocated variables (cd-read, cd-info, FreeBSD)
 
@@ -121,4 +119,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.43 2004/06/02 04:03:40 thesin Exp $
+$Id: NEWS,v 1.44 2004/06/09 11:01:20 rocky Exp $
