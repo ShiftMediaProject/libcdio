@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.45 2004/06/29 02:01:24 rocky Exp $
+    $Id: iso9660.h,v 1.46 2004/09/04 23:49:47 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -56,32 +56,35 @@
     =	 38 chars
 \endverbatim 
 */
-#define LEN_ISONAME     31
-#define MAX_ISONAME     37
 
+/*! size in bytes of the filename portion + null byte */
+#define LEN_ISONAME      31
+
+/*! Max # characters in the entire ISO 9660 filename. */
+#define MAX_ISONAME      37
+
+/*! Max # characters in the entire ISO 9660 filename. */
 #define MAX_ISOPATHNAME 255
 
-/*! \def Max # characters in an perparer id. */
+/*! Max # characters in an perparer id. */
 #define ISO_MAX_PREPARER_ID 128
 
-/*! \def Max # characters in an publisher id. */
+/*! Max # characters in an publisher id. */
 #define ISO_MAX_PUBLISHER_ID 128
 
-/*! \def Max # characters in an application id. */
+/*! Max # characters in an application id. */
 #define ISO_MAX_APPLICATION_ID 128
 
-/*! \def Max # characters in an system id. */
+/*! Max # characters in an system id. */
 #define ISO_MAX_SYSTEM_ID 32
 
-/*! \def Max # characters in an volume id. */
+/*! Max # characters in an volume id. */
 #define ISO_MAX_VOLUME_ID 32
 
-/*! \def Max # characters in an volumeset id. */
+/*! Max # characters in an volume-set id. */
 #define ISO_MAX_VOLUMESET_ID 128
 
-/*
- * ISO 9660 directory flags.
- */
+/**! ISO 9660 directory flags. */
 #define	ISO_FILE	  0	/**< Not really a flag...		  */
 #define	ISO_EXISTENCE	  1	/**< Do not make existence known (hidden) */
 #define	ISO_DIRECTORY	  2	/**< This file is a directory		  */
@@ -92,18 +95,23 @@
 #define	ISO_DRESERVED2	 64	/**< Reserved bit 6			  */
 #define	ISO_MULTIEXTENT	128	/**< Not final entry of a mult. ext. file */
 
-/* Volume descriptor types */
+/**! Volume descriptor types */
 #define ISO_VD_PRIMARY             1
 #define ISO_VD_SUPPLEMENTARY	   2  /**< Used by Joliet */
 #define ISO_VD_END	         255
 
-#define ISO_PVD_SECTOR  16      /**< Sector of Primary Volume Descriptor */
-#define ISO_EVD_SECTOR  17      /**< Sector of End Volume Descriptor */
+/*! Sector of Primary Volume Descriptor */
+#define ISO_PVD_SECTOR  16
 
-#define ISO_STANDARD_ID      "CD001" /**< String inside track identifying an 
-                                        ISO 9660 filesystem. */
-#define ISO_BLOCKSIZE           2048 /**< Number of bytes in an ISO
-                                        9660 block */
+/*! Sector of End Volume Descriptor */
+#define ISO_EVD_SECTOR  17  
+
+/*! String inside track identifying an ISO 9660 filesystem. */
+#define ISO_STANDARD_ID      "CD001" 
+
+
+/*! Number of bytes in an ISO 9660 block */
+#define ISO_BLOCKSIZE           2048 
 
 #ifdef __cplusplus
 extern "C" {

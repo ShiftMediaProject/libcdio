@@ -1,5 +1,5 @@
 /*
-    $Id: logging.h,v 1.8 2004/05/05 02:47:18 rocky Exp $
+    $Id: logging.h,v 1.9 2004/09/04 23:49:47 rocky Exp $
 
     Copyright (C) 2000, Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, Rocky Bernstein <rocky@panix.com>
@@ -75,7 +75,7 @@ typedef void (*cdio_log_handler_t) (cdio_log_level_t level,
 cdio_log_handler_t cdio_log_set_handler (cdio_log_handler_t new_handler);
 
 /**
- * Handle an message with the given log level
+ * Handle an message with the given log level.
  *
  * @see cdio_debug
  * @see cdio_info

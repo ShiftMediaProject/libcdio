@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.h,v 1.6 2004/07/17 02:18:27 rocky Exp $
+    $Id: cdtext.h,v 1.7 2004/09/04 23:49:47 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     adapted from cuetools
@@ -21,7 +21,7 @@
 */
 /*!
  * \file cdtext.h 
- * \brief Header CDTEXT information
+ * \brief Header CD-Text information
 */
 
 
@@ -36,6 +36,10 @@ extern "C" {
 
 #define MAX_CDTEXT_FIELDS 13
   
+  /*! \brief structure for holding CD-Text information
+
+  @see cdtext_init, cdtext_destroy, cdtext_get, and cdtext_set.
+  */
   struct cdtext {
     char *field[MAX_CDTEXT_FIELDS];
   };

@@ -1,5 +1,5 @@
 /*
-    $Id: dvd.h,v 1.3 2004/07/28 01:09:59 rocky Exp $
+    $Id: dvd.h,v 1.4 2004/09/04 23:49:47 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Modeled after GNU/Linux definitions in linux/cdrom.h
@@ -20,7 +20,7 @@
 */
 
 /*!
-   \file scsi_mmc.h 
+   \file dvd.h 
    \brief Definitions for DVD access.
 */
 

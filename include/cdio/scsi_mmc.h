@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.32 2004/08/27 02:50:13 rocky Exp $
+    $Id: scsi_mmc.h,v 1.33 2004/09/04 23:49:47 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -264,13 +264,16 @@
  */
 #define MAX_CDB_LEN 12
 
-/*! A Command Descriptor Buffer (CDB) used in sending SCSI MMC 
+/*! \brief A Command Descriptor Buffer (CDB) used in sending SCSI MMC 
     commands.
  */
 typedef struct scsi_mmc_cdb {
   uint8_t field[MAX_CDB_LEN];
 } scsi_mmc_cdb_t;
 
+/*! \brief Format of header block in data returned from a SCSI-MMC
+    GET_CONFIGURATION command.
+ */
 typedef struct scsi_mmc_feature_list_header {
   unsigned char length_msb;
   unsigned char length_1sb;
