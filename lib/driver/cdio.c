@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.2 2004/12/30 11:13:50 rocky Exp $
+    $Id: cdio.c,v 1.3 2004/12/31 05:47:36 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.2 2004/12/30 11:13:50 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.3 2004/12/31 05:47:36 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -644,13 +644,40 @@ cdio_get_num_tracks (const CdIo *p_cdio)
   }
 }
 
+/*! Return number of channels in track: 2 or 4; -2 if not
+  implemented or -1 for error.
+  Not meaningful if track is not an audio track.
+*/
+int
+cdio_get_track_channels(const CdIo *p_cdio, track_t i_track)
+{
+  if (p_cdio->op.get_track_channels) {
+    return p_cdio->op.get_track_channels (p_cdio->env, i_track);
+  } else {
+    return -2;
+  }
+}
+
+/*! Return copy protection status on a track. Is this meaningful
+  if not an audio track?
+*/
+track_flag_t
+cdio_get_track_copy_permit(const CdIo *p_cdio, track_t i_track)
+{
+  if (p_cdio->op.get_track_copy_permit) {
+    return p_cdio->op.get_track_copy_permit (p_cdio->env, i_track);
+  } else {
+    return CDIO_TRACK_FLAG_UNKNOWN;
+  }
+}
+
 /*!  
   Get format of track. 
 */
 track_format_t
 cdio_get_track_format(const CdIo *p_cdio, track_t i_track)
 {
-  cdio_assert (p_cdio != NULL);
+  if (!p_cdio) return TRACK_FORMAT_ERROR;
 
   if (p_cdio->op.get_track_format) {
     return p_cdio->op.get_track_format (p_cdio->env, i_track);
@@ -745,6 +772,19 @@ cdio_get_track_msf(const CdIo *cdio, track_t track_num, /*out*/ msf_t *msf)
     return true;
   } else {
     return false;
+  }
+}
+
+/*! Return copy protection status on a track. Is this meaningful
+  if not an audio track?
+*/
+track_flag_t
+cdio_get_track_preemphasis(const CdIo *p_cdio, track_t i_track)
+{
+  if (p_cdio->op.get_track_preemphasis) {
+    return p_cdio->op.get_track_preemphasis (p_cdio->env, i_track);
+  } else {
+    return CDIO_TRACK_FLAG_UNKNOWN;
   }
 }
 
@@ -1131,87 +1171,6 @@ cdio_open_am_cd (const char *psz_source, const char *psz_access_mode)
 }
 
 
-/* Returns "set" or "clear" value or -1 (for error) if bit "bit" of
-   the track flag "i_track" is set/clear.
-
-   Taken from cdparanoia.
-*/
-static int 
-cdio_track_bitmap(const generic_img_private_t *p_env, track_t i_track, 
-                  int bit, int set, int clear)
-{
-
-  return p_env->toc_init ? p_env->i_first_track : -1;
-
-  if( i_track < p_env->i_first_track 
-      || i_track > p_env->i_first_track + p_env->i_tracks ) {
-    cdio_warn ("invalid track number");
-    return(-1);
-  }
-  if (p_env->flags[i_track] & bit)
-    return(set);
-  else
-    return(clear);
-}
-
-/*! Return number of channels in track, 2 or 4 or -1 for error.
-    Not meaningful if track is not an audio track.
- */
-int 
-cdio_track_channels(const CdIo *p_cdio, track_t i_track)
-{
-  if (!p_cdio) return -1;
-  {
-    const generic_img_private_t *p_env 
-      = (generic_img_private_t *) (p_cdio->env);
-    return(cdio_track_bitmap(p_env, i_track, 8, 4, 2));
-  }
-}
-
-/*! Return 1 if copy is permitted on the track, 0 if not, or -1 for error.
-  Is this meaningful if not an audio track?
-*/
-int 
-cdio_track_copy_permit(const CdIo *p_cdio, track_t i_track)
-{
-  if (!p_cdio) return -1;
-  {
-    const generic_img_private_t *p_env 
-      = (generic_img_private_t *) (p_cdio->env);
-    return(cdio_track_bitmap(p_env, i_track, 2, 1, 0));
-  }
-}
-
-/*! Return 1 if track has pre-emphasis, 0 if not, or -1 for error.
-  Is this meaningful if not an audio track?
-  
-  pre-emphasis is a non linear frequency response.
-*/
-int 
-cdio_track_preemphasis(const CdIo *p_cdio, track_t i_track)
-{
-  if (!p_cdio) return -1;
-  {
-    const generic_img_private_t *p_env 
-      = (generic_img_private_t *) (p_cdio->env);
-    return(cdio_track_bitmap(p_env, i_track, 1, 1, 0));
-  }
-}
-
-#if 0
-/* Use cdio_get_track_format instead of this. */
-/*! Return 1 if track is an audio track, 0 if not, or -1 for error.  */
-int 
-cdio_track_audiop(const CdIo *p_cdio, track_t i_track)
-{
-  if (!p_cdio) return -1;
-  {
-    const generic_img_private_t *p_env 
-      = (generic_img_private_t *) (p_cdio->env);
-    return(cdio_track_bitmap(p_env, i_track, 4, 0, 1));
-  }
-}
-#endif
 
 
 /* 

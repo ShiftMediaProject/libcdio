@@ -54,11 +54,14 @@ cdio_get_hwinfo
 cdio_get_joliet_level
 cdio_get_mcn
 cdio_get_num_tracks
+cdio_get_track_channels
+cdio_get_track_copy_permit
 cdio_get_track_format
 cdio_get_track_green
 cdio_get_track_lba
 cdio_get_track_lsn
 cdio_get_track_msf
+cdio_get_track_preemphasis
 cdio_get_track_sec_count
 cdio_guess_cd_type
 cdio_have_bincue

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.2 2004/12/30 11:13:50 rocky Exp $
+    $Id: cdio_private.h,v 1.3 2004/12/31 05:47:36 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -134,6 +134,18 @@ extern "C" {
     */
     track_t (*get_num_tracks) (void *p_env);
     
+    /*! Return number of channels in track: 2 or 4; -2 if not
+      implemented or -1 for error.
+      Not meaningful if track is not an audio track.
+    */
+    int (*get_track_channels) (const void *p_env, track_t i_track);
+  
+    /*! Return 0 if track is copy protected, 1 if not, or -1 for error
+      or -2 if not implimented (yet). Is this meaningful if not an
+      audio track?
+    */
+    track_flag_t (*get_track_copy_permit) (void *p_env, track_t i_track);
+  
     /*!  
       Return the starting LBA for track number
       i_track in p_env.  Tracks numbers start at 1.
@@ -167,6 +179,13 @@ extern "C" {
     */
     bool (*get_track_msf) (void *p_env, track_t i_track, msf_t *p_msf);
     
+    /*! Return 1 if track has pre-emphasis, 0 if not, or -1 for error
+      or -2 if not implimented (yet). Is this meaningful if not an
+      audio track?
+    */
+    track_flag_t (*get_track_preemphasis) (const void  *p_env, 
+					   track_t i_track);
+  
     /*!
       lseek - reposition read/write file offset
       Returns (off_t) -1 on error. 

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.103 2004/12/18 21:24:25 rocky Exp $
+    $Id: cd-info.c,v 1.104 2004/12/31 05:47:36 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1045,18 +1045,24 @@ main(int argc, const char *argv[])
     printf("CD-ROM Track List (%i - %i)\n" NORMAL, 
 	   i_first_track, i_tracks);
 
-    printf("  #: MSF       LSN     Type  Green?\n");
+    printf("  #: MSF       LSN    Type   Green? Copy?");
+    if ( CDIO_DISC_MODE_CD_DA == discmode 
+	 || CDIO_DISC_MODE_CD_MIXED == discmode )
+      printf(" Channels Premphasis?");
+    printf("\n");
   }
 
   /* Read and possibly print track information. */
   for (i = i_first_track; i <= CDIO_CDROM_LEADOUT_TRACK; i++) {
     msf_t msf;
     char *psz_msf;
+    track_format_t track_format;
 
     if (!cdio_get_track_msf(p_cdio, i, &msf)) {
       err_exit("cdio_track_msf for track %i failed, I give up.\n", i);
     }
-
+    
+    track_format = cdio_get_track_format(p_cdio, i);
     psz_msf = cdio_msf_to_str(&msf);
     if (i == CDIO_CDROM_LEADOUT_TRACK) {
       if (!opts.no_tracks) {
@@ -1076,14 +1082,54 @@ main(int argc, const char *argv[])
       free(psz_msf);
       break;
     } else if (!opts.no_tracks) {
-      printf("%3d: %8s  %06lu  %-5s %s\n", (int) i, psz_msf,
-	     (long unsigned int) cdio_msf_to_lsn(&msf),
-	     track_format2str[cdio_get_track_format(p_cdio, i)],
-	     cdio_get_track_green(p_cdio, i)? "true" : "false");
+      const char *psz;
+      printf( "%3d: %8s  %06lu %-6s %-5s  ", (int) i, psz_msf,
+	      (long unsigned int) cdio_msf_to_lsn(&msf),
+	      track_format2str[track_format],
+	      cdio_get_track_green(p_cdio, i)? "true " : "false");
+
+      switch (cdio_get_track_copy_permit(p_cdio, i)) {
+      case CDIO_TRACK_FLAG_FALSE:
+	psz="no";
+	break;
+      case CDIO_TRACK_FLAG_TRUE:
+	psz="yes";
+	break;
+      case CDIO_TRACK_FLAG_UNKNOWN:
+	psz="?";
+	break;
+      case CDIO_TRACK_FLAG_ERROR:
+      default:
+	psz="error";
+	break;
+      }
+      printf("%-5s", psz);
+	
+      if (TRACK_FORMAT_AUDIO == track_format) {
+	switch (cdio_get_track_preemphasis(p_cdio, i)) {
+	case CDIO_TRACK_FLAG_FALSE:
+	  psz="no";
+	  break;
+	case CDIO_TRACK_FLAG_TRUE:
+	  psz="yes";
+	  break;
+	case CDIO_TRACK_FLAG_UNKNOWN:
+	  psz="?";
+	  break;
+	case CDIO_TRACK_FLAG_ERROR:
+	default:
+	  psz="error";
+	  break;
+	}
+	printf( " %-8d %s", cdio_get_track_channels(p_cdio, i), psz);
+      }
+      
+      printf( "\n" );
+      
     }
     free(psz_msf);
     
-    if (TRACK_FORMAT_AUDIO == cdio_get_track_format(p_cdio, i)) {
+    if (TRACK_FORMAT_AUDIO == track_format) {
       num_audio++;
       if (-1 == first_audio) first_audio = i;
     } else {

@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.2 2004/12/30 11:13:50 rocky Exp $
+    $Id: generic.h,v 1.3 2004/12/31 05:47:36 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -67,12 +67,7 @@ extern "C" {
     CdIo *cdio;             /**< a way to call general cdio routines. */
     cdtext_t  cdtext;       /**< CD-Text for disc. */
     cdtext_t  cdtext_track[CDIO_CD_MAX_TRACKS+1]; /**< CD-TEXT for each track*/
-    uint8_t   flags[CDIO_CD_MAX_TRACKS+1]; /**< track flags: 
-					        bit 4: # channels 2 or 4
-					        bit 3: audio? 
-						bit 2: copy protection
-						bit 1: premphasis
-					    */  
+    track_flags_t track_flags[CDIO_CD_MAX_TRACKS+1];
   } generic_img_private_t;
 
   /*!
@@ -165,6 +160,26 @@ extern "C" {
     Same as above but only handles CD cases
   */
   discmode_t get_discmode_cd_generic (void *p_user_data );
+  
+  /*! Return number of channels in track: 2 or 4; -2 if not
+    implemented or -1 for error.
+    Not meaningful if track is not an audio track.
+  */
+  int  get_track_channels_generic(const void *p_user_data, track_t i_track);
+  
+  /*! Return 1 if copy is permitted on the track, 0 if not, or -1 for error.
+    Is this meaningful if not an audio track?
+  */
+  track_flag_t get_track_copy_permit_generic(void *p_user_data, 
+					     track_t i_track);
+  
+  /*! Return 1 if track has pre-emphasis, 0 if not, or -1 for error.
+    Is this meaningful if not an audio track?
+    
+    pre-emphasis is a non linear frequency response.
+  */
+  track_flag_t get_track_preemphasis_generic(const void *p_user_data, 
+					     track_t i_track);
   
   void set_cdtext_field_generic(void *user_data, track_t i_track, 
 				track_t i_first_track,

@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: cdrdao.c,v 1.2 2004/12/31 05:47:36 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.2 2004/12/31 05:47:36 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1026,16 +1026,16 @@ get_hwinfo_cdrdao ( const CdIo *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_format_t
-_get_track_format_cdrdao(void *user_data, track_t i_track) 
+_get_track_format_cdrdao(void *p_user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   
-  if (!env->gen.init) _init_cdrdao(env);
+  if (!p_env->gen.init) return TRACK_FORMAT_ERROR;
 
-  if (i_track > env->gen.i_tracks || i_track == 0) 
+  if (i_track > p_env->gen.i_tracks || i_track == 0) 
     return TRACK_FORMAT_ERROR;
 
-  return env->tocent[i_track-env->gen.i_first_track].track_format;
+  return p_env->tocent[i_track-p_env->gen.i_first_track].track_format;
 }
 
 /*!

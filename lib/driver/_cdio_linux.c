@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: _cdio_linux.c,v 1.2 2004/12/31 05:47:36 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.2 2004/12/31 05:47:36 rocky Exp $";
 
 #include <string.h>
 
@@ -836,15 +836,28 @@ read_toc_linux (void *p_user_data)
 
   /* read individual tracks */
   for (i= p_env->gen.i_first_track; i<=p_env->gen.i_tracks; i++) {
-    p_env->tocent[i-p_env->gen.i_first_track].cdte_track = i;
-    p_env->tocent[i-p_env->gen.i_first_track].cdte_format = CDROM_MSF;
-    if ( ioctl(p_env->gen.fd, CDROMREADTOCENTRY, 
-	       &p_env->tocent[i-p_env->gen.i_first_track]) == -1 ) {
+    struct cdrom_tocentry *p_toc = 
+      &(p_env->tocent[i-p_env->gen.i_first_track]);
+    
+    p_toc->cdte_track = i;
+    p_toc->cdte_format = CDROM_MSF;
+    if ( ioctl(p_env->gen.fd, CDROMREADTOCENTRY, p_toc) == -1 ) {
       cdio_warn("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
               i, strerror(errno));
       return false;
     }
+
+    /** FIXME: Move into generic. **/
+    p_env->gen.track_flags[i].preemphasis = 
+      p_toc->cdte_ctrl & 0x1 ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
+
+    p_env->gen.track_flags[i].copy_permit = 
+      p_toc->cdte_ctrl & 0x2 ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
+    
+    p_env->gen.track_flags[i].channels = 
+      p_toc->cdte_ctrl & 0x8 ? 4 : 2;
+    
     /****
     struct cdrom_msf0 *msf= &env->tocent[i-1].cdte_addr.msf;
     
@@ -1120,37 +1133,40 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   char *psz_source;
 
   cdio_funcs _funcs = {
-    .eject_media        = eject_media_linux,
-    .free               = cdio_generic_free,
-    .get_arg            = get_arg_linux,
-    .get_cdtext         = get_cdtext_generic,
-    .get_default_device = cdio_get_default_device_linux,
-    .get_devices        = cdio_get_devices_linux,
-    .get_discmode       = get_discmode_linux,
+    .eject_media           = eject_media_linux,
+    .free                  = cdio_generic_free,
+    .get_arg               = get_arg_linux,
+    .get_cdtext            = get_cdtext_generic,
+    .get_default_device    = cdio_get_default_device_linux,
+    .get_devices           = cdio_get_devices_linux,
+    .get_discmode          = get_discmode_linux,
 #if USE_LINUX_CAP
-    .get_drive_cap      = get_drive_cap_linux,
+    .get_drive_cap         = get_drive_cap_linux,
 #else
-    .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
+    .get_drive_cap         = scsi_mmc_get_drive_cap_generic,
 #endif
-    .get_first_track_num= get_first_track_num_generic,
-    .get_hwinfo         = NULL,
-    .get_mcn            = get_mcn_linux,
-    .get_num_tracks     = get_num_tracks_generic,
-    .get_track_format   = get_track_format_linux,
-    .get_track_green    = get_track_green_linux,
-    .get_track_lba      = NULL, /* This could be implemented if need be. */
-    .get_track_msf      = get_track_msf_linux,
-    .lseek              = cdio_generic_lseek,
-    .read               = cdio_generic_read,
-    .read_audio_sectors = _read_audio_sectors_linux,
-    .read_mode1_sector  = _read_mode1_sector_linux,
-    .read_mode1_sectors = _read_mode1_sectors_linux,
-    .read_mode2_sector  = _read_mode2_sector_linux,
-    .read_mode2_sectors = _read_mode2_sectors_linux,
-    .read_toc           = read_toc_linux,
-    .run_scsi_mmc_cmd   = run_scsi_cmd_linux,
-    .set_arg            = set_arg_linux,
-    .stat_size          = stat_size_linux
+    .get_first_track_num   = get_first_track_num_generic,
+    .get_hwinfo            = NULL,
+    .get_mcn               = get_mcn_linux,
+    .get_num_tracks        = get_num_tracks_generic,
+    .get_track_channels    = get_track_channels_generic,
+    .get_track_copy_permit = get_track_copy_permit_generic,
+    .get_track_format      = get_track_format_linux,
+    .get_track_green       = get_track_green_linux,
+    .get_track_lba         = NULL, /* This could be implemented if need be. */
+    .get_track_preemphasis = get_track_preemphasis_generic,
+    .get_track_msf         = get_track_msf_linux,
+    .lseek                 = cdio_generic_lseek,
+    .read                  = cdio_generic_read,
+    .read_audio_sectors    = _read_audio_sectors_linux,
+    .read_mode1_sector     = _read_mode1_sector_linux,
+    .read_mode1_sectors    = _read_mode1_sectors_linux,
+    .read_mode2_sector     = _read_mode2_sector_linux,
+    .read_mode2_sectors    = _read_mode2_sectors_linux,
+    .read_toc              = read_toc_linux,
+    .run_scsi_mmc_cmd      = run_scsi_cmd_linux,
+    .set_arg               = set_arg_linux,
+    .stat_size             = stat_size_linux
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));

@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: image_common.h,v 1.2 2004/12/31 05:47:36 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -143,22 +143,22 @@ _get_track_msf_image(void *user_data, track_t track_num, msf_t *msf)
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_get_first_track_num_image(void *user_data) 
+_get_first_track_num_image(void *p_user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   
-  return env->gen.i_first_track;
+  return p_env->gen.i_first_track;
 }
 
 /*!
   Return the number of tracks. 
 */
 static track_t
-_get_num_tracks_image(void *user_data) 
+_get_num_tracks_image(void *p_user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
-  return env->gen.i_tracks;
+  return p_env->gen.i_tracks;
 }
 
 /*!

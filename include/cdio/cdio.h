@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.69 2004/12/30 11:13:49 rocky Exp $
+    $Id: cdio.h,v 1.70 2004/12/31 05:47:36 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -358,72 +358,6 @@ extern "C" {
   */
   track_t cdio_get_num_tracks (const CdIo *p_cdio);
   
-  /*!  
-    Get the format (audio, mode2, mode1) of track. 
-  */
-  track_format_t cdio_get_track_format(const CdIo *p_cdio, track_t i_track);
-  
-  /*!
-    Return true if we have XA data (green, mode2 form1) or
-    XA data (green, mode2 form2). That is track begins:
-    sync - header - subheader
-    12     4      -  8
-    
-    FIXME: there's gotta be a better design for this and get_track_format?
-  */
-  bool cdio_get_track_green(const CdIo *p_cdio, track_t i_track);
-    
-  /*!  
-    Get the starting LBA for track number
-    i_track in p_cdio.  Track numbers usually start at something 
-    greater than 0, usually 1.
-
-    The "leadout" track is specified either by
-    using i_track CDIO_CDROM_LEADOUT_TRACK or the total tracks+1.
-
-    @param p_cdio object to get information from
-    @param i_track  the track number we want the LSN for
-    @return the starting LBA or CDIO_INVALID_LBA on error.
-  */
-  lba_t cdio_get_track_lba(const CdIo *p_cdio, track_t i_track);
-  
-  /*!  
-    Return the starting MSF (minutes/secs/frames) for track number
-    i_track in p_cdio.  Track numbers usually start at something 
-    greater than 0, usually 1.
-
-    The "leadout" track is specified either by
-    using i_track CDIO_CDROM_LEADOUT_TRACK or the total tracks+1.
-
-    @param p_cdio object to get information from
-    @param i_track  the track number we want the LSN for
-    @return the starting LSN or CDIO_INVALID_LSN on error.
-  */
-  lsn_t cdio_get_track_lsn(const CdIo *p_cdio, track_t i_track);
-  
-  /*!  
-    Return the starting MSF (minutes/secs/frames) for track number
-    i_track in p_cdio.  Track numbers usually start at something 
-    greater than 0, usually 1.
-
-    The "leadout" track is specified either by
-    using i_track CDIO_CDROM_LEADOUT_TRACK or the total tracks+1.
-    
-    @return true if things worked or false if there is no track entry.
-  */
-  bool cdio_get_track_msf(const CdIo *p_cdio, track_t i_track, 
-			  /*out*/ msf_t *msf);
-  
-  /*!  
-    Get the number of sectors between this track an the next.  This
-    includes any pregap sectors before the start of the next track.
-    Track numbers usually start at something 
-    greater than 0, usually 1.
-
-    @return the number of sectors or 0 if there is an error.
-  */
-  unsigned int cdio_get_track_sec_count(const CdIo *p_cdio, track_t i_track);
-
   /*!
     Reposition read offset
     Similar to (if not the same as) libc's lseek()
@@ -1023,20 +957,11 @@ extern "C" {
   */
   bool cdio_is_device(const char *source_name, driver_id_t driver_id);
   
-  /*! Return number of channels in track: 2 or 4 or -1 for error.
-    Not meaningful if track is not an audio track.
-  */
-  int cdio_track_channels(const CdIo *p_cdio, track_t i_track);
-  
-  /*! Return 1 if track is copy protected, 0 if not, or -1 for error.
-      Is this meaningful if not an audio track?
-   */
-  int cdio_track_copy_permit(const CdIo *p_cdio, track_t i_track);
-  
-  int cdio_track_preemphasis(const CdIo *p_cdio, track_t i_track);
-  
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+/* Track-related functions. */
+#include <cdio/track.h>
 
 #endif /* __CDIO_H__ */

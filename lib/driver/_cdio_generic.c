@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.2 2004/12/30 11:13:49 rocky Exp $
+    $Id: _cdio_generic.c,v 1.3 2004/12/31 05:47:36 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.2 2004/12/30 11:13:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.3 2004/12/31 05:47:36 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -422,6 +422,39 @@ init_cdtext_generic (generic_img_private_t *p_env)
 				       p_env->cdio->op.run_scsi_mmc_cmd, 
 				       set_cdtext_field_generic
 				       );
+}
+
+/*! Return number of channels in track: 2 or 4; -2 if not
+  implemented or -1 for error.
+  Not meaningful if track is not an audio track.
+*/
+int 
+get_track_channels_generic(const void *p_user_data, track_t i_track)
+{
+  const generic_img_private_t *p_env = p_user_data;
+  return p_env->track_flags[i_track].channels;
+}
+
+/*! Return 1 if copy is permitted on the track, 0 if not, or -1 for error.
+  Is this meaningful if not an audio track?
+*/
+track_flag_t 
+get_track_copy_permit_generic(void *p_user_data, track_t i_track)
+{
+  const generic_img_private_t *p_env = p_user_data;
+  return p_env->track_flags[i_track].copy_permit;
+}
+
+/*! Return 1 if track has pre-emphasis, 0 if not, or -1 for error.
+  Is this meaningful if not an audio track?
+  
+  pre-emphasis is a non linear frequency response.
+*/
+track_flag_t
+get_track_preemphasis_generic(const void *p_user_data, track_t i_track)
+{
+  const generic_img_private_t *p_env = p_user_data;
+  return p_env->track_flags[i_track].preemphasis;
 }
 
 
