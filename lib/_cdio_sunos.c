@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.5 2003/03/30 13:01:22 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.6 2003/04/06 06:45:13 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -31,7 +31,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.5 2003/03/30 13:01:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.6 2003/04/06 06:45:13 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -521,7 +521,7 @@ _cdio_get_track_green(void *user_data, track_t track_num)
   if (!_obj->gen.init) _cdio_init(_obj);
   if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDIO_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+  if (track_num == CDROM_LEADOUT) track_num = TOTAL_TRACKS+1;
 
   if (track_num > TOTAL_TRACKS+1 || track_num == 0)
     return false;
@@ -549,7 +549,7 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
   if (!_obj->gen.init) _cdio_init(_obj);
   if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDIO_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+  if (track_num == CDROM_LEADOUT) track_num = TOTAL_TRACKS+1;
 
   if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
     return false;

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.h,v 1.6 2003/04/04 00:41:10 rocky Exp $
+    $Id: cdio.h,v 1.7 2003/04/06 06:45:13 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -83,6 +83,9 @@ extern "C" {
     TRACK_FORMAT_CDI,     /* CD-i. How this is different from DATA below? */
     TRACK_FORMAT_XA,      /* Mode2 of some sort */
     TRACK_FORMAT_DATA,    /* Mode1 of some sort */
+    TRACK_FORMAT_PSX,     /* Playstation CD. Like audio but only 2336 bytes
+			     of user data.
+			   */
     TRACK_FORMAT_ERROR    /* Dunno what is or some other error. */
   } track_format_t;
 

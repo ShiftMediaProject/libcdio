@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.4 2003/03/30 13:01:22 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.5 2003/04/06 06:45:13 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "util.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.4 2003/03/30 13:01:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.5 2003/04/06 06:45:13 rocky Exp $";
 
 /* structures used */
 
@@ -304,8 +304,8 @@ PRAGMA_END_PACKED
 	    lsn2 = UINT32_FROM_BE (_entries[idx + 1].lsn);
 
 	    _register_mapping (_obj, lsn, lsn2 - lsn, 
-			       (lsn+CDIO_PREGAP_SECTORS) * CD_RAW_SECTOR_SIZE,
-			       CD_RAW_SECTOR_SIZE);
+			       (lsn+CDIO_PREGAP_SECTORS) * CD_FRAMESIZE_RAW,
+			       CD_FRAMESIZE_RAW);
 	  }
 	} 
 	break;
@@ -523,7 +523,7 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
     track_info_t  *this_track=&(_obj->tocent[i]);
     switch (this_track->track_format) {
     case TRACK_FORMAT_AUDIO:
-      user_datasize=CDDA_SECTOR_SIZE;
+      user_datasize=CD_FRAMESIZE_RAW;
       break;
     case TRACK_FORMAT_CDI:
       user_datasize=FORM1_DATA_SIZE;
@@ -532,7 +532,7 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
       user_datasize=FORM1_DATA_SIZE;
       break;
     default:
-      user_datasize=CD_RAW_SECTOR_SIZE;
+      user_datasize=CD_FRAMESIZE_RAW;
       cdio_warn ("track %d has unknown format %d",
 		 i+1, this_track->track_format);
     }
@@ -582,7 +582,7 @@ _cdio_stat_size (void *user_data)
 _read_mode2_sector (void *user_data, void *data, lsn_t lsn, bool form2)
 {
   _img_private_t *_obj = user_data;
-  char buf[CD_RAW_SECTOR_SIZE] = { 0, };
+  char buf[CD_FRAMESIZE_RAW] = { 0, };
   CdioListNode *node;
 
   if (lsn >= _obj->size)
@@ -600,7 +600,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn, bool form2)
 	{
 	  long img_offset = _map->img_offset;
 	  int blocksize = _obj->sector_2336_flag 
-	    ? M2RAW_SECTOR_SIZE : CD_RAW_SECTOR_SIZE;
+	    ? M2RAW_SECTOR_SIZE : CD_FRAMESIZE_RAW;
 
 	  img_offset += (lsn - _map->start_lsn) * blocksize;
 	  
@@ -772,7 +772,7 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
 
   if (NULL == msf) return 1;
 
-  if (track_num == CDIO_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
+  if (track_num == CDROM_LEADOUT) track_num = _obj->total_tracks+1;
 
   if (track_num <= _obj->total_tracks+1 && track_num != 0) {
     *msf = _obj->tocent[track_num-1].start_msf;
