@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.17 2003/08/13 12:33:59 rocky Exp $
+    $Id: cd-info.c,v 1.18 2003/08/14 13:41:26 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -63,6 +63,7 @@
 #endif
  
 #include <errno.h>
+#include "analyze.h"
 
 #ifdef ENABLE_NLS
 #include <locale.h>
@@ -95,85 +96,9 @@
 #endif
 
 #define err_exit(fmt, args...) \
-  { fprintf(stderr, "%s: "fmt, program_name, ##args);	\
-    myexit(EXIT_FAILURE);				\
-  }							
+  fprintf(stderr, "%s: "fmt, program_name, ##args); \
+  myexit(cdio, EXIT_FAILURE)		     
   
-/*
-Subject:   -65- How can I read an IRIX (EFS) CD-ROM on a machine which
-                doesn't use EFS?
-Date: 18 Jun 1995 00:00:01 EST
-
-  You want 'efslook', at
-  ftp://viz.tamu.edu/pub/sgi/software/efslook.tar.gz.
-
-and
-! Robert E. Seastrom <rs@access4.digex.net>'s software (with source
-! code) for using an SGI CD-ROM on a Macintosh is at
-! ftp://bifrost.seastrom.com/pub/mac/CDROM-Jumpstart.sit151.hqx.
-
-*/
-
-#define FS_NO_DATA              0   /* audio only */
-#define FS_HIGH_SIERRA		1
-#define FS_ISO_9660		2
-#define FS_INTERACTIVE		3
-#define FS_HFS			4
-#define FS_UFS			5
-#define FS_EXT2			6
-#define FS_ISO_HFS              7  /* both hfs & isofs filesystem */
-#define FS_ISO_9660_INTERACTIVE 8  /* both CD-RTOS and isofs filesystem */
-#define FS_3DO			9
-#define FS_UNKNOWN	       15
-#define FS_MASK		       15
-
-#define XA		       16
-#define MULTISESSION	       32
-#define PHOTO_CD	       64
-#define HIDDEN_TRACK          128
-#define CDTV		      256
-#define BOOTABLE       	      512
-#define VIDEOCDI       	     1024
-#define ROCKRIDGE            2048
-#define JOLIET               4096
-#define SVCD       	     8192   /* Choiji Video CD */
-
-char buffer[6][CDIO_CD_FRAMESIZE_RAW];  /* for CD-Data */
-
-/* Some interesting sector numbers stored in the above buffer. */
-#define ISO_SUPERBLOCK_SECTOR  16  /* buffer[0] */
-#define UFS_SUPERBLOCK_SECTOR   4  /* buffer[2] */
-#define BOOT_SECTOR            17  /* buffer[3] */
-#define VCD_INFO_SECTOR       150  /* buffer[4] */
-
-
-typedef struct signature
-{
-  unsigned int buf_num;
-  unsigned int offset;
-  const char *sig_str;
-  const char *description;
-} signature_t;
-
-static signature_t sigs[] =
-  {
-/*buffer[x] off look for     description */
-    {0,     1, "CD001",      "ISO 9660"}, 
-    {0,     1, "CD-I",       "CD-I"}, 
-    {0,     8, "CDTV",       "CDTV"}, 
-    {0,     8, "CD-RTOS",    "CD-RTOS"}, 
-    {0,     9, "CDROM",      "HIGH SIERRA"}, 
-    {0,    16, "CD-BRIDGE",  "BRIDGE"}, 
-    {0,  1024, "CD-XA001",   "XA"}, 
-    {1,    64, "PPPPHHHHOOOOTTTTOOOO____CCCCDDDD",  "PHOTO CD"}, 
-    {1, 0x438, "\x53\xef",   "EXT2 FS"}, 
-    {2,  1372, "\x54\x19\x01\x0", "UFS"}, 
-    {3,     7, "EL TORITO",  "BOOTABLE"}, 
-    {4,     0, "VIDEO_CD",   "VIDEO CD"}, 
-    {4,     0, "SUPERVCD",   "Chaoji VCD"}, 
-    { 0 }
-  };
-
 
 #if 0
 #define STRONG "\033[1m"
@@ -182,28 +107,6 @@ static signature_t sigs[] =
 #define STRONG "__________________________________\n"
 #define NORMAL ""
 #endif
-
-#define IS_ISOFS     0
-#define IS_CD_I      1
-#define IS_CDTV      2
-#define IS_CD_RTOS   3
-#define IS_HS        4
-#define IS_BRIDGE    5
-#define IS_XA        6
-#define IS_PHOTO_CD  7
-#define IS_EXT2      8
-#define IS_UFS       9
-#define IS_BOOTABLE 10
-#define IS_VIDEO_CD 11 /* Video CD */
-#define IS_SVCD     12 /* SVCD or CVD */
-
-int rc;                                                      /* return code */
-int i,j;                                                           /* index */
-int isofs_size = 0;                                      /* size of session */
-int start_track;                                   /* first sector of track */
-int ms_offset;                /* multisession offset found by track-walking */
-int data_start;                                       /* start of data area */
-int joliet_level = 0;
 
 CdIo *cdio; 
 track_t num_tracks;
@@ -486,204 +389,8 @@ PARTICULAR PURPOSE.\n\
   
 }
 
-/* ------------------------------------------------------------------------ */
-/* some ISO 9660 fiddling                                                   */
-
-static int 
-read_block(int superblock, uint32_t offset, uint8_t bufnum, track_t track_num)
-{
-  unsigned int track_sec_count = cdio_get_track_sec_count(cdio, track_num);
-  memset(buffer[bufnum], 0, CDIO_CD_FRAMESIZE);
-
-  if ( track_sec_count < superblock) {
-    dbg_print(1, "reading block %u skipped track %d has only %u sectors\n", 
-	      superblock, track_num, track_sec_count);
-    return -1;
-  }
-  
-  dbg_print(2, "about to read sector %u\n", offset+superblock);
-
-  if (cdio_get_track_green(cdio,  track_num)) {
-    if (0 > cdio_read_mode2_sector(cdio, buffer[bufnum], 
-				   offset+superblock, false))
-      return -1;
-  } else {
-    if (0 > cdio_read_yellow_sector(cdio, buffer[bufnum], 
-				    offset+superblock, false))
-      return -1;
-  }
-
-  return 0;
-}
-
-static bool 
-is_it(int num) 
-{
-  signature_t *sigp=&sigs[num];
-  int len=strlen(sigp->sig_str);
-
-  /* TODO: check that num < largest sig. */
-  return 0 == memcmp(&buffer[sigp->buf_num][sigp->offset], sigp->sig_str, len);
-}
-
-static int 
-is_hfs(void)
-{
-  return (0 == memcmp(&buffer[1][512],"PM",2)) ||
-    (0 == memcmp(&buffer[1][512],"TS",2)) ||
-    (0 == memcmp(&buffer[1][1024], "BD",2));
-}
-
-static int 
-is_3do(void)
-{
-  return (0 == memcmp(&buffer[1][0],"\x01\x5a\x5a\x5a\x5a\x5a\x01", 7)) &&
-    (0 == memcmp(&buffer[1][40], "CD-ROM", 6));
-}
-
-static int is_joliet(void)
-{
-  return 2 == buffer[3][0] && buffer[3][88] == 0x25 && buffer[3][89] == 0x2f;
-}
-
-/* ISO 9660 volume space in M2F1_SECTOR_SIZE byte units */
-static int 
-get_size(void)
-{
-  return ((buffer[0][80] & 0xff) |
-	  ((buffer[0][81] & 0xff) << 8) |
-	  ((buffer[0][82] & 0xff) << 16) |
-	  ((buffer[0][83] & 0xff) << 24));
-}
-
-static int 
-get_joliet_level( void )
-{
-  switch (buffer[3][90]) {
-  case 0x40: return 1;
-  case 0x43: return 2;
-  case 0x45: return 3;
-  }
-  return 0;
-}
-
-#define is_it_dbg(sig) \
-    if (is_it(sig)) printf("%s, ", sigs[sig].description)
-
-static int 
-guess_filesystem(int start_session, track_t track_num)
-{
-  int ret = 0;
-  
-  if (read_block(ISO_SUPERBLOCK_SECTOR, start_session, 0, track_num) < 0)
-    return FS_UNKNOWN;
-  
-  if (opts.debug_level > 0) {
-    /* buffer is defined */
-    is_it_dbg(IS_CD_I);
-    is_it_dbg(IS_CD_RTOS);
-    is_it_dbg(IS_ISOFS);
-    is_it_dbg(IS_HS);
-    is_it_dbg(IS_BRIDGE);
-    is_it_dbg(IS_XA);
-    is_it_dbg(IS_CDTV);
-    puts("");
-  }
-  
-  /* filesystem */
-  if (is_it(IS_CD_I) && is_it(IS_CD_RTOS) 
-      && !is_it(IS_BRIDGE) && !is_it(IS_XA)) {
-    return FS_INTERACTIVE;
-  } else {	/* read sector 0 ONLY, when NO greenbook CD-I !!!! */
-
-    if (read_block(0, start_session, 1, track_num) < 0)
-      return ret;
-    
-    if (opts.debug_level > 0) {
-      /* buffer[1] is defined */
-      is_it_dbg(IS_PHOTO_CD);
-      if (is_hfs()) printf("HFS, ");
-      is_it_dbg(IS_EXT2);
-      if (is_3do()) printf("3DO, ");
-      puts("");
-    }
-    
-    if (is_it(IS_HS))
-      ret |= FS_HIGH_SIERRA;
-    else if (is_it(IS_ISOFS)) {
-      if (is_it(IS_CD_RTOS) && is_it(IS_BRIDGE))
-	ret = FS_ISO_9660_INTERACTIVE;
-      else if (is_hfs())
-	ret = FS_ISO_HFS;
-      else
-	ret = FS_ISO_9660;
-      isofs_size = get_size();
-      
-#if 0
-      if (is_rockridge())
-	ret |= ROCKRIDGE;
-#endif
-
-      if (read_block(BOOT_SECTOR, start_session, 3, track_num) < 0)
-	return ret;
-      
-      if (opts.debug_level > 0) {
-	
-	/* buffer[3] is defined */
-	if (is_joliet()) printf("JOLIET, ");
-	puts("");
-	is_it_dbg(IS_BOOTABLE);
-	puts("");
-      }
-      
-      if (is_joliet()) {
-	joliet_level = get_joliet_level();
-	ret |= JOLIET;
-      }
-      if (is_it(IS_BOOTABLE))
-	ret |= BOOTABLE;
-      
-      if (is_it(IS_XA) && is_it(IS_ISOFS) 
-	  && !is_it(IS_PHOTO_CD)) {
-
-        if (read_block(VCD_INFO_SECTOR, start_session, 4, track_num) < 0)
-	  return ret;
-	
-	if (is_it(IS_BRIDGE) && is_it(IS_CD_RTOS)) {
-	  if (is_it(IS_VIDEO_CD))  ret |= VIDEOCDI;
-	  else if (is_it(IS_SVCD)) ret |= SVCD;
-	}
-      }
-    } 
-    else if (is_hfs())       ret |= FS_HFS;
-    else if (is_it(IS_EXT2)) ret |= FS_EXT2;
-    else if (is_3do())       ret |= FS_3DO;
-    else {
-      if (read_block(UFS_SUPERBLOCK_SECTOR, start_session, 2, track_num) < 0)
-	return ret;
-      
-      if (opts.debug_level > 0) {
-	/* buffer[2] is defined */
-	is_it_dbg(IS_UFS);
-	puts("");
-      }
-      
-      if (is_it(IS_UFS)) 
-	ret |= FS_UFS;
-      else
-	ret |= FS_UNKNOWN;
-    }
-  }
-  
-  /* other checks */
-  if (is_it(IS_XA))       ret |= XA;
-  if (is_it(IS_PHOTO_CD)) ret |= PHOTO_CD;
-  if (is_it(IS_CDTV))     ret |= CDTV;
-  return ret;
-}
-
 static void 
-myexit(int rc) 
+myexit(CdIo *cdio, int rc) 
 {
   if (NULL != cdio) 
     cdio_destroy(cdio);
@@ -725,7 +432,7 @@ msf_seconds(msf_t *msf)
       the number of tracks.
 */
 static unsigned long
-cddb_discid()
+cddb_discid(CdIo *cdio, int num_tracks)
 {
   int i,t,n=0;
   msf_t start_msf;
@@ -891,14 +598,17 @@ print_vcd_info(void) {
 #endif 
 
 static void
-print_analysis(int fs, int num_audio)
+print_analysis(int ms_offset, cdio_analysis_t cdio_analysis, 
+	       int fs, int first_data, int num_audio, 
+	       int num_tracks, CdIo *cdio)
 {
   int need_lf;
   
   switch(fs & FS_MASK) {
   case FS_NO_DATA:
     if (num_audio > 0) {
-      printf("Audio CD, CDDB disc ID is %08lx\n", cddb_discid());
+      printf("Audio CD, CDDB disc ID is %08lx\n", 
+	     cddb_discid(cdio, num_tracks));
 #ifdef HAVE_CDDB
       if (!opts.no_cddb) print_cddb_info();
 #endif      
@@ -907,7 +617,7 @@ print_analysis(int fs, int num_audio)
   case FS_ISO_9660:
     printf("CD-ROM with ISO 9660 filesystem");
     if (fs & JOLIET) {
-      printf(" and joliet extension level %d", joliet_level);
+      printf(" and joliet extension level %d", cdio_analysis.joliet_level);
     }
     if (fs & ROCKRIDGE)
       printf(" and rockridge extensions");
@@ -946,7 +656,7 @@ print_analysis(int fs, int num_audio)
   case FS_ISO_9660_INTERACTIVE:
   case FS_ISO_HFS:
     printf("ISO 9660: %i blocks, label `%.32s'\n",
-	   isofs_size, buffer[0]+40);
+	   cdio_analysis.isofs_size, cdio_analysis.iso_label);
     break;
   }
   need_lf = 0;
@@ -955,11 +665,12 @@ print_analysis(int fs, int num_audio)
   if (fs & XA)
     need_lf += printf("XA sectors   ");
   if (fs & MULTISESSION)
-    need_lf += printf("Multisession, offset = %i   ",ms_offset);
+    need_lf += printf("Multisession, offset = %i   ", ms_offset);
   if (fs & HIDDEN_TRACK)
     need_lf += printf("Hidden Track   ");
   if (fs & PHOTO_CD)
-    need_lf += printf("%sPhoto CD   ", num_audio > 0 ? " Portfolio " : "");
+    need_lf += printf("%sPhoto CD   ", 
+		      num_audio > 0 ? " Portfolio " : "");
   if (fs & CDTV)
     need_lf += printf("Commodore CDTV   ");
   if (first_data > 1)
@@ -980,7 +691,6 @@ print_analysis(int fs, int num_audio)
   if (need_lf) printf("\n");
 }
 
-
 /* ------------------------------------------------------------------------ */
 
 int
@@ -988,6 +698,11 @@ main(int argc, const char *argv[])
 {
 
   int fs=0;
+  int i;
+  lsn_t start_track;          /* first sector of track */
+  lsn_t data_start =0;        /* start of data area */
+  int ms_offset = 0;
+  
   poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
   gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
@@ -1210,7 +925,7 @@ main(int argc, const char *argv[])
       
       /* CD-I/Ready says start_track <= 30*75 then CDDA */
       if (start_track > 100 /* 100 is just a guess */) {
-	fs = guess_filesystem(0, 1);
+	fs = guess_filesystem(cdio, 0, 1);
 	if ((fs & FS_MASK) != FS_UNKNOWN)
 	  fs |= HIDDEN_TRACK;
 	else {
@@ -1220,9 +935,11 @@ main(int argc, const char *argv[])
 		 start_track);
 	}
       }
-      print_analysis(fs, num_audio);
+      print_analysis(ms_offset, cdio_analysis, fs, first_data, num_audio,
+		     num_tracks, cdio);
     } else {
       /* we have data track(s) */
+      int j;
       
       for (j = 2, i = first_data; i <= num_tracks; i++) {
 	msf_t msf;
@@ -1248,22 +965,23 @@ main(int argc, const char *argv[])
 	  data_start = start_track;
 	
 	/* skip tracks which belong to the current walked session */
-	if (start_track < data_start + isofs_size)
+	if (start_track < data_start + cdio_analysis.isofs_size)
 	  continue;
 	
-	fs = guess_filesystem(start_track, i);
+	fs = guess_filesystem(cdio, start_track, i);
 
 	if (i > 1) {
 	  /* track is beyond last session -> new session found */
 	  ms_offset = start_track;
 	  printf("session #%d starts at track %2i, LSN: %6i,"
 		 " ISO 9660 blocks: %6i\n",
-		 j++, i, start_track, isofs_size);
+		 j++, i, start_track, cdio_analysis.isofs_size);
 	  printf("ISO 9660: %i blocks, label `%.32s'\n",
-		 isofs_size, buffer[0]+40);
+		 cdio_analysis.isofs_size, cdio_analysis.iso_label);
 	  fs |= MULTISESSION;
 	} else {
-	  print_analysis(fs, num_audio);
+	  print_analysis(ms_offset, cdio_analysis, fs, first_data, num_audio,
+			 num_tracks, cdio);
 	}
 	
 	if (!(((fs & FS_MASK) == FS_ISO_9660 ||
@@ -1274,9 +992,8 @@ main(int argc, const char *argv[])
       }
     }
   }
-  
-  
-  myexit(EXIT_SUCCESS);
+
+  myexit(cdio, EXIT_SUCCESS);
   /* Not reached:*/
   return(EXIT_SUCCESS);
 }
