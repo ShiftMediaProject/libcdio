@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.6 2005/01/06 01:15:51 rocky Exp $
+    $Id: cdio.c,v 1.7 2005/01/09 00:12:21 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.6 2005/01/06 01:15:51 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.7 2005/01/09 00:12:21 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -389,8 +389,12 @@ cdio_get_devices_ret (/*in/out*/ driver_id_t *p_driver_id)
 
   switch (*p_driver_id) {
     /* FIXME: spit out unknown to give image drivers as well.  */
-  case DRIVER_UNKNOWN:
   case DRIVER_DEVICE:
+    p_cdio = scan_for_driver(DRIVER_UNKNOWN, CDIO_MAX_DEVICE_DRIVER, 
+                             NULL, NULL);
+    *p_driver_id = cdio_get_driver_id(p_cdio);
+    break;
+  case DRIVER_UNKNOWN:
     p_cdio = scan_for_driver(DRIVER_UNKNOWN, CDIO_MAX_DRIVER, NULL, NULL);
     *p_driver_id = cdio_get_driver_id(p_cdio);
     break;
