@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.19 2004/01/10 03:03:08 rocky Exp $
+#   $Id: Makefile.am,v 1.20 2004/02/25 10:04:06 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,7 +23,7 @@ CDDB_LIBS=@CDDB_LIBS@
 
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES = $(man_MANS)
-man_MANS = cd-info.1 cd-read.1 
+man_MANS = cd-info.1 cd-read.1 iso-read.1 iso-info.1
 $(man_MANS): %.1: %
 	-$(HELP2MAN) --output=$@ ./$<
 endif
@@ -38,10 +38,13 @@ cd_read_LDADD =  $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
 iso_info_SOURCES = iso-info.c util.c util.h
 iso_info_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
 
+iso_read_SOURCES = iso-read.c util.c util.h
+iso_read_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
+
 if BUILD_CDINFO_LINUX
 cdinfo_linux_SOURCES = cdinfo-linux.c
 cdinfo_linux_LDADD = $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
-bin_PROGRAMS = cd-info cd-read cdinfo-linux iso-info
+bin_PROGRAMS = cd-info cd-read cdinfo-linux iso-info iso-read
 else
 bin_PROGRAMS = cd-info cd-read iso-info
 EXTRA_DIST = cdinfo-linux.c $(man_MANS)
