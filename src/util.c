@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.30 2005/01/09 00:10:49 rocky Exp $
+  $Id: util.c,v 1.31 2005/01/09 16:33:18 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -88,7 +88,7 @@ open_input(const char *psz_source, source_image_t source_image,
 	err_exit("Error in automatically selecting driver for input %s.\n", 
 		 psz_source);
       } else {
-	err_exit("Error in automatically selecting driver.\n");
+	err_exit("%s", "Error in automatically selecting driver.\n");
       }
     } 
     break;
@@ -99,7 +99,7 @@ open_input(const char *psz_source, source_image_t source_image,
 	err_exit("Cannot use CD-ROM device %s. Is a CD loaded?\n",
 		 psz_source);
       } else {
-	err_exit("Cannot find a CD-ROM with a CD loaded.\n");
+	err_exit("%s", "Cannot find a CD-ROM with a CD loaded.\n");
       }
     } 
     break;
@@ -110,7 +110,7 @@ open_input(const char *psz_source, source_image_t source_image,
 	err_exit("%s: Error in opening CDRWin BIN/CUE image for BIN"
 		 " input %s\n", psz_source);
       } else {
-	err_exit("Cannot find CDRWin BIN/CUE image.\n");
+	err_exit("%s", "Cannot find CDRWin BIN/CUE image.\n");
       }
     } 
     break;
@@ -121,7 +121,7 @@ open_input(const char *psz_source, source_image_t source_image,
 	err_exit("%s: Error in opening CDRWin BIN/CUE image for CUE"
 		 " input %s\n", psz_source);
       } else {
-	err_exit("Cannot find CDRWin BIN/CUE image.\n");
+	err_exit("%s", "Cannot find CDRWin BIN/CUE image.\n");
       }
     } 
     break;
@@ -132,7 +132,7 @@ open_input(const char *psz_source, source_image_t source_image,
 	err_exit("Error in opening Nero NRG image for input %s\n", 
 		 psz_source);
       } else {
-	err_exit("Cannot find Nero NRG image.\n");
+	err_exit("%s", "Cannot find Nero NRG image.\n");
       }
     } 
     break;
@@ -143,7 +143,7 @@ open_input(const char *psz_source, source_image_t source_image,
       if (psz_source) {
 	err_exit("Error in opening cdrdao TOC with input %s.\n", psz_source);
       } else {
-	err_exit("Cannot find cdrdao TOC image.\n");
+	err_exit("%s", "Cannot find cdrdao TOC image.\n");
       }
     }
     break;
