@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.23 2004/05/27 10:47:07 rocky Exp $
+    $Id: _cdio_osx.c,v 1.24 2004/05/31 15:21:48 thesin Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.23 2004/05/27 10:47:07 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.24 2004/05/31 15:21:48 thesin Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -705,7 +705,7 @@ cdio_get_devices_osx(void)
       return( nil );
     }
   
-  CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaEjectable),
+  CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaEjectableKey),
 			kCFBooleanTrue );
   
   kern_result = IOServiceGetMatchingServices( master_port, 
@@ -726,7 +726,7 @@ cdio_get_devices_osx(void)
       do
 	{
 	  str_bsd_path = IORegistryEntryCreateCFProperty( next_media,
-							  CFSTR( kIOBSDName ),
+							  CFSTR( kIOBSDNameKey ),
 							  kCFAllocatorDefault,
 							  0 );
 	  if( str_bsd_path == NULL )
@@ -787,7 +787,7 @@ cdio_get_default_device_osx(void)
       return( nil );
     }
   
-  CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaEjectable),
+  CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaEjectableKey),
 			kCFBooleanTrue );
   
   kern_result = IOServiceGetMatchingServices( master_port, 
@@ -808,7 +808,7 @@ cdio_get_default_device_osx(void)
       do
 	{
 	  str_bsd_path = IORegistryEntryCreateCFProperty( next_media,
-							  CFSTR( kIOBSDName ),
+							  CFSTR( kIOBSDNameKey ),
 							  kCFAllocatorDefault,
 							  0 );
 	  if( str_bsd_path == NULL )

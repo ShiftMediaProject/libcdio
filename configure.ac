@@ -19,7 +19,7 @@ define(RELEASE_NUM, 69)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.79 2004/05/09 17:03:27 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.80 2004/05/31 15:21:48 thesin Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -230,13 +230,13 @@ AC_SUBST(LIBCDIO_LIBS)
 AC_SUBST(LIBISO9660_LIBS)
 
 case $host_os in
-     darwin6*)
+     darwin6*|darwin7*)
        AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h, 
                         [have_iokit_h="yes"])
        if test "x$have_iokit_h" = "xyes" ; then 
          AC_DEFINE([HAVE_DARWIN_CDROM], [1],
 	      [Define 1 if you have Darwin OS X-type CD-ROM support])
-	 LIBS="$LIBS  -framework CoreFoundation -framework IOKit"
+	 LIBS="$LIBS  -Wl,-framework -Wl,CoreFoundation -Wl,-framework -Wl,IOKit"
          cd_drivers="${cd_drivers}, Darwin"
        fi
      ;;
