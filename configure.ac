@@ -15,8 +15,8 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_PREREQ(2.54)
-AC_REVISION([$Id: configure.ac,v 1.50 2003/10/04 17:01:10 rocky Exp $])dnl
+AC_PREREQ(2.52)
+AC_REVISION([$Id: configure.ac,v 1.51 2003/10/04 19:16:01 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
 AM_CONFIG_HEADER(config.h)
