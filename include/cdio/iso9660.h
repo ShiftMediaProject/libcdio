@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.28 2003/11/05 12:40:35 rocky Exp $
+    $Id: iso9660.h,v 1.29 2003/11/09 13:53:28 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -50,10 +50,10 @@
 \verbatim  
   	 30 chars (filename + ext)
     +	  2 chars ('.' + ';')
-    +	   strlen("32767")
-    +	   null byte
+    +	  5 chars (strlen("32767"))
+    +	  1 null byte
    ================================
-    =	38 chars
+    =	 38 chars
 \endverbatim 
 */
 #define LEN_ISONAME     31
@@ -233,10 +233,38 @@ struct iso9660_stat { /* big endian!! */
 
 PRAGMA_END_PACKED
 
-/*====================================
-  Character file/dirname's 
-=====================================*/
 
+/*====================================================
+  Time conversion 
+ ====================================================*/
+/*!
+  Set time in format used in ISO 9660 directory index record
+  from a Unix time structure. */
+  void iso9660_set_dtime (const struct tm *tm, 
+                          /*out*/ iso9660_dtime_t *idr_date);
+
+
+/*!
+  Set "long" time in format used in ISO 9660 primary volume descriptor
+  from a Unix time structure. */
+  void iso9660_set_ltime (const struct tm *_tm, 
+                          /*out*/ iso9660_ltime_t *pvd_date);
+
+/*!
+  Get Unix time structure from format use in an ISO 9660 directory index 
+  record. Even though tm_wday and tm_yday fields are not explicitly in
+  idr_date, they are calculated from the other fields.
+
+  If tm is to reflect the localtime, set "use_localtime" true, otherwise
+  tm will reported in GMT.
+*/
+  void iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool use_localtime,
+                          /*out*/ struct tm *tm);
+
+
+/*====================================================
+  Characters used in file and directory and manipulation
+ ====================================================*/
 /*!
    Return true if c is a DCHAR - a character that can appear in an an
    ISO-9600 level 1 directory name. These are the ASCII capital
@@ -274,31 +302,6 @@ int iso9660_name_translate(const char *old, char *new);
  */
 char *iso9660_strncpy_pad(char dst[], const char src[], size_t len, 
                           enum strncpy_pad_check _check);
-
-/*!
-  Set time in format used in ISO 9660 directory index record
-  from a Unix time structure. */
-  void iso9660_set_dtime (const struct tm *tm, 
-                          /*out*/ iso9660_dtime_t *idr_date);
-
-
-/*!
-  Set "long" time in format used in ISO 9660 primary volume descriptor
-  from a Unix time structure. */
-  void iso9660_set_ltime (const struct tm *_tm, 
-                          /*out*/ iso9660_ltime_t *pvd_date);
-
-/*!
-  Get Unix time structure from format use in an ISO 9660 directory index 
-  record. Even though tm_wday and tm_yday fields are not explicitly in
-  idr_date, they are calculated from the other fields.
-
-  If tm is to reflect the localtime, set "use_localtime" true, otherwise
-  tm will reported in GMT.
-*/
-  void iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool use_localtime,
-                          /*out*/ struct tm *tm);
-
 
 /*=====================================================================
   file/dirname's 
@@ -429,7 +432,9 @@ uint16_t
 iso9660_pathtable_m_add_entry (void *pt, const char name[], uint32_t extent,
                                uint16_t parent);
 
-/* volume descriptors */
+/*=====================================================================
+                 Volume Descriptors
+======================================================================*/
 
 void
 iso9660_set_pvd (void *pd, const char volume_id[], const char application_id[],
