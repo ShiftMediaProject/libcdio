@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.5 2004/06/20 15:06:42 rocky Exp $
+    $Id: win32.h,v 1.6 2004/06/21 03:22:58 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -60,21 +60,13 @@ typedef struct {
 /*!
    Reads an audio device using the DeviceIoControl method into data
    starting from lsn.  Returns 0 if no error.
- */
-int read_audio_sectors_aspi (_img_private_t *obj, void *data, lsn_t lsn, 
-			     unsigned int nblocks);
-/*!
-   Reads an audio device using the DeviceIoControl method into data
-   starting from lsn.  Returns 0 if no error.
- */
+*/
 int read_audio_sectors_win32ioctl (_img_private_t *obj, void *data, lsn_t lsn, 
 				   unsigned int nblocks);
 /*!
    Reads a single mode2 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int read_mode2_sector_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
-			    bool b_form2);
 int read_mode2_sector_win32ioctl (const _img_private_t *env, void *data, 
 				  lsn_t lsn, bool b_form2);
 
@@ -82,18 +74,14 @@ int read_mode2_sector_win32ioctl (const _img_private_t *env, void *data,
    Reads a single mode1 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int read_mode1_sector_aspi (const _img_private_t *env, void *data, 
-			    lsn_t lsn, bool b_form2);
 int read_mode1_sector_win32ioctl (const _img_private_t *env, void *data, 
 				  lsn_t lsn, bool b_form2);
 
-const char *is_cdrom_aspi(const char drive_letter);
 const char *is_cdrom_win32ioctl (const char drive_letter);
 
 /*!
   Initialize internal structures for CD device.
  */
-bool init_aspi (_img_private_t *env);
 bool init_win32ioctl (_img_private_t *env);
 
 /*! 
@@ -101,7 +89,6 @@ bool init_win32ioctl (_img_private_t *env);
   Return true if successful or false if an error.
 */
 bool read_toc_win32ioctl (_img_private_t *env);
-bool read_toc_aspi (_img_private_t *env);
 
 char *get_mcn_win32ioctl (const _img_private_t *env);
 
@@ -128,6 +115,3 @@ cdio_drive_cap_t get_drive_cap_win32ioctl (const _img_private_t *env);
 */
 track_format_t get_track_format_win32ioctl(const _img_private_t *env, 
 					   track_t i_track); 
-
-track_format_t get_track_format_aspi(const _img_private_t *env, 
-				     track_t i_track); 

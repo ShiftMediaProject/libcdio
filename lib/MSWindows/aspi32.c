@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.7 2004/06/20 15:06:42 rocky Exp $
+    $Id: aspi32.c,v 1.8 2004/06/21 03:22:58 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.7 2004/06/20 15:06:42 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.8 2004/06/21 03:22:58 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -306,17 +306,11 @@ static int
 mmc_read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
 		       int sector_type, unsigned int nblocks)
 {
-  unsigned char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   HANDLE hEvent;
   struct SRB_ExecSCSICmd ssc;
 
 #if 0  
   sector_type = 0; /*all types */
-  /*sector_type = 1;*/	/* CD-DA */
-  /*sector_type = 2;*/	/* mode1 */
-  /*sector_type = 3;*/	/* mode2 */
-  /*sector_type = 4;*/	/* mode2/form1 */
-  /*sector_type = 5;*/	/* mode2/form2 */
 #endif
   int sync        = 0;
   int header_code = 2;
@@ -362,8 +356,25 @@ mmc_read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
 #endif
   
   /* Result buffer */
-  ssc.SRB_BufPointer  = buf;
-  ssc.SRB_BufLen = CDIO_CD_FRAMESIZE_RAW;
+  ssc.SRB_BufPointer  = data;
+
+  switch (sector_type) {
+  case CDIO_MMC_READ_TYPE_ANY: 
+  case CDIO_MMC_READ_TYPE_CDDA: 
+    ssc.SRB_BufLen = CDIO_CD_FRAMESIZE_RAW;
+    break;
+  case CDIO_MMC_READ_TYPE_M2F1:
+    ssc.SRB_BufLen = CDIO_CD_FRAMESIZE;
+    break;
+  case CDIO_MMC_READ_TYPE_M2F2:
+    ssc.SRB_BufLen = 2324;
+    break;
+  case CDIO_MMC_READ_TYPE_MODE1:
+    ssc.SRB_BufLen = CDIO_CD_FRAMESIZE;
+    break;
+  default:
+    ssc.SRB_BufLen = CDIO_CD_FRAMESIZE_RAW;
+  }
   
   /* Initiate transfer */
   ResetEvent( hEvent );
@@ -380,10 +391,7 @@ mmc_read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
   if( ssc.SRB_Status != SS_COMP ) {
     return 1;
   }
-  
-  /* FIXME! remove the 8 (SUBHEADER size) below... */
-  memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
-  
+
   return 0;
 }
 
@@ -409,14 +417,10 @@ int
 read_mode2_sector_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  
-  if (mmc_read_sectors_aspi(env, data, lsn, b_form2 
-			   ? CDIO_MMC_READ_TYPE_M2F2 
-			   : CDIO_MMC_READ_TYPE_M2F1, 
-			     1)) {
-    return mmc_read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_ANY, 1);
-  }
-  return 0;
+  return mmc_read_sectors_aspi(env, data, lsn, b_form2 
+			       ? CDIO_MMC_READ_TYPE_M2F2 
+			       : CDIO_MMC_READ_TYPE_M2F1, 
+			       1);
 }
 
 /*!
@@ -427,10 +431,7 @@ int
 read_mode1_sector_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  if (mmc_read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_MODE1, 1)) {
-    return mmc_read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_ANY, 1);
-  }
-  return 0;
+  return mmc_read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_MODE1, 1);
 }
 
 /*! 
@@ -594,16 +595,12 @@ wnaspi32_eject_media (void *user_data) {
 /*!
   Return the the kind of drive capabilities of device.
 
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
  */
 cdio_drive_cap_t
 get_drive_cap_aspi (const _img_private_t *env) 
 {
   int32_t i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
-  unsigned char buf[192] = { 0, };
-
+  BYTE        buf[256] = { 0, };
   HANDLE hEvent;
   struct SRB_ExecSCSICmd ssc;
 
@@ -619,24 +616,22 @@ get_drive_cap_aspi (const _img_private_t *env)
      capabilities, i.e. ability to read/write to CD-ROM/R/RW
      or/and read/write to DVD-ROM/R/RW.   */
   
-  ssc.SRB_Cmd         = SC_EXEC_SCSI_CMD;
-  ssc.SRB_Flags       = SRB_DIR_IN | SRB_EVENT_NOTIFY;
-  ssc.SRB_HaId        = LOBYTE( env->i_sid );
-  ssc.SRB_Target      = HIBYTE( env->i_sid );
-  ssc.SRB_SenseLen    = SENSE_LEN;
+  ssc.SRB_Cmd      = SC_EXEC_SCSI_CMD;
+  ssc.SRB_Flags    = SRB_DIR_IN | SRB_EVENT_NOTIFY;
+  ssc.SRB_HaId     = LOBYTE( env->i_sid );
+  ssc.SRB_Target   = HIBYTE( env->i_sid );
+  ssc.SRB_Lun      = 0;  /* FIXME */
+  ssc.SRB_SenseLen = SENSE_LEN;
 
   ssc.SRB_PostProc = (LPVOID) hEvent;
-  ssc.SRB_CDBLen      = 6;
+  ssc.SRB_CDBLen   = 12;
 
   /* Operation code */
-  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_MODE_SENSE);
-
-  /*ssc.CDBByte[1]           = 0x08;  /+ doesn't return block descriptors */
+  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_MODE_SENSE_10);
   ssc.CDBByte[1]             = 0x0;
-  ssc.CDBByte[2]             = 0x2a;  /*MODE_PAGE_CAPABILITIES*/;
-  ssc.CDBByte[3]             = 0;     /* Not used */
-  ssc.CDBByte[4]             = 128;
-  ssc.CDBByte[5]             = 0;     /* Not used */
+  ssc.CDBByte[2]             = 0x3F;  /* try narrower 0x2a "mode-page" ? */
+  ssc.CDBByte[7]             = 0x01;
+  ssc.CDBByte[8]             = 0x00; 
 
   /* Allocation length and buffer */
   ssc.SRB_BufPointer  = buf;
@@ -651,26 +646,49 @@ get_drive_cap_aspi (const _img_private_t *env)
   if( ssc.SRB_Status == SS_PENDING )
     WaitForSingleObject( hEvent, INFINITE );
   
+  CloseHandle( hEvent );
+
   /* check that the transfer went as planned */
   if( ssc.SRB_Status != SS_COMP ) {
-    CloseHandle( hEvent );
     return i_drivetype;
-  }
-  {
-    unsigned int n=buf[3]+4;
-    /* Reader? */
-    if (buf[n+5] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_AUDIO;
-    if (buf[n+2] & 0x02) i_drivetype |= CDIO_DRIVE_CAP_CD_RW;
-    if (buf[n+2] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_DVD;
-    
-    /* Writer? */
-    if (buf[n+3] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_R;
-    if (buf[n+3] & 0x10) i_drivetype |= CDIO_DRIVE_CAP_DVD_R;
-    if (buf[n+3] & 0x20) i_drivetype |= CDIO_DRIVE_CAP_DVD_RAM;
-    
-    if (buf[n+6] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_OPEN_TRAY;
-    if (buf[n+6] >> 5 != 0) 
-      i_drivetype |= CDIO_DRIVE_CAP_CLOSE_TRAY;
+  } else {
+    BYTE *p;
+    int lenData  = ((unsigned int)buf[0] << 8) + buf[1];
+    BYTE *pMax = buf + 256;
+
+    i_drivetype = 0;
+    /* set to first sense mask, and then walk through the masks */
+    p = buf + 8;
+    while( (p < &(buf[2+lenData])) && (p < pMax) )       {
+      BYTE which;
+      
+      which = p[0] & 0x3F;
+      switch( which )
+	{
+	case CDRAUDIOCTL:
+	case READERRREC:
+	case CDRPARMS:
+	  /* Don't handle theses yet. */
+	  break;
+	case CDRCAPS:
+	  /* Reader? */
+	  if (p[5] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_AUDIO;
+	  if (p[2] & 0x02) i_drivetype |= CDIO_DRIVE_CAP_CD_RW;
+	  if (p[2] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_DVD;
+	  
+	  /* Writer? */
+	  if (p[3] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_R;
+	  if (p[3] & 0x10) i_drivetype |= CDIO_DRIVE_CAP_DVD_R;
+	  if (p[3] & 0x20) i_drivetype |= CDIO_DRIVE_CAP_DVD_RAM;
+	  
+	  if (p[6] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_OPEN_TRAY;
+	  if (p[6] >> 5 != 0) 
+	    i_drivetype |= CDIO_DRIVE_CAP_CLOSE_TRAY;
+	  break;
+	default: ;
+	}
+      p += (p[1] + 2);
+    }
   }
   return i_drivetype;
 }

@@ -1,6 +1,6 @@
 /* Win32 aspi specific */
 /*
-    $Id: aspi32.h,v 1.1 2004/03/05 12:32:45 rocky Exp $
+    $Id: aspi32.h,v 1.2 2004/06/21 03:22:58 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -94,6 +94,14 @@ struct SRB_ExecSCSICmd
     unsigned char   SenseArea[SENSE_LEN+2];
 };
 
+/*! 
+  Values and structures used in MODE SENSE 10 command.
+*/
+#define READERRREC    0x01
+#define CDRPARMS      0x0D
+#define CDRAUDIOCTL   0x0E
+#define CDRCAPS       0x2A
+
 /*****************************************************************************
           %%% SRB - HOST ADAPTER INQUIRY - SC_HA_INQUIRY (0) %%%
 *****************************************************************************/
@@ -114,33 +122,50 @@ typedef struct                     // Offset
 }
 SRB_HAInquiry;
 
-const char * wnaspi32_is_cdrom(const char drive_letter);
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+cdio_drive_cap_t get_drive_cap_aspi (const _img_private_t *env);
+
+/*!  
+  Get the format (XA, DATA, AUDIO) of a track. 
+*/
+track_format_t get_track_format_aspi(const _img_private_t *env, 
+				     track_t i_track); 
 
 /*!
-  Initialize CD device.
+  Initialize internal structures for CD device.
  */
-bool wnaspi32_init_win32 (_img_private_t *env);
+bool init_aspi (_img_private_t *env);
+
+const char *is_cdrom_aspi(const char drive_letter);
 
 /*!
-   Reads an audio device into data starting from lsn.
-   Returns 0 if no error. 
+   Reads an audio device using the DeviceIoControl method into data
+   starting from lsn.  Returns 0 if no error.
  */
-int wnaspi32_read_audio_sectors (_img_private_t *env, void *data, lsn_t lsn, 
-			       unsigned int nblocks);
+int read_audio_sectors_aspi (_img_private_t *obj, void *data, lsn_t lsn, 
+			     unsigned int nblocks);
+/*!
+   Reads a single mode1 sector using the DeviceIoControl method into
+   data starting from lsn. Returns 0 if no error.
+ */
+int read_mode1_sector_aspi (const _img_private_t *env, void *data, 
+			    lsn_t lsn, bool b_form2);
 /*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-int wnaspi32_read_mode2_sector (_img_private_t *env, void *data, lsn_t lsn);
+int read_mode2_sector_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
+			    bool b_form2);
 
 /*! 
   Read and cache the CD's Track Table of Contents and track info.
   Return true if successful or false if an error.
 */
-bool wnaspi32_read_toc (_img_private_t *env);
+bool read_toc_aspi (_img_private_t *env);
 
-/*!  
-  Get format of track. 
-*/
-track_format_t wnaspi32_get_track_format(_img_private_t *env, 
-					 track_t track_num);
