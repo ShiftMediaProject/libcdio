@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.35 2004/07/25 17:32:19 rocky Exp $
+    $Id: aspi32.c,v 1.36 2004/07/25 21:43:30 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.35 2004/07/25 17:32:19 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.36 2004/07/25 21:43:30 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -238,7 +238,8 @@ get_dvd_struct_physical (_img_private_t *p_env, cdio_dvd_struct_t *s)
 discmode_t
 get_discmode_aspi (_img_private_t *p_env)
 {
-  int32_t i_discmode;
+  track_t i_track;
+  discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
 
   /* See if this is a DVD. */
   cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
@@ -257,33 +258,67 @@ get_discmode_aspi (_img_private_t *p_env)
     }
   }
 
-#if 1
-  return CDIO_DISC_MODE_ERROR;
-#else
-  i_discmode = ioctl (p_env->gen.fd, CDROM_DISC_STATUS);
+  if (!p_env->gen.toc_init) 
+    read_toc_aspi (p_env);
 
-  if (i_discmode < 0) return CDIO_DISC_MODE_ERROR;
-
-  /* FIXME Need to add getting DVD types. */
-  switch(i_discmode) {
-  case CDS_AUDIO:
-    return CDIO_DISC_MODE_CD_DA;
-  case CDS_DATA_1:
-    return CDIO_DISC_MODE_CD_DATA_1;
-  case CDS_DATA_2:
-    return CDIO_DISC_MODE_CD_DATA_2;
-  case CDS_MIXED:
-    return CDIO_DISC_MODE_CD_MIXED;
-  case CDS_XA_2_1:
-    return CDIO_DISC_MODE_CD_XA_2_1;
-  case CDS_XA_2_2:
-    return CDIO_DISC_MODE_CD_XA_2_2;
-  case CDS_NO_INFO:
+  if (!p_env->gen.toc_init) 
     return CDIO_DISC_MODE_NO_INFO;
-  default:
-    return CDIO_DISC_MODE_ERROR;
+
+  for (i_track = p_env->i_first_track; 
+       i_track < p_env->i_first_track + p_env->i_tracks ; 
+       i_track ++) {
+    track_format_t track_fmt=get_track_format_aspi(p_env, i_track);
+
+    /* FIXME Need to add getting DVD types. */
+    switch(track_fmt) {
+    case TRACK_FORMAT_AUDIO:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_DA;
+	  break;
+	case CDIO_DISC_MODE_CD_DA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	  discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_XA:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_XA;
+	  break;
+	case CDIO_DISC_MODE_CD_XA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_DATA:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_DATA;
+	  break;
+	case CDIO_DISC_MODE_CD_DATA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_ERROR:
+    default:
+      discmode = CDIO_DISC_MODE_ERROR;
+    }
   }
-#endif
+  return discmode;
 }
 
 const char *
@@ -912,7 +947,7 @@ get_mcn_aspi (const _img_private_t *p_env)
   Get format of track. 
 */
 track_format_t
-get_track_format_aspi(const _img_private_t *env, track_t track_num) 
+get_track_format_aspi(const _img_private_t *p_env, track_t track_num) 
 {
   MCI_OPEN_PARMS op;
   MCI_STATUS_PARMS st;
@@ -921,7 +956,7 @@ get_track_format_aspi(const _img_private_t *env, track_t track_num)
 
   memset( &op, 0, sizeof(MCI_OPEN_PARMS) );
   op.lpstrDeviceType = (LPCSTR)MCI_DEVTYPE_CD_AUDIO;
-  op.lpstrElementName = env->gen.source_name;
+  op.lpstrElementName = p_env->gen.source_name;
   
   /* Set the flags for the device type */
   i_flags = MCI_OPEN_TYPE | MCI_OPEN_TYPE_ID |
