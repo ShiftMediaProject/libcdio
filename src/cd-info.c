@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.123 2005/03/01 10:53:15 rocky Exp $
+    $Id: cd-info.c,v 1.124 2005/03/01 11:14:43 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1154,9 +1154,9 @@ main(int argc, const char *argv[])
       
       rc = cdio_audio_read_subchannel(p_cdio, &subchannel);
       
-      if (DRIVER_OP_SUCCESS == rc) {
+      report( stdout, "audio status: "); fflush(stdout);
 	
-	report( stdout, "audio status: "); fflush(stdout);
+      if (DRIVER_OP_SUCCESS == rc) {
 	
 	switch (subchannel.audio_status) {
 	case CDIO_MMC_READ_SUB_ST_INVALID:
