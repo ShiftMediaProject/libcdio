@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.13 2005/03/15 12:22:38 rocky Exp $
+    $Id: cdda-player.c,v 1.14 2005/03/15 15:56:13 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -510,9 +510,10 @@ read_toc(CdIo_t *p_cdio)
 }
 
 /*! Play an audio track. */
-static void
+static bool
 play_track(track_t i_start_track, track_t i_end_track)
 {
+  bool b_ok = true;
   char line[80];
   
   if (!b_cd) {
@@ -522,7 +523,7 @@ play_track(track_t i_start_track, track_t i_end_track)
   
   read_subchannel(p_cdio);
   if (!b_cd || i_first_track == CDIO_CDROM_LEADOUT_TRACK)
-    return;
+    return false;
   
   if (debug)
     fprintf(stderr,"play tracks: %d-%d => ", i_start_track, i_end_track);
@@ -536,9 +537,12 @@ play_track(track_t i_start_track, track_t i_end_track)
   cd_pause(p_cdio);
   sprintf(line,"play track %d...", i_start_track);
   action(line);
-  if ( DRIVER_OP_SUCCESS != cdio_audio_play_msf(p_cdio, &(toc[i_start_track]),
-						&(toc[i_end_track])) )
+  b_okay = (DRIVER_OP_SUCCESS == cdio_audio_play_msf(p_cdio, 
+						     &(toc[i_start_track]),
+						     &(toc[i_end_track])) );
+  if (!b_okay)
     xperror("play");
+  return b_okay;
 }
 
 static void
@@ -1354,7 +1358,7 @@ main(int argc, char *argv[])
 	    if (one_track)
 	      printf("%s\n", cd_info[start_track].title);
 	  }
-	  play_track(start_track, stop_track);
+	  i_rc = play_track(start_track, stop_track) ? 0 : 1;
 	  break;
 	case PLAY_CD:
 	  if (b_record)
