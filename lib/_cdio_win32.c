@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.8 2003/06/11 10:55:54 rocky Exp $
+    $Id: _cdio_win32.c,v 1.9 2003/06/12 03:38:31 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.8 2003/06/11 10:55:54 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.9 2003/06/12 03:38:31 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -213,7 +213,7 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
 }
 
 static const char *
-cdio_have_cdrom_drive(const char drive_letter) {
+cdio_is_cdrom(const char drive_letter) {
   static char psz_win32_drive[7];
   static char root_path_name[8];
   _img_private_t obj;
@@ -1039,7 +1039,7 @@ cdio_get_default_device_win32(void)
   char drive_letter;
 
   for (drive_letter='A'; drive_letter <= 'Z'; drive_letter++) {
-    const char *drive_str=cdio_have_cdrom_drive(drive_letter);
+    const char *drive_str=cdio_is_cdrom(drive_letter);
     if (drive_str != NULL) {
       return strdup(drive_str);
     }
