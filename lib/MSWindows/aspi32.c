@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.20 2004/07/14 04:34:25 rocky Exp $
+    $Id: aspi32.c,v 1.21 2004/07/14 04:42:11 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.20 2004/07/14 04:34:25 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.21 2004/07/14 04:42:11 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -397,10 +397,9 @@ scsi_mmc_command( const _img_private_t *env,
   /* Create the transfer completion event */
   hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
   if( hEvent == NULL ) {
+    cdio_info("CreateEvent failed");
     return false;
   }
-  
-  /* Data selection */
   
   memset( &ssc, 0, sizeof( ssc ) );
 
@@ -443,7 +442,7 @@ scsi_mmc_command( const _img_private_t *env,
 
 
 /*!
-   Reads a single mode2 sector from cd device into data starting from lsn.
+   Reads nblocks sectors from cd device into data starting from lsn.
    Returns 0 if no error. 
  */
 static int
