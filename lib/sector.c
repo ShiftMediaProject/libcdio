@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.4 2003/09/11 02:50:06 rocky Exp $
+    $Id: sector.c,v 1.5 2004/05/07 10:59:12 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -32,11 +32,12 @@
 #endif
 
 
-static const char _rcsid[] = "$Id: sector.c,v 1.4 2003/09/11 02:50:06 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.5 2004/05/07 10:59:12 rocky Exp $";
 
 lba_t
 cdio_lba_to_lsn (lba_t lba)
 {
+  if (CDIO_INVALID_LBA  == lba) return CDIO_INVALID_LSN;
   return lba - CDIO_PREGAP_SECTORS; 
 }
 
@@ -67,6 +68,7 @@ cdio_lba_to_msf_str (lba_t lba)
 lba_t
 cdio_lsn_to_lba (lsn_t lsn)
 {
+  if (CDIO_INVALID_LSN  == lsn) return CDIO_INVALID_LBA;
   return lsn + CDIO_PREGAP_SECTORS; 
 }
 
