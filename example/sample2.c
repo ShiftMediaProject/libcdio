@@ -1,5 +1,5 @@
 /*
-  $Id: sample2.c,v 1.8 2004/04/25 14:07:23 rocky Exp $
+  $Id: sample2.c,v 1.9 2004/07/13 12:28:18 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -47,7 +47,7 @@ main(int argc, const char *argv[])
     if (default_device) {
       cdio_drive_cap_t i_drive_cap =  cdio_get_drive_cap(cdio);
       printf("The default device for this driver is %s\n", default_device);
-      printf("drive capability in hex: %x\n", i_drive_cap);
+      printf("drive capability in hex: %x\n", (unsigned int) i_drive_cap);
       if (CDIO_DRIVE_CAP_ERROR == i_drive_cap) {
 	printf("Error in getting drive properties\n");
       } else if (CDIO_DRIVE_CAP_UNKNOWN == i_drive_cap) {

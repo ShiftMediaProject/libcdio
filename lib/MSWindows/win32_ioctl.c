@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.9 2004/07/13 03:45:26 rocky Exp $
+    $Id: win32_ioctl.c,v 1.10 2004/07/13 12:28:21 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.9 2004/07/13 03:45:26 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.10 2004/07/13 12:28:21 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -181,7 +181,7 @@ read_audio_sectors_win32ioctl (_img_private_t *env, void *data, lsn_t lsn,
 		       sizeof(RAW_READ_INFO), data,
 		       CDIO_CD_FRAMESIZE_RAW * nblocks,
 		       &dwBytesReturned, NULL ) == 0 ) {
-    char *psz_msg;
+    char *psz_msg = NULL;
     DWORD dw = GetLastError();
 
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
@@ -244,7 +244,7 @@ read_raw_sector (const _img_private_t *env, void *buf, lsn_t lsn)
 			  NULL);
 
   if(! success) {
-    char *psz_msg;
+    char *psz_msg = NULL;
     DWORD dw = GetLastError();
 
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 

@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.18 2004/07/13 04:33:07 rocky Exp $
+    $Id: aspi32.c,v 1.19 2004/07/13 12:28:21 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.18 2004/07/13 04:33:07 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.19 2004/07/13 12:28:21 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -286,6 +286,8 @@ init_aspi (_img_private_t *env)
   } else if ( 6 == strlen(env->gen.source_name) 
 	      && isalpha(env->gen.source_name[4] )) {
     c_drive = env->gen.source_name[4];
+  } else {
+    c_drive = 'C';
   }
   
   if ( !have_aspi(&hASPI, &lpGetSupport, &lpSendCommand) )
