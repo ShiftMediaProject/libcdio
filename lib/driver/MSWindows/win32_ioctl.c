@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.18 2005/03/06 00:54:50 rocky Exp $
+    $Id: win32_ioctl.c,v 1.19 2005/03/06 11:21:52 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.18 2005/03/06 00:54:50 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.19 2005/03/06 11:21:52 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -140,13 +140,13 @@ audio_play_msf_win32ioctl (void *p_user_data, msf_t *p_start_msf,
   CDROM_PLAY_AUDIO_MSF play;
   DWORD dw_bytes_returned;
 
-  play.StartingM = p_start_msf->m;
-  play.StartingS = p_start_msf->s;
-  play.StartingF = p_start_msf->f;
+  play.StartingM = cdio_from_bcd8(p_start_msf->m);
+  play.StartingS = cdio_from_bcd8(p_start_msf->s);
+  play.StartingF = cdio_from_bcd8(p_start_msf->f);
 
-  play.EndingM   = p_end_msf->m;
-  play.EndingS   = p_end_msf->s;
-  play.EndingF   = p_end_msf->f;
+  play.EndingM   = cdio_from_bcd8(p_end_msf->m);
+  play.EndingS   = cdio_from_bcd8(p_end_msf->s);
+  play.EndingF   = cdio_from_bcd8(p_end_msf->f);
 
   bool b_success = 
     DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_PLAY_AUDIO_MSF,

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: audio.h,v 1.5 2005/03/05 09:26:52 rocky Exp $
+    $Id: audio.h,v 1.6 2005/03/06 11:21:52 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -120,6 +120,14 @@ extern "C" {
   */
   driver_return_code_t cdio_audio_set_volume (CdIo_t *p_cdio,
 					      cdio_audio_volume_t *p_volume);
+
+  /*!
+    Stop playing an audio CD.
+    
+    @param p_cdio the CD object to be acted upon.
+
+  */
+  driver_return_code_t cdio_audio_stop (CdIo_t *p_cdio);
 
 #ifdef __cplusplus
 }

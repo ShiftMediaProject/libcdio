@@ -1,5 +1,5 @@
 /*
-    $Id: solaris.c,v 1.3 2005/03/06 00:55:42 rocky Exp $
+    $Id: solaris.c,v 1.4 2005/03/06 11:21:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: solaris.c,v 1.3 2005/03/06 00:55:42 rocky Exp $";
+static const char _rcsid[] = "$Id: solaris.c,v 1.4 2005/03/06 11:21:52 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -144,12 +144,12 @@ audio_play_msf_solaris (void *p_user_data, msf_t *p_start_msf,
   const _img_private_t *p_env = p_user_data;
 
   struct cdrom_msf solaris_msf;
-  solaris_msf.cdmsf_min0   = p_start_msf->m;
-  solaris_msf.cdmsf_sec0   = p_start_msf->s;
-  solaris_msf.cdmsf_frame0 = p_start_msf->f;
-  solaris_msf.cdmsf_min1   = p_end_msf->m;
-  solaris_msf.cdmsf_sec1   = p_end_msf->s;
-  solaris_msf.cdmsf_frame1 = p_end_msf->f;
+  solaris_msf.cdmsf_min0   = cdio_from_bcd8(p_start_msf->m);
+  solaris_msf.cdmsf_sec0   = cdio_from_bcd8(p_start_msf->s);
+  solaris_msf.cdmsf_frame0 = cdio_from_bcd8(p_start_msf->f);
+  solaris_msf.cdmsf_min1   = cdio_from_bcd8(p_end_msf->m);
+  solaris_msf.cdmsf_sec1   = cdio_from_bcd8(p_end_msf->s);
+  solaris_msf.cdmsf_frame1 = cdio_from_bcd8(p_end_msf->f);
 
   return ioctl(p_env->gen.fd, CDROMPLAYMSF, &solaris_msf);
 }

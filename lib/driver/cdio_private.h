@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.21 2005/03/05 10:48:41 rocky Exp $
+    $Id: cdio_private.h,v 1.22 2005/03/06 11:21:52 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -111,14 +111,30 @@ extern "C" {
     */
     driver_return_code_t (*audio_set_volume) 
 	 ( void *p_env,  cdio_audio_volume_t *p_volume );
+
+    /*!
+      Stop playing an audio CD.
+      
+      @param p_env the CD object to be acted upon.
+      
+    */
+    driver_return_code_t (*audio_stop) ( void *p_env );
+    
+    /*!
+      Close media tray in CD drive if there is a routine to do so. 
+      
+      @param p_env the CD object to be acted upon.
+    */
+    driver_return_code_t (*close_tray) ( void *p_env );
+    
     /*!
       Eject media in CD drive. If successful, as a side effect we 
-      also free obj. Return 0 if success and 1 for failure.
+      also free p_env. 
 
       @param p_env the CD object to be acted upon.
       If the CD is ejected *p_env is freed and p_env set to NULL.
     */
-    int (*eject_media) (void *p_env);
+    driver_return_code_t (*eject_media) ( void *p_env );
     
     /*!
       Release and free resources associated with cd. 
@@ -134,7 +150,7 @@ extern "C" {
       Get the block size for subsequest read requests, via a SCSI MMC 
       MODE_SENSE 6 command.
     */
-    int (*get_blocksize) (void *p_env);
+    int (*get_blocksize) ( void *p_env );
     
     /*! 
       Get cdtext information for a CdIo object.
@@ -146,7 +162,7 @@ extern "C" {
       If i_track is 0 or CDIO_CDROM_LEADOUT_TRACK the track returned
       is the information assocated with the CD. 
     */
-    cdtext_t * (*get_cdtext) (void *p_env, track_t i_track);
+    cdtext_t * (*get_cdtext) ( void *p_env, track_t i_track );
     
     /*!
       Return an array of device names. if CdIo is NULL (we haven't
@@ -155,7 +171,7 @@ extern "C" {
       
       NULL is returned if we couldn't return a list of devices.
     */
-    char ** (*get_devices) (void);
+    char ** (*get_devices) ( void );
     
     /*!
       Get the default CD device.
@@ -167,18 +183,18 @@ extern "C" {
       there is no media in it and it is possible for this routine to return
       NULL even though there may be a hardware CD-ROM.
     */
-    char * (*get_default_device)(void);
+    char * (*get_default_device) ( void );
     
     /*!
       Return the size of the CD in logical block address (LBA) units.
       @return the lsn. On error 0 or CDIO_INVALD_LSN.
     */
-    lsn_t (*get_disc_last_lsn) (void *p_env);
+    lsn_t (*get_disc_last_lsn) ( void *p_env );
 
     /*! 
       Get disc mode associated with cd_obj.
     */
-    discmode_t (*get_discmode) (void *p_env);
+    discmode_t (*get_discmode) ( void *p_env );
 
     /*!
       Return the what kind of device we've got.
@@ -193,7 +209,7 @@ extern "C" {
       Return the number of of the first track. 
       CDIO_INVALID_TRACK is returned on error.
     */
-    track_t (*get_first_track_num) (void *p_env);
+    track_t (*get_first_track_num) ( void *p_env );
     
     /*! 
       Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
@@ -209,7 +225,7 @@ extern "C" {
        @param i_last_session pointer to the session number to be returned.
     */
     driver_return_code_t (*get_last_session)
-	 (void *p_env, /*out*/ lsn_t *i_last_session);
+	 ( void *p_env, /*out*/ lsn_t *i_last_session );
 
     /*! 
       Find out if media has changed since the last call.
@@ -217,31 +233,31 @@ extern "C" {
       @return 1 if media has changed since last call, 0 if not. Error
       return codes are the same as driver_return_code_t
     */
-    int (*get_media_changed) (const void *p_env);
+    int (*get_media_changed) ( const void *p_env );
 
     /*!  
       Return the media catalog number MCN from the CD or NULL if
       there is none or we don't have the ability to get it.
     */
-    char * (*get_mcn) (const void *p_env);
+    char * (*get_mcn) ( const void *p_env );
 
     /*! 
       Return the number of tracks in the current medium.
       CDIO_INVALID_TRACK is returned on error.
     */
-    track_t (*get_num_tracks) (void *p_env);
+    track_t (*get_num_tracks) ( void *p_env );
     
     /*! Return number of channels in track: 2 or 4; -2 if not
       implemented or -1 for error.
       Not meaningful if track is not an audio track.
     */
-    int (*get_track_channels) (const void *p_env, track_t i_track);
+    int (*get_track_channels) ( const void *p_env, track_t i_track );
   
     /*! Return 0 if track is copy protected, 1 if not, or -1 for error
       or -2 if not implimented (yet). Is this meaningful if not an
       audio track?
     */
-    track_flag_t (*get_track_copy_permit) (void *p_env, track_t i_track);
+    track_flag_t (*get_track_copy_permit) ( void *p_env, track_t i_track );
   
     /*!  
       Return the starting LBA for track number
@@ -250,12 +266,12 @@ extern "C" {
       using track_num LEADOUT_TRACK or the total tracks+1.
       CDIO_INVALID_LBA is returned on error.
     */
-    lba_t (*get_track_lba) (void *p_env, track_t i_track);
+    lba_t (*get_track_lba) ( void *p_env, track_t i_track );
     
     /*!  
       Get format of track. 
     */
-    track_format_t (*get_track_format) (void *p_env, track_t i_track);
+    track_format_t (*get_track_format) ( void *p_env, track_t i_track );
     
     /*!
       Return true if we have XA data (green, mode2 form1) or
@@ -265,7 +281,7 @@ extern "C" {
       
       FIXME: there's gotta be a better design for this and get_track_format?
     */
-    bool (*get_track_green) (void *p_env, track_t i_track);
+    bool (*get_track_green) ( void *p_env, track_t i_track );
     
     /*!  
       Return the starting MSF (minutes/secs/frames) for track number
@@ -274,7 +290,7 @@ extern "C" {
       using i_track LEADOUT_TRACK or the total tracks+1.
       False is returned on error.
     */
-    bool (*get_track_msf) (void *p_env, track_t i_track, msf_t *p_msf);
+    bool (*get_track_msf) ( void *p_env, track_t i_track, msf_t *p_msf );
     
     /*! Return 1 if track has pre-emphasis, 0 if not, or -1 for error
       or -2 if not implimented (yet). Is this meaningful if not an
@@ -288,21 +304,21 @@ extern "C" {
       Returns (off_t) -1 on error. 
       Similar to libc's lseek()
     */
-    off_t (*lseek) (void *p_env, off_t offset, int whence);
+    off_t (*lseek) ( void *p_env, off_t offset, int whence );
     
     /*!
       Reads into buf the next size bytes.
       Returns -1 on error. 
       Similar to libc's read()
     */
-    ssize_t (*read) (void *p_env, void *p_buf, size_t i_size);
+    ssize_t (*read) ( void *p_env, void *p_buf, size_t i_size );
     
     /*!
       Reads a single mode2 sector from cd device into buf starting
       from lsn. Returns 0 if no error. 
     */
-    int (*read_audio_sectors) (void *p_env, void *p_buf, lsn_t i_lsn,
-			       unsigned int i_blocks);
+    int (*read_audio_sectors) ( void *p_env, void *p_buf, lsn_t i_lsn,
+				unsigned int i_blocks );
     
     /*!
       Read a data sector
@@ -380,7 +396,7 @@ extern "C" {
     /*!
       Set the arg "key" with "value" in the source device.
     */
-    int (*set_arg) (void *p_env, const char key[], const char value[]);
+    int (*set_arg) ( void *p_env, const char key[], const char value[] );
     
     /*!
       Set the blocksize for subsequent reads. 

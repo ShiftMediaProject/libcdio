@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.131 2005/03/06 02:59:26 rocky Exp $
+    $Id: cd-info.c,v 1.132 2005/03/06 11:21:52 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -26,6 +26,7 @@
 */
 
 #include "util.h"
+#include "cddb.h"
 #include <stdarg.h>
 
 #ifdef HAVE_CDDB
@@ -348,60 +349,6 @@ parse_options (int argc, const char *argv[])
   poptFreeContext(optCon);
   return true;
 }
-
-/* ------------------------------------------------------------------------ */
-/* CDDB                                                                     */
-
-/* 
-   Returns the sum of the decimal digits in a number. Eg. 1955 = 20
-*/
-static int
-cddb_dec_digit_sum(int n)
-{
-  int ret=0;
-  
-  for (;;) {
-    ret += n%10;
-    n    = n/10;
-    if (!n)
-      return ret;
-  }
-}
-
-/* Return the number of seconds (discarding frame portion) of an MSF */
-static inline unsigned int
-msf_seconds(msf_t *msf) 
-{
-  return cdio_from_bcd8(msf->m)*CDIO_CD_SECS_PER_MIN + cdio_from_bcd8(msf->s);
-}
-
-/* 
-   Compute the CDDB disk ID for an Audio disk.  This is a funny checksum
-   consisting of the concatenation of 3 things:
-      the sum of the decimal digits of sizes of all tracks, 
-      the total length of the disk, and 
-      the number of tracks.
-*/
-static unsigned long
-cddb_discid(CdIo_t *p_cdio, int i_tracks)
-{
-  int i,t,n=0;
-  msf_t start_msf;
-  msf_t msf;
-  
-  for (i = 1; i <= i_tracks; i++) {
-    cdio_get_track_msf(p_cdio, i, &msf);
-    n += cddb_dec_digit_sum(msf_seconds(&msf));
-  }
-
-  cdio_get_track_msf(p_cdio, 1, &start_msf);
-  cdio_get_track_msf(p_cdio, CDIO_CDROM_LEADOUT_TRACK, &msf);
-  
-  t = msf_seconds(&msf) - msf_seconds(&start_msf);
-  
-  return ((n % 0xff) << 24 | t << 8 | i_tracks);
-}
-
 
 /* CDIO logging routines */
 

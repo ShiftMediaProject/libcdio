@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.4 2005/03/05 09:26:52 rocky Exp $
+    $Id: audio.c,v 1.5 2005/03/06 11:21:52 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -148,3 +148,30 @@ cdio_audio_set_volume (CdIo_t *p_cdio, cdio_audio_volume_t *p_volume)
     return DRIVER_OP_UNSUPPORTED;
   }
 }
+
+/*!
+  Resume playing an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+driver_return_code_t 
+cdio_audio_stop (CdIo_t *p_cdio)
+{
+  if (!p_cdio) return DRIVER_OP_UNINIT;
+
+  if (!p_cdio->op.audio_stop) {
+    return p_cdio->op.audio_stop(p_cdio->env);
+  } else {
+    return DRIVER_OP_UNSUPPORTED;
+  }
+}
+
+
+/* 
+ * Local variables:
+ *  c-file-style: "gnu"
+ *  tab-width: 8
+ *  indent-tabs-mode: nil
+ * End:
+ */

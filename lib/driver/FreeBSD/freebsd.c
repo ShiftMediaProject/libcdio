@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.20 2005/03/05 23:21:40 rocky Exp $
+    $Id: freebsd.c,v 1.21 2005/03/06 11:21:52 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.20 2005/03/05 23:21:40 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.21 2005/03/06 11:21:52 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -301,13 +301,13 @@ audio_play_msf_freebsd (void *p_user_data, msf_t *p_start_msf,
   const _img_private_t *p_env = p_user_data;
   struct ioc_play_msf freebsd_play_msf;
 
-  freebsd_play_msf.start_m = p_start_msf->m;
-  freebsd_play_msf.start_s = p_start_msf->s;
-  freebsd_play_msf.start_f = p_start_msf->f;
+  freebsd_play_msf.start_m = cdio_from_bcd8(p_start_msf->m);
+  freebsd_play_msf.start_s = cdio_from_bcd8(p_start_msf->s);
+  freebsd_play_msf.start_f = cdio_from_bcd8(p_start_msf->f);
 
-  freebsd_play_msf.end_m = p_end_msf->m;
-  freebsd_play_msf.end_s = p_end_msf->s;
-  freebsd_play_msf.end_f = p_end_msf->f;
+  freebsd_play_msf.end_m = cdio_from_bcd8(p_end_msf->m);
+  freebsd_play_msf.end_s = cdio_from_bcd8(p_end_msf->s);
+  freebsd_play_msf.end_f = cdio_from_bcd8(p_end_msf->f);
 
   return ioctl(p_env->gen.fd, CDIOCPLAYMSF, &freebsd_play_msf);
 }

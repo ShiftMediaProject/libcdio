@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.35 2005/02/06 04:20:25 rocky Exp $
+    $Id: sector.h,v 1.36 2005/03/06 11:21:52 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -212,45 +212,45 @@
       /*! 
         Convert an LBA into a string representation of the MSF.
         \warning cdio_lba_to_msf_str returns new allocated string */
-      char *cdio_lba_to_msf_str (lba_t lba);
+      char *cdio_lba_to_msf_str (lba_t i_lba);
       
       /*! 
         Convert an MSF into a string representation of the MSF.
         \warning cdio_msf_to_msf_str returns new allocated string */
-      char *cdio_msf_to_str (const msf_t *msf);
+      char *cdio_msf_to_str (const msf_t *p_msf);
       
       /*! 
         Convert an LBA into the corresponding LSN.
       */
-      lba_t cdio_lba_to_lsn (lba_t lba);
+      lba_t cdio_lba_to_lsn (lba_t i_lba);
       
       /*! 
         Convert an LBA into the corresponding MSF.
       */
-      void  cdio_lba_to_msf(lba_t lba, msf_t *msf);
+      void  cdio_lba_to_msf(lba_t i_lba, msf_t *p_msf);
       
       /*! 
         Convert an LSN into the corresponding LBA.
         CDIO_INVALID_LBA is returned if there is an error.
       */
-      lba_t cdio_lsn_to_lba (lsn_t lsn);
+      lba_t cdio_lsn_to_lba (lsn_t i_lsn);
       
       /*! 
         Convert an LSN into the corresponding MSF.
       */
-      void  cdio_lsn_to_msf (lsn_t lsn, msf_t *msf);
+      void  cdio_lsn_to_msf (lsn_t i_lsn, msf_t *p_msf);
       
       /*! 
         Convert a MSF into the corresponding LBA.
         CDIO_INVALID_LBA is returned if there is an error.
       */
-      lba_t cdio_msf_to_lba (const msf_t *msf);
+      lba_t cdio_msf_to_lba (const msf_t *p_msf);
       
       /*! 
         Convert a MSF into the corresponding LSN.
         CDIO_INVALID_LSN is returned if there is an error.
       */
-      lsn_t cdio_msf_to_lsn (const msf_t *msf);
+      lsn_t cdio_msf_to_lsn (const msf_t *p_msf);
       
       /*!  
         Convert a MSF - broken out as 3 integer components into the

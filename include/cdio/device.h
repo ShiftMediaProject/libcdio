@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.18 2005/03/05 10:48:41 rocky Exp $
+    $Id: device.h,v 1.19 2005/03/06 11:21:52 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -215,6 +215,14 @@ extern "C" {
     DRIVER_OP_BAD_PARAMETER = -5, /**< Bad parameter passed  */
     DRIVER_OP_BAD_POINTER =   -6, /**< Bad pointer to memory area  */
   } driver_return_code_t;
+
+  /*!
+    Close media tray in CD drive if there is a routine to do so. 
+
+    @param p_cdio the CD object to be acted upon.
+    If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
+  */
+  driver_return_code_t cdio_close_tray (CdIo_t *p_cdio);
 
   /*!
     Eject media in CD drive if there is a routine to do so. 

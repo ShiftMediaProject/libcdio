@@ -20,6 +20,8 @@ cdio_audio_play_track_index
 cdio_audio_read_subchannel
 cdio_audio_resume
 cdio_audio_set_volume
+cdio_audio_stop
+cdio_close_tray
 cdio_debug
 cdio_destroy
 cdio_driver_describe

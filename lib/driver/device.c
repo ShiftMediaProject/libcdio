@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.12 2005/03/05 10:48:41 rocky Exp $
+    $Id: device.c,v 1.13 2005/03/06 11:21:52 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -288,12 +288,30 @@ cdio_destroy (CdIo_t *p_cdio)
   free (p_cdio);
 }
 
-  /*!
-    Eject media in CD drive if there is a routine to do so. 
+/*!
+  Close media tray in CD drive if there is a routine to do so. 
+  
+  @param p_cdio the CD object to be acted upon.
+  If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
+*/
+driver_return_code_t 
+cdio_close_tray (CdIo_t *p_cdio)
+{
+  if (!p_cdio) return DRIVER_OP_UNINIT;
+  
+  if (!p_cdio->op.close_tray) {
+    return p_cdio->op.close_tray(p_cdio->env);
+  } else {
+    return DRIVER_OP_UNSUPPORTED;
+  }
+}
 
-    @param p_cdio the CD object to be acted upon.
-    If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
-  */
+/*!
+  Eject media in CD drive if there is a routine to do so. 
+  
+  @param p_cdio the CD object to be acted upon.
+  If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
+*/
 driver_return_code_t
 cdio_eject_media (CdIo_t **pp_cdio)
 {
