@@ -1,5 +1,5 @@
 /*
-  $Id: testtoc.c,v 1.7 2005/01/16 04:35:08 rocky Exp $
+  $Id: testtoc.c,v 1.8 2005/01/23 00:45:57 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -43,7 +43,7 @@
 #endif
 
 #define NUM_GOOD_TOCS 16
-#define NUM_BAD_TOCS 7
+#define NUM_BAD_TOCS 8
 int
 main(int argc, const char *argv[])
 {
@@ -73,6 +73,7 @@ main(int argc, const char *argv[])
     "bad-cat1.toc", 
     "bad-cat2.toc",
     "bad-cat3.toc",
+    "bad-file.toc",
     "bad-mode1.toc"
   };
   int ret=0;
