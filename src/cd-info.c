@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.23 2003/08/31 02:51:41 rocky Exp $
+    $Id: cd-info.c,v 1.24 2003/08/31 04:02:05 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -55,6 +55,7 @@
 #include <cdio/cd_types.h>
 
 #include "ds.h"
+#include "iso9660_private.h"
 
 #include <fcntl.h>
 #ifdef __linux__
@@ -659,17 +660,22 @@ print_iso9660_recurse (const CdIo *cdio, const char pathname[])
 }
 
 static void
-print_iso9660_fs (const CdIo *cdio)
+print_iso9660_fs (CdIo *cdio)
 {
-  const iso9660_pvd_t *pvd = vcdinfo_get_pvd(cdio);
-  lsn_t extent = iso9660_get_root_lsn(pvd);
+  iso9660_pvd_t pvd;
 
-  printf ("ISO9660 filesystem\n");
-  printf (" root dir in PVD set to lsn %d\n\n", extent);
+  if (cdio_read_mode2_sector (cdio, &pvd, ISO_PVD_SECTOR, false))
+    return;
+  else {
+    const lsn_t extent = iso9660_get_root_lsn(&pvd);
 
-  print_iso9660_recurse (cdio, "/");
+    printf ("ISO9660 filesystem\n");
+    printf (" root dir in PVD set to lsn %d\n\n", extent);
+    
+    print_iso9660_recurse (cdio, "/");
+  }
 }
-#endif
+#endif /*ISO9600_FINISHED*/
 
 static void
 print_analysis(int ms_offset, cdio_analysis_t cdio_analysis, 
