@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.h,v 1.7 2003/11/17 12:06:57 rocky Exp $
+    $Id: cd_types.h,v 1.8 2003/11/18 03:35:19 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -104,10 +104,11 @@ extern "C" {
 #define CDIO_FS_MATCH_ALL            (cdio_fs_anal_t) (~CDIO_FS_MASK)
 
 
-/**
- * The type used to return analysis information from
- * cdio_guess_cd_type. These fields make sense only for when an ISO 9660
- * filesystem is used.
+/*!
+  \brief The type used to return analysis information from
+  cdio_guess_cd_type. 
+
+  These fields make sense only for when an ISO-9660 filesystem is used.
  */
 typedef struct 
 {

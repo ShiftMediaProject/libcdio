@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.32 2003/11/17 12:06:57 rocky Exp $
+    $Id: iso9660.h,v 1.33 2003/11/18 03:35:19 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -45,7 +45,7 @@
 /*!
    An ISO filename is: "abcde.eee;1" -> <filename> '.' <ext> ';' <version #>
 
-    The maximum needed string length is:
+    For ISO-9660 Level 1, the maximum needed string length is:
 
 \verbatim  
   	 30 chars (filename + ext)
@@ -100,6 +100,11 @@ enum strncpy_pad_check {
 
 PRAGMA_BEGIN_PACKED
 
+/*! 
+  \brief ISO-9660 shorter-format time structure.
+  
+  @see iso9660_dtime
+ */
 struct	iso9660_dtime {
   uint8_t 	dt_year;
   uint8_t 	dt_month;  /**< Has value in range 1..12. Note starts
@@ -114,7 +119,10 @@ struct	iso9660_dtime {
 
 typedef struct iso9660_dtime  iso9660_dtime_t;
 
-/*! ISO-9660 Primary Volume Descriptor.
+/*! 
+  \brief ISO-9660 longer-format time structure.
+  
+  @see iso9660_ltime
  */
 struct	iso9660_ltime {
   char	 lt_year	[_delta(   1,	4)];   /**< Add 1900 to value
@@ -136,7 +144,8 @@ struct	iso9660_ltime {
 
 typedef struct iso9660_ltime  iso9660_ltime_t;
 
-/*! ISO-9660 Primary Volume Descriptor.
+/*! 
+  \brief ISO-9660 Primary Volume Descriptor.
  */
 struct iso9660_pvd {
   uint8_t          type;                      /**< 711 encoded */
@@ -193,17 +202,19 @@ typedef struct iso9660_stat iso9660_stat_t;
 #define EMPTY_ARRAY_SIZE 0
 #endif
 
-/*
- * XXX JS: The next structure may have an odd length depending on how 
- * many characters there are in the filename!
- * Some compilers (e.g. on Sun3/mc68020) padd the structures to even length.
- * For this reason, we cannot use sizeof (struct iso_path_table) or
- * sizeof (struct iso_directory_record) to compute on disk sizes.
- * Instead, we use offsetof(..., name) and add the name size.
- * See mkisofs.h
- */
 
-/*! Format of an ISO-9660 directory record */
+/*! \brief Format of an ISO-9660 directory record 
+
+ This structure may have an odd length depending on how many
+ characters there are in the filename!  Some compilers (e.g. on
+ Sun3/mc68020) pad the structures to an even length.  For this reason,
+ we cannot use sizeof (struct iso_path_table) or sizeof (struct
+ iso_directory_record) to compute on disk sizes.  Instead, we use
+ offsetof(..., name) and add the name size.  See mkisofs.h of the 
+ cdrtools package.
+
+  @see iso9660_stat
+*/
 struct iso9660_dir {
   uint8_t          length;            /*! 711 encoded */
   uint8_t          xa_length;         /*! 711 encoded */
@@ -219,9 +230,14 @@ struct iso9660_dir {
 } GNUC_PACKED;
 
 
-/*! The iso9660_stat structure is not part of any ISO 9660 spec. We
-   just use it for our own purposes for communicating info back that's
-   pulled out.
+/*! \brief Unix stat-like version of iso9660_dir
+
+   The iso9660_stat structure is not part of the ISO-9660
+   specification. We use it for our to communicate information
+   in a C-library friendly way, e.g struct tm time structures and
+   a C-style filename string.
+
+   @see iso9660_dir
 */
 struct iso9660_stat { /* big endian!! */
   enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;

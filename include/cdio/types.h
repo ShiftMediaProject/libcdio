@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.8 2003/11/17 12:06:58 rocky Exp $
+    $Id: types.h,v 1.9 2003/11/18 03:35:19 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -177,14 +177,23 @@ extern "C" {
   /* our own offsetof()-like macro */
 #define __cd_offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
   
-  /* In many structures on the disk a sector address is stored as a
-     BCD-encoded mmssff in three bytes. */
+  /*!
+    \brief MSF (minute/second/frame) structure 
+
+    One CD-ROMs addressing scheme especially used in audio formats
+    (Red Book) is an address by minute, sector and frame which
+    BCD-encoded in three bytes. An alternative format is an lba_t.
+    
+    @see lba_t
+  */
   PRAGMA_BEGIN_PACKED
-  typedef struct {
+  struct msf_rec {
     uint8_t m, s, f;
-  } GNUC_PACKED msf_t;
+  } GNUC_PACKED;
   PRAGMA_END_PACKED
   
+  typedef struct msf_rec msf_t;
+
 #define msf_t_SIZEOF 3
   
   /* type used for bit-fields in structs (1 <= bits <= 8) */
@@ -199,13 +208,16 @@ extern "C" {
   typedef uint8_t bitfield_t;
 #endif
   
-  /* The type of a Logical Block Address. */
+  /*! The type of a Logical Block Address. 
+
+    @see msf_t
+  */
   typedef uint32_t lba_t;
   
-  /* The type of an Logical Sector Number. */
+  /*! The type of an Logical Sector Number. */
   typedef uint32_t lsn_t;
   
-  /* The type of an track number 0..99. */
+  /*! The type of an track number 0..99. */
   typedef uint8_t track_t;
   
   /*! 

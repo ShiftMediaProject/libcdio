@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.17 2003/09/22 01:00:10 rocky Exp $
+#   $Id: Makefile.am,v 1.18 2003/11/18 03:35:19 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -21,8 +21,14 @@
 ####################################################
 CDDB_LIBS=@CDDB_LIBS@
 
-if BUILD_CDINFO
+if MAINTAINER_MODE
+MAINTAINERCLEANFILES = $(man_MANS)
 man_MANS = cd-info.1 cd-read.1 
+$(man_MANS): %.1: %
+	-$(HELP2MAN) --output=$@ ./$<
+endif
+
+if BUILD_CDINFO
 cd_info_SOURCES = cd-info.c util.c util.h
 cd_info_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS)
 
@@ -43,7 +49,3 @@ man_MANS =
 endif
 
 INCLUDES = -I$(top_srcdir) $(LIBPOPT_CFLAGS) $(LIBCDIO_CFLAGS) $(VCDINFO_CFLAGS)
-if MAINTAINER_MODE
-$(man_MANS): %.1: %
-	-$(HELP2MAN) --output=$@ ./$<
-endif
