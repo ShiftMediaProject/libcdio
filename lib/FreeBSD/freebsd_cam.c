@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.12 2004/06/19 16:34:45 rocky Exp $
+    $Id: freebsd_cam.c,v 1.13 2004/06/25 20:49:56 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.12 2004/06/19 16:34:45 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.13 2004/06/25 20:49:56 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -55,7 +55,7 @@ _scsi_cmd (_img_private_t * env)
     retval = -1;
   else
     CREAM_ON_ERRNO(((unsigned char *)&env->ccb.csio.sense_data));
-  cdio_error ("transport failed: ", retval);
+  cdio_warn ("transport failed: ", retval);
   return retval;
 }
 
@@ -73,13 +73,13 @@ init_freebsd_cam (_img_private_t *env)
 
   if (env->gen.fd < 0)
     {
-      cdio_error ("open (%s): %s", env->device, strerror (errno));
+      cdio_warn ("open (%s): %s", env->device, strerror (errno));
       return false;
     }
 
   if (ioctl (env->gen.fd, CAMGETPASSTHRU, &env->ccb) < 0)
     {
-      cdio_error ("open: %s", strerror (errno));
+      cdio_warn ("open: %s", strerror (errno));
       return false;
     }
   sprintf (pass,"/dev/%.15s%u",

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.22 2004/06/19 16:34:45 rocky Exp $
+    $Id: freebsd.c,v 1.23 2004/06/25 20:49:56 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.22 2004/06/19 16:34:45 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.23 2004/06/25 20:49:56 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -192,7 +192,7 @@ _cdio_read_toc (_img_private_t *env)
 
   /* read TOC header */
   if ( ioctl(env->gen.fd, CDIOREADTOCHEADER, &env->tochdr) == -1 ) {
-    cdio_error("error in ioctl(CDIOREADTOCHEADER): %s\n", strerror(errno));
+    cdio_warn("error in ioctl(CDIOREADTOCHEADER): %s\n", strerror(errno));
     return false;
   }
 
@@ -203,7 +203,7 @@ _cdio_read_toc (_img_private_t *env)
     env->tocent[j].address_format = CD_LBA_FORMAT;
 
     if ( ioctl(env->gen.fd, CDIOREADTOCENTRY, &(env->tocent[j]) ) ) {
-      cdio_error("%s %d: %s\n",
+      cdio_warn("%s %d: %s\n",
 		 "error in ioctl CDROMREADTOCENTRY for track", 
 		 i, strerror(errno));
       return false;
@@ -213,7 +213,7 @@ _cdio_read_toc (_img_private_t *env)
   env->tocent[j].track          = CDIO_CDROM_LEADOUT_TRACK;
   env->tocent[j].address_format = CD_LBA_FORMAT;
   if ( ioctl(env->gen.fd, CDIOREADTOCENTRY, &(env->tocent[j]) ) ){
-    cdio_error("%s: %s\n",
+    cdio_warn("%s: %s\n",
 	       "error in ioctl CDROMREADTOCENTRY for leadout track", 
 	       strerror(errno));
     return false;
