@@ -1,7 +1,7 @@
 #!/bin/sh
-#$Id: check_nrg.sh,v 1.3 2003/04/26 14:24:45 rocky Exp $
+#$Id: check_nrg.sh.in,v 1.1 2003/04/28 02:02:41 rocky Exp $
 
-if test -n "-lvcd -lvcdinfo" ; then
+if test -n "@VCDINFO_LIB@" ; then
   vcd_opt='--no-vcd'
 fi
 

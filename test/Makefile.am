@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.2 2003/04/24 02:45:04 rocky Exp $
+#   $Id: Makefile.am,v 1.3 2003/04/28 02:02:41 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -31,7 +31,7 @@ check_DATA = vcd_demo.right \
              check_opts6.right check_opts7.right	
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
-	check_common_fn check_cue.sh.in
+	check_common_fn check_cue.sh.in check_nrg.sh.in
 
 TESTS_ENVIRONMENT=$(SHELL)
 TESTS = $(check_SCRIPTS)
