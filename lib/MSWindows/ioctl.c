@@ -1,5 +1,5 @@
 /*
-    $Id: ioctl.c,v 1.4 2004/03/10 10:57:44 rocky Exp $
+    $Id: ioctl.c,v 1.5 2004/04/23 22:10:53 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: ioctl.c,v 1.4 2004/03/10 10:57:44 rocky Exp $";
+static const char _rcsid[] = "$Id: ioctl.c,v 1.5 2004/04/23 22:10:53 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -35,7 +35,7 @@ static const char _rcsid[] = "$Id: ioctl.c,v 1.4 2004/03/10 10:57:44 rocky Exp $
 #ifdef HAVE_WIN32_CDROM
 
 #include <windows.h>
-#include <winioctl.h>
+#include <ddk/ntddstor.h>
 
 #include <stdio.h>
 #include <sys/stat.h>
@@ -468,5 +468,55 @@ win32ioctl_get_track_format(_img_private_t *env, track_t track_num)
     return TRACK_FORMAT_AUDIO;
 }
 
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+cdio_drive_cap_t
+win32ioctl_get_drive_cap (const void *env) {
+  const _img_private_t *_obj = env;
+  int32_t i_drivetype;
+  unsigned int len = strlen(_obj->gen.source_name);
+  char psz_drive[4];
+
+  strcpy( psz_drive, "X:" );
+  
+  psz_drive[0] = _obj->gen.source_name[len-2];
+  i_drivetype = GetDriveType(psz_drive);
+  switch (i_drivetype) {
+  case DRIVE_CDROM: 
+    {
+#if 0
+      DWORD dwBytesReturned;
+      GET_MEDIA_TYPES mediaTypes;
+      i_drivetype = CDIO_DRIVE_CD_R;
+      if ( DeviceIoControl(_obj->h_device_handle,
+			   IOCTL_STORAGE_GET_MEDIA_TYPES_EX, 
+			   NULL, 0, &mediaTypes, sizeof(GET_MEDIA_TYPES),
+			   &dwBytesReturned, NULL) ) {
+	switch (mediaTypes.DeviceType) {
+	case FILE_DEVICE_DVD: 
+	  i_drivetype = CDIO_DRIVE_DVD_R;
+	  break;
+	case FILE_DEVICE_CD_ROM: 
+	  i_drivetype = CDIO_DRIVE_CD_R;
+	  break;
+	default: 
+	  ;
+	}
+      }
+#else
+	  i_drivetype = CDIO_DRIVE_CD_R;
+#endif
+      return i_drivetype;
+    default:
+      return CDIO_DRIVE_ERROR;
+    }
+  }
+}
 
 #endif /*HAVE_WIN32_CDROM*/

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.38 2004/04/22 03:24:38 rocky Exp $
+    $Id: cdio.h,v 1.39 2004/04/23 22:10:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -55,7 +55,10 @@
   \brief Drive types returned by cdio_get_drive_cap()
  */
 #define CDIO_DRIVE_ERROR        0x0000	/**< Error */
-#define CDIO_DRIVE_UNKNOWN      0x0001	/**< Dunno */
+#define CDIO_DRIVE_UNKNOWN      0x0001	/**< Dunno. It can be on if we
+					   have only partial information or
+					   are not completely certain
+					 */
 #define CDIO_DRIVE_FILE		0x1000	/**< drive is really a file, i.e a
                                            CD file image */
 #define CDIO_DRIVE_CD_R		0x2000	/**< drive is a CD-R */
@@ -188,7 +191,14 @@ extern "C" {
 
     See above for a list of bitmasks for the drive type;
   */
-  cdio_drive_cap_t cdio_get_drive_cap (const char *device);
+  cdio_drive_cap_t cdio_get_drive_cap (const CdIo *obj);
+
+  /*!
+    Return the what kind of device we've got. Device version.
+
+    See above for a list of bitmasks for the drive type;
+  */
+  cdio_drive_cap_t cdio_get_drive_cap_dev (const char *device);
 
   /*!
     Return the media catalog number (MCN) from the CD or NULL if there

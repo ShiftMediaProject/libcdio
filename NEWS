@@ -1,3 +1,6 @@
+0.69
+- Add interface returning drive capabilityes (cdio_get_drive_cap).
+
 0.68
 - More honest about mode1 reading in backends. Remove some of the bogusness.
 - Fixes and simplifications to Solaris (from Ian MacIntosh): no longer
@@ -105,4 +108,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.37 2004/03/23 02:25:43 rocky Exp $
+$Id: NEWS,v 1.38 2004/04/23 22:10:52 rocky Exp $

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.44 2004/04/22 03:24:38 rocky Exp $
+    $Id: cdio.c,v 1.45 2004/04/23 22:10:52 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.44 2004/04/22 03:24:38 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.45 2004/04/23 22:10:52 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -384,15 +384,33 @@ cdio_get_devices_with_cap (char* search_devices[],
 
  */
 unsigned int
-cdio_get_drive_cap (const char *device) 
+cdio_get_drive_cap (const CdIo *cdio)
+{
+  cdio_drive_cap_t i_drivetype = CDIO_DRIVE_UNKNOWN;
+  
+  if (cdio && cdio->op.get_drive_cap) {
+    i_drivetype=cdio->op.get_drive_cap(cdio->env);
+  }
+  return i_drivetype;
+}
+
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+unsigned int
+cdio_get_drive_cap_dev (const char *device) 
 {
   cdio_drive_cap_t i_drivetype = CDIO_DRIVE_UNKNOWN;
   
   CdIo *cdio=scan_for_driver(CDIO_MIN_DRIVER, CDIO_MAX_DRIVER, 
                              device);
-
-  if (cdio && cdio->op.get_drive_cap) {
-    i_drivetype=cdio->op.get_drive_cap(cdio->env);
+  if (cdio) {
+    i_drivetype=cdio_get_drive_cap(cdio);
     cdio_destroy(cdio);
   }
   return i_drivetype;

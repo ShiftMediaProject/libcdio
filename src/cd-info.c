@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.53 2004/04/23 01:01:37 rocky Exp $
+    $Id: cd-info.c,v 1.54 2004/04/23 22:10:53 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -830,7 +830,7 @@ main(int argc, const char *argv[])
   }
   
   {
-    cdio_drive_cap_t i_drive_cap =  cdio_get_drive_cap(source_name);
+    cdio_drive_cap_t i_drive_cap =  cdio_get_drive_cap(cdio);
     if (CDIO_DRIVE_ERROR == i_drive_cap) {
       printf("Error in getting drive properties\n");
     } else if (CDIO_DRIVE_UNKNOWN == i_drive_cap) {
