@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.22 2003/09/27 23:29:29 rocky Exp $
+    $Id: cdio.h,v 1.23 2003/09/28 01:04:57 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -131,8 +131,8 @@ extern "C" {
   char * cdio_get_default_device (const CdIo *obj);
 
   /*!
-    Return the media catalog number MCN from the CD or NULL if there is none or
-    we don't have the ability to get it.
+    Return the media catalog number (MCN) from the CD or NULL if there
+    is none or we don't have the ability to get it.
 
     Note: string is malloc'd so caller has to free() the returned
     string when done with it.

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.31 2003/09/27 23:29:29 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.32 2003/09/28 01:04:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.31 2003/09/27 23:29:29 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.32 2003/09/28 01:04:58 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -88,6 +88,7 @@ typedef struct {
   bool sector_2336;              /* Playstation (PSX) uses 2336-byte sectors */
 
   char         *cue_name;
+  char         *mcn;             /* Media catalog number. */
   track_info_t  tocent[100];     /* entry info for each track */
   track_t       total_tracks;    /* number of tracks in image */
   track_t       first_track_num; /* track number of first track */
@@ -314,6 +315,8 @@ _cdio_image_read_cue (_img_private_t *_obj)
 
   _obj->total_tracks=0;
   _obj->first_track_num=1;
+  _obj->mcn=NULL;
+  
   while ((fgets(line, MAXLINE, fp)) != NULL) {
     char *s=NULL;
     char *p;
@@ -326,6 +329,8 @@ _cdio_image_read_cue (_img_private_t *_obj)
       _obj->bin_file = s;
       */
       /* printf("Found file name %s\n", s); */
+    } else if (1==sscanf(p, "CATALOG %as", &s)) {
+      _obj->mcn = s;
     } else if (2==sscanf(p, "TRACK %d MODE2/%d", &track_num, &blocksize)) {
       track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
       this_track->track_num   = track_num;
@@ -563,6 +568,15 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
 #define free_if_notnull(obj) \
   if (NULL != obj) free(obj);
 
+static void 
+_cdio_bincue_free (void *env) {
+  _img_private_t *_obj = env;
+
+  if (NULL == _obj) return;
+  free_if_notnull(_obj->mcn);
+  cdio_generic_stream_free(_obj);
+}
+
 /*!
   Set the arg "key" with "value" in the source device.
   Currently "source" to set the source device in I/O operations 
@@ -648,6 +662,24 @@ _cdio_get_first_track_num(void *env)
   _cdio_init (_obj);
 
   return _obj->first_track_num;
+}
+
+/*!
+  Return the media catalog number (MCN) from the CD or NULL if there
+  is none or we don't have the ability to get it.
+
+  Note: string is malloc'd so caller has to free() the returned
+  string when done with it.
+  */
+static char *
+_cdio_get_mcn(void *env)
+{
+  _img_private_t *_obj = env;
+  
+  _cdio_init (_obj);
+
+  if (NULL == _obj->mcn) return NULL;
+  return strdup(_obj->mcn);
 }
 
 /*! 
@@ -819,11 +851,11 @@ cdio_open_common (_img_private_t **_data)
 {
   cdio_funcs _funcs = {
     .eject_media        = cdio_generic_bogus_eject_media,
-    .free               = cdio_generic_stream_free,
+    .free               = _cdio_bincue_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = cdio_get_default_device_bincue,
     .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = NULL,
+    .get_mcn            = _cdio_get_mcn,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,
