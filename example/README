@@ -1,4 +1,4 @@
-$Id: README,v 1.6 2004/07/29 05:26:46 rocky Exp $
+$Id: README,v 1.7 2004/08/06 22:07:09 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -29,8 +29,11 @@ sample6.c: A simple program to show using libiso9660 to extract a file
 sample7.c: A program to show using libiso9660 to extract a file from an
    ISO-9660 image.
 
-sample8.c: A program to show CD-TEXT and CD disc mode info.
+sample8.c: A program to show CD-Text and CD disc mode info.
 
-sample9.c: A program to show issuing a SCSI-MMC command.
+sample9.c: A program to show issuing a simple SCSI-MMC command (INQUIRY).
+
+sample10.c: A more involved SCSI-MMC command to list features from 
+	    a SCSI GET_CONFIGURATION command.
 
 
