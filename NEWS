@@ -1,8 +1,13 @@
 0.3 
+-  reduced overall size of package. Some regression moved to a separate (large)
+   package.
 -  facilitate inclusion into another project's local source tree (e.g. xine)
 -  version number in include
--  cdinfo: lists number of CDDB matches
--  fix some small compile warnings and configure bugs
+-  cdinfo: lists number of CDDB matches, display error message on failure,
+   and can set CDDB port and http proxy
+-  Bug: Narrow drivers to devices when source is a device.
+-  fix some small compile warnings and configure bugs. Require libcddb 0.9.0 
+   or greater.
 
 0.2 
 -  Added Support for reading audio sectors
