@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.29 2004/03/20 22:46:57 rocky Exp $
+#   $Id: Makefile.am,v 1.30 2004/03/20 22:49:33 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -40,8 +40,8 @@
 #  6. If any interfaces have been removed since the last public release,
 #     then set AGE to 0.
 
-libcdio_la_CURRENT := 1
-libcdio_la_REVISION := 0
+libcdio_la_CURRENT := 0
+libcdio_la_REVISION := 2
 libcdio_la_AGE := 0
 
 libiso9660_la_CURRENT := 1
