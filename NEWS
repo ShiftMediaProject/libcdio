@@ -1,17 +1,17 @@
 0.64
--  Add/expose routines to get/set time. time is reported back in entry
-   stat. Routines to create ISO-9660 directories and entries must now
-   supply the time to set on the entry.
--  cd-info: now displays date on iso9660 listing and translates filename 
-   to normal conventions
--  cd-read: new program to help diagnose reading problems.
--  Document more functions.
 -  add routines to return a list of devices or scan a list of devices
    which satisfy any/all things in a capability mask. Should be useful
    for plugins that want to find a CD-DA to play or find a plugin that handles
    a particular device. 
--  Start Darwin driver.
+-  cd-read: new program to help diagnose reading problems.
+-  cd-info: now displays date on iso9660 listing and translates filename 
+   to normal conventions
+-  Add/expose routines to get/set time. time is reported back in entry
+   stat. Routines to create ISO-9660 directories and entries must now
+   supply the time to set on the entry.
+-  Darwin and FreeBSD drivers closer to having native CD support.
 -  BSDI fixes
+-  Document more functions.
 
 0.63
 -  create libiso9660 library and install that.
