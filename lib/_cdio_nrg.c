@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.21 2003/10/03 08:32:32 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.22 2003/10/07 03:11:38 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -47,7 +47,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.21 2003/10/03 08:32:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.22 2003/10/07 03:11:38 rocky Exp $";
 
 /* structures used */
 
@@ -101,6 +101,9 @@ PRAGMA_END_PACKED
 #define NER5_ID  0x4e455235
 #define NERO_ID  0x4e45524f
 #define SINF_ID  0x53494e46
+#define MTYP_ID  0x4d545950  /* Media type? */
+
+#define MTYP_AUDIO_CD 1
 
 /* reader */
 
@@ -148,7 +151,8 @@ typedef struct {
   track_t         total_tracks;    /* number of tracks in image */
   track_t         first_track_num; /* track number of first track */
   CdioList       *mapping;         /* List of track information */
-  uint32_t size;
+  uint32_t        size;
+  uint32_t        mtyp;            /* Value of MTYP tag */
 } _img_private_t;
 
 static bool     _cdio_parse_nero_footer (_img_private_t *_obj);
@@ -469,6 +473,19 @@ PRAGMA_END_PACKED
 	
 	cdio_debug ("SINF: %lu sessions", 
 		    (long unsigned int) UINT32_FROM_BE (*_sessions));
+      }
+	break;
+	
+      case MTYP_ID: { /* "MTYP" */
+	uint32_t *mtyp_p = (void *) chunk->data;
+	uint32_t mtyp  = UINT32_FROM_BE (*mtyp_p);
+	
+	cdio_assert (UINT32_FROM_BE (chunk->len) == 4);
+
+	if (mtyp != MTYP_AUDIO_CD) {
+	  cdio_warn ("Unknown media type: %u", (unsigned int) mtyp);
+	}
+	_obj->mtyp = mtyp;
       }
 	break;
 	
@@ -835,6 +852,7 @@ _cdio_get_track_format(void *env, track_t track_num)
   if (track_num > _obj->total_tracks || track_num == 0) 
     return TRACK_FORMAT_ERROR;
 
+  if ( MTYP_AUDIO_CD == _obj->mtyp) return TRACK_FORMAT_AUDIO;
   return _obj->tocent[track_num-1].track_format;
 }
 
@@ -854,6 +872,7 @@ _cdio_get_track_green(void *env, track_t track_num)
   if (track_num > _obj->total_tracks || track_num == 0) 
     return false;
 
+  if ( MTYP_AUDIO_CD == _obj->mtyp) return false;
   return _obj->tocent[track_num-1].track_green;
 }
 
@@ -911,6 +930,7 @@ cdio_open_nrg (const char *source_name)
 
 
   _data->total_tracks   = 0;
+  _data->mtyp           = 0; 
   _data->first_track_num= 1;
   _data->sector_2336    = false; /* FIXME: remove sector_2336 */
   _data->is_cues        = false; /* FIXME: remove is_cues. */
