@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.3 2004/03/06 18:22:07 rocky Exp $
+    $Id: nrg.c,v 1.4 2004/03/20 22:46:57 rocky Exp $
 
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.3 2004/03/06 18:22:07 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.4 2004/03/20 22:46:57 rocky Exp $";
 
 /* structures used */
 
@@ -998,6 +998,7 @@ _cdio_nrg_destroy (void *obj)
   if (NULL != env->mapping)
     _cdio_list_free (env->mapping, true); 
   cdio_generic_stdio_free(env);
+  free(env);
 }
 
 /*
@@ -1215,6 +1216,7 @@ cdio_open_nrg (const char *source_name)
     return ret;
   else {
     cdio_generic_stdio_free (_data);
+    free(_data);
     return NULL;
   }
 

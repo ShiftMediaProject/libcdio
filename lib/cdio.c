@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.41 2004/03/10 10:57:44 rocky Exp $
+    $Id: cdio.c,v 1.42 2004/03/20 22:46:57 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.41 2004/03/10 10:57:44 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.42 2004/03/20 22:46:57 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -299,7 +299,9 @@ cdio_get_devices (driver_id_t driver_id)
   
   if (cdio == NULL) return NULL;
   if (cdio->op.get_devices) {
-    return cdio->op.get_devices ();
+    char **devices = cdio->op.get_devices ();
+    cdio_destroy(cdio);
+    return devices;
   } else {
     return NULL;
   }
@@ -318,6 +320,8 @@ cdio_get_devices (driver_id_t driver_id)
   To find a CD-drive of any type, use the mask CDIO_FS_MATCH_ALL.
   
   NULL is returned if we couldn't get a default device.
+  It is also possible to return a non NULL but after dereferencing the 
+  the value is NULL. This also means nothing was found.
 */
 char **
 cdio_get_devices_with_cap (char* search_devices[], 
@@ -362,8 +366,8 @@ cdio_get_devices_with_cap (char* search_devices[],
         cdio_destroy(cdio);
       }
     }
-    cdio_add_device_list(&drives_ret, NULL, &num_drives);
   }
+  cdio_add_device_list(&drives_ret, NULL, &num_drives);
   return drives_ret;
 }
 

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.36 2004/03/06 18:30:44 rocky Exp $
+    $Id: cdio.h,v 1.37 2004/03/20 22:46:57 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -146,6 +146,8 @@ extern "C" {
     To find a CD-drive of any type, use the mask CDIO_FS_MATCH_ALL.
   
     NULL is returned if we couldn't get a default device.
+    It is also possible to return a non NULL but after dereferencing the 
+    the value is NULL. This also means nothing was found.
   */
   char ** cdio_get_devices_with_cap (char* search_devices[],
 				     cdio_fs_anal_t capabilities, bool any);

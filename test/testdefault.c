@@ -1,7 +1,7 @@
 /*
-  $Id: testdefault.c,v 1.3 2003/10/03 01:33:15 rocky Exp $
+  $Id: testdefault.c,v 1.4 2004/03/20 22:46:57 rocky Exp $
 
-  Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -123,6 +123,7 @@ main(int argc, const char *argv[])
   }
     
   cdio_free_device_list(imgs);
+  free(imgs);
   
   
   printf("-----\n");
@@ -141,6 +142,7 @@ main(int argc, const char *argv[])
   }
     
   cdio_free_device_list(imgs);
+  free(imgs);
   
   
   printf("-----\n");
@@ -160,6 +162,7 @@ main(int argc, const char *argv[])
   }
 
   cdio_free_device_list(imgs);
+  free(imgs);
 
   imgs = NULL;
   /* Print out a list of CDDA-drives. */
@@ -180,6 +183,7 @@ main(int argc, const char *argv[])
   }
     
   cdio_free_device_list(imgs);
+  free(imgs);
 
   return 0;
   

@@ -1,7 +1,7 @@
 /*
-  $Id: sample5.c,v 1.4 2003/10/02 02:59:57 rocky Exp $
+  $Id: sample5.c,v 1.5 2004/03/20 22:46:56 rocky Exp $
 
-  Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -23,8 +23,15 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
 #include <cdio/cdio.h>
 #include <cdio/cd_types.h>
 #include <cdio/logging.h>
@@ -56,6 +63,8 @@ main(int argc, const char *argv[])
     }
 
   cdio_free_device_list(cd_drives);
+  free(cd_drives);
+  
   printf("-----\n");
   
   cd_drives = NULL;
@@ -67,9 +76,9 @@ main(int argc, const char *argv[])
       printf("Drive %s\n", *c);
     }
     
-    cdio_free_device_list(cd_drives);
   }
-  
+  cdio_free_device_list(cd_drives);
+  free(cd_drives);
   
   printf("-----\n");
   printf("CD-DA drives...\n");
@@ -81,10 +90,10 @@ main(int argc, const char *argv[])
     for( c = cd_drives; *c != NULL; c++ ) {
       printf("drive: %s\n", *c);
     }
-    
-    cdio_free_device_list(cd_drives);
   }
-  
+  cdio_free_device_list(cd_drives);
+  free(cd_drives);
+    
   printf("-----\n");
   cd_drives = NULL;
   printf("VCD drives...\n");
@@ -99,6 +108,8 @@ main(int argc, const char *argv[])
   }
 
   cdio_free_device_list(cd_drives);
+  free(cd_drives);
+  
   return 0;
   
 }
