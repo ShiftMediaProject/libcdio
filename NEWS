@@ -1,5 +1,11 @@
+0.68
+-- Fixes and simplifications to Solaris (from Ian MacIntosh) no longer
+   requires root access on Sunray environmentsa
+-- Win32 ioctl Works now on win2k (and probably NT, ME and XP) 
+-- compiles with -mno-cygwin (needed for videolan's vlc)
+
 0.67
--  portability for ARM
+--  portability for ARM
 -- add iso-read program and regression tests
 -- libiso9960: stat routines that match level 1 ISO-9600 filenames
    translating them into Unix-style names (i.e. lowercase letters, 
@@ -97,4 +103,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.34 2004/03/01 01:39:01 rocky Exp $
+$Id: NEWS,v 1.35 2004/03/16 12:19:08 rocky Exp $
