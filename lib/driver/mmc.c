@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.7 2005/02/10 01:59:06 rocky Exp $
+    $Id: mmc.c,v 1.8 2005/02/10 03:23:10 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -657,13 +657,14 @@ mmc_get_hwinfo ( const CdIo_t *p_cdio,
 int mmc_get_media_changed(const CdIo_t *p_cdio)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
-  char buf[8] = { 0, };
+  uint8_t buf[8] = { 0, };
   int i_status;
 
   if ( ! p_cdio ) return DRIVER_OP_UNINIT;
   if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_EVENT_STATUS);
+  cdb.field[1] = 1;      /* We poll for info */
   cdb.field[4] = 1 << 4; /* Media */
 
   /* Setup to read header, to get length of data */
@@ -674,7 +675,7 @@ int mmc_get_media_changed(const CdIo_t *p_cdio)
                                     &cdb, SCSI_MMC_DATA_READ, 
                                     sizeof(buf), buf);
   if(i_status == 0) {
-    return 0 != (buf[6] & 0x02);
+    return 0 != (buf[4] & 0x02);
   }
   return DRIVER_OP_ERROR;
 }
