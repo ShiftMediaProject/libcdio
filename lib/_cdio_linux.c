@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.85 2004/07/28 11:45:21 rocky Exp $
+    $Id: _cdio_linux.c,v 1.86 2004/07/29 02:16:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.85 2004/07/28 11:45:21 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.86 2004/07/29 02:16:20 rocky Exp $";
 
 #include <string.h>
 
@@ -70,12 +70,6 @@ static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.85 2004/07/28 11:45:21 rock
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-/* Default value in milliseconds we will wait for a command to 
-   complete. */
-#define DEFAULT_TIMEOUT 500
-
-#define TOTAL_TRACKS    (p_env->tochdr.cdth_trk1)
-
 typedef enum {
   _AM_NONE,
   _AM_IOCTL,
@@ -109,7 +103,7 @@ typedef struct {
 
 /**** prototypes for static functions ****/
 static bool is_cdrom_linux(const char *drive, char *mnttype);
-static bool read_toc_linux (_img_private_t *p_env);
+static bool read_toc_linux (void *p_user_data);
 static int  run_scsi_cmd_linux( const void *p_user_data, 
 				unsigned int i_timeout,
 				unsigned int i_cdb, 
@@ -230,20 +224,6 @@ get_arg_linux (void *env, const char key[])
 }
 
 /*!
-  Return the number of of the first track. 
-  CDIO_INVALID_TRACK is returned on error.
-*/
-static track_t
-get_first_track_num_linux(void *p_user_data) 
-{
-  _img_private_t *p_env = p_user_data;
-  
-  if (!p_env->gen.toc_init) read_toc_linux (p_env) ;
-
-  return p_env->gen.toc_init ? p_env->gen.i_first_track : CDIO_INVALID_TRACK;
-}
-
-/*!
   Return the the kind of drive capabilities of device.
 
   Note: string is malloc'd so caller should free() then returned
@@ -251,12 +231,12 @@ get_first_track_num_linux(void *p_user_data)
 
  */
 static void
-get_drive_cap_linux (const void *env,
+get_drive_cap_linux (const void *p_user_data,
                     cdio_drive_read_cap_t  *p_read_cap,
                     cdio_drive_write_cap_t *p_write_cap,
                     cdio_drive_misc_cap_t  *p_misc_cap)
 {
-  const _img_private_t *_obj = env;
+  const _img_private_t *_obj = p_user_data;
   int32_t i_drivetype;
 
   i_drivetype = ioctl (_obj->gen.fd, CDROM_GET_CAPABILITY, CDSL_CURRENT);
@@ -327,20 +307,6 @@ _get_mcn_linux (const void *env) {
   return strdup(mcn.medium_catalog_number);
 }
 
-/*!
-  Return the number of tracks in the current medium.
-  CDIO_INVALID_TRACK is returned on error.
-*/
-static track_t
-_get_num_tracks_linux(void *p_user_data) 
-{
-  _img_private_t *p_env = p_user_data;
-  
-  if (!p_env->gen.toc_init) read_toc_linux (p_env) ;
-
-  return p_env->gen.toc_init ? TOTAL_TRACKS : CDIO_INVALID_TRACK;
-}
-
 /*!  
   Get format of track. 
 */
@@ -349,7 +315,7 @@ _get_track_format_linux(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
   
-  if (i_track > (TOTAL_TRACKS+p_env->gen.i_first_track) 
+  if (i_track > (p_env->gen.i_tracks+p_env->gen.i_first_track) 
       || i_track < p_env->gen.i_first_track)
     return TRACK_FORMAT_ERROR;
 
@@ -383,9 +349,9 @@ _get_track_green_linux(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
   
-  if (!p_env->gen.toc_init) read_toc_linux (p_env) ;
+  if (!p_env->gen.toc_init) read_toc_linux (p_user_data) ;
 
-  if (i_track >= (TOTAL_TRACKS+p_env->gen.i_first_track) 
+  if (i_track >= (p_env->gen.i_tracks+p_env->gen.i_first_track) 
       || i_track < p_env->gen.i_first_track)
     return false;
 
@@ -413,12 +379,12 @@ _get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
 
   if (NULL == msf) return false;
 
-  if (!p_env->gen.toc_init) read_toc_linux (p_env) ;
+  if (!p_env->gen.toc_init) read_toc_linux (p_user_data) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) 
-    i_track = TOTAL_TRACKS + p_env->gen.i_first_track;
+    i_track = p_env->gen.i_tracks + p_env->gen.i_first_track;
 
-  if (i_track > (TOTAL_TRACKS+p_env->gen.i_first_track) 
+  if (i_track > (p_env->gen.i_tracks+p_env->gen.i_first_track) 
       || i_track < p_env->gen.i_first_track) {
     return false;
   } else {
@@ -838,8 +804,9 @@ _read_mode2_sectors_linux (void *p_user_data, void *data, lsn_t lsn,
   Return false if successful or true if an error.
 */
 static bool
-read_toc_linux (_img_private_t *p_env) 
+read_toc_linux (void *p_user_data) 
 {
+  _img_private_t *p_env = p_user_data;
   int i;
 
   /* read TOC header */
@@ -850,9 +817,10 @@ read_toc_linux (_img_private_t *p_env)
   }
 
   p_env->gen.i_first_track = p_env->tochdr.cdth_trk0;
+  p_env->gen.i_tracks      = p_env->tochdr.cdth_trk1;
 
   /* read individual tracks */
-  for (i= p_env->gen.i_first_track; i<=TOTAL_TRACKS; i++) {
+  for (i= p_env->gen.i_first_track; i<=p_env->gen.i_tracks; i++) {
     p_env->tocent[i-p_env->gen.i_first_track].cdte_track = i;
     p_env->tocent[i-p_env->gen.i_first_track].cdte_format = CDROM_MSF;
     if ( ioctl(p_env->gen.fd, CDROMREADTOCENTRY, 
@@ -872,11 +840,11 @@ read_toc_linux (_img_private_t *p_env)
   }
 
   /* read the lead-out track */
-  p_env->tocent[TOTAL_TRACKS].cdte_track = CDIO_CDROM_LEADOUT_TRACK;
-  p_env->tocent[TOTAL_TRACKS].cdte_format = CDROM_MSF;
+  p_env->tocent[p_env->gen.i_tracks].cdte_track = CDIO_CDROM_LEADOUT_TRACK;
+  p_env->tocent[p_env->gen.i_tracks].cdte_format = CDROM_MSF;
 
   if (ioctl(p_env->gen.fd, CDROMREADTOCENTRY, 
-	    &p_env->tocent[TOTAL_TRACKS]) == -1 ) {
+	    &p_env->tocent[p_env->gen.i_tracks]) == -1 ) {
     cdio_warn("%s: %s\n", 
 	     "error in ioctl CDROMREADTOCENTRY for lead-out",
             strerror(errno));
@@ -884,7 +852,7 @@ read_toc_linux (_img_private_t *p_env)
   }
 
   /*
-  struct cdrom_msf0 *msf= &env->tocent[TOTAL_TRACKS].cdte_addr.msf;
+  struct cdrom_msf0 *msf= &env->tocent[p_env->gen.i_tracks].cdte_addr.msf;
 
   fprintf (stdout, "--- track# %d (msf %2.2x:%2.2x:%2.2x)\n",
 	   i, msf->minute, msf->second, msf->frame);
@@ -1034,7 +1002,7 @@ get_cdtext_linux (void *p_user_data, track_t i_track)
 
   if ( NULL == p_env ||
        (0 != i_track 
-       && i_track >= TOTAL_TRACKS+p_env->gen.i_first_track ) )
+       && i_track >= p_env->gen.i_tracks+p_env->gen.i_first_track ) )
     return NULL;
 
   p_env->b_cdtext_init = init_cdtext_linux(p_env);
@@ -1204,9 +1172,9 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .get_devices        = cdio_get_devices_linux,
     .get_discmode       = get_discmode_linux,
     .get_drive_cap      = get_drive_cap_linux,
-    .get_first_track_num= get_first_track_num_linux,
+    .get_first_track_num= get_first_track_num_generic,
     .get_mcn            = _get_mcn_linux,
-    .get_num_tracks     = _get_num_tracks_linux,
+    .get_num_tracks     = get_num_tracks_generic,
     .get_track_format   = _get_track_format_linux,
     .get_track_green    = _get_track_green_linux,
     .get_track_lba      = NULL, /* This could be implemented if need be. */
@@ -1218,6 +1186,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .read_mode1_sectors = _read_mode1_sectors_linux,
     .read_mode2_sector  = _read_mode2_sector_linux,
     .read_mode2_sectors = _read_mode2_sectors_linux,
+    .read_toc           = read_toc_linux,
     .run_scsi_mmc_cmd   = &run_scsi_cmd_linux,
     .set_arg            = set_arg_linux,
     .stat_size          = stat_size_linux

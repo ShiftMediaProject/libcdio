@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.38 2004/07/26 02:54:37 rocky Exp $
+    $Id: bincue.c,v 1.39 2004/07/29 02:16:20 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.38 2004/07/26 02:54:37 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.39 2004/07/29 02:16:20 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -81,8 +81,6 @@ typedef struct {
 				   exactly 13 bytes */
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
 					         add 1 for leadout. */
-  track_t       i_tracks;        /* number of tracks in image */
-  track_t       i_first_track;   /* track number of first track */
   cdtext_t      cdtext;	         /* CD-TEXT */
   discmode_t    disc_mode;
 } _img_private_t;
@@ -113,7 +111,7 @@ _init_bincue (_img_private_t *env)
      get into infinite recursion calling passing right here.
    */
   env->gen.init      = true;  
-  env->i_first_track = 1;
+  env->gen.i_first_track = 1;
   env->psz_mcn       = NULL;
   env->disc_mode     = CDIO_DISC_MODE_NO_INFO;
 
@@ -129,10 +127,11 @@ _init_bincue (_img_private_t *env)
   if ( !parse_cuefile(env, env->psz_cue_name) ) return false;
 
   /* Fake out leadout track and sector count for last track*/
-  cdio_lsn_to_msf (lead_lsn, &env->tocent[env->i_tracks].start_msf);
-  env->tocent[env->i_tracks].start_lba = cdio_lsn_to_lba(lead_lsn);
-  env->tocent[env->i_tracks - env->i_first_track].sec_count = 
-    cdio_lsn_to_lba(lead_lsn - env->tocent[env->i_tracks - env->i_first_track].start_lba);
+  cdio_lsn_to_msf (lead_lsn, &env->tocent[env->gen.i_tracks].start_msf);
+  env->tocent[env->gen.i_tracks].start_lba = cdio_lsn_to_lba(lead_lsn);
+  env->tocent[env->gen.i_tracks - env->gen.i_first_track].sec_count = 
+    cdio_lsn_to_lba(lead_lsn - 
+		    env->tocent[env->gen.i_tracks - env->gen.i_first_track].start_lba);
 
   return true;
 }
@@ -157,7 +156,7 @@ _lseek_bincue (void *user_data, off_t offset, int whence)
   unsigned int i;
 
   env->pos.lba = 0;
-  for (i=0; i<env->i_tracks; i++) {
+  for (i=0; i<env->gen.i_tracks; i++) {
     track_info_t  *this_track=&(env->tocent[i]);
     env->pos.index = i;
     if ( (this_track->sec_count*this_track->datasize) >= offset) {
@@ -174,7 +173,7 @@ _lseek_bincue (void *user_data, off_t offset, int whence)
     env->pos.lba += this_track->sec_count;
   }
 
-  if (i==env->i_tracks) {
+  if (i==env->gen.i_tracks) {
     cdio_warn ("seeking outside range of disk image");
     return -1;
   } else {
@@ -275,7 +274,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   char         psz_line[MAXLINE];   /* text of current line read in file fp. */
   unsigned int i_line=0;            /* line number in file of psz_line. */
   int          i = -1;              /* Position in tocent. Same as 
-				       cd->i_tracks - 1 */
+				       cd->gen.i_tracks - 1 */
   char *psz_keyword, *psz_field;
   cdio_log_level_t log_level = (NULL == cd) ? CDIO_LOG_INFO : CDIO_LOG_WARN;
   cdtext_field_t cdtext_key;
@@ -295,8 +294,8 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   }
 
   if (cd) {
-    cd->i_tracks=0;
-    cd->i_first_track=1;
+    cd->gen.i_tracks=0;
+    cd->gen.i_first_track=1;
     cd->psz_mcn=NULL;
   }
   
@@ -380,12 +379,12 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	  track_info_t  *this_track=NULL;
 
 	  if (cd) {
-	    this_track = &(cd->tocent[cd->i_tracks]);
-	    this_track->track_num   = cd->i_tracks;
+	    this_track = &(cd->tocent[cd->gen.i_tracks]);
+	    this_track->track_num   = cd->gen.i_tracks;
 	    this_track->num_indices = 0;
 	    b_first_index_for_track = false;
-	    cdtext_init (&(cd->tocent[cd->i_tracks].cdtext));
-	    cd->i_tracks++;
+	    cdtext_init (&(cd->tocent[cd->gen.i_tracks].cdtext));
+	    cd->gen.i_tracks++;
 	  }
 	  i++;
 	  
@@ -692,7 +691,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      cd->tocent[i].indexes[cd->tocent[i].nindex++] = lba;
 #else     
 	      track_info_t  *this_track=
-		&(cd->tocent[cd->i_tracks - cd->i_first_track]);
+		&(cd->tocent[cd->gen.i_tracks - cd->gen.i_first_track]);
 
 	      if (start_index != 0) {
 		if (!b_first_index_for_track) {
@@ -702,15 +701,15 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 		  this_track->start_lba   = lba;
 		}
 		
-		if (cd->i_tracks > 1) {
+		if (cd->gen.i_tracks > 1) {
 		  /* Figure out number of sectors for previous track */
-		  track_info_t  *prev_track=&(cd->tocent[cd->i_tracks-2]);
+		  track_info_t *prev_track=&(cd->tocent[cd->gen.i_tracks-2]);
 		  if ( this_track->start_lba < prev_track->start_lba ) {
 		    cdio_log (log_level,
 			      "track %d at LBA %lu starts before track %d at LBA %lu", 
-			      cd->i_tracks,   
+			      cd->gen.i_tracks,   
 			      (unsigned long int) this_track->start_lba, 
-			      cd->i_tracks, 
+			      cd->gen.i_tracks, 
 			      (unsigned long int) prev_track->start_lba);
 		    prev_track->sec_count = 0;
 		  } else if ( this_track->start_lba >= prev_track->start_lba 
@@ -723,7 +722,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 			      (long unsigned int) 
 			      this_track->start_lba - prev_track->start_lba,
 			      CDIO_PREGAP_SECTORS,
-			      cd->i_tracks);
+			      cd->gen.i_tracks);
 		    /* Include pregap portion in sec_count. Maybe the pregap
 		       was omitted. */
 		    prev_track->sec_count = this_track->start_lba - 
@@ -976,10 +975,10 @@ _get_track_format_bincue(void *user_data, track_t i_track)
 {
   _img_private_t *env = user_data;
   
-  if (i_track > env->i_tracks || i_track == 0) 
+  if (i_track > env->gen.i_tracks || i_track == 0) 
     return TRACK_FORMAT_ERROR;
 
-  return env->tocent[i_track-env->i_first_track].track_format;
+  return env->tocent[i_track-env->gen.i_first_track].track_format;
 }
 
 /*!
@@ -996,11 +995,11 @@ _get_track_green_bincue(void *user_data, track_t i_track)
   _img_private_t *env = user_data;
   
   if ( NULL == env || 
-       ( i_track < env->i_first_track
-	 || i_track >= env->i_tracks + env->i_first_track ) )
+       ( i_track < env->gen.i_first_track
+	 || i_track >= env->gen.i_tracks + env->gen.i_first_track ) )
     return false;
 
-  return env->tocent[i_track-env->i_first_track].track_green;
+  return env->tocent[i_track-env->gen.i_first_track].track_green;
 }
 
 /*!  
@@ -1015,10 +1014,10 @@ _get_lba_track_bincue(void *user_data, track_t i_track)
 {
   _img_private_t *env = user_data;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = env->i_tracks+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = env->gen.i_tracks+1;
 
-  if (i_track <= env->i_tracks + env->i_first_track && i_track != 0) {
-    return env->tocent[i_track-env->i_first_track].start_lba;
+  if (i_track <= env->gen.i_tracks + env->gen.i_first_track && i_track != 0) {
+    return env->tocent[i_track-env->gen.i_first_track].start_lba;
   } else 
     return CDIO_INVALID_LBA;
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.21 2004/07/28 11:45:21 rocky Exp $
+    $Id: scsi_mmc.h,v 1.22 2004/07/29 02:16:20 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -137,7 +137,10 @@ typedef enum scsi_mmc_direction {
 
 #define CDIO_MMC_SET_READ_TYPE(cdb, sector_type) \
   cdb[1] = (sector_type << 2)
-  
+
+#define CDIO_MMC_SET_LEN16(cdb, pos, len)  \
+  cdb[pos  ] = (len >>  8) & 0xff; \
+  cdb[pos+1] = (len      ) & 0xff
 
 #define CDIO_MMC_SET_READ_LBA(cdb, lba) \
   cdb[2] = (lba >> 24) & 0xff; \
@@ -154,8 +157,7 @@ typedef enum scsi_mmc_direction {
   cdb[8] = (len      ) & 0xff
 
 #define CDIO_MMC_SET_READ_LENGTH16(cdb, len) \
-  cdb[7] = (len >>  8) & 0xff; \
-  cdb[8] = (len      ) & 0xff
+  CDIO_MMC_SET_LEN16(cdb, 7, len)
 
 #define CDIO_MMC_SET_READ_LENGTH8(cdb, len) \
   cdb[8] = (len      ) & 0xff

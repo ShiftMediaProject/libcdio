@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.35 2004/07/27 01:06:02 rocky Exp $
+    $Id: cdio_private.h,v 1.36 2004/07/29 02:16:20 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -181,14 +181,14 @@ extern "C" {
       from lsn.
       Returns 0 if no error. 
     */
-    int (*read_mode2_sectors) (void *env, void *buf, lsn_t lsn, 
+    int (*read_mode2_sectors) (void *p_env, void *p_buf, lsn_t lsn, 
 			       bool mode2_form2, unsigned int nblocks);
     
     /*!
       Reads a single mode1 sector from cd device into buf starting
       from lsn. Returns 0 if no error. 
     */
-    int (*read_mode1_sector) (void *env, void *buf, lsn_t lsn, 
+    int (*read_mode1_sector) (void *p_env, void *p_buf, lsn_t lsn, 
 			      bool mode1_form2);
     
     /*!
@@ -196,16 +196,17 @@ extern "C" {
       from lsn.
       Returns 0 if no error. 
     */
-    int (*read_mode1_sectors) (void *env, void *buf, lsn_t lsn, 
+    int (*read_mode1_sectors) (void *p_env, void *p_buf, lsn_t lsn, 
 			       bool mode1_form2, unsigned int nblocks);
     
+    bool (*read_toc) ( void *p_env ) ;
+
     /*!
       Run a SCSI MMC command. 
       
       cdio	        CD structure set by cdio_open().
-      i_timeout         time in milliseconds we will wait for the command
-                        to complete. If this value is -1, use the default 
-   		        time-out value.
+      i_timeout_ms      time in milliseconds we will wait for the command
+                        to complete. 
       cdb_len           number of bytes in cdb (6, 10, or 12).
       cdb	        CDB bytes. All values that are needed should be set on 
                         input. 
@@ -228,9 +229,6 @@ extern "C" {
     */
     uint32_t (*stat_size) (void *env);
 
-    /*! Pointer to parent container object. */
-    CdIo *cdio;
-    
   } cdio_funcs;
 
 
@@ -258,6 +256,7 @@ extern "C" {
      */
     int   fd;               /**< File descriptor of device */
     track_t i_first_track;  /**< The starting track number. */
+    track_t i_tracks;       /**< The number of tracks. */
     CdioDataSource *data_source;
     CdIo *cdio;             /**< a way to call general cdio routines. */
   } generic_img_private_t;
@@ -372,6 +371,21 @@ extern "C" {
   */
   bool cdio_is_device_quiet_generic(const char *source_name);
 
+  /*!
+    Return the number of of the first track. 
+    CDIO_INVALID_TRACK is returned on error.
+  */
+  track_t get_first_track_num_generic(void *p_user_data);
+
+  /*!
+    Return the number of tracks in the current medium.
+  */
+  track_t get_num_tracks_generic(void *p_user_data);
+  
+  /*! 
+    Get disc type associated with cd object.
+  */
+  discmode_t get_discmode_generic (void *p_user_data );
   
 #ifdef __cplusplus
 }

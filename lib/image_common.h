@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.14 2004/07/24 14:23:37 rocky Exp $
+    $Id: image_common.h,v 1.15 2004/07/29 02:16:20 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -45,7 +45,7 @@ _free_image (void *user_data)
 
   if (NULL == env) return;
 
-  for (i_track=0; i_track < env->i_tracks; i_track++) {
+  for (i_track=0; i_track < env->gen.i_tracks; i_track++) {
     free_if_notnull(env->tocent[i_track].filename);
     free_if_notnull(env->tocent[i_track].isrc);
     cdtext_destroy(&(env->tocent[i_track].cdtext));
@@ -106,7 +106,7 @@ _get_cdtext_image (void *user_data, track_t i_track)
 
   if ( NULL == env || 
        ( 0 != i_track
-	 && i_track >= env->i_tracks + env->i_first_track ) )
+	 && i_track >= env->gen.i_tracks + env->gen.i_first_track ) )
     return NULL;
 
   if (CDIO_CDROM_LEADOUT_TRACK == i_track) 
@@ -115,7 +115,7 @@ _get_cdtext_image (void *user_data, track_t i_track)
   if (0 == i_track) 
     return &(env->cdtext);
   else 
-    return &(env->tocent[i_track-env->i_first_track].cdtext);
+    return &(env->tocent[i_track-env->gen.i_first_track].cdtext);
   
 }
 
@@ -159,10 +159,10 @@ _get_track_msf_image(void *user_data, track_t track_num, msf_t *msf)
 
   if (NULL == msf) return false;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = env->i_tracks+1;
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = env->gen.i_tracks+1;
 
-  if (track_num <= env->i_tracks+1 && track_num != 0) {
-    *msf = env->tocent[track_num-env->i_first_track].start_msf;
+  if (track_num <= env->gen.i_tracks+1 && track_num != 0) {
+    *msf = env->tocent[track_num-env->gen.i_first_track].start_msf;
     return true;
   } else 
     return false;
@@ -177,7 +177,7 @@ _get_first_track_num_image(void *user_data)
 {
   _img_private_t *env = user_data;
   
-  return env->i_first_track;
+  return env->gen.i_first_track;
 }
 
 /*!
@@ -188,7 +188,7 @@ _get_num_tracks_image(void *user_data)
 {
   _img_private_t *env = user_data;
 
-  return env->i_tracks;
+  return env->gen.i_tracks;
 }
 
 /*!

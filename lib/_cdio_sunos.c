@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.65 2004/07/28 01:09:59 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.66 2004/07/29 02:16:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.65 2004/07/28 01:09:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.66 2004/07/29 02:16:20 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -64,8 +64,6 @@ static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.65 2004/07/28 01:09:59 rock
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include "cdtext_private.h"
-
-#define TOTAL_TRACKS    (p_env->tochdr.cdth_trk1)
 
 /* reader */
 
@@ -407,8 +405,9 @@ _set_arg_solaris (void *p_user_data, const char key[], const char value[])
   Return true if successful or false if an error.
 */
 static bool
-read_toc_solaris (_img_private_t *p_env) 
+read_toc_solaris (void *p_user_data) 
 {
+  _img_private_t *p_env = p_user_data;
   int i;
 
   /* read TOC header */
@@ -419,9 +418,10 @@ read_toc_solaris (_img_private_t *p_env)
   }
 
   p_env->gen.i_first_track = p_env->tochdr.cdth_trk0;
+  p_env->gen.i_tracks      = p_env->tochdr.cdth_trk1;
   
   /* read individual tracks */
-  for (i=p_env->tochdr.cdth_trk0; i<=p_env->tochdr.cdth_trk1; i++) {
+  for (i=p_env->gen.i_first_track; i<=gen.i_tracks; i++) {
     p_env->tocent[i-1].cdte_track = i;
     p_env->tocent[i-1].cdte_format = CDIO_CDROM_MSF;
     if ( ioctl(p_env->gen.fd, CDROMREADTOCENTRY, &p_env->tocent[i-1]) == -1 ) {
@@ -494,7 +494,7 @@ get_cdtext_solaris (void *p_user_data, track_t i_track)
 
   if ( NULL == p_env ||
        (0 != i_track 
-       && i_track >= TOTAL_TRACKS+p_env->gen.i_first_track )
+       && i_track >= p_env->gen.i_tracks+p_env->gen.i_first_track )
        || p_env ->b_cdtext_error )
     return NULL;
 
@@ -603,123 +603,6 @@ cdio_get_default_device_solaris(void)
   return strdup(DEFAULT_CDIO_DEVICE);
 }
 
-/*! 
-  Get disc type associated with cd object.
-*/
-static discmode_t
-get_discmode_solaris (void *p_user_data)
-{
-  _img_private_t *p_env = p_user_data;
-  track_t i_track;
-  discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
-
-  /* See if this is a DVD. */
-  cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
-
-  dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
-  dvd.physical.layer_num = 0;
-  if (0 == scsi_mmc_get_dvd_struct_physical_private (p_env, 
-						     &run_scsi_cmd_solaris,
-						     &dvd)) {
-    switch(dvd.physical.layer[0].book_type) {
-    case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
-    case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
-    case CDIO_DVD_BOOK_DVD_R:    return CDIO_DISC_MODE_DVD_R;
-    case CDIO_DVD_BOOK_DVD_RW:   return CDIO_DISC_MODE_DVD_RW;
-    case CDIO_DVD_BOOK_DVD_PR:   return CDIO_DISC_MODE_DVD_PR;
-    case CDIO_DVD_BOOK_DVD_PRW:  return CDIO_DISC_MODE_DVD_PRW;
-    default: return CDIO_DISC_MODE_DVD_OTHER;
-    }
-  }
-
-  if (!p_env->gen.toc_init) 
-    read_toc_solaris (p_env);
-
-  if (!p_env->gen.toc_init) 
-    return CDIO_DISC_MODE_NO_INFO;
-
-  for (i_track = p_env->gen.i_first_track; 
-       i_track < p_env->gen.i_first_track + TOTAL_TRACKS ; 
-       i_track ++) {
-    track_format_t track_fmt=get_track_format_solaris(p_env, i_track);
-
-    switch(track_fmt) {
-    case TRACK_FORMAT_AUDIO:
-      switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_DA;
-	  break;
-	case CDIO_DISC_MODE_CD_DA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
-      default:
-	  discmode = CDIO_DISC_MODE_CD_MIXED;
-      }
-      break;
-    case TRACK_FORMAT_XA:
-      switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_XA;
-	  break;
-	case CDIO_DISC_MODE_CD_XA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
-      default:
-	discmode = CDIO_DISC_MODE_CD_MIXED;
-      }
-      break;
-    case TRACK_FORMAT_DATA:
-      switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_DATA;
-	  break;
-	case CDIO_DISC_MODE_CD_DATA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
-      default:
-	discmode = CDIO_DISC_MODE_CD_MIXED;
-      }
-      break;
-    case TRACK_FORMAT_ERROR:
-    default:
-      discmode = CDIO_DISC_MODE_ERROR;
-    }
-  }
-  return discmode;
-}
-
-/*!
-  Return the number of of the first track. 
-  CDIO_INVALID_TRACK is returned on error.
-*/
-static track_t
-get_first_track_num_solaris(void *p_user_data) 
-{
-  _img_private_t *p_env = p_user_data;
-  
-  if (!p_env->gen.toc_init) read_toc_solaris (p_env) ;
-
-  return p_env->gen.i_first_track;
-}
-
-
-/*!
-  Return the number of tracks in the current medium.
-*/
-static track_t
-_cdio_get_num_tracks(void *p_user_data)
-{
-  _img_private_t *p_env = p_user_data;
-  
-  return TOTAL_TRACKS;
-}
-
 /*!  
   Get format of track. 
 */
@@ -728,7 +611,7 @@ get_track_format_solaris(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
   
-  if ( (i_track > TOTAL_TRACKS+p_env->gen.i_first_track) 
+  if ( (i_track > p_env->gen.i_tracks+p_env->gen.i_first_track) 
        || i_track < p_env->gen.i_first_track)
     return TRACK_FORMAT_ERROR;
 
@@ -765,7 +648,7 @@ _cdio_get_track_green(void *p_user_data, track_t i_track)
   if (!p_env->gen.init) init_solaris(p_env);
   if (!p_env->gen.toc_init) read_toc_solaris (p_env) ;
 
-  if (i_track >= TOTAL_TRACKS+p_env->gen.i_first_track 
+  if (i_track >= p_env->gen.i_tracks+p_env->gen.i_first_track 
       || i_track < p_env->gen.i_first_track)
     return false;
 
@@ -797,9 +680,9 @@ _cdio_get_track_msf(void *p_user_data, track_t i_track, msf_t *msf)
   if (!p_env->gen.toc_init) read_toc_solaris (p_env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) 
-    i_track = TOTAL_TRACKS + p_env->gen.i_first_track;
+    i_track = p_env->gen.i_tracks + p_env->gen.i_first_track;
 
-  if (i_track > (TOTAL_TRACKS+p_env->gen.i_first_track) 
+  if (i_track > (p_env->gen.i_tracks+p_env->gen.i_first_track) 
       || i_track < p_env->gen.i_first_track) {
     return false;
   } else {
@@ -883,11 +766,11 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
     .get_cdtext         = get_cdtext_solaris,
     .get_default_device = cdio_get_default_device_solaris,
     .get_devices        = cdio_get_devices_solaris,
-    .get_discmode       = get_discmode_solaris,
+    .get_discmode       = get_discmode_generic,
     .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
-    .get_first_track_num= get_first_track_num_solaris,
+    .get_first_track_num= get_first_track_num_generic,
     .get_mcn            = scsi_mmc_get_mcn_generic,
-    .get_num_tracks     = _cdio_get_num_tracks,
+    .get_num_tracks     = get_num_tracks_generic,
     .get_track_format   = get_track_format_solaris,
     .get_track_green    = _cdio_get_track_green,
     .get_track_lba      = NULL, /* This could be implemented if need be. */
@@ -899,6 +782,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
     .read_mode1_sectors = _read_mode1_sectors_solaris,
     .read_mode2_sector  = _read_mode2_sector_solaris,
     .read_mode2_sectors = _read_mode2_sectors_solaris,
+    .read_toc           = &read_toc_solaris,
     .run_scsi_mmc_cmd   = &run_scsi_cmd_solaris,
     .stat_size          = _cdio_stat_size,
     .set_arg            = _set_arg_solaris

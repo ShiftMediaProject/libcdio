@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.19 2004/06/26 00:39:00 rocky Exp $
+    $Id: _cdio_generic.c,v 1.20 2004/07/29 02:16:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.19 2004/06/26 00:39:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.20 2004/07/29 02:16:20 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -224,4 +224,124 @@ cdio_add_device_list(char **device_list[], const char *drive, int *num_drives)
   }
 }
 
+
+/*! 
+  Get disc type associated with cd object.
+*/
+discmode_t
+get_discmode_generic (void *p_user_data )
+{
+  generic_img_private_t *p_env = p_user_data;
+  track_t i_track;
+  discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
+
+  /* See if this is a DVD. */
+  cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
+
+  dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
+  dvd.physical.layer_num = 0;
+  if (0 == scsi_mmc_get_dvd_struct_physical (p_env->cdio, &dvd)) {
+    switch(dvd.physical.layer[0].book_type) {
+    case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
+    case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
+    case CDIO_DVD_BOOK_DVD_R:    return CDIO_DISC_MODE_DVD_R;
+    case CDIO_DVD_BOOK_DVD_RW:   return CDIO_DISC_MODE_DVD_RW;
+    case CDIO_DVD_BOOK_DVD_PR:   return CDIO_DISC_MODE_DVD_PR;
+    case CDIO_DVD_BOOK_DVD_PRW:  return CDIO_DISC_MODE_DVD_PRW;
+    default: return CDIO_DISC_MODE_DVD_OTHER;
+    }
+  }
+
+  if (!p_env->toc_init) 
+    p_env->cdio->op.read_toc (p_user_data);
+
+  if (!p_env->toc_init) 
+    return CDIO_DISC_MODE_NO_INFO;
+
+  for (i_track = p_env->i_first_track; 
+       i_track < p_env->i_first_track + p_env->i_tracks ; 
+       i_track ++) {
+    track_format_t track_fmt =
+      p_env->cdio->op.get_track_format(p_env, i_track);
+
+    switch(track_fmt) {
+    case TRACK_FORMAT_AUDIO:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_DA;
+	  break;
+	case CDIO_DISC_MODE_CD_DA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	  discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_XA:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_XA;
+	  break;
+	case CDIO_DISC_MODE_CD_XA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_DATA:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_DATA;
+	  break;
+	case CDIO_DISC_MODE_CD_DATA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_ERROR:
+    default:
+      discmode = CDIO_DISC_MODE_ERROR;
+    }
+  }
+  return discmode;
+}
+
+/*!
+  Return the number of of the first track. 
+  CDIO_INVALID_TRACK is returned on error.
+*/
+track_t
+get_first_track_num_generic(void *p_user_data) 
+{
+  generic_img_private_t *p_env = p_user_data;
+  
+  if (!p_env->toc_init) 
+    p_env->cdio->op.read_toc (p_user_data);
+
+  return p_env->toc_init ? p_env->i_first_track : CDIO_INVALID_TRACK;
+}
+
+
+/*!
+  Return the number of tracks in the current medium.
+*/
+ track_t
+get_num_tracks_generic(void *p_user_data)
+{
+  generic_img_private_t *p_env = p_user_data;
+  
+  if (!p_env->toc_init) 
+    p_env->cdio->op.read_toc (p_user_data);
+
+  return p_env->toc_init ? p_env->i_tracks : CDIO_INVALID_TRACK;
+}
 
