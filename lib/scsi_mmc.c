@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.27 2004/08/27 11:53:38 rocky Exp $
+    $Id: scsi_mmc.c,v 1.28 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -527,7 +527,7 @@ scsi_mmc_init_cdtext_private ( void *p_user_data,
 
   generic_img_private_t *p_env = p_user_data;
   scsi_mmc_cdb_t  cdb = {{0, }};
-  char            wdata[5000] = { 0, };
+  unsigned char   wdata[5000] = { 0, };
   int             i_status;
 
   if ( ! p_env || ! run_scsi_mmc_cmd || p_env->b_cdtext_error )

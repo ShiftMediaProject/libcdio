@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.13 2004/07/25 18:37:09 rocky Exp $
+    $Id: sector.c,v 1.14 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 
 #include <ctype.h>
 
-static const char _rcsid[] = "$Id: sector.c,v 1.13 2004/07/25 18:37:09 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.14 2004/09/03 23:20:11 rocky Exp $";
 
 lba_t
 cdio_lba_to_lsn (lba_t lba)
@@ -90,7 +90,8 @@ cdio_lba_to_msf_str (lba_t lba)
   if (CDIO_INVALID_LBA == lba) {
     return strdup("*INVALID");
   } else {
-    msf_t msf = { .m = 0, .s = 0, .f = 0 };
+    msf_t msf;
+    msf.m = msf.s = msf.f = 0;
     cdio_lba_to_msf (lba, &msf);
     return cdio_msf_to_str(&msf);
   }

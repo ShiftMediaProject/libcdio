@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.96 2004/08/27 11:53:38 rocky Exp $
+    $Id: _cdio_linux.c,v 1.97 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.96 2004/08/27 11:53:38 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.97 2004/09/03 23:20:11 rocky Exp $";
 
 #include <string.h>
 
@@ -1154,7 +1154,9 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
       set_arg_linux(_data, "source", psz_orig_source);
     else {
       /* The below would be okay if all device drivers worked this way. */
-      cdio_info ("source %s is a not a device", psz_orig_source);
+#if 0
+      cdio_info ("source %s is not a device", psz_orig_source);
+#endif
       return NULL;
     }
   }

@@ -15,11 +15,11 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-define(RELEASE_NUM, 70)
-define(CDIO_VERSION_STR, 0.$1)
+define(RELEASE_NUM, 71)
+define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.93 2004/09/01 23:39:17 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.94 2004/09/03 23:20:11 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE

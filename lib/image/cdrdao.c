@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.26 2004/08/16 02:04:08 rocky Exp $
+    $Id: cdrdao.c,v 1.27 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.26 2004/08/16 02:04:08 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.27 2004/09/03 23:20:11 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1124,33 +1124,33 @@ cdio_open_cdrdao (const char *psz_cue_name)
   CdIo *ret;
   _img_private_t *_data;
 
-  cdio_funcs _funcs = {
-    .eject_media        = _eject_media_image,
-    .free               = _free_image,
-    .get_arg            = _get_arg_image,
-    .get_cdtext         = get_cdtext_generic,
-    .get_devices        = cdio_get_devices_cdrdao,
-    .get_default_device = cdio_get_default_device_cdrdao,
-    .get_discmode       = _get_discmode_image,
-    .get_drive_cap      = _get_drive_cap_image,
-    .get_first_track_num= _get_first_track_num_image,
-    .get_mcn            = _get_mcn_image,
-    .get_num_tracks     = _get_num_tracks_image,
-    .get_track_format   = _get_track_format_cdrdao,
-    .get_track_green    = _get_track_green_cdrdao,
-    .get_track_lba      = _get_lba_track_cdrdao, 
-    .get_track_msf      = _get_track_msf_image,
-    .lseek              = _lseek_cdrdao,
-    .read               = _read_cdrdao,
-    .read_audio_sectors = _read_audio_sectors_cdrdao,
-    .read_mode1_sector  = _read_mode1_sector_cdrdao,
-    .read_mode1_sectors = _read_mode1_sectors_cdrdao,
-    .read_mode2_sector  = _read_mode2_sector_cdrdao,
-    .read_mode2_sectors = _read_mode2_sectors_cdrdao,
-    .set_arg            = _set_arg_image,
-    .stat_size          = _stat_size_cdrdao
-  };
+ cdio_funcs _funcs;
 
+ _funcs.eject_media        = _eject_media_image;
+ _funcs.free               = _free_image;
+ _funcs.get_arg            = _get_arg_image;
+ _funcs.get_cdtext         = get_cdtext_generic;
+ _funcs.get_devices        = cdio_get_devices_cdrdao;
+ _funcs.get_default_device = cdio_get_default_device_cdrdao;
+ _funcs.get_discmode       = _get_discmode_image;
+ _funcs.get_drive_cap      = _get_drive_cap_image;
+ _funcs.get_first_track_num= _get_first_track_num_image;
+ _funcs.get_mcn            = _get_mcn_image;
+ _funcs.get_num_tracks     = _get_num_tracks_image;
+ _funcs.get_track_format   = _get_track_format_cdrdao;
+ _funcs.get_track_green    = _get_track_green_cdrdao;
+ _funcs.get_track_lba      = _get_lba_track_cdrdao;
+ _funcs.get_track_msf      = _get_track_msf_image;
+ _funcs.lseek              = _lseek_cdrdao;
+ _funcs.read               = _read_cdrdao;
+ _funcs.read_audio_sectors = _read_audio_sectors_cdrdao;
+ _funcs.read_mode1_sector  = _read_mode1_sector_cdrdao;
+ _funcs.read_mode1_sectors = _read_mode1_sectors_cdrdao;
+ _funcs.read_mode2_sector  = _read_mode2_sector_cdrdao;
+ _funcs.read_mode2_sectors = _read_mode2_sectors_cdrdao;
+ _funcs.set_arg            = _set_arg_image;
+ _funcs.stat_size          = _stat_size_cdrdao;
+ 
   if (NULL == psz_cue_name) return NULL;
   
   _data                  = _cdio_malloc (sizeof (_img_private_t));

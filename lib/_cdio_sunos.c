@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.74 2004/08/16 01:47:49 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.75 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.74 2004/08/16 01:47:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.75 2004/09/03 23:20:11 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -767,7 +767,7 @@ cdio_get_devices_solaris (void)
   char volpath[256];
   struct stat st;
   char **drives = NULL;
-  int num_files=0;
+  unsigned int i_files=0;
 #ifdef HAVE_GLOB_H
   unsigned int i;
   glob_t globbuf;
@@ -782,9 +782,9 @@ cdio_get_devices_solaris (void)
     if(S_ISDIR(st.st_mode)) {
       sprintf(volpath, "%s/s0", globbuf.gl_pathv[i]);
       if(stat(volpath, &st) == 0)
-        cdio_add_device_list(&drives, volpath, &num_files);
+        cdio_add_device_list(&drives, volpath, &i_files);
 	}else
-      cdio_add_device_list(&drives, globbuf.gl_pathv[i], &num_files);
+      cdio_add_device_list(&drives, globbuf.gl_pathv[i], &i_files);
   }
   globfree(&globbuf);
 #else
@@ -793,12 +793,12 @@ cdio_get_devices_solaris (void)
     if(S_ISDIR(st.st_mode)) {
       sprintf(volpath, "%s/s0", DEFAULT_CDIO_DEVICE);
       if(stat(volpath, &st) == 0)
-        cdio_add_device_list(&drives, volpath, &num_files);
+        cdio_add_device_list(&drives, volpath, &i_files);
     }else
-      cdio_add_device_list(&drives, DEFAULT_CDIO_DEVICE, &num_files);
+      cdio_add_device_list(&drives, DEFAULT_CDIO_DEVICE, &i_files);
   }
 #endif /*HAVE_GLOB_H*/
-  cdio_add_device_list(&drives, NULL, &num_files);
+  cdio_add_device_list(&drives, NULL, &i_files);
   return drives;
 #endif /*HAVE_SOLARIS_CDROM*/
 }
@@ -828,34 +828,34 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _img_private_t *_data;
   char *psz_source;
 
-  cdio_funcs _funcs = {
-    .eject_media        = eject_media_solaris,
-    .free               = cdio_generic_free,
-    .get_arg            = get_arg_solaris,
-    .get_cdtext         = get_cdtext_generic,
-    .get_default_device = cdio_get_default_device_solaris,
-    .get_devices        = cdio_get_devices_solaris,
-    .get_discmode       = get_discmode_solaris,
-    .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
-    .get_first_track_num= get_first_track_num_generic,
-    .get_mcn            = scsi_mmc_get_mcn_generic,
-    .get_num_tracks     = get_num_tracks_generic,
-    .get_track_format   = get_track_format_solaris,
-    .get_track_green    = _cdio_get_track_green,
-    .get_track_lba      = NULL, /* This could be implemented if need be. */
-    .get_track_msf      = _cdio_get_track_msf,
-    .lseek              = cdio_generic_lseek,
-    .read               = cdio_generic_read,
-    .read_audio_sectors = _read_audio_sectors_solaris,
-    .read_mode1_sector  = _read_mode1_sector_solaris,
-    .read_mode1_sectors = _read_mode1_sectors_solaris,
-    .read_mode2_sector  = _read_mode2_sector_solaris,
-    .read_mode2_sectors = _read_mode2_sectors_solaris,
-    .read_toc           = read_toc_solaris,
-    .run_scsi_mmc_cmd   = run_scsi_cmd_solaris,
-    .stat_size          = _cdio_stat_size,
-    .set_arg            = _set_arg_solaris
-  };
+  cdio_funcs _funcs;
+
+  _funcs.eject_media        = eject_media_solaris;
+  _funcs.free               = cdio_generic_free;
+  _funcs.get_arg            = get_arg_solaris;
+  _funcs.get_cdtext         = get_cdtext_generic;
+  _funcs.get_default_device = cdio_get_default_device_solaris;
+  _funcs.get_devices        = cdio_get_devices_solaris;
+  _funcs.get_discmode       = get_discmode_solaris;
+  _funcs.get_drive_cap      = scsi_mmc_get_drive_cap_generic;
+  _funcs.get_first_track_num= get_first_track_num_generic;
+  _funcs.get_mcn            = scsi_mmc_get_mcn_generic,
+  _funcs.get_num_tracks     = get_num_tracks_generic;
+  _funcs.get_track_format   = get_track_format_solaris;
+  _funcs.get_track_green    = _cdio_get_track_green;
+  _funcs.get_track_lba      = NULL; /* This could be implemented if need be. */
+  _funcs.get_track_msf      = _cdio_get_track_msf;
+  _funcs.lseek              = cdio_generic_lseek;
+  _funcs.read               = cdio_generic_read;
+  _funcs.read_audio_sectors = _read_audio_sectors_solaris;
+  _funcs.read_mode1_sector  = _read_mode1_sector_solaris;
+  _funcs.read_mode1_sectors = _read_mode1_sectors_solaris;
+  _funcs.read_mode2_sector  = _read_mode2_sector_solaris;
+  _funcs.read_mode2_sectors = _read_mode2_sectors_solaris;
+  _funcs.read_toc           = read_toc_solaris;
+  _funcs.run_scsi_mmc_cmd   = run_scsi_cmd_solaris;
+  _funcs.stat_size          = _cdio_stat_size;
+  _funcs.set_arg            = _set_arg_solaris;
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
 
@@ -877,7 +877,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
     else {
       /* The below would be okay if all device drivers worked this way. */
 #if 0
-      cdio_info ("source %s is a not a device", psz_orig_source);
+      cdio_info ("source %s is not a device", psz_orig_source);
 #endif
       return NULL;
     }

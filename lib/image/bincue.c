@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.41 2004/08/16 02:04:08 rocky Exp $
+    $Id: bincue.c,v 1.42 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.41 2004/08/16 02:04:08 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.42 2004/09/03 23:20:11 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1140,64 +1140,64 @@ cdio_open_cue (const char *psz_cue_name)
   _img_private_t *_data;
   char *psz_bin_name;
 
-  cdio_funcs _funcs = {
-    .eject_media        = _eject_media_image,
-    .free               = _free_image,
-    .get_arg            = _get_arg_image,
-    .get_cdtext         = get_cdtext_generic,
-    .get_devices        = cdio_get_devices_bincue,
-    .get_default_device = cdio_get_default_device_bincue,
-    .get_discmode       = _get_discmode_image,
-    .get_drive_cap      = _get_drive_cap_image,
-    .get_first_track_num= _get_first_track_num_image,
-    .get_mcn            = _get_mcn_image,
-    .get_num_tracks     = _get_num_tracks_image,
-    .get_track_format   = _get_track_format_bincue,
-    .get_track_green    = _get_track_green_bincue,
-    .get_track_lba      = _get_lba_track_bincue, 
-    .get_track_msf      = _get_track_msf_image,
-    .lseek              = _lseek_bincue,
-    .read               = _read_bincue,
-    .read_audio_sectors = _read_audio_sectors_bincue,
-    .read_mode1_sector  = _read_mode1_sector_bincue,
-    .read_mode1_sectors = _read_mode1_sectors_bincue,
-    .read_mode2_sector  = _read_mode2_sector_bincue,
-    .read_mode2_sectors = _read_mode2_sectors_bincue,
-    .set_arg            = _set_arg_image,
-    .stat_size          = _stat_size_bincue
-  };
+ cdio_funcs _funcs;
 
-  if (NULL == psz_cue_name) return NULL;
-
-  _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->gen.init       = false;
-  _data->psz_cue_name   = NULL;
-
-  ret = cdio_new ((void *)_data, &_funcs);
-
-  if (ret == NULL) {
-    free(_data);
-    return NULL;
-  }
-
-  psz_bin_name = cdio_is_cuefile(psz_cue_name);
-
-  if (NULL == psz_bin_name) {
-    cdio_error ("source name %s is not recognized as a CUE file", 
-		psz_cue_name);
-  }
-  
-  _set_arg_image (_data, "cue", psz_cue_name);
-  _set_arg_image (_data, "source", psz_bin_name);
-  free(psz_bin_name);
-
-  if (_init_bincue(_data)) {
-    return ret;
-  } else {
-    _free_image(_data);
-    free(ret);
-    return NULL;
-  }
+ _funcs.eject_media        = _eject_media_image;
+ _funcs.free               = _free_image;
+ _funcs.get_arg            = _get_arg_image;
+ _funcs.get_cdtext         = get_cdtext_generic;
+ _funcs.get_devices        = cdio_get_devices_bincue;
+ _funcs.get_default_device = cdio_get_default_device_bincue;
+ _funcs.get_discmode       = _get_discmode_image;
+ _funcs.get_drive_cap      = _get_drive_cap_image;
+ _funcs.get_first_track_num= _get_first_track_num_image;
+ _funcs.get_mcn            = _get_mcn_image;
+ _funcs.get_num_tracks     = _get_num_tracks_image;
+ _funcs.get_track_format   = _get_track_format_bincue;
+ _funcs.get_track_green    = _get_track_green_bincue;
+ _funcs.get_track_lba      = _get_lba_track_bincue;
+ _funcs.get_track_msf      = _get_track_msf_image;
+ _funcs.lseek              = _lseek_bincue;
+ _funcs.read               = _read_bincue;
+ _funcs.read_audio_sectors = _read_audio_sectors_bincue;
+ _funcs.read_mode1_sector  = _read_mode1_sector_bincue;
+ _funcs.read_mode1_sectors = _read_mode1_sectors_bincue;
+ _funcs.read_mode2_sector  = _read_mode2_sector_bincue;
+ _funcs.read_mode2_sectors = _read_mode2_sectors_bincue;
+ _funcs.set_arg            = _set_arg_image;
+ _funcs.stat_size          = _stat_size_bincue;
+ 
+ if (NULL == psz_cue_name) return NULL;
+ 
+ _data                 = _cdio_malloc (sizeof (_img_private_t));
+ _data->gen.init       = false;
+ _data->psz_cue_name   = NULL;
+ 
+ ret = cdio_new ((void *)_data, &_funcs);
+ 
+ if (ret == NULL) {
+   free(_data);
+   return NULL;
+ }
+ 
+ psz_bin_name = cdio_is_cuefile(psz_cue_name);
+ 
+ if (NULL == psz_bin_name) {
+   cdio_error ("source name %s is not recognized as a CUE file", 
+	       psz_cue_name);
+ }
+ 
+ _set_arg_image (_data, "cue", psz_cue_name);
+ _set_arg_image (_data, "source", psz_bin_name);
+ free(psz_bin_name);
+ 
+ if (_init_bincue(_data)) {
+   return ret;
+ } else {
+   _free_image(_data);
+   free(ret);
+   return NULL;
+ }
 }
 
 bool

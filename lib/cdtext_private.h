@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext_private.h,v 1.4 2004/08/30 00:26:59 rocky Exp $
+    $Id: cdtext_private.h,v 1.5 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -69,7 +69,7 @@ typedef void (*set_cdtext_field_fn_t) (void *user_data, track_t i_track,
    Internal routine to parse all CD-TEXT data retrieved.
 */       
 bool cdtext_data_init(void *user_data, track_t i_first_track, 
-                      const unsigned char *wdata, 
+                      unsigned char *wdata, 
                       set_cdtext_field_fn_t set_cdtext_field_fn);
 
 

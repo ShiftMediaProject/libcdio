@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.72 2004/08/29 03:45:35 rocky Exp $
+    $Id: cdio.c,v 1.73 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.72 2004/08/29 03:45:35 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.73 2004/09/03 23:20:11 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -425,7 +425,7 @@ cdio_get_devices_with_cap_ret (/*out*/ char* search_devices[],
 {
   char **drives=search_devices;
   char **drives_ret=NULL;
-  int num_drives=0;
+  unsigned int i_drives=0;
 
   *p_driver_id = DRIVER_DEVICE;
 
@@ -437,7 +437,7 @@ cdio_get_devices_with_cap_ret (/*out*/ char* search_devices[],
     char **d = drives;
     
     for( ; *d != NULL; d++ ) {
-      cdio_add_device_list(&drives_ret, *d, &num_drives);
+      cdio_add_device_list(&drives_ret, *d, &i_drives);
     }
   } else {
     cdio_fs_anal_t got_fs=0;
@@ -461,14 +461,14 @@ cdio_get_devices_with_cap_ret (/*out*/ char* search_devices[],
               ? (got_fs & need_fs_ext)  != 0
               : (got_fs | ~need_fs_ext) == -1;
             if (doit) 
-              cdio_add_device_list(&drives_ret, *d, &num_drives);
+              cdio_add_device_list(&drives_ret, *d, &i_drives);
           }
              
         cdio_destroy(cdio);
       }
     }
   }
-  cdio_add_device_list(&drives_ret, NULL, &num_drives);
+  cdio_add_device_list(&drives_ret, NULL, &i_drives);
   cdio_free_device_list(drives);
   free(drives);
   return drives_ret;

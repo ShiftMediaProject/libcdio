@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.c,v 1.8 2004/08/30 01:59:13 rocky Exp $
+    $Id: cdtext.c,v 1.9 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -149,7 +149,7 @@ cdtext_set (cdtext_field_t key, const char *value, cdtext_t *cdtext)
 */       
 bool
 cdtext_data_init(void *user_data, track_t i_first_track, 
-		 const unsigned char *wdata, 
+		 unsigned char *wdata, 
 		 set_cdtext_field_fn_t set_cdtext_field_fn) 
 {
   CDText_data_t *pdata;

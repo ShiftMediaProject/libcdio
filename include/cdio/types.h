@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.22 2004/08/06 00:55:14 rocky Exp $
+    $Id: types.h,v 1.23 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -106,11 +106,11 @@ extern "C" {
     {
       false = 0,
       true = 1
-    } _Bool;
+    } _cdio_Bool;
   
 #  define false   false
 #  define true    true
-#  define bool _Bool
+#  define bool _cdio_Bool
 # endif
 #endif
   

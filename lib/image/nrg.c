@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.38 2004/08/16 02:04:08 rocky Exp $
+    $Id: nrg.c,v 1.39 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -45,7 +45,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.38 2004/08/16 02:04:08 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.39 2004/09/03 23:20:11 rocky Exp $";
 
 
 /* reader */
@@ -1185,32 +1185,32 @@ cdio_open_nrg (const char *psz_source)
   CdIo *ret;
   _img_private_t *_data;
 
-  cdio_funcs _funcs = {
-    .eject_media        = _eject_media_nrg,
-    .free               = _free_nrg,
-    .get_arg            = _get_arg_image,
-    .get_cdtext         = get_cdtext_generic,
-    .get_devices        = cdio_get_devices_nrg,
-    .get_default_device = cdio_get_default_device_nrg,
-    .get_discmode       = _get_discmode_image,
-    .get_drive_cap      = _get_drive_cap_image,
-    .get_first_track_num= _get_first_track_num_image,
-    .get_mcn            = _get_mcn_image,
-    .get_num_tracks     = _get_num_tracks_image,
-    .get_track_format   = _get_track_format_nrg,
-    .get_track_green    = _get_track_green_nrg,
-    .get_track_lba      = NULL, /* Will use generic routine via msf */
-    .get_track_msf      = _get_track_msf_image,
-    .lseek              = _lseek_nrg,
-    .read               = _read_nrg,
-    .read_audio_sectors = _read_audio_sectors_nrg,
-    .read_mode1_sector  = _read_mode1_sector_nrg,
-    .read_mode1_sectors = _read_mode1_sectors_nrg,
-    .read_mode2_sector  = _read_mode2_sector_nrg,
-    .read_mode2_sectors = _read_mode2_sectors_nrg,
-    .set_arg            = _set_arg_image,
-    .stat_size          = _stat_size_nrg,
-  };
+  cdio_funcs _funcs;
+
+  _funcs.eject_media        = _eject_media_nrg;
+  _funcs.free               = _free_nrg;
+  _funcs.get_arg            = _get_arg_image;
+  _funcs.get_cdtext         = get_cdtext_generic;
+  _funcs.get_devices        = cdio_get_devices_nrg;
+  _funcs.get_default_device = cdio_get_default_device_nrg;
+  _funcs.get_discmode       = _get_discmode_image;
+  _funcs.get_drive_cap      = _get_drive_cap_image;
+  _funcs.get_first_track_num= _get_first_track_num_image;
+  _funcs.get_mcn            = _get_mcn_image;
+  _funcs.get_num_tracks     = _get_num_tracks_image;
+  _funcs.get_track_format   = _get_track_format_nrg;
+  _funcs.get_track_green    = _get_track_green_nrg;
+  _funcs.get_track_lba      = NULL; /* Will use generic routine via msf */
+  _funcs.get_track_msf      = _get_track_msf_image;
+  _funcs.lseek              = _lseek_nrg;
+  _funcs.read               = _read_nrg;
+  _funcs.read_audio_sectors = _read_audio_sectors_nrg;
+  _funcs.read_mode1_sector  = _read_mode1_sector_nrg;
+  _funcs.read_mode1_sectors = _read_mode1_sectors_nrg;
+  _funcs.read_mode2_sector  = _read_mode2_sector_nrg;
+  _funcs.read_mode2_sectors = _read_mode2_sectors_nrg;
+  _funcs.set_arg            = _set_arg_image;
+  _funcs.stat_size          = _stat_size_nrg;
 
   _data                   = _cdio_malloc (sizeof (_img_private_t));
   _data->gen.init         = false;

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.41 2004/08/28 09:15:41 rocky Exp $
+    $Id: cdio_private.h,v 1.42 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -306,7 +306,7 @@ extern "C" {
     Use cdio_free_device_list() to free this device_list.
   */
   void cdio_add_device_list(char **device_list[], const char *drive, 
-			    int *num_drives);
+			    unsigned int *i_drives);
 
 #ifdef __cplusplus
 }

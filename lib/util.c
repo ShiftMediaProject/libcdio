@@ -1,8 +1,8 @@
 /*
-    $Id: util.c,v 1.4 2004/07/27 18:57:04 rocky Exp $
+    $Id: util.c,v 1.5 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,9 +33,10 @@
 #endif
 
 #include "cdio_assert.h"
+#include <cdio/types.h>
 #include <cdio/util.h>
 
-static const char _rcsid[] = "$Id: util.c,v 1.4 2004/07/27 18:57:04 rocky Exp $";
+static const char _rcsid[] = "$Id: util.c,v 1.5 2004/09/03 23:20:11 rocky Exp $";
 
 size_t
 _cdio_strlenv(char **str_array)

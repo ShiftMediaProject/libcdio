@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.25 2004/08/28 09:15:41 rocky Exp $
+    $Id: _cdio_generic.c,v 1.26 2004/09/03 23:20:11 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.25 2004/08/28 09:15:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.26 2004/09/03 23:20:11 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -198,7 +198,8 @@ cdio_is_device_quiet_generic(const char *source_name)
   Use cdio_free_device_list() to free this device_list.
 */
 void 
-cdio_add_device_list(char **device_list[], const char *drive, int *num_drives)
+cdio_add_device_list(char **device_list[], const char *drive, 
+		     unsigned int *num_drives)
 {
   if (NULL != drive) {
     unsigned int j;
