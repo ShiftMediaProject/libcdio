@@ -1,0 +1,7 @@
+Write a real cue parser and toc parser using flex and bison.  A pcct
+grammar is given in cdrdao's trackdb TocParser.g and CueParser.g
+
+Better NRG support. Fill in FreeBSD support. Other OS's? More disk
+image types in regression testing, like CD-I. 
+
+$Id: TODO,v 1.1 2003/04/21 23:30:08 rocky Exp $
