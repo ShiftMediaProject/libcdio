@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.26 2004/07/19 15:40:47 rocky Exp $
+    $Id: win32.c,v 1.27 2004/07/23 14:40:43 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.26 2004/07/19 15:40:47 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.27 2004/07/23 14:40:43 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -121,6 +121,39 @@ _cdio_get_drive_cap (const void *env,
     get_drive_cap_aspi (env, p_read_cap, p_write_cap, p_misc_cap);
   } else {
     get_drive_cap_win32ioctl (env, p_read_cap, p_write_cap, p_misc_cap);
+  }
+}
+
+
+/*!
+  Run a SCSI MMC command. 
+ 
+  env	        private CD structure 
+  i_timeout     time in milliseconds we will wait for the command
+                to complete. If this value is -1, use the default 
+		time-out value.
+  p_buf	        Buffer for data, both sending and receiving
+  i_buf	        Size of buffer
+  e_direction	direction the transfer is to go.
+  cdb	        CDB bytes. All values that are needed should be set on 
+                input. We'll figure out what the right CDB length should be.
+
+  Return 0 if command completed successfully.
+ */
+static int
+scsi_mmc_run_cmd_win32( const void *p_user_data, int i_timeout,
+			unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+			scsi_mmc_direction_t e_direction, 
+			unsigned int i_buf, /*in/out*/ void *p_buf )
+{
+  const _img_private_t *p_env = p_user_data;
+
+  if (p_env->hASPI) {
+    return scsi_mmc_run_cmd_aspi( p_env, i_timeout, i_cdb, p_cdb,  
+				  e_direction, i_buf, p_buf );
+  } else {
+    return scsi_mmc_run_cmd_win32ioctl( p_env, i_timeout, i_cdb, p_cdb,  
+					e_direction, i_buf, p_buf );
   }
 }
 
@@ -755,6 +788,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
     .read_mode1_sectors = _cdio_read_mode1_sectors,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
+    .run_scsi_mmc_cmd   = scsi_mmc_run_cmd_win32,
     .set_arg            = _set_arg_win32,
     .stat_size          = _cdio_stat_size
   };

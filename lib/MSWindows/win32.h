@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.13 2004/07/18 06:51:49 rocky Exp $
+    $Id: win32.h,v 1.14 2004/07/23 14:40:43 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -84,6 +84,27 @@ int read_mode1_sector_win32ioctl (const _img_private_t *env, void *data,
 				  lsn_t lsn, bool b_form2);
 
 const char *is_cdrom_win32ioctl (const char drive_letter);
+
+/*!
+  Run a SCSI MMC command. 
+ 
+  env	        private CD structure 
+  i_timeout     time in milliseconds we will wait for the command
+                to complete. If this value is -1, use the default 
+		time-out value.
+  p_buf	        Buffer for data, both sending and receiving
+  i_buf	        Size of buffer
+  e_direction	direction the transfer is to go.
+  cdb	        CDB bytes. All values that are needed should be set on 
+                input. We'll figure out what the right CDB length should be.
+
+  Return 0 if command completed successfully.
+ */
+int scsi_mmc_run_cmd_win32ioctl( const void *p_user_data, int i_timeout,
+				 unsigned int i_cdb, 
+				 const scsi_mmc_cdb_t * p_cdb,
+				 scsi_mmc_direction_t e_direction, 
+				 unsigned int i_buf, /*in/out*/ void *p_buf );
 
 /*!
   Initialize internal structures for CD device.

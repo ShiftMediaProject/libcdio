@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.21 2004/07/23 14:28:42 rocky Exp $
+    $Id: win32_ioctl.c,v 1.22 2004/07/23 14:40:43 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.21 2004/07/23 14:28:42 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.22 2004/07/23 14:40:43 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -142,7 +142,7 @@ typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
 
   Return 0 if command completed successfully.
  */
-static int
+int
 scsi_mmc_run_cmd_win32ioctl( const void *p_user_data, int i_timeout,
 			     unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,
 			     scsi_mmc_direction_t e_direction, 
