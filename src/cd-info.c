@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.16 2003/08/13 12:18:49 rocky Exp $
+    $Id: cd-info.c,v 1.17 2003/08/13 12:33:59 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -136,7 +136,7 @@ and
 #define VIDEOCDI       	     1024
 #define ROCKRIDGE            2048
 #define JOLIET               4096
-#define CVD       	     8192   /* Choiji Video CD */
+#define SVCD       	     8192   /* Choiji Video CD */
 
 char buffer[6][CDIO_CD_FRAMESIZE_RAW];  /* for CD-Data */
 
@@ -195,7 +195,7 @@ static signature_t sigs[] =
 #define IS_UFS       9
 #define IS_BOOTABLE 10
 #define IS_VIDEO_CD 11 /* Video CD */
-#define IS_CVD      12 /* Chinese Video CD - slightly incompatible with SVCD */
+#define IS_SVCD     12 /* SVCD or CVD */
 
 int rc;                                                      /* return code */
 int i,j;                                                           /* index */
@@ -650,23 +650,9 @@ guess_filesystem(int start_session, track_t track_num)
 	  return ret;
 	
 	if (is_it(IS_BRIDGE) && is_it(IS_CD_RTOS)) {
-	  if (opts.debug_level > 0) {
-	    /* buffer[4] is defined */
-	    is_it_dbg(IS_VIDEO_CD);
-	    puts("");
-	  }
-	  
-	  if (is_it(IS_VIDEO_CD)) ret |= VIDEOCDI;
-	} else {
-	  if (opts.debug_level > 0) {
-	    /* buffer[4] is defined */
-	    is_it_dbg(IS_CVD);
-	    puts("");
-	  }
-	  
-	  if (is_it(IS_CVD)) ret |= CVD;
+	  if (is_it(IS_VIDEO_CD))  ret |= VIDEOCDI;
+	  else if (is_it(IS_SVCD)) ret |= SVCD;
 	}
-	
       }
     } 
     else if (is_hfs())       ret |= FS_HFS;
@@ -989,9 +975,9 @@ print_analysis(int fs, int num_audio)
     }
 #endif    
   }
-  if (fs & CVD)
-    need_lf += printf("Chaoji Video CD");
-  if (need_lf) puts("");
+  if (fs & SVCD)
+    need_lf += printf("Super Video CD (SVCD) or Chaoji Video CD (CVD)");
+  if (need_lf) printf("\n");
 }
 
 
