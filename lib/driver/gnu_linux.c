@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.8 2005/03/08 04:10:36 rocky Exp $
+    $Id: gnu_linux.c,v 1.9 2005/03/15 04:16:17 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.8 2005/03/08 04:10:36 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.9 2005/03/15 04:16:17 rocky Exp $";
 
 #include <string.h>
 
@@ -271,6 +271,7 @@ audio_read_subchannel_linux (void *p_user_data,
 {
 
   const _img_private_t *p_env = p_user_data;
+  p_subchannel->format = CDIO_CDROM_MSF;
   return ioctl(p_env->gen.fd, CDROMSUBCHNL, p_subchannel);
 }
 

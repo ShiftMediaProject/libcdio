@@ -1,5 +1,5 @@
 /*
-    $Id: solaris.c,v 1.7 2005/03/08 04:10:36 rocky Exp $
+    $Id: solaris.c,v 1.8 2005/03/15 04:16:17 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: solaris.c,v 1.7 2005/03/08 04:10:36 rocky Exp $";
+static const char _rcsid[] = "$Id: solaris.c,v 1.8 2005/03/15 04:16:17 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -181,6 +181,7 @@ audio_read_subchannel_solaris (void *p_user_data,
 {
 
   const _img_private_t *p_env = p_user_data;
+  p_subchannel->format = CDIO_CDROM_MSF;
   return ioctl(p_env->gen.fd, CDROMSUBCHNL, p_subchannel);
 }
 
