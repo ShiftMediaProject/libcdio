@@ -1,5 +1,5 @@
 0.69
-- Add interface returning drive capabilityes (cdio_get_drive_cap).
+- Add interface returning drive capabilities (cdio_get_drive_cap).
 - Minimal cdrdao image reading (thanks to Svend S. Sorensen)
 - Some important (I think) bug fixes
 - Redo types of lsn and lba to allow negative values. Should model MMC3
@@ -11,7 +11,9 @@
   via options --no-hexdump and --hexdump
 - better NRG reading (thanks to Michael Kukat via extractnrg.pl)
 - better tracking of allocated variables (cd-read, cd-info, FreeBSD)
-- Add interface to read PVD and pick out some of the fields in that.
+- iso9660: Add interface to read PVD and pick out some of the fields in that.
+  cd-info now shows more PVD info for ISO 9660 filesystems
+- cd-info: X-Box CD detection (via xbox team mediacenter)
 
 0.68
 - More honest about mode1 reading in backends. Remove some of the bogusness.
@@ -120,4 +122,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.45 2004/06/19 02:27:19 rocky Exp $
+$Id: NEWS,v 1.46 2004/06/23 02:25:37 rocky Exp $
