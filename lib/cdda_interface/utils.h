@@ -1,7 +1,7 @@
 /*
-  $Id: utils.h,v 1.4 2005/01/13 21:38:21 rocky Exp $
+  $Id: utils.h,v 1.5 2005/01/14 01:36:12 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include <cdio/bytesex.h>
 #include <stdio.h>
 
 /* I wonder how many alignment issues this is gonna trip in the
@@ -33,40 +34,19 @@ bigendianp(void)
   return(1);
 }
 
-static inline char *
-catstring(char *buff,const char *s){
-  if(s){
-    if(buff)
-      buff=realloc(buff,strlen(buff)+strlen(s)+9);
-    else
-      buff=calloc(strlen(s)+9,1);
-    strcat(buff,s);
-  }
-  return(buff);
-}
+extern char *catstring(char *buff, const char *s);
 
-static inline int32_t swap32(int32_t x){
-  return((((u_int32_t)x & 0x000000ffU) << 24) | 
-	 (((u_int32_t)x & 0x0000ff00U) <<  8) | 
-	 (((u_int32_t)x & 0x00ff0000U) >>  8) | 
-	 (((u_int32_t)x & 0xff000000U) >> 24));
-}
-
-static inline int16_t swap16(int16_t x){
-  return((((u_int16_t)x & 0x00ffU) <<  8) | 
-	 (((u_int16_t)x & 0xff00U) >>  8));
-}
 
 /*#if BYTE_ORDER == LITTLE_ENDIAN*/
 
 #ifndef WORDS_BIGENDIAN
 
 static inline int32_t be32_to_cpu(int32_t x){
-  return(swap32(x));
+  return(UINT32_SWAP_LE_BE_C(x));
 }
 
 static inline int16_t be16_to_cpu(int16_t x){
-  return(swap16(x));
+  return(UINT16_SWAP_LE_BE_C(x));
 }
 
 static inline int32_t le32_to_cpu(int32_t x){
@@ -88,11 +68,11 @@ static inline int16_t be16_to_cpu(int16_t x){
 }
 
 static inline int32_t le32_to_cpu(int32_t x){
-  return(swap32(x));
+  return(UINT32_SWAP_LE_BE_C(x));
 }
 
 static inline int16_t le16_to_cpu(int16_t x){
-  return(swap16(x));
+  return(UINT16_SWAP_LE_BE_C(x));
 }
 
 

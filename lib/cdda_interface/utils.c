@@ -1,5 +1,5 @@
 /*
-  $Id: utils.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: utils.c,v 1.2 2005/01/14 01:36:12 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -135,4 +135,16 @@ idmessage(int messagedest,char **messages,const char *f,
     }
   }
   if(malloced)free(buffer);
+}
+
+char *
+catstring(char *buff,const char *s){
+  if(s){
+    if(buff)
+      buff=realloc(buff,strlen(buff)+strlen(s)+9);
+    else
+      buff=calloc(strlen(s)+9,1);
+    strcat(buff,s);
+  }
+  return(buff);
 }

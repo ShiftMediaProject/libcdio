@@ -1,5 +1,5 @@
 /*
-  $Id: common_interface.c,v 1.7 2005/01/13 21:38:21 rocky Exp $
+  $Id: common_interface.c,v 1.8 2005/01/14 01:36:11 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
@@ -28,7 +28,6 @@
 
 #include <math.h>
 #include "common_interface.h"
-#include <cdio/bytesex.h>
 #include "utils.h"
 #include "smallft.h"
 
@@ -41,7 +40,6 @@
   portion. (Or so that's how I understand it.)
  */
 
-#if USELIBCDIO_ROUTINES
 int 
 data_bigendianp(cdrom_drive_t *d)
 {
@@ -108,9 +106,9 @@ data_bigendianp(cdrom_drive_t *d)
 	int j;
 	
 	for(j=0;j<128;j++)
-	  a[j]=UINT16_FROM_BE(buff[j*2+beginsec+460]);
+	  a[j]=le16_to_cpu(buff[j*2+beginsec+460]);
 	for(j=0;j<128;j++)
-	  b[j]=UINT16_FROM_BE(buff[j*2+beginsec+461]);
+	  b[j]=le16_to_cpu(buff[j*2+beginsec+461]);
 
 	fft_forward(128,a,NULL,NULL);
 	fft_forward(128,b,NULL,NULL);
@@ -119,10 +117,10 @@ data_bigendianp(cdrom_drive_t *d)
 	  lsb_energy+=fabs(a[j])+fabs(b[j]);
 	
 	for(j=0;j<128;j++)
-	  a[j]=UINT16_FROM_LE(buff[j*2+beginsec+460]);
+	  a[j]=be16_to_cpu(buff[j*2+beginsec+460]);
 
 	for(j=0;j<128;j++)
-	  b[j]=UINT16_FROM_LE(buff[j*2+beginsec+461]);
+	  b[j]=be16_to_cpu(buff[j*2+beginsec+461]);
 
 	fft_forward(128,a,NULL,NULL);
 	fft_forward(128,b,NULL,NULL);
@@ -173,126 +171,6 @@ data_bigendianp(cdrom_drive_t *d)
     return(-1);
   }
 }
-
-#else
-int data_bigendianp(cdrom_drive *d){
-  float lsb_votes=0;
-  float msb_votes=0;
-  int i,checked;
-  int endiancache=d->bigendianp;
-  float *a=calloc(1024,sizeof(float));
-  float *b=calloc(1024,sizeof(float));
-  long readsectors=5;
-  int16_t *buff=malloc(readsectors*CDIO_CD_FRAMESIZE_RAW);
-
-  /* look at the starts of the audio tracks */
-  /* if real silence, tool in until some static is found */
-
-  /* Force no swap for now */
-  d->bigendianp=-1;
-  
-  cdmessage(d,"\nAttempting to determine drive endianness from data...");
-  d->enable_cdda(d,1);
-  for(i=0,checked=0;i<d->tracks;i++){
-    float lsb_energy=0;
-    float msb_energy=0;
-    if(cdda_track_audiop(d,i+1)==1){
-      long firstsector=cdda_track_firstsector(d,i+1);
-      long lastsector=cdda_track_lastsector(d,i+1);
-      int zeroflag=-1;
-      long beginsec=0;
-      
-      /* find a block with nonzero data */
-      
-      while(firstsector+readsectors<=lastsector){
-	int j;
-	
-	if(d->read_audio(d,buff,firstsector,readsectors)>0){
-	  
-	  /* Avoid scanning through jitter at the edges */
-	  for(beginsec=0;beginsec<readsectors;beginsec++){
-	    int offset=beginsec*CDIO_CD_FRAMESIZE_RAW/2;
-	    /* Search *half* */
-	    for(j=460;j<128+460;j++)
-	      if(buff[offset+j]!=0){
-		zeroflag=0;
-		break;
-	      }
-	    if(!zeroflag)break;
-	  }
-	  if(!zeroflag)break;
-	  firstsector+=readsectors;
-	}else{
-	  d->enable_cdda(d,0);
-	  free(a);
-	  free(b);
-	  free(buff);
-	  return(-1);
-	}
-      }
-
-      beginsec*=CDIO_CD_FRAMESIZE_RAW/2;
-      
-      /* un-interleave for an fft */
-      if(!zeroflag){
-	int j;
-	
-	for(j=0;j<128;j++)a[j]=le16_to_cpu(buff[j*2+beginsec+460]);
-	for(j=0;j<128;j++)b[j]=le16_to_cpu(buff[j*2+beginsec+461]);
-	fft_forward(128,a,NULL,NULL);
-	fft_forward(128,b,NULL,NULL);
-	for(j=0;j<128;j++)lsb_energy+=fabs(a[j])+fabs(b[j]);
-	
-	for(j=0;j<128;j++)a[j]=be16_to_cpu(buff[j*2+beginsec+460]);
-	for(j=0;j<128;j++)b[j]=be16_to_cpu(buff[j*2+beginsec+461]);
-	fft_forward(128,a,NULL,NULL);
-	fft_forward(128,b,NULL,NULL);
-	for(j=0;j<128;j++)msb_energy+=fabs(a[j])+fabs(b[j]);
-      }
-    }
-    if(lsb_energy<msb_energy){
-      lsb_votes+=msb_energy/lsb_energy;
-      checked++;
-    }else
-      if(lsb_energy>msb_energy){
-	msb_votes+=lsb_energy/msb_energy;
-	checked++;
-      }
-
-    if(checked==5 && (lsb_votes==0 || msb_votes==0))break;
-    cdmessage(d,".");
-  }
-
-  free(buff);
-  free(a);
-  free(b);
-  d->bigendianp=endiancache;
-  d->enable_cdda(d,0);
-
-  /* How did we vote?  Be potentially noisy */
-  if(lsb_votes>msb_votes){
-    char buffer[256];
-    cdmessage(d,"\n\tData appears to be coming back little endian.\n");
-    sprintf(buffer,"\tcertainty: %d%%\n",(int)
-	    (100.*lsb_votes/(lsb_votes+msb_votes)+.5));
-    cdmessage(d,buffer);
-    return(0);
-  }else{
-    if(msb_votes>lsb_votes){
-      char buffer[256];
-      cdmessage(d,"\n\tData appears to be coming back big endian.\n");
-      sprintf(buffer,"\tcertainty: %d%%\n",(int)
-	      (100.*msb_votes/(lsb_votes+msb_votes)+.5));
-      cdmessage(d,buffer);
-      return(1);
-    }
-
-    cdmessage(d,"\n\tCannot determine CDROM drive endianness.\n");
-    return(bigendianp());
-    return(-1);
-  }
-}
-#endif
 
 /************************************************************************/
 
