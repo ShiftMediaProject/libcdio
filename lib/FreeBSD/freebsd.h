@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.4 2004/05/13 01:50:23 rocky Exp $
+    $Id: freebsd.h,v 1.5 2004/05/13 04:32:14 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -120,7 +120,7 @@ typedef struct {
   /* Track information */
   bool toc_init;                         /* if true, info below is valid. */
   struct ioc_toc_header  tochdr;
-  struct cd_toc_entry tocent[100];       /* entry info for each track */
+  struct ioc_read_toc_single_entry tocent[100]; /* entry info for each track */
 
 } _img_private_t;
 
@@ -144,9 +144,6 @@ int  read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data,
 int  read_mode2_sectors_freebsd_cam (_img_private_t *env, void *buf, 
 				     uint32_t lba, unsigned int nblocks, 
 				     bool b_form2);
-
-bool read_toc_freebsd_ioctl (_img_private_t *_obj);
-
 /*!
    Return the size of the CD in logical block address (LBA) units.
  */

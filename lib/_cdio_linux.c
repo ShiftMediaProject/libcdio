@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.45 2004/05/10 03:28:54 rocky Exp $
+    $Id: _cdio_linux.c,v 1.46 2004/05/13 04:32:12 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.45 2004/05/10 03:28:54 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.46 2004/05/13 04:32:12 rocky Exp $";
 
 #include <string.h>
 
@@ -882,7 +882,7 @@ _get_track_format_linux(void *env, track_t track_num)
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
    */
-  if (_obj->tocent[track_num-1].cdte_ctrl & CDROM_DATA_TRACK) {
+  if (_obj->tocent[track_num-1].cdte_ctrl & CDIO_CDROM_DATA_TRACK) {
     if (_obj->tocent[track_num-1].cdte_format == 0x10)
       return TRACK_FORMAT_CDI;
     else if (_obj->tocent[track_num-1].cdte_format == 0x20) 

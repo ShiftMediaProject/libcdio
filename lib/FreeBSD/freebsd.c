@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.11 2004/05/13 01:50:22 rocky Exp $
+    $Id: freebsd.c,v 1.12 2004/05/13 04:32:13 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,11 +27,13 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.11 2004/05/13 01:50:22 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.12 2004/05/13 04:32:13 rocky Exp $";
 
 #include "freebsd.h"
 
 #ifdef HAVE_FREEBSD_CDROM
+
+#include <cdio/sector.h>
 
 static access_mode_t 
 str_to_access_mode_freebsd(const char *psz_access_mode) 
@@ -190,7 +192,7 @@ _set_arg_freebsd (void *env, const char key[], const char value[])
 static bool
 _cdio_read_toc (_img_private_t *_obj) 
 {
-  struct ioc_read_toc_entry te;
+  track_t i, j;
 
   /* read TOC header */
   if ( ioctl(_obj->gen.fd, CDIOREADTOCHEADER, &_obj->tochdr) == -1 ) {
@@ -198,15 +200,25 @@ _cdio_read_toc (_img_private_t *_obj)
     return false;
   }
 
-  te.address_format = CD_LBA_FORMAT;
-  te.starting_track = 0;
-  te.data_len = (TOTAL_TRACKS+1) * sizeof(struct cd_toc_entry);
+  j=0;
+  for ( i = _obj->tochdr.starting_track; i <= _obj->tochdr.ending_track; 
+       i++, j++) {
+    _obj->tocent[j].track = i;
+    _obj->tocent[j].address_format = CD_LBA_FORMAT;
 
-  te.data = _obj->tocent;
-  
-  if ( ioctl(_obj->gen.fd, CDIOREADTOCENTRYS, &te) == -1 ) {
+    if ( ioctl(_obj->gen.fd, CDIOREADTOCENTRY, &(_obj->tocent[j]) ) ) {
+      cdio_error("%s %d: %s\n",
+		 "error in ioctl CDROMREADTOCENTRY for track", 
+		 i, strerror(errno));
+      return false;
+    }
+  }
+
+  _obj->tocent[j].track          = CDIO_CDROM_LEADOUT_TRACK;
+  _obj->tocent[j].address_format = CD_LBA_FORMAT;
+  if ( ioctl(_obj->gen.fd, CDIOREADTOCENTRY, &(_obj->tocent[j]) ) ){
     cdio_error("%s: %s\n",
-	       "error in ioctl CDROMREADTOCENTRYS for track", 
+	       "error in ioctl CDROMREADTOCENTRY for leadout track", 
 	       strerror(errno));
     return false;
   }
@@ -324,29 +336,20 @@ static track_format_t
 _get_track_format_freebsd(void *env, track_t track_num) 
 {
   _img_private_t *_obj = env;
-  struct ioc_read_subchannel subchannel;
-  struct cd_sub_channel_info subchannel_info;
 
-  subchannel.address_format = CD_LBA_FORMAT;
-  subchannel.data_format    = CD_CURRENT_POSITION;
-  subchannel.track          = track_num;
-  subchannel.data_len       = 1;
-  subchannel.data           = &subchannel_info;
-
-  if(ioctl(_obj->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
-    perror("CDIOCREADSUBCHANNEL");
-    return 1;
-  }
-  
-  if (subchannel_info.what.position.control == 0x04) {
-    if (subchannel_info.what.position.data_format == 0x10)
+  /* This is pretty much copied from the "badly broken" cdrom_count_tracks
+     in linux/cdrom.c.
+   */
+  if (_obj->tocent[track_num-1].entry.control & CDIO_CDROM_DATA_TRACK) {
+    if (_obj->tocent[track_num-1].address_format == 0x10)
       return TRACK_FORMAT_CDI;
-    else if (subchannel_info.what.position.data_format == 0x20) 
+    else if (_obj->tocent[track_num-1].address_format == 0x20) 
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;
   } else
     return TRACK_FORMAT_AUDIO;
+  
 }
 
 /*!
@@ -361,24 +364,16 @@ static bool
 _get_track_green_freebsd(void *env, track_t track_num) 
 {
   _img_private_t *_obj = env;
-  struct ioc_read_subchannel subchannel;
-  struct cd_sub_channel_info subchannel_info;
-
-  subchannel.address_format = CD_LBA_FORMAT;
-  subchannel.data_format    = CD_CURRENT_POSITION;
-  subchannel.track          = track_num;
-  subchannel.data_len       = 1;
-  subchannel.data           = &subchannel_info;
-
-  if(ioctl(_obj->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
-    perror("CDIOCREADSUBCHANNEL");
-    return 1;
-  }
   
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+
+  if (track_num > TOTAL_TRACKS+1 || track_num == 0)
+    return false;
+
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cdinfo for a while.
    */
-  return (subchannel_info.what.position.control & 2) != 0;
+  return ((_obj->tocent[track_num-1].entry.control & 2) != 0);
 }
 
 /*!  
@@ -400,7 +395,7 @@ _get_track_lba_freebsd(void *env, track_t track_num)
   if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
     return CDIO_INVALID_LBA;
   } else {
-    return _obj->tocent[track_num-1].addr.lba;
+    return cdio_lsn_to_lba(_obj->tocent[track_num-1].entry.addr.lba);
   }
 }
 

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.4 2004/05/12 20:06:10 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.5 2004/05/13 04:32:14 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.4 2004/05/12 20:06:10 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.5 2004/05/13 04:32:14 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -137,38 +137,6 @@ stat_size_freebsd_ioctl (_img_private_t *_obj)
   size = tocent.entry.addr.lba;
 
   return size;
-}
-
-/*! 
-  Read and cache the CD's Track Table of Contents and track info.
-  Return false if successful or true if an error.
-*/
-bool
-read_toc_freebsd_ioctl (_img_private_t *_obj) 
-{
-  int i;
-  struct ioc_read_toc_entry te;
-
-  /* read TOC header */
-  if ( ioctl(_obj->gen.fd, CDIOREADTOCHEADER, &_obj->tochdr) == -1 ) {
-    cdio_error("error in ioctl(CDIOREADTOCHEADER): %s\n", strerror(errno));
-    return false;
-  }
-
-  te.address_format = CD_LBA_FORMAT;
-  te.starting_track = 0;
-  te.data_len = (TOTAL_TRACKS+1) * sizeof(struct cd_toc_entry);
-
-  te.data = _obj->tocent;
-  
-  if ( ioctl(_obj->gen.fd, CDIOREADTOCENTRYS, &te) == -1 ) {
-    cdio_error("%s %d: %s\n",
-	       "error in ioctl CDROMREADTOCENTRYS for track", 
-	       i, strerror(errno));
-    return false;
-  }
-
-  return true;
 }
 
 /*!
@@ -300,4 +268,3 @@ get_track_green_freebsd_ioctl(void *env, track_t track_num)
 }
 
 #endif /* HAVE_FREEBSD_CDROM */
-
