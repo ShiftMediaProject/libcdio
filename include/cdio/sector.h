@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.28 2004/08/30 01:01:14 rocky Exp $
+    $Id: sector.h,v 1.29 2004/12/04 11:50:40 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -97,7 +97,8 @@ typedef enum {
         CDIO_DISC_MODE_DVD_PRW,         /**< DVD+RW */
         CDIO_DISC_MODE_DVD_OTHER,       /**< Unknown/unclassified DVD type */
         CDIO_DISC_MODE_NO_INFO,
-        CDIO_DISC_MODE_ERROR
+        CDIO_DISC_MODE_ERROR,
+	CDIO_DISC_MODE_CD_I	        /**< CD-i. */
 } discmode_t;
 
 /*! Information that can be obtained through a Read Subchannel
@@ -291,6 +292,7 @@ static inline bool discmode_is_cd(discmode_t discmode)
   case CDIO_DISC_MODE_CD_DATA:
   case CDIO_DISC_MODE_CD_XA:
   case CDIO_DISC_MODE_CD_MIXED:
+  case CDIO_DISC_MODE_CD_I:
     return true;
   default: 
     return false;

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.75 2004/10/26 01:21:05 rocky Exp $
+    $Id: cdio.c,v 1.76 2004/12/04 11:50:40 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.75 2004/10/26 01:21:05 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.76 2004/12/04 11:50:40 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -61,7 +61,8 @@ const char *discmode2str[] = {
   "DVD+RW", 
   "Unknown/unclassified DVD", 
   "No information",
-  "Error in getting information"
+  "Error in getting information",
+  "CD-i" 
 };
 
 

@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.33 2004/09/04 23:49:47 rocky Exp $
+    $Id: scsi_mmc.h,v 1.34 2004/12/04 11:50:40 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -360,23 +360,22 @@ int scsi_mmc_run_cmd( const CdIo *p_cdio, unsigned int i_timeout_ms,
 		      const scsi_mmc_cdb_t *p_cdb,
 		      scsi_mmc_direction_t e_direction, unsigned int i_buf, 
 		      /*in/out*/ void *p_buf );
-
 /*!
  * Eject using SCSI MMC commands. Return 0 if successful.
  */
 int scsi_mmc_eject_media( const CdIo *p_cdio);
 
-/*! Packet driver to read mode2 sectors. 
-   Can read only up to 25 blocks.
-*/
-int scsi_mmc_read_sectors ( const CdIo *p_cdio, void *p_buf, lba_t lba, 
-			    int sector_type, unsigned int nblocks);
+/*! 
+  Return the discmode as reported by the SCSI-MMC Read (FULL) TOC
+  command.
 
-/*!
-  Set the block size for subsequest read requests, via a SCSI MMC 
-  MODE_SELECT 6 command.
+  Information was obtained from Section 5.1.13 (Read TOC/PMA/ATIP)
+  pages 56-62 from the SCSI MMC draft specification, revision 10a
+  at http://www.t10.org/ftp/t10/drafts/mmc/mmc-r10a.pdf See
+  especially tables 72, 73 and 75.
  */
-int scsi_mmc_set_blocksize ( const CdIo *p_cdio, unsigned int bsize);
+discmode_t scsi_mmc_get_discmode( const CdIo *p_cdio );
+
 
 /*!
   Return the the kind of drive capabilities of device.
@@ -411,5 +410,17 @@ bool scsi_mmc_get_hwinfo ( const CdIo *p_cdio,
   
 */
 char *scsi_mmc_get_mcn ( const CdIo *p_cdio );
+
+/*! Packet driver to read mode2 sectors. 
+   Can read only up to 25 blocks.
+*/
+int scsi_mmc_read_sectors ( const CdIo *p_cdio, void *p_buf, lba_t lba, 
+			    int sector_type, unsigned int nblocks);
+
+/*!
+  Set the block size for subsequest read requests, via a SCSI MMC 
+  MODE_SELECT 6 command.
+ */
+int scsi_mmc_set_blocksize ( const CdIo *p_cdio, unsigned int bsize);
 
 #endif /* __SCSI_MMC_H__ */

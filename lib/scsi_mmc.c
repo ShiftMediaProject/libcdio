@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.30 2004/10/31 17:18:08 rocky Exp $
+    $Id: scsi_mmc.c,v 1.31 2004/12/04 11:50:40 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -39,6 +39,42 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+
+/*! 
+  Return the discmode as reported by the SCSI-MMC Read (FULL) TOC
+  command.
+
+  Information was obtained from Section 5.1.13 (Read TOC/PMA/ATIP)
+  pages 56-62 from the SCSI MMC draft specification, revision 10a
+  at http://www.t10.org/ftp/t10/drafts/mmc/mmc-r10a.pdf See
+  especially tables 72, 73 and 75.
+ */
+discmode_t
+scsi_mmc_get_discmode( const CdIo *p_cdio )
+
+{
+  uint8_t buf[14] = { 0, };
+  scsi_mmc_cdb_t cdb;
+
+  memset(&cdb, 0, sizeof(scsi_mmc_cdb_t));
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
+  cdb.field[2] = CDIO_MMC_READTOC_FMT_FULTOC;
+  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
+  scsi_mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), buf);
+  if (buf[7] == 0xA0) {
+    if (buf[13] == 0x00) {
+      if (buf[5] & 0x04) 
+	return CDIO_DISC_MODE_CD_DATA;
+      else 
+	return CDIO_DISC_MODE_CD_DA;
+    }
+    else if (buf[13] == 0x10)
+      return CDIO_DISC_MODE_CD_I;
+    else if (buf[13] == 0x20) 
+    return CDIO_DISC_MODE_CD_XA;
+  }
+  return CDIO_DISC_MODE_NO_INFO;
+}
 
 /*!
   On input a MODE_SENSE command was issued and we have the results
@@ -121,21 +157,21 @@ scsi_mmc_run_cmd( const CdIo *p_cdio, unsigned int i_timeout_ms,
  * Eject using SCSI MMC commands. Return 0 if successful.
  */
 int 
-scsi_mmc_eject_media( const CdIo *cdio )
+scsi_mmc_eject_media( const CdIo *p_cdio )
 {
   int i_status;
   scsi_mmc_cdb_t cdb = {{0, }};
   uint8_t buf[1];
   scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd;
 
-  if ( ! cdio || ! cdio->op.run_scsi_mmc_cmd )
+  if ( ! p_cdio || ! p_cdio->op.run_scsi_mmc_cmd )
     return -2;
 
-  run_scsi_mmc_cmd = cdio->op.run_scsi_mmc_cmd;
+  run_scsi_mmc_cmd = p_cdio->op.run_scsi_mmc_cmd;
   
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
 
-  i_status = run_scsi_mmc_cmd (cdio->env, DEFAULT_TIMEOUT_MS,
+  i_status = run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
 			       scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
 			       SCSI_MMC_DATA_WRITE, 0, &buf);
   if (0 != i_status)
@@ -143,7 +179,7 @@ scsi_mmc_eject_media( const CdIo *cdio )
   
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
   cdb.field[4] = 1;
-  i_status = run_scsi_mmc_cmd (cdio->env, DEFAULT_TIMEOUT_MS,
+  i_status = run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
 			       scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
 			       SCSI_MMC_DATA_WRITE, 0, &buf);
   if (0 != i_status)
@@ -152,7 +188,7 @@ scsi_mmc_eject_media( const CdIo *cdio )
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
   cdb.field[4] = 2; /* eject */
 
-  return run_scsi_mmc_cmd (cdio->env, DEFAULT_TIMEOUT_MS,
+  return run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
 			   scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
 			   SCSI_MMC_DATA_WRITE, 0, &buf);
   
@@ -162,17 +198,17 @@ scsi_mmc_eject_media( const CdIo *cdio )
    Can read only up to 25 blocks.
 */
 int
-scsi_mmc_read_sectors ( const CdIo *cdio, void *p_buf, lba_t lba, 
+scsi_mmc_read_sectors ( const CdIo *p_cdio, void *p_buf, lba_t lba, 
 			int sector_type, unsigned int nblocks )
 {
   scsi_mmc_cdb_t cdb = {{0, }};
 
   scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd;
 
-  if ( ! cdio || ! cdio->op.run_scsi_mmc_cmd )
+  if ( ! p_cdio || ! p_cdio->op.run_scsi_mmc_cmd )
     return -2;
 
-  run_scsi_mmc_cmd = cdio->op.run_scsi_mmc_cmd;
+  run_scsi_mmc_cmd = p_cdio->op.run_scsi_mmc_cmd;
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
   CDIO_MMC_SET_READ_TYPE    (cdb.field, sector_type);
@@ -181,7 +217,7 @@ scsi_mmc_read_sectors ( const CdIo *cdio, void *p_buf, lba_t lba,
   CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb.field, 
 					   CDIO_MMC_MCSB_ALL_HEADERS);
 
-  return run_scsi_mmc_cmd (cdio->env, DEFAULT_TIMEOUT_MS,
+  return run_scsi_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
 			   scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
 			   SCSI_MMC_DATA_READ, 
 			   CDIO_CD_FRAMESIZE_RAW * nblocks,
