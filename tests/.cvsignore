@@ -1,5 +1,6 @@
 Makefile
 Makefile.in
+check_cue.sh
 *.dump
 *.cue
 *.bin
