@@ -1,9 +1,13 @@
-AC_REVISION([$Id: configure.ac,v 1.2 2003/03/29 17:32:00 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.3 2003/03/30 01:11:56 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.1)
      
 AM_SANITY_CHECK
+
+AC_ARG_WITH(cdinfo,
+	[  --without-cdinfo  enable cli frontend (enabled by default)], 
+	enable_cdinfo="${withval}", enable_cdinfo=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -37,7 +41,7 @@ dnl We use a perl for documentation and regression tests
 AC_PATH_PROG(PERL, perl, no)
 AC_SUBST(PERL)dnl
 
-dnl AM_PATH_LIBPOPT(, [enable_cli_fe=no; enable_xml_fe=no])
+AM_PATH_LIBPOPT(, [enable_cdinfo=no])
 
 dnl headers
 
@@ -118,6 +122,7 @@ LIBS="$LIBS -lm"
 CFLAGS="$CFLAGS $WARN_CFLAGS"
 
 AM_CONDITIONAL(CYGWIN, test "x$CYGWIN" = "xyes")
+AM_CONDITIONAL(BUILD_CDINFO, test "x$enable_cdinfo" = "xyes")
 AM_CONDITIONAL(BUILD_CDINFO_LINUX, test "x$enable_cdinfo_linux" = "xyes")
 AM_CONDITIONAL(BUILD_CDIOTEST, test "x$enable_cdiotest" = "xyes")
 

@@ -103,8 +103,8 @@ do
 	echo "Running libtoolize..."
 	libtoolize --force --copy
       fi
-      echo "Running aclocal $aclocalinclude ..."
-      aclocal $aclocalinclude
+      echo "Running aclocal -I . $aclocalinclude ..."
+      aclocal -I . $aclocalinclude
       if grep "^AM_CONFIG_HEADER" configure.ac >/dev/null; then
 	echo "Running autoheader..."
 	autoheader

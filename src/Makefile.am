@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.2 2003/03/29 17:32:00 rocky Exp $
+#   $Id: Makefile.am,v 1.3 2003/03/30 01:11:56 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -19,22 +19,20 @@
 ####################################################
 # Things to make the sample/test programs
 ####################################################
+if BUILD_CDINFO
+cdinfo_SOURCES = cdinfo.c
+cdinfo_LDADD = $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
 if BUILD_CDINFO_LINUX
-bin_PROGRAMS = cdinfo cdinfo-linux
 cdinfo_linux_SOURCES = cdinfo-linux.c
-cdinfo_linux_LDADD = $(LIBCDIO_LIBS) -lpopt
+cdinfo_linux_LDADD = $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
+bin_PROGRAMS = cdinfo cdinfo-linux
 else
-EXTRA_DIST = cdinfo-linux.c
-if BUILD_CDIOTEST
-bin_PROGRAMS = cdinfo cdiotest
-cdiotest_SOURCES = cdiotest.c
-cdiotest_LDADD = $(LIBCDIO_LIBS)
-else 
 bin_PROGRAMS = cdinfo
+EXTRA_DIST = cdinfo-linux.c
 endif
+else 
+EXTRA_DIST = cdinfo-linux.c cdinfo.c
 endif
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
-cdinfo_SOURCES = cdinfo.c
-cdinfo_LDADD = $(LIBCDIO_LIBS) -lpopt
