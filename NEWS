@@ -2,7 +2,7 @@
 -  create libiso9660 library and install that.
 -  More sample programs.
 -  add library routine cdio_guess_cd_type to analyze/guess what type of 
--  CD or CD image we've got.
+   CD or CD image we've got.
 
 0.62
 -  Some minimal documentation. More will follow.
