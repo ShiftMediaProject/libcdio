@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.57 2004/07/22 09:52:17 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.58 2004/07/23 02:23:49 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.57 2004/07/22 09:52:17 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.58 2004/07/23 02:23:49 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -65,8 +65,11 @@ static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.57 2004/07/22 09:52:17 rock
 #include <sys/ioctl.h>
 #include "cdtext_private.h"
 
-#define TOTAL_TRACKS    (env->tochdr.cdth_trk1)
-#define FIRST_TRACK_NUM (env->tochdr.cdth_trk0)
+/* Number of seconds we wait for a SCSI MMC command to complete. */
+#define DEFAULT_TIMEOUT 30
+
+#define TOTAL_TRACKS    (p_env->tochdr.cdth_trk1)
+#define FIRST_TRACK_NUM (p_env->tochdr.cdth_trk0)
 
 /* reader */
 
@@ -93,6 +96,7 @@ typedef struct {
 
   access_mode_t access_mode;
   bool b_cdtext_init;
+  bool b_cdtext_error;
 
   /* Some of the more OS specific things. */
   cdtext_t      cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/
@@ -123,7 +127,7 @@ str_to_access_mode_sunos(const char *psz_access_mode)
   Initialize CD device.
  */
 static bool
-_cdio_init (_img_private_t *env)
+init_solaris (_img_private_t *env)
 {
 
   if (!cdio_generic_init(env)) return false;
@@ -131,6 +135,44 @@ _cdio_init (_img_private_t *env)
   env->access_mode = _AM_SUN_CTRL_SCSI;    
 
   return true;
+}
+
+/*!
+  Run a SCSI MMC command. 
+ 
+  cdio	        CD structure set by cdio_open().
+  i_timeout     time in milliseconds we will wait for the command
+                to complete. If this value is -1, use the default 
+		time-out value.
+  p_buf	        Buffer for data, both sending and receiving
+  i_buf	        Size of buffer
+  e_direction	direction the transfer is to go.
+  cdb	        CDB bytes. All values that are needed should be set on 
+                input. We'll figure out what the right CDB length should be.
+
+  We return true if command completed successfully and false if not.
+ */
+static int
+scsi_mmc_run_cmd_solaris( const void *p_user_data, int i_timeout,
+			  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+			  scsi_mmc_direction_t e_direction, 
+			  unsigned int i_buf, /*out*/ void *p_buf )
+{
+  const _img_private_t *p_env = p_user_data;
+  struct uscsi_cmd cgc;
+
+  memset (&cgc, 0, sizeof (struct uscsi_cmd));
+  cgc.uscsi_cdb = (caddr_t) p_cdb;
+
+  cgc.uscsi_flags = SCSI_MMC_DATA_READ == e_direction ? 
+    USCSI_READ : USCSI_WRITE;
+
+  cgc.uscsi_timeout = i_timeout; /* # of seconds for completion */
+  cgc.uscsi_bufaddr = p_buf;   
+  cgc.uscsi_buflen  = i_buf;
+  cgc.uscsi_cdblen  = i_cdb;
+  
+  return ioctl(p_env->gen.fd, USCSICMD, &cgc);
 }
 
 /*!
@@ -142,7 +184,7 @@ _cdio_init (_img_private_t *env)
 */
 
 static int
-_read_audio_sectors_solaris (void *user_data, void *data, lsn_t lsn, 
+_read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -150,7 +192,7 @@ _read_audio_sectors_solaris (void *user_data, void *data, lsn_t lsn,
   msf_t _msf;
   struct cdrom_cdda cdda;
 
-  _img_private_t *env = user_data;
+  _img_private_t *env = p_user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
   msf->cdmsf_min0   = from_bcd8(_msf.m);
@@ -207,17 +249,17 @@ _read_mode1_sector_solaris (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode1_sectors_solaris (void *user_data, void *data, lsn_t lsn, 
+_read_mode1_sectors_solaris (void *p_user_data, void *p_data, lsn_t lsn, 
 			     bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   unsigned int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _read_mode1_sector_solaris (env, 
-					    ((char *)data) + (blocksize * i),
+    if ( (retval = _read_mode1_sector_solaris (p_env, 
+					    ((char *)p_data) + (blocksize * i),
 					       lsn + i, b_form2)) )
       return retval;
   }
@@ -229,7 +271,7 @@ _read_mode1_sectors_solaris (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sector_solaris (void *user_data, void *data, lsn_t lsn, 
+_read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t lsn, 
 			    bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -238,27 +280,27 @@ _read_mode2_sector_solaris (void *user_data, void *data, lsn_t lsn,
   int offset = 0;
   struct cdrom_cdxa cd_read;
 
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
   msf->cdmsf_min0 = from_bcd8(_msf.m);
   msf->cdmsf_sec0 = from_bcd8(_msf.s);
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
   
-  if (env->gen.ioctls_debugged == 75)
+  if (p_env->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
   
-  if (env->gen.ioctls_debugged == 30 * 75)
+  if (p_env->gen.ioctls_debugged == 30 * 75)
     cdio_debug ("only displaying every 30*75th ioctl from now on");
   
-  if (env->gen.ioctls_debugged < 75 
-      || (env->gen.ioctls_debugged < (30 * 75)  
-	  && env->gen.ioctls_debugged % 75 == 0)
-      || env->gen.ioctls_debugged % (30 * 75) == 0)
+  if (p_env->gen.ioctls_debugged < 75 
+      || (p_env->gen.ioctls_debugged < (30 * 75)  
+	  && p_env->gen.ioctls_debugged % 75 == 0)
+      || p_env->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %2.2d:%2.2d:%2.2d",
 	       msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
   
-  env->gen.ioctls_debugged++;
+  p_env->gen.ioctls_debugged++;
   
   /* Using CDROMXA ioctl will actually use the same uscsi command
    * as ATAPI, except we don't need to be root
@@ -268,16 +310,16 @@ _read_mode2_sector_solaris (void *user_data, void *data, lsn_t lsn,
   cd_read.cdxa_data = buf;
   cd_read.cdxa_length = 1;
   cd_read.cdxa_format = CDROM_XA_SECTOR_DATA;
-  if (ioctl (env->gen.fd, CDROMCDXA, &cd_read) == -1) {
+  if (ioctl (p_env->gen.fd, CDROMCDXA, &cd_read) == -1) {
     perror ("ioctl(..,CDROMCDXA,..)");
     return 1;
     /* exit (EXIT_FAILURE); */
   }
   
   if (b_form2)
-    memcpy (data, buf + (offset-CDIO_CD_SUBHEADER_SIZE), M2RAW_SECTOR_SIZE);
+    memcpy (p_data, buf + (offset-CDIO_CD_SUBHEADER_SIZE), M2RAW_SECTOR_SIZE);
   else
-    memcpy (((char *)data), buf + offset, CDIO_CD_FRAMESIZE);
+    memcpy (((char *)p_data), buf + offset, CDIO_CD_FRAMESIZE);
   
   return 0;
 }
@@ -288,10 +330,10 @@ _read_mode2_sector_solaris (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors_solaris (void *user_data, void *data, lsn_t lsn, 
+_read_mode2_sectors_solaris (void *p_user_data, void *data, lsn_t lsn, 
 			     bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *env = p_user_data;
   unsigned int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
@@ -310,9 +352,9 @@ _read_mode2_sectors_solaris (void *user_data, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_cdio_stat_size (void *user_data)
+_cdio_stat_size (void *p_user_data)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *env = p_user_data;
 
   struct cdrom_tocentry tocent;
   uint32_t size;
@@ -339,9 +381,9 @@ _cdio_stat_size (void *user_data)
   0 is returned if no error was found, and nonzero if there as an error.
 */
 static int
-_set_arg_solaris (void *user_data, const char key[], const char value[])
+_set_arg_solaris (void *p_user_data, const char key[], const char value[])
 {
-  _img_private_t *env = user_data;
+  _img_private_t *env = p_user_data;
 
   if (!strcmp (key, "source"))
     {
@@ -407,12 +449,12 @@ _cdio_read_toc (_img_private_t *env)
 }
 
 static void
-set_cdtext_field_solaris(void *user_data, track_t i_track, 
+set_cdtext_field_solaris(void *p_user_data, track_t i_track, 
 		       track_t i_first_track,
 		       cdtext_field_t e_field, const char *psz_value)
 {
   char **pp_field;
-  _img_private_t *env = user_data;
+  _img_private_t *env = p_user_data;
   
   if( i_track == 0 )
     pp_field = &(env->cdtext.field[e_field]);
@@ -430,39 +472,30 @@ set_cdtext_field_solaris(void *user_data, track_t i_track,
   not exist.
 */
 static bool
-_init_cdtext_solaris (_img_private_t *env)
+_init_cdtext_solaris (_img_private_t *p_env)
 {
 
-  int             status;
+  scsi_mmc_cdb_t  cdb = {{0, }};
   char            wdata[5000] = { 0, };
-  struct uscsi_cmd my_cmd;
-  unsigned char my_rq_buf[26] = { 0, };
-
-  /* Sizes for command descriptor buffer (CDB) are set by the SCSI opcode. 
-     The size for READ TOC is 10. */
-  unsigned char scsi_cdb[10] = {0, }; 
+  int             i_status;
 
   /* Operation code */
-  CDIO_MMC_SET_COMMAND(scsi_cdb, CDIO_MMC_GPCMD_READ_TOC);
-  scsi_cdb[1] = 0x02;   /* MSF mode */
-  scsi_cdb[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
-  CDIO_MMC_SET_READ_LENGTH( scsi_cdb, sizeof(wdata) );
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
 
-  my_cmd.uscsi_flags = (USCSI_READ|USCSI_RQENABLE);  /* We're going get data */
-  my_cmd.uscsi_timeout = 30;          /* # of seconds for completion */
-  my_cmd.uscsi_cdb = scsi_cdb;        /* We'll be using the array above for the CDB */
-  my_cmd.uscsi_bufaddr = wdata;   
-  my_cmd.uscsi_buflen = sizeof(wdata); 
-  my_cmd.uscsi_cdblen = sizeof(scsi_cdb);
-  my_cmd.uscsi_rqlen =  24;        /* The request sense buffer (only valid on a check condition) is 26 bytes long */
-  my_cmd.uscsi_rqbuf = my_rq_buf;        /* Pointer to the request sense buffer */
-  
-  status = ioctl(env->gen.fd, USCSICMD, &my_cmd);
-  if(status != 0) {
-    cdio_warn ("CDTEXT reading failed: %s\n", strerror(errno));  
+  /* Format */
+  cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
+
+  errno = 0;
+  i_status = scsi_mmc_run_cmd_solaris (p_env, DEFAULT_TIMEOUT,
+				       scsi_mmc_get_cmd_len(cdb.field[0]), 
+				       &cdb, SCSI_MMC_DATA_READ, 
+				       sizeof(wdata), &wdata);
+
+  if(i_status != 0) {
+    cdio_info ("CD-TEXT reading failed: %s\n", strerror(errno));  
     return false;
   } else {
-    return cdtext_data_init(env, FIRST_TRACK_NUM, wdata, 
+    return cdtext_data_init(p_env, FIRST_TRACK_NUM, wdata, 
 			    set_cdtext_field_solaris);
   }
 }
@@ -475,22 +508,22 @@ _init_cdtext_solaris (_img_private_t *env)
   or CD-TEXT information does not exist.
 */
 static const cdtext_t *
-_get_cdtext_solaris (void *user_data, track_t i_track)
+_get_cdtext_solaris (void *p_user_data, track_t i_track)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
-  if ( NULL == env ||
+  if ( NULL == p_env ||
        (0 != i_track 
        && i_track >= TOTAL_TRACKS+FIRST_TRACK_NUM ) )
     return NULL;
 
-  env->b_cdtext_init = _init_cdtext_solaris(env);
-  if (!env->b_cdtext_init) return NULL;
+  p_env->b_cdtext_init = _init_cdtext_solaris(p_env);
+  if (!p_env->b_cdtext_init) return NULL;
 
   if (0 == i_track) 
-    return &(env->cdtext);
+    return &(p_env->cdtext);
   else 
-    return &(env->cdtext_track[i_track-FIRST_TRACK_NUM]);
+    return &(p_env->cdtext_track[i_track-FIRST_TRACK_NUM]);
 }
 
 /*!
@@ -498,9 +531,9 @@ _get_cdtext_solaris (void *user_data, track_t i_track)
   also free obj.
  */
 static int 
-_eject_media_solaris (void *user_data) {
+_eject_media_solaris (void *p_user_data) {
 
-  _img_private_t *env = user_data;
+  _img_private_t *env = p_user_data;
   int ret;
 
   close(env->gen.fd);
@@ -537,9 +570,9 @@ _cdio_malloc_and_zero(size_t size) {
   Return the value associated with the key "arg".
 */
 static const char *
-_get_arg_solaris (void *user_data, const char key[])
+_get_arg_solaris (void *p_user_data, const char key[])
 {
-  _img_private_t *env = user_data;
+  _img_private_t *env = p_user_data;
 
   if (!strcmp (key, "source")) {
     return env->gen.source_name;
@@ -595,38 +628,29 @@ cdio_get_default_device_solaris(void)
 
  */
 static void
-_get_drive_cap_solaris (const void *user_data,
+_get_drive_cap_solaris (const void *p_user_data,
 			/*out*/ cdio_drive_read_cap_t  *p_read_cap,
 			/*out*/ cdio_drive_write_cap_t *p_write_cap,
 			/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
-  const _img_private_t *env = user_data;
-  int status;
-  struct uscsi_cmd my_cmd;
-  uint8_t buf[192] = { 0, };
-  unsigned char my_rq_buf[26] = {0, };
+  const _img_private_t *p_env = p_user_data;
+  
+  scsi_mmc_cdb_t cdb = {{0, }};
+  int i_status;
 
-  /* Sizes for command descriptor buffer (CDB) are set by the SCSI opcode. 
-     The size for MODE SENSE 10. */
-  unsigned char scsi_cdb[10] = {0, };
+  uint8_t buf[192] = { 0, };
   
-  CDIO_MMC_SET_COMMAND(scsi_cdb, CDIO_MMC_GPCMD_MODE_SENSE_10);
-  scsi_cdb[1] = 0x0;  
-  scsi_cdb[2] = CDIO_MMC_ALL_PAGES; 
-  scsi_cdb[7] = 0x01;
-  scsi_cdb[8] = 0x00;
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_10);
+  cdb.field[1] = 0x0;  
+  cdb.field[2] = CDIO_MMC_ALL_PAGES; 
+  cdb.field[7] = 0x01;
+  cdb.field[8] = 0x00;
   
-  my_cmd.uscsi_flags = (USCSI_READ|USCSI_RQENABLE);  /* We're going get data */
-  my_cmd.uscsi_timeout = 15;             /* Allow 15 seconds for completion */
-  my_cmd.uscsi_cdb = scsi_cdb;        /* We'll be using the array above for the CDB */
-  my_cmd.uscsi_bufaddr = buf;   /* The block and page data is stored here */
-  my_cmd.uscsi_buflen = sizeof(buf); 
-  my_cmd.uscsi_cdblen = sizeof(scsi_cdb); 
-  my_cmd.uscsi_rqlen =  24;              /* The request sense buffer (only valid on a check condition) is 26 bytes long */
-  my_cmd.uscsi_rqbuf = my_rq_buf;        /* Pointer to the request sense buffer */
-  
-  status = ioctl(env->gen.fd, USCSICMD, &my_cmd);
-  if (status == 0) {
+  i_status = scsi_mmc_run_cmd_solaris (p_env, DEFAULT_TIMEOUT,
+				       scsi_mmc_get_cmd_len(cdb.field[0]), 
+				       &cdb, SCSI_MMC_DATA_READ, 
+				       sizeof(buf), &buf);
+  if (0 == i_status) {
     uint8_t *p;
     int lenData  = ((unsigned int)buf[0] << 8) + buf[1];
     uint8_t *pMax = buf + 256;
@@ -673,40 +697,25 @@ _get_drive_cap_solaris (const void *user_data,
 
  */
 static char *
-_get_mcn_solaris (const void *user_data)
+_get_mcn_solaris (const void *p_user_data)
 {
-  const _img_private_t *env = user_data;
-  struct uscsi_cmd my_cmd;
-  char buf[192] = { 0, };
-  unsigned char my_rq_buf[32] = {0, };
-  int rc;
+  const _img_private_t *p_env = p_user_data;
+  scsi_mmc_cdb_t cdb = {{0, }};
 
-  /* Sizes for command descriptor buffer (CDB) are set by the SCSI opcode. 
-     The size for READ SUBCHANNEL is 10. */
-  unsigned char scsi_cdb[10] = {0, };
+  char buf[192] = { 0, };
+  int i_status;
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
+  cdb.field[1] = 0x0;  
+  cdb.field[2] = 0x40; 
+  cdb.field[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
+  cdb.field[8] = 28; 
   
-  CDIO_MMC_SET_COMMAND(scsi_cdb, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
-  scsi_cdb[1] = 0x0;  
-  scsi_cdb[2] = 0x40; 
-  scsi_cdb[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
-  scsi_cdb[4] = 0;    /* Not used */
-  scsi_cdb[5] = 0;    /* Not used */
-  scsi_cdb[6] = 0;    /* Not used */
-  scsi_cdb[7] = 0;    /* Not used */
-  scsi_cdb[8] = 28; 
-  scsi_cdb[9] = 0;    /* Not used */
-  
-  my_cmd.uscsi_flags = (USCSI_READ|USCSI_RQENABLE);  /* We're going get data */
-  my_cmd.uscsi_timeout = 15;          /* Allow 15 seconds for completion */
-  my_cmd.uscsi_cdb = scsi_cdb;        /* We'll be using the array above for the CDB */
-  my_cmd.uscsi_bufaddr = buf;   /* The block and page data is stored here */
-  my_cmd.uscsi_buflen = sizeof(buf); 
-  my_cmd.uscsi_cdblen = sizeof(scsi_cdb);
-  my_cmd.uscsi_rqlen =  24;              /* The request sense buffer (only valid on a check condition) is 26 bytes long */
-  my_cmd.uscsi_rqbuf = my_rq_buf;        /* Pointer to the request sense buffer */
-  
-  rc = ioctl(env->gen.fd, USCSICMD, &my_cmd);
-  if(rc == 0) {
+  i_status = scsi_mmc_run_cmd_solaris (p_env, DEFAULT_TIMEOUT,
+				       scsi_mmc_get_cmd_len(cdb.field[0]), 
+				       &cdb, SCSI_MMC_DATA_READ, 
+				       sizeof(buf), &buf);
+  if(i_status == 0) {
     return strdup(&buf[9]);
   }
   return NULL;
@@ -718,11 +727,11 @@ _get_mcn_solaris (const void *user_data)
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_cdio_get_first_track_num(void *user_data) 
+_cdio_get_first_track_num(void *p_user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   
-  if (!env->gen.toc_init) _cdio_read_toc (env) ;
+  if (!p_env->gen.toc_init) _cdio_read_toc (p_env) ;
 
   return FIRST_TRACK_NUM;
 }
@@ -732,9 +741,9 @@ _cdio_get_first_track_num(void *user_data)
   Return the number of tracks in the current medium.
 */
 static track_t
-_cdio_get_num_tracks(void *user_data)
+_cdio_get_num_tracks(void *p_user_data)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   
   return TOTAL_TRACKS;
 }
@@ -743,9 +752,9 @@ _cdio_get_num_tracks(void *user_data)
   Get format of track. 
 */
 static track_format_t
-_cdio_get_track_format(void *user_data, track_t i_track) 
+_cdio_get_track_format(void *p_user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   
   if ( (i_track > TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM)
     return TRACK_FORMAT_ERROR;
@@ -755,10 +764,10 @@ _cdio_get_track_format(void *user_data, track_t i_track)
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
    */
-  if (env->tocent[i_track].cdte_ctrl & CDROM_DATA_TRACK) {
-    if (env->tocent[i_track].cdte_format == CDIO_CDROM_CDI_TRACK)
+  if (p_env->tocent[i_track].cdte_ctrl & CDROM_DATA_TRACK) {
+    if (p_env->tocent[i_track].cdte_format == CDIO_CDROM_CDI_TRACK)
       return TRACK_FORMAT_CDI;
-    else if (env->tocent[i_track].cdte_format == CDIO_CDROM_XA_TRACK) 
+    else if (p_env->tocent[i_track].cdte_format == CDIO_CDROM_XA_TRACK) 
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;
@@ -776,12 +785,12 @@ _cdio_get_track_format(void *user_data, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *user_data, track_t i_track) 
+_cdio_get_track_green(void *p_user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   
-  if (!env->gen.init) _cdio_init(env);
-  if (!env->gen.toc_init) _cdio_read_toc (env) ;
+  if (!p_env->gen.init) init_solaris(p_env);
+  if (!p_env->gen.toc_init) _cdio_read_toc (p_env) ;
 
   if (i_track >= TOTAL_TRACKS+FIRST_TRACK_NUM || i_track < FIRST_TRACK_NUM)
     return false;
@@ -791,7 +800,7 @@ _cdio_get_track_green(void *user_data, track_t i_track)
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cd-info for a while.
    */
-  return ((env->tocent[i_track].cdte_ctrl & 2) != 0);
+  return ((p_env->tocent[i_track].cdte_ctrl & 2) != 0);
 }
 
 /*!  
@@ -804,14 +813,14 @@ _cdio_get_track_green(void *user_data, track_t i_track)
   False is returned if there is no entry.
 */
 static bool
-_cdio_get_track_msf(void *user_data, track_t i_track, msf_t *msf)
+_cdio_get_track_msf(void *p_user_data, track_t i_track, msf_t *msf)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (NULL == msf) return false;
 
-  if (!env->gen.init) _cdio_init(env);
-  if (!env->gen.toc_init) _cdio_read_toc (env) ;
+  if (!p_env->gen.init) init_solaris(p_env);
+  if (!p_env->gen.toc_init) _cdio_read_toc (p_env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) 
     i_track = TOTAL_TRACKS + FIRST_TRACK_NUM;
@@ -819,7 +828,7 @@ _cdio_get_track_msf(void *user_data, track_t i_track, msf_t *msf)
   if (i_track > (TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM) {
     return false;
   } else {
-    struct cdrom_tocentry *msf0 = &env->tocent[i_track-1];
+    struct cdrom_tocentry *msf0 = &p_env->tocent[i_track-1];
     msf->m = to_bcd8(msf0->cdte_addr.msf.minute);
     msf->s = to_bcd8(msf0->cdte_addr.msf.second);
     msf->f = to_bcd8(msf0->cdte_addr.msf.frame);
@@ -914,6 +923,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
     .read_mode1_sectors = _read_mode1_sectors_solaris,
     .read_mode2_sector  = _read_mode2_sector_solaris,
     .read_mode2_sectors = _read_mode2_sectors_solaris,
+    .run_scsi_mmc_cmd   = scsi_mmc_run_cmd_solaris,
     .stat_size          = _cdio_stat_size,
     .set_arg            = _set_arg_solaris
   };
@@ -924,6 +934,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _data->gen.init       = false;
   _data->gen.fd         = -1;
   _data->b_cdtext_init  = false;
+  _data->b_cdtext_error = false;
 
   if (NULL == psz_orig_source) {
     psz_source = cdio_get_default_device_solaris();
@@ -945,7 +956,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;
 
-  if (_cdio_init(_data))
+  if (init_solaris(_data))
     return ret;
   else {
     cdio_generic_free (_data);
