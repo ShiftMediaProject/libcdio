@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.27 2003/10/02 02:59:57 rocky Exp $
+    $Id: cdio.h,v 1.28 2003/10/03 01:12:23 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -406,6 +406,8 @@ extern "C" {
   
   char * cdio_get_default_device_win32(void);
 
+  char **cdio_get_devices_win32(void);
+  
   /*! Nero CD disk-image routines. 
      NULL is returned on error.
    */

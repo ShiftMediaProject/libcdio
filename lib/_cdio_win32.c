@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.14 2003/09/25 09:38:16 rocky Exp $
+    $Id: _cdio_win32.c,v 1.15 2003/10/03 01:11:48 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.14 2003/09/25 09:38:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.15 2003/10/03 01:11:48 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -1009,6 +1009,48 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
 #endif /* HAVE_WIN32_CDROM */
 
 /*!
+  Return an array of strings giving possible CD devices.
+ */
+char **
+cdio_get_devices_win32 (void)
+{
+#ifndef HAVE_WIN32_CDROM
+  return NULL;
+#else
+  char **drives = NULL;
+  unsigned int num_drives=0;
+  char drive_letter;
+  
+  /* Scan the system for CD-ROM drives.
+  */
+
+#if FINISHED
+  /* Now check the currently mounted CD drives */
+  if (NULL != (ret_drive = cdio_check_mounts("/etc/mtab"))) {
+    cdio_add_device_list(&drives, drive, &num_drives);
+  }
+  
+  /* Finally check possible mountable drives in /etc/fstab */
+  if (NULL != (ret_drive = cdio_check_mounts("/etc/fstab"))) {
+    cdio_add_device_list(&drives, drive, &num_drives);
+  }
+#endif
+
+  /* Scan the system for CD-ROM drives.
+     Not always 100% reliable, so use the USE_MNTENT code above first.
+  */
+  for (drive_letter='A'; drive_letter <= 'Z'; drive_letter++) {
+    const char *drive_str=cdio_is_cdrom(drive_letter);
+    if (drive_str != NULL) {
+      cdio_add_device_list(&drives, drive_str, &num_drives);
+    }
+  }
+  cdio_add_device_list(&drives, NULL, &num_drives);
+  return drives;
+#endif /*HAVE_WIN32_CDROM*/
+}
+
+/*!
   Return a string containing the default CD device if none is specified.
   if CdIo is NULL (we haven't initialized a specific device driver), 
   then find a suitable one and return the default device for that.
@@ -1075,6 +1117,7 @@ cdio_open_win32 (const char *source_name)
     .free               = _cdio_win32_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = cdio_get_default_device_win32,
+    .get_devices        = cdio_get_devices_win32,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_mcn            = NULL, 
     .get_num_tracks     = _cdio_get_num_tracks,
