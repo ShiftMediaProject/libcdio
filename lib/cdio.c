@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.77 2004/12/15 01:45:15 rocky Exp $
+    $Id: cdio.c,v 1.78 2004/12/17 04:50:46 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.77 2004/12/15 01:45:15 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.78 2004/12/17 04:50:46 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -50,8 +50,8 @@ const char *track_format2str[6] =
 /* Must match discmode enumeration */
 const char *discmode2str[] = {
   "CD-DA", 
-  "CD-DATA Form 1", 
-  "CD DATA Form 2", 
+  "CD-DATA (Mode 1)", 
+  "CD DATA (Mode 2)", 
   "CD-ROM Mixed",
   "DVD-ROM", 
   "DVD-RAM", 
