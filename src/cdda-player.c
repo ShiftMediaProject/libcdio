@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.7 2005/03/12 16:53:29 rocky Exp $
+    $Id: cdda-player.c,v 1.8 2005/03/12 20:32:23 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -70,6 +70,8 @@ static void play_track(track_t t1, track_t t2);
 static void display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, 
 			   track_t i_first_track);
 static void get_cddb_track_info(track_t i_track);
+static void get_cdtext_track_info(track_t i_track);
+static void get_track_info(track_t i_track);
 
 CdIo_t             *p_cdio;               /* libcdio handle */
 driver_id_t        driver_id = DRIVER_DEVICE;
@@ -94,7 +96,7 @@ bool               b_verbose = false;
 bool               debug = false;
 bool               interactive = true;
 int                todo; /* non-interactive */
-bool               have_wdb = false;    /* wdb database present */
+bool               b_prefer_cdtext = true; 
 bool               b_cddb = false;   /* cddb datebase present */
 bool               b_cddb_l = false; /* local cddb */
 bool               b_cddb_r = false; /* remote cddb */
@@ -416,7 +418,7 @@ read_toc(CdIo_t *p_cdio)
 	  }
 	}
       }
-      get_cddb_track_info(i);
+      get_track_info(i);
     }
     b_record = true;
     read_subchannel(p_cdio);
@@ -531,29 +533,36 @@ display_status()
 	 sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY)  &&
 	b_cd) {
     i_last_display_track = sub.track;
+    const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track];
     if (i_first_audio_track != sub.track && 
 	strlen(cd_info[sub.track-1].title)) {
-      mvprintw(LINE_TRACK_PREV, 0, "track %2d title  : %s", 
-	       sub.track-1, cd_info[sub.track-1].title);
+      const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track-1];
+      mvprintw(LINE_TRACK_PREV, 0, "track %2d title  : %s [%s]",
+	       sub.track-1, p_cd_info->title,
+	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
       clrtoeol();
     } else {
       mvprintw(LINE_TRACK_PREV, 0, "%s","");
       clrtoeol();
     }
-    if (strlen(cd_info[sub.track].title)) {
-      mvprintw(LINE_TRACK_TITLE, 0, "track %2d title  : %s", 
-	       sub.track, cd_info[sub.track].title);
+    if (strlen(p_cd_info->title)) {
+      mvprintw(LINE_TRACK_TITLE, 0, "track %2d title  : %s [%s]", 
+	       sub.track, p_cd_info->title, 
+	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
       clrtoeol();
     }
-    if (strlen(cd_info[sub.track].artist)) {
-      mvprintw(LINE_TRACK_ARTIST, 0, "track %2d artist : %s", 
-	       sub.track, cd_info[sub.track].artist);
+    if (strlen(p_cd_info->artist)) {
+      mvprintw(LINE_TRACK_ARTIST, 0, "track %2d artist : %s [%s]",
+	       sub.track, p_cd_info->artist,
+	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
       clrtoeol();
     }
     if (i_last_audio_track != sub.track && 
 	strlen(cd_info[sub.track+1].title)) {
-      mvprintw(LINE_TRACK_NEXT, 0, "track %2d title  : %s", 
-	       sub.track+1, cd_info[sub.track+1].title);
+      const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track+1];
+      mvprintw(LINE_TRACK_NEXT, 0, "track %2d title  : %s [%s]", 
+	       sub.track+1, p_cd_info->title,
+	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
       clrtoeol();
     } else {
       mvprintw(LINE_TRACK_NEXT, 0, "%s","");
@@ -585,6 +594,41 @@ get_cddb_track_info(track_t i_track)
 #else
     ;
 #endif      
+}
+
+#define add_cdtext_track_info(format_str, info_field, FIELD) \
+  if (p_cdtext->field[FIELD]) {                              \
+    snprintf(cd_info[i_track].info_field,                    \
+	     sizeof(cd_info[i_track].info_field),            \
+	     format_str, p_cdtext->field[FIELD]);            \
+    cd_info[i_track].b_cdtext = true; \
+  }
+
+
+static void
+get_cdtext_track_info(track_t i_track)
+{
+
+  cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio, i_track);
+
+  if (NULL != p_cdtext) {
+    add_cdtext_track_info("%s", title, CDTEXT_TITLE);
+    add_cdtext_track_info("%s", title, CDTEXT_PERFORMER);
+  }
+  cdtext_destroy(p_cdtext);
+}
+
+static void
+get_track_info(track_t i_track)
+{
+
+  if (b_prefer_cdtext) {
+    get_cdtext_track_info(i_track);
+    get_cddb_track_info(i_track);
+  } else {
+    get_cddb_track_info(i_track);
+    get_cdtext_track_info(i_track);
+  }
 }
 
 #define display_line(LINE_NO, COL_NO, format_str, field) \
