@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.7 2003/04/06 18:12:37 rocky Exp $
+    $Id: cdinfo.c,v 1.8 2003/04/14 04:26:17 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -57,6 +57,10 @@
 #include "cdio.h"
 #include "logging.h"
 #include "util.h"
+
+#ifdef HAVE_CDDB
+#include <cddb/cddb.h>
+#endif
 
 #ifdef ENABLE_NLS
 #include <locale.h>
@@ -195,7 +199,7 @@ int ms_offset;                /* multisession offset found by track-walking */
 int data_start;                                       /* start of data area */
 int joliet_level = 0;
 
-CdIo *img; 
+CdIo *cdio; 
 track_t num_tracks;
 track_t first_track_num;
 
@@ -226,6 +230,10 @@ typedef enum
   IMAGE_NRG,
   IMAGE_UNKNOWN
 } source_image_t;
+
+#ifdef HAVE_CDDB
+bool no_cddb = false;
+#endif
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
@@ -258,8 +266,7 @@ enum {
   OP_SOURCE_DEVICE,
   
   /* These are the remaining configuration options */
-  OP_VERSION,       OP_NOIOCTL,   OP_NOTRACKS,   OP_QUIET,
-  OP_NOANALYZE
+  OP_VERSION,  QUIET,
   
 };
 
@@ -278,7 +285,12 @@ struct poptOption optionsTable[] = {
   {"noanalyze",'A', POPT_ARG_NONE, &opts.no_analysis, 0,
    "Don't filesystem analysis"},
   
-  {"noioctl",  'I', POPT_ARG_NONE,  &opts.no_ioctl,   0,
+#ifdef HAVE_CDDB
+  {"nocddb",   'a', POPT_ARG_NONE, &no_cddb, 0,
+   "Don't look up audio CDDB information or print that"},
+#endif
+  
+  {"noioctl",  'I', POPT_ARG_NONE,  &opts.no_ioctl, 0,
    "Don't show ioctl() information"},
   
   {"bin-file", 'b', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
@@ -410,7 +422,7 @@ PARTICULAR PURPOSE.\n\
 static int 
 read_block(int superblock, uint32_t offset, uint8_t bufnum, track_t track_num)
 {
-  unsigned int track_sec_count = cdio_get_track_sec_count(img, track_num);
+  unsigned int track_sec_count = cdio_get_track_sec_count(cdio, track_num);
   memset(buffer[bufnum], 0, CDIO_CD_FRAMESIZE);
 
   if ( track_sec_count < superblock) {
@@ -421,11 +433,11 @@ read_block(int superblock, uint32_t offset, uint8_t bufnum, track_t track_num)
   
   dbg_print(2, "about to read sector %u\n", offset+superblock);
 
-  if (0 > cdio_lseek(img, CDIO_CD_FRAMESIZE*(offset+superblock),SEEK_SET))
+  if (0 > cdio_lseek(cdio, CDIO_CD_FRAMESIZE*(offset+superblock),SEEK_SET))
     return -1;
   
 
-  if (0 > cdio_read(img, buffer[bufnum], CDIO_CD_FRAMESIZE))
+  if (0 > cdio_read(cdio, buffer[bufnum], CDIO_CD_FRAMESIZE))
     return -1;
 
   return 0;
@@ -608,7 +620,7 @@ guess_filesystem(int start_session, track_t track_num)
 static void 
 myexit(int rc) 
 {
-  cdio_destroy(img);
+  cdio_destroy(cdio);
   exit(rc);
 }
 
@@ -654,12 +666,12 @@ cddb_discid()
   msf_t msf;
   
   for (i = 1; i <= num_tracks; i++) {
-    cdio_get_track_msf(img, i, &msf);
+    cdio_get_track_msf(cdio, i, &msf);
     n += cddb_dec_digit_sum(msf_seconds(&msf));
   }
 
-  cdio_get_track_msf(img, 1, &start_msf);
-  cdio_get_track_msf(img, CDIO_CDROM_LEADOUT_TRACK, &msf);
+  cdio_get_track_msf(cdio, 1, &start_msf);
+  cdio_get_track_msf(cdio, CDIO_CDROM_LEADOUT_TRACK, &msf);
   
   t = msf_seconds(&msf) - msf_seconds(&start_msf);
   
@@ -686,6 +698,52 @@ _log_handler (cdio_log_level_t level, const char message[])
   gl_default_log_handler (level, message);
 }
 
+
+#ifdef HAVE_CDDB
+static void print_cddb_info() {
+  cddb_conn_t *c    = cddb_new();
+  cddb_disc_t *disc = NULL;
+
+  if (!c) {
+    fprintf(stderr, "%s: unable to initialize libcddb\n", program_name);
+    goto cddb_destroy;
+  }
+
+  cddb_set_email_address(c, "me@home");
+  cddb_set_server_name(c, "freedb.freedb.org");
+  cddb_set_server_port(c, 8880);
+  cddb_http_enable(c, 0);
+    
+  disc = cddb_disc_new();
+  if (!disc) {
+    fprintf(stderr, "%s unable to create CDDB disc structure", program_name);
+    goto cddb_destroy;
+  }
+  for(i = 0; i < num_tracks; i++) {
+    cddb_track_t *t = cddb_track_new(); 
+    t->frame_offset = cdio_get_track_lba(cdio, i+first_track_num);
+    cddb_disc_add_track(disc, t);
+  }
+    
+  disc->length = 
+    cdio_get_track_lba(cdio, CDIO_CDROM_LEADOUT_TRACK) 
+    / CDIO_CD_FRAMES_PER_SEC;
+
+  disc->category = CDDB_CAT_MISC;
+  if (!cddb_disc_calc_discid(disc)) {
+    fprintf(stderr, "%s: libcddb calc discid failed.\n", 
+	    program_name);
+    goto cddb_destroy;
+  }
+  cddb_read(c, disc);
+  cddb_disc_print(disc);
+
+  cddb_disc_destroy(disc);
+  cddb_destroy:
+  cddb_destroy(c);
+}
+#endif
+
 static void
 print_analysis(int fs, int num_audio)
 {
@@ -693,8 +751,12 @@ print_analysis(int fs, int num_audio)
   
   switch(fs & FS_MASK) {
   case FS_NO_DATA:
-    if (num_audio > 0)
+    if (num_audio > 0) {
       printf("Audio CD, CDDB disc ID is %08lx\n", cddb_discid());
+#ifdef HAVE_CDDB
+      if (!no_cddb) print_cddb_info();
+#endif      
+    }
     break;
   case FS_ISO_9660:
     printf("CD-ROM with ISO 9660 filesystem");
@@ -795,28 +857,32 @@ main(int argc, const char *argv[])
   switch (opts.source_image) {
   case IMAGE_UNKNOWN:
   case IMAGE_AUTO:
-    img = cdio_open (source_name, DRIVER_UNKNOWN);
+    cdio = cdio_open (source_name, DRIVER_UNKNOWN);
     break;
   case IMAGE_DEVICE:
-    img = cdio_open (source_name, DRIVER_DEVICE);
+    cdio = cdio_open (source_name, DRIVER_DEVICE);
     break;
   case IMAGE_BIN:
-    img = cdio_open (source_name, DRIVER_BINCUE);
+    cdio = cdio_open (source_name, DRIVER_BINCUE);
     break;
   case IMAGE_CUE:
-    img = cdio_open_cue(source_name);
+    cdio = cdio_open_cue(source_name);
     break;
   case IMAGE_NRG:
-    img = cdio_open (source_name, DRIVER_NRG);
+    cdio = cdio_open (source_name, DRIVER_NRG);
     break;
   }
 
-  if (source_name==NULL) {
-    source_name=strdup(cdio_get_arg(img, "source"));
+  if (cdio==NULL) {
+    err_exit("%s: Error in finding a usable device driver\n", program_name);
   } 
 
-  first_track_num = cdio_get_first_track_num(img);
-  num_tracks      = cdio_get_num_tracks(img);
+  if (source_name==NULL) {
+    source_name=strdup(cdio_get_arg(cdio, "source"));
+  } 
+
+  first_track_num = cdio_get_first_track_num(cdio);
+  num_tracks      = cdio_get_num_tracks(cdio);
 
   if (!opts.no_tracks) {
     printf(STRONG "CD-ROM Track List (%i - %i)\n" NORMAL, 
@@ -829,7 +895,7 @@ main(int argc, const char *argv[])
   for (i = first_track_num; i <= CDIO_CDROM_LEADOUT_TRACK; i++) {
     msf_t msf;
     
-    if (!cdio_get_track_msf(img, i, &msf)) {
+    if (!cdio_get_track_msf(cdio, i, &msf)) {
       err_exit("cdio_track_msf for track %i failed, I give up.\n", i);
     }
 
@@ -845,11 +911,11 @@ main(int argc, const char *argv[])
 	     (int) i, 
 	     msf.m, msf.s, msf.f, 
 	     cdio_msf_to_lsn(&msf),
-	     track_format2str[cdio_get_track_format(img, i)]);
+	     track_format2str[cdio_get_track_format(cdio, i)]);
 
     }
     
-    if (TRACK_FORMAT_AUDIO == cdio_get_track_format(img, i)) {
+    if (TRACK_FORMAT_AUDIO == cdio_get_track_format(cdio, i)) {
       num_audio++;
       if (-1 == first_audio)
 	first_audio = i;
@@ -938,7 +1004,7 @@ main(int argc, const char *argv[])
       /* no data track, may be a "real" audio CD or hidden track CD */
       
       msf_t msf;
-      cdio_get_track_msf(img, 1, &msf);
+      cdio_get_track_msf(cdio, 1, &msf);
       start_track = cdio_msf_to_lsn(&msf);
       
       /* CD-I/Ready says start_track <= 30*75 then CDDA */
@@ -959,9 +1025,9 @@ main(int argc, const char *argv[])
       
       for (j = 2, i = first_data; i <= num_tracks; i++) {
 	msf_t msf;
-	track_format_t track_format = cdio_get_track_format(img, i);
+	track_format_t track_format = cdio_get_track_format(cdio, i);
       
-	cdio_get_track_msf(img, i, &msf);
+	cdio_get_track_msf(cdio, i, &msf);
 
 	switch ( track_format ) {
 	case TRACK_FORMAT_AUDIO:
