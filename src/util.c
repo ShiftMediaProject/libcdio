@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.15 2004/08/07 03:24:45 rocky Exp $
+  $Id: util.c,v 1.16 2004/08/07 03:37:46 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -304,6 +304,9 @@ print_mmc_drive_features(CdIo *p_cdio)
 	  break;
 	case CDIO_MMC_FEATURE_CD_SAO:
 	  printf("CD Mastering (Session at Once) Feature\n");
+	  break;
+	case CDIO_MMC_FEATURE_POWER_MGMT:
+	  printf("Initiator and device directed power management\n");
 	  break;
 	case CDIO_MMC_FEATURE_CDDA_EXT_PLAY:
 	  printf("CD Audio External Play Feature\n");
