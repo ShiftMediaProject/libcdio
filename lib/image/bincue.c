@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.9 2004/03/22 01:01:50 rocky Exp $
+    $Id: bincue.c,v 1.10 2004/04/23 01:01:37 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.9 2004/03/22 01:01:50 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.10 2004/04/23 01:01:37 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -103,6 +103,8 @@ typedef struct {
 
 static bool     _cdio_image_read_cue (_img_private_t *_obj);
 static uint32_t _cdio_stat_size (void *env);
+
+#include "image/common.c"
 
 /*!
   Initialize image structures.
@@ -741,53 +743,6 @@ cdio_get_default_device_bincue(void)
 }
 
 /*!
-  Return the number of of the first track. 
-  CDIO_INVALID_TRACK is returned on error.
-*/
-static track_t
-_cdio_get_first_track_num(void *env) 
-{
-  _img_private_t *_obj = env;
-  
-  _cdio_init (_obj);
-
-  return _obj->first_track_num;
-}
-
-/*!
-  Return the media catalog number (MCN) from the CD or NULL if there
-  is none or we don't have the ability to get it.
-
-  Note: string is malloc'd so caller has to free() the returned
-  string when done with it.
-  */
-static char *
-_cdio_get_mcn(void *env)
-{
-  _img_private_t *_obj = env;
-  
-  _cdio_init (_obj);
-
-  if (NULL == _obj->mcn) return NULL;
-  return strdup(_obj->mcn);
-}
-
-/*! 
-  Return the number of tracks in the current medium.
-  If no cuesheet is available, We fake it an just say there's
-  one big track. 
-  CDIO_INVALID_TRACK is returned on error.
-*/
-static track_t
-_cdio_get_num_tracks(void *env) 
-{
-  _img_private_t *_obj = env;
-  _cdio_init (_obj);
-
-  return _obj->have_cue && _obj->total_tracks > 0 ? _obj->total_tracks : 1;
-}
-
-/*!
   Return the number of tracks in the current medium.
   CDIO_INVALID_TRACK is returned on error.
 */
@@ -844,30 +799,6 @@ _cdio_get_track_lba(void *env, track_t track_num)
     return _obj->tocent[track_num-1].start_lba;
   } else 
     return CDIO_INVALID_LBA;
-}
-
-/*!  
-  Return the starting MSF (minutes/secs/frames) for the track number
-  track_num in obj.  Tracks numbers start at 1.
-  The "leadout" track is specified either by
-  using track_num LEADOUT_TRACK or the total tracks+1.
-
-*/
-static bool
-_cdio_get_track_msf(void *env, track_t track_num, msf_t *msf)
-{
-  _img_private_t *_obj = env;
-  _cdio_init (_obj);
-
-  if (NULL == msf) return false;
-
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
-
-  if (track_num <= _obj->total_tracks+1 && track_num != 0) {
-    *msf = _obj->tocent[track_num-1].start_msf;
-    return true;
-  } else 
-    return false;
 }
 
 /*! 
@@ -964,13 +895,14 @@ cdio_open_cue (const char *cue_name)
     .free               = _cdio_bincue_destroy,
     .get_arg            = _cdio_get_arg,
     .get_default_device = cdio_get_default_device_bincue,
-    .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = _cdio_get_mcn,
-    .get_num_tracks     = _cdio_get_num_tracks,
+    .get_drive_cap      = _cdio_image_get_drive_cap,
+    .get_first_track_num= _cdio_image_get_first_track_num,
+    .get_mcn            = _cdio_image_get_mcn,
+    .get_num_tracks     = _cdio_image_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,
     .get_track_lba      = _cdio_get_track_lba, 
-    .get_track_msf      = _cdio_get_track_msf,
+    .get_track_msf      = _cdio_image_get_track_msf,
     .lseek              = _cdio_lseek,
     .read               = _cdio_read,
     .read_audio_sectors = _cdio_read_audio_sectors,

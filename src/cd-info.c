@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.52 2004/04/21 09:23:38 rocky Exp $
+    $Id: cd-info.c,v 1.53 2004/04/23 01:01:37 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -829,6 +829,28 @@ main(int argc, const char *argv[])
     printf("CD driver name: %s\n", cdio_get_driver_name(cdio));
   }
   
+  {
+    cdio_drive_cap_t i_drive_cap =  cdio_get_drive_cap(source_name);
+    if (CDIO_DRIVE_ERROR == i_drive_cap) {
+      printf("Error in getting drive properties\n");
+    } else if (CDIO_DRIVE_UNKNOWN == i_drive_cap) {
+      printf("Can't determine drive properties\n");
+    } else if (CDIO_DRIVE_FILE == i_drive_cap) {
+      printf("Disc-image file\n");
+    } else {
+      if (i_drive_cap & CDIO_DRIVE_CD_R) 
+	printf("Drive can read CD-ROM\n");
+      if (i_drive_cap & CDIO_DRIVE_CD_RW) 
+	printf("Drive can write CD-ROM\n");
+      if (i_drive_cap & CDIO_DRIVE_DVD) 
+	printf("Drive can read DVD\n");
+      if (i_drive_cap & CDIO_DRIVE_DVD_R) 
+	printf("Drive can write DVD-R\n");
+      if (i_drive_cap & CDIO_DRIVE_DVD_RAM) 
+	printf("Drive can write DVD-RAM\n");
+    }
+  }
+
   if (opts.list_drives) {
     char ** device_list = cdio_get_devices(DRIVER_DEVICE);
     char ** d = device_list;

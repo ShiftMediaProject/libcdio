@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.30 2004/03/20 22:49:33 rocky Exp $
+#   $Id: Makefile.am,v 1.31 2004/04/23 01:01:36 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -69,6 +69,7 @@ libcdio_sources = \
 	ds.c \
 	ds.h \
 	image/bincue.c \
+	image/common.c \
 	image/nrg.c \
 	logging.c \
 	MSWindows/aspi32.c \

@@ -1,5 +1,5 @@
 /*
-  $Id: sample2.c,v 1.5 2004/04/22 03:24:38 rocky Exp $
+  $Id: sample2.c,v 1.6 2004/04/23 01:01:35 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -53,7 +53,7 @@ main(int argc, const char *argv[])
       } else if (CDIO_DRIVE_UNKNOWN == i_drive_cap) {
 	printf("Can't determine drive properties\n");
       } else if (CDIO_DRIVE_FILE == i_drive_cap) {
-	printf("Can't determine drive properties\n");
+	printf("Disc-image file\n");
       } else {
 	if (i_drive_cap & CDIO_DRIVE_CD_R) 
 	  printf("Drive can read CD-ROM\n");
