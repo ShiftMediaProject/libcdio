@@ -1,5 +1,5 @@
 /*
-  $Id: sample9.c,v 1.1 2004/07/29 05:26:46 rocky Exp $
+  $Id: sample9.c,v 1.2 2004/08/27 11:53:38 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -18,7 +18,9 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to show use of SCSI MMC interface. */
+/* Simple program to show use of SCSI MMC interface. Is basically the
+   the libdio scsi_mmc_get_hwinfo() routine.
+*/
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -53,20 +55,23 @@ main(int argc, const char *argv[])
 				&cdb, SCSI_MMC_DATA_READ, 
 				sizeof(buf), &buf);
     if (i_status == 0) {
-      char vendor[CDIO_MMC_HW_VENDOR_LEN+1];
-      char model[CDIO_MMC_HW_MODEL_LEN+1];
-      char rev[CDIO_MMC_HW_REVISION_LEN+1];
+      char psz_vendor[CDIO_MMC_HW_VENDOR_LEN+1];
+      char psz_model[CDIO_MMC_HW_MODEL_LEN+1];
+      char psz_rev[CDIO_MMC_HW_REVISION_LEN+1];
       
-      memcpy(vendor, buf + 8, sizeof(vendor)-1);
-      vendor[sizeof(vendor)-1] = '\0';
-      memcpy(model,  buf + 8 + CDIO_MMC_HW_VENDOR_LEN, sizeof(model)-1);
-      model[sizeof(model)-1] = '\0';
-      memcpy(rev,    buf + 8 + CDIO_MMC_HW_VENDOR_LEN +CDIO_MMC_HW_MODEL_LEN,
-	     sizeof(rev)-1);
-      rev[sizeof(rev)-1] = '\0';
+      memcpy(psz_vendor, buf + 8, sizeof(psz_vendor)-1);
+      psz_vendor[sizeof(psz_vendor)-1] = '\0';
+      memcpy(psz_model,
+	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN, 
+	     sizeof(psz_model)-1);
+      psz_model[sizeof(psz_model)-1] = '\0';
+      memcpy(psz_rev,
+	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN +CDIO_MMC_HW_MODEL_LEN,
+	     sizeof(psz_rev)-1);
+      psz_rev[sizeof(psz_rev)-1] = '\0';
 
       printf("Vendor: %s\nModel: %s\nRevision: %s\n",
-	     vendor, model, rev);
+	     psz_vendor, psz_model, psz_rev);
     } else {
       printf("Couldn't get INQUIRY data (vendor, model, and revision\n");
     }

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.63 2004/08/27 11:23:40 rocky Exp $
+    $Id: cdio.h,v 1.64 2004/08/27 11:53:38 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -63,9 +63,9 @@ extern "C" {
   /*! Structure to return data given by the INQUIRY command  */
   typedef struct cdio_hwinfo 
   {
-    char vendor  [CDIO_MMC_HW_VENDOR_LEN+1];
-    char model   [CDIO_MMC_HW_MODEL_LEN+1];
-    char revision[CDIO_MMC_HW_REVISION_LEN+1];
+    char psz_vendor  [CDIO_MMC_HW_VENDOR_LEN+1];
+    char psz_model   [CDIO_MMC_HW_MODEL_LEN+1];
+    char psz_revision[CDIO_MMC_HW_REVISION_LEN+1];
   } cdio_hwinfo_t;
 
   /** This is an opaque structure for the CD object. */

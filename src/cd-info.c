@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.83 2004/08/27 04:17:08 rocky Exp $
+    $Id: cd-info.c,v 1.84 2004/08/27 11:53:38 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -988,9 +988,9 @@ main(int argc, const char *argv[])
     cdio_hwinfo_t          hwinfo;
     if (cdio_get_hwinfo(p_cdio, &hwinfo)) {
       printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
-	     "Vendor"  , hwinfo.vendor, 
-	     "Model"   , hwinfo.model, 
-	     "Revision", hwinfo.revision);
+	     "Vendor"  , hwinfo.psz_vendor, 
+	     "Model"   , hwinfo.psz_model, 
+	     "Revision", hwinfo.psz_revision);
     }
     cdio_get_drive_cap(p_cdio, &i_read_cap, &i_write_cap, &i_misc_cap);
     print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
@@ -1009,9 +1009,9 @@ main(int argc, const char *argv[])
 	printf("Drive %s\n", *d);
 	if (scsi_mmc_get_hwinfo(p_cdio, &hwinfo)) {
 	  printf("%-8s: %s\n%-8s: %s\n%-8s: %s\n",
-		 "Vendor"  , hwinfo.vendor, 
-		 "Model"   , hwinfo.model, 
-		 "Revision", hwinfo.revision);
+		 "Vendor"  , hwinfo.psz_vendor, 
+		 "Model"   , hwinfo.psz_model, 
+		 "Revision", hwinfo.psz_revision);
 	}
 	if (p_cdio) cdio_destroy(p_cdio);
       }

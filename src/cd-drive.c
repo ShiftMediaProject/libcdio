@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.8 2004/08/27 04:17:08 rocky Exp $
+  $Id: cd-drive.c,v 1.9 2004/08/27 11:53:38 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -242,9 +242,9 @@ main(int argc, const char *argv[])
 	printf("%28s: %s\n", "Drive", *ppsz_cd);
 	if (cdio_get_hwinfo(p_cdio, &hwinfo)) {
 	  printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
-		 "Vendor"  , hwinfo.vendor, 
-		 "Model"   , hwinfo.model, 
-		 "Revision", hwinfo.revision);
+		 "Vendor"  , hwinfo.psz_vendor, 
+		 "Model"   , hwinfo.psz_model, 
+		 "Revision", hwinfo.psz_revision);
 	}
 	print_mmc_drive_features(p_cdio);
 	print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
@@ -268,9 +268,9 @@ main(int argc, const char *argv[])
     if (NULL != p_cdio) {
       if (cdio_get_hwinfo(p_cdio, &hwinfo)) {
 	printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
-	       "Vendor"  , hwinfo.vendor, 
-	       "Model"   , hwinfo.model, 
-	       "Revision", hwinfo.revision);
+	       "Vendor"  , hwinfo.psz_vendor, 
+	       "Model"   , hwinfo.psz_model, 
+	       "Revision", hwinfo.psz_revision);
       }
       print_mmc_drive_features(p_cdio);
     }

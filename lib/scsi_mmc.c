@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.26 2004/08/27 02:50:13 rocky Exp $
+    $Id: scsi_mmc.c,v 1.27 2004/08/27 11:53:38 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -445,18 +445,18 @@ scsi_mmc_get_hwinfo ( const CdIo *p_cdio,
 			      sizeof(buf), &buf);
   if (i_status == 0) {
       
-      memcpy(hw_info->vendor, 
+      memcpy(hw_info->psz_vendor, 
 	     buf + 8, 
-	     sizeof(hw_info->vendor)-1);
-      hw_info->vendor[sizeof(hw_info->vendor)-1] = '\0';
-      memcpy(hw_info->model,  
+	     sizeof(hw_info->psz_vendor)-1);
+      hw_info->psz_vendor[sizeof(hw_info->psz_vendor)-1] = '\0';
+      memcpy(hw_info->psz_model,  
 	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN, 
-	     sizeof(hw_info->model)-1);
-      hw_info->model[sizeof(hw_info->model)-1] = '\0';
-      memcpy(hw_info->revision, 
+	     sizeof(hw_info->psz_model)-1);
+      hw_info->psz_model[sizeof(hw_info->psz_model)-1] = '\0';
+      memcpy(hw_info->psz_revision, 
 	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN + CDIO_MMC_HW_MODEL_LEN,
-	     sizeof(hw_info->revision)-1);
-      hw_info->revision[sizeof(hw_info->revision)-1] = '\0';
+	     sizeof(hw_info->psz_revision)-1);
+      hw_info->psz_revision[sizeof(hw_info->psz_revision)-1] = '\0';
       return true;
     }
   return false;

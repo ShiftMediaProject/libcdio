@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.95 2004/08/27 01:24:40 rocky Exp $
+    $Id: _cdio_linux.c,v 1.96 2004/08/27 11:53:38 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.95 2004/08/27 01:24:40 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.96 2004/08/27 11:53:38 rocky Exp $";
 
 #include <string.h>
 
@@ -218,7 +218,7 @@ get_arg_linux (void *env, const char key[])
   return NULL;
 }
 
-#define USE_LINUX_CAP 1
+#undef USE_LINUX_CAP
 #ifdef USE_LINUX_CAP
 /*!
   Return the the kind of drive capabilities of device.
