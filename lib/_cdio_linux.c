@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.59 2004/06/27 16:36:38 rocky Exp $
+    $Id: _cdio_linux.c,v 1.60 2004/07/08 01:27:59 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,13 +27,14 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.59 2004/06/27 16:36:38 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.60 2004/07/08 01:27:59 rocky Exp $";
 
 #include <string.h>
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
 #include <cdio/scsi_mmc.h>
+#include <cdio/cdtext.h>
 #include "cdio_assert.h"
 #include "cdio_private.h"
 
@@ -66,6 +67,8 @@ static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.59 2004/06/27 16:36:38 rock
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+
+typedef struct cdrom_generic_command cgc_t;
 
 #define TOTAL_TRACKS    (env->tochdr.cdth_trk1)
 #define FIRST_TRACK_NUM (env->tochdr.cdth_trk0)
@@ -260,7 +263,6 @@ static int
 _cdio_mmc_read_sectors (int fd, void *buf, lba_t lba, int sector_type, 
 			unsigned int nblocks)
 {
-  typedef struct cdrom_generic_command cgc_t;
   cgc_t cgc;
 
   memset (&cgc, 0, sizeof (cgc_t));
@@ -672,6 +674,114 @@ _cdio_read_toc (_img_private_t *env)
   return true;
 }
 
+static CDText_data_t *
+_cdtext_query( void *user_data )
+{
+
+#ifdef CDTEXT_FIXED
+  _img_private_t *env = user_data;
+  CDText_data_t  *pdata;
+  int             i;
+  int             j;
+  char            buffer[5000];
+  char            buf[256];
+  int             idx;
+  track_t         i_track;
+  cgc_t           cgc;
+  int             status;
+
+  memset (&cgc,    0, sizeof (cgc));
+  memset (&buffer, 0, sizeof (buffer));
+
+  cgc.cmd[0]   = CDIO_MMC_GPCMD_READ_TOC; 
+  cgc.cmd[1]   = 0x02;   /* MSF mode */
+  cgc.cmd[2]   = 0x05;   /* CD text */
+  CDIO_MMC_SET_READ_LENGTH( cgc.cmd, sizeof(buffer) );
+
+  status = ioctl( env->gen.fd, CDROM_SEND_PACKET, &cgc );
+
+  if( status != 0 ) {
+    cdio_warn ("CDTEXT reading failed: %s\n", strerror(errno));  
+    return NULL;
+  }
+
+  memset (&buf, 0, sizeof (buffer));
+  idx = 0;
+
+  pdata = (CDText_data_t *) (&buffer[4]);
+  for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ )
+  {
+    if( pdata->seq != i )
+      break;
+
+    if( (pdata->type >= 0x80) && (pdata->type <= 0x87) && (pdata->block == 0) )
+    {
+      i_track = pdata->i_track;
+
+      for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++ ) {
+        if( pdata->text[j] == 0x00 ) {
+          switch( pdata->type) {
+          case CDIO_CDTEXT_TITLE:
+            if( i_track == 0 )
+              printf("Album Title: %s\n", buf);
+            else
+              printf("Title track %d: %s\n", i_track, buf);
+            i_track++;
+            idx = 0;
+            break;
+	    
+          case CDIO_CDTEXT_PERFORMER: 
+            if( i_track == 0 )
+              printf("Album Performer %s\n", buf);
+            else
+              printf("Performer track %d: %s\n", i_track, buf);
+            i_track++;
+            idx = 0;
+            break;
+          case CDIO_CDTEXT_COMPOSER: 
+            if( i_track == 0 )
+              printf("Album Composer %s\n", buf);
+            else
+              printf("Composer track %d: %s\n", i_track, buf);
+            i_track++;
+            idx = 0;
+            break;
+          case CDIO_CDTEXT_ARRANGER: 
+            if( i_track == 0 )
+              printf("Album Arranger %s\n", buf);
+            else
+              printf("Arranger track %d: %s\n", i_track, buf);
+            i_track++;
+            idx = 0;
+            break;
+          case CDIO_CDTEXT_MESSAGE: 
+	    printf("Extended data: %s\n", buf);
+            i_track++;
+            idx = 0;
+            break;
+          case CDIO_CDTEXT_GENRE: 
+	    printf("Genre %s\n", buf);
+            i_track++;
+            idx = 0;
+            break;
+          case CDIO_CDTEXT_DISCID: 
+	    printf("Discid track%s\n", buf);
+            idx = 0;
+            break;
+          }
+	}
+	else {
+          buffer[idx++] = pdata->text[j];
+        }
+        buffer[idx] = 0x00;
+      }
+    }
+    pdata++;
+  }
+#endif
+  return NULL; /* FIXME */
+}
+
 /*
  * Eject using SCSI commands. Return 1 if successful, 0 otherwise.
  */
@@ -685,9 +795,10 @@ _eject_media_mmc(int fd)
     char cmd[256];
   } scsi_cmd;
   
-  scsi_cmd.inlen	= 0;
+  CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
+
+  scsi_cmd.inlen  = 0;
   scsi_cmd.outlen = 0;
-  scsi_cmd.cmd[0] = ALLOW_MEDIUM_REMOVAL;
   scsi_cmd.cmd[1] = 0;
   scsi_cmd.cmd[2] = 0;
   scsi_cmd.cmd[3] = 0;
@@ -695,11 +806,11 @@ _eject_media_mmc(int fd)
   scsi_cmd.cmd[5] = 0;
   status = ioctl(fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
   if (status != 0)
-    return 0;
+    return status;
   
   scsi_cmd.inlen  = 0;
   scsi_cmd.outlen = 0;
-  CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_START_STOP);
+  CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_GPCMD_START_STOP);
   scsi_cmd.cmd[1] = 0;
   scsi_cmd.cmd[2] = 0;
   scsi_cmd.cmd[3] = 0;
@@ -707,23 +818,24 @@ _eject_media_mmc(int fd)
   scsi_cmd.cmd[5] = 0;
   status = ioctl(fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
   if (status != 0)
-    return 0;
+    return status;
   
   scsi_cmd.inlen  = 0;
   scsi_cmd.outlen = 0;
-  CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_START_STOP);
+  CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_GPCMD_START_STOP);
   scsi_cmd.cmd[1] = 0;
   scsi_cmd.cmd[2] = 0;
   scsi_cmd.cmd[3] = 0;
-  scsi_cmd.cmd[4] = 2;
+  scsi_cmd.cmd[4] = 2; /* eject */
   scsi_cmd.cmd[5] = 0;
   status = ioctl(fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
   if (status != 0)
-    return 0;
+    return status;
   
   /* force kernel to reread partition table when new disc inserted */
   status = ioctl(fd, BLKRRPART);
-  return (status == 0);
+  return (status);
+  
 }
 
 /*!
@@ -1100,6 +1212,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   char *psz_source;
 
   cdio_funcs _funcs = {
+    .cdtext_query       = _cdtext_query,
     .eject_media        = _eject_media_linux,
     .free               = cdio_generic_free,
     .get_arg            = _get_arg_linux,

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.24 2004/06/26 00:39:01 rocky Exp $
+    $Id: cdio_private.h,v 1.25 2004/07/08 01:28:00 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -29,6 +29,7 @@
 #endif
 
 #include <cdio/cdio.h>
+#include <cdio/cdtext.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,6 +39,12 @@ extern "C" {
   typedef struct _CdioDataSource CdioDataSource;
 
   typedef struct {
+    
+    /*!
+     Return an allocated structure containing CDTEXT information found.
+     NULL is returned if there was a problem.
+    */
+    CDText_data_t * (*cdtext_query) (void *env);
     
     /*!
       Eject media in CD drive. If successful, as a side effect we 

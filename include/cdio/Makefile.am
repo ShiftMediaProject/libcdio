@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.9 2004/05/10 03:28:51 rocky Exp $
+#   $Id: Makefile.am,v 1.10 2004/07/08 01:27:58 rocky Exp $
 #
-#    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 libcdioincludedir=$(includedir)/cdio
 libcdioinclude_HEADERS = \
 	cdio.h \
+	cdtext.h \
 	cd_types.h \
 	iso9660.h \
 	logging.h \

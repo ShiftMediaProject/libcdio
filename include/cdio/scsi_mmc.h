@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.5 2004/06/27 22:00:08 rocky Exp $
+    $Id: scsi_mmc.h,v 1.6 2004/07/08 01:27:59 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -36,17 +36,18 @@
 
 /*! The generic packet command opcodes for CD/DVD Logical Units. */
 
-#define CDIO_MMC_MODE_SENSE 	        0x1a
-#define CDIO_MMC_START_STOP             0x1b
-#define CDIO_MMC_GPCMD_READ_10	        0x28
-#define CDIO_MMC_GPCMD_READ_SUBCHANNEL	0x42
-#define CDIO_MMC_READ_TOC               0x43
-#define CDIO_MMC_MODE_SELECT	        0x55
-#define CDIO_MMC_MODE_SELECT_6	        0x15
-#define CDIO_MMC_MODE_SENSE_10	        0x5a
-#define CDIO_MMC_GPCMD_READ_12	        0xa8
-#define CDIO_MMC_GPCMD_READ_CD	        0xbe
-#define CDIO_MMC_GPCMD_READ_MSF	        0xb9
+#define CDIO_MMC_GPCMD_MODE_SENSE 	     0x1a
+#define CDIO_MMC_GPCMD_START_STOP            0x1b
+#define CDIO_MMC_GPCMD_READ_10	             0x28
+#define CDIO_MMC_GPCMD_READ_SUBCHANNEL	     0x42
+#define CDIO_MMC_GPCMD_READ_TOC              0x43
+#define CDIO_MMC_GPCMD_MODE_SELECT	     0x55
+#define CDIO_MMC_GPCMD_MODE_SELECT_6	     0x15
+#define CDIO_MMC_GPCMD_MODE_SENSE_10	     0x5a
+#define CDIO_MMC_GPCMD_READ_12	             0xa8
+#define CDIO_MMC_GPCMD_READ_CD	             0xbe
+#define CDIO_MMC_GPCMD_READ_MSF	             0xb9
+#define CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL  0x1e
 
 
 /*! Page codes for MODE SENSE and MODE SET. */

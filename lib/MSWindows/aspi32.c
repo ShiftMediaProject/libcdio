@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.12 2004/06/28 00:24:00 rocky Exp $
+    $Id: aspi32.c,v 1.13 2004/07/08 01:28:01 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.12 2004/06/28 00:24:00 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.13 2004/07/08 01:28:01 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -542,7 +542,7 @@ read_toc_aspi (_img_private_t *env)
   ssc.SRB_CDBLen      = 10;
   
   /* Operation code */
-  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_READ_TOC);
+  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_CPCMD_READ_TOC);
   
   /* Format */
   ssc.CDBByte[ 2 ] = READ_TOC_FORMAT_TOC;
@@ -707,7 +707,7 @@ get_drive_cap_aspi (const _img_private_t *env)
   ssc.SRB_CDBLen   = 12;
 
   /* Operation code */
-  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_MODE_SENSE_10);
+  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_GPCMD_MODE_SENSE_10);
   ssc.CDBByte[1]             = 0x0;
   ssc.CDBByte[2]             = CDIO_MMC_ALL_PAGES;
   ssc.CDBByte[7]             = 0x01;
