@@ -1,8 +1,8 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.19 2003/10/03 17:29:59 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.20 2004/03/20 03:34:12 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.19 2003/10/03 17:29:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.20 2004/03/20 03:34:12 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -196,12 +196,57 @@ _read_audio_sectors (void *env, void *data, lsn_t lsn,
 }
 
 /*!
+   Reads a single mode1 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+static int
+_cdio_read_mode1_sector (void *env, void *data, lsn_t lsn, 
+			 bool b_form2)
+{
+
+  char buf[M2RAW_SECTOR_SIZE] = { 0, };
+#if FIXED
+  do something here. 
+#else
+  if (0 > cdio_generic_lseek(env, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
+    return -1;
+  if (0 > cdio_generic_read(env, buf, CDIO_CD_FRAMESIZE))
+    return -1;
+  memcpy (data, buf, b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
+#endif
+  return 0;
+}
+
+/*!
+   Reads nblocks of mode2 sectors from cd device into data starting
+   from lsn.
+   Returns 0 if no error. 
+ */
+static int
+_cdio_read_mode1_sectors (void *env, void *data, lsn_t lsn, 
+			  bool b_form2, unsigned int nblocks)
+{
+  _img_private_t *_obj = env;
+  unsigned int i;
+  int retval;
+  unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
+
+  for (i = 0; i < nblocks; i++) {
+    if ( (retval = _cdio_read_mode1_sector (_obj, 
+					    ((char *)data) + (blocksize * i),
+					    lsn + i, b_form2)) )
+      return retval;
+  }
+  return 0;
+}
+
+/*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
 static int
 _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
-		    bool mode2_form2)
+			 bool b_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
@@ -246,7 +291,7 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
       break;
     }
 
-  if (mode2_form2)
+  if (b_form2)
     memcpy (data, buf, M2RAW_SECTOR_SIZE);
   else
     memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
@@ -261,14 +306,14 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn, 
-			  bool mode2_form2, unsigned int nblocks)
+			  bool b_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   int i;
   int retval;
 
   for (i = 0; i < nblocks; i++) {
-    if (mode2_form2) {
+    if (b_form2) {
       if ( (retval = _cdio_read_mode2_sector (_obj, 
 					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
 					  lsn + i, true)) )
@@ -667,8 +712,10 @@ cdio_open_bsdi (const char *source_name)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
-    .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_audio_sectors = _read_audio_sectors,
+    .read_mode1_sector  = _cdio_read_mode1_sector,
+    .read_mode1_sectors = _cdio_read_mode1_sectors,
+    .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
     .stat_size          = _cdio_stat_size
