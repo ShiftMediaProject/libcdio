@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.23 2004/07/24 11:50:50 rocky Exp $
+    $Id: freebsd_cam.c,v 1.24 2004/07/25 09:39:40 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.23 2004/07/24 11:50:50 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.24 2004/07/25 09:39:40 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -62,6 +62,8 @@ scsi_mmc_run_cmd_freebsd_cam( const void *p_user_data, int i_timeout,
   int   i_status;
   union ccb ccb;
 
+  if (!p_env || !p_env->cam) return -2;
+    
   ccb.ccb_h.path_id    = p_env->cam->path_id;
   ccb.ccb_h.target_id  = p_env->cam->target_id;
   ccb.ccb_h.target_lun = p_env->cam->target_lun;
@@ -128,6 +130,8 @@ init_freebsd_cam (_img_private_t *p_env)
 	   p_env->ccb.cgdl.periph_name,
 	   p_env->ccb.cgdl.unit_number);
   p_env->cam = cam_open_pass (pass,O_RDWR,NULL);
+  if (!p_env->cam) return false;
+  
   p_env->gen.init   = true;
   p_env->b_cam_init = true;
   return true;
