@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.6 2005/01/13 04:00:15 rocky Exp $
+  $Id: paranoia.c,v 1.7 2005/01/14 01:37:33 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -1098,6 +1098,8 @@ paranoia_free(cdrom_paranoia_t *p)
 {
   paranoia_resetall(p);
   sort_free(p->sortcache);
+  free_list(p->cache, 1);
+  free_list(p->fragments, 1);
   free(p);
 }
 
