@@ -1,7 +1,7 @@
 /*
-  $Id: testdefault.c,v 1.5 2004/05/07 10:57:50 rocky Exp $
+  $Id: testdefault.c,v 1.6 2005/01/23 05:51:44 rocky Exp $
 
-  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -93,6 +93,8 @@ main(int argc, const char *argv[])
   }
 
   if (!is_in(nrg_images, nrg_files[0])) {
+    cdio_free_device_list(nrg_images);
+    free(nrg_images);
     return 10;
   }
       
@@ -188,6 +190,10 @@ main(int argc, const char *argv[])
     return 15;
   }
     
+  cdio_free_device_list(nrg_images);
+  free(nrg_images);
+  cdio_free_device_list(bincue_images);
+  free(bincue_images);
   cdio_free_device_list(imgs);
   free(imgs);
 
