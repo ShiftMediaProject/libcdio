@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.16 2003/09/28 22:11:00 rocky Exp $
+#   $Id: Makefile.am,v 1.17 2003/11/09 13:56:42 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -43,6 +43,9 @@ DISTFILES_REGRESSION = tests/monvoisin.nrg  tests/monvoisin.right \
 REGRESSION_VERSION = 1.1
 
 distdir_regression = ../$(PACKAGE)-$(REGRESSION_VERSION)-tests
+
+doxygen:
+	-( cd ${top_srcdir}/doc/doxygen && /bin/sh ${srcdir}/run_doxygen )
 
 dist-regression: distdir-regression
 	cd $(distdir) && $(AMTAR) chof - tests | GZIP=$(GZIP_ENV) gzip -c >$(distdir_regression).tar.gz
