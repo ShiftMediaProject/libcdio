@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.22 2005/03/14 02:02:49 rocky Exp $
+    $Id: device.h,v 1.23 2005/03/21 09:19:06 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -226,7 +226,7 @@ extern "C" {
     it was DRIVER_UNKNOWN or DRIVER_DEVICE; If this is NULL, we won't
     report back the driver used.
   */
-  driver_return_code_t cdio_close_tray (const char *psz_device, 
+  driver_return_code_t cdio_close_tray (const char *psz_drive, 
 					/*in/out*/ driver_id_t *p_driver_id);
 
   /*!

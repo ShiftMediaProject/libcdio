@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.18 2005/03/09 10:23:01 rocky Exp $
+    $Id: mmc.h,v 1.19 2005/03/21 09:19:06 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -420,10 +420,11 @@ typedef struct mmc_cdb_s {
   Read Audio Subchannel information
   
   @param p_cdio the CD object to be acted upon.
-  
+  @param p_subchannel place for returned subchannel information
 */
 driver_return_code_t
-mmc_audio_read_subchannel (CdIo_t *p_cdio, cdio_subchannel_t *p_subchannel);
+mmc_audio_read_subchannel (CdIo_t *p_cdio, 
+                           /*out*/ cdio_subchannel_t *p_subchannel);
   
   /*!
     Return a string containing the name of the audio state as returned from
@@ -632,7 +633,9 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio, cdio_subchannel_t *p_subchannel);
    For data Mode 2, form 2, User Data is 2 324 bytes beginning at
    offset CDIO_CD_XA_SYNC_HEADER.
    
-   @param b_edc_ecc, Return EDC/ECC error detection/correction bits.
+   @param b_sync 
+
+   @param b_edc_ecc true if we return EDC/ECC error detection/correction bits.
    
    The presence and size of EDC redundancy or ECC parity is defined
    according to sector type: 
@@ -693,7 +696,8 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio, cdio_subchannel_t *p_subchannel);
                  M2RAW_SECTOR_SIZE.
 
     @param i_lsn sector to read
-    @param i_blocksize
+    @param i_blocksize size of each block
+    @param i_blocks number of blocks to read
 
   */
   driver_return_code_t mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf, 

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: audio.h,v 1.9 2005/03/19 06:42:24 rocky Exp $
+    $Id: audio.h,v 1.10 2005/03/21 09:19:06 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -88,20 +88,15 @@ extern "C" {
   driver_return_code_t cdio_audio_pause (CdIo_t *p_cdio);
 
   /*!
-    Pause playing CD through analog output
-
-    @param p_cdio the CD object to be acted upon.
-  */
-  driver_return_code_t cdio_audio_pause (CdIo_t *p_cdio);
-
-  /*!
     Playing CD through analog output at the given MSF.
 
     @param p_cdio the CD object to be acted upon.
+    @param p_start_msf pointer to staring MSF
+    @param p_end_msf pointer to ending MSF
   */
   driver_return_code_t cdio_audio_play_msf (CdIo_t *p_cdio, 
-					    msf_t *p_start_msf,
-					    msf_t *p_end_msf);
+					    /*in*/msf_t *p_start_msf,
+					    /*in*/ msf_t *p_end_msf);
 
   /*!
     Playing CD through analog output at the desired track and index
@@ -116,9 +111,10 @@ extern "C" {
     Get subchannel information.
 
     @param p_cdio the CD object to be acted upon.
+    @param p_subchannel place for returned subchannel information
   */
   driver_return_code_t cdio_audio_read_subchannel (CdIo_t *p_cdio, 
-						   cdio_subchannel_t *p_subchannel);
+						   /*out*/ cdio_subchannel_t *p_subchannel);
 
   /*!
     Resume playing an audio CD.
@@ -132,9 +128,10 @@ extern "C" {
     Set volume of an audio CD.
     
     @param p_cdio the CD object to be acted upon.
+    @param p_volume place for returned volume-level information
 
   */
-  driver_return_code_t cdio_audio_set_volume (CdIo_t *p_cdio,
+  driver_return_code_t cdio_audio_set_volume (CdIo_t *p_cdio, /*out*/
 					      cdio_audio_volume_t *p_volume);
 
   /*!
