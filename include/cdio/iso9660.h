@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.22 2003/09/20 11:53:09 rocky Exp $
+    $Id: iso9660.h,v 1.23 2003/09/20 12:33:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -36,6 +36,8 @@
 #include <cdio/xa.h>
 
 #include <time.h>
+
+#define	_delta(from, to)	((to) - (from) + 1)
 
 #define MIN_TRACK_SIZE 4*75
 #define MIN_ISO_SIZE MIN_TRACK_SIZE
@@ -105,42 +107,55 @@ struct	iso9660_dtime {
 
 typedef struct iso9660_dtime  iso9660_dtime_t;
 
+struct	iso9660_ltime {
+  char	 lt_year	[_delta(   1,	4)];   /* Add 1900 for Julian year */
+  char	 lt_month	[_delta(   5,	6)];   /* 1..12. Note starts at 1. */
+  char	 lt_day		[_delta(   7,	8)];
+  char	 lt_hour	[_delta(   9,	10)];
+  char	 lt_minute	[_delta(  11,	12)];
+  char	 lt_second	[_delta(  13,	14)];
+  char	 lt_hsecond	[_delta(  15,	16)];  /* 1/100's of a second */
+  int8_t lt_gmtoff	[_delta(  17,	17)];
+} GNUC_PACKED;
+
+typedef struct iso9660_ltime  iso9660_ltime_t;
+
 /* ISO-9660 Primary Volume Descriptor.
  */
 struct iso9660_pvd {
-  uint8_t  type;                      /* 711 */
-  char     id[5];
-  uint8_t  version;                   /* 711 */
-  char     unused1[1];
-  char     system_id[32];             /* achars */
-  char     volume_id[32];             /* dchars */
-  char     unused2[8];
-  uint64_t volume_space_size;         /* 733 */
-  char     escape_sequences[32];
-  uint32_t volume_set_size;           /* 723 */
-  uint32_t volume_sequence_number;    /* 723 */
-  uint32_t logical_block_size;        /* 723 */
-  uint64_t path_table_size;           /* 733 */
-  uint32_t type_l_path_table;         /* 731 */
-  uint32_t opt_type_l_path_table;     /* 731 */
-  uint32_t type_m_path_table;         /* 732 */
-  uint32_t opt_type_m_path_table;     /* 732 */
-  char     root_directory_record[34]; /* 9.1 */
-  char     volume_set_id[128];        /* dchars */
-  char     publisher_id[128];         /* achars */
-  char     preparer_id[128];          /* achars */
-  char     application_id[128];       /* achars */
-  char     copyright_file_id[37];     /* 7.5 dchars */
-  char     abstract_file_id[37];      /* 7.5 dchars */
-  char     bibliographic_file_id[37]; /* 7.5 dchars */
-  char     creation_date[17];         /* 8.4.26.1 */
-  char     modification_date[17];     /* 8.4.26.1 */
-  char     expiration_date[17];       /* 8.4.26.1 */
-  char     effective_date[17];        /* 8.4.26.1 */
-  uint8_t  file_structure_version;    /* 711 */
-  char     unused4[1];
-  char     application_data[512];
-  char     unused5[653];
+  uint8_t          type;                      /* 711 */
+  char             id[5];
+  uint8_t          version;                   /* 711 */
+  char             unused1[1];
+  char             system_id[32];             /* achars */
+  char             volume_id[32];             /* dchars */
+  char             unused2[8];
+  uint64_t         volume_space_size;         /* 733 */
+  char             escape_sequences[32];
+  uint32_t         volume_set_size;           /* 723 */
+  uint32_t         volume_sequence_number;    /* 723 */
+  uint32_t         logical_block_size;        /* 723 */
+  uint64_t         path_table_size;           /* 733 */
+  uint32_t         type_l_path_table;         /* 731 */
+  uint32_t         opt_type_l_path_table;     /* 731 */
+  uint32_t         type_m_path_table;         /* 732 */
+  uint32_t         opt_type_m_path_table;     /* 732 */
+  char             root_directory_record[34]; /* 9.1 */
+  char             volume_set_id[128];        /* dchars */
+  char             publisher_id[128];         /* achars */
+  char             preparer_id[128];          /* achars */
+  char             application_id[128];       /* achars */
+  char             copyright_file_id[37];     /* 7.5 dchars */
+  char             abstract_file_id[37];      /* 7.5 dchars */
+  char             bibliographic_file_id[37]; /* 7.5 dchars */
+  iso9660_ltime_t  creation_date;             /* 8.4.26.1 */
+  iso9660_ltime_t  modification_date;         /* 8.4.26.1 */
+  iso9660_ltime_t  expiration_date;           /* 8.4.26.1 */
+  iso9660_ltime_t  effective_date;            /* 8.4.26.1 */
+  uint8_t          file_structure_version;    /* 711 */
+  char             unused4[1];
+  char             application_data[512];
+  char             unused5[653];
 } GNUC_PACKED;
 
 typedef struct iso9660_dir  iso9660_dir_t;
@@ -231,9 +246,15 @@ char *iso9660_strncpy_pad(char dst[], const char src[], size_t len,
 /*!
   Set time in format used in ISO 9660 directory index record
   from a Unix time structure. */
-  void iso9660_set_time (const struct tm *tm, 
-                         /*out*/ iso9660_dtime_t *idr_date);
+  void iso9660_set_dtime (const struct tm *tm, 
+                          /*out*/ iso9660_dtime_t *idr_date);
 
+
+/*!
+  Set "long" time in format used in ISO 9660 primary volume descriptor
+  from a Unix time structure. */
+  void iso9660_set_ltime (const struct tm *_tm, 
+                          /*out*/ iso9660_ltime_t *pvd_date);
 
 /*!
   Get time structure from structure in an ISO 9660 directory index 
