@@ -1,5 +1,5 @@
 /*
-  $Id: utils.h,v 1.5 2005/01/14 01:36:12 rocky Exp $
+  $Id: utils.h,v 1.6 2005/01/23 00:20:43 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -35,64 +35,6 @@ bigendianp(void)
 }
 
 extern char *catstring(char *buff, const char *s);
-
-
-/*#if BYTE_ORDER == LITTLE_ENDIAN*/
-
-#ifndef WORDS_BIGENDIAN
-
-static inline int32_t be32_to_cpu(int32_t x){
-  return(UINT32_SWAP_LE_BE_C(x));
-}
-
-static inline int16_t be16_to_cpu(int16_t x){
-  return(UINT16_SWAP_LE_BE_C(x));
-}
-
-static inline int32_t le32_to_cpu(int32_t x){
-  return(x);
-}
-
-static inline int16_t le16_to_cpu(int16_t x){
-  return(x);
-}
-
-#else
-
-static inline int32_t be32_to_cpu(int32_t x){
-  return(x);
-}
-
-static inline int16_t be16_to_cpu(int16_t x){
-  return(x);
-}
-
-static inline int32_t le32_to_cpu(int32_t x){
-  return(UINT32_SWAP_LE_BE_C(x));
-}
-
-static inline int16_t le16_to_cpu(int16_t x){
-  return(UINT16_SWAP_LE_BE_C(x));
-}
-
-
-#endif
-
-static inline int32_t cpu_to_be32(int32_t x){
-  return(be32_to_cpu(x));
-}
-
-static inline int32_t cpu_to_le32(int32_t x){
-  return(le32_to_cpu(x));
-}
-
-static inline int16_t cpu_to_be16(int16_t x){
-  return(be16_to_cpu(x));
-}
-
-static inline int16_t cpu_to_le16(int16_t x){
-  return(le16_to_cpu(x));
-}
 
 void cderror(cdrom_drive_t *d, const char *s);
 
