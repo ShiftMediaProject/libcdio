@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.7 2005/01/08 20:39:40 rocky Exp $
+  $Id: cooked_interface.c,v 1.8 2005/01/09 00:47:07 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -80,7 +80,7 @@ cooked_read (cdrom_drive_t *d, void *p, lsn_t begin, long sectors)
   char *buffer=(char *)p;
 
   /* read d->nsectors at a time, max. */
-  sectors=( sectors > d->nsectors ? d->nsectors : sectors);
+  sectors=( sectors > d->nsectors && d->nsectors > 0 ? d->nsectors : sectors);
 
   retry_count=0;
 

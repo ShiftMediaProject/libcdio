@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.3 2005/01/01 15:08:48 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.4 2005/01/09 00:47:07 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.3 2005/01/01 15:08:48 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.4 2005/01/09 00:47:07 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -205,7 +205,12 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
     cdio_debug ("reading %d", lsn);
   
   p_env->gen.ioctls_debugged++;
-  
+
+  if (nblocks > 60) {
+    cdio_warn("%s:\n", 
+	      "we can't handle reading more than 60 blocks. Reset to 60");
+  }
+
   cdda.cdda_addr    = lsn;
   cdda.cdda_length  = nblocks;
   cdda.cdda_data    = (caddr_t) data;
