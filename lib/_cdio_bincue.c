@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.34 2003/10/02 02:59:58 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.35 2003/10/03 02:36:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.34 2003/10/02 02:59:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.35 2003/10/03 02:36:52 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -42,6 +42,9 @@ static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.34 2003/10/02 02:59:58 roc
 #endif
 #ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
 #endif
 #ifdef HAVE_GLOB_H
 #include <glob.h>

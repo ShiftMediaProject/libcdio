@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.28 2003/10/03 01:12:23 rocky Exp $
+    $Id: cdio.h,v 1.29 2003/10/03 02:36:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -391,6 +391,8 @@ extern "C" {
   CdIo * cdio_open_solaris (const char *source_name);
   
   char * cdio_get_default_device_solaris(void);
+  
+  char **cdio_get_devices_solaris(void);
   
   /*! Darwin OS X CD-reading routines. 
      NULL is returned on error.

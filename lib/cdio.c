@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.31 2003/10/02 02:59:58 rocky Exp $
+    $Id: cdio.c,v 1.32 2003/10/03 02:36:52 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.31 2003/10/02 02:59:58 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.32 2003/10/03 02:36:52 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -88,7 +88,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_open_bsdi,
    &cdio_get_default_device_bsdi,
    &cdio_is_device_generic,
-   NULL
+   &cdio_get_devices_bsdi
   },
 
   {DRIVER_FREEBSD, 
@@ -121,7 +121,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_open_solaris,
    &cdio_get_default_device_solaris,
    &cdio_is_device_generic,
-   NULL
+   &cdio_get_devices_solaris
   },
 
   {DRIVER_OSX, 

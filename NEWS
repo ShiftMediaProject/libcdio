@@ -11,6 +11,7 @@
    for plugins that want to find a CD-DA to play or find a plugin that handles
    a particular device. 
 -  Start Darwin driver.
+-  BSDI fixes
 
 0.63
 -  create libiso9660 library and install that.
