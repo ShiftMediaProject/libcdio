@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.23 2005/03/19 23:47:53 rocky Exp $
+    $Id: cdda-player.c,v 1.24 2005/03/21 09:00:20 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -81,6 +81,7 @@ static void display_cdinfo(CdIo_t *p_cdio, track_t i_tracks,
 static void get_cddb_track_info(track_t i_track);
 static void get_cdtext_track_info(track_t i_track);
 static void get_track_info(track_t i_track);
+static void list_tracks(bool b_keypress_wait);
 
 CdIo_t             *p_cdio;               /* libcdio handle */
 driver_id_t        driver_id = DRIVER_DEVICE;
@@ -169,6 +170,24 @@ const char key_bindings[][MAX_KEY_STR] = {
   "    a         toggle auto-mode",
 };
 
+typedef enum {
+  NO_OP=0,
+  PLAY_CD=1,
+  PLAY_TRACK=2,
+  STOP_PLAYING=3,
+  EJECT_CD=4,
+  CLOSE_CD=5,
+  SET_VOLUME=6,
+  LIST_SUBCHANNEL=7,
+  LIST_KEYS=8,
+  LIST_TRACKS=9,
+  PS_LIST_TRACKS=10,
+  TOGGLE_PAUSE=11,
+  EXIT_PROGRAM=12
+} cd_operation_t;
+
+cd_operation_t cd_op; /* operation to do in non-interactive mode */
+  
 const unsigned int i_key_bindings = sizeof(key_bindings) / MAX_KEY_STR;
 
 /* ---------------------------------------------------------------------- */
@@ -823,6 +842,8 @@ keypress_wait(CdIo_t *p_cdio)
     while (1 != select_wait(b_cd ? 1 : 5)) {
       read_subchannel(p_cdio);
       display_status(true);
+      if (LIST_TRACKS == cd_op && i_last_display_track != sub.track) 
+	list_tracks(false);
     }
     key = getch();
     clrtobot();
@@ -843,7 +864,7 @@ list_keys()
 }
 
 static void
-list_tracks(void)
+list_tracks(bool b_keypress_wait)
 {
   track_t i;
   int i_line=0;
@@ -871,7 +892,7 @@ list_tracks(void)
       mvprintw(i_line++, 0, line);
       clrtoeol();
     }
-    keypress_wait(p_cdio);
+    if (b_keypress_wait) keypress_wait(p_cdio);
   }
 }
 
@@ -1192,19 +1213,6 @@ ps_list_tracks(void)
   printf("showpage\n");
 }
 
-typedef enum {
-  PLAY_CD=1,
-  PLAY_TRACK=2,
-  STOP_PLAYING=3,
-  EJECT_CD=4,
-  CLOSE_CD=5,
-  SET_VOLUME=6,
-  LIST_SUBCHANNEL=7,
-  LIST_KEYS=8,
-  LIST_TRACKS=9,
-  PS_LIST_TRACKS=10
-} cd_operation_t;
-
 int
 main(int argc, char *argv[])
 {    
@@ -1212,8 +1220,6 @@ main(int argc, char *argv[])
   char *h;
   int  i_rc = 0;
   int  i_volume_level = 0;
-  cd_operation_t todo; /* operation to do in non-interactive mode */
-  
   psz_program = strrchr(argv[0],'/');
   psz_program = psz_program ? psz_program+1 : argv[0];
 
@@ -1241,7 +1247,7 @@ main(int argc, char *argv[])
     case 'L':
       if (NULL != (h = strchr(optarg,'-'))) {
 	i_volume_level = atoi(optarg);
-	todo = SET_VOLUME;
+	cd_op = SET_VOLUME;
       }
     case 't':
       if (NULL != (h = strchr(optarg,'-'))) {
@@ -1256,35 +1262,35 @@ main(int argc, char *argv[])
 	one_track = 1;
       }
       interactive = false;
-      todo = PLAY_TRACK;
+      cd_op = PLAY_TRACK;
       break;
     case 'p':
       interactive = false;
-      todo = PLAY_CD;
+      cd_op = PLAY_CD;
       break;
     case 'l':
       interactive = false;
-      todo = LIST_TRACKS;
+      cd_op = LIST_TRACKS;
       break;
     case 'C':
       interactive = false;
-      todo = CLOSE_CD;
+      cd_op = CLOSE_CD;
       break;
     case 'c':
       interactive = false;
-      todo = PS_LIST_TRACKS;
+      cd_op = PS_LIST_TRACKS;
       break;
     case 's':
       interactive = false;
-      todo = STOP_PLAYING;
+      cd_op = STOP_PLAYING;
       break;
     case 'S':
       interactive = false;
-      todo = LIST_SUBCHANNEL;
+      cd_op = LIST_SUBCHANNEL;
       break;
     case 'e':
       interactive = false;
-      todo = EJECT_CD;
+      cd_op = EJECT_CD;
       break;
     case 'k':
       print_keys();
@@ -1329,7 +1335,7 @@ main(int argc, char *argv[])
     fprintf(stderr,"open %s... ", psz_device);
 
   p_cdio = cdio_open (psz_device, driver_id);
-  if (!p_cdio && todo != EJECT_CD) {
+  if (!p_cdio && cd_op != EJECT_CD) {
     cd_close(psz_device);
     p_cdio = cdio_open (psz_device, driver_id);
   }
@@ -1346,10 +1352,10 @@ main(int argc, char *argv[])
   if (!interactive) {
     b_sig = true;
     nostop=1;
-    if (EJECT_CD == todo) {
+    if (EJECT_CD == cd_op) {
       i_rc = cd_eject() ? 0 : 1;
     } else {
-      switch (todo) {
+      switch (cd_op) {
       case PS_LIST_TRACKS:
       case PLAY_TRACK:
 	read_toc(p_cdio);
@@ -1357,7 +1363,7 @@ main(int argc, char *argv[])
 	break;
       }
       if (p_cdio)
-	switch (todo) {
+	switch (cd_op) {
 	case STOP_PLAYING:
 	  i_rc = cd_stop(p_cdio) ? 0 : 1;
 	  break;
@@ -1412,6 +1418,9 @@ main(int argc, char *argv[])
 	  break;
 	case LIST_KEYS:
 	case LIST_TRACKS:
+	case TOGGLE_PAUSE:
+	case EXIT_PROGRAM:
+	case NO_OP:
 	  break;
 	}
       else {
@@ -1438,28 +1447,34 @@ main(int argc, char *argv[])
 	/* fall through */
       case 'Q':
       case 'q':
+	cd_op  = EXIT_PROGRAM;
 	b_sig = true;
 	break;
       case 'E':
       case 'e':
+	cd_op = EJECT_CD;
 	cd_eject();
 	break;
       case 's':
+	cd_op = STOP_PLAYING;
 	cd_stop(p_cdio);
 	break;
       case 'C':
       case 'c':
+	cd_op = CLOSE_CD;
 	cd_close(psz_device);
 	break;
       case 'L':
       case 'l':
-	list_tracks();
+	cd_op = LIST_TRACKS;
+	list_tracks(true);
 	break;
       case 'K':
       case 'k':
       case 'h':
       case 'H':
       case '?':
+	cd_op = LIST_KEYS;
 	list_keys();
 	break;
       case ' ':
