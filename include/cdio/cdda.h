@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.18 2005/02/05 23:52:20 rocky Exp $
+  $Id: cdda.h,v 1.19 2005/02/05 23:53:06 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -184,11 +184,11 @@ extern cdrom_drive_t *cdio_cddap_identify(const char *psz_device,
 					  int messagedest, 
 					  char **ppsz_message);
 
-/** Returns a paranoia CD-ROM drive object with a CD-DA in it.  
-    In contrast to cdio_cddap_identify, we start out with an initialzed p_cdio
-    object. For example you may have used that for other purposes such
-    as to get CDDB/CD-Text information.
-    @see cdio_cddap_identify
+/** Returns a paranoia CD-ROM drive object with a CD-DA in it.  In
+    contrast to cdio_cddap_identify, we start out with an initialized
+    p_cdio object. For example you may have used that for other
+    purposes such as to get CDDB/CD-Text information.  @see
+    cdio_cddap_identify
  */
 cdrom_drive_t *cdio_cddap_identify_cdio(CdIo_t *p_cdio, 
 					int messagedest, char **ppsz_messages);
