@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: freebsd.h,v 1.2 2005/01/27 04:00:48 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -223,8 +223,7 @@ int run_scsi_cmd_freebsd_cam( const void *p_user_data,
 /*!
    Return the size of the CD in logical block address (LBA) units.
  */
-uint32_t stat_size_freebsd_cam (_img_private_t *env);
-uint32_t stat_size_freebsd_ioctl (_img_private_t *env);
+lsn_t get_disc_last_lsn_freebsd_ioctl (_img_private_t *_obj);
 
 bool init_freebsd_cam (_img_private_t *env);
 void free_freebsd_cam (void *user_data);

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.3 2005/01/24 00:06:31 rocky Exp $
+    $Id: freebsd_cam.c,v 1.4 2005/01/27 04:00:48 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.3 2005/01/24 00:06:31 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.4 2005/01/27 04:00:48 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -155,7 +155,7 @@ free_freebsd_cam (void *user_data)
   free (p_env);
 }
 
-static driver_return_code_t
+driver_return_code_t
 read_mode2_sector_freebsd_cam (_img_private_t *p_env, void *data, lsn_t lsn, 
 			       bool b_form2)
 {

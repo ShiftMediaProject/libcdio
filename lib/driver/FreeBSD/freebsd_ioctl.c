@@ -1,7 +1,7 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.2 2005/01/24 00:06:31 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.3 2005/01/27 04:00:48 rocky Exp $
 
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.2 2005/01/24 00:06:31 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.3 2005/01/27 04:00:48 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
