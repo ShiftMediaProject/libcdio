@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.16 2004/02/07 02:40:20 rocky Exp $
+  $Id: cd-read.c,v 1.17 2004/05/04 02:06:48 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -41,6 +41,7 @@ enum {
   OP_SOURCE_BIN,
   OP_SOURCE_CUE,
   OP_SOURCE_NRG         = DRIVER_NRG,
+  OP_SOURCE_CDRDAO         = DRIVER_CDRDAO,
   OP_SOURCE_DEVICE      = DRIVER_DEVICE,
 
   /* These are the remaining configuration options */
@@ -218,6 +219,9 @@ parse_options (int argc, const char *argv[])
     
     {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
      OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
+    
+    {"toc-file", 't', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+     OP_SOURCE_CDRDAO, "set \"TOC\" CD-ROM disk image file as source", "FILE"},
     
     {"output-file",     'o', POPT_ARG_STRING, &opts.output_file, 0,
      "Output blocks to file rather than give a hexdump."},
@@ -469,6 +473,14 @@ main(int argc, const char *argv[])
     cdio = cdio_open (source_name, DRIVER_NRG);
     if (cdio==NULL) {
       err_exit("Error in opening NRG file %s for input\n", 
+	       source_name);
+    } 
+    break;
+
+  case IMAGE_CDRDAO:
+    cdio = cdio_open (source_name, DRIVER_CDRDAO);
+    if (cdio==NULL) {
+      err_exit("Error in opening TOC file %s for input\n", 
 	       source_name);
     } 
     break;

@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.13 2004/04/25 14:07:23 rocky Exp $
+    $Id: types.h,v 1.14 2004/05/04 02:06:48 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -287,6 +287,20 @@ typedef int cdio_fs_anal_t;
 #define CDIO_DRIVE_CAP_DVD_WRITER \
    (CDIO_DRIVE_CAP_DVD_R|CDIO_DRIVE_CAP_DVD_RAM)
 /**< Has some sort of DVD writer ability */
+
+/*! 
+  track flags
+  Q Sub-channel Control Field (4.2.3.3)
+*/
+typedef enum {
+  CDIO_TRACK_FLAG_NONE = 		0x00,	/**< no flags set */
+  CDIO_TRACK_FLAG_PRE_EMPHASIS =	0x01,	/**< audio track recorded with
+                                                     pre-emphasis */
+  CDIO_TRACK_FLAG_COPY_PERMITTED =	0x02,	/**< digital copy permitted */
+  CDIO_TRACK_FLAG_DATA =		0x04,	/**< data track */
+  CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO =	0x08,	/**< 4 audio channels */
+  CDIO_TRACK_FLAG_SCMS =			0x10	/**< SCMS (5.29.2.7) */
+} cdio_track_flag;
 
 #ifdef __cplusplus
 }

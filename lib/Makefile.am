@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.33 2004/04/30 09:59:54 rocky Exp $
+#   $Id: Makefile.am,v 1.34 2004/05/04 02:06:48 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -72,6 +72,7 @@ libcdio_sources = \
         FreeBSD/freebsd_cam.c \
 	FreeBSD/freebsd_ioctl.c \
 	image/bincue.c \
+	image/cdrdao.c \
 	image_common.h \
 	image/nrg.c \
 	logging.c \

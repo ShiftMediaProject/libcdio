@@ -1,5 +1,5 @@
 /*
-  $Id: util.h,v 1.3 2004/04/25 00:46:34 rocky Exp $
+  $Id: util.h,v 1.4 2004/05/04 02:06:48 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -85,6 +85,7 @@ typedef enum
   IMAGE_BIN,
   IMAGE_CUE,
   IMAGE_NRG,
+  IMAGE_CDRDAO,
   IMAGE_UNKNOWN
 } source_image_t;
 

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.58 2004/04/25 00:46:34 rocky Exp $
+    $Id: cd-info.c,v 1.59 2004/05/04 02:06:48 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -105,6 +105,7 @@ enum {
   OP_SOURCE_AUTO,
   OP_SOURCE_BIN,
   OP_SOURCE_CUE,
+  OP_SOURCE_CDRDAO,
   OP_SOURCE_NRG ,
   OP_SOURCE_DEVICE,
   
@@ -197,6 +198,9 @@ parse_options (int argc, const char *argv[])
     {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
      OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
     
+    {"toc-file", 't', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+     OP_SOURCE_CDRDAO, "set cdrdao CD-ROM disk image file as source", "FILE"},
+    
     {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
      "Don't produce warning output" },
     
@@ -215,6 +219,7 @@ parse_options (int argc, const char *argv[])
     case OP_SOURCE_AUTO:
     case OP_SOURCE_BIN: 
     case OP_SOURCE_CUE: 
+    case OP_SOURCE_CDRDAO: 
     case OP_SOURCE_NRG: 
     case OP_SOURCE_DEVICE: 
       if (opts.source_image != IMAGE_UNKNOWN) {
@@ -231,6 +236,9 @@ parse_options (int argc, const char *argv[])
 	break;
       case OP_SOURCE_CUE: 
 	opts.source_image  = IMAGE_CUE;
+	break;
+      case OP_SOURCE_CDRDAO: 
+	opts.source_image  = IMAGE_CDRDAO;
 	break;
       case OP_SOURCE_NRG: 
 	opts.source_image  = IMAGE_NRG;
@@ -255,7 +263,8 @@ parse_options (int argc, const char *argv[])
     if ( remaining_arg != NULL) {
       if (opts.source_image != IMAGE_UNKNOWN) {
 	fprintf (stderr, 
-		 "%s: Source specified in option %s and as %s\n", 
+		 "%s: Source '%s' given as an argument of an option and as "
+		 "unnamed option '%s'\n", 
 		 program_name, source_name, remaining_arg);
 	poptFreeContext(optCon);
 	free(program_name);
@@ -444,10 +453,10 @@ print_cddb_info(CdIo *cdio, track_t num_tracks, track_t first_track_num) {
 
 #ifdef HAVE_VCDINFO
 static void 
-print_vcd_info(void) {
+print_vcd_info(driver_id_t driver) {
   vcdinfo_open_return_t open_rc;
   vcdinfo_obj_t *obj;
-  open_rc = vcdinfo_open(&obj, &source_name, DRIVER_UNKNOWN, NULL);
+  open_rc = vcdinfo_open(&obj, &source_name, driver, NULL);
   switch (open_rc) {
   case VCDINFO_OPEN_VCD: 
     if (vcdinfo_get_format_version (obj) == VCD_TYPE_INVALID) {
@@ -691,7 +700,7 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
   if (fs & (CDIO_FS_ANAL_VIDEOCD|CDIO_FS_ANAL_CVD|CDIO_FS_ANAL_SVCD)) 
     if (!opts.no_vcd) {
       printf("\n");
-      print_vcd_info();
+      print_vcd_info(cdio_get_driver_id(cdio));
     }
 #endif    
 
@@ -808,6 +817,14 @@ main(int argc, const char *argv[])
     cdio = cdio_open (source_name, DRIVER_NRG);
     if (cdio==NULL) {
       err_exit("%s: Error in opening NRG with input %s\n", 
+	       program_name, source_name);
+    } 
+    break;
+
+  case IMAGE_CDRDAO:
+    cdio = cdio_open (source_name, DRIVER_CDRDAO);
+    if (cdio==NULL) {
+      err_exit("%s: Error in opening TOC with input %s\n", 
 	       program_name, source_name);
     } 
     break;

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.44 2004/04/30 06:54:15 rocky Exp $
+    $Id: cdio.h,v 1.45 2004/05/04 02:06:48 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -79,6 +79,9 @@ extern "C" {
     DRIVER_SOLARIS, /**< Sun Solaris Driver */
     DRIVER_OSX,     /**< Apple OSX Driver */
     DRIVER_WIN32,   /**< Microsoft Windows Driver */
+    DRIVER_CDRDAO,  /**< cdrdao format CD image. This is listed
+		         before BINCUE, to make the code prefer cdrdao
+		         over BINCUE when both exist. */
     DRIVER_BINCUE,  /**< BIN/CUE format CD image. This is listed before NRG, 
 		         to make the code prefer BINCUE over NRG when both 
 			 exist. */
@@ -199,6 +202,13 @@ extern "C" {
     then return NULL.
   */
   const char * cdio_get_driver_name (const CdIo *obj);
+
+  /*!
+    Return the driver id. 
+    if CdIo is NULL (we haven't initialized a specific device driver), 
+    then return DRIVER_UNKNOWN.
+  */
+  driver_id_t cdio_get_driver_id (const CdIo *obj);
 
   /*!
     Return the number of the first track. 
@@ -361,6 +371,9 @@ extern "C" {
   /*! True if BIN/CUE driver is available. */
   bool cdio_have_bincue  (void);
 
+  /*! True if cdrdao CDRDAO driver is available. */
+  bool cdio_have_cdrdao  (void);
+
   /*! Like cdio_have_xxx but uses an enumeration instead. */
   bool cdio_have_driver (driver_id_t driver_id);
   
@@ -403,6 +416,19 @@ extern "C" {
   CdIo * cdio_open_am_bincue (const char *psz_cue_name, 
 			      const char *psz_access_mode);
   
+  /*! Set up cdrdao CD disk-image for reading. Source is the .toc file
+
+     NULL is returned on error.
+   */
+  CdIo * cdio_open_cdrdao (const char *psz_toc_name);
+  
+  /*! Set up cdrdao CD disk-image for reading. Source is the .toc file
+
+     NULL is returned on error.
+   */
+  CdIo * cdio_open_am_cdrdao (const char *psz_toc_name, 
+			      const char *psz_access_mode);
+  
   /*! Return a string containing the default CUE file that would
       be used when none is specified.
 
@@ -411,6 +437,15 @@ extern "C" {
   char * cdio_get_default_device_bincue(void);
 
   char **cdio_get_devices_bincue(void);
+
+  /*! Return a string containing the default CUE file that would
+      be used when none is specified.
+
+     NULL is returned on error or there is no device.
+   */
+  char * cdio_get_default_device_cdrdao(void);
+
+  char **cdio_get_devices_cdrdao(void);
 
   /*! Set up CD-ROM for reading. The device_name is
       the some sort of device name.
@@ -646,9 +681,13 @@ extern "C" {
   */
   char *cdio_is_cuefile(const char *cue_name);
   
+  /*! Return true if toc_name is a cdrdao TOC file or false
+    if not a TOC file.
+  */
+  bool cdio_is_tocfile(const char *toc_name);
+  
   /*! Return corresponding CUE file if bin_name is a fin file or NULL
-    if not a BIN file. NOTE: when we handle TOC something will have to 
-    change here....
+    if not a BIN file. 
   */
   char *cdio_is_binfile(const char *bin_name);
   

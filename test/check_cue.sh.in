@@ -1,6 +1,8 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.15 2003/10/06 04:04:05 rocky Exp $
-# Tests to see that BIN/CUE file iamge reading is correct (via cd-info). 
+#$Id: check_cue.sh.in,v 1.16 2004/05/04 02:06:49 rocky Exp $
+# Tests to see that BIN/CUE and BIN/TOC file iamge reading is correct
+# (via cd-info).
+
 if test -n "@VCDINFO_LIBS@" ; then
   vcd_opt='--no-vcd'
 fi
@@ -29,15 +31,30 @@ test_cdinfo "--quiet --bin-file ${srcdir}/${fname}.bin --no-cddb" \
 RC=$?
 check_result $RC "cd-info BIN test $testnum"
 
+test_cdinfo "--quiet --toc-file ${srcdir}/${fname}.toc --no-cddb" \
+  ${fname}.dump ${srcdir}/${fname}.right
+RC=$?
+check_result $RC "cd-info TOC test $testnum"
+
 fname=isofs-m1
-testnum='ISO 9660 mode1'
+testnum='ISO 9660 mode1 CUE'
 if test -f  ${srcdir}/${fname}.bin ; then
   test_cdinfo "-q --cue-file ${srcdir}/${fname}.cue --iso9660" \
     ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
   check_result $RC "cd-info CUE test $testnum"
 else 
-  echo "Don't see CUE file ${srcdir}/${fname}.bin. Test $testum skipped."
+  echo "Don't see CUE file ${srcdir}/${fname}.bin. Test $testnum skipped."
+fi
+
+testnum='ISO 9660 mode1 TOC'
+if test -f  ${srcdir}/${fname}.bin ; then
+  test_cdinfo "-q --toc-file ${srcdir}/${fname}.toc --iso9660" \
+    ${fname}.dump ${srcdir}/${fname}.right
+  RC=$?
+  check_result $RC "cd-info TOC test $testnum"
+else 
+  echo "Don't see TOC file ${srcdir}/${fname}.bin. Test $testnum skipped."
 fi
 
 fname=vcd_demo
@@ -53,7 +70,16 @@ if test -f ${srcdir}/${fname}.cue ; then
   RC=$?
   check_result $RC "cd-info CUE test $testnum"
 else 
-  echo "Don't see CUE file ${srcdir}/${fname}.cue. Test $testum skipped."
+  echo "Don't see CUE file ${srcdir}/${fname}.cue. Test $testnum skipped."
+fi
+
+if test -f ${srcdir}/${fname}.toc ; then
+  test_cdinfo "-q -t ${srcdir}/vcd_demo.toc --iso9660" \
+      ${fname}.dump $right
+  RC=$?
+  check_result $RC "cd-info TOC test $testnum"
+else 
+  echo "Don't see TOC file ${srcdir}/${fname}.toc. Test $testnum skipped."
 fi
 
 fname=svcd_ogt_test_ntsc
