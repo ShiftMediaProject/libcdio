@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.15 2004/05/13 01:49:01 rocky Exp $
+    $Id: win32.c,v 1.16 2004/05/16 13:33:28 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.15 2004/05/13 01:49:01 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.16 2004/05/16 13:33:28 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -85,7 +85,7 @@ str_to_access_mode_win32(const char *psz_access_mode)
   else if (!strcmp(psz_access_mode, "ASPI"))
     return _AM_ASPI;
   else {
-    cdio_warn ("unknown access type: %s. Default 'ioctl' used.", 
+    cdio_warn ("unknown access type: %s. Default used.", 
 	       psz_access_mode);
     return default_access_mode;
   }
@@ -144,7 +144,7 @@ _cdio_init_win32 (void *user_data)
   env->b_aspi_init     = false;
   env->b_ioctl_init    = false;
 
-  if ( WIN_NT ) {
+  if ( _AM_IOCTL == env->access_mode ) {
     return win32ioctl_init_win32(env);
   } else {
     return wnaspi32_init_win32(env);
@@ -155,7 +155,7 @@ _cdio_init_win32 (void *user_data)
   Release and free resources associated with cd. 
  */
 static void
-_cdio_win32_free (void *user_data)
+_free_win32 (void *user_data)
 {
   _img_private_t *env = user_data;
 
@@ -686,7 +686,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
 
   cdio_funcs _funcs = {
     .eject_media        = _cdio_eject_media,
-    .free               = _cdio_win32_free,
+    .free               = _free_win32,
     .get_arg            = _cdio_get_arg,
     .get_default_device = cdio_get_default_device_win32,
     .get_devices        = cdio_get_devices_win32,
@@ -710,6 +710,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
+  _data->access_mode    = str_to_access_mode_win32(psz_access_mode);
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
@@ -719,7 +720,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
     _set_arg_win32(_data, "source", psz_source);
     free(psz_source);
   } else {
-    if (cdio_is_device_generic(psz_orig_source))
+    if (cdio_is_device_win32(psz_orig_source))
       _set_arg_win32(_data, "source", psz_orig_source);
     else {
       /* The below would be okay if all device drivers worked this way. */
@@ -736,7 +737,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   if (_cdio_init_win32(_data))
     return ret;
   else {
-    _cdio_win32_free (_data);
+    _free_win32 (_data);
     return NULL;
   }
   

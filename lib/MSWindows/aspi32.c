@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.5 2004/05/10 03:28:55 rocky Exp $
+    $Id: aspi32.c,v 1.6 2004/05/16 13:33:28 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.5 2004/05/10 03:28:55 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.6 2004/05/16 13:33:28 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -182,7 +182,15 @@ wnaspi32_init_win32 (_img_private_t *env)
   long (*lpSendCommand)( void* ) = NULL;
   DWORD dwSupportInfo;
   int i, j, i_num_adapters;
-  char c_drive = env->gen.source_name[0];
+  char c_drive;
+
+  if (2 == strlen(env->gen.source_name) && isalpha(env->gen.source_name[0]) ) 
+  {
+    c_drive = env->gen.source_name[0];
+  } else if ( 6 == strlen(env->gen.source_name) 
+	      && isalpha(env->gen.source_name[4] )) {
+    c_drive = env->gen.source_name[4];
+  }
   
   hASPI = LoadLibrary( "wnaspi32.dll" );
   if( hASPI != NULL ) {

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.61 2004/05/13 01:50:28 rocky Exp $
+    $Id: cd-info.c,v 1.62 2004/05/16 13:33:40 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -796,7 +796,7 @@ main(int argc, const char *argv[])
   case IMAGE_DEVICE:
     cdio = cdio_open_am (source_name, DRIVER_DEVICE, opts.access_mode);
     if (cdio==NULL) {
-      err_exit("%s: Error in automatically selecting device for input %s\n", 
+      err_exit("%s: Error in automatically selecting CD-image driver for input %s\n", 
 	       program_name, source_name);
     } 
     break;

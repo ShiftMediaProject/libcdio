@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.12 2004/05/13 04:32:13 rocky Exp $
+    $Id: freebsd.c,v 1.13 2004/05/16 13:33:26 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.12 2004/05/13 04:32:13 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.13 2004/05/16 13:33:26 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -42,7 +42,7 @@ str_to_access_mode_freebsd(const char *psz_access_mode)
 
   if (NULL==psz_access_mode) return default_access_mode;
   
-  if (!strcmp(psz_access_mode, "IOCTL"))
+  if (!strcmp(psz_access_mode, "ioctl"))
     return _AM_IOCTL;
   else if (!strcmp(psz_access_mode, "CAM"))
     return _AM_CAM;

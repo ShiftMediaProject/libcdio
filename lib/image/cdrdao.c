@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.7 2004/05/13 01:50:24 rocky Exp $
+    $Id: cdrdao.c,v 1.8 2004/05/16 13:33:30 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.7 2004/05/13 01:50:24 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.8 2004/05/16 13:33:30 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -1203,7 +1203,7 @@ CdIo *
 cdio_open_am_cdrdao (const char *psz_source_name, const char *psz_access_mode)
 {
   if (psz_access_mode != NULL && strcmp(psz_access_mode, "image"))
-    cdio_warn ("there is only one access mode, 'image' for toc. Arg %s ignored",
+    cdio_warn ("there is only one access mode, 'image' for cdrdao. Arg %s ignored",
 	       psz_access_mode);
   return cdio_open_cdrdao(psz_source_name);
 }
