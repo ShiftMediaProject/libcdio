@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_nrg.sh.in,v 1.1 2003/04/28 02:02:41 rocky Exp $
+#$Id: check_nrg.sh.in,v 1.2 2003/05/16 21:11:18 rocky Exp $
 
 if test -n "@VCDINFO_LIB@" ; then
   vcd_opt='--no-vcd'
@@ -29,7 +29,7 @@ if test -f  $nrg_file ; then
   check_result $RC 'cd-info NRG test 1'
 else 
   echo "Don't see NRG file ${nrg_file}. Test skipped."
-  exit $SKIP_TEST_EXITCODE
+  exit 0
 fi
 
 nrg_file=${srcdir}/svcdgs.nrg
