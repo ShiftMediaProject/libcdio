@@ -19,7 +19,7 @@ define(RELEASE_NUM, 72)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.119 2004/12/18 17:29:32 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.120 2004/12/18 21:24:25 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -36,21 +36,33 @@ AM_MAINTAINER_MODE
 
 AM_SANITY_CHECK
 
+AC_ARG_WITH(cd_drive,
+[  --without-cd-drive        build program cd-drive (enabled by default)],
+enable_cd_drive="${withval}", enable_cd_drive=yes)
+
 AC_ARG_WITH(cd_info,
-[  --without-cd-info	build program cd-info (enabled by default)],
+[  --without-cd-info        build program cd-info (enabled by default)],
 enable_cd_info="${withval}", enable_cd_info=yes)
 
+AC_ARG_WITH(cd_paranoia,
+[  --without-cd-paranoia    build program cd-paranoia (enabled by default)],
+enable_cd_paranoia="${withval}", enable_cd_paranoia=yes)
+
 AC_ARG_WITH(cd_read,
-[  --without-cd-read	build program cd-read (enabled by default)],
+[  --without-cd-read        build program cd-read (enabled by default)],
 enable_cd_read="${withval}", enable_cd_read=yes)
+
+AC_ARG_WITH(iso_info,
+[  --without-iso-info       build program iso-info (enabled by default)],
+enable_iso_info="${withval}", enable_iso_info=yes)
+
+AC_ARG_WITH(iso_read,
+[  --without-iso-read       build program iso-read (enabled by default)],
+enable_iso_read="${withval}", enable_iso_read=yes)
 
 AC_ARG_WITH(versioned_libs,
 [  --without-versioned-libs build versioned library symbols (enabled by default if you have GNU ld)],
 enable_versioned_libs="${withval}", enable_versioned_libs=yes)
-
-AC_ARG_WITH(cd_info,
-[  --without-cd-info	build program cd-info (enabled by default)],
-enable_cd_info="${withval}", enable_cd_info=yes)
 
 AC_ARG_ENABLE(vcd_info,
 	[  --disable-cpp        don't make C++ example programs],
@@ -117,7 +129,11 @@ AC_SUBST(DIFF_OPTS)
 
 AM_PATH_LIBPOPT(, 
   [AC_MSG_WARN([Diagnostic programs cd-drive, cd-info, cd-read, iso-info, and is-read will not get built.])
-  		  enable_cd_info=no])
+  		  enable_cd_info=no; 
+		  enable_cd_drive=no; 
+		  enable_cd_read=no; 
+		  enable_iso_info=no; 
+		  enable_iso_read=no])
 
 dnl headers
 
@@ -233,7 +249,12 @@ if test "x$enable_versioned_libs" = "xyes" ; then
 fi
 
 AM_CONDITIONAL(CYGWIN, test "x$CYGWIN" = "xyes")
+AM_CONDITIONAL(BUILD_CD_DRIVE, test "x$enable_cd_drive" = "xyes")
 AM_CONDITIONAL(BUILD_CDINFO, test "x$enable_cd_info" = "xyes")
+AM_CONDITIONAL(BUILD_CD_READ, test "x$enable_cd_read" = "xyes")
+AM_CONDITIONAL(BUILD_CD_PARANOIA, test "x$enable_cd_paranoia" = "xyes")
+AM_CONDITIONAL(BUILD_ISO_INFO, test "x$enable_iso_info" = "xyes")
+AM_CONDITIONAL(BUILD_ISO_READ, test "x$enable_iso_read" = "xyes")
 AM_CONDITIONAL(BUILD_CDINFO_LINUX, test "x$enable_cd_info_linux" = "xyes")
 AM_CONDITIONAL(BUILD_CDIOTEST, test "x$enable_cdiotest" = "xyes")
 AM_CONDITIONAL(BUILD_VERSIONED_LIBS, test "x$enable_versioned_libs" = "xyes")

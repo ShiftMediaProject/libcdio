@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.102 2004/12/18 17:29:32 rocky Exp $
+    $Id: cd-info.c,v 1.103 2004/12/18 21:24:25 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1061,10 +1061,17 @@ main(int argc, const char *argv[])
     if (i == CDIO_CDROM_LEADOUT_TRACK) {
       if (!opts.no_tracks) {
 	lsn_t lsn= cdio_msf_to_lsn(&msf);
-        long unsigned int i_mb = ( lsn * CDIO_CD_FRAMESIZE_RAW ) / 
-	  (1024 * 1024);
-	printf( "%3d: %8s  %06lu  leadout (%lu MB)\n", (int) i, psz_msf,
-	       (long unsigned int) lsn, i_mb );
+        long unsigned int i_bytes = lsn * CDIO_CD_FRAMESIZE_RAW;
+
+	printf( "%3d: %8s  %06lu  leadout ", (int) i, psz_msf,
+		(long unsigned int) lsn );
+	
+	if (i_bytes < 1024) 
+	  printf( "(%lu bytes)\n", i_bytes );
+	if (i_bytes < 1024 * 1024) 
+	  printf( "(%lu KB)\n", i_bytes / 1024 );
+	else 
+	  printf( "(%lu MB)\n", i_bytes / (1024 * 1024) );
       }
       free(psz_msf);
       break;

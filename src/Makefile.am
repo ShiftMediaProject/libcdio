@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.27 2004/12/18 17:29:32 rocky Exp $
+#   $Id: Makefile.am,v 1.28 2004/12/18 21:24:25 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -33,18 +33,27 @@ endif
 if BUILD_CDINFO
 cd_info_SOURCES = cd-info.c util.c util.h
 cd_info_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS) $(LIBICONV)
+endif
 
+if BUILD_CD_DRIVE
 cd_drive_SOURCES = cd-drive.c util.c util.h
 cd_drive_LDADD =  $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
+endif
 
+if BUILD_CD_READ
 cd_read_SOURCES = cd-read.c util.c util.h
 cd_read_LDADD =  $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
+endif
 
+if BUILD_ISO_INFO
 iso_info_SOURCES = iso-info.c util.c util.h
 iso_info_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
+endif
 
+if BUILD_ISO_READ
 iso_read_SOURCES = iso-read.c util.c util.h
 iso_read_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
+endif
 
 if BUILD_CDINFO_LINUX
 cdinfo_linux_SOURCES = cdinfo-linux.c
@@ -53,10 +62,6 @@ bin_PROGRAMS = cd-drive cd-info cd-read cdinfo-linux iso-info iso-read
 else
 bin_PROGRAMS = cd-drive cd-info cd-read iso-info iso-read
 EXTRA_DIST = cdinfo-linux.c $(man_MANS)
-endif
-else 
-EXTRA_DIST = cdinfo-linux.c cd-drive.c cd-info.c cd-read.c $(man_MANS)
-man_MANS = 
 endif
 
 # Put LIBPOPT_CFLAGS after local include in case LIBPOPT has headers common

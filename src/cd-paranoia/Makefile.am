@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.1 2004/12/18 17:29:32 rocky Exp $
+#   $Id: Makefile.am,v 1.2 2004/12/18 21:24:25 rocky Exp $
 #
 #    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -19,6 +19,7 @@
 #
 ###############################################################################
 
+if BUILD_CD_PARANOIA
 cd_paranoia_SOURCES = cd-paranoia.c \
 	buffering_write.c buffering_write.h \
 	header.c header.h \
@@ -32,3 +33,5 @@ man_MANS = cd-paranoia.1 cd-paranoia.1.jp
 EXTRA_DIST = $(man_MANS)
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
+endif
+

@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.17 2004/11/04 10:08:23 rocky Exp $
+    $Id: iso-info.c,v 1.18 2004/12/18 21:24:25 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -61,12 +61,12 @@
 struct arguments
 {
   uint32_t       debug_level;
-  int            no_analysis;
   int            version_only;
   int            silent;
   int            no_header;
   int            no_joliet;
   int            print_iso9660;
+  int            print_iso9660_short;
 } opts;
      
 /* Configuration option codes */
@@ -90,8 +90,14 @@ parse_options (int argc, const char *argv[])
     {"debug",       'd', POPT_ARG_INT, &opts.debug_level, 0,
      "Set debugging to LEVEL"},
     
-    {"iso9660",  '\0', POPT_ARG_NONE, &opts.print_iso9660, 0,
-     "print directory contents of any ISO-9660 filesystems"},
+    {"input", 'i', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 0,
+     "Filename to read ISO-9960 image from", "FILE"},
+    
+    {'\0',    'f', POPT_ARG_NONE, &opts.print_iso9660_short, 0,
+     "Generate output similar to 'find . -print'"},
+
+    {"iso9660",  'l', POPT_ARG_NONE, &opts.print_iso9660, 0,
+     "Generate output similar to 'ls -lR'"},
     
     {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
      0, "Don't display header and copyright (for regression testing)"},
@@ -166,7 +172,9 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
 
   entlist = iso9660_ifs_readdir (p_iso, pathname);
     
-  printf ("%s:\n", pathname);
+  if (opts.print_iso9660) {
+    printf ("%s:\n", pathname);
+  }
 
   if (NULL == entlist) {
     report( stderr, "Error getting above directory information\n" );
@@ -196,32 +204,36 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
           && strcmp (iso_name, ".."))
         _cdio_list_append (dirlist, strdup (_fullname));
 
-#if 1
-      if (iso9660_ifs_is_xa(p_iso)) {
-	printf ( "  %c %s %d %d [fn %.2d] [LSN %6lu] ",
-		 (statbuf->type == _STAT_DIR) ? 'd' : '-',
-		 iso9660_get_xa_attr_str (statbuf->xa.attributes),
-		 uint16_from_be (statbuf->xa.user_id),
-		 uint16_from_be (statbuf->xa.group_id),
-		 statbuf->xa.filenum,
-		 (long unsigned int) statbuf->lsn);
-	
-	if (uint16_from_be(statbuf->xa.attributes) & XA_ATTR_MODE2FORM2) {
-	  printf ("%9u (%9u)",
-		  (unsigned int) statbuf->secsize * M2F2_SECTOR_SIZE,
-		  (unsigned int) statbuf->size);
-	} else {
-	  printf ("%9u", (unsigned int) statbuf->size);
+      if (opts.print_iso9660) {
+	if (iso9660_ifs_is_xa(p_iso)) {
+	  printf ( "  %c %s %d %d [fn %.2d] [LSN %6lu] ",
+		   (statbuf->type == _STAT_DIR) ? 'd' : '-',
+		   iso9660_get_xa_attr_str (statbuf->xa.attributes),
+		   uint16_from_be (statbuf->xa.user_id),
+		   uint16_from_be (statbuf->xa.group_id),
+		   statbuf->xa.filenum,
+		   (long unsigned int) statbuf->lsn);
+	  
+	  if (uint16_from_be(statbuf->xa.attributes) & XA_ATTR_MODE2FORM2) {
+	    printf ("%9u (%9u)",
+		    (unsigned int) statbuf->secsize * M2F2_SECTOR_SIZE,
+		    (unsigned int) statbuf->size);
+	  } else {
+	    printf ("%9u", (unsigned int) statbuf->size);
+	  }
 	}
-      }
-#endif
-      strftime(date_str, DATESTR_SIZE, "%b %d %Y %H:%M ", &statbuf->tm);
-      printf (" %s %s\n", date_str, translated_name);
+	strftime(date_str, DATESTR_SIZE, "%b %d %Y %H:%M ", &statbuf->tm);
+	printf (" %s %s\n", date_str, translated_name);
+      } else 
+	if ( strcmp (iso_name, ".") && strcmp (iso_name, ".."))
+	  printf("%s%s\n", pathname, translated_name);
     }
 
   _cdio_list_free (entlist, true);
 
-  printf ("\n");
+  if (opts.print_iso9660) {
+    printf ("\n");
+  }
 
   /* Now recurse over the directories. */
 
@@ -249,11 +261,12 @@ init(void)
   gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
 
   /* Default option values. */
-  opts.silent        = false;
-  opts.no_header     = false;
-  opts.no_joliet     = false;
-  opts.debug_level   = 0;
-  opts.print_iso9660 = 0;
+  opts.silent              = false;
+  opts.no_header           = false;
+  opts.no_joliet           = false;
+  opts.debug_level         = 0;
+  opts.print_iso9660       = 0;
+  opts.print_iso9660_short = 0;
 }
 
 #define print_vd_info(title, fn)	  \
@@ -313,8 +326,12 @@ main(int argc, const char *argv[])
     print_vd_info("Volume Set ", iso9660_ifs_get_volumeset_id);
   }
   
-  if (!opts.no_analysis) {
+  if (opts.print_iso9660 || opts.print_iso9660_short) {
     printf(STRONG "ISO-9660 Information\n" NORMAL);
+    if (opts.print_iso9660 && opts.print_iso9660_short) {
+      printf("Note: both -f and -l options given -- "
+	     "-l (long listing) takes precidence\n");
+    }
     print_iso9660_fs(p_iso);
   }
 
