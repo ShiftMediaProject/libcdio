@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.16 2003/04/14 04:27:11 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.17 2003/04/14 23:11:32 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.16 2003/04/14 04:27:11 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.17 2003/04/14 23:11:32 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -113,7 +113,7 @@ _cdio_init (_img_private_t *_obj)
 
   /* Read in CUE sheet. */
   if ((_obj->cue_name != NULL)) {
-    _obj->have_cue == _cdio_image_read_cue(_obj);
+    _obj->have_cue = _cdio_image_read_cue(_obj);
   }
 
   if (!_obj->have_cue ) {
