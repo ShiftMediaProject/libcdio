@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.31 2004/07/10 11:06:00 rocky Exp $
+    $Id: bincue.c,v 1.32 2004/07/11 02:28:06 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.31 2004/07/10 11:06:00 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.32 2004/07/11 02:28:06 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -87,9 +87,6 @@ typedef struct {
   track_format_t mode;
 } _img_private_t;
 
-#if 0
-static bool     _bincue_image_read_cue (_img_private_t *env);
-#endif
 static uint32_t _stat_size_bincue (void *user_data);
 static bool     parse_cuefile (_img_private_t *cd, const char *toc_name);
 
@@ -117,6 +114,7 @@ _bincue_init (_img_private_t *env)
   env->gen.init      = true;  
   env->i_first_track = 1;
   env->psz_mcn       = NULL;
+  env->cdtext        = NULL;
 
   lead_lsn = _stat_size_bincue( (_img_private_t *) env);
 
@@ -125,11 +123,7 @@ _bincue_init (_img_private_t *env)
   if ((env->psz_cue_name == NULL)) return false;
 
   /* Read in CUE sheet. */
-#if 0
-  if ( !_bincue_image_read_cue(env) ) return false;
-#else 
   if ( !parse_cuefile(env, env->psz_cue_name) ) return false;
-#endif
 
   /* Fake out leadout track and sector count for last track*/
   cdio_lsn_to_msf (lead_lsn, &env->tocent[env->i_tracks].start_msf);
@@ -659,167 +653,6 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   return false;
 
 }
-
-#if 0
-static bool
-_bincue_image_read_cue (_img_private_t *env)
-{
-  FILE *fp;
-  char line[MAXLINE];
-
-  int i_track;
-  int min,sec,frame;
-  int blocksize;
-  int start_index;
-  bool b_first_index_for_track=false;
-
-  if ( env == NULL ||  env->psz_cue_name == NULL ) return false;
-
-  fp = fopen (env->psz_cue_name, "r");
-  if (fp == NULL) return false;
-
-  env->i_tracks=0;
-  env->i_first_track=1;
-  env->psz_mcn=NULL;
-  
-  while ((fgets(line, MAXLINE, fp)) != NULL) {
-    char s[80];
-    char *p;
-    /*printf("Retrieved line of length %zu :\n", read);
-      printf("%s", line); */
-    for (p=line; isspace(*p); p++) ;
-    if (1==sscanf(p, "FILE \"%80s[^\"]", s)) {
-      /* Should expand file name based on cue file basename.
-      free(env->bin_file);
-      env->bin_file = strdup(s);
-      */
-      /* printf("Found file name %s\n", s); */
-    } else if (1==sscanf(p, "CATALOG %80s", s)) {
-      env->psz_mcn = strdup(s);
-    } else if (2==sscanf(p, "TRACK %d MODE2/%d", &i_track, &blocksize)) {
-      track_info_t  *this_track=&(env->tocent[env->i_tracks]);
-      this_track->track_num   = i_track;
-      this_track->num_indices = 0;
-      this_track->track_format= TRACK_FORMAT_XA;
-      this_track->track_green = true;
-      b_first_index_for_track = false;
-      env->i_tracks++;
-      /*printf("Added track %d with blocksize %d\n", i_track, blocksize);*/
-
-      this_track->blocksize   = blocksize;
-      switch(blocksize) {
-      case 2336:
-	this_track->datastart = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE;
-	this_track->datasize  = M2RAW_SECTOR_SIZE;  
-	this_track->endsize   = 0;
-	break;
-      default:
-	cdio_warn ("Unknown MODE2 size %d. Assuming 2352", blocksize);
-      case 2352:
-	this_track->datastart = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE +
-	  CDIO_CD_SUBHEADER_SIZE;
-	this_track->datasize  = CDIO_CD_FRAMESIZE;
-	this_track->endsize   = CDIO_CD_SYNC_SIZE + CDIO_CD_ECC_SIZE;
-	break;
-      }
-
-    } else if (2==sscanf(p, "TRACK %d MODE1/%d", &i_track, &blocksize)) {
-      track_info_t *this_track=&(env->tocent[env->i_tracks]);
-      this_track->blocksize   = blocksize;
-      switch(blocksize) {
-      case 2048:
-	/* Is the below correct? */
-	this_track->datastart = 0;         
-	this_track->datasize  = CDIO_CD_FRAMESIZE;
-	this_track->endsize   = 0;  
-	break;
-      default:
-	cdio_warn ("Unknown MODE1 size %d. Assuming 2352", blocksize);
-      case 2352:
-	this_track->datastart = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE;
-	this_track->datasize  = CDIO_CD_FRAMESIZE; 
-	this_track->endsize   = CDIO_CD_EDC_SIZE + CDIO_CD_M1F1_ZERO_SIZE 
-	  + CDIO_CD_ECC_SIZE;
-      }
-
-      this_track->track_num      = i_track;
-      this_track->num_indices    = 0;
-      this_track->track_format   = TRACK_FORMAT_DATA;
-      this_track->track_green    = false;
-      b_first_index_for_track    = false;
-      env->i_tracks++;
-      /*printf("Added track %d with blocksize %d\n", i_track, blocksize);*/
-
-    } else if (1==sscanf(p, "TRACK %d AUDIO", &i_track)) {
-      track_info_t  *this_track=&(env->tocent[env->i_tracks]);
-      this_track->blocksize      = CDIO_CD_FRAMESIZE_RAW;
-      this_track->datasize       = CDIO_CD_FRAMESIZE_RAW;
-      this_track->datastart      = 0;
-      this_track->endsize        = 0;
-      this_track->track_num      = i_track;
-      this_track->num_indices    = 0;
-      this_track->track_format   = TRACK_FORMAT_AUDIO;
-      this_track->track_green    = false;
-      b_first_index_for_track    = false;
-      env->i_tracks++;
-
-    } else if (4==sscanf(p, "INDEX %d %d:%d:%d", 
-			 &start_index, &min, &sec, &frame)) {
-      track_info_t  *this_track=&(env->tocent[env->i_tracks - env->i_first_track]);
-      /* FIXME! all of this is a big hack. 
-	 If start_index == 0, then this is the "last_cue" information.
-	 The +2 below seconds is to adjust for the 150 pregap.
-      */
-      if (start_index != 0) {
-	if (!b_first_index_for_track) {
-	  this_track->start_index = start_index;
-	  sec += 2;
-	  if (sec >= 60) {
-	    min++;
-	    sec -= 60;
-	  }
-	  this_track->start_msf.m = to_bcd8 (min);
-	  this_track->start_msf.s = to_bcd8 (sec);
-	  this_track->start_msf.f = to_bcd8 (frame);
-	  b_first_index_for_track = true;
-	  this_track->start_lba   = cdio_msf_to_lba(&this_track->start_msf);
-	}
-
-	if (env->i_tracks > 1) {
-	  /* Figure out number of sectors for previous track */
-	  track_info_t  *prev_track=&(env->tocent[env->i_tracks-2]);
-	  if ( this_track->start_lba < prev_track->start_lba ) {
-	    cdio_warn("track %d at LBA %lu starts before track %d at LBA %lu", 
-		     env->i_tracks,   
-		      (unsigned long int) this_track->start_lba, 
-		      env->i_tracks, 
-		      (unsigned long int) prev_track->start_lba);
-	    prev_track->sec_count = 0;
-	  } else if ( this_track->start_lba >= prev_track->start_lba 
-		      + CDIO_PREGAP_SECTORS ) {
-	    prev_track->sec_count = this_track->start_lba - 
-	      prev_track->start_lba - CDIO_PREGAP_SECTORS ;
-	  } else {
-	    cdio_warn ("%lu fewer than pregap (%d) sectors in track %d", 
-		       (long unsigned int) 
-		         this_track->start_lba - prev_track->start_lba,
-		       CDIO_PREGAP_SECTORS,
-		       env->i_tracks);
-	    /* Include pregap portion in sec_count. Maybe the pregap
-	     was omitted. */
-	    prev_track->sec_count = this_track->start_lba - 
-	      prev_track->start_lba;
-	  }
-	}
-	this_track->num_indices++;
-      }
-    }
-  }
-
-  fclose (fp);
-  return true;
-}
-#endif
 
 /*!
    Reads a single audio sector from CD device into data starting

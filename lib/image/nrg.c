@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.29 2004/07/10 11:31:42 rocky Exp $
+    $Id: nrg.c,v 1.30 2004/07/11 02:28:07 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -45,7 +45,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.29 2004/07/10 11:31:42 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.30 2004/07/11 02:28:07 rocky Exp $";
 
 
 /* reader */
@@ -754,6 +754,9 @@ _init_nrg (_img_private_t *env)
 	       env->gen.source_name);
     return false;
   }
+
+  env->psz_mcn       = NULL;
+  env->cdtext        = NULL;
 
   if ( !parse_nrg (env, env->gen.source_name) ) {
     cdio_warn ("image file %s is not a Nero image", 

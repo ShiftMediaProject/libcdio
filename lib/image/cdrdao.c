@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.17 2004/07/10 11:06:00 rocky Exp $
+    $Id: cdrdao.c,v 1.18 2004/07/11 02:28:07 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.17 2004/07/10 11:06:00 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.18 2004/07/11 02:28:07 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -109,6 +109,7 @@ _init_cdrdao (_img_private_t *env)
   env->gen.init      = true;  
   env->i_first_track = 1;
   env->psz_mcn       = NULL;
+  env->cdtext        = NULL;
 
   /* Read in TOC sheet. */
   if ( !parse_tocfile(env, env->psz_cue_name) ) return false;
@@ -264,7 +265,8 @@ _stat_size_cdrdao (void *user_data)
 static bool
 parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 {
-  char line[MAXLINE];
+  char psz_line[MAXLINE];
+  unsigned int i_cdtext_nest = 0;
   FILE *fp;
   unsigned int i_line=0;
   char *keyword, *psz_field;
@@ -281,17 +283,17 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
     return false;
   }
 
-  while ((fgets(line, MAXLINE, fp)) != NULL) {
+  while ((fgets(psz_line, MAXLINE, fp)) != NULL) {
 
     i_line++;
 
     /* strip comment from line */
     /* todo: // in quoted strings? */
     /* //comment */
-    if (NULL != (psz_field = strstr (line, "//")))
+    if (NULL != (psz_field = strstr (psz_line, "//")))
       *psz_field = '\0';
     
-    if (NULL != (keyword = strtok (line, " \t\n\r"))) {
+    if (NULL != (keyword = strtok (psz_line, " \t\n\r"))) {
       /* CATALOG "ddddddddddddd" */
       if (0 == strcmp ("CATALOG", keyword)) {
 	if (-1 == i) {
@@ -360,7 +362,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	/* TRACK <track-mode> [<sub-channel-mode>] */
       } else if (0 == strcmp ("TRACK", keyword)) {
 	i++;
-	/* cd->tocent[i].cdtext = NULL; */
+	if (NULL != cd) cd->tocent[i].cdtext = NULL;
 	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	  if (0 == strcmp ("AUDIO", psz_field)) {
 	    if (NULL != cd) {
@@ -513,7 +515,8 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	      cd->tocent[i].filename = strdup (psz_field);
 	      /* Todo: do something about reusing existing files. */
 	      if (!(cd->tocent[i].data_source = cdio_stdio_new (psz_field))) {
-		cdio_warn ("%s line %d: can't open file `%s' for reading", 
+		cdio_log (log_level, 
+			  "%s line %d: can't open file `%s' for reading", 
 			   psz_cue_name, i_line, psz_field);
 		goto err_exit;
 	      }
@@ -616,32 +619,48 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  /* CD_TEXT { ... } */
 	  /* todo: opening { must be on same line as CD_TEXT */
       } else if (0 == strcmp ("CD_TEXT", keyword)) {
+	  if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
+	    goto format_error;
+	  }
+	  if ( 0 == strcmp( "{", psz_field ) ) {
+	    i_cdtext_nest++;
+	  } else {
+	    cdio_log (log_level, 
+		      "%s line %d: expecting '{'", psz_cue_name, i_line);
+	    goto err_exit;
+	  }
+	       
       } else if (0 == strcmp ("LANGUAGE_MAP", keyword)) {
       } else if (0 == strcmp ("LANGUAGE", keyword)) {
+	  if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
+	    goto format_error;
+	  }
+	  /* Language number */
+	  if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
+	    goto format_error;
+	  }
+	  if ( 0 == strcmp( "{", psz_field ) ) {
+	    i_cdtext_nest++;
+	  } else {
+	    cdio_log (log_level, 
+		      "%s line %d: expecting '{'", psz_cue_name, i_line);
+	    goto err_exit;
+	  }
       } else if (0 == strcmp ("}", keyword)) {
+	if (i_cdtext_nest > 0) i_cdtext_nest--;
       } else if (0 == cdtext_is_keyword (keyword)) {
 	if (-1 == i) {
 	  if (NULL != cd) {
-#if 0
 	    if (NULL == cd->cdtext)
 	      cd->cdtext = cdtext_init ();
 	    cdtext_set (keyword, strtok (NULL, "\"\t\n\r"), cd->cdtext);
-#else 
-	    ;
-	    
-#endif
 	  }
 	} else {
 	  if (NULL != cd) {
-#if 0
 	    if (NULL == cd->tocent[i].cdtext)
 	      cd->tocent[i].cdtext = cdtext_init ();
 	    cdtext_set (keyword, strtok (NULL, "\"\t\n\r"), 
 			cd->tocent[i].cdtext);
-#else 
-	    ;
-	    
-#endif
 	  }
 	}
 
