@@ -1,8 +1,8 @@
 /*
-    $Id: _cdio_nrg.c,v 1.31 2004/02/07 18:53:02 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.32 2004/02/08 03:00:37 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.31 2004/02/07 18:53:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.32 2004/02/08 03:00:37 rocky Exp $";
 
 /* structures used */
 
@@ -189,14 +189,13 @@ _register_mapping (_img_private_t *_obj, lsn_t start_lsn, uint32_t sec_count,
   track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
   _mapping_t *_map = _cdio_malloc (sizeof (_mapping_t));
 
-  if (!_obj->mapping)
-    _obj->mapping = _cdio_list_new ();
-
-  _cdio_list_append (_obj->mapping, _map);
   _map->start_lsn  = start_lsn;
   _map->sec_count  = sec_count;
   _map->img_offset = img_offset;
   _map->blocksize  = blocksize;
+
+  if (!_obj->mapping) _obj->mapping = _cdio_list_new ();
+  _cdio_list_append (_obj->mapping, _map);
 
   _obj->size = MAX (_obj->size, (start_lsn + sec_count));
 
@@ -484,7 +483,8 @@ PRAGMA_END_PACKED
       case NER5_ID: /* "NER5" */
 	cdio_error ("unexpected nrg magic ID NER%c detected",
 		    opcode==NERO_ID ? 'O': '5');
-	return -1;
+	free(footer_buf);
+	return false;
 	break;
 
       case END1_ID: /* "END!" */
@@ -541,6 +541,7 @@ PRAGMA_END_PACKED
 	    default:
 	      cdio_warn ("Don't know how to handle track mode (%lu)?",
 			 (long unsigned int) track_mode);
+	      free(footer_buf);
 	      return false;
 	    }
 	    
@@ -608,6 +609,7 @@ PRAGMA_END_PACKED
 	    default:
 	      cdio_warn ("Don't know how to handle track mode (%lu)?",
 			 (long unsigned int) track_mode);
+	      free(footer_buf);
 	      return false;
 	    }
 	    
@@ -704,6 +706,7 @@ PRAGMA_END_PACKED
   _obj->tocent[_obj->total_tracks-1].sec_count = 
     cdio_lsn_to_lba(_obj->size - _obj->tocent[_obj->total_tracks-1].start_lba);
 
+  free(footer_buf);
   return true;
 }
 
@@ -919,6 +922,16 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
   return 0;
 }
 
+static void 
+_cdio_nrg_destroy (void *obj) 
+{
+  _img_private_t *env = obj;
+
+  if (NULL == env) return;
+  _cdio_list_free (env->mapping, true); 
+  cdio_generic_stdio_free(env);
+}
+
 /*!
   Set the device to use in I/O operations.
 */
@@ -1092,7 +1105,7 @@ cdio_open_nrg (const char *source_name)
 
   cdio_funcs _funcs = {
     .eject_media        = cdio_generic_bogus_eject_media,
-    .free               = cdio_generic_stdio_free,
+    .free               = _cdio_nrg_destroy,
     .get_arg            = _cdio_get_arg,
     .get_devices        = cdio_get_devices_nrg,
     .get_default_device = cdio_get_default_device_nrg,
