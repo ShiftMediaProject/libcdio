@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh,v 1.1 2003/03/24 19:01:10 rocky Exp $
+#$Id: check_cue.sh,v 1.2 2003/04/06 06:46:52 rocky Exp $
 
 if test -z $srcdir ; then
   srcdir=`pwd`
@@ -9,15 +9,33 @@ fi
 
 BASE=`basename $0 .sh`
 
-test_cdinfo "--cue-file ${srcdir}/svcd_ogt_test_ntsc.cue" \
-  svcd_ogt_test_ntsc.dump ${srcdir}/svcd_ogt_test_ntsc.right
+fname=fsf
+test_cdinfo "--cue-file ${srcdir}/${fname}.cue" \
+  ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC 'cdinfo CUE test 1'
 
-test_cdinfo "-c ${srcdir}/vcd_demo.cue" \
-    vcd_demo.dump ${srcdir}/vcd_demo.right
+fname=fsf-tompox
+test_cdinfo "--cue-file ${srcdir}/${fname}.cue" \
+  ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC 'cdinfo CUE test 2'
+
+fname=svcd_ogt_test_ntsc
+if test -f ${srcdir}/${fname}.cue ; then
+  test_cdinfo "--cue-file ${srcdir}/${fname}.cue" \
+    ${fname}.dump ${srcdir}/${fname}.right
+  RC=$?
+  check_result $RC 'cdinfo CUE test 3'
+fi
+
+fname=vcd_demo
+if test -f ${srcdir}/${fname}.cue ; then
+  test_cdinfo "-c ${srcdir}/vcd_demo.cue" \
+      ${fname}.dump ${srcdir}/${fname}.right
+  RC=$?
+  check_result $RC 'cdinfo CUE test 4'
+fi
 
 exit $RC
 
