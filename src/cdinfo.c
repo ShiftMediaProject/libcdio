@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.14 2003/04/20 17:24:49 rocky Exp $
+    $Id: cdinfo.c,v 1.15 2003/04/21 23:20:37 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -134,6 +134,7 @@ and
 #define VIDEOCDI       	     1024
 #define ROCKRIDGE            2048
 #define JOLIET               4096
+#define CVD       	     8192   /* Choiji Video CD */
 
 char buffer[6][CDIO_CD_FRAMESIZE_RAW];  /* for CD-Data */
 
@@ -167,6 +168,7 @@ static signature_t sigs[] =
     {2,  1372, "\x54\x19\x01\x0", "UFS"}, 
     {3,     7, "EL TORITO",  "BOOTABLE"}, 
     {4,     0, "VIDEO_CD",   "VIDEO CD"}, 
+    {4,     0, "SUPERVCD",   "Chaoji VCD"}, 
     { 0 }
   };
 
@@ -190,7 +192,8 @@ static signature_t sigs[] =
 #define IS_EXT2      8
 #define IS_UFS       9
 #define IS_BOOTABLE 10
-#define IS_VIDEO_CD 11
+#define IS_VIDEO_CD 11 /* Video CD */
+#define IS_CVD      12 /* Chinese Video CD - slightly incompatible with SVCD */
 
 int rc;                                                      /* return code */
 int i,j;                                                           /* index */
@@ -582,20 +585,30 @@ guess_filesystem(int start_session, track_t track_num)
       if (is_it(IS_BOOTABLE))
 	ret |= BOOTABLE;
       
-      if (is_it(IS_BRIDGE) && is_it(IS_XA) && is_it(IS_ISOFS) 
-	  && is_it(IS_CD_RTOS) &&
-	  !is_it(IS_PHOTO_CD)) {
+      if (is_it(IS_XA) && is_it(IS_ISOFS) 
+	  && !is_it(IS_PHOTO_CD)) {
 
         if (read_block(VCD_INFO_SECTOR, start_session, 4, track_num) < 0)
 	  return ret;
 	
-	if (opts.debug_level > 0) {
-	  /* buffer[4] is defined */
-	  is_it_dbg(IS_VIDEO_CD);
-	  puts("");
+	if (is_it(IS_BRIDGE) && is_it(IS_CD_RTOS)) {
+	  if (opts.debug_level > 0) {
+	    /* buffer[4] is defined */
+	    is_it_dbg(IS_VIDEO_CD);
+	    puts("");
+	  }
+	  
+	  if (is_it(IS_VIDEO_CD)) ret |= VIDEOCDI;
+	} else {
+	  if (opts.debug_level > 0) {
+	    /* buffer[4] is defined */
+	    is_it_dbg(IS_CVD);
+	    puts("");
+	  }
+	  
+	  if (is_it(IS_CVD)) ret |= CVD;
 	}
 	
-	if (is_it(IS_VIDEO_CD)) ret |= VIDEOCDI;
       }
     } 
     else if (is_hfs())       ret |= FS_HFS;
@@ -847,6 +860,8 @@ print_analysis(int fs, int num_audio)
     need_lf += printf("bootable CD   ");
   if (fs & VIDEOCDI && num_audio == 0)
     need_lf += printf("Video CD   ");
+  if (fs & CVD)
+    need_lf += printf("Chaoji Video CD");
   if (need_lf) puts("");
 }
 
