@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.7 2003/06/07 22:11:50 rocky Exp $
+    $Id: _cdio_win32.c,v 1.8 2003/06/11 10:55:54 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -19,14 +19,14 @@
 */
 
 /* This file contains Win32-specific code and implements low-level 
-   control of the CD drive. Culled from vlc's cdrom.h code 
+   control of the CD drive. Inspired by vlc's cdrom.h code 
 */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.7 2003/06/07 22:11:50 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.8 2003/06/11 10:55:54 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -196,9 +196,26 @@ typedef struct {
 
 } _img_private_t;
 
+/* General ioctl() CD-ROM command function */
+static bool 
+_cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
+{
+  MCIERROR mci_error;
+  
+  mci_error = mciSendCommand(id, msg, flags, (DWORD)arg);
+  if ( mci_error ) {
+    char error[256];
+    
+    mciGetErrorString(mci_error, error, 256);
+    cdio_error("mciSendCommand() error: %s", error);
+  }
+  return(mci_error == 0);
+}
+
 static const char *
 cdio_have_cdrom_drive(const char drive_letter) {
   static char psz_win32_drive[7];
+  static char root_path_name[8];
   _img_private_t obj;
 
   /* Initializations */
@@ -209,13 +226,15 @@ cdio_have_cdrom_drive(const char drive_letter) {
   
   if ( WIN_NT ) {
     sprintf( psz_win32_drive, "\\\\.\\%c:", drive_letter );
+    sprintf( root_path_name, "\\\\.\\%c:\\", drive_letter );
     
     obj.h_device_handle = CreateFile( psz_win32_drive, GENERIC_READ,
 				      FILE_SHARE_READ | FILE_SHARE_WRITE,
 				      NULL, OPEN_EXISTING,
 				      FILE_FLAG_NO_BUFFERING |
 				      FILE_FLAG_RANDOM_ACCESS, NULL );
-    if (obj.h_device_handle != NULL) {
+    if (obj.h_device_handle != NULL 
+	&& (DRIVE_CDROM == GetDriveType(root_path_name))) {
       CloseHandle(obj.h_device_handle);
       return strdup(psz_win32_drive);
     } else {
@@ -330,17 +349,21 @@ _cdio_init_win32 (void *user_data)
   
   if ( WIN_NT ) {
     char psz_win32_drive[7];
+    unsigned int len=strlen(_obj->gen.source_name);
     
     cdio_debug("using winNT/2K/XP ioctl layer");
+
+    if (cdio_is_device_win32(_obj->gen.source_name)) {
+      sprintf( psz_win32_drive, "\\\\.\\%c:", _obj->gen.source_name[len-2] );
     
-    sprintf( psz_win32_drive, "\\\\.\\%c:", _obj->gen.source_name[0] );
-    
-    _obj->h_device_handle = CreateFile( psz_win32_drive, GENERIC_READ,
-					FILE_SHARE_READ | FILE_SHARE_WRITE,
-					NULL, OPEN_EXISTING,
-					FILE_FLAG_NO_BUFFERING |
-					FILE_FLAG_RANDOM_ACCESS, NULL );
-    return (_obj->h_device_handle == NULL) ? false : true;
+      _obj->h_device_handle = CreateFile( psz_win32_drive, GENERIC_READ,
+					  FILE_SHARE_READ | FILE_SHARE_WRITE,
+					  NULL, OPEN_EXISTING,
+					  FILE_FLAG_NO_BUFFERING |
+					  FILE_FLAG_RANDOM_ACCESS, NULL );
+      return (_obj->h_device_handle == NULL) ? false : true;
+    } else
+      return false;
   } else {
     HMODULE hASPI = NULL;
     long (*lpGetSupport)( void ) = NULL;
@@ -915,12 +938,11 @@ _cdio_get_track_format(void *user_data, track_t track_num)
   DWORD i_flags;
   char psz_drive[4];
   int ret;
+  unsigned int len = strlen(_obj->gen.source_name);
 
   memset( &op, 0, sizeof(MCI_OPEN_PARMS) );
   op.lpstrDeviceType = (LPCSTR)MCI_DEVTYPE_CD_AUDIO;
-  strcpy( psz_drive, "X:" );
-  psz_drive[0] = _obj->gen.source_name[0];
-  op.lpstrElementName = psz_drive;
+  op.lpstrElementName = _obj->gen.source_name;
   
   /* Set the flags for the device type */
   i_flags = MCI_OPEN_TYPE | MCI_OPEN_TYPE_ID |
@@ -932,6 +954,8 @@ _cdio_get_track_format(void *user_data, track_t track_num)
     i_flags = MCI_TRACK | MCI_STATUS_ITEM ;
     ret = mciSendCommand( op.wDeviceID, MCI_STATUS, i_flags, 
 			  (unsigned long) &st );
+
+    /* Release access to the device */
     mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
 
     switch(st.dwReturn) {
@@ -942,9 +966,6 @@ _cdio_get_track_format(void *user_data, track_t track_num)
     default:
       return TRACK_FORMAT_XA;
     }
-
-    /* Release access to the device */
-    mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
   }
 
   return TRACK_FORMAT_ERROR;
@@ -1034,9 +1055,22 @@ bool
 cdio_is_device_win32(const char *source_name)
 {
   unsigned int len;
-  
   len = strlen(source_name);
-  return ((len == 2) && (source_name[len-1] == ':'));
+
+  if (NULL == source_name) return false;
+
+#ifdef HAVE_WIN32_CDROM
+  if ( WIN_NT )
+    /* Really should test to see if of form: \\.\x: */
+    return ((len == 6) && isalpha(source_name[len-2])
+	    && (source_name[len-1] == ':'));
+  else
+    /* See if is of form: x: */
+    return ((len == 2) && isalpha(source_name[0]) 
+	    && (source_name[len-1] == ':'));
+#else 
+  return NULL;
+#endif
 }
 
 /*!
