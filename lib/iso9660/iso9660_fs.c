@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.4 2005/01/20 01:00:52 rocky Exp $
+    $Id: iso9660_fs.c,v 1.5 2005/02/04 02:18:12 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -51,7 +51,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.4 2005/01/20 01:00:52 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.5 2005/02/04 02:18:12 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -83,7 +83,7 @@ iso9660_t *
 iso9660_open_ext (const char *pathname,
 		  iso_extension_mask_t iso_extension_mask)
 {
-  iso9660_t *p_iso = (iso9660_t *) _cdio_malloc(sizeof(struct _iso9660)) ;
+  iso9660_t *p_iso = (iso9660_t *) calloc(1, sizeof(struct _iso9660)) ;
 
   if (NULL == p_iso) return NULL;
   
@@ -610,7 +610,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir,
   /* .. string in statbuf is one longer than in p_iso9660_dir's listing '\1' */
   stat_len      = sizeof(iso9660_stat_t)+filename_len+2;
 
-  stat          = _cdio_malloc(stat_len);
+  stat          = calloc(1, stat_len);
   stat->type    = (p_iso9660_dir->file_flags & ISO_DIRECTORY) 
     ? _STAT_DIR : _STAT_FILE;
   stat->lsn     = from_733 (p_iso9660_dir->extent);
@@ -772,7 +772,7 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
   if (!splitpath[0])
     {
       unsigned int len=sizeof(iso9660_stat_t) + strlen(_root->filename)+1;
-      p_stat = _cdio_malloc(len);
+      p_stat = calloc(1, len);
       memcpy(p_stat, _root, len);
       return p_stat;
     }
@@ -789,7 +789,7 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 		 (unsigned long int) ISO_BLOCKSIZE * _root->secsize);
     }
   
-  _dirbuf = _cdio_malloc (_root->secsize * ISO_BLOCKSIZE);
+  _dirbuf = calloc(1, _root->secsize * ISO_BLOCKSIZE);
 
   if (b_mode2) {
     if (cdio_read_mode2_sectors (p_cdio, _dirbuf, _root->lsn, false, 
@@ -866,7 +866,7 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
     {
       iso9660_stat_t *p_stat;
       unsigned int len=sizeof(iso9660_stat_t) + strlen(_root->filename)+1;
-      p_stat = _cdio_malloc(len);
+      p_stat = calloc(1, len);
       memcpy(p_stat, _root, len);
       return p_stat;
     }
@@ -883,7 +883,7 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 		 (unsigned long int) ISO_BLOCKSIZE * _root->secsize);
     }
   
-  _dirbuf = _cdio_malloc (_root->secsize * ISO_BLOCKSIZE);
+  _dirbuf = calloc(1, _root->secsize * ISO_BLOCKSIZE);
 
   ret = iso9660_iso_seek_read (p_iso, _dirbuf, _root->lsn, _root->secsize);
   if (ret!=ISO_BLOCKSIZE*_root->secsize) return NULL;
@@ -1079,7 +1079,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char pathname[], bool b_mode2)
 		   (unsigned long int) ISO_BLOCKSIZE * p_stat->secsize);
       }
 
-    _dirbuf = _cdio_malloc (p_stat->secsize * ISO_BLOCKSIZE);
+    _dirbuf = calloc(1, p_stat->secsize * ISO_BLOCKSIZE);
 
     if (b_mode2) {
       if (cdio_read_mode2_sectors (p_cdio, _dirbuf, p_stat->lsn, false, 
@@ -1150,7 +1150,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char pathname[])
 		   (unsigned long int) ISO_BLOCKSIZE * p_stat->secsize);
       }
 
-    _dirbuf = _cdio_malloc (p_stat->secsize * ISO_BLOCKSIZE);
+    _dirbuf = calloc(1, p_stat->secsize * ISO_BLOCKSIZE);
 
     ret = iso9660_iso_seek_read (p_iso, _dirbuf, p_stat->lsn, p_stat->secsize);
     if (ret != ISO_BLOCKSIZE*p_stat->secsize) return NULL;
@@ -1209,7 +1209,7 @@ find_fs_lsn_recurse (CdIo_t *p_cdio, const char pathname[], lsn_t lsn)
 
       if (statbuf->lsn == lsn) {
 	unsigned int len=sizeof(iso9660_stat_t)+strlen(statbuf->filename)+1;
-	iso9660_stat_t *ret_stat = _cdio_malloc(len);
+	iso9660_stat_t *ret_stat = calloc(1, len);
 	memcpy(ret_stat, statbuf, len);
         _cdio_list_free (entlist, true);
         _cdio_list_free (dirlist, true);
