@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.7 2004/05/08 16:28:44 rocky Exp $
+    $Id: freebsd_cam.c,v 1.8 2004/05/10 03:28:55 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,12 +26,12 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.7 2004/05/08 16:28:44 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.8 2004/05/10 03:28:55 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
 #include "freebsd.h"
-#include "scsi_mmc.h"
+#include <cdio/scsi_mmc.h>
 
 static const u_char scsi_cdblen[8] = {6, 10, 10, 12, 12, 12, 10, 10};
 

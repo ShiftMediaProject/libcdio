@@ -1,8 +1,8 @@
 /*
-    $Id: sector.h,v 1.10 2004/05/10 02:10:05 rocky Exp $
+    $Id: sector.h,v 1.11 2004/05/10 03:28:52 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.10 2004/04/30 21:36:53 rocky Exp $
+    $Id: scsi_mmc.h,v 1.1 2004/05/10 03:28:52 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 

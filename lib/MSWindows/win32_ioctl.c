@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.2 2004/05/06 04:01:52 rocky Exp $
+    $Id: win32_ioctl.c,v 1.3 2004/05/10 03:28:57 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.2 2004/05/06 04:01:52 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.3 2004/05/10 03:28:57 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -43,8 +43,7 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.2 2004/05/06 04:01:52 rocky
 #include <stddef.h>  /* offsetof() macro */
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#include "scsi_mmc.h"
+#include <cdio/scsi_mmc.h>
 
 /* Win32 DeviceIoControl specifics */
 /***** FIXME: #include ntddcdrm.h from Wine, but probably need to 

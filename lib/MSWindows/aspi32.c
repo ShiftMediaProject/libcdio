@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.4 2004/04/30 22:28:00 rocky Exp $
+    $Id: aspi32.c,v 1.5 2004/05/10 03:28:55 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,13 +27,13 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.4 2004/04/30 22:28:00 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.5 2004/05/10 03:28:55 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
+#include <cdio/scsi_mmc.h>
 #include "cdio_assert.h"
-#include "scsi_mmc.h"
 
 #include <string.h>
 

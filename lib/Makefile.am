@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.34 2004/05/04 02:06:48 rocky Exp $
+#   $Id: Makefile.am,v 1.35 2004/05/10 03:28:53 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -81,7 +81,6 @@ libcdio_sources = \
 	MSWindows/win32_ioctl.c \
 	MSWindows/win32.c \
 	MSWindows/win32.h \
-	scsi_mmc.h \
 	sector.c \
 	util.c
 

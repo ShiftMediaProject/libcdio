@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.31 2004/05/06 01:08:43 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.32 2004/05/10 03:28:54 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -33,15 +33,15 @@
 #include <cdio/logging.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
+#include <cdio/scsi_mmc.h>
 #include "cdio_assert.h"
 #include "cdio_private.h"
-#include "scsi_mmc.h"
 
 #define DEFAULT_CDIO_DEVICE "/vol/dev/aliases/cdrom0"
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.31 2004/05/06 01:08:43 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.32 2004/05/10 03:28:54 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
