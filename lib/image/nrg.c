@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.1 2004/03/05 12:32:45 rocky Exp $
+    $Id: nrg.c,v 1.2 2004/03/06 03:22:50 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.1 2004/03/05 12:32:45 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.2 2004/03/06 03:22:50 rocky Exp $";
 
 /* structures used */
 
@@ -842,6 +842,78 @@ _cdio_read_audio_sectors (void *env, void *data, lsn_t lsn,
 }
 
 static int
+_cdio_read_mode1_sector (void *env, void *data, lsn_t lsn, 
+			 bool mode1_form2)
+{
+  _img_private_t *_obj = env;
+  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+
+  CdioListNode *node;
+
+  if (lsn >= _obj->size)
+    {
+      cdio_warn ("trying to read beyond image size (%lu >= %lu)", 
+		 (long unsigned int) lsn, (long unsigned int) _obj->size);
+      return -1;
+    }
+
+  _CDIO_LIST_FOREACH (node, _obj->mapping) {
+    _mapping_t *_map = _cdio_list_node_data (node);
+    
+    if (IN (lsn, _map->start_lsn, (_map->start_lsn + _map->sec_count - 1))) {
+      int ret;
+      long int img_offset = _map->img_offset;
+      
+      img_offset += (lsn - _map->start_lsn) * _map->blocksize;
+      
+      ret = cdio_stream_seek (_obj->gen.data_source, img_offset, 
+			      SEEK_SET); 
+      if (ret!=0) return ret;
+
+      /* FIXME: Not completely sure the below is correct. */
+      ret = cdio_stream_read (_obj->gen.data_source, 
+			      (M2RAW_SECTOR_SIZE == _map->blocksize)
+			      ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE)
+			      : buf,
+			      _map->blocksize, 1); 
+      if (ret==0) return ret;
+      break;
+    }
+  }
+
+  if (!node)
+    cdio_warn ("reading into pre gap (lsn %lu)", (long unsigned int) lsn);
+
+  memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
+	  mode1_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
+
+  return 0;
+}
+
+/*!
+   Reads nblocks of mode2 sectors from cd device into data starting
+   from lsn.
+   Returns 0 if no error. 
+ */
+static int
+_cdio_read_mode1_sectors (void *env, void *data, uint32_t lsn, 
+			  bool mode1_form2, unsigned nblocks)
+{
+  _img_private_t *_obj = env;
+  int i;
+  int retval;
+  unsigned int blocksize = mode1_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
+
+  for (i = 0; i < nblocks; i++) {
+    if ( (retval = _cdio_read_mode1_sector (_obj, 
+					    ((char *)data) + (blocksize * i),
+					    lsn + i, mode1_form2)) )
+      return retval;
+  }
+  return 0;
+}
+
+static int
 _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
 			 bool mode2_form2)
 {
@@ -898,26 +970,18 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn, 
-		     bool mode2_form2, unsigned nblocks)
+			  bool mode2_form2, unsigned nblocks)
 {
   _img_private_t *_obj = env;
   int i;
   int retval;
+  unsigned int blocksize = mode2_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if (mode2_form2) {
-      if ( (retval = _cdio_read_mode2_sector (_obj, 
-					 ((char *)data) + (M2RAW_SECTOR_SIZE * i),
-					 lsn + i, true)) )
-	return retval;
-    } else {
-      char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _cdio_read_mode2_sector (_obj, buf, lsn + i, true)) )
-	return retval;
-      
-      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
-	      buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
-    }
+    if ( (retval = _cdio_read_mode2_sector (_obj, 
+					    ((char *)data) + (blocksize * i),
+					    lsn + i, mode2_form2)) )
+      return retval;
   }
   return 0;
 }
@@ -1122,6 +1186,8 @@ cdio_open_nrg (const char *source_name)
     .lseek              = _cdio_lseek,
     .read               = _cdio_read,
     .read_audio_sectors = _cdio_read_audio_sectors,
+    .read_mode1_sector  = _cdio_read_mode1_sector,
+    .read_mode1_sectors = _cdio_read_mode1_sectors,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
