@@ -1099,9 +1099,10 @@ main(int argc,char *argv[])
       paranoia_modeset(p,paranoia_mode);
       if(force_cdrom_overlap!=-1)paranoia_overlapset(p,force_cdrom_overlap);
 
-      if(verbose)
+      if(verbose) {
 	cdda_verbose_set(d,CDDA_MESSAGE_LOGIT,CDDA_MESSAGE_LOGIT);
-      else
+	cdio_loglevel_default = CDIO_LOG_INFO;
+      } else
 	cdda_verbose_set(d,CDDA_MESSAGE_FORGETIT,CDDA_MESSAGE_FORGETIT);
       
       paranoia_seek(p,cursor=i_first_lsn,SEEK_SET);      
