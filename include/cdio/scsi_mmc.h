@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.29 2004/08/07 01:48:36 rocky Exp $
+    $Id: scsi_mmc.h,v 1.30 2004/08/07 03:25:25 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -152,9 +152,31 @@
 #define CDIO_MMC_FEATURE_DVD_PR           0x02B /**< DVD+R Feature */
 #define CDIO_MMC_FEATURE_CD_TAO           0x02D
 #define CDIO_MMC_FEATURE_CD_SAO           0x02E
-#define CDIO_MMC_FEATURE_CDDA_EXT_PLAY    0x103
-#define CDIO_MMC_FEATURE_MCODE_UPGRADE    0x104
-#define CDIO_MMC_FEATURE_LU_SN            0x108
+#define CDIO_MMC_FEATURE_POWER_MGMT       0x100 /**< Initiator and
+						   device directed
+						   power management */
+#define CDIO_MMC_FEATURE_CDDA_EXT_PLAY    0x103 /**< Ability to play
+						   audio CDs via the
+						   Logical Unit s own
+						   analog output */
+#define CDIO_MMC_FEATURE_MCODE_UPGRADE    0x104 /* Ability for the
+						   device to accept
+						   new microcode via
+						   the interface */
+#define CDIO_MMC_FEATURE_TIME_OUT         0x105 /**< Ability to
+						   respond to all
+						   commands within a
+						   specific time */
+#define CDIO_MMC_FEATURE_DVD_CSS          0x106 /**< Ability to
+						   perform DVD
+						   CSS/CPPM
+						   authentication and
+						   RPC */
+#define CDIO_MMC_FEATURE_LU_SN            0x108 /**< The Logical Unit
+						   has a unique
+						   identifier. */
+#define CDIO_MMC_FEATURE_FIRMWARE_DATE    0x1FF /**< Firmware creation
+						   date report */
 				
 /*! Profile codes used in GET_CONFIGURATION - PROFILE LIST. */
 #define CDIO_MMC_FEATURE_PROF_NON_REMOVABLE 0x0001 /**< Re-writable
