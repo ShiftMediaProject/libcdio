@@ -1,9 +1,10 @@
 0.64
 -  Add/expose routines to get/set time. time is reported back in entry
-   stat. Routines to creat IS0-9660 directories and entries must now
+   stat. Routines to create ISO-9660 directories and entries must now
    supply the time to set on the entry.
 -  cd-info: now displays date on iso9660 listing and translates filename 
    to normal conventions
+-  cd-read: new program to help diagnose reading problems.
 -  Document more functions.
 
 0.63

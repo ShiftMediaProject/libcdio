@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.34 2003/09/14 09:34:18 rocky Exp $
+    $Id: cd-info.c,v 1.35 2003/09/21 03:35:40 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -187,86 +187,6 @@ enum {
 
 char *temp_str;
 
-struct poptOption optionsTable[] = {
-  {"debug",       'd', POPT_ARG_INT, &opts.debug_level, 0,
-   "Set debugging to LEVEL"},
-  
-  {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
-   "Don't produce warning output" },
-  
-  {"no-tracks",   'T', POPT_ARG_NONE, &opts.no_tracks, 0,
-   "Don't show track information"},
-  
-  {"no-analyze",  'A', POPT_ARG_NONE, &opts.no_analysis, 0,
-   "Don't filesystem analysis"},
-  
-#ifdef HAVE_CDDB
-  {"no-cddb",     'a', POPT_ARG_NONE, &opts.no_cddb, 0,
-   "Don't look up audio CDDB information or print that"},
-
-  {"cddb-port",   'P', POPT_ARG_INT, &opts.cddb_port, 0,
-   "CDDB port number to use (default 8880)"},
-
-  {"cddb-http",   'H', POPT_ARG_NONE, &opts.cddb_http, 0,
-   "Lookup CDDB via HTTP proxy (default no proxy)"},
-
-  {"cddb-server", '\0', POPT_ARG_STRING, &opts.cddb_server, 0,
-   "CDDB server to contact for information (default: freedb.freedb.org)"},
-
-  {"cddb-cache",  '\0', POPT_ARG_STRING, &opts.cddb_cachedir, 0,
-   "Location of CDDB cache directory (default ~/.cddbclient)"},
-
-  {"cddb-email",  '\0', POPT_ARG_STRING, &opts.cddb_email, 0,
-   "Email address to give CDDB server (default me@home"},
-
-  {"no-cddb-cache", '\0', POPT_ARG_NONE, &opts.cddb_disable_cache, 0,
-   "Lookup CDDB via HTTP proxy (default no proxy)"},
-
-  {"cddb-timeout",  '\0', POPT_ARG_INT, &opts.cddb_timeout, 0,
-   "CDDB timeout value in seconds (default 10 seconds)"},
-
-#endif
-  
-#ifdef HAVE_VCDINFO
-  {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 0,
-   "Don't look up Video CD information"},
-#else 
-  {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 0,
-   "Don't look up Video CD information - for this build, this is always set"},
-#endif
-  {"no-ioctl",  'I', POPT_ARG_NONE,  &opts.no_ioctl, 0,
-   "Don't show ioctl() information"},
-  
-  {"bin-file", 'b', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
-   OP_SOURCE_BIN, "set \"bin\" CD-ROM disk image file as source", "FILE"},
-  
-  {"cue-file", 'c', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
-   OP_SOURCE_CUE, "set \"cue\" CD-ROM disk image file as source", "FILE"},
-  
-  {"input", 'i', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
-   OP_SOURCE_AUTO,
-   "set source and determine if \"bin\" image or device", "FILE"},
-  
-  {"iso9660",  '\0', POPT_ARG_NONE, &opts.print_iso9660, 0,
-   "print directory contents of any ISO-9660 filesystems"},
-
-  {"cdrom-device", 'C', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
-   OP_SOURCE_DEVICE,
-   "set CD-ROM device as source", "DEVICE"},
-
-  {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
-   0, "Don't display header and copyright (for regression testing)"},
-  
-  {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
-   OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
-  
-  {"quiet", 'q', POPT_ARG_NONE, &opts.silent, 0, 
-   "show only critical messages"},
-  
-  {"version", 'V', POPT_ARG_NONE, &opts.version_only, 0,
-   "display version and copyright information and exit"},
-  POPT_AUTOHELP {NULL, 0, 0, NULL, 0}
-};
 
 #define DEV_PREFIX "/dev/"
 static char *
@@ -287,11 +207,92 @@ fillout_device_name(const char *device_name)
 }
 
 
-/* Parse a single option. */
+/* Parse a all options. */
 static bool
-parse_options (poptContext optCon)
+parse_options (int argc, const char *argv[])
 {
   int opt;
+
+  struct poptOption optionsTable[] = {
+    {"debug",       'd', POPT_ARG_INT, &opts.debug_level, 0,
+     "Set debugging to LEVEL"},
+    
+    {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
+     "Don't produce warning output" },
+    
+    {"no-tracks",   'T', POPT_ARG_NONE, &opts.no_tracks, 0,
+     "Don't show track information"},
+    
+    {"no-analyze",  'A', POPT_ARG_NONE, &opts.no_analysis, 0,
+     "Don't filesystem analysis"},
+    
+#ifdef HAVE_CDDB
+  {"no-cddb",     'a', POPT_ARG_NONE, &opts.no_cddb, 0,
+   "Don't look up audio CDDB information or print that"},
+    
+    {"cddb-port",   'P', POPT_ARG_INT, &opts.cddb_port, 0,
+     "CDDB port number to use (default 8880)"},
+    
+    {"cddb-http",   'H', POPT_ARG_NONE, &opts.cddb_http, 0,
+     "Lookup CDDB via HTTP proxy (default no proxy)"},
+    
+    {"cddb-server", '\0', POPT_ARG_STRING, &opts.cddb_server, 0,
+     "CDDB server to contact for information (default: freedb.freedb.org)"},
+    
+    {"cddb-cache",  '\0', POPT_ARG_STRING, &opts.cddb_cachedir, 0,
+     "Location of CDDB cache directory (default ~/.cddbclient)"},
+    
+    {"cddb-email",  '\0', POPT_ARG_STRING, &opts.cddb_email, 0,
+     "Email address to give CDDB server (default me@home"},
+    
+    {"no-cddb-cache", '\0', POPT_ARG_NONE, &opts.cddb_disable_cache, 0,
+     "Lookup CDDB via HTTP proxy (default no proxy)"},
+    
+    {"cddb-timeout",  '\0', POPT_ARG_INT, &opts.cddb_timeout, 0,
+     "CDDB timeout value in seconds (default 10 seconds)"},
+#endif
+  
+#ifdef HAVE_VCDINFO
+    {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 0,
+     "Don't look up Video CD information"},
+#else 
+    {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 0,
+     "Don't look up Video CD information - for this build, this is always set"},
+#endif
+    {"no-ioctl",  'I', POPT_ARG_NONE,  &opts.no_ioctl, 0,
+     "Don't show ioctl() information"},
+    
+    {"bin-file", 'b', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+     OP_SOURCE_BIN, "set \"bin\" CD-ROM disk image file as source", "FILE"},
+    
+    {"cue-file", 'c', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+     OP_SOURCE_CUE, "set \"cue\" CD-ROM disk image file as source", "FILE"},
+    
+    {"input", 'i', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+     OP_SOURCE_AUTO,
+     "set source and determine if \"bin\" image or device", "FILE"},
+    
+    {"iso9660",  '\0', POPT_ARG_NONE, &opts.print_iso9660, 0,
+     "print directory contents of any ISO-9660 filesystems"},
+    
+    {"cdrom-device", 'C', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+     OP_SOURCE_DEVICE,
+     "set CD-ROM device as source", "DEVICE"},
+    
+    {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
+     0, "Don't display header and copyright (for regression testing)"},
+    
+    {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+     OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
+    
+    {"quiet", 'q', POPT_ARG_NONE, &opts.silent, 0, 
+     "show only critical messages"},
+    
+    {"version", 'V', POPT_ARG_NONE, &opts.version_only, 0,
+     "display version and copyright information and exit"},
+    POPT_AUTOHELP {NULL, 0, 0, NULL, 0}
+  };
+  poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
   while ((opt = poptGetNextOpt (optCon)) != -1) {
     switch (opt) {
@@ -830,7 +831,6 @@ main(int argc, const char *argv[])
   int            first_data  = -1;  /* # of first data track */
   int            first_audio = -1;  /* # of first audio track */
   cdio_analysis_t cdio_analysis; 
-  poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
       
   memset(&cdio_analysis, 0, sizeof(cdio_analysis));
 
@@ -869,7 +869,7 @@ main(int argc, const char *argv[])
 
   /* Parse our arguments; every option seen by `parse_opt' will
      be reflected in `arguments'. */
-  parse_options(optCon);
+  parse_options(argc, argv);
      
   print_version(opts.version_only);
 
