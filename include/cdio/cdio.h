@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.32 2003/11/04 12:28:08 rocky Exp $
+    $Id: cdio.h,v 1.33 2003/11/05 12:40:34 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -19,7 +19,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Public CD Input and Control Interface . */
+/** \file cdio.h - Public CD Input and Control Interface . */
 
 
 #ifndef __CDIO_H__
@@ -56,7 +56,7 @@ extern "C" {
   /** This is an opaque structure. */
   typedef struct _CdIo CdIo; 
 
-  /** The below enumerations may be used to tag a specific driver
+  /** The driver_id_t enumerations may be used to tag a specific driver
    * that is opened or is desired to be opened. Note that this is
    * different than what is available on a given host.
    *
@@ -86,7 +86,7 @@ extern "C" {
 
 /** Make sure what's listed for CDIO_MIN_DRIVER is the last
     enumeration in driver_id_t. Since we have a bogus (but useful) 0th
-    entry above we don't have to add one below.
+    entry above we don't have to add one.
 */
 #define CDIO_MIN_DRIVER        DRIVER_BSDI
 #define CDIO_MIN_DEVICE_DRIVER CDIO_MIN_DRIVER
@@ -318,16 +318,32 @@ extern "C" {
   
   /* True if xxx driver is available. where xxx=linux, solaris, nrg, ...
    */
+
+  /*! True if BSDI driver is available. */
   bool cdio_have_bsdi    (void);
+
+  /*! True if FreeBSD driver is available. */
   bool cdio_have_freebsd (void);
+
+  /*! True if GNU/Linux driver is available. */
   bool cdio_have_linux   (void);
+
+  /*! True if Sun Solaris driver is available. */
   bool cdio_have_solaris (void);
+
+  /*! True if Apple OSX driver is available. */
   bool cdio_have_osx     (void);
+
+  /*! True if Microsoft Windows driver is available. */
   bool cdio_have_win32   (void);
+
+  /*! True if Nero driver is available. */
   bool cdio_have_nrg     (void);
+
+  /*! True if BIN/CUE driver is available. */
   bool cdio_have_bincue  (void);
 
-  /* Like above but uses the enumeration instead. */
+  /*! Like cdio_have_xxx but uses an enumeration instead. */
   bool cdio_have_driver (driver_id_t driver_id);
   
   /*! Return a string decribing driver_id. */
@@ -336,23 +352,31 @@ extern "C" {
   /*! Sets up to read from place specified by source_name and
      driver_id This should be called before using any other routine,
      except cdio_init. This will call cdio_init, if that hasn't been
-     done previously.  to call one of the specific routines below.
+     done previously.  to call one of the specific cdio_open_xxx 
+     routines.
 
      NULL is returned on error.
   */
   CdIo * cdio_open (const char *source_name, driver_id_t driver_id);
 
-  /*! cdrao BIN/CUE CD disk-image routines. Source is the .bin file
+  /*! Set up BIN/CUE CD disk-image for reading. Source is the .bin or 
+      .cue file
 
      NULL is returned on error.
    */
   CdIo * cdio_open_bincue (const char *bin_name);
   
+  /*! Return a string containing the default CUE file that would
+      be used when none is specified.
+
+     NULL is returned on error or there is no device.
+   */
   char * cdio_get_default_device_bincue(void);
 
   char **cdio_get_devices_bincue(void);
 
-  /*! CD routines. Source is the some sort of device.
+  /*! Set up CD-ROM for reading. The device_name is
+      the some sort of device name.
 
      NULL is returned on error.
    */
@@ -364,65 +388,131 @@ extern "C" {
    */
   CdIo * cdio_open_cue (const char *cue_name);
 
-  /*! BSDI CD-reading routines. 
-     NULL is returned on error.
-  */
+  /*! Set up CD-ROM for reading using the BSDI driver. The device_name is
+      the some sort of device name.
+
+     NULL is returned on error or there is no BSDI driver.
+   */
   CdIo * cdio_open_bsdi (const char *source_name);
   
+  /*! Return a string containing the default device name that the 
+      BSDI driver would use when none is specified.
+
+     NULL is returned on error or there is no CD-ROM device 
+   */
   char * cdio_get_default_device_bsdi(void);
 
   char **cdio_get_devices_bsdi(void);
   
-  /*! BSDI CD-reading routines. 
-     NULL is returned on error.
-  */
+  /*! Set up CD-ROM for reading using the FreeBSD driver. The device_name is
+      the some sort of device name.
+
+     NULL is returned on error or there is no FreeBSD driver.
+   */
   CdIo * cdio_open_freebsd (const char *source_name);
   
+  /*! Return a string containing the default device name that the 
+      FreeBSD driver would use when none is specified.
+
+     NULL is returned on error or there is no CD-ROM device 
+   */
   char * cdio_get_default_device_freebsd(void);
 
+  /*! Return a list of all of the CD-ROM devices that the FreeBSD driver
+      can find.
+   */
   char **cdio_get_devices_freebsd(void);
   
-  /*! Linux CD-reading routines. 
-     NULL is returned on error.
+  /*! Set up CD-ROM for reading using the GNU/Linux driver. The device_name is
+      the some sort of device name.
+
+     NULL is returned on error or there is no GNU/Linux driver.
    */
   CdIo * cdio_open_linux (const char *source_name);
 
+  /*! Return a string containing the default device name that the 
+      GNU/Linux driver would use when none is specified. A scan is made
+      for CD-ROM drives with CDs in them.
+
+     NULL is returned on error or there is no CD-ROM device 
+   */
   char * cdio_get_default_device_linux(void);
 
+  /*! Return a list of all of the CD-ROM devices that the GNU/Linux driver
+      can find.
+   */
   char **cdio_get_devices_linux(void);
   
-  /*! Solaris CD-reading routines. 
-     NULL is returned on error.
+  /*! Set up CD-ROM for reading using the Sun Solaris driver. The
+      device_name is the some sort of device name.
+
+     NULL is returned on error or there is no Solaris driver.
    */
   CdIo * cdio_open_solaris (const char *source_name);
   
+  /*! Return a string containing the default device name that the 
+      Solaris driver would use when none is specified. A scan is made
+      for CD-ROM drives with CDs in them.
+
+     NULL is returned on error or there is no CD-ROM device 
+   */
   char * cdio_get_default_device_solaris(void);
   
+  /*! Return a list of all of the CD-ROM devices that the Solaris driver
+      can find.
+   */
   char **cdio_get_devices_solaris(void);
   
-  /*! Darwin OS X CD-reading routines. 
-     NULL is returned on error.
+  /*! Set up CD-ROM for reading using the Apple OSX driver. The
+      device_name is the some sort of device name.
+
+     NULL is returned on error or there is no OSX driver.
    */
   CdIo * cdio_open_osx (const char *source_name);
 
+  /*! Return a string containing the default device name that the 
+      OSX driver would use when none is specified. A scan is made
+      for CD-ROM drives with CDs in them.
+
+     NULL is returned on error or there is no CD-ROM device 
+   */
   char * cdio_get_default_device_osx(void);
   
+  /*! Return a list of all of the CD-ROM devices that the OSX driver
+      can find.
+   */
   char **cdio_get_devices_osx(void);
   
-  /*! Win32 CD-reading routines. 
-     NULL is returned on error.
+  /*! Set up CD-ROM for reading using the Microsoft Windows driver. The
+      device_name is the some sort of device name.
+
+     NULL is returned on error or there is no Microsof Windows driver.
    */
   CdIo * cdio_open_win32 (const char *source_name);
   
+  /*! Return a string containing the default device name that the 
+      Win32 driver would use when none is specified. A scan is made
+      for CD-ROM drives with CDs in them.
+
+     NULL is returned on error or there is no CD-ROM device 
+   */
   char * cdio_get_default_device_win32(void);
 
   char **cdio_get_devices_win32(void);
   
-  /*! Nero CD disk-image routines. 
-     NULL is returned on error.
+  /*! Set up CD-ROM for reading using the Nero driver. The
+      device_name is the some sort of device name.
+
+     NULL is returned on error or there is no Nero driver.
    */
   CdIo * cdio_open_nrg (const char *source_name);
   
+  /*! Return a string containing the default device name that the 
+      NRG driver would use when none is specified. A scan is made
+      for NRG disk images in the current directory..
+
+     NULL is returned on error or there is no CD-ROM device 
+   */
   char * cdio_get_default_device_nrg(void);
 
   char **cdio_get_devices_nrg(void);
