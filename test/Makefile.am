@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.17 2004/02/29 09:02:27 rocky Exp $
+#   $Id: Makefile.am,v 1.18 2004/02/29 15:04:27 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -46,7 +46,8 @@ check_DATA = vcd_demo.right \
 	     check_opts0.right check_opts1.right check_opts2.right \
              check_opts3.right check_opts4.right check_opts5.right \
              check_opts6.right check_opts7.right \
-	     isofs-m1-read.right cdda-read.right copying.right
+	     isofs-m1-read.right cdda-read.right \
+	     copying.iso copying.right
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in check_iso.sh.in
