@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.20 2005/02/27 20:16:08 rocky Exp $
+    $Id: win32.c,v 1.21 2005/03/01 01:22:38 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.20 2005/02/27 20:16:08 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.21 2005/03/01 01:22:38 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -195,10 +195,11 @@ init_win32 (void *p_user_data)
     return false;
   }
   
-  p_env->gen.init     = true;
-  p_env->gen.toc_init = false;
+  p_env->gen.init           = true;
+  p_env->gen.toc_init       = false;
   p_env->gen.b_cdtext_init  = false;
   p_env->gen.b_cdtext_error = false;
+  p_env->gen.fd             = open (p_env->gen.source_name, O_RDONLY, 0);
 
   /* Initializations */
   p_env->h_device_handle = NULL;
@@ -207,6 +208,7 @@ init_win32 (void *p_user_data)
   p_env->lpSendCommand   = 0;
   p_env->b_aspi_init     = false;
   p_env->b_ioctl_init    = false;
+
 
   if ( _AM_IOCTL == p_env->access_mode ) {
     b_ret = init_win32ioctl(p_env);
@@ -232,6 +234,8 @@ free_win32 (void *p_user_data)
   _img_private_t *p_env = p_user_data;
 
   if (NULL == p_env) return;
+  if (p_env->gen.fd >= 0) close(p_env->gen.fd);
+
   free (p_env->gen.source_name);
 
   if( p_env->h_device_handle )
@@ -768,7 +772,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.lseek                 = NULL;
   _funcs.read                  = NULL;
   _funcs.read_audio_sectors    = _cdio_read_audio_sectors;
-  _funcs.read_data_sectors     = read_data_sectors_mmc;
+  _funcs.read_data_sectors     = read_data_sectors_generic;
   _funcs.read_mode1_sector     = _cdio_read_mode1_sector;
   _funcs.read_mode1_sectors    = _cdio_read_mode1_sectors;
   _funcs.read_mode2_sector     = _cdio_read_mode2_sector;
