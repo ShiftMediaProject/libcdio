@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.7 2005/03/07 07:23:52 rocky Exp $
+    $Id: gnu_linux.c,v 1.8 2005/03/08 04:10:36 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.7 2005/03/07 07:23:52 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.8 2005/03/08 04:10:36 rocky Exp $";
 
 #include <string.h>
 
@@ -1307,7 +1307,7 @@ cdio_get_default_device_linux(void)
 /*!
   Close tray on CD-ROM.
   
-  @param p_user_data the CD object to be acted upon.
+  @param psz_device the CD-ROM drive to be closed.
   
 */
 driver_return_code_t 

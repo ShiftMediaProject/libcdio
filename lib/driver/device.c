@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.16 2005/03/08 03:11:19 rocky Exp $
+    $Id: device.c,v 1.17 2005/03/08 04:10:36 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -173,7 +173,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_get_default_device_osx,
    &cdio_is_device_generic,
    &cdio_get_devices_osx,
-   NULL
+   &close_tray_solaris
   },
 
   {DRIVER_WIN32, 

@@ -1,5 +1,5 @@
 /*
-    $Id: solaris.c,v 1.6 2005/03/06 23:11:47 rocky Exp $
+    $Id: solaris.c,v 1.7 2005/03/08 04:10:36 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: solaris.c,v 1.6 2005/03/06 23:11:47 rocky Exp $";
+static const char _rcsid[] = "$Id: solaris.c,v 1.7 2005/03/08 04:10:36 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -223,19 +223,6 @@ audio_stop_solaris (void *p_user_data)
 {
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROMSTOP);
-}
-
-/*!
-  Close tray on CD-ROM.
-  
-  @param p_user_data the CD object to be acted upon.
-  
-*/
-static driver_return_code_t 
-close_tray_solaris (void *p_user_data)
-{
-  const _img_private_t *p_env = p_user_data;
-  return ioctl(p_env->gen.fd, CDROMSTART);
 }
 
 /*!
@@ -950,6 +937,34 @@ cdio_get_default_device_solaris(void)
 #endif /* HAVE_SOLARIS_CDROM */
 
 /*!
+  Close tray on CD-ROM.
+  
+  @param psz_device the CD-ROM drive to be closed.
+  
+*/
+driver_return_code_t 
+close_tray_solaris (const char *psz_device)
+{
+#ifdef HAVE_SOLARIS_CDROM
+  int i_rc;
+  int fd = open (psz_device, O_RDONLY|O_NONBLOCK);
+
+  if ( fd > -1 ) {
+    i_rc = DRIVER_OP_SUCCESS;
+    if((i_rc = ioctl(fd, CDROMSTART)) != 0) {
+      cdio_warn ("ioctl CDROMSTART failed: %s\n", strerror(errno));  
+      i_rc = DRIVER_OP_ERROR;
+    }
+    close(fd);
+  } else 
+    i_rc = DRIVER_OP_ERROR;
+  return i_rc;
+#else 
+  return DRIVER_OP_NO_DRIVER;
+#endif /*HAVE_SOLARIS_CDROM*/
+}
+
+/*!
   Return an array of strings giving possible CD devices.
  */
 char **
@@ -1034,7 +1049,6 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.audio_set_volume       = audio_set_volume_solaris;
   _funcs.audio_stop             = audio_stop_solaris,
   _funcs.eject_media            = eject_media_solaris;
-  _funcs.close_tray             = close_tray_solaris;
   _funcs.free                   = cdio_generic_free;
   _funcs.get_arg                = get_arg_solaris;
 #if USE_MMC
