@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.9 2004/07/26 03:39:55 rocky Exp $
+    $Id: scsi_mmc.c,v 1.10 2004/07/26 03:58:25 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -29,6 +29,10 @@
 
 #ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
 #endif
 
 /*!
@@ -227,3 +231,75 @@ scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize)
   if ( ! cdio )  return -2;
   return set_bsize_mmc (cdio->env, (&cdio->op.run_scsi_mmc_cmd), bsize);
 }
+
+/*! 
+  Get the DVD type associated with cd object.
+*/
+discmode_t
+get_dvd_struct_physical_mmc ( void *p_env, 
+			      const scsi_mmc_run_cmd_fn_t *run_scsi_mmc_cmd, 
+			      cdio_dvd_struct_t *s)
+{
+  scsi_mmc_cdb_t cdb = {{0, }};
+  unsigned char buf[20], *base;
+  int i_status;
+  uint8_t layer_num = s->physical.layer_num;
+  
+  cdio_dvd_layer_t *layer;
+  
+  if ( ! p_env || ! run_scsi_mmc_cmd )
+    return -2;
+
+  if (layer_num >= CDIO_DVD_MAX_LAYERS)
+    return -EINVAL;
+  
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_DVD_STRUCTURE);
+  cdb.field[6] = layer_num;
+  cdb.field[7] = CDIO_DVD_STRUCT_PHYSICAL;
+  cdb.field[9] = sizeof(buf) & 0xff;
+  
+  i_status = (*run_scsi_mmc_cmd)(p_env, DEFAULT_TIMEOUT_MS, 
+				scsi_mmc_get_cmd_len(cdb.field[0]), 
+				&cdb, SCSI_MMC_DATA_READ, 
+				sizeof(buf), &buf);
+  if (0 != i_status)
+    return CDIO_DISC_MODE_ERROR;
+  
+  base = &buf[4];
+  layer = &s->physical.layer[layer_num];
+  
+  /*
+   * place the data... really ugly, but at least we won't have to
+   * worry about endianess in userspace.
+   */
+  memset(layer, 0, sizeof(*layer));
+  layer->book_version = base[0] & 0xf;
+  layer->book_type = base[0] >> 4;
+  layer->min_rate = base[1] & 0xf;
+  layer->disc_size = base[1] >> 4;
+  layer->layer_type = base[2] & 0xf;
+  layer->track_path = (base[2] >> 4) & 1;
+  layer->nlayers = (base[2] >> 5) & 3;
+  layer->track_density = base[3] & 0xf;
+  layer->linear_density = base[3] >> 4;
+  layer->start_sector = base[5] << 16 | base[6] << 8 | base[7];
+  layer->end_sector = base[9] << 16 | base[10] << 8 | base[11];
+  layer->end_sector_l0 = base[13] << 16 | base[14] << 8 | base[15];
+  layer->bca = base[16] >> 7;
+
+  return 0;
+}
+
+
+/*! 
+  Get the DVD type associated with cd object.
+*/
+discmode_t
+scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio, cdio_dvd_struct_t *s)
+{
+  if ( ! p_cdio )  return -2;
+  return get_dvd_struct_physical_mmc (p_cdio->env, 
+				      (&p_cdio->op.run_scsi_mmc_cmd), 
+				      s);
+}
+

@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.16 2004/07/26 02:54:37 rocky Exp $
+    $Id: scsi_mmc.h,v 1.17 2004/07/26 03:58:25 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -28,6 +28,7 @@
 
 #include <cdio/cdio.h>
 #include <cdio/types.h>
+#include <cdio/dvd.h>
 
 /*! The generic packet command opcodes for CD/DVD Logical Units. */
 
@@ -208,5 +209,10 @@ int scsi_mmc_read_sectors ( const CdIo *cdio, void *p_buf, lba_t lba,
 
 int scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize);
 
+/*! 
+  Get the DVD type associated with cd object.
+*/
+discmode_t scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio, 
+					      cdio_dvd_struct_t *s);
 
 #endif /* __SCSI_MMC_H__ */

@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.23 2004/07/25 22:33:54 rocky Exp $
+    $Id: win32_ioctl.c,v 1.24 2004/07/26 03:58:25 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,11 +26,10 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.23 2004/07/25 22:33:54 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.24 2004/07/26 03:58:25 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
-#include <cdio/dvd.h>
 #include "cdio_assert.h"
 
 #ifdef HAVE_WIN32_CDROM
@@ -194,59 +193,6 @@ scsi_mmc_run_cmd_win32ioctl( const void *p_user_data, int i_timeout,
 /*! 
   Get disc type associated with cd object.
 */
-static discmode_t
-get_dvd_struct_physical (_img_private_t *p_env, cdio_dvd_struct_t *s)
-{
-  scsi_mmc_cdb_t cdb = {{0, }};
-  unsigned char buf[20], *base;
-  int i_status;
-  uint8_t layer_num = s->physical.layer_num;
-  
-  cdio_dvd_layer_t *layer;
-  
-  if (layer_num >= CDIO_DVD_MAX_LAYERS)
-    return -EINVAL;
-  
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_DVD_STRUCTURE);
-  cdb.field[6] = layer_num;
-  cdb.field[7] = CDIO_DVD_STRUCT_PHYSICAL;
-  cdb.field[9] = sizeof(buf) & 0xff;
-  
-  i_status = scsi_mmc_run_cmd_win32ioctl(p_env, OP_TIMEOUT_MS, 
-					 scsi_mmc_get_cmd_len(cdb.field[0]), 
-					 &cdb, SCSI_MMC_DATA_READ, 
-					 sizeof(buf), &buf);
-  if (0 != i_status)
-    return CDIO_DISC_MODE_ERROR;
-  
-  base = &buf[4];
-  layer = &s->physical.layer[layer_num];
-  
-  /*
-   * place the data... really ugly, but at least we won't have to
-   * worry about endianess in userspace.
-   */
-  memset(layer, 0, sizeof(*layer));
-  layer->book_version = base[0] & 0xf;
-  layer->book_type = base[0] >> 4;
-  layer->min_rate = base[1] & 0xf;
-  layer->disc_size = base[1] >> 4;
-  layer->layer_type = base[2] & 0xf;
-  layer->track_path = (base[2] >> 4) & 1;
-  layer->nlayers = (base[2] >> 5) & 3;
-  layer->track_density = base[3] & 0xf;
-  layer->linear_density = base[3] >> 4;
-  layer->start_sector = base[5] << 16 | base[6] << 8 | base[7];
-  layer->end_sector = base[9] << 16 | base[10] << 8 | base[11];
-  layer->end_sector_l0 = base[13] << 16 | base[14] << 8 | base[15];
-  layer->bca = base[16] >> 7;
-
-  return 0;
-}
-
-/*! 
-  Get disc type associated with cd object.
-*/
 discmode_t
 get_discmode_win32ioctl (_img_private_t *p_env)
 {
@@ -258,7 +204,9 @@ get_discmode_win32ioctl (_img_private_t *p_env)
 
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
-  if (0 == get_dvd_struct_physical (p_env, &dvd)) {
+  if (0 == get_dvd_struct_physical_mmc (p_env, 
+					&scsi_mmc_run_cmd_win32ioctl,
+					&dvd)) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
