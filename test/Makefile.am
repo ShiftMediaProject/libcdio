@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.13 2003/09/28 22:14:44 rocky Exp $
+#   $Id: Makefile.am,v 1.14 2003/09/29 02:56:23 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,14 +20,15 @@
 # Things to regression testing
 ####################################################
 #
-noinst_PROGRAMS = testassert testischar testiso9660 check_sizeof
+noinst_PROGRAMS = testassert testischar testdefault testiso9660 check_sizeof
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
-testassert_LDADD = $(LIBCDIO_LIBS)
-testischar_LDADD = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
-testiso9660_LDADD = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
-check_sizeof_LDADD = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
+testassert_LDADD    = $(LIBCDIO_LIBS)
+testdefault_LDADD   = $(LIBCDIO_LIBS)
+testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
+testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
+check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 
 check_SCRIPTS = check_nrg.sh check_cue.sh check_cd_read.sh check_opts.sh
 

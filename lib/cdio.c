@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.28 2003/09/28 17:14:20 rocky Exp $
+    $Id: cdio.c,v 1.29 2003/09/29 02:56:22 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.28 2003/09/28 17:14:20 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.29 2003/09/29 02:56:22 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -266,23 +266,31 @@ cdio_get_default_device (const CdIo *obj)
   }
 }
 
-/*!
-  Return an array of device names. if CdIo is NULL (we haven't
-  initialized a specific device driver), then find a suitable device 
-  driver.
+/*!Return an array of device names. If you want a specific
+  devices, dor a driver give that device, if you want hardware
+  devices, give DRIVER_DEVICE and if you want all possible devices,
+  image drivers and hardware drivers give DRIVER_UNKNOWN.
   
   NULL is returned if we couldn't return a list of devices.
 */
 char **
-cdio_get_devices (const CdIo *cdio)
+cdio_get_devices (driver_id_t driver_id)
 {
-  const CdIo *c = (cdio == NULL) 
-    ? scan_for_driver(DRIVER_UNKNOWN, CDIO_MAX_DRIVER, NULL) 
-    : cdio;
+  CdIo *cdio;
+
+  switch (driver_id) {
+    /* FIXME: spit out unknown to give image drivers as well.  */
+  case DRIVER_UNKNOWN:
+  case DRIVER_DEVICE:
+    cdio = scan_for_driver(DRIVER_UNKNOWN, CDIO_MAX_DRIVER, NULL);
+    break;
+  default:
+    cdio = scan_for_driver(driver_id, driver_id, NULL);
+  }
   
-  if (c == NULL) return NULL;
-  if (c->op.get_devices) {
-    return c->op.get_devices (c->env);
+  if (cdio == NULL) return NULL;
+  if (cdio->op.get_devices) {
+    return cdio->op.get_devices ();
   } else {
     return NULL;
   }
@@ -310,7 +318,7 @@ cdio_get_devices_with_cap (char* search_devices[],
   char **drives_ret=NULL;
   int num_drives=0;
 
-  if (NULL == drives) drives=cdio_get_devices(NULL);
+  if (NULL == drives) drives=cdio_get_devices(DRIVER_DEVICE);
 
   if (capabilities == CDIO_FS_MATCH_ALL) {
     /* Duplicate drives into drives_ret. */
@@ -321,9 +329,7 @@ cdio_get_devices_with_cap (char* search_devices[],
     cdio_fs_anal_t got_fs=0;
     cdio_fs_anal_t need_fs = CDIO_FSTYPE(capabilities);
     cdio_fs_anal_t need_fs_ext;
-    need_fs_ext = any 
-      ? capabilities | CDIO_FS_MASK
-      : capabilities & ~CDIO_FS_MASK;
+    need_fs_ext = capabilities & ~CDIO_FS_MASK;
       
     for( ;  *drives != NULL; drives++ ) {
       CdIo *cdio = cdio_open(*drives, DRIVER_UNKNOWN);

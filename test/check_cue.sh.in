@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.12 2003/09/20 00:28:32 rocky Exp $
+#$Id: check_cue.sh.in,v 1.13 2003/09/29 02:56:23 rocky Exp $
 # Tests to see that BIN/CUE file iamge reading is correct (via cd-info). 
 if test -z "@VCDINFO_LIBS@" ; then
   vcd_opt='--no-vcd'
@@ -41,10 +41,15 @@ else
 fi
 
 fname=vcd_demo
+if test -z "@VCDINFO_LIBS@" ; then
+  right=${srcdir}/${fname}.right
+else
+  right=${srcdir}/${fname}_vcdinfo.right
+fi
 testnum='Video CD'
 if test -f ${srcdir}/${fname}.cue ; then
-  test_cdinfo "-c ${srcdir}/vcd_demo.cue $vcd_opt --iso9660" \
-      ${fname}.dump ${srcdir}/${fname}.right
+  test_cdinfo "-c ${srcdir}/vcd_demo.cue --iso9660" \
+      ${fname}.dump $right
   RC=$?
   check_result $RC "cd-info CUE test $testnum"
 else 

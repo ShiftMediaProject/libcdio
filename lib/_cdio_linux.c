@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.24 2003/09/28 17:14:20 rocky Exp $
+    $Id: _cdio_linux.c,v 1.25 2003/09/29 02:56:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.24 2003/09/28 17:14:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.25 2003/09/29 02:56:22 rocky Exp $";
 
 #include <string.h>
 
@@ -841,7 +841,7 @@ static char checklist2[][40] = {
   Return a string containing the default VCD device if none is specified.
  */
 static char **
-_cdio_get_devices (const CdIo *obj)
+_cdio_get_devices (void)
 {
   unsigned int i;
   char drive[40];
@@ -893,7 +893,7 @@ _cdio_get_devices (const CdIo *obj)
 #endif /* HAVE_LINUX_CDROM */
 
 /*!
-  Return a string containing the default VCD device if none is specified.
+  Return a string containing the default CD device.
  */
 char *
 cdio_get_default_device_linux(void)

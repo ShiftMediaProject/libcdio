@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.54)
-AC_REVISION([$Id: configure.ac,v 1.47 2003/09/28 22:11:00 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.48 2003/09/29 02:56:22 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
 AM_CONFIG_HEADER(config.h)
@@ -93,7 +93,7 @@ AM_PATH_LIBPOPT(, [enable_cd_info=no])
 dnl headers
 
 AC_STDC_HEADERS
-AC_CHECK_HEADERS(stdint.h inttypes.h stdbool.h)
+AC_CHECK_HEADERS(stdint.h  glob.h inttypes.h stdbool.h)
 
 dnl compiler
 AC_C_BIGENDIAN

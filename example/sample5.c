@@ -1,5 +1,5 @@
 /*
-  $Id: sample5.c,v 1.2 2003/09/28 22:11:00 rocky Exp $
+  $Id: sample5.c,v 1.3 2003/09/29 02:56:22 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -49,7 +49,7 @@ main(int argc, const char *argv[])
   cdio_log_set_handler (log_handler);
 
   /* Print out a list of CD-drives */
-  cd_drives = cdio_get_devices(NULL);
+  cd_drives = cdio_get_devices(DRIVER_DEVICE);
   for( c = cd_drives; *c != NULL; *c++ ) {
     printf("Drive %s\n", *c);
   }
@@ -74,7 +74,7 @@ main(int argc, const char *argv[])
   printf("CD-DA drives...\n");
   cd_drives = NULL;
   /* Print out a list of CD-drives with CD-DA's in them. */
-  cd_drives = cdio_get_devices_with_cap(NULL,  CDIO_FS_AUDIO, true);
+  cd_drives = cdio_get_devices_with_cap(NULL,  CDIO_FS_AUDIO, false);
 
   if (NULL != cd_drives) {
     for( c = cd_drives; *c != NULL; *c++ ) {

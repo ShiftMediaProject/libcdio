@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.18 2003/09/25 09:38:16 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.19 2003/09/29 02:56:22 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -25,9 +25,18 @@
 # include "config.h"
 #endif
 
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+#ifdef HAVE_GLOB_H
+#include <glob.h>
+#endif
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -38,7 +47,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.18 2003/09/25 09:38:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.19 2003/09/29 02:56:22 rocky Exp $";
 
 /* structures used */
 
@@ -756,10 +765,37 @@ _cdio_get_arg (void *env, const char key[])
 /*!
   Return a string containing the default VCD device if none is specified.
  */
-char *
-cdio_get_default_device_nrg()
+static char **
+_cdio_get_devices (void)
 {
-  return strdup(DEFAULT_CDIO_DEVICE);
+  char **drives = NULL;
+  unsigned int num_files=0;
+#ifdef HAVE_GLOB_H
+  unsigned int i;
+  glob_t globbuf;
+  globbuf.gl_offs = 0;
+  glob("*.nrg", GLOB_DOOFFS, NULL, &globbuf);
+  for (i=0; i<globbuf.gl_pathc; i++) {
+    cdio_add_device_list(&drives, globbuf.gl_pathv[i], &num_files);
+  }
+  globfree(&globbuf);
+#else
+  cdio_add_device_list(&drives, DEFAULT_CDIO_DEVICE, &num_files);
+#endif /*HAVE_GLOB_H*/
+  cdio_add_device_list(&drives, NULL, &num_files);
+  return drives;
+}
+
+/*!
+  Return a string containing the default CD device.
+ */
+char *
+cdio_get_default_device_nrg(void)
+{
+  char **drives = _cdio_get_devices();
+  char *drive = (drives[0] == NULL) ? NULL : strdup(drives[0]);
+  cdio_free_device_list(drives);
+  return drive;
 }
 
 /*!
@@ -852,6 +888,7 @@ cdio_open_nrg (const char *source_name)
     .eject_media        = cdio_generic_bogus_eject_media,
     .free               = cdio_generic_stream_free,
     .get_arg            = _cdio_get_arg,
+    .get_devices        = _cdio_get_devices,
     .get_default_device = cdio_get_default_device_nrg,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_num_tracks     = _cdio_get_num_tracks,

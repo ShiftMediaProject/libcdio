@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.24 2003/09/28 17:14:20 rocky Exp $
+    $Id: cdio.h,v 1.25 2003/09/29 02:56:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -143,18 +143,19 @@ extern "C" {
   */
   char ** cdio_get_devices_with_cap (char* search_devices[],
 				     cdio_fs_anal_t capabilities, bool any);
-  /*!
-    Return an array of device names. if CdIo is NULL (we haven't
-    initialized a specific device driver), then find a suitable device 
-    driver.
+
+  /*!Return an array of device names. If you want a specific
+    devices, dor a driver give that device, if you want hardware
+    devices, give DRIVER_DEVICE and if you want all possible devices,
+    image drivers and hardware drivers give DRIVER_UNKNOWN.
     
     NULL is returned if we couldn't return a list of devices.
   */
-  char ** cdio_get_devices (const CdIo *obj);
+  char ** cdio_get_devices (driver_id_t driver);
 
   /*!
-    Return a string containing the default CD device if none is specified.
-    if CdIo is NULL (we haven't initialized a specific device driver), 
+    Return a string containing the default CD device.
+    if obj is NULL (we haven't initialized a specific device driver), 
     then find a suitable one and return the default device for that.
     
     NULL is returned if we couldn't get a default device.

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.15 2003/09/28 17:14:21 rocky Exp $
+    $Id: cdio_private.h,v 1.16 2003/09/29 02:56:23 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -62,7 +62,7 @@ extern "C" {
       
       NULL is returned if we couldn't return a list of devices.
     */
-    char ** (*get_devices) (const CdIo *obj);
+    char ** (*get_devices) (void);
     
     /*!
       Return a string containing the default CD device if none is specified.
