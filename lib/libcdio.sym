@@ -11,6 +11,7 @@ cdio_debug
 cdio_destroy
 cdio_driver_describe
 cdio_free_device_list
+cdio_from_bcd8
 cdio_get_arg
 cdio_get_cdtext
 cdio_get_default_device
@@ -64,11 +65,10 @@ cdio_stdio_destroy
 cdio_stdio_new
 cdio_stream_read
 cdio_stream_seek
+cdio_to_bcd8
 cdio_warn
 cdtext_field2str
 discmode2str
-from_bcd8
 scsi_mmc_get_hwinfo
 scsi_mmc_run_cmd
-to_bcd8
 track_format2str

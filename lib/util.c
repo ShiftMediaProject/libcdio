@@ -1,5 +1,5 @@
 /*
-    $Id: util.c,v 1.5 2004/09/03 23:20:11 rocky Exp $
+    $Id: util.c,v 1.6 2004/11/15 01:34:09 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -36,7 +36,7 @@
 #include <cdio/types.h>
 #include <cdio/util.h>
 
-static const char _rcsid[] = "$Id: util.c,v 1.5 2004/09/03 23:20:11 rocky Exp $";
+static const char _rcsid[] = "$Id: util.c,v 1.6 2004/11/15 01:34:09 rocky Exp $";
 
 size_t
 _cdio_strlenv(char **str_array)
@@ -174,7 +174,7 @@ _cdio_strdup_upper (const char str[])
 }
 
 uint8_t
-to_bcd8 (uint8_t n)
+cdio_to_bcd8 (uint8_t n)
 {
   /*cdio_assert (n < 100);*/
 
@@ -182,7 +182,7 @@ to_bcd8 (uint8_t n)
 }
 
 uint8_t
-from_bcd8(uint8_t p)
+cdio_from_bcd8(uint8_t p)
 {
   return (0xf & p)+(10*(p >> 4));
 }

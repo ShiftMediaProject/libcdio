@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.58 2004/11/14 18:33:13 rocky Exp $
+#   $Id: Makefile.am,v 1.59 2004/11/15 01:34:09 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -180,7 +180,7 @@ libcdio.la.ver: $(libcdio_la_OBJECTS)
 	nm $(patsubst %.lo,%.o,$(libcdio_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" libcdio.sym; then :; else echo "    $${symbol};"; fi; done >> $@
 	echo '};' >> $@
 else 
-libcdio_la_LDFLAGS = $(libcdio_la_ldflags) -export-symbols libcdio.sym
+libcdio_la_LDFLAGS = $(libcdio_la_ldflags)
 endif 
 
 libiso9660_la_MAJOR := $(shell expr $(libiso9660_la_CURRENT) - $(libiso9660_la_AGE))
@@ -198,6 +198,6 @@ libiso9660.la.ver: $(libiso9660_la_OBJECTS)
 
 MOSTLYCLEANFILES = libcdio.la.ver libiso9660.la.ver
 else 
-libiso9660_la_LDFLAGS = $(libiso9660_la_ldflags) -export-symbols libiso9660.sym
+libiso9660_la_LDFLAGS = $(libiso9660_la_ldflags)
 libiso9660_la_DEPENDENCIES = $(libcdio9660_la_dependencies)
 endif
