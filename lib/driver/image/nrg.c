@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.10 2005/02/03 07:35:16 rocky Exp $
+    $Id: nrg.c,v 1.11 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.10 2005/02/03 07:35:16 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.11 2005/02/06 11:13:37 rocky Exp $";
 
 
 /* reader */
@@ -1226,6 +1226,7 @@ cdio_open_nrg (const char *psz_source)
   _funcs.get_drive_cap         = _get_drive_cap_image;
   _funcs.get_first_track_num   = _get_first_track_num_image;
   _funcs.get_hwinfo            = get_hwinfo_nrg;
+  _funcs.get_media_changed     = get_media_changed_image;
   _funcs.get_mcn               = _get_mcn_image;
   _funcs.get_num_tracks        = _get_num_tracks_image;
   _funcs.get_track_channels    = get_track_channels_generic,

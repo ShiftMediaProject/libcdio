@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.12 2005/02/05 13:07:02 rocky Exp $
+    $Id: cdio_private.h,v 1.13 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -56,6 +56,9 @@ extern "C" {
     /*!
       Eject media in CD drive. If successful, as a side effect we 
       also free obj. Return 0 if success and 1 for failure.
+
+      @param p_cdio the CD object to be acted upon.
+      If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
     */
     int (*eject_media) (void *p_env);
     
@@ -97,7 +100,14 @@ extern "C" {
     char ** (*get_devices) (void);
     
     /*!
-      Return a string containing the default CD device if none is specified.
+      Get the default CD device.
+
+      @return a string containing the default CD device or NULL is
+      if we couldn't get a default device.
+
+      In some situations of drivers or OS's we can't find a CD device if
+      there is no media in it and it is possible for this routine to return
+      NULL even though there may be a hardware CD-ROM.
     */
     char * (*get_default_device)(void);
     
@@ -133,6 +143,14 @@ extern "C" {
     */
     bool (*get_hwinfo) ( const CdIo_t *p_cdio, 
 			 /* out*/ cdio_hwinfo_t *p_hw_info );
+
+    /*! 
+      Find out if media has changed since the last call.
+      @param p_env the CD object to be acted upon.
+      @return 1 if media has changed since last call, 0 if not. Error
+      return codes are the same as driver_return_code_t
+    */
+    int (*get_media_changed) (void *p_env);
 
     /*!  
       Return the media catalog number MCN from the CD or NULL if
@@ -171,12 +189,6 @@ extern "C" {
       Get format of track. 
     */
     track_format_t (*get_track_format) (void *p_env, track_t i_track);
-    
-    /*!
-      Set the drive speed. -1 is returned if we had an error.
-      -2 is returned if this is not implemented for the current driver.
-    */
-    int (*get_speed) (void *p_env);
     
     /*!
       Return true if we have XA data (green, mode2 form1) or
@@ -273,7 +285,7 @@ extern "C" {
       
       Returns 0 if command completed successfully.
     */
-    scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd;
+    mmc_run_cmd_fn_t run_mmc_cmd;
 
     /*!
       Set the arg "key" with "value" in the source device.
@@ -282,11 +294,8 @@ extern "C" {
     
     /*!
       Set the blocksize for subsequent reads. 
-      
-      @return 0 if everything went okay, -1 if we had an error. is -2
-      returned if this is not implemented for the current driver.
     */
-    int (*set_blocksize) ( void *p_env, int i_blocksize );
+    driver_return_code_t (*set_blocksize) ( void *p_env, int i_blocksize );
 
     /*!
       Set the drive speed. 

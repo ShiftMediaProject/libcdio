@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.43 2005/02/05 14:42:28 rocky Exp $
+    $Id: scsi_mmc.h,v 1.44 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -83,6 +83,8 @@ typedef enum {
 						   handled by Plextor drives.
 						*/
 						   
+  CDIO_MMC_GPCMD_GET_EVENT_STATUS       = 0x4a, /**< Report events and 
+						   Status. */
   CDIO_MMC_GPCMD_PAUSE_RESUME           = 0x4b, /**< Stop or restart audio 
 						   playback. (10 bytes). 
 						   Used with a PLAY command. */
@@ -394,7 +396,7 @@ typedef enum scsi_mmc_direction {
   Buffer (CDB) for a given MMC command. The length will be 
   either 6, 10, or 12. 
 */
-uint8_t scsi_mmc_get_cmd_len(uint8_t scsi_cmd);
+uint8_t mmc_get_cmd_len(uint8_t scsi_cmd);
 
 
 /*!
@@ -412,7 +414,7 @@ uint8_t scsi_mmc_get_cmd_len(uint8_t scsi_cmd);
 
   @return 0 if command completed successfully.
  */
-int scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
+int mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 		      const scsi_mmc_cdb_t *p_cdb,
 		      scsi_mmc_direction_t e_direction, unsigned int i_buf, 
 		      /*in/out*/ void *p_buf );
@@ -421,14 +423,14 @@ int scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 
  @return 0 if successful.
  */
-int scsi_mmc_eject_media( const CdIo_t *p_cdio );
+int mmc_eject_media( const CdIo_t *p_cdio );
 
 /*!  
   Get the lsn of the end of the CD
   
   @return the lsn. On error return CDIO_INVALID_LSN.
 */
-lsn_t scsi_mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
+lsn_t mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
   
 /*! 
   Return the discmode as reported by the MMC Read (FULL) TOC
@@ -439,14 +441,14 @@ lsn_t scsi_mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
   at http://www.t10.org/ftp/t10/drafts/mmc/mmc-r10a.pdf See
   especially tables 72, 73 and 75.
  */
-discmode_t scsi_mmc_get_discmode( const CdIo_t *p_cdio );
+discmode_t mmc_get_discmode( const CdIo_t *p_cdio );
 
 
 /*!
   Get drive capabilities for a device.
   @return the drive capabilities.
  */
-void scsi_mmc_get_drive_cap (const CdIo_t *p_cdio,
+void mmc_get_drive_cap (const CdIo_t *p_cdio,
 			     /*out*/ cdio_drive_read_cap_t  *p_read_cap,
 			     /*out*/ cdio_drive_write_cap_t *p_write_cap,
 			     /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
@@ -456,7 +458,7 @@ void scsi_mmc_get_drive_cap (const CdIo_t *p_cdio,
 
   @return the DVD discmode.
 */
-discmode_t scsi_mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, 
+discmode_t mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, 
 					      cdio_dvd_struct_t *s);
 
 /*! 
@@ -465,9 +467,17 @@ discmode_t scsi_mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio,
   @return true if we were able to get hardware info, false if we had
   an error.
 */
-bool scsi_mmc_get_hwinfo ( const CdIo_t *p_cdio, 
+bool mmc_get_hwinfo ( const CdIo_t *p_cdio, 
 			   /* out*/ cdio_hwinfo_t *p_hw_info );
 
+
+/*! 
+  Find out if media has changed since the last call.
+  @param p_cdio the CD object to be acted upon.
+  @return 1 if media has changed since last call, 0 if not. Error
+  return codes are the same as driver_return_code_t
+   */
+int mmc_get_media_changed(const CdIo_t *p_cdio);
 
 /*!
   Get the media catalog number (MCN) from the CD via MMC.
@@ -479,25 +489,25 @@ bool scsi_mmc_get_hwinfo ( const CdIo_t *p_cdio,
   string when done with it.
   
 */
-char *scsi_mmc_get_mcn ( const CdIo_t *p_cdio );
+char * mmc_get_mcn ( const CdIo_t *p_cdio );
 
 /*! Packet driver to read mode2 sectors. 
    Can read only up to 25 blocks.
 */
-int scsi_mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba, 
+int mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba, 
 			    int sector_type, unsigned int i_blocks);
 
 /*!
   Set the block size for subsequest read requests, via an MMC 
   MODE_SELECT 6 command.
  */
-int scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_bsize);
+int mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_bsize);
 
 /*!
   Set the block size for subsequest read requests, via an MMC 
   MODE_SENSE 6 command.
  */
-int scsi_mmc_get_blocksize ( const CdIo_t *p_cdio );
+int mmc_get_blocksize ( const CdIo_t *p_cdio );
 
 /*!
   Set the drive speed. 
@@ -507,8 +517,21 @@ int scsi_mmc_get_blocksize ( const CdIo_t *p_cdio );
   
   @see scsi_mmc_get_speed
 */
-int
-scsi_mmc_set_speed( const CdIo_t *p_cdio, int i_speed );
+int mmc_set_speed( const CdIo_t *p_cdio, int i_speed );
 
+/** For backward compatibility. */
+#define scsi_mmc_get_cmd_len             mmc_get_cmd_len
+#define scsi_mmc_run_cmd                 mmc_run_cmd
+#define scsi_mmc_eject_media             mmc_eject_media
+#define scsi_mmc_get_disc_last_lsn       mmc_get_disc_last_lsn
+#define scsi_mmc_get_discmode            mmc_get_discmode
+#define scsi_mmc_get_drive_cap           mmc_get_drive_cap 
+#define scsi_mmc_get_dvd_struct_physical mmc_get_dvd_struct_physical 
+#define scsi_mmc_get_hwinfo              mmc_get_hwinfo 
+#define scsi_mmc_get_mcn                 mmc_get_mcn 
+#define scsi_mmc_read_sectors            mmc_read_sectors 
+#define scsi_mmc_set_blocksize           mmc_set_blocksize 
+#define scsi_mmc_get_blocksize           mmc_get_blocksize 
+#define scsi_mmc_set_speed               mmc_set_speed
 
 #endif /* __SCSI_MMC_H__ */

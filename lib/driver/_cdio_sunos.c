@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.18 2005/02/03 07:35:15 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.19 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.18 2005/02/03 07:35:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.19 2005/02/06 11:13:37 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -146,8 +146,8 @@ init_solaris (_img_private_t *p_env)
  */
 static driver_return_code_t
 run_scsi_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
-		      unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-		      scsi_mmc_direction_t e_direction, 
+		      unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+		      mmc_direction_t e_direction, 
 		      unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
@@ -575,7 +575,7 @@ get_discmode_solaris (void *p_user_data)
      Issue a SCSI MMC-2 FULL TOC command first to try get more
      accurate information.
   */
-  discmode = scsi_mmc_get_discmode(p_env->gen.cdio);
+  discmode = mmc_get_discmode(p_env->gen.cdio);
   if (CDIO_DISC_MODE_NO_INFO != discmode) 
     return discmode;
 
@@ -872,12 +872,12 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.read_mode2_sector      = _read_mode2_sector_solaris;
   _funcs.read_mode2_sectors     = _read_mode2_sectors_solaris;
   _funcs.read_toc               = read_toc_solaris;
-  _funcs.run_scsi_mmc_cmd       = run_scsi_cmd_solaris;
+  _funcs.run_mmc_cmd            = run_mmc_cmd_solaris;
   _funcs.set_arg                = _set_arg_solaris;
   _funcs.set_blocksize          = set_blocksize_mmc;
   _funcs.set_speed              = set_speed_solaris;
 
-  _data                 = calloc(1, sizeof (_img_private_t));
+  _data                         = calloc(1, sizeof (_img_private_t));
 
   _data->access_mode    = _AM_SUN_CTRL_SCSI;
   _data->gen.init       = false;

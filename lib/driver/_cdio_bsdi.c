@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.11 2005/02/03 07:35:15 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.12 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.11 2005/02/03 07:35:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.12 2005/02/06 11:13:37 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -81,7 +81,7 @@ typedef struct {
 /* Define the Cdrom Generic Command structure */
 typedef struct  cgc
 {
-  scsi_mmc_cdb_t cdb;
+  mmc_cdb_t cdb;
   u_char  *buf;
   int     buflen;
   int     rw;
@@ -94,10 +94,10 @@ typedef struct  cgc
    This code adapted from Steven M. Schultz's libdvd
 */
 static driver_return_code_t
-run_scsi_cmd_bsdi(void *p_user_data, unsigned int i_timeout_ms,
-		  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-		  scsi_mmc_direction_t e_direction, 
-		  unsigned int i_buf, /*in/out*/ void *p_buf )
+run_mmc_cmd_bsdi(void *p_user_data, unsigned int i_timeout_ms,
+		 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+		 mmc_direction_t e_direction, 
+		 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   int     i_status, i_asc;
@@ -105,7 +105,7 @@ run_scsi_cmd_bsdi(void *p_user_data, unsigned int i_timeout_ms,
   struct  scsi_sense   *sp;
   
  again:
-  suc.suc_flags = SCSI_MMC_DATA_READ == e_direction ? 
+  suc.suc_flags = MMC_DATA_READ == e_direction ? 
     SUC_READ : SUC_WRITE;
   suc.suc_cdblen = i_cdb;
   memcpy(suc.suc_cdb, p_cdb, i_cdb);
@@ -784,7 +784,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .read_mode2_sector  = _read_mode2_sector_bsdi,
     .read_mode2_sectors = _read_mode2_sectors_bsdi,
     .read_toc           = &read_toc_bsdi,
-    .run_scsi_mmc_cmd   = &run_scsi_cmd_bsdi,
+    .run_mmc_cmd        = &run_mmc_cmd_bsdi,
     .set_arg            = _set_arg_bsdi,
   };
 

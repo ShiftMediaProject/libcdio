@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.14 2005/02/03 07:35:15 rocky Exp $
+    $Id: _cdio_osx.c,v 1.15 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.14 2005/02/03 07:35:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.15 2005/02/06 11:13:37 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -355,8 +355,8 @@ init_osx(_img_private_t *p_env) {
 static int 
 run_scsi_cmd_osx( void *p_user_data, 
 		  unsigned int i_timeout_ms,
-		  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-		  scsi_mmc_direction_t e_direction, 
+		  unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+		  mmc_direction_t e_direction, 
 		  unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;
@@ -486,11 +486,11 @@ run_scsi_cmd_osx( void *p_user_data,
   We return true if command completed successfully and false if not.
  */
 static int
-run_scsi_cmd_osx( const void *p_user_data, 
-		  unsigned int i_timeout_ms,
-		  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-		  scsi_mmc_direction_t e_direction, 
-		  unsigned int i_buf, /*in/out*/ void *p_buf )
+run_mmc_cmd_osx( const void *p_user_data, 
+		 unsigned int i_timeout_ms,
+		 unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		 scsi_mmc_direction_t e_direction, 
+		 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
 
 #ifndef SCSI_MMC_FIXED
@@ -1689,7 +1689,7 @@ cdio_open_osx (const char *psz_orig_source)
     .read_mode2_sector     = _get_read_mode2_sector_osx,
     .read_mode2_sectors    = _get_read_mode2_sectors_osx,
     .read_toc              =  read_toc_osx,
-    .run_scsi_mmc_cmd      =  run_scsi_cmd_osx,
+    .run_mmc_cmd           =  run_mmc_cmd_osx,
     .set_arg               = _set_arg_osx,
     .set_speed             = set_speed_osx,
   };

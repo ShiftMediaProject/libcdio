@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.12 2005/02/03 07:35:16 rocky Exp $
+    $Id: cdrdao.c,v 1.13 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.12 2005/02/03 07:35:16 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.13 2005/02/06 11:13:37 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1273,6 +1273,7 @@ cdio_open_cdrdao (const char *psz_cue_name)
   _funcs.get_drive_cap         = _get_drive_cap_image;
   _funcs.get_first_track_num   = _get_first_track_num_image;
   _funcs.get_hwinfo            = get_hwinfo_cdrdao;
+  _funcs.get_media_changed     = get_media_changed_image;
   _funcs.get_mcn               = _get_mcn_image;
   _funcs.get_num_tracks        = _get_num_tracks_image;
   _funcs.get_track_channels    = get_track_channels_image,

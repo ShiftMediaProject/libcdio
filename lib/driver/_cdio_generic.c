@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.14 2005/02/05 13:07:02 rocky Exp $
+    $Id: _cdio_generic.c,v 1.15 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.14 2005/02/05 13:07:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.15 2005/02/06 11:13:37 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -290,7 +290,7 @@ get_discmode_generic (void *p_user_data )
 
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
-  if (0 == scsi_mmc_get_dvd_struct_physical (p_env->cdio, &dvd)) {
+  if (0 == mmc_get_dvd_struct_physical (p_env->cdio, &dvd)) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
@@ -436,7 +436,7 @@ bool
 init_cdtext_generic (generic_img_private_t *p_env)
 {
   return mmc_init_cdtext_private( p_env,
-                                  p_env->cdio->op.run_scsi_mmc_cmd, 
+                                  p_env->cdio->op.run_mmc_cmd, 
                                   set_cdtext_field_generic
                                   );
 }

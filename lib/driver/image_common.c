@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.c,v 1.7 2005/01/23 05:31:03 rocky Exp $
+    $Id: image_common.c,v 1.8 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -41,7 +41,7 @@
 
 /*!
   Eject media -- there's nothing to do here except free resources.
-  We always return -2.
+  We always return DRIVER_OP_UNSUPPORTED.
  */
 driver_return_code_t
 _eject_media_image(void *p_user_data)
@@ -144,6 +144,19 @@ _get_first_track_num_image(void *p_user_data)
   _img_private_t *p_env = p_user_data;
   
   return p_env->gen.i_first_track;
+}
+
+/*! 
+  Find out if media has changed since the last call.
+  @param p_user_data the CD object to be acted upon.
+  @return 1 if media has changed since last call, 0 if not. Error
+  return codes are the same as driver_return_code_t
+  We always return DRIVER_OP_UNSUPPORTED.
+ */
+int
+get_media_changed_image(void *p_user_data)
+{
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.15 2005/02/03 07:35:15 rocky Exp $
+    $Id: freebsd.c,v 1.16 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.15 2005/02/03 07:35:15 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.16 2005/02/06 11:13:37 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -92,7 +92,7 @@ _read_audio_sectors_freebsd (void *p_user_data, void *p_buf, lsn_t i_lsn,
 {
   _img_private_t *p_env = p_user_data;
   if ( p_env->access_mode == _AM_CAM ) {
-    return scsi_mmc_read_sectors( p_env->gen.cdio, p_buf, i_lsn,
+    return mmc_read_sectors( p_env->gen.cdio, p_buf, i_lsn,
                                   CDIO_MMC_READ_TYPE_CDDA, i_blocks);
   } else 
     return read_audio_sectors_freebsd_ioctl(p_user_data, p_buf, i_lsn, 
@@ -312,7 +312,7 @@ _get_mcn_freebsd (const void *p_user_data) {
 
   return (p_env->access_mode == _AM_IOCTL) 
     ? get_mcn_freebsd_ioctl(p_env) 
-    : scsi_mmc_get_mcn(p_env->gen.cdio);
+    : mmc_get_mcn(p_env->gen.cdio);
 
 }
 
@@ -343,10 +343,10 @@ get_drive_cap_freebsd (const void *p_user_data,
   p_buf	        Buffer for data, both sending and receiving
  */
 static driver_return_code_t
-run_scsi_cmd_freebsd( void *p_user_data, unsigned int i_timeout_ms,
-		      unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-		      scsi_mmc_direction_t e_direction, 
-		      unsigned int i_buf, /*in/out*/ void *p_buf ) 
+run_mmc_cmd_freebsd( void *p_user_data, unsigned int i_timeout_ms,
+		     unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+		     mmc_direction_t e_direction, 
+		     unsigned int i_buf, /*in/out*/ void *p_buf ) 
 {
   const _img_private_t *p_env = p_user_data;
 
@@ -606,9 +606,9 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .read_mode2_sector      = _read_mode2_sector_freebsd,
     .read_mode2_sectors     = _read_mode2_sectors_freebsd,
     .read_toc               = read_toc_freebsd,
-    .run_scsi_mmc_cmd       = run_scsi_cmd_freebsd,
+    .run_mmc_cmd            = run_mmc_cmd_freebsd,
     .set_arg                = _set_arg_freebsd,
-    .set_blocksize         = set_blocksize_mmc,
+    .set_blocksize          = set_blocksize_mmc,
     .set_speed              = set_speed_freebsd,
   };
 

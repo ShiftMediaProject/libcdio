@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.11 2005/02/06 04:20:25 rocky Exp $
+    $Id: device.h,v 1.12 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -274,16 +274,13 @@ extern "C" {
 			 /* out*/ cdio_hwinfo_t *p_hw_info );
 
 
-  /*!
-    Get the drive speed. 
-
-    @return the drive speed if greater than 0. DRIVER_OP_ERROR if we
-    had an error, DRIVER_OP_UNSUPPORTED if this is not implemented for
-    the current driver.
-    
-    @see cdio_set_speed
-  */
-  int cdio_get_speed ( const CdIo_t *p_cdio, int i_speed );
+  /*! 
+      Find out if media has changed since the last call.
+      @param p_cdio the CD object to be acted upon.
+      @return 1 if media has changed since last call, 0 if not. Error
+      return codes are the same as driver_return_code_t
+   */
+  int cdio_get_media_changed(CdIo_t *p_cdio);
 
   /*! True if AIX driver is available. */
   bool cdio_have_aix    (void);
@@ -392,10 +389,9 @@ extern "C" {
 
   char **cdio_get_devices_bincue(void);
 
-  /*! Return a string containing the default CUE file that would
-      be used when none is specified.
-
-     NULL is returned on error or there is no device.
+  /*! @return string containing the default CUE file that would be
+      used when none is specified. NULL is returned on error or there
+      is no device.
    */
   char * cdio_get_default_device_cdrdao(void);
 

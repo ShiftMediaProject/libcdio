@@ -1,5 +1,5 @@
 /*
-  $Id: mmc1.c,v 1.1 2005/02/04 23:12:16 rocky Exp $
+  $Id: mmc1.c,v 1.2 2005/02/06 11:13:37 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -51,9 +51,8 @@ main(int argc, const char *argv[])
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_INQUIRY);
     cdb.field[4] = sizeof(buf);
 
-    i_status = scsi_mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, 
-				&cdb, SCSI_MMC_DATA_READ, 
-				sizeof(buf), &buf);
+    i_status = mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, &cdb, 
+			   SCSI_MMC_DATA_READ, sizeof(buf), &buf);
     if (i_status == 0) {
       char psz_vendor[CDIO_MMC_HW_VENDOR_LEN+1];
       char psz_model[CDIO_MMC_HW_MODEL_LEN+1];

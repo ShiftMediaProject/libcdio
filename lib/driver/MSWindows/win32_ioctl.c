@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.10 2005/02/05 13:13:31 rocky Exp $
+    $Id: win32_ioctl.c,v 1.11 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.10 2005/02/05 13:13:31 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.11 2005/02/06 11:13:37 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -184,11 +184,11 @@ typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
   Return 0 if command completed successfully.
  */
 int
-run_scsi_cmd_win32ioctl( void *p_user_data, 
-			 unsigned int i_timeout_ms,
-			 unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,
-			 scsi_mmc_direction_t e_direction, 
-			 unsigned int i_buf, /*in/out*/ void *p_buf )
+run_mmc_cmd_win32ioctl( void *p_user_data, 
+			unsigned int i_timeout_ms,
+			unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,
+			scsi_mmc_direction_t e_direction, 
+			unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   SCSI_PASS_THROUGH_DIRECT sptd;
@@ -245,7 +245,7 @@ get_discmode_win32ioctl (_img_private_t *p_env)
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
   if (0 == mmc_get_dvd_struct_physical_private (p_env, 
-						&run_scsi_cmd_win32ioctl,
+						&run_mmc_cmd_win32ioctl,
 						&dvd)) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
@@ -409,10 +409,10 @@ read_raw_sector (_img_private_t *p_env, void *p_buf, lsn_t lsn)
 
   cdb.field[9]=0xF8;  /* Raw read, 2352 bytes per sector */
   
-  return run_scsi_cmd_win32ioctl(p_env, OP_TIMEOUT_MS,
-				     scsi_mmc_get_cmd_len(cdb.field[0]), 
-				     &cdb, SCSI_MMC_DATA_READ, 
-				     CDIO_CD_FRAMESIZE_RAW, p_buf);
+  return run_mmc_cmd_win32ioctl(p_env, OP_TIMEOUT_MS,
+				mmc_get_cmd_len(cdb.field[0]), 
+				&cdb, SCSI_MMC_DATA_READ, 
+				CDIO_CD_FRAMESIZE_RAW, p_buf);
 }
 
 /*!
@@ -574,10 +574,10 @@ read_fulltoc_win32mmc (_img_private_t *p_env)
   /* Setup to read header, to get length of data */
   CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(cdrom_toc_full));
 
-  i_status = run_scsi_cmd_win32ioctl (p_env, 1000*60*3,
-				scsi_mmc_get_cmd_len(cdb.field[0]), 
-				&cdb, SCSI_MMC_DATA_READ, 
-				sizeof(cdrom_toc_full), &cdrom_toc_full);
+  i_status = run_mmc_cmd_win32ioctl (p_env, 1000*60*3,
+				     mmc_get_cmd_len(cdb.field[0]), 
+				     &cdb, SCSI_MMC_DATA_READ, 
+				     sizeof(cdrom_toc_full), &cdrom_toc_full);
 
   if ( 0 != i_status ) {
     cdio_debug ("SCSI MMC READ_TOC failed\n");  

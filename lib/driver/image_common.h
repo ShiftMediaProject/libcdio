@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.6 2005/01/18 00:57:20 rocky Exp $
+    $Id: image_common.h,v 1.7 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -98,6 +98,15 @@ void _get_drive_cap_image (const void *user_data,
   CDIO_INVALID_TRACK is returned on error.
 */
 track_t _get_first_track_num_image(void *p_user_data);
+
+/*! 
+  Find out if media has changed since the last call.
+  @param p_user_data the CD object to be acted upon.
+  @return 1 if media has changed since last call, 0 if not. Error
+  return codes are the same as driver_return_code_t
+  We always return DRIVER_OP_UNSUPPORTED.
+ */
+int get_media_changed_image(void *p_user_data);
 
 /*!
   Return the media catalog number (MCN) from the CD or NULL if there

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.20 2005/02/03 07:35:15 rocky Exp $
+    $Id: _cdio_linux.c,v 1.21 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.20 2005/02/03 07:35:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.21 2005/02/06 11:13:37 rocky Exp $";
 
 #include <string.h>
 
@@ -99,13 +99,13 @@ typedef struct {
 /**** prototypes for static functions ****/
 static bool is_cdrom_linux(const char *drive, char *mnttype);
 static bool read_toc_linux (void *p_user_data);
-static driver_return_code_t run_scsi_cmd_linux( void *p_user_data, 
-                                                unsigned int i_timeout,
-                                                unsigned int i_cdb, 
-                                                const scsi_mmc_cdb_t *p_cdb, 
-                                                scsi_mmc_direction_t e_direction, 
-                                                unsigned int i_buf, 
-                                                /*in/out*/ void *p_buf );
+static driver_return_code_t run_mmc_cmd_linux( void *p_user_data, 
+                                               unsigned int i_timeout,
+                                               unsigned int i_cdb, 
+                                               const scsi_mmc_cdb_t *p_cdb, 
+                                               scsi_mmc_direction_t e_direction, 
+                                               unsigned int i_buf, 
+                                               /*in/out*/ void *p_buf );
 static access_mode_t 
 
 str_to_access_mode_linux(const char *psz_access_mode) 
@@ -287,6 +287,18 @@ get_drive_cap_linux (const void *p_user_data,
 }
 #endif
 
+/*! 
+  Find out if media has changed since the last call.
+  @param p_user_data the environment object to be acted upon.
+  @return 1 if media has changed since last call, 0 if not. Error
+  return codes are the same as driver_return_code_t
+*/
+static int
+get_media_changed_linux (void *p_user_data) {
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROM_MEDIA_CHANGED, 0);
+}
+
 /*!
   Return the media catalog number MCN.
 
@@ -423,7 +435,7 @@ eject_media_linux (void *p_user_data) {
 	if((ret = ioctl(fd, CDROMEJECT)) != 0) {
 	  int eject_error = errno;
 	  /* Try ejecting the MMC way... */
-	  ret = scsi_mmc_eject_media(p_env->gen.cdio);
+	  ret = mmc_eject_media(p_env->gen.cdio);
 	  if (0 != ret) {
 	    cdio_warn("ioctl CDROMEJECT failed: %s\n", 
 		      strerror(eject_error));
@@ -483,7 +495,7 @@ get_discmode_linux (void *p_user_data)
      issue a SCSI MMC-2 FULL TOC command first to try get more
      accurate information.
   */
-  discmode = scsi_mmc_get_discmode(p_env->gen.cdio);
+  discmode = mmc_get_discmode(p_env->gen.cdio);
   if (CDIO_DISC_MODE_NO_INFO != discmode) 
     return discmode;
   else {
@@ -551,8 +563,8 @@ _read_audio_sectors_linux (void *p_user_data, void *buf, lsn_t lsn,
 			   unsigned int nblocks)
 {
   _img_private_t *p_env = p_user_data;
-  return scsi_mmc_read_sectors( p_env->gen.cdio, buf, lsn, 
-				CDIO_MMC_READ_TYPE_CDDA, nblocks);
+  return mmc_read_sectors( p_env->gen.cdio, buf, lsn, CDIO_MMC_READ_TYPE_CDDA, 
+                           nblocks);
 }
 
 /* Packet driver to read mode2 sectors. 
@@ -572,22 +584,22 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_10);
     CDIO_MMC_SET_READ_LENGTH16(cdb.field, nblocks);
 
-    if ((retval = scsi_mmc_set_blocksize (p_env->gen.cdio, M2RAW_SECTOR_SIZE)))
+    if ((retval = mmc_set_blocksize (p_env->gen.cdio, M2RAW_SECTOR_SIZE)))
       return retval;
     
-    if ((retval = run_scsi_cmd_linux (p_env, 0, 
-				      scsi_mmc_get_cmd_len(cdb.field[0]),
-				      &cdb, 
-				      SCSI_MMC_DATA_READ,
-				      M2RAW_SECTOR_SIZE * nblocks, 
-				      p_buf)))
+    if ((retval = run_mmc_cmd_linux (p_env, 0, 
+                                     mmc_get_cmd_len(cdb.field[0]),
+                                     &cdb, 
+                                     SCSI_MMC_DATA_READ,
+                                     M2RAW_SECTOR_SIZE * nblocks, 
+                                     p_buf)))
       {
-	scsi_mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
+	mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
 	return retval;
       }
     
     /* Restore blocksize. */
-    retval = scsi_mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
+    retval = mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
     return retval;
   } else {
 
@@ -597,10 +609,10 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
     CDIO_MMC_SET_READ_LENGTH24(cdb.field, nblocks);
 
-    return run_scsi_cmd_linux (p_env, 0, 
-			       scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-			       SCSI_MMC_DATA_READ,
-			       M2RAW_SECTOR_SIZE * nblocks, p_buf);
+    return run_mmc_cmd_linux (p_env, 0, 
+                              mmc_get_cmd_len(cdb.field[0]), &cdb, 
+                              SCSI_MMC_DATA_READ,
+                              M2RAW_SECTOR_SIZE * nblocks, p_buf);
   }
 }
 
@@ -897,7 +909,7 @@ read_toc_linux (void *p_user_data)
   We return true if command completed successfully and false if not.
  */
 static driver_return_code_t
-run_scsi_cmd_linux( void *p_user_data, 
+run_mmc_cmd_linux( void *p_user_data, 
 		    unsigned int i_timeout_ms,
 		    unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 		    scsi_mmc_direction_t e_direction, 
@@ -1148,6 +1160,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
 #endif
     .get_first_track_num   = get_first_track_num_generic,
     .get_hwinfo            = NULL,
+    .get_media_changed     = get_media_changed_linux,
     .get_mcn               = get_mcn_linux,
     .get_num_tracks        = get_num_tracks_generic,
     .get_track_channels    = get_track_channels_generic,
@@ -1165,7 +1178,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .read_mode2_sector     = _read_mode2_sector_linux,
     .read_mode2_sectors    = _read_mode2_sectors_linux,
     .read_toc              = read_toc_linux,
-    .run_scsi_mmc_cmd      = run_scsi_cmd_linux,
+    .run_mmc_cmd           = run_mmc_cmd_linux,
     .set_arg               = set_arg_linux,
     .set_blocksize         = set_blocksize_mmc,
     .set_speed             = set_speed_linux,

@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.8 2005/01/26 01:03:16 rocky Exp $
+    $Id: device.c,v 1.9 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -290,7 +290,7 @@ driver_return_code_t
 cdio_eject_media (CdIo_t **pp_cdio)
 {
   
-  if ((pp_cdio == NULL) || (*pp_cdio == NULL)) return 1;
+  if ((pp_cdio == NULL) || (*pp_cdio == NULL)) return DRIVER_OP_UNINIT;
 
   if ((*pp_cdio)->op.eject_media) {
     int ret = (*pp_cdio)->op.eject_media ((*pp_cdio)->env);
@@ -564,8 +564,23 @@ cdio_get_hwinfo (const CdIo_t *p_cdio, cdio_hwinfo_t *hw_info)
   } else {
     /* Perhaps driver forgot to initialize.  We are no worse off Using
        scsi_mmc than returning false here. */
-    return scsi_mmc_get_hwinfo(p_cdio, hw_info);
+    return mmc_get_hwinfo(p_cdio, hw_info);
   }
+}
+
+/*! 
+  Find out if media has changed since the last call.
+  @param p_cdio the CD object to be acted upon.
+  @return 1 if media has changed since last call, 0 if not. Error
+  return codes are the same as driver_return_code_t
+*/
+int
+cdio_get_media_changed(CdIo_t *p_cdio)
+{
+  if (!p_cdio) return DRIVER_OP_UNINIT;
+  if (p_cdio->op.get_media_changed)
+    return p_cdio->op.get_media_changed(p_cdio->env);
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 bool
@@ -580,6 +595,7 @@ cdio_is_device(const char *psz_source, driver_id_t driver_id)
   if (CdIo_all_drivers[driver_id].is_device == NULL) return false;
   return (*CdIo_all_drivers[driver_id].is_device)(psz_source);
 }
+
 
 /*! Sets up to read from place specified by source_name and
   driver_id. This should be called before using any other routine,
@@ -707,7 +723,7 @@ cdio_set_blocksize ( const CdIo_t *p_cdio, int i_blocksize )
 /*!
   Set the drive speed. 
   
-  @see cdio_get_speed
+  @see cdio_set_speed
 */
 driver_return_code_t
 cdio_set_speed (const CdIo_t *p_cdio, int i_speed) 

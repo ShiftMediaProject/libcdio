@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_aix.c,v 1.9 2005/02/03 07:35:14 rocky Exp $
+    $Id: _cdio_aix.c,v 1.10 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -37,7 +37,7 @@
 
 #ifdef HAVE_AIX_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.9 2005/02/03 07:35:14 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.10 2005/02/06 11:13:37 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -195,17 +195,17 @@ init_aix (_img_private_t *p_env)
   p_buf	        Buffer for data, both sending and receiving
  */
 static driver_return_code_t
-run_scsi_cmd_aix( void *p_user_data, unsigned int i_timeout_ms,
-                  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-                  scsi_mmc_direction_t e_direction, 
-                  unsigned int i_buf, /*in/out*/ void *p_buf )
+run_mmc_cmd_aix( void *p_user_data, unsigned int i_timeout_ms,
+                 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+                 mmc_direction_t e_direction, 
+                 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   struct sc_passthru cgc;
   int i_rc;
 
   memset (&cgc, 0, sizeof (cgc));
-  memcpy(cgc.scsi_cdb,  p_cdb, sizeof(scsi_mmc_cdb_t));
+  memcpy(cgc.scsi_cdb,  p_cdb, sizeof(mmc_cdb_t));
 
 #ifdef AIX_DISABLE_ASYNC
 	/* This enables synchronous negotiation mode.  Some CD-ROM drives
@@ -217,7 +217,7 @@ run_scsi_cmd_aix( void *p_user_data, unsigned int i_timeout_ms,
 #endif
 
   if (0 != i_buf) 
-    cgc.flags     |= SCSI_MMC_DATA_READ == e_direction ? B_READ : B_WRITE;
+    cgc.flags     |= MMC_DATA_READ == e_direction ? B_READ : B_WRITE;
 
   cgc.timeout_value = msecs2secs(i_timeout_ms);
   cgc.buffer        = p_buf;   
@@ -554,7 +554,7 @@ static bool
 read_toc_aix (void *p_user_data) 
 {
   _img_private_t *p_env = p_user_data;
-  scsi_mmc_cdb_t  cdb = {{0, }};
+  mmc_cdb_t  cdb = {{0, }};
   CDROM_TOC_FULL  cdrom_toc_full;
   int             i_status, i, i_seen_flag;
   int             i_track_format = 0;
@@ -573,8 +573,8 @@ read_toc_aix (void *p_user_data)
   CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(cdrom_toc_full));
 
   i_status = run_scsi_cmd_aix (p_env, 1000*60*3,
-			       scsi_mmc_get_cmd_len(cdb.field[0]), 
-			       &cdb, SCSI_MMC_DATA_READ, 
+			       mmc_get_cmd_len(cdb.field[0]), 
+			       &cdb, MMC_DATA_READ, 
 			       sizeof(cdrom_toc_full), &cdrom_toc_full);
 
   if ( 0 != i_status ) {
@@ -960,7 +960,7 @@ cdio_open_am_aix (const char *psz_orig_source, const char *access_mode)
   _funcs.read_mode2_sector  = _read_mode2_sector_aix;
   _funcs.read_mode2_sectors = _read_mode2_sectors_aix;
   _funcs.read_toc           = read_toc_aix;
-  _funcs.run_scsi_mmc_cmd   = run_scsi_cmd_aix;
+  _funcs.run_mmc_cmd        = run_mmc_cmd_aix;
   _funcs.set_arg            = _set_arg_aix;
 
   _data                 = calloc (1, sizeof (_img_private_t));

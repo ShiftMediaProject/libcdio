@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.11 2005/02/03 07:35:16 rocky Exp $
+    $Id: bincue.c,v 1.12 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.11 2005/02/03 07:35:16 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.12 2005/02/06 11:13:37 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1146,6 +1146,7 @@ cdio_open_cue (const char *psz_cue_name)
   _funcs.get_drive_cap         = _get_drive_cap_image;
   _funcs.get_first_track_num   = _get_first_track_num_image;
   _funcs.get_hwinfo            = get_hwinfo_bincue;
+  _funcs.get_media_changed     = get_media_changed_image;
   _funcs.get_mcn               = _get_mcn_image;
   _funcs.get_num_tracks        = _get_num_tracks_image;
   _funcs.get_track_channels    = get_track_channels_image,

@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: mmc_private.h,v 1.1 2005/02/05 13:07:02 rocky Exp $
+    $Id: mmc_private.h,v 1.2 2005/02/06 11:13:37 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -55,6 +55,8 @@ void get_drive_cap_mmc (const void *p_user_data,
 			/*out*/ cdio_drive_write_cap_t *p_write_cap,
 			/*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
 
+int get_media_changed_mmc (const void *p_user_data);
+
 char *get_mcn_mmc (const void *p_user_data);
 
 /* Set read blocksize (via MMC) */
@@ -68,7 +70,7 @@ driver_return_code_t set_speed_mmc (void *p_user_data, int i_speed);
   to better classify these.
 ************************************************************/
 
-typedef driver_return_code_t (*scsi_mmc_run_cmd_fn_t) 
+typedef driver_return_code_t (*mmc_run_cmd_fn_t) 
      ( void *p_user_data, 
        unsigned int i_timeout_ms,
        unsigned int i_cdb, 
@@ -77,7 +79,7 @@ typedef driver_return_code_t (*scsi_mmc_run_cmd_fn_t)
        unsigned int i_buf, /*in/out*/ void *p_buf );
 			     
 int mmc_set_blocksize_mmc_private ( const void *p_env, const
-				    scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
+				    mmc_run_cmd_fn_t run_mmc_cmd,
 				    unsigned int bsize );
 
 /*! 
@@ -85,20 +87,20 @@ int mmc_set_blocksize_mmc_private ( const void *p_env, const
 */
 discmode_t 
 mmc_get_dvd_struct_physical_private ( void *p_env,
-				      scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+				      mmc_run_cmd_fn_t run_mmc_cmd, 
 				      cdio_dvd_struct_t *s );
 
 
 int
 mmc_get_blocksize_private ( void *p_env, 
-			    scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd);
+			    mmc_run_cmd_fn_t run_mmc_cmd);
 
 char *mmc_get_mcn_private ( void *p_env,
-			    scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd
+			    mmc_run_cmd_fn_t run_mmc_cmd
 			    );
 
 bool mmc_init_cdtext_private ( void *p_user_data, 
-			       scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
+			       mmc_run_cmd_fn_t run_mmc_cmd,
 			       set_cdtext_field_fn_t set_cdtext_field_fn
 			       );
 
@@ -121,11 +123,11 @@ void mmc_get_drive_cap_buf(const uint8_t *p,
  */
 void
 mmc_get_drive_cap_private ( void *p_env,
-			    const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+			    const mmc_run_cmd_fn_t run_mmc_cmd, 
 			    /*out*/ cdio_drive_read_cap_t  *p_read_cap,
 			    /*out*/ cdio_drive_write_cap_t *p_write_cap,
 			    /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
 driver_return_code_t
 mmc_set_blocksize_private ( void *p_env, 
-			    const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+			    const mmc_run_cmd_fn_t run_mmc_cmd, 
 			    unsigned int i_bsize);

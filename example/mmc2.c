@@ -1,5 +1,5 @@
 /*
-  $Id: mmc2.c,v 1.1 2005/02/04 23:12:16 rocky Exp $
+  $Id: mmc2.c,v 1.2 2005/02/06 11:13:37 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -52,9 +52,8 @@ main(int argc, const char *argv[])
     cdb.field[1] = CDIO_MMC_GET_CONF_ALL_FEATURES;
     cdb.field[3] = 0x0;
 
-    i_status = scsi_mmc_run_cmd(p_cdio, 0, 
-				&cdb, SCSI_MMC_DATA_READ, 
-				sizeof(buf), &buf);
+    i_status = mmc_run_cmd(p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), 
+			   &buf);
     if (i_status == 0) {
       uint8_t *p;
       uint32_t i_data;
