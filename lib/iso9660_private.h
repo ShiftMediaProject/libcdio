@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660_private.h,v 1.6 2003/09/06 14:50:50 rocky Exp $
+    $Id: iso9660_private.h,v 1.7 2004/06/02 00:37:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     See also iso9660.h by Eric Youngdale (1993).
 
@@ -28,7 +28,7 @@
 #define __CDIO_ISO9660_PRIVATE_H__
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+
 #endif
 
 #include <cdio/types.h>
