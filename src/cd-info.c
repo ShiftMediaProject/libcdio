@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.63 2004/05/24 23:28:05 rocky Exp $
+    $Id: cd-info.c,v 1.64 2004/05/31 04:00:54 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -122,7 +122,8 @@ static bool
 parse_options (int argc, const char *argv[])
 {
   int opt;
-
+  char *psz_my_source;
+  
   struct poptOption optionsTable[] = {
     {"access-mode",       'a', POPT_ARG_STRING, &opts.access_mode, 0,
      "Set CD access methed"},
@@ -172,13 +173,13 @@ parse_options (int argc, const char *argv[])
     {"no-ioctl",  'I', POPT_ARG_NONE,  &opts.no_ioctl, 0,
      "Don't show ioctl() information"},
     
-    {"bin-file", 'b', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+    {"bin-file", 'b', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_BIN, "set \"bin\" CD-ROM disk image file as source", "FILE"},
     
-    {"cue-file", 'c', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+    {"cue-file", 'c', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_CUE, "set \"cue\" CD-ROM disk image file as source", "FILE"},
     
-    {"input", 'i', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+    {"input", 'i', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_AUTO,
      "set source and determine if \"bin\" image or device", "FILE"},
     
@@ -195,10 +196,10 @@ parse_options (int argc, const char *argv[])
     {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
      0, "Don't display header and copyright (for regression testing)"},
     
-    {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+    {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
     
-    {"toc-file", 't', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+    {"toc-file", 't', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_CDRDAO, "set cdrdao CD-ROM disk image file as source", "FILE"},
     
     {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
@@ -230,6 +231,14 @@ parse_options (int argc, const char *argv[])
 		program_name);
 	break;
       } 
+
+      /* For all input sources which are not a DEVICE, we need to make
+	 a copy of the string; for a DEVICE the fill-out routine makes
+	 the copy.
+       */
+      if (OP_SOURCE_DEVICE != opt) 
+	source_name = strdup(psz_my_source);
+      
       switch (opt) {
       case OP_SOURCE_BIN: 
 	opts.source_image  = IMAGE_BIN;
@@ -265,7 +274,7 @@ parse_options (int argc, const char *argv[])
 	fprintf (stderr, 
 		 "%s: Source '%s' given as an argument of an option and as "
 		 "unnamed option '%s'\n", 
-		 program_name, source_name, remaining_arg);
+		 program_name, psz_my_source, remaining_arg);
 	poptFreeContext(optCon);
 	free(program_name);
 	exit (EXIT_FAILURE);
@@ -279,7 +288,7 @@ parse_options (int argc, const char *argv[])
       if ( (poptGetArgs(optCon)) != NULL) {
 	fprintf (stderr, 
 		 "%s: Source specified in previously %s and %s\n", 
-		 program_name, source_name, remaining_arg);
+		 program_name, psz_my_source, remaining_arg);
 	poptFreeContext(optCon);
 	free(program_name);
 	exit (EXIT_FAILURE);
