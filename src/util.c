@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.43 2005/02/22 02:02:46 rocky Exp $
+  $Id: util.c,v 1.44 2005/02/26 15:41:20 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -500,23 +500,12 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
 
     strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &p_statbuf->tm);
 
-    /* Some RRIP writers incorrectly place ctime in the TF_CREATE field.
-       Try to handle this correctly for either case. */
-    if (p_statbuf->rr.create.b_used) {
-      if (p_statbuf->rr.create.b_longdate) {
-	iso9660_get_ltime(&p_statbuf->rr.create.t.ltime, &tm);
+    /* Now try the proper field for mtime: attributes  */
+    if (p_statbuf->rr.modify.b_used) {
+      if (p_statbuf->rr.modify.b_longdate) {
+	iso9660_get_ltime(&p_statbuf->rr.modify.t.ltime, &tm);
       } else {
-	iso9660_get_dtime(&p_statbuf->rr.create.t.dtime, true, &tm);
-      }
-      strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &p_statbuf->tm);
-    }
-    
-    /* Now try the proper field for ctime: attributes  */
-    if (p_statbuf->rr.attributes.b_used) {
-      if (p_statbuf->rr.create.b_longdate) {
-	iso9660_get_ltime(&p_statbuf->rr.attributes.t.ltime, &tm);
-      } else {
-	iso9660_get_dtime(&p_statbuf->rr.attributes.t.dtime, true, &tm);
+	iso9660_get_dtime(&p_statbuf->rr.modify.t.dtime, true, &tm);
       }
       strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &tm);
     }
