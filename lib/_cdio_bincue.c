@@ -1,8 +1,8 @@
 /*
-    $Id: _cdio_bincue.c,v 1.37 2003/11/04 04:44:43 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.38 2004/01/09 02:42:39 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.37 2003/11/04 04:44:43 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.38 2004/01/09 02:42:39 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -371,8 +371,7 @@ _cdio_image_read_cue (_img_private_t *_obj)
       }
 
     } else if (2==sscanf(p, "TRACK %d MODE1/%d", &track_num, &blocksize)) {
-      track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
-      this_track->blocksize      = blocksize;
+      track_info_t *this_track=&(_obj->tocent[_obj->total_tracks]);
       this_track->blocksize   = blocksize;
       switch(blocksize) {
       case 2048:
