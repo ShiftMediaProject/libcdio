@@ -1,7 +1,7 @@
 /*
-    $Id: win32_ioctl.c,v 1.9 2005/02/04 03:57:45 rocky Exp $
+    $Id: win32_ioctl.c,v 1.10 2005/02/05 13:13:31 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.9 2005/02/04 03:57:45 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.10 2005/02/05 13:13:31 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -244,9 +244,9 @@ get_discmode_win32ioctl (_img_private_t *p_env)
 
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
-  if (0 == scsi_mmc_get_dvd_struct_physical_private (p_env, 
-						     &run_scsi_cmd_win32ioctl,
-						     &dvd)) {
+  if (0 == mmc_get_dvd_struct_physical_private (p_env, 
+						&run_scsi_cmd_win32ioctl,
+						&dvd)) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
