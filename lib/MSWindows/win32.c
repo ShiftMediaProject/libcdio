@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.18 2004/07/13 03:45:26 rocky Exp $
+    $Id: win32.c,v 1.19 2004/07/13 03:59:10 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.18 2004/07/13 03:45:26 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.19 2004/07/13 03:59:10 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -440,10 +440,10 @@ _get_cdtext_win32 (void *user_data)
     return &(env->cdtext);
   
   if (env->hASPI) {
-    get_cdtext_aspi(env);
+    return get_cdtext_aspi(env);
   }
 
-  return &(env->cdtext);
+  return NULL;
 }
 
 /*!
