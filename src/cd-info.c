@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.48 2004/02/07 02:40:20 rocky Exp $
+    $Id: cd-info.c,v 1.49 2004/02/21 13:09:12 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -94,6 +94,7 @@ struct arguments
   int            silent;
   int            no_header;
   int            print_iso9660;
+  int            list_drives;
   source_image_t source_image;
 } opts;
      
@@ -186,6 +187,9 @@ parse_options (int argc, const char *argv[])
     {"cdrom-device", 'C', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
      OP_SOURCE_DEVICE,
      "set CD-ROM device as source", "DEVICE"},
+    
+    {"list-drives",   'l', POPT_ARG_NONE, &opts.list_drives, 0,
+     "Give a list of CD-drives" },
     
     {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
      0, "Don't display header and copyright (for regression testing)"},
@@ -708,6 +712,7 @@ init(void)
 
   /* Default option values. */
   opts.silent        = false;
+  opts.list_drives   = false;
   opts.no_header     = false;
   opts.debug_level   = 0;
   opts.no_tracks     = 0;
@@ -824,6 +829,19 @@ main(int argc, const char *argv[])
     printf("CD driver name: %s\n", cdio_get_driver_name(cdio));
   }
   
+  if (opts.list_drives) {
+    char ** device_list = cdio_get_devices(DRIVER_DEVICE);
+    char ** d = device_list;
+
+    printf("list of devices found:\n");
+    if (NULL != d) {
+      for ( ; *d != NULL ; d++ ) {
+	printf("%s\n", *d);
+      }
+    }
+    cdio_free_device_list(device_list);
+  }
+
   if (opts.access_mode!=NULL) {
     cdio_set_arg(cdio, "access-mode", opts.access_mode);
   } 
