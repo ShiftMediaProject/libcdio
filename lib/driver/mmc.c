@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.11 2005/02/11 03:30:12 rocky Exp $
+    $Id: mmc.c,v 1.12 2005/02/14 01:07:29 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -538,7 +538,6 @@ mmc_get_drive_cap (CdIo_t *p_cdio,
                    /*out*/ cdio_drive_write_cap_t *p_write_cap,
                    /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
-  if ( ! p_cdio )  return;
   /* Largest buffer size we use. */
 #define BUF_MAX 2048
   uint8_t buf[BUF_MAX] = { 0, };
@@ -547,6 +546,7 @@ mmc_get_drive_cap (CdIo_t *p_cdio,
   uint16_t i_data = BUF_MAX;
   int page = CDIO_MMC_ALL_PAGES;
 
+  if ( ! p_cdio )  return;
  retry:
 
   /* In the first run we run MODE SENSE 10 we are trying to get the
