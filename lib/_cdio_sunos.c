@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.26 2004/04/25 03:52:37 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.27 2004/04/25 14:07:23 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -41,7 +41,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.26 2004/04/25 03:52:37 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.27 2004/04/25 14:07:23 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -524,25 +524,26 @@ _cdio_get_drive_cap_solaris (const void *env)
   if(rc == 0) {
     unsigned int n=buf[3]+4;
     /* Reader? */
-    if (buf[n+5] & 0x01) i_drivetype |= CDIO_DRIVE_CD_AUDIO;
-    if (buf[n+2] & 0x02) i_drivetype |= CDIO_DRIVE_CD_RW;
-    if (buf[n+2] & 0x08) i_drivetype |= CDIO_DRIVE_DVD;
+    if (buf[n+5] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_AUDIO;
+    if (buf[n+2] & 0x02) i_drivetype |= CDIO_DRIVE_CAP_CD_RW;
+    if (buf[n+2] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_DVD;
     
     /* Writer? */
-    if (buf[n+3] & 0x01) i_drivetype |= CDIO_DRIVE_CD_R;
-    if (buf[n+3] & 0x10) i_drivetype |= CDIO_DRIVE_DVD_R;
-    if (buf[n+3] & 0x20) i_drivetype |= CDIO_DRIVE_DVD_RAM;
+    if (buf[n+3] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_R;
+    if (buf[n+3] & 0x10) i_drivetype |= CDIO_DRIVE_CAP_DVD_R;
+    if (buf[n+3] & 0x20) i_drivetype |= CDIO_DRIVE_CAP_DVD_RAM;
     
-    if (buf[n+6] & 0x08) i_drivetype |= CDIO_DRIVE_OPEN_TRAY;
-    if (buf[n+6] >> 5 != 0) i_drivetype |= CDIO_DRIVE_CLOSE_TRAY;
+    if (buf[n+6] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_OPEN_TRAY;
+    if (buf[n+6] >> 5 != 0) i_drivetype |= CDIO_DRIVE_CAP_CLOSE_TRAY;
     
   } else {
-    i_drivetype = CDIO_DRIVE_CD_AUDIO | CDIO_DRIVE_UNKNOWN;
+    i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
   }
   return i_drivetype;
 
 #else
-  return CDIO_DRIVE_UNKNOWN | CDIO_DRIVE_CD_AUDIO | CDIO_DRIVE_CD_RW;
+  return CDIO_DRIVE_CAP_UNKNOWN | CDIO_DRIVE_CAP_CD_AUDIO 
+    | CDIO_DRIVE_CAP_CD_RW;
 #endif
 }
 

@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.8 2004/04/25 01:19:58 rocky Exp $
+    $Id: nrg.c,v 1.9 2004/04/25 14:07:23 rocky Exp $
 
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.8 2004/04/25 01:19:58 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.9 2004/04/25 14:07:23 rocky Exp $";
 
 /* structures used */
 
@@ -1090,7 +1090,7 @@ _cdio_get_drive_cap_nrg (const void *env) {
      Also, we know we can't handle 
      LOCK, OPEN_TRAY, CLOSE_TRAY, SELECT_SPEED, SELECT_DISC
   */
-  return CDIO_DRIVE_FILE | CDIO_DRIVE_MCN | CDIO_DRIVE_CD_AUDIO ;
+  return CDIO_DRIVE_CAP_FILE | CDIO_DRIVE_CAP_MCN | CDIO_DRIVE_CAP_CD_AUDIO ;
 }
 
 /*!

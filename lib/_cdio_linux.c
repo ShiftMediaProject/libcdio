@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.36 2004/04/25 03:52:37 rocky Exp $
+    $Id: _cdio_linux.c,v 1.37 2004/04/25 14:07:23 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.36 2004/04/25 03:52:37 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.37 2004/04/25 14:07:23 rocky Exp $";
 
 #include <string.h>
 
@@ -834,7 +834,7 @@ _cdio_get_drive_cap_linux (const void *env) {
 
   i_drivetype = ioctl (_obj->gen.fd, CDROM_GET_CAPABILITY, CDSL_CURRENT);
 
-  if (i_drivetype < 0) return CDIO_DRIVE_ERROR;
+  if (i_drivetype < 0) return CDIO_DRIVE_CAP_ERROR;
 
   /* If >= 0 we can safely cast as cdio_drive_cap_t and return */
   return (cdio_drive_cap_t) i_drivetype;

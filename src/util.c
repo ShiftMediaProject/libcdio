@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.6 2004/04/25 03:52:37 rocky Exp $
+  $Id: util.c,v 1.7 2004/04/25 14:07:23 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -90,33 +90,34 @@ fillout_device_name(const char *device_name)
 void
 print_drive_capabilities(cdio_drive_cap_t i_drive_cap)
 {
-  if (CDIO_DRIVE_ERROR == i_drive_cap) {
+  if (CDIO_DRIVE_CAP_ERROR == i_drive_cap) {
     printf("Error in getting drive properties\n");
   } else {
     printf("Hardware             : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_FILE  ? "Disk Image"  : "CD-ROM or DVD");
+	   i_drive_cap & CDIO_DRIVE_CAP_FILE  
+	   ? "Disk Image"  : "CD-ROM or DVD");
     printf("Can open tray        : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_OPEN_TRAY  ? "Yes"  : "No");
+	   i_drive_cap & CDIO_DRIVE_CAP_OPEN_TRAY  ? "Yes"  : "No");
     printf("Can close tray       : %s\n\n", 
-	   i_drive_cap & CDIO_DRIVE_OPEN_TRAY  ? "Yes"  : "No");
+	   i_drive_cap & CDIO_DRIVE_CAP_OPEN_TRAY  ? "Yes"  : "No");
     
     printf("Compact Disc         : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_CD         ? "Yes"  : "No");
+	   i_drive_cap & CDIO_DRIVE_CAP_CD         ? "Yes"  : "No");
     printf("   Can play audio    : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_CD_AUDIO   ?  "Yes" : "No");
+	   i_drive_cap & CDIO_DRIVE_CAP_CD_AUDIO   ?  "Yes" : "No");
     printf("   Can read  CD-RW   : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_CD_RW      ?  "Yes" : "No");
+	   i_drive_cap & CDIO_DRIVE_CAP_CD_RW      ?  "Yes" : "No");
     printf("   Can write CD-R    : %s\n\n", 
-	   i_drive_cap & CDIO_DRIVE_CD_R       ?  "Yes" : "No");
+	   i_drive_cap & CDIO_DRIVE_CAP_CD_R       ?  "Yes" : "No");
     
     printf("Digital Versital Disc: %s\n", 
-	   i_drive_cap & CDIO_DRIVE_DVD        ?  "Yes" : "No");
+	   i_drive_cap & CDIO_DRIVE_CAP_DVD        ?  "Yes" : "No");
     printf("   Can write DVD-R   : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_DVD_R      ?  "Yes" : "No");
+	   i_drive_cap & CDIO_DRIVE_CAP_DVD_R      ?  "Yes" : "No");
     printf("   Can write DVD-RAM : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_DVD_RAM    ?  "Yes" : "No");
+	   i_drive_cap & CDIO_DRIVE_CAP_DVD_RAM    ?  "Yes" : "No");
   }
-  if (CDIO_DRIVE_UNKNOWN == i_drive_cap) {
+  if (CDIO_DRIVE_CAP_UNKNOWN == i_drive_cap) {
     printf("Not completely sure about drive properties\n\n");
   }
 }

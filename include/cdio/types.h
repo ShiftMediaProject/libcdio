@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.12 2004/04/25 00:46:34 rocky Exp $
+    $Id: types.h,v 1.13 2004/04/25 14:07:23 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -244,44 +244,48 @@ typedef int cdio_fs_anal_t;
   a capability.
 */ 
 
-#define CDIO_DRIVE_CLOSE_TRAY	  0x00001 /**< caddy systems _can't_ close */
-#define CDIO_DRIVE_OPEN_TRAY	  0x00002 /**< but _can_ eject.  */
-#define CDIO_DRIVE_LOCK		  0x00004 /**< disable manual eject */
-#define CDIO_DRIVE_SELECT_SPEED   0x00008 /**< programmable speed */
-#define CDIO_DRIVE_SELECT_DISC	  0x00010 /**< select disc from juke-box */
-#define CDIO_DRIVE_MULTI_SESSION  0x00020 /**< read sessions>1 */
-#define CDIO_DRIVE_MCN		  0x00040 /**< Medium Catalog Number */
-#define CDIO_DRIVE_MEDIA_CHANGED  0x00080 /**< media changed */
-#define CDIO_DRIVE_CD_AUDIO	  0x00100 /**< drive can play CD audio */
-#define CDIO_DRIVE_RESET          0x00200 /**< hard reset device */
-#define CDIO_DRIVE_IOCTLS         0x00400 /**< driver has non-standard 
-                                               ioctls */
-#define CDIO_DRIVE_DRIVE_STATUS   0x00800 /**< driver implements drive 
+#define CDIO_DRIVE_CAP_CLOSE_TRAY     0x00001 /**< caddy systems can't 
+                                                   close... */
+#define CDIO_DRIVE_CAP_OPEN_TRAY      0x00002 /**< but can eject.  */
+#define CDIO_DRIVE_CAP_LOCK	      0x00004 /**< disable manual eject */
+#define CDIO_DRIVE_CAP_SELECT_SPEED   0x00008 /**< programmable speed */
+#define CDIO_DRIVE_CAP_SELECT_DISC    0x00010 /**< select disc from juke-box */
+#define CDIO_DRIVE_CAP_MULTI_SESSION  0x00020 /**< read sessions>1 */
+#define CDIO_DRIVE_CAP_MCN	      0x00040 /**< Medium Catalog Number */
+#define CDIO_DRIVE_CAP_MEDIA_CHANGED  0x00080 /**< media changed */
+#define CDIO_DRIVE_CAP_CD_AUDIO	      0x00100 /**< drive can play CD audio */
+#define CDIO_DRIVE_CAP_RESET          0x00200 /**< hard reset device */
+#define CDIO_DRIVE_CAP_IOCTLS         0x00400 /**< driver has non-standard 
+                                                   ioctls */
+#define CDIO_DRIVE_CAP_DRIVE_STATUS   0x00800 /**< driver implements drive 
                                                status */
-#define CDIO_DRIVE_GENERIC_PACKET 0x01000 /**< driver implements generic 
-                                               packets */
-#define CDIO_DRIVE_CD_R		  0x02000 /**< drive can write CD-R */
-#define CDIO_DRIVE_CD_RW	  0x04000 /**< drive can write CD-RW */
-#define CDIO_DRIVE_DVD		  0x08000 /**< drive can read DVD */
-#define CDIO_DRIVE_DVD_R	  0x10000 /**< drive can write DVD-R */
-#define CDIO_DRIVE_DVD_RAM	  0x20000 /**< drive can write DVD-RAM */
+#define CDIO_DRIVE_CAP_GENERIC_PACKET 0x01000 /**< driver implements generic 
+                                                   packets */
+#define CDIO_DRIVE_CAP_CD_R	      0x02000 /**< drive can write CD-R */
+#define CDIO_DRIVE_CAP_CD_RW	      0x04000 /**< drive can write CD-RW */
+#define CDIO_DRIVE_CAP_DVD	      0x08000 /**< drive can read DVD */
+#define CDIO_DRIVE_CAP_DVD_R	      0x10000 /**< drive can write DVD-R */
+#define CDIO_DRIVE_CAP_DVD_RAM	      0x20000 /**< drive can write DVD-RAM */
 
 /**<  These are not taken by GNU/Linux cdrom.h (yet) */
-#define CDIO_DRIVE_ERROR          0x00000 /**< Error */
-#define CDIO_DRIVE_FILE		  0x40000 /**< drive is really a file, i.e a
-                                               CD file image */
-#define CDIO_DRIVE_UNKNOWN        0x80000 /**< Dunno. It can be on if we
+#define CDIO_DRIVE_CAP_ERROR          0x00000 /**< Error */
+#define CDIO_DRIVE_CAP_FILE	      0x40000 /**< drive is really a file, i.e
+                                                   a CD file image */
+#define CDIO_DRIVE_CAP_UNKNOWN        0x80000 /**< Dunno. It can be on if we
 					        have only partial information 
                                                 or are not completely certain
                                           */
 /**< Masks derived from above... */
-#define CDIO_DRIVE_CD_WRITER    (CDIO_DRIVE_CD_R|CDIO_DRIVE_CD_RW) 
+#define CDIO_DRIVE_CAP_CD_WRITER \
+   (CDIO_DRIVE_CAP_CD_R|CDIO_DRIVE_CAP_CD_RW) 
 /**< Has some sort of CD writer ability */
 
-#define CDIO_DRIVE_CD           (CDIO_DRIVE_CD_AUDIO|CDIO_DRIVE_CD_WRITER)
+#define CDIO_DRIVE_CAP_CD \
+   (CDIO_DRIVE_CAP_CD_AUDIO|CDIO_DRIVE_CAP_CD_WRITER)
 /**< Has some sort of CD ability */
 
-#define CDIO_DRIVE_DVD_WRITER   (CDIO_DRIVE_DVD_R|CDIO_DRIVE_DVD_RAM)
+#define CDIO_DRIVE_CAP_DVD_WRITER \
+   (CDIO_DRIVE_CAP_DVD_R|CDIO_DRIVE_CAP_DVD_RAM)
 /**< Has some sort of DVD writer ability */
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.13 2004/04/25 01:19:58 rocky Exp $
+    $Id: bincue.c,v 1.14 2004/04/25 14:07:23 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.13 2004/04/25 01:19:58 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.14 2004/04/25 14:07:23 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -756,7 +756,7 @@ _cdio_get_drive_cap_bincue (const void *env) {
      Also, we know we can't handle 
      LOCK, OPEN_TRAY, CLOSE_TRAY, SELECT_SPEED, SELECT_DISC
   */
-  return CDIO_DRIVE_FILE | CDIO_DRIVE_MCN | CDIO_DRIVE_CD_AUDIO ;
+  return CDIO_DRIVE_CAP_FILE | CDIO_DRIVE_CAP_MCN | CDIO_DRIVE_CAP_CD_AUDIO ;
 }
 
 /*!
