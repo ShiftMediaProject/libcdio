@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.9 2003/04/14 04:24:47 rocky Exp $
+    $Id: cdio.c,v 1.10 2003/04/20 15:34:31 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include "logging.h"
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.9 2003/04/14 04:24:47 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.10 2003/04/20 15:34:31 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -569,7 +569,7 @@ cdio_open (const char *orig_source_name, driver_id_t driver_id)
   case DRIVER_DEVICE: 
     {  
       /* Scan for a driver. */
-      CdIo *ret = scan_for_driver(DRIVER_UNKNOWN, MAX_DRIVER, source_name);
+      CdIo *ret = cdio_open_cd(source_name);
       free(source_name);
       return ret;
     }
@@ -606,7 +606,7 @@ cdio_open_cd (const char *source_name)
   if (CdIo_last_driver == -1) cdio_init();
 
   /* Scan for a driver. */
-  return scan_for_driver(DRIVER_UNKNOWN, MAX_DRIVER, source_name);
+  return scan_for_driver(MIN_DEVICE_DRIVER, MAX_DEVICE_DRIVER, source_name);
 }
 
 

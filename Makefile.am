@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.3 2003/04/19 19:12:06 rocky Exp $
+#   $Id: Makefile.am,v 1.4 2003/04/20 15:34:31 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -30,7 +30,8 @@ DISTFILES_REGRESSION = tests/monvoisin.nrg  tests/monvoisin.right \
 	               tests/svcd_ogt_test_ntsc.bin \
 	               tests/svcd_ogt_test_ntsc.cue \
 	               tests/svcd_ogt_test_ntsc.right \
-		       tests/fsf.bin tests/fsf.cue tests/fsf.right
+		       tests/vcd_demo.bin tests/vcd_demo.cue \
+		       tests/vcd_demo.right
 
 REGRESSION_VERSION = 1.0
 

@@ -1,5 +1,8 @@
 #!/bin/sh
-#$Id: check_cue.sh,v 1.5 2003/04/19 19:12:06 rocky Exp $
+#$Id: check_cue.sh,v 1.6 2003/04/20 15:34:31 rocky Exp $
+if test -n "-lcddb" ; then
+  cddb_opt='--no-cddb'
+fi
 
 if test -z $srcdir ; then
   srcdir=`pwd`
@@ -9,9 +12,9 @@ fi
 
 BASE=`basename $0 .sh`
 
-fname=fsf-tompox
-testnum=1
-test_cdinfo "--cue-file ${srcdir}/${fname}.cue" \
+fname=cdda
+testnum=CD-DA
+test_cdinfo "--cue-file ${srcdir}/${fname}.cue $cddb_opt" \
   ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC "cdinfo CUE test $testnum"
