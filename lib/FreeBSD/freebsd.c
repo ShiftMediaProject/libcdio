@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.7 2004/05/04 04:42:17 rocky Exp $
+    $Id: freebsd.c,v 1.8 2004/05/06 00:51:33 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.7 2004/05/04 04:42:17 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.8 2004/05/06 00:51:33 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -480,12 +480,14 @@ cdio_open_freebsd (const char *psz_source_name)
   ones to set that up.
  */
 CdIo *
-cdio_open_am_freebsd (const char *psz_source_name, const char *psz_access_mode)
+cdio_open_am_freebsd (const char *psz_orig_source_name, 
+		      const char *psz_access_mode)
 {
 
 #ifdef HAVE_FREEBSD_CDROM
   CdIo *ret;
   _img_private_t *_data;
+  char *psz_source_name;
 
   cdio_funcs _funcs = {
     .eject_media        = _eject_media_freebsd,
@@ -516,28 +518,31 @@ cdio_open_am_freebsd (const char *psz_source_name, const char *psz_access_mode)
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
-  _set_arg_freebsd(_data, "source", (NULL == psz_source_name) 
-		   ? DEFAULT_CDIO_DEVICE: psz_source_name);
-
-  ret = cdio_new (_data, &_funcs);
-  if (ret == NULL) return NULL;
-
-  if (!cdio_generic_init(_data)) {
-    cdio_generic_free (_data);
-    return NULL;
-  }
-
-  if ( _data->access_mode == _AM_IOCTL ) {
-    return ret;
+  if (NULL == psz_orig_source_name) {
+    psz_source_name=cdio_get_default_device_freebsd();
+    _set_arg_freebsd(_data, "source", psz_source_name);
+    free(psz_source_name);
   } else {
-    if (init_freebsd_cam(_data)) 
-      return ret;
+    if (cdio_is_device_generic(psz_orig_source_name))
+      _set_arg_freebsd(_data, "source", psz_orig_source_name);
     else {
-      cdio_generic_free (_data);
+      /* The below would be okay if all device drivers worked this way. */
+#if 0
+      cdio_info ("source %s is a not a device", psz_orig_source_name);
+#endif
       return NULL;
     }
   }
     
+  ret = cdio_new (_data, &_funcs);
+  if (ret == NULL) return NULL;
+
+  if (cdio_generic_init(_data))
+    return ret;
+  else {
+    cdio_generic_free (_data);
+    return NULL;
+  }
   
 #else 
   return NULL;
