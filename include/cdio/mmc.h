@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.11 2005/02/17 07:03:36 rocky Exp $
+    $Id: mmc.h,v 1.12 2005/02/19 11:45:03 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -31,6 +31,10 @@
 #include <cdio/cdio.h>
 #include <cdio/types.h>
 #include <cdio/dvd.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 /*! \brief The opcode-portion (generic packet commands) of an MMC command.
 
@@ -654,6 +658,10 @@ driver_return_code_t mmc_set_blocksize ( const CdIo_t *p_cdio,
 */
 driver_return_code_t mmc_set_speed( const CdIo_t *p_cdio, int i_speed );
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 /** For backward compatibility. */
 #define scsi_mmc_get_cmd_len             mmc_get_cmd_len
 #define scsi_mmc_run_cmd                 mmc_run_cmd
@@ -670,3 +678,11 @@ driver_return_code_t mmc_set_speed( const CdIo_t *p_cdio, int i_speed );
 #define scsi_mmc_set_speed               mmc_set_speed
 
 #endif /* __SCSI_MMC_H__ */
+
+/* 
+ * Local variables:
+ *  c-file-style: "gnu"
+ *  tab-width: 8
+ *  indent-tabs-mode: nil
+ * End:
+ */
