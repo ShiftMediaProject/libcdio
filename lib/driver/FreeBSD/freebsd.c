@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.22 2005/03/11 02:08:05 rocky Exp $
+    $Id: freebsd.c,v 1.23 2005/03/11 02:10:11 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.22 2005/03/11 02:08:05 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.23 2005/03/11 02:10:11 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -718,15 +718,14 @@ driver_return_code_t
 close_tray_freebsd (const char *psz_device)
 {
 #ifdef HAVE_FREEBSD_CDROM
-  int i_rc;
   int fd = open (psz_device, O_RDONLY|O_NONBLOCK, 0);
 
-  i_rc = DRIVER_OP_SUCCESS;
   if((i_rc = ioctl(fd, CDIOCSTART)) != 0) {
     cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
-    i_rc = DRIVER_OP_ERROR;
+    return DRIVER_OP_ERROR;
   }
-  return i_rc;
+  close(fd);
+  return DRIVER_OP_SUCCESS;
 #else 
   return DRIVER_OP_NO_DRIVER;
 #endif /*HAVE_FREEBSD_CDROM*/
