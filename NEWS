@@ -1,9 +1,10 @@
 0.67
--  portability fix, for ARM e.g
+-  portability fixes, for ARM and BSD derivatives
 -- add iso-read program
 -- libiso9960: stat routines that match level 1 ISO-9600 filenames
    translating them into Unix-style names (i.e. lowercase letters, 
    with version numbers dropped.)
+-- Expand/improve documentation
 
 0.66
 -  Add interface for reading an ISO-9660 image
@@ -92,4 +93,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.31 2004/02/26 00:13:24 rocky Exp $
+$Id: NEWS,v 1.32 2004/02/27 02:43:22 rocky Exp $
