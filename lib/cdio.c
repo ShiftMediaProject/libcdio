@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.33 2003/10/04 20:30:59 rocky Exp $
+    $Id: cdio.c,v 1.34 2003/10/04 20:32:54 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.33 2003/10/04 20:30:59 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.34 2003/10/04 20:32:54 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -856,11 +856,7 @@ cdio_open (const char *orig_source_name, driver_id_t driver_id)
   case DRIVER_BINCUE:
     if ((*CdIo_all_drivers[driver_id].have_driver)()) {
       CdIo *ret = (*CdIo_all_drivers[driver_id].driver_open)(source_name);
-      if (NULL == ret) {
-        free(source_name);
-        return NULL;
-      }
-      ret->driver_id = driver_id;
+      if (ret) ret->driver_id = driver_id;
       return ret;
     }
   }
