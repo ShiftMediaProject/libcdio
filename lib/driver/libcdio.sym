@@ -55,6 +55,7 @@ cdio_get_first_track_num
 cdio_get_hwinfo
 cdio_get_joliet_level
 cdio_get_last_track_num
+cdio_get_media_changed
 cdio_get_mcn
 cdio_get_num_tracks
 cdio_get_track
@@ -69,6 +70,7 @@ cdio_get_track_msf
 cdio_get_track_preemphasis
 cdio_get_track_sec_count
 cdio_guess_cd_type
+cdio_have_atapi
 cdio_have_bincue
 cdio_have_bsdi
 cdio_have_cdrdao
@@ -159,6 +161,9 @@ mmc_get_last_lsn
 mmc_feature2str
 mmc_feature_profile2str
 mmc_have_interface
+mmc_mode_sense
+mmc_mode_sense_10
+mmc_mode_sense_6
 mmc_read_sectors
 mmc_run_cmd
 mmc_set_blocksize

@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.6 2005/02/09 02:50:47 rocky Exp $
+    $Id: mmc.c,v 1.7 2005/02/10 01:59:06 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -249,8 +249,29 @@ mmc_get_mcn_private ( void *p_env,
   return NULL;
 }
 
+/* Run a MODE SENSE command (either the 6- or 10-byte version
+   @return DRIVER_OP_SUCCESS if we ran the command ok.
+ */
 int 
-mmc_mode_sense_6( const CdIo_t *p_cdio, void *p_buf, int i_size, int page)
+mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
+                int page)
+{
+  if ( cdio_have_atapi(p_cdio) ) {
+    if ( DRIVER_OP_SUCCESS == mmc_mode_sense_6(p_cdio, p_buf, i_size, page) )
+      return DRIVER_OP_SUCCESS;
+    return mmc_mode_sense_10(p_cdio, p_buf, i_size, page);
+  }
+  if ( DRIVER_OP_SUCCESS == mmc_mode_sense_10(p_cdio, p_buf, i_size, page) )
+    return DRIVER_OP_SUCCESS;
+  return mmc_mode_sense_6(p_cdio, p_buf, i_size, page);
+}
+
+/*! Run a MODE_SENSE command (6-byte version) 
+  and put the results in p_buf 
+  @return DRIVER_OP_SUCCESS if we ran the command ok.
+*/
+int 
+mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
 
@@ -271,8 +292,12 @@ mmc_mode_sense_6( const CdIo_t *p_cdio, void *p_buf, int i_size, int page)
 }
 
 
+/*! Run a MODE_SENSE command (10-byte version) 
+  and put the results in p_buf 
+  @return DRIVER_OP_SUCCESS if we ran the command ok.
+*/
 int 
-mmc_mode_sense_10( const CdIo_t *p_cdio, void *p_buf, int i_size, int page)
+mmc_mode_sense_10( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
 
@@ -500,10 +525,10 @@ mmc_get_discmode( const CdIo_t *p_cdio )
 }
 
 void
-mmc_get_drive_cap (const CdIo_t *p_cdio,
-			/*out*/ cdio_drive_read_cap_t  *p_read_cap,
-			/*out*/ cdio_drive_write_cap_t *p_write_cap,
-			/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
+mmc_get_drive_cap (CdIo_t *p_cdio,
+                   /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+                   /*out*/ cdio_drive_write_cap_t *p_write_cap,
+                   /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
   if ( ! p_cdio )  return;
   /* Largest buffer size we use. */
@@ -688,7 +713,7 @@ mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 }
 
 int 
-mmc_get_blocksize ( const CdIo_t *p_cdio)
+mmc_get_blocksize ( CdIo_t *p_cdio)
 {
   int i_status;
 
@@ -915,8 +940,8 @@ const char *mmc_feature_profile2str( int i_feature_profile )
  * See if CD-ROM has feature with value value
  * @return true if we have the feature and false if not.
  */
-bool
-mmc_have_interface( const CdIo_t *p_cdio, mmc_feature_interface_t interface )
+bool_3way_t
+mmc_have_interface( CdIo_t *p_cdio, mmc_feature_interface_t e_interface )
 {
   int i_status;                  /* Result of MMC command */
   uint8_t buf[500] = { 0, };     /* Place to hold returned data */
@@ -929,7 +954,7 @@ mmc_have_interface( const CdIo_t *p_cdio, mmc_feature_interface_t interface )
 
   i_status = mmc_run_cmd(p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), 
                          &buf);
-  if (i_status == 0) {
+  if (DRIVER_OP_SUCCESS == i_status) {
     uint8_t *p;
     uint32_t i_data;
     uint8_t *p_max = buf + 65530;
@@ -945,12 +970,13 @@ mmc_have_interface( const CdIo_t *p_cdio, mmc_feature_interface_t interface )
       if (CDIO_MMC_FEATURE_CORE == i_feature) {
         uint8_t *q = p+4;
         uint32_t i_interface_standard = CDIO_MMC_GET_LEN32(q);
-        if (interface == i_interface_standard) return true;
+        if (e_interface == i_interface_standard) return yep;
       }
       p += i_feature_additional + 4;
     }
-  }
-  return false;
+    return nope;
+  } else 
+    return dunno;
 }
 
 /*! Read sectors using SCSI-MMC GPCMD_READ_CD.

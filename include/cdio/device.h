@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.12 2005/02/06 11:13:37 rocky Exp $
+    $Id: device.h,v 1.13 2005/02/10 01:59:06 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -281,6 +281,9 @@ extern "C" {
       return codes are the same as driver_return_code_t
    */
   int cdio_get_media_changed(CdIo_t *p_cdio);
+
+  /*! True if CD-ROM understand ATAPI commands. */
+  bool_3way_t cdio_have_atapi (CdIo_t *p_cdio);
 
   /*! True if AIX driver is available. */
   bool cdio_have_aix    (void);

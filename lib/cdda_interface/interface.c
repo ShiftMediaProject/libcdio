@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.21 2005/02/07 03:36:02 rocky Exp $
+  $Id: interface.c,v 1.22 2005/02/10 01:59:06 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -121,8 +121,8 @@ cdio_cddap_open(cdrom_drive_t *d)
   /*  d->select_speed(d,d->maxspeed); most drives are full speed by default */
 
   if ( -1 == d->bigendianp ) {
-    if (mmc_have_interface(d->p_cdio, CDIO_MMC_FEATURE_INTERFACE_ATAPI))
-      /* Is this right? */
+    if (yep == cdio_have_atapi(d->p_cdio))
+      /* Is this right? Might we also have to check for SCSI ATAPI? */
       d->bigendianp = 1;
     else
       d->bigendianp = data_bigendianp(d);

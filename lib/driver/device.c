@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.9 2005/02/06 11:13:37 rocky Exp $
+    $Id: device.c,v 1.10 2005/02/10 01:59:06 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -35,6 +35,14 @@
 
 #ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+
+/* This probably will get moved to driver code, i.e _cdio_linux.c */
+#ifdef HAVE_LINUX_MAJOR_H
+#include <linux/major.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
 #endif
 
 /* The below array gives of the drivers that are currently available for 
@@ -581,6 +589,76 @@ cdio_get_media_changed(CdIo_t *p_cdio)
   if (p_cdio->op.get_media_changed)
     return p_cdio->op.get_media_changed(p_cdio->env);
   return DRIVER_OP_UNSUPPORTED;
+}
+
+bool_3way_t
+cdio_have_atapi(CdIo_t *p_cdio)
+{
+  bool_3way_t i_status;
+
+  if (!p_cdio) return nope;
+  i_status = mmc_have_interface(p_cdio, CDIO_MMC_FEATURE_INTERFACE_ATAPI);
+  if (dunno != i_status) return i_status;
+
+  {
+    /* cdparanoia seems to think that if we have a mode sense command
+       we have an atapi drive or is atapi compatible.
+     */
+    uint8_t buf[22];
+    if (DRIVER_OP_SUCCESS == mmc_mode_sense(p_cdio, buf, sizeof(buf),
+                                            CDIO_MMC_CAPABILITIES_PAGE) ) {
+      uint8_t *b = buf;
+      b+=b[3]+4;
+      if( CDIO_MMC_CAPABILITIES_PAGE == (b[0]&0x3F) ) {
+        /* MMC style drive! */
+        return yep;
+      }
+    }
+  }
+  
+  /* Put these in the various drivers? If we get more, yes!
+   */
+#ifdef HAVE_LINUX_MAJOR_H
+  {
+    /* This too is from cdparanoia. */
+    struct stat st;
+    generic_img_private_t *p_env  = p_cdio->env;
+    if ( 0 == lstat(p_env->source_name, &st) ) {
+      if (S_ISCHR(st.st_mode) || S_ISBLK(st.st_mode)) {
+        int drive_type=(int)(st.st_rdev>>8);
+        switch (drive_type) {
+        case IDE0_MAJOR:
+        case IDE1_MAJOR:
+        case IDE2_MAJOR:
+        case IDE3_MAJOR:
+          /* Yay, ATAPI... */
+          return yep;
+          break;
+        case CDU31A_CDROM_MAJOR:
+        case CDU535_CDROM_MAJOR:
+        case MATSUSHITA_CDROM_MAJOR:
+        case MATSUSHITA_CDROM2_MAJOR:
+        case MATSUSHITA_CDROM3_MAJOR:
+        case MATSUSHITA_CDROM4_MAJOR:
+        case SANYO_CDROM_MAJOR:
+        case MITSUMI_CDROM_MAJOR:
+        case MITSUMI_X_CDROM_MAJOR:
+        case OPTICS_CDROM_MAJOR:
+        case AZTECH_CDROM_MAJOR:
+        case GOLDSTAR_CDROM_MAJOR:
+        case CM206_CDROM_MAJOR:
+        case SCSI_CDROM_MAJOR:   
+        case SCSI_GENERIC_MAJOR: 
+          return nope;
+	break;
+        default:
+          return dunno;
+        }
+      }
+    }
+  }
+#endif /*HAVE_LINUX_MAJOR_H*/
+  return dunno;
 }
 
 bool

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.10 2005/02/06 11:32:22 rocky Exp $
+    $Id: iso9660_fs.c,v 1.11 2005/02/10 01:59:06 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -51,14 +51,7 @@
 
 #include <stdio.h>
 
-typedef enum  {
-  nope  = 0,
-  yep   = 1,
-  dunno = 2
-} bool_3way_t;
-  
-
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.10 2005/02/06 11:32:22 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.11 2005/02/10 01:59:06 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {

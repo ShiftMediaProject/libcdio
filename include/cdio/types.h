@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.25 2005/01/04 04:33:36 rocky Exp $
+    $Id: types.h,v 1.26 2005/02/10 01:59:06 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -191,6 +191,12 @@ extern "C" {
   typedef struct msf_rec msf_t;
 
 #define msf_t_SIZEOF 3
+  
+  typedef enum  {
+    nope  = 0,
+    yep   = 1,
+    dunno = 2
+  } bool_3way_t;
   
   /* type used for bit-fields in structs (1 <= bits <= 8) */
 #if defined(__GNUC__)

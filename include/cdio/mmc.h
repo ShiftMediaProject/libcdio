@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.5 2005/02/09 02:50:47 rocky Exp $
+    $Id: mmc.h,v 1.6 2005/02/10 01:59:06 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -391,7 +391,7 @@ uint8_t mmc_get_cmd_len(uint8_t scsi_cmd);
   Set the block size for subsequest read requests, via an MMC 
   MODE_SENSE 6 command.
  */
-int mmc_get_blocksize ( const CdIo_t *p_cdio );
+int mmc_get_blocksize ( CdIo_t *p_cdio );
 
 /*!  
   Get the lsn of the end of the CD
@@ -416,10 +416,10 @@ discmode_t mmc_get_discmode( const CdIo_t *p_cdio );
   Get drive capabilities for a device.
   @return the drive capabilities.
  */
-void mmc_get_drive_cap (const CdIo_t *p_cdio,
-			     /*out*/ cdio_drive_read_cap_t  *p_read_cap,
-			     /*out*/ cdio_drive_write_cap_t *p_write_cap,
-			     /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
+void mmc_get_drive_cap ( CdIo_t *p_cdio,
+			 /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+			 /*out*/ cdio_drive_write_cap_t *p_write_cap,
+			 /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
 
 /*! 
   Get the DVD type associated with cd object.
@@ -465,15 +465,29 @@ char * mmc_get_mcn ( const CdIo_t *p_cdio );
   routine could probably return the sincle mmc_feature_interface_t.
   @return true if we have the interface and false if not.
  */
-bool mmc_have_interface( const CdIo_t *p_cdio, 
-			 mmc_feature_interface_t e_interface );
+bool_3way_t mmc_have_interface( CdIo_t *p_cdio, 
+				mmc_feature_interface_t e_interface );
 
-/*! Run a MODE_SENSE_10 and put the results in p_buf */
-int  mmc_mode_sense_10( const CdIo_t *p_cdio, void *p_buf, int i_size, 
+/*! Run a MODE_SENSE command (6- or 10-byte version) 
+  and put the results in p_buf 
+  @return DRIVER_OP_SUCCESS if we ran the command ok.
+*/
+int mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
+		    int page);
+
+
+/*! Run a MODE_SENSE command (10-byte version) 
+  and put the results in p_buf 
+  @return DRIVER_OP_SUCCESS if we ran the command ok.
+*/
+int  mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
 			int page);
 
-/*! Run a MODE_SENSE_6 and put the results in p_buf */
-int  mmc_mode_sense_6( const CdIo_t *p_cdio, void *p_buf, int i_size, 
+/*! Run a MODE_SENSE command (6-byte version) 
+  and put the results in p_buf 
+  @return DRIVER_OP_SUCCESS if we ran the command ok.
+*/
+int  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
 		       int page);
 
 
