@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.2 2005/03/08 03:11:19 rocky Exp $
+    $Id: cdda-player.c,v 1.3 2005/03/09 02:19:54 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -284,7 +284,7 @@ oops(const char *txt, int rc)
 static void
 cd_stop(CdIo_t *p_cdio)
 {
-  if (b_cd) {
+  if (b_cd && p_cdio) {
     action("stop...");
     if (DRIVER_OP_SUCCESS != cdio_audio_stop(p_cdio))
       xperror("stop");
@@ -292,13 +292,16 @@ cd_stop(CdIo_t *p_cdio)
 }
 
 static void
-cd_eject(CdIo_t *p_cdio)
+cd_eject(void)
 {
-  cd_stop(p_cdio);
-  action("eject...");
-  if (DRIVER_OP_SUCCESS != cdio_eject_media(&p_cdio))
-    xperror("eject");
-  b_cd = 0;
+  if (p_cdio) {
+    cd_stop(p_cdio);
+    action("eject...");
+    if (DRIVER_OP_SUCCESS != cdio_eject_media(&p_cdio))
+      xperror("eject");
+    b_cd = 0;
+    p_cdio = NULL;
+  }
 }
 
 static void
@@ -330,7 +333,7 @@ read_subchannel(CdIo_t *p_cdio)
     b_cd = 0;
   }
   if (auto_mode && sub.audio_status == CDIO_MMC_READ_SUB_ST_COMPLETED)
-    cd_eject(p_cdio);
+    cd_eject();
 }
 
 static void
@@ -1137,10 +1140,6 @@ main(int argc, char *argv[])
     cdio_free_device_list(ppsz_cdda_drives);
   }
   
-  /* open device */
-  if (b_verbose)
-    fprintf(stderr,"open %s... ", psz_device);
-
   if (!interactive) {
     b_sig = true;
     nostop=1;
@@ -1148,6 +1147,10 @@ main(int argc, char *argv[])
       cd_close(psz_device);
     }
   }
+
+  /* open device */
+  if (b_verbose)
+    fprintf(stderr,"open %s... ", psz_device);
 
   p_cdio = cdio_open (psz_device, driver_id);
 
@@ -1170,49 +1173,52 @@ main(int argc, char *argv[])
   if (!interactive) {
     b_sig = true;
     nostop=1;
-    read_toc(p_cdio);
-    if (!b_cd && todo != EJECT_CD) {
-      cd_close(psz_device);
-      read_toc(p_cdio);
-    }
-    if (b_cd || todo == EJECT_CD) {
-      switch (todo) {
-      case STOP_PLAYING:
-	cd_stop(p_cdio);
-	break;
-      case EJECT_CD:
-	cd_stop(p_cdio);
-	cd_eject(p_cdio);
-	break;
-      case LIST_TRACKS:
-	tracklist();
-	break;
-      case PS_LIST_TRACKS:
-	ps_tracklist();
-	break;
-      case PLAY_TRACK:
-	/* play just this one track */
-	if (b_record) {
-	  printf("%s / %s\n", artist, title);
-	  if (one_track)
-	    printf("%s\n", cd_info[start_track].title);
-	}
-	play_track(start_track, stop_track);
-	break;
-      case PLAY_CD:
-	if (b_record)
-	  printf("%s / %s\n", artist, title);
-	play_track(1,CDIO_CDROM_LEADOUT_TRACK);
-	break;
-      }
+    if (EJECT_CD == todo) {
+	cd_eject();
     } else {
-      fprintf(stderr,"no CD in drive (%s)\n", psz_device);
+      read_toc(p_cdio);
+      if (!b_cd) {
+	cd_close(psz_device);
+	read_toc(p_cdio);
+      }
+      if (b_cd)
+	switch (todo) {
+	case STOP_PLAYING:
+	  cd_stop(p_cdio);
+	  break;
+	case EJECT_CD:
+	  /* Should have been handled above. */
+	  cd_eject();
+	  break;
+	case LIST_TRACKS:
+	  tracklist();
+	  break;
+	case PS_LIST_TRACKS:
+	  ps_tracklist();
+	  break;
+	case PLAY_TRACK:
+	  /* play just this one track */
+	  if (b_record) {
+	    printf("%s / %s\n", artist, title);
+	    if (one_track)
+	      printf("%s\n", cd_info[start_track].title);
+	  }
+	  play_track(start_track, stop_track);
+	  break;
+	case PLAY_CD:
+	  if (b_record)
+	    printf("%s / %s\n", artist, title);
+	  play_track(1,CDIO_CDROM_LEADOUT_TRACK);
+	  break;
+	}
+      else {
+	fprintf(stderr,"no CD in drive (%s)\n", psz_device);
+      }
     }
   }
   
   while ( !b_sig ) {
-    if (!b_cd)
-      read_toc(p_cdio);
+    if (!b_cd) read_toc(p_cdio);
     read_subchannel(p_cdio);
     display_status();
     
@@ -1232,7 +1238,7 @@ main(int argc, char *argv[])
 	break;
       case 'E':
       case 'e':
-	cd_eject(p_cdio);
+	cd_eject();
 	break;
       case 'S':
       case 's':

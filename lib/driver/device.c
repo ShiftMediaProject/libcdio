@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.17 2005/03/08 04:10:36 rocky Exp $
+    $Id: device.c,v 1.18 2005/03/09 02:19:54 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -292,7 +292,7 @@ cdio_destroy (CdIo_t *p_cdio)
   CdIo_last_driver = CDIO_DRIVER_UNINIT;
   if (p_cdio == NULL) return;
 
-  if (p_cdio->op.free != NULL) 
+  if (p_cdio->op.free != NULL && p_cdio->env) 
     p_cdio->op.free (p_cdio->env);
   p_cdio->env = NULL;
   free (p_cdio);

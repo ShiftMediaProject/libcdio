@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.27 2005/03/08 03:19:29 rocky Exp $
+    $Id: win32.c,v 1.28 2005/03/09 02:19:54 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.27 2005/03/08 03:19:29 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.28 2005/03/09 02:19:54 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -543,27 +543,22 @@ read_toc_win32 (void *p_user_data)
 }
 
 /*!
-  Eject media. Return 1 if successful, 0 otherwise.
+  Close media tray.
  */
-static int 
-eject_media_win32 (void *p_user_data) {
+static driver_return_code_t
+open_close_media_win32 (const char *psz_win32_drive, DWORD command_flags) 
+{
 #ifdef _XBOX
   return DRIVER_OP_UNSUPPORTED;
 #else
-  _img_private_t *p_env = p_user_data;
-
-
   MCI_OPEN_PARMS op;
   MCI_STATUS_PARMS st;
   DWORD i_flags;
-  char psz_drive[4];
   int ret;
     
   memset( &op, 0, sizeof(MCI_OPEN_PARMS) );
   op.lpstrDeviceType = (LPCSTR)MCI_DEVTYPE_CD_AUDIO;
-  strcpy( psz_drive, "X:" );
-  psz_drive[0] = p_env->gen.source_name[0];
-  op.lpstrElementName = psz_drive;
+  op.lpstrElementName = psz_win32_drive;
   
   /* Set the flags for the device type */
   i_flags = MCI_OPEN_TYPE | MCI_OPEN_TYPE_ID |
@@ -572,14 +567,38 @@ eject_media_win32 (void *p_user_data) {
   if( _cdio_mciSendCommand( 0, MCI_OPEN, i_flags, &op ) ) {
     st.dwItem = MCI_STATUS_READY;
     /* Eject disc */
-    ret = _cdio_mciSendCommand( op.wDeviceID, MCI_SET, MCI_SET_DOOR_OPEN, 0 ) != 0;
+    ret = _cdio_mciSendCommand( op.wDeviceID, MCI_SET, command_flags, 0 ) == 0;
     /* Release access to the device */
     _cdio_mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
   } else 
-    ret = 0;
+    ret = DRIVER_OP_ERROR;
   
   return ret;
 #endif
+}
+
+/*!
+  Eject media.
+ */
+static driver_return_code_t
+eject_media_win32 (void *p_user_data) 
+{
+  const _img_private_t *p_env = p_user_data;
+  char psz_drive[4];
+  unsigned int i_device = strlen(p_env->gen.source_name);
+    
+  strcpy( psz_drive, "X:" );
+  if (6 == i_device) {
+    psz_drive[0] = p_env->gen.source_name[4];
+  } else if (2 == i_device) {
+    psz_drive[0] = p_env->gen.source_name[0];
+  } else {
+    cdio_info ("Can't pick out drive letter from device %s", 
+	       p_env->gen.source_name);
+    return DRIVER_OP_ERROR;
+  }
+  
+  return open_close_media_win32(psz_drive, MCI_SET_DOOR_OPEN);
 }
 
 /*!
@@ -801,8 +820,11 @@ cdio_is_device_win32(const char *source_name)
 }
 
 driver_return_code_t
-close_tray_win32 ( const char *psz_win32_drive)
+close_tray_win32 (const char *psz_win32_drive)
 {
+#if 0
+  return open_close_media_win32(psz_win32_drive, MCI_SET_DOOR_CLOSED);
+#else 
 #ifdef HAVE_WIN32_CDROM
   if ( WIN_NT ) {
     return close_tray_win32ioctl (psz_win32_drive);
@@ -813,13 +835,14 @@ close_tray_win32 ( const char *psz_win32_drive)
   return DRIVER_OP_UNSUPPORTED;
 #endif
 }
+#endif
 
 /*!
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
   ones to set that up.
  */
-CdIo *
+CdIo_t *
 cdio_open_win32 (const char *psz_source_name)
 {
 #ifdef HAVE_WIN32_CDROM
@@ -838,12 +861,12 @@ cdio_open_win32 (const char *psz_source_name)
   get called via a function pointer. In fact *we* are the
   ones to set that up.
  */
-CdIo *
+CdIo_t *
 cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
 {
 
 #ifdef HAVE_WIN32_CDROM
-  CdIo *ret;
+  CdIo_t *ret;
   _img_private_t *_data;
   char *psz_source;
 
