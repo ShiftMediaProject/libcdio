@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.13 2005/01/18 03:03:56 rocky Exp $
+  $Id: scan_devices.c,v 1.14 2005/01/19 17:24:58 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -254,18 +254,18 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
     if ( scsi_mmc_get_hwinfo( p_cdio, &hw_info ) ) {
       unsigned int i_len = strlen(hw_info.psz_vendor) 
 	+ strlen(hw_info.psz_model) 
-	+ strlen(hw_info.psz_revision) + 3;
+	+ strlen(hw_info.psz_revision) + 5;
       
       if (description) {
 	i_len += strlen(description);
 	d->drive_model=malloc( i_len );
-	snprintf( d->drive_model, i_len, "%s%s%s %s", 
+	snprintf( d->drive_model, i_len, "%s %s %s %s", 
 		  hw_info.psz_vendor, hw_info.psz_model, hw_info.psz_revision,
 		  description );
 	free(description);
       } else {
 	d->drive_model=malloc( i_len );
-	snprintf( d->drive_model, i_len, "%s%s%s", 
+	snprintf( d->drive_model, i_len, "%s %s %s", 
 		  hw_info.psz_vendor, hw_info.psz_model, hw_info.psz_revision 
 		  );
       }
