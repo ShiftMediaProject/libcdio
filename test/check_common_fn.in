@@ -1,4 +1,4 @@
-# $Id: check_common_fn.in,v 1.10 2005/01/09 00:10:48 rocky Exp $
+# $Id: check_common_fn.in,v 1.11 2005/01/29 14:50:34 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -33,10 +33,9 @@ check_result() {
   cmdline=$*
   if test $RC -ne 0 ; then 
     if test $RC -ne $SKIP_TEST_EXITCODE ; then
-      if test -z "$cmdline" ; then 
-        echo "$0: $msg failed."
-      else 
-        echo "$0: $msg failed running:"
+      echo "$0: $msg failed in comparing output."
+      if test -n "$cmdline" ; then 
+        echo "$0: failed command:"
         echo "	$cmdline"
       fi
       exit $RC
