@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.54 2004/04/23 22:10:53 rocky Exp $
+    $Id: cd-info.c,v 1.55 2004/04/24 04:48:06 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -833,21 +833,29 @@ main(int argc, const char *argv[])
     cdio_drive_cap_t i_drive_cap =  cdio_get_drive_cap(cdio);
     if (CDIO_DRIVE_ERROR == i_drive_cap) {
       printf("Error in getting drive properties\n");
-    } else if (CDIO_DRIVE_UNKNOWN == i_drive_cap) {
-      printf("Can't determine drive properties\n");
-    } else if (CDIO_DRIVE_FILE == i_drive_cap) {
-      printf("Disc-image file\n");
     } else {
-      if (i_drive_cap & CDIO_DRIVE_CD_R) 
-	printf("Drive can read CD-ROM\n");
-      if (i_drive_cap & CDIO_DRIVE_CD_RW) 
-	printf("Drive can write CD-ROM\n");
-      if (i_drive_cap & CDIO_DRIVE_DVD) 
-	printf("Drive can read DVD\n");
-      if (i_drive_cap & CDIO_DRIVE_DVD_R) 
-	printf("Drive can write DVD-R\n");
-      if (i_drive_cap & CDIO_DRIVE_DVD_RAM) 
-	printf("Drive can write DVD-RAM\n");
+      if (CDIO_DRIVE_FILE == i_drive_cap) {
+	printf("Disc-image file\n");
+      } else {
+	printf("CD Reader   :  %s\n", 
+	       i_drive_cap & CDIO_DRIVE_CD_READER  ? "Yes" : "No");
+	printf("   CD-R     :  %s\n", 
+	       i_drive_cap & CDIO_DRIVE_CD_R       ?  "Yes" : "No");
+	printf("   CD-RW    :  %s\n\n", 
+	       i_drive_cap & CDIO_DRIVE_CD_RW      ? "Yes" : "No");
+
+	printf("DVD Reader   :  %s\n", 
+	       i_drive_cap & CDIO_DRIVE_DVD_READER ? "Yes" : "No");
+	printf("   DVD-ROM   :  %s\n", 
+	       i_drive_cap & CDIO_DRIVE_DVD        ?  "Yes" : "No");
+	printf("   DVD-R     :  %s\n", 
+	       i_drive_cap & CDIO_DRIVE_DVD_R      ?  "Yes" : "No");
+	printf("   DVD_RAM  :  %s\n", 
+	       i_drive_cap & CDIO_DRIVE_DVD_RAM    ? "Yes" : "No");
+      }
+      if (CDIO_DRIVE_UNKNOWN == i_drive_cap) {
+	printf("Not sure about drive properties\n\n");
+      }
     }
   }
 
