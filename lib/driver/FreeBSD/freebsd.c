@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.5 2005/01/20 01:00:52 rocky Exp $
+    $Id: freebsd.c,v 1.6 2005/01/20 05:07:00 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.5 2005/01/20 01:00:52 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.6 2005/01/20 05:07:00 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -54,18 +54,18 @@ str_to_access_mode_freebsd(const char *psz_access_mode)
 }
 
 static void
-_free_freebsd (void *obj)
+_free_freebsd (void *p_obj)
 {
-  _img_private_t *env = obj;
+  _img_private_t *p_env = p_obj;
 
-  if (NULL == env) return;
+  if (NULL == p_env) return;
 
-  if (NULL != env->device) free(env->device);
+  if (NULL != p_env->device) free(p_env->device);
 
-  if (_AM_CAM == env->access_mode) 
-    return free_freebsd_cam(env);
+  if (_AM_CAM == p_env->access_mode) 
+    return free_freebsd_cam(p_env);
   else 
-    return cdio_generic_free(obj);
+    return cdio_generic_free(p_obj);
 }
 
 /* Check a drive to see if it is a CD-ROM 
@@ -139,46 +139,49 @@ _read_mode2_sectors_freebsd (void *user_data, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_stat_size_freebsd (void *obj)
+_stat_size_freebsd (void *p_obj)
 {
-  _img_private_t *env = obj;
+  _img_private_t *p_env = p_obj;
 
   if (NULL == env) return CDIO_INVALID_LBA;
 
-  if (_AM_CAM == env->access_mode) 
-    return stat_size_freebsd_cam(env);
+  if (_AM_CAM == p_env->access_mode) 
+    return stat_size_freebsd_cam(p_env);
   else 
-    return stat_size_freebsd_ioctl(env);
+    return stat_size_freebsd_ioctl(p_env);
 }
 
 /*!
-  Set the key "arg" to "value" in source device.
+  Set the arg "key" with "value" in the source device.
+  Currently "source" and "access-mode" are valid keys.
+  "source" sets the source device in I/O operations 
+  "access-mode" sets the the method of CD access 
+
+  DRIVER_OP_SUCCESS is returned if no error was found, 
+  and nonzero if there as an error.
 */
-static int
-_set_arg_freebsd (void *user_data, const char key[], const char value[])
+static driver_return_code_t
+_set_arg_freebsd (void *p_user_data, const char key[], const char value[])
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (!strcmp (key, "source"))
     {
-      if (!value)
-	return -2;
-
-      free (env->gen.source_name);
-      
-      env->gen.source_name = strdup (value);
+      if (!value) return DRIVER_OP_ERROR;
+      free (p_env->gen.source_name);
+      p_env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
-      env->access_mode = str_to_access_mode_freebsd(value);
-      if (env->access_mode == _AM_CAM && !env->b_cam_init) 
-	return init_freebsd_cam(env) ? 1 : -3;
-      return 0;
+      p_env->access_mode = str_to_access_mode_freebsd(value);
+      if (p_env->access_mode == _AM_CAM && !env->b_cam_init) 
+	return init_freebsd_cam(p_env) 
+	  ? DRIVER_OP_SUCCESS : DRIVER_OP_ERROR;
     }
-  else 
-    return -1;
+  else return DRIVER_OP_ERROR;
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
+
 }
 
 /* Set CD-ROM drive speed */
@@ -344,7 +347,7 @@ run_scsi_cmd_freebsd( const void *p_user_data, unsigned int i_timeout_ms,
     return run_scsi_cmd_freebsd_cam( p_user_data, i_timeout_ms, i_cdb, p_cdb, 
 				     e_direction, i_buf, p_buf );
   else 
-    return 2;
+    return DRIVER_OP_UNSUPPORTED;
 }  
 
 /*!  
@@ -573,6 +576,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .eject_media            = _eject_media_freebsd,
     .free                   = _free_freebsd,
     .get_arg                = _get_arg_freebsd,
+    .get_blocksize          = get_blocksize_generic,
     .get_cdtext             = get_cdtext_generic,
     .get_default_device     = cdio_get_default_device_freebsd,
     .get_devices            = cdio_get_devices_freebsd,
@@ -596,6 +600,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .read_toc               = read_toc_freebsd,
     .run_scsi_mmc_cmd       = run_scsi_cmd_freebsd,
     .set_arg                = _set_arg_freebsd,
+    .set_blocksize         = set_blocksize_generic,
     .set_speed              = set_speed_freebsd,
     .stat_size              = _stat_size_freebsd
   };

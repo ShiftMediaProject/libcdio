@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.8 2005/01/20 01:00:52 rocky Exp $
+    $Id: _cdio_generic.c,v 1.9 2005/01/20 05:07:00 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.8 2005/01/20 01:00:52 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.9 2005/01/20 05:07:00 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -277,6 +277,15 @@ get_cdtext_generic (void *p_user_data, track_t i_track)
   else 
     return &(p_env->cdtext_track[i_track-p_env->i_first_track]);
 
+}
+
+/* Set read blocksize (via MMC) */
+int
+get_blocksize_generic (void *p_user_data)
+{
+  generic_img_private_t *p_env = p_user_data;
+  if (!p_env) return DRIVER_OP_UNINIT;
+  return scsi_mmc_get_blocksize(p_env->cdio);
 }
 
 /*! 

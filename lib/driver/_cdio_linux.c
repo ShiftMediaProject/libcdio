@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.13 2005/01/20 01:00:52 rocky Exp $
+    $Id: _cdio_linux.c,v 1.14 2005/01/20 05:07:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.13 2005/01/20 01:00:52 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.14 2005/01/20 05:07:00 rocky Exp $";
 
 #include <string.h>
 
@@ -1136,6 +1136,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .eject_media           = eject_media_linux,
     .free                  = cdio_generic_free,
     .get_arg               = get_arg_linux,
+    .get_blocksize         = get_blocksize_generic,
     .get_cdtext            = get_cdtext_generic,
     .get_default_device    = cdio_get_default_device_linux,
     .get_devices           = cdio_get_devices_linux,

@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.8 2005/01/20 01:00:52 rocky Exp $
+    $Id: generic.h,v 1.9 2005/01/20 05:07:00 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -156,6 +156,12 @@ extern "C" {
     or CD-TEXT information does not exist.
   */
   const cdtext_t *get_cdtext_generic (void *p_user_data, track_t i_track);
+
+  /*!
+    Get the block size for subsequest read requests, via a SCSI MMC 
+    MODE_SENSE 6 command.
+  */
+  int get_blocksize_generic (void *p_user_data);
 
   /*!
     Return the number of of the first track. 

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.7 2005/01/20 01:00:52 rocky Exp $
+    $Id: cdio_private.h,v 1.8 2005/01/20 05:07:00 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -68,6 +68,12 @@ extern "C" {
       Return the value associated with the key "arg".
     */
     const char * (*get_arg) (void *p_env, const char key[]);
+    
+    /*!
+      Get the block size for subsequest read requests, via a SCSI MMC 
+      MODE_SENSE 6 command.
+    */
+    int (*get_blocksize) (void *p_env);
     
     /*! 
       Get cdtext information for a CdIo object.
