@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.27 2004/07/11 02:33:18 rocky Exp $
+#   $Id: Makefile.am,v 1.28 2004/09/05 13:03:46 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -33,8 +33,12 @@ testassert_LDADD    = $(LIBCDIO_LIBS)
 testdefault_LDADD   = $(LIBCDIO_LIBS)
 testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
+
 testtoc_LDADD       = $(LIBCDIO_LIBS)
+testtoc_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
+
 testbincue_LDADD    = $(LIBCDIO_LIBS)
+testbincue_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
                 check_iso.sh  check_opts.sh 
@@ -76,3 +80,5 @@ MOSTLYCLEANFILES = core.* *.dump
 check-am:	make-executable
 make-executable: check_nrg.sh check_cue.sh
 	chmod +x *.sh
+	if test ! -f cdda.bin ; then $(LN_S) $(srcdir)/cdda.bin cdda.bin ; fi
+	if test ! -f isofs-m1.bin ; then $(LN_S) $(srcdir)/isofs-m1.bin isofs-m1.bin ; fi

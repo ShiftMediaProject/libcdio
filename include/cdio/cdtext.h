@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.h,v 1.7 2004/09/04 23:49:47 rocky Exp $
+    $Id: cdtext.h,v 1.8 2004/09/05 13:03:46 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     adapted from cuetools
@@ -44,6 +44,7 @@ extern "C" {
     char *field[MAX_CDTEXT_FIELDS];
   };
   
+  /*! \brief A list of all of the CD-Text fields */
   typedef enum {
     CDTEXT_ARRANGER   =  0,   /**< name(s) of the arranger(s) */
     CDTEXT_COMPOSER   =  1,   /**< name(s) of the composer(s) */
@@ -73,14 +74,16 @@ extern "C" {
   /*! Free memory assocated with cdtext*/
   void cdtext_destroy (cdtext_t *cdtext);
   
-  /*!  returns the CDTEXT value associated with key at the given track
-    number. NULL is returned if key is CDTEXT_INVALID or the field is
-    not set. 
+  /*! returns the string associated with the given field.  NULL is
+    returned if key is CDTEXT_INVALID or the field is not set.
+
+    @see cdio_get_cdtext to retrieve the cdtext structure used as
+    input here.
   */
   const char *cdtext_get (cdtext_field_t key, const cdtext_t *cdtext);
   
   /*!
-    returns enum of keyword if key is a CD-TEXT keyword, 
+    returns enum of keyword if key is a CD-Text keyword, 
     returns MAX_CDTEXT_FIELDS non-zero otherwise.
   */
   cdtext_field_t cdtext_is_keyword (const char *key);

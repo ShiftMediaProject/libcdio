@@ -1,5 +1,5 @@
 /*
-  $Id: testtoc.c,v 1.4 2004/07/11 02:33:18 rocky Exp $
+  $Id: testtoc.c,v 1.5 2004/09/05 13:03:47 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -38,6 +38,10 @@
 #endif
 #include <string.h>
 
+#ifndef TEST_DIR
+#define TEST_DIR "."
+#endif
+
 #define NUM_GOOD_TOCS 15
 #define NUM_BAD_TOCS 7
 int
@@ -72,10 +76,15 @@ main(int argc, const char *argv[])
   };
   int ret=0;
   unsigned int i;
+  char psz_tocfile[500];
+
+  psz_tocfile[sizeof(psz_tocfile)-1] = '\0';
   
   cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
   for (i=0; i<NUM_GOOD_TOCS; i++) {
-    if (!cdio_is_tocfile(toc_file[i])) {
+    snprintf(psz_tocfile, sizeof(psz_tocfile)-1,
+	     "%s/%s", TEST_DIR, toc_file[i]);
+    if (!cdio_is_tocfile(psz_tocfile)) {
       printf("Incorrect: %s doesn't parse as a cdrdao TOC file.\n", 
 	     toc_file[i]);
       ret=i+1;
@@ -83,16 +92,21 @@ main(int argc, const char *argv[])
       printf("Correct: %s parses as a cdrdao TOC file.\n", 
 	     toc_file[i]);
     }
+    free(psz_tocfile);
   }
 
   for (i=0; i<NUM_BAD_TOCS; i++) {
-    if (!cdio_is_tocfile(badtoc_file[i])) {
+    snprintf(psz_tocfile, sizeof(psz_tocfile)-1,
+	     "%s/%s", TEST_DIR, badtoc_file[i]);
+    if (!cdio_is_tocfile(psz_tocfile)) {
       printf("Correct: %s doesn't parse as a cdrdao TOC file.\n", 
 	     badtoc_file[i]);
+      free(psz_tocfile);
     } else {
       printf("Incorrect: %s parses as a cdrdao TOC file.\n", 
 	     badtoc_file[i]);
       ret+=50*i+1;
+      free(psz_tocfile);
       break;
     }
   }
