@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.84 2004/08/27 11:53:38 rocky Exp $
+    $Id: cd-info.c,v 1.85 2004/08/30 00:26:59 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -91,6 +91,7 @@ struct arguments
   char          *cddb_cachedir;
 #endif
   int            no_vcd;
+  int            show_dvd;
   int            no_device;
   int            no_disc_mode;
   uint32_t       debug_level;
@@ -173,6 +174,9 @@ parse_options (int argc, const char *argv[])
     {"no-disc-mode", '\0', POPT_ARG_NONE, &opts.no_disc_mode, 0,
      "Don't show disc-mode info"},
     
+    {"dvd",   '\0', POPT_ARG_NONE, &opts.show_dvd, 0,
+     "Attempt to give DVD information if a DVD is found."},
+
 #ifdef HAVE_VCDINFO
     {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 0,
      "Don't look up Video CD information"},
@@ -1027,6 +1031,12 @@ main(int argc, const char *argv[])
   if ( 0 == opts.no_disc_mode ) {
     printf("Disc mode is listed as: %s\n", 
 	   discmode2str[discmode]);
+  }
+
+  if (discmode_is_dvd && !opts.show_dvd) {
+    printf("No further information currently given for DVDs.\n");
+    printf("Use --dvd to override.\n");
+    myexit(p_cdio, EXIT_SUCCESS);
   }
   
   i_first_track = cdio_get_first_track_num(p_cdio);

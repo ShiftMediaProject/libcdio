@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.c,v 1.6 2004/07/17 08:59:44 rocky Exp $
+    $Id: cdtext.c,v 1.7 2004/08/30 00:26:59 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -144,6 +144,9 @@ cdtext_set (cdtext_field_t key, const char *value, cdtext_t *cdtext)
 #define SET_CDTEXT_FIELD(FIELD) \
   (*set_cdtext_field_fn)(user_data, i_track, i_first_track, FIELD, buffer);
 
+/* 
+  parse all CD-TEXT data retrieved.
+*/       
 bool
 cdtext_data_init(void *user_data, track_t i_first_track, 
 		 const unsigned char *wdata, 
@@ -162,6 +165,12 @@ cdtext_data_init(void *user_data, track_t i_first_track,
   
   pdata = (CDText_data_t *) (&wdata[4]);
   for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ ) {
+
+    if ( pdata->bDBC ) {
+      cdio_warn("Double-byte characters not supported");
+      return false;
+    }
+    
     if( pdata->seq != i )
       break;
     

@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext_private.h,v 1.3 2004/07/17 09:34:30 rocky Exp $
+    $Id: cdtext_private.h,v 1.4 2004/08/30 00:26:59 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -43,10 +43,16 @@ struct CDText_data
   uint8_t  type;
   track_t  i_track;
   uint8_t  seq;
+#ifdef WORDS_BIGENDIAN
+  uint8_t  bDBC:             1;	 /* double byte character */
+  uint8_t  block:            3;  /* block number 0..7 */
   uint8_t  characterPosition:4;  /* character position */
-  uint8_t  block:3;		 /* block number 0..7 */
-  uint8_t  bDBC:1;		 /* double byte character */
-  char     text[12];
+#else
+  uint8_t  characterPosition:4;  /* character position */
+  uint8_t  block            :3;	 /* block number 0..7 */
+  uint8_t  bDBC             :1;	 /* double byte character */
+#endif
+  char     text[CDIO_CDTEXT_MAX_TEXT_DATA];
   uint8_t  crc[2];
 } GNUC_PACKED;
 

@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.26 2004/07/25 18:37:09 rocky Exp $
+    $Id: sector.h,v 1.27 2004/08/30 00:26:59 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -283,6 +283,18 @@ bool cdio_is_discmode_dvd (discmode_t discmode);
 #ifdef __cplusplus
     }
 #endif
+
+static inline bool discmode_is_cd(discmode_t discmode) 
+{
+  return discmode <= CDIO_DISC_MODE_CD_MIXED;
+}
+
+static inline bool discmode_is_dvd(discmode_t discmode) 
+{
+  return (discmode >= CDIO_DISC_MODE_DVD_ROM) 
+    && (discmode <= CDIO_DISC_MODE_DVD_OTHER);
+}
+
 
 #endif /* _CDIO_SECTOR_H_ */
 
