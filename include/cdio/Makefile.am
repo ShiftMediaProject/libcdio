@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.13 2004/10/22 01:13:38 rocky Exp $
+#   $Id: Makefile.am,v 1.14 2004/10/28 10:08:56 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -25,6 +25,7 @@ libcdioincludedir=$(includedir)/cdio
 libcdioinclude_HEADERS = \
 	bytesex.h \
 	bytesex_asm.h \
+	cdio.h \
 	cdtext.h \
 	cdtext.h \
 	cd_types.h \
