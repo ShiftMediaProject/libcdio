@@ -17,8 +17,8 @@
  *
  */
 /* Simple program to show using libcdio's version of the CD-DA
-   paranoia library. In this version, we'll open a cdio object before
-   calling paranoia's open. I image in many cases such as media
+   paranoia library. But in this version, we'll open a cdio object before
+   calling paranoia's open. I imagine in many cases such as media
    players this may be what will be done since, one may want to get
    CDDB/CD-Text info beforehand.
  */
@@ -38,7 +38,7 @@
 int
 main(int argc, const char *argv[])
 {
-  cdrom_drive_t *d = NULL; /* Place to store handle given by cd-parapnioa. */
+  cdrom_drive_t *d = NULL; /* Place to store handle given by cd-paranoia. */
   char **ppsz_cd_drives;  /* List of all drives with a loaded CDDA in it. */
   CdIo_t *p_cdio = NULL;
 
