@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_private.h,v 1.7 2004/06/02 00:37:14 rocky Exp $
+    $Id: iso9660_private.h,v 1.8 2004/06/02 07:44:02 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 #define __CDIO_ISO9660_PRIVATE_H__
 
 #ifdef HAVE_CONFIG_H
-
+#include "config.h"
 #endif
 
 #include <cdio/types.h>
