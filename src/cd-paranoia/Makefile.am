@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.7 2005/01/11 04:11:37 rocky Exp $
+#   $Id: Makefile.am,v 1.8 2005/01/11 10:51:02 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -30,7 +30,10 @@ EXTRA_DIST = $(man_MANS) getopt.c getopt1.c \
 
 noinst_HEADERS = getopt.h header.h report.h 
 
+transform = s,cd-paranoia,@CDPARANOIA_NAME@,
+
 if BUILD_CD_PARANOIA
+
 cd_paranoia_SOURCES = cd-paranoia.c \
 	buffering_write.c buffering_write.h \
 	$(getopt_sources) header.c report.c usage.h utils.h version.h
