@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.76 2004/10/26 07:34:41 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.77 2004/11/13 23:33:57 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.76 2004/10/26 07:34:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.77 2004/11/13 23:33:57 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -122,12 +122,12 @@ str_to_access_mode_sunos(const char *psz_access_mode)
   Initialize CD device.
  */
 static bool
-init_solaris (_img_private_t *env)
+init_solaris (_img_private_t *p_env)
 {
 
-  if (!cdio_generic_init(env)) return false;
+  if (!cdio_generic_init(p_env)) return false;
   
-  env->access_mode = _AM_SUN_CTRL_SCSI;    
+  p_env->access_mode = _AM_SUN_CTRL_SCSI;    
 
   return true;
 }
@@ -186,31 +186,31 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
   msf_t _msf;
   struct cdrom_cdda cdda;
 
-  _img_private_t *env = p_user_data;
+  _img_private_t *p_env = p_user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
   msf->cdmsf_min0   = from_bcd8(_msf.m);
   msf->cdmsf_sec0   = from_bcd8(_msf.s);
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
   
-  if (env->gen.ioctls_debugged == 75)
+  if (p_env->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
   
-  if (env->gen.ioctls_debugged == 30 * 75)
+  if (p_env->gen.ioctls_debugged == 30 * 75)
     cdio_debug ("only displaying every 30*75th ioctl from now on");
   
-  if (env->gen.ioctls_debugged < 75 
-      || (env->gen.ioctls_debugged < (30 * 75)  
-	  && env->gen.ioctls_debugged % 75 == 0)
-      || env->gen.ioctls_debugged % (30 * 75) == 0)
+  if (p_env->gen.ioctls_debugged < 75 
+      || (p_env->gen.ioctls_debugged < (30 * 75)  
+	  && p_env->gen.ioctls_debugged % 75 == 0)
+      || p_env->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %d", lsn);
   
-  env->gen.ioctls_debugged++;
+  p_env->gen.ioctls_debugged++;
   
   cdda.cdda_addr   = lsn;
   cdda.cdda_length = nblocks;
   cdda.cdda_data   = (caddr_t) data;
-  if (ioctl (env->gen.fd, CDROMCDDA, &cdda) == -1) {
+  if (ioctl (p_env->gen.fd, CDROMCDDA, &cdda) == -1) {
     perror ("ioctl(..,CDROMCDDA,..)");
 	return 1;
 	/* exit (EXIT_FAILURE); */
