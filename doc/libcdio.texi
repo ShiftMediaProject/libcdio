@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.42 2005/02/13 16:05:27 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.43 2005/03/21 10:36:18 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -238,14 +238,15 @@ and Ahead Nero's NRG format is available, so applications that use this
 library also have the ability to read disc images as though they were
 CDs.
 
-Finally, we provide a way to issue SCSI ``MultiMedia Commands'' (MMC).
-MMC is supported by many hardware CD-ROM manufacturers; and in some
-cases where a CD-ROM doesn't understand MMC directly, some Operating
-Systems (such as GNU/Linux, Solaris, or FreeBSD or Microsoft Windows
-ASPI to name a few) provide the MMC emulation.@footnote{This
-concept of software emulation of a common hardware command language is
-common for printers such as using ghostscript to private postscript
-emulation for a non-postscript printer.}
+@command{libcdio} also provides a way to issue SCSI ``MultiMedia
+Commands'' (MMC).  MMC is supported by many hardware CD-ROM
+manufacturers; and in some cases where a CD-ROM doesn't understand MMC
+directly, some Operating Systems (such as GNU/Linux, Solaris, or
+FreeBSD or Microsoft Windows ASPI to name a few) provide the MMC
+emulation.@footnote{This concept of software emulation of a common
+hardware command language is common for printers such as using
+ghostscript to private postscript emulation for a non-postscript
+printer.}
 
 Immediate of the library in this package are the Video CD authoring
 and ripping tools, VCDImager (@url{http://vcdimager.org}), a
@@ -264,17 +265,27 @@ libcddb (@url{http://libcddb.sourceforge.net}) is available, the
 @command{cd-info} program will display CDDB matches on CD-DA
 discs. And if a new enough version of libvcdinfo is available (from
 the vcdimager project), then @command{cd-info} shows basic VCD
-information. The command @command{cd-drive} shows what drivers are
-available and some basic properties of cd-drives attached to the
-system. (But media may have to be inserted in order to get this info.)
+information.
 
 Other utility programs in the libcdio package are:
 
 @table @code 
 
+@item @code{cdda-player}
+
+shows off @value{libcdio} audio and CD-ROM control commands. It can
+play a track, eject or load media and show the the status of a CD-DA
+that is might be currently played via the audio control commands.  It
+can be run in batch mode or has a simple curses-based interface.
+
+If libcddb is available or a CD has CD-Text and your CD-ROM drive
+supports CD-Text, track/album information about the CD can be shown.
+
 @item @code{cd-drive}
 
-lists out drive capabilities
+shows what drivers are available and some basic properties of
+cd-drives attached to the system. (But media may have to be inserted
+in order to get this info.)  lists out drive capabilities
 
 @item cd-read
 performs low-level block reading of a CD or CD image,
@@ -325,12 +336,9 @@ extracts files from an ISO-9660 image.
 
 @end table
 
-At present, there is no support for directing CD Audio control,
-e.g. playing, stopping, or pausing of a CD-CA where the blocks are not
-actually read into the computer. Nor is there any support for writing
-CD's. Nor is there any support for reading or writing DVDs. For some
-of these, there are other libraries (e.g. libdi, libscg, or libdvdread)
-may be helpful.
+At present, there is no support for writing CD's. Nor is there any
+support for reading or writing DVDs. For some of these, there are
+other libraries (e.g. libdi, libscg, or libdvdread) may be helpful.
 
 I'm not theoretically opposed to putting support like this into
 libcdio. However at present there are already many gaps in this
@@ -484,6 +492,7 @@ Mode 2.
 * ISO 9660 Level 2::
 * ISO 9660 Level 3::
 * Joliet Extensions::
+* Rock Ridge Extensions::
 @end menu
 
 The Yellow Book doesn't specify how data is to be stored on a CD-ROM.
@@ -542,12 +551,31 @@ symbols.
 
 The way all of this is encoded is by adding a second directory and
 filesystem structure in addition to or in parallels to original ISO
-9600 filesystem. The root node of the ISO 9600 filesystem is found via
+9600 filesystem. The root node of the ISO 9660 filesystem is found via
 the @term{Primary Volume Descriptor} or @term{PVD}. The root of the
 Joliet-encode filesystem is found in a Supplementary Volume
 Descriptor or @term{SVD} defined in the ISO 9660 specification. The
 SVD structure is almost identical to a PVD with a couple of unused
 fields getting used and with the filename encoding changed to UCS-BE.
+
+@node Rock Ridge Extensions
+@subsubsection Rock Ridge Extensions
+@cindex Rock Ridge extensions
+
+Using the Joliet Extension one overcome the limitedness of the
+original ISO-9660 naming scheme. But another and probably better
+method is to use the Rock Ridge Extension. Not only can one store a
+filename as one does in a POSIX OS, but the other file attributes,
+such as the various timestamps (creation, modification, access), file
+attributes (user, group, file mode permissions, device type, symbolic
+links) can be stored. This is much as one would do in XA attributes;
+however the two are not completely interchangeable in the information
+they store: XA does @emph{not} address filename limitations, and the
+Rock Ridge extensions don't indicate if a sector is in Mode 1 or Mode
+2 format.
+
+The Rock Ridge extension makes use of a hook that was defined as part
+of the ISO 9660 standard.
 
 @node Mode 1
 @subsection Mode 1 (2048 data bytes per sector)
@@ -901,12 +929,25 @@ values is defined by constant @code{CDIO_CD_MAX_LSN} in
 
 One can addressing a block in one of three formats. The oldest format
 is by it's minute/second/frame number, also referred to as @term{MSF}
-and written in time-like format MM:SS:FF (e.g. 30:01:40). In this
-notation there are 75 ``frames'' in a ``second,'' and the familiar (if
-awkward) 60 seconds in a minute. @emph{Frame} here is what we called a
-@emph{block} above. The CD specification defines ``frame'' to be
-@emph{another} unit which makes up a block. Very confusing. A frame is
-also sometimes called a sector, analogous to hard-disk terminalogy.
+and written in time-like format MM:SS:FF (e.g. 30:01:40). It is best
+suited in audio (Red Book) applications. In @value{libcdio}, the type
+@code{msf_t} can be used to declare variables to hold such
+values. Minute, second and frame values are one byte @emph{and stored
+BCD notation}.@footnote{Perhaps this is a @value{libcdio} design
+flaw. It was originally done I guess because it was convenient for
+VCDs.} There are @value{libcdio} conversion routines
+@code{cdio_from_bcd8()} and @code{cdio_to_bcd8()} to convert the
+minute, second, and frame values into or out of integers. If you want
+to print a field in a BCD-encoded MSF, one can use the format
+specifier @code{%x} @emph{(not @code{%d})} and things will come out
+right.
+
+In the MSF notation, there are 75 ``frames'' in a ``second,'' and the
+familiar (if awkward) 60 seconds in a minute. @emph{Frame} here is
+what we called a @emph{block} above. The CD specification defines
+``frame'' to be @emph{another} unit which makes up a block. Very
+confusing. A frame is also sometimes called a sector, analogous to
+hard-disk terminalogy.
 
 Even more confusing is using this time-like notation for an address or
 for a length. Too often people confuse the MSF notation this with an
@@ -921,10 +962,10 @@ is also not the amount of time your CD-ROM will take to read a
 will read 12x @code{CDIO_CD_FRAMES_PER_SEC}
 @code{CDIO_CD_FRAMSIZE_RAW}-byte blocks in a one second of time.
 
-Furthermore when programming, it is generally more cumbersome to use
-an MSF rather than a LBA or LSN described below, since subtraction of
-two MSF's has the awkwardness akin to subtraction using Roman
-Numerals.
+When programming, unless one is working with a CD-DA (and even here,
+only in a time-like fashion), is generally more cumbersome to use an
+MSF rather than a LBA or LSN described below, since subtraction of two
+MSF's has the awkwardness akin to subtraction using Roman Numerals.
 
 Probably the simplest way to address a block is to use its @term{LSN}
 or ``logical sector number.'' This just numbers the blocks usually
@@ -973,7 +1014,7 @@ distribution as @file{example/tracks.c}.
  4: int
  5: main(int argc, const char *argv[])
  6: @{
- 7:  CdIo_t *p_cdio = cdio_open ("/dev/cdrom", DRIVER_UNKNOWN);
+ 7:  CdIo_t *p_cdio = cdio_open ("/dev/cdrom", DRIVER_DEVICE);
  8:  track_t first_track_num = cdio_get_first_track_num(p_cdio);
  9:  track_t i_tracks        = cdio_get_num_tracks(p_cdio);
 10:  int j, i=first_track_num;
@@ -1066,7 +1107,7 @@ device that is right for it.
  4: int
  5: main(int argc, const char *argv[])
  6: @{
- 7:   CdIo_t *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+ 7:   CdIo_t *p_cdio = cdio_open (NULL, DRIVER_DEVICE);
  8:   driver_id_t driver_id;
  9:  
 10:  if (NULL != p_cdio) @{
@@ -1810,23 +1851,25 @@ image.
 @end menu
 
 @node MMC
-@section ``SCSI'' Multimedia Commands (MMC)
+@section Multimedia Commands (MMC)
 
 In contrast to the rest of the sections in this chapter, MMC
 (Multimedia commands) is not a driver per se, although many of the
 CD-ROM drivers do in fact issue MMC commands. MMC commands
 gives (in theory) a broad and uniform way to access a CD-ROM drive.
 
-If your CD-ROM drive understands MMC commands this is probably
-gives the most flexibility in control. 
+If your CD-ROM drive understands MMC commands this is probably gives
+the most flexibility in control. SCSI and ATAPI CD-ROM devices
+generally support a fairly large set of MMC commands.
 
 The name ``SCSI MMC'' is often found in the literature in
-specifications and on Websites. The ``SCSI'' part is probably a little
-bit misleading because a drive can understand ``SCSI MMC'' commands
-but not use a SCSI interface. In fact there are drivers to
-``encapsulate'' non-SCSI drive or a non-MMC-compliant drive and make
-it act like a MMC drive. I believe that many OS SCSI ``pass-through''
-mechanisms do roughly the same thing.
+specifications and on the Internet. The ``SCSI'' part is probably a
+little bit misleading because a drive can understand ``SCSI MMC''
+commands but not use a SCSI interface---ATAPI CD-ROMs are one such
+broad class of examples. In fact there are drivers to ``encapsulate''
+non-SCSI drives or a non-MMC-compliant drives and make them act like
+MMC drives. I believe that many OS SCSI ``pass-through'' mechanisms do
+roughly the same thing.
 
 The name ``SCSI MMC'' is no doubt due to the fact that these commands
 grew out of the SCSI command set and thus were bundled in them. 
@@ -1853,8 +1896,8 @@ CD frame.
 There seems to be a fascination with the number of bytes a command
 takes in the MMC-specification world. (Size matters?) So often the
 name of an operation will have a suffix with the number of bytes of
-the command (actually in MMC jargon this is called a ``cdb''
-@cindex cdb (Command Descriptor Block)
+the command (actually in MMC jargon this is called a ``CDB''
+@cindex CDB (Command Descriptor Block)
 or command descriptor block). So for example there is a 6-byte ``MODE
 SELECT'' often called ``MODE SELECT 6'' and a 10-byte ``MODE SELECT''
 often called ``MODE SELECT 10''. Presumably the 6-byte command came
@@ -1863,11 +1906,11 @@ longer command. In @value{libcdio} where there are two formats we add
 the suffix in the name, e.g. @code{CDIO_MMC_GPCMD_MODE_SELECT_6} or
 @code{CDIO_MMC_GPCMD_MODE_SELECT_10}.
 
-If the fascination and emphasis in the MMC specifications of cdb size
+If the fascination and emphasis in the MMC specifications of CDB size
 is a bit odd, equally so is the fact that this too often has bled
-through at the OS programming API. At @value{libcdio} in our interface
-you just give the opcode in @code{scsi_mmc_run_cmd()} and we'll do the
-work to figure out how many bytes of the cdb are used.
+through at the OS programming API. However in @value{libcdio}, you
+just give the opcode in @code{scsi_mmc_run_cmd()} and we'll do the
+work to figure out how many bytes of the CDB are used.
 
 Down the line it is hoped that @value{libcdio} will have a way to
 remove a distinction between the various alternative and
@@ -2048,6 +2091,25 @@ To be completed....
 In @value{libcdio} there are a number of conventions used. If you
 understand some of these conventions it may facilitate understanding
 the code a little. 
+
+@subsubsection namespace names
+
+For the most part, the visible external @value{libcdio} names follow
+conventions so as not to be confused with other applications or
+libraries. If you understand these conventions, there will be little
+or no chance that the names you use will conflict with @value{libcdio}
+and @code{libiso9660} and vice versa.
+
+All of the external @value{libcdio} C routines start out with
+@code{cdio_}, e.g. @code{cdio_open}; as a corollary, the
+@value{libcdio} CD-Paranoia routines start @code{cdio_cddap_},
+e.g. @code{cdio_cddap_open}.  @code{libiso9660} routines start
+@code{iso9660_}, e.g. @code{iso9660_open}.
+
+@value{libcdio} C-Preprocessor names generally start @code{CDIO_}, for
+example @code{CDIO_CD_FRAMESIZE_RAW}; @code{libiso9660}
+C-preprocessor names start @code{ISO9660_},
+e.g. @code{ISO9660_FRAMESIZE}.
 
 @subsubsection suffixes (type and structure names)
 

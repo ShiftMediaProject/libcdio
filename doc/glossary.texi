@@ -170,6 +170,9 @@ characters.
 See @uref{http://bmrc.berkeley.edu/people/chaffee/jolspec.html} for
 the Joliet Specification.
 
+The name Joliet comes from the city in Illinois (U.S) that the
+standard was defined.
+
 @item LBA
 @cindex LBA
 
@@ -236,6 +239,11 @@ added to readable discs at a later time.
 A proprietary CD image file format use by a popular program for
 Microsoft Windows, Ahead Nero. The specification of this format is
 not to our knowlege published. 
+
+@item Rock Ridge Extensions
+@cindex Rock Ridge extensions
+
+An extension to the ISO-9660 standard which adds POSIX information to files.
 
 @item SCSI 
 @cindex SCSI 
