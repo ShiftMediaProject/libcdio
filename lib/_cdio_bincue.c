@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.5 2003/04/04 05:15:33 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.6 2003/04/06 06:44:25 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.5 2003/04/04 05:15:33 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.6 2003/04/06 06:44:25 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -48,8 +48,7 @@ static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.5 2003/04/04 05:15:33 rock
 #define DEFAULT_CDIO_CUE    "videocd.cue"
 
 typedef struct {
-  int            blocksize;
-  int            track_num;   /* Probably is index+1 */
+  track_t        track_num;   /* Probably is index+1 */
   msf_t          start_msf;
   lba_t          start_lba;
   int            start_index;
@@ -59,15 +58,20 @@ typedef struct {
   int            flags; /* "DCP", "4CH", "PRE" */
   track_format_t track_format;
   bool           track_green;
+  uint16_t  datasize;        /* How much is in the portion we return back? */
+  uint16_t  datastart;       /* Offset from begining that data starts */
+  uint16_t  endsize;         /* How much stuff at the end to skip over. This
+			       stuff may have error correction (EDC, or ECC).*/
+  uint16_t  blocksize;        /* total block size = start + size + end */
+
   
 } track_info_t;
 
 typedef struct 
 {
-  off_t   buff_offset;        /* buffer offset in disk-image seeks. */
-  track_t index;              /* Current track index in tocent. */
-  lba_t   lba;                /* Current LBA */
-  unsigned int user_datasize; /* How much is in the portion we return back? */
+  off_t   buff_offset;      /* buffer offset in disk-image seeks. */
+  track_t index;            /* Current track index in tocent. */
+  lba_t   lba;              /* Current LBA */
 } internal_position_t;
   
 typedef struct {
@@ -76,7 +80,7 @@ typedef struct {
   generic_img_private_t gen; 
   internal_position_t pos; 
   
-  bool sector_2336_flag;
+  bool sector_2336;              /* Playstation (PSX) uses 2336-byte sectors */
 
   CdioDataSource *data_source;
   char         *cue_name;
@@ -124,8 +128,8 @@ _cdio_init (_img_private_t *_obj)
        sector pregap and 2 for the cue information.
      */
     track_info_t  *this_track=&(_obj->tocent[0]);
-    int blocksize = _obj->sector_2336_flag 
-      ? M2RAW_SECTOR_SIZE : CD_RAW_SECTOR_SIZE;
+    int blocksize = _obj->sector_2336 
+      ? M2RAW_SECTOR_SIZE : CD_FRAMESIZE_RAW;
 
     _obj->total_tracks = 2;
     _obj->first_track_num = 1;
@@ -165,7 +169,7 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
      The number below was determined empirically. I'm guessing
      the 1st 24 bytes of a bin file are used for something.
   */
-  off_t real_offset=24;
+  off_t real_offset=0;
 
   unsigned int i;
 
@@ -173,41 +177,27 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
   for (i=0; i<_obj->total_tracks; i++) {
     track_info_t  *this_track=&(_obj->tocent[i]);
     _obj->pos.index = i;
-    switch (this_track->track_format) {
-    case TRACK_FORMAT_AUDIO:
-      _obj->pos.user_datasize=CDDA_SECTOR_SIZE;
-      break;
-    case TRACK_FORMAT_CDI:
-      _obj->pos.user_datasize=FORM1_DATA_SIZE;
-      break;
-    case TRACK_FORMAT_XA:
-      _obj->pos.user_datasize=FORM1_DATA_SIZE;
-      break;
-    default:
-      _obj->pos.user_datasize=CD_RAW_SECTOR_SIZE;
-      cdio_warn ("track %d has unknown format %d",
-		 i+1, this_track->track_format);
-    }
-
-    if ( (this_track->sec_count*_obj->pos.user_datasize) >= offset) {
-      int blocks            = offset / _obj->pos.user_datasize;
-      int rem               = offset % _obj->pos.user_datasize;
-      int block_offset      = blocks * CD_RAW_SECTOR_SIZE;
+    if ( (this_track->sec_count*this_track->datasize) >= offset) {
+      int blocks            = offset / this_track->datasize;
+      int rem               = offset % this_track->datasize;
+      int block_offset      = blocks * this_track->blocksize;
       real_offset          += block_offset + rem;
       _obj->pos.buff_offset = rem;
       _obj->pos.lba        += blocks;
       break;
     }
-    real_offset   += this_track->sec_count*CD_RAW_SECTOR_SIZE;
-    offset        -= this_track->sec_count*_obj->pos.user_datasize;
+    real_offset   += this_track->sec_count*this_track->blocksize;
+    offset        -= this_track->sec_count*this_track->datasize;
     _obj->pos.lba += this_track->sec_count;
   }
 
   if (i==_obj->total_tracks) {
     cdio_warn ("seeking outside range of disk image");
     return -1;
-  } else
+  } else {
+    real_offset += _obj->tocent[i].datastart;
     return cdio_stream_seek(_obj->data_source, real_offset, whence);
+  }
 }
 
 /*!
@@ -221,13 +211,15 @@ static ssize_t
 _cdio_read (void *user_data, void *data, size_t size)
 {
   _img_private_t *_obj = user_data;
-  char buf[CD_RAW_SECTOR_SIZE] = { 0, };
+  char buf[CD_FRAMESIZE_RAW] = { 0, };
   char *p = data;
   ssize_t final_size=0;
   ssize_t this_size;
+  track_info_t  *this_track=&(_obj->tocent[_obj->pos.index]);
+  ssize_t skip_size = this_track->datastart + this_track->endsize;
 
   while (size > 0) {
-    int rem = _obj->pos.user_datasize - _obj->pos.buff_offset;
+    int rem = this_track->datasize - _obj->pos.buff_offset;
     if (size <= rem) {
       this_size = cdio_stream_read(_obj->data_source, buf, size, 1);
       final_size += this_size;
@@ -236,16 +228,29 @@ _cdio_read (void *user_data, void *data, size_t size)
     }
 
     /* Finish off reading this sector. */
+    cdio_warn ("Reading across block boundaries not finished");
+
     size -= rem;
     this_size = cdio_stream_read(_obj->data_source, buf, rem, 1);
     final_size += this_size;
     memcpy (p, buf, this_size);
     p += this_size;
-    _obj->pos.lba++;
-    cdio_warn ("Reading across block boundaries not finished");
-    /* Figure out how much to skip in header and skip over that.
-       See if we've left this track.... FIXME: COMPLETE THIS..
+    this_size = cdio_stream_read(_obj->data_source, buf, rem, 1);
+    
+    /* Skip over stuff at end of this sector and the beginning of the next.
      */
+    cdio_stream_read(_obj->data_source, buf, skip_size, 1);
+
+    /* Get ready to read another sector. */
+    _obj->pos.buff_offset=0;
+    _obj->pos.lba++;
+
+    /* Have gone into next track. */
+    if (_obj->pos.lba >= _obj->tocent[_obj->pos.index+1].start_lba) {
+      _obj->pos.index++;
+      this_track=&(_obj->tocent[_obj->pos.index]);
+      skip_size = this_track->datastart + this_track->endsize;
+    }
   }
   return final_size;
 }
@@ -258,8 +263,8 @@ _cdio_stat_size (void *user_data)
 {
   _img_private_t *_obj = user_data;
   long size;
-  int blocksize = _obj->sector_2336_flag 
-    ? M2RAW_SECTOR_SIZE : CD_RAW_SECTOR_SIZE;
+  int blocksize = _obj->sector_2336 
+    ? M2RAW_SECTOR_SIZE : CD_FRAMESIZE_RAW;
 
   _cdio_init (_obj);
   
@@ -271,7 +276,7 @@ _cdio_stat_size (void *user_data)
                 blocksize);
       if (size % M2RAW_SECTOR_SIZE == 0)
 	cdio_warn ("this may be a 2336-type disc image");
-      else if (size % CD_RAW_SECTOR_SIZE == 0)
+      else if (size % CD_FRAMESIZE_RAW == 0)
 	cdio_warn ("this may be a 2352-type disc image");
       /* exit (EXIT_FAILURE); */
     }
@@ -316,7 +321,6 @@ _cdio_image_read_cue (_img_private_t *_obj)
       /* printf("Found file name %s\n", s); */
     } else if (2==sscanf(p, "TRACK %d MODE2/%d", &track_num, &blocksize)) {
       track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
-      this_track->blocksize   = blocksize;
       this_track->track_num   = track_num;
       this_track->num_indices = 0;
       this_track->track_format= TRACK_FORMAT_XA;
@@ -325,24 +329,65 @@ _cdio_image_read_cue (_img_private_t *_obj)
       seen_first_index_for_track=false;
       /*printf("Added track %d with blocksize %d\n", track_num, blocksize);*/
 
+      this_track->blocksize   = blocksize;
+      switch(blocksize) {
+      case 2336:
+	this_track->datastart = 12 + 4;      /* sync, head */
+	this_track->datasize  = 2336;        /* sub */
+	this_track->endsize   = 0;
+	break;
+      default:
+	cdio_warn ("Unknown MODE2 size %d. Assuming 2352", blocksize);
+      case 2352:
+	if (_obj->sector_2336) {
+	  this_track->datastart = 0;          
+	  this_track->datasize  = 2336;
+	  this_track->endsize   = blocksize - 2336;
+	} else {
+	  this_track->datastart = 12 + 4 + 8; /* sync, head, sub */
+	  this_track->datasize  = 2048;       /* data */
+	  this_track->endsize   = 4 + 276;    /* EDC, ECC */
+	}
+	break;
+      }
+
     } else if (2==sscanf(p, "TRACK %d MODE1/%d", &track_num, &blocksize)) {
       track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
+      this_track->blocksize      = blocksize;
       this_track->blocksize   = blocksize;
-      this_track->track_num   = track_num;
-      this_track->num_indices = 0;
-      this_track->track_format= TRACK_FORMAT_CDI;
-      this_track->track_green = false;
+      switch(blocksize) {
+      case 2048:
+	/* Is the below correct? */
+	this_track->datastart = 0;         
+	this_track->datasize  = 2048;        
+	this_track->endsize   = 0;  
+	break;
+      default:
+	cdio_warn ("Unknown MODE1 size %d. Assuming 2352", blocksize);
+      case 2352:
+	this_track->datastart = CD_SYNC_SIZE + CD_HEAD_SIZE;
+	this_track->datasize  = CD_FRAMESIZE; 
+	this_track->endsize   = CD_EDC_SIZE + CD_ZERO_SIZE + CD_ECC_SIZE;
+      }
+
+      this_track->track_num      = track_num;
+      this_track->num_indices    = 0;
+      this_track->track_format   = TRACK_FORMAT_DATA;
+      this_track->track_green    = false;
       _obj->total_tracks++;
       seen_first_index_for_track=false;
       /*printf("Added track %d with blocksize %d\n", track_num, blocksize);*/
 
     } else if (1==sscanf(p, "TRACK %d AUDIO", &track_num)) {
       track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
-      this_track->blocksize   = CDDA_SECTOR_SIZE;
-      this_track->track_num   = track_num;
-      this_track->num_indices = 0;
-      this_track->track_format= TRACK_FORMAT_AUDIO;
-      this_track->track_green = false;
+      this_track->blocksize      = CD_FRAMESIZE_RAW;
+      this_track->datasize       = CD_FRAMESIZE_RAW;
+      this_track->datastart      = 0;
+      this_track->endsize        = 0;
+      this_track->track_num      = track_num;
+      this_track->num_indices    = 0;
+      this_track->track_format   = TRACK_FORMAT_AUDIO;
+      this_track->track_green    = false;
       _obj->total_tracks++;
       seen_first_index_for_track=false;
 
@@ -422,16 +467,16 @@ _read_mode2_sector (void *user_data, void *data, uint32_t lsn,
 		    bool mode2_form2)
 {
   _img_private_t *_obj = user_data;
-  char buf[CD_RAW_SECTOR_SIZE] = { 0, };
-  int blocksize = _obj->sector_2336_flag 
-    ? M2RAW_SECTOR_SIZE : CD_RAW_SECTOR_SIZE;
+  char buf[CD_FRAMESIZE_RAW] = { 0, };
+  int blocksize = _obj->sector_2336 
+    ? M2RAW_SECTOR_SIZE : CD_FRAMESIZE_RAW;
 
   _cdio_init (_obj);
 
   cdio_stream_seek (_obj->data_source, lsn * blocksize, SEEK_SET);
 
   cdio_stream_read (_obj->data_source,
-		    _obj->sector_2336_flag ? (buf + 12 + 4) : buf,
+		    _obj->sector_2336 ? (buf + 12 + 4) : buf,
 		    blocksize, 1);
 
   if (mode2_form2)
@@ -493,9 +538,9 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
   else if (!strcmp (key, "sector"))
     {
       if (!strcmp (value, "2336"))
-	_obj->sector_2336_flag = true;
+	_obj->sector_2336 = true;
       else if (!strcmp (value, "2352"))
-	_obj->sector_2336_flag = false;
+	_obj->sector_2336 = false;
       else
 	return -2;
     }
@@ -619,7 +664,7 @@ _cdio_get_track_lba(void *user_data, track_t track_num)
   _img_private_t *_obj = user_data;
   _cdio_init (_obj);
 
-  if (track_num == CDIO_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
+  if (track_num == CDROM_LEADOUT) track_num = _obj->total_tracks+1;
 
   if (track_num <= _obj->total_tracks+1 && track_num != 0) {
     return _obj->tocent[track_num-1].start_lba;
@@ -642,7 +687,7 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
 
   if (NULL == msf) return false;
 
-  if (track_num == CDIO_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
+  if (track_num == CDROM_LEADOUT) track_num = _obj->total_tracks+1;
 
   if (track_num <= _obj->total_tracks+1 && track_num != 0) {
     *msf = _obj->tocent[track_num-1].start_msf;
@@ -676,6 +721,7 @@ cdio_open_bincue (const char *source_name)
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
   _data->gen.init       = false;
+  _data->sector_2336    = false;
 
   /* FIXME: should set cue initially.  */
   _data->cue_name       = NULL;
