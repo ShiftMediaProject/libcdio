@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.5 2005/01/21 02:59:32 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.6 2005/01/21 20:54:55 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.5 2005/01/21 02:59:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.6 2005/01/21 20:54:55 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -94,7 +94,7 @@ typedef struct  cgc
    This code adapted from Steven M. Schultz's libdvd
 */
 static int 
-run_scsi_cmd_bsdi(const void *p_user_data, unsigned int i_timeout_ms,
+run_scsi_cmd_bsdi(void *p_user_data, unsigned int i_timeout_ms,
 		  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 		  scsi_mmc_direction_t e_direction, 
 		  unsigned int i_buf, /*in/out*/ void *p_buf )

@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.8 2005/01/21 02:59:32 rocky Exp $
+    $Id: scsi_mmc.c,v 1.9 2005/01/21 20:54:55 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -188,7 +188,7 @@ scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 #define DEFAULT_TIMEOUT_MS 6000
   
 int
-scsi_mmc_get_blocksize_private ( const void *p_env, 
+scsi_mmc_get_blocksize_private ( void *p_env, 
 				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd)
 {
   int i_status = 0;
@@ -311,7 +311,7 @@ scsi_mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba,
 }
 
 driver_return_code_t
-scsi_mmc_set_blocksize_private ( const void *p_env, 
+scsi_mmc_set_blocksize_private ( void *p_env, 
 				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
 				 unsigned int i_bsize)
 {
@@ -366,7 +366,7 @@ scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_blocksize)
   Return the the kind of drive capabilities of device.
  */
 void
-scsi_mmc_get_drive_cap_private (const void *p_env,
+scsi_mmc_get_drive_cap_private (void *p_env,
 				const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
 				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
 				/*out*/ cdio_drive_write_cap_t *p_write_cap,

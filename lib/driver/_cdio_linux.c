@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.15 2005/01/21 02:59:32 rocky Exp $
+    $Id: _cdio_linux.c,v 1.16 2005/01/21 20:54:55 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.15 2005/01/21 02:59:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.16 2005/01/21 20:54:55 rocky Exp $";
 
 #include <string.h>
 
@@ -99,7 +99,7 @@ typedef struct {
 /**** prototypes for static functions ****/
 static bool is_cdrom_linux(const char *drive, char *mnttype);
 static bool read_toc_linux (void *p_user_data);
-static int  run_scsi_cmd_linux( const void *p_user_data, 
+static int  run_scsi_cmd_linux( void *p_user_data, 
 				unsigned int i_timeout,
 				unsigned int i_cdb, 
 				const scsi_mmc_cdb_t *p_cdb, 
@@ -899,7 +899,7 @@ read_toc_linux (void *p_user_data)
   We return true if command completed successfully and false if not.
  */
 static int
-run_scsi_cmd_linux( const void *p_user_data, 
+run_scsi_cmd_linux( void *p_user_data, 
 		    unsigned int i_timeout_ms,
 		    unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 		    scsi_mmc_direction_t e_direction, 

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.8 2005/01/21 03:15:36 rocky Exp $
+    $Id: _cdio_osx.c,v 1.9 2005/01/21 20:54:55 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.8 2005/01/21 03:15:36 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.9 2005/01/21 20:54:55 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -353,7 +353,7 @@ init_osx(_img_private_t *p_env) {
 /* process a complete scsi command. */
 // handle_scsi_cmd(cdrom_drive *d,
 static int 
-run_scsi_cmd_osx( const void *p_user_data, 
+run_scsi_cmd_osx( void *p_user_data, 
 		  unsigned int i_timeout_ms,
 		  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 		  scsi_mmc_direction_t e_direction, 

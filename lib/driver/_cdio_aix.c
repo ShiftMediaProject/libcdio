@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_aix.c,v 1.4 2005/01/21 02:59:32 rocky Exp $
+    $Id: _cdio_aix.c,v 1.5 2005/01/21 20:54:55 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -37,7 +37,7 @@
 
 #ifdef HAVE_AIX_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.4 2005/01/21 02:59:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.5 2005/01/21 20:54:55 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -197,10 +197,10 @@ init_aix (_img_private_t *p_env)
   Return 0 if no error.
  */
 static int
-run_scsi_cmd_aix( const void *p_user_data, unsigned int i_timeout_ms,
-		      unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-		      scsi_mmc_direction_t e_direction, 
-		      unsigned int i_buf, /*in/out*/ void *p_buf )
+run_scsi_cmd_aix( void *p_user_data, unsigned int i_timeout_ms,
+                  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+                  scsi_mmc_direction_t e_direction, 
+                  unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   struct sc_passthru cgc;

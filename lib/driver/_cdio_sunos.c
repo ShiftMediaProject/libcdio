@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.12 2005/01/21 02:59:32 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.13 2005/01/21 20:54:55 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.12 2005/01/21 02:59:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.13 2005/01/21 20:54:55 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -147,7 +147,7 @@ init_solaris (_img_private_t *p_env)
   Return 0 if no error.
  */
 static int
-run_scsi_cmd_solaris( const void *p_user_data, unsigned int i_timeout_ms,
+run_scsi_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
 		      unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 		      scsi_mmc_direction_t e_direction, 
 		      unsigned int i_buf, /*in/out*/ void *p_buf )

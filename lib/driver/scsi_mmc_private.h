@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: scsi_mmc_private.h,v 1.2 2005/01/21 02:59:32 rocky Exp $
+    $Id: scsi_mmc_private.h,v 1.3 2005/01/21 20:54:55 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -34,7 +34,7 @@ msecs2secs(unsigned int msecs)
 #undef SECS2MSECS
 
 typedef 
-int (*scsi_mmc_run_cmd_fn_t) ( const void *p_user_data, 
+int (*scsi_mmc_run_cmd_fn_t) ( void *p_user_data, 
 			       unsigned int i_timeout_ms,
 			       unsigned int i_cdb, 
 			       const scsi_mmc_cdb_t *p_cdb, 
@@ -55,14 +55,14 @@ scsi_mmc_get_dvd_struct_physical_private ( void *p_env, const
 
 
 int
-scsi_mmc_get_blocksize_private ( const void *p_env, 
-				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd);
+scsi_mmc_get_blocksize_private ( void *p_env, 
+				 scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd);
 
 char *scsi_mmc_get_mcn_private ( void *p_env,
-				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd
+				 scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd
 				 );
 
-bool scsi_mmc_init_cdtext_private ( void *user_data, const 
+bool scsi_mmc_init_cdtext_private ( void *p_user_data, 
 				    scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
 				    set_cdtext_field_fn_t set_cdtext_field_fn
 				    );
@@ -85,13 +85,13 @@ void scsi_mmc_get_drive_cap_buf(const uint8_t *p,
 
  */
 void
-scsi_mmc_get_drive_cap_private (const void *p_env,
+scsi_mmc_get_drive_cap_private ( void *p_env,
 				const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
 				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
 				/*out*/ cdio_drive_write_cap_t *p_write_cap,
 				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
 int
-scsi_mmc_set_blocksize_private ( const void *p_env, 
+scsi_mmc_set_blocksize_private ( void *p_env, 
 				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
 				 unsigned int i_bsize);
 
