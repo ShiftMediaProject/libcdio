@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.23 2005/02/05 23:45:57 rocky Exp $
+  $Id: scan_devices.c,v 1.24 2005/02/05 23:52:20 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -185,7 +185,7 @@ char **ppsz_messages)
 				   ppsz_messages);
 }
 
-/** Returns a paranoia CD-ROM drive ojbect with a CD-DA in it.  
+/** Returns a paranoia CD-ROM drive object with a CD-DA in it.  
     In contrast to cdio_cddap_identify, we start out with an initialzed p_cdio
     object. For example you may have used that for other purposes such
     as to get CDDB/CD-Text information.
