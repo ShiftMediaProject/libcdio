@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.5 2004/06/21 16:17:22 rocky Exp $
+    $Id: win32_ioctl.c,v 1.6 2004/06/28 16:02:07 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.5 2004/06/21 16:17:22 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.6 2004/06/28 16:02:07 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -484,7 +484,7 @@ get_drive_cap_win32ioctl (const _img_private_t *env)
   CDIO_MMC_SET_COMMAND(sptwb.Spt.Cdb, CDIO_MMC_MODE_SENSE);
   /*sptwb.Spt.Cdb[1]           = 0x08;  /+ doesn't return block descriptors */
   sptwb.Spt.Cdb[1]             = 0x0;
-  sptwb.Spt.Cdb[2]             = 0x2a;  /*MODE_PAGE_CAPABILITIES*/;
+  sptwb.Spt.Cdb[2]             = CDIO_MMC_CAPABILITIES_PAGE;
   sptwb.Spt.Cdb[3]             = 0;     /* Not used */
   sptwb.Spt.Cdb[4]             = 128;
   sptwb.Spt.Cdb[5]             = 0;     /* Not used */
@@ -502,19 +502,7 @@ get_drive_cap_win32ioctl (const _img_private_t *env)
     {
       unsigned int n=sptwb.DataBuf[3]+4;
       /* Reader? */
-      if (sptwb.DataBuf[n+5] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_AUDIO;
-      if (sptwb.DataBuf[n+2] & 0x02) i_drivetype |= CDIO_DRIVE_CAP_CD_RW;
-      if (sptwb.DataBuf[n+2] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_DVD;
-      
-      /* Writer? */
-      if (sptwb.DataBuf[n+3] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_R;
-      if (sptwb.DataBuf[n+3] & 0x10) i_drivetype |= CDIO_DRIVE_CAP_DVD_R;
-      if (sptwb.DataBuf[n+3] & 0x20) i_drivetype |= CDIO_DRIVE_CAP_DVD_RAM;
-
-      if (sptwb.DataBuf[n+6] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_OPEN_TRAY;
-      if (sptwb.DataBuf[n+6] >> 5 != 0) 
-	i_drivetype |= CDIO_DRIVE_CAP_CLOSE_TRAY;
-      
+      i_drivetype |= cdio_get_drive_cap_mmc(&(sptwb.DataBuf[n]));
       return i_drivetype;
     } else {
       i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
