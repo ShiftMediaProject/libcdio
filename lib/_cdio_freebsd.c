@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.7 2003/04/19 20:49:53 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.8 2003/04/22 02:48:33 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.7 2003/04/19 20:49:53 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.8 2003/04/22 02:48:33 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -261,7 +261,7 @@ _cdio_stat_size (void *user_data)
 {
   _img_private_t *_obj = user_data;
 
-  struct cdrom_tocentry tocent;
+  struct ioc_read_toc_single_entry tocent;
   uint32_t size;
 
   tocent.cdte_track = CDROM_LEADOUT;
@@ -429,10 +429,7 @@ _cdio_get_track_format(void *user_data, track_t track_num)
   if (track_num > TOTAL_TRACKS || track_num == 0)
     return TRACK_FORMAT_ERROR;
 
-  /* This is pretty much copied from the "badly broken" cdrom_count_tracks
-     in linux/cdrom.c.
-   */
-  if (_obj->tocent[track_num-1].cdte_ctrl & CDROM_DATA_TRACK) {
+  if (_obj->tocent[track_num-1].entry.control & CDROM_DATA_TRACK) {
     if (_obj->tocent[track_num-1].cdte_format == 0x10)
       return TRACK_FORMAT_CDI;
     else if (_obj->tocent[track_num-1].cdte_format == 0x20) 
