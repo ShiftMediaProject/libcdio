@@ -1,5 +1,9 @@
 Svend S. Sorensen <ssorensen@fastmail.fm>
-  cdrdao TOC-reading code
+  cdrdao TOC-reading code based on cuetools
+  http://cuetools.sourceforge.net/
+
+Heiner <h.eichmann@gmx.de>
+  FreeBSD CAM support and FreeBSD debugging & testing
 
 Nicolas Boullis <nboullis@debian.org>
   Build issues, library symbol versioning, Debian packaging and issues
