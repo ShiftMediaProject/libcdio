@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.c,v 1.5 2004/07/16 21:29:25 rocky Exp $
+    $Id: cdtext.c,v 1.6 2004/07/17 08:59:44 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -26,6 +26,7 @@
 
 #include <cdio/cdtext.h>
 #include <cdio/logging.h>
+#include "cdtext_private.h"
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -130,12 +131,87 @@ cdtext_is_keyword (const char *key)
 
 /*! sets cdtext's keyword entry to field.
  */
-void cdtext_set (cdtext_field_t key, const char *value, cdtext_t *cdtext)
+void 
+cdtext_set (cdtext_field_t key, const char *value, cdtext_t *cdtext)
 {
   if (NULL == value || key == CDTEXT_INVALID) return;
   
   if (cdtext->field[key]) free (cdtext->field[key]);
   cdtext->field[key] = strdup (value);
   
+}
+
+#define SET_CDTEXT_FIELD(FIELD) \
+  (*set_cdtext_field_fn)(user_data, i_track, i_first_track, FIELD, buffer);
+
+bool
+cdtext_data_init(void *user_data, track_t i_first_track, 
+		 const unsigned char *wdata, 
+		 set_cdtext_field_fn_t set_cdtext_field_fn) 
+{
+  CDText_data_t *pdata;
+  int           i;
+  int           j;
+  char          buffer[256];
+  int           idx;
+  int           i_track;
+  bool          b_ret = false;
+  
+  memset( buffer, 0x00, sizeof(buffer) );
+  idx = 0;
+  
+  pdata = (CDText_data_t *) (&wdata[4]);
+  for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ ) {
+    if( pdata->seq != i )
+      break;
+    
+    if( (pdata->type >= 0x80) 
+	&& (pdata->type <= 0x85) && (pdata->block == 0) ) {
+      i_track = pdata->i_track;
+      
+      for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++ ) {
+	if( pdata->text[j] == 0x00 ) {
+	  bool b_field_set=true;
+	  switch( pdata->type) {
+	  case CDIO_CDTEXT_TITLE: 
+	    SET_CDTEXT_FIELD(CDTEXT_TITLE);
+	    break;
+	  case CDIO_CDTEXT_PERFORMER:  
+	    SET_CDTEXT_FIELD(CDTEXT_PERFORMER);
+	    break;
+	  case CDIO_CDTEXT_SONGWRITER:
+	    SET_CDTEXT_FIELD(CDTEXT_SONGWRITER);
+	    break;
+	  case CDIO_CDTEXT_COMPOSER:
+	    SET_CDTEXT_FIELD(CDTEXT_COMPOSER);
+	    break;
+	  case CDIO_CDTEXT_ARRANGER:
+	    SET_CDTEXT_FIELD(CDTEXT_ARRANGER);
+	    break;
+	  case CDIO_CDTEXT_MESSAGE:
+	    SET_CDTEXT_FIELD(CDTEXT_MESSAGE);
+	    break;
+	  case CDIO_CDTEXT_DISCID: 
+	    SET_CDTEXT_FIELD(CDTEXT_DISCID);
+	    break;
+	  case CDIO_CDTEXT_GENRE: 
+	    SET_CDTEXT_FIELD(CDTEXT_GENRE);
+	    break;
+	  default : b_field_set = false;
+	  }
+	  if (b_field_set) {
+	    b_ret = true;
+	    i_track++;
+	    idx = 0;
+	  }
+	} else {
+	  buffer[idx++] = pdata->text[j];
+	}
+	buffer[idx] = 0x00;
+      }
+    }
+    pdata++;
+  }
+  return b_ret;
 }
 

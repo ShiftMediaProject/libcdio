@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext_private.h,v 1.1 2004/07/09 01:05:32 rocky Exp $
+    $Id: cdtext_private.h,v 1.2 2004/07/17 08:59:44 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -37,10 +37,6 @@
 
 PRAGMA_BEGIN_PACKED
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 struct CDText_data
 {
   uint8_t  type;
@@ -56,6 +52,19 @@ struct CDText_data
 PRAGMA_END_PACKED
 
 typedef struct CDText_data CDText_data_t;
+
+typedef void (*set_cdtext_field_fn_t) (void *user_data, track_t i_track,
+                                       track_t i_first_track,
+                                       cdtext_field_t field, 
+                                       const char *buffer);
+
+/* 
+   Internal routine to parse all CD-TEXT data retrieved.
+*/       
+bool cdtext_data_init(void *user_data, track_t i_first_track, 
+                      const unsigned char *wdata, 
+                      set_cdtext_field_fn_t set_cdtext_field_fn);
+
 
 #endif /* __CDIO_CDTEXT_PRIVATE_H__ */
 
