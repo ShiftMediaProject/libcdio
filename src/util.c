@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.25 2004/11/04 10:08:23 rocky Exp $
+  $Id: util.c,v 1.26 2004/11/06 03:17:31 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -48,7 +48,7 @@ print_version (char *program_name, const char *version,
 	    program_name, version);
   report( stdout,  
 	  _("This is free software; see the source for copying conditions.\n\
-There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n	\
+There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n\
 PARTICULAR PURPOSE.\n\
 "));
 
