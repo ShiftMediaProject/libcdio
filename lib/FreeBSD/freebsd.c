@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.23 2004/06/25 20:49:56 rocky Exp $
+    $Id: freebsd.c,v 1.24 2004/07/23 10:43:21 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.23 2004/06/25 20:49:56 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.24 2004/07/23 10:43:21 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -282,20 +282,20 @@ _get_first_track_num_freebsd(void *user_data)
 
  */
 static char *
-_get_mcn_freebsd (const void *user_data) {
+_get_mcn_freebsd (const void *p_user_data) {
 
-#if FIXED
-  const _img_private_t *env = user_data;
+#if 1
+  const _img_private_t *p_env = p_user_data;
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
 
   subchannel.address_format = CD_LBA_FORMAT;
-  subchannel.data_format    = CD_MEDIA_CATALOG;
+  subchannel.data_format    = CDIO_SUBCHANNELMEDIA_CATALOG;
   subchannel.track          = 0;
-  subchannel.data_len       = 1;
+  subchannel.data_len       = 28;
   subchannel.data           = &subchannel_info;
 
-  if(ioctl(env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
+  if(ioctl(p_env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
     perror("CDIOCREADSUBCHANNEL");
     return NULL;
   }
