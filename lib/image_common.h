@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.2 2004/04/25 00:46:34 rocky Exp $
+    $Id: image_common.h,v 1.3 2004/04/25 03:52:37 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -28,9 +28,9 @@
   string when done with it.
   */
 static char *
-_cdio_image_get_mcn(void *env)
+_cdio_image_get_mcn(const void *env)
 {
-  _img_private_t *_obj = env;
+  const _img_private_t *_obj = env;
   
   if (NULL == _obj->mcn) return NULL;
   return strdup(_obj->mcn);

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.25 2004/03/16 12:18:32 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.26 2004/04/25 03:52:37 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -41,7 +41,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.25 2004/03/16 12:18:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.26 2004/04/25 03:52:37 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -482,6 +482,123 @@ cdio_get_default_device_solaris(void)
 }
 
 /*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static cdio_drive_cap_t
+_cdio_get_drive_cap_solaris (const void *env) 
+{
+#if 1
+  struct uscsi_cmd my_cmd;
+  int32_t i_drivetype = 0;
+  char buf[192] = { 0, };
+  unsigned char my_rq_buf[26];
+  unsigned char my_scsi_cdb[6];
+  const _img_private_t *_obj = env;
+  int rc;
+  
+  memset(&my_scsi_cdb, 0, sizeof(my_scsi_cdb));
+  memset(&my_rq_buf,   0, sizeof(my_rq_buf));
+  
+  /* Initialize my_scsi_cdb as a Mode Select(6) */
+  my_scsi_cdb[0] = CDIO_MMC_MODE_SENSE;
+  my_scsi_cdb[1] = 0x0;  
+  my_scsi_cdb[2] = 0x2a; /* MODE_PAGE_CAPABILITIES*/;
+  my_scsi_cdb[3] = 0;    /* Not used */
+  my_scsi_cdb[4] = 128; 
+  my_scsi_cdb[5] = 0;    /* Not used */
+  
+  my_cmd.uscsi_flags = (USCSI_READ|USCSI_RQENABLE);  /* We're going get data */
+  my_cmd.uscsi_timeout = 15;             /* Allow 15 seconds for completion */
+  my_cmd.uscsi_cdb = my_scsi_cdb;        /* We'll be using the array above for the CDB */
+  my_cmd.uscsi_bufaddr = buf;   /* The block and page data is stored here */
+  my_cmd.uscsi_buflen = sizeof(buf); 
+  my_cmd.uscsi_cdblen = 6;               /* The CDB is 6 bytes long */
+  my_cmd.uscsi_rqlen =  24;              /* The request sense buffer (only valid on a check condition) is 26 bytes long */
+  my_cmd.uscsi_rqbuf = my_rq_buf;        /* Pointer to the request sense buffer */
+  
+  rc = ioctl(_obj->gen.fd, USCSICMD, &my_cmd);
+  if(rc == 0) {
+    unsigned int n=buf[3]+4;
+    /* Reader? */
+    if (buf[n+5] & 0x01) i_drivetype |= CDIO_DRIVE_CD_AUDIO;
+    if (buf[n+2] & 0x02) i_drivetype |= CDIO_DRIVE_CD_RW;
+    if (buf[n+2] & 0x08) i_drivetype |= CDIO_DRIVE_DVD;
+    
+    /* Writer? */
+    if (buf[n+3] & 0x01) i_drivetype |= CDIO_DRIVE_CD_R;
+    if (buf[n+3] & 0x10) i_drivetype |= CDIO_DRIVE_DVD_R;
+    if (buf[n+3] & 0x20) i_drivetype |= CDIO_DRIVE_DVD_RAM;
+    
+    if (buf[n+6] & 0x08) i_drivetype |= CDIO_DRIVE_OPEN_TRAY;
+    if (buf[n+6] >> 5 != 0) i_drivetype |= CDIO_DRIVE_CLOSE_TRAY;
+    
+  } else {
+    i_drivetype = CDIO_DRIVE_CD_AUDIO | CDIO_DRIVE_UNKNOWN;
+  }
+  return i_drivetype;
+
+#else
+  return CDIO_DRIVE_UNKNOWN | CDIO_DRIVE_CD_AUDIO | CDIO_DRIVE_CD_RW;
+#endif
+}
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static char *
+_cdio_get_mcn_solaris (const void *env) 
+{
+#if 0
+  struct uscsi_cmd my_cmd;
+  char buf[192] = { 0, };
+  unsigned char my_rq_buf[32];
+  unsigned char my_scsi_cdb[6];
+  const _img_private_t *_obj = env;
+  int rc;
+  
+  memset(&my_scsi_cdb, 0, sizeof(my_scsi_cdb));
+  memset(&my_rq_buf,   0, sizeof(my_rq_buf));
+  
+  my_scsi_cdb[0] = CDIO_MMC_GPCMD_READ_SUBCHANNEL;
+  my_scsi_cdb[1] = 0x0;  
+  my_scsi_cdb[2] = 0x40; 
+  my_scsi_cdb[3] = 02;    /* Give media catalog number. */
+  my_scsi_cdb[4] = 0;    /* Not used */
+  my_scsi_cdb[5] = 0;    /* Not used */
+  my_scsi_cdb[6] = 0;    /* Not used */
+  my_scsi_cdb[7] = 0;    /* Not used */
+  my_scsi_cdb[8] = 28; 
+  my_scsi_cdb[9] = 0;    /* Not used */
+  
+  my_cmd.uscsi_flags = (USCSI_READ|USCSI_RQENABLE);  /* We're going get data */
+  my_cmd.uscsi_timeout = 15;             /* Allow 15 seconds for completion */
+  my_cmd.uscsi_cdb = my_scsi_cdb;        /* We'll be using the array above for the CDB */
+  my_cmd.uscsi_bufaddr = buf;   /* The block and page data is stored here */
+  my_cmd.uscsi_buflen = sizeof(buf); 
+  my_cmd.uscsi_cdblen = 6;               /* The CDB is 6 bytes long */
+  my_cmd.uscsi_rqlen =  24;              /* The request sense buffer (only valid on a check condition) is 26 bytes long */
+  my_cmd.uscsi_rqbuf = my_rq_buf;        /* Pointer to the request sense buffer */
+  
+  rc = ioctl(_obj->gen.fd, USCSICMD, &my_cmd);
+  if(rc == 0) {
+    return strdup(&buf[9]);
+  }
+  return NULL;
+#else
+  return NULL;
+#endif
+}
+
+
+/*!
   Return the number of of the first track. 
   CDIO_INVALID_TRACK is returned on error.
 */
@@ -494,6 +611,7 @@ _cdio_get_first_track_num(void *env)
 
   return FIRST_TRACK_NUM;
 }
+
 
 /*!
   Return the number of tracks in the current medium.
@@ -603,6 +721,7 @@ cdio_get_default_device_solaris(void)
 {
   return strdup(DEFAULT_CDIO_DEVICE);
 }
+
 #endif /* HAVE_SOLARIS_CDROM */
 
 /*!
@@ -652,8 +771,9 @@ cdio_open_solaris (const char *source_name)
     .get_arg            = _cdio_get_arg,
     .get_devices        = cdio_get_devices_solaris,
     .get_default_device = cdio_get_default_device_solaris,
+    .get_drive_cap      = _cdio_get_drive_cap_solaris,
     .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = NULL,
+    .get_mcn            = _cdio_get_mcn_solaris,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,

@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.1 2004/04/25 00:46:34 rocky Exp $
+  $Id: cd-drive.c,v 1.2 2004/04/25 03:52:37 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -191,18 +191,21 @@ main(int argc, const char *argv[])
     char *default_device;
 
     cdio = cdio_open (NULL, DRIVER_UNKNOWN);
-    default_device = cdio_get_default_device(cdio);
 
-    printf("The driver selected is %s\n", cdio_get_driver_name(cdio));
+    if (NULL != cdio) {
+      default_device = cdio_get_default_device(cdio);
+      
+      printf("The driver selected is %s\n", cdio_get_driver_name(cdio));
 
-    if (default_device) {
-      printf("The default device for this driver is %s\n", default_device);
-    }
+      if (default_device) {
+	printf("The default device for this driver is %s\n", default_device);
+      }
     
-    free(default_device);
-    cdio_destroy(cdio);
-    cdio=NULL;
-    printf("\n");
+      free(default_device);
+      cdio_destroy(cdio);
+      cdio=NULL;
+      printf("\n");
+    }
   }
   
   /* Print out a drivers available */

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.20 2004/04/22 03:24:38 rocky Exp $
+    $Id: cdio_private.h,v 1.21 2004/04/25 03:52:37 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -80,7 +80,7 @@ extern "C" {
       Return the media catalog number MCN from the CD or NULL if
       there is none or we don't have the ability to get it.
     */
-    char * (*get_mcn) (void *env);
+    char * (*get_mcn) (const void *env);
 
     /*!
       Return the number of of the first track. 

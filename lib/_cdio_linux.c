@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.35 2004/04/25 01:19:58 rocky Exp $
+    $Id: _cdio_linux.c,v 1.36 2004/04/25 03:52:37 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.35 2004/04/25 01:19:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.36 2004/04/25 03:52:37 rocky Exp $";
 
 #include <string.h>
 
@@ -810,7 +810,7 @@ _cdio_get_first_track_num(void *env)
 
  */
 static char *
-_cdio_get_mcn_linux (void *env) {
+_cdio_get_mcn_linux (const void *env) {
 
   struct cdrom_mcn mcn;
   const _img_private_t *_obj = env;

@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.5 2004/04/25 00:46:34 rocky Exp $
+  $Id: util.c,v 1.6 2004/04/25 03:52:37 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -94,7 +94,7 @@ print_drive_capabilities(cdio_drive_cap_t i_drive_cap)
     printf("Error in getting drive properties\n");
   } else {
     printf("Hardware             : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_FILE  ? "Disk Image"  : "CD-ROM/DVD");
+	   i_drive_cap & CDIO_DRIVE_FILE  ? "Disk Image"  : "CD-ROM or DVD");
     printf("Can open tray        : %s\n", 
 	   i_drive_cap & CDIO_DRIVE_OPEN_TRAY  ? "Yes"  : "No");
     printf("Can close tray       : %s\n\n", 
