@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.28 2005/03/18 19:30:31 rocky Exp $
+    $Id: cdio_private.h,v 1.29 2005/03/23 11:26:49 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -119,13 +119,6 @@ extern "C" {
       
     */
     driver_return_code_t (*audio_stop) ( void *p_env );
-    
-    /*!
-      Close media tray in CD drive if there is a routine to do so. 
-      
-      @param p_env the CD object to be acted upon.
-    */
-    driver_return_code_t (*close_tray) ( void *p_env );
     
     /*!
       Eject media in CD drive. If successful, as a side effect we 
@@ -473,7 +466,7 @@ extern "C" {
   void cdio_add_device_list(char **device_list[], const char *psz_drive,
 			    unsigned int *i_drives);
 
-  driver_return_code_t close_tray_bsdi    (char *psz_drive);
+  driver_return_code_t close_tray_bsdi    (const char *psz_drive);
   driver_return_code_t close_tray_freebsd (const char *psz_drive);
   driver_return_code_t close_tray_linux   (const char *psz_drive);
   driver_return_code_t close_tray_osx     (const char *psz_drive);

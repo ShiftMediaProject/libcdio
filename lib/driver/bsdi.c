@@ -1,5 +1,5 @@
 /*
-    $Id: bsdi.c,v 1.11 2005/03/22 09:15:57 rocky Exp $
+    $Id: bsdi.c,v 1.12 2005/03/23 11:26:49 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: bsdi.c,v 1.11 2005/03/22 09:15:57 rocky Exp $";
+static const char _rcsid[] = "$Id: bsdi.c,v 1.12 2005/03/23 11:26:49 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -878,7 +878,7 @@ get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
   
 */
 driver_return_code_t 
-close_tray_bsdi (char *psz_device)
+close_tray_bsdi (const char *psz_device)
 {
 #ifdef HAVE_BSDI_CDROM
   int fd = open(psz_device, O_RDONLY | O_NONBLOCK, 0);
