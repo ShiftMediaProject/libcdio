@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: track.h,v 1.7 2005/02/06 04:20:25 rocky Exp $
+    $Id: track.h,v 1.8 2005/02/25 09:47:10 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -113,11 +113,6 @@ extern "C" {
 #define	CDIO_CDROM_DATA_TRACK	0x04
 #define	CDIO_CDROM_CDI_TRACK	0x10
 #define	CDIO_CDROM_XA_TRACK	0x20
-      
-  /*! CD-ROM address types (GNU/Linux e.g. cdrom_tocentry.cdte_format) */
-#define	CDIO_CDROM_LBA 0x01 /**< "logical block": first frame is #0 */
-#define	CDIO_CDROM_MSF 0x02 /**< "minute-second-frame": binary, not
-                               BCD here! */
       
   /*! 
     Get CD-Text information for a CdIo_t object.
