@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.21 2004/06/02 00:35:32 rocky Exp $
+    $Id: nrg.c,v 1.22 2004/06/14 09:52:17 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -49,7 +49,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.21 2004/06/02 00:35:32 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.22 2004/06/14 09:52:17 rocky Exp $";
 
 
 /* reader */
@@ -82,6 +82,7 @@ typedef struct {
 			     include pregap before next entry. */
   uint64_t img_offset;    /* Bytes offset from beginning of disk image file.*/
   uint32_t blocksize;     /* Number of bytes in a block */
+  int      flags;         /* don't copy, 4 channel, pre-emphasis */
 } _mapping_t;
 
 
@@ -117,7 +118,8 @@ static uint32_t _stat_size_nrg (void *user_data);
 static void
 _register_mapping (_img_private_t *env, lsn_t start_lsn, uint32_t sec_count,
 		   uint64_t img_offset, uint32_t blocksize,
-		   track_format_t track_format, bool track_green)
+		   track_format_t track_format, bool track_green,
+		   int flags)
 {
   const int track_num=env->i_tracks;
   track_info_t  *this_track=&(env->tocent[env->i_tracks]);
@@ -127,6 +129,7 @@ _register_mapping (_img_private_t *env, lsn_t start_lsn, uint32_t sec_count,
   _map->sec_count  = sec_count;
   _map->img_offset = img_offset;
   _map->blocksize  = blocksize;
+  _map->blocksize  = flags;
 
   if (!env->mapping) env->mapping = _cdio_list_new ();
   _cdio_list_append (env->mapping, _map);
@@ -286,15 +289,22 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	    int idx;
 	    
 	    cdio_info ("CUES type image detected" );
-	    /*cdio_assert (lsn == 0?);*/
+
+	    /* CUES LSN has 150 pregap include at beginning? -/
+	       cdio_assert (lsn == 0?);
+	    */
 	    
 	    env->is_cues       = true; /* HACK alert. */
 	    env->i_tracks      = 0;
 	    env->i_first_track = 1;
 	    for (idx = 1; idx < entries-1; idx += 2) {
 	      lsn_t sec_count;
-	      
-	      cdio_assert (_entries[idx].addr_ctrl == 0);
+	      int addrtype = _entries[idx].addr_ctrl / 16;
+	      int control  = _entries[idx].addr_ctrl % 16;
+	      int flags = 0;
+	      if ( 1 == control )
+  		     flags &= ~CDIO_TRACK_FLAG_COPY_PERMITTED;
+
 	      cdio_assert (_entries[idx].track == _entries[idx + 1].track);
 	      
 	      /* lsn and sec_count*2 aren't correct, but it comes closer on the
@@ -302,25 +312,56 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 		 We are picking up the wrong fields and/or not interpreting
 		 them correctly.
 	      */
+
+	      switch (addrtype) {
+	      case 0:
+		lsn = UINT32_FROM_BE (_entries[idx].lsn);
+		break;
+	      case 1: 
+		{
+#if 0
+		  msf_t msf = (msf_t) _entries[idx].lsn;
+		  lsn = cdio_msf_to_lsn(&msf);
+#else
+		  lsn = CDIO_INVALID_LSN;
+#endif		  
+		  cdio_warn ("untested (i.e. probably wrong) CUE MSF code");
+		  break;
+		}
+	      default:
+		lsn = CDIO_INVALID_LSN;
+		cdio_warn("unknown addrtype %d", addrtype);
+	      }
 	      
-	      lsn       = UINT32_FROM_BE (_entries[idx].lsn);
 	      sec_count = UINT32_FROM_BE (_entries[idx + 1].lsn);
 	      
 	      _register_mapping (env, lsn, sec_count*2, 
 				 (lsn+CDIO_PREGAP_SECTORS) * M2RAW_SECTOR_SIZE,
-				 M2RAW_SECTOR_SIZE, TRACK_FORMAT_XA, true);
+				 M2RAW_SECTOR_SIZE, TRACK_FORMAT_XA, true,
+				 flags);
 	    }
 	  } else {
 	    lsn_t lsn = UINT32_FROM_BE (_entries[0].lsn);
 	    int idx;
 	    
 	    cdio_info ("CUEX type image detected");
-	    cdio_assert (lsn == 0xffffff6a);
+
+	    /* LSN must start at -150 (LBA 0)? */
+	    cdio_assert (lsn == -150); 
 	    
 	    for (idx = 2; idx < entries; idx += 2) {
 	      lsn_t sec_count;
-	      
-	      cdio_assert (_entries[idx].addr_ctrl == 1);
+	      int addrtype = _entries[idx].addr_ctrl >> 4;
+	      int control  = _entries[idx].addr_ctrl & 0xf;
+	      int flags = 0;
+	      if ( 1 == control )
+  		     flags &= ~CDIO_TRACK_FLAG_COPY_PERMITTED;
+
+	      /* extractnrg.pl has addrtype for LBA's 0, and
+		 for MSF 1. ???
+	       */
+	      cdio_assert ( addrtype == 1);
+
 	      cdio_assert (_entries[idx].track != _entries[idx + 1].track);
 	      
 	      lsn       = UINT32_FROM_BE (_entries[idx].lsn);
@@ -328,7 +369,8 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	      
 	      _register_mapping (env, lsn, sec_count - lsn, 
 				 (lsn + CDIO_PREGAP_SECTORS)*M2RAW_SECTOR_SIZE,
-				 M2RAW_SECTOR_SIZE, TRACK_FORMAT_XA, true);
+				 M2RAW_SECTOR_SIZE, TRACK_FORMAT_XA, true,
+				 flags);
 	    }
 	  }
 	  break;
@@ -499,7 +541,7 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	    
 	    _start += idx * CDIO_PREGAP_SECTORS;
 	    _register_mapping (env, _start, _len, _start2, blocksize,
-			       track_format, track_green);
+			       track_format, track_green, 0);
 
 	  }
 	}
@@ -605,7 +647,7 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	    
 	    _start += idx * CDIO_PREGAP_SECTORS;
 	    _register_mapping (env, _start, _len, _start2, blocksize,
-			       track_format, track_green);
+			       track_format, track_green, 0);
 	  }
 	}
 	break;
