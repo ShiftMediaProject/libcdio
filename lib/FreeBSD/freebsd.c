@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.28 2004/07/24 11:50:50 rocky Exp $
+    $Id: freebsd.c,v 1.29 2004/07/25 11:15:08 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.28 2004/07/24 11:50:50 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.29 2004/07/25 11:15:08 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -183,26 +183,26 @@ _set_arg_freebsd (void *user_data, const char key[], const char value[])
 
 /*! 
   Read and cache the CD's Track Table of Contents and track info.
-  Return false if successful or true if an error.
+  Return false if unsuccessful;
 */
 static bool
-_cdio_read_toc (_img_private_t *env) 
+_cdio_read_toc (_img_private_t *p_env) 
 {
   track_t i, j;
 
   /* read TOC header */
-  if ( ioctl(env->gen.fd, CDIOREADTOCHEADER, &env->tochdr) == -1 ) {
+  if ( ioctl(p_env->gen.fd, CDIOREADTOCHEADER, &p_env->tochdr) == -1 ) {
     cdio_warn("error in ioctl(CDIOREADTOCHEADER): %s\n", strerror(errno));
     return false;
   }
 
   j=0;
-  for ( i = env->tochdr.starting_track; i <= env->tochdr.ending_track; 
+  for ( i = p_env->tochdr.starting_track; i <= p_env->tochdr.ending_track; 
        i++, j++) {
-    env->tocent[j].track = i;
-    env->tocent[j].address_format = CD_LBA_FORMAT;
+    p_env->tocent[j].track = i;
+    p_env->tocent[j].address_format = CD_LBA_FORMAT;
 
-    if ( ioctl(env->gen.fd, CDIOREADTOCENTRY, &(env->tocent[j]) ) ) {
+    if ( ioctl(p_env->gen.fd, CDIOREADTOCENTRY, &(p_env->tocent[j]) ) ) {
       cdio_warn("%s %d: %s\n",
 		 "error in ioctl CDROMREADTOCENTRY for track", 
 		 i, strerror(errno));
@@ -210,15 +210,16 @@ _cdio_read_toc (_img_private_t *env)
     }
   }
 
-  env->tocent[j].track          = CDIO_CDROM_LEADOUT_TRACK;
-  env->tocent[j].address_format = CD_LBA_FORMAT;
-  if ( ioctl(env->gen.fd, CDIOREADTOCENTRY, &(env->tocent[j]) ) ){
+  p_env->tocent[j].track          = CDIO_CDROM_LEADOUT_TRACK;
+  p_env->tocent[j].address_format = CD_LBA_FORMAT;
+  if ( ioctl(p_env->gen.fd, CDIOREADTOCENTRY, &(p_env->tocent[j]) ) ){
     cdio_warn("%s: %s\n",
 	       "error in ioctl CDROMREADTOCENTRY for leadout track", 
 	       strerror(errno));
     return false;
   }
 
+  p_env->toc_init = true;
   return true;
 }
 
@@ -265,11 +266,11 @@ _get_arg_freebsd (void *user_data, const char key[])
 static track_t
 _get_first_track_num_freebsd(void *user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
-  return FIRST_TRACK_NUM;
+  return p_env->toc_init ? FIRST_TRACK_NUM : CDIO_INVALID_TRACK;
 }
 
 /*!
@@ -344,11 +345,11 @@ scsi_mmc_run_cmd_freebsd( const void *p_user_data, int i_timeout,
 static track_t
 _get_num_tracks_freebsd(void *user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
-  return TOTAL_TRACKS;
+  return p_env->toc_init ? TOTAL_TRACKS : CDIO_INVALID_TRACK;
 }
 
 /*!  
@@ -360,7 +361,7 @@ _get_num_tracks_freebsd(void *user_data)
 static track_format_t
 _get_track_format_freebsd(void *user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
 
   if (i_track > TOTAL_TRACKS || i_track == 0)
     return TRACK_FORMAT_ERROR;
@@ -370,10 +371,10 @@ _get_track_format_freebsd(void *user_data, track_t i_track)
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
    */
-  if (env->tocent[i_track].entry.control & CDIO_CDROM_DATA_TRACK) {
-    if (env->tocent[i_track].address_format == CDIO_CDROM_CDI_TRACK)
+  if (p_env->tocent[i_track].entry.control & CDIO_CDROM_DATA_TRACK) {
+    if (p_env->tocent[i_track].address_format == CDIO_CDROM_CDI_TRACK)
       return TRACK_FORMAT_CDI;
-    else if (env->tocent[i_track].address_format == CDIO_CDROM_XA_TRACK)
+    else if (p_env->tocent[i_track].address_format == CDIO_CDROM_XA_TRACK)
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;
@@ -393,7 +394,7 @@ _get_track_format_freebsd(void *user_data, track_t i_track)
 static bool
 _get_track_green_freebsd(void *user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
@@ -403,7 +404,7 @@ _get_track_green_freebsd(void *user_data, track_t i_track)
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cdinfo for a while.
    */
-  return ((env->tocent[i_track-FIRST_TRACK_NUM].entry.control & 2) != 0);
+  return ((p_env->tocent[i_track-FIRST_TRACK_NUM].entry.control & 2) != 0);
 }
 
 /*!  
@@ -411,21 +412,21 @@ _get_track_green_freebsd(void *user_data, track_t i_track)
   i_track in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
   using i_track LEADOUT_TRACK or the total tracks+1.
-  False is returned if there is no track entry.
+  CDIO_INVALID_LBA is returned if there is no track entry.
 */
 static lba_t
 _get_track_lba_freebsd(void *user_data, track_t i_track)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
 
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
-  if (i_track > TOTAL_TRACKS+1 || i_track == 0) {
+  if (i_track > TOTAL_TRACKS+1 || i_track == 0 || !p_env->toc_init) {
     return CDIO_INVALID_LBA;
   } else {
-    return cdio_lsn_to_lba(ntohl(env->tocent[i_track-FIRST_TRACK_NUM].entry.addr.lba));
+    return cdio_lsn_to_lba(ntohl(p_env->tocent[i_track-FIRST_TRACK_NUM].entry.addr.lba));
   }
 }
 
