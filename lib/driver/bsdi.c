@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.16 2005/03/03 10:32:44 rocky Exp $
+    $Id: bsdi.c,v 1.1 2005/03/05 09:26:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.16 2005/03/03 10:32:44 rocky Exp $";
+static const char _rcsid[] = "$Id: bsdi.c,v 1.1 2005/03/05 09:26:52 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.36 2005/03/05 09:11:44 rocky Exp $
+    $Id: gnu_linux.c,v 1.1 2005/03/05 09:26:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.36 2005/03/05 09:11:44 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.1 2005/03/05 09:26:52 rocky Exp $";
 
 #include <string.h>
 
@@ -227,11 +227,21 @@ audio_pause_linux (void *p_user_data)
   @param p_cdio the CD object to be acted upon.
 */
 static driver_return_code_t
-audio_play_msf_linux (void *p_user_data, msf_t *p_msf)
+audio_play_msf_linux (void *p_user_data, msf_t *p_start_msf, msf_t *p_end_msf)
 {
 
   const _img_private_t *p_env = p_user_data;
-  return ioctl(p_env->gen.fd, CDROMPLAYMSF, p_msf);
+  struct cdrom_msf cdrom_msf;
+  
+  cdrom_msf.cdmsf_min0   = p_start_msf->m;
+  cdrom_msf.cdmsf_sec0   = p_start_msf->s;
+  cdrom_msf.cdmsf_frame0 = p_start_msf->f;
+  
+  cdrom_msf.cdmsf_min1   = p_end_msf->m;
+  cdrom_msf.cdmsf_sec1   = p_end_msf->s;
+  cdrom_msf.cdmsf_frame1 = p_end_msf->f;
+  
+  return ioctl(p_env->gen.fd, CDROMPLAYMSF, &cdrom_msf);
 }
 
 /*!

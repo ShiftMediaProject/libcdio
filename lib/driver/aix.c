@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_aix.c,v 1.11 2005/02/07 03:36:02 rocky Exp $
+    $Id: aix.c,v 1.1 2005/03/05 09:26:52 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -37,7 +37,7 @@
 
 #ifdef HAVE_AIX_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.11 2005/02/07 03:36:02 rocky Exp $";
+static const char _rcsid[] = "$Id: aix.c,v 1.1 2005/03/05 09:26:52 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>

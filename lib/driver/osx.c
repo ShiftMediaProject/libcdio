@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.20 2005/03/01 10:53:15 rocky Exp $
+    $Id: osx.c,v 1.1 2005/03/05 09:26:52 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.20 2005/03/01 10:53:15 rocky Exp $";
+static const char _rcsid[] = "$Id: osx.c,v 1.1 2005/03/05 09:26:52 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.8 2005/03/01 00:41:34 rocky Exp $
+#   $Id: Makefile.am,v 1.9 2005/03/05 09:26:52 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -52,16 +52,13 @@ EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile \
 noinst_HEADERS = cdio_assert.h cdio_private.h portable.h
 
 libcdio_sources = \
-	_cdio_aix.c \
-	_cdio_bsdi.c \
 	_cdio_generic.c \
-	_cdio_linux.c \
-	_cdio_osx.c \
 	_cdio_stdio.c \
 	_cdio_stdio.h \
 	_cdio_stream.c \
 	_cdio_stream.h \
-	_cdio_sunos.c \
+	aix.c \
+	bsdi.c \
 	audio.c \
 	cd_types.c \
 	cdio.c \
@@ -75,6 +72,7 @@ libcdio_sources = \
         FreeBSD/freebsd_cam.c \
 	FreeBSD/freebsd_ioctl.c \
 	generic.h \
+	gnu_linux.c \
 	image.h \
 	image/bincue.c \
 	image/cdrdao.c \
@@ -82,6 +80,7 @@ libcdio_sources = \
 	image_common.h \
 	image/nrg.c \
 	image/nrg.h \
+	logging.c \
 	mmc.c \
 	mmc_private.h \
 	MSWindows/aspi32.c \
@@ -89,9 +88,10 @@ libcdio_sources = \
 	MSWindows/win32_ioctl.c \
 	MSWindows/win32.c \
 	MSWindows/win32.h \
-	logging.c \
+	osx.c \
 	read.c \
 	sector.c \
+	solaris.c \
 	track.c \
 	util.c
 

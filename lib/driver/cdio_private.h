@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.18 2005/03/05 09:11:44 rocky Exp $
+    $Id: cdio_private.h,v 1.19 2005/03/05 09:26:52 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -75,7 +75,9 @@ extern "C" {
       
       @param p_env the CD object to be acted upon.
     */
-    driver_return_code_t (*audio_play_msf) ( void *p_env, msf_t *p_msf );
+    driver_return_code_t (*audio_play_msf) ( void *p_env, 
+					     msf_t *p_start_msf,
+					     msf_t *p_end_msf );
 
     /*!
       Playing CD through analog output

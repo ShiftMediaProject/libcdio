@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.3 2005/03/05 09:11:44 rocky Exp $
+    $Id: audio.c,v 1.4 2005/03/05 09:26:52 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -68,12 +68,12 @@ cdio_audio_pause (CdIo_t *p_cdio)
   @param p_cdio the CD object to be acted upon.
 */
 driver_return_code_t 
-cdio_audio_play_msf (CdIo_t *p_cdio, msf_t *p_msf)
+cdio_audio_play_msf (CdIo_t *p_cdio, msf_t *p_start_msf, msf_t *p_end_msf)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
 
   if (p_cdio->op.audio_play_msf) {
-    return p_cdio->op.audio_play_msf (p_cdio->env, p_msf);
+    return p_cdio->op.audio_play_msf (p_cdio->env, p_start_msf, p_end_msf);
   } else {
     return DRIVER_OP_UNSUPPORTED;
   }
