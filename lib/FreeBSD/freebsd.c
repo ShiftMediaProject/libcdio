@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.3 2004/05/02 14:50:01 rocky Exp $
+    $Id: freebsd.c,v 1.4 2004/05/02 14:55:11 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.3 2004/05/02 14:50:01 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.4 2004/05/02 14:55:11 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -188,7 +188,6 @@ _set_arg_freebsd (void *env, const char key[], const char value[])
 static bool
 _cdio_read_toc (_img_private_t *_obj) 
 {
-  int i;
   struct ioc_read_toc_entry te;
 
   /* read TOC header */
@@ -204,9 +203,9 @@ _cdio_read_toc (_img_private_t *_obj)
   te.data = _obj->tocent;
   
   if ( ioctl(_obj->gen.fd, CDIOREADTOCENTRYS, &te) == -1 ) {
-    cdio_error("%s %d: %s\n",
+    cdio_error("%s: %s\n",
 	       "error in ioctl CDROMREADTOCENTRYS for track", 
-	       i, strerror(errno));
+	       strerror(errno));
     return false;
   }
 
