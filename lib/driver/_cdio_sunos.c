@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.7 2005/01/18 01:48:42 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.8 2005/01/19 09:40:50 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.7 2005/01/18 01:48:42 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.8 2005/01/19 09:40:50 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -377,30 +377,27 @@ _cdio_stat_size (void *p_user_data)
   "source" sets the source device in I/O operations 
   "access-mode" sets the the method of CD access 
 
-  0 is returned if no error was found, and nonzero if there as an error.
+  DRIVER_OP_SUCCESS is returned if no error was found, 
+  and nonzero if there as an error.
 */
-static int
+static driver_return_code_t
 _set_arg_solaris (void *p_user_data, const char key[], const char value[])
 {
   _img_private_t *p_env = p_user_data;
 
   if (!strcmp (key, "source"))
     {
-      if (!value)
-	return -2;
-
+      if (!value) return DRIVER_OP_ERROR;
       free (p_env->gen.source_name);
-      
       p_env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
       p_env->access_mode = str_to_access_mode_sunos(key);
     }
-  else 
-    return -1;
+  else return DRIVER_OP_ERROR;
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*! 
@@ -460,7 +457,7 @@ read_toc_solaris (void *p_user_data)
   Eject media in CD drive. If successful, as a side effect we 
   also free obj.
  */
-static int 
+static driver_return_code_t
 eject_media_solaris (void *p_user_data) {
 
   _img_private_t *p_env = p_user_data;
@@ -472,12 +469,12 @@ eject_media_solaris (void *p_user_data) {
     if ((ret = ioctl(p_env->gen.fd, CDROMEJECT)) != 0) {
       cdio_generic_free((void *) p_env);
       cdio_warn ("CDROMEJECT failed: %s\n", strerror(errno));
-      return 1;
+      return DRIVER_OP_ERROR;
     } else {
-      return 0;
+      return DRIVER_OP_SUCCESS;
     }
   }
-  return 2;
+  return DRIVER_OP_ERROR;
 }
 
 
@@ -770,20 +767,20 @@ _cdio_get_track_msf(void *p_user_data, track_t i_track, msf_t *msf)
 }
 
 /* Set read blocksize */
-static int 
+static driver_return_code_t
 set_blocksize_solaris (void *p_user_data, int i_blocksize)
 {
   const _img_private_t *p_env = p_user_data;
   return scsi_mmc_set_blocksize(p_env->gen.cdio, i_blocksize);
 }
 
-/* Set operating speed */
-static int 
+/* Set CD-ROM drive speed */
+static driver_return_code_t
 set_speed_solaris (void *p_user_data, int i_speed)
 {
   const _img_private_t *p_env = p_user_data;
 
-  if (!p_env) return -1;
+  if (!p_env) return DRIVER_OP_ERROR;
   return ioctl(p_env->gen.fd, CDROMSDRVSPEED, i_speed);
 }
 

@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.c,v 1.5 2005/01/19 09:23:24 rocky Exp $
+    $Id: image_common.c,v 1.6 2005/01/19 09:40:50 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -243,25 +243,19 @@ _set_arg_image (void *p_user_data, const char key[], const char value[])
   if (!strcmp (key, "source"))
     {
       free_if_notnull (p_env->gen.source_name);
-
       if (!value) return DRIVER_OP_ERROR;
-
       p_env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "cue"))
     {
       free_if_notnull (p_env->psz_cue_name);
-
       if (!value) return DRIVER_OP_ERROR;
-
       p_env->psz_cue_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
       free_if_notnull (p_env->psz_access_mode);
-
       if (!value) return DRIVER_OP_ERROR;
-
       p_env->psz_access_mode = strdup (value);
     }
   else

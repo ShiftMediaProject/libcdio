@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.10 2005/01/19 09:23:24 rocky Exp $
+    $Id: _cdio_linux.c,v 1.11 2005/01/19 09:40:50 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.10 2005/01/19 09:23:24 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.11 2005/01/19 09:40:50 rocky Exp $";
 
 #include <string.h>
 
@@ -951,7 +951,8 @@ stat_size_linux (void *p_user_data)
   "source" sets the source device in I/O operations 
   "access-mode" sets the the method of CD access 
 
-  0 is returned if no error was found, and nonzero if there as an error.
+  DRIVER_OP_SUCCESS is returned if no error was found, 
+  and nonzero if there as an error.
 */
 static driver_return_code_t
 set_arg_linux (void *p_user_data, const char key[], const char value[])
@@ -961,9 +962,7 @@ set_arg_linux (void *p_user_data, const char key[], const char value[])
   if (!strcmp (key, "source"))
     {
       if (!value) return DRIVER_OP_ERROR;
-
       free (p_env->gen.source_name);
-      
       p_env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
