@@ -1,5 +1,5 @@
 /*
-    $Id: bsdi.c,v 1.1 2005/03/05 09:26:52 rocky Exp $
+    $Id: bsdi.c,v 1.2 2005/03/05 22:46:33 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: bsdi.c,v 1.1 2005/03/05 09:26:52 rocky Exp $";
+static const char _rcsid[] = "$Id: bsdi.c,v 1.2 2005/03/05 22:46:33 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -264,13 +264,13 @@ audio_pause_bsdi (void *p_user_data)
   @param p_cdio the CD object to be acted upon.
 */
 static driver_return_code_t
-audio_play_msf_bsdi (void *p_user_data, msf_t *p_msf)
+audio_play_msf_bsdi (void *p_user_data, msf_t *p_start_msf, msf_t *p_end_msf)
 {
 
   const _img_private_t *p_env = p_user_data;
-  lsn_t i_start_lsn = cdio_msf_to_lsn(p_msf);
-  return cdplay(p_env->p_cdinfo, i_start_lsn, 
-		get_disc_last_lsn_bsdi(p_user_data));
+  lsn_t i_start_lsn = cdio_msf_to_lsn(p_start_msf);
+  lsn_t i_end_lsn   = cdio_msf_to_lsn(p_end_msf);
+  return cdplay(p_env->p_cdinfo, i_start_lsn, i_end_lsn);
 }
 
 /*!
@@ -359,7 +359,7 @@ audio_resume_bsdi (void *p_user_data)
 */
 static driver_return_code_t
 audio_set_volume_bsdi (void *p_user_data, 
-                        const cdio_audio_volume_t *p_volume)
+                       cdio_audio_volume_t *p_volume)
 {
 
   const _img_private_t *p_env = p_user_data;
@@ -909,7 +909,7 @@ cdio_open_bsdi (const char *psz_orig_source)
   char *psz_source;
 
   cdio_funcs_t _funcs = {
-    .audio_pause           = audio_resume_bsdi,
+    .audio_pause           = audio_pause_bsdi,
     .audio_play_msf        = audio_play_msf_bsdi,
     .audio_play_track_index= audio_play_track_index_bsdi,
 #if USE_MMC_SUBCHANNEL
