@@ -5,6 +5,12 @@ To compile the source:
   make check
   make install  # may have to do this as root 
 
+
+If you have problems linking libcdio or libiso9660, you might try the
+option --without-versioned-libs. However this option does help with
+the situtation described below so it is preferred all other things
+being equal.
+
 VCD dependency:
 ---------------
 One thing that confuses people is the "dependency" on libvcdinfo from
@@ -34,4 +40,4 @@ spent far more time on this platform than I care for. If someone is
 interested in fixing the Microsoft OS support great.
 
 
-$Id: README.libcdio,v 1.1 2004/02/22 13:10:39 rocky Exp $
+$Id: README.libcdio,v 1.2 2004/02/29 14:36:15 rocky Exp $
