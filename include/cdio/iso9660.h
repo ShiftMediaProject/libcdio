@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.14 2003/09/01 02:08:59 rocky Exp $
+    $Id: iso9660.h,v 1.15 2003/09/01 15:10:43 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -165,27 +165,78 @@ typedef struct iso9660_stat { /* big endian!! */
 
 PRAGMA_END_PACKED
 
-char *
-iso9660_strncpy_pad(char dst[], const char src[], size_t len, 
-                    enum strncpy_pad_check _check);
+/*====================================
+  Character file/dirname's 
+=====================================*/
 
-int
-iso9660_isdchar (int c);
+/*!
+   Return true if c is a DCHAR - a character that can appear in an an
+   ISO-9600 level 1 directory name. These are the ASCII capital
+   letters A-Z, the digits 0-9 and an underscore.
+*/
+bool iso9660_isdchar (int c);
 
-int
-iso9660_isachar (int c);
+/*!
+   Return true if c is an ACHAR - 
+   These are the DCHAR's plus some ASCII symbols including the space 
+   symbol.   
+*/
+bool iso9660_isachar (int c);
 
-/* file/dirname's */
-bool
-iso9660_pathname_valid_p (const char pathname[]);
+/*!  
+  Pad string src with spaces to size len and copy this to dst. If
+  len is less than the length of src, dst will be truncated to the
+  first len characters of src.
 
-bool
-iso9660_dirname_valid_p (const char pathname[]);
+  src can also be scanned to see if it contains only ACHARs, DCHARs, 
+  7-bit ASCII chars depending on the enumeration _check.
 
-char *
-iso9660_pathname_isofy (const char pathname[], uint16_t version);
+  In addition to getting changed, dst is the return value.
+  Note: this string might not be NULL terminated.
+ */
+char *iso9660_strncpy_pad(char dst[], const char src[], size_t len, 
+                          enum strncpy_pad_check _check);
 
-/* directory tree */
+/*=====================================================================
+  file/dirname's 
+======================================================================*/
+
+/*!
+  Check that pathname is a valid ISO-9660 directory name.
+
+  A valid directory name should not start out with a slash (/), 
+  dot (.) or null byte, should be less than 37 characters long, 
+  have no more than 8 characters in a directory component 
+  which is separated by a /, and consist of only DCHARs. 
+
+  True is returned if pathname is valid.
+ */
+bool iso9660_dirname_valid_p (const char pathname[]);
+
+/*!  
+  Take pathname and a version number and turn that into a ISO-9660
+  pathname.  (That's just the pathname followd by ";" and the version
+  number. For example, mydir/file.ext -> mydir/file.ext;1 for version
+  1. The resulting ISO-9660 pathname is returned.
+*/
+char *iso9660_pathname_isofy (const char pathname[], uint16_t version);
+
+/*!
+  Check that pathname is a valid ISO-9660 pathname.  
+
+  A valid pathname contains a valid directory name, if one appears and
+  the filename portion should be no more than 8 characters for the
+  file prefix and 3 characters in the extension (or portion after a
+  dot). There should be exactly one dot somewhere in the filename
+  portion and the filename should be composed of only DCHARs.
+  
+  True is returned if pathname is valid.
+ */
+bool iso9660_pathname_valid_p (const char pathname[]);
+
+/*=====================================================================
+  directory tree 
+======================================================================*/
 
 void
 iso9660_dir_init_new (void *dir, uint32_t self, uint32_t ssize, 
@@ -193,17 +244,17 @@ iso9660_dir_init_new (void *dir, uint32_t self, uint32_t ssize,
 
 void
 iso9660_dir_init_new_su (void *dir, uint32_t self, uint32_t ssize, 
-                         const void *ssu_data, unsigned ssu_size, 
+                         const void *ssu_data, unsigned int ssu_size, 
                          uint32_t parent, uint32_t psize, 
-                         const void *psu_data, unsigned psu_size);
+                         const void *psu_data, unsigned int psu_size);
 
 void
 iso9660_dir_add_entry_su (void *dir, const char name[], uint32_t extent,
                           uint32_t size, uint8_t flags, const void *su_data,
-                          unsigned su_size);
+                          unsigned int su_size);
 
-unsigned
-iso9660_dir_calc_record_size (unsigned namelen, unsigned int su_len);
+unsigned int 
+iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
 
 int
 iso9660_fs_stat (CdIo *obj,const char pathname[], iso9660_stat_t *buf,

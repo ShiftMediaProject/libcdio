@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.6 2003/08/31 05:00:44 rocky Exp $
+    $Id: iso9660.c,v 1.7 2003/09/01 15:10:43 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -25,8 +25,12 @@
 
 #include <time.h>
 #include <ctype.h>
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
 
 /* Public headers */
 #include <cdio/iso9660.h>
@@ -37,14 +41,14 @@
 #include "cdio_assert.h"
 #include "bytesex.h"
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.6 2003/08/31 05:00:44 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.7 2003/09/01 15:10:43 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
 #define VOLUME_SET_ID     ""
 
 static void
-pathtable_get_size_and_entries(const void *pt, unsigned *size, 
+pathtable_get_size_and_entries(const void *pt, unsigned int *size, 
                                unsigned int *entries);
 
 static void
@@ -82,6 +86,17 @@ _pvd_set_time (char _pvd_date[], const struct tm *_tm)
   _pvd_date[16] = (int8_t) 0; /* tz */
 }
 
+/*!  
+  Pad string src with spaces to size len and copy this to dst. If
+  len is less than the length of src, dst will be truncated to the
+  first len characters of src.
+
+  src can also be scanned to see if it contains only ACHARs, DCHARs, 
+  7-bit ASCII chars depending on the enumeration _check.
+
+  In addition to getting changed, dst is the return value.
+  Note: this string might not be NULL terminated.
+ */
 char *
 iso9660_strncpy_pad(char dst[], const char src[], size_t len,
                     enum strncpy_pad_check _check)
@@ -137,7 +152,7 @@ iso9660_strncpy_pad(char dst[], const char src[], size_t len,
 
   if (rlen > len)
     cdio_warn ("string '%s' is getting truncated to %d characters",  
-              src, (unsigned) len);
+              src, (unsigned int) len);
 
   strncpy (dst, src, len);
   if (rlen < len)
@@ -145,7 +160,12 @@ iso9660_strncpy_pad(char dst[], const char src[], size_t len,
   return dst;
 }
 
-int
+/*!
+   Return true if c is a DCHAR - a valid ISO-9660 level 1 character.
+   These are the ASCSII capital letters A-Z, the digits 0-9 and an
+   underscore.
+*/
+bool
 iso9660_isdchar (int c)
 {
   if (!IN (c, 0x30, 0x5f)
@@ -156,7 +176,13 @@ iso9660_isdchar (int c)
   return true;
 }
 
-int
+
+/*!
+   Return true if c is an ACHAR - 
+   These are the DCHAR's plus some ASCII symbols including the space 
+   symbol.   
+*/
+bool
 iso9660_isachar (int c)
 {
   if (!IN (c, 0x20, 0x5f)
@@ -258,10 +284,10 @@ iso9660_set_pvd(void *pd,
   memcpy(pd, &ipd, sizeof(ipd)); /* copy stuff to arg ptr */
 }
 
-unsigned
-iso9660_dir_calc_record_size(unsigned namelen, unsigned int su_len)
+unsigned int
+iso9660_dir_calc_record_size(unsigned int namelen, unsigned int su_len)
 {
-  unsigned length;
+  unsigned int length;
 
   length = sizeof(iso9660_dir_t);
   length += namelen;
@@ -281,11 +307,11 @@ iso9660_dir_add_entry_su(void *dir,
                          uint32_t size,
                          uint8_t flags,
                          const void *su_data,
-                         unsigned su_size)
+                         unsigned int su_size)
 {
   iso9660_dir_t *idr = dir;
   uint8_t *dir8 = dir;
-  unsigned offset = 0;
+  unsigned int offset = 0;
   uint32_t dsize = from_733(idr->size);
   int length, su_offset;
 
@@ -309,7 +335,7 @@ iso9660_dir_add_entry_su(void *dir,
 
   /* find the last entry's end */
   {
-    unsigned ofs_last_rec = 0;
+    unsigned int ofs_last_rec = 0;
 
     offset = 0;
     while (offset < dsize)
@@ -372,11 +398,11 @@ iso9660_dir_init_new_su (void *dir,
                          uint32_t self,
                          uint32_t ssize,
                          const void *ssu_data,
-                         unsigned ssu_size,
+                         unsigned int ssu_size,
                          uint32_t parent,
                          uint32_t psize,
                          const void *psu_data,
-                         unsigned psu_size)
+                         unsigned int psu_size)
 {
   cdio_assert (ssize > 0 && !(ssize % ISO_BLOCKSIZE));
   cdio_assert (psize > 0 && !(psize % ISO_BLOCKSIZE));
@@ -403,11 +429,11 @@ iso9660_pathtable_init (void *pt)
 }
 
 static const struct iso_path_table*
-pathtable_get_entry (const void *pt, unsigned entrynum)
+pathtable_get_entry (const void *pt, unsigned int entrynum)
 {
   const uint8_t *tmp = pt;
-  unsigned offset = 0;
-  unsigned count = 0;
+  unsigned int offset = 0;
+  unsigned int count = 0;
 
   cdio_assert (pt != NULL);
 
@@ -434,12 +460,12 @@ pathtable_get_entry (const void *pt, unsigned entrynum)
 
 void
 pathtable_get_size_and_entries (const void *pt, 
-                                unsigned *size,
-                                unsigned *entries)
+                                unsigned int *size,
+                                unsigned int *entries)
 {
   const uint8_t *tmp = pt;
-  unsigned offset = 0;
-  unsigned count = 0;
+  unsigned int offset = 0;
+  unsigned int count = 0;
 
   cdio_assert (pt != NULL);
 
@@ -463,7 +489,7 @@ pathtable_get_size_and_entries (const void *pt,
 unsigned int
 iso9660_pathtable_get_size (const void *pt)
 {
-  unsigned size = 0;
+  unsigned int size = 0;
   pathtable_get_size_and_entries (pt, &size, NULL);
   return size;
 }
@@ -477,7 +503,7 @@ iso9660_pathtable_l_add_entry (void *pt,
   struct iso_path_table *ipt = 
     (struct iso_path_table*)((char *)pt + iso9660_pathtable_get_size (pt));
   size_t name_len = strlen (name) ? strlen (name) : 1;
-  unsigned entrynum = 0;
+  unsigned int entrynum = 0;
 
   cdio_assert (iso9660_pathtable_get_size (pt) < ISO_BLOCKSIZE); /*fixme */
 
@@ -512,7 +538,7 @@ iso9660_pathtable_m_add_entry (void *pt,
   struct iso_path_table *ipt =
     (struct iso_path_table*)((char *)pt + iso9660_pathtable_get_size (pt));
   size_t name_len = strlen (name) ? strlen (name) : 1;
-  unsigned entrynum = 0;
+  unsigned int entrynum = 0;
 
   cdio_assert (iso9660_pathtable_get_size(pt) < ISO_BLOCKSIZE); /* fixme */
 
@@ -538,6 +564,14 @@ iso9660_pathtable_m_add_entry (void *pt,
   return entrynum;
 }
 
+/*!
+  Check that pathname is a valid ISO-9660 directory name.
+
+  A valid directory name should not start out with a slash (/), 
+  dot (.) or null byte, should be less than 37 characters long, 
+  have no more than 8 characters in a directory component 
+  which is separated by a /, and consist of only DCHARs. 
+ */
 bool
 iso9660_dirname_valid_p (const char pathname[])
 {
@@ -575,6 +609,17 @@ iso9660_dirname_valid_p (const char pathname[])
   return true;
 }
 
+/*!
+  Check that pathname is a valid ISO-9660 pathname.  
+
+  A valid pathname contains a valid directory name, if one appears and
+  the filename portion should be no more than 8 characters for the
+  file prefix and 3 characters in the extension (or portion after a
+  dot). There should be exactly one dot somewhere in the filename
+  portion and the filename should be composed of only DCHARs.
+  
+  True is returned if pathname is valid.
+ */
 bool
 iso9660_pathname_valid_p (const char pathname[])
 {
@@ -634,6 +679,12 @@ iso9660_pathname_valid_p (const char pathname[])
   return true;
 }
 
+/*!  
+  Take pathname and a version number and turn that into a ISO-9660
+  pathname.  (That's just the pathname followd by ";" and the version
+  number. For example, mydir/file.ext -> mydir/file.ext;1 for version
+  1. The resulting ISO-9660 pathname is returned.
+*/
 char *
 iso9660_pathname_isofy (const char pathname[], uint16_t version)
 {
