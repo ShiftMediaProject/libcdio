@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.34 2004/04/23 01:01:36 rocky Exp $
+    $Id: _cdio_linux.c,v 1.35 2004/04/25 01:19:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.34 2004/04/23 01:01:36 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.35 2004/04/25 01:19:58 rocky Exp $";
 
 #include <string.h>
 
@@ -810,7 +810,7 @@ _cdio_get_first_track_num(void *env)
 
  */
 static char *
-_cdio_get_mcn (void *env) {
+_cdio_get_mcn_linux (void *env) {
 
   struct cdrom_mcn mcn;
   const _img_private_t *_obj = env;
@@ -828,7 +828,7 @@ _cdio_get_mcn (void *env) {
 
  */
 static cdio_drive_cap_t
-_cdio_get_drive_cap (const void *env) {
+_cdio_get_drive_cap_linux (const void *env) {
   const _img_private_t *_obj = env;
   int32_t i_drivetype;
 
@@ -1080,9 +1080,9 @@ cdio_open_linux (const char *orig_source_name)
     .get_arg            = _cdio_get_arg,
     .get_devices        = cdio_get_devices_linux,
     .get_default_device = cdio_get_default_device_linux,
-    .get_drive_cap      = _cdio_get_drive_cap,
+    .get_drive_cap      = _cdio_get_drive_cap_linux,
     .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = _cdio_get_mcn,
+    .get_mcn            = _cdio_get_mcn_linux,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,

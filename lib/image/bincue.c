@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.12 2004/04/25 00:46:34 rocky Exp $
+    $Id: bincue.c,v 1.13 2004/04/25 01:19:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.12 2004/04/25 00:46:34 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.13 2004/04/25 01:19:58 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -634,7 +634,7 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
   if (NULL != obj) { free(obj); obj=NULL; };
 
 static void 
-_cdio_bincue_destroy (void *obj) 
+_cdio_destroy_bincue (void *obj) 
 {
   _img_private_t *env = obj;
 
@@ -750,7 +750,7 @@ cdio_get_default_device_bincue(void)
 
  */
 static cdio_drive_cap_t
-_cdio_bincue_get_drive_cap (const void *env) {
+_cdio_get_drive_cap_bincue (const void *env) {
 
   /* There may be more in the future but these we can handle now. 
      Also, we know we can't handle 
@@ -909,10 +909,10 @@ cdio_open_cue (const char *cue_name)
 
   cdio_funcs _funcs = {
     .eject_media        = cdio_generic_bogus_eject_media,
-    .free               = _cdio_bincue_destroy,
+    .free               = _cdio_destroy_bincue,
     .get_arg            = _cdio_get_arg,
     .get_default_device = cdio_get_default_device_bincue,
-    .get_drive_cap      = _cdio_bincue_get_drive_cap,
+    .get_drive_cap      = _cdio_get_drive_cap_bincue,
     .get_first_track_num= _cdio_image_get_first_track_num,
     .get_mcn            = _cdio_image_get_mcn,
     .get_num_tracks     = _cdio_image_get_num_tracks,
@@ -955,7 +955,7 @@ cdio_open_cue (const char *cue_name)
   if (_cdio_init(_data)) {
     return ret;
   } else {
-    _cdio_bincue_destroy(_data);
+    _cdio_destroy_bincue(_data);
     free(ret);
     return NULL;
   }

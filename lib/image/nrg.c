@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.7 2004/04/25 00:46:34 rocky Exp $
+    $Id: nrg.c,v 1.8 2004/04/25 01:19:58 rocky Exp $
 
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.7 2004/04/25 00:46:34 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.8 2004/04/25 01:19:58 rocky Exp $";
 
 /* structures used */
 
@@ -992,7 +992,7 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
   Free memory resources associated with NRG object.
 */
 static void 
-_cdio_nrg_destroy (void *obj) 
+_cdio_destroy_nrg (void *obj) 
 {
   _img_private_t *env = obj;
 
@@ -1084,7 +1084,7 @@ cdio_get_default_device_nrg(void)
 
  */
 static cdio_drive_cap_t
-_cdio_nrg_get_drive_cap (const void *env) {
+_cdio_get_drive_cap_nrg (const void *env) {
 
   /* There may be more in the future but these we can handle now. 
      Also, we know we can't handle 
@@ -1147,11 +1147,11 @@ cdio_open_nrg (const char *source_name)
 
   cdio_funcs _funcs = {
     .eject_media        = cdio_generic_bogus_eject_media,
-    .free               = _cdio_nrg_destroy,
+    .free               = _cdio_destroy_nrg,
     .get_arg            = _cdio_get_arg,
     .get_devices        = cdio_get_devices_nrg,
     .get_default_device = cdio_get_default_device_nrg,
-    .get_drive_cap      = _cdio_nrg_get_drive_cap,
+    .get_drive_cap      = _cdio_get_drive_cap_nrg,
     .get_first_track_num= _cdio_image_get_first_track_num,
     .get_mcn            = _cdio_image_get_mcn,
     .get_num_tracks     = _cdio_image_get_num_tracks,
