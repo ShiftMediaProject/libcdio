@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.29 2004/10/24 12:26:28 rocky Exp $
+    $Id: iso9660_fs.c,v 1.30 2004/10/24 13:01:44 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -49,7 +49,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.29 2004/10/24 12:26:28 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.30 2004/10/24 13:01:44 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -592,8 +592,8 @@ _fs_stat_iso_root (iso9660_t *p_iso)
   iso9660_dir_t *p_iso9660_dir;
 
   p_iso9660_dir = p_iso->i_joliet_level 
-    ? (iso9660_dir_t *) p_iso->pvd.root_directory_record 
-    : (iso9660_dir_t *) p_iso->svd.root_directory_record ;
+    ? (iso9660_dir_t *) p_iso->svd.root_directory_record 
+    : (iso9660_dir_t *) p_iso->pvd.root_directory_record ;
 
   p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, true, 
 				    p_iso->i_joliet_level);
