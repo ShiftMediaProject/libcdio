@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.3 2005/01/01 14:20:15 rocky Exp $
+    $Id: nrg.c,v 1.4 2005/01/01 14:55:58 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.3 2005/01/01 14:20:15 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.4 2005/01/01 14:55:58 rocky Exp $";
 
 
 /* reader */
@@ -342,7 +342,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	      if ( FOUR_CHANNEL_AUDIO & cdte_ctrl ) {
 		if (p_env) p_env->tocent[i].flags |= FOUR_CHANNEL_AUDIO;
 	      } else {
-		if (p_env) p_env->tocent[i].flags &= &FOUR_CHANNEL_AUDIO;
+		if (p_env) p_env->tocent[i].flags &= ~FOUR_CHANNEL_AUDIO;
 	      }
 	      
 	      /* extractnrg.pl has cdte_format for LBA's 0, and
