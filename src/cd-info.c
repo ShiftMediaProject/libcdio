@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.127 2005/03/05 10:10:16 rocky Exp $
+    $Id: cd-info.c,v 1.128 2005/03/05 16:51:12 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1149,7 +1149,7 @@ main(int argc, const char *argv[])
     /* List number of sessions */
     {
       unsigned int i_last_session;
-      report(stdout, "Last CD Session #: "); fflush(stdout);
+      report(stdout, "Last CD Session LSN: "); fflush(stdout);
       if (DRIVER_OP_SUCCESS == cdio_get_last_session(p_cdio, &i_last_session)) 
 	{
 	  report(stdout, "%d\n", i_last_session);
