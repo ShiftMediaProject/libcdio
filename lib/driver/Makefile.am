@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.6 2005/01/27 03:26:37 rocky Exp $
+#   $Id: Makefile.am,v 1.7 2005/02/05 13:07:02 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -81,6 +81,8 @@ libcdio_sources = \
 	image_common.h \
 	image/nrg.c \
 	image/nrg.h \
+	mmc.c \
+	mmc_private.h \
 	MSWindows/aspi32.c \
 	MSWindows/aspi32.h \
 	MSWindows/win32_ioctl.c \
@@ -88,8 +90,6 @@ libcdio_sources = \
 	MSWindows/win32.h \
 	logging.c \
 	read.c \
-	scsi_mmc.c \
-	scsi_mmc_private.h \
 	sector.c \
 	track.c \
 	util.c

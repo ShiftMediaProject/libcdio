@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: scsi_mmc_private.h,v 1.6 2005/01/27 11:08:55 rocky Exp $
+    $Id: mmc_private.h,v 1.1 2005/02/05 13:07:02 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -76,41 +76,41 @@ typedef driver_return_code_t (*scsi_mmc_run_cmd_fn_t)
        scsi_mmc_direction_t e_direction, 
        unsigned int i_buf, /*in/out*/ void *p_buf );
 			     
-int scsi_mmc_set_blocksize_mmc_private ( const void *p_env, const
-					 scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
-					 unsigned int bsize );
+int mmc_set_blocksize_mmc_private ( const void *p_env, const
+				    scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
+				    unsigned int bsize );
 
 /*! 
   Get the DVD type associated with cd object.
 */
 discmode_t 
-scsi_mmc_get_dvd_struct_physical_private ( void *p_env,
-					   scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
-					   cdio_dvd_struct_t *s );
+mmc_get_dvd_struct_physical_private ( void *p_env,
+				      scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+				      cdio_dvd_struct_t *s );
 
 
 int
-scsi_mmc_get_blocksize_private ( void *p_env, 
-				 scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd);
+mmc_get_blocksize_private ( void *p_env, 
+			    scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd);
 
-char *scsi_mmc_get_mcn_private ( void *p_env,
-				 scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd
-				 );
+char *mmc_get_mcn_private ( void *p_env,
+			    scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd
+			    );
 
-bool scsi_mmc_init_cdtext_private ( void *p_user_data, 
-				    scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
-				    set_cdtext_field_fn_t set_cdtext_field_fn
-				    );
+bool mmc_init_cdtext_private ( void *p_user_data, 
+			       scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
+			       set_cdtext_field_fn_t set_cdtext_field_fn
+			       );
 
 /*!
   On input a MODE_SENSE command was issued and we have the results
   in p. We interpret this and return a bit mask set according to the 
   capabilities.
  */
-void scsi_mmc_get_drive_cap_buf(const uint8_t *p,
-				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
-				/*out*/ cdio_drive_write_cap_t *p_write_cap,
-				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
+void mmc_get_drive_cap_buf(const uint8_t *p,
+			   /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+			   /*out*/ cdio_drive_write_cap_t *p_write_cap,
+			   /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
 
 /*!
   Return the the kind of drive capabilities of device.
@@ -120,12 +120,12 @@ void scsi_mmc_get_drive_cap_buf(const uint8_t *p,
 
  */
 void
-scsi_mmc_get_drive_cap_private ( void *p_env,
-				const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
-				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
-				/*out*/ cdio_drive_write_cap_t *p_write_cap,
-				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
+mmc_get_drive_cap_private ( void *p_env,
+			    const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+			    /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+			    /*out*/ cdio_drive_write_cap_t *p_write_cap,
+			    /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
 driver_return_code_t
-scsi_mmc_set_blocksize_private ( void *p_env, 
-				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
-				 unsigned int i_bsize);
+mmc_set_blocksize_private ( void *p_env, 
+			    const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+			    unsigned int i_bsize);

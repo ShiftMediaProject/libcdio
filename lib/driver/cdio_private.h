@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.11 2005/01/27 03:10:06 rocky Exp $
+    $Id: cdio_private.h,v 1.12 2005/02/05 13:07:02 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -30,7 +30,7 @@
 
 #include <cdio/cdio.h>
 #include <cdio/cdtext.h>
-#include "scsi_mmc_private.h"
+#include "mmc_private.h"
 
 #ifdef __cplusplus
 extern "C" {

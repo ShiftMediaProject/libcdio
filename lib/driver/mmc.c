@@ -1,6 +1,6 @@
-/*  Common SCSI Multimedia Command (MMC) routines.
+/*  Common Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.13 2005/01/29 20:54:20 rocky Exp $
+    $Id: mmc.c,v 1.1 2005/02/05 13:07:02 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -114,8 +114,8 @@ set_speed_mmc (void *p_user_data, int i_speed)
 *************************************************************************/
 
 int
-scsi_mmc_get_blocksize_private ( void *p_env, 
-				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd)
+mmc_get_blocksize_private ( void *p_env, 
+                            const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd)
 {
   int i_status = 0;
   scsi_mmc_cdb_t cdb = {{0, }};
@@ -162,10 +162,10 @@ scsi_mmc_get_blocksize_private ( void *p_env,
   capabilities.
  */
 void
-scsi_mmc_get_drive_cap_buf(const uint8_t *p,
-			   /*out*/ cdio_drive_read_cap_t  *p_read_cap,
-			   /*out*/ cdio_drive_write_cap_t *p_write_cap,
-			   /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
+mmc_get_drive_cap_buf(const uint8_t *p,
+                      /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+                      /*out*/ cdio_drive_write_cap_t *p_write_cap,
+                      /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
   /* Reader */
   if (p[2] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_R;
@@ -197,11 +197,11 @@ scsi_mmc_get_drive_cap_buf(const uint8_t *p,
   Return the the kind of drive capabilities of device.
  */
 void
-scsi_mmc_get_drive_cap_private (void *p_env,
-				const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
-				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
-				/*out*/ cdio_drive_write_cap_t *p_write_cap,
-				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
+mmc_get_drive_cap_private (void *p_env,
+                           const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+                           /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+                           /*out*/ cdio_drive_write_cap_t *p_write_cap,
+                           /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
   /* Largest buffer size we use. */
 #define BUF_MAX 2048
@@ -269,7 +269,7 @@ scsi_mmc_get_drive_cap_private (void *p_env,
 	  /* Don't handle these yet. */
 	  break;
 	case CDIO_MMC_CAPABILITIES_PAGE:
-	  scsi_mmc_get_drive_cap_buf(p, p_read_cap, p_write_cap, p_misc_cap);
+	  mmc_get_drive_cap_buf(p, p_read_cap, p_write_cap, p_misc_cap);
 	  break;
 	default: ;
 	}
@@ -288,9 +288,9 @@ scsi_mmc_get_drive_cap_private (void *p_env,
   Get the DVD type associated with cd object.
 */
 discmode_t
-scsi_mmc_get_dvd_struct_physical_private ( void *p_env, 
-					   scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
-					   cdio_dvd_struct_t *s)
+mmc_get_dvd_struct_physical_private ( void *p_env, 
+                                      scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+                                      cdio_dvd_struct_t *s)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
   unsigned char buf[4 + 4 * 20], *base;
@@ -350,9 +350,9 @@ scsi_mmc_get_dvd_struct_physical_private ( void *p_env,
 
  */
 char *
-scsi_mmc_get_mcn_private ( void *p_env,
-			   const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd
-			   )
+mmc_get_mcn_private ( void *p_env,
+                      const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd
+                      )
 {
   scsi_mmc_cdb_t cdb = {{0, }};
   char buf[28] = { 0, };
@@ -384,10 +384,10 @@ scsi_mmc_get_mcn_private ( void *p_env,
   not exist.
 */
 bool
-scsi_mmc_init_cdtext_private ( void *p_user_data, 
-			       const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
-			       set_cdtext_field_fn_t set_cdtext_field_fn 
-			       )
+mmc_init_cdtext_private ( void *p_user_data, 
+                          const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
+                          set_cdtext_field_fn_t set_cdtext_field_fn 
+                          )
 {
 
   generic_img_private_t *p_env = p_user_data;
@@ -449,9 +449,9 @@ scsi_mmc_init_cdtext_private ( void *p_user_data,
 }
 
 driver_return_code_t
-scsi_mmc_set_blocksize_private ( void *p_env, 
-				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
-				 unsigned int i_bsize)
+mmc_set_blocksize_private ( void *p_env, 
+                            const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+                            unsigned int i_bsize)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
 
@@ -591,9 +591,9 @@ scsi_mmc_get_drive_cap (const CdIo_t *p_cdio,
 			/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
   if ( ! p_cdio )  return;
-  scsi_mmc_get_drive_cap_private (p_cdio->env, 
-				  p_cdio->op.run_scsi_mmc_cmd, 
-				  p_read_cap, p_write_cap, p_misc_cap);
+  mmc_get_drive_cap_private (p_cdio->env, 
+                             p_cdio->op.run_scsi_mmc_cmd, 
+                             p_read_cap, p_write_cap, p_misc_cap);
 }
 
 /*! 
@@ -604,9 +604,9 @@ scsi_mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, cdio_dvd_struct_t *s)
 {
   if ( ! p_cdio )  return -2;
   return 
-    scsi_mmc_get_dvd_struct_physical_private (p_cdio->env, 
-					      p_cdio->op.run_scsi_mmc_cmd, 
-					      s);
+    mmc_get_dvd_struct_physical_private (p_cdio->env, 
+                                         p_cdio->op.run_scsi_mmc_cmd, 
+                                         s);
 }
 
 /*! 
@@ -652,8 +652,7 @@ char *
 scsi_mmc_get_mcn ( const CdIo_t *p_cdio )
 {
   if ( ! p_cdio )  return NULL;
-  return scsi_mmc_get_mcn_private (p_cdio->env, 
-				   p_cdio->op.run_scsi_mmc_cmd );
+  return mmc_get_mcn_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd );
 }
 
 /*!
@@ -687,8 +686,7 @@ scsi_mmc_get_blocksize ( const CdIo_t *p_cdio)
 {
   if ( ! p_cdio ) return DRIVER_OP_UNINIT;
   return 
-    scsi_mmc_get_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd);
-
+    mmc_get_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd);
 }
 
 
@@ -767,8 +765,8 @@ scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_blocksize)
 {
   if ( ! p_cdio )  return DRIVER_OP_UNINIT;
   return 
-    scsi_mmc_set_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd, 
-				    i_blocksize);
+    mmc_set_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd, 
+                               i_blocksize);
 }
 
 

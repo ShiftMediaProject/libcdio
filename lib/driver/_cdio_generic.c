@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.13 2005/01/27 03:10:06 rocky Exp $
+    $Id: _cdio_generic.c,v 1.14 2005/02/05 13:07:02 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.13 2005/01/27 03:10:06 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.14 2005/02/05 13:07:02 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -435,10 +435,10 @@ set_cdtext_field_generic(void *p_user_data, track_t i_track,
 bool
 init_cdtext_generic (generic_img_private_t *p_env)
 {
-  return scsi_mmc_init_cdtext_private( p_env,
-				       p_env->cdio->op.run_scsi_mmc_cmd, 
-				       set_cdtext_field_generic
-				       );
+  return mmc_init_cdtext_private( p_env,
+                                  p_env->cdio->op.run_scsi_mmc_cmd, 
+                                  set_cdtext_field_generic
+                                  );
 }
 
 /*! Return number of channels in track: 2 or 4; -2 if not
