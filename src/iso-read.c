@@ -1,7 +1,7 @@
 /*
-  $Id: iso-read.c,v 1.7 2004/11/04 10:08:23 rocky Exp $
+  $Id: iso-read.c,v 1.8 2005/01/22 22:21:36 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ parse_options (int argc, const char *argv[])
     switch (opt)
       {
       case OP_VERSION:
-        print_version(program_name, VERSION, 0, true);
+        print_version(program_name, CDIO_VERSION, 0, true);
 	poptFreeContext(optCon);
 	free(program_name);
         exit (EXIT_SUCCESS);

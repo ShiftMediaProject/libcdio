@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.16 2005/01/13 19:58:17 rocky Exp $
+  $Id: cd-drive.c,v 1.17 2005/01/22 22:21:36 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -171,7 +171,7 @@ main(int argc, const char *argv[])
      be reflected in `arguments'. */
   parse_options(argc, argv);
      
-  print_version(program_name, VERSION, false, opts.version_only);
+  print_version(program_name, CDIO_VERSION, false, opts.version_only);
 
   if (opts.debug_level == 3) {
     cdio_loglevel_default = CDIO_LOG_INFO;
