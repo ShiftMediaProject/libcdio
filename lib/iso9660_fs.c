@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.31 2004/10/24 23:42:39 rocky Exp $
+    $Id: iso9660_fs.c,v 1.32 2004/10/26 01:21:05 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -49,7 +49,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.31 2004/10/24 23:42:39 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.32 2004/10/26 01:21:05 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -140,7 +140,7 @@ check_pvd (const iso9660_pvd_t *p_pvd)
 }
 
 static bool
-ucs2be_to_locale(const char *psz_ucs2be,  size_t i_inlen, 
+ucs2be_to_locale(char *psz_ucs2be,  size_t i_inlen, 
 		 char **p_psz_out,  size_t i_outlen)
 {
   iconv_t ic = iconv_open(nl_langinfo(CODESET), "UCS-2BE");
@@ -149,6 +149,7 @@ ucs2be_to_locale(const char *psz_ucs2be,  size_t i_inlen,
   char *psz_buf2;
   int i_outlen_save = i_outlen;
 
+#if 0
   if (errno) {
     cdio_warn("Failed to get conversion table for locale, trying ASCII");
     ic = iconv_open("ASCII", "UCS-2BE");
@@ -157,6 +158,7 @@ ucs2be_to_locale(const char *psz_ucs2be,  size_t i_inlen,
       return false;
     }
   }
+#endif
   
   psz_buf = (char *) realloc(psz_buf, i_outlen);
   psz_buf2 = psz_buf;
@@ -427,10 +429,25 @@ bool
 iso9660_fs_read_pvd(const CdIo *p_cdio, /*out*/ iso9660_pvd_t *p_pvd)
 {
   /* A bit of a hack, we'll assume track 1 contains ISO_PVD_SECTOR.*/
-  bool b_mode2  = cdio_get_track_green(p_cdio, 1);
+  bool b_mode2;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   int i_rc;
 
+  switch(cdio_get_track_format(p_cdio, 1)) {
+  case TRACK_FORMAT_CDI:
+  case TRACK_FORMAT_XA:
+    b_mode2 = true;
+    break;
+  case TRACK_FORMAT_DATA:
+    b_mode2 = false;
+    break;
+  case TRACK_FORMAT_AUDIO: 
+  case TRACK_FORMAT_PSX: 
+  case TRACK_FORMAT_ERROR: 
+  default:
+    return false;
+  }
+  
   i_rc = b_mode2 
       ? cdio_read_mode2_sector (p_cdio, buf, ISO_PVD_SECTOR, false)
       : cdio_read_mode1_sector (p_cdio, buf, ISO_PVD_SECTOR, false);
@@ -467,11 +484,25 @@ iso9660_fs_read_superblock (CdIo *p_cdio,
     iso9660_pvd_t         *p_pvd = &(p_env->pvd);
     iso9660_svd_t         *p_svd = &(p_env->svd);
     char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-
-    /* A bit of a hack, we'll assume track 1 contains ISO_PVD_SECTOR.*/
-    bool                  b_mode2  = cdio_get_track_green(p_cdio, 1);
+    bool                   b_mode2;
     int i_rc;
 
+    /* A bit of a hack, we'll assume track 1 contains ISO_PVD_SECTOR.*/
+    switch(cdio_get_track_format(p_cdio, 1)) {
+    case TRACK_FORMAT_CDI:
+    case TRACK_FORMAT_XA:
+      b_mode2 = true;
+      break;
+    case TRACK_FORMAT_DATA:
+      b_mode2 = false;
+      break;
+    case TRACK_FORMAT_AUDIO: 
+    case TRACK_FORMAT_PSX: 
+    case TRACK_FORMAT_ERROR: 
+    default:
+      return false;
+    }
+  
     if ( !iso9660_fs_read_pvd(p_cdio, p_pvd) )
       return false;
     
@@ -481,7 +512,7 @@ iso9660_fs_read_superblock (CdIo *p_cdio,
       ? cdio_read_mode2_sector (p_cdio, buf, ISO_PVD_SECTOR+1, false)
       : cdio_read_mode1_sector (p_cdio, buf, ISO_PVD_SECTOR+1, false);
 
-    if (0 != i_rc) {
+    if (0 == i_rc) {
       /* The size of a PVD or SVD is smaller than a sector. So we
 	 allocated a bigger block above (buf) and now we'll copy just
 	 the part we need to save.
@@ -653,7 +684,7 @@ _fs_stat_root (CdIo *p_cdio)
   bool b_mode2 = cdio_get_track_green(p_cdio, 1);
 
   /* FIXME try also with Joliet.*/
-  if ( !iso9660_fs_read_superblock (p_cdio, 0 /*ISO_EXTENSION_ALL*/) ) {
+  if ( !iso9660_fs_read_superblock (p_cdio, ISO_EXTENSION_ALL) ) {
     cdio_warn("Could not read ISO-9660 Superblock.");
     return NULL;
   }
@@ -684,19 +715,20 @@ _fs_stat_iso_root (iso9660_t *p_iso)
 }
 
 static iso9660_stat_t *
-_fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root, 
+_fs_stat_traverse (const CdIo *p_cdio, const iso9660_stat_t *_root, 
 		   char **splitpath, bool b_mode2, bool translate)
 {
   unsigned offset = 0;
   uint8_t *_dirbuf = NULL;
-  iso9660_stat_t *stat;
+  iso9660_stat_t *p_stat;
+  generic_img_private_t *p_env = (generic_img_private_t *) p_cdio->env;
 
   if (!splitpath[0])
     {
       unsigned int len=sizeof(iso9660_stat_t) + strlen(_root->filename)+1;
-      stat = _cdio_malloc(len);
-      memcpy(stat, _root, len);
-      return stat;
+      p_stat = _cdio_malloc(len);
+      memcpy(p_stat, _root, len);
+      return p_stat;
     }
 
   if (_root->type == _STAT_FILE)
@@ -714,11 +746,11 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
   _dirbuf = _cdio_malloc (_root->secsize * ISO_BLOCKSIZE);
 
   if (b_mode2) {
-    if (cdio_read_mode2_sectors (cdio, _dirbuf, _root->lsn, false, 
+    if (cdio_read_mode2_sectors (p_cdio, _dirbuf, _root->lsn, false, 
 				 _root->secsize))
       return NULL;
   } else {
-    if (cdio_read_mode1_sectors (cdio, _dirbuf, _root->lsn, false,
+    if (cdio_read_mode1_sectors (p_cdio, _dirbuf, _root->lsn, false,
 				 _root->secsize))
       return NULL;
   }
@@ -726,7 +758,7 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
   while (offset < (_root->secsize * ISO_BLOCKSIZE))
     {
       iso9660_dir_t *p_iso9660_dir = (void *) &_dirbuf[offset];
-      iso9660_stat_t *stat;
+      iso9660_stat_t *p_stat;
       int cmp;
 
       if (!iso9660_get_dir_len(p_iso9660_dir))
@@ -735,34 +767,36 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
 	  continue;
 	}
       
-      stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, 0);
+      p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, 
+					p_env->i_joliet_level);
 
       if (translate) {
-	char *trans_fname = malloc(strlen(stat->filename));
+	char *trans_fname = malloc(strlen(p_stat->filename));
 	int trans_len;
 	
 	if (trans_fname == NULL) {
 	  cdio_warn("can't allocate %lu bytes", 
-		    (long unsigned int) strlen(stat->filename));
+		    (long unsigned int) strlen(p_stat->filename));
 	  return NULL;
 	}
-	trans_len = iso9660_name_translate(stat->filename, trans_fname);
+	trans_len = iso9660_name_translate_ext(p_stat->filename, trans_fname, 
+					       p_env->i_joliet_level);
 	cmp = strcmp(splitpath[0], trans_fname);
 	free(trans_fname);
       } else {
-	cmp = strcmp(splitpath[0], stat->filename);
+	cmp = strcmp(splitpath[0], p_stat->filename);
       }
       
       if (!cmp) {
 	iso9660_stat_t *ret_stat 
-	  = _fs_stat_traverse (cdio, stat, &splitpath[1], b_mode2, 
+	  = _fs_stat_traverse (p_cdio, p_stat, &splitpath[1], b_mode2, 
 			       translate);
-	free(stat);
+	free(p_stat);
 	free (_dirbuf);
 	return ret_stat;
       }
 
-      free(stat);
+      free(p_stat);
 	  
       offset += iso9660_get_dir_len(p_iso9660_dir);
     }
@@ -974,6 +1008,7 @@ CdioList *
 iso9660_fs_readdir (CdIo *p_cdio, const char pathname[], bool b_mode2)
 {
   iso9660_stat_t *p_stat;
+  generic_img_private_t *p_env = (generic_img_private_t *) p_cdio->env;
 
   if (!p_cdio)   return NULL;
   if (!pathname) return NULL;
@@ -1021,7 +1056,8 @@ iso9660_fs_readdir (CdIo *p_cdio, const char pathname[], bool b_mode2)
 	    continue;
 	  }
 
-	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, b_mode2, 0);
+	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, b_mode2, 
+						 p_env->i_joliet_level);
 	_cdio_list_append (retval, p_iso9660_stat);
 
 	offset += iso9660_get_dir_len(p_iso9660_dir);

@@ -24,8 +24,6 @@ System     : CD-RTOS CD-BRIDGE
 Volume     : SVIDEOCD
 Volume Set : 
 ISO9660 filesystem
- root dir in PVD set to lsn 18
-
 /:
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..

@@ -1,5 +1,5 @@
 /*
-    $Id: testiso9660.c,v 1.2 2003/09/21 01:14:30 rocky Exp $
+    $Id: testiso9660.c,v 1.3 2004/10/26 01:21:05 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -24,6 +24,9 @@
 #endif
 
 #include <ctype.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
@@ -121,8 +124,10 @@ main (int argc, const char *argv[])
   dst_p = iso9660_pathname_isofy ("this/file.ext", 1);
   if ( 0 != strncmp(dst_p, "this/file.ext;1", 16) ) {
     printf("Failed iso9660_pathname_isofy\n");
+    free(dst_p);
     return 10;
   }
+  free(dst_p);
 
   /* Test get/set date */
   {

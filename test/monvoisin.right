@@ -21,8 +21,6 @@ System     : CD-RTOS CD-BRIDGE
 Volume     : MONVOISIN
 Volume Set : 
 ISO9660 filesystem
- root dir in PVD set to lsn 18
-
 /:
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Dec 31 1969 23:59  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Dec 31 1969 23:59  ..

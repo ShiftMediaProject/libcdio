@@ -1,5 +1,5 @@
 /*
-  $Id: testbincue.c,v 1.4 2004/10/23 20:55:09 rocky Exp $
+  $Id: testbincue.c,v 1.5 2004/10/26 01:21:05 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -68,29 +68,33 @@ main(int argc, const char *argv[])
   psz_cuefile[sizeof(psz_cuefile)-1] = '\0';
   cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
   for (i=0; i<NUM_GOOD_CUES; i++) {
-
+    char *psz_binfile;
     snprintf(psz_cuefile, sizeof(psz_cuefile)-1,
 	     "%s/%s", TEST_DIR, cue_file[i]);
-    if (!cdio_is_cuefile(psz_cuefile)) {
+    psz_binfile = cdio_is_cuefile(psz_cuefile);
+    if (!psz_binfile) {
       printf("Incorrect: %s doesn't parse as a CDRWin CUE file.\n", 
 	     cue_file[i]);
       ret=i+1;
     } else {
       printf("Correct: %s parses as a CDRWin CUE file.\n", 
 	     cue_file[i]);
+      free(psz_binfile);
     }
   }
 
   for (i=0; i<NUM_BAD_CUES; i++) {
-
+    char *psz_binfile;
     snprintf(psz_cuefile, sizeof(psz_cuefile)-1,
 	     "%s/%s", TEST_DIR, badcue_file[i]);
-    if (!cdio_is_cuefile(psz_cuefile)) {
+    psz_binfile=cdio_is_cuefile(psz_cuefile);
+    if (!psz_binfile) {
       printf("Correct: %s doesn't parse as a CDRWin CUE file.\n", 
 	     badcue_file[i]);
     } else {
       printf("Incorrect: %s parses as a CDRWin CUE file.\n", 
 	     badcue_file[i]);
+      free(psz_binfile);
       ret+=50*i+1;
       break;
     }

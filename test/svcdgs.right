@@ -21,8 +21,6 @@ System     : S_VCD30 DISC of EnReach
 Volume     : SVCD
 Volume Set : SVCD01
 ISO9660 filesystem
- root dir in PVD set to lsn 20
-
 /:
   d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan 06 2001 21:29  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan 06 2001 21:29  ..

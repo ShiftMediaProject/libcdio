@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.44 2004/10/24 23:42:39 rocky Exp $
+    $Id: bincue.c,v 1.45 2004/10/26 01:21:05 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.44 2004/10/24 23:42:39 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.45 2004/10/26 01:21:05 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1066,16 +1066,17 @@ cdio_is_cuefile(const char *psz_cue_name)
       if (parse_cuefile(NULL, psz_cue_name))
 	return psz_bin_name;
       else 
-	return NULL;
+	goto error;
     } 
     else if (psz_cue_name[i]=='C' && psz_cue_name[i+1]=='U' && psz_cue_name[i+2]=='E') {
       psz_bin_name[i++]='B'; psz_bin_name[i++]='I'; psz_bin_name[i++]='N';
       if (parse_cuefile(NULL, psz_cue_name))
 	return psz_bin_name;
       else 
-	return NULL;
+	goto error;
     }
   }
+ error:
   free(psz_bin_name);
   return NULL;
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.74 2004/10/24 23:42:39 rocky Exp $
+    $Id: cdio.c,v 1.75 2004/10/26 01:21:05 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.74 2004/10/24 23:42:39 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.75 2004/10/26 01:21:05 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -765,7 +765,7 @@ cdio_get_joliet_level(const CdIo *p_cdio)
   if (!p_cdio) return 0;
   {
     const generic_img_private_t *p_env 
-      = (generic_img_private_t *)&(p_cdio->env);
+      = (generic_img_private_t *) (p_cdio->env);
     return p_env->i_joliet_level;
   }
 }

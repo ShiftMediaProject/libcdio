@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.20 2004/10/25 01:41:07 rocky Exp $
+    $Id: iso9660.c,v 1.21 2004/10/26 01:21:05 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.20 2004/10/25 01:41:07 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.21 2004/10/26 01:21:05 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -90,12 +90,22 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
   
   if (!idr_date) return;
 
+  memset(p_tm, 0, sizeof(struct tm));
   p_tm->tm_year   = idr_date->dt_year;
   p_tm->tm_mon    = idr_date->dt_month - 1;
   p_tm->tm_mday   = idr_date->dt_day;
   p_tm->tm_hour   = idr_date->dt_hour;
   p_tm->tm_min    = idr_date->dt_minute;
   p_tm->tm_sec    = idr_date->dt_second;
+
+#ifdef HAVE_TM_GMTOFF
+  if (b_localtime) {
+    tzset();
+    p_tm->tm_isdst  = daylight;
+    p_tm->tm_gmtoff = timezone;
+    p_tm->tm_zone   = (char *) tzname;
+  }
+#endif
 
   /* Recompute tm_wday and tm_yday via mktime. */
   t = mktime(p_tm);

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.92 2004/10/24 23:42:39 rocky Exp $
+    $Id: cd-info.c,v 1.93 2004/10/26 01:21:05 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -544,6 +544,7 @@ print_iso9660_recurse (CdIo *p_cdio, const char pathname[],
   CdioList *entlist;
   CdioList *dirlist =  _cdio_list_new ();
   CdioListNode *entnode;
+  uint8_t i_joliet_level = cdio_get_joliet_level(p_cdio);
 
   entlist = iso9660_fs_readdir (p_cdio, pathname, b_mode2);
     
@@ -565,7 +566,7 @@ print_iso9660_recurse (CdIo *p_cdio, const char pathname[],
 #define DATESTR_SIZE 30
       char date_str[DATESTR_SIZE];
 
-      iso9660_name_translate(iso_name, translated_name);
+      iso9660_name_translate_ext(iso_name, translated_name, i_joliet_level);
       
       snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
 		iso_name);
@@ -614,51 +615,22 @@ print_iso9660_recurse (CdIo *p_cdio, const char pathname[],
   _cdio_list_free (dirlist, true);
 }
 
-static bool
-read_iso9660_pvd(const CdIo *p_cdio, track_format_t track_format, /*out*/
-		 iso9660_pvd_t *p_pvd) 		 {
-  
-  switch (track_format) {
-  case TRACK_FORMAT_CDI:
-  case TRACK_FORMAT_XA:
-    if (0 != cdio_read_mode2_sector (p_cdio, p_pvd, ISO_PVD_SECTOR, false))
-      return false;
-    break;
-  case TRACK_FORMAT_DATA:
-    if (0 != cdio_read_mode1_sector (p_cdio, p_pvd, ISO_PVD_SECTOR, false))
-      return false;
-    break;
-  case TRACK_FORMAT_AUDIO: 
-  case TRACK_FORMAT_PSX: 
-  case TRACK_FORMAT_ERROR: 
-  default:
-    return false;
-  }
-  return true;
-}
-		 
-
 static void
 print_iso9660_fs (CdIo *p_cdio, cdio_fs_anal_t fs, 
 		  track_format_t track_format)
 {
-  iso9660_pvd_t pvd;
   bool b_mode2 = false;
 
   if (fs & CDIO_FS_ANAL_XA) track_format = TRACK_FORMAT_XA;
 
-  if ( !read_iso9660_pvd(p_cdio, track_format, &pvd) ) 
+  if ( !iso9660_fs_read_superblock(p_cdio, ISO_EXTENSION_ALL) ) 
     return;
   
   b_mode2 = ( TRACK_FORMAT_CDI == track_format 
 	       || TRACK_FORMAT_XA == track_format );
   
   {
-    const lsn_t extent = iso9660_get_root_lsn(&pvd);
-    
     printf ("ISO9660 filesystem\n");
-    printf (" root dir in PVD set to lsn %lu\n\n", (long unsigned) extent);
-    
     print_iso9660_recurse (p_cdio, "/", fs, b_mode2);
   }
 }
@@ -736,7 +708,7 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
     {
       iso9660_pvd_t pvd;
 
-      if ( read_iso9660_pvd(p_cdio, track_format, &pvd) ) {
+      if ( iso9660_fs_read_pvd(p_cdio, &pvd) ) {
 	fprintf(stdout, "Application: %s\n", 
 		iso9660_get_application_id(&pvd));
 	fprintf(stdout, "Preparer   : %s\n", iso9660_get_preparer_id(&pvd));

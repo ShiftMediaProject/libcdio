@@ -19,8 +19,6 @@ System     : LINUX
 Volume     : CDROM
 Volume Set : 
 ISO9660 filesystem
- root dir in PVD set to lsn 23
-
 /:
  Apr 20 2003 07:26  .
  Apr 20 2003 07:26  ..

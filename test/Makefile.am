@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.29 2004/10/24 12:26:28 rocky Exp $
+#   $Id: Makefile.am,v 1.30 2004/10/26 01:21:05 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -68,6 +68,8 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 XFAIL_TESTS = testassert
 
 MOSTLYCLEANFILES = core.* *.dump
+
+test: check
 
 # This is a really bad hack to make sure check_nrg and check_cue.sh
 # are executable. Automake will remake check_nrg.sh and check_cue.sh
