@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.20 2003/09/30 03:26:11 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.21 2003/10/03 08:32:32 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -47,7 +47,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.20 2003/09/30 03:26:11 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.21 2003/10/03 08:32:32 rocky Exp $";
 
 /* structures used */
 
@@ -219,6 +219,7 @@ _cdio_parse_nero_footer (_img_private_t *_obj)
     return 0;
 
   size = cdio_stream_stat (_obj->gen.data_source);
+  if (-1 == size) return false;
 
   {
 PRAGMA_BEGIN_PACKED
@@ -237,7 +238,7 @@ PRAGMA_END_PACKED
 
     cdio_assert (sizeof (buf) == 12);
  
- cdio_stream_seek (_obj->gen.data_source, size - sizeof (buf), SEEK_SET);
+    cdio_stream_seek (_obj->gen.data_source, size - sizeof (buf), SEEK_SET);
     cdio_stream_read (_obj->gen.data_source, (void *) &buf, sizeof (buf), 1);
     
     if (buf.v50.ID == UINT32_TO_BE (0x4e45524f)) /* "NERO" */
@@ -252,7 +253,7 @@ PRAGMA_END_PACKED
       }
     else
       {
-	cdio_error ("Image not recognized as either v50 or v55 type NRG");
+	cdio_warn ("Image not recognized as either v50 or v55 type NRG");
 	return -1;
       }
 
