@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.7 2004/07/10 02:17:59 rocky Exp $
+    $Id: image_common.h,v 1.8 2004/07/10 11:06:00 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -18,10 +18,74 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Common image routines. */
+/*! Common image routines. 
+  
+  Because _img_private_t may vary over image formats, the routines are
+  included into the image drivers after _img_private_t is defined.  In
+  order for the below routines to work, there is a large part of
+  _img_private_t that is common among image drivers. For example, see
+  image.h
+*/
 
 #ifndef __CDIO_IMAGE_COMMON_H__
 #define __CDIO_IMAGE_COMMON_H__
+
+#define free_if_notnull(obj) \
+  if (NULL != obj) { free(obj); obj=NULL; };
+
+/*!
+  We don't need the image any more. Free all memory associated with
+  it.
+ */
+static void 
+_free_image (void *user_data) 
+{
+  _img_private_t *cd = user_data;
+  track_t i_track;
+
+  if (NULL == cd) return;
+
+  for (i_track=0; i_track < cd->i_tracks; i_track++) {
+    free_if_notnull(cd->tocent[i_track].filename);
+    free_if_notnull(cd->tocent[i_track].isrc);
+    cdtext_delete(cd->tocent[i_track].cdtext);
+  }
+
+  free_if_notnull(cd->psz_mcn);
+  free_if_notnull(cd->psz_cue_name);
+  cdtext_delete(cd->cdtext);
+  cdio_generic_stdio_free(cd);
+  free(cd);
+}
+
+/*!
+  Eject media -- there's nothing to do here except free resources.
+  We always return 2.
+ */
+static int
+_eject_media_image(void *user_data)
+{
+  _free_image (user_data);
+  return 2;
+}
+
+/*!
+  Return the value associated with the key "arg".
+*/
+static const char *
+_get_arg_image (void *user_data, const char key[])
+{
+  _img_private_t *env = user_data;
+
+  if (!strcmp (key, "source")) {
+    return env->gen.source_name;
+  } else if (!strcmp (key, "cue")) {
+    return env->psz_cue_name;
+  } else if (!strcmp(key, "access-mode")) {
+    return "image";
+  } 
+  return NULL;
+}
 
 /*!
   Return the media catalog number (MCN) from the CD or NULL if there
@@ -75,8 +139,7 @@ _get_first_track_num_image(void *user_data)
 }
 
 /*!
-  Return the number of tracks. We fake it an just say there's
-  one big track. 
+  Return the number of tracks. 
 */
 static track_t
 _get_num_tracks_image(void *user_data) 
@@ -84,6 +147,42 @@ _get_num_tracks_image(void *user_data)
   _img_private_t *env = user_data;
 
   return env->i_tracks;
+}
+
+/*!
+  Set the arg "key" with "value" in the source device.
+  Currently "source" to set the source device in I/O operations 
+  is the only valid key.
+
+  0 is returned if no error was found, and nonzero if there as an error.
+*/
+static int
+_set_arg_image (void *user_data, const char key[], const char value[])
+{
+  _img_private_t *env = user_data;
+
+  if (!strcmp (key, "source"))
+    {
+      free_if_notnull (env->gen.source_name);
+
+      if (!value)
+	return -2;
+
+      env->gen.source_name = strdup (value);
+    }
+  else if (!strcmp (key, "cue"))
+    {
+      free_if_notnull (env->psz_cue_name);
+
+      if (!value)
+	return -2;
+
+      env->psz_cue_name = strdup (value);
+    }
+  else
+    return -1;
+
+  return 0;
 }
 
 #endif /* __CDIO_IMAGE_COMMON_H__ */

@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.16 2004/07/10 02:17:59 rocky Exp $
+    $Id: cdrdao.c,v 1.17 2004/07/10 11:06:00 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.16 2004/07/10 02:17:59 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.17 2004/07/10 11:06:00 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -76,17 +76,15 @@ typedef struct {
   generic_img_private_t gen; 
   internal_position_t pos; 
   
-  bool sector_2336;              /* Playstation (PSX) uses 2336-byte sectors */
-
-  char         *psz_toc_name;
+  char         *psz_cue_name;
   char         *psz_mcn;        /* Media Catalog Number (5.22.3) 
 				   exactly 13 bytes */
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
 					         add 1 for leadout. */
   track_t       i_tracks;    /* number of tracks in image */
   track_t       i_first_track; /* track number of first track */
+  cdtext_t      *cdtext;	/* CD-TEXT */
   track_format_t mode;
-  bool          b_have_cdrdao;
 } _img_private_t;
 
 static uint32_t _stat_size_cdrdao (void *user_data);
@@ -113,7 +111,7 @@ _init_cdrdao (_img_private_t *env)
   env->psz_mcn       = NULL;
 
   /* Read in TOC sheet. */
-  if ( !parse_tocfile(env, env->psz_toc_name) ) return false;
+  if ( !parse_tocfile(env, env->psz_cue_name) ) return false;
   
   lead_lsn = _stat_size_cdrdao( (_img_private_t *) env);
 
@@ -238,15 +236,13 @@ _stat_size_cdrdao (void *user_data)
 {
   _img_private_t *env = user_data;
   long size;
-  int blocksize = env->sector_2336 
-    ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
   size = cdio_stream_stat (env->tocent[0].data_source);
 
-  if (size % blocksize)
+  if (size % CDIO_CD_FRAMESIZE_RAW)
     {
       cdio_warn ("image %s size (%ld) not multiple of blocksize (%d)", 
-		 env->tocent[0].filename, size, blocksize);
+		 env->tocent[0].filename, size, CDIO_CD_FRAMESIZE_RAW);
       if (size % M2RAW_SECTOR_SIZE == 0)
 	cdio_warn ("this may be a 2336-type disc image");
       else if (size % CDIO_CD_FRAMESIZE_RAW == 0)
@@ -254,7 +250,7 @@ _stat_size_cdrdao (void *user_data)
       /* exit (EXIT_FAILURE); */
     }
 
-  size /= blocksize;
+  size /= CDIO_CD_FRAMESIZE_RAW;
 
   return size;
 }
@@ -262,11 +258,11 @@ _stat_size_cdrdao (void *user_data)
 #define MAXLINE 512
 #define UNIMPLIMENTED_MSG \
   cdio_log(log_level, "%s line %d: unimplimented keyword: %s",  \
-	   psz_toc_name, i_line, keyword)
+	   psz_cue_name, i_line, keyword)
 
 
 static bool
-parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
+parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 {
   char line[MAXLINE];
   FILE *fp;
@@ -275,13 +271,13 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
   int i =  -1;
   cdio_log_level_t log_level = (NULL == cd) ? CDIO_LOG_INFO : CDIO_LOG_WARN;
 
-  if (NULL == psz_toc_name) 
+  if (NULL == psz_cue_name) 
     return false;
   
-  fp = fopen (psz_toc_name, "r");
+  fp = fopen (psz_cue_name, "r");
   if (fp == NULL) {
     cdio_log(log_level, "error opening %s for reading: %s", 
-	     psz_toc_name, strerror(errno));
+	     psz_cue_name, strerror(errno));
     return false;
   }
 
@@ -303,7 +299,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 	    if (13 != strlen(psz_field)) {
 	      cdio_log(log_level, 
 		       "%s line %d after word CATALOG:", 
-		       psz_toc_name, i_line);
+		       psz_cue_name, i_line);
 	      cdio_log(log_level, 
 		       "Token %s has length %ld. Should be 13 digits.", 
 		       psz_field, (long int) strlen(psz_field));
@@ -316,7 +312,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 		if (!isdigit(psz_field[i])) {
 		    cdio_log(log_level, 
 			     "%s line %d after word CATALOG:", 
-			     psz_toc_name, i_line);
+			     psz_cue_name, i_line);
 		    cdio_log(log_level, 
 			     "Character \"%c\" at postition %i of token \"%s\""
 			     " is not all digits.", 
@@ -329,7 +325,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 	  } else {
 	    cdio_log(log_level, 
 		     "%s line %d after word CATALOG:", 
-		     psz_toc_name, i_line);
+		     psz_cue_name, i_line);
 	    cdio_log(log_level, "Expecting 13 digits; nothing seen.");
 	    goto err_exit;
 	  }
@@ -441,7 +437,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 	    }
 	  } else {
 	    cdio_log(log_level, "%s line %d after TRACK:",
-		     psz_toc_name, i_line);
+		     psz_cue_name, i_line);
 	    cdio_log(log_level, "'%s' not a valid mode.", psz_field);
 	    goto err_exit;
 	  }
@@ -518,7 +514,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 	      /* Todo: do something about reusing existing files. */
 	      if (!(cd->tocent[i].data_source = cdio_stdio_new (psz_field))) {
 		cdio_warn ("%s line %d: can't open file `%s' for reading", 
-			   psz_toc_name, i_line, psz_field);
+			   psz_cue_name, i_line, psz_field);
 		goto err_exit;
 	      }
 	    }
@@ -528,7 +524,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 	    lba_t lba = cdio_lsn_to_lba(cdio_mmssff_to_lba (psz_field));
 	    if (CDIO_INVALID_LBA == lba) {
 	      cdio_log(log_level, "%s line %d: invalid MSF string %s", 
-		       psz_toc_name, i_line, psz_field);
+		       psz_cue_name, i_line, psz_field);
 	      goto err_exit;
 	    }
 	    
@@ -652,7 +648,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 	  /* unrecognized line */
       } else {
 	cdio_log(log_level, "%s line %d: warning: unrecognized keyword: %s", 
-		 psz_toc_name, i_line, keyword);
+		 psz_cue_name, i_line, keyword);
 	goto err_exit;
       }
     }
@@ -668,12 +664,12 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
   
  format_error:
   cdio_log(log_level, "%s line %d after keyword %s", 
-	   psz_toc_name, i_line, keyword);
+	   psz_cue_name, i_line, keyword);
   goto err_exit;
   
  not_in_global_section:
   cdio_log(log_level, "%s line %d: keyword %s only allowed in global section", 
-	   psz_toc_name, i_line, keyword);
+	   psz_cue_name, i_line, keyword);
 
  err_exit: 
   fclose (fp);
@@ -726,19 +722,14 @@ _read_mode1_sector_cdrdao (void *user_data, void *data, lsn_t lsn,
   _img_private_t *env = user_data;
   int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  int blocksize = env->sector_2336 
-    ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
-  ret = cdio_stream_seek (env->tocent[0].data_source, lsn * blocksize, 
-			  SEEK_SET);
+  ret = cdio_stream_seek (env->tocent[0].data_source, 
+			  lsn * CDIO_CD_FRAMESIZE_RAW, SEEK_SET);
   if (ret!=0) return ret;
 
   /* FIXME: Not completely sure the below is correct. */
-  ret = cdio_stream_read (env->tocent[0].data_source,
-			  env->sector_2336 
-			  ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE) 
-			  : buf,
-			  blocksize, 1);
+  ret = cdio_stream_read (env->tocent[0].data_source, buf, 
+			  CDIO_CD_FRAMESIZE_RAW, 1);
   if (ret==0) return ret;
 
   memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
@@ -788,18 +779,12 @@ _read_mode2_sector_cdrdao (void *user_data, void *data, lsn_t lsn,
      Review this sector 2336 stuff later.
   */
 
-  int blocksize = env->sector_2336 
-    ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
-
-  ret = cdio_stream_seek (env->tocent[0].data_source, lsn * blocksize, 
-			  SEEK_SET);
+  ret = cdio_stream_seek (env->tocent[0].data_source, 
+			  lsn * CDIO_CD_FRAMESIZE_RAW, SEEK_SET);
   if (ret!=0) return ret;
 
-  ret = cdio_stream_read (env->tocent[0].data_source,
-			  env->sector_2336 
-			  ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE) 
-			  : buf,
-			  blocksize, 1);
+  ret = cdio_stream_read (env->tocent[0].data_source, buf, 
+			  CDIO_CD_FRAMESIZE_RAW, 1);
   if (ret==0) return ret;
 
 
@@ -825,102 +810,14 @@ _read_mode2_sectors_cdrdao (void *user_data, void *data, lsn_t lsn,
   _img_private_t *env = user_data;
   int i;
   int retval;
-  unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
     if ( (retval = _read_mode2_sector_cdrdao (env, 
-					    ((char *)data) + (blocksize * i),
+					    ((char *)data) + (CDIO_CD_FRAMESIZE * i),
 					    lsn + i, b_form2)) )
       return retval;
   }
   return 0;
-}
-
-#define free_if_notnull(obj) \
-  if (NULL != obj) { free(obj); obj=NULL; };
-
-static void 
-_free_cdrdao (void *obj) 
-{
-  _img_private_t *env = obj;
-  int i;
-
-  if (NULL == env) return;
-  free_if_notnull(env->psz_mcn);
-  for (i=0; i<env->i_tracks; i++) {
-    if (env->tocent[i].data_source)
-      cdio_stdio_destroy (env->tocent[i].data_source);
-    free_if_notnull(env->tocent[i].isrc);
-    free_if_notnull(env->tocent[i].filename);
-  }
-  free_if_notnull(env->psz_toc_name);
-  cdio_generic_stdio_free(env);
-  free(env);
-}
-
-/*!
-  Eject media -- there's nothing to do here except free resources.
-  We always return 2.
- */
-static int
-_eject_media_cdrdao(void *obj)
-{
-  _free_cdrdao (obj);
-  return 2;
-}
-
-/*!
-  Set the arg "key" with "value" in the source device.
-  Currently "source" to set the source device in I/O operations 
-  is the only valid key.
-
-  0 is returned if no error was found, and nonzero if there as an error.
-*/
-static int
-_set_arg_cdrdao (void *user_data, const char key[], const char value[])
-{
-  _img_private_t *env = user_data;
-
-  if (!strcmp (key, "sector"))
-    {
-      if (!strcmp (value, "2336"))
-	env->sector_2336 = true;
-      else if (!strcmp (value, "2352"))
-	env->sector_2336 = false;
-      else
-	return -2;
-    }
-  else if (!strcmp (key, "toc"))
-    {
-      free_if_notnull (env->psz_toc_name);
-
-      if (!value)
-	return -2;
-
-      env->psz_toc_name = strdup (value);
-    }
-  else
-    return -1;
-
-  return 0;
-}
-
-/*!
-  Return the value associated with the key "arg".
-*/
-static const char *
-_get_arg_cdrdao (void *user_data, const char key[])
-{
-  _img_private_t *env = user_data;
-
-  if (!strcmp (key, "source")) {
-    return env->tocent[0].filename;
-  } else if (!strcmp (key, "toc")) {
-    return env->psz_toc_name;
-  } else if (!strcmp(key, "access-mode")) {
-    return "image";
-  } 
-  return NULL;
 }
 
 /*!
@@ -1040,18 +937,18 @@ _get_lba_track_cdrdao(void *user_data, track_t i_track)
 
 */
 bool
-cdio_is_tocfile(const char *psz_toc_name) 
+cdio_is_tocfile(const char *psz_cue_name) 
 {
   int   i;
   
-  if (psz_toc_name == NULL) return false;
+  if (psz_cue_name == NULL) return false;
 
-  i=strlen(psz_toc_name)-strlen("toc");
+  i=strlen(psz_cue_name)-strlen("toc");
   
   if (i>0) {
-    if ( (psz_toc_name[i]=='t' && psz_toc_name[i+1]=='o' && psz_toc_name[i+2]=='c') 
-	 || (psz_toc_name[i]=='T' && psz_toc_name[i+1]=='O' && psz_toc_name[i+2]=='C') ) {
-      return parse_tocfile(NULL, psz_toc_name);
+    if ( (psz_cue_name[i]=='t' && psz_cue_name[i+1]=='o' && psz_cue_name[i+2]=='c') 
+	 || (psz_cue_name[i]=='T' && psz_cue_name[i+1]=='O' && psz_cue_name[i+2]=='C') ) {
+      return parse_tocfile(NULL, psz_cue_name);
     }
   }
   return false;
@@ -1077,15 +974,15 @@ cdio_open_am_cdrdao (const char *psz_source_name, const char *psz_access_mode)
   ones to set that up.
  */
 CdIo *
-cdio_open_cdrdao (const char *psz_toc_name)
+cdio_open_cdrdao (const char *psz_cue_name)
 {
   CdIo *ret;
   _img_private_t *_data;
 
   cdio_funcs _funcs = {
-    .eject_media        = _eject_media_cdrdao,
-    .free               = _free_cdrdao,
-    .get_arg            = _get_arg_cdrdao,
+    .eject_media        = _eject_media_image,
+    .free               = _free_image,
+    .get_arg            = _get_arg_image,
     .get_devices        = cdio_get_devices_cdrdao,
     .get_default_device = cdio_get_default_device_cdrdao,
     .get_drive_cap      = _get_drive_cap_cdrdao,
@@ -1103,35 +1000,38 @@ cdio_open_cdrdao (const char *psz_toc_name)
     .read_mode1_sectors = _read_mode1_sectors_cdrdao,
     .read_mode2_sector  = _read_mode2_sector_cdrdao,
     .read_mode2_sectors = _read_mode2_sectors_cdrdao,
-    .set_arg            = _set_arg_cdrdao,
+    .set_arg            = _set_arg_image,
     .stat_size          = _stat_size_cdrdao
   };
 
-  if (NULL == psz_toc_name) return NULL;
+  if (NULL == psz_cue_name) return NULL;
   
-  _data                    = _cdio_malloc (sizeof (_img_private_t));
-  (_data)->gen.init        = false;
-  (_data)->sector_2336     = false;
-  (_data)->psz_toc_name        = NULL;
-  (_data)->gen.data_source = NULL;
-  (_data)->gen.source_name = NULL;
+  _data                  = _cdio_malloc (sizeof (_img_private_t));
+  _data->gen.init        = false;
+  _data->psz_cue_name    = NULL;
+  _data->gen.data_source = NULL;
+  _data->gen.source_name = NULL;
 
   ret = cdio_new (_data, &_funcs);
 
-  if (ret == NULL) return NULL;
+  if (ret == NULL) {
+    free(_data);
+    return NULL;
+  }
 
-  if (!cdio_is_tocfile(psz_toc_name)) {
+  if (!cdio_is_tocfile(psz_cue_name)) {
     cdio_debug ("source name %s is not recognized as a TOC file", 
-		psz_toc_name);
+		psz_cue_name);
     return NULL;
   }
   
-  _set_arg_cdrdao (_data, "toc", psz_toc_name);
+  _set_arg_image (_data, "cue", psz_cue_name);
+  _set_arg_image (_data, "source", psz_cue_name);
 
   if (_init_cdrdao(_data)) {
     return ret;
   } else {
-    _free_cdrdao(_data);
+    _free_image(_data);
     free(ret);
     return NULL;
   }

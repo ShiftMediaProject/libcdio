@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.27 2004/07/10 02:17:59 rocky Exp $
+    $Id: nrg.c,v 1.28 2004/07/10 11:06:00 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -45,7 +45,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.27 2004/07/10 02:17:59 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.28 2004/07/10 11:06:00 rocky Exp $";
 
 
 /* reader */
@@ -70,6 +70,20 @@ typedef struct {
      This must be first. */
   generic_img_private_t gen; 
   internal_position_t pos; 
+
+  /* This is common to all image drivers... */
+  char         *psz_cue_name;
+  char         *psz_mcn;         /* Media Catalog Number (5.22.3) */
+
+  track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
+					         add 1 for leadout. */
+  track_t       i_tracks;        /* number of tracks in image */
+  track_t       i_first_track;   /* track number of first track */
+  cdtext_t      *cdtext;	/* CD-TEXT */
+  track_format_t mode;
+
+  /* Nero Specific stuff. Note: for the image_free to work, this *must*
+     be last. */
   bool          is_dao;          /* True if some of disk at once. False
 				    if some sort of track at once. */
   uint32_t      mtyp;            /* Value of MTYP (media type?) tag */
@@ -78,16 +92,11 @@ typedef struct {
   /* This is a hack because I don't really understnad NERO better. */
   bool            is_cues;
 
-  char         *psz_mcn;         /* Media Catalog Number (5.22.3) */
-  track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
-					         add 1 for leadout. */
-  track_t       i_tracks;        /* number of tracks in image */
-  track_t       i_first_track;   /* track number of first track */
   CdioList     *mapping;         /* List of track information */
   uint32_t      size;
 } _img_private_t;
 
-static bool     parse_nrg (_img_private_t *env, const char *psz_nrg_name);
+static bool     parse_nrg (_img_private_t *env, const char *psz_cue_name);
 static uint32_t _stat_size_nrg (void *user_data);
 
 #include "image_common.h"
@@ -994,8 +1003,10 @@ _free_nrg (void *user_data)
   if (NULL == env) return;
   if (NULL != env->mapping)
     _cdio_list_free (env->mapping, true); 
-  cdio_generic_stdio_free(env);
-  free(env);
+
+  /* The remaining part of the image is like the other image drivers,
+     so free that in the same way. */
+  _free_image(user_data);
 }
 
 /*!
@@ -1007,45 +1018,6 @@ _eject_media_nrg(void *obj)
 {
   _free_nrg (obj);
   return 2;
-}
-
-/*
-  Set the device to use in I/O operations.
-*/
-static int
-_set_arg_nrg (void *user_data, const char key[], const char value[])
-{
-  _img_private_t *env = user_data;
-
-  if (!strcmp (key, "source"))
-    {
-      free (env->gen.source_name);
-
-      if (!value)
-	return -2;
-
-      env->gen.source_name = strdup (value);
-    }
-  else
-    return -1;
-
-  return 0;
-}
-
-/*!
-  Return the value associated with the key "arg".
-*/
-static const char *
-_get_arg_nrg (void *user_data, const char key[])
-{
-  _img_private_t *env = user_data;
-
-  if (!strcmp (key, "source")) {
-    return env->gen.source_name;
-  } else if (!strcmp(key, "access-mode")) {
-    return "image";
-  }
-  return NULL;
 }
 
 /*!
@@ -1198,7 +1170,7 @@ cdio_open_nrg (const char *psz_source)
   cdio_funcs _funcs = {
     .eject_media        = _eject_media_nrg,
     .free               = _free_nrg,
-    .get_arg            = _get_arg_nrg,
+    .get_arg            = _get_arg_image,
     .get_devices        = cdio_get_devices_nrg,
     .get_default_device = cdio_get_default_device_nrg,
     .get_drive_cap      = _get_drive_cap_nrg,
@@ -1216,7 +1188,7 @@ cdio_open_nrg (const char *psz_source)
     .read_mode1_sectors = _read_mode1_sectors_nrg,
     .read_mode2_sector  = _read_mode2_sector_nrg,
     .read_mode2_sectors = _read_mode2_sectors_nrg,
-    .set_arg            = _set_arg_nrg,
+    .set_arg            = _set_arg_image,
     .stat_size          = _stat_size_nrg,
   };
 
@@ -1230,23 +1202,32 @@ cdio_open_nrg (const char *psz_source)
   _data->is_dao         = false; 
   _data->is_cues        = false; /* FIXME: remove is_cues. */
 
-  _set_arg_nrg(_data, "source", (NULL == psz_source) 
-	       ? DEFAULT_CDIO_DEVICE: psz_source);
-
   ret = cdio_new (_data, &_funcs);
 
-  if (ret == NULL) return NULL;
-
-  if (!cdio_is_nrg(psz_source)) {
-    cdio_debug ("source name %s is not recognized as a NRG image", 
-		psz_source);
+  if (ret == NULL) {
+    free(_data);
     return NULL;
   }
+
+  _set_arg_image(_data, "source", (NULL == psz_source) 
+	       ? DEFAULT_CDIO_DEVICE: psz_source);
+
+  _data->psz_cue_name   = strdup(_get_arg_image(_data, "source"));
+
+  if (!cdio_is_nrg(_data->psz_cue_name)) {
+    cdio_debug ("source name %s is not recognized as a NRG image", 
+		_data->psz_cue_name);
+    _free_nrg(_data);
+    return NULL;
+  }
+
+  _set_arg_image (_data, "cue", _data->psz_cue_name);
 
   if (_init_nrg(_data))
     return ret;
   else {
     _free_nrg(_data);
+    free(ret);
     return NULL;
   }
 

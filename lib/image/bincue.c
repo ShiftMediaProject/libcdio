@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.30 2004/07/10 02:17:59 rocky Exp $
+    $Id: bincue.c,v 1.31 2004/07/10 11:06:00 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.30 2004/07/10 02:17:59 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.31 2004/07/10 11:06:00 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -77,13 +77,14 @@ typedef struct {
   internal_position_t pos; 
   
   char         *psz_cue_name;
-  char         *psz_mcn;         /* Media Catalog Number. */
+  char         *psz_mcn;        /* Media Catalog Number (5.22.3) 
+				   exactly 13 bytes */
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
 					         add 1 for leadout. */
   track_t       i_tracks;    /* number of tracks in image */
   track_t       i_first_track;   /* track number of first track */
   cdtext_t      *cdtext;	/* CD-TEXT */
-  bool have_cue;
+  track_format_t mode;
 } _img_private_t;
 
 #if 0
@@ -125,12 +126,10 @@ _bincue_init (_img_private_t *env)
 
   /* Read in CUE sheet. */
 #if 0
-  env->have_cue = _bincue_image_read_cue(env);
+  if ( !_bincue_image_read_cue(env) ) return false;
 #else 
-  env->have_cue = parse_cuefile(env, env->psz_cue_name);
+  if ( !parse_cuefile(env, env->psz_cue_name) ) return false;
 #endif
-
-  if ( !env->have_cue ) return false;
 
   /* Fake out leadout track and sector count for last track*/
   cdio_lsn_to_msf (lead_lsn, &env->tocent[env->i_tracks].start_msf);
@@ -816,7 +815,6 @@ _bincue_image_read_cue (_img_private_t *env)
       }
     }
   }
-  env->have_cue = env->i_tracks != 0;
 
   fclose (fp);
   return true;
@@ -965,95 +963,6 @@ _read_mode2_sectors_bincue (void *user_data, void *data, lsn_t lsn,
       return retval;
   }
   return 0;
-}
-
-#define free_if_notnull(obj) \
-  if (NULL != obj) { free(obj); obj=NULL; };
-
-static void 
-_free_bincue (void *user_data) 
-{
-  _img_private_t *env = user_data;
-  track_t i_track;
-
-  if (NULL == env) return;
-
-  for (i_track=0; i_track < env->i_tracks; i_track++) {
-    free_if_notnull(env->tocent[i_track].filename);
-    free_if_notnull(env->tocent[i_track].isrc);
-    cdtext_delete(env->tocent[i_track].cdtext);
-  }
-
-  free_if_notnull(env->psz_mcn);
-  free_if_notnull(env->psz_cue_name);
-  cdtext_delete(env->cdtext);
-  cdio_generic_stdio_free(env);
-  free(env);
-}
-
-/*!
-  Eject media -- there's nothing to do here except free resources.
-  We always return 2.
- */
-static int
-_eject_media_bincue(void *user_data)
-{
-  _free_bincue (user_data);
-  return 2;
-}
-
-/*!
-  Set the arg "key" with "value" in the source device.
-  Currently "source" to set the source device in I/O operations 
-  is the only valid key.
-
-  0 is returned if no error was found, and nonzero if there as an error.
-*/
-static int
-_set_arg_bincue (void *user_data, const char key[], const char value[])
-{
-  _img_private_t *env = user_data;
-
-  if (!strcmp (key, "source"))
-    {
-      free_if_notnull (env->gen.source_name);
-
-      if (!value)
-	return -2;
-
-      env->gen.source_name = strdup (value);
-    }
-  else if (!strcmp (key, "cue"))
-    {
-      free_if_notnull (env->psz_cue_name);
-
-      if (!value)
-	return -2;
-
-      env->psz_cue_name = strdup (value);
-    }
-  else
-    return -1;
-
-  return 0;
-}
-
-/*!
-  Return the value associated with the key "arg".
-*/
-static const char *
-_get_arg_bincue (void *user_data, const char key[])
-{
-  _img_private_t *env = user_data;
-
-  if (!strcmp (key, "source")) {
-    return env->gen.source_name;
-  } else if (!strcmp (key, "cue")) {
-    return env->psz_cue_name;
-  } else if (!strcmp(key, "access-mode")) {
-    return "image";
-  } 
-  return NULL;
 }
 
 /*!
@@ -1275,9 +1184,9 @@ cdio_open_cue (const char *psz_cue_name)
   char *psz_bin_name;
 
   cdio_funcs _funcs = {
-    .eject_media        = _eject_media_bincue,
-    .free               = _free_bincue,
-    .get_arg            = _get_arg_bincue,
+    .eject_media        = _eject_media_image,
+    .free               = _free_image,
+    .get_arg            = _get_arg_image,
     .get_devices        = cdio_get_devices_bincue,
     .get_default_device = cdio_get_default_device_bincue,
     .get_drive_cap      = _get_drive_cap_bincue,
@@ -1295,19 +1204,22 @@ cdio_open_cue (const char *psz_cue_name)
     .read_mode1_sectors = _read_mode1_sectors_bincue,
     .read_mode2_sector  = _read_mode2_sector_bincue,
     .read_mode2_sectors = _read_mode2_sectors_bincue,
-    .set_arg            = _set_arg_bincue,
+    .set_arg            = _set_arg_image,
     .stat_size          = _stat_size_bincue
   };
 
   if (NULL == psz_cue_name) return NULL;
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
-  (_data)->gen.init    = false;
-  (_data)->psz_cue_name    = NULL;
+  _data->gen.init       = false;
+  _data->psz_cue_name   = NULL;
 
   ret = cdio_new (_data, &_funcs);
 
-  if (ret == NULL) return NULL;
+  if (ret == NULL) {
+    free(_data);
+    return NULL;
+  }
 
   psz_bin_name = cdio_is_cuefile(psz_cue_name);
 
@@ -1316,14 +1228,14 @@ cdio_open_cue (const char *psz_cue_name)
 		psz_cue_name);
   }
   
-  _set_arg_bincue (_data, "cue", psz_cue_name);
-  _set_arg_bincue (_data, "source", psz_bin_name);
+  _set_arg_image (_data, "cue", psz_cue_name);
+  _set_arg_image (_data, "source", psz_bin_name);
   free(psz_bin_name);
 
   if (_bincue_init(_data)) {
     return ret;
   } else {
-    _free_bincue(_data);
+    _free_image(_data);
     free(ret);
     return NULL;
   }

@@ -1,5 +1,5 @@
 /*
-    $Id: image.h,v 1.1 2004/07/10 02:17:59 rocky Exp $
+    $Id: image.h,v 1.2 2004/07/10 11:06:00 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -18,7 +18,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Common image routines. */
+/*! 
+  Header for image drivers. In contrast to image_common.h which contains
+  routines, this header like most C headers does not depend on anything
+  defined before it is included.
+*/
 
 #ifndef __CDIO_IMAGE_H__
 #define __CDIO_IMAGE_H__
