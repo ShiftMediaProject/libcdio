@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.23 2004/02/27 02:35:24 rocky Exp $
+#   $Id: Makefile.am,v 1.24 2004/02/28 19:48:17 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -44,8 +44,8 @@ libcdio_la_CURRENT := 0
 libcdio_la_REVISION := 1
 libcdio_la_AGE := 0
 
-libiso9660_la_CURRENT := 0
-libiso9660_la_REVISION := 1
+libiso9660_la_CURRENT := 1
+libiso9660_la_REVISION := 0
 libiso9660_la_AGE := 0
 
 noinst_HEADERS = cdio_assert.h bytesex.h bytesex_asm.h \
