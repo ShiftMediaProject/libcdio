@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.19 2003/08/16 12:59:03 rocky Exp $
+    $Id: cd-info.c,v 1.20 2003/08/16 15:34:58 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -52,6 +52,7 @@
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
 #include <cdio/util.h>
+#include <cdio/cd_types.h>
 
 #include <fcntl.h>
 #ifdef __linux__
@@ -63,7 +64,6 @@
 #endif
  
 #include <errno.h>
-#include "analyze.h"
 
 #ifdef ENABLE_NLS
 #include <locale.h>
@@ -108,20 +108,14 @@
 #define NORMAL ""
 #endif
 
-CdIo *cdio; 
-cdio_analysis_t cdio_analysis;
+/* Used figure out what type of filesystem or CD image we've got. */
+cdio_analysis_t cdio_analysis; 
 
 #if CDIO_IOCTL_FINISHED
 struct cdrom_mcn           mcn;
 struct cdrom_multisession  ms;
 struct cdrom_subchnl       sub;
 #endif
-
-int                        first_data = -1;        /* # of first data track */
-int                        num_data = 0;                /* # of data tracks */
-int                        first_audio = -1;      /* # of first audio track */
-int                        num_audio = 0;              /* # of audio tracks */
-
 
 char *source_name = NULL;
 char *program_name;
@@ -479,7 +473,7 @@ _log_handler (cdio_log_level_t level, const char message[])
 
 #ifdef HAVE_CDDB
 static void 
-print_cddb_info(track_t num_tracks, track_t first_track_num) {
+print_cddb_info(CdIo *cdio, track_t num_tracks, track_t first_track_num) {
   int i, matches;
   
   cddb_conn_t *conn =  cddb_new();
@@ -570,9 +564,9 @@ print_vcd_info(void) {
       return;
     }
     fprintf (stdout, "format: %s\n", vcdinfo_get_format_version_str(obj));
-    fprintf (stdout, "album id: `%.16s'\n", vcdinfo_get_album_id(obj));
-    fprintf (stdout, "volume count: %d\n", vcdinfo_get_volume_count(obj));
-    fprintf (stdout, "volume number: %d\n", vcdinfo_get_volume_num(obj));
+    fprintf (stdout, "album id: `%.16s'\n",  vcdinfo_get_album_id(obj));
+    fprintf (stdout, "volume count: %d\n",   vcdinfo_get_volume_count(obj));
+    fprintf (stdout, "volume number: %d\n",  vcdinfo_get_volume_num(obj));
     fprintf (stdout, "system id: `%s'\n",    vcdinfo_get_system_id(obj));
     fprintf (stdout, "volume id: `%s'\n",    vcdinfo_get_volume_id(obj));
     fprintf (stdout, "volumeset id: `%s'\n", vcdinfo_get_volumeset_id(obj));
@@ -603,22 +597,22 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
 {
   int need_lf;
   
-  switch(fs & CDIO_FS_MASK) {
+  switch(CDIO_FSTYPE(fs)) {
   case CDIO_FS_NO_DATA:
     if (num_audio > 0) {
       printf("Audio CD, CDDB disc ID is %08lx\n", 
 	     cddb_discid(cdio, num_tracks));
 #ifdef HAVE_CDDB
-      if (!opts.no_cddb) print_cddb_info(num_tracks, first_track_num);
+      if (!opts.no_cddb) print_cddb_info(cdio, num_tracks, first_track_num);
 #endif      
     }
     break;
   case CDIO_FS_ISO_9660:
     printf("CD-ROM with ISO 9660 filesystem");
-    if (fs & JOLIET) {
+    if (fs & CDIO_FS_ANAL_JOLIET) {
       printf(" and joliet extension level %d", cdio_analysis.joliet_level);
     }
-    if (fs & ROCKRIDGE)
+    if (fs & CDIO_FS_ANAL_ROCKRIDGE)
       printf(" and rockridge extensions");
     printf("\n");
     break;
@@ -650,7 +644,7 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
     printf("CD-ROM with unknown filesystem\n");
     break;
   }
-  switch(fs & CDIO_FS_MASK) {
+  switch(CDIO_FSTYPE(fs)) {
   case CDIO_FS_ISO_9660:
   case CDIO_FS_ISO_9660_INTERACTIVE:
   case CDIO_FS_ISO_HFS:
@@ -661,22 +655,22 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
   need_lf = 0;
   if (first_data == 1 && num_audio > 0)
     need_lf += printf("mixed mode CD   ");
-  if (fs & XA)
+  if (fs & CDIO_FS_ANAL_XA)
     need_lf += printf("XA sectors   ");
-  if (fs & MULTISESSION)
+  if (fs & CDIO_FS_ANAL_MULTISESSION)
     need_lf += printf("Multisession, offset = %i   ", ms_offset);
-  if (fs & HIDDEN_TRACK)
+  if (fs & CDIO_FS_ANAL_HIDDEN_TRACK)
     need_lf += printf("Hidden Track   ");
-  if (fs & PHOTO_CD)
+  if (fs & CDIO_FS_ANAL_PHOTO_CD)
     need_lf += printf("%sPhoto CD   ", 
 		      num_audio > 0 ? " Portfolio " : "");
-  if (fs & CDTV)
+  if (fs & CDIO_FS_ANAL_CDTV)
     need_lf += printf("Commodore CDTV   ");
   if (first_data > 1)
     need_lf += printf("CD-Plus/Extra   ");
-  if (fs & BOOTABLE)
+  if (fs & CDIO_FS_ANAL_BOOTABLE)
     need_lf += printf("bootable CD   ");
-  if (fs & VIDEOCDI && num_audio == 0) {
+  if (fs & CDIO_FS_ANAL_VIDEOCDI && num_audio == 0) {
     need_lf += printf("Video CD   ");
 #ifdef HAVE_VCDINFO
     if (!opts.no_vcd) {
@@ -685,9 +679,9 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
     }
 #endif    
   }
-  if (fs & SVCD)
+  if (fs & CDIO_FS_ANAL_SVCD)
     need_lf += printf("Super Video CD (SVCD) or Chaoji Video CD (CVD)");
-  if (fs & CVD)
+  if (fs & CDIO_FS_ANAL_CVD)
     need_lf += printf("Chaoji Video CD (CVD)");
   if (need_lf) printf("\n");
 }
@@ -698,14 +692,19 @@ int
 main(int argc, const char *argv[])
 {
 
-  int fs=0;
+  CdIo          *cdio=NULL;
+  cdio_fs_anal_t fs=0;
   int i;
-  lsn_t   start_track;          /* first sector of track */
-  lsn_t   data_start =0;        /* start of data area */
-  int     ms_offset = 0;
-  track_t num_tracks=0;
-  track_t first_track_num=0;
-  
+  lsn_t          start_track;          /* first sector of track */
+  lsn_t          data_start =0;        /* start of data area */
+  int            ms_offset = 0;
+  track_t        num_tracks=0;
+  track_t        first_track_num  =  0;
+  unsigned int   num_audio   =  0;  /* # of audio tracks */
+  unsigned int   num_data    =  0;  /* # of data tracks */
+  int            first_data  = -1;  /* # of first data track */
+  int            first_audio = -1;  /* # of first audio track */
+
   poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
   gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
@@ -928,9 +927,9 @@ main(int argc, const char *argv[])
       
       /* CD-I/Ready says start_track <= 30*75 then CDDA */
       if (start_track > 100 /* 100 is just a guess */) {
-	fs = cdio_guess_filesystem(cdio, 0, 1, &cdio_analysis);
-	if ((fs & CDIO_FS_MASK) != CDIO_FS_UNKNOWN)
-	  fs |= HIDDEN_TRACK;
+	fs = cdio_guess_cd_type(cdio, 0, 1, &cdio_analysis);
+	if ((CDIO_FSTYPE(fs)) != CDIO_FS_UNKNOWN)
+	  fs |= CDIO_FS_ANAL_HIDDEN_TRACK;
 	else {
 	  fs &= ~CDIO_FS_MASK; /* del filesystem info */
 	  printf("Oops: %i unused sectors at start, "
@@ -971,7 +970,7 @@ main(int argc, const char *argv[])
 	if (start_track < data_start + cdio_analysis.isofs_size)
 	  continue;
 	
-	fs = cdio_guess_filesystem(cdio, start_track, i, &cdio_analysis);
+	fs = cdio_guess_cd_type(cdio, start_track, i, &cdio_analysis);
 
 	if (i > 1) {
 	  /* track is beyond last session -> new session found */
@@ -981,18 +980,19 @@ main(int argc, const char *argv[])
 		 j++, i, start_track, cdio_analysis.isofs_size);
 	  printf("ISO 9660: %i blocks, label `%.32s'\n",
 		 cdio_analysis.isofs_size, cdio_analysis.iso_label);
-	  fs |= MULTISESSION;
+	  fs |= CDIO_FS_ANAL_MULTISESSION;
 	} else {
 	  print_analysis(ms_offset, cdio_analysis, fs, first_data, num_audio,
 			 num_tracks, first_track_num, cdio);
 	}
-	
-	if (!(((fs & CDIO_FS_MASK) == CDIO_FS_ISO_9660 ||
-	       (fs & CDIO_FS_MASK) == CDIO_FS_ISO_HFS ||
-	       /* (fs & CDIO_FS_MASK) == CDIO_FS_ISO_9660_INTERACTIVE) 
+
+	if ( !(CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660 ||
+	       CDIO_FSTYPE(fs) == CDIO_FS_ISO_HFS  ||
+	       /* CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660_INTERACTIVE) 
 		  && (fs & XA))) */
-	       (fs & CDIO_FS_MASK) == CDIO_FS_ISO_9660_INTERACTIVE)))
-	  break;	/* no method for non-iso9660 multisessions */
+	       CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660_INTERACTIVE) )
+	  /* no method for non-ISO9660 multisessions */
+	  break;
       }
     }
   }

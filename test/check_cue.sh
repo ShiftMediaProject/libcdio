@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh,v 1.2 2003/08/16 12:59:03 rocky Exp $
+#$Id: check_cue.sh,v 1.3 2003/08/16 15:34:58 rocky Exp $
 if test -n "@CDDB_LIB@" ; then
   cddb_opt='--no-cddb'
 fi
