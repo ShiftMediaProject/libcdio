@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.c,v 1.6 2005/01/19 09:40:50 rocky Exp $
+    $Id: image_common.c,v 1.7 2005/01/23 05:31:03 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -29,6 +29,7 @@
 
 #include "image.h"
 #include "image_common.h"
+#include "_cdio_stdio.h"
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -62,9 +63,11 @@ _free_image (void *p_user_data)
   if (NULL == p_env) return;
 
   for (i_track=0; i_track < p_env->gen.i_tracks; i_track++) {
-    free_if_notnull(p_env->tocent[i_track].filename);
-    free_if_notnull(p_env->tocent[i_track].isrc);
-    cdtext_destroy(&(p_env->tocent[i_track].cdtext));
+    track_info_t *p_tocent = &(p_env->tocent[i_track]);
+    free_if_notnull(p_tocent->filename);
+    free_if_notnull(p_tocent->isrc);
+    cdtext_destroy(&(p_tocent->cdtext));
+    if (p_tocent->data_source) cdio_stdio_destroy(p_tocent->data_source);
   }
 
   free_if_notnull(p_env->psz_mcn);

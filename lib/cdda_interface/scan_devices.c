@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.15 2005/01/22 03:45:19 rocky Exp $
+  $Id: scan_devices.c,v 1.16 2005/01/23 05:31:03 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -307,9 +307,12 @@ cdda_identify_cooked(const char *psz_dev, int messagedest,
     char *psz_device = test_resolve_symlink(psz_dev, messagedest, 
 					    ppsz_messages);
     if ( psz_device ) {
+      cdrom_drive_t *d=NULL;
       p_cdio = cdio_open(psz_device, DRIVER_UNKNOWN);
-      return cdda_identify_device_cdio(p_cdio, psz_device, messagedest, 
-				       ppsz_messages);
+      d = cdda_identify_device_cdio(p_cdio, psz_device, messagedest, 
+				    ppsz_messages);
+      free(psz_device);
+      return d;
     }
   }
   p_cdio = cdio_open(psz_dev, DRIVER_UNKNOWN);

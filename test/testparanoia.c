@@ -43,7 +43,7 @@
 #define SKIP_TEST_RC 77
 
 #define MAX_SECTORS 50
-uint8_t audio_buf[MAX_SECTORS][CDIO_CD_FRAMESIZE_RAW];
+uint8_t audio_buf[MAX_SECTORS][CDIO_CD_FRAMESIZE_RAW] = { {0}, };
 paranoia_cb_mode_t audio_status[MAX_SECTORS];
 unsigned int i = 0;
 

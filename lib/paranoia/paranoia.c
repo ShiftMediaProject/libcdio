@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.7 2005/01/14 01:37:33 rocky Exp $
+  $Id: paranoia.c,v 1.8 2005/01/23 05:31:03 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -1211,7 +1211,7 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
     new=new_c_block(p);
   }
 
-  buffer=malloc(totaltoread*CDIO_CD_FRAMESIZE_RAW);
+  buffer=calloc(1, totaltoread*CDIO_CD_FRAMESIZE_RAW);
   sofar=0;
   firstread=-1;
   

@@ -1,5 +1,5 @@
 /*
-  $Id: isort.c,v 1.3 2005/01/07 02:42:29 rocky Exp $
+  $Id: isort.c,v 1.4 2005/01/23 05:31:03 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -47,7 +47,7 @@ sort_alloc(long size)
   ret->maxsize=size;
 
   ret->head=calloc(65536,sizeof(sort_link *));
-  ret->bucketusage=malloc(65536*sizeof(long));
+  ret->bucketusage=calloc(1, 65536*sizeof(long));
   ret->revindex=calloc(size,sizeof(sort_link));
   ret->lastbucket=0;
 

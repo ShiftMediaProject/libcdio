@@ -1,5 +1,5 @@
 /*
-    $Id: p_block.c,v 1.5 2005/01/10 02:10:47 rocky Exp $
+    $Id: p_block.c,v 1.6 2005/01/23 05:31:03 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -303,10 +303,11 @@ c_insert(c_block_t *v,long pos,int16_t *b,long size)
   int vs=cs(v);
   if(pos<0 || pos>vs)return;
 
-  if(v->vector)
-    v->vector=realloc(v->vector,sizeof(int16_t)*(size+vs));
-  else
-    v->vector=malloc(sizeof(int16_t)*size);
+  if(v->vector) {
+    v->vector = realloc(v->vector,sizeof(int16_t)*(size+vs));
+  } else {
+    v->vector = calloc(1, sizeof(int16_t)*size);
+  }
   
   if(pos<vs)memmove(v->vector+pos+size,v->vector+pos,
 		       (vs-pos)*sizeof(int16_t));
@@ -349,8 +350,9 @@ c_append(c_block_t *v, int16_t *vector, long size)
   /* update the vector */
   if(v->vector)
     v->vector=realloc(v->vector,sizeof(int16_t)*(size+vs));
-  else
-    v->vector=malloc(sizeof(int16_t)*size);
+  else {
+    v->vector=calloc(1, sizeof(int16_t)*size);
+  }
   memcpy(v->vector+vs,vector,sizeof(int16_t)*size);
 
   v->size+=size;
