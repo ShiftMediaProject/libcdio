@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.10 2005/01/23 05:31:03 rocky Exp $
+    $Id: win32.c,v 1.11 2005/01/23 17:14:33 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.10 2005/01/23 05:31:03 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.11 2005/01/23 17:14:33 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -166,7 +166,7 @@ is_cdrom_win32(const char drive_letter) {
   Return 0 if command completed successfully.
  */
 static int
-run_scsi_cmd_win32( const void *p_user_data, unsigned int i_timeout_ms,
+run_scsi_cmd_win32( void *p_user_data, unsigned int i_timeout_ms,
 		    unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 		    scsi_mmc_direction_t e_direction, 
 		    unsigned int i_buf, /*in/out*/ void *p_buf )
@@ -238,14 +238,19 @@ _free_win32 (void *user_data)
    Returns 0 if no error. 
  */
 static int
-_cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn, 
-			  unsigned int nblocks) 
+_cdio_read_audio_sectors (void *p_user_data, void *p_buf, lsn_t i_lsn, 
+			  unsigned int i_blocks) 
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   if ( p_env->hASPI ) {
-    return read_audio_sectors_aspi( p_env, data, lsn, nblocks );
+    return read_audio_sectors_aspi( p_env, p_buf, i_lsn, i_blocks );
   } else {
-    return read_audio_sectors_win32ioctl( p_env, data, lsn, nblocks );
+#if 0
+    return read_audio_sectors_win32ioctl( p_env, p_buf, i_lsn, i_blocks );
+#else
+    return scsi_mmc_read_sectors( p_env->gen.cdio, p_buf, i_lsn,
+                                  CDIO_MMC_READ_TYPE_CDDA, i_blocks);
+#endif
   }
 }
 
@@ -254,10 +259,10 @@ _cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_mode1_sector (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode1_sector (void *p_user_data, void *p_buf, lsn_t lsn, 
 			 bool b_form2)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (p_env->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
@@ -274,9 +279,9 @@ _cdio_read_mode1_sector (void *user_data, void *data, lsn_t lsn,
   p_env->gen.ioctls_debugged++;
 
   if ( p_env->hASPI ) {
-    return read_mode1_sector_aspi( p_env, data, lsn, b_form2 );
+    return read_mode1_sector_aspi( p_env, p_buf, lsn, b_form2 );
   } else {
-    return read_mode1_sector_win32ioctl( p_env, data, lsn, b_form2 );
+    return read_mode1_sector_win32ioctl( p_env, p_buf, lsn, b_form2 );
   }
 }
 
@@ -286,17 +291,17 @@ _cdio_read_mode1_sector (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode1_sectors (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode1_sectors (void *p_user_data, void *p_buf, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   int i;
   int retval;
 
   for (i = 0; i < nblocks; i++) {
     if (b_form2) {
       if ( (retval = _cdio_read_mode1_sector (p_env, 
-					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
+					  ((char *)p_buf) + (M2RAW_SECTOR_SIZE * i),
 					  lsn + i, true)) )
 	return retval;
     } else {
@@ -304,7 +309,7 @@ _cdio_read_mode1_sectors (void *user_data, void *data, lsn_t lsn,
       if ( (retval = _cdio_read_mode1_sector (p_env, buf, lsn + i, false)) )
 	return retval;
       
-      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
+      memcpy (((char *)p_buf) + (CDIO_CD_FRAMESIZE * i), 
 	      buf, CDIO_CD_FRAMESIZE);
     }
   }
@@ -316,11 +321,11 @@ _cdio_read_mode1_sectors (void *user_data, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode2_sector (void *p_user_data, void *data, lsn_t lsn, 
 		    bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (p_env->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
@@ -338,7 +343,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 
   if ( p_env->hASPI ) {
     int ret;
-    ret = read_mode2_sector_aspi(user_data, buf, lsn, 1);
+    ret = read_mode2_sector_aspi(p_user_data, buf, lsn, 1);
     if( ret != 0 ) return ret;
     if (b_form2)
       memcpy (data, buf, M2RAW_SECTOR_SIZE);
@@ -356,7 +361,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode2_sectors (void *p_user_data, void *data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
   int i;
@@ -364,7 +369,7 @@ _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _cdio_read_mode2_sector (user_data, 
+    if ( (retval = _cdio_read_mode2_sector (p_user_data, 
 					    ((char *)data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -376,9 +381,9 @@ _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-stat_size_win32 (void *user_data)
+stat_size_win32 (void *p_user_data)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   return p_env->tocent[p_env->gen.i_tracks].start_lsn;
 }
@@ -387,9 +392,9 @@ stat_size_win32 (void *user_data)
   Set the key "arg" to "value" in source device.
 */
 static int
-set_arg_win32 (void *user_data, const char key[], const char value[])
+set_arg_win32 (void *p_user_data, const char key[], const char value[])
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (!strcmp (key, "source"))
     {
@@ -439,11 +444,11 @@ read_toc_win32 (void *p_user_data)
   Eject media. Return 1 if successful, 0 otherwise.
  */
 static int 
-_cdio_eject_media (void *user_data) {
+_cdio_eject_media (void *p_user_data) {
 #ifdef _XBOX
-  return -1;
+  return DRIVER_OP_UNSUPPORTED;
 #else
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
 
   MCI_OPEN_PARMS op;
@@ -455,7 +460,7 @@ _cdio_eject_media (void *user_data) {
   memset( &op, 0, sizeof(MCI_OPEN_PARMS) );
   op.lpstrDeviceType = (LPCSTR)MCI_DEVTYPE_CD_AUDIO;
   strcpy( psz_drive, "X:" );
-  psz_drive[0] = env->gen.source_name[0];
+  psz_drive[0] = p_env->gen.source_name[0];
   op.lpstrElementName = psz_drive;
   
   /* Set the flags for the device type */
@@ -479,14 +484,14 @@ _cdio_eject_media (void *user_data) {
   Return the value associated with the key "arg".
 */
 static const char *
-_get_arg_win32 (void *user_data, const char key[])
+_get_arg_win32 (void *p_user_data, const char key[])
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (!strcmp (key, "source")) {
-    return env->gen.source_name;
+    return p_env->gen.source_name;
   } else if (!strcmp (key, "access-mode")) {
-    if (env->hASPI) 
+    if (p_env->hASPI) 
       return "ASPI";
     else 
       return "ioctl";
