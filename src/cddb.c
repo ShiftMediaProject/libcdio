@@ -1,5 +1,5 @@
 /*
-  $Id: cddb.c,v 1.1 2005/03/06 11:21:52 rocky Exp $
+  $Id: cddb.c,v 1.2 2005/03/06 16:00:35 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -23,16 +23,8 @@
 #endif
 
 #include <cdio/cdio.h>
-#include <cdio/util.h>
+#include <cdio/audio.h>
 #include "cddb.h"
-
-/* Return the number of seconds (discarding frame portion) of an MSF */
-static inline unsigned int
-msf_seconds(msf_t *p_msf) 
-{
-  return 
-    cdio_from_bcd8(p_msf->m)*CDIO_CD_SECS_PER_MIN + cdio_from_bcd8(p_msf->s);
-}
 
 /*!
    Returns the sum of the decimal digits in a number. Eg. 1955 = 20
@@ -65,13 +57,13 @@ cddb_discid(CdIo_t *p_cdio, track_t i_tracks)
   
   for (i = 1; i <= i_tracks; i++) {
     cdio_get_track_msf(p_cdio, i, &msf);
-    n += cddb_dec_digit_sum(msf_seconds(&msf));
+    n += cddb_dec_digit_sum(cdio_audio_get_msf_seconds(&msf));
   }
 
   cdio_get_track_msf(p_cdio, 1, &start_msf);
   cdio_get_track_msf(p_cdio, CDIO_CDROM_LEADOUT_TRACK, &msf);
   
-  t = msf_seconds(&msf) - msf_seconds(&start_msf);
+  t = cdio_audio_get_msf_seconds(&msf)-cdio_audio_get_msf_seconds(&start_msf);
   
   return ((n % 0xff) << 24 | t << 8 | i_tracks);
 }
