@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.24 2004/07/31 07:43:26 rocky Exp $
+    $Id: scsi_mmc.h,v 1.25 2004/08/01 11:29:13 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -46,6 +46,7 @@
 #define CDIO_MMC_GPCMD_READ_TOC              0x43
 #define CDIO_MMC_GPCMD_READ_HEADER           0x44
 #define CDIO_MMC_GPCMD_PLAY_AUDIO_10         0x45
+#define CDIO_MMC_GPCMD_GET_CONFIGURATION     0x46
 #define CDIO_MMC_GPCMD_PLAY_AUDIO_MSF        0x47
 #define CDIO_MMC_GPCMD_PLAY_AUDIO_TI         0x48
 #define CDIO_MMC_GPCMD_PLAY_TRACK_REL_10     0x49
@@ -109,6 +110,7 @@
 #define CDIO_MMC_HW_MODEL_LEN    16 /**< length of model field */
 #define CDIO_MMC_HW_REVISION_LEN  4 /**< length of revision field */
 
+/*! Structure to return data given by the INQUIRY command  */
 typedef struct scsi_mmc_hwinfo 
 {
   char vendor  [CDIO_MMC_HW_VENDOR_LEN+1];
@@ -134,6 +136,17 @@ typedef struct scsi_mmc_hwinfo
 typedef struct scsi_mmc_cdb {
   uint8_t field[MAX_CDB_LEN];
 } scsi_mmc_cdb_t;
+
+typedef struct scsi_mmc_feature_list_header {
+  unsigned char lenght_msb;
+  unsigned char lenght_1sb;
+  unsigned char lenght_2sb;
+  unsigned char lenght_lsb;
+  unsigned char reserved1;
+  unsigned char reserved2;
+  unsigned char profile_msb;
+  unsigned char profile_lsb;
+} scs_mmc_feature_list_header_t;
 
 /*! An enumeration indicating whether a SCSI MMC command is sending
     data or getting data.
