@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.42 2005/01/16 04:20:32 rocky Exp $
+#   $Id: Makefile.am,v 1.43 2005/01/18 03:46:40 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -65,7 +65,8 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right vcd_demo_vcdinfo_toc.right \
              check_opts6.right check_opts7.right \
 	     isofs-m1-read.right cdda-read.right \
 	     t1.toc t2.toc t3.toc t4.toc t5.toc t6.toc t7.toc t8.toc t9.toc \
-	     data1.toc data2.toc data5.toc data6.toc data7.toc cdtext.toc \
+	     data1.toc data2.toc data5.toc data6.toc data7.toc \
+	     vcd2.toc cdtext.toc \
 	     bad-mode1.cue bad-msf-1.cue bad-msf-2.cue bad-msf-3.cue \
 	     bad-mode1.toc bad-msf-1.toc bad-msf-2.toc bad-msf-3.toc \
 	     bad-cat1.cue bad-cat2.cue bad-cat3.cue \
