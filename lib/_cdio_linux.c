@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.17 2003/09/14 09:34:17 rocky Exp $
+    $Id: _cdio_linux.c,v 1.18 2003/09/17 12:16:42 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.17 2003/09/14 09:34:17 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.18 2003/09/17 12:16:42 rocky Exp $";
 
 #include <string.h>
 
@@ -422,7 +422,7 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 
   _img_private_t *_obj = user_data;
 
-  cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
+  cdio_lsn_to_msf (lsn, &_msf);
   msf->cdmsf_min0 = from_bcd8(_msf.m);
   msf->cdmsf_sec0 = from_bcd8(_msf.s);
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
