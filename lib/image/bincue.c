@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.26 2004/07/09 02:46:42 rocky Exp $
+    $Id: bincue.c,v 1.27 2004/07/09 10:12:15 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.26 2004/07/09 02:46:42 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.27 2004/07/09 10:12:15 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -48,6 +48,9 @@ static const char _rcsid[] = "$Id: bincue.c,v 1.26 2004/07/09 02:46:42 rocky Exp
 #endif
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
+#endif
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
 #endif
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -131,21 +134,19 @@ typedef struct {
   generic_img_private_t gen; 
   internal_position_t pos; 
   
-  bool sector_2336;              /* Playstation (PSX) uses 2336-byte sectors */
-
   char         *psz_cue_name;
   char         *psz_mcn;         /* Media Catalog Number. */
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
 					         add 1 for leadout. */
   track_t       i_tracks;    /* number of tracks in image */
   track_t       i_first_track;   /* track number of first track */
-  char         *psz_catalog;
   cdtext_t      *cdtext;	/* CD-TEXT */
   bool have_cue;
 } _img_private_t;
 
 static bool     _bincue_image_read_cue (_img_private_t *env);
 static uint32_t _stat_size_bincue (void *user_data);
+static bool     parse_cuefile (_img_private_t *cd, const char *toc_name);
 
 #include "image_common.h"
 
@@ -168,42 +169,25 @@ _bincue_init (_img_private_t *env)
   /* Have to set init before calling _stat_size_bincue() or we will
      get into infinite recursion calling passing right here.
    */
-  env->gen.init = true;  
+  env->gen.init      = true;  
+  env->i_first_track = 1;
+  env->psz_mcn       = NULL;
 
   lead_lsn = _stat_size_bincue( (_img_private_t *) env);
 
-  if (-1 == lead_lsn) 
-    return false;
+  if (-1 == lead_lsn) return false;
+
+  if ((env->psz_cue_name == NULL)) return false;
 
   /* Read in CUE sheet. */
-  if ((env->psz_cue_name != NULL)) {
-    env->have_cue = _bincue_image_read_cue(env);
-  }
+#if 0
+  env->have_cue = _bincue_image_read_cue(env);
+#else 
+  env->have_cue = parse_cuefile(env, env->psz_cue_name);
+#endif
 
-  if (!env->have_cue ) {
-    /* Time to fake things...
-       Make one big track, track 0 and 1 are the same. 
-       We are guessing stuff starts at msf 00:04:00 - 2 for the 150
-       sector pregap and 2 for the cue information.
-     */
-    track_info_t  *this_track=&(env->tocent[0]);
-    int blocksize = env->sector_2336 
-      ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
+  if ( !env->have_cue ) return false;
 
-    env->i_tracks           = 2;
-    env->i_first_track      = 1;
-    this_track->start_msf.m = to_bcd8(0);
-    this_track->start_msf.s = to_bcd8(4);
-    this_track->start_msf.f = to_bcd8(0);
-    this_track->start_lba   = cdio_msf_to_lba(&this_track->start_msf);
-    this_track->blocksize   = blocksize;
-    this_track->track_format= TRACK_FORMAT_XA;
-    this_track->track_green = true;
-
-
-    env->tocent[1] = env->tocent[0];
-  }
-  
   /* Fake out leadout track and sector count for last track*/
   cdio_lsn_to_msf (lead_lsn, &env->tocent[env->i_tracks].start_msf);
   env->tocent[env->i_tracks].start_lba = cdio_lsn_to_lba(lead_lsn);
@@ -322,15 +306,13 @@ _stat_size_bincue (void *user_data)
 {
   _img_private_t *env = user_data;
   long size;
-  int blocksize = env->sector_2336 
-    ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
   size = cdio_stream_stat (env->gen.data_source);
 
-  if (size % blocksize)
+  if (size % CDIO_CD_FRAMESIZE_RAW)
     {
       cdio_warn ("image %s size (%ld) not multiple of blocksize (%d)", 
-		 env->gen.source_name, size, blocksize);
+		 env->gen.source_name, size, CDIO_CD_FRAMESIZE_RAW);
       if (size % M2RAW_SECTOR_SIZE == 0)
 	cdio_warn ("this may be a 2336-type disc image");
       else if (size % CDIO_CD_FRAMESIZE_RAW == 0)
@@ -338,7 +320,7 @@ _stat_size_bincue (void *user_data)
       /* exit (EXIT_FAILURE); */
     }
 
-  size /= blocksize;
+  size /= CDIO_CD_FRAMESIZE_RAW;
 
   return size;
 }
@@ -422,205 +404,359 @@ mmssff_to_lba (char *s)
 
 #define MAXLINE 4096		/* maximum line length + 1 */
 
-static void 
-parse_cuefile (_img_private_t *cd, char *psz_line, 
-	       int i_line, cdio_log_level_t log_level)
+static bool
+parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 {
-  char *keyword, *field;
-  int i = cd->i_tracks - 1;
-  bool seen_first_index_for_track=false;
+  FILE *fp;
+  char psz_line[MAXLINE];
+  unsigned int i_line=0;
+  int min,sec,frame;
+  int start_index;
+  char *psz_keyword, *psz_field;
+  cdio_log_level_t log_level = (NULL == cd) ? CDIO_LOG_INFO : CDIO_LOG_WARN;
+  bool b_first_index_for_track=false;
+  int i = -1;   /* Position in tocent. Same as cd->i_tracks - 1 */
+
+  if (NULL == psz_cue_name) 
+    return false;
   
-  if (NULL != (keyword = strtok (psz_line, " \t\n\r"))) {
-    /* REM remarks ... */
-    if (0 == strcmp ("REM", keyword)) {
-      ;
-      
-      /* global section */
-      /* CATALOG ddddddddddddd */
-    } else if (0 == strcmp ("CATALOG", keyword)) {
-      if (-1 == i) {
-	if (NULL != (field = strtok (NULL, " \t\n\r")))
-	  cd->psz_catalog = strdup (field);
-	if (NULL != (field = strtok (NULL, " \t\n\r")))
-	  cdio_log (log_level, "%s: format error\n", keyword);
-      } else {
-	cdio_log (log_level, "%d: only allowed in global section: %s\n", 
-		  i_line, keyword);
-      }
-      
-      /* FILE "<filename>" <BINARY|WAVE|other?> */
-    } else if (0 == strcmp ("FILE", keyword)) {
-      if (NULL != (field = strtok (NULL, "\"\t\n\r")))
-	cd->tocent[i + 1].filename = strdup (field);
-      else
-	cdio_log (log_level, "%d: format error: %s\n", i_line, keyword);
-      
-      /* TRACK N <mode> */
-    } else if (0 == strcmp ("TRACK", keyword)) {
-      i++;
-      cd->tocent[i].cdtext = NULL;
-      if (NULL != (field = strtok (NULL, " \t\n\r")))
-	; /* skip index number */
-      if (NULL != (field = strtok (NULL, " \t\n\r"))) {
-	track_info_t  *this_track=&(cd->tocent[cd->i_tracks]);
-	this_track->track_num   = cd->i_tracks;
-	this_track->num_indices = 0;
-	if (0 == strcmp ("AUDIO", field)) {
-	  this_track->mode           = AUDIO;
-	  this_track->blocksize      = CDIO_CD_FRAMESIZE_RAW;
-	  this_track->datasize       = CDIO_CD_FRAMESIZE_RAW;
-	  this_track->datastart      = 0;
-	  this_track->endsize        = 0;
-	  this_track->track_format   = TRACK_FORMAT_AUDIO;
-	  this_track->track_green    = false;
-	  cd->i_tracks++;
-	  seen_first_index_for_track=false;
-	} else if (0 == strcmp ("MODE1/2048", field)) {
-	  this_track->mode        = MODE1;
-	  this_track->blocksize   = 2048;
-	  /* Is the below correct? */
-	  this_track->datastart   = 0;         
-	  this_track->datasize    = CDIO_CD_FRAMESIZE;
-	  this_track->endsize     = 0;  
-	} else if (0 == strcmp ("MODE1/2352", field)) {
-	  this_track->blocksize   = 2352;
-	  this_track->datastart   = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE;
-	  this_track->datasize    = CDIO_CD_FRAMESIZE; 
-	  this_track->endsize     = CDIO_CD_EDC_SIZE + CDIO_CD_M1F1_ZERO_SIZE 
-	    + CDIO_CD_ECC_SIZE;
-	  this_track->mode        = MODE1_RAW; 
-	} else if (0 == strcmp ("MODE2/2336", field)) {
-	  this_track->blocksize   = 2336;
-	  this_track->track_format= TRACK_FORMAT_XA;
-	  this_track->track_green = true;
-	  this_track->mode        = MODE2;
-	  this_track->datastart   = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE;
-	  this_track->datasize    = M2RAW_SECTOR_SIZE;  
-	  this_track->endsize     = 0;
-	  cd->i_tracks++;
-	} else if (0 == strcmp ("MODE2/2048", field)) {
-	  this_track->blocksize   = 2048;
-	  this_track->track_format= TRACK_FORMAT_XA;
-	  this_track->track_green = true;
-	  this_track->mode        = MODE2_FORM1;
-	  cd->i_tracks++;
-	} else if (0 == strcmp ("MODE2/2324", field)) {
-	  this_track->blocksize   = 2324;
-	  this_track->track_format= TRACK_FORMAT_XA;
-	  this_track->track_green = true;
-	  this_track->mode        = MODE2_FORM2;
-	  cd->i_tracks++;
-	} else if (0 == strcmp ("MODE2/2336", field)) {
-	  this_track->blocksize   = 2336;
-	  this_track->track_format= TRACK_FORMAT_XA;
-	  this_track->track_green = true;
-	  this_track->mode        = MODE2_FORM_MIX;
-	  this_track->datastart   = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE;
-	  this_track->datasize    = M2RAW_SECTOR_SIZE;  
-	  this_track->endsize     = 0;
-	  cd->i_tracks++;
-	} else if (0 == strcmp ("MODE2/2352", field)) {
-	  this_track->blocksize   = 2352;
-	  this_track->track_format= TRACK_FORMAT_XA;
-	  this_track->track_green = true;
-	  this_track->mode        = MODE2_RAW;
-	  this_track->datastart   = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE +
-	    CDIO_CD_SUBHEADER_SIZE;
-	  this_track->datasize    = CDIO_CD_FRAMESIZE;
-	  this_track->endsize     = CDIO_CD_SYNC_SIZE + CDIO_CD_ECC_SIZE;
-	  cd->i_tracks++;
+  fp = fopen (psz_cue_name, "r");
+  if (fp == NULL) {
+    cdio_log(log_level, "error opening %s for reading: %s", 
+	     psz_cue_name, strerror(errno));
+    return false;
+  }
+
+  if (cd) {
+    cd->i_tracks=0;
+    cd->i_first_track=1;
+    cd->psz_mcn=NULL;
+  }
+  
+  while ((fgets(psz_line, MAXLINE, fp)) != NULL) {
+
+    i_line++;
+
+    if (NULL != (psz_keyword = strtok (psz_line, " \t\n\r"))) {
+      /* REM remarks ... */
+      if (0 == strcmp ("REM", psz_keyword)) {
+	;
+	
+	/* global section */
+	/* CATALOG ddddddddddddd */
+      } else if (0 == strcmp ("CATALOG", psz_keyword)) {
+	if (-1 == i) {
+	  if (NULL != (psz_field = strtok (NULL, " \t\n\r")))
+	    if (cd) cd->psz_mcn = strdup (psz_field);
+	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+	    goto format_error;
+	  }
 	} else {
-	  cdio_log (log_level, "%d: format error: %s\n", i_line, keyword);
+	  goto not_in_global_section;
 	}
-      } else {
-	cdio_log (log_level, "%d: format error: %s\n", i_line, keyword);
-      }
-      
-      /* FLAGS flag1 flag2 ... */
-    } else if (0 == strcmp ("FLAGS", keyword)) {
-      if (0 <= i) {
-	while (NULL != (field = strtok (NULL, " \t\n\r"))) {
-	  if (0 == strcmp ("PRE", field)) {
-	    cd->tocent[i].flags |= PRE_EMPHASIS;
-	  } else if (0 == strcmp ("DCP", field)) {
-	    cd->tocent[i].flags |= COPY_PERMITTED;
-	  } else if (0 == strcmp ("4CH", field)) {
-	    cd->tocent[i].flags |= FOUR_CHANNEL_AUDIO;
-	  } else if (0 == strcmp ("SCMS", field)) {
-	    cd->tocent[i].flags |= SCMS;
-	  } else {
-	    cdio_warn ("%d: format error: %s\n", i_line, keyword);
+	
+	/* FILE "<filename>" <BINARY|WAVE|other?> */
+      } else if (0 == strcmp ("FILE", psz_keyword)) {
+	if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
+	  if (cd) cd->tocent[i + 1].filename = strdup (psz_field);
+	} else {
+	  goto format_error;
+	}
+	
+	/* TRACK N <mode> */
+      } else if (0 == strcmp ("TRACK", psz_keyword)) {
+	int i_track;
+	i++;
+	if (cd) cd->tocent[i].cdtext = NULL;
+	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+	  if (1!=sscanf(psz_field, "%d", &i_track)) {
+	    cdio_log(log_level, 
+		     "%s line %d after keyword TRACK - "
+		     "expecting a track number", 
+		     psz_cue_name, i_line);
+	    goto err_exit;
 	  }
 	}
-      } else {
-	cdio_log (log_level, "%d: not allowed in global section: %s\n", 
-		  i_line, keyword);
-      }
-      
-      /* ISRC CCOOOYYSSSSS */
-    } else if (0 == strcmp ("ISRC", keyword)) {
-      if (0 <= i) {
-	if (NULL != (field = strtok (NULL, " \t\n\r")))
-	  cd->tocent[i].isrc = strdup (field);
-	else
-	  cdio_log (log_level, "%d: format error: %s\n", i_line, keyword);
-      } else {
-	cdio_log (log_level, "%d: not allowed in global section: %s\n", 
-		  i_line, keyword);
-      }
-      
-      /* PREGAP MM:SS:FF */
-    } else if (0 == strcmp ("PREGAP", keyword)) {
-      if (0 <= i) {
-	if (NULL != (field = strtok (NULL, " \t\n\r")))
-	  cd->tocent[i].pregap = mmssff_to_lba (field);
-	else
-	  cdio_log (log_level, "%d: format error: %s\n", i_line, keyword);
-	if (NULL != (field = strtok (NULL, " \t\n\r")))
-	  cdio_log (log_level, "%d: format error: %s\n", i_line, keyword);
-      } else {
-	cdio_log (log_level, "%d: not allowed in global section: %s\n", 
-		  i_line, keyword);
-      }
-      
-      /* INDEX [##] MM:SS:FF */
-    } else if (0 == strcmp ("INDEX", keyword)) {
-      if (0 <= i) {
-	if (NULL != (field = strtok (NULL, " \t\n\r")))
-	  ; /* skip index number */
-	if (NULL != (field = strtok (NULL, " \t\n\r")))
-#if 0	  
-	  // cd->tocent[i].indexes[cd->tocent[i].nindex++] = mmssff_to_lba (field);
+	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+	  track_info_t  *this_track=NULL;
+
+	  if (cd) {
+	    this_track = &(cd->tocent[cd->i_tracks]);
+	    this_track->track_num   = cd->i_tracks;
+	    this_track->num_indices = 0;
+	    b_first_index_for_track = false;
+	    cd->i_tracks++;
+	  }
+	  i++;
+	  
+	  if (0 == strcmp ("AUDIO", psz_field)) {
+	    if (cd) {
+	      this_track->mode           = AUDIO;
+	      this_track->blocksize      = CDIO_CD_FRAMESIZE_RAW;
+	      this_track->datasize       = CDIO_CD_FRAMESIZE_RAW;
+	      this_track->datastart      = 0;
+	      this_track->endsize        = 0;
+	      this_track->track_format   = TRACK_FORMAT_AUDIO;
+	      this_track->track_green    = false;
+	    }
+	  } else if (0 == strcmp ("MODE1/2048", psz_field)) {
+	    if (cd) {
+	      this_track->mode        = MODE1;
+	      this_track->blocksize   = 2048;
+	      this_track->track_format= TRACK_FORMAT_DATA;
+	      this_track->track_green = false;
+	      /* Is the below correct? */
+	      this_track->datastart   = 0;         
+	      this_track->datasize    = CDIO_CD_FRAMESIZE;
+	      this_track->endsize     = 0;  
+	    }
+	  } else if (0 == strcmp ("MODE1/2352", psz_field)) {
+	    if (cd) {
+	      this_track->blocksize   = 2352;
+	      this_track->track_format= TRACK_FORMAT_DATA;
+	      this_track->track_green = false;
+	      this_track->datastart   = CDIO_CD_SYNC_SIZE 
+		+ CDIO_CD_HEADER_SIZE;
+	      this_track->datasize    = CDIO_CD_FRAMESIZE; 
+	      this_track->endsize     = CDIO_CD_EDC_SIZE 
+		+ CDIO_CD_M1F1_ZERO_SIZE + CDIO_CD_ECC_SIZE;
+	      this_track->mode        = MODE1_RAW; 
+	    }
+	  } else if (0 == strcmp ("MODE2/2336", psz_field)) {
+	    if (cd) {
+	      this_track->blocksize   = 2336;
+	      this_track->track_format= TRACK_FORMAT_XA;
+	      this_track->track_green = true;
+	      this_track->mode        = MODE2;
+	      this_track->datastart   = CDIO_CD_SYNC_SIZE 
+		+ CDIO_CD_HEADER_SIZE;
+	      this_track->datasize    = M2RAW_SECTOR_SIZE;  
+	      this_track->endsize     = 0;
+	    }
+	  } else if (0 == strcmp ("MODE2/2048", psz_field)) {
+	    if (cd) {
+	      this_track->blocksize   = 2048;
+	      this_track->track_format= TRACK_FORMAT_XA;
+	      this_track->track_green = true;
+	      this_track->mode        = MODE2_FORM1;
+	    }
+	  } else if (0 == strcmp ("MODE2/2324", psz_field)) {
+	    if (cd) {
+	      this_track->blocksize   = 2324;
+	      this_track->track_format= TRACK_FORMAT_XA;
+	      this_track->track_green = true;
+	      this_track->mode        = MODE2_FORM2;
+	    }
+	  } else if (0 == strcmp ("MODE2/2336", psz_field)) {
+	    if (cd) {
+	      this_track->blocksize   = 2336;
+	      this_track->track_format= TRACK_FORMAT_XA;
+	      this_track->track_green = true;
+	      this_track->mode        = MODE2_FORM_MIX;
+	      this_track->datastart   = CDIO_CD_SYNC_SIZE 
+		+ CDIO_CD_HEADER_SIZE;
+	      this_track->datasize    = M2RAW_SECTOR_SIZE;  
+	      this_track->endsize     = 0;
+	    }
+	  } else if (0 == strcmp ("MODE2/2352", psz_field)) {
+	    if (cd) {
+	      this_track->blocksize   = 2352;
+	      this_track->track_format= TRACK_FORMAT_XA;
+	      this_track->track_green = true;
+	      this_track->mode        = MODE2_RAW;
+	      this_track->datastart   = CDIO_CD_SYNC_SIZE 
+		+ CDIO_CD_HEADER_SIZE + CDIO_CD_SUBHEADER_SIZE;
+	      this_track->datasize    = CDIO_CD_FRAMESIZE;
+	      this_track->endsize     = CDIO_CD_SYNC_SIZE + CDIO_CD_ECC_SIZE;
+	    }
+	  } else {
+	    goto format_error;
+	  }
+	} else {
+	  goto format_error;
+	}
+	
+	/* FLAGS flag1 flag2 ... */
+      } else if (0 == strcmp ("FLAGS", psz_keyword)) {
+	if (0 <= i) {
+	  while (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+	    if (0 == strcmp ("PRE", psz_field)) {
+	      if (cd) cd->tocent[i].flags |= PRE_EMPHASIS;
+	    } else if (0 == strcmp ("DCP", psz_field)) {
+	      if (cd) cd->tocent[i].flags |= COPY_PERMITTED;
+	    } else if (0 == strcmp ("4CH", psz_field)) {
+	      if (cd) cd->tocent[i].flags |= FOUR_CHANNEL_AUDIO;
+	    } else if (0 == strcmp ("SCMS", psz_field)) {
+	      if (cd) cd->tocent[i].flags |= SCMS;
+	    } else {
+	      goto format_error;
+	    }
+	  }
+	} else {
+	  goto format_error;
+	}
+	
+	/* ISRC CCOOOYYSSSSS */
+      } else if (0 == strcmp ("ISRC", psz_keyword)) {
+	if (0 <= i) {
+	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+	    if (cd) cd->tocent[i].isrc = strdup (psz_field);
+	  } else {
+	    goto format_error;
+	  }
+	} else {
+	  goto in_global_section;
+	}
+	
+	/* PREGAP MM:SS:FF */
+      } else if (0 == strcmp ("PREGAP", psz_keyword)) {
+	if (0 <= i) {
+	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+	    if (cd) cd->tocent[i].pregap = mmssff_to_lba (psz_field);
+	  } else {
+	    goto format_error;
+	  } if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+	    goto format_error;
+	  }
+	} else {
+	  goto in_global_section;
+	}
+	
+	/* INDEX [##] MM:SS:FF */
+      } else if (0 == strcmp ("INDEX", psz_keyword)) {
+	if (0 <= i) {
+	  if (NULL != (psz_field = strtok (NULL, " \t\n\r")))
+	    if (1!=sscanf(psz_field, "%d", &start_index)) {
+	      cdio_log(log_level, 
+		       "%s line %d after keyword INDEX - "
+		       "expecting an index number", 
+		       psz_cue_name, i_line);
+	      goto err_exit;
+	    }
+	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+#if FIXED_ME
+	    if (cd) cd->tocent[i].indexes[cd->tocent[i].nindex++] = 
+	      mmssff_to_lba (psz_field);
 #else     
-	  ;	
+	    if (3==sscanf(psz_field, "%d:%d:%d", &min, &sec, &frame)) {
+	      if (cd) {
+		track_info_t  *this_track=
+		  &(cd->tocent[cd->i_tracks - cd->i_first_track]);
+
+		/* FIXME! all of this is a big hack.  If start_index
+		   == 0, then this is the "last_cue" information.  The
+		   +2 below seconds is to adjust for the 150 pregap.
+		*/
+		if (start_index != 0) {
+		  if (!b_first_index_for_track) {
+		    this_track->start_index = start_index;
+		    sec += 2;
+		    if (sec >= 60) {
+		      min++;
+		      sec -= 60;
+		    }
+		    b_first_index_for_track = true;
+		    this_track->start_msf.m = to_bcd8 (min);
+		    this_track->start_msf.s = to_bcd8 (sec);
+		    this_track->start_msf.f = to_bcd8 (frame);
+		    this_track->start_lba   = cdio_msf_to_lba(&this_track->start_msf);
+		  }
+		  
+		  if (cd->i_tracks > 1) {
+		    /* Figure out number of sectors for previous track */
+		    track_info_t  *prev_track=&(cd->tocent[cd->i_tracks-2]);
+		    if ( this_track->start_lba < prev_track->start_lba ) {
+		      cdio_log (log_level,
+				"track %d at LBA %lu starts before track %d at LBA %lu", 
+				cd->i_tracks,   
+				(unsigned long int) this_track->start_lba, 
+				cd->i_tracks, 
+				(unsigned long int) prev_track->start_lba);
+		      prev_track->sec_count = 0;
+		    } else if ( this_track->start_lba >= prev_track->start_lba 
+				+ CDIO_PREGAP_SECTORS ) {
+		      prev_track->sec_count = this_track->start_lba - 
+			prev_track->start_lba - CDIO_PREGAP_SECTORS ;
+		    } else {
+		      cdio_log (log_level, 
+				"%lu fewer than pregap (%d) sectors in track %d",
+				(long unsigned int) 
+				this_track->start_lba - prev_track->start_lba,
+				CDIO_PREGAP_SECTORS,
+				cd->i_tracks);
+		      /* Include pregap portion in sec_count. Maybe the pregap
+			 was omitted. */
+		      prev_track->sec_count = this_track->start_lba - 
+			prev_track->start_lba;
+		    }
+		  }
+		  this_track->num_indices++;
+		}
+	      }
+	    } else {
+	      cdio_log (log_level, 
+			"%s line %d: after keyword: %s - expecting MM:SS::FF", 
+			psz_cue_name, i_line, psz_keyword);
+	      goto err_exit;
+	    }
 #endif  
-	else
-	  cdio_log (log_level, "%d: format error: %s\n", i_line, keyword);
+	  } else {
+	    goto format_error;
+	  }
+	} else {
+	  goto in_global_section;
+	}
+	
+	/* CD-TEXT */
+      } else if (0 == cdtext_is_keyword (psz_keyword)) {
+	if (-1 == i) {
+	  if (NULL == cd->cdtext)
+	    if (cd) {
+	      cd->cdtext = cdtext_init ();
+	      cdtext_set (psz_keyword, strtok (NULL, "\"\t\n\r"), cd->cdtext);
+	    }
+	} else {
+	  if (NULL == cd->tocent[i].cdtext)
+	    if (cd) {
+	      cd->tocent[i].cdtext = cdtext_init ();
+	      cdtext_set (psz_keyword, strtok (NULL, "\"\t\n\r"), 
+			  cd->tocent[i].cdtext);
+	    }
+	}
+	
+	/* unrecognized line */
       } else {
-	cdio_log (log_level, "%d: not allowed in global section: %s\n", 
-		  i_line, keyword);
+	cdio_log(log_level, "%s line %d: warning: unrecognized keyword: %s", 
+		 psz_cue_name, i_line, psz_keyword);
+	goto err_exit;
       }
-      
-      /* CD-TEXT */
-    } else if (0 == cdtext_is_keyword (keyword)) {
-      if (-1 == i) {
-	if (NULL == cd->cdtext)
-	  cd->cdtext = cdtext_init ();
-	cdtext_set (keyword, strtok (NULL, "\"\t\n\r"), cd->cdtext);
-      } else {
-	if (NULL == cd->tocent[i].cdtext)
-	  cd->tocent[i].cdtext = cdtext_init ();
-	cdtext_set (keyword, strtok (NULL, "\"\t\n\r"), cd->tocent[i].cdtext);
-      }
-      
-      /* unrecognized line */
-    } else {
-      cdio_log(log_level, "%d: warning: unrecognized keyword: %s\n", 
-	       i_line, keyword);
     }
   }
+
+  fclose (fp);
+  return true;
+
+ format_error:
+  cdio_log(log_level, "%s line %d after keyword %s", 
+	   psz_cue_name, i_line, psz_keyword);
+  goto err_exit;
+
+ in_global_section:
+  cdio_log(log_level, "%s line %d: keyword %s not allowed in global section", 
+	   psz_cue_name, i_line, psz_keyword);
+  goto err_exit;
+
+ not_in_global_section:
+  cdio_log(log_level, "%s line %d: keyword %s only allowed in global section", 
+	   psz_cue_name, i_line, psz_keyword);
+
+ err_exit: 
+  fclose (fp);
+  return false;
+
 }
 
+  
 static bool
 _bincue_image_read_cue (_img_private_t *env)
 {
@@ -631,7 +767,7 @@ _bincue_image_read_cue (_img_private_t *env)
   int min,sec,frame;
   int blocksize;
   int start_index;
-  bool seen_first_index_for_track=false;
+  bool b_first_index_for_track=false;
 
   if ( env == NULL ||  env->psz_cue_name == NULL ) return false;
 
@@ -662,8 +798,8 @@ _bincue_image_read_cue (_img_private_t *env)
       this_track->num_indices = 0;
       this_track->track_format= TRACK_FORMAT_XA;
       this_track->track_green = true;
+      b_first_index_for_track = false;
       env->i_tracks++;
-      seen_first_index_for_track=false;
       /*printf("Added track %d with blocksize %d\n", i_track, blocksize);*/
 
       this_track->blocksize   = blocksize;
@@ -676,16 +812,10 @@ _bincue_image_read_cue (_img_private_t *env)
       default:
 	cdio_warn ("Unknown MODE2 size %d. Assuming 2352", blocksize);
       case 2352:
-	if (env->sector_2336) {
-	  this_track->datastart = 0;          
-	  this_track->datasize  = M2RAW_SECTOR_SIZE;
-	  this_track->endsize   = blocksize - 2336;
-	} else {
-	  this_track->datastart = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE +
-	    CDIO_CD_SUBHEADER_SIZE;
-	  this_track->datasize  = CDIO_CD_FRAMESIZE;
-	  this_track->endsize   = CDIO_CD_SYNC_SIZE + CDIO_CD_ECC_SIZE;
-	}
+	this_track->datastart = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE +
+	  CDIO_CD_SUBHEADER_SIZE;
+	this_track->datasize  = CDIO_CD_FRAMESIZE;
+	this_track->endsize   = CDIO_CD_SYNC_SIZE + CDIO_CD_ECC_SIZE;
 	break;
       }
 
@@ -712,8 +842,8 @@ _bincue_image_read_cue (_img_private_t *env)
       this_track->num_indices    = 0;
       this_track->track_format   = TRACK_FORMAT_DATA;
       this_track->track_green    = false;
+      b_first_index_for_track    = false;
       env->i_tracks++;
-      seen_first_index_for_track=false;
       /*printf("Added track %d with blocksize %d\n", i_track, blocksize);*/
 
     } else if (1==sscanf(p, "TRACK %d AUDIO", &i_track)) {
@@ -726,8 +856,8 @@ _bincue_image_read_cue (_img_private_t *env)
       this_track->num_indices    = 0;
       this_track->track_format   = TRACK_FORMAT_AUDIO;
       this_track->track_green    = false;
+      b_first_index_for_track    = false;
       env->i_tracks++;
-      seen_first_index_for_track=false;
 
     } else if (4==sscanf(p, "INDEX %d %d:%d:%d", 
 			 &start_index, &min, &sec, &frame)) {
@@ -737,7 +867,7 @@ _bincue_image_read_cue (_img_private_t *env)
 	 The +2 below seconds is to adjust for the 150 pregap.
       */
       if (start_index != 0) {
-	if (!seen_first_index_for_track) {
+	if (!b_first_index_for_track) {
 	  this_track->start_index = start_index;
 	  sec += 2;
 	  if (sec >= 60) {
@@ -747,8 +877,8 @@ _bincue_image_read_cue (_img_private_t *env)
 	  this_track->start_msf.m = to_bcd8 (min);
 	  this_track->start_msf.s = to_bcd8 (sec);
 	  this_track->start_msf.f = to_bcd8 (frame);
+	  b_first_index_for_track = true;
 	  this_track->start_lba   = cdio_msf_to_lba(&this_track->start_msf);
-	  seen_first_index_for_track=true;
 	}
 
 	if (env->i_tracks > 1) {
@@ -833,18 +963,13 @@ _read_mode1_sector_bincue (void *user_data, void *data, lsn_t lsn,
   _img_private_t *env = user_data;
   int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  int blocksize = env->sector_2336 
-    ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
+  int blocksize = CDIO_CD_FRAMESIZE_RAW;
 
   ret = cdio_stream_seek (env->gen.data_source, lsn * blocksize, SEEK_SET);
   if (ret!=0) return ret;
 
   /* FIXME: Not completely sure the below is correct. */
-  ret = cdio_stream_read (env->gen.data_source,
-			  env->sector_2336 
-			  ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE) 
-			  : buf,
-			  blocksize, 1);
+  ret = cdio_stream_read (env->gen.data_source, buf, CDIO_CD_FRAMESIZE_RAW, 1);
   if (ret==0) return ret;
 
   memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
@@ -894,17 +1019,12 @@ _read_mode2_sector_bincue (void *user_data, void *data, lsn_t lsn,
      Review this sector 2336 stuff later.
   */
 
-  int blocksize = env->sector_2336 
-    ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
+  int blocksize = CDIO_CD_FRAMESIZE_RAW;
 
   ret = cdio_stream_seek (env->gen.data_source, lsn * blocksize, SEEK_SET);
   if (ret!=0) return ret;
 
-  ret = cdio_stream_read (env->gen.data_source,
-			  env->sector_2336 
-			  ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE) 
-			  : buf,
-			  blocksize, 1);
+  ret = cdio_stream_read (env->gen.data_source, buf, CDIO_CD_FRAMESIZE_RAW, 1);
   if (ret==0) return ret;
 
 
@@ -959,7 +1079,6 @@ _free_bincue (void *user_data)
   }
 
   free_if_notnull(env->psz_mcn);
-  free_if_notnull(env->psz_catalog);
   free_if_notnull(env->psz_cue_name);
   cdtext_delete(env->cdtext);
   cdio_generic_stdio_free(env);
@@ -997,15 +1116,6 @@ _set_arg_bincue (void *user_data, const char key[], const char value[])
 	return -2;
 
       env->gen.source_name = strdup (value);
-    }
-  else if (!strcmp (key, "sector"))
-    {
-      if (!strcmp (value, "2336"))
-	env->sector_2336 = true;
-      else if (!strcmp (value, "2352"))
-	env->sector_2336 = false;
-      else
-	return -2;
     }
   else if (!strcmp (key, "cue"))
     {
@@ -1150,61 +1260,64 @@ _get_lba_track_bincue(void *user_data, track_t i_track)
 /*! 
   Return corresponding BIN file if psz_cue_name is a cue file or NULL
   if not a CUE file.
-
-*/
-/* Later we'll probably parse the entire file. For now though, this gets us 
-   started for now.
 */
 char *
 cdio_is_cuefile(const char *psz_cue_name) 
 {
   int   i;
-  char *bin_name;
+  char *psz_bin_name;
   
   if (psz_cue_name == NULL) return NULL;
 
-  bin_name=strdup(psz_cue_name);
-  i=strlen(bin_name)-strlen("cue");
+  /* FIXME? Now that we have cue parsing, should we really force
+     the filename extension requirement or is it enough just to 
+     parse the cuefile? 
+   */
+
+  psz_bin_name=strdup(psz_cue_name);
+  i=strlen(psz_bin_name)-strlen("cue");
   
   if (i>0) {
     if (psz_cue_name[i]=='c' && psz_cue_name[i+1]=='u' && psz_cue_name[i+2]=='e') {
-      bin_name[i++]='b'; bin_name[i++]='i'; bin_name[i++]='n';
-      return bin_name;
+      psz_bin_name[i++]='b'; psz_bin_name[i++]='i'; psz_bin_name[i++]='n';
+      if (parse_cuefile(NULL, psz_cue_name))
+	return psz_bin_name;
+      else 
+	return NULL;
     } 
     else if (psz_cue_name[i]=='C' && psz_cue_name[i+1]=='U' && psz_cue_name[i+2]=='E') {
-      bin_name[i++]='B'; bin_name[i++]='I'; bin_name[i++]='N';
-      return bin_name;
+      psz_bin_name[i++]='B'; psz_bin_name[i++]='I'; psz_bin_name[i++]='N';
+      if (parse_cuefile(NULL, psz_cue_name))
+	return psz_bin_name;
+      else 
+	return NULL;
     }
   }
-  free(bin_name);
+  free(psz_bin_name);
   return NULL;
 }
 
 /*! 
-  Return corresponding CUE file if bin_name is a bin file or NULL
+  Return corresponding CUE file if psz_bin_name is a bin file or NULL
   if not a BIN file.
-
-*/
-/* Later we'll probably do better. For now though, this gets us 
-   started for now.
 */
 char *
-cdio_is_binfile(const char *bin_name) 
+cdio_is_binfile(const char *psz_bin_name) 
 {
   int   i;
   char *psz_cue_name;
   
-  if (bin_name == NULL) return NULL;
+  if (psz_bin_name == NULL) return NULL;
 
-  psz_cue_name=strdup(bin_name);
-  i=strlen(bin_name)-strlen("bin");
+  psz_cue_name=strdup(psz_bin_name);
+  i=strlen(psz_bin_name)-strlen("bin");
   
   if (i>0) {
-    if (bin_name[i]=='b' && bin_name[i+1]=='i' && bin_name[i+2]=='n') {
+    if (psz_bin_name[i]=='b' && psz_bin_name[i+1]=='i' && psz_bin_name[i+2]=='n') {
       psz_cue_name[i++]='c'; psz_cue_name[i++]='u'; psz_cue_name[i++]='e';
       return psz_cue_name;
     } 
-    else if (bin_name[i]=='B' && bin_name[i+1]=='I' && bin_name[i+2]=='N') {
+    else if (psz_bin_name[i]=='B' && psz_bin_name[i+1]=='I' && psz_bin_name[i+2]=='N') {
       psz_cue_name[i++]='C'; psz_cue_name[i++]='U'; psz_cue_name[i++]='E';
       return psz_cue_name;
     }
@@ -1235,10 +1348,10 @@ cdio_open_am_bincue (const char *psz_source_name, const char *psz_access_mode)
 CdIo *
 cdio_open_bincue (const char *source_name)
 {
-  char *bin_name = cdio_is_cuefile(source_name);
+  char *psz_bin_name = cdio_is_cuefile(source_name);
 
-  if (NULL != bin_name) {
-    free(bin_name);
+  if (NULL != psz_bin_name) {
+    free(psz_bin_name);
     return cdio_open_cue(source_name);
   } else {
     char *psz_cue_name = cdio_is_binfile(source_name);
@@ -1253,7 +1366,7 @@ cdio_open_cue (const char *psz_cue_name)
 {
   CdIo *ret;
   _img_private_t *_data;
-  char *bin_name;
+  char *psz_bin_name;
 
   cdio_funcs _funcs = {
     .eject_media        = _eject_media_bincue,
@@ -1284,23 +1397,22 @@ cdio_open_cue (const char *psz_cue_name)
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
   (_data)->gen.init    = false;
-  (_data)->sector_2336 = false;
   (_data)->psz_cue_name    = NULL;
 
   ret = cdio_new (_data, &_funcs);
 
   if (ret == NULL) return NULL;
 
-  bin_name = cdio_is_cuefile(psz_cue_name);
+  psz_bin_name = cdio_is_cuefile(psz_cue_name);
 
-  if (NULL == bin_name) {
+  if (NULL == psz_bin_name) {
     cdio_error ("source name %s is not recognized as a CUE file", 
 		psz_cue_name);
   }
   
   _set_arg_bincue (_data, "cue", psz_cue_name);
-  _set_arg_bincue (_data, "source", bin_name);
-  free(bin_name);
+  _set_arg_bincue (_data, "source", psz_bin_name);
+  free(psz_bin_name);
 
   if (_bincue_init(_data)) {
     return ret;
