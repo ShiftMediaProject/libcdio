@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.1 2003/03/24 19:01:10 rocky Exp $
+    $Id: cdinfo.c,v 1.2 2003/03/24 21:01:40 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -130,19 +130,14 @@ and
 #define ROCKRIDGE            2048
 #define JOLIET               4096
 
-/* Some interesting sector numbers. */
-#define ISO_SUPERBLOCK_SECTOR  16
-#define UFS_SUPERBLOCK_SECTOR   4
-#define BOOT_SECTOR            17
-#define VCD_INFO_SECTOR       150
+char buffer[6][CDDA_SECTOR_SIZE];  /* for CD-Data */
 
-#if 0
-#define STRONG "\033[1m"
-#define NORMAL "\033[0m"
-#else
-#define STRONG "__________________________________\n"
-#define NORMAL ""
-#endif
+/* Some interesting sector numbers stored in the above buffer. */
+#define ISO_SUPERBLOCK_SECTOR  16  /* buffer[0] */
+#define UFS_SUPERBLOCK_SECTOR   4  /* buffer[2] */
+#define BOOT_SECTOR            17  /* buffer[3] */
+#define VCD_INFO_SECTOR       150  /* buffer[4] */
+
 
 typedef struct signature
 {
@@ -151,6 +146,33 @@ typedef struct signature
   const char *sig_str;
   const char *description;
 } signature_t;
+
+static signature_t sigs[] =
+  {
+/*buffer[x] off look for     description */
+    {0,     1, "CD001",      "ISO 9660"}, 
+    {0,     1, "CD-I",       "CD-I"}, 
+    {0,     8, "CDTV",       "CDTV"}, 
+    {0,     8, "CD-RTOS",    "CD-RTOS"}, 
+    {0,     9, "CDROM",      "HIGH SIERRA"}, 
+    {0,    16, "CD-BRIDGE",  "BRIDGE"}, 
+    {0,  1024, "CD-XA001",   "XA"}, 
+    {1,    64, "PPPPHHHHOOOOTTTTOOOO____CCCCDDDD",  "PHOTO CD"}, 
+    {1, 0x438, "\x53\xef",   "EXT2 FS"}, 
+    {2,  1372, "\x54\x19\x01\x0", "UFS"}, 
+    {3,     7, "EL TORITO",  "BOOTABLE"}, 
+    {4,     0, "VIDEO_CD",   "VIDEO CD"}, 
+    { 0 }
+  };
+
+
+#if 0
+#define STRONG "\033[1m"
+#define NORMAL "\033[0m"
+#else
+#define STRONG "__________________________________\n"
+#define NORMAL ""
+#endif
 
 #define IS_ISOFS     0
 #define IS_CD_I      1
@@ -165,24 +187,6 @@ typedef struct signature
 #define IS_BOOTABLE 10
 #define IS_VIDEO_CD 11
 
-static signature_t sigs[] =
-  {
-  /* Buff off  look for     description */
-    {0,     1, "CD001",     "ISO 9660"}, 
-    {0,     1, "CD-I",      "CD-I"}, 
-    {0,     8, "CDTV",      "CDTV"}, 
-    {0,     8, "CD-RTOS",   "CD-RTOS"}, 
-    {0,     9, "CDROM",     "HIGH SIERRA"}, 
-    {0,    16, "CD-BRIDGE", "BRIDGE"}, 
-    {0,  1024, "CD-XA001",  "XA"}, 
-    {1,    64, "PPPPHHHHOOOOTTTTOOOO____CCCCDDDD",  "PHOTO CD"}, 
-    {1, 0x438, "\x53\xef",  "EXT2 FS"}, 
-    {2,  1372, "\x54\x19\x01\x0", "UFS"}, 
-    {3,     7, "EL TORITO", "BOOTABLE"}, 
-    {4,     0, "VIDEO_CD",  "VIDEO CD"}, 
-    { 0 }
-  };
-
 int rc;                                                      /* return code */
 int i,j;                                                           /* index */
 int isofs_size = 0;                                      /* size of session */
@@ -190,8 +194,6 @@ int start_track;                                   /* first sector of track */
 int ms_offset;                /* multisession offset found by track-walking */
 int data_start;                                       /* start of data area */
 int joliet_level = 0;
-
-char buffer[6][CDDA_SECTOR_SIZE];  /* for CD-Data */
 
 CdIo *img; 
 track_t num_tracks;
