@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.6 2003/04/06 06:44:25 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.7 2003/04/06 17:57:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.6 2003/04/06 06:44:25 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.7 2003/04/06 17:57:20 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -129,7 +129,7 @@ _cdio_init (_img_private_t *_obj)
      */
     track_info_t  *this_track=&(_obj->tocent[0]);
     int blocksize = _obj->sector_2336 
-      ? M2RAW_SECTOR_SIZE : CD_FRAMESIZE_RAW;
+      ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
     _obj->total_tracks = 2;
     _obj->first_track_num = 1;
@@ -211,7 +211,7 @@ static ssize_t
 _cdio_read (void *user_data, void *data, size_t size)
 {
   _img_private_t *_obj = user_data;
-  char buf[CD_FRAMESIZE_RAW] = { 0, };
+  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   char *p = data;
   ssize_t final_size=0;
   ssize_t this_size;
@@ -264,7 +264,7 @@ _cdio_stat_size (void *user_data)
   _img_private_t *_obj = user_data;
   long size;
   int blocksize = _obj->sector_2336 
-    ? M2RAW_SECTOR_SIZE : CD_FRAMESIZE_RAW;
+    ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
   _cdio_init (_obj);
   
@@ -272,11 +272,11 @@ _cdio_stat_size (void *user_data)
 
   if (size % blocksize)
     {
-      cdio_warn ("image file not multiple of blocksize (%d)", 
-                blocksize);
+      cdio_warn ("image %s size (%ld) not multiple of blocksize (%d)", 
+		 _obj->gen.source_name, size, blocksize);
       if (size % M2RAW_SECTOR_SIZE == 0)
 	cdio_warn ("this may be a 2336-type disc image");
-      else if (size % CD_FRAMESIZE_RAW == 0)
+      else if (size % CDIO_CD_FRAMESIZE_RAW == 0)
 	cdio_warn ("this may be a 2352-type disc image");
       /* exit (EXIT_FAILURE); */
     }
@@ -365,9 +365,10 @@ _cdio_image_read_cue (_img_private_t *_obj)
       default:
 	cdio_warn ("Unknown MODE1 size %d. Assuming 2352", blocksize);
       case 2352:
-	this_track->datastart = CD_SYNC_SIZE + CD_HEAD_SIZE;
-	this_track->datasize  = CD_FRAMESIZE; 
-	this_track->endsize   = CD_EDC_SIZE + CD_ZERO_SIZE + CD_ECC_SIZE;
+	this_track->datastart = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE;
+	this_track->datasize  = CDIO_CD_FRAMESIZE; 
+	this_track->endsize   = CDIO_CD_EDC_SIZE + CDIO_CD_M1F1_ZERO_SIZE 
+	  + CDIO_CD_ECC_SIZE;
       }
 
       this_track->track_num      = track_num;
@@ -380,8 +381,8 @@ _cdio_image_read_cue (_img_private_t *_obj)
 
     } else if (1==sscanf(p, "TRACK %d AUDIO", &track_num)) {
       track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
-      this_track->blocksize      = CD_FRAMESIZE_RAW;
-      this_track->datasize       = CD_FRAMESIZE_RAW;
+      this_track->blocksize      = CDIO_CD_FRAMESIZE_RAW;
+      this_track->datasize       = CDIO_CD_FRAMESIZE_RAW;
       this_track->datastart      = 0;
       this_track->endsize        = 0;
       this_track->track_num      = track_num;
@@ -467,9 +468,9 @@ _read_mode2_sector (void *user_data, void *data, uint32_t lsn,
 		    bool mode2_form2)
 {
   _img_private_t *_obj = user_data;
-  char buf[CD_FRAMESIZE_RAW] = { 0, };
+  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   int blocksize = _obj->sector_2336 
-    ? M2RAW_SECTOR_SIZE : CD_FRAMESIZE_RAW;
+    ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
   _cdio_init (_obj);
 
@@ -480,9 +481,9 @@ _read_mode2_sector (void *user_data, void *data, uint32_t lsn,
 		    blocksize, 1);
 
   if (mode2_form2)
-    memcpy (data, buf + 12 + 4, M2RAW_SECTOR_SIZE);
+    memcpy (data, buf + CDIO_CD_XA_HEADER, M2RAW_SECTOR_SIZE);
   else
-    memcpy (data, buf + 12 + 4 + 8, FORM1_DATA_SIZE);
+    memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, CDIO_CD_FRAMESIZE);
 
   return 0;
 }
@@ -511,8 +512,8 @@ _read_mode2_sectors (void *user_data, void *data, uint32_t lsn,
       if ( (retval = _read_mode2_sector (_obj, buf, lsn + i, true)) )
 	return retval;
       
-      memcpy (((char *)data) + (M2F1_SECTOR_SIZE * i), buf + 8, 
-	      FORM1_DATA_SIZE);
+      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
+	      buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
     }
   }
   return 0;
@@ -664,7 +665,7 @@ _cdio_get_track_lba(void *user_data, track_t track_num)
   _img_private_t *_obj = user_data;
   _cdio_init (_obj);
 
-  if (track_num == CDROM_LEADOUT) track_num = _obj->total_tracks+1;
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
 
   if (track_num <= _obj->total_tracks+1 && track_num != 0) {
     return _obj->tocent[track_num-1].start_lba;
@@ -687,7 +688,7 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
 
   if (NULL == msf) return false;
 
-  if (track_num == CDROM_LEADOUT) track_num = _obj->total_tracks+1;
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
 
   if (track_num <= _obj->total_tracks+1 && track_num != 0) {
     *msf = _obj->tocent[track_num-1].start_msf;

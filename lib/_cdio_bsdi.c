@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.5 2003/03/30 13:01:22 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.6 2003/04/06 17:57:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.5 2003/03/30 13:01:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.6 2003/04/06 17:57:20 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -202,7 +202,7 @@ _cdio_stat_size (void *user_data)
   struct cdrom_tocentry tocent;
   uint32_t size;
 
-  tocent.cdte_track = CDROM_LEADOUT;
+  tocent.cdte_track = CDIO_CDROM_LEADOUT_TRACK;
   tocent.cdte_format = CDROM_LBA;
   if (ioctl (_obj->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
@@ -281,7 +281,7 @@ _cdio_read_toc (_img_private_t *_obj)
   }
 
   /* read the lead-out track */
-  _obj->tocent[TOTAL_TRACKS].cdte_track = CDROM_LEADOUT;
+  _obj->tocent[TOTAL_TRACKS].cdte_track = CDIO_CDROM_LEADOUT_TRACK;
   _obj->tocent[TOTAL_TRACKS].cdte_format = CDROM_MSF;
 
   if (ioctl(_obj->gen.fd, CDROMREADTOCENTRY, 

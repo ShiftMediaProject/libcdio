@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.c,v 1.2 2003/03/29 17:32:00 rocky Exp $
+    $Id: _cdio_stream.c,v 1.3 2003/04/06 17:57:20 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -34,7 +34,7 @@
 #include "util.h"
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.2 2003/03/29 17:32:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.3 2003/04/06 17:57:20 rocky Exp $";
 
 /* 
  * DataSource implementations
@@ -47,22 +47,22 @@ struct _CdioDataSource {
   long position;
 };
 
-static void
+static bool
 _cdio_stream_open_if_necessary(CdioDataSource *obj)
 {
   cdio_assert (obj != NULL);
 
   if (!obj->is_open) {
-    if (obj->op.open(obj->user_data))
+    if (obj->op.open(obj->user_data)) {
       cdio_error ("could not opening input stream...");
-    else {
-#ifdef STREAM_DEBUG
+      return false;
+    } else {
       cdio_debug ("opened source...");
-#endif
       obj->is_open = 1;
       obj->position = 0;
     }
   }
+  return true;
 }
 
 long
@@ -70,7 +70,7 @@ cdio_stream_seek(CdioDataSource* obj, long offset, int whence)
 {
   cdio_assert (obj != NULL);
 
-  _cdio_stream_open_if_necessary(obj);
+  if (!_cdio_stream_open_if_necessary(obj)) return 0;
 
   if (obj->position != offset) {
 #ifdef STREAM_DEBUG
@@ -103,7 +103,7 @@ cdio_stream_read(CdioDataSource* obj, void *ptr, long size, long nmemb)
 
   cdio_assert (obj != NULL);
 
-  _cdio_stream_open_if_necessary(obj);
+  if (!_cdio_stream_open_if_necessary(obj)) return 0;
 
   read_bytes = obj->op.read(obj->user_data, ptr, size*nmemb);
   obj->position += read_bytes;
@@ -116,7 +116,7 @@ cdio_stream_stat(CdioDataSource* obj)
 {
   cdio_assert (obj != NULL);
 
-  _cdio_stream_open_if_necessary(obj);
+  if (!_cdio_stream_open_if_necessary(obj)) return 0;
 
   return obj->op.stat(obj->user_data);
 }
@@ -127,9 +127,7 @@ cdio_stream_close(CdioDataSource* obj)
   cdio_assert (obj != NULL);
 
   if (obj->is_open) {
-#ifdef STREAM_DEBUG
     cdio_debug ("closed source...");
-#endif
     obj->op.close(obj->user_data);
     obj->is_open = 0;
     obj->position = 0;

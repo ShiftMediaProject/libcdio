@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.5 2003/04/06 06:45:13 rocky Exp $
+    $Id: _cdio_linux.c,v 1.6 2003/04/06 17:57:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.5 2003/04/06 06:45:13 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.6 2003/04/06 17:57:20 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -328,7 +328,7 @@ _cdio_stat_size (void *user_data)
   struct cdrom_tocentry tocent;
   uint32_t size;
 
-  tocent.cdte_track = CDROM_LEADOUT;
+  tocent.cdte_track = CDIO_CDROM_LEADOUT_TRACK;
   tocent.cdte_format = CDROM_LBA;
   if (ioctl (_obj->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
@@ -411,7 +411,7 @@ _cdio_read_toc (_img_private_t *_obj)
   }
 
   /* read the lead-out track */
-  _obj->tocent[TOTAL_TRACKS].cdte_track = CDROM_LEADOUT;
+  _obj->tocent[TOTAL_TRACKS].cdte_track = CDIO_CDROM_LEADOUT_TRACK;
   _obj->tocent[TOTAL_TRACKS].cdte_format = CDROM_MSF;
 
   if (ioctl(_obj->gen.fd, CDROMREADTOCENTRY, 
@@ -574,7 +574,7 @@ _cdio_get_track_green(void *user_data, track_t track_num)
   
   if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDROM_LEADOUT) track_num = TOTAL_TRACKS+1;
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
 
   if (track_num > TOTAL_TRACKS+1 || track_num == 0)
     return false;
@@ -601,7 +601,7 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
 
   if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDROM_LEADOUT) track_num = TOTAL_TRACKS+1;
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
 
   if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
     return false;

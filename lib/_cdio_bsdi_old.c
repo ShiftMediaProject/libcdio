@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi_old.c,v 1.1 2003/03/29 17:32:00 rocky Exp $
+    $Id: _cdio_bsdi_old.c,v 1.2 2003/04/06 17:57:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char _rcsid[] = "$Id: _cdio_bsdi_old.c,v 1.1 2003/03/29 17:32:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi_old.c,v 1.2 2003/04/06 17:57:20 rocky Exp $";
 
 #if HAVE_BSDI_CDROM
 
@@ -297,7 +297,7 @@ _cdio_stat_size (void *user_data)
 
   suc.suc_cdb[0] = 0x43; /* CMD_READ_TOC_PMA_ATIP */
   suc.suc_cdb[1] = 0; /* lba; msf: 0x2 */
-  suc.suc_cdb[6] = 0xaa; /* CDROM_LEADOUT */
+  suc.suc_cdb[6] = CDIO_CDROM_LEADOUT_TRACK;
   suc.suc_cdb[8] = 12; /* ? */
   suc.suc_cdblen = 10;
 

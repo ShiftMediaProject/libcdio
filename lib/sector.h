@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.4 2003/04/06 06:43:32 rocky Exp $
+    $Id: sector.h,v 1.5 2003/04/06 17:57:20 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
  *
  * format   sector type               user data size (bytes)
  * -----------------------------------------------------------------------------
- *   1     (Red Book)    CD-DA          2352    (CD-FRAMESIZE_RAW)
+ *   1     (Red Book)    CD-DA          2352    (CDIO_CD_FRAMESIZE_RAW)
  *   2     (Yellow Book) Mode1 Form1    2048    (M1F1_SECTOR_SIZE)
  *   3     (Yellow Book) Mode1 Form2    2336    (M2RAW_SECTOR_SIZE)
  *   4     (Green Book)  Mode2 Form1    2048    (M2F1_SECTOR_SIZE)
@@ -69,90 +69,42 @@
    This is from linux.h - not to slight other OS's. This was the first
    place I came across such useful stuff.
 */
-#ifndef CD_MINS
-#define CD_MINS              74 /* max. minutes per CD, not really a limit */
-#endif
-#ifndef CD_SECS
-#define CD_SECS              60 /* seconds per minute */
-#endif
-#ifndef CD_FRAMES
-#define CD_FRAMES            75 /* frames per second */
-#endif
-#ifndef CD_SYNC_SIZE
-#define CD_SYNC_SIZE         12 /* 12 sync bytes per raw data frame */
-#endif
-#ifndef CD_MSF_OFFSET
-#define CD_MSF_OFFSET       150 /* MSF numbering offset of first frame */
-#endif
-#ifndef CD_CHUNK_SIZE
-#define CD_CHUNK_SIZE        24 /* lowest-level "data bytes piece" */
-#endif
-#ifndef CD_NUM_OF_CHUNKS
-#define CD_NUM_OF_CHUNKS     98 /* chunks per frame */
-#endif
-#ifndef CD_FRAMESIZE_SUB
-#define CD_FRAMESIZE_SUB     96 /* subchannel data "frame" size */
-#endif
-#ifndef CD_HEAD_SIZE
-#define CD_HEAD_SIZE          4 /* header (address) bytes per raw data frame */
-#endif
-#ifndef CD_SUBHEAD_SIZE
-#define CD_SUBHEAD_SIZE       8 /* subheader bytes per raw XA data frame */
-#endif
-#ifndef CD_EDC_SIZE
-#define CD_EDC_SIZE           4 /* bytes EDC per most raw data frame types */
-#endif
-#ifndef CD_ZERO_SIZE
-#define CD_ZERO_SIZE          8 /* bytes zero per yellow book mode 1 frame */
-#endif
-#ifndef CD_ECC_SIZE
-#define CD_ECC_SIZE         276 /* bytes ECC per most raw data frame types */
-#endif
-#ifndef CD_FRAMESIZE
-#define CD_FRAMESIZE       2048 /* bytes per frame, "cooked" mode */
-#endif
-#ifndef CD_FRAMESIZE_RAW
-#define CD_FRAMESIZE_RAW   2352 /* bytes per frame, "raw" mode */
-#endif
-#ifndef CD_FRAMESIZE_RAWER
-#define CD_FRAMESIZE_RAWER 2646 /* The maximum possible returned bytes */ 
-#endif
-/* most drives don't deliver everything: */
-#ifndef CD_FRAMESIZE_RAW1
-#define CD_FRAMESIZE_RAW1 (CD_FRAMESIZE_RAW-CD_SYNC_SIZE) /*2340*/
-#endif
-#ifndef CD_FRAMESIZE_RAW0
-#define CD_FRAMESIZE_RAW0 (CD_FRAMESIZE_RAW-CD_SYNC_SIZE-CD_HEAD_SIZE) /*2336*/
-#endif
+#define CDIO_CD_MINS           74 /* max. minutes per CD, not really a limit */
+#define CDIO_CD_SECS_PER_MIN   60 /* seconds per minute */
+#define CDIO_CD_FRAMES_PER_SEC 75 /* frames per second */
+#define CDIO_CD_SYNC_SIZE      12 /* 12 sync bytes per raw data frame */
+#define CDIO_CD_CHUNK_SIZE     24 /* lowest-level "data bytes piece" */
+#define CDIO_CD_NUM_OF_CHUNKS  98 /* chunks per frame */
+#define CDIO_CD_FRAMESIZE_SUB  96 /* subchannel data "frame" size */
+#define CDIO_CD_HEADER_SIZE     4 /* header (address) bytes per raw data 
+                                     frame */
+#define CDIO_CD_SUBHEADER_SIZE  8 /* subheader bytes per raw XA data frame */
+#define CDIO_CD_EDC_SIZE        4 /* bytes EDC per most raw data frame types */
+#define CDIO_CD_M1F1_ZERO_SIZE  8 /* bytes zero per yellow book mode 1 frame */
+#define CDIO_CD_ECC_SIZE      276 /* bytes ECC per most raw data frame types */
+#define CDIO_CD_FRAMESIZE    2048 /* bytes per frame, "cooked" mode */
+#define CDIO_CD_FRAMESIZE_RAW 2352/* bytes per frame, "raw" mode */
+#define CDIO_CD_FRAMESIZE_RAWER 2646 /* The maximum possible returned bytes */ 
+#define CDIO_CD_FRAMESIZE_RAW1 (CD_FRAMESIZE_RAW-CD_SYNC_SIZE) /*2340*/
+#define CDIO_CD_FRAMESIZE_RAW0 (CD_FRAMESIZE_RAW-CD_SYNC_SIZE-CD_HEAD_SIZE) /*2336*/
 
-#ifndef CD_XA_HEAD
-#define CD_XA_HEAD        (CD_HEAD_SIZE+CD_SUBHEAD_SIZE) /* "before data" part of raw XA frame */
-#endif
-#ifndef CD_XA_TAIL
-#define CD_XA_TAIL        (CD_EDC_SIZE+CD_ECC_SIZE) /* "after data" part of raw XA frame */
-#endif
-#ifndef CD_XA_SYNC_HEAD
-#define CD_XA_SYNC_HEAD   (CD_SYNC_SIZE+CD_XA_HEAD) /* sync bytes + header of XA frame */
-#endif
+/* "before data" part of raw XA (green, mode2) frame */
+#define CDIO_CD_XA_HEADER (CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE) 
 
-/* CD-ROM address types (cdrom_tocentry.cdte_format) */
-#ifndef CDROM_LBA
-#define	CDROM_LBA 0x01 /* "logical block": first frame is #0 */
-#endif
-#ifndef CDROM_MSF
-#define	CDROM_MSF 0x02 /* "minute-second-frame": binary, not bcd here! */
-#endif
+/* "after data" part of raw XA (green, mode2 form1) frame */
+#define CDIO_CD_XA_TAIL   (CDIO_CD_EDC_SIZE+CDIO_CD_ECC_SIZE) 
 
-/* bit to tell whether track is data or audio (cdrom_tocentry.cdte_ctrl) */
-#ifndef CDROM_DATA_TRACK
-#define	CDROM_DATA_TRACK	0x04
-#endif
+/* "before data" sync bytes + header of XA (green, mode2) frame */
+#define CDIO_CD_XA_SYNC_HEADER   (CDIO_CD_SYNC_SIZE+CDIO_CD_XA_HEADER) 
+
+/* CD-ROM address types (Linux cdrom_tocentry.cdte_format) */
+#define	CDIO_CDROM_LBA 0x01 /* "logical block": first frame is #0 */
+#define	CDIO_CDROM_MSF 0x02 /* "minute-second-frame": binary, not bcd here! */
+
+#define	CDIO_CDROM_DATA_TRACK	0x04
 
 /* The leadout track is always 0xAA, regardless of # of tracks on disc */
-#ifndef CDROM_LEADOUT
-#define	CDROM_LEADOUT		0xAA
-#endif
-
+#define	CDIO_CDROM_LEADOUT_TRACK 0xAA
 
 #define M1F1_SECTOR_SIZE    2048
 #define M2F1_SECTOR_SIZE    2048
@@ -163,10 +115,11 @@
 
 #define CD_MAX_TRACKS 99 
 
-#define CD_FRAMES_PER_SECOND 75
-#define CD_FRAMES_PER_MINUTE (60*(CD_FRAMES_PER_SECOND))
-#define CD_74MIN_SECTORS (UINT32_C(74)*CD_FRAMES_PER_MINUTE)
-#define CD_80MIN_SECTORS (UINT32_C(80)*CD_FRAMES_PER_MINUTE)
+#define CDIO_CD_FRAMES_PER_MINUTE \
+   (CDIO_CD_FRAMES_PER_SEC*CDIO_CD_SECS_PER_MINUTE)
+
+#define CD_74MIN_SECTORS (UINT32_C(74)*CDIO_CD_FRAMES_PER_MINUTE)
+#define CD_80MIN_SECTORS (UINT32_C(80)*CDIO_CD_FRAMES_PER_MINUTE)
 #define CD_90MIN_SECTORS (UINT32_C(90)*CD_FRAMES_PER_MINUTE)
 #define CD_MAX_SECTORS   (UINT32_C(100)*CD_FRAMES_PER_MINUTE-CDIO_PREGAP_SECTORS)
 
