@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.38 2004/12/31 07:51:43 rocky Exp $
+#   $Id: Makefile.am,v 1.39 2005/01/13 03:58:47 rocky Exp $
 #
-#    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -23,7 +23,15 @@
 #
 # There's a problem with doing make distcheck for testdefault. 
 # A reminder of why I hate automake.
-hack = check_sizeof testassert testischar testiso9660 testtoc testbincue
+
+if BUILD_CD_PARANOIA
+testparanoia=testparanoia
+testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS)
+endif
+
+hack = check_sizeof testassert  testbincue testischar testiso9660 \
+       $(testparanoia) testtoc
+
 noinst_PROGRAMS = $(hack) testdefault 
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
