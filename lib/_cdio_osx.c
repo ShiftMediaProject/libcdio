@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.50 2004/08/15 13:53:03 rocky Exp $
+    $Id: _cdio_osx.c,v 1.51 2004/08/15 16:15:40 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.50 2004/08/15 13:53:03 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.51 2004/08/15 16:15:40 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -56,23 +56,26 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.50 2004/08/15 13:53:03 rocky 
 #include <sys/ioctl.h>
 
 #include <paths.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include <CoreFoundation/CFBase.h>
-#include <CoreFoundation/CFString.h>
 #include <CoreFoundation/CFNumber.h>
+#include <CoreFoundation/CFString.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/IOBSD.h>
+#include <IOKit/scsi-commands/IOSCSIMultimediaCommandsDevice.h>
 #include <IOKit/storage/IOCDTypes.h>
 #include <IOKit/storage/IODVDTypes.h>
 #include <IOKit/storage/IOMedia.h>
 #include <IOKit/storage/IOCDMedia.h>
 #include <IOKit/storage/IOCDMediaBSDClient.h>
 #include <IOKit/storage/IODVDMediaBSDClient.h>
+#include <IOKit/storage/IOStorageDeviceCharacteristics.h>
 
 /* Note leadout is normally defined 0xAA, But on OSX 0xA0 is "lead in" while
    0xA2 is "lead out". Don't ask me why. */
 #define	OSX_CDROM_LEADOUT_TRACK 0xA2
 
-#define TOTAL_TRACKS    (env->i_last_track - env->i_first_track + 1)
+#define TOTAL_TRACKS    (p_env->i_last_track - p_env->i_first_track + 1)
 
 #define CDROM_CDI_TRACK 0x1
 #define CDROM_XA_TRACK  0x2
@@ -98,16 +101,154 @@ typedef struct {
   track_t i_last_session;    /* highest session number */
   track_t i_first_session;   /* first session number */
   lsn_t   *pp_lba;
+  CFMutableDictionaryRef dict;
 
 } _img_private_t;
 
+/***************************************************************************
+ * GetFeaturesFlagsForDrive -Gets the bitfield which represents the
+ * features flags.
+ ***************************************************************************/
+
+static bool
+GetFeaturesFlagsForDrive ( CFMutableDictionaryRef dict,
+			   uint32_t *i_cdFlags,
+			   uint32_t *i_dvdFlags )
+{
+  CFDictionaryRef propertiesDict = 0;
+  CFNumberRef     flagsNumberRef = 0;
+  
+  *i_cdFlags = 0;
+  *i_dvdFlags= 0;
+  
+  propertiesDict = ( CFDictionaryRef ) 
+    CFDictionaryGetValue ( dict, 
+			   CFSTR ( kIOPropertyDeviceCharacteristicsKey ) );
+  if ( propertiesDict != 0 ) return false;
+  
+  /* Get the CD features */
+  flagsNumberRef = ( CFNumberRef ) 
+    CFDictionaryGetValue ( propertiesDict, 
+			   CFSTR ( kIOPropertySupportedCDFeatures ) );
+  if ( flagsNumberRef != 0 ) {
+    CFNumberGetValue ( flagsNumberRef, kCFNumberLongType, i_cdFlags );
+  }
+  
+  /* Get the DVD features */
+  flagsNumberRef = ( CFNumberRef ) 
+    CFDictionaryGetValue ( propertiesDict, 
+			   CFSTR ( kIOPropertySupportedDVDFeatures ) );
+  if ( flagsNumberRef != 0 ) {
+    CFNumberGetValue ( flagsNumberRef, kCFNumberLongType, i_dvdFlags );
+  }
+
+  return true;
+}
+
+/*!
+ */
+static void
+get_drive_cap_osx(const void *p_user_data,
+		  /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+		  /*out*/ cdio_drive_write_cap_t *p_write_cap,
+		  /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
+{
+  const _img_private_t *p_env = p_user_data;
+  uint32_t i_cdFlags;
+  uint32_t i_dvdFlags;
+
+  if (! GetFeaturesFlagsForDrive ( p_env->dict, &i_cdFlags, &i_dvdFlags ) )
+    return;
+
+  /* Reader */
+
+  if ( 0 != (i_cdFlags & kCDFeaturesAnalogAudioMask) )
+    *p_read_cap  |= CDIO_DRIVE_CAP_READ_AUDIO;      
+
+  if ( 0 != (i_cdFlags & kCDFeaturesWriteOnceMask) ) 
+    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_R;
+
+  if ( 0 != (i_cdFlags & kCDFeaturesCDDAStreamAccurateMask) )
+    *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_DA;
+
+  if ( 0 != (i_dvdFlags & kDVDFeaturesReadStructuresMask) )
+      *p_read_cap  |= CDIO_DRIVE_CAP_READ_DVD_ROM;
+
+  if ( 0 != (i_cdFlags & kCDFeaturesReWriteableMask) )
+    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_RW;
+  
+  if ( 0 != (i_dvdFlags & kDVDFeaturesWriteOnceMask) ) 
+    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_R;
+  
+  if ( 0 != (i_dvdFlags & kDVDFeaturesRandomWriteableMask) )
+    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RAM;
+  
+  if ( 0 != (i_dvdFlags & kDVDFeaturesReWriteableMask) )
+    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RW;
+
+#if 0
+  if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRMask) )
+    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PR;
+  
+  if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRWMask )
+    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PRW;
+#endif
+
+}
+
+#if 0
+/****************************************************************************
+ * GetDriveDescription - Gets drive description. 
+ ****************************************************************************/
+
+static bool
+GetDriveDescription ( CFMutableDictionaryRef dict,
+		      /*out*/ scsi_mmc_hwinfo_t *hw_info)
+{
+  
+  CFDictionaryRef    deviceDict  = NULL;
+  CFStringRef        vendor      = NULL;
+  CFStringRef        product     = NULL;
+  
+  if ( dict != 0 ) return false;
+  
+  deviceDict = ( CFDictionaryRef ) 
+    CFDictionaryGetValue ( dict, 
+			   CFSTR ( kIOPropertyDeviceCharacteristicsKey ) );
+
+  if ( deviceDict != 0 ) return false;
+  
+  vendor = ( CFStringRef ) 
+    CFDictionaryGetValue ( deviceDict, CFSTR ( kIOPropertyVendorNameKey ) );
+
+  if( CFStringGetCString( vendor,
+			  (char *) &(hw_info->vendor),
+			  sizeof(hw_info->vendor),
+			  kCFStringEncodingASCII ) )
+    CFRelease( vendor );
+
+  product = ( CFStringRef ) 
+    CFDictionaryGetValue ( deviceDict, CFSTR ( kIOPropertyProductNameKey ) );
+  
+  if( CFStringGetCString( product,
+			  (char *) &(hw_info->model),
+			  sizeof(hw_info->model),
+			  kCFStringEncodingASCII ) )
+    CFRelease( product );
+  
+  return true;
+  
+}
+#endif
+
 static void 
-_free_osx (void *user_data) {
-  _img_private_t *env = user_data;
-  if (NULL == env) return;
-  cdio_generic_free(env);
-  if (NULL != env->pp_lba) free((void *) env->pp_lba);
-  if (NULL != env->pTOC) free((void *) env->pTOC);
+_free_osx (void *p_user_data) {
+  _img_private_t *p_env = p_user_data;
+  if (NULL == p_env) return;
+  cdio_generic_free(p_env);
+  if (NULL != p_env->pp_lba) free((void *) p_env->pp_lba);
+  if (NULL != p_env->pTOC)   free((void *) p_env->pTOC);
+  if (NULL != p_env->dict)   CFRelease( p_env->dict ); 
 }
 
 /*!
@@ -194,11 +335,11 @@ _get_read_audio_sectors_osx (void *user_data, void *data, lsn_t lsn,
   
   memset( &cd_read, 0, sizeof(cd_read) );
   
-  cd_read.offset = lsn * kCDSectorSizeCDDA;
-  cd_read.sectorArea = kCDSectorAreaUser;
-  cd_read.sectorType = kCDSectorTypeCDDA;
+  cd_read.offset       = lsn * kCDSectorSizeCDDA;
+  cd_read.sectorArea   = kCDSectorAreaUser;
+  cd_read.sectorType   = kCDSectorTypeCDDA;
   
-  cd_read.buffer = data;
+  cd_read.buffer       = data;
   cd_read.bufferLength = kCDSectorSizeCDDA * nblocks;
   
   if( ioctl( env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
@@ -266,28 +407,27 @@ _set_arg_osx (void *user_data, const char key[], const char value[])
   Return false if successful or true if an error.
 */
 static bool
-_cdio_read_toc (_img_private_t *env) 
+_cdio_read_toc (_img_private_t *p_env) 
 {
   mach_port_t port;
   char *psz_devname;
   kern_return_t ret;
   io_iterator_t iterator;
   io_registry_entry_t service;
-  CFMutableDictionaryRef properties;
   CFDataRef data;
   
-  env->gen.fd = open( env->gen.source_name, O_RDONLY | O_NONBLOCK );
-  if (-1 == env->gen.fd) {
-    cdio_warn("Failed to open %s: %s", env->gen.source_name,
+  p_env->gen.fd = open( p_env->gen.source_name, O_RDONLY | O_NONBLOCK );
+  if (-1 == p_env->gen.fd) {
+    cdio_warn("Failed to open %s: %s", p_env->gen.source_name,
 	       strerror(errno));
     return false;
   }
 
   /* get the device name */
-  if( ( psz_devname = strrchr( env->gen.source_name, '/') ) != NULL )
+  if( ( psz_devname = strrchr( p_env->gen.source_name, '/') ) != NULL )
     ++psz_devname;
   else
-    psz_devname = env->gen.source_name;
+    psz_devname = p_env->gen.source_name;
   
   /* unraw the device name */
   if( *psz_devname == 'r' )
@@ -336,9 +476,9 @@ _cdio_read_toc (_img_private_t *env)
       cdio_warn( "search for kIOCDMediaClass came up empty" );
       return false;
     }
-  
+
   /* create a CF dictionary containing the TOC */
-  ret = IORegistryEntryCreateCFProperties( service, &properties,
+  ret = IORegistryEntryCreateCFProperties( service, &(p_env->dict),
 					   kCFAllocatorDefault, kNilOptions );
   
   if(  ret != KERN_SUCCESS )
@@ -349,7 +489,7 @@ _cdio_read_toc (_img_private_t *env)
     }
   
   /* get the TOC from the dictionary */
-  data = (CFDataRef) CFDictionaryGetValue( properties,
+  data = (CFDataRef) CFDictionaryGetValue( p_env->dict,
 					   CFSTR(kIOCDMediaTOCKey) );
   if( data  != NULL )
     {
@@ -359,8 +499,8 @@ _cdio_read_toc (_img_private_t *env)
       buf_len = CFDataGetLength( data ) + 1;
       range = CFRangeMake( 0, buf_len );
       
-      if( ( env->pTOC = (CDTOC *)malloc( buf_len ) ) != NULL ) {
-	CFDataGetBytes( data, range, (u_char *) env->pTOC );
+      if( ( p_env->pTOC = (CDTOC *)malloc( buf_len ) ) != NULL ) {
+	CFDataGetBytes( data, range, (u_char *) p_env->pTOC );
       } else {
 	cdio_warn( "Trouble allocating CDROM TOC" );
 	return false;
@@ -372,10 +512,9 @@ _cdio_read_toc (_img_private_t *env)
       return false;
     }
   
-  CFRelease( properties );
   IOObjectRelease( service ); 
 
-  env->i_descriptors = CDTOCGetDescriptorCount ( env->pTOC );
+  p_env->i_descriptors = CDTOCGetDescriptorCount ( p_env->pTOC );
 
   /* Read in starting sectors. There may be non-tracks mixed in with
      the real tracks.  So find the first and last track number by
@@ -386,22 +525,22 @@ _cdio_read_toc (_img_private_t *env)
     
     CDTOCDescriptor *pTrackDescriptors;
     
-    env->pp_lba = malloc( env->i_descriptors * sizeof(int) );
-    if( env->pp_lba == NULL )
+    p_env->pp_lba = malloc( p_env->i_descriptors * sizeof(int) );
+    if( p_env->pp_lba == NULL )
       {
 	cdio_warn("Out of memory in allocating track starting LSNs" );
-	free( env->pTOC );
+	free( p_env->pTOC );
 	return false;
       }
     
-    pTrackDescriptors = env->pTOC->descriptors;
+    pTrackDescriptors = p_env->pTOC->descriptors;
 
-    env->i_first_track   = CDIO_CD_MAX_TRACKS+1;
-    env->i_last_track    = CDIO_CD_MIN_TRACK_NO;
-    env->i_first_session = CDIO_CD_MAX_TRACKS+1;
-    env->i_last_session  = CDIO_CD_MIN_TRACK_NO;
+    p_env->i_first_track   = CDIO_CD_MAX_TRACKS+1;
+    p_env->i_last_track    = CDIO_CD_MIN_TRACK_NO;
+    p_env->i_first_session = CDIO_CD_MAX_TRACKS+1;
+    p_env->i_last_session  = CDIO_CD_MIN_TRACK_NO;
     
-    for( i = 0; i <= env->i_descriptors; i++ )
+    for( i = 0; i <= p_env->i_descriptors; i++ )
       {
 	track_t i_track     = pTrackDescriptors[i].point;
 	session_t i_session = pTrackDescriptors[i].session;
@@ -428,23 +567,23 @@ _cdio_read_toc (_img_private_t *env)
 	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
 	  continue;
 
-	if (env->i_first_track > i_track) 
-	  env->i_first_track = i_track;
+	if (p_env->i_first_track > i_track) 
+	  p_env->i_first_track = i_track;
 	
-	if (env->i_last_track < i_track) 
-	  env->i_last_track = i_track;
+	if (p_env->i_last_track < i_track) 
+	  p_env->i_last_track = i_track;
 	
-	if (env->i_first_session > i_session) 
-	  env->i_first_track = i_session;
+	if (p_env->i_first_session > i_session) 
+	  p_env->i_first_track = i_session;
 	
-	if (env->i_last_session < i_session) 
-	  env->i_last_track = i_session;
+	if (p_env->i_last_session < i_session) 
+	  p_env->i_last_track = i_session;
       }
 
     /* Now that we know what the first track number is, we can make sure
        index positions are ordered starting at 0.
      */
-    for( i = 0; i <= env->i_descriptors; i++ )
+    for( i = 0; i <= p_env->i_descriptors; i++ )
       {
 	track_t i_track = pTrackDescriptors[i].point;
 
@@ -454,15 +593,15 @@ _cdio_read_toc (_img_private_t *env)
 	/* Note what OSX calls a LBA we call an LSN. So below re we 
 	   really have have MSF -> LSN -> LBA.
 	 */
-	env->pp_lba[i_track - env->i_first_track] =
+	p_env->pp_lba[i_track - p_env->i_first_track] =
 	  cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i].p ));
       }
     
     if( i_leadout == -1 )
       {
 	cdio_warn( "CD leadout not found" );
-	free( env->pp_lba );
-	free( (void *) env->pTOC );
+	free( p_env->pp_lba );
+	free( (void *) p_env->pTOC );
 	return false;
       }
     
@@ -470,11 +609,11 @@ _cdio_read_toc (_img_private_t *env)
        Note what OSX calls a LBA we call an LSN. So below re we 
        really have have MSF -> LSN -> LBA.
     */
-    env->pp_lba[TOTAL_TRACKS] =
+    p_env->pp_lba[TOTAL_TRACKS] =
       cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i_leadout].p ));
   }
 
-  env->toc_init   = true;
+  p_env->toc_init   = true;
 
   return( true ); 
 
@@ -490,16 +629,16 @@ _cdio_read_toc (_img_private_t *env)
 static lsn_t
 _get_track_lba_osx(void *user_data, track_t i_track)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
 
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = env->i_last_track+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = p_env->i_last_track+1;
 
-  if (i_track > env->i_last_track + 1 || i_track < env->i_first_track) {
+  if (i_track > p_env->i_last_track + 1 || i_track < p_env->i_first_track) {
     return CDIO_INVALID_LSN;
   } else {
-    return env->pp_lba[i_track - env->i_first_track];
+    return p_env->pp_lba[i_track - p_env->i_first_track];
   }
 }
 
@@ -516,13 +655,13 @@ _get_track_lba_osx(void *user_data, track_t i_track)
 static int 
 _eject_media_osx (void *user_data) {
 
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
 
   FILE *p_eject;
   char *psz_disk;
   char sz_cmd[32];
 
-  if( ( psz_disk = (char *)strstr( env->gen.source_name, "disk" ) ) != NULL &&
+  if( ( psz_disk = (char *)strstr( p_env->gen.source_name, "disk" ) ) != NULL &&
       strlen( psz_disk ) > 4 )
     {
 #define EJECT_CMD "/usr/sbin/hdiutil eject %s"
@@ -569,12 +708,12 @@ _stat_size_osx (void *user_data)
 static const char *
 _get_arg_osx (void *user_data, const char key[])
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
 
   if (!strcmp (key, "source")) {
-    return env->gen.source_name;
+    return p_env->gen.source_name;
   } else if (!strcmp (key, "access-mode")) {
-    switch (env->access_mode) {
+    switch (p_env->access_mode) {
     case _AM_OSX:
       return "OS X";
     case _AM_NONE:
@@ -591,11 +730,11 @@ _get_arg_osx (void *user_data, const char key[])
 static track_t
 _get_first_track_num_osx(void *user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
-  return env->i_first_track;
+  return p_env->i_first_track;
 }
 
 /*!
@@ -603,12 +742,12 @@ _get_first_track_num_osx(void *user_data)
  */
 static char *
 _get_mcn_osx (const void *user_data) {
-  const _img_private_t *env = user_data;
+  const _img_private_t *p_env = user_data;
   dk_cd_read_mcn_t cd_read;
 
   memset( &cd_read, 0, sizeof(cd_read) );
 
-  if( ioctl( env->gen.fd, DKIOCCDREADMCN, &cd_read ) < 0 )
+  if( ioctl( p_env->gen.fd, DKIOCCDREADMCN, &cd_read ) < 0 )
   {
     cdio_debug( "could not read MCN, %s", strerror(errno) );
     return NULL;
@@ -625,9 +764,9 @@ _get_mcn_osx (const void *user_data) {
 static track_t
 _get_num_tracks_osx(void *user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
   return( TOTAL_TRACKS );
 }
@@ -638,11 +777,11 @@ _get_num_tracks_osx(void *user_data)
 static track_format_t
 _get_track_format_osx(void *user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   dk_cd_read_track_info_t cd_read;
   CDTrackInfo a_track;
 
-  if (i_track > env->i_last_track || i_track < env->i_first_track)
+  if (i_track > p_env->i_last_track || i_track < p_env->i_first_track)
     return TRACK_FORMAT_ERROR;
     
   memset( &cd_read, 0, sizeof(cd_read) );
@@ -653,7 +792,7 @@ _get_track_format_osx(void *user_data, track_t i_track)
   cd_read.buffer = &a_track;
   cd_read.bufferLength = sizeof(CDTrackInfo);
   
-  if( ioctl( env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
+  if( ioctl( p_env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
   {
     cdio_warn( "could not read trackinfo for track %d", i_track );
     return TRACK_FORMAT_ERROR;
@@ -686,12 +825,12 @@ _get_track_format_osx(void *user_data, track_t i_track)
 static bool
 _get_track_green_osx(void *user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   CDTrackInfo a_track;
 
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
-  if ( i_track > env->i_last_track || i_track < env->i_first_track )
+  if ( i_track > p_env->i_last_track || i_track < p_env->i_first_track )
     return false;
 
   else {
@@ -706,7 +845,7 @@ _get_track_green_osx(void *user_data, track_t i_track)
     cd_read.buffer       = &a_track;
     cd_read.bufferLength = sizeof(CDTrackInfo);
     
-    if( ioctl( env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 ) {
+    if( ioctl( p_env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 ) {
       cdio_warn( "could not read trackinfo for track %d", i_track );
       return false;
     }
@@ -917,7 +1056,8 @@ cdio_open_osx (const char *psz_orig_source)
     .get_arg            = _get_arg_osx,
     .get_default_device = cdio_get_default_device_osx,
     .get_devices        = cdio_get_devices_osx,
-    .get_drive_cap      = NULL,
+    .get_discmode       = NULL,
+    .get_drive_cap      = get_drive_cap_osx,
     .get_first_track_num= _get_first_track_num_osx,
     .get_mcn            = _get_mcn_osx,
     .get_num_tracks     = _get_num_tracks_osx,
