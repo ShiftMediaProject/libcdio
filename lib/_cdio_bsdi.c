@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.15 2003/10/03 01:43:45 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.16 2003/10/03 03:45:40 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.15 2003/10/03 01:43:45 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.16 2003/10/03 03:45:40 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -144,14 +144,14 @@ _cdio_init (_img_private_t *_obj)
 /* Read audio sectors
 */
 static int
-_read_audio_sectors (void *user_data, void *data, lsn_t lsn,
+_read_audio_sectors (void *env, void *data, lsn_t lsn,
 		     unsigned int nblocks)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
 
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
   msf->cdmsf_min0 = from_bcd8(_msf.m);
@@ -202,34 +202,34 @@ _read_audio_sectors (void *user_data, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
 		    bool mode2_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
 
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
   msf->cdmsf_min0 = from_bcd8(_msf.m);
   msf->cdmsf_sec0 = from_bcd8(_msf.s);
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
 
-  if (_obj->ioctls_debugged == 75)
+  if (_obj->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
 
-  if (_obj->ioctls_debugged == 30 * 75)
+  if (_obj->gen.ioctls_debugged == 30 * 75)
     cdio_debug ("only displaying every 30*75th ioctl from now on");
   
-  if (_obj->ioctls_debugged < 75 
-      || (_obj->ioctls_debugged < (30 * 75)  
-	  && _obj->ioctls_debugged % 75 == 0)
+  if (_obj->gen.ioctls_debugged < 75 
+      || (_obj->gen.ioctls_debugged < (30 * 75)  
+	  && _obj->gen.ioctls_debugged % 75 == 0)
       || _obj->ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %2.2d:%2.2d:%2.2d",
 	       msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
   
-  _obj->ioctls_debugged++;
+  _obj->gen.ioctls_debugged++;
  
   switch (_obj->access_mode)
     {
@@ -246,7 +246,6 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 	  /* exit (EXIT_FAILURE); */
 	}
       break;
-      
     }
 
   if (mode2_form2)
@@ -263,22 +262,22 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn, 
 		     bool mode2_form2, unsigned int nblocks)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   int i;
   int retval;
 
   for (i = 0; i < nblocks; i++) {
     if (mode2_form2) {
-      if ( (retval = _read_mode2_sector (_obj, 
+      if ( (retval = _cdio_read_mode2_sector (_obj, 
 					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
 					  lsn + i, true)) )
 	return retval;
     } else {
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _read_mode2_sector (_obj, buf, lsn + i, true)) )
+      if ( (retval = _cdio_read_mode2_sector (_obj, buf, lsn + i, true)) )
 	return retval;
       
       memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
@@ -292,9 +291,9 @@ _read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_cdio_stat_size (void *user_data)
+_cdio_stat_size (void *env)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   struct cdrom_tocentry tocent;
   uint32_t size;
@@ -316,9 +315,9 @@ _cdio_stat_size (void *user_data)
   Set the key "arg" to "value" in source device.
 */
 static int
-_cdio_set_arg (void *user_data, const char key[], const char value[])
+_cdio_set_arg (void *env, const char key[], const char value[])
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (!strcmp (key, "source"))
     {
@@ -404,9 +403,9 @@ _cdio_read_toc (_img_private_t *_obj)
   also free obj.
  */
 static int 
-_cdio_eject_media (void *user_data) {
+_cdio_eject_media (void *env) {
 
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   int ret=2;
   int status;
   int fd;
@@ -441,9 +440,9 @@ _cdio_eject_media (void *user_data) {
   Return the value associated with the key "arg".
 */
 static const char *
-_cdio_get_arg (void *user_data, const char key[])
+_cdio_get_arg (void *env, const char key[])
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (!strcmp (key, "source")) {
     return _obj->source_name;
@@ -463,9 +462,9 @@ _cdio_get_arg (void *user_data, const char key[])
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_cdio_get_first_track_num(void *user_data) 
+_cdio_get_first_track_num(void *env) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
@@ -477,9 +476,9 @@ _cdio_get_first_track_num(void *user_data)
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_cdio_get_num_tracks(void *user_data) 
+_cdio_get_num_tracks(void *env) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
@@ -490,9 +489,9 @@ _cdio_get_num_tracks(void *user_data)
   Get format of track. 
 */
 static track_format_t
-_cdio_get_track_format(void *user_data, track_t track_num) 
+_cdio_get_track_format(void *env, track_t track_num) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
@@ -523,9 +522,9 @@ _cdio_get_track_format(void *user_data, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *user_data, track_t track_num) 
+_cdio_get_track_green(void *env, track_t track_num) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
@@ -548,9 +547,9 @@ _cdio_get_track_green(void *user_data, track_t track_num)
   False is returned if there is no track entry.
 */
 static bool
-_cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
+_cdio_get_track_msf(void *env, track_t track_num, msf_t *msf)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (NULL == msf) return false;
 
@@ -595,7 +594,7 @@ cdio_get_devices_bsdi (void)
   setfsent();
   
   /* Check what's in /etc/fstab... */
-  while (fs = getfsent())
+  while ( (fs = getfsent()) )
     {
       if (strncmp(fs->fs_spec, "/dev/sr", 7))
 	cdio_add_device_list(&drives, fs->fs_spec, &num_drives);
@@ -655,9 +654,9 @@ cdio_open_bsdi (const char *source_name)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
-    .read_mode2_sector  = _read_mode2_sector,
+    .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_audio_sectors = _read_audio_sectors,
-    .read_mode2_sectors = _read_mode2_sectors,
+    .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
     .stat_size          = _cdio_stat_size
   };
