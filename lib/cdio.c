@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.14 2003/05/18 01:50:51 rocky Exp $
+    $Id: cdio.c,v 1.15 2003/05/24 15:25:21 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.14 2003/05/18 01:50:51 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.15 2003/05/24 15:25:21 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -201,6 +201,17 @@ cdio_get_default_device (const CdIo *obj)
     return NULL;
   }
 }
+
+/*!
+  Return a string containing the name of the driver in use.
+  if CdIo is NULL (we haven't initialized a specific device driver), 
+  then return NULL.
+*/
+const char * cdio_get_driver_name (const CdIo *obj) 
+{
+  return CdIo_all_drivers[obj->driver_id].name;
+}
+
 
 /*!
   Return the number of of the first track. 
@@ -513,7 +524,10 @@ scan_for_driver(driver_id_t start, driver_id_t end, const char *source_name)
   for (driver_id=start; driver_id<=end; driver_id++) {
     if ((*CdIo_all_drivers[driver_id].have_driver)()) {
       CdIo *ret=(*CdIo_all_drivers[driver_id].driver_open)(source_name);
-      if (ret != NULL) return ret;
+      if (ret != NULL) {
+        ret->driver_id = driver_id;
+        return ret;
+      }
     }
   }
   return NULL;
@@ -552,7 +566,8 @@ cdio_open (const char *orig_source_name, driver_id_t driver_id)
     {
       struct stat buf;
       if (0 != stat(source_name, &buf)) {
-        cdio_error ("Can't stat file %s:\n%s", source_name, strerror(errno));
+        cdio_error ("Can't get file status for %s:\n%s", source_name, 
+                    strerror(errno));
         return NULL;
       }
       if (S_ISBLK(buf.st_mode) || S_ISCHR(buf.st_mode)) {
@@ -592,6 +607,7 @@ cdio_open (const char *orig_source_name, driver_id_t driver_id)
   case DRIVER_BINCUE:
     if ((*CdIo_all_drivers[driver_id].have_driver)()) {
       CdIo *ret = (*CdIo_all_drivers[driver_id].driver_open)(source_name);
+      ret->driver_id = driver_id;
       free(source_name);
       return ret;
     }
