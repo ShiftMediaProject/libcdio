@@ -1,7 +1,8 @@
 /*
-    $Id: _cdio_nrg.c,v 1.25 2003/12/30 11:52:49 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.26 2003/12/31 03:09:31 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
+    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.25 2003/12/30 11:52:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.26 2003/12/31 03:09:31 rocky Exp $";
 
 /* structures used */
 
@@ -157,19 +158,20 @@ typedef struct {
      This must be first. */
   generic_img_private_t gen; 
   internal_position_t pos; 
-  bool            is_dao;          /* True if some of disk at once. False
-				      if some sort of track at once. */
+  bool          is_dao;          /* True if some of disk at once. False
+				    if some sort of track at once. */
+  uint32_t      mtyp;            /* Value of MTYP (media type?) tag */
+  uint8_t       dtyp;            /* Value of DAOX media type tag */
 
   /* This is a hack because I don't really understnad NERO better. */
   bool            is_cues;
 
-  track_info_t    tocent[100];     /* entry info for each track */
-  track_t         total_tracks;    /* number of tracks in image */
-  track_t         first_track_num; /* track number of first track */
-  CdioList       *mapping;         /* List of track information */
-  uint32_t        size;
-  uint32_t        mtyp;            /* Value of MTYP (media type?) tag */
-  uint8_t         dtyp;            /* Value of DAOX media type tag */
+  char         *mcn;             /* Media catalog number. */
+  track_info_t  tocent[100];     /* entry info for each track */
+  track_t       total_tracks;    /* number of tracks in image */
+  track_t       first_track_num; /* track number of first track */
+  CdioList     *mapping;         /* List of track information */
+  uint32_t      size;
 } _img_private_t;
 
 static bool     _cdio_parse_nero_footer (_img_private_t *_obj);
@@ -217,10 +219,52 @@ _register_mapping (_img_private_t *_obj, lsn_t start_lsn, uint32_t sec_count,
       
   this_track->sec_count = sec_count;
 
-  _obj->total_tracks++;
-
   this_track->track_format= track_format;
   this_track->track_green = track_green;
+
+  switch (this_track->track_format) {
+  case TRACK_FORMAT_AUDIO:
+    this_track->blocksize   = CDIO_CD_FRAMESIZE_RAW;
+    this_track->datasize    = CDIO_CD_FRAMESIZE_RAW;
+    /*this_track->datastart   = 0;*/
+    this_track->endsize     = 0;
+    break;
+  case TRACK_FORMAT_CDI:
+    this_track->datasize=CDIO_CD_FRAMESIZE;
+    break;
+  case TRACK_FORMAT_XA:
+    if (track_green) {
+      this_track->blocksize = CDIO_CD_FRAMESIZE;
+      /*this_track->datastart = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE;*/
+      this_track->datasize  = M2RAW_SECTOR_SIZE;
+      this_track->endsize   = 0;
+    } else {
+      /*this_track->datastart = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE +
+	CDIO_CD_SUBHEADER_SIZE;*/
+      this_track->datasize  = CDIO_CD_FRAMESIZE;
+      this_track->endsize   = CDIO_CD_SYNC_SIZE + CDIO_CD_ECC_SIZE;
+    }
+    break;
+  case TRACK_FORMAT_DATA:
+    if (track_green) {
+      /*this_track->datastart = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE;*/
+      this_track->datasize  = CDIO_CD_FRAMESIZE;
+      this_track->endsize   = CDIO_CD_EDC_SIZE + CDIO_CD_M1F1_ZERO_SIZE 
+	  + CDIO_CD_ECC_SIZE;
+    } else {
+      /* Is the below correct? */
+      /*this_track->datastart = 0;*/
+      this_track->datasize  = CDIO_CD_FRAMESIZE;
+      this_track->endsize   = 0;  
+    }
+    break;
+  default:
+    /*this_track->datasize=CDIO_CD_FRAMESIZE_RAW;*/
+    cdio_warn ("track %d has unknown format %d",
+	       _obj->total_tracks, this_track->track_format);
+  }
+  
+  _obj->total_tracks++;
 
   cdio_debug ("start lsn: %d sector count: %0d -> %8ld (%08lx)", 
 	      start_lsn, sec_count, 
@@ -391,16 +435,31 @@ PRAGMA_END_PACKED
       case DAOI_ID: /* "DAOI" */
 	{
 	  _daox_array_t *_entries = (void *) chunk->data;
+	  track_format_t track_format;
 	  int form     = _entries->_unknown[18];
-	  _obj->is_dao = true;
 	  _obj->dtyp   = _entries->_unknown[36];
+	  _obj->is_dao = true;
 	  cdio_debug ("DAOI tag detected, track format %d, form %x\n", 
 		      _obj->dtyp, form);
+	  switch (_obj->dtyp) {
+	  case 0:
+	    track_format = TRACK_FORMAT_DATA;
+	    break;
+	  case 0x20:
+	    track_format = TRACK_FORMAT_XA;
+	    break;
+	  default:
+	    cdio_warn ("Unknown track format %x\n", 
+		      _obj->dtyp);
+	    track_format = TRACK_FORMAT_AUDIO;
+	  }
 	  if (0 == form) {
 	    int i;
 	    for (i=0; i<_obj->total_tracks; i++) {
 	      _obj->tocent[i].track_green = false;
-	      _obj->tocent[i].datastart   -= CDIO_CD_SUBHEADER_SIZE;
+	      _obj->tocent[i].track_format= track_format;
+	      _obj->tocent[i].datasize    = CDIO_CD_FRAMESIZE;
+	      _obj->tocent[i].datastart  =  0;
 	    }
 	  }
 	  break;
@@ -408,15 +467,31 @@ PRAGMA_END_PACKED
       case DAOX_ID: /* "DAOX" */ 
 	{
 	  _daox_array_t *_entries = (void *) chunk->data;
+	  track_format_t track_format;
 	  int form     = _entries->_unknown[18];
 	  _obj->dtyp   = _entries->_unknown[36];
+	  _obj->is_dao = true;
 	  cdio_debug ("DAOX tag detected, track format %d, form %x\n", 
 		      _obj->dtyp, form);
+	  switch (_obj->dtyp) {
+	  case 0:
+	    track_format = TRACK_FORMAT_DATA;
+	    break;
+	  case 0x20:
+	    track_format = TRACK_FORMAT_XA;
+	    break;
+	  default:
+	    cdio_warn ("Unknown track format %x\n", 
+		      _obj->dtyp);
+	    track_format = TRACK_FORMAT_AUDIO;
+	  }
 	  if (0 == form) {
 	    int i;
 	    for (i=0; i<_obj->total_tracks; i++) {
 	      _obj->tocent[i].track_green = false;
-	      _obj->tocent[i].datastart   -= CDIO_CD_SUBHEADER_SIZE;
+	      _obj->tocent[i].track_format= track_format;
+	      _obj->tocent[i].datasize    = CDIO_CD_FRAMESIZE;
+	      _obj->tocent[i].datastart  -= CDIO_CD_SUBHEADER_SIZE;
 	    }
 	  }
 	  break;
@@ -652,48 +727,22 @@ _cdio_lseek (void *env, off_t offset, int whence)
   off_t real_offset= _obj->is_dao ? 0x4b000 : 0;
 
   unsigned int i;
-  unsigned int user_datasize;
 
   for (i=0; i<_obj->total_tracks; i++) {
     track_info_t  *this_track=&(_obj->tocent[i]);
-    switch (this_track->track_format) {
-    case TRACK_FORMAT_AUDIO:
-      user_datasize=CDIO_CD_FRAMESIZE_RAW;
-      break;
-    case TRACK_FORMAT_CDI:
-      user_datasize=CDIO_CD_FRAMESIZE;
-      break;
-    case TRACK_FORMAT_XA:
-      user_datasize=CDIO_CD_FRAMESIZE;
-      break;
-    case TRACK_FORMAT_DATA:
-      user_datasize=CDIO_CD_FRAMESIZE;
-      break;
-    default:
-      user_datasize=CDIO_CD_FRAMESIZE_RAW;
-      cdio_warn ("track %d has unknown format %d",
-		 i+1, this_track->track_format);
-    }
-
-    if ( (this_track->sec_count*user_datasize) >= offset) {
-      int blocks = offset / user_datasize;
-      int rem    = offset % user_datasize;
-
-      if (this_track->track_green) {
-	int block_offset = blocks * (M2RAW_SECTOR_SIZE);
-	real_offset += block_offset + rem;
-      } else 
-	real_offset += offset + rem;
+    _obj->pos.index = i;
+    if ( (this_track->sec_count*this_track->datasize) >= offset) {
+      int blocks            = offset / this_track->datasize;
+      int rem               = offset % this_track->datasize;
+      int block_offset      = blocks * this_track->blocksize;
+      real_offset          += block_offset + rem;
+      _obj->pos.buff_offset = rem;
+      _obj->pos.lba        += blocks;
       break;
     }
-
-    if (this_track->track_green)
-      real_offset += this_track->sec_count*M2RAW_SECTOR_SIZE;
-    else
-      /* Not sure if this is right... */
-      real_offset += this_track->sec_count*CDIO_CD_FRAMESIZE;
-    
-    offset -= this_track->sec_count*user_datasize;
+    real_offset   += this_track->sec_count*this_track->blocksize;
+    offset        -= this_track->sec_count*this_track->datasize;
+    _obj->pos.lba += this_track->sec_count;
   }
 
   if (i==_obj->total_tracks) {
