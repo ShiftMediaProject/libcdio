@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.5 2005/01/06 16:37:30 rocky Exp $
+  $Id: scan_devices.c,v 1.6 2005/01/08 00:56:09 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -156,17 +156,19 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
 {
 
   cdrom_drive_t *d=NULL;
-  char *device;
+  char *device = NULL;
   CdIo_t *p_cdio = NULL;
 
-  device = test_resolve_symlink(dev,messagedest,messages);
-  if ( !device ) device = strdup(dev);
+  if (dev) {
+    device = test_resolve_symlink(dev,messagedest,messages);
+    if ( !device ) device = strdup(dev);
+  }
 
   p_cdio = cdio_open(device, DRIVER_UNKNOWN);
   
   if (!p_cdio) {
     idperror(messagedest,messages,"\t\tUnable to open %s", dev);
-    free(device);
+    if (device) free(device);
     return NULL;
   }
   
