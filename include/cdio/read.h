@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: read.h,v 1.1 2005/01/09 16:07:46 rocky Exp $
+    $Id: read.h,v 1.2 2005/01/20 04:51:14 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -48,6 +48,10 @@ extern "C" {
     Reads into buf the next size bytes.
     Similar to (if not the same as) libc's read()
 
+    @param p_cdio object to read from
+    @param p_buf place to read data into
+    @param i_size number of bytes to read
+
     @return (ssize_t) -1 on error. 
   */
   ssize_t cdio_read(const CdIo_t *p_cdio, void *p_buf, size_t i_size);
@@ -56,8 +60,8 @@ extern "C" {
     Read an audio sector
 
     @param p_cdio object to read from
-    @param buf place to read data into
-    @param lsn sector to read
+    @param p_buf place to read data into
+    @param i_lsn sector to read
 
     @return 0 if no error, nonzero otherwise.
   */
@@ -67,21 +71,21 @@ extern "C" {
     Reads audio sectors
 
     @param p_cdio object to read from
-    @param buf place to read data into
-    @param lsn sector to read
+    @param p_buf place to read data into
+    @param i_lsn sector to read
     @param i_sectors number of sectors to read
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_audio_sectors (const CdIo_t *p_cdio, void *buf, lsn_t lsn,
+  int cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 			       unsigned int i_sectors);
 
   /*!
     Reads a mode 1 sector
 
     @param p_cdio object to read from
-    @param buf place to read data into
-    @param lsn sector to read
+    @param p_buf place to read data into
+    @param i_lsn sector to read
     @param b_form2 true for reading mode 1 form 2 sectors or false for 
     mode 1 form 1 sectors.
 
@@ -94,8 +98,8 @@ extern "C" {
     Reads mode 1 sectors
 
     @param p_cdio object to read from
-    @param buf place to read data into
-    @param lsn sector to read
+    @param p_buf place to read data into
+    @param i_lsn sector to read
     @param b_form2 true for reading mode 1 form 2 sectors or false for 
     mode 1 form 1 sectors.
     @param i_sectors number of sectors to read
@@ -109,8 +113,8 @@ extern "C" {
     Reads a mode 2 sector
 
     @param p_cdio object to read from
-    @param buf place to read data into
-    @param lsn sector to read
+    @param p_buf place to read data into
+    @param i_lsn sector to read
     @param b_form2 true for reading mode 2 form 2 sectors or false for 
     mode 2 form 1 sectors.
 
@@ -123,10 +127,10 @@ extern "C" {
     Reads mode 2 sectors
 
     @param p_cdio object to read from
-    @param buf place to read data into
-    @param lsn sector to read
+    @param p_buf place to read data into
+    @param i_lsn sector to read
     @param b_form2 true for reading mode2 form 2 sectors or false for 
-    mode 2  form 1 sectors.
+           mode 2  form 1 sectors.
     @param i_sectors number of sectors to read
 
     @return 0 if no error, nonzero otherwise.

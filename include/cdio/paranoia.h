@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.h,v 1.3 2005/01/13 04:00:15 rocky Exp $
+  $Id: paranoia.h,v 1.4 2005/01/20 04:51:14 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -19,7 +19,7 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/** \file cdda_paranoia.h 
+/** \file paranoia.h 
  *  \brief  The top-level header for libcdda_paranoia: 
     a library for reading CD-DA with error tolerance and repair.
  */
@@ -100,6 +100,8 @@ extern void paranoia_modeset(cdrom_paranoia_t *p, int mode);
   /*!
     reposition reading offset. 
 
+    @param p       paranoia type
+    @param seek    byte offset to seek to
     @param whence  like corresponding parameter in libc's lseek, e.g. 
                    SEEK_SET or SEEK_END.
   */

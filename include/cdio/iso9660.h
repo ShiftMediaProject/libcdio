@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.56 2005/01/12 11:34:52 rocky Exp $
+    $Id: iso9660.h,v 1.57 2005/01/20 04:51:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -226,7 +226,7 @@ struct iso9660_pvd {
   uint32_t         opt_type_m_path_table;        /**< 732 encoded */
   iso9660_dir_t    root_directory_record;        /**< See section 9.1 of
                                                     ISO 9660 spec. */
-  char             root_directory_filename;      /**< Is \0 */
+  char             root_directory_filename;      /**< Is '\\0' */
   char             volume_set_id[ISO_MAX_VOLUMESET_ID];    /**< dchars */
   char             publisher_id[ISO_MAX_PUBLISHER_ID];     /**< achars */
   char             preparer_id[ISO_MAX_PREPARER_ID];       /**< achars */

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.6 2005/01/20 00:36:38 rocky Exp $
+    $Id: device.h,v 1.7 2005/01/20 04:51:14 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -462,6 +462,8 @@ extern "C" {
   /*! Set up CD-ROM for reading using the BSDI driver. The device_name is
       the some sort of device name.
 
+     @param psz_source the name of the device to open
+     @param am         the preferred access mode to use 
      @return the cdio object for subsequent operations. 
      NULL on error or there is no BSDI driver.
 
@@ -473,6 +475,7 @@ extern "C" {
   /*! Set up CD-ROM for reading using the BSDI driver. The device_name is
       the some sort of device name.
 
+     @param psz_source the name of the device to open
      @return the cdio object for subsequent operations. 
      NULL on error or there is no BSDI driver.
 
