@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.85 2004/08/30 00:26:59 rocky Exp $
+    $Id: cd-info.c,v 1.86 2004/08/30 01:01:14 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1033,7 +1033,7 @@ main(int argc, const char *argv[])
 	   discmode2str[discmode]);
   }
 
-  if (discmode_is_dvd && !opts.show_dvd) {
+  if (discmode_is_dvd(discmode) && !opts.show_dvd) {
     printf("No further information currently given for DVDs.\n");
     printf("Use --dvd to override.\n");
     myexit(p_cdio, EXIT_SUCCESS);

@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.27 2004/08/30 00:26:59 rocky Exp $
+    $Id: sector.h,v 1.28 2004/08/30 01:01:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -286,13 +286,31 @@ bool cdio_is_discmode_dvd (discmode_t discmode);
 
 static inline bool discmode_is_cd(discmode_t discmode) 
 {
-  return discmode <= CDIO_DISC_MODE_CD_MIXED;
+  switch (discmode) {
+  case CDIO_DISC_MODE_CD_DA:
+  case CDIO_DISC_MODE_CD_DATA:
+  case CDIO_DISC_MODE_CD_XA:
+  case CDIO_DISC_MODE_CD_MIXED:
+    return true;
+  default: 
+    return false;
+  }
 }
 
 static inline bool discmode_is_dvd(discmode_t discmode) 
 {
-  return (discmode >= CDIO_DISC_MODE_DVD_ROM) 
-    && (discmode <= CDIO_DISC_MODE_DVD_OTHER);
+  switch (discmode) {
+  case CDIO_DISC_MODE_DVD_ROM:
+  case CDIO_DISC_MODE_DVD_RAM:
+  case CDIO_DISC_MODE_DVD_R:
+  case CDIO_DISC_MODE_DVD_RW:
+  case CDIO_DISC_MODE_DVD_PR:
+  case CDIO_DISC_MODE_DVD_PRW:
+  case CDIO_DISC_MODE_DVD_OTHER:
+    return true;
+  default: 
+    return false;
+  }
 }
 
 
