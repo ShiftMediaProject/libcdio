@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.1 2004/08/10 11:58:15 rocky Exp $
+    $Id: generic.h,v 1.2 2004/08/28 09:15:41 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -148,6 +148,11 @@ extern "C" {
     Get disc type associated with cd object.
   */
   discmode_t get_discmode_generic (void *p_user_data );
+  
+  /*! 
+    Same as above but only handles CD cases
+  */
+  discmode_t get_discmode_cd_generic (void *p_user_data );
   
   void set_cdtext_field_generic(void *user_data, track_t i_track, 
 				track_t i_first_track,

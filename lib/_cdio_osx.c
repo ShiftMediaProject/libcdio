@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.60 2004/08/27 02:59:25 rocky Exp $
+    $Id: _cdio_osx.c,v 1.61 2004/08/28 09:15:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.60 2004/08/27 02:59:25 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.61 2004/08/28 09:15:41 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -70,9 +70,6 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.60 2004/08/27 02:59:25 rocky 
 
 #include <paths.h>
 #include <CoreFoundation/CoreFoundation.h>
-#include <CoreFoundation/CFBase.h>
-#include <CoreFoundation/CFNumber.h>
-#include <CoreFoundation/CFString.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/IOBSD.h>
 #include <IOKit/scsi-commands/IOSCSIMultimediaCommandsDevice.h>
@@ -80,9 +77,12 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.60 2004/08/27 02:59:25 rocky 
 #include <IOKit/storage/IODVDTypes.h>
 #include <IOKit/storage/IOMedia.h>
 #include <IOKit/storage/IOCDMedia.h>
+#include <IOKit/storage/IODVDMedia.h>
 #include <IOKit/storage/IOCDMediaBSDClient.h>
 #include <IOKit/storage/IODVDMediaBSDClient.h>
 #include <IOKit/storage/IOStorageDeviceCharacteristics.h>
+
+#define kIOCDBlockStorageDeviceClassString		"IOCDBlockStorageDevice"
 
 /* Note leadout is normally defined 0xAA, But on OSX 0xA0 is "lead in" while
    0xA2 is "lead out". Don't ask me why. */
@@ -98,6 +98,7 @@ typedef enum {
   _AM_OSX,
 } access_mode_t;
 
+#define MAX_SERVICE_NAME 1000
 typedef struct {
   /* Things common to all drivers like this. 
      This must be first. */
@@ -115,6 +116,7 @@ typedef struct {
   lsn_t   *pp_lba;
   CFMutableDictionaryRef dict;
   io_service_t MediaClass_service;
+  char    psz_MediaClass_service[MAX_SERVICE_NAME];
   SCSITaskDeviceInterface **pp_scsiTaskDeviceInterface;
 
 } _img_private_t;
@@ -192,9 +194,10 @@ init_osx(_img_private_t *p_env) {
   p_env->MediaClass_service = IOIteratorNext( iterator );
   IOObjectRelease( iterator );
   
-  /* search for kIOCDMediaClass */ 
+  /* search for kIOCDMediaClass or kIOCDVDMediaClass */ 
   while( p_env->MediaClass_service && 
-	 !IOObjectConformsTo( p_env->MediaClass_service, kIOCDMediaClass ) )
+	 (!IOObjectConformsTo(p_env->MediaClass_service, kIOCDMediaClass)) &&
+	 (!IOObjectConformsTo(p_env->MediaClass_service, kIODVDMediaClass)) )
     {
 
       ret = IORegistryEntryGetParentIterator( p_env->MediaClass_service, 
@@ -230,6 +233,9 @@ init_osx(_img_private_t *p_env) {
       IOObjectRelease( p_env->MediaClass_service );
       return false;
     }
+
+  IORegistryEntryGetPath(p_env->MediaClass_service, kIOServicePlane, 
+			 p_env->psz_MediaClass_service);
   return true;
 }
 
@@ -330,6 +336,26 @@ run_scsi_cmd_osx( const void *p_user_data,
 }
 
 /***************************************************************************
+ * GetDeviceIterator - Gets an io_iterator_t for our class type
+ ***************************************************************************/
+
+static io_iterator_t
+GetDeviceIterator ( const char * deviceClass )
+{
+  
+  IOReturn	err	 = kIOReturnSuccess;
+  io_iterator_t	iterator = MACH_PORT_NULL;
+  
+  err = IOServiceGetMatchingServices ( kIOMasterPortDefault,
+				       IOServiceMatching ( deviceClass ),
+				       &iterator );
+  check ( err == kIOReturnSuccess );
+  
+  return iterator;
+  
+}
+
+/***************************************************************************
  * GetFeaturesFlagsForDrive -Gets the bitfield which represents the
  * features flags.
  ***************************************************************************/
@@ -370,112 +396,218 @@ GetFeaturesFlagsForDrive ( CFDictionaryRef dict,
   return true;
 }
 
+/*! 
+  Get disc type associated with the cd object.
+*/
+static discmode_t
+get_discmode_osx (void *p_user_data)
+{
+  _img_private_t *p_env = p_user_data;
+  char str[10];
+  int32_t i_discmode = CDIO_DISC_MODE_ERROR;
+  CFDictionaryRef propertiesDict = 0;
+  CFStringRef data;
+
+  propertiesDict  = GetRegistryEntryProperties ( p_env->MediaClass_service );
+
+  if ( propertiesDict == 0 ) return i_discmode;
+
+  data = ( CFStringRef ) 
+    CFDictionaryGetValue ( propertiesDict, CFSTR ( kIODVDMediaTypeKey ) );
+
+  if( CFStringGetCString( data, str, sizeof(str),
+			  kCFStringEncodingASCII ) ) {
+    if (0 == strncmp(str, "DVD+R", sizeof(str)) )
+      i_discmode = CDIO_DISC_MODE_DVD_PR;
+    else if (0 == strncmp(str, "DVD+RW", sizeof(str)) ) 
+      i_discmode = CDIO_DISC_MODE_DVD_PRW;
+    else if (0 == strncmp(str, "DVD-R", sizeof(str)) ) 
+      i_discmode = CDIO_DISC_MODE_DVD_R;
+    else if (0 == strncmp(str, "DVD-ROM", sizeof(str)) ) 
+      i_discmode = CDIO_DISC_MODE_DVD_ROM;
+    else if (0 == strncmp(str, "DVD-RAM", sizeof(str)) ) 
+      i_discmode = CDIO_DISC_MODE_DVD_RAM;
+    else if (0 == strncmp(str, "CD-ROM", sizeof(str)) )
+      i_discmode = CDIO_DISC_MODE_CD_DA;
+    else if (0 == strncmp(str, "CDR", sizeof(str)) ) 
+      i_discmode = CDIO_DISC_MODE_CD_DATA;
+    else if (0 == strncmp(str, "CDRW", sizeof(str)) ) 
+      i_discmode = CDIO_DISC_MODE_CD_DATA;
+    CFRelease( data );
+  }
+  CFRelease( propertiesDict );   
+  if (CDIO_DISC_MODE_CD_DATA == i_discmode) {
+    /* Need to do more classification */
+    return get_discmode_cd_generic(p_user_data);
+  }
+  return i_discmode;
+
+}
+
+static io_service_t
+get_drive_service_osx(const _img_private_t *p_env)
+{
+  io_service_t  service;
+  io_iterator_t service_iterator;
+  
+  service_iterator = GetDeviceIterator ( kIOCDBlockStorageDeviceClassString );
+
+  if( service_iterator == MACH_PORT_NULL ) return 0;
+  
+  service = IOIteratorNext( service_iterator );
+  if( service == 0 ) return 0;
+
+  do
+    {
+      char psz_service[MAX_SERVICE_NAME];
+      IORegistryEntryGetPath(service, kIOServicePlane, psz_service);
+      psz_service[MAX_SERVICE_NAME-1] = '\0';
+      
+      /* FIXME: This is all hoaky. Here we need info from a parent class,
+	 psz_service of what we opened above. We are relying on the
+	 fact that the name  will be a substring of the name we
+	 openned with.
+      */
+      if (0 == strncmp(psz_service, p_env->psz_MediaClass_service, 
+		       strlen(psz_service))) {
+	/* Found our device */
+	IOObjectRelease( service_iterator );
+	return service;
+      }
+      
+      IOObjectRelease( service );
+      
+    } while( ( service = IOIteratorNext( service_iterator ) ) != 0 );
+
+  IOObjectRelease( service_iterator );
+  return service;
+}
+
 static void
 get_drive_cap_osx(const void *p_user_data,
 		  /*out*/ cdio_drive_read_cap_t  *p_read_cap,
 		  /*out*/ cdio_drive_write_cap_t *p_write_cap,
 		  /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
-#if 1
-  *p_misc_cap = *p_write_cap = *p_read_cap = CDIO_DRIVE_CAP_UNKNOWN;
-  return;
-#else 
   const _img_private_t *p_env = p_user_data;
   uint32_t i_cdFlags;
   uint32_t i_dvdFlags;
 
-  properties  = GetRegistryEntryProperties ( ??service );
+  io_service_t  service = get_drive_service_osx(p_env);
+  
+  if( service == 0 ) goto err_exit;
 
-  if (! GetFeaturesFlagsForDrive ( properties, &i_cdFlags, &i_dvdFlags ) )
-    return;
-
-  /* Reader */
-
-  if ( 0 != (i_cdFlags & kCDFeaturesAnalogAudioMask) )
-    *p_read_cap  |= CDIO_DRIVE_CAP_READ_AUDIO;      
-
-  if ( 0 != (i_cdFlags & kCDFeaturesWriteOnceMask) ) 
-    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_R;
-
-  if ( 0 != (i_cdFlags & kCDFeaturesCDDAStreamAccurateMask) )
-    *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_DA;
-
-  if ( 0 != (i_dvdFlags & kDVDFeaturesReadStructuresMask) )
+  /* Found our device */
+  {
+    CFDictionaryRef  properties = GetRegistryEntryProperties ( service );
+    
+    if (! GetFeaturesFlagsForDrive ( properties, &i_cdFlags, 
+				     &i_dvdFlags ) ) {
+      IOObjectRelease( service );
+      goto err_exit;
+    }
+    
+    /* Reader */
+    
+    if ( 0 != (i_cdFlags & kCDFeaturesAnalogAudioMask) )
+      *p_read_cap  |= CDIO_DRIVE_CAP_READ_AUDIO;      
+    
+    if ( 0 != (i_cdFlags & kCDFeaturesWriteOnceMask) ) 
+      *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_R;
+    
+    if ( 0 != (i_cdFlags & kCDFeaturesCDDAStreamAccurateMask) )
+      *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_DA;
+    
+    if ( 0 != (i_dvdFlags & kDVDFeaturesReadStructuresMask) )
       *p_read_cap  |= CDIO_DRIVE_CAP_READ_DVD_ROM;
+    
+    if ( 0 != (i_cdFlags & kCDFeaturesReWriteableMask) )
+      *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_RW;
+    
+    if ( 0 != (i_dvdFlags & kDVDFeaturesWriteOnceMask) ) 
+      *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_R;
+    
+    if ( 0 != (i_dvdFlags & kDVDFeaturesRandomWriteableMask) )
+      *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RAM;
+    
+    if ( 0 != (i_dvdFlags & kDVDFeaturesReWriteableMask) )
+      *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RW;
+    
+    /***
+	if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRMask) )
+	*p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PR;
+	
+	if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRWMask )
+	*p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PRW;
+	***/
 
-  if ( 0 != (i_cdFlags & kCDFeaturesReWriteableMask) )
-    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_RW;
-  
-  if ( 0 != (i_dvdFlags & kDVDFeaturesWriteOnceMask) ) 
-    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_R;
-  
-  if ( 0 != (i_dvdFlags & kDVDFeaturesRandomWriteableMask) )
-    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RAM;
-  
-  if ( 0 != (i_dvdFlags & kDVDFeaturesReWriteableMask) )
-    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RW;
+    /* FIXME: fill out */
+      *p_misc_cap = 0;
 
-  /***
-  if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRMask) )
-    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PR;
+    IOObjectRelease( service );
+  }
   
-  if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRWMask )
-    *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PRW;
-    ***/
-#endif
+  return;
 
+ err_exit:
+  *p_misc_cap = *p_write_cap = *p_read_cap = CDIO_DRIVE_CAP_UNKNOWN;
+  return;
 }
 
-#if ADDED_DRIVE_INFO
+#if 1
 /****************************************************************************
  * GetDriveDescription - Gets drive description. 
  ****************************************************************************/
 
 static bool
-GetDriveDescription ( CFMutableDictionaryRef dict,
-		      /*out*/ cdio_hwinfo_t *hw_info)
+get_hwinfo_osx ( const CdIo *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
 {
-  
-  CFDictionaryRef    deviceDict  = NULL;
-  CFStringRef        vendor      = NULL;
-  CFStringRef        product     = NULL;
-  CFStringRef        revision    = NULL;
-  
-  if ( dict != 0 ) return false;
-  
-  deviceDict = ( CFDictionaryRef ) 
-    CFDictionaryGetValue ( dict, 
-			   CFSTR ( kIOPropertyDeviceCharacteristicsKey ) );
+  _img_private_t *p_env = (_img_private_t *) p_cdio->env;
+  io_service_t  service = get_drive_service_osx(p_env);
 
-  if ( deviceDict != 0 ) return false;
+  if ( service == 0 ) return false;
   
-  vendor = ( CFStringRef ) 
-    CFDictionaryGetValue ( deviceDict, CFSTR ( kIOPropertyVendorNameKey ) );
-
-  if( CFStringGetCString( vendor,
-			  (char *) &(hw_info->vendor),
-			  sizeof(hw_info->vendor),
-			  kCFStringEncodingASCII ) )
-    CFRelease( vendor );
-
-  product = ( CFStringRef ) 
-    CFDictionaryGetValue ( deviceDict, CFSTR ( kIOPropertyProductNameKey ) );
+  /* Found our device */
+  {
+    CFStringRef      vendor      = NULL;
+    CFStringRef      product     = NULL;
+    CFStringRef      revision    = NULL;
   
-  if( CFStringGetCString( product,
-			  (char *) &(hw_info->model),
-			  sizeof(hw_info->model),
-			  kCFStringEncodingASCII ) )
-    CFRelease( product );
-  
-  revision = ( CFStringRef ) 
-    CFDictionaryGetValue ( deviceDict, CFSTR ( kIOPropertyProductRevisionLevelKey ) );
-  
-  if( CFStringGetCString( product,
-			  (char *) &(hw_info->revision),
-			  sizeof(hw_info->revision),
-			  kCFStringEncodingASCII ) )
-    CFRelease( revision );
-  
+    CFDictionaryRef  properties  = GetRegistryEntryProperties ( service );
+    CFDictionaryRef  deviceDict  = ( CFDictionaryRef ) 
+      CFDictionaryGetValue ( properties, 
+			     CFSTR ( kIOPropertyDeviceCharacteristicsKey ) );
+    
+    if ( deviceDict == 0 ) return false;
+    
+    vendor = ( CFStringRef ) 
+      CFDictionaryGetValue ( deviceDict, CFSTR ( kIOPropertyVendorNameKey ) );
+    
+    if( CFStringGetCString( vendor,
+			    (char *) &(hw_info->vendor),
+			    sizeof(hw_info->vendor),
+			    kCFStringEncodingASCII ) )
+      CFRelease( vendor );
+    
+    product = ( CFStringRef ) 
+      CFDictionaryGetValue ( deviceDict, CFSTR ( kIOPropertyProductNameKey ) );
+    
+    if( CFStringGetCString( product,
+			    (char *) &(hw_info->model),
+			    sizeof(hw_info->model),
+			    kCFStringEncodingASCII ) )
+      CFRelease( product );
+    
+    revision = ( CFStringRef ) 
+      CFDictionaryGetValue ( deviceDict, 
+			     CFSTR ( kIOPropertyProductRevisionLevelKey ) );
+    
+    if( CFStringGetCString( product,
+			    (char *) &(hw_info->revision),
+			    sizeof(hw_info->revision),
+			    kCFStringEncodingASCII ) )
+      CFRelease( revision );
+  }
   return true;
   
 }
@@ -661,6 +793,7 @@ _set_arg_osx (void *user_data, const char key[], const char value[])
   return 0;
 }
 
+#if 0
 static void TestDevice(_img_private_t *p_env, io_service_t service)
 {
   SInt32                          score;
@@ -703,6 +836,7 @@ static void TestDevice(_img_private_t *p_env, io_service_t service)
   ( *mmcInterface )->Release ( mmcInterface );
   IODestroyPlugInInterface ( plugInInterface );
 }
+#endif
 
 /*! 
   Read and cache the CD's Track Table of Contents and track info.
@@ -1281,13 +1415,13 @@ cdio_open_osx (const char *psz_orig_source)
     .eject_media        = _eject_media_osx,
     .free               = _free_osx,
     .get_arg            = _get_arg_osx,
-    .get_cdtext         = get_cdtext_generic,
+    .get_cdtext         = get_cdtext_osx,
     .get_default_device = cdio_get_default_device_osx,
     .get_devices        = cdio_get_devices_osx,
-    .get_discmode       = get_discmode_generic,
-    .get_cdtext         = get_cdtext_osx,
+    .get_discmode       = get_discmode_osx,
     .get_drive_cap      = get_drive_cap_osx,
     .get_first_track_num= _get_first_track_num_osx,
+    .get_hwinfo         = get_hwinfo_osx,
     .get_mcn            = get_mcn_osx,
     .get_num_tracks     = _get_num_tracks_osx,
     .get_track_format   = get_track_format_osx,

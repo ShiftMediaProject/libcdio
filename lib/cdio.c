@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.70 2004/08/27 11:23:40 rocky Exp $
+    $Id: cdio.c,v 1.71 2004/08/28 09:15:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.70 2004/08/27 11:23:40 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.71 2004/08/28 09:15:41 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -597,10 +597,10 @@ cdio_get_hwinfo (const CdIo *p_cdio, cdio_hwinfo_t *hw_info)
   then return NULL.
 */
 char *
-cdio_get_mcn (const CdIo *cdio) 
+cdio_get_mcn (const CdIo *p_cdio) 
 {
-  if (cdio->op.get_mcn) {
-    return cdio->op.get_mcn (cdio->env);
+  if (p_cdio->op.get_mcn) {
+    return p_cdio->op.get_mcn (p_cdio->env);
   } else {
     return NULL;
   }
@@ -611,12 +611,12 @@ cdio_get_mcn (const CdIo *cdio)
   CDIO_INVALID_TRACK is returned on error.
 */
 track_t
-cdio_get_num_tracks (const CdIo *cdio)
+cdio_get_num_tracks (const CdIo *p_cdio)
 {
-  if (cdio == NULL) return CDIO_INVALID_TRACK;
+  if (p_cdio == NULL) return CDIO_INVALID_TRACK;
 
-  if (cdio->op.get_num_tracks) {
-    return cdio->op.get_num_tracks (cdio->env);
+  if (p_cdio->op.get_num_tracks) {
+    return p_cdio->op.get_num_tracks (p_cdio->env);
   } else {
     return CDIO_INVALID_TRACK;
   }
@@ -626,12 +626,12 @@ cdio_get_num_tracks (const CdIo *cdio)
   Get format of track. 
 */
 track_format_t
-cdio_get_track_format(const CdIo *cdio, track_t track_num)
+cdio_get_track_format(const CdIo *p_cdio, track_t i_track)
 {
-  cdio_assert (cdio != NULL);
+  cdio_assert (p_cdio != NULL);
 
-  if (cdio->op.get_track_format) {
-    return cdio->op.get_track_format (cdio->env, track_num);
+  if (p_cdio->op.get_track_format) {
+    return p_cdio->op.get_track_format (p_cdio->env, i_track);
   } else {
     return TRACK_FORMAT_ERROR;
   }

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.40 2004/08/27 02:50:13 rocky Exp $
+    $Id: cdio_private.h,v 1.41 2004/08/28 09:15:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -98,7 +98,7 @@ extern "C" {
     /*! 
       Get disc mode associated with cd_obj.
     */
-    discmode_t (*get_discmode) (void *env);
+    discmode_t (*get_discmode) (void *p_env);
 
     /*!
       Return the what kind of device we've got.
@@ -113,7 +113,7 @@ extern "C" {
       Return the number of of the first track. 
       CDIO_INVALID_TRACK is returned on error.
     */
-    track_t (*get_first_track_num) (void *env);
+    track_t (*get_first_track_num) (void *p_env);
     
     /*! 
       Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.

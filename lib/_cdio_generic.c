@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.24 2004/08/13 13:04:37 rocky Exp $
+    $Id: _cdio_generic.c,v 1.25 2004/08/28 09:15:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.24 2004/08/13 13:04:37 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.25 2004/08/28 09:15:41 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -267,8 +267,6 @@ discmode_t
 get_discmode_generic (void *p_user_data )
 {
   generic_img_private_t *p_env = p_user_data;
-  track_t i_track;
-  discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
 
   /* See if this is a DVD. */
   cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
@@ -286,6 +284,19 @@ get_discmode_generic (void *p_user_data )
     default: return CDIO_DISC_MODE_DVD_OTHER;
     }
   }
+
+  return get_discmode_cd_generic(p_user_data);
+}
+
+/*! 
+  Get disc type associated with cd object.
+*/
+discmode_t
+get_discmode_cd_generic (void *p_user_data )
+{
+  generic_img_private_t *p_env = p_user_data;
+  track_t i_track;
+  discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
 
   if (!p_env->toc_init) 
     p_env->cdio->op.read_toc (p_user_data);
