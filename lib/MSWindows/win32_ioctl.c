@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.36 2004/08/27 04:12:29 rocky Exp $
+    $Id: win32_ioctl.c,v 1.37 2004/08/29 02:31:34 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.36 2004/08/27 04:12:29 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.37 2004/08/29 02:31:34 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -181,10 +181,9 @@ run_scsi_cmd_win32ioctl( const void *p_user_data,
 
   if(! success) {
     char *psz_msg = NULL;
-    DWORD dw = GetLastError();
-
+    long int i_err = GetLastError();
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
-		  NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		  NULL, i_err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		  (LPSTR) psz_msg, 0, NULL);
     cdio_info("Error: %s", psz_msg);
     LocalFree(psz_msg);
@@ -470,36 +469,45 @@ init_win32ioctl (_img_private_t *env)
   Return true if successful or false if an error.
 */
 bool
-read_toc_win32ioctl (_img_private_t *env) 
+read_toc_win32ioctl (_img_private_t *p_env) 
 {
 
   DWORD dwBytesReturned;
   CDROM_TOC cdrom_toc;
   int i;
   
-  if( DeviceIoControl( env->h_device_handle,
+  if( DeviceIoControl( p_env->h_device_handle,
 		       IOCTL_CDROM_READ_TOC,
 		       NULL, 0, &cdrom_toc, sizeof(CDROM_TOC),
 		       &dwBytesReturned, NULL ) == 0 ) {
-    cdio_warn( "could not read TOCHDR: %ld" , (long int) GetLastError());
+    char *psz_msg = NULL;
+    long int i_err = GetLastError();
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
+		  NULL, i_err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		  (LPSTR) psz_msg, 0, NULL);
+    if (psz_msg) {
+      cdio_warn("could not read TOC (%ld): %s", i_err, psz_msg);
+      LocalFree(psz_msg);
+    } else 
+      cdio_warn("could not read TOC (%ld)", i_err);
     return false;
   }
   
-  env->gen.i_first_track = cdrom_toc.FirstTrack;
-  env->gen.i_tracks  = cdrom_toc.LastTrack - cdrom_toc.FirstTrack + 1;
+  p_env->gen.i_first_track = cdrom_toc.FirstTrack;
+  p_env->gen.i_tracks  = cdrom_toc.LastTrack - cdrom_toc.FirstTrack + 1;
   
   
-  for( i = 0 ; i <= env->gen.i_tracks ; i++ ) {
-    env->tocent[ i ].start_lsn = cdio_msf3_to_lba(
+  for( i = 0 ; i <= p_env->gen.i_tracks ; i++ ) {
+    p_env->tocent[ i ].start_lsn = cdio_msf3_to_lba(
 					     cdrom_toc.TrackData[i].Address[1],
 					     cdrom_toc.TrackData[i].Address[2],
 					     cdrom_toc.TrackData[i].Address[3] );
-    env->tocent[ i ].Control   = cdrom_toc.TrackData[i].Control;
-    env->tocent[ i ].Format    = cdrom_toc.TrackData[i].Format;
+    p_env->tocent[ i ].Control   = cdrom_toc.TrackData[i].Control;
+    p_env->tocent[ i ].Format    = cdrom_toc.TrackData[i].Format;
     cdio_debug("p_sectors: %i, %lu", i, 
-	       (unsigned long int) (env->tocent[i].start_lsn));
+	       (unsigned long int) (p_env->tocent[i].start_lsn));
   }
-  env->gen.toc_init = true;
+  p_env->gen.toc_init = true;
   return true;
 }
 
