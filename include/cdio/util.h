@@ -1,5 +1,5 @@
 /*
-    $Id: util.h,v 1.6 2005/02/03 07:36:51 rocky Exp $
+    $Id: util.h,v 1.7 2005/02/28 02:05:19 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -42,30 +42,30 @@
 #undef  CLAMP
 #define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
 
-static inline unsigned
-_cdio_len2blocks (unsigned len, int blocksize)
+static inline uint16_t
+_cdio_len2blocks (unsigned int i_len, uint16_t i_blocksize)
 {
-  unsigned blocks;
+  uint16_t i_blocks;
 
-  blocks = len / blocksize;
-  if (len % blocksize)
-    blocks++;
+  i_blocks = i_len / i_blocksize;
+  if (i_len % i_blocksize)
+    i_blocks++;
 
-  return blocks;
+  return i_blocks;
 }
 
 /* round up to next block boundary */
 static inline unsigned 
-_cdio_ceil2block (unsigned offset, int blocksize)
+_cdio_ceil2block (unsigned offset, uint16_t i_blocksize)
 {
-  return _cdio_len2blocks (offset, blocksize) * blocksize;
+  return _cdio_len2blocks (offset, i_blocksize) * i_blocksize;
 }
 
-static inline unsigned 
-_cdio_ofs_add (unsigned offset, unsigned length, int blocksize)
+static inline unsigned int
+_cdio_ofs_add (unsigned offset, unsigned length, uint16_t i_blocksize)
 {
-  if (blocksize - (offset % blocksize) < length)
-    offset = _cdio_ceil2block (offset, blocksize);
+  if (i_blocksize - (offset % i_blocksize) < length)
+    offset = _cdio_ceil2block (offset, i_blocksize);
 
   offset += length;
 
