@@ -1,5 +1,5 @@
 /*
-  $Id: scsi-mmc1.c,v 1.2 2004/11/13 20:38:41 rocky Exp $
+  $Id: scsi-mmc1.c,v 1.3 2005/01/29 10:05:33 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -30,13 +30,13 @@
 #include <cdio/scsi_mmc.h>
 #include <string.h>
 
-/* Set how long do wto wait for SCSI-MMC commands to complete */
+/* Set how long to wait for MMC commands to complete */
 #define DEFAULT_TIMEOUT_MS 10000
 
 int
 main(int argc, const char *argv[])
 {
-  CdIo *p_cdio;
+  CdIo_t *p_cdio;
 
   p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
 
@@ -44,7 +44,7 @@ main(int argc, const char *argv[])
     printf("Couldn't find CD\n");
     return 1;
   } else {
-    int i_status;                  /* Result of SCSI MMC command */
+    int i_status;                  /* Result of MMC command */
     char buf[36] = { 0, };         /* Place to hold returned data */
     scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Block */
 

@@ -1,5 +1,5 @@
 /*
-  $Id: scsi-mmc2.c,v 1.1 2004/10/10 00:21:08 rocky Exp $
+  $Id: scsi-mmc2.c,v 1.2 2005/01/29 10:05:33 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -18,7 +18,7 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* A program to using the SCSI-MMC interface to list CD and drive features
+/* A program to using the MMC interface to list CD and drive features
    from the MMC GET_CONFIGURATION command . */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -35,7 +35,7 @@
 int
 main(int argc, const char *argv[])
 {
-  CdIo *p_cdio;
+  CdIo_t *p_cdio;
 
   p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
 
@@ -43,8 +43,8 @@ main(int argc, const char *argv[])
     printf("Couldn't find CD\n");
     return 1;
   } else {
-    int i_status;                  /* Result of SCSI MMC command */
-    uint8_t buf[500] = { 0, };         /* Place to hold returned data */
+    int i_status;                  /* Result of MMC command */
+    uint8_t buf[500] = { 0, };     /* Place to hold returned data */
     scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Block */
 
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_CONFIGURATION);

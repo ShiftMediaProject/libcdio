@@ -8,11 +8,15 @@ See @acronym{Win32 ASPI}
 
 @item ATAPI
 
-Advanced Technology Attachment Packet Interface. An interface to
+Advanced Technology (AT) Attachment Packet Interface. An interface to
 support CD Drives and DVD Drives using the computers current IDE
-connections. IDE(also called ATA) was originally designed for hard
-drives only, but with help of ATAPI it is possible to connect other
-devices to the IDE/EIDE connections.
+connections.  This is in contrast say to the SCSI protocol.
+
+IDE (also called ATA) was originally designed for hard drives only,
+but with help of ATAPI it is possible to connect other devices, in
+particular CD-ROMS to the IDE/EIDE connections.
+
+Many ATAPI CD-ROM drives understand a subset of MMC commands. 
 
 @item BIN/CUE
 
@@ -187,8 +191,9 @@ called a UPC. Another identification number is ISRC.
 @cindex MMC
 
 MMC (Multimedia Commands). A SCSI programming specification made by
-the SCSI committee T10 organization.  They are raw commands for
-communicating with CDROM drives, CD-Rewriters, DVD-Rewriters, etc.
+the SCSI committee T10 organization @url{http://www.t10.org/}.  MMC
+are raw commands for communicating with CDROM drives, CD-Rewriters,
+DVD-Rewriters, etc.
 
 Many manufacturers have adopted this standard and it also applies to
 ATAPI versions of their drives.

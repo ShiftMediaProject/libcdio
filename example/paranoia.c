@@ -35,7 +35,7 @@
 int
 main(int argc, const char *argv[])
 {
-  cdrom_drive_t *d = NULL; /* Place to store handle given by cd-parapnioa. */
+  cdrom_drive_t *d = NULL; /* Place to store handle given by cd-paranoia. */
   char **ppsz_cd_drives;  /* List of all drives with a loaded CDDA in it. */
 
   /* See if we can find a device with a loaded CD-DA in it. */
