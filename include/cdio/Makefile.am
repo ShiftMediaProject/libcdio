@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.17 2005/01/04 04:33:36 rocky Exp $
+#   $Id: Makefile.am,v 1.18 2005/01/04 10:58:03 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -31,6 +31,7 @@ libcdioinclude_HEADERS = \
 	cdtext.h \
 	cdtext.h \
 	cd_types.h \
+	device.h \
 	disc.h \
 	ds.h \
 	dvd.h \

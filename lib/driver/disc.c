@@ -1,5 +1,5 @@
 /*
-    $Id: disc.c,v 1.1 2005/01/04 04:33:36 rocky Exp $
+    $Id: disc.c,v 1.2 2005/01/04 10:58:03 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -27,6 +27,12 @@
 #include <cdio/cdio.h>
 #include "cdio_private.h"
 
+unsigned int 
+cdio_get_disc_last_lsn(const CdIo *p_cdio)
+{
+  return cdio_get_track_lsn(p_cdio, CDIO_CDROM_LEADOUT_TRACK);
+}
+
 /*! 
   Get medium associated with cd_obj.
 */
@@ -40,12 +46,6 @@ cdio_get_discmode (CdIo *cd_obj)
   } else {
     return CDIO_DISC_MODE_NO_INFO;
   }
-}
-
-unsigned int 
-cdio_get_disc_last_lsn(const CdIo *p_cdio)
-{
-  return cdio_get_track_lsn(p_cdio, CDIO_CDROM_LEADOUT_TRACK);
 }
 
 /*!

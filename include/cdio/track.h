@@ -1,7 +1,7 @@
 /* -*- c -*-
-    $Id: track.h,v 1.3 2005/01/04 04:33:36 rocky Exp $
+    $Id: track.h,v 1.4 2005/01/04 10:58:03 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 */
 
 /** \file track.h 
- *  \brief  The top-level header for track-related libcdio calls
+ *  \brief  The top-level header for track-related libcdio calls.
  */
 #ifndef __CDIO_TRACK_H__
 #define __CDIO_TRACK_H__
@@ -46,6 +46,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
+  /*! Printable tags for track_format_t enumeration.  */
+  extern const char *track_format2str[6];
+  
   typedef enum  {
     TRACK_FORMAT_AUDIO,   /**< Audio track, e.g. CD-DA */
     TRACK_FORMAT_CDI,     /**< CD-i. How this is different from DATA below? */
@@ -70,6 +73,19 @@ extern "C" {
     int channels;
   } track_flags_t;
     
+  /*! 
+    Get CD-Text information for a CdIo_t object.
+
+    @param p_cdio the CD object that may contain CD-Text information.
+    @param i_track track for which we are requesting CD-Text information.
+    @return the CD-Text object or NULL if obj is NULL
+    or CD-Text information does not exist.
+
+    If i_track is 0 or CDIO_CDROM_LEADOUT_TRACK the track returned
+    is the information assocated with the CD. 
+  */
+  const cdtext_t *cdio_get_cdtext (CdIo_t *p_cdio, track_t i_track);
+
   /*!
     Get the number of the first track. 
 

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: disc.h,v 1.1 2005/01/04 04:33:36 rocky Exp $
+    $Id: disc.h,v 1.2 2005/01/04 10:58:03 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -18,8 +18,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/** \file dic.h 
- *  \brief  The top-level header for disc-related libcdio calls
+/** \file disc.h 
+ *  \brief  The top-level header for disc-related libcdio calls.
  */
 #ifndef __CDIO_DISC_H__
 #define __CDIO_DISC_H__
@@ -30,13 +30,6 @@ extern "C" {
 
   extern const char *discmode2str[];
   
-  /*!  
-    Get the lsn of the end of the CD
-
-    @return the leadout LSN or CDIO_INVALID_LSN if there is an error.
-  */
-  unsigned int cdio_get_disc_last_lsn(const CdIo *p_cdio);
-
   /*! 
     Get disc mode - the kind of CD (CD-DA, CD-ROM mode 1, CD-MIXED, etc.
     that we've got. The notion of "CD" is extended a little to include
@@ -49,7 +42,7 @@ extern "C" {
 
     @return the leadout LSN or CDIO_INVALID_LSN if there is an error.
   */
-  unsigned int cdio_get_disc_last_lsn(const CdIo *p_cdio);
+  unsigned int cdio_get_disc_last_lsn(const CdIo_t *p_cdio);
   
 
   /*!  
