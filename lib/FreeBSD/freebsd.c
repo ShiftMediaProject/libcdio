@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.15 2004/05/27 12:10:21 rocky Exp $
+    $Id: freebsd.c,v 1.16 2004/05/31 14:53:07 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.15 2004/05/27 12:10:21 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.16 2004/05/31 14:53:07 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -83,10 +83,10 @@ cdio_is_cdrom(char *drive, char *mnttype)
    Returns 0 if no error. 
  */
 static int
-_read_audio_sectors_freebsd (void *env, void *data, lsn_t lsn,
+_read_audio_sectors_freebsd (void *user_data, void *data, lsn_t lsn,
 			     unsigned int nblocks)
 {
-  return read_audio_sectors_freebsd_ioctl(env, data, lsn, nblocks);
+  return read_audio_sectors_freebsd_ioctl(user_data, data, lsn, nblocks);
 }
 
 /*!
@@ -94,14 +94,14 @@ _read_audio_sectors_freebsd (void *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_mode2_sector_freebsd (void *env, void *data, lsn_t lsn, 
+_read_mode2_sector_freebsd (void *user_data, void *data, lsn_t lsn, 
 			    bool b_form2)
 {
-  _img_private_t *_obj = env;
-  if ( _obj->access_mode == _AM_CAM )
-    return read_mode2_sectors_freebsd_cam(_obj, data, lsn, 1, b_form2);
+  _img_private_t *env = user_data;
+  if ( env->access_mode == _AM_CAM )
+    return read_mode2_sectors_freebsd_cam(env, data, lsn, 1, b_form2);
   else
-    return read_mode2_sector_freebsd_ioctl(_obj, data, lsn, b_form2);
+    return read_mode2_sector_freebsd_ioctl(env, data, lsn, b_form2);
 }
 
 /*!
@@ -110,25 +110,25 @@ _read_mode2_sector_freebsd (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors_freebsd (void *env, void *data, lsn_t lsn, 
+_read_mode2_sectors_freebsd (void *user_data, void *data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int i;
   int retval;
 
-  if ( _obj->access_mode == _AM_CAM )
-    return read_mode2_sectors_freebsd_cam(_obj, data, lsn, nblocks, b_form2);
+  if ( env->access_mode == _AM_CAM )
+    return read_mode2_sectors_freebsd_cam(env, data, lsn, nblocks, b_form2);
   
   for (i = 0; i < nblocks; i++) {
     if (b_form2) {
-      if ( (retval = read_mode2_sector_freebsd_ioctl (_obj, 
+      if ( (retval = read_mode2_sector_freebsd_ioctl (env, 
 					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
 					  lsn + i, true)) )
 	return retval;
     } else {
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = read_mode2_sector_freebsd_ioctl (_obj, buf, 
+      if ( (retval = read_mode2_sector_freebsd_ioctl (env, buf, 
 						      lsn + i, true)) )
 	return retval;
       
@@ -159,24 +159,24 @@ _stat_size_freebsd (void *obj)
   Set the key "arg" to "value" in source device.
 */
 static int
-_set_arg_freebsd (void *env, const char key[], const char value[])
+_set_arg_freebsd (void *user_data, const char key[], const char value[])
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   if (!strcmp (key, "source"))
     {
       if (!value)
 	return -2;
 
-      free (_obj->gen.source_name);
+      free (env->gen.source_name);
       
-      _obj->gen.source_name = strdup (value);
+      env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
-      _obj->access_mode = str_to_access_mode_freebsd(value);
-      if (_obj->access_mode == _AM_CAM && !_obj->b_cam_init) 
-	return init_freebsd_cam(_obj) ? 1 : -3;
+      env->access_mode = str_to_access_mode_freebsd(value);
+      if (env->access_mode == _AM_CAM && !env->b_cam_init) 
+	return init_freebsd_cam(env) ? 1 : -3;
       return 0;
     }
   else 
@@ -190,23 +190,23 @@ _set_arg_freebsd (void *env, const char key[], const char value[])
   Return false if successful or true if an error.
 */
 static bool
-_cdio_read_toc (_img_private_t *_obj) 
+_cdio_read_toc (_img_private_t *env) 
 {
   track_t i, j;
 
   /* read TOC header */
-  if ( ioctl(_obj->gen.fd, CDIOREADTOCHEADER, &_obj->tochdr) == -1 ) {
+  if ( ioctl(env->gen.fd, CDIOREADTOCHEADER, &env->tochdr) == -1 ) {
     cdio_error("error in ioctl(CDIOREADTOCHEADER): %s\n", strerror(errno));
     return false;
   }
 
   j=0;
-  for ( i = _obj->tochdr.starting_track; i <= _obj->tochdr.ending_track; 
+  for ( i = env->tochdr.starting_track; i <= env->tochdr.ending_track; 
        i++, j++) {
-    _obj->tocent[j].track = i;
-    _obj->tocent[j].address_format = CD_LBA_FORMAT;
+    env->tocent[j].track = i;
+    env->tocent[j].address_format = CD_LBA_FORMAT;
 
-    if ( ioctl(_obj->gen.fd, CDIOREADTOCENTRY, &(_obj->tocent[j]) ) ) {
+    if ( ioctl(env->gen.fd, CDIOREADTOCENTRY, &(env->tocent[j]) ) ) {
       cdio_error("%s %d: %s\n",
 		 "error in ioctl CDROMREADTOCENTRY for track", 
 		 i, strerror(errno));
@@ -214,9 +214,9 @@ _cdio_read_toc (_img_private_t *_obj)
     }
   }
 
-  _obj->tocent[j].track          = CDIO_CDROM_LEADOUT_TRACK;
-  _obj->tocent[j].address_format = CD_LBA_FORMAT;
-  if ( ioctl(_obj->gen.fd, CDIOREADTOCENTRY, &(_obj->tocent[j]) ) ){
+  env->tocent[j].track          = CDIO_CDROM_LEADOUT_TRACK;
+  env->tocent[j].address_format = CD_LBA_FORMAT;
+  if ( ioctl(env->gen.fd, CDIOREADTOCENTRY, &(env->tocent[j]) ) ){
     cdio_error("%s: %s\n",
 	       "error in ioctl CDROMREADTOCENTRY for leadout track", 
 	       strerror(errno));
@@ -230,27 +230,27 @@ _cdio_read_toc (_img_private_t *_obj)
   Eject media. Return 1 if successful, 0 otherwise.
  */
 static int 
-_eject_media_freebsd (void *env) 
+_eject_media_freebsd (void *user_data) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
-  return (_obj->access_mode == _AM_IOCTL) 
-    ? eject_media_freebsd_ioctl(_obj) 
-    : eject_media_freebsd_cam(_obj);
+  return (env->access_mode == _AM_IOCTL) 
+    ? eject_media_freebsd_ioctl(env) 
+    : eject_media_freebsd_cam(env);
 }
 
 /*!
   Return the value associated with the key "arg".
 */
 static const char *
-_get_arg_freebsd (void *env, const char key[])
+_get_arg_freebsd (void *user_data, const char key[])
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   if (!strcmp (key, "source")) {
-    return _obj->gen.source_name;
+    return env->gen.source_name;
   } else if (!strcmp (key, "access-mode")) {
-    switch (_obj->access_mode) {
+    switch (env->access_mode) {
     case _AM_IOCTL:
       return "ioctl";
     case _AM_CAM:
@@ -267,11 +267,11 @@ _get_arg_freebsd (void *env, const char key[])
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_get_first_track_num_freebsd(void *env) 
+_get_first_track_num_freebsd(void *user_data) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!env->toc_init) _cdio_read_toc (env) ;
 
   return FIRST_TRACK_NUM;
 }
@@ -286,10 +286,10 @@ _get_first_track_num_freebsd(void *env)
 
  */
 static char *
-_get_mcn_freebsd (const void *env) {
+_get_mcn_freebsd (const void *user_data) {
 
 #if FIXED
-  const _img_private_t *_obj = env;
+  const _img_private_t *env = user_data;
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
 
@@ -299,7 +299,7 @@ _get_mcn_freebsd (const void *env) {
   subchannel.data_len       = 1;
   subchannel.data           = &subchannel_info;
 
-  if(ioctl(_obj->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
+  if(ioctl(env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
     perror("CDIOCREADSUBCHANNEL");
     return NULL;
   }
@@ -322,11 +322,11 @@ _get_mcn_freebsd (const void *env) {
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_get_num_tracks_freebsd(void *env) 
+_get_num_tracks_freebsd(void *user_data) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!env->toc_init) _cdio_read_toc (env) ;
 
   return TOTAL_TRACKS;
 }
@@ -338,17 +338,17 @@ _get_num_tracks_freebsd(void *env)
   
 */
 static track_format_t
-_get_track_format_freebsd(void *env, track_t i_track) 
+_get_track_format_freebsd(void *user_data, track_t i_track) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
    */
-  if (_obj->tocent[i_track-FIRST_TRACK_NUM].entry.control & CDIO_CDROM_DATA_TRACK) {
-    if (_obj->tocent[i_track-FIRST_TRACK_NUM].address_format == 0x10)
+  if (env->tocent[i_track-FIRST_TRACK_NUM].entry.control & CDIO_CDROM_DATA_TRACK) {
+    if (env->tocent[i_track-FIRST_TRACK_NUM].address_format == 0x10)
       return TRACK_FORMAT_CDI;
-    else if (_obj->tocent[i_track-FIRST_TRACK_NUM].address_format == 0x20) 
+    else if (env->tocent[i_track-FIRST_TRACK_NUM].address_format == 0x20) 
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;
@@ -366,9 +366,9 @@ _get_track_format_freebsd(void *env, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_get_track_green_freebsd(void *env, track_t i_track) 
+_get_track_green_freebsd(void *user_data, track_t i_track) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
@@ -378,7 +378,7 @@ _get_track_green_freebsd(void *env, track_t i_track)
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cdinfo for a while.
    */
-  return ((_obj->tocent[i_track-FIRST_TRACK_NUM].entry.control & 2) != 0);
+  return ((env->tocent[i_track-FIRST_TRACK_NUM].entry.control & 2) != 0);
 }
 
 /*!  
@@ -389,18 +389,18 @@ _get_track_green_freebsd(void *env, track_t i_track)
   False is returned if there is no track entry.
 */
 static lba_t
-_get_track_lba_freebsd(void *env, track_t i_track)
+_get_track_lba_freebsd(void *user_data, track_t i_track)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
-  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+  if (!env->toc_init) _cdio_read_toc (env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
   if (i_track > TOTAL_TRACKS+1 || i_track == 0) {
     return CDIO_INVALID_LBA;
   } else {
-    return cdio_lsn_to_lba(ntohl(_obj->tocent[i_track-FIRST_TRACK_NUM].entry.addr.lba));
+    return cdio_lsn_to_lba(ntohl(env->tocent[i_track-FIRST_TRACK_NUM].entry.addr.lba));
   }
 }
 

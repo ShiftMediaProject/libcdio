@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.7 2004/05/24 23:31:15 rocky Exp $
+    $Id: freebsd.h,v 1.8 2004/05/31 14:53:08 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -90,9 +90,9 @@
 
 #include <cdio/util.h>
 
-#define TOTAL_TRACKS    ( _obj->tochdr.ending_track \
-			- _obj->tochdr.starting_track + 1)
-#define FIRST_TRACK_NUM (_obj->tochdr.starting_track)
+#define TOTAL_TRACKS    ( env->tochdr.ending_track \
+			- env->tochdr.starting_track + 1)
+#define FIRST_TRACK_NUM (env->tochdr.starting_track)
 
 typedef  enum {
   _AM_NONE,
