@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.31 2004/07/28 11:45:22 rocky Exp $
+    $Id: win32_ioctl.c,v 1.32 2004/07/28 16:51:15 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.31 2004/07/28 11:45:22 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.32 2004/07/28 16:51:15 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -155,18 +155,20 @@ run_scsi_cmd_win32ioctl( const void *p_user_data,
   bool success;
   DWORD dwBytesReturned;
   
-  sptd.Length=sizeof(sptd);
-  sptd.PathId=0;     /* SCSI card ID will be filled in automatically */
-  sptd.TargetId=0;   /* SCSI target ID will also be filled in */
-  sptd.Lun=0;        /* SCSI lun ID will also be filled in */
-  sptd.CdbLength=12; /* CDB size is 12 for ReadCD MMC1 command */
-  sptd.SenseInfoLength=0; /* Don't return any sense data */
+  sptd.Length  = sizeof(sptd);
+  sptd.PathId  = 0;      /* SCSI card ID will be filled in automatically */
+  sptd.TargetId= 0;      /* SCSI target ID will also be filled in */
+  sptd.Lun=0;            /* SCSI lun ID will also be filled in */
+  sptd.CdbLength         = i_cdb;
+  sptd.SenseInfoLength   = 0; /* Don't return any sense data */
   sptd.DataIn            = SCSI_MMC_DATA_READ == e_direction ? 
     SCSI_IOCTL_DATA_IN : SCSI_IOCTL_DATA_OUT; 
   sptd.DataTransferLength= i_buf; 
   sptd.TimeOutValue      = msecs2secs(i_timeout_ms);
-  sptd.DataBuffer= (void *) p_buf;
-  sptd.SenseInfoOffset=0;
+  sptd.DataBuffer        = (void *) p_buf;
+  sptd.SenseInfoOffset   = 0;
+
+  memcpy(sptd.Cdb, p_cdb, i_cdb);
 
   /* Send the command to drive */
   success=DeviceIoControl(p_env->h_device_handle,
