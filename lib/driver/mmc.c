@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.10 2005/02/11 01:34:12 rocky Exp $
+    $Id: mmc.c,v 1.11 2005/02/11 03:30:12 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -264,15 +264,14 @@ int
 mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
                 int page)
 {
-  bool_3way_t e_status = cdio_have_atapi(p_cdio);
-  if ( yep == e_status ) {
-    if ( DRIVER_OP_SUCCESS == mmc_mode_sense_6(p_cdio, p_buf, i_size, page) )
-      return DRIVER_OP_SUCCESS;
-    return mmc_mode_sense_10(p_cdio, p_buf, i_size, page);
-  } 
-  if ( DRIVER_OP_SUCCESS == mmc_mode_sense_10(p_cdio, p_buf, i_size, page) )
+  /* We used to make a choice as to which routine we'd use based
+     cdio_have_atapi(). But since that calls this in its determination,
+     we had an infinite recursion. So we can't use cdio_have_atapi()
+     (until we put in better capability checks.)
+   */
+  if ( DRIVER_OP_SUCCESS == mmc_mode_sense_6(p_cdio, p_buf, i_size, page) )
     return DRIVER_OP_SUCCESS;
-  return mmc_mode_sense_6(p_cdio, p_buf, i_size, page);
+  return mmc_mode_sense_10(p_cdio, p_buf, i_size, page);
 }
 
 /*! Run a MODE_SENSE command (6-byte version) 

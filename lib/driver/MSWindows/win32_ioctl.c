@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.14 2005/02/07 04:16:19 rocky Exp $
+    $Id: win32_ioctl.c,v 1.15 2005/02/11 03:30:12 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.14 2005/02/07 04:16:19 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.15 2005/02/11 03:30:12 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -223,11 +223,14 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
     char *psz_msg = NULL;
     long int i_err = GetLastError();
     FORMAT_ERROR(i_err, psz_msg);
-    cdio_info("Error: %s", psz_msg);
+    if (psz_msg) 
+      cdio_info("Error: %s", psz_msg);
+    else 
+      cdio_info("Error: %ld", i_err);
     LocalFree(psz_msg);
-    return 1;
+    return DRIVER_OP_ERROR;
   }
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*! 
