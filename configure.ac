@@ -19,7 +19,7 @@ define(RELEASE_NUM, 73)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.148 2005/03/09 03:39:46 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.149 2005/03/10 12:47:03 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -506,6 +506,15 @@ fi
 
 AC_SUBST(CDDB_LIBS)
 
+if test x$enable_cdda_player = xyes; then
+    AC_CHECK_LIB(ncurses, mvprintw, [CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
+    AC_CHECK_LIB(curses, mvprintw, [CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
+    [AC_MSG_WARN([Will not build cdda-player - did not find libcurses or libncurses])
+     enable_cdda_player=no]))
+fi
+
+AC_SUBST(CDDA_PLAYER_LIBS)
+
 if test x$enable_vcd_info = x; then
 AC_ARG_ENABLE(vcd_info,
 	[  --disable-vcd-info        don't include Video CD Info from libvcd],
@@ -583,3 +592,45 @@ chmod +x test/check_paranoia.sh
 AC_OUTPUT
 
 echo "Using CD-ROM drivers: $cd_drivers"
+echo -n "Building cd-paranoia: "
+if test "x$enable_cdda_player" = "xyes"
+then
+echo "yes"
+else
+echo "no"
+fi
+echo -n "Building cd-info    : "
+if test "x$enable_cd_info" = "xyes" 
+then
+echo "yes"
+else
+echo "no"
+fi
+echo -n "Building cd-read    : "
+if test "x$enable_cd_read" = "xyes" 
+then
+echo "yes"
+else
+echo "no"
+fi
+echo -n "Building cdda-player: "
+if test "x$enable_cdda_player" = "xyes" 
+then
+echo "yes"
+else
+echo "no"
+fi
+echo -n "Building iso-info   : "
+if test "x$enable_iso_info" = "xyes" 
+then
+echo "yes"
+else
+echo "no"
+fi
+echo -n "Building iso-read   : "
+if test "x$enable_iso_read" = "xyes" 
+then
+echo "yes"
+else
+echo "no"
+fi

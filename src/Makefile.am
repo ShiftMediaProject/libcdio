@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.34 2005/03/07 12:55:12 rocky Exp $
+#   $Id: Makefile.am,v 1.35 2005/03/10 12:47:03 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -25,6 +25,7 @@ SUBDIRS =  cd-paranoia
 endif
 
 CDDB_LIBS=@CDDB_LIBS@
+CDDA_PLAYER_LIBS=@CDDA_PLAYER_LIBS@
 
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES = $(man_MANS)
@@ -35,7 +36,7 @@ endif
 
 if BUILD_CDDA_PLAYER
 cdda_player_SOURCES = cdda-player.c cddb.c cddb.h
-cdda_player_LDADD   = $(LIBCDIO_LIBS) $(CDDB_LIBS) -lcurses
+cdda_player_LDADD   = $(LIBCDIO_LIBS) $(CDDB_LIBS) $(CDDA_PLAYER_LIBS)
 bin_cdda_player     = cdda-player
 endif
 
