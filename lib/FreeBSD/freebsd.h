@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.20 2004/07/31 09:15:25 rocky Exp $
+    $Id: freebsd.h,v 1.21 2004/07/31 09:26:31 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -212,12 +212,13 @@ bool read_toc_freebsd_ioctl (_img_private_t *env);
 
   Return 0 if no error.
  */
-int scsi_mmc_run_cmd_freebsd_cam( const void *p_user_data, int i_timeout,
-				  unsigned int i_cdb, 
-				  const scsi_mmc_cdb_t *p_cdb, 
-				  scsi_mmc_direction_t e_direction, 
-				  unsigned int i_buf, 
-				  /*in/out*/ void *p_buf );
+int run_scsi_cmd_freebsd_cam( const void *p_user_data, 
+			      unsigned int i_timeout_ms,
+			      unsigned int i_cdb, 
+			      const scsi_mmc_cdb_t *p_cdb, 
+			      scsi_mmc_direction_t e_direction, 
+			      unsigned int i_buf, 
+			      /*in/out*/ void *p_buf );
 
 /*!
    Return the size of the CD in logical block address (LBA) units.

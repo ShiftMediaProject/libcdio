@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.32 2004/07/31 09:14:59 rocky Exp $
+    $Id: freebsd.c,v 1.33 2004/07/31 09:26:31 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.32 2004/07/31 09:14:59 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.33 2004/07/31 09:26:31 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -322,15 +322,15 @@ get_drive_cap_freebsd (const void *p_user_data,
   Return 0 if no error.
  */
 static int
-scsi_mmc_run_cmd_freebsd( const void *p_user_data, int i_timeout,
-			  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-			  scsi_mmc_direction_t e_direction, 
-			  unsigned int i_buf, /*in/out*/ void *p_buf ) 
+run_scsi_cmd_frebsd( const void *p_user_data, unsigned int i_timeout_ms,
+		     unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		     scsi_mmc_direction_t e_direction, 
+		     unsigned int i_buf, /*in/out*/ void *p_buf ) 
 {
   const _img_private_t *p_env = p_user_data;
 
   if (p_env->access_mode == _AM_CAM) 
-    return scsi_mmc_run_cmd_freebsd_cam( p_user_data, i_timeout, i_cdb, p_cdb, 
+    return run_scsi_cmd_frebsd_cam( p_user_data, i_timeout, i_cdb, p_cdb, 
 					 e_direction, i_buf, p_buf );
   else 
     return 2;
@@ -590,7 +590,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .read_audio_sectors = _read_audio_sectors_freebsd,
     .read_mode2_sector  = _read_mode2_sector_freebsd,
     .read_mode2_sectors = _read_mode2_sectors_freebsd,
-    .run_scsi_mmc_cmd   = scsi_mmc_run_cmd_freebsd,
+    .run_scsi_mmc_cmd   = run_scsi_cmd_frebsd,
     .set_arg            = _set_arg_freebsd,
     .stat_size          = _stat_size_freebsd
   };
@@ -618,7 +618,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     }
   }
     
-  ret = cdio_new (_data, &_funcs);
+  ret = cdio_new ((void *)_data, &_funcs);
   if (ret == NULL) return NULL;
 
   if (cdio_generic_init(_data))
