@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.8 2003/04/12 03:38:00 rocky Exp $
+    $Id: cdio.c,v 1.9 2003/04/14 04:24:47 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include "logging.h"
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.8 2003/04/12 03:38:00 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.9 2003/04/14 04:24:47 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -100,7 +100,7 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "Linux ioctl and packet driver",
    &cdio_have_linux,
    &cdio_open_linux,
-   &cdio_get_default_device_freebsd
+   &cdio_get_default_device_linux
   },
 
   {DRIVER_SOLARIS, 
@@ -525,19 +525,24 @@ scan_for_driver(driver_id_t start, driver_id_t end, const char *source_name)
    For now though, we'll start more simply...
 */
 CdIo *
-cdio_open (const char *source_name, driver_id_t driver_id)
+cdio_open (const char *orig_source_name, driver_id_t driver_id)
 {
+  char *source_name;
+  
   if (CdIo_last_driver == -1) cdio_init();
 
-  if (NULL == source_name) return NULL;
-
+  if (NULL == orig_source_name) 
+    source_name = cdio_get_default_device(NULL);
+  else 
+    source_name = strdup(orig_source_name);
+  
  retry:
   switch (driver_id) {
   case DRIVER_UNKNOWN: 
     {
       struct stat buf;
       if (0 != stat(source_name, &buf)) {
-        cdio_error ("Can't stat file %s:", strerror(errno));
+        cdio_error ("Can't stat file %s:\n%s", source_name, strerror(errno));
         return NULL;
       }
       if (S_ISBLK(buf.st_mode) || S_ISCHR(buf.st_mode)) {
@@ -565,6 +570,7 @@ cdio_open (const char *source_name, driver_id_t driver_id)
     {  
       /* Scan for a driver. */
       CdIo *ret = scan_for_driver(DRIVER_UNKNOWN, MAX_DRIVER, source_name);
+      free(source_name);
       return ret;
     }
     break;
@@ -575,10 +581,13 @@ cdio_open (const char *source_name, driver_id_t driver_id)
   case DRIVER_NRG:
   case DRIVER_BINCUE:
     if ((*CdIo_all_drivers[driver_id].have_driver)()) {
-      return (*CdIo_all_drivers[driver_id].driver_open)(source_name);
+      CdIo *ret = (*CdIo_all_drivers[driver_id].driver_open)(source_name);
+      free(source_name);
+      return ret;
     }
   }
-  
+
+  free(source_name);
   return NULL;
 }
 
