@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.15 2005/01/22 03:41:50 rocky Exp $
+#   $Id: Makefile.am,v 1.16 2005/02/04 23:12:16 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -21,10 +21,10 @@
 ####################################################
 #
 if DISABLE_CPP
-noinst_PROGRAMS = cdtext drives iso1 iso2 iso3 scsi-mmc1 scsi-mmc2 \
+noinst_PROGRAMS = cdtext drives iso1 iso2 iso3 iso4 mmc1 mmc2 \
 		  paranoia paranoia2 tracks sample2 sample3 sample4 
 else  
-noinst_PROGRAMS = cdtext drives iso1 iso2 iso3 paranoia scsi-mmc1 scsi-mmc2 \
+noinst_PROGRAMS = cdtext drives iso1 iso2 iso3 iso4 mmc1 mmc2 \
 		  paranoia paranoia2 tracks sample2 sample3 sample4 \
 	          iso1cpp iso2cpp iso3cpp
 endif
@@ -41,6 +41,7 @@ paranoia2_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
 iso1_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 iso2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 iso3_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso4_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
 if !DISABLE_CPP
 iso1cpp_SOURCES  = iso1cpp.cpp
@@ -51,8 +52,8 @@ iso3cpp_SOURCES  = iso3cpp.cpp
 iso3cpp_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 endif
 
-scsi_mmc1_LDADD = $(LIBCDIO_LIBS)
-scsi_mmc2_LDADD = $(LIBCDIO_LIBS)
+mmc1_LDADD = $(LIBCDIO_LIBS)
+mmc2_LDADD = $(LIBCDIO_LIBS)
 
 sample2_LDADD = $(LIBCDIO_LIBS)
 sample3_LDADD = $(LIBCDIO_LIBS)
