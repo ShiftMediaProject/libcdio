@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.34 2004/08/01 11:28:00 rocky Exp $
+    $Id: freebsd.c,v 1.35 2004/08/03 12:45:40 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.34 2004/08/01 11:28:00 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.35 2004/08/03 12:45:40 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -186,8 +186,9 @@ _set_arg_freebsd (void *user_data, const char key[], const char value[])
   Return false if unsuccessful;
 */
 static bool
-read_toc_freebsd (_img_private_t *p_env) 
+read_toc_freebsd (void *p_user_data) 
 {
+  _img_private_t *p_env = p_user_data;
   track_t i, j;
 
   /* read TOC header */
@@ -567,6 +568,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .read_audio_sectors = _read_audio_sectors_freebsd,
     .read_mode2_sector  = _read_mode2_sector_freebsd,
     .read_mode2_sectors = _read_mode2_sectors_freebsd,
+    .read_toc           = read_toc_freebsd,
     .run_scsi_mmc_cmd   = run_scsi_cmd_freebsd,
     .set_arg            = _set_arg_freebsd,
     .stat_size          = _stat_size_freebsd

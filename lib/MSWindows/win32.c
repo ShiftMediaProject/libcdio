@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.36 2004/07/29 04:14:44 rocky Exp $
+    $Id: win32.c,v 1.37 2004/08/03 12:45:40 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.36 2004/07/29 04:14:44 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.37 2004/08/03 12:45:40 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -410,7 +410,7 @@ set_arg_win32 (void *user_data, const char key[], const char value[])
 static bool
 read_toc_win32 (void *p_user_data) 
 {
-  _img_private_t *p_env;
+  _img_private_t *p_env = p_user_data;
   bool ret;
   if( p_env->hASPI ) {
     ret = read_toc_aspi( p_env );
