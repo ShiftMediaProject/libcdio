@@ -12,5 +12,6 @@ configure
 libcdio*.tar.gz
 libtool
 libcdio.pc
+libcdio.spec
 ltmain.sh
 stamp-h1
