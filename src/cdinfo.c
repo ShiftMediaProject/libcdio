@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.10 2003/04/14 10:01:03 rocky Exp $
+    $Id: cdinfo.c,v 1.11 2003/04/19 00:53:27 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -703,19 +703,22 @@ _log_handler (cdio_log_level_t level, const char message[])
 
 
 #ifdef HAVE_CDDB
-static void print_cddb_info() {
-  cddb_conn_t *c    = cddb_new();
+static void 
+print_cddb_info() {
+  int i, matches;
+  
+  cddb_conn_t *conn =  cddb_new();
   cddb_disc_t *disc = NULL;
 
-  if (!c) {
+  if (!conn) {
     fprintf(stderr, "%s: unable to initialize libcddb\n", program_name);
     goto cddb_destroy;
   }
 
-  cddb_set_email_address(c, "me@home");
-  cddb_set_server_name(c, "freedb.freedb.org");
-  cddb_set_server_port(c, 8880);
-  cddb_http_enable(c, 0);
+  cddb_set_email_address(conn, "me@home");
+  cddb_set_server_name(conn, "freedb.freedb.org");
+  cddb_set_server_port(conn, 8880);
+  cddb_http_enable(conn);
     
   disc = cddb_disc_new();
   if (!disc) {
@@ -732,18 +735,23 @@ static void print_cddb_info() {
     cdio_get_track_lba(cdio, CDIO_CDROM_LEADOUT_TRACK) 
     / CDIO_CD_FRAMES_PER_SEC;
 
-  disc->category = CDDB_CAT_MISC;
   if (!cddb_disc_calc_discid(disc)) {
     fprintf(stderr, "%s: libcddb calc discid failed.\n", 
 	    program_name);
     goto cddb_destroy;
   }
-  cddb_read(c, disc);
-  cddb_disc_print(disc);
+
+  matches = cddb_query(conn, disc);
+
+  for (i=1; i<=matches; i++) {
+    cddb_read(conn, disc);
+    cddb_disc_print(disc);
+    cddb_query_next(conn, disc);
+  }
 
   cddb_disc_destroy(disc);
   cddb_destroy:
-  cddb_destroy(c);
+  cddb_destroy(conn);
 }
 #endif
 
@@ -763,8 +771,9 @@ print_analysis(int fs, int num_audio)
     break;
   case FS_ISO_9660:
     printf("CD-ROM with ISO 9660 filesystem");
-    if (fs & JOLIET)
+    if (fs & JOLIET) {
       printf(" and joliet extension level %d", joliet_level);
+    }
     if (fs & ROCKRIDGE)
       printf(" and rockridge extensions");
     printf("\n");
