@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.2 2004/04/30 21:36:54 rocky Exp $
+    $Id: freebsd_cam.c,v 1.3 2004/05/05 02:39:16 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.2 2004/04/30 21:36:54 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.3 2004/05/05 02:39:16 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -42,7 +42,7 @@ _scsi_cmd (_img_private_t * _obj)
   _obj->ccb.csio.cdb_len = scsi_cdblen[(_obj->ccb.csio.cdb_io.cdb_bytes[0] >> 5) & 7];
   if ((retval = cam_send_ccb(_obj->cam, &_obj->ccb)) < 0)
     {
-      cdio_error ("transport failed: ", retval);
+      cdio_warn ("transport failed: ", retval);
       return -1;
     }
   if ((_obj->ccb.ccb_h.status & CAM_STATUS_MASK) == CAM_REQ_CMP)
@@ -162,35 +162,36 @@ read_mode2_sectors_freebsd_cam (_img_private_t *_obj, void *buf, uint32_t lba,
 				unsigned int nblocks, bool b_form2)
 {
   int retval = 0;
+  bool b_read_10 = false;
+
   memset(&_obj->ccb,0,sizeof(_obj->ccb));
+
   _obj->ccb.ccb_h.path_id    = _obj->cam->path_id;
   _obj->ccb.ccb_h.target_id  = _obj->cam->target_id;
   _obj->ccb.ccb_h.target_lun = _obj->cam->target_lun;
   cam_fill_csio (&(_obj->ccb.csio), 1, NULL, 
 		 CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, NULL, 0, 
 		 sizeof(_obj->ccb.csio.sense_data), 0, 30*1000);
-  _obj->ccb.csio.cdb_len = (b_form2?8:9)+1;
+  _obj->ccb.csio.cdb_len = (8)+1;
   
-  _obj->ccb.csio.cdb_io.cdb_bytes[0] = (b_form2
-					? CDIO_MMC_GPCMD_READ_10
-					: CDIO_MMC_GPCMD_READ_CD );
-  
-  if (!b_form2)
-    _obj->ccb.csio.cdb_io.cdb_bytes[1] = 0; /* sector size mode2 */
-  
+  CDIO_MMC_SET_COMMAND(_obj->ccb.csio.cdb_io.cdb_bytes, b_read_10
+		       ? CDIO_MMC_GPCMD_READ_10 : CDIO_MMC_GPCMD_READ_CD);
+
   CDIO_MMC_SET_READ_LBA(_obj->ccb.csio.cdb_io.cdb_bytes, lba);
   CDIO_MMC_SET_READ_LENGTH(_obj->ccb.csio.cdb_io.cdb_bytes, nblocks);
   
-  if (!b_form2)
+  if (!b_read_10) {
+    _obj->ccb.csio.cdb_io.cdb_bytes[1] = 0; /* sector size mode2 */
     _obj->ccb.csio.cdb_io.cdb_bytes[9] = 0x58; /* 2336 mode2 mixed form */
-  
-  _obj->ccb.csio.data_ptr = buf;
+  }
+
   _obj->ccb.csio.dxfer_len = M2RAW_SECTOR_SIZE * nblocks;
+  _obj->ccb.csio.data_ptr  = buf;
   
   /* suc.suc_timeout = 500; */
   _obj->ccb.csio.ccb_h.flags = CAM_DIR_IN;
   
-  if (b_form2)
+  if (b_read_10)
     {
       if ((retval = _set_bsize (_obj, M2RAW_SECTOR_SIZE)))
 	goto out;
