@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext_private.h,v 1.2 2004/07/17 08:59:44 rocky Exp $
+    $Id: cdtext_private.h,v 1.3 2004/07/17 09:34:30 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -22,6 +22,7 @@
 #define __CDIO_CDTEXT_PRIVATE_H__
 
 #include <cdio/cdio.h>
+#include <cdio/cdtext.h>
 
 #define CDIO_CDTEXT_MAX_PACK_DATA  255
 #define CDIO_CDTEXT_MAX_TEXT_DATA  12
