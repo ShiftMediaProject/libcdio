@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.135 2005/03/15 04:17:05 rocky Exp $
+    $Id: cd-info.c,v 1.136 2005/03/18 12:56:00 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -343,7 +343,6 @@ parse_options (int argc, const char *argv[])
 
 /* CDIO logging routines */
 
-static cdio_log_handler_t gl_default_cdio_log_handler = NULL;
 #ifdef HAVE_CDDB
 static cddb_log_handler_t gl_default_cddb_log_handler = NULL;
 #endif

@@ -1,5 +1,5 @@
 /*
-    $Id: read.c,v 1.6 2005/02/17 07:03:37 rocky Exp $
+    $Id: read.c,v 1.7 2005/03/18 12:56:00 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -81,7 +81,7 @@ cdio_lseek (const CdIo_t *p_cdio, off_t offset, int whence)
   if (!p_cdio) return DRIVER_OP_UNINIT;
   
   if (p_cdio->op.lseek)
-    return p_cdio->op.lseek (p_cdio->env, offset, whence);
+    return (p_cdio->op.lseek) (p_cdio->env, offset, whence);
   return DRIVER_OP_UNSUPPORTED;
 }
 
@@ -96,7 +96,7 @@ cdio_read (const CdIo_t *p_cdio, void *p_buf, size_t i_size)
   if (!p_cdio) return DRIVER_OP_UNINIT;
   
   if (p_cdio->op.read)
-    return p_cdio->op.read (p_cdio->env, p_buf, i_size);
+    return (p_cdio->op.read) (p_cdio->env, p_buf, i_size);
   return DRIVER_OP_UNSUPPORTED;
 }
 
@@ -123,7 +123,8 @@ cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 {
   check_lsn_blocks(i_lsn, i_blocks);
   if (p_cdio->op.read_audio_sectors)
-    return p_cdio->op.read_audio_sectors (p_cdio->env, p_buf, i_lsn, i_blocks);
+    return (p_cdio->op.read_audio_sectors) (p_cdio->env, p_buf, i_lsn, 
+                                            i_blocks);
   return DRIVER_OP_UNSUPPORTED;
 }
 
@@ -189,8 +190,8 @@ cdio_read_mode1_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 {
   check_lsn_blocks(i_lsn, i_blocks);
   if (p_cdio->op.read_mode1_sectors)
-    return p_cdio->op.read_mode1_sectors (p_cdio->env, p_buf, i_lsn, b_form2, 
-                                          i_blocks);
+    return (p_cdio->op.read_mode1_sectors) (p_cdio->env, p_buf, i_lsn, b_form2,
+                                            i_blocks);
   return DRIVER_OP_UNSUPPORTED;
 }
 
@@ -233,8 +234,8 @@ cdio_read_mode2_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 {
   check_lsn_blocks(i_lsn, i_blocks);
   if (p_cdio->op.read_mode2_sectors) 
-    return p_cdio->op.read_mode2_sectors (p_cdio->env, p_buf, i_lsn,
-                                          b_form2, i_blocks);
+    return (p_cdio->op.read_mode2_sectors) (p_cdio->env, p_buf, i_lsn,
+                                            b_form2, i_blocks);
   return DRIVER_OP_UNSUPPORTED;
   
 }

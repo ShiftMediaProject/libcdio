@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.17 2005/01/22 22:21:36 rocky Exp $
+  $Id: cd-drive.c,v 1.18 2005/03/18 12:56:00 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -130,8 +130,6 @@ parse_options (int argc, const char *argv[])
 }
 
 /* CDIO logging routines */
-
-static cdio_log_handler_t gl_default_cdio_log_handler = NULL;
 
 static void 
 _log_handler (cdio_log_level_t level, const char message[])

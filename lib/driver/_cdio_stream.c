@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.c,v 1.6 2005/02/05 04:25:14 rocky Exp $
+    $Id: _cdio_stream.c,v 1.7 2005/03/18 12:56:00 rocky Exp $
 
     Copyright (C) 2000, 2004, 2005 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
@@ -35,7 +35,7 @@
 #include <cdio/util.h>
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.6 2005/02/05 04:25:14 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.7 2005/03/18 12:56:00 rocky Exp $";
 
 /* 
  * DataSource implementations
@@ -146,7 +146,7 @@ cdio_stream_read(CdioDataSource_t* p_obj, void *ptr, long size, long nmemb)
   if (!p_obj) return 0;
   if (!_cdio_stream_open_if_necessary(p_obj)) return 0;
 
-  read_bytes = p_obj->op.read(p_obj->user_data, ptr, size*nmemb);
+  read_bytes = (p_obj->op.read)(p_obj->user_data, ptr, size*nmemb);
   p_obj->position += read_bytes;
 
   return read_bytes;

@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.29 2005/02/27 20:16:08 rocky Exp $
+    $Id: iso-info.c,v 1.30 2005/03/18 12:56:00 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -157,8 +157,6 @@ parse_options (int argc, const char *argv[])
 }
 
 /* CDIO logging routines */
-
-static cdio_log_handler_t gl_default_cdio_log_handler = NULL;
 
 static void 
 _log_handler (cdio_log_level_t level, const char message[])
