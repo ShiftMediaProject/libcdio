@@ -1,26 +1,5 @@
-# $Id: check_common_fn.in,v 1.1 2003/06/08 12:33:38 rocky Exp $
+# $Id: check_common_fn.in,v 1.2 2003/06/08 13:08:37 rocky Exp $
 SKIP_TEST_EXITCODE=77
-DIFF_OPTS=
-have_diff() {
-  if @DIFF@ ./Makefile ./Makefile > /dev/null 2>&1; then
-    :
-  else
-    
-    return 1;
-  fi
-  
-  if @DIFF@ ./Makefile ./check_common_fn.in > /dev/null 2>&1; then
-    return 1;
-  fi
-
-  # MSDOG output uses \r\n rather than \n in tests
-  for diff_opt in -w --unified ; do 
-    if @DIFF@ $opt ./Makefile ./Makefile > /dev/null 2>&1; then
-      DIFF_OPTS="$DIFF_OPTS $diff_opt"
-    fi
-  done
-  return 0;
-}
 
 check_result() {
   RC=$1
@@ -52,8 +31,8 @@ test_cdinfo() {
   fi
 
   if ${CDINFO} --no-header ${opts} >${outfile} 2>&1 ; then 
-    if have_diff; then
-      if @DIFF@ ${outfile} ${rightfile} ; then
+    if test "@DIFF@" != no; then
+      if @DIFF@ @DIFF_OPTS@ ${outfile} ${rightfile} ; then
 	rm -f $outfile
 	return 0
       else

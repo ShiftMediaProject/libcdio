@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.26 2003/06/08 12:33:37 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.27 2003/06/08 13:08:37 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.61)
@@ -54,11 +54,28 @@ else
   unset warning_flags
 fi
 
-dnl We use a perl for documentation and regression tests
+dnl We use a Perl for documentation and regression tests
 AC_PATH_PROG(PERL, perl, no)
-AC_SUBST(PERL)dnl
-AC_PATH_PROGS(DIFF, diff, cmp)
-AC_SUBST(DIFF)dnl
+AC_SUBST(PERL)
+
+dnl We use a diff in regression testing
+AC_PATH_PROG(DIFF, diff, no)
+DIFF_OPTS=
+
+if test "$DIFF" == no ; then
+   AC_PATH_PROG(DIFF, cmp, no)
+else 
+   dnl Try for GNU diff options.
+  # MSDOG output uses \r\n rather than \n in tests
+  for diff_opt in -w --unified ; do 
+    if $DIFF $diff_opt ./configure ./configure > /dev/null 2>&1; then
+      AC_MSG_RESULT([adding $diff_opt to diff in regression tests])
+      DIFF_OPTS="$DIFF_OPTS $diff_opt"
+    fi
+  done
+fi
+AC_SUBST(DIFF)
+AC_SUBST(DIFF_OPTS)
 
 
 AM_PATH_LIBPOPT(, [enable_cdinfo=no])
