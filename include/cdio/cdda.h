@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.1 2005/01/05 04:16:11 rocky Exp $
+  $Id: cdda.h,v 1.2 2005/01/06 23:34:13 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -19,8 +19,9 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-/** \file cdda_paranoia.h
- *  \brief The top-level interface header; applications include this.
+/** \file cdda.h
+ *  \brief The top-level interface header for cd-paranoia; applications 
+ *  include this.
  *
  ******************************************************************/
 
@@ -114,8 +115,6 @@ struct cdrom_drive_s {
 
 };
 
-#define IS_AUDIO(d,i) (!(d->disc_toc[i].bFlags & 0x04))
-
 /** autosense functions */
 
 extern cdrom_drive_t *cdda_find_a_cdrom(int messagedest, char **message);
@@ -123,9 +122,6 @@ extern cdrom_drive_t *cdda_identify(const char *device, int messagedest,
 				  char **message);
 extern cdrom_drive_t *cdda_identify_cooked(const char *device,int messagedest,
 					 char **message);
-extern cdrom_drive_t *cdda_identify_scsi(const char *generic_device, 
-				       const char *ioctl_device,
-				       int messagedest, char **message);
 #ifdef CDDA_TEST
 extern cdrom_drive_t *cdda_identify_test(const char *filename,
 				       int messagedest, char **message);
@@ -150,8 +146,21 @@ extern lsn_t   cdda_track_firstsector(cdrom_drive_t *d, track_t i_track);
 /*! Get last lsn of the track. This generally one less than the start
   of the next track. -1 is returned on error. */
 extern lsn_t   cdda_track_lastsector(cdrom_drive_t *d, track_t i_track);
+
+/*! Return the number of tracks on the CD. */
 extern track_t cdda_tracks(cdrom_drive_t *d);
+
+/*! Return the track containing the given LSN. If the LSN is before
+    the first track (in the pregap), 0 is returned. If there was an
+    error or the LSN after the LEADOUT (beyond the end of the CD), then
+    CDIO_INVALID_TRACK is returned.
+ */
 extern int     cdda_sector_gettrack(cdrom_drive_t *d, lsn_t lsn);
+
+/*! Return the number of channels in track: 2 or 4; -2 if not
+  implemented or -1 for error.
+  Not meaningful if track is not an audio track.
+*/
 extern int     cdda_track_channels(cdrom_drive_t *d, track_t i_track);
 
 /*! Return 1 is track is an audio track, 0 otherwise. */
