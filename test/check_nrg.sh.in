@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_nrg.sh.in,v 1.12 2005/02/17 04:29:24 rocky Exp $
+#$Id: check_nrg.sh.in,v 1.13 2005/02/17 06:28:41 rocky Exp $
 
 if test -n "@VCDINFO_LIBS@" ; then
   vcd_opt='--no-vcd'
@@ -36,8 +36,8 @@ else
 fi
 
 test_name='svcdgs'
-opts="-q --no-device-info --nrg-file $nrg_file $vcd_opt --iso9660"
 nrg_file=${srcdir}/${test_name}.nrg
+opts="-q --no-device-info --nrg-file $nrg_file $vcd_opt --iso9660"
 if test -f  $nrg_file ; then
   test_cdinfo "$opts" ${test_name}.dump ${srcdir}/${test_name}.right
   RC=$?
@@ -48,10 +48,10 @@ else
 fi
 
 test_name='cdda-mcn'
-opts="-q --no-device-info --nrg-file $nrg_file --no-cddb"
 nrg_file=${srcdir}/${test_name}.nrg
+opts="-q --no-device-info --nrg-file $nrg_file --no-cddb"
 if test -f  $nrg_file ; then
-  test_cdinfo $opts ${test_name}.dump ${srcdir}/${test_name}.right
+  test_cdinfo "$opts" ${test_name}.dump ${srcdir}/${test_name}.right
   RC=$?
   check_result $RC "cd-info NRG $test_name" "${CD_INFO} $opts"
   exit $RC
