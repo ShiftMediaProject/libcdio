@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.24 2003/09/13 06:25:37 rocky Exp $
+    $Id: cdio.c,v 1.25 2003/09/14 14:34:51 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.24 2003/09/13 06:25:37 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.25 2003/09/14 14:34:51 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -330,8 +330,9 @@ cdio_get_track_lba(const CdIo *obj, track_t track_num)
     return obj->op.get_track_lba (obj->user_data, track_num);
   } else {
     msf_t msf;
-    if (cdio_get_track_msf(obj, track_num, &msf))
-      return cdio_msf_to_lba(&msf);
+    if (obj->op.get_track_msf) 
+      if (cdio_get_track_msf(obj, track_num, &msf))
+        return cdio_msf_to_lba(&msf);
     return CDIO_INVALID_LBA;
   }
 }
@@ -372,6 +373,11 @@ cdio_get_track_msf(const CdIo *obj, track_t track_num, /*out*/ msf_t *msf)
 
   if (obj->op.get_track_msf) {
     return obj->op.get_track_msf (obj->user_data, track_num, msf);
+  } else if (obj->op.get_track_lba) {
+    lba_t lba = obj->op.get_track_lba (obj->user_data, track_num);
+    if (lba  == CDIO_INVALID_LBA) return false;
+    cdio_lba_to_msf(lba, msf);
+    return true;
   } else {
     return false;
   }
