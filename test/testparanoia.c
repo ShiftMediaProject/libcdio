@@ -138,7 +138,7 @@ main(int argc, const char *argv[])
 	/* Compare with the sectors from paranoia. */
 	i_lsn -= MAX_SECTORS;
 	for ( i = 0; i < MAX_SECTORS; i++, i_lsn++ ) {
-	  uint8_t readbuf[CDIO_CD_FRAMESIZE_RAW];
+	  uint8_t readbuf[CDIO_CD_FRAMESIZE_RAW] = {0,};
 	  if ( PARANOIA_CB_READ == audio_status[i] || 
 	       PARANOIA_CB_VERIFY == audio_status[i] ) {
 	    /* We read the block via paranoia without an error. */
