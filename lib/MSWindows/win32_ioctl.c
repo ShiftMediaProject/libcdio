@@ -1,5 +1,5 @@
 /*
-    $Id: ioctl.c,v 1.12 2004/04/30 07:33:51 rocky Exp $
+    $Id: win32_ioctl.c,v 1.1 2004/04/30 08:23:23 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: ioctl.c,v 1.12 2004/04/30 07:33:51 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.1 2004/04/30 08:23:23 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
