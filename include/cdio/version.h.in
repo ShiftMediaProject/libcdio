@@ -1,1 +1,6 @@
+/* $Id: version.h.in,v 1.2 2003/11/17 11:50:37 rocky Exp $ */
+/** \file version.h 
+ *  \brief  A file simply containing the library version number.
+ */
+
 #define CDIO_VERSION "@VERSION@"
