@@ -1,0 +1,45 @@
+See also @uref{http://www.dvdrhelp.com/glossary}.
+
+@table @acronym
+
+@item CD
+Compact Disc
+
+@item CD-DA
+@acronym{CD} Digital Audio. This commonly referred to as an audio
+@acronym{CD} and what most people think of when you play a
+@acronym{CD} as it was the first to use the @acronym{CD} medium.
+
+@item CD-ROM
+@acronym{CD} Read Only Memory
+
+@item CD-ROM XA
+CD-ROM EXtended Architecture. A modificattion to the CD-ROM
+specification that defines two new types of sectors.  CD-ROM XA was
+developed jointly by Sony, Philips, and Microsoft, and its
+specifications were published in an extension to the Yellow Book.
+CD-i, Photo CD, Video CD and CD-EXTRA have all subsequently been based
+on CD-ROM XA.
+
+@item CD-XA
+See @acronym{CD-ROM XA}.
+
+@item FSF
+Free Software Foundation, @uref{http://www.fsf.org/}
+
+@item GNU
+@acronym{GNU} is not @acronym{UNIX}, @uref{http://www.gnu.org/}
+
+@item ISO
+International Standards Organization. 
+
+@item SVCD
+Super @acronym{VCD} @uref{http://www.dvdrhelp.com/svcd}
+
+@item VCD
+Video @acronym{CD} @uref{http://www.dvdrhelp.com/vcd}
+
+@item XA
+See @acronym{CD-ROM XA}
+
+@end table
