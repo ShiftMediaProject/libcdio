@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.2 2003/03/29 17:32:00 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.3 2003/03/29 21:13:55 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "util.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.2 2003/03/29 17:32:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.3 2003/03/29 21:13:55 rocky Exp $";
 
 /* structures used */
 
@@ -530,6 +530,7 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
       user_datasize=FORM1_DATA_SIZE;
       break;
     default:
+      user_datasize=CD_RAW_SECTOR_SIZE;
       cdio_warn ("track %d has unknown format %d",
 		 i+1, this_track->track_format);
     }

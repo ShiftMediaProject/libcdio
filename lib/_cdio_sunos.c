@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.3 2003/03/29 20:28:05 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.4 2003/03/29 21:13:55 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -31,7 +31,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.3 2003/03/29 20:28:05 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.4 2003/03/29 21:13:55 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -95,11 +95,11 @@ _cdio_init (_img_private_t *_obj)
 
   struct dk_cinfo cinfo;
 
-  _obj->gen.fd = open (_obj->source_name, O_RDONLY, 0);
+  _obj->gen.fd = open (_obj->gen.source_name, O_RDONLY, 0);
 
   if (_obj->gen.fd < 0)
     {
-      cdio_error ("open (%s): %s", _obj->source_name, strerror (errno));
+      cdio_error ("open (%s): %s", _obj->gen.source_name, strerror (errno));
       return false;
     }
 
@@ -306,9 +306,9 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
       if (!value)
 	return -2;
 
-      free (_obj->source_name);
+      free (_obj->gen.source_name);
       
-      _obj->source_name = strdup (value);
+      _obj->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
@@ -416,7 +416,7 @@ _cdio_get_arg (void *user_data, const char key[])
   _img_private_t *_obj = user_data;
 
   if (!strcmp (key, "source")) {
-    return _obj->source_name;
+    return _obj->gen.source_name;
   } else if (!strcmp (key, "access-mode")) {
     switch (_obj->access_mode) {
     case _AM_SUN_CTRL_ATAPI:

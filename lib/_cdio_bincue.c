@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.2 2003/03/29 17:32:00 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.3 2003/03/29 21:13:55 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.2 2003/03/29 17:32:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.3 2003/03/29 21:13:55 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -173,6 +173,7 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
       user_datasize=FORM1_DATA_SIZE;
       break;
     default:
+      user_datasize=CD_RAW_SECTOR_SIZE;
       cdio_warn ("track %d has unknown format %d",
 		 i+1, this_track->track_format);
     }
