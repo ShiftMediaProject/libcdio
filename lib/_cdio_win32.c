@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.27 2004/03/03 02:41:18 rocky Exp $
+    $Id: _cdio_win32.c,v 1.28 2004/03/05 04:23:52 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.27 2004/03/03 02:41:18 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.28 2004/03/05 04:23:52 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -146,6 +146,68 @@ _cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn,
 }
 
 /*!
+   Reads a single mode1 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+static int
+_cdio_read_mode1_sector (void *user_data, void *data, lsn_t lsn, 
+			 bool mode1_form2)
+{
+  _img_private_t *env = user_data;
+
+  if (env->gen.ioctls_debugged == 75)
+    cdio_debug ("only displaying every 75th ioctl from now on");
+
+  if (env->gen.ioctls_debugged == 30 * 75)
+    cdio_debug ("only displaying every 30*75th ioctl from now on");
+  
+  if (env->gen.ioctls_debugged < 75 
+      || (env->gen.ioctls_debugged < (30 * 75)  
+	  && env->gen.ioctls_debugged % 75 == 0)
+      || env->gen.ioctls_debugged % (30 * 75) == 0)
+    cdio_debug ("reading %lu", (unsigned long int) lsn);
+  
+  env->gen.ioctls_debugged++;
+
+  if ( env->hASPI ) {
+    return 1;
+  } else {
+    return win32ioctl_read_mode1_sector( env, data, lsn, mode1_form2 );
+  }
+}
+
+/*!
+   Reads nblocks of mode1 sectors from cd device into data starting
+   from lsn.
+   Returns 0 if no error. 
+ */
+static int
+_cdio_read_mode1_sectors (void *user_data, void *data, lsn_t lsn, 
+			  bool mode1_form2, unsigned int nblocks)
+{
+  _img_private_t *env = user_data;
+  int i;
+  int retval;
+
+  for (i = 0; i < nblocks; i++) {
+    if (mode1_form2) {
+      if ( (retval = _cdio_read_mode1_sector (env, 
+					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
+					  lsn + i, true)) )
+	return retval;
+    } else {
+      char buf[M2RAW_SECTOR_SIZE] = { 0, };
+      if ( (retval = _cdio_read_mode1_sector (env, buf, lsn + i, false)) )
+	return retval;
+      
+      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
+	      buf, CDIO_CD_FRAMESIZE);
+    }
+  }
+  return 0;
+}
+
+/*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
@@ -191,7 +253,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
-		     bool mode2_form2, unsigned int nblocks)
+			  bool mode2_form2, unsigned int nblocks)
 {
   _img_private_t *env = user_data;
   int i;
@@ -200,7 +262,8 @@ _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
   for (i = 0; i < nblocks; i++) {
     if (mode2_form2) {
       if ( (retval = _cdio_read_mode2_sector (env, 
-					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
+					  ((char *)data) 
+					  + (M2RAW_SECTOR_SIZE * i),
 					  lsn + i, true)) )
 	return retval;
     } else {
@@ -577,6 +640,8 @@ cdio_open_win32 (const char *source_name)
     .lseek              = NULL,
     .read               = NULL,
     .read_audio_sectors = _cdio_read_audio_sectors,
+    .read_mode1_sector  = _cdio_read_mode1_sector,
+    .read_mode1_sectors = _cdio_read_mode1_sectors,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,

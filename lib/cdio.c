@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.38 2004/02/07 02:40:20 rocky Exp $
+    $Id: cdio.c,v 1.39 2004/03/05 04:23:52 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.38 2004/02/07 02:40:20 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.39 2004/03/05 04:23:52 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -678,44 +678,35 @@ cdio_read_mode1_sector (const CdIo *cdio, void *data, lsn_t lsn, bool is_form2)
 {
   uint32_t size = is_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE ;
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
-  int ret;
   
   cdio_assert (cdio != NULL);
   cdio_assert (data != NULL);
 
-  if (cdio->op.lseek && cdio->op.read) {
+  if (cdio->op.read_mode1_sector && cdio->op.read_mode1_sector) {
+    return cdio->op.read_mode1_sector(cdio->env, data, lsn, is_form2);
+  } else if (cdio->op.lseek && cdio->op.read) {
     if (0 > cdio_lseek(cdio, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
       return -1;
     if (0 > cdio_read(cdio, buf, CDIO_CD_FRAMESIZE))
       return -1;
     memcpy (data, buf, size);
     return 0;
-  } else {
-    ret = cdio_read_mode2_sector(cdio, data, lsn, is_form2);
-    if (ret == 0) 
-      memcpy (data, buf+CDIO_CD_SUBHEADER_SIZE, size);
-  }
-  return ret;
+  } 
+
+  return 1;
 
 }
 
 int
-cdio_read_mode1_sectors (const CdIo *cdio, void *data, lsn_t lsn, 
+cdio_read_mode1_sectors (const CdIo *cdio, void *buf, lsn_t lsn, 
                          bool is_form2,  unsigned int num_sectors)
 {
-  uint32_t size = is_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE ;
-  int retval;
-  int i;
-
   cdio_assert (cdio != NULL);
+  cdio_assert (buf != NULL);
+  cdio_assert (cdio->op.read_mode1_sectors != NULL);
   
-  for (i = 0; i < num_sectors; i++) {
-    if ( (retval = cdio_read_mode1_sector (cdio, 
-                                           ((char *)data) + (size * i),
-                                           lsn + i, is_form2)) )
-      return retval;
-  }
-  return 0;
+  return cdio->op.read_mode1_sectors (cdio->env, buf, lsn, is_form2, 
+                                      num_sectors);
 }
 
 /*!
@@ -741,15 +732,15 @@ cdio_read_mode2_sector (const CdIo *cdio, void *buf, lsn_t lsn,
 }
 
 int
-cdio_read_mode2_sectors (const CdIo *cdio, void *buf, lsn_t lsn, bool mode2raw, 
-                         unsigned num_sectors)
+cdio_read_mode2_sectors (const CdIo *cdio, void *buf, lsn_t lsn, 
+                         bool is_form2, unsigned int num_sectors)
 {
   cdio_assert (cdio != NULL);
   cdio_assert (buf != NULL);
   cdio_assert (cdio->op.read_mode2_sectors != NULL);
   
   return cdio->op.read_mode2_sectors (cdio->env, buf, lsn,
-                                     mode2raw, num_sectors);
+                                      is_form2, num_sectors);
 }
 
 uint32_t

@@ -1,5 +1,5 @@
 /*
-    $Id: win32ioctl.c,v 1.5 2004/03/04 04:01:30 rocky Exp $
+    $Id: win32ioctl.c,v 1.6 2004/03/05 04:23:52 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32ioctl.c,v 1.5 2004/03/04 04:01:30 rocky Exp $";
+static const char _rcsid[] = "$Id: win32ioctl.c,v 1.6 2004/03/05 04:23:52 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -224,14 +224,12 @@ win32ioctl_read_audio_sectors (_img_private_t *env, void *data, lsn_t lsn,
 }
 
 /*!
-   Reads a single mode2 sector using the DeviceIoControl method into
+   Reads a single raw sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int
-win32ioctl_read_mode2_sector (_img_private_t *env, void *data, lsn_t lsn, 
-			      bool mode2_form2)
+static int
+win32ioctl_read_raw_sector (_img_private_t *env, void *buf, lsn_t lsn) 
 {
-  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   SCSI_PASS_THROUGH_DIRECT sptd;
   BOOL success;
   DWORD dwBytesReturned;
@@ -279,12 +277,49 @@ win32ioctl_read_mode2_sector (_img_private_t *env, void *data, lsn_t lsn,
     return 1;
   }
 
-  if (mode2_form2)
-    memcpy (data, buf + 24, M2RAW_SECTOR_SIZE);
-  else
-    memcpy (((char *)data), buf + 24, CDIO_CD_FRAMESIZE);
+  return 0;
+}
+
+/*!
+   Reads a single mode2 sector using the DeviceIoControl method into
+   data starting from lsn. Returns 0 if no error.
+ */
+int
+win32ioctl_read_mode2_sector (_img_private_t *env, void *data, lsn_t lsn, 
+			      bool mode2_form2)
+{
+  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+  int ret = win32ioctl_read_raw_sector (env, buf, lsn);
+
+  if ( 0 != ret) return ret;
+
+  memcpy (data, 
+	  buf + CDIO_CD_SYNC_SIZE + CDIO_CD_XA_HEADER,
+	  mode2_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
   
   return 0;
+
+}
+
+/*!
+   Reads a single mode2 sector using the DeviceIoControl method into
+   data starting from lsn. Returns 0 if no error.
+ */
+int
+win32ioctl_read_mode1_sector (_img_private_t *env, void *data, lsn_t lsn, 
+			      bool mode2_form2)
+{
+  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+  int ret = win32ioctl_read_raw_sector (env, buf, lsn);
+
+  if ( 0 != ret) return ret;
+
+  memcpy (data, 
+	  buf + CDIO_CD_SYNC_SIZE+CDIO_CD_HEADER_SIZE, 
+	  mode2_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
+  
+  return 0;
+
 }
 
 /*!

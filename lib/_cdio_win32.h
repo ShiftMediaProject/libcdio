@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.h,v 1.3 2004/02/05 03:02:16 rocky Exp $
+    $Id: _cdio_win32.h,v 1.4 2004/03/05 04:23:52 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -58,6 +58,14 @@ int win32ioctl_read_audio_sectors (_img_private_t *obj, void *data, lsn_t lsn,
  */
 int
 win32ioctl_read_mode2_sector (_img_private_t *env, void *data, lsn_t lsn, 
+			      bool mode2_form2);
+
+/*!
+   Reads a single mode1 sector using the DeviceIoControl method into
+   data starting from lsn. Returns 0 if no error.
+ */
+int
+win32ioctl_read_mode1_sector (_img_private_t *env, void *data, lsn_t lsn, 
 			      bool mode2_form2);
 
 const char *win32ioctl_is_cdrom(const char drive_letter);
