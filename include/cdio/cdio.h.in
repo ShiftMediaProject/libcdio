@@ -1,5 +1,5 @@
-/*
-    $Id: cdio.h.in,v 1.2 2003/04/20 17:24:49 rocky Exp $
+/* -*- c -*-
+    $Id: cdio.h.in,v 1.3 2003/04/21 10:17:50 hvr Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>

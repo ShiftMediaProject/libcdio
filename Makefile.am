@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.4 2003/04/20 15:34:31 rocky Exp $
+#   $Id: Makefile.am,v 1.5 2003/04/21 10:17:50 hvr Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -24,6 +24,12 @@ EXTRA_DIST = libpopt.m4 THANKS
 
 # SUBDIRS =  doc include lib src tests
 SUBDIRS =  include lib src tests
+
+# pkg-config(1) related rules
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libcdio.pc
+
+$(pkgconfig_DATA): config.status
 
 # List of additional files for expanded regression tests
 DISTFILES_REGRESSION = tests/monvoisin.nrg  tests/monvoisin.right \

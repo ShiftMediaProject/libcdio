@@ -1,4 +1,4 @@
-AC_REVISION([$Id: configure.ac,v 1.14 2003/04/20 17:24:48 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.15 2003/04/21 10:17:50 hvr Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.3)
@@ -215,6 +215,7 @@ AC_CONFIG_COMMANDS([checks],
 
 AC_OUTPUT([ \
        Makefile \
+       libcdio.pc \
        include/Makefile \
        include/cdio/Makefile \
        include/cdio/cdio.h \
