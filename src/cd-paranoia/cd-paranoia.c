@@ -847,7 +847,6 @@ main(int argc,char *argv[])
     }
   }
 
-  d->i_test_flags = test_flags;
   switch( cdda_open(d) ) {
   case -2:case -3:case -4:case -5:
     report("\nUnable to open disc.  Is there an audio CD in the drive?");
@@ -861,6 +860,8 @@ main(int argc,char *argv[])
     report("\nUnable to open disc.");
     exit(1);
   }
+
+  d->i_test_flags = test_flags;
 
   /* Dump the TOC */
   if (query_only || verbose ) display_toc(d);

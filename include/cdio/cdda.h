@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.8 2005/01/22 03:43:03 rocky Exp $
+  $Id: cdda.h,v 1.9 2005/01/22 18:11:32 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -111,26 +111,35 @@ struct cdrom_drive_s {
 
 };
 
-/**< under-run testing. The below bit is set for testing.  */
-#define CDDA_TEST_UNDERRUN         16 
 
-#if TESTING_IS_FINISHED
-/** jitter testing. The first two bits are set to determine
-    how much jitter to simulate.
+/**< jitter testing. The first two bits are set to determine
+     the byte-distance we will jitter the data; 0 is no shifting.
  */
 #define CDDA_TEST_JITTER_SMALL      1 
 #define CDDA_TEST_JITTER_LARGE      2 
 #define CDDA_TEST_JITTER_MASSIVE    3 
 
+/**< jitter testing. Set the below bit to always cause jittering on reads.
+     The below bit only has any effect if the first two (above) bits are 
+     nonzero. If the above bits are set, but the below bit isn't we'll
+     jitter 90% of the time.
+  */
+#define CDDA_TEST_ALWAYS_JITTER     4 
+
 /** fragment testing */
-#define CDDA_TEST_FRAG_SMALL   (1<<2)
-#define CDDA_TEST_FRAG_LARGE   (2<<2)
-#define CDDA_TEST_FRAG_MASSIVE (3<<2)
+#define CDDA_TEST_FRAG_SMALL   (1<<3)
+#define CDDA_TEST_FRAG_LARGE   (2<<3)
+#define CDDA_TEST_FRAG_MASSIVE (3<<3)
+
+/**< under-run testing. The below bit is set for testing.  */
+#define CDDA_TEST_UNDERRUN         64 
+
+#if TESTING_IS_FINISHED
 
  /** scratch testing */
-#define CDDA_TEST_SCRATCH          32
-#undef  CDDA_TEST_BOGUS_BYTES      64
-#undef  CDDA_TEST_DROPDUPE_BYTES  128
+#define CDDA_TEST_SCRATCH         128
+#undef  CDDA_TEST_BOGUS_BYTES     256
+#undef  CDDA_TEST_DROPDUPE_BYTES  512
 #endif /* TESTING_IS_FINISHED */
 
 /** autosense functions */

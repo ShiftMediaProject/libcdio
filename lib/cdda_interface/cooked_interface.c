@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.12 2005/01/18 00:57:20 rocky Exp $
+  $Id: cooked_interface.c,v 1.13 2005/01/22 18:11:32 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -69,33 +69,24 @@ cooked_setspeed(cdrom_drive_t *d, int i_speed)
   return cdio_set_speed(d->p_cdio, i_speed);
 }
 
-/* read 'SectorBurst' adjacent sectors of audio sectors 
- * to Buffer '*p' beginning at sector 'lSector'
+/* read 'i_sector' adjacent audio sectors
+ * into buffer '*p' beginning at sector 'begin'
  */
 
 static long int
-cooked_read (cdrom_drive_t *d, void *p, lsn_t begin, long sectors)
+read_blocks (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors)
 {
-  int retry_count,err;
+  int retry_count = 0;
+  int err;
   char *buffer=(char *)p;
 
-  /* read d->nsectors at a time, max. */
-  sectors=( sectors > d->nsectors && d->nsectors > 0 ? d->nsectors : sectors);
-
-  /* If we are testing under-run correction, we will deliberately set
-     what we read a frame short.  */
-  if (d->i_test_flags & CDDA_TEST_UNDERRUN ) 
-    sectors--;
-
-  retry_count=0;
-
   do {
-    err = cdio_read_audio_sectors( d->p_cdio, buffer, begin, sectors);
+    err = cdio_read_audio_sectors( d->p_cdio, buffer, begin, i_sectors);
     
     if ( 0 != err ) {
       if (!d->error_retry) return -7;
       
-      if (sectors==1) {
+      if (i_sectors==1) {
 	/* *Could* be I/O or media error.  I think.  If we're at
 	   30 retries, we better skip this unhappy little
 	   sector. */
@@ -111,8 +102,8 @@ cooked_read (cdrom_drive_t *d, void *p, lsn_t begin, long sectors)
       }
 
       if(retry_count>4)
-	if(sectors>1)
-	  sectors=sectors*3/4;
+	if(i_sectors>1)
+	  i_sectors=i_sectors*3/4;
       retry_count++;
       if (retry_count>MAX_RETRIES) {
 	cderror(d,"007: Unknown, unrecoverable error reading data\n");
@@ -122,7 +113,115 @@ cooked_read (cdrom_drive_t *d, void *p, lsn_t begin, long sectors)
       break;
   } while (err);
   
-  return(sectors);
+  return(i_sectors);
+}
+
+typedef enum  {
+  JITTER_NONE = 0,
+  JITTER_SMALL= 1,
+  JITTER_LARGE= 2,
+  JITTER_MASSIVE=3
+} jitter_baddness_t;
+
+/* read 'i_sector' adjacent audio sectors
+ * into buffer '*p' beginning at sector 'begin'
+ */
+
+static long int
+jitter_read (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors,
+	     jitter_baddness_t jitter_badness)
+{
+  static int i_jitter=0;
+  int jitter_flag;
+  long i_sectors_orig = i_sectors;
+  long i_jitter_offset = 0;
+  
+  char *p_buf=malloc(CDIO_CD_FRAMESIZE_RAW*(i_sectors+1));
+  
+  if (d->i_test_flags & CDDA_TEST_ALWAYS_JITTER)
+    jitter_flag = 1;
+  else 
+    jitter_flag = (drand48() > .9) ? 1 : 0;
+  
+  if (jitter_flag) {
+    int i_coeff = 0;
+    int i_jitter_sectors = 0;
+    switch(jitter_badness) {
+    case JITTER_SMALL  : i_coeff =   4; break;
+    case JITTER_LARGE  : i_coeff =  32; break;
+    case JITTER_MASSIVE: i_coeff = 128; break;
+    case JITTER_NONE   :
+    default            : ;
+    }
+    i_jitter = i_coeff * (int)((drand48()-.5)*CDIO_CD_FRAMESIZE_RAW/8);
+    
+    /* We may need to add another sector to compensate for the bytes that
+       will be dropped off when jittering, and the begin location may
+       be a little different.
+    */
+    i_jitter_sectors = i_jitter / CDIO_CD_FRAMESIZE_RAW;
+
+    if (i_jitter >= 0) 
+      i_jitter_offset  = i_jitter % CDIO_CD_FRAMESIZE_RAW;
+    else {
+      i_jitter_offset  = CDIO_CD_FRAMESIZE_RAW - 
+	(-i_jitter % CDIO_CD_FRAMESIZE_RAW);
+      i_jitter_sectors--;
+    }
+    
+    
+    if (begin + i_jitter_sectors > 0) {
+      char buffer[256];
+      sprintf(buffer, "jittering by %d, offset %ld\n", i_jitter, 
+	      i_jitter_offset);
+      cdmessage(d,buffer); 
+
+      begin += i_jitter_sectors;
+      i_sectors ++; 
+    } else 
+      i_jitter_offset = 0;
+    
+  }
+
+  i_sectors = read_blocks(d, p_buf, begin, i_sectors);
+
+  if (i_sectors < 0) return i_sectors;
+  
+  if (i_sectors < i_sectors_orig) 
+    /* Had to reduce # of sectors due to read errors. So give full amount,
+       with no jittering. */
+    memcpy(p, p_buf, i_sectors*CDIO_CD_FRAMESIZE_RAW);
+  else 
+    /* Got full amount, but now adjust size for jittering. */
+    memcpy(p, p_buf+i_jitter_offset, i_sectors_orig*CDIO_CD_FRAMESIZE_RAW);
+
+  free(p_buf);
+  return(i_sectors);
+}
+
+/* read 'i_sector' adjacent audio sectors
+ * into buffer '*p' beginning at sector 'begin'
+ */
+
+static long int
+cooked_read (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors)
+{
+  jitter_baddness_t jitter_badness = d->i_test_flags & 0x3;
+
+  /* read d->nsectors at a time, max. */
+  i_sectors = ( i_sectors > d->nsectors && d->nsectors > 0 ) 
+    ? d->nsectors : i_sectors;
+
+  /* If we are testing under-run correction, we will deliberately set
+     what we read a frame short.  */
+  if (d->i_test_flags & CDDA_TEST_UNDERRUN ) 
+    i_sectors--;
+
+  if (jitter_badness) {
+    return jitter_read(d, p, begin, i_sectors, jitter_badness);
+  } else 
+    return read_blocks(d, p, begin, i_sectors);
+  
 }
 
 /* hook */
