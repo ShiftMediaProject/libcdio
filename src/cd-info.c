@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.94 2004/10/26 07:34:41 rocky Exp $
+    $Id: cd-info.c,v 1.95 2004/10/26 07:51:49 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -98,6 +98,7 @@ struct arguments
   int            version_only;
   int            silent;
   int            no_header;
+  int            no_joliet;
   int            print_iso9660;
   int            list_drives;
   source_image_t source_image;
@@ -209,6 +210,9 @@ parse_options (int argc, const char *argv[])
     
     {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
      0, "Don't display header and copyright (for regression testing)"},
+    
+    {"no-joliet", '\0', POPT_ARG_NONE, &opts.no_joliet, 
+     0, "Don't use Joliet extensions"},
     
     {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
@@ -543,7 +547,11 @@ print_iso9660_recurse (CdIo *p_cdio, const char pathname[],
   CdioList *entlist;
   CdioList *dirlist =  _cdio_list_new ();
   CdioListNode *entnode;
-  uint8_t i_joliet_level = cdio_get_joliet_level(p_cdio);
+  uint8_t i_joliet_level;
+
+  i_joliet_level = (opts.no_joliet) 
+    ? 0
+    : cdio_get_joliet_level(p_cdio);
 
   entlist = iso9660_fs_readdir (p_cdio, pathname, b_mode2);
     
@@ -619,10 +627,15 @@ print_iso9660_fs (CdIo *p_cdio, cdio_fs_anal_t fs,
 		  track_format_t track_format)
 {
   bool b_mode2 = false;
+  iso_extension_mask_t iso_extension_mask = ISO_EXTENSION_ALL;
 
   if (fs & CDIO_FS_ANAL_XA) track_format = TRACK_FORMAT_XA;
 
-  if ( !iso9660_fs_read_superblock(p_cdio, ISO_EXTENSION_ALL) ) 
+  if (opts.no_joliet) {
+    iso_extension_mask &= ~ISO_EXTENSION_JOLIET;
+  }
+
+  if ( !iso9660_fs_read_superblock(p_cdio, iso_extension_mask) ) 
     return;
   
   b_mode2 = ( TRACK_FORMAT_CDI == track_format 
@@ -794,6 +807,7 @@ init(void)
   opts.silent        = false;
   opts.list_drives   = false;
   opts.no_header     = false;
+  opts.no_joliet     = false;
   opts.no_device     = 0;
   opts.no_disc_mode  = 0;
   opts.debug_level   = 0;
@@ -825,21 +839,21 @@ int
 main(int argc, const char *argv[])
 {
 
-  CdIo               *p_cdio=NULL;
-  cdio_fs_anal_t      fs=CDIO_FS_AUDIO;
+  CdIo                *p_cdio=NULL;
+  cdio_fs_anal_t       fs=CDIO_FS_AUDIO;
   int i;
-  lsn_t               start_track_lsn;      /* lsn of first track */
-  lsn_t               data_start     =  0;  /* start of data area */
-  int                 ms_offset      =  0;
-  track_t             i_tracks       =  0;
-  track_t             i_first_track  =  0;
-  unsigned int        num_audio      =  0;  /* # of audio tracks */
-  unsigned int        num_data       =  0;  /* # of data tracks */
-  int                 first_data     = -1;  /* # of first data track */
-  int                 first_audio    = -1;  /* # of first audio track */
-  cdio_iso_analysis_t cdio_iso_analysis; 
+  lsn_t                start_track_lsn;      /* lsn of first track */
+  lsn_t                data_start     =  0;  /* start of data area */
+  int                  ms_offset      =  0;
+  track_t              i_tracks       =  0;
+  track_t              i_first_track  =  0;
+  unsigned int         num_audio      =  0;  /* # of audio tracks */
+  unsigned int         num_data       =  0;  /* # of data tracks */
+  int                  first_data     = -1;  /* # of first data track */
+  int                  first_audio    = -1;  /* # of first audio track */
+  cdio_iso_analysis_t  cdio_iso_analysis; 
   char                *media_catalog_number;  
-  discmode_t          discmode = CDIO_DISC_MODE_NO_INFO;
+  discmode_t           discmode = CDIO_DISC_MODE_NO_INFO;
       
   memset(&cdio_iso_analysis, 0, sizeof(cdio_iso_analysis));
   init();
