@@ -34,13 +34,10 @@ int
 main(int argc, const char *argv[])
 {
   cdrom_drive_t *d = NULL; /* Place to store handle given by cd-parapnioa. */
-  driver_id_t driver_id;
   char **ppsz_cd_drives;  /* List of all drives with a loaded CDDA in it. */
 
-  /* See if we can find a device with a loaded CD-DA in it. If successful
-     drive_id will be set.  */
-  ppsz_cd_drives = cdio_get_devices_with_cap_ret(NULL, CDIO_FS_AUDIO, false,
-						 &driver_id);
+  /* See if we can find a device with a loaded CD-DA in it. */
+  ppsz_cd_drives = cdio_get_devices_with_cap(NULL, CDIO_FS_AUDIO, false);
 
   if (ppsz_cd_drives) {
     /* Found such a CD-ROM with a CD-DA loaded. Use the first drive in
