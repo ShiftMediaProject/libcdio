@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.38 2004/06/17 01:20:40 rocky Exp $
+    $Id: _cdio_osx.c,v 1.39 2004/06/17 03:24:39 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.38 2004/06/17 01:20:40 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.39 2004/06/17 03:24:39 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -381,6 +381,7 @@ _cdio_read_toc (_img_private_t *env)
     
     CDTOCDescriptor *pTrackDescriptors;
     track_t i_track;
+    int i_session = -1;
     
     env->pp_lba = malloc( TOTAL_TRACKS * sizeof(int) );
     if( env->pp_lba == NULL )
@@ -398,6 +399,11 @@ _cdio_read_toc (_img_private_t *env)
     for( i = 0; i <= env->i_descriptors; i++ )
       {
 	i_track = pTrackDescriptors[i].point;
+
+	if ( -1 == i_session ) 
+	  i_session = pTrackDescriptors[i].session;
+	else if (pTrackDescriptors[i].session != i_session) 
+	  continue;
 
 	if( i_track == OSX_CDROM_LEADOUT_TRACK )
 	  /* Note leadout should be 0xAA, But OSX seems to use 0xA2. */
