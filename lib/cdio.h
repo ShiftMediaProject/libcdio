@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.h,v 1.9 2003/04/12 03:38:00 rocky Exp $
+    $Id: cdio.h,v 1.10 2003/04/19 00:52:16 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -69,7 +69,7 @@ extern "C" {
     DRIVER_SOLARIS, 
     DRIVER_BINCUE, /* Prefer bincue over nrg when both exist */
     DRIVER_NRG,    
-    DRIVER_DEVICE, /* Is really a set of the above; should come last */
+    DRIVER_DEVICE  /* Is really a set of the above; should come last */
   } driver_id_t;
 
   /* Make sure what's listed below is the last one above. Since we have
