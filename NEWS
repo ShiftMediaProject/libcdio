@@ -1,10 +1,13 @@
 0.70
 
-- SCSI MMC interface routine
+- SCSI MMC interface routine (all except Darwin)
 - Distinguish DVD's from CD's
-- Code clean-ups
+- Code clean-ups and reduced code duplication
 - Better CUE parsing 
 - Reporting drive capability is more accurate 
+- add constant driver_id for kind of hardware driver in build
+- new drive scanning routines which pass back driver as well 
+  as drive string. Speeds up subsequent opens.
 
 0.69
 - Add interface returning drive capabilities (cdio_get_drive_cap).
@@ -131,4 +134,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.49 2004/08/05 04:02:11 rocky Exp $
+$Id: NEWS,v 1.50 2004/08/27 11:22:40 rocky Exp $
