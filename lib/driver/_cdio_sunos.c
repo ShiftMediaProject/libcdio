@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.6 2005/01/17 17:20:09 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.7 2005/01/18 01:48:42 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.6 2005/01/17 17:20:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.7 2005/01/18 01:48:42 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -769,6 +769,24 @@ _cdio_get_track_msf(void *p_user_data, track_t i_track, msf_t *msf)
   }
 }
 
+/* Set read blocksize */
+static int 
+set_blocksize_solaris (void *p_user_data, int i_blocksize)
+{
+  const _img_private_t *p_env = p_user_data;
+  return scsi_mmc_set_blocksize(p_env->gen.cdio, i_blocksize);
+}
+
+/* Set operating speed */
+static int 
+set_speed_solaris (void *p_user_data, int i_speed)
+{
+  const _img_private_t *p_env = p_user_data;
+
+  if (!p_env) return -1;
+  return ioctl(p_env->gen.fd, CDROMSDRVSPEED, i_speed);
+}
+
 #else 
 /*!
   Return a string containing the default VCD device if none is specified.
@@ -886,6 +904,9 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.run_scsi_mmc_cmd       = run_scsi_cmd_solaris;
   _funcs.stat_size              = _cdio_stat_size;
   _funcs.set_arg                = _set_arg_solaris;
+  _funcs.set_blocksize          = set_blocksize_solaris;
+  _funcs.set_speed              = set_speed_solaris;
+  _funcs.stat_size              = _cdio_stat_size;
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
 

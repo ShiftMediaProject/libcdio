@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.8 2005/01/18 00:57:20 rocky Exp $
+    $Id: _cdio_linux.c,v 1.9 2005/01/18 01:48:42 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.8 2005/01/18 00:57:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.9 2005/01/18 01:48:42 rocky Exp $";
 
 #include <string.h>
 
@@ -985,7 +985,7 @@ static char checklist2[][40] = {
   {"?a hd?"}, {"?0 scd?"}, {"?0 sr?"}, {""}
 };
 
-/* Set operating speed */
+/* Set read blocksize */
 static int 
 set_blocksize_linux (void *p_user_data, int i_blocksize)
 {
@@ -993,7 +993,7 @@ set_blocksize_linux (void *p_user_data, int i_blocksize)
   return scsi_mmc_set_blocksize(p_env->gen.cdio, i_blocksize);
 }
 
-/* Set operating speed */
+/* Set CD-ROM drive speed */
 static int 
 set_speed_linux (void *p_user_data, int i_speed)
 {
