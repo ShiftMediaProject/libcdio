@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.3 2003/06/07 10:44:14 rocky Exp $
+    $Id: _cdio_win32.c,v 1.4 2003/06/07 12:47:19 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.3 2003/06/07 10:44:14 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.4 2003/06/07 12:47:19 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -41,6 +41,7 @@ static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.3 2003/06/07 10:44:14 rocky
 
 #ifdef HAVE_WIN32_CDROM
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -174,7 +175,7 @@ struct SRB_ExecSCSICmd
 #pragma pack()
 
 typedef struct {
-  lba_t          start_lba;
+  lsn_t          start_lsn;
   track_format_t track_format;
 } track_info_t;
 
@@ -239,7 +240,7 @@ cdio_have_cdrom_drive(const char drive_letter) {
     }
     
     if( hASPI == NULL || lpGetSupport == NULL || lpSendCommand == NULL ) {
-      cdio_debug("unable to load aspi or get aspi function pointers");
+      cdio_debug("Unable to load ASPI or get ASPI function pointers");
       if( hASPI ) FreeLibrary( hASPI );
       return NULL;
     }
@@ -255,7 +256,7 @@ cdio_have_cdrom_drive(const char drive_letter) {
     }
     
     if( HIBYTE( LOWORD ( dwSupportInfo ) ) != SS_COMP ) {
-      cdio_debug("unable to initalize ASPI layer");
+      cdio_debug("Unable to initalize ASPI layer");
       FreeLibrary( hASPI );
       return NULL;
     }
@@ -266,7 +267,7 @@ cdio_have_cdrom_drive(const char drive_letter) {
       return NULL;
     }
     
-    c_drive = drive_letter - 'A';
+    c_drive = toupper(drive_letter) - 'A';
     
     for( j = 0; j < 15; j++ ) {
       struct SRB_GetDiskInfo srbDiskInfo;
@@ -310,7 +311,7 @@ cdio_have_cdrom_drive(const char drive_letter) {
   Initialize CD device.
  */
 static bool
-_cdio_win32_init (void *user_data)
+_cdio_init_win32 (void *user_data)
 {
   _img_private_t *_obj = user_data;
   if (_obj->gen.init) {
@@ -358,7 +359,7 @@ _cdio_win32_init (void *user_data)
     }
     
     if( hASPI == NULL || lpGetSupport == NULL || lpSendCommand == NULL ) {
-      cdio_debug("unable to load aspi or get aspi function pointers");
+      cdio_debug("Unable to load ASPI or get ASPI function pointers");
       if( hASPI ) FreeLibrary( hASPI );
       return false;
     }
@@ -752,12 +753,12 @@ _cdio_read_toc (_img_private_t *_obj)
       
       for( i = 0 ; i <= _obj->total_tracks ; i++ ) {
 	int i_index = 8 + 8 * i;
-	_obj->tocent[ i ].start_lba = ((int)p_fulltoc[ i_index ] << 24) +
+	_obj->tocent[ i ].start_lsn = ((int)p_fulltoc[ i_index ] << 24) +
 	  ((int)p_fulltoc[ i_index+1 ] << 16) +
 	  ((int)p_fulltoc[ i_index+2 ] << 8) +
 	  (int)p_fulltoc[ i_index+3 ];
 	
-	cdio_debug( "p_sectors: %i %i", i, _obj->tocent[i].start_lba );
+	cdio_debug( "p_sectors: %i %i", i, _obj->tocent[i].start_lsn );
       }
 	
       free( p_fulltoc );
@@ -784,11 +785,11 @@ _cdio_read_toc (_img_private_t *_obj)
     
       
     for( i = 0 ; i <= _obj->total_tracks ; i++ ) {
-	_obj->tocent[ i ].start_lba = MSF_TO_LBA2(
+	_obj->tocent[ i ].start_lsn = MSF_TO_LBA2(
 					 cdrom_toc.TrackData[i].Address[1],
 					 cdrom_toc.TrackData[i].Address[2],
 					 cdrom_toc.TrackData[i].Address[3] );
-	cdio_debug("p_sectors: %i, %i", i, (_obj->tocent[i].start_lba));
+	cdio_debug("p_sectors: %i, %i", i, (_obj->tocent[i].start_lsn));
       }
   }
   return true;
@@ -939,19 +940,26 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
   if (track_num > _obj->total_tracks+1 || track_num == 0) {
     return false;
   } else {
-    cdio_lba_to_msf(_obj->tocent[track_num-1].start_lba, msf);
+    cdio_lsn_to_msf(_obj->tocent[track_num-1].start_lsn, msf);
     return true;
   }
 }
 
+#endif /* HAVE_WIN32_CDROM */
+
 /*!
   Return a string containing the default CD device if none is specified.
- */
+  if CdIo is NULL (we haven't initialized a specific device driver), 
+  then find a suitable one and return the default device for that.
+  
+  NULL is returned if we couldn't get a default device.
+*/
 char *
 cdio_get_default_device_win32(void)
 {
 
-  char drive_letter='C';
+#ifdef HAVE_WIN32_CDROM
+  char drive_letter;
 
   for (drive_letter='A'; drive_letter <= 'Z'; drive_letter++) {
     const char *drive_str=cdio_have_cdrom_drive(drive_letter);
@@ -959,18 +967,21 @@ cdio_get_default_device_win32(void)
       return strdup(drive_str);
     }
   }
+#endif
   return NULL;
 }
-#else 
-/*!
-  Return a string containing the default CD device if none is specified.
- */
-char *
-cdio_get_default_device_win32(void)
+
+/*!  
+  Return true if source_name could be a device containing a CD-ROM.
+*/
+bool
+cdio_is_device_win32(const char *source_name)
 {
-  return NULL;
+  unsigned int len;
+  
+  len = strlen(source_name);
+  return ((len == 2) && (source_name[len-1] == ':'));
 }
-#endif /* HAVE_WIN32_CDROM */
 
 /*!
   Initialization routine. This is the only thing that doesn't
@@ -1015,7 +1026,7 @@ cdio_open_win32 (const char *source_name)
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;
 
-  if (_cdio_win32_init(_data))
+  if (_cdio_init_win32(_data))
     return ret;
   else {
     _cdio_win32_free (_data);
