@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.10 2003/04/07 02:58:49 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.11 2003/04/07 11:24:55 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.10 2003/04/07 02:58:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.11 2003/04/07 11:24:55 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -55,25 +55,18 @@ typedef struct {
   int            sec_count;  /* Number of sectors in this track. Does not
 				include pregap */
   int            num_indices;
-  int            flags; /* "DCP", "4CH", "PRE" */
+  int            flags;      /* "DCP", "4CH", "PRE" */
   track_format_t track_format;
   bool           track_green;
   uint16_t  datasize;        /* How much is in the portion we return back? */
   uint16_t  datastart;       /* Offset from begining that data starts */
   uint16_t  endsize;         /* How much stuff at the end to skip over. This
 			       stuff may have error correction (EDC, or ECC).*/
-  uint16_t  blocksize;        /* total block size = start + size + end */
+  uint16_t  blocksize;       /* total block size = start + size + end */
 
   
 } track_info_t;
 
-typedef struct 
-{
-  off_t   buff_offset;      /* buffer offset in disk-image seeks. */
-  track_t index;            /* Current track index in tocent. */
-  lba_t   lba;              /* Current LBA */
-} internal_position_t;
-  
 typedef struct {
   /* Things common to all drivers like this. 
      This must be first. */
@@ -82,7 +75,6 @@ typedef struct {
   
   bool sector_2336;              /* Playstation (PSX) uses 2336-byte sectors */
 
-  CdioDataSource *data_source;
   char         *cue_name;
   track_info_t  tocent[100];     /* entry info for each track */
   track_t       total_tracks;    /* number of tracks in image */
@@ -104,7 +96,7 @@ _cdio_init (_img_private_t *_obj)
   if (_obj->gen.init)
     return false;
 
-  if (!(_obj->data_source = cdio_stdio_new (_obj->gen.source_name))) {
+  if (!(_obj->gen.data_source = cdio_stdio_new (_obj->gen.source_name))) {
     cdio_error ("init failed");
     return false;
   }
@@ -199,7 +191,7 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
     return -1;
   } else {
     real_offset += _obj->tocent[i].datastart;
-    return cdio_stream_seek(_obj->data_source, real_offset, whence);
+    return cdio_stream_seek(_obj->gen.data_source, real_offset, whence);
   }
 }
 
@@ -224,7 +216,7 @@ _cdio_read (void *user_data, void *data, size_t size)
   while (size > 0) {
     int rem = this_track->datasize - _obj->pos.buff_offset;
     if (size <= rem) {
-      this_size = cdio_stream_read(_obj->data_source, buf, size, 1);
+      this_size = cdio_stream_read(_obj->gen.data_source, buf, size, 1);
       final_size += this_size;
       memcpy (p, buf, this_size);
       break;
@@ -234,15 +226,15 @@ _cdio_read (void *user_data, void *data, size_t size)
     cdio_warn ("Reading across block boundaries not finished");
 
     size -= rem;
-    this_size = cdio_stream_read(_obj->data_source, buf, rem, 1);
+    this_size = cdio_stream_read(_obj->gen.data_source, buf, rem, 1);
     final_size += this_size;
     memcpy (p, buf, this_size);
     p += this_size;
-    this_size = cdio_stream_read(_obj->data_source, buf, rem, 1);
+    this_size = cdio_stream_read(_obj->gen.data_source, buf, rem, 1);
     
     /* Skip over stuff at end of this sector and the beginning of the next.
      */
-    cdio_stream_read(_obj->data_source, buf, skip_size, 1);
+    cdio_stream_read(_obj->gen.data_source, buf, skip_size, 1);
 
     /* Get ready to read another sector. */
     _obj->pos.buff_offset=0;
@@ -271,7 +263,7 @@ _cdio_stat_size (void *user_data)
 
   _cdio_init (_obj);
   
-  size = cdio_stream_stat (_obj->data_source);
+  size = cdio_stream_stat (_obj->gen.data_source);
 
   if (size % blocksize)
     {
@@ -335,8 +327,8 @@ _cdio_image_read_cue (_img_private_t *_obj)
       this_track->blocksize   = blocksize;
       switch(blocksize) {
       case 2336:
-	this_track->datastart = 12 + 4;      /* sync, head */
-	this_track->datasize  = 2336;        /* sub */
+	this_track->datastart = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE;
+	this_track->datasize  = M2RAW_SECTOR_SIZE;  
 	this_track->endsize   = 0;
 	break;
       default:
@@ -344,12 +336,13 @@ _cdio_image_read_cue (_img_private_t *_obj)
       case 2352:
 	if (_obj->sector_2336) {
 	  this_track->datastart = 0;          
-	  this_track->datasize  = 2336;
+	  this_track->datasize  = M2RAW_SECTOR_SIZE;
 	  this_track->endsize   = blocksize - 2336;
 	} else {
-	  this_track->datastart = 12 + 4 + 8; /* sync, head, sub */
-	  this_track->datasize  = 2048;       /* data */
-	  this_track->endsize   = 4 + 276;    /* EDC, ECC */
+	  this_track->datastart = CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE +
+	    CDIO_CD_SUBHEADER_SIZE;
+	  this_track->datasize  = CDIO_CD_FRAMESIZE;
+	  this_track->endsize   = CDIO_CD_SYNC_SIZE + CDIO_CD_ECC_SIZE;
 	}
 	break;
       }
@@ -362,7 +355,7 @@ _cdio_image_read_cue (_img_private_t *_obj)
       case 2048:
 	/* Is the below correct? */
 	this_track->datastart = 0;         
-	this_track->datasize  = 2048;        
+	this_track->datasize  = CDIO_CD_FRAMESIZE;
 	this_track->endsize   = 0;  
 	break;
       default:
@@ -450,25 +443,8 @@ _cdio_image_read_cue (_img_private_t *_obj)
   return true;
 }
 
-/*!
-  Release and free resources used here.
- */
-static void
-_cdio_free (void *user_data)
-{
-  _img_private_t *_obj = user_data;
-
-  free (_obj->gen.source_name);
-
-  if (_obj->data_source)
-    cdio_stream_destroy (_obj->data_source);
-
-  free (_obj);
-}
-
 static int
-_read_mode2_sector (void *user_data, void *data, uint32_t lsn, 
-		    bool mode2_form2)
+_read_mode2_sector (void *user_data, void *data, lsn_t lsn, bool mode2_form2)
 {
   _img_private_t *_obj = user_data;
   int ret;
@@ -478,18 +454,21 @@ _read_mode2_sector (void *user_data, void *data, uint32_t lsn,
 
   _cdio_init (_obj);
 
-  ret = cdio_stream_seek (_obj->data_source, lsn * blocksize, SEEK_SET);
+  ret = cdio_stream_seek (_obj->gen.data_source, lsn * blocksize, SEEK_SET);
   if (ret!=0) return ret;
 
-  ret = cdio_stream_read (_obj->data_source,
-			  _obj->sector_2336 ? (buf + 12 + 4) : buf,
+  ret = cdio_stream_read (_obj->gen.data_source,
+			  _obj->sector_2336 
+			  ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE) 
+			  : buf,
 			  blocksize, 1);
   if (ret==0) return ret;
 
   if (mode2_form2)
-    memcpy (data, buf + 12 + 4, M2RAW_SECTOR_SIZE);
+    memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
+	    M2RAW_SECTOR_SIZE);
   else
-    memcpy (data, buf + 12 + 4 + 8, CDIO_CD_FRAMESIZE);
+    memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, CDIO_CD_FRAMESIZE);
 
   return 0;
 }
@@ -711,7 +690,7 @@ cdio_open_bincue (const char *source_name)
 
   cdio_funcs _funcs = {
     .eject_media        = cdio_generic_bogus_eject_media,
-    .free               = _cdio_free,
+    .free               = cdio_generic_stream_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = _cdio_get_default_device,
     .get_first_track_num= _cdio_get_first_track_num,
@@ -750,7 +729,7 @@ cdio_open_cue (const char *cue_name)
 
   cdio_funcs _funcs = {
     .eject_media        = cdio_generic_bogus_eject_media,
-    .free               = _cdio_free,
+    .free               = cdio_generic_stream_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = _cdio_get_default_device,
     .get_first_track_num= _cdio_get_first_track_num,
@@ -793,7 +772,7 @@ cdio_open_cue (const char *cue_name)
   if (_cdio_init(_data))
     return ret;
   else {
-    _cdio_free (_data);
+    cdio_generic_stream_free (_data);
     return NULL;
   }
 }
