@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.35 2004/02/21 13:10:51 rocky Exp $
+    $Id: cdio.h,v 1.36 2004/03/06 18:30:44 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -278,21 +278,21 @@ extern "C" {
    from lsn. Returns 0 if no error. 
   */
   int cdio_read_mode1_sector (const CdIo *obj, void *buf, lsn_t lsn, 
-			      bool is_form2);
+			      bool b_form2);
   
   /*!
     Reads nblocks of mode1 sectors from cd device into data starting
     from lsn. Returns 0 if no error. 
   */
   int cdio_read_mode1_sectors (const CdIo *obj, void *buf, lsn_t lsn, 
-			       bool is_form2, unsigned int num_sectors);
+			       bool b_form2, unsigned int num_sectors);
   
   /*!
     Reads a single mode2 sector from cd device into data starting
     from lsn. Returns 0 if no error. 
   */
   int cdio_read_mode2_sector (const CdIo *obj, void *buf, lsn_t lsn, 
-			      bool is_form2);
+			      bool b_form2);
   
   /*!
     Reads nblocks of mode2 sectors from cd device into data starting
@@ -300,7 +300,7 @@ extern "C" {
     Returns 0 if no error. 
   */
   int cdio_read_mode2_sectors (const CdIo *obj, void *buf, lsn_t lsn, 
-			       bool is_form2, unsigned int num_sectors);
+			       bool b_form2, unsigned int num_sectors);
   
   /*!
     Set the arg "key" with "value" in the source device.

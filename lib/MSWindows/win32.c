@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.2 2004/03/06 18:05:37 rocky Exp $
+    $Id: win32.c,v 1.3 2004/03/06 18:30:44 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.2 2004/03/06 18:05:37 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.3 2004/03/06 18:30:44 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -151,7 +151,7 @@ _cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode1_sector (void *user_data, void *data, lsn_t lsn, 
-			 bool mode1_form2)
+			 bool b_form2)
 {
   _img_private_t *env = user_data;
 
@@ -172,7 +172,7 @@ _cdio_read_mode1_sector (void *user_data, void *data, lsn_t lsn,
   if ( env->hASPI ) {
     return 1;
   } else {
-    return win32ioctl_read_mode1_sector( env, data, lsn, mode1_form2 );
+    return win32ioctl_read_mode1_sector( env, data, lsn, b_form2 );
   }
 }
 
@@ -183,14 +183,14 @@ _cdio_read_mode1_sector (void *user_data, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode1_sectors (void *user_data, void *data, lsn_t lsn, 
-			  bool mode1_form2, unsigned int nblocks)
+			  bool b_form2, unsigned int nblocks)
 {
   _img_private_t *env = user_data;
   int i;
   int retval;
 
   for (i = 0; i < nblocks; i++) {
-    if (mode1_form2) {
+    if (b_form2) {
       if ( (retval = _cdio_read_mode1_sector (env, 
 					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
 					  lsn + i, true)) )
@@ -213,7 +213,7 @@ _cdio_read_mode1_sectors (void *user_data, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
-		    bool mode2_form2)
+		    bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   _img_private_t *env = user_data;
@@ -236,13 +236,13 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
     int ret;
     ret = wnaspi32_read_mode2_sector(user_data, buf, lsn);
     if( ret != 0 ) return ret;
-    if (mode2_form2)
+    if (b_form2)
       memcpy (data, buf, M2RAW_SECTOR_SIZE);
     else
       memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
     return 0;
   } else {
-    return win32ioctl_read_mode2_sector( env, data, lsn, mode2_form2 );
+    return win32ioctl_read_mode2_sector( env, data, lsn, b_form2 );
   }
 }
 
@@ -253,14 +253,14 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
-			  bool mode2_form2, unsigned int nblocks)
+			  bool b_form2, unsigned int nblocks)
 {
   _img_private_t *env = user_data;
   int i;
   int retval;
 
   for (i = 0; i < nblocks; i++) {
-    if (mode2_form2) {
+    if (b_form2) {
       if ( (retval = _cdio_read_mode2_sector (env, 
 					  ((char *)data) 
 					  + (M2RAW_SECTOR_SIZE * i),
