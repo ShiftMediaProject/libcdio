@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.c,v 1.7 2003/11/05 04:12:58 rocky Exp $
+    $Id: cd_types.c,v 1.8 2004/06/19 19:15:15 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -66,6 +66,7 @@ static char buffer[6][CDIO_CD_FRAMESIZE_RAW];  /* for CD-Data */
 #define UFS_SUPERBLOCK_SECTOR   4  /* buffer[2] */
 #define BOOT_SECTOR            17  /* buffer[3] */
 #define VCD_INFO_SECTOR       150  /* buffer[4] */
+#define XISO_SECTOR	       32  /* buffer[4] */
 
 
 typedef struct signature
@@ -92,6 +93,7 @@ static signature_t sigs[] =
     {3,     7, "EL TORITO",  "BOOTABLE"}, 
     {4,     0, "VIDEO_CD",   "VIDEO CD"}, 
     {4,     0, "SUPERVCD",   "SVCD or Chaoji VCD"}, 
+    {0,     0, "MICROSOFT*XBOX*MEDIA", "XBOX CD"},
     { 0 }
   };
 
@@ -110,6 +112,7 @@ static signature_t sigs[] =
 #define INDEX_BOOTABLE 10
 #define INDEX_VIDEO_CD 11 /* Video CD */
 #define INDEX_SVCD     12 /* CVD *or* SVCD */
+#define INDEX_XISO     13 /* Microsoft X-BOX filesystem */
 
 
 /* 
@@ -220,6 +223,9 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num,
 			0, track_num) < 0 )
     return CDIO_FS_UNKNOWN;
   
+  if ( _cdio_is_it(INDEX_XISO) )
+    return CDIO_FS_ANAL_XISO;
+
   /* We have something that smells of a filesystem. */
   if (_cdio_is_it(INDEX_CD_I) && _cdio_is_it(INDEX_CD_RTOS) 
       && !_cdio_is_it(INDEX_BRIDGE) && !_cdio_is_it(INDEX_XA)) {

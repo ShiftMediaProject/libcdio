@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.21 2004/06/01 11:45:35 rocky Exp $
+    $Id: bincue.c,v 1.22 2004/06/19 19:15:15 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.21 2004/06/01 11:45:35 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.22 2004/06/19 19:15:15 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -235,8 +235,8 @@ _read_bincue (void *user_data, void *data, size_t size)
   ssize_t skip_size = this_track->datastart + this_track->endsize;
 
   while (size > 0) {
-    int rem = this_track->datasize - env->pos.buff_offset;
-    if (size <= rem) {
+    long int rem = this_track->datasize - env->pos.buff_offset;
+    if ((long int) size <= rem) {
       this_size = cdio_stream_read(env->gen.data_source, buf, size, 1);
       final_size += this_size;
       memcpy (p, buf, this_size);
@@ -832,7 +832,7 @@ cdio_is_cuefile(const char *cue_name)
   int   i;
   char *bin_name;
   
-  if (cue_name == NULL) return false;
+  if (cue_name == NULL) return NULL;
 
   bin_name=strdup(cue_name);
   i=strlen(bin_name)-strlen("cue");
@@ -865,7 +865,7 @@ cdio_is_binfile(const char *bin_name)
   int   i;
   char *cue_name;
   
-  if (bin_name == NULL) return false;
+  if (bin_name == NULL) return NULL;
 
   cue_name=strdup(bin_name);
   i=strlen(bin_name)-strlen("bin");

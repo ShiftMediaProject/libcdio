@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.67 2004/06/19 10:38:07 rocky Exp $
+    $Id: cd-info.c,v 1.68 2004/06/19 19:15:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -667,13 +667,16 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
     printf("CD-ROM with Unix UFS\n");
     break;
   case CDIO_FS_EXT2:
-    printf("CD-ROM with Linux second extended filesystem\n");
+    printf("CD-ROM with GNU/Linux EXT2 (native) filesystem\n");
 	  break;
   case CDIO_FS_3DO:
     printf("CD-ROM with Panasonic 3DO filesystem\n");
     break;
   case CDIO_FS_UNKNOWN:
     printf("CD-ROM with unknown filesystem\n");
+    break;
+  case CDIO_FS_XISO:
+    printf("CD-ROM with Microsoft X-BOX XISO filesystem\n");
     break;
   }
   switch(CDIO_FSTYPE(fs)) {

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.55 2004/06/07 00:24:45 rocky Exp $
+    $Id: cdio.c,v 1.56 2004/06/19 19:15:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <errno.h>
 #include <string.h>
 
@@ -37,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.55 2004/06/07 00:24:45 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.56 2004/06/19 19:15:15 rocky Exp $";
 
 
 const char *track_format2str[6] = 

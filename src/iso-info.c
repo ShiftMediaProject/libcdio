@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.8 2004/06/19 10:38:07 rocky Exp $
+    $Id: iso-info.c,v 1.9 2004/06/19 19:15:15 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -38,7 +38,9 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <sys/types.h>
 
 #include <errno.h>

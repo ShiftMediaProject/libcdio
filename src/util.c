@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.7 2004/04/25 14:07:23 rocky Exp $
+  $Id: util.c,v 1.8 2004/06/19 19:15:15 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -75,11 +75,11 @@ fillout_device_name(const char *device_name)
 #if defined(HAVE_WIN32_CDROM)
   return strdup(device_name);
 #else
-  unsigned int prefix_len=strlen(DEV_PREFIX);
+  unsigned int prefix_len = strlen(DEV_PREFIX);
   if (0 == strncmp(device_name, DEV_PREFIX, prefix_len))
     return strdup(device_name);
   else {
-    char *full_device_name=malloc(strlen(device_name)+prefix_len);
+    char *full_device_name = (char*) malloc(strlen(device_name)+prefix_len);
     sprintf(full_device_name, DEV_PREFIX "%s", device_name);
     return full_device_name;
   }

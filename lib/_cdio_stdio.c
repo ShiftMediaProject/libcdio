@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stdio.c,v 1.7 2004/02/21 18:29:59 rocky Exp $
+    $Id: _cdio_stdio.c,v 1.8 2004/06/19 19:15:15 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -26,7 +26,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h> 
+#endif /*HAVE_UNISTD_H*/
+
 #include <sys/stat.h>
 #include <errno.h>
 
@@ -35,7 +39,7 @@
 #include "_cdio_stream.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.7 2004/02/21 18:29:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.8 2004/06/19 19:15:15 rocky Exp $";
 
 #define CDIO_STDIO_BUFSIZE (128*1024)
 
