@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.2 2003/03/24 23:59:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.1 2003/03/24 19:01:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.2 2003/03/24 23:59:22 rocky Exp $";
 
 #if HAVE_BSDI_CDROM
 
@@ -127,7 +127,7 @@ _cdio_free (void *user_data)
 }
 
 static int 
-_set_bsize (int fd, unsigned bsize)
+_set_bsize (int fd, unsigned int bsize)
 {
   struct
   {

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: cdio.c,v 1.2 2003/03/24 23:59:22 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -28,7 +28,7 @@
 #include "logging.h"
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.1 2003/03/24 19:01:09 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.2 2003/03/24 23:59:22 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -70,6 +70,22 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    NULL
   },
 
+  {DRIVER_BSDI, 
+   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
+   "BSDI",
+   "BSDI ATAPI and SCSI driver",
+   &cdio_have_bsdi,
+   cdio_open_bsdi
+  },
+
+  {DRIVER_FREEBSD, 
+   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
+   "FreeBSD",
+   "FreeBSD driver",
+   &cdio_have_freebsd,
+   cdio_open_freebsd
+  },
+
   {DRIVER_LINUX, 
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK,
    "Linux", 
@@ -84,14 +100,6 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "Solaris ATAPI and SCSI driver",
    &cdio_have_solaris,
    &cdio_open_solaris
-  },
-
-  {DRIVER_BSDI, 
-   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
-   "BSDI",
-   "BSDI ATAPI and SCSI driver",
-   &cdio_have_bsdi,
-   cdio_open_bsdi
   },
 
   {DRIVER_NRG,
@@ -404,9 +412,10 @@ cdio_open (const char *source_name, driver_id_t driver_id)
       return NULL;
     }
     break;
+  case DRIVER_BSDI:
+  case DRIVER_FREEBSD:
   case DRIVER_LINUX:
   case DRIVER_SOLARIS:
-  case DRIVER_BSDI:
   case DRIVER_NRG:
   case DRIVER_BINCUE:
     if ((*CdIo_all_drivers[driver_id].have_driver)()) {

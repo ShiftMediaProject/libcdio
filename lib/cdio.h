@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.h,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: cdio.h,v 1.2 2003/03/24 23:59:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -47,9 +47,10 @@ extern "C" {
   */
   typedef enum  {
     DRIVER_UNKNOWN, 
+    DRIVER_BSDI, 
+    DRIVER_FREEBSD, 
     DRIVER_LINUX,
     DRIVER_SOLARIS, 
-    DRIVER_BSDI, 
     DRIVER_NRG,
     DRIVER_BINCUE,
     DRIVER_DEVICE,
@@ -156,11 +157,12 @@ extern "C" {
 
   /* True if xxx driver is available. where xxx=linux, solaris, nrg, ...
    */
+  bool cdio_have_bsdi    (void);
+  bool cdio_have_freebsd (void);
   bool cdio_have_linux   (void);
   bool cdio_have_solaris (void);
   bool cdio_have_nrg     (void);
   bool cdio_have_bincue  (void);
-  bool cdio_have_bsdi    (void);
 
   /* Like above but uses the enumeration instead. */
   bool cdio_have_driver (driver_id_t driver_id);
@@ -196,6 +198,11 @@ extern "C" {
      NULL is returned on error.
   */
   CdIo * cdio_open_bsdi (const char *source_name);
+  
+  /*! BSDI CD-reading routines. 
+     NULL is returned on error.
+  */
+  CdIo * cdio_open_freebsd (const char *source_name);
   
   /*! Linux CD-reading routines. 
      NULL is returned on error.

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: _cdio_linux.c,v 1.2 2003/03/24 23:59:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.1 2003/03/24 19:01:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.2 2003/03/24 23:59:22 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -129,7 +129,7 @@ _cdio_free (void *user_data)
 }
 
 static int 
-_set_bsize (int fd, unsigned bsize)
+_set_bsize (int fd, unsigned int bsize)
 {
   struct cdrom_generic_command cgc;
 
@@ -485,29 +485,31 @@ static int
 _cdio_eject_media (void *user_data) {
 
   _img_private_t *_obj = user_data;
-  int ret, status;
+  int ret=2;
+  int status;
+  int fd;
 
-  if (_obj->fd > -1) {
-    if((status = ioctl(_obj->fd, CDROM_DRIVE_STATUS, CDSL_CURRENT)) > 0) {
+  if ((fd = open (_obj->source_name, O_RDONLY|O_NONBLOCK)) > -1) {
+    if((status = ioctl(fd, CDROM_DRIVE_STATUS, CDSL_CURRENT)) > 0) {
       switch(status) {
       case CDS_TRAY_OPEN:
-	if((ret = ioctl(_obj->fd, CDROMCLOSETRAY)) != 0) {
-	  cdio_error ("CDROMCLOSETRAY failed: %s\n", strerror(errno));  
+	if((ret = ioctl(fd, CDROMCLOSETRAY)) != 0) {
+	  cdio_error ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
 	}
 	break;
       case CDS_DISC_OK:
-	if((ret = ioctl(_obj->fd, CDROMEJECT)) != 0) {
-	  cdio_error("CDROMEJECT failed: %s\n", strerror(errno));  
+	if((ret = ioctl(fd, CDROMEJECT)) != 0) {
+	  cdio_error("ioctl CDROMEJECT failed: %s\n", strerror(errno));  
 	}
 	break;
       }
-      _cdio_free((void *) _obj);
-      return 0;
+      ret=0;
     } else {
       cdio_error ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
-      _cdio_free((void *) _obj);
-      return 1;
+      ret=1;
     }
+    close(fd);
+    _cdio_free((void *) _obj);
   }
   return 2;
 }
