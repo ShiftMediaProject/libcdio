@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.24 2004/07/23 10:43:21 rocky Exp $
+    $Id: freebsd.c,v 1.25 2004/07/23 23:46:53 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.24 2004/07/23 10:43:21 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.25 2004/07/23 23:46:53 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -290,7 +290,7 @@ _get_mcn_freebsd (const void *p_user_data) {
   struct cd_sub_channel_info subchannel_info;
 
   subchannel.address_format = CD_LBA_FORMAT;
-  subchannel.data_format    = CDIO_SUBCHANNELMEDIA_CATALOG;
+  subchannel.data_format    = CDIO_SUBCHANNEL_MEDIA_CATALOG;
   subchannel.track          = 0;
   subchannel.data_len       = 28;
   subchannel.data           = &subchannel_info;
