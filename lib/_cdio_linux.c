@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.75 2004/07/24 05:42:09 rocky Exp $
+    $Id: _cdio_linux.c,v 1.76 2004/07/25 03:05:18 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.75 2004/07/24 05:42:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.76 2004/07/25 03:05:18 rocky Exp $";
 
 #include <string.h>
 
@@ -168,6 +168,24 @@ _get_discmode_linux (void *p_user_data)
   _img_private_t *p_env = p_user_data;
 
   int32_t i_discmode;
+
+  /* See if this is a DVD. */
+  dvd_struct dvd;  /* DVD READ STRUCT for layer 0. */
+
+  dvd.physical.type = DVD_STRUCT_PHYSICAL;
+  dvd.physical.layer_num = 0;
+  if (0 == ioctl (p_env->gen.fd, DVD_READ_STRUCT, &dvd)) {
+    switch(dvd.physical.layer[0].book_type) {
+    case 0:  return CDIO_DISC_MODE_DVD_ROM;
+    case 1:  return CDIO_DISC_MODE_DVD_RAM;
+    case 2:  return CDIO_DISC_MODE_DVD_R;
+    case 3:  return CDIO_DISC_MODE_DVD_RW;
+    case 8:  return CDIO_DISC_MODE_DVD_RW;
+    case 9:  return CDIO_DISC_MODE_DVD_RW;
+    default: return CDIO_DISC_MODE_DVD_OTHER;
+    }
+  }
+
   i_discmode = ioctl (p_env->gen.fd, CDROM_DISC_STATUS);
   
   if (i_discmode < 0) return CDIO_DISC_MODE_ERROR;

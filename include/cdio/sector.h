@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.23 2004/07/24 05:42:09 rocky Exp $
+    $Id: sector.h,v 1.24 2004/07/25 03:05:18 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -85,16 +85,39 @@ typedef enum {
   and GNU/Linux /usr/include/linux/cdrom.h and we've added DVD.
  */
 typedef enum {
-	CDIO_DISC_MODE_CD_DA,			/**< CD-DA */
-	CDIO_DISC_MODE_CD_DATA_1,		/**< CD-ROM form 1 mode 1 */
-	CDIO_DISC_MODE_CD_DATA_2,		/**< CD-ROM form 1 mode 2 */
-	CDIO_DISC_MODE_CD_XA_2_1,		/**< CD-ROM XA form2 mode 1 */
-	CDIO_DISC_MODE_CD_XA_2_2,		/**< CD-ROM XA form2 mode 2 */
-	CDIO_DISC_MODE_CD_MIXED,		/**< CD-ROM XA and CD-I */
-        CDIO_DISC_MODE_DVD,                     /**< some sort of DVD */
+	CDIO_DISC_MODE_CD_DA,		/**< CD-DA */
+	CDIO_DISC_MODE_CD_DATA_1,	/**< CD-ROM form 1 mode 1 */
+	CDIO_DISC_MODE_CD_DATA_2,	/**< CD-ROM form 1 mode 2 */
+	CDIO_DISC_MODE_CD_XA_2_1,	/**< CD-ROM XA form2 mode 1 */
+	CDIO_DISC_MODE_CD_XA_2_2,	/**< CD-ROM XA form2 mode 2 */
+	CDIO_DISC_MODE_CD_MIXED,	/**< CD-ROM XA and CD-I */
+        CDIO_DISC_MODE_DVD_ROM,         /**< DVD ROM (e.g. movies) */
+        CDIO_DISC_MODE_DVD_RAM,         /**< DVD-RAM */
+        CDIO_DISC_MODE_DVD_R,           /**< DVD-R */
+        CDIO_DISC_MODE_DVD_RW,          /**< DVD-RW */
+        CDIO_DISC_MODE_DVD_PR,          /**< DVD+R */
+        CDIO_DISC_MODE_DVD_PRW,         /**< DVD+RW */
+        CDIO_DISC_MODE_DVD_OTHER,       /**< Unknown/unclassified DVD type */
         CDIO_DISC_MODE_NO_INFO,
         CDIO_DISC_MODE_ERROR
 } discmode_t;
+
+#define CDIO_DISC_MODE_DVD                       \
+      (CDIO_DISC_MODE_DVD_ROM                    \
+       | CDIO_DISC_MODE_DVD_RAM                  \
+       | CDIO_DISC_MODE_DVD_R                    \
+       | CDIO_DISC_MODE_DVD_RW                   \
+       | CDIO_DISC_MODE_DVD_PR                   \
+       | CDIO_DISC_MODE_DVD_PRW                  \
+       | CDIO_DISC_MODE_DVD_OTHER)               
+
+#define CDIO_DISC_MODE_CD                        \
+      (CDIO_DISC_MODE_CD_DA                      \
+       | CDIO_DISC_MODE_CD_DATA_1                \
+       | CDIO_DISC_MODE_CD_DATA_2                \
+       | CDIO_DISC_MODE_CD_XA_2_1                \
+       | CDIO_DISC_MODE_CD_XA_2_2                \
+       | CDIO_DISC_MODE_CD_MIXED)                
 
 /*! Information that can be obtained through a Read Subchannel
     command.

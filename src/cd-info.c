@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.74 2004/07/24 14:23:39 rocky Exp $
+    $Id: cd-info.c,v 1.75 2004/07/25 03:05:18 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1031,8 +1031,26 @@ main(int argc, const char *argv[])
     case CDIO_DISC_MODE_CD_MIXED:
       printf("CD-ROM mixed mode");
       break;
-    case CDIO_DISC_MODE_DVD:
-      printf("some sort of DVD");
+    case CDIO_DISC_MODE_DVD_ROM:
+      printf("DVD-ROM");
+      break;
+    case CDIO_DISC_MODE_DVD_RAM:
+      printf("DVD-RAM");
+      break;
+    case CDIO_DISC_MODE_DVD_R:
+      printf("DVD-R");
+      break;
+    case CDIO_DISC_MODE_DVD_RW:
+      printf("DVD-RW");
+      break;
+    case CDIO_DISC_MODE_DVD_PR:
+      printf("DVD+R");
+      break;
+    case CDIO_DISC_MODE_DVD_PRW:
+      printf("DVD+RW");
+      break;
+    case CDIO_DISC_MODE_DVD_OTHER:
+      printf("Unknown/unclassified DVD");
       break;
     case CDIO_DISC_MODE_NO_INFO:
       printf("No information");
