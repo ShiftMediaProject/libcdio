@@ -1,5 +1,5 @@
 /*
-    $Id: win32ioctl.c,v 1.4 2004/03/03 02:41:18 rocky Exp $
+    $Id: win32ioctl.c,v 1.5 2004/03/04 04:01:30 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32ioctl.c,v 1.4 2004/03/03 02:41:18 rocky Exp $";
+static const char _rcsid[] = "$Id: win32ioctl.c,v 1.5 2004/03/04 04:01:30 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -40,6 +40,8 @@ static const char _rcsid[] = "$Id: win32ioctl.c,v 1.4 2004/03/03 02:41:18 rocky 
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#include "scsi_mmc.h"
 
 /* Win32 DeviceIoControl specifics */
 /***** FIXME: #include ntddcdrm.h from Wine, but probably need to 
@@ -82,7 +84,7 @@ typedef struct _SCSI_PASS_THROUGH_DIRECT {
 	PVOID DataBuffer;
 	ULONG SenseInfoOffset;
 	UCHAR Cdb[16];
-}SCSI_PASS_THROUGH_DIRECT, *PSCSI_PASS_THROUGH_DIRECT;
+} SCSI_PASS_THROUGH_DIRECT, *PSCSI_PASS_THROUGH_DIRECT;
 
 #ifndef IOCTL_CDROM_BASE
 #    define IOCTL_CDROM_BASE FILE_DEVICE_CD_ROM
@@ -96,16 +98,17 @@ typedef struct _SCSI_PASS_THROUGH_DIRECT {
 #    define IOCTL_CDROM_BASE FILE_DEVICE_CD_ROM
 #endif
 #ifndef IOCTL_CDROM_READ_TOC
-#    define IOCTL_CDROM_READ_TOC CTL_CODE(IOCTL_CDROM_BASE, 0x0000, \
-                                          METHOD_BUFFERED, FILE_READ_ACCESS)
+#define IOCTL_CDROM_READ_TOC \
+  CTL_CODE(IOCTL_CDROM_BASE, 0x0000, METHOD_BUFFERED, FILE_READ_ACCESS)
 #endif
 #ifndef IOCTL_CDROM_RAW_READ
-#define IOCTL_CDROM_RAW_READ CTL_CODE(IOCTL_CDROM_BASE, 0x000F, \
-                                      METHOD_OUT_DIRECT, FILE_READ_ACCESS)
+#define IOCTL_CDROM_RAW_READ \
+  CTL_CODE(IOCTL_CDROM_BASE, 0x000F, METHOD_OUT_DIRECT, FILE_READ_ACCESS)
 #endif
 
 #ifndef IOCTL_CDROM_READ_Q_CHANNEL
-#define IOCTL_CDROM_READ_Q_CHANNEL      CTL_CODE(IOCTL_CDROM_BASE, 0x000B, METHOD_BUFFERED, FILE_READ_ACCESS)
+#define IOCTL_CDROM_READ_Q_CHANNEL \
+  CTL_CODE(IOCTL_CDROM_BASE, 0x000B, METHOD_BUFFERED, FILE_READ_ACCESS)
 #endif
 
 typedef struct _TRACK_DATA {
@@ -229,49 +232,57 @@ win32ioctl_read_mode2_sector (_img_private_t *env, void *data, lsn_t lsn,
 			      bool mode2_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+  SCSI_PASS_THROUGH_DIRECT sptd;
+  BOOL success;
   DWORD dwBytesReturned;
-  RAW_READ_INFO cdrom_raw;
   
-  /* Initialize CDROM_RAW_READ structure */
-  cdrom_raw.DiskOffset.QuadPart = CDIO_CD_FRAMESIZE * lsn;
-  cdrom_raw.SectorCount = 1;
-  cdrom_raw.TrackMode = mode2_form2 ? XAForm2 : YellowMode2;
+  sptd.Length=sizeof(sptd);
+  sptd.PathId=0;     /* SCSI card ID will be filled in automatically */
+  sptd.TargetId=0;   /* SCSI target ID will also be filled in */
+  sptd.Lun=0;        /* SCSI lun ID will also be filled in */
+  sptd.CdbLength=12; /* CDB size is 12 for ReadCD MMC1 command */
+  sptd.SenseInfoLength=0; /* Don't return any sense data */
+  sptd.DataIn=SCSI_IOCTL_DATA_IN; //There will be data from drive
+  sptd.DataTransferLength=CDIO_CD_FRAMESIZE_RAW; 
+  sptd.TimeOutValue=60;  /*SCSI timeout value (60 seconds - 
+			   maybe it should be longer) */
+  sptd.DataBuffer= (PVOID) buf;
+  sptd.SenseInfoOffset=0;
+
+  /* ReadCD CDB12 command.  The values were taken from MMC1 draft paper. */
+  sptd.Cdb[0]=CDIO_MMC_GPCMD_READ_CD;
+  sptd.Cdb[1]=0;        
+
+  CDIO_MMC_SET_READ_LBA(sptd.Cdb, lsn);
+
+  CDIO_MMC_SET_READ_LENGTH(sptd.Cdb, 1);
+
+  sptd.Cdb[9]=0xF8;  /* Raw read, 2352 bytes per sector */
+  sptd.Cdb[10]=0;   
+  sptd.Cdb[11]=0;
+  sptd.Cdb[12]=0;
+  sptd.Cdb[13]=0;
+  sptd.Cdb[14]=0;
+  sptd.Cdb[15]=0;
   
-  if( DeviceIoControl( env->h_device_handle,
-		       IOCTL_CDROM_RAW_READ, &cdrom_raw,
-		       sizeof(RAW_READ_INFO), buf,
-		       sizeof(buf), &dwBytesReturned, NULL )
-      == 0 ) {
-    /* Retry in Yellowmode2 */
-    if (mode2_form2) {
-      cdio_debug("Retrying mode2 request as mode1");
-      cdrom_raw.TrackMode = YellowMode2;
-    } else {
-      cdio_debug("Retrying mode1 request as mode2");
-      cdrom_raw.TrackMode = XAForm2;
-    }
-    if( DeviceIoControl( env->h_device_handle,
-			 IOCTL_CDROM_RAW_READ, &cdrom_raw,
-			 sizeof(RAW_READ_INFO), buf,
-			 sizeof(buf), &dwBytesReturned, NULL )
-	== 0 ) {
-      cdio_debug("Last-ditch effort reading as CDDA");
-      cdrom_raw.TrackMode = CDDA;
-      if( DeviceIoControl( env->h_device_handle,
-			   IOCTL_CDROM_RAW_READ, &cdrom_raw,
-			   sizeof(RAW_READ_INFO), buf,
-			   sizeof(buf), &dwBytesReturned, NULL )
-	  == 0 ) {
-	cdio_info("Error reading %lu (%ld)\n", lsn, GetLastError());
-	return 1;
-      }
-    }
+  /* Send the command to drive */
+  success=DeviceIoControl(env->h_device_handle,
+			  IOCTL_SCSI_PASS_THROUGH_DIRECT,               
+			  (PVOID)&sptd, 
+			  (DWORD)sizeof(SCSI_PASS_THROUGH_DIRECT),
+			  NULL, 0,                        
+			  &dwBytesReturned,
+			  NULL);
+
+  if(! success) {
+    cdio_info("Error reading %lu (%ld)\n", lsn, GetLastError());
+    return 1;
   }
 
   if (mode2_form2)
-    memcpy (data, buf, M2RAW_SECTOR_SIZE);
+    memcpy (data, buf + 24, M2RAW_SECTOR_SIZE);
   else
-    memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
+    memcpy (((char *)data), buf + 24, CDIO_CD_FRAMESIZE);
   
   return 0;
 }
