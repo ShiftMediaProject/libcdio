@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.8 2003/11/17 12:06:58 rocky Exp $
+    $Id: sector.h,v 1.9 2004/05/09 16:55:52 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -139,6 +139,11 @@
   Convert an LBA into a string representation of the MSF.
   \warning cdio_lba_to_msf_str returns new allocated string */
 char *cdio_lba_to_msf_str (lba_t lba);
+
+/*! 
+  Convert an MSF into a string representation of the MSF.
+  \warning cdio_msf_to_msf_str returns new allocated string */
+char *cdio_msf_to_str (const msf_t *msf);
 
 /*! 
   Convert an LBA into the corresponding LSN.
