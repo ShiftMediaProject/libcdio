@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.68 2004/08/27 02:50:13 rocky Exp $
+    $Id: cdio.c,v 1.69 2004/08/27 04:17:08 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.68 2004/08/27 02:50:13 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.69 2004/08/27 04:17:08 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -340,22 +340,31 @@ cdio_get_default_device (const CdIo *obj)
 char **
 cdio_get_devices (driver_id_t driver_id)
 {
-  CdIo *cdio;
+  /* Probably could get away with &driver_id below. */
+  driver_id_t driver_id_temp = driver_id; 
+  return cdio_get_devices_ret (&driver_id_temp);
+}
 
-  switch (driver_id) {
+char **
+cdio_get_devices_ret (/*in/out*/ driver_id_t *p_driver_id)
+{
+  CdIo *p_cdio;
+
+  switch (*p_driver_id) {
     /* FIXME: spit out unknown to give image drivers as well.  */
   case DRIVER_UNKNOWN:
   case DRIVER_DEVICE:
-    cdio = scan_for_driver(DRIVER_UNKNOWN, CDIO_MAX_DRIVER, NULL, NULL);
+    p_cdio = scan_for_driver(DRIVER_UNKNOWN, CDIO_MAX_DRIVER, NULL, NULL);
+    *p_driver_id = cdio_get_driver_id(p_cdio);
     break;
   default:
-    return (*CdIo_all_drivers[driver_id].get_devices)();
+    return (*CdIo_all_drivers[*p_driver_id].get_devices)();
   }
   
-  if (cdio == NULL) return NULL;
-  if (cdio->op.get_devices) {
-    char **devices = cdio->op.get_devices ();
-    cdio_destroy(cdio);
+  if (p_cdio == NULL) return NULL;
+  if (p_cdio->op.get_devices) {
+    char **devices = p_cdio->op.get_devices ();
+    cdio_destroy(p_cdio);
     return devices;
   } else {
     return NULL;
@@ -379,14 +388,26 @@ cdio_get_devices (driver_id_t driver_id)
   the value is NULL. This also means nothing was found.
 */
 char **
-cdio_get_devices_with_cap (char* search_devices[], 
+cdio_get_devices_with_cap (/*out*/ char* search_devices[], 
                            cdio_fs_anal_t capabilities, bool any)
+{
+  driver_id_t p_driver_id;
+  return cdio_get_devices_with_cap_ret (search_devices, capabilities, any,
+                                        &p_driver_id);
+}
+
+char **
+cdio_get_devices_with_cap_ret (/*out*/ char* search_devices[], 
+                               cdio_fs_anal_t capabilities, bool any,
+                               /*out*/ driver_id_t *p_driver_id)
 {
   char **drives=search_devices;
   char **drives_ret=NULL;
   int num_drives=0;
 
-  if (NULL == drives) drives=cdio_get_devices(DRIVER_DEVICE);
+  *p_driver_id = DRIVER_DEVICE;
+
+  if (NULL == drives) drives=cdio_get_devices_ret(p_driver_id);
   if (NULL == drives) return NULL;
 
   if (capabilities == CDIO_FS_MATCH_ALL) {
@@ -404,7 +425,7 @@ cdio_get_devices_with_cap (char* search_devices[],
     need_fs_ext = capabilities & ~CDIO_FS_MASK;
       
     for( ;  *d != NULL; d++ ) {
-      CdIo *cdio = cdio_open(*d, DRIVER_UNKNOWN);
+      CdIo *cdio = cdio_open(*d, *p_driver_id);
       
       if (NULL != cdio) {
         track_t first_track = cdio_get_first_track_num(cdio);

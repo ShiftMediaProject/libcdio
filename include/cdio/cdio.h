@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.61 2004/08/27 02:50:13 rocky Exp $
+    $Id: cdio.h,v 1.62 2004/08/27 04:17:08 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -145,7 +145,7 @@ extern "C" {
 
     @param cd_obj the CD object to eliminated.
    */
-  void cdio_destroy (CdIo *cd_obj);
+  void cdio_destroy (CdIo *p_cdio);
 
   /*!
     Free device list returned by cdio_get_devices or
@@ -198,8 +198,18 @@ extern "C" {
     after dereferencing the the value is NULL. This also means nothing
     was found.
   */
-  char ** cdio_get_devices_with_cap (char* search_devices[],
+  char ** cdio_get_devices_with_cap (char* ppsz_search_devices[],
 				     cdio_fs_anal_t capabilities, bool any);
+
+  /*!
+    Like cdio_get_devices_with_cap but we return the driver we found
+    as well. This is because often one wants to search for kind of drive
+    and then *open* it afterwards. Giving the driver back facilitates this,
+    and speeds things up for libcdio as well.
+  */
+  char ** cdio_get_devices_with_cap_ret (/*out*/ char* ppsz_search_devices[],
+					 cdio_fs_anal_t capabilities, bool any,
+					 /*out*/ driver_id_t *p_driver_id);
 
   /*! Return an array of device names. If you want a specific
     devices for a driver, give that device. If you want hardware
@@ -212,7 +222,16 @@ extern "C" {
     there is no media in it and it is possible for this routine to return
     NULL even though there may be a hardware CD-ROM.
   */
-  char ** cdio_get_devices (driver_id_t driver);
+  char ** cdio_get_devices (driver_id_t driver_id);
+
+  /*! Like cdio_get_devices, but we may change the p_driver_id if we
+      were given DRIVER_DEVICE or DRIVER_UNKNOWN. This is because
+      often one wants to get a drive name and then *open* it
+      afterwards. Giving the driver back facilitates this, and speeds
+      things up for libcdio as well.
+   */
+    
+  char ** cdio_get_devices_ret (/*in/out*/ driver_id_t *p_driver_id);
 
   /*!
     Get the default CD device.
@@ -227,7 +246,7 @@ extern "C" {
     there is no media in it and it is possible for this routine to return
     NULL even though there may be a hardware CD-ROM.
   */
-  char * cdio_get_default_device (const CdIo *cd_obj);
+  char * cdio_get_default_device (const CdIo *p_cdio);
 
   /*!
     Get the what kind of device we've got.
@@ -239,7 +258,7 @@ extern "C" {
     there is no media in it and it is possible for this routine to return
     NULL even though there may be a hardware CD-ROM.
   */
-  void cdio_get_drive_cap (const CdIo *cd_obj,
+  void cdio_get_drive_cap (const CdIo *p_cdio,
 			   cdio_drive_read_cap_t  *p_read_cap,
 			   cdio_drive_write_cap_t *p_write_cap,
 			   cdio_drive_misc_cap_t  *p_misc_cap);
@@ -276,7 +295,7 @@ extern "C" {
     string when done with it.
 
   */
-  char * cdio_get_mcn (const CdIo *cd_obj);
+  char * cdio_get_mcn (const CdIo *p_cdio);
 
   /*!
     Get a string containing the name of the driver in use.
@@ -284,7 +303,7 @@ extern "C" {
     @return a string with driver name or NULL if CdIo is NULL (we
     haven't initialized a specific device.
   */
-  const char * cdio_get_driver_name (const CdIo *cd_obj);
+  const char * cdio_get_driver_name (const CdIo *p_cdio);
 
   /*!
     Get the driver id. 
@@ -293,7 +312,7 @@ extern "C" {
 
     @return the driver id..
   */
-  driver_id_t cdio_get_driver_id (const CdIo *cd_obj);
+  driver_id_t cdio_get_driver_id (const CdIo *p_cdio);
 
   /*!
     Get the number of the first track. 
@@ -301,14 +320,14 @@ extern "C" {
     @return the track number or CDIO_INVALID_TRACK 
     on error.
   */
-  track_t cdio_get_first_track_num(const CdIo *cd_obj);
+  track_t cdio_get_first_track_num(const CdIo *p_cdio);
   
   /*! 
     Get disc mode - the kind of CD (CD-DA, CD-ROM mode 1, CD-MIXED, etc.
     that we've got. The notion of "CD" is extended a little to include
     DVD's.
   */
-  discmode_t cdio_get_discmode (CdIo *cd_obj);
+  discmode_t cdio_get_discmode (CdIo *p_cdio);
 
   /*!
     Get the number of tracks on the CD.
@@ -316,12 +335,12 @@ extern "C" {
     @return the number of tracks, or CDIO_INVALID_TRACK if there is
     an error.
   */
-  track_t cdio_get_num_tracks (const CdIo *cd_obj);
+  track_t cdio_get_num_tracks (const CdIo *p_cdio);
   
   /*!  
     Get the format (audio, mode2, mode1) of track. 
   */
-  track_format_t cdio_get_track_format(const CdIo *cd_obj, track_t i_track);
+  track_format_t cdio_get_track_format(const CdIo *p_cdio, track_t i_track);
   
   /*!
     Return true if we have XA data (green, mode2 form1) or
@@ -331,7 +350,7 @@ extern "C" {
     
     FIXME: there's gotta be a better design for this and get_track_format?
   */
-  bool cdio_get_track_green(const CdIo *cd_obj, track_t i_track);
+  bool cdio_get_track_green(const CdIo *p_cdio, track_t i_track);
     
   /*!  
     Get the starting LBA for track number

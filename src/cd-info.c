@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.82 2004/08/27 02:50:13 rocky Exp $
+    $Id: cd-info.c,v 1.83 2004/08/27 04:17:08 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -997,13 +997,14 @@ main(int argc, const char *argv[])
   }
 
   if (opts.list_drives) {
-    char ** device_list = cdio_get_devices(DRIVER_DEVICE);
+    driver_id_t driver_id = DRIVER_DEVICE;
+    char ** device_list = cdio_get_devices_ret(&driver_id);
     char ** d = device_list;
 
     printf("list of devices found:\n");
     if (NULL != d) {
       for ( ; *d != NULL ; d++ ) {
-	CdIo *p_cdio = cdio_open(source_name, DRIVER_UNKNOWN); 
+	CdIo *p_cdio = cdio_open(source_name, driver_id); 
 	cdio_hwinfo_t hwinfo;
 	printf("Drive %s\n", *d);
 	if (scsi_mmc_get_hwinfo(p_cdio, &hwinfo)) {

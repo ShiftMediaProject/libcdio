@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.7 2004/08/27 02:50:13 rocky Exp $
+  $Id: cd-drive.c,v 1.8 2004/08/27 04:17:08 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -226,15 +226,16 @@ main(int argc, const char *argv[])
     /* Print out a list of CD-drives */
 
     char **ppsz_cdrives=NULL, **ppsz_cd;
+    driver_id_t driver_id = DRIVER_DEVICE;
     
-    ppsz_cdrives = cdio_get_devices(DRIVER_DEVICE);
+    ppsz_cdrives = cdio_get_devices_ret(&driver_id);
     if (NULL != ppsz_cdrives) 
       for( ppsz_cd = ppsz_cdrives; *ppsz_cd != NULL; ppsz_cd++ ) {
 	cdio_drive_read_cap_t  i_read_cap;
 	cdio_drive_write_cap_t i_write_cap;
 	cdio_drive_misc_cap_t  i_misc_cap;
 	cdio_hwinfo_t          hwinfo;
-	CdIo *p_cdio = cdio_open(*ppsz_cd, DRIVER_UNKNOWN); 
+	CdIo *p_cdio = cdio_open(*ppsz_cd, driver_id); 
 
 	cdio_get_drive_cap_dev(*ppsz_cd, &i_read_cap, &i_write_cap, 
 			       &i_misc_cap);
