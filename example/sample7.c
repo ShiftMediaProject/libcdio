@@ -1,5 +1,5 @@
 /*
-  $Id: sample7.c,v 1.6 2004/03/21 00:57:03 rocky Exp $
+  $Id: sample7.c,v 1.7 2004/04/03 11:50:58 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -119,7 +119,6 @@ main(int argc, const char *argv[])
 	{
 	  perror ("fwrite()");
 	  my_exit(5);
-	  return 5;
 	}
     }
   
@@ -132,5 +131,4 @@ main(int argc, const char *argv[])
     perror ("ftruncate()");
 
   my_exit(0);
-  return 0;
 }
