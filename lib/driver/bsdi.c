@@ -1,5 +1,5 @@
 /*
-    $Id: bsdi.c,v 1.10 2005/03/22 08:59:54 rocky Exp $
+    $Id: bsdi.c,v 1.11 2005/03/22 09:15:57 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: bsdi.c,v 1.10 2005/03/22 08:59:54 rocky Exp $";
+static const char _rcsid[] = "$Id: bsdi.c,v 1.11 2005/03/22 09:15:57 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -884,9 +884,11 @@ close_tray_bsdi (char *psz_device)
   int fd = open(psz_device, O_RDONLY | O_NONBLOCK, 0);
 
   if (fd < 0) return DRIVER_OP_ERROR;
-  cdrom_tray_move(fd, 0);
-  close(fd);
-  return DRIVER_OP_SUCCESS;
+  else {
+    int i_rc = cdrom_tray_move(fd, 0);
+    close(fd);
+    return (i_rc > -1) ? DRIVER_OP_SUCCESS : DRIVER_OP_ERROR;
+  }
 #else 
   return DRIVER_OP_NO_DRIVER;
 #endif /*HAVE_BSDI_CDROM*/
