@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.46 2004/08/29 15:14:57 rocky Exp $
+#   $Id: Makefile.am,v 1.47 2004/08/29 15:16:38 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -40,13 +40,13 @@
 #  6. If any interfaces have been removed since the last public release,
 #     then set AGE to 0.
 
-libcdio_la_CURRENT := 1
+libcdio_la_CURRENT := 2
 libcdio_la_REVISION := 0
-libcdio_la_AGE := 1
+libcdio_la_AGE := 2
 
-libiso9660_la_CURRENT := 3
+libiso9660_la_CURRENT := 2
 libiso9660_la_REVISION := 0
-libiso9660_la_AGE := 3
+libiso9660_la_AGE := 2
 
 EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile 
 
