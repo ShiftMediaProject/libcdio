@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.50 2004/03/20 22:46:57 rocky Exp $
+    $Id: cd-info.c,v 1.51 2004/03/24 11:24:44 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -539,7 +539,7 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs,
 	  printf ("%9u", (unsigned int) statbuf->size);
 	}
       }
-      strftime(date_str, DATESTR_SIZE, "%b %e %Y %H:%M ", &statbuf->tm);
+      strftime(date_str, DATESTR_SIZE, "%b %d %Y %H:%M ", &statbuf->tm);
       printf (" %s %s\n", date_str, translated_name);
     }
 
