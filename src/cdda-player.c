@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.18 2005/03/17 08:54:11 rocky Exp $
+    $Id: cdda-player.c,v 1.19 2005/03/18 15:42:25 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -1218,7 +1218,7 @@ main(int argc, char *argv[])
   int  c, nostop=0;
   char *h;
   int  i_rc = 0;
-  int  i_volume_level;
+  int  i_volume_level = 0;
   cd_operation_t todo; /* operation to do in non-interactive mode */
   
   psz_program = strrchr(argv[0],'/');
