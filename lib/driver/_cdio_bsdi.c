@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.7 2005/01/23 05:31:03 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.8 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.7 2005/01/23 05:31:03 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.8 2005/01/23 19:16:58 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -93,7 +93,7 @@ typedef struct  cgc
 /* 
    This code adapted from Steven M. Schultz's libdvd
 */
-static int 
+static driver_return_code_t
 run_scsi_cmd_bsdi(void *p_user_data, unsigned int i_timeout_ms,
 		  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 		  scsi_mmc_direction_t e_direction, 
@@ -220,7 +220,7 @@ _cdio_init (_img_private_t *p_env)
 
 /* Read audio sectors
 */
-static int
+static driver_return_code_t
 _read_audio_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
 			  unsigned int nblocks)
 {
@@ -278,7 +278,7 @@ _read_audio_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
    Reads a single mode1 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode1_sector_bsdi (void *user_data, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
@@ -297,7 +297,7 @@ _read_mode1_sector_bsdi (void *user_data, void *data, lsn_t lsn,
    from lsn.
    Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode1_sectors_bsdi (void *p_user_data, void *p_data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
@@ -319,7 +319,7 @@ _read_mode1_sectors_bsdi (void *p_user_data, void *p_data, lsn_t lsn,
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sector_bsdi (void *p_user_data, void *p_data, lsn_t lsn, 
 			 bool b_form2)
 {
@@ -379,7 +379,7 @@ _read_mode2_sector_bsdi (void *p_user_data, void *p_data, lsn_t lsn,
    from lsn.
    Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sectors_bsdi (void *user_data, void *data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.17 2005/01/23 05:31:03 rocky Exp $
+    $Id: _cdio_linux.c,v 1.18 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.17 2005/01/23 05:31:03 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.18 2005/01/23 19:16:58 rocky Exp $";
 
 #include <string.h>
 
@@ -99,13 +99,13 @@ typedef struct {
 /**** prototypes for static functions ****/
 static bool is_cdrom_linux(const char *drive, char *mnttype);
 static bool read_toc_linux (void *p_user_data);
-static int  run_scsi_cmd_linux( void *p_user_data, 
-				unsigned int i_timeout,
-				unsigned int i_cdb, 
-				const scsi_mmc_cdb_t *p_cdb, 
-				scsi_mmc_direction_t e_direction, 
-				unsigned int i_buf, 
-				/*in/out*/ void *p_buf );
+static driver_return_code_t run_scsi_cmd_linux( void *p_user_data, 
+                                                unsigned int i_timeout,
+                                                unsigned int i_cdb, 
+                                                const scsi_mmc_cdb_t *p_cdb, 
+                                                scsi_mmc_direction_t e_direction, 
+                                                unsigned int i_buf, 
+                                                /*in/out*/ void *p_buf );
 static access_mode_t 
 
 str_to_access_mode_linux(const char *psz_access_mode) 
@@ -401,13 +401,12 @@ get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
 
 /*!
   Eject media in CD drive. 
-  Return 0 if success and 1 for failure, and 2 if no routine.
  */
 static driver_return_code_t
 eject_media_linux (void *p_user_data) {
 
   _img_private_t *p_env = p_user_data;
-  int ret=DRIVER_OP_SUCCESS;
+  driver_return_code_t ret=DRIVER_OP_SUCCESS;
   int status;
   int fd;
 
@@ -547,7 +546,7 @@ is_cdrom_linux(const char *drive, char *mnttype)
 /* MMC driver to read audio sectors. 
    Can read only up to 25 blocks.
 */
-static int
+static driver_return_code_t
 _read_audio_sectors_linux (void *p_user_data, void *buf, lsn_t lsn, 
 			   unsigned int nblocks)
 {
@@ -559,7 +558,7 @@ _read_audio_sectors_linux (void *p_user_data, void *buf, lsn_t lsn,
 /* Packet driver to read mode2 sectors. 
    Can read only up to 25 blocks.
 */
-static int
+static driver_return_code_t
 _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba, 
 			 unsigned int nblocks, bool b_read_10)
 {
@@ -590,7 +589,7 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
     /* Restore blocksize. */
     retval = scsi_mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
     return retval;
-  } else
+  } else {
 
     cdb.field[1] = 0; /* sector size mode2 */
     cdb.field[9] = 0x58; /* 2336 mode2 */
@@ -602,11 +601,10 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
 			       scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
 			       SCSI_MMC_DATA_READ,
 			       M2RAW_SECTOR_SIZE * nblocks, p_buf);
-  
-  return 0;
+  }
 }
 
-static int
+static driver_return_code_t
 _read_mode2_sectors (_img_private_t *p_env, void *p_buf, lba_t lba, 
 		     unsigned int nblocks, bool b_read_10)
 {
@@ -635,7 +633,7 @@ _read_mode2_sectors (_img_private_t *p_env, void *p_buf, lba_t lba,
    Reads a single mode1 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn, 
 			 bool b_form2)
 {
@@ -706,7 +704,7 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
    from lsn.
    Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode1_sectors_linux (void *p_user_data, void *p_data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
@@ -721,14 +719,14 @@ _read_mode1_sectors_linux (void *p_user_data, void *p_data, lsn_t lsn,
 					    lsn + i, b_form2)) )
       return retval;
   }
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn, 
 			  bool b_form2)
 {
@@ -788,7 +786,7 @@ _read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
   else
     memcpy (((char *)p_data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
   
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
@@ -796,7 +794,7 @@ _read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
    from lsn.
    Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sectors_linux (void *p_user_data, void *data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
@@ -812,7 +810,7 @@ _read_mode2_sectors_linux (void *p_user_data, void *data, lsn_t lsn,
 					    lsn + i, b_form2)) )
       return retval;
   }
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*! 
@@ -898,7 +896,7 @@ read_toc_linux (void *p_user_data)
 
   We return true if command completed successfully and false if not.
  */
-static int
+static driver_return_code_t
 run_scsi_cmd_linux( void *p_user_data, 
 		    unsigned int i_timeout_ms,
 		    unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_aix.c,v 1.5 2005/01/21 20:54:55 rocky Exp $
+    $Id: _cdio_aix.c,v 1.6 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -37,7 +37,7 @@
 
 #ifdef HAVE_AIX_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.5 2005/01/21 20:54:55 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.6 2005/01/23 19:16:58 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -193,10 +193,8 @@ init_aix (_img_private_t *p_env)
   e_direction	direction the transfer is to go.
   i_buf	        Size of buffer
   p_buf	        Buffer for data, both sending and receiving
-
-  Return 0 if no error.
  */
-static int
+static driver_return_code_t
 run_scsi_cmd_aix( void *p_user_data, unsigned int i_timeout_ms,
                   unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
                   scsi_mmc_direction_t e_direction, 
@@ -241,7 +239,7 @@ run_scsi_cmd_aix( void *p_user_data, unsigned int i_timeout_ms,
    can be read in one go, e.g. 25 blocks.
 */
 
-static int
+static driver_return_code_t
 _read_audio_sectors_aix (void *p_user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
@@ -291,7 +289,7 @@ _read_audio_sectors_aix (void *p_user_data, void *data, lsn_t lsn,
    Reads a single mode1 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode1_sector_aix (void *env, void *data, lsn_t lsn, 
 			    bool b_form2)
 {
@@ -308,7 +306,7 @@ _read_mode1_sector_aix (void *env, void *data, lsn_t lsn,
    from lsn.
    Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode1_sectors_aix (void *p_user_data, void *p_data, lsn_t lsn, 
 			     bool b_form2, unsigned int nblocks)
 {
@@ -330,7 +328,7 @@ _read_mode1_sectors_aix (void *p_user_data, void *p_data, lsn_t lsn,
    Reads a single mode2 sector from cd device into data starting from lsn.
    Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sector_aix (void *p_user_data, void *p_data, lsn_t lsn, 
 			    bool b_form2)
 {
@@ -392,7 +390,7 @@ _read_mode2_sector_aix (void *p_user_data, void *p_data, lsn_t lsn,
    from lsn.
    Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sectors_aix (void *p_user_data, void *data, lsn_t lsn, 
 			     bool b_form2, unsigned int nblocks)
 {
@@ -445,28 +443,24 @@ _cdio_stat_size (void *p_user_data)
 
   0 is returned if no error was found, and nonzero if there as an error.
 */
-static int
+static driver_return_code_t
 _set_arg_aix (void *p_user_data, const char key[], const char value[])
 {
-  _img_private_t *env = p_user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (!strcmp (key, "source"))
     {
-      if (!value)
-	return -2;
-
-      free (env->gen.source_name);
-      
-      env->gen.source_name = strdup (value);
+      if (!value) return DRIVER_OP_ERROR;
+      free (p_env->gen.source_name);
+      p_env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
-      env->access_mode = str_to_access_mode_aix(key);
+      p_env->access_mode = str_to_access_mode_aix(key);
     }
-  else 
-    return -1;
+  else return DRIVER_OP_ERROR;
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*
@@ -650,24 +644,23 @@ read_toc_aix (void *p_user_data)
   Eject media in CD drive. If successful, as a side effect we 
   also free obj.
  */
-static int 
+static driver_return_code_t
 eject_media_aix (void *p_user_data) {
 
-  _img_private_t *env = p_user_data;
-  int ret;
+  _img_private_t *p_env = p_user_data;
+  driver_return_code_t ret=DRIVER_OP_SUCCESS;
+  int i_status;
 
-  close(env->gen.fd);
-  env->gen.fd = -1;
-  if (env->gen.fd > -1) {
-    if ((ret = ioctl(env->gen.fd, DKEJECT)) != 0) {
-      cdio_generic_free((void *) env);
-      cdio_warn ("DKEJECT failed: %s", strerror(errno));
-      return 1;
-    } else {
-      return 0;
-    }
+  if (p_env->gen.fd <= -1) return DRIVER_OP_UNINIT;
+  i_status = ioctl(p_env->gen.fd, DKEJECT);
+  if ( i_status != 0) {
+    cdio_generic_free((void *) p_env);
+    cdio_warn ("DKEJECT failed: %s", strerror(errno));
+    ret = DRIVER_OP_ERROR;
   }
-  return 2;
+  close(env->gen.fd);
+  p_env->gen.fd = -1;
+  return ret;
 }
 
 #if 0
@@ -693,12 +686,12 @@ _cdio_malloc_and_zero(size_t size) {
 static const char *
 get_arg_aix (void *p_user_data, const char key[])
 {
-  _img_private_t *env = p_user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (!strcmp (key, "source")) {
-    return env->gen.source_name;
+    return p_env->gen.source_name;
   } else if (!strcmp (key, "access-mode")) {
-    switch (env->access_mode) {
+    switch (p_env->access_mode) {
     case _AM_CTRL_SCSI:
       return "SCSI";
     case _AM_NONE:

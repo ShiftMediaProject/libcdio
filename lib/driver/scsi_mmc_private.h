@@ -1,8 +1,8 @@
 /*  private MMC helper routines.
 
-    $Id: scsi_mmc_private.h,v 1.3 2005/01/21 20:54:55 rocky Exp $
+    $Id: scsi_mmc_private.h,v 1.4 2005/01/23 19:16:58 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -90,7 +90,7 @@ scsi_mmc_get_drive_cap_private ( void *p_env,
 				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
 				/*out*/ cdio_drive_write_cap_t *p_write_cap,
 				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
-int
+driver_return_code_t
 scsi_mmc_set_blocksize_private ( void *p_env, 
 				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
 				 unsigned int i_bsize);

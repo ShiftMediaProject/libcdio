@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.7 2005/01/17 17:20:09 rocky Exp $
+    $Id: nrg.c,v 1.8 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.7 2005/01/17 17:20:09 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.8 2005/01/23 19:16:58 rocky Exp $";
 
 
 /* reader */
@@ -845,9 +845,9 @@ _stat_size_nrg (void *p_user_data)
 
 /*!
    Reads a single audio sector from CD device into data starting
-   from LSN. Returns 0 if no error. 
+   from LSN.
  */
-static int
+static driver_return_code_t
 _read_audio_sectors_nrg (void *p_user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
@@ -887,7 +887,7 @@ _read_audio_sectors_nrg (void *p_user_data, void *data, lsn_t lsn,
   return 0;
 }
 
-static int
+static driver_return_code_t
 _read_mode1_sector_nrg (void *p_user_data, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
@@ -939,9 +939,8 @@ _read_mode1_sector_nrg (void *p_user_data, void *data, lsn_t lsn,
 /*!
    Reads nblocks of mode2 sectors from cd device into data starting
    from lsn.
-   Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode1_sectors_nrg (void *p_user_data, void *data, lsn_t lsn, 
 			 bool b_form2, unsigned nblocks)
 {
@@ -959,7 +958,7 @@ _read_mode1_sectors_nrg (void *p_user_data, void *data, lsn_t lsn,
   return 0;
 }
 
-static int
+static driver_return_code_t
 _read_mode2_sector_nrg (void *p_user_data, void *data, lsn_t lsn, 
 			bool b_form2)
 {
@@ -1014,7 +1013,7 @@ _read_mode2_sector_nrg (void *p_user_data, void *data, lsn_t lsn,
    from lsn.
    Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sectors_nrg (void *p_user_data, void *data, lsn_t lsn, 
 			 bool b_form2, unsigned nblocks)
 {
@@ -1053,11 +1052,11 @@ _free_nrg (void *p_user_data)
   Eject media -- there's nothing to do here except free resources.
   We always return 2.
  */
-static int
+static driver_return_code_t
 _eject_media_nrg(void *obj)
 {
   _free_nrg (obj);
-  return 2;
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!

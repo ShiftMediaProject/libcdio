@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.14 2005/01/23 04:53:31 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.15 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.14 2005/01/23 04:53:31 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.15 2005/01/23 19:16:58 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -143,10 +143,8 @@ init_solaris (_img_private_t *p_env)
   e_direction	direction the transfer is to go.
   i_buf	        Size of buffer
   p_buf	        Buffer for data, both sending and receiving
-
-  Return 0 if no error.
  */
-static int
+static driver_return_code_t
 run_scsi_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
 		      unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 		      scsi_mmc_direction_t e_direction, 
@@ -218,18 +216,18 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
   
   if (ioctl (p_env->gen.fd, CDROMCDDA, &cdda) == -1) {
     perror ("ioctl(..,CDROMCDDA,..)");
-    return 1;
+    return DRIVER_OP_ERROR;
     /* exit (EXIT_FAILURE); */
   }
   
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
    Reads a single mode1 sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
+   from lsn. 
  */
-static int
+static driver_return_code_t
 _read_mode1_sector_solaris (void *p_env, void *data, lsn_t lsn, 
 			    bool b_form2)
 {
@@ -244,9 +242,8 @@ _read_mode1_sector_solaris (void *p_env, void *data, lsn_t lsn,
 /*!
    Reads i_blocks of mode2 sectors from cd device into data starting
    from lsn.
-   Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode1_sectors_solaris (void *p_user_data, void *p_data, lsn_t lsn, 
 			     bool b_form2, unsigned int i_blocks)
 {
@@ -261,14 +258,13 @@ _read_mode1_sectors_solaris (void *p_user_data, void *p_data, lsn_t lsn,
 					       lsn + i, b_form2)) )
       return retval;
   }
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
    Reads a single mode2 sector from cd device into data starting from lsn.
-   Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t lsn, 
 			    bool b_form2)
 {
@@ -320,15 +316,14 @@ _read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t lsn,
   else
     memcpy (((char *)p_data), buf + offset, CDIO_CD_FRAMESIZE);
   
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
    Reads i_blocks of mode2 sectors from cd device into data starting
    from lsn.
-   Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sectors_solaris (void *p_user_data, void *data, lsn_t lsn, 
 			     bool b_form2, unsigned int i_blocks)
 {

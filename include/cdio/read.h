@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: read.h,v 1.2 2005/01/20 04:51:14 rocky Exp $
+    $Id: read.h,v 1.3 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -62,10 +62,9 @@ extern "C" {
     @param p_cdio object to read from
     @param p_buf place to read data into
     @param i_lsn sector to read
-
-    @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_audio_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn);
+  driver_return_code_t cdio_read_audio_sector (const CdIo_t *p_cdio, 
+					       void *p_buf, lsn_t i_lsn);
 
   /*!
     Reads audio sectors
@@ -74,11 +73,10 @@ extern "C" {
     @param p_buf place to read data into
     @param i_lsn sector to read
     @param i_sectors number of sectors to read
-
-    @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
-			       unsigned int i_sectors);
+  driver_return_code_t cdio_read_audio_sectors (const CdIo_t *p_cdio, 
+						void *p_buf, lsn_t i_lsn,
+						unsigned int i_sectors);
 
   /*!
     Reads a mode 1 sector
@@ -88,11 +86,10 @@ extern "C" {
     @param i_lsn sector to read
     @param b_form2 true for reading mode 1 form 2 sectors or false for 
     mode 1 form 1 sectors.
-
-    @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_mode1_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-			      bool b_form2);
+  driver_return_code_t cdio_read_mode1_sector (const CdIo_t *p_cdio, 
+					       void *p_buf, lsn_t i_lsn, 
+					       bool b_form2);
   
   /*!
     Reads mode 1 sectors
@@ -103,11 +100,11 @@ extern "C" {
     @param b_form2 true for reading mode 1 form 2 sectors or false for 
     mode 1 form 1 sectors.
     @param i_sectors number of sectors to read
-
-    @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_mode1_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-			       bool b_form2, unsigned int i_sectors);
+  driver_return_code_t cdio_read_mode1_sectors (const CdIo_t *p_cdio, 
+						void *p_buf, lsn_t i_lsn, 
+						bool b_form2, 
+						unsigned int i_sectors);
   
   /*!
     Reads a mode 2 sector
@@ -120,8 +117,9 @@ extern "C" {
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_mode2_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-			      bool b_form2);
+  driver_return_code_t cdio_read_mode2_sector (const CdIo_t *p_cdio, 
+					       void *p_buf, lsn_t i_lsn, 
+					       bool b_form2);
   
   /*!
     Reads mode 2 sectors
@@ -135,8 +133,10 @@ extern "C" {
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_mode2_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-			       bool b_form2, unsigned int i_sectors);
+  driver_return_code_t cdio_read_mode2_sectors (const CdIo_t *p_cdio, 
+						void *p_buf, lsn_t i_lsn, 
+						bool b_form2, 
+						unsigned int i_sectors);
   
 #ifdef __cplusplus
 }

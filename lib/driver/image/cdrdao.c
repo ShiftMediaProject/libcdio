@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.9 2005/01/22 23:57:10 rocky Exp $
+    $Id: cdrdao.c,v 1.10 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.9 2005/01/22 23:57:10 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.10 2005/01/23 19:16:58 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -960,7 +960,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
    Reads a single audio sector from CD device into data starting
    from lsn. Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_audio_sectors_cdrdao (void *user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
@@ -995,7 +995,7 @@ _read_audio_sectors_cdrdao (void *user_data, void *data, lsn_t lsn,
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode1_sector_cdrdao (void *user_data, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
@@ -1015,7 +1015,7 @@ _read_mode1_sector_cdrdao (void *user_data, void *data, lsn_t lsn,
   memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
 	  b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
@@ -1038,14 +1038,14 @@ _read_mode1_sectors_cdrdao (void *user_data, void *data, lsn_t lsn,
 					    lsn + i, b_form2)) )
       return retval;
   }
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
    Reads a single mode1 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sector_cdrdao (void *user_data, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
@@ -1080,7 +1080,7 @@ _read_mode2_sector_cdrdao (void *user_data, void *data, lsn_t lsn,
   else
     memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, CDIO_CD_FRAMESIZE);
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
@@ -1088,7 +1088,7 @@ _read_mode2_sector_cdrdao (void *user_data, void *data, lsn_t lsn,
    from lsn.
    Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sectors_cdrdao (void *user_data, void *data, lsn_t lsn, 
 			    bool b_form2, unsigned int nblocks)
 {

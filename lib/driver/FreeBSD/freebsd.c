@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.10 2005/01/23 05:31:03 rocky Exp $
+    $Id: freebsd.c,v 1.11 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.10 2005/01/23 05:31:03 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.11 2005/01/23 19:16:58 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -82,7 +82,7 @@ cdio_is_cdrom(char *drive, char *mnttype)
    Reads i_blocks of audio sectors from cd device into data starting from lsn.
    Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_audio_sectors_freebsd (void *p_user_data, void *p_buf, lsn_t i_lsn,
 			     unsigned int i_blocks)
 {
@@ -99,7 +99,7 @@ _read_audio_sectors_freebsd (void *p_user_data, void *p_buf, lsn_t i_lsn,
    Reads a single mode2 sector from cd device into data starting
    from i_lsn. Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sector_freebsd (void *p_user_data, void *data, lsn_t i_lsn,
 			    bool b_form2)
 {
@@ -114,9 +114,8 @@ _read_mode2_sector_freebsd (void *p_user_data, void *data, lsn_t i_lsn,
 /*!
    Reads nblocks of mode2 sectors from cd device into data starting
    from lsn.
-   Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sectors_freebsd (void *user_data, void *data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
@@ -138,7 +137,7 @@ _read_mode2_sectors_freebsd (void *user_data, void *data, lsn_t lsn,
       if (retval) return retval;
     }
   }
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
@@ -337,10 +336,8 @@ get_drive_cap_freebsd (const void *p_user_data,
   e_direction	direction the transfer is to go.
   i_buf	        Size of buffer
   p_buf	        Buffer for data, both sending and receiving
-
-  Return 0 if no error.
  */
-static int
+static driver_return_code_t
 run_scsi_cmd_freebsd( void *p_user_data, unsigned int i_timeout_ms,
 		      unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 		      scsi_mmc_direction_t e_direction, 

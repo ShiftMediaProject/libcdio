@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.7 2005/01/20 04:51:14 rocky Exp $
+    $Id: device.h,v 1.8 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -102,10 +102,16 @@ extern "C" {
 #define CDIO_MAX_DRIVER        DRIVER_NRG
 #define CDIO_MAX_DEVICE_DRIVER DRIVER_WIN32
 
-  /** There will generally be only one hardware for a given
-     build/platform from the list above. You can use the variable
-     below to determine which you've got. If the build doesn't make an
-     hardware driver, then the value will be DRIVER_UNKNOWN.
+  /** The following are status codes for completion of a given cdio
+     operation. By design 0 is successful completion and -1 is error
+     completion. This is compatable with ioctl so those routines that
+     call ioctl can just pass the value the get back (cast as this
+     enum). Also, by using negative numbers for errors, the
+     enumeration values below can be used in places where a positive
+     value is expected when things complete successfully. For example,
+     get_blocksize returns the blocksize, but on error uses the error
+     codes below. So note that this enumeration is often cast to an
+     integer.  C seems to tolerate this.
   */
   typedef enum  {
     DRIVER_OP_UNINIT = -3,     /**< returned when a particular driver

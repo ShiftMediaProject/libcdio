@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.5 2005/01/17 17:20:09 rocky Exp $
+    $Id: bincue.c,v 1.6 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.5 2005/01/17 17:20:09 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.6 2005/01/23 19:16:58 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -151,7 +151,7 @@ _lseek_bincue (void *user_data, off_t offset, int whence)
 
   if (i==env->gen.i_tracks) {
     cdio_warn ("seeking outside range of disk image");
-    return -1;
+    return DRIVER_OP_ERROR;
   } else {
     real_offset += env->tocent[i].datastart;
     return cdio_stream_seek(env->gen.data_source, real_offset, whence);
@@ -774,7 +774,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
    Reads a single audio sector from CD device into data starting
    from lsn. Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_audio_sectors_bincue (void *user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
@@ -809,7 +809,7 @@ _read_audio_sectors_bincue (void *user_data, void *data, lsn_t lsn,
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode1_sector_bincue (void *user_data, void *data, lsn_t lsn, 
 			   bool b_form2)
 {
@@ -828,7 +828,7 @@ _read_mode1_sector_bincue (void *user_data, void *data, lsn_t lsn,
   memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
 	  b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
@@ -836,7 +836,7 @@ _read_mode1_sector_bincue (void *user_data, void *data, lsn_t lsn,
    from lsn.
    Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode1_sectors_bincue (void *user_data, void *data, lsn_t lsn, 
 			    bool b_form2, unsigned int nblocks)
 {
@@ -851,14 +851,14 @@ _read_mode1_sectors_bincue (void *user_data, void *data, lsn_t lsn,
 					    lsn + i, b_form2)) )
       return retval;
   }
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
    Reads a single mode1 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sector_bincue (void *user_data, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
@@ -888,7 +888,7 @@ _read_mode2_sector_bincue (void *user_data, void *data, lsn_t lsn,
   else
     memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, CDIO_CD_FRAMESIZE);
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
@@ -896,7 +896,7 @@ _read_mode2_sector_bincue (void *user_data, void *data, lsn_t lsn,
    from lsn.
    Returns 0 if no error. 
  */
-static int
+static driver_return_code_t
 _read_mode2_sectors_bincue (void *user_data, void *data, lsn_t lsn, 
 			    bool b_form2, unsigned int nblocks)
 {

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.10 2005/01/21 02:59:32 rocky Exp $
+    $Id: _cdio_generic.c,v 1.11 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.10 2005/01/21 02:59:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.11 2005/01/23 19:16:58 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -130,16 +130,14 @@ cdio_generic_init (void *user_data)
 
 /*!
    Reads a single form1 sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
+   from lsn.
  */
-int
+driver_return_code_t
 cdio_generic_read_form1_sector (void * user_data, void *data, lsn_t lsn)
 {
   if (0 > cdio_generic_lseek(user_data, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
-    return -1;
-  if (0 > cdio_generic_read(user_data, data, CDIO_CD_FRAMESIZE))
-    return -1;
-  return 0;
+    return DRIVER_OP_ERROR;
+  return cdio_generic_read(user_data, data, CDIO_CD_FRAMESIZE);
 }
 
 /*!
@@ -399,7 +397,7 @@ get_first_track_num_generic(void *p_user_data)
 /*!
   Return the number of tracks in the current medium.
 */
- track_t
+track_t
 get_num_tracks_generic(void *p_user_data)
 {
   generic_img_private_t *p_env = p_user_data;

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.76 2005/01/19 09:23:24 rocky Exp $
+    $Id: cdio.h,v 1.77 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -61,7 +61,14 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-/* Sector (frame, or block)-related functions. */
+/* Drive(r)/Device-related functions. Perhaps we should break out 
+   Driver from device?
+*/
+#include <cdio/device.h>
+
+/* Sector (frame, or block)-related functions. Uses driver_return_code_t
+   from <cdio/device.h> so it should come after that. 
+*/
 #include <cdio/read.h>
 
 /* CD-Text-related functions. */
@@ -72,10 +79,5 @@ extern "C" {
 
 /* Disc-related functions. */
 #include <cdio/disc.h>
-
-/* Drive(r)/Device-related functions. Perhaps we should break out 
-   Driver from device?
-*/
-#include <cdio/device.h>
 
 #endif /* __CDIO_H__ */

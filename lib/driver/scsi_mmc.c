@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.9 2005/01/21 20:54:55 rocky Exp $
+    $Id: scsi_mmc.c,v 1.10 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -169,10 +169,8 @@ scsi_mmc_get_cmd_len(uint8_t scsi_cmd)
   e_direction	direction the transfer is to go
   cdb	        CDB bytes. All values that are needed should be set on 
                 input. We'll figure out what the right CDB length should be.
-
-  We return 0 if command completed successfully and DRIVER_OP_ERROR if not.
  */
-int
+driver_return_code_t
 scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms, 
 		  const scsi_mmc_cdb_t *p_cdb,
 		  scsi_mmc_direction_t e_direction, unsigned int i_buf, 
@@ -225,7 +223,7 @@ scsi_mmc_get_blocksize_private ( void *p_env,
   i_status = run_scsi_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
 			       scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
 			       SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
-  if (0 != i_status) return -2;
+  if (DRIVER_OP_SUCCESS != i_status) return i_status;
 
   return CDIO_MMC_GET_LEN16(p);
 }
@@ -233,7 +231,7 @@ scsi_mmc_get_blocksize_private ( void *p_env,
 int 
 scsi_mmc_get_blocksize ( const CdIo_t *p_cdio)
 {
-  if ( ! p_cdio )  return DRIVER_OP_UNINIT;
+  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
   return 
     scsi_mmc_get_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd);
 
@@ -283,7 +281,7 @@ scsi_mmc_eject_media( const CdIo_t *p_cdio )
 /*! Read sectors using SCSI-MMC GPCMD_READ_CD.
    Can read only up to 25 blocks.
 */
-int
+driver_return_code_t
 scsi_mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba, 
 			int sector_type, unsigned int i_blocks )
 {
@@ -291,8 +289,8 @@ scsi_mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba,
 
   scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd;
 
-  if ( ! p_cdio || ! p_cdio->op.run_scsi_mmc_cmd )
-    return -2;
+  if (!p_cdio) return DRIVER_OP_UNINIT;
+  if (!p_cdio->op.run_scsi_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
 
   run_scsi_mmc_cmd = p_cdio->op.run_scsi_mmc_cmd;
 
@@ -480,8 +478,8 @@ scsi_mmc_get_dvd_struct_physical_private ( void *p_env, const
   
   cdio_dvd_layer_t *layer;
   
-  if ( ! p_env || ! run_scsi_mmc_cmd )
-    return -2;
+  if (!p_env) return DRIVER_OP_UNINIT;
+  if (!run_scsi_mmc_cmd) return DRIVER_OP_UNSUPPORTED;
 
   if (layer_num >= CDIO_DVD_MAX_LAYERS)
     return -EINVAL;
@@ -520,7 +518,7 @@ scsi_mmc_get_dvd_struct_physical_private ( void *p_env, const
   layer->end_sector_l0 = base[13] << 16 | base[14] << 8 | base[15];
   layer->bca = base[16] >> 7;
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 
@@ -691,7 +689,7 @@ scsi_mmc_init_cdtext_private ( void *p_user_data,
 }
 
 /* Set read blocksize (via MMC) */
-int
+driver_return_code_t
 get_blocksize_mmc (void *p_user_data)
 {
   generic_img_private_t *p_env = p_user_data;

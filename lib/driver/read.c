@@ -1,5 +1,5 @@
 /*
-    $Id: read.c,v 1.2 2005/01/21 02:57:59 rocky Exp $
+    $Id: read.c,v 1.3 2005/01/23 19:16:58 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -37,8 +37,9 @@
 #endif
 
 #define check_read_parms(p_cdio, p_buf, i_lsn)                          \
-  if (!p_cdio || !p_buf || CDIO_INVALID_LSN == i_lsn )                  \
-    return -1; 
+  if (!p_cdio) return DRIVER_OP_UNINIT;                                 \
+  if (!p_buf || CDIO_INVALID_LSN == i_lsn)                              \
+    return DRIVER_OP_ERROR; 
 
 #define check_lsn(i_lsn)                                                \
   check_read_parms(p_cdio, p_buf, i_lsn);                               \
@@ -48,7 +49,7 @@
     if ( i_lsn > end_lsn ) {                                            \
       cdio_info("Trying to access past end of disk lsn: %ld, end lsn: %ld", \
                 (long int) i_lsn, (long int) end_lsn);                  \
-      return -1;                                                        \
+      return DRIVER_OP_ERROR;                                           \
     }                                                                   \
   }
 
@@ -60,7 +61,7 @@
     if ( i_lsn > end_lsn ) {                                            \
       cdio_info("Trying to access past end of disk lsn: %ld, end lsn: %ld", \
                 (long int) i_lsn, (long int) end_lsn);                  \
-      return -1;                                                        \
+      return DRIVER_OP_ERROR;                                           \
     }                                                                   \
     if ( i_lsn + i_blocks -1 > end_lsn ) {                              \
       cdio_info("Request truncated to end disk; lsn: %ld, end lsn: %ld", \
@@ -79,11 +80,11 @@
 off_t
 cdio_lseek (const CdIo_t *p_cdio, off_t offset, int whence)
 {
-  if (p_cdio == NULL) return -1;
+  if (!p_cdio) return DRIVER_OP_UNINIT;
   
   if (p_cdio->op.lseek)
     return p_cdio->op.lseek (p_cdio->env, offset, whence);
-  return -1;
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!
@@ -94,38 +95,38 @@ cdio_lseek (const CdIo_t *p_cdio, off_t offset, int whence)
 ssize_t
 cdio_read (const CdIo_t *p_cdio, void *p_buf, size_t size)
 {
-  if (p_cdio == NULL) return -1;
+  if (!p_cdio) return DRIVER_OP_UNINIT;
   
   if (p_cdio->op.read)
     return p_cdio->op.read (p_cdio->env, p_buf, size);
-  return -1;
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!
   Reads an audio sector from cd device into data starting
   from lsn. Returns 0 if no error. 
 */
-int
+driver_return_code_t
 cdio_read_audio_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn) 
 {
   check_lsn(i_lsn);
   if  (p_cdio->op.read_audio_sectors != NULL)
     return p_cdio->op.read_audio_sectors (p_cdio->env, p_buf, i_lsn, 1);
-  return -1;
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!
   Reads audio sectors from cd device into data starting
   from lsn. Returns 0 if no error. 
 */
-int
+driver_return_code_t
 cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
                          unsigned int i_blocks) 
 {
   check_lsn_blocks(i_lsn, i_blocks);
   if (p_cdio->op.read_audio_sectors != NULL)
     return p_cdio->op.read_audio_sectors (p_cdio->env, p_buf, i_lsn, i_blocks);
-  return -1;
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 #ifndef SEEK_SET
@@ -136,7 +137,7 @@ cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
    Reads a single mode1 form1 or form2  sector from cd device 
    into data starting from lsn. Returns 0 if no error. 
  */
-int
+driver_return_code_t
 cdio_read_mode1_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
                         bool b_form2)
 {
@@ -152,11 +153,10 @@ cdio_read_mode1_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
     if (0 > cdio_read(p_cdio, buf, CDIO_CD_FRAMESIZE))
       return -1;
     memcpy (p_buf, buf, size);
-    return 0;
+    return DRIVER_OP_SUCCESS;
   } 
 
-  return -1;
-
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!
@@ -168,10 +168,8 @@ cdio_read_mode1_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   @param b_form2 true for reading mode 1 form 2 sectors or false for 
   mode 1 form 1 sectors.
   @param i_sectors number of sectors to read
-  
-  @return 0 if no error, nonzero otherwise.
 */
-int
+driver_return_code_t
 cdio_read_mode1_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
                          bool b_form2,  unsigned int i_blocks)
 {
@@ -179,7 +177,7 @@ cdio_read_mode1_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   if (p_cdio->op.read_mode1_sectors)
     return p_cdio->op.read_mode1_sectors (p_cdio->env, p_buf, i_lsn, b_form2, 
                                           i_blocks);
-  return -1;
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!
@@ -190,10 +188,8 @@ cdio_read_mode1_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   @param lsn sector to read
   @param b_form2 true for reading mode 2 form 2 sectors or false for 
   mode 2 form 1 sectors.
-  
-  @return 0 if no error, nonzero otherwise.
 */
-int
+driver_return_code_t
 cdio_read_mode2_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
                         bool b_form2)
 {
@@ -204,7 +200,7 @@ cdio_read_mode2_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   /* fallback */
   if (p_cdio->op.read_mode2_sectors != NULL)
     return cdio_read_mode2_sectors (p_cdio, p_buf, i_lsn, b_form2, 1);
-  return -1;
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!
@@ -216,10 +212,8 @@ cdio_read_mode2_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   @param b_form2 true for reading mode2 form 2 sectors or false for 
   mode 2  form 1 sectors.
   @param i_sectors number of sectors to read
-  
-  @return 0 if no error, nonzero otherwise.
 */
-int
+driver_return_code_t
 cdio_read_mode2_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
                          bool b_form2, unsigned int i_blocks)
 {
@@ -227,7 +221,7 @@ cdio_read_mode2_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   if (p_cdio->op.read_mode2_sectors) 
     return p_cdio->op.read_mode2_sectors (p_cdio->env, p_buf, i_lsn,
                                           b_form2, i_blocks);
-  return -1;
+  return DRIVER_OP_UNSUPPORTED;
   
 }
 
