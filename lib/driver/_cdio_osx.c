@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.3 2005/01/06 04:09:47 rocky Exp $
+    $Id: _cdio_osx.c,v 1.4 2005/01/14 22:04:24 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.3 2005/01/06 04:09:47 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.4 2005/01/14 22:04:24 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -599,7 +599,7 @@ get_hwinfo_osx ( const CdIo *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
       CFDictionaryGetValue ( deviceDict, 
 			     CFSTR ( kIOPropertyProductRevisionLevelKey ) );
     
-    if ( CFStringGetCString( product,
+    if ( CFStringGetCString( revision,
 			     (char *) &(hw_info->psz_revision),
 			     sizeof(hw_info->psz_revision),
 			     kCFStringEncodingASCII ) )
