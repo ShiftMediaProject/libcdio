@@ -1,5 +1,5 @@
 INCLUDES = -I .
-all: cueparser cuelexer
+all: cueparser cuelexer tocparser
 
 lex.cue.c: cue.L cue.tab.h
 	flex -Pcue cue.L
@@ -24,6 +24,20 @@ cueparser: lex.cue.o cue.tab.o
 
 cuelexer: lex.cuelex.o 
 	gcc -g lex.cuelex.o -lfl -o cuelexer
+
+toc.tab.h: toc.tab.c
+
+toc.tab.c: toc.y
+	bison -p toc -d toc.y
+
+toclexer.o: toclexer.c
+	gcc -g -Wall -c toclexer.c $(INCLUDES)
+
+toc.tab.o: toc.tab.c toc.tab.h
+	gcc -g -Wall -DSTANDALONE -c toc.tab.c $(INCLUDES)
+
+tocparser: toc.tab.o toclexer.o
+	gcc -g toclexer.o toc.tab.o -o tocparser
 
 clean: 
 	rm -f lex.cue.c lex.cuelex.c lex.cue.o lex.cuelex.o cue.tab.c \
