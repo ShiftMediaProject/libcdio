@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.14 2004/07/23 14:40:43 rocky Exp $
+    $Id: win32.h,v 1.15 2004/07/25 22:33:54 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -62,6 +62,11 @@ typedef struct {
   bool b_cdtext_init;
 
 } _img_private_t;
+
+/*! 
+  Get disc type associated with cd object.
+*/
+discmode_t get_discmode_win32ioctl (_img_private_t *p_env);
 
 /*!
    Reads an audio device using the DeviceIoControl method into data

@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.22 2004/07/23 14:40:43 rocky Exp $
+    $Id: win32_ioctl.c,v 1.23 2004/07/25 22:33:54 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,10 +26,11 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.22 2004/07/23 14:40:43 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.23 2004/07/25 22:33:54 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
+#include <cdio/dvd.h>
 #include "cdio_assert.h"
 
 #ifdef HAVE_WIN32_CDROM
@@ -42,6 +43,7 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.22 2004/07/23 14:40:43 rock
 #include <stdio.h>
 #include <stddef.h>  /* offsetof() macro */
 #include <sys/stat.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <cdio/scsi_mmc.h>
 #include "cdtext_private.h"
@@ -187,6 +189,147 @@ scsi_mmc_run_cmd_win32ioctl( const void *p_user_data, int i_timeout,
     return 1;
   }
   return 0;
+}
+
+/*! 
+  Get disc type associated with cd object.
+*/
+static discmode_t
+get_dvd_struct_physical (_img_private_t *p_env, cdio_dvd_struct_t *s)
+{
+  scsi_mmc_cdb_t cdb = {{0, }};
+  unsigned char buf[20], *base;
+  int i_status;
+  uint8_t layer_num = s->physical.layer_num;
+  
+  cdio_dvd_layer_t *layer;
+  
+  if (layer_num >= CDIO_DVD_MAX_LAYERS)
+    return -EINVAL;
+  
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_DVD_STRUCTURE);
+  cdb.field[6] = layer_num;
+  cdb.field[7] = CDIO_DVD_STRUCT_PHYSICAL;
+  cdb.field[9] = sizeof(buf) & 0xff;
+  
+  i_status = scsi_mmc_run_cmd_win32ioctl(p_env, OP_TIMEOUT_MS, 
+					 scsi_mmc_get_cmd_len(cdb.field[0]), 
+					 &cdb, SCSI_MMC_DATA_READ, 
+					 sizeof(buf), &buf);
+  if (0 != i_status)
+    return CDIO_DISC_MODE_ERROR;
+  
+  base = &buf[4];
+  layer = &s->physical.layer[layer_num];
+  
+  /*
+   * place the data... really ugly, but at least we won't have to
+   * worry about endianess in userspace.
+   */
+  memset(layer, 0, sizeof(*layer));
+  layer->book_version = base[0] & 0xf;
+  layer->book_type = base[0] >> 4;
+  layer->min_rate = base[1] & 0xf;
+  layer->disc_size = base[1] >> 4;
+  layer->layer_type = base[2] & 0xf;
+  layer->track_path = (base[2] >> 4) & 1;
+  layer->nlayers = (base[2] >> 5) & 3;
+  layer->track_density = base[3] & 0xf;
+  layer->linear_density = base[3] >> 4;
+  layer->start_sector = base[5] << 16 | base[6] << 8 | base[7];
+  layer->end_sector = base[9] << 16 | base[10] << 8 | base[11];
+  layer->end_sector_l0 = base[13] << 16 | base[14] << 8 | base[15];
+  layer->bca = base[16] >> 7;
+
+  return 0;
+}
+
+/*! 
+  Get disc type associated with cd object.
+*/
+discmode_t
+get_discmode_win32ioctl (_img_private_t *p_env)
+{
+  track_t i_track;
+  discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
+
+  /* See if this is a DVD. */
+  cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
+
+  dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
+  dvd.physical.layer_num = 0;
+  if (0 == get_dvd_struct_physical (p_env, &dvd)) {
+    switch(dvd.physical.layer[0].book_type) {
+    case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
+    case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
+    case CDIO_DVD_BOOK_DVD_R:    return CDIO_DISC_MODE_DVD_R;
+    case CDIO_DVD_BOOK_DVD_RW:   return CDIO_DISC_MODE_DVD_RW;
+    case CDIO_DVD_BOOK_DVD_PW:   return CDIO_DISC_MODE_DVD_PR;
+    case CDIO_DVD_BOOK_DVD_PRW:  return CDIO_DISC_MODE_DVD_PRW;
+    default: return CDIO_DISC_MODE_DVD_OTHER;
+    }
+  }
+
+  if (!p_env->gen.toc_init) 
+    read_toc_win32ioctl (p_env);
+
+  if (!p_env->gen.toc_init) 
+    return CDIO_DISC_MODE_NO_INFO;
+
+  for (i_track = p_env->i_first_track; 
+       i_track < p_env->i_first_track + p_env->i_tracks ; 
+       i_track ++) {
+    track_format_t track_fmt=get_track_format_win32ioctl(p_env, i_track);
+
+    switch(track_fmt) {
+    case TRACK_FORMAT_AUDIO:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_DA;
+	  break;
+	case CDIO_DISC_MODE_CD_DA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	  discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_XA:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_XA;
+	  break;
+	case CDIO_DISC_MODE_CD_XA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_DATA:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_DATA;
+	  break;
+	case CDIO_DISC_MODE_CD_DATA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_ERROR:
+    default:
+      discmode = CDIO_DISC_MODE_ERROR;
+    }
+  }
+  return discmode;
 }
 
 /*

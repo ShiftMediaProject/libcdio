@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.28 2004/07/25 17:32:19 rocky Exp $
+    $Id: win32.c,v 1.29 2004/07/25 22:33:54 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.28 2004/07/25 17:32:19 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.29 2004/07/25 22:33:54 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -96,8 +96,8 @@ get_discmode_win32(void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
 
-  if ( WIN_NT ) {
-    return CDIO_DISC_MODE_ERROR;
+  if (p_env->hASPI) {
+    return get_discmode_win32ioctl (p_env);
   } else {
     return get_discmode_aspi (p_env);
   }
@@ -408,15 +408,15 @@ _set_arg_win32 (void *user_data, const char key[], const char value[])
   Return true if successful or false if an error.
 */
 static bool
-_cdio_read_toc (_img_private_t *env) 
+_cdio_read_toc (_img_private_t *p_env) 
 {
   bool ret;
-  if( env->hASPI ) {
-    ret = read_toc_aspi( env );
+  if( p_env->hASPI ) {
+    ret = read_toc_aspi( p_env );
   } else {
-    ret = read_toc_win32ioctl( env );
+    ret = read_toc_win32ioctl( p_env );
   }
-  if (ret) env->gen.toc_init = true ;
+  if (ret) p_env->gen.toc_init = true ;
   return true;
 }
 

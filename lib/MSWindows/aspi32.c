@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.36 2004/07/25 21:43:30 rocky Exp $
+    $Id: aspi32.c,v 1.37 2004/07/25 22:33:54 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.36 2004/07/25 21:43:30 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.37 2004/07/25 22:33:54 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -269,7 +269,6 @@ get_discmode_aspi (_img_private_t *p_env)
        i_track ++) {
     track_format_t track_fmt=get_track_format_aspi(p_env, i_track);
 
-    /* FIXME Need to add getting DVD types. */
     switch(track_fmt) {
     case TRACK_FORMAT_AUDIO:
       switch(discmode) {
