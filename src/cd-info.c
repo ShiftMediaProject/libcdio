@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.35 2003/09/21 03:35:40 rocky Exp $
+    $Id: cd-info.c,v 1.36 2003/09/21 04:21:39 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -24,20 +24,10 @@
   the CD.
  
 */
+
+#include "util.h"
+
 #define PROGRAM_NAME "CD Info"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-
-#include <popt.h>
-/* Accomodate to older popt that doesn't support the "optional" flag */
-#ifndef POPT_ARGFLAG_OPTIONAL
-#define POPT_ARGFLAG_OPTIONAL 0
-#endif
-
-#include "config.h"
 
 #ifdef HAVE_CDDB
 #include <cddb/cddb.h>
@@ -49,8 +39,6 @@
 #include <libvcd/info.h>
 #endif
 
-#include <cdio/cdio.h>
-#include <cdio/logging.h>
 #include <cdio/util.h>
 #include <cdio/cd_types.h>
 #include <cdio/iso9660.h>
@@ -71,41 +59,6 @@
  
 #include <errno.h>
 
-#ifdef ENABLE_NLS
-#include <locale.h>
-#    include <libintl.h>
-#    define _(String) dgettext ("cdinfo", String)
-#else
-/* Stubs that do something close enough.  */
-#    define _(String) (String)
-#endif
-
-/* The following test is to work around the gross typo in
-   systems like Sony NEWS-OS Release 4.0C, whereby EXIT_FAILURE
-   is defined to 0, not 1.  */
-#if !EXIT_FAILURE
-# undef EXIT_FAILURE
-# define EXIT_FAILURE 1
-#endif
-
-#ifndef EXIT_SUCCESS
-# define EXIT_SUCCESS 0
-#endif
-
-#define DEBUG 1
-#if DEBUG
-#define dbg_print(level, s, args...) \
-   if (opts.debug_level >= level) \
-     fprintf(stderr, "%s: "s, __func__ , ##args)
-#else
-#define dbg_print(level, s, args...) 
-#endif
-
-#define err_exit(fmt, args...) \
-  fprintf(stderr, "%s: "fmt, program_name, ##args); \
-  myexit(cdio, EXIT_FAILURE)		     
-  
-
 #if 0
 #define STRONG "\033[1m"
 #define NORMAL "\033[0m"
@@ -120,21 +73,8 @@ struct cdrom_multisession  ms;
 struct cdrom_subchnl       sub;
 #endif
 
-char *source_name = NULL;
-char *program_name;
-
 const char *argp_program_version     = PROGRAM_NAME " " VERSION;
 const char *argp_program_bug_address = "rocky@panix.com";
-
-typedef enum
-{
-  IMAGE_AUTO,
-  IMAGE_DEVICE,
-  IMAGE_BIN,
-  IMAGE_CUE,
-  IMAGE_NRG,
-  IMAGE_UNKNOWN
-} source_image_t;
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
@@ -186,25 +126,6 @@ enum {
 };
 
 char *temp_str;
-
-
-#define DEV_PREFIX "/dev/"
-static char *
-fillout_device_name(const char *device_name) 
-{
-#if defined(HAVE_WIN32_CDROM)
-  return strdup(device_name);
-#else
-  unsigned int prefix_len=strlen(DEV_PREFIX);
-  if (0 == strncmp(device_name, DEV_PREFIX, prefix_len))
-    return strdup(device_name);
-  else {
-    char *full_device_name=malloc(strlen(device_name)+prefix_len);
-    sprintf(full_device_name, DEV_PREFIX "%s", device_name);
-    return full_device_name;
-  }
-#endif
-}
 
 
 /* Parse a all options. */
@@ -359,46 +280,6 @@ parse_options (int argc, const char *argv[])
   
   return true;
 }
-
-static void
-print_version (bool version_only)
-{
-  
-  driver_id_t driver_id;
-
-  if (!opts.no_header)
-    printf( _("CD Info %s (c) 2003 Gerd Knorr, Heiko Eiﬂfeldt & R. Bernstein\n"),
-	    VERSION);
-  printf( _("This is free software; see the source for copying conditions.\n\
-There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n\
-PARTICULAR PURPOSE.\n\
-"));
-
-  if (version_only) {
-    char *default_device;
-    for (driver_id=DRIVER_UNKNOWN+1; driver_id<=CDIO_MAX_DRIVER; driver_id++) {
-      if (cdio_have_driver(driver_id)) {
-	printf("Have driver: %s\n", cdio_driver_describe(driver_id));
-      }
-    }
-    default_device=cdio_get_default_device(NULL);
-    if (default_device)
-      printf("Default CD-ROM device: %s\n", default_device);
-    else
-      printf("No CD-ROM device found.\n");
-    exit(100);
-  }
-  
-}
-
-static void 
-myexit(CdIo *cdio, int rc) 
-{
-  if (NULL != cdio) 
-    cdio_destroy(cdio);
-  exit(rc);
-}
-
 
 /* ------------------------------------------------------------------------ */
 /* CDDB                                                                     */
@@ -871,7 +752,7 @@ main(int argc, const char *argv[])
      be reflected in `arguments'. */
   parse_options(argc, argv);
      
-  print_version(opts.version_only);
+  print_version(program_name, VERSION, opts.no_header, opts.version_only);
 
   switch (opts.source_image) {
   case IMAGE_UNKNOWN:

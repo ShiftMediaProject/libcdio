@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.4 2003/09/21 03:35:40 rocky Exp $
+  $Id: cd-read.c,v 1.5 2003/09/21 04:21:39 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -20,65 +20,7 @@
 
 /* Program to debug read routines audio, mode1, mode2 forms 1 & 2. */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
-#include <stdio.h>
-#include <sys/types.h>
-#include <cdio/cdio.h>
-#include <cdio/logging.h>
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_STRING_H
-#include <string.h>
-#endif
-#include <ctype.h>
-
-#include <popt.h>
-/* Accomodate to older popt that doesn't support the "optional" flag */
-#ifndef POPT_ARGFLAG_OPTIONAL
-#define POPT_ARGFLAG_OPTIONAL 0
-#endif
-
-#ifdef ENABLE_NLS
-#include <locale.h>
-#    include <libintl.h>
-#    define _(String) dgettext ("cdinfo", String)
-#else
-/* Stubs that do something close enough.  */
-#    define _(String) (String)
-#endif
-
-/* The following test is to work around the gross typo in
-   systems like Sony NEWS-OS Release 4.0C, whereby EXIT_FAILURE
-   is defined to 0, not 1.  */
-#if !EXIT_FAILURE
-# undef EXIT_FAILURE
-# define EXIT_FAILURE 1
-#endif
-
-#ifndef EXIT_SUCCESS
-# define EXIT_SUCCESS 0
-#endif
-
-#define err_exit(fmt, args...) \
-  fprintf(stderr, "%s: "fmt, program_name, ##args); \
-  myexit(cdio, EXIT_FAILURE)		     
-  
-char *source_name = NULL;
-char *program_name;
-
-typedef enum
-{
-  IMAGE_AUTO,
-  IMAGE_DEVICE,
-  IMAGE_BIN,
-  IMAGE_CUE,
-  IMAGE_NRG,
-  IMAGE_UNKNOWN
-} source_image_t;
+#include "util.h"
 
 /* Configuration option codes */
 enum {
@@ -143,34 +85,6 @@ struct arguments
   lsn_t          start_lsn;
 } opts;
      
-/* Comparison function called by bearch() to find sub-option record. */
-static int
-compare_subopts(const void *key1, const void *key2) 
-{
-  subopt_entry_t *a = (subopt_entry_t *) key1;
-  subopt_entry_t *b = (subopt_entry_t *) key2;
-  return (strncmp(a->name, b->name, 30));
-}
-
-/* CDIO logging routines */
-static cdio_log_handler_t gl_default_cdio_log_handler = NULL;
-
-static void 
-_log_handler (cdio_log_level_t level, const char message[])
-{
-  if (level == CDIO_LOG_DEBUG && opts.debug_level < 3)
-    return;
-
-  if (level == CDIO_LOG_INFO  && opts.debug_level < 2)
-    return;
-  
-  if (level == CDIO_LOG_WARN  && opts.debug_level < 1)
-    return;
-  
-  gl_default_cdio_log_handler (level, message);
-}
-
-
 static void
 hexdump (uint8_t * buffer, unsigned int len)
 {
@@ -192,6 +106,15 @@ hexdump (uint8_t * buffer, unsigned int len)
       }
     }
   printf ("\n");
+}
+
+/* Comparison function called by bearch() to find sub-option record. */
+static int
+compare_subopts(const void *key1, const void *key2) 
+{
+  subopt_entry_t *a = (subopt_entry_t *) key1;
+  subopt_entry_t *b = (subopt_entry_t *) key2;
+  return (strncmp(a->name, b->name, 30));
 }
 
 /* Do processing of a --mode sub option. 
@@ -225,39 +148,6 @@ process_suboption(const char *subopt, subopt_entry_t *sublist, const int num,
     fprintf(stderr, "or %s.\n", sublist[num-1].name);
     exit (is_help ? EXIT_SUCCESS : EXIT_FAILURE);
   }
-}
-
-#define DEV_PREFIX "/dev/"
-static char *
-fillout_device_name(const char *device_name) 
-{
-#if defined(HAVE_WIN32_CDROM)
-  return strdup(device_name);
-#else
-  unsigned int prefix_len=strlen(DEV_PREFIX);
-  if (0 == strncmp(device_name, DEV_PREFIX, prefix_len))
-    return strdup(device_name);
-  else {
-    char *full_device_name=malloc(strlen(device_name)+prefix_len);
-    sprintf(full_device_name, DEV_PREFIX "%s", device_name);
-    return full_device_name;
-  }
-#endif
-}
-
-static void
-print_version (void)
-{
-  
-  if (!opts.no_header)
-    printf( _("cd-read %s (c) 2003 R. Bernstein\n"),
-	    VERSION);
-  printf( _("This is free software; see the source for copying conditions.\n\
-There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n\
-PARTICULAR PURPOSE.\n\
-"));
-
-  exit(100);
 }
 
 /* Parse a options. */
@@ -350,7 +240,7 @@ parse_options (int argc, const char *argv[])
                             "--mode");
         break;
       case OP_VERSION:
-        print_version();
+        print_version(program_name, VERSION, 0, true);
         exit (EXIT_SUCCESS);
         break;
 
@@ -410,12 +300,20 @@ parse_options (int argc, const char *argv[])
 }
 
 static void 
-myexit(CdIo *cdio, int rc) 
+log_handler (cdio_log_level_t level, const char message[])
 {
-  if (NULL != cdio) 
-    cdio_destroy(cdio);
-  exit(rc);
+  if (level == CDIO_LOG_DEBUG && opts.debug_level < 2)
+    return;
+
+  if (level == CDIO_LOG_INFO  && opts.debug_level < 1)
+    return;
+  
+  if (level == CDIO_LOG_WARN  && opts.debug_level < 0)
+    return;
+  
+  gl_default_cdio_log_handler (level, message);
 }
+
 
 int
 main(int argc, const char *argv[])
@@ -432,7 +330,7 @@ main(int argc, const char *argv[])
   opts.read_mode     = READ_MODE_UNINIT;
   opts.source_image  = IMAGE_UNKNOWN;
 
-  gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
+  gl_default_cdio_log_handler = cdio_log_set_handler (log_handler);
 
   /* Parse our arguments; every option seen by `parse_opt' will
      be reflected in `arguments'. */
