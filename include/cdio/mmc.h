@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.13 2005/03/01 00:41:34 rocky Exp $
+    $Id: mmc.h,v 1.14 2005/03/01 09:33:52 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -31,6 +31,7 @@
 #include <cdio/cdio.h>
 #include <cdio/types.h>
 #include <cdio/dvd.h>
+#include <cdio/audio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -382,6 +383,15 @@ typedef enum scsi_mmc_direction {
   cdb[9] = val << 3;
 
 /*!
+  Read Audio Subchannel information
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+driver_return_code_t
+mmc_audio_read_subchannel (CdIo_t *p_cdio, cdio_subchannel_t *p_subchannel);
+
+/*!
  * Eject using MMC commands. 
 
  @return 0 if successful.
@@ -445,7 +455,7 @@ void mmc_get_drive_cap ( CdIo_t *p_cdio,
   @return the DVD discmode.
 */
 discmode_t mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, 
-					      cdio_dvd_struct_t *s);
+                                         cdio_dvd_struct_t *s);
 
 /*! 
   Get the CD-ROM hardware info via an MMC INQUIRY command.

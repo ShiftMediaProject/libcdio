@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.26 2005/03/01 08:14:09 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.27 2005/03/01 09:33:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.26 2005/03/01 08:14:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.27 2005/03/01 09:33:52 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -160,7 +160,7 @@ audio_play_track_index_solaris (void *p_user_data,
 }
 
 /*!
-  Resume playing an audio CD.
+  Read Audio Subchannel information
   
   @param p_cdio the CD object to be acted upon.
   

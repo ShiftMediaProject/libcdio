@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.16 2005/02/28 02:56:26 rocky Exp $
+    $Id: mmc.c,v 1.17 2005/03/01 09:33:52 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -53,6 +53,20 @@
   Most of these routines just pick out the cdio pointer and call the
   corresponding publically-accessible routine.
 *************************************************************************/
+
+/*!
+  Read Audio Subchannel information
+  
+  @param p_user_data the CD object to be acted upon.
+  
+*/
+driver_return_code_t
+audio_read_subchannel_mmc ( void *p_user_data, cdio_subchannel_t *p_subchannel)
+{
+  generic_img_private_t *p_env = p_user_data;
+  if (!p_env) return DRIVER_OP_UNINIT;
+  return mmc_get_blocksize(p_env->cdio);
+}
 
 /*!
   Get the block size for subsequest read requests, via MMC.
@@ -161,6 +175,7 @@ mmc_get_drive_cap_buf(const uint8_t *p,
   if (p[5] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_DA;
   if (p[5] & 0x10) *p_read_cap  |= CDIO_DRIVE_CAP_READ_C2_ERRS;
   if (p[5] & 0x20) *p_read_cap  |= CDIO_DRIVE_CAP_READ_ISRC;
+  if (p[5] & 0x40) *p_read_cap  |= CDIO_DRIVE_CAP_READ_MCN;
   
   /* Writer */
   if (p[3] & 0x01) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_R;
@@ -506,6 +521,29 @@ mmc_get_disc_last_lsn ( const CdIo_t *p_cdio )
   }
 
   return retval;
+}
+
+/*!
+  Read Audio Subchannel information
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+driver_return_code_t
+mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
+{
+  scsi_mmc_cdb_t cdb;
+
+  if (!p_cdio) return DRIVER_OP_UNINIT;
+  
+  memset(&cdb, 0, sizeof(scsi_mmc_cdb_t));
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
+  cdb.field[1] = CDIO_CDROM_MSF;
+  cdb.field[2] = 0x40; /* subq */
+  cdb.field[6] = 0x40; /* track number (only in isrc mode, ignored) */
+  cdb.field[8] = 20;   
+  return mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_READ, 
+                     sizeof(cdio_subchannel_t), p_subchannel);
 }
 
 /*! 

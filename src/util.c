@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.45 2005/02/26 23:25:33 rocky Exp $
+  $Id: util.c,v 1.46 2005/03/01 09:33:52 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -406,6 +406,8 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
 	   i_read_cap & CDIO_DRIVE_CAP_READ_C2_ERRS     ? "Yes" : "No" );
     report( stdout, _("  Can read IRSC             : %s\n"), 
 	   i_read_cap & CDIO_DRIVE_CAP_READ_ISRC        ? "Yes" : "No" );
+    report( stdout, _("  Can read MCN              : %s\n"), 
+	   i_read_cap & CDIO_DRIVE_CAP_READ_MCN         ? "Yes" : "No" );
     report( stdout, _("  Can play audio            : %s\n"), 
 	   i_read_cap & CDIO_DRIVE_CAP_READ_AUDIO       ? "Yes" : "No" );
     report( stdout, _("  Can read CD-DA            : %s\n"), 

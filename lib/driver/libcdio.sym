@@ -157,6 +157,7 @@ cdtext_init
 cdtext_is_keyword
 cdtext_set
 discmode2str
+mmc_audio_read_subchannel
 mmc_eject_media
 mmc_get_blocksize
 mmc_get_discmode

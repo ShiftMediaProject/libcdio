@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: mmc_private.h,v 1.6 2005/02/17 07:03:37 rocky Exp $
+    $Id: mmc_private.h,v 1.7 2005/03/01 09:33:52 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -37,6 +37,16 @@ msecs2secs(unsigned int msecs)
   MMC CdIo Operations which a driver may use. 
   These are not directly user-accessible.
 ************************************************************/
+/*!
+  Read Audio Subchannel information
+  
+  @param p_user_data the CD object to be acted upon.
+  
+*/
+driver_return_code_t
+audio_read_subchannel_mmc ( void *p_user_data, 
+			    cdio_subchannel_t *p_subchannel);
+
 /*!
   Get the block size for subsequest read requests, via a SCSI MMC 
   MODE_SENSE 6 command.
