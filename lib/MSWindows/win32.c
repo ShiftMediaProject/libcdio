@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.48 2004/10/31 05:33:08 rocky Exp $
+    $Id: win32.c,v 1.49 2004/10/31 17:18:08 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.48 2004/10/31 05:33:08 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.49 2004/10/31 17:18:08 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -41,25 +41,56 @@ static const char _rcsid[] = "$Id: win32.c,v 1.48 2004/10/31 05:33:08 rocky Exp 
 
 #include <ctype.h>
 #include <stdio.h>
+
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+
+#ifdef HAVE_ERRNO_H
 #include <errno.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
+#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
+#endif
 
 #include <windows.h>
 #include <winioctl.h>
 #include "win32.h"
 
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
-#include <sys/types.h>
-#include "aspi32.h"
+#endif
 
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
+#if defined (MSVC) || defined (_XBOX)
+#undef IN
+#else
+#include "aspi32.h"
+#endif
+
+#ifdef _XBOX
+#include "stdint.h"
+#include <xtl.h>
+#define WIN_NT 1
+#else
 #define WIN_NT               ( GetVersion() < 0x80000000 )
+#endif
 
 /* General ioctl() CD-ROM command function */
 static bool 
 _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
 {
+#ifdef _XBOX
+  return false;
+#else
   MCIERROR mci_error;
   
   mci_error = mciSendCommand(id, msg, flags, (DWORD)arg);
@@ -70,6 +101,7 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
     cdio_warn("mciSendCommand() error: %s", error);
   }
   return(mci_error == 0);
+#endif
 }
 
 static access_mode_t 
@@ -83,10 +115,16 @@ str_to_access_mode_win32(const char *psz_access_mode)
   if (!strcmp(psz_access_mode, "ioctl"))
     return _AM_IOCTL;
   else if (!strcmp(psz_access_mode, "ASPI"))
+#ifdef _XBOX
     return _AM_ASPI;
+#else 
+    cdio_warn ("XBOX doesn't support % access: %s. Default %s used instead.", 
+	       psz_access_mode, psz_default_access_mode);
+    return default_access_mode;
+#endif    
   else {
-    cdio_warn ("unknown access type: %s. Default used.", 
-	       psz_access_mode);
+    cdio_warn ("unknown access type: %s. Default % used instead.", 
+	       psz_access_mode, psz_default_access_mode);
     return default_access_mode;
   }
 }
@@ -402,7 +440,9 @@ read_toc_win32 (void *p_user_data)
  */
 static int 
 _cdio_eject_media (void *user_data) {
-
+#ifdef _XBOX
+  return -1;
+#else
   _img_private_t *env = user_data;
 
 
@@ -432,6 +472,7 @@ _cdio_eject_media (void *user_data) {
     ret = 0;
   
   return ret;
+#endif
 }
 
 /*!
@@ -696,6 +737,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.get_discmode       = get_discmode_win32;
   _funcs.get_drive_cap      = scsi_mmc_get_drive_cap_generic;
   _funcs.get_first_track_num= get_first_track_num_generic;
+  _funcs.get_hwinfo         = NULL;
   _funcs.get_mcn            = _cdio_get_mcn;
   _funcs.get_num_tracks     = get_num_tracks_generic;
   _funcs.get_track_format   = _cdio_get_track_format;

@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.29 2004/10/30 21:53:15 rocky Exp $
+    $Id: scsi_mmc.c,v 1.30 2004/10/31 17:18:08 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -519,7 +519,7 @@ scsi_mmc_get_mcn_generic (const void *p_user_data)
 /*
   Read cdtext information for a CdIo object .
   
-  return true on success, false on error or CD-TEXT information does
+  return true on success, false on error or CD-Text information does
   not exist.
 */
 bool
@@ -532,7 +532,7 @@ scsi_mmc_init_cdtext_private ( void *p_user_data,
   generic_img_private_t *p_env = p_user_data;
   scsi_mmc_cdb_t  cdb = {{0, }};
   unsigned char   wdata[5000] = { 0, };
-  int             i_status;
+  int             i_status, i_errno;
 
   if ( ! p_env || ! run_scsi_mmc_cmd || p_env->b_cdtext_error )
     return false;
@@ -544,21 +544,43 @@ scsi_mmc_init_cdtext_private ( void *p_user_data,
   /* Format */
   cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
 
-  CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(wdata));
+  /* Setup to read header, to get length of data */
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, 4);
 
   errno = 0;
 
-  /* We may need to give CD-TEXT a little more time to complete. */
-  i_status = run_scsi_mmc_cmd (p_env, 1000*60*3,
+/* Set read timeout 3 minues. */
+#define READ_TIMEOUT 3*60*1000
+
+  /* We may need to give CD-Text a little more time to complete. */
+  /* First off, just try and read the size */
+  i_status = run_scsi_mmc_cmd (p_env, READ_TIMEOUT,
 			       scsi_mmc_get_cmd_len(cdb.field[0]), 
 			       &cdb, SCSI_MMC_DATA_READ, 
-			       sizeof(wdata), &wdata);
+			       4, &wdata);
 
   if (i_status != 0) {
-    cdio_info ("CD-TEXT reading failed: %s\n", strerror(errno));  
+    cdio_info ("CD-Text read failed for header: %s\n", strerror(errno));  
+	i_errno = errno;
     p_env->b_cdtext_error = true;
     return false;
   } else {
+    /* Now read the CD-Text data */
+    int	i_cdtext = CDIO_MMC_GET_LEN16(wdata);
+
+    if (i_cdtext > sizeof(wdata)) i_cdtext = sizeof(wdata);
+    
+    CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_cdtext);
+    i_status = run_scsi_mmc_cmd (p_env, READ_TIMEOUT,
+				 scsi_mmc_get_cmd_len(cdb.field[0]), 
+				 &cdb, SCSI_MMC_DATA_READ, 
+				 i_cdtext, &wdata);
+    if (i_status != 0) {
+      cdio_info ("CD-Text read for text failed: %s\n", strerror(errno));  
+      i_errno = errno;
+      p_env->b_cdtext_error = true;
+      return false;
+    }
     p_env->b_cdtext_init = true;
     return cdtext_data_init(p_env, p_env->i_first_track, wdata, 
 			    set_cdtext_field_fn);
