@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.7 2003/04/06 17:57:20 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.8 2003/04/06 23:09:30 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.7 2003/04/06 17:57:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.8 2003/04/06 23:09:30 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -481,9 +481,9 @@ _read_mode2_sector (void *user_data, void *data, uint32_t lsn,
 		    blocksize, 1);
 
   if (mode2_form2)
-    memcpy (data, buf + CDIO_CD_XA_HEADER, M2RAW_SECTOR_SIZE);
+    memcpy (data, buf + 12 + 4, M2RAW_SECTOR_SIZE);
   else
-    memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, CDIO_CD_FRAMESIZE);
+    memcpy (data, buf + 12 + 4 + 8, CDIO_CD_FRAMESIZE);
 
   return 0;
 }
