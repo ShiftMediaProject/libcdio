@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.13 2003/04/22 12:09:09 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.14 2003/04/23 22:05:59 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.13 2003/04/22 12:09:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.14 2003/04/23 22:05:59 rocky Exp $";
 
 /* structures used */
 
@@ -296,15 +296,21 @@ PRAGMA_END_PACKED
 	  _obj->total_tracks    = 0;
 	  _obj->first_track_num = 1;
 	  for (idx = 1; idx < entries-1; idx += 2) {
-	    lsn_t lsn2;
+	    lsn_t sec_count;
 	    
 	    cdio_assert (_entries[idx].index == 0);
 	    cdio_assert (_entries[idx].track == _entries[idx + 1].track);
 	    
-	    lsn  = UINT32_FROM_BE (_entries[idx].lsn);
-	    lsn2 = UINT32_FROM_BE (_entries[idx + 1].lsn);
+	    /* lsn and sec_count*2 aren't correct, but it comes closer on the
+	       single example I have: svcdgs.nrg
+	       We are picking up the wrong fields and/or not interpreting
+	       them correctly.
+	     */
 
-	    _register_mapping (_obj, lsn, lsn2 - lsn, 
+	    lsn       = UINT32_FROM_BE (_entries[idx].lsn);
+	    sec_count = UINT32_FROM_BE (_entries[idx + 1].lsn);
+
+	    _register_mapping (_obj, lsn, sec_count*2, 
               (lsn+CDIO_PREGAP_SECTORS) * M2RAW_SECTOR_SIZE, 
 	       M2RAW_SECTOR_SIZE);
 	  }
