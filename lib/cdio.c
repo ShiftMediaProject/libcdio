@@ -1,0 +1,454 @@
+/*
+    $Id: cdio.c,v 1.1 2003/03/24 19:01:09 rocky Exp $
+
+    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#include "cdio_assert.h"
+#include "util.h"
+#include "logging.h"
+#include "cdio_private.h"
+
+static const char _rcsid[] = "$Id: cdio.c,v 1.1 2003/03/24 19:01:09 rocky Exp $";
+
+
+const char *track_format2str[5] = 
+  {
+    "audio", "CD-i", "XA", "data", "error"
+  };
+
+/* The below array gives of the drivers that are currently available for 
+   on a particular host. */
+
+CdIo_driver_t CdIo_driver[MAX_DRIVER] = { {0} };
+
+struct _CdIo {
+  void *user_data;
+  cdio_funcs op;
+};
+
+/* The last valid entry of Cdio_driver. -1 means uninitialzed. -2 
+   means some sort of error.
+*/
+int CdIo_last_driver = -1; 
+
+static bool 
+cdio_have_false(void)
+{
+  return false;
+}
+
+
+/* The below array gives all drivers that can possibly appear.
+   on a particular host. */
+
+CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = { 
+  {DRIVER_UNKNOWN, 
+   0,
+   "Unknown", 
+   "No driver",
+   &cdio_have_false,
+   NULL
+  },
+
+  {DRIVER_LINUX, 
+   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK,
+   "Linux", 
+   "Linux ioctl and packet driver",
+   &cdio_have_linux,
+   &cdio_open_linux
+  },
+
+  {DRIVER_SOLARIS, 
+   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
+   "Solaris",
+   "Solaris ATAPI and SCSI driver",
+   &cdio_have_solaris,
+   &cdio_open_solaris
+  },
+
+  {DRIVER_BSDI, 
+   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
+   "BSDI",
+   "BSDI ATAPI and SCSI driver",
+   &cdio_have_bsdi,
+   cdio_open_bsdi
+  },
+
+  {DRIVER_NRG,
+   CDIO_SRC_IS_DISK_IMAGE_MASK,
+   "NRG",
+   "Nero NRG disk image driver",
+   &cdio_have_nrg,
+   &cdio_open_nrg
+  },
+
+  {DRIVER_BINCUE,
+   CDIO_SRC_IS_DISK_IMAGE_MASK,
+   "BIN/CUE",
+   "bin/cuesheet disk image driver",
+   &cdio_have_bincue,
+   &cdio_open_bincue
+  }
+
+};
+
+/*!
+  Eject media in CD drive if there is a routine to do so. 
+  Return 0 if success and 1 for failure, and 2 if no routine.
+ */
+int
+cdio_eject_media (const CdIo *obj)
+{
+  cdio_assert (obj != NULL);
+
+  if (obj->op.eject_media) {
+    return obj->op.eject_media (obj->user_data);
+  } else {
+    return 2;
+  }
+}
+
+/*!
+  Return a string containing the default CD device if none is specified.
+ */
+const char *
+cdio_get_arg (const CdIo *obj, const char key[])
+{
+  cdio_assert (obj != NULL);
+
+  if (obj->op.get_arg) {
+    return obj->op.get_arg (obj->user_data, key);
+  } else {
+    return NULL;
+  }
+}
+
+/*!
+  Return a string containing the default CD device if none is specified.
+ */
+char *
+cdio_get_default_device (const CdIo *obj)
+{
+  cdio_assert (obj != NULL);
+
+  if (obj->op.get_default_device) {
+    return obj->op.get_default_device ();
+  } else {
+    return NULL;
+  }
+}
+
+/*!
+  Return the number of of the first track. 
+  CDIO_INVALID_TRACK is returned on error.
+*/
+track_t
+cdio_get_first_track_num (const CdIo *obj)
+{
+  cdio_assert (obj != NULL);
+
+  if (obj->op.get_first_track_num) {
+    return obj->op.get_first_track_num (obj->user_data);
+  } else {
+    return CDIO_INVALID_TRACK;
+  }
+}
+
+/*! 
+  Return the number of tracks in the current medium.
+  CDIO_INVALID_TRACK is returned on error.
+*/
+track_t
+cdio_get_num_tracks (const CdIo *obj)
+{
+  cdio_assert (obj != NULL);
+
+  if (obj->op.get_num_tracks) {
+    return obj->op.get_num_tracks (obj->user_data);
+  } else {
+    return CDIO_INVALID_TRACK;
+  }
+}
+
+/*!  
+  Get format of track. 
+*/
+track_format_t
+cdio_get_track_format(const CdIo *obj, track_t track_num)
+{
+  cdio_assert (obj != NULL);
+
+  if (obj->op.get_track_format) {
+    return obj->op.get_track_format (obj->user_data, track_num);
+  } else {
+    return TRACK_FORMAT_ERROR;
+  }
+}
+
+/*!
+  Return true if we have XA data (green, mode2 form1) or
+  XA data (green, mode2 form2). That is track begins:
+  sync - header - subheader
+  12     4      -  8
+  
+  FIXME: there's gotta be a better design for this and get_track_format?
+*/
+bool
+cdio_get_track_green(const CdIo *obj, track_t track_num)
+{
+  cdio_assert (obj != NULL);
+
+  if (obj->op.get_track_green) {
+    return obj->op.get_track_green (obj->user_data, track_num);
+  } else {
+    return false;
+  }
+}
+
+/*!  
+  Return the starting MSF (minutes/secs/frames) for track number
+  track_num in obj.  Track numbers start at 1.
+  The "leadout" track is specified either by
+  using track_num LEADOUT_TRACK or the total tracks+1.
+  False is returned if there is no track entry.
+*/
+bool
+cdio_get_track_msf(const CdIo *obj, track_t track_num, msf_t *msf)
+{
+  cdio_assert (obj != NULL);
+
+  if (obj->op.get_track_msf) {
+    return obj->op.get_track_msf (obj->user_data, track_num, msf);
+  } else {
+    return false;
+  }
+}
+
+bool
+cdio_have_driver(driver_id_t driver_id)
+{
+  return (*CdIo_all_drivers[driver_id].have_driver)();
+}
+
+
+/*!
+  Initialize CD Reading and control routines. Should be called first.
+  May be implicitly called by other routines if not called first.
+*/
+bool
+cdio_init(void)
+{
+  
+  CdIo_driver_t *all_dp;
+  CdIo_driver_t *dp = CdIo_driver;
+  driver_id_t driver_id;
+
+  if (CdIo_last_driver != -1) {
+    cdio_warn ("Init routine called more than once.");
+    return false;
+  }
+
+  for (driver_id=DRIVER_UNKNOWN; driver_id<=MAX_DRIVER; driver_id++) {
+    all_dp = &CdIo_all_drivers[driver_id];
+    if ((*CdIo_all_drivers[driver_id].have_driver)()) {
+      *dp++ = *all_dp;
+      CdIo_last_driver++;
+    }
+  }
+
+  return true;
+}
+
+CdIo *
+cdio_new (void *user_data, const cdio_funcs *funcs)
+{
+  CdIo *new_obj;
+
+  new_obj = _cdio_malloc (sizeof (CdIo));
+
+  new_obj->user_data = user_data;
+  new_obj->op = *funcs;
+
+  return new_obj;
+}
+
+void
+cdio_destroy (CdIo *obj)
+{
+  cdio_assert (obj != NULL);
+  
+  obj->op.free (obj->user_data);
+  free (obj);
+}
+
+int
+cdio_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, bool mode2raw, 
+                         unsigned num_sectors)
+{
+  char *_buf = buf;
+  const int blocksize = mode2raw ? M2RAW_SECTOR_SIZE : M2F1_SECTOR_SIZE;
+  int n, rc;
+
+  cdio_assert (obj != NULL);
+  cdio_assert (buf != NULL);
+  cdio_assert (obj->op.read_mode2_sector != NULL 
+	      || obj->op.read_mode2_sectors != NULL);
+  
+  if (obj->op.read_mode2_sectors)
+    return obj->op.read_mode2_sectors (obj->user_data, buf, lsn,
+				       mode2raw, num_sectors);
+
+  /* fallback */
+  if (obj->op.read_mode2_sector != NULL)
+    for (n = 0; n < num_sectors; n++)
+      if ((rc = cdio_read_mode2_sector (obj, &_buf[n * blocksize],
+						    lsn + n, mode2raw)))
+	return rc;
+  
+  return 0;
+}
+
+/*!
+   Reads a single mode2 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+int
+cdio_read_mode2_sector (CdIo *obj, void *buf, uint32_t lsn, bool mode2raw)
+{
+  cdio_assert (obj != NULL);
+  cdio_assert (buf != NULL);
+  cdio_assert (obj->op.read_mode2_sector != NULL 
+	      || obj->op.read_mode2_sectors != NULL);
+
+  if (obj->op.read_mode2_sector)
+    return obj->op.read_mode2_sector (obj->user_data, buf, lsn, mode2raw);
+
+  /* fallback */
+  if (obj->op.read_mode2_sectors != NULL)
+    return cdio_read_mode2_sectors (obj, buf, lsn, mode2raw, 1);
+  return 1;
+}
+
+uint32_t
+cdio_stat_size (CdIo *obj)
+{
+  cdio_assert (obj != NULL);
+
+  return obj->op.stat_size (obj->user_data);
+}
+
+/*!
+  Set the arg "key" with "value" in the source device.
+*/
+int
+cdio_set_arg (CdIo *obj, const char key[], const char value[])
+{
+  cdio_assert (obj != NULL);
+  cdio_assert (obj->op.set_arg != NULL);
+  cdio_assert (key != NULL);
+
+  return obj->op.set_arg (obj->user_data, key, value);
+}
+
+/*! Sets up to read from place specified by source_name and
+  driver_id This should be called before using any other routine,
+  except cdio_init. This will call cdio_init, if that hasn't been
+  done previously.  to call one of the specific routines below. 
+  
+  NULL is returned on error.
+*/
+/* In the future we'll have more complicated code to allow selection
+   of an I/O routine as well as code to find an appropriate default
+   routine among the "registered" routines. Possibly classes too
+   disk-based, SCSI-based, native-based, vendor (e.g. Sony, or
+   Plextor) based 
+
+   For now though, we'll start more simply...
+*/
+CdIo *
+cdio_open (const char *source_name, driver_id_t driver_id)
+{
+  if (CdIo_last_driver == -1) cdio_init();
+
+  switch (driver_id) {
+  case DRIVER_UNKNOWN:
+  case DRIVER_DEVICE: 
+    {  
+      /* Scan for a driver. */
+      for (driver_id=DRIVER_UNKNOWN; driver_id<=MAX_DRIVER; driver_id++) {
+        if ((*CdIo_all_drivers[driver_id].have_driver)()) {
+          CdIo *ret=(*CdIo_all_drivers[driver_id].driver_open)(source_name);
+          if (ret != NULL) return ret;
+        }
+      }
+      return NULL;
+    }
+    break;
+  case DRIVER_LINUX:
+  case DRIVER_SOLARIS:
+  case DRIVER_BSDI:
+  case DRIVER_NRG:
+  case DRIVER_BINCUE:
+    if ((*CdIo_all_drivers[driver_id].have_driver)()) {
+      return (*CdIo_all_drivers[driver_id].driver_open)(source_name);
+    }
+  }
+  
+  return NULL;
+}
+
+
+/* In the future we'll have more complicated code to allow selection
+   of an I/O routine as well as code to find an appropriate default
+   routine among the "registered" routines. Possibly classes too
+   disk-based, SCSI-based, native-based, vendor (e.g. Sony, or
+   Plextor) based 
+
+   For now though, we'll start more simply...
+*/
+CdIo *
+cdio_open_cd (const char *source_name)
+{
+  driver_id_t driver_id;
+  
+  if (CdIo_last_driver == -1) cdio_init();
+
+  /* Scan for a driver. */
+  for (driver_id=DRIVER_UNKNOWN; driver_id<=MAX_DRIVER; driver_id++) {
+    if ((*CdIo_all_drivers[driver_id].have_driver)()) {
+      CdIo *ret=(*CdIo_all_drivers[driver_id].driver_open)(source_name);
+      if (ret != NULL) return ret;
+    }
+  }
+  return NULL;
+}
+
+
+
+/* 
+ * Local variables:
+ *  c-file-style: "gnu"
+ *  tab-width: 8
+ *  indent-tabs-mode: nil
+ * End:
+ */
