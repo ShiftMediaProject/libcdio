@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.1 2004/05/10 03:28:52 rocky Exp $
+    $Id: scsi_mmc.h,v 1.2 2004/05/11 02:15:47 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -41,9 +41,12 @@
 #define CDIO_MMC_GPCMD_READ_10	        0x28
 #define CDIO_MMC_GPCMD_READ_SUBCHANNEL	0x42
 #define CDIO_MMC_READ_TOC               0x43
+#define CDIO_MMC_MODE_SELECT	        0x55
+#define CDIO_MMC_MODE_SELECT_6	        0x15
 #define CDIO_MMC_MODE_SENSE_10	        0x5a
 #define CDIO_MMC_GPCMD_READ_12	        0xa8
 #define CDIO_MMC_GPCMD_READ_CD	        0xbe
+#define CDIO_MMC_GPCMD_READ_MSF	        0xb9
 
 #define CDIO_MMC_SET_COMMAND(rec, command) \
   rec[0] = command

@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.6 2004/05/09 16:53:01 rocky Exp $
+    $Id: sector.c,v 1.7 2004/05/11 02:15:58 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -32,7 +32,7 @@
 #endif
 
 
-static const char _rcsid[] = "$Id: sector.c,v 1.6 2004/05/09 16:53:01 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.7 2004/05/11 02:15:58 rocky Exp $";
 
 lba_t
 cdio_lba_to_lsn (lba_t lba)
@@ -42,14 +42,35 @@ cdio_lba_to_lsn (lba_t lba)
   return lba - CDIO_PREGAP_SECTORS; 
 }
 
+/* 
+   The below is adapted from cdparanoia code which claims it is
+   straight from the MMC3 spec.
+*/
+
 void
-cdio_lba_to_msf (lba_t lba, msf_t *msf)
+cdio_lsn_to_msf (lsn_t lsn, msf_t *msf)
 {
+  int m, s, f;
+  
   cdio_assert (msf != 0);
 
-  msf->m = to_bcd8 (lba / (60 * 75));
-  msf->s = to_bcd8 ((lba / 75) % 60);
-  msf->f = to_bcd8 (lba % 75);
+  if ( lsn >= -CDIO_PREGAP_SECTORS ){
+    m    = (lsn + CDIO_PREGAP_SECTORS) / CDIO_CD_FRAMES_PER_MIN;
+    lsn -= m * CDIO_CD_FRAMES_PER_MIN;
+    s    = (lsn + CDIO_PREGAP_SECTORS) / CDIO_CD_FRAMES_PER_SEC;
+    lsn -= s * CDIO_CD_FRAMES_PER_SEC;
+    f    = lsn + CDIO_PREGAP_SECTORS;
+  } else {
+    m    = (lsn + CDIO_CD_MAX_LSN)     / CDIO_CD_FRAMES_PER_MIN;
+    lsn -= m * (CDIO_CD_FRAMES_PER_MIN);
+    s    = (lsn+CDIO_CD_MAX_LSN)       / CDIO_CD_FRAMES_PER_SEC;
+    lsn -= s * CDIO_CD_FRAMES_PER_SEC;
+    f    = lsn + CDIO_CD_MAX_LSN;
+  }
+
+  msf->m = to_bcd8 (m);
+  msf->s = to_bcd8 (s);
+  msf->f = to_bcd8 (f);
 }
 
 /* warning, returns new allocated string */
@@ -74,13 +95,13 @@ cdio_lsn_to_lba (lsn_t lsn)
 }
 
 void
-cdio_lsn_to_msf (lsn_t lsn, msf_t *msf)
+cdio_lba_to_msf (lba_t lba, msf_t *msf)
 {
   cdio_assert (msf != 0);
-  cdio_lba_to_msf(cdio_lsn_to_lba(lsn), msf);
+  cdio_lsn_to_msf(cdio_lba_to_lsn(lba), msf);
 }
 
-uint32_t
+lba_t
 cdio_msf_to_lba (const msf_t *msf)
 {
   uint32_t lba = 0;
@@ -88,17 +109,17 @@ cdio_msf_to_lba (const msf_t *msf)
   cdio_assert (msf != 0);
 
   lba = from_bcd8 (msf->m);
-  lba *= 60;
+  lba *= CDIO_CD_SECS_PER_MIN;
 
   lba += from_bcd8 (msf->s);
-  lba *= 75;
+  lba *= CDIO_CD_FRAMES_PER_SEC;
   
   lba += from_bcd8 (msf->f);
 
   return lba;
 }
 
-uint32_t
+lba_t
 cdio_msf_to_lsn (const msf_t *msf)
 {
   return cdio_lba_to_lsn(cdio_msf_to_lba (msf));

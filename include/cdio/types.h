@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.15 2004/05/08 14:07:09 rocky Exp $
+    $Id: types.h,v 1.16 2004/05/11 02:15:57 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -204,14 +204,19 @@ extern "C" {
   typedef uint8_t bitfield_t;
 #endif
   
-  /*! The type of a Logical Block Address. 
+  /*! The type of a Logical Block Address. We allow for an lba to be 
+    negative to be consistent with an lba, although I'm not sure this
+    this is possible.
+      
+   */
+  typedef int32_t lba_t;
+  
+  /*! The type of a Logical Sector Number. Note that an lba lsn be negative
+    and the MMC3 specs allow for a conversion of a negative lba
 
     @see msf_t
   */
-  typedef uint32_t lba_t;
-  
-  /*! The type of an Logical Sector Number. */
-  typedef uint32_t lsn_t;
+  typedef int32_t lsn_t;
   
   /*! The type of an track number 0..99. */
   typedef uint8_t track_t;
@@ -222,14 +227,16 @@ extern "C" {
 #define CDIO_INVALID_TRACK   0xFF
   
   /*! 
-    Constant for invalid LBA
+    Constant for invalid LBA. It is 151 less than the most negative
+    LBA -45150. This provide slack for the 150-frame offset in
+    LBA to LSN 150 conversions
   */
-#define CDIO_INVALID_LBA   0xFFFFFFFF
+#define CDIO_INVALID_LBA    -45301
   
   /*! 
     Constant for invalid LSN
   */
-#define CDIO_INVALID_LSN   0xFFFFFFFF
+#define CDIO_INVALID_LSN    CDIO_INVALID_LBA
 
 typedef int cdio_fs_anal_t;
 

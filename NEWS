@@ -2,7 +2,9 @@
 - Add interface returning drive capabilityes (cdio_get_drive_cap).
 - Minimal cdrdao image reading
 - Some important (I think) bug fixes
-
+- Redo types of lsn and lba to allow negative values. Should model MMC3
+  specs. Add max/min values for lsn.
+- More complete MMC command set
 
 0.68
 - More honest about mode1 reading in backends. Remove some of the bogusness.
@@ -111,4 +113,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.39 2004/05/08 20:36:01 rocky Exp $
+$Id: NEWS,v 1.40 2004/05/11 02:15:42 rocky Exp $

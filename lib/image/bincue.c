@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.16 2004/04/30 06:54:15 rocky Exp $
+    $Id: bincue.c,v 1.17 2004/05/11 02:15:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.16 2004/04/30 06:54:15 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.17 2004/05/11 02:15:58 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -546,8 +546,8 @@ _read_mode1_sector_bincue (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode1_sectors_bincue (void *env, void *data, uint32_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+_read_mode1_sectors_bincue (void *env, void *data, lsn_t lsn, 
+			    bool b_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   int i;
@@ -613,8 +613,8 @@ _read_mode2_sector_bincue (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors_bincue (void *env, void *data, uint32_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+_read_mode2_sectors_bincue (void *env, void *data, lsn_t lsn, 
+			    bool b_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   int i;

@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.12 2004/05/09 16:52:20 rocky Exp $
+    $Id: nrg.c,v 1.13 2004/05/11 02:16:01 rocky Exp $
 
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.12 2004/05/09 16:52:20 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.13 2004/05/11 02:16:01 rocky Exp $";
 
 /* structures used */
 
@@ -898,8 +898,8 @@ _read_mode1_sector_nrg (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode1_sectors_nrg (void *env, void *data, uint32_t lsn, 
-			  bool b_form2, unsigned nblocks)
+_read_mode1_sectors_nrg (void *env, void *data, lsn_t lsn, 
+			 bool b_form2, unsigned nblocks)
 {
   _img_private_t *_obj = env;
   int i;
@@ -971,8 +971,8 @@ _read_mode2_sector_nrg (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors_nrg (void *env, void *data, uint32_t lsn, 
-			  bool b_form2, unsigned nblocks)
+_read_mode2_sectors_nrg (void *env, void *data, lsn_t lsn, 
+			 bool b_form2, unsigned nblocks)
 {
   _img_private_t *_obj = env;
   int i;

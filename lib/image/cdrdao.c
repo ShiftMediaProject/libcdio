@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.5 2004/05/08 22:02:28 rocky Exp $
+    $Id: cdrdao.c,v 1.6 2004/05/11 02:16:00 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.5 2004/05/08 22:02:28 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.6 2004/05/11 02:16:00 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -888,8 +888,8 @@ _read_mode1_sector_cdrdao (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode1_sectors_cdrdao (void *env, void *data, uint32_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+_read_mode1_sectors_cdrdao (void *env, void *data, lsn_t lsn, 
+			    bool b_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   int i;
@@ -956,8 +956,8 @@ _read_mode2_sector_cdrdao (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors_cdrdao (void *env, void *data, uint32_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+_read_mode2_sectors_cdrdao (void *env, void *data, lsn_t lsn, 
+			    bool b_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   int i;
