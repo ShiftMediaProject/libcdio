@@ -706,11 +706,8 @@ static char *force_generic_device = NULL;
 static void 
 cleanup (void) 
 {
-  if (p)                    paranoia_free(p);
-  if (d)                    cdda_close(d);
-#if FIXME_FIGURE_THIS_OUT
-  free_and_null(span);
-#endif
+  if (p) paranoia_free(p);
+  if (d) cdda_close(d);
   free_and_null(force_cdrom_device);
   free_and_null(force_generic_device);
 }

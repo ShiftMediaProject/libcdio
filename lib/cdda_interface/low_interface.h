@@ -1,5 +1,5 @@
 /*
-  $Id: low_interface.h,v 1.4 2005/01/06 03:09:11 rocky Exp $
+  $Id: low_interface.h,v 1.5 2005/01/07 22:15:25 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -38,10 +38,6 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#ifdef HAVE_LINUX_MAJOR_H
-#include <linux/major.h>
-#endif
-
 #ifdef HAVE_LINUX_VERSION_H
 #include <linux/version.h>
 #endif
@@ -50,14 +46,6 @@
 #include <cdio/cdda.h>
 
 /* some include file locations have changed with newer kernels */
-
-#ifdef SBPCD_H
-#include <linux/sbpcd.h>
-#endif
-
-#ifdef UCDROM_H
-#include <linux/ucdrom.h>
-#endif
 
 #ifndef CDROMAUDIOBUFSIZ      
 #define CDROMAUDIOBUFSIZ        0x5382 /* set the audio buffer size */
