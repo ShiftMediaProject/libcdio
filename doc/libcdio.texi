@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.19 2004/03/04 04:49:15 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.20 2004/04/03 12:24:45 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -244,6 +244,7 @@ to by the color of the cover on the specification.
 @menu
 * Red Book::        Red Book (CD-DA)
 * Yellow Book::     Yellow Book (CD-ROM Digital Data)
+* Green Book::      Green Book (CD-i)
 * White Book::      White Book (Video CD)
 @end menu
 
@@ -257,8 +258,8 @@ and for that information to be split up into tracks. Tracks are broken
 up into "sectors" and each sector contains 2,352 bytes. To play one
 44.1 kHz CD-DA sampled audio second, 75 sectors are used.
 
-In @value{libcdio} when you you want to read an audio sector, you call the
-routine @code{cdio_read_audio_sector()}.
+In @value{libcdio} when you you want to read an audio sector, you call 
+@code{cdio_read_audio_sector()} or @code{cdio_read_audio_sectors()}.
 
 @node Yellow Book
 @section Yellow Book
@@ -339,6 +340,10 @@ detecting and correcting code. This is necessary because data CDs
 cannot tolerate the loss of a handful of bits now and then, the way
 audio CDs can.
 
+In @value{libcdio} when you you want to read a mode1
+sector you call the @code{cdio_read_mode1_sector()} or
+@code{cdio_read_mode1_sectors()}.
+
 @node Mode2
 @subsection Mode2
 Mode 2 data CDs are the same as mode 1 CDs except that the error
@@ -353,21 +358,43 @@ original data CD standards known as CD-ROM Extended Architecture, or
 CD-ROM XA.  CD-ROM XA formats currently in use are CD-I Bridge
 formats, Photo CD and Video CD plus Sony's Playstation.
 
+In @value{libcdio} when you you want to read a mode1
+sector you call the @code{cdio_read_mode2_sector()} or
+@code{cdio_read_mode2_sectors()}.
+
+@node Green Book
+@section Green Book
+
+This was a CD-ROM format developed by Philips for CD-i (an obsolete
+embedded CD-ROM application allowing limited user user interaction
+with films, games and educational applications). The format is ISO
+9660 compliant and introduced mode 2 form 2 addressing. It also 
+contains XA (Extended Architecture) attributes.
+
+Although some Green Book discs contain CD-i applications which can
+only be played on a CD-i player, others have films or music
+videos. Video CDs in Green-Book format are labelled "Digital Video on
+CD." The Green Book for video is largely superceded by White book
+CD-ROM which draws on this specification.
+
+
 @node White Book
 @section White Book
-The White Book was released by Sony, Philips, Matsushita, and JVC
-in 1993, defines the Video CD specification. The White Book
-is also known as Digital Video (DV). A Video CD contains one data
-track recorded in CD-ROM XA Mode 2 Form 2. It is always the first
-track on the disc (Track 1). The ISO-9660 file structure and a CD-i
-application program are recorded in this track, as well as the Video
-CD Information Area which gives general information about the Video
-Compact Disc. After the data track, video is written in one or more
-subsequent tracks within the same session. These tracks are also
-recorded in Mode 2 Form 2.
+The White Book was released by Sony, Philips, Matsushita, and JVC in
+1993, defines the Video CD specification. The White Book is also known
+as Digital Video (DV). 
+
+A Video CD contains one data track recorded in CD-ROM XA Mode 2 Form
+2. It is always the first track on the disc (Track 1). The ISO-9660
+file structure and a CD-i application program are recorded in this
+track, as well as the Video CD Information Area which gives general
+information about the Video Compact Disc. After the data track, video
+is written in one or more subsequent tracks within the same
+session. These tracks are also recorded in Mode 2 Form 2. 
 
 In @value{libcdio} when you you want to read a mode2 format 2 audio
-sector you call the routine @code{cdio_read_mode2_sector()}.
+sector you call the @code{cdio_read_mode2_sector()} or
+@code{cdio_read_mode2_sectors()} setting @code{b_form2} to @code{true}.
 
 @node CD Terms
 @chapter CD Terminology
@@ -752,6 +779,7 @@ main(int argc, const char *argv[])
 	break;	
     @}
   @}
+  cdio_destroy(cdio);
   return 0;
 @}
 @end smallexample
@@ -793,6 +821,12 @@ is @command{iso-read}, part of this distribution.
 #include <sys/types.h>
 #endif
 
+#define my_exit(rc)				\
+  fclose (outfd);				\
+  free(statbuf);				\
+  iso9660_close(iso);				\
+  return rc;					\
+
 int
 main(int argc, const char *argv[])
 @{
@@ -814,12 +848,15 @@ main(int argc, const char *argv[])
       fprintf(stderr, 
 	      "Could not get ISO-9660 file information for file %s\n",
 	      LOCAL_FILENAME);
+      iso9660_close(iso);
       return 2;
     @}
 
   if (!(outfd = fopen (LOCAL_FILENAME, "wb")))
     @{
       perror ("fopen()");
+      free(statbuf);
+      iso9660_close(iso);
       return 3;
     @}
 
@@ -836,7 +873,7 @@ main(int argc, const char *argv[])
       @{
 	fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
 		(long unsigned int) statbuf->lsn + (i / ISO_BLOCKSIZE));
-	return 4;
+	my_exit(4);
       @}
       
       
@@ -845,7 +882,7 @@ main(int argc, const char *argv[])
       if (ferror (outfd))
 	@{
 	  perror ("fwrite()");
-	  return 5;
+	  my_exit(5);
 	@}
     @}
   
@@ -857,9 +894,7 @@ main(int argc, const char *argv[])
   if (ftruncate (fileno (outfd), statbuf->size))
     perror ("ftruncate()");
 
-  fclose (outfd);
-  iso9660_close(iso);
-  return 0;
+  my_exit(0);
 @}
 @end smallexample 
 
