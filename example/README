@@ -1,4 +1,4 @@
-$Id: README,v 1.10 2004/11/22 01:25:12 rocky Exp $
+$Id: README,v 1.11 2005/01/22 18:43:13 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -10,26 +10,38 @@ Descriptions of the programs here are as follows...
 
 cdtext.c: A program to show CD-Text and CD disc mode info.
 
-iso1.c: A program to show using libiso9660 to list files in a
-	directory of an ISO-9660 image.
+drives.c: A program to show drivers installed and what the default
+	  CD-ROM drive is and what CD drives are available.
 
-iso2.c: A simple program to show using libiso9660 to extract a file
-	from a CDRWIN cue/bin CD image.
+iso1.c:   A program to show using libiso9660 to list files in a
+	  directory of an ISO-9660 image.
 
-iso3.c: A program to show using libiso9660 to extract a file from an
-	ISO-9660 image.
+iso2.c:   A program to show using libiso9660 to extract a file
+	  from a CDRWIN cue/bin CD image.
+
+iso3.c:   A program to show using libiso9660 to extract a file from an
+	  ISO-9660 image.
 
 iso1cpp.cpp: iso1.c compiled via C++
 iso2cpp.cpp: iso2.c compiled via C++
 iso3cpp.cpp: iso3.c compiled via C++
+
+paranoia:  A program to show using CD-DA paranoia (a library for jitter
+	   detection and audio-read error correction). This program uses
+	   an interface compatible (mostly) with cdparanoia.
+
+paranoia2: Another program to show using CD-DA paranoia using a more
+	   libcdio-oriented initialization. Probably more suited to
+	   things that otherwise use libcdio such as media players 
+	   (e.g. for getting CDDB or CD-Text info)
 
 scsi-mmc1.c: A program to show issuing a simple SCSI-MMC command (INQUIRY).
 
 scsi-mmc2.c: A more involved SCSI-MMC command to list features from 
 	     a SCSI GET_CONFIGURATION command.
 
-sample1.c: A simple program to list track numbers and logical sector
-   numbers of a Compact Disc using libcdio.
+tracks.c:    A program to list track numbers and logical sector
+	     numbers of a Compact Disc using libcdio.
 
 sample2.c: A simple program to show drivers installed and what the
    default CD-ROM drive is.
@@ -40,7 +52,5 @@ sample3.c: A simple program to show the use of cdio_guess_cd_type().
 sample4.c: A slightly improved sample3 program: we handle cdio logging
    and take an optional CD-location.
 
-sample5.c: A program to show drivers installed and what the default
-   CD-ROM drive is and what CD drives are available.
 
 
