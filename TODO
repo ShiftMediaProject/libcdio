@@ -24,8 +24,6 @@ and feature requests.
   set of "tar" would be nice, as that is widely used and probably
   fairly complete in thing that might be desired for listing/extracting.
 
-* Delete files in an iso9660 image (mephisto75 at web.de)
-
 * Add something to show what kind of CD media is in a drive. Ideally: CD
   (purchased), CD Write Once, CD Read/Write, but what is there is
   probably something like Cyanine, PhthaloCyanine, Metallized Azo,
@@ -57,6 +55,10 @@ and feature requests.
 
   - Address static loglevel variable (nboullis at debian.org)
 
+* UDF support.
+
+* Delete files in an iso9660 image (mephisto75 at web.de)
+
 * Some things where libcdio will probably not expand in:
  
   -  DVD things, especially DVD-ROM (use libdvdread) 
@@ -71,4 +73,4 @@ to undertake doing it. Patches are always welcome (and CVS write
 access is available for those who have demonstrated reasonable ability
 through contributions.)
 
-$Id: TODO,v 1.6 2004/10/23 21:15:22 rocky Exp $
+$Id: TODO,v 1.7 2004/10/23 21:24:07 rocky Exp $
