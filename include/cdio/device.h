@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.9 2005/01/29 20:54:20 rocky Exp $
+    $Id: device.h,v 1.10 2005/02/05 04:23:21 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -116,7 +116,7 @@ extern "C" {
   typedef enum  {
     DRIVER_OP_UNINIT = -3,     /**< returned when a particular driver
 				   hasn't been initialized or a null
-				   CdIo_t pointer has been passed.
+				   pointer has been passed.
 				*/
     DRIVER_OP_UNSUPPORTED = -2, /**< returned when a particular driver
 				   doesn't support a particular operation.

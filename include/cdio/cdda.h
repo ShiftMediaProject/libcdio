@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.14 2005/01/29 20:54:20 rocky Exp $
+  $Id: cdda.h,v 1.15 2005/02/05 04:23:21 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -32,9 +32,16 @@
 #include <cdio/cdio.h>
 #include <cdio/paranoia.h>
 
+enum {
+  CDDA_MESSAGE_FORGETIT = 0,
+  CDDA_MESSAGE_PRINTIT  = 1,
+  CDDA_MESSAGE_LOGIT    = 2,
+  CD_FRAMESAMPLES       = CDIO_CD_FRAMESIZE_RAW / 4,
+  MAXTRK                = (CDIO_CD_MAX_TRACKS+1)
+} paranoia_cdda_enums;
+  
 #define CD_FRAMESAMPLES (CDIO_CD_FRAMESIZE_RAW / 4)
 
-#include <sys/types.h>
 #include <signal.h>
 
 /** We keep MAXTRK since this header is exposed publicly and other
@@ -51,11 +58,6 @@ typedef struct TOC_s {
 /** For compatibility. TOC is depricated, use TOC_t instead. */
 #define TOC TOC_t
 
-/** interface types */
-#define GENERIC_SCSI	0
-#define COOKED_IOCTL	1
-#define TEST_INTERFACE	2
-
 #define CDDA_MESSAGE_FORGETIT 0
 #define CDDA_MESSAGE_PRINTIT 1
 #define CDDA_MESSAGE_LOGIT 2
@@ -70,7 +72,6 @@ struct cdrom_drive_s {
 
   char *drive_model;
   int drive_type;
-  int interface;
   int bigendianp; /**< Whether data returned on the CDDA is bigendian or
 		       not. 1 if big endian, 0 if little endian and -1 if
 		       we don't know.
@@ -121,9 +122,25 @@ struct cdrom_drive_s {
 };
 
 
-/**< jitter testing. The first two bits are set to determine
-     the byte-distance we will jitter the data; 0 is no shifting.
+/*! An enumeration for some of the CDDA_TEST_* #defines below. This isn't
+  really an enumeration one would really use in a program it is to
+  be helpful in debuggers where wants just to refer to the CDDA_TEST_
+  names and get something.
+*/
+enum {
+  CDDA_TEST_JITTER_SMALL   = 1,
+  CDDA_TEST_JITTER_LARGE   = 2,
+  CDDA_TEST_JITTER_MASSIVE = 3,
+  CDDA_TEST_FRAG_SMALL     = (1<<3),
+  CDDA_TEST_FRAG_LARGE     = (2<<3),
+  CDDA_TEST_FRAG_MASSIVE   = (3<<3),
+  CDDA_TEST_UNDERRUN       = 64 
+} paranoia_jitter_enums;
+  
+/** jitter testing. The first two bits are set to determine the
+     byte-distance we will jitter the data; 0 is no shifting.
  */
+
 #define CDDA_TEST_JITTER_SMALL      1 
 #define CDDA_TEST_JITTER_LARGE      2 
 #define CDDA_TEST_JITTER_MASSIVE    3 
@@ -278,18 +295,21 @@ extern int data_bigendianp(cdrom_drive_t *d);
 
 /** transport errors: */
 
-#define TR_OK            0
-#define TR_EWRITE        1  /**< Error writing packet command (transport) */
-#define TR_EREAD         2  /**< Error reading packet data (transport) */
-#define TR_UNDERRUN      3  /**< Read underrun */
-#define TR_OVERRUN       4  /**< Read overrun */
-#define TR_ILLEGAL       5  /**< Illegal/rejected request */
-#define TR_MEDIUM        6  /**< Medium error */
-#define TR_BUSY          7  /**< Device busy */
-#define TR_NOTREADY      8  /**< Device not ready */
-#define TR_FAULT         9  /**< Device failure */
-#define TR_UNKNOWN      10  /**< Unspecified error */
-#define TR_STREAMING    11  /**< loss of streaming */
+typedef enum {
+  TR_OK =            0,
+  TR_EWRITE =        1  /**< Error writing packet command (transport) */,
+  TR_EREAD =         2  /**< Error reading packet data (transport) */,
+  TR_UNDERRUN =      3  /**< Read underrun */,
+  TR_OVERRUN =       4  /**< Read overrun */,
+  TR_ILLEGAL =       5  /**< Illegal/rejected request */,
+  TR_MEDIUM =        6  /**< Medium error */,
+  TR_BUSY =          7  /**< Device busy */,
+  TR_NOTREADY =      8  /**< Device not ready */,
+  TR_FAULT =         9  /**< Device failure */,
+  TR_UNKNOWN =      10  /**< Unspecified error */,
+  TR_STREAMING =    11  /**< loss of streaming */,
+} transport_error_t;
+  
 
 #ifdef NEED_STRERROR_TR
 const char *strerror_tr[]={

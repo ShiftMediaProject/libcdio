@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.58 2005/01/29 20:54:20 rocky Exp $
+    $Id: iso9660.h,v 1.59 2005/02/05 04:23:21 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -45,6 +45,51 @@
 #define MIN_TRACK_SIZE 4*75
 #define MIN_ISO_SIZE MIN_TRACK_SIZE
 
+/*! An enumeration for some of the ISO_* #defines below. This isn't
+    really an enumeration one would really use in a program it is here
+    to be helpful in debuggers where wants just to refer to the
+    ISO_*_ names and get something.
+  */
+enum {
+  ISO_PVD_SECTOR      =   16, /**< Sector of Primary Volume Descriptor */
+  ISO_EVD_SECTOR      =   17, /**< Sector of End Volume Descriptor */
+  LEN_ISONAME         =   31, /**<  size in bytes of the filename 
+                                 portion + null byte */
+  ISO_MAX_SYSTEM_ID   =   32, /**< Maximum number of characters in a system 
+                                 id. */
+  MAX_ISONAME         =   37, /**< size in bytes of the filename 
+                                 portion + null byte */
+  ISO_MAX_PREPARER_ID =  128, /**< Maximum number of characters in a
+                                 preparer id. */
+  MAX_ISOPATHNAME     =  255,
+  ISO_BLOCKSIZE       = 2048
+
+} iso_enums1;
+
+/*! An enumeration for some of the ISO_* #defines below. This isn't
+    really an enumeration one would really use in a program it is here
+    to be helpful in debuggers where wants just to refer to the
+    ISO_*_ names and get something.
+  */
+enum {
+  ISO_FILE	      =   0,	/**<, Not really a flag...		  */
+  ISO_EXISTENCE	      =   1,	/**< Do not make existence known (hidden) */
+  ISO_DIRECTORY	      =   2,	/**< This file is a directory		  */
+  ISO_ASSOCIATED      =   4,	/**< This file is an associated file	  */
+  ISO_RECORD	      =   8,	/**<, Record format in extended attr. != 0 */
+  ISO_PROECTION	      =  16,	/**< No read/execute perm. in ext. attr.  */
+  ISO_DRESERVED1      =  32,	/**<, Reserved bit 5			  */
+  ISO_DRESERVED2      =  64,	/**<, Reserved bit 6			  */
+  ISO_MULTIEXTENT     = 128,	/**< Not final entry of a mult. ext. file */
+} iso_flag_enums;
+
+enum {
+  ISO_VD_PRIMARY      =  1,  /**< Is in any ISO-9660 */
+  ISO_VD_SUPPLEMENARY =  2,  /**< Used by Joliet */
+  ISO_VD_END	      = 255
+} iso_vd_enums;
+
+  
 /*!
    An ISO filename is: "abcde.eee;1" -> <filename> '.' <ext> ';' <version #>
 
@@ -71,22 +116,22 @@
 /*! \brief Maximum number of characters in the entire ISO 9660 filename. */
 #define MAX_ISOPATHNAME 255
 
-/*! \brief Maximum number of characters in an perparer id. */
+/*! \brief Maximum number of characters in a preparer id. */
 #define ISO_MAX_PREPARER_ID 128
 
-/*! \brief Maximum number of characters in an publisher id. */
+/*! \brief Maximum number of characters in a publisher id. */
 #define ISO_MAX_PUBLISHER_ID 128
 
 /*! \brief Maximum number of characters in an application id. */
 #define ISO_MAX_APPLICATION_ID 128
 
-/*! \brief Maximum number of characters in an system id. */
+/*! \brief Maximum number of characters in a system id. */
 #define ISO_MAX_SYSTEM_ID 32
 
-/*! \brief Maximum number of characters in an volume id. */
+/*! \brief Maximum number of characters in a volume id. */
 #define ISO_MAX_VOLUME_ID 32
 
-/*! \brief Maximum number of characters in an volume-set id. */
+/*! \brief Maximum number of characters in a volume-set id. */
 #define ISO_MAX_VOLUMESET_ID 128
 
 /**! ISO 9660 directory flags. */
@@ -101,7 +146,7 @@
 #define	ISO_MULTIEXTENT	128	/**< Not final entry of a mult. ext. file */
 
 /**! Volume descriptor types */
-#define ISO_VD_PRIMARY             1
+#define ISO_VD_PRIMARY             1  /**< Is in any ISO-9660 */
 #define ISO_VD_SUPPLEMENTARY	   2  /**< Used by Joliet */
 #define ISO_VD_END	         255
 
@@ -111,7 +156,10 @@
 /*! Sector of End Volume Descriptor */
 #define ISO_EVD_SECTOR  17  
 
-/*! String inside track identifying an ISO 9660 filesystem. */
+/*! String inside frame which identifies an ISO 9660 filesystem. This
+    string generally occurs one byte into a frame at the beginning of
+    an ISO_PVD_SECTOR.
+*/
 #define ISO_STANDARD_ID      "CD001" 
 
 
@@ -122,12 +170,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
-enum strncpy_pad_check {
+typedef enum strncpy_pad_check {
   ISO9660_NOCHECK = 0,
   ISO9660_7BIT,
   ISO9660_ACHARS,
   ISO9660_DCHARS
-};
+} strncpy_pad_check_t;
 
 #ifndef  EMPTY_ARRAY_SIZE
 #define EMPTY_ARRAY_SIZE 0
@@ -375,6 +423,42 @@ typedef struct _iso9660 iso9660_t;
   iso9660_t *iso9660_open_ext (const char *psz_path, 
                                iso_extension_mask_t iso_extension_mask);
 
+/*!
+  Open an ISO 9660 image for reading with some tolerence for positioning
+  of the ISO9660 image. Here we will scan for ISO_STANDARD_ID and set
+  that position as the 
+  Maybe in the future we will have
+  a mode. NULL is returned on error.
+
+  @see iso9660_open
+*/
+  iso9660_t *iso9660_open_fuzzy (const char *psz_path /*flags, mode */,
+                                 uint16_t i_fuzz);
+
+/*!
+  Open an ISO 9660 image for reading with some tolerence for positioning
+  of the ISO9660 image. Here we will scan for ISO_STANDARD_ID and set
+  that position as the 
+  Maybe in the future we will have
+  a mode. NULL is returned on error.
+
+  @see iso9660_open
+*/
+  iso9660_t *iso9660_open_fuzzy_ext (const char *psz_path,
+                                     iso_extension_mask_t iso_extension_mask,
+                                     uint16_t i_fuzz
+                                     /*flags, mode */);
+
+/*!
+  Read the Super block of an ISO 9660 image but determine framesize
+  and datastart and a possible additional offset. Generally here we are
+  not reading an ISO 9660 image but a CD-Image which contains an ISO 9660
+  filesystem.
+*/
+  bool iso9660_ifs_fuzzy_read_superblock (iso9660_t *p_iso, 
+                                          iso_extension_mask_t iso_extension_mask,
+                                          uint16_t i_fuzz);
+  
 /*!
   Close previously opened ISO 9660 image.
   True is unconditionally returned. If there was an error false would
