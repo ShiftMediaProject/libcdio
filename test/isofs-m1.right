@@ -20,13 +20,13 @@ Volume     : CDROM
 Volume Set : 
 ISO9660 filesystem
 /:
-  drwxrwxr-x   3 715 715 [LSN     23]      2048 Apr 20 2003 11:26  .
-  drwxrwxr-x   3 715 715 [LSN     23]      2048 Apr 20 2003 11:26  ..
-  -rw-r--r--   1 715 715 [LSN     26]     17992 Jul 29 2002 12:39  COPYING
-  drwxrwxr-x   2 715 715 [LSN     24]      2048 Apr 20 2003 16:18  doc
+  drwxrwxr-x   3 715 715 [LSN     23]      2048 Apr 20 2003 11:26:46  .
+  drwxrwxr-x   3 715 715 [LSN     23]      2048 Apr 20 2003 11:26:46  ..
+  -rw-r--r--   1 715 715 [LSN     26]     17992 Jul 29 2002 12:39:53  COPYING
+  drwxrwxr-x   2 715 715 [LSN     24]      2048 Apr 20 2003 16:18:53  doc
 
 /doc/:
-  drwxrwxr-x   2 715 715 [LSN     24]      2048 Apr 20 2003 16:18  .
-  drwxrwxr-x   3 715 715 [LSN     23]      2048 Apr 20 2003 11:26  ..
-  -rw-rw-r--   1 715 715 [LSN     35]       648 Apr 20 2003 16:18  readme.txt
+  drwxrwxr-x   2 715 715 [LSN     24]      2048 Apr 20 2003 16:18:53  .
+  drwxrwxr-x   3 715 715 [LSN     23]      2048 Apr 20 2003 11:26:46  ..
+  -rw-rw-r--   1 715 715 [LSN     35]       648 Apr 20 2003 16:18:53  readme.txt
 

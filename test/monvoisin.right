@@ -22,45 +22,45 @@ Volume     : MONVOISIN
 Volume Set : 
 ISO9660 filesystem
 /:
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00  .
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00  ..
-  d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048 Feb 19 2001 15:37  cdi
-  d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Feb 19 2001 15:37  ext
-  d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Feb 19 2001 15:37  mpegav
-  d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Feb 19 2001 15:37  segment
-  d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Feb 19 2001 15:37  vcd
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00:00  ..
+  d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048 Feb 19 2001 15:37:04  cdi
+  d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Feb 19 2001 15:37:04  ext
+  d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Feb 19 2001 15:37:04  mpegav
+  d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Feb 19 2001 15:37:04  segment
+  d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Feb 19 2001 15:37:04  vcd
 
 /CDI/:
-  d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048 Jan 01 1970 00:00  .
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00  ..
-  ---2-xrxrxr 0 0 [fn 01] [LSN    211]   1494332 (  1315168) Feb 19 2001 15:37  cdi_imag.rtf
-  ----1xrxrxr 0 0 [fn 01] [LSN    854]     13616 Feb 19 2001 15:37  cdi_text.fnt
-  ----1xrxrxr 0 0 [fn 01] [LSN    861]    102400 Feb 19 2001 15:37  cdi_vcd.app
-  ----1xrxrxr 0 0 [fn 01] [LSN    911]       279 Feb 19 2001 15:37  cdi_vcd.cfg
+  d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048 Jan 01 1970 00:00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00:00  ..
+  ---2-xrxrxr 0 0 [fn 01] [LSN    211]   1494332 (  1315168) Feb 19 2001 15:37:04  cdi_imag.rtf
+  ----1xrxrxr 0 0 [fn 01] [LSN    854]     13616 Feb 19 2001 15:37:04  cdi_text.fnt
+  ----1xrxrxr 0 0 [fn 01] [LSN    861]    102400 Feb 19 2001 15:37:04  cdi_vcd.app
+  ----1xrxrxr 0 0 [fn 01] [LSN    911]       279 Feb 19 2001 15:37:04  cdi_vcd.cfg
 
 /EXT/:
-  d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan 01 1970 00:00  .
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00  ..
-  ----1xrxrxr 0 0 [fn 01] [LSN    912]     65536 Feb 19 2001 15:37  lot_x.vcd
-  ----1xrxrxr 0 0 [fn 01] [LSN    944]        24 Feb 19 2001 15:37  psd_x.vcd
-  ----1xrxrxr 0 0 [fn 01] [LSN    945]       114 Feb 19 2001 15:37  scandata.dat
+  d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jan 01 1970 00:00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00:00  ..
+  ----1xrxrxr 0 0 [fn 01] [LSN    912]     65536 Feb 19 2001 15:37:04  lot_x.vcd
+  ----1xrxrxr 0 0 [fn 01] [LSN    944]        24 Feb 19 2001 15:37:04  psd_x.vcd
+  ----1xrxrxr 0 0 [fn 01] [LSN    945]       114 Feb 19 2001 15:37:04  scandata.dat
 
 /MPEGAV/:
-  d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Jan 01 1970 00:00  .
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00  ..
-  ---2-xrxrxr 0 0 [fn 01] [LSN   1251]   3655652 (  3221504) Feb 19 2001 15:37  avseq01.dat
+  d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Jan 01 1970 00:00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00:00  ..
+  ---2-xrxrxr 0 0 [fn 01] [LSN   1251]   3655652 (  3221504) Feb 19 2001 15:37:59  avseq01.dat
 
 /SEGMENT/:
-  d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jan 01 1970 00:00  .
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00  ..
+  d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jan 01 1970 00:00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00:00  ..
 
 /VCD/:
-  d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jan 01 1970 00:00  .
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00  ..
-  ----1xrxrxr 0 0 [fn 00] [LSN    151]      2048 Feb 19 2001 15:37  entries.vcd
-  ----1xrxrxr 0 0 [fn 00] [LSN    150]      2048 Feb 19 2001 15:37  info.vcd
-  ----1xrxrxr 0 0 [fn 00] [LSN    152]     65536 Feb 19 2001 15:37  lot.vcd
-  ----1xrxrxr 0 0 [fn 00] [LSN    184]        24 Feb 19 2001 15:37  psd.vcd
+  d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jan 01 1970 00:00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jan 01 1970 00:00:00  ..
+  ----1xrxrxr 0 0 [fn 00] [LSN    151]      2048 Feb 19 2001 15:37:04  entries.vcd
+  ----1xrxrxr 0 0 [fn 00] [LSN    150]      2048 Feb 19 2001 15:37:04  info.vcd
+  ----1xrxrxr 0 0 [fn 00] [LSN    152]     65536 Feb 19 2001 15:37:04  lot.vcd
+  ----1xrxrxr 0 0 [fn 00] [LSN    184]        24 Feb 19 2001 15:37:04  psd.vcd
 
 XA sectors   Video CD   
 session #2 starts at track  2, LSN: 1251, ISO 9660 blocks:   1101

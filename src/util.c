@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.44 2005/02/26 15:41:20 rocky Exp $
+  $Id: util.c,v 1.45 2005/02/26 23:25:33 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -498,7 +498,7 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
   if (yep == p_statbuf->rr.b3_rock && b_rock) {
     struct tm tm;
 
-    strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &p_statbuf->tm);
+    strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M:%S ", &p_statbuf->tm);
 
     /* Now try the proper field for mtime: attributes  */
     if (p_statbuf->rr.modify.b_used) {
@@ -507,7 +507,7 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
       } else {
 	iso9660_get_dtime(&p_statbuf->rr.modify.t.dtime, true, &tm);
       }
-      strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &tm);
+      strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M:%S ", &tm);
     }
     
     report (stdout," %s %s", date_str, psz_name_untranslated );
@@ -517,7 +517,7 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
     }
 
   } else {
-    strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &p_statbuf->tm);
+    strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M:%S ", &p_statbuf->tm);
     report (stdout," %s %s", date_str, psz_name_translated);
   }
 

@@ -20,13 +20,13 @@ Volume     : CDROM
 Volume Set : 
 ISO9660 filesystem
 /:
-  d [LSN     23]      2048 Apr 20 2003 11:26  .
-  d [LSN     23]      2048 Apr 20 2003 11:26  ..
-  - [LSN     26]     17992 Jul 29 2002 12:39  copying
-  d [LSN     24]      2048 Apr 20 2003 16:18  doc
+  d [LSN     23]      2048 Apr 20 2003 11:26:46  .
+  d [LSN     23]      2048 Apr 20 2003 11:26:46  ..
+  - [LSN     26]     17992 Jul 29 2002 12:39:53  copying
+  d [LSN     24]      2048 Apr 20 2003 16:18:53  doc
 
 /doc/:
-  d [LSN     24]      2048 Apr 20 2003 16:18  .
-  d [LSN     23]      2048 Apr 20 2003 11:26  ..
-  - [LSN     35]       648 Apr 20 2003 16:18  readme.txt
+  d [LSN     24]      2048 Apr 20 2003 16:18:53  .
+  d [LSN     23]      2048 Apr 20 2003 11:26:46  ..
+  - [LSN     35]       648 Apr 20 2003 16:18:53  readme.txt
 

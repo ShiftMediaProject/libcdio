@@ -21,37 +21,37 @@ Volume     : SVCD_OGT_TEST_NTSC
 Volume Set : 
 ISO9660 filesystem
 /:
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  .
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
-  d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048 Jul 14 1978 00:00  ext
-  d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jul 14 1978 00:00  mpeg2
-  d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Jul 14 1978 00:00  segment
-  d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jul 14 1978 00:00  svcd
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00:00  ..
+  d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048 Jul 14 1978 00:00:00  ext
+  d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jul 14 1978 00:00:00  mpeg2
+  d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Jul 14 1978 00:00:00  segment
+  d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jul 14 1978 00:00:00  svcd
 
 /EXT/:
-  d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048 Jul 14 1978 00:00  .
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
-  ----1xrxrxr 0 0 [fn 00] [LSN    375]       201 Jul 14 1978 00:00  scandata.dat
+  d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048 Jul 14 1978 00:00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00:00  ..
+  ----1xrxrxr 0 0 [fn 00] [LSN    375]       201 Jul 14 1978 00:00:00  scandata.dat
 
 /MPEG2/:
-  d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jul 14 1978 00:00  .
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
-  ---2-xrxrxr 0 0 [fn 00] [LSN    526]   7971320 (  7024640) Jul 14 1978 00:00  avseq01.mpg
+  d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jul 14 1978 00:00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00:00  ..
+  ---2-xrxrxr 0 0 [fn 00] [LSN    526]   7971320 (  7024640) Jul 14 1978 00:00:00  avseq01.mpg
 
 /SEGMENT/:
-  d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Jul 14 1978 00:00  .
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
-  ---2-xrxrxr 0 0 [fn 00] [LSN    225]    183596 (   161792) Jul 14 1978 00:00  item0001.mpg
+  d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Jul 14 1978 00:00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00:00  ..
+  ---2-xrxrxr 0 0 [fn 00] [LSN    225]    183596 (   161792) Jul 14 1978 00:00:00  item0001.mpg
 
 /SVCD/:
-  d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jul 14 1978 00:00  .
-  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
-  ----1xrxrxr 0 0 [fn 00] [LSN    151]      2048 Jul 14 1978 00:00  entries.svd
-  ----1xrxrxr 0 0 [fn 00] [LSN    150]      2048 Jul 14 1978 00:00  info.svd
-  ----1xrxrxr 0 0 [fn 00] [LSN    152]     65536 Jul 14 1978 00:00  lot.svd
-  ----1xrxrxr 0 0 [fn 00] [LSN    184]        40 Jul 14 1978 00:00  psd.svd
-  ----1xrxrxr 0 0 [fn 00] [LSN    186]       190 Jul 14 1978 00:00  search.dat
-  ----1xrxrxr 0 0 [fn 00] [LSN    185]      2048 Jul 14 1978 00:00  tracks.svd
+  d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jul 14 1978 00:00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00:00  ..
+  ----1xrxrxr 0 0 [fn 00] [LSN    151]      2048 Jul 14 1978 00:00:00  entries.svd
+  ----1xrxrxr 0 0 [fn 00] [LSN    150]      2048 Jul 14 1978 00:00:00  info.svd
+  ----1xrxrxr 0 0 [fn 00] [LSN    152]     65536 Jul 14 1978 00:00:00  lot.svd
+  ----1xrxrxr 0 0 [fn 00] [LSN    184]        40 Jul 14 1978 00:00:00  psd.svd
+  ----1xrxrxr 0 0 [fn 00] [LSN    186]       190 Jul 14 1978 00:00:00  search.dat
+  ----1xrxrxr 0 0 [fn 00] [LSN    185]      2048 Jul 14 1978 00:00:00  tracks.svd
 
 XA sectors   Super Video CD (SVCD) or Chaoji Video CD (CVD)
 session #2 starts at track  2, LSN: 526, ISO 9660 blocks:    376
