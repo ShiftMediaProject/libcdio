@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.24 2004/07/28 22:02:55 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.25 2004/07/29 05:32:11 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -170,28 +170,45 @@ limited. (However to be fair, it may have only been intended for games
 and may be suitable for that).  Applications that just want the CD
 reading and control portion I think will find quite a bit overhead.
 
-Another related project is J@"org Schilling's SCSI library. If I knew how
-to make this project hook into that I'd do it. If you want to
-volunteer to undertake, please let me know.
+Another related project is J@"org Schilling's SCSI library. You can
+use that to make a non-SCSI CD-ROM act like one that understands SCSI
+MMC commands which is a neat thing to do. However it is a little weird
+to have to install drivers just so you can run a particular user-level
+program. Installing drivers often requires special priviledges and
+permissions and it is pervasive on a system. It is a little sad that
+along the way to creating such a SCSI library a library similar to
+@value{libcdio} wasn't created which could be used. Were that the
+case, this library certainly never would have been written.
 
 At the OS level there is the "A Linux CD-ROM Standard" by David van
 Leeuwen from around 1999. This defines a set of definitions and
 ioctl's that mask hardware differences of various Compact Disc
-hardware. It is a great idea and no doubt something similar exists on
-other platforms. However this "standard" lacked adoption on OS's other
-than GNU/Linux.
+hardware. It is a great idea, however this ``standard'' lacked
+adoption on OS's other than GNU/Linux. (Or maybe it's the case that
+the standard on other OS's lacked adoption on GNU/Linux.)
 
-Finally at the hardware level where a similar chaos exists (existed?),
-there is the SCSI MMC (multimedia commands). This attempts to provide
-a uniform command set for CD devices sort of like PostScript does for
-printer commands. But in contrast to PostScript, there is no uniform
-PostScript command language that programmers can write to. Instead
-each OS has its own ``standard API.''  For example Adaptec's ASPI or
-the Microsoft's DeviceIoControl on Microsoft Windows, or IOKit for
-Apple's OS/X, or FreeBSD's CAM. Even in situtations where the
-underlying function impliment MMC, the way you write code to invoke
-the commands is different across OS's. In @value{libcdio} we provide a
-common API to issue SCSI-MMC commands.
+Finally at the hardware level where a similar chaos exists, there has
+been an attempt to do something similar with the SCSI MMC (multimedia
+commands). This attempts to provide a uniform command set for CD
+devices PostScript does for printer commands.@footnote{I wrote
+``attempts'' because over time the command set has changed and now
+there are several different commands to do a particular function like
+read a CD table of contents and some hardware understands some of the
+version of the commands set but might not others} In contrast to
+PostScript where there one in theory can write a PostScript program in
+a uniform ASCII representation and send that to a printer, for MMC
+although there are common internal structures defined, there is no
+common syntax for representing the structures or an OS-independent
+library or API for issuing MMC-commands which a programmer would need
+to use. Instead each Operating System has its own interface.  For
+example Adaptec's ASPI or the Microsoft's DeviceIoControl on Microsoft
+Windows, or IOKit for Apple's OS/X, or FreeBSD's CAM. I've been
+postively amazed at how many different variations for doing basically
+the same thing there are. And how easy it is to issue an SCSI-MMC
+command from a program varies from easy to very difficult. Mastering
+the boilerplate code to issue a command on one OS really doesn't help
+in figuring out how to do it on another OS. So in @value{libcdio} we
+provide a common API to issue SCSI-MMC commands.
 
 @node Purpose
 @chapter What is in this package (and what's not)
@@ -995,17 +1012,17 @@ print_cdtext_track_info(CdIo *cdio, track_t i_track, const char *message) @{
 @}
     
 static void 
-print_disc_info(CdIo *cdio, track_t i_tracks, track_t i_first_track) @{
+print_disc_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) @{
   track_t i_last_track = i_first_track+i_tracks;
-  discmode_t cd_discmode = cdio_get_discmode(cdio);
+  discmode_t cd_discmode = cdio_get_discmode(p_cdio);
 
   printf("%s\n", discmode2str[cd_discmode]);
   
   print_cdtext_track_info(cdio, 0, "\nCD-TEXT for Disc:");
   for ( ; i_first_track < i_last_track; i_first_track++ ) @{
-    char msg[50];
+    char psz_msg[50];
     sprintf(msg, "CD-TEXT for Track %d:", i_first_track);
-    print_cdtext_track_info(cdio, i_first_track, msg);
+    print_cdtext_track_info(p_cdio, i_first_track, psz_msg);
   @}
 @}
 
@@ -1014,19 +1031,19 @@ main(int argc, const char *argv[])
 @{
   track_t i_first_track;
   track_t i_tracks;
-  CdIo *cdio;
+  CdIo *p_cdio;
   cdio = cdio_open (NULL, DRIVER_UNKNOWN);
-  i_first_track = cdio_get_first_track_num(cdio);
-  i_tracks      = cdio_get_num_tracks(cdio);
+  i_first_track = cdio_get_first_track_num(p_cdio);
+  i_tracks      = cdio_get_num_tracks(p_cdio);
 
-  if (NULL == cdio) @{
+  if (NULL == p_cdio) @{
     printf("Couldn't find CD\n");
     return 1;
   @} else @{
-    print_disc_info(cdio, i_tracks, i_first_track);
+    print_disc_info(p_cdio, i_tracks, i_first_track);
   @}
 
-  cdio_destroy(cdio);
+  cdio_destroy(p_cdio);
   
   return 0;
 @}
