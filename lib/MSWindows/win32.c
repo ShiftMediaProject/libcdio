@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.37 2004/08/03 12:45:40 rocky Exp $
+    $Id: win32.c,v 1.38 2004/08/06 14:27:33 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.37 2004/08/03 12:45:40 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.38 2004/08/06 14:27:33 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -126,6 +126,10 @@ _cdio_get_drive_cap (const void *env,
 		     cdio_drive_misc_cap_t  *p_misc_cap)
 {
   const _img_private_t *_obj = env;
+
+  *p_read_cap  = 0;
+  *p_write_cap = 0;
+  *p_misc_cap  = 0;
 
   if (_obj->hASPI) {
     /* A safe guess */ 
