@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.2 2005/01/27 11:08:55 rocky Exp $
+    $Id: win32.h,v 1.3 2005/02/04 03:57:45 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -66,20 +66,20 @@ discmode_t get_discmode_win32ioctl (_img_private_t *p_env);
    Reads an audio device using the DeviceIoControl method into data
    starting from lsn.  Returns 0 if no error.
 */
-int read_audio_sectors_win32ioctl (_img_private_t *obj, void *data, lsn_t lsn, 
+int read_audio_sectors_win32ioctl (_img_private_t *p_obj, void *p_data, lsn_t lsn, 
 				   unsigned int nblocks);
 /*!
    Reads a single mode2 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int read_mode2_sector_win32ioctl (const _img_private_t *env, void *data, 
+int read_mode2_sector_win32ioctl (_img_private_t *p_env, void *p_data, 
 				  lsn_t lsn, bool b_form2);
 
 /*!
    Reads a single mode1 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int read_mode1_sector_win32ioctl (const _img_private_t *env, void *data, 
+int read_mode1_sector_win32ioctl (_img_private_t *p_env, void *p_data, 
 				  lsn_t lsn, bool b_form2);
 
 const char *is_cdrom_win32ioctl (const char drive_letter);

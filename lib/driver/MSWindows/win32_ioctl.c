@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.8 2005/01/27 11:08:55 rocky Exp $
+    $Id: win32_ioctl.c,v 1.9 2005/02/04 03:57:45 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.8 2005/01/27 11:08:55 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.9 2005/02/04 03:57:45 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -420,7 +420,7 @@ read_raw_sector (_img_private_t *p_env, void *p_buf, lsn_t lsn)
    data starting from lsn. Returns 0 if no error.
  */
 int
-read_mode2_sector_win32ioctl (const _img_private_t *p_env, void *p_data, 
+read_mode2_sector_win32ioctl (_img_private_t *p_env, void *p_data, 
 			      lsn_t lsn, bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -441,7 +441,7 @@ read_mode2_sector_win32ioctl (const _img_private_t *p_env, void *p_data,
    data starting from lsn. Returns 0 if no error.
  */
 int
-read_mode1_sector_win32ioctl (const _img_private_t *env, void *data, 
+read_mode1_sector_win32ioctl (_img_private_t *env, void *data, 
 			      lsn_t lsn, bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -605,10 +605,13 @@ read_fulltoc_win32mmc (_img_private_t *p_env)
     if ( 0xA2 ==  j ) { 
       /* Start position of the lead out */
       p_env->tocent[ p_env->gen.i_tracks ].start_lsn = 
-	cdio_msf3_to_lba(
-			 cdrom_toc_full.TrackData[i].PMIN,
-			 cdrom_toc_full.TrackData[i].PSEC,
-			 cdrom_toc_full.TrackData[i].PFRAME );
+	cdio_lba_to_lsn(
+			cdio_msf3_to_lba(
+					 cdrom_toc_full.TrackData[i].PMIN,
+					 cdrom_toc_full.TrackData[i].PSEC,
+					 cdrom_toc_full.TrackData[i].PFRAME 
+					 )
+			);
       p_env->tocent[ p_env->gen.i_tracks ].Control 
 	= cdrom_toc_full.TrackData[i].Control;
       p_env->tocent[ p_env->gen.i_tracks ].Format  = i_track_format;
@@ -618,10 +621,13 @@ read_fulltoc_win32mmc (_img_private_t *p_env)
     if (cdrom_toc_full.TrackData[i].POINT > 0 
 	&& cdrom_toc_full.TrackData[i].POINT <= p_env->gen.i_tracks) {
       p_env->tocent[j-1].start_lsn = 
-	cdio_msf3_to_lba(
-			 cdrom_toc_full.TrackData[i].PMIN,
-			 cdrom_toc_full.TrackData[i].PSEC,
-			 cdrom_toc_full.TrackData[i].PFRAME );
+	cdio_lba_to_lsn(
+			cdio_msf3_to_lba(
+					 cdrom_toc_full.TrackData[i].PMIN,
+					 cdrom_toc_full.TrackData[i].PSEC,
+					 cdrom_toc_full.TrackData[i].PFRAME 
+					 )
+			);
       p_env->tocent[j-1].Control = 
 	cdrom_toc_full.TrackData[i].Control;
       p_env->tocent[j-1].Format  = i_track_format;
@@ -683,9 +689,11 @@ read_toc_win32ioctl (_img_private_t *p_env)
   j = p_env->gen.i_first_track;
   for( i = 0 ; i <= p_env->gen.i_tracks ; i++, j++ ) {
     p_env->tocent[ i ].start_lsn = 
-      cdio_msf3_to_lba( cdrom_toc.TrackData[i].Address[1],
-			cdrom_toc.TrackData[i].Address[2],
-			cdrom_toc.TrackData[i].Address[3] );
+      cdio_lba_to_lsn(
+		      cdio_msf3_to_lba( cdrom_toc.TrackData[i].Address[1],
+					cdrom_toc.TrackData[i].Address[2],
+					cdrom_toc.TrackData[i].Address[3] )
+		      );
     p_env->tocent[i].Control   = cdrom_toc.TrackData[i].Control;
     p_env->tocent[i].Format    = cdrom_toc.TrackData[i].Format;
 
