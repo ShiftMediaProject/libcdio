@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.45 2005/01/23 00:45:57 rocky Exp $
+#   $Id: Makefile.am,v 1.46 2005/02/08 04:38:05 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -49,7 +49,7 @@ testbincue_LDADD    = $(LIBCDIO_LIBS)
 testbincue_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
-                check_iso.sh  check_paranoia.sh check_opts.sh
+                check_iso.sh  check_fuzzyiso.sh check_paranoia.sh check_opts.sh
 # If we beefed this up so it checked to see if a CD-DA was loaded
 # it could be an automatic test. But for now, not so.
 #               check_paranoia.sh
