@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.29 2005/03/09 02:36:25 rocky Exp $
+    $Id: win32.c,v 1.30 2005/03/09 11:04:34 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.29 2005/03/09 02:36:25 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.30 2005/03/09 11:04:34 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -822,19 +822,19 @@ cdio_is_device_win32(const char *source_name)
 driver_return_code_t
 close_tray_win32 (const char *psz_win32_drive)
 {
+#ifdef HAVE_WIN32_CDROM
 #if 1
   return open_close_media_win32(psz_win32_drive, MCI_SET_DOOR_CLOSED|MCI_WAIT);
 #else 
-#ifdef HAVE_WIN32_CDROM
   if ( WIN_NT ) {
     return close_tray_win32ioctl (psz_win32_drive);
   } else {
     return DRIVER_OP_UNSUPPORTED; /* not yet, but soon I hope */
   }
+#endif
 #else
   return DRIVER_OP_UNSUPPORTED;
-#endif
-#endif
+#endif /* HAVE_WIN32_CDROM*/
 }
 
 /*!
