@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.39 2005/01/18 05:41:58 rocky Exp $
+    $Id: scsi_mmc.h,v 1.40 2005/01/20 04:46:25 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -30,52 +30,64 @@
 #include <cdio/types.h>
 #include <cdio/dvd.h>
 
-/*! The generic packet command opcodes for CD/DVD Logical Units. */
+/*! \brief The opcode-portion (generic packet commands) of a SCSI-MMC command.
 
-#define CDIO_MMC_GPCMD_INQUIRY 	             0x12
-#define CDIO_MMC_GPCMD_MODE_SELECT_6	     0x15
-#define CDIO_MMC_GPCMD_MODE_SENSE 	     0x1a
-#define CDIO_MMC_GPCMD_START_STOP            0x1b
-#define CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL  0x1e
-#define CDIO_MMC_GPCMD_READ_10	             0x28
 
-/*!
-  	Group 2 Commands
-  */
-#define CDIO_MMC_GPCMD_READ_SUBCHANNEL	     0x42
-#define CDIO_MMC_GPCMD_READ_TOC              0x43
-#define CDIO_MMC_GPCMD_READ_HEADER           0x44
-#define CDIO_MMC_GPCMD_PLAY_AUDIO_10         0x45
-#define CDIO_MMC_GPCMD_GET_CONFIGURATION     0x46
-#define CDIO_MMC_GPCMD_PLAY_AUDIO_MSF        0x47
-#define CDIO_MMC_GPCMD_PLAY_AUDIO_TI         0x48
-#define CDIO_MMC_GPCMD_PLAY_TRACK_REL_10     0x49
-#define CDIO_MMC_GPCMD_PAUSE_RESUME          0x4b
+In general, those opcodes that end in 6 take a 6-byte command
+descriptor, those that end in 10 take a 10-byte
+descriptor and those that in in 12 take a 12-byte descriptor. 
 
-#define CDIO_MMC_GPCMD_READ_DISC_INFO	     0x51
-#define CDIO_MMC_GPCMD_MODE_SELECT	     0x55
-#define CDIO_MMC_GPCMD_MODE_SENSE_10	     0x5a
+(Not that you need to know that, but it seems to be a
+big deal in the SCSI-MMC specification.)
 
-/*!
- 	Group 5 Commands
- */
-#define CDIO_MMC_GPCMD_PLAY_AUDIO_12	     0xa5
-#define CDIO_MMC_GPCMD_READ_12	             0xa8
-#define CDIO_MMC_GPCMD_PLAY_TRACK_REL_12     0xa9
-#define CDIO_MMC_GPCMD_READ_DVD_STRUCTURE    0xad
-#define CDIO_MMC_GPCMD_READ_CD	             0xbe
-#define CDIO_MMC_GPCMD_READ_MSF	             0xb9
+*/
+typedef enum {
+  CDIO_MMC_GPCMD_INQUIRY 	        = 0x12,
+  CDIO_MMC_GPCMD_MODE_SELECT_6	        = 0x15,
+  CDIO_MMC_GPCMD_MODE_SENSE 	        = 0x1a,
+  CDIO_MMC_GPCMD_START_STOP             = 0x1b,
+  CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL   = 0x1e,
+  CDIO_MMC_GPCMD_READ_10	        = 0x28,
 
-/*!
- 	Group 6 Commands
- */
+  /** Group 2 Commands (CDB's here are 10-bytes)   
+   * @{
+   */
+  CDIO_MMC_GPCMD_READ_SUBCHANNEL	= 0x42,
+  CDIO_MMC_GPCMD_READ_TOC               = 0x43,
+  CDIO_MMC_GPCMD_READ_HEADER            = 0x44,
+  CDIO_MMC_GPCMD_PLAY_AUDIO_10          = 0x45,
+  CDIO_MMC_GPCMD_GET_CONFIGURATION      = 0x46,
+  CDIO_MMC_GPCMD_PLAY_AUDIO_MSF         = 0x47,
+  CDIO_MMC_GPCMD_PLAY_AUDIO_TI          = 0x48,
+  CDIO_MMC_GPCMD_PLAY_TRACK_REL_10      = 0x49,
+  CDIO_MMC_GPCMD_PAUSE_RESUME           = 0x4b,
 
-#define	CDIO_MMC_GPCMD_CD_PLAYBACK_STATUS    0xc4 /**< SONY unique command */
-#define	CDIO_MMC_GPCMD_PLAYBACK_CONTROL      0xc9 /**< SONY unique command */
-#define	CDIO_MMC_GPCMD_READ_CDDA	     0xd8 /**< Vendor unique command */
-#define	CDIO_MMC_GPCMD_READ_CDXA	     0xdb /**< Vendor unique command */
-#define	CDIO_MMC_GPCMD_READ_ALL_SUBCODES     0xdf /**< Vendor unique command */
+  CDIO_MMC_GPCMD_READ_DISC_INFO	        = 0x51,
+  CDIO_MMC_GPCMD_MODE_SELECT	        = 0x55,
+  CDIO_MMC_GPCMD_MODE_SENSE_10	        = 0x5a,
+  /**@}*/ 
 
+  /** Group 5 Commands (CDB's here are 12-bytes) 
+   * @{
+   */
+  CDIO_MMC_GPCMD_PLAY_AUDIO_12	        = 0xa5,
+  CDIO_MMC_GPCMD_READ_12	        = 0xa8,
+  CDIO_MMC_GPCMD_PLAY_TRACK_REL_12      = 0xa9,
+  CDIO_MMC_GPCMD_READ_DVD_STRUCTURE     = 0xad,
+  CDIO_MMC_GPCMD_READ_CD	        = 0xbe,
+  CDIO_MMC_GPCMD_READ_MSF	        = 0xb9,
+  /**@}*/ 
+
+  /** Vendor-unique Commands  
+   * @{
+   */
+  CDIO_MMC_GPCMD_CD_PLAYBACK_STATUS  = 0xc4 /**< SONY unique  = command */,
+  CDIO_MMC_GPCMD_PLAYBACK_CONTROL    = 0xc9 /**< SONY unique  = command */,
+  CDIO_MMC_GPCMD_READ_CDDA	     = 0xd8 /**< Vendor unique  = command */,
+  CDIO_MMC_GPCMD_READ_CDXA	     = 0xdb /**< Vendor unique  = command */,
+  CDIO_MMC_GPCMD_READ_ALL_SUBCODES   = 0xdf /**< Vendor unique  = command */
+  /**@}*/ 
+  } cdio_mmc_gpcmd_t;
 
 
 /*! Level values that can go into READ_CD */
@@ -345,16 +357,17 @@ uint8_t scsi_mmc_get_cmd_len(uint8_t scsi_cmd);
 /*!
   Run a SCSI MMC command. 
  
-  cdio	        CD structure set by cdio_open().
-  i_timeout_ms  time in milliseconds we will wait for the command
-                to complete. 
-  p_cdb	        CDB bytes. All values that are needed should be set on 
-                input. We'll figure out what the right CDB length should be.
-  e_direction	direction the transfer is to go.
-  i_buf	        Size of buffer
-  p_buf	        Buffer for data, both sending and receiving.
+  @param p_cdio	       CD structure set by cdio_open().
+  @param i_timeout_ms  time in milliseconds we will wait for the command
+                       to complete. 
+  @param p_cdb	       CDB bytes. All values that are needed should be set on 
+                       input. We'll figure out what the right CDB length 
+		       should be.
+  @param e_direction   direction the transfer is to go.
+  @param i_buf	       Size of buffer
+  @param p_buf	       Buffer for data, both sending and receiving.
 
-  Returns 0 if command completed successfully.
+  @return 0 if command completed successfully.
  */
 int scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 		      const scsi_mmc_cdb_t *p_cdb,
