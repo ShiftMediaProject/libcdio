@@ -1,6 +1,7 @@
 /*
-    $Id: sector.c,v 1.7 2004/05/11 02:15:58 rocky Exp $
+    $Id: sector.c,v 1.8 2004/05/11 12:17:17 rocky Exp $
 
+    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
@@ -32,13 +33,12 @@
 #endif
 
 
-static const char _rcsid[] = "$Id: sector.c,v 1.7 2004/05/11 02:15:58 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.8 2004/05/11 12:17:17 rocky Exp $";
 
 lba_t
 cdio_lba_to_lsn (lba_t lba)
 {
   if (CDIO_INVALID_LBA     == lba) return CDIO_INVALID_LSN;
-  if (CDIO_PREGAP_SECTORS  >  lba) return lba; /* Assume no pregap?*/
   return lba - CDIO_PREGAP_SECTORS; 
 }
 
