@@ -1,5 +1,5 @@
 /*
-  $Id: sample6.c,v 1.6 2004/03/20 22:44:14 rocky Exp $
+  $Id: sample6.c,v 1.7 2004/03/21 00:57:03 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -36,22 +36,34 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+#include <cdio/cdio.h>
+#include <cdio/iso9660.h>
+
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
-#include <cdio/cdio.h>
-#include <cdio/iso9660.h>
-
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
+#ifdef HAVE_ERRNO_H
 #include <errno.h>
+#endif
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
 
 #define my_exit(rc)				\
+  fclose (outfd);				\
   free(statbuf);				\
   cdio_destroy(cdio);				\
   return rc;					\
@@ -78,13 +90,16 @@ main(int argc, const char *argv[])
       fprintf(stderr, 
 	      "Could not get ISO-9660 file information for file %s\n",
 	      ISO9660_FILENAME);
+      cdio_destroy(cdio);
       return 2;
     }
 
   if (!(outfd = fopen ("copying", "wb")))
     {
       perror ("fopen()");
-      my_exit(3);
+      cdio_destroy(cdio);
+      free(statbuf);
+      return 3;
     }
 
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
@@ -121,6 +136,5 @@ main(int argc, const char *argv[])
   if (ftruncate (fileno (outfd), statbuf->size))
     perror ("ftruncate()");
 
-  fclose (outfd);
   my_exit(0);
 }

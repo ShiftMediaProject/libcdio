@@ -1,5 +1,5 @@
 /*
-  $Id: sample7.c,v 1.5 2004/03/11 01:31:32 rocky Exp $
+  $Id: sample7.c,v 1.6 2004/03/21 00:57:03 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -44,6 +44,9 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
@@ -53,6 +56,12 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
+#define my_exit(rc)				\
+  fclose (outfd);				\
+  free(statbuf);				\
+  iso9660_close(iso);				\
+  return rc;					\
 
 int
 main(int argc, const char *argv[])
@@ -75,12 +84,15 @@ main(int argc, const char *argv[])
       fprintf(stderr, 
 	      "Could not get ISO-9660 file information for file %s\n",
 	      LOCAL_FILENAME);
+      iso9660_close(iso);
       return 2;
     }
 
   if (!(outfd = fopen (LOCAL_FILENAME, "wb")))
     {
       perror ("fopen()");
+      free(statbuf);
+      iso9660_close(iso);
       return 3;
     }
 
@@ -97,7 +109,7 @@ main(int argc, const char *argv[])
       {
 	fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
 		(long unsigned int) statbuf->lsn + (i / ISO_BLOCKSIZE));
-	return 4;
+	my_exit(4);
       }
       
       
@@ -106,6 +118,7 @@ main(int argc, const char *argv[])
       if (ferror (outfd))
 	{
 	  perror ("fwrite()");
+	  my_exit(5);
 	  return 5;
 	}
     }
@@ -118,7 +131,6 @@ main(int argc, const char *argv[])
   if (ftruncate (fileno (outfd), statbuf->size))
     perror ("ftruncate()");
 
-  fclose (outfd);
-  iso9660_close(iso);
+  my_exit(0);
   return 0;
 }
