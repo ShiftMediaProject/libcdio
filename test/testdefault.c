@@ -1,5 +1,5 @@
 /*
-  $Id: testdefault.c,v 1.2 2003/10/02 02:59:58 rocky Exp $
+  $Id: testdefault.c,v 1.3 2003/10/03 01:33:15 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -56,7 +56,7 @@ static bool
 is_in(char **file_list, const char *file) 
 {
   char **p;
-  for (p = file_list; p != NULL && *p != NULL; *p++) {
+  for (p = file_list; p != NULL && *p != NULL; p++) {
     if (strcmp(*p, file) == 0) {
       printf("File %s found as expected\n", file);
       return true;
@@ -136,7 +136,7 @@ main(int argc, const char *argv[])
     return 4;
   }
     
-  for( c = imgs; *c != NULL; *c++ ) {
+  for( c = imgs; *c != NULL; c++ ) {
     printf("%s\n", *c);
   }
     
@@ -155,7 +155,7 @@ main(int argc, const char *argv[])
     return 5;
   }
     
-  for( c = imgs; *c != NULL; *c++ ) {
+  for( c = imgs; *c != NULL; c++ ) {
     printf("image: %s\n", *c);
   }
 

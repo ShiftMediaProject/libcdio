@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.9 2003/10/02 02:59:58 rocky Exp $
+  $Id: cd-read.c,v 1.10 2003/10/03 01:33:30 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -411,13 +411,15 @@ main(int argc, const char *argv[])
   case IMAGE_AUTO:
     cdio = cdio_open (source_name, DRIVER_UNKNOWN);
     if (cdio==NULL) {
-      err_exit("Error in automatically selecting driver with input\n");
+      err_exit("Error in automatically selecting driver with input %s\n",
+	       source_name);
     } 
     break;
   case IMAGE_DEVICE:
     cdio = cdio_open (source_name, DRIVER_DEVICE);
     if (cdio==NULL) {
-      err_exit("Error in automatically selecting device with input\n");
+      err_exit("Error in automatically selecting device with input %s\n",
+	       source_name);
 
     } 
     break;
