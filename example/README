@@ -1,4 +1,4 @@
-$Id: README,v 1.8 2004/08/07 10:40:29 rocky Exp $
+$Id: README,v 1.9 2004/10/10 00:21:08 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -7,6 +7,22 @@ A larger more-complicated example are the cd-drive, cd-info, cd-read,
 iso-info and iso-read programs in the src directory.
 
 Descriptions of the programs here are as follows...
+
+cdtext.c: A program to show CD-Text and CD disc mode info.
+
+iso1.c: A program to show using libiso9660 to list files in a
+	directory of an ISO-9660 image.
+
+iso2.c: A simple program to show using libiso9660 to extract a file
+	from a CDRWIN cue/bin CD image.
+
+iso3.c: A program to show using libiso9660 to extract a file from an
+	ISO-9660 image.
+
+scsi-mmc1.c: A program to show issuing a simple SCSI-MMC command (INQUIRY).
+
+scsi-mmc2.c: A more involved SCSI-MMC command to list features from 
+	     a SCSI GET_CONFIGURATION command.
 
 sample1.c: A simple program to list track numbers and logical sector
    numbers of a Compact Disc using libcdio.
@@ -22,18 +38,5 @@ sample4.c: A slightly improved sample3 program: we handle cdio logging
 
 sample5.c: A program to show drivers installed and what the default
    CD-ROM drive is and what CD drives are available.
-
-sample6.c: A simple program to show using libiso9660 to extract a file
-   from a CDRWIN cue/bin CD image.
-
-sample7.c: A program to show using libiso9660 to extract a file from an
-   ISO-9660 image.
-
-sample8.c: A program to show CD-Text and CD disc mode info.
-
-sample9.c: A program to show issuing a simple SCSI-MMC command (INQUIRY).
-
-sample10.c: A more involved SCSI-MMC command to list features from 
-	    a SCSI GET_CONFIGURATION command.
 
 

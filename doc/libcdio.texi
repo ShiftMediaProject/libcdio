@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.26 2004/08/07 11:27:03 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.27 2004/10/10 00:21:08 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -558,16 +558,17 @@ Other sources for examples would be the larger utility programs
 @menu
 * Example 1::        list out tracks and LSNs
 * Example 2::        list drivers available and default CD device 
-* Example 3::        list out tracks and LSNs
+* Example 3::        figure out what kind of CD (image) we've got
 * Example 4::        use libiso9660 to extract a file from an ISO-9660 image
 * Example 5::        list CD-Text and CD disc mode info
+* Example 6::        run a SCSI-MMC INQUIRY command
 * All sample programs:: list of all programs in the example directory
 @end menu
 
 @node Example 1
 @section Example 1: list out tracks and LSNs
 Here we will give an annotated example which can be found in the
-distribution as @file{example/sample1.c}.
+distribution as @file{example/tracks.c}.
 
 @smallexample
  1: #include <stdio.h>
@@ -685,11 +686,11 @@ device that is right for it.
 
 
 @node Example 3
-@section Example 3: figure out what kind of CD image we've got
+@section Example 3: figure out what kind of CD (image) we've got
 
 In this example is a somewhat simplified program to show the use of
 @command{cdio_guess_cd_type()} to  figure out the kind of CD image
-we've got. This can be in the distribution as @file{example/sample3.c}.
+we've got. This can be found in the distribution as @file{example/sample3.c}.
 
 @smallexample
 #ifdef HAVE_CONFIG_H
@@ -875,8 +876,8 @@ main(int argc, const char *argv[])
 @section Example 4: use libiso9660 to extract a file from an ISO-9660 image
 
 Next a program to show using @command{libiso9660} to extract a file
-from an ISO-9660 image.  This can be in the distribution as
-@file{example/sample7.c}. A more complete and expanded version of this
+from an ISO-9660 image.  This can be found in the distribution as
+@file{example/iso3.c}. A more complete and expanded version of this
 is @command{iso-read}, part of this distribution.
 
 @smallexample
@@ -989,10 +990,10 @@ main(int argc, const char *argv[])
 @section Example 5: list CD-Text and disc mode info
 
 Next a program to show using @command{libcdio} to list CD-TEXT data.
-This can be in the distribution as @file{example/sample8.c}.
+This can be found in the distribution as @file{example/cdtext.c}.
 
 @smallexample
-/* Simple program to list CD-TEXT info of a Compact Disc using libcdio. */
+/* Simple program to list CD-Text info of a Compact Disc using libcdio. */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -1026,10 +1027,10 @@ print_disc_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) @{
 
   printf("%s\n", discmode2str[cd_discmode]);
   
-  print_cdtext_track_info(p_cdio, 0, "\nCD-TEXT for Disc:");
+  print_cdtext_track_info(p_cdio, 0, "\nCD-Text for Disc:");
   for ( ; i_first_track < i_last_track; i_first_track++ ) @{
     char psz_msg[50];
-    sprintf(msg, "CD-TEXT for Track %d:", i_first_track);
+    sprintf(msg, "CD-Text for Track %d:", i_first_track);
     print_cdtext_track_info(p_cdio, i_first_track, psz_msg);
   @}
 @}
@@ -1057,6 +1058,80 @@ main(int argc, const char *argv[])
 @}
 @end smallexample 
 
+@node Example 6
+@section Example 6: Using SCSI-MMC to run an @code{INQURY} command
+
+Now a program to show issuing a simple SCSI-MMC command
+(@code{INQUIRY}). This MMC command retrieves the vendor, model and
+firmware revision number of a CD drive. For this command to work,
+usually a CD to be loaded into the drive; odd since the CD itself is
+not used.
+
+This can be found in the distribution as @file{example/scsi-mmc1.c}.
+
+@smallexample
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+#include <stdio.h>
+#include <sys/types.h>
+#include <cdio/cdio.h>
+#include <cdio/scsi_mmc.h>
+#include <string.h>
+
+/* Set how long do wto wait for SCSI-MMC commands to complete */
+#define DEFAULT_TIMEOUT_MS 10000
+
+int
+main(int argc, const char *argv[])
+@{
+  CdIo *p_cdio;
+
+  p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+
+  if (NULL == p_cdio) @{
+    printf("Couldn't find CD\n");
+    return 1;
+  @} else @{
+    int i_status;                  /* Result of SCSI MMC command */
+    char buf[36] = @{ 0, @};         /* Place to hold returned data */
+    scsi_mmc_cdb_t cdb = @{@{0, @}@};  /* Command Descriptor Block */
+
+    CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_INQUIRY);
+    cdb.field[4] = sizeof(buf);
+
+    i_status = scsi_mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, 
+				&cdb, SCSI_MMC_DATA_READ, 
+				sizeof(buf), &buf);
+    if (i_status == 0) @{
+      char psz_vendor[CDIO_MMC_HW_VENDOR_LEN+1];
+      char psz_model[CDIO_MMC_HW_MODEL_LEN+1];
+      char psz_rev[CDIO_MMC_HW_REVISION_LEN+1];
+      
+      memcpy(psz_vendor, buf + 8, sizeof(psz_vendor)-1);
+      psz_vendor[sizeof(psz_vendor)-1] = '\0';
+      memcpy(psz_model,
+	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN, 
+	     sizeof(psz_model)-1);
+      psz_model[sizeof(psz_model)-1] = '\0';
+      memcpy(psz_rev,
+	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN +CDIO_MMC_HW_MODEL_LEN,
+	     sizeof(psz_rev)-1);
+      psz_rev[sizeof(psz_rev)-1] = '\0';
+
+      printf("Vendor: %s\nModel: %s\nRevision: %s\n",
+	     psz_vendor, psz_model, psz_rev);
+    @} else @{
+      printf("Couldn't get INQUIRY data (vendor, model, and revision\n");
+    @}
+  @}
+  
+  cdio_destroy(p_cdio);
+  
+  return 0;
+@}
+@end smallexample 
+
 @node All sample programs
 @section A list of all sample progrmas in the @code{example} directory
 
@@ -1071,7 +1146,40 @@ Descriptions of the sample are as follows...
 
 @table @code 
 
-@item @code{sample1.c}
+@item @code{iso1.c}
+
+A program to show using @code{libiso9660} to list files in a
+	directory of an ISO-9660 image.
+
+@item @code{iso2.c}
+
+A program to show using @code{libiso9660} to extract a file from a
+CDRWIN cue/bin CD image.
+
+@item @code{iso3.c}
+
+A program to show using libiso9660 to extract a file from an ISO-9660
+image.
+
+@item @code{cdtext.c}
+
+A program to show CD-Text and CD disc mode info.
+
+@item @code{drives.c}
+
+A program to show drivers installed and what the default CD-ROM drive
+is and what CD drives are available.
+
+@item @code{scsi-mmc1.c}
+
+A program to show issuing a simple SCSI-MMC command (@code{INQUIRY}).
+
+@item @code{scsi-mmc2.c}
+
+A more involved SCSI-MMC command to list CD and drive features from a
+SCSI-MMC @code{GET_CONFIGURATION} command.
+
+@item @code{tracks.c}
 
 A simple program to list track numbers and logical sector numbers of a
 Compact Disc using @value{libcdio}.
@@ -1090,34 +1198,6 @@ the kind of CD image we've got.
 
  A slightly improved sample3 program: we handle cdio logging and take
 an optional CD-location.
-
-@item @code{sample5.c}
-
-A program to show drivers installed and what the default CD-ROM drive
-is and what CD drives are available.
-
-@item @code{sample6.c}
-
-A simple program to show using @code{libiso9660} to extract a file from a
-CDRWIN cue/bin CD image.
-
-@item @code{sample7.c}
-
-A program to show using libiso9660 to extract a file from an ISO-9660
-image.
-
-@item @code{sample8.c}
-
-A program to show CD-Text and CD disc mode info.
-
-@item @code{sample9.c}
-
-A program to show issuing a simple SCSI-MMC command (@code{INQUIRY}).
-
-@item @code{sample10.c}
-
-A more involved SCSI-MMC command to list features from a SCSI-MMC
-@code{GET_CONFIGURATION} command.
 
 @end table
 

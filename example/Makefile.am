@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.8 2004/10/09 03:20:28 rocky Exp $
+#   $Id: Makefile.am,v 1.9 2004/10/10 00:21:08 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,19 +20,24 @@
 # Things to regression testing
 ####################################################
 #
-noinst_PROGRAMS = sample1 sample2 sample3 sample4 sample5 sample6 \
-	          sample7 sample8 sample9 sample10 iso1
+noinst_PROGRAMS = cdtext drives iso1 iso2 iso3 scsi-mmc1 scsi-mmc2 \
+		  tracks sample2 sample3 sample4 
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
+cdtext_LDADD  = $(LIBCDIO_LIBS)
+
+drives_LDADD = $(LIBCDIO_LIBS)
+
 iso1_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
-sample1_LDADD = $(LIBCDIO_LIBS)
+iso2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
+iso3_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
+
+scsi_mmc1_LDADD = $(LIBCDIO_LIBS)
+scsi_mmc2_LDADD = $(LIBCDIO_LIBS)
+
 sample2_LDADD = $(LIBCDIO_LIBS)
 sample3_LDADD = $(LIBCDIO_LIBS)
 sample4_LDADD = $(LIBCDIO_LIBS)
-sample5_LDADD = $(LIBCDIO_LIBS)
-sample6_LDADD = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
-sample7_LDADD = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
-sample8_LDADD = $(LIBCDIO_LIBS)
-sample9_LDADD = $(LIBCDIO_LIBS)
-sample10_LDADD = $(LIBCDIO_LIBS)
+
+tracks_LDADD  = $(LIBCDIO_LIBS)

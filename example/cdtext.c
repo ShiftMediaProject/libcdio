@@ -1,5 +1,5 @@
 /*
-  $Id: sample8.c,v 1.12 2004/07/29 05:32:55 rocky Exp $
+  $Id: cdtext.c,v 1.1 2004/10/10 00:21:08 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -18,7 +18,7 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to list CD-TEXT info of  a Compact Disc using libcdio. */
+/* Simple program to list CD-Text info of  a Compact Disc using libcdio. */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -52,10 +52,10 @@ print_disc_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) {
 
   printf("%s\n", discmode2str[cd_discmode]);
   
-  print_cdtext_track_info(p_cdio, 0, "\nCD-TEXT for Disc:");
+  print_cdtext_track_info(p_cdio, 0, "\nCD-Text for Disc:");
   for ( ; i_first_track < i_last_track; i_first_track++ ) {
     char psz_msg[50];
-    sprintf(psz_msg, "CD-TEXT for Track %d:", i_first_track);
+    sprintf(psz_msg, "CD-Text for Track %d:", i_first_track);
     print_cdtext_track_info(p_cdio, i_first_track, psz_msg);
   }
 }

@@ -1,5 +1,5 @@
 /*
-  $Id: sample10.c,v 1.8 2004/08/10 11:58:14 rocky Exp $
+  $Id: scsi-mmc2.c,v 1.1 2004/10/10 00:21:08 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -18,7 +18,8 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to show use of SCSI MMC interface. */
+/* A program to using the SCSI-MMC interface to list CD and drive features
+   from the MMC GET_CONFIGURATION command . */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif

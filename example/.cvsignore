@@ -4,5 +4,10 @@
 Makefile.in
 Makefile
 copying
+drives
+iso?
+cdtext
 sample?
-sample??
+scsi-mmc1
+scsi-mmc2
+tracks

@@ -1,5 +1,5 @@
 /*
-  $Id: sample9.c,v 1.2 2004/08/27 11:53:38 rocky Exp $
+  $Id: scsi-mmc1.c,v 1.1 2004/10/10 00:21:08 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
