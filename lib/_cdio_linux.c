@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.68 2004/07/17 22:16:47 rocky Exp $
+    $Id: _cdio_linux.c,v 1.69 2004/07/18 03:35:07 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.68 2004/07/17 22:16:47 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.69 2004/07/18 03:35:07 rocky Exp $";
 
 #include <string.h>
 
@@ -974,7 +974,7 @@ _get_drive_cap_linux (const void *env,
   if (i_drivetype & CDC_CLOSE_TRAY) 
     *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_CLOSE_TRAY;
   if (i_drivetype & CDC_OPEN_TRAY) 
-    *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_OPEN_TRAY;
+    *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_EJECT;
   if (i_drivetype & CDC_LOCK) 
     *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_LOCK;
   if (i_drivetype & CDC_SELECT_SPEED) 

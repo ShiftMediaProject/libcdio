@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.53 2004/07/17 22:16:47 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.54 2004/07/18 03:35:07 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.53 2004/07/17 22:16:47 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.54 2004/07/18 03:35:07 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -630,7 +630,6 @@ _get_drive_cap_solaris (const void *user_data,
     int lenData  = ((unsigned int)buf[0] << 8) + buf[1];
     uint8_t *pMax = buf + 256;
 
-    i_drivetype = 0;
     /* set to first sense mask, and then walk through the masks */
     p = buf + 8;
     while( (p < &(buf[2+lenData])) && (p < pMax) )       {
@@ -654,9 +653,11 @@ _get_drive_cap_solaris (const void *user_data,
   } else {
     cdio_info("%s: %s\n", 
             "error in ioctl USCSICMD MODE_SELECT", strerror(errno));
-    i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
+    *p_read_cap  = CDIO_DRIVE_CAP_ERROR;
+    *p_write_cap = CDIO_DRIVE_CAP_ERROR;
+    *p_misc_cap  = CDIO_DRIVE_CAP_ERROR;
   }
-  return i_drivetype;
+  return;
 }
 
 /*!
@@ -920,7 +921,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _data->b_cdtext_init  = false;
 
   if (NULL == psz_orig_source) {
-    psz_source=_get_default_device_solaris();
+    psz_source = cdio_get_default_device_solaris();
     if (NULL == psz_source) return NULL;
     _set_arg_solaris(_data, "source", psz_source);
     free(psz_source);

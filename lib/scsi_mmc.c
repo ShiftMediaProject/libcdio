@@ -1,6 +1,6 @@
 /*  Common MMC routines.
 
-    $Id: scsi_mmc.c,v 1.4 2004/07/17 22:16:47 rocky Exp $
+    $Id: scsi_mmc.c,v 1.5 2004/07/18 03:35:07 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -38,12 +38,16 @@ cdio_get_drive_cap_mmc(const uint8_t *p,
 		       cdio_drive_misc_cap_t  *p_misc_cap)
 {
   /* Reader */
+  if (p[2] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_R;
   if (p[2] & 0x02) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_RW;
   if (p[2] & 0x08) *p_read_cap  |= CDIO_DRIVE_CAP_READ_DVD_ROM;
-  if (p[5] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_AUDIO;
+  if (p[4] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_AUDIO;
+  if (p[5] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_DA;
+  if (p[5] & 0x10) *p_read_cap  |= CDIO_DRIVE_CAP_READ_C2_ERRS;
   
   /* Writer */
   if (p[3] & 0x01) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_R;
+  if (p[3] & 0x02) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_RW;
   if (p[3] & 0x10) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_R;
   if (p[3] & 0x20) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RAM;
 
@@ -51,7 +55,7 @@ cdio_get_drive_cap_mmc(const uint8_t *p,
   if (p[4] & 0x40) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_MULTI_SESSION;
   
   if (p[6] & 0x01) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_LOCK;
-  if (p[6] & 0x08) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_OPEN_TRAY;
+  if (p[6] & 0x08) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_EJECT;
   if (p[6] >> 5 != 0) 
     *p_misc_cap |= CDIO_DRIVE_CAP_MISC_CLOSE_TRAY;
 }

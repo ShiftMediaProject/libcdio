@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.19 2004/07/17 22:16:47 rocky Exp $
+    $Id: types.h,v 1.20 2004/07/18 03:35:07 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -290,7 +290,7 @@ extern "C" {
 
 #define CDIO_DRIVE_CAP_MISC_CLOSE_TRAY     0x00001 /**< caddy systems can't 
                                                    close... */
-#define CDIO_DRIVE_CAP_MISC_OPEN_TRAY      0x00002 /**< but can eject.  */
+#define CDIO_DRIVE_CAP_MISC_EJECT          0x00002 /**< but can eject.  */
 #define CDIO_DRIVE_CAP_MISC_LOCK	   0x00004 /**< disable manual eject */
 #define CDIO_DRIVE_CAP_MISC_SELECT_SPEED   0x00008 /**< programmable speed */
 #define CDIO_DRIVE_CAP_MISC_SELECT_DISC    0x00010 /**< select disc from 
@@ -298,21 +298,24 @@ extern "C" {
 #define CDIO_DRIVE_CAP_MISC_MULTI_SESSION  0x00020 /**< read sessions>1 */
 #define CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED  0x00080 /**< media changed */
 #define CDIO_DRIVE_CAP_MISC_RESET          0x00100 /**< hard reset device */
+#define CDIO_DRIVE_CAP_MCN                 0x00200 /**< can read MCN      */
+#define CDIO_DRIVE_CAP_ISRC                0x00200 /**< can read ISRC     */
 #define CDIO_DRIVE_CAP_MISC_FILE           0x20000 /**< drive is really a file,
                                                       i.e a CD file image */
 
   /*! Reading masks.. */
 #define CDIO_DRIVE_CAP_READ_AUDIO     0x00001 /**< drive can play CD audio */
-#define CDIO_DRIVE_CAP_READ_CD_G      0x00002 /**< drive can read CD G */
-#define CDIO_DRIVE_CAP_READ_CD_R      0x00004 /**< drive can read CD-R  */
-#define CDIO_DRIVE_CAP_READ_CD_RW     0x00008 /**< drive can read CD-RW */
-#define CDIO_DRIVE_CAP_READ_DVD_R     0x00010 /**< drive can read DVD-R */
-#define CDIO_DRIVE_CAP_READ_DVD_PR    0x00020 /**< drive can read DVD+R */
-#define CDIO_DRIVE_CAP_READ_DVD_RAM   0x00040 /**< drive can read DVD-RAM */
-#define CDIO_DRIVE_CAP_READ_DVD_ROM   0x00080 /**< drive can read DVD-ROM */
-#define CDIO_DRIVE_CAP_READ_DVD_RW    0x00100 /**< drive can read DVD-RW  */
-#define CDIO_DRIVE_CAP_READ_DVD_RPW   0x00200 /**< drive can read DVD+RW  */
-#define CDIO_DRIVE_CAP_READ_C2_ERRS   0x00400 /**< has C2 error correction */
+#define CDIO_DRIVE_CAP_READ_CD_DA     0x00002 /**< drive can read CD-DA */
+#define CDIO_DRIVE_CAP_READ_CD_G      0x00004 /**< drive can read CD G  */
+#define CDIO_DRIVE_CAP_READ_CD_R      0x00008 /**< drive can read CD-R  */
+#define CDIO_DRIVE_CAP_READ_CD_RW     0x00010 /**< drive can read CD-RW */
+#define CDIO_DRIVE_CAP_READ_DVD_R     0x00020 /**< drive can read DVD-R */
+#define CDIO_DRIVE_CAP_READ_DVD_PR    0x00040 /**< drive can read DVD+R */
+#define CDIO_DRIVE_CAP_READ_DVD_RAM   0x00080 /**< drive can read DVD-RAM */
+#define CDIO_DRIVE_CAP_READ_DVD_ROM   0x00100 /**< drive can read DVD-ROM */
+#define CDIO_DRIVE_CAP_READ_DVD_RW    0x00200 /**< drive can read DVD-RW  */
+#define CDIO_DRIVE_CAP_READ_DVD_RPW   0x00400 /**< drive can read DVD+RW  */
+#define CDIO_DRIVE_CAP_READ_C2_ERRS   0x00800 /**< has C2 error correction */
 
   /*! Writing masks.. */
 #define CDIO_DRIVE_CAP_WRITE_CD_R     0x00001 /**< drive can write CD-R */

@@ -1,5 +1,5 @@
 /*
-  $Id: sample2.c,v 1.10 2004/07/17 22:16:46 rocky Exp $
+  $Id: sample2.c,v 1.11 2004/07/18 03:35:07 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -48,8 +48,8 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
     printf(_("Hardware                    : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_FILE  
 	   ? "Disk Image"  : "CD-ROM or DVD");
-    printf(_("Can open tray               : %s\n"), 
-	   i_misc_cap & CDIO_DRIVE_CAP_MISC_OPEN_TRAY     ? "Yes" : "No");
+    printf(_("Can eject                   : %s\n"), 
+	   i_misc_cap & CDIO_DRIVE_CAP_MISC_EJECT         ? "Yes" : "No");
     printf(_("Can close tray              : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_CLOSE_TRAY    ? "Yes" : "No");
     printf(_("Can disable manual eject    : %s\n"), 
