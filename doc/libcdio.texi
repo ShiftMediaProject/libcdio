@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.39 2005/02/05 04:25:14 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.40 2005/02/12 02:04:34 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -1854,8 +1854,8 @@ There seems to be a fascination with the number of bytes a command
 takes in the MMC-specification world. (Size matters?) So often the
 name of an operation will have a suffix with the number of bytes of
 the command (actually in MMC jargon this is called a ``cdb''
-@cindex cdb (Command Descriptor Buffer)
-or command descriptor buffer). So for example there is a 6-byte ``MODE
+@cindex cdb (Command Descriptor Block)
+or command descriptor block). So for example there is a 6-byte ``MODE
 SELECT'' often called ``MODE SELECT 6'' and a 10-byte ``MODE SELECT''
 often called ``MODE SELECT 10''. Presumably the 6-byte command came
 first and it was discovered that there was some deficiency causing the

@@ -6,17 +6,23 @@ See also @uref{http://www.dvdrhelp.com/glossary}.
 @cindex ASPI
 See @acronym{Win32 ASPI}
 
+@item ATA
+
+Advanced Technology Attachment (ATA). The same things as IDE.
+
 @item ATAPI
 
-Advanced Technology (AT) Attachment Packet Interface. An interface to
-support CD Drives and DVD Drives using the computers current IDE
-connections.  This is in contrast say to the SCSI protocol.
+Advanced Technology Attachment (ATA) Packet Interface. The interface
+provides a mechanism for transferring and executing SCSI CDBs on IDE
+CD Drives and DVD Drives.
 
 IDE (also called ATA) was originally designed for hard drives only,
 but with help of ATAPI it is possible to connect other devices, in
 particular CD-ROMS to the IDE/EIDE connections.
 
-Many ATAPI CD-ROM drives understand a subset of MMC commands. 
+The ATAPI CD-ROM drives understand a subset of MMC commands. In
+particular multi-initiator commands are neither needed nor deviced for
+ATAPI devices.
 
 @item BIN/CUE
 
@@ -105,6 +111,12 @@ translators. But also a CD-I player can also read CD-XA discs even if
 its own `Green Book' file system only resembles ISO 9660 and isn't
 fully compatible. 
 
+@item Command Packet
+@cindex Command Packet
+
+The data structure that is used to issue an ATAPI command. The same
+thing as a SCSI Command Descriptor Block (CDB).
+
 @item FSF
 @cindex FSF
 
@@ -114,6 +126,12 @@ Free Software Foundation, @uref{http://www.fsf.org/}
 @cindex GNU
 
 @acronym{GNU} is not @acronym{UNIX}, @uref{http://www.gnu.org/}
+
+@item IDE
+
+Integrated Drive Electronics. This is a commonly used interface for
+hard disk drives and CD-ROM drives. It is less expensive than SCSI,
+but offers slightly less in terms of performance.
 
 @item ISO
 @cindex ISO
@@ -226,6 +244,12 @@ Small Computer System Interface.  A set of ANSI standard electronic
 interfaces (originally developed at Apple Computer) that allow
 personal computers to communicate with peripheral hardware such as
 CD-ROM drives, disk drives, printers, etc.
+
+@item SCSI CDB
+@cindex SCSI CDB
+
+SCSI Command Descriptor Block. The data structure that is used to
+issue a SCSI command. 
 
 @item SCSI Pass Through Interface.
 @cindex SCSI Pass Through Interface.
