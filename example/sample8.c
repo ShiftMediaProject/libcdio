@@ -1,5 +1,5 @@
 /*
-  $Id: sample8.c,v 1.7 2004/07/24 06:11:30 rocky Exp $
+  $Id: sample8.c,v 1.8 2004/07/25 03:17:47 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -69,8 +69,26 @@ print_disc_info(CdIo *cdio, track_t i_tracks, track_t i_first_track) {
   case CDIO_DISC_MODE_CD_MIXED: 
     printf("Disc is mixed-mode.\n");
     break;
-  case CDIO_DISC_MODE_DVD: 
-    printf("Disc is some sort of DVD.\n");
+  case CDIO_DISC_MODE_DVD_ROM:
+    printf("DVD-ROM\n");
+    break;
+  case CDIO_DISC_MODE_DVD_RAM:
+    printf("DVD-RAM\n");
+    break;
+  case CDIO_DISC_MODE_DVD_R:
+    printf("DVD-R\n");
+    break;
+  case CDIO_DISC_MODE_DVD_RW:
+    printf("DVD-RW\n");
+    break;
+  case CDIO_DISC_MODE_DVD_PR:
+    printf("DVD+R\n");
+    break;
+  case CDIO_DISC_MODE_DVD_PRW:
+    printf("DVD+RW\n");
+    break;
+  case CDIO_DISC_MODE_DVD_OTHER:
+    printf("Unknown/unclassified DVD\n");
     break;
   case CDIO_DISC_MODE_NO_INFO: 
     printf("Don't now what disc is. Perhaps driver doesn't implement.\n");
