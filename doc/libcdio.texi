@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.22 2004/04/30 06:54:15 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.23 2004/06/06 11:51:40 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -200,9 +200,10 @@ device-dependent properties of a CD-ROM can use this library.
 Also included is a library, @command{libiso9660}, for working with ISO-9660
 filesystems.
 
-Some support for disk image types like BIN/CUE and NRG is
-available, so applications that use this library also have the ability
-to read disc images as though they were CDs. 
+Some support for disk-image types like cdrdao's TOC, CDRWIN's BIN/CUE
+and Ahead Nero's NRG format is available, so applications that use this
+library also have the ability to read disc images as though they were
+CDs.
 
 Immediate of the library in this package are the Video CD authoring
 and ripping tools, VCDImager (@url{http://vcdimager.org}), a
@@ -221,11 +222,26 @@ information. The command @command{cd-drive} shows what drivers are
 available and some basic properties of cd-drives attached to the
 system. (But media may have to be inserted in order to get this info.)
 
-Other utility programs in the libcdio package are @command{cd-read},
-for performing low-level block reading of a CD or CD image,
-@command{iso-info} for displaying ISO-9660 information from an
-ISO-9660 image, and @command{iso-read} for extracting files from an
-ISO-9660 image.
+Other utility programs in the libcdio package are:
+
+@table @code 
+
+@item @code{cd-drive}
+
+lists out drive capabilities
+
+@item cd-read
+performs low-level block reading of a CD or CD image,
+
+@item @code{iso-info} 
+
+displays ISO-9660 information from an ISO-9660 image
+
+@item @code{iso-read} 
+
+extracts files from an ISO-9660 image.
+
+@end table
 
 At present, there is no support for directing CD Audio control,
 e.g. playing, stopping, or pausing of a CD-CA where the blocks are not
@@ -416,7 +432,8 @@ In this section we describe CD properties and terms that we make use
 of in @value{libcdio}.
 
 A CD is formated into a number of @term{tracks}, and a CD can hold at
-most 99 such tracks. Between the tracks CD specifications require a
+most 99 such tracks. This is defined by @code{CDIO_CD_MAX_TRACKS} in
+@file{cdio/sector.h}. Between the tracks CD specifications require a
 ``2 second'' in gap (called a @term{lead-in gap}. This is unused space
 with no ``data'' similar to the space between tracks on an old
 phonograph. The word ``second'' here really refers to a measure of
@@ -444,7 +461,12 @@ largest legal track position. In @value{libcdio},
 @section block addressing (MSF, LSN, LBA)
 A track is broken up into a number of 2352-byte @emph{blocks} which we
 sometimes call @emph{sectors}. Whereas tracks have to have a gap
-between them, a block or sector does not.
+between them, a block or sector does not. (In @value{libcdio} the
+block size constant is defined using @code{CDIO_CD_FRAMESIZE_RAW}).
+
+A Compact Disc has a limit on the number of blocks or sectors.  This
+values is defined by constant @code{CDIO_CD_MAX_LSN} in
+@file{cdio/sector.h}.
 
 One can addressing a block in one of three formats. The oldest format
 is by it's minute/second/frame number, also referred to as @term{MSF}
@@ -452,19 +474,21 @@ and written in time-like format MM:SS:FF (e.g. 30:01:40). In this
 notation there are 75 ``frames'' in a ``second,'' and the familiar (if
 awkward) 60 seconds in a minute. @emph{Frame} here is what we called a
 @emph{block} above. The CD specification defines ``frame'' to be
-@emph{another} unit which makes up a block. Very confusing.
+@emph{another} unit which makes up a block. Very confusing. A frame is
+also sometimes called a sector, analogous to hard-disk terminalogy.
 
-Even more confusing is is using this time-like notation for an address
-or for a length. Too often people confuse the MSF notation this with
-an amount of time. A ``second'' (or 75 blocks) in this notation is
-only a second of playing time for something encoded as CD-DA. It does
-@emph{not} necessarily represent the amount time that it will take to
-play a of Video CD---usually you need more blocks than this. Nor does
-it represent the amount of data used to play a second of an
-MP3---usually you need fewer blocks than this. It is also not the
-amount of time your CD-ROM will take to read a ``second'' of data off
-a Compact Disc: for example a 12x CD player will read 12x75 2352-byte
-blocks in a one second of time.
+Even more confusing is using this time-like notation for an address or
+for a length. Too often people confuse the MSF notation this with an
+amount of time. A ``second'' (or @code{CDIO_CD_FRAMES_PER_SEC} blocks)
+in this notation is only a second of playing time for something
+encoded as CD-DA. It does @emph{not} necessarily represent the amount
+time that it will take to play a of Video CD---usually you need more
+blocks than this. Nor does it represent the amount of data used to
+play a second of an MP3---usually you need fewer blocks than this. It
+is also not the amount of time your CD-ROM will take to read a
+``second'' of data off a Compact Disc: for example a 12x CD player
+will read 12x @code{CDIO_CD_FRAMES_PER_SEC}
+@code{CDIO_CD_FRAMSIZE_RAW}-byte blocks in a one second of time.
 
 Furthermore when programming, it is generally more cumbersome to use
 an MSF rather than a LBA or LSN described below, since subtraction of
@@ -472,12 +496,14 @@ two MSF's has the awkwardness akin to subtraction using Roman
 Numerals.
 
 Probably the simplest way to address a block is to use its @term{LSN}
-or ``logical sector number.'' This just numbers the blocks from 0
-on. The Lead-in and Lead-out gaps described above have LSNs just like
-any other space on a CD. The last unit of address is a @term{LBA}. It
-is the same as a LSN but the 150 blocks assocated with the initial
+or ``logical sector number.'' This just numbers the blocks usually
+from 0 on. @emph{fix me: LSNs can be negative up to the pregap size?}
+The Lead-in and Lead-out gaps described above have LSNs just like any
+other space on a CD. The last unit of address is a @term{LBA}. It is
+the same as a LSN but the 150 blocks assocated with the initial
 lead-in is are not counted. So to convert a LBA into an LSN you just
-add 150. Why the distinction between LBA and LSN? I don't know.
+add 150. Why the distinction between LBA and LSN? I don't know,
+perhaps this has something to do with ``multisession'' CDs.
 
 @node How to use
 @chapter How to use
@@ -914,11 +940,18 @@ main(int argc, const char *argv[])
 @chapter Diagnostic programs (@samp{cd-info}, @samp{cd-read}, @samp{iso-info}, @samp{iso-read})
 
 @menu
+* cd-drive::        list out CD-ROM drive information
 * cd-info::        list out CD or CD-image information
 * cd-read::        read blocks of a CD or CD image
 * iso-info::       list out ISO-9600 image information
 * iso-read::       extract a file from an ISO 9660 image
 @end menu
+
+@node cd-drive
+@section @samp{cd-drive}
+
+@samp{cd-drive} lists out drive information and information about
+what hardware drivers are available.
 
 @node cd-info
 @section @samp{cd-info}
@@ -955,6 +988,8 @@ image.
 * GNU/Linux::
 * Microsoft::
 * Solaris::
+* FreeBSD::
+* OS X::
 @end menu
 
 @node GNU/Linux
@@ -987,6 +1022,20 @@ interface, and has taken steps to make using ASPI more inaccessible
 
 There are two CD drive access methods on Solaris:
 ATAPI and SCSI. SCSI is preferred when possible.
+
+@node FreeBSD
+@section FreeBSD
+
+There are two CD drive access methods on Solaris:
+ioctl and CAM (common access method). CAM is preferred when possible;
+it is however sort of a hybrid and includes some ioctl code. 
+
+More work on this driver is needed. Volunteers? 
+
+@node OS X
+@section OS X
+
+More work on this driver is needed. Volunteers? 
 
 @node ISO-9660 Character Sets
 @appendix ISO-9660 Character Sets
@@ -1068,9 +1117,6 @@ The @emph{toc}-file describes what data is written to the
 and sub-channel information.  It is a simple text file, use your
 favorite text editor to create it.
 @end quotation
-
-We don't support this image format currently, but intend to in the
-future. Anyone want to volunteer? 
 
 @node  BIN/CUE Format
 @appendixsec BIN/CUE Format
