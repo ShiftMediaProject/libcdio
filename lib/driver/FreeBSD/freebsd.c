@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: freebsd.c,v 1.2 2005/01/12 12:15:25 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.2 2005/01/12 12:15:25 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -203,15 +203,20 @@ read_toc_freebsd (void *p_user_data)
 
   j=0;
   for (i=p_env->gen.i_first_track; i<=p_env->gen.i_tracks; i++, j++) {
-    p_env->tocent[j].track = i;
-    p_env->tocent[j].address_format = CD_LBA_FORMAT;
+    struct ioc_read_toc_single_entry *p_toc = 
+      &(p_env->tocent[i-p_env->gen.i_first_track]);
+    p_toc->track = i;
+    p_toc->address_format = CD_LBA_FORMAT;
 
-    if ( ioctl(p_env->gen.fd, CDIOREADTOCENTRY, &(p_env->tocent[j]) ) ) {
+    if ( ioctl(p_env->gen.fd, CDIOREADTOCENTRY, p_toc) ) {
       cdio_warn("%s %d: %s\n",
 		 "error in ioctl CDROMREADTOCENTRY for track", 
 		 i, strerror(errno));
       return false;
     }
+
+    set_track_flags(&(p_env->gen.track_flags[i]), p_toc->entry.control);
+
   }
 
   p_env->tocent[j].track          = CDIO_CDROM_LEADOUT_TRACK;
@@ -550,37 +555,40 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
   char *psz_source_name;
 
   cdio_funcs _funcs = {
-    .eject_media        = _eject_media_freebsd,
-    .free               = _free_freebsd,
-    .get_arg            = _get_arg_freebsd,
-    .get_cdtext         = get_cdtext_generic,
-    .get_default_device = cdio_get_default_device_freebsd,
-    .get_devices        = cdio_get_devices_freebsd,
-    .get_discmode       = get_discmode_generic,
-    .get_drive_cap      = get_drive_cap_freebsd,
-    .get_first_track_num= get_first_track_num_generic,
-    .get_mcn            = _get_mcn_freebsd,
-    .get_num_tracks     = get_num_tracks_generic,
-    .get_track_format   = _get_track_format_freebsd,
-    .get_track_green    = _get_track_green_freebsd,
-    .get_track_lba      = _get_track_lba_freebsd, 
-    .get_track_msf      = NULL,
-    .lseek              = cdio_generic_lseek,
-    .read               = cdio_generic_read,
-    .read_audio_sectors = _read_audio_sectors_freebsd,
-    .read_mode2_sector  = _read_mode2_sector_freebsd,
-    .read_mode2_sectors = _read_mode2_sectors_freebsd,
-    .read_toc           = read_toc_freebsd,
-    .run_scsi_mmc_cmd   = run_scsi_cmd_freebsd,
-    .set_arg            = _set_arg_freebsd,
-    .stat_size          = _stat_size_freebsd
+    .eject_media            = _eject_media_freebsd,
+    .free                   = _free_freebsd,
+    .get_arg                = _get_arg_freebsd,
+    .get_cdtext             = get_cdtext_generic,
+    .get_default_device     = cdio_get_default_device_freebsd,
+    .get_devices            = cdio_get_devices_freebsd,
+    .get_discmode           = get_discmode_generic,
+    .get_drive_cap          = get_drive_cap_freebsd,
+    .get_first_track_num    = get_first_track_num_generic,
+    .get_mcn                = _get_mcn_freebsd,
+    .get_num_tracks         = get_num_tracks_generic,
+    .get_track_channels     = get_track_channels_generic,
+    .get_track_copy_permit  = get_track_copy_permit_generic,
+    .get_track_format       = _get_track_format_freebsd,
+    .get_track_green        = _get_track_green_freebsd,
+    .get_track_lba          = _get_track_lba_freebsd, 
+    .get_track_preemphasis  = get_track_preemphasis_generic,
+    .get_track_msf          = NULL,
+    .lseek                  = cdio_generic_lseek,
+    .read                   = cdio_generic_read,
+    .read_audio_sectors     = _read_audio_sectors_freebsd,
+    .read_mode2_sector      = _read_mode2_sector_freebsd,
+    .read_mode2_sectors     = _read_mode2_sectors_freebsd,
+    .read_toc               = read_toc_freebsd,
+    .run_scsi_mmc_cmd       = run_scsi_cmd_freebsd,
+    .set_arg                = _set_arg_freebsd,
+    .stat_size              = _stat_size_freebsd
   };
 
-  _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->access_mode    = str_to_access_mode_freebsd(psz_access_mode);
-  _data->gen.init       = false;
-  _data->gen.fd         = -1;
-  _data->gen.toc_init   = false;
+  _data                     = _cdio_malloc (sizeof (_img_private_t));
+  _data->access_mode        = str_to_access_mode_freebsd(psz_access_mode);
+  _data->gen.init           = false;
+  _data->gen.fd             = -1;
+  _data->gen.toc_init       = false;
   _data->gen.b_cdtext_init  = false;
   _data->gen.b_cdtext_error = false;
 
