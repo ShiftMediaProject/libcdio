@@ -2,6 +2,8 @@ It isn't look hard to find a gap in libcdio or libiso9660 or think of
 something you'd like added. Here are some of the many known problems
 and feature requests.
 
+* mmc_read_cd often doesn't work when request reading a large number of blocks.
+
 * All of the API should be finished on all OS's (or the API adjusted).
 
 * Fix the current gaps:
@@ -26,8 +28,6 @@ and feature requests.
   operations. Alternatively it could be read from a configuration
   file, but right now there's no internal structure for holding all of
   the capabilities.
-
-* Handle Rock Ridge Extensions
 
 * Combine iso-read and iso-info into an "iso-tar" for listing or
   extracting files". Ideally something matching the relevant command
@@ -91,4 +91,4 @@ to undertake doing it. Patches are always welcome (and CVS write
 access is available for those who have demonstrated reasonable ability
 through contributions.)
 
-$Id: TODO,v 1.9 2005/02/07 04:15:22 rocky Exp $
+$Id: TODO,v 1.10 2005/02/28 03:24:23 rocky Exp $
