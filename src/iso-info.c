@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.28 2005/02/21 09:00:53 rocky Exp $
+    $Id: iso-info.c,v 1.29 2005/02/27 20:16:08 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -227,7 +227,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
 		       psz_iso_name, translated_name);
       } else 
 	if ( strcmp (psz_iso_name, ".") && strcmp (psz_iso_name, ".."))
-	  printf("%9u %s%s\n", p_statbuf->size, pathname, 
+	  printf("%9u %s%s\n", (unsigned int) p_statbuf->size, pathname, 
 		 yep == p_statbuf->rr.b3_rock 
 		 ? psz_iso_name : translated_name);
       if (p_statbuf->rr.i_symlink) {

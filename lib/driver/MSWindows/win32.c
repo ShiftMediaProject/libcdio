@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.19 2005/02/11 02:18:15 rocky Exp $
+    $Id: win32.c,v 1.20 2005/02/27 20:16:08 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.19 2005/02/11 02:18:15 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.20 2005/02/27 20:16:08 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -768,6 +768,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.lseek                 = NULL;
   _funcs.read                  = NULL;
   _funcs.read_audio_sectors    = _cdio_read_audio_sectors;
+  _funcs.read_data_sectors     = read_data_sectors_mmc;
   _funcs.read_mode1_sector     = _cdio_read_mode1_sector;
   _funcs.read_mode1_sectors    = _cdio_read_mode1_sectors;
   _funcs.read_mode2_sector     = _cdio_read_mode2_sector;

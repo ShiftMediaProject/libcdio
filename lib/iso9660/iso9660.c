@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.11 2005/02/26 14:58:53 rocky Exp $
+    $Id: iso9660.c,v 1.12 2005/02/27 20:16:08 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.11 2005/02/26 14:58:53 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.12 2005/02/27 20:16:08 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -135,7 +135,6 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
   p_tm->tm_min    = idr_date->dt_minute;
   p_tm->tm_sec    = idr_date->dt_second;
   p_tm->tm_isdst  = -1; /* information not available */
-#ifdef HAVE_TM_GMTOFF
   {
     time_t t = 0;
     struct tm *p_temp_tm = localtime(&t);
@@ -143,7 +142,23 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
     /* Recompute tm_wday and tm_yday via mktime. Also adjust for 
        time-zone differences */
     t = mktime(p_tm);
-    t -= idr_date->dt_gmtoff * (15 * 60) - p_temp_tm->tm_gmtoff;
+    t -= idr_date->dt_gmtoff * (15 * 60);
+#ifdef HAVE_TM_GMTOFF
+    t += p_temp_tm->tm_gmtoff;
+#else 
+    {
+      static bool i_first_time = true;
+      static time_t gmt_off;
+      if (i_first_time) {
+        struct tm tm_local, tm_gmt;
+        memcpy(&tm_local, localtime(&t), sizeof(struct tm));
+        memcpy(&tm_gmt  , gmtime(&t)   , sizeof(struct tm));
+        gmt_off      = mktime(&tm_local) - mktime(&tm_gmt);
+        i_first_time = false;
+      }
+      t += gmt_off;
+    }
+#endif
     
     p_temp_tm = localtime(&t);
 
@@ -155,7 +170,6 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
     memcpy(p_tm, p_temp_tm, sizeof(struct tm));
   }
 
-#endif
 
   return true;
 }
