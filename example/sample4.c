@@ -1,5 +1,5 @@
 /*
-  $Id: sample4.c,v 1.3 2003/10/03 01:42:47 rocky Exp $
+  $Id: sample4.c,v 1.4 2003/11/05 04:12:58 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -45,7 +45,7 @@ log_handler (cdio_log_level_t level, const char message[])
 }
 
 static void
-print_analysis(cdio_analysis_t cdio_analysis, 
+print_analysis(cdio_iso_analysis_t cdio_iso_analysis, 
 	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
 	       track_t num_tracks, track_t first_track_num, CdIo *cdio)
 {
@@ -55,7 +55,7 @@ print_analysis(cdio_analysis_t cdio_analysis,
   case CDIO_FS_ISO_9660:
     printf("CD-ROM with ISO 9660 filesystem");
     if (fs & CDIO_FS_ANAL_JOLIET) {
-      printf(" and joliet extension level %d", cdio_analysis.joliet_level);
+      printf(" and joliet extension level %d", cdio_iso_analysis.joliet_level);
     }
     if (fs & CDIO_FS_ANAL_ROCKRIDGE)
       printf(" and rockridge extensions");
@@ -94,7 +94,7 @@ print_analysis(cdio_analysis_t cdio_analysis,
   case CDIO_FS_ISO_9660_INTERACTIVE:
   case CDIO_FS_ISO_HFS:
     printf("ISO 9660: %i blocks, label `%.32s'\n",
-	   cdio_analysis.isofs_size, cdio_analysis.iso_label);
+	   cdio_iso_analysis.isofs_size, cdio_iso_analysis.iso_label);
     break;
   }
   if (first_data == 1 && num_audio > 0)
@@ -174,9 +174,9 @@ main(int argc, const char *argv[])
   } else {
     /* we have data track(s) */
     int j;
-    cdio_analysis_t cdio_analysis; 
+    cdio_iso_analysis_t cdio_iso_analysis; 
 
-    memset(&cdio_analysis, 0, sizeof(cdio_analysis));
+    memset(&cdio_iso_analysis, 0, sizeof(cdio_iso_analysis));
     
     for (j = 2, i = first_data; i <= num_tracks; i++) {
       lsn_t lsn;
@@ -202,12 +202,12 @@ main(int argc, const char *argv[])
 	data_start = start_track;
       
       /* skip tracks which belong to the current walked session */
-      if (start_track < data_start + cdio_analysis.isofs_size)
+      if (start_track < data_start + cdio_iso_analysis.isofs_size)
 	continue;
       
-      fs = cdio_guess_cd_type(cdio, start_track, i, &cdio_analysis);
+      fs = cdio_guess_cd_type(cdio, start_track, i, &cdio_iso_analysis);
       
-      print_analysis(cdio_analysis, fs, first_data, num_audio,
+      print_analysis(cdio_iso_analysis, fs, first_data, num_audio,
 		     num_tracks, first_track_num, cdio);
       
       if ( !(CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660 ||

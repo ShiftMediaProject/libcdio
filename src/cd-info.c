@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.43 2003/10/15 01:59:51 rocky Exp $
+    $Id: cd-info.c,v 1.44 2003/11/05 04:12:58 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -591,7 +591,7 @@ print_iso9660_fs (CdIo *cdio, cdio_fs_anal_t fs, track_format_t track_format)
 }
 
 static void
-print_analysis(int ms_offset, cdio_analysis_t cdio_analysis, 
+print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis, 
 	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
 	       track_t num_tracks, track_t first_track_num, 
 	       track_format_t track_format, CdIo *cdio)
@@ -611,7 +611,7 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
   case CDIO_FS_ISO_9660:
     printf("CD-ROM with ISO 9660 filesystem");
     if (fs & CDIO_FS_ANAL_JOLIET) {
-      printf(" and joliet extension level %d", cdio_analysis.joliet_level);
+      printf(" and joliet extension level %d", cdio_iso_analysis.joliet_level);
     }
     if (fs & CDIO_FS_ANAL_ROCKRIDGE)
       printf(" and rockridge extensions");
@@ -650,7 +650,7 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
   case CDIO_FS_ISO_9660_INTERACTIVE:
   case CDIO_FS_ISO_HFS:
     printf("ISO 9660: %i blocks, label `%.32s'\n",
-	   cdio_analysis.isofs_size, cdio_analysis.iso_label);
+	   cdio_iso_analysis.isofs_size, cdio_iso_analysis.iso_label);
     if (opts.print_iso9660) 
       print_iso9660_fs(cdio, fs, track_format);
     break;
@@ -731,22 +731,22 @@ int
 main(int argc, const char *argv[])
 {
 
-  CdIo          *cdio=NULL;
-  cdio_fs_anal_t fs=CDIO_FS_AUDIO;
+  CdIo               *cdio=NULL;
+  cdio_fs_anal_t      fs=CDIO_FS_AUDIO;
   int i;
-  lsn_t          start_track_lsn;      /* lsn of first track */
-  lsn_t          data_start =0;        /* start of data area */
-  int            ms_offset = 0;
-  track_t        num_tracks=0;
-  track_t        first_track_num  =  0;
-  unsigned int   num_audio   =  0;  /* # of audio tracks */
-  unsigned int   num_data    =  0;  /* # of data tracks */
-  int            first_data  = -1;  /* # of first data track */
-  int            first_audio = -1;  /* # of first audio track */
-  cdio_analysis_t cdio_analysis; 
-  char           *media_catalog_number;  
+  lsn_t               start_track_lsn;      /* lsn of first track */
+  lsn_t               data_start =0;        /* start of data area */
+  int                 ms_offset = 0;
+  track_t             num_tracks=0;
+  track_t             first_track_num  =  0;
+  unsigned int        num_audio   =  0;  /* # of audio tracks */
+  unsigned int        num_data    =  0;  /* # of data tracks */
+  int                 first_data  = -1;  /* # of first data track */
+  int                 first_audio = -1;  /* # of first audio track */
+  cdio_iso_analysis_t cdio_iso_analysis; 
+  char                *media_catalog_number;  
       
-  memset(&cdio_analysis, 0, sizeof(cdio_analysis));
+  memset(&cdio_iso_analysis, 0, sizeof(cdio_iso_analysis));
   init();
 
   /* Parse our arguments; every option seen by `parse_opt' will
@@ -942,7 +942,7 @@ main(int argc, const char *argv[])
       
       /* CD-I/Ready says start_track_lsn <= 30*75 then CDDA */
       if (start_track_lsn > 100 /* 100 is just a guess */) {
-	fs = cdio_guess_cd_type(cdio, 0, 1, &cdio_analysis);
+	fs = cdio_guess_cd_type(cdio, 0, 1, &cdio_iso_analysis);
 	if ((CDIO_FSTYPE(fs)) != CDIO_FS_UNKNOWN)
 	  fs |= CDIO_FS_ANAL_HIDDEN_TRACK;
 	else {
@@ -952,7 +952,7 @@ main(int argc, const char *argv[])
 		 (long unsigned int) start_track_lsn);
 	}
       }
-      print_analysis(ms_offset, cdio_analysis, fs, first_data, num_audio,
+      print_analysis(ms_offset, cdio_iso_analysis, fs, first_data, num_audio,
 		     num_tracks, first_track_num, 
 		     cdio_get_track_format(cdio, 1), cdio);
     } else {
@@ -983,10 +983,10 @@ main(int argc, const char *argv[])
 	  data_start = start_track_lsn;
 	
 	/* skip tracks which belong to the current walked session */
-	if (start_track_lsn < data_start + cdio_analysis.isofs_size)
+	if (start_track_lsn < data_start + cdio_iso_analysis.isofs_size)
 	  continue;
 	
-	fs = cdio_guess_cd_type(cdio, start_track_lsn, i, &cdio_analysis);
+	fs = cdio_guess_cd_type(cdio, start_track_lsn, i, &cdio_iso_analysis);
 
 	if (i > 1) {
 	  /* track is beyond last session -> new session found */
@@ -994,13 +994,14 @@ main(int argc, const char *argv[])
 	  printf("session #%d starts at track %2i, LSN: %lu,"
 		 " ISO 9660 blocks: %6i\n",
 		 j++, i, (unsigned long int) start_track_lsn, 
-		 cdio_analysis.isofs_size);
+		 cdio_iso_analysis.isofs_size);
 	  printf("ISO 9660: %i blocks, label `%.32s'\n",
-		 cdio_analysis.isofs_size, cdio_analysis.iso_label);
+		 cdio_iso_analysis.isofs_size, cdio_iso_analysis.iso_label);
 	  fs |= CDIO_FS_ANAL_MULTISESSION;
 	} else {
-	  print_analysis(ms_offset, cdio_analysis, fs, first_data, num_audio,
-			 num_tracks, first_track_num, track_format, cdio);
+	  print_analysis(ms_offset, cdio_iso_analysis, fs, first_data, 
+			 num_audio, num_tracks, first_track_num, 
+			 track_format, cdio);
 	}
 
 	if ( !(CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660 ||

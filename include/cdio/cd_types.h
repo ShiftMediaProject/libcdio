@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.h,v 1.5 2003/11/04 12:28:08 rocky Exp $
+    $Id: cd_types.h,v 1.6 2003/11/05 04:12:58 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -110,7 +110,7 @@ typedef struct
   char          iso_label[33]; /**< This is 32 + 1 for null byte at the end in 
 				    formatting the string */
   unsigned int  isofs_size;
-} cdio_analysis_t;
+} cdio_iso_analysis_t;
 
 /**
  *  Try to determine what kind of CD-image and/or filesystem we
@@ -119,7 +119,7 @@ typedef struct
  */
 cdio_fs_anal_t cdio_guess_cd_type(const CdIo *cdio, int start_session, 
 				  track_t track_num, 
-				  /*out*/ cdio_analysis_t *cdio_analysis);
+				  /*out*/ cdio_iso_analysis_t *iso_analysis);
 
 #ifdef __cplusplus
 }

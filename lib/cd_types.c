@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.c,v 1.6 2003/10/06 04:04:05 rocky Exp $
+    $Id: cd_types.c,v 1.7 2003/11/05 04:12:58 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -208,7 +208,7 @@ _cdio_get_joliet_level( void )
 */
 cdio_fs_anal_t
 cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num, 
-		   /*out*/ cdio_analysis_t *cdio_analysis)
+		   /*out*/ cdio_iso_analysis_t *iso_analysis)
 {
   int ret = 0;
   bool sector0_read_ok;
@@ -239,8 +239,8 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num,
 	ret = CDIO_FS_ISO_HFS;
       else
 	ret = CDIO_FS_ISO_9660;
-      cdio_analysis->isofs_size = _cdio_get_iso9660_fs_sec_count();
-      sprintf(cdio_analysis->iso_label, buffer[0]+40);
+      iso_analysis->isofs_size = _cdio_get_iso9660_fs_sec_count();
+      sprintf(iso_analysis->iso_label, buffer[0]+40);
       
 #if 0
       if (_cdio_is_rockridge())
@@ -251,7 +251,7 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num,
 	return ret;
       
       if (_cdio_is_joliet()) {
-	cdio_analysis->joliet_level = _cdio_get_joliet_level();
+	iso_analysis->joliet_level = _cdio_get_joliet_level();
 	ret |= CDIO_FS_ANAL_JOLIET;
       }
       if (_cdio_is_it(INDEX_BOOTABLE))
