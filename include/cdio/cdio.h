@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.39 2004/04/23 22:10:52 rocky Exp $
+    $Id: cdio.h,v 1.40 2004/04/24 04:49:26 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -66,6 +66,12 @@
 #define CDIO_DRIVE_DVD		0x8000	/**< drive is a DVD */
 #define CDIO_DRIVE_DVD_R	0x10000	/**< drive can write DVD-R */
 #define CDIO_DRIVE_DVD_RAM	0x20000	/**< drive can write DVD-RAM */
+
+#define CDIO_DRIVE_CD_READER    (CDIO_DRIVE_CD_R|CDIO_DRIVE_CD_RW)
+#define CDIO_DRIVE_CD_WRITER    (CDIO_DRIVE_RW)
+
+#define CDIO_DRIVE_DVD_READER   (CDIO_DRIVE_DVD|CDIO_DRIVE_DVD_R|CDIO_DRIVE_DVD_RAM)
+#define CDIO_DRIVE_DVD_WRITER   (CDIO_DRIVE_DVD_R|CDIO_DRIVE_DVD_RAM)
 
 #ifdef __cplusplus
 extern "C" {
