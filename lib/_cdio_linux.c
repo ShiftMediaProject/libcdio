@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.16 2003/09/01 15:11:36 rocky Exp $
+    $Id: _cdio_linux.c,v 1.17 2003/09/14 09:34:17 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.16 2003/09/01 15:11:36 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.17 2003/09/14 09:34:17 rocky Exp $";
 
 #include <string.h>
 
@@ -35,6 +35,7 @@ static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.16 2003/09/01 15:11:36 rock
 #include <cdio/util.h>
 #include "cdio_assert.h"
 #include "cdio_private.h"
+#include "scsi_mmc.h"
 
 #ifdef HAVE_LINUX_CDROM
 
@@ -245,14 +246,9 @@ _read_packet_audio_sector (int fd, void *buf, lba_t lba)
   cgc.cmd[0] = GPCMD_READ_CD;
   cgc.cmd[1] = 0; /* Any type of sectors returned */
   
-  cgc.cmd[2] = (lba >> 24) & 0xff;
-  cgc.cmd[3] = (lba >> 16) & 0xff;
-  cgc.cmd[4] = (lba >> 8) & 0xff;
-  cgc.cmd[5] = (lba >> 0) & 0xff;
+  SCSI_MMC_SET_READ_LBA(cgc.cmd, lba);
+  SCSI_MMC_SET_READ_LENGTH(cgc.cmd, nblocks);
 
-  cgc.cmd[6] = (nblocks >> 16) & 0xff;
-  cgc.cmd[7] = (nblocks >> 8) & 0xff;
-  cgc.cmd[8] = (nblocks >> 0) & 0xff;
   cgc.cmd[9] = 0x78; /* All headers  */
 
   cgc.buflen = CDIO_CD_FRAMESIZE_RAW * nblocks; 
@@ -280,15 +276,9 @@ __read_packet_mode2_sectors (int fd, void *buf, lba_t lba,
   memset (&cgc, 0, sizeof (struct cdrom_generic_command));
 
   cgc.cmd[0] = use_read_10 ? GPCMD_READ_10 : GPCMD_READ_CD;
-  
-  cgc.cmd[2] = (lba >> 24) & 0xff;
-  cgc.cmd[3] = (lba >> 16) & 0xff;
-  cgc.cmd[4] = (lba >> 8) & 0xff;
-  cgc.cmd[5] = (lba >> 0) & 0xff;
 
-  cgc.cmd[6] = (nblocks >> 16) & 0xff;
-  cgc.cmd[7] = (nblocks >> 8) & 0xff;
-  cgc.cmd[8] = (nblocks >> 0) & 0xff;
+  SCSI_MMC_SET_READ_LBA(cgc.cmd, lba);
+  SCSI_MMC_SET_READ_LENGTH(cgc.cmd, nblocks);
 
   if (!use_read_10)
     {

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.12 2003/09/13 06:25:37 rocky Exp $
+#   $Id: Makefile.am,v 1.13 2003/09/14 09:34:17 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -44,6 +44,7 @@ libcdio_sources = \
 	ds.c \
 	ds.h \
 	logging.c \
+	scsi_mmc.h \
 	sector.c \
 	util.c
 

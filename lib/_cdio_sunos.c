@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.15 2003/09/01 15:11:36 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.16 2003/09/14 09:34:17 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -30,12 +30,13 @@
 #include <cdio/util.h>
 #include "cdio_assert.h"
 #include "cdio_private.h"
+#include "scsi_mmc.h"
 
 #define DEFAULT_CDIO_DEVICE "/vol/dev/aliases/cdrom0"
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.15 2003/09/01 15:11:36 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.16 2003/09/14 09:34:17 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -186,13 +187,10 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 	memset(&sc, 0, sizeof(sc));
 	cdb.scc_cmd = 0xBE;
 	cdb.cdb_opaque[1] = (sector_type) << 2;
-	cdb.cdb_opaque[2] = (lsn >> 24) & 0xff;
-	cdb.cdb_opaque[3] = (lsn >> 16) & 0xff;
-	cdb.cdb_opaque[4] = (lsn >>  8) & 0xff;
-	cdb.cdb_opaque[5] =  lsn & 0xff;
-	cdb.cdb_opaque[6] = (blocks >> 16) & 0xff;
-	cdb.cdb_opaque[7] = (blocks >>  8) & 0xff;
-	cdb.cdb_opaque[8] =  blocks & 0xff;
+	
+	SCSI_MMC_SET_READ_LBA(cdb.cdb_opaque, lsn);
+	SCSI_MMC_SET_READ_LENGTH(cdb.cdb_opaque, blocks);
+
 	cdb.cdb_opaque[9] = (sync << 7) |
 	  (header_code << 5) |
 	  (user_data << 4) |
@@ -296,13 +294,10 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 	memset(&sc, 0, sizeof(sc));
 	cdb.scc_cmd = 0xBE;
 	cdb.cdb_opaque[1] = (sector_type) << 2;
-	cdb.cdb_opaque[2] = (lsn >> 24) & 0xff;
-	cdb.cdb_opaque[3] = (lsn >> 16) & 0xff;
-	cdb.cdb_opaque[4] = (lsn >>  8) & 0xff;
-	cdb.cdb_opaque[5] =  lsn & 0xff;
-	cdb.cdb_opaque[6] = (blocks >> 16) & 0xff;
-	cdb.cdb_opaque[7] = (blocks >>  8) & 0xff;
-	cdb.cdb_opaque[8] =  blocks & 0xff;
+
+	SCSI_MMC_SET_READ_LBA(cdb.cdb_opaque, lsn);
+	SCSI_MMC_SET_READ_LENGTH(cdb.cdb_opaque, blocks);
+
 	cdb.cdb_opaque[9] = (sync << 7) |
 	  (header_code << 5) |
 	  (user_data << 4) |

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.10 2003/08/11 09:19:18 rocky Exp $
+    $Id: _cdio_win32.c,v 1.11 2003/09/14 09:34:18 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,13 +26,14 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.10 2003/08/11 09:19:18 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.11 2003/09/14 09:34:18 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
 #include "cdio_assert.h"
 #include "cdio_private.h"
+#include "scsi_mmc.h"
 
 /* LBA = msf.frame + 75 * ( msf.second - 2 + 60 * msf.minute ) */
 #define MSF_TO_LBA2(min, sec, frame) ((int)frame + 75 * (sec -2 + 60 * min))
@@ -534,15 +535,9 @@ _cdio_read_raw_sector (void *user_data, void *data, lsn_t lsn)
 
     /* Start of LSN */
     ssc.CDBByte[ 1 ] = (sector_type) << 2;
-    ssc.CDBByte[ 2 ] = (lsn >> 24) & 0xff;
-    ssc.CDBByte[ 3 ] = (lsn >> 16) & 0xff;
-    ssc.CDBByte[ 4 ] = (lsn >>  8) & 0xff;
-    ssc.CDBByte[ 5 ] = (lsn      ) & 0xff;
-    
-    /* Transfer length */
-    ssc.CDBByte[ 6 ] = (blocks >> 16) & 0xff;
-    ssc.CDBByte[ 7 ] = (blocks >>  8) & 0xff;
-    ssc.CDBByte[ 8 ] = blocks & 0xff;
+
+    SCSI_MMC_SET_READ_LBA(ssc.CDBByte, lsn);
+    SCSI_MMC_SET_READ_LENGTH(ssc.CDBByte, blocks);
     
     ssc.CDBByte[ 9 ] = (sync << 7) |
       (header_code << 5) |
@@ -617,7 +612,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
       || (_obj->gen.ioctls_debugged < (30 * 75)  
 	  && _obj->gen.ioctls_debugged % 75 == 0)
       || _obj->gen.ioctls_debugged % (30 * 75) == 0)
-    cdio_debug ("reading %d", lsn);
+    cdio_debug ("reading %lu", (unsigned long int) lsn);
   
   _obj->gen.ioctls_debugged++;
  
@@ -802,7 +797,8 @@ _cdio_read_toc (_img_private_t *_obj)
 	  ((int)p_fulltoc[ i_index+2 ] << 8) +
 	  (int)p_fulltoc[ i_index+3 ];
 	
-	cdio_debug( "p_sectors: %i %i", i, _obj->tocent[i].start_lsn );
+	cdio_debug( "p_sectors: %i %lu", 
+		    i, (unsigned long int) _obj->tocent[i].start_lsn );
       }
 	
       free( p_fulltoc );
@@ -833,7 +829,8 @@ _cdio_read_toc (_img_private_t *_obj)
 					 cdrom_toc.TrackData[i].Address[1],
 					 cdrom_toc.TrackData[i].Address[2],
 					 cdrom_toc.TrackData[i].Address[3] );
-	cdio_debug("p_sectors: %i, %i", i, (_obj->tocent[i].start_lsn));
+	cdio_debug("p_sectors: %i, %lu", i, 
+		   (unsigned long int) (_obj->tocent[i].start_lsn));
       }
   }
   return true;
@@ -936,9 +933,7 @@ _cdio_get_track_format(void *user_data, track_t track_num)
   MCI_OPEN_PARMS op;
   MCI_STATUS_PARMS st;
   DWORD i_flags;
-  char psz_drive[4];
   int ret;
-  unsigned int len = strlen(_obj->gen.source_name);
 
   memset( &op, 0, sizeof(MCI_OPEN_PARMS) );
   op.lpstrDeviceType = (LPCSTR)MCI_DEVTYPE_CD_AUDIO;

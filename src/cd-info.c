@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.33 2003/09/07 18:12:30 rocky Exp $
+    $Id: cd-info.c,v 1.34 2003/09/14 09:34:18 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -639,20 +639,20 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs,
         _cdio_list_append (dirlist, strdup (_fullname));
 
       if (fs & CDIO_FS_ANAL_XA) {
-	printf ( "  %c %s %d %d [fn %.2d] [LSN %6d] ",
+	printf ( "  %c %s %d %d [fn %.2d] [LSN %6lu] ",
 		 (statbuf.type == _STAT_DIR) ? 'd' : '-',
 		 iso9660_get_xa_attr_str (statbuf.xa.attributes),
 		 uint16_from_be (statbuf.xa.user_id),
 		 uint16_from_be (statbuf.xa.group_id),
 		 statbuf.xa.filenum,
-		 statbuf.lsn);
+		 (long unsigned int) statbuf.lsn);
 	
 	if (uint16_from_be(statbuf.xa.attributes) & XA_ATTR_MODE2FORM2) {
-	  printf ("%9d (%9d)",
-		  statbuf.secsize * M2F2_SECTOR_SIZE,
-		  statbuf.size);
+	  printf ("%9u (%9u)",
+		  (unsigned int) statbuf.secsize * M2F2_SECTOR_SIZE,
+		  (unsigned int) statbuf.size);
 	} else {
-	  printf ("%9d", statbuf.size);
+	  printf ("%9u", (unsigned int) statbuf.size);
 	}
       }
       strftime(date_str, DATESTR_SIZE, "%b %e %Y %H:%M ", &statbuf.tm);
@@ -706,7 +706,7 @@ print_iso9660_fs (CdIo *cdio, cdio_fs_anal_t fs, track_format_t track_format)
     const lsn_t extent = iso9660_get_root_lsn(&pvd);
     
     printf ("ISO9660 filesystem\n");
-    printf (" root dir in PVD set to lsn %d\n\n", extent);
+    printf (" root dir in PVD set to lsn %lu\n\n", (long unsigned) extent);
     
     print_iso9660_recurse (cdio, "/", fs, is_mode2);
   }
@@ -820,7 +820,7 @@ main(int argc, const char *argv[])
   CdIo          *cdio=NULL;
   cdio_fs_anal_t fs=0;
   int i;
-  lsn_t          start_track;          /* first sector of track */
+  lsn_t          start_track_lsn;      /* lsn of first track */
   lsn_t          data_start =0;        /* start of data area */
   int            ms_offset = 0;
   track_t        num_tracks=0;
@@ -947,16 +947,16 @@ main(int argc, const char *argv[])
 
     if (i == CDIO_CDROM_LEADOUT_TRACK) {
       if (!opts.no_tracks)
-	printf("%3d: %2.2x:%2.2x:%2.2x  %06d  leadout\n",
+	printf("%3d: %2.2x:%2.2x:%2.2x  %06lu  leadout\n",
 	       (int) i, 
 	       msf.m, msf.s, msf.f, 
-	       cdio_msf_to_lsn(&msf));
+	       (long unsigned int) cdio_msf_to_lsn(&msf));
       break;
     } else if (!opts.no_tracks) {
-      printf("%3d: %2.2x:%2.2x:%2.2x  %06d  %s\n",
+      printf("%3d: %2.2x:%2.2x:%2.2x  %06lu  %s\n",
 	     (int) i, 
 	     msf.m, msf.s, msf.f, 
-	     cdio_msf_to_lsn(&msf),
+	     (long unsigned int) cdio_msf_to_lsn(&msf),
 	     track_format2str[cdio_get_track_format(cdio, i)]);
 
     }
@@ -1049,18 +1049,18 @@ main(int argc, const char *argv[])
       
       msf_t msf;
       cdio_get_track_msf(cdio, 1, &msf);
-      start_track = cdio_msf_to_lsn(&msf);
+      start_track_lsn = cdio_msf_to_lsn(&msf);
       
-      /* CD-I/Ready says start_track <= 30*75 then CDDA */
-      if (start_track > 100 /* 100 is just a guess */) {
+      /* CD-I/Ready says start_track_lsn <= 30*75 then CDDA */
+      if (start_track_lsn > 100 /* 100 is just a guess */) {
 	fs = cdio_guess_cd_type(cdio, 0, 1, &cdio_analysis);
 	if ((CDIO_FSTYPE(fs)) != CDIO_FS_UNKNOWN)
 	  fs |= CDIO_FS_ANAL_HIDDEN_TRACK;
 	else {
 	  fs &= ~CDIO_FS_MASK; /* del filesystem info */
-	  printf("Oops: %i unused sectors at start, "
+	  printf("Oops: %lu unused sectors at start, "
 		 "but hidden track check failed.\n",
-		 start_track);
+		 (long unsigned int) start_track_lsn);
 	}
       }
       print_analysis(ms_offset, cdio_analysis, fs, first_data, num_audio,
@@ -1087,24 +1087,25 @@ main(int argc, const char *argv[])
 	  ;
 	}
 	
-	start_track = (i == 1) ? 0 : cdio_msf_to_lsn(&msf);
+	start_track_lsn = (i == 1) ? 0 : cdio_msf_to_lsn(&msf);
 	
 	/* save the start of the data area */
 	if (i == first_data) 
-	  data_start = start_track;
+	  data_start = start_track_lsn;
 	
 	/* skip tracks which belong to the current walked session */
-	if (start_track < data_start + cdio_analysis.isofs_size)
+	if (start_track_lsn < data_start + cdio_analysis.isofs_size)
 	  continue;
 	
-	fs = cdio_guess_cd_type(cdio, start_track, i, &cdio_analysis);
+	fs = cdio_guess_cd_type(cdio, start_track_lsn, i, &cdio_analysis);
 
 	if (i > 1) {
 	  /* track is beyond last session -> new session found */
-	  ms_offset = start_track;
-	  printf("session #%d starts at track %2i, LSN: %6i,"
+	  ms_offset = start_track_lsn;
+	  printf("session #%d starts at track %2i, LSN: %lu,"
 		 " ISO 9660 blocks: %6i\n",
-		 j++, i, start_track, cdio_analysis.isofs_size);
+		 j++, i, (unsigned long int) start_track_lsn, 
+		 cdio_analysis.isofs_size);
 	  printf("ISO 9660: %i blocks, label `%.32s'\n",
 		 cdio_analysis.isofs_size, cdio_analysis.iso_label);
 	  fs |= CDIO_FS_ANAL_MULTISESSION;
