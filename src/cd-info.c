@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.46 2003/11/09 15:51:43 rocky Exp $
+    $Id: cd-info.c,v 1.47 2003/11/16 19:30:45 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -493,9 +493,9 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs,
   
   _CDIO_LIST_FOREACH (entnode, entlist)
     {
-      char *iso_name = _cdio_list_node_data (entnode);
+      iso9660_stat_t *statbuf = _cdio_list_node_data (entnode);
+      char *iso_name = statbuf->filename;
       char _fullname[4096] = { 0, };
-      iso9660_stat_t statbuf;
       char translated_name[MAX_ISONAME+1];
 #define DATESTR_SIZE 30
       char date_str[DATESTR_SIZE];
@@ -505,37 +505,31 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs,
       snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
 		iso_name);
   
-      if (iso9660_fs_stat (cdio, _fullname, &statbuf, is_mode2)) {
-        fprintf(stderr, "Error getting file info for directory %s/\n", 
-		_fullname);
-	continue;
-      }
-
       strncat (_fullname, "/", sizeof (_fullname));
 
-      if (statbuf.type == _STAT_DIR
+      if (statbuf->type == _STAT_DIR
           && strcmp (iso_name, ".") 
           && strcmp (iso_name, ".."))
         _cdio_list_append (dirlist, strdup (_fullname));
 
       if (fs & CDIO_FS_ANAL_XA) {
 	printf ( "  %c %s %d %d [fn %.2d] [LSN %6lu] ",
-		 (statbuf.type == _STAT_DIR) ? 'd' : '-',
-		 iso9660_get_xa_attr_str (statbuf.xa.attributes),
-		 uint16_from_be (statbuf.xa.user_id),
-		 uint16_from_be (statbuf.xa.group_id),
-		 statbuf.xa.filenum,
-		 (long unsigned int) statbuf.lsn);
+		 (statbuf->type == _STAT_DIR) ? 'd' : '-',
+		 iso9660_get_xa_attr_str (statbuf->xa.attributes),
+		 uint16_from_be (statbuf->xa.user_id),
+		 uint16_from_be (statbuf->xa.group_id),
+		 statbuf->xa.filenum,
+		 (long unsigned int) statbuf->lsn);
 	
-	if (uint16_from_be(statbuf.xa.attributes) & XA_ATTR_MODE2FORM2) {
+	if (uint16_from_be(statbuf->xa.attributes) & XA_ATTR_MODE2FORM2) {
 	  printf ("%9u (%9u)",
-		  (unsigned int) statbuf.secsize * M2F2_SECTOR_SIZE,
-		  (unsigned int) statbuf.size);
+		  (unsigned int) statbuf->secsize * M2F2_SECTOR_SIZE,
+		  (unsigned int) statbuf->size);
 	} else {
-	  printf ("%9u", (unsigned int) statbuf.size);
+	  printf ("%9u", (unsigned int) statbuf->size);
 	}
       }
-      strftime(date_str, DATESTR_SIZE, "%b %e %Y %H:%M ", &statbuf.tm);
+      strftime(date_str, DATESTR_SIZE, "%b %e %Y %H:%M ", &statbuf->tm);
       printf (" %s %s\n", date_str, translated_name);
     }
 

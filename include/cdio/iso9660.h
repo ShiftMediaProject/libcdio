@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.30 2003/11/10 04:01:16 rocky Exp $
+    $Id: iso9660.h,v 1.31 2003/11/16 19:30:45 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -194,7 +194,8 @@ typedef struct iso9660_stat iso9660_stat_t;
 #endif
 
 /*
- * XXX JS: The next structure may have an odd length!
+ * XXX JS: The next structure may have an odd length depending on how 
+ * many characters there are in the filename!
  * Some compilers (e.g. on Sun3/mc68020) padd the structures to even length.
  * For this reason, we cannot use sizeof (struct iso_path_table) or
  * sizeof (struct iso_directory_record) to compute on disk sizes.
@@ -229,7 +230,8 @@ struct iso9660_stat { /* big endian!! */
   uint32_t     secsize;               /**< number of sectors allocated */
   iso9660_xa_t xa;                    /**< XA attributes */
   struct tm    tm;                    /**< time on entry */
-} ;
+  char         filename[EMPTY_ARRAY_SIZE]; /**< filename */
+} GNUC_PACKED;
 
 PRAGMA_END_PACKED
 
@@ -367,22 +369,22 @@ iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
 
 /*!
    Given a directory pointer, find the filesystem entry that contains
-   lsn and return information about it in stat. 
+   lsn and return information about it.
 
-   Returns true if we found an entry with the lsn and false if not.
+   Returns stat_t of entry if we found lsn, or NULL otherwise.
  */
-bool iso9660_find_fs_lsn(const CdIo *cdio, lsn_t lsn, 
-                         /*out*/ iso9660_stat_t *stat);
+iso9660_stat_t *iso9660_find_fs_lsn(const CdIo *cdio, lsn_t lsn);
+
 
 /*!
-  Get file status for pathname into stat. As with libc's stat, 0 is returned
-  if no error and -1 on error.
+  Get file status for pathname into stat. NULL is returned on error.
  */
-int iso9660_fs_stat (const CdIo *obj, const char pathname[], 
-                     /*out*/ iso9660_stat_t *stat, bool is_mode2);
+iso9660_stat_t *iso9660_fs_stat (const CdIo *obj, const char pathname[], 
+                                 bool is_mode2);
 
-/*!  Read pathname (a directory) and return a list of of the files
-  inside that (char *). The caller must free the returned result.
+/*! 
+  Read pathname (a directory) and return a list of iso9660_stat_t
+  of the files inside that. The caller must free the returned result.
 */
 void * iso9660_fs_readdir (const CdIo *obj, const char pathname[], bool mode2);
 
