@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.10 2004/11/04 10:08:23 rocky Exp $
+  $Id: cd-drive.c,v 1.11 2004/11/14 00:03:52 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -234,17 +234,20 @@ main(int argc, const char *argv[])
 	cdio_hwinfo_t          hwinfo;
 	CdIo *p_cdio = cdio_open(*ppsz_cd, driver_id); 
 
-	cdio_get_drive_cap_dev(*ppsz_cd, &i_read_cap, &i_write_cap, 
-			       &i_misc_cap);
 	printf("%28s: %s\n", "Drive", *ppsz_cd);
-	if (cdio_get_hwinfo(p_cdio, &hwinfo)) {
-	  printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
-		 "Vendor"  , hwinfo.psz_vendor, 
-		 "Model"   , hwinfo.psz_model, 
-		 "Revision", hwinfo.psz_revision);
+
+	if (p_cdio) {
+	  if (cdio_get_hwinfo(p_cdio, &hwinfo)) {
+	    printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
+		   "Vendor"  , hwinfo.psz_vendor, 
+		   "Model"   , hwinfo.psz_model, 
+		   "Revision", hwinfo.psz_revision);
+	  }
+	  print_mmc_drive_features(p_cdio);
+	  cdio_get_drive_cap(p_cdio, &i_read_cap, &i_write_cap, 
+			     &i_misc_cap);
+	  print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
 	}
-	print_mmc_drive_features(p_cdio);
-	print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
 	printf("\n");
 	if (p_cdio) cdio_destroy(p_cdio);
       }
