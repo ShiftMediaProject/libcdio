@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.10 2003/06/12 04:46:27 rocky Exp $
+    $Id: cdio_private.h,v 1.11 2003/06/22 22:41:29 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -212,7 +212,7 @@ extern "C" {
 
   /* The below array gives of the drivers that are currently available for 
      on a particular host. */
-  extern CdIo_driver_t CdIo_driver[MAX_DRIVER];
+  extern CdIo_driver_t CdIo_driver[CDIO_MAX_DRIVER];
 
   /* The last valid entry of Cdio_driver. -1 means uninitialzed. -2 
      means some sort of error.
@@ -221,7 +221,7 @@ extern "C" {
 
   /* The below array gives all drivers that can possibly appear.
      on a particular host. */
-  extern CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1];
+  extern CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1];
 
   /*!
     Bogus eject media when there is no ejectable media, e.g. a disk image

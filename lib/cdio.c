@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.20 2003/06/11 10:57:02 rocky Exp $
+    $Id: cdio.c,v 1.21 2003/06/22 22:41:29 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.20 2003/06/11 10:57:02 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.21 2003/06/22 22:41:29 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -46,7 +46,7 @@ const char *track_format2str[6] =
 /* The below array gives of the drivers that are currently available for 
    on a particular host. */
 
-CdIo_driver_t CdIo_driver[MAX_DRIVER] = { {0} };
+CdIo_driver_t CdIo_driver[CDIO_MAX_DRIVER] = { {0} };
 
 /* The last valid entry of Cdio_driver. 
    -1 or (CDIO_DRIVER_UNINIT) means uninitialzed. 
@@ -66,7 +66,7 @@ cdio_have_false(void)
 /* The below array gives all drivers that can possibly appear.
    on a particular host. */
 
-CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = { 
+CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
   {DRIVER_UNKNOWN, 
    0,
    "Unknown", 
@@ -203,7 +203,7 @@ cdio_get_default_device (const CdIo *obj)
   if (obj == NULL) {
     driver_id_t driver_id;
     /* Scan for driver */
-    for (driver_id=DRIVER_UNKNOWN; driver_id<=MAX_DRIVER; driver_id++) {
+    for (driver_id=DRIVER_UNKNOWN; driver_id<=CDIO_MAX_DRIVER; driver_id++) {
       if ( (*CdIo_all_drivers[driver_id].have_driver)() &&
            *CdIo_all_drivers[driver_id].get_default_device ) {
         return (*CdIo_all_drivers[driver_id].get_default_device)();
@@ -415,7 +415,7 @@ cdio_init(void)
     return false;
   }
 
-  for (driver_id=DRIVER_UNKNOWN; driver_id<=MAX_DRIVER; driver_id++) {
+  for (driver_id=DRIVER_UNKNOWN; driver_id<=CDIO_MAX_DRIVER; driver_id++) {
     all_dp = &CdIo_all_drivers[driver_id];
     if ((*CdIo_all_drivers[driver_id].have_driver)()) {
       *dp++ = *all_dp;
@@ -626,7 +626,7 @@ cdio_open (const char *orig_source_name, driver_id_t driver_id)
   switch (driver_id) {
   case DRIVER_UNKNOWN: 
     {
-      CdIo *cdio=scan_for_driver(MIN_DEVICE_DRIVER, MAX_DEVICE_DRIVER, 
+      CdIo *cdio=scan_for_driver(CDIO_MIN_DRIVER, CDIO_MAX_DRIVER, 
                                  source_name);
       if (cdio != NULL && cdio_is_device(source_name, cdio->driver_id)) {
         driver_id = cdio->driver_id;
@@ -702,7 +702,8 @@ cdio_open_cd (const char *source_name)
   if (CdIo_last_driver == -1) cdio_init();
 
   /* Scan for a driver. */
-  return scan_for_driver(MIN_DEVICE_DRIVER, MAX_DEVICE_DRIVER, source_name);
+  return scan_for_driver(CDIO_MIN_DEVICE_DRIVER, CDIO_MAX_DEVICE_DRIVER, 
+                         source_name);
 }
 
 

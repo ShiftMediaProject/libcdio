@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.14 2003/06/11 10:57:02 rocky Exp $
+    $Id: cdio.h,v 1.15 2003/06/22 22:41:29 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -83,9 +83,10 @@ extern "C" {
   /* Make sure what's listed below is the last one above. Since we have
      a bogus (but useful) 0th entry above we don't have to add one below.
    */
-#define MAX_DRIVER DRIVER_NRG
-#define MAX_DEVICE_DRIVER DRIVER_WIN32
-#define MIN_DEVICE_DRIVER DRIVER_BSDI
+#define CDIO_MIN_DRIVER        DRIVER_BSDI
+#define CDIO_MIN_DEVICE_DRIVER CDIO_MIN_DRIVER
+#define CDIO_MAX_DRIVER        DRIVER_NRG
+#define CDIO_MAX_DEVICE_DRIVER DRIVER_WIN32
 
   typedef enum  {
     TRACK_FORMAT_AUDIO,   /* Audio track, e.g. CD-DA */

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.13 2003/06/13 04:36:35 rocky Exp $
+    $Id: cd-info.c,v 1.14 2003/06/22 22:41:29 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -471,7 +471,7 @@ PARTICULAR PURPOSE.\n\
 
   if (version_only) {
     char *default_device;
-    for (driver_id=DRIVER_UNKNOWN+1; driver_id<=MAX_DRIVER; driver_id++) {
+    for (driver_id=DRIVER_UNKNOWN+1; driver_id<=CDIO_MAX_DRIVER; driver_id++) {
       if (cdio_have_driver(driver_id)) {
 	printf("Have driver: %s\n", cdio_driver_describe(driver_id));
       }
