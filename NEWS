@@ -1,5 +1,5 @@
 0.66
--  Add interface for reading an ISO-9600 image
+-  Add interface for reading an ISO-9660 image
 -  portability fixes (Solaris, cygwin)
 -  Microsoft Windows ASPI/ DeviceIoControl code reorganization
 -  NRG image reading improvements 
