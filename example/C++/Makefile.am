@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.19 2005/02/19 11:42:18 rocky Exp $
+#   $Id: Makefile.am,v 1.1 2005/02/19 11:42:18 rocky Exp $
 #
-#    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -20,36 +20,22 @@
 # Things to regression testing
 ####################################################
 #
-if !DISABLE_CPP
-SUBDIRS =  C++
-endif
-noinst_PROGRAMS = cdtext device drives iso1 iso2 iso3 isofuzzy mmc1 mmc2 \
-		  mmc4 paranoia paranoia2 tracks sample3 sample4 
+noinst_PROGRAMS = iso1 iso2 iso3 mmc1 mmc2
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
-cdtext_LDADD  = $(LIBCDIO_LIBS)
+iso1_SOURCES  = iso1.cpp
+iso1_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso2_SOURCES  = iso2.cpp
+iso2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso3_SOURCES  = iso3.cpp
+iso3_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
-device_LDADD = $(LIBCDIO_LIBS)
-
-drives_LDADD = $(LIBCDIO_LIBS)
-
-paranoia_LDADD  = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
-paranoia2_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
-
-iso1_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-iso2_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-iso3_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-isofuzzy_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-
+mmc1_SOURCES  = mmc1.cpp
 mmc1_LDADD = $(LIBCDIO_LIBS)
+
+mmc2_SOURCES  = mmc2.cpp
 mmc2_LDADD = $(LIBCDIO_LIBS)
-mmc4_LDADD = $(LIBCDIO_LIBS)
-
-sample3_LDADD = $(LIBCDIO_LIBS)
-sample4_LDADD = $(LIBCDIO_LIBS)
-
-tracks_LDADD  = $(LIBCDIO_LIBS)
 
 # iso programs create file "copying"
 MOSTLYCLEANFILES = copying

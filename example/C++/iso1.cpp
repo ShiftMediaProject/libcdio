@@ -1,5 +1,5 @@
 /*
-  $Id: iso1cpp.cpp,v 1.1 2004/11/22 01:03:53 rocky Exp $
+  $Id: iso1.cpp,v 1.1 2005/02/19 11:42:18 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -27,7 +27,7 @@
  */
 
 /* This is the ISO 9660 image. */
-#define ISO9660_IMAGE_PATH "../"
+#define ISO9660_IMAGE_PATH "../../"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
 
 #ifdef HAVE_CONFIG_H
@@ -58,8 +58,15 @@ main(int argc, const char *argv[])
 {
   CdioList *entlist;
   CdioListNode *entnode;
+  char const *psz_fname;
+  iso9660_t *p_iso;
 
-  iso9660_t *p_iso = iso9660_open (ISO9660_IMAGE);
+  if (argc > 1) 
+    psz_fname = argv[1];
+  else 
+    psz_fname = ISO9660_IMAGE;
+
+  p_iso = iso9660_open (psz_fname);
   
   if (NULL == p_iso) {
     fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", ISO9660_IMAGE);

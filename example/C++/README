@@ -1,0 +1,16 @@
+$Id: README,v 1.1 2005/02/19 11:42:18 rocky Exp $
+
+This directory contains some simple C++ examples of the use of the libcdio
+library.
+
+Descriptions of the programs in this example directory are as follows...
+
+iso1.cpp:   A program to show using libiso9660 to list files in a
+	    	  directory of an ISO-9660 image.
+
+iso2.cpp:   A program to show using libiso9660 to extract a file
+	    from a CDRWIN cue/bin CD image.
+
+iso3.cpp:   A program to show using libiso9660 to extract a file from an
+	    ISO-9660 image.
+

@@ -1,5 +1,5 @@
 /*
-  $Id: iso3.c,v 1.3 2004/11/22 01:03:53 rocky Exp $
+  $Id: iso3.c,v 1.4 2005/02/19 11:42:18 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -68,8 +68,15 @@ main(int argc, const char *argv[])
   iso9660_stat_t *p_statbuf;
   FILE *p_outfd;
   int i;
+  char const *psz_fname;
+  iso9660_t *p_iso;
   
-  iso9660_t *p_iso = iso9660_open (ISO9660_IMAGE);
+  if (argc > 1) 
+    psz_fname = argv[1];
+  else 
+    psz_fname = ISO9660_IMAGE;
+
+  p_iso = iso9660_open (psz_fname);
   
   if (NULL == p_iso) {
     fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", ISO9660_IMAGE);
