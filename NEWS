@@ -1,6 +1,7 @@
 0.65
 -  tag headers to give doxygen API documentation
 -  cd-info/cd-read now can specify library level of output
+-  sample program using libiso9660 added.
 
 0.64
 -  add routines to return a list of devices or scan a list of devices

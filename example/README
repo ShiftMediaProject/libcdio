@@ -1,7 +1,28 @@
-$Id: README,v 1.2 2003/09/28 21:55:09 rocky Exp $
+$Id: README,v 1.3 2003/12/24 11:05:48 uid67423 Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
 
 A larger more-complicated example are the cd-info and cd-read programs
 in the src directory.
+
+Descriptions of the programs here are as follows...
+
+sample1.c: A simple program to list track numbers and logical sector
+   numbers of a Compact Disc using libcdio.
+
+sample2.c: A simple program to show drivers installed and what the
+   default CD-ROM drive is.
+
+sample3.c: A simple program to show the use of cdio_guess_cd_type().
+   Figure out the kind of CD image we've got.
+
+sample4.c: A slightly improved sample3 program: we handle cdio logging
+   and take an optional CD-location.
+
+sample5.c: A program to show drivers installed and what the default
+   CD-ROM drive is and what CD drives are available.
+
+sample6.c: A program to show drivers installed and what the default
+   CD-ROM drive is and what CD drives are available.
+

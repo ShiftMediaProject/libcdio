@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.1 2003/09/28 22:11:00 rocky Exp $
+#   $Id: Makefile.am,v 1.2 2003/12/24 11:05:48 uid67423 Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,7 +20,7 @@
 # Things to regression testing
 ####################################################
 #
-noinst_PROGRAMS = sample1 sample2 sample3 sample4 sample5
+noinst_PROGRAMS = sample1 sample2 sample3 sample4 sample5 sample6
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
@@ -29,3 +29,4 @@ sample2_LDADD = $(LIBCDIO_LIBS)
 sample3_LDADD = $(LIBCDIO_LIBS)
 sample4_LDADD = $(LIBCDIO_LIBS)
 sample5_LDADD = $(LIBCDIO_LIBS)
+sample6_LDADD = $(LIBCDIO_LIBS) $(LIBISO9660_LIBS)
