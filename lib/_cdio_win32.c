@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.18 2003/10/18 04:08:46 rocky Exp $
+    $Id: _cdio_win32.c,v 1.19 2003/10/18 19:49:00 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.18 2003/10/18 04:08:46 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.19 2003/10/18 19:49:00 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -56,9 +56,26 @@ static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.18 2003/10/18 04:08:46 rock
 #include <sys/types.h>
 
 /* Win32 DeviceIoControl specifics */
-#ifndef MAXIMUM_NUMBER_TRACKS
-#    define MAXIMUM_NUMBER_TRACKS 100
+/***** FIXME: #include ntddcdrm.h from Wine, but probably need to 
+   modify it a little.
+*/
+
+#ifndef IOCTL_CDROM_BASE
+#    define IOCTL_CDROM_BASE FILE_DEVICE_CD_ROM
 #endif
+#ifndef IOCTL_CDROM_READ_TOC
+#    define IOCTL_CDROM_READ_TOC CTL_CODE(IOCTL_CDROM_BASE, 0x0000, \
+                                          METHOD_BUFFERED, FILE_READ_ACCESS)
+#endif
+#ifndef IOCTL_CDROM_RAW_READ
+#define IOCTL_CDROM_RAW_READ CTL_CODE(IOCTL_CDROM_BASE, 0x000F, \
+                                      METHOD_OUT_DIRECT, FILE_READ_ACCESS)
+#endif
+
+#ifndef IOCTL_CDROM_READ_Q_CHANNEL
+#define IOCTL_CDROM_READ_Q_CHANNEL      CTL_CODE(IOCTL_CDROM_BASE, 0x000B, METHOD_BUFFERED, FILE_READ_ACCESS)
+#endif
+
 typedef struct _TRACK_DATA {
     UCHAR Format;
     UCHAR Control : 4;
@@ -67,22 +84,23 @@ typedef struct _TRACK_DATA {
     UCHAR Reserved1;
     UCHAR Address[4];
 } TRACK_DATA, *PTRACK_DATA;
+
 typedef struct _CDROM_TOC {
     UCHAR Length[2];
     UCHAR FirstTrack;
     UCHAR LastTrack;
-    TRACK_DATA TrackData[MAXIMUM_NUMBER_TRACKS];
+    TRACK_DATA TrackData[CDIO_CD_MAX_TRACKS+1];
 } CDROM_TOC, *PCDROM_TOC;
-typedef enum _TRACK_MODE_TYPE {
-    YellowMode2,
-    XAForm2,
-    CDDA
-} TRACK_MODE_TYPE, *PTRACK_MODE_TYPE;
-typedef struct __RAW_READ_INFO {
-    LARGE_INTEGER DiskOffset;
-    ULONG SectorCount;
-    TRACK_MODE_TYPE TrackMode;
-} RAW_READ_INFO, *PRAW_READ_INFO;
+
+#define IOCTL_CDROM_SUB_Q_CHANNEL    0x00
+#define IOCTL_CDROM_CURRENT_POSITION 0x01
+#define IOCTL_CDROM_MEDIA_CATALOG    0x02
+#define IOCTL_CDROM_TRACK_ISRC       0x03
+
+typedef struct _CDROM_SUB_Q_DATA_FORMAT {
+    UCHAR               Format;
+    UCHAR               Track;
+} CDROM_SUB_Q_DATA_FORMAT, *PCDROM_SUB_Q_DATA_FORMAT;
 
 typedef struct _SUB_Q_HEADER {
   UCHAR Reserved;
@@ -99,17 +117,17 @@ typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
   UCHAR MediaCatalog[15];
 } SUB_Q_MEDIA_CATALOG_NUMBER, *PSUB_Q_MEDIA_CATALOG_NUMBER;
 
-#ifndef IOCTL_CDROM_BASE
-#    define IOCTL_CDROM_BASE FILE_DEVICE_CD_ROM
-#endif
-#ifndef IOCTL_CDROM_READ_TOC
-#    define IOCTL_CDROM_READ_TOC CTL_CODE(IOCTL_CDROM_BASE, 0x0000, \
-                                          METHOD_BUFFERED, FILE_READ_ACCESS)
-#endif
-#ifndef IOCTL_CDROM_RAW_READ
-#define IOCTL_CDROM_RAW_READ CTL_CODE(IOCTL_CDROM_BASE, 0x000F, \
-                                      METHOD_OUT_DIRECT, FILE_READ_ACCESS)
-#endif
+typedef enum _TRACK_MODE_TYPE {
+    YellowMode2,
+    XAForm2,
+    CDDA
+} TRACK_MODE_TYPE, *PTRACK_MODE_TYPE;
+
+typedef struct __RAW_READ_INFO {
+    LARGE_INTEGER DiskOffset;
+    ULONG SectorCount;
+    TRACK_MODE_TYPE TrackMode;
+} RAW_READ_INFO, *PRAW_READ_INFO;
 
 /* Win32 aspi specific */
 #define WIN_NT               ( GetVersion() < 0x80000000 )
@@ -970,23 +988,27 @@ _cdio_get_first_track_num(void *user_data)
 static char *
 _cdio_get_mcn (void *env) {
 
-#if 0
   _img_private_t *_obj = env;
 
-  if( !_obj->hASPI ) {
+  if( ! _obj->hASPI ) {
     DWORD dwBytesReturned;
     SUB_Q_MEDIA_CATALOG_NUMBER mcn;
+    CDROM_SUB_Q_DATA_FORMAT q_data_format;
+    
+    memset( &mcn, 0, sizeof(mcn) );
 
+    q_data_format.Format = IOCTL_CDROM_MEDIA_CATALOG;
+    q_data_format.Track=1;
+    
     if( DeviceIoControl( _obj->h_device_handle,
 			 IOCTL_CDROM_READ_Q_CHANNEL,
-			 NULL, 0, &mcn, sizeof(mcn),
+			 &q_data_format, sizeof(q_data_format), 
+			 &mcn, sizeof(mcn),
 			 &dwBytesReturned, NULL ) == 0 ) {
-      cdio_warn( "could not read Q Channel" );
-      return NULL;
-    }
-    return strdup(mcn.MediaCatalog);
+      cdio_warn( "could not read Q Channel at track 1");
+    } else if (mcn.Mcval)
+      return strdup(mcn.MediaCatalog);
   }
-#endif
   return NULL;
 }
 
@@ -1077,9 +1099,9 @@ _cdio_get_track_format(void *env, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *user_data, track_t track_num) 
+_cdio_get_track_green(void *env, track_t track_num) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
@@ -1087,6 +1109,15 @@ _cdio_get_track_green(void *user_data, track_t track_num)
 
   if (track_num > _obj->total_tracks+1 || track_num == 0)
     return false;
+
+  switch (_cdio_get_track_format(env, track_num)) {
+  case TRACK_FORMAT_ERROR:
+  case TRACK_FORMAT_CDI:
+  case TRACK_FORMAT_AUDIO:
+    return false;
+  default:
+    break;
+  }
 
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cd-info for a while.
@@ -1102,9 +1133,9 @@ _cdio_get_track_green(void *user_data, track_t track_num)
   False is returned if there is no track entry.
 */
 static bool
-_cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
+_cdio_get_track_msf(void *env, track_t track_num, msf_t *msf)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (NULL == msf) return false;
 
