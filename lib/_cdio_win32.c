@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.15 2003/10/03 01:11:48 rocky Exp $
+    $Id: _cdio_win32.c,v 1.16 2003/10/15 03:53:25 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.15 2003/10/03 01:11:48 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.16 2003/10/15 03:53:25 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -176,6 +176,7 @@ struct SRB_ExecSCSICmd
 
 typedef struct {
   lsn_t          start_lsn;
+  UCHAR          Control : 4;
 } track_info_t;
 
 typedef struct {
@@ -494,6 +495,16 @@ _cdio_mmc_read_sectors (void *user_data, void *data, lsn_t lsn,
   if( _obj->hASPI ) {
     HANDLE hEvent;
     struct SRB_ExecSCSICmd ssc;
+
+#if 1
+    int sector_type = 0; /*all types */
+    int sync        = 0;
+    int header_code = 2;
+    int user_data   = 1;
+    int edc_ecc     = 0;
+    int error_field = 0;
+#endif
+	
     
     /* Create the transfer completion event */
     hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -520,8 +531,18 @@ _cdio_mmc_read_sectors (void *user_data, void *data, lsn_t lsn,
     CDIO_MMC_SET_READ_TYPE(ssc.CDBByte, sector_type);
     CDIO_MMC_SET_READ_LBA(ssc.CDBByte, lsn);
     CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, nblocks);
+
+#if 1
+    ssc.CDBByte[ 9 ] = (sync << 7) |
+      (header_code << 5) |
+      (user_data << 4) |
+      (edc_ecc << 3) |
+      (error_field << 1);
+    /* ssc.CDBByte[ 9 ] = READ_CD_USERDATA_MODE2; */
+#else 
     CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(ssc.CDBByte,
 					     CDIO_MMC_MCSB_ALL_HEADERS);
+#endif
     
     /* Result buffer */
     ssc.SRB_BufPointer  = buf;
@@ -785,6 +806,7 @@ _cdio_read_toc (_img_private_t *_obj)
 	  ((int)p_fulltoc[ i_index+1 ] << 16) +
 	  ((int)p_fulltoc[ i_index+2 ] << 8) +
 	  (int)p_fulltoc[ i_index+3 ];
+	_obj->tocent[ i ].Control   = (UCHAR)p_fulltoc[ 1 + 8 * i ];
 	
 	cdio_debug( "p_sectors: %i %lu", 
 		    i, (unsigned long int) _obj->tocent[i].start_lsn );
@@ -794,6 +816,7 @@ _cdio_read_toc (_img_private_t *_obj)
     }
     
     CloseHandle( hEvent );
+    _obj->gen.toc_init = true;
     return true;
     
   } else {
@@ -818,10 +841,12 @@ _cdio_read_toc (_img_private_t *_obj)
 					 cdrom_toc.TrackData[i].Address[1],
 					 cdrom_toc.TrackData[i].Address[2],
 					 cdrom_toc.TrackData[i].Address[3] );
+	_obj->tocent[ i ].Control   = cdrom_toc.TrackData[i].Control;
 	cdio_debug("p_sectors: %i, %lu", i, 
 		   (unsigned long int) (_obj->tocent[i].start_lsn));
       }
   }
+  _obj->gen.toc_init = true;
   return true;
 }
 
@@ -976,8 +1001,10 @@ _cdio_get_track_green(void *user_data, track_t track_num)
   if (track_num > _obj->total_tracks+1 || track_num == 0)
     return false;
 
-  /* FIXME! */
-  return true;
+  /* FIXME: Dunno if this is the right way, but it's what 
+     I was using in cd-info for a while.
+   */
+  return ((_obj->tocent[track_num-1].Control & 2) != 0);
 }
 
 /*!  
