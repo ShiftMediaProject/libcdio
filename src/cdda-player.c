@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.11 2005/03/14 02:03:33 rocky Exp $
+    $Id: cdda-player.c,v 1.12 2005/03/15 04:17:05 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -350,7 +350,6 @@ read_subchannel(CdIo_t *p_cdio)
 {
   if (!b_cd) return;
 
-  sub.format = CDIO_CDROM_MSF;
   if (DRIVER_OP_SUCCESS != cdio_audio_read_subchannel(p_cdio, &sub)) {
     xperror("read subchannel");
     b_cd = 0;

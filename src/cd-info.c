@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.134 2005/03/12 06:02:36 rocky Exp $
+    $Id: cd-info.c,v 1.135 2005/03/15 04:17:05 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1066,8 +1066,6 @@ main(int argc, const char *argv[])
       driver_return_code_t rc;
       
       memset(&subchannel, 0, sizeof(subchannel));
-      subchannel.format = CDIO_CDROM_MSF;
-      
       report( stdout, "audio status: "); fflush(stdout);
 	
       rc = cdio_audio_read_subchannel(p_cdio, &subchannel);
