@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_nrg.sh.in,v 1.6 2003/09/01 02:02:59 rocky Exp $
+#$Id: check_nrg.sh.in,v 1.7 2003/09/20 00:28:32 rocky Exp $
 
 if test -z "@VCDINFO_LIBS@" ; then
   vcd_opt='--no-vcd'
@@ -11,7 +11,7 @@ fi
 
 . ${srcdir}/check_common_fn
 
-if ! test -x ../src/cd-info ; then
+if test ! -x ../src/cd-info ; then
   exit 77
 fi
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cd_read.sh,v 1.2 2003/09/19 04:34:53 rocky Exp $
+#$Id: check_cd_read.sh,v 1.3 2003/09/20 00:28:32 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -25,7 +25,7 @@ fi
 
 . ${srcdir}/check_common_fn
 
-if ! test -x ../src/cd-read ; then
+if test ! -x ../src/cd-read ; then
   exit 77
 fi
 
