@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.24 2004/06/02 00:43:53 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.25 2004/06/03 09:22:10 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.24 2004/06/02 00:43:53 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.25 2004/06/03 09:22:10 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -143,13 +143,13 @@ _cdio_init (_img_private_t *env)
 */
 static int
 _read_audio_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
-		     unsigned int nblocks)
+			  unsigned int nblocks)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
 
-  _img_private_t *env = env;
+  _img_private_t *env = user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
   msf->cdmsf_min0 = from_bcd8(_msf.m);
@@ -226,7 +226,7 @@ static int
 _read_mode1_sectors_bsdi (void *user_data, void *data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *env = env;
+  _img_private_t *env = user_data;
   unsigned int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
@@ -252,7 +252,7 @@ _read_mode2_sector_bsdi (void *user_data, void *data, lsn_t lsn,
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
 
-  _img_private_t *env = env;
+  _img_private_t *env = user data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
   msf->cdmsf_min0 = from_bcd8(_msf.m);
@@ -308,24 +308,17 @@ static int
 _read_mode2_sectors_bsdi (void *user_data, void *data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *env = env;
-  int i;
-  int retval;
+  _img_private_t *env = user_data;
+  unsigned int i;
+  unsigned int i_blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
+    /* For each frame, pick out the data part we need */
   for (i = 0; i < nblocks; i++) {
-    if (b_form2) {
-      if ( (retval = _read_mode2_sector_bsdi (env, 
-					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
-					  lsn + i, true)) )
-	return retval;
-    } else {
-      char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _read_mode2_sector_bsdi (env, buf, lsn + i, true)) )
-	return retval;
-      
-      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
-	      buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
-    }
+    int retval = _read_mode2_sector_bsd i(env, 
+					  ((char *)data) + 
+					  (i_blocksize * i),
+					  lsn + i, b_form2);
+    if (retval) return retval;
   }
   return 0;
 }
@@ -336,7 +329,7 @@ _read_mode2_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
 static uint32_t 
 _stat_size_bsdi (void *user_data)
 {
-  _img_private_t *env = env;
+  _img_private_t *env = user_data;
 
   struct cdrom_tocentry tocent;
   uint32_t size;
@@ -360,7 +353,7 @@ _stat_size_bsdi (void *user_data)
 static int
 _set_arg_bsdi (void *user_data, const char key[], const char value[])
 {
-  _img_private_t *env = env;
+  _img_private_t *env = user_data;
 
   if (!strcmp (key, "source"))
     {
@@ -448,7 +441,7 @@ _cdio_read_toc (_img_private_t *env)
 static int 
 _eject_media_bsdi (void *user_data) {
 
-  _img_private_t *env = env;
+  _img_private_t *env = user_data;
   int ret=2;
   int status;
   int fd;
@@ -485,7 +478,7 @@ _eject_media_bsdi (void *user_data) {
 static const char *
 _get_arg_bsdi (void *user_data, const char key[])
 {
-  _img_private_t *env = env;
+  _img_private_t *env = user_data;
 
   if (!strcmp (key, "source")) {
     return env->source_name;
@@ -507,7 +500,7 @@ _get_arg_bsdi (void *user_data, const char key[])
 static track_t
 _get_first_track_num_bsdi(void *user_data) 
 {
-  _img_private_t *env = env;
+  _img_private_t *env = user_data;
   
   if (!env->toc_init) _cdio_read_toc (env) ;
 
@@ -523,7 +516,7 @@ static char *
 _get_mcn_bsdi (const void *user_data) {
 
   struct cdrom_mcn mcn;
-  const _img_private_t *env = env;
+  const _img_private_t *env = user_data;
   if (ioctl(env->gen.fd, CDROM_GET_MCN, &mcn) != 0)
     return NULL;
   return strdup(mcn.medium_catalog_number);
@@ -536,7 +529,7 @@ _get_mcn_bsdi (const void *user_data) {
 static track_t
 _get_num_tracks_bsdi(void *user_data) 
 {
-  _img_private_t *env = env;
+  _img_private_t *env = user_data;
   
   if (!env->toc_init) _cdio_read_toc (env) ;
 
@@ -549,7 +542,7 @@ _get_num_tracks_bsdi(void *user_data)
 static track_format_t
 _get_track_format_bsdi(void *user_data, track_t i_track) 
 {
-  _img_private_t *env = env;
+  _img_private_t *env = user_data;
   
   if (!env->toc_init) _cdio_read_toc (env) ;
 
@@ -584,7 +577,7 @@ _get_track_format_bsdi(void *user_data, track_t i_track)
 static bool
 _get_track_green_bsdi(void *user_data, track_t i_track) 
 {
-  _img_private_t *env = env;
+  _img_private_t *env = user_data;
   
   if (!env->toc_init) _cdio_read_toc (env) ;
 
@@ -609,7 +602,7 @@ _get_track_green_bsdi(void *user_data, track_t i_track)
 static bool
 _get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
 {
-  _img_private_t *env = env;
+  _img_private_t *env = user_data;
 
   if (NULL == msf) return false;
 
