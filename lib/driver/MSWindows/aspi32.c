@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: aspi32.c,v 1.2 2005/01/01 04:17:41 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.2 2005/01/01 04:17:41 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -679,7 +679,7 @@ read_toc_aspi (_img_private_t *p_env)
   p_env->gen.i_tracks  = tocheader[3] - tocheader[2] + 1;
   
   {
-    int i, i_toclength;
+    int i, j, i_toclength;
     unsigned char *p_fulltoc;
     
     i_toclength = 4 /* header */ + tocheader[0] +
@@ -701,15 +701,28 @@ read_toc_aspi (_img_private_t *p_env)
     if( 0 != i_status ) {
       p_env->gen.i_tracks = 0;
     }
+
+    j = p_env->gen.i_first_track;
     
-    for( i = 0 ; i <= p_env->gen.i_tracks ; i++ ) {
+    for( i = 0 ; i <= p_env->gen.i_tracks ; i++, j++ ) {
       int i_index = 8 + 8 * i;
       p_env->tocent[ i ].start_lsn = ((int)p_fulltoc[ i_index ] << 24) +
 	((int)p_fulltoc[ i_index+1 ] << 16) +
 	((int)p_fulltoc[ i_index+2 ] << 8) +
 	(int)p_fulltoc[ i_index+3 ];
-      p_env->tocent[ i ].Control   = (UCHAR)p_fulltoc[ 1 + 8 * i ];
+      p_env->tocent[i].Control   = (UCHAR)p_fulltoc[ 1 + 8 * i ];
       
+      p_env->gen.track_flags[j].preemphasis = 
+	p_env->tocent[i].Control & 0x1 
+	? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
+      
+      p_env->gen.track_flags[j].copy_permit = 
+	p_env->tocent[i].Control & 0x2 
+	? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
+      
+      p_env->gen.track_flags[j].channels = 
+	p_env->tocent[i].Control & 0x8 ? 4 : 2;
+    
       cdio_debug( "p_sectors: %i %lu", 
 		  i, (unsigned long int) p_env->tocent[i].start_lsn );
     }
