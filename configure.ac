@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.40 2003/09/14 07:49:12 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.41 2003/09/14 17:04:48 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
@@ -245,6 +245,7 @@ AC_SUBST(HAVE_LINUX_CDROM)
 AC_SUBST(HAVE_BSDI_CDROM)
 AC_SUBST(HAVE_SOLARIS_CDROM)
 AC_SUBST(HAVE_WIN32_CDROM)
+AC_SUBST(HAVE_DARWIN_CDROM)
 
 if test x$enable_cddb = x; then
 AC_ARG_ENABLE(cddb,

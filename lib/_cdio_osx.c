@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.4 2003/09/14 15:26:31 rocky Exp $
+    $Id: _cdio_osx.c,v 1.5 2003/09/14 17:04:49 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com> from vcdimager code
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -31,7 +31,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.4 2003/09/14 15:26:31 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.5 2003/09/14 17:04:49 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -78,7 +78,7 @@ typedef struct {
   CDTOC *pTOC;
   int i_descriptors;
   track_t num_tracks;
-  lsn_t   *pp_sectors;
+  lsn_t   *pp_lsn;
 
 } _img_private_t;
 
@@ -87,29 +87,8 @@ _cdio_osx_free (void *user_data) {
   _img_private_t *_obj = user_data;
   if (NULL == _obj) return;
   cdio_generic_free(_obj);
-  if (NULL != _obj->pp_sectors) free((void *) _obj->pp_sectors);
+  if (NULL != _obj->pp_lsn) free((void *) _obj->pp_lsn);
   if (NULL != _obj->pTOC) free((void *) _obj->pTOC);
-}
-
-/****************************************************************************
-  _cdio_getNumberOfDescriptors: get number of descriptors in TOC 
- ****************************************************************************/
-static int 
-_cdio_getNumberOfDescriptors( CDTOC *pTOC )
-{
-  int i_descriptors;
-  
-  /* get TOC length */
-  i_descriptors = pTOC->length;
-  
-  /* remove the first and last session */
-  i_descriptors -= ( sizeof(pTOC->sessionFirst) +
-		     sizeof(pTOC->sessionLast) );
-  
-  /* divide the length by the size of a single descriptor */
-  i_descriptors /= sizeof(CDTOCDescriptor);
-  
-  return( i_descriptors );
 }
 
 /****************************************************************************
@@ -321,7 +300,7 @@ _cdio_read_toc (_img_private_t *_obj)
       IOObjectRelease( iterator );
     }
   
-  if( service == NULL )
+  if( service == 0 )
     {
       cdio_error( "search for kIOCDMediaClass came up empty" );
       return false;
@@ -364,7 +343,7 @@ _cdio_read_toc (_img_private_t *_obj)
   CFRelease( properties );
   IOObjectRelease( service ); 
 
-  _obj->i_descriptors = _cdio_getNumberOfDescriptors( _obj->pTOC );
+  _obj->i_descriptors = CDTOCGetDescriptorCount ( _obj->pTOC );
   _obj->num_tracks = _cdio_getNumberOfTracks(_obj->pTOC, _obj->i_descriptors);
 
   /* Read in starting sectors */
@@ -374,8 +353,8 @@ _cdio_read_toc (_img_private_t *_obj)
     track_t track;
     int i_tracks;
     
-    _obj->pp_sectors = malloc( (_obj->num_tracks + 1) * sizeof(int) );
-    if( _obj->pp_sectors == NULL )
+    _obj->pp_lsn = malloc( (_obj->num_tracks + 1) * sizeof(int) );
+    if( _obj->pp_lsn == NULL )
       {
 	cdio_error("Out of memory in allocating track starting LSNs" );
 	free( _obj->pTOC );
@@ -395,21 +374,21 @@ _cdio_read_toc (_img_private_t *_obj)
 	if( track > CDIO_CD_MAX_TRACKS || track < CDIO_CD_MIN_TRACK_NO )
 	  continue;
 	
-	_obj->pp_sectors[i_tracks++] =
-	  CDConvertMSFToLBA( pTrackDescriptors[i].p );
+	_obj->pp_lsn[i_tracks++] =
+	  cdio_lba_to_lsn(CDConvertMSFToLBA( pTrackDescriptors[i].p ));
       }
     
     if( i_leadout == -1 )
       {
 	cdio_error( "CD leadout not found" );
-	free( _obj->pp_sectors );
+	free( _obj->pp_lsn );
 	free( (void *) _obj->pTOC );
 	return false;
       }
     
     /* set leadout sector */
-    _obj->pp_sectors[i_tracks] =
-      CDConvertMSFToLBA( pTrackDescriptors[i_leadout].p );
+    _obj->pp_lsn[i_tracks] =
+      cdio_lba_to_lsn(CDConvertMSFToLBA( pTrackDescriptors[i_leadout].p ));
   }
 
   _obj->toc_init   = true;
@@ -437,7 +416,7 @@ _cdio_get_track_lsn(void *user_data, track_t track_num)
   if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
     return CDIO_INVALID_LSN;
   } else {
-    return _obj->pp_sectors[track_num-1];
+    return _obj->pp_lsn[track_num-1];
   }
 }
 
