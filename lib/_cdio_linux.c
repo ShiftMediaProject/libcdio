@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.46 2004/05/13 04:32:12 rocky Exp $
+    $Id: _cdio_linux.c,v 1.47 2004/05/27 10:58:11 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.46 2004/05/13 04:32:12 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.47 2004/05/27 10:58:11 rocky Exp $";
 
 #include <string.h>
 
@@ -633,9 +633,10 @@ _cdio_read_toc (_img_private_t *_obj)
 
   /* read individual tracks */
   for (i= FIRST_TRACK_NUM; i<=TOTAL_TRACKS; i++) {
-    _obj->tocent[i-1].cdte_track = i;
-    _obj->tocent[i-1].cdte_format = CDROM_MSF;
-    if ( ioctl(_obj->gen.fd, CDROMREADTOCENTRY, &_obj->tocent[i-1]) == -1 ) {
+    _obj->tocent[i-FIRST_TRACK_NUM].cdte_track = i;
+    _obj->tocent[i-FIRST_TRACK_NUM].cdte_format = CDROM_MSF;
+    if ( ioctl(_obj->gen.fd, CDROMREADTOCENTRY, 
+	       &_obj->tocent[i-FIRST_TRACK_NUM]) == -1 ) {
       cdio_error("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
               i, strerror(errno));
@@ -870,22 +871,22 @@ _get_num_tracks_linux(void *env)
   Get format of track. 
 */
 static track_format_t
-_get_track_format_linux(void *env, track_t track_num) 
+_get_track_format_linux(void *env, track_t i_track) 
 {
   _img_private_t *_obj = env;
   
   if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num > TOTAL_TRACKS || track_num == 0)
+  if (i_track > TOTAL_TRACKS || i_track == 0)
     return TRACK_FORMAT_ERROR;
 
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
    */
-  if (_obj->tocent[track_num-1].cdte_ctrl & CDIO_CDROM_DATA_TRACK) {
-    if (_obj->tocent[track_num-1].cdte_format == 0x10)
+  if (_obj->tocent[i_track-FIRST_TRACK_NUM].cdte_ctrl & CDIO_CDROM_DATA_TRACK) {
+    if (_obj->tocent[i_track-FIRST_TRACK_NUM].cdte_format == 0x10)
       return TRACK_FORMAT_CDI;
-    else if (_obj->tocent[track_num-1].cdte_format == 0x20) 
+    else if (_obj->tocent[i_track-FIRST_TRACK_NUM].cdte_format == 0x20) 
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;
@@ -903,32 +904,32 @@ _get_track_format_linux(void *env, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_get_track_green_linux(void *env, track_t track_num) 
+_get_track_green_linux(void *env, track_t i_track) 
 {
   _img_private_t *_obj = env;
   
   if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
-  if (track_num > TOTAL_TRACKS+1 || track_num == 0)
+  if (i_track > TOTAL_TRACKS+1 || i_track == 0)
     return false;
 
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cdinfo for a while.
    */
-  return ((_obj->tocent[track_num-1].cdte_ctrl & 2) != 0);
+  return ((_obj->tocent[i_track-FIRST_TRACK_NUM].cdte_ctrl & 2) != 0);
 }
 
 /*!  
   Return the starting MSF (minutes/secs/frames) for track number
-  track_num in obj.  Track numbers start at 1.
+  i_track in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
-  using track_num LEADOUT_TRACK or the total tracks+1.
+  using i_track LEADOUT_TRACK or the total tracks+1.
   False is returned if there is no track entry.
 */
 static bool
-_get_track_msf_linux(void *env, track_t track_num, msf_t *msf)
+_get_track_msf_linux(void *env, track_t i_track, msf_t *msf)
 {
   _img_private_t *_obj = env;
 
@@ -936,12 +937,12 @@ _get_track_msf_linux(void *env, track_t track_num, msf_t *msf)
 
   if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
-  if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
+  if (i_track > TOTAL_TRACKS+1 || i_track == 0) {
     return false;
   } else {
-    struct cdrom_msf0  *msf0= &_obj->tocent[track_num-1].cdte_addr.msf;
+    struct cdrom_msf0  *msf0= &_obj->tocent[i_track-FIRST_TRACK_NUM].cdte_addr.msf;
     msf->m = to_bcd8(msf0->minute);
     msf->s = to_bcd8(msf0->second);
     msf->f = to_bcd8(msf0->frame);
