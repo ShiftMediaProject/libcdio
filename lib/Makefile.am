@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.59 2004/11/15 01:34:09 rocky Exp $
+#   $Id: Makefile.am,v 1.60 2004/11/15 21:34:10 nboullis Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -175,9 +175,9 @@ libcdio_la_DEPENDENCIES = libcdio.la.ver
 libcdio.la.ver: $(libcdio_la_OBJECTS)
 	echo 'CDIO_$(libcdio_la_MAJOR) { ' > $@
 	echo "  global:" >> $@
-	nm $(patsubst %.lo,%.o,$(libcdio_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" libcdio.sym; then echo "    $${symbol};"; fi; done >> $@
+	nm $(patsubst %.lo,%.o,$(libcdio_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio.sym; then echo "    $${symbol};"; fi; done >> $@
 	echo "  local:" >> $@
-	nm $(patsubst %.lo,%.o,$(libcdio_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" libcdio.sym; then :; else echo "    $${symbol};"; fi; done >> $@
+	nm $(patsubst %.lo,%.o,$(libcdio_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio.sym; then :; else echo "    $${symbol};"; fi; done >> $@
 	echo '};' >> $@
 else 
 libcdio_la_LDFLAGS = $(libcdio_la_ldflags)
@@ -191,9 +191,9 @@ libiso9660_la_DEPENDENCIES = $(libcdio9660_la_dependencies) libiso9660.la.ver
 libiso9660.la.ver: $(libiso9660_la_OBJECTS)
 	echo 'ISO9660_$(libiso9660_la_MAJOR) {' > $@
 	echo "  global:" >> $@
-	nm $(patsubst %.lo,%.o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" libiso9660.sym; then echo "    $${symbol};"; fi; done >> $@
+	nm $(patsubst %.lo,%.o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libiso9660.sym; then echo "    $${symbol};"; fi; done >> $@
 	echo "  local:" >> $@
-	nm $(patsubst %.lo,%.o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" libiso9660.sym; then :; else echo "    $${symbol};"; fi; done >> $@
+	nm $(patsubst %.lo,%.o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libiso9660.sym; then :; else echo "    $${symbol};"; fi; done >> $@
 	echo '};' >> $@
 
 MOSTLYCLEANFILES = libcdio.la.ver libiso9660.la.ver
