@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_private.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: iso9660_private.h,v 1.2 2005/02/05 04:25:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -39,7 +39,7 @@ PRAGMA_BEGIN_PACKED
 
 struct iso_volume_descriptor {
   uint8_t  type;      /* 711 */
-  char     id[5];
+  char     id[5];     /* "CD001" (ISO_STANDARD_ID) */
   uint8_t  version;   /* 711 */
   char     data[2041];
 } GNUC_PACKED;

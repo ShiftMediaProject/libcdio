@@ -1,8 +1,8 @@
 /*
-    $Id: _cdio_stream.h,v 1.2 2005/01/20 01:00:52 rocky Exp $
+    $Id: _cdio_stream.h,v 1.3 2005/02/05 04:25:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,7 +36,8 @@ extern "C" {
   
   typedef long(*cdio_data_read_t)(void *user_data, void *buf, long count);
   
-  typedef long(*cdio_data_seek_t)(void *user_data, long offset, int whence);
+  typedef driver_return_code_t(*cdio_data_seek_t)(void *user_data, long offset,
+                                                  int whence);
   
   typedef long(*cdio_data_stat_t)(void *user_data);
   
@@ -76,7 +77,7 @@ extern "C" {
      We do not distinguish between end-of-file and error, and callers
      must use feof(3) and ferror(3) to determine which occurred.
   */
-  long cdio_stream_read(CdioDataSource_t* p_obj, void *ptr, long size, 
+  long cdio_stream_read(CdioDataSource_t* p_obj, void *ptr, long i_size, 
                         long nmemb);
   
   /*! 
@@ -91,12 +92,12 @@ extern "C" {
     of-file indicator for the stream and undoes any effects of the
     ungetc(3) function on the same stream.
     
-    RETURN VALUE
-    Upon successful completion, return 0,
-    Otherwise, -1 is returned and the global variable errno is set to indi-
-    cate the error.
+    @return upon successful completion, DRIVER_OP_SUCCESS, else,
+    DRIVER_OP_ERROR is returned and the global variable errno is set to
+    indicate the error.
    */
-  long int cdio_stream_seek(CdioDataSource_t *p_obj, long offset, int whence);
+  driver_return_code_t cdio_stream_seek(CdioDataSource_t *p_obj, long offset, 
+                                        int whence);
   
   /*!
     Return whatever size of stream reports, I guess unit size is bytes. 

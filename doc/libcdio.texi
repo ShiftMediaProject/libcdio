@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.38 2005/02/01 03:35:43 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.39 2005/02/05 04:25:14 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -1471,7 +1471,7 @@ firmware revision number of a CD drive. For this command to work,
 usually a CD to be loaded into the drive; odd since the CD itself is
 not used.
 
-This can be found in the distribution as @file{example/scsi-mmc1.c}.
+This can be found in the distribution as @file{example/mmc1.c}.
 
 @smallexample
 #ifdef HAVE_CONFIG_H
@@ -1721,11 +1721,11 @@ paranoia's open. I imagine in many cases such as media players this
 may be what will be done since, one may want to get CDDB/CD-Text info
 beforehand. 
 
-@item @code{scsi-mmc1.c}
+@item @code{mmc1.c}
 
 A program to show issuing a simple MMC command (@code{INQUIRY}).
 
-@item @code{scsi-mmc2.c}
+@item @code{mmc2.c}
 
 A more involved MMC command to list CD and drive features from a
 SCSI-MMC @code{GET_CONFIGURATION} command.

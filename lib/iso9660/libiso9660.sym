@@ -26,6 +26,7 @@ iso9660_get_system_id
 iso9660_get_volume_id
 iso9660_get_volumeset_id
 iso9660_get_xa_attr_str
+iso9660_ifs_fuzzy_read_superblock
 iso9660_ifs_get_application_id
 iso9660_ifs_get_joliet_level
 iso9660_ifs_get_preparer_id
@@ -46,6 +47,8 @@ iso9660_name_translate
 iso9660_name_translate_ext
 iso9660_open
 iso9660_open_ext
+iso9660_open_fuzzy
+iso9660_open_fuzzy_ext
 iso9660_pathname_isofy
 iso9660_pathname_valid_p
 iso9660_pathtable_get_size

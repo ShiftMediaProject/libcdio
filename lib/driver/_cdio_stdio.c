@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stdio.c,v 1.3 2005/02/03 07:35:15 rocky Exp $
+    $Id: _cdio_stdio.c,v 1.4 2005/02/05 04:25:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -39,7 +39,7 @@
 #include "_cdio_stream.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.3 2005/02/03 07:35:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.4 2005/02/05 04:25:14 rocky Exp $";
 
 #define CDIO_STDIO_BUFSIZE (128*1024)
 
@@ -106,27 +106,26 @@ _stdio_free(void *user_data)
   of-file indicator for the stream and undoes any effects of the
   ungetc(3) function on the same stream.
   
-  RETURN VALUE
-  Upon successful completion, return 0,
-  Otherwise, -1 is returned and the global variable errno is set to indi-
-  cate the error.
+  @return upon successful completion, DRIVER_OP_SUCCESS, else,
+  DRIVER_OP_ERROR is returned and the global variable errno is set to
+  indicate the error.
 */
-static long
-_stdio_seek(void *user_data, long offset, int whence)
+static driver_return_code_t 
+_stdio_seek(void *p_user_data, long i_offset, int whence)
 {
-  _UserData *const ud = user_data;
+  _UserData *const ud = p_user_data;
 
-  if ( (offset=fseek (ud->fd, offset, whence)) ) {
+  if ( (i_offset=fseek (ud->fd, i_offset, whence)) ) {
     cdio_error ("fseek (): %s", strerror (errno));
   }
 
-  return offset;
+  return i_offset;
 }
 
 static long int
-_stdio_stat(void *user_data)
+_stdio_stat(void *p_user_data)
 {
-  const _UserData *const ud = user_data;
+  const _UserData *const ud = p_user_data;
 
   return ud->st_size;
 }

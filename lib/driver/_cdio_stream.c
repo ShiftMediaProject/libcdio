@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.c,v 1.5 2005/02/03 07:35:15 rocky Exp $
+    $Id: _cdio_stream.c,v 1.6 2005/02/05 04:25:14 rocky Exp $
 
     Copyright (C) 2000, 2004, 2005 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
@@ -35,7 +35,7 @@
 #include <cdio/util.h>
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.5 2005/02/03 07:35:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.6 2005/02/05 04:25:14 rocky Exp $";
 
 /* 
  * DataSource implementations
@@ -82,21 +82,20 @@ _cdio_stream_open_if_necessary(CdioDataSource_t *p_obj)
   of-file indicator for the stream and undoes any effects of the
   ungetc(3) function on the same stream.
   
-  RETURN VALUE
-  Upon successful completion, return 0,
-  Otherwise, -1 is returned and the global variable errno is set to indi-
-  cate the error.
+  @return unpon successful completion, DRIVER_OP_SUCCESS, else,
+  DRIVER_OP_ERROR is returned and the global variable errno is set to
+  indicate the error.
 */
-long int
+driver_return_code_t
 cdio_stream_seek(CdioDataSource_t* p_obj, long int offset, int whence)
 {
-  if (!p_obj) return -1;
+  if (!p_obj) return DRIVER_OP_UNINIT;
 
   if (!_cdio_stream_open_if_necessary(p_obj)) 
     /* errno is set by _cdio_stream_open_if necessary. */
-    return -1;
+    return DRIVER_OP_ERROR;
 
-  if (offset < 0) return -1;
+  if (offset < 0) return DRIVER_OP_ERROR;
 
   if (p_obj->position != offset) {
 #ifdef STREAM_DEBUG

@@ -1,5 +1,5 @@
 /*
-    $Id: read.c,v 1.3 2005/01/23 19:16:58 rocky Exp $
+    $Id: read.c,v 1.4 2005/02/05 04:25:14 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -104,7 +104,7 @@ cdio_read (const CdIo_t *p_cdio, void *p_buf, size_t size)
 
 /*!
   Reads an audio sector from cd device into data starting
-  from lsn. Returns 0 if no error. 
+  from lsn. Returns DRIVER_OP_SUCCESS if no error. 
 */
 driver_return_code_t
 cdio_read_audio_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn) 
@@ -117,7 +117,7 @@ cdio_read_audio_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn)
 
 /*!
   Reads audio sectors from cd device into data starting
-  from lsn. Returns 0 if no error. 
+  from lsn. Returns DRIVER_OP_SUCCESS if no error. 
 */
 driver_return_code_t
 cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
@@ -135,7 +135,7 @@ cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 
 /*!
    Reads a single mode1 form1 or form2  sector from cd device 
-   into data starting from lsn. Returns 0 if no error. 
+   into data starting from lsn. Returns DRIVER_OP_SUCCESS if no error. 
  */
 driver_return_code_t
 cdio_read_mode1_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 

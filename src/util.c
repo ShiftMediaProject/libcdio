@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.31 2005/01/09 16:33:18 rocky Exp $
+  $Id: util.c,v 1.32 2005/02/05 04:25:14 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -164,7 +164,7 @@ fillout_device_name(const char *device_name)
   if (0 == strncmp(device_name, DEV_PREFIX, prefix_len))
     return strdup(device_name);
   else {
-    char *full_device_name = (char*) malloc(strlen(device_name)+prefix_len);
+    char *full_device_name = (char*) calloc(1, strlen(device_name)+prefix_len);
     report( stdout, full_device_name, DEV_PREFIX "%s", device_name);
     return full_device_name;
   }

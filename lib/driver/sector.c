@@ -1,7 +1,7 @@
 /*
-    $Id: sector.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: sector.c,v 1.2 2005/02/05 04:25:14 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
@@ -35,8 +35,13 @@
 
 #include <ctype.h>
 
-static const char _rcsid[] = "$Id: sector.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.2 2005/02/05 04:25:14 rocky Exp $";
 
+/*! String of bytes used to identify the beginning of a Mode 1 or
+  Mode 2 sector. */
+const uint8_t CDIO_SECTOR_SYNC_HEADER[CDIO_CD_SYNC_SIZE] = 
+  {0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0};
+      
 lba_t
 cdio_lba_to_lsn (lba_t lba)
 {
