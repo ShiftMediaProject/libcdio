@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_iso.sh.in,v 1.3 2004/05/07 02:15:52 rocky Exp $
+#$Id: check_iso.sh.in,v 1.4 2004/10/28 11:13:40 rocky Exp $
 
 if test -z $srcdir ; then
   srcdir=`pwd`
@@ -17,12 +17,26 @@ fname=copying
 opts="--quiet ${srcdir}/${fname}.iso --iso9660 "
 test_iso_info  "$opts" ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
-check_result $RC 'iso-info test 1' "iso-info $opts"
+check_result $RC 'iso-info basic test' "iso-info $opts"
 
 opts="--image ${srcdir}/${fname}.iso --extract $fname "
 test_iso_read  "$opts" ${fname} ${srcdir}/../COPYING
 RC=$?
 check_result $RC 'iso-read test 1' "iso-read $opts"
+
+if test -n "@HAVE_JOLIET@" ; then
+  BASE=`basename $0 .sh`
+  fname=joliet
+  opts="--quiet ${srcdir}/${fname}.iso --iso9660 "
+  test_iso_info  "$opts" ${fname}-nojoliet.dump ${srcdir}/${fname}.right
+  RC=$?
+  check_result $RC 'iso-info Joliet test' "$cmdline"
+  opts="--quiet ${srcdir}/${fname}.iso --iso9660 --no-joliet "
+  test_iso_info  "$opts" ${fname}-nojoliet.dump \
+                 ${srcdir}/${fname}-nojoliet.right
+  RC=$?
+  check_result $RC 'iso-info --no-joliet test' "$cmdline"
+fi
 
 exit $RC
 

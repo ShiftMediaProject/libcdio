@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.35 2004/10/26 10:00:27 rocky Exp $
+    $Id: iso9660_fs.c,v 1.36 2004/10/28 11:13:40 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -49,7 +49,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.35 2004/10/26 10:00:27 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.36 2004/10/28 11:13:40 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -140,14 +140,15 @@ check_pvd (const iso9660_pvd_t *p_pvd)
 }
 
 static bool
-ucs2be_to_locale(char *psz_ucs2be,  size_t i_inlen, 
+ucs2be_to_locale(ICONV_CONST char *psz_ucs2be,  size_t i_inlen, 
 		 char **p_psz_out,  size_t i_outlen)
 {
   iconv_t ic = iconv_open(nl_langinfo(CODESET), "UCS-2BE");
   int rc;
   char *psz_buf = NULL;
   char *psz_buf2;
-  int i_outlen_save = i_outlen;
+  int i_outlen_max = i_outlen;
+  int i_outlen_actual;
 
   if (-1 == (size_t) ic) {
     cdio_info("Failed to get conversion table for locale, trying ASCII");
@@ -170,9 +171,10 @@ ucs2be_to_locale(char *psz_ucs2be,  size_t i_inlen,
     /* conversion failed */
     goto error;
   }
-  *p_psz_out = malloc(i_outlen_save + 1);
-  memcpy(*p_psz_out, psz_buf, i_outlen_save);
-  *(*p_psz_out + i_outlen_save) = '\0';
+  i_outlen_actual = i_outlen_max - i_outlen;
+  *p_psz_out = malloc(i_outlen_actual + 1);
+  memcpy(*p_psz_out, psz_buf, i_outlen_actual);
+  *(*p_psz_out + i_outlen_actual) = '\0';
   free(psz_buf);
   return true;
  error:

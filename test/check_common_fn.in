@@ -1,4 +1,4 @@
-# $Id: check_common_fn.in,v 1.8 2004/05/06 12:05:49 rocky Exp $
+# $Id: check_common_fn.in,v 1.9 2004/10/28 11:13:40 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -94,7 +94,8 @@ test_iso_info() {
     return 1
   fi
 
-  if ${ISO_INFO} --no-header ${opts} >${outfile} 2>&1 ; then 
+  cmdline="${ISO_INFO} --no-header ${opts}"
+  if $cmdline  >${outfile} 2>&1 ; then 
     if test "/usr/bin/diff" != no; then
       if @DIFF@ @DIFF_OPTS@ ${outfile} ${rightfile} ; then
 	rm -f $outfile
@@ -108,7 +109,7 @@ test_iso_info() {
       return 77
     fi
   else
-    echo "$0 failed running: ${ISO_INFO} ${opts}"
+    echo "$0 failed running: $cmdline"
     return 2
   fi
 

@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.37 2004/08/29 02:31:34 rocky Exp $
+    $Id: win32_ioctl.c,v 1.38 2004/10/28 11:13:40 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,26 +26,36 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.37 2004/08/29 02:31:34 rocky Exp $";
-
-#include <cdio/cdio.h>
-#include <cdio/sector.h>
-#include "cdio_assert.h"
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.38 2004/10/28 11:13:40 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
+#ifdef WIN32
 #include <windows.h>
+#endif
+
+#if defined (_XBOX) || defined (WIN32)
+#include "inttypes.h"
+#include "NtScsi.h"
+#include "undocumented.h"
+#else
 #include <ddk/ntddstor.h>
 #include <ddk/ntddscsi.h>
 #include <ddk/scsi.h>
+#endif
 
 #include <stdio.h>
 #include <stddef.h>  /* offsetof() macro */
 #include <sys/stat.h>
 #include <errno.h>
 #include <sys/types.h>
+
+#include <cdio/cdio.h>
+#include <cdio/sector.h>
+#include "cdio_assert.h"
 #include <cdio/scsi_mmc.h>
 #include "cdtext_private.h"
+#include "cdio/logging.h"
 
 /* Win32 DeviceIoControl specifics */
 /***** FIXME: #include ntddcdrm.h from Wine, but probably need to 
@@ -91,6 +101,28 @@ typedef struct _CDROM_TOC {
     UCHAR LastTrack;
     TRACK_DATA TrackData[CDIO_CD_MAX_TRACKS+1];
 } CDROM_TOC, *PCDROM_TOC;
+
+typedef struct _TRACK_DATA_FULL {
+    UCHAR SessionNumber;
+    UCHAR Control : 4;
+    UCHAR Adr : 4;
+    UCHAR TNO;
+    UCHAR POINT;  /* Tracknumber (of session?) or lead-out/in (0xA0, 0xA1, 0xA2)  */ 
+    UCHAR Min;  /* Only valid if disctype is CDDA ? */
+    UCHAR Sec;  /* Only valid if disctype is CDDA ? */
+    UCHAR Frame;  /* Only valid if disctype is CDDA ? */
+    UCHAR Zero;  /* Always zero */
+    UCHAR PMIN;  /* start min, if POINT is a track; if lead-out/in 0xA0: First Track */
+    UCHAR PSEC;
+    UCHAR PFRAME;
+} TRACK_DATA_FULL, *PTRACK_DATA_FULL;
+
+typedef struct _CDROM_TOC_FULL {
+    UCHAR Length[2];
+    UCHAR FirstSession;
+    UCHAR LastSession;
+    TRACK_DATA_FULL TrackData[CDIO_CD_MAX_TRACKS+3];
+} CDROM_TOC_FULL, *PCDROM_TOC_FULL;
 
 typedef enum _TRACK_MODE_TYPE {
     YellowMode2,
@@ -182,9 +214,14 @@ run_scsi_cmd_win32ioctl( const void *p_user_data,
   if(! success) {
     char *psz_msg = NULL;
     long int i_err = GetLastError();
+#ifdef _XBOX
+	psz_msg=(char *)LocalAlloc(LMEM_ZEROINIT, 255);
+	sprintf(psz_msg, "run_scsi_cmd_win32ioctl: error %d\n", i_err);
+#else
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
 		  NULL, i_err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		  (LPSTR) psz_msg, 0, NULL);
+#endif
     cdio_info("Error: %s", psz_msg);
     LocalFree(psz_msg);
     return 1;
@@ -290,7 +327,11 @@ get_discmode_win32ioctl (_img_private_t *p_env)
 const char *
 is_cdrom_win32ioctl(const char c_drive_letter) 
 {
-
+#ifdef _XBOX
+	char sz_win32_drive_full[] = "\\\\.\\X:";
+	sz_win32_drive_full[4] = c_drive_letter;
+	return strdup(sz_win32_drive_full);
+#else
     UINT uDriveType;
     char sz_win32_drive[4];
     
@@ -311,6 +352,7 @@ is_cdrom_win32ioctl(const char c_drive_letter)
         cdio_debug("Drive %c is not a CD-ROM", c_drive_letter);
         return NULL;
     }
+#endif
 }
   
 /*!
@@ -336,11 +378,14 @@ read_audio_sectors_win32ioctl (_img_private_t *env, void *data, lsn_t lsn,
 		       &dwBytesReturned, NULL ) == 0 ) {
     char *psz_msg = NULL;
     DWORD dw = GetLastError();
-
+#ifdef _XBOX
+	psz_msg=(char *)LocalAlloc(LMEM_ZEROINIT, 255);
+	sprintf(psz_msg, "read_audio_sectors_win32ioctl: error %d\n", dw);
+#else
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
 		  NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		  (LPSTR) psz_msg, 0, NULL);
-
+#endif
     cdio_info("Error reading audio-mode %lu\n%s)", 
 	      (long unsigned int) lsn, psz_msg);
     LocalFree(psz_msg);
@@ -406,9 +451,9 @@ read_mode1_sector_win32ioctl (const _img_private_t *env, void *data,
   if ( 0 != ret) return ret;
 
   memcpy (data, 
-	  buf + CDIO_CD_SYNC_SIZE+CDIO_CD_HEADER_SIZE, 
-	  b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
-  
+	  buf + CDIO_CD_SYNC_SIZE+CDIO_CD_HEADER_SIZE,
+	  b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);  
+
   return 0;
 
 }
@@ -419,13 +464,25 @@ read_mode1_sector_win32ioctl (const _img_private_t *env, void *data,
 bool
 init_win32ioctl (_img_private_t *env)
 {
-  char psz_win32_drive[7];
-  unsigned int len=strlen(env->gen.source_name);
+#ifdef WIN32
   OSVERSIONINFO ov;
+#endif
+
+#ifdef _XBOX
+  ANSI_STRING filename;
+  OBJECT_ATTRIBUTES attributes;
+  IO_STATUS_BLOCK status;
+  HANDLE hDevice;
+  NTSTATUS error;
+#else
+  unsigned int len=strlen(env->gen.source_name);
+  char psz_win32_drive[7];
   DWORD dw_access_flags;
+#endif
   
   cdio_debug("using winNT/2K/XP ioctl layer");
-  
+
+#ifdef WIN32
   memset(&ov,0,sizeof(OSVERSIONINFO));
   ov.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
   GetVersionEx(&ov);
@@ -434,10 +491,34 @@ init_win32ioctl (_img_private_t *env)
      (ov.dwMajorVersion>4))
     dw_access_flags = GENERIC_READ|GENERIC_WRITE;  /* add gen write on W2k/XP */
   else dw_access_flags = GENERIC_READ;
-  
-  if (cdio_is_device_win32(env->gen.source_name)) {
-    sprintf( psz_win32_drive, "\\\\.\\%c:", env->gen.source_name[len-2] );
+#endif
+
+  if (cdio_is_device_win32(env->gen.source_name)) 
+  {
+#ifdef _XBOX
+    //	Use XBOX cdrom, no matter what drive letter is given.
+    RtlInitAnsiString(&filename,"\\Device\\Cdrom0");
+    InitializeObjectAttributes(&attributes, &filename, OBJ_CASE_INSENSITIVE,
+			       NULL);
+    error = NtCreateFile( &hDevice, 
+			  GENERIC_READ |SYNCHRONIZE | FILE_READ_ATTRIBUTES, 
+			  &attributes, 
+			  &status, 
+			  NULL, 
+			  0,
+			  FILE_SHARE_READ,
+			  FILE_OPEN,	
+			  FILE_NON_DIRECTORY_FILE 
+			  | FILE_SYNCHRONOUS_IO_NONALERT );
     
+    if (!NT_SUCCESS(error))
+    {
+	  return false;
+    }
+	env->h_device_handle = hDevice;
+#else
+    sprintf( psz_win32_drive, "\\\\.\\%c:", env->gen.source_name[len-2] );
+
     env->h_device_handle = CreateFile( psz_win32_drive, 
 				       dw_access_flags,
 				       FILE_SHARE_READ | FILE_SHARE_WRITE, 
@@ -445,19 +526,22 @@ init_win32ioctl (_img_private_t *env)
 				       OPEN_EXISTING,
 				       FILE_ATTRIBUTE_NORMAL, 
 				       NULL );
+
     if( env->h_device_handle == INVALID_HANDLE_VALUE )
-      {
-	/* No good. try toggle write. */
-	dw_access_flags ^= GENERIC_WRITE;  
-	env->h_device_handle = CreateFile( psz_win32_drive, 
-					   dw_access_flags, 
-					   FILE_SHARE_READ,  
-					   NULL, 
-					   OPEN_EXISTING, 
-					   FILE_ATTRIBUTE_NORMAL, 
-					   NULL );
-	return (env->h_device_handle == NULL) ? false : true;
-      }
+    {
+	  /* No good. try toggle write. */
+	  dw_access_flags ^= GENERIC_WRITE;  
+	  env->h_device_handle = CreateFile( psz_win32_drive, 
+					     dw_access_flags, 
+					     FILE_SHARE_READ,  
+					     NULL, 
+					     OPEN_EXISTING, 
+					     FILE_ATTRIBUTE_NORMAL, 
+					     NULL );
+	  if (env->h_device_handle == NULL)
+		return false;
+    }
+#endif
     env->b_ioctl_init = true;
     return true;
   }
@@ -471,20 +555,106 @@ init_win32ioctl (_img_private_t *env)
 bool
 read_toc_win32ioctl (_img_private_t *p_env) 
 {
+  scsi_mmc_cdb_t  cdb = {{0, }};
+  CDROM_TOC_FULL  cdrom_toc_full;
+  CDROM_TOC       cdrom_toc;
+  DWORD           dwBytesReturned;
+  int             i_status, i, i_track_format, test;
 
-  DWORD dwBytesReturned;
-  CDROM_TOC cdrom_toc;
-  int i;
-  
+  if ( ! p_env )
+    return false;
+
+  /* Read full TOC, (not supported on DVD media) */
+
+  /* Operation code */
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
+
+  cdb.field[1] = 0x00;
+
+  /* Format */
+  cdb.field[2] = CDIO_MMC_READTOC_FMT_FULTOC;
+
+  memset(&cdrom_toc_full, 0, sizeof(cdrom_toc_full));
+
+  /* Setup to read header, to get length of data */
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(cdrom_toc_full));
+
+  i_status = run_scsi_cmd_win32ioctl (p_env, 1000*60*3,
+				scsi_mmc_get_cmd_len(cdb.field[0]), 
+				&cdb, SCSI_MMC_DATA_READ, 
+				sizeof(cdrom_toc_full), &cdrom_toc_full);
+
+  if (i_status == 0) {
+    cdio_info ("READTOC failed\n");  
+    return false;
+  } else {
+    test=0;
+    for( i = 0 ; i <= CDIO_CD_MAX_TRACKS+3; i++ ) {
+
+      if (cdrom_toc_full.TrackData[i].POINT == 0xA0) { /* First track number */
+        p_env->gen.i_first_track = cdrom_toc_full.TrackData[i].PMIN;
+        i_track_format = cdrom_toc_full.TrackData[i].PSEC;
+        test|=0x01;
+      }
+
+      if (cdrom_toc_full.TrackData[i].POINT == 0xA1) { /* Last track number */
+        p_env->gen.i_tracks  = cdrom_toc_full.TrackData[i].PMIN - p_env->gen.i_first_track + 1;
+        test|=0x02;
+      }
+
+      if (cdrom_toc_full.TrackData[i].POINT == 0xA2) { /* Start position of the lead out */
+        p_env->tocent[ p_env->gen.i_tracks ].start_lsn = cdio_msf3_to_lba(
+					        cdrom_toc_full.TrackData[i].PMIN,
+					        cdrom_toc_full.TrackData[i].PSEC,
+					        cdrom_toc_full.TrackData[i].PFRAME );
+        p_env->tocent[ p_env->gen.i_tracks ].Control   = cdrom_toc_full.TrackData[i].Control;
+        p_env->tocent[ p_env->gen.i_tracks ].Format    = i_track_format;
+        test|=0x04;
+      }
+
+      if (cdrom_toc_full.TrackData[i].POINT > 0 && cdrom_toc_full.TrackData[i].POINT <= p_env->gen.i_tracks) {
+        p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].start_lsn = cdio_msf3_to_lba(
+					        cdrom_toc_full.TrackData[i].PMIN,
+					        cdrom_toc_full.TrackData[i].PSEC,
+					        cdrom_toc_full.TrackData[i].PFRAME );
+        p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].Control   = cdrom_toc_full.TrackData[i].Control;
+        p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].Format    = i_track_format;
+
+        cdio_debug("p_sectors: %i, %lu", i, 
+	          (unsigned long int) (p_env->tocent[i].start_lsn));
+
+        if (cdrom_toc_full.TrackData[i].POINT == p_env->gen.i_tracks)
+          test|=0x08;
+      }
+
+      if (test == 0x0F)
+        break;
+
+    }
+    if (test == 0x0F)
+    {
+      p_env->gen.toc_init = true; 
+      return true;
+    }
+  }
+
+  /* No full TOC available */
+  /* read the normal TOC as fallback */
+
   if( DeviceIoControl( p_env->h_device_handle,
 		       IOCTL_CDROM_READ_TOC,
 		       NULL, 0, &cdrom_toc, sizeof(CDROM_TOC),
 		       &dwBytesReturned, NULL ) == 0 ) {
     char *psz_msg = NULL;
     long int i_err = GetLastError();
+#ifdef _XBOX
+	psz_msg=(char *)LocalAlloc(LMEM_ZEROINIT, 255);
+	sprintf(psz_msg, "read_toc_win32ioctl: error %d\n", i_err);
+#else
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
 		  NULL, i_err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		  (LPSTR) psz_msg, 0, NULL);
+#endif
     if (psz_msg) {
       cdio_warn("could not read TOC (%ld): %s", i_err, psz_msg);
       LocalFree(psz_msg);
@@ -509,6 +679,7 @@ read_toc_win32ioctl (_img_private_t *p_env)
   }
   p_env->gen.toc_init = true;
   return true;
+
 }
 
 /*!
@@ -551,6 +722,7 @@ get_track_format_win32ioctl(const _img_private_t *env, track_t i_track)
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
   */
+
   if (env->tocent[i_track - env->gen.i_first_track].Control & 0x04) {
     if (env->tocent[i_track - env->gen.i_first_track].Format == 0x10)
       return TRACK_FORMAT_CDI;

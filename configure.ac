@@ -19,7 +19,7 @@ define(RELEASE_NUM, 71)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.101 2004/10/26 09:00:11 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.102 2004/10/28 11:13:40 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -47,6 +47,12 @@ enable_cd_read="${withval}", enable_cd_read=yes)
 AC_ARG_WITH(versioned_libs,
 [  --without-versioned-libs build versioned library symbols (enabled by default if you have GNU ld)],
 enable_versioned_libs="${withval}", enable_versioned_libs=yes)
+
+AC_ARG_WITH(cd_info,
+[  --without-cd-info	build program cd-info (enabled by default)],
+enable_cd_info="${withval}", enable_cd_info=yes)
+
+
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -203,7 +209,7 @@ if test "x$enable_versioned_libs" = "xyes" ; then
     else 
       # Do we have GNU ld? We need that too.
       if test "$with_gnu_ld" != yes; then
-        AC_MSG_WARN(I don't see GNU ld. I'm going to assume --without-versioned-libs)
+        AC_MSG_WARN([I don't see GNU ld. I'm going to assume --without-versioned-libs])
 	enable_versioned_libs='no'
       fi
     fi
@@ -293,8 +299,8 @@ int has_timeout=sizeof(test.timeout);],
   	cd_drivers="${cd_drivers}, FreeBSD "
 	;;
      *)
-	AC_MSG_WARN(Don't have OS CD-reading support for ${host_os}...)
-	AC_MSG_WARN(Will use generic support.)
+	AC_MSG_WARN([Don't have OS CD-reading support for ${host_os}...])
+	AC_MSG_WARN([Will use generic support.])
 	;;
 esac
 AC_SUBST(LINUX_CDROM_TIMEOUT)
@@ -305,8 +311,6 @@ AC_SUBST(HAVE_FREEBSD_CDROM)
 AC_SUBST(HAVE_LINUX_CDROM)
 AC_SUBST(HAVE_SOLARIS_CDROM)
 AC_SUBST(HAVE_WIN32_CDROM)
-
-AM_ICONV
 
 LIBCDIO_SOURCE_PATH="`pwd`"
 AC_DEFINE_UNQUOTED(LICDIO_SOURCE_PATH, "$LIBCDIO_SOURCE_PATH",
@@ -321,6 +325,28 @@ AC_CHECK_MEMBER([struct tm.tm_gmtoff],
                  ,
                  [#include <time.h>])
 
+if test x$enable_joliet = x; then
+AC_ARG_ENABLE(joliet,
+	[  --disable-joliet          don't include Joliet extension support],
+		enable_joliet=no,
+		enable_joliet=yes)
+fi
+if test x$enable_joliet = xyes; then
+  AM_ICONV
+  AC_DEFINE(HAVE_JOLIET, [], 
+  [Define this if you want ISO-9660 Joliet extension support. 
+  You must have also libiconv installed to get Joliet extension support.])
+  if test "$am_cv_func_iconv" = yes ; then 
+     HAVE_JOLIET=yes
+  else
+     HAVE_JOLIET=no
+     AC_MSG_WARN([You must have iconv installed to get Joliet extension support.])
+  fi
+fi
+
+AC_SUBST(HAVE_JOLIET)
+
+
 if test x$enable_cddb = x; then
 AC_ARG_ENABLE(cddb,
 	[  --disable-cddb          don't include CDDB lookups in cd_info],
@@ -332,7 +358,7 @@ if test x$enable_cddb = xyes; then
     HAVE_CDDB=yes 
     AC_DEFINE(HAVE_CDDB, [], [Define this if you have libcddb installed])
     ],
-    [AC_MSG_WARN(new enough libcddb not found. CDDB access disabled. Get libcddb from http://libcddb.sourceforge.net) 
+    [AC_MSG_WARN([new enough libcddb not found. CDDB access disabled. Get libcddb from http://libcddb.sourceforge.net])
     HAVE_CDDB=no])
     AC_CHECK_LIB(socket, connect)
     AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
