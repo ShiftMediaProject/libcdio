@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.41 2003/09/14 17:04:48 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.42 2003/09/15 12:05:10 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
@@ -29,7 +29,7 @@ enable_cdinfo="${withval}", enable_cdinfo=yes)
 dnl Checks for programs.
 AC_PROG_CC
 
-cd_drivers='bin/cue NRG '
+cd_drivers='BIN/CUE, NRG'
 
 if test "x$GCC" != "xyes" 
 then
@@ -183,10 +183,14 @@ AC_SUBST(ACLOCAL_AMFLAGS)
 
 case $host_os in
      darwin6*)
-       AC_CHECK_HEADERS(IOKit/IOKitLib.h, [have_osx_cdrom="yes"])
-       AC_DEFINE([HAVE_OSX_CDROM], [1], 
-	     [Define 1 if you have OSX-type CD-ROM support])
-       cd_drivers="${cd_drivers}OS X "
+       AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h, 
+                        [have_iokit_h="yes"])
+       if test "x$have_iokit_h" = "xyes" ; then 
+         AC_DEFINE([HAVE_DARWIN_CDROM], [1],
+	      [Define 1 if you have Darwin OS X-type CD-ROM support])
+	 LIBS="$LIBS  -framework CoreFoundation -framework IOKit"
+         cd_drivers="${cd_drivers}, Darwin"
+       fi
      ;;
      linux*)
         AC_CHECK_HEADERS(linux/version.h)
@@ -200,7 +204,7 @@ int has_timeout=sizeof(test.timeout);],
                    [Define 1 if timeout is in cdrom_generic_command struct])])
 	   AC_DEFINE([HAVE_LINUX_CDROM], [1], 
                      [Define 1 if you have Linux-type CD-ROM support])
-	   cd_drivers="${cd_drivers}GNU/Linux "
+	   cd_drivers="${cd_drivers}, GNU/Linux"
 	fi
 	;;
      bsdi*)
@@ -209,14 +213,14 @@ int has_timeout=sizeof(test.timeout);],
      	  AC_DEFINE([HAVE_BSDI_CDROM], [1], 
                     [Define 1 if you have BSDI-type CD-ROM support])
 	  LIBS="$LIBS -ldvd"
-	  cd_drivers="${cd_drivers}BSDI "
+	  cd_drivers="${cd_drivers}, BSDI"
 	fi
 	;;
      sunos*|sun*|solaris*)
         AC_CHECK_HEADERS(sys/cdio.h)
      	AC_DEFINE([HAVE_SOLARIS_CDROM], [1], 
                   [Define 1 if you have Solaris CD-ROM support])
-	  cd_drivers="${cd_drivers}Solaris "
+	  cd_drivers="${cd_drivers}, Solaris"
 	;;
      cygwin*)
  	LIBS="$LIBS -mcygwin"
@@ -225,7 +229,7 @@ int has_timeout=sizeof(test.timeout);],
      	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
                   [Define 1 if you have MinGW CD-ROM support])
  	LIBS="$LIBS -lwinmm -mcygwin"
-  	cd_drivers="${cd_drivers}MinGW "
+  	cd_drivers="${cd_drivers}, MinGW"
 	;;
      mingw*)
 	AC_DEFINE([MINGW32], [1], 
@@ -233,7 +237,7 @@ int has_timeout=sizeof(test.timeout);],
      	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
                   [Define 1 if you have MinGW CD-ROM support])
  	LIBS="$LIBS -lwinmm -mwindows"
-  	cd_drivers="${cd_drivers}MinGW "
+  	cd_drivers="${cd_drivers}, MinGW "
 	;;
      *)
 	AC_MSG_WARN(Don't have OS CD-reading support for ${host_os}...)
