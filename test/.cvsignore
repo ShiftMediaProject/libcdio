@@ -2,11 +2,12 @@
 .libs
 Makefile
 Makefile.in
+cdda.raw
 cdda-orig.wav
 cdda-try.wav
 cdda-1.raw
 cdda-2.raw
-cdda.raw
+cdda-good.raw
 cdda-underrun.raw
 check_cue.sh
 check_paranoia.sh
