@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.21 2005/02/20 10:21:01 rocky Exp $
+    $Id: iso9660_fs.c,v 1.22 2005/02/20 17:47:01 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.21 2005/02/20 10:21:01 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.22 2005/02/20 17:47:01 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -818,8 +818,14 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
     int  i_rr_fname = 
       get_rock_ridge_filename(p_iso9660_dir, rr_fname, p_stat);
     if (i_rr_fname > 0) {
-      if (i_rr_fname > i_fname) 
-	realloc(p_stat, sizeof(iso9660_stat_t)+i_rr_fname+2);
+      if (i_rr_fname > i_fname) {
+	/* realloc gives valgrind errors */
+	iso9660_stat_t *p_stat_new = 
+	  calloc(1, sizeof(iso9660_stat_t)+i_rr_fname+2);
+	memcpy(p_stat_new, p_stat, stat_len);
+	free(p_stat);
+	p_stat = p_stat_new;
+      }
       strncpy(p_stat->filename, rr_fname, i_rr_fname+1);
     } else {
 #ifdef HAVE_JOLIET
@@ -1042,18 +1048,22 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
       cmp = strcmp(splitpath[0], p_stat->filename);
 
       if ( 0 != cmp && 0 == p_env->i_joliet_level && yep != p_stat->b_rock ) {
-	char *trans_fname = malloc(strlen(p_stat->filename));
+	char *trans_fname = NULL;
+	unsigned int i_trans_fname=strlen(p_stat->filename);
 	int trans_len;
 	
-	if (trans_fname == NULL) {
-	  cdio_warn("can't allocate %lu bytes", 
-		    (long unsigned int) strlen(p_stat->filename));
-	  return NULL;
+	if (i_trans_fname) {
+	  trans_fname = calloc(1, i_trans_fname+1);
+	  if (!trans_fname) {
+	    cdio_warn("can't allocate %lu bytes", 
+		      (long unsigned int) strlen(p_stat->filename));
+	    return NULL;
+	  }
+	  trans_len = iso9660_name_translate_ext(p_stat->filename, trans_fname,
+						 p_env->i_joliet_level);
+	  cmp = strcmp(splitpath[0], trans_fname);
+	  free(trans_fname);
 	}
-	trans_len = iso9660_name_translate_ext(p_stat->filename, trans_fname, 
-					       p_env->i_joliet_level);
-	cmp = strcmp(splitpath[0], trans_fname);
-	free(trans_fname);
       }
       
       if (!cmp) {

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.4 2005/02/12 18:24:21 rocky Exp $
+    $Id: iso9660.c,v 1.5 2005/02/20 17:47:01 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -44,7 +44,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.4 2005/02/12 18:24:21 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.5 2005/02/20 17:47:01 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enums1     iso_enums1;
@@ -222,7 +222,8 @@ iso9660_name_translate_ext(const char *old, char *new, uint8_t i_joliet_level)
 {
   int len = strlen(old);
   int i;
-  
+
+  if (0 == len) return 0;
   for (i = 0; i < len; i++) {
     unsigned char c = old[i];
     if (!c)
