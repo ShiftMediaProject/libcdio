@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.27 2003/12/31 04:41:08 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.28 2004/01/03 13:50:17 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.27 2003/12/31 04:41:08 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.28 2004/01/03 13:50:17 rocky Exp $";
 
 /* structures used */
 
@@ -532,6 +532,11 @@ PRAGMA_END_PACKED
 	      track_green  = true;
 	      blocksize    = M2RAW_SECTOR_SIZE;
 	      break;
+	    case 7:
+	      track_format = TRACK_FORMAT_AUDIO;
+	      track_green  = false;
+	      blocksize    = CDIO_CD_FRAMESIZE_RAW;
+	      break;
 	    default:
 	      cdio_warn ("Don't know how to handle track mode (%d)?",
 			 track_mode);
@@ -594,17 +599,48 @@ PRAGMA_END_PACKED
 	      track_green  = true;
 	      blocksize    = M2RAW_SECTOR_SIZE;
 	      break;
+	    case 7:
+	      track_format = TRACK_FORMAT_AUDIO;
+	      track_green  = false;
+	      blocksize    = CDIO_CD_FRAMESIZE_RAW;
+	      break;
 	    default:
 	      cdio_warn ("Don't know how to handle track mode (%d)?",
 			 track_mode);
 	      return false;
 	    }
 	    
-	    cdio_assert (_len % blocksize == 0);
+	    if (_len % blocksize != 0) {
+	      cdio_warn ("length is not a multiple of blocksize " 
+			 "len %d, size %d, rem %d", 
+			 _len, blocksize, _len % blocksize);
+	      if (0 == _len % CDIO_CD_FRAMESIZE) {
+		cdio_warn("Adjusting blocksize to %d", CDIO_CD_FRAMESIZE);
+		blocksize = CDIO_CD_FRAMESIZE;
+	      } else if (0 == _len % M2RAW_SECTOR_SIZE) {
+		cdio_warn("Adjusting blocksize to %d", M2RAW_SECTOR_SIZE);
+		blocksize = M2RAW_SECTOR_SIZE;
+	      } else if (0 == _len % CDIO_CD_FRAMESIZE_RAW) {
+		cdio_warn("Adjusting blocksize to %d", CDIO_CD_FRAMESIZE_RAW);
+		blocksize = CDIO_CD_FRAMESIZE_RAW;
+	      }
+	    }
 	    
 	    _len /= blocksize;
 	    
-	    cdio_assert (_start * blocksize == _start2);
+	    if (_start * blocksize != _start2) {
+	      cdio_warn ("%d * %d != %d", _start, blocksize, _start2);
+	      if (_start * CDIO_CD_FRAMESIZE == _start2) {
+		cdio_warn("Adjusting blocksize to %d", CDIO_CD_FRAMESIZE);
+		blocksize = CDIO_CD_FRAMESIZE;
+	      } else if (_start * M2RAW_SECTOR_SIZE == _start2) {
+		cdio_warn("Adjusting blocksize to %d", M2RAW_SECTOR_SIZE);
+		blocksize = M2RAW_SECTOR_SIZE;
+	      } else if (0 == _start * CDIO_CD_FRAMESIZE_RAW == _start2) {
+		cdio_warn("Adjusting blocksize to %d", CDIO_CD_FRAMESIZE_RAW);
+		blocksize = CDIO_CD_FRAMESIZE_RAW;
+	      }
+	    }
 	    
 	    _start += idx * CDIO_PREGAP_SECTORS;
 	    _register_mapping (_obj, _start, _len, _start2, blocksize,
