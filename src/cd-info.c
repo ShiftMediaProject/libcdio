@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.12 2003/06/12 04:46:27 rocky Exp $
+    $Id: cd-info.c,v 1.13 2003/06/13 04:36:35 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -866,7 +866,7 @@ static void
 print_vcd_info(void) {
   vcdinfo_open_return_t open_rc;
   vcdinfo_obj_t obj;
-  open_rc = vcdinfo_open(&obj, &source_name, VCDINFO_SOURCE_AUTO, NULL);
+  open_rc = vcdinfo_open(&obj, &source_name, DRIVER_UNKNOWN, NULL);
   switch (open_rc) {
   case VCDINFO_OPEN_VCD: 
     if (vcdinfo_get_format_version (&obj) == VCD_TYPE_INVALID) {
