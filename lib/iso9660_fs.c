@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.24 2004/10/09 03:20:28 rocky Exp $
+    $Id: iso9660_fs.c,v 1.25 2004/10/09 23:20:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,6 @@
 #endif
 
 #include <cdio/cdio.h>
-#include <cdio/ds.h>
 #include <cdio/iso9660.h>
 #include <cdio/util.h>
 
@@ -40,7 +39,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.24 2004/10/09 03:20:28 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.25 2004/10/09 23:20:52 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -513,7 +512,7 @@ iso9660_fs_stat_translate (const CdIo *cdio, const char pathname[],
 /*!
   Get file status for pathname into stat. NULL is returned on error.
  */
-void *
+iso9660_stat_t *
 iso9660_ifs_stat (iso9660_t *iso, const char pathname[])
 {
   iso9660_stat_t *root;
@@ -540,7 +539,7 @@ iso9660_ifs_stat (iso9660_t *iso, const char pathname[])
   name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
   are lowercased.
  */
-void *
+iso9660_stat_t *
 iso9660_ifs_stat_translate (iso9660_t *iso, const char pathname[])
 {
   iso9660_stat_t *root;
@@ -565,7 +564,7 @@ iso9660_ifs_stat_translate (iso9660_t *iso, const char pathname[])
   Read pathname (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
-void * 
+CdioList * 
 iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool is_mode2)
 {
   iso9660_stat_t *stat;
@@ -635,7 +634,7 @@ iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool is_mode2)
   Read pathname (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
-void * 
+CdioList * 
 iso9660_ifs_readdir (iso9660_t *iso, const char pathname[])
 {
   iso9660_stat_t *stat;

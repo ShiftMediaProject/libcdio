@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.47 2004/10/09 03:20:28 rocky Exp $
+    $Id: iso9660.h,v 1.48 2004/10/09 23:20:52 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -33,6 +33,7 @@
 #define __CDIO_ISO9660_H__
 
 #include <cdio/cdio.h>
+#include <cdio/ds.h>
 #include <cdio/xa.h>
 
 #include <time.h>
@@ -539,7 +540,7 @@ iso9660_stat_t *iso9660_fs_stat_translate (const CdIo *obj,
 /*!
   Get file status for pathname into stat. NULL is returned on error.
  */
-void *iso9660_ifs_stat (iso9660_t *iso, const char pathname[]);
+iso9660_stat_t *iso9660_ifs_stat (iso9660_t *iso, const char pathname[]);
 
 
 /*!
@@ -548,7 +549,8 @@ void *iso9660_ifs_stat (iso9660_t *iso, const char pathname[]);
   name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
   are lowercased.
  */
-void *iso9660_ifs_stat_translate (iso9660_t *iso, const char pathname[]);
+iso9660_stat_t *iso9660_ifs_stat_translate (iso9660_t *iso, 
+                                            const char pathname[]);
 
 
 
@@ -556,13 +558,13 @@ void *iso9660_ifs_stat_translate (iso9660_t *iso, const char pathname[]);
   Read pathname (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
-void * iso9660_fs_readdir (const CdIo *obj, const char pathname[], bool mode2);
+CdioList * iso9660_fs_readdir (const CdIo *obj, const char pathname[], bool mode2);
 
 /*! 
   Read pathname (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
-void * iso9660_ifs_readdir (iso9660_t *p_iso, const char pathname[]);
+CdioList * iso9660_ifs_readdir (iso9660_t *p_iso, const char pathname[]);
 
 /*!
   Return the PVD's application ID.
