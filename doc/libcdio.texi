@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.18 2004/02/29 02:13:46 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.19 2004/03/04 04:49:15 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -931,7 +931,7 @@ even though the drives might not be SCSI nor might there even be a
 SCSI controller attached.
 
 However in Windows NT/2K/XP, Microsoft provides their Win32 ioctl
-interface, and has take steps to make using ASPI more inaccessible
+interface, and has taken steps to make using ASPI more inaccessible
 (e.g. requiring adminstrative access to use ASPI).
 
 
@@ -1083,7 +1083,7 @@ file syntax as used in vcdimager in an EBNF-like notation:
 @cindex NRG, CD Image Format
 
 The format referred to as @emph{NRG Format} in this manual is another
-popular CD image format. It is available only on using Nero software
+popular CD image format. It is available only on Nero software
 on a Microsoft Windows Operating System. It is proprietary and not
 generally published, so the information we have comes from guessing
 based on sample CD images. So support for this is incomplete and using
