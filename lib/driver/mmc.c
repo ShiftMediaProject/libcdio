@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.4 2005/02/08 04:14:28 rocky Exp $
+    $Id: mmc.c,v 1.5 2005/02/09 01:24:17 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -820,6 +820,8 @@ const char *mmc_feature2str( int i_feature )
     return "DVD+RW";
   case CDIO_MMC_FEATURE_DVD_PR:
     return "DVD+R";
+  case CDIO_MMC_FEATURE_RIGID_RES_OVERW:
+    return "Rigid Restricted Overwrite";
   case CDIO_MMC_FEATURE_CD_TAO:
     return "CD Track at Once";
   case CDIO_MMC_FEATURE_CD_SAO:
