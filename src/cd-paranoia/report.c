@@ -1,5 +1,5 @@
 /*
-  $Id: report.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: report.c,v 1.2 2005/01/06 01:15:51 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 #include "config.h"
-#include <cdio/cdda_interface.h>
+#include <cdio/cdda.h>
 #include "report.h"
 
 int quiet=0;

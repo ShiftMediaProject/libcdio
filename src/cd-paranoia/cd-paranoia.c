@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+ * Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
  *           (C) 1998 Monty <xiphmont@mit.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -58,7 +58,9 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-#include <cdio/cdda_interface.h>
+#include <cdio/cdio.h>
+#include <cdio/cd_types.h>
+#include <cdio/cdda.h>
 #include <cdio/paranoia.h>
 #include <cdio/bytesex.h>
 #include "utils.h"
@@ -73,7 +75,8 @@ extern int quiet;
 /* I wonder how many alignment issues this is gonna trip in the
    future...  it shouldn't trip any...  I guess we'll find out :) */
 
-static int bigendianp(void)
+static int 
+bigendianp(void)
 {
   int test=1;
   char *hack=(char *)(&test);
@@ -81,16 +84,19 @@ static int bigendianp(void)
   return(1);
 }
 
-static long parse_offset(cdrom_drive_t *d, char *offset, int begin){
-  long track=-1;
-  long hours=-1;
-  long minutes=-1;
-  long seconds=-1;
-  long sectors=-1;
-  char *time=NULL,*temp=NULL;
+static long 
+parse_offset(cdrom_drive_t *d, char *offset, int begin)
+{
+  track_t i_track= CDIO_INVALID_TRACK;
+  long hours   = -1;
+  long minutes = -1;
+  long seconds = -1;
+  long sectors = -1;
+  char *time   = NULL;
+  char *temp   = NULL;
   long ret;
 
-  if(offset==NULL)return(-1);
+  if (!offset) return -1;
 
   /* seperate track from time offset */
   temp=strchr(offset,']');
@@ -110,10 +116,12 @@ static long parse_offset(cdrom_drive_t *d, char *offset, int begin){
     int chars=strspn(offset,"0123456789");
     if(chars>0){
       offset[chars]='\0';
-      track=atoi(offset);
-      if(track<0 || track>d->tracks){ /*take track 0 as pre-gap of 1st track*/
+      i_track=atoi(offset);
+      if ( i_track > d->tracks ) {
+	/*take track i_first_track-1 as pre-gap of 1st track*/
 	char buffer[256];
-	sprintf(buffer,"Track #%ld does not exist.",track);
+	snprintf(buffer, sizeof(buffer), 
+		 "Track #%d does not exist.", i_track);
 	report(buffer);
 	exit(1);
       }
@@ -156,39 +164,40 @@ static long parse_offset(cdrom_drive_t *d, char *offset, int begin){
       break;
     }
 	 
-    if(sec<=time)break;
+    if (sec<=time) break;
     *sec='\0';
   }
 
-  if(track==-1){
-    if(seconds==-1 && sectors==-1)return(-1);
-    if(begin==-1)
+  if (i_track == CDIO_INVALID_TRACK) {
+    if (seconds==-1 && sectors==-1) return -1;
+    if (begin==-1) {
       ret=cdda_disc_firstsector(d);
-    else
-      ret=begin;
-  }else{
-    if(seconds==-1 && sectors==-1){
-      if(begin==-1){ /* first half of a span */
-	return(cdda_track_firstsector(d,track));
+    } else
+      ret = begin;
+  } else {
+    if ( seconds==-1 && sectors==-1 ) {
+      if (begin==-1){ 
+	/* first half of a span */
+	return(cdda_track_firstsector(d, i_track));
       }else{
-	return(cdda_track_lastsector(d,track));
+	return(cdda_track_lastsector(d, i_track));
       }
-    }else{
+    } else {
       /* relative offset into a track */
-      ret=cdda_track_firstsector(d,track);
+      ret=cdda_track_firstsector(d, i_track);
     }
   }
    
   /* OK, we had some sort of offset into a track */
 
-  if(sectors!=-1) ret +=sectors;
-  if(seconds!=-1) ret += seconds*CDIO_CD_FRAMES_PER_SEC;
-  if(minutes!=-1) ret += minutes*CDIO_CD_FRAMES_PER_MIN;
-  if(hours!=-1)   ret += hours  *60*CDIO_CD_FRAMES_PER_MIN;
+  if (sectors != -1) ret += sectors;
+  if (seconds != -1) ret += seconds*CDIO_CD_FRAMES_PER_SEC;
+  if (minutes != -1) ret += minutes*CDIO_CD_FRAMES_PER_MIN;
+  if (hours   != -1) ret += hours  *60*CDIO_CD_FRAMES_PER_MIN;
 
   /* We don't want to outside of the track; if it's relative, that's OK... */
-  if(track!=-1){
-    if(cdda_sector_gettrack(d,ret)!=track){
+  if( i_track != CDIO_INVALID_TRACK ){
+    if (cdda_sector_gettrack(d,ret) != i_track) {
       report("Time/sector offset goes beyond end of specified track.");
       exit(1);
     }
@@ -196,7 +205,7 @@ static long parse_offset(cdrom_drive_t *d, char *offset, int begin){
 
   /* Don't pass up end of session */
 
-  if(ret>cdda_disc_lastsector(d)){
+  if( ret>cdda_disc_lastsector(d) ) {
     report("Time/sector offset goes beyond end of disc.");
     exit(1);
   }
@@ -204,28 +213,31 @@ static long parse_offset(cdrom_drive_t *d, char *offset, int begin){
   return(ret);
 }
 
-static void display_toc(cdrom_drive_t *d){
+static void 
+display_toc(cdrom_drive_t *d)
+{
   long audiolen=0;
   track_t i;
+  
   report("\nTable of contents (audio tracks only):\n"
 	 "track        length               begin        copy pre ch\n"
 	 "===========================================================");
   
-  for(i=1;i<=d->tracks;i++)
-    if(cdda_track_audiop(d,i)){
+  for( i=1; i<=d->tracks; i++)
+    if ( cdda_track_audiop(d,i) ) {
       char buffer[256];
 
-      long sec=cdda_track_firstsector(d,i);
-      long off=cdda_track_lastsector(d,i)-sec+1;
-      
+      lsn_t sec=cdda_track_firstsector(d,i);
+      lsn_t off=cdda_track_lastsector(d,i)-sec+1;
+
       sprintf(buffer,
 	      "%3d.  %7ld [%02d:%02d.%02d]  %7ld [%02d:%02d.%02d]  %s %s %s",
 	      i,
-	      off,
+	      (long int) off,
 	      (int) (off/(CDIO_CD_FRAMES_PER_MIN)),
 	      (int) ((off/CDIO_CD_FRAMES_PER_SEC) % CDIO_CD_SECS_PER_MIN),
 	      (int) (off % CDIO_CD_FRAMES_PER_SEC),
-	      sec,
+	      (long int) sec,
 	      (int) (sec/(CDIO_CD_FRAMES_PER_MIN)),
 	      (int) ((sec/CDIO_CD_FRAMES_PER_SEC) % CDIO_CD_SECS_PER_MIN),
 	      (int) (sec % CDIO_CD_FRAMES_PER_SEC),
@@ -652,12 +664,24 @@ struct option options [] = {
 	{NULL,0,NULL,0}
 };
 
-static cdrom_drive_t *d=NULL;
-static cdrom_paranoia_t *p=NULL;
+static cdrom_drive_t    *d     = NULL;
+static cdrom_paranoia_t *p     = NULL;
+static char             *span  = NULL;
+static char *force_cdrom_device   = NULL;
+static char *force_generic_device = NULL;
 
-static void cleanup(void){
-  if(p)paranoia_free(p);
-  if(d)cdda_close(d);
+#define free_and_null(p) \
+  if (p) free(p);	 \
+  p=NULL;		 
+  
+static void 
+cleanup (void) 
+{
+  if (p)                    paranoia_free(p);
+  if (d)                    cdda_close(d);
+  free_and_null(span);
+  free_and_null(force_cdrom_device);
+  free_and_null(force_generic_device);
 }
 
 int 
@@ -669,16 +693,12 @@ main(int argc,char *argv[])
   int   force_cdrom_endian   = -1;
   int   force_cdrom_sectors  = -1;
   int   force_cdrom_overlap  = -1;
-  char *force_cdrom_device   = NULL;
-  char *force_generic_device = NULL;
   int   force_cdrom_speed    = -1;
   int   max_retries          = 20;
-  char *span                 = NULL;
   int   output_type          = 1; /* 0=raw, 1=wav, 2=aifc */
   int   output_endian        = 0; /* -1=host, 0=little, 1=big */
   int   query_only           = 0;
   int   batch                = 0;
-  int   i;
 
   /* full paranoia, but allow skipping */
   int paranoia_mode=PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP; 
@@ -710,11 +730,11 @@ main(int argc,char *argv[])
       break;
     case 'd':
       if(force_cdrom_device)free(force_cdrom_device);
-      force_cdrom_device=strdup(optarg);
+      force_cdrom_device=copystring(optarg);
       break;
     case 'g':
       if(force_generic_device)free(force_generic_device);
-      force_generic_device=strdup(optarg);
+      force_generic_device=copystring(optarg);
       break;
     case 'S':
       force_cdrom_speed=atoi(optarg);
@@ -797,7 +817,7 @@ main(int argc,char *argv[])
       break;
     case 'i':
       if(info_file)free(info_file);
-      info_file=strdup(info_file);
+      info_file=copystring(info_file);
       break;
     case 'T':
       toc_bias=-1;
@@ -823,42 +843,28 @@ main(int argc,char *argv[])
       exit(1);
     }
   }else
-    span=strdup(argv[optind]);
+    span=copystring(argv[optind]);
 
   report(VERSION);
 
   /* Query the cdrom/disc; we may need to override some settings */
 
-  if(force_generic_device)
-    d=cdda_identify_scsi(force_generic_device,force_cdrom_device,verbose,NULL);
+  if (force_generic_device)
+    d = cdda_identify (force_generic_device, verbose, NULL);
   else
     if(force_cdrom_device)
       d=cdda_identify(force_cdrom_device,verbose,NULL);
-    else
-      if(search)
-	d=cdda_find_a_cdrom(verbose,NULL);
-      else{
-	/* does the /dev/cdrom link exist? */
-	struct stat s;
-	if(lstat("/dev/cdrom",&s)){
-	  /* no link.  Search anyway */
-	  d=cdda_find_a_cdrom(verbose,NULL);
-	}else{
-	  d=cdda_identify("/dev/cdrom",verbose,NULL);
-	  if(d==NULL  && !verbose){
-	    verbose=1;
-	    report("\n/dev/cdrom exists but isn't accessible.  By default,\n"
-		   "cdparanoia stops searching for an accessible drive here.\n"
-		   "Consider using -sv to force a more complete autosense\n"
-		   "of the machine.\n\nMore information about /dev/cdrom:");
-
-	    d=cdda_identify("/dev/cdrom",CDDA_MESSAGE_PRINTIT,NULL);
-	    report("\n");
-	    exit(1);
-	  }else
-	    report("");
-	}
-      }
+    else {
+      driver_id_t driver_id;
+      char **ppsz_cd_drives = cdio_get_devices_with_cap_ret(NULL,  
+							    CDIO_FS_AUDIO, 
+							    false,
+							    &driver_id);
+      if (NULL != ppsz_cd_drives) 
+	d=cdda_identify(*ppsz_cd_drives,verbose, NULL);
+      cdio_free_device_list(ppsz_cd_drives);
+      free(ppsz_cd_drives);
+    }
 
   if(!d){
     if(!verbose)
@@ -883,7 +889,7 @@ main(int argc,char *argv[])
       break;
     }
   }
-  if(force_cdrom_sectors!=-1){
+  if (force_cdrom_sectors!=-1) {
     if(force_cdrom_sectors<0 || force_cdrom_sectors>100){
       report("Default sector read size must be 1<= n <= 100\n");
       cdda_close(d);
@@ -914,7 +920,7 @@ main(int argc,char *argv[])
     }
   }
 
-  switch(cdda_open(d)){
+  switch( cdda_open(d) ) {
   case -2:case -3:case -4:case -5:
     report("\nUnable to open disc.  Is there an audio CD in the drive?");
     exit(1);
@@ -929,8 +935,9 @@ main(int argc,char *argv[])
   }
 
   /* Dump the TOC */
-  if(query_only || verbose)display_toc(d);
-  if(query_only)exit(0);
+  if (query_only || verbose ) display_toc(d);
+
+  if (query_only) exit(0);
 
   /* bias the disc.  A hack.  Of course. */
   /* we may need to read before or past user area; this is never
@@ -945,18 +952,24 @@ main(int argc,char *argv[])
     }
   }
 
-  if(toc_bias){
-    toc_offset=-cdda_track_firstsector(d,1);
+  if (toc_bias) {
+    toc_offset = -cdda_track_firstsector(d,1);
   }
-  for(i=0;i<d->tracks+1;i++)
-    d->disc_toc[i].dwStartSector+=toc_offset;
+  
+  {
+    int i;
+    for( i=0; i < d->tracks+1; i++ )
+      d->disc_toc[i].dwStartSector+=toc_offset;
+  }
 
 
-  if(force_cdrom_speed!=-1){
+#ifdef SPEED_FINISHED
+  if (force_cdrom_speed != -1) {
     cdda_speed_set(d,force_cdrom_speed);
   }
+#endif
 
-  if(d->nsectors==1){
+  if (d->nsectors==1) {
     report("WARNING: The autosensed/selected sectors per read value is\n"
 	   "         one sector, making it very unlikely Paranoia can \n"
 	   "         work.\n\n"
@@ -966,80 +979,77 @@ main(int argc,char *argv[])
   /* parse the span, set up begin and end sectors */
 
   {
-    long first_sector;
-    long last_sector;
+    long i_first_lsn;
+    long i_last_lsn;
     long batch_first;
     long batch_last;
     int batch_track;
 
-    if(span){
+    if (span) {
       /* look for the hyphen */ 
       char *span2=strchr(span,'-');
       if(strrchr(span,'-')!=span2){
 	report("Error parsing span argument");
-	free(span);
-	cdda_close(d);
-	d=NULL;
 	exit(1);
       }
       
-      if(span2!=NULL){
+      if (span2!=NULL) {
 	*span2='\0';
 	span2++;
       }
       
-      first_sector=parse_offset(d,span,-1);
-      if(first_sector==-1)
-	last_sector=parse_offset(d,span2,cdda_disc_firstsector(d));
+      i_first_lsn=parse_offset(d, span, -1);
+
+      if(i_first_lsn==-1)
+	i_last_lsn=parse_offset(d, span2, cdda_disc_firstsector(d));
+
       else
-	last_sector=parse_offset(d,span2,first_sector);
+	i_last_lsn=parse_offset(d, span2, i_first_lsn);
       
-      if(first_sector==-1){
-	if(last_sector==-1){
+      if (i_first_lsn == -1) {
+	if (i_last_lsn == -1) {
 	  report("Error parsing span argument");
-	  cdda_close(d);
-	  d=NULL;
 	  exit(1);
-	}else{
-	  first_sector=cdda_disc_firstsector(d);
+	} else {
+	  i_first_lsn=cdda_disc_firstsector(d);
 	}
-      }else{
-	if(last_sector==-1){
-	  if(span2){ /* There was a hyphen */
-	    last_sector=cdda_disc_lastsector(d);
-	  }else{
-	    last_sector=
-	      cdda_track_lastsector(d,cdda_sector_gettrack(d,first_sector));
+      } else {
+	if (i_last_lsn==-1) {
+	  if (span2) { /* There was a hyphen */
+	    i_last_lsn=cdda_disc_lastsector(d);
+	  } else {
+	    i_last_lsn=
+	      cdda_track_lastsector(d,cdda_sector_gettrack(d, i_first_lsn));
 	  }
 	}
       }
-    }else{
-      first_sector=cdda_disc_firstsector(d);
-      last_sector=cdda_disc_lastsector(d);
+    } else {
+      i_first_lsn = cdda_disc_firstsector(d);
+      i_last_lsn  = cdda_disc_lastsector(d);
     }
 
     {
       char buffer[250];
-      int track1=cdda_sector_gettrack(d,first_sector);
-      int track2=cdda_sector_gettrack(d,last_sector);
-      long off1=first_sector-cdda_track_firstsector(d,track1);
-      long off2=last_sector-cdda_track_firstsector(d,track2);
+      int track1 = cdda_sector_gettrack(d, i_first_lsn);
+      int track2 = cdda_sector_gettrack(d, i_last_lsn);
+      long off1  = i_first_lsn - cdda_track_firstsector(d, track1);
+      long off2  = i_last_lsn  - cdda_track_firstsector(d, track2);
       int i;
 
-      for(i=track1;i<=track2;i++)
+      for( i=track1; i<=track2; i++ )
 	if(!cdda_track_audiop(d,i)){
 	  report("Selected span contains non audio tracks.  Aborting.\n\n");
 	  exit(1);
 	}
 
-      sprintf(buffer,"Ripping from sector %7ld (track %2d [%d:%02d.%02d])\n"
+      sprintf(buffer, "Ripping from sector %7ld (track %2d [%d:%02d.%02d])\n"
 	      "\t  to sector %7ld (track %2d [%d:%02d.%02d])\n",
-	      first_sector,
+	      i_first_lsn,
 	      track1,
 	      (int) (off1/(CDIO_CD_FRAMES_PER_MIN)),
 	      (int) ((off1/CDIO_CD_FRAMES_PER_SEC) % CDIO_CD_SECS_PER_MIN),
 	      (int) (off1 % CDIO_CD_FRAMES_PER_SEC),
-	      last_sector,
+	      i_last_lsn,
 	      track2,
 	      (int) (off2/(CDIO_CD_FRAMES_PER_MIN)),
 	      (int) ((off2/CDIO_CD_FRAMES_PER_SEC) % CDIO_CD_SECS_PER_MIN),
@@ -1063,7 +1073,7 @@ main(int argc,char *argv[])
       else
 	cdda_verbose_set(d,CDDA_MESSAGE_FORGETIT,CDDA_MESSAGE_FORGETIT);
       
-      paranoia_seek(p,cursor=first_sector,SEEK_SET);      
+      paranoia_seek(p,cursor=i_first_lsn,SEEK_SET);      
 
       /* this is probably a good idea in general */
       seteuid(getuid());
@@ -1077,18 +1087,17 @@ main(int argc,char *argv[])
       if(sample_offset)
 	d->disc_toc[d->tracks].dwStartSector++;
 
-      while(cursor<=last_sector){
+      while(cursor<=i_last_lsn){
 	char outfile_name[256];
-	if(batch){
-	  batch_first=cursor;
-	  batch_last=
-	    cdda_track_lastsector(d,batch_track=
-				  cdda_sector_gettrack(d,cursor));
-	  if(batch_last>last_sector)batch_last=last_sector;
-	}else{
-	  batch_first=first_sector;
-	  batch_last=last_sector;
-	  batch_track=-1;
+	if ( batch ){
+	  batch_first = cursor;
+	  batch_track = cdda_sector_gettrack(d,cursor);
+	  batch_last  = cdda_track_lastsector(d, batch_track);
+	  if (batch_last>i_last_lsn) batch_last=i_last_lsn;
+	} else {
+	  batch_first = i_first_lsn;
+	  batch_last  = i_last_lsn;
+	  batch_track = -1;
 	}
 	
 	callbegin=batch_first;
@@ -1096,14 +1105,15 @@ main(int argc,char *argv[])
 	
 	/* argv[optind] is the span, argv[optind+1] (if exists) is outfile */
 	
-	if(optind+1<argc){
-	  if(!strcmp(argv[optind+1],"-")){
-	    out=dup(fileno(stdout));
-	    if(batch)report("Are you sure you wanted 'batch' "
-			    "(-B) output with stdout?");
+	if (optind+1<argc) {
+	  if (!strcmp(argv[optind+1],"-") ){
+	    out = dup(fileno(stdout));
+	    if(batch)
+	      report("Are you sure you wanted 'batch' "
+		     "(-B) output with stdout?");
 	    report("outputting to stdout\n");
 	    outfile_name[0]='\0';
-	  }else{
+	  } else {
 	    char path[256];
 
 	    char *post=strrchr(argv[optind+1],'/');
@@ -1116,41 +1126,40 @@ main(int argc,char *argv[])
 	      strncat(path,argv[optind+1],pos>256?256:pos);
 
 	    if(batch)
-	      snprintf(outfile_name,246,"%strack%02d.%s",path,batch_track,file);
+	      snprintf(outfile_name, 246, " %strack%02d.%s", path, 
+		       batch_track, file);
 	    else
-	      snprintf(outfile_name,246,"%s%s",path,file);
+	      snprintf(outfile_name, 246, "%s%s", path, file);
 
 	    if(file[0]=='\0'){
-	      switch(output_type){
+	      switch (output_type) {
 	      case 0: /* raw */
-		strcat(outfile_name,"cdda.raw");
+		strcat(outfile_name, "cdda.raw");
 		break;
 	      case 1:
-		strcat(outfile_name,"cdda.wav");
+		strcat(outfile_name, "cdda.wav");
 		break;
 	      case 2:
-		strcat(outfile_name,"cdda.aifc");
+		strcat(outfile_name, "cdda.aifc");
 		break;
 	      case 3:
-		strcat(outfile_name,"cdda.aiff");
+		strcat(outfile_name, "cdda.aiff");
 		break;
 	      }
 	    }
 	    
 	    out=open(outfile_name,O_RDWR|O_CREAT|O_TRUNC,0666);
 	    if(out==-1){
-	      report3("Cannot open specified output file %s: %s",outfile_name,
-		      strerror(errno));
-	      cdda_close(d);
-	      d=NULL;
+	      report3("Cannot open specified output file %s: %s",
+		      outfile_name, strerror(errno));
 	      exit(1);
 	    }
-	    report2("outputting to %s\n",outfile_name);
+	    report2("outputting to %s\n", outfile_name);
 	  }
-	}else{
+	} else {
 	  /* default */
-	  if(batch)
-	    sprintf(outfile_name,"track%02d.",batch_track);
+	  if (batch)
+	    sprintf(outfile_name,"track%02d.", batch_track);
 	  else
 	    outfile_name[0]='\0';
 	  
@@ -1169,28 +1178,26 @@ main(int argc,char *argv[])
 	    break;
 	  }
 	  
-	  out=open(outfile_name,O_RDWR|O_CREAT|O_TRUNC,0666);
+	  out = open(outfile_name, O_RDWR|O_CREAT|O_TRUNC, 0666);
 	  if(out==-1){
-	    report3("Cannot open default output file %s: %s",outfile_name,
+	    report3("Cannot open default output file %s: %s", outfile_name,
 		    strerror(errno));
-	    cdda_close(d);
-	    d=NULL;
 	    exit(1);
 	  }
-	  report2("outputting to %s\n",outfile_name);
+	  report2("outputting to %s\n", outfile_name);
 	}
 	
-	switch(output_type){
+	switch(output_type) {
 	case 0: /* raw */
 	  break;
 	case 1: /* wav */
-	  WriteWav(out,(batch_last-batch_first+1)*CDIO_CD_FRAMESIZE_RAW);
+	  WriteWav(out, (batch_last-batch_first+1)*CDIO_CD_FRAMESIZE_RAW);
 	  break;
 	case 2: /* aifc */
-	  WriteAifc(out,(batch_last-batch_first+1)*CDIO_CD_FRAMESIZE_RAW);
+	  WriteAifc(out, (batch_last-batch_first+1)*CDIO_CD_FRAMESIZE_RAW);
 	  break;
 	case 3: /* aiff */
-	  WriteAiff(out,(batch_last-batch_first+1)*CDIO_CD_FRAMESIZE_RAW);
+	  WriteAiff(out, (batch_last-batch_first+1)*CDIO_CD_FRAMESIZE_RAW);
 	  break;
 	}
 	
@@ -1199,10 +1206,10 @@ main(int argc,char *argv[])
 	if(offset_buffer_used){
 	  /* partial sector from previous batch read */
 	  cursor++;
-	  if(buffering_write(out,
-			     ((char *)offset_buffer)+offset_buffer_used,
-			     CDIO_CD_FRAMESIZE_RAW-offset_buffer_used)){
-	    report2("Error writing output: %s",strerror(errno));
+	  if (buffering_write(out,
+			      ((char *)offset_buffer)+offset_buffer_used,
+			      CDIO_CD_FRAMESIZE_RAW-offset_buffer_used)){
+	    report2("Error writing output: %s", strerror(errno));
 	    exit(1);
 	  }
 	}
@@ -1219,9 +1226,9 @@ main(int argc,char *argv[])
 		    "                                           \r%s%s\n",
 		    mes?mes:"",err?err:"");
 	  
-	  if(err)free(err);
-	  if(mes)free(mes);
-	  if(readbuf==NULL){
+	  if (err) free(err);
+	  if (mes) free(mes);
+	  if( readbuf==NULL) {
 	    skipped_flag=1;
 	    report("\nparanoia_read: Unrecoverable error, bailing.\n");
 	    break;
@@ -1234,25 +1241,25 @@ main(int argc,char *argv[])
 	  skipped_flag=0;
 	  cursor++;
 	  
-	  if(output_endian!=bigendianp()){
+	  if (output_endian!=bigendianp()) {
 	    int i;
-	    for(i=0;i<CDIO_CD_FRAMESIZE_RAW/2;i++)
+	    for (i=0; i<CDIO_CD_FRAMESIZE_RAW/2; i++)
 	      readbuf[i]=UINT16_SWAP_LE_BE_C(readbuf[i]);
 	  }
 	  
 	  callback(cursor*(CD_FRAMEWORDS)-1,-2);
 
-	  if(buffering_write(out,((char *)readbuf)+offset_skip,
+	  if (buffering_write(out,((char *)readbuf)+offset_skip,
 			     CDIO_CD_FRAMESIZE_RAW-offset_skip)){
-	    report2("Error writing output: %s",strerror(errno));
+	    report2("Error writing output: %s", strerror(errno));
 	    exit(1);
 	  }
 	  offset_skip=0;
 	  
-	  if(output_endian!=bigendianp()){
+	  if (output_endian != bigendianp()){
 	    int i;
-	    for(i=0;i<CDIO_CD_FRAMESIZE_RAW/2;i++)
-	      readbuf[i]=UINT16_SWAP_LE_BE_C(readbuf[i]);
+	    for (i=0; i<CDIO_CD_FRAMESIZE_RAW/2; i++)
+	      readbuf[i] = UINT16_SWAP_LE_BE_C(readbuf[i]);
 	  }
 
 	  /* One last bit of silliness to deal with sample offsets */
@@ -1275,7 +1282,7 @@ main(int argc,char *argv[])
 		     "sample_offset shift\n\tat end of track, bailing.\n");
 	      break;
 	    }
-	    if(skipped_flag && abort_on_skip)break;
+	    if (skipped_flag && abort_on_skip) break;
 	    skipped_flag=0;
 	    /* do not move the cursor */
 	  
@@ -1290,7 +1297,7 @@ main(int argc,char *argv[])
 
 	    if(buffering_write(out,(char *)offset_buffer,
 			       offset_buffer_used)){
-	      report2("Error writing output: %s",strerror(errno));
+	      report2("Error writing output: %s", strerror(errno));
 	      exit(1);
 	    }
 	  }
@@ -1299,13 +1306,13 @@ main(int argc,char *argv[])
 	buffering_close(out);
 	if(skipped_flag){
 	  /* remove the file */
-	  report2("\nRemoving aborted file: %s",outfile_name);
+	  report2("\nRemoving aborted file: %s", outfile_name);
 	  unlink(outfile_name);
 	  /* make the cursor correct if we have another track */
 	  if(batch_track!=-1){
 	    batch_track++;
 	    cursor=cdda_track_firstsector(d,batch_track);
-	    paranoia_seek(p,cursor,SEEK_SET);      
+	    paranoia_seek(p,cursor, SEEK_SET);
 	    offset_skip=sample_offset*4;
 	    offset_buffer_used=0;
 	  }
@@ -1319,11 +1326,6 @@ main(int argc,char *argv[])
   }
 
   report("Done.\n\n");
-  
-  cdda_close(d);
-  if (span) free(span);
-  if (force_cdrom_device) free(force_cdrom_device);
-  if (force_generic_device) free(force_generic_device);
-  d=NULL;
+
   return 0;
 }

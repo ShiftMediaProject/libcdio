@@ -67,7 +67,7 @@ cdda_open(cdrom_drive_t *d)
     break;
 #endif
   default:
-    cderror(d,"100: Interface not supported\n");
+    cderror(d, "100: Interface not supported\n");
     return(-100);
   }
 #else 

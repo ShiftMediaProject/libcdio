@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.3 2005/01/05 04:16:11 rocky Exp $
+  $Id: cooked_interface.c,v 1.4 2005/01/06 01:15:51 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -251,7 +251,7 @@ cooked_init_drive (cdrom_drive_t *d){
 #else 
   {
     char buffer[256];
-    d->nsectors=8; 
+    d->nsectors = 8; 
     sprintf(buffer,"\tSetting read block size at %d sectors (%ld bytes).\n",
 	    d->nsectors,(long)d->nsectors*CD_FRAMESIZE_RAW);
     cdmessage(d,buffer);

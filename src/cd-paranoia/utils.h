@@ -1,7 +1,7 @@
 /*
-  $Id: utils.h,v 1.3 2004/12/19 01:43:38 rocky Exp $
+  $Id: utils.h,v 1.4 2005/01/06 01:15:51 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define copystring(s) (s) ? s : NULL;
+  
 static inline char *
 catstring(char *buff, const char *s)
 {

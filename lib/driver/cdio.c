@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.5 2005/01/04 04:33:36 rocky Exp $
+    $Id: cdio.c,v 1.6 2005/01/06 01:15:51 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.5 2005/01/04 04:33:36 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.6 2005/01/06 01:15:51 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -643,14 +643,14 @@ cdio_new (generic_img_private_t *p_env, cdio_funcs *p_funcs)
   Free any resources associated with cdio.
 */
 void
-cdio_destroy (CdIo_t *cdio)
+cdio_destroy (CdIo_t *p_cdio)
 {
   CdIo_last_driver = CDIO_DRIVER_UNINIT;
-  if (cdio == NULL) return;
+  if (p_cdio == NULL) return;
 
-  if (cdio->op.free != NULL) 
-    cdio->op.free (cdio->env);
-  free (cdio);
+  if (p_cdio->op.free != NULL) 
+    p_cdio->op.free (p_cdio->env);
+  free (p_cdio);
 }
 
 /*!

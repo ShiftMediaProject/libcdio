@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.3 2005/01/05 04:16:11 rocky Exp $
+  $Id: paranoia.c,v 1.4 2005/01/06 01:15:51 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -148,11 +148,11 @@ i_paranoia_overlap2(int16_t *buffA,int16_t *buffB,
 		    long sizeA,long sizeB,
 		    long *ret_begin, long *ret_end)
 {
-  long beginA=offsetA,endA=offsetA;
-  long beginB=offsetB,endB=offsetB;
+  long beginA=offsetA, endA=offsetA;
+  long beginB=offsetB, endB=offsetB;
   
-  for(;beginA>=0 && beginB>=0;beginA--,beginB--){
-    if(buffA[beginA]!=buffB[beginB])break;
+  for( ; beginA>=0 && beginB>=0; beginA--,beginB-- ) {
+    if ( buffA[beginA] != buffB[beginB] ) break;
     /* don't allow matching across matching sector boundaries */
     /* don't allow matching through known missing data */
     if((flagsA[beginA]&flagsB[beginB]&1)){
@@ -242,7 +242,7 @@ try_sort_sync(cdrom_paranoia_t *p,
     {
       long zeropos=post-ib(A);
       if(zeropos>=0 && zeropos<is(A)){
-	if(cv(B)[post-cb(B)]==iv(A)[zeropos]){
+	if ( cv(B)[post-cb(B)] == iv(A)[zeropos] ) {
 	  if(do_const_sync(B,A,Aflags,
 			   post-cb(B),zeropos,
 			   begin,end,offset)){
