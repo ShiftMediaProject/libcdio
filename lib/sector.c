@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.10 2004/06/05 02:49:21 rocky Exp $
+    $Id: sector.c,v 1.11 2004/06/12 17:32:00 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
@@ -34,7 +34,7 @@
 #endif
 
 
-static const char _rcsid[] = "$Id: sector.c,v 1.10 2004/06/05 02:49:21 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.11 2004/06/12 17:32:00 rocky Exp $";
 
 lba_t
 cdio_lba_to_lsn (lba_t lba)
@@ -137,7 +137,7 @@ cdio_msf_to_str (const msf_t *msf)
 {
   char buf[16];
   
-  snprintf (buf, sizeof (buf), "%.2x:%.2x.%.2x", msf->m, msf->s, msf->f);
+  snprintf (buf, sizeof (buf), "%2.2x:%2.2x:%2.2x", msf->m, msf->s, msf->f);
   return strdup (buf);
 }
 
