@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.20 2003/05/20 07:35:10 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.21 2003/05/20 08:10:45 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.6)
@@ -226,6 +226,8 @@ dnl	      [Define this if you have libcddb installed])
     ],
  AC_MSG_WARN(libcddb library might not be new enough; need version 0.90 or greater), 
     HAVE_CDDB=no)
+    AC_CHECK_LIB(socket, connect)
+    AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
 fi
 
 
