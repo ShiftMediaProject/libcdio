@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.23 2004/08/07 09:42:34 rocky Exp $
+    $Id: scsi_mmc.c,v 1.24 2004/08/07 22:58:51 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -505,7 +505,7 @@ scsi_mmc_init_cdtext_private ( void *p_user_data,
   char            wdata[5000] = { 0, };
   int             i_status;
 
-  if ( ! p_env || ! run_scsi_mmc_cmd )
+  if ( ! p_env || ! run_scsi_mmc_cmd || p_env->b_cdtext_error )
     return false;
 
   /* Operation code */
@@ -527,8 +527,10 @@ scsi_mmc_init_cdtext_private ( void *p_user_data,
 
   if (i_status != 0) {
     cdio_info ("CD-TEXT reading failed: %s\n", strerror(errno));  
+    p_env->b_cdtext_error = true;
     return false;
   } else {
+    p_env->b_cdtext_init = true;
     return cdtext_data_init(p_env, p_env->i_first_track, wdata, 
 			    set_cdtext_field_fn);
   }

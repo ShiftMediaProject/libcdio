@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.36 2004/07/29 02:16:20 rocky Exp $
+    $Id: cdio_private.h,v 1.37 2004/08/07 22:58:51 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -248,7 +248,10 @@ extern "C" {
   typedef struct {
     char *source_name;      /**< Name used in open. */
     bool  init;             /**< True if structure has been initialized */
-    bool  toc_init;         /**< True TOC read in */
+    bool  toc_init;         /**< True if TOC read in */
+    bool  b_cdtext_init;    /**< True if CD-Text read in */
+    bool  b_cdtext_error;   /**< True if trouble reading CD-Text */
+    
     int   ioctls_debugged;  /**< for debugging */
 
     /* Only one of the below is used. The first is for CD-ROM devices 

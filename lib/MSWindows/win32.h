@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.18 2004/07/29 04:14:44 rocky Exp $
+    $Id: win32.h,v 1.19 2004/08/07 22:58:51 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -55,7 +55,6 @@ typedef struct {
 
   bool b_ioctl_init;
   bool b_aspi_init;
-  bool b_cdtext_init;
 
 } _img_private_t;
 

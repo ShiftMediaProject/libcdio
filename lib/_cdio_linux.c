@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.88 2004/08/05 03:58:46 rocky Exp $
+    $Id: _cdio_linux.c,v 1.89 2004/08/07 22:58:51 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.88 2004/08/05 03:58:46 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.89 2004/08/07 22:58:51 rocky Exp $";
 
 #include <string.h>
 
@@ -88,8 +88,6 @@ typedef struct {
   cdtext_t      cdtext;	         /* CD-TEXT */
 
   access_mode_t access_mode;
-  bool b_cdtext_init;
-  bool b_cdtext_error;
 
   /* Some of the more OS specific things. */
   cdtext_t      cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/
@@ -1002,11 +1000,12 @@ get_cdtext_linux (void *p_user_data, track_t i_track)
 
   if ( NULL == p_env ||
        (0 != i_track 
-       && i_track >= p_env->gen.i_tracks+p_env->gen.i_first_track ) )
+	&& i_track >= p_env->gen.i_tracks+p_env->gen.i_first_track ) )
     return NULL;
 
-  p_env->b_cdtext_init = init_cdtext_linux(p_env);
-  if (!p_env->b_cdtext_init || p_env->b_cdtext_error) return NULL;
+  if (!p_env->gen.b_cdtext_init)
+    init_cdtext_linux(p_env);
+  if (!p_env->gen.b_cdtext_init) return NULL;
 
   if (0 == i_track) 
     return &(p_env->cdtext);
@@ -1197,8 +1196,8 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   _data->access_mode    = str_to_access_mode_linux(access_mode);
   _data->gen.init       = false;
   _data->gen.fd         = -1;
-  _data->b_cdtext_init  = false;
-  _data->b_cdtext_error = false;
+  _data->gen.b_cdtext_init  = false;
+  _data->gen.b_cdtext_error = false;
 
   if (NULL == psz_orig_source) {
     psz_source=cdio_get_default_device_linux();

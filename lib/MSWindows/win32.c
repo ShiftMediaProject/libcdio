@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.38 2004/08/06 14:27:33 rocky Exp $
+    $Id: win32.c,v 1.39 2004/08/07 22:58:51 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.38 2004/08/06 14:27:33 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.39 2004/08/07 22:58:51 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -187,6 +187,8 @@ _cdio_init_win32 (void *user_data)
   
   p_env->gen.init     = true;
   p_env->gen.toc_init = false;
+  p_env->gen.b_cdtext_init  = false;
+  p_env->gen.b_cdtext_error = false;
 
   /* Initializations */
   p_env->h_device_handle = NULL;
@@ -195,7 +197,6 @@ _cdio_init_win32 (void *user_data)
   p_env->lpSendCommand   = 0;
   p_env->b_aspi_init     = false;
   p_env->b_ioctl_init    = false;
-  p_env->b_cdtext_init   = false;
 
   if ( _AM_IOCTL == p_env->access_mode ) {
     return init_win32ioctl(p_env);
@@ -504,26 +505,28 @@ set_cdtext_field_win32(void *user_data, track_t i_track,
 static const cdtext_t *
 _get_cdtext_win32 (void *user_data, track_t i_track)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
 
-  if (NULL == env) return NULL;
+  if (NULL == p_env) return NULL;
 
-  if ( NULL == env ||
+  if ( NULL == p_env ||
        (0 != i_track 
-       && i_track >= env->gen.i_tracks + env->gen.i_first_track ) )
+       && i_track >= p_env->gen.i_tracks + p_env->gen.i_first_track ) )
     return NULL;
 
-  if (env->hASPI) {
-    env->b_cdtext_init = init_cdtext_aspi(env);
-  }  else 
-    env->b_cdtext_init = init_cdtext_win32ioctl(env);
+  if (!p_env->gen.b_cdtext_init) {
+    if (p_env->hASPI) {
+      p_env->b_cdtext_init = init_cdtext_aspi(p_env);
+    }  else 
+      p_env->b_cdtext_init = init_cdtext_win32ioctl(p_env);
+  }
     
-  if (!env->b_cdtext_init) return NULL;
+  if (!p_env->gen.b_cdtext_init) return NULL;
 
   if (0 == i_track) 
-    return &(env->cdtext);
+    return &(p_env->cdtext);
   else 
-    return &(env->tocent[i_track-env->gen.i_first_track].cdtext);
+    return &(p_env->tocent[i_track-env->gen.i_first_track].cdtext);
 
   return NULL;
 }

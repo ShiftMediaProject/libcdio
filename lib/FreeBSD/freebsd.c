@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.38 2004/08/07 10:20:40 rocky Exp $
+    $Id: freebsd.c,v 1.39 2004/08/07 22:58:51 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.38 2004/08/07 10:20:40 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.39 2004/08/07 22:58:51 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -577,6 +577,8 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
   _data->access_mode    = str_to_access_mode_freebsd(psz_access_mode);
   _data->gen.init       = false;
   _data->gen.fd         = -1;
+  _data->gen.b_cdtext_init  = false;
+  _data->gen.b_cdtext_error = false;
 
   if (NULL == psz_orig_source_name) {
     psz_source_name=cdio_get_default_device_freebsd();

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.20 2004/07/29 02:16:20 rocky Exp $
+    $Id: _cdio_generic.c,v 1.21 2004/08/07 22:58:51 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.20 2004/07/29 02:16:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.21 2004/08/07 22:58:51 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,22 +84,24 @@ cdio_generic_free (void *user_data)
 bool
 cdio_generic_init (void *user_data)
 {
-  generic_img_private_t *_env = user_data;
-  if (_env->init) {
+  generic_img_private_t *p_env = user_data;
+  if (p_env->init) {
     cdio_warn ("init called more than once");
     return false;
   }
   
-  _env->fd = open (_env->source_name, O_RDONLY, 0);
+  p_env->fd = open (p_env->source_name, O_RDONLY, 0);
 
-  if (_env->fd < 0)
+  if (p_env->fd < 0)
     {
-      cdio_warn ("open (%s): %s", _env->source_name, strerror (errno));
+      cdio_warn ("open (%s): %s", p_env->source_name, strerror (errno));
       return false;
     }
 
-  _env->init = true;
-  _env->toc_init = false;
+  p_env->init = true;
+  p_env->toc_init = false;
+  p_env->b_cdtext_init  = false;
+  p_env->b_cdtext_error = false;
   return true;
 }
 
@@ -125,8 +127,8 @@ cdio_generic_read_form1_sector (void * user_data, void *data, lsn_t lsn)
 off_t
 cdio_generic_lseek (void *user_data, off_t offset, int whence)
 {
-  generic_img_private_t *_env = user_data;
-  return lseek(_env->fd, offset, whence);
+  generic_img_private_t *p_env = user_data;
+  return lseek(p_env->fd, offset, whence);
 }
 
 /*!
@@ -137,8 +139,8 @@ cdio_generic_lseek (void *user_data, off_t offset, int whence)
 ssize_t
 cdio_generic_read (void *user_data, void *buf, size_t size)
 {
-  generic_img_private_t *_env = user_data;
-  return read(_env->fd, buf, size);
+  generic_img_private_t *p_env = user_data;
+  return read(p_env->fd, buf, size);
 }
 
 /*!
@@ -147,14 +149,14 @@ cdio_generic_read (void *user_data, void *buf, size_t size)
 void
 cdio_generic_stdio_free (void *user_data)
 {
-  generic_img_private_t *_env = user_data;
+  generic_img_private_t *p_env = user_data;
 
-  if (NULL == _env) return;
-  if (NULL != _env->source_name) 
-    free (_env->source_name);
+  if (NULL == p_env) return;
+  if (NULL != p_env->source_name) 
+    free (p_env->source_name);
 
-  if (_env->data_source)
-    cdio_stdio_destroy (_env->data_source);
+  if (p_env->data_source)
+    cdio_stdio_destroy (p_env->data_source);
 }
 
 
