@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.20 2004/08/05 02:58:46 rocky Exp $
+    $Id: scsi_mmc.c,v 1.21 2004/08/05 03:49:37 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -517,7 +517,9 @@ scsi_mmc_init_cdtext_private ( void *p_user_data,
   CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(wdata));
 
   errno = 0;
-  i_status = run_scsi_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
+
+  /* We may need to give CD-TEXT a little more time to complete. */
+  i_status = run_scsi_mmc_cmd (p_env, 1000*60*3,
 			       scsi_mmc_get_cmd_len(cdb.field[0]), 
 			       &cdb, SCSI_MMC_DATA_READ, 
 			       sizeof(wdata), &wdata);
