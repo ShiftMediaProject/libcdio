@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.21 2003/06/22 22:41:29 rocky Exp $
+    $Id: cdio.c,v 1.22 2003/08/31 14:26:06 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.21 2003/06/22 22:41:29 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.22 2003/08/31 14:26:06 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -495,13 +495,13 @@ cdio_read_audio_sector (CdIo *obj, void *buf, lsn_t lsn)
 }
 
 /*!
-   Reads a single yellow mode1 or mode2  sector from cd device 
+   Reads a single mode1 form1 or form2  sector from cd device 
    into data starting from lsn. Returns 0 if no error. 
  */
 int
-cdio_read_yellow_sector (CdIo *obj, void *data, uint32_t lsn, bool mode1)
+cdio_read_mode1_sector (CdIo *obj, void *data, lsn_t lsn, bool is_form2)
 {
-  uint32_t size = mode1 ? CDIO_CD_FRAMESIZE : M2RAW_SECTOR_SIZE;
+  uint32_t size = is_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE ;
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   int ret;
   
@@ -516,12 +516,52 @@ cdio_read_yellow_sector (CdIo *obj, void *data, uint32_t lsn, bool mode1)
     memcpy (data, buf, size);
     return 0;
   } else {
-    ret = cdio_read_mode2_sector(obj, data, lsn, mode1);
+    ret = cdio_read_mode2_sector(obj, data, lsn, is_form2);
     if (ret == 0) 
       memcpy (data, buf+CDIO_CD_SUBHEADER_SIZE, size);
   }
   return ret;
 
+}
+
+int
+cdio_read_mode1_sectors (CdIo *obj, void *data, lsn_t lsn, bool is_form2, 
+                         unsigned int num_sectors)
+{
+  uint32_t size = is_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE ;
+  int retval;
+  int i;
+
+  cdio_assert (obj != NULL);
+  
+  for (i = 0; i < num_sectors; i++) {
+    if ( (retval = cdio_read_mode1_sector (obj, 
+                                           ((char *)data) + (size * i),
+                                           lsn + i, is_form2)) )
+      return retval;
+  }
+  return 0;
+}
+
+/*!
+   Reads a single mode2 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+int
+cdio_read_mode2_sector (CdIo *obj, void *buf, uint32_t lsn, bool is_form2)
+{
+  cdio_assert (obj != NULL);
+  cdio_assert (buf != NULL);
+  cdio_assert (obj->op.read_mode2_sector != NULL 
+	      || obj->op.read_mode2_sectors != NULL);
+
+  if (obj->op.read_mode2_sector)
+    return obj->op.read_mode2_sector (obj->user_data, buf, lsn, is_form2);
+
+  /* fallback */
+  if (obj->op.read_mode2_sectors != NULL)
+    return cdio_read_mode2_sectors (obj, buf, lsn, is_form2, 1);
+  return 1;
 }
 
 int
@@ -534,27 +574,6 @@ cdio_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, bool mode2raw,
   
   return obj->op.read_mode2_sectors (obj->user_data, buf, lsn,
                                      mode2raw, num_sectors);
-}
-
-/*!
-   Reads a single mode2 sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
- */
-int
-cdio_read_mode2_sector (CdIo *obj, void *buf, uint32_t lsn, bool mode2raw)
-{
-  cdio_assert (obj != NULL);
-  cdio_assert (buf != NULL);
-  cdio_assert (obj->op.read_mode2_sector != NULL 
-	      || obj->op.read_mode2_sectors != NULL);
-
-  if (obj->op.read_mode2_sector)
-    return obj->op.read_mode2_sector (obj->user_data, buf, lsn, mode2raw);
-
-  /* fallback */
-  if (obj->op.read_mode2_sectors != NULL)
-    return cdio_read_mode2_sectors (obj, buf, lsn, mode2raw, 1);
-  return 1;
 }
 
 uint32_t

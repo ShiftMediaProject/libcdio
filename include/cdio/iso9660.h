@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.12 2003/08/31 09:32:24 rocky Exp $
+    $Id: iso9660.h,v 1.13 2003/08/31 14:26:06 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -174,10 +174,11 @@ unsigned
 iso9660_dir_calc_record_size (unsigned namelen, unsigned int su_len);
 
 int
-iso9660_fs_stat (CdIo *obj,const char pathname[], iso9660_stat_t *buf);
+iso9660_fs_stat (CdIo *obj,const char pathname[], iso9660_stat_t *buf,
+                 bool is_mode2);
 
 void * /* list of char* -- caller must free it */
-iso9660_fs_readdir (CdIo *obj, const char pathname[]);
+iso9660_fs_readdir (CdIo *obj, const char pathname[], bool mode2);
 
 uint8_t
 iso9660_get_dir_len(const iso9660_dir_t *idr);

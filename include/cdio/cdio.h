@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.16 2003/07/27 22:52:22 rocky Exp $
+    $Id: cdio.h,v 1.17 2003/08/31 14:26:06 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -222,20 +222,27 @@ extern "C" {
    Reads a single mode1 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-  int cdio_read_yellow_sector (CdIo *obj, void *buf, lsn_t lsn, bool mode1);
+  int cdio_read_mode1_sector (CdIo *obj, void *buf, lsn_t lsn, bool is_form2);
+
+  /*!
+   Reads nblocks of mode1 sectors from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+  int cdio_read_mode1_sectors (CdIo *obj, void *buf, lsn_t lsn, bool is_form2,
+			       unsigned int num_sectors);
 
   /*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-  int cdio_read_mode2_sector (CdIo *obj, void *buf, lsn_t lsn, bool mode2raw);
+  int cdio_read_mode2_sector (CdIo *obj, void *buf, lsn_t lsn, bool is_form2);
 
   /*!
     Reads nblocks of mode2 sectors from cd device into data starting
     from lsn.
     Returns 0 if no error. 
   */
-  int cdio_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, bool mode2raw, 
+  int cdio_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, bool is_form2, 
 			       unsigned int num_sectors);
   
   /*!

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.3 2003/08/31 09:11:25 rocky Exp $
+    $Id: iso9660_fs.c,v 1.4 2003/08/31 14:26:06 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -36,7 +36,7 @@
 #include "bytesex.h"
 #include "ds.h"
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.3 2003/08/31 09:11:25 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.4 2003/08/31 14:26:06 rocky Exp $";
 
 static void
 _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *buf)
@@ -107,14 +107,19 @@ _idr2name (const iso9660_dir_t *idr)
 
 
 static void
-_fs_stat_root (CdIo *obj, iso9660_stat_t *buf)
+_fs_stat_root (CdIo *obj, iso9660_stat_t *buf, bool is_mode2)
 {
   char block[ISO_BLOCKSIZE] = { 0, };
   const iso9660_pvd_t *pvd = (void *) &block;
   const iso9660_dir_t *idr = (void *) pvd->root_directory_record;
 
-  if (cdio_read_mode2_sector (obj, &block, ISO_PVD_SECTOR, false))
-    cdio_assert_not_reached ();
+  if (is_mode2) {
+    if (cdio_read_mode2_sector (obj, &block, ISO_PVD_SECTOR, false))
+      cdio_assert_not_reached ();
+  } else {
+    if (cdio_read_mode1_sector (obj, &block, ISO_PVD_SECTOR, false))
+      cdio_assert_not_reached ();
+  }
 
   _idr2statbuf (idr, buf);
 }
@@ -187,8 +192,8 @@ _fs_stat_traverse (CdIo *obj, const iso9660_stat_t *_root, char **splitpath,
 }
 
 int
-iso9660_fs_stat (CdIo *obj, const char pathname[], 
-			  iso9660_stat_t *buf)
+iso9660_fs_stat (CdIo *obj, const char pathname[], iso9660_stat_t *buf, 
+		 bool is_mode2)
 {
   iso9660_stat_t _root;
   int retval;
@@ -198,7 +203,7 @@ iso9660_fs_stat (CdIo *obj, const char pathname[],
   cdio_assert (pathname != NULL);
   cdio_assert (buf != NULL);
 
-  _fs_stat_root (obj, &_root);
+  _fs_stat_root (obj, &_root, is_mode2);
 
   splitpath = _cdio_strsplit (pathname, '/');
   retval = _fs_stat_traverse (obj, &_root, splitpath, buf);
@@ -208,14 +213,14 @@ iso9660_fs_stat (CdIo *obj, const char pathname[],
 }
 
 void * /* list of char* -- caller must free it */
-iso9660_fs_readdir (CdIo *obj, const char pathname[])
+iso9660_fs_readdir (CdIo *obj, const char pathname[], bool is_mode2)
 {
   iso9660_stat_t _stat;
 
   cdio_assert (obj != NULL);
   cdio_assert (pathname != NULL);
 
-  if (iso9660_fs_stat (obj, pathname, &_stat))
+  if (iso9660_fs_stat (obj, pathname, &_stat, is_mode2))
     return NULL;
 
   if (_stat.type != _STAT_DIR)
@@ -234,9 +239,15 @@ iso9660_fs_readdir (CdIo *obj, const char pathname[])
 
     _dirbuf = _cdio_malloc (_stat.secsize * ISO_BLOCKSIZE);
 
-    if (cdio_read_mode2_sectors (obj, _dirbuf, _stat.lsn, false, 
+    if (is_mode2) {
+      if (cdio_read_mode2_sectors (obj, _dirbuf, _stat.lsn, false, 
 				 _stat.secsize))
-      cdio_assert_not_reached ();
+	cdio_assert_not_reached ();
+    } else {
+      if (cdio_read_mode1_sectors (obj, _dirbuf, _stat.lsn, false,
+				   _stat.secsize))
+	cdio_assert_not_reached ();
+    }
 
     while (offset < (_stat.secsize * ISO_BLOCKSIZE))
       {

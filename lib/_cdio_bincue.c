@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.22 2003/07/27 22:52:22 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.23 2003/08/31 14:26:06 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.22 2003/07/27 22:52:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.23 2003/08/31 14:26:06 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -508,7 +508,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sectors (void *user_data, void *data, uint32_t lsn, 
-		     bool mode2_form2, unsigned nblocks)
+		     bool mode2_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = user_data;
   int i;

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.26 2003/08/31 08:32:40 rocky Exp $
+    $Id: cd-info.c,v 1.27 2003/08/31 14:26:06 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -598,13 +598,14 @@ print_vcd_info(void) {
 #endif 
 
 static void
-print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs)
+print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs, 
+		       bool is_mode2)
 {
   CdioList *entlist;
   CdioList *dirlist =  _cdio_list_new ();
   CdioListNode *entnode;
 
-  entlist = iso9660_fs_readdir (cdio, pathname);
+  entlist = iso9660_fs_readdir (cdio, pathname, is_mode2);
     
   printf ("%s:\n", pathname);
 
@@ -620,7 +621,7 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs)
 
       snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, _name);
   
-      if (iso9660_fs_stat (cdio, _fullname, &statbuf))
+      if (iso9660_fs_stat (cdio, _fullname, &statbuf, is_mode2))
         cdio_assert_not_reached ();
 
       strncat (_fullname, "/", sizeof (_fullname));
@@ -660,33 +661,47 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs)
     {
       char *_fullname = _cdio_list_node_data (entnode);
 
-      print_iso9660_recurse (cdio, _fullname, fs);
+      print_iso9660_recurse (cdio, _fullname, fs, is_mode2);
     }
 
   _cdio_list_free (dirlist, true);
 }
 
 static void
-print_iso9660_fs (CdIo *cdio, cdio_fs_anal_t fs)
+print_iso9660_fs (CdIo *cdio, cdio_fs_anal_t fs, track_format_t track_format)
 {
   iso9660_pvd_t pvd;
 
-  if (cdio_read_mode2_sector (cdio, &pvd, ISO_PVD_SECTOR, false))
+  switch (track_format) {
+  case TRACK_FORMAT_AUDIO: 
+  case TRACK_FORMAT_PSX: 
+  case TRACK_FORMAT_ERROR: 
     return;
-  else {
+  case TRACK_FORMAT_CDI:
+  case TRACK_FORMAT_XA:
+    if (cdio_read_mode2_sector (cdio, &pvd, ISO_PVD_SECTOR, false))
+      return;
+    break;
+  case TRACK_FORMAT_DATA:
+    if (cdio_read_mode1_sector (cdio, &pvd, ISO_PVD_SECTOR, true))
+      return;
+  }
+  
+  {
     const lsn_t extent = iso9660_get_root_lsn(&pvd);
-
+    
     printf ("ISO9660 filesystem\n");
     printf (" root dir in PVD set to lsn %d\n\n", extent);
     
-    print_iso9660_recurse (cdio, "/", fs);
+    print_iso9660_recurse (cdio, "/", fs, track_format);
   }
 }
 
 static void
 print_analysis(int ms_offset, cdio_analysis_t cdio_analysis, 
 	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
-	       track_t num_tracks, track_t first_track_num, CdIo *cdio)
+	       track_t num_tracks, track_t first_track_num, 
+	       track_format_t track_format, CdIo *cdio)
 {
   int need_lf;
   
@@ -744,7 +759,7 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
     printf("ISO 9660: %i blocks, label `%.32s'\n",
 	   cdio_analysis.isofs_size, cdio_analysis.iso_label);
     if (opts.print_iso9660) 
-      print_iso9660_fs(cdio, fs);
+      print_iso9660_fs(cdio, fs, track_format);
     break;
   }
   need_lf = 0;
@@ -1034,7 +1049,8 @@ main(int argc, const char *argv[])
 	}
       }
       print_analysis(ms_offset, cdio_analysis, fs, first_data, num_audio,
-		     num_tracks, first_track_num, cdio);
+		     num_tracks, first_track_num, 
+		     cdio_get_track_format(cdio, 1), cdio);
     } else {
       /* we have data track(s) */
       int j;
@@ -1079,7 +1095,7 @@ main(int argc, const char *argv[])
 	  fs |= CDIO_FS_ANAL_MULTISESSION;
 	} else {
 	  print_analysis(ms_offset, cdio_analysis, fs, first_data, num_audio,
-			 num_tracks, first_track_num, cdio);
+			 num_tracks, first_track_num, track_format, cdio);
 	}
 
 	if ( !(CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660 ||

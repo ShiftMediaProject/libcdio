@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.c,v 1.2 2003/08/31 03:35:36 rocky Exp $
+    $Id: cd_types.c,v 1.3 2003/08/31 14:26:06 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -136,7 +136,7 @@ _cdio_read_block(CdIo *cdio, int superblock, uint32_t offset, uint8_t bufnum,
 				   offset+superblock, false))
       return -1;
   } else {
-    if (0 > cdio_read_yellow_sector(cdio, buffer[bufnum], 
+    if (0 > cdio_read_mode1_sector(cdio, buffer[bufnum], 
 				    offset+superblock, false))
       return -1;
   }
