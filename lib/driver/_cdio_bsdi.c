@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.15 2005/03/01 10:53:15 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.16 2005/03/03 10:32:44 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.15 2005/03/01 10:53:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.16 2005/03/03 10:32:44 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -59,6 +59,11 @@ static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.15 2005/03/01 10:53:15 rocky
 #include </sys/dev/scsi/scsi_ioctl.h>
 #include "cdtext_private.h"
 
+#include <cdrom.h>
+/* This function is in the man page but seems to be missing from the
+   above include (on Steve Schultz BSDI box). */
+extern int cdpause(struct cdinfo *cdinfo, int pause_resume);
+
 typedef  enum {
   _AM_NONE,
   _AM_IOCTL,
@@ -75,6 +80,7 @@ typedef struct {
   /* Track information */
   struct cdrom_tochdr    tochdr;
   struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1]; 
+  struct cdinfo *        p_cdinfo;
 
 } _img_private_t;
 
@@ -89,6 +95,9 @@ typedef struct  cgc
   scsi_user_sense_t *sus;
 } cgc_t;
 
+
+static bool get_track_msf_bsdi(void *p_user_data, track_t i_track, msf_t *msf);
+static lsn_t  get_disc_last_lsn_bsdi (void *p_user_data);
 
 /* 
    This code adapted from Steven M. Schultz's libdvd
@@ -191,6 +200,7 @@ cdio_is_cdrom(char *drive, char *mnttype)
   else if ( mnttype && (strcmp(mnttype, "cd9660") == 0) ) {
     is_cd = true;
   }
+
   return(is_cd);
 }
 
@@ -213,9 +223,148 @@ _cdio_init (_img_private_t *p_env)
       return false;
     }
 
-  p_env->gen.init = true;
+  p_env->p_cdinfo     = cdopen(p_env->gen.source_name);
+  p_env->gen.init     = true;
   p_env->gen.toc_init = false;
   return true;
+}
+
+/*!
+  Get the volume of an audio CD.
+
+  @param p_cdio the CD object to be acted upon.
+*/
+#if 0
+static driver_return_code_t
+audio_get_volume_bsdi (void *p_user_data,
+                        /*out*/ cdio_audio_volume_t *p_volume)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMVOLREAD, p_volume);
+}
+#endif
+
+/*!
+  Pause playing CD through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+static driver_return_code_t
+audio_pause_bsdi (void *p_user_data)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return cdpause(p_env->p_cdinfo, 0);
+}
+
+/*!
+  Playing starting at given MSF through analog output
+  
+  @param p_cdio the CD object to be acted upon.
+*/
+static driver_return_code_t
+audio_play_msf_bsdi (void *p_user_data, msf_t *p_msf)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  lsn_t i_start_lsn = cdio_msf_to_lsn(p_msf);
+  return cdplay(p_env->p_cdinfo, i_start_lsn, 
+		get_disc_last_lsn_bsdi(p_user_data));
+}
+
+/*!
+  Playing CD through analog output at the desired track and index
+  
+  @param p_cdio the CD object to be acted upon.
+  @param p_track_index location to start/end.
+*/
+static driver_return_code_t
+audio_play_track_index_bsdi (void *p_user_data, 
+                              cdio_track_index_t *p_track_index)
+{
+  const _img_private_t *p_env = p_user_data;
+  msf_t start_msf;
+  msf_t end_msf;
+  lsn_t i_start_lsn = cdio_msf_to_lsn(&start_msf);
+  lsn_t i_end_lsn   = cdio_msf_to_lsn(&end_msf);
+
+  get_track_msf_bsdi(p_user_data, p_track_index->i_start_track, &start_msf);
+  get_track_msf_bsdi(p_user_data, p_track_index->i_end_track, &end_msf);
+  
+  return cdplay(p_env->p_cdinfo, i_start_lsn, i_end_lsn);
+}
+
+/*!
+  Read Audio Subchannel information
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_read_subchannel_bsdi (void *p_user_data, cdio_subchannel_t *p_subchannel)
+{
+  int   i_rc;
+  const _img_private_t *p_env = p_user_data;
+  struct cdstatus cdstat;
+  i_rc = cdstatus(p_env->p_cdinfo, &cdstat);
+  if (0 == i_rc) {
+    p_subchannel->control      = cdstat.control;
+    p_subchannel->track        = cdstat.track_num;
+    p_subchannel->index        = cdstat.index_num;
+    p_subchannel->abs_addr.lba = cdstat.abs_frame;
+    p_subchannel->rel_addr.lba = cdstat.rel_frame;
+    switch(cdstat.state) {
+    case cdstate_unknown:
+      p_subchannel->audio_status = CDIO_MMC_READ_SUB_ST_NO_STATUS;
+      break;
+    case cdstate_stopped:
+      p_subchannel->audio_status = CDIO_MMC_READ_SUB_ST_COMPLETED;
+      break;
+    case cdstate_playing:
+      p_subchannel->audio_status = CDIO_MMC_READ_SUB_ST_PLAY;
+      break;
+    case cdstate_paused:
+      p_subchannel->audio_status = CDIO_MMC_READ_SUB_ST_PAUSED;
+      break;
+    default:
+      p_subchannel->audio_status = CDIO_MMC_READ_SUB_ST_INVALID;
+    }
+  }
+  
+  return i_rc;
+}
+
+/*!
+  Resume playing an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_resume_bsdi (void *p_user_data)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return cdpause(p_env->p_cdinfo, 1);
+}
+
+/*!  
+
+  Set the volume of an audio CD. We use only the first (port 0) volume
+  level.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_set_volume_bsdi (void *p_user_data, 
+                        const cdio_audio_volume_t *p_volume)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  /* Convert volume from 0..255 into 0..100. */
+  return cdvolume(p_env->p_cdinfo, (p_volume->level[0]*100+128) / 256);
 }
 
 /* Read audio sectors
@@ -401,9 +550,9 @@ _read_mode2_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 static lsn_t 
-get_disc_last_lsn_bsdi (void *user_data)
+get_disc_last_lsn_bsdi (void *p_user_data)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   struct cdrom_tocentry tocent;
   uint32_t size;
@@ -543,6 +692,7 @@ _eject_media_bsdi (void *p_user_data) {
     }
     close(fd);
   }
+  cdclose(p_env->p_cdinfo);
   return ret;
 }
 
@@ -573,10 +723,10 @@ _get_arg_bsdi (void *user_data, const char key[])
   string when done with it.
  */
 static char *
-_get_mcn_bsdi (const void *user_data) {
+_get_mcn_bsdi (const void *p_user_data) {
 
   struct cdrom_mcn mcn;
-  const _img_private_t *p_env = user_data;
+  const _img_private_t *p_env = p_user_data;
   if (ioctl(p_env->gen.fd, CDROM_GET_MCN, &mcn) != 0)
     return NULL;
   return strdup(mcn.medium_catalog_number);
@@ -646,7 +796,7 @@ _get_track_green_bsdi(void *user_data, track_t i_track)
   False is returned if there is no track entry.
 */
 static bool
-_get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
+get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
 {
   _img_private_t *p_env = user_data;
 
@@ -759,47 +909,57 @@ cdio_open_bsdi (const char *psz_orig_source)
   char *psz_source;
 
   cdio_funcs_t _funcs = {
-    .eject_media        = _eject_media_bsdi,
-    .free               = cdio_generic_free,
-    .get_arg            = _get_arg_bsdi,
-    .get_cdtext         = get_cdtext_generic,
-    .get_default_device = cdio_get_default_device_bsdi,
-    .get_devices        = cdio_get_devices_bsdi,
-    .get_drive_cap      = get_drive_cap_mmc,
-    .get_disc_last_lsn  = get_disc_last_lsn_bsdi,
-    .get_discmode       = get_discmode_generic,
-    .get_first_track_num= get_first_track_num_generic,
-    .get_hwinfo         = NULL,
-    .get_media_changed  = get_media_changed_mmc, 
-    .get_mcn            = _get_mcn_bsdi, 
-    .get_num_tracks     = get_num_tracks_generic,
-    .get_track_format   = get_track_format_bsdi,
-    .get_track_green    = _get_track_green_bsdi,
-    .get_track_lba      = NULL, /* This could be implemented if need be. */
-    .get_track_msf      = _get_track_msf_bsdi,
-    .lseek              = cdio_generic_lseek,
-    .read               = cdio_generic_read,
-    .read_audio_sectors = _read_audio_sectors_bsdi,
-    .read_data_sectors  = read_data_sectors_mmc,
-    .read_mode1_sector  = _read_mode1_sector_bsdi,
-    .read_mode1_sectors = _read_mode1_sectors_bsdi,
-    .read_mode2_sector  = _read_mode2_sector_bsdi,
-    .read_mode2_sectors = _read_mode2_sectors_bsdi,
-    .read_toc           = &read_toc_bsdi,
-    .run_mmc_cmd        = &run_mmc_cmd_bsdi,
-    .set_arg            = _set_arg_bsdi,
+    .audio_pause           = audio_resume_bsdi,
+    .audio_play_msf        = audio_play_msf_bsdi,
+    .audio_play_track_index= audio_play_track_index_bsdi,
+#if USE_MMC_SUBCHANNEL
+    .audio_read_subchannel = audio_read_subchannel_mmc,
+#else
+    .audio_read_subchannel = audio_read_subchannel_bsdi,
+#endif
+    .audio_resume          = audio_resume_bsdi,
+    .audio_set_volume      = audio_set_volume_bsdi,
+    .eject_media           = _eject_media_bsdi,
+    .free                  = cdio_generic_free,
+    .get_arg               = _get_arg_bsdi,
+    .get_cdtext            = get_cdtext_generic,
+    .get_default_device    = cdio_get_default_device_bsdi,
+    .get_devices           = cdio_get_devices_bsdi,
+    .get_drive_cap         = get_drive_cap_mmc,
+    .get_disc_last_lsn     = get_disc_last_lsn_bsdi,
+    .get_discmode          = get_discmode_generic,
+    .get_first_track_num   = get_first_track_num_generic,
+    .get_hwinfo            = NULL,
+    .get_media_changed     = get_media_changed_mmc, 
+    .get_mcn               = _get_mcn_bsdi, 
+    .get_num_tracks        = get_num_tracks_generic,
+    .get_track_format      = get_track_format_bsdi,
+    .get_track_green       = _get_track_green_bsdi,
+    .get_track_lba         = NULL, /* This could be implemented if need be. */
+    .get_track_msf         = get_track_msf_bsdi,
+    .lseek                 = cdio_generic_lseek,
+    .read                  = cdio_generic_read,
+    .read_audio_sectors    = _read_audio_sectors_bsdi,
+    .read_data_sectors     = read_data_sectors_mmc,
+    .read_mode1_sector     = _read_mode1_sector_bsdi,
+    .read_mode1_sectors    = _read_mode1_sectors_bsdi,
+    .read_mode2_sector     = _read_mode2_sector_bsdi,
+    .read_mode2_sectors    = _read_mode2_sectors_bsdi,
+    .read_toc              = read_toc_bsdi,
+    .run_mmc_cmd           = run_mmc_cmd_bsdi,
+    .set_arg               = _set_arg_bsdi,
   };
 
-  _data                 = calloc (1, sizeof (_img_private_t));
-  _data->access_mode    = _AM_IOCTL;
-  _data->gen.init       = false;
-  _data->gen.fd         = -1;
-  _data->gen.toc_init   = false;
+  _data                     = calloc (1, sizeof (_img_private_t));
+  _data->access_mode        = _AM_IOCTL;
+  _data->gen.init           = false;
+  _data->gen.fd             = -1;
+  _data->gen.toc_init       = false;
   _data->gen.b_cdtext_init  = false;
   _data->gen.b_cdtext_error = false;
 
   if (NULL == psz_orig_source) {
-    psz_source=cdio_get_default_device_linux();
+    psz_source=cdio_get_default_device_bsdi();
     if (NULL == psz_source) return NULL;
     _set_arg_bsdi(_data, "source", psz_source);
     free(psz_source);
