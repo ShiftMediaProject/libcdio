@@ -16,10 +16,10 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 define(RELEASE_NUM, 72)
-define(CDIO_VERSION_STR, 0.$1rc2)
+define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.135 2005/01/29 21:01:45 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.136 2005/01/31 23:55:23 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -511,10 +511,18 @@ fi
 AC_SUBST(VCDINFO_LIBS)
 AC_SUBST(VCDINFO_CFLAGS)
 
+dnl
+dnl Newest automake workaround - needed for multi-language manual pages
+dnl
+AC_SUBST(mkdir_p)
+
 AC_CONFIG_COMMANDS([checks], 
 		   [chmod +x test/check_cue.sh; chmod +x test/check_nrg.sh
 		   ])
 
+dnl
+dnl Output configuration files
+dnl
 AC_CONFIG_FILES([ \
        Makefile \
        example/Makefile \
