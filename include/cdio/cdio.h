@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.50 2004/05/19 03:00:03 rocky Exp $
+    $Id: cdio.h,v 1.51 2004/06/06 11:45:37 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -241,7 +241,7 @@ extern "C" {
     @return the track number or CDIO_INVALID_TRACK 
     on error.
   */
-  track_t cdio_get_first_track_num(const CdIo *obj);
+  track_t cdio_get_first_num_track(const CdIo *obj);
   
   /*!
     Get the number of tracks on the CD.
@@ -254,7 +254,7 @@ extern "C" {
   /*!  
     Get the format (audio, mode2, mode1) of track. 
   */
-  track_format_t cdio_get_track_format(const CdIo *obj, track_t track_num);
+  track_format_t cdio_get_track_format(const CdIo *obj, track_t i_track);
   
   /*!
     Return true if we have XA data (green, mode2 form1) or
@@ -264,51 +264,58 @@ extern "C" {
     
     FIXME: there's gotta be a better design for this and get_track_format?
   */
-  bool cdio_get_track_green(const CdIo *obj, track_t track_num);
+  bool cdio_get_track_green(const CdIo *obj, track_t i_track);
     
   /*!  
     Get the starting LBA for track number
-    track_num in obj.  Tracks numbers start at 1.
+    i_track in obj.  Track numbers usually start at something 
+    greater than 0, usually 1.
+
     The "leadout" track is specified either by
-    using track_num LEADOUT_TRACK or the total tracks+1.
+    using i_track LEADOUT_TRACK or the total tracks+1.
 
     @param obj object to get information from
-    @param track_num  the track number we want the LSN for
+    @param i_track  the track number we want the LSN for
     @return the starting LBA or CDIO_INVALID_LBA on error.
   */
-  lba_t cdio_get_track_lba(const CdIo *obj, track_t track_num);
+  lba_t cdio_get_track_lba(const CdIo *obj, track_t i_track);
   
   /*!  
-    Get the starting LSN for track number
-    track_num in obj.  Tracks numbers start at 1.
+    Return the starting MSF (minutes/secs/frames) for track number
+    i_track in obj.  Track numbers usually start at something 
+    greater than 0, usually 1.
+
     The "leadout" track is specified either by
-    using track_num LEADOUT_TRACK or the total tracks+1.
+    using i_track LEADOUT_TRACK or the total tracks+1.
 
     @param obj object to get information from
-    @param track_num  the track number we want the LSN for
+    @param i_track  the track number we want the LSN for
     @return the starting LSN or CDIO_INVALID_LSN on error.
   */
-  lsn_t cdio_get_track_lsn(const CdIo *obj, track_t track_num);
+  lsn_t cdio_get_track_lsn(const CdIo *obj, track_t i_track);
   
   /*!  
-    Get the starting MSF (minutes/secs/frames) for track number
-    track_num in obj.  Track numbers start at 1.
+    Return the starting MSF (minutes/secs/frames) for track number
+    i_track in obj.  Track numbers usually start at something 
+    greater than 0, usually 1.
+
     The "leadout" track is specified either by
-    using track_num LEADOUT_TRACK or the total tracks+1.
+    using i_track LEADOUT_TRACK or the total tracks+1.
     
     @return true if things worked or false if there is no track entry.
   */
-  bool cdio_get_track_msf(const CdIo *obj, track_t track_num, 
+  bool cdio_get_track_msf(const CdIo *obj, track_t i_track, 
 			  /*out*/ msf_t *msf);
   
   /*!  
     Get the number of sectors between this track an the next.  This
     includes any pregap sectors before the start of the next track.
-    Tracks start at 1.
+    Track numbers usually start at something 
+    greater than 0, usually 1.
 
     @return the number of sectors or 0 if there is an error.
   */
-  unsigned int cdio_get_track_sec_count(const CdIo *obj, track_t track_num);
+  unsigned int cdio_get_track_sec_count(const CdIo *obj, track_t i_track);
 
   /*!
     Reposition read offset
@@ -347,12 +354,12 @@ extern "C" {
     @param obj object to read from
     @param buf place to read data into
     @param lsn sector to read
-    @param num_sectors number of sectors to read
+    @param i_sectors number of sectors to read
 
     @return 0 if no error, nonzero otherwise.
   */
   int cdio_read_audio_sectors (const CdIo *obj, void *buf, lsn_t lsn,
-			       unsigned int num_sectors);
+			       unsigned int i_sectors);
 
   /*!
     Reads a mode1 sector
@@ -376,12 +383,12 @@ extern "C" {
     @param lsn sector to read
     @param b_form2 true for reading mode1 form2 sectors or false for 
     mode1 form1 sectors.
-    @param num_sectors number of sectors to read
+    @param i_sectors number of sectors to read
 
     @return 0 if no error, nonzero otherwise.
   */
   int cdio_read_mode1_sectors (const CdIo *obj, void *buf, lsn_t lsn, 
-			       bool b_form2, unsigned int num_sectors);
+			       bool b_form2, unsigned int i_sectors);
   
   /*!
     Reads a mode1 sector
@@ -405,12 +412,12 @@ extern "C" {
     @param lsn sector to read
     @param b_form2 true for reading mode1 form2 sectors or false for 
     mode1 form1 sectors.
-    @param num_sectors number of sectors to read
+    @param i_sectors number of sectors to read
 
     @return 0 if no error, nonzero otherwise.
   */
   int cdio_read_mode2_sectors (const CdIo *obj, void *buf, lsn_t lsn, 
-			       bool b_form2, unsigned int num_sectors);
+			       bool b_form2, unsigned int i_sectors);
   
   /*!
     Set the arg "key" with "value" in "obj".
