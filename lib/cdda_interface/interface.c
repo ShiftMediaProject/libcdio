@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.19 2005/02/05 04:23:56 rocky Exp $
+  $Id: interface.c,v 1.20 2005/02/05 16:25:51 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -97,7 +97,7 @@ cdio_cddap_open(cdrom_drive_t *d)
   int ret;
   if(d->opened)return(0);
 
-  if ( (ret=cooked_init_drive(d)) )
+  if ( (ret=cddap_init_drive(d)) )
     return(ret);
   
   /* Check TOC, enable for CDDA */

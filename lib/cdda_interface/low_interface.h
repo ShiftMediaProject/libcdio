@@ -1,5 +1,5 @@
 /*
-  $Id: low_interface.h,v 1.6 2005/02/03 07:28:40 rocky Exp $
+  $Id: low_interface.h,v 1.7 2005/02/05 16:25:51 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -62,19 +62,8 @@
 #define MIN_BIG_BUFF_SIZE 4096
 #define SG_OFF sizeof(struct sg_header)
 
-#ifndef SG_EMULATED_HOST
-/* old kernel version; the check for the ioctl is still runtime, this
-   is just to build */
-#define SG_EMULATED_HOST 0x2203
-#define SG_SET_TRANSFORM 0x2204
-#define SG_GET_TRANSFORM 0x2205
-#endif
-
-extern int  cooked_init_drive (cdrom_drive_t *d);
+extern int  cddap_init_drive (cdrom_drive_t *d);
 extern unsigned char *scsi_inquiry (cdrom_drive_t *d);
 extern int  scsi_init_drive (cdrom_drive_t *d);
-#ifdef CDDA_TEST
-extern int  test_init_drive (cdrom_drive_t *d);
-#endif
 #endif /*_CDDA_LOW_INTERFACE_*/
 

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.3 2005/01/15 16:05:44 rocky Exp $
+#   $Id: Makefile.am,v 1.4 2005/02/05 16:25:51 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -50,7 +50,7 @@ libcdio_cdda_la_AGE := 0
 noinst_HEADERS  = common_interface.h drive_exceptions.h low_interface.h \
 		  smallft.h utils.h
 
-libcdio_cdda_sources =  common_interface.c cooked_interface.c interface.c \
+libcdio_cdda_sources =  common_interface.c cddap_interface.c interface.c \
 	scan_devices.c	smallft.c toc.c utils.c
 
 lib_LTLIBRARIES = libcdio_cdda.la

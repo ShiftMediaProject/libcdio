@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.14 2005/01/25 11:04:45 rocky Exp $
+  $Id: cddap_interface.c,v 1.1 2005/02/05 16:25:51 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -35,7 +35,7 @@
     0 is returned if there was an error.
 */
 static int 
-cooked_readtoc (cdrom_drive_t *d)
+cddap_readtoc (cdrom_drive_t *d)
 {
   int i;
   track_t i_track;
@@ -64,7 +64,7 @@ cooked_readtoc (cdrom_drive_t *d)
 
 /* Set operating speed */
 static int 
-cooked_setspeed(cdrom_drive_t *d, int i_speed)
+cddap_setspeed(cdrom_drive_t *d, int i_speed)
 {
   return cdio_set_speed(d->p_cdio, i_speed);
 }
@@ -204,7 +204,7 @@ jitter_read (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors,
  */
 
 static long int
-cooked_read (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors)
+cddap_read (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors)
 {
   jitter_baddness_t jitter_badness = d->i_test_flags & 0x3;
 
@@ -297,7 +297,7 @@ check_exceptions(cdrom_drive_t *d, const exception_t *list)
 
 /* set function pointers to use the ioctl routines */
 int 
-cooked_init_drive (cdrom_drive_t *d)
+cddap_init_drive (cdrom_drive_t *d)
 {
   int ret;
 
@@ -366,9 +366,9 @@ cooked_init_drive (cdrom_drive_t *d)
 #endif /*HAVE_LINUX_MAJOR_H*/
 
   d->enable_cdda = Dummy;
-  d->set_speed   = cooked_setspeed;
-  d->read_toc    = cooked_readtoc;
-  d->read_audio  = cooked_read;
+  d->set_speed   = cddap_setspeed;
+  d->read_toc    = cddap_readtoc;
+  d->read_audio  = cddap_read;
 
   ret = d->tracks = d->read_toc(d);
   if(d->tracks<1)
