@@ -19,7 +19,7 @@ define(RELEASE_NUM, 71)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.96 2004/10/24 11:20:30 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.97 2004/10/24 11:32:21 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -108,7 +108,7 @@ AM_PATH_LIBPOPT(,
 dnl headers
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(glob.h stdbool.h)
+AC_CHECK_HEADERS(glob.h)
 
 dnl compiler
 AC_C_BIGENDIAN
@@ -265,7 +265,6 @@ int has_timeout=sizeof(test.timeout);],
 	fi
 	;;
      sunos*|sun*|solaris*)
-        AC_CHECK_HEADERS(sys/cdio.h)
      	AC_DEFINE([HAVE_SOLARIS_CDROM], [1], 
                   [Define 1 if you have Solaris CD-ROM support])
 	  cd_drivers="${cd_drivers}, Solaris"
