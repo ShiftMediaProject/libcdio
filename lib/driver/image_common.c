@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.c,v 1.2 2005/01/01 15:08:48 rocky Exp $
+    $Id: image_common.c,v 1.3 2005/01/04 04:33:36 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -72,6 +72,7 @@ _free_image (void *p_user_data)
 
   free_if_notnull(p_env->psz_mcn);
   free_if_notnull(p_env->psz_cue_name);
+  free_if_notnull(p_env->psz_access_mode);
   cdtext_destroy(&(p_env->gen.cdtext));
   cdio_generic_stdio_free(p_env);
   free(p_env);
@@ -239,27 +240,36 @@ get_track_preemphasis_image(const void *p_user_data, track_t i_track)
   0 is returned if no error was found, and nonzero if there as an error.
 */
 int
-_set_arg_image (void *user_data, const char key[], const char value[])
+_set_arg_image (void *p_user_data, const char key[], const char value[])
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (!strcmp (key, "source"))
     {
-      free_if_notnull (env->gen.source_name);
+      free_if_notnull (p_env->gen.source_name);
 
       if (!value)
 	return -2;
 
-      env->gen.source_name = strdup (value);
+      p_env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "cue"))
     {
-      free_if_notnull (env->psz_cue_name);
+      free_if_notnull (p_env->psz_cue_name);
 
       if (!value)
 	return -2;
 
-      env->psz_cue_name = strdup (value);
+      p_env->psz_cue_name = strdup (value);
+    }
+  else if (!strcmp (key, "access-mode"))
+    {
+      free_if_notnull (p_env->psz_access_mode);
+
+      if (!value)
+	return -2;
+
+      p_env->psz_access_mode = strdup (value);
     }
   else
     return -1;

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: track.h,v 1.2 2005/01/02 22:43:41 rocky Exp $
+    $Id: track.h,v 1.3 2005/01/04 04:33:36 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -24,6 +24,24 @@
 #ifndef __CDIO_TRACK_H__
 #define __CDIO_TRACK_H__
 
+/*! The leadout track is always 0xAA, regardless of # of tracks on
+    disc, or what value may be used internally. For example although
+    OS X uses a different value for the lead-out track internally than
+    given below, programmers should use CDIO_CDROM_LEADOUT_TRACK and
+    not worry about this.
+ */
+#define	CDIO_CDROM_LEADOUT_TRACK 0xAA
+
+/*! Largest CD track number */
+#define CDIO_CD_MAX_TRACKS    99 
+/*! Smallest CD track number */
+#define CDIO_CD_MIN_TRACK_NO   1
+
+/*! 
+  Constant for invalid track number
+*/
+#define CDIO_INVALID_TRACK   0xFF
+  
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -52,6 +70,30 @@ extern "C" {
     int channels;
   } track_flags_t;
     
+  /*!
+    Get the number of the first track. 
+
+    @return the track number or CDIO_INVALID_TRACK 
+    on error.
+  */
+  track_t cdio_get_first_track_num(const CdIo_t *p_cdio);
+  
+  /*!
+    Return the last track number.
+    CDIO_INVALID_TRACK is returned on error.
+  */
+  track_t cdio_get_last_track_num (const CdIo_t *p_cdio);
+  
+
+  /*! Find the track which contans lsn.
+    CDIO_INVALID_TRACK is returned if the lsn outside of the CD or
+    if there was some error. 
+    
+    If the lsn is before the pregap of the first track 0 is returned.
+    Otherwise we return the track that spans the lsn.
+  */
+  track_t cdio_get_track(const CdIo_t *p_cdio, lsn_t lsn);
+
   /*! Return number of channels in track: 2 or 4; -2 if not
       implemented or -1 for error.
       Not meaningful if track is not an audio track.
@@ -76,8 +118,14 @@ extern "C" {
     
     FIXME: there's gotta be a better design for this and get_track_format?
   */
-  bool cdio_get_track_green(const CdIo *p_cdio, track_t i_track);
+  bool cdio_get_track_green(const CdIo_t *p_cdio, track_t i_track);
     
+  /*!  
+    Return the ending LSN for track number
+    i_track in cdio.  CDIO_INVALID_LSN is returned on error.
+  */
+  lsn_t cdio_get_track_last_lsn(const CdIo_t *p_cdio, track_t i_track);
+
   /*!  
     Get the starting LBA for track number
     i_track in p_cdio.  Track numbers usually start at something 
@@ -90,7 +138,7 @@ extern "C" {
     @param i_track  the track number we want the LSN for
     @return the starting LBA or CDIO_INVALID_LBA on error.
   */
-  lba_t cdio_get_track_lba(const CdIo *p_cdio, track_t i_track);
+  lba_t cdio_get_track_lba(const CdIo_t *p_cdio, track_t i_track);
   
   /*!  
     Return the starting MSF (minutes/secs/frames) for track number
@@ -104,7 +152,7 @@ extern "C" {
     @param i_track  the track number we want the LSN for
     @return the starting LSN or CDIO_INVALID_LSN on error.
   */
-  lsn_t cdio_get_track_lsn(const CdIo *p_cdio, track_t i_track);
+  lsn_t cdio_get_track_lsn(const CdIo_t *p_cdio, track_t i_track);
   
   /*!  
     Return the starting MSF (minutes/secs/frames) for track number
@@ -116,13 +164,14 @@ extern "C" {
     
     @return true if things worked or false if there is no track entry.
   */
-  bool cdio_get_track_msf(const CdIo *p_cdio, track_t i_track, 
+  bool cdio_get_track_msf(const CdIo_t *p_cdio, track_t i_track, 
 			  /*out*/ msf_t *msf);
   
   /*! Get linear preemphasis status on an audio track 
       This is not meaningful if not an audio track?
    */
-  track_flag_t cdio_get_track_preemphasis(const CdIo *p_cdio, track_t i_track);
+  track_flag_t cdio_get_track_preemphasis(const CdIo_t *p_cdio,
+					  track_t i_track);
   
   /*!  
     Get the number of sectors between this track an the next.  This
@@ -132,11 +181,11 @@ extern "C" {
 
     @return the number of sectors or 0 if there is an error.
   */
-  unsigned int cdio_get_track_sec_count(const CdIo *p_cdio, track_t i_track);
+  unsigned int cdio_get_track_sec_count(const CdIo_t *p_cdio, track_t i_track);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* __CDIO_H__ */
+#endif /* __CDIO_TRACK_H__ */
 

@@ -1,7 +1,7 @@
 /*
-    $Id: image_common.h,v 1.3 2004/12/31 07:51:43 rocky Exp $
+    $Id: image_common.h,v 1.4 2005/01/04 04:33:36 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,6 +37,10 @@ typedef struct {
   internal_position_t pos; 
   
   char         *psz_cue_name;
+  char         *psz_access_mode; /* Just the name of the driver.
+				    We add this for regularity with other
+				    real CD drivers which has an access mode.
+				  */
   char         *psz_mcn;        /* Media Catalog Number (5.22.3) 
 				   exactly 13 bytes */
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 

@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.24 2004/12/18 17:29:32 rocky Exp $
+    $Id: types.h,v 1.25 2005/01/04 04:33:36 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -220,11 +220,6 @@ extern "C" {
   
   /*! The type of a track number 0..99. */
   typedef uint8_t track_t;
-  
-  /*! 
-    Constant for invalid track number
-  */
-#define CDIO_INVALID_TRACK   0xFF
   
   /*! The type of a session number 0..99. */
   typedef uint8_t session_t;

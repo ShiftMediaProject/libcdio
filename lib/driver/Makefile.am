@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.2 2004/12/31 07:51:43 rocky Exp $
+#   $Id: Makefile.am,v 1.3 2005/01/04 04:33:36 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -66,6 +66,7 @@ libcdio_sources = \
 	cdio.c \
 	cdtext.c \
 	cdtext_private.h \
+	disc.c \
 	ds.c \
         FreeBSD/freebsd.c \
         FreeBSD/freebsd.h \
@@ -88,6 +89,7 @@ libcdio_sources = \
 	scsi_mmc.c \
 	scsi_mmc_private.h \
 	sector.c \
+	track.c \
 	util.c
 
 lib_LTLIBRARIES    = libcdio.la

@@ -1,8 +1,8 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.71 2005/01/02 22:43:41 rocky Exp $
+    $Id: cdio.h,v 1.72 2005/01/04 04:33:36 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -129,8 +129,6 @@ extern "C" {
 #define CDIO_MAX_DRIVER        DRIVER_NRG
 #define CDIO_MAX_DEVICE_DRIVER DRIVER_WIN32
 
-  extern const char *discmode2str[];
-  
   /*! Printable tags for track_format_t enumeration.  */
   extern const char *track_format2str[6];
   
@@ -254,13 +252,6 @@ extern "C" {
     
   char ** cdio_get_devices_ret (/*in/out*/ driver_id_t *p_driver_id);
 
-  /*! 
-    Get disc mode - the kind of CD (CD-DA, CD-ROM mode 1, CD-MIXED, etc.
-    that we've got. The notion of "CD" is extended a little to include
-    DVD's.
-  */
-  discmode_t cdio_get_discmode (CdIo_t *p_cdio);
-
   /*!
     Get the what kind of device we've got.
 
@@ -309,14 +300,6 @@ extern "C" {
   */
   driver_id_t cdio_get_driver_id (const CdIo_t *p_cdio);
 
-  /*!
-    Get the number of the first track. 
-
-    @return the track number or CDIO_INVALID_TRACK 
-    on error.
-  */
-  track_t cdio_get_first_track_num(const CdIo_t *p_cdio);
-  
   /*! 
     Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
     False is returned if we had an error getting the information.
@@ -325,41 +308,6 @@ extern "C" {
 			 /* out*/ cdio_hwinfo_t *p_hw_info );
 
 
-  /*!  
-    Return the Joliet level recognized for p_cdio.
-  */
-  uint8_t cdio_get_joliet_level(const CdIo_t *p_cdio);
-
-  /*!
-    Get the media catalog number (MCN) from the CD.
-
-    @return the media catalog number r NULL if there is none or we
-    don't have the ability to get it.
-
-    Note: string is malloc'd so caller has to free() the returned
-    string when done with it.
-
-  */
-  char * cdio_get_mcn (const CdIo_t *p_cdio);
-
-  /*!
-    Get the number of tracks on the CD.
-
-    @return the number of tracks, or CDIO_INVALID_TRACK if there is
-    an error.
-  */
-  track_t cdio_get_num_tracks (const CdIo_t *p_cdio);
-  
-  /*!
-    Reposition read offset
-    Similar to (if not the same as) libc's lseek()
-
-    @param p_cdio object to get information from
-    @param offset amount to seek
-    @param whence  like corresponding parameter in libc's lseek, e.g. 
-                   SEEK_SET or SEEK_END.
-    @return (off_t) -1 on error. 
-  */
   off_t cdio_lseek(const CdIo_t *p_cdio, off_t offset, int whence);
     
   /*!
@@ -955,5 +903,7 @@ extern "C" {
 
 /* Track-related functions. */
 #include <cdio/track.h>
+/* Disc-related functions. */
+#include <cdio/disc.h>
 
 #endif /* __CDIO_H__ */

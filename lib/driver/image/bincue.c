@@ -1,7 +1,7 @@
 /*
-    $Id: bincue.c,v 1.3 2004/12/31 07:51:43 rocky Exp $
+    $Id: bincue.c,v 1.4 2005/01/04 04:33:36 rocky Exp $
 
-    Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     cue parsing routine adapted from cuetools
     Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.3 2004/12/31 07:51:43 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.4 2005/01/04 04:33:36 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1185,6 +1185,7 @@ cdio_open_cue (const char *psz_cue_name)
   
   _set_arg_image (_data, "cue", psz_cue_name);
   _set_arg_image (_data, "source", psz_bin_name);
+  _set_arg_image (_data, "access-mode", "bincue");
   free(psz_bin_name);
   
   if (_init_bincue(_data)) {

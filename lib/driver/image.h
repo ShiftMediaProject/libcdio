@@ -1,7 +1,7 @@
 /*
-    $Id: image.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: image.h,v 1.2 2005/01/04 04:33:36 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

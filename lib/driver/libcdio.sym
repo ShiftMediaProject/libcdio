@@ -44,6 +44,7 @@ cdio_get_devices_solaris
 cdio_get_devices_win32
 cdio_get_devices_with_cap
 cdio_get_devices_with_cap_ret
+cdio_get_disc_last_lsn
 cdio_get_discmode
 cdio_get_drive_cap
 cdio_get_drive_cap_dev
@@ -52,12 +53,15 @@ cdio_get_driver_name
 cdio_get_first_track_num
 cdio_get_hwinfo
 cdio_get_joliet_level
+cdio_get_last_track_num
 cdio_get_mcn
 cdio_get_num_tracks
+cdio_get_track
 cdio_get_track_channels
 cdio_get_track_copy_permit
 cdio_get_track_format
 cdio_get_track_green
+cdio_get_track_last_lsn
 cdio_get_track_lba
 cdio_get_track_lsn
 cdio_get_track_msf

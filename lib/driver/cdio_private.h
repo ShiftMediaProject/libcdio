@@ -1,7 +1,7 @@
 /*
-    $Id: cdio_private.h,v 1.3 2004/12/31 05:47:36 rocky Exp $
+    $Id: cdio_private.h,v 1.4 2005/01/04 04:33:36 rocky Exp $
 
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

@@ -1,7 +1,7 @@
 /*
-    $Id: cdio.c,v 1.4 2005/01/02 22:43:41 rocky Exp $
+    $Id: cdio.c,v 1.5 2005/01/04 04:33:36 rocky Exp $
 
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.4 2005/01/02 22:43:41 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.5 2005/01/04 04:33:36 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -489,21 +489,6 @@ cdio_get_devices_with_cap_ret (/*out*/ char* search_devices[],
   return drives_ret;
 }
 
-/*! 
-  Get medium associated with cd_obj.
-*/
-discmode_t
-cdio_get_discmode (CdIo *cd_obj)
-{
-  if (cd_obj == NULL) return CDIO_DISC_MODE_ERROR;
-  
-  if (cd_obj->op.get_discmode) {
-    return cd_obj->op.get_discmode (cd_obj->env);
-  } else {
-    return CDIO_DISC_MODE_NO_INFO;
-  }
-}
-
 /*!
   Return the the kind of drive capabilities of device.
 
@@ -578,23 +563,6 @@ cdio_get_driver_id (const CdIo *cdio)
   return cdio->driver_id;
 }
 
-
-/*!
-  Return the number of the first track. 
-  CDIO_INVALID_TRACK is returned on error.
-*/
-track_t
-cdio_get_first_track_num (const CdIo *p_cdio)
-{
-  if (NULL == p_cdio) return CDIO_INVALID_TRACK;
-
-  if (p_cdio->op.get_first_track_num) {
-    return p_cdio->op.get_first_track_num (p_cdio->env);
-  } else {
-    return CDIO_INVALID_TRACK;
-  }
-}
-
 /*!
   Return a string containing the name of the driver in use.
   if CdIo is NULL (we haven't initialized a specific device driver), 
@@ -613,216 +581,10 @@ cdio_get_hwinfo (const CdIo *p_cdio, cdio_hwinfo_t *hw_info)
   }
 }
 
-/*!
-  Return a string containing the name of the driver in use.
-  if CdIo is NULL (we haven't initialized a specific device driver), 
-  then return NULL.
-*/
-char *
-cdio_get_mcn (const CdIo *p_cdio) 
-{
-  if (p_cdio->op.get_mcn) {
-    return p_cdio->op.get_mcn (p_cdio->env);
-  } else {
-    return NULL;
-  }
-}
-
-/*! 
-  Return the number of tracks in the current medium.
-  CDIO_INVALID_TRACK is returned on error.
-*/
-track_t
-cdio_get_num_tracks (const CdIo *p_cdio)
-{
-  if (p_cdio == NULL) return CDIO_INVALID_TRACK;
-
-  if (p_cdio->op.get_num_tracks) {
-    return p_cdio->op.get_num_tracks (p_cdio->env);
-  } else {
-    return CDIO_INVALID_TRACK;
-  }
-}
-
-/*! Return number of channels in track: 2 or 4; -2 if not
-  implemented or -1 for error.
-  Not meaningful if track is not an audio track.
-*/
-int
-cdio_get_track_channels(const CdIo *p_cdio, track_t i_track)
-{
-  if (p_cdio->op.get_track_channels) {
-    return p_cdio->op.get_track_channels (p_cdio->env, i_track);
-  } else {
-    return -2;
-  }
-}
-
-/*! Return copy protection status on a track. Is this meaningful
-  if not an audio track?
-*/
-track_flag_t
-cdio_get_track_copy_permit(const CdIo *p_cdio, track_t i_track)
-{
-  if (p_cdio->op.get_track_copy_permit) {
-    return p_cdio->op.get_track_copy_permit (p_cdio->env, i_track);
-  } else {
-    return CDIO_TRACK_FLAG_UNKNOWN;
-  }
-}
-
-/*!  
-  Get format of track. 
-*/
-track_format_t
-cdio_get_track_format(const CdIo *p_cdio, track_t i_track)
-{
-  if (!p_cdio) return TRACK_FORMAT_ERROR;
-
-  if (p_cdio->op.get_track_format) {
-    return p_cdio->op.get_track_format (p_cdio->env, i_track);
-  } else {
-    return TRACK_FORMAT_ERROR;
-  }
-}
-
-/*!
-  Return true if we have XA data (green, mode2 form1) or
-  XA data (green, mode2 form2). That is track begins:
-  sync - header - subheader
-  12     4      -  8
-  
-  FIXME: there's gotta be a better design for this and get_track_format?
-*/
-bool
-cdio_get_track_green(const CdIo *cdio, track_t track_num)
-{
-  cdio_assert (cdio != NULL);
-
-  if (cdio->op.get_track_green) {
-    return cdio->op.get_track_green (cdio->env, track_num);
-  } else {
-    return false;
-  }
-}
-
-/*!  
-  Return the starting LBA for track number
-  track_num in cdio.  Tracks numbers start at 1.
-  The "leadout" track is specified either by
-  using track_num LEADOUT_TRACK or the total tracks+1.
-  CDIO_INVALID_LBA is returned on error.
-*/
-lba_t
-cdio_get_track_lba(const CdIo *cdio, track_t track_num)
-{
-  if (cdio == NULL) return CDIO_INVALID_LBA;
-
-  if (cdio->op.get_track_lba) {
-    return cdio->op.get_track_lba (cdio->env, track_num);
-  } else {
-    msf_t msf;
-    if (cdio->op.get_track_msf) 
-      if (cdio_get_track_msf(cdio, track_num, &msf))
-        return cdio_msf_to_lba(&msf);
-    return CDIO_INVALID_LBA;
-  }
-}
-
-/*!  
-  Return the starting LSN for track number
-  track_num in cdio.  Tracks numbers start at 1.
-  The "leadout" track is specified either by
-  using track_num LEADOUT_TRACK or the total tracks+1.
-  CDIO_INVALID_LBA is returned on error.
-*/
-lsn_t
-cdio_get_track_lsn(const CdIo *cdio, track_t track_num)
-{
-  if (cdio == NULL) return CDIO_INVALID_LBA;
-
-  if (cdio->op.get_track_lba) {
-    return cdio_lba_to_lsn(cdio->op.get_track_lba (cdio->env, track_num));
-  } else {
-    msf_t msf;
-    if (cdio_get_track_msf(cdio, track_num, &msf))
-      return cdio_msf_to_lsn(&msf);
-    return CDIO_INVALID_LSN;
-  }
-}
-
-/*!  
-  Return the starting MSF (minutes/secs/frames) for track number
-  track_num in cdio.  Track numbers start at 1.
-  The "leadout" track is specified either by
-  using track_num LEADOUT_TRACK or the total tracks+1.
-  False is returned if there is no track entry.
-*/
-bool
-cdio_get_track_msf(const CdIo *cdio, track_t track_num, /*out*/ msf_t *msf)
-{
-  cdio_assert (cdio != NULL);
-
-  if (cdio->op.get_track_msf) {
-    return cdio->op.get_track_msf (cdio->env, track_num, msf);
-  } else if (cdio->op.get_track_lba) {
-    lba_t lba = cdio->op.get_track_lba (cdio->env, track_num);
-    if (lba  == CDIO_INVALID_LBA) return false;
-    cdio_lba_to_msf(lba, msf);
-    return true;
-  } else {
-    return false;
-  }
-}
-
-/*! Return copy protection status on a track. Is this meaningful
-  if not an audio track?
-*/
-track_flag_t
-cdio_get_track_preemphasis(const CdIo *p_cdio, track_t i_track)
-{
-  if (p_cdio->op.get_track_preemphasis) {
-    return p_cdio->op.get_track_preemphasis (p_cdio->env, i_track);
-  } else {
-    return CDIO_TRACK_FLAG_UNKNOWN;
-  }
-}
-
-/*!  
-  Return the number of sectors between this track an the next.  This
-  includes any pregap sectors before the start of the next track.
-  Tracks start at 1.
-  0 is returned if there is an error.
-*/
-unsigned int
-cdio_get_track_sec_count(const CdIo *cdio, track_t track_num)
-{
-  track_t num_tracks = cdio_get_num_tracks(cdio);
-
-  if (track_num >=1 && track_num <= num_tracks) 
-    return ( cdio_get_track_lba(cdio, track_num+1) 
-             - cdio_get_track_lba(cdio, track_num) );
-  return 0;
-}
-
 bool
 cdio_have_driver(driver_id_t driver_id)
 {
   return (*CdIo_all_drivers[driver_id].have_driver)();
-}
-
-/*!  
-  Return the Joliet level recognized for p_cdio.
-*/
-uint8_t 
-cdio_get_joliet_level(const CdIo *p_cdio)
-{
-  if (!p_cdio) return 0;
-  {
-    const generic_img_private_t *p_env 
-      = (generic_img_private_t *) (p_cdio->env);
-    return p_env->i_joliet_level;
-  }
 }
 
 bool
