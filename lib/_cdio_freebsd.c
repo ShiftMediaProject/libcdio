@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.17 2003/10/03 04:04:24 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.18 2003/10/03 04:36:51 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.17 2003/10/03 04:04:24 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.18 2003/10/03 04:36:51 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -56,8 +56,8 @@ static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.17 2003/10/03 04:04:24 ro
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-#define TOTAL_TRACKS    (_obj->tochdr.ending_track \
-			- obj->tochdr.starting_track + 1)
+#define TOTAL_TRACKS    ( _obj->tochdr.ending_track \
+			- _obj->tochdr.starting_track + 1)
 #define FIRST_TRACK_NUM (_obj->tochdr.starting_track)
 
 typedef struct {
@@ -90,7 +90,7 @@ cdio_is_cdrom(char *drive, char *mnttype)
 {
   bool is_cd=false;
   int cdfd;
-  struct cdrom_tochdr    tochdr;
+  struct ioc_toc_header    tochdr;
   
   /* If it doesn't exist, return -1 */
   if ( !cdio_is_device_quiet_generic(drive) ) {
@@ -105,7 +105,7 @@ cdio_is_cdrom(char *drive, char *mnttype)
      ENODEV means there's no drive present. */
 
   if ( cdfd >= 0 ) {
-    if ( ioctl(cdfd, CDROMREADTOCHDR, &tochdr) != -1 ) {
+    if ( ioctl(cdfd, CDIOREADTOCHEADER, &tochdr) != -1 ) {
       is_cd = true;
     }
     close(cdfd);
@@ -141,7 +141,7 @@ _read_mode2 (int fd, void *buf, lba_t lba, unsigned int nblocks,
       const unsigned int nblocks2 = (nblocks > 25) ? 25 : nblocks;
       void *buf2 = ((char *)buf ) + (l * M2RAW_SECTOR_SIZE);
       
-      retval |= __read_mode2 (fd, buf2, lba + l, nblocks2, _workaround);
+      retval |= _read_mode2 (fd, buf2, lba + l, nblocks2, _workaround);
 
       if (retval)
 	break;
@@ -158,20 +158,21 @@ _read_mode2 (int fd, void *buf, lba_t lba, unsigned int nblocks,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_audio_sectors (void *env, void *data, lsn_t lsn
+_cdio_read_audio_sectors (void *env, void *data, lsn_t lsn,
 			  unsigned int nblocks)
 {
   unsigned char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
 
   struct cdrom_cdda cdda;
+  _img_private_t *_obj = env;
 
-  cdda.cdda_addr = frame;
-  cdda.cdda_length = nblocks;
-  cdda.cdda_data = buf;
-  cdda.cdda_subcode = CDROM_DA_NO_SUBCODE;
+  cdda.address.lba = lsn;
+  cdda.buffer         = buf;
+  cdda.nframes        = nblocks;
+  cdda.address_format = CD_LBA_FORMAT;
 
   /* read a frame */
-  if(ioctl(fd, CDROMCDDA, &cdda) < 0) {
+  if(ioctl(_obj->gen.fd, CDROMCDREADAUDIO, &cdda) < 0) {
     perror("CDROMCDDA");
     return 1;
   }
@@ -282,8 +283,8 @@ _cdio_stat_size (void *env)
   struct ioc_read_toc_single_entry tocent;
   uint32_t size;
 
-  tocent.cdte_track = CDROM_LEADOUT;
-  tocent.cdte_format = CDROM_LBA;
+  tocent.cdte_track = CDIO_CDROM_LEADOUT_TRACK;
+  tocent.cdte_format = CD_LBA_FORMAT;
   if (ioctl (_obj->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
       perror ("ioctl(CDROMREADTOCENTRY)");
@@ -499,7 +500,7 @@ _cdio_get_track_msf(void *env, track_t track_num, msf_t *msf)
 
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDIO_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
 
   if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
     return false;
@@ -585,7 +586,7 @@ cdio_open_freebsd (const char *source_name)
 
   cdio_funcs _funcs = {
     .eject_media        = _cdio_eject_media,
-    .free               = _cdio_generic_free,
+    .free               = cdio_generic_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = _cdio_get_default_device_freebsd,
     .get_devices        = cdio_get_devices_freebsd,
@@ -606,7 +607,7 @@ cdio_open_freebsd (const char *source_name)
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->access_mode    = _AM_READ_CD;
+  _data->access_mode    = _AM_IOCTL;
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
@@ -619,7 +620,7 @@ cdio_open_freebsd (const char *source_name)
   if (_cdio_generic_init(_data))
     return ret;
   else {
-    _cdio_generic_free (_data);
+    cdio_generic_free (_data);
     return NULL;
   }
   
