@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.14 2004/03/09 02:55:37 rocky Exp $
+    $Id: _cdio_osx.c,v 1.15 2004/03/20 04:16:59 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.14 2004/03/09 02:55:37 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.15 2004/03/20 04:16:59 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -148,7 +148,7 @@ _cdio_read_mode1_sectors (void *env, void *data, lsn_t lsn,
     cd_read.bufferLength = kCDSectorSizeMode1 * nblocks;
   }
   
-  if( ioctl( device_handle, DKIOCCDREAD, &cd_read ) == -1 )
+   if( ioctl( _obj->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
     cdio_error( "could not read block %d, %s", lsn, strerror(errno) );
     return -1;
