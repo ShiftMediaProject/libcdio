@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.66 2004/07/29 02:16:20 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.67 2004/07/29 02:27:04 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.66 2004/07/29 02:16:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.67 2004/07/29 02:27:04 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -421,7 +421,7 @@ read_toc_solaris (void *p_user_data)
   p_env->gen.i_tracks      = p_env->tochdr.cdth_trk1;
   
   /* read individual tracks */
-  for (i=p_env->gen.i_first_track; i<=gen.i_tracks; i++) {
+  for (i=p_env->gen.i_first_track; i<=p_env->gen.i_tracks; i++) {
     p_env->tocent[i-1].cdte_track = i;
     p_env->tocent[i-1].cdte_format = CDIO_CDROM_MSF;
     if ( ioctl(p_env->gen.fd, CDROMREADTOCENTRY, &p_env->tocent[i-1]) == -1 ) {
