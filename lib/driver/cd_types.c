@@ -1,7 +1,7 @@
 /*
-    $Id: cd_types.c,v 1.2 2005/01/02 22:43:41 rocky Exp $
+    $Id: cd_types.c,v 1.3 2005/02/17 11:54:28 rocky Exp $
 
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -124,33 +124,24 @@ static signature_t sigs[] =
    Read a particular block into the global array to be used for further
    analysis later.
 */
-static int 
-_cdio_read_block(const CdIo *cdio, int superblock, uint32_t offset, 
+static driver_return_code_t
+_cdio_read_block(const CdIo_t *p_cdio, int superblock, uint32_t offset, 
 		 uint8_t bufnum, track_t i_track)
 {
-  unsigned int track_sec_count = cdio_get_track_sec_count(cdio, i_track);
+  unsigned int track_sec_count = cdio_get_track_sec_count(p_cdio, i_track);
   memset(buffer[bufnum], 0, CDIO_CD_FRAMESIZE);
 
   if ( track_sec_count < superblock) {
     cdio_debug("reading block %u skipped track %d has only %u sectors\n", 
 	       superblock, i_track, track_sec_count);
-    return -1;
+    return DRIVER_OP_ERROR;
   }
   
   cdio_debug("about to read sector %lu\n", 
 	     (long unsigned int) offset+superblock);
 
-  if (cdio_get_track_green(cdio,  i_track)) {
-    if (0 > cdio_read_mode2_sector(cdio, buffer[bufnum], 
-				   offset+superblock, false))
-      return -1;
-  } else {
-    if (0 > cdio_read_mode1_sector(cdio, buffer[bufnum], 
-				    offset+superblock, false))
-      return -1;
-  }
-
-  return 0;
+  return cdio_read_data_sectors (p_cdio, buffer[bufnum], offset+superblock, 
+				 ISO_BLOCKSIZE, 1);
 }
 
 /* 
@@ -221,36 +212,36 @@ _cdio_get_joliet_level( void )
    is returned in cdio_analysis and the return value.
 */
 cdio_fs_anal_t
-cdio_guess_cd_type(const CdIo_t *cdio, int start_session, track_t i_track, 
+cdio_guess_cd_type(const CdIo_t *p_cdio, int start_session, track_t i_track, 
 		   /*out*/ cdio_iso_analysis_t *iso_analysis)
 {
   int ret = CDIO_FS_UNKNOWN;
   bool sector0_read_ok;
   
-  if (TRACK_FORMAT_AUDIO == cdio_get_track_format(cdio, i_track))
+  if (TRACK_FORMAT_AUDIO == cdio_get_track_format(p_cdio, i_track))
     return CDIO_FS_AUDIO;
 
-  if ( _cdio_read_block(cdio, ISO_PVD_SECTOR, start_session, 
-			0, i_track) < 0 )
+  if ( DRIVER_OP_SUCCESS != 
+       _cdio_read_block(p_cdio, ISO_PVD_SECTOR, start_session, 0, i_track) )
     return CDIO_FS_UNKNOWN;
   
   if ( _cdio_is_it(INDEX_XISO) )
     return CDIO_FS_ANAL_XISO;
 
-  if (_cdio_read_block(cdio, ISO_SUPERBLOCK_SECTOR, start_session, 0, 
-		       i_track) < 0)
+  if ( DRIVER_OP_SUCCESS != _cdio_read_block(p_cdio, ISO_SUPERBLOCK_SECTOR, 
+					     start_session, 0, i_track) )
     return ret;
 
   if ( _cdio_is_it(INDEX_UDF) ) {
     /* Detect UDF version 
        Test if we have a valid version of UDF the xbox can read natively */
-    if (_cdio_read_block(cdio, 35, start_session, 5, i_track) < 0)
+    if (_cdio_read_block(p_cdio, 35, start_session, 5, i_track) < 0)
       return CDIO_FS_UNKNOWN;
 
      iso_analysis->UDFVerMinor=(unsigned int)buffer[5][240];
      iso_analysis->UDFVerMajor=(unsigned int)buffer[5][241];
      /*	Read disc label */
-     if (_cdio_read_block(cdio, 32, start_session, 5, i_track) < 0)
+     if (_cdio_read_block(p_cdio, 32, start_session, 5, i_track) < 0)
        return CDIO_FS_UDF;
 
      strncpy(iso_analysis->iso_label, buffer[5]+25, 33);
@@ -266,7 +257,7 @@ cdio_guess_cd_type(const CdIo_t *cdio, int start_session, track_t i_track,
     /* read sector 0 ONLY, when NO greenbook CD-I !!!! */
 
     sector0_read_ok = 
-      _cdio_read_block(cdio, 0, start_session, 1, i_track) == 0;
+      _cdio_read_block(p_cdio, 0, start_session, 1, i_track) == 0;
     
     if (_cdio_is_it(INDEX_HS))
       ret |= CDIO_FS_HIGH_SIERRA;
@@ -281,7 +272,7 @@ cdio_guess_cd_type(const CdIo_t *cdio, int start_session, track_t i_track,
       strncpy(iso_analysis->iso_label, buffer[0]+40,33);
       iso_analysis->iso_label[32] = '\0';
       
-      if ( _cdio_read_block(cdio, UDF_ANCHOR_SECTOR, start_session, 5, 
+      if ( _cdio_read_block(p_cdio, UDF_ANCHOR_SECTOR, start_session, 5, 
 			    i_track) < 0)
 	return ret;
       
@@ -290,7 +281,7 @@ cdio_guess_cd_type(const CdIo_t *cdio, int start_session, track_t i_track,
       if ( _cdio_is_UDF() ) {
 	/* Detect UDF version.
 	   Test if we have a valid version of UDF the xbox can read natively */
-	if ( _cdio_read_block(cdio, 35, start_session, 5, i_track) < 0)
+	if ( _cdio_read_block(p_cdio, 35, start_session, 5, i_track) < 0)
 	  return ret;
 	  
 	  iso_analysis->UDFVerMinor=(unsigned int)buffer[5][240];
@@ -298,7 +289,7 @@ cdio_guess_cd_type(const CdIo_t *cdio, int start_session, track_t i_track,
 #if 0
 	  /*  We are using ISO/UDF cd's as iso,
 	      no need to get UDF disc label */
-	  if (_cdio_read_block(cdio, 32, start_session, 5, i_track) < 0)
+	  if (_cdio_read_block(p_cdio, 32, start_session, 5, i_track) < 0)
 	    return ret;
 	  stnrcpy(iso_analysis->iso_label, buffer[5]+25, 33);
 	  iso_analysis->iso_label[32] = '\0';
@@ -311,7 +302,7 @@ cdio_guess_cd_type(const CdIo_t *cdio, int start_session, track_t i_track,
 	ret |= CDIO_FS_ANAL_ROCKRIDGE;
 #endif
 
-      if (_cdio_read_block(cdio, BOOT_SECTOR, start_session, 3, i_track) < 0)
+      if (_cdio_read_block(p_cdio, BOOT_SECTOR, start_session, 3, i_track) < 0)
 	return ret;
       
       if (_cdio_is_joliet()) {
@@ -324,7 +315,7 @@ cdio_guess_cd_type(const CdIo_t *cdio, int start_session, track_t i_track,
       if ( _cdio_is_it(INDEX_XA) && _cdio_is_it(INDEX_ISOFS) 
 	  && !(sector0_read_ok && _cdio_is_it(INDEX_PHOTO_CD)) ) {
 
-        if ( _cdio_read_block(cdio, VCD_INFO_SECTOR, start_session, 4, 
+        if ( _cdio_read_block(p_cdio, VCD_INFO_SECTOR, start_session, 4, 
 			     i_track) < 0 )
 	  return ret;
 	
@@ -339,7 +330,7 @@ cdio_guess_cd_type(const CdIo_t *cdio, int start_session, track_t i_track,
     else if (sector0_read_ok && _cdio_is_it(INDEX_EXT2)) ret |= CDIO_FS_EXT2;
     else if (_cdio_is_3do())          ret |= CDIO_FS_3DO;
     else {
-      if ( _cdio_read_block(cdio, UFS_SUPERBLOCK_SECTOR, start_session, 2, 
+      if ( _cdio_read_block(p_cdio, UFS_SUPERBLOCK_SECTOR, start_session, 2, 
 			    i_track) < 0 )
 	return ret;
       

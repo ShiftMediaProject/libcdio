@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.112 2005/02/05 14:42:28 rocky Exp $
+    $Id: cd-info.c,v 1.113 2005/02/17 11:54:28 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -536,8 +536,7 @@ print_vcd_info(driver_id_t driver) {
 
 static void
 print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[], 
-		       cdio_fs_anal_t fs, 
-		       bool b_mode2)
+		       cdio_fs_anal_t fs)
 {
   CdioList_t *entlist;
   CdioList_t *dirlist =  _cdio_list_new ();
@@ -548,7 +547,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
     ? 0
     : cdio_get_joliet_level(p_cdio);
 
-  entlist = iso9660_fs_readdir (p_cdio, pathname, b_mode2);
+  entlist = iso9660_fs_readdir (p_cdio, pathname, false);
     
   printf ("%s:\n", pathname);
 
@@ -611,7 +610,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
     {
       char *_fullname = _cdio_list_node_data (entnode);
 
-      print_iso9660_recurse (p_cdio, _fullname, fs, b_mode2);
+      print_iso9660_recurse (p_cdio, _fullname, fs);
     }
 
   _cdio_list_free (dirlist, true);
@@ -621,7 +620,6 @@ static void
 print_iso9660_fs (CdIo_t *p_cdio, cdio_fs_anal_t fs, 
 		  track_format_t track_format)
 {
-  bool b_mode2 = false;
   iso_extension_mask_t iso_extension_mask = ISO_EXTENSION_ALL;
 
   if (fs & CDIO_FS_ANAL_XA) track_format = TRACK_FORMAT_XA;
@@ -633,13 +631,8 @@ print_iso9660_fs (CdIo_t *p_cdio, cdio_fs_anal_t fs,
   if ( !iso9660_fs_read_superblock(p_cdio, iso_extension_mask) ) 
     return;
   
-  b_mode2 = ( TRACK_FORMAT_CDI == track_format 
-	       || TRACK_FORMAT_XA == track_format );
-  
-  {
-    printf ("ISO9660 filesystem\n");
-    print_iso9660_recurse (p_cdio, "/", fs, b_mode2);
-  }
+  printf ("ISO9660 filesystem\n");
+  print_iso9660_recurse (p_cdio, "/", fs);
 }
 
 #define print_vd_info(title, fn)		\

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.16 2005/02/17 07:03:37 rocky Exp $
+    $Id: iso9660_fs.c,v 1.17 2005/02/17 11:54:28 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,14 +52,12 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.16 2005/02/17 07:03:37 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.17 2005/02/17 11:54:28 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
   CdioDataSource_t *stream; /* Stream pointer */
-  bool_3way_t b_xa;         /* true if has XA attributes. If true
-			       b_mode2 should be set true as well.
-			     */
+  bool_3way_t b_xa;         /* true if has XA attributes. */
   bool_3way_t b_mode2;      /* true if has mode 2, false for mode 1. */
   uint8_t  i_joliet_level;  /* 0 = no Joliet extensions.
 			       1-3: Joliet level. */
@@ -792,8 +790,8 @@ iso9660_iso_seek_read (const iso9660_t *p_iso, void *ptr, lsn_t start,
 
 
 static iso9660_stat_t *
-_iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool b_mode2, 
-			 bool_3way_t b_xa, uint8_t i_joliet_level)
+_iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa, 
+			 uint8_t i_joliet_level)
 {
   uint8_t dir_len= iso9660_get_dir_len(p_iso9660_dir);
   unsigned int filename_len;
@@ -850,7 +848,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool b_mode2,
   }
   
 
-  if (b_mode2) {
+  {
     int su_length = iso9660_get_dir_len(p_iso9660_dir) 
       - sizeof (iso9660_dir_t);
     su_length -= filename_len;
@@ -930,7 +928,6 @@ _fs_stat_root (CdIo_t *p_cdio)
   {
     iso_extension_mask_t iso_extension_mask = ISO_EXTENSION_ALL;
     generic_img_private_t *p_env = (generic_img_private_t *) p_cdio->env;
-    bool b_mode2;
     iso9660_dir_t *p_iso9660_dir;
     iso9660_stat_t *p_stat;
     bool_3way_t b_xa;
@@ -944,8 +941,6 @@ _fs_stat_root (CdIo_t *p_cdio)
       return NULL;
     }
 
-    b_mode2 = cdio_get_track_green(p_cdio, 1);
-    
     switch(cdio_get_discmode(p_cdio)) {
     case CDIO_DISC_MODE_CD_XA: 
       b_xa = yep;
@@ -965,7 +960,7 @@ _fs_stat_root (CdIo_t *p_cdio)
     p_iso9660_dir = &(p_env->pvd.root_directory_record) ;
 #endif
     
-    p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, b_xa, 
+    p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_xa, 
 				      p_env->i_joliet_level);
     return p_stat;
   }
@@ -986,15 +981,14 @@ _fs_stat_iso_root (iso9660_t *p_iso)
   p_iso9660_dir = &(p_iso->pvd.root_directory_record) ;
 #endif
   
-  p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_mode2, p_iso->b_xa,
+  p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_xa,
 				    p_iso->i_joliet_level);
   return p_stat;
 }
 
 static iso9660_stat_t *
 _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root, 
-		   char **splitpath, bool b_mode2, bool b_xa, 
-		   bool translate)
+		   char **splitpath, bool b_xa, bool translate)
 {
   unsigned offset = 0;
   uint8_t *_dirbuf = NULL;
@@ -1023,15 +1017,9 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
   
   _dirbuf = calloc(1, _root->secsize * ISO_BLOCKSIZE);
 
-  if (b_mode2) {
-    if (cdio_read_mode2_sectors (p_cdio, _dirbuf, _root->lsn, false, 
-				 _root->secsize))
+  if (cdio_read_data_sectors (p_cdio, _dirbuf, _root->lsn, false, 
+			      _root->secsize))
       return NULL;
-  } else {
-    if (cdio_read_mode1_sectors (p_cdio, _dirbuf, _root->lsn, false,
-				 _root->secsize))
-      return NULL;
-  }
   
   while (offset < (_root->secsize * ISO_BLOCKSIZE))
     {
@@ -1045,7 +1033,7 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 	  continue;
 	}
       
-      p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, dunno,
+      p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, dunno, 
 					p_env->i_joliet_level);
 
       if (translate) {
@@ -1067,8 +1055,7 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
       
       if (!cmp) {
 	iso9660_stat_t *ret_stat 
-	  = _fs_stat_traverse (p_cdio, p_stat, &splitpath[1], b_mode2, b_xa,
-			       translate);
+	  = _fs_stat_traverse (p_cdio, p_stat, &splitpath[1], b_xa, translate);
 	free(p_stat);
 	free (_dirbuf);
 	return ret_stat;
@@ -1132,8 +1119,8 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 	  continue;
 	}
       
-      p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_mode2, 
-					p_iso->b_xa, p_iso->i_joliet_level);
+      p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_xa, 
+					p_iso->i_joliet_level);
 
       if (translate) {
 	char *trans_fname = malloc(strlen(p_stat->filename)+1);
@@ -1181,14 +1168,11 @@ iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[])
   iso9660_stat_t *p_root;
   char **p_psz_splitpath;
   iso9660_stat_t *p_stat;
-  /* A bit of a hack, we'll assume track 1 contains ISO_PVD_SECTOR.*/
-  bool b_mode2;
   bool_3way_t b_xa;
 
   if (!p_cdio)   return NULL;
   if (!psz_path) return NULL;
 
-  b_mode2 = cdio_get_track_green(p_cdio, 1);
   p_root = _fs_stat_root (p_cdio);
 
   if (!p_root)   return NULL;
@@ -1205,8 +1189,7 @@ iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[])
   }
   
   p_psz_splitpath = _cdio_strsplit (psz_path, '/');
-  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath, b_mode2, 
-			      b_xa, false);
+  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath, b_xa, false);
   free(p_root);
   _cdio_strfreev (p_psz_splitpath);
 
@@ -1246,8 +1229,7 @@ iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[],
   }
 
   p_psz_splitpath = _cdio_strsplit (psz_path, '/');
-  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath, b_mode2, 
-			      b_xa, true);
+  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath, b_xa, true);
   free(p_root);
   _cdio_strfreev (p_psz_splitpath);
 
@@ -1355,7 +1337,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
 	    continue;
 	  }
 
-	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, b_mode2, dunno,
+	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, dunno,
 						 p_env->i_joliet_level);
 	_cdio_list_append (retval, p_iso9660_stat);
 
@@ -1419,9 +1401,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
 	    continue;
 	  }
 
-	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, 
-						 p_iso->b_mode2, 
-						 p_iso->b_xa,
+	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, p_iso->b_xa,
 						 p_iso->i_joliet_level);
 
 	if (p_iso9660_stat) 
