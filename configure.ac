@@ -19,7 +19,7 @@ define(RELEASE_NUM, 69)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.76 2004/05/04 12:06:40 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.77 2004/05/07 11:00:27 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -100,7 +100,9 @@ fi
 AC_SUBST(DIFF)
 AC_SUBST(DIFF_OPTS)
 
-AM_PATH_LIBPOPT(, [enable_cd_info=no])
+AM_PATH_LIBPOPT(, 
+  [AC_MSG_WARN(Diagnostic programs cd-drive, cd-info, cd-read, iso-info, and is-read will not get built)
+  		  enable_cd_info=no])
 
 dnl headers
 
