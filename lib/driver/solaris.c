@@ -1,5 +1,5 @@
 /*
-    $Id: solaris.c,v 1.8 2005/03/15 04:16:17 rocky Exp $
+    $Id: solaris.c,v 1.9 2005/03/19 18:50:46 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: solaris.c,v 1.8 2005/03/15 04:16:17 rocky Exp $";
+static const char _rcsid[] = "$Id: solaris.c,v 1.9 2005/03/19 18:50:46 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -177,12 +177,37 @@ audio_play_track_index_solaris (void *p_user_data,
 */
 static driver_return_code_t
 audio_read_subchannel_solaris (void *p_user_data, 
-                             cdio_subchannel_t *p_subchannel)
+			       cdio_subchannel_t *p_subchannel)
 {
-
   const _img_private_t *p_env = p_user_data;
+  struct cdrom_subchnl subchannel;
+  int   i_rc;
   p_subchannel->format = CDIO_CDROM_MSF;
-  return ioctl(p_env->gen.fd, CDROMSUBCHNL, p_subchannel);
+  i_rc = ioctl(p_env->gen.fd, CDROMSUBCHNL, &subchannel);
+  if (0 == i_rc) {
+    p_subchannel->control      = subchannel.cdsc_ctrl;
+    p_subchannel->track        = subchannel.cdsc_trk;
+    p_subchannel->index        = subchannel.cdsc_ind;
+
+    p_subchannel->abs_addr.m   = 
+      cdio_to_bcd8(subchannel.cdsc_absaddr.msf.minute);
+    p_subchannel->abs_addr.s   = 
+      cdio_to_bcd8(subchannel.cdsc_absaddr.msf.second);
+    p_subchannel->abs_addr.f   = 
+      cdio_to_bcd8(subchannel.cdsc_absaddr.msf.frame);
+    p_subchannel->rel_addr.m   = 
+      cdio_to_bcd8(subchannel.cdsc_reladdr.msf.minute);
+    p_subchannel->rel_addr.s   = 
+      cdio_to_bcd8(subchannel.cdsc_reladdr.msf.second);
+    p_subchannel->rel_addr.f   = 
+      cdio_to_bcd8(subchannel.cdsc_reladdr.msf.frame);
+    p_subchannel->audio_status = subchannel.cdsc_audiostatus;
+
+    return DRIVER_OP_SUCCESS;
+  } else {
+    cdio_info ("ioctl CDROMSUBCHNL failed: %s\n", strerror(errno));  
+    return DRIVER_OP_ERROR;
+  }
 }
 
 /*!
