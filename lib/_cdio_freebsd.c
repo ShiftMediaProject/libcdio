@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.4 2003/03/30 00:38:11 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.5 2003/03/30 00:40:29 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.4 2003/03/30 00:38:11 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.5 2003/03/30 00:40:29 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -521,7 +521,7 @@ cdio_open_freebsd (const char *source_name)
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
   _data->access_mode    = _AM_READ_CD;
-  _data->init           = false;
+  _data->gen.init       = false;
   _data->gen.fd         = -1;
 
   _cdio_set_arg(_data, "source", (NULL == source_name) 
