@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.41 2004/11/01 10:39:30 rocky Exp $
+    $Id: win32_ioctl.c,v 1.42 2004/11/07 06:22:49 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.41 2004/11/01 10:39:30 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.42 2004/11/07 06:22:49 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -542,23 +542,17 @@ init_win32ioctl (_img_private_t *env)
   return false;
 }
 
-/*! 
+/*!  
   Read and cache the CD's Track Table of Contents and track info.
-  Return true if successful or false if an error.
+  via a SCSI MMC READ_TOC (FULTOC).  Return true if successful or
+  false if an error.
 */
-bool
-read_toc_win32ioctl (_img_private_t *p_env) 
+static bool
+read_toc_win32mmc (_img_private_t *p_env) 
 {
   scsi_mmc_cdb_t  cdb = {{0, }};
   CDROM_TOC_FULL  cdrom_toc_full;
-  CDROM_TOC       cdrom_toc;
-  DWORD           dwBytesReturned;
-  int             i_status, i, i_track_format, test;
-
-  if ( ! p_env )
-    return false;
-
-  /* Read full TOC, (not supported on DVD media) */
+  int             i_status, i, i_track_format, i_seen_flag;
 
   /* Operation code */
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
@@ -578,63 +572,85 @@ read_toc_win32ioctl (_img_private_t *p_env)
 				&cdb, SCSI_MMC_DATA_READ, 
 				sizeof(cdrom_toc_full), &cdrom_toc_full);
 
-  if (i_status == 0) {
-    cdio_info ("READTOC failed\n");  
+  if ( 0 != i_status ) {
+    cdio_debug ("SCSI MMC READ_TOC failed\n");  
     return false;
-  } else {
-    test=0;
-    for( i = 0 ; i <= CDIO_CD_MAX_TRACKS+3; i++ ) {
-
-      if (cdrom_toc_full.TrackData[i].POINT == 0xA0) { /* First track number */
-        p_env->gen.i_first_track = cdrom_toc_full.TrackData[i].PMIN;
-        i_track_format = cdrom_toc_full.TrackData[i].PSEC;
-        test|=0x01;
-      }
-
-      if (cdrom_toc_full.TrackData[i].POINT == 0xA1) { /* Last track number */
-        p_env->gen.i_tracks  = cdrom_toc_full.TrackData[i].PMIN - p_env->gen.i_first_track + 1;
-        test|=0x02;
-      }
-
-      if (cdrom_toc_full.TrackData[i].POINT == 0xA2) { /* Start position of the lead out */
-        p_env->tocent[ p_env->gen.i_tracks ].start_lsn = cdio_msf3_to_lba(
-					        cdrom_toc_full.TrackData[i].PMIN,
-					        cdrom_toc_full.TrackData[i].PSEC,
-					        cdrom_toc_full.TrackData[i].PFRAME );
-        p_env->tocent[ p_env->gen.i_tracks ].Control   = cdrom_toc_full.TrackData[i].Control;
-        p_env->tocent[ p_env->gen.i_tracks ].Format    = i_track_format;
-        test|=0x04;
-      }
-
-      if (cdrom_toc_full.TrackData[i].POINT > 0 && cdrom_toc_full.TrackData[i].POINT <= p_env->gen.i_tracks) {
-        p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].start_lsn = cdio_msf3_to_lba(
-					        cdrom_toc_full.TrackData[i].PMIN,
-					        cdrom_toc_full.TrackData[i].PSEC,
-					        cdrom_toc_full.TrackData[i].PFRAME );
-        p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].Control   = cdrom_toc_full.TrackData[i].Control;
-        p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].Format    = i_track_format;
-
-        cdio_debug("p_sectors: %i, %lu", i, 
-	          (unsigned long int) (p_env->tocent[i].start_lsn));
-
-        if (cdrom_toc_full.TrackData[i].POINT == p_env->gen.i_tracks)
-          test|=0x08;
-      }
-
-      if (test == 0x0F)
-        break;
-
+  } 
+    
+  i_seen_flag=0;
+  for( i = 0 ; i <= CDIO_CD_MAX_TRACKS+3; i++ ) {
+    
+    if ( 0xA0 == cdrom_toc_full.TrackData[i].POINT ) { 
+      /* First track number */
+      p_env->gen.i_first_track = cdrom_toc_full.TrackData[i].PMIN;
+      i_track_format = cdrom_toc_full.TrackData[i].PSEC;
+      i_seen_flag|=0x01;
     }
-    if (test == 0x0F)
-    {
-      p_env->gen.toc_init = true; 
-      return true;
+    
+    if ( 0xA1 == cdrom_toc_full.TrackData[i].POINT ) { 
+      /* Last track number */
+      p_env->gen.i_tracks = 
+	cdrom_toc_full.TrackData[i].PMIN - p_env->gen.i_first_track + 1;
+      i_seen_flag|=0x02;
     }
+    
+    if ( 0xA2 == cdrom_toc_full.TrackData[i].POINT ) { 
+      /* Start position of the lead out */
+      p_env->tocent[ p_env->gen.i_tracks ].start_lsn = 
+	cdio_msf3_to_lba(
+			 cdrom_toc_full.TrackData[i].PMIN,
+			 cdrom_toc_full.TrackData[i].PSEC,
+			 cdrom_toc_full.TrackData[i].PFRAME );
+      p_env->tocent[ p_env->gen.i_tracks ].Control 
+	= cdrom_toc_full.TrackData[i].Control;
+      p_env->tocent[ p_env->gen.i_tracks ].Format  = i_track_format;
+      i_seen_flag|=0x04;
+    }
+    
+    if (cdrom_toc_full.TrackData[i].POINT > 0 
+	&& cdrom_toc_full.TrackData[i].POINT <= p_env->gen.i_tracks) {
+      p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].start_lsn = 
+	cdio_msf3_to_lba(
+			 cdrom_toc_full.TrackData[i].PMIN,
+			 cdrom_toc_full.TrackData[i].PSEC,
+			 cdrom_toc_full.TrackData[i].PFRAME );
+      p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].Control = 
+	cdrom_toc_full.TrackData[i].Control;
+      p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].Format  = 
+	i_track_format;
+      
+      cdio_debug("p_sectors: %i, %lu", i, 
+		 (unsigned long int) (p_env->tocent[i].start_lsn));
+      
+      if (cdrom_toc_full.TrackData[i].POINT == p_env->gen.i_tracks)
+	i_seen_flag|=0x08;
+    }
+    
+    if ( 0x0F == i_seen_flag ) break;
   }
+  if ( 0x0F == i_seen_flag ) {
+    p_env->gen.toc_init = true; 
+    return true;
+  }
+  return false;
+}
 
-  /* No full TOC available */
-  /* read the normal TOC as fallback */
+/*! 
+  Read and cache the CD's Track Table of Contents and track info.
+  Return true if successful or false if an error.
+*/
+bool
+read_toc_win32ioctl (_img_private_t *p_env) 
+{
+  CDROM_TOC    cdrom_toc;
+  DWORD        dwBytesReturned;
+  unsigned int i;
 
+  if ( ! p_env ) return false;
+
+  if ( read_toc_win32mmc(p_env) ) return true;
+
+  /* No SCSI MMC READ_TOC (FULTOC) read via DeviceIoControl as fallback */
   if( DeviceIoControl( p_env->h_device_handle,
 		       IOCTL_CDROM_READ_TOC,
 		       NULL, 0, &cdrom_toc, sizeof(CDROM_TOC),
@@ -653,12 +669,11 @@ read_toc_win32ioctl (_img_private_t *p_env)
   p_env->gen.i_first_track = cdrom_toc.FirstTrack;
   p_env->gen.i_tracks  = cdrom_toc.LastTrack - cdrom_toc.FirstTrack + 1;
   
-  
   for( i = 0 ; i <= p_env->gen.i_tracks ; i++ ) {
-    p_env->tocent[ i ].start_lsn = cdio_msf3_to_lba(
-					     cdrom_toc.TrackData[i].Address[1],
-					     cdrom_toc.TrackData[i].Address[2],
-					     cdrom_toc.TrackData[i].Address[3] );
+    p_env->tocent[ i ].start_lsn = 
+      cdio_msf3_to_lba( cdrom_toc.TrackData[i].Address[1],
+			cdrom_toc.TrackData[i].Address[2],
+			cdrom_toc.TrackData[i].Address[3] );
     p_env->tocent[ i ].Control   = cdrom_toc.TrackData[i].Control;
     p_env->tocent[ i ].Format    = cdrom_toc.TrackData[i].Format;
     cdio_debug("p_sectors: %i, %lu", i, 
@@ -666,7 +681,6 @@ read_toc_win32ioctl (_img_private_t *p_env)
   }
   p_env->gen.toc_init = true;
   return true;
-
 }
 
 /*!
