@@ -1,5 +1,5 @@
 /*
-    $Id: ioctl.c,v 1.3 2004/03/06 18:05:37 rocky Exp $
+    $Id: ioctl.c,v 1.4 2004/03/10 10:57:44 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: ioctl.c,v 1.3 2004/03/06 18:05:37 rocky Exp $";
+static const char _rcsid[] = "$Id: ioctl.c,v 1.4 2004/03/10 10:57:44 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -218,7 +218,8 @@ win32ioctl_read_audio_sectors (_img_private_t *env, void *data, lsn_t lsn,
 		       sizeof(RAW_READ_INFO), data,
 		       CDIO_CD_FRAMESIZE_RAW * nblocks,
 		       &dwBytesReturned, NULL ) == 0 ) {
-    cdio_info("Error reading audio-mode %lu (%ld)\n", lsn, GetLastError());
+    cdio_info("Error reading audio-mode %lu (%ld)\n", 
+	      (long unsigned int) lsn, GetLastError());
     return 1;
   }
   return 0;
@@ -274,7 +275,8 @@ win32ioctl_read_raw_sector (_img_private_t *env, void *buf, lsn_t lsn)
 			  NULL);
 
   if(! success) {
-    cdio_info("Error reading %lu (%ld)\n", lsn, GetLastError());
+    cdio_info("Error reading %lu (%ld)\n", (long unsigned) lsn, 
+	      GetLastError());
     return 1;
   }
 

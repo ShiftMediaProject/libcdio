@@ -1,7 +1,7 @@
 /*
-    $Id: cdio.c,v 1.40 2004/03/06 18:30:44 rocky Exp $
+    $Id: cdio.c,v 1.41 2004/03/10 10:57:44 rocky Exp $
 
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.40 2004/03/06 18:30:44 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.41 2004/03/10 10:57:44 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -668,6 +668,10 @@ cdio_read_audio_sectors (const CdIo *cdio, void *buf, lsn_t lsn,
     return cdio->op.read_audio_sectors (cdio->env, buf, lsn, nblocks);
   return -1;
 }
+
+#ifndef SEEK_SET
+#define SEEK_SET 0
+#endif 
 
 /*!
    Reads a single mode1 form1 or form2  sector from cd device 
