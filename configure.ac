@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.55 2003/10/28 16:23:49 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.56 2003/12/03 00:52:17 rocky Exp $])dnl
 AC_INIT(libcdio, 0.65cvs)
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -235,7 +235,6 @@ int has_timeout=sizeof(test.timeout);],
 	  cd_drivers="${cd_drivers}, Solaris"
 	;;
      cygwin*)
- 	LIBS="$LIBS -mcygwin"
 	AC_DEFINE([CYGWIN], [1], 
                   [Define 1 if you are compiling using cygwin])
      	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
