@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.h,v 1.1 2004/02/04 10:23:01 rocky Exp $
+    $Id: _cdio_win32.h,v 1.2 2004/02/04 11:08:10 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -67,4 +67,11 @@ const char *win32ioctl_is_cdrom(const char drive_letter);
  */
 bool win32ioctl_init_win32 (_img_private_t *env);
 
+/*! 
+  Read and cache the CD's Track Table of Contents and track info.
+  Return true if successful or false if an error.
+*/
+bool win32ioctl_read_toc (_img_private_t *env);
+
+char *win32ioctl_get_mcn (_img_private_t *env);
 

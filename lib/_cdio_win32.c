@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.22 2004/02/04 10:23:01 rocky Exp $
+    $Id: _cdio_win32.c,v 1.23 2004/02/04 11:08:10 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,16 +26,13 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.22 2004/02/04 10:23:01 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.23 2004/02/04 11:08:10 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
 #include "cdio_assert.h"
 #include "scsi_mmc.h"
-
-/* LBA = msf.frame + 75 * ( msf.second - 2 + 60 * msf.minute ) */
-#define MSF_TO_LBA2(min, sec, frame) ((int)frame + 75 * (sec -2 + 60 * min))
 
 #include <string.h>
 
@@ -57,80 +54,6 @@ static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.22 2004/02/04 10:23:01 rock
 #include "wnaspi32.h"
 
 #define WIN_NT               ( GetVersion() < 0x80000000 )
-
-/* Win32 DeviceIoControl specifics */
-/***** FIXME: #include ntddcdrm.h from Wine, but probably need to 
-   modify it a little.
-*/
-
-#ifndef IOCTL_CDROM_BASE
-#    define IOCTL_CDROM_BASE FILE_DEVICE_CD_ROM
-#endif
-#ifndef IOCTL_CDROM_READ_TOC
-#    define IOCTL_CDROM_READ_TOC CTL_CODE(IOCTL_CDROM_BASE, 0x0000, \
-                                          METHOD_BUFFERED, FILE_READ_ACCESS)
-#endif
-#ifndef IOCTL_CDROM_RAW_READ
-#define IOCTL_CDROM_RAW_READ CTL_CODE(IOCTL_CDROM_BASE, 0x000F, \
-                                      METHOD_OUT_DIRECT, FILE_READ_ACCESS)
-#endif
-
-#ifndef IOCTL_CDROM_READ_Q_CHANNEL
-#define IOCTL_CDROM_READ_Q_CHANNEL      CTL_CODE(IOCTL_CDROM_BASE, 0x000B, METHOD_BUFFERED, FILE_READ_ACCESS)
-#endif
-
-typedef struct _TRACK_DATA {
-    UCHAR Format;
-    UCHAR Control : 4;
-    UCHAR Adr : 4;
-    UCHAR TrackNumber;
-    UCHAR Reserved1;
-    UCHAR Address[4];
-} TRACK_DATA, *PTRACK_DATA;
-
-typedef struct _CDROM_TOC {
-    UCHAR Length[2];
-    UCHAR FirstTrack;
-    UCHAR LastTrack;
-    TRACK_DATA TrackData[CDIO_CD_MAX_TRACKS+1];
-} CDROM_TOC, *PCDROM_TOC;
-
-#define IOCTL_CDROM_SUB_Q_CHANNEL    0x00
-#define IOCTL_CDROM_CURRENT_POSITION 0x01
-#define IOCTL_CDROM_MEDIA_CATALOG    0x02
-#define IOCTL_CDROM_TRACK_ISRC       0x03
-
-typedef struct _CDROM_SUB_Q_DATA_FORMAT {
-    UCHAR               Format;
-    UCHAR               Track;
-} CDROM_SUB_Q_DATA_FORMAT, *PCDROM_SUB_Q_DATA_FORMAT;
-
-typedef struct _SUB_Q_HEADER {
-  UCHAR Reserved;
-  UCHAR AudioStatus;
-  UCHAR DataLength[2];
-} SUB_Q_HEADER, *PSUB_Q_HEADER;
-
-typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
-  SUB_Q_HEADER Header;
-  UCHAR FormatCode;
-  UCHAR Reserved[3];
-  UCHAR Reserved1 : 7;
-  UCHAR Mcval :1;
-  UCHAR MediaCatalog[15];
-} SUB_Q_MEDIA_CATALOG_NUMBER, *PSUB_Q_MEDIA_CATALOG_NUMBER;
-
-typedef enum _TRACK_MODE_TYPE {
-    YellowMode2,
-    XAForm2,
-    CDDA
-} TRACK_MODE_TYPE, *PTRACK_MODE_TYPE;
-
-typedef struct __RAW_READ_INFO {
-    LARGE_INTEGER DiskOffset;
-    ULONG SectorCount;
-    TRACK_MODE_TYPE TrackMode;
-} RAW_READ_INFO, *PRAW_READ_INFO;
 
 /* General ioctl() CD-ROM command function */
 static bool 
@@ -405,109 +328,80 @@ _cdio_mmc_read_sectors (void *user_data, void *data, lsn_t lsn,
 {
   _img_private_t *_obj = user_data;
   unsigned char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-
-  if( _obj->hASPI ) {
-    HANDLE hEvent;
-    struct SRB_ExecSCSICmd ssc;
-
+  HANDLE hEvent;
+  struct SRB_ExecSCSICmd ssc;
+  
 #if 1
-    int sector_type = 0; /*all types */
-    int sync        = 0;
-    int header_code = 2;
-    int user_data   = 1;
-    int edc_ecc     = 0;
-    int error_field = 0;
+  sector_type = 0; /*all types */
+  int sync        = 0;
+  int header_code = 2;
+  int i_user_data   = 1;
+  int edc_ecc     = 0;
+  int error_field = 0;
 #endif
-	
-    
-    /* Create the transfer completion event */
-    hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
-    if( hEvent == NULL ) {
-      return 1;
-    }
-
-    /* Data selection */
-
-    memset( &ssc, 0, sizeof( ssc ) );
-    
-    ssc.SRB_Cmd         = SC_EXEC_SCSI_CMD;
-    ssc.SRB_Flags       = SRB_DIR_IN | SRB_EVENT_NOTIFY;
-    ssc.SRB_HaId        = LOBYTE( _obj->i_sid );
-    ssc.SRB_Target      = HIBYTE( _obj->i_sid );
-    ssc.SRB_SenseLen    = SENSE_LEN;
-    
-    ssc.SRB_PostProc = (LPVOID) hEvent;
-    ssc.SRB_CDBLen      = 12;
-    
-    /* Operation code */
-    ssc.CDBByte[ 0 ] = CDIO_MMC_GPCMD_READ_CD;
-
-    CDIO_MMC_SET_READ_TYPE(ssc.CDBByte, sector_type);
-    CDIO_MMC_SET_READ_LBA(ssc.CDBByte, lsn);
-    CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, nblocks);
-
+  
+  
+  /* Create the transfer completion event */
+  hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+  if( hEvent == NULL ) {
+    return 1;
+  }
+  
+  /* Data selection */
+  
+  memset( &ssc, 0, sizeof( ssc ) );
+  
+  ssc.SRB_Cmd         = SC_EXEC_SCSI_CMD;
+  ssc.SRB_Flags       = SRB_DIR_IN | SRB_EVENT_NOTIFY;
+  ssc.SRB_HaId        = LOBYTE( _obj->i_sid );
+  ssc.SRB_Target      = HIBYTE( _obj->i_sid );
+  ssc.SRB_SenseLen    = SENSE_LEN;
+  
+  ssc.SRB_PostProc = (LPVOID) hEvent;
+  ssc.SRB_CDBLen      = 12;
+  
+  /* Operation code */
+  ssc.CDBByte[ 0 ] = CDIO_MMC_GPCMD_READ_CD;
+  
+  CDIO_MMC_SET_READ_TYPE(ssc.CDBByte, sector_type);
+  CDIO_MMC_SET_READ_LBA(ssc.CDBByte, lsn);
+  CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, nblocks);
+  
 #if 1
-    ssc.CDBByte[ 9 ] = (sync << 7) |
-      (header_code << 5) |
-      (user_data << 4) |
-      (edc_ecc << 3) |
-      (error_field << 1);
-    /* ssc.CDBByte[ 9 ] = READ_CD_USERDATA_MODE2; */
+  ssc.CDBByte[ 9 ] = (sync << 7) |
+    (header_code << 5) |
+    (i_user_data << 4) |
+    (edc_ecc << 3) |
+    (error_field << 1);
+  /* ssc.CDBByte[ 9 ] = READ_CD_USERDATA_MODE2; */
 #else 
-    CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(ssc.CDBByte,
-					     CDIO_MMC_MCSB_ALL_HEADERS);
+  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(ssc.CDBByte,
+					   CDIO_MMC_MCSB_ALL_HEADERS);
 #endif
-    
-    /* Result buffer */
-    ssc.SRB_BufPointer  = buf;
-    ssc.SRB_BufLen = CDIO_CD_FRAMESIZE_RAW;
-    
-    /* Initiate transfer */
-    ResetEvent( hEvent );
-    _obj->lpSendCommand( (void*) &ssc );
-    
-    /* If the command has still not been processed, wait until it's
-     * finished */
-    if( ssc.SRB_Status == SS_PENDING ) {
-      WaitForSingleObject( hEvent, INFINITE );
-    }
-    CloseHandle( hEvent );
-
-    /* check that the transfer went as planned */
-    if( ssc.SRB_Status != SS_COMP ) {
-      return 1;
-    }
-
-  } else {
-    DWORD dwBytesReturned;
-    RAW_READ_INFO cdrom_raw;
-    
-    /* Initialize CDROM_RAW_READ structure */
-    cdrom_raw.DiskOffset.QuadPart = CDIO_CD_FRAMESIZE * lsn;
-    cdrom_raw.SectorCount = 1;
-    cdrom_raw.TrackMode = XAForm2;
-    
-    if( DeviceIoControl( _obj->h_device_handle,
-			 IOCTL_CDROM_RAW_READ, &cdrom_raw,
-			 sizeof(RAW_READ_INFO), buf,
-			 sizeof(buf), &dwBytesReturned, NULL )
-	== 0 ) {
-      /* Retry in Yellowmode2 */
-      cdrom_raw.TrackMode = YellowMode2;
-      if( DeviceIoControl( _obj->h_device_handle,
-			 IOCTL_CDROM_RAW_READ, &cdrom_raw,
-			 sizeof(RAW_READ_INFO), buf,
-			 sizeof(buf), &dwBytesReturned, NULL )
-	  == 0 ) {
-	cdio_info("Error reading %lu (%ld)\n", lsn, GetLastError());
-	return 1;
-      }
-    }
-   }
-
+  
+  /* Result buffer */
+  ssc.SRB_BufPointer  = buf;
+  ssc.SRB_BufLen = CDIO_CD_FRAMESIZE_RAW;
+  
+  /* Initiate transfer */
+  ResetEvent( hEvent );
+  _obj->lpSendCommand( (void*) &ssc );
+  
+  /* If the command has still not been processed, wait until it's
+   * finished */
+  if( ssc.SRB_Status == SS_PENDING ) {
+    WaitForSingleObject( hEvent, INFINITE );
+  }
+  CloseHandle( hEvent );
+  
+  /* check that the transfer went as planned */
+  if( ssc.SRB_Status != SS_COMP ) {
+    return 1;
+  }
+  
   /* FIXME! remove the 8 (SUBHEADER size) below... */
   memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
-
+  
   return 0;
 }
 
@@ -750,32 +644,7 @@ _cdio_read_toc (_img_private_t *_obj)
     return true;
     
   } else {
-    DWORD dwBytesReturned;
-    CDROM_TOC cdrom_toc;
-    int i;
-    
-    if( DeviceIoControl( _obj->h_device_handle,
-			 IOCTL_CDROM_READ_TOC,
-			 NULL, 0, &cdrom_toc, sizeof(CDROM_TOC),
-			 &dwBytesReturned, NULL ) == 0 ) {
-      cdio_warn( "could not read TOCHDR: %ld" , (long int) GetLastError());
-      return false;
-    }
-    
-    _obj->first_track_num = cdrom_toc.FirstTrack;
-    _obj->total_tracks    = cdrom_toc.LastTrack - cdrom_toc.FirstTrack + 1;
-    
-      
-    for( i = 0 ; i <= _obj->total_tracks ; i++ ) {
-	_obj->tocent[ i ].start_lsn = MSF_TO_LBA2(
-					 cdrom_toc.TrackData[i].Address[1],
-					 cdrom_toc.TrackData[i].Address[2],
-					 cdrom_toc.TrackData[i].Address[3] );
-	_obj->tocent[ i ].Control   = cdrom_toc.TrackData[i].Control;
-	_obj->tocent[ i ].Format    = cdrom_toc.TrackData[i].Format;
-	cdio_debug("p_sectors: %i, %lu", i, 
-		   (unsigned long int) (_obj->tocent[i].start_lsn));
-      }
+    return win32ioctl_read_toc(_obj);
   }
   _obj->gen.toc_init = true;
   return true;
@@ -863,26 +732,10 @@ _cdio_get_first_track_num(void *user_data)
 static char *
 _cdio_get_mcn (void *env) {
 
-  _img_private_t *_obj = env;
+  _img_private_t *_env = env;
 
-  if( ! _obj->hASPI ) {
-    DWORD dwBytesReturned;
-    SUB_Q_MEDIA_CATALOG_NUMBER mcn;
-    CDROM_SUB_Q_DATA_FORMAT q_data_format;
-    
-    memset( &mcn, 0, sizeof(mcn) );
-
-    q_data_format.Format = IOCTL_CDROM_MEDIA_CATALOG;
-    q_data_format.Track=1;
-    
-    if( DeviceIoControl( _obj->h_device_handle,
-			 IOCTL_CDROM_READ_Q_CHANNEL,
-			 &q_data_format, sizeof(q_data_format), 
-			 &mcn, sizeof(mcn),
-			 &dwBytesReturned, NULL ) == 0 ) {
-      cdio_warn( "could not read Q Channel at track 1");
-    } else if (mcn.Mcval)
-      return strdup(mcn.MediaCatalog);
+  if( ! _env->hASPI ) {
+    win32ioctl_get_mcn(_env);
   }
   return NULL;
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: win32ioctl.c,v 1.1 2004/02/04 10:23:01 rocky Exp $
+    $Id: win32ioctl.c,v 1.2 2004/02/04 11:08:10 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32ioctl.c,v 1.1 2004/02/04 10:23:01 rocky Exp $";
+static const char _rcsid[] = "$Id: win32ioctl.c,v 1.2 2004/02/04 11:08:10 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -41,6 +41,11 @@ static const char _rcsid[] = "$Id: win32ioctl.c,v 1.1 2004/02/04 10:23:01 rocky 
 #include <sys/stat.h>
 #include <sys/types.h>
 
+/* Win32 DeviceIoControl specifics */
+/***** FIXME: #include ntddcdrm.h from Wine, but probably need to 
+   modify it a little.
+*/
+
 #ifndef IOCTL_CDROM_BASE
 #    define IOCTL_CDROM_BASE FILE_DEVICE_CD_ROM
 #endif
@@ -48,6 +53,43 @@ static const char _rcsid[] = "$Id: win32ioctl.c,v 1.1 2004/02/04 10:23:01 rocky 
 #define IOCTL_CDROM_RAW_READ CTL_CODE(IOCTL_CDROM_BASE, 0x000F, \
                                       METHOD_OUT_DIRECT, FILE_READ_ACCESS)
 #endif
+
+#ifndef IOCTL_CDROM_BASE
+#    define IOCTL_CDROM_BASE FILE_DEVICE_CD_ROM
+#endif
+#ifndef IOCTL_CDROM_READ_TOC
+#    define IOCTL_CDROM_READ_TOC CTL_CODE(IOCTL_CDROM_BASE, 0x0000, \
+                                          METHOD_BUFFERED, FILE_READ_ACCESS)
+#endif
+#ifndef IOCTL_CDROM_RAW_READ
+#define IOCTL_CDROM_RAW_READ CTL_CODE(IOCTL_CDROM_BASE, 0x000F, \
+                                      METHOD_OUT_DIRECT, FILE_READ_ACCESS)
+#endif
+
+#ifndef IOCTL_CDROM_READ_Q_CHANNEL
+#define IOCTL_CDROM_READ_Q_CHANNEL      CTL_CODE(IOCTL_CDROM_BASE, 0x000B, METHOD_BUFFERED, FILE_READ_ACCESS)
+#endif
+
+typedef struct _TRACK_DATA {
+    UCHAR Format;
+    UCHAR Control : 4;
+    UCHAR Adr : 4;
+    UCHAR TrackNumber;
+    UCHAR Reserved1;
+    UCHAR Address[4];
+} TRACK_DATA, *PTRACK_DATA;
+
+typedef struct _CDROM_TOC {
+    UCHAR Length[2];
+    UCHAR FirstTrack;
+    UCHAR LastTrack;
+    TRACK_DATA TrackData[CDIO_CD_MAX_TRACKS+1];
+} CDROM_TOC, *PCDROM_TOC;
+
+#define IOCTL_CDROM_SUB_Q_CHANNEL    0x00
+#define IOCTL_CDROM_CURRENT_POSITION 0x01
+#define IOCTL_CDROM_MEDIA_CATALOG    0x02
+#define IOCTL_CDROM_TRACK_ISRC       0x03
 
 typedef enum _TRACK_MODE_TYPE {
     YellowMode2,
@@ -60,6 +102,26 @@ typedef struct __RAW_READ_INFO {
     ULONG SectorCount;
     TRACK_MODE_TYPE TrackMode;
 } RAW_READ_INFO, *PRAW_READ_INFO;
+
+typedef struct _CDROM_SUB_Q_DATA_FORMAT {
+    UCHAR               Format;
+    UCHAR               Track;
+} CDROM_SUB_Q_DATA_FORMAT, *PCDROM_SUB_Q_DATA_FORMAT;
+
+typedef struct _SUB_Q_HEADER {
+  UCHAR Reserved;
+  UCHAR AudioStatus;
+  UCHAR DataLength[2];
+} SUB_Q_HEADER, *PSUB_Q_HEADER;
+
+typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
+  SUB_Q_HEADER Header;
+  UCHAR FormatCode;
+  UCHAR Reserved[3];
+  UCHAR Reserved1 : 7;
+  UCHAR Mcval :1;
+  UCHAR MediaCatalog[15];
+} SUB_Q_MEDIA_CATALOG_NUMBER, *PSUB_Q_MEDIA_CATALOG_NUMBER;
 
 #include "_cdio_win32.h"
 
@@ -199,6 +261,78 @@ win32ioctl_init_win32 (_img_private_t *env)
     return (env->h_device_handle == NULL) ? false : true;
   }
   return false;
+}
+
+#define MSF_TO_LBA2(min, sec, frame) \
+  ((int) frame + CDIO_CD_FRAMES_PER_SEC * (CDIO_CD_SECS_PER_MIN*min + sec) \
+         - CDIO_PREGAP_SECTORS )
+
+/*! 
+  Read and cache the CD's Track Table of Contents and track info.
+  Return true if successful or false if an error.
+*/
+bool
+win32ioctl_read_toc (_img_private_t *env) 
+{
+
+  DWORD dwBytesReturned;
+  CDROM_TOC cdrom_toc;
+  int i;
+  
+  if( DeviceIoControl( env->h_device_handle,
+		       IOCTL_CDROM_READ_TOC,
+		       NULL, 0, &cdrom_toc, sizeof(CDROM_TOC),
+		       &dwBytesReturned, NULL ) == 0 ) {
+    cdio_warn( "could not read TOCHDR: %ld" , (long int) GetLastError());
+    return false;
+  }
+  
+  env->first_track_num = cdrom_toc.FirstTrack;
+  env->total_tracks    = cdrom_toc.LastTrack - cdrom_toc.FirstTrack + 1;
+  
+  
+  for( i = 0 ; i <= env->total_tracks ; i++ ) {
+    env->tocent[ i ].start_lsn = MSF_TO_LBA2(
+					     cdrom_toc.TrackData[i].Address[1],
+					     cdrom_toc.TrackData[i].Address[2],
+					     cdrom_toc.TrackData[i].Address[3] );
+    env->tocent[ i ].Control   = cdrom_toc.TrackData[i].Control;
+    env->tocent[ i ].Format    = cdrom_toc.TrackData[i].Format;
+    cdio_debug("p_sectors: %i, %lu", i, 
+	       (unsigned long int) (env->tocent[i].start_lsn));
+  }
+  env->gen.toc_init = true;
+  return true;
+}
+
+/*!
+  Return the media catalog number MCN.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+char *
+win32ioctl_get_mcn (_img_private_t *env) {
+
+  DWORD dwBytesReturned;
+  SUB_Q_MEDIA_CATALOG_NUMBER mcn;
+  CDROM_SUB_Q_DATA_FORMAT q_data_format;
+  
+  memset( &mcn, 0, sizeof(mcn) );
+  
+  q_data_format.Format = IOCTL_CDROM_MEDIA_CATALOG;
+  q_data_format.Track=1;
+  
+  if( DeviceIoControl( env->h_device_handle,
+		       IOCTL_CDROM_READ_Q_CHANNEL,
+		       &q_data_format, sizeof(q_data_format), 
+		       &mcn, sizeof(mcn),
+		       &dwBytesReturned, NULL ) == 0 ) {
+    cdio_warn( "could not read Q Channel at track 1");
+  } else if (mcn.Mcval)
+    return strdup(mcn.MediaCatalog);
+  return NULL;
 }
 
 #endif /*HAVE_WIN32_CDROM*/
