@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.25 2004/06/03 09:22:10 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.26 2004/06/03 12:37:54 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.25 2004/06/03 09:22:10 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.26 2004/06/03 12:37:54 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -252,7 +252,7 @@ _read_mode2_sector_bsdi (void *user_data, void *data, lsn_t lsn,
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
 
-  _img_private_t *env = user data;
+  _img_private_t *env = user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
   msf->cdmsf_min0 = from_bcd8(_msf.m);
@@ -314,10 +314,10 @@ _read_mode2_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
 
     /* For each frame, pick out the data part we need */
   for (i = 0; i < nblocks; i++) {
-    int retval = _read_mode2_sector_bsd i(env, 
-					  ((char *)data) + 
-					  (i_blocksize * i),
-					  lsn + i, b_form2);
+    int retval = _read_mode2_sector_bsdi(env, 
+					 ((char *)data) + 
+					 (i_blocksize * i),
+					 lsn + i, b_form2);
     if (retval) return retval;
   }
   return 0;
