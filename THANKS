@@ -1,12 +1,8 @@
-Svend S. Sorensen <ssorensen@fastmail.fm>
-  cdrdao TOC-reading code based on cuetools
-  http://cuetools.sourceforge.net/
+Frantisek Dvorak <valtri@atlas.cz>:
+  bug reports and miscellaneous fixes
 
 Heiner <h.eichmann@gmx.de>
   FreeBSD CAM support and FreeBSD debugging & testing
-
-Nicolas Boullis <nboullis@debian.org>
-  Build issues, library symbol versioning, Debian packaging and issues
 
 Kris Verbeeck <airborne@advalvas.be>:
   CDDB library support from libcddb http://libcddb.sourceforge.net
@@ -16,8 +12,13 @@ Manfred Tremmel <Manfred.Tremmel@iiv.de>:
   RPM spec file and inclusion of libcdio into
   http://packman.links2linux.de/
 
-Frantisek Dvorak <valtri@atlas.cz>:
-  bug reports and miscellaneous fixes
-
 Michael Kukat <michael@unixiron.org>,
   for the hints in extractnrg.pl
+
+Nicolas Boullis <nboullis@debian.org>
+  Build issues, library symbol versioning, Debian packaging and issues
+
+Svend S. Sorensen <ssorensen@fastmail.fm>
+  cdrdao TOC-reading code based on cuetools
+  http://cuetools.sourceforge.net/
+
