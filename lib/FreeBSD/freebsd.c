@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.18 2004/06/05 02:47:49 rocky Exp $
+    $Id: freebsd.c,v 1.19 2004/06/12 17:40:07 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.18 2004/06/05 02:47:49 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.19 2004/06/12 17:40:07 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -47,7 +47,7 @@ str_to_access_mode_freebsd(const char *psz_access_mode)
   else if (!strcmp(psz_access_mode, "CAM"))
     return _AM_CAM;
   else {
-    cdio_warn ("unknown access type: %s. Default IOCTL used.", 
+    cdio_warn ("unknown access type: %s. Default ioctl used.", 
 	       psz_access_mode);
     return default_access_mode;
   }

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.9 2004/06/05 02:47:49 rocky Exp $
+    $Id: freebsd.h,v 1.10 2004/06/12 17:40:08 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -58,6 +58,19 @@
 #ifdef HAVE_SYS_CDIO_H
 # include <sys/cdio.h>
 #endif
+
+#ifndef CDIOCREADAUDIO
+struct ioc_read_audio
+{
+        u_char address_format;
+        union msf_lba address;
+        int nframes;
+        u_char* buffer;
+};
+
+#define CDIOCREADAUDIO _IOWR('c',31,struct ioc_read_audio)
+#endif
+
 #include <sys/cdrio.h>
 
 #include <sys/stat.h>
