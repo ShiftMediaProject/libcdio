@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.36 2004/06/02 00:43:53 rocky Exp $
+#   $Id: Makefile.am,v 1.37 2004/06/02 13:30:02 thesin Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -100,7 +100,7 @@ libiso9660_la_LIBADD = libcdio.la
 libiso9660_la_ldflags = -version-info $(libiso9660_la_CURRENT):$(libiso9660_la_REVISION):$(libiso9660_la_AGE)
 libiso9660_la_dependencies = libcdio.la
 
-INCLUDES = -I$(LIBCDIO_CFLAGS)
+INCLUDES = $(LIBCDIO_CFLAGS)
 
 ########################################################
 # Things to version the symbols in the libraries
