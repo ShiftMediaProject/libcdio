@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.18 2004/02/25 02:05:42 rocky Exp $
+#   $Id: Makefile.am,v 1.19 2004/02/25 10:11:06 rocky Exp $
 #
-#    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -88,3 +88,16 @@ check_cue.sh: $(top_builddir)/config.status check_cue.sh.in
 	chmod +x config_cue.csh
 
 make-executable:
+
+# cvs2cl
+MAINTAINERCLEANFILES = ChangeLog
+
+if MAINTAINER_MODE
+
+.PHONY: ChangeLog
+ChangeLog:
+	$(CVS2CL) -W 450 --header $(srcdir)/cvs2cl_header --utc -w -I ChangeLog --usermap $(srcdir)/cvs2cl_usermap -P 
+
+ACLOCAL_AMFLAGS=-I .
+
+endif
