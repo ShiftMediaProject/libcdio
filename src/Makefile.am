@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.14 2003/08/31 06:59:23 rocky Exp $
+#   $Id: Makefile.am,v 1.15 2003/09/17 12:13:07 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -25,16 +25,19 @@ if BUILD_CDINFO
 cd_info_SOURCES = cd-info.c
 cd_info_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS)
 
+cd_read_SOURCES = cd-read.c
+cd_read_LDADD =  $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
+
 if BUILD_CDINFO_LINUX
 cdinfo_linux_SOURCES = cdinfo-linux.c
 cdinfo_linux_LDADD = $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
-bin_PROGRAMS = cd-info cdinfo-linux
+bin_PROGRAMS = cd-info cd-read cdinfo-linux
 else
-bin_PROGRAMS = cd-info
+bin_PROGRAMS = cd-info cd-read
 EXTRA_DIST = cdinfo-linux.c
 endif
 else 
-EXTRA_DIST = cdinfo-linux.c cd-info.c
+EXTRA_DIST = cdinfo-linux.c cd-info.c cd-read.c
 endif
 
 INCLUDES = -I$(top_srcdir) $(LIBPOPT_CFLAGS) $(LIBCDIO_CFLAGS) $(VCDINFO_CFLAGS)
