@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.7 2003/06/07 08:53:16 rocky Exp $
+    $Id: cd-info.c,v 1.8 2003/06/07 10:43:32 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -364,6 +364,9 @@ struct poptOption optionsTable[] = {
 static char *
 fillout_device_name(const char *device_name) 
 {
+#if defined(HAVE_WIN32_CDROM)
+  return strdup(device_name);
+#else
   unsigned int prefix_len=strlen(DEV_PREFIX);
   if (0 == strncmp(device_name, DEV_PREFIX, prefix_len))
     return strdup(device_name);
@@ -372,6 +375,7 @@ fillout_device_name(const char *device_name)
     sprintf(full_device_name, DEV_PREFIX "%s", device_name);
     return full_device_name;
   }
+#endif
 }
 
 
@@ -463,9 +467,10 @@ PARTICULAR PURPOSE.\n\
   if (version_only) {
     for (driver_id=DRIVER_UNKNOWN+1; driver_id<=MAX_DRIVER; driver_id++) {
       if (cdio_have_driver(driver_id)) {
-	printf("driver: %s\n", cdio_driver_describe(driver_id));
+	printf("Have driver: %s\n", cdio_driver_describe(driver_id));
       }
     }
+    printf("Default CD-ROM device: %s\n", cdio_get_default_device(NULL));
     exit(100);
   }
   
