@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.36 2004/08/07 22:58:51 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.37 2004/08/07 23:17:36 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.36 2004/08/07 22:58:51 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.37 2004/08/07 23:17:36 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -78,9 +78,6 @@ typedef struct {
   struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1]; 
 
   cdtext_t      cdtext;	         /* CD-TEXT */
-
-  bool b_cdtext_init;
-  bool b_cdtext_error;
 
   /* Some of the more OS specific things. */
   cdtext_t      cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/
@@ -548,7 +545,7 @@ set_cdtext_field_bsdi(void *p_user_data, track_t i_track,
   not exist.
 */
 static bool
-_init_cdtext_bsdi (_img_private_t *p_env)
+init_cdtext_bsdi (_img_private_t *p_env)
 {
   return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
 				       &run_scsi_cmd_bsdi, 
@@ -570,14 +567,12 @@ get_cdtext_bsdi (void *p_user_data, track_t i_track)
 
   if ( NULL == p_env ||
        (0 != i_track 
-       && i_track >= p_env->gen.i_tracks+p_env->gen.i_first_track )
-       || p_env ->b_cdtext_error )
+	&& i_track >= p_env->gen.i_tracks+p_env->gen.i_first_track ) )
     return NULL;
 
-  if (!p_env->b_cdtext_init)
-    p_env->b_cdtext_init = _init_cdtext_bsdi(p_env);
-
-  if (!p_env->b_cdtext_init) return NULL;
+  if (!p_env->gen.b_cdtext_init)
+    init_cdtext_bsdi(p_env);
+  if (!p_env->gen.b_cdtext_init) return NULL;
 
   if (0 == i_track) 
     return &(p_env->cdtext);
