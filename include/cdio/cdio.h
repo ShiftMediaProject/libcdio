@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.11 2003/06/07 01:19:47 rocky Exp $
+    $Id: cdio.h,v 1.12 2003/06/07 16:53:21 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -283,7 +283,7 @@ extern "C" {
 
      NULL is returned on error.
    */
-  CdIo * cdio_open_cd (const char *cue_name);
+  CdIo * cdio_open_cd (const char *device_name);
 
   /*! cdrao BIN/CUE CD disk-image routines. Source is the .cue file
 
@@ -343,6 +343,10 @@ extern "C" {
     change here....
   */
   char *cdio_is_binfile(const char *bin_name);
+  
+  /*! Return true if source name is a device.
+  */
+  bool cdio_is_device(const char *source_name, driver_id_t driver_id);
   
 #ifdef __cplusplus
 }

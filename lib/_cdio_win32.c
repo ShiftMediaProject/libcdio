@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.4 2003/06/07 12:47:19 rocky Exp $
+    $Id: _cdio_win32.c,v 1.5 2003/06/07 16:53:21 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.4 2003/06/07 12:47:19 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.5 2003/06/07 16:53:21 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -176,7 +176,6 @@ struct SRB_ExecSCSICmd
 
 typedef struct {
   lsn_t          start_lsn;
-  track_format_t track_format;
 } track_info_t;
 
 typedef struct {
@@ -386,7 +385,7 @@ _cdio_init_win32 (void *user_data)
       return -1;
     }
     
-    c_drive = c_drive > 'Z' ? c_drive - 'a' : c_drive - 'A';
+    c_drive = toupper(c_drive) - 'A';
     
     for( i = 0; i < i_hostadapters; i++ ) {
       for( j = 0; j < 15; j++ ) {
@@ -418,7 +417,7 @@ _cdio_init_win32 (void *user_data)
 	    _obj->i_sid = MAKEWORD( i, j );
 	    _obj->hASPI = (long)hASPI;
 	    _obj->lpSendCommand = lpSendCommand;
-	    cdio_debug("using ASPI layer");
+	    cdio_debug("Using ASPI layer");
 	    
 	    return true;
 	  } else {
@@ -432,7 +431,7 @@ _cdio_init_win32 (void *user_data)
     }
     
     FreeLibrary( hASPI );
-    cdio_debug( "unable to get haid and target (aspi)" );
+    cdio_debug( "Unable to get HaId and target (ASPI)" );
     
   }
   
@@ -625,10 +624,9 @@ _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
 static uint32_t 
 _cdio_stat_size (void *user_data)
 {
-  /* _img_private_t *_obj = user_data; */
+  _img_private_t *_obj = user_data;
 
-  /* FIXME! */
-  return 65536;
+  return _obj->tocent[_obj->total_tracks].start_lsn;
 }
 
 /*!
@@ -812,7 +810,6 @@ _cdio_eject_media (void *user_data) {
     
   memset( &op, 0, sizeof(MCI_OPEN_PARMS) );
   op.lpstrDeviceType = (LPCSTR)MCI_DEVTYPE_CD_AUDIO;
-
   strcpy( psz_drive, "X:" );
   psz_drive[0] = _obj->gen.source_name[0];
   op.lpstrElementName = psz_drive;
@@ -888,10 +885,46 @@ _cdio_get_num_tracks(void *user_data)
 static track_format_t
 _cdio_get_track_format(void *user_data, track_t track_num) 
 {
-  /* _img_private_t *_obj = user_data; */
+  _img_private_t *_obj = user_data;
 
-  /* FIXME! */
-  return TRACK_FORMAT_XA;
+  MCI_OPEN_PARMS op;
+  MCI_STATUS_PARMS st;
+  DWORD i_flags;
+  char psz_drive[4];
+  int ret;
+
+  memset( &op, 0, sizeof(MCI_OPEN_PARMS) );
+  op.lpstrDeviceType = (LPCSTR)MCI_DEVTYPE_CD_AUDIO;
+  strcpy( psz_drive, "X:" );
+  psz_drive[0] = _obj->gen.source_name[0];
+  op.lpstrElementName = psz_drive;
+  
+  /* Set the flags for the device type */
+  i_flags = MCI_OPEN_TYPE | MCI_OPEN_TYPE_ID |
+    MCI_OPEN_ELEMENT | MCI_OPEN_SHAREABLE;
+  
+  if( !mciSendCommand( 0, MCI_OPEN, i_flags, (unsigned long)&op ) ) {
+    st.dwItem  = MCI_CDA_STATUS_TYPE_TRACK;
+    st.dwTrack = track_num;
+    i_flags = MCI_TRACK | MCI_STATUS_ITEM ;
+    ret = mciSendCommand( op.wDeviceID, MCI_STATUS, i_flags, 
+			  (unsigned long) &st );
+    mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
+
+    switch(st.dwReturn) {
+    case MCI_CDA_TRACK_AUDIO:
+      return TRACK_FORMAT_AUDIO;
+    case MCI_CDA_TRACK_OTHER:
+      return TRACK_FORMAT_DATA;
+    default:
+      return TRACK_FORMAT_XA;
+    }
+
+    /* Release access to the device */
+    mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
+  }
+
+  return TRACK_FORMAT_ERROR;
   
 }
 

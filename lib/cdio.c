@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.17 2003/06/07 01:19:46 rocky Exp $
+    $Id: cdio.c,v 1.18 2003/06/07 16:53:21 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.17 2003/06/07 01:19:46 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.18 2003/06/07 16:53:21 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -73,6 +73,7 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "No driver",
    &cdio_have_false,
    NULL,
+   NULL,
    NULL
   },
 
@@ -81,8 +82,9 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "BSDI",
    "BSDI ATAPI and SCSI driver",
    &cdio_have_bsdi,
-   cdio_open_bsdi,
-   &cdio_get_default_device_bsdi
+   &cdio_open_bsdi,
+   &cdio_get_default_device_bsdi,
+   &cdio_is_device_generic
   },
 
   {DRIVER_FREEBSD, 
@@ -91,7 +93,8 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "FreeBSD driver",
    &cdio_have_freebsd,
    &cdio_open_freebsd,
-   &cdio_get_default_device_freebsd
+   &cdio_get_default_device_freebsd,
+   &cdio_is_device_generic
   },
 
   {DRIVER_LINUX, 
@@ -100,7 +103,8 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "Linux ioctl and packet driver",
    &cdio_have_linux,
    &cdio_open_linux,
-   &cdio_get_default_device_linux
+   &cdio_get_default_device_linux,
+   &cdio_is_device_generic
   },
 
   {DRIVER_SOLARIS, 
@@ -109,7 +113,8 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "Solaris ATAPI and SCSI driver",
    &cdio_have_solaris,
    &cdio_open_solaris,
-   &cdio_get_default_device_solaris
+   &cdio_get_default_device_solaris,
+   &cdio_is_device_generic
   },
 
   {DRIVER_WIN32, 
@@ -118,7 +123,8 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "Windows 32-bit ASPI and winNT/2K/XP ioctl driver",
    &cdio_have_win32,
    &cdio_open_win32,
-   &cdio_get_default_device_win32
+   &cdio_get_default_device_win32,
+   &cdio_is_device_win32
   },
 
   {DRIVER_BINCUE,
@@ -127,7 +133,8 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "bin/cuesheet disk image driver",
    &cdio_have_bincue,
    &cdio_open_bincue,
-   &cdio_get_default_device_bincue
+   &cdio_get_default_device_bincue,
+   NULL
   },
 
   {DRIVER_NRG,
@@ -136,7 +143,8 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
    "Nero NRG disk image driver",
    &cdio_have_nrg,
    &cdio_open_nrg,
-   &cdio_get_default_device_nrg
+   &cdio_get_default_device_nrg,
+   NULL
   }
 
 };
@@ -211,12 +219,19 @@ cdio_get_default_device (const CdIo *obj)
   }
 }
 
+const char *
+cdio_driver_describe(driver_id_t driver_id)
+{
+  return CdIo_all_drivers[driver_id].describe;
+}
+
 /*!
   Return a string containing the name of the driver in use.
   if CdIo is NULL (we haven't initialized a specific device driver), 
   then return NULL.
 */
-const char * cdio_get_driver_name (const CdIo *obj) 
+const char *
+cdio_get_driver_name (const CdIo *obj) 
 {
   return CdIo_all_drivers[obj->driver_id].name;
 }
@@ -375,10 +390,11 @@ cdio_have_driver(driver_id_t driver_id)
   return (*CdIo_all_drivers[driver_id].have_driver)();
 }
 
-const char *
-cdio_driver_describe(driver_id_t driver_id)
+bool
+cdio_is_device(const char *source_name, driver_id_t driver_id)
 {
-  return CdIo_all_drivers[driver_id].describe;
+  if (CdIo_all_drivers[driver_id].is_device == NULL) return false;
+  return (*CdIo_all_drivers[driver_id].is_device)(source_name);
 }
 
 
@@ -429,11 +445,12 @@ cdio_new (void *user_data, const cdio_funcs *funcs)
 void
 cdio_destroy (CdIo *obj)
 {
-  cdio_assert (obj != NULL);
-  
-  obj->op.free (obj->user_data);
-  free (obj);
   CdIo_last_driver = CDIO_DRIVER_UNINIT;
+  if (obj == NULL) return;
+
+  if (obj->op.free != NULL) 
+    obj->op.free (obj->user_data);
+  free (obj);
 }
 
 /*!
@@ -579,31 +596,34 @@ cdio_open (const char *orig_source_name, driver_id_t driver_id)
   switch (driver_id) {
   case DRIVER_UNKNOWN: 
     {
-      struct stat buf;
-      if (0 != stat(source_name, &buf)) {
-        cdio_error ("Can't get file status for %s:\n%s", source_name, 
-                    strerror(errno));
-        return NULL;
-      }
-      if (S_ISBLK(buf.st_mode) || S_ISCHR(buf.st_mode)) {
-        driver_id = DRIVER_DEVICE;
-      } else if (S_ISREG(buf.st_mode)) {
+      CdIo *cdio=scan_for_driver(MIN_DEVICE_DRIVER, MAX_DEVICE_DRIVER, 
+                                 source_name);
+      if (cdio != NULL && cdio_is_device(source_name, cdio->driver_id)) {
+        driver_id = cdio->driver_id;
+      } else {
+        struct stat buf;
+        if (0 != stat(source_name, &buf)) {
+          return NULL;
+        }
+        if (S_ISREG(buf.st_mode)) {
         /* FIXME: check to see if is a text file. If so, then 
            set SOURCE_CUE. */
-        int i=strlen(source_name)-strlen("bin");
-        if (i > 0
-            && ( (source_name)[i]   =='n' || (source_name)[i]   =='N' )
-            && ( (source_name)[i+1] =='r' || (source_name)[i+1] =='R' )
-            && ( (source_name)[i+2] =='g' || (source_name)[i+2] =='G' ) )
-          driver_id = DRIVER_NRG;
-        else if (i > 0
-            && ( (source_name)[i]   =='c' || (source_name)[i]   =='C')
-            && ( (source_name)[i+1] =='u' || (source_name)[i+1] =='U')
-            && ( (source_name)[i+2] =='e' || (source_name)[i+2] =='E') ) 
-          driver_id = DRIVER_BINCUE;
-        else
-          driver_id = DRIVER_BINCUE;
+          int i=strlen(source_name)-strlen("bin");
+          if (i > 0
+              && ( (source_name)[i]   =='n' || (source_name)[i]   =='N' )
+              && ( (source_name)[i+1] =='r' || (source_name)[i+1] =='R' )
+              && ( (source_name)[i+2] =='g' || (source_name)[i+2] =='G' ) )
+            driver_id = DRIVER_NRG;
+          else if (i > 0
+                   && ( (source_name)[i]   =='c' || (source_name)[i]   =='C')
+                   && ( (source_name)[i+1] =='u' || (source_name)[i+1] =='U')
+                   && ( (source_name)[i+2] =='e' || (source_name)[i+2] =='E') )
+            driver_id = DRIVER_BINCUE;
+          else
+            driver_id = DRIVER_BINCUE;
+        }
       }
+      cdio_destroy(cdio);
       goto retry;
     }
   case DRIVER_DEVICE: 
