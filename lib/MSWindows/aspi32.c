@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.32 2004/07/23 10:59:15 rocky Exp $
+    $Id: aspi32.c,v 1.33 2004/07/24 05:42:09 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.32 2004/07/23 10:59:15 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.33 2004/07/24 05:42:09 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -770,7 +770,7 @@ get_drive_cap_aspi (const _img_private_t *p_env,
 }
 
 /*!
-  Return the the kind of drive capabilities of device.
+  Return the media catalog number MCN.
 
   Note: string is malloc'd so caller should free() then returned
   string when done with it.

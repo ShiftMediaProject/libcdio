@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.74 2004/07/22 11:00:59 rocky Exp $
+    $Id: _cdio_linux.c,v 1.75 2004/07/24 05:42:09 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.74 2004/07/22 11:00:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.75 2004/07/24 05:42:09 rocky Exp $";
 
 #include <string.h>
 
@@ -286,7 +286,7 @@ scsi_mmc_run_cmd_linux( const void *p_user_data, int i_timeout,
   memcpy(&cgc.cmd, p_cdb, i_cdb);
   cgc.buflen = i_buf;
   cgc.buffer = p_buf;
-  cgc.data_direction = SCSI_MMC_DATA_READ == cgc.data_direction 
+  cgc.data_direction = (SCSI_MMC_DATA_READ == cgc.data_direction)
     ? CGC_DATA_READ : CGC_DATA_WRITE;
 
 #ifdef HAVE_LINUX_CDROM_TIMEOUT
@@ -300,7 +300,7 @@ scsi_mmc_run_cmd_linux( const void *p_user_data, int i_timeout,
 static int 
 _set_bsize (_img_private_t *p_env, unsigned int bsize)
 {
-  scsi_mmc_cdb_t cdb;
+  scsi_mmc_cdb_t cdb = {{0, }};
 
   struct
   {
@@ -324,8 +324,6 @@ _set_bsize (_img_private_t *p_env, unsigned int bsize)
   mh.block_length_med  = (bsize >>  8) & 0xff;
   mh.block_length_lo   = (bsize >>  0) & 0xff;
 
-  memset (&cdb, 0, sizeof (cdb));
-  
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SELECT_6);
 
   cdb.field[1] = 1 << 4;
@@ -343,9 +341,7 @@ static int
 _read_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba, 
 		   int sector_type, unsigned int nblocks)
 {
-  scsi_mmc_cdb_t cdb;
-
-  memset (&cdb, 0, sizeof (scsi_mmc_cdb_t));
+  scsi_mmc_cdb_t cdb = {{0, }};
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
   CDIO_MMC_SET_READ_TYPE  (cdb.field, sector_type);
@@ -380,9 +376,7 @@ static int
 _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba, 
 			 unsigned int nblocks, bool b_read_10)
 {
-  scsi_mmc_cdb_t cdb;
-
-  memset (&cdb, 0, sizeof (scsi_mmc_cdb_t));
+  scsi_mmc_cdb_t cdb = {{0, }};
 
   CDIO_MMC_SET_COMMAND(cdb.field, b_read_10 
 		       ? CDIO_MMC_GPCMD_READ_10 : CDIO_MMC_GPCMD_READ_CD);
@@ -772,11 +766,10 @@ static bool
 _init_cdtext_linux (_img_private_t *p_env)
 {
 
-  scsi_mmc_cdb_t cdb;
+  scsi_mmc_cdb_t cdb = {{0, }};
+
   unsigned char wdata[2000]= {0, };  /* Data read from device starts here */
   int status;
-
-  memset (&cdb, 0, sizeof (scsi_mmc_cdb_t));
 
   /* Operation code */
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC); 
@@ -825,14 +818,14 @@ _get_cdtext_linux (void *p_user_data, track_t i_track)
 
 }
 
-/*
- * Eject using SCSI MMC commands. Return 1 if successful, 0 otherwise.
+/*!
+ * Eject using SCSI MMC commands. Return 0 if successful.
  */
 static int 
 _eject_media_mmc(_img_private_t *p_env)
 {
   int i_status;
-  scsi_mmc_cdb_t cdb;
+  scsi_mmc_cdb_t cdb = {{0, }};
   uint8_t buf[1];
   
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);

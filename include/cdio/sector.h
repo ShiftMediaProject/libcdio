@@ -1,6 +1,5 @@
-
 /*
-    $Id: sector.h,v 1.22 2004/07/23 11:29:49 rocky Exp $
+    $Id: sector.h,v 1.23 2004/07/24 05:42:09 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
