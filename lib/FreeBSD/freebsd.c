@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.36 2004/08/05 04:01:35 rocky Exp $
+    $Id: freebsd.c,v 1.37 2004/08/07 09:25:49 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.36 2004/08/05 04:01:35 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.37 2004/08/07 09:25:49 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -289,11 +289,11 @@ get_drive_cap_freebsd (const void *p_user_data,
 		       cdio_drive_write_cap_t *p_write_cap,
 		       cdio_drive_misc_cap_t  *p_misc_cap) 
 {
-
   const _img_private_t *p_env = p_user_data;
 
   if (p_env->access_mode == _AM_CAM) 
-    get_drive_cap_freebsd_cam (p_env, p_read_cap, p_write_cap, p_misc_cap);
+    scsi_mmc_get_drive_cap_generic (p_user_data, p_read_cap, p_write_cap, 
+				    p_misc_cap);
   
 }  
 
