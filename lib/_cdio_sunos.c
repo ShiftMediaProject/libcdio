@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.67 2004/07/29 02:27:04 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.68 2004/08/03 11:30:42 imacintosh Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.67 2004/07/29 02:27:04 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.68 2004/08/03 11:30:42 imacintosh Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -64,6 +64,9 @@ static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.67 2004/07/29 02:27:04 rock
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include "cdtext_private.h"
+
+/* not defined in dkio.h yet */
+#define DK_DVDRW 0x13
 
 /* reader */
 
@@ -236,7 +239,6 @@ _read_mode1_sector_solaris (void *env, void *data, lsn_t lsn,
 #else
   return cdio_generic_read_form1_sector(env, data, lsn);
 #endif
-  return 0;
 }
 
 /*!
@@ -600,7 +602,120 @@ cdio_get_default_device_solaris(void)
     }
     return device;
   }
+  /* Check if it could be a Solaris media*/
+  if((stat(DEFAULT_CDIO_DEVICE, &stb) == 0) && S_ISDIR(stb.st_mode)) {
+    device = _cdio_malloc_and_zero(strlen(DEFAULT_CDIO_DEVICE) + 4);
+    sprintf(device, "%s/s0", DEFAULT_CDIO_DEVICE);
+    return device;
+  }
   return strdup(DEFAULT_CDIO_DEVICE);
+}
+
+/*! 
+  Get disc type associated with cd object.
+*/
+
+static discmode_t
+get_discmode_solaris (void *p_user_data)
+{
+  _img_private_t *p_env = p_user_data;
+  track_t i_track;
+  discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
+  struct dk_minfo media;
+  int ret;
+
+  /* Get the media info */
+  if((ret = ioctl(p_env->gen.fd, DKIOCGMEDIAINFO, &media)) != 0) {
+     cdio_warn ("DKIOCGMEDIAINFO failed: %s\n", strerror(errno));
+	 return CDIO_DISC_MODE_NO_INFO;
+  }
+  switch(media.dki_media_type) {
+  case DK_CDROM:
+  case DK_CDR:
+  case DK_CDRW:
+  /* Do cdrom detection */
+  break;
+  case DK_DVDROM:	return CDIO_DISC_MODE_DVD_ROM;
+  case DK_DVDR:		discmode = CDIO_DISC_MODE_DVD_R;
+  break;
+  case DK_DVDRAM:	discmode = CDIO_DISC_MODE_DVD_RAM;
+  break;
+  case DK_DVDRW:
+  case DK_DVDRW+1:	discmode = CDIO_DISC_MODE_DVD_RW;
+  break;
+  default: /* no valid match */
+  return CDIO_DISC_MODE_NO_INFO; 
+  }
+
+  if((discmode == CDIO_DISC_MODE_DVD_RAM || 
+      discmode == CDIO_DISC_MODE_DVD_RW ||
+      discmode == CDIO_DISC_MODE_DVD_R)) {
+    /* Fallback to uscsi if we can */
+    if(geteuid() == 0)
+      return get_discmode_solaris(p_user_data);
+    return discmode;
+  }
+
+  if (!p_env->gen.toc_init) 
+    read_toc_solaris (p_env);
+
+  if (!p_env->gen.toc_init) 
+    return CDIO_DISC_MODE_NO_INFO;
+
+  for (i_track = p_env->gen.i_first_track; 
+       i_track < p_env->gen.i_first_track + p_env->tochdr.cdth_trk1 ; 
+       i_track ++) {
+    track_format_t track_fmt=get_track_format_solaris(p_env, i_track);
+
+    switch(track_fmt) {
+    case TRACK_FORMAT_AUDIO:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_DA;
+	  break;
+	case CDIO_DISC_MODE_CD_DA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	  discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_XA:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_XA;
+	  break;
+	case CDIO_DISC_MODE_CD_XA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_DATA:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_DATA;
+	  break;
+	case CDIO_DISC_MODE_CD_DATA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_ERROR:
+    default:
+      discmode = CDIO_DISC_MODE_ERROR;
+    }
+  }
+  return discmode;
 }
 
 /*!  
@@ -715,19 +830,39 @@ cdio_get_devices_solaris (void)
 #ifndef HAVE_SOLARIS_CDROM
   return NULL;
 #else
+  char volpath[256];
+  struct stat st;
   char **drives = NULL;
-  unsigned int num_files=0;
+  int num_files=0;
 #ifdef HAVE_GLOB_H
   unsigned int i;
   glob_t globbuf;
+
   globbuf.gl_offs = 0;
   glob("/vol/dev/aliases/cdrom*", GLOB_DOOFFS, NULL, &globbuf);
   for (i=0; i<globbuf.gl_pathc; i++) {
-    cdio_add_device_list(&drives, globbuf.gl_pathv[i], &num_files);
+    if(stat(globbuf.gl_pathv[i], &st) < 0)
+      continue;
+
+    /* Check if this is a directory, if so it's probably Solaris media */
+    if(S_ISDIR(st.st_mode)) {
+      sprintf(volpath, "%s/s0", globbuf.gl_pathv[i]);
+      if(stat(volpath, &st) == 0)
+        cdio_add_device_list(&drives, volpath, &num_files);
+	}else
+      cdio_add_device_list(&drives, globbuf.gl_pathv[i], &num_files);
   }
   globfree(&globbuf);
 #else
-  cdio_add_device_list(&drives, DEFAULT_CDIO_DEVICE, &num_files);
+  if(stat(DEFAULT_CDIO_DEVICE, &st) == 0) {
+    /* Check if this is a directory, if so it's probably Solaris media */
+    if(S_ISDIR(st.st_mode)) {
+      sprintf(volpath, "%s/s0", DEFAULT_CDIO_DEVICE);
+      if(stat(volpath, &st) == 0)
+        cdio_add_device_list(&drives, volpath, &num_files);
+    }else
+      cdio_add_device_list(&drives, DEFAULT_CDIO_DEVICE, &num_files);
+  }
 #endif /*HAVE_GLOB_H*/
   cdio_add_device_list(&drives, NULL, &num_files);
   return drives;
@@ -766,7 +901,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
     .get_cdtext         = get_cdtext_solaris,
     .get_default_device = cdio_get_default_device_solaris,
     .get_devices        = cdio_get_devices_solaris,
-    .get_discmode       = get_discmode_generic,
+    .get_discmode       = get_discmode_solaris,
     .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
     .get_first_track_num= get_first_track_num_generic,
     .get_mcn            = scsi_mmc_get_mcn_generic,
