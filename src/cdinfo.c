@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.2 2003/03/24 21:01:40 rocky Exp $
+    $Id: cdinfo.c,v 1.3 2003/03/25 02:10:41 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -424,11 +424,12 @@ static bool
 is_it(int num) 
 {
   signature_t *sigp;
+  int len;
 
   /* TODO: check that num < largest sig. */
   sigp = &sigs[num];
 
-  int len = strlen(sigp->sig_str);
+  len = strlen(sigp->sig_str);
   return 0 == memcmp(&buffer[sigp->buf_num][sigp->offset], 
 		     sigp->sig_str, len);
 }
