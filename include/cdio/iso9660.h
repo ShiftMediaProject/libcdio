@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.2 2003/08/31 01:01:40 rocky Exp $
+    $Id: iso9660.h,v 1.3 2003/08/31 01:32:05 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -129,11 +129,13 @@ iso9660_pathtable_m_add_entry (void *pt, const char name[], uint32_t extent,
 uint8_t
 iso9660_get_dir_len(const iso_directory_record_t *idr);
 
+#if FIXME
 uint8_t
 iso9660_get_dir_size(const iso_directory_record_t *idr);
 
-uint8_t
-iso9660_get_dir_extent(const iso_directory_record_t *idr);
+lsn_t
+iso9660_get_dir_extent(const iso_directory_record_t *idr);#
+#endif
 
 uint8_t
 iso9660_get_pvd_type(const pvd_t *pvd);

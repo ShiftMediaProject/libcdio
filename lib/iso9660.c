@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.2 2003/08/31 01:01:40 rocky Exp $
+    $Id: iso9660.c,v 1.3 2003/08/31 01:32:05 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include "cdio_assert.h"
 #include "bytesex.h"
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.2 2003/08/31 01:01:40 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.3 2003/08/31 01:32:05 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -646,12 +646,14 @@ iso9660_pathname_isofy (const char pathname[], uint16_t version)
   return strdup (tmpbuf);
 }
 
-uint8_t
+#if FIXME
+lsn_t
 iso9660_get_dir_extent(const iso_directory_record_t *idr) 
 {
   if (NULL == idr) return 0;
   return from_733(idr->extent);
 }
+#endif
 
 uint8_t
 iso9660_get_dir_len(const iso_directory_record_t *idr) 
@@ -660,12 +662,14 @@ iso9660_get_dir_len(const iso_directory_record_t *idr)
   return idr->length;
 }
 
+#if FIXME
 uint8_t
 iso9660_get_dir_size(const iso_directory_record_t *idr) 
 {
   if (NULL == idr) return 0;
   return from_733(idr->size);
 }
+#endif
 
 uint8_t
 iso9660_get_pvd_type(const pvd_t *pvd) 
