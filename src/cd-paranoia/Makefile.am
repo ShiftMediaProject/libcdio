@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.10 2005/01/14 02:02:26 rocky Exp $
+#   $Id: Makefile.am,v 1.11 2005/01/16 11:47:45 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -24,6 +24,8 @@ else
 getopt_sources = getopt.c getopt1.c
 endif
 
+man_MANS = doc/cd-paranoia.1 doc/cd-paranoia.1.jp
+
 EXTRA_DIST = $(man_MANS) getopt.c getopt1.c \
 	      usage.txt.in pod2c.pl \
 	      doc/FAQ.txt doc/overlapdef.txt
@@ -41,8 +43,6 @@ cd_paranoia_SOURCES = cd-paranoia.c \
 cd_paranoia_LDADD =  $(LIBCDIO_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_PARANOIA_LIBS)
 
 bin_PROGRAMS = cd-paranoia
-
-man_MANS = cd-paranoia.1 cd-paranoia.1.jp
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
