@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.4 2004/05/02 14:55:11 rocky Exp $
+    $Id: freebsd.c,v 1.5 2004/05/03 03:22:24 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.4 2004/05/02 14:55:11 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.5 2004/05/03 03:22:24 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -97,7 +97,7 @@ _read_mode2_sector_freebsd (void *env, void *data, lsn_t lsn,
   if ( _obj->access_mode == _AM_CAM )
     return read_mode2_sector_freebsd_ioctl(_obj, data, lsn, b_form2);
   else
-    return read_mode2_sector_freebsd_cam(_obj, data, lsn, b_form2);
+    return read_mode2_sectors_freebsd_cam(_obj, data, lsn, 1, b_form2);
 }
 
 /*!
