@@ -1,5 +1,5 @@
 /*
-  $Id: sample1.c,v 1.4 2003/10/03 01:09:43 rocky Exp $
+  $Id: sample1.c,v 1.5 2003/10/03 08:36:39 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -30,9 +30,18 @@ int
 main(int argc, const char *argv[])
 {
   CdIo *cdio = cdio_open (NULL, DRIVER_UNKNOWN);
-  track_t first_track_num = cdio_get_first_track_num(cdio);
-  track_t num_tracks      = cdio_get_num_tracks(cdio);
+  track_t first_track_num;
+  track_t num_tracks;
   int j, i=first_track_num;
+  
+
+  if (NULL == cdio) {
+    printf("Couldn't find a driver.. leaving.\n");
+    return 1;
+  }
+  
+  num_tracks      = cdio_get_num_tracks(cdio);
+  first_track_num = i = cdio_get_first_track_num(cdio);
 
   printf("CD-ROM Track List (%i - %i)\n", first_track_num, num_tracks);
 
