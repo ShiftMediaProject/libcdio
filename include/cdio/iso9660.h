@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.51 2004/10/23 20:55:09 rocky Exp $
+    $Id: iso9660.h,v 1.52 2004/10/24 03:29:31 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -391,11 +391,11 @@ typedef struct _iso9660 iso9660_t;
                              /*out*/ iso9660_pvd_t *p_pvd);
 
 /*!
-  Read the Supper block of an ISO 9660 image. This is either the 
-  Primvary Volume Descriptor (PVD) or perhaps a Supplimental Volume 
+  Read the Supper block of an ISO 9660 image. This is the 
+  Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
   Descriptor if (Joliet) extensions are acceptable.
 */
-  bool iso9660_ifs_read_super (iso9660_t *p_iso, /*out*/ iso9660_pvd_t *p_vd, 
+  bool iso9660_ifs_read_super (iso9660_t *p_iso,
                                iso_extension_mask_t iso_extension_mask);
 
 /*!

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.27 2004/10/23 20:55:09 rocky Exp $
+    $Id: iso9660_fs.c,v 1.28 2004/10/24 03:29:31 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -49,7 +49,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.27 2004/10/23 20:55:09 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.28 2004/10/24 03:29:31 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -57,8 +57,8 @@ struct _iso9660 {
   bool b_xa;              /* true if has XA attributes. */
   uint8_t  i_joliet_level;/* 0 = no Joliet extensions.
 			     1-3: Joliet level. */
-  iso9660_pvd_t vd;       /* Either a PVD or a SVD, but rather than
-			     use union we'll cast when necessary */
+  iso9660_pvd_t pvd;      
+  iso9660_svd_t svd;      
   iso_extension_mask_t iso_extension_mask; /* What extensions we
 					      tolerate. */
 };
@@ -89,12 +89,12 @@ iso9660_open_ext (const char *pathname,
   if (NULL == p_iso->stream) 
     goto error;
   
-  if ( !iso9660_ifs_read_super(p_iso, &(p_iso->vd), iso_extension_mask) )
+  if ( !iso9660_ifs_read_super(p_iso, iso_extension_mask) )
     goto error;
   
   /* Determine if image has XA attributes. */
   
-  p_iso->b_xa = !strncmp ((char *) &(p_iso->vd) + ISO_XA_MARKER_OFFSET, 
+  p_iso->b_xa = !strncmp ((char *) &(p_iso->pvd) + ISO_XA_MARKER_OFFSET, 
 			  ISO_XA_MARKER_STRING, 
 			  strlen (ISO_XA_MARKER_STRING));
   p_iso->iso_extension_mask = iso_extension_mask;
@@ -140,7 +140,7 @@ check_pvd (const iso9660_pvd_t *p_pvd)
 }
 
 static bool
-ucs2be_to_locale(char *psz_ucs2be,  size_t i_inlen, 
+ucs2be_to_locale(const char *psz_ucs2be,  size_t i_inlen, 
 		 char **p_psz_out,  size_t i_outlen)
 {
   iconv_t ic = iconv_open(nl_langinfo(CODESET), "UCS-2BE");
@@ -148,6 +148,16 @@ ucs2be_to_locale(char *psz_ucs2be,  size_t i_inlen,
   char *psz_buf = NULL;
   char *psz_buf2;
   int i_outlen_save = i_outlen;
+
+  if (errno) {
+    cdio_warn("Failed to get conversion table for locale, trying ASCII");
+    ic = iconv_open("ASCII", "UCS-2BE");
+    if (errno) {
+      cdio_warn("Failed to get conversion table for ASCII too");
+      return false;
+    }
+  }
+  
   psz_buf = (char *) realloc(psz_buf, i_outlen);
   psz_buf2 = psz_buf;
   if (!psz_buf) {
@@ -191,14 +201,14 @@ iso9660_ifs_get_application_id(iso9660_t *p_iso,
        longer results *and* have the same character using
        the PVD, do that.
      */
-    return ucs2be_to_locale(p_iso->vd.application_id, 
-			    ISO_MAX_APPLICATION_ID, 
-			    p_psz_app_id, 
-			    ISO_MAX_APPLICATION_ID);
-  } else {
-    *p_psz_app_id = iso9660_get_application_id( &(p_iso->vd) );
-    return *p_psz_app_id != NULL && strlen(*p_psz_app_id);
-  }
+    if ( ucs2be_to_locale(p_iso->svd.application_id, 
+			  ISO_MAX_APPLICATION_ID, 
+			  p_psz_app_id, 
+			  ISO_MAX_APPLICATION_ID))
+      return true;
+  } 
+  *p_psz_app_id = iso9660_get_application_id( &(p_iso->pvd) );
+  return *p_psz_app_id != NULL && strlen(*p_psz_app_id);
 }
 
 /*!  
@@ -230,12 +240,12 @@ iso9660_ifs_get_preparer_id(iso9660_t *p_iso,
        longer results *and* have the same character using
        the PVD, do that.
      */
-    return ucs2be_to_locale(p_iso->vd.preparer_id, ISO_MAX_PREPARER_ID, 
-			    p_psz_preparer_id, ISO_MAX_PREPARER_ID);
-  } else {
-    *p_psz_preparer_id = iso9660_get_preparer_id( &(p_iso->vd) );
-    return *p_psz_preparer_id != NULL && strlen(*p_psz_preparer_id);
-  }
+    if ( ucs2be_to_locale(p_iso->svd.preparer_id, ISO_MAX_PREPARER_ID, 
+			  p_psz_preparer_id, ISO_MAX_PREPARER_ID) )
+      return true;
+  } 
+  *p_psz_preparer_id = iso9660_get_preparer_id( &(p_iso->pvd) );
+  return *p_psz_preparer_id != NULL && strlen(*p_psz_preparer_id);
 }
 
 /*!
@@ -256,12 +266,12 @@ bool iso9660_ifs_get_publisher_id(iso9660_t *p_iso,
        longer results *and* have the same character using
        the PVD, do that.
      */
-    return ucs2be_to_locale(p_iso->vd.publisher_id, ISO_MAX_PUBLISHER_ID, 
-			    p_psz_publisher_id, ISO_MAX_PUBLISHER_ID);
-  } else {
-    *p_psz_publisher_id = iso9660_get_publisher_id( &(p_iso->vd) );
-    return *p_psz_publisher_id != NULL && strlen(*p_psz_publisher_id);
-  }
+    if( ucs2be_to_locale(p_iso->svd.publisher_id, ISO_MAX_PUBLISHER_ID, 
+			 p_psz_publisher_id, ISO_MAX_PUBLISHER_ID) )
+      return true;
+  } 
+  *p_psz_publisher_id = iso9660_get_publisher_id( &(p_iso->pvd) );
+  return *p_psz_publisher_id != NULL && strlen(*p_psz_publisher_id);
 }
 
 
@@ -283,12 +293,12 @@ bool iso9660_ifs_get_system_id(iso9660_t *p_iso,
        longer results *and* have the same character using
        the PVD, do that.
      */
-    return ucs2be_to_locale(p_iso->vd.system_id, ISO_MAX_SYSTEM_ID, 
-			    p_psz_system_id, ISO_MAX_SYSTEM_ID);
-  } else {
-    *p_psz_system_id = iso9660_get_system_id( &(p_iso->vd) );
-    return *p_psz_system_id != NULL && strlen(*p_psz_system_id);
+    if ( ucs2be_to_locale(p_iso->svd.system_id, ISO_MAX_SYSTEM_ID, 
+			  p_psz_system_id, ISO_MAX_SYSTEM_ID) )
+      return true;
   }
+  *p_psz_system_id = iso9660_get_system_id( &(p_iso->pvd) );
+  return *p_psz_system_id != NULL && strlen(*p_psz_system_id);
 }
 
 
@@ -310,12 +320,12 @@ bool iso9660_ifs_get_volume_id(iso9660_t *p_iso,
        longer results *and* have the same character using
        the PVD, do that.
      */
-    return ucs2be_to_locale(p_iso->vd.volume_id, ISO_MAX_VOLUME_ID, 
-			    p_psz_volume_id, ISO_MAX_VOLUME_ID);
-  } else {
-    *p_psz_volume_id = iso9660_get_volume_id( &(p_iso->vd) );
-    return *p_psz_volume_id != NULL && strlen(*p_psz_volume_id);
-  }
+    if ( ucs2be_to_locale(p_iso->svd.volume_id, ISO_MAX_VOLUME_ID, 
+			  p_psz_volume_id, ISO_MAX_VOLUME_ID) )
+      return true;
+  } 
+  *p_psz_volume_id = iso9660_get_volume_id( &(p_iso->pvd) );
+  return *p_psz_volume_id != NULL && strlen(*p_psz_volume_id);
 }
 
 
@@ -337,14 +347,14 @@ bool iso9660_ifs_get_volumeset_id(iso9660_t *p_iso,
        longer results *and* have the same character using
        the PVD, do that.
      */
-    return ucs2be_to_locale(p_iso->vd.volume_set_id, 
-			    ISO_MAX_VOLUMESET_ID, 
-			    p_psz_volumeset_id, 
-			    ISO_MAX_VOLUMESET_ID);
-  } else {
-    *p_psz_volumeset_id = iso9660_get_volume_id( &(p_iso->vd) );
-    return *p_psz_volumeset_id != NULL && strlen(*p_psz_volumeset_id);
+    if ( ucs2be_to_locale(p_iso->svd.volume_set_id, 
+			  ISO_MAX_VOLUMESET_ID, 
+			  p_psz_volumeset_id, 
+			  ISO_MAX_VOLUMESET_ID) )
+      return true;
   }
+  *p_psz_volumeset_id = iso9660_get_volume_id( &(p_iso->pvd) );
+  return *p_psz_volumeset_id != NULL && strlen(*p_psz_volumeset_id);
 }
 
 
@@ -364,25 +374,27 @@ iso9660_ifs_read_pvd (const iso9660_t *p_iso, /*out*/ iso9660_pvd_t *p_pvd)
 
 
 /*!
-  Read the Supper block of an ISO 9660 image. This is either the 
-  Primvary Volume Descriptor (PVD) or perhaps a Supplimental Volume 
+  Read the Supper block of an ISO 9660 image. This is the 
+  Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
   Descriptor if (Joliet) extensions are acceptable.
 */
 bool 
-iso9660_ifs_read_super (iso9660_t *p_iso, /*out*/ iso9660_pvd_t *p_pvd,
-		     iso_extension_mask_t iso_extension_mask)
+iso9660_ifs_read_super (iso9660_t *p_iso, 
+			iso_extension_mask_t iso_extension_mask)
 {
-  iso9660_svd_t svd;  /* Secondary volume descriptor. */
+  iso9660_svd_t *p_svd;  /* Secondary volume descriptor. */
   
-  if (!iso9660_ifs_read_pvd(p_iso, p_pvd))
+  if (!p_iso || !iso9660_ifs_read_pvd(p_iso, &(p_iso->pvd)))
     return false;
-  
+
+  p_svd = &(p_iso->svd);
   p_iso->i_joliet_level = 0;
 
-  if (0 != iso9660_iso_seek_read (p_iso, &svd, ISO_PVD_SECTOR+1, 1)) {
-    if ( ISO_VD_SUPPLEMENTARY == from_711(svd.type) ) {
-      if (svd.escape_sequences[0] == 0x25 && svd.escape_sequences[1] == 0x2f) {
-	switch (svd.escape_sequences[2]) {
+  if (0 != iso9660_iso_seek_read (p_iso, p_svd, ISO_PVD_SECTOR+1, 1)) {
+    if ( ISO_VD_SUPPLEMENTARY == from_711(p_svd->type) ) {
+      if (p_svd->escape_sequences[0] == 0x25 
+	  && p_svd->escape_sequences[1] == 0x2f) {
+	switch (p_svd->escape_sequences[2]) {
 	case 0x40:
 	  if (iso_extension_mask & ISO_EXTENSION_JOLIET_LEVEL1) 
 	    p_iso->i_joliet_level = 1;
@@ -400,7 +412,6 @@ iso9660_ifs_read_super (iso9660_t *p_iso, /*out*/ iso9660_pvd_t *p_pvd,
 	}
 	if (p_iso->i_joliet_level > 0) {
 	  cdio_info("Found Extension: Joliet Level %d", p_iso->i_joliet_level);
-	  memcpy(p_pvd, &svd, sizeof(iso9660_pvd_t));
 	}
       }
     }
@@ -578,18 +589,11 @@ static iso9660_stat_t *
 _fs_stat_iso_root (iso9660_t *p_iso)
 {
   iso9660_stat_t *p_stat;
-#if 1
-  iso9660_dir_t *p_iso9660_dir = 
-    (iso9660_dir_t *) p_iso->vd.root_directory_record;
-#else 
-  int ret;
-  char block[ISO_BLOCKSIZE] = { 0, };
-  const iso9660_pvd_t *p_pvd = (void *) &block;
-  iso9660_dir_t *iso9660_dir = (void *) p_pvd->root_directory_record;
+  iso9660_dir_t *p_iso9660_dir;
 
-  ret = iso9660_iso_seek_read (p_iso, block, ISO_PVD_SECTOR, 1);
-  if (ret!=ISO_BLOCKSIZE) return NULL;
-#endif
+  p_iso9660_dir = p_iso->i_joliet_level 
+    ? (iso9660_dir_t *) p_iso->pvd.root_directory_record 
+    : (iso9660_dir_t *) p_iso->svd.root_directory_record ;
 
   p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, true, 
 				    p_iso->i_joliet_level);
