@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.17 2003/04/14 23:11:32 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.18 2003/04/22 12:09:08 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,18 +28,18 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.17 2003/04/14 23:11:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.18 2003/04/22 12:09:08 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include <cdio/logging.h>
+#include <cdio/sector.h>
+#include <cdio/util.h>
 #include "cdio_assert.h"
 #include "cdio_private.h"
-#include "logging.h"
-#include "sector.h"
-#include "util.h"
 #include "_cdio_stdio.h"
 
 /* reader */

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.h,v 1.5 2003/04/07 11:23:24 rocky Exp $
+    $Id: _cdio_stream.h,v 1.6 2003/04/22 12:09:09 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -23,7 +23,7 @@
 #ifndef __CDIO_STREAM_H__
 #define __CDIO_STREAM_H__
 
-#include "types.h"
+#include <cdio/types.h>
 #include "cdio_private.h"
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.15 2003/04/21 23:20:37 rocky Exp $
+    $Id: cdinfo.c,v 1.16 2003/04/22 12:09:09 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -46,9 +46,9 @@
 #include <cddb/cddb.h>
 #endif
 
-#include "cdio.h"
-#include "logging.h"
-#include "util.h"
+#include <cdio/cdio.h>
+#include <cdio/logging.h>
+#include <cdio/util.h>
 
 #include <fcntl.h>
 #include <sys/ioctl.h>

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.10 2003/04/20 15:34:31 rocky Exp $
+    $Id: cdio.c,v 1.11 2003/04/22 12:09:09 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -31,11 +31,11 @@
 #include <string.h>
 
 #include "cdio_assert.h"
-#include "util.h"
-#include "logging.h"
+#include <cdio/util.h>
+#include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.10 2003/04/20 15:34:31 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.11 2003/04/22 12:09:09 rocky Exp $";
 
 
 const char *track_format2str[5] = 

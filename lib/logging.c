@@ -1,5 +1,5 @@
 /*
-    $Id: logging.c,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: logging.c,v 1.2 2003/04/22 12:09:09 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -25,11 +25,12 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+
+#include <cdio/logging.h>
 #include "cdio_assert.h"
 
-#include "logging.h"
 
-static const char _rcsid[] = "$Id: logging.c,v 1.1 2003/03/24 19:01:09 rocky Exp $";
+static const char _rcsid[] = "$Id: logging.c,v 1.2 2003/04/22 12:09:09 rocky Exp $";
 
 static void
 default_cdio_log_handler (cdio_log_level_t level, const char message[])

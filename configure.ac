@@ -1,7 +1,7 @@
-AC_REVISION([$Id: configure.ac,v 1.15 2003/04/21 10:17:50 hvr Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.16 2003/04/22 12:09:08 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(libcdio, 0.3)
+AM_INIT_AUTOMAKE(libcdio, 0.4)
      
 AM_SANITY_CHECK
 
@@ -138,7 +138,7 @@ AC_STDC_HEADERS
      
 AC_HAVE_HEADERS( stdbool.h  stdlib.h stdint.h stdio.h string.h strings.h linux/version.h sys/cdio.h sys/stat.h sys/types.h )
 
-LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/ -I$(top_srcdir)/include/ -I$(top_srcdir)/include/cdio'
+LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/ -I$(top_srcdir)/include/ -I$(top_builddir)/include'
 LIBCDIO_LIBS='$(top_builddir)/lib/libcdio.la'
 AC_SUBST(LIBCDIO_CFLAGS)
 AC_SUBST(LIBCDIO_LIBS)
@@ -210,7 +210,7 @@ fi
 AC_SUBST(CDDB_LIB)
 
 AC_CONFIG_COMMANDS([checks], 
-		   [chmod +x tests/check_cue.sh
+		   [chmod +x test/check_cue.sh
 		   ])
 
 AC_OUTPUT([ \
@@ -218,10 +218,10 @@ AC_OUTPUT([ \
        libcdio.pc \
        include/Makefile \
        include/cdio/Makefile \
-       include/cdio/cdio.h \
+       include/cdio/version.h \
        lib/Makefile \
        src/Makefile \
-       tests/check_cue.sh \
-       tests/Makefile \
+       test/check_cue.sh \
+       test/Makefile \
        ])
 

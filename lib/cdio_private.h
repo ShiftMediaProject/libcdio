@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.6 2003/04/10 04:13:41 rocky Exp $
+    $Id: cdio_private.h,v 1.7 2003/04/22 12:09:09 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -31,7 +31,7 @@
 #include <unistd.h>
 #endif
 
-#include <cdio.h>
+#include <cdio/cdio.h>
 
 #ifdef __cplusplus
 extern "C" {

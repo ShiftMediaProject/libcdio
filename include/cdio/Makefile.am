@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.3 2003/04/21 14:13:54 hvr Exp $
+#   $Id: Makefile.am,v 1.4 2003/04/22 12:09:08 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -21,10 +21,9 @@
 ########################################################
 #
 
-# generated part should be put into version.h.in and included from cdio.h
-EXTRA_DIST = cdio.h.in
-
 libcdioincludedir=$(includedir)/cdio
 libcdioinclude_HEADERS = cdio.h logging.h sector.h types.h util.h
 
-BUILT_SOURCES = cdio.h
+EXTRA_DIST = version.h.in
+BUILT_SOURCES = version.h
+

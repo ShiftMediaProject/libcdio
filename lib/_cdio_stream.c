@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.c,v 1.5 2003/04/07 03:05:31 rocky Exp $
+    $Id: _cdio_stream.c,v 1.6 2003/04/22 12:09:09 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -30,11 +30,11 @@
 
 /* #define STREAM_DEBUG  */
 
-#include "logging.h"
-#include "util.h"
+#include <cdio/logging.h>
+#include <cdio/util.h>
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.5 2003/04/07 03:05:31 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.6 2003/04/22 12:09:09 rocky Exp $";
 
 /* 
  * DataSource implementations

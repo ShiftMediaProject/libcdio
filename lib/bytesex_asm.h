@@ -1,5 +1,5 @@
 /*
-    $Id: bytesex_asm.h,v 1.2 2003/04/03 12:16:27 rocky Exp $
+    $Id: bytesex_asm.h,v 1.3 2003/04/22 12:09:09 rocky Exp $
 
     Copyright (C) 2001 Sven Ottemann <ac-logic@freenet.de>
                   2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -23,7 +23,7 @@
 #define __CDIO_BYTESEX_ASM_H__
 #if !defined(DISABLE_ASM_OPTIMIZE)
 
-#include "types.h"
+#include <cdio/types.h>
 
 #if defined(__powerpc__) && defined(__GNUC__)
 
