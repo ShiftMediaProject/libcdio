@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.27 2004/07/09 10:12:15 rocky Exp $
+    $Id: bincue.c,v 1.28 2004/07/09 20:48:05 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.27 2004/07/09 10:12:15 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.28 2004/07/09 20:48:05 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -144,7 +144,9 @@ typedef struct {
   bool have_cue;
 } _img_private_t;
 
+#if 0
 static bool     _bincue_image_read_cue (_img_private_t *env);
+#endif
 static uint32_t _stat_size_bincue (void *user_data);
 static bool     parse_cuefile (_img_private_t *cd, const char *toc_name);
 
@@ -446,8 +448,40 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	/* CATALOG ddddddddddddd */
       } else if (0 == strcmp ("CATALOG", psz_keyword)) {
 	if (-1 == i) {
-	  if (NULL != (psz_field = strtok (NULL, " \t\n\r")))
-	    if (cd) cd->psz_mcn = strdup (psz_field);
+	  if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
+	    cdio_log(log_level, 
+		     "%s line %d after word CATALOG: ",
+		     psz_cue_name, i_line);
+	    cdio_log(log_level, 
+		     "expecting 13-digit media catalog number, got nothing.");
+	    goto err_exit;
+	  }
+	  if (strlen(psz_field) != 13) {
+	    cdio_log(log_level, 
+		     "%s line %d after word CATALOG: ",
+		     psz_cue_name, i_line);
+	    cdio_log(log_level, 
+		       "Token %s has length %ld. Should be 13 digits.", 
+		     psz_field, (long int) strlen(psz_field));
+	    goto err_exit;
+	  } else {
+	    /* Check that we have all digits*/
+	    unsigned int i;
+	    for (i=0; i<13; i++) {
+	      if (!isdigit(psz_field[i])) {
+		cdio_log(log_level, 
+			 "%s line %d after word CATALOG:", 
+			 psz_cue_name, i_line);
+		cdio_log(log_level, 
+			 "Character \"%c\" at postition %i of token \"%s\" "
+			 "is not all digits.", 
+			 psz_field[i], i+1, psz_field);
+		goto err_exit;
+	      }
+	    }
+	  }
+	      
+	  if (cd) cd->psz_mcn = strdup (psz_field);
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    goto format_error;
 	  }
@@ -756,7 +790,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 
 }
 
-  
+#if 0
 static bool
 _bincue_image_read_cue (_img_private_t *env)
 {
@@ -916,6 +950,7 @@ _bincue_image_read_cue (_img_private_t *env)
   fclose (fp);
   return true;
 }
+#endif
 
 /*!
    Reads a single audio sector from CD device into data starting
