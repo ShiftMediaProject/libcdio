@@ -1,7 +1,7 @@
 /*
-  $Id: util.c,v 1.2 2003/10/28 16:23:50 rocky Exp $
+  $Id: util.c,v 1.3 2004/01/10 03:21:50 rocky Exp $
 
-  Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ print_version (const char *program_name, const char *version,
   driver_id_t driver_id;
 
   if (no_header == 0)
-    printf( "%s version %s\nCopyright (c) 2003 R. Bernstein\n",
+    printf( "%s version %s\nCopyright (c) 2003, 2004 R. Bernstein\n",
 	    program_name, version);
   printf( _("This is free software; see the source for copying conditions.\n\
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n\

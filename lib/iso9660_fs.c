@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.14 2004/01/10 03:03:08 rocky Exp $
+    $Id: iso9660_fs.c,v 1.15 2004/01/10 03:21:50 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -40,7 +40,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.14 2004/01/10 03:03:08 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.15 2004/01/10 03:21:50 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -431,8 +431,8 @@ iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool is_mode2)
 {
   iso9660_stat_t *stat;
 
-  cdio_assert (cdio != NULL);
-  cdio_assert (pathname != NULL);
+  if (NULL == cdio)     return NULL;
+  if (NULL == pathname) return NULL;
 
   stat = iso9660_fs_stat (cdio, pathname, is_mode2);
   if (NULL == stat)
@@ -479,6 +479,69 @@ iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool is_mode2)
 	  }
 
 	iso9660_stat = _iso9660_dir_to_statbuf(iso9660_dir, is_mode2);
+	_cdio_list_append (retval, iso9660_stat);
+
+	offset += iso9660_get_dir_len(iso9660_dir);
+      }
+
+    cdio_assert (offset == (stat->secsize * ISO_BLOCKSIZE));
+
+    free (_dirbuf);
+    free (stat);
+    return retval;
+  }
+}
+
+/*! 
+  Read pathname (a directory) and return a list of iso9660_stat_t
+  of the files inside that. The caller must free the returned result.
+*/
+void * 
+iso9660_ifs_readdir (iso9660_t *iso, const char pathname[])
+{
+  iso9660_stat_t *stat;
+
+  if (NULL == iso)      return NULL;
+  if (NULL == pathname) return NULL;
+
+  stat = iso9660_ifs_stat (iso, pathname);
+  if (NULL == stat)     return NULL;
+
+  if (stat->type != _STAT_DIR) {
+    free(stat);
+    return NULL;
+  }
+
+  {
+    long int ret;
+    unsigned offset = 0;
+    uint8_t *_dirbuf = NULL;
+    CdioList *retval = _cdio_list_new ();
+
+    if (stat->size != ISO_BLOCKSIZE * stat->secsize)
+      {
+	cdio_warn ("bad size for ISO9660 directory (%ud) should be (%lu)!",
+		   (unsigned) stat->size, 
+		   (unsigned long int) ISO_BLOCKSIZE * stat->secsize);
+      }
+
+    _dirbuf = _cdio_malloc (stat->secsize * ISO_BLOCKSIZE);
+
+    ret = iso9660_iso_seek_read (iso, _dirbuf, stat->lsn, stat->secsize);
+    if (ret != ISO_BLOCKSIZE*stat->secsize) return NULL;
+    
+    while (offset < (stat->secsize * ISO_BLOCKSIZE))
+      {
+	const iso9660_dir_t *iso9660_dir = (void *) &_dirbuf[offset];
+	iso9660_stat_t *iso9660_stat;
+	
+	if (!iso9660_get_dir_len(iso9660_dir))
+	  {
+	    offset++;
+	    continue;
+	  }
+
+	iso9660_stat = _iso9660_dir_to_statbuf(iso9660_dir, true);
 	_cdio_list_append (retval, iso9660_stat);
 
 	offset += iso9660_get_dir_len(iso9660_dir);

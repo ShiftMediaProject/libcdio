@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.35 2004/01/10 03:03:08 rocky Exp $
+    $Id: iso9660.h,v 1.36 2004/01/10 03:21:50 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -446,7 +446,7 @@ void * iso9660_fs_readdir (const CdIo *obj, const char pathname[], bool mode2);
   Read pathname (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
-void * iso9660_ifs_readdir (const iso9660_t *iso, const char pathname[]);
+void * iso9660_ifs_readdir (iso9660_t *iso, const char pathname[]);
 
 uint8_t iso9660_get_dir_len(const iso9660_dir_t *idr);
 
