@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.20 2003/10/03 02:35:33 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.21 2003/10/03 02:46:32 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -42,7 +42,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.20 2003/10/03 02:35:33 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.21 2003/10/03 02:46:32 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -515,34 +515,6 @@ cdio_get_default_device_solaris(void)
 }
 
 /*!
-  Return an array of strings giving possible CD devices.
- */
-char **
-cdio_get_devices_solaris (void)
-{
-#ifndef HAVE_SOLARIS_CDROM
-  return NULL;
-#else
-  char **drives = NULL;
-  unsigned int num_files=0;
-#ifdef HAVE_GLOB_H
-  unsigned int i;
-  glob_t globbuf;
-  globbuf.gl_offs = 0;
-  glob("/vol/dev/aliases/cdrom*", GLOB_DOOFFS, NULL, &globbuf);
-  for (i=0; i<globbuf.gl_pathc; i++) {
-    cdio_add_device_list(&drives, globbuf.gl_pathv[i], &num_files);
-  }
-  globfree(&globbuf);
-#else
-  cdio_add_device_list(&drives, DEFAULT_CDIO_DEVICE, &num_files);
-#endif /*HAVE_GLOB_H*/
-  cdio_add_device_list(&drives, NULL, &num_files);
-  return drives;
-#endif /*HAVE_SOLARIS_CDROM*/
-}
-
-/*!
   Return the number of of the first track. 
   CDIO_INVALID_TRACK is returned on error.
 */
@@ -665,6 +637,34 @@ cdio_get_default_device_solaris(void)
   return strdup(DEFAULT_CDIO_DEVICE);
 }
 #endif /* HAVE_SOLARIS_CDROM */
+
+/*!
+  Return an array of strings giving possible CD devices.
+ */
+char **
+cdio_get_devices_solaris (void)
+{
+#ifndef HAVE_SOLARIS_CDROM
+  return NULL;
+#else
+  char **drives = NULL;
+  unsigned int num_files=0;
+#ifdef HAVE_GLOB_H
+  unsigned int i;
+  glob_t globbuf;
+  globbuf.gl_offs = 0;
+  glob("/vol/dev/aliases/cdrom*", GLOB_DOOFFS, NULL, &globbuf);
+  for (i=0; i<globbuf.gl_pathc; i++) {
+    cdio_add_device_list(&drives, globbuf.gl_pathv[i], &num_files);
+  }
+  globfree(&globbuf);
+#else
+  cdio_add_device_list(&drives, DEFAULT_CDIO_DEVICE, &num_files);
+#endif /*HAVE_GLOB_H*/
+  cdio_add_device_list(&drives, NULL, &num_files);
+  return drives;
+#endif /*HAVE_SOLARIS_CDROM*/
+}
 
 /*!
   Initialization routine. This is the only thing that doesn't
