@@ -117,8 +117,8 @@ long cdda_read(cdrom_drive_t *d, void *buffer, lsn_t beginsector, long sectors)
 	
 	if(d->bigendianp!=bigendianp()){
 	  int i;
-	  u_int16_t *p=(u_int16_t *)buffer;
-	  long els=sectors*CD_FRAMESIZE_RAW/2;
+	  uint16_t *p=(uint16_t *)buffer;
+	  long els=sectors*CDIO_CD_FRAMESIZE_RAW/2;
 	  
 	  for(i=0;i<els;i++)
 	    p[i]=UINT16_SWAP_LE_BE_C(p[i]);

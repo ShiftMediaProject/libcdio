@@ -1,5 +1,5 @@
 /*
-  $Id: low_interface.h,v 1.3 2005/01/05 22:28:53 rocky Exp $
+  $Id: low_interface.h,v 1.4 2005/01/06 03:09:11 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -63,11 +63,13 @@
 #define CDROMAUDIOBUFSIZ        0x5382 /* set the audio buffer size */
 #endif
 
-#include <scsi/sg.h>
-#include <scsi/scsi.h>
-
+#ifdef HAVE_LINUX_CDROM_H
 #include <linux/cdrom.h>
+#endif
+
+#ifdef HAVE_LINUX_MAJOR_H
 #include <linux/major.h>
+#endif
 
 #define MAX_RETRIES 8
 #define MAX_BIG_BUFF_SIZE 65536

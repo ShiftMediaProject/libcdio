@@ -1,5 +1,5 @@
 /*
-  $Id: common_interface.c,v 1.3 2005/01/05 04:16:11 rocky Exp $
+  $Id: common_interface.c,v 1.4 2005/01/06 03:09:11 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
@@ -31,42 +31,6 @@
 #include <cdio/bytesex.h>
 #include "utils.h"
 #include "smallft.h"
-
-#include <linux/hdreg.h>
-
-/* Test for presence of a cdrom by pinging with the 'CDROMVOLREAD' ioctl() */
-int 
-ioctl_ping_cdrom(int fd) 
-{
-  struct cdrom_volctrl volctl;
-  if (ioctl(fd, CDROMVOLREAD, &volctl)) 
-    return(1); /* failure */
-
-  return(0);
-  /* success! */
-}
-
-
-/* Use the ioctl thingy above ping the cdrom; this will get model info */
-char *atapi_drive_info(int fd){
-  /* Work around the fact that the struct grew without warning in
-     2.1/2.0.34 */
-  
-  struct hd_driveid *id=malloc(512); /* the size in 2.0.34 */
-  char *ret;
-
-  if (!(ioctl(fd, HDIO_GET_IDENTITY, id))) {
-
-    if(id->model==0 || id->model[0]==0)
-      ret=strdup("Generic Unidentifiable ATAPI CDROM");
-    else
-      ret=strdup(id->model);
-  }else
-    ret=strdup("Generic Unidentifiable CDROM");
-
-  free(id);
-  return(ret);
-}
 
 int 
 data_bigendianp(cdrom_drive_t *d)

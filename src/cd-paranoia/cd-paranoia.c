@@ -46,17 +46,48 @@
  *   Changes are becoming TNTC. Will resume the log at beta.
  */
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#ifdef HAVE_STDIO_H
+# include <stdio.h>
+#endif
+
+#ifdef HAVE_STDARG_H
+# include <stdarg.h>
+#endif
+
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif 
+
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+
+#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
-#include <getopt.h>
+#endif
+
+#ifdef HAVE_GETOPT_H
+# include <getopt.h>
+#endif
+
+#ifdef HAVE_ERRNO_H
 #include <errno.h>
+#endif
+
 #include <math.h>
 #include <sys/time.h>
-#include <sys/stat.h>
+
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
 
 #include <cdio/cdio.h>
 #include <cdio/cd_types.h>
@@ -261,7 +292,7 @@ display_toc(cdrom_drive_t *d)
 
 static void usage(FILE *f){
   fprintf( f,
-VERSION"\n"
+PARANOIA_VERSION"\n"
 
 "USAGE:\n"
 "  cdparanoia [options] <span> [outfile]\n\n"
@@ -679,7 +710,9 @@ cleanup (void)
 {
   if (p)                    paranoia_free(p);
   if (d)                    cdda_close(d);
+#if FIXME_FIGURE_THIS_OUT
   free_and_null(span);
+#endif
   free_and_null(force_cdrom_device);
   free_and_null(force_generic_device);
 }
@@ -733,7 +766,7 @@ main(int argc,char *argv[])
       force_cdrom_device=copystring(optarg);
       break;
     case 'g':
-      if(force_generic_device)free(force_generic_device);
+      if (force_generic_device) free(force_generic_device);
       force_generic_device=copystring(optarg);
       break;
     case 'S':
@@ -779,7 +812,7 @@ main(int argc,char *argv[])
       fprintf(stderr,"Sending all callcaks to stderr for wrapper script\n");
       break;
     case 'V':
-      fprintf(stderr,VERSION);
+      fprintf(stderr,PARANOIA_VERSION);
       fprintf(stderr,"\n");
       exit(0);
       break;
@@ -845,7 +878,7 @@ main(int argc,char *argv[])
   }else
     span=copystring(argv[optind]);
 
-  report(VERSION);
+  report(PARANOIA_VERSION);
 
   /* Query the cdrom/disc; we may need to override some settings */
 

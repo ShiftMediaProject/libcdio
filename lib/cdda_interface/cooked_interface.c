@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.4 2005/01/06 01:15:51 rocky Exp $
+  $Id: cooked_interface.c,v 1.5 2005/01/06 03:09:11 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -77,16 +77,11 @@ static long int
 cooked_read (cdrom_drive_t *d, void *p, lsn_t begin, long sectors)
 {
   int retry_count,err;
-  struct cdrom_read_audio arg;
   char *buffer=(char *)p;
 
   /* read d->nsectors at a time, max. */
   sectors=( sectors > d->nsectors ? d->nsectors : sectors);
 
-  arg.addr.lba = begin;
-  arg.addr_format = CDROM_LBA;
-  arg.nframes = sectors;
-  arg.buf=buffer;
   retry_count=0;
 
   do {
@@ -135,7 +130,7 @@ static int
 verify_read_command(cdrom_drive_t *d)
 {
   int i;
-  int16_t *buff=malloc(CD_FRAMESIZE_RAW);
+  int16_t *buff=malloc(CDIO_CD_FRAMESIZE_RAW);
   int audioflag=0;
 
   cdmessage(d,"Verifying drive can read CDDA...\n");
@@ -226,7 +221,7 @@ cooked_init_drive (cdrom_drive_t *d){
       } else {
 	char buffer[256];
 	sprintf(buffer,"\tSetting read block size at %d sectors (%ld bytes).\n",
-		d->nsectors,(long)d->nsectors*CD_FRAMESIZE_RAW);
+		d->nsectors,(long)d->nsectors*CDIO_CD_FRAMESIZE_RAW);
 	cdmessage(d,buffer);
 	break;
       }
@@ -253,7 +248,7 @@ cooked_init_drive (cdrom_drive_t *d){
     char buffer[256];
     d->nsectors = 8; 
     sprintf(buffer,"\tSetting read block size at %d sectors (%ld bytes).\n",
-	    d->nsectors,(long)d->nsectors*CD_FRAMESIZE_RAW);
+	    d->nsectors,(long)d->nsectors*CDIO_CD_FRAMESIZE_RAW);
     cdmessage(d,buffer);
   }
   

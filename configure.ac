@@ -19,7 +19,7 @@ define(RELEASE_NUM, 72)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.122 2005/01/05 22:28:16 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.123 2005/01/06 03:09:11 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -145,7 +145,8 @@ AM_PATH_LIBPOPT(,
 dnl headers
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(errno.h fcntl.h stdio.h sys/cdio.h glob.h stdbool.h stdarg.h)
+AC_CHECK_HEADERS(errno.h fcntl.h getopt.h glob.h)
+AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h)
 AC_CHECK_HEADERS(linux/sbpcd.h, SBPCD_H="-DSBPCD_H='1' ")
 AC_CHECK_HEADERS(linux/ucdrom.h, UCDROM_H="-DUCDROM_H='1' ")
 
