@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.39 2004/02/26 00:13:24 rocky Exp $
+    $Id: iso9660.h,v 1.40 2004/05/04 01:32:49 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -328,7 +328,7 @@ bool iso9660_isachar (int c);
 
    The length of the translated string is returned.
 */
-int iso9660_name_translate(const char *old, char *new);
+int iso9660_name_translate(const char *oldname, char *newname);
 
 /*!  
   Pad string src with spaces to size len and copy this to dst. If
