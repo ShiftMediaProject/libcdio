@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.21 2004/10/24 11:20:30 rocky Exp $
+#   $Id: Makefile.am,v 1.22 2004/10/24 14:32:50 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,7 +20,7 @@
 ##   which configure then turns into a Makefile  ...
 ##     which make can then use to produce stuff. Isn't configuration simple? 
 
-EXTRA_DIST = config.rpath  codeset.m4 gettext.m4 glibc21.m4 iconv.m4 intdiv0.m4 inttypes.m4 inttypes_h.m4 inttypes-pri.m4 isc-posix.m4 lcmessage.m4 lib-ld.m4 lib-link.m4 lib-prefix.m4 progtest.m4 stdint_h.m4 uintmax_t.m4 ulonglong.m4  libpopt.m4 THANKS README.libcdio libcdio.spec.in libcdio.spec \
+EXTRA_DIST = config.rpath  codeset.m4 gettext.m4 glibc21.m4 iconv.m4 intdiv0.m4 intmax.m4 inttypes.m4 inttypes_h.m4 inttypes-pri.m4 isc-posix.m4 lcmessage.m4 lib-ld.m4 lib-link.m4 lib-prefix.m4 longdouble.m4 longlong.m4 nls.m4 po.m4 printf-posix.m4 progtest.m4 signed.m4 size_max.m4 stdint_h.m4 uintmax_t.m4 ulonglong.m4 wchar_t.m4 wint_t.m4 xsize.m4 libpopt.m4 THANKS README.libcdio libcdio.spec.in libcdio.spec \
 	     example/README
 
 SUBDIRS =  doc include lib src test example
@@ -43,6 +43,8 @@ DISTFILES_REGRESSION = tests/monvoisin.nrg  tests/monvoisin.right \
 REGRESSION_VERSION = 1.1
 
 distdir_regression = ../$(PACKAGE)-$(REGRESSION_VERSION)-tests
+
+test: check
 
 doxygen:
 	-( cd ${top_srcdir}/doc/doxygen && /bin/sh ${srcdir}/run_doxygen )
