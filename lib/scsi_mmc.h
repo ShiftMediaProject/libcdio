@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.1 2003/09/14 09:36:32 rocky Exp $
+    $Id: scsi_mmc.h,v 1.2 2003/09/18 13:31:07 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,13 +26,15 @@
 #ifndef __SCSI_MMC_H__
 #define __SCSI_MMC_H__
 
-#define SCSI_MMC_SET_READ_LBA(rec, lba) \
+#define CDIO_MMC_GPCMD_READ_CD	0xbe
+
+#define CDIO_MMC_SET_READ_LBA(rec, lba) \
   rec[2] = (lba >> 24) & 0xff; \
   rec[3] = (lba >> 16) & 0xff; \
   rec[4] = (lba >>  8) & 0xff; \
   rec[5] = (lba      ) & 0xff
 
-#define SCSI_MMC_SET_READ_LENGTH(rec, len) \
+#define CDIO_MMC_SET_READ_LENGTH(rec, len) \
   rec[6] = (len >> 16) & 0xff; \
   rec[7] = (len >>  8) & 0xff; \
   rec[8] = (len      ) & 0xff
