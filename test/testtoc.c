@@ -1,5 +1,5 @@
 /*
-  $Id: testtoc.c,v 1.5 2004/09/05 13:03:47 rocky Exp $
+  $Id: testtoc.c,v 1.6 2004/11/06 17:24:04 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -92,7 +92,6 @@ main(int argc, const char *argv[])
       printf("Correct: %s parses as a cdrdao TOC file.\n", 
 	     toc_file[i]);
     }
-    free(psz_tocfile);
   }
 
   for (i=0; i<NUM_BAD_TOCS; i++) {
@@ -101,12 +100,10 @@ main(int argc, const char *argv[])
     if (!cdio_is_tocfile(psz_tocfile)) {
       printf("Correct: %s doesn't parse as a cdrdao TOC file.\n", 
 	     badtoc_file[i]);
-      free(psz_tocfile);
     } else {
       printf("Incorrect: %s parses as a cdrdao TOC file.\n", 
 	     badtoc_file[i]);
       ret+=50*i+1;
-      free(psz_tocfile);
       break;
     }
   }
