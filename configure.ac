@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.65 2004/02/28 03:57:41 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.66 2004/02/29 04:41:57 rocky Exp $])dnl
 AC_INIT(libcdio, 0.67cvs)
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -360,6 +360,7 @@ AC_CONFIG_FILES([ \
        src/Makefile \
        test/check_nrg.sh \
        test/check_cue.sh \
+       test/check_iso.sh \
        test/check_common_fn \
        test/Makefile \
        ])
@@ -368,6 +369,7 @@ AC_CONFIG_COMMANDS([default],[[
 # Make sure scripts are executable
 chmod +x test/check_nrg.sh
 chmod +x test/check_cue.sh
+chmod +x test/check_iso.sh
 ]],[[]])
 
 AC_OUTPUT

@@ -1,0 +1,27 @@
+#!/bin/sh
+#$Id: check_iso.sh.in,v 1.1 2004/02/29 04:41:57 rocky Exp $
+
+if test -z $srcdir ; then
+  srcdir=`pwd`
+fi
+
+. ${srcdir}/check_common_fn
+
+if test ! -x ../src/iso-info ; then
+  exit 77
+fi
+
+BASE=`basename $0 .sh`
+fname=copying
+
+test_isoinfo "--quiet ${srcdir}/${fname}.iso --iso9660 " \
+  ${fname}.dump ${srcdir}/${fname}.right
+RC=$?
+check_result $RC 'iso-info test 1'
+
+exit $RC
+
+#;;; Local Variables: ***
+#;;; mode:shell-script ***
+#;;; eval: (sh-set-shell "bash") ***
+#;;; End: ***

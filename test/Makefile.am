@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.15 2003/10/03 01:10:50 rocky Exp $
+#   $Id: Makefile.am,v 1.16 2004/02/29 04:41:57 rocky Exp $
 #
-#    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -34,7 +34,8 @@ testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 
-check_SCRIPTS = check_nrg.sh check_cue.sh check_cd_read.sh check_opts.sh
+check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
+                check_iso.sh  check_opts.sh 
 
 check_PROGRAMS = $(hack)
 
@@ -48,7 +49,7 @@ check_DATA = vcd_demo.right \
 	     isofs-m1-read.right cdda-read.right
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
-	check_common_fn check_cue.sh.in check_nrg.sh.in
+	check_common_fn check_cue.sh.in check_nrg.sh.in check_iso.sh.in
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
 XFAIL_TESTS = testassert
