@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.12 2005/01/24 00:17:41 rocky Exp $
+    $Id: _cdio_osx.c,v 1.13 2005/01/27 23:23:22 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.12 2005/01/24 00:17:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.13 2005/01/27 23:23:22 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -864,7 +864,7 @@ get_hwinfo_osx ( const CdIo_t *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
   string when done with it.
 
  */
-static const cdtext_t *
+static cdtext_t *
 get_cdtext_osx (void *p_user_data, track_t i_track) 
 {
   return NULL;
@@ -1320,7 +1320,7 @@ _eject_media_osx (void *user_data) {
 /*!
    Return the size of the CD in logical block address (LBA) units.
  */
-static uint32_t 
+static lsn_t
 get_disc_last_lsn_osx (void *user_data)
 {
   return get_track_lba_osx(user_data, CDIO_CDROM_LEADOUT_TRACK);
