@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.61 2004/08/28 09:15:41 rocky Exp $
+    $Id: _cdio_osx.c,v 1.62 2004/08/28 16:06:25 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.61 2004/08/28 09:15:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.62 2004/08/28 16:06:25 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -114,7 +114,6 @@ typedef struct {
   track_t i_last_session;    /* highest session number */
   track_t i_first_session;   /* first session number */
   lsn_t   *pp_lba;
-  CFMutableDictionaryRef dict;
   io_service_t MediaClass_service;
   char    psz_MediaClass_service[MAX_SERVICE_NAME];
   SCSITaskDeviceInterface **pp_scsiTaskDeviceInterface;
@@ -131,17 +130,14 @@ static bool read_toc_osx (void *p_user_data);
 static CFMutableDictionaryRef
 GetRegistryEntryProperties ( io_service_t service )
 {
-  
   IOReturn			err	= kIOReturnSuccess;
   CFMutableDictionaryRef	dict	= 0;
   
-  err = IORegistryEntryCreateCFProperties (	service,
-						&dict,
-						kCFAllocatorDefault,
-						0 );		
-  check ( err == kIOReturnSuccess );
+  err = IORegistryEntryCreateCFProperties (service, &dict, kCFAllocatorDefault, 0); 
+  if ( err != kIOReturnSuccess )
+    cdio_warn( "IORegistryEntryCreateCFProperties: 0x%08x", err );
+
   return dict;
-  
 }
 
 
@@ -215,25 +211,15 @@ init_osx(_img_private_t *p_env) {
       IOObjectRelease( iterator );
     }
   
-  if( p_env->MediaClass_service == 0 )
-    {
-      cdio_warn( "search for kIOCDMediaClass came up empty" );
-      return false;
-    }
+  if ( 0 == p_env->MediaClass_service )     {
+    cdio_warn( "search for kIOCDMediaClass/kIODVDMediaClass came up empty" );
+    return false;
+  }
 
-  /* create a CF dictionary containing the TOC */
-  ret = IORegistryEntryCreateCFProperties( p_env->MediaClass_service, 
-					   &(p_env->dict),
-					   kCFAllocatorDefault, 
-					   kNilOptions );
-  
-  if(  ret != KERN_SUCCESS )
-    {
-      cdio_warn( "IORegistryEntryCreateCFProperties: 0x%08x", ret );
-      IOObjectRelease( p_env->MediaClass_service );
-      return false;
-    }
-
+  /* Save the name so we can compare against this in case we have to do
+     another scan. FIXME: this is hoaky and there's got to be a better
+     variable to test or way to do.
+   */
   IORegistryEntryGetPath(p_env->MediaClass_service, kIOServicePlane, 
 			 p_env->psz_MediaClass_service);
   return true;
@@ -433,9 +419,9 @@ get_discmode_osx (void *p_user_data)
       i_discmode = CDIO_DISC_MODE_CD_DATA;
     else if (0 == strncmp(str, "CDRW", sizeof(str)) ) 
       i_discmode = CDIO_DISC_MODE_CD_DATA;
-    CFRelease( data );
+    //??  Handled by below? CFRelease( data );
   }
-  CFRelease( propertiesDict );   
+  CFRelease( propertiesDict );    
   if (CDIO_DISC_MODE_CD_DATA == i_discmode) {
     /* Need to do more classification */
     return get_discmode_cd_generic(p_user_data);
@@ -541,8 +527,18 @@ get_drive_cap_osx(const void *p_user_data,
 	*p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PRW;
 	***/
 
-    /* FIXME: fill out */
-      *p_misc_cap = 0;
+    /* FIXME: fill out. For now assume CD-ROM is relatively modern. */
+      *p_misc_cap = (
+		     CDIO_DRIVE_CAP_MISC_CLOSE_TRAY 
+		     | CDIO_DRIVE_CAP_MISC_EJECT
+		     | CDIO_DRIVE_CAP_MISC_LOCK
+		     | CDIO_DRIVE_CAP_MISC_SELECT_SPEED
+		     | CDIO_DRIVE_CAP_MISC_MULTI_SESSION
+		     | CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED
+		     | CDIO_DRIVE_CAP_MISC_RESET
+		     | CDIO_DRIVE_CAP_MCN
+		     | CDIO_DRIVE_CAP_ISRC
+		     );
 
     IOObjectRelease( service );
   }
@@ -583,29 +579,29 @@ get_hwinfo_osx ( const CdIo *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
     vendor = ( CFStringRef ) 
       CFDictionaryGetValue ( deviceDict, CFSTR ( kIOPropertyVendorNameKey ) );
     
-    if( CFStringGetCString( vendor,
-			    (char *) &(hw_info->vendor),
-			    sizeof(hw_info->vendor),
-			    kCFStringEncodingASCII ) )
+    if ( CFStringGetCString( vendor,
+			     (char *) &(hw_info->psz_vendor),
+			     sizeof(hw_info->psz_vendor),
+			     kCFStringEncodingASCII ) )
       CFRelease( vendor );
     
     product = ( CFStringRef ) 
       CFDictionaryGetValue ( deviceDict, CFSTR ( kIOPropertyProductNameKey ) );
     
-    if( CFStringGetCString( product,
-			    (char *) &(hw_info->model),
-			    sizeof(hw_info->model),
-			    kCFStringEncodingASCII ) )
+    if ( CFStringGetCString( product,
+			     (char *) &(hw_info->psz_model),
+			     sizeof(hw_info->psz_model),
+			     kCFStringEncodingASCII ) )
       CFRelease( product );
     
     revision = ( CFStringRef ) 
       CFDictionaryGetValue ( deviceDict, 
 			     CFSTR ( kIOPropertyProductRevisionLevelKey ) );
     
-    if( CFStringGetCString( product,
-			    (char *) &(hw_info->revision),
-			    sizeof(hw_info->revision),
-			    kCFStringEncodingASCII ) )
+    if ( CFStringGetCString( product,
+			     (char *) &(hw_info->psz_revision),
+			     sizeof(hw_info->psz_revision),
+			     kCFStringEncodingASCII ) )
       CFRelease( revision );
   }
   return true;
@@ -633,7 +629,6 @@ _free_osx (void *p_user_data) {
   cdio_generic_free(p_env);
   if (NULL != p_env->pp_lba)  free((void *) p_env->pp_lba);
   if (NULL != p_env->pTOC)    free((void *) p_env->pTOC);
-  if (NULL != p_env->dict)    CFRelease( p_env->dict ); 
   IOObjectRelease( p_env->MediaClass_service );
 
   if (NULL != p_env->pp_scsiTaskDeviceInterface) 
@@ -846,34 +841,39 @@ static bool
 read_toc_osx (void *p_user_data) 
 {
   _img_private_t *p_env = p_user_data;
+  CFDictionaryRef propertiesDict = 0;
   CFDataRef data;
 
+  /* create a CF dictionary containing the TOC */
+  propertiesDict = GetRegistryEntryProperties( p_env->MediaClass_service );
+
+  if ( 0 == propertiesDict )     {
+    return false;
+  }
+
   /* get the TOC from the dictionary */
-  data = (CFDataRef) CFDictionaryGetValue( p_env->dict,
+  data = (CFDataRef) CFDictionaryGetValue( propertiesDict,
 					   CFSTR(kIOCDMediaTOCKey) );
-  if( data  != NULL )
-    {
-      CFRange range;
-      CFIndex buf_len;
-      
-      buf_len = CFDataGetLength( data ) + 1;
-      range = CFRangeMake( 0, buf_len );
-      
-      if( ( p_env->pTOC = (CDTOC *)malloc( buf_len ) ) != NULL ) {
-	CFDataGetBytes( data, range, (u_char *) p_env->pTOC );
-      } else {
-	cdio_warn( "Trouble allocating CDROM TOC" );
-	return false;
-      }
-    }
-  else
-    {
-      cdio_warn( "CFDictionaryGetValue failed" );
+  if ( data  != NULL ) {
+    CFRange range;
+    CFIndex buf_len;
+    
+    buf_len = CFDataGetLength( data ) + 1;
+    range = CFRangeMake( 0, buf_len );
+    
+    if( ( p_env->pTOC = (CDTOC *)malloc( buf_len ) ) != NULL ) {
+      CFDataGetBytes( data, range, (u_char *) p_env->pTOC );
+    } else {
+      cdio_warn( "Trouble allocating CDROM TOC" );
       return false;
     }
+  } else     {
+    cdio_warn( "CFDictionaryGetValue failed" );
+    return false;
+  }
 
   /* TestDevice(p_env, service); */
-  IOObjectRelease( p_env->MediaClass_service ); 
+  CFRelease( propertiesDict );    
 
   p_env->i_descriptors = CDTOCGetDescriptorCount ( p_env->pTOC );
 
