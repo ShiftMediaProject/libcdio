@@ -1,5 +1,5 @@
 /*
-    $Id: bsdi.c,v 1.3 2005/03/17 08:54:10 rocky Exp $
+    $Id: bsdi.c,v 1.4 2005/03/18 19:30:31 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: bsdi.c,v 1.3 2005/03/17 08:54:10 rocky Exp $";
+static const char _rcsid[] = "$Id: bsdi.c,v 1.4 2005/03/18 19:30:31 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -666,14 +666,20 @@ read_toc_bsdi (void *p_user_data)
   
   /* read individual tracks */
   for (i= p_env->gen.i_first_track; i<=p_env->gen.i_tracks; i++) {
-    p_env->tocent[i-1].cdte_track = i;
-    p_env->tocent[i-1].cdte_format = CDROM_MSF;
-    if (ioctl(p_env->gen.fd, CDROMREADTOCENTRY, &p_env->tocent[i-1]) == -1) {
+    struct cdrom_tocentry *p_toc = 
+      &(p_env->tocent[i-p_env->gen.i_first_track]);
+
+    p_toc->cdte_track = i;
+    p_toc->cdte_format = CDROM_MSF;
+    if (ioctl(p_env->gen.fd, CDROMREADTOCENTRY, p_toc) == -1) {
       cdio_warn("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
               i, strerror(errno));
       return false;
     }
+
+    set_track_flags(&(p_env->gen.track_flags[i]), p_toc->cdte_ctrl);
+
     /****
     struct cdrom_msf0 *msf= &p_env->tocent[i-1].cdte_addr.msf;
     
@@ -715,47 +721,17 @@ eject_media_bsdi (void *p_user_data) {
 
   _img_private_t *p_env = p_user_data;
   int ret=DRIVER_OP_ERROR;
-  int status;
   int fd;
 
   close(p_env->gen.fd);
   p_env->gen.fd = -1;
   if ((fd = open (p_env->gen.source_name, O_RDONLY|O_NONBLOCK)) > -1) {
-    if((status = ioctl(fd, CDROM_DRIVE_STATUS, (void *) CDSL_CURRENT)) > 0) {
-      switch(status) {
-      case CDS_TRAY_OPEN:
-	if((ret = ioctl(fd, CDROMCLOSETRAY, 0)) != 0) {
-	  cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
-	}
-	break;
-      case CDS_DISC_OK:
-	if((ret = ioctl(fd, CDROMEJECT, 0)) != 0) {
-	  cdio_warn("ioctl CDROMEJECT failed: %s\n", strerror(errno));  
-	}
-	break;
-      }
-      ret=DRIVER_OP_SUCCESS;
-    } else {
-      cdio_warn ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
-      ret=DRIVER_OP_ERROR;
+    if((ret = ioctl(fd, CDROMEJECT, 0)) != 0) {
+      cdio_warn("ioctl CDROMEJECT failed: %s\n", strerror(errno));  
     }
     close(fd);
   }
-  cdclose(p_env->p_cdinfo);
   return ret;
-}
-
-/*!
-  Close tray on CD-ROM.
-  
-  @param p_user_data the CD object to be acted upon.
-  
-*/
-static driver_return_code_t 
-close_tray_bsdi (void *p_user_data)
-{
-  const _img_private_t *p_env = p_user_data;
-  return cdload(p_env->p_cdinfo);
 }
 
 /*!
@@ -886,6 +862,27 @@ get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
 #endif /* HAVE_BSDI_CDROM */
 
 /*!
+  Close tray on CD-ROM.
+  
+  @param p_user_data the CD object to be acted upon.
+  
+*/
+driver_return_code_t 
+close_tray_bsdi (char *psz_device)
+{
+#ifdef HAVE_BSDI_CDROM
+  struct cdinfo *p_cdinfo;
+  int i_rc;
+  p_cdinfo = cdopen(psz_device);
+  i_rc = cdload(p_cdinfo);
+  cdclose(p_cdinfo);
+  return i_rc;
+#else 
+  return DRIVER_OP_NO_DRIVER;
+#endif /*HAVE_BSDI_CDROM*/
+}
+
+/*!
   Return an array of strings giving possible CD devices.
  */
 char **
@@ -997,9 +994,12 @@ cdio_open_bsdi (const char *psz_orig_source)
     .get_media_changed     = get_media_changed_mmc, 
     .get_mcn               = _get_mcn_bsdi, 
     .get_num_tracks        = get_num_tracks_generic,
+    .get_track_channels    = get_track_channels_generic,
+    .get_track_copy_permit = get_track_copy_permit_generic,
     .get_track_format      = get_track_format_bsdi,
     .get_track_green       = _get_track_green_bsdi,
     .get_track_lba         = NULL, /* This could be implemented if need be. */
+    .get_track_preemphasis = get_track_preemphasis_generic,
     .get_track_msf         = get_track_msf_bsdi,
     .lseek                 = cdio_generic_lseek,
     .read                  = cdio_generic_read,
