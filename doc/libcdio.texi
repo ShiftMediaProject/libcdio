@@ -16,7 +16,7 @@
 
 @c A macro for defining terms variables.
 @macro term{varname}
-@cindex \varname\
+@c @cindex{\varname\}
 @emph{\varname\}
 @end macro
 
@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.14 2004/02/26 04:42:21 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.15 2004/02/26 12:24:22 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -80,7 +80,8 @@ Copyright (C) 2003, 2004 Herbert Valerio Riedel and Rocky Bernstein
 
 @menu
 * History::         How this came about
-* Purpose::         Why this library?
+* Previous Work::   The problem and previous work
+* Purpose::         What is in this package (and what's not)
 * CD Formats::      A tour through the CD-specification spectrum
 * CD Terms::        Limitations and terminology used in CD's and libcdio
 * How to use::      Okay enough babble, lemme at the library!
@@ -133,7 +134,7 @@ the library really doesn't handle writing or output (the final "o" in
 the name). However it was felt that if I put libcdi that might be
 confused with a particular CD format called CD-I.
 
-@node Purpose
+@node Previous Work
 @chapter The problem and previous work
 
 If around the year 2002 you were to look at the code for a number of
@@ -166,7 +167,7 @@ limited. (However to be fair, it may have only been intended for games
 and may be suitable for that).  Applications that just want the CD
 reading and control portion I think will find quite a bit overhead.
 
-Another related project J@"org Schilling's SCSI library. If I knew how
+Another related project is J@"org Schilling's SCSI library. If I knew how
 to make this project hook into that I'd do it. If you want to
 volunteer to undertake, please let me know.
 
@@ -177,14 +178,52 @@ hardware. It is a great idea and no doubt something similar exists on
 other platforms. However this "standard" lacked adoption on OS's other
 than GNU/Linux.
 
-The library ``The Compact Disc Input and Control Library'' encapsulates
-CD-ROM reading and control. Applications wishing to be oblivious of
-the OS- and device-dependent properties of a CD-ROM can use this
-library. Some support for disk image types like BIN/CUE and NRG is
+@node Purpose
+@chapter What is in this package (and what's not)
+
+The library, @command{libcdio}, encapsulates CD-ROM reading and
+control. Applications wishing to be oblivious of the OS- and
+device-dependent properties of a CD-ROM can use this library.
+
+Also included is a library, @command{libiso9660}, for working with ISO-9660
+filesystems.
+
+Some support for disk image types like BIN/CUE and NRG is
 available, so applications that use this library also have the ability
 to read disc images as though they were CDs. 
 
-A sample utility for displaying CD info is included.
+Immediate of the library in this package are the Video CD authoring
+and ripping tools, VCDImager (@url{http://vcdimager.org}), a
+navigation-capable Video CD plugin and CD-DA plugins for the media
+players xine (@url{http://xinehq.de}) and videolan's vlc
+(@url{http://videolan.org/vlc}).
+
+Also included in the libcdio package is a utility program
+@command{cd-info} which displays CD information: number of tracks,
+CD-format and if possible basic information about the format.  If
+libcddb (@url{http://libcdddb.sourceforge.net}) is available, the
+@command{cd-info} program will display CDDB matches on CD-DA
+discs. And if a new enough version of libvcdinfo is available (from
+the vcdimager project), then @command{cd-info} shows basic VCD
+information.
+
+Other utility programs in the libcdio package are @command{cd-read},
+for performing low-level block reading of a CD or CD image,
+@command{iso-info} for displaying ISO-9660 information from an
+ISO-9660 image, and @command{iso-read} for extracting files from an
+ISO-9660 image.
+
+At present, there is no support for directing CD Audio control,
+e.g. playing, stopping, or pausing of a CD-CA where the blocks are not
+actually read into the computer. Nor is there any support for writing
+CD's. Nor is there any support for reading or writing DVDs. For some
+of these, there are other libraries (e.g. libdi, libscg, or libdvdread)
+may be helpful.
+
+I'm not theoretically opposed to putting support like this into
+libcdio. However at present there are already many gaps in this
+package, so narrowing its scope in order to focus on these things I
+think is a good idea.
 
 @node CD Formats
 @chapter CD Formats
@@ -402,7 +441,15 @@ add 150. Why the distinction between LBA and LSN? I don't know.
 @node How to use
 @chapter How to use
 
-@section Example 1 --- list out tracks and LSNs
+@menu
+* Example 1::        list out tracks and LSNs
+* Example 2::        list drivers available and default CD device 
+* Example 3::        list out tracks and LSNs
+* Example 4::        use libiso9660 to extract a file from an ISO-9660 image
+@end menu
+
+@node Example 1
+@section Example 1: list out tracks and LSNs
 Here we will give an annotated example which can be found in the
 distribution as @file{example/sample1.c}.
 
@@ -481,7 +528,8 @@ number and LSN value. Finally we print out the ``lead-out track''
 information and we finally call @code{cdio_destroy()} in line 23 to
 indicate we're done with the CD.
 
-@section Example 2 --- lists drivers available and default CD device 
+@node Example 2
+@section Example 2: list drivers available and default CD device 
 
 One thing that's a bit hoaky in Example 1 is hard-coding the name of
 the device used: @code{/dev/cdrom}. Although often this is the name of
@@ -518,6 +566,294 @@ device that is right for it.
 24:  return 0;
 25: @}
 @end smallexample
+
+
+@node Example 3
+@section Example 3: figure out what kind of CD image we've got
+
+In this example is a somewhat simplified program to show the use of
+@command{cdio_guess_cd_type()} to  figure out the kind of CD image we've got.
+
+@smallexample
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <cdio/cdio.h>
+#include <cdio/cd_types.h>
+
+static void
+print_analysis(cdio_iso_analysis_t cdio_iso_analysis, 
+	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
+	       track_t num_tracks, track_t first_track_num, CdIo *cdio)
+@{
+  switch(CDIO_FSTYPE(fs)) @{
+  case CDIO_FS_AUDIO:
+    break;
+  case CDIO_FS_ISO_9660:
+    printf("CD-ROM with ISO 9660 filesystem");
+    if (fs & CDIO_FS_ANAL_JOLIET) @{
+      printf(" and joliet extension level %d", cdio_iso_analysis.joliet_level);
+    @}
+    if (fs & CDIO_FS_ANAL_ROCKRIDGE)
+      printf(" and rockridge extensions");
+    printf("\n");
+    break;
+  case CDIO_FS_ISO_9660_INTERACTIVE:
+    printf("CD-ROM with CD-RTOS and ISO 9660 filesystem\n");
+    break;
+  case CDIO_FS_HIGH_SIERRA:
+    printf("CD-ROM with High Sierra filesystem\n");
+    break;
+  case CDIO_FS_INTERACTIVE:
+    printf("CD-Interactive%s\n", num_audio > 0 ? "/Ready" : "");
+    break;
+  case CDIO_FS_HFS:
+    printf("CD-ROM with Macintosh HFS\n");
+    break;
+  case CDIO_FS_ISO_HFS:
+    printf("CD-ROM with both Macintosh HFS and ISO 9660 filesystem\n");
+    break;
+  case CDIO_FS_UFS:
+    printf("CD-ROM with Unix UFS\n");
+    break;
+  case CDIO_FS_EXT2:
+    printf("CD-ROM with Linux second extended filesystem\n");
+	  break;
+  case CDIO_FS_3DO:
+    printf("CD-ROM with Panasonic 3DO filesystem\n");
+    break;
+  case CDIO_FS_UNKNOWN:
+    printf("CD-ROM with unknown filesystem\n");
+    break;
+  @}
+  switch(CDIO_FSTYPE(fs)) @{
+  case CDIO_FS_ISO_9660:
+  case CDIO_FS_ISO_9660_INTERACTIVE:
+  case CDIO_FS_ISO_HFS:
+    printf("ISO 9660: %i blocks, label `%.32s'\n",
+	   cdio_iso_analysis.isofs_size, cdio_iso_analysis.iso_label);
+    break;
+  @}
+  if (first_data == 1 && num_audio > 0)
+    printf("mixed mode CD   ");
+  if (fs & CDIO_FS_ANAL_XA)
+    printf("XA sectors   ");
+  if (fs & CDIO_FS_ANAL_MULTISESSION)
+    printf("Multisession");
+  if (fs & CDIO_FS_ANAL_HIDDEN_TRACK)
+    printf("Hidden Track   ");
+  if (fs & CDIO_FS_ANAL_PHOTO_CD)
+    printf("%sPhoto CD   ", 
+		      num_audio > 0 ? " Portfolio " : "");
+  if (fs & CDIO_FS_ANAL_CDTV)
+    printf("Commodore CDTV   ");
+  if (first_data > 1)
+    printf("CD-Plus/Extra   ");
+  if (fs & CDIO_FS_ANAL_BOOTABLE)
+    printf("bootable CD   ");
+  if (fs & CDIO_FS_ANAL_VIDEOCD && num_audio == 0) @{
+    printf("Video CD   ");
+  @}
+  if (fs & CDIO_FS_ANAL_SVCD)
+    printf("Super Video CD (SVCD) or Chaoji Video CD (CVD)");
+  if (fs & CDIO_FS_ANAL_CVD)
+    printf("Chaoji Video CD (CVD)");
+  printf("\n");
+@}
+
+int
+main(int argc, const char *argv[])
+@{
+  CdIo *cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  cdio_fs_anal_t fs=0;
+  
+  track_t num_tracks;
+  track_t first_track_num;
+  lsn_t start_track;          /* first sector of track */
+  lsn_t data_start =0;        /* start of data area */
+
+  int first_data = -1;        /* # of first data track */
+  int first_audio = -1;       /* # of first audio track */
+  unsigned int num_data  = 0; /* # of data tracks */
+  unsigned int num_audio = 0; /* # of audio tracks */
+  unsigned int i;
+
+  if (NULL == cdio) @{
+    printf("Problem in trying to find a driver.\n\n");
+    return 1;
+  @}
+
+  first_track_num = cdio_get_first_track_num(cdio);
+  num_tracks      = cdio_get_num_tracks(cdio);
+
+  /* Count the number of data and audio tracks. */
+  for (i = first_track_num; i <= num_tracks; i++) @{
+    if (TRACK_FORMAT_AUDIO == cdio_get_track_format(cdio, i)) @{
+      num_audio++;
+      if (-1 == first_audio) first_audio = i;
+    @} else @{
+      num_data++;
+      if (-1 == first_data)  first_data = i;
+    @}
+  @}
+
+  /* try to find out what sort of CD we have */
+  if (0 == num_data) @{
+    printf("Audio CD\n");
+  @} else @{
+    /* we have data track(s) */
+    int j;
+    cdio_iso_analysis_t cdio_iso_analysis; 
+
+    memset(&cdio_iso_analysis, 0, sizeof(cdio_iso_analysis));
+    
+    for (j = 2, i = first_data; i <= num_tracks; i++) @{
+      lsn_t lsn;
+      track_format_t track_format = cdio_get_track_format(cdio, i);
+      
+      lsn = cdio_get_track_lsn(cdio, i);
+      
+      switch ( track_format ) @{
+      case TRACK_FORMAT_AUDIO:
+      case TRACK_FORMAT_ERROR:
+	break;
+      case TRACK_FORMAT_CDI:
+      case TRACK_FORMAT_XA:
+      case TRACK_FORMAT_DATA: 
+      case TRACK_FORMAT_PSX: 
+	;
+      @}
+      
+      start_track = (i == 1) ? 0 : lsn;
+      
+      /* save the start of the data area */
+      if (i == first_data) 
+	data_start = start_track;
+      
+      /* skip tracks which belong to the current walked session */
+      if (start_track < data_start + cdio_iso_analysis.isofs_size)
+	continue;
+      
+      fs = cdio_guess_cd_type(cdio, start_track, i, &cdio_iso_analysis);
+      
+      print_analysis(cdio_iso_analysis, fs, first_data, num_audio,
+		     num_tracks, first_track_num, cdio);
+      
+      if ( !(CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660 ||
+	     CDIO_FSTYPE(fs) == CDIO_FS_ISO_HFS  ||
+	     CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660_INTERACTIVE) )
+	/* no method for non-ISO9660 multisessions */
+	break;	
+    @}
+  @}
+  return 0;
+@}
+@end smallexample
+
+@node Example 4
+@section Example 4: use libiso9660 to extract a file from an ISO-9660 image
+
+@smallexample
+/* This is the ISO 9660 image. */
+#define ISO9660_IMAGE_PATH "../"
+#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
+
+#define LOCAL_FILENAME "copying"
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+#include <sys/types.h>
+#include <cdio/cdio.h>
+#include <cdio/iso9660.h>
+
+#include <stdio.h>
+
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
+int
+main(int argc, const char *argv[])
+@{
+  iso9660_stat_t *statbuf;
+  FILE *outfd;
+  int i;
+  
+  iso9660_t *iso = iso9660_open (ISO9660_IMAGE);
+  
+  if (NULL == iso) @{
+    fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", ISO9660_IMAGE);
+    return 1;
+  @}
+
+  statbuf = iso9660_ifs_stat_translate (iso, LOCAL_FILENAME);
+
+  if (NULL == statbuf) 
+    @{
+      fprintf(stderr, 
+	      "Could not get ISO-9660 file information for file %s\n",
+	      LOCAL_FILENAME);
+      return 2;
+    @}
+
+  if (!(outfd = fopen (LOCAL_FILENAME, "wb")))
+    @{
+      perror ("fopen()");
+      return 3;
+    @}
+
+  /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
+  for (i = 0; i < statbuf->size; i += ISO_BLOCKSIZE)
+    @{
+      char buf[ISO_BLOCKSIZE];
+
+      memset (buf, 0, ISO_BLOCKSIZE);
+      
+      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (iso, buf, statbuf->lsn 
+						   + (i / ISO_BLOCKSIZE),
+						   1) )
+      @{
+	fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
+		(long unsigned int) statbuf->lsn + (i / ISO_BLOCKSIZE));
+	return 4;
+      @}
+      
+      
+      fwrite (buf, ISO_BLOCKSIZE, 1, outfd);
+      
+      if (ferror (outfd))
+	@{
+	  perror ("fwrite()");
+	  return 5;
+	@}
+    @}
+  
+  fflush (outfd);
+
+  /* Make sure the file size has the exact same byte size. Without the
+     truncate below, the file will a multiple of ISO_BLOCKSIZE.
+   */
+  if (ftruncate (fileno (outfd), statbuf->size))
+    perror ("ftruncate()");
+
+  fclose (outfd);
+  iso9660_close(iso);
+  return 0;
+@}
+@end smallexample 
 
 @emph{Fill out examples for cdio_read_xxx or cdio_seek, More on 
 drivers?.}
