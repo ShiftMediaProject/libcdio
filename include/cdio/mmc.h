@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.7 2005/02/10 11:23:08 rocky Exp $
+    $Id: mmc.h,v 1.8 2005/02/12 02:05:02 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -288,12 +288,12 @@ typedef enum {
 } mmc_feature_interface_t;
   
 
-/*! The largest Command Descriptor Buffer (CDB) size.
+/*! The largest Command Descriptor Block (CDB) size.
     The possible sizes are 6, 10, and 12 bytes.
  */
 #define MAX_CDB_LEN 12
 
-/*! \brief A Command Descriptor Buffer (CDB) used in sending MMC 
+/*! \brief A Command Descriptor Block (CDB) used in sending MMC 
     commands.
  */
 typedef struct scsi_mmc_cdb {
