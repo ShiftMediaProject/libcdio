@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.14 2004/05/10 03:28:56 rocky Exp $
+    $Id: win32.c,v 1.15 2004/05/13 01:49:01 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.14 2004/05/10 03:28:56 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.15 2004/05/13 01:49:01 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -80,12 +80,12 @@ str_to_access_mode_win32(const char *psz_access_mode)
 
   if (NULL==psz_access_mode) return default_access_mode;
   
-  if (!strcmp(psz_access_mode, "IOCTL"))
+  if (!strcmp(psz_access_mode, "ioctl"))
     return _AM_IOCTL;
   else if (!strcmp(psz_access_mode, "ASPI"))
     return _AM_ASPI;
   else {
-    cdio_warn ("unknown access type: %s. Default IOCTL used.", 
+    cdio_warn ("unknown access type: %s. Default 'ioctl' used.", 
 	       psz_access_mode);
     return default_access_mode;
   }
@@ -421,10 +421,8 @@ _cdio_get_arg (void *user_data, const char key[])
   } else if (!strcmp (key, "access-mode")) {
     if (env->hASPI) 
       return "ASPI";
-    else if ( WIN_NT ) 
-      return "IOCTL";
     else 
-      return "undefined WIN32";
+      return "ioctl";
   } 
   return NULL;
 }
@@ -663,7 +661,7 @@ cdio_open_win32 (const char *psz_source_name)
 {
 #ifdef HAVE_WIN32_CDROM
   if ( WIN_NT ) {
-    return cdio_open_am_win32(psz_source_name, "IOCTL");
+    return cdio_open_am_win32(psz_source_name, "ioctl");
   } else {
     return cdio_open_am_win32(psz_source_name, "ASPI");
   }
