@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.1 2004/02/01 16:00:06 rocky Exp $
+    $Id: iso-info.c,v 1.2 2004/02/07 02:40:20 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -102,7 +102,7 @@ parse_options (int argc, const char *argv[])
   poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
   program_name = strrchr(argv[0],'/');
-  program_name = program_name ? program_name+1 : strdup(argv[0]);
+  program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
   while ((opt = poptGetNextOpt (optCon)) != -1) {
     switch (opt) {
@@ -119,11 +119,13 @@ parse_options (int argc, const char *argv[])
 	fprintf (stderr, 
 		 "%s: Source specified in previously %s and %s\n", 
 		 program_name, source_name, remaining_arg);
+	poptFreeContext(optCon);
 	exit (EXIT_FAILURE);
       }
     }
   }
   
+  poptFreeContext(optCon);
   return true;
 }
 
@@ -287,5 +289,6 @@ main(int argc, const char *argv[])
 
   iso9660_close(iso);
   /* Not reached:*/
+  free(program_name);
   return(EXIT_SUCCESS);
 }

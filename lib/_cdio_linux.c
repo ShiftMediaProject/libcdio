@@ -1,8 +1,8 @@
 /*
-    $Id: _cdio_linux.c,v 1.27 2003/10/03 01:26:52 rocky Exp $
+    $Id: _cdio_linux.c,v 1.28 2004/02/07 02:40:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.27 2003/10/03 01:26:52 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.28 2004/02/07 02:40:20 rocky Exp $";
 
 #include <string.h>
 
@@ -727,6 +727,7 @@ _cdio_get_mcn (void *env) {
 
   struct cdrom_mcn mcn;
   _img_private_t *_obj = env;
+  memset(&mcn, 0, sizeof(mcn));
   if (ioctl(_obj->gen.fd, CDROM_GET_MCN, &mcn) != 0)
     return NULL;
   return strdup(mcn.medium_catalog_number);

@@ -1,5 +1,5 @@
 /*
-  $Id: util.h,v 1.1 2003/09/21 04:21:39 rocky Exp $
+  $Id: util.h,v 1.2 2004/02/07 02:40:20 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -94,7 +94,7 @@ extern cdio_log_handler_t gl_default_cdio_log_handler;
 
 void myexit(CdIo *cdio, int rc);
 
-void print_version (const char *program_name, const char *version,
+void print_version (char *program_name, const char *version,
 		    int no_header, bool version_only);
 
 char *fillout_device_name(const char *device_name);

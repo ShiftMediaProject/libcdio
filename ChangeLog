@@ -1,3 +1,339 @@
+2004-02-01 22:57  rocky
+
+	* configure.ac: 0.65's been released. We're now into 0.66 CVS.
+
+2004-02-01 22:56  rocky
+
+	* lib/: Makefile.am, wnaspi32.h: Move APSI stuff into a separate
+	file.
+
+2004-02-01 22:55  rocky
+
+	* lib/_cdio_win32.c: Small changes. Bigger changes should follow
+	later.
+
+2004-02-01 12:13  rocky
+
+	* example/sample7.c: More printf lint.
+
+2004-02-01 12:12  rocky
+
+	* example/Makefile.am: libiso9660 depends on libcdio. Cygwin (and
+	perhaps others) then require that libiso9660 be listed in the link
+	order before things that it depends on.
+
+2004-02-01 11:00  rocky
+
+	* src/iso-info.c: ISO Info - prints various information about a ISO
+	9660 image.
+
+2004-02-01 10:53  rocky
+
+	* lib/_cdio_nrg.c: 2nd try at getting lint messages removed across
+	all architectures.
+
+2004-02-01 10:45  rocky
+
+	* lib/_cdio_nrg.c: remove debug output lint warnings
+
+2004-01-28 23:23  rocky
+
+	* doc/libcdio.texi: Typo.
+
+2004-01-28 23:22  rocky
+
+	* example/: README, sample6.c, sample7.c: Update text commentary
+	for sample6 & sample7.
+
+2004-01-18 13:31  rocky
+
+	* example/.cvsignore: Added yet another sample program.
+
+2004-01-18 10:07  rocky
+
+	* include/cdio/iso9660.h: Don't pack our own iso9660_t.
+
+2004-01-17 21:11  rocky
+
+	* include/cdio/iso9660.h: Move tm struct around so the alignment
+	will be on a word boundary. Do we need GNUC_PACKED here?
+
+2004-01-15 09:43  hvr
+
+	* libpopt.m4: fixed underquoted definition warning
+
+2004-01-09 23:11  rocky
+
+	* test/copying.iso: Sample ISO 9660 image.
+
+2004-01-09 22:21  rocky
+
+	* include/cdio/iso9660.h, lib/iso9660_fs.c, src/util.c: iso-info
+	now does something useful now that readdir routine fixed up for iso
+	images.
+
+2004-01-09 22:03  rocky
+
+	* example/Makefile.am, example/sample6.c, example/sample7.c,
+	include/cdio/iso9660.h, lib/_cdio_stdio.c, lib/_cdio_stdio.h,
+	lib/_cdio_stream.c, lib/_cdio_stream.h, lib/iso9660_fs.c,
+	src/Makefile.am: Add routines to open an ISO-9660 image independent
+	of being part of a CD.
+
+2004-01-08 21:42  rocky
+
+	* lib/_cdio_bincue.c: Remove duplicate assignment
+
+2004-01-03 08:50  rocky
+
+	* lib/_cdio_nrg.c: More guesses as to NRG format. Guess blocksizes,
+	handle some mixed-mode CDs.
+
+2003-12-30 23:41  rocky
+
+	* lib/_cdio_nrg.c: Some code consolidation.
+
+2003-12-30 22:09  rocky
+
+	* lib/_cdio_nrg.c: More Disk-at-once corrections.
+
+2003-12-30 06:52  rocky
+
+	* lib/_cdio_nrg.c: Slightly better disk-at-once and track-at-once
+	parsing. Am able to read a tao mode1 form1 now.
+
+2003-12-28 03:33  uid67423
+
+	* lib/_cdio_nrg.c: Attempt getting various non-mode2/form2 track
+	modes correct.
+
+2003-12-24 06:09  uid67423
+
+	* example/sample6.c: add ISO9660 sample program
+
+2003-12-24 06:08  uid67423
+
+	* example/.cvsignore: [no log message]
+
+2003-12-24 06:05  uid67423
+
+	* NEWS, example/Makefile.am, example/README: Add ISO9660 sample
+	program.
+
+2003-12-24 06:05  uid67423
+
+	* configure.ac: Require vcdimager 0.7.20 or greater. Bump libcdio
+	version for last release.
+
+2003-12-24 06:03  uid67423
+
+	* include/cdio/iso9660.h: Documention in comment bug.
+
+2003-12-02 19:52  rocky
+
+	* configure.ac: Remove extraneous cygwin LIB set.
+
+2003-11-17 22:35  rocky
+
+	* include/cdio/cd_types.h, include/cdio/iso9660.h,
+	include/cdio/types.h, include/cdio/util.h, src/Makefile.am: More
+	documentation changes.
+	
+	Makefile.am: Don't build man pages if not in MAINTAINER mode.
+
+2003-11-17 07:06  rocky
+
+	* doc/Makefile.am, include/cdio/cd_types.h, include/cdio/cdio.h,
+	include/cdio/iso9660.h, include/cdio/logging.h,
+	include/cdio/sector.h, include/cdio/types.h, include/cdio/xa.h:
+	Related to doxygen documentation.
+
+2003-11-17 06:50  rocky
+
+	* include/cdio/version.h.in: Add doxygen comment and CVS Id line.
+
+2003-11-16 14:30  rocky
+
+	* doc/Makefile.am, include/cdio/iso9660.h, lib/iso9660_fs.c,
+	src/cd-info.c: iso9600_stat now has filename inside it. 
+	iso9660_fs_readdir now returns a list of iso9660_stat_t's rather
+	than filenames.
+	
+	This should reduce by a small amount the number of CD reads since
+	we store more information in the iso9660_fs_readdir return.
+	
+	However all of this is in preparation for greatly reducing the
+	number of CD reads when picking out segment lsn information.
+
+2003-11-11 07:46  rocky
+
+	* doc/libcdio.texi: libcdio.info was missing a @dircategory and
+	@direntry section.
+	
+	See
+	http://savannah.nongnu.org/bugs/?func=detailbug&bug_id=6470&group_id=3845
+	
+	Thanks to dweimer for pointing this out and providing a patch.
+
+2003-11-09 23:01  rocky
+
+	* include/cdio/iso9660.h, lib/iso9660_fs.c: Smallish cosmetic
+	changes. Bigger ones to iso9660_fs_readdir will probably occur
+	later...
+
+2003-11-09 22:59  rocky
+
+	* NEWS: [no log message]
+
+2003-11-09 22:47  rocky
+
+	* src/cd-read.c: Allow setting debug level in library for default
+	log handler.
+
+2003-11-09 10:51  rocky
+
+	* src/cd-info.c: Was filling out source_name for a device even when
+	it wasn't.
+
+2003-11-09 10:50  rocky
+
+	* lib/_cdio_nrg.c: Revise info on MTYP - more debugging here too.
+
+2003-11-09 09:13  rocky
+
+	* doc/doxygen/.cvignore: The usual.
+
+2003-11-09 09:11  rocky
+
+	* doc/doxygen/run_doxygen: Program to run doxygen.
+
+2003-11-09 08:57  rocky
+
+	* lib/logging.c, src/cd-info.c: Be able to set/disable default log
+	handler logging.
+
+2003-11-09 08:56  rocky
+
+	* Makefile.am: Add doxygen target.
+
+2003-11-09 08:54  rocky
+
+	* doc/doxygen/Doxyfile: Slightly customized configuration setting
+	for running doxygen.
+
+2003-11-09 08:53  rocky
+
+	* include/cdio/iso9660.h: doxygen changes.
+
+2003-11-05 07:40  rocky
+
+	* include/cdio/: cdio.h, iso9660.h, sector.h: update/add More
+	doxygen tagging
+
+2003-11-04 23:12  rocky
+
+	* example/sample3.c, example/sample4.c, include/cdio/cd_types.h,
+	lib/cd_types.c, lib/cdio.c, src/cd-info.c: cdio_analysis ->
+	cdio_iso_analysis
+
+2003-11-04 07:28  rocky
+
+	* include/cdio/: cd_types.h, cdio.h, logging.h: doxygen changes.
+
+2003-11-03 23:45  rocky
+
+	* include/cdio/cd_types.h, include/cdio/iso9660.h,
+	include/cdio/logging.h, lib/logging.c: Start to document using
+	doxygen.
+
+2003-11-03 23:44  rocky
+
+	* lib/_cdio_bincue.c: Got return value on _cdio_audio_sectors
+	backwards.
+
+2003-10-28 11:23  rocky
+
+	* configure.ac, doc/libcdio.texi, include/cdio/iso9660.h,
+	src/util.c: configure.ac: changes suggested by Karl Berry
+	(karl@freefriends.org) which may make work for autoconf 1.7.8
+	
+	libcdio.texi: remove colophon and correct copyright notice
+	iso9660.h: trivial comment addition util.c: Correct copyright line.
+
+2003-10-20 00:29  rocky
+
+	* lib/_cdio_win32.c: Retry YellowMode2 if XA fails - but I think we
+	need a better overall method.
+
+2003-10-20 00:28  rocky
+
+	* src/cd-read.c: Don't print blocks if read failed.
+
+2003-10-19 12:36  rocky
+
+	* configure.ac: Life goes on. Bump version number.
+
+2003-10-18 15:49  rocky
+
+	* lib/_cdio_win32.c: More WIN32 fixes.
+
+2003-10-18 00:08  rocky
+
+	* lib/_cdio_win32.c: More fixes on non ASPI side.
+
+2003-10-16 22:25  rocky
+
+	* lib/_cdio_win32.c: Track format's if no ASPI are probably close.
+	Reading probably closer to correct.
+
+2003-10-16 09:21  rocky
+
+	* src/cd-read.c: Typo.
+
+2003-10-15 07:53  rocky
+
+	* NEWS: [no log message]
+
+2003-10-14 23:53  rocky
+
+	* lib/_cdio_win32.c: Some of the many necessary fixes needed to
+	make Win32 handling more complete. Some bugs remain (and will so
+	until after the release).
+
+2003-10-14 22:35  rocky
+
+	* src/cd-read.c: [no log message]
+
+2003-10-14 21:59  rocky
+
+	* src/cd-info.c, src/cd-read.c, test/cdda.right,
+	test/check_opts2.right, test/check_opts3.right,
+	test/check_opts4.right, test/check_opts5.right,
+	test/check_opts6.right, test/check_opts7.right,
+	test/isofs-m1.right, test/monvoisin.right,
+	test/svcd_ogt_test_ntsc.right, test/svcdgs.right,
+	test/vcd_demo.right, test/vcd_demo_vcdinfo.right,
+	test/videocd.right: Show green status for each track.  cd-info.c:
+	above + fewer assertions cd-read.c: direction we'll go when after
+	release.
+
+2003-10-14 00:44  rocky
+
+	* lib/_cdio_sunos.c: Back off some of the modularization until we
+	figure out what's gone wrong.
+
+2003-10-13 19:41  rocky
+
+	* lib/_cdio_osx.c: Compilation bugs.
+
+2003-10-13 19:00  rocky
+
+	* configure.ac: The real release.
+
+2003-10-13 18:45  rocky
+
+	* ChangeLog: [no log message]
+
 2003-10-07 21:06  rocky
 
 	* include/cdio/sector.h, lib/_cdio_osx.c: OSX fixups and #define

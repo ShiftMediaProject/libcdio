@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.3 2004/01/10 03:21:50 rocky Exp $
+  $Id: util.c,v 1.4 2004/02/07 02:40:20 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -29,13 +29,14 @@ char *program_name;
 void 
 myexit(CdIo *cdio, int rc) 
 {
-  if (NULL != cdio) 
-    cdio_destroy(cdio);
+  if (NULL != cdio) cdio_destroy(cdio);
+  if (NULL != program_name) free(program_name);
+  if (NULL != source_name)  free(source_name);
   exit(rc);
 }
 
 void
-print_version (const char *program_name, const char *version, 
+print_version (char *program_name, const char *version, 
 	       int no_header, bool version_only)
 {
   
@@ -61,6 +62,7 @@ PARTICULAR PURPOSE.\n\
       printf("Default CD-ROM device: %s\n", default_device);
     else
       printf("No CD-ROM device found.\n");
+    free(program_name);
     exit(100);
   }
   

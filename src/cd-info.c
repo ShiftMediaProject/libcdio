@@ -1,9 +1,9 @@
 /*
-    $Id: cd-info.c,v 1.47 2003/11/16 19:30:45 rocky Exp $
+    $Id: cd-info.c,v 1.48 2004/02/07 02:40:20 rocky Exp $
 
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
-    Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
-         and       Heiko Eiﬂfeldt <heiko@hexco.de>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
+         and Heiko Eiﬂfeldt <heiko@hexco.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -203,7 +203,7 @@ parse_options (int argc, const char *argv[])
   poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
   program_name = strrchr(argv[0],'/');
-  program_name = program_name ? program_name+1 : strdup(argv[0]);
+  program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
   while ((opt = poptGetNextOpt (optCon)) != -1) {
     switch (opt) {
@@ -242,6 +242,7 @@ parse_options (int argc, const char *argv[])
       break;
       
     default:
+      poptFreeContext(optCon);
       return false;
     }
   }
@@ -252,6 +253,8 @@ parse_options (int argc, const char *argv[])
 	fprintf (stderr, 
 		 "%s: Source specified in option %s and as %s\n", 
 		 program_name, source_name, remaining_arg);
+	poptFreeContext(optCon);
+	free(program_name);
 	exit (EXIT_FAILURE);
       }
       
@@ -264,12 +267,15 @@ parse_options (int argc, const char *argv[])
 	fprintf (stderr, 
 		 "%s: Source specified in previously %s and %s\n", 
 		 program_name, source_name, remaining_arg);
+	poptFreeContext(optCon);
+	free(program_name);
 	exit (EXIT_FAILURE);
 	
       }
     }
   }
   
+  poptFreeContext(optCon);
   return true;
 }
 

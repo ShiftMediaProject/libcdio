@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.15 2003/11/10 03:47:37 rocky Exp $
+  $Id: cd-read.c,v 1.16 2004/02/07 02:40:20 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -229,7 +229,7 @@ parse_options (int argc, const char *argv[])
   poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
   
   program_name = strrchr(argv[0],'/');
-  program_name = program_name ? program_name+1 : strdup(argv[0]);
+  program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
   while ((opt = poptGetNextOpt (optCon)) != -1)
     switch (opt)
@@ -274,6 +274,8 @@ parse_options (int argc, const char *argv[])
         break;
       case OP_VERSION:
         print_version(program_name, VERSION, 0, true);
+	poptFreeContext(optCon);
+	free(program_name);
         exit (EXIT_SUCCESS);
         break;
 
@@ -282,6 +284,8 @@ parse_options (int argc, const char *argv[])
                  poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
                  poptStrerror(opt));
         fprintf (stderr, "error while parsing command line - try --help\n");
+	poptFreeContext(optCon);
+	free(program_name);
         exit (EXIT_FAILURE);
       }
 
@@ -292,6 +296,8 @@ parse_options (int argc, const char *argv[])
 	fprintf (stderr, 
 		 "%s: Source specified in option %s and as %s\n", 
 		 program_name, source_name, remaining_arg);
+	poptFreeContext(optCon);
+	free(program_name);
 	exit (EXIT_FAILURE);
       }
       
@@ -304,6 +310,8 @@ parse_options (int argc, const char *argv[])
 	fprintf (stderr, 
 		 "%s: Source specified in previously %s and %s\n", 
 		 program_name, source_name, remaining_arg);
+	poptFreeContext(optCon);
+	free(program_name);
 	exit (EXIT_FAILURE);
 	
       }
@@ -320,6 +328,8 @@ parse_options (int argc, const char *argv[])
     fprintf(stderr, 
 	    "%s: Need to give a read mode (audio, m1f1, m1f2, m2f1 or m2f2)\n",
 	    program_name);
+    poptFreeContext(optCon);
+    free(program_name);
     exit(10);
   }
 
@@ -338,6 +348,7 @@ parse_options (int argc, const char *argv[])
 		" the sector to read (%lu)\n",
 		program_name, (unsigned long) opts.end_lsn, 
 		(unsigned long) opts.num_sectors);
+	poptFreeContext(optCon);
 	exit(12);
       }
       opts.start_lsn = opts.end_lsn - opts.num_sectors + 1;
@@ -356,6 +367,8 @@ parse_options (int argc, const char *argv[])
 	      "%s: end LSN (%lu) needs to be less than start LSN (%lu)\n",
 	      program_name, (unsigned long) opts.start_lsn, 
 	      (unsigned long) opts.end_lsn);
+      poptFreeContext(optCon);
+      free(program_name);
       exit(13);
     }
     if (opts.num_sectors != opts.end_lsn - opts.start_lsn + 1)
@@ -365,11 +378,14 @@ parse_options (int argc, const char *argv[])
 		 "and count (%d)\n",
 		 program_name, (unsigned long) opts.start_lsn, 
 		 (unsigned long) opts.end_lsn, opts.num_sectors);
+	 poptFreeContext(optCon);
+	 free(program_name);
 	 exit(14);
 	}
     opts.num_sectors = opts.end_lsn - opts.start_lsn + 1;
   }
   
+  poptFreeContext(optCon);
   return true;
 }
 
@@ -536,6 +552,8 @@ main(int argc, const char *argv[])
 
   if (opts.output_file) close(output_fd);
 
-  cdio_destroy(cdio);
-  return 0;
+  myexit(cdio, EXIT_SUCCESS);
+  /* Not reached:*/
+  return(EXIT_SUCCESS);
+
 }
