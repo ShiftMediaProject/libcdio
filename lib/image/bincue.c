@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.33 2004/07/11 14:25:07 rocky Exp $
+    $Id: bincue.c,v 1.34 2004/07/17 02:18:28 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.33 2004/07/11 14:25:07 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.34 2004/07/17 02:18:28 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -883,7 +883,9 @@ _get_track_green_bincue(void *user_data, track_t i_track)
 {
   _img_private_t *env = user_data;
   
-  if (i_track > env->i_tracks || i_track == 0) 
+  if ( NULL == env || 
+       ( i_track < env->i_first_track
+	 || i_track >= env->i_tracks + env->i_first_track ) )
     return false;
 
   return env->tocent[i_track-env->i_first_track].track_green;

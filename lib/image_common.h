@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.11 2004/07/13 04:33:07 rocky Exp $
+    $Id: image_common.h,v 1.12 2004/07/17 02:18:28 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -89,16 +89,34 @@ _get_arg_image (void *user_data, const char key[])
   return NULL;
 }
 
-/*!
-  Return the CD-TEXT structure
+/*! 
+  Get cdtext information for a CdIo object.
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return the CD-TEXT object or NULL if obj is NULL
+  or CD-TEXT information does not exist.
+  
+  If i_track is 0 or CDIO_CDROM_LEADOUT_TRACK the track returned
+  is the information assocated with the CD. 
 */
 static const cdtext_t *
-_get_cdtext_image (void *user_data)
+_get_cdtext_image (void *user_data, track_t i_track)
 {
   const _img_private_t *env = user_data;
 
-  if (NULL == env) return NULL;
-  return &(env->cdtext);
+  if ( NULL == env || 
+       ( 0 != i_track
+	 && i_track >= env->i_tracks + env->i_first_track ) )
+    return NULL;
+
+  if (CDIO_CDROM_LEADOUT_TRACK == i_track) 
+    i_track = 0;
+  
+  if (0 == i_track) 
+    return &(env->cdtext);
+  else 
+    return &(env->tocent[i_track-env->i_first_track].cdtext);
+  
 }
 
 /*!

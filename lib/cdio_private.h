@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.28 2004/07/13 03:45:15 rocky Exp $
+    $Id: cdio_private.h,v 1.29 2004/07/17 02:18:28 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -56,10 +56,17 @@ extern "C" {
     */
     const char * (*get_arg) (void *env, const char key[]);
     
-    /*!
-      Return cdtext information.
+    /*! 
+      Get cdtext information for a CdIo object.
+    
+      @param obj the CD object that may contain CD-TEXT information.
+      @return the CD-TEXT object or NULL if obj is NULL
+      or CD-TEXT information does not exist.
+    
+      If i_track is 0 or CDIO_CDROM_LEADOUT_TRACK the track returned
+      is the information assocated with the CD. 
     */
-    const cdtext_t * (*get_cdtext) (void *env);
+    const cdtext_t * (*get_cdtext) (void *env, track_t i_track);
     
     /*!
       Return an array of device names. if CdIo is NULL (we haven't

@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.h,v 1.5 2004/07/16 21:29:24 rocky Exp $
+    $Id: cdtext.h,v 1.6 2004/07/17 02:18:27 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     adapted from cuetools
@@ -57,35 +57,35 @@ extern "C" {
     CDTEXT_INVALID    = MAX_CDTEXT_FIELDS
   } cdtext_field_t;
 
-/*! Return string representation of the enum values above */
-const char *cdtext_field2str (cdtext_field_t i);
+  /*! Return string representation of the enum values above */
+  const char *cdtext_field2str (cdtext_field_t i);
   
-/*! Initialize a new cdtext structure.
-  When the structure is no longer needed, release the 
-  resources using cdtext_delete.
-*/
-void cdtext_init (cdtext_t *cdtext);
-
-/*! Free memory assocated with cdtext*/
-void cdtext_destroy (cdtext_t *cdtext);
-
-/*! 
-  returns the CDTEXT value associated with key. NULL is returned
-  if key is CDTEXT_INVALID or the field is not set.
- */
-const char *cdtext_get (cdtext_field_t key, const cdtext_t *cdtext);
-
-/*!
-  returns enum of keyword if key is a CD-TEXT keyword, 
-  returns MAX_CDTEXT_FIELDS non-zero otherwise.
-*/
-cdtext_field_t cdtext_is_keyword (const char *key);
-
-/*! 
-  sets cdtext's keyword entry to field 
- */
-void cdtext_set (cdtext_field_t key, const char *value, cdtext_t *cdtext);
-
+  /*! Initialize a new cdtext structure.
+    When the structure is no longer needed, release the 
+    resources using cdtext_delete.
+  */
+  void cdtext_init (cdtext_t *cdtext);
+  
+  /*! Free memory assocated with cdtext*/
+  void cdtext_destroy (cdtext_t *cdtext);
+  
+  /*!  returns the CDTEXT value associated with key at the given track
+    number. NULL is returned if key is CDTEXT_INVALID or the field is
+    not set. 
+  */
+  const char *cdtext_get (cdtext_field_t key, const cdtext_t *cdtext);
+  
+  /*!
+    returns enum of keyword if key is a CD-TEXT keyword, 
+    returns MAX_CDTEXT_FIELDS non-zero otherwise.
+  */
+  cdtext_field_t cdtext_is_keyword (const char *key);
+  
+  /*! 
+    sets cdtext's keyword entry to field 
+  */
+  void cdtext_set (cdtext_field_t key, const char *value, cdtext_t *cdtext);
+  
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

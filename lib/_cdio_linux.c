@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.64 2004/07/15 11:36:12 rocky Exp $
+    $Id: _cdio_linux.c,v 1.65 2004/07/17 02:18:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.64 2004/07/15 11:36:12 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.65 2004/07/17 02:18:27 rocky Exp $";
 
 #include <string.h>
 
@@ -699,11 +699,10 @@ _cdio_read_toc (_img_private_t *env)
   @return the CD-TEXT object or NULL if obj is NULL
   or CD-TEXT information does not exist.
 */
-static const cdtext_t *
-_get_cdtext_linux (void *user_data)
+static bool
+_init_cdtext_linux (_img_private_t *env)
 {
 
-  _img_private_t *env = user_data;
   int status;
   struct scsi_cmd {
     unsigned int inlen;         /* Length of data written to device     */
@@ -724,7 +723,7 @@ _get_cdtext_linux (void *user_data)
   status = ioctl(env->gen.fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
   if (status != 0) {
     cdio_warn ("CDTEXT reading failed: %s\n", strerror(errno));  
-    return NULL;
+    return false;
   } else {
     
     CDText_data_t *pdata;
@@ -787,8 +786,34 @@ _get_cdtext_linux (void *user_data)
     }
   }
 
-  env->b_cdtext_init = true;
-  return &(env->cdtext);
+  return true;
+}
+
+/*! 
+  Get cdtext information for a CdIo object .
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return the CD-TEXT object or NULL if obj is NULL
+  or CD-TEXT information does not exist.
+*/
+static const cdtext_t *
+_get_cdtext_linux (void *user_data, track_t i_track)
+{
+  _img_private_t *env = user_data;
+
+  if ( NULL == env ||
+       (0 != i_track 
+       && i_track >= TOTAL_TRACKS+FIRST_TRACK_NUM ) )
+    return NULL;
+
+  env->b_cdtext_init = _init_cdtext_linux(env);
+  if (!env->b_cdtext_init) return NULL;
+
+  if (0 == i_track) 
+    return &(env->cdtext);
+  else 
+    return &(env->cdtext_track[i_track-FIRST_TRACK_NUM]);
+
 }
 
 #endif

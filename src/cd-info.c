@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.71 2004/07/16 21:29:25 rocky Exp $
+    $Id: cd-info.c,v 1.72 2004/07/17 02:18:28 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -336,13 +336,13 @@ msf_seconds(msf_t *msf)
       the number of tracks.
 */
 static unsigned long
-cddb_discid(CdIo *cdio, int num_tracks)
+cddb_discid(CdIo *cdio, int i_tracks)
 {
   int i,t,n=0;
   msf_t start_msf;
   msf_t msf;
   
-  for (i = 1; i <= num_tracks; i++) {
+  for (i = 1; i <= i_tracks; i++) {
     cdio_get_track_msf(cdio, i, &msf);
     n += cddb_dec_digit_sum(msf_seconds(&msf));
   }
@@ -352,7 +352,7 @@ cddb_discid(CdIo *cdio, int num_tracks)
   
   t = msf_seconds(&msf) - msf_seconds(&start_msf);
   
-  return ((n % 0xff) << 24 | t << 8 | num_tracks);
+  return ((n % 0xff) << 24 | t << 8 | i_tracks);
 }
 
 
@@ -382,27 +382,37 @@ _log_handler (cdio_log_level_t level, const char message[])
 }
 
 static void 
-print_cdtext_info(CdIo *cdio) {
-    const cdtext_t *cdtext = cdio_get_cdtext(cdio);
+print_cdtext_track_info(CdIo *cdio, track_t i_track, const char *message) {
+  const cdtext_t *cdtext = cdio_get_cdtext(cdio, 0);
 
-    if (NULL != cdtext) {
-      cdtext_field_t i;
-      
-      printf("\nCD-TEXT info:\n");
-
-      for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
-	if (cdtext->field[i]) {
-	  printf("\t%s: %s\n", cdtext_field2str(i), cdtext->field[i]);
-	}
+  if (NULL != cdtext) {
+    cdtext_field_t i;
+    
+    printf("%s\n", message);
+    
+    for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
+      if (cdtext->field[i]) {
+	printf("\t%s: %s\n", cdtext_field2str(i), cdtext->field[i]);
       }
-    } else {
-      printf("Didn't get CD-TEXT info.\n");
     }
+  }
 }
     
+static void 
+print_cdtext_info(CdIo *cdio, track_t i_tracks, track_t i_first_track) {
+  track_t i_last_track = i_first_track+i_tracks;
+  
+  print_cdtext_track_info(cdio, 0, "\nCD-TEXT for Disc:");
+  for ( ; i_first_track < i_last_track; i_first_track++ ) {
+    char msg[50];
+    sprintf(msg, "CD-TEXT for Track %d:", i_first_track);
+    print_cdtext_track_info(cdio, i_first_track, msg);
+  }
+}
+
 #ifdef HAVE_CDDB
 static void 
-print_cddb_info(CdIo *cdio, track_t num_tracks, track_t first_track_num) {
+print_cddb_info(CdIo *cdio, track_t i_tracks, track_t i_first_track) {
   int i, matches;
   
   cddb_conn_t *conn =  cddb_new();
@@ -444,9 +454,9 @@ print_cddb_info(CdIo *cdio, track_t num_tracks, track_t first_track_num) {
     fprintf(stderr, "%s: unable to create CDDB disc structure", program_name);
     goto cddb_destroy;
   }
-  for(i = 0; i < num_tracks; i++) {
+  for(i = 0; i < i_tracks; i++) {
     cddb_track_t *t = cddb_track_new(); 
-    t->frame_offset = cdio_get_track_lba(cdio, i+first_track_num);
+    t->frame_offset = cdio_get_track_lba(cdio, i+i_first_track);
     cddb_disc_add_track(disc, t);
   }
     
@@ -643,7 +653,7 @@ print_iso9660_fs (const CdIo *p_cdio, cdio_fs_anal_t fs,
 static void
 print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis, 
 	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
-	       track_t num_tracks, track_t first_track_num, 
+	       track_t i_tracks, track_t i_first_track, 
 	       track_format_t track_format, CdIo *p_cdio)
 {
   int need_lf;
@@ -652,11 +662,11 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
   case CDIO_FS_AUDIO:
     if (num_audio > 0) {
       printf("Audio CD, CDDB disc ID is %08lx\n", 
-	     cddb_discid(p_cdio, num_tracks));
+	     cddb_discid(p_cdio, i_tracks));
 #ifdef HAVE_CDDB
-      if (!opts.no_cddb) print_cddb_info(p_cdio, num_tracks, first_track_num);
+      if (!opts.no_cddb) print_cddb_info(p_cdio, i_tracks, i_first_track);
 #endif      
-      print_cdtext_info(p_cdio);
+      print_cdtext_info(p_cdio, i_tracks, i_first_track);
     }
     break;
   case CDIO_FS_ISO_9660:
@@ -822,14 +832,14 @@ main(int argc, const char *argv[])
   cdio_fs_anal_t      fs=CDIO_FS_AUDIO;
   int i;
   lsn_t               start_track_lsn;      /* lsn of first track */
-  lsn_t               data_start =0;        /* start of data area */
-  int                 ms_offset = 0;
-  track_t             num_tracks=0;
-  track_t             first_track_num  =  0;
-  unsigned int        num_audio   =  0;  /* # of audio tracks */
-  unsigned int        num_data    =  0;  /* # of data tracks */
-  int                 first_data  = -1;  /* # of first data track */
-  int                 first_audio = -1;  /* # of first audio track */
+  lsn_t               data_start     =  0;  /* start of data area */
+  int                 ms_offset      =  0;
+  track_t             i_tracks       =  0;
+  track_t             i_first_track  =  0;
+  unsigned int        num_audio      =  0;  /* # of audio tracks */
+  unsigned int        num_data       =  0;  /* # of data tracks */
+  int                 first_data     = -1;  /* # of first data track */
+  int                 first_audio    = -1;  /* # of first audio track */
   cdio_iso_analysis_t cdio_iso_analysis; 
   char                *media_catalog_number;  
       
@@ -974,18 +984,18 @@ main(int argc, const char *argv[])
     if (device_list) free(device_list);
   }
 
-  first_track_num = cdio_get_first_track_num(cdio);
-  num_tracks      = cdio_get_num_tracks(cdio);
+  i_first_track = cdio_get_first_track_num(cdio);
+  i_tracks      = cdio_get_num_tracks(cdio);
 
   if (!opts.no_tracks) {
     printf(STRONG "CD-ROM Track List (%i - %i)\n" NORMAL, 
-	   first_track_num, num_tracks);
+	   i_first_track, i_tracks);
 
     printf("  #: MSF       LSN     Type  Green?\n");
   }
   
   /* Read and possibly print track information. */
-  for (i = first_track_num; i <= CDIO_CDROM_LEADOUT_TRACK; i++) {
+  for (i = i_first_track; i <= CDIO_CDROM_LEADOUT_TRACK; i++) {
     msf_t msf;
     char *psz_msf;
 
@@ -1014,7 +1024,7 @@ main(int argc, const char *argv[])
       if (-1 == first_data)  first_data = i;
     }
     /* skip to leadout? */
-    if (i == num_tracks) i = CDIO_CDROM_LEADOUT_TRACK-1;
+    if (i == i_tracks) i = CDIO_CDROM_LEADOUT_TRACK-1;
   }
 
   /* get MCN */
@@ -1111,13 +1121,13 @@ main(int argc, const char *argv[])
 	}
       }
       print_analysis(ms_offset, cdio_iso_analysis, fs, first_data, num_audio,
-		     num_tracks, first_track_num, 
+		     i_tracks, i_first_track, 
 		     cdio_get_track_format(cdio, 1), cdio);
     } else {
       /* we have data track(s) */
       int j;
 
-      for (j = 2, i = first_data; i <= num_tracks; i++) {
+      for (j = 2, i = first_data; i <= i_tracks; i++) {
 	msf_t msf;
 	track_format_t track_format = cdio_get_track_format(cdio, i);
       
@@ -1158,7 +1168,7 @@ main(int argc, const char *argv[])
 	  fs |= CDIO_FS_ANAL_MULTISESSION;
 	} else {
 	  print_analysis(ms_offset, cdio_iso_analysis, fs, first_data, 
-			 num_audio, num_tracks, first_track_num, 
+			 num_audio, i_tracks, i_first_track, 
 			 track_format, cdio);
 	}
 

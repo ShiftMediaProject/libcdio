@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.56 2004/07/11 14:25:07 rocky Exp $
+    $Id: cdio.h,v 1.57 2004/07/17 02:18:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -160,8 +160,11 @@ extern "C" {
     @param obj the CD object that may contain CD-TEXT information.
     @return the CD-TEXT object or NULL if obj is NULL
     or CD-TEXT information does not exist.
+
+    If i_track is 0 or CDIO_CDROM_LEADOUT_TRACK the track returned
+    is the information assocated with the CD. 
   */
-  const cdtext_t *cdio_get_cdtext (const CdIo *obj);
+  const cdtext_t *cdio_get_cdtext (CdIo *obj, track_t i_track);
 
   /*!
     Get an array of device names in search_devices that have at
@@ -300,7 +303,7 @@ extern "C" {
     greater than 0, usually 1.
 
     The "leadout" track is specified either by
-    using i_track LEADOUT_TRACK or the total tracks+1.
+    using i_track CDIO_CDROM_LEADOUT_TRACK or the total tracks+1.
 
     @param obj object to get information from
     @param i_track  the track number we want the LSN for
@@ -314,7 +317,7 @@ extern "C" {
     greater than 0, usually 1.
 
     The "leadout" track is specified either by
-    using i_track LEADOUT_TRACK or the total tracks+1.
+    using i_track CDIO_CDROM_LEADOUT_TRACK or the total tracks+1.
 
     @param obj object to get information from
     @param i_track  the track number we want the LSN for
@@ -328,7 +331,7 @@ extern "C" {
     greater than 0, usually 1.
 
     The "leadout" track is specified either by
-    using i_track LEADOUT_TRACK or the total tracks+1.
+    using i_track CDIO_CDROM_LEADOUT_TRACK or the total tracks+1.
     
     @return true if things worked or false if there is no track entry.
   */

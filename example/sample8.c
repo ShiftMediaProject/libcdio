@@ -1,5 +1,5 @@
 /*
-  $Id: sample8.c,v 1.3 2004/07/13 03:45:15 rocky Exp $
+  $Id: sample8.c,v 1.4 2004/07/17 02:18:26 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -26,51 +26,63 @@
 #include <sys/types.h>
 #include <cdio/cdio.h>
 #include <cdio/cdtext.h>
+
+
+static void 
+print_cdtext_track_info(CdIo *cdio, track_t i_track, const char *message) {
+  const cdtext_t *cdtext = cdio_get_cdtext(cdio, 0);
+
+  if (NULL != cdtext) {
+    cdtext_field_t i;
+    
+    printf("%s\n", message);
+    
+    for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
+      if (cdtext->field[i]) {
+	printf("\t%s: %s\n", cdtext_field2str(i), cdtext->field[i]);
+      }
+    }
+  }
+}
+    
+static void 
+print_cdtext_info(CdIo *cdio, track_t i_tracks, track_t i_first_track) {
+  track_t i_last_track = i_first_track+i_tracks;
+  
+  print_cdtext_track_info(cdio, 0, "\nCD-TEXT for Disc:");
+  for ( ; i_first_track < i_last_track; i_first_track++ ) {
+    char msg[50];
+    sprintf(msg, "CD-TEXT for Track %d:", i_first_track);
+    print_cdtext_track_info(cdio, i_first_track, msg);
+  }
+}
+
 int
 main(int argc, const char *argv[])
 {
-  CdIo *cdio = cdio_open ("../test/cdda.cue", DRIVER_BINCUE);
+  CdIo *cdio       = cdio_open ("../test/cdda.cue", DRIVER_BINCUE);
+  track_t i_first_track = cdio_get_first_track_num(cdio);
+  track_t i_tracks      = cdio_get_num_tracks(cdio);
+
 
   if (NULL == cdio) {
     printf("Couldn't open ../test/cdda.cue with BIN/CUE driver \n");
     return 1;
   } else {
-    const cdtext_t *cdtext = cdio_get_cdtext(cdio);
-
-    if (NULL != cdtext) {
-      printf("CD-TEXT Title: %s\n", 
-	     cdtext->field[CDTEXT_TITLE]     ? 
-	     cdtext->field[CDTEXT_TITLE]     : "not set");
-      printf("CD-TEXT Performer: %s\n", 
-	     cdtext->field[CDTEXT_PERFORMER] ? 
-	     cdtext->field[CDTEXT_PERFORMER] : "not set"
-	     );
-    } else {
-      printf("Didn't get CD-TEXT info.\n");
-    }
+    print_cdtext_info(cdio, i_tracks, i_first_track);
   }
 
   cdio_destroy(cdio);
   
   cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  i_first_track = cdio_get_first_track_num(cdio);
+  i_tracks      = cdio_get_num_tracks(cdio);
 
   if (NULL == cdio) {
     printf("Couldn't find CD\n");
     return 1;
   } else {
-    const cdtext_t *cdtext = cdio_get_cdtext(cdio);
-
-    if (NULL != cdtext) {
-      printf("CD-TEXT Title: %s\n", 
-	     cdtext->field[CDTEXT_TITLE]     ? 
-	     cdtext->field[CDTEXT_TITLE]     : "not set");
-      printf("CD-TEXT Performer: %s\n", 
-	     cdtext->field[CDTEXT_PERFORMER] ? 
-	     cdtext->field[CDTEXT_PERFORMER] : "not set"
-	     );
-    } else {
-      printf("Didn't get CD-TEXT info.\n");
-    }
+    print_cdtext_info(cdio, i_tracks, i_first_track);
   }
 
   cdio_destroy(cdio);
