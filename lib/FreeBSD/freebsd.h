@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.19 2004/07/28 11:45:21 rocky Exp $
+    $Id: freebsd.h,v 1.20 2004/07/31 09:15:25 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -123,8 +123,6 @@ typedef struct {
   /* Things common to all drivers like this. 
      This must be first. */
   generic_img_private_t gen; 
-
-  char *source_name;
 
 #ifdef HAVE_FREEBSD_CAM
   char *device;
