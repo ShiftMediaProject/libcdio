@@ -1,8 +1,8 @@
 /*
-    $Id: bincue.c,v 1.18 2004/05/13 01:50:23 rocky Exp $
+    $Id: bincue.c,v 1.19 2004/06/01 11:15:58 rocky Exp $
 
-    Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.18 2004/05/13 01:50:23 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.19 2004/06/01 11:15:58 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -96,13 +96,13 @@ typedef struct {
   char         *cue_name;
   char         *mcn;             /* Media catalog number. */
   track_info_t  tocent[100];     /* entry info for each track */
-  track_t       total_tracks;    /* number of tracks in image */
-  track_t       first_track_num; /* track number of first track */
+  track_t       i_tracks;    /* number of tracks in image */
+  track_t       i_first_track;   /* track number of first track */
   bool have_cue;
 } _img_private_t;
 
-static bool     _bincue_image_read_cue (_img_private_t *_obj);
-static uint32_t _stat_size_bincue (void *env);
+static bool     _bincue_image_read_cue (_img_private_t *env);
+static uint32_t _stat_size_bincue (void *user_data);
 
 #include "image_common.h"
 
@@ -110,14 +110,14 @@ static uint32_t _stat_size_bincue (void *env);
   Initialize image structures.
  */
 static bool
-_bincue_init (_img_private_t *_obj)
+_bincue_init (_img_private_t *env)
 {
   lsn_t lead_lsn;
 
-  if (_obj->gen.init)
+  if (env->gen.init)
     return false;
 
-  if (!(_obj->gen.data_source = cdio_stdio_new (_obj->gen.source_name))) {
+  if (!(env->gen.data_source = cdio_stdio_new (env->gen.source_name))) {
     cdio_warn ("init failed");
     return false;
   }
@@ -125,30 +125,30 @@ _bincue_init (_img_private_t *_obj)
   /* Have to set init before calling _stat_size_bincue() or we will
      get into infinite recursion calling passing right here.
    */
-  _obj->gen.init = true;  
+  env->gen.init = true;  
 
-  lead_lsn = _stat_size_bincue( (_img_private_t *) _obj);
+  lead_lsn = _stat_size_bincue( (_img_private_t *) env);
 
   if (-1 == lead_lsn) 
     return false;
 
   /* Read in CUE sheet. */
-  if ((_obj->cue_name != NULL)) {
-    _obj->have_cue = _bincue_image_read_cue(_obj);
+  if ((env->cue_name != NULL)) {
+    env->have_cue = _bincue_image_read_cue(env);
   }
 
-  if (!_obj->have_cue ) {
+  if (!env->have_cue ) {
     /* Time to fake things...
        Make one big track, track 0 and 1 are the same. 
        We are guessing stuff starts at msf 00:04:00 - 2 for the 150
        sector pregap and 2 for the cue information.
      */
-    track_info_t  *this_track=&(_obj->tocent[0]);
-    int blocksize = _obj->sector_2336 
+    track_info_t  *this_track=&(env->tocent[0]);
+    int blocksize = env->sector_2336 
       ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
-    _obj->total_tracks = 2;
-    _obj->first_track_num = 1;
+    env->i_tracks           = 2;
+    env->i_first_track      = 1;
     this_track->start_msf.m = to_bcd8(0);
     this_track->start_msf.s = to_bcd8(4);
     this_track->start_msf.f = to_bcd8(0);
@@ -158,14 +158,14 @@ _bincue_init (_img_private_t *_obj)
     this_track->track_green = true;
 
 
-    _obj->tocent[1] = _obj->tocent[0];
+    env->tocent[1] = env->tocent[0];
   }
   
   /* Fake out leadout track and sector count for last track*/
-  cdio_lsn_to_msf (lead_lsn, &_obj->tocent[_obj->total_tracks].start_msf);
-  _obj->tocent[_obj->total_tracks].start_lba = cdio_lsn_to_lba(lead_lsn);
-  _obj->tocent[_obj->total_tracks-1].sec_count = 
-    cdio_lsn_to_lba(lead_lsn - _obj->tocent[_obj->total_tracks-1].start_lba);
+  cdio_lsn_to_msf (lead_lsn, &env->tocent[env->i_tracks].start_msf);
+  env->tocent[env->i_tracks].start_lba = cdio_lsn_to_lba(lead_lsn);
+  env->tocent[env->i_tracks - env->i_first_track].sec_count = 
+    cdio_lsn_to_lba(lead_lsn - env->tocent[env->i_tracks - env->i_first_track].start_lba);
 
   return true;
 }
@@ -177,9 +177,9 @@ _bincue_init (_img_private_t *_obj)
   information in each sector.
 */
 static off_t
-_lseek_bincue (void *env, off_t offset, int whence)
+_lseek_bincue (void *user_data, off_t offset, int whence)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   /* real_offset is the real byte offset inside the disk image
      The number below was determined empirically. I'm guessing
@@ -189,30 +189,30 @@ _lseek_bincue (void *env, off_t offset, int whence)
 
   unsigned int i;
 
-  _obj->pos.lba = 0;
-  for (i=0; i<_obj->total_tracks; i++) {
-    track_info_t  *this_track=&(_obj->tocent[i]);
-    _obj->pos.index = i;
+  env->pos.lba = 0;
+  for (i=0; i<env->i_tracks; i++) {
+    track_info_t  *this_track=&(env->tocent[i]);
+    env->pos.index = i;
     if ( (this_track->sec_count*this_track->datasize) >= offset) {
       int blocks            = offset / this_track->datasize;
       int rem               = offset % this_track->datasize;
       int block_offset      = blocks * this_track->blocksize;
       real_offset          += block_offset + rem;
-      _obj->pos.buff_offset = rem;
-      _obj->pos.lba        += blocks;
+      env->pos.buff_offset = rem;
+      env->pos.lba        += blocks;
       break;
     }
     real_offset   += this_track->sec_count*this_track->blocksize;
     offset        -= this_track->sec_count*this_track->datasize;
-    _obj->pos.lba += this_track->sec_count;
+    env->pos.lba += this_track->sec_count;
   }
 
-  if (i==_obj->total_tracks) {
+  if (i==env->i_tracks) {
     cdio_warn ("seeking outside range of disk image");
     return -1;
   } else {
-    real_offset += _obj->tocent[i].datastart;
-    return cdio_stream_seek(_obj->gen.data_source, real_offset, whence);
+    real_offset += env->tocent[i].datastart;
+    return cdio_stream_seek(env->gen.data_source, real_offset, whence);
   }
 }
 
@@ -224,20 +224,20 @@ _lseek_bincue (void *env, off_t offset, int whence)
    boundaries.
 */
 static ssize_t
-_read_bincue (void *env, void *data, size_t size)
+_read_bincue (void *user_data, void *data, size_t size)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   char *p = data;
   ssize_t final_size=0;
   ssize_t this_size;
-  track_info_t  *this_track=&(_obj->tocent[_obj->pos.index]);
+  track_info_t  *this_track=&(env->tocent[env->pos.index]);
   ssize_t skip_size = this_track->datastart + this_track->endsize;
 
   while (size > 0) {
-    int rem = this_track->datasize - _obj->pos.buff_offset;
+    int rem = this_track->datasize - env->pos.buff_offset;
     if (size <= rem) {
-      this_size = cdio_stream_read(_obj->gen.data_source, buf, size, 1);
+      this_size = cdio_stream_read(env->gen.data_source, buf, size, 1);
       final_size += this_size;
       memcpy (p, buf, this_size);
       break;
@@ -247,24 +247,24 @@ _read_bincue (void *env, void *data, size_t size)
     cdio_warn ("Reading across block boundaries not finished");
 
     size -= rem;
-    this_size = cdio_stream_read(_obj->gen.data_source, buf, rem, 1);
+    this_size = cdio_stream_read(env->gen.data_source, buf, rem, 1);
     final_size += this_size;
     memcpy (p, buf, this_size);
     p += this_size;
-    this_size = cdio_stream_read(_obj->gen.data_source, buf, rem, 1);
+    this_size = cdio_stream_read(env->gen.data_source, buf, rem, 1);
     
     /* Skip over stuff at end of this sector and the beginning of the next.
      */
-    cdio_stream_read(_obj->gen.data_source, buf, skip_size, 1);
+    cdio_stream_read(env->gen.data_source, buf, skip_size, 1);
 
     /* Get ready to read another sector. */
-    _obj->pos.buff_offset=0;
-    _obj->pos.lba++;
+    env->pos.buff_offset=0;
+    env->pos.lba++;
 
     /* Have gone into next track. */
-    if (_obj->pos.lba >= _obj->tocent[_obj->pos.index+1].start_lba) {
-      _obj->pos.index++;
-      this_track=&(_obj->tocent[_obj->pos.index]);
+    if (env->pos.lba >= env->tocent[env->pos.index+1].start_lba) {
+      env->pos.index++;
+      this_track=&(env->tocent[env->pos.index]);
       skip_size = this_track->datastart + this_track->endsize;
     }
   }
@@ -275,21 +275,19 @@ _read_bincue (void *env, void *data, size_t size)
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_stat_size_bincue (void *env)
+_stat_size_bincue (void *user_data)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   long size;
-  int blocksize = _obj->sector_2336 
+  int blocksize = env->sector_2336 
     ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
-  _bincue_init (_obj);
-  
-  size = cdio_stream_stat (_obj->gen.data_source);
+  size = cdio_stream_stat (env->gen.data_source);
 
   if (size % blocksize)
     {
       cdio_warn ("image %s size (%ld) not multiple of blocksize (%d)", 
-		 _obj->gen.source_name, size, blocksize);
+		 env->gen.source_name, size, blocksize);
       if (size % M2RAW_SECTOR_SIZE == 0)
 	cdio_warn ("this may be a 2336-type disc image");
       else if (size % CDIO_CD_FRAMESIZE_RAW == 0)
@@ -305,25 +303,25 @@ _stat_size_bincue (void *env)
 #define MAXLINE 512
 
 static bool
-_bincue_image_read_cue (_img_private_t *_obj)
+_bincue_image_read_cue (_img_private_t *env)
 {
   FILE *fp;
   char line[MAXLINE];
 
-  int track_num;
+  int i_track;
   int min,sec,frame;
   int blocksize;
   int start_index;
   bool seen_first_index_for_track=false;
 
-  if ( _obj == NULL ||  _obj->cue_name == NULL ) return false;
+  if ( env == NULL ||  env->cue_name == NULL ) return false;
 
-  fp = fopen (_obj->cue_name, "r");
+  fp = fopen (env->cue_name, "r");
   if (fp == NULL) return false;
 
-  _obj->total_tracks=0;
-  _obj->first_track_num=1;
-  _obj->mcn=NULL;
+  env->i_tracks=0;
+  env->i_first_track=1;
+  env->mcn=NULL;
   
   while ((fgets(line, MAXLINE, fp)) != NULL) {
     char s[80];
@@ -333,21 +331,21 @@ _bincue_image_read_cue (_img_private_t *_obj)
     for (p=line; isspace(*p); p++) ;
     if (1==sscanf(p, "FILE \"%80s[^\"]", s)) {
       /* Should expand file name based on cue file basename.
-      free(_obj->bin_file);
-      _obj->bin_file = strdup(s);
+      free(env->bin_file);
+      env->bin_file = strdup(s);
       */
       /* printf("Found file name %s\n", s); */
     } else if (1==sscanf(p, "CATALOG %80s", s)) {
-      _obj->mcn = strdup(s);
-    } else if (2==sscanf(p, "TRACK %d MODE2/%d", &track_num, &blocksize)) {
-      track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
-      this_track->track_num   = track_num;
+      env->mcn = strdup(s);
+    } else if (2==sscanf(p, "TRACK %d MODE2/%d", &i_track, &blocksize)) {
+      track_info_t  *this_track=&(env->tocent[env->i_tracks]);
+      this_track->track_num   = i_track;
       this_track->num_indices = 0;
       this_track->track_format= TRACK_FORMAT_XA;
       this_track->track_green = true;
-      _obj->total_tracks++;
+      env->i_tracks++;
       seen_first_index_for_track=false;
-      /*printf("Added track %d with blocksize %d\n", track_num, blocksize);*/
+      /*printf("Added track %d with blocksize %d\n", i_track, blocksize);*/
 
       this_track->blocksize   = blocksize;
       switch(blocksize) {
@@ -359,7 +357,7 @@ _bincue_image_read_cue (_img_private_t *_obj)
       default:
 	cdio_warn ("Unknown MODE2 size %d. Assuming 2352", blocksize);
       case 2352:
-	if (_obj->sector_2336) {
+	if (env->sector_2336) {
 	  this_track->datastart = 0;          
 	  this_track->datasize  = M2RAW_SECTOR_SIZE;
 	  this_track->endsize   = blocksize - 2336;
@@ -372,8 +370,8 @@ _bincue_image_read_cue (_img_private_t *_obj)
 	break;
       }
 
-    } else if (2==sscanf(p, "TRACK %d MODE1/%d", &track_num, &blocksize)) {
-      track_info_t *this_track=&(_obj->tocent[_obj->total_tracks]);
+    } else if (2==sscanf(p, "TRACK %d MODE1/%d", &i_track, &blocksize)) {
+      track_info_t *this_track=&(env->tocent[env->i_tracks]);
       this_track->blocksize   = blocksize;
       switch(blocksize) {
       case 2048:
@@ -391,30 +389,30 @@ _bincue_image_read_cue (_img_private_t *_obj)
 	  + CDIO_CD_ECC_SIZE;
       }
 
-      this_track->track_num      = track_num;
+      this_track->track_num      = i_track;
       this_track->num_indices    = 0;
       this_track->track_format   = TRACK_FORMAT_DATA;
       this_track->track_green    = false;
-      _obj->total_tracks++;
+      env->i_tracks++;
       seen_first_index_for_track=false;
-      /*printf("Added track %d with blocksize %d\n", track_num, blocksize);*/
+      /*printf("Added track %d with blocksize %d\n", i_track, blocksize);*/
 
-    } else if (1==sscanf(p, "TRACK %d AUDIO", &track_num)) {
-      track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
+    } else if (1==sscanf(p, "TRACK %d AUDIO", &i_track)) {
+      track_info_t  *this_track=&(env->tocent[env->i_tracks]);
       this_track->blocksize      = CDIO_CD_FRAMESIZE_RAW;
       this_track->datasize       = CDIO_CD_FRAMESIZE_RAW;
       this_track->datastart      = 0;
       this_track->endsize        = 0;
-      this_track->track_num      = track_num;
+      this_track->track_num      = i_track;
       this_track->num_indices    = 0;
       this_track->track_format   = TRACK_FORMAT_AUDIO;
       this_track->track_green    = false;
-      _obj->total_tracks++;
+      env->i_tracks++;
       seen_first_index_for_track=false;
 
     } else if (4==sscanf(p, "INDEX %d %d:%d:%d", 
 			 &start_index, &min, &sec, &frame)) {
-      track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks-1]);
+      track_info_t  *this_track=&(env->tocent[env->i_tracks - env->i_first_track]);
       /* FIXME! all of this is a big hack. 
 	 If start_index == 0, then this is the "last_cue" information.
 	 The +2 below seconds is to adjust for the 150 pregap.
@@ -434,14 +432,14 @@ _bincue_image_read_cue (_img_private_t *_obj)
 	  seen_first_index_for_track=true;
 	}
 
-	if (_obj->total_tracks > 1) {
+	if (env->i_tracks > 1) {
 	  /* Figure out number of sectors for previous track */
-	  track_info_t  *prev_track=&(_obj->tocent[_obj->total_tracks-2]);
+	  track_info_t  *prev_track=&(env->tocent[env->i_tracks-2]);
 	  if ( this_track->start_lba < prev_track->start_lba ) {
 	    cdio_warn("track %d at LBA %lu starts before track %d at LBA %lu", 
-		     _obj->total_tracks,   
+		     env->i_tracks,   
 		      (unsigned long int) this_track->start_lba, 
-		      _obj->total_tracks-1, 
+		      env->i_tracks, 
 		      (unsigned long int) prev_track->start_lba);
 	    prev_track->sec_count = 0;
 	  } else if ( this_track->start_lba >= prev_track->start_lba 
@@ -453,7 +451,7 @@ _bincue_image_read_cue (_img_private_t *_obj)
 		       (long unsigned int) 
 		         this_track->start_lba - prev_track->start_lba,
 		       CDIO_PREGAP_SECTORS,
-		       _obj->total_tracks-1);
+		       env->i_tracks);
 	    /* Include pregap portion in sec_count. Maybe the pregap
 	     was omitted. */
 	    prev_track->sec_count = this_track->start_lba - 
@@ -464,7 +462,7 @@ _bincue_image_read_cue (_img_private_t *_obj)
       }
     }
   }
-  _obj->have_cue = _obj->total_tracks != 0;
+  env->have_cue = env->i_tracks != 0;
 
   fclose (fp);
   return true;
@@ -475,31 +473,29 @@ _bincue_image_read_cue (_img_private_t *_obj)
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_audio_sectors_bincue (void *env, void *data, lsn_t lsn, 
+_read_audio_sectors_bincue (void *user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int ret;
-
-  _bincue_init (_obj);
 
   /* Why the adjustment of 272, I don't know. It seems to work though */
   if (lsn != 0) {
-    ret = cdio_stream_seek (_obj->gen.data_source, 
+    ret = cdio_stream_seek (env->gen.data_source, 
 			    (lsn * CDIO_CD_FRAMESIZE_RAW) - 272, SEEK_SET);
     if (ret!=0) return ret;
 
-    ret = cdio_stream_read (_obj->gen.data_source, data, 
+    ret = cdio_stream_read (env->gen.data_source, data, 
 			    CDIO_CD_FRAMESIZE_RAW, nblocks);
   } else {
     /* We need to pad out the first 272 bytes with 0's */
     BZERO(data, 272);
     
-    ret = cdio_stream_seek (_obj->gen.data_source, 0, SEEK_SET);
+    ret = cdio_stream_seek (env->gen.data_source, 0, SEEK_SET);
 
     if (ret!=0) return ret;
 
-    ret = cdio_stream_read (_obj->gen.data_source, (uint8_t *) data+272, 
+    ret = cdio_stream_read (env->gen.data_source, (uint8_t *) data+272, 
 			    CDIO_CD_FRAMESIZE_RAW - 272, nblocks);
   }
 
@@ -512,23 +508,21 @@ _read_audio_sectors_bincue (void *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_mode1_sector_bincue (void *env, void *data, lsn_t lsn, 
+_read_mode1_sector_bincue (void *user_data, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  int blocksize = _obj->sector_2336 
+  int blocksize = env->sector_2336 
     ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
-  _bincue_init (_obj);
-
-  ret = cdio_stream_seek (_obj->gen.data_source, lsn * blocksize, SEEK_SET);
+  ret = cdio_stream_seek (env->gen.data_source, lsn * blocksize, SEEK_SET);
   if (ret!=0) return ret;
 
   /* FIXME: Not completely sure the below is correct. */
-  ret = cdio_stream_read (_obj->gen.data_source,
-			  _obj->sector_2336 
+  ret = cdio_stream_read (env->gen.data_source,
+			  env->sector_2336 
 			  ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE) 
 			  : buf,
 			  blocksize, 1);
@@ -546,16 +540,16 @@ _read_mode1_sector_bincue (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode1_sectors_bincue (void *env, void *data, lsn_t lsn, 
+_read_mode1_sectors_bincue (void *user_data, void *data, lsn_t lsn, 
 			    bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _read_mode1_sector_bincue (_obj, 
+    if ( (retval = _read_mode1_sector_bincue (env, 
 					    ((char *)data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -568,10 +562,10 @@ _read_mode1_sectors_bincue (void *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_mode2_sector_bincue (void *env, void *data, lsn_t lsn, 
+_read_mode2_sector_bincue (void *user_data, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
 
@@ -581,16 +575,14 @@ _read_mode2_sector_bincue (void *env, void *data, lsn_t lsn,
      Review this sector 2336 stuff later.
   */
 
-  int blocksize = _obj->sector_2336 
+  int blocksize = env->sector_2336 
     ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
-  _bincue_init (_obj);
-
-  ret = cdio_stream_seek (_obj->gen.data_source, lsn * blocksize, SEEK_SET);
+  ret = cdio_stream_seek (env->gen.data_source, lsn * blocksize, SEEK_SET);
   if (ret!=0) return ret;
 
-  ret = cdio_stream_read (_obj->gen.data_source,
-			  _obj->sector_2336 
+  ret = cdio_stream_read (env->gen.data_source,
+			  env->sector_2336 
 			  ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE) 
 			  : buf,
 			  blocksize, 1);
@@ -613,16 +605,16 @@ _read_mode2_sector_bincue (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors_bincue (void *env, void *data, lsn_t lsn, 
+_read_mode2_sectors_bincue (void *user_data, void *data, lsn_t lsn, 
 			    bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _read_mode2_sector_bincue (_obj, 
+    if ( (retval = _read_mode2_sector_bincue (env, 
 					    ((char *)data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -664,36 +656,36 @@ _eject_media_bincue(void *obj)
   0 is returned if no error was found, and nonzero if there as an error.
 */
 static int
-_set_arg_bincue (void *env, const char key[], const char value[])
+_set_arg_bincue (void *user_data, const char key[], const char value[])
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   if (!strcmp (key, "source"))
     {
-      free_if_notnull (_obj->gen.source_name);
+      free_if_notnull (env->gen.source_name);
 
       if (!value)
 	return -2;
 
-      _obj->gen.source_name = strdup (value);
+      env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "sector"))
     {
       if (!strcmp (value, "2336"))
-	_obj->sector_2336 = true;
+	env->sector_2336 = true;
       else if (!strcmp (value, "2352"))
-	_obj->sector_2336 = false;
+	env->sector_2336 = false;
       else
 	return -2;
     }
   else if (!strcmp (key, "cue"))
     {
-      free_if_notnull (_obj->cue_name);
+      free_if_notnull (env->cue_name);
 
       if (!value)
 	return -2;
 
-      _obj->cue_name = strdup (value);
+      env->cue_name = strdup (value);
     }
   else
     return -1;
@@ -705,14 +697,14 @@ _set_arg_bincue (void *env, const char key[], const char value[])
   Return the value associated with the key "arg".
 */
 static const char *
-_get_arg_bincue (void *env, const char key[])
+_get_arg_bincue (void *user_data, const char key[])
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   if (!strcmp (key, "source")) {
-    return _obj->gen.source_name;
+    return env->gen.source_name;
   } else if (!strcmp (key, "cue")) {
-    return _obj->cue_name;
+    return env->cue_name;
   } else if (!strcmp(key, "access-mode")) {
     return "image";
   } 
@@ -763,7 +755,7 @@ cdio_get_default_device_bincue(void)
 
  */
 static cdio_drive_cap_t
-_get_drive_cap_bincue (const void *env) {
+_get_drive_cap_bincue (const void *user_data) {
 
   /* There may be more in the future but these we can handle now. 
      Also, we know we can't handle 
@@ -777,16 +769,14 @@ _get_drive_cap_bincue (const void *env) {
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_format_t
-_get_track_format_bincue(void *env, track_t track_num) 
+_get_track_format_bincue(void *user_data, track_t i_track) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   
-  if (!_obj->gen.init) _bincue_init(_obj);
-
-  if (track_num > _obj->total_tracks || track_num == 0) 
+  if (i_track > env->i_tracks || i_track == 0) 
     return TRACK_FORMAT_ERROR;
 
-  return _obj->tocent[track_num-1].track_format;
+  return env->tocent[i_track-env->i_first_track].track_format;
 }
 
 /*!
@@ -798,35 +788,32 @@ _get_track_format_bincue(void *env, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_get_track_green_bincue(void *env, track_t track_num) 
+_get_track_green_bincue(void *user_data, track_t i_track) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   
-  if (!_obj->gen.init) _bincue_init(_obj);
-
-  if (track_num > _obj->total_tracks || track_num == 0) 
+  if (i_track > env->i_tracks || i_track == 0) 
     return false;
 
-  return _obj->tocent[track_num-1].track_green;
+  return env->tocent[i_track-env->i_first_track].track_green;
 }
 
 /*!  
   Return the starting LSN track number
-  track_num in obj.  Track numbers start at 1.
+  i_track in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
-  using track_num LEADOUT_TRACK or the total tracks+1.
+  using i_track LEADOUT_TRACK or the total tracks+1.
   False is returned if there is no track entry.
 */
 static lba_t
-_get_lba_track_bincue(void *env, track_t track_num)
+_get_lba_track_bincue(void *user_data, track_t i_track)
 {
-  _img_private_t *_obj = env;
-  _bincue_init (_obj);
+  _img_private_t *env = user_data;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = env->i_tracks+1;
 
-  if (track_num <= _obj->total_tracks+1 && track_num != 0) {
-    return _obj->tocent[track_num-1].start_lba;
+  if (i_track < env->i_tracks && i_track != 0) {
+    return env->tocent[i_track-env->i_first_track].start_lba;
   } else 
     return CDIO_INVALID_LBA;
 }

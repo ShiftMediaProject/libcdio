@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.19 2004/06/01 10:47:37 rocky Exp $
+    $Id: nrg.c,v 1.20 2004/06/01 11:15:58 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -49,7 +49,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.19 2004/06/01 10:47:37 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.20 2004/06/01 11:15:58 rocky Exp $";
 
 
 /* reader */
@@ -100,8 +100,8 @@ typedef struct {
 
   char         *mcn;             /* Media catalog number. */
   track_info_t  tocent[100];     /* entry info for each track */
-  track_t       total_tracks;    /* number of tracks in image */
-  track_t       first_track_num; /* track number of first track */
+  track_t       i_tracks;        /* number of tracks in image */
+  track_t       i_first_track;   /* track number of first track */
   CdioList     *mapping;         /* List of track information */
   uint32_t      size;
 } _img_private_t;
@@ -119,8 +119,8 @@ _register_mapping (_img_private_t *env, lsn_t start_lsn, uint32_t sec_count,
 		   uint64_t img_offset, uint32_t blocksize,
 		   track_format_t track_format, bool track_green)
 {
-  const int track_num=env->total_tracks;
-  track_info_t  *this_track=&(env->tocent[env->total_tracks]);
+  const int track_num=env->i_tracks;
+  track_info_t  *this_track=&(env->tocent[env->i_tracks]);
   _mapping_t *_map = _cdio_malloc (sizeof (_mapping_t));
 
   _map->start_lsn  = start_lsn;
@@ -194,10 +194,10 @@ _register_mapping (_img_private_t *env, lsn_t start_lsn, uint32_t sec_count,
   default:
     /*this_track->datasize=CDIO_CD_FRAMESIZE_RAW;*/
     cdio_warn ("track %d has unknown format %d",
-	       env->total_tracks, this_track->track_format);
+	       env->i_tracks, this_track->track_format);
   }
   
-  env->total_tracks++;
+  env->i_tracks++;
 
   cdio_debug ("start lsn: %lu sector count: %0lu -> %8ld (%08lx)", 
 	      (long unsigned int) start_lsn, 
@@ -288,9 +288,9 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	    cdio_info ("CUES type image detected" );
 	    /*cdio_assert (lsn == 0?);*/
 	    
-	    env->is_cues         = true; /* HACK alert. */
-	    env->total_tracks    = 0;
-	    env->first_track_num = 1;
+	    env->is_cues       = true; /* HACK alert. */
+	    env->i_tracks      = 0;
+	    env->i_first_track = 1;
 	    for (idx = 1; idx < entries-1; idx += 2) {
 	      lsn_t sec_count;
 	      
@@ -386,7 +386,7 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	  }
 	  if (0 == form2) {
 	    int i;
-	    for (i=0; i<env->total_tracks; i++) {
+	    for (i=0; i<env->i_tracks; i++) {
 	      env->tocent[i].track_format= track_format;
 	      env->tocent[i].datastart   = 0;
 	      env->tocent[i].track_green = false;
@@ -401,7 +401,7 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	    }
 	  } else if (2 == form2) {
 	    int i;
-	    for (i=0; i<env->total_tracks; i++) {
+	    for (i=0; i<env->i_tracks; i++) {
 	      env->tocent[i].track_green = true;
 	      env->tocent[i].track_format= track_format;
 	      env->tocent[i].datasize    = CDIO_CD_FRAMESIZE;
@@ -658,10 +658,10 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
   /* Don't use _stat_size_nrg since that will lead to recursion since
      we haven't fully initialized things yet.
   */
-  cdio_lsn_to_msf (env->size, &env->tocent[env->total_tracks].start_msf);
-  env->tocent[env->total_tracks].start_lba = cdio_lsn_to_lba(env->size);
-  env->tocent[env->total_tracks-1].sec_count = 
-    cdio_lsn_to_lba(env->size - env->tocent[env->total_tracks-1].start_lba);
+  cdio_lsn_to_msf (env->size, &env->tocent[env->i_tracks].start_msf);
+  env->tocent[env->i_tracks].start_lba = cdio_lsn_to_lba(env->size);
+  env->tocent[env->i_tracks-1].sec_count = 
+    cdio_lsn_to_lba(env->size - env->tocent[env->i_tracks-1].start_lba);
 
   free(footer_buf);
   return true;
@@ -713,7 +713,7 @@ _lseek_nrg (void *user_data, off_t offset, int whence)
 
   unsigned int i;
 
-  for (i=0; i<env->total_tracks; i++) {
+  for (i=0; i<env->i_tracks; i++) {
     track_info_t  *this_track=&(env->tocent[i]);
     env->pos.index = i;
     if ( (this_track->sec_count*this_track->datasize) >= offset) {
@@ -730,7 +730,7 @@ _lseek_nrg (void *user_data, off_t offset, int whence)
     env->pos.lba += this_track->sec_count;
   }
 
-  if (i==env->total_tracks) {
+  if (i==env->i_tracks) {
     cdio_warn ("seeking outside range of disk image");
     return -1;
   } else
@@ -1076,7 +1076,7 @@ _get_track_format_nrg(void *user_data, track_t track_num)
 {
   _img_private_t *env = user_data;
   
-  if (track_num > env->total_tracks || track_num == 0) 
+  if (track_num > env->i_tracks || track_num == 0) 
     return TRACK_FORMAT_ERROR;
 
   if ( env->dtyp != DTYP_INVALID) {
@@ -1106,7 +1106,7 @@ _get_track_green_nrg(void *user_data, track_t track_num)
 {
   _img_private_t *env = user_data;
   
-  if (track_num > env->total_tracks || track_num == 0) 
+  if (track_num > env->i_tracks || track_num == 0) 
     return false;
 
   if ( MTYP_AUDIO_CD == env->mtyp) return false;
@@ -1189,10 +1189,10 @@ cdio_open_nrg (const char *psz_source)
   _data                 = _cdio_malloc (sizeof (_img_private_t));
   _data->gen.init       = false;
 
-  _data->total_tracks   = 0;
+  _data->i_tracks       = 0;
   _data->mtyp           = 0; 
   _data->dtyp           = DTYP_INVALID; 
-  _data->first_track_num= 1;
+  _data->i_first_track  = 1;
   _data->is_dao         = false; 
   _data->is_cues        = false; /* FIXME: remove is_cues. */
 

@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.8 2004/05/16 13:33:30 rocky Exp $
+    $Id: cdrdao.c,v 1.9 2004/06/01 11:15:58 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.8 2004/05/16 13:33:30 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.9 2004/06/01 11:15:58 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -107,13 +107,13 @@ typedef struct {
   char         *mcn;             /* Media Catalog Number (5.22.3) 
 				    exactly 13 bytes */
   track_info_t  tocent[100];     /* entry info for each track */
-  track_t       total_tracks;    /* number of tracks in image */
-  track_t       first_track_num; /* track number of first track */
+  track_t       i_tracks;    /* number of tracks in image */
+  track_t       i_first_track; /* track number of first track */
   track_format_t mode;
   bool          b_have_cdrdao;
 } _img_private_t;
 
-static uint32_t _stat_size_cdrdao (void *env);
+static uint32_t _stat_size_cdrdao (void *user_data);
 static bool parse_tocfile (_img_private_t *cd, const char *toc_name);
 
 #include "image_common.h"
@@ -230,33 +230,33 @@ msf_lba_from_mmssff (char *s)
   Initialize image structures.
  */
 static bool
-_init_cdrdao (_img_private_t *_obj)
+_init_cdrdao (_img_private_t *env)
 {
   lsn_t lead_lsn;
 
-  if (_obj->gen.init)
+  if (env->gen.init)
     return false;
 
   /* Have to set init before calling _stat_size_cdrdao() or we will
      get into infinite recursion calling passing right here.
    */
-  _obj->gen.init = true;  
-  _obj->first_track_num=1;
-  _obj->mcn=NULL;
+  env->gen.init      = true;  
+  env->i_first_track = 1;
+  env->mcn           = NULL;
 
   /* Read in TOC sheet. */
-  if ( !parse_tocfile(_obj, _obj->toc_name) ) return false;
+  if ( !parse_tocfile(env, env->toc_name) ) return false;
   
-  lead_lsn = _stat_size_cdrdao( (_img_private_t *) _obj);
+  lead_lsn = _stat_size_cdrdao( (_img_private_t *) env);
 
   if (-1 == lead_lsn) 
     return false;
 
   /* Fake out leadout track and sector count for last track*/
-  cdio_lsn_to_msf (lead_lsn, &_obj->tocent[_obj->total_tracks].start_msf);
-  _obj->tocent[_obj->total_tracks].start_lba = cdio_lsn_to_lba(lead_lsn);
-  _obj->tocent[_obj->total_tracks-1].sec_count = 
-    cdio_lsn_to_lba(lead_lsn - _obj->tocent[_obj->total_tracks-1].start_lba);
+  cdio_lsn_to_msf (lead_lsn, &env->tocent[env->i_tracks].start_msf);
+  env->tocent[env->i_tracks].start_lba = cdio_lsn_to_lba(lead_lsn);
+  env->tocent[env->i_tracks-env->i_first_track].sec_count = 
+    cdio_lsn_to_lba(lead_lsn - env->tocent[env->i_tracks-1].start_lba);
 
   return true;
 }
@@ -268,9 +268,9 @@ _init_cdrdao (_img_private_t *_obj)
   information in each sector.
 */
 static off_t
-_lseek_cdrdao (void *env, off_t offset, int whence)
+_lseek_cdrdao (void *user_data, off_t offset, int whence)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   /* real_offset is the real byte offset inside the disk image
      The number below was determined empirically. I'm guessing
@@ -280,30 +280,30 @@ _lseek_cdrdao (void *env, off_t offset, int whence)
 
   unsigned int i;
 
-  _obj->pos.lba = 0;
-  for (i=0; i<_obj->total_tracks; i++) {
-    track_info_t  *this_track=&(_obj->tocent[i]);
-    _obj->pos.index = i;
+  env->pos.lba = 0;
+  for (i=0; i<env->i_tracks; i++) {
+    track_info_t  *this_track=&(env->tocent[i]);
+    env->pos.index = i;
     if ( (this_track->sec_count*this_track->datasize) >= offset) {
       int blocks            = offset / this_track->datasize;
       int rem               = offset % this_track->datasize;
       int block_offset      = blocks * this_track->blocksize;
       real_offset          += block_offset + rem;
-      _obj->pos.buff_offset = rem;
-      _obj->pos.lba        += blocks;
+      env->pos.buff_offset = rem;
+      env->pos.lba        += blocks;
       break;
     }
     real_offset   += this_track->sec_count*this_track->blocksize;
     offset        -= this_track->sec_count*this_track->datasize;
-    _obj->pos.lba += this_track->sec_count;
+    env->pos.lba += this_track->sec_count;
   }
 
-  if (i==_obj->total_tracks) {
+  if (i==env->i_tracks) {
     cdio_warn ("seeking outside range of disk image");
     return -1;
   } else {
-    real_offset += _obj->tocent[i].datastart;
-    return cdio_stream_seek(_obj->tocent[i].data_source, real_offset, whence);
+    real_offset += env->tocent[i].datastart;
+    return cdio_stream_seek(env->tocent[i].data_source, real_offset, whence);
   }
 }
 
@@ -315,18 +315,18 @@ _lseek_cdrdao (void *env, off_t offset, int whence)
    boundaries.
 */
 static ssize_t
-_read_cdrdao (void *env, void *data, size_t size)
+_read_cdrdao (void *user_data, void *data, size_t size)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   char *p = data;
   ssize_t final_size=0;
   ssize_t this_size;
-  track_info_t  *this_track=&(_obj->tocent[_obj->pos.index]);
+  track_info_t  *this_track=&(env->tocent[env->pos.index]);
   ssize_t skip_size = this_track->datastart + this_track->endsize;
 
   while (size > 0) {
-    int rem = this_track->datasize - _obj->pos.buff_offset;
+    int rem = this_track->datasize - env->pos.buff_offset;
     if (size <= rem) {
       this_size = cdio_stream_read(this_track->data_source, buf, size, 1);
       final_size += this_size;
@@ -349,13 +349,13 @@ _read_cdrdao (void *env, void *data, size_t size)
     cdio_stream_read(this_track->data_source, buf, skip_size, 1);
 
     /* Get ready to read another sector. */
-    _obj->pos.buff_offset=0;
-    _obj->pos.lba++;
+    env->pos.buff_offset=0;
+    env->pos.lba++;
 
     /* Have gone into next track. */
-    if (_obj->pos.lba >= _obj->tocent[_obj->pos.index+1].start_lba) {
-      _obj->pos.index++;
-      this_track=&(_obj->tocent[_obj->pos.index]);
+    if (env->pos.lba >= env->tocent[env->pos.index+1].start_lba) {
+      env->pos.index++;
+      this_track=&(env->tocent[env->pos.index]);
       skip_size = this_track->datastart + this_track->endsize;
     }
   }
@@ -366,21 +366,19 @@ _read_cdrdao (void *env, void *data, size_t size)
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_stat_size_cdrdao (void *env)
+_stat_size_cdrdao (void *user_data)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   long size;
-  int blocksize = _obj->sector_2336 
+  int blocksize = env->sector_2336 
     ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
-  _init_cdrdao (_obj);
-  
-  size = cdio_stream_stat (_obj->tocent[0].data_source);
+  size = cdio_stream_stat (env->tocent[0].data_source);
 
   if (size % blocksize)
     {
       cdio_warn ("image %s size (%ld) not multiple of blocksize (%d)", 
-		 _obj->tocent[0].filename, size, blocksize);
+		 env->tocent[0].filename, size, blocksize);
       if (size % M2RAW_SECTOR_SIZE == 0)
 	cdio_warn ("this may be a 2336-type disc image");
       else if (size % CDIO_CD_FRAMESIZE_RAW == 0)
@@ -790,7 +788,7 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
     }
   }
     
-  if (NULL != cd) cd->total_tracks = i+1;
+  if (NULL != cd) cd->i_tracks = i+1;
   return true;
 
  unimplimented_error:
@@ -816,31 +814,29 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_audio_sectors_cdrdao (void *env, void *data, lsn_t lsn, 
+_read_audio_sectors_cdrdao (void *user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int ret;
-
-  _init_cdrdao (_obj);
 
   /* Why the adjustment of 272, I don't know. It seems to work though */
   if (lsn != 0) {
-    ret = cdio_stream_seek (_obj->tocent[0].data_source, 
+    ret = cdio_stream_seek (env->tocent[0].data_source, 
 			    (lsn * CDIO_CD_FRAMESIZE_RAW) - 272, SEEK_SET);
     if (ret!=0) return ret;
 
-    ret = cdio_stream_read (_obj->tocent[0].data_source, data, 
+    ret = cdio_stream_read (env->tocent[0].data_source, data, 
 			    CDIO_CD_FRAMESIZE_RAW, nblocks);
   } else {
     /* We need to pad out the first 272 bytes with 0's */
     BZERO(data, 272);
     
-    ret = cdio_stream_seek (_obj->tocent[0].data_source, 0, SEEK_SET);
+    ret = cdio_stream_seek (env->tocent[0].data_source, 0, SEEK_SET);
 
     if (ret!=0) return ret;
 
-    ret = cdio_stream_read (_obj->tocent[0].data_source, (uint8_t *) data+272, 
+    ret = cdio_stream_read (env->tocent[0].data_source, (uint8_t *) data+272, 
 			    CDIO_CD_FRAMESIZE_RAW - 272, nblocks);
   }
 
@@ -853,24 +849,22 @@ _read_audio_sectors_cdrdao (void *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_mode1_sector_cdrdao (void *env, void *data, lsn_t lsn, 
+_read_mode1_sector_cdrdao (void *user_data, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  int blocksize = _obj->sector_2336 
+  int blocksize = env->sector_2336 
     ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
-  _init_cdrdao (_obj);
-
-  ret = cdio_stream_seek (_obj->tocent[0].data_source, lsn * blocksize, 
+  ret = cdio_stream_seek (env->tocent[0].data_source, lsn * blocksize, 
 			  SEEK_SET);
   if (ret!=0) return ret;
 
   /* FIXME: Not completely sure the below is correct. */
-  ret = cdio_stream_read (_obj->tocent[0].data_source,
-			  _obj->sector_2336 
+  ret = cdio_stream_read (env->tocent[0].data_source,
+			  env->sector_2336 
 			  ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE) 
 			  : buf,
 			  blocksize, 1);
@@ -888,16 +882,16 @@ _read_mode1_sector_cdrdao (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode1_sectors_cdrdao (void *env, void *data, lsn_t lsn, 
+_read_mode1_sectors_cdrdao (void *user_data, void *data, lsn_t lsn, 
 			    bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _read_mode1_sector_cdrdao (_obj, 
+    if ( (retval = _read_mode1_sector_cdrdao (env, 
 					    ((char *)data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -910,10 +904,10 @@ _read_mode1_sectors_cdrdao (void *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_mode2_sector_cdrdao (void *env, void *data, lsn_t lsn, 
+_read_mode2_sector_cdrdao (void *user_data, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
 
@@ -923,17 +917,15 @@ _read_mode2_sector_cdrdao (void *env, void *data, lsn_t lsn,
      Review this sector 2336 stuff later.
   */
 
-  int blocksize = _obj->sector_2336 
+  int blocksize = env->sector_2336 
     ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
-  _init_cdrdao (_obj);
-
-  ret = cdio_stream_seek (_obj->tocent[0].data_source, lsn * blocksize, 
+  ret = cdio_stream_seek (env->tocent[0].data_source, lsn * blocksize, 
 			  SEEK_SET);
   if (ret!=0) return ret;
 
-  ret = cdio_stream_read (_obj->tocent[0].data_source,
-			  _obj->sector_2336 
+  ret = cdio_stream_read (env->tocent[0].data_source,
+			  env->sector_2336 
 			  ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE) 
 			  : buf,
 			  blocksize, 1);
@@ -956,16 +948,16 @@ _read_mode2_sector_cdrdao (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors_cdrdao (void *env, void *data, lsn_t lsn, 
+_read_mode2_sectors_cdrdao (void *user_data, void *data, lsn_t lsn, 
 			    bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _read_mode2_sector_cdrdao (_obj, 
+    if ( (retval = _read_mode2_sector_cdrdao (env, 
 					    ((char *)data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -984,7 +976,7 @@ _free_cdrdao (void *obj)
 
   if (NULL == env) return;
   free_if_notnull(env->mcn);
-  for (i=0; i<env->total_tracks; i++) {
+  for (i=0; i<env->i_tracks; i++) {
     if (env->tocent[i].data_source)
       cdio_stdio_destroy (env->tocent[i].data_source);
     free_if_notnull(env->tocent[i].isrc);
@@ -1014,27 +1006,27 @@ _eject_media_cdrdao(void *obj)
   0 is returned if no error was found, and nonzero if there as an error.
 */
 static int
-_set_arg_cdrdao (void *env, const char key[], const char value[])
+_set_arg_cdrdao (void *user_data, const char key[], const char value[])
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   if (!strcmp (key, "sector"))
     {
       if (!strcmp (value, "2336"))
-	_obj->sector_2336 = true;
+	env->sector_2336 = true;
       else if (!strcmp (value, "2352"))
-	_obj->sector_2336 = false;
+	env->sector_2336 = false;
       else
 	return -2;
     }
   else if (!strcmp (key, "toc"))
     {
-      free_if_notnull (_obj->toc_name);
+      free_if_notnull (env->toc_name);
 
       if (!value)
 	return -2;
 
-      _obj->toc_name = strdup (value);
+      env->toc_name = strdup (value);
     }
   else
     return -1;
@@ -1046,14 +1038,14 @@ _set_arg_cdrdao (void *env, const char key[], const char value[])
   Return the value associated with the key "arg".
 */
 static const char *
-_get_arg_cdrdao (void *env, const char key[])
+_get_arg_cdrdao (void *user_data, const char key[])
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
 
   if (!strcmp (key, "source")) {
-    return _obj->tocent[0].filename;
+    return env->tocent[0].filename;
   } else if (!strcmp (key, "toc")) {
-    return _obj->toc_name;
+    return env->toc_name;
   } else if (!strcmp(key, "access-mode")) {
     return "image";
   } 
@@ -1104,7 +1096,7 @@ cdio_get_default_device_cdrdao(void)
 
  */
 static cdio_drive_cap_t
-_get_drive_cap_cdrdao (const void *env) {
+_get_drive_cap_cdrdao (const void *user_data) {
 
   /* There may be more in the future but these we can handle now. 
      Also, we know we can't handle 
@@ -1118,16 +1110,16 @@ _get_drive_cap_cdrdao (const void *env) {
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_format_t
-_get_track_format_cdrdao(void *env, track_t track_num) 
+_get_track_format_cdrdao(void *user_data, track_t i_track) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   
-  if (!_obj->gen.init) _init_cdrdao(_obj);
+  if (!env->gen.init) _init_cdrdao(env);
 
-  if (track_num > _obj->total_tracks || track_num == 0) 
+  if (i_track > env->i_tracks || i_track == 0) 
     return TRACK_FORMAT_ERROR;
 
-  return _obj->tocent[track_num-1].track_format;
+  return env->tocent[i_track-env->i_first_track].track_format;
 }
 
 /*!
@@ -1139,35 +1131,35 @@ _get_track_format_cdrdao(void *env, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_get_track_green_cdrdao(void *env, track_t track_num) 
+_get_track_green_cdrdao(void *user_data, track_t i_track) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *env = user_data;
   
-  if (!_obj->gen.init) _init_cdrdao(_obj);
+  if (!env->gen.init) _init_cdrdao(env);
 
-  if (track_num > _obj->total_tracks || track_num == 0) 
+  if (i_track > env->i_tracks || i_track == 0) 
     return false;
 
-  return _obj->tocent[track_num-1].track_green;
+  return env->tocent[i_track-env->i_first_track].track_green;
 }
 
 /*!  
   Return the starting LSN track number
-  track_num in obj.  Track numbers start at 1.
+  i_track in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
-  using track_num LEADOUT_TRACK or the total tracks+1.
+  using i_track LEADOUT_TRACK or the total tracks+1.
   False is returned if there is no track entry.
 */
 static lba_t
-_get_lba_track_cdrdao(void *env, track_t track_num)
+_get_lba_track_cdrdao(void *user_data, track_t i_track)
 {
-  _img_private_t *_obj = env;
-  _init_cdrdao (_obj);
+  _img_private_t *env = user_data;
+  _init_cdrdao (env);
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = env->i_tracks+1;
 
-  if (track_num <= _obj->total_tracks+1 && track_num != 0) {
-    return _obj->tocent[track_num-1].start_lba;
+  if (i_track <= env->i_tracks+1 && i_track != 0) {
+    return env->tocent[i_track-1].start_lba;
   } else 
     return CDIO_INVALID_LBA;
 }
