@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.32 2005/02/05 04:23:21 rocky Exp $
+    $Id: sector.h,v 1.33 2005/02/05 12:37:35 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -129,7 +129,7 @@
         be helpful in debuggers where wants just to refer to the CDIO_CD_
         names and get something.
       */
-      enum {
+      extern enum cdio_cd_enums {
         CDIO_CD_MINS =              74,   /**< max. minutes per CD, not really
                                              a limit */
         CDIO_CD_SECS_PER_MIN =      60,   /**< seconds per minute */
@@ -210,7 +210,7 @@
         is to be helpful in debuggers where wants just to refer to the
         CDIO_CDROM_* names and get something.
       */
-      enum {
+      extern enum cdio_cdrom_enums {
         CDIO_CDROM_LBA =0x01, /**< "logical block": first frame is #0 */
         CDIO_CDROM_MSF =0x02, /**< "minute-second-frame": binary, not
                                  BCD here! */
@@ -234,7 +234,7 @@
         program it is to be helpful in debuggers where wants just to refer
         to the M2*_SECTOR_SIZE names and get something.
       */
-      enum {
+      extern enum m2_sector_enums {
         M2F2_SECTOR_SIZE  = 2324,
         M2SUB_SECTOR_SIZE = 2332,
         M2RAW_SECTOR_SIZE = 2336

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.59 2005/02/05 04:23:21 rocky Exp $
+    $Id: iso9660.h,v 1.60 2005/02/05 12:37:35 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -50,7 +50,7 @@
     to be helpful in debuggers where wants just to refer to the
     ISO_*_ names and get something.
   */
-enum {
+extern enum iso_enums1 {
   ISO_PVD_SECTOR      =   16, /**< Sector of Primary Volume Descriptor */
   ISO_EVD_SECTOR      =   17, /**< Sector of End Volume Descriptor */
   LEN_ISONAME         =   31, /**<  size in bytes of the filename 
@@ -71,19 +71,19 @@ enum {
     to be helpful in debuggers where wants just to refer to the
     ISO_*_ names and get something.
   */
-enum {
-  ISO_FILE	      =   0,	/**<, Not really a flag...		  */
-  ISO_EXISTENCE	      =   1,	/**< Do not make existence known (hidden) */
-  ISO_DIRECTORY	      =   2,	/**< This file is a directory		  */
-  ISO_ASSOCIATED      =   4,	/**< This file is an associated file	  */
-  ISO_RECORD	      =   8,	/**<, Record format in extended attr. != 0 */
-  ISO_PROECTION	      =  16,	/**< No read/execute perm. in ext. attr.  */
-  ISO_DRESERVED1      =  32,	/**<, Reserved bit 5			  */
-  ISO_DRESERVED2      =  64,	/**<, Reserved bit 6			  */
-  ISO_MULTIEXTENT     = 128,	/**< Not final entry of a mult. ext. file */
+extern enum iso_flag_enums {
+  ISO_FILE	      =   0,   /**<  Not really a flag...	         */
+  ISO_EXISTENCE	      =   1,   /**< Do not make existence known (hidden) */
+  ISO_DIRECTORY	      =   2,   /**< This file is a directory		 */
+  ISO_ASSOCIATED      =   4,   /**< This file is an associated file	 */
+  ISO_RECORD	      =   8,   /**< Record format in extended attr. != 0 */
+  ISO_PROECTION	      =  16,   /**< No read/execute perm. in ext. attr.  */
+  ISO_DRESERVED1      =  32,   /**<, Reserved bit 5			 */
+  ISO_DRESERVED2      =  64,   /**<, Reserved bit 6			 */
+  ISO_MULTIEXTENT     = 128,   /**< Not final entry of a mult. ext. file */
 } iso_flag_enums;
 
-enum {
+extern enum iso_vd_enums {
   ISO_VD_PRIMARY      =  1,  /**< Is in any ISO-9660 */
   ISO_VD_SUPPLEMENARY =  2,  /**< Used by Joliet */
   ISO_VD_END	      = 255

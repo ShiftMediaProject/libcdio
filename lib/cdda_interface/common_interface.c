@@ -1,5 +1,5 @@
 /*
-  $Id: common_interface.c,v 1.12 2005/01/27 03:10:06 rocky Exp $
+  $Id: common_interface.c,v 1.13 2005/02/05 12:37:35 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
@@ -30,6 +30,10 @@
 #include "common_interface.h"
 #include "utils.h"
 #include "smallft.h"
+
+/* Variables to hold debugger-helping enumerations */
+enum paranoia_cdda_enums;
+enum paranoia_jitter_enums;
 
 /*! Determine Endian-ness of the CD-drive based on reading data from
   it. Some drives return audio data Big Endian while some (most)

@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: iso9660.c,v 1.2 2005/02/05 12:37:35 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,7 +37,12 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.2 2005/02/05 12:37:35 rocky Exp $";
+
+/* Variables to hold debugger-helping enumerations */
+enum iso_enums1     iso_enums1;
+enum iso_flag_enums iso_flag_enums;
+enum iso_vd_enums   iso_vd_enums;
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"

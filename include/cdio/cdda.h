@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.15 2005/02/05 04:23:21 rocky Exp $
+  $Id: cdda.h,v 1.16 2005/02/05 12:37:35 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -32,7 +32,7 @@
 #include <cdio/cdio.h>
 #include <cdio/paranoia.h>
 
-enum {
+extern enum paranoia_cdda_enums {
   CDDA_MESSAGE_FORGETIT = 0,
   CDDA_MESSAGE_PRINTIT  = 1,
   CDDA_MESSAGE_LOGIT    = 2,
@@ -127,7 +127,7 @@ struct cdrom_drive_s {
   be helpful in debuggers where wants just to refer to the CDDA_TEST_
   names and get something.
 */
-enum {
+extern enum paranoia_jitter_enums {
   CDDA_TEST_JITTER_SMALL   = 1,
   CDDA_TEST_JITTER_LARGE   = 2,
   CDDA_TEST_JITTER_MASSIVE = 3,
