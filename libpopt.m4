@@ -5,7 +5,7 @@ dnl AM_PATH_LIBPOPT([ACTION-IF-FOUND[, ACTION-IF-NOT-FOUND]])
 dnl Test for libpopt, sets LIBPOPT_{CFLAGS,LIBS}
 dnl alas there's no easy way to check the version available
 
-AC_DEFUN(AM_PATH_LIBPOPT, [
+AC_DEFUN([AM_PATH_LIBPOPT], [
 
 AC_ARG_WITH(libpopt-prefix,[  --with-libpopt-prefix=PFX    Prefix where libpopt is installed (optional)],
 	    libpopt_prefix="$withval", libpopt_prefix="")
@@ -63,6 +63,6 @@ dnl handle test result
   AC_SUBST(LIBPOPT_CFLAGS)
   AC_SUBST(LIBPOPT_LIBS)
 
-]) dnl AC_DEFUN(AM_PATH_LIBPOPT, [...
+])
 
 dnl EOF
