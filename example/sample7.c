@@ -1,5 +1,5 @@
 /*
-  $Id: sample7.c,v 1.2 2004/01/29 04:22:49 rocky Exp $
+  $Id: sample7.c,v 1.3 2004/02/01 17:13:42 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -82,8 +82,8 @@ main(int argc, const char *argv[])
 						   + (i / ISO_BLOCKSIZE),
 						   1) )
       {
-	fprintf(stderr, "Error reading ISO 9660 file at lsn %d\n",
-		statbuf->lsn + (i / ISO_BLOCKSIZE));
+	fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
+		(long unsigned int) statbuf->lsn + (i / ISO_BLOCKSIZE));
 	return 4;
       }
       
