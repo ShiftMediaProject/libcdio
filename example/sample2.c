@@ -1,5 +1,5 @@
 /*
-  $Id: sample2.c,v 1.11 2004/07/18 03:35:07 rocky Exp $
+  $Id: sample2.c,v 1.12 2004/08/07 10:50:03 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -99,25 +99,25 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
 int
 main(int argc, const char *argv[])
 {
-  CdIo *cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  CdIo *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
   driver_id_t driver_id;
   
-  if (NULL != cdio) {
-    char *default_device = cdio_get_default_device(cdio);
+  if (NULL != p_cdio) {
+    char *default_device = cdio_get_default_device(p_cdio);
     cdio_drive_read_cap_t  i_read_cap;
     cdio_drive_write_cap_t i_write_cap;
     cdio_drive_misc_cap_t  i_misc_cap;
     
-    printf("The driver selected is %s\n", cdio_get_driver_name(cdio));
+    printf("The driver selected is %s\n", cdio_get_driver_name(p_cdio));
 
     if (default_device)
       printf("The default device for this driver is %s\n", default_device);
 
-    cdio_get_drive_cap(cdio, &i_read_cap, &i_write_cap, &i_misc_cap);
+    cdio_get_drive_cap(p_cdio, &i_read_cap, &i_write_cap, &i_misc_cap);
     print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
       
     free(default_device);
-    cdio_destroy(cdio);
+    cdio_destroy(p_cdio);
     printf("\n");
 
   } else {

@@ -1,5 +1,5 @@
 /*
-  $Id: sample4.c,v 1.5 2004/03/20 13:18:31 rocky Exp $
+  $Id: sample4.c,v 1.6 2004/08/07 10:50:03 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -47,7 +47,7 @@ log_handler (cdio_log_level_t level, const char message[])
 static void
 print_analysis(cdio_iso_analysis_t cdio_iso_analysis, 
 	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
-	       track_t num_tracks, track_t first_track_num, CdIo *cdio)
+	       track_t num_tracks, track_t first_track_num, CdIo *p_cdio)
 {
   switch(CDIO_FSTYPE(fs)) {
   case CDIO_FS_AUDIO:
@@ -127,7 +127,7 @@ print_analysis(cdio_iso_analysis_t cdio_iso_analysis,
 int
 main(int argc, const char *argv[])
 {
-  CdIo *cdio;
+  CdIo *p_cdio;
   cdio_fs_anal_t fs=0;
   
   track_t num_tracks;
@@ -147,19 +147,19 @@ main(int argc, const char *argv[])
 
   cdio_log_set_handler (log_handler);
 
-  cdio = cdio_open (cd_image_name, DRIVER_UNKNOWN);
+  p_cdio = cdio_open (cd_image_name, DRIVER_UNKNOWN);
 
-  if (NULL == cdio) {
+  if (NULL == p_cdio) {
     printf("Problem in trying to find a driver.\n\n");
     return 1;
   }
 
-  first_track_num = cdio_get_first_track_num(cdio);
-  num_tracks      = cdio_get_num_tracks(cdio);
+  first_track_num = cdio_get_first_track_num(p_cdio);
+  num_tracks      = cdio_get_num_tracks(p_cdio);
 
   /* Count the number of data and audio tracks. */
   for (i = first_track_num; i <= num_tracks; i++) {
-    if (TRACK_FORMAT_AUDIO == cdio_get_track_format(cdio, i)) {
+    if (TRACK_FORMAT_AUDIO == cdio_get_track_format(p_cdio, i)) {
       num_audio++;
       if (-1 == first_audio) first_audio = i;
     } else {
@@ -180,9 +180,9 @@ main(int argc, const char *argv[])
     
     for (j = 2, i = first_data; i <= num_tracks; i++) {
       lsn_t lsn;
-      track_format_t track_format = cdio_get_track_format(cdio, i);
+      track_format_t track_format = cdio_get_track_format(p_cdio, i);
       
-      lsn = cdio_get_track_lsn(cdio, i);
+      lsn = cdio_get_track_lsn(p_cdio, i);
       
       switch ( track_format ) {
       case TRACK_FORMAT_AUDIO:
@@ -205,10 +205,10 @@ main(int argc, const char *argv[])
       if (start_track < data_start + cdio_iso_analysis.isofs_size)
 	continue;
       
-      fs = cdio_guess_cd_type(cdio, start_track, i, &cdio_iso_analysis);
+      fs = cdio_guess_cd_type(p_cdio, start_track, i, &cdio_iso_analysis);
       
       print_analysis(cdio_iso_analysis, fs, first_data, num_audio,
-		     num_tracks, first_track_num, cdio);
+		     num_tracks, first_track_num, p_cdio);
       
       if ( !(CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660 ||
 	     CDIO_FSTYPE(fs) == CDIO_FS_ISO_HFS  ||
@@ -217,6 +217,6 @@ main(int argc, const char *argv[])
 	break;	
     }
   }
-  cdio_destroy(cdio);
+  cdio_destroy(p_cdio);
   return 0;
 }

@@ -1,7 +1,7 @@
 /*
-  $Id: sample1.c,v 1.5 2003/10/03 08:36:39 rocky Exp $
+  $Id: sample1.c,v 1.6 2004/08/07 10:50:03 rocky Exp $
 
-  Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,31 +29,32 @@
 int
 main(int argc, const char *argv[])
 {
-  CdIo *cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  CdIo *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
   track_t first_track_num;
   track_t num_tracks;
   int j, i=first_track_num;
   
 
-  if (NULL == cdio) {
+  if (NULL == p_cdio) {
     printf("Couldn't find a driver.. leaving.\n");
     return 1;
   }
   
-  num_tracks      = cdio_get_num_tracks(cdio);
-  first_track_num = i = cdio_get_first_track_num(cdio);
+  num_tracks      = cdio_get_num_tracks(p_cdio);
+  first_track_num = i = cdio_get_first_track_num(p_cdio);
 
   printf("CD-ROM Track List (%i - %i)\n", first_track_num, num_tracks);
 
   printf("  #:  LSN\n");
   
   for (j = 0; j < num_tracks; i++, j++) {
-    lsn_t lsn = cdio_get_track_lsn(cdio, i);
+    lsn_t lsn = cdio_get_track_lsn(p_cdio, i);
     if (CDIO_INVALID_LSN != lsn)
 	printf("%3d: %06lu\n", (int) i, (long unsigned int) lsn);
   }
   printf("%3X: %06lu  leadout\n", CDIO_CDROM_LEADOUT_TRACK, 
-       (long unsigned int) cdio_get_track_lsn(cdio, CDIO_CDROM_LEADOUT_TRACK));
-  cdio_destroy(cdio);
+       (long unsigned int) cdio_get_track_lsn(p_cdio, 
+					      CDIO_CDROM_LEADOUT_TRACK));
+  cdio_destroy(p_cdio);
   return 0;
 }
