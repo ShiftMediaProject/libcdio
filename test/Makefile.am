@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.30 2004/10/26 01:21:05 rocky Exp $
+#   $Id: Makefile.am,v 1.31 2004/10/26 08:32:29 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -28,11 +28,11 @@ noinst_PROGRAMS = $(hack) testdefault
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
-check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBINTL)
+check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 testassert_LDADD    = $(LIBCDIO_LIBS)
 testdefault_LDADD   = $(LIBCDIO_LIBS)
-testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBINTL)
-testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBINTL)
+testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
 testtoc_LDADD       = $(LIBCDIO_LIBS)
 testtoc_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
