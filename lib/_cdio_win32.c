@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.6 2003/06/07 20:42:49 rocky Exp $
+    $Id: _cdio_win32.c,v 1.7 2003/06/07 22:11:50 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.6 2003/06/07 20:42:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.7 2003/06/07 22:11:50 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -567,7 +567,7 @@ _cdio_read_raw_sector (void *user_data, void *data, lsn_t lsn)
    }
 
   /* FIXME! remove the 8 (SUBHEADER size) below... */
-  memcpy (data, buf+8, CDIO_CD_FRAMESIZE_RAW);
+  memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
 
   return 0;
 }
@@ -580,7 +580,7 @@ static int
 _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
 		    bool mode2_form2)
 {
-  char buf[M2RAW_SECTOR_SIZE] = { 0, };
+  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   _img_private_t *_obj = user_data;
   int ret;
 
