@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.26 2003/12/31 03:09:31 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.27 2003/12/31 04:41:08 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.26 2003/12/31 03:09:31 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.27 2003/12/31 04:41:08 rocky Exp $";
 
 /* structures used */
 
@@ -341,129 +341,82 @@ PRAGMA_END_PACKED
 
     while (pos < size - footer_start) {
       _chunk_t *chunk = (void *) (footer_buf + pos);
+      uint32_t opcode = UINT32_FROM_BE (chunk->id);
       
       bool break_out = false;
       
-      switch (UINT32_FROM_BE (chunk->id)) {
-      case CUES_ID: { /* "CUES" Seems to have sector size 2336 and 150 sector
-			 pregap seems to be included at beginning of image.
+      switch (opcode) {
+
+      case CUES_ID: /* "CUES" Seems to have sector size 2336 and 150 sector
+		       pregap seems to be included at beginning of image.
 		       */
-
-
-	unsigned entries = UINT32_FROM_BE (chunk->len);
-	_cuex_array_t *_entries = (void *) chunk->data;
-	
-	cdio_assert (_obj->mapping == NULL);
-	
-	cdio_assert (sizeof (_cuex_array_t) == 8);
-	cdio_assert ( UINT32_FROM_BE(chunk->len) % sizeof(_cuex_array_t) 
-		      == 0 );
-	
-	entries /= sizeof (_cuex_array_t);
-	
-	cdio_info ("CUES type image detected");
-	
+      case CUEX_ID: /* "CUEX" */ 
 	{
-	  lsn_t lsn = UINT32_FROM_BE (_entries[0].lsn);
-	  int idx;
+	  unsigned entries = UINT32_FROM_BE (chunk->len);
+	  _cuex_array_t *_entries = (void *) chunk->data;
 	  
-	  /*cdio_assert (lsn == 0?);*/
-
-	  _obj->is_cues         = true; /* HACK alert. */
-	  _obj->total_tracks    = 0;
-	  _obj->first_track_num = 1;
-	  for (idx = 1; idx < entries-1; idx += 2) {
-	    lsn_t sec_count;
-	    
-	    cdio_assert (_entries[idx].index == 0);
-	    cdio_assert (_entries[idx].track == _entries[idx + 1].track);
-	    
-	    /* lsn and sec_count*2 aren't correct, but it comes closer on the
-	       single example I have: svcdgs.nrg
-	       We are picking up the wrong fields and/or not interpreting
-	       them correctly.
-	     */
-
-	    lsn       = UINT32_FROM_BE (_entries[idx].lsn);
-	    sec_count = UINT32_FROM_BE (_entries[idx + 1].lsn);
-
-	    _register_mapping (_obj, lsn, sec_count*2, 
-			       (lsn+CDIO_PREGAP_SECTORS) * M2RAW_SECTOR_SIZE, 
-			       M2RAW_SECTOR_SIZE, TRACK_FORMAT_XA, true);
-	  }
-	} 
-	break;
-      }
-	
-      case CUEX_ID: /* "CUEX" */ {
-	unsigned entries = UINT32_FROM_BE (chunk->len);
-	_cuex_array_t *_entries = (void *) chunk->data;
-	
-	cdio_assert (_obj->mapping == NULL);
-	
-	cdio_assert ( sizeof (_cuex_array_t) == 8 );
-	cdio_assert ( UINT32_FROM_BE (chunk->len) % sizeof(_cuex_array_t) 
-		      == 0 );
-	
-	entries /= sizeof (_cuex_array_t);
-	
-	cdio_info ("DAO type image detected");
-	
-	{
-	  uint32_t lsn = UINT32_FROM_BE (_entries[0].lsn);
-	  int idx;
+	  cdio_assert (_obj->mapping == NULL);
 	  
-	  cdio_assert (lsn == 0xffffff6a);
+	  cdio_assert ( sizeof (_cuex_array_t) == 8 );
+	  cdio_assert ( UINT32_FROM_BE (chunk->len) % sizeof(_cuex_array_t) 
+			== 0 );
 	  
-	  for (idx = 2; idx < entries; idx += 2) {
-	    lsn_t lsn2;
-
-	    cdio_assert (_entries[idx].index == 1);
-	    cdio_assert (_entries[idx].track != _entries[idx + 1].track);
+	  entries /= sizeof (_cuex_array_t);
+	  
+	  if (CUES_ID == opcode) {
+	    lsn_t lsn = UINT32_FROM_BE (_entries[0].lsn);
+	    int idx;
 	    
-	    lsn = UINT32_FROM_BE (_entries[idx].lsn);
-	    lsn2 = UINT32_FROM_BE (_entries[idx + 1].lsn);
+	    cdio_info ("CUES type image detected" );
+	    /*cdio_assert (lsn == 0?);*/
 	    
-	    _register_mapping (_obj, lsn, lsn2 - lsn, 
-			       (lsn + CDIO_PREGAP_SECTORS)*M2RAW_SECTOR_SIZE, 
-			       M2RAW_SECTOR_SIZE, TRACK_FORMAT_XA, true);
-	  }
-	}    
-	break;
-      }
-	
-      case DAOI_ID: /* "DAOI" */
-	{
-	  _daox_array_t *_entries = (void *) chunk->data;
-	  track_format_t track_format;
-	  int form     = _entries->_unknown[18];
-	  _obj->dtyp   = _entries->_unknown[36];
-	  _obj->is_dao = true;
-	  cdio_debug ("DAOI tag detected, track format %d, form %x\n", 
-		      _obj->dtyp, form);
-	  switch (_obj->dtyp) {
-	  case 0:
-	    track_format = TRACK_FORMAT_DATA;
-	    break;
-	  case 0x20:
-	    track_format = TRACK_FORMAT_XA;
-	    break;
-	  default:
-	    cdio_warn ("Unknown track format %x\n", 
-		      _obj->dtyp);
-	    track_format = TRACK_FORMAT_AUDIO;
-	  }
-	  if (0 == form) {
-	    int i;
-	    for (i=0; i<_obj->total_tracks; i++) {
-	      _obj->tocent[i].track_green = false;
-	      _obj->tocent[i].track_format= track_format;
-	      _obj->tocent[i].datasize    = CDIO_CD_FRAMESIZE;
-	      _obj->tocent[i].datastart  =  0;
+	    _obj->is_cues         = true; /* HACK alert. */
+	    _obj->total_tracks    = 0;
+	    _obj->first_track_num = 1;
+	    for (idx = 1; idx < entries-1; idx += 2) {
+	      lsn_t sec_count;
+	      
+	      cdio_assert (_entries[idx].index == 0);
+	      cdio_assert (_entries[idx].track == _entries[idx + 1].track);
+	      
+	      /* lsn and sec_count*2 aren't correct, but it comes closer on the
+		 single example I have: svcdgs.nrg
+		 We are picking up the wrong fields and/or not interpreting
+		 them correctly.
+	      */
+	      
+	      lsn       = UINT32_FROM_BE (_entries[idx].lsn);
+	      sec_count = UINT32_FROM_BE (_entries[idx + 1].lsn);
+	      
+	      _register_mapping (_obj, lsn, sec_count*2, 
+				 (lsn+CDIO_PREGAP_SECTORS) * M2RAW_SECTOR_SIZE,
+				 M2RAW_SECTOR_SIZE, TRACK_FORMAT_XA, true);
+	    }
+	  } else {
+	    lsn_t lsn = UINT32_FROM_BE (_entries[0].lsn);
+	    int idx;
+	    
+	    cdio_info ("CUEX type image detected");
+	    cdio_assert (lsn == 0xffffff6a);
+	    
+	    for (idx = 2; idx < entries; idx += 2) {
+	      lsn_t sec_count;
+	      
+	      cdio_assert (_entries[idx].index == 1);
+	      cdio_assert (_entries[idx].track != _entries[idx + 1].track);
+	      
+	      lsn       = UINT32_FROM_BE (_entries[idx].lsn);
+	      sec_count = UINT32_FROM_BE (_entries[idx + 1].lsn);
+	      
+	      _register_mapping (_obj, lsn, sec_count - lsn, 
+				 (lsn + CDIO_PREGAP_SECTORS)*M2RAW_SECTOR_SIZE,
+				 M2RAW_SECTOR_SIZE, TRACK_FORMAT_XA, true);
 	    }
 	  }
 	  break;
 	}
+	
+      case DAOI_ID: /* "DAOI" */
       case DAOX_ID: /* "DAOX" */ 
 	{
 	  _daox_array_t *_entries = (void *) chunk->data;
@@ -471,14 +424,18 @@ PRAGMA_END_PACKED
 	  int form     = _entries->_unknown[18];
 	  _obj->dtyp   = _entries->_unknown[36];
 	  _obj->is_dao = true;
-	  cdio_debug ("DAOX tag detected, track format %d, form %x\n", 
-		      _obj->dtyp, form);
+	  cdio_debug ("DAO%c tag detected, track format %d, form %x\n", 
+		      opcode==DAOX_ID ? 'X': 'I', _obj->dtyp, form);
 	  switch (_obj->dtyp) {
 	  case 0:
 	    track_format = TRACK_FORMAT_DATA;
 	    break;
+	  case 0x6:
 	  case 0x20:
 	    track_format = TRACK_FORMAT_XA;
+	    break;
+	  case 0x7:
+	    track_format = TRACK_FORMAT_AUDIO;
 	    break;
 	  default:
 	    cdio_warn ("Unknown track format %x\n", 
@@ -488,25 +445,47 @@ PRAGMA_END_PACKED
 	  if (0 == form) {
 	    int i;
 	    for (i=0; i<_obj->total_tracks; i++) {
+	      _obj->tocent[i].track_format= track_format;
+	      _obj->tocent[i].datastart   = 0;
 	      _obj->tocent[i].track_green = false;
+	      if (TRACK_FORMAT_AUDIO == track_format) {
+		_obj->tocent[i].blocksize   = CDIO_CD_FRAMESIZE_RAW;
+		_obj->tocent[i].datasize    = CDIO_CD_FRAMESIZE_RAW;
+		_obj->tocent[i].endsize     = 0;
+	      } else {
+		_obj->tocent[i].datasize    = CDIO_CD_FRAMESIZE;
+		_obj->tocent[i].datastart  =  0;
+	      }
+	    }
+	  } else if (2 == form) {
+	    int i;
+	    for (i=0; i<_obj->total_tracks; i++) {
+	      _obj->tocent[i].track_green = true;
 	      _obj->tocent[i].track_format= track_format;
 	      _obj->tocent[i].datasize    = CDIO_CD_FRAMESIZE;
-	      _obj->tocent[i].datastart  -= CDIO_CD_SUBHEADER_SIZE;
+	      if (TRACK_FORMAT_XA == track_format) {
+		_obj->tocent[i].datastart   = CDIO_CD_SYNC_SIZE 
+		  + CDIO_CD_HEADER_SIZE + CDIO_CD_SUBHEADER_SIZE;
+		_obj->tocent[i].endsize     = CDIO_CD_SYNC_SIZE 
+		  + CDIO_CD_ECC_SIZE;
+	      } else {
+		_obj->tocent[i].datastart   = CDIO_CD_SYNC_SIZE 
+		  + CDIO_CD_HEADER_SIZE;
+		_obj->tocent[i].endsize     = CDIO_CD_EDC_SIZE 
+		  + CDIO_CD_M1F1_ZERO_SIZE + CDIO_CD_ECC_SIZE;
+	      
+	      }
 	    }
 	  }
 	  break;
 	}
-	
+      case NERO_ID: /* "NER0" */
       case NER5_ID: /* "NER5" */
-	cdio_error ("unexpected nrg magic ID NER5 detected");
+	cdio_error ("unexpected nrg magic ID NER%c detected",
+		    opcode==NERO_ID ? 'O': '5');
 	return -1;
 	break;
 
-      case NERO_ID: /* "NER0" */
-	cdio_error ("unexpected nrg magic ID NER0 detected");
-	return -1;
-	break;
-	
       case END1_ID: /* "END!" */
 	cdio_debug ("nrg end tag detected");
 	break_out = true;
