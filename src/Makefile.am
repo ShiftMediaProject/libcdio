@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.22 2004/04/25 00:46:34 rocky Exp $
+#   $Id: Makefile.am,v 1.23 2004/05/27 02:46:17 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -57,4 +57,6 @@ EXTRA_DIST = cdinfo-linux.c cd-drive.c cd-info.c cd-read.c $(man_MANS)
 man_MANS = 
 endif
 
-INCLUDES = -I$(top_srcdir) $(LIBPOPT_CFLAGS) $(LIBCDIO_CFLAGS) $(VCDINFO_CFLAGS)
+# Put LIBPOPT_CFLAGS after local include in case LIBPOPT has headers common
+# to those in LIBCDIO_CFLAGS
+INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(VCDINFO_CFLAGS) $(LIBPOPT_CFLAGS) 
