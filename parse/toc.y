@@ -1,5 +1,5 @@
 /*
-    $Id: toc.y,v 1.1 2005/01/31 10:20:51 rocky Exp $
+    $Id: toc.y,v 1.2 2005/02/01 03:35:12 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -137,8 +137,8 @@ opt_index_msfs: opt_index_msfs INDEX msf
          | /* empty */ ;
 
 subTrack_or_start_or_end: subTrack 
-         | START 
-         | END;
+         | START opt_msf 
+         | END opt_msf ;
 
 subTracks_or_starts_or_ends: subTracks_or_starts_or_ends 
                              subTrack_or_start_or_end 
@@ -175,6 +175,8 @@ uLong: Integer ;
 sLong: Integer ;
 
 msf: Integer Colon Integer Colon Integer ;
+
+opt_msf: msf | /* empty */ ;
 
 samples: msf | uLong ;
 
