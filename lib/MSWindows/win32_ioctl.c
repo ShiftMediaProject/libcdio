@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.6 2004/06/28 16:02:07 rocky Exp $
+    $Id: win32_ioctl.c,v 1.7 2004/07/10 01:21:20 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.6 2004/06/28 16:02:07 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.7 2004/07/10 01:21:20 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -352,10 +352,6 @@ init_win32ioctl (_img_private_t *env)
   return false;
 }
 
-#define MSF_TO_LBA2(min, sec, frame) \
-  ((int) frame + CDIO_CD_FRAMES_PER_SEC * (CDIO_CD_SECS_PER_MIN*min + sec) \
-         - CDIO_PREGAP_SECTORS )
-
 /*! 
   Read and cache the CD's Track Table of Contents and track info.
   Return true if successful or false if an error.
@@ -381,7 +377,7 @@ read_toc_win32ioctl (_img_private_t *env)
   
   
   for( i = 0 ; i <= env->total_tracks ; i++ ) {
-    env->tocent[ i ].start_lsn = MSF_TO_LBA2(
+    env->tocent[ i ].start_lsn = cdio_msf3_to_lba(
 					     cdrom_toc.TrackData[i].Address[1],
 					     cdrom_toc.TrackData[i].Address[2],
 					     cdrom_toc.TrackData[i].Address[3] );

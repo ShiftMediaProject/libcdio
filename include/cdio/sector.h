@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.14 2004/06/27 15:29:21 rocky Exp $
+    $Id: sector.h,v 1.15 2004/07/10 01:21:19 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -181,6 +181,7 @@ void  cdio_lba_to_msf(lba_t lba, msf_t *msf);
 
 /*! 
   Convert an LSN into the corresponding LBA.
+  CDIO_INVALID_LBA is returned if there is an error.
 */
 lba_t cdio_lsn_to_lba (lsn_t lsn);
 
@@ -191,15 +192,30 @@ void  cdio_lsn_to_msf (lsn_t lsn, msf_t *msf);
 
 /*! 
   Convert a MSF into the corresponding LBA.
+  CDIO_INVALID_LBA is returned if there is an error.
 */
-lba_t
-cdio_msf_to_lba (const msf_t *msf);
+lba_t cdio_msf_to_lba (const msf_t *msf);
 
 /*! 
   Convert a MSF into the corresponding LSN.
+  CDIO_INVALID_LSN is returned if there is an error.
 */
-lsn_t
-cdio_msf_to_lsn (const msf_t *msf);
+lsn_t cdio_msf_to_lsn (const msf_t *msf);
+
+/*!  
+  Convert a MSF - broken out as 3 integer components into the
+  corresponding LBA.  
+  CDIO_INVALID_LBA is returned if there is an error.
+*/
+lba_t cdio_msf3_to_lba (unsigned int minutes, unsigned int seconds, 
+                        unsigned int frames);
+      
+/*! 
+  Convert a string of the form MM:SS:FF into the corresponding LBA.
+  CDIO_INVALID_LBA is returned if there is an error.
+*/
+lba_t cdio_mmssff_to_lba (const char *psz_mmssff);
+      
 
 #ifdef __cplusplus
     }

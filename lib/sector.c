@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.11 2004/06/12 17:32:00 rocky Exp $
+    $Id: sector.c,v 1.12 2004/07/10 01:21:19 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
@@ -33,8 +33,9 @@
 #include <string.h>
 #endif
 
+#include <ctype.h>
 
-static const char _rcsid[] = "$Id: sector.c,v 1.11 2004/06/12 17:32:00 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.12 2004/07/10 01:21:19 rocky Exp $";
 
 lba_t
 cdio_lba_to_lsn (lba_t lba)
@@ -79,7 +80,9 @@ cdio_lsn_to_msf (lsn_t lsn, msf_t *msf)
   msf->f = to_bcd8 (f);
 }
 
-/* warning, returns new allocated string */
+/*! 
+  Convert an LBA into a string representation of the MSF.
+  \warning cdio_lba_to_msf_str returns new allocated string */
 char *
 cdio_lba_to_msf_str (lba_t lba)
 {
@@ -93,6 +96,10 @@ cdio_lba_to_msf_str (lba_t lba)
   }
 }
 
+/*! 
+  Convert an LSN into the corresponding LBA.
+  CDIO_INVALID_LBA is returned if there is an error.
+*/
 lba_t
 cdio_lsn_to_lba (lsn_t lsn)
 {
@@ -100,6 +107,9 @@ cdio_lsn_to_lba (lsn_t lsn)
   return lsn + CDIO_PREGAP_SECTORS; 
 }
 
+/*! 
+  Convert an LBA into the corresponding MSF.
+*/
 void
 cdio_lba_to_msf (lba_t lba, msf_t *msf)
 {
@@ -107,6 +117,10 @@ cdio_lba_to_msf (lba_t lba, msf_t *msf)
   cdio_lsn_to_msf(cdio_lba_to_lsn(lba), msf);
 }
 
+/*! 
+  Convert a MSF into the corresponding LBA.
+  CDIO_INVALID_LBA is returned if there is an error.
+*/
 lba_t
 cdio_msf_to_lba (const msf_t *msf)
 {
@@ -125,13 +139,19 @@ cdio_msf_to_lba (const msf_t *msf)
   return lba;
 }
 
+/*! 
+  Convert a MSF into the corresponding LSN.
+  CDIO_INVALID_LSN is returned if there is an error.
+*/
 lba_t
 cdio_msf_to_lsn (const msf_t *msf)
 {
   return cdio_lba_to_lsn(cdio_msf_to_lba (msf));
 }
 
-/* warning, returns new allocated string */
+/*! 
+  Convert an LBA into a string representation of the MSF.
+  \warning cdio_lba_to_msf_str returns new allocated string */
 char *
 cdio_msf_to_str (const msf_t *msf)
 {
@@ -139,6 +159,93 @@ cdio_msf_to_str (const msf_t *msf)
   
   snprintf (buf, sizeof (buf), "%2.2x:%2.2x:%2.2x", msf->m, msf->s, msf->f);
   return strdup (buf);
+}
+
+/*!  
+  Convert a MSF - broken out as 3 integer components into the
+  corresponding LBA.  
+  CDIO_INVALID_LBA is returned if there is an error.
+*/
+lba_t
+cdio_msf3_to_lba (unsigned int minutes, unsigned int seconds, 
+                  unsigned int frames)
+{
+  return ((minutes * CDIO_CD_SECS_PER_MIN + seconds) * CDIO_CD_FRAMES_PER_SEC 
+	  + frames);
+}
+
+/*! 
+  Convert a string of the form MM:SS:FF into the corresponding LBA.
+  CDIO_INVALID_LBA is returned if there is an error.
+*/
+lba_t
+cdio_mmssff_to_lba (const char *psz_mmssff)
+{
+  int psz_field;
+  lba_t ret;
+  char c;
+  
+  if (0 == strcmp (psz_mmssff, "0"))
+    return 0;
+  
+  c = *psz_mmssff++;
+  if(c >= '0' && c <= '9')
+    psz_field = (c - '0');
+  else
+    return CDIO_INVALID_LBA;
+  while(':' != (c = *psz_mmssff++)) {
+    if(c >= '0' && c <= '9')
+      psz_field = psz_field * 10 + (c - '0');
+    else
+      return CDIO_INVALID_LBA;
+  }
+  
+  ret = cdio_msf3_to_lba (psz_field, 0, 0);
+  
+  c = *psz_mmssff++;
+  if(c >= '0' && c <= '9')
+    psz_field = (c - '0');
+  else
+    return CDIO_INVALID_LBA;
+  if(':' != (c = *psz_mmssff++)) {
+    if(c >= '0' && c <= '9') {
+      psz_field = psz_field * 10 + (c - '0');
+      c = *psz_mmssff++;
+      if(c != ':')
+	return CDIO_INVALID_LBA;
+    }
+    else
+      return CDIO_INVALID_LBA;
+  }
+  
+  if(psz_field >= CDIO_CD_SECS_PER_MIN)
+    return CDIO_INVALID_LBA;
+  
+  ret += cdio_msf3_to_lba (0, psz_field, 0);
+  
+  c = *psz_mmssff++;
+  if (isdigit(c))
+    psz_field = (c - '0');
+  else
+    return -1;
+  if('\0' != (c = *psz_mmssff++)) {
+    if (isdigit(c)) {
+      psz_field = psz_field * 10 + (c - '0');
+      c = *psz_mmssff++;
+    }
+    else
+      return CDIO_INVALID_LBA;
+  }
+  
+  if('\0' != c)
+    return CDIO_INVALID_LBA;
+  
+  if(psz_field >= CDIO_CD_FRAMES_PER_SEC)
+    return CDIO_INVALID_LBA;
+  
+  ret += psz_field;
+  
+  return ret;
 }
 
 

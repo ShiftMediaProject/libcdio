@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.14 2004/07/09 20:48:05 rocky Exp $
+    $Id: cdrdao.c,v 1.15 2004/07/10 01:21:20 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -29,7 +29,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.14 2004/07/09 20:48:05 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.15 2004/07/10 01:21:20 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -123,83 +123,6 @@ static uint32_t _stat_size_cdrdao (void *user_data);
 static bool parse_tocfile (_img_private_t *cd, const char *toc_name);
 
 #include "image_common.h"
-
-static lba_t
-msf_to_lba (int minutes, int seconds, int frames)
-{
-  return ((minutes * CDIO_CD_SECS_PER_MIN + seconds) * CDIO_CD_FRAMES_PER_SEC 
-	  + frames);
-}
-
-static lba_t
-msf_lba_from_mmssff (char *s)
-{
-  int field;
-  lba_t ret;
-  char c;
-  
-  if (0 == strcmp (s, "0"))
-    return 0;
-  
-  c = *s++;
-  if(c >= '0' && c <= '9')
-    field = (c - '0');
-  else
-    return CDIO_INVALID_LBA;
-  while(':' != (c = *s++)) {
-    if(c >= '0' && c <= '9')
-      field = field * 10 + (c - '0');
-    else
-      return CDIO_INVALID_LBA;
-  }
-  
-  ret = msf_to_lba (field, 0, 0);
-  
-  c = *s++;
-  if(c >= '0' && c <= '9')
-    field = (c - '0');
-  else
-    return CDIO_INVALID_LBA;
-  if(':' != (c = *s++)) {
-    if(c >= '0' && c <= '9') {
-      field = field * 10 + (c - '0');
-      c = *s++;
-      if(c != ':')
-	return CDIO_INVALID_LBA;
-    }
-    else
-      return CDIO_INVALID_LBA;
-  }
-  
-  if(field >= CDIO_CD_SECS_PER_MIN)
-    return CDIO_INVALID_LBA;
-  
-  ret += msf_to_lba (0, field, 0);
-  
-  c = *s++;
-  if (isdigit(c))
-    field = (c - '0');
-  else
-    return -1;
-  if('\0' != (c = *s++)) {
-    if (isdigit(c)) {
-      field = field * 10 + (c - '0');
-      c = *s++;
-    }
-    else
-      return CDIO_INVALID_LBA;
-  }
-  
-  if('\0' != c)
-    return -1;
-  
-  if(field >= CDIO_CD_FRAMES_PER_SEC)
-    return CDIO_INVALID_LBA;
-  
-  ret += field;
-  
-  return ret;
-}
 
 /*!
   Initialize image structures.
@@ -632,7 +555,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 	  }
 	  
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
-	    lba_t lba = cdio_lsn_to_lba(msf_lba_from_mmssff (psz_field));
+	    lba_t lba = cdio_lsn_to_lba(cdio_mmssff_to_lba (psz_field));
 	    if (CDIO_INVALID_LBA == lba) {
 	      cdio_log(log_level, "%s line %d: invalid MSF string %s", 
 		       psz_toc_name, i_line, psz_field);
@@ -646,7 +569,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 	  }
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r")))
 	    if (NULL != cd)
-	      cd->tocent[i].length = msf_lba_from_mmssff (psz_field);
+	      cd->tocent[i].length = cdio_mmssff_to_lba (psz_field);
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    goto format_error;
 	  }
@@ -668,7 +591,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    /* todo: line is too long! */
 	    if (NULL != cd) {
-	      cd->tocent[i].start_lba += msf_lba_from_mmssff (psz_field);
+	      cd->tocent[i].start_lba += cdio_mmssff_to_lba (psz_field);
 	      cdio_lba_to_msf(cd->tocent[i].start_lba, 
 			      &(cd->tocent[i].start_msf));
 	    }
@@ -686,7 +609,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    if (NULL != cd) 
-	      cd->tocent[i].pregap = msf_lba_from_mmssff (psz_field);
+	      cd->tocent[i].pregap = cdio_mmssff_to_lba (psz_field);
 	  } else {
 	    goto format_error;
 	  }
@@ -708,7 +631,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 		cd->tocent[i].nindex++;
 	      }
 	      cd->tocent[i].indexes[cd->tocent[i].nindex++] = 
-		msf_lba_from_mmssff (psz_field) + cd->tocent[i].indexes[0];
+		cdio_mmssff_to_lba (psz_field) + cd->tocent[i].indexes[0];
 #else 
 	      ;
 	      

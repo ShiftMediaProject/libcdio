@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.28 2004/07/09 20:48:05 rocky Exp $
+    $Id: bincue.c,v 1.29 2004/07/10 01:21:20 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.28 2004/07/09 20:48:05 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.29 2004/07/10 01:21:20 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -327,83 +327,6 @@ _stat_size_bincue (void *user_data)
   return size;
 }
 
-static lba_t 
-msf_msf_to_lba (int minutes, int seconds, int frames)
-{
-  return ( (minutes * CDIO_CD_SECS_PER_MIN + seconds) 
-	   * CDIO_CD_FRAMES_PER_SEC + frames );
-}
-
-static lba_t
-mmssff_to_lba (char *s)
-{
-  int field;
-  long ret;
-  char c;
-  
-  if (0 == strcmp (s, "0"))
-    return 0;
-  
-  c = *s++;
-  if(c >= '0' && c <= '9')
-    field = (c - '0');
-  else
-    return CDIO_INVALID_LBA;
-  while(':' != (c = *s++)) {
-    if(c >= '0' && c <= '9')
-      field = field * 10 + (c - '0');
-    else
-      return CDIO_INVALID_LBA;
-  }
-  
-  ret = msf_msf_to_lba (field, 0, 0);
-  
-  c = *s++;
-  if(c >= '0' && c <= '9')
-    field = (c - '0');
-  else
-    return CDIO_INVALID_LBA;
-  if(':' != (c = *s++)) {
-    if(c >= '0' && c <= '9') {
-      field = field * 10 + (c - '0');
-      c = *s++;
-      if(c != ':')
-	return CDIO_INVALID_LBA;
-    }
-    else
-      return CDIO_INVALID_LBA;
-  }
-  
-  if(field >= CDIO_CD_SECS_PER_MIN)
-    return CDIO_INVALID_LBA;
-  
-  ret += msf_msf_to_lba (0, field, 0);
-  
-  c = *s++;
-  if(c >= '0' && c <= '9')
-    field = (c - '0');
-  else
-    return CDIO_INVALID_LBA;
-  if('\0' != (c = *s++)) {
-    if(c >= '0' && c <= '9') {
-      field = field * 10 + (c - '0');
-      c = *s++;
-    }
-    else
-      return CDIO_INVALID_LBA;
-  }
-  
-  if('\0' != c)
-    return CDIO_INVALID_LBA;
-  
-  if(field >= CDIO_CD_FRAMES_PER_SEC)
-    return CDIO_INVALID_LBA;
-  
-  ret += field;
-  
-  return ret;
-}
-
 #define MAXLINE 4096		/* maximum line length + 1 */
 
 static bool
@@ -412,7 +335,6 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   FILE *fp;
   char psz_line[MAXLINE];
   unsigned int i_line=0;
-  int min,sec,frame;
   int start_index;
   char *psz_keyword, *psz_field;
   cdio_log_level_t log_level = (NULL == cd) ? CDIO_LOG_INFO : CDIO_LOG_WARN;
@@ -505,9 +427,10 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	  if (1!=sscanf(psz_field, "%d", &i_track)) {
 	    cdio_log(log_level, 
-		     "%s line %d after keyword TRACK - "
-		     "expecting a track number", 
+		     "%s line %d after word TRACK:",
 		     psz_cue_name, i_line);
+	    cdio_log(log_level, 
+		     "Expecting a track number, got %s", psz_field);
 	    goto err_exit;
 	  }
 	}
@@ -604,7 +527,12 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      this_track->endsize     = CDIO_CD_SYNC_SIZE + CDIO_CD_ECC_SIZE;
 	    }
 	  } else {
-	    goto format_error;
+	    cdio_log(log_level, 
+		     "%s line %d after word TRACK:",
+		     psz_cue_name, i_line);
+	    cdio_log(log_level, 
+		     "Unknown track mode %s", psz_field);
+	    goto err_exit;
 	  }
 	} else {
 	  goto format_error;
@@ -646,7 +574,17 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
       } else if (0 == strcmp ("PREGAP", psz_keyword)) {
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
-	    if (cd) cd->tocent[i].pregap = mmssff_to_lba (psz_field);
+	    lba_t lba = cdio_lsn_to_lba(cdio_mmssff_to_lba (psz_field));
+	    if (CDIO_INVALID_LBA == lba) {
+	      cdio_log(log_level, "%s line %d: after word PREGAP:", 
+		       psz_cue_name, i_line);
+	      cdio_log(log_level, "Invalid MSF string %s", 
+		       psz_field);
+	      goto err_exit;
+	    }
+	    if (cd) {
+	      cd->tocent[i].pregap = lba;
+	    }
 	  } else {
 	    goto format_error;
 	  } if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
@@ -662,76 +600,67 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r")))
 	    if (1!=sscanf(psz_field, "%d", &start_index)) {
 	      cdio_log(log_level, 
-		       "%s line %d after keyword INDEX - "
-		       "expecting an index number", 
+		       "%s line %d after word INDEX:",
 		       psz_cue_name, i_line);
+	      cdio_log(log_level, 
+		       "expecting an index number, got %s", 
+		       psz_field);
 	      goto err_exit;
 	    }
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
-#if FIXED_ME
-	    if (cd) cd->tocent[i].indexes[cd->tocent[i].nindex++] = 
-	      mmssff_to_lba (psz_field);
-#else     
-	    if (3==sscanf(psz_field, "%d:%d:%d", &min, &sec, &frame)) {
-	      if (cd) {
-		track_info_t  *this_track=
-		  &(cd->tocent[cd->i_tracks - cd->i_first_track]);
-
-		/* FIXME! all of this is a big hack.  If start_index
-		   == 0, then this is the "last_cue" information.  The
-		   +2 below seconds is to adjust for the 150 pregap.
-		*/
-		if (start_index != 0) {
-		  if (!b_first_index_for_track) {
-		    this_track->start_index = start_index;
-		    sec += 2;
-		    if (sec >= 60) {
-		      min++;
-		      sec -= 60;
-		    }
-		    b_first_index_for_track = true;
-		    this_track->start_msf.m = to_bcd8 (min);
-		    this_track->start_msf.s = to_bcd8 (sec);
-		    this_track->start_msf.f = to_bcd8 (frame);
-		    this_track->start_lba   = cdio_msf_to_lba(&this_track->start_msf);
-		  }
-		  
-		  if (cd->i_tracks > 1) {
-		    /* Figure out number of sectors for previous track */
-		    track_info_t  *prev_track=&(cd->tocent[cd->i_tracks-2]);
-		    if ( this_track->start_lba < prev_track->start_lba ) {
-		      cdio_log (log_level,
-				"track %d at LBA %lu starts before track %d at LBA %lu", 
-				cd->i_tracks,   
-				(unsigned long int) this_track->start_lba, 
-				cd->i_tracks, 
-				(unsigned long int) prev_track->start_lba);
-		      prev_track->sec_count = 0;
-		    } else if ( this_track->start_lba >= prev_track->start_lba 
-				+ CDIO_PREGAP_SECTORS ) {
-		      prev_track->sec_count = this_track->start_lba - 
-			prev_track->start_lba - CDIO_PREGAP_SECTORS ;
-		    } else {
-		      cdio_log (log_level, 
-				"%lu fewer than pregap (%d) sectors in track %d",
-				(long unsigned int) 
-				this_track->start_lba - prev_track->start_lba,
-				CDIO_PREGAP_SECTORS,
-				cd->i_tracks);
-		      /* Include pregap portion in sec_count. Maybe the pregap
-			 was omitted. */
-		      prev_track->sec_count = this_track->start_lba - 
-			prev_track->start_lba;
-		    }
-		  }
-		  this_track->num_indices++;
-		}
-	      }
-	    } else {
-	      cdio_log (log_level, 
-			"%s line %d: after keyword: %s - expecting MM:SS::FF", 
-			psz_cue_name, i_line, psz_keyword);
+	    lba_t lba = cdio_mmssff_to_lba (psz_field);
+	    if (CDIO_INVALID_LBA == lba) {
+	      cdio_log(log_level, "%s line %d: after word INDEX:", 
+		       psz_cue_name, i_line);
+	      cdio_log(log_level, "Invalid MSF string %s", 
+		       psz_field);
 	      goto err_exit;
+	    }
+	    if (cd) {
+#if FIXED_ME
+	      cd->tocent[i].indexes[cd->tocent[i].nindex++] = lba;
+#else     
+	      track_info_t  *this_track=
+		&(cd->tocent[cd->i_tracks - cd->i_first_track]);
+
+	      if (start_index != 0) {
+		if (!b_first_index_for_track) {
+		  lba += CDIO_PREGAP_SECTORS;
+		  cdio_lba_to_msf(lba, &(this_track->start_msf));
+		  b_first_index_for_track = true;
+		  this_track->start_lba   = lba;
+		}
+		
+		if (cd->i_tracks > 1) {
+		  /* Figure out number of sectors for previous track */
+		  track_info_t  *prev_track=&(cd->tocent[cd->i_tracks-2]);
+		  if ( this_track->start_lba < prev_track->start_lba ) {
+		    cdio_log (log_level,
+			      "track %d at LBA %lu starts before track %d at LBA %lu", 
+			      cd->i_tracks,   
+			      (unsigned long int) this_track->start_lba, 
+			      cd->i_tracks, 
+			      (unsigned long int) prev_track->start_lba);
+		    prev_track->sec_count = 0;
+		  } else if ( this_track->start_lba >= prev_track->start_lba 
+			      + CDIO_PREGAP_SECTORS ) {
+		    prev_track->sec_count = this_track->start_lba - 
+		      prev_track->start_lba - CDIO_PREGAP_SECTORS ;
+		  } else {
+		    cdio_log (log_level, 
+			      "%lu fewer than pregap (%d) sectors in track %d",
+			      (long unsigned int) 
+			      this_track->start_lba - prev_track->start_lba,
+			      CDIO_PREGAP_SECTORS,
+			      cd->i_tracks);
+		    /* Include pregap portion in sec_count. Maybe the pregap
+		       was omitted. */
+		    prev_track->sec_count = this_track->start_lba - 
+		      prev_track->start_lba;
+		  }
+		}
+		this_track->num_indices++;
+	      }
 	    }
 #endif  
 	  } else {
@@ -771,17 +700,17 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   return true;
 
  format_error:
-  cdio_log(log_level, "%s line %d after keyword %s", 
+  cdio_log(log_level, "%s line %d after word %s", 
 	   psz_cue_name, i_line, psz_keyword);
   goto err_exit;
 
  in_global_section:
-  cdio_log(log_level, "%s line %d: keyword %s not allowed in global section", 
+  cdio_log(log_level, "%s line %d: word %s not allowed in global section", 
 	   psz_cue_name, i_line, psz_keyword);
   goto err_exit;
 
  not_in_global_section:
-  cdio_log(log_level, "%s line %d: keyword %s only allowed in global section", 
+  cdio_log(log_level, "%s line %d: word %s only allowed in global section", 
 	   psz_cue_name, i_line, psz_keyword);
 
  err_exit: 
