@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.2 2003/09/19 04:11:23 rocky Exp $
+  $Id: cd-read.c,v 1.3 2003/09/19 04:36:06 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -80,6 +80,7 @@ main(int argc, const char *argv[])
 {
   uint8_t buffer[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   lsn_t lsn;
+  unsigned int blocklen=CDIO_CD_FRAMESIZE_RAW;
   
   gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
 
@@ -98,22 +99,23 @@ main(int argc, const char *argv[])
     break;
   case '2':
     cdio_read_mode1_sector(cdio, &buffer, lsn, false);
+    blocklen=CDIO_CD_FRAMESIZE;
     break;
   case '3':
-    cdio_read_mode1_sector(cdio, &buffer, 16, true);
+    cdio_read_mode1_sector(cdio, &buffer, lsn, true);
     break;
   case '4':
-    cdio_read_mode2_sector(cdio, &buffer, 0, false);
+    cdio_read_mode2_sector(cdio, &buffer, lsn, false);
     break;
   case '5':
-    cdio_read_mode2_sector(cdio, &buffer, 16, true);
+    cdio_read_mode2_sector(cdio, &buffer, lsn, true);
     break;
   default:
     printf("Expecting 1..5 as the second argument.\n");
     return 20;
   }
 
-  hexdump(buffer, CDIO_CD_FRAMESIZE_RAW);
+  hexdump(buffer, blocklen);
   cdio_destroy(cdio);
   return 0;
 }
