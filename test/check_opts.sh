@@ -1,11 +1,15 @@
 #!/bin/sh
-#$Id: check_opts.sh,v 1.2 2003/04/25 21:28:39 rocky Exp $
+#$Id: check_opts.sh,v 1.3 2003/08/29 11:10:01 rocky Exp $
 # Check cd-info options
 if test -z "$srcdir" ; then
   srcdir=`pwd`
 fi
 
 . ${srcdir}/check_common_fn
+
+if ! test -x ../src/cd-info ; then
+  exit 77
+fi
 
 BASE=`basename $0 .sh`
 
