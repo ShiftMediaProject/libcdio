@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.67 2004/09/02 02:33:54 rocky Exp $
+    $Id: _cdio_osx.c,v 1.68 2004/09/02 03:45:49 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.67 2004/09/02 02:33:54 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.68 2004/09/02 03:45:49 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -87,7 +87,7 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.67 2004/09/02 02:33:54 rocky 
    0xA2 is "lead out". Don't ask me why. */
 #define	OSX_CDROM_LEADOUT_TRACK 0xA2
 
-#define TOTAL_TRACKS    (p_env->i_last_track - p_env->i_first_track + 1)
+#define TOTAL_TRACKS    (p_env->i_last_track - p_env->gen.i_first_track + 1)
 
 #define CDROM_CDI_TRACK 0x1
 #define CDROM_XA_TRACK  0x2
@@ -109,7 +109,6 @@ typedef struct {
   CDTOC *pTOC;
   int i_descriptors;
   track_t i_last_track;      /* highest track number */
-  track_t i_first_track;     /* first track */
   track_t i_last_session;    /* highest session number */
   track_t i_first_session;   /* first session number */
   lsn_t   *pp_lba;
@@ -402,23 +401,23 @@ get_discmode_osx (void *p_user_data)
 
   if( CFStringGetCString( data, str, sizeof(str),
 			  kCFStringEncodingASCII ) ) {
-    if (0 == strncmp(str, "DVD+R", sizeof(str)) )
+    if (0 == strncmp(str, "DVD+R", strlen(str)) )
       i_discmode = CDIO_DISC_MODE_DVD_PR;
-    else if (0 == strncmp(str, "DVD+RW", sizeof(str)) ) 
+    else if (0 == strncmp(str, "DVD+RW", strlen(str)) ) 
       i_discmode = CDIO_DISC_MODE_DVD_PRW;
-    else if (0 == strncmp(str, "DVD-R", sizeof(str)) ) 
+    else if (0 == strncmp(str, "DVD-R", strlen(str)) ) 
       i_discmode = CDIO_DISC_MODE_DVD_R;
-    else if (0 == strncmp(str, "DVD-RW", sizeof(str)) ) 
+    else if (0 == strncmp(str, "DVD-RW", strlen(str)) ) 
       i_discmode = CDIO_DISC_MODE_DVD_RW;
-    else if (0 == strncmp(str, "DVD-ROM", sizeof(str)) ) 
+    else if (0 == strncmp(str, "DVD-ROM", strlen(str)) ) 
       i_discmode = CDIO_DISC_MODE_DVD_ROM;
-    else if (0 == strncmp(str, "DVD-RAM", sizeof(str)) ) 
+    else if (0 == strncmp(str, "DVD-RAM", strlen(str)) ) 
       i_discmode = CDIO_DISC_MODE_DVD_RAM;
-    else if (0 == strncmp(str, "CD-ROM", sizeof(str)) )
+    else if (0 == strncmp(str, "CD-ROM", strlen(str)) )
       i_discmode = CDIO_DISC_MODE_CD_DATA;
-    else if (0 == strncmp(str, "CDR", sizeof(str)) ) 
+    else if (0 == strncmp(str, "CDR", strlen(str)) ) 
       i_discmode = CDIO_DISC_MODE_CD_DATA;
-    else if (0 == strncmp(str, "CDRW", sizeof(str)) ) 
+    else if (0 == strncmp(str, "CDRW", strlen(str)) ) 
       i_discmode = CDIO_DISC_MODE_CD_DATA;
     //??  Handled by below? CFRelease( data );
   }
@@ -897,7 +896,7 @@ read_toc_osx (void *p_user_data)
     
     pTrackDescriptors = p_env->pTOC->descriptors;
 
-    p_env->i_first_track   = CDIO_CD_MAX_TRACKS+1;
+    p_env->gen.i_first_track   = CDIO_CD_MAX_TRACKS+1;
     p_env->i_last_track    = CDIO_CD_MIN_TRACK_NO;
     p_env->i_first_session = CDIO_CD_MAX_TRACKS+1;
     p_env->i_last_session  = CDIO_CD_MIN_TRACK_NO;
@@ -929,17 +928,17 @@ read_toc_osx (void *p_user_data)
 	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
 	  continue;
 
-	if (p_env->i_first_track > i_track) 
-	  p_env->i_first_track = i_track;
+	if (p_env->gen.i_first_track > i_track) 
+	  p_env->gen.i_first_track = i_track;
 	
 	if (p_env->i_last_track < i_track) 
 	  p_env->i_last_track = i_track;
 	
 	if (p_env->i_first_session > i_session) 
-	  p_env->i_first_track = i_session;
+	  p_env->i_first_session = i_session;
 	
 	if (p_env->i_last_session < i_session) 
-	  p_env->i_last_track = i_session;
+	  p_env->i_last_session = i_session;
       }
 
     /* Now that we know what the first track number is, we can make sure
@@ -955,7 +954,7 @@ read_toc_osx (void *p_user_data)
 	/* Note what OSX calls a LBA we call an LSN. So below re we 
 	   really have have MSF -> LSN -> LBA.
 	 */
-	p_env->pp_lba[i_track - p_env->i_first_track] =
+	p_env->pp_lba[i_track - p_env->gen.i_first_track] =
 	  cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i].p ));
       }
     
@@ -973,6 +972,7 @@ read_toc_osx (void *p_user_data)
     */
     p_env->pp_lba[TOTAL_TRACKS] =
       cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i_leadout].p ));
+    p_env->gen.i_tracks = TOTAL_TRACKS;
   }
 
   p_env->gen.toc_init   = true;
@@ -998,10 +998,10 @@ get_track_lba_osx(void *p_user_data, track_t i_track)
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = p_env->i_last_track+1;
 
-  if (i_track > p_env->i_last_track + 1 || i_track < p_env->i_first_track) {
+  if (i_track > p_env->i_last_track + 1 || i_track < p_env->gen.i_first_track) {
     return CDIO_INVALID_LSN;
   } else {
-    return p_env->pp_lba[i_track - p_env->i_first_track];
+    return p_env->pp_lba[i_track - p_env->gen.i_first_track];
   }
 }
 
@@ -1115,7 +1115,7 @@ get_track_format_osx(void *user_data, track_t i_track)
   dk_cd_read_track_info_t cd_read;
   CDTrackInfo a_track;
 
-  if (i_track > p_env->i_last_track || i_track < p_env->i_first_track)
+  if (i_track > p_env->i_last_track || i_track < p_env->gen.i_first_track)
     return TRACK_FORMAT_ERROR;
     
   memset( &cd_read, 0, sizeof(cd_read) );
@@ -1164,7 +1164,7 @@ get_track_green_osx(void *user_data, track_t i_track)
 
   if (!p_env->gen.toc_init) read_toc_osx (p_env) ;
 
-  if ( i_track > p_env->i_last_track || i_track < p_env->i_first_track )
+  if ( i_track > p_env->i_last_track || i_track < p_env->gen.i_first_track )
     return false;
 
   else {
