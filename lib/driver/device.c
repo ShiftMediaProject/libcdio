@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.18 2005/03/09 02:19:54 rocky Exp $
+    $Id: device.c,v 1.19 2005/03/14 02:02:49 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -301,13 +301,19 @@ cdio_destroy (CdIo_t *p_cdio)
 /*!
   Close media tray in CD drive if there is a routine to do so. 
   
-  @param p_cdio the CD object to be acted upon.
-  If the CD is ejected *p_cdio is free'd and p_cdio set to NULL.
+  @param psz_drive the name of CD-ROM to be closed.
+  @param p_driver_id is the driver to be used or that got used if
+  it was DRIVER_UNKNOWN or DRIVER_DEVICE; If this is NULL, we won't
+  report back the driver used.
 */
 driver_return_code_t 
-cdio_close_tray (const char *psz_device, /*in/out*/ driver_id_t
+cdio_close_tray (const char *psz_drive, /*in/out*/ driver_id_t
                  *p_driver_id)
 {
+  const driver_id_t temp_driver_id = DRIVER_DEVICE;
+
+  if (!p_driver_id) p_driver_id = &temp_driver_id;
+  
   if (DRIVER_UNKNOWN == *p_driver_id || DRIVER_DEVICE == *p_driver_id) {
     *p_driver_id = CDIO_MIN_DEVICE_DRIVER;
     
@@ -315,7 +321,7 @@ cdio_close_tray (const char *psz_device, /*in/out*/ driver_id_t
     for ( ; *p_driver_id<=CDIO_MAX_DRIVER; (*p_driver_id)++) {
       if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
            *CdIo_all_drivers[*p_driver_id].close_tray ) {
-        return (*CdIo_all_drivers[*p_driver_id].close_tray)(psz_device);
+        return (*CdIo_all_drivers[*p_driver_id].close_tray)(psz_drive);
       }
     }
     return DRIVER_OP_UNSUPPORTED;
@@ -324,7 +330,7 @@ cdio_close_tray (const char *psz_device, /*in/out*/ driver_id_t
   /* The driver id was specified. Use that. */
   if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
        *CdIo_all_drivers[*p_driver_id].close_tray ) {
-    return (*CdIo_all_drivers[*p_driver_id].close_tray)(psz_device);
+    return (*CdIo_all_drivers[*p_driver_id].close_tray)(psz_drive);
   }
   return DRIVER_OP_UNSUPPORTED;
 }

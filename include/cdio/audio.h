@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: audio.h,v 1.7 2005/03/06 15:59:20 rocky Exp $
+    $Id: audio.h,v 1.8 2005/03/14 02:02:49 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -66,6 +66,10 @@ extern "C" {
     Get volume of an audio CD.
     
     @param p_cdio the CD object to be acted upon.
+    @param p_volume place to put the list of volume outputs levels
+
+    p_volume can be NULL in which case we return only whether the driver
+    has the ability to get the volume or not.
 
   */
   driver_return_code_t cdio_audio_get_volume (CdIo_t *p_cdio,  /*out*/

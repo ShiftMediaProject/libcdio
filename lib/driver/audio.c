@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.7 2005/03/06 22:36:27 rocky Exp $
+    $Id: audio.c,v 1.8 2005/03/14 02:02:49 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -46,8 +46,11 @@ cdio_audio_get_msf_seconds(msf_t *p_msf)
 driver_return_code_t 
 cdio_audio_get_volume (CdIo_t *p_cdio,  /*out*/ cdio_audio_volume_t *p_volume)
 {
+  cdio_audio_volume_t temp_audio_volume;
+  
   if (!p_cdio) return DRIVER_OP_UNINIT;
 
+  if (!p_volume) p_volume = &temp_audio_volume;
   if (p_cdio->op.audio_get_volume) {
     return p_cdio->op.audio_get_volume (p_cdio->env, p_volume);
   } else {

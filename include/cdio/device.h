@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.21 2005/03/07 07:23:52 rocky Exp $
+    $Id: device.h,v 1.22 2005/03/14 02:02:49 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -220,11 +220,11 @@ extern "C" {
 
   /*!
     Close media tray in CD drive if there is a routine to do so. 
-
-    @param name of CD-ROM device to be acted upon.
-    driver_id is the driver to use to perform the action. If DRIVER_UNKNOWN
-    or DRIVER_DEVICE we'll scan for a suitable driver and set 
-    driver_id to that on return.
+    
+    @param psz_drive the name of CD-ROM to be closed.
+    @param p_driver_id is the driver to be used or that got used if
+    it was DRIVER_UNKNOWN or DRIVER_DEVICE; If this is NULL, we won't
+    report back the driver used.
   */
   driver_return_code_t cdio_close_tray (const char *psz_device, 
 					/*in/out*/ driver_id_t *p_driver_id);
