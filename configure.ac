@@ -19,7 +19,7 @@ define(RELEASE_NUM, 73)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.151 2005/03/19 06:42:22 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.152 2005/03/19 07:52:51 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -590,7 +590,7 @@ chmod +x test/check_nrg.sh
 chmod +x test/check_cue.sh
 chmod +x test/check_iso.sh
 chmod +x test/check_paranoia.sh
-cp config.h include/cdio/cdio_config.h
+head -196 config.h > include/cdio/cdio_config.h
 ]],[[]])
 
 AC_OUTPUT
