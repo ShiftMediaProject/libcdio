@@ -19,7 +19,7 @@ define(RELEASE_NUM, 73)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.139 2005/02/03 07:52:15 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.140 2005/02/03 08:07:24 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -156,7 +156,7 @@ AM_PATH_LIBPOPT(,
 dnl headers
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(errno.h fcntl.h glob.h)
+AC_CHECK_HEADERS(errno.h fcntl.h glob.h pwd.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h)
 
 AC_SUBST(SBPCD_H)
@@ -413,7 +413,7 @@ AC_DEFINE_UNQUOTED(LIBCDIO_SOURCE_PATH, "$LIBCDIO_SOURCE_PATH",
 AC_SUBST(LIBCDIO_SOURCE_PATH)
 
 AC_CHECK_FUNCS( [bzero ftruncate lstat memcpy memset snprintf \
-		 tzset vsnprintf] )
+		 tzset vsnprintf getpwuid geteuid] )
 
 AC_CHECK_MEMBER([struct tm.tm_gmtoff],
                 [AC_DEFINE(HAVE_TM_GMTOFF, 1,

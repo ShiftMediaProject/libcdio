@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.19 2005/02/03 07:52:15 rocky Exp $
+  $Id: scan_devices.c,v 1.20 2005/02/03 08:07:24 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -31,8 +31,14 @@
 #include "cdio/scsi_mmc.h"
 #include <limits.h>
 #include <ctype.h>
+
+#ifdef HAVE_PWD_H
 #include <pwd.h>
+#endif
+
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#endif
 
 #define MAX_DEV_LEN 20 /* Safe because strings only come from below */
 /* must be absolute paths! */
@@ -110,11 +116,16 @@ cdio_cddap_find_a_cdrom(int messagedest, char **ppsz_messages){
     i++;
   }
   {
+#if defined(HAVE_GETPWUID) && defined(HAVE_GETEUID)
     struct passwd *temp;
     temp=getpwuid(geteuid());
     idmessage(messagedest, ppsz_messages,
 	      "\n\nNo cdrom drives accessible to %s found.\n",
 	      temp->pw_name);
+#else
+    idmessage(messagedest, ppsz_messages,
+	      "\n\nNo cdrom drives accessible found.\n", NULL);
+#endif
   }
   return(NULL);
 }
@@ -128,7 +139,7 @@ cdda_identify(const char *psz_device, int messagedest,char **ppsz_messages)
     idmessage(messagedest, ppsz_messages, "Checking %s for cdrom...", 
 	      psz_device);
   else 
-    idmessage(messagedest, ppsz_messages, "Checking for cdrom...", NULL );
+    idmessage(messagedest, ppsz_messages, "Checking for cdrom...", NULL);
 
   d=cdio_cddap_identify_cooked(psz_device, messagedest, ppsz_messages);
 
