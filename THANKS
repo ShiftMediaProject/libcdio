@@ -4,6 +4,9 @@ Frantisek Dvorak <valtri@atlas.cz>:
 Heiner <h.eichmann@gmx.de>
   FreeBSD CAM support and FreeBSD debugging & testing
 
+Justin F. Hallett <thesin@southofheaven.org>
+  Fink packaging and matters OSX
+
 Kris Verbeeck <airborne@advalvas.be>:
   CDDB library support from libcddb http://libcddb.sourceforge.net
   Gentoo ebuild-file
@@ -21,4 +24,7 @@ Nicolas Boullis <nboullis@debian.org>
 Svend S. Sorensen <ssorensen@fastmail.fm>
   cdrdao TOC-reading code based on cuetools
   http://cuetools.sourceforge.net/
+
+xboxmediacenter team (www.xboxmediacenter.de)
+ X-Box detection and XDF filesystem things
 
