@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.3 2003/09/14 14:44:26 rocky Exp $
+    $Id: _cdio_osx.c,v 1.4 2003/09/14 15:26:31 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com> from vcdimager code
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -31,7 +31,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.3 2003/09/14 14:44:26 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.4 2003/09/14 15:26:31 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -540,7 +540,7 @@ _cdio_get_first_track_num(void *user_data)
 
     pTrackDescriptors = _obj->pTOC->descriptors;
 
-    for( i = _obj->i_descriptors; i >= 0; i-- )
+    for( i = 0; i < _obj->i_descriptors; i++ )
     {
         track = pTrackDescriptors[i].point;
 
