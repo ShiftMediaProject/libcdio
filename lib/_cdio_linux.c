@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.13 2003/06/12 04:46:27 rocky Exp $
+    $Id: _cdio_linux.c,v 1.14 2003/07/27 22:52:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.13 2003/06/12 04:46:27 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.14 2003/07/27 22:52:22 rocky Exp $";
 
 #include <string.h>
 
@@ -420,7 +420,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 }
 
 /*!
-   Reads a single mode2 sector from cd device into data starting
+   Reads a single audio sector from CD device into data starting
    from lsn. Returns 0 if no error. 
  */
 static int

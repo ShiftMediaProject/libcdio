@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.14 2003/04/23 22:05:59 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.15 2003/07/27 22:52:22 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.14 2003/04/23 22:05:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.15 2003/07/27 22:52:22 rocky Exp $";
 
 /* structures used */
 
@@ -588,6 +588,10 @@ _cdio_stat_size (void *user_data)
   return _obj->size;
 }
 
+/*!
+   Reads a single audio sector from CD device into data starting
+   from LSN. Returns 0 if no error. 
+ */
 static int
 _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 {

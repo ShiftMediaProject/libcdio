@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.21 2003/05/20 07:56:10 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.22 2003/07/27 22:52:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.21 2003/05/20 07:56:10 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.22 2003/07/27 22:52:22 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -443,6 +443,10 @@ _cdio_image_read_cue (_img_private_t *_obj)
   return true;
 }
 
+/*!
+   Reads a single audio sector from CD device into data starting
+   from lsn. Returns 0 if no error. 
+ */
 static int
 _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 {
@@ -462,6 +466,10 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
   return 0;
 }
 
+/*!
+   Reads a single mode2 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
 static int
 _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
 		    bool mode2_form2)

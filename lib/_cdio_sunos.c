@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.13 2003/05/16 07:18:27 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.14 2003/07/27 22:52:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -35,7 +35,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.13 2003/05/16 07:18:27 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.14 2003/07/27 22:52:22 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -228,7 +228,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 }
 
 /*!
-   Reads a single mode2 sector from cd device into data starting from lsn.
+   Reads a single audio sector from CD device into data starting from lsn.
    Returns 0 if no error. 
  */
 static int
