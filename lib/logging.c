@@ -1,5 +1,5 @@
 /*
-    $Id: logging.c,v 1.6 2004/03/10 11:53:10 rocky Exp $
+    $Id: logging.c,v 1.7 2004/10/31 14:55:35 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -29,8 +29,9 @@
 
 #include <cdio/logging.h>
 #include "cdio_assert.h"
+#include "portable.h"
 
-static const char _rcsid[] = "$Id: logging.c,v 1.6 2004/03/10 11:53:10 rocky Exp $";
+static const char _rcsid[] = "$Id: logging.c,v 1.7 2004/10/31 14:55:35 rocky Exp $";
 
 cdio_log_level_t cdio_loglevel_default = CDIO_LOG_WARN;
 

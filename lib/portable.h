@@ -1,5 +1,5 @@
 /*
-    $Id: portable.h,v 1.1 2004/10/31 13:58:44 rocky Exp $
+    $Id: portable.h,v 1.2 2004/10/31 14:55:35 rocky Exp $
 
     Copyright (C) Rocky Bernstein <rocky@panix.com>
 
@@ -27,8 +27,6 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
-
-static const char _rcsid[] = "$Id: portable.h,v 1.1 2004/10/31 13:58:44 rocky Exp $";
 
 #if !defined(HAVE_FTRUNCATE)
 #if defined ( WIN32 )
