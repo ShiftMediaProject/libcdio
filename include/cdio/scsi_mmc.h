@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.27 2004/08/06 22:08:07 rocky Exp $
+    $Id: scsi_mmc.h,v 1.28 2004/08/06 22:13:14 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -195,10 +195,10 @@ typedef struct scsi_mmc_cdb {
 } scsi_mmc_cdb_t;
 
 typedef struct scsi_mmc_feature_list_header {
-  unsigned char lenght_msb;
-  unsigned char lenght_1sb;
-  unsigned char lenght_2sb;
-  unsigned char lenght_lsb;
+  unsigned char length_msb;
+  unsigned char length_1sb;
+  unsigned char length_2sb;
+  unsigned char length_lsb;
   unsigned char reserved1;
   unsigned char reserved2;
   unsigned char profile_msb;
@@ -317,7 +317,7 @@ discmode_t scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio,
   False is returned if we had an error getting the information.
 */
 bool scsi_mmc_get_hwinfo ( const CdIo *p_cdio, 
-			   /* out*/ scsi_mmc_hwinfo_t *hw_info );
+			   /* out*/ scsi_mmc_hwinfo_t *p_hw_info );
 
 
 /*!

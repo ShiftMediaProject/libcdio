@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.21 2004/08/05 03:49:37 rocky Exp $
+    $Id: scsi_mmc.c,v 1.22 2004/08/06 22:13:14 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -265,7 +265,7 @@ scsi_mmc_get_drive_cap_private (const void *p_env,
 			       sizeof(buf), &buf);
   if (0 == i_status) {
     uint8_t *p;
-    int lenData  = ((unsigned int)buf[0] << 8) + buf[1];
+    uint16_t lenData  = (unsigned int) CDIO_MMC_GET_LEN16(buf);
     uint8_t *pMax = buf + 256;
 
     *p_read_cap  = 0;
