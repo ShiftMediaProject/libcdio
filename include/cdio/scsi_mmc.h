@@ -1,7 +1,7 @@
 /*
-    $Id: scsi_mmc.h,v 1.36 2004/12/18 17:29:32 rocky Exp $
+    $Id: scsi_mmc.h,v 1.37 2005/01/05 04:16:11 rocky Exp $
 
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -395,7 +395,7 @@ discmode_t scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio,
   Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
   False is returned if we had an error getting the information.
 */
-bool scsi_mmc_get_hwinfo ( const CdIo *p_cdio, 
+bool scsi_mmc_get_hwinfo ( const CdIo_t *p_cdio, 
 			   /* out*/ cdio_hwinfo_t *p_hw_info );
 
 

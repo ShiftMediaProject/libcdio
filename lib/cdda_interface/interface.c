@@ -32,13 +32,11 @@ cdda_close(cdrom_drive_t *d)
     if(d->opened)
       d->enable_cdda(d,0);
 
+    cdio_destroy (d->p_cdio);
     _clean_messages(d);
-    if(d->cdda_device_name)free(d->cdda_device_name);
-    if(d->ioctl_device_name)free(d->ioctl_device_name);
-    if(d->drive_model)free(d->drive_model);
-    if(d->cdda_fd!=-1)close(d->cdda_fd);
-    if(d->ioctl_fd!=-1 && d->ioctl_fd!=d->cdda_fd)close(d->ioctl_fd);
-    if(d->sg)free(d->sg);
+    if (d->cdda_device_name) free(d->cdda_device_name);
+    if (d->drive_model)      free(d->drive_model);
+    if (d->sg)               free(d->sg);
     
     free(d);
   }
@@ -52,6 +50,7 @@ cdda_open(cdrom_drive_t *d)
   int ret;
   if(d->opened)return(0);
 
+#if HAVE_SCSI_HANDLING
   switch(d->interface){
   case GENERIC_SCSI:  
     if((ret=scsi_init_drive(d)))
@@ -71,6 +70,11 @@ cdda_open(cdrom_drive_t *d)
     cderror(d,"100: Interface not supported\n");
     return(-100);
   }
+#else 
+  d->interface = COOKED_IOCTL;
+  if ( (ret=cooked_init_drive(d)) )
+    return(ret);
+#endif
   
   /* Check TOC, enable for CDDA */
   
@@ -100,7 +104,7 @@ cdda_speed_set(cdrom_drive_t *d, int speed)
   return d->set_speed ? d->set_speed(d, speed) : 0;
 }
 
-long cdda_read(cdrom_drive_t *d, void *buffer, long beginsector, long sectors)
+long cdda_read(cdrom_drive_t *d, void *buffer, lsn_t beginsector, long sectors)
 {
   if(d->opened){
     if(sectors>0){

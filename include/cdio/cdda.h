@@ -1,7 +1,7 @@
 /*
-  $Id: cdda_interface.h,v 1.3 2004/12/30 11:13:49 rocky Exp $
+  $Id: cdda.h,v 1.1 2005/01/05 04:16:11 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
   and Heiko Eissfeldt heiko@escape.colossus.de
 
@@ -27,8 +27,8 @@
 #ifndef _CDDA_INTERFACE_H_
 #define _CDDA_INTERFACE_H_
 
+#include <cdio/cdio.h>
 #include <cdio/paranoia.h>
-#include <cdio/types.h>
 
 #define CD_FRAMESAMPLES (CDIO_CD_FRAMESIZE_RAW / 4)
 
@@ -41,7 +41,6 @@
 #define MAXTRK (CDIO_CD_MAX_TRACKS+1)
 
 typedef struct TOC {	/* structure of table of contents */
-  unsigned char bFlags;
   unsigned char bTrack;
   int32_t       dwStartSector;
 } TOC_t;
@@ -62,25 +61,21 @@ typedef struct TOC {	/* structure of table of contents */
 
 struct cdrom_drive_s {
 
+  CdIo_t *p_cdio;
   int opened; /* This struct may just represent a candidate for opening */
 
   char *cdda_device_name;
-  char *ioctl_device_name;
-
-  int cdda_fd;
-  int ioctl_fd;
 
   char *drive_model;
-  int drive_type;
   int interface;
   int bigendianp;
   int nsectors;
 
   int cd_extra;
-  int tracks;
+  track_t tracks;
   TOC_t disc_toc[MAXTRK];
-  long audio_first_sector;
-  long audio_last_sector;
+  lsn_t audio_first_sector;
+  lsn_t audio_last_sector;
 
   int errordest;
   int messagedest;
@@ -91,7 +86,7 @@ struct cdrom_drive_s {
 
   int  (*enable_cdda)  (cdrom_drive_t *d, int onoff);
   int  (*read_toc)     (cdrom_drive_t *d);
-  long (*read_audio)   (cdrom_drive_t *d, void *p, long begin, 
+  long (*read_audio)   (cdrom_drive_t *d, void *p, lsn_t begin, 
 		       long sectors);
   int  (*set_speed)    (cdrom_drive_t *d, int speed);
   int error_retry;
@@ -138,26 +133,45 @@ extern cdrom_drive_t *cdda_identify_test(const char *filename,
 
 /**  oriented functions */
 
-extern int   cdda_speed_set(cdrom_drive_t *d, int speed);
-extern void  cdda_verbose_set(cdrom_drive_t *d,int err_action, int mes_action);
-extern char *cdda_messages(cdrom_drive_t *d);
-extern char *cdda_errors(cdrom_drive_t *d);
+extern int     cdda_speed_set(cdrom_drive_t *d, int speed);
+extern void    cdda_verbose_set(cdrom_drive_t *d, int err_action, 
+				int mes_action);
+extern char   *cdda_messages(cdrom_drive_t *d);
+extern char   *cdda_errors(cdrom_drive_t *d);
 
-extern int   cdda_close(cdrom_drive_t *d);
-extern int   cdda_open(cdrom_drive_t *d);
-extern long  cdda_read(cdrom_drive_t *d, void *buffer,
-		       long int beginsector, long int sectors);
+extern int     cdda_close(cdrom_drive_t *d);
+extern int     cdda_open(cdrom_drive_t *d);
+extern long    cdda_read(cdrom_drive_t *d, void *p_buffer,
+			 lsn_t beginsector, long sectors);
 
-extern long cdda_track_firstsector(cdrom_drive_t *d,int track);
-extern long cdda_track_lastsector(cdrom_drive_t *d,int track);
-extern long cdda_tracks(cdrom_drive_t *d);
-extern int  cdda_sector_gettrack(cdrom_drive_t *d,long sector);
-extern int  cdda_track_channels(cdrom_drive_t *d,int track);
-extern int  cdda_track_audiop(cdrom_drive_t *d,int track);
-extern int  cdda_track_copyp(cdrom_drive_t *d,int track);
-extern int  cdda_track_preemp(cdrom_drive_t *d,int track);
-extern long cdda_disc_firstsector(cdrom_drive_t *d);
-extern long cdda_disc_lastsector(cdrom_drive_t *d);
+/*! Return the lsn for the start of track i_track */
+extern lsn_t   cdda_track_firstsector(cdrom_drive_t *d, track_t i_track);
+
+/*! Get last lsn of the track. This generally one less than the start
+  of the next track. -1 is returned on error. */
+extern lsn_t   cdda_track_lastsector(cdrom_drive_t *d, track_t i_track);
+extern track_t cdda_tracks(cdrom_drive_t *d);
+extern int     cdda_sector_gettrack(cdrom_drive_t *d, lsn_t lsn);
+extern int     cdda_track_channels(cdrom_drive_t *d, track_t i_track);
+
+/*! Return 1 is track is an audio track, 0 otherwise. */
+extern int     cdda_track_audiop(cdrom_drive_t *d, track_t i_track);
+
+/*! Return 1 is track has copy permit set, 0 otherwise. */
+extern int     cdda_track_copyp(cdrom_drive_t *d, track_t i_track);
+
+/*! Return 1 is audio track has linear preemphasis set, 0 otherwise. 
+    Only makes sense for audio tracks.
+ */
+extern int     cdda_track_preemp(cdrom_drive_t *d, track_t i_track);
+
+/*! Get first lsn of the first audio track. -1 is returned on error. */
+extern lsn_t   cdda_disc_firstsector(cdrom_drive_t *d);
+
+/*! Get last lsn of the last audio track. The last lssn generally one
+  less than the start of the next track after the audio track. -1 is
+  returned on error. */
+extern lsn_t   cdda_disc_lastsector(cdrom_drive_t *d);
 
 /** transport errors: */
 

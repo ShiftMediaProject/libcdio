@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.1 2005/01/04 10:58:03 rocky Exp $
+    $Id: device.h,v 1.2 2005/01/05 04:16:11 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -279,6 +279,14 @@ extern "C" {
   /*! Like cdio_have_xxx but uses an enumeration instead. */
   bool cdio_have_driver (driver_id_t driver_id);
   
+  /*!
+    Free any resources associated with p_cdio. Call this when done using p_cdio
+    and using CD reading/control operations.
+
+    @param p_cdio the CD object to eliminated.
+   */
+  void cdio_destroy (CdIo_t *p_cdio);
+
   /*! 
     Get a string decribing driver_id. 
 

@@ -1,7 +1,7 @@
 /*
-  $Id: low_interface.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: low_interface.h,v 1.2 2005/01/05 04:16:11 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -41,7 +41,7 @@
 #include <linux/major.h>
 #include <linux/version.h>
 #include <cdio/paranoia.h>
-#include <cdio/cdda_interface.h>
+#include <cdio/cdda.h>
 
 /* some include file locations have changed with newer kernels */
 

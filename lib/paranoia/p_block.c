@@ -1,7 +1,7 @@
 /*
-    $Id: p_block.c,v 1.2 2004/12/22 09:41:58 rocky Exp $
+    $Id: p_block.c,v 1.3 2005/01/05 04:16:11 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1998 Monty xiphmont@mit.edu
 
     This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 #endif
 #include <limits.h>
 #include "p_block.h"
-#include <cdio/cdda_interface.h>
+#include <cdio/cdda.h>
 #include <cdio/paranoia.h>
 
 linked_list *new_list(void *(*newp)(void),void (*freep)(void *))

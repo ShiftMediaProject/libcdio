@@ -1,7 +1,7 @@
 /*
-  $Id: cooked_interface.c,v 1.2 2004/12/19 01:43:38 rocky Exp $
+  $Id: cooked_interface.c,v 1.3 2005/01/05 04:16:11 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
              Eissfeldt heiko@colossus.escape.de
   Current blenderization Copyright (C) 1998-1999 Monty xiphmont@mit.edu
@@ -35,48 +35,24 @@ static int
 cooked_readtoc (cdrom_drive_t *d)
 {
   int i;
-  track_t i_tracks;
-  struct cdrom_tochdr hdr;
-  struct cdrom_tocentry entry;
+  track_t i_track;
 
-  /* get TocHeader to find out how many entries there are */
-  if(ioctl(d->ioctl_fd, CDROMREADTOCHDR, &hdr ))
-    switch(errno){
-    case EPERM:
-      cderror(d,"102: Permision denied on cdrom (ioctl) device\n");
-      return(-102);
-    default:
-      cderror(d,"004: Unable to read table of contents header\n");
-      return(-4);
-    }
-
-  /* get all TocEntries */
-  for(i=0;i<hdr.cdth_trk1;i++){
-    entry.cdte_track= i+1;
-    entry.cdte_format = CDROM_LBA;
-    if(ioctl(d->ioctl_fd,CDROMREADTOCENTRY,&entry)){
-      cderror(d,"005: Unable to read table of contents entry\n");
-      return(-5);
-    }
-      
-    d->disc_toc[i].bFlags = (entry.cdte_adr << 4) | (entry.cdte_ctrl & 0x0f);
-    d->disc_toc[i].bTrack = i+1;
-    d->disc_toc[i].dwStartSector = entry.cdte_addr.lba;
+  /* Save TOC Entries */
+  d->tracks = cdio_get_num_tracks(d->p_cdio) ;
+  i_track   = cdio_get_first_track_num(d->p_cdio);
+  
+  for ( i=0; i < d->tracks; i++) {
+    d->disc_toc[i].bTrack = i_track;
+    d->disc_toc[i].dwStartSector = cdio_get_track_lsn(d->p_cdio, i_track);
+    i_track++;
   }
 
-  entry.cdte_track = CDIO_CDROM_LEADOUT_TRACK;
-  entry.cdte_format = CDROM_LBA;
-  if(ioctl(d->ioctl_fd, CDROMREADTOCENTRY, &entry)){
-    cderror(d,"005: Unable to read table of contents entry\n");
-    return(-5);
-  }
-  d->disc_toc[i].bFlags = (entry.cdte_adr << 4) | (entry.cdte_ctrl & 0x0f);
-  d->disc_toc[i].bTrack = entry.cdte_track;
-  d->disc_toc[i].dwStartSector = entry.cdte_addr.lba;
+  d->disc_toc[i].bTrack = i_track;
+  d->disc_toc[i].dwStartSector = cdio_get_track_lsn(d->p_cdio, 
+						    CDIO_CDROM_LEADOUT_TRACK);
 
-  i_tracks=hdr.cdth_trk1+1;
-  d->cd_extra=FixupTOC(d,i_tracks);
-  return(--i_tracks);  /* without lead-out */
+  d->cd_extra=FixupTOC(d, i_track);
+  return --i_track;  /* without lead-out */
 }
 
 
@@ -84,9 +60,11 @@ cooked_readtoc (cdrom_drive_t *d)
 static int 
 cooked_setspeed(cdrom_drive_t *d, int speed)
 {
+#if SET_SPEED_FIXED
   if(d->ioctl_fd!=-1)
     return ioctl(d->ioctl_fd, CDROM_SELECT_SPEED, speed);
   else
+#endif
     return 0;
 }
 
@@ -96,14 +74,14 @@ cooked_setspeed(cdrom_drive_t *d, int speed)
  */
 
 static long int
-cooked_read (cdrom_drive_t *d, void *p, long begin, long sectors)
+cooked_read (cdrom_drive_t *d, void *p, lsn_t begin, long sectors)
 {
   int retry_count,err;
   struct cdrom_read_audio arg;
   char *buffer=(char *)p;
 
   /* read d->nsectors at a time, max. */
-  sectors=(sectors>d->nsectors?d->nsectors:sectors);
+  sectors=( sectors > d->nsectors ? d->nsectors : sectors);
 
   arg.addr.lba = begin;
   arg.addr_format = CDROM_LBA;
@@ -112,43 +90,35 @@ cooked_read (cdrom_drive_t *d, void *p, long begin, long sectors)
   retry_count=0;
 
   do {
-    if((err=ioctl(d->ioctl_fd, CDROMREADAUDIO, &arg))){
-      if(!d->error_retry)return(-7);
-      switch(errno){
-      case ENOMEM:
-	/* D'oh.  Possible kernel error. Keep limping */
-	if(sectors==1){
-	  /* Nope, can't continue */
-	  cderror(d,"300: Kernel memory error\n");
-	  return(-300);  
+    err = cdio_read_audio_sectors( d->p_cdio, buffer, begin, sectors);
+    
+    if ( 0 != err ) {
+      if (!d->error_retry) return -7;
+      
+      if (sectors==1) {
+	/* *Could* be I/O or media error.  I think.  If we're at
+	   30 retries, we better skip this unhappy little
+	   sector. */
+	if (retry_count>MAX_RETRIES-1) {
+	  char b[256];
+	  snprintf(b, sizeof(b), 
+		   "010: Unable to access sector %ld: skipping...\n",
+		   (long int) begin);
+	  cderror(d, b);
+	  return -10;
 	}
-      default:
-	if(sectors==1){
-	    
-
-	  /* *Could* be I/O or media error.  I think.  If we're at
-	     30 retries, we better skip this unhappy little
-	     sector. */
-	  if(retry_count>MAX_RETRIES-1){
-	    char b[256];
-	    sprintf(b,"010: Unable to access sector %ld: skipping...\n",
-		    begin);
-	    cderror(d,b);
-	    return(-10);
-	    
-	  }
-	  break;
-	}
+	break;
       }
+
       if(retry_count>4)
 	if(sectors>1)
 	  sectors=sectors*3/4;
       retry_count++;
-      if(retry_count>MAX_RETRIES){
+      if (retry_count>MAX_RETRIES) {
 	cderror(d,"007: Unknown, unrecoverable error reading data\n");
 	return(-7);
       }
-    }else
+    } else
       break;
   } while (err);
   
@@ -206,6 +176,7 @@ verify_read_command(cdrom_drive_t *d)
 
 #include "drive_exceptions.h"
 
+#if CHECK_EXCEPTIONS_FIXED
 static void 
 check_exceptions(cdrom_drive_t *d, const exception_t *list)
 {
@@ -219,12 +190,14 @@ check_exceptions(cdrom_drive_t *d, const exception_t *list)
     i++;
   }
 }
+#endif
 
 /* set function pointers to use the ioctl routines */
 int 
 cooked_init_drive (cdrom_drive_t *d){
   int ret;
 
+#if BUFSIZE_DETERMINATION_FIXED
   switch(d->drive_type){
   case MATSUSHITA_CDROM_MAJOR:	/* sbpcd 1 */
   case MATSUSHITA_CDROM2_MAJOR:	/* sbpcd 2 */
@@ -240,7 +213,7 @@ cooked_init_drive (cdrom_drive_t *d){
       /* this ioctl returns zero on error; exactly wrong, but that's
          what it does. */
 
-      if(ioctl(d->ioctl_fd, CDROMAUDIOBUFSIZ, d->nsectors)==0){
+      if (ioctl(d->ioctl_fd, CDROMAUDIOBUFSIZ, d->nsectors)==0) {
 	d->nsectors>>=1;
 	if(d->nsectors==0){
 	  char buffer[256];
@@ -250,7 +223,7 @@ cooked_init_drive (cdrom_drive_t *d){
 	  cdmessage(d,buffer);
 	  break; /* Oh, well.  Try to read anyway.*/
 	}
-      }else{
+      } else {
 	char buffer[256];
 	sprintf(buffer,"\tSetting read block size at %d sectors (%ld bytes).\n",
 		d->nsectors,(long)d->nsectors*CD_FRAMESIZE_RAW);
@@ -275,6 +248,17 @@ cooked_init_drive (cdrom_drive_t *d){
   default:
     d->nsectors=40; 
   }
+#else 
+  {
+    char buffer[256];
+    d->nsectors=8; 
+    sprintf(buffer,"\tSetting read block size at %d sectors (%ld bytes).\n",
+	    d->nsectors,(long)d->nsectors*CD_FRAMESIZE_RAW);
+    cdmessage(d,buffer);
+  }
+  
+#endif
+
   d->enable_cdda = Dummy;
   d->read_audio = cooked_read;
   d->set_speed = cooked_setspeed;

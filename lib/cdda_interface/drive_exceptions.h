@@ -1,5 +1,5 @@
 /*
-  $Id: drive_exceptions.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: drive_exceptions.h,v 1.2 2005/01/05 04:16:11 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -39,6 +39,7 @@ typedef struct exception {
 
 /* specific to general */
 
+#ifdef FINISHED_DRIVE_EXCEPTIONS
 /* list of drives that affect autosensing in ATAPI specific portions of code 
    (force drives to detect as ATAPI or SCSI, force ATAPI read command */
 
@@ -48,6 +49,7 @@ static exception_t atapi_list[]={
   {"SONY CD-ROM CDU-561",            0,   0,         Dummy,          NULL,0},
   {"Chinon CD-ROM CDS-525",          0,   0,         Dummy,          NULL,0},
   {NULL,0,0,NULL,NULL,0}};
+#endif /*FINISHED_DRIVE_EXCEPTIONS*/
 
 /* list of drives that affect MMC default settings */
 

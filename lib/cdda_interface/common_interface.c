@@ -1,5 +1,5 @@
 /*
-  $Id: common_interface.c,v 1.2 2004/12/19 01:43:38 rocky Exp $
+  $Id: common_interface.c,v 1.3 2005/01/05 04:16:11 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
@@ -205,19 +205,18 @@ data_bigendianp(cdrom_drive_t *d)
 int 
 FixupTOC(cdrom_drive_t *d, track_t i_tracks)
 {
-  struct cdrom_multisession ms_str;
   int j;
   
   /* First off, make sure the 'starting sector' is >=0 */
   
-  for(j=0;j<i_tracks;j++){
-    if(d->disc_toc[j].dwStartSector<0){
+  for( j=0; j<i_tracks; j++){
+    if (d->disc_toc[j].dwStartSector<0 ) {
       cdmessage(d,"\n\tTOC entry claims a negative start offset: massaging"
 		".\n");
       d->disc_toc[j].dwStartSector=0;
     }
-    if(j<i_tracks-1 && d->disc_toc[j].dwStartSector>
-       d->disc_toc[j+1].dwStartSector){
+    if( j<i_tracks-1 && d->disc_toc[j].dwStartSector>
+       d->disc_toc[j+1].dwStartSector ) {
       cdmessage(d,"\n\tTOC entry claims an overly large start offset: massaging"
 		".\n");
       d->disc_toc[j].dwStartSector=0;
@@ -227,9 +226,9 @@ FixupTOC(cdrom_drive_t *d, track_t i_tracks)
   /* Make sure the listed 'starting sectors' are actually increasing.
      Flag things that are blatant/stupid/wrong */
   {
-    long last=d->disc_toc[0].dwStartSector;
-    for(j=1;j<i_tracks;j++){
-      if(d->disc_toc[j].dwStartSector<last){
+    lsn_t last=d->disc_toc[0].dwStartSector;
+    for ( j=1; j<i_tracks; j++){
+      if ( d->disc_toc[j].dwStartSector<last ) {
 	cdmessage(d,"\n\tTOC entries claim non-increasing offsets: massaging"
 		  ".\n");
 	 d->disc_toc[j].dwStartSector=last;
@@ -239,10 +238,12 @@ FixupTOC(cdrom_drive_t *d, track_t i_tracks)
     }
   }
 
+#if LOOKED_OVER
   /* For a scsi device, the ioctl must go to the specialized SCSI
      CDROM device, not the generic device. */
 
   if (d->ioctl_fd != -1) {
+    struct cdrom_multisession ms_str;
     int result;
 
     ms_str.addr_format = CDROM_LBA;
@@ -266,6 +267,8 @@ FixupTOC(cdrom_drive_t *d, track_t i_tracks)
       return 1;
     }
   }
+#endif
+
   return 0;
 }
 

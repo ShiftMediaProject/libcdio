@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.73 2005/01/04 10:58:03 rocky Exp $
+    $Id: cdio.h,v 1.74 2005/01/05 04:16:11 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -56,14 +56,6 @@ extern "C" {
 
   /** This is an opaque structure for the CD-Text object. */
   typedef struct cdtext cdtext_t;
-
-  /*!
-    Free any resources associated with p_cdio. Call this when done using p_cdio
-    and using CD reading/control operations.
-
-    @param p_cdio the CD object to eliminated.
-   */
-  void cdio_destroy (CdIo_t *p_cdio);
 
   /*!
     Get the value associatied with key. 

@@ -1,7 +1,7 @@
 /*
-    $Id: p_block.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: p_block.h,v 1.2 2005/01/05 04:16:11 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) by Monty (xiphmont@mit.edu)
 
     This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #define _P_BLOCK_H_
 
 #include <cdio/paranoia.h>
-#include <cdio/cdda_interface.h>
+#include <cdio/cdda.h>
 
 #define MIN_WORDS_OVERLAP    64     /* 16 bit words */
 #define MIN_WORDS_SEARCH     64     /* 16 bit words */

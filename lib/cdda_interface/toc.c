@@ -1,6 +1,7 @@
 /*
-  $Id: toc.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: toc.c,v 1.2 2005/01/05 04:16:11 rocky Exp $
 
+  Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   derived from code (C) 1994-1996 Heiko Eissfeldt
 
@@ -25,17 +26,18 @@
 #include "low_interface.h"
 #include "utils.h"
 
-long 
-cdda_track_firstsector(cdrom_drive_t *d,int track)
+/*! Return the lsn for the start of track i_track */
+lsn_t
+cdda_track_firstsector(cdrom_drive_t *d, track_t i_track)
 {
   if(!d->opened){
     cderror(d,"400: Device not open\n");
     return(-1);
   }
 
-  if (track == 0) {
+  if (i_track == 0) {
     if (d->disc_toc[0].dwStartSector == 0) {
-      /* first track starts at lba 0 -> no pre-gap */
+      /* first track starts at lsn 0 -> no pre-gap */
       cderror(d,"401: Invalid track number\n");
       return(-1);
     }
@@ -44,14 +46,15 @@ cdda_track_firstsector(cdrom_drive_t *d,int track)
     }
   }
 
-  if(track<0 || track>d->tracks){
+  if( i_track>d->tracks) {
     cderror(d,"401: Invalid track number\n");
     return(-1);
   }
-  return(d->disc_toc[track-1].dwStartSector);
+  return(d->disc_toc[i_track-1].dwStartSector);
 }
 
-long 
+/*! Get first lsn of the first audio track. -1 is returned on error. */
+lsn_t
 cdda_disc_firstsector(cdrom_drive_t *d)
 {
   int i;
@@ -61,27 +64,29 @@ cdda_disc_firstsector(cdrom_drive_t *d)
   }
 
   /* look for an audio track */
-  for(i=0;i<d->tracks;i++)
-    if(cdda_track_audiop(d,i+1)==1) {
+  for ( i=0; i<d->tracks; i++ )
+    if( cdda_track_audiop(d, i+1)==1 ) {
       if (i == 0) /* disc starts at lba 0 if first track is an audio track */
        return 0;
       else
-       return(cdda_track_firstsector(d,i+1));
+       return cdda_track_firstsector(d, i+1);
     }
 
   cderror(d,"403: No audio tracks on disc\n");  
   return(-1);
 }
 
-long 
-cdda_track_lastsector(cdrom_drive_t *d,int track)
+/*! Get last lsn of the track. The lsn is generally one less than the
+  start of the next track. -1 is returned on error. */
+lsn_t
+cdda_track_lastsector(cdrom_drive_t *d, track_t i_track)
 {
-  if(!d->opened){
+  if (!d->opened) {
     cderror(d,"400: Device not open\n");
-    return(-1);
+    return -1;
   }
 
-  if (track == 0) {
+  if (i_track == 0) {
     if (d->disc_toc[0].dwStartSector == 0) {
       /* first track starts at lba 0 -> no pre-gap */
       cderror(d,"401: Invalid track number\n");
@@ -92,108 +97,92 @@ cdda_track_lastsector(cdrom_drive_t *d,int track)
     }
   }
 
-  if(track<1 || track>d->tracks){
+  if ( i_track<1 || i_track>d->tracks ) {
     cderror(d,"401: Invalid track number\n");
-    return(-1);
+    return -1;
   }
   /* Safe, we've always the leadout at disc_toc[tracks] */
-  return(d->disc_toc[track].dwStartSector-1);
+  return(d->disc_toc[i_track].dwStartSector-1);
 }
 
-long 
+/*! Get last lsn of the last audio track. The last lssn generally one
+  less than the start of the next track after the audio track. -1 is
+  returned on error. */
+lsn_t
 cdda_disc_lastsector(cdrom_drive_t *d)
 {
   int i;
-  if(!d->opened){
+  if (!d->opened) {
     cderror(d,"400: Device not open\n");
-    return(-1);
+    return -1;
   }
 
   /* look for an audio track */
-  for(i=d->tracks-1;i>=0;i--)
-    if(cdda_track_audiop(d,i+1)==1)
-      return(cdda_track_lastsector(d,i+1));
+  for ( i=d->tracks-1; i>=0; i-- )
+    if ( cdda_track_audiop(d,i+1) == 1 )
+      return (cdda_track_lastsector(d,i+1));
 
   cderror(d,"403: No audio tracks on disc\n");  
-  return(-1);
+  return -1;
 }
 
-long 
+track_t
 cdda_tracks(cdrom_drive_t *d)
 {
-  if(!d->opened){
+  if (!d->opened){
     cderror(d,"400: Device not open\n");
-    return(-1);
+    return -1;
   }
   return(d->tracks);
 }
 
 int 
-cdda_sector_gettrack(cdrom_drive_t *d,long sector)
+cdda_sector_gettrack(cdrom_drive_t *d, lsn_t lsn)
 {
-  if(!d->opened){
+  if (!d->opened) {
     cderror(d,"400: Device not open\n");
-    return(-1);
-  }else{
-    int i;
-
-    if (sector < d->disc_toc[0].dwStartSector)
+    return -1;
+  } else {
+    if (lsn < d->disc_toc[0].dwStartSector)
       return 0; /* We're in the pre-gap of first track */
 
-    for(i=0;i<d->tracks;i++){
-      if(d->disc_toc[i].dwStartSector<=sector &&
-	 d->disc_toc[i+1].dwStartSector>sector)
-	return (i+1);
-    }
-
-    cderror(d,"401: Invalid track number\n");
-    return -1;
+    return cdio_get_track(d->p_cdio, lsn);
   }
 }
 
-static int 
-cdda_track_bitmap(cdrom_drive_t *d,int track,int bit,int set,int clear)
+/*! Return number of channels in track: 2 or 4; -2 if not
+  implemented or -1 for error.
+  Not meaningful if track is not an audio track.
+*/
+int 
+cdda_track_channels(cdrom_drive_t *d, track_t i_track)
 {
-  if(!d->opened){
-    cderror(d,"400: Device not open\n");
-    return(-1);
-  }
-
-  if (track == 0)
-    track = 1; /* map to first track number */
-
-  if(track<1 || track>d->tracks){
-    cderror(d,"401: Invalid track number\n");
-    return(-1);
-  }
-  if ((d->disc_toc[track-1].bFlags & bit))
-    return(set);
-  else
-    return(clear);
+  return(cdio_get_track_channels(d->p_cdio, i_track));
 }
 
-
+/*! Return 1 is track is an audio track, 0 otherwise. */
 int 
-cdda_track_channels(cdrom_drive_t *d,int track)
+cdda_track_audiop(cdrom_drive_t *d, track_t i_track)
 {
-  return(cdda_track_bitmap(d,track,8,4,2));
+  track_format_t track_format = cdio_get_track_format(d->p_cdio, i_track);
+  return TRACK_FORMAT_AUDIO == track_format ? 1 : 0;
 }
 
+/*! Return 1 is track is an audio track, 0 otherwise. */
 int 
-cdda_track_audiop(cdrom_drive_t *d,int track)
+cdda_track_copyp(cdrom_drive_t *d, track_t i_track)
 {
-  return(cdda_track_bitmap(d,track,4,0,1));
+  track_flag_t track_flag = cdio_get_track_copy_permit(d->p_cdio, i_track);
+  return CDIO_TRACK_FLAG_TRUE == track_flag ? 1 : 0;
 }
 
+/*! Return 1 is audio track has linear preemphasis set, 0 otherwise. 
+    Only makes sense for audio tracks.
+ */
 int 
-cdda_track_copyp(cdrom_drive_t *d,int track)
+cdda_track_preemp(cdrom_drive_t *d, track_t i_track)
 {
-  return(cdda_track_bitmap(d,track,2,1,0));
-}
-
-int 
-cdda_track_preemp(cdrom_drive_t *d, int track)
-{
-  return(cdda_track_bitmap(d,track,1,1,0));
+  track_flag_t track_flag = cdio_get_track_preemphasis(d->p_cdio, i_track);
+  return CDIO_TRACK_FLAG_TRUE == track_flag ? 1 : 0;
 }
 

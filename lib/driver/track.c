@@ -1,5 +1,5 @@
 /*
-    $Id: track.c,v 1.1 2005/01/04 04:33:36 rocky Exp $
+    $Id: track.c,v 1.2 2005/01/05 04:16:11 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -160,13 +160,13 @@ cdio_get_track(const CdIo_t *p_cdio, lsn_t lsn)
 
     do {
       const track_t i_mid = (i_low_track + i_high_track) / 2;
-      if (lsn <= cdio_get_track_lsn(p_cdio, i_mid))
-	i_high_track = i_mid;
-      else
-	i_low_track = i_mid + 1;
-    } while ( i_low_track < i_high_track );
-    
-    return i_high_track;
+      const lsn_t i_mid_lsn = cdio_get_track_lsn(p_cdio, i_mid);
+      if (lsn <= i_mid_lsn) i_high_track = i_mid - 1;
+      if (lsn >= i_mid_lsn) i_low_track  = i_mid + 1;
+    } while ( i_low_track <= i_high_track );
+
+    return (i_low_track > i_high_track + 1) 
+      ? i_high_track + 1 : i_high_track;
   }
 }
 

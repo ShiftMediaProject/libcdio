@@ -1,7 +1,7 @@
 /*
-  $Id: paranoia.c,v 1.2 2004/12/22 09:41:58 rocky Exp $
+  $Id: paranoia.c,v 1.3 2005/01/05 04:16:11 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -76,7 +76,7 @@
 #include <string.h>
 #endif
 #include <math.h>
-#include <cdio/cdda_interface.h>
+#include <cdio/cdda.h>
 #include "../cdda_interface/smallft.h"
 #include "p_block.h"
 #include <cdio/paranoia.h>
