@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.59 2004/07/23 02:54:34 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.60 2004/07/23 03:48:16 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.59 2004/07/23 02:54:34 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.60 2004/07/23 03:48:16 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -140,23 +140,23 @@ init_solaris (_img_private_t *env)
 /*!
   Run a SCSI MMC command. 
  
-  cdio	        CD structure set by cdio_open().
+  p_user_data   internal CD structure.
   i_timeout     time in milliseconds we will wait for the command
                 to complete. If this value is -1, use the default 
 		time-out value.
-  p_buf	        Buffer for data, both sending and receiving
-  i_buf	        Size of buffer
+  i_cdb	        Size of p_cdb
+  p_cdb	        CDB bytes. 
   e_direction	direction the transfer is to go.
-  cdb	        CDB bytes. All values that are needed should be set on 
-                input. We'll figure out what the right CDB length should be.
+  i_buf	        Size of buffer
+  p_buf	        Buffer for data, both sending and receiving
 
-  We return true if command completed successfully and false if not.
+  Return 0 if no error.
  */
 static int
 scsi_mmc_run_cmd_solaris( const void *p_user_data, int i_timeout,
 			  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 			  scsi_mmc_direction_t e_direction, 
-			  unsigned int i_buf, /*out*/ void *p_buf )
+			  unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   struct uscsi_cmd cgc;
@@ -484,6 +484,8 @@ _init_cdtext_solaris (_img_private_t *p_env)
 
   /* Format */
   cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
+
+  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(wdata));
 
   errno = 0;
   i_status = scsi_mmc_run_cmd_solaris (p_env, DEFAULT_TIMEOUT,
