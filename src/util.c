@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.20 2004/08/10 02:29:46 rocky Exp $
+  $Id: util.c,v 1.21 2004/08/10 03:44:56 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -340,7 +340,8 @@ print_mmc_drive_features(CdIo *p_cdio)
 	case CDIO_MMC_FEATURE_DVD_CSS:
 	  printf("Ability to perform DVD CSS/CPPM authentication and"
 		 " RPC\n");
-#if 0
+#if 1
+	  printf("\tp[2] %x\n", p[2]);
 	  printf("\tMedium does%s have Content Scrambling (CSS/CPPM)\n", 
 		 (p[2] & 1) ? "": "not ");
 #endif

@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.20 2004/08/10 03:03:27 rocky Exp $
+    $Id: win32.h,v 1.21 2004/08/10 03:44:56 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -43,6 +43,9 @@ typedef struct {
   access_mode_t access_mode;
 
   /* Some of the more OS specific things. */
+    /* Entry info for each track, add 1 for leadout. */
+  track_info_t  tocent[CDIO_CD_MAX_TRACKS+1];
+
   HANDLE h_device_handle; /* device descriptor */
   long  hASPI;
   short i_sid;
