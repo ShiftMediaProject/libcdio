@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.3 2003/05/24 15:26:27 rocky Exp $
+    $Id: cd-info.c,v 1.4 2003/05/24 15:46:28 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -25,7 +25,7 @@
  
 */
 #define PROGRAM_NAME "CD Info"
-#define CDINFO_VERSION "2.1"
+#define CDINFO_VERSION "2.0"
 
 #include <stdio.h>
 #include <stdlib.h>
