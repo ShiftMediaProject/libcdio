@@ -19,7 +19,7 @@ define(RELEASE_NUM, 71)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.105 2004/10/31 03:10:25 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.106 2004/10/31 13:58:44 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -114,7 +114,7 @@ AM_PATH_LIBPOPT(,
 dnl headers
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(glob.h stdbool.h langinfo.h)
+AC_CHECK_HEADERS(glob.h stdbool.h)
 
 dnl compiler
 AC_C_BIGENDIAN
@@ -317,7 +317,8 @@ AC_DEFINE_UNQUOTED(LICDIO_SOURCE_PATH, "$LIBCDIO_SOURCE_PATH",
 	[Full path to libcdio top_sourcedir.])
 AC_SUBST(LIBCDIO_SOURCE_PATH)
 
-AC_CHECK_FUNCS( memset bzero memcpy tzset nl_langinfo )
+AC_CHECK_FUNCS( [bzero ftruncate memcpy memset snprintf \
+		 tzset vsnprintf] )
 
 AC_CHECK_MEMBER([struct tm.tm_gmtoff],
                 [AC_DEFINE(HAVE_TM_GMTOFF, 1,
@@ -370,6 +371,7 @@ AC_ARG_ENABLE(joliet,
 fi
 if test x$enable_joliet = xyes; then
   AM_ICONV
+  AM_LANGINFO_CODESET
   if test "$am_cv_func_iconv" = yes ; then 
      AC_DEFINE(HAVE_JOLIET, [1], 
      [Define 1 if you want ISO-9660 Joliet extension support. 

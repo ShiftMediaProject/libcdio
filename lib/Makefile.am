@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.51 2004/10/28 03:49:37 rocky Exp $
+#   $Id: Makefile.am,v 1.52 2004/10/31 13:58:44 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -50,7 +50,7 @@ libiso9660_la_AGE := 0
 
 EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile 
 
-noinst_HEADERS = cdio_assert.h 	cdio_private.h
+noinst_HEADERS = cdio_assert.h cdio_private.h portable.h
 
 libcdio_sources = \
 	_cdio_bsdi.c \
@@ -78,12 +78,12 @@ libcdio_sources = \
 	image_common.h \
 	image/nrg.c \
 	image/nrg.h \
-	logging.c \
 	MSWindows/aspi32.c \
 	MSWindows/aspi32.h \
 	MSWindows/win32_ioctl.c \
 	MSWindows/win32.c \
 	MSWindows/win32.h \
+	logging.c \
 	scsi_mmc.c \
 	scsi_mmc_private.h \
 	sector.c \

@@ -1,8 +1,7 @@
 /*
-    $Id: _cdio_generic.c,v 1.27 2004/10/24 23:42:39 rocky Exp $
+    $Id: _cdio_generic.c,v 1.28 2004/10/31 13:58:44 rocky Exp $
 
-    Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,15 +18,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* This file contains Linux-specific code and implements low-level 
-   control of the CD drive.
+/* This file contains generic implementations of device-dirver routines.
 */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.27 2004/10/24 23:42:39 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.28 2004/10/31 13:58:44 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,5 +1,5 @@
 /*
-  $Id: iso-read.c,v 1.5 2004/07/17 16:47:37 rocky Exp $
+  $Id: iso-read.c,v 1.6 2004/10/31 13:58:44 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -21,6 +21,7 @@
 /* Program to read ISO-9660 images. */
 
 #include "util.h"
+#include "portable.h"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -42,10 +43,6 @@
 #endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
-#endif
-
-#if defined ( WIN32 )
-#define ftruncate chsize
 #endif
 
 /* Used by `main' to communicate with `parse_opt'. And global options

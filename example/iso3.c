@@ -1,5 +1,5 @@
 /*
-  $Id: iso3.c,v 1.1 2004/10/10 00:21:08 rocky Exp $
+  $Id: iso3.c,v 1.2 2004/10/31 13:58:44 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -22,10 +22,6 @@
    ISO-9660 image.
  */
 
-#if defined ( WIN32 )
-#define ftruncate chsize
-#endif
-
 /* This is the ISO 9660 image. */
 #define ISO9660_IMAGE_PATH "../"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
@@ -35,6 +31,9 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+#include "portable.h"
+
 #include <sys/types.h>
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>

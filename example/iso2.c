@@ -1,5 +1,5 @@
 /*
-  $Id: iso2.c,v 1.2 2004/10/24 23:42:39 rocky Exp $
+  $Id: iso2.c,v 1.3 2004/10/31 13:58:44 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -22,10 +22,6 @@
    cue/bin CD-IMAGE.
  */
 
-#if defined ( WIN32 )
-#define ftruncate chsize
-#endif
-
 /* This is the CD-image with an ISO-9660 filesystem */
 #define ISO9660_IMAGE_PATH "../"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/isofs-m1.cue"
@@ -36,6 +32,8 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+#include "portable.h"
 
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
