@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.28 2005/03/01 10:53:15 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.29 2005/03/03 08:43:39 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.28 2005/03/01 10:53:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.29 2005/03/03 08:43:39 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -100,7 +100,7 @@ static track_format_t get_track_format_solaris(void *p_user_data,
 					       track_t i_track);
 
 static access_mode_t 
-str_to_access_mode_sunos(const char *psz_access_mode) 
+str_to_access_mode_solaris(const char *psz_access_mode) 
 {
   const access_mode_t default_access_mode = _AM_SUN_CTRL_SCSI;
 
@@ -260,7 +260,7 @@ run_mmc_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
 */
 
 static int
-_read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn, 
+_read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t i_lsn, 
 			     unsigned int i_blocks)
 {
   struct cdrom_msf solaris_msf;
@@ -269,7 +269,7 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
 
   _img_private_t *p_env = p_user_data;
 
-  cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
+  cdio_lba_to_msf (cdio_lsn_to_lba(i_lsn), &_msf);
   solaris_msf.cdmsf_min0   = cdio_from_bcd8(_msf.m);
   solaris_msf.cdmsf_sec0   = cdio_from_bcd8(_msf.s);
   solaris_msf.cdmsf_frame0 = cdio_from_bcd8(_msf.f);
@@ -284,7 +284,7 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
       || (p_env->gen.ioctls_debugged < (30 * 75)  
 	  && p_env->gen.ioctls_debugged % 75 == 0)
       || p_env->gen.ioctls_debugged % (30 * 75) == 0)
-    cdio_debug ("reading %d", lsn);
+    cdio_debug ("reading %d", i_lsn);
   
   p_env->gen.ioctls_debugged++;
 
@@ -293,7 +293,7 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
 	      "we can't handle reading more than 60 blocks. Reset to 60");
   }
 
-  cdda.cdda_addr    = lsn;
+  cdda.cdda_addr    = i_lsn;
   cdda.cdda_length  = i_blocks;
   cdda.cdda_data    = (caddr_t) data;
   cdda.cdda_subcode = CDROM_DA_NO_SUBCODE;
@@ -309,26 +309,26 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
 
 /*!
    Reads a single mode1 sector from cd device into data starting
-   from lsn. 
+   from i_lsn. 
  */
 static driver_return_code_t
-_read_mode1_sector_solaris (void *p_env, void *data, lsn_t lsn, 
+_read_mode1_sector_solaris (void *p_env, void *data, lsn_t i_lsn, 
 			    bool b_form2)
 {
 
 #if FIXED
   do something here. 
 #else
-  return cdio_generic_read_form1_sector(p_env, data, lsn);
+  return cdio_generic_read_form1_sector(p_env, data, i_lsn);
 #endif
 }
 
 /*!
    Reads i_blocks of mode2 sectors from cd device into data starting
-   from lsn.
+   from i_lsn.
  */
 static driver_return_code_t
-_read_mode1_sectors_solaris (void *p_user_data, void *p_data, lsn_t lsn, 
+_read_mode1_sectors_solaris (void *p_user_data, void *p_data, lsn_t i_lsn, 
 			     bool b_form2, unsigned int i_blocks)
 {
   _img_private_t *p_env = p_user_data;
@@ -339,7 +339,7 @@ _read_mode1_sectors_solaris (void *p_user_data, void *p_data, lsn_t lsn,
   for (i = 0; i < i_blocks; i++) {
     if ( (retval = _read_mode1_sector_solaris (p_env, 
 					    ((char *)p_data) + (blocksize * i),
-					       lsn + i, b_form2)) )
+					       i_lsn + i, b_form2)) )
       return retval;
   }
   return DRIVER_OP_SUCCESS;
@@ -349,7 +349,7 @@ _read_mode1_sectors_solaris (void *p_user_data, void *p_data, lsn_t lsn,
    Reads a single mode2 sector from cd device into data starting from lsn.
  */
 static driver_return_code_t
-_read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t lsn, 
+_read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t i_lsn, 
 			    bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -360,7 +360,7 @@ _read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t lsn,
 
   _img_private_t *p_env = p_user_data;
 
-  cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
+  cdio_lba_to_msf (cdio_lsn_to_lba(i_lsn), &_msf);
   solaris_msf.cdmsf_min0   = cdio_from_bcd8(_msf.m);
   solaris_msf.cdmsf_sec0   = cdio_from_bcd8(_msf.s);
   solaris_msf.cdmsf_frame0 = cdio_from_bcd8(_msf.f);
@@ -385,7 +385,7 @@ _read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t lsn,
    * as ATAPI, except we don't need to be root
    */      
   offset = CDIO_CD_XA_SYNC_HEADER;
-  cd_read.cdxa_addr = lsn;
+  cd_read.cdxa_addr = i_lsn;
   cd_read.cdxa_data = buf;
   cd_read.cdxa_length = 1;
   cd_read.cdxa_format = CDROM_XA_SECTOR_DATA;
@@ -405,10 +405,10 @@ _read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t lsn,
 
 /*!
    Reads i_blocks of mode2 sectors from cd device into data starting
-   from lsn.
+   from i_lsn.
  */
 static driver_return_code_t
-_read_mode2_sectors_solaris (void *p_user_data, void *data, lsn_t lsn, 
+_read_mode2_sectors_solaris (void *p_user_data, void *data, lsn_t i_lsn, 
 			     bool b_form2, unsigned int i_blocks)
 {
   _img_private_t *p_env = p_user_data;
@@ -419,7 +419,7 @@ _read_mode2_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
   for (i = 0; i < i_blocks; i++) {
     if ( (retval = _read_mode2_sector_solaris (p_env, 
 					    ((char *)data) + (blocksize * i),
-					       lsn + i, b_form2)) )
+					       i_lsn + i, b_form2)) )
       return retval;
   }
   return 0;
@@ -428,10 +428,10 @@ _read_mode2_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
 
 /*!
    Return the size of the CD in logical block address (LBA) units.
-   @return the lsn. On error return CDIO_INVALID_LSN.
+   @return the size. On error return CDIO_INVALID_LSN.
  */
 static lsn_t 
-get_disc_last_lsn_sunos (void *p_user_data)
+get_disc_last_lsn_solaris (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -473,7 +473,7 @@ _set_arg_solaris (void *p_user_data, const char key[], const char value[])
     }
   else if (!strcmp (key, "access-mode"))
     {
-      p_env->access_mode = str_to_access_mode_sunos(key);
+      p_env->access_mode = str_to_access_mode_solaris(key);
     }
   else return DRIVER_OP_ERROR;
 
@@ -983,7 +983,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.get_cdtext             = get_cdtext_generic;
   _funcs.get_default_device     = cdio_get_default_device_solaris;
   _funcs.get_devices            = cdio_get_devices_solaris;
-  _funcs.get_disc_last_lsn      = get_disc_last_lsn_sunos;
+  _funcs.get_disc_last_lsn      = get_disc_last_lsn_solaris;
   _funcs.get_discmode           = get_discmode_solaris;
   _funcs.get_drive_cap          = get_drive_cap_mmc;
   _funcs.get_first_track_num    = get_first_track_num_generic;
