@@ -1,7 +1,9 @@
 /*
-    $Id: cdtext.h,v 1.2 2004/07/09 01:05:31 rocky Exp $
+    $Id: cdtext.h,v 1.3 2004/07/09 01:34:16 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    adapted from cuetools
+    Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +30,10 @@
 
 #include <cdio/cdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef struct cdtext cdtext_t;
 
 /*! Initialize and allocate a new cdtext structure and return a
@@ -42,21 +48,24 @@ void cdtext_delete (cdtext_t *cdtext);
 /*!
   returns 0 if field is a CD-TEXT keyword, returns non-zero otherwise.
 */
-int cdtext_is_keyword (char *key);
+int cdtext_is_keyword (const char *key);
 
 /*! 
   sets cdtext's keyword entry to field 
  */
-void cdtext_set (char *key, char *value, cdtext_t *cdtext);
+void cdtext_set (const char *key, const char *value, cdtext_t *cdtext);
 
-char *cdtext_get (char *key, cdtext_t *cdtext);
+/*! 
+  returns the CDTEXT value associated with key
+ */
+const char *cdtext_get (const char *key, const cdtext_t *cdtext);
 
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* __CDIO_ISO9660_H__ */
+#endif /* __CDIO_CDTEXT_H__ */
 
 /* 
  * Local variables:
