@@ -1,5 +1,5 @@
 /*
-  $Id: sample8.c,v 1.5 2004/07/21 10:19:20 rocky Exp $
+  $Id: sample8.c,v 1.6 2004/07/21 11:01:23 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -48,22 +48,34 @@ print_cdtext_track_info(CdIo *cdio, track_t i_track, const char *message) {
 static void 
 print_cdtext_info(CdIo *cdio, track_t i_tracks, track_t i_first_track) {
   track_t i_last_track = i_first_track+i_tracks;
-  cd_disctype_t cd_disctype = cdio_get_disctype(cdio);
+  discmode_t cd_discmode = cdio_get_discmode(cdio);
 
-  switch (cd_disctype) {
-  case CDIO_DISC_TYPE_CD: 
-    printf("Disc is CD-DA or CD-ROM.\n");
+  switch (cd_discmode) {
+  case CDIO_DISC_MODE_CD_DA: 
+    printf("Disc is CD-DA.\n");
     break;
-  case CDIO_DISC_TYPE_CD_I: 
-    printf("Disc is CD-i.\n");
+  case CDIO_DISC_MODE_CD_DATA_1: 
+    printf("Disc is CD-ROM mode 1.\n");
     break;
-  case CDIO_DISC_TYPE_XA: 
-    printf("Disc is CD-XA or DDCD.\n");
+  case CDIO_DISC_MODE_CD_DATA_2: 
+    printf("Disc is CD-ROM mode 2.\n");
     break;
-  case CDIO_DISC_TYPE_UNDEF: 
-    printf("Not a CD - perhaps a DVD.\n");
+  case CDIO_DISC_MODE_CD_XA_2_1: 
+    printf("Disc is CD-XA form2 mode 1.\n");
     break;
-  case CDIO_DISC_TYPE_ERROR: 
+  case CDIO_DISC_MODE_CD_XA_2_2: 
+    printf("Disc is CD-XA form2 mode 2.\n");
+    break;
+  case CDIO_DISC_MODE_CD_MIXED: 
+    printf("Disc is mixed-mode.\n");
+    break;
+  case CDIO_DISC_MODE_DVD: 
+    printf("Disc is some sort of DVD.\n");
+    break;
+  case CDIO_DISC_MODE_NO_INFO: 
+    printf("Don't now what disc is. Perhaps driver doesn't implement.\n");
+    break;
+  case CDIO_DISC_MODE_ERROR: 
     printf("Error getting CD info or request not supported by drive.\n");
     break;
   }
