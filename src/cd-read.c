@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.12 2003/10/15 02:35:19 rocky Exp $
+  $Id: cd-read.c,v 1.13 2003/10/16 13:21:56 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -312,7 +312,7 @@ parse_options (int argc, const char *argv[])
   
   if (opts.read_mode == READ_MODE_UNINIT) {
     fprintf(stderr, 
-	    "%s: Need to give a read mode (audio, m1f1, m1f2, m1f2 or m2f2)\n",
+	    "%s: Need to give a read mode (audio, m1f1, m1f2, m2f1 or m2f2)\n",
 	    program_name);
     exit(10);
   }
