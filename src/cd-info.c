@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.45 2003/11/09 13:57:51 rocky Exp $
+    $Id: cd-info.c,v 1.46 2003/11/09 15:51:43 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -255,8 +255,10 @@ parse_options (int argc, const char *argv[])
 	exit (EXIT_FAILURE);
       }
       
-      if (opts.source_image == OP_SOURCE_DEVICE)
+      if (opts.source_image == IMAGE_DEVICE)
 	source_name = fillout_device_name(remaining_arg);
+      else 
+	source_name = strdup(remaining_arg);
       
       if ( (poptGetArgs(optCon)) != NULL) {
 	fprintf (stderr, 
