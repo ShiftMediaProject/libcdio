@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.36 2004/01/10 03:21:50 rocky Exp $
+    $Id: iso9660.h,v 1.37 2004/01/18 02:11:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -240,12 +240,12 @@ struct iso9660_dir {
    @see iso9660_dir
 */
 struct iso9660_stat { /* big endian!! */
-  enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;
+  struct tm    tm;                    /**< time on entry */
   lsn_t        lsn;                   /**< start logical sector number */
   uint32_t     size;                  /**< total size in bytes */
   uint32_t     secsize;               /**< number of sectors allocated */
   iso9660_xa_t xa;                    /**< XA attributes */
-  struct tm    tm;                    /**< time on entry */
+  enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;
   char         filename[EMPTY_ARRAY_SIZE]; /**< filename */
 } GNUC_PACKED;
 
