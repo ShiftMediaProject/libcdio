@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.17 2005/01/26 01:03:16 rocky Exp $
+  $Id: interface.c,v 1.18 2005/01/27 03:10:06 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -155,17 +155,17 @@ cdio_cddap_read(cdrom_drive_t *d, void *buffer, lsn_t beginsector,
     if (sectors>0) {
       sectors=d->read_audio(d, buffer, beginsector, sectors);
 
-      if (sectors > 0){
+      if (sectors > 0) {
 	/* byteswap? */
-	if(d->bigendianp==-1) /* not determined yet */
+	if ( d->bigendianp == -1 ) /* not determined yet */
 	  d->bigendianp = data_bigendianp(d);
 
-	if(d->bigendianp!=bigendianp()){
+	if ( d->b_swap_bytes && d->bigendianp != bigendianp() ) {
 	  int i;
 	  uint16_t *p=(uint16_t *)buffer;
 	  long els=sectors*CDIO_CD_FRAMESIZE_RAW/2;
 	  
-	  /* Note: Something perhaps in the original cdparanioa code might
+	  /* Note: Something perhaps in the original cdparanoia code might
 	     cause the code to access outside of the allocated range of
 	     buffer. This comment is just to serve as a marker for
 	     the loop where the data got clobbered. I don't think this

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: track.h,v 1.4 2005/01/04 10:58:03 rocky Exp $
+    $Id: track.h,v 1.5 2005/01/27 03:10:06 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -84,7 +84,7 @@ extern "C" {
     If i_track is 0 or CDIO_CDROM_LEADOUT_TRACK the track returned
     is the information assocated with the CD. 
   */
-  const cdtext_t *cdio_get_cdtext (CdIo_t *p_cdio, track_t i_track);
+  cdtext_t *cdio_get_cdtext (CdIo_t *p_cdio, track_t i_track);
 
   /*!
     Get the number of the first track. 

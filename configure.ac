@@ -19,7 +19,7 @@ define(RELEASE_NUM, 72)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.130 2005/01/25 11:04:45 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.131 2005/01/27 03:10:06 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -321,9 +321,10 @@ AC_SUBST(LIBISO9660_LIBS)
 
 case $host_os in
      aix*)
-       AC_DEFINE([HAVE_AIX_CDROM], [1],
-	     [Define 1 if you have AIX CD-ROM support])
-       cd_drivers="${cd_drivers}, AIX"
+       ## Don't use AIX driver until starts to really work
+       ## cd_drivers="${cd_drivers}, AIX"
+       ## AC_DEFINE([HAVE_AIX_CDROM], [1],
+       ##     [Define 1 if you have AIX CD-ROM support])
        ;;
      darwin6*|darwin7*)
        AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h, 

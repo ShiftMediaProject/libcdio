@@ -1,5 +1,5 @@
 /*
-  $Id: common_interface.c,v 1.11 2005/01/23 00:27:11 rocky Exp $
+  $Id: common_interface.c,v 1.12 2005/01/27 03:10:06 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
@@ -185,6 +185,11 @@ data_bigendianp(cdrom_drive_t *d)
    rocky OMITTED FOR NOW:
    The multisession stuff is from Hannu's code; it assumes it knows
    the leadout/leadin size.
+
+   @return -1 if we can't get multisession info, 0 if there is one
+   session only or the multi-session LBA is less than or 100 (don't
+   ask me why -- I don't know), and 1 if the multi-session lba is
+   greater than 100.
 */
 int 
 FixupTOC(cdrom_drive_t *d, track_t i_tracks)

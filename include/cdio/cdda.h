@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.12 2005/01/26 01:21:29 rocky Exp $
+  $Id: cdda.h,v 1.13 2005/01/27 03:10:06 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -76,7 +76,15 @@ struct cdrom_drive_s {
 		   */
   int nsectors;
 
-  int cd_extra;
+  int cd_extra;   /**< -1 if we can't get multisession info, 0 if
+                       there is one session only or the multi-session
+                       LBA is less than or 100 (don't ask me why -- I
+                       don't know), and 1 if the multi-session lba is
+                       greater than 100. */
+
+  bool b_swap_bytes;  /**< Swap bytes if Endian-ness of drive
+			   mismatches the endian-ness of the
+			   computer? */
   track_t tracks;
   TOC_t disc_toc[MAXTRK]; /**< info here starts origin 0 rather than the
 			     first track number (usually 1). So to take 

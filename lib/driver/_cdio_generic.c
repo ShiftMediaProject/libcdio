@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.12 2005/01/26 01:03:16 rocky Exp $
+    $Id: _cdio_generic.c,v 1.13 2005/01/27 03:10:06 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.12 2005/01/26 01:03:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.13 2005/01/27 03:10:06 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -256,7 +256,7 @@ cdio_add_device_list(char **device_list[], const char *drive,
   @return the CD-TEXT object or NULL if obj is NULL
   or CD-TEXT information does not exist.
 */
-const cdtext_t *
+cdtext_t *
 get_cdtext_generic (void *p_user_data, track_t i_track)
 {
   generic_img_private_t *p_env = p_user_data;
@@ -409,26 +409,27 @@ get_num_tracks_generic(void *p_user_data)
 }
 
 void
-set_cdtext_field_generic(void *user_data, track_t i_track, 
+set_cdtext_field_generic(void *p_user_data, track_t i_track, 
 		       track_t i_first_track,
 		       cdtext_field_t e_field, const char *psz_value)
 {
   char **pp_field;
-  generic_img_private_t *env = user_data;
+  generic_img_private_t *p_env = p_user_data;
   
   if( i_track == 0 )
-    pp_field = &(env->cdtext.field[e_field]);
+    pp_field = &(p_env->cdtext.field[e_field]);
   
   else
-    pp_field = &(env->cdtext_track[i_track-i_first_track].field[e_field]);
+    pp_field = &(p_env->cdtext_track[i_track-i_first_track].field[e_field]);
 
-  *pp_field = strdup(psz_value);
+  if (*pp_field) free(*pp_field);
+  *pp_field = (psz_value) ? strdup(psz_value) : NULL;
 }
 
 /*!
   Read CD-Text information for a CdIo_t object .
   
-  return true on success, false on error or CD-TEXT information does
+  return true on success, false on error or CD-Text information does
   not exist.
 */
 bool

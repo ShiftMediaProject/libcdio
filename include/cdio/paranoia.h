@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.h,v 1.6 2005/01/26 01:21:29 rocky Exp $
+  $Id: paranoia.h,v 1.7 2005/01/27 03:10:06 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -29,6 +29,10 @@
 
 #include <cdio/cdio.h>
 
+/*! Paranoia likes to work with 16-bit numbers rather than
+    (possibly byte-swapped) bytes. So there are this many 
+    16-bit numbers block (frame, or sector) read.
+*/
 #define CD_FRAMEWORDS (CDIO_CD_FRAMESIZE_RAW/2)
 
 /**! Flags used in paranoia_modeset. */

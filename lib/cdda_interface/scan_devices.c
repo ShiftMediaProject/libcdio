@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.17 2005/01/25 11:04:45 rocky Exp $
+  $Id: scan_devices.c,v 1.18 2005/01/27 03:10:06 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -262,6 +262,7 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
   d->interface        = COOKED_IOCTL;
   d->bigendianp       = -1; /* We don't know yet... */
   d->nsectors         = -1;
+  d->b_swap_bytes     = true;
   
   {
     cdio_hwinfo_t hw_info;

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.110 2005/01/22 22:21:36 rocky Exp $
+    $Id: cd-info.c,v 1.111 2005/01/27 03:10:06 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -393,20 +393,21 @@ _log_handler (cdio_log_level_t level, const char message[])
 }
 
 static void 
-print_cdtext_track_info(CdIo_t *p_cdio, track_t i_track, const char *message) {
-  const cdtext_t *cdtext = cdio_get_cdtext(p_cdio, i_track);
+print_cdtext_track_info(CdIo_t *p_cdio, track_t i_track, const char *psz_msg) {
+   cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio, i_track);
 
-  if (NULL != cdtext) {
+  if (NULL != p_cdtext) {
     cdtext_field_t i;
     
-    printf("%s\n", message);
+    printf("%s\n", psz_msg);
     
     for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
-      if (cdtext->field[i]) {
-	printf("\t%s: %s\n", cdtext_field2str(i), cdtext->field[i]);
+      if (p_cdtext->field[i]) {
+	printf("\t%s: %s\n", cdtext_field2str(i), p_cdtext->field[i]);
       }
     }
   }
+  cdtext_destroy(p_cdtext);
 }
     
 static void 

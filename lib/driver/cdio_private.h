@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.10 2005/01/24 00:06:31 rocky Exp $
+    $Id: cdio_private.h,v 1.11 2005/01/27 03:10:06 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -85,7 +85,7 @@ extern "C" {
       If i_track is 0 or CDIO_CDROM_LEADOUT_TRACK the track returned
       is the information assocated with the CD. 
     */
-    const cdtext_t * (*get_cdtext) (void *p_env, track_t i_track);
+    cdtext_t * (*get_cdtext) (void *p_env, track_t i_track);
     
     /*!
       Return an array of device names. if CdIo is NULL (we haven't

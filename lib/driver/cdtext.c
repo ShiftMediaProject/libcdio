@@ -1,7 +1,7 @@
 /*
-    $Id: cdtext.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: cdtext.c,v 1.2 2005/01/27 03:10:06 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
     Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
@@ -66,15 +66,18 @@ cdtext_field2str (cdtext_field_t i)
     return cdtext_keywords[i];
 }
 
-
 /*! Free memory assocated with cdtext*/
 void 
-cdtext_destroy (cdtext_t *cdtext)
+cdtext_destroy (cdtext_t *p_cdtext)
 {
   cdtext_field_t i;
 
   for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
-    if (cdtext->field[i]) free(cdtext->field[i]);
+    if (p_cdtext->field[i]) {
+      free(p_cdtext->field[i]);
+      p_cdtext->field[i] = NULL;
+    }
+    
   }
 }
 
@@ -82,11 +85,11 @@ cdtext_destroy (cdtext_t *cdtext)
   returns the CDTEXT value associated with key. NULL is returned
   if key is CDTEXT_INVALID or the field is not set.
  */
-const char *
-cdtext_get (cdtext_field_t key, const cdtext_t *cdtext)
+char *
+cdtext_get (cdtext_field_t key, const cdtext_t *p_cdtext)
 {
   if (key == CDTEXT_INVALID) return NULL;
-  return cdtext->field[key];
+  return strdup(p_cdtext->field[key]);
 }
 
 /*! Initialize a new cdtext structure.
@@ -94,12 +97,12 @@ cdtext_get (cdtext_field_t key, const cdtext_t *cdtext)
   resources using cdtext_delete.
 */
 void 
-cdtext_init (cdtext_t *cdtext)
+cdtext_init (cdtext_t *p_cdtext)
 {
   cdtext_field_t i;
 
   for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
-    cdtext->field[i] = NULL;
+    p_cdtext->field[i] = NULL;
   }
 }
 
@@ -132,27 +135,27 @@ cdtext_is_keyword (const char *key)
 /*! sets cdtext's keyword entry to field.
  */
 void 
-cdtext_set (cdtext_field_t key, const char *value, cdtext_t *cdtext)
+cdtext_set (cdtext_field_t key, const char *p_value, cdtext_t *p_cdtext)
 {
-  if (NULL == value || key == CDTEXT_INVALID) return;
+  if (NULL == p_value || key == CDTEXT_INVALID) return;
   
-  if (cdtext->field[key]) free (cdtext->field[key]);
-  cdtext->field[key] = strdup (value);
+  if (p_cdtext->field[key]) free (p_cdtext->field[key]);
+  p_cdtext->field[key] = strdup (p_value);
   
 }
 
 #define SET_CDTEXT_FIELD(FIELD) \
-  (*set_cdtext_field_fn)(user_data, i_track, i_first_track, FIELD, buffer);
+  (*set_cdtext_field_fn)(p_user_data, i_track, i_first_track, FIELD, buffer);
 
 /* 
   parse all CD-TEXT data retrieved.
 */       
 bool
-cdtext_data_init(void *user_data, track_t i_first_track, 
+cdtext_data_init(void *p_user_data, track_t i_first_track, 
 		 unsigned char *wdata, 
 		 set_cdtext_field_fn_t set_cdtext_field_fn) 
 {
-  CDText_data_t *pdata;
+  CDText_data_t *p_data;
   int           i;
   int           j;
   char          buffer[256];
@@ -163,27 +166,27 @@ cdtext_data_init(void *user_data, track_t i_first_track,
   memset( buffer, 0x00, sizeof(buffer) );
   idx = 0;
   
-  pdata = (CDText_data_t *) (&wdata[4]);
+  p_data = (CDText_data_t *) (&wdata[4]);
   for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ ) {
 
 #if TESTED
-    if ( pdata->bDBC ) {
+    if ( p_data->bDBC ) {
       cdio_warn("Double-byte characters not supported");
       return false;
     }
 #endif
     
-    if( pdata->seq != i )
+    if( p_data->seq != i )
       break;
     
-    if( (pdata->type >= 0x80) 
-	&& (pdata->type <= 0x85) && (pdata->block == 0) ) {
-      i_track = pdata->i_track;
+    if( (p_data->type >= 0x80) 
+	&& (p_data->type <= 0x85) && (p_data->block == 0) ) {
+      i_track = p_data->i_track;
       
       for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++ ) {
-	if( pdata->text[j] == 0x00 ) {
+	if( p_data->text[j] == 0x00 ) {
 	  bool b_field_set=true;
-	  switch( pdata->type) {
+	  switch( p_data->type) {
 	  case CDIO_CDTEXT_TITLE: 
 	    SET_CDTEXT_FIELD(CDTEXT_TITLE);
 	    break;
@@ -216,12 +219,12 @@ cdtext_data_init(void *user_data, track_t i_first_track,
 	    idx = 0;
 	  }
 	} else {
-	  buffer[idx++] = pdata->text[j];
+	  buffer[idx++] = p_data->text[j];
 	}
 	buffer[idx] = 0x00;
       }
     }
-    pdata++;
+    p_data++;
   }
   return b_ret;
 }
