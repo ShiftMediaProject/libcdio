@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.22 2005/03/08 15:47:50 rocky Exp $
+    $Id: win32_ioctl.c,v 1.23 2005/03/15 02:04:51 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.22 2005/03/08 15:47:50 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.23 2005/03/15 02:04:51 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -168,39 +168,6 @@ audio_play_msf_win32ioctl (void *p_user_data, msf_t *p_start_msf,
   
 }
 
-
-/* Like cdio_lsn_to_msf bout without the to_bcd8 encoding */
-static void
-lsn_to_msf (lsn_t lsn, msf_t *msf)
-{
-  int m, s, f;
-  
-  cdio_assert (msf != 0);
-
-  if ( lsn >= -CDIO_PREGAP_SECTORS ){
-    m    = (lsn + CDIO_PREGAP_SECTORS) / CDIO_CD_FRAMES_PER_MIN;
-    lsn -= m * CDIO_CD_FRAMES_PER_MIN;
-    s    = (lsn + CDIO_PREGAP_SECTORS) / CDIO_CD_FRAMES_PER_SEC;
-    lsn -= s * CDIO_CD_FRAMES_PER_SEC;
-    f    = lsn + CDIO_PREGAP_SECTORS;
-  } else {
-    m    = (lsn + CDIO_CD_MAX_LSN)     / CDIO_CD_FRAMES_PER_MIN;
-    lsn -= m * (CDIO_CD_FRAMES_PER_MIN);
-    s    = (lsn+CDIO_CD_MAX_LSN)       / CDIO_CD_FRAMES_PER_SEC;
-    lsn -= s * CDIO_CD_FRAMES_PER_SEC;
-    f    = lsn + CDIO_CD_MAX_LSN;
-  }
-
-  if (m > 99) {
-    cdio_warn ("number of minutes (%d) truncated to 99.", m);
-    m = 99;
-  }
-  
-  msf->m = m;
-  msf->s = s;
-  msf->f = f;
-}
-
 /*!
   Read Audio Subchannel information
   
@@ -212,8 +179,6 @@ audio_read_subchannel_win32ioctl (void *p_user_data,
 				  cdio_subchannel_t *p_subchannel)
 {
   const _img_private_t *p_env = p_user_data;
-  lba_t abs_lba;
-  lba_t rel_lba;
   DWORD dw_bytes_returned;
   CDROM_SUB_Q_DATA_FORMAT q_data_format;
   SUB_Q_CHANNEL_DATA q_subchannel_data;
@@ -248,13 +213,19 @@ audio_read_subchannel_win32ioctl (void *p_user_data,
   p_subchannel->address = q_subchannel_data.CurrentPosition.ADR;
   p_subchannel->control = q_subchannel_data.CurrentPosition.Control;
 
-  abs_lba = 
-    CDIO_MMC_GET_LEN32(q_subchannel_data.CurrentPosition.AbsoluteAddress);
-  rel_lba = 
-    CDIO_MMC_GET_LEN32(q_subchannel_data.CurrentPosition.TrackRelativeAddress);
+  { 
+    const UCHAR *abs_addr = 
+      q_subchannel_data.CurrentPosition.AbsoluteAddress;
+    const UCHAR *rel_addr = 
+      q_subchannel_data.CurrentPosition.TrackRelativeAddress;
 
-  lsn_to_msf(abs_lba, &p_subchannel->abs_addr.msf);
-  lsn_to_msf(rel_lba, &p_subchannel->rel_addr.msf);
+    p_subchannel->abs_addr.msf.m = abs_addr[1];
+    p_subchannel->abs_addr.msf.s = abs_addr[2];
+    p_subchannel->abs_addr.msf.f = abs_addr[3];
+    p_subchannel->rel_addr.msf.m = rel_addr[1];
+    p_subchannel->rel_addr.msf.s = rel_addr[2];
+    p_subchannel->rel_addr.msf.f = rel_addr[3];
+  }
 
   return DRIVER_OP_SUCCESS;
 }
