@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.42 2004/10/22 01:13:38 rocky Exp $
+    $Id: nrg.c,v 1.43 2004/10/31 06:07:26 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.42 2004/10/22 01:13:38 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.43 2004/10/31 06:07:26 rocky Exp $";
 
 
 /* reader */
@@ -1197,6 +1197,8 @@ cdio_open_nrg (const char *psz_source)
   _img_private_t *_data;
 
   cdio_funcs _funcs;
+
+  memset( &_funcs, 0, sizeof(_funcs) );
 
   _funcs.eject_media        = _eject_media_nrg;
   _funcs.free               = _free_nrg;

@@ -1,8 +1,8 @@
 /*
-    $Id: logging.h,v 1.9 2004/09/04 23:49:47 rocky Exp $
+    $Id: logging.h,v 1.10 2004/10/31 06:07:26 rocky Exp $
 
     Copyright (C) 2000, Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,10 @@
 #define __LOGGING_H__
 
 #include <cdio/types.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * The different log levels supported.
@@ -116,6 +120,10 @@ void cdio_warn (const char format[], ...) GNUC_PRINTF(1,2);
  * @see cdio_log for a more generic routine.
  */
 void cdio_error (const char format[], ...) GNUC_PRINTF(1,2);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __LOGGING_H__ */
 

@@ -1,7 +1,8 @@
 /*
-    $Id: util.h,v 1.2 2003/11/18 03:35:19 rocky Exp $
+    $Id: util.h,v 1.3 2004/10/31 06:07:26 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
+    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -71,6 +72,16 @@ _cdio_ofs_add (unsigned offset, unsigned length, int blocksize)
   return offset;
 }
 
+static inline const char *
+_cdio_bool_str (bool b)
+{
+  return b ? "yes" : "no";
+}
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void *
 _cdio_malloc (size_t size);
 
@@ -92,16 +103,12 @@ _cdio_strlenv(char **str_array);
 char **
 _cdio_strsplit(const char str[], char delim);
 
-static inline const char *
-_cdio_bool_str (bool b)
-{
-  return b ? "yes" : "no";
-}
-
-/* BCD */
-
 uint8_t  to_bcd8(uint8_t n);
 uint8_t  from_bcd8(uint8_t p);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __CDIO_UTIL_H__ */
 
