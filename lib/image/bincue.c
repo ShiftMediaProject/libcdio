@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.19 2004/06/01 11:15:58 rocky Exp $
+    $Id: bincue.c,v 1.20 2004/06/01 11:43:57 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.19 2004/06/01 11:15:58 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.20 2004/06/01 11:43:57 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -626,9 +626,9 @@ _read_mode2_sectors_bincue (void *user_data, void *data, lsn_t lsn,
   if (NULL != obj) { free(obj); obj=NULL; };
 
 static void 
-_free_bincue (void *obj) 
+_free_bincue (void *user_data) 
 {
-  _img_private_t *env = obj;
+  _img_private_t *env = user_data;
 
   if (NULL == env) return;
   free_if_notnull(env->mcn);
@@ -642,9 +642,9 @@ _free_bincue (void *obj)
   We always return 2.
  */
 static int
-_eject_media_bincue(void *obj)
+_eject_media_bincue(void *user_data)
 {
-  _free_bincue (obj);
+  _free_bincue (user_data);
   return 2;
 }
 
@@ -812,7 +812,7 @@ _get_lba_track_bincue(void *user_data, track_t i_track)
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = env->i_tracks+1;
 
-  if (i_track < env->i_tracks && i_track != 0) {
+  if (i_track - env->i_first_track  <= env->i_tracks && i_track != 0) {
     return env->tocent[i_track-env->i_first_track].start_lba;
   } else 
     return CDIO_INVALID_LBA;
