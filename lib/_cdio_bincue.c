@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.18 2003/04/22 12:09:08 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.19 2003/05/18 01:50:51 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.18 2003/04/22 12:09:08 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.19 2003/05/18 01:50:51 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -710,31 +710,64 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
   if not a CUE file.
 
 */
-/* We can imagine more elaborate checks later. But this gets us 
+/* Later we'll probably parse the entire file. For now though, this gets us 
    started for now.
 */
 char *
 cdio_is_cuefile(const char *cue_name) 
 {
   int   i;
-  char *source_name;
+  char *bin_name;
   
   if (cue_name == NULL) return false;
 
-  source_name=strdup(cue_name);
-  i=strlen(source_name)-strlen("cue");
+  bin_name=strdup(cue_name);
+  i=strlen(bin_name)-strlen("cue");
   
   if (i>0) {
     if (cue_name[i]=='c' && cue_name[i+1]=='u' && cue_name[i+2]=='e') {
-      source_name[i++]='b'; source_name[i++]='i'; source_name[i++]='n';
-      return source_name;
+      bin_name[i++]='b'; bin_name[i++]='i'; bin_name[i++]='n';
+      return bin_name;
     } 
     else if (cue_name[i]=='C' && cue_name[i+1]=='U' && cue_name[i+2]=='E') {
-      source_name[i++]='B'; source_name[i++]='I'; source_name[i++]='N';
-      return source_name;
+      bin_name[i++]='B'; bin_name[i++]='I'; bin_name[i++]='N';
+      return bin_name;
     }
   }
-  free(source_name);
+  free(bin_name);
+  return NULL;
+}
+
+/*! 
+  Return corresponding CUE file if bin_name is a bin file or NULL
+  if not a BIN file.
+
+*/
+/* Later we'll probably do better. For now though, this gets us 
+   started for now.
+*/
+char *
+cdio_is_binfile(const char *bin_name) 
+{
+  int   i;
+  char *cue_name;
+  
+  if (cue_name == NULL) return false;
+
+  cue_name=strdup(bin_name);
+  i=strlen(bin_name)-strlen("bin");
+  
+  if (i>0) {
+    if (bin_name[i]=='b' && bin_name[i+1]=='i' && bin_name[i+2]=='n') {
+      cue_name[i++]='c'; cue_name[i++]='u'; cue_name[i++]='e';
+      return cue_name;
+    } 
+    else if (bin_name[i]=='B' && bin_name[i+1]=='I' && bin_name[i+2]=='N') {
+      cue_name[i++]='C'; cue_name[i++]='U'; cue_name[i++]='E';
+      return cue_name;
+    }
+  }
+  free(cue_name);
   return NULL;
 }
 
@@ -772,22 +805,16 @@ cdio_open_common (_img_private_t **_data)
 CdIo *
 cdio_open_bincue (const char *source_name)
 {
-  CdIo *ret;
-  _img_private_t *_data;
-
   char *bin_name = cdio_is_cuefile(source_name);
 
   if (NULL != bin_name) {
     return cdio_open_cue(source_name);
+  } else {
+    char *cue_name = cdio_is_cuefile(source_name);
+    CdIo *cdio = cdio_open_cue(cue_name);
+    free(cue_name);
+    return cdio;
   }
-  
-  ret = cdio_open_common(&_data);
-  if (ret == NULL) return NULL;
-
-  _cdio_set_arg(_data, "source", (NULL == source_name) 
-		? DEFAULT_CDIO_DEVICE: source_name);
-
-  return ret;
 }
 
 CdIo *
@@ -795,20 +822,20 @@ cdio_open_cue (const char *cue_name)
 {
   CdIo *ret;
   _img_private_t *_data;
-  char *source_name;
+  char *bin_name;
 
   ret = cdio_open_common(&_data);
   if (ret == NULL) return NULL;
 
-  source_name = cdio_is_cuefile(cue_name);
+  bin_name = cdio_is_cuefile(cue_name);
 
-  if (NULL == source_name) {
-    cdio_error ("source name %s is not recognized as a cue file", cue_name);
+  if (NULL == bin_name) {
+    cdio_error ("source name %s is not recognized as a CUE file", cue_name);
   }
   
   _cdio_set_arg (_data, "cue", cue_name);
-  _cdio_set_arg (_data, "source", source_name);
-  free(source_name);
+  _cdio_set_arg (_data, "source", bin_name);
+  free(bin_name);
 
   if (_cdio_init(_data)) {
     return ret;

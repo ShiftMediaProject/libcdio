@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.13 2003/05/16 07:36:48 rocky Exp $
+    $Id: cdio.c,v 1.14 2003/05/18 01:50:51 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.13 2003/05/16 07:36:48 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.14 2003/05/18 01:50:51 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -158,13 +158,14 @@ cdio_eject_media (CdIo **obj)
 }
 
 /*!
-  Return a string containing the default CD device if none is specified.
+  Return the value associatied with key. NULL is returned if obj is NULL
+  or "key" does not exist.
  */
 const char *
 cdio_get_arg (const CdIo *obj, const char key[])
 {
-  cdio_assert (obj != NULL);
-
+  if (obj == NULL) return NULL;
+  
   if (obj->op.get_arg) {
     return obj->op.get_arg (obj->user_data, key);
   } else {

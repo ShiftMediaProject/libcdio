@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.7 2003/05/16 07:18:27 rocky Exp $
+    $Id: cdio.h,v 1.8 2003/05/18 01:50:51 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -113,7 +113,8 @@ extern "C" {
   void cdio_destroy (CdIo *obj);
 
   /*!
-    Return the value associated with the key "arg".
+    Return the value associatied with key. NULL is returned if obj is NULL
+    or "key" does not exist.
   */
   const char * cdio_get_arg (const CdIo *obj,  const char key[]);
 
@@ -313,8 +314,16 @@ extern "C" {
   
   char * cdio_get_default_device_nrg(void);
 
-  /*! Return true if cue_name is a cue file. */
+  /*! Return corresponding BIN file if cue_name is a cue file or NULL
+    if not a CUE file.
+  */
   char *cdio_is_cuefile(const char *cue_name);
+  
+  /*! Return corresponding CUE file if bin_name is a fin file or NULL
+    if not a BIN file. NOTE: when we handle TOC something will have to 
+    change here....
+  */
+  char *cdio_is_binfile(const char *bin_name);
   
 #ifdef __cplusplus
 }
