@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.h,v 1.9 2004/06/19 19:15:15 rocky Exp $
+    $Id: cd_types.h,v 1.10 2004/06/23 03:56:25 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -71,6 +71,10 @@ extern "C" {
    Microsoft X-BOX CD.
  */
 #define CDIO_FS_XISO 		    11
+#define CDIO_FS_UDFX 		    12
+#define CDIO_FS_UDF 		    13
+#define CDIO_FS_ISO_UDF             14
+
 
 #define CDIO_FS_MASK		    15  /**< Note: this should be 2**n-1 and
                                              and greater than the highest 

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.68 2004/06/19 19:15:15 rocky Exp $
+    $Id: cd-info.c,v 1.69 2004/06/23 03:56:25 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -672,6 +672,9 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
   case CDIO_FS_3DO:
     printf("CD-ROM with Panasonic 3DO filesystem\n");
     break;
+  case CDIO_FS_UDFX:
+    printf("CD-ROM with UDFX filesystem\n");
+    break;
   case CDIO_FS_UNKNOWN:
     printf("CD-ROM with unknown filesystem\n");
     break;
@@ -683,6 +686,7 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
   case CDIO_FS_ISO_9660:
   case CDIO_FS_ISO_9660_INTERACTIVE:
   case CDIO_FS_ISO_HFS:
+  case CDIO_FS_ISO_UDF:
     printf("ISO 9660: %i blocks, label `%.32s'\n",
 	   cdio_iso_analysis.isofs_size, cdio_iso_analysis.iso_label);
 

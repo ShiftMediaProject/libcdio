@@ -1,7 +1,7 @@
 /*
-    $Id: cd_types.c,v 1.8 2004/06/19 19:15:15 rocky Exp $
+    $Id: cd_types.c,v 1.9 2004/06/23 03:56:25 rocky Exp $
 
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,10 +63,13 @@ and
 static char buffer[6][CDIO_CD_FRAMESIZE_RAW];  /* for CD-Data */
 
 /* Some interesting sector numbers stored in the above buffer. */
+#define ISO_SUPERBLOCK_SECTOR  16  /* buffer[0] */
 #define UFS_SUPERBLOCK_SECTOR   4  /* buffer[2] */
 #define BOOT_SECTOR            17  /* buffer[3] */
 #define VCD_INFO_SECTOR       150  /* buffer[4] */
 #define XISO_SECTOR	       32  /* buffer[4] */
+#define UDFX_SECTOR	       32  /* buffer[4] */
+#define UDF_ANCHOR_SECTOR     256  /* buffer[5] */
 
 
 typedef struct signature
@@ -94,6 +97,7 @@ static signature_t sigs[] =
     {4,     0, "VIDEO_CD",   "VIDEO CD"}, 
     {4,     0, "SUPERVCD",   "SVCD or Chaoji VCD"}, 
     {0,     0, "MICROSOFT*XBOX*MEDIA", "XBOX CD"},
+    {0,     1, "BEA01",      "UDF"}, 
     { 0 }
   };
 
@@ -113,6 +117,7 @@ static signature_t sigs[] =
 #define INDEX_VIDEO_CD 11 /* Video CD */
 #define INDEX_SVCD     12 /* CVD *or* SVCD */
 #define INDEX_XISO     13 /* Microsoft X-BOX filesystem */
+#define INDEX_UDF      14
 
 
 /* 
@@ -121,21 +126,21 @@ static signature_t sigs[] =
 */
 static int 
 _cdio_read_block(const CdIo *cdio, int superblock, uint32_t offset, 
-		 uint8_t bufnum, track_t track_num)
+		 uint8_t bufnum, track_t i_track)
 {
-  unsigned int track_sec_count = cdio_get_track_sec_count(cdio, track_num);
+  unsigned int track_sec_count = cdio_get_track_sec_count(cdio, i_track);
   memset(buffer[bufnum], 0, CDIO_CD_FRAMESIZE);
 
   if ( track_sec_count < superblock) {
     cdio_debug("reading block %u skipped track %d has only %u sectors\n", 
-	       superblock, track_num, track_sec_count);
+	       superblock, i_track, track_sec_count);
     return -1;
   }
   
   cdio_debug("about to read sector %lu\n", 
 	     (long unsigned int) offset+superblock);
 
-  if (cdio_get_track_green(cdio,  track_num)) {
+  if (cdio_get_track_green(cdio,  i_track)) {
     if (0 > cdio_read_mode2_sector(cdio, buffer[bufnum], 
 				   offset+superblock, false))
       return -1;
@@ -183,6 +188,12 @@ _cdio_is_joliet(void)
   return 2 == buffer[3][0] && buffer[3][88] == 0x25 && buffer[3][89] == 0x2f;
 }
 
+static int 
+_cdio_is_UDF(void)
+{
+  return 2 == ((uint16_t)buffer[5][0] | ((uint16_t)buffer[5][1] << 8));
+}
+
 /* ISO 9660 volume space in M2F1_SECTOR_SIZE byte units */
 static int 
 _cdio_get_iso9660_fs_sec_count(void)
@@ -206,25 +217,46 @@ _cdio_get_joliet_level( void )
 
 /* 
    Try to determine what kind of CD-image and/or filesystem we
-   have at track track_num. Return information about the CD image
+   have at track i_track. Return information about the CD image
    is returned in cdio_analysis and the return value.
 */
 cdio_fs_anal_t
-cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num, 
+cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t i_track, 
 		   /*out*/ cdio_iso_analysis_t *iso_analysis)
 {
-  int ret = 0;
+  int ret = CDIO_FS_UNKNOWN;
   bool sector0_read_ok;
   
-  if (TRACK_FORMAT_AUDIO == cdio_get_track_format(cdio, track_num))
+  if (TRACK_FORMAT_AUDIO == cdio_get_track_format(cdio, i_track))
     return CDIO_FS_AUDIO;
 
   if ( _cdio_read_block(cdio, ISO_PVD_SECTOR, start_session, 
-			0, track_num) < 0 )
+			0, i_track) < 0 )
     return CDIO_FS_UNKNOWN;
   
   if ( _cdio_is_it(INDEX_XISO) )
     return CDIO_FS_ANAL_XISO;
+
+  if (_cdio_read_block(cdio, ISO_SUPERBLOCK_SECTOR, start_session, 0, 
+		       i_track) < 0)
+    return ret;
+
+  if ( _cdio_is_it(INDEX_UDF) ) {
+    /* Detect UDF version 
+       Test if we have a valid version of UDF the xbox can read natively */
+    if (_cdio_read_block(cdio, 35, start_session, 5, i_track) < 0)
+      return CDIO_FS_UNKNOWN;
+
+#if 0    
+     m_nUDFVerMinor=(int)buffer[5][240];
+     m_nUDFVerMajor=(int)buffer[5][241];
+     /*	Read disc label */
+     if (_cdio_read_block(cdio, 32, start_session, 5, i_track) < 0)
+       return CDIO_FS_UDF;
+     m_strDiscLabel=buffer[5]+25;
+#endif
+     return CDIO_FS_UDF;
+   }
 
   /* We have something that smells of a filesystem. */
   if (_cdio_is_it(INDEX_CD_I) && _cdio_is_it(INDEX_CD_RTOS) 
@@ -234,7 +266,7 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num,
     /* read sector 0 ONLY, when NO greenbook CD-I !!!! */
 
     sector0_read_ok = 
-      _cdio_read_block(cdio, 0, start_session, 1, track_num) == 0;
+      _cdio_read_block(cdio, 0, start_session, 1, i_track) == 0;
     
     if (_cdio_is_it(INDEX_HS))
       ret |= CDIO_FS_HIGH_SIERRA;
@@ -253,7 +285,7 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num,
 	ret |= CDIO_FS_ANAL_ROCKRIDGE;
 #endif
 
-      if (_cdio_read_block(cdio, BOOT_SECTOR, start_session, 3, track_num) < 0)
+      if (_cdio_read_block(cdio, BOOT_SECTOR, start_session, 3, i_track) < 0)
 	return ret;
       
       if (_cdio_is_joliet()) {
@@ -267,7 +299,7 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num,
 	  && !(sector0_read_ok && _cdio_is_it(INDEX_PHOTO_CD)) ) {
 
         if ( _cdio_read_block(cdio, VCD_INFO_SECTOR, start_session, 4, 
-			     track_num) < 0 )
+			     i_track) < 0 )
 	  return ret;
 	
 	if (_cdio_is_it(INDEX_BRIDGE) && _cdio_is_it(INDEX_CD_RTOS)) {
@@ -282,7 +314,7 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num,
     else if (_cdio_is_3do())          ret |= CDIO_FS_3DO;
     else {
       if ( _cdio_read_block(cdio, UFS_SUPERBLOCK_SECTOR, start_session, 2, 
-			    track_num) < 0 )
+			    i_track) < 0 )
 	return ret;
       
       if (sector0_read_ok && _cdio_is_it(INDEX_UFS)) 
