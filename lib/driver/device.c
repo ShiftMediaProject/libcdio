@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.4 2005/01/18 00:57:20 rocky Exp $
+    $Id: device.c,v 1.5 2005/01/18 12:34:21 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -716,7 +716,7 @@ int
 cdio_set_speed (const CdIo_t *p_cdio, int i_speed) 
 {
   if (!p_cdio) return -1;
-  if (p_cdio->op.set_speed) return -2;
+  if (!p_cdio->op.set_speed) return -2;
   return p_cdio->op.set_speed(p_cdio->env, i_speed);
 }
 
