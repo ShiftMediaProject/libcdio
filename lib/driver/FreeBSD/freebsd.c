@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.8 2005/01/21 02:59:32 rocky Exp $
+    $Id: freebsd.c,v 1.9 2005/01/22 12:51:56 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.8 2005/01/21 02:59:32 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.9 2005/01/22 12:51:56 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -79,30 +79,36 @@ cdio_is_cdrom(char *drive, char *mnttype)
 }
 
 /*!
-   Reads nblocks of audio sectors from cd device into data starting from lsn.
+   Reads i_blocks of audio sectors from cd device into data starting from lsn.
    Returns 0 if no error. 
  */
 static int
-_read_audio_sectors_freebsd (void *user_data, void *data, lsn_t lsn,
-			     unsigned int nblocks)
+_read_audio_sectors_freebsd (void *p_user_data, void *p_buf, lsn_t i_lsn,
+			     unsigned int i_blocks)
 {
-  return read_audio_sectors_freebsd_ioctl(user_data, data, lsn, nblocks);
+  _img_private_t *p_env = p_user_data;
+  if ( p_env->access_mode == _AM_CAM ) {
+    return scsi_mmc_read_sectors( p_env->gen.cdio, p_buf, i_lsn,
+                                  CDIO_MMC_READ_TYPE_CDDA, i_blocks);
+  } else 
+    return read_audio_sectors_freebsd_ioctl(p_user_data, p_buf, i_lsn, 
+					    i_blocks);
 }
 
 /*!
    Reads a single mode2 sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
+   from i_lsn. Returns 0 if no error. 
  */
 static int
-_read_mode2_sector_freebsd (void *user_data, void *data, lsn_t lsn, 
+_read_mode2_sector_freebsd (void *p_user_data, void *data, lsn_t i_lsn,
 			    bool b_form2)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
-  if ( env->access_mode == _AM_CAM )
-    return read_mode2_sector_freebsd_cam(env, data, lsn, b_form2);
+  if ( p_env->access_mode == _AM_CAM )
+    return read_mode2_sector_freebsd_cam(p_env, data, i_lsn, b_form2);
   else
-    return read_mode2_sector_freebsd_ioctl(env, data, lsn, b_form2);
+    return read_mode2_sector_freebsd_ioctl(p_env, data, i_lsn, b_form2);
 }
 
 /*!
@@ -315,8 +321,7 @@ get_drive_cap_freebsd (const void *p_user_data,
   const _img_private_t *p_env = p_user_data;
 
   if (p_env->access_mode == _AM_CAM) 
-    scsi_mmc_get_drive_cap_generic (p_user_data, p_read_cap, p_write_cap, 
-				    p_misc_cap);
+    get_drive_cap_mmc (p_user_data, p_read_cap, p_write_cap, p_misc_cap);
   
 }  
 
@@ -336,10 +341,10 @@ get_drive_cap_freebsd (const void *p_user_data,
   Return 0 if no error.
  */
 static int
-run_scsi_cmd_freebsd( const void *p_user_data, unsigned int i_timeout_ms,
-		     unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-		     scsi_mmc_direction_t e_direction, 
-		     unsigned int i_buf, /*in/out*/ void *p_buf ) 
+run_scsi_cmd_freebsd( void *p_user_data, unsigned int i_timeout_ms,
+		      unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		      scsi_mmc_direction_t e_direction, 
+		      unsigned int i_buf, /*in/out*/ void *p_buf ) 
 {
   const _img_private_t *p_env = p_user_data;
 
@@ -600,7 +605,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .read_toc               = read_toc_freebsd,
     .run_scsi_mmc_cmd       = run_scsi_cmd_freebsd,
     .set_arg                = _set_arg_freebsd,
-    .set_blocksize         = set_blocksize_generic,
+    .set_blocksize         = set_blocksize_mmc,
     .set_speed              = set_speed_freebsd,
     .stat_size              = _stat_size_freebsd
   };
