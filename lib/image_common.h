@@ -1,5 +1,5 @@
 /*
-    $Id: common.c,v 1.1 2004/04/23 01:01:37 rocky Exp $
+    $Id: image_common.h,v 1.1 2004/04/23 02:18:07 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 

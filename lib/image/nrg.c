@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.5 2004/04/23 01:01:37 rocky Exp $
+    $Id: nrg.c,v 1.6 2004/04/23 02:18:07 rocky Exp $
 
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.5 2004/04/23 01:01:37 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.6 2004/04/23 02:18:07 rocky Exp $";
 
 /* structures used */
 
@@ -177,7 +177,7 @@ typedef struct {
 static bool     _cdio_parse_nero_footer (_img_private_t *_obj);
 static uint32_t _cdio_stat_size (void *env);
 
-#include "image/common.c"
+#include "image_common.h"
 
 /* Updates internal track TOC, so we can later 
    simulate ioctl(CDROMREADTOCENTRY).

@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.10 2004/04/23 01:01:37 rocky Exp $
+    $Id: bincue.c,v 1.11 2004/04/23 02:18:07 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.10 2004/04/23 01:01:37 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.11 2004/04/23 02:18:07 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -104,7 +104,7 @@ typedef struct {
 static bool     _cdio_image_read_cue (_img_private_t *_obj);
 static uint32_t _cdio_stat_size (void *env);
 
-#include "image/common.c"
+#include "image_common.h"
 
 /*!
   Initialize image structures.
