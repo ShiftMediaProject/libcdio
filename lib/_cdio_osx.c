@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.63 2004/08/29 03:05:53 rocky Exp $
+    $Id: _cdio_osx.c,v 1.64 2004/08/29 03:45:34 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.63 2004/08/29 03:05:53 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.64 2004/08/29 03:45:34 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -409,6 +409,8 @@ get_discmode_osx (void *p_user_data)
       i_discmode = CDIO_DISC_MODE_DVD_PRW;
     else if (0 == strncmp(str, "DVD-R", sizeof(str)) ) 
       i_discmode = CDIO_DISC_MODE_DVD_R;
+    else if (0 == strncmp(str, "DVD-RW", sizeof(str)) ) 
+      i_discmode = CDIO_DISC_MODE_DVD_RW;
     else if (0 == strncmp(str, "DVD-ROM", sizeof(str)) ) 
       i_discmode = CDIO_DISC_MODE_DVD_ROM;
     else if (0 == strncmp(str, "DVD-RAM", sizeof(str)) ) 
@@ -868,7 +870,7 @@ read_toc_osx (void *p_user_data)
       return false;
     }
   } else     {
-    cdio_warn( "CFDictionaryGetValue failed" );
+    cdio_warn( "Trouble reading TOC" );
     return false;
   }
 
@@ -988,11 +990,12 @@ read_toc_osx (void *p_user_data)
   False is returned if there is no track entry.
 */
 static lsn_t
-get_track_lba_osx(void *user_data, track_t i_track)
+get_track_lba_osx(void *p_user_data, track_t i_track)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (!p_env->gen.toc_init) read_toc_osx (p_env) ;
+  if (!p_env->gen.toc_init) return CDIO_INVALID_LSN;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = p_env->i_last_track+1;
 
