@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.21 2004/05/07 03:04:01 rocky Exp $
+    $Id: _cdio_osx.c,v 1.22 2004/05/07 09:55:54 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.21 2004/05/07 03:04:01 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.22 2004/05/07 09:55:54 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -863,13 +863,13 @@ cdio_open_am_osx (const char *psz_source_name, const char *psz_access_mode)
   ones to set that up.
  */
 CdIo *
-cdio_open_osx (const char *orig_source_name)
+cdio_open_osx (const char *psz_orig_source)
 {
 
 #ifdef HAVE_DARWIN_CDROM
   CdIo *ret;
   _img_private_t *_data;
-  char *source_name;
+  char *psz_source;
 
   cdio_funcs _funcs = {
     .eject_media        = _eject_media_osx,
@@ -901,13 +901,22 @@ cdio_open_osx (const char *orig_source_name)
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
-  if (NULL == orig_source_name) {
-    source_name=cdio_get_default_device_osx();
-    if (NULL == source_name) return NULL;
-    _set_arg_osx(_data, "source", source_name);
-    free(source_name);
-  } else 
-    _set_arg_osx(_data, "source", orig_source_name);
+  if (NULL == psz_orig_source) {
+    psz_source=cdio_get_default_device_osx();
+    if (NULL == psz_source) return NULL;
+    _set_arg_osx(_data, "source", psz_source);
+    free(psz_source);
+  } else {
+    if (cdio_is_device_generic(psz_orig_source))
+      _set_arg_osx(_data, "source", psz_orig_source);
+    else {
+      /* The below would be okay if all device drivers worked this way. */
+#if 0
+      cdio_info ("source %s is a not a device", psz_orig_source);
+#endif
+      return NULL;
+    }
+  }
 
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;
