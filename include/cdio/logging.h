@@ -1,5 +1,5 @@
 /*
-    $Id: logging.h,v 1.3 2003/10/05 14:48:07 rocky Exp $
+    $Id: logging.h,v 1.4 2003/11/04 04:45:24 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -23,36 +23,93 @@
 
 #include <cdio/types.h>
 
+/**
+ * The different log levels supported.
+ */
 typedef enum {
-  CDIO_LOG_DEBUG = 1,
-  CDIO_LOG_INFO,
-  CDIO_LOG_WARN,
-  CDIO_LOG_ERROR,
-  CDIO_LOG_ASSERT
+  CDIO_LOG_DEBUG = 1, /**< Debug-level messages - helps debug what's up. */
+  CDIO_LOG_INFO,      /**< Informational - indicates perhaps something of 
+                           interest. */
+  CDIO_LOG_WARN,      /**< Warning conditions - something that looks funny. */
+  CDIO_LOG_ERROR,     /**< Error conditions - may terminate program.  */
+  CDIO_LOG_ASSERT     /**< Critical conditions - may abort program. */
 } cdio_log_level_t;
 
-extern int cdio_loglevel_default;
+/**
+ * The place to save the preference concerning how much verbosity 
+ * is desired. This is used by the internal default log handler, but
+ * it could be use by applications which provide their own log handler.
+ */
+extern cdio_log_level_t cdio_loglevel_default;
 
-void
-cdio_log (cdio_log_level_t level, const char format[], ...) GNUC_PRINTF(2, 3);
-    
+/**
+ * This type defines the signature of a log handler.  For every
+ * message being logged, the handler will receive the log level and
+ * the message string.
+ *
+ * @see cdio_log_set_handler
+ * @see cdio_log_level_t
+ *
+ * @param level   The log level.
+ * @param message The log message.
+ */
 typedef void (*cdio_log_handler_t) (cdio_log_level_t level, 
                                     const char message[]);
 
-cdio_log_handler_t
-cdio_log_set_handler (cdio_log_handler_t new_handler);
+/**
+ * Set a custom log handler for libcdio.  The return value is the log
+ * handler being replaced.  If the provided parameter is NULL, then
+ * the handler will be reset to the default handler.
+ *
+ * @see cdio_log_handler_t
+ *
+ * @param new_handler The new log handler.
+ * @return The previous log handler.
+ */
+cdio_log_handler_t cdio_log_set_handler (cdio_log_handler_t new_handler);
 
-void
-cdio_debug (const char format[], ...) GNUC_PRINTF(1,2);
+/**
+ * Handle an message with the given log level
+ *
+ * @see cdio_debug
+ * @see cdio_info
+ * @see cdio_warn
+ * @see cdio_error
 
-void
-cdio_info (const char format[], ...) GNUC_PRINTF(1,2);
+ * @param level   The log level.
+ * @param format  printf-style format string
+ * @param ...     remaining arguments needed by format string
+ */
+void cdio_log (cdio_log_level_t level, 
+               const char format[], ...) GNUC_PRINTF(2, 3);
+    
+/**
+ * Handle a debugging message.
+ *
+ * @see cdio_log for a more generic routine
+ */
+void cdio_debug (const char format[], ...) GNUC_PRINTF(1,2);
 
-void
-cdio_warn (const char format[], ...) GNUC_PRINTF(1,2);
+/**
+ * Handle an informative message.
+ *
+ * @see cdio_log for a more generic routine
+ */
+void cdio_info (const char format[], ...) GNUC_PRINTF(1,2);
 
-void
-cdio_error (const char format[], ...) GNUC_PRINTF(1,2);
+/**
+ * Handle a warning message.
+ *
+ * @see cdio_log for a more generic routine
+ */
+void cdio_warn (const char format[], ...) GNUC_PRINTF(1,2);
+
+/**
+ * Handle an error message.
+ *
+ * @see cdio_log for a more generic routine
+ */
+void cdio_error (const char format[], ...) GNUC_PRINTF(1,2);
 
 #endif /* __LOGGING_H__ */
 

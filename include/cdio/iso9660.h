@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.26 2003/10/28 16:23:50 rocky Exp $
+    $Id: iso9660.h,v 1.27 2003/11/04 04:45:24 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -107,20 +107,22 @@ struct	iso9660_dtime {
 
 typedef struct iso9660_dtime  iso9660_dtime_t;
 
+/*! ISO-9660 Primary Volume Descriptor.
+ */
 struct	iso9660_ltime {
-  char	 lt_year	[_delta(   1,	4)];   /* Add 1900 for Julian year */
-  char	 lt_month	[_delta(   5,	6)];   /* 1..12. Note starts at 1. */
+  char	 lt_year	[_delta(   1,	4)];   /*! Add 1900 for Julian year */
+  char	 lt_month	[_delta(   5,	6)];   /*! 1..12. Note starts at 1. */
   char	 lt_day		[_delta(   7,	8)];
   char	 lt_hour	[_delta(   9,	10)];
   char	 lt_minute	[_delta(  11,	12)];
   char	 lt_second	[_delta(  13,	14)];
-  char	 lt_hsecond	[_delta(  15,	16)];  /* 1/100's of a second */
+  char	 lt_hsecond	[_delta(  15,	16)];  /*! 1/100's of a second */
   int8_t lt_gmtoff	[_delta(  17,	17)];
 } GNUC_PACKED;
 
 typedef struct iso9660_ltime  iso9660_ltime_t;
 
-/* ISO-9660 Primary Volume Descriptor.
+/*! ISO-9660 Primary Volume Descriptor.
  */
 struct iso9660_pvd {
   uint8_t          type;                      /* 711 */
@@ -175,18 +177,18 @@ typedef struct iso9660_stat iso9660_stat_t;
  * See mkisofs.h
  */
 
-/* Format of an ISO-9660 directory record */
+/*! Format of an ISO-9660 directory record */
 struct iso9660_dir {
-  uint8_t          length;            /* 711 */
-  uint8_t          xa_length;         /* 711 */
-  uint64_t         extent;            /* 733 */
-  uint64_t         size;              /* 733 */
-  iso9660_dtime_t  recording_time;    /* 7 by 711 */
+  uint8_t          length;            /*! 711 */
+  uint8_t          xa_length;         /*! 711 */
+  uint64_t         extent;            /*! 733 */
+  uint64_t         size;              /*! 733 */
+  iso9660_dtime_t  recording_time;    /*! 7 by 711 */
   uint8_t          file_flags;
-  uint8_t          file_unit_size;    /* 711 */
-  uint8_t          interleave_gap;    /* 711 */
-  uint32_t volume_sequence_number;    /* 723 */
-  uint8_t          filename_len;      /* 711 */
+  uint8_t          file_unit_size;    /*! 711 */
+  uint8_t          interleave_gap;    /*! 711 */
+  uint32_t volume_sequence_number;    /*! 723 */
+  uint8_t          filename_len;      /*! 711 */
   char             filename[EMPTY_ARRAY_SIZE];
 } GNUC_PACKED;
 
