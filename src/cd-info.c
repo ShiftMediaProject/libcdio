@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.81 2004/08/06 00:53:58 rocky Exp $
+    $Id: cd-info.c,v 1.82 2004/08/27 02:50:13 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -985,12 +985,12 @@ main(int argc, const char *argv[])
     cdio_drive_read_cap_t  i_read_cap;
     cdio_drive_write_cap_t i_write_cap;
     cdio_drive_misc_cap_t  i_misc_cap;
-    scsi_mmc_hwinfo_t scsi_mmc_hwinfo;
-    if (scsi_mmc_get_hwinfo(p_cdio, &scsi_mmc_hwinfo)) {
+    cdio_hwinfo_t          hwinfo;
+    if (cdio_get_hwinfo(p_cdio, &hwinfo)) {
       printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
-	     "Vendor"  , scsi_mmc_hwinfo.vendor, 
-	     "Model"   , scsi_mmc_hwinfo.model, 
-	     "Revision", scsi_mmc_hwinfo.revision);
+	     "Vendor"  , hwinfo.vendor, 
+	     "Model"   , hwinfo.model, 
+	     "Revision", hwinfo.revision);
     }
     cdio_get_drive_cap(p_cdio, &i_read_cap, &i_write_cap, &i_misc_cap);
     print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
@@ -1004,13 +1004,13 @@ main(int argc, const char *argv[])
     if (NULL != d) {
       for ( ; *d != NULL ; d++ ) {
 	CdIo *p_cdio = cdio_open(source_name, DRIVER_UNKNOWN); 
-	scsi_mmc_hwinfo_t scsi_mmc_hwinfo;
+	cdio_hwinfo_t hwinfo;
 	printf("Drive %s\n", *d);
-	if (scsi_mmc_get_hwinfo(p_cdio, &scsi_mmc_hwinfo)) {
+	if (scsi_mmc_get_hwinfo(p_cdio, &hwinfo)) {
 	  printf("%-8s: %s\n%-8s: %s\n%-8s: %s\n",
-		 "Vendor"  , scsi_mmc_hwinfo.vendor, 
-		 "Model"   , scsi_mmc_hwinfo.model, 
-		 "Revision", scsi_mmc_hwinfo.revision);
+		 "Vendor"  , hwinfo.vendor, 
+		 "Model"   , hwinfo.model, 
+		 "Revision", hwinfo.revision);
 	}
 	if (p_cdio) cdio_destroy(p_cdio);
       }

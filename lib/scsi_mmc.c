@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.25 2004/08/27 01:24:40 rocky Exp $
+    $Id: scsi_mmc.c,v 1.26 2004/08/27 02:50:13 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -429,7 +429,7 @@ scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio, cdio_dvd_struct_t *s)
 */
 bool 
 scsi_mmc_get_hwinfo ( const CdIo *p_cdio, 
-		      /*out*/ scsi_mmc_hwinfo_t *hw_info )
+		      /*out*/ cdio_hwinfo_t *hw_info )
 {
   int i_status;                  /* Result of SCSI MMC command */
   char buf[36] = { 0, };         /* Place to hold returned data */

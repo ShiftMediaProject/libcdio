@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.39 2004/08/10 11:58:15 rocky Exp $
+    $Id: cdio_private.h,v 1.40 2004/08/27 02:50:13 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -109,18 +109,25 @@ extern "C" {
 			   cdio_drive_read_cap_t  *p_read_cap,
 			   cdio_drive_write_cap_t *p_write_cap,
 			   cdio_drive_misc_cap_t  *p_misc_cap);
-    /*!  
-      Return the media catalog number MCN from the CD or NULL if
-      there is none or we don't have the ability to get it.
-    */
-    char * (*get_mcn) (const void *env);
-
     /*!
       Return the number of of the first track. 
       CDIO_INVALID_TRACK is returned on error.
     */
     track_t (*get_first_track_num) (void *env);
     
+    /*! 
+      Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
+      False is returned if we had an error getting the information.
+    */
+    bool (*get_hwinfo) ( const CdIo *p_cdio, 
+			 /* out*/ cdio_hwinfo_t *p_hw_info );
+
+    /*!  
+      Return the media catalog number MCN from the CD or NULL if
+      there is none or we don't have the ability to get it.
+    */
+    char * (*get_mcn) (const void *env);
+
     /*! 
       Return the number of tracks in the current medium.
       CDIO_INVALID_TRACK is returned on error.

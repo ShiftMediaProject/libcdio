@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.31 2004/08/10 02:29:46 rocky Exp $
+    $Id: scsi_mmc.h,v 1.32 2004/08/27 02:50:13 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -252,19 +252,6 @@
 						      conform to any
 						      Profile. */
 
-/*! Size of fields returned by an INQUIRY command */
-#define CDIO_MMC_HW_VENDOR_LEN    8 /**< length of vendor field */
-#define CDIO_MMC_HW_MODEL_LEN    16 /**< length of model field */
-#define CDIO_MMC_HW_REVISION_LEN  4 /**< length of revision field */
-
-/*! Structure to return data given by the INQUIRY command  */
-typedef struct scsi_mmc_hwinfo 
-{
-  char vendor  [CDIO_MMC_HW_VENDOR_LEN+1];
-  char model   [CDIO_MMC_HW_MODEL_LEN+1];
-  char revision[CDIO_MMC_HW_REVISION_LEN+1];
-} scsi_mmc_hwinfo_t;
-
 /*! This is listed as optional in ATAPI 2.6, but is (curiously) 
   missing from Mt. Fuji, Table 57.  It _is_ mentioned in Mt. Fuji
   Table 377 as an MMC command for SCSi devices though...  Most ATAPI
@@ -407,7 +394,7 @@ discmode_t scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio,
   False is returned if we had an error getting the information.
 */
 bool scsi_mmc_get_hwinfo ( const CdIo *p_cdio, 
-			   /* out*/ scsi_mmc_hwinfo_t *p_hw_info );
+			   /* out*/ cdio_hwinfo_t *p_hw_info );
 
 
 /*!

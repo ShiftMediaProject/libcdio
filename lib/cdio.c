@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.67 2004/07/28 22:03:35 rocky Exp $
+    $Id: cdio.c,v 1.68 2004/08/27 02:50:13 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.67 2004/07/28 22:03:35 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.68 2004/08/27 02:50:13 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -431,6 +431,21 @@ cdio_get_devices_with_cap (char* search_devices[],
   return drives_ret;
 }
 
+/*! 
+  Get medium associated with cd_obj.
+*/
+discmode_t
+cdio_get_discmode (CdIo *cd_obj)
+{
+  if (cd_obj == NULL) return CDIO_DISC_MODE_ERROR;
+  
+  if (cd_obj->op.get_discmode) {
+    return cd_obj->op.get_discmode (cd_obj->env);
+  } else {
+    return CDIO_DISC_MODE_NO_INFO;
+  }
+}
+
 /*!
   Return the the kind of drive capabilities of device.
 
@@ -439,7 +454,7 @@ cdio_get_devices_with_cap (char* search_devices[],
 
  */
 void
-cdio_get_drive_cap (const CdIo *cdio, 
+cdio_get_drive_cap (const CdIo *p_cdio, 
                     cdio_drive_read_cap_t  *p_read_cap,
                     cdio_drive_write_cap_t *p_write_cap,
                     cdio_drive_misc_cap_t  *p_misc_cap)
@@ -449,8 +464,8 @@ cdio_get_drive_cap (const CdIo *cdio,
   *p_write_cap = CDIO_DRIVE_CAP_UNKNOWN;
   *p_misc_cap  = CDIO_DRIVE_CAP_UNKNOWN;
   
-  if (cdio && cdio->op.get_drive_cap) {
-    cdio->op.get_drive_cap(cdio->env, p_read_cap, p_write_cap, p_misc_cap);
+  if (p_cdio && p_cdio->op.get_drive_cap) {
+    p_cdio->op.get_drive_cap(p_cdio->env, p_read_cap, p_write_cap, p_misc_cap);
   }
 }
 
@@ -511,29 +526,32 @@ cdio_get_driver_id (const CdIo *cdio)
   CDIO_INVALID_TRACK is returned on error.
 */
 track_t
-cdio_get_first_track_num (const CdIo *cdio)
+cdio_get_first_track_num (const CdIo *p_cdio)
 {
-  if (NULL == cdio) return CDIO_INVALID_TRACK;
+  if (NULL == p_cdio) return CDIO_INVALID_TRACK;
 
-  if (cdio->op.get_first_track_num) {
-    return cdio->op.get_first_track_num (cdio->env);
+  if (p_cdio->op.get_first_track_num) {
+    return p_cdio->op.get_first_track_num (p_cdio->env);
   } else {
     return CDIO_INVALID_TRACK;
   }
 }
 
-/*! 
-  Get medium associated with cd_obj.
+/*!
+  Return a string containing the name of the driver in use.
+  if CdIo is NULL (we haven't initialized a specific device driver), 
+  then return NULL.
 */
-discmode_t
-cdio_get_discmode (CdIo *cd_obj)
+bool
+cdio_get_hwinfo (const CdIo *p_cdio, cdio_hwinfo_t *hw_info) 
 {
-  if (cd_obj == NULL) return CDIO_DISC_MODE_ERROR;
-  
-  if (cd_obj->op.get_discmode) {
-    return cd_obj->op.get_discmode (cd_obj->env);
+  if (!p_cdio) return false;
+  if (p_cdio->op.get_hwinfo) {
+    return p_cdio->op.get_hwinfo (p_cdio, hw_info);
   } else {
-    return CDIO_DISC_MODE_NO_INFO;
+    /* Perhaps driver forgot to initialize.  We are no worse off Using
+       scsi_mmc than returning false here. */
+    return scsi_mmc_get_hwinfo(p_cdio, hw_info);
   }
 }
 

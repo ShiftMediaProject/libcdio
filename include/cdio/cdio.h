@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.60 2004/07/28 22:03:35 rocky Exp $
+    $Id: cdio.h,v 1.61 2004/08/27 02:50:13 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -54,6 +54,19 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+/*! Size of fields returned by an INQUIRY command */
+#define CDIO_MMC_HW_VENDOR_LEN    8 /**< length of vendor field */
+#define CDIO_MMC_HW_MODEL_LEN    16 /**< length of model field */
+#define CDIO_MMC_HW_REVISION_LEN  4 /**< length of revision field */
+
+  /*! Structure to return data given by the INQUIRY command  */
+  typedef struct cdio_hwinfo 
+  {
+    char vendor  [CDIO_MMC_HW_VENDOR_LEN+1];
+    char model   [CDIO_MMC_HW_MODEL_LEN+1];
+    char revision[CDIO_MMC_HW_REVISION_LEN+1];
+  } cdio_hwinfo_t;
 
   /** This is an opaque structure for the CD object. */
   typedef struct _CdIo CdIo; 
@@ -244,6 +257,14 @@ extern "C" {
 			       cdio_drive_read_cap_t  *p_read_cap,
 			       cdio_drive_write_cap_t *p_write_cap,
 			       cdio_drive_misc_cap_t  *p_misc_cap);
+
+  /*! 
+    Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
+    False is returned if we had an error getting the information.
+  */
+  bool cdio_get_hwinfo ( const CdIo *p_cdio, 
+			 /* out*/ cdio_hwinfo_t *p_hw_info );
+
 
   /*!
     Get the media catalog number (MCN) from the CD.
