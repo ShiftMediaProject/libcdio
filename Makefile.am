@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.5 2003/04/21 10:17:50 hvr Exp $
+#   $Id: Makefile.am,v 1.6 2003/04/22 01:34:20 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -33,13 +33,14 @@ $(pkgconfig_DATA): config.status
 
 # List of additional files for expanded regression tests
 DISTFILES_REGRESSION = tests/monvoisin.nrg  tests/monvoisin.right \
+		       tests/svcdgs.nrg  tests/svcdgs.nrg \
 	               tests/svcd_ogt_test_ntsc.bin \
 	               tests/svcd_ogt_test_ntsc.cue \
 	               tests/svcd_ogt_test_ntsc.right \
 		       tests/vcd_demo.bin tests/vcd_demo.cue \
 		       tests/vcd_demo.right
 
-REGRESSION_VERSION = 1.0
+REGRESSION_VERSION = 1.1
 
 distdir_regression = ../$(PACKAGE)-$(REGRESSION_VERSION)-tests
 
