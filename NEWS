@@ -1,3 +1,9 @@
+0.70
+
+- Code clean-ups
+- Better CUE parsing 
+- Reporting drive capability is more accurate 
+
 0.69
 - Add interface returning drive capabilities (cdio_get_drive_cap).
 - Minimal cdrdao image reading (thanks to Svend S. Sorensen)
@@ -123,4 +129,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.47 2004/06/25 21:10:36 rocky Exp $
+$Id: NEWS,v 1.48 2004/07/09 10:29:11 rocky Exp $
