@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.2 2003/03/29 17:32:00 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.3 2003/03/29 20:28:05 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -31,7 +31,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.2 2003/03/29 17:32:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.3 2003/03/29 20:28:05 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -609,7 +609,7 @@ cdio_open_solaris (const char *source_name)
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->fd             = -1;
+  _data->gen.fd         = -1;
 
   _cdio_set_arg(_data, "source", (NULL == source_name) 
 		? DEFAULT_CDIO_DEVICE: source_name);
