@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.24 2004/07/26 03:58:25 rocky Exp $
+    $Id: win32_ioctl.c,v 1.25 2004/07/26 11:25:51 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.24 2004/07/26 03:58:25 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.25 2004/07/26 11:25:51 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -499,15 +499,6 @@ read_toc_win32ioctl (_img_private_t *env)
   env->gen.toc_init = true;
   return true;
 }
-
-#define set_cdtext_field(FIELD)						\
-  if( i_track == 0 )							\
-    env->cdtext.field[FIELD] = strdup(buffer);				\
-  else									\
-    env->tocent[i_track-1].cdtext.field[FIELD]				\
-      = strdup(buffer);							\
-  i_track++;								\
-  idx = 0;
 
 /*! 
   Get cdtext information for a CdIo object .
