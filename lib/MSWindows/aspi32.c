@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.43 2004/07/28 01:55:03 rocky Exp $
+    $Id: aspi32.c,v 1.44 2004/07/28 03:17:56 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,12 +27,12 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.43 2004/07/28 01:55:03 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.44 2004/07/28 03:17:56 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
-#include <cdio/util.include>
-#h <cdio/scsi_mmc.h>
+#include <cdio/util.h>
+#include <cdio/scsi_mmc.h>
 #include "cdio_assert.h"
 
 #include <string.h>
@@ -476,7 +476,7 @@ init_aspi (_img_private_t *env)
   Run a SCSI MMC command. 
  
   env	        private CD structure 
-  i_timeout     time in milliseconds we will wait for the command
+  i_timeout_ms  time in milliseconds we will wait for the command
                 to complete. If this value is -1, use the default 
 		time-out value.
   p_buf	        Buffer for data, both sending and receiving
@@ -491,7 +491,7 @@ int
 run_scsi_cmd_aspi( const void *p_user_data, unsigned int i_timeout_ms,
 		   unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,  
 		   scsi_mmc_direction_t e_direction, 
-		       unsigned int i_buf, /*in/out*/ void *p_buf )
+		   unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   HANDLE hEvent;
@@ -825,7 +825,7 @@ get_drive_cap_aspi (const _img_private_t *p_env,
 	  /* Don't handle these yet. */
 	  break;
 	case CDIO_MMC_CAPABILITIES_PAGE:
-	  scsi_mmc_get_drive_cap(p, p_read_cap, p_write_cap, p_misc_cap);
+	  scsi_mmc_get_drive_cap_buf(p, p_read_cap, p_write_cap, p_misc_cap);
 	  break;
 	default: ;
 	}

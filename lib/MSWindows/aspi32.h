@@ -1,6 +1,6 @@
 /* Win32 aspi specific */
 /*
-    $Id: aspi32.h,v 1.11 2004/07/25 17:32:19 rocky Exp $
+    $Id: aspi32.h,v 1.12 2004/07/28 03:17:56 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -252,9 +252,10 @@ bool read_toc_aspi (_img_private_t *env);
 
   Return 0 if command completed successfully.
  */
-int scsi_mmc_run_cmd_aspi( const void *p_user_data, int i_timeout,
-			   unsigned int i_cdb, 
-			   const scsi_mmc_cdb_t * p_cdb,
-			   scsi_mmc_direction_t e_direction, 
-			   unsigned int i_buf, /*in/out*/ void *p_buf );
+int run_scsi_cmd_aspi( const void *p_user_data, 
+		       unsigned int i_timeout,
+		       unsigned int i_cdb, 
+		       const scsi_mmc_cdb_t * p_cdb,
+		       scsi_mmc_direction_t e_direction, 
+		       unsigned int i_buf, /*in/out*/ void *p_buf );
 

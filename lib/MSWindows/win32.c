@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.34 2004/07/28 01:55:03 rocky Exp $
+    $Id: win32.c,v 1.35 2004/07/28 03:17:56 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.34 2004/07/28 01:55:03 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.35 2004/07/28 03:17:56 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -141,7 +141,7 @@ _cdio_get_drive_cap (const void *env,
   Run a SCSI MMC command. 
  
   env	        private CD structure 
-  i_timeout     time in milliseconds we will wait for the command
+  i_timeout_ms  time in milliseconds we will wait for the command
                 to complete. If this value is -1, use the default 
 		time-out value.
   p_buf	        Buffer for data, both sending and receiving
@@ -153,19 +153,19 @@ _cdio_get_drive_cap (const void *env,
   Return 0 if command completed successfully.
  */
 static int
-scsi_mmc_run_cmd_win32( const void *p_user_data, int i_timeout,
-			unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-			scsi_mmc_direction_t e_direction, 
-			unsigned int i_buf, /*in/out*/ void *p_buf )
+run_scsi_cmd_win32( const void *p_user_data, unsigned int i_timeout_ms,
+		    unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		    scsi_mmc_direction_t e_direction, 
+		    unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
 
   if (p_env->hASPI) {
-    return scsi_mmc_run_cmd_aspi( p_env, i_timeout, i_cdb, p_cdb,  
-				  e_direction, i_buf, p_buf );
+    return run_scsi_cmd_aspi( p_env, i_timeout_ms, i_cdb, p_cdb,  
+			      e_direction, i_buf, p_buf );
   } else {
-    return scsi_mmc_run_cmd_win32ioctl( p_env, i_timeout, i_cdb, p_cdb,  
-					e_direction, i_buf, p_buf );
+    return run_scsi_cmd_win32ioctl( p_env, i_timeout_ms, i_cdb, p_cdb,  
+				    e_direction, i_buf, p_buf );
   }
 }
 
@@ -801,7 +801,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
     .read_mode1_sectors = _cdio_read_mode1_sectors,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
-    .run_scsi_mmc_cmd   = scsi_mmc_run_cmd_win32,
+    .run_scsi_mmc_cmd   = run_scsi_cmd_win32,
     .set_arg            = _set_arg_win32,
     .stat_size          = _cdio_stat_size
   };

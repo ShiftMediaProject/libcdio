@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.29 2004/07/28 01:55:03 rocky Exp $
+    $Id: win32_ioctl.c,v 1.30 2004/07/28 03:17:56 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.29 2004/07/28 01:55:03 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.30 2004/07/28 03:17:56 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -144,11 +144,11 @@ typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
   Return 0 if command completed successfully.
  */
 int
-scsi_mmc_run_cmd_win32ioctl( const void *p_user_data, 
-			     unsigned int i_timeout_ms,
-			     unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,
-			     scsi_mmc_direction_t e_direction, 
-			     unsigned int i_buf, /*in/out*/ void *p_buf )
+run_scsi_cmd_win32ioctl( const void *p_user_data, 
+			 unsigned int i_timeout_ms,
+			 unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,
+			 scsi_mmc_direction_t e_direction, 
+			 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   SCSI_PASS_THROUGH_DIRECT sptd;
@@ -206,7 +206,7 @@ get_discmode_win32ioctl (_img_private_t *p_env)
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
   if (0 == scsi_mmc_get_dvd_struct_physical_private (p_env, 
-						     &scsi_mmc_run_cmd_win32ioctl,
+						     &run_scsi_cmd_win32ioctl,
 						     &dvd)) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
@@ -364,7 +364,7 @@ read_raw_sector (const _img_private_t *p_env, void *p_buf, lsn_t lsn)
 
   cdb.field[9]=0xF8;  /* Raw read, 2352 bytes per sector */
   
-  return scsi_mmc_run_cmd_win32ioctl(p_env, OP_TIMEOUT_MS,
+  return run_scsi_cmd_win32ioctl(p_env, OP_TIMEOUT_MS,
 				     scsi_mmc_get_cmd_len(cdb.field[0]), 
 				     &cdb, SCSI_MMC_DATA_READ, 
 				     CDIO_CD_FRAMESIZE_RAW, p_buf);
@@ -512,7 +512,7 @@ bool
 init_cdtext_win32ioctl (_img_private_t *p_env)
 {
   return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
-				       &scsi_mmc_run_cmd_win32ioctl, 
+				       &run_scsi_cmd_win32ioctl, 
 				       set_cdtext_field_win32
 				       );
 }
@@ -626,8 +626,8 @@ get_drive_cap_win32ioctl (const _img_private_t *p_env,
 		       FALSE) )     {
     unsigned int n=sptwb.DataBuf[3]+4;
     /* Reader? */
-    scsi_mmc_get_drive_cap(&(sptwb.DataBuf[n]), p_read_cap, 
-			   p_write_cap, p_misc_cap);
+    scsi_mmc_get_drive_cap_buf(&(sptwb.DataBuf[n]), p_read_cap, 
+			       p_write_cap, p_misc_cap);
   } else {
     *p_read_cap  = CDIO_DRIVE_CAP_UNKNOWN;
     *p_write_cap = CDIO_DRIVE_CAP_UNKNOWN;

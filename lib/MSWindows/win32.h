@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.16 2004/07/27 01:06:02 rocky Exp $
+    $Id: win32.h,v 1.17 2004/07/28 03:17:56 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -93,7 +93,7 @@ const char *is_cdrom_win32ioctl (const char drive_letter);
   Run a SCSI MMC command. 
  
   env	        private CD structure 
-  i_timeout     time in milliseconds we will wait for the command
+  i_timeout_ms  time in milliseconds we will wait for the command
                 to complete. If this value is -1, use the default 
 		time-out value.
   p_buf	        Buffer for data, both sending and receiving
@@ -104,11 +104,12 @@ const char *is_cdrom_win32ioctl (const char drive_letter);
 
   Return 0 if command completed successfully.
  */
-int scsi_mmc_run_cmd_win32ioctl( const void *p_user_data, int i_timeout,
-				 unsigned int i_cdb, 
-				 const scsi_mmc_cdb_t * p_cdb,
-				 scsi_mmc_direction_t e_direction, 
-				 unsigned int i_buf, /*in/out*/ void *p_buf );
+int run_scsi_cmd_win32ioctl( const void *p_user_data, 
+			     unsigned int i_timeout,
+			     unsigned int i_cdb, 
+			     const scsi_mmc_cdb_t * p_cdb,
+			     scsi_mmc_direction_t e_direction, 
+			     unsigned int i_buf, /*in/out*/ void *p_buf );
 
 /*!
   Initialize internal structures for CD device.
