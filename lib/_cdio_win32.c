@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.2 2003/06/07 08:53:16 rocky Exp $
+    $Id: _cdio_win32.c,v 1.3 2003/06/07 10:44:14 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.2 2003/06/07 08:53:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.3 2003/06/07 10:44:14 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -34,17 +34,10 @@ static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.2 2003/06/07 08:53:16 rocky
 #include "cdio_assert.h"
 #include "cdio_private.h"
 
-/* Is this the right default? */
-#define DEFAULT_CDIO_DEVICE "Z:"
-
 /* LBA = msf.frame + 75 * ( msf.second - 2 + 60 * msf.minute ) */
 #define MSF_TO_LBA2(min, sec, frame) ((int)frame + 75 * (sec -2 + 60 * min))
 
 #include <string.h>
-
-/* NOT COMPLETE YET.... 
-#undef HAVE_WIN32_CDROM
-*/
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -202,6 +195,116 @@ typedef struct {
   track_t       first_track_num; /* track number of first track */
 
 } _img_private_t;
+
+static const char *
+cdio_have_cdrom_drive(const char drive_letter) {
+  static char psz_win32_drive[7];
+  _img_private_t obj;
+
+  /* Initializations */
+  obj.h_device_handle = NULL;
+  obj.i_sid = 0;
+  obj.hASPI = 0;
+  obj.lpSendCommand = 0;
+  
+  if ( WIN_NT ) {
+    sprintf( psz_win32_drive, "\\\\.\\%c:", drive_letter );
+    
+    obj.h_device_handle = CreateFile( psz_win32_drive, GENERIC_READ,
+				      FILE_SHARE_READ | FILE_SHARE_WRITE,
+				      NULL, OPEN_EXISTING,
+				      FILE_FLAG_NO_BUFFERING |
+				      FILE_FLAG_RANDOM_ACCESS, NULL );
+    if (obj.h_device_handle != NULL) {
+      CloseHandle(obj.h_device_handle);
+      return strdup(psz_win32_drive);
+    } else {
+      CloseHandle(obj.h_device_handle);
+      return NULL;
+    }
+  } else {
+    HMODULE hASPI = NULL;
+    long (*lpGetSupport)( void ) = NULL;
+    long (*lpSendCommand)( void* ) = NULL;
+    DWORD dwSupportInfo;
+    int j, i_hostadapters;
+    char c_drive;
+    
+    hASPI = LoadLibrary( "wnaspi32.dll" );
+    if( hASPI != NULL ) {
+      (FARPROC) lpGetSupport = GetProcAddress( hASPI,
+					       "GetASPI32SupportInfo" );
+      (FARPROC) lpSendCommand = GetProcAddress( hASPI,
+						"SendASPI32Command" );
+    }
+    
+    if( hASPI == NULL || lpGetSupport == NULL || lpSendCommand == NULL ) {
+      cdio_debug("unable to load aspi or get aspi function pointers");
+      if( hASPI ) FreeLibrary( hASPI );
+      return NULL;
+    }
+    
+    /* ASPI support seems to be there */
+    
+    dwSupportInfo = lpGetSupport();
+    
+    if( HIBYTE( LOWORD ( dwSupportInfo ) ) == SS_NO_ADAPTERS ) {
+      cdio_debug("no host adapters found (ASPI)");
+      FreeLibrary( hASPI );
+      return NULL;
+    }
+    
+    if( HIBYTE( LOWORD ( dwSupportInfo ) ) != SS_COMP ) {
+      cdio_debug("unable to initalize ASPI layer");
+      FreeLibrary( hASPI );
+      return NULL;
+    }
+    
+    i_hostadapters = LOBYTE( LOWORD( dwSupportInfo ) );
+    if( i_hostadapters == 0 ) {
+      FreeLibrary( hASPI );
+      return NULL;
+    }
+    
+    c_drive = drive_letter - 'A';
+    
+    for( j = 0; j < 15; j++ ) {
+      struct SRB_GetDiskInfo srbDiskInfo;
+      
+      srbDiskInfo.SRB_Cmd         = SC_GET_DISK_INFO;
+      srbDiskInfo.SRB_HaId        = 0;
+      srbDiskInfo.SRB_Flags       = 0;
+      srbDiskInfo.SRB_Hdr_Rsvd    = 0;
+      srbDiskInfo.SRB_Target      = j;
+      srbDiskInfo.SRB_Lun         = 0;
+      
+      lpSendCommand( (void*) &srbDiskInfo );
+      
+      if( (srbDiskInfo.SRB_Status == SS_COMP) &&
+	  (srbDiskInfo.SRB_Int13HDriveInfo == c_drive) ) {
+	/* Make sure this is a cdrom device */
+	struct SRB_GDEVBlock   srbGDEVBlock;
+	
+	memset( &srbGDEVBlock, 0, sizeof(struct SRB_GDEVBlock) );
+	srbGDEVBlock.SRB_Cmd    = SC_GET_DEV_TYPE;
+	srbGDEVBlock.SRB_HaId   = 0;
+	srbGDEVBlock.SRB_Target = j;
+	
+	lpSendCommand( (void*) &srbGDEVBlock );
+	
+	if( ( srbGDEVBlock.SRB_Status == SS_COMP ) &&
+	    ( srbGDEVBlock.SRB_DeviceType == DTYPE_CDROM ) ) {
+	  sprintf( psz_win32_drive, "%c:", drive_letter );
+	  FreeLibrary( hASPI );
+	  return(psz_win32_drive);
+	}
+      }
+    }
+    FreeLibrary( hASPI );
+  }
+  return NULL;
+
+}
 
 /*!
   Initialize CD device.
@@ -841,19 +944,33 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
   }
 }
 
-#endif /* HAVE_WIN32_CDROM */
-
 /*!
-  Return a string containing the default VCD device if none is specified.
+  Return a string containing the default CD device if none is specified.
  */
 char *
-cdio_get_default_device_win32()
+cdio_get_default_device_win32(void)
 {
 
-  /* FIXME: If WIN32, we should loop over device names until we get a
-     CD-ROM. */
-  return strdup(DEFAULT_CDIO_DEVICE);
+  char drive_letter='C';
+
+  for (drive_letter='A'; drive_letter <= 'Z'; drive_letter++) {
+    const char *drive_str=cdio_have_cdrom_drive(drive_letter);
+    if (drive_str != NULL) {
+      return strdup(drive_str);
+    }
+  }
+  return NULL;
 }
+#else 
+/*!
+  Return a string containing the default CD device if none is specified.
+ */
+char *
+cdio_get_default_device_win32(void)
+{
+  return NULL;
+}
+#endif /* HAVE_WIN32_CDROM */
 
 /*!
   Initialization routine. This is the only thing that doesn't
@@ -893,7 +1010,7 @@ cdio_open_win32 (const char *source_name)
   _data->gen.fd         = -1;
 
   _cdio_set_arg(_data, "source", (NULL == source_name) 
-		? DEFAULT_CDIO_DEVICE: source_name);
+		? cdio_get_default_device_win32(): source_name);
 
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;

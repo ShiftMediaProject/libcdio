@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.2 2003/05/27 02:55:58 rocky Exp $
+    $Id: types.h,v 1.3 2003/06/07 10:44:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -52,6 +52,10 @@ extern "C" {
 # undef UINT32_C
 # undef UINT64_C
 # undef INT64_C
+#endif
+
+#if defined (MINGW32)
+  typedef int ssize_t;
 #endif
   
   /* if it's still not defined, take a good guess... should work for
