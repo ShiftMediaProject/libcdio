@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.5 2003/09/14 17:04:49 rocky Exp $
+    $Id: _cdio_osx.c,v 1.6 2003/09/15 01:37:32 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com> from vcdimager code
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -31,7 +31,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.5 2003/09/14 17:04:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.6 2003/09/15 01:37:32 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -78,7 +78,7 @@ typedef struct {
   CDTOC *pTOC;
   int i_descriptors;
   track_t num_tracks;
-  lsn_t   *pp_lsn;
+  lsn_t   *pp_lba;
 
 } _img_private_t;
 
@@ -87,7 +87,7 @@ _cdio_osx_free (void *user_data) {
   _img_private_t *_obj = user_data;
   if (NULL == _obj) return;
   cdio_generic_free(_obj);
-  if (NULL != _obj->pp_lsn) free((void *) _obj->pp_lsn);
+  if (NULL != _obj->pp_lba) free((void *) _obj->pp_lba);
   if (NULL != _obj->pTOC) free((void *) _obj->pTOC);
 }
 
@@ -353,8 +353,8 @@ _cdio_read_toc (_img_private_t *_obj)
     track_t track;
     int i_tracks;
     
-    _obj->pp_lsn = malloc( (_obj->num_tracks + 1) * sizeof(int) );
-    if( _obj->pp_lsn == NULL )
+    _obj->pp_lba = malloc( (_obj->num_tracks + 1) * sizeof(int) );
+    if( _obj->pp_lba == NULL )
       {
 	cdio_error("Out of memory in allocating track starting LSNs" );
 	free( _obj->pTOC );
@@ -374,21 +374,21 @@ _cdio_read_toc (_img_private_t *_obj)
 	if( track > CDIO_CD_MAX_TRACKS || track < CDIO_CD_MIN_TRACK_NO )
 	  continue;
 	
-	_obj->pp_lsn[i_tracks++] =
-	  cdio_lba_to_lsn(CDConvertMSFToLBA( pTrackDescriptors[i].p ));
+	_obj->pp_lba[i_tracks++] =
+	  cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i].p ));
       }
     
     if( i_leadout == -1 )
       {
 	cdio_error( "CD leadout not found" );
-	free( _obj->pp_lsn );
+	free( _obj->pp_lba );
 	free( (void *) _obj->pTOC );
 	return false;
       }
     
     /* set leadout sector */
-    _obj->pp_lsn[i_tracks] =
-      cdio_lba_to_lsn(CDConvertMSFToLBA( pTrackDescriptors[i_leadout].p ));
+    _obj->pp_lba[i_tracks] =
+      cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i_leadout].p ));
   }
 
   _obj->toc_init   = true;
@@ -405,7 +405,7 @@ _cdio_read_toc (_img_private_t *_obj)
   False is returned if there is no track entry.
 */
 static lsn_t
-_cdio_get_track_lsn(void *user_data, track_t track_num)
+_cdio_get_track_lba(void *user_data, track_t track_num)
 {
   _img_private_t *_obj = user_data;
 
@@ -416,7 +416,7 @@ _cdio_get_track_lsn(void *user_data, track_t track_num)
   if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
     return CDIO_INVALID_LSN;
   } else {
-    return _obj->pp_lsn[track_num-1];
+    return _obj->pp_lba[track_num-1];
   }
 }
 
@@ -477,7 +477,7 @@ _cdio_eject_media (void *user_data) {
 static uint32_t 
 _cdio_stat_size (void *user_data)
 {
-  return _cdio_get_track_lsn(user_data, CDIO_CDROM_LEADOUT_TRACK);
+  return _cdio_get_track_lba(user_data, CDIO_CDROM_LEADOUT_TRACK);
 }
 
 /*!
@@ -639,7 +639,7 @@ cdio_open_osx (const char *source_name)
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,
-    .get_track_lba      = _cdio_get_track_lsn,
+    .get_track_lba      = _cdio_get_track_lba,
     .get_track_msf      = NULL,
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
