@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.17 2005/03/06 02:59:26 rocky Exp $
+    $Id: mmc.h,v 1.18 2005/03/09 10:23:01 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -36,19 +36,19 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-/*! \brief The opcode-portion (generic packet commands) of an MMC command.
-
-
-In general, those opcodes that end in 6 take a 6-byte command
-descriptor, those that end in 10 take a 10-byte
-descriptor and those that in in 12 take a 12-byte descriptor. 
-
-(Not that you need to know that, but it seems to be a
-big deal in the MMC specification.)
-
-*/
-typedef enum {
+  
+  /*! \brief The opcode-portion (generic packet commands) of an MMC command.
+    
+  
+  In general, those opcodes that end in 6 take a 6-byte command
+  descriptor, those that end in 10 take a 10-byte
+  descriptor and those that in in 12 take a 12-byte descriptor. 
+  
+  (Not that you need to know that, but it seems to be a
+  big deal in the MMC specification.)
+  
+  */
+  typedef enum {
   CDIO_MMC_GPCMD_INQUIRY 	        = 0x12, /**< Request drive 
 						   information. */
   CDIO_MMC_GPCMD_MODE_SELECT_6	        = 0x15, /**< Select medium 
@@ -338,55 +338,55 @@ typedef enum {
 typedef struct mmc_cdb_s {
   uint8_t field[MAX_CDB_LEN];
 } mmc_cdb_t;
-
-/*! \brief Format of header block in data returned from an MMC
+  
+  /*! \brief Format of header block in data returned from an MMC
     GET_CONFIGURATION command.
- */
-typedef struct mmc_feature_list_header_s {
-  unsigned char length_msb;
-  unsigned char length_1sb;
-  unsigned char length_2sb;
-  unsigned char length_lsb;
-  unsigned char reserved1;
-  unsigned char reserved2;
-  unsigned char profile_msb;
-  unsigned char profile_lsb;
-} mmc_feature_list_header_t;
+  */
+  typedef struct mmc_feature_list_header_s {
+    unsigned char length_msb;
+    unsigned char length_1sb;
+    unsigned char length_2sb;
+    unsigned char length_lsb;
+    unsigned char reserved1;
+    unsigned char reserved2;
+    unsigned char profile_msb;
+    unsigned char profile_lsb;
+  } mmc_feature_list_header_t;
 
-/*! An enumeration indicating whether an MMC command is sending
+  /*! An enumeration indicating whether an MMC command is sending
     data or getting data.
- */
-typedef enum mmc_direction_s {
-  SCSI_MMC_DATA_READ,
-  SCSI_MMC_DATA_WRITE
-} mmc_direction_t;
-
-typedef struct mmc_subchannel_s
-{
-  uint8_t       reserved;
-  uint8_t       audio_status;
-  uint16_t      data_length; /* Really 7.2.2 */
-  uint8_t	format;
-  uint8_t	address:	4;
-  uint8_t	control:	4;
-  uint8_t	track;
-  uint8_t	index;
-  uint8_t       abs_addr[4];
-  uint8_t       rel_addr[4];
-} mmc_subchannel_t;
-
+  */
+  typedef enum mmc_direction_s {
+    SCSI_MMC_DATA_READ,
+    SCSI_MMC_DATA_WRITE
+  } mmc_direction_t;
+  
+  typedef struct mmc_subchannel_s
+  {
+    uint8_t       reserved;
+    uint8_t       audio_status;
+    uint16_t      data_length; /* Really 7.2.2 */
+    uint8_t	format;
+    uint8_t	address:	4;
+    uint8_t	control:	4;
+    uint8_t	track;
+    uint8_t	index;
+    uint8_t       abs_addr[4];
+    uint8_t       rel_addr[4];
+  } mmc_subchannel_t;
+  
 #define CDIO_MMC_SET_COMMAND(cdb, command) \
   cdb[0] = command
-
+  
 #define CDIO_MMC_SET_READ_TYPE(cdb, sector_type) \
   cdb[1] = (sector_type << 2)
-
+  
 #define CDIO_MMC_GET_LEN16(p) \
   (p[0]<<8) + p[1]
-
+  
 #define CDIO_MMC_GET_LEN32(p) \
   (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
-
+  
 #define CDIO_MMC_SET_LEN16(cdb, pos, len)  \
   cdb[pos  ] = (len >>  8) & 0xff; \
   cdb[pos+1] = (len      ) & 0xff
@@ -424,233 +424,241 @@ typedef struct mmc_subchannel_s
 */
 driver_return_code_t
 mmc_audio_read_subchannel (CdIo_t *p_cdio, cdio_subchannel_t *p_subchannel);
-
-/*!
-  Return a string containing the name of the audio state as returned from
-  the Q_SUBCHANNEL.
- */
-const char *mmc_audio_state2str( uint8_t i_audio_state );
-
-/*!
- * Eject using MMC commands. 
-
- @return 0 if successful.
- */
-int mmc_eject_media( const CdIo_t *p_cdio );
-
-/*!
- Return a string containing the name of the given feature
- */
-const char *mmc_feature2str( int i_feature );
-
-/*!
- Return a string containing the name of the given feature
- */
-const char *mmc_feature_profile2str( int i_feature_profile );
-
-/*!  
-  Return the length in bytes of the Command Descriptor
-  Buffer (CDB) for a given MMC command. The length will be 
-  either 6, 10, or 12. 
-*/
-uint8_t mmc_get_cmd_len(uint8_t mmc_cmd);
-
-/*!
-  Get the block size used in read requests, via MMC.
-  @return the blocksize if > 0; error if <= 0
- */
-int mmc_get_blocksize ( CdIo_t *p_cdio );
-
-/*!  
-  Get the lsn of the end of the CD
   
-  @return the lsn. On error return CDIO_INVALID_LSN.
-*/
-lsn_t mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
+  /*!
+    Return a string containing the name of the audio state as returned from
+    the Q_SUBCHANNEL.
+  */
+  const char *mmc_audio_state2str( uint8_t i_audio_state );
   
-/*! 
-  Return the discmode as reported by the MMC Read (FULL) TOC
-  command.
-
-  Information was obtained from Section 5.1.13 (Read TOC/PMA/ATIP)
-  pages 56-62 from the MMC draft specification, revision 10a
-  at http://www.t10.org/ftp/t10/drafts/mmc/mmc-r10a.pdf See
-  especially tables 72, 73 and 75.
- */
-discmode_t mmc_get_discmode( const CdIo_t *p_cdio );
-
-
-/*!
-  Get drive capabilities for a device.
-  @return the drive capabilities.
- */
-void mmc_get_drive_cap ( CdIo_t *p_cdio,
-			 /*out*/ cdio_drive_read_cap_t  *p_read_cap,
-			 /*out*/ cdio_drive_write_cap_t *p_write_cap,
-			 /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
-
-/*! 
-  Get the DVD type associated with cd object.
-
-  @return the DVD discmode.
-*/
-discmode_t mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, 
-                                         cdio_dvd_struct_t *s);
-
-/*! 
-  Get the CD-ROM hardware info via an MMC INQUIRY command.
-
-  @return true if we were able to get hardware info, false if we had
-  an error.
-*/
-bool mmc_get_hwinfo ( const CdIo_t *p_cdio, 
-			   /* out*/ cdio_hwinfo_t *p_hw_info );
-
-
-/*! 
-  Find out if media has changed since the last call.
-  @param p_cdio the CD object to be acted upon.
-  @return 1 if media has changed since last call, 0 if not. Error
-  return codes are the same as driver_return_code_t
+  /*!
+    Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.
+    Command is not "immediate" -- we'll wait for the command to complete.
+    For a more general (and lower-level) routine, @see mmc_start_stop_media.
+  */
+  driver_return_code_t mmc_eject_media( const CdIo_t *p_cdio );
+  
+  /*!
+    Return a string containing the name of the given feature
+  */
+  const char *mmc_feature2str( int i_feature );
+  
+  /*!
+    Return a string containing the name of the given feature
+  */
+  const char *mmc_feature_profile2str( int i_feature_profile );
+  
+  /*!  
+    Return the length in bytes of the Command Descriptor
+    Buffer (CDB) for a given MMC command. The length will be 
+    either 6, 10, or 12. 
+  */
+  uint8_t mmc_get_cmd_len(uint8_t mmc_cmd);
+  
+  /*!
+    Get the block size used in read requests, via MMC.
+    @return the blocksize if > 0; error if <= 0
+  */
+  int mmc_get_blocksize ( CdIo_t *p_cdio );
+  
+#if 0
+  /*! Don't know how to implement yet. */
+  /*!
+   * Close tray using a MMC START STOP command.
    */
-int mmc_get_media_changed(const CdIo_t *p_cdio);
-
-/*!
-  Get the media catalog number (MCN) from the CD via MMC.
+  driver_return_code_t mmc_close_tray( const char *psz_device );
+#endif
   
-  @return the media catalog number r NULL if there is none or we
-  don't have the ability to get it.
+  /*!  
+    Get the lsn of the end of the CD
+    
+    @return the lsn. On error return CDIO_INVALID_LSN.
+  */
+  lsn_t mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
   
-  Note: string is malloc'd so caller has to free() the returned
-  string when done with it.
+  /*! 
+    Return the discmode as reported by the MMC Read (FULL) TOC
+    command.
+    
+    Information was obtained from Section 5.1.13 (Read TOC/PMA/ATIP)
+    pages 56-62 from the MMC draft specification, revision 10a
+    at http://www.t10.org/ftp/t10/drafts/mmc/mmc-r10a.pdf See
+    especially tables 72, 73 and 75.
+  */
+  discmode_t mmc_get_discmode( const CdIo_t *p_cdio );
   
-*/
-char * mmc_get_mcn ( const CdIo_t *p_cdio );
+  
+  /*!
+    Get drive capabilities for a device.
+    @return the drive capabilities.
+  */
+  void mmc_get_drive_cap ( CdIo_t *p_cdio,
+                           /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+                           /*out*/ cdio_drive_write_cap_t *p_write_cap,
+                           /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
+  
+  /*! 
+    Get the DVD type associated with cd object.
+    
+    @return the DVD discmode.
+  */
+  discmode_t mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, 
+                                           cdio_dvd_struct_t *s);
+  
+  /*! 
+    Get the CD-ROM hardware info via an MMC INQUIRY command.
+    
+    @return true if we were able to get hardware info, false if we had
+    an error.
+  */
+  bool mmc_get_hwinfo ( const CdIo_t *p_cdio, 
+                        /* out*/ cdio_hwinfo_t *p_hw_info );
+  
+  
+  /*! 
+    Find out if media has changed since the last call.
+    @param p_cdio the CD object to be acted upon.
+    @return 1 if media has changed since last call, 0 if not. Error
+    return codes are the same as driver_return_code_t
+  */
+  int mmc_get_media_changed(const CdIo_t *p_cdio);
+  
+  /*!
+    Get the media catalog number (MCN) from the CD via MMC.
+    
+    @return the media catalog number r NULL if there is none or we
+    don't have the ability to get it.
+    
+    Note: string is malloc'd so caller has to free() the returned
+    string when done with it.
+    
+  */
+  char * mmc_get_mcn ( const CdIo_t *p_cdio );
+  
+  /** Get the output port volumes and port selections used on AUDIO PLAY
+      commands via a MMC MODE SENSE command using the CD Audio Control
+      Page.
+  */
+  driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
+                                             mmc_audio_volume_t *p_volume);
+  
+  /*!
+    Report if CD-ROM has a praticular kind of interface (ATAPI, SCSCI, ...)
+    Is it possible for an interface to have serveral? If not this 
+    routine could probably return the sincle mmc_feature_interface_t.
+    @return true if we have the interface and false if not.
+  */
+  bool_3way_t mmc_have_interface( CdIo_t *p_cdio, 
+                                  mmc_feature_interface_t e_interface );
+  
+  /*! Run a MODE_SENSE command (6- or 10-byte version) 
+    and put the results in p_buf 
+    @return DRIVER_OP_SUCCESS if we ran the command ok.
+  */
+  int mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
+                      int page);
+  
+  
+  /*! Run a MODE_SENSE command (10-byte version) 
+    and put the results in p_buf 
+    @return DRIVER_OP_SUCCESS if we ran the command ok.
+  */
+  int  mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
+                          int page);
+  
+  /*! Run a MODE_SENSE command (6-byte version) 
+    and put the results in p_buf 
+    @return DRIVER_OP_SUCCESS if we ran the command ok.
+  */
+  int  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
+                         int page);
+  
+  /*! Issue a MMC READ_CD command.
+    
+  @param p_cdio  object to read from 
+  
+  @param p_buf   Place to store data. The caller should ensure that 
+  p_buf can hold at least i_blocksize * i_blocks  bytes.
+  
+  @param i_lsn   sector to read 
+  
+  @param expected_sector_type restricts reading to a specific CD
+  sector type.  Only 3 bits with values 1-5 are used:
+    0 all sector types
+    1 CD-DA sectors only 
+    2 Mode 1 sectors only
+    3 Mode 2 formless sectors only. Note in contrast to all other
+      values an MMC CD-ROM is not required to support this mode.
+    4 Mode 2 Form 1 sectors only
+    5 Mode 2 Form 2 sectors only
 
-/** Get the output port volumes and port selections used on AUDIO PLAY
-    commands via a MMC MODE SENSE command using the CD Audio Control
-    Page.
- */
-driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
-                                           mmc_audio_volume_t *p_volume);
-
-/*!
-  Report if CD-ROM has a praticular kind of interface (ATAPI, SCSCI, ...)
-  Is it possible for an interface to have serveral? If not this 
-  routine could probably return the sincle mmc_feature_interface_t.
-  @return true if we have the interface and false if not.
- */
-bool_3way_t mmc_have_interface( CdIo_t *p_cdio, 
-				mmc_feature_interface_t e_interface );
-
-/*! Run a MODE_SENSE command (6- or 10-byte version) 
-  and put the results in p_buf 
-  @return DRIVER_OP_SUCCESS if we ran the command ok.
-*/
-int mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
-		    int page);
-
-
-/*! Run a MODE_SENSE command (10-byte version) 
-  and put the results in p_buf 
-  @return DRIVER_OP_SUCCESS if we ran the command ok.
-*/
-int  mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
-			int page);
-
-/*! Run a MODE_SENSE command (6-byte version) 
-  and put the results in p_buf 
-  @return DRIVER_OP_SUCCESS if we ran the command ok.
-*/
-int  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
-		       int page);
-
-/*! Issue a MMC READ_CD command.
-
-    @param p_cdio  object to read from 
-
-    @param p_buf   Place to store data. The caller should ensure that 
-    p_buf can hold at least i_blocksize * i_blocks  bytes.
-
-    @param i_lsn   sector to read 
-
-    @param expected_sector_type restricts reading to a specific CD
-      sector type.  Only 3 bits with values 1-5 are used:
-      0 all sector types
-      1 CD-DA sectors only 
-      2 Mode 1 sectors only
-      3 Mode 2 formless sectors only. Note in contrast to all other
-        values an MMC CD-ROM is not required to support this mode.
-      4 Mode 2 Form 1 sectors only
-      5 Mode 2 Form 2 sectors only
-
-     @param b_digital_audio_play Control error concealment when the
-     data being read is CD-DA.  If the data being read is not CD-DA,
-     this parameter is ignored.  If the data being read is CD-DA and
-     DAP is false zero, then the user data returned should not be
-     modified by flaw obscuring mechanisms such as audio data mute and
-     interpolate.  If the data being read is CD-DA and DAP is true,
-     then the user data returned should be modified by flaw obscuring
-     mechanisms such as audio data mute and interpolate.  
-
-     b_sync_header return the sync header (which will probably have
-     the same value as CDIO_SECTOR_SYNC_HEADER of size
-     CDIO_CD_SYNC_SIZE).
-
-     @param header_codes Header Codes refer to the sector header and
-     the sub-header that is present in mode 2 formed sectors: 
-
-     0 No header information is returned.  
-     1 The 4-byte sector header of data sectors is be returned, 
-     2 The 8-byte sector sub-header of mode 2 formed sectors is
+  @param b_digital_audio_play Control error concealment when the
+  data being read is CD-DA.  If the data being read is not CD-DA,
+  this parameter is ignored.  If the data being read is CD-DA and
+  DAP is false zero, then the user data returned should not be
+  modified by flaw obscuring mechanisms such as audio data mute and
+  interpolate.  If the data being read is CD-DA and DAP is true,
+  then the user data returned should be modified by flaw obscuring
+  mechanisms such as audio data mute and interpolate.  
+  
+  b_sync_header return the sync header (which will probably have
+  the same value as CDIO_SECTOR_SYNC_HEADER of size
+  CDIO_CD_SYNC_SIZE).
+  
+  @param header_codes Header Codes refer to the sector header and
+  the sub-header that is present in mode 2 formed sectors: 
+  
+   0 No header information is returned.  
+   1 The 4-byte sector header of data sectors is be returned, 
+   2 The 8-byte sector sub-header of mode 2 formed sectors is
      returned.  
-     3 Both sector header and sub-header (12 bytes) is returned.  
-       The Header preceeds the rest of the bytes (e.g. user-data bytes) 
-       that might get returned.
-
-     @param b_user_data  Return user data if true. 
+   3 Both sector header and sub-header (12 bytes) is returned.  
+   The Header preceeds the rest of the bytes (e.g. user-data bytes) 
+   that might get returned.
    
-     For CD-DA, the User Data is CDIO_CD_FRAMESIZE_RAW bytes.
+   @param b_user_data  Return user data if true. 
+   
+   For CD-DA, the User Data is CDIO_CD_FRAMESIZE_RAW bytes.
 
-     For Mode 1, The User Data is ISO_BLOCKSIZE bytes beginning at
-     offset CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE.
-
-     For Mode 2 formless, The User Data is M2RAW_SECTOR_SIZE bytes
-     beginning at offset CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE.
-
-     For data Mode 2, form 1, User Data is ISO_BLOCKSIZE bytes beginning at
-     offset CDIO_CD_XA_SYNC_HEADER.
-
-     For data Mode 2, form 2, User Data is 2 324 bytes beginning at
-     offset CDIO_CD_XA_SYNC_HEADER.
-
-     @param b_edc_ecc, Return EDC/ECC error detection/correction bits.
-
-     The presence and size of EDC redundancy or ECC parity is defined
-     according to sector type: 
-
-     CD-DA sectors have neither EDC redundancy nor ECC parity.  
-
-     Data Mode 1 sectors have 288 bytes of EDC redundancy, Pad, and
-     ECC parity beginning at offset 2064.
- 
-     Data Mode 2 formless sectors have neither EDC redundancy nor ECC
-     parity
-
-     Data Mode 2 form 1 sectors have 280 bytes of EDC redundancy and
-     ECC parity beginning at offset 2072
-
-     Data Mode 2 form 2 sectors optionally have 4 bytes of EDC
-     redundancy beginning at offset 2348.
-
-
-     @param c2_error_information If true associate a bit with each
-     sector for C2 error The resulting bit field is ordered exactly as
-     the main channel bytes.  Each 8-bit boundary defines a byte of
-     flag bits.
-
-     @param subchannel_selection subchannel-selection bits
-
+   For Mode 1, The User Data is ISO_BLOCKSIZE bytes beginning at
+   offset CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE.
+   
+   For Mode 2 formless, The User Data is M2RAW_SECTOR_SIZE bytes
+   beginning at offset CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE.
+   
+   For data Mode 2, form 1, User Data is ISO_BLOCKSIZE bytes beginning at
+   offset CDIO_CD_XA_SYNC_HEADER.
+   
+   For data Mode 2, form 2, User Data is 2 324 bytes beginning at
+   offset CDIO_CD_XA_SYNC_HEADER.
+   
+   @param b_edc_ecc, Return EDC/ECC error detection/correction bits.
+   
+   The presence and size of EDC redundancy or ECC parity is defined
+   according to sector type: 
+   
+   CD-DA sectors have neither EDC redundancy nor ECC parity.  
+   
+   Data Mode 1 sectors have 288 bytes of EDC redundancy, Pad, and
+   ECC parity beginning at offset 2064.
+   
+   Data Mode 2 formless sectors have neither EDC redundancy nor ECC
+   parity
+   
+   Data Mode 2 form 1 sectors have 280 bytes of EDC redundancy and
+   ECC parity beginning at offset 2072
+   
+   Data Mode 2 form 2 sectors optionally have 4 bytes of EDC
+   redundancy beginning at offset 2348.
+   
+   
+   @param c2_error_information If true associate a bit with each
+   sector for C2 error The resulting bit field is ordered exactly as
+   the main channel bytes.  Each 8-bit boundary defines a byte of
+   flag bits.
+   
+   @param subchannel_selection subchannel-selection bits
+   
      0  No Sub-channel data shall be returned.  (0 bytes)
      1  RAW P-W Sub-channel data shall be returned.  (96 byte)
      2  Formatted Q sub-channel data shall be transferred (16 bytes)
@@ -658,22 +666,22 @@ int  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size,
      4  Corrected and de-interleaved R-W sub-channel (96 bytes)
      5-7  Reserved
 
-     @param i_blocksize size of the a block expected to be returned
+   @param i_blocksize size of the a block expected to be returned
      
-     @param i_blocks number of blocks expected to be returned.
+   @param i_blocks number of blocks expected to be returned.
      
-*/
-driver_return_code_t
-mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-              int expected_sector_type, bool b_digital_audio_play,
-	      bool b_sync, uint8_t header_codes, bool b_user_data, 
-	      bool b_edc_ecc, uint8_t c2_error_information, 
-	      uint8_t subchannel_selection, uint16_t i_blocksize, 
-	      uint32_t i_blocks );
-
-/*! Read just the user data part of some sort of data sector (via 
+  */
+  driver_return_code_t
+  mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
+                int expected_sector_type, bool b_digital_audio_play,
+                bool b_sync, uint8_t header_codes, bool b_user_data, 
+                bool b_edc_ecc, uint8_t c2_error_information, 
+                uint8_t subchannel_selection, uint16_t i_blocksize, 
+                uint32_t i_blocks );
+  
+  /*! Read just the user data part of some sort of data sector (via 
     mmc_read_cd). 
-
+    
     @param p_cdio object to read from
 
     @param p_buf place to read data into.  The caller should make sure
@@ -687,47 +695,62 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
     @param i_lsn sector to read
     @param i_blocksize
 
-*/
-driver_return_code_t mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf, 
-					     lsn_t i_lsn, 
-					     uint16_t i_blocksize,
-					     uint32_t i_blocks );
+  */
+  driver_return_code_t mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf, 
+                                               lsn_t i_lsn, 
+                                               uint16_t i_blocksize,
+                                               uint32_t i_blocks );
+  
+  /*! issue a MMC read mode2 sectors. - depricated.
+   */
+  driver_return_code_t mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, 
+                                          lsn_t i_lsn,  int read_sector_type, 
+                                          uint32_t i_blocks);
+  
+  /*!
+    Run an MMC command. 
+    
+    @param p_cdio	 CD structure set by cdio_open().
+    @param i_timeout_ms  time in milliseconds we will wait for the command
+                         to complete. 
+    @param p_cdb	 CDB bytes. All values that are needed should be set 
+                         on input. We'll figure out what the right CDB length 
+                         should be.
+    @param e_direction   direction the transfer is to go.
+    @param i_buf	 Size of buffer
+    @param p_buf	 Buffer for data, both sending and receiving.
 
-/*! issue a MMC read mode2 sectors. - depricated.
-*/
-driver_return_code_t mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, 
-					lsn_t i_lsn,  int read_sector_type, 
-					uint32_t i_blocks);
-
-/*!
-  Run an MMC command. 
- 
-  @param p_cdio	       CD structure set by cdio_open().
-  @param i_timeout_ms  time in milliseconds we will wait for the command
-                       to complete. 
-  @param p_cdb	       CDB bytes. All values that are needed should be set on 
-                       input. We'll figure out what the right CDB length 
-		       should be.
-  @param e_direction   direction the transfer is to go.
-  @param i_buf	       Size of buffer
-  @param p_buf	       Buffer for data, both sending and receiving.
-
-  @return 0 if command completed successfully.
- */
-int mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
-		      const mmc_cdb_t *p_cdb,
-		      mmc_direction_t e_direction, unsigned int i_buf, 
-		      /*in/out*/ void *p_buf );
-/*!
-  Set the block size for subsequest read requests, via MMC.
- */
-driver_return_code_t mmc_set_blocksize ( const CdIo_t *p_cdio, 
-					 uint16_t i_blocksize);
-
-/*!
-  Set the drive speed. 
-*/
-driver_return_code_t mmc_set_speed( const CdIo_t *p_cdio, int i_speed );
+    @return 0 if command completed successfully.
+  */
+  int mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
+                   const mmc_cdb_t *p_cdb,
+                   mmc_direction_t e_direction, unsigned int i_buf, 
+                   /*in/out*/ void *p_buf );
+  /*!
+    Set the block size for subsequest read requests, via MMC.
+  */
+  driver_return_code_t mmc_set_blocksize ( const CdIo_t *p_cdio, 
+                                           uint16_t i_blocksize);
+  
+  /*!
+    Set the drive speed. 
+  */
+  driver_return_code_t mmc_set_speed( const CdIo_t *p_cdio, int i_speed );
+  
+  /*!
+    Load or Unload media using a MMC START STOP command. 
+    
+    @param p_cdio  the CD object to be acted upon.
+    @param b_eject eject if true and close tray if false
+    @param b_immediate wait or don't wait for operation to complete
+    @param power_condition Set CD-ROM to idle/standby/sleep. If nonzero
+    eject/load is ignored, so set to 0 if you want to eject or load.
+    
+    @see mmc_eject_media or mmc_close_tray
+  */
+  driver_return_code_t
+  mmc_start_stop_media(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
+                       uint8_t power_condition);
 
 #ifdef __cplusplus
 }

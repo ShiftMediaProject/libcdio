@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.21 2005/03/06 02:59:26 rocky Exp $
+    $Id: mmc.c,v 1.22 2005/03/09 10:23:03 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -521,7 +521,7 @@ mmc_set_blocksize_private ( void *p_env,
 ************************************************************/
 /*!  
   Return the number of length in bytes of the Command Descriptor
-  buffer (CDB) for a given SCSI MMC command. The length will be 
+  buffer (CDB) for a given MMC command. The length will be 
   either 6, 10, or 12. 
 */
 uint8_t
@@ -623,7 +623,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
   command.
 
   Information was obtained from Section 5.1.13 (Read TOC/PMA/ATIP)
-  pages 56-62 from the SCSI MMC draft specification, revision 10a
+  pages 56-62 from the MMC draft specification, revision 10a
   at http://www.t10.org/ftp/t10/drafts/mmc/mmc-r10a.pdf See
   especially tables 72, 73 and 75.
  */
@@ -744,14 +744,14 @@ mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, cdio_dvd_struct_t *s)
 }
 
 /*! 
-  Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
+  Get the CD-ROM hardware info via a MMC INQUIRY command.
   False is returned if we had an error getting the information.
 */
 bool 
 mmc_get_hwinfo ( const CdIo_t *p_cdio, 
 		      /*out*/ cdio_hwinfo_t *hw_info )
 {
-  int i_status;                  /* Result of SCSI MMC command */
+  int i_status;                  /* Result of MMC command */
   char buf[36] = { 0, };         /* Place to hold returned data */
   mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Block */
   
@@ -823,7 +823,7 @@ mmc_get_mcn ( const CdIo_t *p_cdio )
 }
 
 /*!
-  Run a SCSI MMC command. 
+  Run a MMC command. 
  
   cdio	        CD structure set by cdio_open().
   i_timeout     time in milliseconds we will wait for the command
@@ -892,7 +892,51 @@ mmc_get_blocksize ( CdIo_t *p_cdio)
 
 
 /*!
- * Eject using SCSI MMC commands. Return 0 if successful.
+ * Load or Unload media using a MMC START STOP command. 
+ */
+driver_return_code_t
+mmc_start_stop_media(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
+                     uint8_t power_condition)
+{
+  mmc_cdb_t cdb = {{0, }};
+  uint8_t buf[1];
+
+  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
+  if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
+
+  if (b_immediate) cdb.field[1] |= 1;
+
+  if (power_condition) 
+    cdb.field[4] = power_condition << 4;
+  else {
+    if (b_eject) 
+      cdb.field[4] = 2; /* eject */
+    else 
+      cdb.field[4] = 3; /* close tray for tray-type */
+  }
+  
+  return p_cdio->op.run_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
+                                 mmc_get_cmd_len(cdb.field[0]), &cdb, 
+                                 SCSI_MMC_DATA_WRITE, 0, &buf);
+}
+
+#if 0
+/*!
+ * Close tray using a MMC START STOP command.
+ */
+driver_return_code_t
+mmc_close_tray( const CdIo_t *p_cdio )
+{
+  return mmc_start_stop_media(p_cdio, false, false, 0);
+}
+#endif
+
+/*!
+ Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.
+ Command is not "immediate" -- we'll wait for the command to complete.
+ For a more general (and lower-level) routine, @see mmc_start_stop_media.
  */
 driver_return_code_t
 mmc_eject_media( const CdIo_t *p_cdio )
@@ -900,34 +944,18 @@ mmc_eject_media( const CdIo_t *p_cdio )
   int i_status = 0;
   mmc_cdb_t cdb = {{0, }};
   uint8_t buf[1];
-  mmc_run_cmd_fn_t run_mmc_cmd;
 
   if ( ! p_cdio ) return DRIVER_OP_UNINIT;
   if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
 
-  run_mmc_cmd = p_cdio->op.run_mmc_cmd;
-  
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
 
-  i_status = run_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
-			       mmc_get_cmd_len(cdb.field[0]), &cdb, 
-			       SCSI_MMC_DATA_WRITE, 0, &buf);
+  i_status = p_cdio->op.run_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
+                                     mmc_get_cmd_len(cdb.field[0]), &cdb, 
+                                     SCSI_MMC_DATA_WRITE, 0, &buf);
   if (0 != i_status) return i_status;
-  
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
-  cdb.field[4] = 1;
-  i_status = run_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
-			       mmc_get_cmd_len(cdb.field[0]), &cdb, 
-			       SCSI_MMC_DATA_WRITE, 0, &buf);
-  if (0 != i_status)
-    return i_status;
-  
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
-  cdb.field[4] = 2; /* eject */
 
-  return run_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
-                      mmc_get_cmd_len(cdb.field[0]), &cdb, 
-                      SCSI_MMC_DATA_WRITE, 0, &buf);
+  return mmc_start_stop_media(p_cdio, true, false, 0);
   
 }
 
