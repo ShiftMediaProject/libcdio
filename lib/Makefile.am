@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.45 2004/08/10 11:58:15 rocky Exp $
+#   $Id: Makefile.am,v 1.46 2004/08/29 15:14:57 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -44,9 +44,9 @@ libcdio_la_CURRENT := 1
 libcdio_la_REVISION := 0
 libcdio_la_AGE := 1
 
-libiso9660_la_CURRENT := 2
+libiso9660_la_CURRENT := 3
 libiso9660_la_REVISION := 0
-libiso9660_la_AGE := 2
+libiso9660_la_AGE := 3
 
 EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile 
 
