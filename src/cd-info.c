@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.29 2003/08/31 20:56:14 rocky Exp $
+    $Id: cd-info.c,v 1.30 2003/09/01 02:04:33 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -673,6 +673,8 @@ print_iso9660_fs (CdIo *cdio, cdio_fs_anal_t fs, track_format_t track_format)
   iso9660_pvd_t pvd;
   bool is_mode2 = false;
 
+  if (fs & CDIO_FS_ANAL_XA) track_format = TRACK_FORMAT_XA;
+
   switch (track_format) {
   case TRACK_FORMAT_CDI:
   case TRACK_FORMAT_XA:
@@ -684,6 +686,7 @@ print_iso9660_fs (CdIo *cdio, cdio_fs_anal_t fs, track_format_t track_format)
     if (cdio_read_mode1_sector (cdio, &pvd, ISO_PVD_SECTOR, false))
       return;
     is_mode2 = false;
+    break;
   case TRACK_FORMAT_AUDIO: 
   case TRACK_FORMAT_PSX: 
   case TRACK_FORMAT_ERROR: 
