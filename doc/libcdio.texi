@@ -1,10 +1,16 @@
 \input texinfo @c -*-texinfo-*-
 
+@c %**start of header
+@setfilename libcdio.info
+@settitle The GNU Compact Disck Input and Control library
+@setchapternewpage on
+@c %**end of header
+
+@include version.texi
+
 @paragraphindent 0
 @exampleindent 0
 
-@c %**start of header
-@setfilename libcdio.info
 @set libcdio @code{libcdio}
 @set program @kbd{libcdio}
 
@@ -13,9 +19,6 @@
 @cindex \varname\
 @emph{\varname\}
 @end macro
-
-@settitle The GNU libcdio library
-@setchapternewpage on
 
 @dircategory Libraries
 @direntry
@@ -43,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.10 2004/02/14 17:15:50 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.11 2004/02/21 15:42:14 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
