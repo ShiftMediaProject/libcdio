@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.52 2004/06/06 11:25:13 rocky Exp $
+    $Id: _cdio_linux.c,v 1.53 2004/06/06 11:30:48 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.52 2004/06/06 11:25:13 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.53 2004/06/06 11:30:48 rocky Exp $";
 
 #include <string.h>
 
@@ -938,7 +938,8 @@ _get_track_msf_linux(void *user_data, track_t i_track, msf_t *msf)
 
   if (!env->gen.toc_init) _cdio_read_toc (env) ;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) 
+    i_track = TOTAL_TRACKS + FIRST_TRACK_NUM;
 
   if (i_track > (TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM) {
     return false;
