@@ -830,7 +830,6 @@ main(int argc,char *argv[])
 	      "ignoring preset and autosense",force_cdrom_sectors);
       report(buffer);
       d->nsectors=force_cdrom_sectors;
-      d->bigbuff=force_cdrom_sectors*CDIO_CD_FRAMESIZE_RAW;
     }
   }
   if (force_cdrom_overlap!=-1) {
