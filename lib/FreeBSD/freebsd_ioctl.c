@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.7 2004/06/19 16:34:45 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.8 2004/06/25 20:45:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.7 2004/06/19 16:34:45 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.8 2004/06/25 20:45:41 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -96,6 +96,20 @@ read_audio_sectors_freebsd_ioctl (_img_private_t *_obj, void *data, lsn_t lsn,
 }
 
 /*!
+   Reads a single form1 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+int
+read_form1_sector_freebsd_ioctl (_img_private_t *env, void *data, lsn_t lsn)
+{
+  if (0 > cdio_generic_lseek(env, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
+    return -1;
+  if (0 > cdio_generic_read(env, data, CDIO_CD_FRAMESIZE))
+    return -1;
+  return 0;
+}
+
+/*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
@@ -106,13 +120,13 @@ read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data, lsn_t lsn,
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   int retval;
 
+  if ( !b_form2 )
+    return read_form1_sector_freebsd_ioctl (env, buf, lsn);
+  
   if ( (retval = read_audio_sectors_freebsd_ioctl (env, buf, lsn, 1)) )
     return retval;
     
-  if (b_form2)
-    memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, M2RAW_SECTOR_SIZE);
-  else
-    memcpy (data, buf + CDIO_CD_XA_HEADER, CDIO_CD_FRAMESIZE);
+  memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, M2RAW_SECTOR_SIZE);
   
   return 0;
 }
@@ -152,9 +166,9 @@ eject_media_freebsd_ioctl (_img_private_t *env)
   if ((fd = open(_obj->gen.source_name, O_RDONLY|O_NONBLOCK)) > -1) {
     ret = 1;
     if (ioctl(fd, CDIOCALLOW) == -1) {
-      cdio_error("ioctl(fd, CDIOCALLOW) failed: %s\n", strerror(errno));
+      cdio_warn("ioctl(fd, CDIOCALLOW) failed: %s\n", strerror(errno));
     } else if (ioctl(fd, CDIOCEJECT) == -1) {
-      cdio_error("ioctl(CDIOCEJECT) failed: %s\n", strerror(errno));
+      cdio_warn("ioctl(CDIOCEJECT) failed: %s\n", strerror(errno));
     } else {
       ret = 0;
     }
