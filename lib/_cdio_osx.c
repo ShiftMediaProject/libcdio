@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.16 2004/04/25 15:41:26 rocky Exp $
+    $Id: _cdio_osx.c,v 1.17 2004/04/25 16:38:06 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.16 2004/04/25 15:41:26 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.17 2004/04/25 16:38:06 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -579,8 +579,8 @@ _get_first_track_num_osx(void *env)
   Return the media catalog number MCN.
  */
 static char *
-_get_mcn_osx (void *env) {
-  _img_private_t *_obj = env;
+_get_mcn_osx (const void *env) {
+  const _img_private_t *_obj = env;
   dk_cd_read_mcn_t cd_read;
 
   memset( &cd_read, 0, sizeof(cd_read) );

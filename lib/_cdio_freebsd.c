@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.20 2004/04/25 15:41:26 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.21 2004/04/25 16:38:06 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.20 2004/04/25 15:41:26 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.21 2004/04/25 16:38:06 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -377,9 +377,9 @@ _get_first_track_num_freebsd(void *env)
 
  */
 static char *
-_get_mcn_freebsd (void *env) {
+_get_mcn_freebsd (const void *env) {
 
-  _img_private_t *_obj = env;
+  const _img_private_t *_obj = env;
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
 

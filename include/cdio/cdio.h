@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.42 2004/04/25 00:46:34 rocky Exp $
+    $Id: cdio.h,v 1.43 2004/04/25 16:38:06 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -207,7 +207,7 @@ extern "C" {
   track_t cdio_get_first_track_num(const CdIo *obj);
   
   /*!
-    Return a string containing the default CD device if none is specified.
+    Return the number of tracks on the CD.
   */
   track_t cdio_get_num_tracks (const CdIo *obj);
   
