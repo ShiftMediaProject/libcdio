@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.12 2003/04/19 08:29:14 rocky Exp $
+    $Id: cdinfo.c,v 1.13 2003/04/20 01:39:23 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -718,7 +718,7 @@ print_cddb_info() {
   cddb_set_email_address(conn, "me@home");
   cddb_set_server_name(conn, "freedb.freedb.org");
   cddb_set_server_port(conn, 8880);
-  cddb_http_enable(conn, 0);
+  cddb_http_disable(conn);
     
   disc = cddb_disc_new();
   if (!disc) {

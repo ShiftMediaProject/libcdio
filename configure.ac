@@ -1,4 +1,4 @@
-AC_REVISION([$Id: configure.ac,v 1.11 2003/04/19 19:12:06 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.12 2003/04/20 01:39:23 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.3)
@@ -193,17 +193,17 @@ fi
 if test x$enable_cddb = xyes; then
     AC_CHECK_LIB(cddb, cddb_disc_calc_discid,
                  [ CDDB_LIB="-lcddb"; ac_have_cddb=yes ])
-    AC_DEFINE([HAVE_CDDB],[],
-	      [Define this if you have libcddb installed])
-dnl    AC_TRY_COMPILE([#include <cddb/cddb.h>],[
-dnl cddb_conn_t *conn;
-dnl cddb_http_enable(conn);
-dnl ], [
-dnl    HAVE_CDDB=yes 
-dnl    AC_DEFINE(HAVE_CDDB, [], [Define this if you have libcddb installed])
-dnl    ],
-dnl AC_MSG_WARN(libcddb library might not be new enough; need version 0.90 or greater), 
-dnl    HAVE_CDDB=no)
+dnl    AC_DEFINE([HAVE_CDDB],[],
+dnl	      [Define this if you have libcddb installed])
+    AC_TRY_COMPILE([#include <cddb/cddb.h>],[
+ cddb_conn_t *conn;
+ cddb_http_enable(conn);
+ ], [
+    HAVE_CDDB=yes 
+    AC_DEFINE(HAVE_CDDB, [], [Define this if you have libcddb installed])
+    ],
+ AC_MSG_WARN(libcddb library might not be new enough; need version 0.90 or greater), 
+    HAVE_CDDB=no)
 fi
 
 

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.5 2003/04/19 08:29:14 rocky Exp $
+#   $Id: Makefile.am,v 1.6 2003/04/20 01:39:23 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -48,25 +48,3 @@ lib_LTLIBRARIES     = libcdio.la
 libcdio_la_SOURCES = $(libcdio_sources)
 
 INCLUDES = -I$(LIBCDIO_CFLAGS)
-###
-# Install header files (default=$includedir/cdio)
-#
-install-includeHEADERS: $(include_HEADERS)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(includedir)/cdio
-	@list='$(include_HEADERS)'; for p in $$list; do \
-	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(includedir)/cdio/"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(includedir)/cdio/; \
-	done
-
-
-###
-# Remove them
-#
-uninstall-includeHEADERS:
-	@$(NORMAL_UNINSTALL)
-	list='$(include_HEADERS)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(includedir)/cdio/$$p; \
-	done
-

@@ -1,3 +1,71 @@
+2003-04-19 16:49  rocky
+
+	* lib/_cdio_freebsd.c: Add _cdio_read_audio_sector. Try to sync up
+	with other drivers.
+
+2003-04-19 15:12  rocky
+
+	* Makefile.am, NEWS, configure.ac, tests/Makefile.am,
+	tests/check_common_fn, tests/check_cue.sh, tests/check_nrg.sh,
+	tests/check_opts.sh.in, tests/check_opts0.right,
+	tests/check_opts1.right, tests/check_opts2.right,
+	tests/check_opts3.right, tests/check_opts4.right,
+	tests/check_opts5.right, tests/check_opts6.right,
+	tests/check_opts7.right: Break most of the larger regression tests
+	into a separate package.
+
+2003-04-19 05:13  rocky
+
+	* include/cdio/: Makefile.am, cdio.h, cdio.h.in: Add package
+	version
+
+2003-04-19 05:02  rocky
+
+	* include/cdio/cdio.h: Add an API version number.
+
+2003-04-19 04:29  rocky
+
+	* ChangeLog, Makefile.am, configure.ac, include/.cvsignore,
+	include/Makefile.am, include/cdio/.cvsignore,
+	include/cdio/Makefile.am, include/cdio/cdio.h,
+	include/cdio/logging.h, include/cdio/sector.h,
+	include/cdio/types.h, include/cdio/util.h, lib/Makefile.am,
+	lib/cdio.h, lib/logging.h, lib/sector.h, lib/types.h, lib/util.h,
+	src/cdinfo.c, tests/.cvsignore: Move public includes to
+	include/cdio. This should facilitate having this source installed
+	locally since it allows #include <cdio/cdio.h> in the source tree.
+
+2003-04-18 20:53  rocky
+
+	* src/cdinfo.c: Revise to to handle libcddb 0.90.
+
+2003-04-18 20:52  rocky
+
+	* lib/cdio.h: Remove a compile warning noticed by Kris Verbeeck.
+
+2003-04-18 20:50  rocky
+
+	* configure.ac: do chmod +x for test/check_opts.sh Test to see if
+	we have new enough libcddb.
+
+2003-04-18 20:49  rocky
+
+	* README: Update to include CDDB information and note this is ued
+	by CD-DA plugin.
+
+2003-04-15 01:19  rocky
+
+	* lib/_cdio_linux.c: Remove compile warning on non-GNU/Linux
+	servers.
+
+2003-04-14 19:30  rocky
+
+	* THANKS: Need to start *somewhere*.
+
+2003-04-14 19:29  rocky
+
+	* NEWS: Wha's happenin'
+
 2003-04-14 19:11  rocky
 
 	* lib/_cdio_bincue.c: Bug-causing typo.
