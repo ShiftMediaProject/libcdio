@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.17 2004/07/28 03:17:56 rocky Exp $
+    $Id: win32.h,v 1.18 2004/07/29 04:14:44 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -44,12 +44,9 @@ typedef struct {
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1];
 
   cdtext_t      cdtext;	         /* CD-TEXT */
-  track_t       i_tracks;        /* number of tracks in image */
-
   access_mode_t access_mode;
 
   /* Some of the more OS specific things. */
-  bool toc_init;                 /* if true, info below is valid. */
   HANDLE h_device_handle; /* device descriptor */
   long  hASPI;
   short i_sid;

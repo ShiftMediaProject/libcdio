@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.45 2004/07/28 11:45:22 rocky Exp $
+    $Id: aspi32.c,v 1.46 2004/07/29 04:14:44 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.45 2004/07/28 11:45:22 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.46 2004/07/29 04:14:44 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -212,7 +212,7 @@ get_discmode_aspi (_img_private_t *p_env)
     return CDIO_DISC_MODE_NO_INFO;
 
   for (i_track = p_env->gen.i_first_track; 
-       i_track < p_env->gen.i_first_track + p_env->i_tracks ; 
+       i_track < p_env->gen.i_first_track + p_env->gen.i_tracks ; 
        i_track ++) {
     track_format_t track_fmt=get_track_format_aspi(p_env, i_track);
 
@@ -676,7 +676,7 @@ read_toc_aspi (_img_private_t *p_env)
   if (0 != i_status) return false;
   
   p_env->gen.i_first_track = tocheader[2];
-  p_env->i_tracks  = tocheader[3] - tocheader[2] + 1;
+  p_env->gen.i_tracks  = tocheader[3] - tocheader[2] + 1;
   
   {
     int i, i_toclength;
@@ -699,10 +699,10 @@ read_toc_aspi (_img_private_t *p_env)
 				      &cdb, SCSI_MMC_DATA_READ, 
 				      i_toclength, p_fulltoc);
     if( 0 != i_status ) {
-      p_env->i_tracks = 0;
+      p_env->gen.i_tracks = 0;
     }
     
-    for( i = 0 ; i <= p_env->i_tracks ; i++ ) {
+    for( i = 0 ; i <= p_env->gen.i_tracks ; i++ ) {
       int i_index = 8 + 8 * i;
       p_env->tocent[ i ].start_lsn = ((int)p_fulltoc[ i_index ] << 24) +
 	((int)p_fulltoc[ i_index+1 ] << 16) +

@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.32 2004/07/28 16:51:15 rocky Exp $
+    $Id: win32_ioctl.c,v 1.33 2004/07/29 04:14:44 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.32 2004/07/28 16:51:15 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.33 2004/07/29 04:14:44 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -228,7 +228,7 @@ get_discmode_win32ioctl (_img_private_t *p_env)
     return CDIO_DISC_MODE_NO_INFO;
 
   for (i_track = p_env->gen.i_first_track; 
-       i_track < p_env->gen.i_first_track + p_env->i_tracks ; 
+       i_track < p_env->gen.i_first_track + p_env->gen.i_tracks ; 
        i_track ++) {
     track_format_t track_fmt=get_track_format_win32ioctl(p_env, i_track);
 
@@ -486,10 +486,10 @@ read_toc_win32ioctl (_img_private_t *env)
   }
   
   env->gen.i_first_track = cdrom_toc.FirstTrack;
-  env->i_tracks  = cdrom_toc.LastTrack - cdrom_toc.FirstTrack + 1;
+  env->gen.i_tracks  = cdrom_toc.LastTrack - cdrom_toc.FirstTrack + 1;
   
   
-  for( i = 0 ; i <= env->i_tracks ; i++ ) {
+  for( i = 0 ; i <= env->gen.i_tracks ; i++ ) {
     env->tocent[ i ].start_lsn = cdio_msf3_to_lba(
 					     cdrom_toc.TrackData[i].Address[1],
 					     cdrom_toc.TrackData[i].Address[2],
