@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.9 2003/04/14 04:58:49 rocky Exp $
+    $Id: cdinfo.c,v 1.10 2003/04/14 10:01:03 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -269,7 +269,7 @@ enum {
   OP_SOURCE_DEVICE,
   
   /* These are the remaining configuration options */
-  OP_VERSION,  QUIET,
+  OP_VERSION,  
   
 };
 
@@ -282,18 +282,18 @@ struct poptOption optionsTable[] = {
   {"quiet",    'q', POPT_ARG_NONE, &opts.silent, 0,
    "Don't produce warning output" },
   
-  {"notracks", 'T', POPT_ARG_NONE, &opts.no_tracks, 0,
+  {"no-tracks", 'T', POPT_ARG_NONE, &opts.no_tracks, 0,
    "Don't show track information"},
   
-  {"noanalyze",'A', POPT_ARG_NONE, &opts.no_analysis, 0,
+  {"no-analyze",'A', POPT_ARG_NONE, &opts.no_analysis, 0,
    "Don't filesystem analysis"},
   
 #ifdef HAVE_CDDB
-  {"nocddb",   'a', POPT_ARG_NONE, &opts.no_cddb, 0,
+  {"no-cddb",   'a', POPT_ARG_NONE, &opts.no_cddb, 0,
    "Don't look up audio CDDB information or print that"},
 #endif
   
-  {"noioctl",  'I', POPT_ARG_NONE,  &opts.no_ioctl, 0,
+  {"no-ioctl",  'I', POPT_ARG_NONE,  &opts.no_ioctl, 0,
    "Don't show ioctl() information"},
   
   {"bin-file", 'b', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
@@ -846,7 +846,9 @@ main(int argc, const char *argv[])
   opts.silent         = false;
   opts.debug_level    = 0;
   opts.no_tracks      = 0;
+#ifdef HAVE_CDDB
   opts.no_cddb        = 0;
+#endif
   opts.no_ioctl       = 0;
   opts.no_analysis    = 0;
   opts.source_image   = IMAGE_UNKNOWN;
