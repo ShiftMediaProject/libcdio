@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.2 2005/02/07 12:06:29 rocky Exp $
+    $Id: mmc.h,v 1.3 2005/02/07 17:09:31 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -454,7 +454,7 @@ char * mmc_get_mcn ( const CdIo_t *p_cdio );
   @return true if we have the interface and false if not.
  */
 bool mmc_have_interface( const CdIo_t *p_cdio, 
-			 mmc_feature_interface_t interface );
+			 mmc_feature_interface_t e_interface );
 
 /*! Packet driver to read mode2 sectors. 
    Can read only up to 25 blocks.
