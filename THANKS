@@ -22,7 +22,7 @@ Nicolas Boullis <nboullis@debian.org>
   Build issues, library symbol versioning, Debian packaging and issues
 
 Svend S. Sorensen <ssorensen@fastmail.fm>
-  cdrdao TOC-reading code based on cuetools
+  cdrdao TOC-reading and CDRWin CUE parsing code based on cuetools
   http://cuetools.sourceforge.net/
 
 xboxmediacenter team (www.xboxmediacenter.de)
