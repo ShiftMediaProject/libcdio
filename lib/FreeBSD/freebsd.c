@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.27 2004/07/24 06:06:22 rocky Exp $
+    $Id: freebsd.c,v 1.28 2004/07/24 11:50:50 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.27 2004/07/24 06:06:22 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.28 2004/07/24 11:50:50 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -230,7 +230,7 @@ _eject_media_freebsd (void *user_data)
 {
   _img_private_t *p_env = user_data;
 
-  return (env->access_mode == _AM_IOCTL) 
+  return (p_env->access_mode == _AM_IOCTL) 
     ? eject_media_freebsd_ioctl(p_env) 
     : eject_media_freebsd_cam(p_env);
 }
@@ -306,11 +306,26 @@ get_drive_cap_freebsd (const void *p_user_data,
   
 }  
 
+/*!
+  Run a SCSI MMC command. 
+ 
+  p_user_data   internal CD structure.
+  i_timeout     time in milliseconds we will wait for the command
+                to complete. If this value is -1, use the default 
+		time-out value.
+  i_cdb	        Size of p_cdb
+  p_cdb	        CDB bytes. 
+  e_direction	direction the transfer is to go.
+  i_buf	        Size of buffer
+  p_buf	        Buffer for data, both sending and receiving
+
+  Return 0 if no error.
+ */
 static int
 scsi_mmc_run_cmd_freebsd( const void *p_user_data, int i_timeout,
 			  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 			  scsi_mmc_direction_t e_direction, 
-			  unsigned int i_buf, /*out*/ void *p_buf ) 
+			  unsigned int i_buf, /*in/out*/ void *p_buf ) 
 {
   const _img_private_t *p_env = p_user_data;
 

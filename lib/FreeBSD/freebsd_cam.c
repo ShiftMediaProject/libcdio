@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.22 2004/07/24 05:42:09 rocky Exp $
+    $Id: freebsd_cam.c,v 1.23 2004/07/24 11:50:50 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.22 2004/07/24 05:42:09 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.23 2004/07/24 11:50:50 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -52,7 +52,7 @@ static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.22 2004/07/24 05:42:09 rock
 
   Return 0 if no error.
  */
-static int
+int
 scsi_mmc_run_cmd_freebsd_cam( const void *p_user_data, int i_timeout,
 			      unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 			      scsi_mmc_direction_t e_direction, 
@@ -164,7 +164,7 @@ free_freebsd_cam (void *user_data)
 
  */
 char *
-get_mcn_freebsd_cam (_img_private_t *p_env)
+get_mcn_freebsd_cam (const _img_private_t *p_env)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
   char buf[28] = { 0, };

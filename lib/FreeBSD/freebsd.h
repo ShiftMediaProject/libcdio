@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.16 2004/07/24 05:57:21 rocky Exp $
+    $Id: freebsd.h,v 1.17 2004/07/24 11:50:50 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -200,6 +200,28 @@ int  read_mode2_sectors_freebsd_cam (_img_private_t *env, void *buf,
 				     lsn_t lsn, unsigned int nblocks);
 
 bool read_toc_freebsd_ioctl (_img_private_t *env);
+
+/*!
+  Run a SCSI MMC command. 
+ 
+  p_user_data   internal CD structure.
+  i_timeout     time in milliseconds we will wait for the command
+                to complete. If this value is -1, use the default 
+		time-out value.
+  i_cdb	        Size of p_cdb
+  p_cdb	        CDB bytes. 
+  e_direction	direction the transfer is to go.
+  i_buf	        Size of buffer
+  p_buf	        Buffer for data, both sending and receiving
+
+  Return 0 if no error.
+ */
+int scsi_mmc_run_cmd_freebsd_cam( const void *p_user_data, int i_timeout,
+				  unsigned int i_cdb, 
+				  const scsi_mmc_cdb_t *p_cdb, 
+				  scsi_mmc_direction_t e_direction, 
+				  unsigned int i_buf, 
+				  /*in/out*/ void *p_buf );
 
 /*!
    Return the size of the CD in logical block address (LBA) units.
