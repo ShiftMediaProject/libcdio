@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cd_read.sh,v 1.5 2003/09/21 18:43:36 rocky Exp $
+#$Id: check_cd_read.sh,v 1.6 2004/05/07 02:15:49 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -33,17 +33,17 @@ BASE=`basename $0 .sh`
 
 fname=cdda
 testnum=CD-DA
-test_cd_read "-c ${srcdir}/${fname}.cue --mode=red --start=0" \
-  ${fname}-read.dump ${srcdir}/${fname}-read.right
+opts="-c ${srcdir}/${fname}.cue --mode=red --start=0"
+test_cd_read  "$opts" ${fname}-read.dump ${srcdir}/${fname}-read.right
 RC=$?
-check_result $RC "cd-read CUE test $testnum"
+check_result $RC "cd-read CUE test $testnum" "cd-read $opts"
 
 fname=isofs-m1
 testnum=MODE1
-test_cd_read "-i ${srcdir}/${fname}.cue --mode m1f1 -s 26 -n 2" \
-  ${fname}-read.dump ${srcdir}/${fname}-read.right
+opts="-i ${srcdir}/${fname}.cue --mode m1f1 -s 26 -n 2"
+test_cd_read "$opts" ${fname}-read.dump ${srcdir}/${fname}-read.right
 RC=$?
-check_result $RC "cd-read CUE test $testnum"
+check_result $RC "cd-read CUE test $testnum" "cd-read $opts"
 
 exit $RC
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_opts.sh,v 1.5 2003/10/06 04:04:05 rocky Exp $
+#$Id: check_opts.sh,v 1.6 2004/05/07 02:15:56 rocky Exp $
 # Check cd-info options
 if test -z "$srcdir" ; then
   srcdir=`pwd`
@@ -18,10 +18,10 @@ i=0
 for opt in '-T' '--no-tracks' '-A' '--no-analyze' '-I' '--no-ioctl' \
       '-q' '--quiet' ; do 
   testname=${BASE}$i
-  test_cdinfo "--cue-file ${srcdir}/${fname}.cue $opt --quiet" \
-    ${testname}.dump ${srcdir}/${testname}.right
+  opts="--cue-file ${srcdir}/${fname}.cue $opt --quiet"
+  test_cdinfo  "$opts" ${testname}.dump ${srcdir}/${testname}.right
   RC=$?
-  check_result $RC "cd-info option test $opt"
+  check_result $RC "cd-info option test $opt" "cd-info $opts"
   i=`expr $i + 1`
 done
 
