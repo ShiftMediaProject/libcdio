@@ -7,6 +7,12 @@
 @setfilename libcdio.info
 @set libcdio @code{libcdio}
 
+@c A macro for defining terms variables.
+@macro term{varname}
+@cindex \varname\
+@emph{\varname\}
+@end macro
+
 @settitle The GNU libcdio library
 @setchapternewpage on
 
@@ -31,7 +37,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.4 2003/08/02 03:41:07 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.5 2003/08/03 20:31:46 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -293,9 +299,9 @@ sector you call the routine @code{cdio_read_mode2_sector()}.
 In this section we describe CD properties and terms that we make use
 of in @value{libcdio}.
 
-A CD is formated into a number of @emph{tracks}, and a CD can hold at
+A CD is formated into a number of @term{tracks}, and a CD can hold at
 most 99 such tracks. Between the tracks CD specifications require a
-``2 second'' in gap (called a @emph{lead-in} gap. This is unused space
+``2 second'' in gap (called a @term{lead-in gap}. This is unused space
 with no ``data'' similar to the space between tracks on an old
 phonograph. The word ``second'' here really refers to a measure of
 space and not really necessarily an amount of time. However in the
@@ -304,11 +310,20 @@ time to play a gap of this size will take 2 seconds.
 
 The beginning (or inner edge) of the CD is supposed to have a ``2
 second'' lead-in gap and there is supposed to be another ``2 second''
-@emph{Lead-out} gap at the end (or outer edge) of the CD.
+@term{lead-out} gap at the end (or outer edge) of the CD.
 
 People have discovered that they can put useful data in the various
 gaps and their equipment can read this, violating the standards but
 allowing a CD to store more data.
+
+In order to determine the number of tracks on a CD and where they
+start, commands are used to get this table-of-contents or @term{TOC}
+information. Asking about the start of the @term{lead-out track}
+gives the amount of data stored on the Compact Disk. To make it easy
+to specify this leadout track, special constant 0xAA (decimal 170) is
+used to indicate it. This is safe since this is higher than the
+largest legal track position. In @value{libcdio},
+@code{CDIO_CDROM_LEADOUT_TRACK} is defined to be this special value.
 
 @section block addressing (MSF, LSN, LBA)
 A track is broken up into a number of 2352-byte @emph{blocks} which we
@@ -316,7 +331,7 @@ sometimes call @emph{sectors}. Whereas tracks have to have a gap
 between them, a block or sector does not.
 
 One can addressing a block in one of three formats. The oldest format
-is by it's minute/second/frame number, also referred to as @emph{MSF}
+is by it's minute/second/frame number, also referred to as @term{MSF}
 and written in time-like format MM:SS:FF (e.g. 30:01:40). In this
 notation there are 75 ``frames'' in a ``second,'' and the familiar (if
 awkward) 60 seconds in a minute. @emph{Frame} here is what we called a
@@ -340,22 +355,136 @@ an MSF rather than a LBA or LSN described below, since subtraction of
 two MSF's has the awkwardness akin to subtraction using Roman
 Numerals.
 
-Probably the simplest way to address a block is to use its @emph{LSN}
+Probably the simplest way to address a block is to use its @term{LSN}
 or ``logical sector number.'' This just numbers the blocks from 0
 on. The Lead-in and Lead-out gaps described above have LSNs just like
-any other space on a CD. The last unit of address is a @emph{LBA}. It
+any other space on a CD. The last unit of address is a @term{LBA}. It
 is the same as a LSN but the 150 blocks assocated with the initial
 lead-in is are not counted. So to convert a LBA into an LSN you just
 add 150. Why the distinction between LBA and LSN? I don't know.
 
-@emph{Finish. describe TOC, 0xAA --- LEADOUT}.
-
 @node How to use
 @chapter How to use
 
-@emph{Basically do a cdio_open, cdio_read_xxx or cdio_seek, and cdio_close. 
-There's a lot of complication in selecting the appropriate driver,
-getting the default drive.}
+@section Example 1 --- list out tracks and LSNs
+Here we will give an annotated example which can be found in the
+distribution as @file{example/sample1.c}.
+
+@smallexample
+ 1: #include <stdio.h>
+ 2: #include <sys/types.h>
+ 3: #include <cdio/cdio.h>
+ 4: int
+ 5: main(int argc, const char *argv[])
+ 6: @{
+ 7:  CdIo *cdio = cdio_open ("/dev/cdrom", DRIVER_UNKNOWN);
+ 8:  track_t first_track_num = cdio_get_first_track_num(cdio);
+ 9:  track_t num_tracks      = cdio_get_num_tracks(cdio);
+10:  int j, i=first_track_num;
+11:
+12:  printf("CD-ROM Track List (%i - %i)\n", first_track_num, num_tracks);
+13
+14:  printf("  #:  LSN\n");
+15:  
+16:  for (j = 0; j < num_tracks; i++, j++) @{
+17:    lsn_t lsn = cdio_get_track_lsn(cdio, i);
+18:    if (CDIO_INVALID_LSN != lsn)
+19:      printf("%3d: %06d\n", (int) i, lsn);
+20:  @}
+21:  printf("%3X: %06d  leadout\n", CDIO_CDROM_LEADOUT_TRACK, 
+22:         cdio_get_track_lsn(cdio, CDIO_CDROM_LEADOUT_TRACK));
+23:  cdio_destroy(cdio);
+24:  return 0;
+25: @}
+@end smallexample 
+
+Already from the beginning on line 2 we see something odd. The
+@code{#include <sys/types.h>} is needed because @value{libcdio}
+assumes type definitions exist for @code{uint32_t}, @code{uint16_t}
+and so on.  Alternatively you change line 2to:
+
+@smallexample
+#define HAVE_SYS_TYPES_H
+@end smallexample 
+
+and @code{<cdio/cdio.h>} will insert line 2. If you use GNU autoconf
+to configure your program, add @code{sys/types.h} to
+@code{AC_HAVE_HEADERS} and @emph{it} will arrange for
+@code{HAVE_SYS_TYPES_H} to get defined. If you don't have
+@code{<sys/types.h>} but have some other include that defines these
+types, put that instead of line 2. Or you could roll your own
+typedefs. (Note: In the future, this will probably get ``fixed'' by
+requiring glib.h.)
+
+Okay after getting over the hurdle of line 2, the next line pretty
+straightforward: you need to include this to get cdio definitions. One
+of the types that is defined via line 3 is @code{CdIo} and a pointer
+that is used pretty much in all operations. Line 6 initializes the
+variable @code{cdio} which we will be using in all of the subsequent
+libcdio calls. It does this via a call to @code{cdio_open()}. 
+
+The second parameter of @code{cdio_open} is DRIVER_UNKNOWN. For any
+given installation a number of Compact Disc device drivers may be
+available. In particular it's not uncommon to have several drivers
+that can read CD disk-image formats as well as a driver that handles
+some CD-ROM piece of hardware. Using DRIVER_UNKNOWN as that second
+parameter we let the library select a driver amongst those that are
+available; generally the first hardware driver that is available is
+the one selected.
+
+Note that in contrast to what is typically done using ioctls to read a
+CD, you don't issue any sort of CD-ROM read TOC command---that is all
+done by the driver. Of course, the information that you get from
+reading the TOC is often desired: many tracks are on the CD, or what
+number the first one is called. This is done through calls on lines 8
+and 9.
+
+For each track, we call a cdio routine to get the logical sector
+number, @code{cdio_get_track_lsn()} on line 17 and print the track
+number and LSN value. Finally we print out the ``lead-out track''
+information and we finally call @code{cdio_destroy()} in line 23 to
+indicate we're done with the CD.
+
+@section Example 2 --- lists drivers available and default CD device 
+
+One thing that's a bit hoaky in Example 1 is hard-coding the name of
+the device used: @code{/dev/cdrom}. Although often this is the name of
+a CD-ROM device on GNU/Linux and possibly some other Unix derivates,
+there are many OSs for which use a different device name.
+
+In the next example, we'll let the driver give us the name of the CD-ROM
+device that is right for it. 
+
+@smallexample
+ 1: #include <stdio.h>
+ 2: #include <sys/types.h>
+ 3: #include <cdio/cdio.h>
+ 4: int
+ 5: main(int argc, const char *argv[])
+ 6: @{
+ 7:   CdIo *cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+ 8:   driver_id_t driver_id;
+ 9:  
+10:  if (NULL != cdio) @{
+11:    printf("The driver selected is %s\n", cdio_get_driver_name(cdio));
+12:    printf("The default device for this driver is %s\n\n", 
+13:           cdio_get_default_device(cdio));
+14:    cdio_destroy(cdio);
+15:  @} else @{
+16:    printf("Problem in trying to find a driver.\n\n");
+17:  @}
+18:
+19:  for (driver_id=CDIO_MIN_DRIVER; driver_id<=CDIO_MAX_DRIVER; driver_id++)
+20:    if (cdio_have_driver(driver_id))
+21:      printf("We have: %s\n", cdio_driver_describe(driver_id));
+22:    else
+23:      printf("We don't have: %s\n", cdio_driver_describe(driver_id));
+24:  return 0;
+25: @}
+@end smallexample
+
+@emph{Fill out examples for cdio_read_xxx or cdio_seek, More on 
+drivers?.}
 
 @node General Index
 @unnumbered General Index
