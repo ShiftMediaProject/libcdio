@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.35 2003/08/31 08:03:37 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.36 2003/09/01 02:07:52 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.63)
@@ -258,7 +258,7 @@ if test x$enable_cddb = xyes; then
 fi
 
 
-AC_SUBST(CDDB)
+AC_SUBST(CDDB_LIBS)
 
 if test x$enable_vcdinfo = x; then
 AC_ARG_ENABLE(vcdinfo,
