@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.7 2005/02/07 03:36:02 rocky Exp $
+    $Id: aspi32.c,v 1.8 2005/03/06 00:54:50 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.7 2005/02/07 03:36:02 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.8 2005/03/06 00:54:50 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -488,8 +488,8 @@ init_aspi (_img_private_t *env)
  */
 int
 run_mmc_cmd_aspi( void *p_user_data, unsigned int i_timeout_ms,
-		  unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,  
-		  scsi_mmc_direction_t e_direction, 
+		  unsigned int i_cdb, const mmc_cdb_t * p_cdb,  
+		  mmc_direction_t e_direction, 
 		  unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
@@ -552,7 +552,7 @@ static int
 read_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn, 
 		   int sector_type, unsigned int nblocks)
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
   unsigned int i_buf;
 
   int sync        = 0;
@@ -602,7 +602,7 @@ read_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
   }
 
   return run_mmc_cmd_aspi(p_env, OP_TIMEOUT_MS, 
-			  scsi_mmc_get_cmd_len(cdb.field[0]), 
+			  mmc_get_cmd_len(cdb.field[0]), 
 			  &cdb, SCSI_MMC_DATA_READ, i_buf*nblocks, data);
 }
 
@@ -653,7 +653,7 @@ read_mode1_sector_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
 bool
 read_toc_aspi (_img_private_t *p_env) 
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
   unsigned char tocheader[ 4 ];
   int      i_status;
   
@@ -669,7 +669,7 @@ read_toc_aspi (_img_private_t *p_env)
   CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(tocheader));
 
   i_status = run_mmc_cmd_aspi (p_env, OP_TIMEOUT_MS,
-			       scsi_mmc_get_cmd_len(cdb.field[0]), 
+			       mmc_get_cmd_len(cdb.field[0]), 
 			       &cdb, SCSI_MMC_DATA_READ, 
 			       sizeof(tocheader), &tocheader);
   
@@ -695,7 +695,7 @@ read_toc_aspi (_img_private_t *p_env)
     CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_toclength);
 
     i_status = run_mmc_cmd_aspi (p_env, OP_TIMEOUT_MS,
-				 scsi_mmc_get_cmd_len(cdb.field[0]), 
+				 mmc_get_cmd_len(cdb.field[0]), 
 				 &cdb, SCSI_MMC_DATA_READ, 
 				 i_toclength, p_fulltoc);
     if( 0 != i_status ) {

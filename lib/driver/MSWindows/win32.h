@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.5 2005/03/05 09:11:44 rocky Exp $
+    $Id: win32.h,v 1.6 2005/03/06 00:54:50 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -145,8 +145,8 @@ const char *is_cdrom_win32ioctl (const char drive_letter);
 int run_mmc_cmd_win32ioctl( void *p_user_data, 
 			    unsigned int i_timeout,
 			    unsigned int i_cdb, 
-			    const scsi_mmc_cdb_t * p_cdb,
-			    scsi_mmc_direction_t e_direction, 
+			    const mmc_cdb_t * p_cdb,
+			    mmc_direction_t e_direction, 
 			    unsigned int i_buf, /*in/out*/ void *p_buf );
 
 /*!

@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.23 2005/03/05 19:27:28 rocky Exp $
+    $Id: win32.c,v 1.24 2005/03/06 00:54:50 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.23 2005/03/05 19:27:28 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.24 2005/03/06 00:54:50 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -246,8 +246,8 @@ is_cdrom_win32(const char drive_letter) {
  */
 static int
 run_mmc_cmd_win32( void *p_user_data, unsigned int i_timeout_ms,
-		   unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-		   scsi_mmc_direction_t e_direction, 
+		   unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+		   mmc_direction_t e_direction, 
 		   unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;
@@ -340,7 +340,7 @@ read_audio_sectors (void *p_user_data, void *p_buf, lsn_t i_lsn,
 #if 0
     return read_audio_sectors_win32ioctl( p_env, p_buf, i_lsn, i_blocks );
 #else
-    return scsi_mmc_read_sectors( p_env->gen.cdio, p_buf, i_lsn,
+    return mmc_read_sectors( p_env->gen.cdio, p_buf, i_lsn,
                                   CDIO_MMC_READ_TYPE_CDDA, i_blocks);
 #endif
   }
@@ -603,7 +603,7 @@ _cdio_get_mcn (const void *p_user_data) {
   const _img_private_t *p_env = p_user_data;
 
   if( p_env->hASPI ) {
-    return scsi_mmc_get_mcn( p_env->gen.cdio );
+    return mmc_get_mcn( p_env->gen.cdio );
   } else {
     return get_mcn_win32ioctl(p_env);
   }

@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.17 2005/03/05 22:10:20 rocky Exp $
+    $Id: win32_ioctl.c,v 1.18 2005/03/06 00:54:50 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.17 2005/03/05 22:10:20 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.18 2005/03/06 00:54:50 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -288,8 +288,8 @@ audio_set_volume_win32ioctl (void *p_user_data,
 int
 run_mmc_cmd_win32ioctl( void *p_user_data, 
 			unsigned int i_timeout_ms,
-			unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,
-			scsi_mmc_direction_t e_direction, 
+			unsigned int i_cdb, const mmc_cdb_t * p_cdb,
+			mmc_direction_t e_direction, 
 			unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
@@ -520,7 +520,7 @@ read_audio_sectors_win32ioctl (_img_private_t *p_env, void *data, lsn_t lsn,
 static int
 read_raw_sector (_img_private_t *p_env, void *p_buf, lsn_t lsn) 
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
 
   /* ReadCD CDB12 command.  The values were taken from MMC1 draft paper. */
   CDIO_MMC_SET_COMMAND      (cdb.field, CDIO_MMC_GPCMD_READ_CD);
@@ -675,7 +675,7 @@ init_win32ioctl (_img_private_t *env)
 static bool
 read_fulltoc_win32mmc (_img_private_t *p_env) 
 {
-  scsi_mmc_cdb_t  cdb = {{0, }};
+  mmc_cdb_t  cdb = {{0, }};
   CDROM_TOC_FULL  cdrom_toc_full;
   int             i_status, i, j;
   int             i_track_format = 0;
