@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.94 2004/08/26 10:44:38 rocky Exp $
+    $Id: _cdio_linux.c,v 1.95 2004/08/27 01:24:40 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.94 2004/08/26 10:44:38 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.95 2004/08/27 01:24:40 rocky Exp $";
 
 #include <string.h>
 
@@ -218,6 +218,8 @@ get_arg_linux (void *env, const char key[])
   return NULL;
 }
 
+#define USE_LINUX_CAP 1
+#ifdef USE_LINUX_CAP
 /*!
   Return the the kind of drive capabilities of device.
 
@@ -283,6 +285,7 @@ get_drive_cap_linux (const void *p_user_data,
   if (i_drivetype & CDC_RESET) 
     *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_RESET;
 }
+#endif
 
 /*!
   Return the media catalog number MCN.
@@ -1107,7 +1110,11 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .get_default_device = cdio_get_default_device_linux,
     .get_devices        = cdio_get_devices_linux,
     .get_discmode       = get_discmode_linux,
+#if USE_LINUX_CAP
     .get_drive_cap      = get_drive_cap_linux,
+#else
+    .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
+#endif
     .get_first_track_num= get_first_track_num_generic,
     .get_mcn            = get_mcn_linux,
     .get_num_tracks     = get_num_tracks_generic,

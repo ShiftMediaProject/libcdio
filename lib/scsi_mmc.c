@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.24 2004/08/07 22:58:51 rocky Exp $
+    $Id: scsi_mmc.c,v 1.25 2004/08/27 01:24:40 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -235,6 +235,7 @@ scsi_mmc_set_blocksize ( const CdIo *cdio, unsigned int bsize)
 				    bsize);
 }
 
+
 /*!
   Return the the kind of drive capabilities of device.
  */
@@ -245,10 +246,13 @@ scsi_mmc_get_drive_cap_private (const void *p_env,
 				/*out*/ cdio_drive_write_cap_t *p_write_cap,
 				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
+  /* Largest buffer size we use. */
+#define BUF_MAX 2048
+  uint8_t buf[BUF_MAX] = { 0, };
+
   scsi_mmc_cdb_t cdb = {{0, }};
   int i_status;
-
-  uint8_t buf[192] = { 0, };
+  uint16_t i_data = BUF_MAX;
   
   if ( ! p_env || ! run_scsi_mmc_cmd )
     return;
@@ -256,19 +260,40 @@ scsi_mmc_get_drive_cap_private (const void *p_env,
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_10);
   cdb.field[1] = 0x0;  
   cdb.field[2] = CDIO_MMC_ALL_PAGES; 
-  cdb.field[7] = 0x01;
-  cdb.field[8] = 0x00;
-  
+
+ retry:
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, 8);
+
+  /* In the first run we run MODE SENSE 10 we are trying to get the
+     length of the data features. */
   i_status = run_scsi_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
 			       scsi_mmc_get_cmd_len(cdb.field[0]), 
 			       &cdb, SCSI_MMC_DATA_READ, 
 			       sizeof(buf), &buf);
   if (0 == i_status) {
+    uint16_t i_data_try = (uint16_t) CDIO_MMC_GET_LEN16(buf);
+    if (i_data_try < BUF_MAX) i_data = i_data_try;
+  }
+
+  /* Now try getting all features with length set above, possibly
+     truncated or the default length if we couldn't get the proper
+     length. */
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_data);
+
+  i_status = run_scsi_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
+			       scsi_mmc_get_cmd_len(cdb.field[0]), 
+			       &cdb, SCSI_MMC_DATA_READ, 
+			       sizeof(buf), &buf);
+
+  if (0 != i_status && CDIO_MMC_CAPABILITIES_PAGE != cdb.field[2]) {
+    cdb.field[2] =  CDIO_MMC_CAPABILITIES_PAGE; 
+    goto retry;
+  }
+
+  if (0 == i_status) {
     uint8_t *p;
-    uint16_t i_data;
     uint8_t *p_max = buf + 256;
     
-    i_data = (unsigned int) CDIO_MMC_GET_LEN16(buf);
     *p_read_cap  = 0;
     *p_write_cap = 0;
     *p_misc_cap  = 0;
