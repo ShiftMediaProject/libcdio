@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.c,v 1.4 2003/04/06 23:40:21 rocky Exp $
+    $Id: _cdio_stream.c,v 1.5 2003/04/07 03:05:31 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -34,7 +34,7 @@
 #include "util.h"
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.4 2003/04/06 23:40:21 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.5 2003/04/07 03:05:31 rocky Exp $";
 
 /* 
  * DataSource implementations
@@ -58,7 +58,7 @@ _cdio_stream_open_if_necessary(CdioDataSource *obj)
 
   if (!obj->is_open) {
     if (obj->op.open(obj->user_data)) {
-      cdio_error ("could not opening input stream...");
+      cdio_error ("could not open input stream...");
       return false;
     } else {
       cdio_debug ("opened source...");
