@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.33 2004/10/26 09:35:47 rocky Exp $
+    $Id: iso9660_fs.c,v 1.34 2004/10/26 09:56:53 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -49,7 +49,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.33 2004/10/26 09:35:47 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.34 2004/10/26 09:56:53 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -149,16 +149,14 @@ ucs2be_to_locale(char *psz_ucs2be,  size_t i_inlen,
   char *psz_buf2;
   int i_outlen_save = i_outlen;
 
-#if 0
-  if (errno) {
-    cdio_warn("Failed to get conversion table for locale, trying ASCII");
+  if (-1 == (int) ic) {
+    cdio_info("Failed to get conversion table for locale, trying ASCII");
     ic = iconv_open("ASCII", "UCS-2BE");
-    if (errno) {
-      cdio_warn("Failed to get conversion table for ASCII too");
+    if (-1 == (int) ic) {
+      cdio_info("Failed to get conversion table for ASCII too");
       return false;
     }
   }
-#endif
   
   psz_buf = (char *) realloc(psz_buf, i_outlen);
   psz_buf2 = psz_buf;
