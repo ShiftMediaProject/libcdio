@@ -1,6 +1,2 @@
 libcdio-suse.spec
-libcdio.pc
 libcdio.spec
-libiso9660.pc
-libcdio_cdda.pc
-libcdio_paranoia.pc
