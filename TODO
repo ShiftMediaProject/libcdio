@@ -1,5 +1,8 @@
-One doesn't have to look hard to find a gap in libcdio or libiso9660. 
-All of the API should be finished on all OS's (or the API adjusted).
+It isn't look hard to find a gap in libcdio or libiso9660 or think of
+something you'd like added. Here are some of the many known problems
+and feature requests.
+
+* All of the API should be finished on all OS's (or the API adjusted).
 
 * Fix the current gaps:
 
@@ -14,7 +17,10 @@ All of the API should be finished on all OS's (or the API adjusted).
 * Use libcdio as a cdparanoia back-end and add API for CD-DA reading
   with paranoia support.
 
-* Joliet support for libiso9660.
+* Handle Rock Ridge Extensions
+
+* Combine iso-read and iso-info into an iso-tar (for listing or
+  extracting files).
 
 * Delete files in an iso9660 image (mephisto75 at web.de)
 
@@ -24,7 +30,6 @@ All of the API should be finished on all OS's (or the API adjusted).
   Advanced PhthaloCyanine, Formazan. See
   http://www.cdmediaworld.com/hardware/cdrom/cd_dye.shtml or
   http://www.cd-info.com/CDIC/History/Commentary/Parker/stcroix.html
-
 
   The discmode type can be used to classify DVD media and it also
   classifies for CD track formats (in addition to CD *content*
@@ -39,7 +44,8 @@ All of the API should be finished on all OS's (or the API adjusted).
 
 * More disk image types in regression testing, like CD-I.
 
-* Convert to use glib, removing ds.h and common routines from vcdimager.
+* Convert to use glib, removing ds.h 
+  (Revise vcdimager too)
 
 * API overhaul. hvr has expressed interest but it's unlikely he'll ever
   have hthe time to do. It could be done in conjunction with a wrappers
@@ -57,11 +63,10 @@ All of the API should be finished on all OS's (or the API adjusted).
   -  more proprietary undocumented image format (unless someone else is willing
      to do the work)
 
-It should go without saying, but I'll say it anyway...  if there is
-something you really want done on the above list or have something
-else you want done, it may go a lot faster if you undertake doing it
-yourself. Patches are always welcome (and CVS write access is
-available for those who have demonstrated reasonable ability through
-contributions.)
+If there is something you really want done on the above list or have
+something else you want done, it will go a lot faster if you attempt
+to undertake doing it. Patches are always welcome (and CVS write
+access is available for those who have demonstrated reasonable ability
+through contributions.)
 
-$Id: TODO,v 1.4 2004/09/06 10:50:01 rocky Exp $
+$Id: TODO,v 1.5 2004/10/23 21:10:36 rocky Exp $
