@@ -1,6 +1,6 @@
-# $Id: check_common_fn.in,v 1.6 2004/02/29 16:18:53 rocky Exp $
+# $Id: check_common_fn.in,v 1.7 2004/03/06 03:51:52 rocky Exp $
 #
-#    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ test_cdinfo() {
 	return 3
       fi
     else
-      echo "$0: No diff(1) or cmp(1 found - cannot test ${CD_INFO}"
+      echo "$0: No diff(1) or cmp(1) found - cannot test ${CD_INFO}"
       rm -f $outfile
       return 77
     fi
