@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.2 2003/04/06 06:46:52 rocky Exp $
+#   $Id: Makefile.am,v 1.3 2003/04/06 08:13:25 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,7 +23,8 @@
 check_SCRIPTS = check_nrg.sh check_cue.sh
 
 check_DATA = monvoisin.right svcd_ogt_test_ntsc.right vcd_demo.right \
-	     fsf-tompox.right fsf-tompox.cue fsf-tompox.bin
+	     fsf-tompox.right fsf-tompox.cue fsf-tompox.bin monvoisin.nrg \
+	     fsf.right fsf.bin fsf.cue
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn 
