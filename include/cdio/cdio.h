@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.8 2003/05/18 01:50:51 rocky Exp $
+    $Id: cdio.h,v 1.9 2003/05/24 15:24:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -126,6 +126,13 @@ extern "C" {
     NULL is returned if we couldn't get a default device.
   */
   char * cdio_get_default_device (const CdIo *obj);
+
+  /*!
+    Return a string containing the name of the driver in use.
+    if CdIo is NULL (we haven't initialized a specific device driver), 
+    then return NULL.
+  */
+  const char * cdio_get_driver_name (const CdIo *obj);
 
   /*!
     Return the number of the first track. 
