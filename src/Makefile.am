@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.33 2005/03/06 11:23:15 rocky Exp $
+#   $Id: Makefile.am,v 1.34 2005/03/07 12:55:12 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -31,6 +31,12 @@ MAINTAINERCLEANFILES = $(man_MANS)
 man_MANS = cd-drive.1 cd-info.1 cd-read.1 iso-read.1 iso-info.1 
 $(man_MANS): %.1: %
 	-$(HELP2MAN) --output=$@ ./$<
+endif
+
+if BUILD_CDDA_PLAYER
+cdda_player_SOURCES = cdda-player.c cddb.c cddb.h
+cdda_player_LDADD   = $(LIBCDIO_LIBS) $(CDDB_LIBS) -lcurses
+bin_cdda_player     = cdda-player
 endif
 
 if BUILD_CD_DRIVE
@@ -69,7 +75,7 @@ iso_read_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICON
 bin_iso_read     = iso-read
 endif
 
-bin_PROGRAMS = $(bin_cd_drive) $(bin_cd_info)  $(bin_cdinfo_linux) $(bin_cd_read) $(bin_iso_info) $(bin_iso_read)
+bin_PROGRAMS = $(bin_cd_drive) $(bin_cd_info)  $(bin_cdinfo_linux) $(bin_cd_read) $(bin_iso_info) $(bin_iso_read) $(bin_cdda_player)
 
 # Put LIBPOPT_CFLAGS after local include in case LIBPOPT has headers common
 # to those in LIBCDIO_CFLAGS

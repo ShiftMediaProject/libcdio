@@ -19,7 +19,7 @@ define(RELEASE_NUM, 73)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.146 2005/03/03 10:34:14 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.147 2005/03/07 12:55:12 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -158,6 +158,8 @@ dnl headers
 AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h fcntl.h glob.h pwd.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h)
+
+AC_CHECK_HEADERS(curses.h, ,[enable_cdda_player"no"])
 
 AC_SUBST(SBPCD_H)
 AC_SUBST(UCDROM_H)
@@ -298,6 +300,7 @@ if test "x$enable_versioned_libs" = "xyes" ; then
 fi
 
 AM_CONDITIONAL(CYGWIN, test "x$CYGWIN" = "xyes")
+AM_CONDITIONAL(BUILD_CDDA_PLAYER, test "x$enable_cdda_player" = "xyes")
 AM_CONDITIONAL(BUILD_CD_DRIVE, test "x$enable_cd_drive" = "xyes")
 AM_CONDITIONAL(BUILD_CDINFO, test "x$enable_cd_info" = "xyes")
 AM_CONDITIONAL(BUILD_CD_READ, test "x$enable_cd_read" = "xyes")
