@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.2 2004/04/30 06:54:15 rocky Exp $
+    $Id: aspi32.c,v 1.3 2004/04/30 21:36:54 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.2 2004/04/30 06:54:15 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.3 2004/04/30 21:36:54 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -320,9 +320,7 @@ wnaspi32_mmc_read_sectors (_img_private_t *env, void *data, lsn_t lsn,
   ssc.SRB_PostProc = (LPVOID) hEvent;
   ssc.SRB_CDBLen      = 12;
   
-  /* Operation code */
-  ssc.CDBByte[ 0 ] = CDIO_MMC_GPCMD_READ_CD;
-  
+  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_GPCMD_READ_CD));
   CDIO_MMC_SET_READ_TYPE(ssc.CDBByte, sector_type);
   CDIO_MMC_SET_READ_LBA(ssc.CDBByte, lsn);
   CDIO_MMC_SET_READ_LENGTH(ssc.CDBByte, nblocks);
@@ -417,13 +415,13 @@ wnaspi32_read_toc (_img_private_t *env)
   ssc.SRB_CDBLen      = 10;
   
   /* Operation code */
-  ssc.CDBByte[ 0 ] = READ_TOC;
+  CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_READ_TOC);
   
   /* Format */
   ssc.CDBByte[ 2 ] = READ_TOC_FORMAT_TOC;
   
   /* Starting track */
-  ssc.CDBByte[ 6 ] = 0;
+  CDIO_MMC_SET_START_TRACK(ssc.CDBByte, 0);
   
   /* Allocation length and buffer */
   ssc.SRB_BufLen = sizeof( p_tocheader );

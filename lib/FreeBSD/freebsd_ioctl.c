@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.1 2004/04/30 09:59:54 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.2 2004/04/30 21:36:54 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.1 2004/04/30 09:59:54 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.2 2004/04/30 21:36:54 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -74,10 +74,9 @@ cdio_is_cdrom_freebsd_ioctl(char *drive, char *mnttype)
    Returns 0 if no error. 
  */
 int
-read_audio_sectors_freebsd_ioctl (void *env, void *data, lsn_t lsn,
+read_audio_sectors_freebsd_ioctl (_img_private_t *_obj, void *data, lsn_t lsn,
 				  unsigned int nblocks)
 {
-  _img_private_t *_obj = env;
   unsigned char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   struct ioc_read_audio cdda;
 
@@ -101,7 +100,7 @@ read_audio_sectors_freebsd_ioctl (void *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 int
-read_mode2_sector_freebsd_ioctl (void *env, void *data, lsn_t lsn, 
+read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data, lsn_t lsn, 
 				  bool b_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
@@ -122,10 +121,8 @@ read_mode2_sector_freebsd_ioctl (void *env, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 uint32_t 
-stat_size_freebsd_ioctl (void *env)
+stat_size_freebsd_ioctl (_img_private_t *_obj)
 {
-  _img_private_t *_obj = env;
-
   struct ioc_read_toc_single_entry tocent;
   uint32_t size;
 

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.1 2004/04/30 09:59:54 rocky Exp $
+    $Id: freebsd_cam.c,v 1.2 2004/04/30 21:36:54 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.1 2004/04/30 09:59:54 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.2 2004/04/30 21:36:54 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -63,8 +63,6 @@ bool
 init_freebsd_cam (_img_private_t *_obj)
 {
   char pass[100];
-  if (_obj->gen.init)
-    return true;
   
   _obj->cam=NULL;
   memset (&_obj->ccb, 0, sizeof(_obj->ccb));
@@ -160,10 +158,9 @@ _set_bsize (_img_private_t *_obj, unsigned int bsize)
 }
 
 int
-read_mode2_sectors_freebsd_cam (void *env, void *buf, uint32_t lba, 
+read_mode2_sectors_freebsd_cam (_img_private_t *_obj, void *buf, uint32_t lba, 
 				unsigned int nblocks, bool b_form2)
 {
-  _img_private_t *_obj = env;
   int retval = 0;
   memset(&_obj->ccb,0,sizeof(_obj->ccb));
   _obj->ccb.ccb_h.path_id    = _obj->cam->path_id;
@@ -216,11 +213,8 @@ read_mode2_sectors_freebsd_cam (void *env, void *buf, uint32_t lba,
    Return the size of the CD in logical block address (LBA) units.
  */
 uint32_t
-stat_size_freebsd_cam (void *env)
+stat_size_freebsd_cam (_img_private_t *_obj)
 {
-  _img_private_t *_obj = env;
-
-
   uint8_t buf[12] = { 0, };
 
   uint32_t retval;
@@ -234,9 +228,10 @@ stat_size_freebsd_cam (void *env)
 		 sizeof(_obj->ccb.csio.sense_data), 0, 30*1000);
   _obj->ccb.csio.cdb_len = 8+1;
   
-  _obj->ccb.csio.cdb_io.cdb_bytes[0] = CDIO_MMC_READ_TOC;
+  CDIO_MMC_SET_COMMAND(_obj->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_READ_TOC);
   _obj->ccb.csio.cdb_io.cdb_bytes[1] = 0; /* lba; msf: 0x2 */
-  _obj->ccb.csio.cdb_io.cdb_bytes[6] = CDIO_CDROM_LEADOUT_TRACK;
+  CDIO_MMC_SET_START_TRACK(_obj->ccb.csio.cdb_io.cdb_bytes, 
+			   CDIO_CDROM_LEADOUT_TRACK);
   _obj->ccb.csio.cdb_io.cdb_bytes[8] = 12; /* ? */
   
   _obj->ccb.csio.data_ptr = buf;

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.40 2004/04/30 06:54:15 rocky Exp $
+    $Id: _cdio_linux.c,v 1.41 2004/04/30 21:36:53 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.40 2004/04/30 06:54:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.41 2004/04/30 21:36:53 rocky Exp $";
 
 #include <string.h>
 
@@ -306,7 +306,8 @@ _read_packet_mode2_sectors_mmc (int fd, void *buf, lba_t lba,
 
   memset (&cgc, 0, sizeof (struct cdrom_generic_command));
 
-  cgc.cmd[0] = use_read_10 ? GPCMD_READ_10 : CDIO_MMC_GPCMD_READ_CD;
+  CDIO_MMC_SET_COMMAND(cgc.cmd, 
+		       use_read_10 ? GPCMD_READ_10 : CDIO_MMC_GPCMD_READ_CD);
 
   CDIO_MMC_SET_READ_LBA(cgc.cmd, lba);
   CDIO_MMC_SET_READ_LENGTH(cgc.cmd, nblocks);
@@ -701,7 +702,7 @@ _eject_media_mmc(int fd)
   
   scsi_cmd.inlen  = 0;
   scsi_cmd.outlen = 0;
-  scsi_cmd.cmd[0] = START_STOP;
+  CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_START_STOP);
   scsi_cmd.cmd[1] = 0;
   scsi_cmd.cmd[2] = 0;
   scsi_cmd.cmd[3] = 0;
@@ -713,7 +714,7 @@ _eject_media_mmc(int fd)
   
   scsi_cmd.inlen  = 0;
   scsi_cmd.outlen = 0;
-  scsi_cmd.cmd[0] = START_STOP;
+  CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_START_STOP);
   scsi_cmd.cmd[1] = 0;
   scsi_cmd.cmd[2] = 0;
   scsi_cmd.cmd[3] = 0;

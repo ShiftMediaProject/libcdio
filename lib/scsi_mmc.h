@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.9 2004/04/27 03:05:23 rocky Exp $
+    $Id: scsi_mmc.h,v 1.10 2004/04/30 21:36:53 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -45,6 +45,9 @@
 #define CDIO_MMC_GPCMD_READ_12	        0xa8
 #define CDIO_MMC_GPCMD_READ_CD	        0xbe
 
+#define CDIO_MMC_SET_COMMAND(rec, command) \
+  rec[0] = command
+
 #define CDIO_MMC_SET_READ_TYPE(rec, sector_type) \
   rec[1] = (sector_type << 2)
   
@@ -54,6 +57,9 @@
   rec[3] = (lba >> 16) & 0xff; \
   rec[4] = (lba >>  8) & 0xff; \
   rec[5] = (lba      ) & 0xff
+
+#define CDIO_MMC_SET_START_TRACK(rec, command) \
+  rec[6] = command
 
 #define CDIO_MMC_SET_READ_LENGTH(rec, len) \
   rec[6] = (len >> 16) & 0xff; \

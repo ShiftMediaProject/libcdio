@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.1 2004/04/30 09:59:54 rocky Exp $
+    $Id: freebsd.h,v 1.2 2004/04/30 21:36:54 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -125,21 +125,22 @@ int  eject_media_freebsd_cam (_img_private_t *env);
 
 void free_freebsd_cam (void *obj);
 
-int  read_audio_sectors_freebsd_ioctl (void *env, void *data, lsn_t lsn,
-				      unsigned int nblocks);
-int  read_mode2_sector_freebsd_ioctl (void *env, void *data, lsn_t lsn, 
-				      bool b_form2);
+int  read_audio_sectors_freebsd_ioctl (_img_private_t *env, void *data, 
+				       lsn_t lsn, unsigned int nblocks);
+int  read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data, 
+				      lsn_t lsn, bool b_form2);
 
-int  read_mode2_sectors_freebsd_cam (void *env, void *buf, uint32_t lba, 
-				     unsigned int nblocks, bool b_form2);
+int  read_mode2_sectors_freebsd_cam (_img_private_t *env, void *buf, 
+				     uint32_t lba, unsigned int nblocks, 
+				     bool b_form2);
 
 bool read_toc_freebsd_ioctl (_img_private_t *_obj);
 
 /*!
    Return the size of the CD in logical block address (LBA) units.
  */
-uint32_t stat_size_freebsd_cam (void *env);
-uint32_t stat_size_freebsd_ioctl (void *env);
+uint32_t stat_size_freebsd_cam (_img_private_t *env);
+uint32_t stat_size_freebsd_ioctl (_img_private_t *env);
 
 bool init_freebsd_cam (_img_private_t *_obj);
 void free_freebsd_cam (void *obj);

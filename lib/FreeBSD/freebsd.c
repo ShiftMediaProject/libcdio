@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.1 2004/04/30 09:59:54 rocky Exp $
+    $Id: freebsd.c,v 1.2 2004/04/30 21:36:53 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.1 2004/04/30 09:59:54 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.2 2004/04/30 21:36:53 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -93,7 +93,11 @@ static int
 _read_mode2_sector_freebsd (void *env, void *data, lsn_t lsn, 
 			    bool b_form2)
 {
-  return read_mode2_sector_freebsd_ioctl(env, data, lsn, b_form2);
+  _img_private_t *_obj = env;
+  if ( _obj->access_mode == _AM_CAM )
+    return read_mode2_sector_freebsd_ioctl(_obj, data, lsn, b_form2);
+  else
+    return read_mode2_sector_freebsd_cam(_obj, data, lsn, b_form2);
 }
 
 /*!
@@ -109,15 +113,19 @@ _read_mode2_sectors_freebsd (void *env, void *data, lsn_t lsn,
   int i;
   int retval;
 
+  if ( _obj->access_mode == _AM_CAM )
+    return read_mode2_sectors_freebsd_cam(_obj);
+  
   for (i = 0; i < nblocks; i++) {
     if (b_form2) {
-      if ( (retval = _read_mode2_sector_freebsd (_obj, 
+      if ( (retval = read_mode2_sector_freebsd_ioctl (_obj, 
 					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
 					  lsn + i, true)) )
 	return retval;
     } else {
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _read_mode2_sector_freebsd (_obj, buf, lsn + i, true)) )
+      if ( (retval = read_mode2_sector_freebsd_ioctl (_obj, buf, 
+						      lsn + i, true)) )
 	return retval;
       
       memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
@@ -131,9 +139,16 @@ _read_mode2_sectors_freebsd (void *env, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_stat_size_freebsd (void *env)
+_stat_size_freebsd (void *obj)
 {
-  return stat_size_freebsd_ioctl(env);
+  _img_private_t *env = obj;
+
+  if (NULL == env) return CDIO_INVALID_LBA;
+
+  if (_AM_CAM == env->access_mode) 
+    return stat_size_freebsd_cam(env);
+  else 
+    return stat_size_freebsd_ioctl(env);
 }
 
 /*!
@@ -155,7 +170,10 @@ _set_arg_freebsd (void *env, const char key[], const char value[])
     }
   else if (!strcmp (key, "access-mode"))
     {
-      return str_to_access_mode_freebsd(value);
+      _obj->access_mode = str_to_access_mode_freebsd(value);
+      if (_obj->access_mode == _AM_CAM && !_obj->b_cam_init) 
+	return init_freebsd_cam(_obj) ? 1 : -3;
+      return 0;
     }
   else 
     return -1;
@@ -502,13 +520,13 @@ cdio_open_am_freebsd (const char *psz_source_name, const char *psz_access_mode)
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;
 
+  if (!cdio_generic_init(_data))
+    cdio_generic_free (_data);
+    return NULL;
+  }
+
   if ( _data->access_mode == _AM_IOCTL ) {
-    if (cdio_generic_init(_data))
-      return ret;
-    else {
-      cdio_generic_free (_data);
-      return NULL;
-    }
+    return ret;
   } else {
     if (init_freebsd_cam(_data)) 
       return ret;
