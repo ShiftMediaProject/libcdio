@@ -1,27 +1,30 @@
-Frantisek Dvorak <valtri@atlas.cz>:
+Frantisek Dvorak <valtri at atlas.cz>:
   bug reports and miscellaneous fixes
 
-Heiner <h.eichmann@gmx.de>
+Heiner <h.eichmann at gmx.de>
   FreeBSD CAM support and FreeBSD debugging & testing
 
-Justin F. Hallett <thesin@southofheaven.org>
+Justin F. Hallett <thesin at southofheaven.org>
   Fink packaging and matters OSX
 
-Kris Verbeeck <airborne@advalvas.be>:
+Kris Verbeeck <airborne at advalvas.be>:
   CDDB library support from libcddb http://libcddb.sourceforge.net
   Gentoo ebuild-file
 
-Manfred Tremmel <Manfred.Tremmel@iiv.de>:
+Manfred Tremmel <Manfred.Tremmel at iiv.de>:
   RPM spec file and inclusion of libcdio into
   http://packman.links2linux.de/
 
-Michael Kukat <michael@unixiron.org>,
+Michael Kukat <michael at unixiron.org>,
   for the hints in extractnrg.pl
 
-Nicolas Boullis <nboullis@debian.org>
+Nicolas Boullis <nboullis at debian.org>
   Build issues, library symbol versioning, Debian packaging and issues
 
-Svend S. Sorensen <ssorensen@fastmail.fm>
+Steven M. Schultz <sms at 2BSD.COM>
+  All things BSDI and the use of a really fabulous Darwin G5 box.
+
+Svend S. Sorensen <ssorensen at fastmail.fm>
   cdrdao TOC-reading and CDRWin CUE parsing code based on cuetools
   http://cuetools.sourceforge.net/
 
