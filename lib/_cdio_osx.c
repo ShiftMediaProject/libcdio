@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.1 2003/09/13 06:25:37 rocky Exp $
+    $Id: _cdio_osx.c,v 1.2 2003/09/14 01:21:41 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com> from vcdimager code
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -23,7 +23,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* This file contains Linux-specific code and implements low-level 
+/* This file contains OSX-specific code and implements low-level 
    control of the CD drive.
 */
 
@@ -31,7 +31,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.1 2003/09/13 06:25:37 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.2 2003/09/14 01:21:41 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -39,7 +39,7 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.1 2003/09/13 06:25:37 rocky E
 #include "cdio_private.h"
 
 /* Is this the right default? */
-#define DEFAULT_CDIO_DEVICE "/dev/cdrom"
+#define DEFAULT_CDIO_DEVICE "/dev/rdisk2"
 
 #include <string.h>
 
@@ -184,8 +184,8 @@ _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
   int retval;
 
   if (mode2_form2) {
-    return _cdio_read_mode2_form2_sectors(_obj->gen.fd, data, lsn, mode2_form2, 
-					  nblocks);
+    return _cdio_read_mode2_form2_sectors(_obj->gen.fd, data, lsn, 
+					  mode2_form2, nblocks);
   }
   
   for (i = 0; i < nblocks; i++) {
@@ -388,8 +388,7 @@ _cdio_read_toc (_img_private_t *_obj)
       {
 	track = pTrackDescriptors[i].point;
 
-	if( track == 0xA2 )
-	  /* Note leadout should be 0xAA, But OSX uses 0xA2? */
+	if( track == CDIO_CDROM_LEADOUT_TRACK )
 	  i_leadout = i;
 	
 	if( track > CDIO_CD_MAX_TRACKS || track < CDIO_CD_MIN_TRACK_NO )
@@ -419,7 +418,7 @@ _cdio_read_toc (_img_private_t *_obj)
 }
 
 /*!  
-  Return the starting MSF (minutes/secs/frames) for track number
+  Return the starting LSN track number
   track_num in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
   using track_num LEADOUT_TRACK or the total tracks+1.
@@ -630,7 +629,7 @@ _cdio_get_track_green(void *user_data, track_t track_num)
 #endif /* HAVE_OSX_CDROM */
 
 /*!
-  Return a string containing the default VCD device if none is specified.
+  Return a string containing the default CD device if none is specified.
  */
 char *
 cdio_get_default_device_osx()
