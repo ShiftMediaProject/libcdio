@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.32 2004/10/26 01:21:05 rocky Exp $
+    $Id: iso9660_fs.c,v 1.33 2004/10/26 09:35:47 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -49,7 +49,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.32 2004/10/26 01:21:05 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.33 2004/10/26 09:35:47 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -678,25 +678,34 @@ iso9660_dir_to_name (const iso9660_dir_t *iso9660_dir)
 static iso9660_stat_t *
 _fs_stat_root (CdIo *p_cdio)
 {
-  generic_img_private_t *p_env;
-  iso9660_dir_t *p_iso9660_dir;
-  iso9660_stat_t *p_stat;
-  bool b_mode2 = cdio_get_track_green(p_cdio, 1);
 
-  /* FIXME try also with Joliet.*/
-  if ( !iso9660_fs_read_superblock (p_cdio, ISO_EXTENSION_ALL) ) {
-    cdio_warn("Could not read ISO-9660 Superblock.");
-    return NULL;
+  if (!p_cdio) return NULL;
+  
+  {
+    iso_extension_mask_t iso_extension_mask = ISO_EXTENSION_ALL;
+    generic_img_private_t *p_env = (generic_img_private_t *) p_cdio->env;
+    bool b_mode2 = cdio_get_track_green(p_cdio, 1);
+    iso9660_dir_t *p_iso9660_dir;
+    iso9660_stat_t *p_stat;
+
+    if (!p_env->i_joliet_level)
+      iso_extension_mask &= ~ISO_EXTENSION_JOLIET;
+    
+    /* FIXME try also with Joliet.*/
+    if ( !iso9660_fs_read_superblock (p_cdio, iso_extension_mask) ) {
+      cdio_warn("Could not read ISO-9660 Superblock.");
+      return NULL;
+    }
+    
+    p_iso9660_dir = p_env->i_joliet_level 
+      ? &(p_env->svd.root_directory_record) 
+      : &(p_env->pvd.root_directory_record) ;
+    
+    p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, 
+				      p_env->i_joliet_level);
+    return p_stat;
   }
-
-  p_env = (generic_img_private_t *) p_cdio->env;
-  p_iso9660_dir = p_env->i_joliet_level 
-    ? &(p_env->svd.root_directory_record) 
-    : &(p_env->pvd.root_directory_record) ;
-
-  p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, 
-				    p_env->i_joliet_level);
-  return p_stat;
+  
 }
 
 static iso9660_stat_t *
