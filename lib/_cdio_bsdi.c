@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.18 2003/10/03 04:04:24 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.19 2003/10/03 17:29:59 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.18 2003/10/03 04:04:24 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.19 2003/10/03 17:29:59 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -45,7 +45,7 @@ static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.18 2003/10/03 04:04:24 rocky
 #include <unistd.h>
 #include <fcntl.h>
 
-#define USE_ETC_FSTAB
+/*#define USE_ETC_FSTAB*/
 #ifdef USE_ETC_FSTAB
 #include <fstab.h>
 #endif
@@ -109,7 +109,7 @@ cdio_is_cdrom(char *drive, char *mnttype)
     close(cdfd);
     }
   /* Even if we can't read it, it might be mounted */
-  else if ( mnttype && (strcmp(mnttype, "iso9660") == 0) ) {
+  else if ( mnttype && (strcmp(mnttype, "cd9660") == 0) ) {
     is_cd = true;
   }
   return(is_cd);
