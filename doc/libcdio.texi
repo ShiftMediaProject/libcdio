@@ -24,8 +24,8 @@
 @ifinfo
 This file documents GNU CD input and control library
 
-Copyright (C) 2003 Herbert Valerio Riedel @email{<hvr@@gnu.org>} and Rocky
-Bernstein @email{<rocky@@panix.com>}
+Copyright (C) 2003, 2004 Herbert Valerio Riedel @email{<hvr@@gnu.org>}
+and Rocky Bernstein @email{<rocky@@panix.com>}
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -42,7 +42,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.7 2003/11/11 12:46:20 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.8 2004/01/29 04:23:38 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -219,10 +219,10 @@ Mode2.
 @end menu
 
 @subsection ISO-9660
-Nowhere in the Yellow Book ist specified how data is to be stored on a
-CD-ROM.  It was feared that different companies would implement
-proprietary data storage formats using this specification, resulting
-in incompatible data CDs. To prevent this, representatives of major
+The Yellow Book doesn't specify how data is to be stored on a CD-ROM.
+It was feared that different companies would implement proprietary
+data storage formats using this specification, resulting in
+incompatible data CDs. To prevent this, representatives of major
 manufacturers met at the High Sierra Hotel and Casino in Lake Tahoe,
 NV, in 1985, to define a standard for storing data on CDs. This format
 was nicknamed High Sierra Format. In a slightly modified form it was
