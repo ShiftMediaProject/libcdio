@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.12 2005/03/15 04:17:05 rocky Exp $
+    $Id: cdda-player.c,v 1.13 2005/03/15 12:22:38 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -63,6 +63,7 @@
 #include <cdio/mmc.h>
 #include <cdio/util.h>
 #include <cdio/cd_types.h>
+#include <cdio/logging.h>
 
 #include "cddb.h"
 
@@ -299,63 +300,79 @@ oops(const char *psz_msg, int rc)
 /* ---------------------------------------------------------------------- */
 
 /*! Stop playing audio CD */
-static void
+static bool
 cd_stop(CdIo_t *p_cdio)
 {
+  bool b_ok = true;
   if (b_cd && p_cdio) {
     action("stop...");
     i_last_audio_track = CDIO_INVALID_TRACK;
-    if (DRIVER_OP_SUCCESS != cdio_audio_stop(p_cdio))
+    b_ok = DRIVER_OP_SUCCESS == cdio_audio_stop(p_cdio);
+    if ( !b_ok )
       xperror("stop");
   }
+  return b_ok;
 }
 
 /*! Eject CD */
-static void
+static bool
 cd_eject(void)
 {
+  bool b_ok = true;
   if (p_cdio) {
     cd_stop(p_cdio);
     action("eject...");
-    if (DRIVER_OP_SUCCESS != cdio_eject_media(&p_cdio))
+    b_ok = DRIVER_OP_SUCCESS == cdio_eject_media(&p_cdio);
+    if (!b_ok)
       xperror("eject");
     b_cd = 0;
     p_cdio = NULL;
   }
+  return b_ok;
 }
 
 /*! Close CD tray */
-static void
+static bool
 cd_close(const char *psz_device)
 {
+  bool b_ok = true;
   if (!b_cd) {
     action("close...");
-    if (DRIVER_OP_SUCCESS != cdio_close_tray(psz_device, &driver_id))
+    b_ok = DRIVER_OP_SUCCESS == cdio_close_tray(psz_device, &driver_id);
+    if (!b_ok)
       xperror("close");
   }
+  return b_ok;
 }
 
 /*! Pause playing audio CD */
-static void
+static bool
 cd_pause(CdIo_t *p_cdio)
 {
-  if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY)
-    if (DRIVER_OP_SUCCESS != cdio_audio_pause(p_cdio))
+  bool b_ok = true;
+  if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
+    b_ok = DRIVER_OP_SUCCESS == cdio_audio_pause(p_cdio);
+    if (!b_ok)
       xperror("pause");
+  }
+  return b_ok;
 }
 
 /*! Get status/track/position info of an audio CD */
-static void
+static bool
 read_subchannel(CdIo_t *p_cdio)
 {
-  if (!b_cd) return;
+  bool b_ok = true;
+  if (!b_cd) return false;
 
-  if (DRIVER_OP_SUCCESS != cdio_audio_read_subchannel(p_cdio, &sub)) {
+  b_ok = DRIVER_OP_SUCCESS == cdio_audio_read_subchannel(p_cdio, &sub);
+  if (!b_ok) {
     xperror("read subchannel");
     b_cd = 0;
   }
   if (auto_mode && sub.audio_status == CDIO_MMC_READ_SUB_ST_COMPLETED)
     cd_eject();
+  return b_ok;
 }
 
 #define add_cddb_disc_info(format_str, field)  \
@@ -548,18 +565,22 @@ skip(int diff)
     xperror("play");
 }
 
-static void
+static bool
 toggle_pause()
 {
-  if (!b_cd) return;
+  bool b_ok = true;
+  if (!b_cd) return false;
   
   if (CDIO_MMC_READ_SUB_ST_PAUSED == sub.audio_status) {
-    if (DRIVER_OP_SUCCESS != cdio_audio_resume(p_cdio))
+    b_ok = DRIVER_OP_SUCCESS != cdio_audio_resume(p_cdio);
+    if (!b_ok)
       xperror("resume");
   } else {
-    if (DRIVER_OP_SUCCESS != cdio_audio_pause(p_cdio))
+    b_ok = DRIVER_OP_SUCCESS != cdio_audio_pause(p_cdio);
+    if (!b_ok)
       xperror("pause");
   }
+  return b_ok;
 }
 
 /*! Update windows with status and possibly track info. This used in 
@@ -1182,12 +1203,14 @@ main(int argc, char *argv[])
 {    
   int             c, nostop=0;
   char            *h;
+  int             i_rc = 0;
   
   psz_program = strrchr(argv[0],'/');
   psz_program = psz_program ? psz_program+1 : argv[0];
 
   memset(&cddb_opts, 0, sizeof(cddb_opts));
   
+  cdio_loglevel_default = CDIO_LOG_WARN;
   /* parse options */
   while ( 1 ) {
     if (-1 == (c = getopt(argc, argv, "xdhkvcCpset:la")))
@@ -1195,9 +1218,13 @@ main(int argc, char *argv[])
     switch (c) {
     case 'v':
       b_verbose = true;
+      if (cdio_loglevel_default > CDIO_LOG_INFO) 
+	cdio_loglevel_default = CDIO_LOG_INFO;
       break;
     case 'd':
       debug = 1;
+      if (cdio_loglevel_default > CDIO_LOG_DEBUG) 
+      cdio_loglevel_default = CDIO_LOG_DEBUG;
       break;
     case 'a':
       auto_mode = 1;
@@ -1288,14 +1315,7 @@ main(int argc, char *argv[])
 
   p_cdio = cdio_open (psz_device, driver_id);
 
-  if (!p_cdio) {
-    if (b_verbose)
-      fprintf(stderr, "error: %s\n", strerror(errno));
-    else
-      fprintf(stderr, "open %s: %s\n", psz_device, strerror(errno));
-    exit(1);
-  } else
-    if (b_verbose)
+  if (p_cdio && b_verbose)
       fprintf(stderr,"ok\n");
   
   tty_raw();
@@ -1308,7 +1328,7 @@ main(int argc, char *argv[])
     b_sig = true;
     nostop=1;
     if (EJECT_CD == todo) {
-	cd_eject();
+      i_rc = cd_eject() ? 0 : 1;
     } else {
       read_toc(p_cdio);
       if (!b_cd) {
@@ -1318,7 +1338,7 @@ main(int argc, char *argv[])
       if (b_cd)
 	switch (todo) {
 	case STOP_PLAYING:
-	  cd_stop(p_cdio);
+	  i_rc = cd_stop(p_cdio) ? 0 : 1;
 	  break;
 	case EJECT_CD:
 	  /* Should have been handled above. */
@@ -1342,7 +1362,7 @@ main(int argc, char *argv[])
 	  play_track(1,CDIO_CDROM_LEADOUT_TRACK);
 	  break;
 	case CLOSE_CD:
-	  cdio_close_tray(psz_device, NULL);
+	  i_rc = cdio_close_tray(psz_device, NULL) ? 0 : 1;
 	  break;
 	case LIST_KEYS:
 	case LIST_TRACKS:
@@ -1433,10 +1453,10 @@ main(int argc, char *argv[])
       case '7':
       case '8':
       case '9':
-	play_track(key - '0',CDIO_CDROM_LEADOUT_TRACK);
+	play_track(key - '0', CDIO_CDROM_LEADOUT_TRACK);
 	break;
       case '0':
-	play_track(10,CDIO_CDROM_LEADOUT_TRACK);
+	play_track(10, CDIO_CDROM_LEADOUT_TRACK);
 	break;
       case KEY_F(1):
       case KEY_F(2):
@@ -1458,14 +1478,14 @@ main(int argc, char *argv[])
       case KEY_F(18):
       case KEY_F(19):
       case KEY_F(20):
-	play_track(key - KEY_F(1) + 11,CDIO_CDROM_LEADOUT_TRACK);
+	play_track(key - KEY_F(1) + 11, CDIO_CDROM_LEADOUT_TRACK);
 	break;
       }
     }
   }
   if (!nostop) cd_stop(p_cdio);
   tty_restore();
-  oops("bye", 0);
+  oops("bye", i_rc);
   
   return 0; /* keep compiler happy */
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.1 2005/03/15 04:18:05 rocky Exp $
+    $Id: audio.c,v 1.2 2005/03/15 12:22:37 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -117,61 +117,76 @@ oops(const char *psz_msg, int rc)
 /* ---------------------------------------------------------------------- */
 
 /*! Stop playing audio CD */
-static void
+static bool
 cd_stop(CdIo_t *p_cdio)
 {
+  bool b_ok = true;
   if (b_cd && p_cdio) {
     i_last_audio_track = CDIO_INVALID_TRACK;
-    if (DRIVER_OP_SUCCESS != cdio_audio_stop(p_cdio))
+    b_ok = DRIVER_OP_SUCCESS == cdio_audio_stop(p_cdio);
+    if ( !b_ok )
       xperror("stop");
   }
+  return b_ok;
 }
 
 /*! Eject CD */
-static void
+static bool
 cd_eject(void)
 {
+  bool b_ok = true;
   if (p_cdio) {
     cd_stop(p_cdio);
-    if (DRIVER_OP_SUCCESS != cdio_eject_media(&p_cdio))
+    b_ok = DRIVER_OP_SUCCESS == cdio_eject_media(&p_cdio);
+    if (!b_ok)
       xperror("eject");
     b_cd = 0;
     p_cdio = NULL;
   }
+  return b_ok;
 }
 
 /*! Close CD tray */
-static void
+static bool
 cd_close(const char *psz_device)
 {
+  bool b_ok = true;
   if (!b_cd) {
-    if (DRIVER_OP_SUCCESS != cdio_close_tray(psz_device, &driver_id))
+    b_ok = DRIVER_OP_SUCCESS == cdio_close_tray(psz_device, &driver_id);
+    if (!b_ok)
       xperror("close");
   }
+  return b_ok;
 }
 
 /*! Pause playing audio CD */
-static void
+static bool
 cd_pause(CdIo_t *p_cdio)
 {
-  if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY)
-    if (DRIVER_OP_SUCCESS != cdio_audio_pause(p_cdio))
+  bool b_ok = true;
+  if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
+    b_ok = DRIVER_OP_SUCCESS == cdio_audio_pause(p_cdio);
+    if (!b_ok)
       xperror("pause");
+  }
+  return b_ok;
 }
 
 /*! Get status/track/position info of an audio CD */
-static void
+static bool
 read_subchannel(CdIo_t *p_cdio)
 {
-  if (!b_cd) return;
+  bool b_ok = true;
+  if (!b_cd) return false;
 
-  sub.format = CDIO_CDROM_MSF;
-  if (DRIVER_OP_SUCCESS != cdio_audio_read_subchannel(p_cdio, &sub)) {
+  b_ok = DRIVER_OP_SUCCESS == cdio_audio_read_subchannel(p_cdio, &sub);
+  if (!b_ok) {
     xperror("read subchannel");
     b_cd = 0;
   }
   if (auto_mode && sub.audio_status == CDIO_MMC_READ_SUB_ST_COMPLETED)
     cd_eject();
+  return b_ok;
 }
 
 /*! Read CD TOC  and set CD information. */
@@ -286,8 +301,9 @@ usage(char *prog)
 int
 main(int argc, char *argv[])
 {
-  int             c, nostop=0;
-  char            *h;
+  int  c, nostop=0;
+  char *h;
+  int  i_rc = 0;
   
   psz_program = strrchr(argv[0],'/');
   psz_program = psz_program ? psz_program+1 : argv[0];
@@ -386,7 +402,7 @@ main(int argc, char *argv[])
   {
     nostop=1;
     if (EJECT_CD == todo) {
-      cd_eject();
+      i_rc = cd_eject() ? 0 : 1;
     } else {
       read_toc(p_cdio);
       if (!b_cd) {
@@ -396,7 +412,7 @@ main(int argc, char *argv[])
       if (b_cd)
 	switch (todo) {
 	case STOP_PLAYING:
-	  cd_stop(p_cdio);
+	  i_rc = cd_stop(p_cdio) ? 0 : 1;
 	  break;
 	case EJECT_CD:
 	  /* Should have been handled above. */
@@ -410,7 +426,7 @@ main(int argc, char *argv[])
 	  play_track(1,CDIO_CDROM_LEADOUT_TRACK);
 	  break;
 	case CLOSE_CD:
-	  cdio_close_tray(psz_device, NULL);
+	  i_rc = cdio_close_tray(psz_device, NULL) ? 0 : 1;
 	  break;
 	}
       else {
@@ -420,7 +436,7 @@ main(int argc, char *argv[])
   }
   
   if (!nostop) cd_stop(p_cdio);
-  oops("bye", 0);
+  oops("bye", i_rc);
   
   return 0; /* keep compiler happy */
 }
