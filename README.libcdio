@@ -1,0 +1,37 @@
+To compile the source:
+
+  ./configure
+  make
+  make check
+  make install  # may have to do this as root 
+
+VCD dependency:
+---------------
+One thing that confuses people is the "dependency" on libvcdinfo from
+vcdimager, while vcdimager has a dependency on libcdio.  This libcdio
+dependency on vcdimager is optional (i.e. not mandatory) dependency,
+while the vcdimager dependency right now is mandatory. libvcdinfo is
+used only by the utility program cd-read. If you want cd-read to use
+the VCD reporting portion and you don't already have vcdimager
+installed, build and install libcdio, then vcdimager, then configure
+libcdio again and it should find libvcdinfo. 
+
+OS Support
+---------------
+
+Support for Operating Systems's other than GNU/Linux is really based
+on the desire, ability and willingness of others to help out. To date
+it's been almost zip. I use GNU/Linux so that probably works
+best. Occasionally, I'll test on an old Solaris box I have. Steve
+Shultz has done a great job making BSDI CD support look like GNU/Linux
+and usually let's me know where I've blown things on BSDI. Derk-Jan
+Hartman started Mac OSX, but that's not complete yet. Calls for help
+in FreeBSD (NetBSD whatever) and Solaris have gone out but no one yet
+seems all that interested. Maybe it's just as well. Microsoft support
+is also meager. It works on my Windows 98 laptop sort of. Personally I
+find it a drag to develop on Microsoft Operating Systems and have
+spent far more time on this platform than I care for. If someone is
+interested in fixing the Microsoft OS support great.
+
+
+$Id: README.libcdio,v 1.1 2004/02/22 13:10:39 rocky Exp $
