@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.51 2004/07/17 15:31:00 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.52 2004/07/17 15:43:57 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.51 2004/07/17 15:31:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.52 2004/07/17 15:43:57 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -317,8 +317,8 @@ _cdio_stat_size (void *user_data)
   struct cdrom_tocentry tocent;
   uint32_t size;
 
-  tocent.cdte_track = CDIO_CDROM_LEADOUT_TRACK;
-  tocent.cdte_format = CDROM_LBA;
+  tocent.cdte_track  = CDIO_CDROM_LEADOUT_TRACK;
+  tocent.cdte_format = CDIO_CDROM_LBA;
   if (ioctl (env->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
       perror ("ioctl(CDROMREADTOCENTRY)");
@@ -381,7 +381,7 @@ _cdio_read_toc (_img_private_t *env)
   /* read individual tracks */
   for (i=env->tochdr.cdth_trk0; i<=env->tochdr.cdth_trk1; i++) {
     env->tocent[i-1].cdte_track = i;
-    env->tocent[i-1].cdte_format = CDROM_MSF;
+    env->tocent[i-1].cdte_format = CDIO_CDROM_MSF;
     if ( ioctl(env->gen.fd, CDROMREADTOCENTRY, &env->tocent[i-1]) == -1 ) {
       cdio_warn("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
@@ -392,7 +392,7 @@ _cdio_read_toc (_img_private_t *env)
 
   /* read the lead-out track */
   env->tocent[env->tochdr.cdth_trk1].cdte_track = CDIO_CDROM_LEADOUT_TRACK;
-  env->tocent[env->tochdr.cdth_trk1].cdte_format = CDROM_MSF;
+  env->tocent[env->tochdr.cdth_trk1].cdte_format = CDIO_CDROM_MSF;
 
   if (ioctl(env->gen.fd, CDROMREADTOCENTRY, 
 	    &env->tocent[env->tochdr.cdth_trk1]) == -1 ) {
