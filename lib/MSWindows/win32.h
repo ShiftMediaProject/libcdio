@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.1 2004/03/05 12:32:45 rocky Exp $
+    $Id: win32.h,v 1.2 2004/04/24 04:46:33 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -82,6 +82,15 @@ bool win32ioctl_init_win32 (_img_private_t *env);
 bool win32ioctl_read_toc (_img_private_t *env);
 
 char *win32ioctl_get_mcn (_img_private_t *env);
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+cdio_drive_cap_t win32ioctl_get_drive_cap (const void *env);
 
 /*!  
   Get the format (XA, DATA, AUDIO) of a track. 

@@ -1,5 +1,5 @@
 /*
-    $Id: ioctl.c,v 1.5 2004/04/23 22:10:53 rocky Exp $
+    $Id: ioctl.c,v 1.6 2004/04/24 04:46:33 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: ioctl.c,v 1.5 2004/04/23 22:10:53 rocky Exp $";
+static const char _rcsid[] = "$Id: ioctl.c,v 1.6 2004/04/24 04:46:33 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -36,8 +36,11 @@ static const char _rcsid[] = "$Id: ioctl.c,v 1.5 2004/04/23 22:10:53 rocky Exp $
 
 #include <windows.h>
 #include <ddk/ntddstor.h>
+#include <ddk/ntddscsi.h>
+#include <ddk/scsi.h>
 
 #include <stdio.h>
+#include <stddef.h>  /* offsetof() macro */
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -48,52 +51,6 @@ static const char _rcsid[] = "$Id: ioctl.c,v 1.5 2004/04/23 22:10:53 rocky Exp $
    modify it a little.
 */
 
-#define SCSI_IOCTL_DATA_OUT             0 //Give data to SCSI device (e.g. for writing)
-#define SCSI_IOCTL_DATA_IN              1 //Get data from SCSI device (e.g. for reading)
-#define SCSI_IOCTL_DATA_UNSPECIFIED     2 //No data (e.g. for ejecting)
-
-#define IOCTL_SCSI_PASS_THROUGH         0x4D004
-typedef struct ScsiPassThrough {
-        unsigned short  Length;
-        unsigned char   ScsiStatus;
-        unsigned char   PathId;
-        unsigned char   TargetId;
-        unsigned char   Lun;
-        unsigned char   CdbLength;
-        unsigned char   SenseInfoLength;
-        unsigned char   DataIn;
-        unsigned int    DataTransferLength;
-        unsigned int    TimeOutValue;
-        unsigned int    DataBufferOffset;
-        unsigned int    SenseInfoOffset;
-        unsigned char   Cdb[16];
-} SCSI_PASS_THROUGH;
-
-#define IOCTL_SCSI_PASS_THROUGH_DIRECT  0x4D014
-typedef struct _SCSI_PASS_THROUGH_DIRECT {
-	USHORT Length;
-	UCHAR ScsiStatus;
-	UCHAR PathId;
-	UCHAR TargetId;
-	UCHAR Lun;
-	UCHAR CdbLength;
-	UCHAR SenseInfoLength;
-	UCHAR DataIn;
-	ULONG DataTransferLength;
-	ULONG TimeOutValue;
-	PVOID DataBuffer;
-	ULONG SenseInfoOffset;
-	UCHAR Cdb[16];
-} SCSI_PASS_THROUGH_DIRECT, *PSCSI_PASS_THROUGH_DIRECT;
-
-#ifndef IOCTL_CDROM_BASE
-#    define IOCTL_CDROM_BASE FILE_DEVICE_CD_ROM
-#endif
-#ifndef IOCTL_CDROM_RAW_READ
-#define IOCTL_CDROM_RAW_READ CTL_CODE(IOCTL_CDROM_BASE, 0x000F, \
-                                      METHOD_OUT_DIRECT, FILE_READ_ACCESS)
-#endif
-
 #ifndef IOCTL_CDROM_BASE
 #    define IOCTL_CDROM_BASE FILE_DEVICE_CD_ROM
 #endif
@@ -102,14 +59,21 @@ typedef struct _SCSI_PASS_THROUGH_DIRECT {
   CTL_CODE(IOCTL_CDROM_BASE, 0x0000, METHOD_BUFFERED, FILE_READ_ACCESS)
 #endif
 #ifndef IOCTL_CDROM_RAW_READ
-#define IOCTL_CDROM_RAW_READ \
-  CTL_CODE(IOCTL_CDROM_BASE, 0x000F, METHOD_OUT_DIRECT, FILE_READ_ACCESS)
+#define IOCTL_CDROM_RAW_READ CTL_CODE(IOCTL_CDROM_BASE, 0x000F, \
+                                      METHOD_OUT_DIRECT, FILE_READ_ACCESS)
 #endif
 
 #ifndef IOCTL_CDROM_READ_Q_CHANNEL
 #define IOCTL_CDROM_READ_Q_CHANNEL \
   CTL_CODE(IOCTL_CDROM_BASE, 0x000B, METHOD_BUFFERED, FILE_READ_ACCESS)
 #endif
+
+typedef struct {
+   SCSI_PASS_THROUGH Spt;
+   ULONG Filler;
+   UCHAR SenseBuf[32];
+   UCHAR DataBuf[512];
+} SCSI_PASS_THROUGH_WITH_BUFFERS;
 
 typedef struct _TRACK_DATA {
     UCHAR Format;
@@ -480,43 +444,64 @@ cdio_drive_cap_t
 win32ioctl_get_drive_cap (const void *env) {
   const _img_private_t *_obj = env;
   int32_t i_drivetype;
-  unsigned int len = strlen(_obj->gen.source_name);
-  char psz_drive[4];
-
-  strcpy( psz_drive, "X:" );
+  SCSI_PASS_THROUGH_WITH_BUFFERS      sptwb;
+  ULONG                               returned = 0;
+  ULONG                               length;
   
-  psz_drive[0] = _obj->gen.source_name[len-2];
-  i_drivetype = GetDriveType(psz_drive);
-  switch (i_drivetype) {
-  case DRIVE_CDROM: 
+  /* If device supports SCSI-3, then we can get the CD drive
+     capabilities, i.e. ability to read/write to CD-ROM/R/RW
+     or/and read/write to DVD-ROM/R/RW.   */
+  
+  memset(&sptwb,0, sizeof(SCSI_PASS_THROUGH_WITH_BUFFERS));
+  
+  sptwb.Spt.Length              = sizeof(SCSI_PASS_THROUGH);
+  sptwb.Spt.PathId             = 0;
+  sptwb.Spt.TargetId           = 1;
+  sptwb.Spt.Lun                = 0;
+  sptwb.Spt.CdbLength          = 6; /* CDB6GENERIC_LENGTH; */
+  sptwb.Spt.SenseInfoLength    = 24;
+  sptwb.Spt.DataIn             = SCSI_IOCTL_DATA_IN;
+  sptwb.Spt.DataTransferLength = 192;
+  sptwb.Spt.TimeOutValue       = 2;
+  sptwb.Spt.DataBufferOffset   =
+    offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,DataBuf);
+  sptwb.Spt.SenseInfoOffset    = 
+    offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,SenseBuf);
+  sptwb.Spt.Cdb[0]             = SCSIOP_MODE_SENSE;
+  sptwb.Spt.Cdb[1] = 0x08;  /* target doesn't return block descriptors */
+  sptwb.Spt.Cdb[2]             = MODE_PAGE_CAPABILITIES;
+  sptwb.Spt.Cdb[4]             = 192;
+  length = offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,DataBuf) +
+    sptwb.Spt.DataTransferLength;
+  
+  if ( DeviceIoControl(_obj->h_device_handle,
+		       IOCTL_SCSI_PASS_THROUGH,
+		       &sptwb,
+		       sizeof(SCSI_PASS_THROUGH),
+		       &sptwb,
+		       length,
+		       &returned,
+		       FALSE) )
     {
-#if 0
-      DWORD dwBytesReturned;
-      GET_MEDIA_TYPES mediaTypes;
-      i_drivetype = CDIO_DRIVE_CD_R;
-      if ( DeviceIoControl(_obj->h_device_handle,
-			   IOCTL_STORAGE_GET_MEDIA_TYPES_EX, 
-			   NULL, 0, &mediaTypes, sizeof(GET_MEDIA_TYPES),
-			   &dwBytesReturned, NULL) ) {
-	switch (mediaTypes.DeviceType) {
-	case FILE_DEVICE_DVD: 
-	  i_drivetype = CDIO_DRIVE_DVD_R;
-	  break;
-	case FILE_DEVICE_CD_ROM: 
-	  i_drivetype = CDIO_DRIVE_CD_R;
-	  break;
-	default: 
-	  ;
-	}
-      }
-#else
-	  i_drivetype = CDIO_DRIVE_CD_R;
-#endif
+      /* Reader */
+      if (sptwb.DataBuf[6] & 0x01) i_drivetype |= CDIO_DRIVE_CD_R;
+      if (sptwb.DataBuf[6] & 0x02) i_drivetype |= CDIO_DRIVE_CD_RW;
+      if (sptwb.DataBuf[6] & 0x08) i_drivetype |= CDIO_DRIVE_DVD;
+      if (sptwb.DataBuf[6] & 0x10) i_drivetype |= CDIO_DRIVE_DVD_R;
+      if (sptwb.DataBuf[6] & 0x20) i_drivetype |= CDIO_DRIVE_DVD_RAM;
+      
+      /* Writer */
+      if (sptwb.DataBuf[7] & 0x01) i_drivetype |= CDIO_DRIVE_CD_R;
+      if (sptwb.DataBuf[7] & 0x02) i_drivetype |= CDIO_DRIVE_CD_RW;
+      if (sptwb.DataBuf[7] & 0x08) i_drivetype |= CDIO_DRIVE_DVD;
+      if (sptwb.DataBuf[7] & 0x10) i_drivetype |= CDIO_DRIVE_DVD_R;
+      if (sptwb.DataBuf[7] & 0x20) i_drivetype |= CDIO_DRIVE_DVD_RAM;
+      
       return i_drivetype;
-    default:
-      return CDIO_DRIVE_ERROR;
+    } else {
+      i_drivetype = CDIO_DRIVE_CD_R | CDIO_DRIVE_UNKNOWN;
     }
-  }
+  return CDIO_DRIVE_ERROR;
 }
 
 #endif /*HAVE_WIN32_CDROM*/

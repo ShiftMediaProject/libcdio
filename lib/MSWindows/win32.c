@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.4 2004/03/07 02:40:58 rocky Exp $
+    $Id: win32.c,v 1.5 2004/04/24 04:46:33 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.4 2004/03/07 02:40:58 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.5 2004/04/24 04:46:33 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -78,6 +78,24 @@ cdio_is_cdrom(const char drive_letter) {
     return win32ioctl_is_cdrom(drive_letter);
   } else {
     return wnaspi32_is_cdrom(drive_letter);
+  }
+}
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static cdio_drive_cap_t
+_cdio_get_drive_cap (const void *env) {
+  const _img_private_t *_obj = env;
+
+  if (_obj->hASPI) {
+    return CDIO_DRIVE_UNKNOWN;
+  } else {
+    return win32ioctl_get_drive_cap (env);
   }
 }
 
@@ -578,8 +596,7 @@ cdio_get_default_device_win32(void)
 bool
 cdio_is_device_win32(const char *source_name)
 {
-  unsigned int len;
-  len = strlen(source_name);
+  unsigned int len = strlen(source_name);
 
   if (NULL == source_name) return false;
 
@@ -620,6 +637,7 @@ cdio_open_win32 (const char *source_name)
     .get_arg            = _cdio_get_arg,
     .get_default_device = cdio_get_default_device_win32,
     .get_devices        = cdio_get_devices_win32,
+    .get_drive_cap      = _cdio_get_drive_cap,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_mcn            = _cdio_get_mcn, 
     .get_num_tracks     = _cdio_get_num_tracks,
