@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.33 2003/08/17 05:31:19 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.34 2003/08/31 01:01:39 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.63)
@@ -88,12 +88,12 @@ AC_STDC_HEADERS
 AC_CHECK_HEADERS(stdint.h inttypes.h stdbool.h)
 
 AC_CHECK_HEADER(cddb/cddb.h, , 
-           [ AC_MSG_RESULT([*** CDDB support disabled from cdinfo program])
+           [ AC_MSG_RESULT([*** CDDB support disabled from cd-info program])
            enable_cddb=no ], 
 	        )	   
 
 AC_CHECK_HEADER(libvcd/info.h, , 
-           [ AC_MSG_RESULT([*** Video CD info disabled from cdinfo program])
+           [ AC_MSG_RESULT([*** Video CD info disabled from cd-info program])
            enable_vcdinfo=no ], 
 	        )	   
 

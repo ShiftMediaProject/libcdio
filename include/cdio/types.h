@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.4 2003/08/17 05:31:19 rocky Exp $
+    $Id: types.h,v 1.5 2003/08/31 01:01:40 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -218,13 +218,6 @@ extern "C" {
   */
 #define CDIO_INVALID_LSN   0xFFFFFFFF
 
-  /* Opaque types ... */
-
-  /* Defined fully in iso9660_private.h */
-  typedef struct iso_primary_descriptor pvd_t;
-
-
-  
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

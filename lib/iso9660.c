@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.1 2003/08/17 05:31:19 rocky Exp $
+    $Id: iso9660.c,v 1.2 2003/08/31 01:01:40 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include "cdio_assert.h"
 #include "bytesex.h"
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.1 2003/08/17 05:31:19 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.2 2003/08/31 01:01:40 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -202,9 +202,9 @@ iso9660_set_pvd(void *pd,
             uint32_t path_table_m_extent,
             uint32_t path_table_size)
 {
-  struct iso_primary_descriptor ipd;
+  pvd_t ipd;
 
-  cdio_assert (sizeof(struct iso_primary_descriptor) == ISO_BLOCKSIZE);
+  cdio_assert (sizeof(pvd_t) == ISO_BLOCKSIZE);
 
   cdio_assert (pd != NULL);
   cdio_assert (volume_id != NULL);
@@ -646,51 +646,72 @@ iso9660_pathname_isofy (const char pathname[], uint16_t version)
   return strdup (tmpbuf);
 }
 
-lsn_t
-iso9660_get_root_lsn(struct iso_primary_descriptor const *pvd) 
+uint8_t
+iso9660_get_dir_extent(const iso_directory_record_t *idr) 
 {
-  if (NULL == pvd) 
-    return CDIO_INVALID_LSN;
-  else {
-    struct iso_directory_record *idr = (void *) pvd->root_directory_record;
-    if (NULL == idr) return CDIO_INVALID_LSN;
-    return(from_733 (idr->extent));
-  }
+  if (NULL == idr) return 0;
+  return from_733(idr->extent);
 }
 
 uint8_t
-iso9660_get_pvd_type(struct iso_primary_descriptor const *pvd) 
+iso9660_get_dir_len(const iso_directory_record_t *idr) 
+{
+  if (NULL == idr) return 0;
+  return idr->length;
+}
+
+uint8_t
+iso9660_get_dir_size(const iso_directory_record_t *idr) 
+{
+  if (NULL == idr) return 0;
+  return from_733(idr->size);
+}
+
+uint8_t
+iso9660_get_pvd_type(const pvd_t *pvd) 
 {
   if (NULL == pvd) return 255;
   return(pvd->type);
 }
 
 const char *
-iso9660_get_pvd_id(struct iso_primary_descriptor const *pvd) 
+iso9660_get_pvd_id(const pvd_t *pvd) 
 {
   if (NULL == pvd) return "ERR";
   return(pvd->id);
 }
 
 int
-iso9660_get_pvd_space_size(struct iso_primary_descriptor const *pvd) 
+iso9660_get_pvd_space_size(const pvd_t *pvd) 
 {
   if (NULL == pvd) return 0;
   return from_733(pvd->volume_space_size);
 }
 
 int
-iso9660_get_pvd_block_size(struct iso_primary_descriptor const *pvd) 
+iso9660_get_pvd_block_size(const pvd_t *pvd) 
 {
   if (NULL == pvd) return 0;
   return from_723(pvd->logical_block_size);
 }
 
 int
-iso9660_get_pvd_version(struct iso_primary_descriptor const *pvd) 
+iso9660_get_pvd_version(const pvd_t *pvd) 
 {
   if (NULL == pvd) return 0;
   return pvd->version;
+}
+
+lsn_t
+iso9660_get_root_lsn(const pvd_t *pvd) 
+{
+  if (NULL == pvd) 
+    return CDIO_INVALID_LSN;
+  else {
+    iso_directory_record_t *idr = (void *) pvd->root_directory_record;
+    if (NULL == idr) return CDIO_INVALID_LSN;
+    return(from_733 (idr->extent));
+  }
 }
 
 

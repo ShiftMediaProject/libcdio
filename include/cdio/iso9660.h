@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.1 2003/08/17 05:31:19 rocky Exp $
+    $Id: iso9660.h,v 1.2 2003/08/31 01:01:40 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -51,6 +51,12 @@ enum strncpy_pad_check {
   ISO9660_ACHARS,
   ISO9660_DCHARS
 };
+
+  /* Opaque types ... */
+
+  /* Defined fully in iso9660_private.h */
+  typedef struct iso_primary_descriptor pvd_t;
+  typedef struct iso_directory_record iso_directory_record_t;
 
 char *
 iso9660_strncpy_pad(char dst[], const char src[], size_t len, 
@@ -120,23 +126,32 @@ uint16_t
 iso9660_pathtable_m_add_entry (void *pt, const char name[], uint32_t extent,
                        uint16_t parent);
 
-lsn_t
-iso9660_get_root_lsn(struct iso_primary_descriptor const *pvd);
+uint8_t
+iso9660_get_dir_len(const iso_directory_record_t *idr);
 
 uint8_t
-iso9660_get_pvd_type(struct iso_primary_descriptor const *pvd);
+iso9660_get_dir_size(const iso_directory_record_t *idr);
+
+uint8_t
+iso9660_get_dir_extent(const iso_directory_record_t *idr);
+
+uint8_t
+iso9660_get_pvd_type(const pvd_t *pvd);
 
 const char *
-iso9660_get_pvd_id(struct iso_primary_descriptor const *pvd);
+iso9660_get_pvd_id(const pvd_t *pvd);
 
 int
-iso9660_get_pvd_space_size(struct iso_primary_descriptor const *pvd);
+iso9660_get_pvd_space_size(const pvd_t *pvd);
 
 int
-iso9660_get_pvd_block_size(struct iso_primary_descriptor const *pvd) ;
+iso9660_get_pvd_block_size(const pvd_t *pvd) ;
 
 int
-iso9660_get_pvd_version(struct iso_primary_descriptor const *pvd) ;
+iso9660_get_pvd_version(const pvd_t *pvd) ;
+
+lsn_t
+iso9660_get_root_lsn(const pvd_t *pvd);
 
 
 #endif /* __CDIO_ISO9660_H__ */
