@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.14 2004/07/25 03:17:47 rocky Exp $
+    $Id: scsi_mmc.h,v 1.15 2004/07/25 16:38:05 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -60,7 +60,7 @@
 #define CDIO_MMC_GPCMD_PLAY_AUDIO_12	     0xa5
 #define CDIO_MMC_GPCMD_READ_12	             0xa8
 #define CDIO_MMC_GPCMD_PLAY_TRACK_REL_12     0xa9
-#define CDIO_MMC_CPCMD_READ_DVD_STRUCTURE    0xad
+#define CDIO_MMC_GPCMD_READ_DVD_STRUCTURE    0xad
 #define CDIO_MMC_GPCMD_READ_CD	             0xbe
 #define CDIO_MMC_GPCMD_READ_MSF	             0xb9
 
