@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.2 2004/03/06 01:24:29 rocky Exp $
+    $Id: bincue.c,v 1.3 2004/03/06 01:26:35 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.2 2004/03/06 01:24:29 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.3 2004/03/06 01:26:35 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -571,6 +571,13 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
   _img_private_t *_obj = env;
   int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+
+  /* NOTE: The logic below seems a bit wrong and convoluted
+     to me, but passes the regression tests. (Perhaps it is why we get
+     valgrind errors in vcdxrip). Leave it the way it was for now.
+     Review this sector 2336 stuff later.
+  */
+
   int blocksize = _obj->sector_2336 
     ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
@@ -586,6 +593,8 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
 			  blocksize, 1);
   if (ret==0) return ret;
 
+
+  /* See NOTE above. */
   if (mode2_form2)
     memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
 	    M2RAW_SECTOR_SIZE);
