@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.11 2004/10/22 01:13:38 rocky Exp $
+    $Id: iso-info.c,v 1.12 2004/10/22 09:51:40 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -272,14 +272,14 @@ main(int argc, const char *argv[])
   }
 
   if (source_name==NULL) {
-    err_exit("%s: No input device given/found\n", program_name);
+    err_exit("No input device given/found\n");
   } 
 
   p_iso = iso9660_open (source_name);
 
   if (p_iso==NULL) {
     free(source_name);
-    err_exit("%s: Error in opening device driver\n", program_name);
+    err_exit("Error in opening ISO-9660 image\n");
   } 
 
   if (opts.silent == 0) {
