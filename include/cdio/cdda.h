@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.6 2005/01/15 16:08:39 rocky Exp $
+  $Id: cdda.h,v 1.7 2005/01/16 04:23:41 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -111,13 +111,26 @@ struct cdrom_drive_s {
 
 };
 
-#define CDDA_TEST_UNDERRUN 1 /**< Define if you want underrun testing */
+/**< under-run testing. The below bit is set for testing.  */
+#define CDDA_TEST_UNDERRUN         16 
+
 #if TESTING_IS_FINISHED
-#define CDDA_TEST_JITTER   2 /**< Define if you want jitter testing */
-#define CDDA_TEST_FRAGMENT 4 /**< Define if you want fragment testing */
-#define CDDA_TEST_SCRATCH  8 /**< Define if you want scratch testing */
-#undef  CDDA_TEST_BOGUS_BYTES
-#undef  CDDA_TEST_DROPDUPE_BYTES
+/** jitter testing. The first two bits are set to determine
+    how much jitter to simulate.
+ */
+#define CDDA_TEST_JITTER_SMALL      1 
+#define CDDA_TEST_JITTER_LARGE      2 
+#define CDDA_TEST_JITTER_MASSIVE    3 
+
+/** fragment testing */
+#define CDDA_TEST_FRAG_SMALL   (1<<2)
+#define CDDA_TEST_FRAG_LARGE   (2<<2)
+#define CDDA_TEST_FRAG_MASSIVE (3<<2)
+
+ /** scratch testing */
+#define CDDA_TEST_SCRATCH          32
+#undef  CDDA_TEST_BOGUS_BYTES      64
+#undef  CDDA_TEST_DROPDUPE_BYTES  128
 #endif /* TESTING_IS_FINISHED */
 
 /** autosense functions */
