@@ -1,9 +1,14 @@
 _cdio_list_append
 _cdio_list_begin
+_cdio_list_end
+_cdio_list_find
 _cdio_list_free
+_cdio_list_length
 _cdio_list_new
 _cdio_list_node_data
+_cdio_list_node_free
 _cdio_list_node_next
+_cdio_list_preappend
 _cdio_malloc
 _cdio_strfreev
 _cdio_strsplit
