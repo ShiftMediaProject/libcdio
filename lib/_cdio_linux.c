@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.73 2004/07/22 10:13:08 rocky Exp $
+    $Id: _cdio_linux.c,v 1.74 2004/07/22 11:00:59 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.73 2004/07/22 10:13:08 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.74 2004/07/22 11:00:59 rocky Exp $";
 
 #include <string.h>
 
@@ -275,17 +275,19 @@ cdio_check_mounts(const char *mtab)
   We return true if command completed successfully and false if not.
  */
 static int
-scsi_mmc_run_cmd_linux( const _img_private_t *p_env, int i_timeout,
+scsi_mmc_run_cmd_linux( const void *p_user_data, int i_timeout,
 			unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 			scsi_mmc_direction_t e_direction, 
 			unsigned int i_buf, /*out*/ void *p_buf )
 {
+  const _img_private_t *p_env = p_user_data;
   struct cdrom_generic_command cgc;
   memset (&cgc, 0, sizeof (struct cdrom_generic_command));
   memcpy(&cgc.cmd, p_cdb, i_cdb);
   cgc.buflen = i_buf;
   cgc.buffer = p_buf;
-  SCSI_MMC_DATA_READ == cgc.data_direction ? CGC_DATA_READ : CGC_DATA_WRITE;
+  cgc.data_direction = SCSI_MMC_DATA_READ == cgc.data_direction 
+    ? CGC_DATA_READ : CGC_DATA_WRITE;
 
 #ifdef HAVE_LINUX_CDROM_TIMEOUT
   if (i_timeout >= 0)
@@ -1307,6 +1309,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .read_mode1_sectors = _read_mode1_sectors_linux,
     .read_mode2_sector  = _read_mode2_sector_linux,
     .read_mode2_sectors = _read_mode2_sectors_linux,
+    .run_scsi_mmc_cmd   = scsi_mmc_run_cmd_linux,
     .set_arg            = _set_arg_linux,
     .stat_size          = _stat_size_linux
   };

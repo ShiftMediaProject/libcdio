@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.32 2004/07/22 09:52:17 rocky Exp $
+    $Id: cdio_private.h,v 1.33 2004/07/22 11:00:59 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -216,7 +216,7 @@ extern "C" {
       
       Returns 0 if command completed successfully.
     */
-    int (*run_scsi_mmc_cmd)  ( const CdIo *cdio, unsigned int i_timeout,
+    int (*run_scsi_mmc_cmd)  ( const void *env, int i_timeout,
 			       unsigned int cdb_len,
 			       const scsi_mmc_cdb_t *p_cdb, 
 			       scsi_mmc_direction_t e_direction,
