@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.47 2004/06/26 01:20:41 rocky Exp $
+    $Id: _cdio_osx.c,v 1.48 2004/06/27 15:29:22 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.47 2004/06/26 01:20:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.48 2004/06/27 15:29:22 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -95,6 +95,8 @@ typedef struct {
   int i_descriptors;
   track_t i_last_track;      /* highest track number */
   track_t i_first_track;     /* first track */
+  track_t i_last_session;    /* highest session number */
+  track_t i_first_session;   /* first session number */
   lsn_t   *pp_lba;
 
 } _img_private_t;
@@ -383,7 +385,6 @@ _cdio_read_toc (_img_private_t *env)
     int i, i_leadout = -1;
     
     CDTOCDescriptor *pTrackDescriptors;
-    track_t i_track;
     
     env->pp_lba = malloc( env->i_descriptors * sizeof(int) );
     if( env->pp_lba == NULL )
@@ -395,24 +396,27 @@ _cdio_read_toc (_img_private_t *env)
     
     pTrackDescriptors = env->pTOC->descriptors;
 
-    env->i_first_track = CDIO_CD_MAX_TRACKS+1;
-    env->i_last_track  = CDIO_CD_MIN_TRACK_NO-1;
+    env->i_first_track   = CDIO_CD_MAX_TRACKS+1;
+    env->i_last_track    = CDIO_CD_MIN_TRACK_NO;
+    env->i_first_session = CDIO_CD_MAX_TRACKS+1;
+    env->i_last_session  = CDIO_CD_MIN_TRACK_NO;
     
     for( i = 0; i <= env->i_descriptors; i++ )
       {
-	i_track = pTrackDescriptors[i].point;
+	track_t i_track     = pTrackDescriptors[i].point;
+	session_t i_session = pTrackDescriptors[i].session;
 
 	cdio_debug( "point: %d, tno: %d, session: %d, adr: %d, control:%d, "
-		   "address: %d:%d:%d, p: %d:%d:%d", 
-		   pTrackDescriptors[i].point,
-		   pTrackDescriptors[i].tno, pTrackDescriptors[i].session,
-		   pTrackDescriptors[i].adr, pTrackDescriptors[i].control,
-		   pTrackDescriptors[i].address.minute,
-		   pTrackDescriptors[i].address.second,
-		   pTrackDescriptors[i].address.frame, 
-		   pTrackDescriptors[i].p.minute,
-		   pTrackDescriptors[i].p.second, 
-		   pTrackDescriptors[i].p.frame );
+		    "address: %d:%d:%d, p: %d:%d:%d", 
+		    i_track,
+		    pTrackDescriptors[i].tno, i_session
+		    pTrackDescriptors[i].adr, pTrackDescriptors[i].control,
+		    pTrackDescriptors[i].address.minute,
+		    pTrackDescriptors[i].address.second,
+		    pTrackDescriptors[i].address.frame, 
+		    pTrackDescriptors[i].p.minute,
+		    pTrackDescriptors[i].p.second, 
+		    pTrackDescriptors[i].p.frame );
 
 	/* track information has adr = 1 */
 	if ( 0x01 != pTrackDescriptors[i].adr ) 
@@ -430,6 +434,11 @@ _cdio_read_toc (_img_private_t *env)
 	if (env->i_last_track < i_track) 
 	  env->i_last_track = i_track;
 	
+	if (env->i_first_session > i_session) 
+	  env->i_first_track = i_session;
+	
+	if (env->i_last_session < i_session) 
+	  env->i_last_track = i_session;
       }
 
     /* Now that we know what the first track number is, we can make sure

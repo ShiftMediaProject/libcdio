@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.17 2004/05/26 06:29:15 rocky Exp $
+    $Id: types.h,v 1.18 2004/06/27 15:29:21 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -218,13 +218,21 @@ extern "C" {
   */
   typedef int32_t lsn_t;
   
-  /*! The type of an track number 0..99. */
+  /*! The type of a track number 0..99. */
   typedef uint8_t track_t;
   
   /*! 
     Constant for invalid track number
   */
 #define CDIO_INVALID_TRACK   0xFF
+  
+  /*! The type of a session number 0..99. */
+  typedef uint8_t session_t;
+  
+  /*! 
+    Constant for invalid session number
+  */
+#define CDIO_INVALID_SESSION   0xFF
   
   /*! 
     Constant for invalid LBA. It is 151 less than the most negative
@@ -243,18 +251,36 @@ extern "C" {
   */
 #define CDIO_MCN_SIZE       13
 
-typedef int cdio_fs_anal_t;
+  /*! 
+    Type to hold ASCII bytes in a media catalog number (MCN).
+    We include an extra 0 byte so these can be used as C strings.
+  */
+  typedef char cdio_mcn_t[CDIO_MCN_SIZE+1];
+  
 
-/*! The type of an drive capability bit mask. See below for values*/
+  /*! 
+    Number of ASCII bytes in International Standard Recording Codes (ISRC)
+  */
+#define CDIO_ISRC_SIZE       12
+
+  /*! 
+    Type to hold ASCII bytes in a media catalog number (MCN).
+    We include an extra 0 byte so these can be used as C strings.
+  */
+  typedef char cdio_isrc_t[CDIO_ISRC_SIZE+1];
+
+  typedef int cdio_fs_anal_t;
+
+  /*! The type of an drive capability bit mask. See below for values*/
   typedef uint32_t cdio_drive_cap_t;
   
-/*!
-  \brief Drive types returned by cdio_get_drive_cap()
-
-  Most are copied from the GNU/Linux the uniform CD-ROM driver header
-  linux/cdrom.h>  NOTE: Setting a bit here means the presence of
-  a capability.
-*/ 
+  /*!
+    \brief Drive types returned by cdio_get_drive_cap()
+    
+    Most are copied from the GNU/Linux the uniform CD-ROM driver header
+    linux/cdrom.h>  NOTE: Setting a bit here means the presence of
+    a capability.
+  */ 
 
 #define CDIO_DRIVE_CAP_CLOSE_TRAY     0x00001 /**< caddy systems can't 
                                                    close... */
@@ -298,20 +324,20 @@ typedef int cdio_fs_anal_t;
 
 #define CDIO_DRIVE_CAP_DVD_WRITER \
    (CDIO_DRIVE_CAP_DVD_R|CDIO_DRIVE_CAP_DVD_RAM)
-/**< Has some sort of DVD writer ability */
+  /**< Has some sort of DVD writer ability */
 
-/*! 
-  track flags
-  Q Sub-channel Control Field (4.2.3.3)
-*/
-typedef enum {
-  CDIO_TRACK_FLAG_NONE = 		0x00,	/**< no flags set */
-  CDIO_TRACK_FLAG_PRE_EMPHASIS =	0x01,	/**< audio track recorded with
-                                                     pre-emphasis */
-  CDIO_TRACK_FLAG_COPY_PERMITTED =	0x02,	/**< digital copy permitted */
-  CDIO_TRACK_FLAG_DATA =		0x04,	/**< data track */
-  CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO =	0x08,	/**< 4 audio channels */
-  CDIO_TRACK_FLAG_SCMS =			0x10	/**< SCMS (5.29.2.7) */
+  /*! 
+    track flags
+    Q Sub-channel Control Field (4.2.3.3)
+  */
+  typedef enum {
+    CDIO_TRACK_FLAG_NONE = 		 0x00,	/**< no flags set */
+    CDIO_TRACK_FLAG_PRE_EMPHASIS =	 0x01,	/**< audio track recorded with
+                                                   pre-emphasis */
+    CDIO_TRACK_FLAG_COPY_PERMITTED =	 0x02,	/**< digital copy permitted */
+    CDIO_TRACK_FLAG_DATA =		 0x04,	/**< data track */
+    CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO = 0x08,  /**< 4 audio channels */
+  CDIO_TRACK_FLAG_SCMS =		 0x10	/**< SCMS (5.29.2.7) */
 } cdio_track_flag;
 
 #ifdef __cplusplus

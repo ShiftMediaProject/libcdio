@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.12 2004/06/19 16:34:45 rocky Exp $
+    $Id: freebsd.h,v 1.13 2004/06/27 15:29:22 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -140,7 +140,9 @@ typedef struct {
   /* Track information */
   bool toc_init;                         /* if true, info below is valid. */
   struct ioc_toc_header  tochdr;
-  struct ioc_read_toc_single_entry tocent[100]; /* entry info for each track */
+
+  /* Entry info for each track. Add 1 for leadout. */
+  struct ioc_read_toc_single_entry tocent[CDIO_CD_MAX_TRACKS+1; 
 
 } _img_private_t;
 

@@ -57,6 +57,13 @@ layer. Mode 2 is for audio and video data and has no extra correction
 layer. CD-ROM/XA An expansion of the CD-ROM Mode 2 format that allows
 both computer and audio/video to be mixed in the same track.
 
+@item CD Text
+CD Text is a technology developed by Sony Corporation and Philips
+Electronics in 1996 that allows storing in an audio CD and its tracks
+information such as artist name, title, songwriter, composer, or
+arranger. Commercially available audio CDs sometimes contain CD Text
+information.
+
 @item CD XA
 CD-ROM EXtended Architecture. A modification to the CD-ROM
 specification that defines two new types of sectors.  CD-ROM XA was

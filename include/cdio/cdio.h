@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.53 2004/06/19 10:39:30 rocky Exp $
+    $Id: cdio.h,v 1.54 2004/06/27 15:29:21 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -232,7 +232,7 @@ extern "C" {
     string when done with it.
 
   */
-  char *cdio_get_mcn (const CdIo *obj);
+  char * cdio_get_mcn (const CdIo *obj);
 
   /*!
     Get a string containing the name of the driver in use.

@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.9 2004/06/25 01:47:06 rocky Exp $
+    $Id: aspi32.c,v 1.10 2004/06/27 15:29:22 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.9 2004/06/25 01:47:06 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.10 2004/06/27 15:29:22 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -52,6 +52,75 @@ static const char _rcsid[] = "$Id: aspi32.c,v 1.9 2004/06/25 01:47:06 rocky Exp 
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "aspi32.h"
+
+const char *aspierror(int nErrorCode) 
+{
+  switch (nErrorCode)
+    {
+    case SS_PENDING:
+      return "SRB being processed";
+      break;
+    case SS_COMP:
+      return "SRB completed without error";
+      break;
+    case SS_ABORTED:
+      return "SRB aborted";
+      break;
+    case SS_ABORT_FAIL:
+      return "Unable to abort SRB";
+      break;
+    case SS_ERR:
+      return "SRB completed with error";
+      break;
+    case SS_INVALID_CMD:
+      return "Invalid ASPI command";
+      break;
+    case SS_INVALID_HA:
+      return "Invalid host adapter number";
+      break;
+    case SS_NO_DEVICE:
+      return "SCSI device not installed";
+      break;
+    case SS_INVALID_SRB:
+      return "Invalid parameter set in SRB";
+      break;
+    case SS_OLD_MANAGER:
+      return "ASPI manager doesn't support";
+      break;
+    case SS_ILLEGAL_MODE:
+      return "Unsupported Windows mode";
+      break;
+    case SS_NO_ASPI:
+      return "No ASPI managers";
+      break;
+    case SS_FAILED_INIT:
+      return "ASPI for windows failed init";
+      break;
+    case SS_ASPI_IS_BUSY:
+      return "No resources available to execute command";
+      break;
+    case SS_BUFFER_TOO_BIG:
+      return "Buffer size too big to handle";
+      break;
+    case SS_MISMATCHED_COMPONENTS:
+      return "The DLLs/EXEs of ASPI don't version check";
+      break;
+    case SS_NO_ADAPTERS:
+      return "No host adapters found";
+      break;
+    case SS_INSUFFICIENT_RESOURCES:
+      return "Couldn't allocate resources needed to init";
+      break;
+    case SS_ASPI_IS_SHUTDOWN:
+      return "Call came to ASPI after PROCESS_DETACH";
+      break;
+    case SS_BAD_INSTALL:
+      return "The DLL or other components are installed wrong";
+      break;
+    default: 
+      return "Unknow ASPI error");
+    }
+}
 
 /* General ioctl() CD-ROM command function */
 static bool 
@@ -111,6 +180,7 @@ is_cdrom_aspi(const char drive_letter)
   DWORD dwSupportInfo;
   int i_adapter, i_hostadapters;
   char c_drive;
+  int i_rc;
 
   if ( !have_aspi(&hASPI, &lpGetSupport, &lpSendCommand) )
     return NULL;
@@ -118,15 +188,11 @@ is_cdrom_aspi(const char drive_letter)
   /* ASPI support seems to be there. */
   
   dwSupportInfo = lpGetSupport();
-  
-  if( HIBYTE( LOWORD ( dwSupportInfo ) ) == SS_NO_ADAPTERS ) {
-    cdio_debug("no host adapters found (ASPI)");
-    FreeLibrary( hASPI );
-    return NULL;
-  }
-  
-  if( HIBYTE( LOWORD ( dwSupportInfo ) ) != SS_COMP ) {
-    cdio_debug("Unable to initalize ASPI layer");
+
+  i_rc = HIBYTE( LOWORD ( dwSupportInfo ) );
+
+  if( SS_COMP != rc ) {
+    cdio_debug("ASPI: %s", aspierror(i_rc));
     FreeLibrary( hASPI );
     return NULL;
   }
@@ -205,6 +271,7 @@ init_aspi (_img_private_t *env)
   DWORD dwSupportInfo;
   int i_adapter, i_hostadapters;
   char c_drive;
+  int i_rc;
 
   if (2 == strlen(env->gen.source_name) && isalpha(env->gen.source_name[0]) ) 
   {
@@ -221,14 +288,10 @@ init_aspi (_img_private_t *env)
   
   dwSupportInfo = lpGetSupport();
   
-  if( HIBYTE( LOWORD ( dwSupportInfo ) ) == SS_NO_ADAPTERS ) {
-    cdio_debug("no host adapters found (ASPI)");
-    FreeLibrary( hASPI );
-    return false;
-  }
-  
-  if( HIBYTE( LOWORD ( dwSupportInfo ) ) != SS_COMP ) {
-    cdio_debug("unable to initalize ASPI layer");
+  i_rc = HIBYTE( LOWORD ( dwSupportInfo ) );
+
+  if( SS_COMP != rc ) {
+    cdio_info("ASPI: %s", aspierror(i_rc));
     FreeLibrary( hASPI );
     return false;
   }
@@ -402,6 +465,7 @@ mmc_read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
   
   /* check that the transfer went as planned */
   if( ssc.SRB_Status != SS_COMP ) {
+    cdio_info("ASPI: %s", aspierror(ssc.SRB_Status));
     return 1;
   }
 
@@ -502,6 +566,7 @@ read_toc_aspi (_img_private_t *env)
   
   /* check that the transfer went as planned */
   if( ssc.SRB_Status != SS_COMP ) {
+    cdio_info("ASPI: %s", aspierror(ssc.SRB_Status));
     CloseHandle( hEvent );
     return false;
   }
@@ -540,10 +605,10 @@ read_toc_aspi (_img_private_t *env)
       WaitForSingleObject( hEvent, INFINITE );
     
     /* check that the transfer went as planned */
-#if 0
-    if( ssc.SRB_Status != SS_COMP )
+    if( ssc.SRB_Status != SS_COMP ) {
+      cdio_info("ASPI: %s", aspierror(ssc.SRB_Status));
       env->total_tracks = 0;
-#endif
+    }
     
     for( i = 0 ; i <= env->total_tracks ; i++ ) {
       int i_index = 8 + 8 * i;
@@ -664,6 +729,7 @@ get_drive_cap_aspi (const _img_private_t *env)
 
   /* check that the transfer went as planned */
   if( ssc.SRB_Status != SS_COMP ) {
+    cdio_info("ASPI: %s", aspierror(ssc.SRB_Status));
     return i_drivetype;
   } else {
     BYTE *p;

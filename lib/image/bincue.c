@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.22 2004/06/19 19:15:15 rocky Exp $
+    $Id: bincue.c,v 1.23 2004/06/27 15:29:22 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.22 2004/06/19 19:15:15 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.23 2004/06/27 15:29:22 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -94,8 +94,9 @@ typedef struct {
   bool sector_2336;              /* Playstation (PSX) uses 2336-byte sectors */
 
   char         *cue_name;
-  char         *mcn;             /* Media catalog number. */
-  track_info_t  tocent[100];     /* entry info for each track */
+  char         *mcn;             /* Media Catalog Number. */
+  track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
+					         add 1 for leadout. */
   track_t       i_tracks;    /* number of tracks in image */
   track_t       i_first_track;   /* track number of first track */
   bool have_cue;

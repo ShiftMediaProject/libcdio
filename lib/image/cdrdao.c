@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.9 2004/06/01 11:15:58 rocky Exp $
+    $Id: cdrdao.c,v 1.10 2004/06/27 15:29:22 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.9 2004/06/01 11:15:58 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.10 2004/06/27 15:29:22 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -106,7 +106,8 @@ typedef struct {
   char         *toc_name;
   char         *mcn;             /* Media Catalog Number (5.22.3) 
 				    exactly 13 bytes */
-  track_info_t  tocent[100];     /* entry info for each track */
+  track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
+					         add 1 for leadout. */
   track_t       i_tracks;    /* number of tracks in image */
   track_t       i_first_track; /* track number of first track */
   track_format_t mode;

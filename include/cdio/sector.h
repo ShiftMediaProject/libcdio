@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.13 2004/06/02 00:43:53 rocky Exp $
+    $Id: sector.h,v 1.14 2004/06/27 15:29:21 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -119,16 +119,31 @@
 #define	CDIO_CDROM_CDI_TRACK	0x10
 #define	CDIO_CDROM_XA_TRACK	0x20
 
-/*! The leadout track is always 0xAA, regardless of # of tracks on disc */
+/*! The leadout track is always 0xAA, regardless of # of tracks on
+    disc, or what value may be used internally. For example although
+    OS X uses a different value for the lead-out track internally than
+    given below, programmers should use CDIO_CDROM_LEADOUT_TRACK and
+    not worry about this.
+ */
 #define	CDIO_CDROM_LEADOUT_TRACK 0xAA
 
 #define M2F2_SECTOR_SIZE    2324
 #define M2SUB_SECTOR_SIZE   2332
 #define M2RAW_SECTOR_SIZE   2336
 
+/*! Largest CD track number */
 #define CDIO_CD_MAX_TRACKS    99 
+/*! Smallest CD track number */
 #define CDIO_CD_MIN_TRACK_NO   1
+
+/*! Largest CD session number */
+#define CDIO_CD_MAX_SESSIONS    99 
+/*! Smallest CD session number */
+#define CDIO_CD_MIN_SESSION_NO   1
+
+/*! Largest LSN in a CD */
 #define CDIO_CD_MAX_LSN   450150
+/*! Smallest LSN in a CD */
 #define CDIO_CD_MIN_LSN  -450150
 
 
