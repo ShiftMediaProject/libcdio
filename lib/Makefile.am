@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.55 2004/11/12 03:44:08 rocky Exp $
+#   $Id: Makefile.am,v 1.56 2004/11/14 16:35:17 nboullis Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -174,10 +174,12 @@ libcdio_la_DEPENDENCIES = libcdio.la.ver
 libcdio.la.ver: $(libcdio_la_OBJECTS)
 	echo 'CDIO_$(libcdio_la_MAJOR) { ' > $@
 	echo "  global:" >> $@
-	nm $(patsubst %.lo,%.o,$(libcdio_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/    \1;/p' | sort | uniq >> $@
+	nm $(patsubst %.lo,%.o,$(libcdio_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" libcdio.sym; then echo "    $${symbol};"; fi; done >> $@
+	echo "  local:" >> $@
+	nm $(patsubst %.lo,%.o,$(libcdio_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" libcdio.sym; then :; else echo "    $${symbol};"; fi; done >> $@
 	echo '};' >> $@
 else 
-libcdio_la_LDFLAGS = $(libcdio_la_ldflags)
+libcdio_la_LDFLAGS = $(libcdio_la_ldflags) -export-symbols libcdio.sym
 endif 
 
 libiso9660_la_MAJOR := $(shell expr $(libiso9660_la_CURRENT) - $(libiso9660_la_AGE))
