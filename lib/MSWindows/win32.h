@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.3 2004/04/30 06:54:15 rocky Exp $
+    $Id: win32.h,v 1.4 2004/04/30 07:33:51 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -31,8 +31,7 @@ typedef struct {
 typedef enum {
   _AM_NONE,
   _AM_IOCTL,
-  _AM_READ_CD,
-  _AM_READ_10
+  _AM_ASPI,
 } access_mode_t;
 
 typedef struct {
@@ -93,7 +92,7 @@ bool win32ioctl_init_win32 (_img_private_t *env);
 */
 bool win32ioctl_read_toc (_img_private_t *env);
 
-char *win32ioctl_get_mcn (_img_private_t *env);
+char *win32ioctl_get_mcn (const _img_private_t *env);
 
 /*!
   Return the the kind of drive capabilities of device.

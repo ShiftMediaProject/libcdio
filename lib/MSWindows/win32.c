@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.8 2004/04/30 06:54:15 rocky Exp $
+    $Id: win32.c,v 1.9 2004/04/30 07:33:51 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.8 2004/04/30 06:54:15 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.9 2004/04/30 07:33:51 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -73,7 +73,7 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
 }
 
 static access_mode_t 
-str_to_access_mode_linux(const char *psz_access_mode) 
+str_to_access_mode_win32(const char *psz_access_mode) 
 {
   const access_mode_t default_access_mode = 
     WIN_NT ? _AM_IOCTL : _AM_ASPI;
@@ -83,7 +83,8 @@ str_to_access_mode_linux(const char *psz_access_mode)
   if (!strcmp(psz_access_mode, "IOCTL"))
     return _AM_IOCTL;
   else if (!strcmp(psz_access_mode, "ASPI"))
-    return _AM_READ_CD;
+    return _AM_ASPI;
+  else {
     cdio_warn ("unknown access type: %s. Default IOCTL used.", 
 	       psz_access_mode);
     return default_access_mode;
@@ -111,7 +112,7 @@ _cdio_get_drive_cap (const void *env) {
   const _img_private_t *_obj = env;
 
   if (_obj->hASPI) {
-    return CDIO_DRIVE_UNKNOWN;
+    return CDIO_DRIVE_CAP_UNKNOWN;
   } else {
     return win32ioctl_get_drive_cap (env);
   }
@@ -336,7 +337,7 @@ _set_arg_win32 (void *user_data, const char key[], const char value[])
     }
   else if (!strcmp (key, "access-mode"))
     {
-      return str_to_access_mode_linux(value);
+      return str_to_access_mode_win32(value);
     }
   else 
     return -1;
@@ -441,9 +442,9 @@ _cdio_get_first_track_num(void *user_data)
 
  */
 static char *
-_cdio_get_mcn (void *env) {
+_cdio_get_mcn (const void *env) {
 
-  _img_private_t *_env = env;
+  const _img_private_t *_env = env;
 
   if( ! _env->hASPI ) {
     return win32ioctl_get_mcn(_env);
@@ -649,7 +650,7 @@ cdio_is_device_win32(const char *source_name)
   ones to set that up.
  */
 CdIo *
-cdio_open_win32 (const char *source_name)
+cdio_open_win32 (const char *psz_source_name)
 {
 #ifdef HAVE_WIN32_CDROM
   if ( WIN_NT ) {
@@ -704,8 +705,8 @@ cdio_open_am_win32 (const char *psz_source_name, const char *psz_access_mode)
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
-  _set_arg_win32(_data, "source", (NULL == source_name) 
-		 ? cdio_get_default_device_win32(): source_name);
+  _set_arg_win32(_data, "source", (NULL == psz_source_name) 
+		 ? cdio_get_default_device_win32(): psz_source_name);
 
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;

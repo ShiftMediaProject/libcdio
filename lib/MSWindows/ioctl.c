@@ -1,5 +1,5 @@
 /*
-    $Id: ioctl.c,v 1.11 2004/04/30 06:54:15 rocky Exp $
+    $Id: ioctl.c,v 1.12 2004/04/30 07:33:51 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: ioctl.c,v 1.11 2004/04/30 06:54:15 rocky Exp $";
+static const char _rcsid[] = "$Id: ioctl.c,v 1.12 2004/04/30 07:33:51 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -390,7 +390,7 @@ win32ioctl_read_toc (_img_private_t *env)
 
  */
 char *
-win32ioctl_get_mcn (_img_private_t *env) {
+win32ioctl_get_mcn (const _img_private_t *env) {
 
   DWORD dwBytesReturned;
   SUB_Q_MEDIA_CATALOG_NUMBER mcn;
