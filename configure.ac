@@ -19,7 +19,7 @@ define(RELEASE_NUM, 72)
 define(CDIO_VERSION_STR, 0.$1rc1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.133 2005/01/27 04:54:26 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.134 2005/01/29 08:03:23 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -536,8 +536,11 @@ AC_CONFIG_FILES([ \
        package/libcdio.spec \
        src/cd-paranoia/Makefile \
        src/cd-paranoia/usage.txt \
-       src/cd-paranoia/doc/cd-paranoia.1 \
-       src/cd-paranoia/doc/cd-paranoia.1.jp \
+       src/cd-paranoia/doc/Makefile \
+       src/cd-paranoia/doc/en/cd-paranoia.1 \
+       src/cd-paranoia/doc/en/Makefile \
+       src/cd-paranoia/doc/jp/cd-paranoia.1 \
+       src/cd-paranoia/doc/jp/Makefile \
        src/Makefile \
        test/check_nrg.sh \
        test/check_cue.sh \

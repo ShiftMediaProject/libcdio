@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.12 2005/01/16 13:08:25 rocky Exp $
+#   $Id: Makefile.am,v 1.13 2005/01/29 08:03:23 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -24,12 +24,9 @@ else
 getopt_sources = getopt.c getopt1.c
 endif
 
-man_MANS = doc/cd-paranoia.1 doc/cd-paranoia.1.jp
-
-EXTRA_DIST = $(man_MANS) getopt.c getopt1.c \
+EXTRA_DIST = getopt.c getopt1.c \
 	     usage.txt.in pod2c.pl \
-             doc/FAQ.txt doc/overlapdef.txt \
-             doc/cd-paranoia.1.in doc/cd-paranoia.1.jp.in
+             doc/FAQ.txt doc/overlapdef.txt
 
 
 noinst_HEADERS = getopt.h header.h report.h 
@@ -37,6 +34,8 @@ noinst_HEADERS = getopt.h header.h report.h
 transform = s,cd-paranoia,@CDPARANOIA_NAME@,
 
 if BUILD_CD_PARANOIA
+
+SUBDIRS = doc
 
 cd_paranoia_SOURCES = cd-paranoia.c \
 	buffering_write.c buffering_write.h \
