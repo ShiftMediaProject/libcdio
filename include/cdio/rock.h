@@ -1,12 +1,10 @@
 /*
-    $Id: rock.h,v 1.1 2005/02/13 00:20:05 rocky Exp $
+    $Id: rock.h,v 1.2 2005/02/13 22:03:00 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
-    See also rock.c by Eric Youngdale (1993) from GNU/Linux and in cdrtools. 
-    This is 
-
-    Copyright 1993 Yggdrasil Computing, Incorporated
+    See also rock.c by Eric Youngdale (1993) from GNU/Linux 
+    This is Copyright 1993 Yggdrasil Computing, Incorporated
 
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -70,16 +68,42 @@ extern enum cdio_rock_enums {
 
 PRAGMA_BEGIN_PACKED
 
+/*! The next two structs are used by the system-use-sharing protocol
+   (SUSP), in which the Rock Ridge extensions are embedded.  It is
+   quite possible that other extensions are present on the disk, and
+   this is fine as long as they all use SUSP. */
+
+/*! system-use-sharing protocol */
+typedef struct iso_su_sp_s{
+  unsigned char magic[2];
+  uint8_t       skip;
+} GNUC_PACKED iso_su_sp_t;
+
+/*! system-use extension record */
+typedef struct iso_su_er_s {
+  iso711_t      len_id;  /**< Identifier length. Value 10?. */
+  unsigned char len_des;
+  unsigned char len_src;
+  iso711_t      ext_ver; /**< Extension version. Value 1? */
+  char data[EMPTY_ARRAY_SIZE];
+} GNUC_PACKED iso_su_er_t;
+
+typedef struct iso_su_ce_s {
+  char extent[8];
+  char offset[8];
+  char size[8];
+} iso_su_ce_t;
+
 /*! POSIX file attributes, PX. See Section 4.1.2 */
 typedef struct iso_rock_px_s {
   iso733_t st_mode;       /*! file mode permissions; same as st_mode 
                             of POSIX:5.6.1 */
-  iso733_t st_links;      /*! number of links to file; same as st_links
+  iso733_t st_nlinks;     /*! number of links to file; same as st_nlinks
                             of POSIX:5.6.1 */
   iso733_t st_uid;        /*! user id owner of file; same as st_uid
                             of POSIX:5.6.1 */
-  iso733_t gid;          /*! group id of file; same as st_gid of 
-                           of POSIX:5.6.1 */
+  iso733_t st_gid;        /*! group id of file; same as st_gid of 
+                            of POSIX:5.6.1 */
 } GNUC_PACKED iso_rock_px_t ;
 
 /*! POSIX device number, PN. A PN is mandatory if the file type
@@ -97,11 +121,29 @@ typedef struct iso_rock_pn_s {
                            7.2.3 encoded */
 } GNUC_PACKED iso_rock_pn_t ;
 
-/*! Symbolic link. See Section 4.1.3 */
-typedef struct iso_rock_sl_s {
+/*! These are the bits and their meanings for flags in the SL structure. */
+typedef enum {
+  ISO_ROCK_SL_CONTINUE = 1,
+  ISO_ROCK_SL_CURRENT  = 2,
+  ISO_ROCK_SL_PARENT   = 4,
+  ISO_ROCK_SL_ROOT     = 8
+} iso_rock_sl_flag_t;
+
+#define	ISO_ROCK_SL_CONTINUE 1
+#define	ISO_ROCK_SL_CURRENT  2
+#define	ISO_ROCK_SL_PARENT   4
+#define	ISO_ROCK_SL_ROOT     8
+
+typedef struct iso_rock_sl_part_s {
   unsigned char flags;
   unsigned char len;
   char text[EMPTY_ARRAY_SIZE];
+} GNUC_PACKED iso_rock_sl_part_t ;
+
+/*! Symbolic link. See Section 4.1.3 */
+typedef struct iso_rock_sl_s {
+  unsigned char flags;
+  iso_rock_sl_part_t link;
 } GNUC_PACKED iso_rock_sl_t ;
 
 /*! Alternate name. See Section 4.1.4 */
@@ -120,7 +162,7 @@ typedef struct iso_rock_pl_s {
   char location[1];
 } GNUC_PACKED iso_rock_pl_t ;
 
-/* These are the bits and their meanings for flags in the TF structure. */
+/*! These are the bits and their meanings for flags in the TF structure. */
 typedef enum {
   ISO_ROCK_TF_CREATE     =  1,
   ISO_ROCK_TF_MODIFY     =  2,
@@ -155,34 +197,37 @@ typedef struct iso_rock_sf_s {
   uint8_t   table_depth;
 } GNUC_PACKED iso_rock_sf_t ;
 
-/*! GNU/Linux-specific extension for transparent decompression. */
-typedef struct iso_rock_zf_s {
-  char algorithm[2];
-  char parms[2];
-  char real_size[8];
-} GNUC_PACKED iso_rock_zf_t ;
-
-typedef struct iso_rock_ridge_s {
-  char signature[2]; /**< signature word; either 'SP', 'CE', 'ER', 'RR',
+typedef struct iso_extension_record_s {
+  char signature[2];   /**< signature word; either 'SP', 'CE', 'ER', 'RR',
                           'PX', 'PN', 'SL', 'NM', 'CL', 'PL', 'TF', or 
                           'ZF' */
-  iso711_t len;      /** length of system-user area - 44 for PX
-                         20 for PN, 5+strlen(text) for SL. */
-  iso711_t version;  /** version number - value 1 */
+  iso711_t len;        /**< length of system-user area - 44 for PX
+                          20 for PN, 5+strlen(text) for SL, 21 for 
+                          SF, etc. */
+  iso711_t version;    /**< version number - value 1 */
   union{
-    iso_rock_px_t PX;
-    iso_rock_pn_t PN;
-    iso_rock_sl_t SL;
-    iso_rock_nm_t NM;
-    iso_rock_cl_t CL;
-    iso_rock_pl_t PL;
-    iso_rock_tf_t TF;
-    iso_rock_zf_t SF;
-    iso_rock_zf_t ZF;
+    iso_su_sp_t    SP;  /**< system-use-sharing protocol - not
+                          strictly part of Rock Ridge */
+    iso_su_er_t    ER;  /**< system-use extension packet - not
+                           strictly part of Rock Ridge */
+    iso_su_ce_t    CE;  /**< system-use -  strictly part of Rock Ridge */
+    iso_rock_px_t  PX;  /**< Rock Ridge POSIX file attributes */
+    iso_rock_pn_t  PN;  /**< Rock Ridge POSIX device number */
+    iso_rock_sl_t  SL;  /**< Rock Ridge symbolic link */
+    iso_rock_nm_t  NM;  /**< Rock Ridge alternate name */
+    iso_rock_cl_t  CL;  /**< Rock Ridge child link */
+    iso_rock_pl_t  PL;  /**< Rock Ridge parent link */
+    iso_rock_tf_t  TF;  /**< Rock Ridge timestamp(s) for a file */
   } u;
-} GNUC_PACKED iso_rock_ridge_t;
+} GNUC_PACKED iso_extension_record_t;
 
 PRAGMA_END_PACKED
+
+/*! return length of name field; 0: not found, -1: to be ignored */
+int get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * retname, 
+                            /*out*/ iso9660_stat_t *p_stat);
+
+int parse_rock_ridge_stat(iso9660_dir_t *de, /*out*/ iso9660_stat_t *p_stat);
 
 #endif /* __ISO_ROCK_H__ */
 

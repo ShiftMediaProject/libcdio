@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.4 2005/01/27 03:26:37 rocky Exp $
+#   $Id: Makefile.am,v 1.5 2005/02/13 22:03:00 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -56,6 +56,7 @@ libiso9660_la_SOURCES = \
 	iso9660.c \
 	iso9660_private.h \
 	iso9660_fs.c \
+	rock.c \
 	xa.c
 
 libiso9660_la_LIBADD = @LIBCDIO_LIBS@

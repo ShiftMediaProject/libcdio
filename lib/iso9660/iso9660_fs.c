@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.12 2005/02/12 10:23:18 rocky Exp $
+    $Id: iso9660_fs.c,v 1.13 2005/02/13 22:03:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -18,6 +18,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+/* iso9660 filesystem-based routines */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -51,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.12 2005/02/12 10:23:18 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.13 2005/02/13 22:03:00 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -517,7 +518,7 @@ bool iso9660_ifs_get_volumeset_id(iso9660_t *p_iso,
       return true;
   }
 #endif /*HAVE_JOLIET*/
-  *p_psz_volumeset_id = iso9660_get_volume_id( &(p_iso->pvd) );
+  *p_psz_volumeset_id = iso9660_get_volumeset_id( &(p_iso->pvd) );
   return *p_psz_volumeset_id != NULL && strlen(*p_psz_volumeset_id);
 }
 

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.64 2005/02/13 00:20:05 rocky Exp $
+    $Id: iso9660.h,v 1.65 2005/02/13 22:03:00 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -255,6 +255,8 @@ struct	iso9660_ltime_s {
 } GNUC_PACKED;
 
 typedef struct iso9660_ltime_s  iso9660_ltime_t;
+typedef struct iso9660_dir_s    iso9660_dir_t;
+typedef struct iso9660_stat_s   iso9660_stat_t;
 
 #include <cdio/rock.h>
 
@@ -301,8 +303,6 @@ struct iso9660_dir_s {
   iso711_t         filename_len;      /*! number of bytes in filename field */
   char             filename[EMPTY_ARRAY_SIZE];
 } GNUC_PACKED;
-
-typedef struct iso9660_dir_s  iso9660_dir_t;
 
 /*! 
   \brief ISO-9660 Primary Volume Descriptor.
@@ -521,6 +521,23 @@ PRAGMA_END_PACKED
    @see iso9660_dir
 */
 struct iso9660_stat_s { /* big endian!! */
+  bool         b_rock;                /**< has Rock Ridge extension. 
+                                          If not true then the next 7 feilds
+                                          aren't used.
+                                       */
+  mode_t       st_mode;               /**< protection */
+  nlink_t      st_nlinks;             /**< number of hard links */
+  uid_t        st_uid;                /**< user ID of owner */
+  gid_t        st_gid;                /**< group ID of owner */
+  uint8_t      s_rock_offset;
+  int          i_size;
+#if 0
+  time_t       st_atime;              /**< time of last access */
+  time_t       st_mtime;              /**< time of last modification */
+  time_t       st_ctime;              /**< time of last change */
+#endif
+
+  /* Non Ridge-specific fields  */
   struct tm    tm;                    /**< time on entry */
   lsn_t        lsn;                   /**< start logical sector number */
   uint32_t     size;                  /**< total size in bytes */
@@ -529,9 +546,6 @@ struct iso9660_stat_s { /* big endian!! */
   enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;
   char         filename[EMPTY_ARRAY_SIZE]; /**< filename */
 };
-
-typedef struct iso9660_stat_s iso9660_stat_t;
-
 
 /** A mask used in iso9660_ifs_read_vd which allows what kinds 
     of extensions we allow, eg. Joliet, Rock Ridge, etc. */
