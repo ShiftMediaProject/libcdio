@@ -1,3 +1,15 @@
-This library is to encapsulate CD-ROM reading and control.
-Applications wishing to be oblivious of the OS- and device-dependant
-properties of a CD-ROM can use this library.
+This library is to encapsulate CD-ROM reading and
+control. Applications wishing to be oblivious of the OS- and
+device-dependant properties of a CD-ROM can use this library.
+
+Some support for disk image types like BIN/CUE and NRG is available,
+so applications that use this library also have the ability to read
+disc images as though they were CD's.
+
+Immediate uses are VCDImager, a navigation-capable Video CD plugin
+and CD-DA plugin for the media player xine.
+
+A sample utility, cdinfo, is included which displayings CD info. 
+
+If libcddb (http://libcddb.sourceforge.net) is available, the cdinfo
+program will display CDDB matches on CD-DA discs.
