@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.2 2004/12/22 10:04:46 rocky Exp $
+#   $Id: Makefile.am,v 1.3 2005/01/11 00:34:10 rocky Exp $
 #
-#    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -129,10 +129,8 @@ libiso9660_la_DEPENDENCIES = $(libcdio9660_la_dependencies) libiso9660.la.ver
 
 libiso9660.la.ver: $(libiso9660_la_OBJECTS) $(srcdir)/libiso9660.sym
 	echo 'ISO9660_$(libiso9660_la_MAJOR) {' > $@
-	echo "  global:" >> $@
-	nm $(patsubst %.lo,%.o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libiso9660.sym; then echo "    $${symbol};"; fi; done >> $@
-	echo "  local:" >> $@
-	nm $(patsubst %.lo,%.o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libiso9660.sym; then :; else echo "    $${symbol};"; fi; done >> $@
+	nm $(patsubst %.lo,%.o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libiso9660.sym; then if test $$first = true; then echo "  global:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@
+	nm $(patsubst %.lo,%.o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libiso9660.sym; then :; else if test $$first = true; then echo "  local:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@
 	echo '};' >> $@
 
 MOSTLYCLEANFILES = libiso9660.la.ver
