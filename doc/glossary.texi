@@ -6,25 +6,47 @@ See also @uref{http://www.dvdrhelp.com/glossary}.
 Compact Disc
 
 @item CD-DA
-@acronym{CD} Digital Audio, described in the ``Red Book'' or ICE
+Compact Disc Digital Audio, described in the ``Red Book'' or ICE
 908. This commonly referred to as an audio @acronym{CD} and what most
 people think of when you play a @acronym{CD} as it was the first to
 use the @acronym{CD} medium.
 
-@item CD-ROM
-@acronym{CD} Read Only Memory or ``Yellow Book'' describe in Standards
-ISO/IEC 10149.
+@item CD-i Bridge
 
-@item CD-ROM XA
+A standard allowing CD-ROM XA discs to play on CD-i.  Kodak PhotoCDs
+are CD-XA Bridge discs.
+
+@item CD-ROM
+Compact Disc Read Only Memory or ``Yellow Book'' describe in Standards
+ISO/IEC 10149. The data stored on it can be either in the form of
+audio, computer or video files.
+
+@item CD-ROM Mode 1 and Mode2
+
+The Yellow Book specifies two types of tracks, Mode 1 and Mode 2. Mode
+1 is used for computer data and text and has an extra error correction
+layer. Mode 2 is for audio and video data and has no extra correction
+layer. CD-ROM/XA An expansion of the CD-ROM Mode 2 format that allows
+both computer and audio/video to be mixed in the same track.
+
+@item CD XA
 CD-ROM EXtended Architecture. A modification to the CD-ROM
 specification that defines two new types of sectors.  CD-ROM XA was
-developed jointly by Sony, Philips, and Microsoft, and its
-specifications were published in an extension to the Yellow Book.
-CD-i, Photo CD, Video CD and CD-EXTRA have all subsequently been based
-on CD-ROM XA.
+developed jointly by Sony, Philips, and Microsoft, and announced in
+August 1988. Its specifications were published in an extension to the
+Yellow Book.  CD-i, Photo CD, Video CD and CD-EXTRA have all
+subsequently been based on CD-ROM XA.
 
-@item CD-XA
-See @acronym{CD-ROM XA}.
+CD-XA defines another way of formatting sectors on a CD-ROM, including
+headers in the sectors that describe the type (audio, video, data) and
+some additional info (markers, resolution in case of a video or audio
+sector, file numbers, etc).
+
+The data written on a CD-XA is consistent with and can be in ISO-9660
+file system format and therefore be readable by ISO-9660 file system
+translators. But also a CD-I player can also read CD-XA discs even if
+its own `Green Book' file system only resembles ISO 9660 and isn't
+fully compatible. 
 
 @item FSF
 Free Software Foundation, @uref{http://www.fsf.org/}
@@ -35,8 +57,43 @@ Free Software Foundation, @uref{http://www.fsf.org/}
 @item ISO
 International Standards Organization. 
 
+@item ISO 9660
+
+The ISO 9660 format is a logical filesystem format for CD-ROM
+media. It was standardized in 1988 and replaced the High Sierra
+standard for the logical format on CD-ROM media (ISO 9660 and High
+Sierra are identical in content, but the exact format is different).
+
+@item Joliet extensions
+
+This standard was developed for Windows 95 and Windows NT by Microsoft
+as an extension of ISO 9600 to support long file names up to 64
+characters.
+
+@item Mixed-Mode 
+
+A CD that contains tracks of differing CD-ROM Mode formats. For
+example a discs could contain both computer data (Yellow Book) and
+audio (Red Book) tracks. 
+
+@item Multisession 
+
+A way of writing to a CD that allows more data to be
+added to readable discs at a later time.
+
+@item Session
+
+A fully readable complete recording that contains one or more tracks
+of computer data or audio on a CD.
+
 @item SVCD
 Super @acronym{VCD} @uref{http://www.dvdrhelp.com/svcd}
+
+@item Track 
+
+A unit of data of a CD. The size of a track can vary; it can occupy
+the entire contents of the CD. Most CD standards however require that
+tracks have a 150 frame (or ``2 second'' lead in gap.
 
 @item VCD
 Video @acronym{CD} @uref{http://www.dvdrhelp.com/vcd}
