@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.15 2004/01/10 03:21:50 rocky Exp $
+    $Id: iso9660_fs.c,v 1.16 2004/02/07 18:53:02 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -40,7 +40,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.15 2004/01/10 03:21:50 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.16 2004/02/07 18:53:02 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -79,7 +79,7 @@ bool
 iso9660_close (iso9660_t *iso)
 {
   if (NULL != iso) {
-    cdio_stream_destroy(iso->stream);
+    cdio_stdio_destroy(iso->stream);
     free(iso);
   }
   return true;

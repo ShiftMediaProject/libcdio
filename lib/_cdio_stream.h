@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.h,v 1.7 2004/01/10 03:03:08 rocky Exp $
+    $Id: _cdio_stream.h,v 1.8 2004/02/07 18:53:02 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -104,6 +104,9 @@ extern "C" {
   */
   long int cdio_stream_stat(CdioDataSource* obj);
   
+  /*!
+    Deallocate resources assocaited with obj. After this obj is unusable.
+  */
   void cdio_stream_destroy(CdioDataSource* obj);
   
   void cdio_stream_close(CdioDataSource* obj);

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.38 2004/01/09 02:42:39 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.39 2004/02/07 18:53:02 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.38 2004/01/09 02:42:39 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.39 2004/02/07 18:53:02 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -580,7 +580,7 @@ _cdio_bincue_free (void *env) {
 
   if (NULL == _obj) return;
   free_if_notnull(_obj->mcn);
-  cdio_generic_stream_free(_obj);
+  cdio_generic_stdio_free(_obj);
 }
 
 /*!
@@ -917,6 +917,7 @@ cdio_open_bincue (const char *source_name)
   char *bin_name = cdio_is_cuefile(source_name);
 
   if (NULL != bin_name) {
+    free(bin_name);
     return cdio_open_cue(source_name);
   } else {
     char *cue_name = cdio_is_binfile(source_name);
@@ -950,7 +951,7 @@ cdio_open_cue (const char *cue_name)
   if (_cdio_init(_data)) {
     return ret;
   } else {
-    cdio_generic_stream_free (_data);
+    cdio_generic_stdio_free (_data);
     return NULL;
   }
 }

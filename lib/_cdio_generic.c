@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.11 2003/09/28 17:14:20 rocky Exp $
+    $Id: _cdio_generic.c,v 1.12 2004/02/07 18:53:02 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.11 2003/09/28 17:14:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.12 2004/02/07 18:53:02 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -126,7 +126,7 @@ cdio_generic_read (void *user_data, void *buf, size_t size)
   Release and free resources associated with stream or disk image.
 */
 void
-cdio_generic_stream_free (void *user_data)
+cdio_generic_stdio_free (void *user_data)
 {
   generic_img_private_t *_obj = user_data;
 
@@ -134,7 +134,7 @@ cdio_generic_stream_free (void *user_data)
   free (_obj->source_name);
 
   if (_obj->data_source)
-    cdio_stream_destroy (_obj->data_source);
+    cdio_stdio_destroy (_obj->data_source);
 
   free (_obj);
 }

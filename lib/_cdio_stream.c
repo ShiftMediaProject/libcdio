@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.c,v 1.8 2004/01/10 03:03:08 rocky Exp $
+    $Id: _cdio_stream.c,v 1.9 2004/02/07 18:53:02 rocky Exp $
 
     Copyright (C) 2000, 2004 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -34,7 +34,7 @@
 #include <cdio/util.h>
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.8 2004/01/10 03:03:08 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.9 2004/02/07 18:53:02 rocky Exp $";
 
 /* 
  * DataSource implementations
@@ -186,6 +186,8 @@ cdio_stream_destroy(CdioDataSource* obj)
   cdio_stream_close(obj);
 
   obj->op.free(obj->user_data);
+
+  free(obj);
 }
 
 

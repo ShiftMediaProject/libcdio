@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.17 2003/09/30 03:26:11 rocky Exp $
+    $Id: cdio_private.h,v 1.18 2004/02/07 18:53:02 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -275,7 +275,7 @@ extern "C" {
   /*!
     Release and free resources associated with stream or disk image.
   */
-  void cdio_generic_stream_free (void *env);
+  void cdio_generic_stdio_free (void *env);
 
   /*!  
     Return true if source_name could be a device containing a CD-ROM on

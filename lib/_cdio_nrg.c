@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.30 2004/02/01 15:53:06 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.31 2004/02/07 18:53:02 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.30 2004/02/01 15:53:06 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.31 2004/02/07 18:53:02 rocky Exp $";
 
 /* structures used */
 
@@ -1092,7 +1092,7 @@ cdio_open_nrg (const char *source_name)
 
   cdio_funcs _funcs = {
     .eject_media        = cdio_generic_bogus_eject_media,
-    .free               = cdio_generic_stream_free,
+    .free               = cdio_generic_stdio_free,
     .get_arg            = _cdio_get_arg,
     .get_devices        = cdio_get_devices_nrg,
     .get_default_device = cdio_get_default_device_nrg,
@@ -1131,7 +1131,7 @@ cdio_open_nrg (const char *source_name)
   if (_cdio_init(_data))
     return ret;
   else {
-    cdio_generic_stream_free (_data);
+    cdio_generic_stdio_free (_data);
     return NULL;
   }
 
