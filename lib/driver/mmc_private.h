@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: mmc_private.h,v 1.4 2005/02/09 02:50:47 rocky Exp $
+    $Id: mmc_private.h,v 1.5 2005/02/17 04:57:21 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -59,8 +59,32 @@ int get_media_changed_mmc (const void *p_user_data);
 
 char *get_mcn_mmc (const void *p_user_data);
 
+/*! Read just the user data part of some sort of data sector (via 
+    mmc_read_cd). 
+
+    @param p_user_data object to read from
+
+    @param p_buf place to read data into.  The caller should make sure
+                 this location can store at least CDIO_CD_FRAMESIZE,
+                 M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE depending on
+                 the kind of sector getting read. If you don't know
+                 whether you have a Mode 1/2, Form 1/ Form 2/Formless
+                 sector best to reserve space for the maximum,
+                 M2RAW_SECTOR_SIZE.
+
+    @param i_lsn sector to read
+    @param i_blocksize size of block. Should be either CDIO_CD_FRAMESIZE, 
+    M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE. See comment above under p_buf.
+
+*/
+driver_return_code_t read_data_sector_mmc ( void *p_user_data, 
+					    void *p_buf,  lsn_t i_lsn,
+					    uint16_t i_blocksize );
+char *get_mcn_mmc (const void *p_user_data);
+
 /* Set read blocksize (via MMC) */
-driver_return_code_t set_blocksize_mmc (void *p_user_data, int i_blocksize);
+driver_return_code_t set_blocksize_mmc (void *p_user_data, 
+					uint16_t i_blocksize);
 
 /* Set CD-ROM drive speed (via MMC) */
 driver_return_code_t set_speed_mmc (void *p_user_data, int i_speed);
@@ -80,7 +104,7 @@ typedef driver_return_code_t (*mmc_run_cmd_fn_t)
 			     
 int mmc_set_blocksize_mmc_private ( const void *p_env, const
 				    mmc_run_cmd_fn_t run_mmc_cmd,
-				    unsigned int bsize );
+				    uint16_t i_blocksize );
 
 /*! 
   Get the DVD type associated with cd object.
@@ -113,4 +137,4 @@ void mmc_get_drive_cap_buf(const uint8_t *p,
 driver_return_code_t
 mmc_set_blocksize_private ( void *p_env, 
 			    const mmc_run_cmd_fn_t run_mmc_cmd, 
-			    unsigned int i_bsize);
+			    uint16_t i_blocksize);

@@ -1,5 +1,5 @@
 /*
-    $Id: image.h,v 1.6 2005/01/22 23:57:10 rocky Exp $
+    $Id: image.h,v 1.7 2005/02/17 04:57:21 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -69,7 +69,7 @@ typedef struct {
   trackmode_t    mode;
   uint16_t       datasize;      /**< How much is in the portion we return 
 				     back? */
-  long int       datastart;     /**<  Offset from begining of fraem 
+  uint16_t       datastart;     /**<  Offset from begining of frame 
 				      that data starts */
   uint16_t       endsize;       /**< How much stuff at the end to skip over. 
 				     This stuff may have error correction 

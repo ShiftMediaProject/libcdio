@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.24 2005/02/07 04:16:19 rocky Exp $
+    $Id: _cdio_linux.c,v 1.25 2005/02/17 04:57:21 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.24 2005/02/07 04:16:19 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.25 2005/02/17 04:57:21 rocky Exp $";
 
 #include <string.h>
 
@@ -576,11 +576,11 @@ is_cdrom_linux(const char *drive, char *mnttype)
 */
 static driver_return_code_t
 _read_audio_sectors_linux (void *p_user_data, void *buf, lsn_t lsn, 
-			   unsigned int nblocks)
+			   uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   return mmc_read_sectors( p_env->gen.cdio, buf, lsn, CDIO_MMC_READ_TYPE_CDDA, 
-                           nblocks);
+                           i_blocks);
 }
 
 /* Packet driver to read mode2 sectors. 
@@ -588,7 +588,7 @@ _read_audio_sectors_linux (void *p_user_data, void *buf, lsn_t lsn,
 */
 static driver_return_code_t
 _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba, 
-			 unsigned int nblocks, bool b_read_10)
+			 uint32_t i_blocks, bool b_read_10)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
 
@@ -598,7 +598,7 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
     int retval;
     
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_10);
-    CDIO_MMC_SET_READ_LENGTH16(cdb.field, nblocks);
+    CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_blocks);
 
     if ((retval = mmc_set_blocksize (p_env->gen.cdio, M2RAW_SECTOR_SIZE)))
       return retval;
@@ -607,7 +607,7 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
                                      mmc_get_cmd_len(cdb.field[0]),
                                      &cdb, 
                                      SCSI_MMC_DATA_READ,
-                                     M2RAW_SECTOR_SIZE * nblocks, 
+                                     M2RAW_SECTOR_SIZE * i_blocks, 
                                      p_buf)))
       {
 	mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
@@ -623,35 +623,35 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
     cdb.field[9] = 0x58; /* 2336 mode2 */
 
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
-    CDIO_MMC_SET_READ_LENGTH24(cdb.field, nblocks);
+    CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks);
 
     return run_mmc_cmd_linux (p_env, 0, 
                               mmc_get_cmd_len(cdb.field[0]), &cdb, 
                               SCSI_MMC_DATA_READ,
-                              M2RAW_SECTOR_SIZE * nblocks, p_buf);
+                              M2RAW_SECTOR_SIZE * i_blocks, p_buf);
   }
 }
 
 static driver_return_code_t
 _read_mode2_sectors (_img_private_t *p_env, void *p_buf, lba_t lba, 
-		     unsigned int nblocks, bool b_read_10)
+		     uint32_t i_blocks, bool b_read_10)
 {
   unsigned int l = 0;
   int retval = 0;
 
-  while (nblocks > 0)
+  while (i_blocks > 0)
     {
-      const unsigned nblocks2 = (nblocks > 25) ? 25 : nblocks;
+      const unsigned i_blocks2 = (i_blocks > 25) ? 25 : i_blocks;
       void *p_buf2 = ((char *)p_buf ) + (l * M2RAW_SECTOR_SIZE);
       
       retval |= _read_mode2_sectors_mmc (p_env, p_buf2, lba + l, 
-					 nblocks2, b_read_10);
+					 i_blocks2, b_read_10);
 
       if (retval)
 	break;
 
-      nblocks -= nblocks2;
-      l += nblocks2;
+      i_blocks -= i_blocks2;
+      l += i_blocks2;
     }
 
   return retval;
@@ -666,7 +666,7 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
 			 bool b_form2)
 {
 
-#if FIXED
+#if 0
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   struct cdrom_msf *p_msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
@@ -674,9 +674,9 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
   _img_private_t *p_env = p_user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
-  msf->cdmsf_min0 = cdio_from_bcd8(_msf.m);
-  msf->cdmsf_sec0 = cdio_from_bcd8(_msf.s);
-  msf->cdmsf_frame0 = cdio_from_bcd8(_msf.f);
+  p_msf->cdmsf_min0 = cdio_from_bcd8(_msf.m);
+  p_msf->cdmsf_sec0 = cdio_from_bcd8(_msf.s);
+  p_msf->cdmsf_frame0 = cdio_from_bcd8(_msf.f);
 
  retry:
   switch (p_env->access_mode)
@@ -697,8 +697,8 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
       
     case _AM_READ_CD:
     case _AM_READ_10:
-      if (_read_mode2_sectors (p_env->gen.fd, buf, lsn, 1, 
-				      (p_env->access_mode == _AM_READ_10)))
+      if (_read_mode2_sectors (p_env, buf, lsn, 1, 
+                               (p_env->access_mode == _AM_READ_10)))
 	{
 	  perror ("ioctl()");
 	  if (p_env->access_mode == _AM_READ_CD)
@@ -718,7 +718,7 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
       break;
     }
 
-  memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
+  memcpy (p_data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
 	  b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
   
 #else
@@ -728,20 +728,20 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
 }
 
 /*!
-   Reads nblocks of mode2 sectors from cd device into data starting
+   Reads i_blocks of mode2 sectors from cd device into data starting
    from lsn.
    Returns 0 if no error. 
  */
 static driver_return_code_t
 _read_mode1_sectors_linux (void *p_user_data, void *p_data, lsn_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+			  bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   unsigned int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
-  for (i = 0; i < nblocks; i++) {
+  for (i = 0; i < i_blocks; i++) {
     if ( (retval = _read_mode1_sector_linux (p_env,
 					    ((char *)p_data) + (blocksize*i),
 					    lsn + i, b_form2)) )
@@ -818,20 +818,20 @@ _read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
 }
 
 /*!
-   Reads nblocks of mode2 sectors from cd device into data starting
+   Reads i_blocks of mode2 sectors from cd device into data starting
    from lsn.
    Returns 0 if no error. 
  */
 static driver_return_code_t
 _read_mode2_sectors_linux (void *p_user_data, void *data, lsn_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+			  bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   unsigned int i;
-  unsigned int i_blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
+  uint16_t i_blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   /* For each frame, pick out the data part we need */
-  for (i = 0; i < nblocks; i++) {
+  for (i = 0; i < i_blocks; i++) {
     int retval;
     if ( (retval = _read_mode2_sector_linux (p_env, 
 					    ((char *)data) + (i_blocksize*i),
@@ -1189,6 +1189,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .lseek                 = cdio_generic_lseek,
     .read                  = cdio_generic_read,
     .read_audio_sectors    = _read_audio_sectors_linux,
+    .read_data_sector      = read_data_sector_mmc,
     .read_mode1_sector     = _read_mode1_sector_linux,
     .read_mode1_sectors    = _read_mode1_sectors_linux,
     .read_mode2_sector     = _read_mode2_sector_linux,

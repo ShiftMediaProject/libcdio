@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.11 2005/01/27 03:10:06 rocky Exp $
+    $Id: generic.h,v 1.12 2005/02/17 04:57:21 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -83,7 +83,7 @@ extern "C" {
   */
   driver_return_code_t 
   cdio_generic_unimplemented_set_blocksize (void *p_user_data, 
-					    int i_blocksize);
+					    uint16_t i_blocksize);
 
   /*!
     Set the drive speed.

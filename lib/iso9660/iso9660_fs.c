@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.14 2005/02/14 07:49:46 rocky Exp $
+    $Id: iso9660_fs.c,v 1.15 2005/02/17 04:57:21 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.14 2005/02/14 07:49:46 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.15 2005/02/17 04:57:21 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -672,31 +672,13 @@ bool
 iso9660_fs_read_pvd(const CdIo_t *p_cdio, /*out*/ iso9660_pvd_t *p_pvd)
 {
   /* A bit of a hack, we'll assume track 1 contains ISO_PVD_SECTOR.*/
-  bool b_mode2;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  int i_rc;
+  driver_return_code_t driver_return = 
+    cdio_read_data_sector (p_cdio, buf, ISO_PVD_SECTOR, ISO_BLOCKSIZE);
 
-  switch(cdio_get_track_format(p_cdio, 1)) {
-  case TRACK_FORMAT_CDI:
-  case TRACK_FORMAT_XA:
-    b_mode2 = true;
-    break;
-  case TRACK_FORMAT_DATA:
-    b_mode2 = false;
-    break;
-  case TRACK_FORMAT_AUDIO: 
-  case TRACK_FORMAT_PSX: 
-  case TRACK_FORMAT_ERROR: 
-  default:
-    return false;
-  }
-  
-  i_rc = b_mode2 
-      ? cdio_read_mode2_sector (p_cdio, buf, ISO_PVD_SECTOR, false)
-      : cdio_read_mode1_sector (p_cdio, buf, ISO_PVD_SECTOR, false);
-  
-  if (i_rc) {
-    cdio_warn ("error reading PVD sector (%d)", ISO_PVD_SECTOR);
+  if (DRIVER_OP_SUCCESS != driver_return) {
+    cdio_warn ("error reading PVD sector (%d) error %d", ISO_PVD_SECTOR,
+	       driver_return);
     return false;
   }
 
@@ -727,35 +709,18 @@ iso9660_fs_read_superblock (CdIo_t *p_cdio,
     iso9660_pvd_t         *p_pvd = &(p_env->pvd);
     iso9660_svd_t         *p_svd = &(p_env->svd);
     char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-    bool                   b_mode2;
-    int i_rc;
+    driver_return_code_t driver_return = 
+      cdio_read_data_sector (p_cdio, buf, ISO_PVD_SECTOR, ISO_BLOCKSIZE);
 
-    /* A bit of a hack, we'll assume track 1 contains ISO_PVD_SECTOR.*/
-    switch(cdio_get_track_format(p_cdio, 1)) {
-    case TRACK_FORMAT_CDI:
-    case TRACK_FORMAT_XA:
-      b_mode2 = true;
-      break;
-    case TRACK_FORMAT_DATA:
-      b_mode2 = false;
-      break;
-    case TRACK_FORMAT_AUDIO: 
-    case TRACK_FORMAT_PSX: 
-    case TRACK_FORMAT_ERROR: 
-    default:
-      return false;
-    }
-  
     if ( !iso9660_fs_read_pvd(p_cdio, p_pvd) )
       return false;
     
     p_env->i_joliet_level = 0;
     
-    i_rc = (b_mode2)
-      ? cdio_read_mode2_sector (p_cdio, buf, ISO_PVD_SECTOR+1, false)
-      : cdio_read_mode1_sector (p_cdio, buf, ISO_PVD_SECTOR+1, false);
+    driver_return = 
+      cdio_read_data_sector (p_cdio, buf, ISO_PVD_SECTOR+1, ISO_BLOCKSIZE);
 
-    if (0 == i_rc) {
+  if (DRIVER_OP_SUCCESS == driver_return) {
       /* The size of a PVD or SVD is smaller than a sector. So we
 	 allocated a bigger block above (buf) and now we'll copy just
 	 the part we need to save.

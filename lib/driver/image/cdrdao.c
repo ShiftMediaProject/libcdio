@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.14 2005/02/11 01:34:12 rocky Exp $
+    $Id: cdrdao.c,v 1.15 2005/02/17 04:57:21 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.14 2005/02/11 01:34:12 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.15 2005/02/17 04:57:21 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -73,12 +73,12 @@ static bool parse_tocfile (_img_private_t *cd, const char *p_toc_name);
 static bool
 check_track_is_blocksize_multiple(const char *psz_fname, 
 				  track_t i_track, long i_size, 
-				  long i_blocksize)
+				  uint16_t i_blocksize)
 {
   if (i_size % i_blocksize) {
     cdio_info ("image %s track %d size (%ld) not a multiple"
 	       " of the blocksize (%ld)", psz_fname, i_track, i_size, 
-	       i_blocksize);
+	       (long int) i_blocksize);
     if (i_size % M2RAW_SECTOR_SIZE == 0)
       cdio_info ("this may be a 2336-type disc image");
     else if (i_size % CDIO_CD_FRAMESIZE_RAW == 0)
@@ -236,7 +236,7 @@ get_disc_last_lsn_cdrdao (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
   track_t i_leadout = p_env->gen.i_tracks;
-  long i_blocksize  = p_env->tocent[i_leadout-1].blocksize;
+  uint16_t i_blocksize  = p_env->tocent[i_leadout-1].blocksize;
   long i_size;
 
   if (p_env->tocent[i_leadout-1].sec_count) {
@@ -787,7 +787,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	    /* No start-msf. */
 	    if (cd) {
 	      if (i) {
-		long i_blocksize = cd->tocent[i-1].blocksize;
+		uint16_t i_blocksize = cd->tocent[i-1].blocksize;
 		long i_size      = 
 		  cdio_stream_stat(cd->tocent[i-1].data_source);
 
@@ -1286,6 +1286,7 @@ cdio_open_cdrdao (const char *psz_cue_name)
   _funcs.lseek                 = _lseek_cdrdao;
   _funcs.read                  = _read_cdrdao;
   _funcs.read_audio_sectors    = _read_audio_sectors_cdrdao;
+  _funcs.read_data_sector      = read_data_sector_image;
   _funcs.read_mode1_sector     = _read_mode1_sector_cdrdao;
   _funcs.read_mode1_sectors    = _read_mode1_sectors_cdrdao;
   _funcs.read_mode2_sector     = _read_mode2_sector_cdrdao;

@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.12 2005/02/14 01:07:29 rocky Exp $
+    $Id: mmc.c,v 1.13 2005/02/17 04:57:21 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -109,9 +109,20 @@ get_mcn_mmc (const void *p_user_data)
   return mmc_get_mcn( p_env->cdio );
 }
 
+/*! Read sectors using SCSI-MMC GPCMD_READ_CD.
+   Can read only up to 25 blocks.
+*/
+driver_return_code_t 
+read_data_sector_mmc ( void *p_user_data, void *p_buf, 
+                       lba_t i_lba,  uint16_t i_blocksize )
+{
+  const generic_img_private_t *p_env = p_user_data;
+  return mmc_read_data_sector( p_env->cdio, p_buf, i_lba, i_blocksize );
+}
+
 /* Set read blocksize (via MMC) */
 driver_return_code_t
-set_blocksize_mmc (void *p_user_data, int i_blocksize)
+set_blocksize_mmc (void *p_user_data, uint16_t i_blocksize)
 {
   generic_img_private_t *p_env = p_user_data;
   if (!p_env) return DRIVER_OP_UNINIT;
@@ -400,7 +411,7 @@ mmc_init_cdtext_private ( void *p_user_data,
 driver_return_code_t
 mmc_set_blocksize_private ( void *p_env, 
                             const mmc_run_cmd_fn_t run_mmc_cmd, 
-                            unsigned int i_bsize)
+                            uint16_t i_blocksize)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
 
@@ -425,9 +436,9 @@ mmc_set_blocksize_private ( void *p_env,
 
   memset (&mh, 0, sizeof (mh));
   mh.block_desc_length = 0x08;
-  mh.block_length_hi   = (i_bsize >> 16) & 0xff;
-  mh.block_length_med  = (i_bsize >>  8) & 0xff;
-  mh.block_length_lo   = (i_bsize >>  0) & 0xff;
+  mh.block_length_hi   = (i_blocksize >> 16) & 0xff;
+  mh.block_length_med  = (i_blocksize >>  8) & 0xff;
+  mh.block_length_lo   = (i_blocksize >>  0) & 0xff;
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SELECT_6);
 
@@ -990,12 +1001,81 @@ mmc_have_interface( CdIo_t *p_cdio, mmc_feature_interface_t e_interface )
     return dunno;
 }
 
+/*! issue a MMC READ_CD command.
+*/
+driver_return_code_t
+mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
+              int read_sector_type, bool b_digital_audio_play,
+	      bool b_sync, uint8_t header_codes, bool b_user_data, 
+	      bool b_edc_ecc, uint8_t c2_error_information, 
+	      uint8_t subchannel_selection, uint16_t i_blocksize, 
+	      uint32_t i_blocks )
+{
+  scsi_mmc_cdb_t cdb = {{0, }};
+
+  mmc_run_cmd_fn_t run_mmc_cmd;
+  uint8_t i_read_type = 0;
+  uint8_t cdb9 = 0;
+    
+
+  if (!p_cdio) return DRIVER_OP_UNINIT;
+  if (!p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
+
+  run_mmc_cmd = p_cdio->op.run_mmc_cmd;
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
+
+  i_read_type = read_sector_type << 2;
+  if (b_digital_audio_play) i_read_type |= 0x2;
+  
+  CDIO_MMC_SET_READ_TYPE    (cdb.field, i_read_type);
+  CDIO_MMC_SET_READ_LBA     (cdb.field, i_lsn);
+  CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks);
+
+  
+  if (b_sync)      cdb9 |= 128;
+  if (b_user_data) cdb9 |=  16;
+  if (b_edc_ecc)   cdb9 |=   8;
+  cdb9 |= (header_codes & 3)         << 5;
+  cdb9 |= (c2_error_information & 3) << 1;
+  cdb.field[9]  = cdb9;
+  cdb.field[10] = (subchannel_selection & 7);
+
+  return run_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
+                      mmc_get_cmd_len(cdb.field[0]), &cdb, 
+                      SCSI_MMC_DATA_READ, 
+                      i_blocksize * i_blocks,
+                      p_buf);
+}
+
+/*! Read sectors using SCSI-MMC GPCMD_READ_CD.
+*/
+driver_return_code_t 
+mmc_read_data_sector ( CdIo_t *p_cdio, void *p_buf, 
+                       lsn_t i_lsn,  uint16_t i_blocksize )
+{
+  return mmc_read_cd(p_cdio, 
+                     p_buf, /* place to store data */
+                     i_lsn, /* lsn */
+                     0, /* read_sector_type */
+                     false, /* digital audio play */
+                     false, /* return sync header */
+                     0,     /* header codes */
+                     true,  /* return user data */
+                     false, /* return EDC ECC */
+                     false, /* return C2 Error information */
+                     0,     /* suchannel selection bits */
+                     ISO_BLOCKSIZE, /* blocksize*/ 
+                     1      /* Number of blocks. */);
+
+}
+
 /*! Read sectors using SCSI-MMC GPCMD_READ_CD.
    Can read only up to 25 blocks.
 */
 driver_return_code_t
-mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba, 
-			int sector_type, unsigned int i_blocks )
+mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
+                   int sector_type, uint32_t i_blocks )
 {
   scsi_mmc_cdb_t cdb = {{0, }};
 
@@ -1008,7 +1088,7 @@ mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba,
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
   CDIO_MMC_SET_READ_TYPE    (cdb.field, sector_type);
-  CDIO_MMC_SET_READ_LBA     (cdb.field, lba);
+  CDIO_MMC_SET_READ_LBA     (cdb.field, i_lsn);
   CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks);
   CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb.field, 
 					   CDIO_MMC_MCSB_ALL_HEADERS);
@@ -1021,7 +1101,7 @@ mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba,
 }
 
 driver_return_code_t
-mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_blocksize)
+mmc_set_blocksize ( const CdIo_t *p_cdio, uint16_t i_blocksize)
 {
   if ( ! p_cdio )  return DRIVER_OP_UNINIT;
   return 

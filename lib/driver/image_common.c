@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.c,v 1.10 2005/02/11 01:34:12 rocky Exp $
+    $Id: image_common.c,v 1.11 2005/02/17 04:57:21 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -245,6 +245,52 @@ get_track_preemphasis_image(const void *p_user_data, track_t i_track)
   return ( p_env->tocent[i_track-p_env->gen.i_first_track].flags 
 	   & PRE_EMPHASIS ) ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
 }
+
+/*!
+  Read a data sector
+  
+  @param p_cdio object to read from
+
+  @param p_buf place to read data into.  The caller should make sure
+  this location can store at least ISO_BLOCKSIZE, M2RAW_SECTOR_SIZE,
+  or M2F2_SECTOR_SIZE depending on the kind of sector getting read. If
+  you don't know whether you have a Mode 1/2, Form 1/ Form 2/Formless
+  sector best to reserve space for the maximum, M2RAW_SECTOR_SIZE.
+
+  @param i_lsn sector to read
+
+  @param i_blocksize size of block. Should be either ISO_BLOCKSIZE
+  M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE. See comment above under
+  p_buf.
+  */
+driver_return_code_t 
+read_data_sector_image ( void *p_user_data, void *p_buf, 
+                       lsn_t i_lsn,  uint16_t i_blocksize )
+{
+  const _img_private_t *p_env = p_user_data;
+
+  if (!p_env || !p_env->gen.cdio) return DRIVER_OP_UNINIT;
+  
+  {
+    CdIo_t *p_cdio                = p_env->gen.cdio;
+    track_t i_track               = cdio_get_track(p_cdio, i_lsn);
+    track_format_t e_track_format = cdio_get_track_format(p_cdio, i_track);
+
+    switch(e_track_format) {
+    case TRACK_FORMAT_PSX:
+    case TRACK_FORMAT_AUDIO:
+    case TRACK_FORMAT_ERROR:
+      return DRIVER_OP_ERROR;
+    case TRACK_FORMAT_CDI:
+    case TRACK_FORMAT_DATA:
+      return cdio_read_mode1_sector (p_cdio, p_buf, i_lsn, false);
+    case TRACK_FORMAT_XA:
+      return cdio_read_mode2_sector (p_cdio, p_buf, i_lsn, false);
+    }
+  }
+  return DRIVER_OP_ERROR;
+}
+
 
 /*!
   Set the arg "key" with "value" in the source device.

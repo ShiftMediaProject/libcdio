@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.17 2005/02/06 13:05:42 rocky Exp $
+    $Id: freebsd.c,v 1.18 2005/02/17 04:57:21 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.17 2005/02/06 13:05:42 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.18 2005/02/17 04:57:21 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -130,7 +130,7 @@ _read_mode2_sectors_freebsd (void *user_data, void *data, lsn_t lsn,
     return read_mode2_sectors_freebsd_cam(env, data, lsn, nblocks);
   } else {
     unsigned int i;
-    unsigned int i_blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
+    uint16_t i_blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
   
     /* For each frame, pick out the data part we need */
     for (i = 0; i < nblocks; i++) {

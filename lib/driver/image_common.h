@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.8 2005/02/06 11:32:22 rocky Exp $
+    $Id: image_common.h,v 1.9 2005/02/17 04:57:21 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -150,6 +150,27 @@ track_flag_t get_track_copy_permit_image(void *p_user_data, track_t i_track);
 */
 track_flag_t get_track_preemphasis_image(const void *p_user_data, 
 					 track_t i_track);
+/*!
+  Read a data sector
+  
+  @param p_cdio object to read from
+
+  @param p_buf place to read data into.  The caller should make sure
+  this location can store at least ISO_BLOCKSIZE, M2RAW_SECTOR_SIZE,
+  or M2F2_SECTOR_SIZE depending on the kind of sector getting read. If
+  you don't know whether you have a Mode 1/2, Form 1/ Form 2/Formless
+  sector best to reserve space for the maximum, M2RAW_SECTOR_SIZE.
+
+  @param i_lsn sector to read
+
+  @param i_blocksize size of block. Should be either ISO_BLOCKSIZE
+  M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE. See comment above under
+  p_buf.
+  */
+driver_return_code_t 
+read_data_sector_image ( void *p_user_data, void *p_buf, 
+			 lsn_t i_lsn,  uint16_t i_blocksize );
+
 /*!
   Set the arg "key" with "value" in the source device.
   Currently "source" to set the source device in I/O operations 

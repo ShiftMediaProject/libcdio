@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.14 2005/02/06 11:32:22 rocky Exp $
+    $Id: cdio_private.h,v 1.15 2005/02/17 04:57:21 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -228,20 +228,41 @@ extern "C" {
       Returns -1 on error. 
       Similar to libc's read()
     */
-    ssize_t (*read) (void *p_env, void *p_buf, size_t size);
+    ssize_t (*read) (void *p_env, void *p_buf, size_t i_size);
     
     /*!
       Reads a single mode2 sector from cd device into buf starting
       from lsn. Returns 0 if no error. 
     */
-    int (*read_audio_sectors) (void *p_env, void *p_buf, lsn_t lsn,
+    int (*read_audio_sectors) (void *p_env, void *p_buf, lsn_t i_lsn,
 			       unsigned int i_blocks);
     
     /*!
+      Read a data sector
+      
+      @param p_env environment to read from
+
+      @param p_buf place to read data into.  The caller should make sure
+      this location can store at least CDIO_CD_FRAMESIZE, 
+      M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE depending
+      on the kind of sector getting read. If you don't 
+      know whether you have a Mode 1/2, Form 1/ Form 2/Formless
+      sector best to reserve space for the maximum, 
+      M2RAW_SECTOR_SIZE.
+
+      @param i_lsn sector to read
+      @param i_blocksize size of block. Should be either CDIO_CD_FRAMESIZE, 
+      M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE. See comment above under p_buf.
+    */
+    driver_return_code_t (*read_data_sector) (void *p_env, void *p_buf, 
+					      lsn_t i_lsn, 
+					      uint16_t i_blocksize);
+    
+    /*!
       Reads a single mode2 sector from cd device into buf starting
       from lsn. Returns 0 if no error. 
     */
-    int (*read_mode2_sector) (void *p_env, void *p_buf, lsn_t lsn, 
+    int (*read_mode2_sector) (void *p_env, void *p_buf, lsn_t i_lsn, 
 			      bool b_mode2_form2);
     
     /*!
@@ -249,14 +270,14 @@ extern "C" {
       from lsn.
       Returns 0 if no error. 
     */
-    int (*read_mode2_sectors) (void *p_env, void *p_buf, lsn_t lsn, 
+    int (*read_mode2_sectors) (void *p_env, void *p_buf, lsn_t i_lsn,
 			       bool b_mode2_form2, unsigned int i_blocks);
     
     /*!
       Reads a single mode1 sector from cd device into buf starting
       from lsn. Returns 0 if no error. 
     */
-    int (*read_mode1_sector) (void *p_env, void *p_buf, lsn_t lsn, 
+    int (*read_mode1_sector) (void *p_env, void *p_buf, lsn_t i_lsn,
 			      bool mode1_form2);
     
     /*!
@@ -264,7 +285,7 @@ extern "C" {
       from lsn.
       Returns 0 if no error. 
     */
-    int (*read_mode1_sectors) (void *p_env, void *p_buf, lsn_t lsn, 
+    int (*read_mode1_sectors) (void *p_env, void *p_buf, lsn_t i_lsn,
 			       bool mode1_form2, unsigned int i_blocks);
     
     bool (*read_toc) ( void *p_env ) ;
@@ -295,7 +316,8 @@ extern "C" {
     /*!
       Set the blocksize for subsequent reads. 
     */
-    driver_return_code_t (*set_blocksize) ( void *p_env, int i_blocksize );
+    driver_return_code_t (*set_blocksize) ( void *p_env, 
+					    uint16_t i_blocksize );
 
     /*!
       Set the drive speed. 
@@ -362,7 +384,7 @@ extern "C" {
     Add/allocate a drive to the end of drives. 
     Use cdio_free_device_list() to free this device_list.
   */
-  void cdio_add_device_list(char **device_list[], const char *drive, 
+  void cdio_add_device_list(char **device_list[], const char *psz_drive,
 			    unsigned int *i_drives);
 
 #ifdef __cplusplus

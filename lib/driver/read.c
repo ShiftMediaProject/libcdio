@@ -1,5 +1,5 @@
 /*
-    $Id: read.c,v 1.4 2005/02/05 04:25:14 rocky Exp $
+    $Id: read.c,v 1.5 2005/02/17 04:57:21 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -70,8 +70,6 @@
     }                                                                   \
   }
 
-
-
 /*!
   lseek - reposition read/write file offset
   Returns (off_t) -1 on error. 
@@ -93,12 +91,12 @@ cdio_lseek (const CdIo_t *p_cdio, off_t offset, int whence)
   Similar to (if not the same as) libc's read()
 */
 ssize_t
-cdio_read (const CdIo_t *p_cdio, void *p_buf, size_t size)
+cdio_read (const CdIo_t *p_cdio, void *p_buf, size_t i_size)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
   
   if (p_cdio->op.read)
-    return p_cdio->op.read (p_cdio->env, p_buf, size);
+    return p_cdio->op.read (p_cdio->env, p_buf, i_size);
   return DRIVER_OP_UNSUPPORTED;
 }
 
@@ -110,7 +108,7 @@ driver_return_code_t
 cdio_read_audio_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn) 
 {
   check_lsn(i_lsn);
-  if  (p_cdio->op.read_audio_sectors != NULL)
+  if  (p_cdio->op.read_audio_sectors)
     return p_cdio->op.read_audio_sectors (p_cdio->env, p_buf, i_lsn, 1);
   return DRIVER_OP_UNSUPPORTED;
 }
@@ -121,13 +119,28 @@ cdio_read_audio_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn)
 */
 driver_return_code_t
 cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
-                         unsigned int i_blocks) 
+                         uint32_t i_blocks) 
 {
   check_lsn_blocks(i_lsn, i_blocks);
-  if (p_cdio->op.read_audio_sectors != NULL)
+  if (p_cdio->op.read_audio_sectors)
     return p_cdio->op.read_audio_sectors (p_cdio->env, p_buf, i_lsn, i_blocks);
   return DRIVER_OP_UNSUPPORTED;
 }
+/*!
+  Reads an audio sector from cd device into data starting
+  from lsn. Returns DRIVER_OP_SUCCESS if no error. 
+*/
+driver_return_code_t
+cdio_read_data_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
+                       uint16_t i_blocksize) 
+{
+  check_lsn(i_lsn);
+  if  (p_cdio->op.read_data_sector)
+    return p_cdio->op.read_data_sector (p_cdio->env, p_buf, i_lsn, 
+                                        i_blocksize);
+  return DRIVER_OP_UNSUPPORTED;
+}
+
 
 #ifndef SEEK_SET
 #define SEEK_SET 0
@@ -167,11 +180,11 @@ cdio_read_mode1_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   @param lsn sector to read
   @param b_form2 true for reading mode 1 form 2 sectors or false for 
   mode 1 form 1 sectors.
-  @param i_sectors number of sectors to read
+  @param i_blocks number of sectors to read
 */
 driver_return_code_t
 cdio_read_mode1_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-                         bool b_form2,  unsigned int i_blocks)
+                         bool b_form2,  uint32_t i_blocks)
 {
   check_lsn_blocks(i_lsn, i_blocks);
   if (p_cdio->op.read_mode1_sectors)
@@ -211,11 +224,11 @@ cdio_read_mode2_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   @param lsn sector to read
   @param b_form2 true for reading mode2 form 2 sectors or false for 
   mode 2  form 1 sectors.
-  @param i_sectors number of sectors to read
+  @param i_blocks number of sectors to read
 */
 driver_return_code_t
 cdio_read_mode2_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-                         bool b_form2, unsigned int i_blocks)
+                         bool b_form2, uint32_t i_blocks)
 {
   check_lsn_blocks(i_lsn, i_blocks);
   if (p_cdio->op.read_mode2_sectors) 
