@@ -1,5 +1,5 @@
 /*
-  $Id: rock.c,v 1.3 2005/02/14 07:49:46 rocky Exp $
+  $Id: rock.c,v 1.4 2005/02/18 01:31:08 rocky Exp $
  
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -91,7 +91,7 @@ get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * psz_name,
   int len;
   unsigned char *chr;
   CONTINUE_DECLS;
-  int retnamlen = 0;
+  int i_namelen = 0;
   int truncate=0;
 
   if (!p_stat || nope == p_stat->b_rock) return 0;
@@ -140,7 +140,7 @@ get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * psz_name,
 	  break;
 	}
 	strncat(psz_name, rr->u.NM.name, rr->len - 5);
-	retnamlen += rr->len - 5;
+	i_namelen += rr->len - 5;
 	break;
       case SIG('P','X'):
 	p_stat->st_mode   = from_733(rr->u.PX.st_mode);
@@ -186,7 +186,7 @@ get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * psz_name,
     }
   }
   free(buffer);
-  return retnamlen; /* If 0, this file did not have a NM field */
+  return i_namelen; /* If 0, this file did not have a NM field */
  out:
   free(buffer);
   return 0;

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.113 2005/02/17 11:54:28 rocky Exp $
+    $Id: cd-info.c,v 1.114 2005/02/18 01:31:08 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -538,8 +538,8 @@ static void
 print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[], 
 		       cdio_fs_anal_t fs)
 {
-  CdioList_t *entlist;
-  CdioList_t *dirlist =  _cdio_list_new ();
+  CdioList_t *p_entlist;
+  CdioList_t *p_dirlist =  _cdio_list_new ();
   CdioListNode_t *entnode;
   uint8_t i_joliet_level;
 
@@ -547,73 +547,78 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
     ? 0
     : cdio_get_joliet_level(p_cdio);
 
-  entlist = iso9660_fs_readdir (p_cdio, pathname, false);
+  p_entlist = iso9660_fs_readdir (p_cdio, pathname, false);
     
   printf ("%s:\n", pathname);
 
-  if (NULL == entlist) {
+  if (NULL == p_entlist) {
     report( stderr, "Error getting above directory information\n" );
     return;
   }
 
   /* Iterate over files in this directory */
   
-  _CDIO_LIST_FOREACH (entnode, entlist)
+  _CDIO_LIST_FOREACH (entnode, p_entlist)
     {
-      iso9660_stat_t *statbuf = _cdio_list_node_data (entnode);
-      char *iso_name = statbuf->filename;
+      iso9660_stat_t *p_statbuf = _cdio_list_node_data (entnode);
+      char *psz_iso_name = p_statbuf->filename;
       char _fullname[4096] = { 0, };
       char translated_name[MAX_ISONAME+1];
 #define DATESTR_SIZE 30
       char date_str[DATESTR_SIZE];
 
-      iso9660_name_translate_ext(iso_name, translated_name, i_joliet_level);
+      if (yep != p_statbuf->b_rock) {
+	iso9660_name_translate_ext(psz_iso_name, translated_name, 
+				   i_joliet_level);
+      }
+  
       
       snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
-		iso_name);
+		psz_iso_name);
   
       strncat (_fullname, "/", sizeof (_fullname));
 
-      if (statbuf->type == _STAT_DIR
-          && strcmp (iso_name, ".") 
-          && strcmp (iso_name, ".."))
-        _cdio_list_append (dirlist, strdup (_fullname));
+      if (p_statbuf->type == _STAT_DIR
+          && strcmp (psz_iso_name, ".") 
+          && strcmp (psz_iso_name, ".."))
+        _cdio_list_append (p_dirlist, strdup (_fullname));
 
       if (fs & CDIO_FS_ANAL_XA) {
 	printf ( "  %c %s %d %d [fn %.2d] [LSN %6lu] ",
-		 (statbuf->type == _STAT_DIR) ? 'd' : '-',
-		 iso9660_get_xa_attr_str (statbuf->xa.attributes),
-		 uint16_from_be (statbuf->xa.user_id),
-		 uint16_from_be (statbuf->xa.group_id),
-		 statbuf->xa.filenum,
-		 (long unsigned int) statbuf->lsn);
+		 (p_statbuf->type == _STAT_DIR) ? 'd' : '-',
+		 iso9660_get_xa_attr_str (p_statbuf->xa.attributes),
+		 uint16_from_be (p_statbuf->xa.user_id),
+		 uint16_from_be (p_statbuf->xa.group_id),
+		 p_statbuf->xa.filenum,
+		 (long unsigned int) p_statbuf->lsn);
 	
-	if (uint16_from_be(statbuf->xa.attributes) & XA_ATTR_MODE2FORM2) {
+	if (uint16_from_be(p_statbuf->xa.attributes) & XA_ATTR_MODE2FORM2) {
 	  printf ("%9u (%9u)",
-		  (unsigned int) statbuf->secsize * M2F2_SECTOR_SIZE,
-		  (unsigned int) statbuf->size);
+		  (unsigned int) p_statbuf->secsize * M2F2_SECTOR_SIZE,
+		  (unsigned int) p_statbuf->size);
 	} else {
-	  printf ("%9u", (unsigned int) statbuf->size);
+	  printf ("%9u", (unsigned int) p_statbuf->size);
 	}
       }
-      strftime(date_str, DATESTR_SIZE, "%b %d %Y %H:%M ", &statbuf->tm);
-      printf (" %s %s\n", date_str, translated_name);
+      strftime(date_str, DATESTR_SIZE, "%b %d %Y %H:%M ", &p_statbuf->tm);
+      printf (" %s %s\n", date_str, (yep != p_statbuf->b_rock) 
+	      ? translated_name : psz_iso_name);
     }
 
-  _cdio_list_free (entlist, true);
+  _cdio_list_free (p_entlist, true);
 
   printf ("\n");
 
   /* Now recurse over the directories. */
 
-  _CDIO_LIST_FOREACH (entnode, dirlist)
+  _CDIO_LIST_FOREACH (entnode, p_dirlist)
     {
       char *_fullname = _cdio_list_node_data (entnode);
 
       print_iso9660_recurse (p_cdio, _fullname, fs);
     }
 
-  _cdio_list_free (dirlist, true);
+  _cdio_list_free (p_dirlist, true);
 }
 
 static void
