@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.23 2004/08/10 11:58:15 rocky Exp $
+  $Id: util.c,v 1.24 2004/08/27 00:02:10 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -384,6 +384,8 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
 {
   if (CDIO_DRIVE_CAP_ERROR == i_misc_cap) {
     printf("Error in getting drive hardware properties\n");
+  }  else if (CDIO_DRIVE_CAP_UNKNOWN == i_misc_cap) {
+    printf("Uknown drive hardware properties\n");
   } else {
     printf(_("Hardware                    : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_FILE  
@@ -410,6 +412,8 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
     
   if (CDIO_DRIVE_CAP_ERROR == i_read_cap) {
       printf("Error in getting drive reading properties\n");
+  }  else if (CDIO_DRIVE_CAP_UNKNOWN == i_misc_cap) {
+    printf("Uknown drive reading properties\n");
   } else {
     printf("Reading....\n");
     printf(_("  Can play audio            : %s\n"), 
@@ -425,6 +429,8 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
 
   if (CDIO_DRIVE_CAP_ERROR == i_write_cap) {
       printf("Error in getting drive writing properties\n");
+  }  else if (CDIO_DRIVE_CAP_UNKNOWN == i_misc_cap) {
+    printf("Uknown drive writing properties\n");
   } else {
     printf("\nWriting....\n");
     printf(_("  Can write CD-RW           : %s\n"), 
