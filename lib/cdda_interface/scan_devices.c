@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.7 2005/01/08 20:39:40 rocky Exp $
+  $Id: scan_devices.c,v 1.8 2005/01/08 20:47:03 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -157,9 +157,7 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
 
   cdrom_drive_t *d=NULL;
   struct stat st;
-#ifdef HAVE_LINUX_MAJOR_H
   int drive_type = 0;
-#endif
   char *description=NULL;
   char *device = NULL;
   CdIo_t *p_cdio = NULL;
