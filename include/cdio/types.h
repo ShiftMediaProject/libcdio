@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.10 2004/03/13 03:32:49 rocky Exp $
+    $Id: types.h,v 1.11 2004/04/22 03:24:38 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -215,6 +215,9 @@ extern "C" {
   
   /*! The type of an track number 0..99. */
   typedef uint8_t track_t;
+  
+  /*! The type of an Logical Sector Number. */
+  typedef uint32_t cdio_drive_cap_t;
   
   /*! 
     Constant for invalid track number

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.32 2004/03/07 02:42:22 rocky Exp $
+    $Id: _cdio_linux.c,v 1.33 2004/04/22 03:24:38 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.32 2004/03/07 02:42:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.33 2004/04/22 03:24:38 rocky Exp $";
 
 #include <string.h>
 
@@ -813,11 +813,31 @@ static char *
 _cdio_get_mcn (void *env) {
 
   struct cdrom_mcn mcn;
-  _img_private_t *_obj = env;
+  const _img_private_t *_obj = env;
   memset(&mcn, 0, sizeof(mcn));
   if (ioctl(_obj->gen.fd, CDROM_GET_MCN, &mcn) != 0)
     return NULL;
   return strdup(mcn.medium_catalog_number);
+}
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static cdio_drive_cap_t
+_cdio_get_drive_cap (const void *env) {
+  const _img_private_t *_obj = env;
+  int32_t i_drivetype;
+
+  i_drivetype = ioctl (_obj->gen.fd, CDROM_GET_CAPABILITY, CDSL_CURRENT);
+
+  if (i_drivetype < 0) return CDIO_DRIVE_ERROR;
+
+  /* If >= 0 we can safely cast as cdio_drive_cap_t and return */
+  return (cdio_drive_cap_t) i_drivetype;
 }
 
 /*!
@@ -1060,6 +1080,7 @@ cdio_open_linux (const char *orig_source_name)
     .get_arg            = _cdio_get_arg,
     .get_devices        = cdio_get_devices_linux,
     .get_default_device = cdio_get_default_device_linux,
+    .get_drive_cap      = _cdio_get_drive_cap,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_mcn            = _cdio_get_mcn,
     .get_num_tracks     = _cdio_get_num_tracks,

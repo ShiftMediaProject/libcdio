@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.37 2004/03/20 22:46:57 rocky Exp $
+    $Id: cdio.h,v 1.38 2004/04/22 03:24:38 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -44,12 +44,25 @@
 #include <cdio/types.h>
 #include <cdio/sector.h>
 
-/* Flags specifying the category of device to open or is opened. */
+/**! Flags specifying the category of device to open or is opened. */
 
 #define CDIO_SRC_IS_DISK_IMAGE_MASK 0x0001 /**< Read source is a CD image. */
 #define CDIO_SRC_IS_DEVICE_MASK     0x0002 /**< Read source is a CD device. */
-#define CDIO_SRC_IS_SCSI_MASK       0x0004 
+#define CDIO_SRC_IS_SCSI_MASK       0x0004 /**< Read source SCSI device. */
 #define CDIO_SRC_IS_NATIVE_MASK     0x0008
+
+/*!
+  \brief Drive types returned by cdio_get_drive_cap()
+ */
+#define CDIO_DRIVE_ERROR        0x0000	/**< Error */
+#define CDIO_DRIVE_UNKNOWN      0x0001	/**< Dunno */
+#define CDIO_DRIVE_FILE		0x1000	/**< drive is really a file, i.e a
+                                           CD file image */
+#define CDIO_DRIVE_CD_R		0x2000	/**< drive is a CD-R */
+#define CDIO_DRIVE_CD_RW	0x4000	/**< drive is a CD-RW */
+#define CDIO_DRIVE_DVD		0x8000	/**< drive is a DVD */
+#define CDIO_DRIVE_DVD_R	0x10000	/**< drive can write DVD-R */
+#define CDIO_DRIVE_DVD_RAM	0x20000	/**< drive can write DVD-RAM */
 
 #ifdef __cplusplus
 extern "C" {
@@ -169,6 +182,13 @@ extern "C" {
     NULL is returned if we couldn't get a default device.
   */
   char * cdio_get_default_device (const CdIo *obj);
+
+  /*!
+    Return the what kind of device we've got.
+
+    See above for a list of bitmasks for the drive type;
+  */
+  cdio_drive_cap_t cdio_get_drive_cap (const char *device);
 
   /*!
     Return the media catalog number (MCN) from the CD or NULL if there

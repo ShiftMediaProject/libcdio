@@ -1,5 +1,5 @@
 /*
-  $Id: sample2.c,v 1.4 2004/03/20 13:12:22 rocky Exp $
+  $Id: sample2.c,v 1.5 2004/04/22 03:24:38 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -41,10 +41,36 @@ main(int argc, const char *argv[])
   
   if (NULL != cdio) {
     char *default_device = cdio_get_default_device(cdio);
+
     printf("The driver selected is %s\n", cdio_get_driver_name(cdio));
-    printf("The default device for this driver is %s\n\n", default_device);
+
+    if (default_device) {
+      cdio_drive_cap_t i_drive_cap =  cdio_get_drive_cap(default_device);
+      printf("The default device for this driver is %s\n", default_device);
+      printf("drive capability in hex: %x\n", i_drive_cap);
+      if (CDIO_DRIVE_ERROR == i_drive_cap) {
+	printf("Error in getting drive properties\n");
+      } else if (CDIO_DRIVE_UNKNOWN == i_drive_cap) {
+	printf("Can't determine drive properties\n");
+      } else if (CDIO_DRIVE_FILE == i_drive_cap) {
+	printf("Can't determine drive properties\n");
+      } else {
+	if (i_drive_cap & CDIO_DRIVE_CD_R) 
+	  printf("Drive can read CD-ROM\n");
+	if (i_drive_cap & CDIO_DRIVE_CD_RW) 
+	  printf("Drive can write CD-ROM\n");
+	if (i_drive_cap & CDIO_DRIVE_DVD) 
+	  printf("Drive can read DVD\n");
+	if (i_drive_cap & CDIO_DRIVE_DVD_R) 
+	  printf("Drive can write DVD-R\n");
+	if (i_drive_cap & CDIO_DRIVE_DVD_RAM) 
+	  printf("Drive can write DVD-RAM\n");
+      }
+    }
+      
     free(default_device);
     cdio_destroy(cdio);
+    printf("\n");
   } else {
     printf("Problem in trying to find a driver.\n\n");
   }

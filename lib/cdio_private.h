@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.19 2004/03/05 04:23:52 rocky Exp $
+    $Id: cdio_private.h,v 1.20 2004/04/22 03:24:38 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -69,6 +69,13 @@ extern "C" {
     */
     char * (*get_default_device)(void);
     
+    /*!
+      Return the what kind of device we've got.
+      
+      See cd_types.h for a list of bitmasks for the drive type;
+    */
+    unsigned int (*get_drive_cap) (const void *env);
+
     /*!  
       Return the media catalog number MCN from the CD or NULL if
       there is none or we don't have the ability to get it.
