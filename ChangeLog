@@ -1,3 +1,110 @@
+2003-09-06 10:54  rocky
+
+	* test/: isofs-m1.right, monvoisin.right, svcd_ogt_test_ntsc.right,
+	svcdgs.right, vcd_demo.right, videocd.right: Update for normal
+	filenames from the ISO-9660 names.
+
+2003-09-06 10:50  rocky
+
+	* include/cdio/iso9660.h, lib/iso9660.c, lib/iso9660_fs.c,
+	lib/iso9660_private.h, src/cd-info.c: Add iso9660_name_translate()
+	to remove ISO-name cruft.  Document iso9660_fs_stat().
+
+2003-09-05 22:51  rocky
+
+	* include/cdio/types.h: Small comment change.
+
+2003-09-05 18:48  rocky
+
+	* include/cdio/cdio.h, include/cdio/iso9660.h, lib/cdio.c,
+	lib/iso9660_fs.c: Move ISO-9660 lsn-finding routine from vcdimager
+	here.  More prototypes are "const CdIo *".
+
+2003-09-01 18:51  rocky
+
+	* lib/_cdio_bincue.c: Test for NULL binfile - as odd as this
+	sounds, it could cause core dump if no CD loaded.
+
+2003-09-01 18:50  rocky
+
+	* configure.ac: Remove -Wsign-promo which is not relevant for C
+	programs.
+
+2003-09-01 18:31  rocky
+
+	* src/cd-info.c: Always have no-vcdinfo option.
+
+2003-09-01 15:25  rocky
+
+	* libcdio.spec.in: Translation kindly and graceously provided by
+	Manfred Tremmel
+
+2003-09-01 12:02  rocky
+
+	* include/cdio/iso9660.h: Did packing incorrectly on pvd_t.
+
+2003-09-01 11:11  rocky
+
+	* lib/: _cdio_bsdi.c, _cdio_freebsd.c, _cdio_linux.c,
+	_cdio_sunos.c: Note TOC's initialized so we don't reread. Add some
+	int's to unsigned.
+
+2003-09-01 11:10  rocky
+
+	* include/cdio/iso9660.h, lib/iso9660.c: Start to document library
+	routines. An "int" was changed to the more correct "bool".
+
+2003-09-01 11:08  rocky
+
+	* test/.cvsignore: [no log message]
+
+2003-09-01 11:08  rocky
+
+	* test/: Makefile.am, testiso9660.c: Add minimal test of new
+	iso9660 library.
+
+2003-08-31 22:08  rocky
+
+	* include/cdio/iso9660.h, include/cdio/xa.h, lib/iso9660_private.h:
+	Merge in and tidy up with mkisofs's iso9660.h. If that is correct
+	(and it probably is), there were erroneous field definitions.
+
+2003-08-31 22:07  rocky
+
+	* configure.ac: Wrong AC_SUBST variable for CDDB.
+
+2003-08-31 22:05  rocky
+
+	* libcdio.spec.in: Add commentary about cd-info. Update
+	dependencies to latest versions of packages which is really needed.
+
+2003-08-31 22:04  rocky
+
+	* src/cd-info.c: Have to rely more on other XA test since track
+	indicator seems faulty.  Missing "break;" in switch caused us to
+	not print iso9660 filesystems.
+
+2003-08-31 22:02  rocky
+
+	* test/: check_cue.sh.in, check_nrg.sh.in: Was setting options all
+	wrong and using wrong CDDB subtitution variable.  As Bullwinkle
+	says, "This time, for sure!"
+
+2003-08-31 22:02  rocky
+
+	* lib/_cdio_linux.c: Wasn't noting that we read TOC so we were
+	re-reading it every time.
+
+2003-08-31 16:56  rocky
+
+	* src/cd-info.c: Deal with gcc warning. Think it was spurious, but
+	just in case.
+
+2003-08-31 16:52  rocky
+
+	* ChangeLog, Makefile.am, THANKS, libcdio.spec.in: Fixes from
+	Frantisek Dvorak <valtri@atlas.cz>
+
 2003-08-31 16:50  rocky
 
 	* NEWS: [no log message]
