@@ -50,6 +50,17 @@
 # include "config.h"
 #endif
 
+/* Give folks a way to choose what this program is to be called.
+   Some may want to use "cdparanoia", especially there is no other
+   program arround, since that name is what applications tend to use, 
+   
+   Others may want to have both programs around, so the default below
+   is suggested.
+ */
+#ifndef PROGRAM_NAME 
+#define PROGRAM_NAME "cd-paranoia"
+#endif
+
 #ifdef HAVE_STDIO_H
 # include <stdio.h>
 #endif
@@ -293,7 +304,7 @@ static void usage(FILE *f){
 PARANOIA_VERSION"\n"
 
 "USAGE:\n"
-"  cdparanoia [options] <span> [outfile]\n\n"
+"  %s [options] <span> [outfile]\n\n"
 
 "OPTIONS:\n"
 "  -v --verbose                    : extra verbose operation\n"
@@ -399,14 +410,16 @@ PARANOIA_VERSION"\n"
 "A few examples, protected from the shell:\n"
 "  A) query only with exhaustive search for a drive and full reporting\n"
 "     of autosense:\n"
-"       cdparanoia -vsQ\n\n"
+"       %s -vsQ\n\n"
 "  B) extract up to and including track 3, putting each track in a seperate\n"
 "     file:\n"
-"       cdparanoia -B -- \"-3\"\n\n"
+"       %s -B -- \"-3\"\n\n"
 "  C) extract from track 1, time 0:30.12 to 1:10.00:\n"
-"       cdparanoia \"1[:30.12]-1[1:10]\"\n\n"
+"       %s \"1[:30.12]-1[1:10]\"\n\n"
 
-"Submit bug reports to bug-libcdio@gnu.org\n\n");
+"Submit bug reports to bug-libcdio@gnu.org\n\n",
+	   PROGRAM_NAME, PROGRAM_NAME, PROGRAM_NAME, PROGRAM_NAME
+);
 }
 
 long callbegin;
@@ -891,7 +904,10 @@ main(int argc,char *argv[])
       if (ppsz_cd_drives) {
 	d=cdda_identify(*ppsz_cd_drives,verbose, NULL);
       } else {
-	report("\nUnable find a CD-ROM drive with an audio CD in it.");
+	report("\nUnable find or access a CD-ROM drive with an audio CD"
+	       " in it.");
+	report("\nYou might try specifying the drive, especially if it has"
+	       " mixed-mode (and non-audio) format tracks");
 	exit(1);
       }
 
