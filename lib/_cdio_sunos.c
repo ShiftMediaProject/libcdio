@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.41 2004/06/26 00:39:01 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.42 2004/06/27 21:57:45 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.41 2004/06/26 00:39:01 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.42 2004/06/27 21:57:45 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -89,7 +89,8 @@ typedef struct {
 
   /* Track information */
   struct cdrom_tochdr    tochdr;
-  struct cdrom_tocentry  tocent[100];    /* entry info for each track */
+  /* Entry info for each track, add 1 for leadout. */
+  struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1]; 
 
 } _img_private_t;
 
@@ -189,7 +190,7 @@ _cdio_read_mode1_sector (void *env, void *data, lsn_t lsn,
 #if FIXED
   do something here. 
 #else
-  return cdio_generic_read_form1_sector(env_data, data, lsn);
+  return cdio_generic_read_form1_sector(env, data, lsn);
 #endif
   return 0;
 }
@@ -506,7 +507,7 @@ _cdio_get_drive_cap_solaris (const void *user_data)
 #if 1
   struct uscsi_cmd my_cmd;
   int32_t i_drivetype = 0;
-  char buf[192] = { 0, };
+  uint8_t buf[192] = { 0, };
   unsigned char my_rq_buf[26];
   unsigned char my_scsi_cdb[6];
   const _img_private_t *env = user_data;
@@ -518,7 +519,7 @@ _cdio_get_drive_cap_solaris (const void *user_data)
   /* Initialize my_scsi_cdb as a Mode Select(6) */
   CDIO_MMC_SET_COMMAND(my_scsi_cdb, CDIO_MMC_MODE_SENSE);
   my_scsi_cdb[1] = 0x0;  
-  my_scsi_cdb[2] = 0x2a; /* MODE_PAGE_CAPABILITIES*/;
+  my_scsi_cdb[2] = CDIO_MMC_CAPABILITIES_PAGE; 
   my_scsi_cdb[3] = 0;    /* Not used */
   my_scsi_cdb[4] = 128; 
   my_scsi_cdb[5] = 0;    /* Not used */
@@ -535,20 +536,10 @@ _cdio_get_drive_cap_solaris (const void *user_data)
   rc = ioctl(env->gen.fd, USCSICMD, &my_cmd);
   if(rc == 0) {
     unsigned int n=buf[3]+4;
-    /* Reader? */
-    if (buf[n+5] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_AUDIO;
-    if (buf[n+2] & 0x02) i_drivetype |= CDIO_DRIVE_CAP_CD_RW;
-    if (buf[n+2] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_DVD;
-    
-    /* Writer? */
-    if (buf[n+3] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_R;
-    if (buf[n+3] & 0x10) i_drivetype |= CDIO_DRIVE_CAP_DVD_R;
-    if (buf[n+3] & 0x20) i_drivetype |= CDIO_DRIVE_CAP_DVD_RAM;
-    
-    if (buf[n+6] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_OPEN_TRAY;
-    if (buf[n+6] >> 5 != 0) i_drivetype |= CDIO_DRIVE_CAP_CLOSE_TRAY;
-    
+    i_drivetype |= cdio_get_drive_cap_mmc(&(buf[n]));
   } else {
+    cdio_info("%s: %s\n", 
+            "error in ioctl USCSICMD MODE_SELECT", strerror(errno));
     i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
   }
   return i_drivetype;
