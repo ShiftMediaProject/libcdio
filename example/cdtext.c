@@ -1,7 +1,7 @@
 /*
-  $Id: cdtext.c,v 1.1 2004/10/10 00:21:08 rocky Exp $
+  $Id: cdtext.c,v 1.2 2005/01/04 04:40:22 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 
 
 static void 
-print_cdtext_track_info(CdIo *p_cdio, track_t i_track, const char *psz_msg) {
+print_cdtext_track_info(CdIo_t *p_cdio, track_t i_track, const char *psz_msg) {
   const cdtext_t *cdtext = cdio_get_cdtext(p_cdio, 0);
   if (NULL != cdtext) {
     cdtext_field_t i;
@@ -46,7 +46,7 @@ print_cdtext_track_info(CdIo *p_cdio, track_t i_track, const char *psz_msg) {
 }
     
 static void 
-print_disc_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) {
+print_disc_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
   track_t i_last_track = i_first_track+i_tracks;
   discmode_t cd_discmode = cdio_get_discmode(p_cdio);
 
@@ -65,7 +65,7 @@ main(int argc, const char *argv[])
 {
   track_t i_first_track;
   track_t i_tracks;
-  CdIo *p_cdio       = cdio_open ("../test/cdda.cue", DRIVER_BINCUE);
+  CdIo_t *p_cdio       = cdio_open ("../test/cdda.cue", DRIVER_BINCUE);
 
 
   if (NULL == p_cdio) {

@@ -1,7 +1,7 @@
 /*
-  $Id: sample2.c,v 1.12 2004/08/07 10:50:03 rocky Exp $
+  $Id: sample2.c,v 1.13 2005/01/04 04:40:22 rocky Exp $
 
-  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
 int
 main(int argc, const char *argv[])
 {
-  CdIo *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  CdIo_t *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
   driver_id_t driver_id;
   
   if (NULL != p_cdio) {

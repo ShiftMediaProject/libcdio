@@ -1,7 +1,7 @@
 /*
-  $Id: tracks.c,v 1.1 2004/10/10 00:21:08 rocky Exp $
+  $Id: tracks.c,v 1.2 2005/01/04 04:40:22 rocky Exp $
 
-  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,10 +29,10 @@
 int
 main(int argc, const char *argv[])
 {
-  CdIo *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
-  track_t first_track_num;
-  track_t num_tracks;
-  int j, i=first_track_num;
+  CdIo_t *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  track_t i_first_track;
+  track_t i_tracks;
+  int j, i=i_first_track;
   
 
   if (NULL == p_cdio) {
@@ -40,14 +40,14 @@ main(int argc, const char *argv[])
     return 1;
   }
   
-  num_tracks      = cdio_get_num_tracks(p_cdio);
-  first_track_num = i = cdio_get_first_track_num(p_cdio);
+  i_tracks      = cdio_get_num_tracks(p_cdio);
+  i_first_track = i = cdio_get_first_track_num(p_cdio);
 
-  printf("CD-ROM Track List (%i - %i)\n", first_track_num, num_tracks);
+  printf("CD-ROM Track List (%i - %i)\n", i_first_track, i_tracks);
 
   printf("  #:  LSN\n");
   
-  for (j = 0; j < num_tracks; i++, j++) {
+  for (j = 0; j < i_tracks; i++, j++) {
     lsn_t lsn = cdio_get_track_lsn(p_cdio, i);
     if (CDIO_INVALID_LSN != lsn)
 	printf("%3d: %06lu\n", (int) i, (long unsigned int) lsn);

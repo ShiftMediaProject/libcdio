@@ -1,7 +1,7 @@
 /*
-  $Id: sample3.c,v 1.8 2004/08/07 10:50:03 rocky Exp $
+  $Id: sample3.c,v 1.9 2005/01/04 04:40:22 rocky Exp $
 
-  Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
 static void
 print_analysis(cdio_iso_analysis_t cdio_iso_analysis, 
 	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
-	       track_t num_tracks, track_t first_track_num, CdIo *p_cdio)
+	       track_t num_tracks, track_t first_track_num, CdIo_t *p_cdio)
 {
   switch(CDIO_FSTYPE(fs)) {
   case CDIO_FS_AUDIO:
@@ -114,7 +114,7 @@ print_analysis(cdio_iso_analysis_t cdio_iso_analysis,
 int
 main(int argc, const char *argv[])
 {
-  CdIo *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  CdIo_t *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
   cdio_fs_anal_t fs=0;
   
   track_t num_tracks;

@@ -1,7 +1,7 @@
 /*
-  $Id: iso2.c,v 1.4 2004/11/22 01:03:53 rocky Exp $
+  $Id: iso2.c,v 1.5 2005/01/04 04:40:22 rocky Exp $
 
-  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ main(int argc, const char *argv[])
   FILE *p_outfd;
   int i;
   
-  CdIo *p_cdio = cdio_open (ISO9660_IMAGE, DRIVER_BINCUE);
+  CdIo_t *p_cdio = cdio_open (ISO9660_IMAGE, DRIVER_BINCUE);
   
   if (NULL == p_cdio) {
     fprintf(stderr, "Sorry, couldn't open BIN/CUE image %s\n", ISO9660_IMAGE);
