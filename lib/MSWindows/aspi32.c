@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.24 2004/07/16 02:09:10 rocky Exp $
+    $Id: aspi32.c,v 1.25 2004/07/17 02:43:41 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.24 2004/07/16 02:09:10 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.25 2004/07/17 02:43:41 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -710,6 +710,12 @@ wnaspi32_eject_media (void *user_data) {
   i_track++;								\
   idx = 0;
 
+/*
+  Read cdtext information for a CdIo object .
+  
+  return true on success, false on error or CD-TEXT information does
+  not exist.
+*/
 /*! 
   Get cdtext information for a CdIo object .
   
@@ -717,8 +723,8 @@ wnaspi32_eject_media (void *user_data) {
   @return the CD-TEXT object or NULL if obj is NULL
   or CD-TEXT information does not exist.
 */
-const cdtext_t *
-get_cdtext_aspi (_img_private_t *env)
+static const cdtext_t *
+_init_cdtext_aspi (_img_private_t *env)
 {
   uint8_t  wdata[5000] = { 0, };
   uint8_t  scsi_cdb[10] = { 0, };
@@ -730,7 +736,7 @@ get_cdtext_aspi (_img_private_t *env)
 
   if (!scsi_passthrough_aspi(env, scsi_cdb, sizeof(scsi_cdb), 
 			     wdata, sizeof(wdata)))
-      return NULL;
+      return false;
 
   {
     CDText_data_t *pdata;
@@ -792,9 +798,30 @@ get_cdtext_aspi (_img_private_t *env)
     }
   }
 
-  env->b_cdtext_init = true;
-  return &(env->cdtext);
+  return true;
 }
+
+/*! 
+  Get cdtext information for a CdIo object .
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return the CD-TEXT object or NULL if obj is NULL
+  or CD-TEXT information does not exist.
+*/
+const cdtext_t *
+get_cdtext_aspi (_img_private_t *env, track_t i_track)
+{
+
+  env->b_cdtext_init = _init_cdtext_aspi(env);
+  if (!env->b_cdtext_init) return NULL;
+
+  if (0 == i_track) 
+    return &(env->cdtext);
+  else 
+    return &(env->cdtext_track[i_track-env->i_first_track]);
+}
+
+
 /*!
   Return the the kind of drive capabilities of device.
 

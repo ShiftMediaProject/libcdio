@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.21 2004/07/16 13:55:08 rocky Exp $
+    $Id: win32.c,v 1.22 2004/07/17 02:43:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.21 2004/07/16 13:55:08 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.22 2004/07/17 02:43:41 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -431,16 +431,22 @@ _get_arg_win32 (void *user_data, const char key[])
   Return the value associated with the key "arg".
 */
 static const cdtext_t *
-_get_cdtext_win32 (void *user_data)
+_get_cdtext_win32 (void *user_data, track_t i_track)
 {
   _img_private_t *env = user_data;
 
   if (NULL == env) return NULL;
 
+  if ( NULL == env ||
+       (0 != i_track 
+       && i_track >= env->i_tracks + env->i_first_track ) )
+    return NULL;
+
+
   if (env->hASPI) {
-    return get_cdtext_aspi(env);
+    return get_cdtext_aspi(env, i_track);
   } else 
-    return get_cdtext_win32ioctl(env);
+    return get_cdtext_win32ioctl(env, i_track);
 
   return NULL;
 }
@@ -495,19 +501,19 @@ _cdio_get_num_tracks(void *user_data)
   Get format of track. 
 */
 static track_format_t
-_cdio_get_track_format(void *obj, track_t track_num) 
+_cdio_get_track_format(void *obj, track_t i_tracks) 
 {
   _img_private_t *env = obj;
   
-  if (!env->gen.toc_init) _cdio_read_toc (env) ;
-
-  if (track_num > env->i_tracks || track_num == 0)
+  if ( NULL == env ||
+       ( i_track < env->i_first_track
+	 || i_track >= env->i_tracks + env->i_first_track ) )
     return TRACK_FORMAT_ERROR;
 
   if( env->hASPI ) {
-    return get_track_format_aspi(env, track_num);
+    return get_track_format_aspi(env, i_tracks);
   } else {
-    return get_track_format_win32ioctl(env, track_num);
+    return get_track_format_win32ioctl(env, i_tracks);
   }
 }
 
@@ -524,13 +530,6 @@ _cdio_get_track_green(void *obj, track_t i_track)
 {
   _img_private_t *env = obj;
   
-  if (!env->toc_init) _cdio_read_toc (env) ;
-
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = env->i_tracks+1;
-
-  if (i_track > env->i_tracks+1 || i_track == 0)
-    return false;
-
   switch (_cdio_get_track_format(env, i_track)) {
   case TRACK_FORMAT_XA:
     return true;
@@ -553,13 +552,13 @@ _cdio_get_track_green(void *obj, track_t i_track)
 
 /*!  
   Return the starting MSF (minutes/secs/frames) for track number
-  track_num in obj.  Track numbers start at 1.
+  i_tracks in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
-  using track_num LEADOUT_TRACK or the total tracks+1.
+  using i_tracks LEADOUT_TRACK or the total tracks+1.
   False is returned if there is no track entry.
 */
 static bool
-_cdio_get_track_msf(void *env, track_t track_num, msf_t *msf)
+_cdio_get_track_msf(void *env, track_t i_tracks, msf_t *msf)
 {
   _img_private_t *_obj = env;
 
@@ -567,12 +566,12 @@ _cdio_get_track_msf(void *env, track_t track_num, msf_t *msf)
 
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = _obj->i_tracks+1;
+  if (i_tracks == CDIO_CDROM_LEADOUT_TRACK) i_tracks = _obj->i_tracks+1;
 
-  if (track_num > _obj->i_tracks+1 || track_num == 0) {
+  if (i_tracks > _obj->i_tracks+1 || i_tracks == 0) {
     return false;
   } else {
-    cdio_lsn_to_msf(_obj->tocent[track_num-1].start_lsn, msf);
+    cdio_lsn_to_msf(_obj->tocent[i_tracks-1].start_lsn, msf);
     return true;
   }
 }

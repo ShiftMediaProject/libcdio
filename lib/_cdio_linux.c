@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.65 2004/07/17 02:18:27 rocky Exp $
+    $Id: _cdio_linux.c,v 1.66 2004/07/17 02:43:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.65 2004/07/17 02:18:27 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.66 2004/07/17 02:43:41 rocky Exp $";
 
 #include <string.h>
 
@@ -692,12 +692,11 @@ _cdio_read_toc (_img_private_t *env)
   i_track++;								\
   idx = 0;
 
-/*! 
-  Get cdtext information for a CdIo object .
+/*
+  Read cdtext information for a CdIo object .
   
-  @param obj the CD object that may contain CD-TEXT information.
-  @return the CD-TEXT object or NULL if obj is NULL
-  or CD-TEXT information does not exist.
+  return true on success, false on error or CD-TEXT information does
+  not exist.
 */
 static bool
 _init_cdtext_linux (_img_private_t *env)
@@ -1056,7 +1055,7 @@ _get_track_green_linux(void *user_data, track_t i_track)
   
   if (!env->gen.toc_init) _cdio_read_toc (env) ;
 
-  if (i_track > (TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM)
+  if (i_track >= (TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM)
     return false;
 
   i_track -= FIRST_TRACK_NUM;

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.48 2004/07/16 11:37:12 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.49 2004/07/17 02:43:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.48 2004/07/16 11:37:12 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.49 2004/07/17 02:43:41 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -415,18 +415,16 @@ _cdio_read_toc (_img_private_t *env)
   i_track++;								\
   idx = 0;
 
-/*! 
-  Get cdtext information for a CdIo object .
+/*
+  Read cdtext information for a CdIo object .
   
-  @param obj the CD object that may contain CD-TEXT information.
-  @return the CD-TEXT object or NULL if obj is NULL
-  or CD-TEXT information does not exist.
+  return true on success, false on error or CD-TEXT information does
+  not exist.
 */
 static const cdtext_t *
-_get_cdtext_solaris (void *user_data)
+_init_cdtext_solaris (_img_private_t *env)
 {
 
-  _img_private_t *env = user_data;
   int             status;
   char            wdata[5000] = { 0, };
   struct uscsi_cmd my_cmd;
@@ -453,7 +451,7 @@ _get_cdtext_solaris (void *user_data)
   status = ioctl(env->gen.fd, USCSICMD, &my_cmd);
   if(status != 0) {
     cdio_warn ("CDTEXT reading failed: %s\n", strerror(errno));  
-    return NULL;
+    return false;
   } else {
     
     CDText_data_t *pdata;
@@ -513,8 +511,31 @@ _get_cdtext_solaris (void *user_data)
       pdata++;
     }
   }
-  env->b_cdtext_init = true;
-  return &(env->cdtext);
+  return true;
+}
+
+/*! 
+  Get cdtext information for a CdIo object .
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return the CD-TEXT object or NULL if obj is NULL
+  or CD-TEXT information does not exist.
+*/
+static const cdtext_t *
+_get_cdtext_solaris (void *user_data, track_t i_track)
+{
+  if ( NULL == env ||
+       (0 != i_track 
+       && i_track >= TOTAL_TRACKS+FIRST_TRACK_NUM ) )
+    return NULL;
+
+  env->b_cdtext_init = _init_cdtext_solaris(env);
+  if (!env->b_cdtext_init) return NULL;
+
+  if (0 == i_track) 
+    return &(env->cdtext);
+  else 
+    return &(env->cdtext_track[i_track-FIRST_TRACK_NUM]);
 }
 
 /*!
@@ -804,7 +825,7 @@ _cdio_get_track_green(void *user_data, track_t i_track)
   if (!env->gen.init) _cdio_init(env);
   if (!env->gen.toc_init) _cdio_read_toc (env) ;
 
-  if (i_track > TOTAL_TRACKS+FIRST_TRACK_NUM || i_track < FIRST_TRACK_NUM)
+  if (i_track >= TOTAL_TRACKS+FIRST_TRACK_NUM || i_track < FIRST_TRACK_NUM)
     return false;
 
   i_track -= FIRST_TRACK_NUM;
