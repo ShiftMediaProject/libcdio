@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.5 2005/01/11 04:00:26 rocky Exp $
+#   $Id: Makefile.am,v 1.6 2005/01/11 04:05:02 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -28,7 +28,7 @@ EXTRA_DIST = $(man_MANS) getopt.c getopt1.c \
 	      usage.txt.in pod2c.pl \
 	      doc/FAQ.txt doc/overlapdef.txt
 
-noinst_HEADERS = getopt.h header.h report.h
+noinst_HEADERS = getopt.h header.h report.h utils.h version.h
 
 if BUILD_CD_PARANOIA
 cd_paranoia_SOURCES = cd-paranoia.c \
