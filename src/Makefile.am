@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.20 2004/02/25 10:04:06 rocky Exp $
+#   $Id: Makefile.am,v 1.21 2004/02/28 12:45:02 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -46,7 +46,7 @@ cdinfo_linux_SOURCES = cdinfo-linux.c
 cdinfo_linux_LDADD = $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
 bin_PROGRAMS = cd-info cd-read cdinfo-linux iso-info iso-read
 else
-bin_PROGRAMS = cd-info cd-read iso-info
+bin_PROGRAMS = cd-info cd-read iso-info iso-read
 EXTRA_DIST = cdinfo-linux.c $(man_MANS)
 endif
 else 
