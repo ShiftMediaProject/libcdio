@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.8 2005/02/05 18:41:31 rocky Exp $
+    $Id: iso9660_fs.c,v 1.9 2005/02/05 18:58:36 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -58,7 +58,7 @@ typedef enum  {
 } bool_3way_t;
   
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.8 2005/02/05 18:41:31 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.9 2005/02/05 18:58:36 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -136,6 +136,10 @@ adjust_fuzzy_pvd( iso9660_t *p_iso )
 	  cdio_warn ("Expecting the PVD sector header MSF to be 0x16, is: %x", 
 		     buf[14]);
 	}
+	if (buf[15+CDIO_CD_SUBHEADER_SIZE] != 0x1) {
+	  cdio_warn ("Expecting the PVD sector mode to be Mode 1 is: %x", 
+		     buf[15]);
+	}
 	p_iso->b_mode2 = nope;
 	p_iso->b_xa = nope;
       } else if (!memcmp(CDIO_SECTOR_SYNC_HEADER, buf, CDIO_CD_SYNC_SIZE)) {
@@ -143,6 +147,10 @@ adjust_fuzzy_pvd( iso9660_t *p_iso )
 	if (buf[14] != 0x16) {
 	  cdio_warn ("Expecting the PVD sector header MSF to be 0x16, is: %x", 
 		     buf[14]);
+	}
+	if (buf[15] != 0x2) {
+	  cdio_warn ("Expecting the PVD sector mode to be Mode 2 is: %x", 
+		     buf[15]);
 	}
 	p_iso->b_mode2 = yep;
 	/* Do do: check Mode 2 Form 2? */

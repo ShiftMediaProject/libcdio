@@ -1,5 +1,5 @@
 /*
-  $Id: iso4.c,v 1.1 2005/02/04 23:12:16 rocky Exp $
+  $Id: iso4.c,v 1.2 2005/02/05 18:58:36 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -69,7 +69,7 @@ main(int argc, const char *argv[])
   p_iso = iso9660_open_fuzzy (psz_fname, 5);
   
   if (NULL == p_iso) {
-    fprintf(stderr, "Sorry, could not find ISO 9660 image from %s\n", 
+    fprintf(stderr, "Sorry, could not find an ISO 9660 image from %s\n", 
 	    psz_fname);
     return 1;
   }
