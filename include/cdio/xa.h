@@ -1,8 +1,8 @@
 /*
-    $Id: xa.h,v 1.10 2005/02/01 07:01:20 rocky Exp $
+    $Id: xa.h,v 1.11 2005/02/05 17:29:01 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     See also iso9660.h by Eric Youngdale (1993) and in cdrtools. These
     are 
@@ -35,10 +35,46 @@
 
 #include <cdio/types.h>
 
+/*! An enumeration for some of the XA_* #defines below. This isn't
+  really an enumeration one would really use in a program it is to
+  be helpful in debuggers where wants just to refer to the XA_*
+  names and get something.
+*/
+extern enum cdio_xa_enums {
+  ISO_XA_MARKER_OFFSET =   1024,
+  XA_PERM_RSYS =         0x0001,  /**< System Group Read */
+    XA_PERM_XSYS =       0x0004,  /**< System Group Execute */
+
+    XA_PERM_RUSR =       0x0010,  /**< User (owner) Read */
+    XA_PERM_XUSR =       0x0040,  /**< User (owner) Execute */
+
+    XA_PERM_RGRP =       0x0100,  /**< Group Read */
+    XA_PERM_XGRP =       0x0400,  /**< Group Execute */
+
+    XA_PERM_ROTH =       0x1000,  /**< Other (world) Read */
+    XA_PERM_XOTH =       0x4000,  /**< Other (world) Execute */
+
+    XA_ATTR_MODE2FORM1  =   (1 << 11),
+    XA_ATTR_MODE2FORM2  =   (1 << 12),
+    XA_ATTR_INTERLEAVED =   (1 << 13),
+    XA_ATTR_CDDA        =   (1 << 14),
+    XA_ATTR_DIRECTORY   =   (1 << 15),
+
+    XA_PERM_ALL_READ    =   (XA_PERM_RUSR | XA_PERM_RSYS | XA_PERM_RGRP),
+    XA_PERM_ALL_EXEC    =   (XA_PERM_XUSR | XA_PERM_XSYS | XA_PERM_XGRP),
+    XA_PERM_ALL_ALL     =   (XA_PERM_ALL_READ | XA_PERM_ALL_EXEC),
+
+    XA_FORM1_DIR  = (XA_ATTR_DIRECTORY | XA_ATTR_MODE2FORM1 | XA_PERM_ALL_ALL),
+    XA_FORM1_FILE =  (XA_ATTR_MODE2FORM1 | XA_PERM_ALL_ALL),
+    XA_FORM2_FILE =  (XA_ATTR_MODE2FORM2 | XA_PERM_ALL_ALL)
+  
+} cdio_xa_enums;
+
+  
 #define ISO_XA_MARKER_STRING    "CD-XA001"
 #define ISO_XA_MARKER_OFFSET    1024
 
-/* XA attribute definitions */
+/*! XA attribute definitions */
 #define XA_PERM_RSYS          0x0001   /**< System Group Read */
 #define XA_PERM_XSYS          0x0004   /**< System Group Execute */
 

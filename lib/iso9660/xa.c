@@ -1,8 +1,8 @@
 /*
-    $Id: xa.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: xa.c,v 1.2 2005/02/05 17:29:01 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,6 +38,9 @@
 
 #define BUF_COUNT 16
 #define BUF_SIZE 80
+
+/* Variables to hold debugger-helping enumerations */
+enum cdio_xa_enums;
 
 /* Return a pointer to a internal free buffer */
 static char *

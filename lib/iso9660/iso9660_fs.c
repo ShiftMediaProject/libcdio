@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.6 2005/02/05 04:25:14 rocky Exp $
+    $Id: iso9660_fs.c,v 1.7 2005/02/05 17:29:01 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -51,12 +51,22 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.6 2005/02/05 04:25:14 rocky Exp $";
+typedef enum  {
+  nope  = 0,
+  yep   = 1,
+  dunno = 2
+} bool_3way_t;
+  
+
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.7 2005/02/05 17:29:01 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
   CdioDataSource_t *stream; /* Stream pointer */
-  bool b_xa;                /* true if has XA attributes. */
+  bool_3way_t b_xa;                /* true if has XA attributes. If true
+			       b_mode2 should be set true as well.
+			     */
+  bool_3way_t b_mode2;      /* true if has mode 2, false for mode 1. */
   uint8_t  i_joliet_level;  /* 0 = no Joliet extensions.
 			       1-3: Joliet level. */
   iso9660_pvd_t pvd;      
@@ -119,9 +129,14 @@ adjust_fuzzy_pvd( iso9660_t *p_iso )
 						SEEK_SET) )
       return;
     if (sizeof(buf) == cdio_stream_read (p_iso->stream, buf, sizeof(buf), 1)) {
-      if (memcmp(CDIO_SECTOR_SYNC_HEADER, buf, CDIO_CD_SYNC_SIZE) &&
-	  memcmp(CDIO_SECTOR_SYNC_HEADER, buf+CDIO_CD_SUBHEADER_SIZE, 
-		 CDIO_CD_SYNC_SIZE)) {
+      if (!memcmp(CDIO_SECTOR_SYNC_HEADER, buf+CDIO_CD_SUBHEADER_SIZE, 
+		  CDIO_CD_SYNC_SIZE)) {
+	
+	p_iso->b_mode2 = nope;
+	p_iso->b_xa = nope;
+      } else if (!memcmp(CDIO_SECTOR_SYNC_HEADER, buf, CDIO_CD_SYNC_SIZE)) {
+	p_iso->b_mode2 = yep;
+      } else {
 	  /* Has no frame header */
 	  p_iso->i_framesize = M2RAW_SECTOR_SIZE;
 	  p_iso->i_fuzzy_offset = (CDIO_CD_FRAMESIZE_RAW - M2RAW_SECTOR_SIZE) 
@@ -161,9 +176,11 @@ iso9660_open_ext_private (const char *pathname,
   
   /* Determine if image has XA attributes. */
   
-  p_iso->b_xa = !strncmp ((char *) &(p_iso->pvd) + ISO_XA_MARKER_OFFSET, 
-			  ISO_XA_MARKER_STRING, 
-			  strlen (ISO_XA_MARKER_STRING));
+  p_iso->b_xa = strncmp ((char *) &(p_iso->pvd) + ISO_XA_MARKER_OFFSET, 
+			 ISO_XA_MARKER_STRING,
+			 strlen (ISO_XA_MARKER_STRING)) 
+    ? nope : yep;
+  
   p_iso->iso_extension_mask = iso_extension_mask;
   return p_iso;
 
@@ -798,10 +815,9 @@ iso9660_iso_seek_read (const iso9660_t *p_iso, void *ptr, lsn_t start,
 
 
 static iso9660_stat_t *
-_iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, 
-			 bool b_mode2, uint8_t i_joliet_level)
+_iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool b_mode2, 
+			 bool_3way_t b_xa, uint8_t i_joliet_level)
 {
-  iso9660_xa_t *xa_data = NULL;
   uint8_t dir_len= iso9660_get_dir_len(p_iso9660_dir);
   unsigned int filename_len;
   unsigned int stat_len;
@@ -860,23 +876,31 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir,
     if (su_length < 0 || su_length < sizeof (iso9660_xa_t))
       return stat;
     
-    xa_data = (void *) (((char *) p_iso9660_dir) 
-			+ (iso9660_get_dir_len(p_iso9660_dir) - su_length));
-    
-    if (xa_data->signature[0] != 'X' 
-	|| xa_data->signature[1] != 'A')
-    {
-      cdio_warn ("XA signature not found in ISO9660's system use area;"
-		 " ignoring XA attributes for this file entry.");
-      cdio_debug ("%d %d %d, '%c%c' (%d, %d)", 
-		  iso9660_get_dir_len(p_iso9660_dir), 
-		  filename_len,
-		  su_length,
-		  xa_data->signature[0], xa_data->signature[1],
-		  xa_data->signature[0], xa_data->signature[1]);
+    if (nope == b_xa) {
       return stat;
+    } else {
+      iso9660_xa_t *xa_data = 
+	(void *) (((char *) p_iso9660_dir)  
+		  + (iso9660_get_dir_len(p_iso9660_dir) - su_length));
+      cdio_log_level_t loglevel = (yep == b_xa) 
+	? CDIO_LOG_WARN : CDIO_LOG_INFO;
+      
+      if (xa_data->signature[0] != 'X' 
+	  || xa_data->signature[1] != 'A')
+	{
+	  cdio_log (loglevel, 
+		    "XA signature not found in ISO9660's system use area;"
+		     " ignoring XA attributes for this file entry.");
+	  cdio_debug ("%d %d %d, '%c%c' (%d, %d)", 
+		      iso9660_get_dir_len(p_iso9660_dir), 
+		      filename_len,
+		      su_length,
+		      xa_data->signature[0], xa_data->signature[1],
+		      xa_data->signature[0], xa_data->signature[1]);
+	  return stat;
+	}
+      stat->xa = *xa_data;
     }
-    stat->xa = *xa_data;
   }
   return stat;
     
@@ -942,7 +966,7 @@ _fs_stat_root (CdIo_t *p_cdio)
     p_iso9660_dir = &(p_env->pvd.root_directory_record) ;
 #endif
     
-    p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, 
+    p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, dunno, 
 				      p_env->i_joliet_level);
     return p_stat;
   }
@@ -963,7 +987,7 @@ _fs_stat_iso_root (iso9660_t *p_iso)
   p_iso9660_dir = &(p_iso->pvd.root_directory_record) ;
 #endif
   
-  p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, true, 
+  p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_mode2, p_iso->b_xa,
 				    p_iso->i_joliet_level);
   return p_stat;
 }
@@ -1021,7 +1045,7 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 	  continue;
 	}
       
-      p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, 
+      p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, dunno,
 					p_env->i_joliet_level);
 
       if (translate) {
@@ -1108,8 +1132,8 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 	  continue;
 	}
       
-      p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, true, 
-					p_iso->i_joliet_level);
+      p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_mode2, 
+					p_iso->b_xa, p_iso->i_joliet_level);
 
       if (translate) {
 	char *trans_fname = malloc(strlen(p_stat->filename)+1);
@@ -1310,7 +1334,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
 	    continue;
 	  }
 
-	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, b_mode2, 
+	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, b_mode2, dunno,
 						 p_env->i_joliet_level);
 	_cdio_list_append (retval, p_iso9660_stat);
 
@@ -1374,7 +1398,9 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
 	    continue;
 	  }
 
-	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, true,
+	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, 
+						 p_iso->b_mode2, 
+						 p_iso->b_xa,
 						 p_iso->i_joliet_level);
 
 	if (p_iso9660_stat) 
@@ -1471,5 +1497,5 @@ bool
 iso9660_ifs_is_xa (const iso9660_t * p_iso) 
 {
   if (!p_iso) return false;
-  return p_iso->b_xa;
+  return yep == p_iso->b_xa;
 }
