@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.22 2004/06/14 09:52:17 rocky Exp $
+    $Id: nrg.c,v 1.23 2004/06/18 22:55:24 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -49,7 +49,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.22 2004/06/14 09:52:17 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.23 2004/06/18 22:55:24 rocky Exp $";
 
 
 /* reader */
@@ -129,7 +129,7 @@ _register_mapping (_img_private_t *env, lsn_t start_lsn, uint32_t sec_count,
   _map->sec_count  = sec_count;
   _map->img_offset = img_offset;
   _map->blocksize  = blocksize;
-  _map->blocksize  = flags;
+  _map->flags      = flags;
 
   if (!env->mapping) env->mapping = _cdio_list_new ();
   _cdio_list_append (env->mapping, _map);
@@ -359,8 +359,10 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 
 	      /* extractnrg.pl has addrtype for LBA's 0, and
 		 for MSF 1. ???
+
+		 FIXME: Should decode as appropriate for addrtype.
 	       */
-	      cdio_assert ( addrtype == 1);
+	      cdio_assert ( addrtype == 0 || addrtype == 1 );
 
 	      cdio_assert (_entries[idx].track != _entries[idx + 1].track);
 	      
