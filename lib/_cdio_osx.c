@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.55 2004/08/18 11:31:58 rocky Exp $
+    $Id: _cdio_osx.c,v 1.56 2004/08/19 04:01:34 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.55 2004/08/18 11:31:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.56 2004/08/19 04:01:34 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -114,6 +114,8 @@ typedef struct {
 
 } _img_private_t;
 
+static bool read_toc_osx (void *p_user_data);
+
 /*!
   Run a SCSI MMC command. 
  
@@ -153,6 +155,8 @@ run_scsi_cmd_osx( const void *p_user_data,
   if (!p_env->gen.toc_init) read_toc_osx (p_user_data) ;
 
   sc = p_env->pp_scsiTaskDeviceInterface;
+
+  if (NULL == sc) return 3;
 
   cmd = (*sc)->CreateSCSITask(sc);
   if (cmd == NULL) {
