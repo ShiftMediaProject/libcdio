@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.15 2004/05/26 06:27:03 rocky Exp $
+    $Id: nrg.c,v 1.16 2004/05/31 04:00:01 rocky Exp $
 
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.15 2004/05/26 06:27:03 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.16 2004/05/31 04:00:01 rocky Exp $";
 
 /* structures used */
 
@@ -67,7 +67,8 @@ typedef struct {
   uint32_t _unknown   GNUC_PACKED; /* wtf is this for? -- always zero... */
 } _etnf_array_t;
 
-/* finally they realized that 32bit offsets are a bit outdated for IA64 *eg* */
+/* Finally they realized that 32-bit offsets are a bit outdated for
+   IA64 *eg* */
 typedef struct {
   uint64_t start      GNUC_PACKED;
   uint64_t length     GNUC_PACKED;
@@ -87,9 +88,15 @@ typedef struct {
 } _cuex_array_t;
 
 typedef struct {
+  uint32_t _unknown1  GNUC_PACKED;
+  char      mcn[CDIO_MCN_SIZE]  GNUC_PACKED;
+  uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint32_t)]  GNUC_PACKED;
+} _daoi_array_t;
+
+typedef struct {
   uint64_t _unknown1  GNUC_PACKED;
   char      mcn[CDIO_MCN_SIZE]  GNUC_PACKED;
-  uint8_t  _unknown[64-17]  GNUC_PACKED;
+  uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint64_t)]  GNUC_PACKED;
 } _daox_array_t;
 
 typedef struct {
@@ -315,21 +322,22 @@ PRAGMA_END_PACKED
     
     if (buf.v50.ID == UINT32_TO_BE (NERO_ID)) 
       {
-	cdio_info ("detected Nero version 5.0 (32bit offsets) NRG magic");
+	cdio_info ("detected Nero version 5.0 (32-bit offsets) NRG magic");
 	footer_start = uint32_to_be (buf.v50.footer_ofs); 
       }
     else if (buf.v55.ID == UINT32_TO_BE (NER5_ID)) 
       {
-	cdio_info ("detected Nero version 5.5 (64bit offsets) NRG magic");
+	cdio_info ("detected Nero version 5.5 (64-bit offsets) NRG magic");
 	footer_start = uint64_from_be (buf.v55.footer_ofs);
       }
     else
       {
-	cdio_warn ("Image not recognized as either v50 or v55 type NRG");
+	cdio_warn ("Image not recognized as either version 5.0 or "
+		   "version 5.5 type NRG");
 	return false;
       }
 
-    cdio_debug ("nrg footer start = %ld, length = %ld", 
+    cdio_debug (".NRG footer start = %ld, length = %ld", 
 	       (long) footer_start, (long) (size - footer_start));
 
     cdio_assert (IN ((size - footer_start), 0, 4096));
@@ -421,18 +429,25 @@ PRAGMA_END_PACKED
 	}
 	
       case DAOX_ID: /* "DAOX" */ 
-	/* Fall through... */
-
       case DAOI_ID: /* "DAOI" */
 	{
-	  _daox_array_t *_entries = (void *) chunk->data;
 	  track_format_t track_format;
-	  int form     = _entries->_unknown[1];
-	  _obj->dtyp   = _entries->_unknown[19];
-	  _obj->is_dao = true;
-	  _obj->mcn      = _cdio_malloc (CDIO_MCN_SIZE);
-	  memcpy(_obj->mcn, &(_entries->mcn), CDIO_MCN_SIZE);
+	  int form;
 
+	  _obj->mcn      = _cdio_malloc (CDIO_MCN_SIZE);
+	  if (DAOX_ID == opcode) {
+	    _daox_array_t *_entries = (void *) chunk->data;
+	    form         = _entries->_unknown[1];
+	    _obj->dtyp   = _entries->_unknown[19];
+	    memcpy(_obj->mcn, &(_entries->mcn), CDIO_MCN_SIZE);
+	  } else {
+	    _daoi_array_t *_entries = (void *) chunk->data;
+	    form         = _entries->_unknown[1];
+	    _obj->dtyp   = _entries->_unknown[19];
+	    memcpy(_obj->mcn, &(_entries->mcn), CDIO_MCN_SIZE);
+	  }
+	  
+	  _obj->is_dao = true;
 	  cdio_debug ("DAO%c tag detected, track format %d, form %x\n", 
 		      opcode==DAOX_ID ? 'X': 'I', _obj->dtyp, form);
 	  switch (_obj->dtyp) {
@@ -445,6 +460,7 @@ PRAGMA_END_PACKED
 	    break;
 	  case 3:
 	    /* Mode 2 */
+	    track_format = TRACK_FORMAT_XA;
 	    break;
 	  case 0x6:
 	    /* Mode2 form mix */
