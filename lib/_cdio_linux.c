@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.14 2003/07/27 22:52:22 rocky Exp $
+    $Id: _cdio_linux.c,v 1.15 2003/09/01 02:02:03 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.14 2003/07/27 22:52:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.15 2003/09/01 02:02:03 rocky Exp $";
 
 #include <string.h>
 
@@ -619,6 +619,7 @@ _cdio_read_toc (_img_private_t *_obj)
 	   i, msf->minute, msf->second, msf->frame);
   */
 
+  _obj->gen.toc_init = true;
   return true;
 }
 
