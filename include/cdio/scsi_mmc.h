@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.11 2004/07/21 11:07:27 rocky Exp $
+    $Id: scsi_mmc.h,v 1.12 2004/07/22 09:52:17 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -20,14 +20,19 @@
 
 /*!
    \file scsi_mmc.h 
-   \brief Common definitions for SCSI MMC (Multimedia commands).
+   \brief Common definitions for SCSI MMC (Multi-Media Commands).
 */
 
 #ifndef __SCSI_MMC_H__
 #define __SCSI_MMC_H__
 
+#include <cdio/cdio.h>
+#include <cdio/types.h>
+
 /*! The generic packet command opcodes for CD/DVD Logical Units. */
 
+#define CDIO_MMC_GPCMD_INQUIRY 	             0x12
+#define CDIO_MMC_GPCMD_MODE_SELECT_6	     0x15
 #define CDIO_MMC_GPCMD_MODE_SENSE 	     0x1a
 #define CDIO_MMC_GPCMD_START_STOP            0x1b
 #define CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL  0x1e
@@ -39,23 +44,22 @@
 #define CDIO_MMC_GPCMD_READ_SUBCHANNEL	     0x42
 #define CDIO_MMC_GPCMD_READ_TOC              0x43
 #define CDIO_MMC_GPCMD_READ_HEADER           0x44
-#define CDIO_MMC_GPCMD_PLAYAUDIO10           0x45
-#define CDIO_MMC_GPCMD_PLAYAUDIO_MSF         0x47
-#define CDIO_MMC_GPCMD_PLAYAUDIO_TI          0x48
-#define CDIO_MMC_GPCMD_PLAYTRACK_REL10       0x49
+#define CDIO_MMC_GPCMD_PLAY_AUDIO_10         0x45
+#define CDIO_MMC_GPCMD_PLAY_AUDIO_MSF        0x47
+#define CDIO_MMC_GPCMD_PLAY_AUDIO_TI         0x48
+#define CDIO_MMC_GPCMD_PLAY_TRACK_REL_10      0x49
 #define CDIO_MMC_GPCMD_PAUSE_RESUME          0x4b
 
 #define CDIO_MMC_GPCMD_READ_DISC_INFO	     0x51
 #define CDIO_MMC_GPCMD_MODE_SELECT	     0x55
-#define CDIO_MMC_GPCMD_MODE_SELECT_6	     0x15
 #define CDIO_MMC_GPCMD_MODE_SENSE_10	     0x5a
 
 /*!
  	Group 5 Commands
  */
-#define CDIO_MMC_GPCMD_PLAYAUDIO_12	     0xa5
+#define CDIO_MMC_GPCMD_PLAY_AUDIO_12	     0xa5
 #define CDIO_MMC_GPCMD_READ_12	             0xa8
-#define CDIO_MMC_GPCMD_PLAYTRACK_REL12       0xa9
+#define CDIO_MMC_GPCMD_PLAY_TRACK_REL_12     0xa9
 #define CDIO_MMC_GPCMD_READ_CD	             0xbe
 #define CDIO_MMC_GPCMD_READ_MSF	             0xb9
 
@@ -106,38 +110,86 @@
 #define CDIO_MMC_GPCMD_SET_SPEED	0xbb
 
 
-#define CDIO_MMC_SET_COMMAND(rec, command) \
-  rec[0] = command
+/*! The largest Command Descriptor Buffer (CDB) size.
+    The possible sizes are 6, 10, and 12 bytes.
+ */
+#define MAX_CDB_LEN 12
 
-#define CDIO_MMC_SET_READ_TYPE(rec, sector_type) \
-  rec[1] = (sector_type << 2)
+/*! A Command Descriptor Buffer (CDB) used in sending SCSI MMC 
+    commands.
+ */
+typedef struct scsi_mmc_cdb {
+  uint8_t field[MAX_CDB_LEN];
+} scsi_mmc_cdb_t;
+
+/*! An enumeration indicating whether a SCSI MMC command is sending
+    data or getting data.
+ */
+typedef enum scsi_mmc_direction {
+  SCSI_MMC_DATA_READ,
+  SCSI_MMC_DATA_WRITE
+} scsi_mmc_direction_t;
+
+#define CDIO_MMC_SET_COMMAND(cdb, command) \
+  cdb[0] = command
+
+#define CDIO_MMC_SET_READ_TYPE(cdb, sector_type) \
+  cdb[1] = (sector_type << 2)
   
 
-#define CDIO_MMC_SET_READ_LBA(rec, lba) \
-  rec[2] = (lba >> 24) & 0xff; \
-  rec[3] = (lba >> 16) & 0xff; \
-  rec[4] = (lba >>  8) & 0xff; \
-  rec[5] = (lba      ) & 0xff
+#define CDIO_MMC_SET_READ_LBA(cdb, lba) \
+  cdb[2] = (lba >> 24) & 0xff; \
+  cdb[3] = (lba >> 16) & 0xff; \
+  cdb[4] = (lba >>  8) & 0xff; \
+  cdb[5] = (lba      ) & 0xff
 
-#define CDIO_MMC_SET_START_TRACK(rec, command) \
-  rec[6] = command
+#define CDIO_MMC_SET_START_TRACK(cdb, command) \
+  cdb[6] = command
 
-#define CDIO_MMC_SET_READ_LENGTH(rec, len) \
-  rec[6] = (len >> 16) & 0xff; \
-  rec[7] = (len >>  8) & 0xff; \
-  rec[8] = (len      ) & 0xff
+#define CDIO_MMC_SET_READ_LENGTH(cdb, len) \
+  cdb[6] = (len >> 16) & 0xff; \
+  cdb[7] = (len >>  8) & 0xff; \
+  cdb[8] = (len      ) & 0xff
 
 #define CDIO_MMC_MCSB_ALL_HEADERS 0x78
 
-#define CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(rec, val) \
-  rec[9] = val;
+#define CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb, val) \
+  cdb[9] = val;
+
+/*!  
+  Return the number of length in bytes of the Command Descriptor
+  buffer (CDB) for a given SCSI MMC command. The length will be 
+  either 6, 10, or 12. 
+*/
+uint8_t scsi_mmc_get_cmd_len(uint8_t scsi_cmd);
+
+
+/*!
+  Run a SCSI MMC command. 
+ 
+  cdio	        CD structure set by cdio_open().
+  i_timeout     time in milliseconds we will wait for the command
+                to complete. If this value is -1, use the default 
+		time-out value.
+  p_buf	        Buffer for data, both sending and receiving.
+  i_buf	        Size of buffer
+  e_direction	direction the transfer is to go.
+  cdb	        CDB bytes. All values that are needed should be set on 
+                input. We'll figure out what the right CDB length should be.
+
+  Returns 0 if command completed successfully.
+ */
+int scsi_mmc_run_cmd( const CdIo *cdio, int t_timeout, 
+		      const scsi_mmc_cdb_t *p_cdb,
+		      scsi_mmc_direction_t e_direction, unsigned int i_buf, 
+		      /*in/out*/ void *p_buf );
 
 /*!
   On input a MODE_SENSE command was issued and we have the results
   in p. We interpret this and return a bit mask set according to the 
   capabilities.
  */
-void cdio_get_drive_cap_mmc(const uint8_t *p,
+void scsi_mmc_get_drive_cap(const uint8_t *p,
 			    /*out*/ cdio_drive_read_cap_t  *p_read_cap,
 			    /*out*/ cdio_drive_write_cap_t *p_write_cap,
 			    /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);

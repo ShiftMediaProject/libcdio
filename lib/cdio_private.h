@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.31 2004/07/21 10:19:21 rocky Exp $
+    $Id: cdio_private.h,v 1.32 2004/07/22 09:52:17 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -30,6 +30,7 @@
 
 #include <cdio/cdio.h>
 #include <cdio/cdtext.h>
+#include <cdio/scsi_mmc.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -198,6 +199,29 @@ extern "C" {
     int (*read_mode1_sectors) (void *env, void *buf, lsn_t lsn, 
 			       bool mode1_form2, unsigned int nblocks);
     
+    /*!
+      Run a SCSI MMC command. 
+      
+      cdio	        CD structure set by cdio_open().
+      i_timeout         time in milliseconds we will wait for the command
+                        to complete. If this value is -1, use the default 
+   		        time-out value.
+      cdb_len           number of bytes in cdb (6, 10, or 12).
+      cdb	        CDB bytes. All values that are needed should be set on 
+                        input. 
+      b_return_data	TRUE if the command expects data to be returned in 
+                        the buffer
+      len	        Size of buffer
+      buf	        Buffer for data, both sending and receiving
+      
+      Returns 0 if command completed successfully.
+    */
+    int (*run_scsi_mmc_cmd)  ( const CdIo *cdio, unsigned int i_timeout,
+			       unsigned int cdb_len,
+			       const scsi_mmc_cdb_t *p_cdb, 
+			       scsi_mmc_direction_t e_direction,
+			       unsigned int len, /*in/out*/ void *p_buf );
+
     /*!
       Set the arg "key" with "value" in the source device.
     */

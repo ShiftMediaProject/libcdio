@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.19 2004/07/19 01:13:32 rocky Exp $
+    $Id: win32_ioctl.c,v 1.20 2004/07/22 09:52:17 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.19 2004/07/19 01:13:32 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.20 2004/07/22 09:52:17 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -569,7 +569,7 @@ get_drive_cap_win32ioctl (const _img_private_t *env,
 		       FALSE) )     {
     unsigned int n=sptwb.DataBuf[3]+4;
     /* Reader? */
-    cdio_get_drive_cap_mmc(&(sptwb.DataBuf[n]), p_read_cap, 
+    scsi_mmc_get_drive_cap(&(sptwb.DataBuf[n]), p_read_cap, 
 			   p_write_cap, p_misc_cap);
   } else {
     *p_read_cap  = CDIO_DRIVE_CAP_UNKNOWN;

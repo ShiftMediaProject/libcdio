@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.56 2004/07/19 01:29:04 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.57 2004/07/22 09:52:17 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.56 2004/07/19 01:29:04 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.57 2004/07/22 09:52:17 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -649,7 +649,7 @@ _get_drive_cap_solaris (const void *user_data,
 	  /* Don't handle these yet. */
 	  break;
 	case CDIO_MMC_CAPABILITIES_PAGE:
-	  cdio_get_drive_cap_mmc(p, p_read_cap, p_write_cap, p_misc_cap);
+	  scsi_mmc_get_drive_cap(p, p_read_cap, p_write_cap, p_misc_cap);
 	  break;
 	default: ;
 	}

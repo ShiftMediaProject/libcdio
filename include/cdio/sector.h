@@ -1,6 +1,6 @@
 
 /*
-    $Id: sector.h,v 1.20 2004/07/21 10:29:00 rocky Exp $
+    $Id: sector.h,v 1.21 2004/07/22 09:52:17 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -82,8 +82,8 @@ typedef enum {
 	MODE2_RAW			/**< 2352 byte block length */
 } trackmode_t;
 
-/*! disc modes. The first combined from MMC-3 5.29.2.8 and
-  GNU/Linux /usr/include/linux/cdrom.h and we've added DVD.
+/*! disc modes. The first combined from MMC-3 5.29.2.8 (Send CUESHEET)
+  and GNU/Linux /usr/include/linux/cdrom.h and we've added DVD.
  */
 typedef enum {
 	CDIO_DISC_MODE_CD_DA,			/**< CD-DA */

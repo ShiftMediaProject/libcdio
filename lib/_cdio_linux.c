@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.71 2004/07/21 10:19:21 rocky Exp $
+    $Id: _cdio_linux.c,v 1.72 2004/07/22 09:52:17 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,12 +27,13 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.71 2004/07/21 10:19:21 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.72 2004/07/22 09:52:17 rocky Exp $";
 
 #include <string.h>
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
+#include <cdio/types.h>
 #include <cdio/scsi_mmc.h>
 #include <cdio/cdtext.h>
 #include "cdtext_private.h"
@@ -69,10 +70,12 @@ static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.71 2004/07/21 10:19:21 rock
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-typedef struct cdrom_generic_command cgc_t;
+/* Default value in milliseconds we will wait for a command to 
+   complete. */
+#define DEFAULT_TIMEOUT 500
 
-#define TOTAL_TRACKS    (env->tochdr.cdth_trk1)
-#define FIRST_TRACK_NUM (env->tochdr.cdth_trk0)
+#define TOTAL_TRACKS    (p_env->tochdr.cdth_trk1)
+#define FIRST_TRACK_NUM (p_env->tochdr.cdth_trk0)
 
 typedef enum {
   _AM_NONE,
@@ -93,6 +96,7 @@ typedef struct {
 
   access_mode_t access_mode;
   bool b_cdtext_init;
+  bool b_cdtext_error;
 
   /* Some of the more OS specific things. */
   cdtext_t      cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/
@@ -159,12 +163,12 @@ cdio_is_cdrom(char *drive, char *mnttype)
   Get disc tyhpe associated with cd_obj.
 */
 static discmode_t
-_get_discmode_linux (void *user_data)
+_get_discmode_linux (void *p_user_data)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   int32_t i_discmode;
-  i_discmode = ioctl (env->gen.fd, CDROM_DISC_STATUS);
+  i_discmode = ioctl (p_env->gen.fd, CDROM_DISC_STATUS);
   
   if (i_discmode < 0) return CDIO_DISC_MODE_ERROR;
 
@@ -255,10 +259,46 @@ cdio_check_mounts(const char *mtab)
   return NULL;
 }
 
-static int 
-_set_bsize (int fd, unsigned int bsize)
+/*!
+  Run a SCSI MMC command. 
+ 
+  cdio	        CD structure set by cdio_open().
+  i_timeout     time in milliseconds we will wait for the command
+                to complete. If this value is -1, use the default 
+		time-out value.
+  p_buf	        Buffer for data, both sending and receiving
+  i_buf	        Size of buffer
+  e_direction	direction the transfer is to go.
+  cdb	        CDB bytes. All values that are needed should be set on 
+                input. We'll figure out what the right CDB length should be.
+
+  We return true if command completed successfully and false if not.
+ */
+static int
+scsi_mmc_run_cmd_linux( const _img_private_t *p_env, int i_timeout,
+			unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+			scsi_mmc_direction_t e_direction, 
+			unsigned int i_buf, /*out*/ void *p_buf )
 {
   struct cdrom_generic_command cgc;
+  memset (&cgc, 0, sizeof (struct cdrom_generic_command));
+  memcpy(&cgc.cmd, p_cdb, i_cdb);
+  cgc.buflen = i_buf;
+  cgc.buffer = p_buf;
+  cgc.data_direction = SCSI_MMC_DATA_READ ? CGC_DATA_READ : CGC_DATA_WRITE;
+
+#ifdef HAVE_LINUX_CDROM_TIMEOUT
+  if (i_timeout >= 0)
+    cgc.timeout = i_timeout;
+#endif
+
+  return ioctl (p_env->gen.fd, CDROM_SEND_PACKET, &cgc);
+}
+
+static int 
+_set_bsize (_img_private_t *p_env, unsigned int bsize)
+{
+  scsi_mmc_cdb_t cdb;
 
   struct
   {
@@ -277,65 +317,57 @@ _set_bsize (int fd, unsigned int bsize)
   } mh;
 
   memset (&mh, 0, sizeof (mh));
-  memset (&cgc, 0, sizeof (struct cdrom_generic_command));
-  
-  CDIO_MMC_SET_COMMAND(cgc.cmd, CDIO_MMC_GPCMD_MODE_SELECT_6);
-
-  cgc.cmd[1] = 1 << 4;
-  cgc.cmd[4] = 12;
-  
-  cgc.buflen = sizeof (mh);
-  cgc.buffer = (void *) &mh;
-
-  cgc.data_direction = CGC_DATA_WRITE;
-
   mh.block_desc_length = 0x08;
   mh.block_length_hi   = (bsize >> 16) & 0xff;
   mh.block_length_med  = (bsize >>  8) & 0xff;
   mh.block_length_lo   = (bsize >>  0) & 0xff;
 
-  return ioctl (fd, CDROM_SEND_PACKET, &cgc);
+  memset (&cdb, 0, sizeof (cdb));
+  
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SELECT_6);
+
+  cdb.field[1] = 1 << 4;
+  cdb.field[4] = 12;
+  
+  return scsi_mmc_run_cmd_linux (p_env, DEFAULT_TIMEOUT,
+				 scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+				 SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
 }
 
 /* Packet driver to read mode2 sectors. 
    Can read only up to 25 blocks.
 */
 static int
-_read_sectors_mmc (int fd, void *buf, lba_t lba, int sector_type, 
-			unsigned int nblocks)
+_read_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba, 
+		   int sector_type, unsigned int nblocks)
 {
-  cgc_t cgc;
+  scsi_mmc_cdb_t cdb;
 
-  memset (&cgc, 0, sizeof (cgc_t));
+  memset (&cdb, 0, sizeof (scsi_mmc_cdb_t));
 
-  cgc.cmd[0] = CDIO_MMC_GPCMD_READ_CD;
-  CDIO_MMC_SET_READ_TYPE  (cgc.cmd, sector_type);
-  CDIO_MMC_SET_READ_LBA   (cgc.cmd, lba);
-  CDIO_MMC_SET_READ_LENGTH(cgc.cmd, nblocks);
-  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cgc.cmd, CDIO_MMC_MCSB_ALL_HEADERS);
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
+  CDIO_MMC_SET_READ_TYPE  (cdb.field, sector_type);
+  CDIO_MMC_SET_READ_LBA   (cdb.field, lba);
+  CDIO_MMC_SET_READ_LENGTH(cdb.field, nblocks);
+  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb.field, 
+					   CDIO_MMC_MCSB_ALL_HEADERS);
 
-  cgc.buflen = CDIO_CD_FRAMESIZE_RAW * nblocks; 
-  cgc.buffer = buf;
-
-#ifdef HAVE_LINUX_CDROM_TIMEOUT
-  cgc.timeout = 500;
-#endif
-  cgc.data_direction = CGC_DATA_READ;
-
-  return ioctl (fd, CDROM_SEND_PACKET, &cgc);
-
-  return 0;
+  return scsi_mmc_run_cmd_linux (p_env, DEFAULT_TIMEOUT, 
+				 scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+				 SCSI_MMC_DATA_READ, 
+				 CDIO_CD_FRAMESIZE_RAW * nblocks,
+				 p_buf);
 }
 
 /* MMC driver to read audio sectors. 
    Can read only up to 25 blocks.
 */
 static int
-_read_audio_sectors_linux (void *user_data, void *buf, lsn_t lsn, 
+_read_audio_sectors_linux (void *p_user_data, void *buf, lsn_t lsn, 
 			   unsigned int nblocks)
 {
-  _img_private_t *env = user_data;
-  return _read_sectors_mmc( env->gen.fd, buf, lsn, 
+  _img_private_t *p_env = p_user_data;
+  return _read_sectors_mmc( p_env, buf, lsn, 
 			    CDIO_MMC_READ_TYPE_CDDA, nblocks);
 }
 
@@ -343,56 +375,52 @@ _read_audio_sectors_linux (void *user_data, void *buf, lsn_t lsn,
    Can read only up to 25 blocks.
 */
 static int
-_read_mode2_sectors_mmc (int fd, void *buf, lba_t lba, 
+_read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba, 
 			 unsigned int nblocks, bool b_read_10)
 {
-  struct cdrom_generic_command cgc;
+  scsi_mmc_cdb_t cdb;
 
-  memset (&cgc, 0, sizeof (struct cdrom_generic_command));
+  memset (&cdb, 0, sizeof (scsi_mmc_cdb_t));
 
-  CDIO_MMC_SET_COMMAND(cgc.cmd, b_read_10 
+  CDIO_MMC_SET_COMMAND(cdb.field, b_read_10 
 		       ? CDIO_MMC_GPCMD_READ_10 : CDIO_MMC_GPCMD_READ_CD);
 
-  CDIO_MMC_SET_READ_LBA(cgc.cmd, lba);
-  CDIO_MMC_SET_READ_LENGTH(cgc.cmd, nblocks);
+  CDIO_MMC_SET_READ_LBA(cdb.field, lba);
+  CDIO_MMC_SET_READ_LENGTH(cdb.field, nblocks);
 
   if (!b_read_10) {
-    cgc.cmd[1] = 0; /* sector size mode2 */
-    cgc.cmd[9] = 0x58; /* 2336 mode2 */
+    cdb.field[1] = 0; /* sector size mode2 */
+    cdb.field[9] = 0x58; /* 2336 mode2 */
   }
 
-  cgc.buflen = M2RAW_SECTOR_SIZE * nblocks;
-  cgc.buffer = buf;
-
-#ifdef HAVE_LINUX_CDROM_TIMEOUT
-  cgc.timeout = 500;
-#endif
-  cgc.data_direction = CGC_DATA_READ;
-
-  if (b_read_10)
-    {
-      int retval;
-
-      if ((retval = _set_bsize (fd, M2RAW_SECTOR_SIZE)))
+  if (b_read_10) {
+    int retval;
+    
+    if ((retval = _set_bsize (p_env, M2RAW_SECTOR_SIZE)))
+      return retval;
+    
+    if ((retval = scsi_mmc_run_cmd_linux (p_env, 0, 
+				     scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+				     SCSI_MMC_DATA_READ,
+					  M2RAW_SECTOR_SIZE * nblocks, p_buf)))
+      {
+	_set_bsize (p_env, CDIO_CD_FRAMESIZE);
 	return retval;
-
-      if ((retval = ioctl (fd, CDROM_SEND_PACKET, &cgc)))
-	{
-	  _set_bsize (fd, CDIO_CD_FRAMESIZE);
-	  return retval;
-	}
-
-      if ((retval = _set_bsize (fd, CDIO_CD_FRAMESIZE)))
-	return retval;
-    }
-  else
-    return ioctl (fd, CDROM_SEND_PACKET, &cgc);
+      }
+    
+    if ((retval = _set_bsize (p_env, CDIO_CD_FRAMESIZE)))
+      return retval;
+  } else
+    return scsi_mmc_run_cmd_linux (p_env, 0, 
+				   scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+				   SCSI_MMC_DATA_READ,
+				   M2RAW_SECTOR_SIZE * nblocks, p_buf);
 
   return 0;
 }
 
 static int
-_read_mode2_sectors (int fd, void *buf, lba_t lba, 
+_read_mode2_sectors (_img_private_t *p_env, void *p_buf, lba_t lba, 
 		     unsigned int nblocks, bool b_read_10)
 {
   unsigned int l = 0;
@@ -401,10 +429,10 @@ _read_mode2_sectors (int fd, void *buf, lba_t lba,
   while (nblocks > 0)
     {
       const unsigned nblocks2 = (nblocks > 25) ? 25 : nblocks;
-      void *buf2 = ((char *)buf ) + (l * M2RAW_SECTOR_SIZE);
+      void *p_buf2 = ((char *)p_buf ) + (l * M2RAW_SECTOR_SIZE);
       
-      retval |= _read_mode2_sectors_mmc (fd, buf2, lba + l, nblocks2, 
-					 b_read_10);
+      retval |= _read_mode2_sectors_mmc (p_env, p_buf2, lba + l, 
+					 nblocks2, b_read_10);
 
       if (retval)
 	break;
@@ -421,16 +449,16 @@ _read_mode2_sectors (int fd, void *buf, lba_t lba,
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_mode1_sector_linux (void *env, void *data, lsn_t lsn, 
+_read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn, 
 			 bool b_form2)
 {
 
 #if FIXED
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
-  struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
+  struct cdrom_msf *p_msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
 
-  _img_private_t *_obj = env;
+  _img_private_t *p_env = p_user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
   msf->cdmsf_min0 = from_bcd8(_msf.m);
@@ -446,7 +474,7 @@ _read_mode1_sector_linux (void *env, void *data, lsn_t lsn,
       break;
       
     case _AM_IOCTL:
-      if (ioctl (_obj->gen.fd, CDROMREADMODE1, &buf) == -1)
+      if (ioctl (p_env->gen.fd, CDROMREADMODE1, &buf) == -1)
 	{
 	  perror ("ioctl()");
 	  return 1;
@@ -456,20 +484,20 @@ _read_mode1_sector_linux (void *env, void *data, lsn_t lsn,
       
     case _AM_READ_CD:
     case _AM_READ_10:
-      if (_read_mode2_sectors (_obj->gen.fd, buf, lsn, 1, 
-				      (_obj->access_mode == _AM_READ_10)))
+      if (_read_mode2_sectors (p_env->gen.fd, buf, lsn, 1, 
+				      (p_env->access_mode == _AM_READ_10)))
 	{
 	  perror ("ioctl()");
-	  if (_obj->access_mode == _AM_READ_CD)
+	  if (p_env->access_mode == _AM_READ_CD)
 	    {
 	      cdio_info ("READ_CD failed; switching to READ_10 mode...");
-	      _obj->access_mode = _AM_READ_10;
+	      p_env->access_mode = _AM_READ_10;
 	      goto retry;
 	    }
 	  else
 	    {
 	      cdio_info ("READ_10 failed; switching to ioctl(CDROMREADMODE2) mode...");
-	      _obj->access_mode = _AM_IOCTL;
+	      p_env->access_mode = _AM_IOCTL;
 	      goto retry;
 	    }
 	  return 1;
@@ -481,7 +509,7 @@ _read_mode1_sector_linux (void *env, void *data, lsn_t lsn,
 	  b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
   
 #else
-  return cdio_generic_read_form1_sector(env, data, lsn);
+  return cdio_generic_read_form1_sector(p_user_data, p_data, lsn);
 #endif
   return 0;
 }
@@ -492,17 +520,17 @@ _read_mode1_sector_linux (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode1_sectors_linux (void *user_data, void *data, lsn_t lsn, 
+_read_mode1_sectors_linux (void *p_user_data, void *p_data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   unsigned int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _read_mode1_sector_linux (env, 
-					    ((char *)data) + (blocksize * i),
+    if ( (retval = _read_mode1_sector_linux (p_env,
+					    ((char *)p_data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
   }
@@ -514,14 +542,14 @@ _read_mode1_sectors_linux (void *user_data, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_mode2_sector_linux (void *user_data, void *data, lsn_t lsn, 
+_read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn, 
 			  bool b_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
 
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
   msf->cdmsf_min0 = from_bcd8(_msf.m);
@@ -529,7 +557,7 @@ _read_mode2_sector_linux (void *user_data, void *data, lsn_t lsn,
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
 
  retry:
-  switch (env->access_mode)
+  switch (p_env->access_mode)
     {
     case _AM_NONE:
       cdio_warn ("no way to read mode2");
@@ -537,7 +565,7 @@ _read_mode2_sector_linux (void *user_data, void *data, lsn_t lsn,
       break;
       
     case _AM_IOCTL:
-      if (ioctl (env->gen.fd, CDROMREADMODE2, &buf) == -1)
+      if (ioctl (p_env->gen.fd, CDROMREADMODE2, &buf) == -1)
 	{
 	  perror ("ioctl()");
 	  return 1;
@@ -547,20 +575,20 @@ _read_mode2_sector_linux (void *user_data, void *data, lsn_t lsn,
       
     case _AM_READ_CD:
     case _AM_READ_10:
-      if (_read_mode2_sectors (env->gen.fd, buf, lsn, 1, 
-				      (env->access_mode == _AM_READ_10)))
+      if (_read_mode2_sectors (p_env, buf, lsn, 1, 
+			       (p_env->access_mode == _AM_READ_10)))
 	{
 	  perror ("ioctl()");
-	  if (env->access_mode == _AM_READ_CD)
+	  if (p_env->access_mode == _AM_READ_CD)
 	    {
 	      cdio_info ("READ_CD failed; switching to READ_10 mode...");
-	      env->access_mode = _AM_READ_10;
+	      p_env->access_mode = _AM_READ_10;
 	      goto retry;
 	    }
 	  else
 	    {
 	      cdio_info ("READ_10 failed; switching to ioctl(CDROMREADMODE2) mode...");
-	      env->access_mode = _AM_IOCTL;
+	      p_env->access_mode = _AM_IOCTL;
 	      goto retry;
 	    }
 	  return 1;
@@ -569,9 +597,9 @@ _read_mode2_sector_linux (void *user_data, void *data, lsn_t lsn,
     }
 
   if (b_form2)
-    memcpy (data, buf, M2RAW_SECTOR_SIZE);
+    memcpy (p_data, buf, M2RAW_SECTOR_SIZE);
   else
-    memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
+    memcpy (((char *)p_data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
   
   return 0;
 }
@@ -582,17 +610,17 @@ _read_mode2_sector_linux (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors_linux (void *user_data, void *data, lsn_t lsn, 
+_read_mode2_sectors_linux (void *p_user_data, void *data, lsn_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   unsigned int i;
   unsigned int i_blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   /* For each frame, pick out the data part we need */
   for (i = 0; i < nblocks; i++) {
     int retval;
-    if ( (retval = _read_mode2_sector_linux (env, 
+    if ( (retval = _read_mode2_sector_linux (p_env, 
 					    ((char *)data) + (i_blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -604,16 +632,16 @@ _read_mode2_sectors_linux (void *user_data, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_stat_size_linux (void *user_data)
+_stat_size_linux (void *p_user_data)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   struct cdrom_tocentry tocent;
   uint32_t size;
 
   tocent.cdte_track = CDIO_CDROM_LEADOUT_TRACK;
   tocent.cdte_format = CDROM_LBA;
-  if (ioctl (env->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
+  if (ioctl (p_env->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
       perror ("ioctl(CDROMREADTOCENTRY)");
       exit (EXIT_FAILURE);
@@ -633,18 +661,18 @@ _stat_size_linux (void *user_data)
   0 is returned if no error was found, and nonzero if there as an error.
 */
 static int
-_set_arg_linux (void *user_data, const char key[], const char value[])
+_set_arg_linux (void *p_user_data, const char key[], const char value[])
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (!strcmp (key, "source"))
     {
       if (!value)
 	return -2;
 
-      free (env->gen.source_name);
+      free (p_env->gen.source_name);
       
-      env->gen.source_name = strdup (value);
+      p_env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
@@ -661,12 +689,12 @@ _set_arg_linux (void *user_data, const char key[], const char value[])
   Return false if successful or true if an error.
 */
 static bool
-_cdio_read_toc (_img_private_t *env) 
+_cdio_read_toc (_img_private_t *p_env) 
 {
   int i;
 
   /* read TOC header */
-  if ( ioctl(env->gen.fd, CDROMREADTOCHDR, &env->tochdr) == -1 ) {
+  if ( ioctl(p_env->gen.fd, CDROMREADTOCHDR, &p_env->tochdr) == -1 ) {
     cdio_warn("%s: %s\n", 
             "error in ioctl CDROMREADTOCHDR", strerror(errno));
     return false;
@@ -674,10 +702,10 @@ _cdio_read_toc (_img_private_t *env)
 
   /* read individual tracks */
   for (i= FIRST_TRACK_NUM; i<=TOTAL_TRACKS; i++) {
-    env->tocent[i-FIRST_TRACK_NUM].cdte_track = i;
-    env->tocent[i-FIRST_TRACK_NUM].cdte_format = CDROM_MSF;
-    if ( ioctl(env->gen.fd, CDROMREADTOCENTRY, 
-	       &env->tocent[i-FIRST_TRACK_NUM]) == -1 ) {
+    p_env->tocent[i-FIRST_TRACK_NUM].cdte_track = i;
+    p_env->tocent[i-FIRST_TRACK_NUM].cdte_format = CDROM_MSF;
+    if ( ioctl(p_env->gen.fd, CDROMREADTOCENTRY, 
+	       &p_env->tocent[i-FIRST_TRACK_NUM]) == -1 ) {
       cdio_warn("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
               i, strerror(errno));
@@ -693,11 +721,11 @@ _cdio_read_toc (_img_private_t *env)
   }
 
   /* read the lead-out track */
-  env->tocent[TOTAL_TRACKS].cdte_track = CDIO_CDROM_LEADOUT_TRACK;
-  env->tocent[TOTAL_TRACKS].cdte_format = CDROM_MSF;
+  p_env->tocent[TOTAL_TRACKS].cdte_track = CDIO_CDROM_LEADOUT_TRACK;
+  p_env->tocent[TOTAL_TRACKS].cdte_format = CDROM_MSF;
 
-  if (ioctl(env->gen.fd, CDROMREADTOCENTRY, 
-	    &env->tocent[TOTAL_TRACKS]) == -1 ) {
+  if (ioctl(p_env->gen.fd, CDROMREADTOCENTRY, 
+	    &p_env->tocent[TOTAL_TRACKS]) == -1 ) {
     cdio_warn("%s: %s\n", 
 	     "error in ioctl CDROMREADTOCENTRY for lead-out",
             strerror(errno));
@@ -711,7 +739,7 @@ _cdio_read_toc (_img_private_t *env)
 	   i, msf->minute, msf->second, msf->frame);
   */
 
-  env->gen.toc_init = true;
+  p_env->gen.toc_init = true;
   return true;
 }
 
@@ -739,35 +767,31 @@ set_cdtext_field_linux(void *user_data, track_t i_track,
   not exist.
 */
 static bool
-_init_cdtext_linux (_img_private_t *env)
+_init_cdtext_linux (_img_private_t *p_env)
 {
 
-  struct cdrom_generic_command cdc;
-  struct request_sense sense;
+  scsi_mmc_cdb_t cdb;
   unsigned char wdata[2000]= {0, };  /* Data read from device starts here */
   int status;
 
-  memset(&cdc, 0, sizeof(struct cdrom_generic_command));
-  memset(&sense, 0, sizeof(struct request_sense));
+  memset (&cdb, 0, sizeof (scsi_mmc_cdb_t));
 
   /* Operation code */
-  CDIO_MMC_SET_COMMAND(cdc.cmd, CDIO_MMC_GPCMD_READ_TOC); 
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC); 
 
   /* Format */
-  cdc.cmd[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
+  cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
 
-  cdc.buffer = wdata;
-  cdc.buflen = sizeof(wdata);
-  cdc.stat = 0;
-  cdc.sense = &sense;
-  cdc.data_direction = CGC_DATA_READ;
+  status = scsi_mmc_run_cmd_linux (p_env, DEFAULT_TIMEOUT,
+				   scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+				   SCSI_MMC_DATA_READ, sizeof(wdata), &wdata);
 
-  status = ioctl(env->gen.fd, CDROM_SEND_PACKET, (void *)&cdc);
   if (status < 0) {
-    cdio_info ("CDTEXT reading failed\n");  
+    cdio_info ("CD-TEXT reading failed\n");  
+    p_env->b_cdtext_error = true;
     return false;
   } else {
-    return cdtext_data_init(env, FIRST_TRACK_NUM, wdata, 
+    return cdtext_data_init(p_env, FIRST_TRACK_NUM, wdata, 
 			    set_cdtext_field_linux);
   }
 }
@@ -780,78 +804,63 @@ _init_cdtext_linux (_img_private_t *env)
   or CD-TEXT information does not exist.
 */
 static const cdtext_t *
-_get_cdtext_linux (void *user_data, track_t i_track)
+_get_cdtext_linux (void *p_user_data, track_t i_track)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
-  if ( NULL == env ||
+  if ( NULL == p_env ||
        (0 != i_track 
        && i_track >= TOTAL_TRACKS+FIRST_TRACK_NUM ) )
     return NULL;
 
-  env->b_cdtext_init = _init_cdtext_linux(env);
-  if (!env->b_cdtext_init) return NULL;
+  p_env->b_cdtext_init = _init_cdtext_linux(p_env);
+  if (!p_env->b_cdtext_init || p_env->b_cdtext_error) return NULL;
 
   if (0 == i_track) 
-    return &(env->cdtext);
+    return &(p_env->cdtext);
   else 
-    return &(env->cdtext_track[i_track-FIRST_TRACK_NUM]);
+    return &(p_env->cdtext_track[i_track-FIRST_TRACK_NUM]);
 
 }
 
 /*
- * Eject using SCSI commands. Return 1 if successful, 0 otherwise.
+ * Eject using SCSI MMC commands. Return 1 if successful, 0 otherwise.
  */
 static int 
-_eject_media_mmc(int fd)
+_eject_media_mmc(_img_private_t *p_env)
 {
-  int status;
-  struct sdata {
-    unsigned int inlen;     /* Length of data written to device  */
-    unsigned int outlen;    /* Length of data read from device   */
-    char cdb[10];           /* SCSI command bytes (6 <= x <= 16) */
-  } scsi_cmd;
+  int i_status;
+  scsi_mmc_cdb_t cdb;
+  uint8_t buf[1];
   
-  CDIO_MMC_SET_COMMAND(scsi_cmd.cdb, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
 
-  scsi_cmd.inlen  = 0;
-  scsi_cmd.outlen = 0;
-  scsi_cmd.cdb[1] = 0;
-  scsi_cmd.cdb[2] = 0;
-  scsi_cmd.cdb[3] = 0;
-  scsi_cmd.cdb[4] = 0;
-  scsi_cmd.cdb[5] = 0;
-  status = ioctl(fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
-  if (status != 0)
-    return status;
+  i_status = scsi_mmc_run_cmd_linux (p_env, DEFAULT_TIMEOUT,
+				 scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+				 SCSI_MMC_DATA_WRITE, 0, &buf);
+  if (0 != i_status)
+    return i_status;
   
-  scsi_cmd.inlen  = 0;
-  scsi_cmd.outlen = 0;
-  CDIO_MMC_SET_COMMAND(scsi_cmd.cdb, CDIO_MMC_GPCMD_START_STOP);
-  scsi_cmd.cdb[1] = 0;
-  scsi_cmd.cdb[2] = 0;
-  scsi_cmd.cdb[3] = 0;
-  scsi_cmd.cdb[4] = 1;
-  scsi_cmd.cdb[5] = 0;
-  status = ioctl(fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
-  if (status != 0)
-    return status;
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
+  cdb.field[4] = 1;
+  i_status = scsi_mmc_run_cmd_linux (p_env, DEFAULT_TIMEOUT,
+				 scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+				 SCSI_MMC_DATA_WRITE, 0, &buf);
+  if (0 != i_status)
+    return i_status;
   
-  scsi_cmd.inlen  = 0;
-  scsi_cmd.outlen = 0;
-  CDIO_MMC_SET_COMMAND(scsi_cmd.cdb, CDIO_MMC_GPCMD_START_STOP);
-  scsi_cmd.cdb[1] = 0;
-  scsi_cmd.cdb[2] = 0;
-  scsi_cmd.cdb[3] = 0;
-  scsi_cmd.cdb[4] = 2; /* eject */
-  scsi_cmd.cdb[5] = 0;
-  status = ioctl(fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
-  if (status != 0)
-    return status;
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
+  cdb.field[4] = 2; /* eject */
+
+  i_status = scsi_mmc_run_cmd_linux (p_env, DEFAULT_TIMEOUT,
+				 scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+				 SCSI_MMC_DATA_WRITE, 0, &buf);
+  if (0 != i_status)
+    return i_status;
   
   /* force kernel to reread partition table when new disc inserted */
-  status = ioctl(fd, BLKRRPART);
-  return (status);
+  i_status = ioctl(p_env->gen.fd, BLKRRPART);
+  return (i_status);
   
 }
 
@@ -860,16 +869,14 @@ _eject_media_mmc(int fd)
   Return 0 if success and 1 for failure, and 2 if no routine.
  */
 static int 
-_eject_media_linux (void *user_data) {
+_eject_media_linux (void *p_user_data) {
 
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   int ret=2;
   int status;
   int fd;
 
-  close(env->gen.fd);
-  env->gen.fd = -1;
-  if ((fd = open (env->gen.source_name, O_RDONLY|O_NONBLOCK)) > -1) {
+  if ((fd = open (p_env->gen.source_name, O_RDONLY|O_NONBLOCK)) > -1) {
     if((status = ioctl(fd, CDROM_DRIVE_STATUS, CDSL_CURRENT)) > 0) {
       switch(status) {
       case CDS_TRAY_OPEN:
@@ -882,7 +889,7 @@ _eject_media_linux (void *user_data) {
 	if((ret = ioctl(fd, CDROMEJECT)) != 0) {
 	  int eject_error = errno;
 	  /* Try ejecting the MMC way... */
-	  ret = _eject_media_mmc(fd);
+	  ret = _eject_media_mmc(p_env);
 	  if (0 != ret) {
 	    cdio_warn("ioctl CDROMEJECT failed: %s\n", strerror(eject_error));
 	    ret = 1;
@@ -898,9 +905,11 @@ _eject_media_linux (void *user_data) {
       ret=1;
     }
     close(fd);
-    return ret;
-  }
-  return 2;
+  } else
+    ret = 2;
+  close(p_env->gen.fd);
+  p_env->gen.fd = -1;
+  return ret;
 }
 
 /*!
@@ -933,11 +942,11 @@ _get_arg_linux (void *env, const char key[])
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_get_first_track_num_linux(void *user_data) 
+_get_first_track_num_linux(void *p_user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   
-  if (!env->gen.toc_init) _cdio_read_toc (env) ;
+  if (!p_env->gen.toc_init) _cdio_read_toc (p_env) ;
 
   return FIRST_TRACK_NUM;
 }
@@ -1031,11 +1040,11 @@ _get_drive_cap_linux (const void *env,
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_get_num_tracks_linux(void *user_data) 
+_get_num_tracks_linux(void *p_user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   
-  if (!env->gen.toc_init) _cdio_read_toc (env) ;
+  if (!p_env->gen.toc_init) _cdio_read_toc (p_env) ;
 
   return TOTAL_TRACKS;
 }
@@ -1044,9 +1053,9 @@ _get_num_tracks_linux(void *user_data)
   Get format of track. 
 */
 static track_format_t
-_get_track_format_linux(void *user_data, track_t i_track) 
+_get_track_format_linux(void *p_user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   
   if (i_track > (TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM)
     return TRACK_FORMAT_ERROR;
@@ -1056,10 +1065,10 @@ _get_track_format_linux(void *user_data, track_t i_track)
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
    */
-  if (env->tocent[i_track].cdte_ctrl & CDIO_CDROM_DATA_TRACK) {
-    if (env->tocent[i_track].cdte_format == CDIO_CDROM_CDI_TRACK)
+  if (p_env->tocent[i_track].cdte_ctrl & CDIO_CDROM_DATA_TRACK) {
+    if (p_env->tocent[i_track].cdte_format == CDIO_CDROM_CDI_TRACK)
       return TRACK_FORMAT_CDI;
-    else if (env->tocent[i_track].cdte_format == CDIO_CDROM_XA_TRACK)
+    else if (p_env->tocent[i_track].cdte_format == CDIO_CDROM_XA_TRACK)
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;
@@ -1077,11 +1086,11 @@ _get_track_format_linux(void *user_data, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_get_track_green_linux(void *user_data, track_t i_track) 
+_get_track_green_linux(void *p_user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   
-  if (!env->gen.toc_init) _cdio_read_toc (env) ;
+  if (!p_env->gen.toc_init) _cdio_read_toc (p_env) ;
 
   if (i_track >= (TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM)
     return false;
@@ -1091,7 +1100,7 @@ _get_track_green_linux(void *user_data, track_t i_track)
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cd-info for a while.
    */
-  return ((env->tocent[i_track].cdte_ctrl & 2) != 0);
+  return ((p_env->tocent[i_track].cdte_ctrl & 2) != 0);
 }
 
 /*!  
@@ -1104,13 +1113,13 @@ _get_track_green_linux(void *user_data, track_t i_track)
   False is returned if there is no track entry.
 */
 static bool
-_get_track_msf_linux(void *user_data, track_t i_track, msf_t *msf)
+_get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (NULL == msf) return false;
 
-  if (!env->gen.toc_init) _cdio_read_toc (env) ;
+  if (!p_env->gen.toc_init) _cdio_read_toc (p_env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) 
     i_track = TOTAL_TRACKS + FIRST_TRACK_NUM;
@@ -1118,7 +1127,8 @@ _get_track_msf_linux(void *user_data, track_t i_track, msf_t *msf)
   if (i_track > (TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM) {
     return false;
   } else {
-    struct cdrom_msf0  *msf0= &env->tocent[i_track-FIRST_TRACK_NUM].cdte_addr.msf;
+    struct cdrom_msf0  *msf0= 
+      &p_env->tocent[i_track-FIRST_TRACK_NUM].cdte_addr.msf;
     msf->m = to_bcd8(msf0->minute);
     msf->s = to_bcd8(msf0->second);
     msf->f = to_bcd8(msf0->frame);
@@ -1307,6 +1317,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   _data->gen.init       = false;
   _data->gen.fd         = -1;
   _data->b_cdtext_init  = false;
+  _data->b_cdtext_error = false;
 
   if (NULL == psz_orig_source) {
     psz_source=cdio_get_default_device_linux();
