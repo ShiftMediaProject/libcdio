@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext_private.h,v 1.5 2004/09/03 23:20:11 rocky Exp $
+    $Id: cdtext_private.h,v 1.6 2004/10/28 03:50:32 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,14 +27,49 @@
 #define CDIO_CDTEXT_MAX_PACK_DATA  255
 #define CDIO_CDTEXT_MAX_TEXT_DATA  12
 
-#define CDIO_CDTEXT_TITLE      0x80
+/* From table J.2 - Pack Type Indicator Definitions from 
+   Working Draft NCITS XXX T10/1364-D Revision 10G. November 12, 2001.
+*/
+/* Title of Alubm name (ID=0) or Track Titles (ID != 0) */
+#define CDIO_CDTEXT_TITLE      0x80 
+
+/* Name(s) of the performer(s) in ASCII */
 #define CDIO_CDTEXT_PERFORMER  0x81
+
+/* Name(s) of the songwriter(s) in ASCII */
 #define CDIO_CDTEXT_SONGWRITER 0x82
+
+/* Name(s) of the Composers in ASCII */
 #define CDIO_CDTEXT_COMPOSER   0x83
+
+/* Name(s) of the Arrangers in ASCII */
 #define CDIO_CDTEXT_ARRANGER   0x84
+
+/* Message(s) from content provider and/or artist in ASCII */
 #define CDIO_CDTEXT_MESSAGE    0x85
+
+/* Disc Identificatin information */
 #define CDIO_CDTEXT_DISCID     0x86
+
+/* Genre Identification and Genre Information */
 #define CDIO_CDTEXT_GENRE      0x87
+
+/* Table of Content Information */
+#define CDIO_CDTEXT_TOC        0x88
+
+/* Second Table of Content Information */
+#define CDIO_CDTEXT_TOC2       0x89
+
+/* 0x8A, 0x8B, 0x8C are reserved
+   0x8D Reserved for content provider only.
+ */
+
+/* UPC/EAN code of the album and ISRC code of each track */
+#define CDIO_CDTEXT_UPC        0x8E
+
+/* Size information of the Block */
+#define CDIO_CDTEXT_BLOCKSIZE  0x8F
+
 
 PRAGMA_BEGIN_PACKED
 
