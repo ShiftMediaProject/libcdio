@@ -1,5 +1,6 @@
 *.aux
 *.cp
+*.cps
 *.dvi 
 *.info
 *.fn
@@ -7,6 +8,7 @@
 *.log
 *.pg
 *.pdf
+*.tmp
 *.toc
 *.tp
 *.txt
