@@ -1,0 +1,195 @@
+/*
+    $Id: rock.h,v 1.1 2005/02/13 00:20:05 rocky Exp $
+
+    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+
+    See also rock.c by Eric Youngdale (1993) from GNU/Linux and in cdrtools. 
+    This is 
+
+    Copyright 1993 Yggdrasil Computing, Incorporated
+
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+/*!
+   \file rock.h 
+   \brief Things related to the Rock Ridge Interchange Protocol (RRIP)
+
+   Applications will probably not include this directly but via 
+   the iso9660.h header.
+*/
+
+
+#ifndef __CDIO_ROCK_H__
+#define __CDIO_ROCK_H__
+
+#include <cdio/types.h>
+
+/*! An enumeration for some of the ISO_ROCK_* #defines below. This isn't
+  really an enumeration one would really use in a program it is to
+  be helpful in debuggers where wants just to refer to the ISO_ROCK_*
+  names and get something.
+*/
+extern enum cdio_rock_enums {
+  ISO_ROCK_IRUSR  = 000400,   /**< read permission (owner) */
+  ISO_ROCK_IWUSR  = 000200,   /**< write permission (owner) */
+  ISO_ROCK_IXUSR  = 000100,   /**< execute permission (owner) */
+  ISO_ROCK_IRGRP  = 000040,   /**< read permission (group) */
+  ISO_ROCK_IWGRP  = 000020,   /**< write permission (group) */
+  ISO_ROCK_IXGRP  = 000010,   /**< execute permission (group) */
+  ISO_ROCK_IROTH  = 000004,   /**< read permission (other) */
+  ISO_ROCK_IWOTH  = 000002,   /**< write permission (other) */
+  ISO_ROCK_IXOTH  = 000001,   /**< execute permission (other) */
+
+  ISO_ROCK_ISUID  = 004000,   /**< set user ID on execution */
+  ISO_ROCK_ISGID  = 002000,   /**< set group ID on execution */
+  ISO_ROCK_ISVTX  = 001000,   /**< save swapped text even after use */
+
+  ISO_ROCK_ISSOCK = 0140000,  /**< socket */
+  ISO_ROCK_ISLNK  = 0120000,  /**< symbolic link */
+  ISO_ROCK_ISREG  = 0100000,  /**< regular */
+  ISO_ROCK_ISBLK  = 060000,   /**< block special */
+  ISO_ROCK_ISCHR  = 020000,   /**< character special */
+  ISO_ROCK_ISDIR  = 040000,   /**< directory */
+  ISO_ROCK_ISFIFO = 010000    /**< pipe or FIFO */
+} cdio_rock_enums;
+
+
+/** Enforced file locking (shared w/set group ID) */
+#define ISO_ROCK_ENFMT ISO_ROCK_ISGID
+
+PRAGMA_BEGIN_PACKED
+
+/*! POSIX file attributes, PX. See Section 4.1.2 */
+typedef struct iso_rock_px_s {
+  iso733_t st_mode;       /*! file mode permissions; same as st_mode 
+                            of POSIX:5.6.1 */
+  iso733_t st_links;      /*! number of links to file; same as st_links
+                            of POSIX:5.6.1 */
+  iso733_t st_uid;        /*! user id owner of file; same as st_uid
+                            of POSIX:5.6.1 */
+  iso733_t gid;          /*! group id of file; same as st_gid of 
+                           of POSIX:5.6.1 */
+} GNUC_PACKED iso_rock_px_t ;
+
+/*! POSIX device number, PN. A PN is mandatory if the file type
+  recorded in the "PX" File Mode field for a Directory Record
+  indicates a character or block device (ISO_ROCK_ISCHR |
+  ISO_ROCK_ISBLK).  This entry is ignored for other (non-Direcotry)
+  file types. No more than one "PN" is recorded in the System Use Area
+  of a Directory Record.
+
+  See Section 4.1.2 */
+typedef struct iso_rock_pn_s {
+  iso733_t dev_high;     /*! high-order 32 bits of the 64 bit device number.
+                           7.2.3 encoded */
+  iso733_t dev_low;      /*! low-order 32 bits of the 64 bit device number.
+                           7.2.3 encoded */
+} GNUC_PACKED iso_rock_pn_t ;
+
+/*! Symbolic link. See Section 4.1.3 */
+typedef struct iso_rock_sl_s {
+  unsigned char flags;
+  unsigned char len;
+  char text[EMPTY_ARRAY_SIZE];
+} GNUC_PACKED iso_rock_sl_t ;
+
+/*! Alternate name. See Section 4.1.4 */
+typedef struct iso_rock_nm_s {
+  unsigned char flags;
+  char name[EMPTY_ARRAY_SIZE];
+} GNUC_PACKED iso_rock_nm_t ;
+
+/*! Child link. See Section 4.1.5.1 */
+typedef struct iso_rock_cl_s {
+  char location[1];
+} GNUC_PACKED iso_rock_cl_t ;
+
+/*! Parent link. See Section 4.1.5.2 */
+typedef struct iso_rock_pl_s {
+  char location[1];
+} GNUC_PACKED iso_rock_pl_t ;
+
+/* These are the bits and their meanings for flags in the TF structure. */
+typedef enum {
+  ISO_ROCK_TF_CREATE     =  1,
+  ISO_ROCK_TF_MODIFY     =  2,
+  ISO_ROCK_TF_ACCESS     =  4,
+  ISO_ROCK_TF_ATTRIBUTES =  8,
+  ISO_ROCK_TF_BACKUP     =  16,
+  ISO_ROCK_TF_EXPIRATION =  32,
+  ISO_ROCK_TF_EFFECTIVE  =  64,
+  ISO_ROCK_TF_LONG_FORM  = 128
+} iso_rock_tf_flag_t;
+
+/* These are the bits and their meanings for flags in the TF structure. */
+#define ISO_ROCK_TF_CREATE      1
+#define ISO_ROCK_TF_MODIFY      2
+#define ISO_ROCK_TF_ACCESS      4
+#define ISO_ROCK_TF_ATTRIBUTES  8
+#define ISO_ROCK_TF_BACKUP     16
+#define ISO_ROCK_TF_EXPIRATION 32
+#define ISO_ROCK_TF_EFFECTIVE  64
+#define ISO_ROCK_TF_LONG_FORM 128
+
+/*! Time stamp(s) for a file. See Section 4.1.6 */
+typedef struct iso_rock_tf_s {
+  uint8_t flags;
+  iso9660_ltime_t times[EMPTY_ARRAY_SIZE];
+} GNUC_PACKED iso_rock_tf_t ;
+
+/*! File data in sparse format. See Section 4.1.7 */
+typedef struct iso_rock_sf_s {
+  iso733_t virtual_size_high; /**< high-order 32 bits of virtual size */
+  iso733_t virtual_size_low;  /**< low-order 32 bits of virtual size */
+  uint8_t   table_depth;
+} GNUC_PACKED iso_rock_sf_t ;
+
+/*! GNU/Linux-specific extension for transparent decompression. */
+typedef struct iso_rock_zf_s {
+  char algorithm[2];
+  char parms[2];
+  char real_size[8];
+} GNUC_PACKED iso_rock_zf_t ;
+
+typedef struct iso_rock_ridge_s {
+  char signature[2]; /**< signature word; either 'SP', 'CE', 'ER', 'RR',
+                          'PX', 'PN', 'SL', 'NM', 'CL', 'PL', 'TF', or 
+                          'ZF' */
+  iso711_t len;      /** length of system-user area - 44 for PX
+                         20 for PN, 5+strlen(text) for SL. */
+  iso711_t version;  /** version number - value 1 */
+  union{
+    iso_rock_px_t PX;
+    iso_rock_pn_t PN;
+    iso_rock_sl_t SL;
+    iso_rock_nm_t NM;
+    iso_rock_cl_t CL;
+    iso_rock_pl_t PL;
+    iso_rock_tf_t TF;
+    iso_rock_zf_t SF;
+    iso_rock_zf_t ZF;
+  } u;
+} GNUC_PACKED iso_rock_ridge_t;
+
+PRAGMA_END_PACKED
+
+#endif /* __ISO_ROCK_H__ */
+
+/* 
+ * Local variables:
+ *  c-file-style: "gnu"
+ *  tab-width: 8
+ *  indent-tabs-mode: nil
+ * End:
+ */

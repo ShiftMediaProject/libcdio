@@ -1,5 +1,5 @@
 /*
-    $Id: xa.h,v 1.13 2005/02/12 18:24:21 rocky Exp $
+    $Id: xa.h,v 1.14 2005/02/13 00:20:05 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,13 +27,14 @@
 /*!
    \file xa.h 
    \brief Things related to the ISO-9660 XA (Extended Attributes) format
+
+   Applications will probably not include this directly but via 
+   the iso9660.h header.
 */
 
 
 #ifndef __CDIO_XA_H__
 #define __CDIO_XA_H__
-
-#include <cdio/types.h>
 
 /*! An enumeration for some of the XA_* #defines below. This isn't
   really an enumeration one would really use in a program it is to

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.63 2005/02/12 18:24:21 rocky Exp $
+    $Id: iso9660.h,v 1.64 2005/02/13 00:20:05 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -59,6 +59,11 @@ typedef uint64_t iso733_t; /*! See section 7.3.3 */
 typedef char     achar_t;  /*! See section 7.4.1 */
 typedef char     dchar_t;  /*! See section 7.4.1 */
 
+#ifndef  EMPTY_ARRAY_SIZE
+#define EMPTY_ARRAY_SIZE 0
+#endif
+
+#include <cdio/types.h>
 #include <cdio/xa.h>
 
 #define	_delta(from, to)	((to) - (from) + 1)
@@ -203,10 +208,6 @@ typedef enum strncpy_pad_check {
   ISO9660_DCHARS
 } strncpy_pad_check_t;
 
-#ifndef  EMPTY_ARRAY_SIZE
-#define EMPTY_ARRAY_SIZE 0
-#endif
-
 PRAGMA_BEGIN_PACKED
 
 /*! 
@@ -254,6 +255,8 @@ struct	iso9660_ltime_s {
 } GNUC_PACKED;
 
 typedef struct iso9660_ltime_s  iso9660_ltime_t;
+
+#include <cdio/rock.h>
 
 /*! \brief Format of an ISO-9660 directory record 
 
