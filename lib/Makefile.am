@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.52 2004/10/31 13:58:44 rocky Exp $
+#   $Id: Makefile.am,v 1.53 2004/11/06 11:41:59 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -41,10 +41,10 @@
 #     then set AGE to 0.
 
 libcdio_la_CURRENT := 2
-libcdio_la_REVISION := 0
+libcdio_la_REVISION := 1
 libcdio_la_AGE := 2
 
-libiso9660_la_CURRENT := 2
+libiso9660_la_CURRENT := 3
 libiso9660_la_REVISION := 0
 libiso9660_la_AGE := 0
 
