@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: paranoia.h,v 1.2 2005/01/11 04:00:26 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -48,6 +48,10 @@
  */
 typedef struct cdrom_paranoia_s cdrom_paranoia_t;
 typedef struct cdrom_drive_s   cdrom_drive_t;
+
+/** For compatibility. cdrom_drive_t is depricated, use cdrom_drive_t instead. */
+#define cdrom_drive cdrom_drive_t
+
 
 typedef enum  {
   PARANOIA_CB_READ,

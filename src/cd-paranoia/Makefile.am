@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.4 2005/01/06 11:39:40 rocky Exp $
+#   $Id: Makefile.am,v 1.5 2005/01/11 04:00:26 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -24,20 +24,32 @@ else
 getopt_sources = getopt.c getopt1.c
 endif
 
+EXTRA_DIST = $(man_MANS) getopt.c getopt1.c \
+	      usage.txt.in pod2c.pl \
+	      doc/FAQ.txt doc/overlapdef.txt
+
 noinst_HEADERS = getopt.h header.h report.h
 
 if BUILD_CD_PARANOIA
 cd_paranoia_SOURCES = cd-paranoia.c \
 	buffering_write.c buffering_write.h \
-	$(getopt_sources) header.c report.c
+	$(getopt_sources) header.c report.c usage.h
 
 cd_paranoia_LDADD =  $(LIBCDIO_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_PARANOIA_LIBS)
 
 bin_PROGRAMS = cd-paranoia
 
 man_MANS = cd-paranoia.1 cd-paranoia.1.jp
-EXTRA_DIST = $(man_MANS) $(getopt_sources)
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
+
+# These are the implict rules we've got here.
+SUFFIXES = .txt .h
+
+.txt.h:    $(srcdir)/pod2c.pl
+	$(PERL) $(srcdir)/pod2c.pl $< >$@
+
 endif
+
+MOSTLYCLEANFILES = usage.h usage.txt
 
