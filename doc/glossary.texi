@@ -32,8 +32,9 @@ use the @acronym{CD} medium.
 Compact Disc interactive. An extension of the CD format designed
 around a set-top computer that connects to a TV to provide interactive
 home entertainment, including digital audio and video, video games,
-and software applications. Defined by the ``Green Book'' standard. 
-@uref{http://www.icdia.org/}.
+and software applications. Defined by the ``Green Book'' standard.
+@uref{http://www.icdia.org/}. CD-i for video and video music has
+largely (if not totally) been superceded by VCDs.
 
 @item CD-i Bridge
 
