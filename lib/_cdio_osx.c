@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.19 2004/04/30 06:54:15 rocky Exp $
+    $Id: _cdio_osx.c,v 1.20 2004/05/01 01:05:26 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.19 2004/04/30 06:54:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.20 2004/05/01 01:05:26 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -67,7 +67,7 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.19 2004/04/30 06:54:15 rocky 
 
 #define TOTAL_TRACKS    (_obj->num_tracks)
 
-typedef_  enum {
+typedef enum {
   _AM_NONE,
   _AM_OSX,
 } access_mode_t;
