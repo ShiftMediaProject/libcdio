@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.45 2004/06/23 00:37:19 rocky Exp $
+    $Id: _cdio_osx.c,v 1.46 2004/06/24 07:51:51 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.45 2004/06/23 00:37:19 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.46 2004/06/24 07:51:51 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -136,7 +136,7 @@ _get_read_mode1_sectors_osx (void *user_data, void *data, lsn_t lsn,
   
    if( ioctl( env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
-    cdio_error( "could not read block %d, %s", lsn, strerror(errno) );
+    cdio_info( "could not read block %d, %s", lsn, strerror(errno) );
     return -1;
   }
   return 0;
@@ -172,7 +172,7 @@ _get_read_mode2_sectors_osx (void *user_data, void *data, lsn_t lsn,
   
   if( ioctl( env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
-    cdio_error( "could not read block %d, %s", lsn, strerror(errno) );
+    cdio_info( "could not read block %d, %s", lsn, strerror(errno) );
     return -1;
   }
   return 0;
@@ -201,7 +201,7 @@ _get_read_audio_sectors_osx (void *user_data, void *data, lsn_t lsn,
   
   if( ioctl( env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
-    cdio_error( "could not read block %d", lsn );
+    cdio_info( "could not read block %d", lsn );
     return -1;
   }
   return 0;
@@ -251,7 +251,7 @@ _set_arg_osx (void *user_data, const char key[], const char value[])
       if (!strcmp(value, "OSX"))
 	env->access_mode = _AM_OSX;
       else
-	cdio_error ("unknown access type: %s. ignored.", value);
+	cdio_warn ("unknown access type: %s. ignored.", value);
     }
   else 
     return -1;
@@ -276,7 +276,7 @@ _cdio_read_toc (_img_private_t *env)
   
   env->gen.fd = open( env->gen.source_name, O_RDONLY | O_NONBLOCK );
   if (-1 == env->gen.fd) {
-    cdio_error("Failed to open %s: %s", env->gen.source_name,
+    cdio_warn("Failed to open %s: %s", env->gen.source_name,
 	       strerror(errno));
     return false;
   }
@@ -294,7 +294,7 @@ _cdio_read_toc (_img_private_t *env)
   /* get port for IOKit communication */
   if( ( ret = IOMasterPort( MACH_PORT_NULL, &port ) ) != KERN_SUCCESS )
     {
-      cdio_error( "IOMasterPort: 0x%08x", ret );
+      cdio_warn( "IOMasterPort: 0x%08x", ret );
       return false;
     }
   
@@ -303,7 +303,7 @@ _cdio_read_toc (_img_private_t *env)
 					   port, IOBSDNameMatching( port, 0, psz_devname ),
 					   &iterator ) ) != KERN_SUCCESS )
     {
-        cdio_error( "IOServiceGetMatchingServices: 0x%08x", ret );
+        cdio_warn( "IOServiceGetMatchingServices: 0x%08x", ret );
         return false;
     }
   
@@ -319,7 +319,7 @@ _cdio_read_toc (_img_private_t *env)
 					      &iterator );
       if( ret != KERN_SUCCESS )
         {
-	  cdio_error( "IORegistryEntryGetParentIterator: 0x%08x", ret );
+	  cdio_warn( "IORegistryEntryGetParentIterator: 0x%08x", ret );
 	  IOObjectRelease( service );
 	  return false;
         }
@@ -331,7 +331,7 @@ _cdio_read_toc (_img_private_t *env)
   
   if( service == 0 )
     {
-      cdio_error( "search for kIOCDMediaClass came up empty" );
+      cdio_warn( "search for kIOCDMediaClass came up empty" );
       return false;
     }
   
@@ -341,7 +341,7 @@ _cdio_read_toc (_img_private_t *env)
   
   if(  ret != KERN_SUCCESS )
     {
-      cdio_error( "IORegistryEntryCreateCFProperties: 0x%08x", ret );
+      cdio_warn( "IORegistryEntryCreateCFProperties: 0x%08x", ret );
       IOObjectRelease( service );
       return false;
     }
@@ -360,13 +360,14 @@ _cdio_read_toc (_img_private_t *env)
       if( ( env->pTOC = (CDTOC *)malloc( buf_len ) ) != NULL ) {
 	CFDataGetBytes( data, range, (u_char *) env->pTOC );
       } else {
-	cdio_error( "Trouble allocating CDROM TOC" );
+	cdio_warn( "Trouble allocating CDROM TOC" );
 	return false;
       }
     }
   else
     {
-      cdio_error( "CFDictionaryGetValue failed" );
+      cdio_warn( "CFDictionaryGetValue failed" );
+      return false;
     }
   
   CFRelease( properties );
@@ -387,7 +388,7 @@ _cdio_read_toc (_img_private_t *env)
     env->pp_lba = malloc( env->i_descriptors * sizeof(int) );
     if( env->pp_lba == NULL )
       {
-	cdio_error("Out of memory in allocating track starting LSNs" );
+	cdio_warn("Out of memory in allocating track starting LSNs" );
 	free( env->pTOC );
 	return false;
       }
@@ -451,7 +452,7 @@ _cdio_read_toc (_img_private_t *env)
     
     if( i_leadout == -1 )
       {
-	cdio_error( "CD leadout not found" );
+	cdio_warn( "CD leadout not found" );
 	free( env->pp_lba );
 	free( (void *) env->pTOC );
 	return false;
@@ -646,7 +647,7 @@ _get_track_format_osx(void *user_data, track_t i_track)
   
   if( ioctl( env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
   {
-    cdio_error( "could not read trackinfo for track %d", i_track );
+    cdio_warn( "could not read trackinfo for track %d", i_track );
     return TRACK_FORMAT_ERROR;
   }
 
@@ -698,8 +699,8 @@ _get_track_green_osx(void *user_data, track_t i_track)
     cd_read.bufferLength = sizeof(CDTrackInfo);
     
     if( ioctl( env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 ) {
-      cdio_error( "could not read trackinfo for track %d", i_track );
-      return -1;
+      cdio_warn( "could not read trackinfo for track %d", i_track );
+      return false;
     }
     return ((a_track.trackMode & CDIO_CDROM_DATA_TRACK) != 0);
   }
