@@ -2,6 +2,7 @@
 
 - Rock Ridge Extension support added
 - CD audio support (play track/index, pause, set volume, read audio subchannel)
+- utility cdda-player to (show off audio audio support) added
 - file time/size attributes fixes
 - cd-info/iso-info show more ls-like attributes and more often
 - ISO 9660 more accurate more often
@@ -10,6 +11,7 @@
 - remove memory leaks
 - Add enumerations and symbols to facilitate debugging
 - Break out C++ example programs into a separate directory. More C++ programs.
+- gcc 4 fixes
 
 0.72
 
@@ -184,4 +186,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.65 2005/03/03 10:43:31 rocky Exp $
+$Id: NEWS,v 1.66 2005/03/18 13:21:14 rocky Exp $
