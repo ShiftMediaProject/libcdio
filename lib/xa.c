@@ -1,5 +1,5 @@
 /*
-    $Id: xa.c,v 1.1 2003/08/31 08:32:40 rocky Exp $
+    $Id: xa.c,v 1.2 2003/08/31 08:42:11 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -31,8 +31,6 @@
 /* Private headers */
 #include "cdio_assert.h"
 #include "bytesex.h"
-
-#define iso9660_xa_t_SIZEOF 14
 
 iso9660_xa_t *
 iso9660_xa_init (iso9660_xa_t *_xa, uint16_t uid, uint16_t gid, uint16_t attr, 

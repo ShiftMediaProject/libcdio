@@ -1,5 +1,5 @@
 /*
-    $Id: check_sizeof.c,v 1.2 2003/08/31 05:00:44 rocky Exp $
+    $Id: check_sizeof.c,v 1.3 2003/08/31 08:42:11 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -64,6 +64,11 @@ int main (int argc, const char *argv[])
   CHECK_SIZEOF_STRUCT(iso9660_pvd);
   CHECK_SIZEOF_STRUCT(iso_path_table);
   CHECK_SIZEOF_STRUCT(iso9660_dir);
+
+#define iso9660_xa_t_SIZEOF 14
+
+  /* xa.h */
+  CHECK_SIZEOF(iso9660_xa_t);
 
   if (fail)
     return 1;
