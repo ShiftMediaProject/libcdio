@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.c,v 1.2 2005/01/20 01:00:52 rocky Exp $
+    $Id: _cdio_stream.c,v 1.3 2005/01/21 10:11:24 rocky Exp $
 
     Copyright (C) 2000, 2004, 2005 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -34,7 +34,7 @@
 #include <cdio/util.h>
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.2 2005/01/20 01:00:52 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.3 2005/01/21 10:11:24 rocky Exp $";
 
 /* 
  * DataSource implementations
@@ -54,7 +54,7 @@ struct _CdioDataSource {
 static bool
 _cdio_stream_open_if_necessary(CdioDataSource_t *p_obj)
 {
-  cdio_assert (p_obj != NULL);
+  if (!p_obj) return false;
 
   if (!p_obj->is_open) {
     if (p_obj->op.open(p_obj->user_data)) {
@@ -89,7 +89,7 @@ _cdio_stream_open_if_necessary(CdioDataSource_t *p_obj)
 long
 cdio_stream_seek(CdioDataSource_t* p_obj, long int offset, int whence)
 {
-  cdio_assert (p_obj != NULL);
+  if (!p_obj) return -1;
 
   if (!_cdio_stream_open_if_necessary(p_obj)) 
     /* errno is set by _cdio_stream_open_if necessary. */
@@ -141,8 +141,7 @@ cdio_stream_read(CdioDataSource_t* p_obj, void *ptr, long size, long nmemb)
 {
   long read_bytes;
 
-  cdio_assert (p_obj != NULL);
-
+  if (!p_obj) return 0;
   if (!_cdio_stream_open_if_necessary(p_obj)) return 0;
 
   read_bytes = p_obj->op.read(p_obj->user_data, ptr, size*nmemb);
@@ -158,8 +157,7 @@ cdio_stream_read(CdioDataSource_t* p_obj, void *ptr, long size, long nmemb)
 long int
 cdio_stream_stat(CdioDataSource_t *p_obj)
 {
-  cdio_assert (p_obj != NULL);
-
+  if (!p_obj) return -1;
   if (!_cdio_stream_open_if_necessary(p_obj)) return -1;
 
   return p_obj->op.stat(p_obj->user_data);
@@ -168,7 +166,7 @@ cdio_stream_stat(CdioDataSource_t *p_obj)
 void
 cdio_stream_close(CdioDataSource_t *p_obj)
 {
-  cdio_assert (p_obj != NULL);
+  if (!p_obj) return;
 
   if (p_obj->is_open) {
     cdio_debug ("closed source...");
@@ -181,7 +179,7 @@ cdio_stream_close(CdioDataSource_t *p_obj)
 void
 cdio_stream_destroy(CdioDataSource_t *p_obj)
 {
-  cdio_assert (p_obj != NULL);
+  if (!p_obj) return;
 
   cdio_stream_close(p_obj);
 

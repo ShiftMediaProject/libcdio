@@ -1,5 +1,5 @@
 /*
-    $Id: image.h,v 1.4 2005/01/20 01:00:52 rocky Exp $
+    $Id: image.h,v 1.5 2005/01/21 10:11:24 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -57,6 +57,12 @@ typedef struct {
   char          *isrc;		/**< IRSC Code (5.22.4) exactly 12 bytes */
   char           *filename;
   CdioDataSource_t *data_source;
+  off_t          offset;        /**< byte offset into data_start of track
+				     beginning. In cdrdao for example, one
+				     filename may cover many tracks and
+				     each track would then have a different
+				     offset.
+				*/
   track_format_t track_format;
   bool           track_green;
   cdtext_t       cdtext;	/**< CD-TEXT */
@@ -64,7 +70,8 @@ typedef struct {
   trackmode_t    mode;
   uint16_t       datasize;      /**< How much is in the portion we return 
 				     back? */
-  long int       datastart;     /**<  Offset from begining that data starts */
+  long int       datastart;     /**<  Offset from begining of fraem 
+				      that data starts */
   uint16_t       endsize;       /**< How much stuff at the end to skip over. 
 				     This stuff may have error correction 
 				     (EDC, or ECC).*/

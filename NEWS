@@ -10,6 +10,8 @@
 - FreeBSD 6 tolerated
 - improve Win32 driver
 - mode detection fixes
+- all read routines check and adjust so we don't try to access beyond the 
+  end of the disc
 - C++ fixes
 - Update doc
 
@@ -169,4 +171,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.60 2005/01/18 03:46:40 rocky Exp $
+$Id: NEWS,v 1.61 2005/01/21 10:11:23 rocky Exp $

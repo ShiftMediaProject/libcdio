@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.7 2005/01/18 00:57:20 rocky Exp $
+    $Id: cdrdao.c,v 1.8 2005/01/21 10:11:24 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.7 2005/01/18 00:57:20 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.8 2005/01/21 10:11:24 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -68,6 +68,25 @@ static const char _rcsid[] = "$Id: cdrdao.c,v 1.7 2005/01/18 00:57:20 rocky Exp 
 
 static uint32_t _stat_size_cdrdao (void *p_user_data);
 static bool parse_tocfile (_img_private_t *cd, const char *p_toc_name);
+
+
+static bool
+check_track_is_blocksize_multiple(const char *psz_fname, 
+				  track_t i_track, long i_size, 
+				  long i_blocksize)
+{
+  if (i_size % i_blocksize) {
+    cdio_info ("image %s track %d size (%ld) not a multiple"
+	       " of the blocksize (%ld)", psz_fname, i_track, i_size, 
+	       i_blocksize);
+    if (i_size % M2RAW_SECTOR_SIZE == 0)
+      cdio_info ("this may be a 2336-type disc image");
+    else if (i_size % CDIO_CD_FRAMESIZE_RAW == 0)
+      cdio_info ("this may be a 2352-type disc image");
+    return false;
+  }
+  return true;
+}
 
 
 /*!
@@ -213,27 +232,26 @@ _read_cdrdao (void *user_data, void *data, size_t size)
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_stat_size_cdrdao (void *user_data)
+_stat_size_cdrdao (void *p_user_data)
 {
-  _img_private_t *env = user_data;
-  long size;
+  _img_private_t *p_env = p_user_data;
+  track_t i_leadout = p_env->gen.i_tracks;
+  long i_blocksize  = p_env->tocent[i_leadout-1].blocksize;
+  long i_size       = cdio_stream_stat(p_env->tocent[i_leadout-1].data_source)
+    - p_env->tocent[i_leadout-1].offset;
 
-  size = cdio_stream_stat (env->tocent[0].data_source);
+  if (check_track_is_blocksize_multiple(p_env->tocent[i_leadout-1].filename, 
+					i_leadout-1, i_size, i_blocksize)) {
+    i_size /= i_blocksize;
+  } else {
+    /* Round up */
+    i_size = (i_size / i_blocksize) + 1;
+  }
+  
+  i_size += p_env->tocent[i_leadout-1].start_lba;
+  i_size -= CDIO_PREGAP_SECTORS;
 
-  if (size % CDIO_CD_FRAMESIZE_RAW)
-    {
-      cdio_warn ("image %s size (%ld) not multiple of blocksize (%d)", 
-		 env->tocent[0].filename, size, CDIO_CD_FRAMESIZE_RAW);
-      if (size % M2RAW_SECTOR_SIZE == 0)
-	cdio_warn ("this may be a 2336-type disc image");
-      else if (size % CDIO_CD_FRAMESIZE_RAW == 0)
-	cdio_warn ("this may be a 2352-type disc image");
-      /* exit (EXIT_FAILURE); */
-    }
-
-  size /= CDIO_CD_FRAMESIZE_RAW;
-
-  return size;
+  return i_size;
 }
 
 #define MAXLINE 512
@@ -685,12 +703,13 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	    }
 	  }
 	  
-	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+	  psz_field = strtok (NULL, " \t\n\r");
+	  if (psz_field) {
 	    /* Handle optional #byte-offset */
 	    if ( psz_field[0] == '#') {
-	      long int datastart;
+	      long int offset;
 	      psz_field++;
-	      datastart = strtol(psz_field, (char **)NULL, 10);
+	      offset = strtol(psz_field, (char **)NULL, 10);
 	      if ( 0 != errno ) {
 		cdio_log (log_level, 
 			  "%s line %d: can't convert `%s' to byte offset", 
@@ -698,13 +717,13 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 		goto err_exit;
 	      } else {
 		if (NULL != cd) {
-		  cd->tocent[i].datastart = datastart;
+		  cd->tocent[i].offset = offset;
 		}
 	      }
 	      psz_field = strtok (NULL, " \t\n\r");
 	    }
 	  }
-	  if (NULL != psz_field) {
+	  if (psz_field) {
 	    /* Handle start-msf */
 	    lba_t lba = cdio_mmssff_to_lba (psz_field);
 	    if (CDIO_INVALID_LBA == lba) {
@@ -712,12 +731,32 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 		       psz_cue_name, i_line, psz_field);
 	      goto err_exit;
 	    }
-	    if (NULL != cd) {
+	    if (cd) {
 	      cd->tocent[i].start_lba = lba;
 	      cdio_lba_to_msf(cd->tocent[i].start_lba, 
 			      &(cd->tocent[i].start_msf));
 	    }
+	  } else {
+	    /* No start-msf. */
+	    if (cd) {
+	      if (i) {
+		long i_blocksize = cd->tocent[i-1].blocksize;
+		long i_size      = 
+		  cdio_stream_stat(cd->tocent[i-1].data_source);
+
+		  check_track_is_blocksize_multiple(cd->tocent[i-1].filename, 
+						    i-1, i_size, i_blocksize);
+		/* Append size of previous datafile. */
+		cd->tocent[i].start_lba = cd->tocent[i-1].start_lba + 
+		  (i_size / i_blocksize);
+	      }
+	      cd->tocent[i].offset = 0;
+	      cd->tocent[i].start_lba += CDIO_PREGAP_SECTORS;
+	      cdio_lba_to_msf(cd->tocent[i].start_lba, 
+			      &(cd->tocent[i].start_msf));
+	    }
 	  }
+	  
 	} else {
 	  goto not_in_global_section;
 	}
@@ -1107,7 +1146,7 @@ _get_track_green_cdrdao(void *user_data, track_t i_track)
   Return the starting LSN track number
   i_track in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
-  using i_track LEADOUT_TRACK or the total tracks+1.
+  using i_track CDIO_CDROM_LEADOUT_TRACK or the total tracks+1.
   False is returned if there is no track entry.
 */
 static lba_t
