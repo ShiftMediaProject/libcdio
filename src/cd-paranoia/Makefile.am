@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.2 2004/12/18 21:24:25 rocky Exp $
+#   $Id: Makefile.am,v 1.3 2004/12/23 09:57:33 rocky Exp $
 #
 #    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -27,7 +27,7 @@ cd_paranoia_SOURCES = cd-paranoia.c \
 
 cd_paranoia_LDADD =  $(LIBCDIO_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_PARANOIA_LIBS)
 
-bin_PROGRAMS = cd-paranoia$(EXEEXT)
+bin_PROGRAMS = cd-paranoia
 
 man_MANS = cd-paranoia.1 cd-paranoia.1.jp
 EXTRA_DIST = $(man_MANS)
