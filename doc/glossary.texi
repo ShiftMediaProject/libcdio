@@ -15,11 +15,11 @@ devices to the IDE/EIDE connections.
 
 @item BIN/CUE
 
-A CD-image format used by the CDRWin software on Microsoft
-Windows. Many other programs subsequently support using this
+A CD-image format developed by Jeff Arnold for CDRWIN software on
+Microsoft Windows. Many other programs subsequently support using this
 format. The .CUE file is a text file which contains CD format and
-track layout information, while the .BIN file holds the actual data
-of each track.
+track layout information, while the .BIN file holds the actual data of
+each track.
 
 @item CD
 Compact Disc
@@ -100,10 +100,11 @@ International Standards Organization.
 
 @item ISO 9660
 
-The ISO 9660 is a filesystem format for CD-ROM
-media. It was standardized in 1988 and replaced the High Sierra
-standard for the logical format on CD-ROM media (ISO 9660 and High
-Sierra are identical in content, but the exact format is different).
+The ISO 9660 is an operating-system independent filesystem format for
+CD-ROM media and DVD-ROMs. It was standardized in 1988 and replaced the
+High Sierra standard for the logical format on CD-ROM media (ISO 9660
+and High Sierra are identical in content, but the exact format is
+different).
 
 There are several specification levels. In Level 1, file names must be
 in the 8.3 format (no more than eight characters in the name, no more
@@ -111,6 +112,11 @@ than three characters in the suffix) and in capital letters. Directory
 names can be no longer than eight characters. There can be no more
 than eight nested directory levels. Level 2 and 3 specifications allow
 file names up to 32 characters long.
+
+ECMA-119
+(@uref{http://www.ecma-international.org/publications/standards/Ecma-119.htm}
+is the European specification which is identical to ISO 9660.
+ISO 13490 is basically ISO 9660 with multisession support.
 
 @item Joliet extensions
 
