@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.43 2003/09/19 04:39:50 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.44 2003/09/21 07:43:39 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
@@ -256,6 +256,12 @@ AC_SUBST(HAVE_WIN32_CDROM)
 AC_SUBST(HAVE_DARWIN_CDROM)
 
 AC_CHECK_FUNCS( bzero memcpy )
+
+AC_CHECK_MEMBER([struct tm.tm_gmtoff],
+                [AC_DEFINE(HAVE_TM_GMTOFF, 1,
+                        [Define if struct tm has the tm_gmtoff member.])],
+                 ,
+                 [#include <time.h>])
 
 if test x$enable_cddb = x; then
 AC_ARG_ENABLE(cddb,

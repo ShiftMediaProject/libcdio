@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.14 2003/09/21 01:14:30 rocky Exp $
+    $Id: iso9660.c,v 1.15 2003/09/21 07:43:39 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.14 2003/09/21 01:14:30 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.15 2003/09/21 07:43:39 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -99,6 +99,7 @@ iso9660_set_dtime (const struct tm *tm, /*out*/ iso9660_dtime_t *idr_date)
   idr_date->dt_minute = tm->tm_min;
   idr_date->dt_second = tm->tm_sec;
 
+#ifdef HAVE_TM_GMTOFF
   /* The ISO 9660 timezone is in the range -48..+52 and each unit
      represents a 15-minute interval. */
   idr_date->dt_gmtoff = tm->tm_gmtoff / (15 * 60);
@@ -115,6 +116,9 @@ iso9660_set_dtime (const struct tm *tm, /*out*/ iso9660_dtime_t *idr_date)
                idr_date->dt_gmtoff);
     idr_date->dt_gmtoff = 52;
   }
+#else 
+  idr_date->dt_gmtoff = 0;
+#endif
 }
 
 /*!
