@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo-linux.c,v 1.1 2003/03/24 19:01:10 rocky Exp $
+    $Id: cdinfo-linux.c,v 1.2 2003/09/25 10:28:22 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -29,6 +29,13 @@
 #define PROGRAM_NAME "CD Info"
 #define CDINFO_VERSION "2.0"
 
+#include "config.h"
+#include <cdio/cdio.h>
+#include <cdio/logging.h>
+#include <cdio/util.h>
+#include <cdio/cd_types.h>
+#include <cdio/sector.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -46,11 +53,6 @@
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <argp.h>
-
-#include "config.h"
-#include "cdio.h"
-#include "logging.h"
-#include "util.h"
 
 #ifdef ENABLE_NLS
 #include <locale.h>
@@ -197,13 +199,13 @@ int ms_offset;                /* multisession offset found by track-walking */
 int data_start;                                       /* start of data area */
 int joliet_level = 0;
 
-char buffer[6][CDDA_SECTOR_SIZE];  /* for CD-Data */
+char buffer[6][CDIO_CD_FRAMESIZE_RAW];  /* for CD-Data */
 
 CdIo *img; 
 track_t num_tracks;
 track_t first_track_num;
 
-struct cdrom_tocentry      *toc[CDIO_LEADOUT_TRACK+1];  /* TOC-entries */
+struct cdrom_tocentry      *toc[CDIO_CDROM_LEADOUT_TRACK+1];  /* TOC-entries */
 struct cdrom_mcn           mcn;
 struct cdrom_multisession  ms;
 struct cdrom_subchnl       sub;
@@ -308,7 +310,7 @@ PARTICULAR PURPOSE.\n\
 static int 
 read_block(int superblock, uint32_t offset, uint8_t bufnum, bool is_green)
 {
-  memset(buffer[bufnum],0,M2F1_SECTOR_SIZE);
+  memset(buffer[bufnum], 0, CDIO_CD_FRAMESIZE);
   
   dbg_print(2, "about to read sector %u\n", offset+superblock);
   if (cdio_read_mode2_sector(img, buffer[bufnum],
@@ -317,14 +319,14 @@ read_block(int superblock, uint32_t offset, uint8_t bufnum, bool is_green)
 
 
   /* For now compare with what we get the old way.... */
-  if (0 > lseek(filehandle,M2F1_SECTOR_SIZE*(offset+superblock),SEEK_SET))
+  if (0 > lseek(filehandle, CDIO_CD_FRAMESIZE*(offset+superblock), SEEK_SET))
     return -1;
   
-  memset(buffer[5],0,M2F1_SECTOR_SIZE);
-  if (0 > read(filehandle,buffer[5],M2F1_SECTOR_SIZE))
+  memset(buffer[5],0,CDIO_CD_FRAMESIZE);
+  if (0 > read(filehandle,buffer[5], CDIO_CD_FRAMESIZE))
     return -1;
 
-  if (memcmp(buffer[bufnum], buffer[5], M2F1_SECTOR_SIZE) != 0) {
+  if (memcmp(buffer[bufnum], buffer[5], CDIO_CD_FRAMESIZE) != 0) {
     dbg_print(0, 
 	      "libcdio conversion problem in reading super, buf %d\n",
 	      bufnum);
@@ -562,7 +564,7 @@ cddb_discid()
   }
 
   cdio_get_track_msf(img, 1, &start_msf);
-  cdio_get_track_msf(img, CDIO_LEADOUT_TRACK, &msf);
+  cdio_get_track_msf(img, CDIO_CDROM_LEADOUT_TRACK, &msf);
   
   t = msf_seconds(&msf) - msf_seconds(&start_msf);
   
@@ -575,15 +577,15 @@ cddb_discid()
 static cdio_log_handler_t gl_default_log_handler = NULL;
 
 static void 
-_log_handler (log_level_t level, const char message[])
+_log_handler (cdio_log_level_t level, const char message[])
 {
-  if (level == LOG_DEBUG && opts.debug_level < 2)
+  if (level == CDIO_LOG_DEBUG && opts.debug_level < 2)
     return;
 
-  if (level == LOG_INFO  && opts.debug_level < 1)
+  if (level == CDIO_LOG_INFO  && opts.debug_level < 1)
     return;
   
-  if (level == LOG_WARN  && opts.silent)
+  if (level == CDIO_LOG_WARN  && opts.silent)
     return;
   
   gl_default_log_handler (level, message);
@@ -695,11 +697,10 @@ main(int argc, char *argv[])
      
   print_version();
   
-  img = cdio_new_cd ();
   if (devname==NULL) {
     devname=strdup(cdio_get_default_device(img));
   }
-  cdio_set_arg (img, "device", devname);
+  img = cdio_open (devname, DRIVER_UNKNOWN);
   
   /* open device */
   filehandle = open(devname,O_RDONLY);
@@ -718,7 +719,7 @@ main(int argc, char *argv[])
   }
   
   /* Read and possibly print track information. */
-  for (i = first_track_num; i <= CDIO_LEADOUT_TRACK; i++) {
+  for (i = first_track_num; i <= CDIO_CDROM_LEADOUT_TRACK; i++) {
     msf_t msf;
     
     toc[i] = malloc(sizeof(struct cdrom_tocentry));
@@ -744,10 +745,10 @@ main(int argc, char *argv[])
 	     (int)toc[i]->cdte_ctrl,
 	     (int)toc[i]->cdte_adr,
 	     track_format2str[cdio_get_track_format(img, i)],
-	     CDIO_LEADOUT_TRACK == i ? " (leadout)" : "");
+	     CDIO_CDROM_LEADOUT_TRACK == i ? " (leadout)" : "");
     }
     
-    if (i == CDIO_LEADOUT_TRACK)
+    if (i == CDIO_CDROM_LEADOUT_TRACK)
       break;
     if (TRACK_FORMAT_DATA == cdio_get_track_format(img, i)) {
       num_data++;
@@ -760,22 +761,19 @@ main(int argc, char *argv[])
     }
     /* skip to leadout */
     if (i == num_tracks)
-      i = CDIO_LEADOUT_TRACK-1;
+      i = CDIO_CDROM_LEADOUT_TRACK-1;
   }
 
   if (opts.show_ioctl) {
     printf(STRONG "What ioctl's report...\n" NORMAL);
   
-#ifdef CDROM_GET_MCN
     /* get mcn */
     printf("Get MCN     : "); fflush(stdout);
     if (ioctl(filehandle,CDROM_GET_MCN, &mcn))
       printf("FAILED\n");
     else
       printf("%s\n",mcn.medium_catalog_number);
-#endif
     
-#ifdef CDROM_DISC_STATUS
     /* get disk status */
     printf("disc status : "); fflush(stdout);
     switch (ioctl(filehandle,CDROM_DISC_STATUS,0)) {
@@ -788,9 +786,7 @@ main(int argc, char *argv[])
     case CDS_XA_2_2:  printf("XA mode 2\n"); break;
     default:          printf("unknown (failed?)\n");
     }
-#endif 
     
-#ifdef CDROMMULTISESSION
     /* get multisession */
     printf("multisession: "); fflush(stdout);
     ms.addr_format = CDROM_LBA;
@@ -798,9 +794,7 @@ main(int argc, char *argv[])
       printf("FAILED\n");
     else
       printf("%d%s\n",ms.addr.lba,ms.xa_flag?" XA":"");
-#endif 
     
-#ifdef CDROMSUBCHNL
     /* get audio status from subchnl */
     printf("audio status: "); fflush(stdout);
     sub.cdsc_format = CDROM_MSF;
@@ -826,7 +820,6 @@ main(int argc, char *argv[])
 	       sub.cdsc_trk);
       }
     }
-#endif 
   }
   
   if (opts.show_analysis) {
@@ -867,6 +860,7 @@ main(int argc, char *argv[])
 	case TRACK_FORMAT_CDI:
 	case TRACK_FORMAT_XA:
 	case TRACK_FORMAT_DATA: 
+	case TRACK_FORMAT_PSX: 
 	  ;
 	}
 	
