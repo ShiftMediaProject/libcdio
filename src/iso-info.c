@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.21 2005/02/14 07:49:46 rocky Exp $
+    $Id: iso-info.c,v 1.22 2005/02/18 22:36:29 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -192,11 +192,15 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
 #define DATESTR_SIZE 30
       char date_str[DATESTR_SIZE];
 
-      if (yep != p_statbuf->b_rock)
+      if (yep != p_statbuf->b_rock) {
 	iso9660_name_translate_ext(iso_name, translated_name, i_joliet_level);
+	snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
+		  translated_name);
+      } else {
+	snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
+		  iso_name);
+      }
       
-      snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
-		iso_name);
   
       strncat (_fullname, "/", sizeof (_fullname));
 
