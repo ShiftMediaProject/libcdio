@@ -1,4 +1,4 @@
-# $Id: check_common_fn.in,v 1.5 2004/02/29 15:42:30 rocky Exp $
+# $Id: check_common_fn.in,v 1.6 2004/02/29 16:18:53 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -89,7 +89,7 @@ test_iso_info() {
 
   if ${ISO_INFO} --no-header ${opts} >${outfile} 2>&1 ; then 
     if test "/usr/bin/diff" != no; then
-      if /usr/bin/diff  -w --unified ${outfile} ${rightfile} ; then
+      if @DIFF@ @DIFF_OPTS@ ${outfile} ${rightfile} ; then
 	rm -f $outfile
 	return 0
       else
