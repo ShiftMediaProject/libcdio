@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.18 2003/04/25 21:26:47 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.19 2003/04/26 14:24:44 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.5)
@@ -66,8 +66,13 @@ AC_STDC_HEADERS
 AC_CHECK_HEADERS(stdint.h inttypes.h stdbool.h)
 
 AC_CHECK_HEADER(cddb/cddb.h, , 
-           [ AC_MSG_RESULT([*** CDDB support be disabled from cdinfo program])
+           [ AC_MSG_RESULT([*** CDDB support disabled from cdinfo program])
            enable_cddb=no ], 
+	        )	   
+
+AC_CHECK_HEADER(libvcd/info.h, , 
+           [ AC_MSG_RESULT([*** Video CD info disabled from cdinfo program])
+           enable_vcdinfo=no ], 
 	        )	   
 
 dnl compiler
@@ -226,8 +231,21 @@ fi
 
 AC_SUBST(CDDB_LIB)
 
+if test x$enable_vcdinfo = x; then
+AC_ARG_ENABLE(vcdinfo,
+	[  --disable-vcdinfo        don't include Video CD Info from libvcd],
+		enable_vcdinfo=no,
+		enable_vcdinfo=yes)
+fi
+if test x$enable_vcdinfo = xyes; then
+   AC_DEFINE([HAVE_VCDINFO],1, [Define this if you have libvcdinfo installed])
+   VCDINFO_LIB="-lvcd -lvcdinfo"
+fi
+
+AC_SUBST(VCDINFO_LIB)
+
 AC_CONFIG_COMMANDS([checks], 
-		   [chmod +x test/check_cue.sh
+		   [chmod +x test/check_cue.sh; chmod +x test/check_nrg.sh
 		   ])
 
 AC_OUTPUT([ \
@@ -239,6 +257,7 @@ AC_OUTPUT([ \
        include/cdio/version.h \
        lib/Makefile \
        src/Makefile \
+       test/check_nrg.sh \
        test/check_cue.sh \
        test/Makefile \
        ])

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.1 2003/04/25 21:28:39 rocky Exp $
+    $Id: cd-info.c,v 1.2 2003/04/26 14:24:44 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -44,6 +44,12 @@
 
 #ifdef HAVE_CDDB
 #include <cddb/cddb.h>
+#endif
+
+#ifdef HAVE_VCDINFO
+#include <libvcd/files.h>
+#include <libvcd/info.h>
+#include <libvcd/info_private.h>
 #endif
 
 #include <cdio/cdio.h>
@@ -247,6 +253,9 @@ struct arguments
   int cddb_port;  /* port number to contact CDDB server. */
   int cddb_http;  /* 1 if use http proxy */
 #endif
+#ifdef HAVE_VCDINFO
+  int no_vcd;
+#endif
   int debug_level;
   int silent;
   source_image_t source_image;
@@ -301,6 +310,10 @@ struct poptOption optionsTable[] = {
    "Lookup CDDB via HTTP proxy (default no proxy)"},
 #endif
   
+#ifdef HAVE_VCDINFO
+  {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 0,
+   "Don't look up Video CD information"},
+#endif
   {"no-ioctl",  'I', POPT_ARG_NONE,  &opts.no_ioctl, 0,
    "Don't show ioctl() information"},
   
@@ -782,6 +795,46 @@ print_cddb_info() {
 }
 #endif
 
+#ifdef HAVE_VCDINFO
+static void 
+print_vcd_info(void) {
+  vcdinfo_open_return_t open_rc;
+  vcdinfo_obj_t obj;
+  open_rc = vcdinfo_open(&obj, &source_name, VCDINFO_SOURCE_AUTO, NULL);
+  switch (open_rc) {
+  case VCDINFO_OPEN_VCD: 
+    if (vcdinfo_get_format_version (&obj) == VCD_TYPE_INVALID) {
+      fprintf(stderr, "VCD format detection failed");
+      vcdinfo_close(&obj);
+      return;
+    }
+    fprintf (stdout, "format: %s\n", vcdinfo_get_format_version_str(&obj));
+    fprintf (stdout, "album id: `%.16s'\n", vcdinfo_get_album_id(&obj));
+    fprintf (stdout, "volume count: %d\n", vcdinfo_get_volume_count(&obj));
+    fprintf (stdout, "volume number: %d\n", vcdinfo_get_volume_num(&obj));
+    fprintf (stdout, "system id: `%s'\n",    vcdinfo_get_system_id(&obj));
+    fprintf (stdout, "volume id: `%s'\n",    vcdinfo_get_volume_id(&obj));
+    fprintf (stdout, "volumeset id: `%s'\n", vcdinfo_get_volumeset_id(&obj));
+    fprintf (stdout, "publisher id: `%s'\n", vcdinfo_get_publisher_id(&obj));
+    fprintf (stdout, "preparer id: `%s'\n",  vcdinfo_get_preparer_id(&obj));
+    fprintf (stdout, "application id: `%s'\n", 
+	     vcdinfo_get_application_id(&obj));
+
+    break;
+  case VCDINFO_OPEN_ERROR:
+    fprintf (stderr, "Error in Video CD opening of %s\n", source_name);
+    return;
+    break;
+  case VCDINFO_OPEN_OTHER:
+    fprintf (stderr, "Even though we thought this was a Video CD, "
+	     " further inspection says it is not.\n");
+    break;
+  }
+  vcdinfo_close(&obj);
+    
+}
+#endif 
+
 static void
 print_analysis(int fs, int num_audio)
 {
@@ -858,8 +911,15 @@ print_analysis(int fs, int num_audio)
     need_lf += printf("CD-Plus/Extra   ");
   if (fs & BOOTABLE)
     need_lf += printf("bootable CD   ");
-  if (fs & VIDEOCDI && num_audio == 0)
+  if (fs & VIDEOCDI && num_audio == 0) {
     need_lf += printf("Video CD   ");
+#ifdef HAVE_VCDINFO
+    if (!opts.no_vcd) {
+      printf("\n");
+      print_vcd_info();
+    }
+#endif    
+  }
   if (fs & CVD)
     need_lf += printf("Chaoji Video CD");
   if (need_lf) puts("");
@@ -1043,7 +1103,7 @@ main(int argc, const char *argv[])
 #endif /*CDIO_IOCTL_FINISHED*/
   
   if (!opts.no_analysis) {
-    printf(STRONG "try to find out what sort of CD this is\n" NORMAL);
+    printf(STRONG "CD Analysis Report\n" NORMAL);
     
     /* try to find out what sort of CD we have */
     if (0 == num_data) {

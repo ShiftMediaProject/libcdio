@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.5 2003/04/25 21:28:39 rocky Exp $
+#   $Id: Makefile.am,v 1.6 2003/04/26 14:24:44 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,7 +23,7 @@ CDDB_LIB=@CDDB_LIB@
 
 if BUILD_CDINFO
 cd_info_SOURCES = cd-info.c
-cd_info_LDADD = $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(CDDB_LIB)
+cd_info_LDADD = $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(CDDB_LIB) $(VCDINFO_LIB)
 if BUILD_CDINFO_LINUX
 cdinfo_linux_SOURCES = cdinfo-linux.c
 cdinfo_linux_LDADD = $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)

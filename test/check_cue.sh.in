@@ -1,7 +1,11 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.1 2003/04/22 12:09:09 rocky Exp $
+#$Id: check_cue.sh.in,v 1.2 2003/04/26 14:24:45 rocky Exp $
 if test -n "@CDDB_LIB@" ; then
   cddb_opt='--no-cddb'
+fi
+
+if test -n "@VCD_LIB@" ; then
+  vcd_opt='--no-vcd'
 fi
 
 if test -z $srcdir ; then
@@ -33,7 +37,7 @@ fi
 fname=vcd_demo
 testnum='Video CD'
 if test -f ${srcdir}/${fname}.cue ; then
-  test_cdinfo "-c ${srcdir}/vcd_demo.cue" \
+  test_cdinfo "-c ${srcdir}/vcd_demo.cue $vcd_opt" \
       ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
   check_result $RC "cdinfo CUE test $testnum"
@@ -44,7 +48,7 @@ fi
 fname=svcd_ogt_test_ntsc
 testnum='Super Video CD'
 if test -f ${srcdir}/${fname}.bin ; then
-  test_cdinfo "--cue-file ${srcdir}/${fname}.cue" \
+  test_cdinfo "--cue-file ${srcdir}/${fname}.cue $vcd_opt" \
     ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
   check_result $RC "cdinfo CUE test $testnum"
