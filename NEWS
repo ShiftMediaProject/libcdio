@@ -1,6 +1,6 @@
 0.62
-  A stab at some documentation. More will follow.
-  Add a simple sample program.
+  Some minimal documentation. More will follow.
+  Add a simple sample programs.
   Add a simple regression test driver.
   "Smart" open was scanning devices rather than devices + image drivers.
 
