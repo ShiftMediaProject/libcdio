@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.4 2004/05/08 20:36:01 rocky Exp $
+    $Id: cdrdao.c,v 1.5 2004/05/08 22:02:28 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.4 2004/05/08 20:36:01 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.5 2004/05/08 22:02:28 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -572,7 +572,7 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 	      cd->tocent[i].endsize      = 0;
 	    }
 	  } else {
-	    cdio_log(log_level, "%s line %d after keyword TRACK:",
+	    cdio_log(log_level, "%s line %d after TRACK:",
 		     toc_name, line_num);
 	    cdio_log(log_level, "'%s' not a valid mode.", field);
 	    goto err_exit;
@@ -659,8 +659,8 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 	  if (NULL != (field = strtok (NULL, " \t\n\r"))) {
 	    lba_t lba = cdio_lsn_to_lba(msf_lba_from_mmssff (field));
 	    if (CDIO_INVALID_LBA == lba) {
-	      cdio_log(log_level, "%d: invalid MSF string %s", 
-		       line_num, field);
+	      cdio_log(log_level, "%s line %d: invalid MSF string %s", 
+		       toc_name, line_num, field);
 	      goto err_exit;
 	    }
 	    
@@ -798,12 +798,12 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
   goto err_exit;
   
  format_error:
-  cdio_log(log_level, "%s line %d: format error: %s", 
+  cdio_log(log_level, "%s line %d after keyword %s", 
 	   toc_name, line_num, keyword);
   goto err_exit;
   
  not_in_global_section:
-  cdio_log(log_level, "%s line %d: only allowed in global section: %s", 
+  cdio_log(log_level, "%s line %d: keyword %s only allowed in global section", 
 	   toc_name, line_num, keyword);
 
  err_exit: 
