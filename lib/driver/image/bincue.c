@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.2 2004/12/31 05:47:36 rocky Exp $
+    $Id: bincue.c,v 1.3 2004/12/31 07:51:43 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.2 2004/12/31 05:47:36 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.3 2004/12/31 07:51:43 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -63,25 +63,9 @@ static const char _rcsid[] = "$Id: bincue.c,v 1.2 2004/12/31 05:47:36 rocky Exp 
 #define DEFAULT_CDIO_DEVICE "videocd.bin"
 #define DEFAULT_CDIO_CUE    "videocd.cue"
 
-typedef struct {
-  /* Things common to all drivers like this. 
-     This must be first. */
-  generic_img_private_t gen; 
-  internal_position_t pos; 
-  
-  char         *psz_cue_name;
-  char         *psz_mcn;        /* Media Catalog Number (5.22.3) 
-				   exactly 13 bytes */
-  track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
-					         add 1 for leadout. */
-  discmode_t    disc_mode;
-} _img_private_t;
-
 static uint32_t _stat_size_bincue (void *user_data);
-static bool     parse_cuefile (_img_private_t *cd, const char *toc_name);
-
-#define NEED_MEDIA_EJECT_IMAGE
 #include "image_common.h"
+static bool     parse_cuefile (_img_private_t *cd, const char *toc_name);
 
 /*!
   Initialize image structures.
@@ -1150,31 +1134,34 @@ cdio_open_cue (const char *psz_cue_name)
   
   memset( &_funcs, 0, sizeof(_funcs) );
   
-  _funcs.eject_media        = _eject_media_image;
-  _funcs.free               = _free_image;
-  _funcs.get_arg            = _get_arg_image;
-  _funcs.get_cdtext         = get_cdtext_generic;
-  _funcs.get_devices        = cdio_get_devices_bincue;
-  _funcs.get_default_device = cdio_get_default_device_bincue;
-  _funcs.get_discmode       = _get_discmode_image;
-  _funcs.get_drive_cap      = _get_drive_cap_image;
-  _funcs.get_first_track_num= _get_first_track_num_image;
-  _funcs.get_hwinfo         = get_hwinfo_bincue;
-  _funcs.get_mcn            = _get_mcn_image;
-  _funcs.get_num_tracks     = _get_num_tracks_image;
-  _funcs.get_track_format   = _get_track_format_bincue;
-  _funcs.get_track_green    = _get_track_green_bincue;
-  _funcs.get_track_lba      = _get_lba_track_bincue;
-  _funcs.get_track_msf      = _get_track_msf_image;
-  _funcs.lseek              = _lseek_bincue;
-  _funcs.read               = _read_bincue;
-  _funcs.read_audio_sectors = _read_audio_sectors_bincue;
-  _funcs.read_mode1_sector  = _read_mode1_sector_bincue;
-  _funcs.read_mode1_sectors = _read_mode1_sectors_bincue;
-  _funcs.read_mode2_sector  = _read_mode2_sector_bincue;
-  _funcs.read_mode2_sectors = _read_mode2_sectors_bincue;
-  _funcs.set_arg            = _set_arg_image;
-  _funcs.stat_size          = _stat_size_bincue;
+  _funcs.eject_media           = _eject_media_image;
+  _funcs.free                  = _free_image;
+  _funcs.get_arg               = _get_arg_image;
+  _funcs.get_cdtext            = get_cdtext_generic;
+  _funcs.get_devices           = cdio_get_devices_bincue;
+  _funcs.get_default_device    = cdio_get_default_device_bincue;
+  _funcs.get_discmode          = _get_discmode_image;
+  _funcs.get_drive_cap         = _get_drive_cap_image;
+  _funcs.get_first_track_num   = _get_first_track_num_image;
+  _funcs.get_hwinfo            = get_hwinfo_bincue;
+  _funcs.get_mcn               = _get_mcn_image;
+  _funcs.get_num_tracks        = _get_num_tracks_image;
+  _funcs.get_track_channels    = get_track_channels_image,
+  _funcs.get_track_copy_permit = get_track_copy_permit_image,
+  _funcs.get_track_format      = _get_track_format_bincue;
+  _funcs.get_track_green       = _get_track_green_bincue;
+  _funcs.get_track_lba         = _get_lba_track_bincue;
+  _funcs.get_track_msf         = _get_track_msf_image;
+  _funcs.get_track_preemphasis = get_track_preemphasis_image,
+  _funcs.lseek                 = _lseek_bincue;
+  _funcs.read                  = _read_bincue;
+  _funcs.read_audio_sectors    = _read_audio_sectors_bincue;
+  _funcs.read_mode1_sector     = _read_mode1_sector_bincue;
+  _funcs.read_mode1_sectors    = _read_mode1_sectors_bincue;
+  _funcs.read_mode2_sector     = _read_mode2_sector_bincue;
+  _funcs.read_mode2_sectors    = _read_mode2_sectors_bincue;
+  _funcs.set_arg               = _set_arg_image;
+  _funcs.stat_size             = _stat_size_bincue;
   
   if (NULL == psz_cue_name) return NULL;
   

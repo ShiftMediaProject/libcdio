@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: nrg.c,v 1.2 2004/12/31 07:51:43 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.2 2004/12/31 07:51:43 rocky Exp $";
 
 
 /* reader */
@@ -66,38 +66,11 @@ typedef struct {
 } _mapping_t;
 
 
-typedef struct {
-  /* Things common to all drivers like this. 
-     This must be first. */
-  generic_img_private_t gen; 
-  internal_position_t pos; 
-
-  /* This is common to all image drivers... */
-  char         *psz_cue_name;
-  char         *psz_mcn;         /* Media Catalog Number (5.22.3) */
-
-  track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
-					         add 1 for leadout. */
-  discmode_t    disc_mode;
-
-  /* Nero Specific stuff. Note: for the image_free to work, this *must*
-     be last. */
-  bool          is_dao;          /* True if some of disk at once. False
-				    if some sort of track at once. */
-  uint32_t      mtyp;            /* Value of MTYP (media type?) tag */
-  uint8_t       dtyp;            /* Value of DAOX media type tag */
-
-  /* This is a hack because I don't really understnad NERO better. */
-  bool            is_cues;
-
-  CdioList     *mapping;         /* List of track information */
-  uint32_t      size;
-} _img_private_t;
+#define NEED_NERO_STRUCT
+#include "image_common.h"
 
 static bool     parse_nrg (_img_private_t *env, const char *psz_cue_name);
 static uint32_t _stat_size_nrg (void *user_data);
-
-#include "image_common.h"
 
 /* Updates internal track TOC, so we can later 
    simulate ioctl(CDROMREADTOCENTRY).

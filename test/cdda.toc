@@ -1,4 +1,4 @@
-// $Id: cdda.toc,v 1.3 2004/07/25 09:57:04 rocky Exp $
+// $Id: cdda.toc,v 1.4 2004/12/31 07:51:43 rocky Exp $
 
 // Language number should always start with 0
 LANGUAGE 0 {
@@ -10,4 +10,5 @@ CATALOG "0000010271955"
 CD_DA
 
 TRACK	  AUDIO
+COPY
 FILE "cdda.bin"   00:00:00 00:00:00

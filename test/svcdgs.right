@@ -5,9 +5,9 @@ __________________________________
 
 Disc mode is listed as: CD DATA (Mode 2)
 CD-ROM Track List (1 - 2)
-  #: MSF       LSN     Type  Green?
-  1: 00:02:00  000000  XA    true
-  2: 00:22:53  001553  XA    true
+  #: MSF       LSN    Type   Green? Copy?
+  1: 00:02:00  000000 XA     true   ?    
+  2: 00:22:53  001553 XA     true   ?    
 170: 01:17:62  005687  leadout (12 MB)
 Media Catalog Number (MCN): 
 __________________________________

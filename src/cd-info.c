@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.104 2004/12/31 05:47:36 rocky Exp $
+    $Id: cd-info.c,v 1.105 2004/12/31 07:51:43 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1106,6 +1106,7 @@ main(int argc, const char *argv[])
       printf("%-5s", psz);
 	
       if (TRACK_FORMAT_AUDIO == track_format) {
+	const int i_channels = cdio_get_track_channels(p_cdio, i);
 	switch (cdio_get_track_preemphasis(p_cdio, i)) {
 	case CDIO_TRACK_FLAG_FALSE:
 	  psz="no";
@@ -1121,7 +1122,13 @@ main(int argc, const char *argv[])
 	  psz="error";
 	  break;
 	}
-	printf( " %-8d %s", cdio_get_track_channels(p_cdio, i), psz);
+	if (i_channels == -2) 
+	  printf(" %-8s", "unknown");
+	else if (i_channels == -1) 
+	  printf(" %-8s", "error");
+	else 
+	  printf(" %-8d", i_channels);
+	printf( " %s", psz);
       }
       
       printf( "\n" );

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.37 2004/12/19 01:43:38 rocky Exp $
+#   $Id: Makefile.am,v 1.38 2004/12/31 07:51:43 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -48,7 +48,7 @@ check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
 
 check_PROGRAMS = $(hack)
 
-check_DATA = vcd_demo.right \
+check_DATA = vcd_demo.right vcd_demo_vcdinfo.right vcd_demo_vcdinfo_toc.right \
 	     videocd.right videocd.nrg \
 	     cdda.right cdda.toc cdda.cue cdda.bin \
 	     isofs-m1.right isofs-m1.toc isofs-m1.cue isofs-m1.bin \

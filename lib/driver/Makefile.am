@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.1 2004/12/18 17:29:32 rocky Exp $
+#   $Id: Makefile.am,v 1.2 2004/12/31 07:51:43 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -75,6 +75,7 @@ libcdio_sources = \
 	image.h \
 	image/bincue.c \
 	image/cdrdao.c \
+	image_common.c \
 	image_common.h \
 	image/nrg.c \
 	image/nrg.h \

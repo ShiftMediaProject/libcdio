@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.2 2004/12/31 05:47:36 rocky Exp $
+    $Id: image_common.h,v 1.3 2004/12/31 07:51:43 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -30,6 +30,35 @@
 #ifndef __CDIO_IMAGE_COMMON_H__
 #define __CDIO_IMAGE_COMMON_H__
 
+typedef struct {
+  /* Things common to all drivers like this. 
+     This must be first. */
+  generic_img_private_t gen; 
+  internal_position_t pos; 
+  
+  char         *psz_cue_name;
+  char         *psz_mcn;        /* Media Catalog Number (5.22.3) 
+				   exactly 13 bytes */
+  track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
+					         add 1 for leadout. */
+  discmode_t    disc_mode;
+
+#ifdef NEED_NERO_STRUCT
+  /* Nero Specific stuff. Note: for the image_free to work, this *must*
+     be last. */
+  bool          is_dao;          /* True if some of disk at once. False
+				    if some sort of track at once. */
+  uint32_t      mtyp;            /* Value of MTYP (media type?) tag */
+  uint8_t       dtyp;            /* Value of DAOX media type tag */
+
+  /* This is a hack because I don't really understnad NERO better. */
+  bool            is_cues;
+
+  CdioList     *mapping;         /* List of track information */
+  uint32_t      size;
+#endif
+} _img_private_t;
+
 #define free_if_notnull(obj) \
   if (NULL != obj) { free(obj); obj=NULL; };
 
@@ -37,67 +66,34 @@
   We don't need the image any more. Free all memory associated with
   it.
  */
-static void 
-_free_image (void *user_data) 
-{
-  _img_private_t *p_env = user_data;
-  track_t i_track;
+void  _free_image (void *p_user_data);
 
-  if (NULL == p_env) return;
-
-  for (i_track=0; i_track < p_env->gen.i_tracks; i_track++) {
-    free_if_notnull(p_env->tocent[i_track].filename);
-    free_if_notnull(p_env->tocent[i_track].isrc);
-    cdtext_destroy(&(p_env->tocent[i_track].cdtext));
-  }
-
-  free_if_notnull(p_env->psz_mcn);
-  free_if_notnull(p_env->psz_cue_name);
-  cdtext_destroy(&(p_env->gen.cdtext));
-  cdio_generic_stdio_free(p_env);
-  free(p_env);
-}
-
-#ifdef NEED_MEDIA_EJECT_IMAGE
-/*!
-  Eject media -- there's nothing to do here except free resources.
-  We always return 2.
- */
-static int
-_eject_media_image(void *user_data)
-{
-  _free_image (user_data);
-  return 2;
-}
-#endif
+int _eject_media_image(void *p_user_data);
 
 /*!
   Return the value associated with the key "arg".
 */
-static const char *
-_get_arg_image (void *user_data, const char key[])
-{
-  _img_private_t *p_env = user_data;
-
-  if (!strcmp (key, "source")) {
-    return p_env->gen.source_name;
-  } else if (!strcmp (key, "cue")) {
-    return p_env->psz_cue_name;
-  } else if (!strcmp(key, "access-mode")) {
-    return "image";
-  } 
-  return NULL;
-}
+const char * _get_arg_image (void *user_data, const char key[]);
 
 /*! 
   Get disc type associated with cd_obj.
 */
-static discmode_t
-_get_discmode_image (void *p_user_data)
-{
-  _img_private_t *p_env = p_user_data;
-  return p_env->disc_mode;
-}
+discmode_t _get_discmode_image (void *p_user_data);
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+ */
+void _get_drive_cap_image (const void *user_data,
+			   cdio_drive_read_cap_t  *p_read_cap,
+			   cdio_drive_write_cap_t *p_write_cap,
+			   cdio_drive_misc_cap_t  *p_misc_cap);
+
+/*!
+  Return the number of of the first track. 
+  CDIO_INVALID_TRACK is returned on error.
+*/
+track_t _get_first_track_num_image(void *p_user_data);
 
 /*!
   Return the media catalog number (MCN) from the CD or NULL if there
@@ -106,14 +102,13 @@ _get_discmode_image (void *p_user_data)
   Note: string is malloc'd so caller has to free() the returned
   string when done with it.
   */
-static char *
-_get_mcn_image(const void *user_data)
-{
-  const _img_private_t *env = user_data;
-  
-  if (NULL == env || NULL == env->psz_mcn) return NULL;
-  return strdup(env->psz_mcn);
-}
+char * _get_mcn_image(const void *p_user_data);
+
+/*!
+  Return the number of tracks. 
+*/
+track_t _get_num_tracks_image(void *p_user_data);
+
 
 /*!  
   Return the starting MSF (minutes/secs/frames) for the track number
@@ -122,45 +117,26 @@ _get_mcn_image(const void *user_data)
   using track_num LEADOUT_TRACK or the total tracks+1.
 
 */
-static bool
-_get_track_msf_image(void *user_data, track_t track_num, msf_t *msf)
-{
-  _img_private_t *env = user_data;
+bool _get_track_msf_image(void *p_user_data, track_t i_track, msf_t *msf);
 
-  if (NULL == msf) return false;
-
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = env->gen.i_tracks+1;
-
-  if (track_num <= env->gen.i_tracks+1 && track_num != 0) {
-    *msf = env->tocent[track_num-env->gen.i_first_track].start_msf;
-    return true;
-  } else 
-    return false;
-}
-
-/*!
-  Return the number of of the first track. 
-  CDIO_INVALID_TRACK is returned on error.
+/*! Return number of channels in track: 2 or 4; -2 if not
+  implemented or -1 for error.
+  Not meaningful if track is not an audio track.
 */
-static track_t
-_get_first_track_num_image(void *p_user_data) 
-{
-  _img_private_t *p_env = p_user_data;
+int get_track_channels_image(const void *p_user_data, track_t i_track);
+
+/*! Return 1 if copy is permitted on the track, 0 if not, or -1 for error.
+  Is this meaningful if not an audio track?
+*/
+track_flag_t get_track_copy_permit_image(void *p_user_data, track_t i_track);
+
+/*! Return 1 if track has pre-emphasis, 0 if not, or -1 for error.
+  Is this meaningful if not an audio track?
   
-  return p_env->gen.i_first_track;
-}
-
-/*!
-  Return the number of tracks. 
+  pre-emphasis is a non linear frequency response.
 */
-static track_t
-_get_num_tracks_image(void *p_user_data) 
-{
-  _img_private_t *p_env = p_user_data;
-
-  return p_env->gen.i_tracks;
-}
-
+track_flag_t get_track_preemphasis_image(const void *p_user_data, 
+					 track_t i_track);
 /*!
   Set the arg "key" with "value" in the source device.
   Currently "source" to set the source device in I/O operations 
@@ -168,58 +144,6 @@ _get_num_tracks_image(void *p_user_data)
 
   0 is returned if no error was found, and nonzero if there as an error.
 */
-static int
-_set_arg_image (void *user_data, const char key[], const char value[])
-{
-  _img_private_t *env = user_data;
-
-  if (!strcmp (key, "source"))
-    {
-      free_if_notnull (env->gen.source_name);
-
-      if (!value)
-	return -2;
-
-      env->gen.source_name = strdup (value);
-    }
-  else if (!strcmp (key, "cue"))
-    {
-      free_if_notnull (env->psz_cue_name);
-
-      if (!value)
-	return -2;
-
-      env->psz_cue_name = strdup (value);
-    }
-  else
-    return -1;
-
-  return 0;
-}
-
-/*!
-  Return the the kind of drive capabilities of device.
-
- */
-static void
-_get_drive_cap_image (const void *user_data,
-		      cdio_drive_read_cap_t  *p_read_cap,
-		      cdio_drive_write_cap_t *p_write_cap,
-		      cdio_drive_misc_cap_t  *p_misc_cap)
-{
-
-  *p_read_cap  = CDIO_DRIVE_CAP_READ_AUDIO 
-    | CDIO_DRIVE_CAP_READ_CD_G
-    | CDIO_DRIVE_CAP_READ_CD_R
-    | CDIO_DRIVE_CAP_READ_CD_RW
-    ;
-
-  *p_write_cap = 0;
-
-  /* In the future we may want to simulate
-     LOCK, OPEN_TRAY, CLOSE_TRAY, SELECT_SPEED, etc.
-  */
-  *p_misc_cap  = CDIO_DRIVE_CAP_MISC_FILE;
-}
+int _set_arg_image (void *user_data, const char key[], const char value[]);
 
 #endif /* __CDIO_IMAGE_COMMON_H__ */
