@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.57 2004/11/14 17:06:01 nboullis Exp $
+#   $Id: Makefile.am,v 1.58 2004/11/14 18:33:13 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -50,7 +50,8 @@ libiso9660_la_CURRENT := 3
 libiso9660_la_REVISION := 0
 libiso9660_la_AGE := 0
 
-EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile 
+EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile \
+	     libcdio.sym libiso9660.sym
 
 noinst_HEADERS = cdio_assert.h cdio_private.h portable.h
 
