@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.23 2003/06/01 21:05:45 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.24 2003/06/07 01:20:40 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.61)
@@ -143,7 +143,10 @@ fi
 dnl
 
 dnl system
+
+dnl test for non-Unix variants
 AC_CYGWIN
+AC_MINGW32
 
 LIBS="$LIBS -lm"
 CFLAGS="$CFLAGS $WARN_CFLAGS"
@@ -196,9 +199,10 @@ int has_timeout=sizeof(test.timeout);],
      	AC_DEFINE([HAVE_SOLARIS_CDROM], [1], 
                   [Define 1 if you have Solaris CD-ROM support])
 	;;
-     mingw*)
+     mingw*|cygwin*)
      	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
                   [Define 1 if you have cywin MinGW CD-ROM support])
+ 	LIBS="$LIBS -lwinmm -mwindows"
 	;;
      *)
 	AC_MSG_WARN(Don't have OS CD-reading support for ${host_os}...)

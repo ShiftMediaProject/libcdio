@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.5 2003/06/01 21:05:45 rocky Exp $
+    $Id: cd-info.c,v 1.6 2003/06/07 01:20:40 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -261,6 +261,7 @@ struct arguments
 #endif
   uint32_t       debug_level;
   int            silent;
+  bool           version_only;
   source_image_t source_image;
 } opts;
      
@@ -356,7 +357,7 @@ struct poptOption optionsTable[] = {
   {"quiet", 'q', POPT_ARG_NONE, &opts.silent, 0, 
    "show only critical messages"},
   
-  {"version", 'V', POPT_ARG_NONE, NULL, OP_VERSION,
+  {"version", 'V', POPT_ARG_NONE, &opts.version_only, 0,
    "display version and copyright information and exit"},
   POPT_AUTOHELP {NULL, 0, 0, NULL, 0}
 };
@@ -447,16 +448,29 @@ parse_options (poptContext optCon)
   
   return true;
 }
-     
+
 static void
-print_version (void)
+print_version (bool version_only)
 {
+  
+  driver_id_t driver_id;
+
   printf( _("CD Info %s | (c) 2003 Gerd Knorr, Heiko Eiﬂfeldt & R. Bernstein\n\
 This is free software; see the source for copying conditions.\n\
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n\
 PARTICULAR PURPOSE.\n\
 "),
 	 CDINFO_VERSION);
+
+  if (version_only) {
+    for (driver_id=DRIVER_UNKNOWN+1; driver_id<=MAX_DRIVER; driver_id++) {
+      if (cdio_have_driver(driver_id)) {
+	printf("driver: %s\n", cdio_driver_describe(driver_id));
+      }
+    }
+    exit(100);
+  }
+  
 }
 
 /* ------------------------------------------------------------------------ */
@@ -736,7 +750,9 @@ cddb_discid()
 /* CDIO logging routines */
 
 static cdio_log_handler_t gl_default_cdio_log_handler = NULL;
+#ifdef HAVE_CDDB
 static cddb_log_handler_t gl_default_cddb_log_handler = NULL;
+#endif
 
 static void 
 _log_handler (cdio_log_level_t level, const char message[])
@@ -974,7 +990,9 @@ main(int argc, const char *argv[])
   poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
   gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
+#ifdef HAVE_CDDB
   gl_default_cddb_log_handler = cddb_log_set_handler (_log_handler);
+#endif
 
   program_name = strrchr(argv[0],'/');
   program_name = program_name ? program_name+1 : strdup(argv[0]);
@@ -1002,7 +1020,7 @@ main(int argc, const char *argv[])
      be reflected in `arguments'. */
   parse_options(optCon);
      
-  print_version();
+  print_version(opts.version_only);
 
   switch (opts.source_image) {
   case IMAGE_UNKNOWN:
