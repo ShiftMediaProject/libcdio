@@ -122,6 +122,9 @@ do
   fi
 done
 
+touch $srcdir/doc/version.texi
+test -f $srcdir/doc/stamp-vti && rm $srcdir/doc/stamp-vti
+  
 conf_flags="--enable-maintainer-mode" # --enable-compile-warnings #--enable-iso-c
 
 if test x$NOCONFIGURE = x; then
