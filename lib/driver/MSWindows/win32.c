@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.26 2005/03/08 03:11:19 rocky Exp $
+    $Id: win32.c,v 1.27 2005/03/08 03:19:29 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.26 2005/03/08 03:11:19 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.27 2005/03/08 03:19:29 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -542,16 +542,6 @@ read_toc_win32 (void *p_user_data)
   return ret;
 }
 
-driver_return_code_t
-close_tray_win32 ( const char *psz_win32_drive)
-{
-  if ( WIN_NT ) {
-    return close_tray_win32ioctl (psz_win32_drive);
-  } else {
-    return DRIVER_OP_UNSUPPORTED; /* not yet, but soon I hope */
-  }
-}
-
 /*!
   Eject media. Return 1 if successful, 0 otherwise.
  */
@@ -807,6 +797,20 @@ cdio_is_device_win32(const char *source_name)
 	   && (source_name[len-1] == ':') );
 #else 
   return false;
+#endif
+}
+
+driver_return_code_t
+close_tray_win32 ( const char *psz_win32_drive)
+{
+#ifdef HAVE_WIN32_CDROM
+  if ( WIN_NT ) {
+    return close_tray_win32ioctl (psz_win32_drive);
+  } else {
+    return DRIVER_OP_UNSUPPORTED; /* not yet, but soon I hope */
+  }
+#else
+  return DRIVER_OP_UNSUPPORTED;
 #endif
 }
 
