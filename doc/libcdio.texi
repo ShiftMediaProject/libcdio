@@ -43,7 +43,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.9 2004/02/14 17:04:40 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.10 2004/02/14 17:15:50 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -516,7 +516,7 @@ drivers?.}
 @node ISO-9660 Character Sets
 @appendix ISO-9660 Character Sets
 
-For a description of where are used see @xref{ISO 9660 Level1}
+For a description of where are used see @xref{ISO 9660 Level 1}.
 
 @menu
 * ISO646 d-Characters::         
