@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.59 2004/08/27 00:03:05 rocky Exp $
+    $Id: _cdio_osx.c,v 1.60 2004/08/27 02:59:25 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.59 2004/08/27 00:03:05 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.60 2004/08/27 02:59:25 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -377,7 +377,7 @@ get_drive_cap_osx(const void *p_user_data,
 		  /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
 #if 1
-  p_misc_cap = p_write_cap = p_read_cap = CDIO_DRIVE_CAP_UNKNOWN;
+  *p_misc_cap = *p_write_cap = *p_read_cap = CDIO_DRIVE_CAP_UNKNOWN;
   return;
 #else 
   const _img_private_t *p_env = p_user_data;
@@ -433,7 +433,7 @@ get_drive_cap_osx(const void *p_user_data,
 
 static bool
 GetDriveDescription ( CFMutableDictionaryRef dict,
-		      /*out*/ scsi_mmc_hwinfo_t *hw_info)
+		      /*out*/ cdio_hwinfo_t *hw_info)
 {
   
   CFDictionaryRef    deviceDict  = NULL;
