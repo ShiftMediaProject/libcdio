@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.1 2004/04/30 08:23:23 rocky Exp $
+    $Id: win32_ioctl.c,v 1.2 2004/05/06 04:01:52 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.1 2004/04/30 08:23:23 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.2 2004/05/06 04:01:52 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -214,11 +214,9 @@ win32ioctl_read_raw_sector (_img_private_t *env, void *buf, lsn_t lsn)
   sptd.SenseInfoOffset=0;
 
   /* ReadCD CDB12 command.  The values were taken from MMC1 draft paper. */
-  sptd.Cdb[0]=CDIO_MMC_GPCMD_READ_CD;
-  sptd.Cdb[1]=0;        
+  CDIO_MMC_SET_COMMAND(sptd.Cdb, CDIO_MMC_GPCMD_READ_CD);
 
   CDIO_MMC_SET_READ_LBA(sptd.Cdb, lsn);
-
   CDIO_MMC_SET_READ_LENGTH(sptd.Cdb, 1);
 
   sptd.Cdb[9]=0xF8;  /* Raw read, 2352 bytes per sector */
@@ -469,7 +467,8 @@ win32ioctl_get_drive_cap (const void *env)
     offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,DataBuf);
   sptwb.Spt.SenseInfoOffset    = 
     offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,SenseBuf);
-  sptwb.Spt.Cdb[0]             = CDIO_MMC_MODE_SENSE;
+
+  CDIO_MMC_SET_COMMAND(sptwb.Spt.Cdb, CDIO_MMC_MODE_SENSE);
   /*sptwb.Spt.Cdb[1]           = 0x08;  /+ doesn't return block descriptors */
   sptwb.Spt.Cdb[1]             = 0x0;
   sptwb.Spt.Cdb[2]             = 0x2a;  /*MODE_PAGE_CAPABILITIES*/;

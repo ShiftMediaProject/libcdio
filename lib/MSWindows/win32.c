@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.11 2004/04/30 22:28:00 rocky Exp $
+    $Id: win32.c,v 1.12 2004/05/06 04:01:52 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.11 2004/04/30 22:28:00 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.12 2004/05/06 04:01:52 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -676,12 +676,13 @@ cdio_open_win32 (const char *psz_source_name)
   ones to set that up.
  */
 CdIo *
-cdio_open_am_win32 (const char *psz_source_name, const char *psz_access_mode)
+cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
 {
 
 #ifdef HAVE_WIN32_CDROM
   CdIo *ret;
   _img_private_t *_data;
+  char *psz_source;
 
   cdio_funcs _funcs = {
     .eject_media        = _cdio_eject_media,
@@ -712,8 +713,22 @@ cdio_open_am_win32 (const char *psz_source_name, const char *psz_access_mode)
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
-  _set_arg_win32(_data, "source", (NULL == psz_source_name) 
-		 ? cdio_get_default_device_win32(): psz_source_name);
+  if (NULL == psz_orig_source) {
+    psz_source=cdio_get_default_device_win32();
+    if (NULL == psz_source) return NULL;
+    _set_arg_win32(_data, "source", psz_source);
+    free(psz_source);
+  } else {
+    if (cdio_is_device_generic(psz_orig_source))
+      _set_arg_win32(_data, "source", psz_orig_source);
+    else {
+      /* The below would be okay if all device drivers worked this way. */
+#if 0
+      cdio_info ("source %s is a not a device", psz_orig_source);
+#endif
+      return NULL;
+    }
+  }
 
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;
