@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.16 2004/02/07 18:53:02 rocky Exp $
+    $Id: iso9660_fs.c,v 1.17 2004/02/26 00:13:24 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -40,7 +40,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.16 2004/02/07 18:53:02 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.17 2004/02/26 00:13:24 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -233,7 +233,7 @@ _fs_stat_iso_root (iso9660_t *iso)
 
 static iso9660_stat_t *
 _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root, 
-		   char **splitpath, bool is_mode2)
+		   char **splitpath, bool is_mode2, bool translate)
 {
   unsigned offset = 0;
   uint8_t *_dirbuf = NULL;
@@ -275,6 +275,7 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
     {
       const iso9660_dir_t *iso9660_dir = (void *) &_dirbuf[offset];
       iso9660_stat_t *stat;
+      int cmp;
 
       if (!iso9660_get_dir_len(iso9660_dir))
 	{
@@ -284,14 +285,29 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
       
       stat = _iso9660_dir_to_statbuf (iso9660_dir, is_mode2);
 
-      if (!strcmp (splitpath[0], stat->filename))
-	{
-	  iso9660_stat_t *ret_stat 
-	    = _fs_stat_traverse (cdio, stat, &splitpath[1], is_mode2);
-	  free(stat);
-	  free (_dirbuf);
-	  return ret_stat;
+      if (translate) {
+	char *trans_fname = malloc(strlen(stat->filename));
+	int trans_len;
+	
+	if (trans_fname == NULL) {
+	  cdio_warn("can't allocate %u bytes", strlen(stat->filename));
+	  return NULL;
 	}
+	trans_len = iso9660_name_translate(stat->filename, trans_fname);
+	cmp = strcmp(splitpath[0], trans_fname);
+	free(trans_fname);
+      } else {
+	cmp = strcmp(splitpath[0], stat->filename);
+      }
+      
+      if (!cmp) {
+	iso9660_stat_t *ret_stat 
+	  = _fs_stat_traverse (cdio, stat, &splitpath[1], is_mode2, 
+			       translate);
+	free(stat);
+	free (_dirbuf);
+	return ret_stat;
+      }
 
       free(stat);
 	  
@@ -307,7 +323,7 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
 
 static iso9660_stat_t *
 _fs_iso_stat_traverse (iso9660_t *iso, const iso9660_stat_t *_root, 
-		       char **splitpath)
+		       char **splitpath, bool translate)
 {
   unsigned offset = 0;
   uint8_t *_dirbuf = NULL;
@@ -343,6 +359,7 @@ _fs_iso_stat_traverse (iso9660_t *iso, const iso9660_stat_t *_root,
     {
       const iso9660_dir_t *iso9660_dir = (void *) &_dirbuf[offset];
       iso9660_stat_t *stat;
+      int cmp;
 
       if (!iso9660_get_dir_len(iso9660_dir))
 	{
@@ -352,14 +369,28 @@ _fs_iso_stat_traverse (iso9660_t *iso, const iso9660_stat_t *_root,
       
       stat = _iso9660_dir_to_statbuf (iso9660_dir, true);
 
-      if (!strcmp (splitpath[0], stat->filename))
-	{
-	  iso9660_stat_t *ret_stat 
-	    = _fs_iso_stat_traverse (iso, stat, &splitpath[1]);
-	  free(stat);
-	  free (_dirbuf);
-	  return ret_stat;
+      if (translate) {
+	char *trans_fname = malloc(strlen(stat->filename));
+	int trans_len;
+	
+	if (trans_fname == NULL) {
+	  cdio_warn("can't allocate %u bytes", strlen(stat->filename));
+	  return NULL;
 	}
+	trans_len = iso9660_name_translate(stat->filename, trans_fname);
+	cmp = strcmp(splitpath[0], trans_fname);
+	free(trans_fname);
+      } else {
+	cmp = strcmp(splitpath[0], stat->filename);
+      }
+      
+      if (!cmp) {
+	iso9660_stat_t *ret_stat 
+	  = _fs_iso_stat_traverse (iso, stat, &splitpath[1], translate);
+	free(stat);
+	free (_dirbuf);
+	return ret_stat;
+      }
 
       free(stat);
 	  
@@ -390,7 +421,35 @@ iso9660_fs_stat (const CdIo *cdio, const char pathname[], bool is_mode2)
   if (NULL == root) return NULL;
 
   splitpath = _cdio_strsplit (pathname, '/');
-  stat = _fs_stat_traverse (cdio, root, splitpath, is_mode2);
+  stat = _fs_stat_traverse (cdio, root, splitpath, is_mode2, false);
+  free(root);
+  _cdio_strfreev (splitpath);
+
+  return stat;
+}
+
+/*!
+  Get file status for pathname into stat. NULL is returned on error.
+  pathname version numbers in the ISO 9660
+  name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
+  are lowercased.
+ */
+iso9660_stat_t *
+iso9660_fs_stat_translate (const CdIo *cdio, const char pathname[], 
+			   bool is_mode2)
+{
+  iso9660_stat_t *root;
+  char **splitpath;
+  iso9660_stat_t *stat;
+
+  if (cdio == NULL)     return NULL;
+  if (pathname == NULL) return NULL;
+
+  root = _fs_stat_root (cdio, is_mode2);
+  if (NULL == root) return NULL;
+
+  splitpath = _cdio_strsplit (pathname, '/');
+  stat = _fs_stat_traverse (cdio, root, splitpath, is_mode2, true);
   free(root);
   _cdio_strfreev (splitpath);
 
@@ -414,13 +473,39 @@ iso9660_ifs_stat (iso9660_t *iso, const char pathname[])
   if (NULL == root) return NULL;
 
   splitpath = _cdio_strsplit (pathname, '/');
-  stat = _fs_iso_stat_traverse (iso, root, splitpath);
+  stat = _fs_iso_stat_traverse (iso, root, splitpath, false);
   free(root);
   _cdio_strfreev (splitpath);
 
   return stat;
 }
 
+/*!
+  Get file status for pathname into stat. NULL is returned on error.
+  pathname version numbers in the ISO 9660
+  name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
+  are lowercased.
+ */
+void *
+iso9660_ifs_stat_translate (iso9660_t *iso, const char pathname[])
+{
+  iso9660_stat_t *root;
+  char **splitpath;
+  iso9660_stat_t *stat;
+
+  if (iso == NULL)      return NULL;
+  if (pathname == NULL) return NULL;
+
+  root = _fs_stat_iso_root (iso);
+  if (NULL == root) return NULL;
+
+  splitpath = _cdio_strsplit (pathname, '/');
+  stat = _fs_iso_stat_traverse (iso, root, splitpath, true);
+  free(root);
+  _cdio_strfreev (splitpath);
+
+  return stat;
+}
 
 /*! 
   Read pathname (a directory) and return a list of iso9660_stat_t

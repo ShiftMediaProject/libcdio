@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.38 2004/01/18 15:07:57 rocky Exp $
+    $Id: iso9660.h,v 1.39 2004/02/26 00:13:24 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -432,8 +432,28 @@ iso9660_stat_t *iso9660_fs_stat (const CdIo *obj, const char pathname[],
 
 /*!
   Get file status for pathname into stat. NULL is returned on error.
+  pathname version numbers in the ISO 9660
+  name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
+  are lowercased.
+ */
+iso9660_stat_t *iso9660_fs_stat_translate (const CdIo *obj, 
+                                           const char pathname[], 
+                                           bool is_mode2);
+
+/*!
+  Get file status for pathname into stat. NULL is returned on error.
  */
 void *iso9660_ifs_stat (iso9660_t *iso, const char pathname[]);
+
+
+/*!
+  Get file status for pathname into stat. NULL is returned on error.
+  pathname version numbers in the ISO 9660
+  name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
+  are lowercased.
+ */
+void *iso9660_ifs_stat_translate (iso9660_t *iso, const char pathname[]);
+
 
 
 /*! 

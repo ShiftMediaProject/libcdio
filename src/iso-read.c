@@ -1,5 +1,5 @@
 /*
-  $Id: iso-read.c,v 1.1 2004/02/25 10:03:27 rocky Exp $
+  $Id: iso-read.c,v 1.2 2004/02/26 00:13:24 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -180,7 +180,7 @@ main(int argc, const char *argv[])
     return 1;
   }
 
-  statbuf = iso9660_ifs_stat (iso, opts.file_name);
+  statbuf = iso9660_ifs_stat_translate (iso, opts.file_name);
 
   if (NULL == statbuf) 
     {

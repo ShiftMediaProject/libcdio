@@ -1,5 +1,5 @@
 /*
-  $Id: sample7.c,v 1.3 2004/02/01 17:13:42 rocky Exp $
+  $Id: sample7.c,v 1.4 2004/02/26 00:13:24 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -25,7 +25,6 @@
 #define ISO9660_IMAGE_PATH "../"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
 
-#define ISO9660_FILENAME "/COPYING.;1"
 #define LOCAL_FILENAME "copying"
 
 #ifdef HAVE_CONFIG_H
@@ -36,10 +35,19 @@
 #include <cdio/iso9660.h>
 
 #include <stdio.h>
+
+#ifdef HAVE_ERRNO_H
 #include <errno.h>
+#endif
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
 
 int
 main(int argc, const char *argv[])
@@ -55,17 +63,17 @@ main(int argc, const char *argv[])
     return 1;
   }
 
-  statbuf = iso9660_ifs_stat (iso, ISO9660_FILENAME);
+  statbuf = iso9660_ifs_stat_translate (iso, LOCAL_FILENAME);
 
   if (NULL == statbuf) 
     {
       fprintf(stderr, 
 	      "Could not get ISO-9660 file information for file %s\n",
-	      ISO9660_FILENAME);
+	      LOCAL_FILENAME);
       return 2;
     }
 
-  if (!(outfd = fopen ("copying", "wb")))
+  if (!(outfd = fopen (LOCAL_FILENAME, "wb")))
     {
       perror ("fopen()");
       return 3;
