@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.22 2005/03/19 23:31:11 rocky Exp $
+    $Id: cdda-player.c,v 1.23 2005/03/19 23:47:53 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -634,7 +634,7 @@ display_status(bool b_status_only)
     if (i_first_audio_track != sub.track && 
 	strlen(cd_info[sub.track-1].title)) {
       const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track-1];
-      mvprintw(LINE_TRACK_PREV, 0, (char *) "track %2d title  : %s [%s]",
+      mvprintw(LINE_TRACK_PREV, 0, (char *) " track %2d title : %s [%s]",
 	       sub.track-1, p_cd_info->title, 
 	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
       clrtoeol();
@@ -643,13 +643,13 @@ display_status(bool b_status_only)
       clrtoeol();
     }
     if (strlen(p_cd_info->title)) {
-      mvprintw(LINE_TRACK_TITLE, 0, (char *) "track %2d title  : %s [%s]", 
+      mvprintw(LINE_TRACK_TITLE,  0, (char *) ">track %2d title : %s [%s]", 
 	       sub.track, p_cd_info->title, 
 	       (char *) p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
       clrtoeol();
     }
     if (strlen(p_cd_info->artist)) {
-      mvprintw(LINE_TRACK_ARTIST, 0, (char *) "track %2d artist : %s [%s]",
+      mvprintw(LINE_TRACK_ARTIST, 0, (char *) ">track %2d artist: %s [%s]",
 	       sub.track, p_cd_info->artist,
 	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
       clrtoeol();
@@ -657,7 +657,7 @@ display_status(bool b_status_only)
     if (i_last_audio_track != sub.track && 
 	strlen(cd_info[sub.track+1].title)) {
       const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track+1];
-      mvprintw(LINE_TRACK_NEXT, 0, (char *) "track %2d title  : %s [%s]", 
+      mvprintw(LINE_TRACK_NEXT, 0, (char *) " track %2d title : %s [%s]", 
 	       sub.track+1, p_cd_info->title,
 	       p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
       clrtoeol();
@@ -855,10 +855,10 @@ list_tracks(void)
       char line[80];
       s = cdio_audio_get_msf_seconds(&toc[i+1]) 
 	- cdio_audio_get_msf_seconds(&toc[i]);
-      sprintf(line, "%2d  %02d:%02d  %s  ", i, 
+      sprintf(line, "%2d  %02d:%02d  %s ", i, 
 	      s / CDIO_CD_SECS_PER_MIN,  s % CDIO_CD_SECS_PER_MIN,
 	      (sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY &&
-	       sub.track == i) ? "*" : "|");
+	       sub.track == i) ? "->" : " |");
       if (b_record) {
 	if ( strlen(cd_info[i].title) )
 	  strcat(line, cd_info[i].title);
