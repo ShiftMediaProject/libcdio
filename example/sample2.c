@@ -1,7 +1,7 @@
 /*
-  $Id: sample2.c,v 1.3 2003/09/28 22:11:00 rocky Exp $
+  $Id: sample2.c,v 1.4 2004/03/20 13:12:22 rocky Exp $
 
-  Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -23,8 +23,15 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
 #include <cdio/cdio.h>
 int
 main(int argc, const char *argv[])
@@ -33,9 +40,10 @@ main(int argc, const char *argv[])
   driver_id_t driver_id;
   
   if (NULL != cdio) {
+    char *default_device = cdio_get_default_device(cdio);
     printf("The driver selected is %s\n", cdio_get_driver_name(cdio));
-    printf("The default device for this driver is %s\n\n", 
-	   cdio_get_default_device(cdio));
+    printf("The default device for this driver is %s\n\n", default_device);
+    free(default_device);
     cdio_destroy(cdio);
   } else {
     printf("Problem in trying to find a driver.\n\n");
