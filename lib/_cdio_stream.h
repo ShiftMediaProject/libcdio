@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.h,v 1.4 2003/04/06 23:40:21 rocky Exp $
+    $Id: _cdio_stream.h,v 1.5 2003/04/07 11:23:24 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -24,6 +24,7 @@
 #define __CDIO_STREAM_H__
 
 #include "types.h"
+#include "cdio_private.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,8 +46,6 @@ extern "C" {
   
   
   /* abstract data source */
-  
-  typedef struct _CdioDataSource CdioDataSource;
   
   typedef struct {
     cdio_data_open_t open;
