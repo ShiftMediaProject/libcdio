@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.2 2004/12/31 08:27:49 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.2 2004/12/31 08:27:49 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -420,14 +420,28 @@ read_toc_solaris (void *p_user_data)
   
   /* read individual tracks */
   for (i=p_env->gen.i_first_track; i<=p_env->gen.i_tracks; i++) {
-    p_env->tocent[i-1].cdte_track = i;
-    p_env->tocent[i-1].cdte_format = CDIO_CDROM_MSF;
-    if ( ioctl(p_env->gen.fd, CDROMREADTOCENTRY, &p_env->tocent[i-1]) == -1 ) {
+    struct cdrom_tocentry *p_toc = 
+      &(p_env->tocent[i-p_env->gen.i_first_track]);
+
+    p_toc->cdte_track = i;
+    p_toc->cdte_format = CDIO_CDROM_MSF;
+    if ( ioctl(p_env->gen.fd, CDROMREADTOCENTRY, p_toc) == -1 ) {
       cdio_warn("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
               i, strerror(errno));
       return false;
     }
+
+    /** FIXME: Do in a more generic place? **/
+    p_env->gen.track_flags[i].preemphasis = 
+      p_toc->cdte_ctrl & 0x1 ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
+
+    p_env->gen.track_flags[i].copy_permit = 
+      p_toc->cdte_ctrl & 0x2 ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
+    
+    p_env->gen.track_flags[i].channels = 
+      p_toc->cdte_ctrl & 0x8 ? 4 : 2;
+
   }
 
   /* read the lead-out track */
@@ -846,33 +860,36 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
 
   cdio_funcs _funcs;
 
-  _funcs.eject_media        = eject_media_solaris;
-  _funcs.free               = cdio_generic_free;
-  _funcs.get_arg            = get_arg_solaris;
-  _funcs.get_cdtext         = get_cdtext_generic;
-  _funcs.get_default_device = cdio_get_default_device_solaris;
-  _funcs.get_devices        = cdio_get_devices_solaris;
-  _funcs.get_discmode       = get_discmode_solaris;
-  _funcs.get_drive_cap      = scsi_mmc_get_drive_cap_generic;
-  _funcs.get_first_track_num= get_first_track_num_generic;
-  _funcs.get_hwinfo         = NULL;
-  _funcs.get_mcn            = scsi_mmc_get_mcn_generic,
-  _funcs.get_num_tracks     = get_num_tracks_generic;
-  _funcs.get_track_format   = get_track_format_solaris;
-  _funcs.get_track_green    = _cdio_get_track_green;
-  _funcs.get_track_lba      = NULL; /* This could be implemented if need be. */
-  _funcs.get_track_msf      = _cdio_get_track_msf;
-  _funcs.lseek              = cdio_generic_lseek;
-  _funcs.read               = cdio_generic_read;
-  _funcs.read_audio_sectors = _read_audio_sectors_solaris;
-  _funcs.read_mode1_sector  = _read_mode1_sector_solaris;
-  _funcs.read_mode1_sectors = _read_mode1_sectors_solaris;
-  _funcs.read_mode2_sector  = _read_mode2_sector_solaris;
-  _funcs.read_mode2_sectors = _read_mode2_sectors_solaris;
-  _funcs.read_toc           = read_toc_solaris;
-  _funcs.run_scsi_mmc_cmd   = run_scsi_cmd_solaris;
-  _funcs.stat_size          = _cdio_stat_size;
-  _funcs.set_arg            = _set_arg_solaris;
+  _funcs.eject_media            = eject_media_solaris;
+  _funcs.free                   = cdio_generic_free;
+  _funcs.get_arg                = get_arg_solaris;
+  _funcs.get_cdtext             = get_cdtext_generic;
+  _funcs.get_default_device     = cdio_get_default_device_solaris;
+  _funcs.get_devices            = cdio_get_devices_solaris;
+  _funcs.get_discmode           = get_discmode_solaris;
+  _funcs.get_drive_cap          = scsi_mmc_get_drive_cap_generic;
+  _funcs.get_first_track_num    = get_first_track_num_generic;
+  _funcs.get_hwinfo             = NULL;
+  _funcs.get_mcn                = scsi_mmc_get_mcn_generic,
+  _funcs.get_num_tracks         = get_num_tracks_generic;
+  _funcs.get_track_channels     = get_track_channels_generic,
+  _funcs.get_track_copy_permit  = get_track_copy_permit_generic,
+  _funcs.get_track_format       = get_track_format_solaris;
+  _funcs.get_track_green        = _cdio_get_track_green;
+  _funcs.get_track_lba          = NULL; /* This could be done if need be. */
+  _funcs.get_track_preemphasis  = get_track_preemphasis_generic,
+  _funcs.get_track_msf          = _cdio_get_track_msf;
+  _funcs.lseek                  = cdio_generic_lseek;
+  _funcs.read                   = cdio_generic_read;
+  _funcs.read_audio_sectors     = _read_audio_sectors_solaris;
+  _funcs.read_mode1_sector      = _read_mode1_sector_solaris;
+  _funcs.read_mode1_sectors     = _read_mode1_sectors_solaris;
+  _funcs.read_mode2_sector      = _read_mode2_sector_solaris;
+  _funcs.read_mode2_sectors     = _read_mode2_sectors_solaris;
+  _funcs.read_toc               = read_toc_solaris;
+  _funcs.run_scsi_mmc_cmd       = run_scsi_cmd_solaris;
+  _funcs.stat_size              = _cdio_stat_size;
+  _funcs.set_arg                = _set_arg_solaris;
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
 

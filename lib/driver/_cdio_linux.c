@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.2 2004/12/31 05:47:36 rocky Exp $
+    $Id: _cdio_linux.c,v 1.3 2004/12/31 08:27:49 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.2 2004/12/31 05:47:36 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.3 2004/12/31 08:27:49 rocky Exp $";
 
 #include <string.h>
 
@@ -848,7 +848,7 @@ read_toc_linux (void *p_user_data)
       return false;
     }
 
-    /** FIXME: Move into generic. **/
+    /** FIXME: Do in a more generic place? **/
     p_env->gen.track_flags[i].preemphasis = 
       p_toc->cdte_ctrl & 0x1 ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
 
