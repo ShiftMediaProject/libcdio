@@ -1,5 +1,5 @@
 /*
-    $Id: osx.c,v 1.1 2005/03/05 09:26:52 rocky Exp $
+    $Id: osx.c,v 1.2 2005/03/13 04:42:38 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: osx.c,v 1.1 2005/03/05 09:26:52 rocky Exp $";
+static const char _rcsid[] = "$Id: osx.c,v 1.2 2005/03/13 04:42:38 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -1324,29 +1324,29 @@ _eject_media_osx (void *user_data) {
 
   _img_private_t *p_env = user_data;
 
-  FILE *p_eject;
-  char *psz_disk;
+  FILE *p_file;
+  char *psz_drive;
   char sz_cmd[32];
 
-  if( ( psz_disk = (char *)strstr( p_env->gen.source_name, "disk" ) ) != NULL &&
-      strlen( psz_disk ) > 4 )
+  if( ( psz_drive = (char *)strstr( p_env->gen.source_name, "disk" ) ) != NULL &&
+      strlen( psz_drive ) > 4 )
     {
 #define EJECT_CMD "/usr/sbin/hdiutil eject %s"
-      snprintf( sz_cmd, sizeof(sz_cmd), EJECT_CMD, psz_disk );
+      snprintf( sz_cmd, sizeof(sz_cmd), EJECT_CMD, psz_drive );
 #undef EJECT_CMD
       
-      if( ( p_eject = popen( sz_cmd, "r" ) ) != NULL )
+      if( ( p_file = popen( sz_cmd, "r" ) ) != NULL )
         {
 	  char psz_result[0x200];
-	  int i_ret = fread( psz_result, 1, sizeof(psz_result) - 1, p_eject );
+	  int i_ret = fread( psz_result, 1, sizeof(psz_result) - 1, p_file );
 	  
-	  if( i_ret == 0 && ferror( p_eject ) != 0 )
+	  if( i_ret == 0 && ferror( p_file ) != 0 )
             {
-	      pclose( p_eject );
+	      pclose( p_file );
 	      return DRIVER_OP_ERROR;
             }
 	  
-	  pclose( p_eject );
+	  pclose( p_file );
 	  
 	  psz_result[ i_ret ] = 0;
 	  
@@ -1507,6 +1507,58 @@ set_speed_osx (void *p_user_data, int i_speed)
 }
 
 #endif /* HAVE_DARWIN_CDROM */
+
+/*!
+  Close tray on CD-ROM.
+  
+  @param psz_drive the CD-ROM drive to be closed.
+  
+*/
+
+/* FIXME: We don't use the device name because we don't how 
+   to.
+ */
+#define CLOSE_TRAY_CMD "/usr/sbin/drutil tray close"
+driver_return_code_t 
+close_tray_osx (const char *psz_drive)
+{
+#ifdef HAVE_DARWIN_CDROM
+  FILE *p_file;
+  char sz_cmd[80];
+
+  if ( !psz_drive) return DRIVER_OP_UNINIT;
+
+  /* Right now we really aren't making use of snprintf, but 
+     possibly someday we will.
+   */
+  snprintf( sz_cmd, sizeof(sz_cmd), CLOSE_TRAY_CMD );
+
+  if( ( p_file = popen( sz_cmd, "r" ) ) != NULL )
+    {
+      char psz_result[0x200];
+      int i_ret = fread( psz_result, 1, sizeof(psz_result) - 1, p_file );
+      
+      if( i_ret == 0 && ferror( p_file ) != 0 )
+	{
+	  pclose( p_file );
+	  return DRIVER_OP_ERROR;
+	}
+      
+      pclose( p_file );
+      
+      psz_result[ i_ret ] = 0;
+      
+      if( 0 == i_ret )
+	{
+	  return DRIVER_OP_SUCCESS;
+	}
+    }
+  
+  return DRIVER_OP_ERROR;
+#else 
+  return DRIVER_OP_NO_DRIVER;
+#endif /*HAVE_DARWIN_CDROM*/
+}
 
 /*!
   Return a string containing the default CD device if none is specified.
