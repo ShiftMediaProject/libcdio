@@ -6,6 +6,7 @@ Makefile
 copying
 drives
 iso?
+iso?cpp
 cdtext
 sample?
 scsi-mmc1
