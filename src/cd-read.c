@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.20 2004/07/16 21:29:35 rocky Exp $
+  $Id: cd-read.c,v 1.21 2004/07/31 07:43:26 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -459,7 +459,7 @@ main(int argc, const char *argv[])
 {
   uint8_t buffer[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   unsigned int blocklen=CDIO_CD_FRAMESIZE_RAW;
-  CdIo *cdio=NULL;
+  CdIo *p_cdio=NULL;
   int output_fd=-1;
   FILE *output_stream;
   
@@ -474,45 +474,45 @@ main(int argc, const char *argv[])
   switch (opts.source_image) {
   case IMAGE_UNKNOWN:
   case IMAGE_AUTO:
-    cdio = cdio_open (source_name, DRIVER_UNKNOWN);
-    if (cdio==NULL) {
+    p_cdio = cdio_open (source_name, DRIVER_UNKNOWN);
+    if (p_cdio==NULL) {
       err_exit("Error in automatically selecting driver with input %s\n",
 	       source_name);
     } 
     break;
   case IMAGE_DEVICE:
-    cdio = cdio_open (source_name, DRIVER_DEVICE);
-    if (cdio==NULL) {
+    p_cdio = cdio_open (source_name, DRIVER_DEVICE);
+    if (p_cdio==NULL) {
       err_exit("Error in automatically selecting device with input %s\n",
 	       source_name ? source_name : "(null)");
 
     } 
     break;
   case IMAGE_BIN:
-    cdio = cdio_open (source_name, DRIVER_BINCUE);
-    if (cdio==NULL) {
+    p_cdio = cdio_open (source_name, DRIVER_BINCUE);
+    if (p_cdio==NULL) {
       err_exit("Error in opening bin/cue file %s\n", 
 	       source_name ? source_name : "(null)");
     } 
     break;
   case IMAGE_CUE:
-    cdio = cdio_open_cue(source_name);
-    if (cdio==NULL) {
+    p_cdio = cdio_open_cue(source_name);
+    if (p_cdio==NULL) {
       err_exit("Error in opening cue/bin file %s with input\n", 
 	       source_name ? source_name : "(null)");
     } 
     break;
   case IMAGE_NRG:
-    cdio = cdio_open (source_name, DRIVER_NRG);
-    if (cdio==NULL) {
+    p_cdio = cdio_open (source_name, DRIVER_NRG);
+    if (p_cdio==NULL) {
       err_exit("Error in opening NRG file %s for input\n", 
 	       source_name ? source_name : "(null)");
     } 
     break;
 
   case IMAGE_CDRDAO:
-    cdio = cdio_open (source_name, DRIVER_CDRDAO);
-    if (cdio==NULL) {
+    p_cdio = cdio_open (source_name, DRIVER_CDRDAO);
+    if (p_cdio==NULL) {
       err_exit("Error in opening TOC file %s for input\n", 
 	       source_name ? source_name : "(null)");
     } 
@@ -520,7 +520,7 @@ main(int argc, const char *argv[])
   }
 
   if (opts.access_mode!=NULL) {
-    cdio_set_arg(cdio, "access-mode", opts.access_mode);
+    cdio_set_arg(p_cdio, "access-mode", opts.access_mode);
   } 
 
   if (opts.output_file!=NULL) {
@@ -546,14 +546,14 @@ main(int argc, const char *argv[])
   for ( ; opts.start_lsn <= opts.end_lsn; opts.start_lsn++ ) {
     switch (opts.read_mode) {
     case READ_AUDIO:
-      if (cdio_read_audio_sector(cdio, &buffer, opts.start_lsn)) {
+      if (cdio_read_audio_sector(p_cdio, &buffer, opts.start_lsn)) {
         fprintf (stderr, "error reading block %u\n", 
 		 (unsigned int) opts.start_lsn);
 	blocklen = 0;
       }
       break;
     case READ_M1F1:
-      if (cdio_read_mode1_sector(cdio, &buffer, opts.start_lsn, false)) {
+      if (cdio_read_mode1_sector(p_cdio, &buffer, opts.start_lsn, false)) {
         fprintf (stderr, "error reading block %u\n", 
 		 (unsigned int) opts.start_lsn);
 	blocklen = 0;
@@ -561,7 +561,7 @@ main(int argc, const char *argv[])
 	blocklen=CDIO_CD_FRAMESIZE;
       break;
     case READ_M1F2:
-      if (cdio_read_mode1_sector(cdio, &buffer, opts.start_lsn, true)) {
+      if (cdio_read_mode1_sector(p_cdio, &buffer, opts.start_lsn, true)) {
         fprintf (stderr, "error reading block %u\n", 
 		 (unsigned int) opts.start_lsn);
 	blocklen = 0;
@@ -569,7 +569,7 @@ main(int argc, const char *argv[])
 	blocklen=M2RAW_SECTOR_SIZE;
       break;
     case READ_M2F1:
-      if (cdio_read_mode2_sector(cdio, &buffer, opts.start_lsn, false)) {
+      if (cdio_read_mode2_sector(p_cdio, &buffer, opts.start_lsn, false)) {
         fprintf (stderr, "error reading block %u\n", 
 		 (unsigned int) opts.start_lsn);
 	blocklen=0;
@@ -577,7 +577,7 @@ main(int argc, const char *argv[])
 	blocklen=CDIO_CD_FRAMESIZE;
       break;
     case READ_M2F2:
-      if (cdio_read_mode2_sector(cdio, &buffer, opts.start_lsn, true)) {
+      if (cdio_read_mode2_sector(p_cdio, &buffer, opts.start_lsn, true)) {
         fprintf (stderr, "error reading block %u\n", 
 		 (unsigned int) opts.start_lsn);
 	blocklen=0;
@@ -587,7 +587,7 @@ main(int argc, const char *argv[])
 #if AUTO_FINISHED
     case READ_AUTO:
       /* Find what track lsn is in. Then 
-         switch cdio_get_track_format(cdio, i)
+         switch cdio_get_track_format(p_cdio, i)
          and also test using is_green
 
       */
@@ -617,7 +617,7 @@ main(int argc, const char *argv[])
 
   if (opts.output_file) close(output_fd);
 
-  myexit(cdio, EXIT_SUCCESS);
+  myexit(p_cdio, EXIT_SUCCESS);
   /* Not reached:*/
   return(EXIT_SUCCESS);
 

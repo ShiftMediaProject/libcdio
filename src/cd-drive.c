@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.3 2004/07/17 22:16:47 rocky Exp $
+  $Id: cd-drive.c,v 1.4 2004/07/31 07:43:26 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -35,6 +35,7 @@
 #include <sys/types.h>
 #endif
 #include <cdio/cdio.h>
+#include <cdio/scsi_mmc.h>
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
@@ -171,7 +172,7 @@ init(void)
 int
 main(int argc, const char *argv[])
 {
-  CdIo *cdio=NULL;
+  CdIo *p_cdio=NULL;
   
   init();
 
@@ -190,20 +191,20 @@ main(int argc, const char *argv[])
   if (NULL == source_name) {
     char *default_device;
 
-    cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+    p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
 
-    if (NULL != cdio) {
-      default_device = cdio_get_default_device(cdio);
+    if (NULL != p_cdio) {
+      default_device = cdio_get_default_device(p_cdio);
       
-      printf("The driver selected is %s\n", cdio_get_driver_name(cdio));
+      printf("The driver selected is %s\n", cdio_get_driver_name(p_cdio));
 
       if (default_device) {
 	printf("The default device for this driver is %s\n", default_device);
       }
     
       free(default_device);
-      cdio_destroy(cdio);
-      cdio=NULL;
+      cdio_destroy(p_cdio);
+      p_cdio=NULL;
       printf("\n");
     }
   }
@@ -224,25 +225,34 @@ main(int argc, const char *argv[])
   if (NULL == source_name) {
     /* Print out a list of CD-drives */
 
-    char **cd_drives=NULL, **cd;
+    char **ppsz_cdrives=NULL, **ppsz_cd;
     
-    cd_drives = cdio_get_devices(DRIVER_DEVICE);
-    if (NULL != cd_drives) 
-      for( cd = cd_drives; *cd != NULL; cd++ ) {
+    ppsz_cdrives = cdio_get_devices(DRIVER_DEVICE);
+    if (NULL != ppsz_cdrives) 
+      for( ppsz_cd = ppsz_cdrives; *ppsz_cd != NULL; ppsz_cd++ ) {
 	cdio_drive_read_cap_t  i_read_cap;
 	cdio_drive_write_cap_t i_write_cap;
 	cdio_drive_misc_cap_t  i_misc_cap;
+	CdIo *p_cdio = cdio_open(source_name, DRIVER_UNKNOWN); 
+	scsi_mmc_hwinfo_t scsi_mmc_hwinfo;
 
-	cdio_get_drive_cap_dev(*cd, &i_read_cap, &i_write_cap, &i_misc_cap);
-
-	printf("Drive %s\n", *cd);
+	cdio_get_drive_cap_dev(*ppsz_cd, &i_read_cap, &i_write_cap, 
+			       &i_misc_cap);
+	printf("%28s: %s\n", "Drive", *ppsz_cd);
+	if (scsi_mmc_get_hwinfo(p_cdio, &scsi_mmc_hwinfo)) {
+	  printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
+		 "Vendor"  , scsi_mmc_hwinfo.vendor, 
+		 "Model"   , scsi_mmc_hwinfo.model, 
+		 "Revision", scsi_mmc_hwinfo.revision);
+	}
 	print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
 	printf("\n");
+	if (p_cdio) cdio_destroy(p_cdio);
       }
     
-    cdio_free_device_list(cd_drives);
-    free(cd_drives);
-    cd_drives = NULL;
+    cdio_free_device_list(ppsz_cdrives);
+    free(ppsz_cdrives);
+    ppsz_cdrives = NULL;
   } else {
     /* Print CD-drive info for given source */
     cdio_drive_read_cap_t  i_read_cap;
@@ -257,7 +267,7 @@ main(int argc, const char *argv[])
     printf("\n");
   }
 
-  myexit(cdio, EXIT_SUCCESS);
+  myexit(p_cdio, EXIT_SUCCESS);
   /* Not reached:*/
   return(EXIT_SUCCESS);
 }

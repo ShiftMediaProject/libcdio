@@ -1,5 +1,5 @@
 /*
-  $Id: util.h,v 1.5 2004/07/17 22:16:48 rocky Exp $
+  $Id: util.h,v 1.6 2004/07/31 07:43:26 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -76,7 +76,7 @@
 
 #define err_exit(fmt, args...) \
   fprintf(stderr, "%s: "fmt, program_name, ##args); \
-  myexit(cdio, EXIT_FAILURE)		     
+  myexit(p_cdio, EXIT_FAILURE)		     
   
 typedef enum
 {

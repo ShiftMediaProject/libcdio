@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.86 2004/07/29 02:16:20 rocky Exp $
+    $Id: _cdio_linux.c,v 1.87 2004/07/31 07:43:26 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.86 2004/07/29 02:16:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.87 2004/07/31 07:43:26 rocky Exp $";
 
 #include <string.h>
 
@@ -558,7 +558,7 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_10);
     CDIO_MMC_SET_READ_LENGTH16(cdb.field, nblocks);
 
-    if ((retval = scsi_mmc_set_bsize (p_env->gen.cdio, M2RAW_SECTOR_SIZE)))
+    if ((retval = scsi_mmc_set_blocksize (p_env->gen.cdio, M2RAW_SECTOR_SIZE)))
       return retval;
     
     if ((retval = run_scsi_cmd_linux (p_env, 0, 
@@ -568,11 +568,11 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
 				      M2RAW_SECTOR_SIZE * nblocks, 
 				      p_buf)))
       {
-	scsi_mmc_set_bsize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
+	scsi_mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
 	return retval;
       }
     
-    if ((retval = scsi_mmc_set_bsize (p_env->gen.cdio, CDIO_CD_FRAMESIZE)))
+    if ((retval = scsi_mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE)))
       return retval;
   } else
 

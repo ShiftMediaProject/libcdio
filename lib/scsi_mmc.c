@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.17 2004/07/29 05:24:21 rocky Exp $
+    $Id: scsi_mmc.c,v 1.18 2004/07/31 07:43:26 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -185,9 +185,9 @@ scsi_mmc_read_sectors ( const CdIo *cdio, void *p_buf, lba_t lba,
 }
 
 int
-scsi_mmc_set_bsize_private ( const void *p_env, 
-			     const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
-			     unsigned int bsize)
+scsi_mmc_set_blocksize_private ( const void *p_env, 
+				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+				 unsigned int bsize)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
 
@@ -227,11 +227,12 @@ scsi_mmc_set_bsize_private ( const void *p_env,
 }
 
 int 
-scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize)
+scsi_mmc_set_blocksize ( const CdIo *cdio, unsigned int bsize)
 {
   if ( ! cdio )  return -2;
   return 
-    scsi_mmc_set_bsize_private (cdio->env, cdio->op.run_scsi_mmc_cmd, bsize);
+    scsi_mmc_set_blocksize_private (cdio->env, cdio->op.run_scsi_mmc_cmd, 
+				    bsize);
 }
 
 /*!
@@ -394,6 +395,45 @@ scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio, cdio_dvd_struct_t *s)
     scsi_mmc_get_dvd_struct_physical_private (p_cdio->env, 
 					      p_cdio->op.run_scsi_mmc_cmd, 
 					      s);
+}
+
+/*! 
+  Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
+  False is returned if we had an error getting the information.
+*/
+bool 
+scsi_mmc_get_hwinfo ( const CdIo *p_cdio, 
+		      /*out*/ scsi_mmc_hwinfo_t *hw_info )
+{
+  int i_status;                  /* Result of SCSI MMC command */
+  char buf[36] = { 0, };         /* Place to hold returned data */
+  scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Block */
+  
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_INQUIRY);
+  cdb.field[4] = sizeof(buf);
+
+  if (! p_cdio || ! hw_info ) return false;
+  
+  i_status = scsi_mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, 
+			      &cdb, SCSI_MMC_DATA_READ, 
+			      sizeof(buf), &buf);
+  if (i_status == 0) {
+      
+      memcpy(hw_info->vendor, 
+	     buf + 8, 
+	     sizeof(hw_info->vendor)-1);
+      hw_info->vendor[sizeof(hw_info->vendor)-1] = '\0';
+      memcpy(hw_info->model,  
+	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN, 
+	     sizeof(hw_info->model)-1);
+      hw_info->model[sizeof(hw_info->model)-1] = '\0';
+      memcpy(hw_info->revision, 
+	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN + CDIO_MMC_HW_MODEL_LEN,
+	     sizeof(hw_info->revision)-1);
+      hw_info->revision[sizeof(hw_info->revision)-1] = '\0';
+      return true;
+    }
+  return false;
 }
 
 /*!

@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: scsi_mmc_private.h,v 1.8 2004/07/28 01:14:42 rocky Exp $
+    $Id: scsi_mmc_private.h,v 1.9 2004/07/31 07:43:26 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -41,9 +41,9 @@ int (*scsi_mmc_run_cmd_fn_t) ( const void *p_user_data,
 			       scsi_mmc_direction_t e_direction, 
 			       unsigned int i_buf, /*in/out*/ void *p_buf );
 			     
-int scsi_mmc_set_bsize_mmc_private ( const void *p_env, const
-				     scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
-				     unsigned int bsize );
+int scsi_mmc_set_blocksize_mmc_private ( const void *p_env, const
+					 scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
+					 unsigned int bsize );
 
 /*! 
   Get the DVD type associated with cd object.
@@ -55,9 +55,9 @@ scsi_mmc_get_dvd_struct_physical_private ( void *p_env, const
 
 
 int
-scsi_mmc_set_bsize_private ( const void *p_env, 
-			     const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
-			     unsigned int bsize);
+scsi_mmc_set_blocksize_private ( const void *p_env, 
+				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+				 unsigned int bsize);
 
 char *scsi_mmc_get_mcn_private ( void *p_env,
 				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd

@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.23 2004/07/29 05:31:27 rocky Exp $
+    $Id: scsi_mmc.h,v 1.24 2004/07/31 07:43:26 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -109,6 +109,12 @@
 #define CDIO_MMC_HW_MODEL_LEN    16 /**< length of model field */
 #define CDIO_MMC_HW_REVISION_LEN  4 /**< length of revision field */
 
+typedef struct scsi_mmc_hwinfo 
+{
+  char vendor  [CDIO_MMC_HW_VENDOR_LEN+1];
+  char model   [CDIO_MMC_HW_MODEL_LEN+1];
+  char revision[CDIO_MMC_HW_REVISION_LEN+1];
+} scsi_mmc_hwinfo_t;
 
 /*! This is listed as optional in ATAPI 2.6, but is (curiously) 
   missing from Mt. Fuji, Table 57.  It _is_ mentioned in Mt. Fuji
@@ -210,7 +216,11 @@ int scsi_mmc_eject_media( const CdIo *cdio);
 int scsi_mmc_read_sectors ( const CdIo *cdio, void *p_buf, lba_t lba, 
 			    int sector_type, unsigned int nblocks);
 
-int scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize);
+/*!
+  Set the block size for subsequest read requests, via a SCSI MMC 
+  MODE_SELECT 6 command.
+ */
+int scsi_mmc_set_blocksize ( const CdIo *cdio, unsigned int bsize);
 
 /*!
   Return the the kind of drive capabilities of device.
@@ -226,7 +236,24 @@ void scsi_mmc_get_drive_cap (const CdIo *p_cdio,
 discmode_t scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio, 
 					      cdio_dvd_struct_t *s);
 
-char *scsi_mmc_get_mcn ( const CdIo *p_cdio );
+/*! 
+  Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
+  False is returned if we had an error getting the information.
+*/
+bool scsi_mmc_get_hwinfo ( const CdIo *p_cdio, 
+			   /* out*/ scsi_mmc_hwinfo_t *hw_info );
 
+
+/*!
+  Get the media catalog number (MCN) from the CD via MMC.
+  
+  @return the media catalog number r NULL if there is none or we
+  don't have the ability to get it.
+  
+  Note: string is malloc'd so caller has to free() the returned
+  string when done with it.
+  
+*/
+char *scsi_mmc_get_mcn ( const CdIo *p_cdio );
 
 #endif /* __SCSI_MMC_H__ */
