@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.21 2003/08/16 17:31:40 rocky Exp $
+    $Id: cd-info.c,v 1.22 2003/08/29 03:03:07 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -702,10 +702,9 @@ main(int argc, const char *argv[])
   int            first_data  = -1;  /* # of first data track */
   int            first_audio = -1;  /* # of first audio track */
   cdio_analysis_t cdio_analysis; 
+  poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
       
   memset(&cdio_analysis, 0, sizeof(cdio_analysis));
-
-  poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
   gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
 #ifdef HAVE_CDDB
