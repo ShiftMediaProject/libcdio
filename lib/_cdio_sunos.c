@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.55 2004/07/19 01:13:32 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.56 2004/07/19 01:29:04 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.55 2004/07/19 01:13:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.56 2004/07/19 01:29:04 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -596,9 +596,9 @@ cdio_get_default_device_solaris(void)
  */
 static void
 _get_drive_cap_solaris (const void *user_data,
-			cdio_drive_read_cap_t  *p_read_cap,
-			cdio_drive_write_cap_t *p_write_cap,
-			cdio_drive_misc_cap_t  *p_misc_cap)
+			/*out*/ cdio_drive_read_cap_t  *p_read_cap,
+			/*out*/ cdio_drive_write_cap_t *p_write_cap,
+			/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
   const _img_private_t *env = user_data;
   int status;
@@ -630,6 +630,10 @@ _get_drive_cap_solaris (const void *user_data,
     uint8_t *p;
     int lenData  = ((unsigned int)buf[0] << 8) + buf[1];
     uint8_t *pMax = buf + 256;
+
+    *p_read_cap  = 0;
+    *p_write_cap = 0;
+    *p_misc_cap  = 0;
 
     /* set to first sense mask, and then walk through the masks */
     p = buf + 8;

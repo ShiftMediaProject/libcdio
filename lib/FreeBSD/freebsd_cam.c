@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.19 2004/07/19 01:13:32 rocky Exp $
+    $Id: freebsd_cam.c,v 1.20 2004/07/19 01:29:04 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.19 2004/07/19 01:13:32 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.20 2004/07/19 01:29:04 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -171,9 +171,9 @@ get_drive_mcn_freebsd_cam (img_private_t *env)
  */
 static cdio_drive_cap_t
 get_drive_cap_freebsd_cam (img_private_t *env,
-			   cdio_drive_read_cap_t  *p_read_cap,
-			   cdio_drive_write_cap_t *p_write_cap,
-			   cdio_drive_misc_cap_t  *p_misc_cap)
+			   /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+			   /*out*/ cdio_drive_write_cap_t *p_write_cap,
+			   /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
   int32_t i_drivetype = 0;
   uint8_t buf[192] = { 0, };
@@ -207,6 +207,9 @@ get_drive_cap_freebsd_cam (img_private_t *env,
 
   if(rc == 0) {
     unsigned int n=buf[3]+4;
+    *p_read_cap  = 0;
+    *p_write_cap = 0;
+    *p_misc_cap  = 0;
     cdio_get_drive_cap_mmc(&(buf[n], p_read_cap, p_write_cap, p_misc_cap));
   } else {
     *p_read_cap  = CDIO_DRIVE_CAP_ERROR;
