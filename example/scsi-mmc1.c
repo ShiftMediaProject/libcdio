@@ -1,5 +1,5 @@
 /*
-  $Id: scsi-mmc1.c,v 1.1 2004/10/10 00:21:08 rocky Exp $
+  $Id: scsi-mmc1.c,v 1.2 2004/11/13 20:38:41 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -73,7 +73,7 @@ main(int argc, const char *argv[])
       printf("Vendor: %s\nModel: %s\nRevision: %s\n",
 	     psz_vendor, psz_model, psz_rev);
     } else {
-      printf("Couldn't get INQUIRY data (vendor, model, and revision\n");
+      printf("Couldn't get INQUIRY data (vendor, model, and revision).\n");
     }
   }
   
