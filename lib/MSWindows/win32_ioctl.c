@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.26 2004/07/27 01:06:02 rocky Exp $
+    $Id: win32_ioctl.c,v 1.27 2004/07/27 02:21:23 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.26 2004/07/27 01:06:02 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.27 2004/07/27 02:21:23 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -204,9 +204,9 @@ get_discmode_win32ioctl (_img_private_t *p_env)
 
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
-  if (0 == get_dvd_struct_physical_mmc (p_env, 
-					&scsi_mmc_run_cmd_win32ioctl,
-					&dvd)) {
+  if (0 == scsi_mmc_get_dvd_struct_physical_private (p_env, 
+						     &scsi_mmc_run_cmd_win32ioctl,
+						     &dvd)) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
@@ -482,7 +482,7 @@ read_toc_win32ioctl (_img_private_t *env)
     return false;
   }
   
-  env->i_first_track = cdrom_toc.FirstTrack;
+  env->gen.i_first_track = cdrom_toc.FirstTrack;
   env->i_tracks  = cdrom_toc.LastTrack - cdrom_toc.FirstTrack + 1;
   
   
@@ -510,7 +510,7 @@ read_toc_win32ioctl (_img_private_t *env)
 bool
 init_cdtext_win32ioctl (_img_private_t *p_env)
 {
-  return scsi_mmc_cdtext_init_private( p_env->gen.cdio,
+  return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
 				       &scsi_mmc_run_cmd_win32ioctl, 
 				       set_cdtext_field_win32
 				       );
@@ -556,10 +556,10 @@ get_track_format_win32ioctl(const _img_private_t *env, track_t i_track)
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
   */
-  if (env->tocent[i_track - env->i_first_track].Control & 0x04) {
-    if (env->tocent[i_track - env->i_first_track].Format == 0x10)
+  if (env->tocent[i_track - env->gen.i_first_track].Control & 0x04) {
+    if (env->tocent[i_track - env->gen.i_first_track].Format == 0x10)
       return TRACK_FORMAT_CDI;
-    else if (env->tocent[i_track - env->i_first_track].Format == 0x20) 
+    else if (env->tocent[i_track - env->gen.i_first_track].Format == 0x20) 
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;

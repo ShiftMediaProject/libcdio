@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.32 2004/07/27 01:06:02 rocky Exp $
+    $Id: win32.c,v 1.33 2004/07/27 02:21:23 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.32 2004/07/27 01:06:02 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.33 2004/07/27 02:21:23 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -505,7 +505,7 @@ _get_cdtext_win32 (void *user_data, track_t i_track)
 
   if ( NULL == env ||
        (0 != i_track 
-       && i_track >= env->i_tracks + env->i_first_track ) )
+       && i_track >= env->i_tracks + env->gen.i_first_track ) )
     return NULL;
 
   if (env->hASPI) {
@@ -518,7 +518,7 @@ _get_cdtext_win32 (void *user_data, track_t i_track)
   if (0 == i_track) 
     return &(env->cdtext);
   else 
-    return &(env->tocent[i_track-env->i_first_track].cdtext);
+    return &(env->tocent[i_track-env->gen.i_first_track].cdtext);
 
   return NULL;
 }
@@ -534,7 +534,7 @@ _cdio_get_first_track_num(void *user_data)
   
   if (!env->toc_init) _cdio_read_toc (env) ;
 
-  return env->i_first_track;
+  return env->gen.i_first_track;
 }
 
 /*!
@@ -548,7 +548,7 @@ static char *
 _cdio_get_mcn (const void *p_user_data) {
   const _img_private_t *p_env = p_user_data;
 
-  if( _env->hASPI ) {
+  if( p_env->hASPI ) {
     return scsi_mmc_get_mcn( p_env->gen.cdio );
   } else {
     return get_mcn_win32ioctl(p_env);
@@ -575,17 +575,17 @@ _cdio_get_num_tracks(void *user_data)
 static track_format_t
 _cdio_get_track_format(void *obj, track_t i_track) 
 {
-  _img_private_t *env = obj;
+  _img_private_t *p_env = obj;
   
-  if ( NULL == env ||
-       ( i_track < env->i_first_track
-	 || i_track >= env->i_tracks + env->i_first_track ) )
+  if ( NULL == p_env ||
+       ( i_track < p_env->gen.i_first_track
+	 || i_track >= p_env->i_tracks + p_env->gen.i_first_track ) )
     return TRACK_FORMAT_ERROR;
 
-  if( env->hASPI ) {
-    return get_track_format_aspi(env, i_track);
+  if( p_env->hASPI ) {
+    return get_track_format_aspi(p_env, i_track);
   } else {
-    return get_track_format_win32ioctl(env, i_track);
+    return get_track_format_win32ioctl(p_env, i_track);
   }
 }
 
@@ -600,9 +600,9 @@ _cdio_get_track_format(void *obj, track_t i_track)
 static bool
 _cdio_get_track_green(void *obj, track_t i_track) 
 {
-  _img_private_t *env = obj;
+  _img_private_t *p_env = obj;
   
-  switch (_cdio_get_track_format(env, i_track)) {
+  switch (_cdio_get_track_format(p_env, i_track)) {
   case TRACK_FORMAT_XA:
     return true;
   case TRACK_FORMAT_ERROR:
@@ -610,7 +610,7 @@ _cdio_get_track_green(void *obj, track_t i_track)
   case TRACK_FORMAT_AUDIO:
     return false;
   case TRACK_FORMAT_DATA:
-    if (_AM_ASPI == env->access_mode ) 
+    if (_AM_ASPI == p_env->access_mode ) 
       return false;
   default:
     break;
@@ -619,7 +619,7 @@ _cdio_get_track_green(void *obj, track_t i_track)
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cd-info for a while.
    */
-  return ((env->tocent[i_track-env->i_first_track].Control & 2) != 0);
+  return ((p_env->tocent[i_track-p_env->gen.i_first_track].Control & 2) != 0);
 }
 
 /*!  
@@ -630,9 +630,9 @@ _cdio_get_track_green(void *obj, track_t i_track)
   False is returned if there is no track entry.
 */
 static bool
-_cdio_get_track_msf(void *env, track_t i_tracks, msf_t *msf)
+_cdio_get_track_msf(void *p_env, track_t i_tracks, msf_t *msf)
 {
-  _img_private_t *_obj = env;
+  _img_private_t *_obj = p_env;
 
   if (NULL == msf) return false;
 
