@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.36 2005/01/31 09:22:35 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.37 2005/02/01 03:19:51 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -1866,14 +1866,14 @@ the suffix in the name, e.g. @code{CDIO_MMC_GPCMD_MODE_SELECT_6} or
 If the fascination and emphasis in the MMC specifications of cdb size
 is a bit odd, equally so is the fact that this too often has bled
 through at the OS programming API. At @value{libcdio} in our interface
-you just give the opcode in @code{scsi_mmc_run_cmd} and we'll do the
-work to figure out how many beet of the cdb are used.
+you just give the opcode in @code{scsi_mmc_run_cmd()} and we'll do the
+work to figure out how many bytes of the cdb are used.
 
 Down the line it is hoped that @value{libcdio} will have a way to
 remove a distinction between the various alternative and
 alternative-size MMC commands. In @code{cdio/scsi-mmc.h} you will
 find a little bit of this for example via the routine
-@code{scsi_mmc_get_drive_cap}. However much more work is needed.
+@code{scsi_mmc_get_drive_cap()}. However much more work is needed.
 
 @node GNU/Linux
 @section GNU/Linux
