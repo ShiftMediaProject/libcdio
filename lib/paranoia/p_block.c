@@ -1,5 +1,5 @@
 /*
-    $Id: p_block.c,v 1.4 2005/01/07 02:42:29 rocky Exp $
+    $Id: p_block.c,v 1.5 2005/01/10 02:10:47 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -367,24 +367,53 @@ c_removef(c_block_t *v, long cut)
 
 /**** Initialization *************************************************/
 
+/*!  Get the beginning and ending sector bounds given cursor position.
+
+  There are a couple of subtle differences between this and the
+  cdda_firsttrack_sector and cdda_lasttrack_sector. If the cursor is
+  an a sector later than cdda_firsttrack_sector, that sectur will be
+  used. As for the difference between cdda_lasttrack_sector, if the CD
+  is mixed and there is a data track after the cursor but before the
+  last audio track, the end of the audio sector before that is used.
+*/
 void 
 i_paranoia_firstlast(cdrom_paranoia_t *p)
 {
-  int i;
+  track_t i, j;
   cdrom_drive_t *d=p->d;
-  p->current_lastsector=-1;
-  for(i=cdda_sector_gettrack(d,p->cursor);i<cdda_tracks(d);i++)
-    if(!cdda_track_audiop(d,i))
-      p->current_lastsector=cdda_track_lastsector(d,i-1);
-  if(p->current_lastsector==-1)
-    p->current_lastsector=cdda_disc_lastsector(d);
+  const track_t i_first_track = cdio_get_first_track_num(d->p_cdio);
+  const track_t i_last_track  = cdio_get_last_track_num(d->p_cdio);
 
-  p->current_firstsector=-1;
-  for(i=cdda_sector_gettrack(d,p->cursor);i>0;i--)
-    if(!cdda_track_audiop(d,i))
-      p->current_firstsector=cdda_track_firstsector(d,i+1);
-  if(p->current_firstsector==-1)
-    p->current_firstsector=cdda_disc_firstsector(d);
+  p->current_lastsector = p->current_firstsector = -1;
+
+  i = cdda_sector_gettrack(d, p->cursor); 
+
+  if ( CDIO_INVALID_TRACK != i ) {
+    if ( 0 == i ) i++;
+    j = i;
+    /* In the below loops, We assume the cursor already is on an audio
+       sector. Not sure if this is correct if p->cursor is in the pregap
+       before the first track.
+    */
+    for ( ; i < i_last_track; i++)
+      if( !cdda_track_audiop(d,i) ) {
+	p->current_lastsector=cdda_track_lastsector(d,i-1);
+	break;
+      }
+
+    i = j;
+    for ( ; i >= i_first_track; i-- )
+      if( !cdda_track_audiop(d,i) ) {
+	p->current_firstsector = cdda_track_firstsector(d,i+1);
+	break;
+      }
+  }
+  
+  if (p->current_lastsector == -1)
+    p->current_lastsector = cdda_disc_lastsector(d);
+
+  if(p->current_firstsector == -1)
+    p->current_firstsector = cdda_disc_firstsector(d);
 
 }
 

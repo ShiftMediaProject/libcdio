@@ -1,5 +1,5 @@
 /*
-  $Id: toc.c,v 1.4 2005/01/06 23:32:58 rocky Exp $
+  $Id: toc.c,v 1.5 2005/01/10 02:10:46 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -54,7 +54,11 @@ cdda_track_firstsector(cdrom_drive_t *d, track_t i_track)
     cderror(d,"401: Invalid track number\n");
     return(-1);
   }
-  return(d->disc_toc[i_track-1].dwStartSector);
+
+  {
+    const track_t i_first_track = cdio_get_first_track_num(d->p_cdio);
+    return(d->disc_toc[i_track-i_first_track].dwStartSector);
+  }
 }
 
 /*! Get first lsn of the first audio track. -1 is returned on error. */
@@ -115,17 +119,17 @@ cdda_track_lastsector(cdrom_drive_t *d, track_t i_track)
 lsn_t
 cdda_disc_lastsector(cdrom_drive_t *d)
 {
-  int i;
   if (!d->opened) {
     cderror(d,"400: Device not open\n");
     return -1;
+  } else {
+    /* look for an audio track */
+    const track_t i_first_track = cdio_get_first_track_num(d->p_cdio);
+    track_t i = cdio_get_last_track_num(d->p_cdio);
+    for ( ; i >= i_first_track; i-- )
+      if ( cdda_track_audiop(d,i) )
+	return (cdda_track_lastsector(d,i));
   }
-
-  /* look for an audio track */
-  for ( i=d->tracks-1; i>=0; i-- )
-    if ( cdda_track_audiop(d,i+1) == 1 )
-      return (cdda_track_lastsector(d,i+1));
-
   cderror(d,"403: No audio tracks on disc\n");  
   return -1;
 }

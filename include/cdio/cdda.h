@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.3 2005/01/08 20:39:40 rocky Exp $
+  $Id: cdda.h,v 1.4 2005/01/10 02:10:46 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -78,7 +78,11 @@ struct cdrom_drive_s {
 
   int cd_extra;
   track_t tracks;
-  TOC_t disc_toc[MAXTRK];
+  TOC_t disc_toc[MAXTRK]; /**< info here starts origin 0 rather than the
+			     first track number (usually 1). So to take 
+			     a track number and use it here, subtract
+			     off cdio_get_first_track_num() beforehand.
+			   */
   lsn_t audio_first_sector;
   lsn_t audio_last_sector;
 
@@ -170,7 +174,7 @@ extern int     cdda_track_preemp(cdrom_drive_t *d, track_t i_track);
 /*! Get first lsn of the first audio track. -1 is returned on error. */
 extern lsn_t   cdda_disc_firstsector(cdrom_drive_t *d);
 
-/*! Get last lsn of the last audio track. The last lssn generally one
+/*! Get last lsn of the last audio track. The last lsn is generally one
   less than the start of the next track after the audio track. -1 is
   returned on error. */
 extern lsn_t   cdda_disc_lastsector(cdrom_drive_t *d);
