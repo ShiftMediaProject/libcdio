@@ -1,0 +1,6 @@
+$Id: README,v 1.1 2003/08/02 03:43:19 rocky Exp $
+
+This directory contains some simple examples of the use of the libcdio
+library.
+
+A larger more-complicated example can be found is the cd-info program.
