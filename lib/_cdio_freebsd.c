@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.12 2003/05/25 10:35:13 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.13 2003/05/27 02:22:06 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -19,14 +19,15 @@
 */
 
 /* This file contains FreeBSD-specific code and implements low-level 
-   control of the CD drive.
+   control of the CD drive. Culled I think from xine's or mplayer's 
+   FreeBSD code. 
 */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.12 2003/05/25 10:35:13 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.13 2003/05/27 02:22:06 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -193,7 +194,7 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   if (mode2_form2)
     memcpy (data, buf, M2RAW_SECTOR_SIZE);
   else
-    memcpy (((char *)data), buf + 8, FORM1_DATA_SIZE);
+    memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
   
   return 0;
 }
@@ -430,7 +431,7 @@ _cdio_get_track_green(void *user_data, track_t track_num)
   
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDIO_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
 
   if (track_num > TOTAL_TRACKS+1 || track_num == 0)
     return false;
