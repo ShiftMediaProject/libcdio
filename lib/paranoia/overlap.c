@@ -1,5 +1,5 @@
 /*
-  $Id: overlap.c,v 1.3 2005/01/07 02:42:29 rocky Exp $
+  $Id: overlap.c,v 1.4 2005/02/06 15:09:10 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -46,7 +46,7 @@ void
 paranoia_resetcache(cdrom_paranoia_t *p)
 {
   c_block_t *c=c_first(p);
-  v_fragment *v;
+  v_fragment_t *v;
 
   while(c){
     free_c_block(c);
@@ -140,7 +140,7 @@ offset_adjust_settings(cdrom_paranoia_t *p,
 	 (potentially unstable) feedback loop */
       {
 	c_block_t *c=c_first(p);
-	v_fragment *v=v_first(p);
+	v_fragment_t *v=v_first(p);
 
 	while(v && v->one){
 	  /* safeguard beginning bounds case with a hammer */

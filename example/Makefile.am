@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.16 2005/02/04 23:12:16 rocky Exp $
+#   $Id: Makefile.am,v 1.17 2005/02/06 15:09:10 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -21,17 +21,19 @@
 ####################################################
 #
 if DISABLE_CPP
-noinst_PROGRAMS = cdtext drives iso1 iso2 iso3 iso4 mmc1 mmc2 \
-		  paranoia paranoia2 tracks sample2 sample3 sample4 
+noinst_PROGRAMS = cdtext device drives iso1 iso2 iso3 iso4 mmc1 mmc2 \
+		  paranoia paranoia2 tracks sample3 sample4 
 else  
-noinst_PROGRAMS = cdtext drives iso1 iso2 iso3 iso4 mmc1 mmc2 \
-		  paranoia paranoia2 tracks sample2 sample3 sample4 \
+noinst_PROGRAMS = cdtext device drives iso1 iso2 iso3 iso4 mmc1 mmc2 \
+		  paranoia paranoia2 tracks sample3 sample4 \
 	          iso1cpp iso2cpp iso3cpp
 endif
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
 cdtext_LDADD  = $(LIBCDIO_LIBS)
+
+device_LDADD = $(LIBCDIO_LIBS)
 
 drives_LDADD = $(LIBCDIO_LIBS)
 
@@ -55,7 +57,6 @@ endif
 mmc1_LDADD = $(LIBCDIO_LIBS)
 mmc2_LDADD = $(LIBCDIO_LIBS)
 
-sample2_LDADD = $(LIBCDIO_LIBS)
 sample3_LDADD = $(LIBCDIO_LIBS)
 sample4_LDADD = $(LIBCDIO_LIBS)
 

@@ -1,5 +1,5 @@
 /*
-  $Id: sample2.c,v 1.13 2005/01/04 04:40:22 rocky Exp $
+  $Id: device.c,v 1.1 2005/02/06 15:09:10 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   

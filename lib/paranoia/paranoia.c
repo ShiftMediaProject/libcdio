@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.9 2005/01/23 14:05:19 rocky Exp $
+  $Id: paranoia.c,v 1.10 2005/02/06 15:09:10 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -452,7 +452,7 @@ typedef struct sync_result {
 /* do *not* match using zero posts */
 static long int 
 i_iterate_stage2(cdrom_paranoia_t *p,
-		 v_fragment *v,
+		 v_fragment_t *v,
 		 sync_result *r,
 		 void(*callback)(long int, paranoia_cb_mode_t))
 {
@@ -528,7 +528,7 @@ i_silence_test(root_block *root)
    also must be called with vectors in ascending begin order in case
    there are nonzero islands */
 static long int 
-i_silence_match(root_block *root, v_fragment *v, 
+i_silence_match(root_block *root, v_fragment_t *v, 
 		void(*callback)(long int, paranoia_cb_mode_t))
 {
 
@@ -547,10 +547,10 @@ i_silence_match(root_block *root, v_fragment *v,
      p->dynoverlap? */
   if(fb(v)>=re(root) && fb(v)-p->dynoverlap<re(root)){
     /* extend the zeroed area of root */
-    long addto=fb(v)+MIN_SILENCE_BOUNDARY-re(root);
-    int16_t vec[addto];
-    memset(vec,0,sizeof(vec));
-    c_append(rc(root),vec,addto);
+    long addto   = fb(v)+MIN_SILENCE_BOUNDARY-re(root);
+    int16_t *vec = calloc(addto, sizeof(int16_t));
+    c_append(rc(root), vec, addto);
+    free(vec);
   }
 
   /* do we have an 'effortless' overlap? */
@@ -595,7 +595,7 @@ i_silence_match(root_block *root, v_fragment *v,
 }
 
 static long int 
-i_stage2_each(root_block *root, v_fragment *v,
+i_stage2_each(root_block *root, v_fragment_t *v,
 	      void(*callback)(long int, paranoia_cb_mode_t))
 {
 
@@ -855,7 +855,7 @@ i_stage2_each(root_block *root, v_fragment *v,
 }
 
 static int 
-i_init_root(root_block *root, v_fragment *v,long int begin,
+i_init_root(root_block *root, v_fragment_t *v,long int begin,
 		       void(*callback)(long int, paranoia_cb_mode_t))
 {
   if(fb(v)<=begin && fe(v)>begin){
@@ -884,7 +884,7 @@ i_init_root(root_block *root, v_fragment *v,long int begin,
 static int 
 vsort(const void *a,const void *b)
 {
-  return((*(v_fragment **)a)->begin-(*(v_fragment **)b)->begin);
+  return((*(v_fragment_t **)a)->begin-(*(v_fragment_t **)b)->begin);
 }
 
 static int 
@@ -904,14 +904,14 @@ i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
      matching in the event that there are still audio vectors with
      content to be sunk before the silence */
 
-  while(flag){
+  while (flag) {
     /* loop through all the current fragments */
-    v_fragment *first=v_first(p);
+    v_fragment_t *first=v_first(p);
     long active=p->fragments->active,count=0;
-    v_fragment *list[active];
+    v_fragment_t **list = calloc(active, sizeof(v_fragment_t *));
 
     while(first){
-      v_fragment *next=v_next(first);
+      v_fragment_t *next=v_next(first);
       list[count++]=first;
       first=next;
     }
@@ -919,7 +919,7 @@ i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
     flag=0;
     if(count){
       /* sorted in ascending order of beginning */
-      qsort(list,active,sizeof(v_fragment *),&vsort);
+      qsort(list,active,sizeof(v_fragment_t *),&vsort);
       
       /* we try a nonzero based match even if in silent mode in
 	 the case that there are still cached vectors to sink
@@ -958,6 +958,7 @@ i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
 	}
       }
     }
+    free(list);
   }
   return(ret);
 }

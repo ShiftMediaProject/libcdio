@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.21 2005/02/06 11:13:37 rocky Exp $
+    $Id: _cdio_linux.c,v 1.22 2005/02/06 15:09:10 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.21 2005/02/06 11:13:37 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.22 2005/02/06 15:09:10 rocky Exp $";
 
 #include <string.h>
 
@@ -294,7 +294,7 @@ get_drive_cap_linux (const void *p_user_data,
   return codes are the same as driver_return_code_t
 */
 static int
-get_media_changed_linux (void *p_user_data) {
+get_media_changed_linux (const void *p_user_data) {
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROM_MEDIA_CHANGED, 0);
 }

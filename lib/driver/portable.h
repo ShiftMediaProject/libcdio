@@ -1,5 +1,5 @@
 /*
-    $Id: portable.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: portable.h,v 1.2 2005/02/06 15:09:10 rocky Exp $
 
     Copyright (C) Rocky Bernstein <rocky@panix.com>
 
@@ -48,6 +48,10 @@
 #  define snprintf _vsnprintf
 # endif
 #endif /*HAVE_SNPRINTF*/
+
+#if !defined(HAVE_DRAND48) && defined(HAVE_RAND)
+# define drand48()   (rand() / (double)RAND_MAX)
+#endif
 
 #ifdef MSVC
 # include <io.h>

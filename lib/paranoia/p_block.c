@@ -1,5 +1,5 @@
 /*
-    $Id: p_block.c,v 1.6 2005/01/23 05:31:03 rocky Exp $
+    $Id: p_block.c,v 1.7 2005/02/06 15:09:10 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -148,10 +148,10 @@ new_c_block(cdrom_paranoia_t *p)
 void free_c_block(c_block_t *c)
 {
   /* also rid ourselves of v_fragments that reference this block */
-  v_fragment *v=v_first(c->p);
+  v_fragment_t *v=v_first(c->p);
   
   while(v){
-    v_fragment *next=v_next(v);
+    v_fragment_t *next=v_next(v);
     if(v->one==c)free_v_fragment(v);
     v=next;
   }    
@@ -159,25 +159,25 @@ void free_c_block(c_block_t *c)
   free_elem(c->e,1);
 }
 
-static v_fragment *
+static v_fragment_t *
 i_vfragment_constructor(void)
 {
-  v_fragment *ret=calloc(1,sizeof(v_fragment));
+  v_fragment_t *ret=calloc(1,sizeof(v_fragment_t));
   return(ret);
 }
 
 static inline void 
-i_v_fragment_destructor(v_fragment *v)
+i_v_fragment_destructor(v_fragment_t *v)
 {
   free(v);
 }
 
-v_fragment *
+v_fragment_t *
 new_v_fragment(cdrom_paranoia_t *p, c_block_t *one,
 	       long int begin, long int end, int last)
 {
   linked_element *e=new_elem(p->fragments);
-  v_fragment *b=e->ptr;
+  v_fragment_t *b=e->ptr;
   
   b->e=e;
   b->p=p;
@@ -191,7 +191,7 @@ new_v_fragment(cdrom_paranoia_t *p, c_block_t *one,
   return(b);
 }
 
-void free_v_fragment(v_fragment *v)
+void free_v_fragment(v_fragment_t *v)
 {
   free_elem(v->e,1);
 }
@@ -228,7 +228,7 @@ c_prev(c_block_t *c)
   return(NULL);
 }
 
-v_fragment *
+v_fragment_t *
 v_first(cdrom_paranoia_t *p)
 {
   if(p->fragments->head){
@@ -237,7 +237,7 @@ v_first(cdrom_paranoia_t *p)
   return(NULL);
 }
 
-v_fragment *
+v_fragment_t *
 v_last(cdrom_paranoia_t *p)
 {
   if(p->fragments->tail)
@@ -245,16 +245,16 @@ v_last(cdrom_paranoia_t *p)
   return(NULL);
 }
 
-v_fragment *
-v_next(v_fragment *v)
+v_fragment_t *
+v_next(v_fragment_t *v)
 {
   if(v->e->next)
     return(v->e->next->ptr);
   return(NULL);
 }
 
-v_fragment *
-v_prev(v_fragment *v)
+v_fragment_t *
+v_prev(v_fragment_t *v)
 {
   if(v->e->prev)
     return(v->e->prev->ptr);
@@ -274,7 +274,7 @@ recover_cache(cdrom_paranoia_t *p)
 }
 
 int16_t *
-v_buffer(v_fragment *v)
+v_buffer(v_fragment_t *v)
 {
   if(!v->one)return(NULL);
   if(!cv(v->one))return(NULL);

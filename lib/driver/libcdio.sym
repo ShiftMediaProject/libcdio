@@ -85,6 +85,7 @@ cdio_is_binfile
 cdio_is_cuefile
 cdio_is_device
 cdio_is_discmode_cdrom
+cdio_is_discmode_dvd
 cdio_is_nrg
 cdio_is_tocfile
 cdio_lba_to_lsn
@@ -122,6 +123,7 @@ cdio_open_nrg
 cdio_open_osx
 cdio_open_solaris
 cdio_open_win32
+cdio_os_driver
 cdio_read
 cdio_read_audio_sector
 cdio_read_audio_sectors
@@ -148,3 +150,4 @@ discmode2str
 mmc_get_hwinfo
 mmc_run_cmd
 track_format2str
+CDIO_SECTOR_SYNC_HEADER

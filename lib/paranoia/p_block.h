@@ -1,5 +1,5 @@
 /*
-    $Id: p_block.h,v 1.3 2005/01/07 02:42:29 rocky Exp $
+    $Id: p_block.h,v 1.4 2005/02/06 15:09:10 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) by Monty (xiphmont@mit.edu)
@@ -97,7 +97,7 @@ extern void free_c_block(c_block_t *c);
 extern void i_cblock_destructor(c_block_t *c);
 extern c_block_t *new_c_block(cdrom_paranoia_t *p);
 
-typedef struct v_fragment{
+typedef struct v_fragment_s {
   c_block_t *one;
 
   long begin;
@@ -111,23 +111,23 @@ typedef struct v_fragment{
   cdrom_paranoia_t *p;
   struct linked_element *e;
 
-} v_fragment;
+} v_fragment_t;
 
-extern void free_v_fragment(v_fragment *c);
-extern v_fragment *new_v_fragment(cdrom_paranoia_t *p, c_block_t *one,
+extern void free_v_fragment(v_fragment_t *c);
+extern v_fragment_t *new_v_fragment(cdrom_paranoia_t *p, c_block_t *one,
 				  long int begin, long int end, 
 				  int lastsector);
-extern int16_t *v_buffer(v_fragment *v);
+extern int16_t *v_buffer(v_fragment_t *v);
 
 extern c_block_t *c_first(cdrom_paranoia_t *p);
 extern c_block_t *c_last(cdrom_paranoia_t *p);
 extern c_block_t *c_next(c_block_t *c);
 extern c_block_t *c_prev(c_block_t *c);
 
-extern v_fragment *v_first(cdrom_paranoia_t *p);
-extern v_fragment *v_last(cdrom_paranoia_t *p);
-extern v_fragment *v_next(v_fragment *v);
-extern v_fragment *v_prev(v_fragment *v);
+extern v_fragment_t *v_first(cdrom_paranoia_t *p);
+extern v_fragment_t *v_last(cdrom_paranoia_t *p);
+extern v_fragment_t *v_next(v_fragment_t *v);
+extern v_fragment_t *v_prev(v_fragment_t *v);
 
 typedef struct root_block{
   long returnedlimit;   
