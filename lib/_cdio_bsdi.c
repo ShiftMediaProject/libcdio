@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.14 2003/10/02 02:59:58 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.15 2003/10/03 01:43:45 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.14 2003/10/02 02:59:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.15 2003/10/03 01:43:45 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -44,6 +44,11 @@ static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.14 2003/10/02 02:59:58 rocky
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+
+#define USE_ETC_FSTAB
+#ifdef USE_ETC_FSTAB
+#include <fstab.h>
+#endif
 
 #include <dvd.h>
 #include <sys/stat.h>
@@ -80,7 +85,7 @@ typedef struct {
    Return 1 if a CD-ROM. 0 if it exists but isn't a CD-ROM drive
    and -1 if no device exists .
 */
-static int
+static bool
 cdio_is_cdrom(char *drive, char *mnttype)
 {
   bool is_cd=false;
@@ -94,6 +99,11 @@ cdio_is_cdrom(char *drive, char *mnttype)
   
   /* If it does exist, verify that it's an available CD-ROM */
   cdfd = open(drive, (O_RDONLY|O_EXCL|O_NONBLOCK), 0);
+
+  /* Should we want to test the condition in more detail:
+     ENOENT is the error for /dev/xxxxx does not exist;
+     ENODEV means there's no drive present. */
+
   if ( cdfd >= 0 ) {
     if ( ioctl(cdfd, CDROMREADTOCHDR, &tochdr) != -1 ) {
       is_cd = true;
@@ -573,29 +583,33 @@ cdio_get_devices_bsdi (void)
   char drive[40];
   char **drives = NULL;
   unsigned int num_drives=0;
+  bool exists=true;
   char c;
   
   /* Scan the system for CD-ROM drives.
   */
 
-#if FINISHED
-  /* Now check the currently mounted CD drives */
-  if (NULL != (ret_drive = cdio_check_mounts("/etc/mtab"))) {
-    cdio_add_device_list(&drives, drive, &num_drives);
-  }
+#ifdef USE_ETC_FSTAB
+
+  struct fstab *fs;
+  setfsent();
   
-  /* Finally check possible mountable drives in /etc/fstab */
-  if (NULL != (ret_drive = cdio_check_mounts("/etc/fstab"))) {
-    cdio_add_device_list(&drives, drive, &num_drives);
-  }
+  /* Check what's in /etc/fstab... */
+  while (fs = getfsent())
+    {
+      if (strncmp(fs->fs_spec, "/dev/sr", 7))
+	cdio_add_device_list(&drives, fs->fs_spec, &num_drives);
+    }
+  
 #endif
 
   /* Scan the system for CD-ROM drives.
      Not always 100% reliable, so use the USE_MNTENT code above first.
   */
-  for ( c='c'; c <='h'; c++ ) {
-    sprintf(drive, "/dev/rsr0%c", c);
-    if ( cdio_is_cdrom(drive, NULL) > 0 ) {
+  for ( c='0'; exists && c <='9'; c++ ) {
+    sprintf(drive, "/dev/rsr%cc", c);
+    exists = cdio_is_cdrom(drive, NULL);
+    if ( exists ) {
       cdio_add_device_list(&drives, drive, &num_drives);
     }
   }
