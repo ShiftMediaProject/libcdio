@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.15 2004/05/13 01:50:20 rocky Exp $
+    $Id: _cdio_generic.c,v 1.16 2004/05/31 12:29:09 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.15 2004/05/13 01:50:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.16 2004/05/31 12:29:09 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,15 +62,15 @@ cdio_generic_bogus_eject_media (void *user_data) {
 void
 cdio_generic_free (void *user_data)
 {
-  generic_img_private_t *_obj = user_data;
+  generic_img_private_t *env = user_data;
 
-  if (NULL == _obj) return;
-  free (_obj->source_name);
+  if (NULL == env) return;
+  free (env->source_name);
 
-  if (_obj->fd >= 0)
-    close (_obj->fd);
+  if (env->fd >= 0)
+    close (env->fd);
 
-  free (_obj);
+  free (env);
 }
 
 /*!
@@ -79,22 +79,22 @@ cdio_generic_free (void *user_data)
 bool
 cdio_generic_init (void *user_data)
 {
-  generic_img_private_t *_obj = user_data;
-  if (_obj->init) {
+  generic_img_private_t *_env = user_data;
+  if (_env->init) {
     cdio_error ("init called more than once");
     return false;
   }
   
-  _obj->fd = open (_obj->source_name, O_RDONLY, 0);
+  _env->fd = open (_env->source_name, O_RDONLY, 0);
 
-  if (_obj->fd < 0)
+  if (_env->fd < 0)
     {
-      cdio_warn ("open (%s): %s", _obj->source_name, strerror (errno));
+      cdio_warn ("open (%s): %s", _env->source_name, strerror (errno));
       return false;
     }
 
-  _obj->init = true;
-  _obj->toc_init = false;
+  _env->init = true;
+  _env->toc_init = false;
   return true;
 }
 
@@ -106,8 +106,8 @@ cdio_generic_init (void *user_data)
 off_t
 cdio_generic_lseek (void *user_data, off_t offset, int whence)
 {
-  generic_img_private_t *_obj = user_data;
-  return lseek(_obj->fd, offset, whence);
+  generic_img_private_t *_env = user_data;
+  return lseek(_env->fd, offset, whence);
 }
 
 /*!
@@ -118,8 +118,8 @@ cdio_generic_lseek (void *user_data, off_t offset, int whence)
 ssize_t
 cdio_generic_read (void *user_data, void *buf, size_t size)
 {
-  generic_img_private_t *_obj = user_data;
-  return read(_obj->fd, buf, size);
+  generic_img_private_t *_env = user_data;
+  return read(_env->fd, buf, size);
 }
 
 /*!
@@ -128,14 +128,14 @@ cdio_generic_read (void *user_data, void *buf, size_t size)
 void
 cdio_generic_stdio_free (void *user_data)
 {
-  generic_img_private_t *_obj = user_data;
+  generic_img_private_t *_env = user_data;
 
-  if (NULL == _obj) return;
-  if (NULL != _obj->source_name) 
-    free (_obj->source_name);
+  if (NULL == _env) return;
+  if (NULL != _env->source_name) 
+    free (_env->source_name);
 
-  if (_obj->data_source)
-    cdio_stdio_destroy (_obj->data_source);
+  if (_env->data_source)
+    cdio_stdio_destroy (_env->data_source);
 }
 
 
