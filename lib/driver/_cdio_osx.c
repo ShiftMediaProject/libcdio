@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.6 2005/01/18 02:18:49 rocky Exp $
+    $Id: _cdio_osx.c,v 1.7 2005/01/20 12:36:21 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.6 2005/01/18 02:18:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.7 2005/01/20 12:36:21 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -82,6 +82,21 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.6 2005/01/18 02:18:49 rocky E
 #include <IOKit/storage/IODVDMediaBSDClient.h>
 #include <IOKit/storage/IOStorageDeviceCharacteristics.h>
 
+/* FIXME */
+#define MAX_BIG_BUFF_SIZE  65535
+#define TR_OK            0
+#define TR_EWRITE        1  /* Error writing packet command (transport) */
+#define TR_EREAD         2  /* Error reading packet data (transport) */
+#define TR_UNDERRUN      3  /* Read underrun */
+#define TR_OVERRUN       4  /* Read overrun */
+#define TR_ILLEGAL       5  /* Illegal/rejected request */
+#define TR_MEDIUM        6  /* Medium error */
+#define TR_BUSY          7  /* Device busy */
+#define TR_NOTREADY      8  /* Device not ready */
+#define TR_FAULT         9  /* Devive failure */
+#define TR_UNKNOWN      10  /* Unspecified error */
+#define TR_STREAMING    11  /* loss of streaming */
+
 #define kIOCDBlockStorageDeviceClassString		"IOCDBlockStorageDevice"
 
 /* Note leadout is normally defined 0xAA, But on OSX 0xA0 is "lead in" while
@@ -117,6 +132,17 @@ typedef struct {
   char    psz_MediaClass_service[MAX_SERVICE_NAME];
   SCSITaskDeviceInterface **pp_scsiTaskDeviceInterface;
 
+  // io_service_t obj;
+  // SCSITaskDeviceInterface **scsi;
+  SCSITaskInterface **scsi_task;
+  MMCDeviceInterface **mmc;
+  IOCFPlugInInterface **plugin;
+  
+  SCSI_Sense_Data sense;
+  SCSITaskStatus status;
+  UInt64 realized_len;
+
+
 } _img_private_t;
 
 static bool read_toc_osx (void *p_user_data);
@@ -139,6 +165,84 @@ GetRegistryEntryProperties ( io_service_t service )
   return dict;
 }
 
+
+static bool
+get_scsi(_img_private_t *p_env)
+{
+  SInt32 score;
+  kern_return_t err;
+  HRESULT herr;
+  
+  err = IOCreatePlugInInterfaceForService(p_env->MediaClass_service, 
+					  kIOMMCDeviceUserClientTypeID,
+					  kIOCFPlugInInterfaceID,
+					  &p_env->plugin, 
+					  &score);
+
+  if (err != noErr) {
+    fprintf(stderr, "Error %x accessing MMC plugin.\n", err);
+    return false;
+    }
+
+  herr = (*p_env->plugin) ->
+    QueryInterface(p_env->plugin, CFUUIDGetUUIDBytes(kIOMMCDeviceInterfaceID),
+		   (void *)&p_env->mmc);
+
+  if (herr != S_OK) {
+    fprintf(stderr, "Error %x accessing MMC interface.\n", (int) herr);
+    IODestroyPlugInInterface(p_env->plugin);
+    return false;
+  }
+  
+  p_env->pp_scsiTaskDeviceInterface = 
+    (*p_env->mmc)->GetSCSITaskDeviceInterface(p_env->mmc);
+  
+  if (!p_env->pp_scsiTaskDeviceInterface) {
+    fprintf(stderr, 
+	    "Could not get SCSITaskkDevice interface from MMC interface.\n");
+    (*p_env->mmc)->Release(p_env->mmc);
+    IODestroyPlugInInterface(p_env->plugin);
+    return false;
+  }
+  
+  err = (*p_env->pp_scsiTaskDeviceInterface)->
+    ObtainExclusiveAccess(p_env->pp_scsiTaskDeviceInterface);
+  if (err != kIOReturnSuccess) {
+    fprintf(stderr, "Could not obtain exclusive access to the device (%x).\n",
+	    err);
+    
+    if (err == kIOReturnBusy)
+      fprintf(stderr, "The volume is already mounted.\n");
+    else if (err == kIOReturnExclusiveAccess)
+      fprintf(stderr, "Another application already has exclusive access "
+	      "to this device.\n");
+    else
+      fprintf(stderr, "I don't know why.\n");
+    
+    (*p_env->pp_scsiTaskDeviceInterface)->
+      Release(p_env->pp_scsiTaskDeviceInterface);
+    (*p_env->mmc)->Release(p_env->mmc);
+    IODestroyPlugInInterface(p_env->plugin);
+    return false;
+  }
+  
+  p_env->scsi_task = 
+    (*p_env->pp_scsiTaskDeviceInterface) -> 
+    CreateSCSITask(p_env->pp_scsiTaskDeviceInterface);
+  
+  if (!p_env->scsi_task) {
+    fprintf(stderr, "Could not create a SCSITask interface.\n");
+    (*p_env->pp_scsiTaskDeviceInterface)->
+      ReleaseExclusiveAccess(p_env->pp_scsiTaskDeviceInterface);
+    (*p_env->pp_scsiTaskDeviceInterface)->
+      Release(p_env->pp_scsiTaskDeviceInterface);
+    (*p_env->mmc)->Release(p_env->mmc);
+    IODestroyPlugInInterface(p_env->plugin);
+    return false;
+  }
+  
+  return true;
+}
 
 static bool 
 init_osx(_img_private_t *p_env) {
@@ -221,9 +325,150 @@ init_osx(_img_private_t *p_env) {
    */
   IORegistryEntryGetPath(p_env->MediaClass_service, kIOServicePlane, 
 			 p_env->psz_MediaClass_service);
+#if 0
+  return get_scsi(p_env);
+#else 
   return true;
+#endif
 }
 
+/*!
+  Run a SCSI MMC command. 
+ 
+  cdio	        CD structure set by cdio_open().
+  i_timeout     time in milliseconds we will wait for the command
+                to complete. If this value is -1, use the default 
+		time-out value.
+  p_buf	        Buffer for data, both sending and receiving
+  i_buf	        Size of buffer
+  e_direction	direction the transfer is to go.
+  cdb	        CDB bytes. All values that are needed should be set on 
+                input. We'll figure out what the right CDB length should be.
+
+  We return true if command completed successfully and false if not.
+ */
+#if 1
+
+/* process a complete scsi command. */
+// handle_scsi_cmd(cdrom_drive *d,
+static int 
+run_scsi_cmd_osx( const void *p_user_data, 
+		  unsigned int i_timeout_ms,
+		  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		  scsi_mmc_direction_t e_direction, 
+		  unsigned int i_buf, /*in/out*/ void *p_buf )
+{
+  _img_private_t *p_env = p_user_data;
+  uint8_t cmdbuf[16];
+  UInt8 dir;
+  IOVirtualRange buf;
+  IOReturn ret;
+
+  if (!p_env->scsi_task) return DRIVER_OP_UNSUPPORTED;
+
+  memcpy(cmdbuf, p_cdb, i_cdb);
+
+  dir = ( SCSI_MMC_DATA_READ == e_direction)
+    ? kSCSIDataTransfer_FromTargetToInitiator
+    : kSCSIDataTransfer_FromInitiatorToTarget;
+  
+  if (!i_buf)
+    dir = kSCSIDataTransfer_NoDataTransfer;
+
+  if (i_buf > MAX_BIG_BUFF_SIZE) {
+    fprintf(stderr, "Excessive request size: %d bytes\n", i_buf);
+    return TR_ILLEGAL;
+  }
+
+  buf.address = (IOVirtualAddress)p_buf;
+  buf.length = i_buf;
+
+  ret = (*p_env->scsi_task)->SetCommandDescriptorBlock(p_env->scsi_task, 
+						       cmdbuf, i_cdb);
+  if (ret != kIOReturnSuccess) {
+    fprintf(stderr, "SetCommandDescriptorBlock: %x\n", ret);
+    return TR_UNKNOWN;
+  }
+  
+  ret = (*p_env->scsi_task)->SetScatterGatherEntries(p_env->scsi_task, &buf, 1,
+						     i_buf, dir);
+  if (ret != kIOReturnSuccess) {
+    fprintf(stderr, "SetScatterGatherEntries: %x\n", ret);
+    return TR_UNKNOWN;
+  }
+  
+  ret = (*p_env->scsi_task)->ExecuteTaskSync(p_env->scsi_task, &p_env->sense, 
+					     &p_env->status, 
+					     &p_env->realized_len);
+  if (ret != kIOReturnSuccess) {
+    fprintf(stderr, "ExecuteTaskSync: %x\n", ret);
+    return TR_UNKNOWN;
+  }
+  
+  if (p_env->status != kSCSITaskStatus_GOOD) {
+    int i;
+    
+    fprintf(stderr, "SCSI status: %x\n", p_env->status);
+    fprintf(stderr, "Sense: %x %x %x\n",
+	    p_env->sense.SENSE_KEY,
+	    p_env->sense.ADDITIONAL_SENSE_CODE,
+	    p_env->sense.ADDITIONAL_SENSE_CODE_QUALIFIER);
+    
+    for (i = 0; i < i_cdb; i++)
+      fprintf(stderr, "%02x ", cmdbuf[i]);
+    
+    fprintf(stderr, "\n");
+    return TR_UNKNOWN;
+  }
+  
+  if (p_env->sense.VALID_RESPONSE_CODE) {
+    char key = p_env->sense.SENSE_KEY & 0xf;
+    char ASC = p_env->sense.ADDITIONAL_SENSE_CODE;
+    char ASCQ = p_env->sense.ADDITIONAL_SENSE_CODE_QUALIFIER;
+    
+    switch (key) {
+    case 0:
+      if (errno == 0)
+	errno = EIO;
+      return (TR_UNKNOWN);
+    case 1:
+      break;
+    case 2:
+      if (errno == 0)
+	errno = EBUSY;
+      return (TR_BUSY);
+    case 3:
+      if (ASC == 0x0C && ASCQ == 0x09) {
+	/* loss of streaming */
+	if (errno == 0)
+	  errno = EIO;
+	return (TR_STREAMING);
+      } else {
+	if (errno == 0)
+	  errno = EIO;
+	return (TR_MEDIUM);
+      }
+    case 4:
+      if (errno == 0)
+	errno = EIO;
+      return (TR_FAULT);
+    case 5:
+      if (errno == 0)
+	errno = EINVAL;
+      return (TR_ILLEGAL);
+    default:
+      if (errno == 0)
+	errno = EIO;
+      return (TR_UNKNOWN);
+    }
+  }
+
+  errno = 0;
+  return (0);
+}
+#endif
+
+#if 0
 /*!
   Run a SCSI MMC command. 
  
@@ -248,7 +493,7 @@ run_scsi_cmd_osx( const void *p_user_data,
 {
 
 #ifndef SCSI_MMC_FIXED
-  return 2;
+  return DRIVER_OP_UNSUPPORTED;
 #else 
   const _img_private_t *p_env = p_user_data;
   SCSITaskDeviceInterface **sc;
@@ -319,6 +564,7 @@ run_scsi_cmd_osx( const void *p_user_data,
   return (ret);
 #endif
 }
+#endif /* 0*/
 
 /***************************************************************************
  * GetDeviceIterator - Gets an io_iterator_t for our class type
@@ -557,7 +803,7 @@ get_drive_cap_osx(const void *p_user_data,
  ****************************************************************************/
 
 static bool
-get_hwinfo_osx ( const CdIo *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
+get_hwinfo_osx ( const CdIo_t *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
 {
   _img_private_t *p_env = (_img_private_t *) p_cdio->env;
   io_service_t  service = get_drive_service_osx(p_env);
@@ -632,9 +878,23 @@ _free_osx (void *p_user_data) {
   if (NULL != p_env->pTOC)    free((void *) p_env->pTOC);
   IOObjectRelease( p_env->MediaClass_service );
 
-  if (NULL != p_env->pp_scsiTaskDeviceInterface) 
-    ( *(p_env->pp_scsiTaskDeviceInterface) )->
-      Release ( (p_env->pp_scsiTaskDeviceInterface) );
+  if (p_env->scsi_task)
+    (*p_env->scsi_task)->Release(p_env->scsi_task);
+
+  if (p_env->pp_scsiTaskDeviceInterface) 
+    (*p_env->pp_scsiTaskDeviceInterface) -> 
+      ReleaseExclusiveAccess(p_env->pp_scsiTaskDeviceInterface);
+  if (p_env->pp_scsiTaskDeviceInterface) 
+    (*p_env->pp_scsiTaskDeviceInterface) ->
+      Release ( p_env->pp_scsiTaskDeviceInterface );
+
+  if (p_env->mmc) 
+    (*p_env->mmc)->Release(p_env->mmc);
+
+  if (p_env->plugin) 
+    IODestroyPlugInInterface(p_env->plugin);
+
+  IOObjectRelease(p_env->MediaClass_service);
 
 }
 
@@ -765,28 +1025,24 @@ _get_read_mode2_sector_osx (void *user_data, void *data, lsn_t lsn,
 static int
 _set_arg_osx (void *user_data, const char key[], const char value[])
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
 
   if (!strcmp (key, "source"))
     {
-      if (!value)
-	return -2;
-
-      free (env->gen.source_name);
-      
-      env->gen.source_name = strdup (value);
+      if (!value) return DRIVER_OP_ERROR;
+      free (p_env->gen.source_name);
+      p_env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
       if (!strcmp(value, "OSX"))
-	env->access_mode = _AM_OSX;
+	p_env->access_mode = _AM_OSX;
       else
 	cdio_warn ("unknown access type: %s. ignored.", value);
     }
-  else 
-    return -1;
+  else return DRIVER_OP_ERROR;
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 #if 0
@@ -1018,7 +1274,7 @@ get_track_lba_osx(void *p_user_data, track_t i_track)
 
  */
 
-static int 
+static driver_return_code_t
 _eject_media_osx (void *user_data) {
 
   _img_private_t *p_env = user_data;
@@ -1042,7 +1298,7 @@ _eject_media_osx (void *user_data) {
 	  if( i_ret == 0 && ferror( p_eject ) != 0 )
             {
 	      pclose( p_eject );
-	      return 0;
+	      return DRIVER_OP_SUCCESS;
             }
 	  
 	  pclose( p_eject );
@@ -1051,12 +1307,12 @@ _eject_media_osx (void *user_data) {
 	  
 	  if( strstr( psz_result, "Disk Ejected" ) != NULL )
             {
-	      return 1;
+	      return DRIVER_OP_ERROR;
             }
         }
     }
   
-  return 0;
+  return DRIVER_OP_ERROR;
 }
 
 /*!
@@ -1137,7 +1393,8 @@ get_track_format_osx(void *user_data, track_t i_track)
     return TRACK_FORMAT_ERROR;
   }
 
-  cdio_debug( "%d: trackinfo trackMode: %x dataMode: %x", i_track, a_track.trackMode, a_track.dataMode );
+  cdio_debug( "%d: trackinfo trackMode: %x dataMode: %x", i_track, 
+	      a_track.trackMode, a_track.dataMode );
 
   if (a_track.trackMode == CDIO_CDROM_DATA_TRACK) {
     if (a_track.dataMode == CDROM_CDI_TRACK) {
@@ -1374,7 +1631,7 @@ cdio_get_default_device_osx(void)
   get called via a function pointer. In fact *we* are the
   ones to set that up.
  */
-CdIo *
+CdIo_t *
 cdio_open_am_osx (const char *psz_source_name, const char *psz_access_mode)
 {
 
@@ -1390,21 +1647,21 @@ cdio_open_am_osx (const char *psz_source_name, const char *psz_access_mode)
   get called via a function pointer. In fact *we* are the
   ones to set that up.
  */
-CdIo *
+CdIo_t *
 cdio_open_osx (const char *psz_orig_source)
 {
 
 #ifdef HAVE_DARWIN_CDROM
-  CdIo *ret;
+  CdIo_t *ret;
   _img_private_t *_data;
   char *psz_source;
 
   cdio_funcs_t _funcs = {
-    .eject_media        = _eject_media_osx,
-    .free               = _free_osx,
-    .get_arg            = _get_arg_osx,
-    .get_cdtext         = get_cdtext_osx,
-    .get_default_device = cdio_get_default_device_osx,
+    .eject_media           = _eject_media_osx,
+    .free                  = _free_osx,
+    .get_arg               = _get_arg_osx,
+    .get_cdtext            = get_cdtext_osx,
+    .get_default_device    = cdio_get_default_device_osx,
     .get_devices           = cdio_get_devices_osx,
     .get_discmode          = get_discmode_osx,
     .get_drive_cap         = get_drive_cap_osx,
