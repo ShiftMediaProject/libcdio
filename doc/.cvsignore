@@ -1,0 +1,15 @@
+*.aux
+*.cp
+*.dvi 
+*.info
+*.fn
+*.ky
+*.log
+*.pg
+*.pdf
+*.toc
+*.tp
+*.txt
+*.vr
+Makefile
+Makefile.in
