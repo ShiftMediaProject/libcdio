@@ -1,3 +1,6 @@
+0.6
+   Bug: eject wouldn't.
+   If given .bin find corresponding .cue. If no cue, complain.
 0.5
 -  Add RPM spec file. Thanks to Manfred Tremmel <Manfred.Tremmel@iiv.de>
 -  cdinfo renamed to cd-info to avoid conflicts with other existing programs
