@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.14 2005/01/09 17:30:14 rocky Exp $
+  $Id: cd-drive.c,v 1.15 2005/01/13 19:30:24 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -214,10 +214,10 @@ main(int argc, const char *argv[])
 
     printf("Drivers available...\n");
     for (driver_id=CDIO_MIN_DRIVER; driver_id<=CDIO_MAX_DRIVER; driver_id++)
-      printf("  %-35s: %s\n", 
-	     cdio_driver_describe(driver_id),
-	     cdio_have_driver(driver_id) ? "Yes" : "No");
-    printf("\n\n");
+      if (cdio_have_driver(driver_id)) {
+	printf("  %-35s\n", cdio_driver_describe(driver_id));
+      }
+    printf("\n");
   }
   
     
