@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.6 2004/05/08 14:47:35 rocky Exp $
+    $Id: freebsd_cam.c,v 1.7 2004/05/08 16:28:44 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.6 2004/05/08 14:47:35 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.7 2004/05/08 16:28:44 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -109,6 +109,122 @@ free_freebsd_cam (void *obj)
 
   free (env);
 }
+
+/**** 
+      The below are really rough guesses. They are here in the hope
+      they can be used as a starting point for someone who knows what
+      they are doing.
+*******/
+#if 0
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static char *
+get_drive_mcn_freebsd_cam (void *env) 
+{
+  char buf[192] = { 0, };
+  _img_private_t *_obj = env;
+  int rc;
+  
+  memset(&_obj->ccb, 0, sizeof(_obj->ccb));
+
+  _obj->ccb.ccb_h.path_id    = _obj->cam->path_id;
+  _obj->ccb.ccb_h.target_id  = _obj->cam->target_id;
+  _obj->ccb.ccb_h.target_lun = _obj->cam->target_lun;
+  cam_fill_csio (&(_obj->ccb.csio), 1, NULL, 
+		 CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, NULL, 0, 
+		 sizeof(_obj->ccb.csio.sense_data), 0, 30*1000);
+
+  /* Initialize my_scsi_cdb as a Mode Select(6) */
+  CDIO_MMC_SET_COMMAND(_obj->ccb.csio.cdb_io.cdb_bytes, 
+		       CDIO_MMC_GPCMD_READ_SUBCHANNEL);
+  _obj->ccb.csio.cdb_io.cdb_bytes[1] = 0x0;  
+  _obj->ccb.csio.cdb_io.cdb_bytes[2] = 0x40;
+  _obj->ccb.csio.cdb_io.cdb_bytes[3] = 02;    /* Get media catalog number. */
+  _obj->ccb.csio.cdb_io.cdb_bytes[4] = 0;    /* Not used */
+  _obj->ccb.csio.cdb_io.cdb_bytes[5] = 0;    /* Not used */
+  _obj->ccb.csio.cdb_io.cdb_bytes[6] = 0;    /* Not used */
+  _obj->ccb.csio.cdb_io.cdb_bytes[7] = 0;    /* Not used */
+  _obj->ccb.csio.cdb_io.cdb_bytes[8] = 28; 
+  _obj->ccb.csio.cdb_io.cdb_bytes[9] = 0;    /* Not used */
+  
+  /* suc.suc_timeout = 500; */
+  _obj->ccb.csio.ccb_h.flags = CAM_DIR_OUT;
+  _obj->ccb.csio.data_ptr  = buf;
+  _obj->ccb.csio.dxfer_len = sizeof(buf);
+
+  rc =  _scsi_cmd (_obj);
+
+  if(rc == 0) {
+    return strdup(&buf[9]);
+  }
+  return NULL;
+}
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static cdio_drive_cap_t
+get_drive_cap_freebsd_cam (void *env) 
+{
+  int32_t i_drivetype = 0;
+  char buf[192] = { 0, };
+  _img_private_t *_obj = env;
+  int rc;
+  
+  memset(&_obj->ccb, 0, sizeof(_obj->ccb));
+
+  _obj->ccb.ccb_h.path_id    = _obj->cam->path_id;
+  _obj->ccb.ccb_h.target_id  = _obj->cam->target_id;
+  _obj->ccb.ccb_h.target_lun = _obj->cam->target_lun;
+  cam_fill_csio (&(_obj->ccb.csio), 1, NULL, 
+		 CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, NULL, 0, 
+		 sizeof(_obj->ccb.csio.sense_data), 0, 30*1000);
+
+  /* Initialize my_scsi_cdb as a Mode Select(6) */
+  CDIO_MMC_SET_COMMAND(_obj->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_MODE_SENSE);
+  _obj->ccb.csio.cdb_io.cdb_bytes[1] = 0x0;  
+  _obj->ccb.csio.cdb_io.cdb_bytes[2] = 0x2a; /* MODE_PAGE_CAPABILITIES*/
+  _obj->ccb.csio.cdb_io.cdb_bytes[3] = 0;    /* Not used */
+  _obj->ccb.csio.cdb_io.cdb_bytes[4] = 128; 
+  _obj->ccb.csio.cdb_io.cdb_bytes[5] = 0;    /* Not used */
+  
+  /* suc.suc_timeout = 500; */
+  _obj->ccb.csio.ccb_h.flags = CAM_DIR_OUT;
+  _obj->ccb.csio.data_ptr  = buf;
+  _obj->ccb.csio.dxfer_len = sizeof(buf);
+
+  rc =  _scsi_cmd (_obj);
+
+  if(rc == 0) {
+    unsigned int n=buf[3]+4;
+    /* Reader? */
+    if (buf[n+5] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_AUDIO;
+    if (buf[n+2] & 0x02) i_drivetype |= CDIO_DRIVE_CAP_CD_RW;
+    if (buf[n+2] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_DVD;
+    
+    /* Writer? */
+    if (buf[n+3] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_R;
+    if (buf[n+3] & 0x10) i_drivetype |= CDIO_DRIVE_CAP_DVD_R;
+    if (buf[n+3] & 0x20) i_drivetype |= CDIO_DRIVE_CAP_DVD_RAM;
+    
+    if (buf[n+6] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_OPEN_TRAY;
+    if (buf[n+6] >> 5 != 0) i_drivetype |= CDIO_DRIVE_CAP_CLOSE_TRAY;
+    
+  } else {
+    i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
+  }
+  return i_drivetype;
+}
+#endif
 
 static int
 _set_bsize (_img_private_t *_obj, unsigned int bsize)
