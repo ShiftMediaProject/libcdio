@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.49 2004/05/04 02:06:48 rocky Exp $
+    $Id: cdio.c,v 1.50 2004/05/08 14:06:11 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.49 2004/05/04 02:06:48 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.50 2004/05/08 14:06:11 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -407,7 +407,8 @@ cdio_get_devices_with_cap (char* search_devices[],
 unsigned int
 cdio_get_drive_cap (const CdIo *cdio)
 {
-  cdio_drive_cap_t i_drivetype = CDIO_DRIVE_CAP_UNKNOWN;
+  cdio_drive_cap_t i_drivetype = 
+    CDIO_DRIVE_CAP_UNKNOWN | CDIO_DRIVE_CAP_CD_AUDIO; /* A safe guess. */
   
   if (cdio && cdio->op.get_drive_cap) {
     i_drivetype=cdio->op.get_drive_cap(cdio->env);
