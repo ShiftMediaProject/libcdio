@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.39 2004/10/30 06:48:17 rocky Exp $
+    $Id: win32_ioctl.c,v 1.40 2004/11/01 09:48:34 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.39 2004/10/30 06:48:17 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.40 2004/11/01 09:48:34 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -34,10 +34,17 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.39 2004/10/30 06:48:17 rock
 #include "inttypes.h"
 #include "NtScsi.h"
 #include "undocumented.h"
+#define FORMAT_ERROR(i_err, psz_msg) \
+   psz_msg=(char *)LocalAlloc(LMEM_ZEROINIT, 255); \
+   sprintf(psz_msg, "error %d\n", i_err)
 #else
 #include <ddk/ntddstor.h>
 #include <ddk/ntddscsi.h>
 #include <ddk/scsi.h>
+#define FORMAT_ERROR(i_err, psz_msg) \
+   FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, \
+		 NULL, i_err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), \
+		 (LPSTR) psz_msg, 0, NULL)
 #endif
 
 #ifdef WIN32
@@ -214,14 +221,7 @@ run_scsi_cmd_win32ioctl( const void *p_user_data,
   if(! success) {
     char *psz_msg = NULL;
     long int i_err = GetLastError();
-#ifdef _XBOX
-	psz_msg=(char *)LocalAlloc(LMEM_ZEROINIT, 255);
-	sprintf(psz_msg, "run_scsi_cmd_win32ioctl: error %d\n", i_err);
-#else
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
-		  NULL, i_err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		  (LPSTR) psz_msg, 0, NULL);
-#endif
+    FORMAT_ERROR(i_err, psz_msg);
     cdio_info("Error: %s", psz_msg);
     LocalFree(psz_msg);
     return 1;
@@ -328,30 +328,30 @@ const char *
 is_cdrom_win32ioctl(const char c_drive_letter) 
 {
 #ifdef _XBOX
-	char sz_win32_drive_full[] = "\\\\.\\X:";
-	sz_win32_drive_full[4] = c_drive_letter;
-	return strdup(sz_win32_drive_full);
+  char sz_win32_drive_full[] = "\\\\.\\X:";
+  sz_win32_drive_full[4] = c_drive_letter;
+  return strdup(sz_win32_drive_full);
 #else
-    UINT uDriveType;
-    char sz_win32_drive[4];
-    
-    sz_win32_drive[0]= c_drive_letter;
-    sz_win32_drive[1]=':';
-    sz_win32_drive[2]='\\';
-    sz_win32_drive[3]='\0';
-
-    uDriveType = GetDriveType(sz_win32_drive);
-
-    switch(uDriveType) {
-    case DRIVE_CDROM: {
-        char sz_win32_drive_full[] = "\\\\.\\X:";
-	sz_win32_drive_full[4] = c_drive_letter;
-	return strdup(sz_win32_drive_full);
-    }
-    default:
-        cdio_debug("Drive %c is not a CD-ROM", c_drive_letter);
-        return NULL;
-    }
+  UINT uDriveType;
+  char sz_win32_drive[4];
+  
+  sz_win32_drive[0]= c_drive_letter;
+  sz_win32_drive[1]=':';
+  sz_win32_drive[2]='\\';
+  sz_win32_drive[3]='\0';
+  
+  uDriveType = GetDriveType(sz_win32_drive);
+  
+  switch(uDriveType) {
+  case DRIVE_CDROM: {
+    char sz_win32_drive_full[] = "\\\\.\\X:";
+    sz_win32_drive_full[4] = c_drive_letter;
+    return strdup(sz_win32_drive_full);
+  }
+  default:
+    cdio_debug("Drive %c is not a CD-ROM", c_drive_letter);
+    return NULL;
+  }
 #endif
 }
   
@@ -378,14 +378,7 @@ read_audio_sectors_win32ioctl (_img_private_t *env, void *data, lsn_t lsn,
 		       &dwBytesReturned, NULL ) == 0 ) {
     char *psz_msg = NULL;
     DWORD dw = GetLastError();
-#ifdef _XBOX
-	psz_msg=(char *)LocalAlloc(LMEM_ZEROINIT, 255);
-	sprintf(psz_msg, "read_audio_sectors_win32ioctl: error %d\n", dw);
-#else
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
-		  NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		  (LPSTR) psz_msg, 0, NULL);
-#endif
+    FORMAT_ERROR(i_err, psz_msg);
     cdio_info("Error reading audio-mode %lu\n%s)", 
 	      (long unsigned int) lsn, psz_msg);
     LocalFree(psz_msg);
@@ -647,14 +640,7 @@ read_toc_win32ioctl (_img_private_t *p_env)
 		       &dwBytesReturned, NULL ) == 0 ) {
     char *psz_msg = NULL;
     long int i_err = GetLastError();
-#ifdef _XBOX
-	psz_msg=(char *)LocalAlloc(LMEM_ZEROINIT, 255);
-	sprintf(psz_msg, "read_toc_win32ioctl: error %d\n", i_err);
-#else
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
-		  NULL, i_err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		  (LPSTR) psz_msg, 0, NULL);
-#endif
+    FORMAT_ERROR(i_err, psz_msg);
     if (psz_msg) {
       cdio_warn("could not read TOC (%ld): %s", i_err, psz_msg);
       LocalFree(psz_msg);
