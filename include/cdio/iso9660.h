@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.40 2004/05/04 01:32:49 rocky Exp $
+    $Id: iso9660.h,v 1.41 2004/06/18 23:00:05 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -60,6 +60,24 @@
 #define MAX_ISONAME     37
 
 #define MAX_ISOPATHNAME 255
+
+/*! \def Max # characters in an perparer id. */
+#define ISO_MAX_PREPARER_ID 128
+
+/*! \def Max # characters in an publisher id. */
+#define ISO_MAX_PUBLISHER_ID 128
+
+/*! \def Max # characters in an application id. */
+#define ISO_MAX_APPLICATION_ID 128
+
+/*! \def Max # characters in an system id. */
+#define ISO_MAX_SYSTEM_ID 32
+
+/*! \def Max # characters in an volume id. */
+#define ISO_MAX_VOLUME_ID 32
+
+/*! \def Max # characters in an volumeset id. */
+#define ISO_MAX_VOLUMESET_ID 128
 
 /*
  * ISO 9660 directory flags.
@@ -148,29 +166,29 @@ typedef struct iso9660_ltime  iso9660_ltime_t;
   \brief ISO-9660 Primary Volume Descriptor.
  */
 struct iso9660_pvd {
-  uint8_t          type;                      /**< 711 encoded */
+  uint8_t          type;                         /**< 711 encoded */
   char             id[5];
-  uint8_t          version;                   /**< 711 encoded */
+  uint8_t          version;                      /**< 711 encoded */
   char             unused1[1];
-  char             system_id[32];             /**< each char is an achar */
-  char             volume_id[32];             /**< each char is a dchar */
+  char             system_id[ISO_MAX_SYSTEM_ID]; /**< each char is an achar */
+  char             volume_id[ISO_MAX_VOLUME_ID]; /**< each char is a dchar */
   char             unused2[8];
-  uint64_t         volume_space_size;         /**< 733 encoded */
+  uint64_t         volume_space_size;            /**< 733 encoded */
   char             escape_sequences[32];
-  uint32_t         volume_set_size;           /**< 723 encoded */
-  uint32_t         volume_sequence_number;    /**< 723 encoded */
-  uint32_t         logical_block_size;        /**< 723 encoded */
-  uint64_t         path_table_size;           /**< 733 encoded */
-  uint32_t         type_l_path_table;         /**< 731 encoded */
-  uint32_t         opt_type_l_path_table;     /**< 731 encoded */
-  uint32_t         type_m_path_table;         /**< 732 encoded */
-  uint32_t         opt_type_m_path_table;     /**< 732 encoded */
-  char             root_directory_record[34]; /**< See section 9.1 of
-                                                 ISO 9660 spec. */
-  char             volume_set_id[128];        /**< dchars */
-  char             publisher_id[128];         /**< achars */
-  char             preparer_id[128];          /**< achars */
-  char             application_id[128];       /**< achars */
+  uint32_t         volume_set_size;              /**< 723 encoded */
+  uint32_t         volume_sequence_number;       /**< 723 encoded */
+  uint32_t         logical_block_size;           /**< 723 encoded */
+  uint64_t         path_table_size;              /**< 733 encoded */
+  uint32_t         type_l_path_table;            /**< 731 encoded */
+  uint32_t         opt_type_l_path_table;        /**< 731 encoded */
+  uint32_t         type_m_path_table;            /**< 732 encoded */
+  uint32_t         opt_type_m_path_table;        /**< 732 encoded */
+  char             root_directory_record[34];    /**< See section 9.1 of
+                                                    ISO 9660 spec. */
+  char             volume_set_id[ISO_MAX_VOLUMESET_ID];    /**< dchars */
+  char             publisher_id[ISO_MAX_PUBLISHER_ID];     /**< achars */
+  char             preparer_id[ISO_MAX_PREPARER_ID];       /**< achars */
+  char             application_id[ISO_MAX_APPLICATION_ID]; /**< achars */
   char             copyright_file_id[37];     /**< See section 7.5 of
                                                  ISO 9660 spec. Each char is 
                                                  a dchar */
@@ -468,6 +486,13 @@ void * iso9660_fs_readdir (const CdIo *obj, const char pathname[], bool mode2);
 */
 void * iso9660_ifs_readdir (iso9660_t *iso, const char pathname[]);
 
+/*!
+  Return the PVD's application ID.
+  NULL is returned if there is some problem in getting this. 
+  */
+const char * iso9660_get_application_id(const iso9660_pvd_t *pvd);
+
+
 uint8_t iso9660_get_dir_len(const iso9660_dir_t *idr);
 
 #if FIXME
@@ -483,6 +508,18 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *idr);
 */
 char * iso9660_dir_to_name (const iso9660_dir_t *iso9660_dir);
   
+/*!
+   Return a string containing the preparer id with trailing
+   blanks removed.
+*/
+const char *iso9660_get_preparer_id(const iso9660_pvd_t *pvd);
+  
+/*!
+   Return a string containing the PVD's publisher id with trailing
+   blanks removed.
+*/
+const char *iso9660_get_publisher_id(const iso9660_pvd_t *pvd);
+
 uint8_t iso9660_get_pvd_type(const iso9660_pvd_t *pvd);
 
 const char * iso9660_get_pvd_id(const iso9660_pvd_t *pvd);
@@ -496,10 +533,28 @@ int iso9660_get_pvd_block_size(const iso9660_pvd_t *pvd) ;
  */
 int iso9660_get_pvd_version(const iso9660_pvd_t *pvd) ;
 
+/*!
+   Return a string containing the PVD's system id with trailing
+   blanks removed.
+*/
+const char *iso9660_get_system_id(const iso9660_pvd_t *pvd);
+  
+
 /*! Return the LSN of the root directory for pvd.
     If there is an error CDIO_INVALID_LSN is returned. 
  */
 lsn_t iso9660_get_root_lsn(const iso9660_pvd_t *pvd);
+
+/*!
+  Return the PVD's volume ID.
+*/
+const char *iso9660_get_volume_id(const iso9660_pvd_t *pvd);
+
+/*!
+  Return the PVD's volumeset ID.
+  NULL is returned if there is some problem in getting this. 
+*/
+const char *iso9660_get_volumeset_id(const iso9660_pvd_t *pvd);
 
 /* pathtable */
 

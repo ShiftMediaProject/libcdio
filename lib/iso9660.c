@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.15 2003/09/21 07:43:39 rocky Exp $
+    $Id: iso9660.c,v 1.16 2004/06/18 23:00:06 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -37,11 +37,37 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.15 2003/09/21 07:43:39 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.16 2004/06/18 23:00:06 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
 #define VOLUME_SET_ID     ""
+
+/*!
+   Change trailing blanks in str to nulls.  Str has a maximum size of
+   n characters.
+*/
+static const char *
+strip_trail (const char str[], size_t n)
+{
+  static char buf[1024];
+  int j;
+
+  cdio_assert (n < 1024);
+
+  strncpy (buf, str, n);
+  buf[n] = '\0';
+
+  for (j = strlen (buf) - 1; j >= 0; j--)
+    {
+      if (buf[j] != ' ')
+        break;
+
+      buf[j] = '\0';
+    }
+
+  return buf;
+}
 
 static void
 pathtable_get_size_and_entries(const void *pt, unsigned int *size, 
@@ -797,6 +823,17 @@ iso9660_pathname_isofy (const char pathname[], uint16_t version)
   return strdup (tmpbuf);
 }
 
+/*!
+  Return the PVD's application ID.
+  NULL is returned if there is some problem in getting this. 
+*/
+const char * 
+iso9660_get_application_id(const iso9660_pvd_t *pvd)
+{
+  if (NULL==pvd) return NULL;
+  return(strip_trail(pvd->application_id, ISO_MAX_APPLICATION_ID));
+}
+
 #if FIXME
 lsn_t
 iso9660_get_dir_extent(const iso9660_dir_t *idr) 
@@ -873,6 +910,60 @@ iso9660_get_root_lsn(const iso9660_pvd_t *pvd)
     if (NULL == idr) return CDIO_INVALID_LSN;
     return(from_733 (idr->extent));
   }
+}
+
+/*!
+   Return a string containing the preparer id with trailing
+   blanks removed.
+*/
+const char *
+iso9660_get_preparer_id(const iso9660_pvd_t *pvd)
+{
+  if (NULL==pvd) return NULL;
+  return(strip_trail(pvd->preparer_id, ISO_MAX_PREPARER_ID));
+}
+
+/*!
+   Return a string containing the publisher id with trailing
+   blanks removed.
+*/
+const char *
+iso9660_get_publisher_id(const iso9660_pvd_t *pvd)
+{
+  if (NULL==pvd) return NULL;
+  return(strip_trail(pvd->publisher_id, ISO_MAX_PUBLISHER_ID));
+}
+
+/*!
+   Return a string containing the PVD's system id with trailing
+   blanks removed.
+*/
+const char *
+iso9660_get_system_id(const iso9660_pvd_t *pvd)
+{
+  if (NULL==pvd) return NULL;
+  return(strip_trail(pvd->system_id, ISO_MAX_SYSTEM_ID));
+}
+
+/*!
+  Return the PVD's volume ID.
+*/
+const char *
+iso9660_get_volume_id(const iso9660_pvd_t *pvd) 
+{
+  if (NULL == pvd) return NULL;
+  return(strip_trail(pvd->volume_id, ISO_MAX_VOLUME_ID));
+}
+
+/*!
+  Return the PVD's volumeset ID.
+  NULL is returned if there is some problem in getting this. 
+*/
+const char *
+iso9660_get_volumeset_id(const iso9660_pvd_t *pvd)
+{
+  if ( NULL == pvd ) return NULL;
+  return strip_trail(pvd->volume_set_id, ISO_MAX_VOLUMESET_ID);
 }
 
 
