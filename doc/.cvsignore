@@ -15,3 +15,5 @@
 *.vr
 Makefile
 Makefile.in
+version.texi
+stamp-vti
