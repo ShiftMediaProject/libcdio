@@ -1,4 +1,4 @@
-# $Id: check_common_fn,v 1.2 2003/04/25 21:28:39 rocky Exp $
+# $Id: check_common_fn,v 1.3 2003/05/30 10:58:05 rocky Exp $
 SKIP_TEST_EXITCODE=77
 
 have_cmp() {
@@ -41,7 +41,7 @@ test_cdinfo() {
   CDINFO="../src/cd-info"
 
   if [ ! -x ${CDINFO} ]; then
-    echo "$0: No cdinfo"
+    echo "$0: No ${CDINFO}"
     return 1
   fi
 
