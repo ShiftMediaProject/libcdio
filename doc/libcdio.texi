@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.37 2005/02/01 03:19:51 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.38 2005/02/01 03:35:43 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -703,7 +703,7 @@ are the same.
     | "TWO_CHANNEL_AUDIO"  | "FOUR_CHANNEL_AUDIO" )*
     @{ <cdTextTrack>  @}
     @{ "PREGAP" <msf> @}
-    ( <subTrack> | "START" | "END" )+
+    ( <subTrack> | "START" @{ msf @} | "END" @{ msf @} )+
     ( "INDEX" <msf> )*
 
 <subTrack> ::= 
