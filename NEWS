@@ -5,6 +5,9 @@
 - Redo types of lsn and lba to allow negative values. Should model MMC3
   specs. Add max/min values for lsn.
 - More complete MMC command set
+- FreeBSD drive reading works better (thanks to Heiner)
+- cd-read allows dumping bytes to stdout and hexdumps to a file
+  via options --no-hexdump and --hexdump
 
 0.68
 - More honest about mode1 reading in backends. Remove some of the bogusness.
@@ -113,4 +116,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.40 2004/05/11 02:15:42 rocky Exp $
+$Id: NEWS,v 1.41 2004/05/26 01:40:47 rocky Exp $
