@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.10 2003/04/10 07:22:56 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.11 2003/04/11 17:30:30 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "util.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.10 2003/04/10 07:22:56 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.11 2003/04/11 17:30:30 rocky Exp $";
 
 /* structures used */
 
@@ -832,6 +832,7 @@ cdio_open_nrg (const char *source_name)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = _cdio_lseek,
     .read               = _cdio_read,
+    .read_audio_sector  = _cdio_read_audio_sector,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
