@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: audio.h,v 1.1 2005/03/01 00:41:34 rocky Exp $
+    $Id: audio.h,v 1.2 2005/03/01 10:53:15 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -36,14 +36,14 @@ extern "C" {
   /*! This struct is used by the cdio_audio_read_subchannel */
   typedef struct cdio_subchannel_s 
   {
-    uint8_t	cdsc_format;
-    uint8_t	cdsc_audiostatus;
-    uint8_t	cdsc_adr:	4;
-    uint8_t	cdsc_ctrl:	4;
-    uint8_t	cdsc_trk;
-    uint8_t	cdsc_ind;
-    union cdio_cdrom_addr cdsc_absaddr;
-    union cdio_cdrom_addr cdsc_reladdr;
+    uint8_t	format;
+    uint8_t	audio_status;
+    uint8_t	address:	4;
+    uint8_t	control:	4;
+    uint8_t	track;
+    uint8_t	index;
+    union cdio_cdrom_addr abs_addr;
+    union cdio_cdrom_addr rel_addr;
   } cdio_subchannel_t;
   
   /*! This struct is used by cdio_audio_get_volume and cdio_audio_set_volume */

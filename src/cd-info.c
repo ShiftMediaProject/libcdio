@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.122 2005/03/01 07:54:09 rocky Exp $
+    $Id: cd-info.c,v 1.123 2005/03/01 10:53:15 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1150,7 +1150,7 @@ main(int argc, const char *argv[])
       driver_return_code_t rc;
       
       memset(&subchannel, 0, sizeof(subchannel));
-      subchannel.cdsc_format = CDIO_CDROM_MSF;
+      subchannel.format = CDIO_CDROM_MSF;
       
       rc = cdio_audio_read_subchannel(p_cdio, &subchannel);
       
@@ -1158,7 +1158,7 @@ main(int argc, const char *argv[])
 	
 	report( stdout, "audio status: "); fflush(stdout);
 	
-	switch (subchannel.cdsc_audiostatus) {
+	switch (subchannel.audio_status) {
 	case CDIO_MMC_READ_SUB_ST_INVALID:
 	  report( stdout, "invalid\n" );   break;
 	case CDIO_MMC_READ_SUB_ST_PLAY:
@@ -1175,14 +1175,14 @@ main(int argc, const char *argv[])
 	default:                     
 	  report( stdout, "Oops: unknown\n" );
 	}
-	if (subchannel.cdsc_audiostatus == CDIO_MMC_READ_SUB_ST_PLAY ||
-	    subchannel.cdsc_audiostatus == CDIO_MMC_READ_SUB_ST_PAUSED) {
+	if (subchannel.audio_status == CDIO_MMC_READ_SUB_ST_PLAY ||
+	    subchannel.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED) {
 	  report( stdout, " at: %02d:%02d abs / %02d:%02d track %d\n",
-		  subchannel.cdsc_absaddr.msf.m,
-		  subchannel.cdsc_absaddr.msf.s,
-		  subchannel.cdsc_reladdr.msf.m,
-		  subchannel.cdsc_reladdr.msf.s,
-		  subchannel.cdsc_trk );
+		  subchannel.abs_addr.msf.m,
+		  subchannel.abs_addr.msf.s,
+		  subchannel.rel_addr.msf.m,
+		  subchannel.rel_addr.msf.s,
+		  subchannel.track );
 	}
       } else {
 	report( stdout, "FAILED\n" );

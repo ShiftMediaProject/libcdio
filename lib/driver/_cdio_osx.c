@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.19 2005/02/25 09:17:41 rocky Exp $
+    $Id: _cdio_osx.c,v 1.20 2005/03/01 10:53:15 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.19 2005/02/25 09:17:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.20 2005/03/01 10:53:15 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -349,7 +349,7 @@ init_osx(_img_private_t *p_env) {
 static int 
 run_mmc_cmd_osx( void *p_user_data, 
 		 unsigned int i_timeout_ms,
-		 unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
 		 scsi_mmc_direction_t e_direction, 
 		 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
@@ -482,7 +482,7 @@ run_mmc_cmd_osx( void *p_user_data,
 static int
 run_mmc_cmd_osx( const void *p_user_data, 
 		 unsigned int i_timeout_ms,
-		 unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
 		 scsi_mmc_direction_t e_direction, 
 		 unsigned int i_buf, /*in/out*/ void *p_buf )
 {

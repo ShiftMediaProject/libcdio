@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.17 2005/03/01 09:33:52 rocky Exp $
+    $Id: mmc.c,v 1.18 2005/03/01 10:53:15 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -65,7 +65,7 @@ audio_read_subchannel_mmc ( void *p_user_data, cdio_subchannel_t *p_subchannel)
 {
   generic_img_private_t *p_env = p_user_data;
   if (!p_env) return DRIVER_OP_UNINIT;
-  return mmc_get_blocksize(p_env->cdio);
+  return mmc_audio_read_subchannel(p_env->cdio, p_subchannel);
 }
 
 /*!
@@ -200,7 +200,7 @@ mmc_get_dvd_struct_physical_private ( void *p_env,
                                       mmc_run_cmd_fn_t run_mmc_cmd, 
                                       cdio_dvd_struct_t *s)
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
   unsigned char buf[4 + 4 * 20], *base;
   int i_status;
   uint8_t layer_num = s->physical.layer_num;
@@ -262,7 +262,7 @@ mmc_get_mcn_private ( void *p_env,
                       const mmc_run_cmd_fn_t run_mmc_cmd
                       )
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
   char buf[28] = { 0, };
   int i_status;
 
@@ -270,10 +270,11 @@ mmc_get_mcn_private ( void *p_env,
     return NULL;
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
+  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
+
   cdb.field[1] = 0x0;  
   cdb.field[2] = 0x40; 
   cdb.field[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
-  CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(buf));
 
   i_status = run_mmc_cmd(p_env, DEFAULT_TIMEOUT_MS, 
 			      mmc_get_cmd_len(cdb.field[0]), 
@@ -309,7 +310,7 @@ mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size,
 int 
 mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
 
   if ( ! p_cdio ) return DRIVER_OP_UNINIT;
   if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
@@ -335,7 +336,7 @@ mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
 int 
 mmc_mode_sense_10( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
 
   if ( ! p_cdio ) return DRIVER_OP_UNINIT;
   if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
@@ -343,9 +344,9 @@ mmc_mode_sense_10( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
   memset (p_buf, 0, i_size);
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_10);
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_size);
 
   cdb.field[2] = 0x3F & page;
-  CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_size);
   
   return p_cdio->op.run_mmc_cmd (p_cdio->env, 
                                  DEFAULT_TIMEOUT_MS,
@@ -368,7 +369,7 @@ mmc_init_cdtext_private ( void *p_user_data,
 {
 
   generic_img_private_t *p_env = p_user_data;
-  scsi_mmc_cdb_t  cdb = {{0, }};
+  mmc_cdb_t  cdb = {{0, }};
   unsigned char   wdata[5000] = { 0, };
   int             i_status, i_errno;
 
@@ -378,12 +379,12 @@ mmc_init_cdtext_private ( void *p_user_data,
   /* Operation code */
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
 
+  /* Setup to read header, to get length of data */
+  CDIO_MMC_SET_READ_LENGTH8(cdb.field, 4);
+
   cdb.field[1] = CDIO_CDROM_MSF;
   /* Format */
   cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
-
-  /* Setup to read header, to get length of data */
-  CDIO_MMC_SET_READ_LENGTH16(cdb.field, 4);
 
   errno = 0;
 
@@ -430,7 +431,7 @@ mmc_set_blocksize_private ( void *p_env,
                             const mmc_run_cmd_fn_t run_mmc_cmd, 
                             uint16_t i_blocksize)
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
 
   struct
   {
@@ -489,7 +490,7 @@ mmc_get_cmd_len(uint8_t scsi_cmd)
 lsn_t
 mmc_get_disc_last_lsn ( const CdIo_t *p_cdio )
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
   uint8_t buf[12] = { 0, };
 
   lsn_t retval = 0;
@@ -532,18 +533,41 @@ mmc_get_disc_last_lsn ( const CdIo_t *p_cdio )
 driver_return_code_t
 mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
 {
-  scsi_mmc_cdb_t cdb;
+  mmc_cdb_t cdb;
+  driver_return_code_t i_rc;
+  mmc_subchannel_t mmc_subchannel;
 
   if (!p_cdio) return DRIVER_OP_UNINIT;
   
-  memset(&cdb, 0, sizeof(scsi_mmc_cdb_t));
+  memset(&mmc_subchannel, 0, sizeof(mmc_subchannel));
+  mmc_subchannel.format = CDIO_CDROM_MSF;
+  memset(&cdb, 0, sizeof(mmc_cdb_t));
+
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
+  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(mmc_subchannel_t));
+
   cdb.field[1] = CDIO_CDROM_MSF;
   cdb.field[2] = 0x40; /* subq */
-  cdb.field[6] = 0x40; /* track number (only in isrc mode, ignored) */
-  cdb.field[8] = 20;   
-  return mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_READ, 
-                     sizeof(cdio_subchannel_t), p_subchannel);
+  cdb.field[3] = CDIO_SUBCHANNEL_CURRENT_POSITION;
+  cdb.field[6] = 0;    /* track number (only in isrc mode, ignored) */
+
+  i_rc = mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, &cdb, SCSI_MMC_DATA_READ, 
+                     sizeof(mmc_subchannel_t), &mmc_subchannel);
+  if (DRIVER_OP_SUCCESS == i_rc) {
+    p_subchannel->format         = mmc_subchannel.format;
+    p_subchannel->audio_status   = mmc_subchannel.audio_status;
+    p_subchannel->address        = mmc_subchannel.address;
+    p_subchannel->control        = mmc_subchannel.control;
+    p_subchannel->track          = mmc_subchannel.track;
+    p_subchannel->index          = mmc_subchannel.index;
+    p_subchannel->abs_addr.msf.m = mmc_subchannel.abs_addr[1];
+    p_subchannel->abs_addr.msf.s = mmc_subchannel.abs_addr[2];
+    p_subchannel->abs_addr.msf.f = mmc_subchannel.abs_addr[3];
+    p_subchannel->rel_addr.msf.m = mmc_subchannel.rel_addr[1];
+    p_subchannel->rel_addr.msf.s = mmc_subchannel.rel_addr[2];
+    p_subchannel->rel_addr.msf.f = mmc_subchannel.rel_addr[3];
+  }
+  return i_rc;
 }
 
 /*! 
@@ -560,13 +584,16 @@ mmc_get_discmode( const CdIo_t *p_cdio )
 
 {
   uint8_t buf[14] = { 0, };
-  scsi_mmc_cdb_t cdb;
+  mmc_cdb_t cdb;
 
-  memset(&cdb, 0, sizeof(scsi_mmc_cdb_t));
+  memset(&cdb, 0, sizeof(mmc_cdb_t));
+
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
+  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
+
   cdb.field[1] = CDIO_CDROM_MSF; /* The MMC-5 spec may require this. */
   cdb.field[2] = CDIO_MMC_READTOC_FMT_FULTOC;
-  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
+
   mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), buf);
   if (buf[7] == 0xA0) {
     if (buf[13] == 0x00) {
@@ -678,7 +705,7 @@ mmc_get_hwinfo ( const CdIo_t *p_cdio,
 {
   int i_status;                  /* Result of SCSI MMC command */
   char buf[36] = { 0, };         /* Place to hold returned data */
-  scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Block */
+  mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Block */
   
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_INQUIRY);
   cdb.field[4] = sizeof(buf);
@@ -715,7 +742,7 @@ mmc_get_hwinfo ( const CdIo_t *p_cdio,
    */
 int mmc_get_media_changed(const CdIo_t *p_cdio)
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
   uint8_t buf[8] = { 0, };
   int i_status;
 
@@ -723,11 +750,12 @@ int mmc_get_media_changed(const CdIo_t *p_cdio)
   if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_EVENT_STATUS);
-  cdb.field[1] = 1;      /* We poll for info */
-  cdb.field[4] = 1 << 4; /* We want Media events */
 
   /* Setup to read header, to get length of data */
   CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(buf));
+
+  cdb.field[1] = 1;      /* We poll for info */
+  cdb.field[4] = 1 << 4; /* We want Media events */
 
   i_status = p_cdio->op.run_mmc_cmd(p_cdio->env, DEFAULT_TIMEOUT_MS, 
                                     mmc_get_cmd_len(cdb.field[0]), 
@@ -761,7 +789,7 @@ mmc_get_mcn ( const CdIo_t *p_cdio )
  */
 driver_return_code_t
 mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms, 
-		  const scsi_mmc_cdb_t *p_cdb,
+		  const mmc_cdb_t *p_cdb,
 		  scsi_mmc_direction_t e_direction, unsigned int i_buf, 
 		  /*in/out*/ void *p_buf )
 {
@@ -822,7 +850,7 @@ driver_return_code_t
 mmc_eject_media( const CdIo_t *p_cdio )
 {
   int i_status = 0;
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
   uint8_t buf[1];
   mmc_run_cmd_fn_t run_mmc_cmd;
 
@@ -1014,12 +1042,13 @@ mmc_have_interface( CdIo_t *p_cdio, mmc_feature_interface_t e_interface )
 {
   int i_status;                  /* Result of MMC command */
   uint8_t buf[500] = { 0, };     /* Place to hold returned data */
-  scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Buffer */
+  mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Buffer */
 
   if (!p_cdio || !p_cdio->op.run_mmc_cmd) return nope;
   
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_CONFIGURATION);
   CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
+
   cdb.field[1] = CDIO_MMC_GET_CONF_NAMED_FEATURE;
   cdb.field[3] = CDIO_MMC_FEATURE_CORE;
 
@@ -1066,7 +1095,7 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 	      uint8_t subchannel_selection, uint16_t i_blocksize, 
 	      uint32_t i_blocks )
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
 
   mmc_run_cmd_fn_t run_mmc_cmd;
   uint8_t i_read_type = 0;
@@ -1151,7 +1180,7 @@ driver_return_code_t
 mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
                    int sector_type, uint32_t i_blocks )
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
 
   mmc_run_cmd_fn_t run_mmc_cmd;
 
@@ -1195,7 +1224,7 @@ mmc_set_speed( const CdIo_t *p_cdio, int i_speed )
 
 {
   uint8_t buf[14] = { 0, };
-  scsi_mmc_cdb_t cdb;
+  mmc_cdb_t cdb;
 
   /* If the requested speed is less than 1x 176 kb/s this command
      will return an error - it's part of the ATAPI specs. Therefore, 
@@ -1203,7 +1232,7 @@ mmc_set_speed( const CdIo_t *p_cdio, int i_speed )
 
   if ( i_speed < 1 ) return -1;
   
-  memset(&cdb, 0, sizeof(scsi_mmc_cdb_t));
+  memset(&cdb, 0, sizeof(mmc_cdb_t));
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_SET_SPEED);
   CDIO_MMC_SET_LEN16(cdb.field, 2, i_speed);
   /* Some drives like the Creative 24x CDRW require one to set a

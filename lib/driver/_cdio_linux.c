@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.32 2005/03/01 09:33:52 rocky Exp $
+    $Id: _cdio_linux.c,v 1.33 2005/03/01 10:53:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.32 2005/03/01 09:33:52 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.33 2005/03/01 10:53:15 rocky Exp $";
 
 #include <string.h>
 
@@ -103,7 +103,7 @@ static bool read_toc_linux (void *p_user_data);
 static driver_return_code_t run_mmc_cmd_linux( void *p_user_data, 
                                                unsigned int i_timeout,
                                                unsigned int i_cdb, 
-                                               const scsi_mmc_cdb_t *p_cdb, 
+                                               const mmc_cdb_t *p_cdb, 
                                                scsi_mmc_direction_t e_direction, 
                                                unsigned int i_buf, 
                                                /*in/out*/ void *p_buf );
@@ -676,7 +676,7 @@ static driver_return_code_t
 _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba, 
 			 uint32_t i_blocks, bool b_read_10)
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
 
   CDIO_MMC_SET_READ_LBA(cdb.field, lba);
 
@@ -1013,7 +1013,7 @@ read_toc_linux (void *p_user_data)
 static driver_return_code_t
 run_mmc_cmd_linux( void *p_user_data, 
                    unsigned int i_timeout_ms,
-                   unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+                   unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
                    scsi_mmc_direction_t e_direction, 
                    unsigned int i_buf, /*in/out*/ void *p_buf )
 {
@@ -1272,7 +1272,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .audio_pause           = audio_pause_linux,
     .audio_play_msf        = audio_play_msf_linux,
     .audio_play_track_index= audio_play_track_index_linux,
-    .audio_read_subchannel = audio_read_subchannel_linux,
+    .audio_read_subchannel = audio_read_subchannel_mmc,
     .audio_resume          = audio_resume_linux,
     .audio_set_volume      = audio_set_volume_linux,
     .eject_media           = eject_media_linux,

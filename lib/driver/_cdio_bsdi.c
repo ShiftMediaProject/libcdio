@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.14 2005/02/17 12:05:10 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.15 2005/03/01 10:53:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.14 2005/02/17 12:05:10 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.15 2005/03/01 10:53:15 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -81,7 +81,7 @@ typedef struct {
 /* Define the Cdrom Generic Command structure */
 typedef struct  cgc
 {
-  scsi_mmc_cdb_t cdb;
+  mmc_cdb_t cdb;
   u_char  *buf;
   int     buflen;
   int     rw;
@@ -95,7 +95,7 @@ typedef struct  cgc
 */
 static driver_return_code_t
 run_mmc_cmd_bsdi(void *p_user_data, unsigned int i_timeout_ms,
-		 unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
 		 scsi_mmc_direction_t e_direction, 
 		 unsigned int i_buf, /*in/out*/ void *p_buf )
 {

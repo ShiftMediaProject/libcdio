@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.14 2005/03/01 09:33:52 rocky Exp $
+    $Id: mmc.h,v 1.15 2005/03/01 10:53:15 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -315,14 +315,14 @@ typedef enum {
 /*! \brief A Command Descriptor Block (CDB) used in sending MMC 
     commands.
  */
-typedef struct scsi_mmc_cdb {
+typedef struct mmc_cdb_s {
   uint8_t field[MAX_CDB_LEN];
-} scsi_mmc_cdb_t;
+} mmc_cdb_t;
 
 /*! \brief Format of header block in data returned from an MMC
     GET_CONFIGURATION command.
  */
-typedef struct scsi_mmc_feature_list_header {
+typedef struct mmc_feature_list_header_s {
   unsigned char length_msb;
   unsigned char length_1sb;
   unsigned char length_2sb;
@@ -331,15 +331,29 @@ typedef struct scsi_mmc_feature_list_header {
   unsigned char reserved2;
   unsigned char profile_msb;
   unsigned char profile_lsb;
-} scs_mmc_feature_list_header_t;
+} mmc_feature_list_header_t;
 
 /*! An enumeration indicating whether an MMC command is sending
     data or getting data.
  */
-typedef enum scsi_mmc_direction {
+typedef enum mmc_direction_s {
   SCSI_MMC_DATA_READ,
   SCSI_MMC_DATA_WRITE
-} scsi_mmc_direction_t;
+} mmc_direction_t;
+
+typedef struct mmc_subchannel_s
+{
+  uint8_t       reserved;
+  uint8_t       audio_status;
+  uint16_t      data_length; /* Really 7.2.2 */
+  uint8_t	format;
+  uint8_t	address:	4;
+  uint8_t	control:	4;
+  uint8_t	track;
+  uint8_t	index;
+  uint8_t       abs_addr[4];
+  uint8_t       rel_addr[4];
+} mmc_subchannel_t;
 
 #define CDIO_MMC_SET_COMMAND(cdb, command) \
   cdb[0] = command
@@ -413,7 +427,7 @@ const char *mmc_feature_profile2str( int i_feature_profile );
   Buffer (CDB) for a given MMC command. The length will be 
   either 6, 10, or 12. 
 */
-uint8_t mmc_get_cmd_len(uint8_t scsi_cmd);
+uint8_t mmc_get_cmd_len(uint8_t mmc_cmd);
 
 /*!
   Get the block size used in read requests, via MMC.
@@ -668,8 +682,8 @@ driver_return_code_t mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf,
   @return 0 if command completed successfully.
  */
 int mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
-		      const scsi_mmc_cdb_t *p_cdb,
-		      scsi_mmc_direction_t e_direction, unsigned int i_buf, 
+		      const mmc_cdb_t *p_cdb,
+		      mmc_direction_t e_direction, unsigned int i_buf, 
 		      /*in/out*/ void *p_buf );
 /*!
   Set the block size for subsequest read requests, via MMC.
@@ -687,6 +701,8 @@ driver_return_code_t mmc_set_speed( const CdIo_t *p_cdio, int i_speed );
 #endif /* __cplusplus */
 
 /** For backward compatibility. */
+#define scsi_mmc_cdb_t                   mmc_cdb_t
+#define scsi_mmc_direction_t             mmc_direction_t
 #define scsi_mmc_get_cmd_len             mmc_get_cmd_len
 #define scsi_mmc_run_cmd                 mmc_run_cmd
 #define scsi_mmc_eject_media             mmc_eject_media
@@ -701,7 +717,7 @@ driver_return_code_t mmc_set_speed( const CdIo_t *p_cdio, int i_speed );
 #define scsi_mmc_get_blocksize           mmc_get_blocksize 
 #define scsi_mmc_set_speed               mmc_set_speed
 
-#endif /* __SCSI_MMC_H__ */
+#endif /* __MMC_H__ */
 
 /* 
  * Local variables:
