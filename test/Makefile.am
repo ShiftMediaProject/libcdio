@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.1 2003/04/22 12:09:09 rocky Exp $
+#   $Id: Makefile.am,v 1.2 2003/04/24 02:45:04 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,6 +23,7 @@
 check_SCRIPTS = check_nrg.sh check_cue.sh check_opts.sh
 
 check_DATA = vcd_demo.right \
+	     videocd.right videocd.nrg \
 	     cdda.right cdda.cue cdda.bin \
 	     isofs-m1.right isofs-m1.cue isofs-m1.bin \
 	     check_opts0.right check_opts1.right check_opts2.right \

@@ -1,11 +1,19 @@
 #!/bin/sh
-#$Id: check_nrg.sh,v 1.1 2003/04/22 12:09:09 rocky Exp $
+#$Id: check_nrg.sh,v 1.2 2003/04/24 02:45:04 rocky Exp $
 
 if test -z $srcdir ; then
   srcdir=`pwd`
 fi
 
 . ${srcdir}/check_common_fn
+
+BASE=`basename $0 .sh`
+fname=videocd
+
+test_cdinfo "--nrg-file ${srcdir}/${fname}.nrg" \
+  ${fname}.dump ${srcdir}/${fname}.right
+RC=$?
+check_result $RC 'cdinfo NRG test 1'
 
 BASE=`basename $0 .sh`
 nrg_file=${srcdir}/monvoisin.nrg
