@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.7 2005/01/24 00:06:31 rocky Exp $
+    $Id: bincue.c,v 1.8 2005/01/28 00:06:34 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.7 2005/01/24 00:06:31 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.8 2005/01/28 00:06:34 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -718,7 +718,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	  goto in_global_section;
 	}
 	
-	/* CD-TEXT */
+	/* CD-Text */
       } else if ( CDTEXT_INVALID != 
 		  (cdtext_key = cdtext_is_keyword (psz_keyword)) ) {
 	if (-1 == i) {
