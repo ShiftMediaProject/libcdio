@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.12 2005/01/24 00:06:31 rocky Exp $
+    $Id: win32.c,v 1.13 2005/01/24 00:23:18 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.12 2005/01/24 00:06:31 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.13 2005/01/24 00:23:18 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -380,7 +380,7 @@ _cdio_read_mode2_sectors (void *p_user_data, void *data, lsn_t lsn,
 /*!
    Return the size of the CD in logical block address (LBA) units.
  */
-static uint32_t 
+static lsn_t
 get_disc_last_lsn_win32 (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
