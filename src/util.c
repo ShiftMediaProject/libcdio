@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.35 2005/02/08 04:14:28 rocky Exp $
+  $Id: util.c,v 1.36 2005/02/09 01:31:10 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -303,6 +303,7 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 	  case CDIO_MMC_FEATURE_ENHANCED_DEFECT:
 	    report( stdout, "\t%s-DRM mode is supported\n", 
 		    (p[4] & 1) ? "DRT": "Persistent" );
+	    report( stdout, "\n" );
 	    break;
 	  case CDIO_MMC_FEATURE_CDDA_EXT_PLAY:
 	    report( stdout, "\tSCAN command is %ssupported\n", 
