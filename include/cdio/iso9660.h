@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.25 2003/09/21 01:26:31 rocky Exp $
+    $Id: iso9660.h,v 1.26 2003/10/28 16:23:50 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -76,8 +76,8 @@
 #define ISO_VD_SUPPLEMENTARY	   2  /* Used by Joliet */
 #define ISO_VD_END	         255
 
-#define ISO_PVD_SECTOR  16
-#define ISO_EVD_SECTOR  17
+#define ISO_PVD_SECTOR  16      /* Sector of Primary Volume Descriptor */
+#define ISO_EVD_SECTOR  17      /* Sector of End Volume Descriptor */
 
 #define ISO_STANDARD_ID      "CD001"
 #define ISO_BLOCKSIZE           2048

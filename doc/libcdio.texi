@@ -19,7 +19,7 @@
 @ifinfo
 This file documents GNU CD input and control library
 
-Copyright (C) Herbert Valerio Riedel @email{<hvr@@gnu.org>} and Rocky
+Copyright (C) 2003 Herbert Valerio Riedel @email{<hvr@@gnu.org>} and Rocky
 Bernstein @email{<rocky@@panix.com>}
 
 Permission is granted to copy, distribute and/or modify this document
@@ -37,7 +37,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.5 2003/08/03 20:31:46 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.6 2003/10/28 16:23:49 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -490,19 +490,4 @@ drivers?.}
 @unnumbered General Index
 @printindex cp
 
-@tex
-% I think something like @colophon should be in texinfo.  In the
-% meantime:
-\long\def\colophon{\hbox to0pt{}\vfill
-\centerline{The body of this manual is set in}
-\centerline{\fontname\tenrm,}
-\centerline{with headings in {\bf\fontname\tenbf}}
-\centerline{and examples in {\tt\fontname\tentt}.}
-\centerline{{\it\fontname\tenit\/},}
-\centerline{{\bf\fontname\tenbf}, and}
-\centerline{{\sl\fontname\tensl\/}}
-\centerline{are used for emphasis.}\vfill}
-\page\colophon
-% Blame: doc@cygnus.com, 1991.
-@end tex
 @bye

@@ -16,9 +16,10 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.54 2003/10/19 16:36:21 rocky Exp $])dnl
-AC_INIT(lib/cdio.c)
-AM_INIT_AUTOMAKE(libcdio, 0.65cvs)
+AC_REVISION([$Id: configure.ac,v 1.55 2003/10/28 16:23:49 rocky Exp $])dnl
+AC_INIT(libcdio, 0.65cvs)
+AC_CONFIG_SRCDIR(src/cd-info.c)
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
