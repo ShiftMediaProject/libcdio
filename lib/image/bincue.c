@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.3 2004/03/06 01:26:35 rocky Exp $
+    $Id: bincue.c,v 1.4 2004/03/06 03:21:59 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.3 2004/03/06 01:26:35 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.4 2004/03/06 03:21:59 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -524,6 +524,7 @@ _cdio_read_mode1_sector (void *env, void *data, lsn_t lsn,
   ret = cdio_stream_seek (_obj->gen.data_source, lsn * blocksize, SEEK_SET);
   if (ret!=0) return ret;
 
+  /* FIXME: Not completely sure the below is correct. */
   ret = cdio_stream_read (_obj->gen.data_source,
 			  _obj->sector_2336 
 			  ? (buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE) 
@@ -611,7 +612,7 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn, 
-		     bool mode2_form2, unsigned int nblocks)
+			  bool mode2_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   int i;
