@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.54 2004/06/06 11:38:33 rocky Exp $
+    $Id: _cdio_linux.c,v 1.55 2004/06/06 11:44:51 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.54 2004/06/06 11:38:33 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.55 2004/06/06 11:44:51 rocky Exp $";
 
 #include <string.h>
 
@@ -924,7 +924,7 @@ _get_track_green_linux(void *user_data, track_t i_track)
 
 /*!  
   Return the starting MSF (minutes/secs/frames) for track number
-  track_num in obj.  Tracks numbers usually start at something 
+  track_num in obj.  Track numbers usually start at something 
   greater than 0, usually 1.
 
   The "leadout" track is specified either by
