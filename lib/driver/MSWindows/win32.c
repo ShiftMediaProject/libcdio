@@ -1,7 +1,7 @@
 /*
-    $Id: win32.c,v 1.3 2005/01/14 19:25:45 rocky Exp $
+    $Id: win32.c,v 1.4 2005/01/14 21:41:36 rocky Exp $
 
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.3 2005/01/14 19:25:45 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.4 2005/01/14 21:41:36 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -522,7 +522,8 @@ _cdio_get_track_format(void *p_obj, track_t i_track)
   
   if ( !p_env ) return TRACK_FORMAT_ERROR;
   
-  if (!p_env->gen.toc_init) read_toc_win32 (p_env) ;
+  if (!p_env->gen.toc_init) 
+    if (!read_toc_win32 (p_env)) return TRACK_FORMAT_ERROR;
 
   if ( i_track < p_env->gen.i_first_track
        || i_track >= p_env->gen.i_tracks + p_env->gen.i_first_track )
@@ -582,7 +583,8 @@ _cdio_get_track_msf(void *p_user_data, track_t i_tracks, msf_t *msf)
 
   if (NULL == msf) return false;
 
-  if (!p_env->gen.toc_init) read_toc_win32 (p_env) ;
+  if (!p_env->gen.toc_init) 
+    if (!read_toc_win32 (p_env)) return false;
 
   if (i_tracks == CDIO_CDROM_LEADOUT_TRACK) i_tracks = p_env->gen.i_tracks+1;
 
