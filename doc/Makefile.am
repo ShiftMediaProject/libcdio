@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.3 2003/11/16 19:30:45 rocky Exp $
+#   $Id: Makefile.am,v 1.4 2003/11/17 12:06:56 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -18,6 +18,9 @@
 #
 EXTRA_DIST = doxygen/Doxyfile doxygen/run_doxygen
 info_TEXINFOS = libcdio.texi 
+
+reference:
+	-( cd ${top_srcdir} && $(MAKE) doxygen )
 
 pdf: libcdio.pdf 
 

@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.7 2003/09/28 17:14:20 rocky Exp $
+    $Id: types.h,v 1.8 2003/11/17 12:06:58 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -18,6 +18,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
+/** \file types.h 
+ *  \brief  Common type definitions used pervasively in libcdio.
+ */
+
 
 #ifndef __CDIO_TYPES_H__
 #define __CDIO_TYPES_H__

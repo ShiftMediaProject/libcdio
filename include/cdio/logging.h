@@ -1,5 +1,5 @@
 /*
-    $Id: logging.h,v 1.5 2003/11/04 12:28:08 rocky Exp $
+    $Id: logging.h,v 1.6 2003/11/17 12:06:58 rocky Exp $
 
     Copyright (C) 2000, Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, Rocky Bernstein <rocky@panix.com>
@@ -18,6 +18,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
+/** \file logging.h 
+ *  \brief Header to control logging and level of detail of output.
+ *         
+ */
 
 #ifndef __LOGGING_H__
 #define __LOGGING_H__

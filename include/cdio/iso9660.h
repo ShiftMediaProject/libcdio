@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.31 2003/11/16 19:30:45 rocky Exp $
+    $Id: iso9660.h,v 1.32 2003/11/17 12:06:57 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -24,8 +24,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*!
- * \file iso9660.h - Assorted structure definitions and typecasts.
- * specific for the ISO 9660 filesystem.
+ * \file iso9660.h 
+ * \brief Header for libiso9660: the ISO-9660 filesystem library.
 */
 
 

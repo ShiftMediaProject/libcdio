@@ -1,5 +1,5 @@
 /*
-    $Id: xa.h,v 1.5 2003/09/21 01:14:30 rocky Exp $
+    $Id: xa.h,v 1.6 2003/11/17 12:06:58 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -24,6 +24,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+/*!
+   \file xa.h 
+   \brief Things related to the ISO-9660 XA (Extended Attributes) format
+*/
+
 
 #ifndef __CDIO_XA_H__
 #define __CDIO_XA_H__
@@ -34,17 +39,17 @@
 #define ISO_XA_MARKER_OFFSET    1024
 
 /* XA attribute definitions */
-#define XA_PERM_RSYS          0x0001   /* System Group Read */
-#define XA_PERM_XSYS          0x0004   /* System Group Execute */
+#define XA_PERM_RSYS          0x0001   /**< System Group Read */
+#define XA_PERM_XSYS          0x0004   /**< System Group Execute */
 
-#define XA_PERM_RUSR          0x0010   /* User (owner) Read */
-#define XA_PERM_XUSR          0x0040   /* User (owner) Execute */
+#define XA_PERM_RUSR          0x0010   /**< User (owner) Read */
+#define XA_PERM_XUSR          0x0040   /**< User (owner) Execute */
 
-#define XA_PERM_RGRP          0x0100   /* Group Read */
-#define XA_PERM_XGRP          0x0400   /* Group Execute */
+#define XA_PERM_RGRP          0x0100   /**< Group Read */
+#define XA_PERM_XGRP          0x0400   /**< Group Execute */
 
-#define	XA_PERM_ROTH	      0x1000   /* Other (world) Read */
-#define	XA_PERM_XOTH	      0x4000   /* Other (world) Execute */
+#define	XA_PERM_ROTH	      0x1000   /**< Other (world) Read */
+#define	XA_PERM_XOTH	      0x4000   /**< Other (world) Execute */
 
 #define XA_ATTR_MODE2FORM1     (1 << 11)
 #define XA_ATTR_MODE2FORM2     (1 << 12)
@@ -61,17 +66,18 @@
 #define XA_FORM1_FILE   (XA_ATTR_MODE2FORM1 | XA_PERM_ALL_ALL)
 #define XA_FORM2_FILE   (XA_ATTR_MODE2FORM2 | XA_PERM_ALL_ALL)
 
-/*
- * Extended Attributes record according to Yellow Book.
+/*!
+ * An "Extended Attributes" record according to the Philips Yellow Book.
+ * Note structure is big-endian.
  */
-typedef struct iso9660_xa /* big endian!! */
+typedef struct iso9660_xa 
 {
-  uint16_t group_id;      /* 0 */
-  uint16_t user_id;       /* 0 */
-  uint16_t attributes;    /* XA_ATTR_ */ 
-  uint8_t  signature[2];  /* { 'X', 'A' } */
-  uint8_t  filenum;       /* file number, see also XA subheader */
-  uint8_t  reserved[5];   /* zero */
+  uint16_t group_id;      /**< 0 */
+  uint16_t user_id;       /**< 0 */
+  uint16_t attributes;    /**< XA_ATTR_ */ 
+  uint8_t  signature[2];  /**< { 'X', 'A' } */
+  uint8_t  filenum;       /**< file number, see also XA subheader */
+  uint8_t  reserved[5];   /**< zero */
 } iso9660_xa_t GNUC_PACKED;
 
 
@@ -106,6 +112,12 @@ typedef struct iso9660_xa /* big endian!! */
 const char *
 iso9660_get_xa_attr_str (uint16_t xa_attr);
   
+/*! 
+  Allocates and initalizes a new iso9600_xa_t variable and returns
+  it. The caller should free the returned result.
+
+  @see iso9660_xa
+*/
 iso9660_xa_t *
 iso9660_xa_init (iso9660_xa_t *_xa, uint16_t uid, uint16_t gid, uint16_t attr, 
 		 uint8_t filenum);

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.33 2003/11/05 12:40:34 rocky Exp $
+    $Id: cdio.h,v 1.34 2003/11/17 12:06:57 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -19,7 +19,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/** \file cdio.h - Public CD Input and Control Interface . */
+/** \file cdio.h 
+ *  \brief  The top-level header for libcdio: the CD Input and Control library.
+ */
 
 
 #ifndef __CDIO_H__
@@ -46,7 +48,7 @@
 
 #define CDIO_SRC_IS_DISK_IMAGE_MASK 0x0001 /**< Read source is a CD image. */
 #define CDIO_SRC_IS_DEVICE_MASK     0x0002 /**< Read source is a CD device. */
-#define CDIO_SRC_IS_SCSI_MASK       0x0004
+#define CDIO_SRC_IS_SCSI_MASK       0x0004 
 #define CDIO_SRC_IS_NATIVE_MASK     0x0008
 
 #ifdef __cplusplus
@@ -392,29 +394,40 @@ extern "C" {
       the some sort of device name.
 
      NULL is returned on error or there is no BSDI driver.
+
+     @see cdio_open
    */
   CdIo * cdio_open_bsdi (const char *source_name);
   
   /*! Return a string containing the default device name that the 
       BSDI driver would use when none is specified.
 
-     NULL is returned on error or there is no CD-ROM device 
+     NULL is returned on error or there is no CD-ROM device.
+
+     @see cdio_open_cd
+     @see cdio_open
    */
   char * cdio_get_default_device_bsdi(void);
 
+  /*! Return a list of all of the CD-ROM devices that the BSDI driver
+      can find.
+   */
   char **cdio_get_devices_bsdi(void);
   
   /*! Set up CD-ROM for reading using the FreeBSD driver. The device_name is
       the some sort of device name.
 
      NULL is returned on error or there is no FreeBSD driver.
+
+     @see cdio_open_cd
+     @see cdio_open
    */
   CdIo * cdio_open_freebsd (const char *source_name);
   
   /*! Return a string containing the default device name that the 
       FreeBSD driver would use when none is specified.
 
-     NULL is returned on error or there is no CD-ROM device 
+     NULL is returned on error or there is no CD-ROM device.
    */
   char * cdio_get_default_device_freebsd(void);
 
@@ -434,7 +447,10 @@ extern "C" {
       GNU/Linux driver would use when none is specified. A scan is made
       for CD-ROM drives with CDs in them.
 
-     NULL is returned on error or there is no CD-ROM device 
+     NULL is returned on error or there is no CD-ROM device.
+
+     @see cdio_open_cd
+     @see cdio_open
    */
   char * cdio_get_default_device_linux(void);
 
@@ -454,7 +470,10 @@ extern "C" {
       Solaris driver would use when none is specified. A scan is made
       for CD-ROM drives with CDs in them.
 
-     NULL is returned on error or there is no CD-ROM device 
+     NULL is returned on error or there is no CD-ROM device.
+
+     @see cdio_open_cd
+     @see cdio_open
    */
   char * cdio_get_default_device_solaris(void);
   
@@ -467,6 +486,9 @@ extern "C" {
       device_name is the some sort of device name.
 
      NULL is returned on error or there is no OSX driver.
+
+     @see cdio_open_cd
+     @see cdio_open
    */
   CdIo * cdio_open_osx (const char *source_name);
 
@@ -494,7 +516,10 @@ extern "C" {
       Win32 driver would use when none is specified. A scan is made
       for CD-ROM drives with CDs in them.
 
-     NULL is returned on error or there is no CD-ROM device 
+     NULL is returned on error or there is no CD-ROM device.
+
+     @see cdio_open_cd
+     @see cdio_open
    */
   char * cdio_get_default_device_win32(void);
 
@@ -511,7 +536,7 @@ extern "C" {
       NRG driver would use when none is specified. A scan is made
       for NRG disk images in the current directory..
 
-     NULL is returned on error or there is no CD-ROM device 
+     NULL is returned on error or there is no CD-ROM device.
    */
   char * cdio_get_default_device_nrg(void);
 

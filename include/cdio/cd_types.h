@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.h,v 1.6 2003/11/05 04:12:58 rocky Exp $
+    $Id: cd_types.h,v 1.7 2003/11/17 12:06:57 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -19,6 +19,12 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
+/** \file cd_types.h 
+ *  \brief Header for routines which automatically determine the Compact Disc
+ *  format and possibly filesystem on the CD.
+ *         
+ */
 
 #ifndef __CDIO_CD_TYPES_H__
 #define __CDIO_CD_TYPES_H__
@@ -115,7 +121,7 @@ typedef struct
 /**
  *  Try to determine what kind of CD-image and/or filesystem we
  *  have at track track_num. Return information about the CD image
- *  is returned in cdio_analysis and the return value.
+ *  is returned in iso_analysis and the return value.
  */
 cdio_fs_anal_t cdio_guess_cd_type(const CdIo *cdio, int start_session, 
 				  track_t track_num, 

@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.7 2003/11/05 12:40:35 rocky Exp $
+    $Id: sector.h,v 1.8 2003/11/17 12:06:58 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -19,8 +19,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 /*!
-   \file sector.h - Things related to CDROM layout. Sector sizes,
-   MSFs, LBAs,
+   \file sector.h 
+   \brief Things related to CD-ROM layout: tracks, sector sizes, MSFs, LBAs.
 
   A CD-ROM physical sector size is 2048, 2052, 2056, 2324, 2332, 2336,
   2340, or 2352 bytes long.
