@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.5 2005/03/12 06:02:36 rocky Exp $
+    $Id: cdda-player.c,v 1.6 2005/03/12 16:45:44 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -80,6 +80,7 @@ track_t            i_first_track;
 track_t            i_last_track;
 track_t            i_first_audio_track;
 track_t            i_last_audio_track;
+track_t            i_last_display_track = CDIO_INVALID_TRACK;
 track_t            i_tracks;
 msf_t              toc[CDIO_CDROM_LEADOUT_TRACK+1];
 cdio_subchannel_t  sub;      /* subchannel last time read */
@@ -107,8 +108,9 @@ typedef enum {
   STOP_PLAYING=3,
   EJECT_CD=4,
   CLOSE_CD=5,
-  LIST_TRACKS=6,
-  PS_LIST_TRACKS=7
+  LIST_KEYS=6,
+  LIST_TRACKS=7,
+  PS_LIST_TRACKS=8
 } cd_operation_t;
 
 char *psz_device=NULL;
@@ -120,6 +122,7 @@ typedef struct
 {
   char title[80];
   char artist[80];
+  char length[8];
   char ext_data[80];
   bool b_cdtext;  /* true if from CD-Text, false if from CDDB */
 } cd_track_info_rec_t;
@@ -143,39 +146,50 @@ cddb_disc_t *p_cddb_disc = NULL;
 int i_cddb_matches = 0;
 #endif
 
-const char key_bindings[] =
-"    right     play / next track\n"
-"    left      previous track\n"
-"    up        10 sec forward\n"
-"    down      10 sec back\n"
-"    1-9       jump to track 1-9\n"
-"    0         jump to track 10\n"
-"    F1-F20    jump to track 11-30\n"
-"\n"
-"    e         eject\n"
-"    c         close tray\n"
-"    p, space  pause / resume\n"
-"    s         stop\n"
-"    q, ^C     quit\n"
-"    x         quit and continue playing\n"
-"    a         toggle auto-mode\n";
+#define MAX_KEY_STR 50
+const char key_bindings[][MAX_KEY_STR] = {
+  "    right     play / next track",
+  "    left      previous track",
+  "    up        10 sec forward",
+  "    down      10 sec back",
+  "    1-9       jump to track 1-9",
+  "    0         jump to track 10",
+  "    F1-F20    jump to track 11-30",
+  " ",
+  "    k, h, ?   show this key help",
+  "    e         eject",
+  "    c         close tray",
+  "    p, space  pause / resume",
+  "    s         stop",
+  "    q, ^C     quit",
+  "    x         quit and continue playing",
+  "    a         toggle auto-mode",
+};
 
+const unsigned int i_key_bindings = sizeof(key_bindings) / MAX_KEY_STR;
 
 /* ---------------------------------------------------------------------- */
 /* tty stuff                                                              */
 
-#define LINE_STATUS    0
-#define LINE_CDINFO    1
+typedef enum {
+  LINE_STATUS       =  0,
+  LINE_CDINFO       =  1,
 
-#define LINE_ARTIST    3
-#define LINE_CDNAME    4
-#define LINE_GENRE     5
-#define LINE_YEAR      6
-#define LINE_TRACK_A   7
-#define LINE_TRACK_T   8
+  LINE_ARTIST       =  3,
+  LINE_CDNAME       =  4,
+  LINE_GENRE        =  5,
+  LINE_YEAR         =  6,
 
-#define LINE_ACTION   10
-#define LINE_LAST     11
+  LINE_TRACK_PREV   =  8,
+  LINE_TRACK_TITLE  =  9,
+  LINE_TRACK_ARTIST = 10,
+  LINE_TRACK_NEXT   = 11,
+
+  LINE_ACTION       = 24,
+  LINE_LAST         = 25
+} track_line_t;
+
+
 
 static void
 tty_raw()
@@ -219,36 +233,37 @@ select_wait(int sec)
 /* ---------------------------------------------------------------------- */
 
 static void 
-action(const char *txt)
+action(const char *psz_action)
 {
   if (!interactive) {
     if (b_verbose)
-      fprintf(stderr,"action: %s\n",txt);
+      fprintf(stderr,"action: %s\n", psz_action);
     return;
   }
   
-  if (txt && strlen(txt))
-    mvprintw(LINE_ACTION,0,"action : %-70s\n",txt);
+  if (psz_action && strlen(psz_action))
+    mvprintw(LINE_ACTION,0,"action : %s\n", psz_action);
   else
-    mvprintw(LINE_ACTION,0,"%-79s\n","");
+    mvprintw(LINE_ACTION,0,"");
+  clrtoeol();
   refresh();
 }
 
 static void inline
-xperror(const char *txt)
+xperror(const char *psz_msg)
 {
   char line[80];
   
   if (!interactive) {
     if (b_verbose) {
-      fprintf(stderr,"error: ");
-      perror(txt);
+      fprintf(stderr, "error: ");
+      perror(psz_msg);
     }
     return;
   }
   
   if (b_verbose) {
-    sprintf(line,"%s: %s",txt,strerror(errno));
+    sprintf(line,"%s: %s",psz_msg,strerror(errno));
     mvprintw(LINE_ACTION, 0, "error  : %-70s", line);
     refresh();
     select_wait(3);
@@ -257,10 +272,10 @@ xperror(const char *txt)
 }
 
 static void 
-oops(const char *txt, int rc)
+oops(const char *psz_msg, int rc)
 {
-  if(interactive) {
-    mvprintw(LINE_LAST, 0, "%s, exiting...\n", txt);
+  if (interactive) {
+    mvprintw(LINE_LAST, 0, "%s, exiting...\n", psz_msg);
     refresh();
   }
   tty_restore();
@@ -279,6 +294,7 @@ cd_stop(CdIo_t *p_cdio)
 {
   if (b_cd && p_cdio) {
     action("stop...");
+    i_last_audio_track = CDIO_INVALID_TRACK;
     if (DRIVER_OP_SUCCESS != cdio_audio_stop(p_cdio))
       xperror("stop");
   }
@@ -331,7 +347,7 @@ read_subchannel(CdIo_t *p_cdio)
 
 #define add_cddb_disc_info(format_str, field) \
   if (p_cddb_disc->field) \
-    snprintf(field, sizeof(field)-1, format_str, p_cddb_disc->field);
+    snprintf(field, sizeof(field), format_str, p_cddb_disc->field);
 
 static void
 read_toc(CdIo_t *p_cdio)
@@ -354,6 +370,7 @@ read_toc(CdIo_t *p_cdio)
     xperror("read toc header");
     b_cd = false;
     b_record = false;
+    i_last_display_track = CDIO_INVALID_TRACK;
   } else {
     b_cd = true;
     data = 0;
@@ -364,27 +381,39 @@ read_toc(CdIo_t *p_cdio)
       add_cddb_disc_info("%s",  artist);
       add_cddb_disc_info("%s",  title);
       add_cddb_disc_info("%s",  genre);
-      add_cddb_disc_info("%5d", year);
+      add_cddb_disc_info("%4d", year);
     }
     
 #else
     b_db = false;
 #endif
     for (i = i_first_track; i <= i_last_track+1; i++) {
+      int s;
       if ( !cdio_get_track_msf(p_cdio, i, &(toc[i])) )
       {
 	xperror("read toc entry");
 	b_cd = false;
 	return;
       }
-      if ( (TRACK_FORMAT_AUDIO != cdio_get_track_format(p_cdio, i)) &&
-	   (i != i_last_track+1) ) {
-	data++;
-	if (i == i_first_track) {
-	  if (i == i_last_track)
-	    i_first_audio_track = CDIO_CDROM_LEADOUT_TRACK;
-	  else
-	    i_first_audio_track++;
+      if ( TRACK_FORMAT_AUDIO == cdio_get_track_format(p_cdio, i) ) {
+	
+	if (i != i_first_track) 
+	  {
+	    s = cdio_audio_get_msf_seconds(&toc[i]) 
+	      - cdio_audio_get_msf_seconds(&toc[i-1]);
+	    snprintf(cd_info[i].length, sizeof(cd_info[0].length), 
+		     "%02d:%02d",
+		     s / CDIO_CD_SECS_PER_MIN,  s % CDIO_CD_SECS_PER_MIN);
+	  }
+      } else {
+	if ((i != i_last_track+1) ) {
+	  data++;
+	  if (i == i_first_track) {
+	    if (i == i_last_track)
+	      i_first_audio_track = CDIO_CDROM_LEADOUT_TRACK;
+	    else
+	      i_first_audio_track++;
+	  }
 	}
       }
       get_cddb_track_info(i);
@@ -394,6 +423,7 @@ read_toc(CdIo_t *p_cdio)
     if (auto_mode && sub.audio_status != CDIO_MMC_READ_SUB_ST_PLAY)
       play_track(1, CDIO_CDROM_LEADOUT_TRACK);
   }
+  action(NULL);
   display_cdinfo(p_cdio, i_tracks, i_first_track);
 }
 
@@ -481,34 +511,59 @@ display_status()
     
   } else if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
 	     sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
-    sprintf(line,"%2d - %02d:%02d (%02d:%02d abs)  %-10s",
+    sprintf(line,"track %2d - %02d:%02d of %s (%02d:%02d abs) %-10s",
 	    sub.track,
 	    sub.rel_addr.msf.m,
 	    sub.rel_addr.msf.s,
+	    cd_info[sub.track].length,
 	    sub.abs_addr.msf.m,
 	    sub.abs_addr.msf.s,
 	    mmc_audio_state2str(sub.audio_status));
-    
   } else {
     sprintf(line,"%s", mmc_audio_state2str(sub.audio_status));
     
   }
-  mvprintw(LINE_STATUS,0,"status%s: %-70s",auto_mode ? "*" : " ", line);
+  mvprintw(LINE_STATUS, 0, "status%s: %s",auto_mode ? "*" : " ", line);
+  clrtoeol();
   
-  if (b_db) {
-    if ((sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
+  if (b_db && i_last_display_track != sub.track && 
+      (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
 	 sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY)  &&
 	b_cd) {
-      if (strlen(cd_info[sub.track].artist))
-	mvprintw(LINE_TRACK_A, 0,"track artist : %-70s", 
-		 cd_info[sub.track].artist);
-      if (strlen(cd_info[sub.track].title))
-	mvprintw(LINE_TRACK_T, 0,"track title  : %-70s", 
-		 cd_info[sub.track].title);
+    i_last_display_track = sub.track;
+    if (i_first_audio_track != sub.track && 
+	strlen(cd_info[sub.track-1].title)) {
+      mvprintw(LINE_TRACK_PREV, 0, "track %2d title  : %s", 
+	       sub.track-1, cd_info[sub.track-1].title);
+      clrtoeol();
+    } else {
+      mvprintw(LINE_TRACK_PREV, 0, "%s","");
+      clrtoeol();
     }
+    if (strlen(cd_info[sub.track].title)) {
+      mvprintw(LINE_TRACK_TITLE, 0, "track %2d title  : %s", 
+	       sub.track, cd_info[sub.track].title);
+      clrtoeol();
+    }
+    if (strlen(cd_info[sub.track].artist)) {
+      mvprintw(LINE_TRACK_ARTIST, 0, "track %2d artist : %s", 
+	       sub.track, cd_info[sub.track].artist);
+      clrtoeol();
+    }
+    if (i_last_audio_track != sub.track && 
+	strlen(cd_info[sub.track+1].title)) {
+      mvprintw(LINE_TRACK_NEXT, 0, "track %2d title  : %s", 
+	       sub.track+1, cd_info[sub.track+1].title);
+      clrtoeol();
+    } else {
+      mvprintw(LINE_TRACK_NEXT, 0, "%s","");
+      clrtoeol();
+    }
+    clrtobot();
   }
+
   refresh();
-  action(NULL);
+
 }
 
 #define add_cddb_track_info(format_str, field) \
@@ -553,10 +608,10 @@ display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track)
       sprintf(line+len,", audio=%u-%u", (unsigned int) i_first_audio_track,
 	      (unsigned int) i_last_audio_track);
     
-    display_line(LINE_ARTIST, 0, "Artist      : %-70s", artist);
-    display_line(LINE_CDNAME, 0, "CD          : %-70s", title);
-    display_line(LINE_GENRE,  0, "Genre       : %-40s", genre);
-    display_line(LINE_YEAR,   0, "Year        : %5s",   year);
+    display_line(LINE_ARTIST, 0, "CD Artist       : %-70s", artist);
+    display_line(LINE_CDNAME, 0, "CD Title        : %-70s", title);
+    display_line(LINE_GENRE,  0, "CD Genre        : %-40s", genre);
+    display_line(LINE_YEAR,   0, "CD Year         : %4s",   year);
   }
   
   mvprintw(LINE_CDINFO, 0, "CD info: %-70s", line);
@@ -608,48 +663,68 @@ usage(char *prog)
 }
 
 static void
-keys()
+print_keys()
 {
-  fprintf(stderr, key_bindings);
+  unsigned int i;
+  for (i=0; i < i_key_bindings; i++)
+    fprintf(stderr, "%s\n", key_bindings[i]);
 }
 
 static void
-tracklist(void)
+list_keys()
+{
+  unsigned int i;
+  for (i=0; i < i_key_bindings; i++) {
+    mvprintw(LINE_TRACK_PREV+i, 0, "%s", key_bindings[i]);
+    clrtoeol();
+  }
+  {
+    int key;
+    action("press any key to continue");
+    key = getch();
+    clrtobot();
+    action(NULL);
+    i_last_display_track = CDIO_INVALID_TRACK;
+  }
+}
+
+static void
+list_tracks(void)
 {
   track_t i;
+  int i_line=0;
   int s;
 
-  if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
-    printf("drive plays track %d (%02x:%02x)\n\n",
-	   sub.track, sub.rel_addr.msf.m, sub.rel_addr.msf.s);
-  }
-  printf("%2d  %02x:%02x  |  ", (int) i_last_track,
-	 toc[i_last_track+1].m,
-	 toc[i_last_track+1].s);
-  if (b_record)
-    printf("%s / %s", artist, title);
-  printf("\n");
-  printf("-----------+--------------------------------------------------\n");
-  for (i = i_first_track; i <= i_last_track; i++) {
-    s = cdio_audio_get_msf_seconds(&toc[i+1]) 
-      - cdio_audio_get_msf_seconds(&toc[i]);
-    printf("%2d  %02d:%02d  %s  ", i, 
-	   s / CDIO_CD_SECS_PER_MIN,  s % CDIO_CD_SECS_PER_MIN,
-	   (sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY &&
-	    sub.track == i) ? "*" : "|");
-    if (b_record) {
-      if ( !strlen(cd_info[i].title) && !strlen(cd_info[i].artist) )
-	printf("\n");
-      else { 
+  if (b_record) {
+    i_line=LINE_TRACK_PREV;
+    for (i = i_first_track; i <= i_last_track; i++) {
+      char line[80];
+      s = cdio_audio_get_msf_seconds(&toc[i+1]) 
+	- cdio_audio_get_msf_seconds(&toc[i]);
+      sprintf(line, "%2d  %02d:%02d  %s  ", i, 
+	      s / CDIO_CD_SECS_PER_MIN,  s % CDIO_CD_SECS_PER_MIN,
+	      (sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY &&
+	       sub.track == i) ? "*" : "|");
+      if (b_record) {
 	if ( strlen(cd_info[i].title) )
-	  printf("%s\n", cd_info[i].title);
+	  strcat(line, cd_info[i].title);
 	if ( strlen(cd_info[i].artist) > 0 ) {
-	  printf("           %s  %s\n", 
-		 (sub.track == i) ? "*" : "|", cd_info[i].artist);
+	  if (strlen(cd_info[i].title))
+	    strcat(line, " / ");
+	  strcat(line, cd_info[i].artist);
 	}
       }
-    } else
-      printf("\n");
+      mvprintw(i_line++, 0, line);
+      clrtoeol();
+    }
+    {
+      int key;
+      action("press any key to continue");
+      switch (key = getch());
+      i_last_display_track = CDIO_INVALID_TRACK;
+      clrtobot();
+      action(NULL);
+    }
   }
 }
 
@@ -909,7 +984,7 @@ tracklist(void)
 
 
 static void
-ps_tracklist(void)
+ps_list_tracks(void)
 {
   int i,s,y,sy;
   
@@ -973,7 +1048,7 @@ ps_tracklist(void)
 int
 main(int argc, char *argv[])
 {    
-  int             c,key,nostop=0;
+  int             c, nostop=0;
   char            *h;
   
   psz_program = strrchr(argv[0],'/');
@@ -1035,7 +1110,7 @@ main(int argc, char *argv[])
       todo = EJECT_CD;
       break;
     case 'k':
-      keys();
+      print_keys();
       exit(1);
     case 'h':
       usage(psz_program);
@@ -1117,11 +1192,8 @@ main(int argc, char *argv[])
 	  /* Should have been handled above. */
 	  cd_eject();
 	  break;
-	case LIST_TRACKS:
-	  tracklist();
-	  break;
 	case PS_LIST_TRACKS:
-	  ps_tracklist();
+	  ps_list_tracks();
 	  break;
 	case PLAY_TRACK:
 	  /* play just this one track */
@@ -1145,6 +1217,7 @@ main(int argc, char *argv[])
   }
   
   while ( !b_sig ) {
+    int key;
     if (!b_cd) read_toc(p_cdio);
     read_subchannel(p_cdio);
     display_status();
@@ -1174,6 +1247,17 @@ main(int argc, char *argv[])
       case 'C':
       case 'c':
 	cd_close(psz_device);
+	break;
+      case 'L':
+      case 'l':
+	list_tracks();
+	break;
+      case 'K':
+      case 'k':
+      case 'h':
+      case 'H':
+      case '?':
+	list_keys();
 	break;
       case ' ':
       case 'P':
