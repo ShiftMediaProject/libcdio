@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.1 2003/04/19 08:29:14 rocky Exp $
+#   $Id: Makefile.am,v 1.2 2003/04/19 09:13:06 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,6 +20,8 @@
 # Things to make the install (public) libcdio headers
 ########################################################
 #
+EXTRA_DIST = cdio.h.in
+
 pkgincludedir=$(includedir)/cdio
 
 pkginclude_HEADERS = cdio.h logging.h sector.h types.h util.h

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.h,v 1.2 2003/04/19 09:02:30 rocky Exp $
+    $Id: cdio.h.in,v 1.1 2003/04/19 09:13:06 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -29,6 +29,9 @@
    interface changes, we increase this number.
  */
 #define CDIO_API_VERSION 1
+
+/* Version of cdio package.  */
+#define CDIO_VERSION @VERSION@
 
 #ifdef  HAVE_SYS_TYPES_H
 #include <sys/types.h>
