@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.36 2003/09/01 02:07:52 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.37 2003/09/01 22:50:25 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.63)
@@ -37,7 +37,7 @@ then
   echo "*** This package has not been tested very well with non GNU compilers"
   echo "*** you should try to use 'gcc' for compiling this package."
 else
-  WARN_CFLAGS="-Wall -Wchar-subscripts -Wmissing-prototypes -Wmissing-declarations -Wunused -Wpointer-arith -Wwrite-strings -Wnested-externs -Wsign-promo -Wno-sign-compare"
+  WARN_CFLAGS="-Wall -Wchar-subscripts -Wmissing-prototypes -Wmissing-declarations -Wunused -Wpointer-arith -Wwrite-strings -Wnested-externs -Wno-sign-compare"
 
   for WOPT in $WARN_CFLAGS; do
     SAVE_CFLAGS="$CFLAGS"
