@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.21 2004/07/31 07:43:26 rocky Exp $
+  $Id: cd-read.c,v 1.22 2004/11/04 10:08:23 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -158,17 +158,17 @@ process_suboption(const char *subopt, subopt_entry_t *sublist, const int num,
     unsigned int i;
     bool is_help=strcmp(subopt, "help")==0;
     if (is_help) {
-      fprintf (stderr, "The list of sub options for \"%s\" are:\n", 
-               subopt_name);
+      report( stderr, "The list of sub options for \"%s\" are:\n", 
+	      subopt_name );
     } else {
-      fprintf (stderr, "Invalid option following \"%s\": %s.\n", 
-               subopt_name, subopt);
-      fprintf (stderr, "Should be one of: ");
+      report( stderr, "Invalid option following \"%s\": %s.\n", 
+	      subopt_name, subopt );
+      report( stderr, "Should be one of: " );
     }
     for (i=0; i<num-1; i++) {
-      fprintf(stderr, "%s, ", sublist[i].name);
+      report( stderr, "%s, ", sublist[i].name );
     }
-    fprintf(stderr, "or %s.\n", sublist[num-1].name);
+    report( stderr, "or %s.\n", sublist[num-1].name );
     exit (is_help ? EXIT_SUCCESS : EXIT_FAILURE);
   }
 }
@@ -258,11 +258,10 @@ parse_options (int argc, const char *argv[])
       case OP_SOURCE_NRG: 
       case OP_SOURCE_DEVICE: 
 	if (opts.source_image != IMAGE_UNKNOWN) {
-	  fprintf(stderr, 
-		  "%s: another source type option given before.\n", 
-		  program_name);
-	  fprintf(stderr, "%s: give only one source type option.\n", 
-		  program_name);
+	  report( stderr, "%s: another source type option given before.\n", 
+		  program_name );
+	  report( stderr, "%s: give only one source type option.\n", 
+		  program_name );
 	  break;
 	} 
 
@@ -306,10 +305,10 @@ parse_options (int argc, const char *argv[])
         break;
 
       default:
-        fprintf (stderr, "%s: %s\n", 
-                 poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
-                 poptStrerror(opt));
-        fprintf (stderr, "error while parsing command line - try --help\n");
+        report( stderr, "%s: %s\n", 
+		poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
+		poptStrerror(opt) );
+        report( stderr, "error while parsing command line - try --help\n" );
 	poptFreeContext(optCon);
 	free(program_name);
         exit (EXIT_FAILURE);
@@ -319,9 +318,8 @@ parse_options (int argc, const char *argv[])
     const char *remaining_arg = poptGetArg(optCon);
     if ( remaining_arg != NULL) {
       if (opts.source_image != IMAGE_UNKNOWN) {
-	fprintf (stderr, 
-		 "%s: Source specified in option %s and as %s\n", 
-		 program_name, source_name, remaining_arg);
+	report( stderr, "%s: Source specified in option %s and as %s\n", 
+		program_name, source_name, remaining_arg );
 	poptFreeContext(optCon);
 	free(program_name);
 	exit (EXIT_FAILURE);
@@ -333,9 +331,8 @@ parse_options (int argc, const char *argv[])
 	source_name = strdup(remaining_arg);
       
       if ( (poptGetArgs(optCon)) != NULL) {
-	fprintf (stderr, 
-		 "%s: Source specified in previously %s and %s\n", 
-		 program_name, source_name, remaining_arg);
+	report( stderr, "%s: Source specified in previously %s and %s\n", 
+		program_name, source_name, remaining_arg );
 	poptFreeContext(optCon);
 	free(program_name);
 	exit (EXIT_FAILURE);
@@ -351,9 +348,10 @@ parse_options (int argc, const char *argv[])
   }
 
   if (opts.read_mode == READ_MODE_UNINIT) {
-    fprintf(stderr, 
-	    "%s: Need to give a read mode (audio, m1f1, m1f2, m2f1 or m2f2)\n",
-	    program_name);
+    report( stderr, 
+	    "%s: Need to give a read mode "
+	    "(audio, m1f1, m1f2, m2f1 or m2f2)\n",
+	    program_name );
     poptFreeContext(optCon);
     free(program_name);
     exit(10);
@@ -362,9 +360,9 @@ parse_options (int argc, const char *argv[])
   /* Check consistency between start_lsn, end_lsn and num_sectors. */
 
   if (opts.nohexdump && opts.hexdump != 2) {
-    fprintf(stderr, 
+    report( stderr, 
 	    "%s: don't give both --hexdump and --no-hexdump together\n",
-	    program_name);
+	    program_name );
     exit(13);
   }
 
@@ -378,11 +376,10 @@ parse_options (int argc, const char *argv[])
       if (opts.num_sectors == 0) opts.num_sectors = 1;
     } else if (opts.num_sectors != 0) {
       if (opts.end_lsn <= opts.num_sectors) {
-	fprintf(stderr, 
-		"%s: end LSN (%lu) needs to be greater than "
+	report( stderr, "%s: end LSN (%lu) needs to be greater than "
 		" the sector to read (%lu)\n",
 		program_name, (unsigned long) opts.end_lsn, 
-		(unsigned long) opts.num_sectors);
+		(unsigned long) opts.num_sectors );
 	poptFreeContext(optCon);
 	exit(12);
       }
@@ -398,21 +395,21 @@ parse_options (int argc, const char *argv[])
   } else {
     /* We were given an end lsn. */
     if (opts.end_lsn < opts.start_lsn) {
-      fprintf(stderr, 
+      report( stderr, 
 	      "%s: end LSN (%lu) needs to be less than start LSN (%lu)\n",
 	      program_name, (unsigned long) opts.start_lsn, 
-	      (unsigned long) opts.end_lsn);
+	      (unsigned long) opts.end_lsn );
       poptFreeContext(optCon);
       free(program_name);
       exit(13);
     }
     if (opts.num_sectors != opts.end_lsn - opts.start_lsn + 1)
       if (opts.num_sectors != 0) {
-	 fprintf(stderr, 
+	 report( stderr, 
 		 "%s: inconsistency between start LSN (%lu), end (%lu), "
 		 "and count (%d)\n",
 		 program_name, (unsigned long) opts.start_lsn, 
-		 (unsigned long) opts.end_lsn, opts.num_sectors);
+		 (unsigned long) opts.end_lsn, opts.num_sectors );
 	 poptFreeContext(optCon);
 	 free(program_name);
 	 exit(14);
@@ -547,39 +544,39 @@ main(int argc, const char *argv[])
     switch (opts.read_mode) {
     case READ_AUDIO:
       if (cdio_read_audio_sector(p_cdio, &buffer, opts.start_lsn)) {
-        fprintf (stderr, "error reading block %u\n", 
-		 (unsigned int) opts.start_lsn);
+	report( stderr, "error reading block %u\n", 
+		(unsigned int) opts.start_lsn );
 	blocklen = 0;
       }
       break;
     case READ_M1F1:
       if (cdio_read_mode1_sector(p_cdio, &buffer, opts.start_lsn, false)) {
-        fprintf (stderr, "error reading block %u\n", 
-		 (unsigned int) opts.start_lsn);
+        report( stderr, "error reading block %u\n", 
+		(unsigned int) opts.start_lsn);
 	blocklen = 0;
       } else
 	blocklen=CDIO_CD_FRAMESIZE;
       break;
     case READ_M1F2:
       if (cdio_read_mode1_sector(p_cdio, &buffer, opts.start_lsn, true)) {
-        fprintf (stderr, "error reading block %u\n", 
-		 (unsigned int) opts.start_lsn);
+        report( stderr, "error reading block %u\n", 
+		(unsigned int) opts.start_lsn);
 	blocklen = 0;
       } else 
 	blocklen=M2RAW_SECTOR_SIZE;
       break;
     case READ_M2F1:
       if (cdio_read_mode2_sector(p_cdio, &buffer, opts.start_lsn, false)) {
-        fprintf (stderr, "error reading block %u\n", 
-		 (unsigned int) opts.start_lsn);
+        report( stderr, "error reading block %u\n", 
+		(unsigned int) opts.start_lsn);
 	blocklen=0;
       } else
 	blocklen=CDIO_CD_FRAMESIZE;
       break;
     case READ_M2F2:
       if (cdio_read_mode2_sector(p_cdio, &buffer, opts.start_lsn, true)) {
-        fprintf (stderr, "error reading block %u\n", 
-		 (unsigned int) opts.start_lsn);
+        report( stderr, "error reading block %u\n",  
+		(unsigned int) opts.start_lsn);
 	blocklen=0;
       } else
 	blocklen=M2F2_SECTOR_SIZE;

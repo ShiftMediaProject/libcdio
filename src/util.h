@@ -1,5 +1,5 @@
 /*
-  $Id: util.h,v 1.7 2004/08/07 01:48:36 rocky Exp $
+  $Id: util.h,v 1.8 2004/11/04 10:08:23 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -37,6 +37,11 @@
 #include <string.h>
 #endif
 #include <ctype.h>
+
+#ifdef HAVE_STDARG_H
+/* Get a definition for va_list.  */
+#include <stdarg.h>
+#endif
 
 #include <popt.h>
 /* Accomodate to older popt that doesn't support the "optional" flag */
@@ -108,5 +113,9 @@ void print_drive_capabilities(cdio_drive_read_cap_t  p_read_cap,
 			      cdio_drive_write_cap_t p_write_cap,
 			      cdio_drive_misc_cap_t  p_misc_cap);
 
+
+/* Common place for Output routine. Some environments like XBOX may not
+   stdout and stderr. */
+void report (FILE *stream, const char *psz_format, ...);
 
 #endif /* UTIL_H */

@@ -21,7 +21,7 @@ define(CDIO_VERSION_STR, 0.$1cvs)
 PACKAGE=libcdio
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.108 2004/11/01 08:53:47 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.109 2004/11/04 10:08:23 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE($PACKAGE, $CDIO_VERSION_STR)
@@ -116,7 +116,7 @@ AM_PATH_LIBPOPT(,
 dnl headers
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(glob.h stdbool.h)
+AC_CHECK_HEADERS(glob.h stdbool.h stdarg.h)
 
 dnl compiler
 AC_C_BIGENDIAN

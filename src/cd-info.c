@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.96 2004/10/29 02:11:48 rocky Exp $
+    $Id: cd-info.c,v 1.97 2004/11/04 10:08:23 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -26,6 +26,7 @@
 */
 
 #include "util.h"
+#include <stdarg.h>
 
 #ifdef HAVE_CDDB
 #include <cddb/cddb.h>
@@ -59,13 +60,8 @@
  
 #include <errno.h>
 
-#if 0
-#define STRONG "\033[1m"
-#define NORMAL "\033[0m"
-#else
 #define STRONG "__________________________________\n"
 #define NORMAL ""
-#endif
 
 #if CDIO_IOCTL_FINISHED
 struct cdrom_multisession  ms;
@@ -244,11 +240,10 @@ parse_options (int argc, const char *argv[])
     case OP_SOURCE_NRG: 
     case OP_SOURCE_DEVICE: 
       if (opts.source_image != IMAGE_UNKNOWN) {
-	fprintf(stderr, 
-		"%s: another source type option given before.\n", 
-		program_name);
-	fprintf(stderr, "%s: give only one source type option.\n", 
-		program_name);
+	report(stderr, "%s: another source type option given before.\n", 
+		   program_name);
+	report(stderr, "%s: give only one source type option.\n", 
+		   program_name);
 	break;
       } 
 
@@ -291,10 +286,9 @@ parse_options (int argc, const char *argv[])
     const char *remaining_arg = poptGetArg(optCon);
     if ( remaining_arg != NULL) {
       if (opts.source_image != IMAGE_UNKNOWN) {
-	fprintf (stderr, 
-		 "%s: Source '%s' given as an argument of an option and as "
-		 "unnamed option '%s'\n", 
-		 program_name, psz_my_source, remaining_arg);
+	report(stderr, "%s: Source '%s' given as an argument of an option and as "
+		   "unnamed option '%s'\n", 
+	       program_name, psz_my_source, remaining_arg);
 	poptFreeContext(optCon);
 	free(program_name);
 	exit (EXIT_FAILURE);
@@ -306,9 +300,8 @@ parse_options (int argc, const char *argv[])
 	source_name = strdup(remaining_arg);
       
       if ( (poptGetArgs(optCon)) != NULL) {
-	fprintf (stderr, 
-		 "%s: Source specified in previously %s and %s\n", 
-		 program_name, psz_my_source, remaining_arg);
+	report(stderr, "%s: Source specified in previously %s and %s\n", 
+		   program_name, psz_my_source, remaining_arg);
 	poptFreeContext(optCon);
 	free(program_name);
 	exit (EXIT_FAILURE);
@@ -344,7 +337,7 @@ cddb_dec_digit_sum(int n)
 static inline unsigned int
 msf_seconds(msf_t *msf) 
 {
-  return from_bcd8(msf->m)*60 + from_bcd8(msf->s);
+  return from_bcd8(msf->m)*CDIO_CD_SECS_PER_MIN + from_bcd8(msf->s);
 }
 
 /* 
@@ -438,7 +431,7 @@ print_cddb_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) {
   cddb_disc_t *disc = NULL;
 
   if (!conn) {
-    fprintf(stderr, "%s: unable to initialize libcddb\n", program_name);
+    report(stderr,  "%s: unable to initialize libcddb\n", program_name);
     goto cddb_destroy;
   }
 
@@ -470,7 +463,7 @@ print_cddb_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) {
     
   disc = cddb_disc_new();
   if (!disc) {
-    fprintf(stderr, "%s: unable to create CDDB disc structure", program_name);
+    report(stderr, "%s: unable to create CDDB disc structure", program_name);
     goto cddb_destroy;
   }
   for(i = 0; i < i_tracks; i++) {
@@ -484,8 +477,8 @@ print_cddb_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) {
     / CDIO_CD_FRAMES_PER_SEC;
 
   if (!cddb_disc_calc_discid(disc)) {
-    fprintf(stderr, "%s: libcddb calc discid failed.\n", 
-	    program_name);
+    report(stderr, "%s: libcddb calc discid failed.\n", 
+	       program_name);
     goto cddb_destroy;
   }
 
@@ -517,23 +510,23 @@ print_vcd_info(driver_id_t driver) {
   switch (open_rc) {
   case VCDINFO_OPEN_VCD: 
     if (vcdinfo_get_format_version (p_vcd) == VCD_TYPE_INVALID) {
-      fprintf(stderr, "VCD format detection failed");
+      report(stderr, "VCD format detection failed");
       vcdinfo_close(p_vcd);
       return;
     }
-    fprintf (stdout, "Format      : %s\n", 
-	     vcdinfo_get_format_version_str(p_vcd));
-    fprintf (stdout, "Album       : `%.16s'\n",  vcdinfo_get_album_id(p_vcd));
-    fprintf (stdout, "Volume count: %d\n",   vcdinfo_get_volume_count(p_vcd));
-    fprintf (stdout, "volume number: %d\n",  vcdinfo_get_volume_num(p_vcd));
+    report (stdout, "Format      : %s\n", 
+	    vcdinfo_get_format_version_str(p_vcd));
+    report (stdout, "Album       : `%.16s'\n",  vcdinfo_get_album_id(p_vcd));
+    report (stdout, "Volume count: %d\n",   vcdinfo_get_volume_count(p_vcd));
+    report (stdout, "volume number: %d\n",  vcdinfo_get_volume_num(p_vcd));
 
     break;
   case VCDINFO_OPEN_ERROR:
-    fprintf (stderr, "Error in Video CD opening of %s\n", source_name);
+    report( stderr, "Error in Video CD opening of %s\n", source_name );
     break;
   case VCDINFO_OPEN_OTHER:
-    fprintf (stderr, "Even though we thought this was a Video CD, "
-	     " further inspection says it is not.\n");
+    report( stderr, "Even though we thought this was a Video CD, "
+	    " further inspection says it is not.\n" );
     break;
   }
   if (p_vcd) vcdinfo_close(p_vcd);
@@ -560,7 +553,7 @@ print_iso9660_recurse (CdIo *p_cdio, const char pathname[],
   printf ("%s:\n", pathname);
 
   if (NULL == entlist) {
-    fprintf (stderr, "Error getting above directory information\n");
+    report( stderr, "Error getting above directory information\n" );
     return;
   }
 
@@ -652,7 +645,7 @@ print_iso9660_fs (CdIo *p_cdio, cdio_fs_anal_t fs,
 #define print_vd_info(title, fn)		\
   psz_str = fn(&pvd);				\
   if (psz_str) {				\
-    fprintf(stdout, title ": %s\n", psz_str);	\
+    report(stdout, title ": %s\n", psz_str);	\
     free(psz_str);				\
     psz_str = NULL;				\
   }
@@ -750,8 +743,8 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
   switch(CDIO_FSTYPE(fs)) {
   case CDIO_FS_UDF:
   case CDIO_FS_ISO_UDF:
-    fprintf(stdout, "UDF: version %x.%2.2x\n",
-	    cdio_iso_analysis.UDFVerMajor, cdio_iso_analysis.UDFVerMinor);
+    report(stdout, "UDF: version %x.%2.2x\n",
+	   cdio_iso_analysis.UDFVerMajor, cdio_iso_analysis.UDFVerMinor);
     break;
   default: ;
   }
@@ -1018,7 +1011,7 @@ main(int argc, const char *argv[])
     if (device_list) free(device_list);
   }
 
-  printf(STRONG "\n");
+  report(stdout, STRONG "\n");
   
 
   discmode = cdio_get_discmode(p_cdio);
@@ -1104,7 +1097,7 @@ main(int argc, const char *argv[])
     
 #if CDIO_IOCTL_FINISHED
   if (!opts.no_ioctl) {
-    printf(STRONG "What ioctl's report...\n" NORMAL);
+    report(stdout, "What ioctl's report...\n");
   
 #ifdef CDROMMULTISESSION
     /* get multisession */
@@ -1147,7 +1140,7 @@ main(int argc, const char *argv[])
 #endif /*CDIO_IOCTL_FINISHED*/
   
   if (!opts.no_analysis) {
-    printf(STRONG "CD Analysis Report\n" NORMAL);
+    report(stdout, STRONG "CD Analysis Report\n" NORMAL);
     
     /* try to find out what sort of CD we have */
     if (0 == num_data) {

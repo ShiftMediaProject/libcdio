@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.9 2004/08/27 11:53:38 rocky Exp $
+  $Id: cd-drive.c,v 1.10 2004/11/04 10:08:23 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -87,11 +87,10 @@ parse_options (int argc, const char *argv[])
       
     case OP_SOURCE_DEVICE: 
       if (opts.source_image != IMAGE_UNKNOWN) {
-	fprintf(stderr, 
-		"%s: another source type option given before.\n", 
-		program_name);
-	fprintf(stderr, "%s: give only one source type option.\n", 
-		program_name);
+	report( stderr, "%s: another source type option given before.\n", 
+		program_name );
+	report( stderr, "%s: give only one source type option.\n", 
+		program_name );
 	break;
       } else {
 	opts.source_image  = IMAGE_DEVICE;
@@ -109,9 +108,8 @@ parse_options (int argc, const char *argv[])
     const char *remaining_arg = poptGetArg(optCon);
     if ( remaining_arg != NULL) {
       if (opts.source_image != IMAGE_UNKNOWN) {
-	fprintf (stderr, 
-		 "%s: Source specified in option %s and as %s\n", 
-		 program_name, source_name, remaining_arg);
+	report( stderr, "%s: Source specified in option %s and as %s\n", 
+		program_name, source_name, remaining_arg);
 	poptFreeContext(optCon);
 	free(program_name);
 	exit (EXIT_FAILURE);
@@ -123,9 +121,8 @@ parse_options (int argc, const char *argv[])
 	source_name = strdup(remaining_arg);
       
       if ( (poptGetArgs(optCon)) != NULL) {
-	fprintf (stderr, 
-		 "%s: Source specified in previously %s and %s\n", 
-		 program_name, source_name, remaining_arg);
+	report( stderr, "%s: Source specified in previously %s and %s\n", 
+		program_name, source_name, remaining_arg);
 	poptFreeContext(optCon);
 	free(program_name);
 	exit (EXIT_FAILURE);

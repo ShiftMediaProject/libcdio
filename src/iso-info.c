@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.16 2004/10/30 02:55:17 rocky Exp $
+    $Id: iso-info.c,v 1.17 2004/11/04 10:08:23 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -23,8 +23,8 @@
 #include "util.h"
 #undef err_exit
 
-#define err_exit(fmt, args...) \
-  fprintf(stderr, "%s: "fmt, program_name, ##args); \
+#define err_exit(fmt, args...)			    \
+  report (stderr, "%s: "fmt, program_name, ##args); \
   iso9660_close(p_iso);				    \
   return(EXIT_FAILURE);
 
@@ -124,9 +124,8 @@ parse_options (int argc, const char *argv[])
     const char *remaining_arg = poptGetArg(optCon);
     if ( remaining_arg != NULL) {
       if ( (poptGetArgs(optCon)) != NULL) {
-	fprintf (stderr, 
-		 "%s: Source specified in previously %s and %s\n", 
-		 program_name, source_name, remaining_arg);
+	report( stderr, "%s: Source specified in previously %s and %s\n", 
+		    program_name, source_name, remaining_arg );
 	poptFreeContext(optCon);
 	exit (EXIT_FAILURE);
       }
@@ -170,7 +169,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
   printf ("%s:\n", pathname);
 
   if (NULL == entlist) {
-    fprintf (stderr, "Error getting above directory information\n");
+    report( stderr, "Error getting above directory information\n" );
     return;
   }
 
