@@ -1,5 +1,5 @@
 /*
-  $Id: iso-read.c,v 1.2 2004/02/26 00:13:24 rocky Exp $
+  $Id: iso-read.c,v 1.3 2004/02/29 16:02:48 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -165,6 +165,7 @@ main(int argc, const char *argv[])
   iso9660_stat_t *statbuf;
   FILE *outfd;
   int i;
+  iso9660_t *iso;
   
   init();
 
@@ -172,7 +173,7 @@ main(int argc, const char *argv[])
      be reflected in `arguments'. */
   parse_options(argc, argv);
      
-  iso9660_t *iso = iso9660_open (opts.iso9660_image);
+  iso = iso9660_open (opts.iso9660_image);
   
   if (NULL == iso) {
     fprintf(stderr, "Sorry, couldn't open ISO-9660 image %s\n", 
