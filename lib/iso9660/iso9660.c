@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.6 2005/02/22 02:02:46 rocky Exp $
+    $Id: iso9660.c,v 1.7 2005/02/22 04:32:52 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.6 2005/02/22 02:02:46 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.7 2005/02/22 04:32:52 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enums1     iso_enums1;
@@ -110,7 +110,7 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
   p_tm->tm_hour   = idr_date->dt_hour;
   p_tm->tm_min    = idr_date->dt_minute;
   p_tm->tm_sec    = idr_date->dt_second;
-  p_tm->tm_gmtoff = - timezone * 15;
+  p_tm->tm_gmtoff = - idr_date->dt_gmtoff * (15 * 60);
   p_tm->tm_isdst  = -1; /* information not available */
 
   
@@ -156,7 +156,7 @@ iso9660_get_ltime (const iso9660_ltime_t *p_ldate,
   set_ltime_field(tm_min,  lt_minute, 0);
   set_ltime_field(tm_sec,  lt_second, 0);
   p_tm->tm_isdst= -1; /* information not available */
-  p_tm->tm_gmtoff = - timezone * 15;
+  p_tm->tm_gmtoff = - p_ldate->lt_gmtoff * (15 * 60);
 
   /* Recompute tm_wday and tm_yday via mktime. */
   {

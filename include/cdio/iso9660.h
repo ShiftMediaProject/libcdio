@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.72 2005/02/22 02:02:46 rocky Exp $
+    $Id: iso9660.h,v 1.73 2005/02/22 04:32:52 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -212,19 +212,19 @@ typedef enum strncpy_pad_check {
 PRAGMA_BEGIN_PACKED
 
 /*! 
-  \brief ISO-9660 shorter-format time structure.
+  \brief ISO-9660 shorter-format time structure. See ECMA 9.1.5.
   
   @see iso9660_dtime
  */
 struct	iso9660_dtime_s {
-  uint8_t 	dt_year;
-  uint8_t 	dt_month;  /**< Has value in range 1..12. Note starts
+  iso711_t 	dt_year;   /**< Number of years since 1900 */
+  iso711_t 	dt_month;  /**< Has value in range 1..12. Note starts
                               at 1, not 0 like a tm struct. */
-  uint8_t	dt_day;
-  uint8_t	dt_hour;
-  uint8_t	dt_minute;
-  uint8_t	dt_second;
-  int8_t	dt_gmtoff; /**< GMT values -48 .. + 52 in 15 minute
+  iso711_t	dt_day;    /**< Day of the month from 1 to 31 */
+  iso711_t	dt_hour;   /**< Hour of the day from 0 to 23 */
+  iso711_t	dt_minute; /**< Minute of the hour from 0 to 59 */
+  iso711_t	dt_second; /**< Second of the minute from 0 to 59 */
+  iso712_t	dt_gmtoff; /**< GMT values -48 .. + 52 in 15 minute
                               intervals */
 } GNUC_PACKED;
 

@@ -1,5 +1,5 @@
 /*
-    $Id: rock.h,v 1.6 2005/02/21 09:00:53 rocky Exp $
+    $Id: rock.h,v 1.7 2005/02/22 04:32:52 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -275,7 +275,7 @@ typedef struct iso_rock_time_s {
     iso9660_ltime_t ltime;
     iso9660_dtime_t dtime;
   } t;
-} iso_rock_time_t;
+} GNUC_PACKED iso_rock_time_t;
 
 typedef struct iso_rock_statbuf_s {
   bool_3way_t   b3_rock;              /**< has Rock Ridge extension. 
