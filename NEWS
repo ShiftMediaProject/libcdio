@@ -1,6 +1,7 @@
 0.70
 
 - SCSI MMC interface routine (all except Darwin)
+- CD-Text support (all except Darwin)
 - Distinguish DVD's from CD's
 - Code clean-ups and reduced code duplication
 - Better CUE parsing 
@@ -134,4 +135,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.50 2004/08/27 11:22:40 rocky Exp $
+$Id: NEWS,v 1.51 2004/08/28 16:31:01 rocky Exp $
