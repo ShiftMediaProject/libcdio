@@ -8,7 +8,7 @@ _cdio_list_new
 _cdio_list_node_data
 _cdio_list_node_free
 _cdio_list_node_next
-_cdio_list_preappend
+_cdio_list_prepend
 _cdio_malloc
 _cdio_strfreev
 _cdio_strsplit
