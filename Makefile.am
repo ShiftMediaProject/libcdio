@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.14 2003/08/31 20:52:05 rocky Exp $
+#   $Id: Makefile.am,v 1.15 2003/09/19 04:38:39 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -81,3 +81,12 @@ distdir-regression: $(DISTFILES_REGRESSION)
 	  ! -type d ! -perm -400 -exec chmod a+r {} \; -o \
 	  ! -type d ! -perm -444 -exec $(SHELL) $(install_sh) -c -m a+r {} {} \; \
 	|| chmod -R a+r $(distdir)
+
+check_nrg.sh: $(top_builddir)/config.status check_nrg.sh.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+	chmod +x config_nrg.sh
+check_cue.sh: $(top_builddir)/config.status check_cue.sh.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+	chmod +x config_cue.csh
+
+make-executable:
