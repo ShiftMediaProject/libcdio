@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.19 2005/03/18 15:42:25 rocky Exp $
+    $Id: cdda-player.c,v 1.20 2005/03/19 06:42:24 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -550,7 +550,7 @@ skip(int diff)
   if (!b_cd ||  i_first_track == CDIO_CDROM_LEADOUT_TRACK)
     return;
   
-  sec  = cdio_audio_get_msf_seconds(&sub.abs_addr.msf);
+  sec  = cdio_audio_get_msf_seconds(&sub.abs_addr);
   sec += diff;
   if (sec < 0) sec = 0;
   
@@ -607,24 +607,17 @@ display_status(bool b_status_only)
 	uint8_t i_level = audio_volume.level[i_vol_port];
 	sprintf(line,
 		"track %2d - %02d:%02d of %s (%02d:%02d abs) %s volume: %d",
-		sub.track,
-		sub.rel_addr.msf.m,
-		sub.rel_addr.msf.s,
+		sub.track, sub.rel_addr.m, sub.rel_addr.s, 
 		cd_info[sub.track].length,
-		sub.abs_addr.msf.m,
-		sub.abs_addr.msf.s,
+		sub.abs_addr.m, sub.abs_addr.s,
 		mmc_audio_state2str(sub.audio_status),
 		(i_level*100+128) / 256 );
       
       } else 
 	sprintf(line,"track %2d - %02d:%02d of %s (%02d:%02d abs) %s",
-		sub.track,
-		sub.rel_addr.msf.m,
-		sub.rel_addr.msf.s,
-		cd_info[sub.track].length,
-		sub.abs_addr.msf.m,
-		sub.abs_addr.msf.s,
-	      mmc_audio_state2str(sub.audio_status));
+		sub.track, sub.rel_addr.m, sub.rel_addr.s,
+		cd_info[sub.track].length, sub.abs_addr.m, sub.abs_addr.s,
+		mmc_audio_state2str(sub.audio_status));
   } else {
     sprintf(line,"%s", mmc_audio_state2str(sub.audio_status));
     
@@ -1403,11 +1396,8 @@ main(int argc, char *argv[])
 		sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
 	      {
 		printf("track %2d - %02d:%02d (%02d:%02d abs) ",
-		       sub.track,
-		       sub.rel_addr.msf.m,
-		       sub.rel_addr.msf.s,
-		       sub.abs_addr.msf.m,
-		       sub.abs_addr.msf.s);
+		       sub.track, sub.rel_addr.m, sub.rel_addr.s,
+		       sub.abs_addr.m, sub.abs_addr.s);
 	      }
 	    }
 	    printf("drive state: %s\n", 

@@ -19,7 +19,7 @@ define(RELEASE_NUM, 73)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.150 2005/03/17 07:36:09 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.151 2005/03/19 06:42:22 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -156,6 +156,9 @@ AM_PATH_LIBPOPT(,
 		  enable_cd_read=no; 
 		  enable_iso_info=no; 
 		  enable_iso_read=no])
+
+AC_DEFINE(LIBCDIO_CONFIG_H, 1, 
+  [Is set when libcdio's config.h has been included. Applications wishing to sue their own config.h values (such as set by the application's configure script can define this before including any of libcdio's headers.])
 
 dnl headers
 
@@ -587,6 +590,7 @@ chmod +x test/check_nrg.sh
 chmod +x test/check_cue.sh
 chmod +x test/check_iso.sh
 chmod +x test/check_paranoia.sh
+cp config.h include/cdio/cdio_config.h
 ]],[[]])
 
 AC_OUTPUT

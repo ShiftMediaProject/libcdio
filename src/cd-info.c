@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.136 2005/03/18 12:56:00 rocky Exp $
+    $Id: cd-info.c,v 1.137 2005/03/19 06:42:24 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1092,10 +1092,10 @@ main(int argc, const char *argv[])
 
 	if (b_position)
 	  report( stdout, " at: %02d:%02d abs / %02d:%02d track %d\n",
-		  subchannel.abs_addr.msf.m,
-		  subchannel.abs_addr.msf.s,
-		  subchannel.rel_addr.msf.m,
-		  subchannel.rel_addr.msf.s,
+		  subchannel.abs_addr.m,
+		  subchannel.abs_addr.s,
+		  subchannel.rel_addr.m,
+		  subchannel.rel_addr.s,
 		  subchannel.track );
 	
 	if (b_volume) {

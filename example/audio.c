@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.3 2005/03/16 02:19:20 rocky Exp $
+    $Id: audio.c,v 1.4 2005/03/19 06:42:24 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -464,11 +464,8 @@ main(int argc, char *argv[])
 		sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
 	      {
 		printf("track %2d - %02d:%02d (%02d:%02d abs) ",
-		       sub.track,
-		       sub.rel_addr.msf.m,
-		       sub.rel_addr.msf.s,
-		       sub.abs_addr.msf.m,
-		       sub.abs_addr.msf.s);
+		       sub.track, sub.rel_addr.m, sub.rel_addr.s,
+		       sub.abs_addr.m, sub.abs_addr.s);
 	      }
 	    }
 	    printf("drive state: %s\n", 

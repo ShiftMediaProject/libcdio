@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.24 2005/03/17 15:32:27 rocky Exp $
+    $Id: freebsd.c,v 1.25 2005/03/19 06:42:24 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.24 2005/03/17 15:32:27 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.25 2005/03/19 06:42:24 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -361,16 +361,23 @@ audio_read_subchannel_freebsd (void *p_user_data,
   struct cd_sub_channel_info bsdinfo;
   i_rc = ioctl(p_env->gen.fd, CDIOCREADSUBCHANNEL, &bsdinfo);
   if (0 == i_rc) {
-    /*p_subchannel*/
+    msf_t msf;
     p_subchannel->audio_status = bsdinfo.header.audio_status;
     p_subchannel->address      = bsdinfo.what.position.addr_type;
+
     p_subchannel->control      = bsdinfo.what.position.control;
     p_subchannel->track        = bsdinfo.what.position.track_number;
     p_subchannel->index        = bsdinfo.what.position.index_number;
-    memcpy(&(p_subchannel->abs_addr),  &bsdinfo.what.position.absaddr.lba,
-	   sizeof(cdio_subchannel_t));
-    memcpy(&(p_subchannel->rel_addr),  &bsdinfo.what.position.reladdr.lba,
-	   sizeof(cdio_subchannel_t));
+
+    cdio_lba_to_msf(bsdinfo.what.position.absaddr.lba, &msf);
+    p_subchannel->abs_addr.m = cdio_from_bcd8 (msf.m);
+    p_subchannel->abs_addr.s = cdio_from_bcd8 (msf.s);
+    p_subchannel->abs_addr.f = cdio_from_bcd8 (msf.f);
+
+    cdio_lsn_to_msf(bsdinfo.what.position.reladr.lba, &msf);
+    p_subchannel->rel_addr.m = cdio_from_bcd8 (msf.m);
+    p_subchannel->rel_addr.s = cdio_from_bcd8 (msf.s);
+    p_subchannel->rel_addr.f = cdio_from_bcd8 (msf.f);
  }
   return i_rc;
 }
@@ -463,7 +470,6 @@ get_arg_freebsd (void *user_data, const char key[])
  */
 static char *
 get_mcn_freebsd (const void *p_user_data) {
-
   const _img_private_t *p_env = p_user_data;
 
   return (p_env->access_mode == _AM_IOCTL) 

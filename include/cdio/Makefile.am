@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.23 2005/03/01 00:41:34 rocky Exp $
+#   $Id: Makefile.am,v 1.24 2005/03/19 06:42:24 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -29,6 +29,7 @@ libcdioinclude_HEADERS = \
 	paranoia.h \
 	cdda.h \
 	cdio.h \
+	cdio_config.h \
 	cdtext.h \
 	cdtext.h \
 	cd_types.h \
@@ -52,3 +53,4 @@ libcdioinclude_HEADERS = \
 EXTRA_DIST = version.h.in
 BUILT_SOURCES = version.h
 
+MOSTLYCLEANFILES = cdio_config.h

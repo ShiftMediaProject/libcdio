@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.22 2005/03/09 10:23:03 rocky Exp $
+    $Id: mmc.c,v 1.23 2005/03/19 06:42:24 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -602,18 +602,18 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
   i_rc = mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, &cdb, SCSI_MMC_DATA_READ, 
                      sizeof(mmc_subchannel_t), &mmc_subchannel);
   if (DRIVER_OP_SUCCESS == i_rc) {
-    p_subchannel->format         = mmc_subchannel.format;
-    p_subchannel->audio_status   = mmc_subchannel.audio_status;
-    p_subchannel->address        = mmc_subchannel.address;
-    p_subchannel->control        = mmc_subchannel.control;
-    p_subchannel->track          = mmc_subchannel.track;
-    p_subchannel->index          = mmc_subchannel.index;
-    p_subchannel->abs_addr.msf.m = mmc_subchannel.abs_addr[1];
-    p_subchannel->abs_addr.msf.s = mmc_subchannel.abs_addr[2];
-    p_subchannel->abs_addr.msf.f = mmc_subchannel.abs_addr[3];
-    p_subchannel->rel_addr.msf.m = mmc_subchannel.rel_addr[1];
-    p_subchannel->rel_addr.msf.s = mmc_subchannel.rel_addr[2];
-    p_subchannel->rel_addr.msf.f = mmc_subchannel.rel_addr[3];
+    p_subchannel->format       = mmc_subchannel.format;
+    p_subchannel->audio_status = mmc_subchannel.audio_status;
+    p_subchannel->address      = mmc_subchannel.address;
+    p_subchannel->control      = mmc_subchannel.control;
+    p_subchannel->track        = mmc_subchannel.track;
+    p_subchannel->index        = mmc_subchannel.index;
+    p_subchannel->abs_addr.m   = mmc_subchannel.abs_addr[1];
+    p_subchannel->abs_addr.s   = mmc_subchannel.abs_addr[2];
+    p_subchannel->abs_addr.f   = mmc_subchannel.abs_addr[3];
+    p_subchannel->rel_addr.m   = mmc_subchannel.rel_addr[1];
+    p_subchannel->rel_addr.s   = mmc_subchannel.rel_addr[2];
+    p_subchannel->rel_addr.f   = mmc_subchannel.rel_addr[3];
   }
   return i_rc;
 }

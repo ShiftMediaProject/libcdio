@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.29 2005/03/18 01:15:49 rocky Exp $
+    $Id: types.h,v 1.30 2005/03/19 06:42:24 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -30,6 +30,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+#ifndef LIBCDIO_CONFIG_H
+#include <cdio/cdio_config.h>
+#endif
 
   /* provide some C99 definitions */
 
