@@ -1,3 +1,10 @@
+0.61
+   Cygwin/MinGW port.
+   get-default-device reworked to be smarter about finding devices.
+   cd-info: add --no-headers. version ID is from package now. Show default
+            device on "--version" output.
+   API: add routine report if string refers to a device or not
+   Make use of features in libcddb 0.9.4.
 0.6
    Bug: eject wouldn't.
    If given .bin find corresponding .cue. If no cue, complain.
