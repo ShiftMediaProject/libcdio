@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.37 2003/09/21 04:36:41 rocky Exp $
+    $Id: cd-info.c,v 1.38 2003/09/25 09:38:16 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -66,7 +66,6 @@
 #endif
 
 #if CDIO_IOCTL_FINISHED
-struct cdrom_mcn           mcn;
 struct cdrom_multisession  ms;
 struct cdrom_subchnl       sub;
 #endif
@@ -736,6 +735,7 @@ main(int argc, const char *argv[])
   int            first_data  = -1;  /* # of first data track */
   int            first_audio = -1;  /* # of first audio track */
   cdio_analysis_t cdio_analysis; 
+  char           *media_catalog_number;  
       
   memset(&cdio_analysis, 0, sizeof(cdio_analysis));
   init();
@@ -845,19 +845,21 @@ main(int argc, const char *argv[])
     if (i == num_tracks) i = CDIO_CDROM_LEADOUT_TRACK-1;
   }
 
+  /* get MCN */
+  media_catalog_number = cdio_get_mcn(cdio);
+  printf("Get MCN     : "); fflush(stdout);
+  if (NULL == media_catalog_number)
+    printf("not available\n");
+  else {
+    printf("%s\n", media_catalog_number);
+    free(media_catalog_number);
+  }
+  
+    
 #if CDIO_IOCTL_FINISHED
   if (!opts.no_ioctl) {
     printf(STRONG "What ioctl's report...\n" NORMAL);
   
-#ifdef CDROM_GET_MCN
-    /* get mcn */
-    printf("Get MCN     : "); fflush(stdout);
-    if (ioctl(filehandle,CDROM_GET_MCN, &mcn))
-      printf("FAILED\n");
-    else
-      printf("%s\n",mcn.medium_catalog_number);
-#endif
-    
 #ifdef CDROM_DISC_STATUS
     /* get disk status */
     printf("disc status : "); fflush(stdout);

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.20 2003/09/20 12:34:02 rocky Exp $
+    $Id: cdio.h,v 1.21 2003/09/25 09:38:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -129,6 +129,15 @@ extern "C" {
     NULL is returned if we couldn't get a default device.
   */
   char * cdio_get_default_device (const CdIo *obj);
+
+  /*!
+    Return the media catalog number MCN from the CD or NULL if there is none or
+    we don't have the ability to get it.
+
+    Note: string is malloc'd so caller has to free() the returned
+    string when done with it.
+  */
+  char *cdio_get_mcn (const CdIo *obj);
 
   /*!
     Return a string containing the name of the driver in use.

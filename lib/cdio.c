@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.26 2003/09/20 12:34:02 rocky Exp $
+    $Id: cdio.c,v 1.27 2003/09/25 09:38:16 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.26 2003/09/20 12:34:02 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.27 2003/09/25 09:38:16 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -171,7 +171,7 @@ cdio_eject_media (CdIo **obj)
   if ((obj == NULL) || (*obj == NULL)) return 1;
 
   if ((*obj)->op.eject_media) {
-    int ret = (*obj)->op.eject_media ((*obj)->user_data);
+    int ret = (*obj)->op.eject_media ((*obj)->env);
     if (0 == ret) {
       cdio_destroy(*obj);
       *obj = NULL;
@@ -194,7 +194,7 @@ cdio_get_arg (const CdIo *obj, const char key[])
   if (obj == NULL) return NULL;
   
   if (obj->op.get_arg) {
-    return obj->op.get_arg (obj->user_data, key);
+    return obj->op.get_arg (obj->env, key);
   } else {
     return NULL;
   }
@@ -257,9 +257,24 @@ cdio_get_first_track_num (const CdIo *obj)
   cdio_assert (obj != NULL);
 
   if (obj->op.get_first_track_num) {
-    return obj->op.get_first_track_num (obj->user_data);
+    return obj->op.get_first_track_num (obj->env);
   } else {
     return CDIO_INVALID_TRACK;
+  }
+}
+
+/*!
+  Return a string containing the name of the driver in use.
+  if CdIo is NULL (we haven't initialized a specific device driver), 
+  then return NULL.
+*/
+char *
+cdio_get_mcn (const CdIo *obj) 
+{
+  if (obj->op.get_mcn) {
+    return obj->op.get_mcn (obj->env);
+  } else {
+    return NULL;
   }
 }
 
@@ -273,7 +288,7 @@ cdio_get_num_tracks (const CdIo *obj)
   if (obj == NULL) return CDIO_INVALID_TRACK;
 
   if (obj->op.get_num_tracks) {
-    return obj->op.get_num_tracks (obj->user_data);
+    return obj->op.get_num_tracks (obj->env);
   } else {
     return CDIO_INVALID_TRACK;
   }
@@ -288,7 +303,7 @@ cdio_get_track_format(const CdIo *obj, track_t track_num)
   cdio_assert (obj != NULL);
 
   if (obj->op.get_track_format) {
-    return obj->op.get_track_format (obj->user_data, track_num);
+    return obj->op.get_track_format (obj->env, track_num);
   } else {
     return TRACK_FORMAT_ERROR;
   }
@@ -308,7 +323,7 @@ cdio_get_track_green(const CdIo *obj, track_t track_num)
   cdio_assert (obj != NULL);
 
   if (obj->op.get_track_green) {
-    return obj->op.get_track_green (obj->user_data, track_num);
+    return obj->op.get_track_green (obj->env, track_num);
   } else {
     return false;
   }
@@ -327,7 +342,7 @@ cdio_get_track_lba(const CdIo *obj, track_t track_num)
   if (obj == NULL) return CDIO_INVALID_LBA;
 
   if (obj->op.get_track_lba) {
-    return obj->op.get_track_lba (obj->user_data, track_num);
+    return obj->op.get_track_lba (obj->env, track_num);
   } else {
     msf_t msf;
     if (obj->op.get_track_msf) 
@@ -350,7 +365,7 @@ cdio_get_track_lsn(const CdIo *obj, track_t track_num)
   if (obj == NULL) return CDIO_INVALID_LBA;
 
   if (obj->op.get_track_lba) {
-    return cdio_lba_to_lsn(obj->op.get_track_lba (obj->user_data, track_num));
+    return cdio_lba_to_lsn(obj->op.get_track_lba (obj->env, track_num));
   } else {
     msf_t msf;
     if (cdio_get_track_msf(obj, track_num, &msf))
@@ -372,9 +387,9 @@ cdio_get_track_msf(const CdIo *obj, track_t track_num, /*out*/ msf_t *msf)
   cdio_assert (obj != NULL);
 
   if (obj->op.get_track_msf) {
-    return obj->op.get_track_msf (obj->user_data, track_num, msf);
+    return obj->op.get_track_msf (obj->env, track_num, msf);
   } else if (obj->op.get_track_lba) {
-    lba_t lba = obj->op.get_track_lba (obj->user_data, track_num);
+    lba_t lba = obj->op.get_track_lba (obj->env, track_num);
     if (lba  == CDIO_INVALID_LBA) return false;
     cdio_lba_to_msf(lba, msf);
     return true;
@@ -443,13 +458,13 @@ cdio_init(void)
 }
 
 CdIo *
-cdio_new (void *user_data, const cdio_funcs *funcs)
+cdio_new (void *env, const cdio_funcs *funcs)
 {
   CdIo *new_obj;
 
   new_obj = _cdio_malloc (sizeof (CdIo));
 
-  new_obj->user_data = user_data;
+  new_obj->env = env;
   new_obj->op = *funcs;
 
   return new_obj;
@@ -465,7 +480,7 @@ cdio_destroy (CdIo *obj)
   if (obj == NULL) return;
 
   if (obj->op.free != NULL) 
-    obj->op.free (obj->user_data);
+    obj->op.free (obj->env);
   free (obj);
 }
 
@@ -480,7 +495,7 @@ cdio_lseek (const CdIo *obj, off_t offset, int whence)
   if (obj == NULL) return -1;
   
   if (obj->op.lseek)
-    return obj->op.lseek (obj->user_data, offset, whence);
+    return obj->op.lseek (obj->env, offset, whence);
   return -1;
 }
 
@@ -495,7 +510,7 @@ cdio_read (const CdIo *obj, void *buf, size_t size)
   if (obj == NULL) return -1;
   
   if (obj->op.read)
-    return obj->op.read (obj->user_data, buf, size);
+    return obj->op.read (obj->env, buf, size);
   return -1;
 }
 
@@ -506,7 +521,7 @@ cdio_read_audio_sector (const CdIo *obj, void *buf, lsn_t lsn)
   cdio_assert (buf != NULL);
 
   if  (obj->op.read_audio_sectors != NULL)
-    return obj->op.read_audio_sectors (obj->user_data, buf, lsn, 1);
+    return obj->op.read_audio_sectors (obj->env, buf, lsn, 1);
   return -1;
 }
 
@@ -518,7 +533,7 @@ cdio_read_audio_sectors (const CdIo *obj, void *buf, lsn_t lsn,
   cdio_assert (buf != NULL);
 
   if  (obj->op.read_audio_sectors != NULL)
-    return obj->op.read_audio_sectors (obj->user_data, buf, lsn, nblocks);
+    return obj->op.read_audio_sectors (obj->env, buf, lsn, nblocks);
   return -1;
 }
 
@@ -585,7 +600,7 @@ cdio_read_mode2_sector (const CdIo *obj, void *buf, lsn_t lsn,
 	      || obj->op.read_mode2_sectors != NULL);
 
   if (obj->op.read_mode2_sector)
-    return obj->op.read_mode2_sector (obj->user_data, buf, lsn, is_form2);
+    return obj->op.read_mode2_sector (obj->env, buf, lsn, is_form2);
 
   /* fallback */
   if (obj->op.read_mode2_sectors != NULL)
@@ -601,7 +616,7 @@ cdio_read_mode2_sectors (const CdIo *obj, void *buf, lsn_t lsn, bool mode2raw,
   cdio_assert (buf != NULL);
   cdio_assert (obj->op.read_mode2_sectors != NULL);
   
-  return obj->op.read_mode2_sectors (obj->user_data, buf, lsn,
+  return obj->op.read_mode2_sectors (obj->env, buf, lsn,
                                      mode2raw, num_sectors);
 }
 
@@ -610,7 +625,7 @@ cdio_stat_size (const CdIo *obj)
 {
   cdio_assert (obj != NULL);
 
-  return obj->op.stat_size (obj->user_data);
+  return obj->op.stat_size (obj->env);
 }
 
 /*!
@@ -623,7 +638,7 @@ cdio_set_arg (CdIo *obj, const char key[], const char value[])
   cdio_assert (obj->op.set_arg != NULL);
   cdio_assert (key != NULL);
 
-  return obj->op.set_arg (obj->user_data, key, value);
+  return obj->op.set_arg (obj->env, key, value);
 }
 
 static CdIo *

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.17 2003/09/20 12:34:02 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.18 2003/09/25 09:38:16 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -38,7 +38,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.17 2003/09/20 12:34:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.18 2003/09/25 09:38:16 rocky Exp $";
 
 /* structures used */
 
@@ -143,7 +143,7 @@ typedef struct {
 } _img_private_t;
 
 static bool     _cdio_parse_nero_footer (_img_private_t *_obj);
-static uint32_t _cdio_stat_size (void *user_data);
+static uint32_t _cdio_stat_size (void *env);
 
 /* Updates internal track TOC, so we can later 
    simulate ioctl(CDROMREADTOCENTRY).
@@ -517,9 +517,9 @@ _cdio_init (_img_private_t *_obj)
   information in each sector.
 */
 static off_t
-_cdio_lseek (void *user_data, off_t offset, int whence)
+_cdio_lseek (void *env, off_t offset, int whence)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   /* real_offset is the real byte offset inside the disk image
      The number below was determined empirically. I'm guessing
@@ -576,16 +576,16 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
    boundaries.
 */
 static ssize_t
-_cdio_read (void *user_data, void *buf, size_t size)
+_cdio_read (void *env, void *buf, size_t size)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   return cdio_stream_read(_obj->gen.data_source, buf, size, 1);
 }
 
 static uint32_t 
-_cdio_stat_size (void *user_data)
+_cdio_stat_size (void *env)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   return _obj->size;
 }
@@ -595,10 +595,10 @@ _cdio_stat_size (void *user_data)
    from LSN. Returns 0 if no error. 
  */
 static int
-_cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_audio_sectors (void *env, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   CdioListNode *node;
 
@@ -635,10 +635,10 @@ _cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn,
 }
 
 static int
-_cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
 			 bool mode2_form2)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   int blocksize = _obj->sector_2336 
     ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
@@ -691,10 +691,10 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sectors (void *user_data, void *data, uint32_t lsn, 
+_cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn, 
 		     bool mode2_form2, unsigned nblocks)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   int i;
   int retval;
 
@@ -720,9 +720,9 @@ _cdio_read_mode2_sectors (void *user_data, void *data, uint32_t lsn,
   Set the device to use in I/O operations.
 */
 static int
-_cdio_set_arg (void *user_data, const char key[], const char value[])
+_cdio_set_arg (void *env, const char key[], const char value[])
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (!strcmp (key, "source"))
     {
@@ -743,9 +743,9 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
   Return the value associated with the key "arg".
 */
 static const char *
-_cdio_get_arg (void *user_data, const char key[])
+_cdio_get_arg (void *env, const char key[])
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (!strcmp (key, "source")) {
     return _obj->gen.source_name;
@@ -767,9 +767,9 @@ cdio_get_default_device_nrg()
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_cdio_get_first_track_num(void *user_data) 
+_cdio_get_first_track_num(void *env) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   return _obj->first_track_num;
 }
@@ -779,9 +779,9 @@ _cdio_get_first_track_num(void *user_data)
   one big track. 
 */
 static track_t
-_cdio_get_num_tracks(void *user_data) 
+_cdio_get_num_tracks(void *env) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   return _obj->total_tracks;
 }
@@ -791,9 +791,9 @@ _cdio_get_num_tracks(void *user_data)
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_format_t
-_cdio_get_track_format(void *user_data, track_t track_num) 
+_cdio_get_track_format(void *env, track_t track_num) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (track_num > _obj->total_tracks || track_num == 0) 
     return TRACK_FORMAT_ERROR;
@@ -810,9 +810,9 @@ _cdio_get_track_format(void *user_data, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *user_data, track_t track_num) 
+_cdio_get_track_green(void *env, track_t track_num) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (track_num > _obj->total_tracks || track_num == 0) 
     return false;
@@ -827,9 +827,9 @@ _cdio_get_track_green(void *user_data, track_t track_num)
   using track_num LEADOUT_TRACK or the total tracks+1.
 */
 static bool
-_cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
+_cdio_get_track_msf(void *env, track_t track_num, msf_t *msf)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (NULL == msf) return 1;
 

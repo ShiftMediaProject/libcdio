@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.7 2003/09/20 12:34:02 rocky Exp $
+    $Id: _cdio_osx.c,v 1.8 2003/09/25 09:38:16 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com> from vcdimager code
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -31,7 +31,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.7 2003/09/20 12:34:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.8 2003/09/25 09:38:16 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -83,8 +83,8 @@ typedef struct {
 } _img_private_t;
 
 static void 
-_cdio_osx_free (void *user_data) {
-  _img_private_t *_obj = user_data;
+_cdio_osx_free (void *env) {
+  _img_private_t *_obj = env;
   if (NULL == _obj) return;
   cdio_generic_free(_obj);
   if (NULL != _obj->pp_lba) free((void *) _obj->pp_lba);
@@ -155,10 +155,10 @@ _cdio_read_mode2_form2_sectors (int device_handle, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn, 
 			  bool mode2_form2, unsigned int nblocks)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   int i;
   int retval;
 
@@ -184,10 +184,10 @@ _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_audio_sectors (void *env, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
-  return _cdio_read_mode2_sectors(user_data, data, lsn, true, nblocks);
+  return _cdio_read_mode2_sectors(env, data, lsn, true, nblocks);
 }
 
 /*!
@@ -195,19 +195,19 @@ _cdio_read_audio_sectors (void *user_data, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
 			 bool mode2_form2)
 {
-  return _cdio_read_mode2_sectors(user_data, data, lsn, mode2_form2, 1);
+  return _cdio_read_mode2_sectors(env, data, lsn, mode2_form2, 1);
 }
 
 /*!
   Set the key "arg" to "value" in source device.
 */
 static int
-_cdio_set_arg (void *user_data, const char key[], const char value[])
+_cdio_set_arg (void *env, const char key[], const char value[])
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (!strcmp (key, "source"))
     {
@@ -406,9 +406,9 @@ _cdio_read_toc (_img_private_t *_obj)
   False is returned if there is no track entry.
 */
 static lsn_t
-_cdio_get_track_lba(void *user_data, track_t track_num)
+_cdio_get_track_lba(void *env, track_t track_num)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
@@ -432,9 +432,9 @@ _cdio_get_track_lba(void *user_data, track_t track_num)
  */
 
 static int 
-_cdio_eject_media (void *user_data) {
+_cdio_eject_media (void *env) {
 
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   FILE *p_eject;
   char *psz_disk;
@@ -476,18 +476,18 @@ _cdio_eject_media (void *user_data) {
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_cdio_stat_size (void *user_data)
+_cdio_stat_size (void *env)
 {
-  return _cdio_get_track_lba(user_data, CDIO_CDROM_LEADOUT_TRACK);
+  return _cdio_get_track_lba(env, CDIO_CDROM_LEADOUT_TRACK);
 }
 
 /*!
   Return the value associated with the key "arg".
 */
 static const char *
-_cdio_get_arg (void *user_data, const char key[])
+_cdio_get_arg (void *env, const char key[])
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (!strcmp (key, "source")) {
     return _obj->gen.source_name;
@@ -507,9 +507,9 @@ _cdio_get_arg (void *user_data, const char key[])
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_cdio_get_first_track_num(void *user_data) 
+_cdio_get_first_track_num(void *env) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
   
@@ -539,9 +539,9 @@ _cdio_get_first_track_num(void *user_data)
   This is the externally called interface.
 */
 static track_t
-_cdio_get_num_tracks(void *user_data) 
+_cdio_get_num_tracks(void *env) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
   return( _obj->num_tracks );
@@ -551,9 +551,9 @@ _cdio_get_num_tracks(void *user_data)
   Get format of track. 
 */
 static track_format_t
-_cdio_get_track_format(void *user_data, track_t track_num) 
+_cdio_get_track_format(void *env, track_t track_num) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
@@ -586,7 +586,7 @@ _cdio_get_track_format(void *user_data, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *user_data, track_t track_num) 
+_cdio_get_track_green(void *env, track_t track_num) 
 {
 
 #if 0  
@@ -637,6 +637,7 @@ cdio_open_osx (const char *source_name)
     .get_arg            = _cdio_get_arg,
     .get_default_device = cdio_get_default_device_osx,
     .get_first_track_num= _cdio_get_first_track_num,
+    .get_mcn            = NULL, /*there is a readMCN, but how to use? */
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.21 2003/09/20 12:34:02 rocky Exp $
+    $Id: _cdio_linux.c,v 1.22 2003/09/25 09:38:16 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.21 2003/09/20 12:34:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.22 2003/09/25 09:38:16 rocky Exp $";
 
 #include <string.h>
 
@@ -267,10 +267,10 @@ _cdio_mmc_read_sectors (int fd, void *buf, lba_t lba, int sector_type,
    Can read only up to 25 blocks.
 */
 static int
-_cdio_read_audio_sectors (void *user_data, void *buf, lsn_t lsn, 
+_cdio_read_audio_sectors (void *env, void *buf, lsn_t lsn, 
 			  unsigned int nblocks)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   return _cdio_mmc_read_sectors( _obj->gen.fd, buf, lsn, 
 				 CDIO_MMC_READ_TYPE_CDDA, nblocks);
 }
@@ -358,14 +358,14 @@ _read_packet_mode2_sectors (int fd, void *buf, lba_t lba,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
 			 bool mode2_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
 
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
   msf->cdmsf_min0 = from_bcd8(_msf.m);
@@ -425,13 +425,13 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
+_cdio_read_audio_sector (void *env, void *data, lsn_t lsn)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
 
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   cdio_lsn_to_msf (lsn, &_msf);
   msf->cdmsf_min0 = from_bcd8(_msf.m);
@@ -483,10 +483,10 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn, 
 			  bool mode2_form2, unsigned int nblocks)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   int i;
   int retval;
 
@@ -513,9 +513,9 @@ _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_cdio_stat_size (void *user_data)
+_cdio_stat_size (void *env)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   struct cdrom_tocentry tocent;
   uint32_t size;
@@ -537,9 +537,9 @@ _cdio_stat_size (void *user_data)
   Set the key "arg" to "value" in source device.
 */
 static int
-_cdio_set_arg (void *user_data, const char key[], const char value[])
+_cdio_set_arg (void *env, const char key[], const char value[])
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (!strcmp (key, "source"))
     {
@@ -684,9 +684,9 @@ _cdio_eject_scsi(int fd)
   Return 0 if success and 1 for failure, and 2 if no routine.
  */
 static int 
-_cdio_eject_media (void *user_data) {
+_cdio_eject_media (void *env) {
 
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   int ret=2;
   int status;
   int fd;
@@ -731,9 +731,9 @@ _cdio_eject_media (void *user_data) {
   Return the value associated with the key "arg".
 */
 static const char *
-_cdio_get_arg (void *user_data, const char key[])
+_cdio_get_arg (void *env, const char key[])
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (!strcmp (key, "source")) {
     return _obj->gen.source_name;
@@ -757,9 +757,9 @@ _cdio_get_arg (void *user_data, const char key[])
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_cdio_get_first_track_num(void *user_data) 
+_cdio_get_first_track_num(void *env) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
@@ -767,13 +767,30 @@ _cdio_get_first_track_num(void *user_data)
 }
 
 /*!
+  Return the media catalog number MCN.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static char *
+_cdio_get_mcn (void *env) {
+
+  struct cdrom_mcn mcn;
+  _img_private_t *_obj = env;
+  if (ioctl(_obj->gen.fd, CDROM_GET_MCN, &mcn) != 0)
+    return NULL;
+  return strdup(mcn.medium_catalog_number);
+}
+
+/*!
   Return the number of tracks in the current medium.
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_cdio_get_num_tracks(void *user_data) 
+_cdio_get_num_tracks(void *env) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
@@ -784,9 +801,9 @@ _cdio_get_num_tracks(void *user_data)
   Get format of track. 
 */
 static track_format_t
-_cdio_get_track_format(void *user_data, track_t track_num) 
+_cdio_get_track_format(void *env, track_t track_num) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
@@ -817,9 +834,9 @@ _cdio_get_track_format(void *user_data, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *user_data, track_t track_num) 
+_cdio_get_track_green(void *env, track_t track_num) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
   
   if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
 
@@ -842,9 +859,9 @@ _cdio_get_track_green(void *user_data, track_t track_num)
   False is returned if there is no track entry.
 */
 static bool
-_cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
+_cdio_get_track_msf(void *env, track_t track_num, msf_t *msf)
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
   if (NULL == msf) return false;
 
@@ -945,6 +962,7 @@ cdio_open_linux (const char *orig_source_name)
     .get_arg            = _cdio_get_arg,
     .get_default_device = cdio_get_default_device_linux,
     .get_first_track_num= _cdio_get_first_track_num,
+    .get_mcn            = _cdio_get_mcn,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,

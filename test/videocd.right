@@ -10,6 +10,7 @@ CD-ROM Track List (1 - 5)
   4: 00:19:01  001276  XA
   5: 00:22:01  001501  XA
 170: 00:25:01  001726  leadout
+Get MCN     : not available
 __________________________________
 CD Analysis Report
 CD-ROM with CD-RTOS and ISO 9660 filesystem
@@ -56,5 +57,5 @@ ISO9660 filesystem
   - ----1xrxrxr 0 0 [fn 00] [LSN    185]      2048 Jul 14 1978 00:00  tracks.svd
 
 XA sectors   Super Video CD (SVCD) or Chaoji Video CD (CVD)
-session #2 starts at track  2, LSN:    826, ISO 9660 blocks:    676
+session #2 starts at track  2, LSN: 826, ISO 9660 blocks:    676
 ISO 9660: 676 blocks, label `SVIDEOCD                        '
