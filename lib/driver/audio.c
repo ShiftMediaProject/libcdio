@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.1 2005/03/01 00:49:24 rocky Exp $
+    $Id: audio.c,v 1.2 2005/03/01 02:49:43 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -39,7 +39,7 @@ cdio_audio_get_volume (CdIo_t *p_cdio,  /*out*/ cdio_audio_volume_t *p_volume)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
 
-  if (!p_cdio->op.audio_get_volume) {
+  if (p_cdio->op.audio_get_volume) {
     return p_cdio->op.audio_get_volume (p_cdio->env, p_volume);
   } else {
     return DRIVER_OP_UNSUPPORTED;
@@ -55,7 +55,7 @@ cdio_audio_pause (CdIo_t *p_cdio)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
 
-  if (!p_cdio->op.audio_pause) {
+  if (p_cdio->op.audio_pause) {
     return p_cdio->op.audio_pause (p_cdio->env);
   } else {
     return DRIVER_OP_UNSUPPORTED;
@@ -72,7 +72,7 @@ cdio_audio_play_msf (CdIo_t *p_cdio, msf_t *p_msf)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
 
-  if (!p_cdio->op.audio_play_msf) {
+  if (p_cdio->op.audio_play_msf) {
     return p_cdio->op.audio_play_msf (p_cdio->env, p_msf);
   } else {
     return DRIVER_OP_UNSUPPORTED;
@@ -89,7 +89,7 @@ cdio_audio_play_track_index (CdIo_t *p_cdio, cdio_track_index_t *p_track_index)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
 
-  if (!p_cdio->op.audio_play_track_index) {
+  if (p_cdio->op.audio_play_track_index) {
     return p_cdio->op.audio_play_track_index (p_cdio->env, p_track_index);
   } else {
     return DRIVER_OP_UNSUPPORTED;
@@ -106,7 +106,7 @@ cdio_audio_read_subchannel (CdIo_t *p_cdio, cdio_subchannel_t *p_subchannel)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
 
-  if (!p_cdio->op.audio_read_subchannel) {
+  if (p_cdio->op.audio_read_subchannel) {
     return p_cdio->op.audio_read_subchannel(p_cdio->env, p_subchannel);
   } else {
     return DRIVER_OP_UNSUPPORTED;
@@ -142,7 +142,7 @@ cdio_audio_set_volume (CdIo_t *p_cdio,  const cdio_audio_volume_t *p_volume)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
 
-  if (!p_cdio->op.audio_set_volume) {
+  if (p_cdio->op.audio_set_volume) {
     return p_cdio->op.audio_set_volume(p_cdio->env, p_volume);
   } else {
     return DRIVER_OP_UNSUPPORTED;

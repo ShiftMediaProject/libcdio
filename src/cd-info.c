@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.120 2005/02/22 02:02:46 rocky Exp $
+    $Id: cd-info.c,v 1.121 2005/03/01 02:49:43 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -44,7 +44,8 @@
 #include <cdio/cd_types.h>
 #include <cdio/cdtext.h>
 #include <cdio/iso9660.h>
-#include <cdio/scsi_mmc.h>
+#include <cdio/mmc.h>
+#include <cdio/audio.h>
 
 #include "cdio_assert.h"
 
@@ -1139,8 +1140,53 @@ main(int argc, const char *argv[])
     printf("%s\n", media_catalog_number);
     free(media_catalog_number);
     }
-  }
   
+    /* get audio status from subchannel */
+    if  ( CDIO_DISC_MODE_CD_DA == discmode ||
+	  CDIO_DISC_MODE_CD_MIXED == discmode ) {
+      cdio_subchannel_t subchannel;
+      driver_return_code_t rc;
+      
+      memset(&subchannel, 0, sizeof(subchannel));
+      subchannel.cdsc_format = CDIO_CDROM_MSF;
+      
+      rc = cdio_audio_read_subchannel(p_cdio, &subchannel);
+      
+      if (DRIVER_OP_SUCCESS == rc) {
+	
+	report( stdout, "audio status: "); fflush(stdout);
+	
+	switch (subchannel.cdsc_audiostatus) {
+	case CDIO_MMC_READ_SUB_ST_INVALID:
+	  report( stdout, "invalid\n" );   break;
+	case CDIO_MMC_READ_SUB_ST_PLAY:
+	  report( stdout, "playing" );     break;
+	case CDIO_MMC_READ_SUB_ST_PAUSED:
+	  report( stdout, "paused" );      break;
+	case CDIO_MMC_READ_SUB_ST_COMPLETED:
+	  report( stdout, "completed\n");  break;
+	case CDIO_MMC_READ_SUB_ST_ERROR:
+	  report( stdout, "error\n" );     break;
+	case CDIO_MMC_READ_SUB_ST_NO_STATUS:
+	  report( stdout, "no status\n" ); break;
+	default:                     
+	  report( stdout, "Oops: unknown\n" );
+	}
+	if (subchannel.cdsc_audiostatus == CDIO_MMC_READ_SUB_ST_PLAY ||
+	    subchannel.cdsc_audiostatus == CDIO_MMC_READ_SUB_ST_PAUSED) {
+	  report( stdout, " at: %02d:%02d abs / %02d:%02d track %d\n",
+		  subchannel.cdsc_absaddr.msf.m,
+		  subchannel.cdsc_absaddr.msf.s,
+		  subchannel.cdsc_reladdr.msf.m,
+		  subchannel.cdsc_reladdr.msf.s,
+		  subchannel.cdsc_trk );
+	}
+      } else {
+	report( stdout, "FAILED\n" );
+      }
+    }
+  }
+
   
     
 #if CDIO_IOCTL_FINISHED
@@ -1149,41 +1195,14 @@ main(int argc, const char *argv[])
   
 #ifdef CDROMMULTISESSION
     /* get multisession */
-    printf("multisession: "); fflush(stdout);
+    report( stdout, "multisession: "); fflush(stdout);
     ms.addr_format = CDROM_LBA;
     if (ioctl(filehandle,CDROMMULTISESSION,&ms))
-      printf("FAILED\n");
+      report( stdout, "FAILED\n");
     else
-      printf("%d%s\n",ms.addr.lba,ms.xa_flag?" XA":"");
+      report( stdout, "%d%s\n",ms.addr.lba,ms.xa_flag?" XA":"");
 #endif 
     
-#ifdef CDROMSUBCHNL
-    /* get audio status from subchnl */
-    printf("audio status: "); fflush(stdout);
-    sub.cdsc_format = CDROM_MSF;
-    if (ioctl(filehandle,CDROMSUBCHNL,&sub))
-      printf("FAILED\n");
-    else {
-      switch (sub.cdsc_audiostatus) {
-      case CDROM_AUDIO_INVALID:    printf("invalid\n");   break;
-      case CDROM_AUDIO_PLAY:       printf("playing");     break;
-      case CDROM_AUDIO_PAUSED:     printf("paused");      break;
-      case CDROM_AUDIO_COMPLETED:  printf("completed\n"); break;
-      case CDROM_AUDIO_ERROR:      printf("error\n");     break;
-      case CDROM_AUDIO_NO_STATUS:  printf("no status\n"); break;
-      default:                     printf("Oops: unknown\n");
-      }
-      if (sub.cdsc_audiostatus == CDROM_AUDIO_PLAY ||
-	  sub.cdsc_audiostatus == CDROM_AUDIO_PAUSED) {
-	printf(" at: %02d:%02d abs / %02d:%02d track %d\n",
-	       sub.cdsc_absaddr.msf.minute,
-	       sub.cdsc_absaddr.msf.second,
-	       sub.cdsc_reladdr.msf.minute,
-	       sub.cdsc_reladdr.msf.second,
-	       sub.cdsc_trk);
-      }
-    }
-#endif  /* CDROMSUBCHNL */
   }
 #endif /*CDIO_IOCTL_FINISHED*/
   
@@ -1204,7 +1223,7 @@ main(int argc, const char *argv[])
 	  fs |= CDIO_FS_ANAL_HIDDEN_TRACK;
 	else {
 	  fs &= ~CDIO_FS_MASK; /* del filesystem info */
-	  printf("Oops: %lu unused sectors at start, "
+	  report( stdout, "Oops: %lu unused sectors at start, "
 		 "but hidden track check failed.\n",
 		 (long unsigned int) start_track_lsn);
 	}
@@ -1249,12 +1268,12 @@ main(int argc, const char *argv[])
 	if (i > 1) {
 	  /* track is beyond last session -> new session found */
 	  ms_offset = start_track_lsn;
-	  printf("session #%d starts at track %2i, LSN: %lu,"
-		 " ISO 9660 blocks: %6i\n",
-		 j++, i, (unsigned long int) start_track_lsn, 
-		 cdio_iso_analysis.isofs_size);
-	  printf("ISO 9660: %i blocks, label `%.32s'\n",
-		 cdio_iso_analysis.isofs_size, cdio_iso_analysis.iso_label);
+	  report( stdout, "session #%d starts at track %2i, LSN: %lu,"
+		  " ISO 9660 blocks: %6i\n",
+		  j++, i, (unsigned long int) start_track_lsn, 
+		  cdio_iso_analysis.isofs_size);
+	  report( stdout, "ISO 9660: %i blocks, label `%.32s'\n",
+		  cdio_iso_analysis.isofs_size, cdio_iso_analysis.iso_label);
 	  fs |= CDIO_FS_ANAL_MULTISESSION;
 	} else {
 	  print_analysis(ms_offset, cdio_iso_analysis, fs, first_data, 

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.29 2005/03/01 00:41:34 rocky Exp $
+    $Id: _cdio_linux.c,v 1.30 2005/03/01 02:49:43 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.29 2005/03/01 00:41:34 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.30 2005/03/01 02:49:43 rocky Exp $";
 
 #include <string.h>
 
@@ -35,6 +35,7 @@ static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.29 2005/03/01 00:41:34 rock
 #include <cdio/util.h>
 #include <cdio/types.h>
 #include <cdio/mmc.h>
+#include <cdio/audio.h>
 #include <cdio/cdtext.h>
 #include "cdtext_private.h"
 #include "cdio_assert.h"
@@ -229,6 +230,20 @@ audio_play_track_index_linux (void *p_user_data,
 
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROMPLAYTRKIND, p_track_index);
+}
+
+/*!
+  Resume playing an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_read_subchannel_linux (void *p_user_data, 
+                             cdio_subchannel_t *p_subchannel) {
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMSUBCHNL, p_subchannel);
 }
 
 /*!
@@ -1251,6 +1266,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .audio_pause           = audio_pause_linux,
     .audio_play_msf        = audio_play_msf_linux,
     .audio_play_track_index= audio_play_track_index_linux,
+    .audio_read_subchannel = audio_read_subchannel_linux,
     .audio_resume          = audio_resume_linux,
     .audio_set_volume      = audio_set_volume_linux,
     .eject_media           = eject_media_linux,
