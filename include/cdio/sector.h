@@ -1,6 +1,6 @@
 
 /*
-    $Id: sector.h,v 1.21 2004/07/22 09:52:17 rocky Exp $
+    $Id: sector.h,v 1.22 2004/07/23 11:29:49 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -103,7 +103,7 @@ typedef enum {
 #define CDIO_SUBCHANNEL_SUBQ_DATA		0
 #define CDIO_SUBCHANNEL_CURRENT_POSITION	1
 #define CDIO_SUBCHANNEL_MEDIA_CATALOG	        2
-#define CDIO_SUBCHANNEL_TRACK_INFO		3
+#define CDIO_SUBCHANNEL_TRACK_ISRC		3
 
 /*! track flags
  * Q Sub-channel Control Field (4.2.3.3)

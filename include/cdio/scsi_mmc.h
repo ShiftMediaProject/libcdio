@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.12 2004/07/22 09:52:17 rocky Exp $
+    $Id: scsi_mmc.h,v 1.13 2004/07/23 11:29:49 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -47,7 +47,7 @@
 #define CDIO_MMC_GPCMD_PLAY_AUDIO_10         0x45
 #define CDIO_MMC_GPCMD_PLAY_AUDIO_MSF        0x47
 #define CDIO_MMC_GPCMD_PLAY_AUDIO_TI         0x48
-#define CDIO_MMC_GPCMD_PLAY_TRACK_REL_10      0x49
+#define CDIO_MMC_GPCMD_PLAY_TRACK_REL_10     0x49
 #define CDIO_MMC_GPCMD_PAUSE_RESUME          0x4b
 
 #define CDIO_MMC_GPCMD_READ_DISC_INFO	     0x51
@@ -171,11 +171,11 @@ uint8_t scsi_mmc_get_cmd_len(uint8_t scsi_cmd);
   i_timeout     time in milliseconds we will wait for the command
                 to complete. If this value is -1, use the default 
 		time-out value.
-  p_buf	        Buffer for data, both sending and receiving.
-  i_buf	        Size of buffer
-  e_direction	direction the transfer is to go.
-  cdb	        CDB bytes. All values that are needed should be set on 
+  p_cdb	        CDB bytes. All values that are needed should be set on 
                 input. We'll figure out what the right CDB length should be.
+  e_direction	direction the transfer is to go.
+  i_buf	        Size of buffer
+  p_buf	        Buffer for data, both sending and receiving.
 
   Returns 0 if command completed successfully.
  */
