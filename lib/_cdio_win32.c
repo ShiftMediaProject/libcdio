@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.19 2003/10/18 19:49:00 rocky Exp $
+    $Id: _cdio_win32.c,v 1.20 2003/10/20 04:29:17 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.19 2003/10/18 19:49:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.20 2003/10/20 04:29:17 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -612,8 +612,17 @@ _cdio_mmc_read_sectors (void *user_data, void *data, lsn_t lsn,
 			 sizeof(RAW_READ_INFO), buf,
 			 sizeof(buf), &dwBytesReturned, NULL )
 	== 0 ) {
+      /* Retry in Yellowmode2 */
+      cdrom_raw.TrackMode = YellowMode2;
+      if( DeviceIoControl( _obj->h_device_handle,
+			 IOCTL_CDROM_RAW_READ, &cdrom_raw,
+			 sizeof(RAW_READ_INFO), buf,
+			 sizeof(buf), &dwBytesReturned, NULL )
+	  == 0 ) {
+	cdio_info("Error reading %lu (%ld)\n", lsn, GetLastError());
 	return 1;
       }
+    }
    }
 
   /* FIXME! remove the 8 (SUBHEADER size) below... */
@@ -677,9 +686,17 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 			 sizeof(RAW_READ_INFO), buf,
 			 sizeof(buf), &dwBytesReturned, NULL )
 	== 0 ) {
-      cdio_debug("Error reading %lu\n", lsn);
-      return 1;
+      /* Retry in Yellowmode2 */
+      cdrom_raw.TrackMode = YellowMode2;
+      if( DeviceIoControl( _obj->h_device_handle,
+			 IOCTL_CDROM_RAW_READ, &cdrom_raw,
+			 sizeof(RAW_READ_INFO), buf,
+			 sizeof(buf), &dwBytesReturned, NULL )
+	  == 0 ) {
+	cdio_info("Error reading %lu (%ld)\n", lsn, GetLastError());
+	return 1;
       }
+    }
     ret = 0;
   }
     
