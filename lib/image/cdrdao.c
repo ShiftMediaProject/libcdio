@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.2 2004/05/05 10:34:55 rocky Exp $
+    $Id: cdrdao.c,v 1.3 2004/05/07 10:58:23 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.2 2004/05/05 10:34:55 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.3 2004/05/07 10:58:23 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -407,7 +407,7 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
   unsigned int line_num=0;
   char *keyword, *field;
   int i =  -1;
-  cdio_log_level_t log_level = (NULL == cd) ? CDIO_LOG_DEBUG : CDIO_LOG_WARN;
+  cdio_log_level_t log_level = (NULL == cd) ? CDIO_LOG_INFO : CDIO_LOG_WARN;
 
   if (NULL == toc_name) 
     return false;
@@ -547,7 +547,10 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 	      cd->tocent[i].endsize      = 0;
 	    }
 	  } else {
-	    goto format_error;
+	    cdio_log(log_level, "%s line %d: format after keyword TRACK.",
+		     toc_name, line_num);
+	    cdio_log(log_level, "'%s' not a valid mode.", field);
+	    goto err_exit;
 	  }
 	}
 	if (NULL != (field = strtok (NULL, " \t\n\r"))) {
@@ -724,7 +727,7 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 	  /* CD_TEXT { ... } */
 	  /* todo: opening { must be on same line as CD_TEXT */
       } else if (0 == strcmp ("CD_TEXT", keyword)) {
-	} else if (0 == strcmp ("LANGUAGE_MAP", keyword)) {
+      } else if (0 == strcmp ("LANGUAGE_MAP", keyword)) {
       } else if (0 == strcmp ("LANGUAGE", keyword)) {
       } else if (0 == strcmp ("}", keyword)) {
       } else if (0 == cdtext_is_keyword (keyword)) {
@@ -1143,11 +1146,8 @@ _get_lba_track_cdrdao(void *env, track_t track_num)
 }
 
 /*! 
-  Check that a TOC file is valid.
+  Check that a TOC file is valid. We parse the entire file.
 
-*/
-/* Later we'll probably parse the entire file. For now though, this gets us 
-   started for now.
 */
 bool
 cdio_is_tocfile(const char *toc_name) 
