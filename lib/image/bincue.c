@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.20 2004/06/01 11:43:57 rocky Exp $
+    $Id: bincue.c,v 1.21 2004/06/01 11:45:35 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.20 2004/06/01 11:43:57 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.21 2004/06/01 11:45:35 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -812,7 +812,7 @@ _get_lba_track_bincue(void *user_data, track_t i_track)
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = env->i_tracks+1;
 
-  if (i_track - env->i_first_track  <= env->i_tracks && i_track != 0) {
+  if (i_track <= env->i_tracks + env->i_first_track && i_track != 0) {
     return env->tocent[i_track-env->i_first_track].start_lba;
   } else 
     return CDIO_INVALID_LBA;
