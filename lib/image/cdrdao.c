@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.12 2004/07/09 02:46:42 rocky Exp $
+    $Id: cdrdao.c,v 1.13 2004/07/09 10:27:17 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -29,7 +29,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.12 2004/07/09 02:46:42 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.13 2004/07/09 10:27:17 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -108,7 +108,7 @@ typedef struct {
   
   bool sector_2336;              /* Playstation (PSX) uses 2336-byte sectors */
 
-  char         *toc_name;
+  char         *psz_toc_name;
   char         *psz_mcn;        /* Media Catalog Number (5.22.3) 
 				   exactly 13 bytes */
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
@@ -220,7 +220,7 @@ _init_cdrdao (_img_private_t *env)
   env->psz_mcn       = NULL;
 
   /* Read in TOC sheet. */
-  if ( !parse_tocfile(env, env->toc_name) ) return false;
+  if ( !parse_tocfile(env, env->psz_toc_name) ) return false;
   
   lead_lsn = _stat_size_cdrdao( (_img_private_t *) env);
 
@@ -369,32 +369,32 @@ _stat_size_cdrdao (void *user_data)
 #define MAXLINE 512
 #define UNIMPLIMENTED_MSG \
   cdio_log(log_level, "%s line %d: unimplimented keyword: %s",  \
-	   toc_name, line_num, keyword)
+	   psz_toc_name, i_line, keyword)
 
 
 static bool
-parse_tocfile (_img_private_t *cd, const char *toc_name)
+parse_tocfile (_img_private_t *cd, const char *psz_toc_name)
 {
   char line[MAXLINE];
   FILE *fp;
-  unsigned int line_num=0;
+  unsigned int i_line=0;
   char *keyword, *field;
   int i =  -1;
   cdio_log_level_t log_level = (NULL == cd) ? CDIO_LOG_INFO : CDIO_LOG_WARN;
 
-  if (NULL == toc_name) 
+  if (NULL == psz_toc_name) 
     return false;
   
-  fp = fopen (toc_name, "r");
+  fp = fopen (psz_toc_name, "r");
   if (fp == NULL) {
     cdio_log(log_level, "error opening %s for reading: %s", 
-	     toc_name, strerror(errno));
+	     psz_toc_name, strerror(errno));
     return false;
   }
 
   while ((fgets(line, MAXLINE, fp)) != NULL) {
 
-    line_num++;
+    i_line++;
 
     /* strip comment from line */
     /* todo: // in quoted strings? */
@@ -410,7 +410,7 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 	    if (13 != strlen(field)) {
 	      cdio_log(log_level, 
 		       "%s line %d after word CATALOG:", 
-		       toc_name, line_num);
+		       psz_toc_name, i_line);
 	      cdio_log(log_level, 
 		       "Token %s has length %ld. Should be 13 digits.", 
 		       field, (long int) strlen(field));
@@ -423,7 +423,7 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 		if (!isdigit(field[i])) {
 		    cdio_log(log_level, 
 			     "%s line %d after word CATALOG:", 
-			     toc_name, line_num);
+			     psz_toc_name, i_line);
 		    cdio_log(log_level, 
 			     "Token %s is not all digits.", field);
 		    goto err_exit;
@@ -434,7 +434,7 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 	  } else {
 	    cdio_log(log_level, 
 		     "%s line %d after word CATALOG:", 
-		     toc_name, line_num);
+		     psz_toc_name, i_line);
 	    cdio_log(log_level, "Expecting 13 digits; nothing seen.");
 	    goto err_exit;
 	  }
@@ -546,7 +546,7 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 	    }
 	  } else {
 	    cdio_log(log_level, "%s line %d after TRACK:",
-		     toc_name, line_num);
+		     psz_toc_name, i_line);
 	    cdio_log(log_level, "'%s' not a valid mode.", field);
 	    goto err_exit;
 	  }
@@ -623,7 +623,7 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 	      /* Todo: do something about reusing existing files. */
 	      if (!(cd->tocent[i].data_source = cdio_stdio_new (field))) {
 		cdio_warn ("%s line %d: can't open file `%s' for reading", 
-			   toc_name, line_num, field);
+			   psz_toc_name, i_line, field);
 		goto err_exit;
 	      }
 	    }
@@ -633,7 +633,7 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 	    lba_t lba = cdio_lsn_to_lba(msf_lba_from_mmssff (field));
 	    if (CDIO_INVALID_LBA == lba) {
 	      cdio_log(log_level, "%s line %d: invalid MSF string %s", 
-		       toc_name, line_num, field);
+		       psz_toc_name, i_line, field);
 	      goto err_exit;
 	    }
 	    
@@ -757,13 +757,14 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 	  /* unrecognized line */
       } else {
 	cdio_log(log_level, "%s line %d: warning: unrecognized keyword: %s", 
-		 toc_name, line_num, keyword);
+		 psz_toc_name, i_line, keyword);
 	goto err_exit;
       }
     }
   }
     
   if (NULL != cd) cd->i_tracks = i+1;
+  fclose (fp);
   return true;
 
  unimplimented_error:
@@ -772,12 +773,12 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
   
  format_error:
   cdio_log(log_level, "%s line %d after keyword %s", 
-	   toc_name, line_num, keyword);
+	   psz_toc_name, i_line, keyword);
   goto err_exit;
   
  not_in_global_section:
   cdio_log(log_level, "%s line %d: keyword %s only allowed in global section", 
-	   toc_name, line_num, keyword);
+	   psz_toc_name, i_line, keyword);
 
  err_exit: 
   fclose (fp);
@@ -957,7 +958,7 @@ _free_cdrdao (void *obj)
     free_if_notnull(env->tocent[i].isrc);
     free_if_notnull(env->tocent[i].filename);
   }
-  free_if_notnull(env->toc_name);
+  free_if_notnull(env->psz_toc_name);
   cdio_generic_stdio_free(env);
   free(env);
 }
@@ -996,12 +997,12 @@ _set_arg_cdrdao (void *user_data, const char key[], const char value[])
     }
   else if (!strcmp (key, "toc"))
     {
-      free_if_notnull (env->toc_name);
+      free_if_notnull (env->psz_toc_name);
 
       if (!value)
 	return -2;
 
-      env->toc_name = strdup (value);
+      env->psz_toc_name = strdup (value);
     }
   else
     return -1;
@@ -1020,7 +1021,7 @@ _get_arg_cdrdao (void *user_data, const char key[])
   if (!strcmp (key, "source")) {
     return env->tocent[0].filename;
   } else if (!strcmp (key, "toc")) {
-    return env->toc_name;
+    return env->psz_toc_name;
   } else if (!strcmp(key, "access-mode")) {
     return "image";
   } 
@@ -1144,18 +1145,18 @@ _get_lba_track_cdrdao(void *user_data, track_t i_track)
 
 */
 bool
-cdio_is_tocfile(const char *toc_name) 
+cdio_is_tocfile(const char *psz_toc_name) 
 {
   int   i;
   
-  if (toc_name == NULL) return false;
+  if (psz_toc_name == NULL) return false;
 
-  i=strlen(toc_name)-strlen("toc");
+  i=strlen(psz_toc_name)-strlen("toc");
   
   if (i>0) {
-    if ( (toc_name[i]=='t' && toc_name[i+1]=='o' && toc_name[i+2]=='c') 
-	 || (toc_name[i]=='T' && toc_name[i+1]=='O' && toc_name[i+2]=='C') ) {
-      return parse_tocfile(NULL, toc_name);
+    if ( (psz_toc_name[i]=='t' && psz_toc_name[i+1]=='o' && psz_toc_name[i+2]=='c') 
+	 || (psz_toc_name[i]=='T' && psz_toc_name[i+1]=='O' && psz_toc_name[i+2]=='C') ) {
+      return parse_tocfile(NULL, psz_toc_name);
     }
   }
   return false;
@@ -1181,7 +1182,7 @@ cdio_open_am_cdrdao (const char *psz_source_name, const char *psz_access_mode)
   ones to set that up.
  */
 CdIo *
-cdio_open_cdrdao (const char *toc_name)
+cdio_open_cdrdao (const char *psz_toc_name)
 {
   CdIo *ret;
   _img_private_t *_data;
@@ -1211,12 +1212,12 @@ cdio_open_cdrdao (const char *toc_name)
     .stat_size          = _stat_size_cdrdao
   };
 
-  if (NULL == toc_name) return NULL;
+  if (NULL == psz_toc_name) return NULL;
   
   _data                    = _cdio_malloc (sizeof (_img_private_t));
   (_data)->gen.init        = false;
   (_data)->sector_2336     = false;
-  (_data)->toc_name        = NULL;
+  (_data)->psz_toc_name        = NULL;
   (_data)->gen.data_source = NULL;
   (_data)->gen.source_name = NULL;
 
@@ -1224,12 +1225,13 @@ cdio_open_cdrdao (const char *toc_name)
 
   if (ret == NULL) return NULL;
 
-  if (!cdio_is_tocfile(toc_name)) {
-    cdio_debug ("source name %s is not recognized as a TOC file", toc_name);
+  if (!cdio_is_tocfile(psz_toc_name)) {
+    cdio_debug ("source name %s is not recognized as a TOC file", 
+		psz_toc_name);
     return NULL;
   }
   
-  _set_arg_cdrdao (_data, "toc", toc_name);
+  _set_arg_cdrdao (_data, "toc", psz_toc_name);
 
   if (_init_cdrdao(_data)) {
     return ret;
