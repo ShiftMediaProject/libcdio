@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.9 2004/07/15 02:24:29 rocky Exp $
+    $Id: win32.h,v 1.10 2004/07/16 02:48:49 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -96,7 +96,23 @@ bool init_win32ioctl (_img_private_t *env);
 */
 bool read_toc_win32ioctl (_img_private_t *env);
 
+/*!
+  Return the media catalog number MCN.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
 char *get_mcn_win32ioctl (const _img_private_t *env);
+
+/*! 
+  Get cdtext information for a CdIo object .
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return the CD-TEXT object or NULL if obj is NULL
+  or CD-TEXT information does not exist.
+*/
+const cdtext_t * get_cdtext_win32ioctl (_img_private_t *env);
 
 /*!
   Return the the kind of drive capabilities of device.

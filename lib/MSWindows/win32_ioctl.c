@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.11 2004/07/16 02:06:40 rocky Exp $
+    $Id: win32_ioctl.c,v 1.12 2004/07/16 02:48:49 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.11 2004/07/16 02:06:40 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.12 2004/07/16 02:48:49 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -44,6 +44,7 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.11 2004/07/16 02:06:40 rock
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <cdio/scsi_mmc.h>
+#include "cdtext_private.h"
 
 /* Win32 DeviceIoControl specifics */
 /***** FIXME: #include ntddcdrm.h from Wine, but probably need to 
@@ -388,6 +389,138 @@ read_toc_win32ioctl (_img_private_t *env)
   }
   env->gen.toc_init = true;
   return true;
+}
+
+#define set_cdtext_field(FIELD)						\
+  if( i_track == 0 )							\
+    env->cdtext.field[FIELD] = strdup(buffer);				\
+  else									\
+    env->tocent[i_track-1].cdtext.field[FIELD]				\
+      = strdup(buffer);							\
+  i_track++;								\
+  idx = 0;
+
+/*! 
+  Get cdtext information for a CdIo object .
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return the CD-TEXT object or NULL if obj is NULL
+  or CD-TEXT information does not exist.
+*/
+const cdtext_t *
+get_cdtext_win32ioctl (_img_private_t *env)
+{
+#if 0
+  return NULL;
+#else  
+  uint8_t  wdata[5000] = { 0, };
+
+  SCSI_PASS_THROUGH_DIRECT sptd;
+  bool success;
+  DWORD dwBytesReturned;
+  
+  sptd.Length=sizeof(sptd);
+  sptd.PathId=0;     /* SCSI card ID will be filled in automatically */
+  sptd.TargetId=0;   /* SCSI target ID will also be filled in */
+  sptd.Lun=0;        /* SCSI lun ID will also be filled in */
+  sptd.CdbLength=10; /* CDB size is 10 for READ TOC MMC1 command */
+  sptd.SenseInfoLength=0; /* Don't return any sense data */
+  sptd.DataIn            = SCSI_IOCTL_DATA_IN; 
+  sptd.DataTransferLength= sizeof(wdata); 
+  sptd.TimeOutValue=60;  /*SCSI timeout value (60 seconds - 
+			   maybe it should be longer) */
+  sptd.DataBuffer= (void *) wdata;
+  sptd.SenseInfoOffset=0;
+
+  CDIO_MMC_SET_COMMAND(sptd.Cdb, CDIO_MMC_GPCMD_READ_TOC); 
+  sptd.Cdb[1] = 0x02;   /* MSF mode */
+  sptd.Cdb[2] = 0x05;   /* CD text  */
+  CDIO_MMC_SET_READ_LENGTH(sptd.Cdb, sizeof(wdata));
+
+  /* Send the command to drive */
+  success=DeviceIoControl(env->h_device_handle,
+			  IOCTL_SCSI_PASS_THROUGH_DIRECT,               
+			  (void *)&sptd, 
+			  (DWORD)sizeof(SCSI_PASS_THROUGH_DIRECT),
+			  NULL, 0,                        
+			  &dwBytesReturned,
+			  NULL);
+
+  if(! success) {
+    char *psz_msg = NULL;
+    DWORD dw = GetLastError();
+
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 
+		  NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		  (LPSTR) psz_msg, 0, NULL);
+    cdio_info("Error reading cdtext: %s", psz_msg);
+    LocalFree(psz_msg);
+    return NULL;
+  }
+
+  {
+    CDText_data_t *pdata;
+    int           i;
+    int           j;
+    char          buffer[256];
+    int           idx;
+    int           i_track;
+
+    memset( buffer, 0x00, sizeof(buffer) );
+    idx = 0;
+  
+    pdata = (CDText_data_t *) (&wdata[4]);
+    for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ ) {
+      if( pdata->seq != i )
+	break;
+      
+      if( (pdata->type >= 0x80) 
+	  && (pdata->type <= 0x85) && (pdata->block == 0) ) {
+	i_track = pdata->i_track;
+	
+	for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++ ) {
+	  if( pdata->text[j] == 0x00 )
+	    {
+	      switch( pdata->type) {
+	      case CDIO_CDTEXT_TITLE: 
+		set_cdtext_field(CDTEXT_TITLE);
+		break;
+	      case CDIO_CDTEXT_PERFORMER:  
+		set_cdtext_field(CDTEXT_PERFORMER);
+		break;
+	      case CDIO_CDTEXT_SONGWRITER:
+		set_cdtext_field(CDTEXT_SONGWRITER);
+		break;
+	      case CDIO_CDTEXT_COMPOSER:
+		set_cdtext_field(CDTEXT_COMPOSER);
+		break;
+	      case CDIO_CDTEXT_ARRANGER:
+		set_cdtext_field(CDTEXT_ARRANGER);
+		break;
+	      case CDIO_CDTEXT_MESSAGE:
+		set_cdtext_field(CDTEXT_MESSAGE);
+		break;
+	      case CDIO_CDTEXT_DISCID: 
+		set_cdtext_field(CDTEXT_DISCID);
+		break;
+	      case CDIO_CDTEXT_GENRE: 
+		set_cdtext_field(CDTEXT_GENRE);
+		break;
+	      }
+	    }
+	  else 	    {
+	    buffer[idx++] = pdata->text[j];
+	  }
+	  buffer[idx] = 0x00;
+	}
+      }
+      pdata++;
+    }
+#endif
+  }
+
+  env->b_cdtext_init = true;
+  return &(env->cdtext);
 }
 
 /*!
