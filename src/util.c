@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.16 2004/08/07 03:37:46 rocky Exp $
+  $Id: util.c,v 1.17 2004/08/07 09:42:34 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -106,14 +106,16 @@ print_mmc_drive_features(CdIo *p_cdio)
 			      sizeof(buf), &buf);
   if (i_status == 0) {
     uint8_t *p;
-    uint32_t lenData  = (unsigned int) CDIO_MMC_GET_LEN32(buf);
-    uint8_t *pMax     = buf + 65530;
+    uint32_t i_data;
+    uint8_t *p_max = buf + 65530;
     
+    i_data  = (unsigned int) CDIO_MMC_GET_LEN32(buf);
+
     /* set to first sense feature code, and then walk through the masks */
     p = buf + 8;
-    while( (p < &(buf[lenData])) && (p < pMax) )       {
+    while( (p < &(buf[i_data])) && (p < p_max) ) {
       uint16_t i_feature;
-      uint8_t i_feature_len = p[3];
+      uint8_t i_feature_additional = p[3];
       
       i_feature = CDIO_MMC_GET_LEN16(p);
       switch( i_feature )
@@ -121,7 +123,7 @@ print_mmc_drive_features(CdIo *p_cdio)
 	  uint8_t *q;
 	case CDIO_MMC_FEATURE_PROFILE_LIST:
 	  printf("Profile List Feature\n");
-	  for ( q = p+4 ; q < p + i_feature_len ; q += 4 ) {
+	  for ( q = p+4 ; q < p + i_feature_additional ; q += 4 ) {
 	    int i_profile=CDIO_MMC_GET_LEN16(q);
 	    switch (i_profile) {
 	    case CDIO_MMC_FEATURE_PROF_NON_REMOVABLE:
@@ -341,7 +343,7 @@ print_mmc_drive_features(CdIo *p_cdio)
 	default: 
 	  printf("Unknown feature code %x\n", i_feature);
 	}
-      p += i_feature_len + 4;
+      p += i_feature_additional + 4;
     }
   } else {
     printf("Didn't get all feature codes\n");

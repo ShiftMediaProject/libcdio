@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.22 2004/08/06 22:13:14 rocky Exp $
+    $Id: scsi_mmc.c,v 1.23 2004/08/07 09:42:34 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -265,20 +265,21 @@ scsi_mmc_get_drive_cap_private (const void *p_env,
 			       sizeof(buf), &buf);
   if (0 == i_status) {
     uint8_t *p;
-    uint16_t lenData  = (unsigned int) CDIO_MMC_GET_LEN16(buf);
-    uint8_t *pMax = buf + 256;
-
+    uint16_t i_data;
+    uint8_t *p_max = buf + 256;
+    
+    i_data = (unsigned int) CDIO_MMC_GET_LEN16(buf);
     *p_read_cap  = 0;
     *p_write_cap = 0;
     *p_misc_cap  = 0;
 
     /* set to first sense mask, and then walk through the masks */
     p = buf + 8;
-    while( (p < &(buf[2+lenData])) && (p < pMax) )       {
-      uint8_t which;
+    while( (p < &(buf[2+i_data])) && (p < p_max) )       {
+      uint8_t which_page;
       
-      which = p[0] & 0x3F;
-      switch( which )
+      which_page = p[0] & 0x3F;
+      switch( which_page )
 	{
 	case CDIO_MMC_AUDIO_CTL_PAGE:
 	case CDIO_MMC_R_W_ERROR_PAGE:
