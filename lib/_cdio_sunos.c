@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.34 2004/06/02 00:43:53 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.35 2004/06/06 10:50:55 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -41,7 +41,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.34 2004/06/02 00:43:53 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.35 2004/06/06 10:50:55 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -638,8 +638,6 @@ _cdio_get_num_tracks(void *user_data)
 {
   _img_private_t *env = user_data;
   
-  if (!env->gen.toc_init) _cdio_read_toc (env) ;
-
   return TOTAL_TRACKS;
 }
 
@@ -651,10 +649,7 @@ _cdio_get_track_format(void *user_data, track_t i_track)
 {
   _img_private_t *env = user_data;
   
-  if (!env->gen.init) _cdio_init(env);
-  if (!env->gen.toc_init) _cdio_read_toc (env) ;
-
-  if (i_track > TOTAL_TRACKS || i_track == 0)
+  if ( (i_track > TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM)
     return TRACK_FORMAT_ERROR;
 
   i_track -= FIRST_TRACK_NUM;
@@ -690,13 +685,13 @@ _cdio_get_track_green(void *user_data, track_t track_num)
   if (!env->gen.init) _cdio_init(env);
   if (!env->gen.toc_init) _cdio_read_toc (env) ;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
-
-  if (track_num > TOTAL_TRACKS+1 || track_num == 0)
+  if (track_num > TOTAL_TRACKS+FIRST_TRACK_NUM || track_num < FIRST_TRACK_NUM)
     return false;
 
+  i_track -= FIRST_TRACK_NUM;
+
   /* FIXME: Dunno if this is the right way, but it's what 
-     I was using in cdinfo for a while.
+     I was using in cd-info for a while.
    */
   return ((env->tocent[track_num-1].cdte_ctrl & 2) != 0);
 }

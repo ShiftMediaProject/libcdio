@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.50 2004/06/03 08:50:30 rocky Exp $
+    $Id: _cdio_linux.c,v 1.51 2004/06/06 10:50:55 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.50 2004/06/03 08:50:30 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.51 2004/06/06 10:50:55 rocky Exp $";
 
 #include <string.h>
 
@@ -876,7 +876,7 @@ _get_track_format_linux(void *user_data, track_t i_track)
 {
   _img_private_t *env = user_data;
   
-  if (i_track > TOTAL_TRACKS || i_track == 0)
+  if (i_track > (TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM)
     return TRACK_FORMAT_ERROR;
 
   i_track -= FIRST_TRACK_NUM;
@@ -909,17 +909,15 @@ _get_track_green_linux(void *user_data, track_t i_track)
 {
   _img_private_t *env = user_data;
   
-  if (!env->gen.toc_init) _cdio_read_toc (env) ;
-
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
-
-  if (i_track > TOTAL_TRACKS+1 || i_track == 0)
+  if (i_track > (TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM)
     return false;
 
+  i_track -= FIRST_TRACK_NUM;
+
   /* FIXME: Dunno if this is the right way, but it's what 
-     I was using in cdinfo for a while.
+     I was using in cd-info for a while.
    */
-  return ((env->tocent[i_track-FIRST_TRACK_NUM].cdte_ctrl & 2) != 0);
+  return ((env->tocent[i_track].cdte_ctrl & 2) != 0);
 }
 
 /*!  
@@ -940,7 +938,7 @@ _get_track_msf_linux(void *user_data, track_t i_track, msf_t *msf)
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
-  if (i_track > TOTAL_TRACKS+1 || i_track == 0) {
+  if (i_track > (TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM) {
     return false;
   } else {
     struct cdrom_msf0  *msf0= &env->tocent[i_track-FIRST_TRACK_NUM].cdte_addr.msf;

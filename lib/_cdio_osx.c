@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.30 2004/06/02 07:40:13 rocky Exp $
+    $Id: _cdio_osx.c,v 1.31 2004/06/06 10:50:55 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.30 2004/06/02 07:40:13 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.31 2004/06/06 10:50:55 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -67,10 +67,10 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.30 2004/06/02 07:40:13 rocky 
 #include <IOKit/storage/IOCDMediaBSDClient.h>
 #include <IOKit/storage/IODVDMediaBSDClient.h>
 
+#define TOTAL_TRACKS    (env->i_last_track - env->i_first_track)
 
-#define TOTAL_TRACKS    (env->num_tracks-1)
 #define CDROM_CDI_TRACK 0x1
-#define CDROM_XA_TRACK 0x2
+#define CDROM_XA_TRACK  0x2
 
 typedef enum {
   _AM_NONE,
@@ -85,10 +85,11 @@ typedef struct {
   access_mode_t access_mode;
 
   /* Track information */
-  bool toc_init;                         /* if true, info below is valid. */
+  bool toc_init;             /* if true, info below is valid. */
   CDTOC *pTOC;
   int i_descriptors;
-  track_t num_tracks;
+  track_t i_tracks;          /* number of tracks */
+  track_t i_first_track;     /* first track */
   lsn_t   *pp_lba;
 
 } _img_private_t;
@@ -107,9 +108,9 @@ _free_osx (void *user_data) {
   This is an internal routine and is called once per CD open.
  ****************************************************************************/
 static track_t
-_cdio_getNumberOfTracks( CDTOC *pTOC, int i_descriptors )
+getNumberOfTracks_osx( CDTOC *pTOC, int i_descriptors )
 {
-    track_t track = CDIO_INVALID_TRACK; 
+    track_t i_track = CDIO_INVALID_TRACK; 
     int i;
     int i_tracks = 0;
     CDTOCDescriptor *pTrackDescriptors;
@@ -118,9 +119,9 @@ _cdio_getNumberOfTracks( CDTOC *pTOC, int i_descriptors )
 
     for( i = i_descriptors; i >= 0; i-- )
     {
-        track = pTrackDescriptors[i].point;
+        i_track = pTrackDescriptors[i].point;
 
-	if( track > CDIO_CD_MAX_TRACKS || track < CDIO_CD_MIN_TRACK_NO )
+	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
             continue;
 
         i_tracks++; 
@@ -130,13 +131,37 @@ _cdio_getNumberOfTracks( CDTOC *pTOC, int i_descriptors )
 }
 
 /*!
+  Return the number of the first track. 
+  CDIO_INVALID_TRACK is returned on error.
+*/
+static track_t
+getFirstTrack_osx( CDTOC *pTOC, int i_descriptors )
+{
+  track_t i_track = CDIO_INVALID_TRACK;
+  int i;
+  CDTOCDescriptor *pTrackDescriptors;
+  
+  pTrackDescriptors = pTOC->descriptors;
+  
+  for( i = 0; i < i_descriptors; i++ )
+    {
+      i_track = pTrackDescriptors[i].point;
+      
+      if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
+	continue;
+      return ( i_track );
+    }
+  return CDIO_INVALID_TRACK;
+}
+
+/*!
    Reads nblocks of mode2 form2 sectors from cd device into data starting
    from lsn.
    Returns 0 if no error. 
  */
 static int
 _get_read_mode1_sectors_osx (void *user_data, void *data, lsn_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+			     bool b_form2, unsigned int nblocks)
 {
   _img_private_t *env = user_data;
   dk_cd_read_t cd_read;
@@ -171,7 +196,7 @@ _get_read_mode1_sectors_osx (void *user_data, void *data, lsn_t lsn,
  */
 static int
 _get_read_mode2_sectors_osx (void *user_data, void *data, lsn_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+			     bool b_form2, unsigned int nblocks)
 {
   _img_private_t *env = user_data;
   dk_cd_read_t cd_read;
@@ -206,7 +231,7 @@ _get_read_mode2_sectors_osx (void *user_data, void *data, lsn_t lsn,
  */
 static int
 _get_read_audio_sectors_osx (void *user_data, void *data, lsn_t lsn, 
-			  unsigned int nblocks)
+			     unsigned int nblocks)
 {
   _img_private_t *env = user_data;
   dk_cd_read_t cd_read;
@@ -394,16 +419,18 @@ _cdio_read_toc (_img_private_t *env)
   IOObjectRelease( service ); 
 
   env->i_descriptors = CDTOCGetDescriptorCount ( env->pTOC );
-  env->num_tracks = _cdio_getNumberOfTracks(env->pTOC, env->i_descriptors);
+  env->i_first_track = getFirstTrack_osx(env->pTOC, env->i_descriptors);
+  env->i_last_track  = env->i_first_track + 
+    getNumberOfTracks_osx(env->pTOC, env->i_descriptors);
 
   /* Read in starting sectors */
   {
     int i, i_leadout = -1;
     CDTOCDescriptor *pTrackDescriptors;
-    track_t track;
+    track_t i_track;
     int i_tracks;
     
-    env->pp_lba = malloc( (env->num_tracks + 1) * sizeof(int) );
+    env->pp_lba = malloc( TOTAL_TRACKS * sizeof(int) );
     if( env->pp_lba == NULL )
       {
 	cdio_error("Out of memory in allocating track starting LSNs" );
@@ -415,13 +442,13 @@ _cdio_read_toc (_img_private_t *env)
     
     for( i_tracks = 0, i = 0; i <= env->i_descriptors; i++ )
       {
-	track = pTrackDescriptors[i].point;
+	i_track = pTrackDescriptors[i].point;
 
-	if( track == 0xA2 )
+	if( i_track == 0xA2 )
 	  /* Note leadout should be 0xAA, But OSX seems to use 0xA2. */
 	  i_leadout = i;
 	
-	if( track > CDIO_CD_MAX_TRACKS || track < CDIO_CD_MIN_TRACK_NO )
+	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
 	  continue;
 	
 	env->pp_lba[i_tracks++] =
@@ -459,14 +486,12 @@ _get_track_lba_osx(void *user_data, track_t i_track)
 {
   _img_private_t *env = user_data;
 
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = env->i_last_track+1;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS;
-
-  if (i_track > TOTAL_TRACKS || i_track == 0) {
+  if (i_track > env->i_last_track + 1 || i_track < env->i_first_track) {
     return CDIO_INVALID_LSN;
   } else {
-    return env->pp_lba[i_track];
+    return env->pp_lba[i_track - env->i_first_track];
   }
 }
 
@@ -560,26 +585,7 @@ _get_first_track_num_osx(void *user_data)
 {
   _img_private_t *env = user_data;
   
-  if (!env->toc_init) _cdio_read_toc (env) ;
-  
-  {
-    track_t track = CDIO_INVALID_TRACK;
-    int i;
-    CDTOCDescriptor *pTrackDescriptors;
-
-    pTrackDescriptors = env->pTOC->descriptors;
-
-    for( i = 0; i < env->i_descriptors; i++ )
-    {
-        track = pTrackDescriptors[i].point;
-
-	if( track > CDIO_CD_MAX_TRACKS || track < CDIO_CD_MIN_TRACK_NO )
-	  continue;
-        return ( track );
-    }
-  }
-  
-  return CDIO_INVALID_TRACK;
+  return env->i_first_track;
 }
 
 /*!
@@ -611,9 +617,7 @@ _get_num_tracks_osx(void *user_data)
 {
   _img_private_t *env = user_data;
   
-  if (!env->toc_init) _cdio_read_toc (env) ;
-
-  return( env->num_tracks-1 );
+  return( TOTAL_TRACKS );
 }
 
 /*!  
@@ -626,13 +630,9 @@ _get_track_format_osx(void *user_data, track_t i_track)
   dk_cd_read_track_info_t cd_read;
   CDTrackInfo a_track;
   
-  if (!env->toc_init) _cdio_read_toc (env) ;
-
-  if (i_track > TOTAL_TRACKS || i_track == 0)
+  if (i_track > env->i_last_track || i_track < env->i_first_track)
     return TRACK_FORMAT_ERROR;
     
-  i_track -= 1; /* should be FIRST_TRACK_NUM */
-
   memset( &cd_read, 0, sizeof(cd_read) );
 
   cd_read.address = i_track;
@@ -644,7 +644,7 @@ _get_track_format_osx(void *user_data, track_t i_track)
   if( ioctl( env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
   {
     cdio_error( "could not read trackinfo for track %d", i_track );
-    return -1;
+    return TRACK_FORMAT_ERROR;
   }
 
   /*cdio_warn( "trackinfo trackMode: %x dataMode: %x", a_track.trackMode, a_track.dataMode );*/
@@ -677,29 +677,27 @@ _get_track_green_osx(void *user_data, track_t i_track)
   _img_private_t *env = user_data;
   CDTrackInfo a_track;
  
-  if (!env->toc_init) _cdio_read_toc (env) ;
-
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS;
-
-  if (i_track > TOTAL_TRACKS || i_track == 0)
+  if ( i_track > env->i_last_track || i_track < env->i_first_track )
     return false;
 
-  dk_cd_read_track_info_t cd_read;
-  memset( &cd_read, 0, sizeof(cd_read) );
+  else {
 
-  cd_read.address = i_track;
-  cd_read.addressType = kCDTrackInfoAddressTypeTrackNumber;
-
-  cd_read.buffer = &a_track;
-  cd_read.bufferLength = sizeof(CDTrackInfo);
-
-  if( ioctl( env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
-  {
-    cdio_error( "could not read trackinfo for track %d", i_track );
-    return -1;
+    dk_cd_read_track_info_t cd_read;
+    
+    memset( &cd_read, 0, sizeof(cd_read) );
+    
+    cd_read.address      = i_track;
+    cd_read.addressType  = kCDTrackInfoAddressTypeTrackNumber;
+    
+    cd_read.buffer       = &a_track;
+    cd_read.bufferLength = sizeof(CDTrackInfo);
+    
+    if( ioctl( env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 ) {
+      cdio_error( "could not read trackinfo for track %d", i_track );
+      return -1;
+    }
+    return ((a_track.trackMode & 2) != 0);
   }
-
-  return ((a_track.trackMode & 2) != 0);
 }
 
 #endif /* HAVE_DARWIN_CDROM */
@@ -724,13 +722,13 @@ cdio_get_devices_osx(void)
   kern_result = IOMasterPort( MACH_PORT_NULL, &master_port );
   if( kern_result != KERN_SUCCESS )
     {
-      return( nil );
+      return( NULL );
     }
   
   classes_to_match = IOServiceMatching( kIOCDMediaClass );
   if( classes_to_match == NULL )
     {
-      return( nil );
+      return( NULL );
     }
   
   CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaEjectableKey),
@@ -741,7 +739,7 @@ cdio_get_devices_osx(void)
 					      &media_iterator );
   if( kern_result != KERN_SUCCESS )
     {
-      return( nil );
+      return( NULL );
     }
   
   next_media = IOIteratorNext( media_iterator );
@@ -806,13 +804,13 @@ cdio_get_default_device_osx(void)
   kern_result = IOMasterPort( MACH_PORT_NULL, &master_port );
   if( kern_result != KERN_SUCCESS )
     {
-      return( nil );
+      return( NULL );
     }
   
   classes_to_match = IOServiceMatching( kIOCDMediaClass );
   if( classes_to_match == NULL )
     {
-      return( nil );
+      return( NULL );
     }
   
   CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaEjectableKey),
@@ -823,7 +821,7 @@ cdio_get_default_device_osx(void)
 					      &media_iterator );
   if( kern_result != KERN_SUCCESS )
     {
-      return( nil );
+      return( NULL );
     }
   
   next_media = IOIteratorNext( media_iterator );
