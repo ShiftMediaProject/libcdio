@@ -1,7 +1,7 @@
 /*
-  $Id: cd-read.c,v 1.22 2004/11/04 10:08:23 rocky Exp $
+  $Id: cd-read.c,v 1.23 2005/01/09 00:10:49 rocky Exp $
 
-  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -202,6 +202,9 @@ parse_options (int argc, const char *argv[])
      "Show output as a hex dump. The default is a hex dump when "
      "output goes to stdout and no hex dump when output is to a file."},
 
+    {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
+     0, "Don't display header and copyright (for regression testing)"},
+
     {"no-hexdump",  '\0', POPT_ARG_NONE, &opts.nohexdump, 0,
      "Don't show output as a hex dump."},
 
@@ -257,7 +260,7 @@ parse_options (int argc, const char *argv[])
       case OP_SOURCE_CUE: 
       case OP_SOURCE_NRG: 
       case OP_SOURCE_DEVICE: 
-	if (opts.source_image != IMAGE_UNKNOWN) {
+	if (opts.source_image != INPUT_UNKNOWN) {
 	  report( stderr, "%s: another source type option given before.\n", 
 		  program_name );
 	  report( stderr, "%s: give only one source type option.\n", 
@@ -274,19 +277,19 @@ parse_options (int argc, const char *argv[])
 
 	switch (opt) {
 	case OP_SOURCE_BIN: 
-	  opts.source_image  = IMAGE_BIN;
+	  opts.source_image  = INPUT_BIN;
 	  break;
 	case OP_SOURCE_CUE: 
-	  opts.source_image  = IMAGE_CUE;
+	  opts.source_image  = INPUT_CUE;
 	  break;
 	case OP_SOURCE_NRG: 
-	  opts.source_image  = IMAGE_NRG;
+	  opts.source_image  = INPUT_NRG;
 	  break;
 	case OP_SOURCE_AUTO:
-	  opts.source_image  = IMAGE_AUTO;
+	  opts.source_image  = INPUT_AUTO;
 	  break;
 	case OP_SOURCE_DEVICE: 
-	opts.source_image  = IMAGE_DEVICE;
+	opts.source_image  = INPUT_DEVICE;
 	source_name = fillout_device_name(source_name);
 	break;
 	}
@@ -317,7 +320,7 @@ parse_options (int argc, const char *argv[])
   {
     const char *remaining_arg = poptGetArg(optCon);
     if ( remaining_arg != NULL) {
-      if (opts.source_image != IMAGE_UNKNOWN) {
+      if (opts.source_image != INPUT_UNKNOWN) {
 	report( stderr, "%s: Source specified in option %s and as %s\n", 
 		program_name, source_name, remaining_arg );
 	poptFreeContext(optCon);
@@ -445,7 +448,7 @@ init(void)
   opts.end_lsn       = CDIO_INVALID_LSN;
   opts.num_sectors   = 0;
   opts.read_mode     = READ_MODE_UNINIT;
-  opts.source_image  = IMAGE_UNKNOWN;
+  opts.source_image  = INPUT_UNKNOWN;
   opts.hexdump       = 2;         /* Not set. */
 
   gl_default_cdio_log_handler = cdio_log_set_handler (log_handler);
@@ -466,59 +469,9 @@ main(int argc, const char *argv[])
      be reflected in `arguments'. */
   parse_options(argc, argv);
      
-  /* end of local declarations */
+  print_version(program_name, VERSION, opts.no_header, opts.version_only);
 
-  switch (opts.source_image) {
-  case IMAGE_UNKNOWN:
-  case IMAGE_AUTO:
-    p_cdio = cdio_open (source_name, DRIVER_UNKNOWN);
-    if (p_cdio==NULL) {
-      err_exit("Error in automatically selecting driver with input %s\n",
-	       source_name);
-    } 
-    break;
-  case IMAGE_DEVICE:
-    p_cdio = cdio_open (source_name, DRIVER_DEVICE);
-    if (p_cdio==NULL) {
-      err_exit("Error in automatically selecting device with input %s\n",
-	       source_name ? source_name : "(null)");
-
-    } 
-    break;
-  case IMAGE_BIN:
-    p_cdio = cdio_open (source_name, DRIVER_BINCUE);
-    if (p_cdio==NULL) {
-      err_exit("Error in opening bin/cue file %s\n", 
-	       source_name ? source_name : "(null)");
-    } 
-    break;
-  case IMAGE_CUE:
-    p_cdio = cdio_open_cue(source_name);
-    if (p_cdio==NULL) {
-      err_exit("Error in opening cue/bin file %s with input\n", 
-	       source_name ? source_name : "(null)");
-    } 
-    break;
-  case IMAGE_NRG:
-    p_cdio = cdio_open (source_name, DRIVER_NRG);
-    if (p_cdio==NULL) {
-      err_exit("Error in opening NRG file %s for input\n", 
-	       source_name ? source_name : "(null)");
-    } 
-    break;
-
-  case IMAGE_CDRDAO:
-    p_cdio = cdio_open (source_name, DRIVER_CDRDAO);
-    if (p_cdio==NULL) {
-      err_exit("Error in opening TOC file %s for input\n", 
-	       source_name ? source_name : "(null)");
-    } 
-    break;
-  }
-
-  if (opts.access_mode!=NULL) {
-    cdio_set_arg(p_cdio, "access-mode", opts.access_mode);
-  } 
+  p_cdio = open_input(source_name, opts.source_image, opts.access_mode);
 
   if (opts.output_file!=NULL) {
     

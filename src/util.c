@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.29 2005/01/04 04:42:17 rocky Exp $
+  $Id: util.c,v 1.30 2005/01/09 00:10:49 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -44,7 +44,8 @@ print_version (char *program_name, const char *version,
   driver_id_t driver_id;
 
   if (no_header == 0)
-    report( stdout,  "%s version %s\nCopyright (c) 2003, 2004 R. Bernstein\n",
+    report( stdout,  
+	    "%s version %s\nCopyright (c) 2003, 2004, 2005 R. Bernstein\n",
 	    program_name, version);
   report( stdout,  
 	  _("This is free software; see the source for copying conditions.\n\
@@ -70,6 +71,87 @@ PARTICULAR PURPOSE.\n\
   
 }
 
+/*! Device input routine. If successful we return an open CdIo_t
+    pointer. On error the program exits.
+ */
+CdIo_t *
+open_input(const char *psz_source, source_image_t source_image,
+	   const char *psz_access_mode)
+{
+  CdIo_t *p_cdio = NULL;
+  switch (source_image) {
+  case INPUT_UNKNOWN:
+  case INPUT_AUTO:
+    p_cdio = cdio_open_am (psz_source, DRIVER_UNKNOWN, psz_access_mode);
+    if (!p_cdio) {
+      if (psz_source) {
+	err_exit("Error in automatically selecting driver for input %s.\n", 
+		 psz_source);
+      } else {
+	err_exit("Error in automatically selecting driver.\n");
+      }
+    } 
+    break;
+  case INPUT_DEVICE:
+    p_cdio = cdio_open_am (psz_source, DRIVER_DEVICE, psz_access_mode);
+    if (!p_cdio) {
+      if (psz_source) {
+	err_exit("Cannot use CD-ROM device %s. Is a CD loaded?\n",
+		 psz_source);
+      } else {
+	err_exit("Cannot find a CD-ROM with a CD loaded.\n");
+      }
+    } 
+    break;
+  case INPUT_BIN:
+    p_cdio = cdio_open_am (psz_source, DRIVER_BINCUE, psz_access_mode);
+    if (!p_cdio) {
+      if (psz_source) {
+	err_exit("%s: Error in opening CDRWin BIN/CUE image for BIN"
+		 " input %s\n", psz_source);
+      } else {
+	err_exit("Cannot find CDRWin BIN/CUE image.\n");
+      }
+    } 
+    break;
+  case INPUT_CUE:
+    p_cdio = cdio_open_cue(psz_source);
+    if (p_cdio==NULL) {
+      if (psz_source) {
+	err_exit("%s: Error in opening CDRWin BIN/CUE image for CUE"
+		 " input %s\n", psz_source);
+      } else {
+	err_exit("Cannot find CDRWin BIN/CUE image.\n");
+      }
+    } 
+    break;
+  case INPUT_NRG:
+    p_cdio = cdio_open_am (psz_source, DRIVER_NRG, psz_access_mode);
+    if (p_cdio==NULL) {
+      if (psz_source) {
+	err_exit("Error in opening Nero NRG image for input %s\n", 
+		 psz_source);
+      } else {
+	err_exit("Cannot find Nero NRG image.\n");
+      }
+    } 
+    break;
+
+  case INPUT_CDRDAO:
+    p_cdio = cdio_open_am (psz_source, DRIVER_CDRDAO, psz_access_mode);
+    if (p_cdio==NULL) {
+      if (psz_source) {
+	err_exit("Error in opening cdrdao TOC with input %s.\n", psz_source);
+      } else {
+	err_exit("Cannot find cdrdao TOC image.\n");
+      }
+    }
+    break;
+  }
+  return p_cdio;
+}
+
+
 #define DEV_PREFIX "/dev/"
 char *
 fillout_device_name(const char *device_name) 
@@ -78,6 +160,7 @@ fillout_device_name(const char *device_name)
   return strdup(device_name);
 #else
   unsigned int prefix_len = strlen(DEV_PREFIX);
+  if (!device_name) return NULL;
   if (0 == strncmp(device_name, DEV_PREFIX, prefix_len))
     return strdup(device_name);
   else {

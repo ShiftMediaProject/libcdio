@@ -1,7 +1,7 @@
 /*
-  $Id: cd-drive.c,v 1.12 2005/01/02 22:49:31 rocky Exp $
+  $Id: cd-drive.c,v 1.13 2005/01/09 00:10:48 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -86,14 +86,14 @@ parse_options (int argc, const char *argv[])
     switch (opt) {
       
     case OP_SOURCE_DEVICE: 
-      if (opts.source_image != IMAGE_UNKNOWN) {
+      if (opts.source_image != DRIVER_UNKNOWN) {
 	report( stderr, "%s: another source type option given before.\n", 
 		program_name );
 	report( stderr, "%s: give only one source type option.\n", 
 		program_name );
 	break;
       } else {
-	opts.source_image  = IMAGE_DEVICE;
+	opts.source_image  = DRIVER_DEVICE;
 	source_name = fillout_device_name(source_name);
 	break;
       }
@@ -107,7 +107,7 @@ parse_options (int argc, const char *argv[])
   {
     const char *remaining_arg = poptGetArg(optCon);
     if ( remaining_arg != NULL) {
-      if (opts.source_image != IMAGE_UNKNOWN) {
+      if (opts.source_image != DRIVER_UNKNOWN) {
 	report( stderr, "%s: Source specified in option %s and as %s\n", 
 		program_name, source_name, remaining_arg);
 	poptFreeContext(optCon);
@@ -115,7 +115,7 @@ parse_options (int argc, const char *argv[])
 	exit (EXIT_FAILURE);
       }
       
-      if (opts.source_image == IMAGE_DEVICE)
+      if (opts.source_image == DRIVER_DEVICE)
 	source_name = fillout_device_name(remaining_arg);
       else 
 	source_name = strdup(remaining_arg);
@@ -163,7 +163,7 @@ init(void)
   /* Default option values. */
   opts.silent        = false;
   opts.debug_level   = 0;
-  opts.source_image  = IMAGE_UNKNOWN;
+  opts.source_image  = DRIVER_UNKNOWN;
 }
 
 int
@@ -188,9 +188,11 @@ main(int argc, const char *argv[])
   if (NULL == source_name) {
     char *default_device;
 
-    p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+    p_cdio = cdio_open (NULL, DRIVER_DEVICE);
 
-    if (NULL != p_cdio) {
+    if (NULL == p_cdio) {
+      printf("No *loaded* CD-ROM device found.\n");
+    }  else {
       default_device = cdio_get_default_device(p_cdio);
       
       printf("The driver selected is %s\n", cdio_get_driver_name(p_cdio));

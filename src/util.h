@@ -1,5 +1,5 @@
 /*
-  $Id: util.h,v 1.9 2004/11/06 09:16:04 rocky Exp $
+  $Id: util.h,v 1.10 2005/01/09 00:10:49 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -85,24 +85,38 @@
   
 typedef enum
 {
-  IMAGE_AUTO,
-  IMAGE_DEVICE,
-  IMAGE_BIN,
-  IMAGE_CUE,
-  IMAGE_NRG,
-  IMAGE_CDRDAO,
-  IMAGE_UNKNOWN
+  INPUT_AUTO,
+  INPUT_DEVICE,
+  INPUT_BIN,
+  INPUT_CUE,
+  INPUT_NRG,
+  INPUT_CDRDAO,
+  INPUT_UNKNOWN
 } source_image_t;
 
 extern char *source_name;
 extern char *program_name;
 extern cdio_log_handler_t gl_default_cdio_log_handler;
 
-void myexit(CdIo *cdio, int rc);
+/*! Common error exit routine which frees p_cdio. rc is the 
+    return code to pass to exit.
+*/
+void myexit(CdIo_t *p_cdio, int rc);
 
-void print_version (char *program_name, const char *version,
+/*! Print our version string */
+void print_version (char *psz_program, const char *psz_version,
 		    int no_header, bool version_only);
 
+/*! Device input routine. If successful we return an open CdIo_t
+    pointer. On error the program exits.
+ */
+CdIo_t *
+open_input(const char *psz_source, source_image_t source_image, 
+	   const char *psz_access_mode);
+
+/*! On Unixish OS's we fill out the device name, from a short name.
+    For example cdrom might become /dev/cdrom.
+*/
 char *fillout_device_name(const char *device_name);
 
 /*! Prints out SCSI-MMC drive features  */

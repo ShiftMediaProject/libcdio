@@ -1,6 +1,6 @@
-# $Id: check_common_fn.in,v 1.9 2004/10/28 11:13:40 rocky Exp $
+# $Id: check_common_fn.in,v 1.10 2005/01/09 00:10:48 rocky Exp $
 #
-#    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -161,7 +161,7 @@ test_cd_read() {
     return 1
   fi
 
-  if ${CD_READ} ${opts} >${outfile} 2>&1 ; then 
+  if ${CD_READ} --no-header ${opts} >${outfile} 2>&1 ; then 
     if test "@DIFF@" != no; then
       if @DIFF@ @DIFF_OPTS@ ${outfile} ${rightfile} ; then
 	rm -f $outfile
