@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.9 2005/01/30 10:03:10 rocky Exp $
+    $Id: bincue.c,v 1.10 2005/01/30 10:05:37 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.9 2005/01/30 10:03:10 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.10 2005/01/30 10:05:37 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -775,10 +775,10 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
    from lsn. Returns 0 if no error. 
  */
 static driver_return_code_t
-_read_audio_sectors_bincue (void *user_data, void *data, lsn_t lsn, 
+_read_audio_sectors_bincue (void *p_user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   int ret;
 
   /* Why the adjustment of 272, I don't know. It seems to work though */
@@ -810,10 +810,10 @@ _read_audio_sectors_bincue (void *user_data, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static driver_return_code_t
-_read_mode1_sector_bincue (void *user_data, void *data, lsn_t lsn, 
+_read_mode1_sector_bincue (void *p_user_data, void *data, lsn_t lsn, 
 			   bool b_form2)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   int blocksize = CDIO_CD_FRAMESIZE_RAW;
@@ -837,10 +837,10 @@ _read_mode1_sector_bincue (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static driver_return_code_t
-_read_mode1_sectors_bincue (void *user_data, void *data, lsn_t lsn, 
+_read_mode1_sectors_bincue (void *p_user_data, void *data, lsn_t lsn, 
 			    bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
@@ -859,10 +859,10 @@ _read_mode1_sectors_bincue (void *user_data, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static driver_return_code_t
-_read_mode2_sector_bincue (void *user_data, void *data, lsn_t lsn, 
+_read_mode2_sector_bincue (void *p_user_data, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
 
@@ -897,10 +897,10 @@ _read_mode2_sector_bincue (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static driver_return_code_t
-_read_mode2_sectors_bincue (void *user_data, void *data, lsn_t lsn, 
+_read_mode2_sectors_bincue (void *p_user_data, void *data, lsn_t lsn, 
 			    bool b_form2, unsigned int nblocks)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
@@ -951,7 +951,7 @@ cdio_get_default_device_bincue(void)
 }
 
 static bool
-get_hwinfo_bincue ( const CdIo *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
+get_hwinfo_bincue ( const CdIo_t *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
 {
   strcpy(hw_info->psz_vendor, "libcdio");
   strcpy(hw_info->psz_model, "CDRWIN");
@@ -986,9 +986,9 @@ _get_track_format_bincue(void *p_user_data, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_get_track_green_bincue(void *user_data, track_t i_track) 
+_get_track_green_bincue(void *p_user_data, track_t i_track) 
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   
   if ( NULL == p_env || 
        ( i_track < p_env->gen.i_first_track
@@ -1006,13 +1006,14 @@ _get_track_green_bincue(void *user_data, track_t i_track)
   False is returned if there is no track entry.
 */
 static lba_t
-_get_lba_track_bincue(void *user_data, track_t i_track)
+_get_lba_track_bincue(void *p_user_data, track_t i_track)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = p_env->gen.i_tracks+1;
 
-  if (i_track <= p_env->gen.i_tracks + p_env->gen.i_first_track && i_track != 0) {
+  if (i_track <= p_env->gen.i_tracks + p_env->gen.i_first_track 
+      && i_track != 0) {
     return p_env->tocent[i_track-p_env->gen.i_first_track].start_lba;
   } else 
     return CDIO_INVALID_LBA;
@@ -1108,16 +1109,16 @@ cdio_open_am_bincue (const char *psz_source_name, const char *psz_access_mode)
   ones to set that up.
  */
 CdIo_t *
-cdio_open_bincue (const char *source_name)
+cdio_open_bincue (const char *psz_source)
 {
-  char *psz_bin_name = cdio_is_cuefile(source_name);
+  char *psz_bin_name = cdio_is_cuefile(psz_source);
 
   if (NULL != psz_bin_name) {
     free(psz_bin_name);
-    return cdio_open_cue(source_name);
+    return cdio_open_cue(psz_source);
   } else {
-    char *psz_cue_name = cdio_is_binfile(source_name);
-    CdIo *cdio = cdio_open_cue(psz_cue_name);
+    char *psz_cue_name = cdio_is_binfile(psz_source);
+    CdIo_t *cdio = cdio_open_cue(psz_cue_name);
     free(psz_cue_name);
     return cdio;
   }
