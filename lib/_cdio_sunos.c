@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.9 2003/04/10 04:13:41 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.10 2003/04/10 07:19:43 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -33,7 +33,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.9 2003/04/10 04:13:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.10 2003/04/10 07:19:43 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -116,7 +116,7 @@ _cdio_init (_img_private_t *_obj)
  */
 static int
 _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
-		    bool mode2_form2)
+			 bool mode2_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
@@ -233,7 +233,8 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 static int
 _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 {
-  struct cdrom_msf *msf = (struct cdrom_msf *) &data;
+  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+  struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
   msf_t _msf;
 
   _img_private_t *_obj = user_data;
@@ -310,8 +311,8 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 	
 	sc.uscsi_cdb = (caddr_t)&cdb;
 	sc.uscsi_cdblen = 12;
-	sc.uscsi_bufaddr = (caddr_t) data;
-	sc.uscsi_buflen = CDIO_CD_FRAMESIZE;
+	sc.uscsi_bufaddr = (caddr_t) buf;
+	sc.uscsi_buflen = CDIO_CD_FRAMESIZE_RAW;
 	sc.uscsi_flags = USCSI_ISOLATE | USCSI_READ;
 	sc.uscsi_timeout = 20;
 	if (ioctl(_obj->gen.fd, USCSICMD, &sc)) {
@@ -326,6 +327,7 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 	break;
       }
     }
+    memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
   
   return 0;
 }
@@ -337,7 +339,7 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
  */
 static int
 _cdio_read_mode2_sectors (void *user_data, void *data, uint32_t lsn, 
-		     bool mode2_form2, unsigned nblocks)
+			  bool mode2_form2, unsigned nblocks)
 {
   _img_private_t *_obj = user_data;
   int i;
