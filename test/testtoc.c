@@ -1,5 +1,5 @@
 /*
-  $Id: testtoc.c,v 1.6 2004/11/06 17:24:04 rocky Exp $
+  $Id: testtoc.c,v 1.7 2005/01/16 04:35:08 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -42,7 +42,7 @@
 #define TEST_DIR "."
 #endif
 
-#define NUM_GOOD_TOCS 15
+#define NUM_GOOD_TOCS 16
 #define NUM_BAD_TOCS 7
 int
 main(int argc, const char *argv[])
@@ -63,6 +63,7 @@ main(int argc, const char *argv[])
     "data5.toc",
     "data6.toc",
     "data7.toc",
+    "vcd2.toc",
   };
 
   const char *badtoc_file[NUM_BAD_TOCS] = {
