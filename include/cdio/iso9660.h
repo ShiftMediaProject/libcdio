@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.21 2003/09/10 08:39:00 rocky Exp $
+    $Id: iso9660.h,v 1.22 2003/09/20 11:53:09 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -93,6 +93,18 @@ enum strncpy_pad_check {
 
 PRAGMA_BEGIN_PACKED
 
+struct	iso9660_dtime {
+  uint8_t 	dt_year;
+  uint8_t 	dt_month;  /* 1..12. Note 1 origin not 0, like a tm struct. */
+  uint8_t	dt_day;
+  uint8_t	dt_hour;
+  uint8_t	dt_minute;
+  uint8_t	dt_second;
+  int8_t	dt_gmtoff; /* GMT values -48 .. + 52 in 15 min intervals */
+} GNUC_PACKED;
+
+typedef struct iso9660_dtime  iso9660_dtime_t;
+
 /* ISO-9660 Primary Volume Descriptor.
  */
 struct iso9660_pvd {
@@ -150,17 +162,17 @@ typedef struct iso9660_stat iso9660_stat_t;
 
 /* Format of an ISO-9660 directory record */
 struct iso9660_dir {
-  uint8_t  length;                    /* 711 */
-  uint8_t  ext_attr_length;           /* 711 */
-  uint64_t extent;                    /* 733 */
-  uint64_t size;                      /* 733 */
-  uint8_t  date[7];                   /* 7 by 711 */
-  uint8_t  flags;
-  uint8_t  file_unit_size;            /* 711 */
-  uint8_t  interleave;                /* 711 */
+  uint8_t          length;            /* 711 */
+  uint8_t          ext_attr_length;   /* 711 */
+  uint64_t         extent;            /* 733 */
+  uint64_t         size;              /* 733 */
+  iso9660_dtime_t  date;              /* 7 by 711 */
+  uint8_t          flags;
+  uint8_t          file_unit_size;    /* 711 */
+  uint8_t          interleave;        /* 711 */
   uint32_t volume_sequence_number;    /* 723 */
-  uint8_t  name_len;                  /* 711 */
-  char     name[EMPTY_ARRAY_SIZE];
+  uint8_t          name_len;          /* 711 */
+  char             name[EMPTY_ARRAY_SIZE];
 } GNUC_PACKED;
 
 struct iso9660_stat { /* big endian!! */
@@ -219,7 +231,8 @@ char *iso9660_strncpy_pad(char dst[], const char src[], size_t len,
 /*!
   Set time in format used in ISO 9660 directory index record
   from a Unix time structure. */
-void iso9660_set_time (const struct tm *tm, /*out*/ uint8_t idr_date[]);
+  void iso9660_set_time (const struct tm *tm, 
+                         /*out*/ iso9660_dtime_t *idr_date);
 
 
 /*!
@@ -227,7 +240,8 @@ void iso9660_set_time (const struct tm *tm, /*out*/ uint8_t idr_date[]);
   record. Even though tm_wday and tm_yday fields are not explicitly in
   idr_date, the are calculated from the other fields.
 */
-void iso9660_get_time (const uint8_t idr_date[], /*out*/ struct tm *tm);
+void iso9660_get_time (const iso9660_dtime_t *idr_date, 
+                       /*out*/ struct tm *tm);
 
 
 /*=====================================================================

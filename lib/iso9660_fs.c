@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.9 2003/09/14 06:35:59 rocky Exp $
+    $Id: iso9660_fs.c,v 1.10 2003/09/20 11:53:09 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.9 2003/09/14 06:35:59 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.10 2003/09/20 11:53:09 rocky Exp $";
 
 static void
 _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *stat, bool is_mode2)
@@ -55,7 +55,7 @@ _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *stat, bool is_mode2)
   stat->size    = from_733 (idr->size);
   stat->secsize = _cdio_len2blocks (stat->size, ISO_BLOCKSIZE);
 
-  iso9660_get_time(idr->date, &(stat->tm));
+  iso9660_get_time(&(idr->date), &(stat->tm));
 
   cdio_assert (dir_len >= sizeof (iso9660_dir_t));
 

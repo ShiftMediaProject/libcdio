@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.10 2003/09/10 08:39:00 rocky Exp $
+    $Id: iso9660.c,v 1.11 2003/09/20 11:53:09 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.10 2003/09/10 08:39:00 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.11 2003/09/20 11:53:09 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -53,16 +53,18 @@ pathtable_get_size_and_entries(const void *pt, unsigned int *size,
   idr_date, the are calculated from the other fields.
 */
 void
-iso9660_get_time (const uint8_t idr_date[], /*out*/ struct tm *tm)
+iso9660_get_time (const iso9660_dtime_t *idr_date, /*out*/ struct tm *tm)
 {
   if (!idr_date) return;
 
-  tm->tm_year = idr_date[0];
-  tm->tm_mon  = idr_date[1] - 1;
-  tm->tm_mday = idr_date[2];
-  tm->tm_hour = idr_date[3];
-  tm->tm_min  = idr_date[4];
-  tm->tm_sec  = idr_date[5];
+  tm->tm_year   = idr_date->dt_year;
+  tm->tm_mon    = idr_date->dt_month - 1;
+  tm->tm_mday   = idr_date->dt_day;
+  tm->tm_hour   = idr_date->dt_hour;
+  tm->tm_min    = idr_date->dt_minute;
+  tm->tm_sec    = idr_date->dt_second;
+  tm->tm_gmtoff = 0;
+  
   /* Recompute tm_wday and tm_yday */
   mktime(tm);
 }
@@ -71,19 +73,19 @@ iso9660_get_time (const uint8_t idr_date[], /*out*/ struct tm *tm)
   Set time in format used in ISO 9660 directory index record
   from a Unix time structure. */
 void
-iso9660_set_time (const struct tm *tm, /*out*/ uint8_t idr_date[])
+iso9660_set_time (const struct tm *tm, /*out*/ iso9660_dtime_t *idr_date)
 {
   memset (idr_date, 0, 7);
 
   if (!tm) return;
 
-  idr_date[0] = tm->tm_year;
-  idr_date[1] = tm->tm_mon + 1;
-  idr_date[2] = tm->tm_mday;
-  idr_date[3] = tm->tm_hour;
-  idr_date[4] = tm->tm_min;
-  idr_date[5] = tm->tm_sec;
-  idr_date[6] = 0x00; /* tz, GMT -48 +52 in 15min intervals */
+  idr_date->dt_year   = tm->tm_year;
+  idr_date->dt_month  = tm->tm_mon + 1;
+  idr_date->dt_day    = tm->tm_mday;
+  idr_date->dt_hour   = tm->tm_hour;
+  idr_date->dt_minute = tm->tm_min;
+  idr_date->dt_second = tm->tm_sec;
+  idr_date->dt_gmtoff = 0x00; /* tz, GMT -48 +52 in 15min intervals */
 }
 
 static void
@@ -427,7 +429,7 @@ iso9660_dir_add_entry_su(void *dir,
   idr->extent = to_733(extent);
   idr->size = to_733(size);
   
-  iso9660_set_time (gmtime(entry_time), idr->date);
+  iso9660_set_time (gmtime(entry_time), &(idr->date));
   
   idr->flags = to_711(flags);
 
