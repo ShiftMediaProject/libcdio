@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.13 2005/02/06 11:39:32 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.14 2005/02/17 12:05:10 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.13 2005/02/06 11:39:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.14 2005/02/17 12:05:10 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -222,7 +222,7 @@ _cdio_init (_img_private_t *p_env)
 */
 static driver_return_code_t
 _read_audio_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
-			  unsigned int nblocks)
+			  uint32_t i_blocks)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
@@ -258,7 +258,7 @@ _read_audio_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
       
     case _AM_IOCTL: {
       unsigned int i;
-      for (i=0; i < nblocks; i++) {
+      for (i=0; i < i_blocks; i++) {
 	if (ioctl (p_env->gen.fd, CDROMREADRAW, &buf) == -1)  {
 	  perror ("ioctl()");
 	  return 1;
@@ -292,20 +292,20 @@ _read_mode1_sector_bsdi (void *user_data, void *data, lsn_t lsn,
 }
 
 /*!
-   Reads nblocks of mode2 sectors from cd device into data starting
+   Reads i_blocks of mode2 sectors from cd device into data starting
    from lsn.
    Returns 0 if no error. 
  */
 static driver_return_code_t
 _read_mode1_sectors_bsdi (void *p_user_data, void *p_data, lsn_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+			  bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   unsigned int i;
   int retval;
-  unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
+  uint16_t blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
-  for (i = 0; i < nblocks; i++) {
+  for (i = 0; i < i_blocks; i++) {
     if ( (retval = _read_mode1_sector_bsdi (p_env, 
 					    ((char *)p_data) + (blocksize * i),
 					    lsn + i, b_form2)) )
@@ -374,20 +374,20 @@ _read_mode2_sector_bsdi (void *p_user_data, void *p_data, lsn_t lsn,
 }
 
 /*!
-   Reads nblocks of mode2 sectors from cd device into data starting
+   Reads i_blocks of mode2 sectors from cd device into data starting
    from lsn.
    Returns 0 if no error. 
  */
 static driver_return_code_t
 _read_mode2_sectors_bsdi (void *user_data, void *data, lsn_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+			  bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = user_data;
   unsigned int i;
   unsigned int i_blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
     /* For each frame, pick out the data part we need */
-  for (i = 0; i < nblocks; i++) {
+  for (i = 0; i < i_blocks; i++) {
     int retval = _read_mode2_sector_bsdi(p_env, 
 					 ((char *)data) + 
 					 (i_blocksize * i),
@@ -780,6 +780,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
     .read_audio_sectors = _read_audio_sectors_bsdi,
+    .read_data_sectors  = read_data_sectors_mmc,
     .read_mode1_sector  = _read_mode1_sector_bsdi,
     .read_mode1_sectors = _read_mode1_sectors_bsdi,
     .read_mode2_sector  = _read_mode2_sector_bsdi,
