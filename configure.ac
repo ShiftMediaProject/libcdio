@@ -1,4 +1,4 @@
-AC_REVISION([$Id: configure.ac,v 1.16 2003/04/22 12:09:08 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.17 2003/04/22 12:40:42 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.4)
@@ -138,7 +138,7 @@ AC_STDC_HEADERS
      
 AC_HAVE_HEADERS( stdbool.h  stdlib.h stdint.h stdio.h string.h strings.h linux/version.h sys/cdio.h sys/stat.h sys/types.h )
 
-LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/ -I$(top_srcdir)/include/ -I$(top_builddir)/include'
+LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/ -I$(top_srcdir)/include/'
 LIBCDIO_LIBS='$(top_builddir)/lib/libcdio.la'
 AC_SUBST(LIBCDIO_CFLAGS)
 AC_SUBST(LIBCDIO_LIBS)
