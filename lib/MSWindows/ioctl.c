@@ -1,5 +1,5 @@
 /*
-    $Id: ioctl.c,v 1.1 2004/03/06 03:47:22 rocky Exp $
+    $Id: ioctl.c,v 1.2 2004/03/06 11:07:02 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: ioctl.c,v 1.1 2004/03/06 03:47:22 rocky Exp $";
+static const char _rcsid[] = "$Id: ioctl.c,v 1.2 2004/03/06 11:07:02 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -164,7 +164,7 @@ typedef struct _SUB_Q_MEDIA_CATALOG_NUMBER {
   UCHAR MediaCatalog[15];
 } SUB_Q_MEDIA_CATALOG_NUMBER, *PSUB_Q_MEDIA_CATALOG_NUMBER;
 
-#include "_cdio_win32.h"
+#include "win32.h"
 
 /*
   Returns a string that can be used in a CreateFile call if 
