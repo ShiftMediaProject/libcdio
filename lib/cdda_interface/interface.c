@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.13 2005/01/15 16:05:44 rocky Exp $
+  $Id: interface.c,v 1.14 2005/01/18 16:05:29 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -122,7 +122,7 @@ long cdda_read(cdrom_drive_t *d, void *buffer, lsn_t beginsector, long sectors)
     if(sectors>0){
       sectors=d->read_audio(d,buffer,beginsector,sectors);
 
-      if(sectors!=-1){
+      if(sectors > 0){
 	/* byteswap? */
 	if(d->bigendianp==-1) /* not determined yet */
 	  d->bigendianp=data_bigendianp(d);
