@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.22 2004/05/07 09:55:54 rocky Exp $
+    $Id: _cdio_osx.c,v 1.23 2004/05/27 10:47:07 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.22 2004/05/07 09:55:54 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.23 2004/05/27 10:47:07 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -589,7 +589,7 @@ _get_mcn_osx (const void *env) {
 
   if( ioctl( _obj->gen.fd, DKIOCCDREADMCN, &cd_read ) < 0 )
   {
-    cdio_error( "could not read MCN, %s", strerror(errno) );
+    cdio_warn( "could not read MCN, %s", strerror(errno) );
     return NULL;
   }
   return strdup((char*)cd_read.mcn);
