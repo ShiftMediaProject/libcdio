@@ -1,5 +1,5 @@
 /*
-  $Id: rock.c,v 1.11 2005/02/22 10:42:50 rocky Exp $
+  $Id: rock.c,v 1.12 2005/02/26 17:20:33 rocky Exp $
  
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -54,7 +54,9 @@ static bool
 realloc_symlink(/*in/out*/ iso9660_stat_t *p_stat, uint8_t i_grow) 
 {
   if (!p_stat->rr.i_symlink) {
-    p_stat->rr.psz_symlink = (char *) calloc(1, 2*i_grow+1);
+    const uint16_t i_max = 2*i_grow+1;
+    p_stat->rr.psz_symlink = (char *) calloc(1, i_max);
+    p_stat->rr.i_symlink_max = i_max;
     return (NULL != p_stat->rr.psz_symlink);
   } else {
     unsigned int i_needed = p_stat->rr.i_symlink + i_grow ;
@@ -246,19 +248,15 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
 	    case 4:
 	      realloc_symlink(p_stat, 1);
 	      p_stat->rr.psz_symlink[p_stat->rr.i_symlink++] = '.';
-	      p_stat->rr.i_symlink++;
 	      /* continue into next case. */
-	      break;
 	    case 2:
 	      realloc_symlink(p_stat, 1);
 	      p_stat->rr.psz_symlink[p_stat->rr.i_symlink++] = '.';
-	      p_stat->rr.i_symlink++;
 	      break;
 	    case 8:
 	      rootflag = 1;
 	      realloc_symlink(p_stat, 1);
 	      p_stat->rr.psz_symlink[p_stat->rr.i_symlink++] = '/';
-	      p_stat->rr.i_symlink++;
 	      break;
 	    default:
 	      cdio_warn("Symlink component flag not implemented");
@@ -279,7 +277,6 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
 	    if (!rootflag && (p_oldsl->flags & 1) == 0) {
 	      realloc_symlink(p_stat, 1);
 	      p_stat->rr.psz_symlink[p_stat->rr.i_symlink++] = '/';
-	      p_stat->rr.i_symlink++;
 	    }
 	  }
 	}
