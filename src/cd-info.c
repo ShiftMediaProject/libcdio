@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.64 2004/05/31 04:00:54 rocky Exp $
+    $Id: cd-info.c,v 1.65 2004/05/31 12:19:35 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -798,51 +798,87 @@ main(int argc, const char *argv[])
   case IMAGE_AUTO:
     cdio = cdio_open_am (source_name, DRIVER_UNKNOWN, opts.access_mode);
     if (cdio==NULL) {
-      err_exit("%s: Error in automatically selecting driver for input %s\n", 
-	       program_name, source_name);
+      if (source_name) {
+	err_exit("%s: Error in automatically selecting driver for input %s.\n", 
+		 program_name, source_name);
+      } else {
+	err_exit("%s: Error in automatically selecting driver.\n", 
+		 program_name);
+      }
     } 
     break;
   case IMAGE_DEVICE:
     cdio = cdio_open_am (source_name, DRIVER_DEVICE, opts.access_mode);
     if (cdio==NULL) {
-      err_exit("%s: Error in automatically selecting CD-image driver for input %s\n", 
+      if (source_name) {
+	err_exit("%s: Error in automatically selecting CD-image driver for input %s\n", 
 	       program_name, source_name);
+      } else {
+	err_exit("%s: Error in automatically selecting CD-image driver.\n", 
+	       program_name);
+      }
     } 
     break;
   case IMAGE_BIN:
     cdio = cdio_open_am (source_name, DRIVER_BINCUE, opts.access_mode);
     if (cdio==NULL) {
-      err_exit("%s: Error in opening bin/cue for input %s\n", 
-	       program_name, source_name);
+      if (source_name) {
+	err_exit("%s: Error in opening bin/cue for input %s\n", 
+		 program_name, source_name);
+      } else {
+	err_exit("%s: Error in opening bin/cue for unspecified input.\n", 
+		 program_name);
+      }
     } 
     break;
   case IMAGE_CUE:
     cdio = cdio_open_cue(source_name);
     if (cdio==NULL) {
-      err_exit("%s: Error in opening cue/bin with input %s\n", 
-	       program_name, source_name);
+      if (source_name) {
+	err_exit("%s: Error in opening cue/bin with input %s\n", 
+		 program_name, source_name);
+      } else {
+	err_exit("%s: Error in opening cue/bin for unspeicified input.\n", 
+		 program_name);
+      }
     } 
     break;
   case IMAGE_NRG:
     cdio = cdio_open_am (source_name, DRIVER_NRG, opts.access_mode);
     if (cdio==NULL) {
-      err_exit("%s: Error in opening NRG with input %s\n", 
-	       program_name, source_name);
+      if (source_name) {
+	err_exit("%s: Error in opening NRG with input %s\n", 
+		 program_name, source_name);
+      } else {
+	err_exit("%s: Error in opening NRG for unspecified input.\n", 
+		 program_name);
+      }
     } 
     break;
 
   case IMAGE_CDRDAO:
     cdio = cdio_open_am (source_name, DRIVER_CDRDAO, opts.access_mode);
     if (cdio==NULL) {
-      err_exit("%s: Error in opening TOC with input %s\n", 
-	       program_name, source_name);
-    } 
+      if (source_name) {
+	err_exit("%s: Error in opening TOC with input %s.\n", 
+		 program_name, source_name);
+      } else {
+	err_exit("%s: Error in opening TOC for unspecified input.\n", 
+		 program_name);
+      }
+    }
     break;
   }
 
   if (cdio==NULL) {
-    err_exit("%s: Error in opening device driver for input %s\n", 
-	     program_name, source_name);
+    if (source_name) {
+      err_exit("%s: Error in opening device driver for input %s.\n", 
+	       program_name, source_name);
+    } else {
+      err_exit("%s: Error in opening device driver for unspecified input.\n", 
+	       program_name);
+    }
+    
   } 
 
   if (source_name==NULL) {
