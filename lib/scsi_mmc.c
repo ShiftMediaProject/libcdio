@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.19 2004/08/01 11:28:00 rocky Exp $
+    $Id: scsi_mmc.c,v 1.20 2004/08/05 02:58:46 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -510,6 +510,7 @@ scsi_mmc_init_cdtext_private ( void *p_user_data,
   /* Operation code */
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
 
+  cdb.field[1] = CDIO_CDROM_MSF;
   /* Format */
   cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
 

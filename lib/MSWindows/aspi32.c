@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.46 2004/07/29 04:14:44 rocky Exp $
+    $Id: aspi32.c,v 1.47 2004/08/05 02:58:46 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.46 2004/07/29 04:14:44 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.47 2004/08/05 02:58:46 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -771,7 +771,7 @@ wnaspi32_eject_media (void *user_data) {
 bool
 init_cdtext_aspi (_img_private_t *p_env)
 {
-  return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
+  return scsi_mmc_init_cdtext_private( p_env,
 				       &run_scsi_cmd_aspi, 
 				       set_cdtext_field_win32
 				       );
