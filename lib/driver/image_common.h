@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.5 2005/01/12 11:34:52 rocky Exp $
+    $Id: image_common.h,v 1.6 2005/01/18 00:57:20 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -63,8 +63,8 @@ typedef struct {
 #endif
 } _img_private_t;
 
-#define free_if_notnull(obj) \
-  if (NULL != obj) { free(obj); obj=NULL; };
+#define free_if_notnull(p_obj) \
+  if (NULL != p_obj) { free(p_obj); p_obj=NULL; };
 
 /*!
   We don't need the image any more. Free all memory associated with

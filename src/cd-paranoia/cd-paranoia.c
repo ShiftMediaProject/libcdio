@@ -905,12 +905,9 @@ main(int argc,char *argv[])
       d->disc_toc[i].dwStartSector+=toc_offset;
   }
 
-
-#ifdef SPEED_FINISHED
   if (force_cdrom_speed != -1) {
     cdda_speed_set(d,force_cdrom_speed);
   }
-#endif
 
   if (d->nsectors==1) {
     report("WARNING: The autosensed/selected sectors per read value is\n"

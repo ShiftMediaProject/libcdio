@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.37 2005/01/05 04:16:11 rocky Exp $
+    $Id: scsi_mmc.h,v 1.38 2005/01/18 00:57:20 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -356,14 +356,16 @@ uint8_t scsi_mmc_get_cmd_len(uint8_t scsi_cmd);
 
   Returns 0 if command completed successfully.
  */
-int scsi_mmc_run_cmd( const CdIo *p_cdio, unsigned int i_timeout_ms,
+int scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 		      const scsi_mmc_cdb_t *p_cdb,
 		      scsi_mmc_direction_t e_direction, unsigned int i_buf, 
 		      /*in/out*/ void *p_buf );
 /*!
- * Eject using SCSI MMC commands. Return 0 if successful.
+ * Eject using SCSI MMC commands. 
+
+ @return 0 if successful.
  */
-int scsi_mmc_eject_media( const CdIo *p_cdio);
+int scsi_mmc_eject_media( const CdIo_t *p_cdio);
 
 /*! 
   Return the discmode as reported by the SCSI-MMC Read (FULL) TOC
@@ -374,26 +376,31 @@ int scsi_mmc_eject_media( const CdIo *p_cdio);
   at http://www.t10.org/ftp/t10/drafts/mmc/mmc-r10a.pdf See
   especially tables 72, 73 and 75.
  */
-discmode_t scsi_mmc_get_discmode( const CdIo *p_cdio );
+discmode_t scsi_mmc_get_discmode( const CdIo_t *p_cdio );
 
 
 /*!
-  Return the the kind of drive capabilities of device.
+  Get drive capabilities for a device.
+  @return the drive capabilities.
  */
-void scsi_mmc_get_drive_cap (const CdIo *p_cdio,
+void scsi_mmc_get_drive_cap (const CdIo_t *p_cdio,
 			     /*out*/ cdio_drive_read_cap_t  *p_read_cap,
 			     /*out*/ cdio_drive_write_cap_t *p_write_cap,
 			     /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
 
 /*! 
   Get the DVD type associated with cd object.
+
+  @return the DVD discmode.
 */
 discmode_t scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio, 
 					      cdio_dvd_struct_t *s);
 
 /*! 
   Get the CD-ROM hardware info via a SCSI MMC INQUIRY command.
-  False is returned if we had an error getting the information.
+
+  @return true if we were able to get hardware info, false if we had
+  an error.
 */
 bool scsi_mmc_get_hwinfo ( const CdIo_t *p_cdio, 
 			   /* out*/ cdio_hwinfo_t *p_hw_info );
@@ -409,24 +416,24 @@ bool scsi_mmc_get_hwinfo ( const CdIo_t *p_cdio,
   string when done with it.
   
 */
-char *scsi_mmc_get_mcn ( const CdIo *p_cdio );
+char *scsi_mmc_get_mcn ( const CdIo_t *p_cdio );
 
 /*! Packet driver to read mode2 sectors. 
    Can read only up to 25 blocks.
 */
-int scsi_mmc_read_sectors ( const CdIo *p_cdio, void *p_buf, lba_t lba, 
+int scsi_mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba, 
 			    int sector_type, unsigned int i_blocks);
 
 /*!
   Set the block size for subsequest read requests, via a SCSI MMC 
   MODE_SELECT 6 command.
  */
-int scsi_mmc_set_blocksize ( const CdIo *p_cdio, unsigned int i_bsize);
+int scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_bsize);
 
 /*!
   Set the block size for subsequest read requests, via a SCSI MMC 
   MODE_SENSE 6 command.
  */
-int scsi_mmc_get_blocksize ( const CdIo *p_cdio );
+int scsi_mmc_get_blocksize ( const CdIo_t *p_cdio );
 
 #endif /* __SCSI_MMC_H__ */

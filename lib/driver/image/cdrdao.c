@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.6 2005/01/17 17:20:09 rocky Exp $
+    $Id: cdrdao.c,v 1.7 2005/01/18 00:57:20 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.6 2005/01/17 17:20:09 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.7 2005/01/18 00:57:20 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -84,10 +84,10 @@ _init_cdrdao (_img_private_t *env)
   /* Have to set init before calling _stat_size_cdrdao() or we will
      get into infinite recursion calling passing right here.
    */
-  env->gen.init      = true;  
+  env->gen.init          = true;  
   env->gen.i_first_track = 1;
-  env->psz_mcn       = NULL;
-  env->disc_mode     = CDIO_DISC_MODE_NO_INFO;
+  env->psz_mcn           = NULL;
+  env->disc_mode         = CDIO_DISC_MODE_NO_INFO;
 
   cdtext_init (&(env->gen.cdtext));
 
@@ -1203,6 +1203,8 @@ cdio_open_cdrdao (const char *psz_cue_name)
   _funcs.read_mode2_sector     = _read_mode2_sector_cdrdao;
   _funcs.read_mode2_sectors    = _read_mode2_sectors_cdrdao;
   _funcs.set_arg               = _set_arg_image;
+  _funcs.set_speed             = cdio_generic_unimplemented_set_speed;
+  _funcs.set_blocksize         = cdio_generic_unimplemented_set_blocksize;
   _funcs.stat_size             = _stat_size_cdrdao;
 
   if (NULL == psz_cue_name) return NULL;

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.7 2005/01/17 17:20:09 rocky Exp $
+    $Id: _cdio_linux.c,v 1.8 2005/01/18 00:57:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.7 2005/01/17 17:20:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.8 2005/01/18 00:57:20 rocky Exp $";
 
 #include <string.h>
 
@@ -587,8 +587,9 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
 	return retval;
       }
     
-    if ((retval = scsi_mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE)))
-      return retval;
+    /* Restore blocksize. */
+    retval = scsi_mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
+    return retval;
   } else
 
     cdb.field[1] = 0; /* sector size mode2 */
@@ -929,7 +930,7 @@ stat_size_linux (void *p_user_data)
   _img_private_t *p_env = p_user_data;
 
   struct cdrom_tocentry tocent;
-  uint32_t size;
+  uint32_t i_size;
 
   tocent.cdte_track = CDIO_CDROM_LEADOUT_TRACK;
   tocent.cdte_format = CDROM_LBA;
@@ -939,9 +940,9 @@ stat_size_linux (void *p_user_data)
       exit (EXIT_FAILURE);
     }
 
-  size = tocent.cdte_addr.lba;
+  i_size = tocent.cdte_addr.lba;
 
-  return size;
+  return i_size;
 }
 
 /*!
@@ -983,6 +984,24 @@ static char checklist1[][40] = {
 static char checklist2[][40] = {
   {"?a hd?"}, {"?0 scd?"}, {"?0 sr?"}, {""}
 };
+
+/* Set operating speed */
+static int 
+set_blocksize_linux (void *p_user_data, int i_blocksize)
+{
+  const _img_private_t *p_env = p_user_data;
+  return scsi_mmc_set_blocksize(p_env->gen.cdio, i_blocksize);
+}
+
+/* Set operating speed */
+static int 
+set_speed_linux (void *p_user_data, int i_speed)
+{
+  const _img_private_t *p_env = p_user_data;
+
+  if (!p_env) return -1;
+  return ioctl(p_env->gen.fd, CDROM_SELECT_SPEED, i_speed);
+}
 
 #endif /* HAVE_LINUX_CDROM */
 
@@ -1158,6 +1177,8 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .read_toc              = read_toc_linux,
     .run_scsi_mmc_cmd      = run_scsi_cmd_linux,
     .set_arg               = set_arg_linux,
+    .set_blocksize         = set_blocksize_linux,
+    .set_speed             = set_speed_linux,
     .stat_size             = stat_size_linux
   };
 

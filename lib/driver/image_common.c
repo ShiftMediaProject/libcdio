@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.c,v 1.3 2005/01/04 04:33:36 rocky Exp $
+    $Id: image_common.c,v 1.4 2005/01/18 00:57:20 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -38,18 +38,15 @@
 #include <string.h>
 #endif
 
-#define free_if_notnull(obj) \
-  if (NULL != obj) { free(obj); obj=NULL; };
-
 /*!
   Eject media -- there's nothing to do here except free resources.
-  We always return 2.
+  We always return -2.
  */
 int
-_eject_media_image(void *user_data)
+_eject_media_image(void *p_user_data)
 {
-  _free_image (user_data);
-  return 2;
+  _free_image (p_user_data);
+  return -2;
 }
 
 /*!

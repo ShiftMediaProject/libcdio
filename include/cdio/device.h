@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.3 2005/01/09 16:07:46 rocky Exp $
+    $Id: device.h,v 1.4 2005/01/18 00:57:19 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -106,7 +106,7 @@ extern "C" {
     Eject media in CD drive if there is a routine to do so. 
 
     @param p_cdio the CD object to be acted upon.
-    @return 0 if success and 1 for failure, and 2 if no routine.
+    @return 0 if success and 1 for failure, and -2 if no routine.
     If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
   */
   int cdio_eject_media (CdIo_t **p_cdio);
@@ -246,6 +246,16 @@ extern "C" {
   bool cdio_get_hwinfo ( const CdIo_t *p_cdio, 
 			 /* out*/ cdio_hwinfo_t *p_hw_info );
 
+
+  /*!
+    Get the drive speed. 
+
+    @return the drive speed if greater than 0. -1 if we had an error. is -2
+    returned if this is not implemented for the current driver.
+    
+    @see cdio_set_speed
+  */
+  int cdio_get_speed ( const CdIo_t *p_cdio, int i_speed );
 
   /*! True if AIX driver is available. */
   bool cdio_have_aix    (void);
@@ -669,11 +679,12 @@ extern "C" {
   CdIo_t * cdio_open_am_nrg (const char *psz_source,
 			     const char *psz_access_mode);
   
-  /*! Return a string containing the default device name that the 
-      NRG driver would use when none is specified. A scan is made
-      for NRG disk images in the current directory..
+  /*! Get a string containing the default device name that the NRG
+      driver would use when none is specified. A scan is made for NRG
+      disk images in the current directory.
 
-     NULL is returned on error or there is no CD-ROM device.
+      @return string containing the default device. NULL on error or
+      there is no CD-ROM device.
    */
   char * cdio_get_default_device_nrg(void);
 
@@ -725,6 +736,24 @@ extern "C" {
     could have a CD disk image. 
   */
   bool cdio_is_device(const char *psz_source, driver_id_t driver_id);
+
+  /*!
+    Set the blocksize for subsequent reads. 
+    
+    @return 0 if everything went okay, -1 if we had an error. is -2
+    returned if this is not implemented for the current driver.
+  */
+  int cdio_set_blocksize ( const CdIo_t *p_cdio, int i_blocksize );
+
+  /*!
+    Set the drive speed. 
+
+    @return 0 if everything went okay, -1 if we had an error. is -2
+    returned if this is not implemented for the current driver.
+
+    @see cdio_get_speed
+  */
+  int cdio_set_speed ( const CdIo_t *p_cdio, int i_speed );
 
 #ifdef __cplusplus
 }

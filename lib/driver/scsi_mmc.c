@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.3 2005/01/09 16:26:51 rocky Exp $
+    $Id: scsi_mmc.c,v 1.4 2005/01/18 00:57:20 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -323,12 +323,12 @@ scsi_mmc_set_blocksize_private ( const void *p_env,
 }
 
 int 
-scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_bsize)
+scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_blocksize)
 {
   if ( ! p_cdio )  return -2;
   return 
     scsi_mmc_set_blocksize_private (p_cdio->env, p_cdio->op.run_scsi_mmc_cmd, 
-				    i_bsize);
+				    i_blocksize);
 }
 
 

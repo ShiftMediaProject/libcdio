@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.3 2005/01/17 17:20:09 rocky Exp $
+    $Id: device.c,v 1.4 2005/01/18 00:57:20 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -536,16 +536,16 @@ cdio_get_driver_name (const CdIo_t *p_cdio)
   return CdIo_all_drivers[p_cdio->driver_id].name;
 }
 
-  /*!
-    Return the driver id. 
-    if CdIo is NULL (we haven't initialized a specific device driver), 
-    then return DRIVER_UNKNOWN.
-  */
+/*!
+  Return the driver id. 
+  if CdIo is NULL (we haven't initialized a specific device driver), 
+  then return DRIVER_UNKNOWN.
+*/
 driver_id_t
-cdio_get_driver_id (const CdIo *cdio) 
+cdio_get_driver_id (const CdIo_t *p_cdio) 
 {
-  if (NULL==cdio) return DRIVER_UNKNOWN;
-  return cdio->driver_id;
+  if (!p_cdio) return DRIVER_UNKNOWN;
+  return p_cdio->driver_id;
 }
 
 /*!
@@ -689,6 +689,35 @@ cdio_open_am_cd (const char *psz_source, const char *psz_access_mode)
   /* Scan for a driver. */
   return scan_for_driver(CDIO_MIN_DEVICE_DRIVER, CDIO_MAX_DEVICE_DRIVER, 
                          psz_source, psz_access_mode);
+}
+
+/*!
+  Set the blocksize for subsequent reads. 
+  
+  @return 0 if everything went okay, -1 if we had an error. is -2
+  returned if this is not implemented for the current driver.
+*/
+int cdio_set_blocksize ( const CdIo_t *p_cdio, int i_blocksize )
+{
+  if (!p_cdio) return -1;
+  if (p_cdio->op.set_blocksize) return -2;
+  return p_cdio->op.set_blocksize(p_cdio->env, i_blocksize);
+}
+
+/*!
+  Set the drive speed. 
+  
+  @return 0 if everything went okay, -1 if we had an error. is -2
+  returned if this is not implemented for the current driver.
+  
+  @see cdio_get_speed
+*/
+int
+cdio_set_speed (const CdIo_t *p_cdio, int i_speed) 
+{
+  if (!p_cdio) return -1;
+  if (p_cdio->op.set_speed) return -2;
+  return p_cdio->op.set_speed(p_cdio->env, i_speed);
 }
 
 

@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.11 2005/01/15 16:05:44 rocky Exp $
+  $Id: cooked_interface.c,v 1.12 2005/01/18 00:57:20 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -64,14 +64,9 @@ cooked_readtoc (cdrom_drive_t *d)
 
 /* Set operating speed */
 static int 
-cooked_setspeed(cdrom_drive_t *d, int speed)
+cooked_setspeed(cdrom_drive_t *d, int i_speed)
 {
-#if SET_SPEED_FIXED
-  if(d->ioctl_fd!=-1)
-    return ioctl(d->ioctl_fd, CDROM_SELECT_SPEED, speed);
-  else
-#endif
-    return 0;
+  return cdio_set_speed(d->p_cdio, i_speed);
 }
 
 /* read 'SectorBurst' adjacent sectors of audio sectors 

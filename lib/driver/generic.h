@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.5 2005/01/04 04:33:36 rocky Exp $
+    $Id: generic.h,v 1.6 2005/01/18 00:57:20 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -64,7 +64,7 @@ extern "C" {
 			       1-3: Joliet level. */
     iso9660_pvd_t pvd;      
     iso9660_svd_t svd;      
-    CdIo *cdio;             /**< a way to call general cdio routines. */
+    CdIo_t   *cdio;         /**< a way to call general cdio routines. */
     cdtext_t  cdtext;       /**< CD-Text for disc. */
     cdtext_t  cdtext_track[CDIO_CD_MAX_TRACKS+1]; /**< CD-TEXT for each track*/
     track_flags_t track_flags[CDIO_CD_MAX_TRACKS+1];
@@ -74,8 +74,23 @@ extern "C" {
     Bogus eject media when there is no ejectable media, e.g. a disk image
     We always return 2. Should we also free resources? 
   */
-  int cdio_generic_bogus_eject_media (void *env);
+  int cdio_generic_unimplemented_eject_media (void *p_env);
 
+  /*!
+    Set the blocksize for subsequent reads. 
+    
+    @return -2 since it's not implemented.
+  */
+  int cdio_generic_unimplemented_set_blocksize (void *p_user_data, 
+						int i_blocksize);
+
+  /*!
+    Set the drive speed.
+    
+    @return -2 since it's not implemented.
+  */
+  int cdio_generic_unimplemented_set_speed (void *p_user_data, int i_speed);
+  
   /*!
     Release and free resources associated with cd. 
   */

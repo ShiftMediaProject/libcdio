@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.5 2005/01/17 17:20:09 rocky Exp $
+    $Id: cdio_private.h,v 1.6 2005/01/18 00:57:20 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -161,6 +161,12 @@ extern "C" {
     track_format_t (*get_track_format) (void *p_env, track_t i_track);
     
     /*!
+      Set the drive speed. -1 is returned if we had an error.
+      -2 is returned if this is not implemented for the current driver.
+    */
+    int (*p_get_speed) (void *p_env);
+    
+    /*!
       Return true if we have XA data (green, mode2 form1) or
       XA data (green, mode2 form2). That is track begins:
       sync - header - subheader
@@ -262,6 +268,22 @@ extern "C" {
     */
     int (*set_arg) (void *p_env, const char key[], const char value[]);
     
+    /*!
+      Set the blocksize for subsequent reads. 
+      
+      @return 0 if everything went okay, -1 if we had an error. is -2
+      returned if this is not implemented for the current driver.
+    */
+    int (*set_blocksize) ( void *p_env, int i_blocksize );
+
+    /*!
+      Set the drive speed. 
+      
+      @return 0 if everything went okay, -1 if we had an error. is -2
+      returned if this is not implemented for the current driver.
+    */
+    int (*set_speed) ( void *p_env, int i_speed );
+
     /*!
       Return the size of the CD in logical block address (LBA) units.
     */

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.5 2005/01/02 22:43:41 rocky Exp $
+    $Id: _cdio_generic.c,v 1.6 2005/01/18 00:57:20 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.5 2005/01/02 22:43:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.6 2005/01/18 00:57:20 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,13 +50,35 @@ static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.5 2005/01/02 22:43:41 roc
 #include "portable.h"
 
 /*!
-  Eject media -- there's nothing to do here. We always return 2.
+  Eject media -- there's nothing to do here. We always return -2.
   Should we also free resources? 
  */
 int 
-cdio_generic_bogus_eject_media (void *user_data) {
+cdio_generic_unimplemented_eject_media (void *p_user_data) {
   /* Sort of a stub here. Perhaps log a message? */
-  return 2;
+  return -2;
+}
+
+/*!
+  Set the blocksize for subsequent reads. 
+  
+  @return -2 since it's not implemented.
+*/
+int 
+cdio_generic_unimplemented_set_blocksize (void *p_user_data, int i_blocksize) {
+  /* Sort of a stub here. Perhaps log a message? */
+  return -2;
+}
+
+/*!
+  Set the drive speed.
+  
+  @return -2 since it's not implemented.
+*/
+int 
+cdio_generic_unimplemented_set_speed (void *p_user_data, int i_speed) {
+  /* Sort of a stub here. Perhaps log a message? */
+  return -2;
 }
 
 
