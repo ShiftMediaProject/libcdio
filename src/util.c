@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.36 2005/02/09 01:31:10 rocky Exp $
+  $Id: util.c,v 1.37 2005/02/20 10:21:01 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -22,6 +22,7 @@
 
 #include "util.h"
 #include <cdio/mmc.h>
+#include <cdio/bytesex.h>
 
 cdio_log_handler_t gl_default_cdio_log_handler = NULL;
 char *source_name = NULL;
@@ -448,5 +449,45 @@ report (FILE *stream, const char *psz_format,  ...)
   vfprintf (stream, psz_format, args);
 #endif
   va_end(args);
+}
+
+/* Prints "ls"-like file attributes */
+void 
+print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa, 
+	       const char *psz_name_untranslated, 
+	       const char *psz_name_translated)
+{
+  char date_str[30];
+
+  if (yep == p_statbuf->b_rock && b_rock) {
+    printf ( "  %s %d %d [LSN %6lu] ",
+	     iso9660_get_rock_attr_str (p_statbuf->st_mode),
+	     p_statbuf->st_uid,
+	     p_statbuf->st_gid,
+	     (long unsigned int) p_statbuf->lsn);
+  } else if (b_xa) {
+    printf ( "  %s %d %d [fn %.2d] [LSN %6lu] ",
+	     iso9660_get_xa_attr_str (p_statbuf->xa.attributes),
+	     uint16_from_be (p_statbuf->xa.user_id),
+	     uint16_from_be (p_statbuf->xa.group_id),
+	     p_statbuf->xa.filenum,
+	     (long unsigned int) p_statbuf->lsn);
+    
+    if (uint16_from_be(p_statbuf->xa.attributes) & XA_ATTR_MODE2FORM2) {
+      printf ("%9u (%9u)",
+	      (unsigned int) p_statbuf->secsize * M2F2_SECTOR_SIZE,
+	      (unsigned int) p_statbuf->size);
+    } else 
+      printf ("%9u", (unsigned int) p_statbuf->size);
+  } else {
+    printf ("  %c %9u", 
+	    (p_statbuf->type == _STAT_DIR) ? 'd' : '-',
+	    (unsigned int) p_statbuf->size);
+  }
+  strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &p_statbuf->tm);
+  printf (" %s %s\n", date_str, 
+	  yep == p_statbuf->b_rock && b_rock
+	  ? psz_name_untranslated : psz_name_translated);
+
 }
 

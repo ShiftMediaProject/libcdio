@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.20 2005/02/20 03:20:42 rocky Exp $
+    $Id: iso9660_fs.c,v 1.21 2005/02/20 10:21:01 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.20 2005/02/20 03:20:42 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.21 2005/02/20 10:21:01 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -794,7 +794,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 			 uint8_t i_joliet_level)
 {
   uint8_t dir_len= iso9660_get_dir_len(p_iso9660_dir);
-  unsigned int i_fname;
+  iso711_t i_fname;
   unsigned int stat_len;
   iso9660_stat_t *p_stat;
 
@@ -813,11 +813,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
   p_stat->secsize = _cdio_len2blocks (p_stat->size, ISO_BLOCKSIZE);
   p_stat->b_rock  = dunno; /*FIXME should do based on mask */
 
-  if ('\0' == p_iso9660_dir->filename[0] && 1 == i_fname)
-    strcpy (p_stat->filename, ".");
-  else if ('\1' == p_iso9660_dir->filename[0] && 1 == i_fname)
-    strcpy (p_stat->filename, "..");
-  else {
+  {
     char rr_fname[256] = "";
     int  i_rr_fname = 
       get_rock_ridge_filename(p_iso9660_dir, rr_fname, p_stat);
@@ -827,7 +823,11 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
       strncpy(p_stat->filename, rr_fname, i_rr_fname+1);
     } else {
 #ifdef HAVE_JOLIET
-      if (i_joliet_level) {
+      if ('\0' == p_iso9660_dir->filename[0] && 1 == i_fname)
+	strcpy (p_stat->filename, ".");
+      else if ('\1' == p_iso9660_dir->filename[0] && 1 == i_fname)
+	strcpy (p_stat->filename, "..");
+      else if (i_joliet_level) {
 	int i_inlen = i_fname;
 	int i_outlen = (i_inlen / 2);
 	char *p_psz_out = NULL;
@@ -835,9 +835,10 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 			 i_outlen);
 	strncpy(p_stat->filename, p_psz_out, i_fname);
 	free(p_psz_out);
-      } else
+      } else {
 #endif /*HAVE_JOLIET*/
 	strncpy (p_stat->filename, p_iso9660_dir->filename, i_fname);
+      }
     }
   }
   

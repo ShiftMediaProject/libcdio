@@ -1,5 +1,5 @@
 /*
-    $Id: rock.h,v 1.2 2005/02/13 22:03:00 rocky Exp $
+    $Id: rock.h,v 1.3 2005/02/20 10:21:01 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -147,6 +147,19 @@ typedef struct iso_rock_sl_s {
 } GNUC_PACKED iso_rock_sl_t ;
 
 /*! Alternate name. See Section 4.1.4 */
+
+/*! These are the bits and their meanings for flags in the NM structure. */
+typedef enum {
+  ISO_ROCK_NM_CONTINUE = 1,
+  ISO_ROCK_NM_CURRENT  = 2,
+  ISO_ROCK_NM_PARENT   = 4,
+} iso_rock_nm_flag_t;
+
+#define	ISO_ROCK_NM_CONTINUE 1
+#define	ISO_ROCK_NM_CURRENT  2
+#define	ISO_ROCK_NM_PARENT   4
+
+
 typedef struct iso_rock_nm_s {
   unsigned char flags;
   char name[EMPTY_ARRAY_SIZE];
@@ -228,6 +241,41 @@ int get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * retname,
                             /*out*/ iso9660_stat_t *p_stat);
 
 int parse_rock_ridge_stat(iso9660_dir_t *de, /*out*/ iso9660_stat_t *p_stat);
+
+/*!
+  Returns a string which interpreting the POSIX mode st_mode. 
+  For example:
+  \verbatim
+  drwxrws---
+  -rw---Sr--
+  lrwxrwxrwx
+  \endverbatim
+  
+  A description of the characters in the string follows
+  The 1st character is either "d" if the entry is a directory, "l" is
+  a symbolic link or "-" if neither.
+  
+  The 2nd to 4th characters refer to permissions for a user while the
+  the 5th to 7th characters refer to permissions for a group while, and 
+  the 8th to 10h characters refer to permissions for everyone. 
+  
+  In each of these triplets the first character (2, 5, 8) is "r" if
+  the entry is allowed to be read.
+
+  The second character of a triplet (3, 6, 9) is "w" if the entry is
+  allowed to be written.
+
+  The third character of a triplet (4, 7, 10) is "x" if the entry is
+  executable but not user (for character 4) or group (for characters
+  6) settable and "s" if the item has the corresponding user/group set.
+
+  For a directory having an executable property on ("x" or "s") means
+  the directory is allowed to be listed or "searched". If the execute
+  property is not allowed for a group or user but the corresponding
+  group/user is set "S" indicates this. If none of these properties
+  holds the "-" indicates this.
+*/
+const char *iso9660_get_rock_attr_str(posix_mode_t st_mode);
 
 #endif /* __ISO_ROCK_H__ */
 

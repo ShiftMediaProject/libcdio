@@ -20,13 +20,13 @@ Volume     : CDROM
 Volume Set : 
 ISO9660 filesystem
 /:
- Apr 20 2003 07:26  .
- Apr 20 2003 07:26  ..
- Jul 29 2002 08:39  COPYING
- Apr 20 2003 12:18  doc
+  d      2048 Apr 20 2003 07:26  .
+  d      2048 Apr 20 2003 07:26  ..
+  -     17992 Jul 29 2002 08:39  COPYING
+  d      2048 Apr 20 2003 12:18  doc
 
 /doc/:
- Apr 20 2003 12:18  .
- Apr 20 2003 07:26  ..
- Apr 20 2003 12:18  readme.txt
+  d      2048 Apr 20 2003 12:18  .
+  d      2048 Apr 20 2003 07:26  ..
+  -       648 Apr 20 2003 12:18  readme.txt
 

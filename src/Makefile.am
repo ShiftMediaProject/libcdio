@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.31 2005/01/06 11:55:09 rocky Exp $
+#   $Id: Makefile.am,v 1.32 2005/02/20 10:21:01 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -35,7 +35,7 @@ endif
 
 if BUILD_CD_DRIVE
 cd_drive_SOURCES = cd-drive.c util.c util.h
-cd_drive_LDADD   =  $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
+cd_drive_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
 bin_cd_drive     = cd-drive
 endif
 
@@ -53,7 +53,7 @@ endif
 
 if BUILD_CD_READ
 cd_read_SOURCES = cd-read.c util.c util.h
-cd_read_LDADD   = $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
+cd_read_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
 bin_cd_read     = cd-read 
 endif
 

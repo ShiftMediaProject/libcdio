@@ -1,5 +1,5 @@
 /*
-  $Id: rock.c,v 1.4 2005/02/18 01:31:08 rocky Exp $
+  $Id: rock.c,v 1.5 2005/02/20 10:21:01 rocky Exp $
  
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -85,8 +85,8 @@
   @return length of name field; 0: not found, -1: to be ignored 
 */
 int 
-get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * psz_name, 
-			iso9660_stat_t *p_stat)
+get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir, 
+			/*out*/ char * psz_name, iso9660_stat_t *p_stat)
 {
   int len;
   unsigned char *chr;
@@ -97,7 +97,7 @@ get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * psz_name,
   if (!p_stat || nope == p_stat->b_rock) return 0;
   *psz_name = 0;
 
-  SETUP_ROCK_RIDGE(de, chr, len);
+  SETUP_ROCK_RIDGE(p_iso9660_dir, chr, len);
   /* repeat:*/
   {
     iso_extension_record_t * rr;
@@ -114,20 +114,26 @@ get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * psz_name,
       case SIG('S','P'):
 	CHECK_SP(goto out);
 	break;
-      case SIG('C','E'):
+      case SIG('C','E'): 
+	{
+	  iso711_t i_fname = from_711(p_iso9660_dir->filename_len);
+	  if ('\0' == p_iso9660_dir->filename[0] && 1 == i_fname)
+	    break;
+	  if ('\1' == p_iso9660_dir->filename[0] && 1 == i_fname)
+	    break;
+	}
 	CHECK_CE;
 	break;
       case SIG('N','M'):
 	p_stat->b_rock = yep;
 	if (truncate) break;
-        /*
-	 * If the flags are 2 or 4, this indicates '.' or '..'.
-	 * We don't want to do anything with this, because it
-	 * screws up the code that calls us.  We don't really
-	 * care anyways, since we can just use the non-RR
-	 * name.
-	 */
-	if (rr->u.NM.flags & 6) {
+	if (rr->u.NM.flags & ISO_ROCK_NM_PARENT) {
+	  i_namelen = strlen("..");
+	  strcat(psz_name, "..");
+	  break;
+	} else if (rr->u.NM.flags & ISO_ROCK_NM_CURRENT) {
+	  i_namelen = strlen(".");
+	  strcat(psz_name, ".");
 	  break;
 	}
 
@@ -193,7 +199,7 @@ get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * psz_name,
 }
 
 static int
-parse_rock_ridge_stat_internal(iso9660_dir_t *de,
+parse_rock_ridge_stat_internal(iso9660_dir_t *p_iso9660_dir,
 			       iso9660_stat_t *p_stat, int regard_xa)
 {
   int len;
@@ -203,7 +209,7 @@ parse_rock_ridge_stat_internal(iso9660_dir_t *de,
 
   if (nope == p_stat->b_rock) return 0;
 
-  SETUP_ROCK_RIDGE(de, chr, len);
+  SETUP_ROCK_RIDGE(p_iso9660_dir, chr, len);
   if (regard_xa)
     {
       chr+=14;
@@ -372,17 +378,117 @@ parse_rock_ridge_stat_internal(iso9660_dir_t *de,
 }
 
 int 
-parse_rock_ridge_stat(iso9660_dir_t *de, /*out*/ iso9660_stat_t *p_stat)
+parse_rock_ridge_stat(iso9660_dir_t *p_iso9660_dir, 
+		      /*out*/ iso9660_stat_t *p_stat)
 {
   int result;
 
   if (!p_stat) return 0;
   
-  result = parse_rock_ridge_stat_internal(de, p_stat, 0);
+  result = parse_rock_ridge_stat_internal(p_iso9660_dir, p_stat, 0);
   /* if Rock-Ridge flag was reset and we didn't look for attributes
    * behind eventual XA attributes, have a look there */
   if (0xFF == p_stat->s_rock_offset && nope != p_stat->b_rock) {
-    result = parse_rock_ridge_stat_internal(de, p_stat, 14);
+    result = parse_rock_ridge_stat_internal(p_iso9660_dir, p_stat, 14);
   }
+  return result;
+}
+
+#define BUF_COUNT 16
+#define BUF_SIZE sizeof("drwxrwxrwx")
+
+/* Return a pointer to a internal free buffer */
+static char *
+_getbuf (void)
+{
+  static char _buf[BUF_COUNT][BUF_SIZE];
+  static int _i = -1;
+  
+  _i++;
+  _i %= BUF_COUNT;
+
+  memset (_buf[_i], 0, BUF_SIZE);
+
+  return _buf[_i];
+}
+
+/*!
+  Returns a string which interpreting the POSIX mode st_mode. 
+  For example:
+  \verbatim
+  drwxrws---
+  -rw-rw-r--
+  lrwxrwxrwx
+  \endverbatim
+  
+  A description of the characters in the string follows
+  The 1st character is either "b" for a block device, 
+  "c" for a character device, "d" if the entry is a directory, "l" for
+  a symbolic link, "p" for a pipe or FIFO, "s" for a "socket", 
+  or "-" if none of the these.
+  
+  The 2nd to 4th characters refer to permissions for a user while the
+  the 5th to 7th characters refer to permissions for a group while, and 
+  the 8th to 10h characters refer to permissions for everyone. 
+  
+  In each of these triplets the first character (2, 5, 8) is "r" if
+  the entry is allowed to be read.
+
+  The second character of a triplet (3, 6, 9) is "w" if the entry is
+  allowed to be written.
+
+  The third character of a triplet (4, 7, 10) is "x" if the entry is
+  executable but not user (for character 4) or group (for characters
+  6) settable and "s" if the item has the corresponding user/group set.
+
+  For a directory having an executable property on ("x" or "s") means
+  the directory is allowed to be listed or "searched". If the execute
+  property is not allowed for a group or user but the corresponding
+  group/user is set "S" indicates this. If none of these properties
+  holds the "-" indicates this.
+*/
+const char *
+iso9660_get_rock_attr_str(posix_mode_t st_mode)
+{
+  char *result = _getbuf();
+
+  if (st_mode & ISO_ROCK_ISBLK) 
+    result[ 0] = 'b';
+  else if (st_mode & ISO_ROCK_ISDIR) 
+    result[ 0] = 'd';
+  else if (st_mode & ISO_ROCK_ISCHR) 
+    result[ 0] = 'c';
+  else if (st_mode & ISO_ROCK_ISLNK) 
+    result[ 0] = 'l';
+  else if (st_mode & ISO_ROCK_ISFIFO) 
+    result[ 0] = 'p';
+  else if (st_mode & ISO_ROCK_ISSOCK) 
+    result[ 0] = 's';
+  /* May eventually fill in others.. */
+  else 
+    result[ 0] = '-';
+
+  result[ 1] = (st_mode & ISO_ROCK_IRUSR) ? 'r' : '-';
+  result[ 2] = (st_mode & ISO_ROCK_IWUSR) ? 'w' : '-';
+
+  if (st_mode & ISO_ROCK_ISUID) 
+    result[ 3] = (st_mode & ISO_ROCK_IXUSR) ? 's' : 'S';
+  else
+    result[ 3] = (st_mode & ISO_ROCK_IXUSR) ? 'x' : '-';
+
+  result[ 4] = (st_mode & ISO_ROCK_IRGRP) ? 'r' : '-';
+  result[ 5] = (st_mode & ISO_ROCK_IWGRP) ? 'w' : '-';
+
+  if (st_mode & ISO_ROCK_ISGID) 
+    result[ 6] = (st_mode & ISO_ROCK_IXGRP) ? 's' : 'S';
+  else 
+    result[ 6] = (st_mode & ISO_ROCK_IXGRP) ? 'x' : '-';
+
+  result[ 7] = (st_mode & ISO_ROCK_IROTH) ? 'r' : '-';
+  result[ 8] = (st_mode & ISO_ROCK_IWOTH) ? 'w' : '-';
+  result[ 9] = (st_mode & ISO_ROCK_IXOTH) ? 'x' : '-';
+
+  result[11] = '\0';
+
   return result;
 }

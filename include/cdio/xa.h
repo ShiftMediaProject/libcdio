@@ -1,5 +1,5 @@
 /*
-    $Id: xa.h,v 1.14 2005/02/13 00:20:05 rocky Exp $
+    $Id: xa.h,v 1.15 2005/02/20 10:21:01 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -139,7 +139,7 @@ typedef struct iso9660_xa_s
 
 
 /*!
-  Returns a string which interpreting the extended attribute xa_attr. 
+  Returns a string interpreting the extended attribute xa_attr. 
   For example:
   \verbatim
   d---1xrxrxr
@@ -147,7 +147,7 @@ typedef struct iso9660_xa_s
   -a--1xrxrxr
   \endverbatim
   
-  A description of the characters in the string follows
+  A description of the characters in the string follows.
   The 1st character is either "d" if the entry is a directory, or "-" if not
   The 2nd character is either "a" if the entry is CDDA (audio), or "-" if not
   The 3rd character is either "i" if the entry is interleaved, or "-" if not

@@ -1,5 +1,5 @@
 /*
-    $Id: xa.c,v 1.3 2005/02/12 18:24:21 rocky Exp $
+    $Id: xa.c,v 1.4 2005/02/20 10:21:01 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2005 Rocky Bernstein <rocky@panix.com>
@@ -42,11 +42,11 @@ const char ISO_XA_MARKER_STRING[] = {'C', 'D', '-', 'X', 'A', '0', '0', '1'};
 /* Private headers */
 #include "cdio_assert.h"
 
-#define BUF_COUNT 16
-#define BUF_SIZE 80
-
 /* Variables to hold debugger-helping enumerations */
 enum cdio_xa_enums;
+
+#define BUF_COUNT 16
+#define BUF_SIZE 80
 
 /* Return a pointer to a internal free buffer */
 static char *

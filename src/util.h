@@ -1,7 +1,7 @@
 /*
-  $Id: util.h,v 1.10 2005/01/09 00:10:49 rocky Exp $
+  $Id: util.h,v 1.11 2005/02/20 10:21:01 rocky Exp $
 
-  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
+#include <cdio/iso9660.h>
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -130,5 +131,10 @@ void print_drive_capabilities(cdio_drive_read_cap_t  p_read_cap,
 /*! Common place for output routine. In some environments, like XBOX,
   it may not be desireable to send output to stdout and stderr. */
 void report (FILE *stream, const char *psz_format, ...);
+
+/* Prints "ls"-like file attributes */
+void print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa, 
+	       const char *psz_name_untranslated, 
+		    const char *psz_name_translated);
 
 #endif /* UTIL_H */

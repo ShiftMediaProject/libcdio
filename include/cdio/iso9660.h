@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.68 2005/02/19 11:47:05 rocky Exp $
+    $Id: iso9660.h,v 1.69 2005/02/20 10:21:01 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -258,6 +258,11 @@ typedef struct iso9660_ltime_s  iso9660_ltime_t;
 typedef struct iso9660_dir_s    iso9660_dir_t;
 typedef struct iso9660_stat_s   iso9660_stat_t;
 
+typedef uint32_t posix_mode_t;
+typedef uint32_t posix_nlink_t;
+typedef uint32_t posix_uid_t;
+typedef uint32_t posix_gid_t;
+
 #include <cdio/rock.h>
 
 /*! \brief Format of an ISO-9660 directory record 
@@ -510,11 +515,6 @@ struct iso9660_svd_s {
 typedef struct iso9660_svd_s  iso9660_svd_t;
 
 PRAGMA_END_PACKED
-
-typedef uint32_t posix_mode_t;
-typedef uint32_t posix_nlink_t;
-typedef uint32_t posix_uid_t;
-typedef uint32_t posix_gid_t;
 
 /*! \brief Unix stat-like version of iso9660_dir
 

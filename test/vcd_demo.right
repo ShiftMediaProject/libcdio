@@ -22,69 +22,69 @@ Volume     : V0469
 Volume Set : 
 ISO9660 filesystem
 /:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
-  d d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048 Jul 14 1978 00:00  ext
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jul 14 1978 00:00  mpegav
-  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Jul 14 1978 00:00  segment
-  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jul 14 1978 00:00  sources
-  d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048 Jul 14 1978 00:00  vcd
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
+  d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048 Jul 14 1978 00:00  EXT
+  d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jul 14 1978 00:00  MPEGAV
+  d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Jul 14 1978 00:00  SEGMENT
+  d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jul 14 1978 00:00  Sources
+  d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048 Jul 14 1978 00:00  VCD
 
 /EXT/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048 Jul 14 1978 00:00  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
-  - ----1xrxrxr 0 0 [fn 01] [LSN    375]     65536 Jul 14 1978 00:00  lot_x.vcd
-  - ----1xrxrxr 0 0 [fn 01] [LSN    407]       144 Jul 14 1978 00:00  psd_x.vcd
+  d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048 Jul 14 1978 00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
+  ----1xrxrxr 0 0 [fn 01] [LSN    375]     65536 Jul 14 1978 00:00  LOT_X.VCD;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    407]       144 Jul 14 1978 00:00  PSD_X.VCD;1
 
 /MPEGAV/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jul 14 1978 00:00  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
-  - ---2-xrxrxr 0 0 [fn 01] [LSN   1182]    904036 (   796672) Jul 14 1978 00:00  avseq01.dat
-  - ---2-xrxrxr 0 0 [fn 02] [LSN   1721]    904036 (   796672) Jul 14 1978 00:00  avseq02.dat
+  d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048 Jul 14 1978 00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
+  ---2-xrxrxr 0 0 [fn 01] [LSN   1182]    904036 (   796672) Jul 14 1978 00:00  AVSEQ01.DAT;1
+  ---2-xrxrxr 0 0 [fn 02] [LSN   1721]    904036 (   796672) Jul 14 1978 00:00  AVSEQ02.DAT;1
 
 /SEGMENT/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Jul 14 1978 00:00  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
-  - ---2-xrxrxr 0 0 [fn 01] [LSN    225]    220780 (   194560) Jul 14 1978 00:00  item0001.dat
+  d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048 Jul 14 1978 00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
+  ---2-xrxrxr 0 0 [fn 01] [LSN    225]    220780 (   194560) Jul 14 1978 00:00  ITEM0001.DAT;1
 
 /Sources/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jul 14 1978 00:00  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
-  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jul 14 1978 00:00  html
-  - ----1xrxrxr 0 0 [fn 01] [LSN    434]       842 Dec 11 2002 10:33  index.htm
-  - ----1xrxrxr 0 0 [fn 01] [LSN    435]   1216557 Jan 07 2003 18:01  menu.ppm
-  - ----1xrxrxr 0 0 [fn 01] [LSN   1030]      2793 Jan 07 2003 18:08  source.xml
+  d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jul 14 1978 00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
+  d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jul 14 1978 00:00  HTML
+  ----1xrxrxr 0 0 [fn 01] [LSN    434]       842 Dec 11 2002 10:33  index.htm;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    435]   1216557 Jan 07 2003 18:01  menu.ppm;1
+  ----1xrxrxr 0 0 [fn 01] [LSN   1030]      2793 Jan 07 2003 18:08  source.xml;1
 
 /Sources/HTML/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jul 14 1978 00:00  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jul 14 1978 00:00  ..
-  - ----1xrxrxr 0 0 [fn 01] [LSN    425]      1067 Jan 07 2003 17:51  0.xml
-  - ----1xrxrxr 0 0 [fn 01] [LSN    426]      1067 Jan 07 2003 17:51  1.xml
-  d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048 Jul 14 1978 00:00  img
-  - ----1xrxrxr 0 0 [fn 01] [LSN    427]      1327 Jan 07 2003 17:51  movies.css
-  - ----1xrxrxr 0 0 [fn 01] [LSN    428]     12024 Jan 07 2003 17:51  toc.xsl
+  d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jul 14 1978 00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048 Jul 14 1978 00:00  ..
+  ----1xrxrxr 0 0 [fn 01] [LSN    425]      1067 Jan 07 2003 17:51  0.xml;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    426]      1067 Jan 07 2003 17:51  1.xml;1
+  d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048 Jul 14 1978 00:00  img
+  ----1xrxrxr 0 0 [fn 01] [LSN    427]      1327 Jan 07 2003 17:51  movies.css;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    428]     12024 Jan 07 2003 17:51  toc.xsl;1
 
 /Sources/HTML/img/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048 Jul 14 1978 00:00  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jul 14 1978 00:00  ..
-  - ----1xrxrxr 0 0 [fn 01] [LSN    408]      1999 Nov 13 2002 07:27  al.gif
-  - ----1xrxrxr 0 0 [fn 01] [LSN    409]      7626 Jan 07 2003 17:42  loeki_groep_01.gif
-  - ----1xrxrxr 0 0 [fn 01] [LSN    413]      9986 Jan 07 2003 17:42  loeki_groep_02.gif
-  - ----1xrxrxr 0 0 [fn 01] [LSN    418]       207 Nov 14 2002 19:33  a_left.gif
-  - ----1xrxrxr 0 0 [fn 01] [LSN    419]       207 Nov 14 2002 19:33  a_right.gif
-  - ----1xrxrxr 0 0 [fn 01] [LSN    420]       441 Nov 13 2002 10:54  animatie.gif
-  - ----1xrxrxr 0 0 [fn 01] [LSN    421]       250 Nov 14 2002 11:44  face_up2.gif
-  - ----1xrxrxr 0 0 [fn 01] [LSN    422]       259 Nov 13 2002 11:09  familie.gif
-  - ----1xrxrxr 0 0 [fn 01] [LSN    423]      1010 Nov 14 2002 11:52  goldstar2.gif
-  - ----1xrxrxr 0 0 [fn 01] [LSN    424]      1783 Nov 13 2002 07:15  vcd.gif
+  d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048 Jul 14 1978 00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048 Jul 14 1978 00:00  ..
+  ----1xrxrxr 0 0 [fn 01] [LSN    408]      1999 Nov 13 2002 07:27  AL.gif;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    409]      7626 Jan 07 2003 17:42  Loeki_Groep_01.gif;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    413]      9986 Jan 07 2003 17:42  Loeki_Groep_02.gif;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    418]       207 Nov 14 2002 19:33  a_left.gif;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    419]       207 Nov 14 2002 19:33  a_right.gif;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    420]       441 Nov 13 2002 10:54  animatie.gif;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    421]       250 Nov 14 2002 11:44  face_up2.gif;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    422]       259 Nov 13 2002 11:09  familie.gif;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    423]      1010 Nov 14 2002 11:52  goldstar2.gif;1
+  ----1xrxrxr 0 0 [fn 01] [LSN    424]      1783 Nov 13 2002 07:15  vcd.gif;1
 
 /VCD/:
-  d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048 Jul 14 1978 00:00  .
-  d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
-  - ----1xrxrxr 0 0 [fn 00] [LSN    151]      2048 Jul 14 1978 00:00  entries.vcd
-  - ----1xrxrxr 0 0 [fn 00] [LSN    150]      2048 Jul 14 1978 00:00  info.vcd
-  - ----1xrxrxr 0 0 [fn 00] [LSN    152]     65536 Jul 14 1978 00:00  lot.vcd
-  - ----1xrxrxr 0 0 [fn 00] [LSN    184]        72 Jul 14 1978 00:00  psd.vcd
+  d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048 Jul 14 1978 00:00  .
+  d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048 Jul 14 1978 00:00  ..
+  ----1xrxrxr 0 0 [fn 00] [LSN    151]      2048 Jul 14 1978 00:00  ENTRIES.VCD;1
+  ----1xrxrxr 0 0 [fn 00] [LSN    150]      2048 Jul 14 1978 00:00  INFO.VCD;1
+  ----1xrxrxr 0 0 [fn 00] [LSN    152]     65536 Jul 14 1978 00:00  LOT.VCD;1
+  ----1xrxrxr 0 0 [fn 00] [LSN    184]        72 Jul 14 1978 00:00  PSD.VCD;1
 
 XA sectors   Video CD   
 session #2 starts at track  2, LSN: 1182, ISO 9660 blocks:   1032

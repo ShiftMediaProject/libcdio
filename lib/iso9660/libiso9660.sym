@@ -21,6 +21,7 @@ iso9660_get_pvd_id
 iso9660_get_pvd_space_size
 iso9660_get_pvd_type
 iso9660_get_pvd_version
+iso9660_get_rock_attr_str
 iso9660_get_root_lsn
 iso9660_get_system_id
 iso9660_get_volume_id
