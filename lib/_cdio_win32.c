@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.16 2003/10/15 03:53:25 rocky Exp $
+    $Id: _cdio_win32.c,v 1.17 2003/10/17 02:25:36 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.16 2003/10/15 03:53:25 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.17 2003/10/17 02:25:36 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -60,7 +60,7 @@ static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.16 2003/10/15 03:53:25 rock
 #    define MAXIMUM_NUMBER_TRACKS 100
 #endif
 typedef struct _TRACK_DATA {
-    UCHAR Reserved;
+    UCHAR Format;
     UCHAR Control : 4;
     UCHAR Adr : 4;
     UCHAR TrackNumber;
@@ -177,6 +177,7 @@ struct SRB_ExecSCSICmd
 typedef struct {
   lsn_t          start_lsn;
   UCHAR          Control : 4;
+  UCHAR          Format;
 } track_info_t;
 
 typedef struct {
@@ -625,9 +626,30 @@ _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn,
     cdio_debug ("reading %lu", (unsigned long int) lsn);
   
   _obj->gen.ioctls_debugged++;
- 
-  ret = _cdio_mmc_read_sectors(user_data, buf, lsn, CDIO_MMC_READ_TYPE_ANY, 1);
 
+  if ( _obj->hASPI ) {
+    ret = _cdio_mmc_read_sectors(user_data, buf, lsn, 
+				 CDIO_MMC_READ_TYPE_ANY, 1);
+  } else {
+    DWORD dwBytesReturned;
+    RAW_READ_INFO cdrom_raw;
+
+    /* Initialize CDROM_RAW_READ structure */
+    cdrom_raw.DiskOffset.QuadPart = CDIO_CD_FRAMESIZE * lsn;
+    cdrom_raw.SectorCount = 1;
+    cdrom_raw.TrackMode = XAForm2;
+    
+    if( DeviceIoControl( _obj->h_device_handle,
+			 IOCTL_CDROM_RAW_READ, &cdrom_raw,
+			 sizeof(RAW_READ_INFO), buf,
+			 sizeof(buf), &dwBytesReturned, NULL )
+	== 0 ) {
+      cdio_debug("Error reading %lu\n", lsn);
+      return 1;
+      }
+    ret = 0;
+  }
+    
   if( ret != 0 ) return ret;
   
   if (mode2_form2)
@@ -842,6 +864,7 @@ _cdio_read_toc (_img_private_t *_obj)
 					 cdrom_toc.TrackData[i].Address[2],
 					 cdrom_toc.TrackData[i].Address[3] );
 	_obj->tocent[ i ].Control   = cdrom_toc.TrackData[i].Control;
+	_obj->tocent[ i ].Format    = cdrom_toc.TrackData[i].Format;
 	cdio_debug("p_sectors: %i, %lu", i, 
 		   (unsigned long int) (_obj->tocent[i].start_lsn));
       }
@@ -940,41 +963,61 @@ _cdio_get_num_tracks(void *user_data)
   Get format of track. 
 */
 static track_format_t
-_cdio_get_track_format(void *user_data, track_t track_num) 
+_cdio_get_track_format(void *env, track_t track_num) 
 {
-  _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
+  
+  if (!_obj->gen.toc_init) _cdio_read_toc (_obj) ;
+
+  if (track_num > _obj->total_tracks || track_num == 0)
+    return TRACK_FORMAT_ERROR;
 
   MCI_OPEN_PARMS op;
   MCI_STATUS_PARMS st;
   DWORD i_flags;
   int ret;
 
-  memset( &op, 0, sizeof(MCI_OPEN_PARMS) );
-  op.lpstrDeviceType = (LPCSTR)MCI_DEVTYPE_CD_AUDIO;
-  op.lpstrElementName = _obj->gen.source_name;
-  
-  /* Set the flags for the device type */
-  i_flags = MCI_OPEN_TYPE | MCI_OPEN_TYPE_ID |
-    MCI_OPEN_ELEMENT | MCI_OPEN_SHAREABLE;
-  
-  if( !mciSendCommand( 0, MCI_OPEN, i_flags, (unsigned long)&op ) ) {
-    st.dwItem  = MCI_CDA_STATUS_TYPE_TRACK;
-    st.dwTrack = track_num;
-    i_flags = MCI_TRACK | MCI_STATUS_ITEM ;
-    ret = mciSendCommand( op.wDeviceID, MCI_STATUS, i_flags, 
-			  (unsigned long) &st );
-
-    /* Release access to the device */
-    mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
-
-    switch(st.dwReturn) {
-    case MCI_CDA_TRACK_AUDIO:
-      return TRACK_FORMAT_AUDIO;
-    case MCI_CDA_TRACK_OTHER:
-      return TRACK_FORMAT_DATA;
-    default:
-      return TRACK_FORMAT_XA;
+  if( _obj->hASPI ) {
+    memset( &op, 0, sizeof(MCI_OPEN_PARMS) );
+    op.lpstrDeviceType = (LPCSTR)MCI_DEVTYPE_CD_AUDIO;
+    op.lpstrElementName = _obj->gen.source_name;
+    
+    /* Set the flags for the device type */
+    i_flags = MCI_OPEN_TYPE | MCI_OPEN_TYPE_ID |
+      MCI_OPEN_ELEMENT | MCI_OPEN_SHAREABLE;
+    
+    if( !_cdio_mciSendCommand( 0, MCI_OPEN, i_flags, &op ) ) {
+      st.dwItem  = MCI_CDA_STATUS_TYPE_TRACK;
+      st.dwTrack = track_num;
+      i_flags = MCI_TRACK | MCI_STATUS_ITEM ;
+      ret = mciSendCommand( op.wDeviceID, MCI_STATUS, i_flags, 
+			    (unsigned long) &st );
+      
+      /* Release access to the device */
+      mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
+      
+      switch(st.dwReturn) {
+      case MCI_CDA_TRACK_AUDIO:
+	return TRACK_FORMAT_AUDIO;
+      case MCI_CDA_TRACK_OTHER:
+	return TRACK_FORMAT_DATA;
+      default:
+	return TRACK_FORMAT_XA;
+      }
     }
+  } else {
+    /* This is pretty much copied from the "badly broken" cdrom_count_tracks
+       in linux/cdrom.c.
+    */
+    if (_obj->tocent[track_num-1].Control & 0x04) {
+      if (_obj->tocent[track_num-1].Format == 0x10)
+	return TRACK_FORMAT_CDI;
+      else if (_obj->tocent[track_num-1].Format == 0x20) 
+	return TRACK_FORMAT_XA;
+      else
+	return TRACK_FORMAT_DATA;
+    } else
+      return TRACK_FORMAT_AUDIO;
   }
 
   return TRACK_FORMAT_ERROR;
