@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.63 2004/02/27 02:35:24 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.64 2004/02/27 02:53:25 rocky Exp $])dnl
 AC_INIT(libcdio, 0.67cvs)
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -37,8 +37,8 @@ AC_ARG_WITH(cd_read,
 [  --without-cd-read	build program cd-read (enabled by default)],
 enable_cd_read="${withval}", enable_cd_read=yes)
 
-AC_ARG_WITH(cd_info,
-[  --without-versioned-libs	build versioned library symbols (enabled by default)],
+AC_ARG_WITH(enable_versioned_libs,
+[  --without-versioned-libs build versioned library symbols (enabled by default)],
 enable_versioned_libs="${withval}", enable_versioned_libs=yes)
 
 dnl Checks for programs.
