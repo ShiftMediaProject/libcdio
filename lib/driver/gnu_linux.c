@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.11 2005/03/19 16:17:13 rocky Exp $
+    $Id: gnu_linux.c,v 1.12 2005/03/29 12:00:23 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.11 2005/03/19 16:17:13 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.12 2005/03/29 12:00:23 rocky Exp $";
 
 #include <string.h>
 
@@ -262,12 +262,12 @@ audio_play_track_index_linux (void *p_user_data,
 /*!
   Read Audio Subchannel information
   
-  @param p_cdio the CD object to be acted upon.
-  
+  @param p_user_data the CD object to be acted upon.
+  @param p_subchannel returned information
 */
 static driver_return_code_t
 audio_read_subchannel_linux (void *p_user_data, 
-                             cdio_subchannel_t *p_subchannel)
+                             /*out*/ cdio_subchannel_t *p_subchannel)
 {
 
   const _img_private_t *p_env = p_user_data;

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.26 2005/03/21 07:53:22 rocky Exp $
+    $Id: freebsd.c,v 1.27 2005/03/29 12:00:23 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.26 2005/03/21 07:53:22 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.27 2005/03/29 12:00:23 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -348,17 +348,18 @@ audio_play_track_index_freebsd (void *p_user_data,
 /*!
   Read Audio Subchannel information
   
-  @param p_cdio the CD object to be acted upon.
-  
+  @param p_user_data the CD object to be acted upon.
+  @param p_subchannel returned information
 */
 #if 1
 static driver_return_code_t
 audio_read_subchannel_freebsd (void *p_user_data, 
-			       cdio_subchannel_t *p_subchannel)
+			       /*out*/ cdio_subchannel_t *p_subchannel)
 {
   const _img_private_t *p_env = p_user_data;
   int i_rc;
   struct cd_sub_channel_info bsdinfo;
+  bsdinfo.what.position.data_format = CD_CURRENT_POSITION;
   i_rc = ioctl(p_env->gen.fd, CDIOCREADSUBCHANNEL, &bsdinfo);
   if (0 == i_rc) {
     msf_t msf;
