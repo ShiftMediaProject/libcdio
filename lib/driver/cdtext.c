@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.c,v 1.2 2005/01/27 03:10:06 rocky Exp $
+    $Id: cdtext.c,v 1.3 2005/02/24 06:32:57 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -72,6 +72,7 @@ cdtext_destroy (cdtext_t *p_cdtext)
 {
   cdtext_field_t i;
 
+  if (!p_cdtext) return; 
   for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
     if (p_cdtext->field[i]) {
       free(p_cdtext->field[i]);
