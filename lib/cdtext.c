@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.c,v 1.2 2004/07/09 02:46:42 rocky Exp $
+    $Id: cdtext.c,v 1.3 2004/07/11 02:26:15 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -95,7 +95,7 @@ cdtext_is_keyword (const char *key)
     {
       "ARRANGER",     /* name(s) of the arranger(s) */
       "COMPOSER",     /* name(s) of the composer(s) */
-      "DISC ID",      /* disc identification information */
+      "DISC_ID",      /* disc identification information */
       "GENRE",        /* genre identification and genre information */
       "ISRC",         /* ISRC code of each track */
       "MESSAGE",      /* message(s) from the content provider and/or artist */
@@ -104,10 +104,11 @@ cdtext_is_keyword (const char *key)
       "SONGWRITER",   /* name(s) of the songwriter(s) */
       "TITLE",        /* title of album name or track titles */
       "TOC_INFO",     /* table of contents information */
-      "TOC_INFO2"     /* second table of contents information */
+      "TOC_INFO2",    /* second table of contents information */
       "UPC_EAN",
     };
-  
+
+#if 0  
   char *item;
   
   item = bsearch(key, 
@@ -116,6 +117,15 @@ cdtext_is_keyword (const char *key)
 		 (int (*)(const void *, const void *))
 		 strcmp);
   return (NULL != item) ? 0 : 1;
+#else 
+  unsigned int i;
+  
+  for (i = 0; i < 13 ; i++)
+    if (0 == strcmp (cdtext_keywords[i], key)) {
+      return 0;
+    }
+  return 1;
+#endif
 }
 
 /*! sets cdtext's keyword entry to field.
