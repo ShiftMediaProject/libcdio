@@ -1,5 +1,5 @@
 /*
-  $Id: testtoc.c,v 1.1 2004/05/07 10:57:50 rocky Exp $
+  $Id: testtoc.c,v 1.2 2004/05/08 20:36:02 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -38,13 +38,13 @@
 #endif
 #include <string.h>
 
-#define NUM_GOOD_TOCS 9
-#define NUM_BAD_TOCS 3
+#define NUM_GOOD_TOCS 14
+#define NUM_BAD_TOCS 6
 int
 main(int argc, const char *argv[])
 {
   const char *toc_file[NUM_GOOD_TOCS] = {
-    "t1.toc", 
+    "t9.toc", 
     "t2.toc", 
     "t3.toc", 
     "t4.toc", 
@@ -52,12 +52,20 @@ main(int argc, const char *argv[])
     "t6.toc", 
     "t7.toc", 
     "t8.toc", 
-    "t9.toc"
+    "t9.toc",
+    "data1.toc",
+    "data2.toc",
+    "data5.toc",
+    "data6.toc",
+    "data7.toc"
   };
 
   const char *badtoc_file[NUM_BAD_TOCS] = {
     "bad-msf-1.toc", 
     "bad-msf-2.toc",
+    "bad-cat1.toc", 
+    "bad-cat2.toc",
+    "bad-cat3.toc",
     "bad-mode1.toc"
   };
   int ret=0;

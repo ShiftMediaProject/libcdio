@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.3 2004/05/07 10:58:23 rocky Exp $
+    $Id: cdrdao.c,v 1.4 2004/05/08 20:36:01 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.3 2004/05/07 10:58:23 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.4 2004/05/08 20:36:01 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -202,12 +202,12 @@ msf_lba_from_mmssff (char *s)
   ret += msf_to_lba (0, field, 0);
   
   c = *s++;
-  if(c >= '0' && c <= '9')
+  if (isdigit(c))
     field = (c - '0');
   else
     return -1;
   if('\0' != (c = *s++)) {
-    if(c >= '0' && c <= '9') {
+    if (isdigit(c)) {
       field = field * 10 + (c - '0');
       c = *s++;
     }
@@ -433,11 +433,36 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
       /* CATALOG "ddddddddddddd" */
       if (0 == strcmp ("CATALOG", keyword)) {
 	if (-1 == i) {
-	  if (NULL != (field = strtok (NULL, "\"\t\n\r")))
-	    if (NULL != cd) 
-	      cd->mcn = strdup (field);
-	  if (NULL != (field = strtok (NULL, " \t\n\r"))) {
-	    cdio_log(log_level, "%d: format error: %s", line_num, keyword);
+	  if (NULL != (field = strtok (NULL, "\"\t\n\r"))) {
+	    if (13 != strlen(field)) {
+	      cdio_log(log_level, 
+		       "%s line %d after word CATALOG:", 
+		       toc_name, line_num);
+	      cdio_log(log_level, 
+		       "Token %s has length %ld. Should be 13 digits.", 
+		       field, (long int) strlen(field));
+	      
+	      goto err_exit;
+	    } else {
+	      /* Check that we have all digits*/
+	      unsigned int i;
+	      for (i=0; i<13; i++) {
+		if (!isdigit(field[i])) {
+		    cdio_log(log_level, 
+			     "%s line %d after word CATALOG:", 
+			     toc_name, line_num);
+		    cdio_log(log_level, 
+			     "Token %s is not all digits.", field);
+		    goto err_exit;
+		}
+	      }
+	      if (NULL != cd) cd->mcn = strdup (field); 
+	    }
+	  } else {
+	    cdio_log(log_level, 
+		     "%s line %d after word CATALOG:", 
+		     toc_name, line_num);
+	    cdio_log(log_level, "Expecting 13 digits; nothing seen.");
 	    goto err_exit;
 	  }
 	} else {
@@ -547,7 +572,7 @@ parse_tocfile (_img_private_t *cd, const char *toc_name)
 	      cd->tocent[i].endsize      = 0;
 	    }
 	  } else {
-	    cdio_log(log_level, "%s line %d: format after keyword TRACK.",
+	    cdio_log(log_level, "%s line %d after keyword TRACK:",
 		     toc_name, line_num);
 	    cdio_log(log_level, "'%s' not a valid mode.", field);
 	    goto err_exit;
