@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.h,v 1.4 2003/11/04 04:45:24 rocky Exp $
+    $Id: cd_types.h,v 1.5 2003/11/04 12:28:08 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -27,17 +27,21 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/*!
-   Filesystem types we understand. The highest-numbered fs type should
-   be less than CDIO_FS_MASK defined below.
-*/
-
-#define CDIO_FS_AUDIO                1   /* audio only - not really a fs */
-#define CDIO_FS_HIGH_SIERRA	     2
-#define CDIO_FS_ISO_9660	     3
+/**
+ * Filesystem types we understand. The highest-numbered fs type should
+ *  be less than CDIO_FS_MASK defined below.
+ */
+#define CDIO_FS_AUDIO                1 /**< audio only - not really a 
+                                          filesystem */
+#define CDIO_FS_HIGH_SIERRA	     2 
+#define CDIO_FS_ISO_9660	     3 /**< ISO 9660 filesystem */
 #define CDIO_FS_INTERACTIVE	     4
-#define CDIO_FS_HFS		     5
-#define CDIO_FS_UFS		     6
+#define CDIO_FS_HFS		     5 /**< file system used on the Macintosh 
+                                            system in MacOS 6 through MacOS 9
+                                            and depricated in OSX. */
+#define CDIO_FS_UFS		     6 /**< Generic Unix file system derived
+                                            from the Berkeley fast file 
+                                            system. */
 
 /** 
  * EXT2 was the GNU/Linux native filesystem for early kernels. Newer
@@ -54,14 +58,16 @@ extern "C" {
  * company.  These specs are for making a 3DO Interactive Multiplayer
  * which uses a CD-player. Panasonic in the early 90's was the first
  * company to manufacture and market a 3DO player. 
-*/
+ */
 #define CDIO_FS_3DO		    10
 
-#define CDIO_FS_MASK		    15  /* Should be 2*n-1 and > above */
+#define CDIO_FS_MASK		    15  /**< Note: this should be 2**n-1 and
+                                             and greater than the highest 
+                                             CDIO_FS number above */
 #define CDIO_FS_UNKNOWN	            CDIO_FS_MASK
 
 /** 
- *Macro to extract just the FS type portion defined above 
+ * Macro to extract just the FS type portion defined above 
 */
 #define CDIO_FSTYPE(fs) (fs & CDIO_FS_MASK)
 
@@ -78,23 +84,31 @@ extern "C" {
 #define CDIO_FS_ANAL_CDTV	       256
 #define CDIO_FS_ANAL_BOOTABLE          512 /**< CD is bootable */
 #define CDIO_FS_ANAL_VIDEOCD          1024 /**< VCD 1.1 */
-#define CDIO_FS_ANAL_ROCKRIDGE        2048
-#define CDIO_FS_ANAL_JOLIET           4096 /**< Has Joliet extensions */
+#define CDIO_FS_ANAL_ROCKRIDGE        2048 /**< Has Rock Ridge Extensions to
+                                                ISO 9660 */
+#define CDIO_FS_ANAL_JOLIET           4096 /**< Microsoft Joliet extensions 
+                                                to ISO 9660 */
 #define CDIO_FS_ANAL_SVCD             8192 /**< Super VCD or Choiji Video CD */
 #define CDIO_FS_ANAL_CVD       	     16384 /**< Choiji Video CD */
 
 /**
- *Pattern which can be used by cdio_get_devices to specify matching
- any sort of CD.
-*/
+ * Pattern which can be used by cdio_get_devices to specify matching
+ * any sort of CD.
+ */
 #define CDIO_FS_MATCH_ALL            (cdio_fs_anal_t) (~CDIO_FS_MASK)
 
 
+/**
+ * The type used to return analysis information from
+ * cdio_guess_cd_type. These fields make sense only for when an ISO 9660
+ * filesystem is used.
+ */
 typedef struct 
 {
-  unsigned int  joliet_level;
-  char          iso_label[33]; /* 32 + 1 for null byte at the end in 
-				  formatting the string */
+  unsigned int  joliet_level;  /**< If has Joliet extensions, this is the
+                                  associated level number (i.e. 1, 2, or 3). */
+  char          iso_label[33]; /**< This is 32 + 1 for null byte at the end in 
+				    formatting the string */
   unsigned int  isofs_size;
 } cdio_analysis_t;
 

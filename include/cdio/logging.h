@@ -1,7 +1,8 @@
 /*
-    $Id: logging.h,v 1.4 2003/11/04 04:45:24 rocky Exp $
+    $Id: logging.h,v 1.5 2003/11/04 12:28:08 rocky Exp $
 
-    Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
+    Copyright (C) 2000, Herbert Valerio Riedel <hvr@gnu.org>
+    Copyright (C) 2003, Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,7 +108,7 @@ void cdio_warn (const char format[], ...) GNUC_PRINTF(1,2);
 /**
  * Handle an error message.
  *
- * @see cdio_log for a more generic routine
+ * @see cdio_log for a more generic routine.
  */
 void cdio_error (const char format[], ...) GNUC_PRINTF(1,2);
 

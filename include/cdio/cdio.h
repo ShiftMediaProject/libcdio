@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.31 2003/10/04 23:11:50 rocky Exp $
+    $Id: cdio.h,v 1.32 2003/11/04 12:28:08 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -25,8 +25,8 @@
 #ifndef __CDIO_H__
 #define __CDIO_H__
 
-/* Application Interface or Protocol version number. If the public
-   interface changes, we increase this number.
+/** Application Interface or Protocol version number. If the public
+ *  interface changes, we increase this number.
  */
 #define CDIO_API_VERSION 1
 
@@ -43,8 +43,9 @@
 #include <cdio/sector.h>
 
 /* Flags specifying the category of device to open or is opened. */
-#define CDIO_SRC_IS_DISK_IMAGE_MASK 0x0001
-#define CDIO_SRC_IS_DEVICE_MASK     0x0002
+
+#define CDIO_SRC_IS_DISK_IMAGE_MASK 0x0001 /**< Read source is a CD image. */
+#define CDIO_SRC_IS_DEVICE_MASK     0x0002 /**< Read source is a CD device. */
 #define CDIO_SRC_IS_SCSI_MASK       0x0004
 #define CDIO_SRC_IS_NATIVE_MASK     0x0008
 
@@ -52,55 +53,58 @@
 extern "C" {
 #endif /* __cplusplus */
 
-  /* opaque structure */
+  /** This is an opaque structure. */
   typedef struct _CdIo CdIo; 
 
-  /* The below enumerations may be used to tag a specific driver
-     that is opened or is desired to be opened. Note that this is
-     different than what is available on a given host. 
-
-     Order is a little significant since the order is used in scans.
-     We have to start with UNKNOWN and devices should come before
-     disk-image readers. By putting something towards the top (a lower
-     enumeration number), in an iterative scan we prefer that to something
-     with a higher enumeration number.
-
-     NOTE: IF YOU MODIFY ENUM MAKE SURE INITIALIZATION IN CDIO.C AGREES.
-     
-  */
+  /** The below enumerations may be used to tag a specific driver
+   * that is opened or is desired to be opened. Note that this is
+   * different than what is available on a given host.
+   *
+   * Order is a little significant since the order is used in scans.
+   * We have to start with UNKNOWN and devices should come before
+   * disk-image readers. By putting something towards the top (a lower
+   * enumeration number), in an iterative scan we prefer that to
+   * something with a higher enumeration number.
+   *
+   * NOTE: IF YOU MODIFY ENUM MAKE SURE INITIALIZATION IN CDIO.C AGREES.
+   *     
+   */
   typedef enum  {
     DRIVER_UNKNOWN, 
-    DRIVER_BSDI, 
-    DRIVER_FREEBSD, 
-    DRIVER_LINUX,
-    DRIVER_SOLARIS, 
-    DRIVER_OSX, 
-    DRIVER_WIN32,
-    DRIVER_BINCUE, /* Prefer bincue over nrg when both exist */
-    DRIVER_NRG,    
-    DRIVER_DEVICE  /* Is really a set of the above; should come last */
+    DRIVER_BSDI,    /**< BSDI driver */
+    DRIVER_FREEBSD, /**< FreeBSD driver */
+    DRIVER_LINUX,   /**< GNU/Linux Driver */
+    DRIVER_SOLARIS, /**< Sun Solaris Driver */
+    DRIVER_OSX,     /**< Apple OSX Driver */
+    DRIVER_WIN32,   /**< Microsoft Windows Driver */
+    DRIVER_BINCUE,  /**< BIN/CUE format CD image. This is listed before NRG, 
+		         to make the code prefer BINCUE over NRG when both 
+			 exist. */
+    DRIVER_NRG,     /**< Nero NRG format CD image. */
+    DRIVER_DEVICE   /**< Is really a set of the above; should come last */
   } driver_id_t;
 
-  /* Make sure what's listed below is the last one above. Since we have
-     a bogus (but useful) 0th entry above we don't have to add one below.
-   */
+/** Make sure what's listed for CDIO_MIN_DRIVER is the last
+    enumeration in driver_id_t. Since we have a bogus (but useful) 0th
+    entry above we don't have to add one below.
+*/
 #define CDIO_MIN_DRIVER        DRIVER_BSDI
 #define CDIO_MIN_DEVICE_DRIVER CDIO_MIN_DRIVER
 #define CDIO_MAX_DRIVER        DRIVER_NRG
 #define CDIO_MAX_DEVICE_DRIVER DRIVER_WIN32
 
   typedef enum  {
-    TRACK_FORMAT_AUDIO,   /* Audio track, e.g. CD-DA */
-    TRACK_FORMAT_CDI,     /* CD-i. How this is different from DATA below? */
-    TRACK_FORMAT_XA,      /* Mode2 of some sort */
-    TRACK_FORMAT_DATA,    /* Mode1 of some sort */
-    TRACK_FORMAT_PSX,     /* Playstation CD. Like audio but only 2336 bytes
-			     of user data.
+    TRACK_FORMAT_AUDIO,   /**< Audio track, e.g. CD-DA */
+    TRACK_FORMAT_CDI,     /**< CD-i. How this is different from DATA below? */
+    TRACK_FORMAT_XA,      /**< Mode2 of some sort */
+    TRACK_FORMAT_DATA,    /**< Mode1 of some sort */
+    TRACK_FORMAT_PSX,     /**< Playstation CD. Like audio but only 2336 bytes
+			   *   of user data.
 			   */
-    TRACK_FORMAT_ERROR    /* Dunno what is or some other error. */
+    TRACK_FORMAT_ERROR    /**< Dunno what is, or some other error. */
   } track_format_t;
 
-  /* Printable tags for above enumeration.  */
+  /*! Printable tags for track_format_t enumeration.  */
   extern const char *track_format2str[6];
   
   /*!
@@ -144,7 +148,7 @@ extern "C" {
   char ** cdio_get_devices_with_cap (char* search_devices[],
 				     cdio_fs_anal_t capabilities, bool any);
 
-  /*!Return an array of device names. If you want a specific
+  /*! Return an array of device names. If you want a specific
     devices, dor a driver give that device, if you want hardware
     devices, give DRIVER_DEVICE and if you want all possible devices,
     image drivers and hardware drivers give DRIVER_UNKNOWN.
@@ -190,7 +194,7 @@ extern "C" {
   track_t cdio_get_num_tracks (const CdIo *obj);
   
   /*!  
-    Get format of track. 
+    Get the format (audio, mode2, mode1) of track. 
   */
   track_format_t cdio_get_track_format(const CdIo *obj, track_t track_num);
   
@@ -255,39 +259,39 @@ extern "C" {
   ssize_t cdio_read(const CdIo *obj, void *buf, size_t size);
     
   /*!
-   Reads a audio sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
- */
+    Reads a audio sector from cd device into data starting
+    from lsn. Returns 0 if no error. 
+  */
   int cdio_read_audio_sector (const CdIo *obj, void *buf, lsn_t lsn);
 
   /*!
-   Reads a audio sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
- */
+    Reads a audio sector from cd device into data starting
+    from lsn. Returns 0 if no error. 
+  */
   int cdio_read_audio_sectors (const CdIo *obj, void *buf, lsn_t lsn,
 			       unsigned int nblocks);
 
   /*!
    Reads a single mode1 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
- */
+  */
   int cdio_read_mode1_sector (const CdIo *obj, void *buf, lsn_t lsn, 
 			      bool is_form2);
-
+  
   /*!
-   Reads nblocks of mode1 sectors from cd device into data starting
-   from lsn. Returns 0 if no error. 
- */
+    Reads nblocks of mode1 sectors from cd device into data starting
+    from lsn. Returns 0 if no error. 
+  */
   int cdio_read_mode1_sectors (const CdIo *obj, void *buf, lsn_t lsn, 
 			       bool is_form2, unsigned int num_sectors);
-
+  
   /*!
-   Reads a single mode2 sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
- */
+    Reads a single mode2 sector from cd device into data starting
+    from lsn. Returns 0 if no error. 
+  */
   int cdio_read_mode2_sector (const CdIo *obj, void *buf, lsn_t lsn, 
 			      bool is_form2);
-
+  
   /*!
     Reads nblocks of mode2 sectors from cd device into data starting
     from lsn.
@@ -306,12 +310,12 @@ extern "C" {
     Return the size of the CD in logical block address (LBA) units.
   */
   uint32_t cdio_stat_size (const CdIo *obj);
-
+  
   /*!
     Initialize CD Reading and control routines. Should be called first.
-   */
+  */
   bool cdio_init(void);
-
+  
   /* True if xxx driver is available. where xxx=linux, solaris, nrg, ...
    */
   bool cdio_have_bsdi    (void);
@@ -326,13 +330,13 @@ extern "C" {
   /* Like above but uses the enumeration instead. */
   bool cdio_have_driver (driver_id_t driver_id);
   
-  /* Return a string decribing driver_id. */
+  /*! Return a string decribing driver_id. */
   const char *cdio_driver_describe (driver_id_t driver_id);
   
   /*! Sets up to read from place specified by source_name and
      driver_id This should be called before using any other routine,
      except cdio_init. This will call cdio_init, if that hasn't been
-     done previously.  to call one of the specific routines below. 
+     done previously.  to call one of the specific routines below.
 
      NULL is returned on error.
   */
