@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.11 2003/05/25 10:34:16 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.12 2003/05/25 10:35:13 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -18,7 +18,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* This file contains Linux-specific code and implements low-level 
+/* This file contains FreeBSD-specific code and implements low-level 
    control of the CD drive.
 */
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.11 2003/05/25 10:34:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.12 2003/05/25 10:35:13 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
