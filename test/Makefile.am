@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.24 2004/05/09 23:06:44 rocky Exp $
+#   $Id: Makefile.am,v 1.25 2004/07/09 20:47:08 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,7 +23,7 @@
 #
 # There's a problem with doing make distcheck for testdefault. 
 # A reminder of why I hate automake.
-hack = check_sizeof testassert testischar testiso9660 testtoc
+hack = check_sizeof testassert testischar testiso9660 testtoc testbincue
 noinst_PROGRAMS = $(hack) testdefault 
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
@@ -34,6 +34,7 @@ testdefault_LDADD   = $(LIBCDIO_LIBS)
 testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 testtoc_LDADD       = $(LIBCDIO_LIBS)
+testbincue_LDADD    = $(LIBCDIO_LIBS)
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
                 check_iso.sh  check_opts.sh 
@@ -52,6 +53,7 @@ check_DATA = vcd_demo.right \
 	     data1.toc data2.toc data5.toc data6.toc data7.toc \
 	     bad-mode1.toc bad-msf-1.toc bad-msf-2.toc \
 	     bad-cat1.toc bad-cat2.toc bad-cat3.toc \
+	     bad-cat1.cue bad-cat2.cue bad-cat3.cue \
 	     copying.iso copying.right
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
