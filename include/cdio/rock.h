@@ -1,5 +1,5 @@
 /*
-    $Id: rock.h,v 1.3 2005/02/20 10:21:01 rocky Exp $
+    $Id: rock.h,v 1.4 2005/02/20 16:21:06 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -62,6 +62,27 @@ extern enum cdio_rock_enums {
   ISO_ROCK_ISFIFO = 010000    /**< pipe or FIFO */
 } cdio_rock_enums;
 
+#define ISO_ROCK_IRUSR    000400  /** read permission (owner) */
+#define ISO_ROCK_IWUSR    000200  /** write permission (owner) */
+#define ISO_ROCK_IXUSR    000100  /** execute permission (owner) */
+#define ISO_ROCK_IRGRP    000040  /** read permission (group) */
+#define ISO_ROCK_IWGRP    000020  /** write permission (group) */
+#define ISO_ROCK_IXGRP    000010  /** execute permission (group) */
+#define ISO_ROCK_IROTH    000004  /** read permission (other) */
+#define ISO_ROCK_IWOTH    000002  /** write permission (other) */
+#define ISO_ROCK_IXOTH    000001  /** execute permission (other) */
+
+#define ISO_ROCK_ISUID    004000  /** set user ID on execution */
+#define ISO_ROCK_ISGID    002000  /** set group ID on execution */
+#define ISO_ROCK_ISVTX    001000  /** save swapped text even after use */
+
+#define ISO_ROCK_ISSOCK  0140000  /** socket */
+#define ISO_ROCK_ISLNK   0120000  /** symbolic link */
+#define ISO_ROCK_ISREG   0100000  /** regular */
+#define ISO_ROCK_ISBLK    060000  /** block special */
+#define ISO_ROCK_ISCHR    020000  /** character special */
+#define ISO_ROCK_ISDIR    040000  /** directory */
+#define ISO_ROCK_ISFIFO   010000  /** pipe or FIFO */
 
 /** Enforced file locking (shared w/set group ID) */
 #define ISO_ROCK_ENFMT ISO_ROCK_ISGID

@@ -1,5 +1,5 @@
 /*
-  $Id: rock.c,v 1.5 2005/02/20 10:21:01 rocky Exp $
+  $Id: rock.c,v 1.6 2005/02/20 16:21:06 rocky Exp $
  
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -31,6 +31,10 @@
 
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
+#endif
+
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
 #endif
 
 #include <cdio/iso9660.h>
@@ -452,17 +456,17 @@ iso9660_get_rock_attr_str(posix_mode_t st_mode)
 {
   char *result = _getbuf();
 
-  if (st_mode & ISO_ROCK_ISBLK) 
+  if (S_ISBLK(st_mode))
     result[ 0] = 'b';
-  else if (st_mode & ISO_ROCK_ISDIR) 
+  else if (S_ISDIR(st_mode)) 
     result[ 0] = 'd';
-  else if (st_mode & ISO_ROCK_ISCHR) 
+  else if (S_ISCHR(st_mode))
     result[ 0] = 'c';
-  else if (st_mode & ISO_ROCK_ISLNK) 
+  else if (S_ISLNK(st_mode))
     result[ 0] = 'l';
-  else if (st_mode & ISO_ROCK_ISFIFO) 
+  else if (S_ISFIFO(st_mode))
     result[ 0] = 'p';
-  else if (st_mode & ISO_ROCK_ISSOCK) 
+  else if (S_ISSOCK(st_mode)) 
     result[ 0] = 's';
   /* May eventually fill in others.. */
   else 

@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.25 2005/02/20 10:21:01 rocky Exp $
+    $Id: iso-info.c,v 1.26 2005/02/20 16:21:06 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -203,7 +203,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
       char _fullname[4096] = { 0, };
       char translated_name[MAX_ISONAME+1];
 
-      if (yep != p_statbuf->b_rock) {
+      if (yep != p_statbuf->b_rock || 1 == opts.no_rock_ridge) {
 	iso9660_name_translate_ext(iso_name, translated_name, i_joliet_level);
 	snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
 		  translated_name);

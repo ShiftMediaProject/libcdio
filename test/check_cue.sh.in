@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.25 2005/01/29 14:50:34 rocky Exp $
+#$Id: check_cue.sh.in,v 1.26 2005/02/20 16:21:06 rocky Exp $
 # Tests to see that BIN/CUE and cdrdao TOC file iamge reading is correct
 # (via cd-info).
 
@@ -43,7 +43,13 @@ if test -f  ${srcdir}/${fname}.bin ; then
   opts="-q --no-device-info --no-disc-mode --cue-file ${srcdir}/${fname}.cue --iso9660"
   test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
-  check_result $RC "cd-info CUE test $testnum" "${CD_INFO} $opts"
+  check_result $RC "cd-info Rock-Ridge CUE test $testnum" "${CD_INFO} $opts"
+
+  opts="-q --no-device-info --no-disc-mode --no-rock-ridge --cue-file ${srcdir}/${fname}.cue --iso9660"
+  test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}-no-rr.right
+  RC=$?
+  check_result $RC "cd-info no Rock-Ridge CUE test $testnum" "${CD_INFO} $opts"
+
 else 
   echo "Don't see CUE file ${srcdir}/${fname}.bin. Test $testnum skipped."
 fi

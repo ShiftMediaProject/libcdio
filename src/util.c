@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.39 2005/02/20 10:34:45 rocky Exp $
+  $Id: util.c,v 1.40 2005/02/20 16:21:06 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -460,10 +460,11 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
   char date_str[30];
 
   if (yep == p_statbuf->b_rock && b_rock) {
-    report (stdout, "  %s %d %d [LSN %6lu] %9u",
-	     iso9660_get_rock_attr_str (p_statbuf->st_mode),
-	     p_statbuf->st_uid,
-	     p_statbuf->st_gid,
+    report (stdout, "  %s %d %d %d [LSN %6lu] %9u",
+	    iso9660_get_rock_attr_str (p_statbuf->st_mode),
+	    p_statbuf->st_nlinks,
+	    p_statbuf->st_uid,
+	    p_statbuf->st_gid,
 	    (long unsigned int) p_statbuf->lsn,
 	    (unsigned int) p_statbuf->size);
 
