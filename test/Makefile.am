@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.7 2003/09/14 04:59:40 rocky Exp $
+#   $Id: Makefile.am,v 1.8 2003/09/14 07:49:12 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -44,7 +44,7 @@ check_DATA = vcd_demo.right \
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in
 
-TESTS_ENVIRONMENT=$(SHELL)
-TESTS = testischar testiso9660 check_sizeof $(check_SCRIPTS) 
+TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
+XFAIL_TESTS = testassert${EXEEXT}
 
 MOSTLYCLEANFILES = core.* *.dump

@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.39 2003/09/13 06:25:36 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.40 2003/09/14 07:49:12 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
@@ -302,6 +302,13 @@ AC_CONFIG_FILES([ \
        test/check_common_fn \
        test/Makefile \
        ])
+
+AC_CONFIG_COMMANDS([default],[[
+# Make sure scripts are executable
+chmod +x test/check_nrg.sh
+chmod +x test/check_cue.sh
+]],[[]])
+
 AC_OUTPUT
 
 echo "Using CD-ROM drivers: $cd_drivers"
