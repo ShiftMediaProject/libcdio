@@ -1,7 +1,7 @@
 /*
-    $Id: _cdio_aix.c,v 1.7 2005/01/24 00:06:31 rocky Exp $
+    $Id: _cdio_aix.c,v 1.8 2005/01/24 17:36:56 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@
 
 #ifdef HAVE_AIX_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.7 2005/01/24 00:06:31 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.8 2005/01/24 17:36:56 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -412,7 +412,7 @@ _read_mode2_sectors_aix (void *p_user_data, void *data, lsn_t lsn,
 /*!
    Return the size of the CD in logical block address (LBA) units.
  */
-static uint32_t 
+static lsn_t
 get_disc_last_lsn_aix (void *p_user_data)
 {
   uint32_t i_size=0;
@@ -658,7 +658,7 @@ eject_media_aix (void *p_user_data) {
     cdio_warn ("DKEJECT failed: %s", strerror(errno));
     ret = DRIVER_OP_ERROR;
   }
-  close(env->gen.fd);
+  close(p_env->gen.fd);
   p_env->gen.fd = -1;
   return ret;
 }
@@ -989,9 +989,9 @@ cdio_open_am_aix (const char *psz_orig_source, const char *access_mode)
     }
   }
 
+  ret = cdio_new ( (void *) _data, &_funcs );
   ret->driver_id = DRIVER_AIX;
 
-  ret = cdio_new ( (void *) _data, &_funcs );
   if (ret == NULL) return NULL;
 
   if (init_aix(_data))
