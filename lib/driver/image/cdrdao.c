@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.13 2005/02/06 11:13:37 rocky Exp $
+    $Id: cdrdao.c,v 1.14 2005/02/11 01:34:12 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.13 2005/02/06 11:13:37 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.14 2005/02/11 01:34:12 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1290,6 +1290,7 @@ cdio_open_cdrdao (const char *psz_cue_name)
   _funcs.read_mode1_sectors    = _read_mode1_sectors_cdrdao;
   _funcs.read_mode2_sector     = _read_mode2_sector_cdrdao;
   _funcs.read_mode2_sectors    = _read_mode2_sectors_cdrdao;
+  _funcs.run_mmc_cmd           = NULL;
   _funcs.set_arg               = _set_arg_image;
   _funcs.set_speed             = cdio_generic_unimplemented_set_speed;
   _funcs.set_blocksize         = cdio_generic_unimplemented_set_blocksize;

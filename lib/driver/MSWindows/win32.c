@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.17 2005/02/07 03:36:02 rocky Exp $
+    $Id: win32.c,v 1.18 2005/02/11 01:34:12 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.17 2005/02/07 03:36:02 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.18 2005/02/11 01:34:12 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -186,9 +186,10 @@ run_mmc_cmd_win32( void *p_user_data, unsigned int i_timeout_ms,
   Initialize CD device.
  */
 static bool
-_cdio_init_win32 (void *user_data)
+_init_win32 (void *user_data)
 {
   _img_private_t *p_env = user_data;
+  bool b_ret;
   if (p_env->gen.init) {
     cdio_error ("init called more than once");
     return false;
@@ -208,10 +209,18 @@ _cdio_init_win32 (void *user_data)
   p_env->b_ioctl_init    = false;
 
   if ( _AM_IOCTL == p_env->access_mode ) {
-    return init_win32ioctl(p_env);
+    b_ret = init_win32ioctl(p_env);
   } else {
-    return init_aspi(p_env);
+    b_ret = init_aspi(p_env);
   }
+
+  /* It looks like get_media_changed_mmc will always
+     return 1 (media changed) on the first call. So 
+     we call it here to clear that flag. We may have
+     to rethink this if there's a problem doing this
+     extra work down the line. */
+  get_media_changed_mmc(p_user_data);
+  return b_ret;
 }
 
 /*!
@@ -795,7 +804,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   ret = cdio_new ((void *)_data, &_funcs);
   if (ret == NULL) return NULL;
 
-  if (_cdio_init_win32(_data))
+  if (_init_win32(_data))
     return ret;
   else {
     _free_win32 (_data);

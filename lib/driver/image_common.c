@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.c,v 1.9 2005/02/06 11:32:22 rocky Exp $
+    $Id: image_common.c,v 1.10 2005/02/11 01:34:12 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -151,12 +151,13 @@ _get_first_track_num_image(void *p_user_data)
   @param p_user_data the CD object to be acted upon.
   @return 1 if media has changed since last call, 0 if not. Error
   return codes are the same as driver_return_code_t
-  We always return DRIVER_OP_UNSUPPORTED.
+  There is no such thing as changing a media image so we will
+  always return 0 - no change.
  */
 int
 get_media_changed_image(const void *p_user_data)
 {
-  return DRIVER_OP_UNSUPPORTED;
+  return 0;
 }
 
 /*!

@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.9 2005/02/10 11:23:08 rocky Exp $
+    $Id: mmc.c,v 1.10 2005/02/11 01:34:12 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -90,6 +90,11 @@ get_drive_cap_mmc (const void *p_user_data,
                      p_read_cap, p_write_cap, p_misc_cap );
 }
 
+/*! Find out if media has changed since the last call.  @param
+  p_user_data the environment of the CD object to be acted upon.
+  @return 1 if media has changed since last call, 0 if not. Error
+  return codes are the same as driver_return_code_t
+   */
 int
 get_media_changed_mmc (const void *p_user_data)
 {
@@ -259,11 +264,12 @@ int
 mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
                 int page)
 {
-  if ( cdio_have_atapi(p_cdio) ) {
+  bool_3way_t e_status = cdio_have_atapi(p_cdio);
+  if ( yep == e_status ) {
     if ( DRIVER_OP_SUCCESS == mmc_mode_sense_6(p_cdio, p_buf, i_size, page) )
       return DRIVER_OP_SUCCESS;
     return mmc_mode_sense_10(p_cdio, p_buf, i_size, page);
-  }
+  } 
   if ( DRIVER_OP_SUCCESS == mmc_mode_sense_10(p_cdio, p_buf, i_size, page) )
     return DRIVER_OP_SUCCESS;
   return mmc_mode_sense_6(p_cdio, p_buf, i_size, page);
@@ -668,7 +674,7 @@ int mmc_get_media_changed(const CdIo_t *p_cdio)
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_EVENT_STATUS);
   cdb.field[1] = 1;      /* We poll for info */
-  cdb.field[4] = 1 << 4; /* Media */
+  cdb.field[4] = 1 << 4; /* We want Media events */
 
   /* Setup to read header, to get length of data */
   CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(buf));
@@ -951,6 +957,8 @@ mmc_have_interface( CdIo_t *p_cdio, mmc_feature_interface_t e_interface )
   uint8_t buf[500] = { 0, };     /* Place to hold returned data */
   scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Buffer */
 
+  if (!p_cdio || !p_cdio->op.run_mmc_cmd) return nope;
+  
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_CONFIGURATION);
   CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
   cdb.field[1] = CDIO_MMC_GET_CONF_NAMED_FEATURE;
