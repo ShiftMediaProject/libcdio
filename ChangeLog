@@ -1,3 +1,48 @@
+2003-05-16 23:53  rocky
+
+	* libcdio.pc.in: We don't really use glib-2.0 for now. BSDI test
+	box doesn't have.
+
+2003-05-16 17:11  rocky
+
+	* test/check_nrg.sh.in: BSDI doesn't handle skipped tests (exit 77)
+	properly. I'd rather switch than fight.
+
+2003-05-16 03:36  rocky
+
+	* lib/cdio.c: Wasn't nulling correctly. Eject test faulty too.
+
+2003-05-16 03:18  rocky
+
+	* include/cdio/cdio.h, lib/_cdio_bsdi.c, lib/_cdio_freebsd.c,
+	lib/_cdio_linux.c, lib/_cdio_sunos.c, lib/cdio.c, parse/Makefile:
+	Bug in eject: need to close internal file descriptor before
+	ejecting.  eject interface now nulls cdio pointer after a sucessful
+	eject.
+
+2003-05-10 23:29  rocky
+
+	* ChangeLog, parse/.cvsignore, parse/Makefile, parse/cue.L,
+	parse/cue.y, parse/test/t1.cue, parse/test/t2.cue,
+	parse/test/t3.cue: Towards CUE parser via flex/bison.
+
+2003-04-29 04:17  rocky
+
+	* misc/libcdio.ebuild: Gentoo ebuild file courtesy of Kris Verbeeck
+	<kris.verbeeck@chello.be
+
+2003-04-29 04:16  rocky
+
+	* THANKS: More appreciation.
+
+2003-04-27 22:08  rocky
+
+	* test/.cvsignore: Do I trust Savannah?
+
+2003-04-27 22:07  rocky
+
+	* NEWS: [no log message]
+
 2003-04-27 22:02  rocky
 
 	* test/: Makefile.am, check_nrg.sh, check_nrg.sh.in: check_nrg.sh
