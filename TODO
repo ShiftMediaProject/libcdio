@@ -1,7 +1,21 @@
-Write a real cue parser and toc parser using flex and bison.  A pcct
-grammar is given in cdrdao's trackdb TocParser.g and CueParser.g
+Write a real cue parser and TOC parser using flex and bison (partly done). 
+A pcct grammar is given in cdrdao's trackdb TocParser.g and CueParser.g
 
-Better NRG support. Fill in FreeBSD support. Other OS's? More disk
-image types in regression testing, like CD-I. 
+Once this is done CUE/TOC files can be checked and better automatic
+disk-image detection can be done.
 
-$Id: TODO,v 1.1 2003/04/21 23:30:08 rocky Exp $
+Stat CUE/BIN files in is_{bin,cue}file? 
+
+Fill in FreeBSD support. Other OS's (Win32 and OS/X)? 
+
+Better NRG support. TOC.
+
+More disk image types in regression testing, like CD-I.
+
+convert to use glib, removing ds.h and common routines from vcdimager.
+
+API overhaul (HVR). 
+
+Write documentation.
+
+$Id: TODO,v 1.2 2003/05/18 02:19:55 rocky Exp $
