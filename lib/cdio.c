@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.50 2004/05/08 14:06:11 rocky Exp $
+    $Id: cdio.c,v 1.51 2004/05/09 22:12:49 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.50 2004/05/08 14:06:11 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.51 2004/05/09 22:12:49 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -731,23 +731,32 @@ cdio_read (const CdIo *cdio, void *buf, size_t size)
   return -1;
 }
 
+/*!
+  Reads an audio sector from cd device into data starting
+  from lsn. Returns 0 if no error. 
+*/
 int
 cdio_read_audio_sector (const CdIo *cdio, void *buf, lsn_t lsn) 
 {
-  cdio_assert (cdio != NULL);
-  cdio_assert (buf != NULL);
+
+  if (NULL == cdio || NULL == buf || CDIO_INVALID_LSN == lsn )
+    return 0;
 
   if  (cdio->op.read_audio_sectors != NULL)
     return cdio->op.read_audio_sectors (cdio->env, buf, lsn, 1);
   return -1;
 }
 
+/*!
+  Reads audio sectors from cd device into data starting
+  from lsn. Returns 0 if no error. 
+*/
 int
 cdio_read_audio_sectors (const CdIo *cdio, void *buf, lsn_t lsn,
                          unsigned int nblocks) 
 {
-  cdio_assert (cdio != NULL);
-  cdio_assert (buf != NULL);
+  if ( NULL == cdio || NULL == buf || CDIO_INVALID_LSN == lsn )
+    return 0;
 
   if  (cdio->op.read_audio_sectors != NULL)
     return cdio->op.read_audio_sectors (cdio->env, buf, lsn, nblocks);
@@ -768,8 +777,8 @@ cdio_read_mode1_sector (const CdIo *cdio, void *data, lsn_t lsn, bool b_form2)
   uint32_t size = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE ;
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   
-  cdio_assert (cdio != NULL);
-  cdio_assert (data != NULL);
+  if (NULL == cdio || NULL == data || CDIO_INVALID_LSN == lsn )
+    return 0;
 
   if (cdio->op.read_mode1_sector && cdio->op.read_mode1_sector) {
     return cdio->op.read_mode1_sector(cdio->env, data, lsn, b_form2);
@@ -790,8 +799,10 @@ int
 cdio_read_mode1_sectors (const CdIo *cdio, void *buf, lsn_t lsn, 
                          bool b_form2,  unsigned int num_sectors)
 {
-  cdio_assert (cdio != NULL);
-  cdio_assert (buf != NULL);
+
+  if (NULL == cdio || NULL == buf || CDIO_INVALID_LSN == lsn )
+    return 0;
+
   cdio_assert (cdio->op.read_mode1_sectors != NULL);
   
   return cdio->op.read_mode1_sectors (cdio->env, buf, lsn, b_form2, 
@@ -806,8 +817,9 @@ int
 cdio_read_mode2_sector (const CdIo *cdio, void *buf, lsn_t lsn, 
                         bool b_form2)
 {
-  cdio_assert (cdio != NULL);
-  cdio_assert (buf != NULL);
+  if (NULL == cdio || NULL == buf || CDIO_INVALID_LSN == lsn )
+    return 0;
+
   cdio_assert (cdio->op.read_mode2_sector != NULL 
 	      || cdio->op.read_mode2_sectors != NULL);
 
@@ -824,8 +836,10 @@ int
 cdio_read_mode2_sectors (const CdIo *cdio, void *buf, lsn_t lsn, 
                          bool b_form2, unsigned int num_sectors)
 {
-  cdio_assert (cdio != NULL);
-  cdio_assert (buf != NULL);
+
+  if (NULL == cdio || NULL == buf || CDIO_INVALID_LSN == lsn )
+    return 0;
+
   cdio_assert (cdio->op.read_mode2_sectors != NULL);
   
   return cdio->op.read_mode2_sectors (cdio->env, buf, lsn,
