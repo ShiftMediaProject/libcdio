@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.23 2004/07/16 01:25:57 rocky Exp $
+    $Id: aspi32.c,v 1.24 2004/07/16 02:09:10 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.23 2004/07/16 01:25:57 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.24 2004/07/16 02:09:10 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -386,9 +386,9 @@ init_aspi (_img_private_t *env)
    Issue a SCSI passthrough command.
  */
 static bool 
-scsi_mmc_command( const _img_private_t *env, 
-		  void * scsi_cdb,  unsigned int i_scsi_cdb, 
-		  void * outdata, unsigned int i_outdata )
+scsi_passthrough_aspi( const _img_private_t *env, 
+		       void * scsi_cdb,  unsigned int i_scsi_cdb, 
+		       void * outdata, unsigned int i_outdata )
 {
   HANDLE hEvent;
   struct SRB_ExecSCSICmd ssc;
@@ -497,7 +497,7 @@ read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
     i_outdata = CDIO_CD_FRAMESIZE_RAW;
   }
 
-  if (scsi_mmc_command(env, cmd, sizeof(cmd), data, i_outdata*nblocks)) 
+  if (scsi_passthrough_aspi(env, cmd, sizeof(cmd), data, i_outdata*nblocks)) 
     return 0;
   else 
     return 1;
@@ -728,7 +728,8 @@ get_cdtext_aspi (_img_private_t *env)
   scsi_cdb[2] = 0x05;   /* CD text  */
   CDIO_MMC_SET_READ_LENGTH(scsi_cdb, sizeof(wdata));
 
-  if (!scsi_mmc_command(env, scsi_cdb, sizeof(scsi_cdb), wdata, sizeof(wdata)))
+  if (!scsi_passthrough_aspi(env, scsi_cdb, sizeof(scsi_cdb), 
+			     wdata, sizeof(wdata)))
       return NULL;
 
   {
@@ -812,7 +813,8 @@ get_drive_cap_aspi (const _img_private_t *env)
   scsi_cdb[7]  = 0x01;
   scsi_cdb[8]  = 0x00; 
 
-  if (!scsi_mmc_command(env, scsi_cdb, sizeof(scsi_cdb), buf, sizeof(buf))) {
+  if (!scsi_passthrough_aspi(env, scsi_cdb, sizeof(scsi_cdb), 
+			     buf, sizeof(buf))) {
     return i_drivetype;
   } else {
     BYTE *p;
@@ -872,7 +874,8 @@ get_mcn_aspi (const _img_private_t *env)
   scsi_cdb[8] = 28; 
   scsi_cdb[9] = 0;    /* Not used */
   
-  if (!scsi_mmc_command(env, scsi_cdb, sizeof(scsi_cdb), buf, sizeof(buf)))
+  if (!scsi_passthrough_aspi(env, scsi_cdb, sizeof(scsi_cdb), 
+			     buf, sizeof(buf)))
       return NULL;
 
   return strdup(&buf[9]);
