@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_private.h,v 1.1 2003/08/17 05:31:19 rocky Exp $
+    $Id: iso9660_private.h,v 1.2 2003/08/29 02:38:07 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -22,7 +22,7 @@
 #ifndef __CDIO_ISO9660_PRIVATE_H__
 #define __CDIO_ISO9660_PRIVATE_H__
 
-#include <libvcd/types.h>
+#include <cdio/types.h>
 
 #define ISO_VD_END              255
 
