@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.33 2004/07/31 09:26:31 rocky Exp $
+    $Id: freebsd.c,v 1.34 2004/08/01 11:28:00 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.33 2004/07/31 09:26:31 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.34 2004/08/01 11:28:00 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -196,8 +196,12 @@ read_toc_freebsd (_img_private_t *p_env)
     return false;
   }
 
+  p_env->gen.i_first_track = p_env->tochdr.starting_track;
+  p_env->gen.i_tracks      = p_env->tochdr.ending_track - 
+    p_env->gen.i_first_track + 1;
+
   j=0;
-  for ( i = FIRST_TRACK_NUM; i <= p_env->tochdr.ending_track; i++, j++) {
+  for (i=p_env->gen.i_first_track; i<=p_env->gen.i_tracks; i++, j++) {
     p_env->tocent[j].track = i;
     p_env->tocent[j].address_format = CD_LBA_FORMAT;
 
@@ -259,20 +263,6 @@ _get_arg_freebsd (void *user_data, const char key[])
 }
 
 /*!
-  Return the number of of the first track. 
-  CDIO_INVALID_TRACK is returned on error.
-*/
-static track_t
-_get_first_track_num_freebsd(void *user_data) 
-{
-  _img_private_t *p_env = user_data;
-  
-  if (!p_env->gen.toc_init) read_toc_freebsd (p_env) ;
-
-  return p_env->gen.toc_init ? FIRST_TRACK_NUM : CDIO_INVALID_TRACK;
-}
-
-/*!
   Return the media catalog number MCN.
 
   Note: string is malloc'd so caller should free() then returned
@@ -301,6 +291,8 @@ get_drive_cap_freebsd (const void *p_user_data,
 
   const _img_private_t *p_env = p_user_data;
 
+  if (!p_env->gen.toc_init) read_toc_freebsd (p_env) ;
+
   if (p_env->access_mode == _AM_CAM) 
     get_drive_cap_freebsd_cam (p_env, p_read_cap, p_write_cap, p_misc_cap);
   
@@ -310,7 +302,7 @@ get_drive_cap_freebsd (const void *p_user_data,
   Run a SCSI MMC command. 
  
   p_user_data   internal CD structure.
-  i_timeout     time in milliseconds we will wait for the command
+  i_timeout_ms  time in milliseconds we will wait for the command
                 to complete. If this value is -1, use the default 
 		time-out value.
   i_cdb	        Size of p_cdb
@@ -322,7 +314,7 @@ get_drive_cap_freebsd (const void *p_user_data,
   Return 0 if no error.
  */
 static int
-run_scsi_cmd_frebsd( const void *p_user_data, unsigned int i_timeout_ms,
+run_scsi_cmd_freebsd( const void *p_user_data, unsigned int i_timeout_ms,
 		     unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 		     scsi_mmc_direction_t e_direction, 
 		     unsigned int i_buf, /*in/out*/ void *p_buf ) 
@@ -330,26 +322,11 @@ run_scsi_cmd_frebsd( const void *p_user_data, unsigned int i_timeout_ms,
   const _img_private_t *p_env = p_user_data;
 
   if (p_env->access_mode == _AM_CAM) 
-    return run_scsi_cmd_frebsd_cam( p_user_data, i_timeout, i_cdb, p_cdb, 
-					 e_direction, i_buf, p_buf );
+    return run_scsi_cmd_freebsd_cam( p_user_data, i_timeout_ms, i_cdb, p_cdb, 
+				     e_direction, i_buf, p_buf );
   else 
     return 2;
 }  
-
-
-/*!
-  Return the number of tracks in the current medium.
-  CDIO_INVALID_TRACK is returned on error.
-*/
-static track_t
-_get_num_tracks_freebsd(void *user_data) 
-{
-  _img_private_t *p_env = user_data;
-  
-  if (!p_env->gen.toc_init) read_toc_freebsd (p_env) ;
-
-  return p_env->gen.toc_init ? TOTAL_TRACKS : CDIO_INVALID_TRACK;
-}
 
 /*!  
   Get format of track. 
@@ -578,9 +555,9 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .get_default_device = cdio_get_default_device_freebsd,
     .get_devices        = cdio_get_devices_freebsd,
     .get_drive_cap      = get_drive_cap_freebsd,
-    .get_first_track_num= _get_first_track_num_freebsd,
+    .get_first_track_num= get_first_track_num_generic,
     .get_mcn            = _get_mcn_freebsd,
-    .get_num_tracks     = _get_num_tracks_freebsd,
+    .get_num_tracks     = get_num_tracks_generic,
     .get_track_format   = _get_track_format_freebsd,
     .get_track_green    = _get_track_green_freebsd,
     .get_track_lba      = _get_track_lba_freebsd, 
@@ -590,7 +567,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .read_audio_sectors = _read_audio_sectors_freebsd,
     .read_mode2_sector  = _read_mode2_sector_freebsd,
     .read_mode2_sectors = _read_mode2_sectors_freebsd,
-    .run_scsi_mmc_cmd   = run_scsi_cmd_frebsd,
+    .run_scsi_mmc_cmd   = run_scsi_cmd_freebsd,
     .set_arg            = _set_arg_freebsd,
     .stat_size          = _stat_size_freebsd
   };

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.27 2004/07/31 09:26:31 rocky Exp $
+    $Id: freebsd_cam.c,v 1.28 2004/08/01 11:28:00 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.27 2004/07/31 09:26:31 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.28 2004/08/01 11:28:00 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -41,7 +41,7 @@ static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.27 2004/07/31 09:26:31 rock
   Run a SCSI MMC command. 
  
   p_user_data   internal CD structure.
-  i_timeout     time in milliseconds we will wait for the command
+  i_timeout_ms  time in milliseconds we will wait for the command
                 to complete. If this value is -1, use the default 
 		time-out value.
   i_cdb	        Size of p_cdb
@@ -53,7 +53,7 @@ static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.27 2004/07/31 09:26:31 rock
   Return 0 if no error.
  */
 int
-run_scsi_cmd_freebsd_cam( const void *p_user_data, int i_timeout,
+run_scsi_cmd_freebsd_cam( const void *p_user_data, unsigned int i_timeout_ms,
 			  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 			  scsi_mmc_direction_t e_direction, 
 			  unsigned int i_buf, /*in/out*/ void *p_buf )
@@ -67,7 +67,7 @@ run_scsi_cmd_freebsd_cam( const void *p_user_data, int i_timeout,
   ccb.ccb_h.path_id    = p_env->cam->path_id;
   ccb.ccb_h.target_id  = p_env->cam->target_id;
   ccb.ccb_h.target_lun = p_env->cam->target_lun;
-  ccb.ccb_h.timeout    = i_timeout;
+  ccb.ccb_h.timeout    = i_timeout_ms;
 
   cam_fill_csio (&(ccb.csio), 1, NULL, 
 		 CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, NULL, 0, 
