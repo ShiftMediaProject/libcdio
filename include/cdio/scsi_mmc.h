@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.25 2004/08/01 11:29:13 rocky Exp $
+    $Id: scsi_mmc.h,v 1.26 2004/08/06 11:55:16 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -104,6 +104,36 @@
 #define CDIO_MMC_TO_PROTECT_PAGE	0x1d
 #define CDIO_MMC_CAPABILITIES_PAGE	0x2a
 #define CDIO_MMC_ALL_PAGES		0x3f
+
+/*! Return type codes for GET_CONFIGURATION. */
+#define CDIO_MMC_GET_CONF_ALL_FEATURES     0  /**< all features without regard
+					           to currency. */
+#define CDIO_MMC_GET_CONF_CURRENT_FEATURES 1  /**< features which are currently
+					           in effect (e.g. based on
+					           medium inserted). */
+#define CDIO_MMC_GET_CONF_NAMED_FEATURE    2  /**< just the feature named in
+					           the GET_CONFIGURATION 
+					           cdb. */
+
+/*! FEATURE codes used in GET_CONFIGURATION. */
+
+#define CDIO_MMC_FEATURE_PROFILE_LIST     0x00
+#define CDIO_MMC_FEATURE_CORE             0x01
+#define CDIO_MMC_FEATURE_REMOVABLE_MEDIUM 0x02
+#define CDIO_MMC_FEATURE_WRITE_PROTECT    0x03
+#define CDIO_MMC_FEATURE_RANDOM_READABLE  0x10
+#define CDIO_MMC_FEATURE_MULTI_READ       0x1D
+#define CDIO_MMC_FEATURE_CD_READ          0x1E
+#define CDIO_MMC_FEATURE_DVD_READ         0x1F
+#define CDIO_MMC_FEATURE_RANDOM_WRITABLE  0x20
+#define CDIO_MMC_FEATURE_INCR_WRITE       0x21
+#define CDIO_MMC_FEATURE_SECTOR_ERASE     0x22
+#define CDIO_MMC_FEATURE_FORMATABLE       0x23
+#define CDIO_MMC_FEATURE_WRITE_ONCE       0x25
+#define CDIO_MMC_FEATURE_MRW              0x28
+#define CDIO_MMC_FEATURE_DVD_RPW          0x2A
+#define CDIO_MMC_FEATURE_CD_TAO           0x2D
+				
 
 /*! Size of fields returned by an INQUIRY command */
 #define CDIO_MMC_HW_VENDOR_LEN    8 /**< length of vendor field */
@@ -213,7 +243,7 @@ uint8_t scsi_mmc_get_cmd_len(uint8_t scsi_cmd);
 
   Returns 0 if command completed successfully.
  */
-int scsi_mmc_run_cmd( const CdIo *cdio, unsigned int i_timeout_ms,
+int scsi_mmc_run_cmd( const CdIo *p_cdio, unsigned int i_timeout_ms,
 		      const scsi_mmc_cdb_t *p_cdb,
 		      scsi_mmc_direction_t e_direction, unsigned int i_buf, 
 		      /*in/out*/ void *p_buf );
@@ -221,19 +251,19 @@ int scsi_mmc_run_cmd( const CdIo *cdio, unsigned int i_timeout_ms,
 /*!
  * Eject using SCSI MMC commands. Return 0 if successful.
  */
-int scsi_mmc_eject_media( const CdIo *cdio);
+int scsi_mmc_eject_media( const CdIo *p_cdio);
 
 /*! Packet driver to read mode2 sectors. 
    Can read only up to 25 blocks.
 */
-int scsi_mmc_read_sectors ( const CdIo *cdio, void *p_buf, lba_t lba, 
+int scsi_mmc_read_sectors ( const CdIo *p_cdio, void *p_buf, lba_t lba, 
 			    int sector_type, unsigned int nblocks);
 
 /*!
   Set the block size for subsequest read requests, via a SCSI MMC 
   MODE_SELECT 6 command.
  */
-int scsi_mmc_set_blocksize ( const CdIo *cdio, unsigned int bsize);
+int scsi_mmc_set_blocksize ( const CdIo *p_cdio, unsigned int bsize);
 
 /*!
   Return the the kind of drive capabilities of device.
