@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.49 2004/07/17 02:43:41 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.50 2004/07/17 09:35:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.49 2004/07/17 02:43:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.50 2004/07/17 09:35:00 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -406,14 +406,22 @@ _cdio_read_toc (_img_private_t *env)
   return true;
 }
 
-#define set_cdtext_field(FIELD)						\
-  if( i_track == 0 )							\
-    env->cdtext.field[FIELD] = strdup(buffer);				\
-  else									\
-    env->cdtext_track[i_track-1].field[FIELD]				\
-      = strdup(buffer);							\
-  i_track++;								\
-  idx = 0;
+static void
+set_cdtext_field_solaris(void *user_data, track_t i_track, 
+		       track_t i_first_track,
+		       cdtext_field_t e_field, const char *psz_value)
+{
+  char **pp_field;
+  _img_private_t *env = user_data;
+  
+  if( i_track == 0 )
+    pp_field = &(env->cdtext.field[e_field]);
+  
+  else
+    pp_field = &(env->cdtext_track[i_track-i_first_track].field[e_field]);
+
+  *pp_field = strdup(psz_value);
+}
 
 /*
   Read cdtext information for a CdIo object .
@@ -421,7 +429,7 @@ _cdio_read_toc (_img_private_t *env)
   return true on success, false on error or CD-TEXT information does
   not exist.
 */
-static const cdtext_t *
+static bool
 _init_cdtext_solaris (_img_private_t *env)
 {
 
@@ -453,65 +461,9 @@ _init_cdtext_solaris (_img_private_t *env)
     cdio_warn ("CDTEXT reading failed: %s\n", strerror(errno));  
     return false;
   } else {
-    
-    CDText_data_t *pdata;
-    int           i;
-    int           j;
-    char          buffer[256] = { 0, };
-    int           idx;
-    int           i_track;
-
-    idx = 0;
-  
-    pdata = (CDText_data_t *) (&wdata[4]);
-    for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ ) {
-      if( pdata->seq != i )
-	break;
-      
-      if( (pdata->type >= 0x80) 
-	  && (pdata->type <= 0x85) && (pdata->block == 0) ) {
-	i_track = pdata->i_track;
-	
-	for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++ ) {
-	  if( pdata->text[j] == 0x00 )
-	    {
-	      switch( pdata->type) {
-	      case CDIO_CDTEXT_TITLE: 
-		set_cdtext_field(CDTEXT_TITLE);
-		break;
-	      case CDIO_CDTEXT_PERFORMER:  
-		set_cdtext_field(CDTEXT_PERFORMER);
-		break;
-	      case CDIO_CDTEXT_SONGWRITER:
-		set_cdtext_field(CDTEXT_SONGWRITER);
-		break;
-	      case CDIO_CDTEXT_COMPOSER:
-		set_cdtext_field(CDTEXT_COMPOSER);
-		break;
-	      case CDIO_CDTEXT_ARRANGER:
-		set_cdtext_field(CDTEXT_ARRANGER);
-		break;
-	      case CDIO_CDTEXT_MESSAGE:
-		set_cdtext_field(CDTEXT_MESSAGE);
-		break;
-	      case CDIO_CDTEXT_DISCID: 
-		set_cdtext_field(CDTEXT_DISCID);
-		break;
-	      case CDIO_CDTEXT_GENRE: 
-		set_cdtext_field(CDTEXT_GENRE);
-		break;
-	      }
-	    }
-	  else 	    {
-	    buffer[idx++] = pdata->text[j];
-	  }
-	  buffer[idx] = 0x00;
-	}
-      }
-      pdata++;
-    }
+    return cdtext_data_init(env, FIRST_TRACK_NUM, wdata, 
+			    set_cdtext_field_solaris);
   }
-  return true;
 }
 
 /*! 
@@ -524,6 +476,8 @@ _init_cdtext_solaris (_img_private_t *env)
 static const cdtext_t *
 _get_cdtext_solaris (void *user_data, track_t i_track)
 {
+  _img_private_t *env = user_data;
+
   if ( NULL == env ||
        (0 != i_track 
        && i_track >= TOTAL_TRACKS+FIRST_TRACK_NUM ) )
@@ -713,7 +667,6 @@ _cdio_get_drive_cap_solaris (const void *user_data)
 static char *
 _cdio_get_mcn_solaris (const void *user_data)
 {
-#if 1
   const _img_private_t *env = user_data;
   struct uscsi_cmd my_cmd;
   char buf[192] = { 0, };
@@ -749,9 +702,6 @@ _cdio_get_mcn_solaris (const void *user_data)
     return strdup(&buf[9]);
   }
   return NULL;
-#else
-  return NULL;
-#endif
 }
 
 
