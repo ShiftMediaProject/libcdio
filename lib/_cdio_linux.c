@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.30 2004/03/06 04:49:26 rocky Exp $
+    $Id: _cdio_linux.c,v 1.31 2004/03/07 01:40:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.30 2004/03/06 04:49:26 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.31 2004/03/07 01:40:00 rocky Exp $";
 
 #include <string.h>
 
@@ -110,7 +110,7 @@ cdio_is_cdrom(char *drive, char *mnttype)
   }
   
   /* If it does exist, verify that it's an available CD-ROM */
-  cdfd = open(drive, (O_RDONLY|O_EXCL|O_NONBLOCK), 0);
+  cdfd = open(drive, (O_RDONLY|O_NONBLOCK), 0);
   if ( cdfd >= 0 ) {
     if ( ioctl(cdfd, CDROMREADTOCHDR, &tochdr) != -1 ) {
       is_cd = true;
