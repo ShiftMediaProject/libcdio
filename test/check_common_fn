@@ -1,4 +1,4 @@
-# $Id: check_common_fn,v 1.3 2003/05/30 10:58:05 rocky Exp $
+# $Id: check_common_fn,v 1.4 2003/06/07 20:41:21 rocky Exp $
 SKIP_TEST_EXITCODE=77
 
 have_cmp() {
@@ -45,7 +45,7 @@ test_cdinfo() {
     return 1
   fi
 
-  if ${CDINFO} ${opts} >${outfile} 2>&1 ; then 
+  if ${CDINFO} --no-header ${opts} >${outfile} 2>&1 ; then 
     if have_cmp; then
       if cmp ${outfile} ${rightfile} ; then
 	rm -f $outfile
