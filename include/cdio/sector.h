@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.2 2003/04/21 14:13:54 hvr Exp $
+    $Id: sector.h,v 1.3 2003/05/26 03:11:06 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -139,10 +139,10 @@ lba_t cdio_lsn_to_lba (lsn_t lsn);
 
 void  cdio_lsn_to_msf (lsn_t lsn, msf_t *msf);
 
-uint32_t
+lba_t
 cdio_msf_to_lba (const msf_t *msf);
 
-uint32_t
+lsn_t
 cdio_msf_to_lsn (const msf_t *msf);
 
 #ifdef __cplusplus
