@@ -1,6 +1,8 @@
 Makefile
+Makefile.in
 .deps
 .libs
+copying
 iso1
 iso2
 iso3
