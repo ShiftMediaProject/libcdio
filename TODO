@@ -19,8 +19,10 @@ and feature requests.
 
 * Handle Rock Ridge Extensions
 
-* Combine iso-read and iso-info into an iso-tar (for listing or
-  extracting files).
+* Combine iso-read and iso-info into an "iso-tar" for listing or
+  extracting files". Ideally something matching the relevant command
+  set of "tar" would be nice, as that is widely used and probably
+  fairly complete in thing that might be desired for listing/extracting.
 
 * Delete files in an iso9660 image (mephisto75 at web.de)
 
@@ -69,4 +71,4 @@ to undertake doing it. Patches are always welcome (and CVS write
 access is available for those who have demonstrated reasonable ability
 through contributions.)
 
-$Id: TODO,v 1.5 2004/10/23 21:10:36 rocky Exp $
+$Id: TODO,v 1.6 2004/10/23 21:15:22 rocky Exp $
