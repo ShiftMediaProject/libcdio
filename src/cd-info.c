@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.41 2003/09/28 17:14:21 rocky Exp $
+    $Id: cd-info.c,v 1.42 2003/10/06 04:04:05 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -90,8 +90,8 @@ struct arguments
 #endif
   int            no_vcd;
   uint32_t       debug_level;
-  int            silent;
   int            version_only;
+  int            silent;
   int            no_header;
   int            print_iso9660;
   source_image_t source_image;
@@ -128,9 +128,6 @@ parse_options (int argc, const char *argv[])
     {"debug",       'd', POPT_ARG_INT, &opts.debug_level, 0,
      "Set debugging to LEVEL"},
     
-    {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
-     "Don't produce warning output" },
-    
     {"no-tracks",   'T', POPT_ARG_NONE, &opts.no_tracks, 0,
      "Don't show track information"},
     
@@ -141,7 +138,7 @@ parse_options (int argc, const char *argv[])
   {"no-cddb",     'a', POPT_ARG_NONE, &opts.no_cddb, 0,
    "Don't look up audio CDDB information or print that"},
     
-    {"cddb-port",   'P', POPT_ARG_INT, &opts.cddb_port, 0,
+    {"cddb-port",   'P', POPT_ARG_INT, &opts.cddb_port, 8880,
      "CDDB port number to use (default 8880)"},
     
     {"cddb-http",   'H', POPT_ARG_NONE, &opts.cddb_http, 0,
@@ -196,8 +193,8 @@ parse_options (int argc, const char *argv[])
     {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
      OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
     
-    {"quiet", 'q', POPT_ARG_NONE, &opts.silent, 0, 
-     "show only critical messages"},
+    {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
+     "Don't produce warning output" },
     
     {"version", 'V', POPT_ARG_NONE, &opts.version_only, 0,
      "display version and copyright information and exit"},
@@ -795,10 +792,6 @@ main(int argc, const char *argv[])
     err_exit("%s: Error in opening device driver\n", program_name);
   } 
 
-  if (opts.debug_level > 0) {
-    printf("CD driver name: %s\n", cdio_get_driver_name(cdio));
-  }
-  
   if (source_name==NULL) {
     source_name=strdup(cdio_get_arg(cdio, "source"));
     if (NULL == source_name) {
@@ -806,6 +799,11 @@ main(int argc, const char *argv[])
     }
   } 
 
+  if (opts.silent == 0) {
+    printf("CD location   : %s\n", source_name);
+    printf("CD driver name: %s\n", cdio_get_driver_name(cdio));
+  }
+  
   if (opts.access_mode!=NULL) {
     cdio_set_arg(cdio, "access-mode", opts.access_mode);
   } 

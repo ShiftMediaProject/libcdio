@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.c,v 1.5 2003/09/28 17:14:20 rocky Exp $
+    $Id: cd_types.c,v 1.6 2003/10/06 04:04:05 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -211,6 +211,7 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num,
 		   /*out*/ cdio_analysis_t *cdio_analysis)
 {
   int ret = 0;
+  bool sector0_read_ok;
   
   if (TRACK_FORMAT_AUDIO == cdio_get_track_format(cdio, track_num))
     return CDIO_FS_AUDIO;
@@ -226,8 +227,8 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num,
   } else {	
     /* read sector 0 ONLY, when NO greenbook CD-I !!!! */
 
-    if ( _cdio_read_block(cdio, 0, start_session, 1, track_num) < 0 )
-      return ret;
+    sector0_read_ok = 
+      _cdio_read_block(cdio, 0, start_session, 1, track_num) == 0;
     
     if (_cdio_is_it(INDEX_HS))
       ret |= CDIO_FS_HIGH_SIERRA;
@@ -256,8 +257,8 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num,
       if (_cdio_is_it(INDEX_BOOTABLE))
 	ret |= CDIO_FS_ANAL_BOOTABLE;
       
-      if (_cdio_is_it(INDEX_XA) && _cdio_is_it(INDEX_ISOFS) 
-	  && !_cdio_is_it(INDEX_PHOTO_CD)) {
+      if ( _cdio_is_it(INDEX_XA) && _cdio_is_it(INDEX_ISOFS) 
+	  && !(sector0_read_ok && _cdio_is_it(INDEX_PHOTO_CD)) ) {
 
         if ( _cdio_read_block(cdio, VCD_INFO_SECTOR, start_session, 4, 
 			     track_num) < 0 )
@@ -271,14 +272,14 @@ cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num,
       }
     } 
     else if (_cdio_is_hfs())          ret |= CDIO_FS_HFS;
-    else if (_cdio_is_it(INDEX_EXT2)) ret |= CDIO_FS_EXT2;
+    else if (sector0_read_ok && _cdio_is_it(INDEX_EXT2)) ret |= CDIO_FS_EXT2;
     else if (_cdio_is_3do())          ret |= CDIO_FS_3DO;
     else {
       if ( _cdio_read_block(cdio, UFS_SUPERBLOCK_SECTOR, start_session, 2, 
 			    track_num) < 0 )
 	return ret;
       
-      if (_cdio_is_it(INDEX_UFS)) 
+      if (sector0_read_ok && _cdio_is_it(INDEX_UFS)) 
 	ret |= CDIO_FS_UFS;
       else
 	ret |= CDIO_FS_UNKNOWN;

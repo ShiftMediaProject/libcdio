@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_nrg.sh.in,v 1.8 2003/09/30 03:26:11 rocky Exp $
+#$Id: check_nrg.sh.in,v 1.9 2003/10/06 04:04:05 rocky Exp $
 
 if test -n "@VCDINFO_LIBS@" ; then
   vcd_opt='--no-vcd'
@@ -18,7 +18,7 @@ fi
 BASE=`basename $0 .sh`
 fname=videocd
 
-test_cdinfo "--nrg-file ${srcdir}/${fname}.nrg $vcd_opt --iso9660 " \
+test_cdinfo "--quiet --nrg-file ${srcdir}/${fname}.nrg $vcd_opt --iso9660 " \
   ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC 'cd-info NRG test 1'
@@ -27,7 +27,7 @@ BASE=`basename $0 .sh`
 nrg_file=${srcdir}/monvoisin.nrg
 
 if test -f  $nrg_file ; then
-  test_cdinfo "--nrg-file $nrg_file $vcd_opt --iso9660 " \
+  test_cdinfo "-q --nrg-file $nrg_file $vcd_opt --iso9660 " \
     monvoisin.dump ${srcdir}/monvoisin.right
   RC=$?
   check_result $RC 'cd-info NRG test 2'
@@ -38,7 +38,7 @@ fi
 
 nrg_file=${srcdir}/svcdgs.nrg
 if test -f  $nrg_file ; then
-  test_cdinfo "--nrg-file $nrg_file $vcd_opt --iso9660" \
+  test_cdinfo "-q --nrg-file $nrg_file $vcd_opt --iso9660" \
     svcdgs.dump ${srcdir}/svcdgs.right
   RC=$?
   check_result $RC 'cd-info NRG test 3'
