@@ -1,8 +1,8 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.34 2003/11/17 12:06:57 rocky Exp $
+    $Id: cdio.h,v 1.35 2004/02/21 13:10:51 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -151,7 +151,7 @@ extern "C" {
 				     cdio_fs_anal_t capabilities, bool any);
 
   /*! Return an array of device names. If you want a specific
-    devices, dor a driver give that device, if you want hardware
+    devices for a driver, give that device. If you want hardware
     devices, give DRIVER_DEVICE and if you want all possible devices,
     image drivers and hardware drivers give DRIVER_UNKNOWN.
     
