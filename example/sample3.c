@@ -1,5 +1,5 @@
 /*
-  $Id: sample3.c,v 1.1 2003/08/16 17:31:40 rocky Exp $
+  $Id: sample3.c,v 1.2 2003/08/16 22:45:37 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -19,7 +19,8 @@
 */
 
 /* 
-   A somewhat simplified program to what kind of CD image we've got.
+   A somewhat simplified program to show the use of cdio_guess_cd_type().
+   We figure out kind of CD image we've got.
 */
 #include <stdio.h>
 #include <string.h>
@@ -131,7 +132,7 @@ main(int argc, const char *argv[])
   first_track_num = cdio_get_first_track_num(cdio);
   num_tracks      = cdio_get_num_tracks(cdio);
 
-  /* Count the data an audio tracks. */
+  /* Count the number of data and audio tracks. */
   for (i = first_track_num; i <= num_tracks; i++) {
     if (TRACK_FORMAT_AUDIO == cdio_get_track_format(cdio, i)) {
       num_audio++;
