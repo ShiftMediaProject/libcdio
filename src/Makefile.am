@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.30 2005/01/06 10:56:22 rocky Exp $
+#   $Id: Makefile.am,v 1.31 2005/01/06 11:55:09 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -60,13 +60,13 @@ endif
 if BUILD_ISO_INFO
 iso_info_SOURCES = iso-info.c util.c util.h
 iso_info_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
-bin_iso_info     = $(bin_progs) iso-info
+bin_iso_info     = iso-info
 endif
 
 if BUILD_ISO_READ
 iso_read_SOURCES = iso-read.c util.c util.h
 iso_read_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
-bin_progs        = iso-read
+bin_iso_read     = iso-read
 endif
 
 bin_PROGRAMS = $(bin_cd_drive) $(bin_cd_info)  $(bin_cdinfo_linux) $(bin_cd_read) $(bin_iso_info) $(bin_iso_read)
