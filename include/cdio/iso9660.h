@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.65 2005/02/13 22:03:00 rocky Exp $
+    $Id: iso9660.h,v 1.66 2005/02/14 02:18:58 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -511,6 +511,11 @@ typedef struct iso9660_svd_s  iso9660_svd_t;
 
 PRAGMA_END_PACKED
 
+typedef uint32_t posix_mode_t;
+typedef uint32_t posix_nlink_t;
+typedef uint32_t posix_uid_t;
+typedef uint32_t posix_gid_t;
+
 /*! \brief Unix stat-like version of iso9660_dir
 
    The iso9660_stat structure is not part of the ISO-9660
@@ -521,24 +526,24 @@ PRAGMA_END_PACKED
    @see iso9660_dir
 */
 struct iso9660_stat_s { /* big endian!! */
-  bool         b_rock;                /**< has Rock Ridge extension. 
-                                          If not true then the next 7 feilds
-                                          aren't used.
-                                       */
-  mode_t       st_mode;               /**< protection */
-  nlink_t      st_nlinks;             /**< number of hard links */
-  uid_t        st_uid;                /**< user ID of owner */
-  gid_t        st_gid;                /**< group ID of owner */
-  uint8_t      s_rock_offset;
-  int          i_size;
-#if 0
-  time_t       st_atime;              /**< time of last access */
-  time_t       st_mtime;              /**< time of last modification */
-  time_t       st_ctime;              /**< time of last change */
-#endif
+  bool          b_rock;               /**< has Rock Ridge extension. 
+                                         If not true then the next 9 fields
+                                         aren't used.
+                                      */
+  posix_mode_t  st_mode;              /**< protection */
+  posix_nlink_t st_nlinks;            /**< number of hard links */
+  posix_uid_t   st_uid;               /**< user ID of owner */
+  posix_gid_t   st_gid;               /**< group ID of owner */
+  uint8_t       s_rock_offset;
+  int           i_size;               /**< FIXME: Is this one of the
+                                         size fields below? */
+  struct tm     atime;                /**< time of last access */
+  struct tm     mtime;                /**< time of last modification */
+  struct tm     ctime;                /**< create time */
 
   /* Non Ridge-specific fields  */
-  struct tm    tm;                    /**< time on entry */
+  struct tm    tm;                    /**< time on entry - FIXME merge with
+                                         one of entries above, like ctime? */
   lsn_t        lsn;                   /**< start logical sector number */
   uint32_t     size;                  /**< total size in bytes */
   uint32_t     secsize;               /**< number of sectors allocated */

@@ -1,5 +1,5 @@
 /*
-  $Id: rock.c,v 1.1 2005/02/13 22:03:00 rocky Exp $
+  $Id: rock.c,v 1.2 2005/02/14 02:18:58 rocky Exp $
  
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -224,32 +224,33 @@ parse_rock_ridge_stat_internal(iso9660_dir_t *de,
 	}
 	break;
 #endif
-#if TIME_FINISHED
+#ifdef TIME_FIXED
       case SIG('T','F'): 
 	{
 	  int cnt = 0; /* Rock ridge never appears on a High Sierra disk */
 	  /* Some RRIP writers incorrectly place ctime in the
 	     ISO_ROCK_TF_CREATE field.  Try to handle this correctly for
 	     either case. */
-	  if(rr->u.TF.flags & ISO_ROCK_TF_CREATE) { 
-	    p_stat->i_ctime.tv_sec = iso_date(rr->u.TF.times[cnt++].time, 0);
-	    p_stat->i_ctime.tv_nsec = 0;
+	  /*** FIXME: 
+	       Test on long format or not and use 
+	       iso9660_get_dtime or iso9660_get_ltime - which needs to be
+	       written.
+	  */
+	  if (rr->u.TF.flags & ISO_ROCK_TF_CREATE) { 
+	    p_stat->st_ctime = rr->u.TF.times[cnt++].time;
 	  }
 	  if(rr->u.TF.flags & ISO_ROCK_TF_MODIFY) {
-	    p_stat->i_mtime.tv_sec = iso_date(rr->u.TF.times[cnt++].time, 0);
-	    p_stat->i_mtime.tv_nsec = 0;
+	    p_stat->st_mtime = rr->u.TF.times[cnt++].time;
 	  }
 	  if(rr->u.TF.flags & ISO_ROCK_TF_ACCESS) {
-	    p_stat->i_atime.tv_sec = iso_date(rr->u.TF.times[cnt++].time, 0);
-	    p_stat->i_atime.tv_nsec = 0;
+	    p_stat->st_atime = rr->u.TF.times[cnt++].time;
 	  }
 	  if(rr->u.TF.flags & ISO_ROCK_TF_ATTRIBUTES) { 
-	    p_stat->i_ctime.tv_sec = iso_date(rr->u.TF.times[cnt++].time, 0);
-	    p_stat->i_ctime.tv_nsec = 0;
+	    p_stat->st_ctime = rr->u.TF.times[cnt++].time;
 	  } 
 	  break;
 	}
-#endif /* TIME_FINISHED */
+#endif
       case SIG('S','L'):
 	{int slen;
 	  iso_rock_sl_part_t *slp;
