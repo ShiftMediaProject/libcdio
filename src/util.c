@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.34 2005/02/07 12:12:14 rocky Exp $
+  $Id: util.c,v 1.35 2005/02/08 04:14:28 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -21,7 +21,7 @@
 /* Miscellaneous things common to standalone programs. */
 
 #include "util.h"
-#include <cdio/scsi_mmc.h>
+#include <cdio/mmc.h>
 
 cdio_log_handler_t gl_default_cdio_log_handler = NULL;
 char *source_name = NULL;
@@ -202,321 +202,146 @@ print_mmc_drive_features(CdIo_t *p_cdio)
       uint8_t i_feature_additional = p[3];
       
       i_feature = CDIO_MMC_GET_LEN16(p);
-      switch( i_feature )
-	{
-	  uint8_t *q;
-	case CDIO_MMC_FEATURE_PROFILE_LIST:
-	  report( stdout, "Profile List Feature\n");
-	  for ( q = p+4 ; q < p + i_feature_additional ; q += 4 ) {
-	    int i_profile=CDIO_MMC_GET_LEN16(q);
-	    switch (i_profile) {
-	    case CDIO_MMC_FEATURE_PROF_NON_REMOVABLE:
-	      report( stdout, 
-		      "\tRe-writable disk, capable of changing behavior");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_REMOVABLE:
-	      report( stdout, 
-		      "\tdisk Re-writable; with removable media");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_MO_ERASABLE:
-	      report( stdout, 
-		      "\tErasable Magneto-Optical disk with sector erase capability");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_MO_WRITE_ONCE:
-	      report( stdout, 
-		      "\tWrite Once Magneto-Optical write once");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_AS_MO:
-	      report( stdout, 
-		      "\tAdvance Storage Magneto-Optical");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_CD_ROM:
-	      report( stdout, 
-		      "\tRead only Compact Disc capable");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_CD_R:
-	      report( stdout, 
-		      "\tWrite once Compact Disc capable");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_CD_RW:
-	      report( stdout, 
-		      "\tCD-RW Re-writable Compact Disc capable");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_DVD_ROM:
-	      report( stdout, 
-		      "\tRead only DVD");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_DVD_R_SEQ:
-	      report( stdout, 
-		      "\tRe-recordable DVD using Sequential recording");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_DVD_RAM:
-	      report( stdout, 
-		      "\tRe-writable DVD");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_DVD_RW_RO:
-	      report( stdout, 
-		      "\tRe-recordable DVD using Restricted Overwrite");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_DVD_RW_SEQ:
-	      report( stdout, 
-		      "\tRe-recordable DVD using Sequential recording");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_DVD_PRW:
-	      report( stdout, 
-		      "\tDVD+RW - DVD ReWritable");
-	      break;
-	    case CDIO_MMC_FEATURE_RIGID_RES_OVERW:
-	      report( stdout, 
-		      "\tRigid Restricted Overwrite");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_DVD_PR:
-	      report( stdout, 
-		      "\tDVD+R - DVD Recordable");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_DDCD_ROM:
-	      report( stdout, 
-		      "\tRead only DDCD");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_DVD_PR2:
-	      report( stdout, 
-		      "\tDVD+R Double Layer - DVD Recordable Double Layer");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_DDCD_R:
-	      report( stdout, 
-		      "\tDDCD-R Write only DDCD");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_DDCD_RW:
-	      report( stdout, 
-		      "\tRe-Write only DDCD");
-	      break;
-	    case CDIO_MMC_FEATURE_PROF_NON_CONFORM:
-	      report( stdout, 
-		      "\tThe Logical Unit does not conform to any Profile.");
-	      break;
-	    default: 
-	      report( stdout, 
-		      "\tUnknown Profile %x", i_profile);
-	      break;
-	    }
-	    if (q[2] & 1) {
-	      report( stdout, " - on");
+      {
+	uint8_t *q;
+	const char *feature_str = mmc_feature2str(i_feature);
+	report( stdout, "%s Feature\n", feature_str);
+	switch( i_feature )
+	  {
+	  case CDIO_MMC_FEATURE_PROFILE_LIST:
+	    for ( q = p+4 ; q < p + i_feature_additional ; q += 4 ) {
+	      int i_profile=CDIO_MMC_GET_LEN16(q);
+	      const char *feature_profile_str = 
+		mmc_feature_profile2str(i_profile);
+	      report( stdout, "\t%s", feature_profile_str );
+	      if (q[2] & 1) {
+		report( stdout, " - on");
+	      }
+	      report( stdout, "\n");
 	    }
 	    report( stdout, "\n");
-	  }
-	  report( stdout, "\n");
-	  
-	  break;
-	case CDIO_MMC_FEATURE_CORE: 
-	  {
-	    uint8_t *q = p+4;
-	    uint32_t 	i_interface_standard = CDIO_MMC_GET_LEN32(q);
-	    report( stdout, "Core Feature\n");
-	    switch(i_interface_standard) {
-	    case CDIO_MMC_FEATURE_INTERFACE_UNSPECIFIED: 
-	      report( stdout, "\tunspecified interface\n");
+	    
+	    break;
+	  case CDIO_MMC_FEATURE_CORE: 
+	    {
+	      uint8_t *q = p+4;
+	      uint32_t 	i_interface_standard = CDIO_MMC_GET_LEN32(q);
+	      switch(i_interface_standard) {
+	      case CDIO_MMC_FEATURE_INTERFACE_UNSPECIFIED: 
+		report( stdout, "\tunspecified interface\n");
+		break;
+	      case CDIO_MMC_FEATURE_INTERFACE_SCSI:
+		report( stdout, "\tSCSI interface\n");
+		break;
+	      case CDIO_MMC_FEATURE_INTERFACE_ATAPI: 
+		report( stdout, "\tATAPI interface\n");
+		break;
+	      case CDIO_MMC_FEATURE_INTERFACE_IEEE_1394: 
+		report( stdout, "\tIEEE 1394 interface\n");
+		break;
+	      case CDIO_MMC_FEATURE_INTERFACE_IEEE_1394A: 
+		report( stdout, "\tIEEE 1394A interface\n");
+		break;
+	      case CDIO_MMC_FEATURE_INTERFACE_FIBRE_CH: 
+		report( stdout, "\tFibre Channel interface\n");
+	      }
+	      report( stdout, "\n");
 	      break;
-	    case CDIO_MMC_FEATURE_INTERFACE_SCSI:
-	      report( stdout, "\tSCSI interface\n");
+	    }
+	  case CDIO_MMC_FEATURE_MORPHING:
+	    report( stdout, 
+		    "\tOperational Change Request/Notification %ssupported\n",
+		    (p[4] & 2) ? "": "not " );
+	    report( stdout, "\t%synchronous GET EVENT/STATUS NOTIFICATION "
+		    "supported\n", 
+		    (p[4] & 1) ? "As": "S" );
+	    report( stdout, "\n");
+	    break;
+	    ;
+	    
+	  case CDIO_MMC_FEATURE_REMOVABLE_MEDIUM:
+	    switch(p[4] >> 5) {
+	    case 0:
+	      report( stdout, 
+		      "\tCaddy/Slot type loading mechanism\n" );
 	      break;
-	    case CDIO_MMC_FEATURE_INTERFACE_ATAPI: 
-	      report( stdout, "\tATAPI interface\n");
+	    case 1:
+	      report( stdout, 
+		      "\tTray type loading mechanism\n" );
 	      break;
-	    case CDIO_MMC_FEATURE_INTERFACE_IEEE_1394: 
-	      report( stdout, "\tIEEE 1394 interface\n");
+	    case 2:
+	      report( stdout, "\tPop-up type loading mechanism\n");
 	      break;
-	    case CDIO_MMC_FEATURE_INTERFACE_IEEE_1394A: 
-	      report( stdout, "\tIEEE 1394A interface\n");
+	    case 4:
+	      report( stdout, 
+		      "\tEmbedded changer with individually changeable discs\n");
 	      break;
-	    case CDIO_MMC_FEATURE_INTERFACE_FIBRE_CH: 
-	      report( stdout, "\tFibre Channel interface\n");
+	    case 5:
+	      report( stdout, 
+		      "\tEmbedded changer using a magazine mechanism\n" );
+	      break;
+	    default:
+	      report( stdout, 
+		      "\tUnknown changer mechanism\n" );
+	    }
+	    
+	    report( stdout, 
+		    "\tcan%s eject the medium or magazine via the normal "
+		    "START/STOP command\n", 
+		    (p[4] & 8) ? "": "not" );
+	    report( stdout, "\tcan%s be locked into the Logical Unit\n", 
+		    (p[4] & 1) ? "": "not" );
+	    report( stdout, "\n" );
+	    break;
+	  case CDIO_MMC_FEATURE_CD_READ:
+	    report( stdout, "\tC2 Error pointers are %ssupported\n", 
+		    (p[4] & 2) ? "": "not " );
+	    report( stdout, "\tCD-Text is %ssupported\n", 
+		    (p[4] & 1) ? "": "not " );
+	    report( stdout, "\n" );
+	    break;
+	  case CDIO_MMC_FEATURE_ENHANCED_DEFECT:
+	    report( stdout, "\t%s-DRM mode is supported\n", 
+		    (p[4] & 1) ? "DRT": "Persistent" );
+	    break;
+	  case CDIO_MMC_FEATURE_CDDA_EXT_PLAY:
+	    report( stdout, "\tSCAN command is %ssupported\n", 
+		    (p[4] & 4) ? "": "not ");
+	    report( stdout, 
+		    "\taudio channels can %sbe muted separately\n", 
+		    (p[4] & 2) ? "": "not ");
+	    report( stdout, 
+		    "\taudio channels can %shave separate volume levels\n", 
+		    (p[4] & 1) ? "": "not ");
+	    {
+	      uint8_t *q = p+6;
+	      uint16_t i_vol_levels = CDIO_MMC_GET_LEN16(q);
+	      report( stdout, "\t%d volume levels can be set\n", i_vol_levels );
 	    }
 	    report( stdout, "\n");
 	    break;
-	  }
-	case CDIO_MMC_FEATURE_MORPHING:
-	  report( stdout, "Morphing Feature\n" );
-	  report( stdout, 
-		  "\tOperational Change Request/Notification %ssupported\n",
-		  (p[4] & 2) ? "": "not " );
-	  report( stdout, "\t%synchronous GET EVENT/STATUS NOTIFICATION "
-		  "supported\n", 
-		 (p[4] & 1) ? "As": "S" );
-	  report( stdout, "\n");
-	  break;
-	  ;
-	  
-	case CDIO_MMC_FEATURE_REMOVABLE_MEDIUM:
-	  report( stdout, "Removable Medium Feature\n" );
-	  switch(p[4] >> 5) {
-	  case 0:
-	    report( stdout, 
-		    "\tCaddy/Slot type loading mechanism\n" );
-	    break;
-	  case 1:
-	    report( stdout, 
-		    "\tTray type loading mechanism\n" );
-	    break;
-	  case 2:
-	    report( stdout, "\tPop-up type loading mechanism\n");
-	    break;
-	  case 4:
-	    report( stdout, 
-		    "\tEmbedded changer with individually changeable discs\n");
-	    break;
-	  case 5:
-	    report( stdout, 
-		    "\tEmbedded changer using a magazine mechanism\n" );
-	    break;
-	  default:
-	    report( stdout, 
-		    "\tUnknown changer mechanism\n" );
-	  }
-	  
-	  report( stdout, 
-		  "\tcan%s eject the medium or magazine via the normal "
-		  "START/STOP command\n", 
-		  (p[4] & 8) ? "": "not" );
-	  report( stdout, "\tcan%s be locked into the Logical Unit\n", 
-		 (p[4] & 1) ? "": "not" );
-	  report( stdout, "\n" );
-	  break;
-	case CDIO_MMC_FEATURE_WRITE_PROTECT:
-	  report( stdout, "Write Protect Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_RANDOM_READABLE:
-	  report( stdout, "Random Readable Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_MULTI_READ:
-	  report( stdout, "Multi-Read Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_CD_READ:
-	  report( stdout, "CD Read Feature\n" );
-	  report( stdout, "\tC2 Error pointers are %ssupported\n", 
-		 (p[4] & 2) ? "": "not " );
-	  report( stdout, "\tCD-Text is %ssupported\n", 
-		 (p[4] & 1) ? "": "not " );
-	  report( stdout, "\n" );
-	  break;
-	case CDIO_MMC_FEATURE_DVD_READ:
-	  report( stdout, "DVD Read Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_RANDOM_WRITABLE:
-	  report( stdout, "Random Writable Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_INCR_WRITE:
-	  report( stdout, "Incremental Streaming Writable Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_SECTOR_ERASE:
-	  report( stdout, "Sector Erasable Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_FORMATABLE:
-	  report( stdout, "Formattable Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_DEFECT_MGMT:
-	  report( stdout, 
-		  "Management Ability of the Logical Unit/media system "
-		  "to provide an apparently defect-free space.\n" );
-	  break;
-	case CDIO_MMC_FEATURE_WRITE_ONCE:
-	  report( stdout, "Write Once Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_RESTRICT_OVERW:
-	  report( stdout, "Restricted Overwrite Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_CD_RW_CAV:
-	  report( stdout, "CD-RW CAV Write Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_MRW:
-	  report( stdout, "MRW Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_ENHANCED_DEFECT:
-	  report( stdout, "Enhanced Defect Reporting\n" );
-	  report( stdout, "\t%s-DRM mode is supported\n", 
-		 (p[4] & 1) ? "DRT": "Persistent" );
-	  break;
-	case CDIO_MMC_FEATURE_DVD_PRW:
-	  report( stdout, "DVD+RW Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_DVD_PR:
-	  report( stdout, "DVD+R Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_CD_TAO:
-	  report( stdout, "CD Track at Once Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_CD_SAO:
-	  report( stdout, "CD Mastering (Session at Once) Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_DVD_R_RW_WRITE:
-	  report( stdout, "DVD-R/RW Write Feature\n" );
-	  break;
-	case CDIO_MMC_FEATURE_CD_RW_MEDIA_WRITE:
-	  report( stdout, "CD-RW Media Write Support\n" );
-	  break;
-	case CDIO_MMC_FEATURE_DVD_PR_2_LAYER:
-	  report( stdout, "DVD+R Double Layer\n" );
-	  break;
-	case CDIO_MMC_FEATURE_POWER_MGMT:
-	  report( stdout, 
-		  "Initiator and device directed power management\n" );
-	  break;
-	case CDIO_MMC_FEATURE_CDDA_EXT_PLAY:
-	  report( stdout, "CD Audio External Play Feature\n" );
-	  report( stdout, "\tSCAN command is %ssupported\n", 
-		 (p[4] & 4) ? "": "not ");
-	  report( stdout, 
-		  "\taudio channels can %sbe muted separately\n", 
-		 (p[4] & 2) ? "": "not ");
-	  report( stdout, 
-		  "\taudio channels can %shave separate volume levels\n", 
-		 (p[4] & 1) ? "": "not ");
-	  {
-	    uint8_t *q = p+6;
-	    uint16_t i_vol_levels = CDIO_MMC_GET_LEN16(q);
-	    report( stdout, "\t%d volume levels can be set\n", i_vol_levels );
-	  }
-	  report( stdout, "\n");
-	  break;
-	case CDIO_MMC_FEATURE_MCODE_UPGRADE:
-	  report( stdout, "Ability for the device to accept new microcode via "
-		 "the interface\n" );
-	  break;
-	case CDIO_MMC_FEATURE_TIME_OUT:
-	  report( stdout, "Ability to respond to all commands within a "
-		 "specific time\n" );
-	  break;
-	case CDIO_MMC_FEATURE_DVD_CSS:
-	  report( stdout, "Ability to perform DVD CSS/CPPM authentication and"
-		 " RPC\n" );
+	  case CDIO_MMC_FEATURE_DVD_CSS:
 #if 0
-	  report( stdout, "\tMedium does%s have Content Scrambling (CSS/CPPM)\n", 
-		 (p[2] & 1) ? "": "not " );
+	    report( stdout, "\tMedium does%s have Content Scrambling (CSS/CPPM)\n", 
+		    (p[2] & 1) ? "": "not " );
 #endif
-	  report( stdout, "\tCSS version %d\n", p[7] );
-	  report( stdout, "\t\n");
-	  break;
-	case CDIO_MMC_FEATURE_RT_STREAMING:
-	  report( stdout, 
-		  "Ability to read and write using Initiator requested performance parameters\n");
-	  break;
-	case CDIO_MMC_FEATURE_LU_SN: {
-	  uint8_t i_serial = *(p+3);
-	  char serial[257] = { '\0', };
-	      
-	  report( stdout, "The Logical Unit has a unique identifier:\n" );
-	  memcpy(serial, p+4, i_serial );
-	  report( stdout, "\t%s\n\n", serial );
-
-	  break;
-	}
-	default: 
-	  if ( 0 != (i_feature & 0xFF00) ) {
-	    report( stdout, "Vendor-specific feature code %x\n", i_feature );
-	  } else {
-	    report( stdout, "Unknown feature code %x\n", i_feature );
+	    report( stdout, "\tCSS version %d\n", p[7] );
+	    report( stdout, "\t\n");
+	    break;
+	  case CDIO_MMC_FEATURE_LU_SN: {
+	    uint8_t i_serial = *(p+3);
+	    char serial[257] = { '\0', };
+	    
+	    memcpy(serial, p+4, i_serial );
+	    report( stdout, "\t%s\n\n", serial );
+	    
+	    break;
 	  }
-	  
-	}
+	  default: 
+	    report( stdout, "\n");
+	    break;
+	  }
+      }
       p += i_feature_additional + 4;
     }
   } else {

@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.3 2005/02/07 03:36:02 rocky Exp $
+    $Id: mmc.c,v 1.4 2005/02/08 04:14:28 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -34,6 +34,10 @@
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+
+#ifdef HAVE_STDIO_H
+#include <stdio.h>
 #endif
 
 #ifdef HAVE_ERRNO_H
@@ -766,6 +770,154 @@ mmc_eject_media( const CdIo_t *p_cdio )
                       SCSI_MMC_DATA_WRITE, 0, &buf);
   
 }
+
+/*!
+ Return a string containing the name of the given feature
+ */
+const char *mmc_feature2str( int i_feature )
+{
+  switch(i_feature) {
+  case CDIO_MMC_FEATURE_PROFILE_LIST:
+    return "Profile List";
+  case CDIO_MMC_FEATURE_CORE: 
+    return "Core";
+  case CDIO_MMC_FEATURE_MORPHING:
+    return "Morphing" ;
+  case CDIO_MMC_FEATURE_REMOVABLE_MEDIUM:
+    return "Removable Medium";
+  case CDIO_MMC_FEATURE_WRITE_PROTECT:
+    return "Write Protect";
+  case CDIO_MMC_FEATURE_RANDOM_READABLE:
+    return "Random Readable";
+  case CDIO_MMC_FEATURE_MULTI_READ:
+    return "Multi-Read";
+  case CDIO_MMC_FEATURE_CD_READ:
+    return "CD Read";
+  case CDIO_MMC_FEATURE_DVD_READ:
+    return "DVD Read";
+  case CDIO_MMC_FEATURE_RANDOM_WRITABLE:
+    return "Random Writable";
+  case CDIO_MMC_FEATURE_INCR_WRITE:
+    return "Incremental Streaming Writable";
+  case CDIO_MMC_FEATURE_SECTOR_ERASE:
+    return "Sector Erasable";
+  case CDIO_MMC_FEATURE_FORMATABLE:
+    return "Formattable";
+  case CDIO_MMC_FEATURE_DEFECT_MGMT:
+    return "Management Ability of the Logical Unit/media system "
+      "to provide an apparently defect-free space.";
+  case CDIO_MMC_FEATURE_WRITE_ONCE:
+    return "Write Once";
+  case CDIO_MMC_FEATURE_RESTRICT_OVERW:
+    return "Restricted Overwrite";
+  case CDIO_MMC_FEATURE_CD_RW_CAV:
+    return "CD-RW CAV Write";
+  case CDIO_MMC_FEATURE_MRW:
+    return "MRW";
+  case CDIO_MMC_FEATURE_ENHANCED_DEFECT:
+    return "Enhanced Defect Reporting";
+  case CDIO_MMC_FEATURE_DVD_PRW:
+    return "DVD+RW";
+  case CDIO_MMC_FEATURE_DVD_PR:
+    return "DVD+R";
+  case CDIO_MMC_FEATURE_CD_TAO:
+    return "CD Track at Once";
+  case CDIO_MMC_FEATURE_CD_SAO:
+    return "CD Mastering (Session at Once)";
+  case CDIO_MMC_FEATURE_DVD_R_RW_WRITE:
+    return "DVD-R/RW Write";
+  case CDIO_MMC_FEATURE_CD_RW_MEDIA_WRITE:
+    return "CD-RW Media Write Support";
+  case CDIO_MMC_FEATURE_DVD_PR_2_LAYER:
+    return "DVD+R Double Layer";
+  case CDIO_MMC_FEATURE_POWER_MGMT:
+    return "Initiator- and Device-directed Power Management";
+  case CDIO_MMC_FEATURE_CDDA_EXT_PLAY:
+    return "CD Audio External Play";
+  case CDIO_MMC_FEATURE_MCODE_UPGRADE:
+    return "Ability for the device to accept new microcode via the interface";
+  case CDIO_MMC_FEATURE_TIME_OUT:
+    return "Ability to respond to all commands within a specific time";
+  case CDIO_MMC_FEATURE_DVD_CSS:
+    return "Ability to perform DVD CSS/CPPM authentication via RPC";
+  case CDIO_MMC_FEATURE_RT_STREAMING:
+    return "Ability to read and write using Initiator requested performance"
+      " parameters";
+  case CDIO_MMC_FEATURE_LU_SN:
+    return "The Logical Unit Unique Identifier";
+  default: 
+    {
+      static char buf[100];
+      if ( 0 != (i_feature & 0xFF00) ) {
+        snprintf( buf, sizeof(buf),
+                 "Vendor-specific code %x", i_feature );
+      } else {
+        snprintf( buf, sizeof(buf),
+                 "Unknown code %x", i_feature );
+      }
+      return buf;
+    }
+  }
+}
+
+
+/*!
+ Return a string containing the name of the given feature profile.
+ */
+const char *mmc_feature_profile2str( int i_feature_profile )
+{
+  switch(i_feature_profile) {
+  case CDIO_MMC_FEATURE_PROF_NON_REMOVABLE:
+    return "Non-removable";
+  case CDIO_MMC_FEATURE_PROF_REMOVABLE:
+    return "disk Re-writable; with removable media";
+  case CDIO_MMC_FEATURE_PROF_MO_ERASABLE:
+    return "Erasable Magneto-Optical disk with sector erase capability";
+  case CDIO_MMC_FEATURE_PROF_MO_WRITE_ONCE:
+    return "Write Once Magneto-Optical write once";
+  case CDIO_MMC_FEATURE_PROF_AS_MO:
+    return "Advance Storage Magneto-Optical";
+  case CDIO_MMC_FEATURE_PROF_CD_ROM:
+    return "Read only Compact Disc capable";
+  case CDIO_MMC_FEATURE_PROF_CD_R:
+    return "Write once Compact Disc capable";
+  case CDIO_MMC_FEATURE_PROF_CD_RW:
+    return "CD-RW Re-writable Compact Disc capable";
+  case CDIO_MMC_FEATURE_PROF_DVD_ROM:
+    return "Read only DVD";
+  case CDIO_MMC_FEATURE_PROF_DVD_R_SEQ:
+    return "Re-recordable DVD using Sequential recording";
+  case CDIO_MMC_FEATURE_PROF_DVD_RAM:
+    return "Re-writable DVD";
+  case CDIO_MMC_FEATURE_PROF_DVD_RW_RO:
+    return "Re-recordable DVD using Restricted Overwrite";
+  case CDIO_MMC_FEATURE_PROF_DVD_RW_SEQ:
+    return "Re-recordable DVD using Sequential recording";
+  case CDIO_MMC_FEATURE_PROF_DVD_PRW:
+    return "DVD+RW - DVD ReWritable";
+  case CDIO_MMC_FEATURE_RIGID_RES_OVERW:
+    return "Rigid Restricted Overwrite";
+  case CDIO_MMC_FEATURE_PROF_DVD_PR:
+    return "DVD+R - DVD Recordable";
+  case CDIO_MMC_FEATURE_PROF_DDCD_ROM:
+    return "Read only DDCD";
+  case CDIO_MMC_FEATURE_PROF_DVD_PR2:
+    return "DVD+R Double Layer - DVD Recordable Double Layer";
+  case CDIO_MMC_FEATURE_PROF_DDCD_R:
+    return "DDCD-R Write only DDCD";
+  case CDIO_MMC_FEATURE_PROF_DDCD_RW:
+    return "Re-Write only DDCD";
+  case CDIO_MMC_FEATURE_PROF_NON_CONFORM:
+    return "The Logical Unit does not conform to any Profile";
+  default: 
+    {
+      static char buf[100];
+      snprintf(buf, sizeof(buf), "Unknown Profile %x", i_feature_profile);
+      return buf;
+    }
+  }
+}
+
 
 /*!
  * See if CD-ROM has feature with value value

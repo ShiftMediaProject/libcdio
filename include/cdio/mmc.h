@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.3 2005/02/07 17:09:31 rocky Exp $
+    $Id: mmc.h,v 1.4 2005/02/08 04:14:28 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -238,8 +238,10 @@ typedef enum {
 						identifier. */
   CDIO_MMC_FEATURE_FIRMWARE_DATE    = 0x1FF, /**< Firmware creation date 
 						report */
+} mmc_feature_t;
 				
-/*! Profile codes used in GET_CONFIGURATION - PROFILE LIST. */
+/*! Profile profile codes used in GET_CONFIGURATION - PROFILE LIST. */
+typedef enum {
   CDIO_MMC_FEATURE_PROF_NON_REMOVABLE = 0x0001, /**< Re-writable disk, capable
 						   of changing behavior */
   CDIO_MMC_FEATURE_PROF_REMOVABLE     = 0x0002, /**< disk Re-writable; with 
@@ -274,7 +276,7 @@ typedef enum {
                                                      double layer */
   CDIO_MMC_FEATURE_PROF_NON_CONFORM   = 0xFFFF, /**< The Logical Unit does not
 						   conform to any Profile. */
-} mmc_feature_t;
+} mmc_feature_profile_t;
   
 typedef enum {
   CDIO_MMC_FEATURE_INTERFACE_UNSPECIFIED = 0,
@@ -367,6 +369,16 @@ typedef enum scsi_mmc_direction {
  @return 0 if successful.
  */
 int mmc_eject_media( const CdIo_t *p_cdio );
+
+/*!
+ Return a string containing the name of the given feature
+ */
+const char *mmc_feature2str( int i_feature );
+
+/*!
+ Return a string containing the name of the given feature
+ */
+const char *mmc_feature_profile2str( int i_feature_profile );
 
 /*!  
   Return the length in bytes of the Command Descriptor
