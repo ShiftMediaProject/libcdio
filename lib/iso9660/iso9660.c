@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.2 2005/02/05 12:37:35 rocky Exp $
+    $Id: iso9660.c,v 1.3 2005/02/12 10:23:18 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.2 2005/02/05 12:37:35 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.3 2005/02/12 10:23:18 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enums1     iso_enums1;
@@ -353,9 +353,9 @@ iso9660_isachar (int c)
 void 
 iso9660_set_evd(void *pd)
 {
-  struct iso_volume_descriptor ied;
+  iso_volume_descriptor_t ied;
 
-  cdio_assert (sizeof(struct iso_volume_descriptor) == ISO_BLOCKSIZE);
+  cdio_assert (sizeof(iso_volume_descriptor_t) == ISO_BLOCKSIZE);
 
   cdio_assert (pd != NULL);
   
@@ -583,14 +583,14 @@ iso9660_dir_init_new_su (void *dir,
 void 
 iso9660_pathtable_init (void *pt)
 {
-  cdio_assert (sizeof (struct iso_path_table) == 8);
+  cdio_assert (sizeof (iso_path_table_t) == 8);
 
   cdio_assert (pt != NULL);
   
   memset (pt, 0, ISO_BLOCKSIZE); /* fixme */
 }
 
-static const struct iso_path_table*
+static const iso_path_table_t *
 pathtable_get_entry (const void *pt, unsigned int entrynum)
 {
   const uint8_t *tmp = pt;
@@ -606,7 +606,7 @@ pathtable_get_entry (const void *pt, unsigned int entrynum)
 
       cdio_assert (count < entrynum);
 
-      offset += sizeof (struct iso_path_table);
+      offset += sizeof (iso_path_table_t);
       offset += from_711 (*tmp);
       if (offset % 2)
         offset++;
@@ -633,7 +633,7 @@ pathtable_get_size_and_entries (const void *pt,
 
   while (from_711 (*tmp)) 
     {
-      offset += sizeof (struct iso_path_table);
+      offset += sizeof (iso_path_table_t);
       offset += from_711 (*tmp);
       if (offset % 2)
         offset++;
@@ -662,14 +662,14 @@ iso9660_pathtable_l_add_entry (void *pt,
                                uint32_t extent, 
                                uint16_t parent)
 {
-  struct iso_path_table *ipt = 
-    (struct iso_path_table*)((char *)pt + iso9660_pathtable_get_size (pt));
+  iso_path_table_t *ipt = 
+    (iso_path_table_t *)((char *)pt + iso9660_pathtable_get_size (pt));
   size_t name_len = strlen (name) ? strlen (name) : 1;
   unsigned int entrynum = 0;
 
   cdio_assert (iso9660_pathtable_get_size (pt) < ISO_BLOCKSIZE); /*fixme */
 
-  memset (ipt, 0, sizeof (struct iso_path_table) + name_len); /* paranoia */
+  memset (ipt, 0, sizeof (iso_path_table_t) + name_len); /* paranoia */
 
   ipt->name_len = to_711 (name_len);
   ipt->extent = to_731 (extent);
@@ -680,7 +680,7 @@ iso9660_pathtable_l_add_entry (void *pt,
 
   if (entrynum > 1)
     {
-      const struct iso_path_table *ipt2 
+      const iso_path_table_t *ipt2 
         = pathtable_get_entry (pt, entrynum - 2);
 
       cdio_assert (ipt2 != NULL);
@@ -697,14 +697,14 @@ iso9660_pathtable_m_add_entry (void *pt,
                                uint32_t extent, 
                                uint16_t parent)
 {
-  struct iso_path_table *ipt =
-    (struct iso_path_table*)((char *)pt + iso9660_pathtable_get_size (pt));
+  iso_path_table_t *ipt =
+    (iso_path_table_t *)((char *)pt + iso9660_pathtable_get_size (pt));
   size_t name_len = strlen (name) ? strlen (name) : 1;
   unsigned int entrynum = 0;
 
   cdio_assert (iso9660_pathtable_get_size(pt) < ISO_BLOCKSIZE); /* fixme */
 
-  memset(ipt, 0, sizeof (struct iso_path_table) + name_len); /* paranoia */
+  memset(ipt, 0, sizeof (iso_path_table_t) + name_len); /* paranoia */
 
   ipt->name_len = to_711 (name_len);
   ipt->extent = to_732 (extent);
@@ -715,7 +715,7 @@ iso9660_pathtable_m_add_entry (void *pt,
 
   if (entrynum > 1)
     {
-      const struct iso_path_table *ipt2 
+      const iso_path_table_t *ipt2 
         = pathtable_get_entry (pt, entrynum - 2);
 
       cdio_assert (ipt2 != NULL);

@@ -1,5 +1,5 @@
 /*
-    $Id: check_sizeof.c,v 1.3 2003/08/31 08:42:11 rocky Exp $
+    $Id: check_sizeof.c,v 1.4 2005/02/12 10:23:18 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -60,10 +60,10 @@ int main (int argc, const char *argv[])
   CHECK_SIZEOF(msf_t);
 
   /* "iso9660_private.h" */
-  CHECK_SIZEOF_STRUCT(iso_volume_descriptor);
-  CHECK_SIZEOF_STRUCT(iso9660_pvd);
-  CHECK_SIZEOF_STRUCT(iso_path_table);
-  CHECK_SIZEOF_STRUCT(iso9660_dir);
+  CHECK_SIZEOF(iso_volume_descriptor_t);
+  CHECK_SIZEOF(iso9660_pvd_t);
+  CHECK_SIZEOF(iso_path_table_t);
+  CHECK_SIZEOF(iso9660_dir_t);
 
 #define iso9660_xa_t_SIZEOF 14
 

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.11 2005/02/10 01:59:06 rocky Exp $
+    $Id: iso9660_fs.c,v 1.12 2005/02/12 10:23:18 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -51,10 +51,10 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.11 2005/02/10 01:59:06 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.12 2005/02/12 10:23:18 rocky Exp $";
 
 /* Implementation of iso9660_t type */
-struct _iso9660 {
+struct _iso9660_s {
   CdioDataSource_t *stream; /* Stream pointer */
   bool_3way_t b_xa;         /* true if has XA attributes. If true
 			       b_mode2 should be set true as well.
@@ -168,7 +168,7 @@ iso9660_open_ext_private (const char *pathname,
 			  iso_extension_mask_t iso_extension_mask,
 			  uint16_t i_fuzz, bool b_fuzzy)
 {
-  iso9660_t *p_iso = (iso9660_t *) calloc(1, sizeof(struct _iso9660)) ;
+  iso9660_t *p_iso = (iso9660_t *) calloc(1, sizeof(iso9660_t)) ;
   bool b_have_superblock;
 
   if (!p_iso) return NULL;

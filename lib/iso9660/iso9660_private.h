@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660_private.h,v 1.2 2005/02/05 04:25:14 rocky Exp $
+    $Id: iso9660_private.h,v 1.3 2005/02/12 10:23:18 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     See also iso9660.h by Eric Youngdale (1993).
 
@@ -37,16 +37,16 @@
 
 PRAGMA_BEGIN_PACKED
 
-struct iso_volume_descriptor {
-  uint8_t  type;      /* 711 */
-  char     id[5];     /* "CD001" (ISO_STANDARD_ID) */
-  uint8_t  version;   /* 711 */
+typedef struct iso_volume_descriptor_s {
+  uint8_t  type;      /**< 7.1.1 */
+  char     id[5];     /**< "CD001" (ISO_STANDARD_ID) */
+  uint8_t  version;   /**< 7.1.1 */
   char     data[2041];
-} GNUC_PACKED;
+}  GNUC_PACKED iso_volume_descriptor_t;
 
-#define struct_iso_volume_descriptor_SIZEOF ISO_BLOCKSIZE
+#define iso_volume_descriptor_t_SIZEOF ISO_BLOCKSIZE
 
-#define struct_iso9660_pvd_SIZEOF ISO_BLOCKSIZE
+#define iso9660_pvd_t_SIZEOF ISO_BLOCKSIZE
 
 /*
  * XXX JS: The next structure has an odd length!
@@ -59,17 +59,17 @@ struct iso_volume_descriptor {
 
 /* We use this to help us look up the parent inode numbers. */
 
-struct iso_path_table {
-  uint8_t  name_len; /* 711 */
-  uint8_t  xa_len;   /* 711 */
-  uint32_t extent;   /* 731/732 */
-  uint16_t parent;   /* 721/722 */
+typedef struct iso_path_table_s {
+  uint8_t  name_len; /* 7.1.1 */
+  uint8_t  xa_len;   /* 7.1.1 */
+  uint32_t extent;   /* 7.3.1/7.3.2 */
+  uint16_t parent;   /* 7.2.1/7.2.2 */
   char     name[EMPTY_ARRAY_SIZE];
-} GNUC_PACKED;
+} GNUC_PACKED iso_path_table_t;
 
-#define struct_iso_path_table_SIZEOF 8
+#define iso_path_table_t_SIZEOF 8
 
-#define struct_iso9660_dir_SIZEOF 33
+#define iso9660_dir_t_SIZEOF 33
 
 PRAGMA_END_PACKED
 
