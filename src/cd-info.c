@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.66 2004/06/12 17:32:38 rocky Exp $
+    $Id: cd-info.c,v 1.67 2004/06/19 10:38:07 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -473,17 +473,11 @@ print_vcd_info(driver_id_t driver) {
       vcdinfo_close(obj);
       return;
     }
-    fprintf (stdout, "format: %s\n", vcdinfo_get_format_version_str(obj));
-    fprintf (stdout, "album id: `%.16s'\n",  vcdinfo_get_album_id(obj));
-    fprintf (stdout, "volume count: %d\n",   vcdinfo_get_volume_count(obj));
+    fprintf (stdout, "Format      : %s\n", 
+	     vcdinfo_get_format_version_str(obj));
+    fprintf (stdout, "Album       : `%.16s'\n",  vcdinfo_get_album_id(obj));
+    fprintf (stdout, "Volume count: %d\n",   vcdinfo_get_volume_count(obj));
     fprintf (stdout, "volume number: %d\n",  vcdinfo_get_volume_num(obj));
-    fprintf (stdout, "system id: `%s'\n",    vcdinfo_get_system_id(obj));
-    fprintf (stdout, "volume id: `%s'\n",    vcdinfo_get_volume_id(obj));
-    fprintf (stdout, "volumeset id: `%s'\n", vcdinfo_get_volumeset_id(obj));
-    fprintf (stdout, "publisher id: `%s'\n", vcdinfo_get_publisher_id(obj));
-    fprintf (stdout, "preparer id: `%s'\n",  vcdinfo_get_preparer_id(obj));
-    fprintf (stdout, "application id: `%s'\n", 
-	     vcdinfo_get_application_id(obj));
 
     break;
   case VCDINFO_OPEN_ERROR:
@@ -501,14 +495,15 @@ print_vcd_info(driver_id_t driver) {
 #endif 
 
 static void
-print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs, 
-		       bool is_mode2)
+print_iso9660_recurse (const CdIo *cdio, const char pathname[], 
+		       cdio_fs_anal_t fs, 
+		       bool b_mode2)
 {
   CdioList *entlist;
   CdioList *dirlist =  _cdio_list_new ();
   CdioListNode *entnode;
 
-  entlist = iso9660_fs_readdir (cdio, pathname, is_mode2);
+  entlist = iso9660_fs_readdir (cdio, pathname, b_mode2);
     
   printf ("%s:\n", pathname);
 
@@ -571,38 +566,50 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs,
     {
       char *_fullname = _cdio_list_node_data (entnode);
 
-      print_iso9660_recurse (cdio, _fullname, fs, is_mode2);
+      print_iso9660_recurse (cdio, _fullname, fs, b_mode2);
     }
 
   _cdio_list_free (dirlist, true);
 }
 
-static void
-print_iso9660_fs (CdIo *cdio, cdio_fs_anal_t fs, track_format_t track_format)
-{
-  iso9660_pvd_t pvd;
-  bool is_mode2 = false;
-
-  if (fs & CDIO_FS_ANAL_XA) track_format = TRACK_FORMAT_XA;
-
+static bool
+read_iso9660_pvd(const CdIo *p_cdio, track_format_t track_format, /*out*/
+		 iso9660_pvd_t *p_pvd) 		 {
+  
   switch (track_format) {
   case TRACK_FORMAT_CDI:
   case TRACK_FORMAT_XA:
-    if (cdio_read_mode2_sector (cdio, &pvd, ISO_PVD_SECTOR, false))
-      return;
-    is_mode2 = true;
+    if (0 != cdio_read_mode2_sector (p_cdio, p_pvd, ISO_PVD_SECTOR, false))
+      return false;
     break;
   case TRACK_FORMAT_DATA:
-    if (cdio_read_mode1_sector (cdio, &pvd, ISO_PVD_SECTOR, false))
-      return;
-    is_mode2 = false;
+    if (0 != cdio_read_mode1_sector (p_cdio, p_pvd, ISO_PVD_SECTOR, false))
+      return false;
     break;
   case TRACK_FORMAT_AUDIO: 
   case TRACK_FORMAT_PSX: 
   case TRACK_FORMAT_ERROR: 
   default:
-    return;
+    return false;
   }
+  return true;
+}
+		 
+
+static void
+print_iso9660_fs (const CdIo *p_cdio, cdio_fs_anal_t fs, 
+		  track_format_t track_format)
+{
+  iso9660_pvd_t pvd;
+  bool b_mode2 = false;
+
+  if (fs & CDIO_FS_ANAL_XA) track_format = TRACK_FORMAT_XA;
+
+  if ( !read_iso9660_pvd(p_cdio, track_format, &pvd) ) 
+    return;
+  
+  b_mode2 = ( TRACK_FORMAT_CDI == track_format 
+	       || TRACK_FORMAT_XA == track_format );
   
   {
     const lsn_t extent = iso9660_get_root_lsn(&pvd);
@@ -610,7 +617,7 @@ print_iso9660_fs (CdIo *cdio, cdio_fs_anal_t fs, track_format_t track_format)
     printf ("ISO9660 filesystem\n");
     printf (" root dir in PVD set to lsn %lu\n\n", (long unsigned) extent);
     
-    print_iso9660_recurse (cdio, "/", fs, is_mode2);
+    print_iso9660_recurse (p_cdio, "/", fs, b_mode2);
   }
 }
 
@@ -618,7 +625,7 @@ static void
 print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis, 
 	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
 	       track_t num_tracks, track_t first_track_num, 
-	       track_format_t track_format, CdIo *cdio)
+	       track_format_t track_format, CdIo *p_cdio)
 {
   int need_lf;
   
@@ -626,9 +633,9 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
   case CDIO_FS_AUDIO:
     if (num_audio > 0) {
       printf("Audio CD, CDDB disc ID is %08lx\n", 
-	     cddb_discid(cdio, num_tracks));
+	     cddb_discid(p_cdio, num_tracks));
 #ifdef HAVE_CDDB
-      if (!opts.no_cddb) print_cddb_info(cdio, num_tracks, first_track_num);
+      if (!opts.no_cddb) print_cddb_info(p_cdio, num_tracks, first_track_num);
 #endif      
     }
     break;
@@ -675,9 +682,27 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
   case CDIO_FS_ISO_HFS:
     printf("ISO 9660: %i blocks, label `%.32s'\n",
 	   cdio_iso_analysis.isofs_size, cdio_iso_analysis.iso_label);
+
+    {
+      iso9660_pvd_t pvd;
+
+      if ( read_iso9660_pvd(p_cdio, track_format, &pvd) ) {
+	fprintf(stdout, "Application: %s\n", 
+		iso9660_get_application_id(&pvd));
+	fprintf(stdout, "Preparer   : %s\n", iso9660_get_preparer_id(&pvd));
+	fprintf(stdout, "Publisher  : %s\n", iso9660_get_publisher_id(&pvd));
+	fprintf(stdout, "System     : %s\n", iso9660_get_system_id(&pvd));
+	fprintf(stdout, "Volume     : %s\n", iso9660_get_volume_id(&pvd));
+	fprintf(stdout, "Volume Set : %s\n", iso9660_get_volumeset_id(&pvd));
+      }
+      
+    }
+    
     if (opts.print_iso9660) 
-      print_iso9660_fs(cdio, fs, track_format);
+      print_iso9660_fs(p_cdio, fs, track_format);
+    
     break;
+
   }
   need_lf = 0;
   if (first_data == 1 && num_audio > 0)
@@ -709,7 +734,7 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
   if (fs & (CDIO_FS_ANAL_VIDEOCD|CDIO_FS_ANAL_CVD|CDIO_FS_ANAL_SVCD)) 
     if (!opts.no_vcd) {
       printf("\n");
-      print_vcd_info(cdio_get_driver_id(cdio));
+      print_vcd_info(cdio_get_driver_id(p_cdio));
     }
 #endif    
 
