@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.8 2004/05/10 03:28:55 rocky Exp $
+    $Id: freebsd_cam.c,v 1.9 2004/05/31 12:05:12 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.8 2004/05/10 03:28:55 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.9 2004/05/31 12:05:12 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -92,13 +92,11 @@ init_freebsd_cam (_img_private_t *_obj)
 }
 
 void
-free_freebsd_cam (void *obj)
+free_freebsd_cam (void *user_data)
 {
-  _img_private_t *env = obj;
+  _img_private_t *env = user_data;
 
   if (NULL == env) return;
-
-  free (env->device);
 
   if (env->gen.fd > 0)
     close (env->gen.fd);
