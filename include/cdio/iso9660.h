@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660.h,v 1.34 2003/12/24 11:03:58 uid67423 Exp $
+    $Id: iso9660.h,v 1.35 2004/01/10 03:03:08 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     See also iso9660.h by Eric Youngdale (1993).
 
@@ -252,6 +252,29 @@ struct iso9660_stat { /* big endian!! */
 PRAGMA_END_PACKED
 
 
+/** This is an opaque structure. */
+typedef struct _iso9660 iso9660_t; 
+
+/*!
+  Open an ISO 9660 image for reading. Maybe in the future we will have
+  flags and mode. NULL is returned on error.
+*/
+  iso9660_t *iso9660_open (const char *pathname /*flags, mode */);
+
+/*!
+  Close previously opened ISO 9660 image.
+  True is unconditionally returned. If there was an error false would
+  be returned.
+*/
+  bool iso9660_close (iso9660_t * iso);
+
+
+/*!
+  Seek to a position and then read n bytes. Size read is returned.
+*/
+  long int iso9660_iso_seek_read (iso9660_t *iso, void *ptr, lsn_t start, 
+                                  long int size);
+
 /*====================================================
   Time conversion 
  ====================================================*/
@@ -393,16 +416,37 @@ iso9660_stat_t *iso9660_find_fs_lsn(const CdIo *cdio, lsn_t lsn);
 
 
 /*!
+   Given a directory pointer, find the filesystem entry that contains
+   lsn and return information about it.
+
+   Returns stat_t of entry if we found lsn, or NULL otherwise.
+ */
+iso9660_stat_t *iso9660_find_ifs_lsn(const iso9660_t *iso, lsn_t lsn);
+
+
+/*!
   Get file status for pathname into stat. NULL is returned on error.
  */
 iso9660_stat_t *iso9660_fs_stat (const CdIo *obj, const char pathname[], 
                                  bool is_mode2);
+
+/*!
+  Get file status for pathname into stat. NULL is returned on error.
+ */
+void *iso9660_ifs_stat (iso9660_t *iso, const char pathname[]);
+
 
 /*! 
   Read pathname (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
 void * iso9660_fs_readdir (const CdIo *obj, const char pathname[], bool mode2);
+
+/*! 
+  Read pathname (a directory) and return a list of iso9660_stat_t
+  of the files inside that. The caller must free the returned result.
+*/
+void * iso9660_ifs_readdir (const iso9660_t *iso, const char pathname[]);
 
 uint8_t iso9660_get_dir_len(const iso9660_dir_t *idr);
 

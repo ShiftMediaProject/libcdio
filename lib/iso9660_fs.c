@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660_fs.c,v 1.13 2003/11/16 19:30:45 rocky Exp $
+    $Id: iso9660_fs.c,v 1.14 2004/01/10 03:03:08 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,10 +35,71 @@
 #include "cdio_assert.h"
 #include "bytesex.h"
 #include "ds.h"
+#include "_cdio_stdio.h"
+#include "cdio_private.h"
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.13 2003/11/16 19:30:45 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.14 2004/01/10 03:03:08 rocky Exp $";
+
+/* Implementation of iso9660_t type */
+struct _iso9660 {
+  CdioDataSource *stream; /* Stream pointer */
+  void *env;              /* environment. */
+};
+
+/*!
+  Open an ISO 9660 image for reading. Maybe in the future we will have
+  flags and mode. NULL is returned on error.
+*/
+iso9660_t *
+iso9660_open (const char *pathname /*flags, mode */)
+{
+  iso9660_t *iso = (iso9660_t *) _cdio_malloc(sizeof(struct _iso9660)) ;
+
+  if (NULL == iso) return NULL;
+  
+  iso->stream = cdio_stdio_new( pathname );
+  if (NULL == iso->stream) {
+    free(iso);
+    return NULL;
+  }
+  
+  return iso;
+}
+
+
+
+/*!
+  Close previously opened ISO 9660 image.
+  True is unconditionally returned. If there was an error false would
+  be returned.
+*/
+bool 
+iso9660_close (iso9660_t *iso)
+{
+  if (NULL != iso) {
+    cdio_stream_destroy(iso->stream);
+    free(iso);
+  }
+  return true;
+}
+
+
+
+/*!
+  Seek to a position and then read n blocks. Size read is returned.
+*/
+long int 
+iso9660_iso_seek_read (iso9660_t *iso, void *ptr, lsn_t start, long int size)
+{
+  long int ret;
+  if (NULL == iso) return 0;
+  ret = cdio_stream_seek (iso->stream, start * ISO_BLOCKSIZE, SEEK_SET);
+  if (ret!=0) return 0;
+  return cdio_stream_read (iso->stream, ptr, ISO_BLOCKSIZE, size);
+}
+
 
 static iso9660_stat_t *
 _iso9660_dir_to_statbuf (const iso9660_dir_t *iso9660_dir, bool is_mode2)
@@ -155,6 +216,22 @@ _fs_stat_root (const CdIo *cdio, bool is_mode2)
 }
 
 static iso9660_stat_t *
+_fs_stat_iso_root (iso9660_t *iso)
+{
+  char block[ISO_BLOCKSIZE] = { 0, };
+  const iso9660_pvd_t *pvd = (void *) &block;
+  const iso9660_dir_t *iso9660_dir = (void *) pvd->root_directory_record;
+  iso9660_stat_t *stat;
+  int ret;
+
+  ret = iso9660_iso_seek_read (iso, block, ISO_PVD_SECTOR, 1);
+  if (ret!=ISO_BLOCKSIZE) return NULL;
+
+  stat = _iso9660_dir_to_statbuf (iso9660_dir, true);
+  return stat;
+}
+
+static iso9660_stat_t *
 _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root, 
 		   char **splitpath, bool is_mode2)
 {
@@ -187,11 +264,11 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
   if (is_mode2) {
     if (cdio_read_mode2_sectors (cdio, _dirbuf, _root->lsn, false, 
 				 _root->secsize))
-      cdio_assert_not_reached ();
+      return NULL;
   } else {
     if (cdio_read_mode1_sectors (cdio, _dirbuf, _root->lsn, false,
 				 _root->secsize))
-      cdio_assert_not_reached ();
+      return NULL;
   }
   
   while (offset < (_root->secsize * ISO_BLOCKSIZE))
@@ -228,6 +305,74 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
   return NULL;
 }
 
+static iso9660_stat_t *
+_fs_iso_stat_traverse (iso9660_t *iso, const iso9660_stat_t *_root, 
+		       char **splitpath)
+{
+  unsigned offset = 0;
+  uint8_t *_dirbuf = NULL;
+  iso9660_stat_t *stat;
+  int ret;
+
+  if (!splitpath[0])
+    {
+      unsigned int len=sizeof(iso9660_stat_t) + strlen(_root->filename)+1;
+      stat = _cdio_malloc(len);
+      memcpy(stat, _root, len);
+      return stat;
+    }
+
+  if (_root->type == _STAT_FILE)
+    return NULL;
+
+  cdio_assert (_root->type == _STAT_DIR);
+
+  if (_root->size != ISO_BLOCKSIZE * _root->secsize)
+    {
+      cdio_warn ("bad size for ISO9660 directory (%ud) should be (%lu)!",
+		 (unsigned) _root->size, 
+		 (unsigned long int) ISO_BLOCKSIZE * _root->secsize);
+    }
+  
+  _dirbuf = _cdio_malloc (_root->secsize * ISO_BLOCKSIZE);
+
+  ret = iso9660_iso_seek_read (iso, _dirbuf, _root->lsn, _root->secsize);
+  if (ret!=ISO_BLOCKSIZE*_root->secsize) return NULL;
+  
+  while (offset < (_root->secsize * ISO_BLOCKSIZE))
+    {
+      const iso9660_dir_t *iso9660_dir = (void *) &_dirbuf[offset];
+      iso9660_stat_t *stat;
+
+      if (!iso9660_get_dir_len(iso9660_dir))
+	{
+	  offset++;
+	  continue;
+	}
+      
+      stat = _iso9660_dir_to_statbuf (iso9660_dir, true);
+
+      if (!strcmp (splitpath[0], stat->filename))
+	{
+	  iso9660_stat_t *ret_stat 
+	    = _fs_iso_stat_traverse (iso, stat, &splitpath[1]);
+	  free(stat);
+	  free (_dirbuf);
+	  return ret_stat;
+	}
+
+      free(stat);
+	  
+      offset += iso9660_get_dir_len(iso9660_dir);
+    }
+
+  cdio_assert (offset == (_root->secsize * ISO_BLOCKSIZE));
+  
+  /* not found */
+  free (_dirbuf);
+  return NULL;
+}
+
 /*!
   Get file status for pathname into stat. NULL is returned on error.
  */
@@ -238,14 +383,38 @@ iso9660_fs_stat (const CdIo *cdio, const char pathname[], bool is_mode2)
   char **splitpath;
   iso9660_stat_t *stat;
 
-  cdio_assert (cdio != NULL);
-  cdio_assert (pathname != NULL);
+  if (cdio == NULL)     return NULL;
+  if (pathname == NULL) return NULL;
 
   root = _fs_stat_root (cdio, is_mode2);
   if (NULL == root) return NULL;
 
   splitpath = _cdio_strsplit (pathname, '/');
   stat = _fs_stat_traverse (cdio, root, splitpath, is_mode2);
+  free(root);
+  _cdio_strfreev (splitpath);
+
+  return stat;
+}
+
+/*!
+  Get file status for pathname into stat. NULL is returned on error.
+ */
+void *
+iso9660_ifs_stat (iso9660_t *iso, const char pathname[])
+{
+  iso9660_stat_t *root;
+  char **splitpath;
+  iso9660_stat_t *stat;
+
+  if (iso == NULL)      return NULL;
+  if (pathname == NULL) return NULL;
+
+  root = _fs_stat_iso_root (iso);
+  if (NULL == root) return NULL;
+
+  splitpath = _cdio_strsplit (pathname, '/');
+  stat = _fs_iso_stat_traverse (iso, root, splitpath);
   free(root);
   _cdio_strfreev (splitpath);
 

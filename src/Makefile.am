@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.18 2003/11/18 03:35:19 rocky Exp $
+#   $Id: Makefile.am,v 1.19 2004/01/10 03:03:08 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -35,12 +35,15 @@ cd_info_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(CDDB_LIBS)
 cd_read_SOURCES = cd-read.c util.c util.h
 cd_read_LDADD =  $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
 
+iso_info_SOURCES = iso-info.c util.c util.h
+iso_info_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
+
 if BUILD_CDINFO_LINUX
 cdinfo_linux_SOURCES = cdinfo-linux.c
 cdinfo_linux_LDADD = $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
-bin_PROGRAMS = cd-info cd-read cdinfo-linux
+bin_PROGRAMS = cd-info cd-read cdinfo-linux iso-info
 else
-bin_PROGRAMS = cd-info cd-read
+bin_PROGRAMS = cd-info cd-read iso-info
 EXTRA_DIST = cdinfo-linux.c $(man_MANS)
 endif
 else 

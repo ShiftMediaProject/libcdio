@@ -1,7 +1,7 @@
 /*
-  $Id: sample6.c,v 1.2 2004/01/10 03:03:08 rocky Exp $
+  $Id: sample7.c,v 1.1 2004/01/10 03:03:08 rocky Exp $
 
-  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -20,9 +20,9 @@
 
 /* Simple program to show using libiso9660 to extract a file. 
  */
-/* This is the CD-image with an ISO-9660 filesystem */
+/* This is the ISO 9660 image. */
 #define ISO9660_IMAGE_PATH "../"
-#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/isofs-m1.cue"
+#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
 
 #define ISO9660_FILENAME "/COPYING.;1"
 #define LOCAL_FILENAME "copying"
@@ -47,14 +47,14 @@ main(int argc, const char *argv[])
   FILE *outfd;
   int i;
   
-  CdIo *cdio = cdio_open (ISO9660_IMAGE, DRIVER_BINCUE);
+  iso9660_t *iso = iso9660_open (ISO9660_IMAGE);
   
-  if (NULL == cdio) {
-    fprintf(stderr, "Sorry, couldn't open BIN/CUE image %s\n", ISO9660_IMAGE);
+  if (NULL == iso) {
+    fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", ISO9660_IMAGE);
     return 1;
   }
 
-  statbuf = iso9660_fs_stat (cdio, ISO9660_FILENAME, false);
+  statbuf = iso9660_ifs_stat (iso, ISO9660_FILENAME);
 
   if (NULL == statbuf) 
     {
@@ -77,9 +77,9 @@ main(int argc, const char *argv[])
 
       memset (buf, 0, ISO_BLOCKSIZE);
       
-      if ( 0 != cdio_read_mode1_sector (cdio, buf, 
-					statbuf->lsn + (i / ISO_BLOCKSIZE),
-					false) )
+      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (iso, buf, statbuf->lsn 
+						   + (i / ISO_BLOCKSIZE),
+						   1) )
       {
 	fprintf(stderr, "Error reading ISO 9660 file at lsn %d\n",
 		statbuf->lsn + (i / ISO_BLOCKSIZE));
@@ -105,6 +105,6 @@ main(int argc, const char *argv[])
     perror ("ftruncate()");
 
   fclose (outfd);
-  cdio_destroy(cdio);
+  iso9660_close(iso);
   return 0;
 }

@@ -1,7 +1,7 @@
 /*
-    $Id: _cdio_stream.c,v 1.7 2003/10/03 08:32:32 rocky Exp $
+    $Id: _cdio_stream.c,v 1.8 2004/01/10 03:03:08 rocky Exp $
 
-    Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
+    Copyright (C) 2000, 2004 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
 #include <cdio/util.h>
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.7 2003/10/03 08:32:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.8 2004/01/10 03:03:08 rocky Exp $";
 
 /* 
  * DataSource implementations
