@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.17 2004/07/24 11:50:50 rocky Exp $
+    $Id: freebsd.h,v 1.18 2004/07/25 16:16:55 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -109,9 +109,9 @@ struct ioc_read_audio
 
 #include <cdio/util.h>
 
-#define TOTAL_TRACKS    ( env->tochdr.ending_track \
-			- env->tochdr.starting_track + 1)
-#define FIRST_TRACK_NUM (env->tochdr.starting_track)
+#define TOTAL_TRACKS    ( p_env->tochdr.ending_track \
+			- p_env->tochdr.starting_track + 1)
+#define FIRST_TRACK_NUM (p_env->tochdr.starting_track)
 
 typedef  enum {
   _AM_NONE,
@@ -138,7 +138,6 @@ typedef struct {
   bool b_cam_init;
   
   /* Track information */
-  bool toc_init;                         /* if true, info below is valid. */
   struct ioc_toc_header  tochdr;
 
   /* Entry info for each track. Add 1 for leadout. */
