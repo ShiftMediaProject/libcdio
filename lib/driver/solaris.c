@@ -1,5 +1,5 @@
 /*
-    $Id: solaris.c,v 1.5 2005/03/06 22:53:50 rocky Exp $
+    $Id: solaris.c,v 1.6 2005/03/06 23:11:47 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: solaris.c,v 1.5 2005/03/06 22:53:50 rocky Exp $";
+static const char _rcsid[] = "$Id: solaris.c,v 1.6 2005/03/06 23:11:47 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -223,6 +223,19 @@ audio_stop_solaris (void *p_user_data)
 {
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROMSTOP);
+}
+
+/*!
+  Close tray on CD-ROM.
+  
+  @param p_user_data the CD object to be acted upon.
+  
+*/
+static driver_return_code_t 
+close_tray_solaris (void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMSTART);
 }
 
 /*!
@@ -1011,6 +1024,8 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
 
   cdio_funcs_t _funcs;
 
+  memset(&_funcs, 0, sizeof(_funcs));
+
   _funcs.audio_pause            = audio_pause_solaris;
   _funcs.audio_play_msf         = audio_play_msf_solaris;
   _funcs.audio_play_track_index = audio_play_track_index_solaris;
@@ -1019,12 +1034,13 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.audio_set_volume       = audio_set_volume_solaris;
   _funcs.audio_stop             = audio_stop_solaris,
   _funcs.eject_media            = eject_media_solaris;
+  _funcs.close_tray             = close_tray_solaris;
   _funcs.free                   = cdio_generic_free;
   _funcs.get_arg                = get_arg_solaris;
 #if USE_MMC
-  _funcs.get_blocksize          = get_blocksize_mmc,
+  _funcs.get_blocksize          = get_blocksize_mmc;
 #else
-  _funcs.get_blocksize          = get_blocksize_solaris,
+  _funcs.get_blocksize          = get_blocksize_solaris;
 #endif
   _funcs.get_cdtext             = get_cdtext_generic;
   _funcs.get_default_device     = cdio_get_default_device_solaris;
