@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.2 2003/04/26 14:24:44 rocky Exp $
+    $Id: cd-info.c,v 1.3 2003/05/24 15:26:27 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -23,11 +23,9 @@
   CD Info - prints various information about a CD, and detects the type of 
   the CD.
  
-  usage: cdinfo  [options] [ dev ]
- 
 */
 #define PROGRAM_NAME "CD Info"
-#define CDINFO_VERSION "2.0"
+#define CDINFO_VERSION "2.1"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -983,6 +981,10 @@ main(int argc, const char *argv[])
     err_exit("%s: Error in finding a usable device driver\n", program_name);
   } 
 
+  if (opts.debug_level > 0) {
+    printf("CD driver name: %s\n", cdio_get_driver_name(cdio));
+  }
+  
   if (source_name==NULL) {
     source_name=strdup(cdio_get_arg(cdio, "source"));
   } 
