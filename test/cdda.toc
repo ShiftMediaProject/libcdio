@@ -1,0 +1,5 @@
+// $Id: cdda.toc,v 1.1 2004/05/04 03:27:11 rocky Exp $
+CD_DA
+
+TRACK	  AUDIO
+FILE "cdda.bin"   00:00:00 00:00:00
