@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.3 2003/04/22 12:09:09 rocky Exp $
+    $Id: sector.c,v 1.4 2003/09/11 02:50:06 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -26,10 +26,22 @@
 #include <cdio/util.h>
 #include "cdio_assert.h"
 
-static const char _rcsid[] = "$Id: sector.c,v 1.3 2003/04/22 12:09:09 rocky Exp $";
+#include <stdio.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
+
+static const char _rcsid[] = "$Id: sector.c,v 1.4 2003/09/11 02:50:06 rocky Exp $";
+
+lba_t
+cdio_lba_to_lsn (lba_t lba)
+{
+  return lba - CDIO_PREGAP_SECTORS; 
+}
 
 void
-cdio_lba_to_msf (uint32_t lba, msf_t *msf)
+cdio_lba_to_msf (lba_t lba, msf_t *msf)
 {
   cdio_assert (msf != 0);
 
@@ -38,10 +50,18 @@ cdio_lba_to_msf (uint32_t lba, msf_t *msf)
   msf->f = to_bcd8 (lba % 75);
 }
 
-lba_t
-cdio_lba_to_lsn (lba_t lba)
+/* warning, returns new allocated string */
+char *
+cdio_lba_to_msf_str (lba_t lba)
 {
-  return lba - CDIO_PREGAP_SECTORS; 
+  char buf[16];
+  msf_t _msf = { .m = 0, .s = 0, .f = 0 };
+
+  cdio_lba_to_msf (lba, &_msf);
+
+  snprintf (buf, sizeof (buf), "%.2x:%.2x.%.2x", _msf.m, _msf.s, _msf.f);
+
+  return strdup (buf);
 }
 
 lba_t
