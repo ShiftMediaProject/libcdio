@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.7 2003/09/01 15:10:43 rocky Exp $
+    $Id: iso9660.c,v 1.8 2003/09/06 14:50:50 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -19,9 +19,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+/* Private headers */
+#include "iso9660_private.h"
+#include "cdio_assert.h"
+#include "bytesex.h"
+
+/* Public headers */
+#include <cdio/iso9660.h>
+#include <cdio/util.h>
 
 #include <time.h>
 #include <ctype.h>
@@ -32,16 +37,7 @@
 #include <stdio.h>
 #endif
 
-/* Public headers */
-#include <cdio/iso9660.h>
-#include <cdio/util.h>
-
-/* Private headers */
-#include "iso9660_private.h"
-#include "cdio_assert.h"
-#include "bytesex.h"
-
-static const char _rcsid[] = "$Id: iso9660.c,v 1.7 2003/09/01 15:10:43 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.8 2003/09/06 14:50:50 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -84,6 +80,46 @@ _pvd_set_time (char _pvd_date[], const struct tm *_tm)
            0 /* 1/100 secs */ );
   
   _pvd_date[16] = (int8_t) 0; /* tz */
+}
+
+/*!
+   Convert ISO-9660 file name that stored in a directory entry into 
+   what's usually listed as the file name in a listing.
+   Lowercase name, and trailing ;1's or .;1's and turn the
+   other ;'s into version numbers.
+
+   The length of the translated string is returned.
+*/
+int 
+iso9660_name_translate(const char *old, char *new)
+{
+  int len = strlen(old);
+  int i;
+  
+  for (i = 0; i < len; i++) {
+    unsigned char c = old[i];
+    if (!c)
+      break;
+    
+    /* lower case */
+    if (isupper(c)) c = tolower(c);	
+    
+    /* Drop trailing '.;1' (ISO 9660:1988 7.5.1 requires period) */
+    if (c == '.' && i == len - 3 && old[i + 1] == ';' && old[i + 2] == '1')
+      break;
+    
+    /* Drop trailing ';1' */
+    if (c == ';' && i == len - 2 && old[i + 1] == '1')
+      break;
+    
+    /* Convert remaining ';' to '.' */
+    if (c == ';')
+      c = '.';
+    
+    new[i] = c;
+  }
+  new[i] = '\0';
+  return i;
 }
 
 /*!  

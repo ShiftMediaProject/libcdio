@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.6 2003/09/05 22:48:16 rocky Exp $
+    $Id: iso9660_fs.c,v 1.7 2003/09/06 14:50:50 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.6 2003/09/05 22:48:16 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.7 2003/09/06 14:50:50 rocky Exp $";
 
 static void
 _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *buf, bool is_mode2)
@@ -201,9 +201,13 @@ _fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root,
   return -1;
 }
 
+/*!
+  Get file status for pathname into stat. As with libc's stat, 0 is returned
+  if no error and -1 on error.
+ */
 int
-iso9660_fs_stat (const CdIo *cdio, const char pathname[], iso9660_stat_t *buf, 
-		 bool is_mode2)
+iso9660_fs_stat (const CdIo *cdio, const char pathname[], 
+		 /*out*/ iso9660_stat_t *stat, bool is_mode2)
 {
   iso9660_stat_t _root;
   int retval;
@@ -211,12 +215,12 @@ iso9660_fs_stat (const CdIo *cdio, const char pathname[], iso9660_stat_t *buf,
 
   cdio_assert (cdio != NULL);
   cdio_assert (pathname != NULL);
-  cdio_assert (buf != NULL);
+  cdio_assert (stat != NULL);
 
   _fs_stat_root (cdio, &_root, is_mode2);
 
   splitpath = _cdio_strsplit (pathname, '/');
-  retval = _fs_stat_traverse (cdio, &_root, splitpath, buf, is_mode2);
+  retval = _fs_stat_traverse (cdio, &_root, splitpath, stat, is_mode2);
   _cdio_strfreev (splitpath);
 
   return retval;

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.17 2003/09/05 22:48:16 rocky Exp $
+    $Id: iso9660.h,v 1.18 2003/09/06 14:50:50 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -184,6 +184,16 @@ bool iso9660_isdchar (int c);
 */
 bool iso9660_isachar (int c);
 
+/*!
+   Convert ISO-9660 file name that stored in a directory entry into 
+   what's usually listed as the file name in a listing.
+   Lowercase name, and drop deal with trailing ;1's or .;1's or 
+   ; version numbers.
+
+   The length of the translated string is returned.
+*/
+int iso9660_name_translate(const char *old, char *new);
+
 /*!  
   Pad string src with spaces to size len and copy this to dst. If
   len is less than the length of src, dst will be truncated to the
@@ -263,13 +273,15 @@ iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
 
    Returns true if we found an entry with the lsn and false if not.
  */
-bool
-iso9660_find_fs_lsn(const CdIo *cdio, lsn_t lsn, /*out*/ iso9660_stat_t *stat);
+bool iso9660_find_fs_lsn(const CdIo *cdio, lsn_t lsn, 
+                         /*out*/ iso9660_stat_t *stat);
 
-
-int
-iso9660_fs_stat (const CdIo *obj, const char pathname[], iso9660_stat_t *buf,
-                 bool is_mode2);
+/*!
+  Get file status for pathname into stat. As with libc's stat, 0 is returned
+  if no error and -1 on error.
+ */
+int iso9660_fs_stat (const CdIo *obj, const char pathname[], 
+                     /*out*/ iso9660_stat_t *stat, bool is_mode2);
 
 void * /* list of char* -- caller must free it */
 iso9660_fs_readdir (const CdIo *obj, const char pathname[], bool mode2);

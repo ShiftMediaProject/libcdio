@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.31 2003/09/01 22:31:46 rocky Exp $
+    $Id: cd-info.c,v 1.32 2003/09/06 14:50:50 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -612,15 +612,19 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs,
 
   cdio_assert (entlist != NULL);
 
-  /* just iterate */
+  /* Iterate over files in this directory */
   
   _CDIO_LIST_FOREACH (entnode, entlist)
     {
-      char *_name = _cdio_list_node_data (entnode);
+      char *iso_name = _cdio_list_node_data (entnode);
       char _fullname[4096] = { 0, };
       iso9660_stat_t statbuf;
+      char translated_name[MAX_ISONAME+1];
 
-      snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, _name);
+      iso9660_name_translate(iso_name, translated_name);
+      
+      snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
+		iso_name);
   
       if (iso9660_fs_stat (cdio, _fullname, &statbuf, is_mode2))
         cdio_assert_not_reached ();
@@ -628,8 +632,8 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs,
       strncat (_fullname, "/", sizeof (_fullname));
 
       if (statbuf.type == _STAT_DIR
-          && strcmp (_name, ".") 
-          && strcmp (_name, ".."))
+          && strcmp (iso_name, ".") 
+          && strcmp (iso_name, ".."))
         _cdio_list_append (dirlist, strdup (_fullname));
 
       if (fs & CDIO_FS_ANAL_XA) {
@@ -649,14 +653,14 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs,
 	  printf ("%9d", statbuf.size);
 	}
       }
-      printf ("  %s\n", _name);
+      printf ("  %s\n", translated_name);
     }
 
   _cdio_list_free (entlist, true);
 
   printf ("\n");
 
-  /* now recurse */
+  /* Now wecurse over the directories. */
 
   _CDIO_LIST_FOREACH (entnode, dirlist)
     {
