@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.13 2004/02/25 02:04:22 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.14 2004/02/26 04:42:21 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -166,7 +166,7 @@ limited. (However to be fair, it may have only been intended for games
 and may be suitable for that).  Applications that just want the CD
 reading and control portion I think will find quite a bit overhead.
 
-Another related project J\"org Schilling's SCSI library. If I knew how
+Another related project J@"org Schilling's SCSI library. If I knew how
 to make this project hook into that I'd do it. If you want to
 volunteer to undertake, please let me know.
 
