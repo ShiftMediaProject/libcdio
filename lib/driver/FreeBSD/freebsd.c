@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.27 2005/03/29 12:00:23 rocky Exp $
+    $Id: freebsd.c,v 1.28 2005/04/05 02:13:58 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.27 2005/03/29 12:00:23 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.28 2005/04/05 02:13:58 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -359,8 +359,14 @@ audio_read_subchannel_freebsd (void *p_user_data,
   const _img_private_t *p_env = p_user_data;
   int i_rc;
   struct cd_sub_channel_info bsdinfo;
-  bsdinfo.what.position.data_format = CD_CURRENT_POSITION;
-  i_rc = ioctl(p_env->gen.fd, CDIOCREADSUBCHANNEL, &bsdinfo);
+  memset(& bsdinfo, 0, sizeof(struct cd_sub_channel_info));
+  struct ioc_read_subchannel read_subchannel;
+  read_subchannel.address_format = CD_MSF_FORMAT;
+  read_subchannel.data_format = CD_CURRENT_POSITION;
+  read_subchannel.track = 0;
+  read_subchannel.data_len = sizeof(struct cd_sub_channel_info);
+  read_subchannel.data = & bsdinfo;
+  i_rc = ioctl(p_env->gen.fd, CDIOCREADSUBCHANNEL, &read_subchannel);
   if (0 == i_rc) {
     msf_t msf;
     p_subchannel->audio_status = bsdinfo.header.audio_status;
@@ -370,15 +376,12 @@ audio_read_subchannel_freebsd (void *p_user_data,
     p_subchannel->track        = bsdinfo.what.position.track_number;
     p_subchannel->index        = bsdinfo.what.position.index_number;
 
-    cdio_lba_to_msf(bsdinfo.what.position.absaddr.lba, &msf);
-    p_subchannel->abs_addr.m = cdio_from_bcd8 (msf.m);
-    p_subchannel->abs_addr.s = cdio_from_bcd8 (msf.s);
-    p_subchannel->abs_addr.f = cdio_from_bcd8 (msf.f);
-
-    cdio_lsn_to_msf(bsdinfo.what.position.reladdr.lba, &msf);
-    p_subchannel->rel_addr.m = cdio_from_bcd8 (msf.m);
-    p_subchannel->rel_addr.s = cdio_from_bcd8 (msf.s);
-    p_subchannel->rel_addr.f = cdio_from_bcd8 (msf.f);
+    p_subchannel->abs_addr.m = cdio_from_bcd8 (bsdinfo.what.position.absaddr.msf.minute);
+    p_subchannel->abs_addr.s = cdio_from_bcd8 (bsdinfo.what.position.absaddr.msf.second);
+    p_subchannel->abs_addr.f = cdio_from_bcd8 (bsdinfo.what.position.absaddr.msf.frame);
+    p_subchannel->rel_addr.m = cdio_from_bcd8 (bsdinfo.what.position.reladdr.msf.minute);
+    p_subchannel->rel_addr.s = cdio_from_bcd8 (bsdinfo.what.position.reladdr.msf.second);
+    p_subchannel->rel_addr.f = cdio_from_bcd8 (bsdinfo.what.position.reladdr.msf.frame);
  }
   return i_rc;
 }
@@ -728,8 +731,8 @@ close_tray_freebsd (const char *psz_device)
   int fd = open (psz_device, O_RDONLY|O_NONBLOCK, 0);
   int i_rc;
   
-  if((i_rc = ioctl(fd, CDIOCSTART)) != 0) {
-    cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
+  if((i_rc = ioctl(fd, CDIOCCLOSE)) != 0) {
+    cdio_warn ("ioctl CDIOCCLOSE failed: %s\n", strerror(errno));  
     return DRIVER_OP_ERROR;
   }
   close(fd);
@@ -798,6 +801,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .lseek                  = cdio_generic_lseek,
     .read                   = cdio_generic_read,
     .read_audio_sectors     = read_audio_sectors_freebsd,
+    .read_data_sectors      = read_data_sectors_mmc,
     .read_mode2_sector      = read_mode2_sector_freebsd,
     .read_mode2_sectors     = read_mode2_sectors_freebsd,
     .read_toc               = read_toc_freebsd,

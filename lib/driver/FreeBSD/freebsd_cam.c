@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.7 2005/02/07 03:36:02 rocky Exp $
+    $Id: freebsd_cam.c,v 1.8 2005/04/05 02:13:58 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.7 2005/02/07 03:36:02 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.8 2005/04/05 02:13:58 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -72,19 +72,20 @@ run_mmc_cmd_freebsd_cam( const void *p_user_data, unsigned int i_timeout_ms,
   ccb.ccb_h.target_lun = p_env->cam->target_lun;
   ccb.ccb_h.timeout    = i_timeout_ms;
 
-   if (!i_cdb)
-      direction |= CAM_DIR_NONE;
-   else
-      direction |= (e_direction == SCSI_MMC_DATA_READ)?CAM_DIR_IN : CAM_DIR_OUT;
+  if (!i_buf)
+    direction |= CAM_DIR_NONE;
+  else
+    direction |= (e_direction == SCSI_MMC_DATA_READ)?CAM_DIR_IN : CAM_DIR_OUT;
+
+ 
+   memcpy(ccb.csio.cdb_io.cdb_bytes, p_cdb->field, i_cdb);
+   ccb.csio.cdb_len =
+     mmc_get_cmd_len(ccb.csio.cdb_io.cdb_bytes[0]);
+   
   cam_fill_csio (&(ccb.csio), 1, NULL, 
 		 direction | CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, p_buf, i_buf, 
-		 sizeof(ccb.csio.sense_data), 0, 30*1000);
+ 		 sizeof(ccb.csio.sense_data), ccb.csio.cdb_len, 30*1000);
 
-  memcpy(ccb.csio.cdb_io.cdb_bytes, p_cdb, i_cdb);
-  
-  ccb.csio.cdb_len = 
-    mmc_get_cmd_len(ccb.csio.cdb_io.cdb_bytes[0]);
-  
   if ((i_status = cam_send_ccb(p_env->cam, &ccb)) < 0)
     {
       cdio_warn ("transport failed: %d", i_status);
@@ -237,6 +238,7 @@ eject_media_freebsd_cam (_img_private_t *p_env)
 				      &cdb, SCSI_MMC_DATA_WRITE, 0, &buf);
   if (i_status) return i_status;
   
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
   cdb.field[4] = 1;
   i_status = run_mmc_cmd_freebsd_cam (p_env, DEFAULT_TIMEOUT_MSECS,
 				 mmc_get_cmd_len(cdb.field[0]), &cdb, 

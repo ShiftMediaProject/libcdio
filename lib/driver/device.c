@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.22 2005/03/22 08:59:54 rocky Exp $
+    $Id: device.c,v 1.23 2005/04/05 02:13:58 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -134,7 +134,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_open_am_freebsd,
    &cdio_get_default_device_freebsd,
    &cdio_is_device_generic,
-   NULL,
+   &close_tray_freebsd
   },
 
   {DRIVER_LINUX, 
