@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.27 2003/09/18 13:42:01 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.28 2003/09/18 13:49:59 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.27 2003/09/18 13:42:01 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.28 2003/09/18 13:49:59 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -44,6 +44,15 @@ static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.27 2003/09/18 13:42:01 roc
 #include <string.h>
 #endif
 #include <ctype.h>
+
+/* FIXME: should put in a common definition somewhere. */
+#ifdef HAVE_BZERO
+#define BZERO(ptr, size) bzero(ptr, size)
+#elif  HAVE_MEMSET
+#define BZERO(ptr, size) memset(ptr, 0, size)
+#else 
+  Error -- you need either memset or bzero
+#endif
 
 /* reader */
 
@@ -471,7 +480,7 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 			    CDIO_CD_FRAMESIZE_RAW, 1);
   } else {
     /* We need to pad out the first 272 bytes with 0's */
-    bzero(data, 272);
+    BZERO(data, 272);
     
     ret = cdio_stream_seek (_obj->gen.data_source, 0, SEEK_SET);
 
