@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.26 2004/07/24 05:57:20 rocky Exp $
+    $Id: freebsd.c,v 1.27 2004/07/24 06:06:22 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.26 2004/07/24 05:57:20 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.27 2004/07/24 06:06:22 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -306,6 +306,22 @@ get_drive_cap_freebsd (const void *p_user_data,
   
 }  
 
+static int
+scsi_mmc_run_cmd_freebsd( const void *p_user_data, int i_timeout,
+			  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+			  scsi_mmc_direction_t e_direction, 
+			  unsigned int i_buf, /*out*/ void *p_buf ) 
+{
+  const _img_private_t *p_env = p_user_data;
+
+  if (p_env->access_mode == _AM_CAM) 
+    return scsi_mmc_run_cmd_freebsd_cam( p_user_data, i_timeout, i_cdb, p_cdb, 
+					 e_direction, i_buf, p_buf );
+  else 
+    return 2;
+}  
+
+
 /*!
   Return the number of tracks in the current medium.
   CDIO_INVALID_TRACK is returned on error.
@@ -559,6 +575,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .read_audio_sectors = _read_audio_sectors_freebsd,
     .read_mode2_sector  = _read_mode2_sector_freebsd,
     .read_mode2_sectors = _read_mode2_sectors_freebsd,
+    .run_scsi_mmc_cmd   = scsi_mmc_run_cmd_freebsd,
     .set_arg            = _set_arg_freebsd,
     .stat_size          = _stat_size_freebsd
   };
