@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.54 2004/05/27 01:06:34 rocky Exp $
+    $Id: cdio.c,v 1.55 2004/06/07 00:24:45 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.54 2004/05/27 01:06:34 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.55 2004/06/07 00:24:45 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -386,7 +386,7 @@ cdio_get_devices_with_cap (char* search_devices[],
               ? (got_fs & need_fs_ext)  != 0
               : (got_fs | ~need_fs_ext) == -1;
             if (doit) 
-              cdio_add_device_list(&drives_ret, *drives, &num_drives);
+              cdio_add_device_list(&drives_ret, *d, &num_drives);
           }
              
         cdio_destroy(cdio);
