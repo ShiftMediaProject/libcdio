@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.9 2003/09/14 09:34:18 rocky Exp $
+#   $Id: Makefile.am,v 1.10 2003/09/17 02:51:44 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -48,3 +48,15 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 XFAIL_TESTS = testassert
 
 MOSTLYCLEANFILES = core.* *.dump
+
+# This is a really back hack to make sure check_nrg and check_cue.sh
+# are executable. Automake will remake check_nrg.sh and check_cue.sh
+# but not run the configure default commands for them to make sure
+# they are executable. You know it would be nice one could just set
+# permissions and mode when it makes the files. I'm sure there's some
+# cleaner a way to do this, but frankly I've wasted far too much of my
+# life the crappy automess system that I've really lost interest in
+# learning any more of this awful system than I need to.
+check-am:	make-executable
+make-executable: check_nrg.sh check_cue.sh
+	chmod +x *.sh
