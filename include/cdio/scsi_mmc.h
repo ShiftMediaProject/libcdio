@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.3 2004/05/26 06:29:15 rocky Exp $
+    $Id: scsi_mmc.h,v 1.4 2004/06/26 01:08:46 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -18,9 +18,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* 
-   This file contains common definitions/routines for SCSI MMC
-   (Multimedia commands).
+/*!
+   \file scsi_mmc.h 
+   \brief Common definitions for SCSI MMC (Multimedia commands).
 */
 
 #ifndef __SCSI_MMC_H__
