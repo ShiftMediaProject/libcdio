@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.9 2005/01/24 00:06:31 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.10 2005/01/24 00:13:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.9 2005/01/24 00:06:31 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.10 2005/01/24 00:13:22 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -766,7 +766,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .get_default_device = cdio_get_default_device_bsdi,
     .get_devices        = cdio_get_devices_bsdi,
     .get_drive_cap      = get_drive_cap_mmc,
-    .get_disc_last_lsn  = get_disc_last_lsn_bsdi
+    .get_disc_last_lsn  = get_disc_last_lsn_bsdi,
     .get_discmode       = get_discmode_generic,
     .get_first_track_num= get_first_track_num_generic,
     .get_hwinfo         = NULL,
