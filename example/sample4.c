@@ -1,5 +1,5 @@
 /*
-  $Id: sample4.c,v 1.2 2003/09/28 22:11:00 rocky Exp $
+  $Id: sample4.c,v 1.3 2003/10/03 01:42:47 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -151,6 +151,7 @@ main(int argc, const char *argv[])
 
   if (NULL == cdio) {
     printf("Problem in trying to find a driver.\n\n");
+    return 1;
   }
 
   first_track_num = cdio_get_first_track_num(cdio);
