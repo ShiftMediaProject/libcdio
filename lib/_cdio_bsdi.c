@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.34 2004/07/28 01:09:59 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.35 2004/07/29 02:48:55 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.34 2004/07/28 01:09:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.35 2004/07/29 02:48:55 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -57,8 +57,6 @@ static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.34 2004/07/28 01:09:59 rocky
 #include </sys/dev/scsi/scsi.h>
 #include </sys/dev/scsi/scsi_ioctl.h>
 #include "cdtext_private.h"
-
-#define TOTAL_TRACKS    (p_env->tochdr.cdth_trk1)
 
 typedef  enum {
   _AM_NONE,
@@ -106,7 +104,7 @@ typedef struct  cgc
    This code adapted from Steven M. Schultz's libdvd
 */
 static int 
-run_scsi_cmd_bsdi(const void *p_user_data, int i_timeout_ms,
+run_scsi_cmd_bsdi(const void *p_user_data, unsigned int i_timeout_ms,
 		  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
 		  scsi_mmc_direction_t e_direction, 
 		  unsigned int i_buf, /*in/out*/ void *p_buf )
@@ -469,8 +467,9 @@ _set_arg_bsdi (void *user_data, const char key[], const char value[])
   Return false if successful or true if an error.
 */
 static bool
-read_toc_bsdi (_img_private_t *p_env) 
+read_toc_bsdi (void *p_user_data) 
 {
+  _img_private_t *p_env = p_user_data;
   int i;
 
   /* read TOC header */
@@ -481,9 +480,10 @@ read_toc_bsdi (_img_private_t *p_env)
   }
 
   p_env->gen.i_first_track = p_env->tochdr.cdth_trk0;
+  p_env->gen.i_tracks      = p_env->tochdr.cdth_trk1;
   
   /* read individual tracks */
-  for (i= p_env->gen.i_first_track; i<=TOTAL_TRACKS; i++) {
+  for (i= p_env->gen.i_first_track; i<=p_env->gen.i_tracks; i++) {
     p_env->tocent[i-1].cdte_track = i;
     p_env->tocent[i-1].cdte_format = CDROM_MSF;
     if (ioctl(p_env->gen.fd, CDROMREADTOCENTRY, &p_env->tocent[i-1]) == -1) {
@@ -502,11 +502,11 @@ read_toc_bsdi (_img_private_t *p_env)
   }
 
   /* read the lead-out track */
-  p_env->tocent[TOTAL_TRACKS].cdte_track = CDIO_CDROM_LEADOUT_TRACK;
-  p_env->tocent[TOTAL_TRACKS].cdte_format = CDROM_MSF;
+  p_env->tocent[p_env->gen.i_tracks].cdte_track = CDIO_CDROM_LEADOUT_TRACK;
+  p_env->tocent[p_env->gen.i_tracks].cdte_format = CDROM_MSF;
 
   if (ioctl(p_env->gen.fd, CDROMREADTOCENTRY, 
-	    &p_env->tocent[TOTAL_TRACKS]) == -1 ) {
+	    &p_env->tocent[p_env->gen.i_tracks]) == -1 ) {
     cdio_warn("%s: %s\n", 
 	     "error in ioctl CDROMREADTOCENTRY for lead-out",
             strerror(errno));
@@ -514,7 +514,7 @@ read_toc_bsdi (_img_private_t *p_env)
   }
 
   /*
-  struct cdrom_msf0 *msf= &p_env->tocent[TOTAL_TRACKS].cdte_addr.msf;
+  struct cdrom_msf0 *msf= &p_env->tocent[p_env->gen.i_tracks].cdte_addr.msf;
 
   fprintf (stdout, "--- track# %d (msf %2.2x:%2.2x:%2.2x)\n",
 	   i, msf->minute, msf->second, msf->frame);
@@ -570,7 +570,7 @@ get_cdtext_bsdi (void *p_user_data, track_t i_track)
 
   if ( NULL == p_env ||
        (0 != i_track 
-       && i_track >= TOTAL_TRACKS+p_env->gen.i_first_track )
+       && i_track >= p_env->gen.i_tracks+p_env->gen.i_first_track )
        || p_env ->b_cdtext_error )
     return NULL;
 
@@ -645,20 +645,6 @@ _get_arg_bsdi (void *user_data, const char key[])
 }
 
 /*!
-  Return the number of of the first track. 
-  CDIO_INVALID_TRACK is returned on error.
-*/
-static track_t
-_get_first_track_num_bsdi(void *user_data) 
-{
-  _img_private_t *p_env = user_data;
-  
-  if (!p_env->toc_init) read_toc_bsdi (p_env) ;
-
-  return p_env->gen.i_first_track;
-}
-
-/*!
   Return the media catalog number MCN.
   Note: string is malloc'd so caller should free() then returned
   string when done with it.
@@ -673,20 +659,6 @@ _get_mcn_bsdi (const void *user_data) {
   return strdup(mcn.medium_catalog_number);
 }
 
-/*!
-  Return the number of tracks in the current medium.
-  CDIO_INVALID_TRACK is returned on error.
-*/
-static track_t
-_get_num_tracks_bsdi(void *user_data) 
-{
-  _img_private_t *p_env = user_data;
-  
-  if (!p_env->toc_init) read_toc_bsdi (p_env) ;
-
-  return TOTAL_TRACKS;
-}
-
 /*!  
   Get format of track. 
 */
@@ -697,7 +669,7 @@ get_track_format_bsdi(void *user_data, track_t i_track)
   
   if (!p_env->toc_init) read_toc_bsdi (p_env) ;
 
-  if (i_track > TOTAL_TRACKS || i_track == 0)
+  if (i_track > p_env->gen.i_tracks || i_track == 0)
     return TRACK_FORMAT_ERROR;
 
   i_track -= p_env->gen.i_first_track;
@@ -732,9 +704,9 @@ _get_track_green_bsdi(void *user_data, track_t i_track)
   
   if (!p_env->toc_init) read_toc_bsdi (p_env) ;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = p_env->gen.i_tracks+1;
 
-  if (i_track > TOTAL_TRACKS+1 || i_track == 0)
+  if (i_track > p_env->gen.i_tracks+1 || i_track == 0)
     return false;
 
   /* FIXME: Dunno if this is the right way, but it's what 
@@ -759,9 +731,9 @@ _get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
 
   if (!p_env->toc_init) read_toc_bsdi (p_env) ;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = p_env->gen.i_tracks+1;
 
-  if (i_track > TOTAL_TRACKS+1 || i_track == 0) {
+  if (i_track > p_env->gen.i_tracks+1 || i_track == 0) {
     return false;
   } 
 
@@ -774,97 +746,6 @@ _get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
     msf->f = to_bcd8(msf0->frame);
     return true;
   }
-}
-
-/*! 
-  Get disc type associated with cd object.
-*/
-static discmode_t
-get_discmode_bsdi (void *p_user_data)
-{
-  _img_private_t *p_env = p_user_data;
-  track_t i_track;
-  discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
-
-  /* See if this is a DVD. */
-  cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
-
-  dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
-  dvd.physical.layer_num = 0;
-  if (0 == scsi_mmc_get_dvd_struct_physical_private (p_env, 
-						     &run_scsi_cmd_bsdi,
-						     &dvd)) {
-    switch(dvd.physical.layer[0].book_type) {
-    case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
-    case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
-    case CDIO_DVD_BOOK_DVD_R:    return CDIO_DISC_MODE_DVD_R;
-    case CDIO_DVD_BOOK_DVD_RW:   return CDIO_DISC_MODE_DVD_RW;
-    case CDIO_DVD_BOOK_DVD_PR:   return CDIO_DISC_MODE_DVD_PR;
-    case CDIO_DVD_BOOK_DVD_PRW:  return CDIO_DISC_MODE_DVD_PRW;
-    default: return CDIO_DISC_MODE_DVD_OTHER;
-    }
-  }
-
-  if (!p_env->gen.toc_init) 
-    read_toc_bsdi (p_env);
-
-  if (!p_env->gen.toc_init) 
-    return CDIO_DISC_MODE_NO_INFO;
-
-  for (i_track = p_env->gen.i_first_track; 
-       i_track < p_env->gen.i_first_track + TOTAL_TRACKS ; 
-       i_track ++) {
-    track_format_t track_fmt=get_track_format_bsdi(p_env, i_track);
-
-    switch(track_fmt) {
-    case TRACK_FORMAT_AUDIO:
-      switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_DA;
-	  break;
-	case CDIO_DISC_MODE_CD_DA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
-      default:
-	  discmode = CDIO_DISC_MODE_CD_MIXED;
-      }
-      break;
-    case TRACK_FORMAT_XA:
-      switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_XA;
-	  break;
-	case CDIO_DISC_MODE_CD_XA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
-      default:
-	discmode = CDIO_DISC_MODE_CD_MIXED;
-      }
-      break;
-    case TRACK_FORMAT_DATA:
-      switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_DATA;
-	  break;
-	case CDIO_DISC_MODE_CD_DATA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
-      default:
-	discmode = CDIO_DISC_MODE_CD_MIXED;
-      }
-      break;
-    case TRACK_FORMAT_ERROR:
-    default:
-      discmode = CDIO_DISC_MODE_ERROR;
-    }
-  }
-  return discmode;
 }
 
 #endif /* HAVE_BSDI_CDROM */
@@ -962,10 +843,10 @@ cdio_open_bsdi (const char *psz_orig_source)
     .get_default_device = cdio_get_default_device_bsdi,
     .get_devices        = cdio_get_devices_bsdi,
     .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
-    .get_discmode       = get_discmode_bsdi,
-    .get_first_track_num= _get_first_track_num_bsdi,
+    .get_discmode       = get_discmode_generic,
+    .get_first_track_num= get_first_track_num_generic,
     .get_mcn            = _get_mcn_bsdi, 
-    .get_num_tracks     = _get_num_tracks_bsdi,
+    .get_num_tracks     = get_num_tracks_generic,
     .get_track_format   = get_track_format_bsdi,
     .get_track_green    = _get_track_green_bsdi,
     .get_track_lba      = NULL, /* This could be implemented if need be. */
@@ -977,6 +858,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .read_mode1_sectors = _read_mode1_sectors_bsdi,
     .read_mode2_sector  = _read_mode2_sector_bsdi,
     .read_mode2_sectors = _read_mode2_sectors_bsdi,
+    .read_toc           = &read_toc_bsdi,
     .run_scsi_mmc_cmd   = &run_scsi_cmd_bsdi,
     .set_arg            = _set_arg_bsdi,
     .stat_size          = _stat_size_bsdi
