@@ -1,5 +1,5 @@
 /*
-  $Id: low_interface.h,v 1.5 2005/01/07 22:15:25 rocky Exp $
+  $Id: low_interface.h,v 1.6 2005/02/03 07:28:40 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -23,20 +23,18 @@
 #ifndef _CDDA_LOW_INTERFACE_
 #define _CDDA_LOW_INTERFACE_
 
-#include <stdio.h>
+#ifdef HAVE_STDIO_H
 #include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+#ifdef HAVE_ERRNO_H
 #include <errno.h>
-#include <fcntl.h>
-
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
-#include <sys/shm.h>
-#include <sys/time.h>
-#include <sys/types.h>
+#endif
 
 #ifdef HAVE_LINUX_VERSION_H
 #include <linux/version.h>
