@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.27 2005/02/21 02:02:12 rocky Exp $
+    $Id: iso-info.c,v 1.28 2005/02/21 09:00:53 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -203,7 +203,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
       char _fullname[4096] = { 0, };
       char translated_name[MAX_ISONAME+1];
 
-      if (yep != p_statbuf->b3_rock || 1 == opts.no_rock_ridge) {
+      if (yep != p_statbuf->rr.b3_rock || 1 == opts.no_rock_ridge) {
 	iso9660_name_translate_ext(psz_iso_name, translated_name, 
 				   i_joliet_level);
 	snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
@@ -228,10 +228,11 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
       } else 
 	if ( strcmp (psz_iso_name, ".") && strcmp (psz_iso_name, ".."))
 	  printf("%9u %s%s\n", p_statbuf->size, pathname, 
-		 yep == p_statbuf->b3_rock ? psz_iso_name : translated_name);
-      if (p_statbuf->i_symlink) {
-	free(p_statbuf->psz_symlink);
-	p_statbuf->i_symlink = 0;
+		 yep == p_statbuf->rr.b3_rock 
+		 ? psz_iso_name : translated_name);
+      if (p_statbuf->rr.i_symlink) {
+	free(p_statbuf->rr.psz_symlink);
+	p_statbuf->rr.i_symlink = 0;
       }
     }
 

@@ -1,5 +1,5 @@
 /*
-    $Id: rock.h,v 1.5 2005/02/21 02:02:12 rocky Exp $
+    $Id: rock.h,v 1.6 2005/02/21 09:00:53 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -115,7 +115,7 @@ typedef struct iso_su_ce_s {
   char size[8];
 } iso_su_ce_t;
 
-/*! POSIX file attributes, PX. See Section 4.1.2 */
+/*! POSIX file attributes, PX. See Rock Ridge Section 4.1.2 */
 typedef struct iso_rock_px_s {
   iso733_t st_mode;       /*! file mode permissions; same as st_mode 
                             of POSIX:5.6.1 */
@@ -134,12 +134,12 @@ typedef struct iso_rock_px_s {
   file types. No more than one "PN" is recorded in the System Use Area
   of a Directory Record.
 
-  See Section 4.1.2 */
+  See Rock Ridge Section 4.1.2 */
 typedef struct iso_rock_pn_s {
-  iso733_t dev_high;     /*! high-order 32 bits of the 64 bit device number.
-                           7.2.3 encoded */
-  iso733_t dev_low;      /*! low-order 32 bits of the 64 bit device number.
-                           7.2.3 encoded */
+  iso733_t dev_high;     /**< high-order 32 bits of the 64 bit device number.
+                            7.2.3 encoded */
+  iso733_t dev_low;      /**< low-order 32 bits of the 64 bit device number.
+                            7.2.3 encoded */
 } GNUC_PACKED iso_rock_pn_t ;
 
 /*! These are the bits and their meanings for flags in the SL structure. */
@@ -161,13 +161,13 @@ typedef struct iso_rock_sl_part_s {
   char text[EMPTY_ARRAY_SIZE];
 } GNUC_PACKED iso_rock_sl_part_t ;
 
-/*! Symbolic link. See Section 4.1.3 */
+/*! Symbolic link. See Rock Ridge Section 4.1.3 */
 typedef struct iso_rock_sl_s {
   unsigned char flags;
   iso_rock_sl_part_t link;
 } GNUC_PACKED iso_rock_sl_t ;
 
-/*! Alternate name. See Section 4.1.4 */
+/*! Alternate name. See Rock Ridge Section 4.1.4 */
 
 /*! These are the bits and their meanings for flags in the NM structure. */
 typedef enum {
@@ -218,13 +218,23 @@ typedef enum {
 #define ISO_ROCK_TF_EFFECTIVE  64
 #define ISO_ROCK_TF_LONG_FORM 128
 
-/*! Time stamp(s) for a file. See Section 4.1.6 */
+/*! Time stamp(s) for a file. See Rock Ridge Section 4.1.6 */
 typedef struct iso_rock_tf_s {
-  uint8_t flags;
-  iso9660_ltime_t times[EMPTY_ARRAY_SIZE];
+  uint8_t flags; /**< See ISO_ROCK_TF_* bits above. */
+  uint8_t time_bytes[EMPTY_ARRAY_SIZE]; /**< A homogenious array of
+                                           iso9660_ltime_t or
+                                           iso9660_dtime_t entries
+                                           depending on flags &
+                                           ISO_ROCK_TF_LONG_FORM. Lacking
+                                           a better method, we store
+                                           this as an array of bytes
+                                           and a cast to the
+                                           appropriate type will have
+                                           to be made before
+                                           extraction.  */
 } GNUC_PACKED iso_rock_tf_t ;
 
-/*! File data in sparse format. See Section 4.1.7 */
+/*! File data in sparse format. See Rock Ridge Section 4.1.7 */
 typedef struct iso_rock_sf_s {
   iso733_t virtual_size_high; /**< high-order 32 bits of virtual size */
   iso733_t virtual_size_low;  /**< low-order 32 bits of virtual size */
@@ -239,7 +249,7 @@ typedef struct iso_extension_record_s {
                           20 for PN, 5+strlen(text) for SL, 21 for 
                           SF, etc. */
   iso711_t version;    /**< version number - value 1 */
-  union{
+  union {
     iso_su_sp_t    SP;  /**< system-use-sharing protocol - not
                           strictly part of Rock Ridge */
     iso_su_er_t    ER;  /**< system-use extension packet - not
@@ -255,6 +265,48 @@ typedef struct iso_extension_record_s {
   } u;
 } GNUC_PACKED iso_extension_record_t;
 
+typedef struct iso_rock_time_s {
+  bool          b_used;     /**< If true, field has been set and  is valid. 
+                               Otherwise remaning fields are meaningless. */
+  bool          b_longdate;  /**< If true date format is a iso9660_ltime_t. 
+                               Otherwise date is iso9660_dtime_t */
+  union 
+  {
+    iso9660_ltime_t ltime;
+    iso9660_dtime_t dtime;
+  } t;
+} iso_rock_time_t;
+
+typedef struct iso_rock_statbuf_s {
+  bool_3way_t   b3_rock;              /**< has Rock Ridge extension. 
+                                         If "yep", then the fields
+                                         are used.
+                                      */
+  posix_mode_t  st_mode;              /**< protection */
+  posix_nlink_t st_nlinks;            /**< number of hard links */
+  posix_uid_t   st_uid;               /**< user ID of owner */
+  posix_gid_t   st_gid;               /**< group ID of owner */
+  uint8_t       s_rock_offset;
+  int           i_symlink;            /**< size of psz_symlink */
+  int           i_symlink_max;        /**< max allocated to psz_symlink */
+  char         *psz_symlink;          /**< if symbolic link, name
+                                         of pointed to file.  */
+  iso_rock_time_t create;             /**< create time See ISO 9660:9.5.4. */
+  iso_rock_time_t modify;             /**< time of last modification
+                                         ISO 9660:9.5.5. st_mtime field of 
+                                         POSIX:5.6.1. */
+  iso_rock_time_t access;             /**< time of last file access st_atime 
+                                         field of POSIX:5.6.1. */
+  iso_rock_time_t attributes;         /**< time of last attribute change.
+                                         st_ctime field of POSIX:5.6.1. */
+  iso_rock_time_t backup;             /**< time of last backup. */
+  iso_rock_time_t expiration;         /**< time of expiration; See ISO 
+                                         9660:9.5.6. */
+  iso_rock_time_t effective;          /**< Effective time; See ISO 9660:9.5.7.
+                                       */
+
+} iso_rock_statbuf_t;
+  
 PRAGMA_END_PACKED
 
 /*! return length of name field; 0: not found, -1: to be ignored */

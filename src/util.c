@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.41 2005/02/21 02:02:12 rocky Exp $
+  $Id: util.c,v 1.42 2005/02/21 09:00:53 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -463,12 +463,12 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
 {
   char date_str[30];
 
-  if (yep == p_statbuf->b3_rock && b_rock) {
+  if (yep == p_statbuf->rr.b3_rock && b_rock) {
     report (stdout, "  %s %d %d %d [LSN %6lu] %9u",
-	    iso9660_get_rock_attr_str (p_statbuf->st_mode),
-	    p_statbuf->st_nlinks,
-	    p_statbuf->st_uid,
-	    p_statbuf->st_gid,
+	    iso9660_get_rock_attr_str (p_statbuf->rr.st_mode),
+	    p_statbuf->rr.st_nlinks,
+	    p_statbuf->rr.st_uid,
+	    p_statbuf->rr.st_gid,
 	    (long unsigned int) p_statbuf->lsn,
 	    (unsigned int) p_statbuf->size);
 
@@ -494,14 +494,14 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
   }
   strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &p_statbuf->tm);
   report (stdout," %s %s", date_str, 
-	  yep == p_statbuf->b3_rock && b_rock
+	  yep == p_statbuf->rr.b3_rock && b_rock
 	  ? psz_name_untranslated : psz_name_translated);
 
-  if (yep == p_statbuf->b3_rock && b_rock && S_ISLNK(p_statbuf->st_mode)) {
-    report(stdout, " -> %s", p_statbuf->psz_symlink);
+  if (yep == p_statbuf->rr.b3_rock && b_rock 
+      && S_ISLNK(p_statbuf->rr.st_mode)) {
+    report(stdout, " -> %s", p_statbuf->rr.psz_symlink);
   }
   
   report(stdout, "\n");
 
 }
-

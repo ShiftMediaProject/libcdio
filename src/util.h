@@ -1,5 +1,5 @@
 /*
-  $Id: util.h,v 1.11 2005/02/20 10:21:01 rocky Exp $
+  $Id: util.h,v 1.12 2005/02/21 09:00:53 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -134,7 +134,7 @@ void report (FILE *stream, const char *psz_format, ...);
 
 /* Prints "ls"-like file attributes */
 void print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa, 
-	       const char *psz_name_untranslated, 
+		    const char *psz_name_untranslated, 
 		    const char *psz_name_translated);
 
 #endif /* UTIL_H */

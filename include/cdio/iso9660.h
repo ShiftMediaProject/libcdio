@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.70 2005/02/21 02:02:12 rocky Exp $
+    $Id: iso9660.h,v 1.71 2005/02/21 09:00:53 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -526,31 +526,15 @@ PRAGMA_END_PACKED
    @see iso9660_dir
 */
 struct iso9660_stat_s { /* big endian!! */
-  bool_3way_t   b3_rock;              /**< has Rock Ridge extension. 
-                                         If not true then the next 9 fields
-                                         aren't used.
-                                      */
-  posix_mode_t  st_mode;              /**< protection */
-  posix_nlink_t st_nlinks;            /**< number of hard links */
-  posix_uid_t   st_uid;               /**< user ID of owner */
-  posix_gid_t   st_gid;               /**< group ID of owner */
-  uint8_t       s_rock_offset;
-  int           i_symlink;            /**< size of psz_symlink */
-  int           i_symlink_max;        /**< max allocated to psz_symlink */
-  char         *psz_symlink;          /**< if symbolic link, name
-                                           of pointed to file.
-                                       */
-  struct tm     atime;                /**< time of last access */
-  struct tm     mtime;                /**< time of last modification */
-  struct tm     ctime;                /**< create time */
 
-  /* Non Ridge-specific fields  */
-  struct tm    tm;                    /**< time on entry - FIXME merge with
+  iso_rock_statbuf_t rr;              /**< Rock Ridge-specific fields  */
+
+  struct tm          tm;              /**< time on entry - FIXME merge with
                                          one of entries above, like ctime? */
-  lsn_t        lsn;                   /**< start logical sector number */
-  uint32_t     size;                  /**< total size in bytes */
-  uint32_t     secsize;               /**< number of sectors allocated */
-  iso9660_xa_t xa;                    /**< XA attributes */
+  lsn_t              lsn;             /**< start logical sector number */
+  uint32_t           size;            /**< total size in bytes */
+  uint32_t           secsize;         /**< number of sectors allocated */
+  iso9660_xa_t       xa;              /**< XA attributes */
   enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;
   char         filename[EMPTY_ARRAY_SIZE]; /**< filename */
 };

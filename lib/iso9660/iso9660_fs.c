@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.23 2005/02/21 02:02:12 rocky Exp $
+    $Id: iso9660_fs.c,v 1.24 2005/02/21 09:00:53 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.23 2005/02/21 02:02:12 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.24 2005/02/21 09:00:53 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -811,7 +811,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
   p_stat->lsn     = from_733 (p_iso9660_dir->extent);
   p_stat->size    = from_733 (p_iso9660_dir->size);
   p_stat->secsize = _cdio_len2blocks (p_stat->size, ISO_BLOCKSIZE);
-  p_stat->b3_rock = dunno; /*FIXME should do based on mask */
+  p_stat->rr.b3_rock = dunno; /*FIXME should do based on mask */
 
   {
     char rr_fname[256] = "";
@@ -852,7 +852,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
   iso9660_get_dtime(&(p_iso9660_dir->recording_time), true, &(p_stat->tm));
 
   if (dir_len < sizeof (iso9660_dir_t)) {
-    free(p_stat->psz_symlink);
+    free(p_stat->rr.psz_symlink);
     free(p_stat);
     return NULL;
   }
@@ -1048,7 +1048,7 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 
       cmp = strcmp(splitpath[0], p_stat->filename);
 
-      if ( 0 != cmp && 0 == p_env->i_joliet_level && yep != p_stat->b3_rock ) {
+      if ( 0 != cmp && 0 == p_env->i_joliet_level && yep != p_stat->rr.b3_rock ) {
 	char *trans_fname = NULL;
 	unsigned int i_trans_fname=strlen(p_stat->filename);
 	int trans_len;
@@ -1070,13 +1070,13 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
       if (!cmp) {
 	iso9660_stat_t *ret_stat 
 	  = _fs_stat_traverse (p_cdio, p_stat, &splitpath[1]);
-	free(p_stat->psz_symlink);
+	free(p_stat->rr.psz_symlink);
 	free(p_stat);
 	free (_dirbuf);
 	return ret_stat;
       }
 
-      free(p_stat->psz_symlink);
+      free(p_stat->rr.psz_symlink);
       free(p_stat);
 	  
       offset += iso9660_get_dir_len(p_iso9660_dir);
@@ -1140,7 +1140,8 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 
       cmp = strcmp(splitpath[0], p_stat->filename);
 
-      if ( 0 != cmp && 0 == p_iso->i_joliet_level && yep != p_stat->b3_rock ) {
+      if ( 0 != cmp && 0 == p_iso->i_joliet_level 
+	   && yep != p_stat->rr.b3_rock ) {
 	char *trans_fname = malloc(strlen(p_stat->filename)+1);
 	int trans_len;
 	
@@ -1158,13 +1159,13 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
       if (!cmp) {
 	iso9660_stat_t *ret_stat 
 	  = _fs_iso_stat_traverse (p_iso, p_stat, &splitpath[1]);
-	free(p_stat->psz_symlink);
+	free(p_stat->rr.psz_symlink);
 	free(p_stat);
 	free (_dirbuf);
 	return ret_stat;
       }
 
-      free(p_stat->psz_symlink);
+      free(p_stat->rr.psz_symlink);
       free(p_stat);
 	  
       offset += iso9660_get_dir_len(p_iso9660_dir);
@@ -1298,7 +1299,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
   if (!p_stat) return NULL;
 
   if (p_stat->type != _STAT_DIR) {
-    free(p_stat->psz_symlink);
+    free(p_stat->rr.psz_symlink);
     free(p_stat);
     return NULL;
   }
@@ -1363,7 +1364,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
   if (!p_stat)   return NULL;
 
   if (p_stat->type != _STAT_DIR) {
-    free(p_stat->psz_symlink);
+    free(p_stat->rr.psz_symlink);
     free(p_stat);
     return NULL;
   }
