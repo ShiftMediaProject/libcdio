@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.25 2005/02/25 09:08:57 rocky Exp $
+    $Id: iso9660_fs.c,v 1.26 2005/02/28 03:04:21 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.25 2005/02/25 09:08:57 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.26 2005/02/28 03:04:21 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -1320,7 +1320,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
 
     if (cdio_read_data_sectors (p_cdio, _dirbuf, p_stat->lsn, 
 				ISO_BLOCKSIZE, p_stat->secsize))
-	cdio_assert_not_reached ();
+	return NULL;
 
     while (offset < (p_stat->secsize * ISO_BLOCKSIZE))
       {
