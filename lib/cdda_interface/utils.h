@@ -1,5 +1,5 @@
 /*
-  $Id: utils.h,v 1.3 2004/12/19 01:43:38 rocky Exp $
+  $Id: utils.h,v 1.4 2005/01/13 21:38:21 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -43,6 +43,75 @@ catstring(char *buff,const char *s){
     strcat(buff,s);
   }
   return(buff);
+}
+
+static inline int32_t swap32(int32_t x){
+  return((((u_int32_t)x & 0x000000ffU) << 24) | 
+	 (((u_int32_t)x & 0x0000ff00U) <<  8) | 
+	 (((u_int32_t)x & 0x00ff0000U) >>  8) | 
+	 (((u_int32_t)x & 0xff000000U) >> 24));
+}
+
+static inline int16_t swap16(int16_t x){
+  return((((u_int16_t)x & 0x00ffU) <<  8) | 
+	 (((u_int16_t)x & 0xff00U) >>  8));
+}
+
+/*#if BYTE_ORDER == LITTLE_ENDIAN*/
+
+#ifndef WORDS_BIGENDIAN
+
+static inline int32_t be32_to_cpu(int32_t x){
+  return(swap32(x));
+}
+
+static inline int16_t be16_to_cpu(int16_t x){
+  return(swap16(x));
+}
+
+static inline int32_t le32_to_cpu(int32_t x){
+  return(x);
+}
+
+static inline int16_t le16_to_cpu(int16_t x){
+  return(x);
+}
+
+#else
+
+static inline int32_t be32_to_cpu(int32_t x){
+  return(x);
+}
+
+static inline int16_t be16_to_cpu(int16_t x){
+  return(x);
+}
+
+static inline int32_t le32_to_cpu(int32_t x){
+  return(swap32(x));
+}
+
+static inline int16_t le16_to_cpu(int16_t x){
+  return(swap16(x));
+}
+
+
+#endif
+
+static inline int32_t cpu_to_be32(int32_t x){
+  return(be32_to_cpu(x));
+}
+
+static inline int32_t cpu_to_le32(int32_t x){
+  return(le32_to_cpu(x));
+}
+
+static inline int16_t cpu_to_be16(int16_t x){
+  return(be16_to_cpu(x));
+}
+
+static inline int16_t cpu_to_le16(int16_t x){
+  return(le16_to_cpu(x));
 }
 
 void cderror(cdrom_drive_t *d, const char *s);
