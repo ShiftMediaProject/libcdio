@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.33 2004/10/28 11:14:50 rocky Exp $
+#   $Id: Makefile.am,v 1.34 2004/11/21 04:02:09 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -68,7 +68,7 @@ EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
 XFAIL_TESTS = testassert
 
-MOSTLYCLEANFILES = core.* *.dump
+MOSTLYCLEANFILES = core core.* *.dump
 
 test: check
 
