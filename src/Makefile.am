@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.32 2005/02/20 10:21:01 rocky Exp $
+#   $Id: Makefile.am,v 1.33 2005/03/06 11:23:15 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -40,7 +40,7 @@ bin_cd_drive     = cd-drive
 endif
 
 if BUILD_CDINFO
-cd_info_SOURCES = cd-info.c util.c util.h
+cd_info_SOURCES = cd-info.c cddb.c cddb.h util.c util.h
 cd_info_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS) $(LIBICONV)
 bin_cd_info     = cd-info 
 endif
