@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.19 2004/10/24 23:42:39 rocky Exp $
+    $Id: iso9660.c,v 1.20 2004/10/25 01:41:07 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.19 2004/10/24 23:42:39 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.20 2004/10/25 01:41:07 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -393,11 +393,13 @@ iso9660_set_pvd(void *pd,
   ipd.type_l_path_table = to_731(path_table_l_extent); 
   ipd.type_m_path_table = to_732(path_table_m_extent); 
   
-  cdio_assert (sizeof(ipd.root_directory_record) == 34);
+  /* root_directory_record doesn't contain the 1-byte filename,
+     so we add one for that. */
+  cdio_assert (sizeof(ipd.root_directory_record) == 33);
   memcpy(&(ipd.root_directory_record), root_dir, 
          sizeof(ipd.root_directory_record));
-  ipd.root_directory_record.length = 34;
-
+  ipd.root_directory_filename='\0';
+  ipd.root_directory_record.length = 33+1;
   iso9660_strncpy_pad (ipd.volume_set_id, VOLUME_SET_ID, 128, ISO9660_DCHARS);
 
   iso9660_strncpy_pad (ipd.publisher_id, publisher_id, 128, ISO9660_ACHARS);
