@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.83 2004/07/27 01:06:02 rocky Exp $
+    $Id: _cdio_linux.c,v 1.84 2004/07/28 01:09:59 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.83 2004/07/27 01:06:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.84 2004/07/28 01:09:59 rocky Exp $";
 
 #include <string.h>
 
@@ -110,12 +110,13 @@ typedef struct {
 /**** prototypes for static functions ****/
 static bool is_cdrom_linux(const char *drive, char *mnttype);
 static bool read_toc_linux (_img_private_t *p_env);
-static int  scsi_mmc_run_cmd_linux( const void *p_user_data, int i_timeout,
-				    unsigned int i_cdb, 
-				    const scsi_mmc_cdb_t *p_cdb, 
-				    scsi_mmc_direction_t e_direction, 
-				    unsigned int i_buf, 
-				    /*in/out*/ void *p_buf );
+static int  run_scsi_cmd_linux( const void *p_user_data, 
+				unsigned int i_timeout,
+				unsigned int i_cdb, 
+				const scsi_mmc_cdb_t *p_cdb, 
+				scsi_mmc_direction_t e_direction, 
+				unsigned int i_buf, 
+				/*in/out*/ void *p_buf );
 static access_mode_t 
 
 str_to_access_mode_linux(const char *psz_access_mode) 
@@ -502,7 +503,7 @@ get_discmode_linux (void *p_user_data)
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
     case CDIO_DVD_BOOK_DVD_R:    return CDIO_DISC_MODE_DVD_R;
     case CDIO_DVD_BOOK_DVD_RW:   return CDIO_DISC_MODE_DVD_RW;
-    case CDIO_DVD_BOOK_DVD_PW:   return CDIO_DISC_MODE_DVD_PR;
+    case CDIO_DVD_BOOK_DVD_PR:   return CDIO_DISC_MODE_DVD_PR;
     case CDIO_DVD_BOOK_DVD_PRW:  return CDIO_DISC_MODE_DVD_PRW;
     default:                     return CDIO_DISC_MODE_DVD_OTHER;
     }
@@ -600,12 +601,12 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
     if ((retval = scsi_mmc_set_bsize (p_env->gen.cdio, M2RAW_SECTOR_SIZE)))
       return retval;
     
-    if ((retval = scsi_mmc_run_cmd_linux (p_env, 0, 
-					  scsi_mmc_get_cmd_len(cdb.field[0]),
-					  &cdb, 
-					  SCSI_MMC_DATA_READ,
-					  M2RAW_SECTOR_SIZE * nblocks, 
-					  p_buf)))
+    if ((retval = run_scsi_cmd_linux (p_env, 0, 
+				      scsi_mmc_get_cmd_len(cdb.field[0]),
+				      &cdb, 
+				      SCSI_MMC_DATA_READ,
+				      M2RAW_SECTOR_SIZE * nblocks, 
+				      p_buf)))
       {
 	scsi_mmc_set_bsize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
 	return retval;
@@ -614,11 +615,11 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
     if ((retval = scsi_mmc_set_bsize (p_env->gen.cdio, CDIO_CD_FRAMESIZE)))
       return retval;
   } else
-    return scsi_mmc_run_cmd_linux (p_env, 0, 
-				   scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
-				   SCSI_MMC_DATA_READ,
-				   M2RAW_SECTOR_SIZE * nblocks, p_buf);
-
+    return run_scsi_cmd_linux (p_env, 0, 
+			       scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
+			       SCSI_MMC_DATA_READ,
+			       M2RAW_SECTOR_SIZE * nblocks, p_buf);
+  
   return 0;
 }
 
@@ -908,10 +909,11 @@ read_toc_linux (_img_private_t *p_env)
   We return true if command completed successfully and false if not.
  */
 static int
-scsi_mmc_run_cmd_linux( const void *p_user_data, int i_timeout,
-			unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-			scsi_mmc_direction_t e_direction, 
-			unsigned int i_buf, /*in/out*/ void *p_buf )
+run_scsi_cmd_linux( const void *p_user_data, 
+		    unsigned int i_timeout_ms,
+		    unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		    scsi_mmc_direction_t e_direction, 
+		    unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   struct cdrom_generic_command cgc;
@@ -923,8 +925,7 @@ scsi_mmc_run_cmd_linux( const void *p_user_data, int i_timeout,
     ? CGC_DATA_READ : CGC_DATA_WRITE;
 
 #ifdef HAVE_LINUX_CDROM_TIMEOUT
-  if (i_timeout >= 0)
-    cgc.timeout = i_timeout;
+  cgc.timeout = i_timeout_ms;
 #endif
 
   return ioctl (p_env->gen.fd, CDROM_SEND_PACKET, &cgc);
@@ -1013,7 +1014,7 @@ static bool
 init_cdtext_linux (_img_private_t *p_env)
 {
   return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
-				       &scsi_mmc_run_cmd_linux, 
+				       &run_scsi_cmd_linux, 
 				       set_cdtext_field_linux
 				       );
 }
@@ -1216,7 +1217,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .read_mode1_sectors = _read_mode1_sectors_linux,
     .read_mode2_sector  = _read_mode2_sector_linux,
     .read_mode2_sectors = _read_mode2_sectors_linux,
-    .run_scsi_mmc_cmd   = scsi_mmc_run_cmd_linux,
+    .run_scsi_mmc_cmd   = &run_scsi_cmd_linux,
     .set_arg            = set_arg_linux,
     .stat_size          = stat_size_linux
   };

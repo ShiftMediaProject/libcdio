@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.24 2004/07/25 09:39:40 rocky Exp $
+    $Id: freebsd_cam.c,v 1.25 2004/07/28 01:09:59 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.24 2004/07/25 09:39:40 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.25 2004/07/28 01:09:59 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -35,7 +35,7 @@ static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.24 2004/07/25 09:39:40 rock
 
 /* Default value in seconds we will wait for a command to 
    complete. */
-#define DEFAULT_TIMEOUT_SECS 10
+#define DEFAULT_TIMEOUT_MSECS 10000
 
 /*!
   Run a SCSI MMC command. 
@@ -180,7 +180,7 @@ get_mcn_freebsd_cam (const _img_private_t *p_env)
   cdb.field[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
   CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(buf));
 
-  i_status = scsi_mmc_run_cmd_freebsd_cam(p_env, DEFAULT_TIMEOUT_SECS,
+  i_status = scsi_mmc_run_cmd_freebsd_cam(p_env, DEFAULT_TIMEOUT_MSECS,
 					  scsi_mmc_get_cmd_len(cdb.field[0]), 
 					  &cdb, SCSI_MMC_DATA_READ, 
 					  sizeof(buf), buf);
@@ -210,7 +210,7 @@ get_drive_cap_freebsd_cam (const _img_private_t *p_env,
   cdb.field[7]  = 0x01;
   cdb.field[8]  = 0x00; 
 
-  i_status = scsi_mmc_run_cmd_freebsd_cam(p_env, DEFAULT_TIMEOUT_SECS, 
+  i_status = scsi_mmc_run_cmd_freebsd_cam(p_env, DEFAULT_TIMEOUT_MSECS, 
 					  scsi_mmc_get_cmd_len(cdb.field[0]),
 					  &cdb, SCSI_MMC_DATA_READ, 
 					  sizeof(buf), buf);
@@ -287,7 +287,7 @@ _set_bsize (_img_private_t *p_env, unsigned int bsize)
   cdb.field[1] = 1 << 4;
   cdb.field[4] = 12;
   
-  return scsi_mmc_run_cmd_freebsd_cam (p_env, DEFAULT_TIMEOUT_SECS,
+  return scsi_mmc_run_cmd_freebsd_cam (p_env, DEFAULT_TIMEOUT_MSECS,
 				       scsi_mmc_get_cmd_len(cdb.field[0]), 
 				       &cdb, SCSI_MMC_DATA_WRITE, 
 				       sizeof(mh), &mh);
@@ -389,7 +389,7 @@ stat_size_freebsd_cam (_img_private_t *p_env)
   p_env->ccb.csio.data_ptr = buf;
   p_env->ccb.csio.dxfer_len = sizeof (buf);
 
-  i_status = scsi_mmc_run_cmd_freebsd_cam(p_env, DEFAULT_TIMEOUT_SECS,
+  i_status = scsi_mmc_run_cmd_freebsd_cam(p_env, DEFAULT_TIMEOUT_MSECS,
 					  scsi_mmc_get_cmd_len(cdb.field[0]), 
 					  &cdb, SCSI_MMC_DATA_READ, 
 					  sizeof(buf), buf);
@@ -422,14 +422,14 @@ eject_media_freebsd_cam (_img_private_t *p_env)
   
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
 
-  i_status = scsi_mmc_run_cmd_freebsd_cam (p_env, DEFAULT_TIMEOUT_SECS,
+  i_status = scsi_mmc_run_cmd_freebsd_cam (p_env, DEFAULT_TIMEOUT_MSECS,
 					   scsi_mmc_get_cmd_len(cdb.field[0]), 
 					   &cdb, SCSI_MMC_DATA_WRITE, 0, &buf);
   if (0 != i_status)
     return i_status;
   
   cdb.field[4] = 1;
-  i_status = scsi_mmc_run_cmd_freebsd_cam (p_env, DEFAULT_TIMEOUT_SECS,
+  i_status = scsi_mmc_run_cmd_freebsd_cam (p_env, DEFAULT_TIMEOUT_MSECS,
 				 scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
 				 SCSI_MMC_DATA_WRITE, 0, &buf);
   if (0 != i_status)
@@ -438,7 +438,7 @@ eject_media_freebsd_cam (_img_private_t *p_env)
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
   cdb.field[4] = 2; /* eject */
 
-  return scsi_mmc_run_cmd_freebsd_cam (p_env, DEFAULT_TIMEOUT_SECS,
+  return scsi_mmc_run_cmd_freebsd_cam (p_env, DEFAULT_TIMEOUT_MSECS,
 				       scsi_mmc_get_cmd_len(cdb.field[0]), 
 				       &cdb, 
 				       SCSI_MMC_DATA_WRITE, 0, &buf);

@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.27 2004/07/27 02:21:23 rocky Exp $
+    $Id: win32_ioctl.c,v 1.28 2004/07/28 01:09:59 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.27 2004/07/27 02:21:23 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.28 2004/07/28 01:09:59 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -212,7 +212,7 @@ get_discmode_win32ioctl (_img_private_t *p_env)
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
     case CDIO_DVD_BOOK_DVD_R:    return CDIO_DISC_MODE_DVD_R;
     case CDIO_DVD_BOOK_DVD_RW:   return CDIO_DISC_MODE_DVD_RW;
-    case CDIO_DVD_BOOK_DVD_PW:   return CDIO_DISC_MODE_DVD_PR;
+    case CDIO_DVD_BOOK_DVD_PR:   return CDIO_DISC_MODE_DVD_PR;
     case CDIO_DVD_BOOK_DVD_PRW:  return CDIO_DISC_MODE_DVD_PRW;
     default: return CDIO_DISC_MODE_DVD_OTHER;
     }

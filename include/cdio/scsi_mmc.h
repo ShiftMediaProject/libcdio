@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.19 2004/07/27 02:45:16 rocky Exp $
+    $Id: scsi_mmc.h,v 1.20 2004/07/28 01:09:59 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -170,9 +170,8 @@ uint8_t scsi_mmc_get_cmd_len(uint8_t scsi_cmd);
   Run a SCSI MMC command. 
  
   cdio	        CD structure set by cdio_open().
-  i_timeout     time in milliseconds we will wait for the command
-                to complete. If this value is -1, use the default 
-		time-out value.
+  i_timeout_ms  time in milliseconds we will wait for the command
+                to complete. 
   p_cdb	        CDB bytes. All values that are needed should be set on 
                 input. We'll figure out what the right CDB length should be.
   e_direction	direction the transfer is to go.
@@ -181,7 +180,7 @@ uint8_t scsi_mmc_get_cmd_len(uint8_t scsi_cmd);
 
   Returns 0 if command completed successfully.
  */
-int scsi_mmc_run_cmd( const CdIo *cdio, int t_timeout, 
+int scsi_mmc_run_cmd( const CdIo *cdio, unsigned int i_timeout_ms,
 		      const scsi_mmc_cdb_t *p_cdb,
 		      scsi_mmc_direction_t e_direction, unsigned int i_buf, 
 		      /*in/out*/ void *p_buf );

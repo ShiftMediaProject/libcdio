@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: scsi_mmc_private.h,v 1.6 2004/07/27 02:45:16 rocky Exp $
+    $Id: scsi_mmc_private.h,v 1.7 2004/07/28 01:09:59 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -22,8 +22,20 @@
 #include <cdio/scsi_mmc.h>
 #include "cdtext_private.h"
 
+/*! Convert milliseconds to seconds taking the ceiling value, i.e.
+    1002 milliseconds gets rounded to 2 seconds.
+*/
+#define SECS2MSECS 1000
+static inline unsigned int 
+msec2secs(unsigned int msecs) 
+{
+  return (msecs+(SECS2MSECS-1)) / SECS2MSECS;
+}
+#undef SECS2MSECS
+
 typedef 
-int (*scsi_mmc_run_cmd_fn_t) ( const void *p_user_data, int i_timeout,
+int (*scsi_mmc_run_cmd_fn_t) ( const void *p_user_data, 
+			       unsigned int i_timeout_ms,
 			       unsigned int i_cdb, 
 			       const scsi_mmc_cdb_t *p_cdb, 
 			       scsi_mmc_direction_t e_direction, 

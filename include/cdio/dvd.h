@@ -1,5 +1,5 @@
 /*
-    $Id: dvd.h,v 1.2 2004/07/25 15:46:40 rocky Exp $
+    $Id: dvd.h,v 1.3 2004/07/28 01:09:59 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Modeled after GNU/Linux definitions in linux/cdrom.h
@@ -29,7 +29,7 @@
 
 #include <cdio/types.h>
 
-/* DVD structure types */
+/*! Values used in a READ DVD STRUCTURE */
 
 #define CDIO_DVD_STRUCT_PHYSICAL	0x00
 #define CDIO_DVD_STRUCT_COPYRIGHT	0x01
@@ -37,12 +37,13 @@
 #define CDIO_DVD_STRUCT_BCA		0x03
 #define CDIO_DVD_STRUCT_MANUFACT	0x04
 
+/*! Media definitions for "Book Type" */
 #define CDIO_DVD_BOOK_DVD_ROM 0
 #define CDIO_DVD_BOOK_DVD_RAM 1
-#define CDIO_DVD_BOOK_DVD_R   2
-#define CDIO_DVD_BOOK_DVD_RW  3
-#define CDIO_DVD_BOOK_DVD_PW  8
-#define CDIO_DVD_BOOK_DVD_PRW 9
+#define CDIO_DVD_BOOK_DVD_R   2 /**< DVD-R  */
+#define CDIO_DVD_BOOK_DVD_RW  3 /**< DVD-RW */
+#define CDIO_DVD_BOOK_DVD_PR  8 /**< DVD+R  */
+#define CDIO_DVD_BOOK_DVD_PRW 9 /**< DVD+RW */
 
 typedef struct cdio_dvd_layer {
   uint8_t book_version	: 4;

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.33 2004/07/27 16:51:14 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.34 2004/07/28 01:09:59 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.33 2004/07/27 16:51:14 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.34 2004/07/28 01:09:59 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -93,11 +93,11 @@ typedef struct {
 /* Define the Cdrom Generic Command structure */
 typedef struct  cgc
 {
-  u_char  cdb[12];
+  scsi_mmc_cdb_t cdb;
   u_char  *buf;
   int     buflen;
   int     rw;
-  int     timeout;
+  unsigned int timeout;
   scsi_user_sense_t *sus;
 } cgc_t;
 
@@ -106,10 +106,10 @@ typedef struct  cgc
    This code adapted from Steven M. Schultz's libdvd
 */
 static int 
-scsi_mmc_run_cmd_bsdi(const void *p_user_data, int i_timeout,
-		      unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-		      scsi_mmc_direction_t e_direction, 
-		      unsigned int i_buf, /*in/out*/ void *p_buf )
+run_scsi_cmd_bsdi(const void *p_user_data, int i_timeout_ms,
+		  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		  scsi_mmc_direction_t e_direction, 
+		  unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   int     i_status, i_asc;
@@ -123,7 +123,7 @@ scsi_mmc_run_cmd_bsdi(const void *p_user_data, int i_timeout,
   memcpy(suc.suc_cdb, p_cdb, i_cdb);
   suc.suc_data = p_buf;
   suc.suc_datalen = i_buf;
-  suc.suc_timeout = i_timeout;
+  suc.suc_timeout = msecs2secs(i_timeout_ms);
   if      (ioctl(p_env->gen.fd, SCSIRAWCDB, &suc) == -1)
     return(errno);
   i_status = suc.suc_sus.sus_status;
@@ -551,7 +551,7 @@ static bool
 _init_cdtext_bsdi (_img_private_t *p_env)
 {
   return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
-				       &scsi_mmc_run_cmd_bsdi, 
+				       &run_scsi_cmd_bsdi, 
 				       set_cdtext_field_bsdi
 				       );
 }
@@ -776,64 +776,6 @@ _get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
   }
 }
 
-#endif /* HAVE_BSDI_CDROM */
-
-/*!
-  Return an array of strings giving possible CD devices.
- */
-char **
-cdio_get_devices_bsdi (void)
-{
-#ifndef HAVE_BSDI_CDROM
-  return NULL;
-#else
-  char drive[40];
-  char **drives = NULL;
-  unsigned int num_drives=0;
-  bool exists=true;
-  char c;
-  
-  /* Scan the system for CD-ROM drives.
-  */
-
-#ifdef USE_ETC_FSTAB
-
-  struct fstab *fs;
-  setfsent();
-  
-  /* Check what's in /etc/fstab... */
-  while ( (fs = getfsent()) )
-    {
-      if (strncmp(fs->fs_spec, "/dev/sr", 7))
-	cdio_add_device_list(&drives, fs->fs_spec, &num_drives);
-    }
-  
-#endif
-
-  /* Scan the system for CD-ROM drives.
-     Not always 100% reliable, so use the USE_MNTENT code above first.
-  */
-  for ( c='0'; exists && c <='9'; c++ ) {
-    sprintf(drive, "/dev/rsr%cc", c);
-    exists = cdio_is_cdrom(drive, NULL);
-    if ( exists ) {
-      cdio_add_device_list(&drives, drive, &num_drives);
-    }
-  }
-  cdio_add_device_list(&drives, NULL, &num_drives);
-  return drives;
-#endif /*HAVE_BSDI_CDROM*/
-}
-
-/*!
-  Return a string containing the default CD device if none is specified.
- */
-char *
-cdio_get_default_device_bsdi(void)
-{
-  return strdup(DEFAULT_CDIO_DEVICE);
-}
-
 /*! 
   Get disc type associated with cd object.
 */
@@ -850,14 +792,14 @@ get_discmode_bsdi (void *p_user_data)
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
   if (0 == scsi_mmc_get_dvd_struct_physical_private (p_env, 
-						     &scsi_mmc_run_cmd_bsdi,
+						     &run_scsi_cmd_bsdi,
 						     &dvd)) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
     case CDIO_DVD_BOOK_DVD_R:    return CDIO_DISC_MODE_DVD_R;
     case CDIO_DVD_BOOK_DVD_RW:   return CDIO_DISC_MODE_DVD_RW;
-    case CDIO_DVD_BOOK_DVD_PW:   return CDIO_DISC_MODE_DVD_PR;
+    case CDIO_DVD_BOOK_DVD_PR:   return CDIO_DISC_MODE_DVD_PR;
     case CDIO_DVD_BOOK_DVD_PRW:  return CDIO_DISC_MODE_DVD_PRW;
     default: return CDIO_DISC_MODE_DVD_OTHER;
     }
@@ -925,6 +867,64 @@ get_discmode_bsdi (void *p_user_data)
   return discmode;
 }
 
+#endif /* HAVE_BSDI_CDROM */
+
+/*!
+  Return an array of strings giving possible CD devices.
+ */
+char **
+cdio_get_devices_bsdi (void)
+{
+#ifndef HAVE_BSDI_CDROM
+  return NULL;
+#else
+  char drive[40];
+  char **drives = NULL;
+  unsigned int num_drives=0;
+  bool exists=true;
+  char c;
+  
+  /* Scan the system for CD-ROM drives.
+  */
+
+#ifdef USE_ETC_FSTAB
+
+  struct fstab *fs;
+  setfsent();
+  
+  /* Check what's in /etc/fstab... */
+  while ( (fs = getfsent()) )
+    {
+      if (strncmp(fs->fs_spec, "/dev/sr", 7))
+	cdio_add_device_list(&drives, fs->fs_spec, &num_drives);
+    }
+  
+#endif
+
+  /* Scan the system for CD-ROM drives.
+     Not always 100% reliable, so use the USE_MNTENT code above first.
+  */
+  for ( c='0'; exists && c <='9'; c++ ) {
+    sprintf(drive, "/dev/rsr%cc", c);
+    exists = cdio_is_cdrom(drive, NULL);
+    if ( exists ) {
+      cdio_add_device_list(&drives, drive, &num_drives);
+    }
+  }
+  cdio_add_device_list(&drives, NULL, &num_drives);
+  return drives;
+#endif /*HAVE_BSDI_CDROM*/
+}
+
+/*!
+  Return a string containing the default CD device if none is specified.
+ */
+char *
+cdio_get_default_device_bsdi(void)
+{
+  return strdup(DEFAULT_CDIO_DEVICE);
+}
+
 /*!
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
@@ -977,7 +977,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .read_mode1_sectors = _read_mode1_sectors_bsdi,
     .read_mode2_sector  = _read_mode2_sector_bsdi,
     .read_mode2_sectors = _read_mode2_sectors_bsdi,
-    .run_scsi_mmc_cmd   = scsi_mmc_run_cmd_bsdi,
+    .run_scsi_mmc_cmd   = &run_scsi_cmd_bsdi,
     .set_arg            = _set_arg_bsdi,
     .stat_size          = _stat_size_bsdi
   };

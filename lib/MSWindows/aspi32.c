@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.41 2004/07/27 01:23:27 rocky Exp $
+    $Id: aspi32.c,v 1.42 2004/07/28 01:09:59 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.41 2004/07/27 01:23:27 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.42 2004/07/28 01:09:59 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -199,7 +199,7 @@ get_discmode_aspi (_img_private_t *p_env)
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
     case CDIO_DVD_BOOK_DVD_R:    return CDIO_DISC_MODE_DVD_R;
     case CDIO_DVD_BOOK_DVD_RW:   return CDIO_DISC_MODE_DVD_RW;
-    case CDIO_DVD_BOOK_DVD_PW:   return CDIO_DISC_MODE_DVD_PR;
+    case CDIO_DVD_BOOK_DVD_PR:   return CDIO_DISC_MODE_DVD_PR;
     case CDIO_DVD_BOOK_DVD_PRW:  return CDIO_DISC_MODE_DVD_PRW;
     default: return CDIO_DISC_MODE_DVD_OTHER;
     }

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.64 2004/07/27 02:45:16 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.65 2004/07/28 01:09:59 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.64 2004/07/27 02:45:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.65 2004/07/28 01:09:59 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -64,9 +64,6 @@ static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.64 2004/07/27 02:45:16 rock
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include "cdtext_private.h"
-
-/* Number of seconds we wait for a SCSI MMC command to complete. */
-#define DEFAULT_TIMEOUT 30
 
 #define TOTAL_TRACKS    (p_env->tochdr.cdth_trk1)
 
@@ -143,9 +140,8 @@ init_solaris (_img_private_t *env)
   Run a SCSI MMC command. 
  
   p_user_data   internal CD structure.
-  i_timeout     time in milliseconds we will wait for the command
-                to complete. If this value is -1, use the default 
-		time-out value.
+  i_timeout_ms   time in milliseconds we will wait for the command
+                to complete. 
   i_cdb	        Size of p_cdb
   p_cdb	        CDB bytes. 
   e_direction	direction the transfer is to go.
@@ -155,10 +151,10 @@ init_solaris (_img_private_t *env)
   Return 0 if no error.
  */
 static int
-scsi_mmc_run_cmd_solaris( const void *p_user_data, int i_timeout,
-			  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-			  scsi_mmc_direction_t e_direction, 
-			  unsigned int i_buf, /*in/out*/ void *p_buf )
+run_scsi_cmd_solaris( const void *p_user_data, unsigned int i_timeout_ms,
+		      unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		      scsi_mmc_direction_t e_direction, 
+		      unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   struct uscsi_cmd cgc;
@@ -169,7 +165,7 @@ scsi_mmc_run_cmd_solaris( const void *p_user_data, int i_timeout,
   cgc.uscsi_flags = SCSI_MMC_DATA_READ == e_direction ? 
     USCSI_READ : USCSI_WRITE;
 
-  cgc.uscsi_timeout = i_timeout; /* # of seconds for completion */
+  cgc.uscsi_timeout = msecs2secs(i_timeout_ms);
   cgc.uscsi_bufaddr = p_buf;   
   cgc.uscsi_buflen  = i_buf;
   cgc.uscsi_cdblen  = i_cdb;
@@ -479,7 +475,7 @@ static bool
 _init_cdtext_solaris (_img_private_t *p_env)
 {
   return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
-				       &scsi_mmc_run_cmd_solaris, 
+				       &run_scsi_cmd_solaris, 
 				       set_cdtext_field_solaris
 				       );
 }
@@ -623,14 +619,14 @@ get_discmode_solaris (void *p_user_data)
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
   if (0 == scsi_mmc_get_dvd_struct_physical_private (p_env, 
-						     &scsi_mmc_run_cmd_solaris,
+						     &run_scsi_cmd_solaris,
 						     &dvd)) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
     case CDIO_DVD_BOOK_DVD_R:    return CDIO_DISC_MODE_DVD_R;
     case CDIO_DVD_BOOK_DVD_RW:   return CDIO_DISC_MODE_DVD_RW;
-    case CDIO_DVD_BOOK_DVD_PW:   return CDIO_DISC_MODE_DVD_PR;
+    case CDIO_DVD_BOOK_DVD_PR:   return CDIO_DISC_MODE_DVD_PR;
     case CDIO_DVD_BOOK_DVD_PRW:  return CDIO_DISC_MODE_DVD_PRW;
     default: return CDIO_DISC_MODE_DVD_OTHER;
     }
@@ -903,7 +899,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
     .read_mode1_sectors = _read_mode1_sectors_solaris,
     .read_mode2_sector  = _read_mode2_sector_solaris,
     .read_mode2_sectors = _read_mode2_sectors_solaris,
-    .run_scsi_mmc_cmd   = scsi_mmc_run_cmd_solaris,
+    .run_scsi_mmc_cmd   = &run_scsi_cmd_solaris,
     .stat_size          = _cdio_stat_size,
     .set_arg            = _set_arg_solaris
   };
