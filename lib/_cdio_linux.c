@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.72 2004/07/22 09:52:17 rocky Exp $
+    $Id: _cdio_linux.c,v 1.73 2004/07/22 10:13:08 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.72 2004/07/22 09:52:17 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.73 2004/07/22 10:13:08 rocky Exp $";
 
 #include <string.h>
 
@@ -285,7 +285,7 @@ scsi_mmc_run_cmd_linux( const _img_private_t *p_env, int i_timeout,
   memcpy(&cgc.cmd, p_cdb, i_cdb);
   cgc.buflen = i_buf;
   cgc.buffer = p_buf;
-  cgc.data_direction = SCSI_MMC_DATA_READ ? CGC_DATA_READ : CGC_DATA_WRITE;
+  SCSI_MMC_DATA_READ == cgc.data_direction ? CGC_DATA_READ : CGC_DATA_WRITE;
 
 #ifdef HAVE_LINUX_CDROM_TIMEOUT
   if (i_timeout >= 0)
