@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.64 2004/02/27 02:53:25 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.65 2004/02/28 03:57:41 rocky Exp $])dnl
 AC_INIT(libcdio, 0.67cvs)
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -37,7 +37,7 @@ AC_ARG_WITH(cd_read,
 [  --without-cd-read	build program cd-read (enabled by default)],
 enable_cd_read="${withval}", enable_cd_read=yes)
 
-AC_ARG_WITH(enable_versioned_libs,
+AC_ARG_WITH(versioned_libs,
 [  --without-versioned-libs build versioned library symbols (enabled by default)],
 enable_versioned_libs="${withval}", enable_versioned_libs=yes)
 
@@ -71,18 +71,18 @@ else
   unset warning_flags
 fi
 
-dnl We use a Perl for documentation and regression tests
+# We use Perl for documentation and regression tests
 AC_PATH_PROG(PERL, perl, no)
 AC_SUBST(PERL)
 
-dnl We use a diff in regression testing
+# We use a diff in regression testing
 AC_PATH_PROG(DIFF, diff, no)
 DIFF_OPTS=
 
 if test "$DIFF" = no ; then
    AC_PATH_PROG(DIFF, cmp, no)
 else 
-   dnl Try for GNU diff options.
+  # Try for GNU diff options.
   # MSDOG output uses \r\n rather than \n in tests
   for diff_opt in -w --unified ; do 
     if $DIFF $diff_opt ./configure ./configure > /dev/null 2>&1; then
@@ -173,14 +173,31 @@ dnl system
 LIBS="$LIBS -lm"
 CFLAGS="$CFLAGS $WARN_CFLAGS"
 
-AM_CONDITIONAL(CYGWIN, test "x$CYGWIN" = "xyes")
 case "$host_os" in
-  freebsd4* | netbsd* | bsdi* ) 
+  freebsd4* | netbsd*  ) 
      enable_versioned_libs=no
      ;;
   * )
 esac
 
+# We need either GNU make or --without-versioned-libs
+if test "x$enable_versioned_libs" = "xyes" ; then 
+  if test -n "$MAKE" ; then
+    $MAKE --version 2>/dev/null >/dev/null
+    if test "$?" -ne 0 ; then
+       AC_MSG_ERROR(Either set MAKE variable to GNU make or use 
+   --without-versioned-libs option)
+    fi
+  else 
+    make --version 2>/dev/null >/dev/null
+    if test "$?" -ne 0 ; then
+       AC_MSG_ERROR(Either set MAKE variable to GNU make or use 
+   --without-versioned-libs option)
+    fi
+  fi
+fi
+
+AM_CONDITIONAL(CYGWIN, test "x$CYGWIN" = "xyes")
 AM_CONDITIONAL(BUILD_CDINFO, test "x$enable_cd_info" = "xyes")
 AM_CONDITIONAL(BUILD_CDINFO_LINUX, test "x$enable_cd_info_linux" = "xyes")
 AM_CONDITIONAL(BUILD_CDIOTEST, test "x$enable_cdiotest" = "xyes")
