@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.124 2005/03/01 11:14:43 rocky Exp $
+    $Id: cd-info.c,v 1.125 2005/03/01 11:29:52 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -858,23 +858,26 @@ int
 main(int argc, const char *argv[])
 {
 
-  CdIo_t              *p_cdio=NULL;
-  cdio_fs_anal_t       fs=CDIO_FS_AUDIO;
+  CdIo_t                *p_cdio=NULL;
+  cdio_fs_anal_t         fs = CDIO_FS_AUDIO;
   int i;
-  lsn_t                start_track_lsn;      /* lsn of first track */
-  lsn_t                data_start     =  0;  /* start of data area */
-  int                  ms_offset      =  0;
-  track_t              i_tracks       =  0;
-  track_t              i_first_track  =  0;
-  unsigned int         num_audio      =  0;  /* # of audio tracks */
-  unsigned int         num_data       =  0;  /* # of data tracks */
-  int                  first_data     = -1;  /* # of first data track */
-  int                  first_audio    = -1;  /* # of first audio track */
-  bool                 b_playing_audio = false; /* currently playing a 
-						   CD-DA */
-  cdio_iso_analysis_t  cdio_iso_analysis; 
-  char                *media_catalog_number;  
-  discmode_t           discmode = CDIO_DISC_MODE_NO_INFO;
+  lsn_t                  start_track_lsn;      /* lsn of first track */
+  lsn_t                  data_start     =  0;  /* start of data area */
+  int                    ms_offset      =  0;
+  track_t                i_tracks       =  0;
+  track_t                i_first_track  =  0;
+  unsigned int           num_audio      =  0;  /* # of audio tracks */
+  unsigned int           num_data       =  0;  /* # of data tracks */
+  int                    first_data     = -1;  /* # of first data track */
+  int                    first_audio    = -1;  /* # of first audio track */
+  bool                   b_playing_audio = false; /* currently playing a 
+						     CD-DA */
+  cdio_iso_analysis_t    cdio_iso_analysis; 
+  char                  *media_catalog_number;  
+  discmode_t             discmode = CDIO_DISC_MODE_NO_INFO;
+  cdio_drive_read_cap_t  i_read_cap = 0;
+  cdio_drive_write_cap_t i_write_cap;
+  cdio_drive_misc_cap_t  i_misc_cap;
       
   memset(&cdio_iso_analysis, 0, sizeof(cdio_iso_analysis));
   init();
@@ -923,10 +926,8 @@ main(int argc, const char *argv[])
     printf("   access mode: %s\n\n", cdio_get_arg(p_cdio, "access-mode"));
   } 
 
+  cdio_get_drive_cap(p_cdio, &i_read_cap, &i_write_cap, &i_misc_cap);
   if (0 == opts.no_device) {
-    cdio_drive_read_cap_t  i_read_cap;
-    cdio_drive_write_cap_t i_write_cap;
-    cdio_drive_misc_cap_t  i_misc_cap;
     cdio_hwinfo_t          hwinfo;
     if (cdio_get_hwinfo(p_cdio, &hwinfo)) {
       printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
@@ -934,7 +935,6 @@ main(int argc, const char *argv[])
 	     "Model"   , hwinfo.psz_model, 
 	     "Revision", hwinfo.psz_revision);
     }
-    cdio_get_drive_cap(p_cdio, &i_read_cap, &i_write_cap, &i_misc_cap);
     print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
   }
 
@@ -1135,12 +1135,17 @@ main(int argc, const char *argv[])
     /* get and print MCN */
     media_catalog_number = cdio_get_mcn(p_cdio);
   
-    printf("Media Catalog Number (MCN): "); fflush(stdout);
-    if (NULL == media_catalog_number)
-      printf("not available\n");
+    report(stdout, "Media Catalog Number (MCN): "); fflush(stdout);
+    if (NULL == media_catalog_number) {
+      if (i_read_cap & CDIO_DRIVE_CAP_READ_MCN)
+	report(stdout, "not available\n");
+      else
+	report(stdout, "not supported by drive\n");
+    }
+    
     else {
-    printf("%s\n", media_catalog_number);
-    free(media_catalog_number);
+      report(stdout, "%s\n", media_catalog_number);
+      free(media_catalog_number);
     }
   
     /* get audio status from subchannel */
@@ -1184,6 +1189,8 @@ main(int argc, const char *argv[])
 		  subchannel.rel_addr.msf.s,
 		  subchannel.track );
 	}
+      } else if (DRIVER_OP_UNSUPPORTED == rc) {
+	report( stdout, "not implemented\n" );
       } else {
 	report( stdout, "FAILED\n" );
       }
