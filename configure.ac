@@ -19,7 +19,7 @@ define(RELEASE_NUM, 71)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.111 2004/11/06 16:10:27 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.112 2004/11/07 19:26:03 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -56,6 +56,7 @@ enable_cd_info="${withval}", enable_cd_info=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
+AC_AIX
 
 cd_drivers='cdrdao, BIN/CUE, NRG'
 
@@ -190,7 +191,10 @@ AM_PROG_LIBTOOL
      
 dnl system
 
-LIBS="$LIBS -lm"
+# FIXME:
+# I believe some OS's require -lm, but I don't recall for what function
+# When we find it, put it in below instead of "cos".
+AC_CHECK_LIB(m, cos, [LIBS="$LIBS -lm"])
 CFLAGS="$CFLAGS $WARN_CFLAGS"
 
 # We need either GNU make or --without-versioned-libs
@@ -376,6 +380,7 @@ if test x$enable_joliet = xyes; then
      AC_MSG_WARN([You must have iconv installed to get Joliet extension support.])
   fi
 fi
+AC_SUBST(HAVE_JOLIET)
 
 if test x$enable_cddb = x; then
 AC_ARG_ENABLE(cddb,
