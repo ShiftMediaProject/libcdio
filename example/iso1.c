@@ -1,5 +1,5 @@
 /*
-  $Id: iso1.c,v 1.1 2004/10/10 00:21:08 rocky Exp $
+  $Id: iso1.c,v 1.2 2004/11/21 22:30:55 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -69,7 +69,8 @@ main(int argc, const char *argv[])
   _CDIO_LIST_FOREACH (entnode, entlist)
     {
       char filename[4096];
-      iso9660_stat_t *p_statbuf = _cdio_list_node_data (entnode);
+      iso9660_stat_t *p_statbuf = 
+	(iso9660_stat_t *) _cdio_list_node_data (entnode);
       iso9660_name_translate(p_statbuf->filename, filename);
       printf ("/%s\n", filename);
     }
