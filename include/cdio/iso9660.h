@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.6 2003/08/31 03:35:36 rocky Exp $
+    $Id: iso9660.h,v 1.7 2003/08/31 05:00:44 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -53,11 +53,63 @@ enum strncpy_pad_check {
   ISO9660_DCHARS
 };
 
-  /* Opaque types ... */
+PRAGMA_BEGIN_PACKED
 
-  /* Defined fully in iso9660_private.h */
-  typedef struct iso_primary_descriptor iso9660_pvd_t;
-  typedef struct iso_directory_record iso9660_dir_t;
+struct iso9660_pvd {
+  uint8_t  type; /* 711 */
+  char     id[5];
+  uint8_t  version; /* 711 */
+  char     unused1[1];
+  char     system_id[32]; /* achars */
+  char     volume_id[32]; /* dchars */
+  char     unused2[8];
+  uint64_t volume_space_size; /* 733 */
+  char     escape_sequences[32];
+  uint32_t volume_set_size; /* 723 */
+  uint32_t volume_sequence_number; /* 723 */
+  uint32_t logical_block_size; /* 723 */
+  uint64_t path_table_size; /* 733 */
+  uint32_t type_l_path_table; /* 731 */
+  uint32_t opt_type_l_path_table; /* 731 */
+  uint32_t type_m_path_table; /* 732 */
+  uint32_t opt_type_m_path_table; /* 732 */
+  char     root_directory_record[34]; /* 9.1 */
+  char     volume_set_id[128]; /* dchars */
+  char     publisher_id[128]; /* achars */
+  char     preparer_id[128]; /* achars */
+  char     application_id[128]; /* achars */
+  char     copyright_file_id[37]; /* 7.5 dchars */
+  char     abstract_file_id[37]; /* 7.5 dchars */
+  char     bibliographic_file_id[37]; /* 7.5 dchars */
+  char     creation_date[17]; /* 8.4.26.1 */
+  char     modification_date[17]; /* 8.4.26.1 */
+  char     expiration_date[17]; /* 8.4.26.1 */
+  char     effective_date[17]; /* 8.4.26.1 */
+  uint8_t  file_structure_version; /* 711 */
+  char     unused4[1];
+  char     application_data[512];
+  char     unused5[653];
+} GNUC_PACKED;
+
+typedef struct iso9660_pvd iso9660_pvd_t;
+
+struct iso9660_dir {
+  uint8_t  length; /* 711 */
+  uint8_t  ext_attr_length; /* 711 */
+  uint64_t extent; /* 733 */
+  uint64_t size; /* 733 */
+  uint8_t  date[7]; /* 7 by 711 */
+  uint8_t  flags;
+  uint8_t  file_unit_size; /* 711 */
+  uint8_t  interleave; /* 711 */
+  uint32_t volume_sequence_number; /* 723 */
+  uint8_t  name_len; /* 711 */
+  char     name[EMPTY_ARRAY_SIZE];
+} GNUC_PACKED;
+
+typedef struct iso9660_dir iso9660_dir_t;
+
+PRAGMA_END_PACKED
 
 char *
 iso9660_strncpy_pad(char dst[], const char src[], size_t len, 
@@ -135,7 +187,7 @@ uint8_t
 iso9660_get_dir_size(const iso9660_dir_t *idr);
 
 lsn_t
-iso9660_get_dir_extent(const iso9660_dir_t *idr);#
+iso9660_get_dir_extent(const iso9660_dir_t *idr);
 #endif
 
 uint8_t

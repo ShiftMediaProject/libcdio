@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.5 2003/08/31 02:51:41 rocky Exp $
+    $Id: iso9660.c,v 1.6 2003/08/31 05:00:44 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include "cdio_assert.h"
 #include "bytesex.h"
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.5 2003/08/31 02:51:41 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.6 2003/08/31 05:00:44 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -263,7 +263,7 @@ iso9660_dir_calc_record_size(unsigned namelen, unsigned int su_len)
 {
   unsigned length;
 
-  length = sizeof(struct iso_directory_record);
+  length = sizeof(iso9660_dir_t);
   length += namelen;
   if (length % 2) /* pad to word boundary */
     length++;
@@ -283,13 +283,13 @@ iso9660_dir_add_entry_su(void *dir,
                          const void *su_data,
                          unsigned su_size)
 {
-  struct iso_directory_record *idr = dir;
+  iso9660_dir_t *idr = dir;
   uint8_t *dir8 = dir;
   unsigned offset = 0;
   uint32_t dsize = from_733(idr->size);
   int length, su_offset;
 
-  cdio_assert (sizeof(struct iso_directory_record) == 33);
+  cdio_assert (sizeof(iso9660_dir_t) == 33);
 
   if (!dsize && !idr->length)
     dsize = ISO_BLOCKSIZE; /* for when dir lacks '.' entry */
@@ -300,7 +300,7 @@ iso9660_dir_add_entry_su(void *dir,
   cdio_assert (name != NULL);
   cdio_assert (strlen(name) <= MAX_ISOPATHNAME);
 
-  length = sizeof(struct iso_directory_record);
+  length = sizeof(iso9660_dir_t);
   length += strlen(name);
   length = _cdio_ceil2block (length, 2); /* pad to word boundary */
   su_offset = length;
@@ -335,7 +335,7 @@ iso9660_dir_add_entry_su(void *dir,
 
   cdio_assert (offset + length <= dsize);
 
-  idr = (struct iso_directory_record*) &dir8[offset];
+  idr = (iso9660_dir_t *) &dir8[offset];
   
   cdio_assert (offset+length < dsize); 
   
