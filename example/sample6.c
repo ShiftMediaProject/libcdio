@@ -1,5 +1,5 @@
 /*
-  $Id: sample6.c,v 1.4 2004/02/04 10:22:01 rocky Exp $
+  $Id: sample6.c,v 1.5 2004/03/11 01:31:32 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -21,6 +21,11 @@
 /* Simple program to show using libiso9660 to extract a file from a
    cue/bin CD-IMAGE.
  */
+
+#if defined ( WIN32 )
+#define ftruncate chsize
+#endif
+
 /* This is the CD-image with an ISO-9660 filesystem */
 #define ISO9660_IMAGE_PATH "../"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/isofs-m1.cue"

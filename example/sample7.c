@@ -1,5 +1,5 @@
 /*
-  $Id: sample7.c,v 1.4 2004/02/26 00:13:24 rocky Exp $
+  $Id: sample7.c,v 1.5 2004/03/11 01:31:32 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -21,6 +21,11 @@
 /* Simple program to show using libiso9660 to extract a file from an
    ISO-9660 image.
  */
+
+#if defined ( WIN32 )
+#define ftruncate chsize
+#endif
+
 /* This is the ISO 9660 image. */
 #define ISO9660_IMAGE_PATH "../"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
