@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.17 2004/05/11 02:15:58 rocky Exp $
+    $Id: bincue.c,v 1.18 2004/05/13 01:50:23 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.17 2004/05/11 02:15:58 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.18 2004/05/13 01:50:23 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -713,6 +713,8 @@ _get_arg_bincue (void *env, const char key[])
     return _obj->gen.source_name;
   } else if (!strcmp (key, "cue")) {
     return _obj->cue_name;
+  } else if (!strcmp(key, "access-mode")) {
+    return "image";
   } 
   return NULL;
 }

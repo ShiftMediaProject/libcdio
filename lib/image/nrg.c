@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.13 2004/05/11 02:16:01 rocky Exp $
+    $Id: nrg.c,v 1.14 2004/05/13 01:50:25 rocky Exp $
 
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.13 2004/05/11 02:16:01 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.14 2004/05/13 01:50:25 rocky Exp $";
 
 /* structures used */
 
@@ -1047,7 +1047,9 @@ _get_arg_nrg (void *env, const char key[])
 
   if (!strcmp (key, "source")) {
     return _obj->gen.source_name;
-  } 
+  } else if (!strcmp(key, "access-mode")) {
+    return "image";
+  }
   return NULL;
 }
 
@@ -1185,7 +1187,7 @@ cdio_is_nrg(const char *psz_nrg)
 CdIo *
 cdio_open_am_nrg (const char *psz_source_name, const char *psz_access_mode)
 {
-  if (psz_access_mode != NULL)
+  if (psz_access_mode != NULL && strcmp(psz_access_mode, "image"))
     cdio_warn ("there is only one access mode for nrg. Arg %s ignored",
 	       psz_access_mode);
   return cdio_open_nrg(psz_source_name);

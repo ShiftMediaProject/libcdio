@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.51 2004/05/09 22:12:49 rocky Exp $
+    $Id: cdio.c,v 1.52 2004/05/13 01:50:20 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.51 2004/05/09 22:12:49 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.52 2004/05/13 01:50:20 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -192,13 +192,15 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
 };
 
 static CdIo *
-scan_for_driver(driver_id_t start, driver_id_t end, const char *source_name) 
+scan_for_driver(driver_id_t start, driver_id_t end, 
+                const char *psz_source, const char *access_mode) 
 {
   driver_id_t driver_id;
   
   for (driver_id=start; driver_id<=end; driver_id++) {
     if ((*CdIo_all_drivers[driver_id].have_driver)()) {
-      CdIo *ret=(*CdIo_all_drivers[driver_id].driver_open)(source_name);
+      CdIo *ret=
+        (*CdIo_all_drivers[driver_id].driver_open_am)(psz_source, access_mode);
       if (ret != NULL) {
         ret->driver_id = driver_id;
         return ret;
@@ -312,7 +314,7 @@ cdio_get_devices (driver_id_t driver_id)
     /* FIXME: spit out unknown to give image drivers as well.  */
   case DRIVER_UNKNOWN:
   case DRIVER_DEVICE:
-    cdio = scan_for_driver(DRIVER_UNKNOWN, CDIO_MAX_DRIVER, NULL);
+    cdio = scan_for_driver(DRIVER_UNKNOWN, CDIO_MAX_DRIVER, NULL, NULL);
     break;
   default:
     return (*CdIo_all_drivers[driver_id].get_devices)();
@@ -430,7 +432,7 @@ cdio_get_drive_cap_dev (const char *device)
   cdio_drive_cap_t i_drivetype = CDIO_DRIVE_CAP_UNKNOWN;
   
   CdIo *cdio=scan_for_driver(CDIO_MIN_DRIVER, CDIO_MAX_DRIVER, 
-                             device);
+                             device, NULL);
   if (cdio) {
     i_drivetype=cdio_get_drive_cap(cdio);
     cdio_destroy(cdio);
@@ -639,10 +641,10 @@ cdio_have_driver(driver_id_t driver_id)
 }
 
 bool
-cdio_is_device(const char *source_name, driver_id_t driver_id)
+cdio_is_device(const char *psz_source, driver_id_t driver_id)
 {
   if (CdIo_all_drivers[driver_id].is_device == NULL) return false;
-  return (*CdIo_all_drivers[driver_id].is_device)(source_name);
+  return (*CdIo_all_drivers[driver_id].is_device)(psz_source);
 }
 
 
@@ -877,28 +879,42 @@ cdio_set_arg (CdIo *cdio, const char key[], const char value[])
 CdIo *
 cdio_open (const char *orig_source_name, driver_id_t driver_id)
 {
-  char *source_name;
+  return cdio_open_am(orig_source_name, driver_id, NULL);
+}
+
+/*! Sets up to read from place specified by source_name and
+  driver_id. This should be called before using any other routine,
+  except cdio_init. This will call cdio_init, if that hasn't been
+  done previously.
+  
+  NULL is returned on error.
+*/
+CdIo *
+cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
+              const char *psz_access_mode)
+{
+  char *psz_source;
   
   if (CdIo_last_driver == -1) cdio_init();
 
-  if (NULL == orig_source_name || strlen(orig_source_name)==0) 
-    source_name = cdio_get_default_device(NULL);
+  if (NULL == psz_orig_source || strlen(psz_orig_source)==0) 
+    psz_source = cdio_get_default_device(NULL);
   else 
-    source_name = strdup(orig_source_name);
+    psz_source = strdup(psz_orig_source);
   
   switch (driver_id) {
   case DRIVER_UNKNOWN: 
     {
       CdIo *cdio=scan_for_driver(CDIO_MIN_DRIVER, CDIO_MAX_DRIVER, 
-                                 source_name);
-      free(source_name);
+                                 psz_source, psz_access_mode);
+      free(psz_source);
       return cdio;
     }
   case DRIVER_DEVICE: 
     {  
       /* Scan for a driver. */
-      CdIo *ret = cdio_open_cd(source_name);
-      free(source_name);
+      CdIo *ret = cdio_open_cd(psz_source);
+      free(psz_source);
       return ret;
     }
     break;
@@ -912,14 +928,16 @@ cdio_open (const char *orig_source_name, driver_id_t driver_id)
   case DRIVER_BINCUE:
   case DRIVER_CDRDAO:
     if ((*CdIo_all_drivers[driver_id].have_driver)()) {
-      CdIo *ret = (*CdIo_all_drivers[driver_id].driver_open)(source_name);
+      CdIo *ret = 
+        (*CdIo_all_drivers[driver_id].driver_open_am)(psz_source, 
+                                                      psz_access_mode);
       if (ret) ret->driver_id = driver_id;
-      free(source_name);
+      free(psz_source);
       return ret;
     }
   }
 
-  free(source_name);
+  free(psz_source);
   return NULL;
 }
 
@@ -939,7 +957,7 @@ cdio_open_cd (const char *source_name)
 
   /* Scan for a driver. */
   return scan_for_driver(CDIO_MIN_DEVICE_DRIVER, CDIO_MAX_DEVICE_DRIVER, 
-                         source_name);
+                         source_name, NULL);
 }
 
 

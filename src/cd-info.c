@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.60 2004/05/09 17:05:34 rocky Exp $
+    $Id: cd-info.c,v 1.61 2004/05/13 01:50:28 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -739,6 +739,7 @@ init(void)
   opts.no_ioctl      = 0;
   opts.no_analysis   = 0;
   opts.source_image  = IMAGE_UNKNOWN;
+  opts.access_mode   = NULL;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -786,21 +787,21 @@ main(int argc, const char *argv[])
   switch (opts.source_image) {
   case IMAGE_UNKNOWN:
   case IMAGE_AUTO:
-    cdio = cdio_open (source_name, DRIVER_UNKNOWN);
+    cdio = cdio_open_am (source_name, DRIVER_UNKNOWN, opts.access_mode);
     if (cdio==NULL) {
       err_exit("%s: Error in automatically selecting driver for input %s\n", 
 	       program_name, source_name);
     } 
     break;
   case IMAGE_DEVICE:
-    cdio = cdio_open (source_name, DRIVER_DEVICE);
+    cdio = cdio_open_am (source_name, DRIVER_DEVICE, opts.access_mode);
     if (cdio==NULL) {
       err_exit("%s: Error in automatically selecting device for input %s\n", 
 	       program_name, source_name);
     } 
     break;
   case IMAGE_BIN:
-    cdio = cdio_open (source_name, DRIVER_BINCUE);
+    cdio = cdio_open_am (source_name, DRIVER_BINCUE, opts.access_mode);
     if (cdio==NULL) {
       err_exit("%s: Error in opening bin/cue for input %s\n", 
 	       program_name, source_name);
@@ -814,7 +815,7 @@ main(int argc, const char *argv[])
     } 
     break;
   case IMAGE_NRG:
-    cdio = cdio_open (source_name, DRIVER_NRG);
+    cdio = cdio_open_am (source_name, DRIVER_NRG, opts.access_mode);
     if (cdio==NULL) {
       err_exit("%s: Error in opening NRG with input %s\n", 
 	       program_name, source_name);
@@ -822,7 +823,7 @@ main(int argc, const char *argv[])
     break;
 
   case IMAGE_CDRDAO:
-    cdio = cdio_open (source_name, DRIVER_CDRDAO);
+    cdio = cdio_open_am (source_name, DRIVER_CDRDAO, opts.access_mode);
     if (cdio==NULL) {
       err_exit("%s: Error in opening TOC with input %s\n", 
 	       program_name, source_name);
@@ -843,10 +844,11 @@ main(int argc, const char *argv[])
   } 
 
   if (opts.silent == 0) {
-    printf("CD location   : %s\n", source_name);
-    printf("CD driver name: %s\n\n", cdio_get_driver_name(cdio));
-  }
-  
+    printf("CD location   : %s\n",   source_name);
+    printf("CD driver name: %s\n",   cdio_get_driver_name(cdio));
+    printf("   access mode: %s\n\n", cdio_get_arg(cdio, "access-mode"));
+  } 
+
   {
     cdio_drive_cap_t i_drive_cap =  cdio_get_drive_cap(cdio);
     print_drive_capabilities(i_drive_cap);
@@ -865,10 +867,6 @@ main(int argc, const char *argv[])
     cdio_free_device_list(device_list);
     free(device_list);
   }
-
-  if (opts.access_mode!=NULL) {
-    cdio_set_arg(cdio, "access-mode", opts.access_mode);
-  } 
 
   first_track_num = cdio_get_first_track_num(cdio);
   num_tracks      = cdio_get_num_tracks(cdio);

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.3 2004/05/05 02:47:18 rocky Exp $
+    $Id: freebsd.h,v 1.4 2004/05/13 01:50:23 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -31,8 +31,19 @@
 #include "cdio_assert.h"
 #include "cdio_private.h"
 
-/* Is this the right default? */
-#define DEFAULT_CDIO_DEVICE "/dev/cd0c"
+/*!
+  For ioctl access /dev/acd0c is preferred over /dev/cd0c.
+  For cam access /dev/cd0c is preferred. DEFAULT_CDIO_DEVICE and
+  DEFAULT_FREEBSD_AM should be consistent. 
+ */
+
+#ifndef DEFUALT_CDIO_DEVICE
+#define DEFAULT_CDIO_DEVICE "/dev/acd0c"
+#endif
+
+#ifndef DEFUALT_FREEBSD_AM
+#define DEFAULT_FREEBSD_AM _AM_IOCTL
+#endif
 
 #include <string.h>
 

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.48 2004/05/11 12:17:17 rocky Exp $
+    $Id: cdio.h,v 1.49 2004/05/13 01:50:10 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -311,7 +311,7 @@ extern "C" {
   unsigned int cdio_get_track_sec_count(const CdIo *obj, track_t track_num);
 
   /*!
-    Reposition read/write file offset
+    Reposition read offset
     Similar to (if not the same as) libc's lseek()
 
     @param obj object to get information from
