@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.7 2005/01/20 00:36:38 rocky Exp $
+    $Id: device.c,v 1.8 2005/01/26 01:03:16 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -276,6 +276,7 @@ cdio_destroy (CdIo_t *p_cdio)
 
   if (p_cdio->op.free != NULL) 
     p_cdio->op.free (p_cdio->env);
+  p_cdio->env = NULL;
   free (p_cdio);
 }
 

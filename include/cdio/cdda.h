@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.10 2005/01/25 11:04:45 rocky Exp $
+  $Id: cdda.h,v 1.11 2005/01/26 01:03:16 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -175,56 +175,81 @@ extern cdrom_drive_t *cdio_cddap_identify_cooked(const char *ppsz_device,
 
 extern int     cdio_cddap_speed_set(cdrom_drive_t *d, int speed);
 extern void    cdio_cddap_verbose_set(cdrom_drive_t *d, int err_action, 
-				     int mes_action);
+				      int mes_action);
 extern char   *cdio_cddap_messages(cdrom_drive_t *d);
 extern char   *cdio_cddap_errors(cdrom_drive_t *d);
 
+/*!
+  Closes d and releases all storage associated with it except
+  the internal p_cdio pointer. 
+
+  @param d cdrom_drive_t object to be closed.
+  @return 0 if passed a null pointer and 1 if not in which case
+  some work was probably done.
+
+  @see cdio_cddap_close
+*/
+bool cdio_cddap_close_no_free_cdio(cdrom_drive_t *d);
+
+/*!
+  Closes d and releases all storage associated with it.
+  Doubles as "cdrom_drive_free()". 
+
+  @param d cdrom_drive_t object to be closed.
+  @return 0 if passed a null pointer and 1 if not in which case
+  some work was probably done.
+
+  @see cdio_cddap_close_no_free_cdio
+*/
 extern int     cdio_cddap_close(cdrom_drive_t *d);
+
 extern int     cdio_cddap_open(cdrom_drive_t *d);
+
 extern long    cdio_cddap_read(cdrom_drive_t *d, void *p_buffer,
 			       lsn_t beginsector, long sectors);
 
 /*! Return the lsn for the start of track i_track */
-extern lsn_t   cdda_track_firstsector(cdrom_drive_t *d, track_t i_track);
+extern lsn_t   cdio_cddap_track_firstsector(cdrom_drive_t *d, 
+				      track_t i_track);
 
 /*! Get last lsn of the track. This generally one less than the start
   of the next track. -1 is returned on error. */
-extern lsn_t   cdda_track_lastsector(cdrom_drive_t *d, track_t i_track);
+extern lsn_t   cdio_cddap_track_lastsector(cdrom_drive_t *d, track_t i_track);
 
 /*! Return the number of tracks on the CD. */
-extern track_t cdda_tracks(cdrom_drive_t *d);
+extern track_t cdio_cddap_tracks(cdrom_drive_t *d);
 
 /*! Return the track containing the given LSN. If the LSN is before
     the first track (in the pregap), 0 is returned. If there was an
     error or the LSN after the LEADOUT (beyond the end of the CD), then
     CDIO_INVALID_TRACK is returned.
  */
-extern int     cdda_sector_gettrack(cdrom_drive_t *d, lsn_t lsn);
+extern int     cdio_cddap_sector_gettrack(cdrom_drive_t *d, lsn_t lsn);
 
 /*! Return the number of channels in track: 2 or 4; -2 if not
   implemented or -1 for error.
   Not meaningful if track is not an audio track.
 */
-extern int     cdda_track_channels(cdrom_drive_t *d, track_t i_track);
+extern int     cdio_cddap_track_channels(cdrom_drive_t *d, track_t i_track);
 
 /*! Return 1 is track is an audio track, 0 otherwise. */
-extern int     cdda_track_audiop(cdrom_drive_t *d, track_t i_track);
+extern int     cdio_cddap_track_audiop(cdrom_drive_t *d, track_t i_track);
 
 /*! Return 1 is track has copy permit set, 0 otherwise. */
-extern int     cdda_track_copyp(cdrom_drive_t *d, track_t i_track);
+extern int     cdio_cddap_track_copyp(cdrom_drive_t *d, track_t i_track);
 
 /*! Return 1 is audio track has linear preemphasis set, 0 otherwise. 
     Only makes sense for audio tracks.
  */
-extern int     cdda_track_preemp(cdrom_drive_t *d, track_t i_track);
+extern int     cdio_cddap_track_preemp(cdrom_drive_t *d, track_t i_track);
 
 /*! Get first lsn of the first audio track. -1 is returned on error. */
-extern lsn_t   cdda_disc_firstsector(cdrom_drive_t *d);
+extern lsn_t   cdio_cddap_disc_firstsector(cdrom_drive_t *d);
 
 /*! Get last lsn of the last audio track. The last lsn is generally one
   less than the start of the next track after the audio track. -1 is
   returned on error. */
-extern lsn_t   cdda_disc_lastsector(cdrom_drive_t *d);
+extern lsn_t   cdio_cddap_disc_lastsector(cdrom_drive_t *d);
 
 /*! Determine Endian-ness of the CD-drive based on reading data from
   it. Some drives return audio data Big Endian while some (most)
@@ -302,7 +327,7 @@ const char *strerror_tr[]={
 */
 
 /** For compatibility with good ol' paranoia */
-#define cdda_cddap_find_a_cdrom cdio_cddap_find_a_cdrom
+#define cdda_find_a_cdrom       cdio_cddap_find_a_cdrom
 #define cdda_identify           cdio_cddap_identify
 #define cdda_speed_set          cdio_cddap_speed_set
 #define cdda_verbose_set        cdio_cddap_verbose_set
@@ -311,6 +336,16 @@ const char *strerror_tr[]={
 #define cdda_close              cdio_cddap_close
 #define cdda_open               cdio_cddap_open
 #define cdda_read               cdio_cddap_read
+#define cdda_track_firstsector  cdio_cddap_track_firstsector 
+#define cdda_track_lastsector   cdio_cddap_track_lastsector 
+#define cdda_tracks             cdio_cddap_tracks 
+#define cdda_sector_gettrack    cdio_cddap_sector_gettrack  
+#define cdda_track_channels     cdio_cddap_track_channels
+#define cdda_track_audiop       cdio_cddap_track_audiop
+#define cdda_track_copyp        cdio_cddap_track_copyp
+#define cdda_track_preemp       cdio_cddap_track_preemp
+#define cdda_disc_firstsector   cdio_cddap_disc_firstsector
+#define cdda_disc_lastsector    cdio_cddap_disc_lastsector
 
 #endif /*_CDDA_INTERFACE_H_*/
 

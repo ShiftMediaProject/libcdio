@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.11 2005/01/23 19:16:58 rocky Exp $
+    $Id: _cdio_generic.c,v 1.12 2005/01/26 01:03:16 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.11 2005/01/23 19:16:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.12 2005/01/26 01:03:16 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,7 +88,7 @@ cdio_generic_free (void *p_user_data)
   track_t i_track;
 
   if (NULL == p_env) return;
-  free (p_env->source_name);
+  if (p_env->source_name) free (p_env->source_name);
 
   for (i_track=0; i_track < p_env->i_tracks; i_track++) {
     cdtext_destroy(&(p_env->cdtext_track[i_track]));

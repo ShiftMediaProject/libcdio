@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.16 2005/01/25 11:04:45 rocky Exp $
+  $Id: interface.c,v 1.17 2005/01/26 01:03:16 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -41,22 +41,53 @@ static void _clean_messages(cdrom_drive_t *d)
   }
 }
 
-/* doubles as "cdrom_drive_free()" */
-int 
-cdio_cddap_close(cdrom_drive_t *d)
+/*!
+  Closes d and releases all storage associated with it except
+  the internal p_cdio pointer. 
+
+  @param d cdrom_drive_t object to be closed.
+  @return 0 if passed a null pointer and 1 if not in which case
+  some work was probably done.
+
+  @see cdio_cddap_close
+*/
+bool
+cdio_cddap_close_no_free_cdio(cdrom_drive_t *d)
 {
   if(d){
     if(d->opened)
       d->enable_cdda(d,0);
 
-    cdio_destroy (d->p_cdio);
     _clean_messages(d);
     if (d->cdda_device_name) free(d->cdda_device_name);
     if (d->drive_model)      free(d->drive_model);
-    
+    d->cdda_device_name = d->drive_model = NULL;
     free(d);
+    return true;
   }
-  return(0);
+  return false;
+}
+
+/*!
+  Closes d and releases all storage associated with it.
+  Doubles as "cdrom_drive_free()". 
+
+  @param d cdrom_drive_t object to be closed.
+  @return 0 if passed a null pointer and 1 if not in which case
+  some work was probably done.
+
+  @see cdio_cddap_close_no_free_cdio
+*/
+int 
+cdio_cddap_close(cdrom_drive_t *d)
+{
+  if (d) {
+    CdIo_t *p_cdio = d->p_cdio;
+    cdio_cddap_close_no_free_cdio(d);
+    cdio_destroy (p_cdio);
+    return 1;
+  }
+  return 0;
 }
 
 /* finish initializing the drive! */

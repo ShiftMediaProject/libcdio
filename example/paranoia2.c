@@ -90,7 +90,8 @@ main(int argc, const char *argv[])
     }
   }
 
-  cdio_cddap_close(d);
+  cdio_cddap_close_no_free_cdio(d);
+  cdio_destroy( p_cdio );
 
   exit(0);
 }
