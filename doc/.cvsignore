@@ -18,3 +18,4 @@ Makefile
 Makefile.in
 libcdio.html
 stamp-vti
+version.texi

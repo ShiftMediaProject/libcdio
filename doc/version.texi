@@ -1,4 +1,0 @@
-@set UPDATED 6 February 2005
-@set UPDATED-MONTH February 2005
-@set EDITION 0.73cvs
-@set VERSION 0.73cvs
