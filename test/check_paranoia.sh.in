@@ -1,28 +1,22 @@
 #!/bin/sh
-# $Id: check_paranoia.sh.in,v 1.1 2004/12/19 00:02:09 rocky Exp $
+# $Id: check_paranoia.sh.in,v 1.2 2005/01/15 10:17:17 rocky Exp $
 # Compare our cd-paranoia with an installed cdparanoia
 
-if test "@OLD_CDPARANOIA@" != no -a -x @OLD_CDPARANOIA@ ; then
-  if test "@CMP@" != no -a -x @OLD_CDPARANOIA@ ; then
-    for opt in '' '-r' '-p' '-f' '-a'  ; do
-      frames='"1[:130]-1[:134]"'
-      ../src/cd-paranoia/cd-paranoia $frames cdda-try.wav
-      @OLD_CDPARANOIA@ $frames cdda-orig.wav
-      if @CMP@ cdda-try.wav cdda-orig.wav ; then
-        echo "** New and old paranoia output are identical using option '$opt'"
-      else
-        echo "** New and old paranoia output differ using option $opt"
-        exit 3
-      fi
-    done
-    exit 0
-  else 
-    echo "Don't see libcdio cd-paranoia program. Test skipped."
-    exit 77
+if test "@CMP@" != no -a "@BUILD_CD_PARANOIA_TRUE@"X = X ; then
+  ../src/cd-paranoia/cd-paranoia -d ./cdda.cue -v -r -- "1-"
+  dd bs=16 skip=17 if=./cdda.raw of=./cdda-1.raw
+  dd bs=16 if=./cdda.bin of=cdda-2.raw count=44377
+  if @CMP@ ./cdda-1.raw ./cdda-2.raw ; then
+    echo "** Raw cdda.bin extraction okay"
+  else
+    echo "** Raw cdda.bin extraction differ"
+    exit 3
   fi
-else
-    echo "Don't see non-libcdio cdparanoia program. Test skipped."
+  exit 0
+else 
+  echo "Don't see libcdio cd-paranoia program. Test skipped."
   exit 77
+fi
 fi
 #;;; Local Variables: ***
 #;;; mode:shell-script ***
