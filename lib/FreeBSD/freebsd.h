@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.10 2004/06/12 17:40:08 rocky Exp $
+    $Id: freebsd.h,v 1.11 2004/06/19 11:07:56 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -37,7 +37,7 @@
   DEFAULT_FREEBSD_AM should be consistent. 
  */
 
-#ifndef DEFUALT_CDIO_DEVICE
+#ifndef DEFAULT_CDIO_DEVICE
 #define DEFAULT_CDIO_DEVICE "/dev/cd0c"
 #endif
 
@@ -76,7 +76,13 @@ struct ioc_read_audio
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
-#include <sys/param.h>
+#include <sys/param.h> /* for __FreeBSD_version */
+
+#if __FreeBSD_version < 500000
+#define DEVICE_POSTFIX "c"
+#else
+#define DEVICE_POSTFIX ""
+#endif
 
 #define HAVE_FREEBSD_CAM
 #ifdef HAVE_FREEBSD_CAM

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.20 2004/06/12 18:45:54 rocky Exp $
+    $Id: freebsd.c,v 1.21 2004/06/19 11:07:55 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.20 2004/06/12 18:45:54 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.21 2004/06/19 11:07:55 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -443,7 +443,7 @@ cdio_get_devices_freebsd (void)
      Not always 100% reliable, so use the USE_MNTENT code above first.
   */
   for ( c='0'; exists && c <='9'; c++ ) {
-    sprintf(drive, "/dev/cd%cc", c);
+    sprintf(drive, "/dev/cd%c%s", c, DEVICE_POSTFIX);
     exists = cdio_is_cdrom(drive, NULL);
     if ( exists ) {
       cdio_add_device_list(&drives, drive, &num_drives);
@@ -495,7 +495,7 @@ cdio_get_default_device_freebsd()
      Not always 100% reliable, so use the USE_MNTENT code above first.
   */
   for ( c='0'; exists && c <='9'; c++ ) {
-    sprintf(drive, "/dev/cd%cc", c);
+    sprintf(drive, "/dev/cd%c%s", c, DEVICE_POSTFIX);
     exists = cdio_is_cdrom(drive, NULL);
     if ( exists ) {
       return strdup(drive);
@@ -569,6 +569,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
 
   if (NULL == psz_orig_source_name) {
     psz_source_name=cdio_get_default_device_freebsd();
+    if (NULL == psz_source_name) return NULL;
     _data->device  = psz_source_name;
     _set_arg_freebsd(_data, "source", psz_source_name);
   } else {
