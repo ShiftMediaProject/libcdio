@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.13 2003/06/07 20:42:49 rocky Exp $
+    $Id: cdio.h,v 1.14 2003/06/11 10:57:02 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -99,7 +99,7 @@ extern "C" {
   } track_format_t;
 
   /* Printable tags for above enumeration.  */
-  extern const char *track_format2str[5];
+  extern const char *track_format2str[6];
   
   /*!
     Eject media in CD drive if there is a routine to do so. 

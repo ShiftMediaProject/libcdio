@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.7 2003/06/01 21:05:45 rocky Exp $
+#   $Id: Makefile.am,v 1.8 2003/06/11 10:57:02 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -36,5 +36,5 @@ else
 EXTRA_DIST = cdinfo-linux.c cd-info.c
 endif
 
-INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
+INCLUDES = -I$(top_srcdir) $(LIBPOPT_CFLAGS) $(LIBCDIO_CFLAGS)
 
