@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.29 2004/02/21 17:18:04 rocky Exp $
+    $Id: _cdio_linux.c,v 1.30 2004/03/06 04:49:26 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.29 2004/02/21 17:18:04 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.30 2004/03/06 04:49:26 rocky Exp $";
 
 #include <string.h>
 
@@ -353,6 +353,103 @@ _read_packet_mode2_sectors (int fd, void *buf, lba_t lba,
 }
 
 /*!
+   Reads a single mode1 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+static int
+_cdio_read_mode1_sector (void *env, void *data, lsn_t lsn, 
+			 bool mode1_form2)
+{
+
+  char buf[M2RAW_SECTOR_SIZE] = { 0, };
+#if FIXED
+  struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
+  msf_t _msf;
+
+  _img_private_t *_obj = env;
+
+  cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
+  msf->cdmsf_min0 = from_bcd8(_msf.m);
+  msf->cdmsf_sec0 = from_bcd8(_msf.s);
+  msf->cdmsf_frame0 = from_bcd8(_msf.f);
+
+ retry:
+  switch (_obj->access_mode)
+    {
+    case _AM_NONE:
+      cdio_error ("no way to read mode1");
+      return 1;
+      break;
+      
+    case _AM_IOCTL:
+      if (ioctl (_obj->gen.fd, CDROMREADMODE1, &buf) == -1)
+	{
+	  perror ("ioctl()");
+	  return 1;
+	  /* exit (EXIT_FAILURE); */
+	}
+      break;
+      
+    case _AM_READ_CD:
+    case _AM_READ_10:
+      if (_read_packet_mode2_sectors (_obj->gen.fd, buf, lsn, 1, 
+				      (_obj->access_mode == _AM_READ_10)))
+	{
+	  perror ("ioctl()");
+	  if (_obj->access_mode == _AM_READ_CD)
+	    {
+	      cdio_info ("READ_CD failed; switching to READ_10 mode...");
+	      _obj->access_mode = _AM_READ_10;
+	      goto retry;
+	    }
+	  else
+	    {
+	      cdio_info ("READ_10 failed; switching to ioctl(CDROMREADMODE2) mode...");
+	      _obj->access_mode = _AM_IOCTL;
+	      goto retry;
+	    }
+	  return 1;
+	}
+      break;
+    }
+
+  memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
+	  mode1_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
+  
+#else
+  if (0 > cdio_generic_lseek(env, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
+    return -1;
+  if (0 > cdio_generic_read(env, buf, CDIO_CD_FRAMESIZE))
+    return -1;
+  memcpy (data, buf, mode1_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
+#endif
+  return 0;
+}
+
+/*!
+   Reads nblocks of mode2 sectors from cd device into data starting
+   from lsn.
+   Returns 0 if no error. 
+ */
+static int
+_cdio_read_mode1_sectors (void *env, void *data, lsn_t lsn, 
+			  bool mode1_form2, unsigned int nblocks)
+{
+  _img_private_t *_obj = env;
+  unsigned int i;
+  int retval;
+  unsigned int blocksize = mode1_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
+
+  for (i = 0; i < nblocks; i++) {
+    if ( (retval = _cdio_read_mode1_sector (_obj, 
+					    ((char *)data) + (blocksize * i),
+					    lsn + i, mode1_form2)) )
+      return retval;
+  }
+  return 0;
+}
+
+/*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
@@ -431,22 +528,13 @@ _cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn,
   _img_private_t *_obj = env;
   unsigned int i;
   int retval;
+  unsigned int blocksize = mode2_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if (mode2_form2) {
-      if ( (retval = _cdio_read_mode2_sector (_obj, 
-					      ((char *)data) 
-					      + (M2RAW_SECTOR_SIZE * i),
-					      lsn + i, true)) )
-	return retval;
-    } else {
-      char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _cdio_read_mode2_sector (_obj, buf, lsn + i, true)) )
-	return retval;
-      
-      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
-	      buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
-    }
+    if ( (retval = _cdio_read_mode2_sector (_obj, 
+					    ((char *)data) + (blocksize * i),
+					    lsn + i, mode2_form2)) )
+      return retval;
   }
   return 0;
 }
@@ -982,6 +1070,8 @@ cdio_open_linux (const char *orig_source_name)
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
     .read_audio_sectors = _cdio_read_audio_sectors,
+    .read_mode1_sector  = _cdio_read_mode1_sector,
+    .read_mode1_sectors = _cdio_read_mode1_sectors,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
