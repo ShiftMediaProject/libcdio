@@ -1,5 +1,5 @@
 /*
-  $Id: sample7.c,v 1.7 2004/04/03 11:50:58 rocky Exp $
+  $Id: sample7.c,v 1.8 2004/08/27 11:36:45 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -58,76 +58,76 @@
 #endif
 
 #define my_exit(rc)				\
-  fclose (outfd);				\
-  free(statbuf);				\
-  iso9660_close(iso);				\
+  fclose (p_outfd);				\
+  free(p_statbuf);				\
+  iso9660_close(p_iso);				\
   return rc;					\
 
 int
 main(int argc, const char *argv[])
 {
-  iso9660_stat_t *statbuf;
-  FILE *outfd;
+  iso9660_stat_t *p_statbuf;
+  FILE *p_outfd;
   int i;
   
-  iso9660_t *iso = iso9660_open (ISO9660_IMAGE);
+  iso9660_t *p_iso = iso9660_open (ISO9660_IMAGE);
   
-  if (NULL == iso) {
+  if (NULL == p_iso) {
     fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", ISO9660_IMAGE);
     return 1;
   }
 
-  statbuf = iso9660_ifs_stat_translate (iso, LOCAL_FILENAME);
+  p_statbuf = iso9660_ifs_stat_translate (p_iso, LOCAL_FILENAME);
 
-  if (NULL == statbuf) 
+  if (NULL == p_statbuf) 
     {
       fprintf(stderr, 
 	      "Could not get ISO-9660 file information for file %s\n",
 	      LOCAL_FILENAME);
-      iso9660_close(iso);
+      iso9660_close(p_iso);
       return 2;
     }
 
-  if (!(outfd = fopen (LOCAL_FILENAME, "wb")))
+  if (!(p_outfd = fopen (LOCAL_FILENAME, "wb")))
     {
       perror ("fopen()");
-      free(statbuf);
-      iso9660_close(iso);
+      free(p_statbuf);
+      iso9660_close(p_iso);
       return 3;
     }
 
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
-  for (i = 0; i < statbuf->size; i += ISO_BLOCKSIZE)
+  for (i = 0; i < p_statbuf->size; i += ISO_BLOCKSIZE)
     {
       char buf[ISO_BLOCKSIZE];
 
       memset (buf, 0, ISO_BLOCKSIZE);
       
-      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (iso, buf, statbuf->lsn 
+      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (p_iso, buf, p_statbuf->lsn 
 						   + (i / ISO_BLOCKSIZE),
 						   1) )
       {
 	fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
-		(long unsigned int) statbuf->lsn + (i / ISO_BLOCKSIZE));
+		(long unsigned int) p_statbuf->lsn + (i / ISO_BLOCKSIZE));
 	my_exit(4);
       }
       
       
-      fwrite (buf, ISO_BLOCKSIZE, 1, outfd);
+      fwrite (buf, ISO_BLOCKSIZE, 1, p_outfd);
       
-      if (ferror (outfd))
+      if (ferror (p_outfd))
 	{
 	  perror ("fwrite()");
 	  my_exit(5);
 	}
     }
   
-  fflush (outfd);
+  fflush (p_outfd);
 
   /* Make sure the file size has the exact same byte size. Without the
      truncate below, the file will a multiple of ISO_BLOCKSIZE.
    */
-  if (ftruncate (fileno (outfd), statbuf->size))
+  if (ftruncate (fileno (p_outfd), p_statbuf->size))
     perror ("ftruncate()");
 
   my_exit(0);
