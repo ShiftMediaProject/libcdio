@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.6 2005/01/20 05:07:00 rocky Exp $
+    $Id: freebsd.c,v 1.7 2005/01/20 14:58:22 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.6 2005/01/20 05:07:00 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.7 2005/01/20 14:58:22 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -143,7 +143,7 @@ _stat_size_freebsd (void *p_obj)
 {
   _img_private_t *p_env = p_obj;
 
-  if (NULL == env) return CDIO_INVALID_LBA;
+  if (NULL == p_env) return CDIO_INVALID_LBA;
 
   if (_AM_CAM == p_env->access_mode) 
     return stat_size_freebsd_cam(p_env);
@@ -174,7 +174,7 @@ _set_arg_freebsd (void *p_user_data, const char key[], const char value[])
   else if (!strcmp (key, "access-mode"))
     {
       p_env->access_mode = str_to_access_mode_freebsd(value);
-      if (p_env->access_mode == _AM_CAM && !env->b_cam_init) 
+      if (p_env->access_mode == _AM_CAM && !p_env->b_cam_init) 
 	return init_freebsd_cam(p_env) 
 	  ? DRIVER_OP_SUCCESS : DRIVER_OP_ERROR;
     }
