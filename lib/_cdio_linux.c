@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.63 2004/07/15 02:24:29 rocky Exp $
+    $Id: _cdio_linux.c,v 1.64 2004/07/15 11:36:12 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.63 2004/07/15 02:24:29 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.64 2004/07/15 11:36:12 rocky Exp $";
 
 #include <string.h>
 
@@ -245,7 +245,8 @@ _set_bsize (int fd, unsigned int bsize)
   memset (&mh, 0, sizeof (mh));
   memset (&cgc, 0, sizeof (struct cdrom_generic_command));
   
-  cgc.cmd[0] = 0x15;
+  CDIO_MMC_SET_COMMAND(cgc.cmd, CDIO_MMC_GPCMD_MODE_SELECT_6);
+
   cgc.cmd[1] = 1 << 4;
   cgc.cmd[4] = 12;
   
@@ -358,7 +359,7 @@ _read_mode2_sectors_mmc (int fd, void *buf, lba_t lba,
 
 static int
 _read_mode2_sectors (int fd, void *buf, lba_t lba, 
-			    unsigned int nblocks, bool b_read_10)
+		     unsigned int nblocks, bool b_read_10)
 {
   unsigned int l = 0;
   int retval = 0;
@@ -705,20 +706,20 @@ _get_cdtext_linux (void *user_data)
   _img_private_t *env = user_data;
   int status;
   struct scsi_cmd {
-    unsigned int inlen;         /* Length of data written to device  */
-    unsigned int outlen;        /* Length of data read from device   */
-    unsigned char cmd[10];      /* SCSI command (6 <= x <= 16)       */
+    unsigned int inlen;         /* Length of data written to device     */
+    unsigned int outlen;        /* Length of data read from device      */
+    unsigned char cdb[10];      /* SCSI command bytes (6 <= x <= 16)    */
     unsigned char wdata[5000];  /* Data read from device starts here   
 				   On error, sense buffer starts here   */     
   } scsi_cmd;
 
-  memset( scsi_cmd.cmd, 0, sizeof(scsi_cmd.cmd) );
-  CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_GPCMD_READ_TOC); 
-  scsi_cmd.cmd[1] = 0x02;   /* MSF mode */
-  scsi_cmd.cmd[2] = 0x05;   /* CD text  */
-  CDIO_MMC_SET_READ_LENGTH(scsi_cmd.cmd, sizeof(scsi_cmd.wdata));
+  memset( scsi_cmd.cdb, 0, sizeof(scsi_cmd.cdb) );
+  CDIO_MMC_SET_COMMAND(scsi_cmd.cdb, CDIO_MMC_GPCMD_READ_TOC); 
+  scsi_cmd.cdb[1] = 0x02;   /* MSF mode */
+  scsi_cmd.cdb[2] = 0x05;   /* CD text  */
+  CDIO_MMC_SET_READ_LENGTH(scsi_cmd.cdb, sizeof(scsi_cmd.wdata));
 
-  scsi_cmd.inlen  = sizeof(scsi_cmd.cmd);
+  scsi_cmd.inlen  = sizeof(scsi_cmd.cdb);
   scsi_cmd.outlen = sizeof(scsi_cmd.wdata);
   status = ioctl(env->gen.fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
   if (status != 0) {
@@ -800,44 +801,44 @@ _eject_media_mmc(int fd)
 {
   int status;
   struct sdata {
-    unsigned int inlen;     /* input: Length of data written to device  */
-    unsigned int outlen;    /* input: Length of data read from device   */
-    char cmd[10];           /* input: SCSI command (6 <= x <= 16)       */
+    unsigned int inlen;     /* Length of data written to device  */
+    unsigned int outlen;    /* Length of data read from device   */
+    char cdb[10];           /* SCSI command bytes (6 <= x <= 16) */
   } scsi_cmd;
   
-  CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
+  CDIO_MMC_SET_COMMAND(scsi_cmd.cdb, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
 
   scsi_cmd.inlen  = 0;
   scsi_cmd.outlen = 0;
-  scsi_cmd.cmd[1] = 0;
-  scsi_cmd.cmd[2] = 0;
-  scsi_cmd.cmd[3] = 0;
-  scsi_cmd.cmd[4] = 0;
-  scsi_cmd.cmd[5] = 0;
+  scsi_cmd.cdb[1] = 0;
+  scsi_cmd.cdb[2] = 0;
+  scsi_cmd.cdb[3] = 0;
+  scsi_cmd.cdb[4] = 0;
+  scsi_cmd.cdb[5] = 0;
   status = ioctl(fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
   if (status != 0)
     return status;
   
   scsi_cmd.inlen  = 0;
   scsi_cmd.outlen = 0;
-  CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_GPCMD_START_STOP);
-  scsi_cmd.cmd[1] = 0;
-  scsi_cmd.cmd[2] = 0;
-  scsi_cmd.cmd[3] = 0;
-  scsi_cmd.cmd[4] = 1;
-  scsi_cmd.cmd[5] = 0;
+  CDIO_MMC_SET_COMMAND(scsi_cmd.cdb, CDIO_MMC_GPCMD_START_STOP);
+  scsi_cmd.cdb[1] = 0;
+  scsi_cmd.cdb[2] = 0;
+  scsi_cmd.cdb[3] = 0;
+  scsi_cmd.cdb[4] = 1;
+  scsi_cmd.cdb[5] = 0;
   status = ioctl(fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
   if (status != 0)
     return status;
   
   scsi_cmd.inlen  = 0;
   scsi_cmd.outlen = 0;
-  CDIO_MMC_SET_COMMAND(scsi_cmd.cmd, CDIO_MMC_GPCMD_START_STOP);
-  scsi_cmd.cmd[1] = 0;
-  scsi_cmd.cmd[2] = 0;
-  scsi_cmd.cmd[3] = 0;
-  scsi_cmd.cmd[4] = 2; /* eject */
-  scsi_cmd.cmd[5] = 0;
+  CDIO_MMC_SET_COMMAND(scsi_cmd.cdb, CDIO_MMC_GPCMD_START_STOP);
+  scsi_cmd.cdb[1] = 0;
+  scsi_cmd.cdb[2] = 0;
+  scsi_cmd.cdb[3] = 0;
+  scsi_cmd.cdb[4] = 2; /* eject */
+  scsi_cmd.cdb[5] = 0;
   status = ioctl(fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
   if (status != 0)
     return status;
