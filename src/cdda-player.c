@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.26 2005/03/22 09:19:47 rocky Exp $
+    $Id: cdda-player.c,v 1.27 2005/03/22 09:36:36 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -652,7 +652,7 @@ display_status(bool b_status_only)
       if (strlen(p_cd_info->title)) {
 	mvprintw(LINE_TRACK_TITLE,  0, (char *) ">track %2d title : %s [%s]", 
 		 sub.track, p_cd_info->title, 
-		 (char *) p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
+		 (char *) (p_cd_info->b_cdtext ? "CD-Text" : "CDDB"));
 	clrtoeol();
       }
       if (strlen(p_cd_info->artist)) {
