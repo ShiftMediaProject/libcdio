@@ -1,7 +1,8 @@
 /*
-    $Id: _cdio_stream.c,v 1.3 2005/01/21 10:11:24 rocky Exp $
+    $Id: _cdio_stream.c,v 1.4 2005/01/22 11:22:00 rocky Exp $
 
     Copyright (C) 2000, 2004, 2005 Herbert Valerio Riedel <hvr@gnu.org>
+    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,7 +35,7 @@
 #include <cdio/util.h>
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.3 2005/01/21 10:11:24 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.4 2005/01/22 11:22:00 rocky Exp $";
 
 /* 
  * DataSource implementations
@@ -86,7 +87,7 @@ _cdio_stream_open_if_necessary(CdioDataSource_t *p_obj)
   Otherwise, -1 is returned and the global variable errno is set to indi-
   cate the error.
 */
-long
+long int
 cdio_stream_seek(CdioDataSource_t* p_obj, long int offset, int whence)
 {
   if (!p_obj) return -1;
@@ -94,6 +95,8 @@ cdio_stream_seek(CdioDataSource_t* p_obj, long int offset, int whence)
   if (!_cdio_stream_open_if_necessary(p_obj)) 
     /* errno is set by _cdio_stream_open_if necessary. */
     return -1;
+
+  if (offset < 0) return -1;
 
   if (p_obj->position != offset) {
 #ifdef STREAM_DEBUG
