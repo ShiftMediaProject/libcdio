@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.14 2005/02/17 07:03:37 rocky Exp $
+    $Id: mmc.c,v 1.15 2005/02/18 09:49:14 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -309,7 +309,7 @@ mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
   return p_cdio->op.run_mmc_cmd (p_cdio->env, 
                                  DEFAULT_TIMEOUT_MS,
                                  mmc_get_cmd_len(cdb.field[0]), &cdb, 
-                                 SCSI_MMC_DATA_WRITE, i_size, p_buf);
+                                 SCSI_MMC_DATA_READ, i_size, p_buf);
 }
 
 
@@ -335,7 +335,7 @@ mmc_mode_sense_10( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
   return p_cdio->op.run_mmc_cmd (p_cdio->env, 
                                  DEFAULT_TIMEOUT_MS,
                                  mmc_get_cmd_len(cdb.field[0]), &cdb, 
-                                 SCSI_MMC_DATA_WRITE, i_size, p_buf);
+                                 SCSI_MMC_DATA_READ, i_size, p_buf);
 }
 
 
@@ -734,37 +734,46 @@ mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 				     p_cdb, e_direction, i_buf, p_buf);
 }
 
+/*! Return the byte size returned on a MMC READ command (e.g. READ_10,
+    READ_MSF, ..)
+*/
 int 
 mmc_get_blocksize ( CdIo_t *p_cdio)
 {
   int i_status;
 
-  struct
-  {
-    uint8_t reserved1;
-    uint8_t medium;
-    uint8_t reserved2;
-    uint8_t block_desc_length;
-    uint8_t density;
-    uint8_t number_of_blocks_hi;
-    uint8_t number_of_blocks_med;
-    uint8_t number_of_blocks_lo;
-    uint8_t reserved3;
-    uint8_t block_length_hi;
-    uint8_t block_length_med;
-    uint8_t block_length_lo;
-  } mh;
+  uint8_t buf[255] = { 0, };
+  uint8_t *p;
 
-  uint8_t *p = &mh.block_length_med;
-
-  memset (&mh, 0, sizeof (mh));
-
-  i_status = mmc_mode_sense_6(p_cdio, &mh, sizeof(&mh), 
+  /* First try using the 6-byte MODE SENSE command. */
+  i_status = mmc_mode_sense_6(p_cdio, buf, sizeof(buf), 
                               CDIO_MMC_R_W_ERROR_PAGE);
   
-  if (DRIVER_OP_SUCCESS != i_status) return i_status;
+  if (DRIVER_OP_SUCCESS == i_status && buf[3]>=8) {
+    p = &buf[4+5];
+    return CDIO_MMC_GET_LEN16(p);
+  }
+  
+  /* Next try using the 10-byte MODE SENSE command. */
+  i_status = mmc_mode_sense_10(p_cdio, buf, sizeof(buf), 
+                               CDIO_MMC_R_W_ERROR_PAGE);
+  p = &buf[6];
+  if (DRIVER_OP_SUCCESS == i_status && CDIO_MMC_GET_LEN16(p)>=8) {
+    return CDIO_MMC_GET_LEN16(p);
+  }
 
-  return CDIO_MMC_GET_LEN16(p);
+#ifdef IS_THIS_CORRECT
+  /* Lastly try using the READ CAPACITY command. */
+  {
+    lba_t    lba = 0;
+    uint16_t i_blocksize;
+
+    i_status = mmc_read_capacity(p_cdio, &lba, &i_blocksize);
+    if ( DRIVER_OP_SUCCESS == i_status )
+      return i_blocksize;
+#endif
+
+  return DRIVER_OP_UNSUPPORTED;
 }
 
 
