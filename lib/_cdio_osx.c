@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.37 2004/06/17 01:16:50 rocky Exp $
+    $Id: _cdio_osx.c,v 1.38 2004/06/17 01:20:40 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.37 2004/06/17 01:16:50 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.38 2004/06/17 01:20:40 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -423,7 +423,10 @@ _cdio_read_toc (_img_private_t *env)
 
 	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
 	  continue;
-	
+
+	/* Note what OSX calls a LBA we call an LSN. So below re we 
+	   really have have MSF -> LSN -> LBA.
+	 */
 	env->pp_lba[i_track - env->i_first_track] =
 	  cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i].p ));
       }
@@ -436,7 +439,10 @@ _cdio_read_toc (_img_private_t *env)
 	return false;
       }
     
-    /* set leadout sector */
+    /* Set leadout sector. 
+       Note what OSX calls a LBA we call an LSN. So below re we 
+       really have have MSF -> LSN -> LBA.
+    */
     env->pp_lba[i_leadout] =
       cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i_leadout].p ));
   }
