@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.29 2005/03/23 16:32:49 rocky Exp $
+    $Id: cdda-player.c,v 1.30 2005/03/31 00:24:32 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -242,7 +242,7 @@ static void
 action(const char *psz_action)
 {
   if (!interactive) {
-    if (b_verbose)
+    if (b_verbose && psz_action)
       fprintf(stderr,"action: %s\n", psz_action);
     return;
   }
@@ -1201,6 +1201,23 @@ ps_list_tracks(void)
   printf("showpage\n");
 }
 
+static void
+list_tracks(void)
+{
+  int i,s;
+
+  if (!b_record) return;
+
+  printf("Title : %s\n", title);
+  printf("Artist: %s\n", artist);
+  
+  for (i = i_first_track; i <= i_last_track; i++) {
+    s = cdio_audio_get_msf_seconds(&toc[i+1]) 
+      - cdio_audio_get_msf_seconds(&toc[i]);
+    printf("%2d: %s [%d seconds]\n", i, cd_info[i].title, s);
+  }
+}
+
 typedef enum {
   NO_OP=0,
   PLAY_CD=1,
@@ -1365,6 +1382,7 @@ main(int argc, char *argv[])
     } else {
       switch (cd_op) {
       case PS_LIST_TRACKS:
+      case LIST_TRACKS:
       case PLAY_TRACK:
 	read_toc(p_cdio);
       default:
@@ -1378,6 +1396,9 @@ main(int argc, char *argv[])
 	case EJECT_CD:
 	  /* Should have been handled above. */
 	  cd_eject();
+	  break;
+	case LIST_TRACKS:
+	  list_tracks();
 	  break;
 	case PS_LIST_TRACKS:
 	  ps_list_tracks();
@@ -1423,7 +1444,6 @@ main(int argc, char *argv[])
 	  break;
 	case CLOSE_CD: /* Handled below */
 	case LIST_KEYS:
-	case LIST_TRACKS:
 	case TOGGLE_PAUSE:
 	case EXIT_PROGRAM:
 	case NO_OP:
