@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.h,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: _cdio_stream.h,v 1.2 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -35,7 +35,7 @@ typedef int(*cdio_data_open_t)(void *user_data);
 
 typedef long(*cdio_data_read_t)(void *user_data, void *buf, long count);
 
-typedef long(*cdio_data_seek_t)(void *user_data, long offset);
+typedef long(*cdio_data_seek_t)(void *user_data, long offset, int whence);
 
 typedef long(*cdio_data_stat_t)(void *user_data);
 
@@ -64,7 +64,7 @@ long
 cdio_stream_read(CdioDataSource* obj, void *ptr, long size, long nmemb);
 
 long
-cdio_stream_seek(CdioDataSource* obj, long offset);
+cdio_stream_seek(CdioDataSource* obj, long offset, int whence);
 
 long
 cdio_stream_stat(CdioDataSource* obj);

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.2 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.1 2003/03/24 19:01:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.2 2003/03/29 17:32:00 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -49,9 +49,12 @@ static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.1 2003/03/24 19:01:09 rock
 
 typedef struct {
   int            blocksize;
-  int            track_num; /* Probably is index+1 */
+  int            track_num;   /* Probably is index+1 */
   msf_t          start_msf;
+  lba_t          start_lba;
   int            start_index;
+  int            sec_count;  /* Number of sectors in this track. Does not
+				include pregap */
   int            num_indices;
   int            flags; /* "DCP", "4CH", "PRE" */
   track_format_t track_format;
@@ -61,16 +64,16 @@ typedef struct {
 
 
 typedef struct {
+  char         *source_name;
+  bool init;
   bool sector_2336_flag;
 
-  CdioDataSource *bin_src;
-  char         *source_name;
+  CdioDataSource *data_source;
   char         *cue_name;
   track_info_t  tocent[100];     /* entry info for each track */
   track_t       total_tracks;    /* number of tracks in image */
   track_t       first_track_num; /* track number of first track */
   bool have_cue;
-  bool init;
 } _img_private_t;
 
 static bool     _cdio_image_read_cue (_img_private_t *_obj);
@@ -82,36 +85,12 @@ static uint32_t _cdio_stat_size (void *user_data);
 static bool
 _cdio_init (_img_private_t *_obj)
 {
+  lsn_t lead_lsn;
+
   if (_obj->init)
     return false;
 
-  /* Read in CUE sheet. */
-  if ((_obj->cue_name != NULL)) {
-    _obj->have_cue == _cdio_image_read_cue(_obj);
-  }
-
-  if (!_obj->have_cue ) {
-    /* Time to fake things...
-       Make one big track, track 0 and 1 are the same. 
-       We are guessing stuff atarts a msf 00:04:00 - 2 for the 150
-       sector pregap and 2 for the cue information.
-     */
-    int blocksize = _obj->sector_2336_flag 
-    ? M2RAW_SECTOR_SIZE : CD_RAW_SECTOR_SIZE;
-    _obj->total_tracks = 2;
-    _obj->first_track_num = 1;
-    _obj->tocent[0].start_msf.m = to_bcd8(0);
-    _obj->tocent[0].start_msf.s = to_bcd8(4);
-    _obj->tocent[0].start_msf.f = to_bcd8(0);
-    _obj->tocent[0].blocksize   = blocksize;
-    _obj->tocent[0].track_format= TRACK_FORMAT_XA;
-    _obj->tocent[0].track_green = true;
-
-    _obj->tocent[1] = _obj->tocent[0];
-  }
-  
-  
-  if (!(_obj->bin_src = cdio_stdio_new (_obj->source_name))) {
+  if (!(_obj->data_source = cdio_stdio_new (_obj->source_name))) {
     cdio_error ("init failed");
     return false;
   }
@@ -121,12 +100,113 @@ _cdio_init (_img_private_t *_obj)
    */
   _obj->init = true;  
 
-  /* Fake out leadout track. */
-  cdio_lsn_to_msf ( _cdio_stat_size( (_img_private_t *) _obj),
-		    &_obj->tocent[_obj->total_tracks].start_msf);
+  lead_lsn = _cdio_stat_size( (_img_private_t *) _obj);
+
+  /* Read in CUE sheet. */
+  if ((_obj->cue_name != NULL)) {
+    _obj->have_cue == _cdio_image_read_cue(_obj);
+  }
+
+  if (!_obj->have_cue ) {
+    /* Time to fake things...
+       Make one big track, track 0 and 1 are the same. 
+       We are guessing stuff starts at msf 00:04:00 - 2 for the 150
+       sector pregap and 2 for the cue information.
+     */
+    track_info_t  *this_track=&(_obj->tocent[0]);
+    int blocksize = _obj->sector_2336_flag 
+      ? M2RAW_SECTOR_SIZE : CD_RAW_SECTOR_SIZE;
+
+    _obj->total_tracks = 2;
+    _obj->first_track_num = 1;
+    this_track->start_msf.m = to_bcd8(0);
+    this_track->start_msf.s = to_bcd8(4);
+    this_track->start_msf.f = to_bcd8(0);
+    this_track->start_lba   = cdio_msf_to_lba(&this_track->start_msf);
+    this_track->blocksize   = blocksize;
+    this_track->track_format= TRACK_FORMAT_XA;
+    this_track->track_green = true;
+
+
+    _obj->tocent[1] = _obj->tocent[0];
+  }
+  
+  /* Fake out leadout track and sector count for last track*/
+  cdio_lsn_to_msf (lead_lsn, &_obj->tocent[_obj->total_tracks].start_msf);
+  _obj->tocent[_obj->total_tracks].start_lba = cdio_lsn_to_lba(lead_lsn);
+  _obj->tocent[_obj->total_tracks-1].sec_count = 
+    cdio_lsn_to_lba(lead_lsn - _obj->tocent[_obj->total_tracks-1].start_lba);
 
   return true;
+}
 
+/*!
+  Reads into buf the next size bytes.
+  Returns -1 on error. 
+  Would be libc's seek() but we have to adjust for the extra track header 
+  information in each sector.
+*/
+static off_t
+_cdio_lseek (void *user_data, off_t offset, int whence)
+{
+  _img_private_t *_obj = user_data;
+
+  /* real_offset is the real byte offset inside the disk image
+     The number below was determined empirically. I'm guessing
+     the 1st 24 bytes of a bin file are used for something.
+  */
+  off_t real_offset=24;
+
+  unsigned int i;
+  unsigned int user_datasize;
+
+  for (i=0; i<_obj->total_tracks; i++) {
+    track_info_t  *this_track=&(_obj->tocent[i]);
+    switch (this_track->track_format) {
+    case TRACK_FORMAT_AUDIO:
+      user_datasize=CDDA_SECTOR_SIZE;
+      break;
+    case TRACK_FORMAT_CDI:
+      user_datasize=FORM1_DATA_SIZE;
+      break;
+    case TRACK_FORMAT_XA:
+      user_datasize=FORM1_DATA_SIZE;
+      break;
+    default:
+      cdio_warn ("track %d has unknown format %d",
+		 i+1, this_track->track_format);
+    }
+
+    if ( (this_track->sec_count*user_datasize) >= offset) {
+      int blocks = offset / user_datasize;
+      int rem    = offset % user_datasize;
+      int block_offset = blocks * CD_RAW_SECTOR_SIZE;
+      real_offset += block_offset + rem;
+      break;
+    }
+    real_offset += this_track->sec_count*CD_RAW_SECTOR_SIZE;
+    offset -= this_track->sec_count*user_datasize;
+  }
+
+  if (i==_obj->total_tracks) {
+    cdio_warn ("seeking outside range of disk image");
+    return -1;
+  } else
+    return cdio_stream_seek(_obj->data_source, real_offset, whence);
+}
+
+/*!
+  Reads into buf the next size bytes.
+  Returns -1 on error. 
+  FIXME: 
+   At present we assume a read doesn't cross sector or track
+   boundaries.
+*/
+static ssize_t
+_cdio_read (void *user_data, void *buf, size_t size)
+{
+  _img_private_t *_obj = user_data;
+  return cdio_stream_read(_obj->data_source, buf, size, 1);
 }
 
 /*!
@@ -142,7 +222,7 @@ _cdio_stat_size (void *user_data)
 
   _cdio_init (_obj);
   
-  size = cdio_stream_stat (_obj->bin_src);
+  size = cdio_stream_stat (_obj->data_source);
 
   if (size % blocksize)
     {
@@ -194,48 +274,79 @@ _cdio_image_read_cue (_img_private_t *_obj)
       */
       /* printf("Found file name %s\n", s); */
     } else if (2==sscanf(p, "TRACK %d MODE2/%d", &track_num, &blocksize)) {
-      _obj->tocent[_obj->total_tracks].blocksize   = blocksize;
-      _obj->tocent[_obj->total_tracks].track_num   = track_num;
-      _obj->tocent[_obj->total_tracks].num_indices = 0;
-      _obj->tocent[_obj->total_tracks].track_format= TRACK_FORMAT_XA;
-      _obj->tocent[_obj->total_tracks].track_green = true;
+      track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
+      this_track->blocksize   = blocksize;
+      this_track->track_num   = track_num;
+      this_track->num_indices = 0;
+      this_track->track_format= TRACK_FORMAT_XA;
+      this_track->track_green = true;
       _obj->total_tracks++;
       seen_first_index_for_track=false;
       /*printf("Added track %d with blocksize %d\n", track_num, blocksize);*/
 
     } else if (2==sscanf(p, "TRACK %d MODE1/%d", &track_num, &blocksize)) {
-      _obj->tocent[_obj->total_tracks].blocksize   = blocksize;
-      _obj->tocent[_obj->total_tracks].track_num   = track_num;
-      _obj->tocent[_obj->total_tracks].num_indices = 0;
-      _obj->tocent[_obj->total_tracks].track_format= TRACK_FORMAT_CDI;
-      _obj->tocent[_obj->total_tracks].track_green = false;
+      track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
+      this_track->blocksize   = blocksize;
+      this_track->track_num   = track_num;
+      this_track->num_indices = 0;
+      this_track->track_format= TRACK_FORMAT_CDI;
+      this_track->track_green = false;
       _obj->total_tracks++;
       seen_first_index_for_track=false;
       /*printf("Added track %d with blocksize %d\n", track_num, blocksize);*/
 
     } else if (1==sscanf(p, "TRACK %d AUDIO", &track_num)) {
-      _obj->tocent[_obj->total_tracks].blocksize   = blocksize;
-      _obj->tocent[_obj->total_tracks].track_num   = track_num;
-      _obj->tocent[_obj->total_tracks].num_indices = 0;
-      _obj->tocent[_obj->total_tracks].track_format= TRACK_FORMAT_AUDIO;
-      _obj->tocent[_obj->total_tracks].track_green = false;
+      track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks]);
+      this_track->blocksize   = CDDA_SECTOR_SIZE;
+      this_track->track_num   = track_num;
+      this_track->num_indices = 0;
+      this_track->track_format= TRACK_FORMAT_AUDIO;
+      this_track->track_green = false;
       _obj->total_tracks++;
       seen_first_index_for_track=false;
 
     } else if (4==sscanf(p, "INDEX %d %d:%d:%d", 
 			 &start_index, &min, &sec, &frame)) {
+      track_info_t  *this_track=&(_obj->tocent[_obj->total_tracks-1]);
       /* FIXME! all of this is a big hack. 
 	 If start_index == 0, then this is the "last_cue" information.
 	 The +2 below seconds is to adjust for the 150 pregap.
       */
-      if (!seen_first_index_for_track && start_index != 0) {
-	_obj->tocent[_obj->total_tracks-1].start_index = start_index;
-	_obj->tocent[_obj->total_tracks-1].start_msf.m = to_bcd8 (min);
-	_obj->tocent[_obj->total_tracks-1].start_msf.s = to_bcd8 (sec)+2;
-	_obj->tocent[_obj->total_tracks-1].start_msf.f = to_bcd8 (frame);
-	seen_first_index_for_track=true;
+      if (start_index != 0) {
+	if (!seen_first_index_for_track) {
+	  this_track->start_index = start_index;
+	  this_track->start_msf.m = to_bcd8 (min);
+	  this_track->start_msf.s = to_bcd8 (sec)+2;
+	  this_track->start_msf.f = to_bcd8 (frame);
+	  this_track->start_lba   = cdio_msf_to_lba(&this_track->start_msf);
+	  seen_first_index_for_track=true;
+	}
+
+	if (_obj->total_tracks > 1) {
+	  /* Figure out number of sectors for previous track */
+	  track_info_t  *prev_track=&(_obj->tocent[_obj->total_tracks-2]);
+	  if ( this_track->start_lba < prev_track->start_lba ) {
+	    cdio_warn ("track %d at LBA %d starts before track %d at LBA %d", 
+		       _obj->total_tracks,   this_track->start_lba, 
+		       _obj->total_tracks-1, prev_track->start_lba);
+	    prev_track->sec_count = 0;
+	  } else if ( this_track->start_lba >= prev_track->start_lba 
+		      + CDIO_PREGAP_SECTORS ) {
+	    prev_track->sec_count = this_track->start_lba - 
+	      prev_track->start_lba - CDIO_PREGAP_SECTORS ;
+	  } else {
+	    cdio_warn ("%d fewer than pregap (%d) sectors in track %d", 
+		       this_track->start_lba - prev_track->start_lba,
+		       CDIO_PREGAP_SECTORS,
+		       _obj->total_tracks-1);
+	    /* Include pregap portion in sec_count. Maybe the pregap
+	     was omitted. */
+	    prev_track->sec_count = this_track->start_lba - 
+	      prev_track->start_lba;
+	  }
+	}
+	this_track->num_indices++;
       }
-      _obj->tocent[_obj->total_tracks-1].num_indices++;
     }
   }
   _obj->have_cue = _obj->total_tracks != 0;
@@ -254,8 +365,8 @@ _cdio_free (void *user_data)
 
   free (_obj->source_name);
 
-  if (_obj->bin_src)
-    cdio_stream_destroy (_obj->bin_src);
+  if (_obj->data_source)
+    cdio_stream_destroy (_obj->data_source);
 
   free (_obj);
 }
@@ -271,16 +382,16 @@ _read_mode2_sector (void *user_data, void *data, uint32_t lsn,
 
   _cdio_init (_obj);
 
-  cdio_stream_seek (_obj->bin_src, lsn * blocksize);
+  cdio_stream_seek (_obj->data_source, lsn * blocksize, SEEK_SET);
 
-  cdio_stream_read (_obj->bin_src,
+  cdio_stream_read (_obj->data_source,
 		    _obj->sector_2336_flag ? (buf + 12 + 4) : buf,
 		    blocksize, 1);
 
   if (mode2_form2)
     memcpy (data, buf + 12 + 4, M2RAW_SECTOR_SIZE);
   else
-    memcpy (data, buf + 12 + 4 + 8, M2F1_SECTOR_SIZE);
+    memcpy (data, buf + 12 + 4 + 8, FORM1_DATA_SIZE);
 
   return 0;
 }
@@ -310,7 +421,7 @@ _read_mode2_sectors (void *user_data, void *data, uint32_t lsn,
 	return retval;
       
       memcpy (((char *)data) + (M2F1_SECTOR_SIZE * i), buf + 8, 
-	      M2F1_SECTOR_SIZE);
+	      FORM1_DATA_SIZE);
     }
   }
   return 0;
@@ -460,10 +571,32 @@ _cdio_get_track_green(void *user_data, track_t track_num)
 }
 
 /*!  
+  Return the starting MSF (minutes/secs/frames) for track number
+  track_num in obj.  Tracks numbers start at 1.
+  The "leadout" track is specified either by
+  using track_num LEADOUT_TRACK or the total tracks+1.
+  1 is returned on error.
+*/
+static lba_t
+_cdio_get_track_lba(void *user_data, track_t track_num)
+{
+  _img_private_t *_obj = user_data;
+  _cdio_init (_obj);
+
+  if (track_num == CDIO_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
+
+  if (track_num <= _obj->total_tracks+1 && track_num != 0) {
+    return _obj->tocent[track_num-1].start_lba;
+  } else 
+    return CDIO_INVALID_LBA;
+}
+
+/*!  
   Return the starting MSF (minutes/secs/frames) for the track number
   track_num in obj.  Tracks numbers start at 1.
-  Since there are no tracks, unless the track number is is 1 we return
-  falure. If the track number is 1, we return 00:00:00.
+  The "leadout" track is specified either by
+  using track_num LEADOUT_TRACK or the total tracks+1.
+
 */
 static bool
 _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
@@ -497,7 +630,7 @@ cdio_open_bincue (const char *source_name)
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,
-    .get_track_lba      = NULL, /* This could be implemented if need be. */
+    .get_track_lba      = _cdio_get_track_lba, 
     .get_track_msf      = _cdio_get_track_msf,
     .read_mode2_sector  = _read_mode2_sector,
     .read_mode2_sectors = _read_mode2_sectors,
@@ -535,8 +668,10 @@ cdio_open_cue (const char *cue_name)
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,
-    .get_track_lba      = NULL, /* This could be implemented if need be. */
+    .get_track_lba      = _cdio_get_track_lba, 
     .get_track_msf      = _cdio_get_track_msf,
+    .lseek              = _cdio_lseek,
+    .read               = _cdio_read,
     .read_mode2_sector  = _read_mode2_sector,
     .read_mode2_sectors = _read_mode2_sectors,
     .set_arg            = _cdio_set_arg,

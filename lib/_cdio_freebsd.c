@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.1 2003/03/25 00:00:36 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.2 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.1 2003/03/25 00:00:36 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.2 2003/03/29 17:32:00 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -209,7 +209,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   if (mode2_form2)
     memcpy (data, buf, M2RAW_SECTOR_SIZE);
   else
-    memcpy (((char *)data), buf + 8, M2F1_SECTOR_SIZE);
+    memcpy (((char *)data), buf + 8, FORM1_DATA_SIZE);
   
   return 0;
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: sector.h,v 1.2 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -44,7 +44,7 @@
  * format   sector type               user data size (bytes)
  * -----------------------------------------------------------------------------
  *   1     (Red Book)    CD-DA          2352    (CDDA_SECTOR_SIZE)
- *   2     (Yellow Book) Mode1 Form1    2048    (M2F1_SECTOR_SIZE)
+ *   2     (Yellow Book) Mode1 Form1    2048    (M1F1_SECTOR_SIZE)
  *   3     (Yellow Book) Mode1 Form2    2336    (M2RAW_SECTOR_SIZE)
  *   4     (Green Book)  Mode2 Form1    2048    (M2F1_SECTOR_SIZE)
  *   5     (Green Book)  Mode2 Form2    2328    (2324+4 spare bytes)
@@ -71,7 +71,9 @@
 
 #define CD_RAW_SECTOR_SIZE  2352
 #define CDDA_SECTOR_SIZE    CD_RAW_SECTOR_SIZE
+#define M1F1_SECTOR_SIZE    2048
 #define M2F1_SECTOR_SIZE    2048
+#define FORM1_DATA_SIZE     2048  /* Mode 1 or Mode 2 user data */
 #define M2F2_SECTOR_SIZE    2324
 #define M2SUB_SECTOR_SIZE   2332
 #define M2RAW_SECTOR_SIZE   2336

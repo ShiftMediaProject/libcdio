@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stream.c,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: _cdio_stream.c,v 1.2 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -34,7 +34,7 @@
 #include "util.h"
 #include "_cdio_stream.h"
 
-static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.1 2003/03/24 19:01:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stream.c,v 1.2 2003/03/29 17:32:00 rocky Exp $";
 
 /* 
  * DataSource implementations
@@ -66,7 +66,7 @@ _cdio_stream_open_if_necessary(CdioDataSource *obj)
 }
 
 long
-cdio_stream_seek(CdioDataSource* obj, long offset)
+cdio_stream_seek(CdioDataSource* obj, long offset, int whence)
 {
   cdio_assert (obj != NULL);
 
@@ -77,7 +77,7 @@ cdio_stream_seek(CdioDataSource* obj, long offset)
     cdio_warn("had to reposition DataSource from %ld to %ld!", obj->position, offset);
 #endif
     obj->position = offset;
-    return obj->op.seek(obj->user_data, offset);
+    return obj->op.seek(obj->user_data, offset, whence);
   }
 
   return 0;

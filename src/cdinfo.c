@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.3 2003/03/25 02:10:41 rocky Exp $
+    $Id: cdinfo.c,v 1.4 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -408,13 +408,24 @@ PARTICULAR PURPOSE.\n\
 /* some ISO 9660 fiddling                                                   */
 
 static int 
-read_block(int superblock, uint32_t offset, uint8_t bufnum, bool is_green)
+read_block(int superblock, uint32_t offset, uint8_t bufnum, track_t track_num)
 {
+  unsigned int track_sec_count = cdio_get_track_sec_count(img, track_num);
   memset(buffer[bufnum],0,M2F1_SECTOR_SIZE);
+
+  if ( track_sec_count < superblock) {
+    dbg_print(1, "reading block %u skipped track %d has only %u sectors\n", 
+	      superblock, track_num, track_sec_count);
+    return -1;
+  }
   
   dbg_print(2, "about to read sector %u\n", offset+superblock);
-  if (cdio_read_mode2_sector(img, buffer[bufnum],
-			     offset+superblock, !is_green))
+
+  if (0 > cdio_lseek(img, FORM1_DATA_SIZE*(offset+superblock),SEEK_SET))
+    return -1;
+  
+
+  if (0 > cdio_read(img, buffer[bufnum], FORM1_DATA_SIZE))
     return -1;
 
   return 0;
@@ -479,11 +490,11 @@ get_joliet_level( void )
     if (is_it(sig)) printf("%s, ", sigs[sig].description)
 
 static int 
-guess_filesystem(int start_session, bool is_green)
+guess_filesystem(int start_session, track_t track_num)
 {
   int ret = 0;
   
-  if (read_block(ISO_SUPERBLOCK_SECTOR, start_session, 0, is_green) < 0)
+  if (read_block(ISO_SUPERBLOCK_SECTOR, start_session, 0, track_num) < 0)
     return FS_UNKNOWN;
   
   if (opts.debug_level > 0) {
@@ -504,7 +515,7 @@ guess_filesystem(int start_session, bool is_green)
     return FS_INTERACTIVE;
   } else {	/* read sector 0 ONLY, when NO greenbook CD-I !!!! */
 
-    if (read_block(0, start_session, 1, true) < 0)
+    if (read_block(0, start_session, 1, track_num) < 0)
       return ret;
     
     if (opts.debug_level > 0) {
@@ -532,7 +543,7 @@ guess_filesystem(int start_session, bool is_green)
 	ret |= ROCKRIDGE;
 #endif
 
-      if (read_block(BOOT_SECTOR, start_session, 3, true) < 0)
+      if (read_block(BOOT_SECTOR, start_session, 3, track_num) < 0)
 	return ret;
       
       if (opts.debug_level > 0) {
@@ -555,7 +566,7 @@ guess_filesystem(int start_session, bool is_green)
 	  && is_it(IS_CD_RTOS) &&
 	  !is_it(IS_PHOTO_CD)) {
 
-        if (read_block(VCD_INFO_SECTOR, start_session, 4, true) < 0)
+        if (read_block(VCD_INFO_SECTOR, start_session, 4, track_num) < 0)
 	  return ret;
 	
 	if (opts.debug_level > 0) {
@@ -571,8 +582,7 @@ guess_filesystem(int start_session, bool is_green)
     else if (is_it(IS_EXT2)) ret |= FS_EXT2;
     else if (is_3do())       ret |= FS_3DO;
     else {
-
-      if (read_block(UFS_SUPERBLOCK_SECTOR, start_session, 2, true) < 0)
+      if (read_block(UFS_SUPERBLOCK_SECTOR, start_session, 2, track_num) < 0)
 	return ret;
       
       if (opts.debug_level > 0) {
@@ -933,12 +943,14 @@ main(int argc, const char *argv[])
       
       /* CD-I/Ready says start_track <= 30*75 then CDDA */
       if (start_track > 100 /* 100 is just a guess */) {
-	fs = guess_filesystem(0, false);
+	fs = guess_filesystem(0, 1);
 	if ((fs & FS_MASK) != FS_UNKNOWN)
 	  fs |= HIDDEN_TRACK;
 	else {
 	  fs &= ~FS_MASK; /* del filesystem info */
-	  printf("Oops: %i unused sectors at start, but hidden track check failed.\n",start_track);
+	  printf("Oops: %i unused sectors at start, "
+		 "but hidden track check failed.\n",
+		 start_track);
 	}
       }
       print_analysis(fs, num_audio);
@@ -971,7 +983,7 @@ main(int argc, const char *argv[])
 	if (start_track < data_start + isofs_size)
 	  continue;
 	
-	fs = guess_filesystem(start_track, cdio_get_track_green(img, i));
+	fs = guess_filesystem(start_track, i);
 
 	if (i > 1) {
 	  /* track is beyond last session -> new session found */

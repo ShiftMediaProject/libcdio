@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.2 2003/03/24 23:59:22 rocky Exp $
+    $Id: _cdio_linux.c,v 1.3 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.2 2003/03/24 23:59:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.3 2003/03/29 17:32:00 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -65,9 +65,9 @@ static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.2 2003/03/24 23:59:22 rocky
 #define FIRST_TRACK_NUM (_obj->tochdr.cdth_trk0)
 
 typedef struct {
-  int fd;
-
-  int ioctls_debugged; /* for debugging */
+  /* Things common to all drivers like this. 
+     This must be first. */
+  generic_img_private_t gen; 
 
   enum {
     _AM_NONE,
@@ -76,9 +76,7 @@ typedef struct {
     _AM_READ_10
   } access_mode;
 
-  char *source_name;
-  
-  bool init;
+  int ioctls_debugged; /* for debugging */
 
   /* Track information */
   bool toc_init;                         /* if true, info below is valid. */
@@ -93,39 +91,22 @@ typedef struct {
 static bool
 _cdio_init (_img_private_t *_obj)
 {
-  if (_obj->init) {
+  if (_obj->gen.init) {
     cdio_error ("init called more than once");
     return false;
   }
   
-  _obj->fd = open (_obj->source_name, O_RDONLY, 0);
+  _obj->gen.fd = open (_obj->gen.source_name, O_RDONLY, 0);
 
-  if (_obj->fd < 0)
+  if (_obj->gen.fd < 0)
     {
-      cdio_error ("open (%s): %s", _obj->source_name, strerror (errno));
+      cdio_error ("open (%s): %s", _obj->gen.source_name, strerror (errno));
       return false;
     }
 
-  _obj->init = true;
+  _obj->gen.init = true;
   _obj->toc_init = false;
   return true;
-}
-
-/*!
-  Release and free resources associated with cd. 
- */
-static void
-_cdio_free (void *user_data)
-{
-  _img_private_t *_obj = user_data;
-
-  if (NULL == _obj) return;
-  free (_obj->source_name);
-
-  if (_obj->fd >= 0)
-    close (_obj->fd);
-
-  free (_obj);
 }
 
 static int 
@@ -254,8 +235,8 @@ _read_mode2 (int fd, void *buf, lba_t lba, unsigned nblocks,
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
-		    bool mode2_form2)
+_cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
+			 bool mode2_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
@@ -292,7 +273,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
       break;
       
     case _AM_IOCTL:
-      if (ioctl (_obj->fd, CDROMREADMODE2, &buf) == -1)
+      if (ioctl (_obj->gen.fd, CDROMREADMODE2, &buf) == -1)
 	{
 	  perror ("ioctl()");
 	  return 1;
@@ -302,7 +283,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
       
     case _AM_READ_CD:
     case _AM_READ_10:
-      if (_read_mode2 (_obj->fd, buf, lsn, 1, 
+      if (_read_mode2 (_obj->gen.fd, buf, lsn, 1, 
 		       (_obj->access_mode == _AM_READ_10)))
 	{
 	  perror ("ioctl()");
@@ -326,7 +307,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   if (mode2_form2)
     memcpy (data, buf, M2RAW_SECTOR_SIZE);
   else
-    memcpy (((char *)data), buf + 8, M2F1_SECTOR_SIZE);
+    memcpy (((char *)data), buf + 8, FORM1_DATA_SIZE);
   
   return 0;
 }
@@ -337,8 +318,8 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
-		     bool mode2_form2, unsigned nblocks)
+_cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
+			  bool mode2_form2, unsigned nblocks)
 {
   _img_private_t *_obj = user_data;
   int i;
@@ -346,17 +327,18 @@ _read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
 
   for (i = 0; i < nblocks; i++) {
     if (mode2_form2) {
-      if ( (retval = _read_mode2_sector (_obj, 
-					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
-					  lsn + i, true)) )
+      if ( (retval = _cdio_read_mode2_sector (_obj, 
+					      ((char *)data) 
+					      + (M2RAW_SECTOR_SIZE * i),
+					      lsn + i, true)) )
 	return retval;
     } else {
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _read_mode2_sector (_obj, buf, lsn + i, true)) )
+      if ( (retval = _cdio_read_mode2_sector (_obj, buf, lsn + i, true)) )
 	return retval;
       
-      memcpy (((char *)data) + (M2F1_SECTOR_SIZE * i), buf + 8, 
-	      M2F1_SECTOR_SIZE);
+      memcpy (((char *)data) + (FORM1_DATA_SIZE * i), buf + 8, 
+	      FORM1_DATA_SIZE);
     }
   }
   return 0;
@@ -375,7 +357,7 @@ _cdio_stat_size (void *user_data)
 
   tocent.cdte_track = CDROM_LEADOUT;
   tocent.cdte_format = CDROM_LBA;
-  if (ioctl (_obj->fd, CDROMREADTOCENTRY, &tocent) == -1)
+  if (ioctl (_obj->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
       perror ("ioctl(CDROMREADTOCENTRY)");
       exit (EXIT_FAILURE);
@@ -399,9 +381,9 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
       if (!value)
 	return -2;
 
-      free (_obj->source_name);
+      free (_obj->gen.source_name);
       
-      _obj->source_name = strdup (value);
+      _obj->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
@@ -430,7 +412,7 @@ _cdio_read_toc (_img_private_t *_obj)
   int i;
 
   /* read TOC header */
-  if ( ioctl(_obj->fd, CDROMREADTOCHDR, &_obj->tochdr) == -1 ) {
+  if ( ioctl(_obj->gen.fd, CDROMREADTOCHDR, &_obj->tochdr) == -1 ) {
     cdio_error("%s: %s\n", 
             "error in ioctl CDROMREADTOCHDR", strerror(errno));
     return false;
@@ -440,7 +422,7 @@ _cdio_read_toc (_img_private_t *_obj)
   for (i= FIRST_TRACK_NUM; i<=TOTAL_TRACKS; i++) {
     _obj->tocent[i-1].cdte_track = i;
     _obj->tocent[i-1].cdte_format = CDROM_MSF;
-    if ( ioctl(_obj->fd, CDROMREADTOCENTRY, &_obj->tocent[i-1]) == -1 ) {
+    if ( ioctl(_obj->gen.fd, CDROMREADTOCENTRY, &_obj->tocent[i-1]) == -1 ) {
       cdio_error("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
               i, strerror(errno));
@@ -459,7 +441,7 @@ _cdio_read_toc (_img_private_t *_obj)
   _obj->tocent[TOTAL_TRACKS].cdte_track = CDROM_LEADOUT;
   _obj->tocent[TOTAL_TRACKS].cdte_format = CDROM_MSF;
 
-  if (ioctl(_obj->fd, CDROMREADTOCENTRY, 
+  if (ioctl(_obj->gen.fd, CDROMREADTOCENTRY, 
 	    &_obj->tocent[TOTAL_TRACKS]) == -1 ) {
     cdio_error("%s: %s\n", 
 	     "error in ioctl CDROMREADTOCENTRY for lead-out",
@@ -489,7 +471,7 @@ _cdio_eject_media (void *user_data) {
   int status;
   int fd;
 
-  if ((fd = open (_obj->source_name, O_RDONLY|O_NONBLOCK)) > -1) {
+  if ((fd = open (_obj->gen.source_name, O_RDONLY|O_NONBLOCK)) > -1) {
     if((status = ioctl(fd, CDROM_DRIVE_STATUS, CDSL_CURRENT)) > 0) {
       switch(status) {
       case CDS_TRAY_OPEN:
@@ -509,7 +491,7 @@ _cdio_eject_media (void *user_data) {
       ret=1;
     }
     close(fd);
-    _cdio_free((void *) _obj);
+    cdio_generic_free((void *) _obj);
   }
   return 2;
 }
@@ -523,7 +505,7 @@ _cdio_get_arg (void *user_data, const char key[])
   _img_private_t *_obj = user_data;
 
   if (!strcmp (key, "source")) {
-    return _obj->source_name;
+    return _obj->gen.source_name;
   } else if (!strcmp (key, "access-mode")) {
     switch (_obj->access_mode) {
     case _AM_IOCTL:
@@ -676,7 +658,7 @@ cdio_open_linux (const char *source_name)
 
   cdio_funcs _funcs = {
     .eject_media        = _cdio_eject_media,
-    .free               = _cdio_free,
+    .free               = cdio_generic_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = _cdio_get_default_device,
     .get_first_track_num= _cdio_get_first_track_num,
@@ -685,16 +667,18 @@ cdio_open_linux (const char *source_name)
     .get_track_green    = _cdio_get_track_green,
     .get_track_lba      = NULL, /* This could be implemented if need be. */
     .get_track_msf      = _cdio_get_track_msf,
-    .read_mode2_sector  = _read_mode2_sector,
-    .read_mode2_sectors = _read_mode2_sectors,
+    .lseek              = cdio_generic_lseek,
+    .read               = cdio_generic_read,
+    .read_mode2_sector  = _cdio_read_mode2_sector,
+    .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
     .stat_size          = _cdio_stat_size
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
   _data->access_mode    = _AM_READ_CD;
-  _data->init           = false;
-  _data->fd             = -1;
+  _data->gen.init       = false;
+  _data->gen.fd         = -1;
 
   _cdio_set_arg(_data, "source", (NULL == source_name) 
 		? DEFAULT_CDIO_DEVICE: source_name);
@@ -705,7 +689,7 @@ cdio_open_linux (const char *source_name)
   if (_cdio_init(_data))
     return ret;
   else {
-    _cdio_free (_data);
+    cdio_generic_free (_data);
     return NULL;
   }
   

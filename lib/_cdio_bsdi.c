@@ -1,8 +1,8 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.2 2003/03/24 23:59:22 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.3 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,73 +18,61 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
+/* This file contains Linux-specific code and implements low-level 
+   control of the CD drive.
+*/
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.3 2003/03/29 17:32:00 rocky Exp $";
+
 #include "cdio_assert.h"
 #include "cdio_private.h"
-#include "util.h"
 #include "sector.h"
-#include "logging.h"
+#include "util.h"
+
+#ifdef HAVE_BSDI_CDROM
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.2 2003/03/24 23:59:22 rocky Exp $";
-
-#if HAVE_BSDI_CDROM
-
-#include </sys/dev/scsi/scsi.h>
-#include </sys/dev/scsi/scsi_ioctl.h>
-
-#include <sys/stat.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-
 #include <errno.h>
-#include <fcntl.h>
 #include <unistd.h>
+#include <fcntl.h>
 
-/* reader */
+#include <dvd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+
+#define DEFAULT_CDIO_DEVICE "/dev/sr0"
+
+#define TOTAL_TRACKS    (_obj->tochdr.cdth_trk1)
+#define FIRST_TRACK_NUM (_obj->tochdr.cdth_trk0)
 
 typedef struct {
   int fd;
 
+  int ioctls_debugged; /* for debugging */
+
   enum {
     _AM_NONE,
-    _AM_READ_CD,
-    _AM_READ_10
+    _AM_IOCTL,
   } access_mode;
 
   char *source_name;
   
   bool init;
+
+  /* Track information */
+  bool toc_init;                         /* if true, info below is valid. */
+  struct cdrom_tochdr    tochdr;
+  struct cdrom_tocentry  tocent[100];    /* entry info for each track */
+
 } _img_private_t;
-
-static int
-_scsi_cmd (int fd, struct scsi_user_cdb *sucp, const char *tag)
-{
-  u_char *cp;
-
-  if  (ioctl (fd, SCSIRAWCDB, sucp))
-    {
-      vcd_error ("%s: ioctl (SCSIRAWCDB): %s", tag, strerror (errno));
-      return 1;
-    }
-  if  (sucp->suc_sus.sus_status)
-    {
-      cp = sucp->suc_sus.sus_sense;
-      vcd_info("%s: cmd: %x sus_status %d ", tag, sucp->suc_cdb[0],
-	       sucp->suc_sus.sus_status);
-      vcd_info(" sense: %x %x %x %x %x %x %x %x", cp[0], cp[1], cp[2],
-	       cp[3], cp[4], cp[5], cp[6], cp[7]);
-      return 1;
-    }
-  return 0;
-}
 
 /*!
   Initialize CD device.
@@ -92,11 +80,12 @@ _scsi_cmd (int fd, struct scsi_user_cdb *sucp, const char *tag)
 static bool
 _cdio_init (_img_private_t *_obj)
 {
-  if (_obj->init)
-    return;
-
+  if (_obj->init) {
+    cdio_error ("init called more than once");
+    return false;
+  }
+  
   _obj->fd = open (_obj->source_name, O_RDONLY, 0);
-  _obj->access_mode = _AM_READ_CD;
 
   if (_obj->fd < 0)
     {
@@ -109,7 +98,6 @@ _cdio_init (_img_private_t *_obj)
   return true;
 }
 
-
 /*!
   Release and free resources associated with cd. 
  */
@@ -118,240 +106,128 @@ _cdio_free (void *user_data)
 {
   _img_private_t *_obj = user_data;
 
+  if (NULL == _obj) return;
   free (_obj->source_name);
 
-  if (_obj->fd)
+  if (_obj->fd >= 0)
     close (_obj->fd);
 
   free (_obj);
 }
 
-static int 
-_set_bsize (int fd, unsigned int bsize)
-{
-  struct
-  {
-    uint8_t reserved1;
-    uint8_t medium;
-    uint8_t reserved2;
-    uint8_t block_desc_length;
-    uint8_t density;
-    uint8_t number_of_blocks_hi;
-    uint8_t number_of_blocks_med;
-    uint8_t number_of_blocks_lo;
-    uint8_t reserved3;
-    uint8_t block_length_hi;
-    uint8_t block_length_med;
-    uint8_t block_length_lo;
-  } mh;
-
-  struct scsi_user_cdb suc; 
-
-  memset (&mh, 0, sizeof (mh));
-  memset (&suc, 0, sizeof (struct scsi_user_cdb));
-  
-  suc.suc_cdb[0] = 0x15;
-  suc.suc_cdb[1] = 1 << 4;
-  suc.suc_cdb[4] = 12;
-  suc.suc_cdblen = 6;;
-
-  suc.suc_data = (u_char *)&mh;
-  suc.suc_datalen = sizeof (mh);
-
-  suc.suc_timeout = 500;
-  suc.suc_flags = SUC_WRITE;
-
-  mh.block_desc_length = 0x08;
-  mh.block_length_hi = (bsize >> 16) & 0xff;
-  mh.block_length_med = (bsize >> 8) & 0xff;
-  mh.block_length_lo = (bsize >> 0) & 0xff;
-
-  return _scsi_cmd (fd, &suc, "_set_bsize");
-}
-
+/*!
+   Reads a single mode2 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
 static int
-_read_mode2 (int fd, void *buf, uint32_t lba, unsigned nblocks, 
-	     bool _workaround)
+_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
+		    bool mode2_form2)
 {
-  struct scsi_user_cdb suc; 
-  int retval = 0;
+  char buf[M2RAW_SECTOR_SIZE] = { 0, };
+  struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
+  msf_t _msf;
 
-  memset (&suc, 0, sizeof (struct scsi_user_cdb));
-
-  suc.suc_cdb[0] = (_workaround 
-		    ? 0x28 /* CMD_READ_10 */
-		    : 0xbe /* CMD_READ_CD */);
-
-  if (!_workaround)
-    suc.suc_cdb[1] = 0; /* sector size mode2 */
-  
-  suc.suc_cdb[2] = (lba >> 24) & 0xff;
-  suc.suc_cdb[3] = (lba >> 16) & 0xff;
-  suc.suc_cdb[4] = (lba >> 8) & 0xff;
-  suc.suc_cdb[5] = (lba >> 0) & 0xff;
-
-  suc.suc_cdb[6] = (nblocks >> 16) & 0xff;
-  suc.suc_cdb[7] = (nblocks >> 8) & 0xff;
-  suc.suc_cdb[8] = (nblocks >> 0) & 0xff;
-
-  if (!_workaround)
-    suc.suc_cdb[9] = 0x58; /* 2336 mode2 mixed form */
-
-  suc.suc_cdblen = _workaround ? 10 : 12;
-
-  suc.suc_data = buf;
-  suc.suc_datalen = 2336 * nblocks;
-
-  suc.suc_timeout = 500;
-  suc.suc_flags = SUC_READ;
-
-  if (_workaround)
-    {
-      if ((retval = _set_bsize (fd, 2336)))
-	goto out;
-
-      if ((retval = _scsi_cmd(fd, &suc, "_read_mode2_workaround")))
-	{
-	  _set_bsize (fd, 2048);
-	  goto out;
-	}
-      retval = _set_bsize (fd, 2048);
-    }
-  else
-    retval = _scsi_cmd(fd, &suc, "_read_mode2");
-
- out:
-  return retval;
-}
-
-static int
-_read_mode2_sector (void *user_data, void *data, uint32_t lsn, bool form2)
-{
   _img_private_t *_obj = user_data;
 
-  _cdio_init (_obj);
+  cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
+  msf->cdmsf_min0 = from_bcd8(_msf.m);
+  msf->cdmsf_sec0 = from_bcd8(_msf.s);
+  msf->cdmsf_frame0 = from_bcd8(_msf.f);
 
-  if (form2)
+  if (_obj->ioctls_debugged == 75)
+    cdio_debug ("only displaying every 75th ioctl from now on");
+
+  if (_obj->ioctls_debugged == 30 * 75)
+    cdio_debug ("only displaying every 30*75th ioctl from now on");
+  
+  if (_obj->ioctls_debugged < 75 
+      || (_obj->ioctls_debugged < (30 * 75)  
+	  && _obj->ioctls_debugged % 75 == 0)
+      || _obj->ioctls_debugged % (30 * 75) == 0)
+    cdio_debug ("reading %2.2d:%2.2d:%2.2d",
+	       msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
+  
+  _obj->ioctls_debugged++;
+ 
+  switch (_obj->access_mode)
     {
-    retry:
-      switch (_obj->access_mode)
+    case _AM_NONE:
+      cdio_error ("no way to read mode2");
+      return 1;
+      break;
+      
+    case _AM_IOCTL:
+      if (ioctl (_obj->fd, CDROMREADMODE2, &buf) == -1)
 	{
-	case _AM_NONE:
-	  vcd_error ("no way to read mode2");
+	  perror ("ioctl()");
 	  return 1;
-	  break;
-
-	case _AM_READ_CD:
-	case _AM_READ_10:
-	  if (_read_mode2 (_obj->fd, data, lsn, 1, 
-			   (_obj->access_mode == _AM_READ_10)))
-	    {
-	      if (_obj->access_mode == _AM_READ_CD)
-		{
-		  vcd_info ("READ_CD failed; switching to READ_10 mode...");
-		  _obj->access_mode = _AM_READ_10;
-		  goto retry;
-		}
-	      else
-		{
-		  vcd_info ("READ_10 failed; no way to read mode2 left.");
-		  _obj->access_mode = _AM_NONE;
-		  goto retry;
-		}
-	      return 1;
-	    }
-	  break;
+	  /* exit (EXIT_FAILURE); */
 	}
+      break;
+      
     }
+
+  if (mode2_form2)
+    memcpy (data, buf, M2RAW_SECTOR_SIZE);
   else
-    {
-      char buf[M2RAW_SIZE] = { 0, };
-      int retval;
-
-      if ((retval = _read_mode2_sector (_obj, buf, lsn, true)))
-	return retval;
-
-      memcpy (data, buf + 8, M2F1_SECTOR_SIZE);
-    }
-
+    memcpy (((char *)data), buf + 8, FORM1_DATA_SIZE);
+  
   return 0;
 }
 
-static const u_char scsi_cdblen[8] = {6, 10, 10, 12, 12, 12, 10, 10};
+/*!
+   Reads nblocks of mode2 sectors from cd device into data starting
+   from lsn.
+   Returns 0 if no error. 
+ */
+static int
+_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
+		     bool mode2_form2, unsigned nblocks)
+{
+  _img_private_t *_obj = user_data;
+  int i;
+  int retval;
 
+  for (i = 0; i < nblocks; i++) {
+    if (mode2_form2) {
+      if ( (retval = _read_mode2_sector (_obj, 
+					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
+					  lsn + i, true)) )
+	return retval;
+    } else {
+      char buf[M2RAW_SECTOR_SIZE] = { 0, };
+      if ( (retval = _read_mode2_sector (_obj, buf, lsn + i, true)) )
+	return retval;
+      
+      memcpy (((char *)data) + (FORM1_DATA_SIZE * i), buf + 8, 
+	      FORM1_DATA_SIZE);
+    }
+  }
+  return 0;
+}
+
+/*!
+   Return the size of the CD in logical block address (LBA) units.
+ */
 static uint32_t 
 _cdio_stat_size (void *user_data)
 {
   _img_private_t *_obj = user_data;
 
-  struct scsi_user_cdb suc; 
-  uint8_t buf[12] = { 0, };
+  struct cdrom_tocentry tocent;
+  uint32_t size;
 
-  uint32_t retval;
-
-  _cdio_init(_obj);
-
-  memset (&suc, 0, sizeof (struct scsi_user_cdb));
-
-  suc.suc_cdb[0] = 0x43; /* CMD_READ_TOC_PMA_ATIP */
-  suc.suc_cdb[1] = 0; /* lba; msf: 0x2 */
-  suc.suc_cdb[6] = 0xaa; /* CDROM_LEADOUT */
-  suc.suc_cdb[8] = 12; /* ? */
-  suc.suc_cdblen = 10;
-
-  suc.suc_data = buf;
-  suc.suc_datalen = sizeof (buf);
-
-  suc.suc_timeout = 500;
-  suc.suc_flags = SUC_READ;
-
-  if (_scsi_cmd(_obj->fd, &suc, "_cdio_stat_size"))
-    return 0;
-
-  {
-    int i;
-
-    retval = 0;
-    for (i = 8; i < 12; i++)
-      {
-        retval <<= 8;
-        retval += buf[i];
-      }
-  }
-
-  return retval;
-}
-
-/*!
-  Return the value associated with the key "arg".
-*/
-static const char *
-_cdio_get_arg (void *user_data, const char key[])
-{
-  _img_private_t *_obj = user_data;
-
-  if (!strcmp (key, "source")) {
-    return _obj->source_name;
-  } else if (!strcmp (key, "access-mode")) {
-    switch (_obj->access_mode) {
-    case _AM_READ_CD:
-      return "READ_CD";
-    case _AM_READ_10:
-      return "READ_10";
-    case _AM_NONE:
-      return "no access method";
+  tocent.cdte_track = CDROM_LEADOUT;
+  tocent.cdte_format = CDROM_LBA;
+  if (ioctl (_obj->fd, CDROMREADTOCENTRY, &tocent) == -1)
+    {
+      perror ("ioctl(CDROMREADTOCENTRY)");
+      exit (EXIT_FAILURE);
     }
-  } 
-  return NULL;
-}
 
-/*!
-  Return a string containing the default VCD device if none is specified.
- */
-static char *
-_cdio_get_default_device()
-{
-  return strdup(DEFAULT_CDIO_DEVICE);
+  size = tocent.cdte_addr.lba;
+
+  return size;
 }
 
 /*!
@@ -373,10 +249,8 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
     }
   else if (!strcmp (key, "access-mode"))
     {
-      if (!strcmp(value, "READ_CD"))
-	_obj->access_mode = _AM_READ_CD;
-      else if (!strcmp(value, "READ_10"))
-	_obj->access_mode = _AM_READ_10;
+      if (!strcmp(value, "IOCTL"))
+	_obj->access_mode = _AM_IOCTL;
       else
 	cdio_error ("unknown access type: %s. ignored.", value);
     }
@@ -386,13 +260,254 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
   return 0;
 }
 
+/*! 
+  Read and cache the CD's Track Table of Contents and track info.
+  Return false if successful or true if an error.
+*/
+static bool
+_cdio_read_toc (_img_private_t *_obj) 
+{
+  int i;
+
+  /* read TOC header */
+  if ( ioctl(_obj->fd, CDROMREADTOCHDR, &_obj->tochdr) == -1 ) {
+    cdio_error("%s: %s\n", 
+            "error in ioctl CDROMREADTOCHDR", strerror(errno));
+    return false;
+  }
+
+  /* read individual tracks */
+  for (i= FIRST_TRACK_NUM; i<=TOTAL_TRACKS; i++) {
+    _obj->tocent[i-1].cdte_track = i;
+    _obj->tocent[i-1].cdte_format = CDROM_MSF;
+    if ( ioctl(_obj->fd, CDROMREADTOCENTRY, &_obj->tocent[i-1]) == -1 ) {
+      cdio_error("%s %d: %s\n",
+              "error in ioctl CDROMREADTOCENTRY for track", 
+              i, strerror(errno));
+      return false;
+    }
+    /****
+    struct cdrom_msf0 *msf= &_obj->tocent[i-1].cdte_addr.msf;
+    
+    fprintf (stdout, "--- track# %d (msf %2.2x:%2.2x:%2.2x)\n",
+	     i, msf->minute, msf->second, msf->frame);
+    ****/
+
+  }
+
+  /* read the lead-out track */
+  _obj->tocent[TOTAL_TRACKS].cdte_track = CDROM_LEADOUT;
+  _obj->tocent[TOTAL_TRACKS].cdte_format = CDROM_MSF;
+
+  if (ioctl(_obj->fd, CDROMREADTOCENTRY, 
+	    &_obj->tocent[TOTAL_TRACKS]) == -1 ) {
+    cdio_error("%s: %s\n", 
+	     "error in ioctl CDROMREADTOCENTRY for lead-out",
+            strerror(errno));
+    return false;
+  }
+
+  /*
+  struct cdrom_msf0 *msf= &_obj->tocent[TOTAL_TRACKS].cdte_addr.msf;
+
+  fprintf (stdout, "--- track# %d (msf %2.2x:%2.2x:%2.2x)\n",
+	   i, msf->minute, msf->second, msf->frame);
+  */
+
+  return true;
+}
+
+/*!
+  Eject media in CD drive. If successful, as a side effect we 
+  also free obj.
+ */
+static int 
+_cdio_eject_media (void *user_data) {
+
+  _img_private_t *_obj = user_data;
+  int ret=2;
+  int status;
+  int fd;
+
+  if ((fd = open (_obj->source_name, O_RDONLY|O_NONBLOCK)) > -1) {
+    if((status = ioctl(fd, CDROM_DRIVE_STATUS, (void *) CDSL_CURRENT)) > 0) {
+      switch(status) {
+      case CDS_TRAY_OPEN:
+	if((ret = ioctl(fd, CDROMCLOSETRAY, 0)) != 0) {
+	  cdio_error ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
+	}
+	break;
+      case CDS_DISC_OK:
+	if((ret = ioctl(fd, CDROMEJECT, 0)) != 0) {
+	  cdio_error("ioctl CDROMEJECT failed: %s\n", strerror(errno));  
+	}
+	break;
+      }
+      ret=0;
+    } else {
+      cdio_error ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
+      ret=1;
+    }
+    close(fd);
+    _cdio_free((void *) _obj);
+  }
+  return 2;
+}
+
+/*!
+  Return the value associated with the key "arg".
+*/
+static const char *
+_cdio_get_arg (void *user_data, const char key[])
+{
+  _img_private_t *_obj = user_data;
+
+  if (!strcmp (key, "source")) {
+    return _obj->source_name;
+  } else if (!strcmp (key, "access-mode")) {
+    switch (_obj->access_mode) {
+    case _AM_IOCTL:
+      return "ioctl";
+    case _AM_NONE:
+      return "no access method";
+    }
+  } 
+  return NULL;
+}
+
+/*!
+  Return a string containing the default VCD device if none is specified.
+ */
+static char *
+_cdio_get_default_device()
+{
+  return strdup(DEFAULT_CDIO_DEVICE);
+}
+
+/*!
+  Return the number of of the first track. 
+  CDIO_INVALID_TRACK is returned on error.
+*/
+static track_t
+_cdio_get_first_track_num(void *user_data) 
+{
+  _img_private_t *_obj = user_data;
+  
+  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+
+  return FIRST_TRACK_NUM;
+}
+
+/*!
+  Return the number of tracks in the current medium.
+  CDIO_INVALID_TRACK is returned on error.
+*/
+static track_t
+_cdio_get_num_tracks(void *user_data) 
+{
+  _img_private_t *_obj = user_data;
+  
+  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+
+  return TOTAL_TRACKS;
+}
+
+/*!  
+  Get format of track. 
+*/
+static track_format_t
+_cdio_get_track_format(void *user_data, track_t track_num) 
+{
+  _img_private_t *_obj = user_data;
+  
+  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+
+  if (track_num > TOTAL_TRACKS || track_num == 0)
+    return TRACK_FORMAT_ERROR;
+
+  /* This is pretty much copied from the "badly broken" cdrom_count_tracks
+     in linux/cdrom.c.
+   */
+  if (_obj->tocent[track_num-1].cdte_ctrl & CDROM_DATA_TRACK) {
+    if (_obj->tocent[track_num-1].cdte_format == 0x10)
+      return TRACK_FORMAT_CDI;
+    else if (_obj->tocent[track_num-1].cdte_format == 0x20) 
+      return TRACK_FORMAT_XA;
+    else
+      return TRACK_FORMAT_DATA;
+  } else
+    return TRACK_FORMAT_AUDIO;
+  
+}
+
+/*!
+  Return true if we have XA data (green, mode2 form1) or
+  XA data (green, mode2 form2). That is track begins:
+  sync - header - subheader
+  12     4      -  8
+
+  FIXME: there's gotta be a better design for this and get_track_format?
+*/
+static bool
+_cdio_get_track_green(void *user_data, track_t track_num) 
+{
+  _img_private_t *_obj = user_data;
+  
+  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+
+  if (track_num == CDIO_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+
+  if (track_num > TOTAL_TRACKS+1 || track_num == 0)
+    return false;
+
+  /* FIXME: Dunno if this is the right way, but it's what 
+     I was using in cdinfo for a while.
+   */
+  return ((_obj->tocent[track_num-1].cdte_ctrl & 2) != 0);
+}
+
+/*!  
+  Return the starting MSF (minutes/secs/frames) for track number
+  track_num in obj.  Track numbers start at 1.
+  The "leadout" track is specified either by
+  using track_num LEADOUT_TRACK or the total tracks+1.
+  False is returned if there is no track entry.
+*/
+static bool
+_cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
+{
+  _img_private_t *_obj = user_data;
+
+  if (NULL == msf) return false;
+
+  if (!_obj->toc_init) _cdio_read_toc (_obj) ;
+
+  if (track_num == CDIO_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+
+  if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
+    return false;
+  } else {
+    struct cdrom_msf0  *msf0= &_obj->tocent[track_num-1].cdte_addr.msf;
+    msf->m = to_bcd8(msf0->minute);
+    msf->s = to_bcd8(msf0->second);
+    msf->f = to_bcd8(msf0->frame);
+    return true;
+  }
+}
+
 #endif /* HAVE_BSDI_CDROM */
 
+/*!
+  Initialization routine. This is the only thing that doesn't
+  get called via a function pointer. In fact *we* are the
+  ones to set that up.
+ */
 CdIo *
 cdio_open_bsdi (const char *source_name)
 {
 
 #ifdef HAVE_BSDI_CDROM
+  CdIo *ret;
   _img_private_t *_data;
 
   cdio_funcs _funcs = {
@@ -400,13 +515,20 @@ cdio_open_bsdi (const char *source_name)
     .free               = _cdio_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = _cdio_get_default_device,
+    .get_first_track_num= _cdio_get_first_track_num,
+    .get_num_tracks     = _cdio_get_num_tracks,
+    .get_track_format   = _cdio_get_track_format,
+    .get_track_green    = _cdio_get_track_green,
+    .get_track_lba      = NULL, /* This could be implemented if need be. */
+    .get_track_msf      = _cdio_get_track_msf,
     .read_mode2_sector  = _read_mode2_sector,
+    .read_mode2_sectors = _read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
     .stat_size          = _cdio_stat_size
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->access_mode    = _AM_READ_CD;
+  _data->access_mode    = _AM_IOCTL;
   _data->init           = false;
   _data->fd             = -1;
 
@@ -426,8 +548,8 @@ cdio_open_bsdi (const char *source_name)
 #else 
   return NULL;
 #endif /* HAVE_BSDI_CDROM */
-}
 
+}
 
 bool
 cdio_have_bsdi (void)

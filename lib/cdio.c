@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.2 2003/03/24 23:59:22 rocky Exp $
+    $Id: cdio.c,v 1.3 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -28,7 +28,7 @@
 #include "logging.h"
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.2 2003/03/24 23:59:22 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.3 2003/03/29 17:32:00 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -40,11 +40,6 @@ const char *track_format2str[5] =
    on a particular host. */
 
 CdIo_driver_t CdIo_driver[MAX_DRIVER] = { {0} };
-
-struct _CdIo {
-  void *user_data;
-  cdio_funcs op;
-};
 
 /* The last valid entry of Cdio_driver. -1 means uninitialzed. -2 
    means some sort of error.
@@ -189,7 +184,7 @@ cdio_get_first_track_num (const CdIo *obj)
 track_t
 cdio_get_num_tracks (const CdIo *obj)
 {
-  cdio_assert (obj != NULL);
+  if (obj == NULL) return CDIO_INVALID_TRACK;
 
   if (obj->op.get_num_tracks) {
     return obj->op.get_num_tracks (obj->user_data);
@@ -234,6 +229,28 @@ cdio_get_track_green(const CdIo *obj, track_t track_num)
 }
 
 /*!  
+  Return the starting LBA for track number
+  track_num in obj.  Tracks numbers start at 1.
+  The "leadout" track is specified either by
+  using track_num LEADOUT_TRACK or the total tracks+1.
+  CDIO_INVALID_LBA is returned on error.
+*/
+lba_t
+cdio_get_track_lba(const CdIo *obj, track_t track_num)
+{
+  if (obj == NULL) return CDIO_INVALID_LBA;
+
+  if (obj->op.get_track_lba) {
+    return obj->op.get_track_lba (obj->user_data, track_num);
+  } else {
+    msf_t msf;
+    if (cdio_get_track_msf(obj, track_num, &msf))
+      return cdio_msf_to_lba(&msf);
+    return CDIO_INVALID_LBA;
+  }
+}
+
+/*!  
   Return the starting MSF (minutes/secs/frames) for track number
   track_num in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
@@ -241,7 +258,7 @@ cdio_get_track_green(const CdIo *obj, track_t track_num)
   False is returned if there is no track entry.
 */
 bool
-cdio_get_track_msf(const CdIo *obj, track_t track_num, msf_t *msf)
+cdio_get_track_msf(const CdIo *obj, track_t track_num, /*out*/ msf_t *msf)
 {
   cdio_assert (obj != NULL);
 
@@ -250,6 +267,23 @@ cdio_get_track_msf(const CdIo *obj, track_t track_num, msf_t *msf)
   } else {
     return false;
   }
+}
+
+/*!  
+  Return the number of sectors between this track an the next.  This
+  includes any pregap sectors before the start of the next track.
+  Tracks start at 1.
+  0 is returned if there is an error.
+*/
+unsigned int
+cdio_get_track_sec_count(const CdIo *obj, track_t track_num)
+{
+  track_t num_tracks = cdio_get_num_tracks(obj);
+
+  if (track_num >=1 && track_num <= num_tracks) 
+    return ( cdio_get_track_lba(obj, track_num+1) 
+             - cdio_get_track_lba(obj, track_num) );
+  return 0;
 }
 
 bool
@@ -300,6 +334,9 @@ cdio_new (void *user_data, const cdio_funcs *funcs)
   return new_obj;
 }
 
+/*!
+  Free any resources associated with obj.
+*/
 void
 cdio_destroy (CdIo *obj)
 {
@@ -309,31 +346,46 @@ cdio_destroy (CdIo *obj)
   free (obj);
 }
 
+/*!
+  lseek - reposition read/write file offset
+  Returns (off_t) -1 on error. 
+  Similar to (if not the same as) libc's lseek()
+*/
+off_t
+cdio_lseek (CdIo *obj, off_t offset, int whence)
+{
+  if (obj == NULL) return -1;
+  
+  if (obj->op.lseek)
+    return obj->op.lseek (obj->user_data, offset, whence);
+  return -1;
+}
+
+/*!
+  Reads into buf the next size bytes.
+  Returns -1 on error. 
+  Similar to (if not the same as) libc's read()
+*/
+ssize_t
+cdio_read (CdIo *obj, void *buf, size_t size)
+{
+  if (obj == NULL) return -1;
+  
+  if (obj->op.read)
+    return obj->op.read (obj->user_data, buf, size);
+  return -1;
+}
+
 int
 cdio_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, bool mode2raw, 
                          unsigned num_sectors)
 {
-  char *_buf = buf;
-  const int blocksize = mode2raw ? M2RAW_SECTOR_SIZE : M2F1_SECTOR_SIZE;
-  int n, rc;
-
   cdio_assert (obj != NULL);
   cdio_assert (buf != NULL);
-  cdio_assert (obj->op.read_mode2_sector != NULL 
-	      || obj->op.read_mode2_sectors != NULL);
+  cdio_assert (obj->op.read_mode2_sectors != NULL);
   
-  if (obj->op.read_mode2_sectors)
-    return obj->op.read_mode2_sectors (obj->user_data, buf, lsn,
-				       mode2raw, num_sectors);
-
-  /* fallback */
-  if (obj->op.read_mode2_sector != NULL)
-    for (n = 0; n < num_sectors; n++)
-      if ((rc = cdio_read_mode2_sector (obj, &_buf[n * blocksize],
-						    lsn + n, mode2raw)))
-	return rc;
-  
-  return 0;
+  return obj->op.read_mode2_sectors (obj->user_data, buf, lsn,
+                                     mode2raw, num_sectors);
 }
 
 /*!

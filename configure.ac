@@ -1,4 +1,4 @@
-AC_REVISION([$Id: configure.ac,v 1.1 2003/03/24 19:01:09 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.2 2003/03/29 17:32:00 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.1)
@@ -118,7 +118,8 @@ LIBS="$LIBS -lm"
 CFLAGS="$CFLAGS $WARN_CFLAGS"
 
 AM_CONDITIONAL(CYGWIN, test "x$CYGWIN" = "xyes")
-AM_CONDITIONAL(BUILD_CDINFO_LINUX, test "x$enable_cli_fe" = "xyes")
+AM_CONDITIONAL(BUILD_CDINFO_LINUX, test "x$enable_cdinfo_linux" = "xyes")
+AM_CONDITIONAL(BUILD_CDIOTEST, test "x$enable_cdiotest" = "xyes")
 
 AM_PROG_LIBTOOL
      

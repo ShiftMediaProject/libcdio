@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_types.h,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: cdio_types.h,v 1.2 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -200,6 +200,11 @@ typedef uint8_t track_t;
   Constant for invalid track number
 */
 #define CDIO_INVALID_TRACK   0xFF
+
+/*! 
+  Constant for invalid LBA
+*/
+#define CDIO_INVALID_LBA   0xFFFFFFFF
 
 #ifdef __cplusplus
 }

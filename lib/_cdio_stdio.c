@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stdio.c,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: _cdio_stdio.c,v 1.2 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -35,7 +35,7 @@
 #include "_cdio_stream.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.1 2003/03/24 19:01:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.2 2003/03/29 17:32:00 rocky Exp $";
 
 #define CDIO_STDIO_BUFSIZE (128*1024)
 
@@ -91,11 +91,11 @@ _stdio_free(void *user_data)
 }
 
 static long
-_stdio_seek(void *user_data, long offset)
+_stdio_seek(void *user_data, long offset, int whence)
 {
   _UserData *const ud = user_data;
 
-  if (fseek (ud->fd, offset, SEEK_SET))
+  if (fseek (ud->fd, offset, whence))
     cdio_error ("fseek (): %s", strerror (errno));
 
   return offset;

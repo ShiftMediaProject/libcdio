@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: cdio_private.h,v 1.2 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -23,6 +23,13 @@
 
 #ifndef __CDIO_PRIVATE_H__
 #define __CDIO_PRIVATE_H__
+
+#ifdef  HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef  HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include <cdio.h>
 
@@ -66,13 +73,13 @@ extern "C" {
     track_t (*get_num_tracks) (void *user_data);
     
     /*!  
-      Return the starting MSF (minutes/secs/frames) for track number
+      Return the starting LBA for track number
       track_num in obj.  Tracks numbers start at 1.
       The "leadout" track is specified either by
       using track_num LEADOUT_TRACK or the total tracks+1.
-      1 is returned on error.
+      CDIO_INVALID_LBA is returned on error.
     */
-    uint32_t (*get_track_lba) (void *user_data, track_t track_num);
+    lba_t (*get_track_lba) (void *user_data, track_t track_num);
     
     /*!  
       Get format of track. 
@@ -94,12 +101,26 @@ extern "C" {
       track_num in obj.  Tracks numbers start at 1.
       The "leadout" track is specified either by
       using track_num LEADOUT_TRACK or the total tracks+1.
-      1 is returned on error.
+      False is returned on error.
     */
     bool (*get_track_msf) (void *user_data, track_t track_num, msf_t *msf);
     
     /*!
-      Reads a single mode2 sector from cd device into data starting
+      lseek - reposition read/write file offset
+      Returns (off_t) -1 on error. 
+      Similar to libc's lseek()
+    */
+    off_t (*lseek) (void *user_data, off_t offset, int whence);
+    
+    /*!
+      Reads into buf the next size bytes.
+      Returns -1 on error. 
+      Similar to libc's read()
+    */
+    ssize_t (*read) (void *user_data, void *buf, size_t size);
+    
+    /*!
+      Reads a single mode2 sector from cd device into buf starting
       from lsn. Returns 0 if no error. 
     */
     int (*read_mode2_sector) (void *user_data, void *buf, lsn_t lsn, 
@@ -124,7 +145,15 @@ extern "C" {
     uint32_t (*stat_size) (void *user_data);
     
   } cdio_funcs;
-  
+
+
+  /* Things that just about all private device structures have. */
+  typedef struct {
+    char *source_name;     /* Name used in open. */
+    bool init;             /* True if structure has been initialized */
+    int fd;                /* File descriptor of device */
+  } generic_img_private_t;
+
   CdIo * cdio_new (void *user_data, const cdio_funcs *funcs);
 
   /* The below structure describes a specific CD Input driver  */
@@ -150,6 +179,39 @@ extern "C" {
   /* The below array gives all drivers that can possibly appear.
      on a particular host. */
   extern CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1];
+
+  /*!
+    Release and free resources associated with cd. 
+  */
+  void cdio_generic_free (void *user_data);
+
+  /*!
+    Reads into buf the next size bytes.
+    Returns -1 on error. 
+    Is in fact libc's read().
+  */
+  off_t cdio_generic_lseek (void *user_data, off_t offset, int whence);
+
+  /*!
+    Reads into buf the next size bytes.
+    Returns -1 on error. 
+    Is in fact libc's read().
+  */
+  ssize_t cdio_generic_read (void *user_data, void *buf, size_t size);
+
+  /*!
+    Reads nblocks of mode2 sectors from cd device into data starting
+    from lsn.
+    Returns 0 if no error. 
+  */
+  int cdio_generic_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, 
+				       bool mode2raw,  unsigned num_sectors);
+
+  struct _CdIo {
+    void *user_data;
+    cdio_funcs op;
+  };
+
 
 #ifdef __cplusplus
 }

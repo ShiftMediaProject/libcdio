@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.2 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -31,7 +31,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.1 2003/03/24 19:01:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.2 2003/03/29 17:32:00 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,10 +62,10 @@ static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.1 2003/03/24 19:01:09 rocky
 /* reader */
 
 typedef struct {
-  int fd;
-
-  int ioctls_debugged; /* for debugging */
-
+  /* Things common to all drivers like this. 
+     This must be first. */
+  generic_img_private_t gen; 
+  
   enum {
     _AM_NONE,
     _AM_SUN_CTRL_ATAPI,
@@ -76,9 +76,8 @@ typedef struct {
 #endif
   } access_mode;
 
-  char *source_name;
-  
-  bool init;
+
+  int ioctls_debugged; /* for debugging */
 
   /* Track information */
   bool toc_init;                         /* if true, info below is valid. */
@@ -96,9 +95,9 @@ _cdio_init (_img_private_t *_obj)
 
   struct dk_cinfo cinfo;
 
-  _obj->fd = open (_obj->source_name, O_RDONLY, 0);
+  _obj->gen.fd = open (_obj->source_name, O_RDONLY, 0);
 
-  if (_obj->fd < 0)
+  if (_obj->gen.fd < 0)
     {
       cdio_error ("open (%s): %s", _obj->source_name, strerror (errno));
       return false;
@@ -109,7 +108,7 @@ _cdio_init (_img_private_t *_obj)
    * Try to send MMC3 SCSI commands via the uscsi interface on
    * ATAPI devices.
    */
-  if ( ioctl(_obj->fd, DKIOCINFO, &cinfo) == 0
+  if ( ioctl(_obj->gen.fd, DKIOCINFO, &cinfo) == 0
        && ((strcmp(cinfo.dki_cname, "ide") == 0) 
 	   || (strncmp(cinfo.dki_cname, "pci", 3) == 0)) ) {
       _obj->access_mode = _AM_SUN_CTRL_ATAPI;
@@ -117,28 +116,10 @@ _cdio_init (_img_private_t *_obj)
       _obj->access_mode = _AM_SUN_CTRL_SCSI;    
   }
 
-  _obj->init = true;
+  _obj->gen.init = true;
   _obj->toc_init = false;
 
   return true;
-}
-
-
-/*!
-  Release and free resources associated with cd. 
- */
-static void
-_cdio_free (void *user_data)
-{
-  _img_private_t *_obj = user_data;
-
-  if (NULL == _obj) return;
-  free (_obj->source_name);
-
-  if (_obj->fd >= 0)
-    close (_obj->fd);
-
-  free (_obj);
 }
 
 /*!
@@ -183,7 +164,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
       break;
       
     case _AM_SUN_CTRL_SCSI:
-      if (ioctl (_obj->fd, CDROMREADMODE2, &buf) == -1) {
+      if (ioctl (_obj->gen.fd, CDROMREADMODE2, &buf) == -1) {
 	perror ("ioctl(..,CDROMREADMODE2,..)");
 	return 1;
 	/* exit (EXIT_FAILURE); */
@@ -236,7 +217,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
 	sc.uscsi_buflen = M2RAW_SECTOR_SIZE;
 	sc.uscsi_flags = USCSI_ISOLATE | USCSI_READ;
 	sc.uscsi_timeout = 20;
-	if (ioctl(_obj->fd, USCSICMD, &sc)) {
+	if (ioctl(_obj->gen.fd, USCSICMD, &sc)) {
 	  perror("USCSICMD: READ CD");
 	  return 1;
 	}
@@ -252,7 +233,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   if (mode2_form2)
     memcpy (data, buf, M2RAW_SECTOR_SIZE);
   else
-    memcpy (((char *)data), buf + 8, M2F1_SECTOR_SIZE);
+    memcpy (((char *)data), buf + 8, FORM1_DATA_SIZE);
   
   return 0;
 }
@@ -281,8 +262,8 @@ _read_mode2_sectors (void *user_data, void *data, uint32_t lsn,
       if ( (retval = _read_mode2_sector (_obj, buf, lsn + i, true)) )
 	return retval;
       
-      memcpy (((char *)data) + (M2F1_SECTOR_SIZE * i), buf + 8, 
-	      M2F1_SECTOR_SIZE);
+      memcpy (((char *)data) + (FORM1_DATA_SIZE * i), buf + 8, 
+	      FORM1_DATA_SIZE);
     }
   }
   return 0;
@@ -301,7 +282,7 @@ _cdio_stat_size (void *user_data)
 
   tocent.cdte_track = CDROM_LEADOUT;
   tocent.cdte_format = CDROM_LBA;
-  if (ioctl (_obj->fd, CDROMREADTOCENTRY, &tocent) == -1)
+  if (ioctl (_obj->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
       perror ("ioctl(CDROMREADTOCENTRY)");
       exit (EXIT_FAILURE);
@@ -354,7 +335,7 @@ _cdio_read_toc (_img_private_t *_obj)
   int i;
 
   /* read TOC header */
-  if ( ioctl(_obj->fd, CDROMREADTOCHDR, &_obj->tochdr) == -1 ) {
+  if ( ioctl(_obj->gen.fd, CDROMREADTOCHDR, &_obj->tochdr) == -1 ) {
     cdio_error("%s: %s\n", 
             "error in ioctl CDROMREADTOCHDR", strerror(errno));
     return false;
@@ -364,7 +345,7 @@ _cdio_read_toc (_img_private_t *_obj)
   for (i=_obj->tochdr.cdth_trk0; i<=_obj->tochdr.cdth_trk1; i++) {
     _obj->tocent[i-1].cdte_track = i;
     _obj->tocent[i-1].cdte_format = CDROM_MSF;
-    if ( ioctl(_obj->fd, CDROMREADTOCENTRY, &_obj->tocent[i-1]) == -1 ) {
+    if ( ioctl(_obj->gen.fd, CDROMREADTOCENTRY, &_obj->tocent[i-1]) == -1 ) {
       cdio_error("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
               i, strerror(errno));
@@ -376,7 +357,7 @@ _cdio_read_toc (_img_private_t *_obj)
   _obj->tocent[_obj->tochdr.cdth_trk1].cdte_track = CDROM_LEADOUT;
   _obj->tocent[_obj->tochdr.cdth_trk1].cdte_format = CDROM_MSF;
 
-  if (ioctl(_obj->fd, CDROMREADTOCENTRY, 
+  if (ioctl(_obj->gen.fd, CDROMREADTOCENTRY, 
 	    &_obj->tocent[_obj->tochdr.cdth_trk1]) == -1 ) {
     cdio_error("%s: %s\n", 
 	     "error in ioctl CDROMREADTOCENTRY for lead-out",
@@ -397,13 +378,13 @@ _cdio_eject_media (void *user_data) {
   _img_private_t *_obj = user_data;
   int ret;
 
-  if (_obj->fd > -1) {
-    if ((ret = ioctl(_obj->fd, CDROMEJECT)) != 0) {
-      _cdio_free((void *) _obj);
+  if (_obj->gen.fd > -1) {
+    if ((ret = ioctl(_obj->gen.fd, CDROMEJECT)) != 0) {
+      cdio_generic_free((void *) _obj);
       cdio_error ("CDROMEJECT failed: %s\n", strerror(errno));
       return 1;
     } else {
-      _cdio_free((void *) _obj);
+      cdio_generic_free((void *) _obj);
       return 0;
     }
   }
@@ -515,7 +496,7 @@ _cdio_get_track_format(void *user_data, track_t track_num)
 {
   _img_private_t *_obj = user_data;
   
-  if (!_obj->init) _cdio_init(_obj);
+  if (!_obj->gen.init) _cdio_init(_obj);
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
   if (track_num > TOTAL_TRACKS || track_num == 0)
@@ -549,7 +530,7 @@ _cdio_get_track_green(void *user_data, track_t track_num)
 {
   _img_private_t *_obj = user_data;
   
-  if (!_obj->init) _cdio_init(_obj);
+  if (!_obj->gen.init) _cdio_init(_obj);
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
   if (track_num == CDIO_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
@@ -568,7 +549,7 @@ _cdio_get_track_green(void *user_data, track_t track_num)
   track_num in obj.  Tracks numbers start at 1.
   The "leadout" track is specified either by
   using track_num LEADOUT_TRACK or the total tracks+1.
-  NULL is returned if there is no entry.
+  False is returned if there is no entry.
 */
 static bool
 _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
@@ -577,7 +558,7 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
 
   if (NULL == msf) return false;
 
-  if (!_obj->init) _cdio_init(_obj);
+  if (!_obj->gen.init) _cdio_init(_obj);
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
   if (track_num == CDIO_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
@@ -610,14 +591,17 @@ cdio_open_solaris (const char *source_name)
 
   cdio_funcs _funcs = {
     .eject_media        = _cdio_eject_media,
-    .free               = _cdio_free,
+    .free               = cdio_generic_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = _cdio_get_default_device,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,
+    .get_track_lba      = NULL, /* This could be implemented if need be. */
     .get_track_msf      = _cdio_get_track_msf,
+    .lseek              = cdio_generic_lseek,
+    .read               = cdio_generic_read,
     .read_mode2_sector  = _read_mode2_sector,
     .read_mode2_sectors = _read_mode2_sectors,
     .stat_size          = _cdio_stat_size,
@@ -636,7 +620,7 @@ cdio_open_solaris (const char *source_name)
   if (_cdio_init(_data))
     return ret;
   else {
-    _cdio_free (_data);
+    cdio_generic_free (_data);
     return NULL;
   }
 

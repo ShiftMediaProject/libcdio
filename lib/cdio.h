@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.h,v 1.2 2003/03/24 23:59:22 rocky Exp $
+    $Id: cdio.h,v 1.3 2003/03/29 17:32:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -24,6 +24,13 @@
 
 #ifndef __CDIO_H__
 #define __CDIO_H__
+
+#ifdef  HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef  HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include "cdio_types.h"
 #include "sector.h"
@@ -78,7 +85,10 @@ extern "C" {
     Return 0 if success and 1 for failure, and 2 if no routine.
   */
   int cdio_eject_media (const CdIo *obj);
-  
+
+  /*!
+    Free any resources associated with obj.
+   */
   void cdio_destroy (CdIo *obj);
 
   /*!
@@ -118,14 +128,46 @@ extern "C" {
   bool cdio_get_track_green(const CdIo *obj, track_t track_num);
     
   /*!  
+    Return the starting LBA for track number
+    track_num in obj.  Tracks numbers start at 1.
+    The "leadout" track is specified either by
+    using track_num LEADOUT_TRACK or the total tracks+1.
+    CDIO_INVALID_LBA is returned on error.
+  */
+  lba_t cdio_get_track_lba(const CdIo *obj, track_t track_num);
+  
+  /*!  
     Return the starting MSF (minutes/secs/frames) for track number
     track_num in obj.  Track numbers start at 1.
     The "leadout" track is specified either by
     using track_num LEADOUT_TRACK or the total tracks+1.
     False is returned if there is no track entry.
   */
-  bool cdio_get_track_msf(const CdIo *obj, track_t track_num, msf_t *msf);
+  bool cdio_get_track_msf(const CdIo *obj, track_t track_num, 
+			  /*out*/ msf_t *msf);
   
+  /*!  
+    Return the number of sectors between this track an the next.  This
+    includes any pregap sectors before the start of the next track.
+    Tracks start at 1.
+    0 is returned if there is an error.
+  */
+  unsigned int cdio_get_track_sec_count(const CdIo *obj, track_t track_num);
+
+  /*!
+    lseek - reposition read/write file offset
+    Returns (off_t) -1 on error. 
+    Similar to (if not the same as) libc's lseek()
+  */
+  off_t cdio_lseek(CdIo *obj, off_t offset, int whence);
+    
+  /*!
+    Reads into buf the next size bytes.
+    Returns -1 on error. 
+    Similar to (if not the same as) libc's read()
+  */
+  ssize_t cdio_read(CdIo *obj, void *buf, size_t size);
+    
   /*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
