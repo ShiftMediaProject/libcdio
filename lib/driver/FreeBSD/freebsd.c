@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.13 2005/01/27 04:00:48 rocky Exp $
+    $Id: freebsd.c,v 1.14 2005/01/27 04:54:27 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,11 +27,15 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.13 2005/01/27 04:00:48 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.14 2005/01/27 04:54:27 rocky Exp $";
 
 #include "freebsd.h"
 
 #ifdef HAVE_FREEBSD_CDROM
+
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
 
 #include <cdio/sector.h>
 
