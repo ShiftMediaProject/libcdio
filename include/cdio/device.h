@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.20 2005/03/06 22:04:07 rocky Exp $
+    $Id: device.h,v 1.21 2005/03/07 07:23:52 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -214,21 +214,26 @@ extern "C" {
 				 */
     DRIVER_OP_BAD_PARAMETER = -5, /**< Bad parameter passed  */
     DRIVER_OP_BAD_POINTER =   -6, /**< Bad pointer to memory area  */
+    DRIVER_OP_NO_DRIVER  =    -7, /**< Operaton called on a driver
+				     not available on this OS  */
   } driver_return_code_t;
 
   /*!
     Close media tray in CD drive if there is a routine to do so. 
 
-    @param p_cdio the CD object to be acted upon.
-    If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
+    @param name of CD-ROM device to be acted upon.
+    driver_id is the driver to use to perform the action. If DRIVER_UNKNOWN
+    or DRIVER_DEVICE we'll scan for a suitable driver and set 
+    driver_id to that on return.
   */
-  driver_return_code_t cdio_close_tray (CdIo_t *p_cdio);
+  driver_return_code_t cdio_close_tray (const char *psz_device, 
+					/*in/out*/ driver_id_t *p_driver_id);
 
   /*!
     Eject media in CD drive if there is a routine to do so. 
 
     @param p_cdio the CD object to be acted upon.
-    If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
+    If the CD is ejected *p_cdio is free'd and p_cdio set to NULL.
   */
   driver_return_code_t cdio_eject_media (CdIo_t **p_cdio);
 
@@ -258,6 +263,15 @@ extern "C" {
     NULL even though there may be a hardware CD-ROM.
   */
   char * cdio_get_default_device (const CdIo_t *p_cdio);
+
+  /*!
+    Return a string containing the default CD device if none is specified.
+    if p_driver_id is DRIVER_UNKNOWN or DRIVER_DEVICE
+    then find a suitable one set the default device for that.
+    
+    NULL is returned if we couldn't get a default device.
+  */
+  char * cdio_get_default_device_driver (/*in/out*/ driver_id_t *p_driver_id);
 
   /*! Return an array of device names. If you want a specific
     devices for a driver, give that device. If you want hardware
@@ -421,7 +435,7 @@ extern "C" {
   /*! Like cdio_have_xxx but uses an enumeration instead. */
   bool cdio_have_driver (driver_id_t driver_id);
   
-  /*!
+  /*
     Free any resources associated with p_cdio. Call this when done using p_cdio
     and using CD reading/control operations.
 

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.22 2005/03/06 11:21:52 rocky Exp $
+    $Id: cdio_private.h,v 1.23 2005/03/07 07:23:52 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -444,12 +444,13 @@ extern "C" {
     const char  *name;
     const char  *describe;
     bool (*have_driver) (void); 
-    CdIo *(*driver_open) (const char *psz_source_name); 
-    CdIo *(*driver_open_am) (const char *psz_source_name, 
+    CdIo_t *(*driver_open) (const char *psz_source_name); 
+    CdIo_t *(*driver_open_am) (const char *psz_source_name, 
 			     const char *psz_access_mode); 
     char *(*get_default_device) (void); 
     bool (*is_device) (const char *psz_source_name);
     char **(*get_devices) (void);
+    driver_return_code_t (*close_tray) (const char *psz_device);
   } CdIo_driver_t;
 
   /* The below array gives of the drivers that are currently available for 
@@ -471,6 +472,9 @@ extern "C" {
   */
   void cdio_add_device_list(char **device_list[], const char *psz_drive,
 			    unsigned int *i_drives);
+
+  driver_return_code_t close_tray_linux (const char *psz_device);
+
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.6 2005/03/06 22:53:50 rocky Exp $
+    $Id: gnu_linux.c,v 1.7 2005/03/07 07:23:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.6 2005/03/06 22:53:50 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.7 2005/03/07 07:23:52 rocky Exp $";
 
 #include <string.h>
 
@@ -311,19 +311,6 @@ audio_stop_linux (void *p_user_data)
 {
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROMSTOP);
-}
-
-/*!
-  Close tray on CD-ROM.
-  
-  @param p_user_data the CD object to be acted upon.
-  
-*/
-static driver_return_code_t 
-close_tray_linux (void *p_user_data)
-{
-  const _img_private_t *p_env = p_user_data;
-  return ioctl(p_env->gen.fd, CDROMCLOSETRAY);
 }
 
 /*!
@@ -1316,6 +1303,54 @@ cdio_get_default_device_linux(void)
   return NULL;
 #endif /*HAVE_LINUX_CDROM*/
 }
+
+/*!
+  Close tray on CD-ROM.
+  
+  @param p_user_data the CD object to be acted upon.
+  
+*/
+driver_return_code_t 
+close_tray_linux (const char *psz_device)
+{
+#ifdef HAVE_LINUX_CDROM
+  int i_rc;
+  int fd = open (psz_device, O_RDONLY|O_NONBLOCK);
+  int status;
+
+  if ( fd > -1 ) {
+    if((status = ioctl(fd, CDROM_DRIVE_STATUS, CDSL_CURRENT)) > 0) {
+      switch(status) {
+      case CDS_TRAY_OPEN:
+        goto try_anyway;
+	break;
+      case CDS_DISC_OK:
+	cdio_info ("Tray already closed.");
+        i_rc = DRIVER_OP_SUCCESS;
+	break;
+      default:
+	cdio_info ("Unknown CD-ROM status (%d), trying anyway", status);
+        goto try_anyway;
+      }
+    } else {
+      cdio_info ("CDROM_DRIVE_STATUS failed: %s, trying anyway", 
+                 strerror(errno));
+    try_anyway:
+      i_rc = DRIVER_OP_SUCCESS;
+      if((i_rc = ioctl(fd, CDROMCLOSETRAY)) != 0) {
+        cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
+        i_rc = DRIVER_OP_ERROR;
+      }
+    }
+    close(fd);
+  } else 
+    i_rc = DRIVER_OP_ERROR;
+  return i_rc;
+#else 
+  return DRIVER_OP_NO_DRIVER;
+#endif /*HAVE_LINUX_CDROM*/
+}
+
 /*!
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
@@ -1324,7 +1359,11 @@ cdio_get_default_device_linux(void)
 CdIo_t *
 cdio_open_linux (const char *psz_source_name)
 {
+#ifdef HAVE_LINUX_CDROM
   return cdio_open_am_linux(psz_source_name, NULL);
+#else 
+  return NULL;
+#endif /*HAVE_LINUX_CDROM*/
 }
 
 /*!
@@ -1354,7 +1393,6 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .audio_resume          = audio_resume_linux,
     .audio_set_volume      = audio_set_volume_linux,
     .audio_stop            = audio_stop_linux,
-    .close_tray            = close_tray_linux,
     .eject_media           = eject_media_linux,
     .free                  = cdio_generic_free,
     .get_arg               = get_arg_linux,

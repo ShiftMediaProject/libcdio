@@ -36,6 +36,7 @@ cdio_get_default_device
 cdio_get_default_device_bincue
 cdio_get_default_device_bsdi
 cdio_get_default_device_cdrdao
+cdio_get_default_device_driver
 cdio_get_default_device_freebsd
 cdio_get_default_device_linux
 cdio_get_default_device_nrg
