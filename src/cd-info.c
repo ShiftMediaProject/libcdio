@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.100 2004/11/19 22:10:21 rocky Exp $
+    $Id: cd-info.c,v 1.101 2004/12/04 11:44:16 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -791,11 +791,15 @@ init(void)
 {
   gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
 #ifdef HAVE_CDDB
-  gl_default_cddb_log_handler = cddb_log_set_handler (_log_handler);
+  
+
+  gl_default_cddb_log_handler = 
+    cddb_log_set_handler ((cddb_log_handler_t) _log_handler);
 #endif
 
 #ifdef HAVE_VCDINFO
-  gl_default_vcd_log_handler = vcd_log_set_handler (_log_handler);
+  gl_default_vcd_log_handler =
+    vcd_log_set_handler ((vcd_log_handler_t) _log_handler);
 #endif
 
   /* Default option values. */
