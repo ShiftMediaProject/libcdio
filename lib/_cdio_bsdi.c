@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.16 2003/10/03 03:45:40 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.17 2003/10/03 03:46:54 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.16 2003/10/03 03:45:40 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.17 2003/10/03 03:46:54 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -62,8 +62,6 @@ typedef struct {
   /* Things common to all drivers like this. 
      This must be first. */
   generic_img_private_t gen; 
-
-  int ioctls_debugged; /* for debugging */
 
   enum {
     _AM_NONE,
