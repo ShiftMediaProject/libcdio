@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.6 2003/09/01 15:08:15 rocky Exp $
+#   $Id: Makefile.am,v 1.7 2003/09/14 04:59:40 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -31,7 +31,7 @@ check_sizeof_LDADD = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 
 check_SCRIPTS = check_nrg.sh check_cue.sh check_opts.sh
 
-check_PROGRAMS = testischar testassert testiso9660
+check_PROGRAMS = $(noinst_PROGRAMS)
 
 check_DATA = vcd_demo.right \
 	     videocd.right videocd.nrg \
