@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.35 2004/12/18 17:29:32 rocky Exp $
+#   $Id: Makefile.am,v 1.36 2004/12/19 00:02:09 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -41,7 +41,7 @@ testbincue_LDADD    = $(LIBCDIO_LIBS)
 testbincue_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
-                check_iso.sh  check_opts.sh 
+                check_iso.sh  check_opts.sh check_paranoia.sh
 
 check_PROGRAMS = $(hack)
 
@@ -68,7 +68,7 @@ EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
 XFAIL_TESTS = testassert
 
-MOSTLYCLEANFILES = core core.* *.dump
+MOSTLYCLEANFILES = core core.* *.dump cdda-orig.wav cdda-try.wav
 
 test: check
 
@@ -81,7 +81,7 @@ test: check
 # life the crappy automess system that I've really lost interest in
 # learning any more of this awful system than I need to.
 check-am:	make-executable
-make-executable: check_nrg.sh check_cue.sh
+make-executable: check_nrg.sh check_cue.sh check_paranoia.sh
 	chmod +x *.sh
 	if test ! -f cdda.bin ; then $(LN_S) $(srcdir)/cdda.bin cdda.bin ; fi
 	if test ! -f isofs-m1.bin ; then $(LN_S) $(srcdir)/isofs-m1.bin isofs-m1.bin ; fi

@@ -1,5 +1,5 @@
 /*
-  $Id: utils.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: utils.h,v 1.2 2004/12/19 00:02:09 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <string.h>
 #include <cdio/types.h>
+#include <cdio/bytesex.h>
 
 /* I wonder how many alignment issues this is gonna trip in the
    future...  it shouldn't trip any...  I guess we'll find out :) */
@@ -35,26 +36,14 @@ static inline int bigendianp(void){
   return(1);
 }
 
-static inline int32_t swap32(int32_t x){
-  return((((u_int32_t)x & 0x000000ffU) << 24) | 
-	 (((u_int32_t)x & 0x0000ff00U) <<  8) | 
-	 (((u_int32_t)x & 0x00ff0000U) >>  8) | 
-	 (((u_int32_t)x & 0xff000000U) >> 24));
-}
-
-static inline int16_t swap16(int16_t x){
-  return((((u_int16_t)x & 0x00ffU) <<  8) | 
-	 (((u_int16_t)x & 0xff00U) >>  8));
-}
-
 #if BYTE_ORDER == LITTLE_ENDIAN
 
 static inline int32_t be32_to_cpu(int32_t x){
-  return(swap32(x));
+  return(UINT32_SWAP_LE_BE_C(x));
 }
 
 static inline int16_t be16_to_cpu(int16_t x){
-  return(swap16(x));
+  return(UINT16_SWAP_LE_BE_C(x));
 }
 
 static inline int32_t le32_to_cpu(int32_t x){
@@ -76,11 +65,11 @@ static inline int16_t be16_to_cpu(int16_t x){
 }
 
 static inline int32_t le32_to_cpu(int32_t x){
-  return(swap32(x));
+  return(UINT32_SWAP_LE_BE_C(x));
 }
 
 static inline int16_t le16_to_cpu(int16_t x){
-  return(swap16(x));
+  return(UINT16_SWAP_LE_BE_C(x));
 }
 
 
@@ -127,7 +116,7 @@ void cderror(cdrom_drive_t *d, const char *s);
 
 void cdmessage(cdrom_drive_t *d,const char *s);
 
-void idperror(int messagedest,char **messages,const char *f, const char *s);
+void idperror(int messagedest, char **messages, const char *f, const char *s);
 
-void idmessage(int messagedest,char **messages,const char *f, const char *s);
+void idmessage(int messagedest, char **messages, const char *f, const char *s);
 

@@ -61,6 +61,7 @@
 
 #include <cdio/cdda_interface.h>
 #include <cdio/paranoia.h>
+#include <cdio/bytesex.h>
 #include "utils.h"
 #include "report.h"
 #include "version.h"
@@ -1236,7 +1237,8 @@ int main(int argc,char *argv[]){
 	  
 	  if(output_endian!=bigendianp()){
 	    int i;
-	    for(i=0;i<CDIO_CD_FRAMESIZE_RAW/2;i++)readbuf[i]=swap16(readbuf[i]);
+	    for(i=0;i<CDIO_CD_FRAMESIZE_RAW/2;i++)
+	      readbuf[i]=UINT16_SWAP_LE_BE_C(readbuf[i]);
 	  }
 	  
 	  callback(cursor*(CD_FRAMEWORDS)-1,-2);
@@ -1250,7 +1252,8 @@ int main(int argc,char *argv[]){
 	  
 	  if(output_endian!=bigendianp()){
 	    int i;
-	    for(i=0;i<CDIO_CD_FRAMESIZE_RAW/2;i++)readbuf[i]=swap16(readbuf[i]);
+	    for(i=0;i<CDIO_CD_FRAMESIZE_RAW/2;i++)
+	      readbuf[i]=UINT16_SWAP_LE_BE_C(readbuf[i]);
 	  }
 
 	  /* One last bit of silliness to deal with sample offsets */
@@ -1279,7 +1282,7 @@ int main(int argc,char *argv[]){
 	  
 	    if(output_endian!=bigendianp())
 	      for(i=0;i<CDIO_CD_FRAMESIZE_RAW/2;i++)
-		offset_buffer[i]=swap16(readbuf[i]);
+		offset_buffer[i]=UINT16_SWAP_LE_BE_C(readbuf[i]);
 	    else
 	      memcpy(offset_buffer,readbuf,CDIO_CD_FRAMESIZE_RAW);
 	    offset_buffer_used=sample_offset*4;

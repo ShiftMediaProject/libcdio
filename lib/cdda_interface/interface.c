@@ -115,7 +115,7 @@ long cdda_read(cdrom_drive_t *d, void *buffer, long beginsector, long sectors)
 	  u_int16_t *p=(u_int16_t *)buffer;
 	  long els=sectors*CD_FRAMESIZE_RAW/2;
 	  
-	  for(i=0;i<els;i++)p[i]=swap16(p[i]);
+	  for(i=0;i<els;i++)p[i]=UINT16_SWAP_LE_BE_C(p[i]);
 	}
       }
     }

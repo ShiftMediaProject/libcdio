@@ -19,7 +19,7 @@ define(RELEASE_NUM, 72)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.120 2004/12/18 21:24:25 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.121 2004/12/19 00:02:09 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -126,6 +126,13 @@ else
 fi
 AC_SUBST(DIFF)
 AC_SUBST(DIFF_OPTS)
+
+# We use  cmp and cdparanoia in cd-paranoia regression testing
+AC_PATH_PROG(CMP, cmp, no)
+AC_SUBST(CMP)
+
+AC_PATH_PROG(OLD_CDPARANOIA, cdparanoia, no)
+AC_SUBST(OLD_CDPARANOIA)
 
 AM_PATH_LIBPOPT(, 
   [AC_MSG_WARN([Diagnostic programs cd-drive, cd-info, cd-read, iso-info, and is-read will not get built.])
@@ -493,6 +500,7 @@ AC_CONFIG_FILES([ \
        test/check_nrg.sh \
        test/check_cue.sh \
        test/check_iso.sh \
+       test/check_paranoia.sh \
        test/check_common_fn \
        test/Makefile \
        ])
@@ -502,6 +510,7 @@ AC_CONFIG_COMMANDS([default],[[
 chmod +x test/check_nrg.sh
 chmod +x test/check_cue.sh
 chmod +x test/check_iso.sh
+chmod +x test/check_paranoia.sh
 ]],[[]])
 
 AC_OUTPUT

@@ -1,0 +1,31 @@
+#!/bin/sh
+# $Id: check_paranoia.sh.in,v 1.1 2004/12/19 00:02:09 rocky Exp $
+# Compare our cd-paranoia with an installed cdparanoia
+
+if test "@OLD_CDPARANOIA@" != no -a -x @OLD_CDPARANOIA@ ; then
+  if test "@CMP@" != no -a -x @OLD_CDPARANOIA@ ; then
+    for opt in '' '-r' '-p' '-f' '-a'  ; do
+      frames='"1[:130]-1[:134]"'
+      ../src/cd-paranoia/cd-paranoia $frames cdda-try.wav
+      @OLD_CDPARANOIA@ $frames cdda-orig.wav
+      if @CMP@ cdda-try.wav cdda-orig.wav ; then
+        echo "** New and old paranoia output are identical using option '$opt'"
+      else
+        echo "** New and old paranoia output differ using option $opt"
+        exit 3
+      fi
+    done
+    exit 0
+  else 
+    echo "Don't see libcdio cd-paranoia program. Test skipped."
+    exit 77
+  fi
+else
+    echo "Don't see non-libcdio cdparanoia program. Test skipped."
+  exit 77
+fi
+#;;; Local Variables: ***
+#;;; mode:shell-script ***
+#;;; eval: (sh-set-shell "bash") ***
+#;;; End: ***
+
