@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.15 2005/03/16 02:19:20 rocky Exp $
+    $Id: cdda-player.c,v 1.16 2005/03/17 07:36:10 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -57,7 +57,12 @@
 #include <errno.h>
 #endif
 
+#ifdef HAVE_CURSES_H
 #include <curses.h>
+#elif HAVE_NCURSES_H
+#include <ncurses.h>
+#  error "You need <curses.h> or <ncurses.h to build cdda-player"
+#endif
 
 #include <cdio/cdio.h>
 #include <cdio/mmc.h>

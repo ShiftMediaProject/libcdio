@@ -19,7 +19,7 @@ define(RELEASE_NUM, 73)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.149 2005/03/10 12:47:03 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.150 2005/03/17 07:36:09 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -163,7 +163,7 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h fcntl.h glob.h pwd.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h)
 
-AC_CHECK_HEADERS(curses.h, [], [enable_cdda_player='no'])
+AC_CHECK_HEADERS(curses.h ncurses.h, break, [enable_cdda_player='no'])
 
 AC_SUBST(SBPCD_H)
 AC_SUBST(UCDROM_H)
@@ -507,8 +507,8 @@ fi
 AC_SUBST(CDDB_LIBS)
 
 if test x$enable_cdda_player = xyes; then
-    AC_CHECK_LIB(ncurses, mvprintw, [CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
     AC_CHECK_LIB(curses, mvprintw, [CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
+    AC_CHECK_LIB(ncurses, mvprintw, [CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
     [AC_MSG_WARN([Will not build cdda-player - did not find libcurses or libncurses])
      enable_cdda_player=no]))
 fi
