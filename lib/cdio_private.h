@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.11 2003/06/22 22:41:29 rocky Exp $
+    $Id: cdio_private.h,v 1.12 2003/09/18 13:40:54 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -24,11 +24,8 @@
 #ifndef __CDIO_PRIVATE_H__
 #define __CDIO_PRIVATE_H__
 
-#ifdef  HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#ifdef  HAVE_UNISTD_H
-#include <unistd.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
 #endif
 
 #include <cdio/cdio.h>

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_assert.h,v 1.3 2003/04/22 12:09:09 rocky Exp $
+    $Id: cdio_assert.h,v 1.4 2003/09/18 13:40:54 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -22,6 +22,10 @@
 #define __CDIO_ASSERT_H__
 
 #if defined(__GNUC__)
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include <cdio/types.h>
 #include <cdio/logging.h>
