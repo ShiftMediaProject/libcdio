@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.17 2004/08/07 09:42:34 rocky Exp $
+  $Id: util.c,v 1.18 2004/08/08 03:03:10 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -336,10 +336,23 @@ print_mmc_drive_features(CdIo *p_cdio)
 	case CDIO_MMC_FEATURE_DVD_CSS:
 	  printf("Ability to perform DVD CSS/CPPM authentication and"
 		 " RPC\n");
+#if 0
+	  printf("\tMedium does%s have Content Scrambling (CSS/CPPM)\n", 
+		 (p[2] & 1) ? "": "not ");
+#endif
+	  printf("\tCSS version %d\n", p[7]);
+	  printf("\t\n");
 	  break;
-	case CDIO_MMC_FEATURE_LU_SN:
-	  printf("The Logical Unit has a unique identifier\n");
+	case CDIO_MMC_FEATURE_LU_SN: {
+	  char *psz_serial_num = (char *) p+4;
+	  printf("The Logical Unit has a unique identifier:\n");
+#if 0
+	  buf[499] = '\0';
+	  printf("\t%s\n\n", psz_serial_num);
+#endif
+
 	  break;
+	}
 	default: 
 	  printf("Unknown feature code %x\n", i_feature);
 	}
