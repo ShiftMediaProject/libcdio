@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.44 2003/11/05 04:12:58 rocky Exp $
+    $Id: cd-info.c,v 1.45 2003/11/09 13:57:51 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -754,6 +754,18 @@ main(int argc, const char *argv[])
   parse_options(argc, argv);
      
   print_version(program_name, VERSION, opts.no_header, opts.version_only);
+
+  if (opts.debug_level == 3) {
+    cdio_loglevel_default = CDIO_LOG_INFO;
+#ifdef HAVE_VCDINFO
+    vcd_loglevel_default = VCD_LOG_INFO;
+#endif
+  } else if (opts.debug_level >= 4) {
+    cdio_loglevel_default = CDIO_LOG_DEBUG;
+#ifdef HAVE_VCDINFO
+    vcd_loglevel_default = VCD_LOG_DEBUG;
+#endif
+  }
 
   switch (opts.source_image) {
   case IMAGE_UNKNOWN:
