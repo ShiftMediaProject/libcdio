@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.6 2003/09/21 18:43:36 rocky Exp $
+  $Id: cd-read.c,v 1.7 2003/09/22 01:00:10 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -297,10 +297,29 @@ parse_options (int argc, const char *argv[])
   }
 
   /* Check consistency between start_lsn, end_lsn and num_sectors. */
-  if (opts.end_lsn == CDIO_INVALID_LSN) {
-    if (0 == opts.num_sectors) {
-      opts.num_sectors = 1;
+
+  if (opts.start_lsn == CDIO_INVALID_LSN) {
+    /* Maybe we derive the start from the end and num sectors. */
+    if (opts.end_lsn == CDIO_INVALID_LSN) {
+      /* No start or end LSN, so use 0 for the start */
+      opts.start_lsn = 0;
+      if (opts.num_sectors == 0) opts.num_sectors = 1;
+    } else if (opts.num_sectors != 0) {
+      if (opts.end_lsn <= opts.num_sectors) {
+	fprintf(stderr, 
+		"%s: end LSN (%d) needs to be greater than "
+		" the sector to read (%d)\n",
+		program_name, opts.end_lsn, opts.num_sectors);
+	exit(12);
+      }
+      opts.start_lsn = opts.end_lsn - opts.num_sectors + 1;
     }
+  }
+
+  /* opts.start_lsn has been set somehow or we've aborted. */
+
+  if (opts.end_lsn == CDIO_INVALID_LSN) {
+    if (0 == opts.num_sectors) opts.num_sectors = 1;
     opts.end_lsn = opts.start_lsn + opts.num_sectors - 1;
   } else {
     /* We were given an end lsn. */
@@ -308,7 +327,7 @@ parse_options (int argc, const char *argv[])
       fprintf(stderr, 
 	      "%s: end LSN (%d) needs to be less than start LSN (%d)\n",
 	      program_name, opts.start_lsn, opts.end_lsn);
-      exit(12);
+      exit(13);
     }
     if (opts.num_sectors != opts.end_lsn - opts.start_lsn + 1)
       if (opts.num_sectors != 0) {
@@ -316,12 +335,11 @@ parse_options (int argc, const char *argv[])
 		 "%s: inconsistency between start LSN (%d), end (%d), "
 		 "and count (%d)\n",
 		 program_name, opts.start_lsn, opts.end_lsn, opts.num_sectors);
-	 exit(13);
+	 exit(14);
 	}
     opts.num_sectors = opts.end_lsn - opts.start_lsn + 1;
   }
   
-
   return true;
 }
 
@@ -345,7 +363,7 @@ static void
 init(void) 
 {
   opts.debug_level   = 0;
-  opts.start_lsn     = 0;
+  opts.start_lsn     = CDIO_INVALID_LSN;
   opts.end_lsn       = CDIO_INVALID_LSN;
   opts.num_sectors   = 0;
   opts.read_mode     = READ_MODE_UNINIT;
