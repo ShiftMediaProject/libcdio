@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.10 2005/01/14 03:41:11 rocky Exp $
+  $Id: scan_devices.c,v 1.11 2005/01/15 03:22:48 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -256,10 +256,15 @@ cdda_identify_cooked(const char *dev, int messagedest, char **messages)
     cdio_hwinfo_t hw_info;
 
     if ( scsi_mmc_get_hwinfo( p_cdio, &hw_info ) ) {
-      d->drive_model=calloc(36,1);
-      snprintf(d->drive_model, 36, "%s%s%s ", 
-	       hw_info.psz_vendor, hw_info.psz_model, hw_info.psz_revision );
-      catstring(d->drive_model, description);
+      unsigned int i_len = strlen(hw_info.psz_vendor) 
+	+ strlen(hw_info.psz_model) 
+	+ strlen(hw_info.psz_revision)
+	+ strlen(description) + 3;
+
+      d->drive_model=malloc( i_len );
+      snprintf( d->drive_model, i_len, "%s%s%s %s", 
+		hw_info.psz_vendor, hw_info.psz_model, hw_info.psz_revision,
+		description );
       idmessage(messagedest,messages,"\t\tCDROM sensed: %s\n", 
 		d->drive_model);
       if (description) free(description);
