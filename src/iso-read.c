@@ -1,5 +1,5 @@
 /*
-  $Id: iso-read.c,v 1.4 2004/03/11 01:01:15 rocky Exp $
+  $Id: iso-read.c,v 1.5 2004/07/17 16:47:37 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -76,16 +76,18 @@ parse_options (int argc, const char *argv[])
   
     {"debug",       'd', 
      POPT_ARG_INT, &opts.debug_level, 0,
-     "Set debugging to LEVEL"},
+     "Set debugging to LEVEL."},
     
     {"image", 'i', POPT_ARG_STRING, &opts.iso9660_image, 0,
-     "read from ISO-9660 image", "FILE"},
+     "Read from ISO-9660 image. This option is mandatory", 
+     "FILE"},
     
     {"extract", 'e', POPT_ARG_STRING, &opts.file_name, 0,
-     "extract FILE from ISO-9660 image", "FILE"},
+     "Extract FILE from ISO-9660 image. This option is mandatory.", 
+     "FILE"},
     
     {"output-file",     'o', POPT_ARG_STRING, &opts.output_file, 0,
-     "Output file."},
+     "Output file. This option is mandatory.", "FILE"},
     
     {"version", 'V', POPT_ARG_NONE, NULL, OP_VERSION,
      "display version and copyright information and exit"},
@@ -110,7 +112,7 @@ parse_options (int argc, const char *argv[])
         fprintf (stderr, "%s: %s\n", 
                  poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
                  poptStrerror(opt));
-        fprintf (stderr, "error while parsing command line - try --help\n");
+        fprintf (stderr, "Error while parsing command line - try --help.\n");
 	poptFreeContext(optCon);
 	free(program_name);
         exit (EXIT_FAILURE);
@@ -144,9 +146,32 @@ parse_options (int argc, const char *argv[])
 
   poptFreeContext(optCon);
 
-  if (opts.iso9660_image == NULL) {
+  if (NULL == opts.iso9660_image) {
     fprintf (stderr, 
-	     "%s: you need to specify an ISO-9660 image name. Try --help\n", 
+	     "%s: you need to specify an ISO-9660 image name.\n", 
+	     program_name);
+    fprintf (stderr, 
+	     "%s: Use option --image or try --help.\n", 
+	     program_name);
+    exit (EXIT_FAILURE);
+  }
+
+  if (NULL == opts.file_name) {
+    fprintf (stderr, 
+	     "%s: you need to specify a filename to extract.\n", 
+	     program_name);
+    fprintf (stderr, 
+	     "%s: Use option --extract or try --help.\n", 
+	     program_name);
+    exit (EXIT_FAILURE);
+  }
+
+  if (NULL == opts.output_file) {
+    fprintf (stderr, 
+	     "%s: you need to specify a place write filename extraction to.\n",
+	     program_name);
+    fprintf (stderr, 
+	     "%s: Use option --output-file or try --help.\n",
 	     program_name);
     exit (EXIT_FAILURE);
   }
@@ -180,8 +205,9 @@ main(int argc, const char *argv[])
   iso = iso9660_open (opts.iso9660_image);
   
   if (NULL == iso) {
-    fprintf(stderr, "Sorry, couldn't open ISO-9660 image %s\n", 
-	    opts.iso9660_image);
+    fprintf(stderr, 
+	    "%s: Sorry, couldn't open ISO-9660 image file '%s'.\n", 
+	    program_name, opts.iso9660_image);
     return 1;
   }
 
@@ -190,14 +216,20 @@ main(int argc, const char *argv[])
   if (NULL == statbuf) 
     {
       fprintf(stderr, 
-	      "Could not get ISO-9660 file information for file %s\n",
-	      opts.file_name);
+	      "%s: Could not get ISO-9660 file information out of %s"
+	      " for file %s.\n",
+	      program_name, opts.iso9660_image, opts.file_name);
+      fprintf(stderr, 
+	      "%s: iso-info may be able to show the contents of %s.\n",
+	      program_name, opts.iso9660_image);
       return 2;
     }
 
   if (!(outfd = fopen (opts.output_file, "wb")))
     {
-      perror ("fopen()");
+      fprintf(stderr,
+	      "%s: Could not open %s for writing: %s\n", 
+	      program_name, opts.output_file, strerror(errno));
       return 3;
     }
 
