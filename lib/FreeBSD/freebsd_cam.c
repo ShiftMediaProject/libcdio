@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.15 2004/07/08 01:28:00 rocky Exp $
+    $Id: freebsd_cam.c,v 1.16 2004/07/08 05:19:29 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.15 2004/07/08 01:28:00 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.16 2004/07/08 05:19:29 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -186,7 +186,7 @@ get_drive_cap_freebsd_cam (img_private_t *env)
 		 sizeof(env->ccb.csio.sense_data), 0, 30*1000);
 
   /* Initialize my_scsi_cdb as a Mode Select(6) */
-  CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_MODE_SENSE);
+  CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_GPCMD_MODE_SENSE);
   env->ccb.csio.cdb_io.cdb_bytes[1] = 0x0;  
                                       /* use ALL_PAGES?*/
   env->ccb.csio.cdb_io.cdb_bytes[2] = CDIO_MMC_CAPABILITIES_PAGE; 

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.42 2004/06/27 21:57:45 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.43 2004/07/08 05:19:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.42 2004/06/27 21:57:45 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.43 2004/07/08 05:19:27 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -517,7 +517,7 @@ _cdio_get_drive_cap_solaris (const void *user_data)
   memset(&my_rq_buf,   0, sizeof(my_rq_buf));
   
   /* Initialize my_scsi_cdb as a Mode Select(6) */
-  CDIO_MMC_SET_COMMAND(my_scsi_cdb, CDIO_MMC_MODE_SENSE);
+  CDIO_MMC_SET_COMMAND(my_scsi_cdb, CDIO_MMC_GPCMD_MODE_SENSE);
   my_scsi_cdb[1] = 0x0;  
   my_scsi_cdb[2] = CDIO_MMC_CAPABILITIES_PAGE; 
   my_scsi_cdb[3] = 0;    /* Not used */
