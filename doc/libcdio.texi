@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.20 2004/04/03 12:24:45 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.21 2004/04/25 17:19:50 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -143,7 +143,8 @@ If around the year 2002 you were to look at the code for a number of
 open-source CD or media players that work on several platforms such as
 vlc, MPlayer, xine, or xmms to name but a few, you'd find the code to
 read a CD sprinked with conditional compilation for this or that
-platform. 
+platform. That is there was OS-independent programmer library for CD
+reading and control even though the technology was over 10 years old!
 
 One CD player, @kbd{xmcd} by Ti Kan, was I think a bit better than
 most in that it tried to @emph{encapsulate} the kinds of CD control
@@ -179,6 +180,15 @@ ioctl's that mask hardware differences of various Compact Disc
 hardware. It is a great idea and no doubt something similar exists on
 other platforms. However this "standard" lacked adoption on OS's other
 than GNU/Linux.
+
+Finally at the hardware level where a similar chaos exists (existed?),
+there is the SCSI MMC (multimedia commands). This attempts to provide
+a uniform command set for CD devices sort of like PostScript does for
+printer commands. But in contrast to PostScript, there is no uniform
+PostScript command language that programmers can write to. Instead
+each OS has its own ``standard API.''  For example Adaptec's ASPI or
+the Microsoft's DeviceIoControl on Microsoft Windows, or IOKit for
+Apple's OS/X.
 
 @node Purpose
 @chapter What is in this package (and what's not)
