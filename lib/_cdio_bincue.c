@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.4 2003/03/30 13:01:22 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.5 2003/04/04 05:15:33 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.4 2003/03/30 13:01:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.5 2003/04/04 05:15:33 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -62,11 +62,19 @@ typedef struct {
   
 } track_info_t;
 
-
+typedef struct 
+{
+  off_t   buff_offset;        /* buffer offset in disk-image seeks. */
+  track_t index;              /* Current track index in tocent. */
+  lba_t   lba;                /* Current LBA */
+  unsigned int user_datasize; /* How much is in the portion we return back? */
+} internal_position_t;
+  
 typedef struct {
   /* Things common to all drivers like this. 
      This must be first. */
   generic_img_private_t gen; 
+  internal_position_t pos; 
   
   bool sector_2336_flag;
 
@@ -160,35 +168,39 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
   off_t real_offset=24;
 
   unsigned int i;
-  unsigned int user_datasize;
 
+  _obj->pos.lba = 0;
   for (i=0; i<_obj->total_tracks; i++) {
     track_info_t  *this_track=&(_obj->tocent[i]);
+    _obj->pos.index = i;
     switch (this_track->track_format) {
     case TRACK_FORMAT_AUDIO:
-      user_datasize=CDDA_SECTOR_SIZE;
+      _obj->pos.user_datasize=CDDA_SECTOR_SIZE;
       break;
     case TRACK_FORMAT_CDI:
-      user_datasize=FORM1_DATA_SIZE;
+      _obj->pos.user_datasize=FORM1_DATA_SIZE;
       break;
     case TRACK_FORMAT_XA:
-      user_datasize=FORM1_DATA_SIZE;
+      _obj->pos.user_datasize=FORM1_DATA_SIZE;
       break;
     default:
-      user_datasize=CD_RAW_SECTOR_SIZE;
+      _obj->pos.user_datasize=CD_RAW_SECTOR_SIZE;
       cdio_warn ("track %d has unknown format %d",
 		 i+1, this_track->track_format);
     }
 
-    if ( (this_track->sec_count*user_datasize) >= offset) {
-      int blocks = offset / user_datasize;
-      int rem    = offset % user_datasize;
-      int block_offset = blocks * CD_RAW_SECTOR_SIZE;
-      real_offset += block_offset + rem;
+    if ( (this_track->sec_count*_obj->pos.user_datasize) >= offset) {
+      int blocks            = offset / _obj->pos.user_datasize;
+      int rem               = offset % _obj->pos.user_datasize;
+      int block_offset      = blocks * CD_RAW_SECTOR_SIZE;
+      real_offset          += block_offset + rem;
+      _obj->pos.buff_offset = rem;
+      _obj->pos.lba        += blocks;
       break;
     }
-    real_offset += this_track->sec_count*CD_RAW_SECTOR_SIZE;
-    offset -= this_track->sec_count*user_datasize;
+    real_offset   += this_track->sec_count*CD_RAW_SECTOR_SIZE;
+    offset        -= this_track->sec_count*_obj->pos.user_datasize;
+    _obj->pos.lba += this_track->sec_count;
   }
 
   if (i==_obj->total_tracks) {
@@ -206,10 +218,36 @@ _cdio_lseek (void *user_data, off_t offset, int whence)
    boundaries.
 */
 static ssize_t
-_cdio_read (void *user_data, void *buf, size_t size)
+_cdio_read (void *user_data, void *data, size_t size)
 {
   _img_private_t *_obj = user_data;
-  return cdio_stream_read(_obj->data_source, buf, size, 1);
+  char buf[CD_RAW_SECTOR_SIZE] = { 0, };
+  char *p = data;
+  ssize_t final_size=0;
+  ssize_t this_size;
+
+  while (size > 0) {
+    int rem = _obj->pos.user_datasize - _obj->pos.buff_offset;
+    if (size <= rem) {
+      this_size = cdio_stream_read(_obj->data_source, buf, size, 1);
+      final_size += this_size;
+      memcpy (p, buf, this_size);
+      break;
+    }
+
+    /* Finish off reading this sector. */
+    size -= rem;
+    this_size = cdio_stream_read(_obj->data_source, buf, rem, 1);
+    final_size += this_size;
+    memcpy (p, buf, this_size);
+    p += this_size;
+    _obj->pos.lba++;
+    cdio_warn ("Reading across block boundaries not finished");
+    /* Figure out how much to skip in header and skip over that.
+       See if we've left this track.... FIXME: COMPLETE THIS..
+     */
+  }
+  return final_size;
 }
 
 /*!
@@ -318,8 +356,13 @@ _cdio_image_read_cue (_img_private_t *_obj)
       if (start_index != 0) {
 	if (!seen_first_index_for_track) {
 	  this_track->start_index = start_index;
+	  sec += 2;
+	  if (sec >= 60) {
+	    min++;
+	    sec -= 60;
+	  }
 	  this_track->start_msf.m = to_bcd8 (min);
-	  this_track->start_msf.s = to_bcd8 (sec)+2;
+	  this_track->start_msf.s = to_bcd8 (sec);
 	  this_track->start_msf.f = to_bcd8 (frame);
 	  this_track->start_lba   = cdio_msf_to_lba(&this_track->start_msf);
 	  seen_first_index_for_track=true;

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.3 2003/03/30 13:01:22 rocky Exp $
+    $Id: cdio_private.h,v 1.4 2003/04/04 05:15:33 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -159,9 +159,6 @@ extern "C" {
     bool  toc_init;         /* True TOC read in */
     int   ioctls_debugged;  /* for debugging */
     int   fd;               /* File descriptor of device */
-    off_t buff_offset;      /* buffer offset in disk-image seeks.
-			       (Not used in CD device access)
-			     */
   } generic_img_private_t;
 
   CdIo * cdio_new (void *user_data, const cdio_funcs *funcs);
