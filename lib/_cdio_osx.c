@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.65 2004/08/30 01:14:14 rocky Exp $
+    $Id: _cdio_osx.c,v 1.66 2004/08/30 01:21:59 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.65 2004/08/30 01:14:14 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.66 2004/08/30 01:21:59 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -1088,21 +1088,6 @@ _get_arg_osx (void *user_data, const char key[])
 }
 
 /*!
-  Return the number of the first track. 
-  CDIO_INVALID_TRACK is returned on error.
-*/
-static track_t
-_get_first_track_num_osx(void *user_data) 
-{
-  _img_private_t *p_env = user_data;
-  
-  if (!p_env->gen.toc_init) read_toc_osx (p_env) ;
-  if (!p_env->gen.toc_init) return CDIO_INVALID_TRACK;
-
-  return p_env->i_first_track;
-}
-
-/*!
   Return the media catalog number MCN.
  */
 static char *
@@ -1120,22 +1105,6 @@ get_mcn_osx (const void *user_data) {
   return strdup((char*)cd_read.mcn);
 }
 
-
-/*!
-  Return the number of tracks in the current medium.
-  CDIO_INVALID_TRACK is returned on error.
-  This is the externally called interface.
-*/
-static track_t
-_get_num_tracks_osx(void *user_data) 
-{
-  _img_private_t *p_env = user_data;
-  
-  if (!p_env->gen.toc_init) read_toc_osx (p_env) ;
-  if (!p_env->gen.toc_init) return CDIO_INVALID_TRACK;
-
-  return( TOTAL_TRACKS );
-}
 
 /*!  
   Get format of track. 
@@ -1425,10 +1394,10 @@ cdio_open_osx (const char *psz_orig_source)
     .get_devices        = cdio_get_devices_osx,
     .get_discmode       = get_discmode_osx,
     .get_drive_cap      = get_drive_cap_osx,
-    .get_first_track_num= _get_first_track_num_osx,
+    .get_first_track_num= get_first_track_num_generic,
     .get_hwinfo         = get_hwinfo_osx,
     .get_mcn            = get_mcn_osx,
-    .get_num_tracks     = _get_num_tracks_osx,
+    .get_num_tracks     = get_num_tracks_generic,
     .get_track_format   = get_track_format_osx,
     .get_track_green    = get_track_green_osx,
     .get_track_lba      = get_track_lba_osx,
