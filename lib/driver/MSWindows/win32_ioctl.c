@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.6 2005/01/13 19:39:24 rocky Exp $
+    $Id: win32_ioctl.c,v 1.7 2005/01/19 17:25:50 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.6 2005/01/13 19:39:24 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.7 2005/01/19 17:25:50 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -361,18 +361,18 @@ is_cdrom_win32ioctl(const char c_drive_letter)
    starting from lsn.  Returns 0 if no error.
  */
 int
-read_audio_sectors_win32ioctl (_img_private_t *env, void *data, lsn_t lsn, 
+read_audio_sectors_win32ioctl (_img_private_t *p_env, void *data, lsn_t lsn, 
 			       unsigned int nblocks) 
 {
   DWORD dwBytesReturned;
   RAW_READ_INFO cdrom_raw;
   
   /* Initialize CDROM_RAW_READ structure */
-  cdrom_raw.DiskOffset.QuadPart = CDIO_CD_FRAMESIZE_RAW * lsn;
+  cdrom_raw.DiskOffset.QuadPart = (long long) CDIO_CD_FRAMESIZE_RAW * lsn;
   cdrom_raw.SectorCount = nblocks;
   cdrom_raw.TrackMode = CDDA;
   
-  if( DeviceIoControl( env->h_device_handle,
+  if( DeviceIoControl( p_env->h_device_handle,
 		       IOCTL_CDROM_RAW_READ, &cdrom_raw,
 		       sizeof(RAW_READ_INFO), data,
 		       CDIO_CD_FRAMESIZE_RAW * nblocks,
@@ -380,8 +380,13 @@ read_audio_sectors_win32ioctl (_img_private_t *env, void *data, lsn_t lsn,
     char *psz_msg = NULL;
     long int i_err = GetLastError();
     FORMAT_ERROR(i_err, psz_msg);
-    cdio_info("Error reading audio-mode lsn %lu\n%s (%ld))", 
-	      (long unsigned int) lsn, psz_msg, i_err);
+    if (psz_msg) {
+      cdio_info("Error reading audio-mode lsn %lu\n%s (%ld))", 
+		(long unsigned int) lsn, psz_msg, i_err);
+    } else {
+      cdio_info("Error reading audio-mode lsn %lu\n (%ld))",
+		(long unsigned int) lsn, i_err);
+    }
     LocalFree(psz_msg);
     return 1;
   }
