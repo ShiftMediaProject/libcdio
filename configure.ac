@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.61 2004/02/22 09:34:15 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.62 2004/02/25 02:01:05 rocky Exp $])dnl
 AC_INIT(libcdio, 0.67cvs)
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -303,7 +303,9 @@ if test x$enable_vcd_info = xyes; then
   PKG_CHECK_MODULES(VCDINFO, libvcdinfo >= 0.7.20, 
   [AC_DEFINE([HAVE_VCDINFO],1, 
   [Define this if you have libvcdinfo installed])], 
-  [AC_MSG_WARN(a new enough libvcdinfo not found. libvcdinfo is part of vcdimager. Get from http://vcdimager.org)
+  [AC_MSG_WARN(a new enough libvcdinfo not found. 
+VCD info display in cd-read disabled.
+libvcdinfo is part of vcdimager. Get it from http://vcdimager.org)
    enable_vcd_info=no])
 fi
 
