@@ -1,4 +1,4 @@
-dnl Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+dnl Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 dnl
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -16,13 +16,14 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.59 2004/02/08 15:05:26 rocky Exp $])dnl
-AC_INIT(libcdio, 0.66)
+AC_REVISION([$Id: configure.ac,v 1.60 2004/02/21 18:35:16 rocky Exp $])dnl
+AC_INIT(libcdio, 0.67cvs)
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
+AM_MISSING_PROG(CVS2CL, cvs2cl, $missing_dir)
 AM_MAINTAINER_MODE
 
 AM_SANITY_CHECK
@@ -189,9 +190,6 @@ LIBISO9660_LIBS='$(top_builddir)/lib/libiso9660.la'
 AC_SUBST(LIBCDIO_CFLAGS)
 AC_SUBST(LIBCDIO_LIBS)
 AC_SUBST(LIBISO9660_LIBS)
-
-ACLOCAL_AMFLAGS='-I .'
-AC_SUBST(ACLOCAL_AMFLAGS)
 
 case $host_os in
      darwin6*)
