@@ -5,6 +5,7 @@
 -  NRG image reading improvements 
 -  Remove memory leaks
 -  library symbol versioning (from Nicolas Boullis)
+-  Go over documentation
 
 0.65
 -  tag headers to give doxygen API documentation

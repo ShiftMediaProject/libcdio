@@ -1,3 +1,131 @@
+2004-02-14 12:05  rocky
+
+	* doc/: Makefile.am, fdl.texi, gpl.texi: Add GPL info.
+
+2004-02-14 12:04  rocky
+
+	* doc/libcdio.texi: Go over.
+	
+	Add CD-image format, ISO 9660 characters and glossary from
+	vcdimager documentation.
+	
+	Numberous small corrections.
+
+2004-02-12 20:09  rocky
+
+	* NEWS: Note library symbol versioning (from Nicolas Boullis).
+
+2004-02-11 20:46  rocky
+
+	* lib/Makefile.am: code reorganization from Nicolas Boullis.
+
+2004-02-10 22:09  rocky
+
+	* lib/Makefile.am: lib/Makefile.am (Nicolas Boullis):
+	
+	Mostly some cleanup... First, this tries to keep the versioning
+	separated from the rest of the Makefile. I used the "foo := $(foo)
+	bar" syntax rather than "foo += bar" as I think the += is not
+	available on all versions of make.
+	
+	Moreover, I replaced "$(LIBCDIO_LIBS)" with "libcdio.la" as
+	"$(LIBCDIO_LIBS)" is "../lib/libcdio.la". That make a difference if
+	you try to build libiso9660.la while libcdio.la is not available.
+	Make knows how to make libcdio.la but not ../lib/libcdio.la.
+
+2004-02-10 21:53  rocky
+
+	* lib/.cvsignore: Igore library version file.
+
+2004-02-09 20:38  rocky
+
+	* lib/Makefile.am: Versioned library symbols from Nicolas Boullis.
+	Much appreciated.
+
+2004-02-09 05:32  rocky
+
+	* THANKS, lib/Makefile.am: Clean up library versioning. Use LIBADD
+	since as best as I can tell, that's what supposed to be used.
+	
+	Many thanks to Nicolas Boullis.
+
+2004-02-08 18:49  rocky
+
+	* lib/_cdio_win32.c: Pick up prototype for cdio_is_device_win32.
+
+2004-02-08 10:05  rocky
+
+	* configure.ac: Get ready for another release.
+
+2004-02-07 23:24  rocky
+
+	* lib/Makefile.am: libiso9660 needs to have libcdio listed in its
+	load flags for Solaris.
+
+2004-02-07 22:35  rocky
+
+	* lib/Makefile.am, lib/_cdio_bincue.c, src/iso-info.c: Makefile.am:
+	bump release number.  iso-info.c: mem leak _cdio_bincue.c: minor
+	formatting change.
+
+2004-02-07 22:18  rocky
+
+	* NEWS: What's new.
+
+2004-02-07 22:00  rocky
+
+	* lib/_cdio_nrg.c: More memory leaks found with valgrind.
+
+2004-02-07 21:00  rocky
+
+	* lib/_cdio_bincue.c: Memory leak found by valgrind.
+
+2004-02-07 13:53  rocky
+
+	* lib/: _cdio_bincue.c, _cdio_generic.c, _cdio_nrg.c,
+	_cdio_stdio.c, _cdio_stdio.h, _cdio_stream.c, _cdio_stream.h,
+	cdio_private.h, iso9660_fs.c: More valgrind-found memory leaks.
+	(More to come...)
+
+2004-02-06 21:40  rocky
+
+	* ChangeLog, lib/_cdio_linux.c, lib/cdio.c, src/cd-info.c,
+	src/cd-read.c, src/iso-info.c, src/util.c, src/util.h: Fix some of
+	the memory leaks and uninitialized variables which valgrind
+	notices.
+
+2004-02-06 19:38  rocky
+
+	* lib/wnaspi32.c: Microsoft Windows ASPI code for libcdio.
+
+2004-02-06 19:35  rocky
+
+	* lib/: Makefile.am, _cdio_win32.c, wnaspi32.h: Split out much of
+	the ASPI code into wnaspi32.c.
+
+2004-02-04 22:02  rocky
+
+	* lib/: _cdio_win32.c, _cdio_win32.h, win32ioctl.c: Move more of
+	IoControl out of _win_32 and into win32ioctl.
+
+2004-02-04 06:08  rocky
+
+	* lib/: _cdio_win32.c, _cdio_win32.h, win32ioctl.c: More cleanup.
+	Still sucks.
+
+2004-02-04 05:23  rocky
+
+	* lib/: Makefile.am, _cdio_win32.c, _cdio_win32.h, win32ioctl.c:
+	Add better DeviceIocontrol support. It still sucks, but sucks less.
+
+2004-02-04 05:22  rocky
+
+	* example/sample6.c: printf lint for Doz.
+
+2004-02-01 23:36  rocky
+
+	* NEWS: What's up.
+
 2004-02-01 22:57  rocky
 
 	* configure.ac: 0.65's been released. We're now into 0.66 CVS.
