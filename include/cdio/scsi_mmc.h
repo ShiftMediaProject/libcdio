@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.2 2004/05/11 02:15:47 rocky Exp $
+    $Id: scsi_mmc.h,v 1.3 2004/05/26 06:29:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -47,6 +47,13 @@
 #define CDIO_MMC_GPCMD_READ_12	        0xa8
 #define CDIO_MMC_GPCMD_READ_CD	        0xbe
 #define CDIO_MMC_GPCMD_READ_MSF	        0xb9
+
+/*! This is listed as optional in ATAPI 2.6, but is (curiously) 
+  missing from Mt. Fuji, Table 57.  It _is_ mentioned in Mt. Fuji
+  Table 377 as an MMC command for SCSi devices though...  Most ATAPI
+  drives support it. */
+#define CDIO_MMC_GPCMD_SET_SPEED	0xbb
+
 
 #define CDIO_MMC_SET_COMMAND(rec, command) \
   rec[0] = command

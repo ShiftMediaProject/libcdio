@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.16 2004/05/11 02:15:57 rocky Exp $
+    $Id: types.h,v 1.17 2004/05/26 06:29:15 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -237,6 +237,11 @@ extern "C" {
     Constant for invalid LSN
   */
 #define CDIO_INVALID_LSN    CDIO_INVALID_LBA
+
+  /*! 
+    Number of ASCII bytes in a media catalog number (MCN).
+  */
+#define CDIO_MCN_SIZE       13
 
 typedef int cdio_fs_anal_t;
 
