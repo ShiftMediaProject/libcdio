@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.38 2004/10/28 11:13:40 rocky Exp $
+    $Id: win32_ioctl.c,v 1.39 2004/10/30 06:48:17 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,15 +26,11 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.38 2004/10/28 11:13:40 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.39 2004/10/30 06:48:17 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
-#ifdef WIN32
-#include <windows.h>
-#endif
-
-#if defined (_XBOX) || defined (WIN32)
+#if defined (_XBOX)
 #include "inttypes.h"
 #include "NtScsi.h"
 #include "undocumented.h"
@@ -42,6 +38,10 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.38 2004/10/28 11:13:40 rock
 #include <ddk/ntddstor.h>
 #include <ddk/ntddscsi.h>
 #include <ddk/scsi.h>
+#endif
+
+#ifdef WIN32
+#include <windows.h>
 #endif
 
 #include <stdio.h>
