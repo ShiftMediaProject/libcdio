@@ -1,4 +1,4 @@
-AC_REVISION([$Id: configure.ac,v 1.3 2003/03/30 01:11:56 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.4 2003/03/30 01:31:06 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.1)
@@ -6,8 +6,8 @@ AM_INIT_AUTOMAKE(libcdio, 0.1)
 AM_SANITY_CHECK
 
 AC_ARG_WITH(cdinfo,
-	[  --without-cdinfo  enable cli frontend (enabled by default)], 
-	enable_cdinfo="${withval}", enable_cdinfo=yes)
+[  --without-cdinfo	build sample program cdinfo (enabled by default)],
+enable_cdinfo="${withval}", enable_cdinfo=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -137,6 +137,9 @@ LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/ -I$(top_srcdir)/include/'
 LIBCDIO_LIBS='$(top_builddir)/lib/libcdio.la'
 AC_SUBST(LIBCDIO_CFLAGS)
 AC_SUBST(LIBCDIO_LIBS)
+
+ACLOCAL_AMFLAGS='-I .'
+AC_SUBST(ACLOCAL_AMFLAGS)
 
 case $host_os in
      linux*)
