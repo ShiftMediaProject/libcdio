@@ -5,3 +5,6 @@ Kris Verbeeck <airborne@advalvas.be>:
 Manfred Tremmel <Manfred.Tremmel@iiv.de>:
   RPM spec file and inclusion of libcdio into
   http://packman.links2linux.de/
+
+Frantisek Dvorak <valtri@atlas.cz>:
+  bug reports and miscellaneous fixes

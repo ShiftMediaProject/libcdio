@@ -1,3 +1,138 @@
+2003-08-31 16:50  rocky
+
+	* NEWS: [no log message]
+
+2003-08-31 11:52  rocky
+
+	* lib/iso9660_fs.c, src/cd-info.c, test/check_cue.sh.in,
+	test/isofs-m1.right: Make mode1 format filesystem print work.
+
+2003-08-31 10:26  rocky
+
+	* include/cdio/cdio.h, include/cdio/iso9660.h,
+	include/cdio/sector.h, lib/_cdio_bincue.c, lib/cd_types.c,
+	lib/cdio.c, lib/iso9660_fs.c, src/cd-info.c: Straighten out mode1
+	vs mode2 mess.
+
+2003-08-31 05:32  rocky
+
+	* include/cdio/iso9660.h: Define EMPTY_ARRAY_SIZE if it is not
+	defined previously.
+
+2003-08-31 05:11  rocky
+
+	* include/cdio/iso9660.h, include/cdio/xa.h, lib/iso9660_fs.c,
+	lib/xa.c: Final tidy up.
+
+2003-08-31 04:53  rocky
+
+	* lib/iso9660_fs.h: Most of this is public now.
+
+2003-08-31 04:42  rocky
+
+	* lib/xa.c, test/check_sizeof.c: [no log message]
+
+2003-08-31 04:32  rocky
+
+	* include/cdio/iso9660.h, include/cdio/xa.h, lib/Makefile.am,
+	lib/iso9660_fs.c, lib/xa.c, lib/xa.h, src/cd-info.c,
+	test/cdda.right, test/check_cue.sh.in, test/check_nrg.sh.in,
+	test/monvoisin.right, test/vcd_demo.right: I think I have the XA
+	encapsulation down so that it will work in vcdimager (and others).
+
+2003-08-31 04:03  rocky
+
+	* configure.ac: Rely more on PKG_INFO and remove header checks
+	which didn't test for --enable-xxx.
+
+2003-08-31 03:39  rocky
+
+	* include/cdio/: Makefile.am, iso9660.h, xa.h: Separate and make XA
+	information public.
+
+2003-08-31 02:59  rocky
+
+	* include/cdio/iso9660.h, lib/Makefile.am, lib/iso9660_fs.c,
+	lib/iso9660_fs.h, lib/xa.h, src/Makefile.am, src/cd-info.c,
+	test/check_cue.sh.in, test/check_nrg.sh.in, test/monvoisin.right,
+	test/svcd_ogt_test_ntsc.right, test/svcdgs.right,
+	test/vcd_demo.right, test/videocd.right: Move over reading ISO-9660
+	filesytems from vcdimager. Handling of XA attributes also moved
+	over.
+
+2003-08-31 01:00  rocky
+
+	* include/cdio/iso9660.h, lib/iso9660.c, lib/iso9660_private.h,
+	test/check_sizeof.c: Expose primary volume descriptor (pvd) and
+	directory structures since they *are* part of the spec. and be done
+	with it.
+
+2003-08-31 00:02  rocky
+
+	* src/cd-info.c: A tad closer to being able to print ISO-9660
+	filesystems
+
+2003-08-30 23:35  rocky
+
+	* include/cdio/iso9660.h, lib/cd_types.c, lib/iso9660_private.h:
+	cd_types: tighter use of ISO #defines.	Make some of the private
+	ones public to reduce "private" use in vcdimager.
+
+2003-08-30 22:51  rocky
+
+	* include/cdio/iso9660.h, lib/iso9660.c, src/cd-info.c:
+	iso_directory_record_t -> iso9660_dir_t
+
+2003-08-30 21:40  rocky
+
+	* include/cdio/iso9660.h, lib/iso9660.c: pvd_t -> iso9660_pvd_t
+
+2003-08-30 21:32  rocky
+
+	* include/cdio/iso9660.h, lib/iso9660.c: two routines are buggy.
+	Back out until they've been fixed.
+
+2003-08-30 21:01  rocky
+
+	* configure.ac, include/cdio/iso9660.h, include/cdio/types.h,
+	lib/iso9660.c: Opaque type declaration for iso9660 moved into well
+	iso9660.h (from cdio/types.h). Opaque type for iso_directory_record
+	defined and access routines added to libiso9660.
+
+2003-08-30 20:11  rocky
+
+	* autogen.sh: Minor changes.
+
+2003-08-30 09:14  rocky
+
+	* NEWS: [no log message]
+
+2003-08-29 07:10  rocky
+
+	* test/: check_cue.sh.in, check_nrg.sh.in, check_opts.sh: Invalid
+	substituiton variable.	Allow cd-info tests to be skipped.
+
+2003-08-28 23:03  rocky
+
+	* src/cd-info.c: Declarations have to all be together for gcc < 3.0
+
+2003-08-28 22:38  rocky
+
+	* lib/iso9660_private.h: Wrong include. We've moved from vcdimager
+	to cdio.
+
+2003-08-28 21:08  rocky
+
+	* Makefile.am: Add sample3 & 4
+
+2003-08-28 21:07  rocky
+
+	* ChangeLog: [no log message]
+
+2003-08-28 21:04  rocky
+
+	* NEWS: [no log message]
+
 2003-08-17 03:13  rocky
 
 	* NEWS, example/.cvsignore, example/sample3.c: [no log message]
