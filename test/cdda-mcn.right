@@ -19,9 +19,11 @@ Reading....
   Can read  DVD-ROM         : No
 
 Writing....
-  Can write CD-RW           : Yes
+  Can write CD-RW           : No
   Can write DVD-R           : No
   Can write DVD-RAM         : No
+  Can write DVD-RW          : No
+  Can write DVD+RW          : No
 __________________________________
 
 Disc mode is listed as: CD-DA
