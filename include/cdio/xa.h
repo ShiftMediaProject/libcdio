@@ -1,5 +1,5 @@
 /*
-    $Id: xa.h,v 1.11 2005/02/05 17:29:01 rocky Exp $
+    $Id: xa.h,v 1.12 2005/02/12 09:52:28 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -124,12 +124,12 @@ fully compatible.
 
  Note structure is big-endian.
 */
-typedef struct iso9660_xa 
+typedef struct iso9660_xa_s
 {
   uint16_t group_id;      /**< 0 */
   uint16_t user_id;       /**< 0 */
   uint16_t attributes;    /**< XA_ATTR_ */ 
-  uint8_t  signature[2];  /**< { 'X', 'A' } */
+  char     signature[2];  /**< { 'X', 'A' } */
   uint8_t  filenum;       /**< file number, see also XA subheader */
   uint8_t  reserved[5];   /**< zero */
 } GNUC_PACKED iso9660_xa_t;
