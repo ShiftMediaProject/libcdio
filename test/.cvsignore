@@ -4,6 +4,10 @@ Makefile
 Makefile.in
 cdda-orig.wav
 cdda-try.wav
+cdda-1.raw
+cdda-2.raw
+cdda.raw
+cdda-underrun.raw
 check_cue.sh
 check_paranoia.sh
 check_common_fn
@@ -15,6 +19,7 @@ testbincue
 testdefault
 testischar
 testiso9660
+testparanoia
 testtoc
 *.dump
 *.cue

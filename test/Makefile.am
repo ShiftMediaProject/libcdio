@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.41 2005/01/15 10:17:17 rocky Exp $
+#   $Id: Makefile.am,v 1.42 2005/01/16 04:20:32 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -79,7 +79,7 @@ EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
 XFAIL_TESTS = testassert
 
-MOSTLYCLEANFILES = core core.* *.dump cdda-orig.wav cdda-try.wav
+MOSTLYCLEANFILES = core core.* *.dump cdda-orig.wav cdda-try.wav *.raw
 
 test: check
 
