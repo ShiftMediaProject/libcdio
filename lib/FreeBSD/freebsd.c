@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.14 2004/05/19 03:00:12 rocky Exp $
+    $Id: freebsd.c,v 1.15 2004/05/27 12:10:21 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.14 2004/05/19 03:00:12 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.15 2004/05/27 12:10:21 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -338,17 +338,17 @@ _get_num_tracks_freebsd(void *env)
   
 */
 static track_format_t
-_get_track_format_freebsd(void *env, track_t track_num) 
+_get_track_format_freebsd(void *env, track_t i_track) 
 {
   _img_private_t *_obj = env;
 
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
    */
-  if (_obj->tocent[track_num-1].entry.control & CDIO_CDROM_DATA_TRACK) {
-    if (_obj->tocent[track_num-1].address_format == 0x10)
+  if (_obj->tocent[i_track-FIRST_TRACK_NUM].entry.control & CDIO_CDROM_DATA_TRACK) {
+    if (_obj->tocent[i_track-FIRST_TRACK_NUM].address_format == 0x10)
       return TRACK_FORMAT_CDI;
-    else if (_obj->tocent[track_num-1].address_format == 0x20) 
+    else if (_obj->tocent[i_track-FIRST_TRACK_NUM].address_format == 0x20) 
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;
@@ -366,41 +366,41 @@ _get_track_format_freebsd(void *env, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_get_track_green_freebsd(void *env, track_t track_num) 
+_get_track_green_freebsd(void *env, track_t i_track) 
 {
   _img_private_t *_obj = env;
   
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
-  if (track_num > TOTAL_TRACKS+1 || track_num == 0)
+  if (i_track > TOTAL_TRACKS+1 || i_track == 0)
     return false;
 
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cdinfo for a while.
    */
-  return ((_obj->tocent[track_num-1].entry.control & 2) != 0);
+  return ((_obj->tocent[i_track-FIRST_TRACK_NUM].entry.control & 2) != 0);
 }
 
 /*!  
   Return the starting LSN track number
-  track_num in obj.  Track numbers start at 1.
+  i_track in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
-  using track_num LEADOUT_TRACK or the total tracks+1.
+  using i_track LEADOUT_TRACK or the total tracks+1.
   False is returned if there is no track entry.
 */
 static lba_t
-_get_track_lba_freebsd(void *env, track_t track_num)
+_get_track_lba_freebsd(void *env, track_t i_track)
 {
   _img_private_t *_obj = env;
 
   if (!_obj->toc_init) _cdio_read_toc (_obj) ;
 
-  if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = TOTAL_TRACKS+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
-  if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
+  if (i_track > TOTAL_TRACKS+1 || i_track == 0) {
     return CDIO_INVALID_LBA;
   } else {
-    return cdio_lsn_to_lba(ntohl(_obj->tocent[track_num-1].entry.addr.lba));
+    return cdio_lsn_to_lba(ntohl(_obj->tocent[i_track-FIRST_TRACK_NUM].entry.addr.lba));
   }
 }
 
