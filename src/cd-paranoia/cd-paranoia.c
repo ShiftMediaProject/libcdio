@@ -544,45 +544,46 @@ callback(long int inpos, paranoia_cb_mode_t function)
 const char *optstring = "escCn:o:O:d:g:S:prRwafvqVQhZz::YXWBi:Tt:";
 
 struct option options [] = {
-	{"stderr-progress",no_argument,NULL,'e'},
-	{"search-for-drive",no_argument,NULL,'s'},
-	{"force-cdrom-little-endian",no_argument,NULL,'c'},
-	{"force-cdrom-big-endian",no_argument,NULL,'C'},
-	{"force-default-sectors",required_argument,NULL,'n'},
-	{"force-search-overlap",required_argument,NULL,'o'},
-	{"force-cdrom-device",required_argument,NULL,'d'},
-	{"force-generic-device",required_argument,NULL,'g'},
-	{"force-read-speed",required_argument,NULL,'S'},
-	{"sample-offset",required_argument,NULL,'O'},
-	{"toc-offset",required_argument,NULL,'t'},
-	{"toc-bias",no_argument,NULL,'T'},
-	{"output-raw",no_argument,NULL,'p'},
-	{"output-raw-little-endian",no_argument,NULL,'r'},
-	{"output-raw-big-endian",no_argument,NULL,'R'},
-	{"output-wav",no_argument,NULL,'w'},
-	{"output-aiff",no_argument,NULL,'f'},
-	{"output-aifc",no_argument,NULL,'a'},
-	{"batch",no_argument,NULL,'B'},
-	{"verbose",no_argument,NULL,'v'},
-	{"quiet",no_argument,NULL,'q'},
-	{"version",no_argument,NULL,'V'},
-	{"query",no_argument,NULL,'Q'},
-	{"help",no_argument,NULL,'h'},
-	{"disable-paranoia",no_argument,NULL,'Z'},
-	{"disable-extra-paranoia",no_argument,NULL,'Y'},
-	{"abort-on-skip",no_argument,NULL,'X'},
-	{"disable-fragmentation",no_argument,NULL,'F'},
-	{"output-info",required_argument,NULL,'i'},
-	{"never-skip",optional_argument,NULL,'z'},
+	{"stderr-progress",           no_argument,       NULL, 'e'},
+	{"search-for-drive",          no_argument,       NULL, 's'},
+	{"force-cdrom-little-endian", no_argument,       NULL, 'c'},
+	{"force-cdrom-big-endian",    no_argument,       NULL, 'C'},
+	{"force-default-sectors",     required_argument, NULL, 'n'},
+	{"force-search-overlap",      required_argument, NULL, 'o'},
+	{"force-cdrom-device",        required_argument, NULL, 'd'},
+	{"force-generic-device",      required_argument, NULL, 'g'},
+	{"force-read-speed",          required_argument, NULL, 'S'},
+	{"sample-offset",             required_argument, NULL, 'O'},
+	{"toc-offset",                required_argument, NULL, 't'},
+	{"toc-bias",                  no_argument,       NULL, 'T'},
+	{"output-raw",                no_argument,       NULL, 'p'},
+	{"output-raw-little-endian",  no_argument,       NULL, 'r'},
+	{"output-raw-big-endian",     no_argument,       NULL, 'R'},
+	{"output-wav",                no_argument,       NULL, 'w'},
+	{"output-aiff",               no_argument,       NULL, 'f'},
+	{"output-aifc",               no_argument,       NULL, 'a'},
+	{"batch",                     no_argument,       NULL, 'B'},
+	{"verbose",                   no_argument,       NULL, 'v'},
+	{"quiet",                     no_argument,       NULL, 'q'},
+	{"version",                   no_argument,       NULL, 'V'},
+	{"query",                     no_argument,       NULL, 'Q'},
+	{"help",                      no_argument,       NULL, 'h'},
+	{"disable-paranoia",          no_argument,       NULL, 'Z'},
+	{"disable-extra-paranoia",    no_argument,       NULL, 'Y'},
+	{"abort-on-skip",             no_argument,       NULL, 'X'},
+	{"disable-fragmentation",     no_argument,       NULL, 'F'},
+	{"output-info",               required_argument, NULL, 'i'},
+	{"never-skip",                optional_argument, NULL, 'z'},
 
 	{NULL,0,NULL,0}
 };
 
-static cdrom_drive_t    *d     = NULL;
-static cdrom_paranoia_t *p     = NULL;
-static char             *span  = NULL;
+static cdrom_drive_t    *d        = NULL;
+static cdrom_paranoia_t *p        = NULL;
+static char             *span     = NULL;
 static char *force_cdrom_device   = NULL;
 static char *force_generic_device = NULL;
+static char *info_file            = NULL;
 
 #define free_and_null(p) \
   if (p) free(p);	 \
@@ -595,6 +596,8 @@ cleanup (void)
   if (d) cdda_close(d);
   free_and_null(force_cdrom_device);
   free_and_null(force_generic_device);
+  free_and_null(span);
+  free_and_null(info_file);
 }
 
 int 
@@ -616,7 +619,6 @@ main(int argc,char *argv[])
   /* full paranoia, but allow skipping */
   int paranoia_mode=PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP; 
 
-  char *info_file=NULL;
   int out;
 
   int search=0;
@@ -643,11 +645,11 @@ main(int argc,char *argv[])
       break;
     case 'd':
       if(force_cdrom_device)free(force_cdrom_device);
-      force_cdrom_device=copystring(optarg);
+      force_cdrom_device=strdup(optarg);
       break;
     case 'g':
       if (force_generic_device) free(force_generic_device);
-      force_generic_device=copystring(optarg);
+      force_generic_device=strdup(optarg);
       break;
     case 'S':
       force_cdrom_speed=atoi(optarg);
@@ -730,7 +732,7 @@ main(int argc,char *argv[])
       break;
     case 'i':
       if(info_file)free(info_file);
-      info_file=copystring(info_file);
+      info_file=strdup(info_file);
       break;
     case 'T':
       toc_bias=-1;
@@ -756,7 +758,7 @@ main(int argc,char *argv[])
       exit(1);
     }
   }else
-    span=copystring(argv[optind]);
+    span=strdup(argv[optind]);
 
   report(PARANOIA_VERSION);
 
