@@ -1,5 +1,5 @@
 /*
-    $Id: dvd.h,v 1.1 2004/07/25 11:18:05 rocky Exp $
+    $Id: dvd.h,v 1.2 2004/07/25 15:46:40 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Modeled after GNU/Linux definitions in linux/cdrom.h
@@ -37,7 +37,7 @@
 #define CDIO_DVD_STRUCT_BCA		0x03
 #define CDIO_DVD_STRUCT_MANUFACT	0x04
 
-#define CDIO_DVD_BOOT_DVD_ROM 0
+#define CDIO_DVD_BOOK_DVD_ROM 0
 #define CDIO_DVD_BOOK_DVD_RAM 1
 #define CDIO_DVD_BOOK_DVD_R   2
 #define CDIO_DVD_BOOK_DVD_RW  3
