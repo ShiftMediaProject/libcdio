@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.34 2004/06/14 08:18:57 rocky Exp $
+    $Id: _cdio_osx.c,v 1.35 2004/06/16 04:51:29 thesin Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.34 2004/06/14 08:18:57 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.35 2004/06/16 04:51:29 thesin Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -121,7 +121,7 @@ getNumberOfTracks_osx( CDTOC *pTOC, int i_descriptors )
     {
         i_track = pTrackDescriptors[i].point;
 
-	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
+	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO || i_track == 0xA2 )
             continue;
 
         i_tracks++; 
@@ -147,7 +147,7 @@ getFirstTrack_osx( CDTOC *pTOC, int i_descriptors )
     {
       i_track = pTrackDescriptors[i].point;
       
-      if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
+      if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO || i_track == 0xA2 )
 	continue;
       return ( i_track );
     }
@@ -420,8 +420,7 @@ _cdio_read_toc (_img_private_t *env)
 
   env->i_descriptors = CDTOCGetDescriptorCount ( env->pTOC );
   env->i_first_track = getFirstTrack_osx(env->pTOC, env->i_descriptors);
-  env->i_last_track  = env->i_first_track + 
-    getNumberOfTracks_osx(env->pTOC, env->i_descriptors);
+  env->i_last_track  = getNumberOfTracks_osx(env->pTOC, env->i_descriptors);
 
   /* Read in starting sectors */
   {
@@ -451,7 +450,7 @@ _cdio_read_toc (_img_private_t *env)
 	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
 	  continue;
 	
-	env->pp_lba[i_tracks++] =
+	env->pp_lba[i_tracks--] =
 	  cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i].p ));
       }
     
@@ -464,7 +463,7 @@ _cdio_read_toc (_img_private_t *env)
       }
     
     /* set leadout sector */
-    env->pp_lba[i_tracks] =
+    env->pp_lba[i_leadout] =
       cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i_leadout].p ));
   }
 
@@ -587,6 +586,8 @@ _get_first_track_num_osx(void *user_data)
 {
   _img_private_t *env = user_data;
   
+  if (!env->toc_init) _cdio_read_toc (env) ;
+
   return env->i_first_track;
 }
 
@@ -619,6 +620,8 @@ _get_num_tracks_osx(void *user_data)
 {
   _img_private_t *env = user_data;
   
+  if (!env->toc_init) _cdio_read_toc (env) ;
+
   return( TOTAL_TRACKS );
 }
 
@@ -631,7 +634,7 @@ _get_track_format_osx(void *user_data, track_t i_track)
   _img_private_t *env = user_data;
   dk_cd_read_track_info_t cd_read;
   CDTrackInfo a_track;
-  
+
   if (i_track > env->i_last_track || i_track < env->i_first_track)
     return TRACK_FORMAT_ERROR;
     
@@ -678,7 +681,7 @@ _get_track_green_osx(void *user_data, track_t i_track)
 {
   _img_private_t *env = user_data;
   CDTrackInfo a_track;
- 
+
   if (!env->toc_init) _cdio_read_toc (env) ;
 
   if ( i_track > env->i_last_track || i_track < env->i_first_track )
@@ -700,7 +703,7 @@ _get_track_green_osx(void *user_data, track_t i_track)
       cdio_error( "could not read trackinfo for track %d", i_track );
       return -1;
     }
-    return ((a_track.trackMode & 2) != 0);
+    return ((a_track.trackMode & CDIO_CDROM_DATA_TRACK) != 0);
   }
 }
 
