@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.49 2004/05/13 01:50:10 rocky Exp $
+    $Id: cdio.h,v 1.50 2004/05/19 03:00:03 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -546,20 +546,32 @@ extern "C" {
   /*! Set up CD-ROM for reading. The device_name is
       the some sort of device name.
 
-     NULL is returned on error.
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no driver for a some sort of hardware CD-ROM.
    */
   CdIo * cdio_open_cd (const char *device_name);
 
-  /*! cdrao BIN/CUE CD disk-image routines. Source is the .cue file
+  /*! Set up CD-ROM for reading. The device_name is
+      the some sort of device name.
 
-     NULL is returned on error.
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no driver for a some sort of hardware CD-ROM.
+   */
+  CdIo * cdio_open_am_cd (const char *psz_device,
+			  const char *psz_access_mode);
+
+  /*! CDRWIN BIN/CUE CD disk-image routines. Source is the .cue file
+
+     @return the cdio object for subsequent operations. 
+     NULL on error.
    */
   CdIo * cdio_open_cue (const char *cue_name);
 
   /*! Set up CD-ROM for reading using the BSDI driver. The device_name is
       the some sort of device name.
 
-     NULL is returned on error or there is no BSDI driver.
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no BSDI driver.
 
      @see cdio_open
    */
@@ -568,7 +580,8 @@ extern "C" {
   /*! Set up CD-ROM for reading using the BSDI driver. The device_name is
       the some sort of device name.
 
-     NULL is returned on error or there is no BSDI driver.
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no BSDI driver.
 
      @see cdio_open
    */
@@ -578,7 +591,8 @@ extern "C" {
   /*! Return a string containing the default device name that the 
       BSDI driver would use when none is specified.
 
-     NULL is returned on error or there is no CD-ROM device.
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no BSDI driver.
 
      @see cdio_open_cd, cdio_open
    */
@@ -623,14 +637,16 @@ extern "C" {
   /*! Set up CD-ROM for reading using the GNU/Linux driver. The device_name is
       the some sort of device name.
 
-     NULL is returned on error or there is no GNU/Linux driver.
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no GNU/Linux driver.
    */
   CdIo * cdio_open_linux (const char *source_name);
 
-  /*! Set up CD-ROM for reading using the GNU/Linux driver. The device_name is
-      the some sort of device name.
+  /*! Set up CD-ROM for reading using the GNU/Linux driver. The
+      device_name is the some sort of device name.
 
-     NULL is returned on error or there is no GNU/Linux driver.
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no GNU/Linux driver.
    */
   CdIo * cdio_open_am_linux (const char *source_name,
 			     const char *access_mode);
@@ -653,14 +669,16 @@ extern "C" {
   /*! Set up CD-ROM for reading using the Sun Solaris driver. The
       device_name is the some sort of device name.
 
-     NULL is returned on error or there is no Solaris driver.
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no Solaris driver.
    */
   CdIo * cdio_open_solaris (const char *source_name);
   
   /*! Set up CD-ROM for reading using the Sun Solaris driver. The
       device_name is the some sort of device name.
 
-     NULL is returned on error or there is no Solaris driver.
+     @return the cdio object for subsequent operations. 
+     NULL on error or there is no Solaris driver.
    */
   CdIo * cdio_open_am_solaris (const char *psz_source_name, 
 			       const char *psz_access_mode);

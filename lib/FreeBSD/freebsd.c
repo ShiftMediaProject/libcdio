@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.13 2004/05/16 13:33:26 rocky Exp $
+    $Id: freebsd.c,v 1.14 2004/05/19 03:00:12 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.13 2004/05/16 13:33:26 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.14 2004/05/19 03:00:12 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -288,6 +288,7 @@ _get_first_track_num_freebsd(void *env)
 static char *
 _get_mcn_freebsd (const void *env) {
 
+#if FIXED
   const _img_private_t *_obj = env;
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
@@ -310,6 +311,10 @@ _get_mcn_freebsd (const void *env) {
     return strdup(subchannel_info.what.media_catalog.mc_number);
   else 
     return NULL;
+#else 
+    return NULL;
+#endif
+
 }
 
 /*!
@@ -395,7 +400,7 @@ _get_track_lba_freebsd(void *env, track_t track_num)
   if (track_num > TOTAL_TRACKS+1 || track_num == 0) {
     return CDIO_INVALID_LBA;
   } else {
-    return cdio_lsn_to_lba(_obj->tocent[track_num-1].entry.addr.lba);
+    return cdio_lsn_to_lba(ntohl(_obj->tocent[track_num-1].entry.addr.lba));
   }
 }
 
@@ -509,18 +514,18 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
   _data->access_mode    = str_to_access_mode_freebsd(psz_access_mode);
-  _data->device         = strdup(psz_source_name);
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
   if (NULL == psz_orig_source_name) {
     psz_source_name=cdio_get_default_device_freebsd();
+    _data->device  = psz_source_name;
     _set_arg_freebsd(_data, "source", psz_source_name);
-    free(psz_source_name);
   } else {
-    if (cdio_is_device_generic(psz_orig_source_name))
+    if (cdio_is_device_generic(psz_orig_source_name)) {
       _set_arg_freebsd(_data, "source", psz_orig_source_name);
-    else {
+      _data->device  = strdup(psz_orig_source_name);
+    } else {
       /* The below would be okay if all device drivers worked this way. */
 #if 0
       cdio_info ("source %s is a not a device", psz_orig_source_name);

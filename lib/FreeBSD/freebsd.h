@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.5 2004/05/13 04:32:14 rocky Exp $
+    $Id: freebsd.h,v 1.6 2004/05/19 03:00:12 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -63,6 +63,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/param.h>
 
 #define HAVE_FREEBSD_CAM
 #ifdef HAVE_FREEBSD_CAM
@@ -144,6 +145,9 @@ int  read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data,
 int  read_mode2_sectors_freebsd_cam (_img_private_t *env, void *buf, 
 				     uint32_t lba, unsigned int nblocks, 
 				     bool b_form2);
+
+bool read_toc_freebsd_ioctl (_img_private_t *_obj);
+
 /*!
    Return the size of the CD in logical block address (LBA) units.
  */

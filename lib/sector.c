@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.8 2004/05/11 12:17:17 rocky Exp $
+    $Id: sector.c,v 1.9 2004/05/19 03:00:12 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
@@ -25,6 +25,7 @@
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
+#include <cdio/logging.h>
 #include "cdio_assert.h"
 
 #include <stdio.h>
@@ -33,7 +34,7 @@
 #endif
 
 
-static const char _rcsid[] = "$Id: sector.c,v 1.8 2004/05/11 12:17:17 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.9 2004/05/19 03:00:12 rocky Exp $";
 
 lba_t
 cdio_lba_to_lsn (lba_t lba)
@@ -68,6 +69,11 @@ cdio_lsn_to_msf (lsn_t lsn, msf_t *msf)
     f    = lsn + CDIO_CD_MAX_LSN;
   }
 
+  if (m > 99) {
+    cdio_warn ("number of minutes (%d) truncated to 99.", m);
+    m = 99;
+  }
+  
   msf->m = to_bcd8 (m);
   msf->s = to_bcd8 (s);
   msf->f = to_bcd8 (f);

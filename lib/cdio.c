@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.52 2004/05/13 01:50:20 rocky Exp $
+    $Id: cdio.c,v 1.53 2004/05/19 03:00:03 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.52 2004/05/13 01:50:20 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.53 2004/05/19 03:00:03 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -913,7 +913,7 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
   case DRIVER_DEVICE: 
     {  
       /* Scan for a driver. */
-      CdIo *ret = cdio_open_cd(psz_source);
+      CdIo *ret = cdio_open_am_cd(psz_source, psz_access_mode);
       free(psz_source);
       return ret;
     }
@@ -942,6 +942,26 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
 }
 
 
+/*! 
+  Set up CD-ROM for reading. The device_name is
+  the some sort of device name.
+  
+  @return the cdio object for subsequent operations. 
+  NULL on error or there is no driver for a some sort of hardware CD-ROM.
+*/
+CdIo *
+cdio_open_cd (const char *psz_source)
+{
+  return cdio_open_am_cd(psz_source, NULL);
+}
+
+/*! 
+  Set up CD-ROM for reading. The device_name is
+  the some sort of device name.
+  
+  @return the cdio object for subsequent operations. 
+  NULL on error or there is no driver for a some sort of hardware CD-ROM.
+*/
 /* In the future we'll have more complicated code to allow selection
    of an I/O routine as well as code to find an appropriate default
    routine among the "registered" routines. Possibly classes too
@@ -951,13 +971,13 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
    For now though, we'll start more simply...
 */
 CdIo *
-cdio_open_cd (const char *source_name)
+cdio_open_am_cd (const char *psz_source, const char *psz_access_mode)
 {
   if (CdIo_last_driver == -1) cdio_init();
 
   /* Scan for a driver. */
   return scan_for_driver(CDIO_MIN_DEVICE_DRIVER, CDIO_MAX_DEVICE_DRIVER, 
-                         source_name, NULL);
+                         psz_source, psz_access_mode);
 }
 
 
