@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.37 2004/06/02 13:30:02 thesin Exp $
+#   $Id: Makefile.am,v 1.38 2004/06/20 15:35:31 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -47,6 +47,8 @@ libcdio_la_AGE := 0
 libiso9660_la_CURRENT := 1
 libiso9660_la_REVISION := 0
 libiso9660_la_AGE := 1
+
+EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile 
 
 noinst_HEADERS = cdio_assert.h bytesex.h bytesex_asm.h \
 	cdio_private.h ds.h 
