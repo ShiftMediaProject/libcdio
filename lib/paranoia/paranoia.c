@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.8 2005/01/23 05:31:03 rocky Exp $
+  $Id: paranoia.c,v 1.9 2005/01/23 14:05:19 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -1202,7 +1202,7 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
   readat+=driftcomp;
   
   if (p->enable&(PARANOIA_MODE_OVERLAP|PARANOIA_MODE_VERIFY)) {
-    flags=calloc(totaltoread*CD_FRAMEWORDS,1);
+    flags=calloc(totaltoread*CD_FRAMEWORDS, 1);
     new=new_c_block(p);
     recover_cache(p);
   } else {
@@ -1211,7 +1211,19 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
     new=new_c_block(p);
   }
 
-  buffer=calloc(1, totaltoread*CDIO_CD_FRAMESIZE_RAW);
+  /* FIXME: We allocate one extra frame more than what we should be
+     using. In cdda_read() when the CD-ROM endian-ness is different
+     from the machine endian-ness and we need to swap bytes, we seem
+     to be accessing outside of buffer in some (but not all)
+     cases. This is probably due to this routine calling cdda_read
+     with parameter that would have it access outside the allocated
+     range. Since I don't know how to fix, we'll do the harmless over
+     allocation.
+     
+     On a sparc (Big Endian) Solaris with a little-endian CD-ROM. The
+     symptom would be that the calloc *after* the one below would fail.
+   */
+  buffer=calloc((totaltoread+1)*CDIO_CD_FRAMESIZE_RAW, 1);
   sofar=0;
   firstread=-1;
   
@@ -1234,16 +1246,20 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
     
     if (secread>0){
       
-      if (firstread<0) firstread=adjread;
-      if ((thisread=cdda_read(p->d,buffer+sofar*CD_FRAMEWORDS,adjread,
-			      secread))<secread){
+      if (firstread<0) firstread = adjread;
+
+      /* See FIXME note above about a possibly erroneous call here. */
+      thisread = cdda_read(p->d, buffer+sofar*CD_FRAMEWORDS, adjread, secread);
+
+      if ( thisread < secread) {
 
 	if (thisread<0) thisread=0;
 
 	/* Uhhh... right.  Make something up. But don't make us seek
            backward! */
 
-	if(callback)(*callback)((adjread+thisread)*CD_FRAMEWORDS,PARANOIA_CB_READERR);  
+	if(callback)
+	  (*callback)((adjread+thisread)*CD_FRAMEWORDS, PARANOIA_CB_READERR);  
 	memset(buffer+(sofar+thisread)*CD_FRAMEWORDS,0,
 	       CDIO_CD_FRAMESIZE_RAW*(secread-thisread));
 	if(flags)memset(flags+(sofar+thisread)*CD_FRAMEWORDS,2,

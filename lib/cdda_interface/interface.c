@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.14 2005/01/18 16:05:29 rocky Exp $
+  $Id: interface.c,v 1.15 2005/01/23 14:05:19 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -118,20 +118,27 @@ cdda_speed_set(cdrom_drive_t *d, int speed)
 
 long cdda_read(cdrom_drive_t *d, void *buffer, lsn_t beginsector, long sectors)
 {
-  if(d->opened){
-    if(sectors>0){
-      sectors=d->read_audio(d,buffer,beginsector,sectors);
+  if (d->opened) {
+    if (sectors>0) {
+      sectors=d->read_audio(d, buffer, beginsector, sectors);
 
-      if(sectors > 0){
+      if (sectors > 0){
 	/* byteswap? */
 	if(d->bigendianp==-1) /* not determined yet */
-	  d->bigendianp=data_bigendianp(d);
-	
+	  d->bigendianp = data_bigendianp(d);
+
 	if(d->bigendianp!=bigendianp()){
 	  int i;
 	  uint16_t *p=(uint16_t *)buffer;
 	  long els=sectors*CDIO_CD_FRAMESIZE_RAW/2;
 	  
+	  /* Note: Something perhaps in the original cdparanioa code might
+	     cause the code to access outside of the allocated range of
+	     buffer. This comment is just to serve as a marker for
+	     the loop where the data got clobbered. I don't think this
+	     code however is wrong. See the comment in i_read_c_block 
+	     of paranioa.c 
+	  */
 	  for(i=0;i<els;i++)
 	    p[i]=UINT16_SWAP_LE_BE_C(p[i]);
 	}
