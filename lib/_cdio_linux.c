@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.28 2004/02/07 02:40:20 rocky Exp $
+    $Id: _cdio_linux.c,v 1.29 2004/02/21 17:18:04 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.28 2004/02/07 02:40:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.29 2004/02/21 17:18:04 rocky Exp $";
 
 #include <string.h>
 
@@ -177,10 +177,9 @@ cdio_check_mounts(const char *mtab)
       }
       if ( strcmp(mnt_type, "iso9660") == 0 ) {
 	if (cdio_is_cdrom(mnt_dev, mnt_type) > 0) {
-	  free(mnt_dev);
 	  free(mnt_type);
 	  endmntent(mntfp);
-	  return strdup(mnt_dev);
+	  return mnt_dev;
 	}
       }
       free(mnt_dev);
@@ -867,12 +866,14 @@ cdio_get_devices_linux (void)
 
   /* Now check the currently mounted CD drives */
   if (NULL != (ret_drive = cdio_check_mounts("/etc/mtab"))) {
-    cdio_add_device_list(&drives, drive, &num_drives);
+    cdio_add_device_list(&drives, ret_drive, &num_drives);
+    free(ret_drive);
   }
   
   /* Finally check possible mountable drives in /etc/fstab */
   if (NULL != (ret_drive = cdio_check_mounts("/etc/fstab"))) {
-    cdio_add_device_list(&drives, drive, &num_drives);
+    cdio_add_device_list(&drives, ret_drive, &num_drives);
+    free(ret_drive);
   }
 
   /* Scan the system for CD-ROM drives.
