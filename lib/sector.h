@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.7 2003/04/06 18:26:24 rocky Exp $
+    $Id: sector.h,v 1.8 2003/04/09 11:15:06 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -110,7 +110,7 @@
 #define M2SUB_SECTOR_SIZE   2332
 #define M2RAW_SECTOR_SIZE   2336
 
-#define CD_MAX_TRACKS 99 
+#define CDIO_CD_MAX_TRACKS 99 
 
 #define CDIO_CD_FRAMES_PER_MIN \
    (CDIO_CD_FRAMES_PER_SEC*CDIO_CD_SECS_PER_MIN)
