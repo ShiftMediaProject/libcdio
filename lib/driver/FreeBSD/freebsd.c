@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.19 2005/03/03 13:48:47 rocky Exp $
+    $Id: freebsd.c,v 1.20 2005/03/05 23:21:40 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.19 2005/03/03 13:48:47 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.20 2005/03/05 23:21:40 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -60,7 +60,7 @@ str_to_access_mode_freebsd(const char *psz_access_mode)
 }
 
 static void
-_free_freebsd (void *p_obj)
+free_freebsd (void *p_obj)
 {
   _img_private_t *p_env = p_obj;
 
@@ -89,7 +89,7 @@ cdio_is_cdrom(char *drive, char *mnttype)
    Returns 0 if no error. 
  */
 static driver_return_code_t
-_read_audio_sectors_freebsd (void *p_user_data, void *p_buf, lsn_t i_lsn,
+read_audio_sectors_freebsd (void *p_user_data, void *p_buf, lsn_t i_lsn,
 			     unsigned int i_blocks)
 {
   _img_private_t *p_env = p_user_data;
@@ -106,8 +106,8 @@ _read_audio_sectors_freebsd (void *p_user_data, void *p_buf, lsn_t i_lsn,
    from i_lsn. Returns 0 if no error. 
  */
 static driver_return_code_t
-_read_mode2_sector_freebsd (void *p_user_data, void *data, lsn_t i_lsn,
-			    bool b_form2)
+read_mode2_sector_freebsd (void *p_user_data, void *data, lsn_t i_lsn,
+			   bool b_form2)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -118,28 +118,28 @@ _read_mode2_sector_freebsd (void *p_user_data, void *data, lsn_t i_lsn,
 }
 
 /*!
-   Reads nblocks of mode2 sectors from cd device into data starting
+   Reads i_blocks of mode2 sectors from cd device into data starting
    from lsn.
  */
 static driver_return_code_t
-_read_mode2_sectors_freebsd (void *user_data, void *data, lsn_t lsn, 
-			  bool b_form2, unsigned int nblocks)
+read_mode2_sectors_freebsd (void *p_user_data, void *p_data, lsn_t i_lsn,
+			    bool b_form2, unsigned int i_blocks)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
 
-  if ( env->access_mode == _AM_CAM  && b_form2) {
+  if ( p_env->access_mode == _AM_CAM  && b_form2 ) {
     /* We have a routine that covers this case without looping. */
-    return read_mode2_sectors_freebsd_cam(env, data, lsn, nblocks);
+    return read_mode2_sectors_freebsd_cam(p_env, p_data, i_lsn, i_blocks);
   } else {
     unsigned int i;
     uint16_t i_blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
   
     /* For each frame, pick out the data part we need */
-    for (i = 0; i < nblocks; i++) {
-      int retval = _read_mode2_sector_freebsd (env, 
-					       ((char *)data) + 
+    for (i = 0; i < i_blocks; i++) {
+      int retval = read_mode2_sector_freebsd (p_env, 
+					       ((char *)p_data) + 
 					       (i_blocksize * i),
-					       lsn + i, b_form2);
+					       i_lsn + i, b_form2);
       if (retval) return retval;
     }
   }
@@ -173,7 +173,7 @@ get_disc_last_lsn_freebsd (void *p_obj)
   and nonzero if there as an error.
 */
 static driver_return_code_t
-_set_arg_freebsd (void *p_user_data, const char key[], const char value[])
+set_arg_freebsd (void *p_user_data, const char key[], const char value[])
 {
   _img_private_t *p_env = p_user_data;
 
@@ -295,17 +295,27 @@ audio_pause_freebsd (void *p_user_data)
   @param p_cdio the CD object to be acted upon.
 */
 static driver_return_code_t
-audio_play_msf_freebsd (void *p_user_data, msf_t *p_msf)
+audio_play_msf_freebsd (void *p_user_data, msf_t *p_start_msf, 
+			msf_t *p_end_msf)
 {
-
   const _img_private_t *p_env = p_user_data;
-  return ioctl(p_env->gen.fd, CDIOCPLAYMSF, p_msf);
+  struct ioc_play_msf freebsd_play_msf;
+
+  freebsd_play_msf.start_m = p_start_msf->m;
+  freebsd_play_msf.start_s = p_start_msf->s;
+  freebsd_play_msf.start_f = p_start_msf->f;
+
+  freebsd_play_msf.end_m = p_end_msf->m;
+  freebsd_play_msf.end_s = p_end_msf->s;
+  freebsd_play_msf.end_f = p_end_msf->f;
+
+  return ioctl(p_env->gen.fd, CDIOCPLAYMSF, &freebsd_play_msf);
 }
 
 /*!
   Playing CD through analog output at the desired track and index
   
-  @param p_cdio the CD object to be acted upon.
+  @param p_user_data the CD object to be acted upon.
   @param p_track_index location to start/end.
 */
 static driver_return_code_t
@@ -315,12 +325,24 @@ audio_play_track_index_freebsd (void *p_user_data,
 
   const _img_private_t *p_env = p_user_data;
   msf_t start_msf;
-  /* msf_t end_msf; */
-  lsn_t i_lsn = get_track_lba_freebsd(p_user_data, p_track_index->i_start_track);
-  /* lsn_t i_end_lsn   = cdio_msf_to_lsn(&end_msf); */
+  msf_t end_msf;
+  struct ioc_play_msf freebsd_play_msf;
+  lsn_t i_lsn = get_track_lba_freebsd(p_user_data, 
+				      p_track_index->i_start_track);
 
-  /*get_track_msf_bsdi(p_user_data, p_track_index->i_end_track, &end_msf);*/
-  return ioctl(p_env->gen.fd, CDIOCPLAYMSF, &start_msf);
+  cdio_lsn_to_msf(i_lsn, &start_msf);
+  i_lsn = get_track_lba_freebsd(p_user_data, p_track_index->i_end_track);
+  cdio_lsn_to_msf(i_lsn, &end_msf);
+
+  freebsd_play_msf.start_m = start_msf.m;
+  freebsd_play_msf.start_s = start_msf.s;
+  freebsd_play_msf.start_f = start_msf.f;
+
+  freebsd_play_msf.end_m = end_msf.m;
+  freebsd_play_msf.end_s = end_msf.s;
+  freebsd_play_msf.end_f = end_msf.f;
+
+  return ioctl(p_env->gen.fd, CDIOCPLAYMSF, &freebsd_play_msf);
 
 }
 
@@ -363,9 +385,8 @@ audio_resume_freebsd (void *p_user_data)
 */
 static driver_return_code_t
 audio_set_volume_freebsd (void *p_user_data, 
-			  const cdio_audio_volume_t *p_volume)
+			  cdio_audio_volume_t *p_volume)
 {
-
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDIOCSETVOL, p_volume);
 }
@@ -374,9 +395,9 @@ audio_set_volume_freebsd (void *p_user_data,
   Eject media. Return 1 if successful, 0 otherwise.
  */
 static int 
-_eject_media_freebsd (void *user_data) 
+eject_media_freebsd (void *p_user_data) 
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   return (p_env->access_mode == _AM_IOCTL) 
     ? eject_media_freebsd_ioctl(p_env) 
@@ -387,7 +408,7 @@ _eject_media_freebsd (void *user_data)
   Return the value associated with the key "arg".
 */
 static const char *
-_get_arg_freebsd (void *user_data, const char key[])
+get_arg_freebsd (void *user_data, const char key[])
 {
   _img_private_t *env = user_data;
 
@@ -416,7 +437,7 @@ _get_arg_freebsd (void *user_data, const char key[])
 
  */
 static char *
-_get_mcn_freebsd (const void *p_user_data) {
+get_mcn_freebsd (const void *p_user_data) {
 
   const _img_private_t *p_env = p_user_data;
 
@@ -474,7 +495,7 @@ run_mmc_cmd_freebsd( void *p_user_data, unsigned int i_timeout_ms,
   
 */
 static track_format_t
-_get_track_format_freebsd(void *p_user_data, track_t i_track) 
+get_track_format_freebsd(void *p_user_data, track_t i_track) 
 {
   _img_private_t *p_env = p_user_data;
 
@@ -509,7 +530,7 @@ _get_track_format_freebsd(void *p_user_data, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_get_track_green_freebsd(void *user_data, track_t i_track) 
+get_track_green_freebsd(void *user_data, track_t i_track) 
 {
   _img_private_t *p_env = user_data;
   
@@ -696,9 +717,9 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .audio_play_track_index = audio_play_track_index_freebsd,
     .audio_resume           = audio_resume_freebsd,
     .audio_set_volume       = audio_set_volume_freebsd,
-    .eject_media            = _eject_media_freebsd,
-    .free                   = _free_freebsd,
-    .get_arg                = _get_arg_freebsd,
+    .eject_media            = eject_media_freebsd,
+    .free                   = free_freebsd,
+    .get_arg                = get_arg_freebsd,
     .get_blocksize          = get_blocksize_mmc,
     .get_cdtext             = get_cdtext_generic,
     .get_default_device     = cdio_get_default_device_freebsd,
@@ -707,23 +728,23 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .get_discmode           = get_discmode_generic,
     .get_drive_cap          = get_drive_cap_freebsd,
     .get_first_track_num    = get_first_track_num_generic,
-    .get_mcn                = _get_mcn_freebsd,
+    .get_mcn                = get_mcn_freebsd,
     .get_num_tracks         = get_num_tracks_generic,
     .get_track_channels     = get_track_channels_generic,
     .get_track_copy_permit  = get_track_copy_permit_generic,
-    .get_track_format       = _get_track_format_freebsd,
-    .get_track_green        = _get_track_green_freebsd,
+    .get_track_format       = get_track_format_freebsd,
+    .get_track_green        = get_track_green_freebsd,
     .get_track_lba          = get_track_lba_freebsd, 
     .get_track_preemphasis  = get_track_preemphasis_generic,
     .get_track_msf          = NULL,
     .lseek                  = cdio_generic_lseek,
     .read                   = cdio_generic_read,
-    .read_audio_sectors     = _read_audio_sectors_freebsd,
-    .read_mode2_sector      = _read_mode2_sector_freebsd,
-    .read_mode2_sectors     = _read_mode2_sectors_freebsd,
+    .read_audio_sectors     = read_audio_sectors_freebsd,
+    .read_mode2_sector      = read_mode2_sector_freebsd,
+    .read_mode2_sectors     = read_mode2_sectors_freebsd,
     .read_toc               = read_toc_freebsd,
     .run_mmc_cmd            = run_mmc_cmd_freebsd,
-    .set_arg                = _set_arg_freebsd,
+    .set_arg                = set_arg_freebsd,
     .set_blocksize          = set_blocksize_mmc,
     .set_speed              = set_speed_freebsd,
   };
@@ -740,10 +761,10 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     psz_source_name=cdio_get_default_device_freebsd();
     if (NULL == psz_source_name) return NULL;
     _data->device  = psz_source_name;
-    _set_arg_freebsd(_data, "source", psz_source_name);
+    set_arg_freebsd(_data, "source", psz_source_name);
   } else {
     if (cdio_is_device_generic(psz_orig_source_name)) {
-      _set_arg_freebsd(_data, "source", psz_orig_source_name);
+      set_arg_freebsd(_data, "source", psz_orig_source_name);
       _data->device  = strdup(psz_orig_source_name);
     } else {
       /* The below would be okay if all device drivers worked this way. */
