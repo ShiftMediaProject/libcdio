@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.17 2005/02/25 09:17:41 rocky Exp $
+    $Id: _cdio_generic.c,v 1.18 2005/03/01 00:40:39 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.17 2005/02/25 09:17:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.18 2005/03/01 00:40:39 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -487,6 +487,18 @@ set_track_flags(track_flags_t *p_track_flag, uint8_t i_flag)
   
   p_track_flag->channels = ( i_flag & CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO )
     ? 4 : 2;
+}
+
+driver_return_code_t
+read_data_sectors_generic (void *p_user_data, void *p_buf, lsn_t i_lsn, 
+                           uint16_t i_blocksize, uint32_t i_blocks)
+{
+  int rc;
+  if (0 > cdio_generic_lseek(p_user_data, i_blocksize*i_lsn, SEEK_SET))
+    return DRIVER_OP_ERROR;
+  rc = cdio_generic_read(p_user_data, p_buf, i_blocksize*i_blocks);
+  if (rc > 0) return DRIVER_OP_SUCCESS;
+  return DRIVER_OP_ERROR;
 }
 
 

@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.12 2005/02/17 04:57:21 rocky Exp $
+    $Id: generic.h,v 1.13 2005/03/01 00:40:39 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -211,6 +211,11 @@ extern "C" {
   
   void set_track_flags(track_flags_t *p_track_flag, uint8_t flag);
   
+  /*! Read mode 1 or mode2 sectors (using cooked mode).  */
+  driver_return_code_t read_data_sectors_generic (void *p_user_data, 
+						  void *p_buf, lsn_t i_lsn, 
+						  uint16_t i_blocksize, 
+						  uint32_t i_blocks);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
