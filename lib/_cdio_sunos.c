@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.7 2003/04/06 17:57:20 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.8 2003/04/08 10:17:56 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -31,7 +31,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.7 2003/04/06 17:57:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.8 2003/04/08 10:17:56 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -221,7 +221,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   if (mode2_form2)
     memcpy (data, buf, M2RAW_SECTOR_SIZE);
   else
-    memcpy (((char *)data), buf + 8, FORM1_DATA_SIZE);
+    memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
   
   return 0;
 }
@@ -250,8 +250,8 @@ _read_mode2_sectors (void *user_data, void *data, uint32_t lsn,
       if ( (retval = _read_mode2_sector (_obj, buf, lsn + i, true)) )
 	return retval;
       
-      memcpy (((char *)data) + (FORM1_DATA_SIZE * i), buf + 8, 
-	      FORM1_DATA_SIZE);
+      memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
+	      buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
     }
   }
   return 0;
