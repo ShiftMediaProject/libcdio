@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.25 2005/03/08 04:10:36 rocky Exp $
+    $Id: cdio_private.h,v 1.26 2005/03/11 02:08:05 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -473,6 +473,7 @@ extern "C" {
   void cdio_add_device_list(char **device_list[], const char *psz_drive,
 			    unsigned int *i_drives);
 
+  driver_return_code_t close_tray_freebsd (const char *psz_device);
   driver_return_code_t close_tray_linux (const char *psz_device);
   driver_return_code_t close_tray_solaris(const char *psz_device);
   driver_return_code_t close_tray_win32 (const char *psz_win32_drive);

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.21 2005/03/06 11:21:52 rocky Exp $
+    $Id: freebsd.c,v 1.22 2005/03/11 02:08:05 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.21 2005/03/06 11:21:52 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.22 2005/03/11 02:08:05 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -322,7 +322,6 @@ static driver_return_code_t
 audio_play_track_index_freebsd (void *p_user_data, 
 				cdio_track_index_t *p_track_index)
 {
-
   const _img_private_t *p_env = p_user_data;
   msf_t start_msf;
   msf_t end_msf;
@@ -352,14 +351,28 @@ audio_play_track_index_freebsd (void *p_user_data,
   @param p_cdio the CD object to be acted upon.
   
 */
-#if 0
+#if 1
 static driver_return_code_t
 audio_read_subchannel_freebsd (void *p_user_data, 
 			       cdio_subchannel_t *p_subchannel)
 {
-
   const _img_private_t *p_env = p_user_data;
-  return ioctl(p_env->gen.fd, CDROMSUBCHNL, p_subchannel);
+  int i_rc;
+  struct cd_sub_channel_info bsdinfo;
+  i_rc = ioctl(p_env->gen.fd, CDIOCREADSUBCHANNEL, &bsdinfo);
+  if (0 == i_rc) {
+    /*p_subchannel*/
+    p_subchannel->audio_status = bsdinfo.header.audio_status;
+    p_subchannel->address      = bsdinfo.what.position.addr_type;
+    p_subchannel->control      = bsdinfo.what.position.control;
+    p_subchannel->track        = bsdinfo.what.position.track_number;
+    p_subchannel->index        = bsdinfo.what.position.index_number;
+    memcpy(&(p_subchannel->abs_addr),  &bsdinfo.what.position.absaddr.lba,
+	   sizeof(cdio_subchannel_t));
+    memcpy(&(p_subchannel->rel_addr),  &bsdinfo.what.position.reladdr.lba,
+	   sizeof(cdio_subchannel_t));
+ }
+  return i_rc;
 }
 #endif
 
@@ -372,7 +385,6 @@ audio_read_subchannel_freebsd (void *p_user_data,
 static driver_return_code_t
 audio_resume_freebsd (void *p_user_data)
 {
-
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDIOCRESUME, 0);
 }
@@ -402,6 +414,19 @@ eject_media_freebsd (void *p_user_data)
   return (p_env->access_mode == _AM_IOCTL) 
     ? eject_media_freebsd_ioctl(p_env) 
     : eject_media_freebsd_cam(p_env);
+}
+
+/*!
+  Stop playing an audio CD.
+  
+  @param p_user_data the CD object to be acted upon.
+  
+*/
+static driver_return_code_t 
+audio_stop_freebsd (void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDIOCSTOP);
 }
 
 /*!
@@ -684,6 +709,30 @@ cdio_get_default_device_freebsd()
 }
 
 /*!
+  Close tray on CD-ROM.
+  
+  @param psz_device the CD-ROM drive to be closed.
+  
+*/
+driver_return_code_t 
+close_tray_freebsd (const char *psz_device)
+{
+#ifdef HAVE_FREEBSD_CDROM
+  int i_rc;
+  int fd = open (psz_device, O_RDONLY|O_NONBLOCK, 0);
+
+  i_rc = DRIVER_OP_SUCCESS;
+  if((i_rc = ioctl(fd, CDIOCSTART)) != 0) {
+    cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
+    i_rc = DRIVER_OP_ERROR;
+  }
+  return i_rc;
+#else 
+  return DRIVER_OP_NO_DRIVER;
+#endif /*HAVE_FREEBSD_CDROM*/
+}
+
+/*!
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
   ones to set that up.
@@ -715,8 +764,10 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .audio_pause            = audio_pause_freebsd,
     .audio_play_msf         = audio_play_msf_freebsd,
     .audio_play_track_index = audio_play_track_index_freebsd,
+    .audio_read_subchannel  = audio_read_subchannel_freebsd,
     .audio_resume           = audio_resume_freebsd,
     .audio_set_volume       = audio_set_volume_freebsd,
+    .audio_stop             = audio_stop_freebsd,
     .eject_media            = eject_media_freebsd,
     .free                   = free_freebsd,
     .get_arg                = get_arg_freebsd,
