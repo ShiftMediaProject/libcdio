@@ -185,6 +185,6 @@ mmc_read_sectors
 mmc_run_cmd
 mmc_set_blocksize
 mmc_set_speed
-mmc_start_stop
+mmc_start_stop_media
 track_format2str
 CDIO_SECTOR_SYNC_HEADER
