@@ -1,5 +1,5 @@
 /*
-    $Id: logging.c,v 1.2 2003/04/22 12:09:09 rocky Exp $
+    $Id: logging.c,v 1.3 2003/10/05 14:47:45 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -30,7 +30,9 @@
 #include "cdio_assert.h"
 
 
-static const char _rcsid[] = "$Id: logging.c,v 1.2 2003/04/22 12:09:09 rocky Exp $";
+static const char _rcsid[] = "$Id: logging.c,v 1.3 2003/10/05 14:47:45 rocky Exp $";
+
+int cdio_loglevel_default = CDIO_LOG_WARN;
 
 static void
 default_cdio_log_handler (cdio_log_level_t level, const char message[])
@@ -38,22 +40,32 @@ default_cdio_log_handler (cdio_log_level_t level, const char message[])
   switch (level)
     {
     case CDIO_LOG_ERROR:
-      fprintf (stderr, "**ERROR: %s\n", message);
-      fflush (stderr);
+      if (level >= cdio_loglevel_default) {
+        fprintf (stderr, "**ERROR: %s\n", message);
+        fflush (stderr);
+      }
       exit (EXIT_FAILURE);
       break;
     case CDIO_LOG_DEBUG:
-      fprintf (stdout, "--DEBUG: %s\n", message);
+      if (level >= cdio_loglevel_default) {
+        fprintf (stdout, "--DEBUG: %s\n", message);
+      }
       break;
     case CDIO_LOG_WARN:
-      fprintf (stdout, "++ WARN: %s\n", message);
+      if (level >= cdio_loglevel_default) {
+        fprintf (stdout, "++ WARN: %s\n", message);
+      }
       break;
     case CDIO_LOG_INFO:
-      fprintf (stdout, "   INFO: %s\n", message);
+      if (level >= cdio_loglevel_default) {
+        fprintf (stdout, "   INFO: %s\n", message);
+      }
       break;
     case CDIO_LOG_ASSERT:
-      fprintf (stderr, "!ASSERT: %s\n", message);
-      fflush (stderr);
+      if (level >= cdio_loglevel_default) {
+        fprintf (stderr, "!ASSERT: %s\n", message);
+        fflush (stderr);
+      }
       abort ();
       break;
     default:

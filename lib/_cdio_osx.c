@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.9 2003/10/04 20:11:27 rocky Exp $
+    $Id: _cdio_osx.c,v 1.10 2003/10/05 14:47:45 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com> from vcdimager code
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -31,7 +31,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.9 2003/10/04 20:11:27 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.10 2003/10/05 14:47:45 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -603,7 +603,7 @@ _cdio_get_track_green(void *env, track_t track_num)
   return ((_obj->tocent[track_num-1].cdte_ctrl & 2) != 0);
 #else 
   /* FIXME! Figure out how to do. */
-  return false;
+  return true;
 #endif
 }
 
@@ -612,10 +612,166 @@ _cdio_get_track_green(void *env, track_t track_num)
 /*!
   Return a string containing the default CD device if none is specified.
  */
-char *
-cdio_get_default_device_osx()
+char **
+cdio_get_devices_osx(void)
 {
-  return strdup(DEFAULT_CDIO_DEVICE);
+#ifndef HAVE_DARWIN_CDROM
+  return NULL;
+#else
+  io_object_t   next_media;
+  mach_port_t   master_port;
+  kern_return_t kern_result;
+  io_iterator_t media_iterator;
+  CFMutableDictionaryRef classes_to_match;
+  char        **drives = NULL;
+  unsigned int  num_drives=0;
+  
+  kern_result = IOMasterPort( MACH_PORT_NULL, &master_port );
+  if( kern_result != KERN_SUCCESS )
+    {
+      return( nil );
+    }
+  
+  classes_to_match = IOServiceMatching( kIOCDMediaClass );
+  if( classes_to_match == NULL )
+    {
+      return( nil );
+    }
+  
+  CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaEjectable),
+			kCFBooleanTrue );
+  
+  kern_result = IOServiceGetMatchingServices( master_port, 
+					      classes_to_match,
+					      &media_iterator );
+  if( kern_result != KERN_SUCCESS )
+    {
+      return( nil );
+    }
+  
+  next_media = IOIteratorNext( media_iterator );
+  if( next_media != 0 )
+    {
+      char psz_buf[0x32];
+      size_t dev_path_length;
+      CFTypeRef str_bsd_path;
+      
+      do
+	{
+	  str_bsd_path = IORegistryEntryCreateCFProperty( next_media,
+							  CFSTR( kIOBSDName ),
+							  kCFAllocatorDefault,
+							  0 );
+	  if( str_bsd_path == NULL )
+	    {
+	      IOObjectRelease( next_media );
+	      continue;
+	    }
+	  
+	  snprintf( psz_buf, sizeof(psz_buf), "%s%c", _PATH_DEV, 'r' );
+	  dev_path_length = strlen( psz_buf );
+	  
+	  if( CFStringGetCString( str_bsd_path,
+				  (char*)&psz_buf + dev_path_length,
+				  sizeof(psz_buf) - dev_path_length,
+				  kCFStringEncodingASCII ) )
+	    {
+	      CFRelease( str_bsd_path );
+	      IOObjectRelease( next_media );
+	      IOObjectRelease( media_iterator );
+	      cdio_add_device_list(&drives, psz_buf, &num_drives);
+	    }
+	  
+	  CFRelease( str_bsd_path );
+	  IOObjectRelease( next_media );
+	  
+	} while( ( next_media = IOIteratorNext( media_iterator ) ) != 0 );
+    }
+  IOObjectRelease( media_iterator );
+  cdio_add_device_list(&drives, NULL, &num_drives);
+  return drives;
+#endif /* HAVE_DARWIN_CDROM */
+}
+
+/*!
+  Return a string containing the default CD device if none is specified.
+ */
+char *
+cdio_get_default_device_osx(void)
+{
+#ifndef HAVE_DARWIN_CDROM
+  return NULL;
+#else
+  io_object_t   next_media;
+  mach_port_t   master_port;
+  kern_return_t kern_result;
+  io_iterator_t media_iterator;
+  CFMutableDictionaryRef classes_to_match;
+  
+  kern_result = IOMasterPort( MACH_PORT_NULL, &master_port );
+  if( kern_result != KERN_SUCCESS )
+    {
+      return( nil );
+    }
+  
+  classes_to_match = IOServiceMatching( kIOCDMediaClass );
+  if( classes_to_match == NULL )
+    {
+      return( nil );
+    }
+  
+  CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaEjectable),
+			kCFBooleanTrue );
+  
+  kern_result = IOServiceGetMatchingServices( master_port, 
+					      classes_to_match,
+					      &media_iterator );
+  if( kern_result != KERN_SUCCESS )
+    {
+      return( nil );
+    }
+  
+  next_media = IOIteratorNext( media_iterator );
+  if( next_media != 0 )
+    {
+      char psz_buf[0x32];
+      size_t dev_path_length;
+      CFTypeRef str_bsd_path;
+      
+      do
+	{
+	  str_bsd_path = IORegistryEntryCreateCFProperty( next_media,
+							  CFSTR( kIOBSDName ),
+							  kCFAllocatorDefault,
+							  0 );
+	  if( str_bsd_path == NULL )
+	    {
+	      IOObjectRelease( next_media );
+	      continue;
+	    }
+	  
+	  snprintf( psz_buf, sizeof(psz_buf), "%s%c", _PATH_DEV, 'r' );
+	  dev_path_length = strlen( psz_buf );
+	  
+	  if( CFStringGetCString( str_bsd_path,
+				  (char*)&psz_buf + dev_path_length,
+				  sizeof(psz_buf) - dev_path_length,
+				  kCFStringEncodingASCII ) )
+	    {
+	      CFRelease( str_bsd_path );
+	      IOObjectRelease( next_media );
+	      IOObjectRelease( media_iterator );
+	      return strdup( psz_buf );
+	    }
+	  
+	  CFRelease( str_bsd_path );
+	  IOObjectRelease( next_media );
+	  
+	} while( ( next_media = IOIteratorNext( media_iterator ) ) != 0 );
+    }
+  IOObjectRelease( media_iterator );
+  return NULL;
+#endif /* HAVE_DARWIN_CDROM */
 }
 
 /*!
@@ -636,6 +792,7 @@ cdio_open_osx (const char *source_name)
     .free               = _cdio_osx_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = cdio_get_default_device_osx,
+    .get_devices        = cdio_get_devices_osx,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_mcn            = NULL, /*there is a readMCN, but how to use? */
     .get_num_tracks     = _cdio_get_num_tracks,

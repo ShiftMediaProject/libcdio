@@ -1,5 +1,5 @@
 /*
-    $Id: logging.h,v 1.2 2003/04/21 14:13:54 hvr Exp $
+    $Id: logging.h,v 1.3 2003/10/05 14:48:07 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -30,6 +30,8 @@ typedef enum {
   CDIO_LOG_ERROR,
   CDIO_LOG_ASSERT
 } cdio_log_level_t;
+
+extern int cdio_loglevel_default;
 
 void
 cdio_log (cdio_log_level_t level, const char format[], ...) GNUC_PRINTF(2, 3);
