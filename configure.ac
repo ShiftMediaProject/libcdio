@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.51 2003/10/04 19:16:01 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.52 2003/10/05 14:49:14 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
 AM_CONFIG_HEADER(config.h)
@@ -250,7 +250,7 @@ int has_timeout=sizeof(test.timeout);],
  	LIBS="$LIBS -lwinmm -mwindows"
   	cd_drivers="${cd_drivers}, MinGW "
 	;;
-     freebsd4.9)
+     freebsd4.*)
      	AC_DEFINE([HAVE_FREEBSD_CDROM], [1], 
                   [Define 1 if you have FreeBSD CD-ROM support])
   	cd_drivers="${cd_drivers}, FreeBSD "
