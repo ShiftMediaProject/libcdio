@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.4 2003/09/20 12:34:02 rocky Exp $
+    $Id: scsi_mmc.h,v 1.5 2004/04/24 11:48:37 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -36,6 +36,8 @@
 
 /* The generic packet command opcodes for CD/DVD Logical Units,
  * From Table 57 of the SFF8090 Ver. 3 (Mt. Fuji) draft standard. */
+#define CDIO_MMC_MODE_SENSE_10	0x5a
+#define CDIO_MMC_MODE_SENSE 	0x1a
 #define CDIO_MMC_GPCMD_READ_CD	0xbe
 #define CDIO_MMC_GPCMD_READ_10	0x28
 #define CDIO_MMC_GPCMD_READ_12	0xa8

@@ -1,5 +1,5 @@
 /*
-    $Id: ioctl.c,v 1.6 2004/04/24 04:46:33 rocky Exp $
+    $Id: ioctl.c,v 1.7 2004/04/24 11:48:37 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: ioctl.c,v 1.6 2004/04/24 04:46:33 rocky Exp $";
+static const char _rcsid[] = "$Id: ioctl.c,v 1.7 2004/04/24 11:48:37 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -454,7 +454,7 @@ win32ioctl_get_drive_cap (const void *env) {
   
   memset(&sptwb,0, sizeof(SCSI_PASS_THROUGH_WITH_BUFFERS));
   
-  sptwb.Spt.Length              = sizeof(SCSI_PASS_THROUGH);
+  sptwb.Spt.Length             = sizeof(SCSI_PASS_THROUGH);
   sptwb.Spt.PathId             = 0;
   sptwb.Spt.TargetId           = 1;
   sptwb.Spt.Lun                = 0;
@@ -467,10 +467,12 @@ win32ioctl_get_drive_cap (const void *env) {
     offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,DataBuf);
   sptwb.Spt.SenseInfoOffset    = 
     offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,SenseBuf);
-  sptwb.Spt.Cdb[0]             = SCSIOP_MODE_SENSE;
-  sptwb.Spt.Cdb[1] = 0x08;  /* target doesn't return block descriptors */
-  sptwb.Spt.Cdb[2]             = MODE_PAGE_CAPABILITIES;
-  sptwb.Spt.Cdb[4]             = 192;
+  sptwb.Spt.Cdb[0]             = CDIO_MMC_MODE_SENSE;
+  sptwb.Spt.Cdb[1]             = 0x08;  /* doesn't return block descriptors */
+  sptwb.Spt.Cdb[2]             = 0x2a;  /*MODE_PAGE_CAPABILITIES*/;
+  sptwb.Spt.Cdb[3]             = 0;     /* Not used */
+  sptwb.Spt.Cdb[4]             = 128;
+  sptwb.Spt.Cdb[5]             = 0;     /* Not used */
   length = offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,DataBuf) +
     sptwb.Spt.DataTransferLength;
   
@@ -483,23 +485,19 @@ win32ioctl_get_drive_cap (const void *env) {
 		       &returned,
 		       FALSE) )
     {
-      /* Reader */
-      if (sptwb.DataBuf[6] & 0x01) i_drivetype |= CDIO_DRIVE_CD_R;
+      /* Reader? */
+      i_drivetype |= CDIO_DRIVE_CD_AUDIO;
       if (sptwb.DataBuf[6] & 0x02) i_drivetype |= CDIO_DRIVE_CD_RW;
       if (sptwb.DataBuf[6] & 0x08) i_drivetype |= CDIO_DRIVE_DVD;
-      if (sptwb.DataBuf[6] & 0x10) i_drivetype |= CDIO_DRIVE_DVD_R;
-      if (sptwb.DataBuf[6] & 0x20) i_drivetype |= CDIO_DRIVE_DVD_RAM;
       
-      /* Writer */
+      /* Writer? */
       if (sptwb.DataBuf[7] & 0x01) i_drivetype |= CDIO_DRIVE_CD_R;
-      if (sptwb.DataBuf[7] & 0x02) i_drivetype |= CDIO_DRIVE_CD_RW;
-      if (sptwb.DataBuf[7] & 0x08) i_drivetype |= CDIO_DRIVE_DVD;
       if (sptwb.DataBuf[7] & 0x10) i_drivetype |= CDIO_DRIVE_DVD_R;
       if (sptwb.DataBuf[7] & 0x20) i_drivetype |= CDIO_DRIVE_DVD_RAM;
       
       return i_drivetype;
     } else {
-      i_drivetype = CDIO_DRIVE_CD_R | CDIO_DRIVE_UNKNOWN;
+      i_drivetype = CDIO_DRIVE_CD_AUDIO | CDIO_DRIVE_UNKNOWN;
     }
   return CDIO_DRIVE_ERROR;
 }

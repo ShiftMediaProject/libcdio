@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.55 2004/04/24 04:48:06 rocky Exp $
+    $Id: cd-info.c,v 1.56 2004/04/24 11:48:37 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -837,21 +837,21 @@ main(int argc, const char *argv[])
       if (CDIO_DRIVE_FILE == i_drive_cap) {
 	printf("Disc-image file\n");
       } else {
-	printf("CD Reader   :  %s\n", 
-	       i_drive_cap & CDIO_DRIVE_CD_READER  ? "Yes" : "No");
-	printf("   CD-R     :  %s\n", 
+	printf("Compact Disc         : %s\n", 
+	       i_drive_cap & CDIO_DRIVE_CD         ? "Yes"  : "No");
+	printf("   Can play audio    : %s\n", 
+	       i_drive_cap & CDIO_DRIVE_CD_AUDIO   ?  "Yes" : "No");
+	printf("   Can write CD-R    : %s\n", 
 	       i_drive_cap & CDIO_DRIVE_CD_R       ?  "Yes" : "No");
-	printf("   CD-RW    :  %s\n\n", 
-	       i_drive_cap & CDIO_DRIVE_CD_RW      ? "Yes" : "No");
+	printf("   Can write CD-RW   : %s\n\n", 
+	       i_drive_cap & CDIO_DRIVE_CD_RW      ?  "Yes"  : "No");
 
-	printf("DVD Reader   :  %s\n", 
-	       i_drive_cap & CDIO_DRIVE_DVD_READER ? "Yes" : "No");
-	printf("   DVD-ROM   :  %s\n", 
-	       i_drive_cap & CDIO_DRIVE_DVD        ?  "Yes" : "No");
-	printf("   DVD-R     :  %s\n", 
+	printf("Digital Versital Disc: %s\n", 
+	       i_drive_cap & CDIO_DRIVE_DVD        ?  "Yes"  : "No");
+	printf("   Can write DVD-R   : %s\n", 
 	       i_drive_cap & CDIO_DRIVE_DVD_R      ?  "Yes" : "No");
-	printf("   DVD_RAM  :  %s\n", 
-	       i_drive_cap & CDIO_DRIVE_DVD_RAM    ? "Yes" : "No");
+	printf("   Can write DVD-RAM : %s\n", 
+	       i_drive_cap & CDIO_DRIVE_DVD_RAM    ?  "Yes" : "No");
       }
       if (CDIO_DRIVE_UNKNOWN == i_drive_cap) {
 	printf("Not sure about drive properties\n\n");
