@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.8 2004/06/21 03:22:58 rocky Exp $
+    $Id: aspi32.c,v 1.9 2004/06/25 01:47:06 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.8 2004/06/21 03:22:58 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.9 2004/06/25 01:47:06 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -69,6 +69,38 @@ mciSendCommand_aspi(int id, UINT msg, DWORD flags, void *arg)
   return(mci_error == 0);
 }
 
+/*
+  See if the ASPI DLL is loadable. If so pointers are returned
+  and we return true. Return false if there was a problem.
+ */
+static bool
+have_aspi( HMODULE *hASPI, 
+	   long (**lpGetSupport)( void ), 
+	   long (**lpSendCommand)( void* ) )
+{
+  /* check if aspi is available */
+  *hASPI = LoadLibrary( "wnaspi32.dll" );
+
+  if( *hASPI == NULL ) {
+    cdio_debug("Unable to load ASPI DLL");
+    return false;
+  }
+
+  (FARPROC) *lpGetSupport = GetProcAddress( *hASPI,
+					    "GetASPI32SupportInfo" );
+  (FARPROC) *lpSendCommand = GetProcAddress( *hASPI,
+					     "SendASPI32Command" );
+  
+  /* make sure that we've got both function addresses */
+  if( *lpGetSupport == NULL || *lpSendCommand == NULL ) {
+    cdio_debug("Unable to get ASPI function pointers");
+    FreeLibrary( *hASPI );
+    return false;
+  }
+
+  return true;
+}
+
 const char *
 is_cdrom_aspi(const char drive_letter) 
 {
@@ -79,21 +111,10 @@ is_cdrom_aspi(const char drive_letter)
   DWORD dwSupportInfo;
   int i_adapter, i_hostadapters;
   char c_drive;
-  
-  hASPI = LoadLibrary( "wnaspi32.dll" );
-  if( hASPI != NULL ) {
-    (FARPROC) lpGetSupport = GetProcAddress( hASPI,
-					     "GetASPI32SupportInfo" );
-    (FARPROC) lpSendCommand = GetProcAddress( hASPI,
-					      "SendASPI32Command" );
-  }
-  
-  if( hASPI == NULL || lpGetSupport == NULL || lpSendCommand == NULL ) {
-    cdio_debug("Unable to load ASPI or get ASPI function pointers");
-    if( hASPI ) FreeLibrary( hASPI );
+
+  if ( !have_aspi(&hASPI, &lpGetSupport, &lpSendCommand) )
     return NULL;
-  }
-  
+
   /* ASPI support seems to be there. */
   
   dwSupportInfo = lpGetSupport();
@@ -154,6 +175,7 @@ is_cdrom_aspi(const char drive_letter)
 	      srbGDEVBlock.SRB_Cmd    = SC_GET_DEV_TYPE;
 	      srbDiskInfo.SRB_HaId    = i_adapter;
 	      srbGDEVBlock.SRB_Target = i_target;
+	      srbGDEVBlock.SRB_Lun    = i_lun;
 	      
 	      lpSendCommand( (void*) &srbGDEVBlock );
 	      
@@ -192,20 +214,9 @@ init_aspi (_img_private_t *env)
     c_drive = env->gen.source_name[4];
   }
   
-  hASPI = LoadLibrary( "wnaspi32.dll" );
-  if( hASPI != NULL ) {
-    (FARPROC) lpGetSupport = GetProcAddress( hASPI,
-					     "GetASPI32SupportInfo" );
-    (FARPROC) lpSendCommand = GetProcAddress( hASPI,
-					      "SendASPI32Command" );
-  }
-  
-  if( hASPI == NULL || lpGetSupport == NULL || lpSendCommand == NULL ) {
-    cdio_debug("Unable to load ASPI or get ASPI function pointers");
-    if( hASPI ) FreeLibrary( hASPI );
-    return false;
-  }
-  
+  if ( !have_aspi(&hASPI, &lpGetSupport, &lpSendCommand) )
+    return NULL;
+
   /* ASPI support seems to be there. */
   
   dwSupportInfo = lpGetSupport();
@@ -278,6 +289,7 @@ init_aspi (_img_private_t *env)
 		  env->hASPI = (long)hASPI;
 		  env->lpSendCommand = lpSendCommand;
 		  env->b_aspi_init   = true;
+		  env->i_lun         = i_lun;
 		  cdio_debug("Using ASPI layer");
 		  
 		  return true;
@@ -333,6 +345,7 @@ mmc_read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
   ssc.SRB_Flags       = SRB_DIR_IN | SRB_EVENT_NOTIFY;
   ssc.SRB_HaId        = LOBYTE( env->i_sid );
   ssc.SRB_Target      = HIBYTE( env->i_sid );
+  ssc.SRB_Lun         = env->i_lun;
   ssc.SRB_SenseLen    = SENSE_LEN;
   
   ssc.SRB_PostProc = (LPVOID) hEvent;
@@ -457,6 +470,7 @@ read_toc_aspi (_img_private_t *env)
   ssc.SRB_Flags       = SRB_DIR_IN | SRB_EVENT_NOTIFY;
   ssc.SRB_HaId        = LOBYTE( env->i_sid );
   ssc.SRB_Target      = HIBYTE( env->i_sid );
+  ssc.SRB_Lun         = env->i_lun;
   ssc.SRB_SenseLen    = SENSE_LEN;
   
   ssc.SRB_PostProc = (LPVOID) hEvent;
@@ -620,7 +634,7 @@ get_drive_cap_aspi (const _img_private_t *env)
   ssc.SRB_Flags    = SRB_DIR_IN | SRB_EVENT_NOTIFY;
   ssc.SRB_HaId     = LOBYTE( env->i_sid );
   ssc.SRB_Target   = HIBYTE( env->i_sid );
-  ssc.SRB_Lun      = 0;  /* FIXME */
+  ssc.SRB_Lun      = env->i_lun;
   ssc.SRB_SenseLen = SENSE_LEN;
 
   ssc.SRB_PostProc = (LPVOID) hEvent;

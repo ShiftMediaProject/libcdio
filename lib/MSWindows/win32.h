@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.6 2004/06/21 03:22:58 rocky Exp $
+    $Id: win32.h,v 1.7 2004/06/25 01:47:06 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -47,6 +47,7 @@ typedef struct {
   HANDLE h_device_handle; /* device descriptor */
   long  hASPI;
   short i_sid;
+  short i_lun;
   long  (*lpSendCommand)( void* );
 
   /* Track information */
