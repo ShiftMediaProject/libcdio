@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.6 2003/08/31 08:32:40 rocky Exp $
+#$Id: check_cue.sh.in,v 1.7 2003/08/31 15:52:56 rocky Exp $
 if test -z "@CDDB_LIB@" ; then
   cddb_opt='--no-cddb'
 fi
@@ -37,7 +37,7 @@ check_result $RC "cdinfo BIN test $testnum"
 fname=isofs-m1
 testnum='ISO 9660 mode1'
 if test -f  ${srcdir}/${fname}.bin ; then
-  test_cdinfo "--cue-file ${srcdir}/${fname}.cue" \
+  test_cdinfo "--cue-file ${srcdir}/${fname}.cue --iso9660 " \
     ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
   check_result $RC "cdinfo CUE test $testnum"

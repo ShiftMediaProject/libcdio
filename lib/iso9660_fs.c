@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.4 2003/08/31 14:26:06 rocky Exp $
+    $Id: iso9660_fs.c,v 1.5 2003/08/31 15:52:56 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -36,42 +36,42 @@
 #include "bytesex.h"
 #include "ds.h"
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.4 2003/08/31 14:26:06 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.5 2003/08/31 15:52:56 rocky Exp $";
 
 static void
-_idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *buf)
+_idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *buf, bool is_mode2)
 {
   iso9660_xa_t *xa_data = NULL;
-  int su_length = 0;
+  uint8_t dir_len= iso9660_get_dir_len(idr);
 
   memset ((void *) buf, 0, sizeof (iso9660_stat_t));
 
-  if (!iso9660_get_dir_len(idr))
-    return;
+  if (!dir_len) return;
 
-  cdio_assert (iso9660_get_dir_len(idr) >= sizeof (iso9660_dir_t));
-
-  buf->type = (idr->flags & ISO_DIRECTORY) ? _STAT_DIR : _STAT_FILE;
-  buf->lsn = from_733 (idr->extent);
-  buf->size = from_733 (idr->size);
+  buf->type    = (idr->flags & ISO_DIRECTORY) ? _STAT_DIR : _STAT_FILE;
+  buf->lsn     = from_733 (idr->extent);
+  buf->size    = from_733 (idr->size);
   buf->secsize = _cdio_len2blocks (buf->size, ISO_BLOCKSIZE);
 
-  su_length = iso9660_get_dir_len(idr) - sizeof (iso9660_dir_t);
-  su_length -= idr->name_len;
+  cdio_assert (dir_len >= sizeof (iso9660_dir_t));
 
-  if (su_length % 2)
-    su_length--;
-
-  if (su_length < 0 || su_length < sizeof (iso9660_xa_t))
-    return;
-
-  xa_data = (void *) (((char *) idr) + (iso9660_get_dir_len(idr) - su_length));
-
-  if (xa_data->signature[0] != 'X' 
-      || xa_data->signature[1] != 'A')
+  if (is_mode2) {
+    int su_length = iso9660_get_dir_len(idr) - sizeof (iso9660_dir_t);
+    su_length -= idr->name_len;
+    
+    if (su_length % 2)
+      su_length--;
+    
+    if (su_length < 0 || su_length < sizeof (iso9660_xa_t))
+      return;
+    
+    xa_data = (void *) (((char *) idr) + (iso9660_get_dir_len(idr) - su_length));
+    
+    if (xa_data->signature[0] != 'X' 
+	|| xa_data->signature[1] != 'A')
     {
       cdio_warn ("XA signature not found in ISO9660's system use area;"
-		" ignoring XA attributes for this file entry.");
+		 " ignoring XA attributes for this file entry.");
       cdio_debug ("%d %d %d, '%c%c' (%d, %d)", iso9660_get_dir_len(idr), 
 		  idr->name_len,
 		  su_length,
@@ -79,8 +79,9 @@ _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *buf)
 		  xa_data->signature[0], xa_data->signature[1]);
       return;
     }
-  
-  buf->xa = *xa_data;
+    buf->xa = *xa_data;
+  }
+    
 }
 
 static char *
@@ -121,12 +122,12 @@ _fs_stat_root (CdIo *obj, iso9660_stat_t *buf, bool is_mode2)
       cdio_assert_not_reached ();
   }
 
-  _idr2statbuf (idr, buf);
+  _idr2statbuf (idr, buf, is_mode2);
 }
 
 static int
 _fs_stat_traverse (CdIo *obj, const iso9660_stat_t *_root, char **splitpath, 
-		   iso9660_stat_t *buf)
+		   iso9660_stat_t *buf, bool is_mode2)
 {
   unsigned offset = 0;
   uint8_t *_dirbuf = NULL;
@@ -150,10 +151,16 @@ _fs_stat_traverse (CdIo *obj, const iso9660_stat_t *_root, char **splitpath,
   
   _dirbuf = _cdio_malloc (_root->secsize * ISO_BLOCKSIZE);
 
-  if (cdio_read_mode2_sectors (obj, _dirbuf, _root->lsn, false, 
-			       _root->secsize))
-    cdio_assert_not_reached ();
-
+  if (is_mode2) {
+    if (cdio_read_mode2_sectors (obj, _dirbuf, _root->lsn, false, 
+				 _root->secsize))
+      cdio_assert_not_reached ();
+  } else {
+    if (cdio_read_mode1_sectors (obj, _dirbuf, _root->lsn, false,
+				 _root->secsize))
+      cdio_assert_not_reached ();
+  }
+  
   while (offset < (_root->secsize * ISO_BLOCKSIZE))
     {
       const iso9660_dir_t *idr 
@@ -169,11 +176,12 @@ _fs_stat_traverse (CdIo *obj, const iso9660_stat_t *_root, char **splitpath,
 	}
       
       _name = _idr2name (idr);
-      _idr2statbuf (idr, &_stat);
+      _idr2statbuf (idr, &_stat, is_mode2);
 
       if (!strcmp (splitpath[0], _name))
 	{
-	  int retval = _fs_stat_traverse (obj, &_stat, &splitpath[1], buf);
+	  int retval = _fs_stat_traverse (obj, &_stat, &splitpath[1], buf,
+					  is_mode2);
 	  free (_name);
 	  free (_dirbuf);
 	  return retval;
@@ -206,7 +214,7 @@ iso9660_fs_stat (CdIo *obj, const char pathname[], iso9660_stat_t *buf,
   _fs_stat_root (obj, &_root, is_mode2);
 
   splitpath = _cdio_strsplit (pathname, '/');
-  retval = _fs_stat_traverse (obj, &_root, splitpath, buf);
+  retval = _fs_stat_traverse (obj, &_root, splitpath, buf, is_mode2);
   _cdio_strfreev (splitpath);
 
   return retval;

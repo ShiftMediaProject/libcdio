@@ -10,3 +10,17 @@ __________________________________
 CD Analysis Report
 CD-ROM with ISO 9660 filesystem
 ISO 9660: 64 blocks, label `CDROM                           '
+ISO9660 filesystem
+ root dir in PVD set to lsn 23
+
+/:
+  .
+  ..
+  COPYING.;1
+  DOC
+
+/DOC/:
+  .
+  ..
+  README.TXT;1
+
