@@ -4,5 +4,7 @@ Makefile
 Makefile.in
 *.o
 cd-info
+cd-info.1
 cd-read
+cd-read.1
 cdinfo-linux
