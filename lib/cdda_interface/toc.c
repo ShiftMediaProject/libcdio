@@ -1,5 +1,5 @@
 /*
-  $Id: toc.c,v 1.2 2005/01/05 04:16:11 rocky Exp $
+  $Id: toc.c,v 1.3 2005/01/06 03:38:58 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -22,6 +22,10 @@
 /******************************************************************
  * Table of contents convenience functions
  ******************************************************************/
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include "low_interface.h"
 #include "utils.h"

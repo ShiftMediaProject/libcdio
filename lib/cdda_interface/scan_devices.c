@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.3 2005/01/05 04:16:11 rocky Exp $
+  $Id: scan_devices.c,v 1.4 2005/01/06 03:38:58 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -25,6 +25,7 @@
  * 
  ******************************************************************/
 
+#include "common_interface.h"
 #include <limits.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -34,7 +35,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "low_interface.h"
-#include "common_interface.h"
 #include "utils.h"
 #include "cdio/scsi_mmc.h"
 

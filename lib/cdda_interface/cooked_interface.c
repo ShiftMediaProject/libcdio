@@ -1,5 +1,5 @@
 /*
-  $Id: cooked_interface.c,v 1.5 2005/01/06 03:09:11 rocky Exp $
+  $Id: cooked_interface.c,v 1.6 2005/01/06 03:38:58 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -27,8 +27,8 @@
  *
  ******************************************************************/
 
-#include "low_interface.h"
 #include "common_interface.h"
+#include "low_interface.h"
 #include "utils.h"
 
 static int 
