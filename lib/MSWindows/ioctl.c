@@ -1,5 +1,5 @@
 /*
-    $Id: ioctl.c,v 1.2 2004/03/06 11:07:02 rocky Exp $
+    $Id: ioctl.c,v 1.3 2004/03/06 18:05:37 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: ioctl.c,v 1.2 2004/03/06 11:07:02 rocky Exp $";
+static const char _rcsid[] = "$Id: ioctl.c,v 1.3 2004/03/06 18:05:37 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -176,8 +176,7 @@ win32ioctl_is_cdrom(const char c_drive_letter)
 {
 
     UINT uDriveType;
-    char sz_win32_drive[5];
-    DWORD dwAccessFlags;
+    char sz_win32_drive[4];
     
     sz_win32_drive[0]= c_drive_letter;
     sz_win32_drive[1]=':';
@@ -187,9 +186,11 @@ win32ioctl_is_cdrom(const char c_drive_letter)
     uDriveType = GetDriveType(sz_win32_drive);
 
     switch(uDriveType) {
-    case DRIVE_CDROM:        
-        dwAccessFlags = GENERIC_READ | GENERIC_WRITE; 
-	return strdup(sz_win32_drive);
+    case DRIVE_CDROM: {
+        char sz_win32_drive_full[] = "\\\\.\\X:";
+	sz_win32_drive_full[4] = c_drive_letter;
+	return strdup(sz_win32_drive_full);
+    }
     default:
         cdio_debug("Drive %c is not a CD-ROM", c_drive_letter);
         return NULL;
@@ -431,6 +432,7 @@ win32ioctl_get_mcn (_img_private_t *env) {
   memset( &mcn, 0, sizeof(mcn) );
   
   q_data_format.Format = IOCTL_CDROM_MEDIA_CATALOG;
+
   q_data_format.Track=1;
   
   if( DeviceIoControl( env->h_device_handle,
@@ -438,7 +440,7 @@ win32ioctl_get_mcn (_img_private_t *env) {
 		       &q_data_format, sizeof(q_data_format), 
 		       &mcn, sizeof(mcn),
 		       &dwBytesReturned, NULL ) == 0 ) {
-    cdio_warn( "could not read Q Channel at track 1");
+    cdio_warn( "could not read Q Channel at track %d", 1);
   } else if (mcn.Mcval)
     return strdup(mcn.MediaCatalog);
   return NULL;

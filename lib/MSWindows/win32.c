@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.1 2004/03/05 12:32:45 rocky Exp $
+    $Id: win32.c,v 1.2 2004/03/06 18:05:37 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.1 2004/03/05 12:32:45 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.2 2004/03/06 18:05:37 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -268,7 +268,7 @@ _cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
 	return retval;
     } else {
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _cdio_read_mode2_sector (env, buf, lsn + i, true)) )
+      if ( (retval = _cdio_read_mode2_sector (env, buf, lsn + i, false)) )
 	return retval;
       
       memcpy (((char *)data) + (CDIO_CD_FRAMESIZE * i), 
