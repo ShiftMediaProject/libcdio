@@ -1,5 +1,5 @@
 /*
-  $Id: sample10.c,v 1.1 2004/08/06 22:05:16 rocky Exp $
+  $Id: sample10.c,v 1.2 2004/08/07 01:48:36 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -61,7 +61,7 @@ main(int argc, const char *argv[])
 
       /* set to first sense feature code, and then walk through the masks */
       p = buf + 8;
-      while( (p < &(buf[8+lenData])) && (p < pMax) )       {
+      while( (p < &(buf[lenData])) && (p < pMax) )       {
 	uint16_t i_feature;
 	uint8_t i_feature_len = p[3];
 	
@@ -172,6 +172,32 @@ main(int argc, const char *argv[])
 	    }
 	  case CDIO_MMC_FEATURE_REMOVABLE_MEDIUM:
 	    printf("Removable Medium Feature\n");
+	    switch(p[4] >> 5) {
+	    case 0:
+	      printf("\tCaddy/Slot type loading mechanism\n");
+	      break;
+	    case 1:
+	      printf("\tTray type loading mechanism\n");
+	      break;
+	    case 2:
+	      printf("\tPop-up type loading mechanism\n");
+	      break;
+	    case 4:
+	      printf("\tEmbedded changer with individually changeable discs\n");
+	      break;
+	    case 5:
+	      printf("\tEmbedded changer using a magazine mechanism\n");
+	      break;
+	    default:
+	      printf("\tUnknown changer mechanism\n");
+	    }
+	    
+	    printf("\tcan%s eject the medium or magazine via the normal "
+		   "START/STOP command\n", 
+		   (p[4] & 8) ? "": "not");
+	    printf("\tcan%s be locked into the Logical Unit\n", 
+		   (p[4] & 1) ? "": "not");
+	    printf("\n");
 	    break;
 	  case CDIO_MMC_FEATURE_WRITE_PROTECT:
 	    printf("Write Protect Feature\n");

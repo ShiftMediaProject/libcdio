@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.4 2004/07/31 07:43:26 rocky Exp $
+  $Id: cd-drive.c,v 1.5 2004/08/07 01:48:36 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -245,6 +245,7 @@ main(int argc, const char *argv[])
 		 "Model"   , scsi_mmc_hwinfo.model, 
 		 "Revision", scsi_mmc_hwinfo.revision);
 	}
+	print_mmc_drive_features(p_cdio);
 	print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
 	printf("\n");
 	if (p_cdio) cdio_destroy(p_cdio);
@@ -258,11 +259,22 @@ main(int argc, const char *argv[])
     cdio_drive_read_cap_t  i_read_cap;
     cdio_drive_write_cap_t i_write_cap;
     cdio_drive_misc_cap_t  i_misc_cap;
+    scsi_mmc_hwinfo_t      scsi_mmc_hwinfo;
+    
 
+    printf("Drive %s\n", source_name);
+    p_cdio = cdio_open (source_name, DRIVER_UNKNOWN);
+    if (NULL != p_cdio) {
+      if (scsi_mmc_get_hwinfo(p_cdio, &scsi_mmc_hwinfo)) {
+	printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
+	       "Vendor"  , scsi_mmc_hwinfo.vendor, 
+	       "Model"   , scsi_mmc_hwinfo.model, 
+	       "Revision", scsi_mmc_hwinfo.revision);
+      }
+      print_mmc_drive_features(p_cdio);
+    }
     cdio_get_drive_cap_dev(source_name, &i_read_cap, &i_write_cap, 
 			   &i_misc_cap);
-    
-    printf("Drive %s\n", source_name);
     print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
     printf("\n");
   }

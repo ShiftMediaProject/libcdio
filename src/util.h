@@ -1,5 +1,5 @@
 /*
-  $Id: util.h,v 1.6 2004/07/31 07:43:26 rocky Exp $
+  $Id: util.h,v 1.7 2004/08/07 01:48:36 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -100,7 +100,10 @@ void print_version (char *program_name, const char *version,
 
 char *fillout_device_name(const char *device_name);
 
-/* Prints out drive capabilities */
+/*! Prints out SCSI-MMC drive features  */
+void  print_mmc_drive_features(CdIo *p_cdio);
+
+/*! Prints out drive capabilities */
 void print_drive_capabilities(cdio_drive_read_cap_t  p_read_cap,
 			      cdio_drive_write_cap_t p_write_cap,
 			      cdio_drive_misc_cap_t  p_misc_cap);
