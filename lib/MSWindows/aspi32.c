@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.33 2004/07/24 05:42:09 rocky Exp $
+    $Id: aspi32.c,v 1.34 2004/07/25 10:26:22 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.33 2004/07/24 05:42:09 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.34 2004/07/25 10:26:22 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -397,7 +397,7 @@ init_aspi (_img_private_t *env)
 
   We return true if command completed successfully and false if not.
  */
-static int
+int
 scsi_mmc_run_cmd_aspi( const void *p_user_data, int i_timeout,
 		       unsigned int i_cdb, const scsi_mmc_cdb_t * p_cdb,  
 		       scsi_mmc_direction_t e_direction, 
