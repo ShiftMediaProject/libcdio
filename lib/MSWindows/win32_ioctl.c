@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.25 2004/07/26 11:25:51 rocky Exp $
+    $Id: win32_ioctl.c,v 1.26 2004/07/27 01:06:02 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.25 2004/07/26 11:25:51 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.26 2004/07/27 01:06:02 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -224,8 +224,8 @@ get_discmode_win32ioctl (_img_private_t *p_env)
   if (!p_env->gen.toc_init) 
     return CDIO_DISC_MODE_NO_INFO;
 
-  for (i_track = p_env->i_first_track; 
-       i_track < p_env->i_first_track + p_env->i_tracks ; 
+  for (i_track = p_env->gen.i_first_track; 
+       i_track < p_env->gen.i_first_track + p_env->i_tracks ; 
        i_track ++) {
     track_format_t track_fmt=get_track_format_win32ioctl(p_env, i_track);
 
@@ -510,31 +510,10 @@ read_toc_win32ioctl (_img_private_t *env)
 bool
 init_cdtext_win32ioctl (_img_private_t *p_env)
 {
-  scsi_mmc_cdb_t cdb = {{ 0, }};
-  uint8_t  wdata[5000] = { 0, };
-  int      i_status;
-
-  /* Operation code */
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(wdata));
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC); 
-
-  /* Format */
-  cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
-
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(wdata));
-
-  i_status = scsi_mmc_run_cmd_win32ioctl (p_env, OP_TIMEOUT_MS,
-					  scsi_mmc_get_cmd_len(cdb.field[0]), 
-					  &cdb, SCSI_MMC_DATA_READ, 
-					  sizeof(wdata), &wdata);
-
-  if(0 != i_status) {
-    cdio_info ("CD-TEXT reading failed\n");
-    return false;
-  } else {
-    return cdtext_data_init(p_env, p_env->i_first_track, wdata, 
-			    set_cdtext_field_win32);
-  }
+  return scsi_mmc_cdtext_init_private( p_env->gen.cdio,
+				       &scsi_mmc_run_cmd_win32ioctl, 
+				       set_cdtext_field_win32
+				       );
 }
 
 /*!

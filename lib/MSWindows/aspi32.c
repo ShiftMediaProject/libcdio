@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.39 2004/07/26 04:33:21 rocky Exp $
+    $Id: aspi32.c,v 1.40 2004/07/27 01:06:02 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.39 2004/07/26 04:33:21 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.40 2004/07/27 01:06:02 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -211,8 +211,8 @@ get_discmode_aspi (_img_private_t *p_env)
   if (!p_env->gen.toc_init) 
     return CDIO_DISC_MODE_NO_INFO;
 
-  for (i_track = p_env->i_first_track; 
-       i_track < p_env->i_first_track + p_env->i_tracks ; 
+  for (i_track = p_env->gen.i_first_track; 
+       i_track < p_env->gen.i_first_track + p_env->i_tracks ; 
        i_track ++) {
     track_format_t track_fmt=get_track_format_aspi(p_env, i_track);
 
@@ -675,7 +675,7 @@ read_toc_aspi (_img_private_t *p_env)
   
   if (0 != i_status) return false;
   
-  p_env->i_first_track = tocheader[2];
+  p_env->gen.i_first_track = tocheader[2];
   p_env->i_tracks  = tocheader[3] - tocheader[2] + 1;
   
   {
@@ -771,30 +771,10 @@ wnaspi32_eject_media (void *user_data) {
 bool
 init_cdtext_aspi (_img_private_t *p_env)
 {
-  scsi_mmc_cdb_t cdb = {{ 0, }};
-  uint8_t  wdata[5000] = { 0, };
-  int      i_status;
-
-  /* Operation code */
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC); 
-
-  /* Format */
-  cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
-
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(wdata));
-
-  i_status = scsi_mmc_run_cmd_aspi (p_env, OP_TIMEOUT_MS,
-				    scsi_mmc_get_cmd_len(cdb.field[0]), 
-				    &cdb, SCSI_MMC_DATA_READ, 
-				    sizeof(wdata), &wdata);
-
-  if (0 != i_status) {
-    cdio_info ("CD-TEXT reading failed\n");
-    return false;
-  } else {
-    return cdtext_data_init(p_env, p_env->i_first_track, wdata, 
-			    set_cdtext_field_win32);
-  }
+  return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
+				       &scsi_mmc_run_cmd_aspi, 
+				       set_cdtext_field_win32
+				       );
 }
 
 /*!
@@ -857,36 +837,6 @@ get_drive_cap_aspi (const _img_private_t *p_env,
     *p_write_cap = CDIO_DRIVE_CAP_UNKNOWN;
     *p_misc_cap  = CDIO_DRIVE_CAP_UNKNOWN;
   }
-}
-
-/*!
-  Return the media catalog number MCN.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
- */
-char *
-get_mcn_aspi (const _img_private_t *p_env)
-{
-  scsi_mmc_cdb_t cdb = {{0, }};
-  char buf[28] = { 0, };
-  int i_status;
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
-  cdb.field[1] = 0x0;  
-  cdb.field[2] = 0x40; 
-  cdb.field[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(buf));
-
-  i_status = scsi_mmc_run_cmd_aspi(p_env, OP_TIMEOUT_MS, 
-				   scsi_mmc_get_cmd_len(cdb.field[0]), 
-				   &cdb, SCSI_MMC_DATA_READ, 
-				   sizeof(buf), buf);
-  if(i_status == 0) {
-    return strdup(&buf[9]);
-  }
-  return NULL;
 }
 
 /*!  

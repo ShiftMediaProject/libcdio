@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.61 2004/07/23 10:37:17 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.62 2004/07/27 01:06:02 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.61 2004/07/23 10:37:17 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.62 2004/07/27 01:06:02 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -69,7 +69,6 @@ static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.61 2004/07/23 10:37:17 rock
 #define DEFAULT_TIMEOUT 30
 
 #define TOTAL_TRACKS    (p_env->tochdr.cdth_trk1)
-#define FIRST_TRACK_NUM (p_env->tochdr.cdth_trk0)
 
 /* reader */
 
@@ -420,6 +419,8 @@ _cdio_read_toc (_img_private_t *env)
     return false;
   }
 
+  p_env->gen.i_first_track = p_env->tochdr.cdth_trk0;
+  
   /* read individual tracks */
   for (i=env->tochdr.cdth_trk0; i<=env->tochdr.cdth_trk1; i++) {
     env->tocent[i-1].cdte_track = i;
@@ -474,32 +475,10 @@ set_cdtext_field_solaris(void *p_user_data, track_t i_track,
 static bool
 _init_cdtext_solaris (_img_private_t *p_env)
 {
-
-  scsi_mmc_cdb_t  cdb = {{0, }};
-  char            wdata[5000] = { 0, };
-  int             i_status;
-
-  /* Operation code */
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
-
-  /* Format */
-  cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
-
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(wdata));
-
-  errno = 0;
-  i_status = scsi_mmc_run_cmd_solaris (p_env, DEFAULT_TIMEOUT,
-				       scsi_mmc_get_cmd_len(cdb.field[0]), 
-				       &cdb, SCSI_MMC_DATA_READ, 
-				       sizeof(wdata), &wdata);
-
-  if(i_status != 0) {
-    cdio_info ("CD-TEXT reading failed: %s\n", strerror(errno));  
-    return false;
-  } else {
-    return cdtext_data_init(p_env, FIRST_TRACK_NUM, wdata, 
-			    set_cdtext_field_solaris);
-  }
+  return scsi_mmc_init_cdtext_private( p_env->gen.cdio,
+				       &scsi_mmc_run_cmd_solaris, 
+				       set_cdtext_field_solaris
+				       );
 }
 
 /*! 
@@ -516,7 +495,7 @@ _get_cdtext_solaris (void *p_user_data, track_t i_track)
 
   if ( NULL == p_env ||
        (0 != i_track 
-       && i_track >= TOTAL_TRACKS+FIRST_TRACK_NUM )
+       && i_track >= TOTAL_TRACKS+p_env->gen.i_first_track )
        || p_env ->b_cdtext_error )
     return NULL;
 
@@ -528,7 +507,7 @@ _get_cdtext_solaris (void *p_user_data, track_t i_track)
   if (0 == i_track) 
     return &(p_env->cdtext);
   else 
-    return &(p_env->cdtext_track[i_track-FIRST_TRACK_NUM]);
+    return &(p_env->cdtext_track[i_track-p_env->gen.i_first_track]);
 }
 
 /*!
@@ -705,26 +684,7 @@ static char *
 _get_mcn_solaris (const void *p_user_data)
 {
   const _img_private_t *p_env = p_user_data;
-  scsi_mmc_cdb_t cdb = {{0, }};
-
-  char buf[28] = { 0, };
-  int i_status;
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
-  cdb.field[1] = 0x0;  
-  cdb.field[2] = 0x40; 
-  cdb.field[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
-
-  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(buf));
-  
-  i_status = scsi_mmc_run_cmd_solaris (p_env, DEFAULT_TIMEOUT,
-				       scsi_mmc_get_cmd_len(cdb.field[0]), 
-				       &cdb, SCSI_MMC_DATA_READ, 
-				       sizeof(buf), &buf);
-  if(i_status == 0) {
-    return strdup(&buf[9]);
-  }
-  return NULL;
+  return scsi_mmc_get_mcn( p_env->gen.cdio );
 }
 
 
@@ -739,7 +699,7 @@ _cdio_get_first_track_num(void *p_user_data)
   
   if (!p_env->gen.toc_init) _cdio_read_toc (p_env) ;
 
-  return FIRST_TRACK_NUM;
+  return p_env->gen.i_first_track;
 }
 
 
@@ -762,10 +722,11 @@ _cdio_get_track_format(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
   
-  if ( (i_track > TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM)
+  if ( (i_track > TOTAL_TRACKS+p_env->gen.i_first_track) 
+       || i_track < p_env->gen.i_first_track)
     return TRACK_FORMAT_ERROR;
 
-  i_track -= FIRST_TRACK_NUM;
+  i_track -= p_env->gen.i_first_track;
 
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
@@ -798,10 +759,11 @@ _cdio_get_track_green(void *p_user_data, track_t i_track)
   if (!p_env->gen.init) init_solaris(p_env);
   if (!p_env->gen.toc_init) _cdio_read_toc (p_env) ;
 
-  if (i_track >= TOTAL_TRACKS+FIRST_TRACK_NUM || i_track < FIRST_TRACK_NUM)
+  if (i_track >= TOTAL_TRACKS+p_env->gen.i_first_track 
+      || i_track < p_env->gen.i_first_track)
     return false;
 
-  i_track -= FIRST_TRACK_NUM;
+  i_track -= p_env->gen.i_first_track;
 
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cd-info for a while.
@@ -829,9 +791,10 @@ _cdio_get_track_msf(void *p_user_data, track_t i_track, msf_t *msf)
   if (!p_env->gen.toc_init) _cdio_read_toc (p_env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) 
-    i_track = TOTAL_TRACKS + FIRST_TRACK_NUM;
+    i_track = TOTAL_TRACKS + p_env->gen.i_first_track;
 
-  if (i_track > (TOTAL_TRACKS+FIRST_TRACK_NUM) || i_track < FIRST_TRACK_NUM) {
+  if (i_track > (TOTAL_TRACKS+p_env->gen.i_first_track) 
+      || i_track < p_env->gen.i_first_track) {
     return false;
   } else {
     struct cdrom_tocentry *msf0 = &p_env->tocent[i_track-1];

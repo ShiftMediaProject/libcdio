@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.17 2004/07/26 03:58:25 rocky Exp $
+    $Id: scsi_mmc.h,v 1.18 2004/07/27 01:06:01 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -214,5 +214,8 @@ int scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize);
 */
 discmode_t scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio, 
 					      cdio_dvd_struct_t *s);
+
+char *scsi_mmc_get_mcn ( const CdIo *p_cdio );
+
 
 #endif /* __SCSI_MMC_H__ */

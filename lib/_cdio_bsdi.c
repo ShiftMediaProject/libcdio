@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.28 2004/06/26 00:39:00 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.29 2004/07/27 01:06:02 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.28 2004/06/26 00:39:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.29 2004/07/27 01:06:02 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -55,8 +55,7 @@ static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.28 2004/06/26 00:39:00 rocky
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-#define TOTAL_TRACKS    (env->tochdr.cdth_trk1)
-#define FIRST_TRACK_NUM (env->tochdr.cdth_trk0)
+#define TOTAL_TRACKS    (p_env->tochdr.cdth_trk1)
 
 typedef  enum {
   _AM_NONE,
@@ -378,29 +377,29 @@ _set_arg_bsdi (void *user_data, const char key[], const char value[])
   Return false if successful or true if an error.
 */
 static bool
-_cdio_read_toc (_img_private_t *env) 
+_cdio_read_toc (_img_private_t *p_env) 
 {
   int i;
 
   /* read TOC header */
-  if ( ioctl(env->gen.fd, CDROMREADTOCHDR, &env->tochdr) == -1 ) {
+  if ( ioctl(p_env->gen.fd, CDROMREADTOCHDR, &p_env->tochdr) == -1 ) {
     cdio_warn("%s: %s\n", 
             "error in ioctl CDROMREADTOCHDR", strerror(errno));
     return false;
   }
 
   /* read individual tracks */
-  for (i= FIRST_TRACK_NUM; i<=TOTAL_TRACKS; i++) {
-    env->tocent[i-1].cdte_track = i;
-    env->tocent[i-1].cdte_format = CDROM_MSF;
-    if ( ioctl(env->gen.fd, CDROMREADTOCENTRY, &env->tocent[i-1]) == -1 ) {
+  for (i= p_env->gen.i_first_track; i<=TOTAL_TRACKS; i++) {
+    p_env->tocent[i-1].cdte_track = i;
+    p_env->tocent[i-1].cdte_format = CDROM_MSF;
+    if (ioctl(p_env->gen.fd, CDROMREADTOCENTRY, &p_env->tocent[i-1]) == -1) {
       cdio_warn("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
               i, strerror(errno));
       return false;
     }
     /****
-    struct cdrom_msf0 *msf= &env->tocent[i-1].cdte_addr.msf;
+    struct cdrom_msf0 *msf= &p_env->tocent[i-1].cdte_addr.msf;
     
     fprintf (stdout, "--- track# %d (msf %2.2x:%2.2x:%2.2x)\n",
 	     i, msf->minute, msf->second, msf->frame);
@@ -409,11 +408,11 @@ _cdio_read_toc (_img_private_t *env)
   }
 
   /* read the lead-out track */
-  env->tocent[TOTAL_TRACKS].cdte_track = CDIO_CDROM_LEADOUT_TRACK;
-  env->tocent[TOTAL_TRACKS].cdte_format = CDROM_MSF;
+  p_env->tocent[TOTAL_TRACKS].cdte_track = CDIO_CDROM_LEADOUT_TRACK;
+  p_env->tocent[TOTAL_TRACKS].cdte_format = CDROM_MSF;
 
-  if (ioctl(env->gen.fd, CDROMREADTOCENTRY, 
-	    &env->tocent[TOTAL_TRACKS]) == -1 ) {
+  if (ioctl(p_env->gen.fd, CDROMREADTOCENTRY, 
+	    &p_env->tocent[TOTAL_TRACKS]) == -1 ) {
     cdio_warn("%s: %s\n", 
 	     "error in ioctl CDROMREADTOCENTRY for lead-out",
             strerror(errno));
@@ -421,7 +420,7 @@ _cdio_read_toc (_img_private_t *env)
   }
 
   /*
-  struct cdrom_msf0 *msf= &env->tocent[TOTAL_TRACKS].cdte_addr.msf;
+  struct cdrom_msf0 *msf= &p_env->tocent[TOTAL_TRACKS].cdte_addr.msf;
 
   fprintf (stdout, "--- track# %d (msf %2.2x:%2.2x:%2.2x)\n",
 	   i, msf->minute, msf->second, msf->frame);
@@ -437,14 +436,14 @@ _cdio_read_toc (_img_private_t *env)
 static int 
 _eject_media_bsdi (void *user_data) {
 
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   int ret=2;
   int status;
   int fd;
 
-  close(env->gen.fd);
-  env->gen.fd = -1;
-  if ((fd = open (env->source_name, O_RDONLY|O_NONBLOCK)) > -1) {
+  close(p_env->gen.fd);
+  p_env->gen.fd = -1;
+  if ((fd = open (p_env->source_name, O_RDONLY|O_NONBLOCK)) > -1) {
     if((status = ioctl(fd, CDROM_DRIVE_STATUS, (void *) CDSL_CURRENT)) > 0) {
       switch(status) {
       case CDS_TRAY_OPEN:
@@ -474,12 +473,12 @@ _eject_media_bsdi (void *user_data) {
 static const char *
 _get_arg_bsdi (void *user_data, const char key[])
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
 
   if (!strcmp (key, "source")) {
-    return env->source_name;
+    return p_env->source_name;
   } else if (!strcmp (key, "access-mode")) {
-    switch (env->access_mode) {
+    switch (p_env->access_mode) {
     case _AM_IOCTL:
       return "ioctl";
     case _AM_NONE:
@@ -496,11 +495,11 @@ _get_arg_bsdi (void *user_data, const char key[])
 static track_t
 _get_first_track_num_bsdi(void *user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
-  return FIRST_TRACK_NUM;
+  return p_p_env->gen.i_first_track;
 }
 
 /*!
@@ -512,8 +511,8 @@ static char *
 _get_mcn_bsdi (const void *user_data) {
 
   struct cdrom_mcn mcn;
-  const _img_private_t *env = user_data;
-  if (ioctl(env->gen.fd, CDROM_GET_MCN, &mcn) != 0)
+  const _img_private_t *p_env = user_data;
+  if (ioctl(p_env->gen.fd, CDROM_GET_MCN, &mcn) != 0)
     return NULL;
   return strdup(mcn.medium_catalog_number);
 }
@@ -525,9 +524,9 @@ _get_mcn_bsdi (const void *user_data) {
 static track_t
 _get_num_tracks_bsdi(void *user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
   return TOTAL_TRACKS;
 }
@@ -538,22 +537,22 @@ _get_num_tracks_bsdi(void *user_data)
 static track_format_t
 _get_track_format_bsdi(void *user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
   if (i_track > TOTAL_TRACKS || i_track == 0)
     return TRACK_FORMAT_ERROR;
 
-  i_track -= FIRST_TRACK_NUM;
+  i_track -= p_p_env->gen.i_first_track;
 
   /* This is pretty much copied from the "badly broken" cdrom_count_tracks
      in linux/cdrom.c.
    */
-  if (env->tocent[i_track].cdte_ctrl & CDROM_DATA_TRACK) {
-    if (env->tocent[i_track].cdte_format == CDIO_CDROM_CDI_TRACK)
+  if (p_env->tocent[i_track].cdte_ctrl & CDROM_DATA_TRACK) {
+    if (p_env->tocent[i_track].cdte_format == CDIO_CDROM_CDI_TRACK)
       return TRACK_FORMAT_CDI;
-    else if (env->tocent[i_track].cdte_format == CDIO_CDROM_XA_TRACK) 
+    else if (p_env->tocent[i_track].cdte_format == CDIO_CDROM_XA_TRACK) 
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;
@@ -573,9 +572,9 @@ _get_track_format_bsdi(void *user_data, track_t i_track)
 static bool
 _get_track_green_bsdi(void *user_data, track_t i_track) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
@@ -585,7 +584,7 @@ _get_track_green_bsdi(void *user_data, track_t i_track)
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cdinfo for a while.
    */
-  return ((env->tocent[i_track-1].cdte_ctrl & 2) != 0);
+  return ((p_env->tocent[i_track-1].cdte_ctrl & 2) != 0);
 }
 
 /*!  
@@ -598,11 +597,11 @@ _get_track_green_bsdi(void *user_data, track_t i_track)
 static bool
 _get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
 
   if (NULL == msf) return false;
 
-  if (!env->toc_init) _cdio_read_toc (env) ;
+  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
@@ -610,10 +609,10 @@ _get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
     return false;
   } 
 
-  i_track -= FIRST_TRACK_NUM;
+  i_track -= p_p_env->gen.i_first_track;
 
   {
-    struct cdrom_msf0  *msf0= &env->tocent[i_track].cdte_addr.msf;
+    struct cdrom_msf0  *msf0= &p_env->tocent[i_track].cdte_addr.msf;
     msf->m = to_bcd8(msf0->minute);
     msf->s = to_bcd8(msf0->second);
     msf->f = to_bcd8(msf0->frame);

@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.11 2004/07/26 04:33:21 rocky Exp $
+    $Id: scsi_mmc.c,v 1.12 2004/07/27 01:06:02 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -24,6 +24,7 @@
 #endif
 
 #include <cdio/cdio.h>
+#include <cdio/logging.h>
 #include <cdio/scsi_mmc.h>
 #include "cdio_private.h"
 
@@ -184,9 +185,9 @@ scsi_mmc_read_sectors ( const CdIo *cdio, void *p_buf, lba_t lba,
 }
 
 int
-set_bsize_mmc ( const void *p_env, 
-		const scsi_mmc_run_cmd_fn_t *run_scsi_mmc_cmd, 
-		unsigned int bsize)
+scsi_mmc_set_bsize_private ( const void *p_env, 
+			     const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+			     unsigned int bsize)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
 
@@ -220,7 +221,7 @@ set_bsize_mmc ( const void *p_env,
   cdb.field[1] = 1 << 4;
   cdb.field[4] = 12;
   
-  return (*run_scsi_mmc_cmd) (p_env, DEFAULT_TIMEOUT_MS,
+  return run_scsi_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
 			      scsi_mmc_get_cmd_len(cdb.field[0]), &cdb, 
 			      SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
 }
@@ -229,16 +230,17 @@ int
 scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize)
 {
   if ( ! cdio )  return -2;
-  return set_bsize_mmc (cdio->env, (&cdio->op.run_scsi_mmc_cmd), bsize);
+  return 
+    scsi_mmc_set_bsize_private (cdio->env, cdio->op.run_scsi_mmc_cmd, bsize);
 }
 
 /*! 
   Get the DVD type associated with cd object.
 */
 discmode_t
-get_dvd_struct_physical_mmc ( void *p_env, 
+scsi_mmc_get_dvd_struct_physical_private ( void *p_env, 
 			      const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
-			      cdio_dvd_struct_t *s)
+					   cdio_dvd_struct_t *s)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
   unsigned char buf[20], *base;
@@ -298,8 +300,96 @@ discmode_t
 scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio, cdio_dvd_struct_t *s)
 {
   if ( ! p_cdio )  return -2;
-  return get_dvd_struct_physical_mmc (p_cdio->env, 
-				      p_cdio->op.run_scsi_mmc_cmd, 
-				      s);
+  return 
+    scsi_mmc_get_dvd_struct_physical_private (p_cdio->env, 
+					      p_cdio->op.run_scsi_mmc_cmd, 
+					      s);
+}
+
+/*!
+  Return the media catalog number MCN.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+char *
+scsi_mmc_get_mcn_private ( void *p_env,
+			   const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd
+			   )
+{
+  scsi_mmc_cdb_t cdb = {{0, }};
+  char buf[28] = { 0, };
+  int i_status;
+
+  if ( ! p_env || ! run_scsi_mmc_cmd )
+    return NULL;
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
+  cdb.field[1] = 0x0;  
+  cdb.field[2] = 0x40; 
+  cdb.field[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
+  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(buf));
+
+  i_status = run_scsi_mmc_cmd(p_env, DEFAULT_TIMEOUT_MS, 
+			      scsi_mmc_get_cmd_len(cdb.field[0]), 
+			      &cdb, SCSI_MMC_DATA_READ, 
+			      sizeof(buf), buf);
+  if(i_status == 0) {
+    return strdup(&buf[9]);
+  }
+  return NULL;
+}
+
+char *
+scsi_mmc_get_mcn ( const CdIo *p_cdio )
+{
+  if ( ! p_cdio )  return NULL;
+  return scsi_mmc_get_mcn_private (p_cdio->env, 
+				   p_cdio->op.run_scsi_mmc_cmd );
+}
+
+/*
+  Read cdtext information for a CdIo object .
+  
+  return true on success, false on error or CD-TEXT information does
+  not exist.
+*/
+bool
+scsi_mmc_init_cdtext_private ( void *p_user_data, 
+			       const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
+			       set_cdtext_field_fn_t set_cdtext_field_fn 
+			       )
+{
+
+  generic_img_private_t *p_env = p_user_data;
+  scsi_mmc_cdb_t  cdb = {{0, }};
+  char            wdata[5000] = { 0, };
+  int             i_status;
+
+  if ( ! p_env || ! run_scsi_mmc_cmd )
+    return false;
+
+  /* Operation code */
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
+
+  /* Format */
+  cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
+
+  CDIO_MMC_SET_READ_LENGTH(cdb.field, sizeof(wdata));
+
+  errno = 0;
+  i_status = run_scsi_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
+			       scsi_mmc_get_cmd_len(cdb.field[0]), 
+			       &cdb, SCSI_MMC_DATA_READ, 
+			       sizeof(wdata), &wdata);
+
+  if (i_status != 0) {
+    cdio_info ("CD-TEXT reading failed: %s\n", strerror(errno));  
+    return false;
+  } else {
+    return cdtext_data_init(p_env, p_env->i_first_track, wdata, 
+			    set_cdtext_field_fn);
+  }
 }
 

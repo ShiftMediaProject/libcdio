@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.34 2004/07/26 02:54:37 rocky Exp $
+    $Id: cdio_private.h,v 1.35 2004/07/27 01:06:02 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -257,6 +257,7 @@ extern "C" {
        and the second for stream reading (bincue, nrg, toc, network).
      */
     int   fd;               /**< File descriptor of device */
+    track_t i_first_track;  /**< The starting track number. */
     CdioDataSource *data_source;
     CdIo *cdio;             /**< a way to call general cdio routines. */
   } generic_img_private_t;

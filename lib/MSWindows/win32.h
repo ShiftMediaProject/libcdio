@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.15 2004/07/25 22:33:54 rocky Exp $
+    $Id: win32.h,v 1.16 2004/07/27 01:06:02 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -45,7 +45,6 @@ typedef struct {
 
   cdtext_t      cdtext;	         /* CD-TEXT */
   track_t       i_tracks;        /* number of tracks in image */
-  track_t       i_first_track;   /* track number of first track */
 
   access_mode_t access_mode;
 
