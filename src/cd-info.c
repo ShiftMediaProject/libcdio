@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.42 2003/10/06 04:04:05 rocky Exp $
+    $Id: cd-info.c,v 1.43 2003/10/15 01:59:51 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -482,7 +482,10 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs,
     
   printf ("%s:\n", pathname);
 
-  cdio_assert (entlist != NULL);
+  if (NULL == entlist) {
+    fprintf (stderr, "Error getting above directory information\n");
+    return;
+  }
 
   /* Iterate over files in this directory */
   
@@ -500,8 +503,11 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs,
       snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
 		iso_name);
   
-      if (iso9660_fs_stat (cdio, _fullname, &statbuf, is_mode2))
-        cdio_assert_not_reached ();
+      if (iso9660_fs_stat (cdio, _fullname, &statbuf, is_mode2)) {
+        fprintf(stderr, "Error getting file info for directory %s/\n", 
+		_fullname);
+	continue;
+      }
 
       strncat (_fullname, "/", sizeof (_fullname));
 
@@ -535,7 +541,7 @@ print_iso9660_recurse (CdIo *cdio, const char pathname[], cdio_fs_anal_t fs,
 
   printf ("\n");
 
-  /* Now wecurse over the directories. */
+  /* Now recurse over the directories. */
 
   _CDIO_LIST_FOREACH (entnode, dirlist)
     {
@@ -815,7 +821,7 @@ main(int argc, const char *argv[])
     printf(STRONG "CD-ROM Track List (%i - %i)\n" NORMAL, 
 	   first_track_num, num_tracks);
 
-    printf("  #: MSF       LSN     Type\n");
+    printf("  #: MSF       LSN     Type  Green?\n");
   }
   
   /* Read and possibly print track information. */
@@ -834,12 +840,12 @@ main(int argc, const char *argv[])
 	       (long unsigned int) cdio_msf_to_lsn(&msf));
       break;
     } else if (!opts.no_tracks) {
-      printf("%3d: %2.2x:%2.2x:%2.2x  %06lu  %s\n",
+      printf("%3d: %2.2x:%2.2x:%2.2x  %06lu  %-5s %s\n",
 	     (int) i, 
 	     msf.m, msf.s, msf.f, 
 	     (long unsigned int) cdio_msf_to_lsn(&msf),
-	     track_format2str[cdio_get_track_format(cdio, i)]);
-
+	     track_format2str[cdio_get_track_format(cdio, i)],
+	     cdio_get_track_green(cdio, i)? "true" : "false");
     }
     
     if (TRACK_FORMAT_AUDIO == cdio_get_track_format(cdio, i)) {

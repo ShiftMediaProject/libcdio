@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.10 2003/10/03 01:33:30 rocky Exp $
+  $Id: cd-read.c,v 1.11 2003/10/15 01:59:51 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -57,6 +57,9 @@ typedef enum
   READ_M1F2,
   READ_M2F1,
   READ_M2F2
+#if AUTO_FINISHED
+  READ_AUTO
+#endif
 } read_mode_t;
 
 /* Structure used so we can binary sort and set the --mode switch. */
@@ -481,6 +484,15 @@ main(int argc, const char *argv[])
       blocklen=M2F2_SECTOR_SIZE;
       cdio_read_mode2_sector(cdio, &buffer, opts.start_lsn, true);
       break;
+#if AUTO_FINISHED
+    case READ_AUTO:
+      /* Find what track lsn is in. Then 
+         switch cdio_get_track_format(cdio, i)
+         and also test using is_green
+
+      */
+      break;
+#endif 
     case READ_MODE_UNINIT:
       err_exit("%s: Reading mode not set\n", program_name);
       break;
