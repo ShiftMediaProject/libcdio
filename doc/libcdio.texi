@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.28 2004/11/21 09:59:44 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.29 2004/11/21 11:36:13 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -135,6 +135,9 @@ While on the topic of the name @value{libcdio}, I should also explain that
 the library really doesn't handle writing or output (the final "o" in
 the name). However it was felt that if I put libcdi that might be
 confused with a particular CD format called CD-I.
+
+Later on, the ISO-9660 filesystem handling component from
+@kbd{vcdimager} was extracted, expanded and made a separate library.
 
 @node Previous Work
 @chapter The problem and previous work
@@ -1367,22 +1370,30 @@ interface, and has taken steps to make using ASPI more inaccessible
 @node Solaris
 @section Solaris
 
-There are two CD drive access methods on Solaris:
-ATAPI and SCSI. SCSI is preferred when possible.
+There is currently only one CD drive access methods in Solaris: SCSI
+(called ``USCI'' or ``user SCSI'' in Solaris). There used to be an
+ATAPI method and it could be resurrected if needed. USCSI was
+preferred since on newer releases of Solaris and Solaris environments
+one would needs to have root access for ATAPI.
 
 @node FreeBSD
 @section FreeBSD
 
-There are two CD drive access methods on Solaris:
-ioctl and CAM (common access method). CAM is preferred when possible;
-it is however sort of a hybrid and includes some ioctl code. 
+There are two CD drive access methods on Solaris: ioctl and CAM
+(common access method). CAM is preferred when possible, especially on
+newer releases. However CAM is right now sort of a hybrid and includes
+some ioctl code.
 
 More work on this driver is needed. Volunteers? 
 
 @node OS X
 @section OS X
 
-More work on this driver is needed. Volunteers? 
+A problem with OS/X is that if the OS thinks it understands the drive
+it gains exclusive access to it and thus prevents a library like this
+to get non-exclusive access.
+
+More work on this driver is needed. Volunteers?
 
 @node ISO-9660 Character Sets
 @appendix ISO-9660 Character Sets
