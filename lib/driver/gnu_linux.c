@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.9 2005/03/15 04:16:17 rocky Exp $
+    $Id: gnu_linux.c,v 1.10 2005/03/15 12:11:53 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.9 2005/03/15 04:16:17 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.10 2005/03/15 12:11:53 rocky Exp $";
 
 #include <string.h>
 
@@ -568,43 +568,43 @@ eject_media_linux (void *p_user_data) {
   _img_private_t *p_env = p_user_data;
   driver_return_code_t ret=DRIVER_OP_SUCCESS;
   int status;
-  int fd;
 
-  if ((fd = open (p_env->gen.source_name, O_RDONLY|O_NONBLOCK)) > -1) {
-    if((status = ioctl(fd, CDROM_DRIVE_STATUS, CDSL_CURRENT)) > 0) {
-      switch(status) {
-      case CDS_TRAY_OPEN:
-	if((ret = ioctl(fd, CDROMCLOSETRAY)) != 0) {
-	  cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
-	  ret = DRIVER_OP_ERROR;
-	}
-	break;
-      case CDS_DISC_OK:
-	if((ret = ioctl(fd, CDROMEJECT)) != 0) {
-	  int eject_error = errno;
-	  /* Try ejecting the MMC way... */
-	  ret = mmc_eject_media(p_env->gen.cdio);
-	  if (0 != ret) {
-	    cdio_warn("ioctl CDROMEJECT failed: %s\n", 
-		      strerror(eject_error));
-	    ret = DRIVER_OP_ERROR;
-	  }
-	}
-	/* force kernel to reread partition table when new disc inserted */
-	ret = ioctl(p_env->gen.fd, BLKRRPART);
-	break;
-      default:
-	cdio_warn ("Unknown CD-ROM (%d)\n", status);
-	ret = DRIVER_OP_ERROR;
+  if ( p_env->gen.fd <= -1 ) {
+    p_env->gen.fd = open (p_env->gen.source_name, O_RDONLY|O_NONBLOCK);
+  }
+  
+  if ( p_env->gen.fd <= -1 ) return DRIVER_OP_ERROR;
+
+  if ((status = ioctl(p_env->gen.fd, CDROM_DRIVE_STATUS, CDSL_CURRENT)) > 0) {
+    switch(status) {
+    case CDS_TRAY_OPEN:
+      if((ret = ioctl(p_env->gen.fd, CDROMCLOSETRAY)) != 0) {
+        cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
+        ret = DRIVER_OP_ERROR;
       }
-    } else {
-      cdio_warn ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
-      ret=DRIVER_OP_ERROR;
+      break;
+    case CDS_DISC_OK:
+      if((ret = ioctl(p_env->gen.fd, CDROMEJECT)) != 0) {
+        int eject_error = errno;
+        /* Try ejecting the MMC way... */
+        ret = mmc_eject_media(p_env->gen.cdio);
+        if (0 != ret) {
+          cdio_info("ioctl CDROMEJECT and MMC eject failed: %s", 
+                    strerror(eject_error));
+          ret = DRIVER_OP_ERROR;
+        }
+      }
+      /* force kernel to reread partition table when new disc inserted */
+      ret = ioctl(p_env->gen.fd, BLKRRPART);
+      break;
+    default:
+      cdio_warn ("Unknown CD-ROM (%d)\n", status);
+      ret = DRIVER_OP_ERROR;
     }
-    close(fd);
-  } else
-    ret = DRIVER_OP_ERROR;
-  close(p_env->gen.fd);
+  } else {
+    cdio_warn ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
+    ret=DRIVER_OP_ERROR;
+  }
   p_env->gen.fd = -1;
   return ret;
 }
@@ -1096,7 +1096,7 @@ run_mmc_cmd_linux( void *p_user_data,
     int i_rc = ioctl (p_env->gen.fd, CDROM_SEND_PACKET, &cgc);
     if (0 == i_rc) return DRIVER_OP_SUCCESS;
     if (-1 == i_rc) {
-      cdio_warn ("ioctl CDROM_SEND_PACKET failed: %s\n", strerror(errno));  
+      cdio_info ("ioctl CDROM_SEND_PACKET failed: %s", strerror(errno));  
       switch (errno) {
       case EPERM:
         return DRIVER_OP_NOT_PERMITTED;
