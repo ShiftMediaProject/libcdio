@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.6 2005/02/10 01:59:06 rocky Exp $
+    $Id: mmc.h,v 1.7 2005/02/10 11:23:08 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -388,8 +388,8 @@ const char *mmc_feature_profile2str( int i_feature_profile );
 uint8_t mmc_get_cmd_len(uint8_t scsi_cmd);
 
 /*!
-  Set the block size for subsequest read requests, via an MMC 
-  MODE_SENSE 6 command.
+  Get the block size used in read requests, via MMC.
+  @return the blocksize if > 0; error if <= 0
  */
 int mmc_get_blocksize ( CdIo_t *p_cdio );
 
@@ -517,10 +517,10 @@ int mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 		      scsi_mmc_direction_t e_direction, unsigned int i_buf, 
 		      /*in/out*/ void *p_buf );
 /*!
-  Set the block size for subsequest read requests, via an MMC 
-  MODE_SELECT 6 command.
+  Set the block size for subsequest read requests, via MMC.
  */
-int mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_bsize);
+driver_return_code_t mmc_set_blocksize ( const CdIo_t *p_cdio, 
+					 unsigned int i_bsize);
 
 /*!
   Set the drive speed. 

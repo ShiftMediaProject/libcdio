@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.21 2005/02/07 03:36:02 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.22 2005/02/10 11:23:08 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.21 2005/02/07 03:36:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.22 2005/02/10 11:23:08 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -497,6 +497,26 @@ get_arg_solaris (void *p_user_data, const char key[])
 }
 
 /*!
+  Get the block size used in read requests, via ioctl.
+  @return the blocksize if > 0; error if <= 0
+ */
+static int
+get_blocksize_solaris (void *p_user_data) {
+
+  _img_private_t *p_env = p_user_data;
+  int ret;
+  int i_blocksize;
+
+  if ( !p_env || p_env->gen.fd <=0 ) return DRIVER_OP_UNINIT;
+  if ((ret = ioctl(p_env->gen.fd, CDROMGBLKMODE, &i_blocksize)) != 0) {
+    cdio_warn ("CDROMGBLKMODE failed: %s\n", strerror(errno));
+    return DRIVER_OP_ERROR;
+  } else {
+    return i_blocksize;
+  }
+}
+
+/*!
   Return a string containing the default CD device if none is specified.
  */
 char *
@@ -692,7 +712,7 @@ get_track_format_solaris(void *p_user_data, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *p_user_data, track_t i_track) 
+get_track_green_solaris(void *p_user_data, track_t i_track) 
 {
   _img_private_t *p_env = p_user_data;
   
@@ -722,7 +742,7 @@ _cdio_get_track_green(void *p_user_data, track_t i_track)
   False is returned if there is no entry.
 */
 static bool
-_cdio_get_track_msf(void *p_user_data, track_t i_track, msf_t *msf)
+get_track_msf_solaris(void *p_user_data, track_t i_track, msf_t *msf)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -743,6 +763,26 @@ _cdio_get_track_msf(void *p_user_data, track_t i_track, msf_t *msf)
     msf->s = cdio_to_bcd8(msf0->cdte_addr.msf.second);
     msf->f = cdio_to_bcd8(msf0->cdte_addr.msf.frame);
     return true;
+  }
+}
+
+/*!
+  Get the block size used in read requests, via ioctl.
+  @return the blocksize if > 0; error if <= 0
+ */
+static driver_return_code_t
+set_blocksize_solaris (void *p_user_data) {
+
+  _img_private_t *p_env = p_user_data;
+  int ret;
+  int i_blocksize;
+
+  if ( !p_env || p_env->gen.fd <=0 ) return DRIVER_OP_UNINIT;
+  if ((ret = ioctl(p_env->gen.fd,  CDROMSBLKMODE, i_blocksize)) != 0) {
+    cdio_warn ("CDROMSBLKMODE failed: %s\n", strerror(errno));
+    return DRIVER_OP_ERROR;
+  } else {
+    return DRIVER_OP_SUCCESS;
   }
 }
 
@@ -846,7 +886,11 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.eject_media            = eject_media_solaris;
   _funcs.free                   = cdio_generic_free;
   _funcs.get_arg                = get_arg_solaris;
+#if USE_MMC
   _funcs.get_blocksize          = get_blocksize_mmc,
+#else
+  _funcs.get_blocksize          = get_blocksize_solaris,
+#endif
   _funcs.get_cdtext             = get_cdtext_generic;
   _funcs.get_default_device     = cdio_get_default_device_solaris;
   _funcs.get_devices            = cdio_get_devices_solaris;
@@ -861,10 +905,10 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.get_track_channels     = get_track_channels_generic,
   _funcs.get_track_copy_permit  = get_track_copy_permit_generic,
   _funcs.get_track_format       = get_track_format_solaris;
-  _funcs.get_track_green        = _cdio_get_track_green;
+  _funcs.get_track_green        = get_track_green_solaris;
   _funcs.get_track_lba          = NULL; /* This could be done if need be. */
   _funcs.get_track_preemphasis  = get_track_preemphasis_generic,
-  _funcs.get_track_msf          = _cdio_get_track_msf;
+  _funcs.get_track_msf          = get_track_msf_solaris;
   _funcs.lseek                  = cdio_generic_lseek;
   _funcs.read                   = cdio_generic_read;
   _funcs.read_audio_sectors     = _read_audio_sectors_solaris;
@@ -875,7 +919,11 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.read_toc               = read_toc_solaris;
   _funcs.run_mmc_cmd            = run_mmc_cmd_solaris;
   _funcs.set_arg                = _set_arg_solaris;
+#if USE_MMC
   _funcs.set_blocksize          = set_blocksize_mmc;
+#else
+  _funcs.set_blocksize          = set_blocksize_solaris;
+#endif
   _funcs.set_speed              = set_speed_solaris;
 
   _data                         = calloc(1, sizeof (_img_private_t));

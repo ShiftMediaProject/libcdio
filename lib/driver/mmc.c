@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.8 2005/02/10 03:23:10 rocky Exp $
+    $Id: mmc.c,v 1.9 2005/02/10 11:23:08 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -54,8 +54,11 @@
   corresponding publically-accessible routine.
 *************************************************************************/
 
-/* Set read blocksize (via MMC) */
-driver_return_code_t
+/*!
+  Get the block size for subsequest read requests, via MMC.
+  @return the blocksize if > 0; error if <= 0
+ */
+int
 get_blocksize_mmc (void *p_user_data)
 {
   generic_img_private_t *p_env = p_user_data;
