@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.23 2004/06/06 11:51:40 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.24 2004/07/28 22:02:55 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -188,7 +188,10 @@ printer commands. But in contrast to PostScript, there is no uniform
 PostScript command language that programmers can write to. Instead
 each OS has its own ``standard API.''  For example Adaptec's ASPI or
 the Microsoft's DeviceIoControl on Microsoft Windows, or IOKit for
-Apple's OS/X.
+Apple's OS/X, or FreeBSD's CAM. Even in situtations where the
+underlying function impliment MMC, the way you write code to invoke
+the commands is different across OS's. In @value{libcdio} we provide a
+common API to issue SCSI-MMC commands.
 
 @node Purpose
 @chapter What is in this package (and what's not)
@@ -204,6 +207,15 @@ Some support for disk-image types like cdrdao's TOC, CDRWIN's BIN/CUE
 and Ahead Nero's NRG format is available, so applications that use this
 library also have the ability to read disc images as though they were
 CDs.
+
+Finally, we provide a way to issue SCSI ``MultiMedia Commands'' (MMC).
+MMC is supported by many hardware CD-ROM manufacturers; and in some
+cases where a CD-ROM doesn't understand MMC directly, some Operating
+Systems (such as GNU/Linux, Solaris, or FreeBSD or Microsoft Windows
+ASPI to name a few) provide the MMC emulation.@footnote{This
+concept of software emulation of a common hardware command language is
+common for printers such as using ghostscript to private postscript
+emulation for a non-postscript printer.}
 
 Immediate of the library in this package are the Video CD authoring
 and ripping tools, VCDImager (@url{http://vcdimager.org}), a
@@ -508,11 +520,23 @@ perhaps this has something to do with ``multisession'' CDs.
 @node How to use
 @chapter How to use
 
+The @value{libcdio} package comes with a number of small example
+programs in @file{example} which demonstrate different aspects of the
+library and show how to use the library. The source code to all of the
+examples here are contained on the package. 
+
+Other sources for examples would be the larger utility programs
+@command{cd-drive}, @command{cd-info}, @command{cd-read},
+@command{iso-info}, and @command{iso-read} which are all in the
+@file{src} directory of the @value{libcdio} package.  See also
+@xref{Utility Programs}.
+
 @menu
 * Example 1::        list out tracks and LSNs
 * Example 2::        list drivers available and default CD device 
 * Example 3::        list out tracks and LSNs
 * Example 4::        use libiso9660 to extract a file from an ISO-9660 image
+* Example 5::        list CD-TEXT and CD disc mode info
 @end menu
 
 @node Example 1
@@ -936,11 +960,83 @@ main(int argc, const char *argv[])
 @}
 @end smallexample 
 
+@node Example 5
+@section Example 5: list CD-TEXT and disc mode info
+
+Next a program to show using @command{libcdio} to list CD-TEXT data.
+This can be in the distribution as @file{example/sample8.c}.
+
+@smallexample
+/* Simple program to list CD-TEXT info of a Compact Disc using libcdio. */
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+#include <stdio.h>
+#include <sys/types.h>
+#include <cdio/cdio.h>
+#include <cdio/cdtext.h>
+
+
+static void 
+print_cdtext_track_info(CdIo *cdio, track_t i_track, const char *message) @{
+  const cdtext_t *cdtext    = cdio_get_cdtext(cdio, 0);
+  if (NULL != cdtext) @{
+    cdtext_field_t i;
+    
+    printf("%s\n", message);
+    
+    for (i=0; i < MAX_CDTEXT_FIELDS; i++) @{
+      if (cdtext->field[i]) @{
+	printf("\t%s: %s\n", cdtext_field2str(i), cdtext->field[i]);
+      @}
+    @}
+  @}
+  
+@}
+    
+static void 
+print_disc_info(CdIo *cdio, track_t i_tracks, track_t i_first_track) @{
+  track_t i_last_track = i_first_track+i_tracks;
+  discmode_t cd_discmode = cdio_get_discmode(cdio);
+
+  printf("%s\n", discmode2str[cd_discmode]);
+  
+  print_cdtext_track_info(cdio, 0, "\nCD-TEXT for Disc:");
+  for ( ; i_first_track < i_last_track; i_first_track++ ) @{
+    char msg[50];
+    sprintf(msg, "CD-TEXT for Track %d:", i_first_track);
+    print_cdtext_track_info(cdio, i_first_track, msg);
+  @}
+@}
+
+int
+main(int argc, const char *argv[])
+@{
+  track_t i_first_track;
+  track_t i_tracks;
+  CdIo *cdio;
+  cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  i_first_track = cdio_get_first_track_num(cdio);
+  i_tracks      = cdio_get_num_tracks(cdio);
+
+  if (NULL == cdio) @{
+    printf("Couldn't find CD\n");
+    return 1;
+  @} else @{
+    print_disc_info(cdio, i_tracks, i_first_track);
+  @}
+
+  cdio_destroy(cdio);
+  
+  return 0;
+@}
+@end smallexample 
+
 @node Utility Programs
 @chapter Diagnostic programs (@samp{cd-info}, @samp{cd-read}, @samp{iso-info}, @samp{iso-read})
 
 @menu
-* cd-drive::        list out CD-ROM drive information
+* cd-drive::       list out CD-ROM drive information
 * cd-info::        list out CD or CD-image information
 * cd-read::        read blocks of a CD or CD image
 * iso-info::       list out ISO-9600 image information
