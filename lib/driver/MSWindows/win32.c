@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.8 2005/01/21 02:59:32 rocky Exp $
+    $Id: win32.c,v 1.9 2005/01/21 15:30:11 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.8 2005/01/21 02:59:32 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.9 2005/01/21 15:30:11 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -737,7 +737,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.get_default_device    = cdio_get_default_device_win32;
   _funcs.get_devices           = cdio_get_devices_win32;
   _funcs.get_discmode          = get_discmode_win32;
-  _funcs.get_drive_cap         = scsi_mmc_get_drive_cap_generic;
+  _funcs.get_drive_cap         = get_drive_cap_mmc;
   _funcs.get_first_track_num   = get_first_track_num_generic;
   _funcs.get_hwinfo            = NULL;
   _funcs.get_mcn               = _cdio_get_mcn;
