@@ -19,7 +19,7 @@ define(RELEASE_NUM, 69)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.78 2004/05/08 10:50:51 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.79 2004/05/09 17:03:27 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -106,8 +106,8 @@ AM_PATH_LIBPOPT(,
 
 dnl headers
 
-AC_STDC_HEADERS
-AC_CHECK_HEADERS(stdint.h  glob.h inttypes.h stdbool.h)
+AC_HEADER_STDC
+AC_CHECK_HEADERS(glob.h stdbool.h)
 
 dnl compiler
 AC_C_BIGENDIAN
@@ -218,7 +218,7 @@ dnl Checks for header files.
 AC_STDC_HEADERS
      
 AC_HAVE_HEADERS( errno.h fcntl.h \
-		 stdbool.h  stdlib.h stdint.h stdio.h string.h \
+		 stdbool.h  stdlib.h stdio.h  \
 		 strings.h linux/version.h sys/cdio.h sys/stat.h \
 		 sys/types.h )
 
