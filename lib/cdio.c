@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.69 2004/08/27 04:17:08 rocky Exp $
+    $Id: cdio.c,v 1.70 2004/08/27 11:23:40 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.69 2004/08/27 04:17:08 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.70 2004/08/27 11:23:40 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -71,12 +71,27 @@ CdIo_driver_t CdIo_driver[CDIO_MAX_DRIVER] = { {0} };
 #define CDIO_DRIVER_UNINIT -1
 int CdIo_last_driver = CDIO_DRIVER_UNINIT;
 
+#ifdef HAVE_BSDI_CDROM
+const driver_id_t cdio_os_driver = DRIVER_BSDI;
+#elif  HAVE_FREEBSD_CDROM
+const driver_id_t cdio_os_driver = DRIVER_FREEBSD;
+#elif  HAVE_LINUX_CDROM
+const driver_id_t cdio_os_driver = DRIVER_LINUX;
+#elif  HAVE_DARWIN_CDROM
+const driver_id_t cdio_os_driver = DRIVER_OSX;
+#elif  HAVE_DARWIN_SOLARIS
+const driver_id_t cdio_os_driver = DRIVER_SOLARIS;
+#elif  HAVE_DARWIN_WIN32
+const driver_id_t cdio_os_driver = DRIVER_WIN32;
+#else 
+const driver_id_t cdio_os_driver = DRIVER_UNKNOWN;
+#endif
+
 static bool 
 cdio_have_false(void)
 {
   return false;
 }
-
 
 /* The below array gives all drivers that can possibly appear.
    on a particular host. */

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.62 2004/08/27 04:17:08 rocky Exp $
+    $Id: cdio.h,v 1.63 2004/08/27 11:23:40 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -104,6 +104,14 @@ extern "C" {
     DRIVER_NRG,     /**< Nero NRG format CD image. */
     DRIVER_DEVICE   /**< Is really a set of the above; should come last */
   } driver_id_t;
+
+  /** There will generally be only one hardware for a given
+     build/platform from the list above. You can use the variable
+     below to determine which you've got. If the build doesn't make an
+     hardware driver, then the value will be DRIVER_UNKNOWN.
+  */
+  extern const driver_id_t cdio_os_driver;
+  
 
 /** Make sure what's listed for CDIO_MIN_DRIVER is the last
     enumeration in driver_id_t. Since we have a bogus (but useful) 0th
