@@ -1,5 +1,5 @@
 /*
-    $Id: xa.h,v 1.1 2003/08/31 07:39:45 rocky Exp $
+    $Id: xa.h,v 1.2 2003/08/31 08:32:40 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -43,6 +43,10 @@
 #define XA_PERM_ALL_EXEC       (XA_ATTR_U_EXEC | XA_ATTR_G_EXEC | XA_ATTR_O_EXEC)
 #define XA_PERM_ALL_ALL        (XA_PERM_ALL_READ | XA_PERM_ALL_EXEC)
 
+#define XA_FORM1_DIR    (XA_ATTR_DIRECTORY | XA_ATTR_MODE2FORM1 | XA_PERM_ALL_ALL)
+#define XA_FORM1_FILE   (XA_ATTR_MODE2FORM1 | XA_PERM_ALL_ALL)
+#define XA_FORM2_FILE   (XA_ATTR_MODE2FORM2 | XA_PERM_ALL_ALL)
+
 typedef struct iso9660_xa  iso9660_xa_t;
 
 struct iso9660_xa /* big endian!! */
@@ -54,4 +58,9 @@ struct iso9660_xa /* big endian!! */
   uint8_t  filenum;       /* file number, see also XA subheader */
   uint8_t  reserved[5];   /* zero */
 } GNUC_PACKED;
+
+
+iso9660_xa_t *
+iso9660_xa_init (iso9660_xa_t *_xa, uint16_t uid, uint16_t gid, uint16_t attr, 
+		 uint8_t filenum);
 

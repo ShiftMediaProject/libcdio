@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.1 2003/08/31 06:59:23 rocky Exp $
+    $Id: iso9660_fs.c,v 1.2 2003/08/31 08:32:40 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -27,11 +27,14 @@
 
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
+#include <cdio/util.h>
 
 /* Private headers */
-#include "iso9660_fs.h"
+#include "cdio_assert.h"
+#include "bytesex.h"
+#include "ds.h"
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.1 2003/08/31 06:59:23 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.2 2003/08/31 08:32:40 rocky Exp $";
 
 #define BUF_COUNT 16
 #define BUF_SIZE 80

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.25 2003/08/31 06:59:23 rocky Exp $
+    $Id: cd-info.c,v 1.26 2003/08/31 08:32:40 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -55,8 +55,9 @@
 #include <cdio/cd_types.h>
 #include <cdio/iso9660.h>
 
+#include "cdio_assert.h"
+#include "bytesex.h"
 #include "ds.h"
-#include "xa.h"
 #include "iso9660_private.h"
 
 #include <fcntl.h>

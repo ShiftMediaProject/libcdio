@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.9 2003/08/31 07:39:45 rocky Exp $
+    $Id: iso9660.h,v 1.10 2003/08/31 08:32:40 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -23,7 +23,6 @@
 #define __CDIO_ISO9660_H__
 
 /* Will eventually need/use glib.h */
-#include <cdio/types.h>
 
 #include <cdio/cdio.h>
 #include <cdio/xa.h>
@@ -256,6 +255,11 @@ iso9660_pathtable_m_add_entry (void *pt, const char name[], uint32_t extent,
 const char *
 iso9660_get_xa_attr_str (uint16_t xa_attr);
   
+iso9660_xa_t *
+iso9660_xa_init (iso9660_xa_t *_xa, uint16_t uid, uint16_t gid, uint16_t attr, 
+                 uint8_t filenum);
+
+
 #endif /* __CDIO_ISO9660_H__ */
 
 
