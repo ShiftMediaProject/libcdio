@@ -1,5 +1,5 @@
 /*
-    $Id: bsdi.c,v 1.2 2005/03/05 22:46:33 rocky Exp $
+    $Id: bsdi.c,v 1.3 2005/03/17 08:54:10 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: bsdi.c,v 1.2 2005/03/05 22:46:33 rocky Exp $";
+static const char _rcsid[] = "$Id: bsdi.c,v 1.3 2005/03/17 08:54:10 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -223,7 +223,6 @@ _cdio_init (_img_private_t *p_env)
       return false;
     }
 
-  p_env->p_cdinfo     = cdopen(p_env->gen.source_name);
   p_env->gen.init     = true;
   p_env->gen.toc_init = false;
   return true;
@@ -254,7 +253,12 @@ static driver_return_code_t
 audio_pause_bsdi (void *p_user_data)
 {
 
-  const _img_private_t *p_env = p_user_data;
+  _img_private_t *p_env = p_user_data;
+  if (!p_env->p_cdinfo) {
+    p_env->p_cdinfo = cdopen(p_env->gen.source_name);
+    if (!p_env->p_cdinfo) return DRIVER_OP_ERROR;
+  }
+  
   return cdpause(p_env->p_cdinfo, 0);
 }
 
@@ -267,9 +271,14 @@ static driver_return_code_t
 audio_play_msf_bsdi (void *p_user_data, msf_t *p_start_msf, msf_t *p_end_msf)
 {
 
-  const _img_private_t *p_env = p_user_data;
+  _img_private_t *p_env = p_user_data;
   lsn_t i_start_lsn = cdio_msf_to_lsn(p_start_msf);
   lsn_t i_end_lsn   = cdio_msf_to_lsn(p_end_msf);
+
+  if (!p_env->p_cdinfo) {
+    p_env->p_cdinfo = cdopen(p_env->gen.source_name);
+    if (!p_env->p_cdinfo) return DRIVER_OP_ERROR;
+  }
   return cdplay(p_env->p_cdinfo, i_start_lsn, i_end_lsn);
 }
 
@@ -283,11 +292,16 @@ static driver_return_code_t
 audio_play_track_index_bsdi (void *p_user_data, 
                               cdio_track_index_t *p_track_index)
 {
-  const _img_private_t *p_env = p_user_data;
+  _img_private_t *p_env = p_user_data;
   msf_t start_msf;
   msf_t end_msf;
   lsn_t i_start_lsn = cdio_msf_to_lsn(&start_msf);
   lsn_t i_end_lsn   = cdio_msf_to_lsn(&end_msf);
+
+  if (!p_env->p_cdinfo) {
+    p_env->p_cdinfo = cdopen(p_env->gen.source_name);
+    if (!p_env->p_cdinfo) return DRIVER_OP_ERROR;
+  }
 
   get_track_msf_bsdi(p_user_data, p_track_index->i_start_track, &start_msf);
   get_track_msf_bsdi(p_user_data, p_track_index->i_end_track, &end_msf);
@@ -305,8 +319,14 @@ static driver_return_code_t
 audio_read_subchannel_bsdi (void *p_user_data, cdio_subchannel_t *p_subchannel)
 {
   int   i_rc;
-  const _img_private_t *p_env = p_user_data;
+  _img_private_t *p_env = p_user_data;
   struct cdstatus cdstat;
+
+  if (!p_env->p_cdinfo) {
+    p_env->p_cdinfo = cdopen(p_env->gen.source_name);
+    if (!p_env->p_cdinfo) return DRIVER_OP_ERROR;
+  }
+
   i_rc = cdstatus(p_env->p_cdinfo, &cdstat);
   if (0 == i_rc) {
     p_subchannel->control      = cdstat.control;
@@ -345,7 +365,13 @@ static driver_return_code_t
 audio_resume_bsdi (void *p_user_data)
 {
 
-  const _img_private_t *p_env = p_user_data;
+  _img_private_t *p_env = p_user_data;
+
+  if (!p_env->p_cdinfo) {
+    p_env->p_cdinfo = cdopen(p_env->gen.source_name);
+    if (!p_env->p_cdinfo) return DRIVER_OP_ERROR;
+  }
+
   return cdpause(p_env->p_cdinfo, 1);
 }
 
@@ -361,10 +387,33 @@ static driver_return_code_t
 audio_set_volume_bsdi (void *p_user_data, 
                        cdio_audio_volume_t *p_volume)
 {
+  _img_private_t *p_env = p_user_data;
 
-  const _img_private_t *p_env = p_user_data;
+  if (!p_env->p_cdinfo) {
+    p_env->p_cdinfo = cdopen(p_env->gen.source_name);
+    if (!p_env->p_cdinfo) return DRIVER_OP_ERROR;
+  }
+
   /* Convert volume from 0..255 into 0..100. */
   return cdvolume(p_env->p_cdinfo, (p_volume->level[0]*100+128) / 256);
+}
+
+/*!
+  Stop playing an audio CD.
+  
+  @param p_user_data the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_stop_bsdi (void *p_user_data)
+{
+  _img_private_t *p_env = p_user_data;
+
+  if (!p_env->p_cdinfo) {
+    p_env->p_cdinfo = cdopen(p_env->gen.source_name);
+    if (!p_env->p_cdinfo) return DRIVER_OP_ERROR;
+  }
+  return cdstop(p_env->p_cdinfo);
 }
 
 /* Read audio sectors
@@ -662,7 +711,7 @@ read_toc_bsdi (void *p_user_data)
   also free obj.
  */
 static driver_return_code_t
-_eject_media_bsdi (void *p_user_data) {
+eject_media_bsdi (void *p_user_data) {
 
   _img_private_t *p_env = p_user_data;
   int ret=DRIVER_OP_ERROR;
@@ -694,6 +743,19 @@ _eject_media_bsdi (void *p_user_data) {
   }
   cdclose(p_env->p_cdinfo);
   return ret;
+}
+
+/*!
+  Close tray on CD-ROM.
+  
+  @param p_user_data the CD object to be acted upon.
+  
+*/
+static driver_return_code_t 
+close_tray_bsdi (void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+  return cdload(p_env->p_cdinfo);
 }
 
 /*!
@@ -919,7 +981,9 @@ cdio_open_bsdi (const char *psz_orig_source)
 #endif
     .audio_resume          = audio_resume_bsdi,
     .audio_set_volume      = audio_set_volume_bsdi,
-    .eject_media           = _eject_media_bsdi,
+    .audio_stop            = audio_stop_bsdi,
+    .close_tray            = close_tray_bsdi,
+    .eject_media           = eject_media_bsdi,
     .free                  = cdio_generic_free,
     .get_arg               = _get_arg_bsdi,
     .get_cdtext            = get_cdtext_generic,

@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.17 2005/03/17 08:19:19 rocky Exp $
+    $Id: cdda-player.c,v 1.18 2005/03/17 08:54:11 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -636,8 +636,8 @@ display_status(bool b_status_only)
        (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
 	sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY)  &&
 	b_cd ) {
-    i_last_display_track = sub.track;
     const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track];
+    i_last_display_track = sub.track;
     if (i_first_audio_track != sub.track && 
 	strlen(cd_info[sub.track-1].title)) {
       const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track-1];
