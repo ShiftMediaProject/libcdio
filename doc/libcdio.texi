@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.27 2004/10/10 00:21:08 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.28 2004/11/21 09:59:44 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -83,7 +83,7 @@ Copyright (C) 2003, 2004 Herbert Valerio Riedel and Rocky Bernstein
 * Previous Work::     The problem and previous work
 * Purpose::           What is in this package (and what's not)
 * CD Formats::        A tour through the CD-specification spectrum
-* CD Terms::          Limitations and terminology used in CD's and libcdio
+* CD Units::          The units that make up a CD
 * How to use::        Okay enough babble, lemme at the library!
 * Utility Programs::  Diagnostic programs that come with this library
 * OS Considerations:: Operating System Considerations and Drivers
@@ -250,7 +250,7 @@ players xine (@url{http://xinehq.de}) and videolan's vlc
 Also included in the libcdio package is a utility program
 @command{cd-info} which displays CD information: number of tracks,
 CD-format and if possible basic information about the format.  If
-libcddb (@url{http://libcdddb.sourceforge.net}) is available, the
+libcddb (@url{http://libcddb.sourceforge.net}) is available, the
 @command{cd-info} program will display CDDB matches on CD-DA
 discs. And if a new enough version of libvcdinfo is available (from
 the vcdimager project), then @command{cd-info} shows basic VCD
@@ -271,7 +271,43 @@ performs low-level block reading of a CD or CD image,
 
 @item @code{iso-info} 
 
-displays ISO-9660 information from an ISO-9660 image
+displays ISO-9660 information from an ISO-9660 image. Below is some
+sample output
+
+@smallexample
+iso-info version 0.71
+Copyright (c) 2003, 2004 R. Bernstein
+This is free software; see the source for copying conditions.
+There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+__________________________________
+ISO 9660 image: ../test/joliet.iso
+Application: K3B THE CD KREATOR VERSION 0.11.12 (C) 2003 SEBASTIAN TRUEG AND THE K3B TEAM
+Preparer   : K3b - Version 0.11.12
+Publisher  : Rocky Bernstein
+System     : LINUX           
+Volume     : K3b data project
+Volume Set : K3b data project
+__________________________________
+ISO-9660 Information
+/:
+ Oct 22 2004 19:44  .
+ Oct 22 2004 19:44  ..
+ Oct 22 2004 19:44  libcdio
+
+/libcdio/:
+ Oct 22 2004 19:44  .
+ Oct 22 2004 19:44  ..
+ Mar 12 2004 02:18  COPYING
+ Jun 26 2004 07:01  README
+ Aug 12 2004 06:22  README.libcdio
+ Oct 22 2004 19:44  test
+
+/libcdio/test/:
+ Oct 22 2004 19:44  .
+ Oct 22 2004 19:44  ..
+ Jul 25 2004 06:52  isofs-m1.cue
+@end smallexample
 
 @item @code{iso-read} 
 
@@ -309,35 +345,48 @@ to by the color of the cover on the specification.
 * Red Book::        Red Book (CD-DA)
 * Yellow Book::     Yellow Book (CD-ROM Digital Data)
 * Green Book::      Green Book (CD-i)
-* White Book::      White Book (Video CD)
+* White Book::      White Book (DV, Video CD)
 @end menu
 
 @node Red Book
-@section Red Book
+@section Red Book (CD-DA)
 The first type of CD that was produced was the Compact Disc Digital
 Audio (CD-DA) or just plain ``audio CD''. The specification, ICE 908,
 is commonly called the ``Red Book''. Music CD's are recorded in this
 format which basically allows for around 74 minutes of audio per disc
 and for that information to be split up into tracks. Tracks are broken
-up into "sectors" and each sector contains 2,352 bytes. To play one
-44.1 kHz CD-DA sampled audio second, 75 sectors are used.
+up into "sectors" and each sector contains up to 2,352 bytes. To play
+one 44.1 kHz CD-DA sampled audio second, 75 sectors are used. 
+
+The minute/second/frame numbering of sectors or MSF format is based on
+the fact that 75 sectors are used in a second of playing of
+sound. (And for almost every other CD format and application the MSF
+format doesn't make that much sense).
 
 In @value{libcdio} when you you want to read an audio sector, you call 
 @code{cdio_read_audio_sector()} or @code{cdio_read_audio_sectors()}.
 
+@cindex subchannel
+In addition the the audio data ``channel'' a provision for other
+information or @term{subchannel} information) can be stored in a
+sector. Other subchannels include a Media Catalog Number (also
+abbreviated as MCN and sometimes a UPC), or album meta data (also
+called CD-Text). Karioke graphics can also be stored in a format
+called @term{CD+G}.
+
 @node Yellow Book
-@section Yellow Book
+@section Yellow Book (CD-ROM Digital Data)
 The CD-ROM specification or the ``Yellow Book'' followed a few years
 later (Standards ISO/IEC 10149), and describes the extension of CD's
 to store computer data, i.e. CD-ROM (Compact Disk Read Only Memory).
 
-The specification in the Yellow Book defines two modes: Mode1 and
-Mode2.
+The specification in the Yellow Book defines two modes: Mode 1 and
+Mode 2.
 
 @menu
 * ISO 9660::
-* Mode1::           Mode 1 Format
-* Mode2::           Mode 2 Format
+* Mode 1::           Mode 1 Format
+* Mode 2::           Mode 2 Format
 @end menu
 
 @node ISO 9660
@@ -348,6 +397,7 @@ Mode2.
 * ISO 9660 Level 1::
 * ISO 9660 Level 2::
 * ISO 9660 Level 3::
+* Joliet Extensions::
 @end menu
 
 The Yellow Book doesn't specify how data is to be stored on a CD-ROM.
@@ -392,13 +442,33 @@ Another extension is the Rock Ridge Interchange Protocol (RRIP), which
 enables the recording of sufficient information to support POSIX File
 System semantics.
 
-@node Mode1
-@subsection Mode1
+@node Joliet Extensions
+@subsubsection Joliet Extensions
+
+Joliet extensions were an upward-compatible extension to the ISO 9660
+specification that removes the limitation initially put in to deal
+with the limited filename convensions found in Microsoft DOS OS. In
+particular, the Joliet specification allows for long filenames and
+allows for UCS-BE (Big-endian Unicode) encoding of filenames which
+include mixed case letter, accented characters spaces and various
+symbols. 
+
+The way all of this is encoded is by adding a second directory and
+filesystem structure in addition to or in parallels to original ISO
+9600 filesystem. The root node of the ISO 9600 filesytem is found via
+the @term{Primary Volume Descriptor} or @term{PVD}. The root of the
+Joliet-encode filesystem is found in a Supplementary Volume
+Descriptor or @term{SVD} defined in the ISO 9660 specifiction. The
+SVD structure is almost identical to a PVD with a couple of unused
+fields getting used and with the filename encoding changed to UCS-BE.
+
+@node Mode 1
+@subsection Mode 1 (2048 data bytes per sector)
 Mode 1 is the data storage mode used by to store computer data. There
 are 3 layers of error correction. A Compact Disc using only this format can
 hold at most 650 MB. The data is laid out in basically the same way as
 in and audio CD format, except that the 2,352 bytes of data in each
-block are broken down further. 2,048 of these bytes are for "real"
+block are broken down further. 2,048 of these bytes are for ``real''
 data. The other 304 bytes are used for an additional level of error
 detecting and correcting code. This is necessary because data CDs
 cannot tolerate the loss of a handful of bits now and then, the way
@@ -408,8 +478,8 @@ In @value{libcdio} when you you want to read a mode1
 sector you call the @code{cdio_read_mode1_sector()} or
 @code{cdio_read_mode1_sectors()}.
 
-@node Mode2
-@subsection Mode2
+@node Mode 2
+@subsection Mode 2 (2336 data bytes per sector)
 Mode 2 data CDs are the same as mode 1 CDs except that the error
 detecting and correcting codes are omitted. So still there are 2
 layers of error correction. A Compact Disc using only this mode can
@@ -427,7 +497,7 @@ sector you call the @code{cdio_read_mode2_sector()} or
 @code{cdio_read_mode2_sectors()}.
 
 @node Green Book
-@section Green Book
+@section Green Book (CD-i)
 
 This was a CD-ROM format developed by Philips for CD-i (an obsolete
 embedded CD-ROM application allowing limited user user interaction
@@ -443,7 +513,7 @@ CD-ROM which draws on this specification.
 
 
 @node White Book
-@section White Book
+@section White Book (DV, Video CD)
 The White Book was released by Sony, Philips, Matsushita, and JVC in
 1993, defines the Video CD specification. The White Book is also known
 as Digital Video (DV). 
@@ -460,10 +530,17 @@ In @value{libcdio} when you you want to read a mode2 format 2 audio
 sector you call the @code{cdio_read_mode2_sector()} or
 @code{cdio_read_mode2_sectors()} setting @code{b_form2} to @code{true}.
 
-@node CD Terms
-@chapter CD Terminology
+@node CD Units
+@chapter The units that make up a CD
 
+@menu
+* Tracks::   Tracks
+* Sectors::  Block addressing (MSF, LSN, LBA)
+@end menu
+
+@node Tracks
 @section tracks --- disc subdivisions
+@cindex tracks
 In this section we describe CD properties and terms that we make use
 of in @value{libcdio}.
 
@@ -477,6 +554,7 @@ space and not really necessarily an amount of time. However in the
 special case that the CD encodes an audio CD or CD-DA, the amount of
 time to play a gap of this size will take 2 seconds.
 
+@cindex lead out
 The beginning (or inner edge) of the CD is supposed to have a ``2
 second'' lead-in gap and there is supposed to be another ``2 second''
 @term{lead-out} gap at the end (or outer edge) of the CD.
@@ -494,7 +572,11 @@ used to indicate it. This is safe since this is higher than the
 largest legal track position. In @value{libcdio},
 @code{CDIO_CDROM_LEADOUT_TRACK} is defined to be this special value.
 
+@node Sectors
 @section block addressing (MSF, LSN, LBA)
+@cindex MSF
+@cindex LSN
+@cindex LBA
 A track is broken up into a number of 2352-byte @emph{blocks} which we
 sometimes call @emph{sectors}. Whereas tracks have to have a gap
 between them, a block or sector does not. (In @value{libcdio} the
