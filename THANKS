@@ -7,6 +7,9 @@ Heiner <h.eichmann at gmx.de>
 Ian MacIntosh 
   Sun-related things.
 
+Justin B. Ruggles <jruggle at earthlink.net>
+  SCSI MMC discmode determination via Read TOC.
+
 Justin F. Hallett <thesin at southofheaven.org>
   Fink packaging and matters OSX
 
