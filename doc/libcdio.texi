@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.33 2005/01/29 10:05:33 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.34 2005/01/29 15:43:28 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -87,7 +87,7 @@ Copyright (C) 2003, 2004, 2005 Rocky Bernstein and Herbert Valerio Riedel
 * CD Units::          The units that make up a CD
 * How to use::        Okay enough babble, lemme at the library!
 * Utility Programs::  Diagnostic programs that come with this library
-* CD-ROM Control and Drivers:: CD-ROM Access and Drivers
+* CD-ROM Access and Drivers::     CD-ROM Access and Drivers
 * Internal Program Organization:: Looking under the hood
 
 Appendices
@@ -642,7 +642,7 @@ size of the test data and just provide alternate meta-data files
 
 In contrast to the first two formats, the NRG format consists of a
 single file. This has the advantage of being a self-contained
-units. It is possible in the other two formats for the meta file to
+unit: in the other two formats it is possible for the meta file to
 refer to a file that can't be found. A disadvantage of the NRG format
 is that the meta data can't be easily viewed or modified say in a text
 file as it can be with the first two formats. In conjunction with this
@@ -1796,20 +1796,20 @@ image.
 
 @samp{iso-info} can be used to extract a file in an ISO-9660 image.
 
-@node CD-ROM Control and Drivers
+@node CD-ROM Access and Drivers
 @chapter CD-ROM Access and Drivers
 
 @menu
-* MMC::
-* GNU/Linux::
-* Microsoft::
-* Solaris::
-* FreeBSD::
-* OS X::
+* MMC::  ``SCSI'' Multimedia Commands (MMC)
+* GNU/Linux:: GNU/Linux ioctl
+* Microsoft:: Microsoft Windows ioctl and ASPI
+* Solaris:: Solaris ATAPI and SCSI
+* FreeBSD:: FreeBSD ioctl and CAM
+* OS X::  OSX (non-exclussive access)
 @end menu
 
 @node MMC
-@section MMC
+@section ``SCSI'' Multimedia Commands (MMC)
 
 In contrast to the rest of the sections in this chapter, MMC
 (Multimedia commands) is not a driver per se, although many of the
@@ -1828,8 +1828,10 @@ it act like a MMC drive. I believe that many OS SCSI ``pass-through''
 mechanisms do the same thing.
 
 The name ``SCSI MMC'' is no doubt do to the fact that these commands
-grew out of the SCSI command set and thus were bundled in
-them. Because of this, will prefer the name ``MMC'' over ``SCSI MMC.''
+grew out of the SCSI command set and thus were bundled in them. 
+
+For clarity and precision we will use the term ``MMC'' rather than
+``SCSI MMC''.
 
 One of the problems with MMC is that there are so many different
 ``standards''. In particular there are MMC
@@ -1873,12 +1875,16 @@ find a little bit of this for example via the routine
 @node GNU/Linux
 @section GNU/Linux
 
-There are two CD drive access methods on GNU/Linux: ioctl and SCSI
-MMC.  GNU/Linux has a rather nice and complete ioctl mechanism. On the
-other hand, the MMC mechanism is more universal. 
+The GNU/Linux uses a hybrid of methods. Somethings are done vai ioctl
+and some things via MMC. GNU/Linux has a rather nice and complete
+ioctl mechanism. On the other hand, the MMC mechanism is more
+universal.  There are other ``access modes'' listed which are not
+really access modes and should probably be redone/rethought.  They are
+just different ways to run the read command. But for completeness
+These are ``READ_CD'' and ``READ_10''.
 
 @node Microsoft
-@section Microsoft
+@section Microsoft Windows ioctl and ASPI
 
 There are two CD drive access methods on Microsoft Windows platforms:
 ioctl and ASPI. 
@@ -1896,16 +1902,16 @@ interface, and has taken steps to make using ASPI more inaccessible
 
 
 @node Solaris
-@section Solaris
+@section Solaris ATAPI and SCSI
 
 There is currently only one CD drive access methods in Solaris: SCSI
-(called ``USCI'' or ``user SCSI'' in Solaris). There used to be an
+(called ``USCSI'' or ``user SCSI'' in Solaris). There used to be an
 ATAPI method and it could be resurrected if needed. USCSI was
 preferred since on newer releases of Solaris and Solaris environments
 one would needs to have root access for ATAPI.
 
 @node FreeBSD
-@section FreeBSD
+@section FreeBSD ioctl and CAM
 
 There are two CD drive access methods on Solaris: ioctl and CAM
 (common access method). CAM is preferred when possible, especially on
@@ -1915,7 +1921,7 @@ some ioctl code.
 More work on this driver is needed. Volunteers? 
 
 @node OS X
-@section OS X
+@section OS X (non-exclussive access)
 
 A problem with OS/X is that if the OS thinks it understands the drive
 it gains exclusive access to it and thus prevents a library like this
@@ -1998,12 +2004,12 @@ Regression tests
 
 @end itemize
 
-@subsection libcdio
+@subsection @samp{libcdio}
 
 @value{libcdio} exports one opaque type @code{CdIo_t}. Internally this
-an enumeration for the driver, a structure containing function
-pointers and a generic ``environment'' pointer which is passed as a
-parameter on a function call. See
+a structure containing an enumeration for the driver, a structure
+containing function pointers and a generic ``environment'' pointer
+which is passed as a parameter on a function call. See
 @file{lib/driver/cdio_private.h}. The initialization routine for each
 driver sets up the function pointers and allocates memory for the
 environment. When a particular user-level cdio routine is called (e.g
@@ -2019,7 +2025,7 @@ Another set of routines that one is likely to find shared amongst
 drivers are the MMC commands. These are located in
 @file{lib/driver/scsi_mmc.c}. 
 
-There not only an attempt to share functions but we've tried to create
+There is not only an attempt to share functions but we've tried to create
 a generic CD structure @code{generic_img_private_t} of file
 @file{lib/driver/generic.h}. By putting information into a common
 structure, we increase the likelihood of being able to have a common
@@ -2030,7 +2036,7 @@ one CD-image format to another. Basically the first image format is
 ``parsed'' into the common internal format and then from this
 structure it is unparsed.
 
-@subsection libiso9660
+@subsection @samp{libiso9660}
 
 To be completed....
 
@@ -2082,16 +2088,17 @@ CD-ROM device names
 
 @end itemize
 
-A couple other name conventions. Generally if a routine name starts
-@code{cdio_}, e.g. @code{cdio_open}, then it is an externally
-visible routine in @code{libcdio}. If a name starts @code{iso9660_},
-e.g. @code{iso9660_isdchar} then it is an externally visible routine
-in @code{libiso9660}. If a name starts @code{scsi_mmc_},
-e.g. @code{scsi_mmc_get_discmode}, then it is an externally visible
-MMC routine. (We don't have a separate library for this yet.
+There are a some other naming conventions. Generally if a routine
+name starts @code{cdio_}, e.g. @code{cdio_open}, then it is an
+externally visible routine in @code{libcdio}. If a name starts
+@code{iso9660_}, e.g. @code{iso9660_isdchar} then it is an externally
+visible routine in @code{libiso9660}. If a name starts
+@code{scsi_mmc_}, e.g. @code{scsi_mmc_get_discmode}, then it is an
+externally visible MMC routine. (We don't have a separate library for
+this yet.
 
-Names in capital letters only that start @code{CDIO_} are externally
-visible @code{#defines}.
+Names using entirely capital letters and that start @code{CDIO_} are
+externally visible @code{#defines}.
 
 
 @node ISO-9660 Character Sets
