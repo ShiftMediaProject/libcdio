@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.40 2003/09/28 14:16:01 rocky Exp $
+    $Id: cd-info.c,v 1.41 2003/09/28 17:14:21 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -596,7 +596,7 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
   int need_lf;
   
   switch(CDIO_FSTYPE(fs)) {
-  case CDIO_FS_NO_DATA:
+  case CDIO_FS_AUDIO:
     if (num_audio > 0) {
       printf("Audio CD, CDDB disc ID is %08lx\n", 
 	     cddb_discid(cdio, num_tracks));
@@ -670,7 +670,7 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
     need_lf += printf("CD-Plus/Extra   ");
   if (fs & CDIO_FS_ANAL_BOOTABLE)
     need_lf += printf("bootable CD   ");
-  if (fs & CDIO_FS_ANAL_VIDEOCDI && num_audio == 0) {
+  if (fs & CDIO_FS_ANAL_VIDEOCD && num_audio == 0) {
     need_lf += printf("Video CD   ");
   }
   if (fs & CDIO_FS_ANAL_SVCD)
@@ -679,7 +679,7 @@ print_analysis(int ms_offset, cdio_analysis_t cdio_analysis,
     need_lf += printf("Chaoji Video CD (CVD)");
   if (need_lf) printf("\n");
 #ifdef HAVE_VCDINFO
-  if (fs & (CDIO_FS_ANAL_VIDEOCDI|CDIO_FS_ANAL_CVD|CDIO_FS_ANAL_SVCD)) 
+  if (fs & (CDIO_FS_ANAL_VIDEOCD|CDIO_FS_ANAL_CVD|CDIO_FS_ANAL_SVCD)) 
     if (!opts.no_vcd) {
       printf("\n");
       print_vcd_info();
@@ -729,7 +729,7 @@ main(int argc, const char *argv[])
 {
 
   CdIo          *cdio=NULL;
-  cdio_fs_anal_t fs=0;
+  cdio_fs_anal_t fs=CDIO_FS_AUDIO;
   int i;
   lsn_t          start_track_lsn;      /* lsn of first track */
   lsn_t          data_start =0;        /* start of data area */

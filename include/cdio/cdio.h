@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.23 2003/09/28 01:04:57 rocky Exp $
+    $Id: cdio.h,v 1.24 2003/09/28 17:14:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -116,10 +116,41 @@ extern "C" {
   void cdio_destroy (CdIo *obj);
 
   /*!
+    Free device list returned by cdio_get_devices or
+    cdio_get_devices_with_cap.
+  */
+  void cdio_free_device_list (char * device_list[]);
+
+  /*!
     Return the value associatied with key. NULL is returned if obj is NULL
     or "key" does not exist.
   */
   const char * cdio_get_arg (const CdIo *obj,  const char key[]);
+
+  /*!
+    Return an array of device names in search_devices that have at
+    least the capabilities listed by cap.  If search_devices is NULL,
+    then we'll search all possible CD drives.  
+    
+    If "any" is set false then every capability listed in the extended
+    portion of capabilities (i.e. not the basic filesystem) must be
+    satisified. If "any" is set true, then if any of the capabilities
+    matches, we call that a success.
+
+    To find a CD-drive of any type, use the mask CDIO_FS_MATCH_ALL.
+  
+    NULL is returned if we couldn't get a default device.
+  */
+  char ** cdio_get_devices_with_cap (char* search_devices[],
+				     cdio_fs_anal_t capabilities, bool any);
+  /*!
+    Return an array of device names. if CdIo is NULL (we haven't
+    initialized a specific device driver), then find a suitable device 
+    driver.
+    
+    NULL is returned if we couldn't return a list of devices.
+  */
+  char ** cdio_get_devices (const CdIo *obj);
 
   /*!
     Return a string containing the default CD device if none is specified.

@@ -1,4 +1,4 @@
-all: sample1 sample2 sample3 sample4 dbg_read
+all: sample1 sample2 sample3 sample4 sample5
 sample1: sample1.c 
 	gcc -g -Wall $< -l cdio -o $@
 sample2: sample2.c 
@@ -8,5 +8,8 @@ sample3: sample3.c
 	gcc -g -Wall $< -l cdio -o $@
 
 sample4: sample4.c 
+	gcc -g -Wall $< -l cdio -o $@
+
+sample5: sample5.c 
 	gcc -g -Wall $< -l cdio -o $@
 

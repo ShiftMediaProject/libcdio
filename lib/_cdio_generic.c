@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.10 2003/06/12 04:46:27 rocky Exp $
+    $Id: _cdio_generic.c,v 1.11 2003/09/28 17:14:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.10 2003/06/12 04:46:27 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.11 2003/09/28 17:14:20 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -167,3 +167,29 @@ cdio_is_device_quiet_generic(const char *source_name)
   }
   return (S_ISBLK(buf.st_mode) || S_ISCHR(buf.st_mode));
 }
+
+/*! 
+  Add/allocate a drive to the end of drives. 
+  Use cdio_free_device_list() to free this device_list.
+*/
+void 
+cdio_add_device_list(char **device_list[], const char *drive, int *num_drives)
+{
+  if (NULL != drive) {
+    unsigned int j;
+    for (j=0; j<*num_drives; j++) {
+      if (strcmp((*device_list)[j], drive) == 0) break;
+    }
+    if (j==*num_drives) {
+      (*num_drives)++;
+      *device_list = realloc(*device_list, (*num_drives) * sizeof(char *));
+      (*device_list)[*num_drives-1] = strdup(drive);
+    }
+  } else {
+    (*num_drives)++;
+    *device_list = realloc(*device_list, (*num_drives) * sizeof(char *));
+    (*device_list)[*num_drives-1] = NULL;
+  }
+}
+
+

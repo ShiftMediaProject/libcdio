@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.23 2003/09/27 23:29:29 rocky Exp $
+    $Id: _cdio_linux.c,v 1.24 2003/09/28 17:14:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.23 2003/09/27 23:29:29 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.24 2003/09/28 17:14:20 rocky Exp $";
 
 #include <string.h>
 
@@ -417,63 +417,6 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
   else
     memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
   
-  return 0;
-}
-
-/*!
-   Reads a single audio sector from CD device into data starting
-   from lsn. Returns 0 if no error. 
- */
-static int
-_cdio_read_audio_sector (void *env, void *data, lsn_t lsn)
-{
-  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
-  msf_t _msf;
-
-  _img_private_t *_obj = env;
-
-  cdio_lsn_to_msf (lsn, &_msf);
-  msf->cdmsf_min0 = from_bcd8(_msf.m);
-  msf->cdmsf_sec0 = from_bcd8(_msf.s);
-  msf->cdmsf_frame0 = from_bcd8(_msf.f);
-
- retry:
-  switch (_obj->access_mode)
-    {
-    case _AM_NONE:
-      cdio_error ("no way to read audio");
-      return 1;
-      break;
-
-    case _AM_IOCTL:
-      if (ioctl (_obj->gen.fd, CDROMREADRAW, &buf) == -1) {
-	perror ("ioctl()");
-	return 1;
-	/* exit (EXIT_FAILURE); */
-      }
-      break;
-
-    case _AM_READ_CD:
-    case _AM_READ_10:
-      if (_cdio_mmc_read_sectors (_obj->gen.fd, buf, lsn, 
-				  CDIO_MMC_READ_TYPE_ANY, 1)) {
-	perror ("ioctl()");
-	if (_obj->access_mode == _AM_READ_CD) {
-	  cdio_info ("READ_CD failed; switching to READ_10 mode...");
-	  _obj->access_mode = _AM_READ_10;
-	  goto retry;
-	} else {
-	  cdio_info ("READ_10 failed; switching to ioctl(CDROMREADAUDIO) mode...");
-	  _obj->access_mode = _AM_IOCTL;
-	  goto retry;
-	}
-	return 1;
-      }
-      break;
-    }
-
-  memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
   return 0;
 }
 
@@ -886,6 +829,67 @@ _cdio_get_track_msf(void *env, track_t track_num, msf_t *msf)
   }
 }
 
+/* checklist: /dev/cdrom, /dev/dvd /dev/hd?, /dev/scd? /dev/sr? */
+static char checklist1[][40] = {
+  {"cdrom"}, {"dvd"}, {""}
+};
+static char checklist2[][40] = {
+  {"?a hd?"}, {"?0 scd?"}, {"?0 sr?"}, {""}
+};
+
+/*!
+  Return a string containing the default VCD device if none is specified.
+ */
+static char **
+_cdio_get_devices (const CdIo *obj)
+{
+  unsigned int i;
+  char drive[40];
+  char *ret_drive;
+  int exists;
+  char **drives = NULL;
+  unsigned int num_drives=0;
+  
+  /* Scan the system for CD-ROM drives.
+  */
+  for ( i=0; strlen(checklist1[i]) > 0; ++i ) {
+    sprintf(drive, "/dev/%s", checklist1[i]);
+    if ( (exists=cdio_is_cdrom(drive, NULL)) > 0 ) {
+      cdio_add_device_list(&drives, drive, &num_drives);
+    }
+  }
+
+  /* Now check the currently mounted CD drives */
+  if (NULL != (ret_drive = cdio_check_mounts("/etc/mtab"))) {
+    cdio_add_device_list(&drives, drive, &num_drives);
+  }
+  
+  /* Finally check possible mountable drives in /etc/fstab */
+  if (NULL != (ret_drive = cdio_check_mounts("/etc/fstab"))) {
+    cdio_add_device_list(&drives, drive, &num_drives);
+  }
+
+  /* Scan the system for CD-ROM drives.
+     Not always 100% reliable, so use the USE_MNTENT code above first.
+  */
+  for ( i=0; strlen(checklist2[i]) > 0; ++i ) {
+    unsigned int j;
+    char *insert;
+    exists = 1;
+    for ( j=checklist2[i][1]; exists; ++j ) {
+      sprintf(drive, "/dev/%s", &checklist2[i][3]);
+      insert = strchr(drive, '?');
+      if ( insert != NULL ) {
+	*insert = j;
+      }
+      if ( (exists=cdio_is_cdrom(drive, NULL)) > 0 ) {
+	cdio_add_device_list(&drives, drive, &num_drives);
+      }
+    }
+  }
+  cdio_add_device_list(&drives, NULL, &num_drives);
+  return drives;
+}
 #endif /* HAVE_LINUX_CDROM */
 
 /*!
@@ -898,13 +902,6 @@ cdio_get_default_device_linux(void)
   return NULL;
   
 #else
-  /* checklist: /dev/cdrom, /dev/dvd /dev/hd?, /dev/scd? /dev/sr? */
-  static char checklist1[][40] = {
-    {"cdrom"}, {"dvd"}, {""}
-  };
-  static char checklist2[][40] = {
-    {"?a hd?"}, {"?0 scd?"}, {"?0 sr?"}, {""}
-  };
   unsigned int i;
   char drive[40];
   int exists;
@@ -966,6 +963,7 @@ cdio_open_linux (const char *orig_source_name)
     .eject_media        = _cdio_eject_media,
     .free               = cdio_generic_free,
     .get_arg            = _cdio_get_arg,
+    .get_devices        = _cdio_get_devices,
     .get_default_device = cdio_get_default_device_linux,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_mcn            = _cdio_get_mcn,

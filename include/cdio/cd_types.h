@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.h,v 1.1 2003/08/16 15:34:58 rocky Exp $
+    $Id: cd_types.h,v 1.2 2003/09/28 17:14:20 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -32,16 +32,16 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define CDIO_FS_NO_DATA              0   /* audio only */
-#define CDIO_FS_HIGH_SIERRA	     1
-#define CDIO_FS_ISO_9660	     2
-#define CDIO_FS_INTERACTIVE	     3
-#define CDIO_FS_HFS		     4
-#define CDIO_FS_UFS		     5
-#define CDIO_FS_EXT2		     6
-#define CDIO_FS_ISO_HFS              7  /* both hfs & isofs filesystem */
-#define CDIO_FS_ISO_9660_INTERACTIVE 8  /* both CD-RTOS and isofs filesystem */
-#define CDIO_FS_3DO		     9
+#define CDIO_FS_AUDIO                1   /* audio only - not really a fs */
+#define CDIO_FS_HIGH_SIERRA	     2
+#define CDIO_FS_ISO_9660	     3
+#define CDIO_FS_INTERACTIVE	     4
+#define CDIO_FS_HFS		     5
+#define CDIO_FS_UFS		     6
+#define CDIO_FS_EXT2		     7
+#define CDIO_FS_ISO_HFS              8  /* both hfs & isofs filesystem */
+#define CDIO_FS_ISO_9660_INTERACTIVE 9  /* both CD-RTOS and isofs filesystem */
+#define CDIO_FS_3DO		    10
 
 #define CDIO_FS_MASK		    15  /* Should be 2*n-1 and > above */
 #define CDIO_FS_UNKNOWN	            CDIO_FS_MASK
@@ -60,14 +60,17 @@ extern "C" {
 #define CDIO_FS_ANAL_HIDDEN_TRACK      128
 #define CDIO_FS_ANAL_CDTV	       256
 #define CDIO_FS_ANAL_BOOTABLE          512
-#define CDIO_FS_ANAL_VIDEOCDI         1024
+#define CDIO_FS_ANAL_VIDEOCD          1024   /* VCD 1.1 */
 #define CDIO_FS_ANAL_ROCKRIDGE        2048
 #define CDIO_FS_ANAL_JOLIET           4096
 #define CDIO_FS_ANAL_SVCD             8192   /* Super VCD or Choiji Video CD */
 #define CDIO_FS_ANAL_CVD       	     16384   /* Choiji Video CD */
 
+/* Pattern which can be used by cdio_get_devices to specify matching
+   any sort of CD.
+*/
+#define CDIO_FS_MATCH_ALL            (cdio_fs_anal_t) (~CDIO_FS_MASK)
 
-typedef int cdio_fs_anal_t;
 
 typedef struct 
 {
@@ -82,7 +85,7 @@ typedef struct
    have at track track_num. Return information about the CD image
    is returned in cdio_analysis and the return value.
 */
-cdio_fs_anal_t cdio_guess_cd_type(/*in*/ CdIo *cdio, int start_session, 
+cdio_fs_anal_t cdio_guess_cd_type(const CdIo *cdio, int start_session, 
 				  track_t track_num, 
 				  /*out*/ cdio_analysis_t *cdio_analysis);
 

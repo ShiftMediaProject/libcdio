@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.c,v 1.4 2003/09/14 07:05:34 rocky Exp $
+    $Id: cd_types.c,v 1.5 2003/09/28 17:14:20 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -117,8 +117,8 @@ static signature_t sigs[] =
    analysis later.
 */
 static int 
-_cdio_read_block(CdIo *cdio, int superblock, uint32_t offset, uint8_t bufnum, 
-		 track_t track_num)
+_cdio_read_block(const CdIo *cdio, int superblock, uint32_t offset, 
+		 uint8_t bufnum, track_t track_num)
 {
   unsigned int track_sec_count = cdio_get_track_sec_count(cdio, track_num);
   memset(buffer[bufnum], 0, CDIO_CD_FRAMESIZE);
@@ -207,11 +207,14 @@ _cdio_get_joliet_level( void )
    is returned in cdio_analysis and the return value.
 */
 cdio_fs_anal_t
-cdio_guess_cd_type(/*in*/ CdIo *cdio, int start_session, track_t track_num, 
+cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t track_num, 
 		   /*out*/ cdio_analysis_t *cdio_analysis)
 {
   int ret = 0;
   
+  if (TRACK_FORMAT_AUDIO == cdio_get_track_format(cdio, track_num))
+    return CDIO_FS_AUDIO;
+
   if ( _cdio_read_block(cdio, ISO_PVD_SECTOR, start_session, 
 			0, track_num) < 0 )
     return CDIO_FS_UNKNOWN;
@@ -261,7 +264,7 @@ cdio_guess_cd_type(/*in*/ CdIo *cdio, int start_session, track_t track_num,
 	  return ret;
 	
 	if (_cdio_is_it(INDEX_BRIDGE) && _cdio_is_it(INDEX_CD_RTOS)) {
-	  if (_cdio_is_it(INDEX_VIDEO_CD))  ret |= CDIO_FS_ANAL_VIDEOCDI;
+	  if (_cdio_is_it(INDEX_VIDEO_CD))  ret |= CDIO_FS_ANAL_VIDEOCD;
 	  else if (_cdio_is_it(INDEX_SVCD)) ret |= CDIO_FS_ANAL_SVCD;
 	} else if (_cdio_is_it(INDEX_SVCD)) ret |= CDIO_FS_ANAL_CVD;
 

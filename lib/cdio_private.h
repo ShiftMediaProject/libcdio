@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.14 2003/09/25 09:38:16 rocky Exp $
+    $Id: cdio_private.h,v 1.15 2003/09/28 17:14:21 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -54,6 +54,15 @@ extern "C" {
       Return the value associated with the key "arg".
     */
     const char * (*get_arg) (void *env, const char key[]);
+    
+    /*!
+      Return an array of device names. if CdIo is NULL (we haven't
+      initialized a specific device driver), then find a suitable device 
+      driver.
+      
+      NULL is returned if we couldn't return a list of devices.
+    */
+    char ** (*get_devices) (const CdIo *obj);
     
     /*!
       Return a string containing the default CD device if none is specified.
@@ -226,6 +235,13 @@ extern "C" {
   /* The below array gives all drivers that can possibly appear.
      on a particular host. */
   extern CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1];
+
+  /*! 
+    Add/allocate a drive to the end of drives. 
+    Use cdio_free_device_list() to free this device_list.
+  */
+  void cdio_add_device_list(char **device_list[], const char *drive, 
+			    int *num_drives);
 
   /*!
     Bogus eject media when there is no ejectable media, e.g. a disk image

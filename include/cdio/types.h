@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.6 2003/09/06 02:51:29 rocky Exp $
+    $Id: types.h,v 1.7 2003/09/28 17:14:20 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -217,6 +217,8 @@ extern "C" {
     Constant for invalid LSN
   */
 #define CDIO_INVALID_LSN   0xFFFFFFFF
+
+typedef int cdio_fs_anal_t;
 
 #ifdef __cplusplus
 }
