@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.13 2003/10/16 13:21:56 rocky Exp $
+  $Id: cd-read.c,v 1.14 2003/10/20 04:28:38 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -469,23 +469,43 @@ main(int argc, const char *argv[])
   for ( ; opts.start_lsn <= opts.end_lsn; opts.start_lsn++ ) {
     switch (opts.read_mode) {
     case READ_AUDIO:
-      cdio_read_audio_sector(cdio, &buffer, opts.start_lsn);
+      if (cdio_read_audio_sector(cdio, &buffer, opts.start_lsn)) {
+        fprintf (stderr, "error reading block %u\n", 
+		 (unsigned int) opts.start_lsn);
+	blocklen = 0;
+      }
       break;
     case READ_M1F1:
-      cdio_read_mode1_sector(cdio, &buffer, opts.start_lsn, false);
-      blocklen=CDIO_CD_FRAMESIZE;
+      if (cdio_read_mode1_sector(cdio, &buffer, opts.start_lsn, false)) {
+        fprintf (stderr, "error reading block %u\n", 
+		 (unsigned int) opts.start_lsn);
+	blocklen = 0;
+      } else
+	blocklen=CDIO_CD_FRAMESIZE;
       break;
     case READ_M1F2:
-      cdio_read_mode1_sector(cdio, &buffer, opts.start_lsn, true);
-      blocklen=M2RAW_SECTOR_SIZE;
+      if (cdio_read_mode1_sector(cdio, &buffer, opts.start_lsn, true)) {
+        fprintf (stderr, "error reading block %u\n", 
+		 (unsigned int) opts.start_lsn);
+	blocklen = 0;
+      } else 
+	blocklen=M2RAW_SECTOR_SIZE;
       break;
     case READ_M2F1:
-      cdio_read_mode2_sector(cdio, &buffer, opts.start_lsn, false);
-      blocklen=CDIO_CD_FRAMESIZE;
+      if (cdio_read_mode2_sector(cdio, &buffer, opts.start_lsn, false)) {
+        fprintf (stderr, "error reading block %u\n", 
+		 (unsigned int) opts.start_lsn);
+	blocklen=0;
+      } else
+	blocklen=CDIO_CD_FRAMESIZE;
       break;
     case READ_M2F2:
-      blocklen=M2F2_SECTOR_SIZE;
-      cdio_read_mode2_sector(cdio, &buffer, opts.start_lsn, true);
+      if (cdio_read_mode2_sector(cdio, &buffer, opts.start_lsn, true)) {
+        fprintf (stderr, "error reading block %u\n", 
+		 (unsigned int) opts.start_lsn);
+	blocklen=0;
+      } else
+	blocklen=M2F2_SECTOR_SIZE;
       break;
 #if AUTO_FINISHED
     case READ_AUTO:
