@@ -1,4 +1,4 @@
-$Id: README,v 1.9 2004/10/10 00:21:08 rocky Exp $
+$Id: README,v 1.10 2004/11/22 01:25:12 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -18,6 +18,10 @@ iso2.c: A simple program to show using libiso9660 to extract a file
 
 iso3.c: A program to show using libiso9660 to extract a file from an
 	ISO-9660 image.
+
+iso1cpp.cpp: iso1.c compiled via C++
+iso2cpp.cpp: iso2.c compiled via C++
+iso3cpp.cpp: iso3.c compiled via C++
 
 scsi-mmc1.c: A program to show issuing a simple SCSI-MMC command (INQUIRY).
 
