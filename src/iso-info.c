@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.18 2004/12/18 21:24:25 rocky Exp $
+    $Id: iso-info.c,v 1.19 2005/01/12 11:34:52 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -165,9 +165,9 @@ _log_handler (cdio_log_level_t level, const char message[])
 static void
 print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
 {
-  CdioList *entlist;
-  CdioList *dirlist =  _cdio_list_new ();
-  CdioListNode *entnode;
+  CdioList_t *entlist;
+  CdioList_t *dirlist =  _cdio_list_new ();
+  CdioListNode_t *entnode;
   uint8_t i_joliet_level = iso9660_ifs_get_joliet_level(p_iso);
 
   entlist = iso9660_ifs_readdir (p_iso, pathname);

@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.4 2005/01/04 04:33:36 rocky Exp $
+    $Id: image_common.h,v 1.5 2005/01/12 11:34:52 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -58,7 +58,7 @@ typedef struct {
   /* This is a hack because I don't really understnad NERO better. */
   bool            is_cues;
 
-  CdioList     *mapping;         /* List of track information */
+  CdioList_t    *mapping;        /* List of track information */
   uint32_t      size;
 #endif
 } _img_private_t;

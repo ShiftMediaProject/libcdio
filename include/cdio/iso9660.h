@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660.h,v 1.55 2004/11/21 22:32:03 rocky Exp $
+    $Id: iso9660.h,v 1.56 2005/01/12 11:34:52 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
     See also iso9660.h by Eric Youngdale (1993).
 
@@ -361,14 +361,14 @@ typedef struct _iso9660 iso9660_t;
   Open an ISO 9660 image for reading. Maybe in the future we will have
   a mode. NULL is returned on error.
 */
-  iso9660_t *iso9660_open (const char *psz_pathname /*flags, mode */);
+  iso9660_t *iso9660_open (const char *psz_path /*flags, mode */);
 
 /*!
   Open an ISO 9660 image for reading allowing various ISO 9660
   extensions.  Maybe in the future we will have a mode. NULL is
   returned on error.
 */
-  iso9660_t *iso9660_open_ext (const char *psz_pathname, 
+  iso9660_t *iso9660_open_ext (const char *psz_path, 
                                iso_extension_mask_t iso_extension_mask);
 
 /*!
@@ -501,27 +501,27 @@ char *iso9660_strncpy_pad(char dst[], const char src[], size_t len,
 ======================================================================*/
 
 /*!
-  Check that pathname is a valid ISO-9660 directory name.
+  Check that psz_path is a valid ISO-9660 directory name.
 
   A valid directory name should not start out with a slash (/), 
   dot (.) or null byte, should be less than 37 characters long, 
   have no more than 8 characters in a directory component 
   which is separated by a /, and consist of only DCHARs. 
 
-  True is returned if pathname is valid.
+  True is returned if psz_path is valid.
  */
-bool iso9660_dirname_valid_p (const char pathname[]);
+bool iso9660_dirname_valid_p (const char psz_path[]);
 
 /*!  
-  Take pathname and a version number and turn that into a ISO-9660
+  Take psz_path and a version number and turn that into a ISO-9660
   pathname.  (That's just the pathname followd by ";" and the version
   number. For example, mydir/file.ext -> MYDIR/FILE.EXT;1 for version
   1. The resulting ISO-9660 pathname is returned.
 */
-char *iso9660_pathname_isofy (const char pathname[], uint16_t i_version);
+char *iso9660_pathname_isofy (const char psz_path[], uint16_t i_version);
 
 /*!
-  Check that pathname is a valid ISO-9660 pathname.  
+  Check that psz_path is a valid ISO-9660 pathname.  
 
   A valid pathname contains a valid directory name, if one appears and
   the filename portion should be no more than 8 characters for the
@@ -529,9 +529,9 @@ char *iso9660_pathname_isofy (const char pathname[], uint16_t i_version);
   dot). There should be exactly one dot somewhere in the filename
   portion and the filename should be composed of only DCHARs.
   
-  True is returned if pathname is valid.
+  True is returned if psz_path is valid.
  */
-bool iso9660_pathname_valid_p (const char pathname[]);
+bool iso9660_pathname_valid_p (const char psz_path[]);
 
 /*=====================================================================
   directory tree 
@@ -577,48 +577,45 @@ iso9660_stat_t *iso9660_find_ifs_lsn(const iso9660_t *p_iso, lsn_t i_lsn);
 
 
 /*!
-  Get file status for pathname into stat. NULL is returned on error.
+  Return file status for psz_path. NULL is returned on error.
  */
-iso9660_stat_t *iso9660_fs_stat (CdIo *p_cdio, const char pathname[]);
+iso9660_stat_t *iso9660_fs_stat (CdIo *p_cdio, const char psz_path[]);
   
 
-/*!
-  Get file status for pathname into stat. NULL is returned on error.
-  pathname version numbers in the ISO 9660
-  name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
-  are lowercased.
+/*!  
+  Return file status for path name psz_path. NULL is returned on error.
+  pathname version numbers in the ISO 9660 name are dropped, i.e. ;1
+  is removed and if level 1 ISO-9660 names are lowercased.
  */
 iso9660_stat_t *iso9660_fs_stat_translate (CdIo *p_cdio, 
-                                           const char pathname[], 
+                                           const char psz_path[], 
                                            bool b_mode2);
 
-/*!
-  Get file status for pathname into stat. NULL is returned on error.
+/*!  
+  Return file status for pathname. NULL is returned on error.
  */
-iso9660_stat_t *iso9660_ifs_stat (iso9660_t *p_iso, const char pathname[]);
+iso9660_stat_t *iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[]);
 
 
-/*!
-  Get file status for pathname into stat. NULL is returned on error.
-  pathname version numbers in the ISO 9660
-  name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
-  are lowercased.
+/*!  Return file status for path name psz_path. NULL is returned on
+  error.  pathname version numbers in the ISO 9660 name are dropped,
+  i.e. ;1 is removed and if level 1 ISO-9660 names are lowercased.
  */
 iso9660_stat_t *iso9660_ifs_stat_translate (iso9660_t *p_iso, 
-                                            const char pathname[]);
+                                            const char psz_path[]);
 
-/*! 
-  Read pathname (a directory) and return a list of iso9660_stat_t
-  of the files inside that. The caller must free the returned result.
+/*!  Read psz_path (a directory) and return a list of iso9660_stat_t
+  pointers for the files inside that directory. The caller must free the
+  returned result.
 */
-CdioList * iso9660_fs_readdir (CdIo *p_cdio, const char pathname[], 
-                               bool b_mode2);
+CdioList_t * iso9660_fs_readdir (CdIo *p_cdio, const char psz_path[], 
+                                 bool b_mode2);
 
-/*! 
-  Read pathname (a directory) and return a list of iso9660_stat_t
-  of the files inside that. The caller must free the returned result.
+/*!  Read psz_path (a directory) and return a list of iso9660_stat_t
+  pointers for the files inside that directory. The caller must free
+  the returned result.
 */
-CdioList * iso9660_ifs_readdir (iso9660_t *p_iso, const char pathname[]);
+CdioList_t * iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[]);
 
 /*!
   Return the PVD's application ID.
@@ -703,7 +700,7 @@ char *iso9660_get_system_id(const iso9660_pvd_t *p_pvd);
   is some problem in getting this and false is returned.
 */
 bool iso9660_ifs_get_system_id(iso9660_t *p_iso,
-                                  /*out*/ char **p_psz_system_id);
+                               /*out*/ char **p_psz_system_id);
 
 
 /*! Return the LSN of the root directory for pvd.
@@ -751,9 +748,9 @@ uint16_t
 iso9660_pathtable_m_add_entry (void *pt, const char name[], uint32_t extent,
                                uint16_t parent);
 
-/*=====================================================================
-                 Volume Descriptors
-======================================================================*/
+  /**=====================================================================
+     Volume Descriptors
+     ======================================================================*/
 
 void
 iso9660_set_pvd (void *pd, const char volume_id[], const char application_id[],

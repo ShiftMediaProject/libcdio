@@ -1,7 +1,8 @@
 /*
-    $Id: ds.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: ds.c,v 1.2 2005/01/12 11:34:52 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
+    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,208 +31,210 @@
 #include <cdio/types.h>
 #include "cdio_assert.h"
 
-static const char _rcsid[] = "$Id: ds.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: ds.c,v 1.2 2005/01/12 11:34:52 rocky Exp $";
 
 struct _CdioList
 {
   unsigned length;
 
-  CdioListNode *begin;
-  CdioListNode *end;
+  CdioListNode_t *begin;
+  CdioListNode_t *end;
 };
 
 struct _CdioListNode
 {
-  CdioList *list;
+  CdioList_t *list;
 
-  CdioListNode *next;
+  CdioListNode_t *next;
 
   void *data;
 };
 
 /* impl */
 
-CdioList *
+CdioList_t *
 _cdio_list_new (void)
 {
-  CdioList *new_obj = _cdio_malloc (sizeof (CdioList));
+  CdioList_t *p_new_obj = _cdio_malloc (sizeof (CdioList_t));
 
-  return new_obj;
+  return p_new_obj;
 }
 
 void
-_cdio_list_free (CdioList *list, int free_data)
+_cdio_list_free (CdioList_t *p_list, int free_data)
 {
-  while (_cdio_list_length (list))
-    _cdio_list_node_free (_cdio_list_begin (list), free_data);
+  while (_cdio_list_length (p_list))
+    _cdio_list_node_free (_cdio_list_begin (p_list), free_data);
 
-  free (list);
+  free (p_list);
 }
 
 unsigned
-_cdio_list_length (const CdioList *list)
+_cdio_list_length (const CdioList_t *p_list)
 {
-  cdio_assert (list != NULL);
+  cdio_assert (p_list != NULL);
 
-  return list->length;
+  return p_list->length;
 }
 
 void
-_cdio_list_prepend (CdioList *list, void *data)
+_cdio_list_prepend (CdioList_t *p_list, void *p_data)
 {
-  CdioListNode *new_node;
+  CdioListNode_t *p_new_node;
 
-  cdio_assert (list != NULL);
+  cdio_assert (p_list != NULL);
 
-  new_node = _cdio_malloc (sizeof (CdioListNode));
+  p_new_node = _cdio_malloc (sizeof (CdioListNode_t));
   
-  new_node->list = list;
-  new_node->next = list->begin;
-  new_node->data = data;
+  p_new_node->list = p_list;
+  p_new_node->next = p_list->begin;
+  p_new_node->data = p_data;
 
-  list->begin = new_node;
-  if (list->length == 0)
-    list->end = new_node;
+  p_list->begin = p_new_node;
+  if (p_list->length == 0)
+    p_list->end = p_new_node;
 
-  list->length++;
+  p_list->length++;
 }
 
 void
-_cdio_list_append (CdioList *list, void *data)
+_cdio_list_append (CdioList_t *p_list, void *p_data)
 {
-  cdio_assert (list != NULL);
+  cdio_assert (p_list != NULL);
 
-  if (list->length == 0)
+  if (p_list->length == 0)
     {
-      _cdio_list_prepend (list, data);
+      _cdio_list_prepend (p_list, p_data);
     }
   else
     {
-      CdioListNode *new_node = _cdio_malloc (sizeof (CdioListNode));
+      CdioListNode_t *p_new_node = _cdio_malloc (sizeof (CdioListNode_t));
       
-      new_node->list = list;
-      new_node->next = NULL;
-      new_node->data = data;
+      p_new_node->list = p_list;
+      p_new_node->next = NULL;
+      p_new_node->data = p_data;
 
-      list->end->next = new_node;
-      list->end = new_node;
+      p_list->end->next = p_new_node;
+      p_list->end = p_new_node;
 
-      list->length++;
+      p_list->length++;
     }
 }
 
 void 
-_cdio_list_foreach (CdioList *list, _cdio_list_iterfunc func, void *user_data)
+_cdio_list_foreach (CdioList_t *p_list, _cdio_list_iterfunc_t func, 
+                    void *p_user_data)
 {
-  CdioListNode *node;
+  CdioListNode_t *node;
 
-  cdio_assert (list != NULL);
+  cdio_assert (p_list != NULL);
   cdio_assert (func != 0);
   
-  for (node = _cdio_list_begin (list);
+  for (node = _cdio_list_begin (p_list);
        node != NULL;
        node = _cdio_list_node_next (node))
-    func (_cdio_list_node_data (node), user_data);
+    func (_cdio_list_node_data (node), p_user_data);
 }
 
-CdioListNode *
-_cdio_list_find (CdioList *list, _cdio_list_iterfunc cmp_func, void *user_data)
+CdioListNode_t *
+_cdio_list_find (CdioList_t *p_list, _cdio_list_iterfunc_t cmp_func, 
+                 void *p_user_data)
 {
-  CdioListNode *node;
+  CdioListNode_t *p_node;
 
-  cdio_assert (list != NULL);
+  cdio_assert (p_list != NULL);
   cdio_assert (cmp_func != 0);
   
-  for (node = _cdio_list_begin (list);
-       node != NULL;
-       node = _cdio_list_node_next (node))
-    if (cmp_func (_cdio_list_node_data (node), user_data))
+  for (p_node = _cdio_list_begin (p_list);
+       p_node != NULL;
+       p_node = _cdio_list_node_next (p_node))
+    if (cmp_func (_cdio_list_node_data (p_node), p_user_data))
       break;
 
-  return node;
+  return p_node;
 }
 
-CdioListNode *
-_cdio_list_begin (const CdioList *list)
+CdioListNode_t *
+_cdio_list_begin (const CdioList_t *p_list)
 {
-  cdio_assert (list != NULL);
+  cdio_assert (p_list != NULL);
 
-  return list->begin;
+  return p_list->begin;
 }
 
-CdioListNode *
-_cdio_list_end (CdioList *list)
+CdioListNode_t *
+_cdio_list_end (CdioList_t *p_list)
 {
-  cdio_assert (list != NULL);
+  cdio_assert (p_list != NULL);
 
-  return list->end;
+  return p_list->end;
 }
 
-CdioListNode *
-_cdio_list_node_next (CdioListNode *node)
+CdioListNode_t *
+_cdio_list_node_next (CdioListNode_t *p_node)
 {
-  if (node)
-    return node->next;
+  if (p_node)
+    return p_node->next;
 
   return NULL;
 }
 
 void 
-_cdio_list_node_free (CdioListNode *node, int free_data)
+_cdio_list_node_free (CdioListNode_t *p_node, int free_data)
 {
-  CdioList *list;
-  CdioListNode *prev_node;
+  CdioList_t *p_list;
+  CdioListNode_t *prev_node;
 
-  cdio_assert (node != NULL);
+  cdio_assert (p_node != NULL);
   
-  list = node->list;
+  p_list = p_node->list;
 
-  cdio_assert (_cdio_list_length (list) > 0);
+  cdio_assert (_cdio_list_length (p_list) > 0);
 
   if (free_data)
-    free (_cdio_list_node_data (node));
+    free (_cdio_list_node_data (p_node));
 
-  if (_cdio_list_length (list) == 1)
+  if (_cdio_list_length (p_list) == 1)
     {
-      cdio_assert (list->begin == list->end);
+      cdio_assert (p_list->begin == p_list->end);
 
-      list->end = list->begin = NULL;
-      list->length = 0;
-      free (node);
+      p_list->end = p_list->begin = NULL;
+      p_list->length = 0;
+      free (p_node);
       return;
     }
 
-  cdio_assert (list->begin != list->end);
+  cdio_assert (p_list->begin != p_list->end);
 
-  if (list->begin == node)
+  if (p_list->begin == p_node)
     {
-      list->begin = node->next;
-      free (node);
-      list->length--;
+      p_list->begin = p_node->next;
+      free (p_node);
+      p_list->length--;
       return;
     }
 
-  for (prev_node = list->begin; prev_node->next; prev_node = prev_node->next)
-    if (prev_node->next == node)
+  for (prev_node = p_list->begin; prev_node->next; prev_node = prev_node->next)
+    if (prev_node->next == p_node)
       break;
 
   cdio_assert (prev_node->next != NULL);
 
-  if (list->end == node)
-    list->end = prev_node;
+  if (p_list->end == p_node)
+    p_list->end = prev_node;
 
-  prev_node->next = node->next;
+  prev_node->next = p_node->next;
 
-  list->length--;
+  p_list->length--;
 
-  free (node);
+  free (p_node);
 }
 
 void *
-_cdio_list_node_data (CdioListNode *node)
+_cdio_list_node_data (CdioListNode_t *p_node)
 {
-  if (node)
-    return node->data;
+  if (p_node)
+    return p_node->data;
 
   return NULL;
 }

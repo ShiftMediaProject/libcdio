@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.2 2005/01/02 22:43:41 rocky Exp $
+    $Id: iso9660_fs.c,v 1.3 2005/01/12 11:34:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -51,7 +51,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.2 2005/01/02 22:43:41 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.3 2005/01/12 11:34:52 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -1050,7 +1050,7 @@ iso9660_ifs_stat_translate (iso9660_t *p_iso, const char pathname[])
   Read pathname (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
-CdioList * 
+CdioList_t * 
 iso9660_fs_readdir (CdIo_t *p_cdio, const char pathname[], bool b_mode2)
 {
   iso9660_stat_t *p_stat;
@@ -1070,7 +1070,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char pathname[], bool b_mode2)
   {
     unsigned offset = 0;
     uint8_t *_dirbuf = NULL;
-    CdioList *retval = _cdio_list_new ();
+    CdioList_t *retval = _cdio_list_new ();
 
     if (p_stat->size != ISO_BLOCKSIZE * p_stat->secsize)
       {
@@ -1121,7 +1121,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char pathname[], bool b_mode2)
   Read pathname (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
-CdioList * 
+CdioList_t * 
 iso9660_ifs_readdir (iso9660_t *p_iso, const char pathname[])
 {
   iso9660_stat_t *p_stat;
@@ -1141,7 +1141,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char pathname[])
     long int ret;
     unsigned offset = 0;
     uint8_t *_dirbuf = NULL;
-    CdioList *retval = _cdio_list_new ();
+    CdioList_t *retval = _cdio_list_new ();
 
     if (p_stat->size != ISO_BLOCKSIZE * p_stat->secsize)
       {
@@ -1184,9 +1184,9 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char pathname[])
 static iso9660_stat_t *
 find_fs_lsn_recurse (CdIo_t *p_cdio, const char pathname[], lsn_t lsn)
 {
-  CdioList *entlist = iso9660_fs_readdir (p_cdio, pathname, true);
-  CdioList *dirlist =  _cdio_list_new ();
-  CdioListNode *entnode;
+  CdioList_t *entlist = iso9660_fs_readdir (p_cdio, pathname, true);
+  CdioList_t *dirlist =  _cdio_list_new ();
+  CdioListNode_t *entnode;
     
   cdio_assert (entlist != NULL);
 

@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.108 2005/01/09 00:10:49 rocky Exp $
+    $Id: cd-info.c,v 1.109 2005/01/12 11:34:52 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -538,9 +538,9 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
 		       cdio_fs_anal_t fs, 
 		       bool b_mode2)
 {
-  CdioList *entlist;
-  CdioList *dirlist =  _cdio_list_new ();
-  CdioListNode *entnode;
+  CdioList_t *entlist;
+  CdioList_t *dirlist =  _cdio_list_new ();
+  CdioListNode_t *entnode;
   uint8_t i_joliet_level;
 
   i_joliet_level = (opts.no_joliet) 

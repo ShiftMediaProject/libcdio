@@ -1,7 +1,7 @@
 /*
-    $Id: nrg.c,v 1.5 2005/01/04 04:33:36 rocky Exp $
+    $Id: nrg.c,v 1.6 2005/01/12 11:34:52 rocky Exp $
 
-    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.5 2005/01/04 04:33:36 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.6 2005/01/12 11:34:52 rocky Exp $";
 
 
 /* reader */
@@ -69,7 +69,7 @@ typedef struct {
 #include "image_common.h"
 
 static bool     parse_nrg (_img_private_t *env, const char *psz_cue_name);
-static uint32_t _stat_size_nrg (void *user_data);
+static uint32_t _stat_size_nrg (void *p_user_data);
 
 /* Updates internal track TOC, so we can later 
    simulate ioctl(CDROMREADTOCENTRY).
@@ -785,9 +785,9 @@ _init_nrg (_img_private_t *p_env)
   information in each sector.
 */
 static off_t
-_lseek_nrg (void *user_data, off_t offset, int whence)
+_lseek_nrg (void *p_user_data, off_t offset, int whence)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   /* real_offset is the real byte offset inside the disk image
      The number below was determined empirically. 
@@ -829,16 +829,16 @@ _lseek_nrg (void *user_data, off_t offset, int whence)
    boundaries.
 */
 static ssize_t
-_read_nrg (void *user_data, void *buf, size_t size)
+_read_nrg (void *p_user_data, void *buf, size_t size)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   return cdio_stream_read(p_env->gen.data_source, buf, size, 1);
 }
 
 static uint32_t 
-_stat_size_nrg (void *user_data)
+_stat_size_nrg (void *p_user_data)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   return p_env->size;
 }
@@ -848,12 +848,12 @@ _stat_size_nrg (void *user_data)
    from LSN. Returns 0 if no error. 
  */
 static int
-_read_audio_sectors_nrg (void *user_data, void *data, lsn_t lsn, 
+_read_audio_sectors_nrg (void *p_user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
-  CdioListNode *node;
+  CdioListNode_t *node;
 
   if (lsn >= p_env->size)
     {
@@ -888,13 +888,13 @@ _read_audio_sectors_nrg (void *user_data, void *data, lsn_t lsn,
 }
 
 static int
-_read_mode1_sector_nrg (void *user_data, void *data, lsn_t lsn, 
+_read_mode1_sector_nrg (void *p_user_data, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
 
-  CdioListNode *node;
+  CdioListNode_t *node;
 
   if (lsn >= p_env->size)
     {
@@ -942,10 +942,10 @@ _read_mode1_sector_nrg (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode1_sectors_nrg (void *user_data, void *data, lsn_t lsn, 
+_read_mode1_sectors_nrg (void *p_user_data, void *data, lsn_t lsn, 
 			 bool b_form2, unsigned nblocks)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
@@ -960,13 +960,13 @@ _read_mode1_sectors_nrg (void *user_data, void *data, lsn_t lsn,
 }
 
 static int
-_read_mode2_sector_nrg (void *user_data, void *data, lsn_t lsn, 
-			 bool b_form2)
+_read_mode2_sector_nrg (void *p_user_data, void *data, lsn_t lsn, 
+			bool b_form2)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
 
-  CdioListNode *node;
+  CdioListNode_t *node;
 
   if (lsn >= p_env->size)
     {
@@ -1015,10 +1015,10 @@ _read_mode2_sector_nrg (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors_nrg (void *user_data, void *data, lsn_t lsn, 
+_read_mode2_sectors_nrg (void *p_user_data, void *data, lsn_t lsn, 
 			 bool b_form2, unsigned nblocks)
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
@@ -1036,9 +1036,9 @@ _read_mode2_sectors_nrg (void *user_data, void *data, lsn_t lsn,
   Free memory resources associated with NRG object.
 */
 static void 
-_free_nrg (void *user_data) 
+_free_nrg (void *p_user_data) 
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (NULL == p_env) return;
   if (NULL != p_env->mapping)
@@ -1046,7 +1046,7 @@ _free_nrg (void *user_data)
 
   /* The remaining part of the image is like the other image drivers,
      so free that in the same way. */
-  _free_image(user_data);
+  _free_image(p_user_data);
 }
 
 /*!
@@ -1111,9 +1111,9 @@ get_hwinfo_nrg ( const CdIo *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_format_t
-get_track_format_nrg(void *user_data, track_t track_num) 
+get_track_format_nrg(void *p_user_data, track_t track_num) 
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   
   if (track_num > p_env->gen.i_tracks || track_num == 0) 
     return TRACK_FORMAT_ERROR;
@@ -1141,9 +1141,9 @@ get_track_format_nrg(void *user_data, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_get_track_green_nrg(void *user_data, track_t track_num) 
+_get_track_green_nrg(void *p_user_data, track_t track_num) 
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
   
   if (track_num > p_env->gen.i_tracks || track_num == 0) 
     return false;
