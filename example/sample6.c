@@ -1,5 +1,5 @@
 /*
-  $Id: sample6.c,v 1.5 2004/03/11 01:31:32 rocky Exp $
+  $Id: sample6.c,v 1.6 2004/03/20 22:44:14 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -36,7 +36,12 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
 
@@ -45,6 +50,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+
+#define my_exit(rc)				\
+  free(statbuf);				\
+  cdio_destroy(cdio);				\
+  return rc;					\
+  
 
 int
 main(int argc, const char *argv[])
@@ -73,7 +84,7 @@ main(int argc, const char *argv[])
   if (!(outfd = fopen ("copying", "wb")))
     {
       perror ("fopen()");
-      return 3;
+      my_exit(3);
     }
 
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
@@ -89,7 +100,7 @@ main(int argc, const char *argv[])
       {
 	fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
 		(long unsigned int) statbuf->lsn + (i / ISO_BLOCKSIZE));
-	return 4;
+	my_exit(4);
       }
       
       
@@ -98,7 +109,7 @@ main(int argc, const char *argv[])
       if (ferror (outfd))
 	{
 	  perror ("fwrite()");
-	  return 5;
+	  my_exit(5);
 	}
     }
   
@@ -111,6 +122,5 @@ main(int argc, const char *argv[])
     perror ("ftruncate()");
 
   fclose (outfd);
-  cdio_destroy(cdio);
-  return 0;
+  my_exit(0);
 }
