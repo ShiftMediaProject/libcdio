@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.20 2003/05/18 02:28:07 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.21 2003/05/20 07:56:10 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.20 2003/05/18 02:28:07 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.21 2003/05/20 07:56:10 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -752,7 +752,7 @@ cdio_is_binfile(const char *bin_name)
   int   i;
   char *cue_name;
   
-  if (cue_name == NULL) return false;
+  if (bin_name == NULL) return false;
 
   cue_name=strdup(bin_name);
   i=strlen(bin_name)-strlen("bin");
