@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.6 2004/07/09 02:46:42 rocky Exp $
+    $Id: image_common.h,v 1.7 2004/07/10 02:17:59 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -19,6 +19,9 @@
 */
 
 /* Common image routines. */
+
+#ifndef __CDIO_IMAGE_COMMON_H__
+#define __CDIO_IMAGE_COMMON_H__
 
 /*!
   Return the media catalog number (MCN) from the CD or NULL if there
@@ -82,3 +85,5 @@ _get_num_tracks_image(void *user_data)
 
   return env->i_tracks;
 }
+
+#endif /* __CDIO_IMAGE_COMMON_H__ */

@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.15 2004/07/10 01:21:19 rocky Exp $
+    $Id: sector.h,v 1.16 2004/07/10 02:17:57 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -66,6 +66,39 @@
 #endif
 
 #include <cdio/types.h>
+
+/*! track modes (Table 350) 
+   reference: MMC-3 draft revsion - 10g
+*/
+typedef enum {
+	AUDIO,				/**< 2352 byte block length */
+	MODE1,				/**< 2048 byte block length */
+	MODE1_RAW,			/**< 2352 byte block length */
+	MODE2,				/**< 2336 byte block length */
+	MODE2_FORM1,			/**< 2048 byte block length */
+	MODE2_FORM2,			/**< 2324 byte block length */
+	MODE2_FORM_MIX,			/**< 2336 byte block length */
+	MODE2_RAW			/**< 2352 byte block length */
+} trackmode_t;
+
+/*! disc modes (5.29.2.8) */
+typedef enum {
+	CD_DA,				/* CD-DA */
+	CD_ROM,				/* CD-ROM mode 1 */
+	CD_ROM_XA			/* CD-ROM XA and CD-I */
+} discmode_t;
+
+/*! track flags
+ * Q Sub-channel Control Field (4.2.3.3)
+ */
+typedef enum {
+	NONE = 			0x00,	/* no flags set */
+	PRE_EMPHASIS =		0x01,	/* audio track recorded with pre-emphasis */
+	COPY_PERMITTED =	0x02,	/* digital copy permitted */
+	DATA =			0x04,	/* data track */
+	FOUR_CHANNEL_AUDIO =	0x08,	/* 4 audio channels */
+	SCMS =			0x10	/* SCMS (5.29.2.7) */
+} flag_t;
 
 #define CDIO_PREGAP_SECTORS  150
 #define CDIO_POSTGAP_SECTORS 150

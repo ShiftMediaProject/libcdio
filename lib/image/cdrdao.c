@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.15 2004/07/10 01:21:20 rocky Exp $
+    $Id: cdrdao.c,v 1.16 2004/07/10 02:17:59 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,20 +25,15 @@
    (*.cue).
 */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.16 2004/07/10 02:17:59 rocky Exp $";
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.15 2004/07/10 01:21:20 rocky Exp $";
-
+#include "image.h"
 #include "cdio_assert.h"
-#include "cdio_private.h"
 #include "_cdio_stdio.h"
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
-#include <cdio/cdtext.h>
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -73,32 +68,7 @@ static const char _rcsid[] = "$Id: cdrdao.c,v 1.15 2004/07/10 01:21:20 rocky Exp
 /* reader */
 
 #define DEFAULT_CDIO_DEVICE "videocd.bin"
-#define DEFAULT_CDIO_CDRDAO    "videocd.toc"
-
-typedef struct {
-  track_t        track_num;   /* Probably is index+1 */
-  msf_t          start_msf;
-  lba_t          start_lba;
-  lba_t          length;
-  lba_t          pregap;
-  int            start_index;
-  int            sec_count;  /* Number of sectors in this track. Does not
-				include pregap */
-  int            num_indices;
-  int            flags;      /* "DCP", "4CH", "PRE" */
-  char          *isrc;            /* IRSC Code (5.22.4) exactly 12 bytes. */
-  char          *filename;        /* name given inside TOC file. */
-  CdioDataSource *data_source;
-  track_format_t track_format;
-  bool           track_green;
-  uint16_t  datasize;        /* How much is in the portion we return back? */
-  uint16_t  datastart;       /* Offset from begining that data starts */
-  uint16_t  endsize;         /* How much stuff at the end to skip over. This
-			       stuff may have error correction (EDC, or ECC).*/
-  uint16_t  blocksize;       /* total block size = start + size + end */
-
-  
-} track_info_t;
+#define DEFAULT_CDIO_CDRDAO "videocd.toc"
 
 typedef struct {
   /* Things common to all drivers like this. 

@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.26 2004/07/09 02:46:42 rocky Exp $
+    $Id: nrg.c,v 1.27 2004/07/10 02:17:59 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -22,9 +22,7 @@
    CD-image format residing inside a disk file (*.nrg).
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "image.h"
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -40,38 +38,19 @@
 #endif
 
 #include <cdio/logging.h>
-#include <cdio/sector.h>
 #include <cdio/util.h>
 #include "cdio_assert.h"
 #include "bytesex.h"
 #include "ds.h"
-#include "cdio_private.h"
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.26 2004/07/09 02:46:42 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.27 2004/07/10 02:17:59 rocky Exp $";
 
 
 /* reader */
 
 #define DEFAULT_CDIO_DEVICE "image.nrg"
-
-typedef struct {
-  int            track_num;  /* Probably is index+1 */
-  msf_t          start_msf;
-  lba_t          start_lba;
-  int            start_index;
-  int            sec_count;  /* Number of sectors in track. Does not 
-				 include pregap before next entry. */
-  int            flags;      /* don't copy, 4 channel audio, pre emphasis */
-  track_format_t track_format;
-  bool           track_green;
-  uint16_t  datasize;        /* How much is in the portion we return back? */
-  long int  datastart;       /* Offset from begining that data starts */
-  uint16_t  endsize;         /* How much stuff at the end to skip over. This
-			       stuff may have error correction (EDC, or ECC).*/
-  uint16_t  blocksize;       /* total block size = start + size + end */
-} track_info_t;
 
 /* 
    Link element of track structure as a linked list.

@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.29 2004/07/10 01:21:20 rocky Exp $
+    $Id: bincue.c,v 1.30 2004/07/10 02:17:59 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,16 +26,15 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.29 2004/07/10 01:21:20 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.30 2004/07/10 02:17:59 rocky Exp $";
 
+#include "image.h"
 #include "cdio_assert.h"
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
 #include <cdio/logging.h>
-#include <cdio/sector.h>
 #include <cdio/util.h>
-#include <cdio/cdtext.h>
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -70,63 +69,6 @@ static const char _rcsid[] = "$Id: bincue.c,v 1.29 2004/07/10 01:21:20 rocky Exp
 
 #define DEFAULT_CDIO_DEVICE "videocd.bin"
 #define DEFAULT_CDIO_CUE    "videocd.cue"
-
-/* track modes (Table 350) */
-typedef enum {
-	AUDIO,				/* 2352 byte block length */
-	MODE1,				/* 2048 byte block length */
-	MODE1_RAW,			/* 2352 byte block length */
-	MODE2,				/* 2336 byte block length */
-	MODE2_FORM1,			/* 2048 byte block length */
-	MODE2_FORM2,			/* 2324 byte block length */
-	MODE2_FORM_MIX,			/* 2336 byte block length */
-	MODE2_RAW			/* 2352 byte block length */
-} trackmode_t;
-
-/* disc modes (5.29.2.8) */
-typedef enum {
-	CD_DA,				/* CD-DA */
-	CD_ROM,				/* CD-ROM mode 1 */
-	CD_ROM_XA			/* CD-ROM XA and CD-I */
-} discmode_t;
-
-/* track flags
- * Q Sub-channel Control Field (4.2.3.3)
- */
-typedef enum {
-	NONE = 			0x00,	/* no flags set */
-	PRE_EMPHASIS =		0x01,	/* audio track recorded with pre-emphasis */
-	COPY_PERMITTED =	0x02,	/* digital copy permitted */
-	DATA =			0x04,	/* data track */
-	FOUR_CHANNEL_AUDIO =	0x08,	/* 4 audio channels */
-	SCMS =			0x10	/* SCMS (5.29.2.7) */
-} flag_t;
-
-typedef struct {
-  track_t        track_num;   /* Probably is index+1 */
-  msf_t          start_msf;
-  lba_t          start_lba;
-  int            start_index;
-  int            sec_count;  /* Number of sectors in this track. Does not
-				include pregap */
-  int            num_indices;
-  flag_t         flags;      /* "DCP", "4CH", "PRE" */
-  track_format_t track_format;
-  char           *filename;
-  bool           track_green;
-  long int       pregap;	/* pre-gap with zero audio data */
-  char          *isrc;		/* IRSC Code (5.22.4) exactly 12 bytes */
-  cdtext_t      *cdtext;	/* CD-TEXT */
-
-  trackmode_t    mode;
-  uint16_t  datasize;        /* How much is in the portion we return back? */
-  uint16_t  datastart;       /* Offset from begining that data starts */
-  uint16_t  endsize;         /* How much stuff at the end to skip over. This
-			       stuff may have error correction (EDC, or ECC).*/
-  uint16_t  blocksize;       /* total block size = start + size + end */
-
-  
-} track_info_t;
 
 typedef struct {
   /* Things common to all drivers like this. 
