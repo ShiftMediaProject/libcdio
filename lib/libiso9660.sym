@@ -1,14 +1,18 @@
 iso9660_close
 iso9660_dir_add_entry_su
 iso9660_dir_calc_record_size
+iso9660_dir_init_new;
 iso9660_dir_init_new_su
+iso9660_dir_to_name;
 iso9660_dirname_valid_p
 iso9660_find_fs_lsn
 iso9660_fs_read_pvd
 iso9660_fs_read_superblock
 iso9660_fs_readdir
 iso9660_fs_stat
+iso9660_fs_stat_translate;
 iso9660_get_application_id
+iso9660_get_dir_len;
 iso9660_get_dtime
 iso9660_get_preparer_id
 iso9660_get_publisher_id
@@ -30,7 +34,10 @@ iso9660_ifs_get_system_id
 iso9660_ifs_get_volume_id
 iso9660_ifs_get_volumeset_id
 iso9660_ifs_is_xa
+iso9660_ifs_read_pvd;
+iso9660_ifs_read_superblock;
 iso9660_ifs_readdir
+iso9660_ifs_stat;
 iso9660_ifs_stat_translate
 iso9660_isachar
 iso9660_isdchar
@@ -47,6 +54,7 @@ iso9660_pathtable_l_add_entry
 iso9660_pathtable_m_add_entry
 iso9660_set_dtime
 iso9660_set_evd
+iso9660_set_ltime;
 iso9660_set_pvd
 iso9660_strncpy_pad
 iso9660_xa_init
