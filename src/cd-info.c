@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.76 2004/07/25 11:32:33 rocky Exp $
+    $Id: cd-info.c,v 1.77 2004/07/25 17:32:19 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1051,7 +1051,7 @@ main(int argc, const char *argv[])
       printf("No information");
       break;
     case CDIO_DISC_MODE_ERROR:
-      printf("No error");
+      printf("Error in getting information");
       break;
     }
     printf("\n");

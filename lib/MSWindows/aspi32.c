@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.34 2004/07/25 10:26:22 rocky Exp $
+    $Id: aspi32.c,v 1.35 2004/07/25 17:32:19 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,12 +27,13 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.34 2004/07/25 10:26:22 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.35 2004/07/25 17:32:19 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
 #include <cdio/scsi_mmc.h>
+#include <cdio/dvd.h>
 #include "cdio_assert.h"
 
 #include <string.h>
@@ -175,6 +176,114 @@ have_aspi( HMODULE *hASPI,
   }
 
   return true;
+}
+
+
+/*! 
+  Get disc type associated with cd object.
+*/
+static discmode_t
+get_dvd_struct_physical (_img_private_t *p_env, cdio_dvd_struct_t *s)
+{
+  scsi_mmc_cdb_t cdb = {{0, }};
+  unsigned char buf[20], *base;
+  int i_status;
+  uint8_t layer_num = s->physical.layer_num;
+  
+  cdio_dvd_layer_t *layer;
+  
+  if (layer_num >= CDIO_DVD_MAX_LAYERS)
+    return -EINVAL;
+  
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_DVD_STRUCTURE);
+  cdb.field[6] = layer_num;
+  cdb.field[7] = CDIO_DVD_STRUCT_PHYSICAL;
+  cdb.field[9] = sizeof(buf) & 0xff;
+  
+  i_status = scsi_mmc_run_cmd_aspi(p_env, OP_TIMEOUT_MS, 
+				   scsi_mmc_get_cmd_len(cdb.field[0]), 
+				   &cdb, SCSI_MMC_DATA_READ, sizeof(buf), 
+				   &buf);
+  if (0 != i_status)
+    return CDIO_DISC_MODE_ERROR;
+  
+  base = &buf[4];
+  layer = &s->physical.layer[layer_num];
+  
+  /*
+   * place the data... really ugly, but at least we won't have to
+   * worry about endianess in userspace.
+   */
+  memset(layer, 0, sizeof(*layer));
+  layer->book_version = base[0] & 0xf;
+  layer->book_type = base[0] >> 4;
+  layer->min_rate = base[1] & 0xf;
+  layer->disc_size = base[1] >> 4;
+  layer->layer_type = base[2] & 0xf;
+  layer->track_path = (base[2] >> 4) & 1;
+  layer->nlayers = (base[2] >> 5) & 3;
+  layer->track_density = base[3] & 0xf;
+  layer->linear_density = base[3] >> 4;
+  layer->start_sector = base[5] << 16 | base[6] << 8 | base[7];
+  layer->end_sector = base[9] << 16 | base[10] << 8 | base[11];
+  layer->end_sector_l0 = base[13] << 16 | base[14] << 8 | base[15];
+  layer->bca = base[16] >> 7;
+
+  return 0;
+}
+
+/*! 
+  Get disc type associated with cd object.
+*/
+discmode_t
+get_discmode_aspi (_img_private_t *p_env)
+{
+  int32_t i_discmode;
+
+  /* See if this is a DVD. */
+  cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
+
+  dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
+  dvd.physical.layer_num = 0;
+  if (0 == get_dvd_struct_physical (p_env, &dvd)) {
+    switch(dvd.physical.layer[0].book_type) {
+    case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
+    case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
+    case CDIO_DVD_BOOK_DVD_R:    return CDIO_DISC_MODE_DVD_R;
+    case CDIO_DVD_BOOK_DVD_RW:   return CDIO_DISC_MODE_DVD_RW;
+    case CDIO_DVD_BOOK_DVD_PW:   return CDIO_DISC_MODE_DVD_PR;
+    case CDIO_DVD_BOOK_DVD_PRW:  return CDIO_DISC_MODE_DVD_PRW;
+    default: return CDIO_DISC_MODE_DVD_OTHER;
+    }
+  }
+
+#if 1
+  return CDIO_DISC_MODE_ERROR;
+#else
+  i_discmode = ioctl (p_env->gen.fd, CDROM_DISC_STATUS);
+
+  if (i_discmode < 0) return CDIO_DISC_MODE_ERROR;
+
+  /* FIXME Need to add getting DVD types. */
+  switch(i_discmode) {
+  case CDS_AUDIO:
+    return CDIO_DISC_MODE_CD_DA;
+  case CDS_DATA_1:
+    return CDIO_DISC_MODE_CD_DATA_1;
+  case CDS_DATA_2:
+    return CDIO_DISC_MODE_CD_DATA_2;
+  case CDS_MIXED:
+    return CDIO_DISC_MODE_CD_MIXED;
+  case CDS_XA_2_1:
+    return CDIO_DISC_MODE_CD_XA_2_1;
+  case CDS_XA_2_2:
+    return CDIO_DISC_MODE_CD_XA_2_2;
+  case CDS_NO_INFO:
+    return CDIO_DISC_MODE_NO_INFO;
+  default:
+    return CDIO_DISC_MODE_ERROR;
+  }
+#endif
 }
 
 const char *
@@ -395,7 +504,7 @@ init_aspi (_img_private_t *env)
   cdb	        CDB bytes. All values that are needed should be set on 
                 input. We'll figure out what the right CDB length should be.
 
-  We return true if command completed successfully and false if not.
+  We return 0 if command completed successfully.
  */
 int
 scsi_mmc_run_cmd_aspi( const void *p_user_data, int i_timeout,
@@ -411,7 +520,7 @@ scsi_mmc_run_cmd_aspi( const void *p_user_data, int i_timeout,
   hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
   if( hEvent == NULL ) {
     cdio_info("CreateEvent failed");
-    return false;
+    return 1;
   }
   
   memset( &ssc, 0, sizeof( ssc ) );
@@ -448,10 +557,10 @@ scsi_mmc_run_cmd_aspi( const void *p_user_data, int i_timeout,
   /* check that the transfer went as planned */
   if( ssc.SRB_Status != SS_COMP ) {
     cdio_info("ASPI: %s", aspierror(ssc.SRB_Status));
-    return 0;
+    return 2;
   }
 
-  return 1;
+  return 0;
 }
 
 
@@ -463,7 +572,7 @@ static int
 read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
 		   int sector_type, unsigned int nblocks)
 {
- scsi_mmc_cdb_t cdb = {{0, }};
+  scsi_mmc_cdb_t cdb = {{0, }};
   unsigned int i_buf;
 
   int sync        = 0;
@@ -608,7 +717,7 @@ read_toc_aspi (_img_private_t *p_env)
 				      scsi_mmc_get_cmd_len(cdb.field[0]), 
 				      &cdb, SCSI_MMC_DATA_READ, 
 				      i_toclength, p_fulltoc);
-    if( 0 == i_status ) {
+    if( 0 != i_status ) {
       p_env->i_tracks = 0;
     }
     

@@ -1,6 +1,6 @@
 /* Win32 aspi specific */
 /*
-    $Id: aspi32.h,v 1.10 2004/07/23 14:40:43 rocky Exp $
+    $Id: aspi32.h,v 1.11 2004/07/25 17:32:19 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -164,6 +164,11 @@ typedef struct                     // Offset
     WORD        HA_Rsvd1;          // 3A/058 Reserved, MUST = 0
 }
 SRB_HAInquiry;
+
+/*! 
+  Get disc type associated with cd object.
+*/
+discmode_t get_discmode_aspi (_img_private_t *p_env);
 
 /*!
   Return the the kind of drive capabilities of device.

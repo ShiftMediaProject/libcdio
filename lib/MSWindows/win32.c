@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.27 2004/07/23 14:40:43 rocky Exp $
+    $Id: win32.c,v 1.28 2004/07/25 17:32:19 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.27 2004/07/23 14:40:43 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.28 2004/07/25 17:32:19 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -91,8 +91,20 @@ str_to_access_mode_win32(const char *psz_access_mode)
   }
 }
 
+static discmode_t
+get_discmode_win32(void *p_user_data) 
+{
+  _img_private_t *p_env = p_user_data;
+
+  if ( WIN_NT ) {
+    return CDIO_DISC_MODE_ERROR;
+  } else {
+    return get_discmode_aspi (p_env);
+  }
+}
+
 static const char *
-cdio_is_cdrom(const char drive_letter) {
+is_cdrom_win32(const char drive_letter) {
   if ( WIN_NT ) {
     return is_cdrom_win32ioctl (drive_letter);
   } else {
@@ -670,7 +682,7 @@ cdio_get_devices_win32 (void)
      Not always 100% reliable, so use the USE_MNTENT code above first.
   */
   for (drive_letter='A'; drive_letter <= 'Z'; drive_letter++) {
-    const char *drive_str=cdio_is_cdrom(drive_letter);
+    const char *drive_str=is_cdrom_win32(drive_letter);
     if (drive_str != NULL) {
       cdio_add_device_list(&drives, drive_str, &num_drives);
     }
@@ -695,7 +707,7 @@ cdio_get_default_device_win32(void)
   char drive_letter;
 
   for (drive_letter='A'; drive_letter <= 'Z'; drive_letter++) {
-    const char *drive_str=cdio_is_cdrom(drive_letter);
+    const char *drive_str=is_cdrom_win32(drive_letter);
     if (drive_str != NULL) {
       return strdup(drive_str);
     }
@@ -773,6 +785,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
     .get_cdtext         = _get_cdtext_win32,
     .get_default_device = cdio_get_default_device_win32,
     .get_devices        = cdio_get_devices_win32,
+    .get_discmode       = get_discmode_win32,
     .get_drive_cap      = _cdio_get_drive_cap,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_mcn            = _cdio_get_mcn, 
