@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.8 2005/03/12 20:32:23 rocky Exp $
+    $Id: cdda-player.c,v 1.9 2005/03/13 03:37:18 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -191,8 +191,7 @@ typedef enum {
   LINE_LAST         = 25
 } track_line_t;
 
-
-
+/*! Curses window initialization. */
 static void
 tty_raw()
 {
@@ -205,20 +204,22 @@ tty_raw()
   refresh();
 }
 
+/*! Curses window finalization. */
 static void
 tty_restore()
 {
   if (!interactive) return;
-  
   endwin();
 }
 
+/* Signal handler - Ctrl-C and others. */
 static void
 ctrlc(int signal)
 {
   b_sig = true;
 }
 
+/* Timed wait on an event. */
 static int
 select_wait(int sec)
 {
@@ -291,6 +292,7 @@ oops(const char *psz_msg, int rc)
 
 /* ---------------------------------------------------------------------- */
 
+/*! Stop playing audio CD */
 static void
 cd_stop(CdIo_t *p_cdio)
 {
@@ -302,6 +304,7 @@ cd_stop(CdIo_t *p_cdio)
   }
 }
 
+/*! Eject CD */
 static void
 cd_eject(void)
 {
@@ -315,6 +318,7 @@ cd_eject(void)
   }
 }
 
+/*! Close CD tray */
 static void
 cd_close(const char *psz_device)
 {
@@ -325,6 +329,7 @@ cd_close(const char *psz_device)
   }
 }
 
+/*! Pause playing audio CD */
 static void
 cd_pause(CdIo_t *p_cdio)
 {
@@ -333,6 +338,7 @@ cd_pause(CdIo_t *p_cdio)
       xperror("pause");
 }
 
+/*! Get status/track/position info of an audio CD */
 static void
 read_subchannel(CdIo_t *p_cdio)
 {
@@ -348,9 +354,58 @@ read_subchannel(CdIo_t *p_cdio)
 }
 
 #define add_cddb_disc_info(format_str, field) \
-  if (p_cddb_disc->field) \
+  if (p_cddb_disc->field && !strlen(field)) \
     snprintf(field, sizeof(field), format_str, p_cddb_disc->field);
 
+static void 
+get_cddb_disc_info(CdIo_t *p_cdio) 
+{
+#ifdef HAVE_CDDB
+  b_db = init_cddb(p_cdio, &p_conn, &p_cddb_disc, xperror, i_first_track, 
+		   i_tracks, &i_cddb_matches);
+  if (b_db) {
+    add_cddb_disc_info("%s",  artist);
+    add_cddb_disc_info("%s",  title);
+    add_cddb_disc_info("%s",  genre);
+    add_cddb_disc_info("%4d", year);
+  }
+#endif
+  return;
+}
+
+#define add_cdtext_disc_info(format_str, info_field, FIELD) \
+  if (p_cdtext->field[FIELD] && !strlen(info_field)) { \
+    snprintf(info_field, sizeof(info_field), format_str,  \
+	     p_cdtext->field[FIELD]); \
+  }
+
+static void 
+get_cdtext_disc_info(CdIo_t *p_cdio) 
+{
+  cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio, 0);
+
+  if (p_cdtext) {
+    add_cdtext_disc_info("%s", title, CDTEXT_TITLE);
+    add_cdtext_disc_info("%s", artist, CDTEXT_PERFORMER);
+    add_cdtext_disc_info("%s", genre, CDTEXT_GENRE);
+    cdtext_destroy(p_cdtext);
+  }
+}
+
+static void 
+get_disc_info(CdIo_t *p_cdio) 
+{
+  b_db = false;
+  if (b_prefer_cdtext) {
+    get_cdtext_disc_info(p_cdio);
+    get_cddb_disc_info(p_cdio);
+  } else {
+    get_cddb_disc_info(p_cdio);
+    get_cdtext_disc_info(p_cdio);
+  }
+}
+
+/*! Read CD TOC  and set CD information. */
 static void
 read_toc(CdIo_t *p_cdio)
 {
@@ -376,19 +431,7 @@ read_toc(CdIo_t *p_cdio)
   } else {
     b_cd = true;
     data = 0;
-#ifdef HAVE_CDDB
-    b_db = init_cddb(p_cdio, &p_conn, &p_cddb_disc, xperror, i_first_track, 
-		     i_tracks, &i_cddb_matches);
-    if (b_db) {
-      add_cddb_disc_info("%s",  artist);
-      add_cddb_disc_info("%s",  title);
-      add_cddb_disc_info("%s",  genre);
-      add_cddb_disc_info("%4d", year);
-    }
-    
-#else
-    b_db = false;
-#endif
+    get_disc_info(p_cdio);
     for (i = i_first_track; i <= i_last_track+1; i++) {
       int s;
       if ( !cdio_get_track_msf(p_cdio, i, &(toc[i])) )
@@ -429,6 +472,7 @@ read_toc(CdIo_t *p_cdio)
   display_cdinfo(p_cdio, i_tracks, i_first_track);
 }
 
+/*! Play an audio track. */
 static void
 play_track(track_t i_start_track, track_t i_end_track)
 {
@@ -614,8 +658,8 @@ get_cdtext_track_info(track_t i_track)
   if (NULL != p_cdtext) {
     add_cdtext_track_info("%s", title, CDTEXT_TITLE);
     add_cdtext_track_info("%s", title, CDTEXT_PERFORMER);
+    cdtext_destroy(p_cdtext);
   }
-  cdtext_destroy(p_cdtext);
 }
 
 static void
