@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.52 2004/11/07 06:42:16 rocky Exp $
+    $Id: aspi32.c,v 1.53 2004/11/07 16:29:05 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.52 2004/11/07 06:42:16 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.53 2004/11/07 16:29:05 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -682,7 +682,8 @@ read_toc_aspi (_img_private_t *p_env)
     int i, i_toclength;
     unsigned char *p_fulltoc;
     
-    i_toclength = 4 /* header */ + CDIO_MMC_GET_LEN16(tocheader);
+    i_toclength = 4 /* header */ + tocheader[0] +
+      ((unsigned int) tocheader[1] << 8);
     
     p_fulltoc = malloc( i_toclength );
     
@@ -703,8 +704,10 @@ read_toc_aspi (_img_private_t *p_env)
     
     for( i = 0 ; i <= p_env->gen.i_tracks ; i++ ) {
       int i_index = 8 + 8 * i;
-      unsigned char *p = &(p_fulltoc[ i_index ]);
-      p_env->tocent[ i ].start_lsn = CDIO_MMC_GET_LEN32(p);
+      p_env->tocent[ i ].start_lsn = ((int)p_fulltoc[ i_index ] << 24) +
+	((int)p_fulltoc[ i_index+1 ] << 16) +
+	((int)p_fulltoc[ i_index+2 ] << 8) +
+	(int)p_fulltoc[ i_index+3 ];
       p_env->tocent[ i ].Control   = (UCHAR)p_fulltoc[ 1 + 8 * i ];
       
       cdio_debug( "p_sectors: %i %lu", 
