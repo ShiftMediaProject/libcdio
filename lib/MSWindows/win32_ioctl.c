@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.12 2004/07/16 02:48:49 rocky Exp $
+    $Id: win32_ioctl.c,v 1.13 2004/07/16 02:52:30 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.12 2004/07/16 02:48:49 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.13 2004/07/16 02:52:30 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -516,11 +516,11 @@ get_cdtext_win32ioctl (_img_private_t *env)
       }
       pdata++;
     }
-#endif
   }
 
   env->b_cdtext_init = true;
   return &(env->cdtext);
+#endif
 }
 
 /*!
