@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.3 2003/03/29 17:32:00 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.4 2003/03/30 01:11:35 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.3 2003/03/29 17:32:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.4 2003/03/30 01:11:35 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -54,7 +54,9 @@ static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.3 2003/03/29 17:32:00 rocky 
 #define FIRST_TRACK_NUM (_obj->tochdr.cdth_trk0)
 
 typedef struct {
-  int fd;
+  /* Things common to all drivers like this. 
+     This must be first. */
+  generic_img_private_t gen; 
 
   int ioctls_debugged; /* for debugging */
 
@@ -80,39 +82,22 @@ typedef struct {
 static bool
 _cdio_init (_img_private_t *_obj)
 {
-  if (_obj->init) {
+  if (_obj->gen.init) {
     cdio_error ("init called more than once");
     return false;
   }
   
-  _obj->fd = open (_obj->source_name, O_RDONLY, 0);
+  _obj->gen.fd = open (_obj->source_name, O_RDONLY, 0);
 
-  if (_obj->fd < 0)
+  if (_obj->gen.fd < 0)
     {
       cdio_error ("open (%s): %s", _obj->source_name, strerror (errno));
       return false;
     }
 
-  _obj->init = true;
+  _obj->gen.init = true;
   _obj->toc_init = false;
   return true;
-}
-
-/*!
-  Release and free resources associated with cd. 
- */
-static void
-_cdio_free (void *user_data)
-{
-  _img_private_t *_obj = user_data;
-
-  if (NULL == _obj) return;
-  free (_obj->source_name);
-
-  if (_obj->fd >= 0)
-    close (_obj->fd);
-
-  free (_obj);
 }
 
 /*!
@@ -157,7 +142,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
       break;
       
     case _AM_IOCTL:
-      if (ioctl (_obj->fd, CDROMREADMODE2, &buf) == -1)
+      if (ioctl (_obj->gen.fd, CDROMREADMODE2, &buf) == -1)
 	{
 	  perror ("ioctl()");
 	  return 1;
@@ -219,7 +204,7 @@ _cdio_stat_size (void *user_data)
 
   tocent.cdte_track = CDROM_LEADOUT;
   tocent.cdte_format = CDROM_LBA;
-  if (ioctl (_obj->fd, CDROMREADTOCENTRY, &tocent) == -1)
+  if (ioctl (_obj->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
       perror ("ioctl(CDROMREADTOCENTRY)");
       exit (EXIT_FAILURE);
@@ -270,7 +255,7 @@ _cdio_read_toc (_img_private_t *_obj)
   int i;
 
   /* read TOC header */
-  if ( ioctl(_obj->fd, CDROMREADTOCHDR, &_obj->tochdr) == -1 ) {
+  if ( ioctl(_obj->gen.fd, CDROMREADTOCHDR, &_obj->tochdr) == -1 ) {
     cdio_error("%s: %s\n", 
             "error in ioctl CDROMREADTOCHDR", strerror(errno));
     return false;
@@ -280,7 +265,7 @@ _cdio_read_toc (_img_private_t *_obj)
   for (i= FIRST_TRACK_NUM; i<=TOTAL_TRACKS; i++) {
     _obj->tocent[i-1].cdte_track = i;
     _obj->tocent[i-1].cdte_format = CDROM_MSF;
-    if ( ioctl(_obj->fd, CDROMREADTOCENTRY, &_obj->tocent[i-1]) == -1 ) {
+    if ( ioctl(_obj->gen.fd, CDROMREADTOCENTRY, &_obj->tocent[i-1]) == -1 ) {
       cdio_error("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
               i, strerror(errno));
@@ -299,7 +284,7 @@ _cdio_read_toc (_img_private_t *_obj)
   _obj->tocent[TOTAL_TRACKS].cdte_track = CDROM_LEADOUT;
   _obj->tocent[TOTAL_TRACKS].cdte_format = CDROM_MSF;
 
-  if (ioctl(_obj->fd, CDROMREADTOCENTRY, 
+  if (ioctl(_obj->gen.fd, CDROMREADTOCENTRY, 
 	    &_obj->tocent[TOTAL_TRACKS]) == -1 ) {
     cdio_error("%s: %s\n", 
 	     "error in ioctl CDROMREADTOCENTRY for lead-out",
@@ -349,7 +334,7 @@ _cdio_eject_media (void *user_data) {
       ret=1;
     }
     close(fd);
-    _cdio_free((void *) _obj);
+    cdio_generic_free((void *) _obj);
   }
   return 2;
 }
@@ -512,7 +497,7 @@ cdio_open_bsdi (const char *source_name)
 
   cdio_funcs _funcs = {
     .eject_media        = _cdio_eject_media,
-    .free               = _cdio_free,
+    .free               = cdio_generic_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = _cdio_get_default_device,
     .get_first_track_num= _cdio_get_first_track_num,
@@ -521,6 +506,8 @@ cdio_open_bsdi (const char *source_name)
     .get_track_green    = _cdio_get_track_green,
     .get_track_lba      = NULL, /* This could be implemented if need be. */
     .get_track_msf      = _cdio_get_track_msf,
+    .lseek              = cdio_generic_lseek,
+    .read               = cdio_generic_read,
     .read_mode2_sector  = _read_mode2_sector,
     .read_mode2_sectors = _read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
@@ -529,8 +516,8 @@ cdio_open_bsdi (const char *source_name)
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
   _data->access_mode    = _AM_IOCTL;
-  _data->init           = false;
-  _data->fd             = -1;
+  _data->gen.init       = false;
+  _data->gen.fd         = -1;
 
   _cdio_set_arg(_data, "source", (NULL == source_name) 
 		? DEFAULT_CDIO_DEVICE: source_name);
@@ -541,7 +528,7 @@ cdio_open_bsdi (const char *source_name)
   if (_cdio_init(_data))
     return ret;
   else {
-    _cdio_free (_data);
+    cdio_generic_free (_data);
     return NULL;
   }
   
