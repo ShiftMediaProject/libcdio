@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: track.h,v 1.1 2004/12/31 05:48:09 rocky Exp $
+    $Id: track.h,v 1.2 2005/01/02 22:43:41 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,6 +27,17 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+  typedef enum  {
+    TRACK_FORMAT_AUDIO,   /**< Audio track, e.g. CD-DA */
+    TRACK_FORMAT_CDI,     /**< CD-i. How this is different from DATA below? */
+    TRACK_FORMAT_XA,      /**< Mode2 of some sort */
+    TRACK_FORMAT_DATA,    /**< Mode1 of some sort */
+    TRACK_FORMAT_PSX,     /**< Playstation CD. Like audio but only 2336 bytes
+			   *   of user data.
+			   */
+    TRACK_FORMAT_ERROR    /**< Dunno what is, or some other error. */
+  } track_format_t;
 
   typedef enum {
     CDIO_TRACK_FLAG_FALSE, 

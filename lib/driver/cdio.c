@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.3 2004/12/31 05:47:36 rocky Exp $
+    $Id: cdio.c,v 1.4 2005/01/02 22:43:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.3 2004/12/31 05:47:36 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.4 2005/01/02 22:43:41 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -861,10 +861,10 @@ cdio_init(void)
   return true;
 }
 
-CdIo *
+CdIo_t *
 cdio_new (generic_img_private_t *p_env, cdio_funcs *p_funcs)
 {
-  CdIo *p_new_cdio = _cdio_malloc (sizeof (CdIo));
+  CdIo_t *p_new_cdio = _cdio_malloc (sizeof (CdIo_t));
 
   if (NULL == p_new_cdio) return NULL;
   
@@ -881,7 +881,7 @@ cdio_new (generic_img_private_t *p_env, cdio_funcs *p_funcs)
   Free any resources associated with cdio.
 */
 void
-cdio_destroy (CdIo *cdio)
+cdio_destroy (CdIo_t *cdio)
 {
   CdIo_last_driver = CDIO_DRIVER_UNINIT;
   if (cdio == NULL) return;
@@ -897,7 +897,7 @@ cdio_destroy (CdIo *cdio)
   Similar to (if not the same as) libc's lseek()
 */
 off_t
-cdio_lseek (const CdIo *cdio, off_t offset, int whence)
+cdio_lseek (const CdIo_t *cdio, off_t offset, int whence)
 {
   if (cdio == NULL) return -1;
   
@@ -912,7 +912,7 @@ cdio_lseek (const CdIo *cdio, off_t offset, int whence)
   Similar to (if not the same as) libc's read()
 */
 ssize_t
-cdio_read (const CdIo *p_cdio, void *buf, size_t size)
+cdio_read (const CdIo_t *p_cdio, void *buf, size_t size)
 {
   if (p_cdio == NULL) return -1;
   
@@ -926,7 +926,7 @@ cdio_read (const CdIo *p_cdio, void *buf, size_t size)
   from lsn. Returns 0 if no error. 
 */
 int
-cdio_read_audio_sector (const CdIo *p_cdio, void *buf, lsn_t lsn) 
+cdio_read_audio_sector (const CdIo_t *p_cdio, void *buf, lsn_t lsn) 
 {
 
   if (NULL == p_cdio || NULL == buf || CDIO_INVALID_LSN == lsn )
@@ -942,7 +942,7 @@ cdio_read_audio_sector (const CdIo *p_cdio, void *buf, lsn_t lsn)
   from lsn. Returns 0 if no error. 
 */
 int
-cdio_read_audio_sectors (const CdIo *p_cdio, void *buf, lsn_t lsn,
+cdio_read_audio_sectors (const CdIo_t *p_cdio, void *buf, lsn_t lsn,
                          unsigned int nblocks) 
 {
   if ( NULL == p_cdio || NULL == buf || CDIO_INVALID_LSN == lsn )
@@ -962,7 +962,7 @@ cdio_read_audio_sectors (const CdIo *p_cdio, void *buf, lsn_t lsn,
    into data starting from lsn. Returns 0 if no error. 
  */
 int
-cdio_read_mode1_sector (const CdIo *p_cdio, void *data, lsn_t lsn, 
+cdio_read_mode1_sector (const CdIo_t *p_cdio, void *data, lsn_t lsn, 
                         bool b_form2)
 {
   uint32_t size = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE ;
@@ -987,7 +987,7 @@ cdio_read_mode1_sector (const CdIo *p_cdio, void *data, lsn_t lsn,
 }
 
 int
-cdio_read_mode1_sectors (const CdIo *cdio, void *buf, lsn_t lsn, 
+cdio_read_mode1_sectors (const CdIo_t *cdio, void *buf, lsn_t lsn, 
                          bool b_form2,  unsigned int num_sectors)
 {
 
@@ -1005,7 +1005,7 @@ cdio_read_mode1_sectors (const CdIo *cdio, void *buf, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 int
-cdio_read_mode2_sector (const CdIo *cdio, void *buf, lsn_t lsn, 
+cdio_read_mode2_sector (const CdIo_t *cdio, void *buf, lsn_t lsn, 
                         bool b_form2)
 {
   if (NULL == cdio || NULL == buf || CDIO_INVALID_LSN == lsn )
@@ -1024,7 +1024,7 @@ cdio_read_mode2_sector (const CdIo *cdio, void *buf, lsn_t lsn,
 }
 
 int
-cdio_read_mode2_sectors (const CdIo *cdio, void *buf, lsn_t lsn, 
+cdio_read_mode2_sectors (const CdIo_t *cdio, void *buf, lsn_t lsn, 
                          bool b_form2, unsigned int num_sectors)
 {
 
@@ -1038,7 +1038,7 @@ cdio_read_mode2_sectors (const CdIo *cdio, void *buf, lsn_t lsn,
 }
 
 uint32_t
-cdio_stat_size (const CdIo *cdio)
+cdio_stat_size (const CdIo_t *cdio)
 {
   cdio_assert (cdio != NULL);
 
@@ -1049,7 +1049,7 @@ cdio_stat_size (const CdIo *cdio)
   Set the arg "key" with "value" in the source device.
 */
 int
-cdio_set_arg (CdIo *cdio, const char key[], const char value[])
+cdio_set_arg (CdIo_t *cdio, const char key[], const char value[])
 {
   cdio_assert (cdio != NULL);
   cdio_assert (cdio->op.set_arg != NULL);
@@ -1065,7 +1065,7 @@ cdio_set_arg (CdIo *cdio, const char key[], const char value[])
   
   NULL is returned on error.
 */
-CdIo *
+CdIo_t *
 cdio_open (const char *orig_source_name, driver_id_t driver_id)
 {
   return cdio_open_am(orig_source_name, driver_id, NULL);
@@ -1078,7 +1078,7 @@ cdio_open (const char *orig_source_name, driver_id_t driver_id)
   
   NULL is returned on error.
 */
-CdIo *
+CdIo_t *
 cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
               const char *psz_access_mode)
 {
@@ -1094,7 +1094,7 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
   switch (driver_id) {
   case DRIVER_UNKNOWN: 
     {
-      CdIo *cdio=scan_for_driver(CDIO_MIN_DRIVER, CDIO_MAX_DRIVER, 
+      CdIo_t *cdio=scan_for_driver(CDIO_MIN_DRIVER, CDIO_MAX_DRIVER, 
                                  psz_source, psz_access_mode);
       free(psz_source);
       return cdio;
@@ -1102,7 +1102,7 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
   case DRIVER_DEVICE: 
     {  
       /* Scan for a driver. */
-      CdIo *ret = cdio_open_am_cd(psz_source, psz_access_mode);
+      CdIo_t *ret = cdio_open_am_cd(psz_source, psz_access_mode);
       free(psz_source);
       return ret;
     }
@@ -1118,7 +1118,7 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
   case DRIVER_BINCUE:
   case DRIVER_CDRDAO:
     if ((*CdIo_all_drivers[driver_id].have_driver)()) {
-      CdIo *ret = 
+      CdIo_t *ret = 
         (*CdIo_all_drivers[driver_id].driver_open_am)(psz_source, 
                                                       psz_access_mode);
       if (ret) ret->driver_id = driver_id;
@@ -1139,7 +1139,7 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
   @return the cdio object for subsequent operations. 
   NULL on error or there is no driver for a some sort of hardware CD-ROM.
 */
-CdIo *
+CdIo_t *
 cdio_open_cd (const char *psz_source)
 {
   return cdio_open_am_cd(psz_source, NULL);
@@ -1160,7 +1160,7 @@ cdio_open_cd (const char *psz_source)
 
    For now though, we'll start more simply...
 */
-CdIo *
+CdIo_t *
 cdio_open_am_cd (const char *psz_source, const char *psz_access_mode)
 {
   if (CdIo_last_driver == -1) cdio_init();

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.5 2005/01/01 15:08:48 rocky Exp $
+    $Id: _cdio_linux.c,v 1.6 2005/01/02 22:43:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.5 2005/01/01 15:08:48 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.6 2005/01/02 22:43:41 rocky Exp $";
 
 #include <string.h>
 
@@ -1104,7 +1104,7 @@ cdio_get_default_device_linux(void)
   get called via a function pointer. In fact *we* are the
   ones to set that up.
  */
-CdIo *
+CdIo_t *
 cdio_open_linux (const char *psz_source_name)
 {
   return cdio_open_am_linux(psz_source_name, NULL);
@@ -1115,12 +1115,12 @@ cdio_open_linux (const char *psz_source_name)
   get called via a function pointer. In fact *we* are the
   ones to set that up.
  */
-CdIo *
+CdIo_t *
 cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
 {
 
 #ifdef HAVE_LINUX_CDROM
-  CdIo *ret;
+  CdIo_t *ret;
   _img_private_t *_data;
   char *psz_source;
 

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: iso9660_fs.c,v 1.2 2005/01/02 22:43:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -51,7 +51,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.2 2005/01/02 22:43:41 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -453,7 +453,7 @@ iso9660_ifs_read_superblock (iso9660_t *p_iso,
   Read the Primary Volume Descriptor for of CD.
 */
 bool 
-iso9660_fs_read_pvd(const CdIo *p_cdio, /*out*/ iso9660_pvd_t *p_pvd)
+iso9660_fs_read_pvd(const CdIo_t *p_cdio, /*out*/ iso9660_pvd_t *p_pvd)
 {
   /* A bit of a hack, we'll assume track 1 contains ISO_PVD_SECTOR.*/
   bool b_mode2;
@@ -501,7 +501,7 @@ iso9660_fs_read_pvd(const CdIo *p_cdio, /*out*/ iso9660_pvd_t *p_pvd)
   Descriptor if (Joliet) extensions are acceptable.
 */
 bool 
-iso9660_fs_read_superblock (CdIo *p_cdio, 
+iso9660_fs_read_superblock (CdIo_t *p_cdio, 
 			    iso_extension_mask_t iso_extension_mask)
 {
   if (!p_cdio) return false;
@@ -705,7 +705,7 @@ iso9660_dir_to_name (const iso9660_dir_t *iso9660_dir)
    Return a pointer to a ISO 9660 stat buffer or NULL if there's an error
 */
 static iso9660_stat_t *
-_fs_stat_root (CdIo *p_cdio)
+_fs_stat_root (CdIo_t *p_cdio)
 {
 
   if (!p_cdio) return NULL;
@@ -761,7 +761,7 @@ _fs_stat_iso_root (iso9660_t *p_iso)
 }
 
 static iso9660_stat_t *
-_fs_stat_traverse (const CdIo *p_cdio, const iso9660_stat_t *_root, 
+_fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root, 
 		   char **splitpath, bool b_mode2, bool translate)
 {
   unsigned offset = 0;
@@ -944,7 +944,7 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
   Get file status for pathname into stat. NULL is returned on error.
  */
 iso9660_stat_t *
-iso9660_fs_stat (CdIo *p_cdio, const char pathname[])
+iso9660_fs_stat (CdIo_t *p_cdio, const char pathname[])
 {
   iso9660_stat_t *p_root;
   char **p_psz_splitpath;
@@ -974,7 +974,7 @@ iso9660_fs_stat (CdIo *p_cdio, const char pathname[])
   are lowercased.
  */
 iso9660_stat_t *
-iso9660_fs_stat_translate (CdIo *p_cdio, const char pathname[], 
+iso9660_fs_stat_translate (CdIo_t *p_cdio, const char pathname[], 
 			   bool b_mode2)
 {
   iso9660_stat_t *p_root;
@@ -1051,7 +1051,7 @@ iso9660_ifs_stat_translate (iso9660_t *p_iso, const char pathname[])
   of the files inside that. The caller must free the returned result.
 */
 CdioList * 
-iso9660_fs_readdir (CdIo *p_cdio, const char pathname[], bool b_mode2)
+iso9660_fs_readdir (CdIo_t *p_cdio, const char pathname[], bool b_mode2)
 {
   iso9660_stat_t *p_stat;
   generic_img_private_t *p_env = (generic_img_private_t *) p_cdio->env;
@@ -1182,7 +1182,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char pathname[])
 }
 
 static iso9660_stat_t *
-find_fs_lsn_recurse (CdIo *p_cdio, const char pathname[], lsn_t lsn)
+find_fs_lsn_recurse (CdIo_t *p_cdio, const char pathname[], lsn_t lsn)
 {
   CdioList *entlist = iso9660_fs_readdir (p_cdio, pathname, true);
   CdioList *dirlist =  _cdio_list_new ();
@@ -1244,7 +1244,7 @@ find_fs_lsn_recurse (CdIo *p_cdio, const char pathname[], lsn_t lsn)
    Returns stat_t of entry if we found lsn, or NULL otherwise.
  */
 iso9660_stat_t *
-iso9660_find_fs_lsn(CdIo *p_cdio, lsn_t i_lsn)
+iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn)
 {
   return find_fs_lsn_recurse (p_cdio, "/", i_lsn);
 }

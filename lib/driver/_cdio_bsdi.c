@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.2 2005/01/02 22:43:41 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.2 2005/01/02 22:43:41 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -740,7 +740,7 @@ cdio_get_default_device_bsdi(void)
   get called via a function pointer. In fact *we* are the
   ones to set that up.
  */
-CdIo *
+CdIo_t *
 cdio_open_am_bsdi (const char *psz_source_name, const char *psz_access_mode)
 {
   if (psz_access_mode != NULL)
@@ -755,12 +755,12 @@ cdio_open_am_bsdi (const char *psz_source_name, const char *psz_access_mode)
   get called via a function pointer. In fact *we* are the
   ones to set that up.
  */
-CdIo *
+CdIo_t *
 cdio_open_bsdi (const char *psz_orig_source)
 {
 
 #ifdef HAVE_BSDI_CDROM
-  CdIo *ret;
+  CdIo_t *ret;
   _img_private_t *_data;
   char *psz_source;
 

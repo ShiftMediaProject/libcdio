@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: scsi_mmc.c,v 1.2 2005/01/02 22:43:41 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -50,7 +50,7 @@
   especially tables 72, 73 and 75.
  */
 discmode_t
-scsi_mmc_get_discmode( const CdIo *p_cdio )
+scsi_mmc_get_discmode( const CdIo_t *p_cdio )
 
 {
   uint8_t buf[14] = { 0, };
@@ -142,7 +142,7 @@ scsi_mmc_get_cmd_len(uint8_t scsi_cmd)
   We return 0 if command completed successfully and 1 if not.
  */
 int
-scsi_mmc_run_cmd( const CdIo *p_cdio, unsigned int i_timeout_ms, 
+scsi_mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms, 
 		  const scsi_mmc_cdb_t *p_cdb,
 		  scsi_mmc_direction_t e_direction, unsigned int i_buf, 
 		  /*in/out*/ void *p_buf )
@@ -201,7 +201,7 @@ scsi_mmc_get_blocksize_private ( const void *p_env,
 }
 
 int 
-scsi_mmc_get_blocksize ( const CdIo *p_cdio)
+scsi_mmc_get_blocksize ( const CdIo_t *p_cdio)
 {
   if ( ! p_cdio )  return -2;
   return 
@@ -214,7 +214,7 @@ scsi_mmc_get_blocksize ( const CdIo *p_cdio)
  * Eject using SCSI MMC commands. Return 0 if successful.
  */
 int 
-scsi_mmc_eject_media( const CdIo *p_cdio )
+scsi_mmc_eject_media( const CdIo_t *p_cdio )
 {
   int i_status = 0;
   scsi_mmc_cdb_t cdb = {{0, }};
@@ -254,7 +254,7 @@ scsi_mmc_eject_media( const CdIo *p_cdio )
    Can read only up to 25 blocks.
 */
 int
-scsi_mmc_read_sectors ( const CdIo *p_cdio, void *p_buf, lba_t lba, 
+scsi_mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lba_t lba, 
 			int sector_type, unsigned int nblocks )
 {
   scsi_mmc_cdb_t cdb = {{0, }};
@@ -323,7 +323,7 @@ scsi_mmc_set_blocksize_private ( const void *p_env,
 }
 
 int 
-scsi_mmc_set_blocksize ( const CdIo *p_cdio, unsigned int i_bsize)
+scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_bsize)
 {
   if ( ! p_cdio )  return -2;
   return 
@@ -424,7 +424,7 @@ scsi_mmc_get_drive_cap_private (const void *p_env,
 }
 
 void
-scsi_mmc_get_drive_cap (const CdIo *p_cdio,
+scsi_mmc_get_drive_cap (const CdIo_t *p_cdio,
 			/*out*/ cdio_drive_read_cap_t  *p_read_cap,
 			/*out*/ cdio_drive_write_cap_t *p_write_cap,
 			/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
@@ -510,7 +510,7 @@ scsi_mmc_get_dvd_struct_physical_private ( void *p_env, const
   Get the DVD type associated with cd object.
 */
 discmode_t
-scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio, cdio_dvd_struct_t *s)
+scsi_mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, cdio_dvd_struct_t *s)
 {
   if ( ! p_cdio )  return -2;
   return 
@@ -524,7 +524,7 @@ scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio, cdio_dvd_struct_t *s)
   False is returned if we had an error getting the information.
 */
 bool 
-scsi_mmc_get_hwinfo ( const CdIo *p_cdio, 
+scsi_mmc_get_hwinfo ( const CdIo_t *p_cdio, 
 		      /*out*/ cdio_hwinfo_t *hw_info )
 {
   int i_status;                  /* Result of SCSI MMC command */
@@ -594,7 +594,7 @@ scsi_mmc_get_mcn_private ( void *p_env,
 }
 
 char *
-scsi_mmc_get_mcn ( const CdIo *p_cdio )
+scsi_mmc_get_mcn ( const CdIo_t *p_cdio )
 {
   if ( ! p_cdio )  return NULL;
   return scsi_mmc_get_mcn_private (p_cdio->env, 
@@ -609,7 +609,7 @@ scsi_mmc_get_mcn_generic (const void *p_user_data)
 }
 
 /*
-  Read cdtext information for a CdIo object .
+  Read cdtext information for a CdIo_t object .
   
   return true on success, false on error or CD-Text information does
   not exist.

@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: cd_types.c,v 1.2 2005/01/02 22:43:41 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -221,7 +221,7 @@ _cdio_get_joliet_level( void )
    is returned in cdio_analysis and the return value.
 */
 cdio_fs_anal_t
-cdio_guess_cd_type(const CdIo *cdio, int start_session, track_t i_track, 
+cdio_guess_cd_type(const CdIo_t *cdio, int start_session, track_t i_track, 
 		   /*out*/ cdio_iso_analysis_t *iso_analysis)
 {
   int ret = CDIO_FS_UNKNOWN;
