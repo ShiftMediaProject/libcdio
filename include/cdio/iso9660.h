@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.15 2003/09/01 15:10:43 rocky Exp $
+    $Id: iso9660.h,v 1.16 2003/09/01 16:02:13 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -89,7 +89,7 @@ PRAGMA_BEGIN_PACKED
 
 /* ISO-9660 Primary Volume Descriptor.
  */
-typedef struct iso9660_pvd {
+struct iso9660_pvd {
   uint8_t  type;                      /* 711 */
   char     id[5];
   uint8_t  version;                   /* 711 */
@@ -123,9 +123,10 @@ typedef struct iso9660_pvd {
   char     unused4[1];
   char     application_data[512];
   char     unused5[653];
-} iso9660_pvd_t GNUC_PACKED;
+} GNUC_PACKED;
 
 typedef struct iso9660_dir  iso9660_dir_t;
+typedef struct iso9660_pvd  iso9660_pvd_t;
 
 #ifndef  EMPTY_ARRAY_SIZE
 #define EMPTY_ARRAY_SIZE 0
