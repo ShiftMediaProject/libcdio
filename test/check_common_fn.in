@@ -1,5 +1,12 @@
-# $Id: check_common_fn.in,v 1.2 2003/06/08 13:08:37 rocky Exp $
+# $Id: check_common_fn.in,v 1.3 2003/09/07 18:10:55 rocky Exp $
+# Common routines and setup for regression testing.
 SKIP_TEST_EXITCODE=77
+
+# Some output changes depending on TZ and locale. Set this so we get known
+# results
+TZ=CUT
+LC_TIME='en_US'
+export TZ LC_TIME
 
 check_result() {
   RC=$1
