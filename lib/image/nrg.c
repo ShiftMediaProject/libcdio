@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.28 2004/07/10 11:06:00 rocky Exp $
+    $Id: nrg.c,v 1.29 2004/07/10 11:31:42 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -45,7 +45,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.28 2004/07/10 11:06:00 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.29 2004/07/10 11:31:42 rocky Exp $";
 
 
 /* reader */
@@ -397,23 +397,31 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	  case 0:
 	    /* Mode 1 */
 	    track_format = TRACK_FORMAT_DATA;
+	    env->mode    = MODE1;
 	    break;
 	  case 2:
 	    /* Mode 2 form 1 */
 	    form2        = 0;
 	    track_format = TRACK_FORMAT_XA;
+	    env->mode    = MODE2_FORM1;
 	    break;
 	  case 3:
 	    /* Mode 2 */
 	    track_format = TRACK_FORMAT_XA;
+	    env->mode    = MODE2;
 	    break;
 	  case 0x6:
 	    /* Mode2 form mix */
-	  case 0x20:
 	    track_format = TRACK_FORMAT_XA;
+	    env->mode    = MODE2_FORM_MIX;
+	    break;
+	  case 0x20: /* ??? Mode2 form 2, Mode2 raw?? */
+	    track_format = TRACK_FORMAT_XA;
+	    env->mode    = MODE2_FORM2; /* Just a guess. */
 	    break;
 	  case 0x7:
 	    track_format = TRACK_FORMAT_AUDIO;
+	    env->mode    = AUDIO;
 	    break;
 	  default:
 	    cdio_log (log_level, "Unknown track format %x\n", 
@@ -500,24 +508,44 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 	    
 	    switch (track_mode) {
 	    case 0:
+	      /* Mode 1 */
 	      track_format = TRACK_FORMAT_DATA;
 	      track_green  = false; /* ?? */
 	      blocksize    = CDIO_CD_FRAMESIZE;
+	      env->mode    = MODE1;
 	      break;
 	    case 2:
+	      /* Mode 2 form 1 */
 	      track_format = TRACK_FORMAT_XA;
 	      track_green  = false; /* ?? */
 	      blocksize    = CDIO_CD_FRAMESIZE;
+	      env->mode    = MODE2_FORM1;
 	      break;
 	    case 3:
+	      /* Mode 2 */
 	      track_format = TRACK_FORMAT_XA;
 	      track_green  = true;
 	      blocksize    = M2RAW_SECTOR_SIZE;
+	      env->mode    = MODE2;
+	      break;
+	    case 06:
+	      /* Mode2 form mix */
+	      track_format = TRACK_FORMAT_XA;
+	      track_green  = true;
+	      blocksize    = M2RAW_SECTOR_SIZE;
+	      env->mode    = MODE2_FORM_MIX;
+	      break;
+	    case 0x20: /* ??? Mode2 form 2, Mode2 raw?? */
+	      track_format = TRACK_FORMAT_XA;
+	      track_green  = true;
+	      blocksize    = M2RAW_SECTOR_SIZE;
+	      env->mode    = MODE2_FORM2; /* Just a guess. */
 	      break;
 	    case 7:
 	      track_format = TRACK_FORMAT_AUDIO;
 	      track_green  = false;
 	      blocksize    = CDIO_CD_FRAMESIZE_RAW;
+	      env->mode    = AUDIO;
 	      break;
 	    default:
 	      cdio_log (log_level, 
