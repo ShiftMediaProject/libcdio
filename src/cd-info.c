@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.126 2005/03/02 04:24:00 rocky Exp $
+    $Id: cd-info.c,v 1.127 2005/03/05 10:10:16 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1140,14 +1140,27 @@ main(int argc, const char *argv[])
       if (i_read_cap & CDIO_DRIVE_CAP_READ_MCN)
 	report(stdout, "not available\n");
       else
-	report(stdout, "not supported by drive\n");
-    }
-    
-    else {
+	report(stdout, "not supported by drive/driver\n");
+    } else {
       report(stdout, "%s\n", media_catalog_number);
       free(media_catalog_number);
     }
-  
+
+    /* List number of sessions */
+    {
+      unsigned int i_last_session;
+      report(stdout, "Last CD Session #: "); fflush(stdout);
+      if (DRIVER_OP_SUCCESS == cdio_get_last_session(p_cdio, &i_last_session)) 
+	{
+	  report(stdout, "%d\n", i_last_session);
+	} else {
+	  if (i_read_cap & CDIO_DRIVE_CAP_MISC_MULTI_SESSION)
+	    report(stdout, "failed\n");
+	  else
+	    report(stdout, "not supported by drive/driver\n");
+	}
+    }
+      
     /* get audio status from subchannel */
     if  ( CDIO_DISC_MODE_CD_DA == discmode ||
 	  CDIO_DISC_MODE_CD_MIXED == discmode ) {
@@ -1219,25 +1232,6 @@ main(int argc, const char *argv[])
     }
   }
 
-  
-    
-#if CDIO_IOCTL_FINISHED
-  if (!opts.no_ioctl) {
-    report(stdout, "What ioctl's report...\n");
-  
-#ifdef CDROMMULTISESSION
-    /* get multisession */
-    report( stdout, "multisession: "); fflush(stdout);
-    ms.addr_format = CDROM_LBA;
-    if (ioctl(filehandle,CDROMMULTISESSION,&ms))
-      report( stdout, "FAILED\n");
-    else
-      report( stdout, "%d%s\n",ms.addr.lba,ms.xa_flag?" XA":"");
-#endif 
-    
-  }
-#endif /*CDIO_IOCTL_FINISHED*/
-  
   if (!opts.no_analysis) {
     if (b_playing_audio) {
       /* Running a CD Analysis would mess up audio playback.*/

@@ -62,6 +62,7 @@ cdio_get_first_track_num
 cdio_get_hwinfo
 cdio_get_joliet_level
 cdio_get_last_track_num
+cdio_get_last_session
 cdio_get_media_changed
 cdio_get_mcn
 cdio_get_num_tracks

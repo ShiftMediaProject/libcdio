@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.1 2005/03/05 09:26:52 rocky Exp $
+    $Id: gnu_linux.c,v 1.2 2005/03/05 10:10:16 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.1 2005/03/05 09:26:52 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.2 2005/03/05 10:10:16 rocky Exp $";
 
 #include <string.h>
 
@@ -395,6 +395,33 @@ get_drive_cap_linux (const void *p_user_data,
     *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_RESET;
 }
 #endif
+
+/*!
+  Return the session number of the last on the CD. 
+  
+  @param p_cdio the CD object to be acted upon.
+  @param i_last_session pointer to the session number to be returned.
+*/
+static driver_return_code_t 
+get_last_session_linux (void *p_user_data, 
+                        /*out*/ unsigned int *i_last_session)
+{
+  const _img_private_t *p_env = p_user_data;
+  struct cdrom_multisession ms;
+  int i_rc;
+  
+  ms.addr_format = CDROM_LBA;
+  i_rc = ioctl(p_env->gen.fd, CDROMMULTISESSION, &ms);
+  if (0 == i_rc) {
+    *i_last_session = ms.addr.lba;
+    return DRIVER_OP_SUCCESS;
+  } else {
+    cdio_warn ("ioctl CDROMMULTISESSION failed: %s\n", strerror(errno));  
+    return DRIVER_OP_ERROR;
+  }
+}
+
+
 
 /*! 
   Find out if media has changed since the last call.
@@ -1318,6 +1345,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
 #endif
     .get_first_track_num   = get_first_track_num_generic,
     .get_hwinfo            = NULL,
+    .get_last_session      = get_last_session_linux,
     .get_media_changed     = get_media_changed_linux,
     .get_mcn               = get_mcn_linux,
     .get_num_tracks        = get_num_tracks_generic,

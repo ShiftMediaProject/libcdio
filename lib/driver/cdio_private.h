@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.19 2005/03/05 09:26:52 rocky Exp $
+    $Id: cdio_private.h,v 1.20 2005/03/05 10:10:16 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -201,6 +201,15 @@ extern "C" {
     */
     bool (*get_hwinfo) 
 	 ( const CdIo_t *p_cdio, /* out*/ cdio_hwinfo_t *p_hw_info );
+
+    /*!
+       Return the session number of the last on the CD. 
+	   
+       @param p_cdio the CD object to be acted upon.
+       @param i_last_session pointer to the session number to be returned.
+    */
+    driver_return_code_t (*get_last_session)
+	 (void *p_env, /*out*/ unsigned int *i_last_session);
 
     /*! 
       Find out if media has changed since the last call.
