@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.16 2003/09/01 16:02:13 rocky Exp $
+    $Id: iso9660.h,v 1.17 2003/09/05 22:48:16 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -257,12 +257,22 @@ iso9660_dir_add_entry_su (void *dir, const char name[], uint32_t extent,
 unsigned int 
 iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
 
+/*!
+   Given a directory pointer, find the filesystem entry that contains
+   lsn and return information about it in stat. 
+
+   Returns true if we found an entry with the lsn and false if not.
+ */
+bool
+iso9660_find_fs_lsn(const CdIo *cdio, lsn_t lsn, /*out*/ iso9660_stat_t *stat);
+
+
 int
-iso9660_fs_stat (CdIo *obj,const char pathname[], iso9660_stat_t *buf,
+iso9660_fs_stat (const CdIo *obj, const char pathname[], iso9660_stat_t *buf,
                  bool is_mode2);
 
 void * /* list of char* -- caller must free it */
-iso9660_fs_readdir (CdIo *obj, const char pathname[], bool mode2);
+iso9660_fs_readdir (const CdIo *obj, const char pathname[], bool mode2);
 
 uint8_t
 iso9660_get_dir_len(const iso9660_dir_t *idr);

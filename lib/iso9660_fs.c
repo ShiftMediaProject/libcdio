@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.5 2003/08/31 15:52:56 rocky Exp $
+    $Id: iso9660_fs.c,v 1.6 2003/09/05 22:48:16 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -36,7 +36,9 @@
 #include "bytesex.h"
 #include "ds.h"
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.5 2003/08/31 15:52:56 rocky Exp $";
+#include <stdio.h>
+
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.6 2003/09/05 22:48:16 rocky Exp $";
 
 static void
 _idr2statbuf (const iso9660_dir_t *idr, iso9660_stat_t *buf, bool is_mode2)
@@ -108,17 +110,17 @@ _idr2name (const iso9660_dir_t *idr)
 
 
 static void
-_fs_stat_root (CdIo *obj, iso9660_stat_t *buf, bool is_mode2)
+_fs_stat_root (const CdIo *cdio, iso9660_stat_t *buf, bool is_mode2)
 {
   char block[ISO_BLOCKSIZE] = { 0, };
   const iso9660_pvd_t *pvd = (void *) &block;
   const iso9660_dir_t *idr = (void *) pvd->root_directory_record;
 
   if (is_mode2) {
-    if (cdio_read_mode2_sector (obj, &block, ISO_PVD_SECTOR, false))
+    if (cdio_read_mode2_sector (cdio, &block, ISO_PVD_SECTOR, false))
       cdio_assert_not_reached ();
   } else {
-    if (cdio_read_mode1_sector (obj, &block, ISO_PVD_SECTOR, false))
+    if (cdio_read_mode1_sector (cdio, &block, ISO_PVD_SECTOR, false))
       cdio_assert_not_reached ();
   }
 
@@ -126,8 +128,8 @@ _fs_stat_root (CdIo *obj, iso9660_stat_t *buf, bool is_mode2)
 }
 
 static int
-_fs_stat_traverse (CdIo *obj, const iso9660_stat_t *_root, char **splitpath, 
-		   iso9660_stat_t *buf, bool is_mode2)
+_fs_stat_traverse (const CdIo *cdio, const iso9660_stat_t *_root, 
+		   char **splitpath, iso9660_stat_t *buf, bool is_mode2)
 {
   unsigned offset = 0;
   uint8_t *_dirbuf = NULL;
@@ -152,11 +154,11 @@ _fs_stat_traverse (CdIo *obj, const iso9660_stat_t *_root, char **splitpath,
   _dirbuf = _cdio_malloc (_root->secsize * ISO_BLOCKSIZE);
 
   if (is_mode2) {
-    if (cdio_read_mode2_sectors (obj, _dirbuf, _root->lsn, false, 
+    if (cdio_read_mode2_sectors (cdio, _dirbuf, _root->lsn, false, 
 				 _root->secsize))
       cdio_assert_not_reached ();
   } else {
-    if (cdio_read_mode1_sectors (obj, _dirbuf, _root->lsn, false,
+    if (cdio_read_mode1_sectors (cdio, _dirbuf, _root->lsn, false,
 				 _root->secsize))
       cdio_assert_not_reached ();
   }
@@ -180,7 +182,7 @@ _fs_stat_traverse (CdIo *obj, const iso9660_stat_t *_root, char **splitpath,
 
       if (!strcmp (splitpath[0], _name))
 	{
-	  int retval = _fs_stat_traverse (obj, &_stat, &splitpath[1], buf,
+	  int retval = _fs_stat_traverse (cdio, &_stat, &splitpath[1], buf,
 					  is_mode2);
 	  free (_name);
 	  free (_dirbuf);
@@ -200,35 +202,35 @@ _fs_stat_traverse (CdIo *obj, const iso9660_stat_t *_root, char **splitpath,
 }
 
 int
-iso9660_fs_stat (CdIo *obj, const char pathname[], iso9660_stat_t *buf, 
+iso9660_fs_stat (const CdIo *cdio, const char pathname[], iso9660_stat_t *buf, 
 		 bool is_mode2)
 {
   iso9660_stat_t _root;
   int retval;
   char **splitpath;
 
-  cdio_assert (obj != NULL);
+  cdio_assert (cdio != NULL);
   cdio_assert (pathname != NULL);
   cdio_assert (buf != NULL);
 
-  _fs_stat_root (obj, &_root, is_mode2);
+  _fs_stat_root (cdio, &_root, is_mode2);
 
   splitpath = _cdio_strsplit (pathname, '/');
-  retval = _fs_stat_traverse (obj, &_root, splitpath, buf, is_mode2);
+  retval = _fs_stat_traverse (cdio, &_root, splitpath, buf, is_mode2);
   _cdio_strfreev (splitpath);
 
   return retval;
 }
 
 void * /* list of char* -- caller must free it */
-iso9660_fs_readdir (CdIo *obj, const char pathname[], bool is_mode2)
+iso9660_fs_readdir (const CdIo *cdio, const char pathname[], bool is_mode2)
 {
   iso9660_stat_t _stat;
 
-  cdio_assert (obj != NULL);
+  cdio_assert (cdio != NULL);
   cdio_assert (pathname != NULL);
 
-  if (iso9660_fs_stat (obj, pathname, &_stat, is_mode2))
+  if (iso9660_fs_stat (cdio, pathname, &_stat, is_mode2))
     return NULL;
 
   if (_stat.type != _STAT_DIR)
@@ -248,11 +250,11 @@ iso9660_fs_readdir (CdIo *obj, const char pathname[], bool is_mode2)
     _dirbuf = _cdio_malloc (_stat.secsize * ISO_BLOCKSIZE);
 
     if (is_mode2) {
-      if (cdio_read_mode2_sectors (obj, _dirbuf, _stat.lsn, false, 
+      if (cdio_read_mode2_sectors (cdio, _dirbuf, _stat.lsn, false, 
 				 _stat.secsize))
 	cdio_assert_not_reached ();
     } else {
-      if (cdio_read_mode1_sectors (obj, _dirbuf, _stat.lsn, false,
+      if (cdio_read_mode1_sectors (cdio, _dirbuf, _stat.lsn, false,
 				   _stat.secsize))
 	cdio_assert_not_reached ();
     }
@@ -277,5 +279,72 @@ iso9660_fs_readdir (CdIo *obj, const char pathname[], bool is_mode2)
     free (_dirbuf);
     return retval;
   }
+}
+
+static bool
+find_fs_lsn_recurse (const CdIo *cdio, const char pathname[], 
+		     /*out*/ iso9660_stat_t *statbuf, lsn_t lsn)
+{
+  CdioList *entlist = iso9660_fs_readdir (cdio, pathname, true);
+  CdioList *dirlist =  _cdio_list_new ();
+  CdioListNode *entnode;
+    
+  cdio_assert (entlist != NULL);
+
+  /* iterate over each entry in the directory */
+  
+  _CDIO_LIST_FOREACH (entnode, entlist)
+    {
+      char *_name = _cdio_list_node_data (entnode);
+      char _fullname[4096] = { 0, };
+
+      snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, _name);
+  
+      if (iso9660_fs_stat (cdio, _fullname, statbuf, true))
+        cdio_assert_not_reached ();
+
+      strncat (_fullname, "/", sizeof (_fullname));
+
+      if (statbuf->type == _STAT_DIR
+          && strcmp (_name, ".") 
+          && strcmp (_name, ".."))
+        _cdio_list_append (dirlist, strdup (_fullname));
+
+      if (statbuf->lsn == lsn) {
+        _cdio_list_free (entlist, true);
+        _cdio_list_free (dirlist, true);
+        return true;
+      }
+      
+    }
+
+  _cdio_list_free (entlist, true);
+
+  /* now recurse/descend over directories encountered */
+
+  _CDIO_LIST_FOREACH (entnode, dirlist)
+    {
+      char *_fullname = _cdio_list_node_data (entnode);
+
+      if (find_fs_lsn_recurse (cdio, _fullname, statbuf, lsn)) {
+        _cdio_list_free (dirlist, true);
+        return true;
+      }
+    }
+
+  _cdio_list_free (dirlist, true);
+  return false;
+}
+
+/*!
+   Given a directory pointer, find the filesystem entry that contains
+   lsn and return information about it in stat. 
+
+   Returns true if we found an entry with the lsn and false if not.
+ */
+bool
+iso9660_find_fs_lsn(const CdIo *cdio, lsn_t lsn, /*out*/ iso9660_stat_t *stat)
+{
+  return find_fs_lsn_recurse (cdio, "/", stat, lsn);
 }
 

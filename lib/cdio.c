@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.22 2003/08/31 14:26:06 rocky Exp $
+    $Id: cdio.c,v 1.23 2003/09/05 22:48:16 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.22 2003/08/31 14:26:06 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.23 2003/09/05 22:48:16 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -459,7 +459,7 @@ cdio_destroy (CdIo *obj)
   Similar to (if not the same as) libc's lseek()
 */
 off_t
-cdio_lseek (CdIo *obj, off_t offset, int whence)
+cdio_lseek (const CdIo *obj, off_t offset, int whence)
 {
   if (obj == NULL) return -1;
   
@@ -474,7 +474,7 @@ cdio_lseek (CdIo *obj, off_t offset, int whence)
   Similar to (if not the same as) libc's read()
 */
 ssize_t
-cdio_read (CdIo *obj, void *buf, size_t size)
+cdio_read (const CdIo *obj, void *buf, size_t size)
 {
   if (obj == NULL) return -1;
   
@@ -484,7 +484,7 @@ cdio_read (CdIo *obj, void *buf, size_t size)
 }
 
 int
-cdio_read_audio_sector (CdIo *obj, void *buf, lsn_t lsn) 
+cdio_read_audio_sector (const CdIo *obj, void *buf, lsn_t lsn) 
 {
   cdio_assert (obj != NULL);
   cdio_assert (buf != NULL);
@@ -499,7 +499,7 @@ cdio_read_audio_sector (CdIo *obj, void *buf, lsn_t lsn)
    into data starting from lsn. Returns 0 if no error. 
  */
 int
-cdio_read_mode1_sector (CdIo *obj, void *data, lsn_t lsn, bool is_form2)
+cdio_read_mode1_sector (const CdIo *obj, void *data, lsn_t lsn, bool is_form2)
 {
   uint32_t size = is_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE ;
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
@@ -525,8 +525,8 @@ cdio_read_mode1_sector (CdIo *obj, void *data, lsn_t lsn, bool is_form2)
 }
 
 int
-cdio_read_mode1_sectors (CdIo *obj, void *data, lsn_t lsn, bool is_form2, 
-                         unsigned int num_sectors)
+cdio_read_mode1_sectors (const CdIo *obj, void *data, lsn_t lsn, 
+                         bool is_form2,  unsigned int num_sectors)
 {
   uint32_t size = is_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE ;
   int retval;
@@ -548,7 +548,8 @@ cdio_read_mode1_sectors (CdIo *obj, void *data, lsn_t lsn, bool is_form2,
    from lsn. Returns 0 if no error. 
  */
 int
-cdio_read_mode2_sector (CdIo *obj, void *buf, uint32_t lsn, bool is_form2)
+cdio_read_mode2_sector (const CdIo *obj, void *buf, lsn_t lsn, 
+                        bool is_form2)
 {
   cdio_assert (obj != NULL);
   cdio_assert (buf != NULL);
@@ -565,7 +566,7 @@ cdio_read_mode2_sector (CdIo *obj, void *buf, uint32_t lsn, bool is_form2)
 }
 
 int
-cdio_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, bool mode2raw, 
+cdio_read_mode2_sectors (const CdIo *obj, void *buf, lsn_t lsn, bool mode2raw, 
                          unsigned num_sectors)
 {
   cdio_assert (obj != NULL);
@@ -577,7 +578,7 @@ cdio_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, bool mode2raw,
 }
 
 uint32_t
-cdio_stat_size (CdIo *obj)
+cdio_stat_size (const CdIo *obj)
 {
   cdio_assert (obj != NULL);
 

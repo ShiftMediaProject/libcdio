@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.17 2003/08/31 14:26:06 rocky Exp $
+    $Id: cdio.h,v 1.18 2003/09/05 22:48:16 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -203,47 +203,49 @@ extern "C" {
     Returns (off_t) -1 on error. 
     Similar to (if not the same as) libc's lseek()
   */
-  off_t cdio_lseek(CdIo *obj, off_t offset, int whence);
+  off_t cdio_lseek(const CdIo *obj, off_t offset, int whence);
     
   /*!
     Reads into buf the next size bytes.
     Returns -1 on error. 
     Similar to (if not the same as) libc's read()
   */
-  ssize_t cdio_read(CdIo *obj, void *buf, size_t size);
+  ssize_t cdio_read(const CdIo *obj, void *buf, size_t size);
     
   /*!
    Reads a audio sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-  int cdio_read_audio_sector (CdIo *obj, void *buf, lsn_t lsn);
+  int cdio_read_audio_sector (const CdIo *obj, void *buf, lsn_t lsn);
 
   /*!
    Reads a single mode1 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-  int cdio_read_mode1_sector (CdIo *obj, void *buf, lsn_t lsn, bool is_form2);
+  int cdio_read_mode1_sector (const CdIo *obj, void *buf, lsn_t lsn, 
+			      bool is_form2);
 
   /*!
    Reads nblocks of mode1 sectors from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-  int cdio_read_mode1_sectors (CdIo *obj, void *buf, lsn_t lsn, bool is_form2,
-			       unsigned int num_sectors);
+  int cdio_read_mode1_sectors (const CdIo *obj, void *buf, lsn_t lsn, 
+			       bool is_form2, unsigned int num_sectors);
 
   /*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-  int cdio_read_mode2_sector (CdIo *obj, void *buf, lsn_t lsn, bool is_form2);
+  int cdio_read_mode2_sector (const CdIo *obj, void *buf, lsn_t lsn, 
+			      bool is_form2);
 
   /*!
     Reads nblocks of mode2 sectors from cd device into data starting
     from lsn.
     Returns 0 if no error. 
   */
-  int cdio_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, bool is_form2, 
-			       unsigned int num_sectors);
+  int cdio_read_mode2_sectors (const CdIo *obj, void *buf, lsn_t lsn, 
+			       bool is_form2, unsigned int num_sectors);
   
   /*!
     Set the arg "key" with "value" in the source device.
@@ -253,7 +255,7 @@ extern "C" {
   /*!
     Return the size of the CD in logical block address (LBA) units.
   */
-  uint32_t cdio_stat_size (CdIo *obj);
+  uint32_t cdio_stat_size (const CdIo *obj);
 
   /*!
     Initialize CD Reading and control routines. Should be called first.
