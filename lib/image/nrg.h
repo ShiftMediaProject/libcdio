@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.h,v 1.1 2004/06/01 10:47:37 rocky Exp $
+    $Id: nrg.h,v 1.2 2004/07/01 09:50:59 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -92,9 +92,10 @@ typedef struct {
 PRAGMA_END_PACKED
 
 /* Nero images are Big Endian. */
-#define CUEX_ID  0x43554558  /* Nero version 5.5 */
-#define CUES_ID  0x43554553  /* Nero pre version 5.5.x */
-#define DAOX_ID  0x44414f58  /* Nero version 5.5.x */
+#define CDTX_ID  0x43445458  /* CD TEXT */
+#define CUEX_ID  0x43554558  /* Nero version 5.5.x-6.x */
+#define CUES_ID  0x43554553  /* Nero pre version 5.5.x-6.x */
+#define DAOX_ID  0x44414f58  /* Nero version 5.5.x-6.x */
 #define DAOI_ID  0x44414f49
 #define END1_ID  0x454e4421
 #define ETN2_ID  0x45544e32

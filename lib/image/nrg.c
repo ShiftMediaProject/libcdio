@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.24 2004/06/27 15:29:22 rocky Exp $
+    $Id: nrg.c,v 1.25 2004/07/01 09:50:59 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -49,7 +49,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.24 2004/06/27 15:29:22 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.25 2004/07/01 09:50:59 rocky Exp $";
 
 
 /* reader */
@@ -243,7 +243,7 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
       footer_start = uint64_from_be (buf.v55.footer_ofs);
     } else {
       cdio_log (log_level, "Image not recognized as either version 5.0 or "
-		"version 5.5.x type NRG");
+		"version 5.5.x-6.x type NRG");
       return false;
     }
 
@@ -687,6 +687,13 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
       }
 	break;
 	
+      case CDTX_ID: { /* "CD TEXT" */
+	
+	cdio_log (log_level,
+		  "Don't know how to handle CD TEXT yet" );
+	break;
+      }
+
       default:
 	cdio_log (log_level,
 		  "unknown tag %8.8x seen", 
