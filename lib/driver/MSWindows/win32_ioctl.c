@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.21 2005/03/08 03:11:19 rocky Exp $
+    $Id: win32_ioctl.c,v 1.22 2005/03/08 15:47:50 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.21 2005/03/08 03:11:19 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.22 2005/03/08 15:47:50 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -386,8 +386,13 @@ close_tray_win32ioctl (const char *psz_win32_drive)
 				OPEN_EXISTING,
 				FILE_ATTRIBUTE_NORMAL, 
 				NULL );
+
+  if( h_device_handle == INVALID_HANDLE_VALUE ) {
+    return DRIVER_OP_ERROR;
+  }
+
   b_success = 
-    DeviceIoControl(h_device_handle, IOCTL_STORAGE_LOAD_MEDIA,
+    DeviceIoControl(h_device_handle, IOCTL_STORAGE_LOAD_MEDIA2,
 		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, NULL);
   
 
