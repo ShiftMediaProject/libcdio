@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.11 2004/04/30 06:54:15 rocky Exp $
+    $Id: nrg.c,v 1.12 2004/05/09 16:52:20 rocky Exp $
 
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.11 2004/04/30 06:54:15 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.12 2004/05/09 16:52:20 rocky Exp $";
 
 /* structures used */
 
@@ -1150,6 +1150,33 @@ _get_track_green_nrg(void *env, track_t track_num)
   return _obj->tocent[track_num-1].track_green;
 }
 
+/*! 
+  Check that a NRG file is valid. 
+
+*/
+/* Later we'll probably do better. For now though, this gets us 
+   started for now.
+*/
+bool
+cdio_is_nrg(const char *psz_nrg) 
+{
+  int   i;
+  
+  if (psz_nrg == NULL) return false;
+
+  i=strlen(psz_nrg)-strlen("nrg");
+  
+  if (i>0) {
+    if (psz_nrg[i]=='n' && psz_nrg[i+1]=='r' && psz_nrg[i+2]=='g') {
+      return true;
+    } 
+    else if (psz_nrg[i]=='N' && psz_nrg[i+1]=='R' && psz_nrg[i+2]=='G') {
+      return true;
+    }
+  }
+  return false;
+}
+
 /*!
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
@@ -1166,7 +1193,7 @@ cdio_open_am_nrg (const char *psz_source_name, const char *psz_access_mode)
 
 
 CdIo *
-cdio_open_nrg (const char *source_name)
+cdio_open_nrg (const char *psz_source)
 {
   CdIo *ret;
   _img_private_t *_data;
@@ -1207,11 +1234,18 @@ cdio_open_nrg (const char *source_name)
   _data->is_cues        = false; /* FIXME: remove is_cues. */
 
 
-  _set_arg_nrg(_data, "source", (NULL == source_name) 
-	       ? DEFAULT_CDIO_DEVICE: source_name);
+  _set_arg_nrg(_data, "source", (NULL == psz_source) 
+	       ? DEFAULT_CDIO_DEVICE: psz_source);
 
   ret = cdio_new (_data, &_funcs);
+
   if (ret == NULL) return NULL;
+
+  if (!cdio_is_nrg(psz_source)) {
+    cdio_debug ("source name %s is not recognized as a NRG image", 
+		psz_source);
+    return NULL;
+  }
 
   if (_cdio_init(_data))
     return ret;
