@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.19 2005/02/19 11:42:18 rocky Exp $
+#   $Id: Makefile.am,v 1.20 2005/02/19 11:44:06 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -24,7 +24,7 @@ if !DISABLE_CPP
 SUBDIRS =  C++
 endif
 noinst_PROGRAMS = cdtext device drives iso1 iso2 iso3 isofuzzy mmc1 mmc2 \
-		  mmc4 paranoia paranoia2 tracks sample3 sample4 
+		  paranoia paranoia2 tracks sample3 sample4 
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
@@ -44,7 +44,6 @@ isofuzzy_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
 mmc1_LDADD = $(LIBCDIO_LIBS)
 mmc2_LDADD = $(LIBCDIO_LIBS)
-mmc4_LDADD = $(LIBCDIO_LIBS)
 
 sample3_LDADD = $(LIBCDIO_LIBS)
 sample4_LDADD = $(LIBCDIO_LIBS)
