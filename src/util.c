@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.26 2004/11/06 03:17:31 rocky Exp $
+  $Id: util.c,v 1.27 2004/11/06 09:16:04 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -478,8 +478,8 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
   }
 }
 
-/* Common place for Output routine. Some environments like XBOX may not
-   stdout and stderr. */
+/*! Common place for output routine. In some environments, like XBOX,
+  it may not be desireable to send output to stdout and stderr. */
 void 
 report (FILE *stream, const char *psz_format,  ...)
 {

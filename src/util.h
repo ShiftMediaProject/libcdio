@@ -1,5 +1,5 @@
 /*
-  $Id: util.h,v 1.8 2004/11/04 10:08:23 rocky Exp $
+  $Id: util.h,v 1.9 2004/11/06 09:16:04 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -74,13 +74,13 @@
 #if DEBUG
 #define dbg_print(level, s, args...) \
    if (opts.debug_level >= level) \
-     fprintf(stderr, "%s: "s, __func__ , ##args)
+     report(stderr, "%s: "s, __func__ , ##args)
 #else
 #define dbg_print(level, s, args...) 
 #endif
 
 #define err_exit(fmt, args...) \
-  fprintf(stderr, "%s: "fmt, program_name, ##args); \
+  report(stderr, "%s: "fmt, program_name, ##args); \
   myexit(p_cdio, EXIT_FAILURE)		     
   
 typedef enum
@@ -113,9 +113,8 @@ void print_drive_capabilities(cdio_drive_read_cap_t  p_read_cap,
 			      cdio_drive_write_cap_t p_write_cap,
 			      cdio_drive_misc_cap_t  p_misc_cap);
 
-
-/* Common place for Output routine. Some environments like XBOX may not
-   stdout and stderr. */
+/*! Common place for output routine. In some environments, like XBOX,
+  it may not be desireable to send output to stdout and stderr. */
 void report (FILE *stream, const char *psz_format, ...);
 
 #endif /* UTIL_H */
