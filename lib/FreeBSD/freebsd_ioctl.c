@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.9 2004/06/26 00:39:01 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.10 2004/07/17 15:31:00 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.9 2004/06/26 00:39:01 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.10 2004/07/17 15:31:00 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -83,7 +83,7 @@ read_audio_sectors_freebsd_ioctl (_img_private_t *_obj, void *data, lsn_t lsn,
   cdda.address.lba    = lsn;
   cdda.buffer         = buf;
   cdda.nframes        = nblocks;
-  cdda.address_format = CD_LBA_FORMAT;
+  cdda.address_format = CDIO_CDROM_LBA;
 
   /* read a frame */
   if(ioctl(_obj->gen.fd, CDIOCREADAUDIO, &cdda) < 0) {
@@ -127,7 +127,7 @@ stat_size_freebsd_ioctl (_img_private_t *_obj)
   uint32_t size;
 
   tocent.track = CDIO_CDROM_LEADOUT_TRACK;
-  tocent.address_format = CD_LBA_FORMAT;
+  tocent.address_format = CDIO_CDROM_LBA;
   if (ioctl (_obj->gen.fd, CDIOREADTOCENTRY, &tocent) == -1)
     {
       perror ("ioctl(CDROMREADTOCENTRY)");
@@ -179,10 +179,10 @@ get_mcn_freebsd_ioctl (const _img_private_t *env) {
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
 
-  subchannel.address_format = CD_LBA_FORMAT;
-  subchannel.data_format    = CD_MEDIA_CATALOG;
+  subchannel.address_format = CDIO_CDROM_LBA;
+  subchannel.data_format    = CDIO_SUBCHANNEL_MEDIA_CATALOG;
   subchannel.track          = 0;
-  subchannel.data_len       = 1;
+  subchannel.data_len       = 10;
   subchannel.data           = &subchannel_info;
 
   if(ioctl(env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
@@ -211,8 +211,8 @@ get_track_format_freebsd_ioctl(const _img_private_t *env, track_t i_track)
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
 
-  subchannel.address_format = CD_LBA_FORMAT;
-  subchannel.data_format    = CD_CURRENT_POSITION;
+  subchannel.address_format = CDIO_CDROM_LBA;
+  subchannel.data_format    = CDIO_SUBCHANNEL_CURRENT_POSITION;
   subchannel.track          = i_track;
   subchannel.data_len       = 1;
   subchannel.data           = &subchannel_info;
@@ -247,8 +247,8 @@ get_track_green_freebsd_ioctl(const _img_private_t *env, track_t i_track)
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
 
-  subchannel.address_format = CD_LBA_FORMAT;
-  subchannel.data_format    = CD_CURRENT_POSITION;
+  subchannel.address_format = CDIO_CDROM_LBA;
+  subchannel.data_format    = CDIO_SUBCHANNEL_CURRENT_POSITION;
   subchannel.track          = i_track;
   subchannel.data_len       = 1;
   subchannel.data           = &subchannel_info;

@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.17 2004/07/12 03:34:14 rocky Exp $
+    $Id: sector.h,v 1.18 2004/07/17 15:31:00 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -87,6 +87,14 @@ typedef enum {
 	CDIO_DISC_MODE_CD_ROM,			/* CD-ROM mode 1 */
 	CDIO_DISC_MODE_CD_ROM_XA		/* CD-ROM XA and CD-I */
 } discmode_t;
+
+/*! Information that can be obtained through a Read Subchannel
+    command.
+ */
+#define CDIO_SUBCHANNEL_SUBQ_DATA		0
+#define CDIO_SUBCHANNEL_CURRENT_POSITION	1
+#define CDIO_SUBCHANNEL_MEDIA_CATALOG	        2
+#define CDIO_SUBCHANNEL_TRACK_INFO		3
 
 /*! track flags
  * Q Sub-channel Control Field (4.2.3.3)

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.16 2004/07/08 05:19:29 rocky Exp $
+    $Id: freebsd_cam.c,v 1.17 2004/07/17 15:31:00 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.16 2004/07/08 05:19:29 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.17 2004/07/17 15:31:00 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -141,7 +141,7 @@ get_drive_mcn_freebsd_cam (img_private_t *env)
 		       CDIO_MMC_GPCMD_READ_SUBCHANNEL);
   env->ccb.csio.cdb_io.cdb_bytes[1] = 0x0;  
   env->ccb.csio.cdb_io.cdb_bytes[2] = 0x40;
-  env->ccb.csio.cdb_io.cdb_bytes[3] = 02;    /* Get media catalog number. */
+  env->ccb.csio.cdb_io.cdb_bytes[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
   env->ccb.csio.cdb_io.cdb_bytes[4] = 0;    /* Not used */
   env->ccb.csio.cdb_io.cdb_bytes[5] = 0;    /* Not used */
   env->ccb.csio.cdb_io.cdb_bytes[6] = 0;    /* Not used */

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.50 2004/07/17 09:35:00 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.51 2004/07/17 15:31:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.50 2004/07/17 09:35:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.51 2004/07/17 15:31:00 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -680,7 +680,7 @@ _cdio_get_mcn_solaris (const void *user_data)
   CDIO_MMC_SET_COMMAND(scsi_cdb, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
   scsi_cdb[1] = 0x0;  
   scsi_cdb[2] = 0x40; 
-  scsi_cdb[3] = 02;    /* Give media catalog number. */
+  scsi_cdb[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
   scsi_cdb[4] = 0;    /* Not used */
   scsi_cdb[5] = 0;    /* Not used */
   scsi_cdb[6] = 0;    /* Not used */

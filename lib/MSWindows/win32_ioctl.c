@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.16 2004/07/17 10:05:54 rocky Exp $
+    $Id: win32_ioctl.c,v 1.17 2004/07/17 15:31:00 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.16 2004/07/17 10:05:54 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.17 2004/07/17 15:31:00 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -471,7 +471,7 @@ get_mcn_win32ioctl (const _img_private_t *env) {
   
   memset( &mcn, 0, sizeof(mcn) );
   
-  q_data_format.Format = IOCTL_CDROM_MEDIA_CATALOG;
+  q_data_format.Format = CDIO_SUBCHANNEL_MEDIA_CATALOG;
 
   q_data_format.Track=1;
   

@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.27 2004/07/17 10:05:54 rocky Exp $
+    $Id: aspi32.c,v 1.28 2004/07/17 15:31:00 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.27 2004/07/17 10:05:54 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.28 2004/07/17 15:31:00 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -797,7 +797,7 @@ get_mcn_aspi (const _img_private_t *env)
   CDIO_MMC_SET_COMMAND(scsi_cdb, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
   scsi_cdb[1] = 0x0;  
   scsi_cdb[2] = 0x40; 
-  scsi_cdb[3] = 02;    /* Give media catalog number. */
+  scsi_cdb[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
   scsi_cdb[4] = 0;    /* Not used */
   scsi_cdb[5] = 0;    /* Not used */
   scsi_cdb[6] = 0;    /* Not used */
