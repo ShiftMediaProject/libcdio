@@ -1,5 +1,5 @@
 /*
-    $Id: ioctl.c,v 1.7 2004/04/24 11:48:37 rocky Exp $
+    $Id: ioctl.c,v 1.8 2004/04/24 19:15:34 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: ioctl.c,v 1.7 2004/04/24 11:48:37 rocky Exp $";
+static const char _rcsid[] = "$Id: ioctl.c,v 1.8 2004/04/24 19:15:34 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -206,8 +206,8 @@ win32ioctl_read_raw_sector (_img_private_t *env, void *buf, lsn_t lsn)
   sptd.Lun=0;        /* SCSI lun ID will also be filled in */
   sptd.CdbLength=12; /* CDB size is 12 for ReadCD MMC1 command */
   sptd.SenseInfoLength=0; /* Don't return any sense data */
-  sptd.DataIn=SCSI_IOCTL_DATA_IN; //There will be data from drive
-  sptd.DataTransferLength=CDIO_CD_FRAMESIZE_RAW; 
+  sptd.DataIn            = SCSI_IOCTL_DATA_IN; 
+  sptd.DataTransferLength= CDIO_CD_FRAMESIZE_RAW; 
   sptd.TimeOutValue=60;  /*SCSI timeout value (60 seconds - 
 			   maybe it should be longer) */
   sptd.DataBuffer= (PVOID) buf;
@@ -407,7 +407,7 @@ win32ioctl_get_mcn (_img_private_t *env) {
 		       &mcn, sizeof(mcn),
 		       &dwBytesReturned, NULL ) == 0 ) {
     cdio_warn( "could not read Q Channel at track %d", 1);
-  } else if (mcn.Mcval)
+  } else if (mcn.Mcval) 
     return strdup(mcn.MediaCatalog);
   return NULL;
 }
@@ -441,9 +441,10 @@ win32ioctl_get_track_format(_img_private_t *env, track_t track_num)
 
  */
 cdio_drive_cap_t
-win32ioctl_get_drive_cap (const void *env) {
+win32ioctl_get_drive_cap (const void *env) 
+{
   const _img_private_t *_obj = env;
-  int32_t i_drivetype;
+  int32_t i_drivetype = 0;
   SCSI_PASS_THROUGH_WITH_BUFFERS      sptwb;
   ULONG                               returned = 0;
   ULONG                               length;
@@ -468,7 +469,8 @@ win32ioctl_get_drive_cap (const void *env) {
   sptwb.Spt.SenseInfoOffset    = 
     offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,SenseBuf);
   sptwb.Spt.Cdb[0]             = CDIO_MMC_MODE_SENSE;
-  sptwb.Spt.Cdb[1]             = 0x08;  /* doesn't return block descriptors */
+  /*sptwb.Spt.Cdb[1]           = 0x08;  /+ doesn't return block descriptors */
+  sptwb.Spt.Cdb[1]             = 0x0;
   sptwb.Spt.Cdb[2]             = 0x2a;  /*MODE_PAGE_CAPABILITIES*/;
   sptwb.Spt.Cdb[3]             = 0;     /* Not used */
   sptwb.Spt.Cdb[4]             = 128;
@@ -485,15 +487,16 @@ win32ioctl_get_drive_cap (const void *env) {
 		       &returned,
 		       FALSE) )
     {
+      unsigned int n=sptwb.DataBuf[3]+4;
       /* Reader? */
-      i_drivetype |= CDIO_DRIVE_CD_AUDIO;
-      if (sptwb.DataBuf[6] & 0x02) i_drivetype |= CDIO_DRIVE_CD_RW;
-      if (sptwb.DataBuf[6] & 0x08) i_drivetype |= CDIO_DRIVE_DVD;
+      if (sptwb.DataBuf[n+5] & 0x01) i_drivetype |= CDIO_DRIVE_CD_AUDIO;
+      if (sptwb.DataBuf[n+2] & 0x02) i_drivetype |= CDIO_DRIVE_CD_RW;
+      if (sptwb.DataBuf[n+2] & 0x08) i_drivetype |= CDIO_DRIVE_DVD;
       
       /* Writer? */
-      if (sptwb.DataBuf[7] & 0x01) i_drivetype |= CDIO_DRIVE_CD_R;
-      if (sptwb.DataBuf[7] & 0x10) i_drivetype |= CDIO_DRIVE_DVD_R;
-      if (sptwb.DataBuf[7] & 0x20) i_drivetype |= CDIO_DRIVE_DVD_RAM;
+      if (sptwb.DataBuf[n+3] & 0x01) i_drivetype |= CDIO_DRIVE_CD_R;
+      if (sptwb.DataBuf[n+3] & 0x10) i_drivetype |= CDIO_DRIVE_DVD_R;
+      if (sptwb.DataBuf[n+3] & 0x20) i_drivetype |= CDIO_DRIVE_DVD_RAM;
       
       return i_drivetype;
     } else {
