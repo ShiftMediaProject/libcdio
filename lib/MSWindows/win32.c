@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.47 2004/10/27 01:16:39 rocky Exp $
+    $Id: win32.c,v 1.48 2004/10/31 05:33:08 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.47 2004/10/27 01:16:39 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.48 2004/10/31 05:33:08 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -683,34 +683,36 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _img_private_t *_data;
   char *psz_source;
 
-  cdio_funcs _funcs = {
-    .eject_media        = _cdio_eject_media,
-    .free               = _free_win32,
-    .get_arg            = _get_arg_win32,
-    .get_cdtext         = get_cdtext_generic,
-    .get_default_device = cdio_get_default_device_win32,
-    .get_devices        = cdio_get_devices_win32,
-    .get_discmode       = get_discmode_win32,
-    .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
-    .get_first_track_num= get_first_track_num_generic,
-    .get_mcn            = _cdio_get_mcn, 
-    .get_num_tracks     = get_num_tracks_generic,
-    .get_track_format   = _cdio_get_track_format,
-    .get_track_green    = _cdio_get_track_green,
-    .get_track_lba      = NULL, /* This could be implemented if need be. */
-    .get_track_msf      = _cdio_get_track_msf,
-    .lseek              = NULL,
-    .read               = NULL,
-    .read_audio_sectors = _cdio_read_audio_sectors,
-    .read_mode1_sector  = _cdio_read_mode1_sector,
-    .read_mode1_sectors = _cdio_read_mode1_sectors,
-    .read_mode2_sector  = _cdio_read_mode2_sector,
-    .read_mode2_sectors = _cdio_read_mode2_sectors,
-    .read_toc           = &read_toc_win32,
-    .run_scsi_mmc_cmd   = &run_scsi_cmd_win32,
-    .set_arg            = set_arg_win32,
-    .stat_size          = stat_size_win32
-  };
+  cdio_funcs _funcs;
+
+  memset( &_funcs, 0, sizeof(_funcs) );
+
+  _funcs.eject_media        = _cdio_eject_media;
+  _funcs.free               = _free_win32;
+  _funcs.get_arg            = _get_arg_win32;
+  _funcs.get_cdtext         = get_cdtext_generic;
+  _funcs.get_default_device = cdio_get_default_device_win32;
+  _funcs.get_devices        = cdio_get_devices_win32;
+  _funcs.get_discmode       = get_discmode_win32;
+  _funcs.get_drive_cap      = scsi_mmc_get_drive_cap_generic;
+  _funcs.get_first_track_num= get_first_track_num_generic;
+  _funcs.get_mcn            = _cdio_get_mcn;
+  _funcs.get_num_tracks     = get_num_tracks_generic;
+  _funcs.get_track_format   = _cdio_get_track_format;
+  _funcs.get_track_green    = _cdio_get_track_green;
+  _funcs.get_track_lba      = NULL; /* This could be implemented if need be. */
+  _funcs.get_track_msf      = _cdio_get_track_msf;
+  _funcs.lseek              = NULL;
+  _funcs.read               = NULL;
+  _funcs.read_audio_sectors = _cdio_read_audio_sectors;
+  _funcs.read_mode1_sector  = _cdio_read_mode1_sector;
+  _funcs.read_mode1_sectors = _cdio_read_mode1_sectors;
+  _funcs.read_mode2_sector  = _cdio_read_mode2_sector;
+  _funcs.read_mode2_sectors = _cdio_read_mode2_sectors;
+  _funcs.read_toc           = &read_toc_win32;
+  _funcs.run_scsi_mmc_cmd   = &run_scsi_cmd_win32;
+  _funcs.set_arg            = set_arg_win32;
+  _funcs.stat_size          = stat_size_win32;
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
   _data->access_mode    = str_to_access_mode_win32(psz_access_mode);
