@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.44 2004/08/10 12:09:20 rocky Exp $
+    $Id: win32.c,v 1.45 2004/08/27 04:12:29 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.44 2004/08/10 12:09:20 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.45 2004/08/27 04:12:29 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -111,35 +111,6 @@ is_cdrom_win32(const char drive_letter) {
     return is_cdrom_aspi(drive_letter);
   }
 }
-
-/*!
-  Return the the kind of drive capabilities of device.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
- */
-static void
-_cdio_get_drive_cap (const void *env,
-		     cdio_drive_read_cap_t  *p_read_cap,
-		     cdio_drive_write_cap_t *p_write_cap,
-		     cdio_drive_misc_cap_t  *p_misc_cap)
-{
-  const _img_private_t *_obj = env;
-
-  *p_read_cap  = 0;
-  *p_write_cap = 0;
-  *p_misc_cap  = 0;
-
-  if (_obj->hASPI) {
-    /* A safe guess */ 
-
-    get_drive_cap_aspi (env, p_read_cap, p_write_cap, p_misc_cap);
-  } else {
-    get_drive_cap_win32ioctl (env, p_read_cap, p_write_cap, p_misc_cap);
-  }
-}
-
 
 /*!
   Run a SCSI MMC command. 
@@ -717,7 +688,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
     .get_default_device = cdio_get_default_device_win32,
     .get_devices        = cdio_get_devices_win32,
     .get_discmode       = get_discmode_win32,
-    .get_drive_cap      = _cdio_get_drive_cap,
+    .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
     .get_first_track_num= get_first_track_num_generic,
     .get_mcn            = _cdio_get_mcn, 
     .get_num_tracks     = get_num_tracks_generic,

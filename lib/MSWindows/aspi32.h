@@ -1,6 +1,6 @@
 /* Win32 aspi specific */
 /*
-    $Id: aspi32.h,v 1.12 2004/07/28 03:17:56 rocky Exp $
+    $Id: aspi32.h,v 1.13 2004/08/27 04:12:29 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -169,18 +169,6 @@ SRB_HAInquiry;
   Get disc type associated with cd object.
 */
 discmode_t get_discmode_aspi (_img_private_t *p_env);
-
-/*!
-  Return the the kind of drive capabilities of device.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
- */
-void get_drive_cap_aspi (const _img_private_t *env,
-			 cdio_drive_read_cap_t  *p_read_cap,
-			 cdio_drive_write_cap_t *p_write_cap,
-			 cdio_drive_misc_cap_t  *p_misc_cap);
 
 /*!
   Return the the kind of drive capabilities of device.

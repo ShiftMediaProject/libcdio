@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.48 2004/08/10 03:03:27 rocky Exp $
+    $Id: aspi32.c,v 1.49 2004/08/27 04:12:29 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.48 2004/08/10 03:03:27 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.49 2004/08/27 04:12:29 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -761,68 +761,6 @@ wnaspi32_eject_media (void *user_data) {
   return ret;
 }
 #endif
-
-/*!
-  Return the the kind of drive capabilities of device.
-
- */
-void
-get_drive_cap_aspi (const _img_private_t *p_env,
-		    cdio_drive_read_cap_t  *p_read_cap,
-		    cdio_drive_write_cap_t *p_write_cap,
-		    cdio_drive_misc_cap_t  *p_misc_cap)
-{
-  scsi_mmc_cdb_t cdb = {{0, }};
-  uint8_t  buf[256] = { 0, };
-  int      i_status;
-
-  /* Set up passthrough command */
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_10);
-  cdb.field[1]  = 0x0;
-  cdb.field[2]  = CDIO_MMC_ALL_PAGES;
-  cdb.field[7]  = 0x01;
-  cdb.field[8]  = 0x00; 
-
-  i_status = run_scsi_cmd_aspi(p_env, OP_TIMEOUT_MS, 
-			       scsi_mmc_get_cmd_len(cdb.field[0]),
-			       &cdb, SCSI_MMC_DATA_READ, 
-			       sizeof(buf), buf);
-  if (0 == i_status) {
-    uint8_t *p;
-    int lenData  = ((unsigned int)buf[0] << 8) + buf[1];
-    uint8_t *pMax = buf + 256;
-
-    *p_read_cap  = 0;
-    *p_write_cap = 0;
-    *p_misc_cap  = 0;
-
-    /* set to first sense mask, and then walk through the masks */
-    p = buf + 8;
-    while( (p < &(buf[2+lenData])) && (p < pMax) )       {
-      uint8_t which;
-      
-      which = p[0] & 0x3F;
-      switch( which )
-	{
-	case CDIO_MMC_AUDIO_CTL_PAGE:
-	case CDIO_MMC_R_W_ERROR_PAGE:
-	case CDIO_MMC_CDR_PARMS_PAGE:
-	  /* Don't handle these yet. */
-	  break;
-	case CDIO_MMC_CAPABILITIES_PAGE:
-	  scsi_mmc_get_drive_cap_buf(p, p_read_cap, p_write_cap, p_misc_cap);
-	  break;
-	default: ;
-	}
-      p += (p[1] + 2);
-    }
-  } else {
-    cdio_info("error in aspi USCSICMD MODE_SELECT");
-    *p_read_cap  = CDIO_DRIVE_CAP_UNKNOWN;
-    *p_write_cap = CDIO_DRIVE_CAP_UNKNOWN;
-    *p_misc_cap  = CDIO_DRIVE_CAP_UNKNOWN;
-  }
-}
 
 /*!  
   Get format of track. 

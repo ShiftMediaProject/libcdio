@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.35 2004/08/10 03:03:27 rocky Exp $
+    $Id: win32_ioctl.c,v 1.36 2004/08/27 04:12:29 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.35 2004/08/10 03:03:27 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.36 2004/08/27 04:12:29 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -552,74 +552,6 @@ get_track_format_win32ioctl(const _img_private_t *env, track_t i_track)
       return TRACK_FORMAT_DATA;
   } else
     return TRACK_FORMAT_AUDIO;
-}
-
-
-/*!
-  Return the the kind of drive capabilities of device.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
- */
-void
-get_drive_cap_win32ioctl (const _img_private_t *p_env,
-			  cdio_drive_read_cap_t  *p_read_cap,
-			  cdio_drive_write_cap_t *p_write_cap,
-			  cdio_drive_misc_cap_t  *p_misc_cap)
-{
-  SCSI_PASS_THROUGH_WITH_BUFFERS      sptwb;
-  ULONG                               returned = 0;
-  ULONG                               length;
-  
-  /* If device supports SCSI-3, then we can get the CD drive
-     capabilities, i.e. ability to read/write to CD-ROM/R/RW
-     or/and read/write to DVD-ROM/R/RW.   */
-  
-  memset(&sptwb,0, sizeof(SCSI_PASS_THROUGH_WITH_BUFFERS));
-  
-  sptwb.Spt.Length             = sizeof(SCSI_PASS_THROUGH);
-  sptwb.Spt.PathId             = 0;
-  sptwb.Spt.TargetId           = 1;
-  sptwb.Spt.Lun                = 0;
-  sptwb.Spt.CdbLength          = 6; /* CDB6GENERIC_LENGTH; */
-  sptwb.Spt.SenseInfoLength    = 24;
-  sptwb.Spt.DataIn             = SCSI_IOCTL_DATA_IN;
-  sptwb.Spt.DataTransferLength = 192;
-  sptwb.Spt.TimeOutValue       = 2;
-  sptwb.Spt.DataBufferOffset   =
-    offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,DataBuf);
-  sptwb.Spt.SenseInfoOffset    = 
-    offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,SenseBuf);
-
-  CDIO_MMC_SET_COMMAND(sptwb.Spt.Cdb, CDIO_MMC_GPCMD_MODE_SENSE);
-  /*sptwb.Spt.Cdb[1]           = 0x08;  /+ doesn't return block descriptors */
-  sptwb.Spt.Cdb[1]             = 0x0;
-  sptwb.Spt.Cdb[2]             = CDIO_MMC_CAPABILITIES_PAGE;
-  sptwb.Spt.Cdb[3]             = 0;     /* Not used */
-  sptwb.Spt.Cdb[4]             = 128;
-  sptwb.Spt.Cdb[5]             = 0;     /* Not used */
-  length = offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS,DataBuf) +
-    sptwb.Spt.DataTransferLength;
-  
-  if ( DeviceIoControl(p_env->h_device_handle,
-		       IOCTL_SCSI_PASS_THROUGH,
-		       &sptwb,
-		       sizeof(SCSI_PASS_THROUGH),
-		       &sptwb,
-		       length,
-		       &returned,
-		       FALSE) )     {
-    unsigned int n=sptwb.DataBuf[3]+4;
-    /* Reader? */
-    scsi_mmc_get_drive_cap_buf(&(sptwb.DataBuf[n]), p_read_cap, 
-			       p_write_cap, p_misc_cap);
-  } else {
-    *p_read_cap  = CDIO_DRIVE_CAP_UNKNOWN;
-    *p_write_cap = CDIO_DRIVE_CAP_UNKNOWN;
-    *p_misc_cap  = CDIO_DRIVE_CAP_UNKNOWN;
-  }
-  return;
 }
 
 #endif /*HAVE_WIN32_CDROM*/
