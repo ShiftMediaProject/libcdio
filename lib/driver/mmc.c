@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.19 2005/03/02 04:24:00 rocky Exp $
+    $Id: mmc.c,v 1.20 2005/03/06 00:03:53 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -814,13 +814,13 @@ mmc_get_mcn ( const CdIo_t *p_cdio )
 driver_return_code_t
 mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms, 
 		  const mmc_cdb_t *p_cdb,
-		  scsi_mmc_direction_t e_direction, unsigned int i_buf, 
+		  mmc_direction_t e_direction, unsigned int i_buf, 
 		  /*in/out*/ void *p_buf )
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
   if (!p_cdio->op.run_mmc_cmd) return DRIVER_OP_UNSUPPORTED;
   return p_cdio->op.run_mmc_cmd(p_cdio->env, i_timeout_ms,
-				     scsi_mmc_get_cmd_len(p_cdb->field[0]),
+				     mmc_get_cmd_len(p_cdb->field[0]),
 				     p_cdb, e_direction, i_buf, p_buf);
 }
 

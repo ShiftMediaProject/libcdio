@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.47 2005/03/02 01:00:48 rocky Exp $
+  $Id: util.c,v 1.48 2005/03/06 00:03:53 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -183,16 +183,15 @@ print_mmc_drive_features(CdIo_t *p_cdio)
   
   int i_status;                  /* Result of SCSI MMC command */
   uint8_t buf[500] = { 0, };     /* Place to hold returned data */
-  scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Block */
+  mmc_cdb_t cdb = {{0, }};       /* Command Descriptor Block */
   
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_CONFIGURATION);
   CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
   cdb.field[1] = CDIO_MMC_GET_CONF_ALL_FEATURES;
   cdb.field[3] = 0x0;
   
-  i_status = scsi_mmc_run_cmd(p_cdio, 0, 
-			      &cdb, SCSI_MMC_DATA_READ, 
-			      sizeof(buf), &buf);
+  i_status = mmc_run_cmd(p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), 
+			 &buf);
   if (i_status == 0) {
     uint8_t *p;
     uint32_t i_data;

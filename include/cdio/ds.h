@@ -1,5 +1,5 @@
 /*
-    $Id: ds.h,v 1.3 2005/01/12 11:34:52 rocky Exp $
+    $Id: ds.h,v 1.4 2005/03/06 00:03:53 rocky Exp $
 
     Copyright (C) 2000, 2004 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
@@ -73,11 +73,11 @@ CdioListNode_t *_cdio_list_find (CdioList_t *p_list,
 
 /** node operations */
 
-CdioListNode *_cdio_list_begin (const CdioList_t *p_list);
+CdioListNode_t *_cdio_list_begin (const CdioList_t *p_list);
 
-CdioListNode *_cdio_list_end (CdioList_t *p_list);
+CdioListNode_t *_cdio_list_end (CdioList_t *p_list);
 
-CdioListNode *_cdio_list_node_next (CdioListNode_t *p_node);
+CdioListNode_t *_cdio_list_node_next (CdioListNode_t *p_node);
 
 void _cdio_list_node_free (CdioListNode_t *p_node, int i_free_data);
 

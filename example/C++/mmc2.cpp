@@ -1,5 +1,5 @@
 /*
-  $Id: mmc2.cpp,v 1.1 2005/02/19 11:42:18 rocky Exp $
+  $Id: mmc2.cpp,v 1.2 2005/03/06 00:03:53 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -43,9 +43,9 @@ main(int argc, const char *argv[])
     printf("Couldn't find CD\n");
     return 1;
   } else {
-    int i_status;                  /* Result of MMC command */
-    uint8_t buf[500] = { 0, };     /* Place to hold returned data */
-    scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Buffer */
+    int i_status;              /* Result of MMC command */
+    uint8_t buf[500] = { 0, }; /* Place to hold returned data */
+    mmc_cdb_t cdb = {{0, }};   /* Command Descriptor Buffer */
 
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_CONFIGURATION);
     CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));

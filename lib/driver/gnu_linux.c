@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.3 2005/03/05 10:48:41 rocky Exp $
+    $Id: gnu_linux.c,v 1.4 2005/03/06 00:03:53 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.3 2005/03/05 10:48:41 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.4 2005/03/06 00:03:53 rocky Exp $";
 
 #include <string.h>
 
@@ -104,7 +104,7 @@ static driver_return_code_t run_mmc_cmd_linux( void *p_user_data,
                                                unsigned int i_timeout,
                                                unsigned int i_cdb, 
                                                const mmc_cdb_t *p_cdb, 
-                                               scsi_mmc_direction_t e_direction, 
+                                               mmc_direction_t e_direction, 
                                                unsigned int i_buf, 
                                                /*in/out*/ void *p_buf );
 static access_mode_t 
@@ -1064,7 +1064,7 @@ static driver_return_code_t
 run_mmc_cmd_linux( void *p_user_data, 
                    unsigned int i_timeout_ms,
                    unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-                   scsi_mmc_direction_t e_direction, 
+                   mmc_direction_t e_direction, 
                    unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;

@@ -1,5 +1,5 @@
 /*
-  $Id: iso1.cpp,v 1.1 2005/02/19 11:42:18 rocky Exp $
+  $Id: iso1.cpp,v 1.2 2005/03/06 00:03:53 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -56,8 +56,8 @@
 int
 main(int argc, const char *argv[])
 {
-  CdioList *entlist;
-  CdioListNode *entnode;
+  CdioList_t *entlist;
+  CdioListNode_t *entnode;
   char const *psz_fname;
   iso9660_t *p_iso;
 
