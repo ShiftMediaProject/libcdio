@@ -19,7 +19,7 @@ define(RELEASE_NUM, 73)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.147 2005/03/07 12:55:12 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.148 2005/03/09 03:39:46 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -42,7 +42,7 @@ AM_MAINTAINER_MODE
 AM_SANITY_CHECK
 
 AC_ARG_WITH(cd_drive,
-[  --without-cd-drive        build program cd-drive (enabled by default)],
+[  --without-cd-drive       build program cd-drive (enabled by default)],
 enable_cd_drive="${withval}", enable_cd_drive=yes)
 
 AC_ARG_WITH(cd_info,
@@ -52,6 +52,10 @@ enable_cd_info="${withval}", enable_cd_info=yes)
 AC_ARG_WITH(cd_paranoia,
 [  --without-cd-paranoia    build program cd-paranoia (enabled by default)],
 enable_cd_paranoia="${withval}", enable_cd_paranoia=yes)
+
+AC_ARG_WITH(cdda_player,
+[  --without-cdda-player    build program cdda-player (enabled by default)],
+enable_cdda_player="${withval}", enable_cdda_player=yes)
 
 AC_ARG_WITH(cd_paranoia_name,
 [  --with-cd-paranoia-name  name to use as the cd-paranoia program name (default cd-paranoia)],
@@ -159,7 +163,7 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h fcntl.h glob.h pwd.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h)
 
-AC_CHECK_HEADERS(curses.h, ,[enable_cdda_player"no"])
+AC_CHECK_HEADERS(curses.h, [], [enable_cdda_player='no'])
 
 AC_SUBST(SBPCD_H)
 AC_SUBST(UCDROM_H)
