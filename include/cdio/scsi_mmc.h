@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.34 2004/12/04 11:50:40 rocky Exp $
+    $Id: scsi_mmc.h,v 1.35 2004/12/04 12:01:48 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -335,8 +335,8 @@ typedef enum scsi_mmc_direction {
   cdb[9] = val;
 
 /*!  
-  Return the number of length in bytes of the Command Descriptor
-  buffer (CDB) for a given SCSI MMC command. The length will be 
+  Return the length in bytes of the Command Descriptor
+  Buffer (CDB) for a given SCSI MMC command. The length will be 
   either 6, 10, or 12. 
 */
 uint8_t scsi_mmc_get_cmd_len(uint8_t scsi_cmd);
