@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.79 2004/11/18 01:56:09 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.80 2004/12/06 05:30:43 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.79 2004/11/18 01:56:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.80 2004/12/06 05:30:43 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -581,6 +581,16 @@ get_discmode_solaris (void *p_user_data)
   default: /* no valid match */
   return CDIO_DISC_MODE_NO_INFO; 
   }
+
+  /* 
+     GNU/Linux ioctl(.., CDROM_DISC_STATUS) does not return "CD DATA
+     Form 2" for SVCD's even though they are are form 2. 
+     Issue a SCSI MMC-2 FULL TOC command first to try get more
+     accurate information.
+  */
+  discmode = scsi_mmc_get_discmode(p_env->gen.cdio);
+  if (CDIO_DISC_MODE_NO_INFO != discmode) 
+    return discmode;
 
   if((discmode == CDIO_DISC_MODE_DVD_RAM || 
       discmode == CDIO_DISC_MODE_DVD_RW ||
