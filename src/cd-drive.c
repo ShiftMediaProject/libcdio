@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.13 2005/01/09 00:10:48 rocky Exp $
+  $Id: cd-drive.c,v 1.14 2005/01/09 17:30:14 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -191,7 +191,7 @@ main(int argc, const char *argv[])
     p_cdio = cdio_open (NULL, DRIVER_DEVICE);
 
     if (NULL == p_cdio) {
-      printf("No *loaded* CD-ROM device found.\n");
+      printf("No loaded CD-ROM device accessible.\n");
     }  else {
       default_device = cdio_get_default_device(p_cdio);
       
