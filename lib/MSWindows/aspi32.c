@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.29 2004/07/18 06:51:49 rocky Exp $
+    $Id: aspi32.c,v 1.30 2004/07/19 01:13:32 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.29 2004/07/18 06:51:49 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.30 2004/07/19 01:13:32 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -569,13 +569,16 @@ read_toc_aspi (_img_private_t *env)
   ssc.SRB_SenseLen    = SENSE_LEN;
   
   ssc.SRB_PostProc = (LPVOID) hEvent;
+
+  /* Sizes for command descriptor buffer (CDB) are set by the SCSI opcode. 
+     The size for READ TOC is 10. */
   ssc.SRB_CDBLen      = 10;
   
   /* Operation code */
   CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_GPCMD_READ_TOC);
   
   /* Format */
-  ssc.CDBByte[ 2 ] = READ_TOC_FORMAT_TOC;
+  ssc.CDBByte[ 2 ] = CDIO_MMC_READTOC_FMT_TOC;
   
   /* Starting track */
   CDIO_MMC_SET_START_TRACK(ssc.CDBByte, 0);

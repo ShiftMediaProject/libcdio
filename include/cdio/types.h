@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.20 2004/07/18 03:35:07 rocky Exp $
+    $Id: types.h,v 1.21 2004/07/19 01:13:31 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -304,29 +304,29 @@ extern "C" {
                                                       i.e a CD file image */
 
   /*! Reading masks.. */
-#define CDIO_DRIVE_CAP_READ_AUDIO     0x00001 /**< drive can play CD audio */
-#define CDIO_DRIVE_CAP_READ_CD_DA     0x00002 /**< drive can read CD-DA */
-#define CDIO_DRIVE_CAP_READ_CD_G      0x00004 /**< drive can read CD G  */
-#define CDIO_DRIVE_CAP_READ_CD_R      0x00008 /**< drive can read CD-R  */
-#define CDIO_DRIVE_CAP_READ_CD_RW     0x00010 /**< drive can read CD-RW */
-#define CDIO_DRIVE_CAP_READ_DVD_R     0x00020 /**< drive can read DVD-R */
-#define CDIO_DRIVE_CAP_READ_DVD_PR    0x00040 /**< drive can read DVD+R */
-#define CDIO_DRIVE_CAP_READ_DVD_RAM   0x00080 /**< drive can read DVD-RAM */
-#define CDIO_DRIVE_CAP_READ_DVD_ROM   0x00100 /**< drive can read DVD-ROM */
-#define CDIO_DRIVE_CAP_READ_DVD_RW    0x00200 /**< drive can read DVD-RW  */
-#define CDIO_DRIVE_CAP_READ_DVD_RPW   0x00400 /**< drive can read DVD+RW  */
-#define CDIO_DRIVE_CAP_READ_C2_ERRS   0x00800 /**< has C2 error correction */
+#define CDIO_DRIVE_CAP_READ_AUDIO       0x00001 /**< drive can play CD audio */
+#define CDIO_DRIVE_CAP_READ_CD_DA       0x00002 /**< drive can read CD-DA */
+#define CDIO_DRIVE_CAP_READ_CD_G        0x00004 /**< drive can read CD+G  */
+#define CDIO_DRIVE_CAP_READ_CD_R        0x00008 /**< drive can read CD-R  */
+#define CDIO_DRIVE_CAP_READ_CD_RW       0x00010 /**< drive can read CD-RW */
+#define CDIO_DRIVE_CAP_READ_DVD_R       0x00020 /**< drive can read DVD-R */
+#define CDIO_DRIVE_CAP_READ_DVD_PR      0x00040 /**< drive can read DVD+R */
+#define CDIO_DRIVE_CAP_READ_DVD_RAM     0x00080 /**< drive can read DVD-RAM */
+#define CDIO_DRIVE_CAP_READ_DVD_ROM     0x00100 /**< drive can read DVD-ROM */
+#define CDIO_DRIVE_CAP_READ_DVD_RW      0x00200 /**< drive can read DVD-RW  */
+#define CDIO_DRIVE_CAP_READ_DVD_RPW     0x00400 /**< drive can read DVD+RW  */
+#define CDIO_DRIVE_CAP_READ_C2_ERRS     0x00800 /**< has C2 error correction */
 
   /*! Writing masks.. */
-#define CDIO_DRIVE_CAP_WRITE_CD_R     0x00001 /**< drive can write CD-R */
-#define CDIO_DRIVE_CAP_WRITE_CD_RW    0x00002 /**< drive can write CD-R */
-#define CDIO_DRIVE_CAP_WRITE_DVD_R    0x00004 /**< drive can write DVD-R */
-#define CDIO_DRIVE_CAP_WRITE_DVD_PR   0x00008 /**< drive can write DVD+R */
-#define CDIO_DRIVE_CAP_WRITE_DVD_RAM  0x00010 /**< drive can write DVD-RAM */
-#define CDIO_DRIVE_CAP_WRITE_DVD_RW   0x00020 /**< drive can write DVD-RAM */
-#define CDIO_DRIVE_CAP_WRITE_DVD_RPW  0x00040 /**< drive can write DVD-RAM */
-#define CDIO_DRIVE_CAP_WRITE_MT_RAIN  0x00080 /**< Mount Rainier           */
-#define CDIO_DRIVE_CAP_WRITE_BUF_UN   0x00100 /**< buffer underrun protect'n */
+#define CDIO_DRIVE_CAP_WRITE_CD_R       0x00001 /**< drive can write CD-R */
+#define CDIO_DRIVE_CAP_WRITE_CD_RW      0x00002 /**< drive can write CD-R */
+#define CDIO_DRIVE_CAP_WRITE_DVD_R      0x00004 /**< drive can write DVD-R */
+#define CDIO_DRIVE_CAP_WRITE_DVD_PR     0x00008 /**< drive can write DVD+R */
+#define CDIO_DRIVE_CAP_WRITE_DVD_RAM    0x00010 /**< drive can write DVD-RAM */
+#define CDIO_DRIVE_CAP_WRITE_DVD_RW     0x00020 /**< drive can write DVD-RAM */
+#define CDIO_DRIVE_CAP_WRITE_DVD_RPW    0x00040 /**< drive can write DVD-RAM */
+#define CDIO_DRIVE_CAP_WRITE_MT_RAINIER 0x00080 /**< Mount Rainier           */
+#define CDIO_DRIVE_CAP_WRITE_BURN_PROOF 0x00100 /**< burn proof */
 
 /**< Masks derived from above... */
 #define CDIO_DRIVE_CAP_WRITE_CD (                \

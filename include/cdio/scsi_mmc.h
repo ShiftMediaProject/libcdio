@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.8 2004/07/17 22:16:47 rocky Exp $
+    $Id: scsi_mmc.h,v 1.9 2004/07/19 01:13:31 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,18 +26,27 @@
 #ifndef __SCSI_MMC_H__
 #define __SCSI_MMC_H__
 
-/* Leval values that can go into READ_CD */
-#define CDIO_MMC_READ_TYPE_ANY   0  /* All types */
-#define CDIO_MMC_READ_TYPE_CDDA  1  /* Only CD-DA sectors */
-#define CDIO_MMC_READ_TYPE_MODE1 2  /* Only mode1 sectors (user data = 2048) */
-#define CDIO_MMC_READ_TYPE_MODE2 3  /* mode2 sectors form1 or form2 */
-#define CDIO_MMC_READ_TYPE_M2F1  4  /* mode2 sectors form1 */
-#define CDIO_MMC_READ_TYPE_M2F2  5  /* mode2 sectors form2 */
+/*! Level values that can go into READ_CD */
+#define CDIO_MMC_READ_TYPE_ANY   0  /**< All types */
+#define CDIO_MMC_READ_TYPE_CDDA  1  /**< Only CD-DA sectors */
+#define CDIO_MMC_READ_TYPE_MODE1 2  /**< mode1 sectors (user data = 2048) */
+#define CDIO_MMC_READ_TYPE_MODE2 3  /**< mode2 sectors form1 or form2 */
+#define CDIO_MMC_READ_TYPE_M2F1  4  /**< mode2 sectors form1 */
+#define CDIO_MMC_READ_TYPE_M2F2  5  /**< mode2 sectors form2 */
+
+/*! Format values for READ_TOC */
+#define CDIO_MMC_READTOC_FMT_TOC      0
+#define CDIO_MMC_READTOC_FMT_SESSION  1  
+#define CDIO_MMC_READTOC_FMT_FULTOC   2  
+#define CDIO_MMC_READTOC_FMT_PMA      3  /**< Q subcode data */
+#define CDIO_MMC_READTOC_FMT_ATIP     4  /**< includes media type */
+#define CDIO_MMC_READTOC_FMT_CDTEXT   5  /**< CD-TEXT info  */
 
 /*! The generic packet command opcodes for CD/DVD Logical Units. */
 
 #define CDIO_MMC_GPCMD_MODE_SENSE 	     0x1a
 #define CDIO_MMC_GPCMD_START_STOP            0x1b
+#define CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL  0x1e
 #define CDIO_MMC_GPCMD_READ_10	             0x28
 #define CDIO_MMC_GPCMD_READ_SUBCHANNEL	     0x42
 #define CDIO_MMC_GPCMD_READ_TOC              0x43
@@ -47,7 +56,6 @@
 #define CDIO_MMC_GPCMD_READ_12	             0xa8
 #define CDIO_MMC_GPCMD_READ_CD	             0xbe
 #define CDIO_MMC_GPCMD_READ_MSF	             0xb9
-#define CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL  0x1e
 
 
 /*! Page codes for MODE SENSE and MODE SET. */
@@ -96,13 +104,13 @@
   rec[9] = val;
 
 /*!
-  On input A MODE_SENSE command was issued and we have the results
+  On input a MODE_SENSE command was issued and we have the results
   in p. We interpret this and return a bit mask set according to the 
   capabilities.
  */
 void cdio_get_drive_cap_mmc(const uint8_t *p,
-			    cdio_drive_read_cap_t  *p_read_cap,
-			    cdio_drive_write_cap_t *p_write_cap,
-			    cdio_drive_misc_cap_t  *p_misc_cap);
+			    /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+			    /*out*/ cdio_drive_write_cap_t *p_write_cap,
+			    /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
 
 #endif /* __SCSI_MMC_H__ */

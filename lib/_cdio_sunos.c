@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.54 2004/07/18 03:35:07 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.55 2004/07/19 01:13:32 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.54 2004/07/18 03:35:07 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.55 2004/07/19 01:13:32 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -442,9 +442,10 @@ _init_cdtext_solaris (_img_private_t *env)
      The size for READ TOC is 10. */
   unsigned char scsi_cdb[10] = {0, }; 
 
+  /* Operation code */
   CDIO_MMC_SET_COMMAND(scsi_cdb, CDIO_MMC_GPCMD_READ_TOC);
-  scsi_cdb[1]   = 0x02;   /* MSF mode */
-  scsi_cdb[2]   = 0x05;   /* CD text */
+  scsi_cdb[1] = 0x02;   /* MSF mode */
+  scsi_cdb[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
   CDIO_MMC_SET_READ_LENGTH( scsi_cdb, sizeof(wdata) );
 
   my_cmd.uscsi_flags = (USCSI_READ|USCSI_RQENABLE);  /* We're going get data */
@@ -625,7 +626,7 @@ _get_drive_cap_solaris (const void *user_data,
   my_cmd.uscsi_rqbuf = my_rq_buf;        /* Pointer to the request sense buffer */
   
   status = ioctl(env->gen.fd, USCSICMD, &my_cmd);
-  if(status == 0) {
+  if (status == 0) {
     uint8_t *p;
     int lenData  = ((unsigned int)buf[0] << 8) + buf[1];
     uint8_t *pMax = buf + 256;

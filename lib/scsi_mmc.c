@@ -1,6 +1,6 @@
 /*  Common MMC routines.
 
-    $Id: scsi_mmc.c,v 1.5 2004/07/18 03:35:07 rocky Exp $
+    $Id: scsi_mmc.c,v 1.6 2004/07/19 01:13:32 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,15 +27,15 @@
 #include <cdio/scsi_mmc.h>
 
 /*!
-  On input A MODE_SENSE command was issued and we have the results
+  On input a MODE_SENSE command was issued and we have the results
   in p. We interpret this and return a bit mask set according to the 
   capabilities.
  */
 void
 cdio_get_drive_cap_mmc(const uint8_t *p,
-		       cdio_drive_read_cap_t  *p_read_cap,
-		       cdio_drive_write_cap_t *p_write_cap,
-		       cdio_drive_misc_cap_t  *p_misc_cap)
+		       /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+		       /*out*/ cdio_drive_write_cap_t *p_write_cap,
+		       /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
   /* Reader */
   if (p[2] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_R;
@@ -50,10 +50,10 @@ cdio_get_drive_cap_mmc(const uint8_t *p,
   if (p[3] & 0x02) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_CD_RW;
   if (p[3] & 0x10) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_R;
   if (p[3] & 0x20) *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RAM;
+  if (p[4] & 0x80) *p_misc_cap  |= CDIO_DRIVE_CAP_WRITE_BURN_PROOF;
 
   /* Misc */
   if (p[4] & 0x40) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_MULTI_SESSION;
-  
   if (p[6] & 0x01) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_LOCK;
   if (p[6] & 0x08) *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_EJECT;
   if (p[6] >> 5 != 0) 

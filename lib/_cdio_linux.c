@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.69 2004/07/18 03:35:07 rocky Exp $
+    $Id: _cdio_linux.c,v 1.70 2004/07/19 01:13:31 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.69 2004/07/18 03:35:07 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.70 2004/07/19 01:13:31 rocky Exp $";
 
 #include <string.h>
 
@@ -718,9 +718,15 @@ _init_cdtext_linux (_img_private_t *env)
   } scsi_cmd;
 
   memset( scsi_cmd.cdb, 0, sizeof(scsi_cmd.cdb) );
+
+  /* Operation code */
   CDIO_MMC_SET_COMMAND(scsi_cmd.cdb, CDIO_MMC_GPCMD_READ_TOC); 
+
   scsi_cmd.cdb[1] = 0x02;   /* MSF mode */
-  scsi_cmd.cdb[2] = 0x05;   /* CD text  */
+
+  /* Format */
+  scsi_cmd.cdb[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
+
   CDIO_MMC_SET_READ_LENGTH(scsi_cmd.cdb, sizeof(scsi_cmd.wdata));
 
   scsi_cmd.inlen  = sizeof(scsi_cmd.cdb);

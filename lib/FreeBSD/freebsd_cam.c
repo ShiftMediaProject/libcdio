@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.18 2004/07/18 04:19:48 rocky Exp $
+    $Id: freebsd_cam.c,v 1.19 2004/07/19 01:13:32 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.18 2004/07/18 04:19:48 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.19 2004/07/19 01:13:32 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -353,11 +353,18 @@ stat_size_freebsd_cam (_img_private_t *env)
 		 sizeof(env->ccb.csio.sense_data), 0, 30*1000);
   env->ccb.csio.cdb_len = 8+1;
   
+  /* Operation code */
   CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, 
 		       CDIO_MMC_GPCMD_READ_TOC);
+
   env->ccb.csio.cdb_io.cdb_bytes[1] = 0; /* lba; msf: 0x2 */
+
+  /* Format */
+  env->ccb.csio.cdb_io.cdb_bytes[2] = CDIO_MMC_READTOC_FMT_TOC;
+
   CDIO_MMC_SET_START_TRACK(env->ccb.csio.cdb_io.cdb_bytes, 
 			   CDIO_CDROM_LEADOUT_TRACK);
+
   env->ccb.csio.cdb_io.cdb_bytes[8] = 12; /* ? */
   
   env->ccb.csio.data_ptr = buf;

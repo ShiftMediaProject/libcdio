@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.18 2004/07/18 06:51:49 rocky Exp $
+    $Id: win32_ioctl.c,v 1.19 2004/07/19 01:13:32 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.18 2004/07/18 06:51:49 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.19 2004/07/19 01:13:32 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -425,9 +425,14 @@ init_cdtext_win32ioctl (_img_private_t *env)
   sptd.DataBuffer= (void *) wdata;
   sptd.SenseInfoOffset=0;
 
+  /* Operation code */
   CDIO_MMC_SET_COMMAND(sptd.Cdb, CDIO_MMC_GPCMD_READ_TOC); 
+
   sptd.Cdb[1] = 0x02;   /* MSF mode */
-  sptd.Cdb[2] = 0x05;   /* CD text  */
+
+  /* Format */
+  sptd.Cdb[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
+
   CDIO_MMC_SET_READ_LENGTH(sptd.Cdb, sizeof(wdata));
 
   /* Send the command to drive */
