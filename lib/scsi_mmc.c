@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.16 2004/07/28 11:45:21 rocky Exp $
+    $Id: scsi_mmc.c,v 1.17 2004/07/29 05:24:21 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -98,15 +98,15 @@ scsi_mmc_get_cmd_len(uint8_t scsi_cmd)
   We return 0 if command completed successfully and 1 if not.
  */
 int
-scsi_mmc_run_cmd( const CdIo *cdio, unsigned int i_timeout, 
+scsi_mmc_run_cmd( const CdIo *p_cdio, unsigned int i_timeout, 
 		  const scsi_mmc_cdb_t *p_cdb,
 		  scsi_mmc_direction_t e_direction, unsigned int i_buf, 
 		  /*in/out*/ void *p_buf )
 {
-  if (cdio && cdio->op.run_scsi_mmc_cmd) {
-    return cdio->op.run_scsi_mmc_cmd(cdio, i_timeout,
-				     scsi_mmc_get_cmd_len(p_cdb->field[0]), 
-				     p_cdb, e_direction, i_buf, p_buf);
+  if (p_cdio && p_cdio->op.run_scsi_mmc_cmd) {
+    return p_cdio->op.run_scsi_mmc_cmd(p_cdio->env, i_timeout,
+				       scsi_mmc_get_cmd_len(p_cdb->field[0]),
+				       p_cdb, e_direction, i_buf, p_buf);
   } else 
     return 1;
 }
