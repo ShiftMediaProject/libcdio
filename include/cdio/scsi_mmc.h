@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.10 2004/07/21 10:19:20 rocky Exp $
+    $Id: scsi_mmc.h,v 1.11 2004/07/21 11:07:27 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -32,15 +32,43 @@
 #define CDIO_MMC_GPCMD_START_STOP            0x1b
 #define CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL  0x1e
 #define CDIO_MMC_GPCMD_READ_10	             0x28
+
+/*!
+  	Group 2 Commands
+  */
 #define CDIO_MMC_GPCMD_READ_SUBCHANNEL	     0x42
 #define CDIO_MMC_GPCMD_READ_TOC              0x43
+#define CDIO_MMC_GPCMD_READ_HEADER           0x44
+#define CDIO_MMC_GPCMD_PLAYAUDIO10           0x45
+#define CDIO_MMC_GPCMD_PLAYAUDIO_MSF         0x47
+#define CDIO_MMC_GPCMD_PLAYAUDIO_TI          0x48
+#define CDIO_MMC_GPCMD_PLAYTRACK_REL10       0x49
+#define CDIO_MMC_GPCMD_PAUSE_RESUME          0x4b
+
 #define CDIO_MMC_GPCMD_READ_DISC_INFO	     0x51
 #define CDIO_MMC_GPCMD_MODE_SELECT	     0x55
 #define CDIO_MMC_GPCMD_MODE_SELECT_6	     0x15
 #define CDIO_MMC_GPCMD_MODE_SENSE_10	     0x5a
+
+/*!
+ 	Group 5 Commands
+ */
+#define CDIO_MMC_GPCMD_PLAYAUDIO_12	     0xa5
 #define CDIO_MMC_GPCMD_READ_12	             0xa8
+#define CDIO_MMC_GPCMD_PLAYTRACK_REL12       0xa9
 #define CDIO_MMC_GPCMD_READ_CD	             0xbe
 #define CDIO_MMC_GPCMD_READ_MSF	             0xb9
+
+/*!
+ 	Group 6 Commands
+ */
+
+#define	CDIO_MMC_GPCMD_CD_PLAYBACK_STATUS    0xc4 /**< SONY unique command */
+#define	CDIO_MMC_GPCMD_PLAYBACK_CONTROL      0xc9 /**< SONY unique command */
+#define	CDIO_MMC_GPCMD_READ_CDDA	     0xd8 /**< Vendor unique command */
+#define	CDIO_MMC_GPCMD_READ_CDXA	     0xdb /**< Vendor unique command */
+#define	CDIO_MMC_GPCMD_READ_ALL_SUBCODES     0xdf /**< Vendor unique command */
+
 
 
 /*! Level values that can go into READ_CD */
