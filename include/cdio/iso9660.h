@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.44 2004/06/19 02:27:19 rocky Exp $
+    $Id: iso9660.h,v 1.45 2004/06/29 02:01:24 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -174,7 +174,7 @@ struct iso9660_pvd {
   char             volume_id[ISO_MAX_VOLUME_ID]; /**< each char is a dchar */
   char             unused2[8];
   uint64_t         volume_space_size;            /**< 733 encoded */
-  char             escape_sequences[32];
+  char             unused3[32];
   uint32_t         volume_set_size;              /**< 723 encoded */
   uint32_t         volume_sequence_number;       /**< 723 encoded */
   uint32_t         logical_block_size;           /**< 723 encoded */
@@ -212,8 +212,63 @@ struct iso9660_pvd {
   char             unused5[653];
 } GNUC_PACKED;
 
+/*! 
+  \brief ISO-9660 Supplimentary Volume Descriptor. 
+
+  This is used for Joliet Extentions and is almost the same as the
+  the primary descriptor but two unused fields, "unused1" and "unused3
+  become "flags and "escape_sequences" respectively.
+*/
+struct iso9660_svd {
+  uint8_t          type;                         /**< 711 encoded */
+  char             id[5];
+  uint8_t          version;                      /**< 711 encoded */
+  char             flags;			 /**< 853 */
+  char             system_id[ISO_MAX_SYSTEM_ID]; /**< each char is an achar */
+  char             volume_id[ISO_MAX_VOLUME_ID]; /**< each char is a dchar */
+  char             unused2[8];
+  uint64_t         volume_space_size;            /**< 733 encoded */
+  char             escape_sequences[32];         /**< 856 */
+  uint32_t         volume_set_size;              /**< 723 encoded */
+  uint32_t         volume_sequence_number;       /**< 723 encoded */
+  uint32_t         logical_block_size;           /**< 723 encoded */
+  uint64_t         path_table_size;              /**< 733 encoded */
+  uint32_t         type_l_path_table;            /**< 731 encoded */
+  uint32_t         opt_type_l_path_table;        /**< 731 encoded */
+  uint32_t         type_m_path_table;            /**< 732 encoded */
+  uint32_t         opt_type_m_path_table;        /**< 732 encoded */
+  char             root_directory_record[34];    /**< See section 9.1 of
+                                                    ISO 9660 spec. */
+  char             volume_set_id[ISO_MAX_VOLUMESET_ID];    /**< dchars */
+  char             publisher_id[ISO_MAX_PUBLISHER_ID];     /**< achars */
+  char             preparer_id[ISO_MAX_PREPARER_ID];       /**< achars */
+  char             application_id[ISO_MAX_APPLICATION_ID]; /**< achars */
+  char             copyright_file_id[37];     /**< See section 7.5 of
+                                                 ISO 9660 spec. Each char is 
+                                                 a dchar */
+  char             abstract_file_id[37];      /**< See section 7.5 of 
+                                                 ISO 9660 spec. Each char is 
+                                                 a dchar */
+  char             bibliographic_file_id[37]; /**< See section 7.5 of 
+                                                 ISO 9660 spec. Each char is
+                                                 a dchar. */
+  iso9660_ltime_t  creation_date;             /**< See section 8.4.26.1 of
+                                                 ISO 9660 spec. */
+  iso9660_ltime_t  modification_date;         /**< See section 8.4.26.1 of 
+                                                 ISO 9660 spec. */
+  iso9660_ltime_t  expiration_date;           /**< See section 8.4.26.1 of
+                                                 ISO 9660 spec. */
+  iso9660_ltime_t  effective_date;            /**< See section 8.4.26.1 of
+                                                 ISO 9660 spec. */
+  uint8_t          file_structure_version;    /**< 711 encoded */
+  char             unused4[1];
+  char             application_data[512];
+  char             unused5[653];
+};
+
 typedef struct iso9660_dir  iso9660_dir_t;
 typedef struct iso9660_pvd  iso9660_pvd_t;
+typedef struct iso9660_svd  iso9660_svd_t;
 typedef struct iso9660_stat iso9660_stat_t;
 
 #ifndef  EMPTY_ARRAY_SIZE
