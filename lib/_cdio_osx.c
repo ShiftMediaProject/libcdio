@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.24 2004/05/31 15:21:48 thesin Exp $
+    $Id: _cdio_osx.c,v 1.25 2004/06/01 03:44:55 thesin Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.24 2004/05/31 15:21:48 thesin Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.25 2004/06/01 03:44:55 thesin Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -61,11 +61,17 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.24 2004/05/31 15:21:48 thesin
 #include <IOKit/IOKitLib.h>
 #include <IOKit/IOBSD.h>
 #include <IOKit/storage/IOCDTypes.h>
+#include <IOKit/storage/IODVDTypes.h>
 #include <IOKit/storage/IOMedia.h>
 #include <IOKit/storage/IOCDMedia.h>
 #include <IOKit/storage/IOCDMediaBSDClient.h>
+#include <IOKit/storage/IODVDMediaBSDClient.h>
+
 
 #define TOTAL_TRACKS    (_obj->num_tracks)
+#define CDROM_DATA_TRACK CDIO_CDROM_DATA_TRACK
+#define CDROM_CDI_TRACK 0x10
+#define CDROM_XA_TRACK 0x20
 
 typedef enum {
   _AM_NONE,
@@ -487,7 +493,7 @@ _eject_media_osx (void *env) {
   if( ( psz_disk = (char *)strstr( _obj->gen.source_name, "disk" ) ) != NULL &&
       strlen( psz_disk ) > 4 )
     {
-#define EJECT_CMD "/usr/sbin/disktool -e %s 0"
+#define EJECT_CMD "/usr/sbin/hdiutil eject %s"
       snprintf( sz_cmd, sizeof(sz_cmd), EJECT_CMD, psz_disk );
 #undef EJECT_CMD
       
@@ -641,7 +647,18 @@ _get_track_format_osx(void *env, track_t track_num)
 
   cdio_warn( "trackinfo trackMode: %x dataMode: %x", a_track.trackMode, a_track.dataMode );
 
-  return TRACK_FORMAT_AUDIO;
+  if (a_track.trackMode == CDROM_DATA_TRACK) {
+    if (a_track.dataMode == CDROM_CDI_TRACK) {
+      return TRACK_FORMAT_CDI;
+    } else if (a_track.dataMode == CDROM_XA_TRACK) {
+      return TRACK_FORMAT_XA;
+    } else {
+      return TRACK_FORMAT_DATA;
+    }
+  } else {
+    return TRACK_FORMAT_AUDIO;
+  }
+
 }
 
 /*!
