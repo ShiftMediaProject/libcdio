@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.10 2005/02/05 04:23:21 rocky Exp $
+    $Id: device.h,v 1.11 2005/02/06 04:20:25 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -21,7 +21,7 @@
 /** \file device.h 
  *
  *  \brief The top-level header for driver- or device-related libcdio
- *          calls.  ("device" include CD-image reading devices).
+ *          calls.  ("device" includes CD-image reading devices).
  */
 #ifndef __CDIO_DEVICE_H__
 #define __CDIO_DEVICE_H__

@@ -1,5 +1,5 @@
 /*
-    $Id: track.c,v 1.3 2005/01/09 16:07:46 rocky Exp $
+    $Id: track.c,v 1.4 2005/02/06 04:20:25 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -32,6 +32,9 @@ const char *track_format2str[6] =
   {
     "audio", "CD-i", "XA", "data", "PSX", "error"
   };
+
+/* Variables to hold debugger-helping enumerations */
+enum cdio_track_enums;
 
 /*!
   Return the number of the first track. 

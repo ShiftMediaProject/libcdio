@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.4 2005/02/05 14:42:28 rocky Exp $
+    $Id: sector.c,v 1.5 2005/02/06 04:20:25 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 
 #include <ctype.h>
 
-static const char _rcsid[] = "$Id: sector.c,v 1.4 2005/02/05 14:42:28 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.5 2005/02/06 04:20:25 rocky Exp $";
 
 /*! String of bytes used to identify the beginning of a Mode 1 or
   Mode 2 sector. */
@@ -44,7 +44,6 @@ const uint8_t CDIO_SECTOR_SYNC_HEADER[CDIO_CD_SYNC_SIZE] =
 
 /* Variables to hold debugger-helping enumerations */
 enum cdio_cd_enums;
-enum cdio_cdrom_enums;
 enum m2_sector_enums;
       
 lba_t

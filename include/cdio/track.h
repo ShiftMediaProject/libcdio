@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: track.h,v 1.6 2005/01/29 20:54:20 rocky Exp $
+    $Id: track.h,v 1.7 2005/02/06 04:20:25 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -76,6 +76,49 @@ extern "C" {
 			      */
   } track_flags_t;
     
+  /*! An enumeration for some of the CDIO_CDROM_* #defines below. This
+    isn't really an enumeration one would really use in a program; it
+    is to be helpful in debuggers where wants just to refer to the
+    CDIO_CDROM_* names and get something.
+  */
+  extern enum cdio_track_enums {
+    CDIO_CDROM_LBA        = 0x01, /**< "logical block": first frame is #0 */
+    CDIO_CDROM_MSF        = 0x02, /**< "minute-second-frame": binary, not
+				     BCD here! */
+    CDIO_CDROM_DATA_TRACK = 0x04, 
+    CDIO_CDROM_CDI_TRACK  = 0x10,
+    CDIO_CDROM_XA_TRACK   = 0x20
+   } cdio_track_enums;
+  
+  /*! track modes (Table 350) 
+    reference: MMC-3 draft revsion - 10g
+  */
+  typedef enum {
+    AUDIO,			/**< 2352 byte block length */
+    MODE1,			/**< 2048 byte block length */
+    MODE1_RAW,			/**< 2352 byte block length */
+    MODE2,			/**< 2336 byte block length */
+    MODE2_FORM1,		/**< 2048 byte block length */
+    MODE2_FORM2,		/**< 2324 byte block length */
+    MODE2_FORM_MIX,		/**< 2336 byte block length */
+    MODE2_RAW			/**< 2352 byte block length */
+  } trackmode_t;
+  
+  /*! CD-ROM address types (GNU/Linux e.g. cdrom_tocentry.cdte_format) */
+#define	CDIO_CDROM_LBA 0x01 /**< "logical block": first frame is #0 */
+#define	CDIO_CDROM_MSF 0x02 /**< "minute-second-frame": binary, not
+                               BCD here! */
+      
+  /*! CD-ROM track format types (GNU/Linux cdte_ctrl) */
+#define	CDIO_CDROM_DATA_TRACK	0x04
+#define	CDIO_CDROM_CDI_TRACK	0x10
+#define	CDIO_CDROM_XA_TRACK	0x20
+      
+  /*! CD-ROM address types (GNU/Linux e.g. cdrom_tocentry.cdte_format) */
+#define	CDIO_CDROM_LBA 0x01 /**< "logical block": first frame is #0 */
+#define	CDIO_CDROM_MSF 0x02 /**< "minute-second-frame": binary, not
+                               BCD here! */
+      
   /*! 
     Get CD-Text information for a CdIo_t object.
 
