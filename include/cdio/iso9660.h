@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.43 2004/06/19 00:15:44 rocky Exp $
+    $Id: iso9660.h,v 1.44 2004/06/19 02:27:19 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -290,14 +290,23 @@ typedef struct _iso9660 iso9660_t;
 /*!
   Seek to a position and then read n bytes. Size read is returned.
 */
-  long int iso9660_iso_seek_read (iso9660_t *p_iso, void *ptr, lsn_t start, 
-                                  long int size);
+  long int iso9660_iso_seek_read (const iso9660_t *p_iso, void *ptr, 
+                                  lsn_t start, long int size);
 
 /*!
   Read the Primary Volume Descriptor for an ISO 9660 image.
   True is returned if read, and false if there was an error.
 */
-  bool iso9660_ifs_read_pvd (iso9660_t *p_iso, iso9660_pvd_t *p_pvd);
+  bool iso9660_ifs_read_pvd (const iso9660_t *p_iso, 
+                             /*out*/ iso9660_pvd_t *p_pvd);
+
+/*!
+  Read the Primary Volume Descriptor for a CD.
+  True is returned if read, and false if there was an error.
+*/
+  bool iso9660_fs_read_mode2_pvd (const CdIo *p_cdio, 
+                                  /*out*/ iso9660_pvd_t *p_pvd,
+                                  bool b_form2);
 
 /*====================================================
   Time conversion 
@@ -436,7 +445,7 @@ iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
 
    Returns stat_t of entry if we found lsn, or NULL otherwise.
  */
-iso9660_stat_t *iso9660_find_fs_lsn(const CdIo *cdio, lsn_t lsn);
+iso9660_stat_t *iso9660_find_fs_lsn(const CdIo *p_cdio, lsn_t lsn);
 
 
 /*!

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.21 2004/06/19 00:15:44 rocky Exp $
+    $Id: iso9660_fs.c,v 1.22 2004/06/19 02:27:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -40,7 +40,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.21 2004/06/19 00:15:44 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.22 2004/06/19 02:27:20 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -85,16 +85,9 @@ iso9660_close (iso9660_t *p_iso)
   return true;
 }
 
-/*!
-  Read the Primary Volume Descriptor for an ISO 9660 image.
-*/
-  bool iso9660_ifs_read_pvd (iso9660_t *p_iso, iso9660_pvd_t *p_pvd)
+static bool
+check_pvd (const iso9660_pvd_t *p_pvd) 
 {
-  if (0 == iso9660_iso_seek_read (p_iso, p_pvd, ISO_PVD_SECTOR, 1)) {
-    cdio_warn ("error reading PVD sector (%d)", ISO_PVD_SECTOR);
-    return false;
-  }
-  
   if (p_pvd->type != ISO_VD_PRIMARY) {
     cdio_warn ("unexpected PVD type %d", p_pvd->type);
     return false;
@@ -110,10 +103,41 @@ iso9660_close (iso9660_t *p_iso)
 }
 
 /*!
+  Read the Primary Volume Descriptor for an ISO 9660 image.
+*/
+bool 
+iso9660_ifs_read_pvd (const iso9660_t *p_iso, /*out*/ iso9660_pvd_t *p_pvd)
+{
+  if (0 == iso9660_iso_seek_read (p_iso, p_pvd, ISO_PVD_SECTOR, 1)) {
+    cdio_warn ("error reading PVD sector (%d)", ISO_PVD_SECTOR);
+    return false;
+  }
+  return check_pvd(p_pvd);
+}
+
+
+/*!
+  Read the Primary Volume Descriptor for of CD.
+*/
+bool 
+iso9660_fs_read_mode2_pvd(const CdIo *cdio, /*out*/ iso9660_pvd_t *p_pvd, 
+			  bool b_form2) 
+{
+  if (cdio_read_mode2_sector (cdio, p_pvd, ISO_PVD_SECTOR, b_form2)) {
+    cdio_warn ("error reading PVD sector (%d)", ISO_PVD_SECTOR);
+    return false;
+  }
+  
+  return check_pvd(p_pvd);
+}
+
+
+/*!
   Seek to a position and then read n blocks. Size read is returned.
 */
 long int 
-iso9660_iso_seek_read (iso9660_t *p_iso, void *ptr, lsn_t start, long int size)
+iso9660_iso_seek_read (const iso9660_t *p_iso, void *ptr, lsn_t start, 
+		       long int size)
 {
   long int ret;
   if (NULL == p_iso) return 0;
