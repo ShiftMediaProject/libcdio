@@ -1,8 +1,12 @@
+.deps
+.libs
 Makefile
 Makefile.in
 check_cue.sh
 check_common_fn
 check_nrg.sh
+testassert
+testischar
 *.dump
 *.cue
 *.bin

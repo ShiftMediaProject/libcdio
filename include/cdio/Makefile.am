@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.6 2003/08/16 15:34:58 rocky Exp $
+#   $Id: Makefile.am,v 1.7 2003/08/17 05:31:19 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -22,8 +22,15 @@
 #
 
 libcdioincludedir=$(includedir)/cdio
-libcdioinclude_HEADERS = cdio.h cd_types.h logging.h sector.h \
-	                 types.h util.h version.h
+libcdioinclude_HEADERS = \
+	cdio.h \
+	cd_types.h \
+	iso9660.h \
+	logging.h \
+	sector.h \
+        types.h \
+	util.h \
+	version.h
 
 EXTRA_DIST = version.h.in
 BUILT_SOURCES = version.h

@@ -13,5 +13,6 @@ libcdio*.tar.gz
 libtool
 libcdio.pc
 libcdio.spec
+libiso9660.pc
 ltmain.sh
 stamp-h1

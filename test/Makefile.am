@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.3 2003/04/28 02:02:41 rocky Exp $
+#   $Id: Makefile.am,v 1.4 2003/08/17 05:31:19 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,7 +20,16 @@
 # Things to regression testing
 ####################################################
 #
+noinst_PROGRAMS = testassert testischar
+
+INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
+
+testassert_LDADD = $(LIBCDIO_LIBS)
+testischar_LDADD = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
+
 check_SCRIPTS = check_nrg.sh check_cue.sh check_opts.sh
+
+check_PROGRAMS = testischar testassert
 
 check_DATA = vcd_demo.right \
 	     videocd.right videocd.nrg \

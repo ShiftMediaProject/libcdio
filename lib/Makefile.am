@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.8 2003/08/16 15:34:58 rocky Exp $
+#   $Id: Makefile.am,v 1.9 2003/08/17 05:31:19 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -46,7 +46,10 @@ libcdio_sources = \
 	sector.c \
 	util.c
 
-lib_LTLIBRARIES     = libcdio.la 
+lib_LTLIBRARIES     = libcdio.la libiso9660.la
 libcdio_la_SOURCES = $(libcdio_sources)
+libiso9660_la_SOURCES = \
+	iso9660.c \
+	iso9660_private.h
 
 INCLUDES = -I$(LIBCDIO_CFLAGS)

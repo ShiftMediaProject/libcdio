@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.11 2003/08/09 11:52:00 rocky Exp $
+#   $Id: Makefile.am,v 1.12 2003/08/17 05:31:19 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -27,7 +27,7 @@ SUBDIRS =  doc include lib src test
 
 # pkg-config(1) related rules
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libcdio.pc
+pkgconfig_DATA = libiso9660.pc libcdio.pc
 
 $(pkgconfig_DATA): config.status
 

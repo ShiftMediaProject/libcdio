@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.32 2003/08/16 22:09:31 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.33 2003/08/17 05:31:19 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.63)
@@ -183,8 +183,10 @@ AC_HAVE_HEADERS( stdbool.h  stdlib.h stdint.h stdio.h string.h strings.h linux/v
 
 LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/ -I$(top_srcdir)/include/'
 LIBCDIO_LIBS='$(top_builddir)/lib/libcdio.la'
+LIBISO9660_LIBS='$(top_builddir)/lib/libiso9660.la'
 AC_SUBST(LIBCDIO_CFLAGS)
 AC_SUBST(LIBCDIO_LIBS)
+AC_SUBST(LIBISO9660_LIBS)
 
 ACLOCAL_AMFLAGS='-I .'
 AC_SUBST(ACLOCAL_AMFLAGS)
@@ -288,10 +290,11 @@ AC_CONFIG_COMMANDS([checks],
 		   [chmod +x test/check_cue.sh; chmod +x test/check_nrg.sh
 		   ])
 
-AC_OUTPUT([ \
+AC_CONFIG_FILES([ \
        Makefile \
        libcdio.pc \
        libcdio.spec \
+       libiso9660.pc \
        include/Makefile \
        include/cdio/Makefile \
        include/cdio/version.h \
@@ -303,5 +306,6 @@ AC_OUTPUT([ \
        test/check_common_fn \
        test/Makefile \
        ])
+AC_OUTPUT
 
 echo "Using CD-ROM drivers: $cd_drivers"
