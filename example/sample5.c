@@ -1,5 +1,5 @@
 /*
-  $Id: sample5.c,v 1.5 2004/03/20 22:46:56 rocky Exp $
+  $Id: sample5.c,v 1.6 2004/03/21 03:42:06 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -64,10 +64,10 @@ main(int argc, const char *argv[])
 
   cdio_free_device_list(cd_drives);
   free(cd_drives);
+  cd_drives = NULL;
   
   printf("-----\n");
-  
-  cd_drives = NULL;
+
   /* Print out a list of CD-drives the harder way. */
   cd_drives = cdio_get_devices_with_cap(NULL, CDIO_FS_MATCH_ALL, false);
 
@@ -79,7 +79,7 @@ main(int argc, const char *argv[])
   }
   cdio_free_device_list(cd_drives);
   free(cd_drives);
-  
+
   printf("-----\n");
   printf("CD-DA drives...\n");
   cd_drives = NULL;
