@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.10 2004/06/05 02:47:49 rocky Exp $
+    $Id: freebsd_cam.c,v 1.11 2004/06/09 10:59:42 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.10 2004/06/05 02:47:49 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.11 2004/06/09 10:59:42 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -255,7 +255,7 @@ _set_bsize (_img_private_t *env, unsigned int bsize)
   env->ccb.csio.cdb_len = 4+1;
   
   
-  env->ccb.csio.cdb_io.cdb_bytes[0] = 0x15;
+  CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_MODE_SELECT_6);
   env->ccb.csio.cdb_io.cdb_bytes[1] = 1 << 4;
   env->ccb.csio.cdb_io.cdb_bytes[4] = 12;
   
@@ -406,7 +406,7 @@ eject_media_freebsd_cam (_img_private_t *env)
 		 0, 30*1000);
   env->ccb.csio.cdb_len = 5+1;
   
-  env->ccb.csio.cdb_io.cdb_bytes[0] = CDIO_MMC_START_STOP;
+  CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_START_STOP);
   env->ccb.csio.cdb_io.cdb_bytes[1] = 0x1;	/* immediate */
   env->ccb.csio.cdb_io.cdb_bytes[4] = 0x2;	/* eject */
   
