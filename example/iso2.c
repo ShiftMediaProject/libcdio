@@ -1,5 +1,5 @@
 /*
-  $Id: iso2.c,v 1.5 2005/01/04 04:40:22 rocky Exp $
+  $Id: iso2.c,v 1.6 2005/02/03 07:32:32 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -19,7 +19,7 @@
 */
 
 /* Simple program to show using libiso9660 to extract a file from a
-   cue/bin CD-IMAGE.
+   cue/bin CD image.
  */
 
 /* This is the CD-image with an ISO-9660 filesystem */
@@ -73,21 +73,28 @@ main(int argc, const char *argv[])
   iso9660_stat_t *p_statbuf;
   FILE *p_outfd;
   int i;
+  char const *psz_fname;
+  CdIo_t *p_cdio;
   
-  CdIo_t *p_cdio = cdio_open (ISO9660_IMAGE, DRIVER_BINCUE);
-  
+  if (argc > 1) 
+    psz_fname = argv[1];
+  else 
+    psz_fname = ISO9660_IMAGE;
+
+  p_cdio = cdio_open (psz_fname, DRIVER_BINCUE);
   if (NULL == p_cdio) {
-    fprintf(stderr, "Sorry, couldn't open BIN/CUE image %s\n", ISO9660_IMAGE);
+    fprintf(stderr, "Sorry, couldn't open %s as a BIN/CUE image\n", 
+	    psz_fname);
     return 1;
   }
 
-  p_statbuf = iso9660_fs_stat (p_cdio, ISO9660_FILENAME);
+  p_statbuf = iso9660_fs_stat (p_cdio, psz_fname);
 
   if (NULL == p_statbuf) 
     {
       fprintf(stderr, 
 	      "Could not get ISO-9660 file information for file %s\n",
-	      ISO9660_FILENAME);
+	      psz_fname);
       cdio_destroy(p_cdio);
       return 2;
     }
@@ -134,7 +141,8 @@ main(int argc, const char *argv[])
   if (ftruncate (fileno (p_outfd), p_statbuf->size))
     perror ("ftruncate()");
 
-  printf("Extraction of file 'copying' from %s successful.\n", ISO9660_IMAGE);
+  printf("Extraction of file 'copying' from %s successful.\n", 
+	 psz_fname);
 
   my_exit(0);
 }
