@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.60 2004/11/15 21:34:10 nboullis Exp $
+#   $Id: Makefile.am,v 1.61 2004/11/16 00:58:10 nboullis Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -172,7 +172,7 @@ if BUILD_VERSIONED_LIBS
 libcdio_la_LDFLAGS = $(libcdio_la_ldflags) -Wl,--version-script=libcdio.la.ver
 libcdio_la_DEPENDENCIES = libcdio.la.ver
 
-libcdio.la.ver: $(libcdio_la_OBJECTS)
+libcdio.la.ver: $(libcdio_la_OBJECTS) $(srcdir)/libcdio.sym
 	echo 'CDIO_$(libcdio_la_MAJOR) { ' > $@
 	echo "  global:" >> $@
 	nm $(patsubst %.lo,%.o,$(libcdio_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio.sym; then echo "    $${symbol};"; fi; done >> $@
@@ -188,7 +188,7 @@ if BUILD_VERSIONED_LIBS
 libiso9660_la_LDFLAGS = $(libiso9660_la_ldflags) -Wl,--version-script=libiso9660.la.ver
 libiso9660_la_DEPENDENCIES = $(libcdio9660_la_dependencies) libiso9660.la.ver
 
-libiso9660.la.ver: $(libiso9660_la_OBJECTS)
+libiso9660.la.ver: $(libiso9660_la_OBJECTS) $(srcdir)/libiso9660.sym
 	echo 'ISO9660_$(libiso9660_la_MAJOR) {' > $@
 	echo "  global:" >> $@
 	nm $(patsubst %.lo,%.o,$(libiso9660_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libiso9660.sym; then echo "    $${symbol};"; fi; done >> $@
