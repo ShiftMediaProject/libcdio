@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.11 2005/01/26 01:03:16 rocky Exp $
+  $Id: cdda.h,v 1.12 2005/01/26 01:21:29 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -326,6 +326,7 @@ const char *strerror_tr[]={
 
 */
 
+#ifndef DO_NOT_WANT_PARANOIA_COMPATIBILITY
 /** For compatibility with good ol' paranoia */
 #define cdda_find_a_cdrom       cdio_cddap_find_a_cdrom
 #define cdda_identify           cdio_cddap_identify
@@ -346,6 +347,7 @@ const char *strerror_tr[]={
 #define cdda_track_preemp       cdio_cddap_track_preemp
 #define cdda_disc_firstsector   cdio_cddap_disc_firstsector
 #define cdda_disc_lastsector    cdio_cddap_disc_lastsector
+#endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
 
 #endif /*_CDDA_INTERFACE_H_*/
 

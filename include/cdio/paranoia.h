@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.h,v 1.5 2005/01/25 11:04:45 rocky Exp $
+  $Id: paranoia.h,v 1.6 2005/01/26 01:21:29 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -130,6 +130,7 @@ extern void cdio_paranoia_overlapset(cdrom_paranoia_t *p,long overlap);
 extern void cdio_paranoia_set_range(cdrom_paranoia_t *p, long int start, 
 				    long int end);
 
+#ifndef DO_NOT_WANT_PARANOIA_COMPATIBILITY
 /** For compatibility with good ol' paranoia */
 #define paranoia_init         cdio_paranoia_init
 #define paranoia_free         cdio_paranoia_free
@@ -139,6 +140,7 @@ extern void cdio_paranoia_set_range(cdrom_paranoia_t *p, long int start,
 #define paranoia_read_limited cdio_paranoia_read_limited
 #define paranoia_overlapset   cdio_paranoia_overlapset
 #define paranoia_set_range    cdio_paranoia_read_overlapset
+#endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
 
 #ifdef __cplusplus
 }
