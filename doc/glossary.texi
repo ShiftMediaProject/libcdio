@@ -6,15 +6,17 @@ See also @uref{http://www.dvdrhelp.com/glossary}.
 Compact Disc
 
 @item CD-DA
-@acronym{CD} Digital Audio. This commonly referred to as an audio
-@acronym{CD} and what most people think of when you play a
-@acronym{CD} as it was the first to use the @acronym{CD} medium.
+@acronym{CD} Digital Audio, described in the ``Red Book'' or ICE
+908. This commonly referred to as an audio @acronym{CD} and what most
+people think of when you play a @acronym{CD} as it was the first to
+use the @acronym{CD} medium.
 
 @item CD-ROM
-@acronym{CD} Read Only Memory
+@acronym{CD} Read Only Memory or ``Yellow Book'' describe in Standards
+ISO/IEC 10149.
 
 @item CD-ROM XA
-CD-ROM EXtended Architecture. A modificattion to the CD-ROM
+CD-ROM EXtended Architecture. A modification to the CD-ROM
 specification that defines two new types of sectors.  CD-ROM XA was
 developed jointly by Sony, Philips, and Microsoft, and its
 specifications were published in an extension to the Yellow Book.
