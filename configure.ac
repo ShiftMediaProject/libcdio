@@ -15,7 +15,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-AC_REVISION([$Id: configure.ac,v 1.25 2003/06/07 08:53:16 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.26 2003/06/08 12:33:37 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(libcdio, 0.61)
@@ -57,6 +57,9 @@ fi
 dnl We use a perl for documentation and regression tests
 AC_PATH_PROG(PERL, perl, no)
 AC_SUBST(PERL)dnl
+AC_PATH_PROGS(DIFF, diff, cmp)
+AC_SUBST(DIFF)dnl
+
 
 AM_PATH_LIBPOPT(, [enable_cdinfo=no])
 
@@ -268,6 +271,7 @@ AC_OUTPUT([ \
        src/Makefile \
        test/check_nrg.sh \
        test/check_cue.sh \
+       test/check_common_fn \
        test/Makefile \
        ])
 

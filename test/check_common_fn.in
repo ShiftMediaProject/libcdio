@@ -1,18 +1,24 @@
-# $Id: check_common_fn,v 1.4 2003/06/07 20:41:21 rocky Exp $
+# $Id: check_common_fn.in,v 1.1 2003/06/08 12:33:38 rocky Exp $
 SKIP_TEST_EXITCODE=77
-
-have_cmp() {
-  if cmp /dev/null /dev/null > /dev/null 2>&1; then
+DIFF_OPTS=
+have_diff() {
+  if @DIFF@ ./Makefile ./Makefile > /dev/null 2>&1; then
     :
   else
     
     return 1;
   fi
   
-  if cmp /dev/zero /dev/null > /dev/null 2>&1; then
+  if @DIFF@ ./Makefile ./check_common_fn.in > /dev/null 2>&1; then
     return 1;
   fi
-  
+
+  # MSDOG output uses \r\n rather than \n in tests
+  for diff_opt in -w --unified ; do 
+    if @DIFF@ $opt ./Makefile ./Makefile > /dev/null 2>&1; then
+      DIFF_OPTS="$DIFF_OPTS $diff_opt"
+    fi
+  done
   return 0;
 }
 
@@ -46,15 +52,15 @@ test_cdinfo() {
   fi
 
   if ${CDINFO} --no-header ${opts} >${outfile} 2>&1 ; then 
-    if have_cmp; then
-      if cmp ${outfile} ${rightfile} ; then
+    if have_diff; then
+      if @DIFF@ ${outfile} ${rightfile} ; then
 	rm -f $outfile
 	return 0
       else
 	return 3
       fi
     else
-      echo "$0: No cmp(1) found - cannot test cdinfo"
+      echo "$0: No diff(1) or cmp(1 found - cannot test ${CDINFO}"
       rm -f $outfile
       return 77
     fi
