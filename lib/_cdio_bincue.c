@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.25 2003/09/14 06:24:09 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.26 2003/09/18 13:32:19 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.25 2003/09/14 06:24:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.26 2003/09/18 13:32:19 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -458,15 +458,27 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 
   _cdio_init (_obj);
 
-  ret = cdio_stream_seek (_obj->gen.data_source, lsn * CDIO_CD_FRAMESIZE_RAW, 
-			  SEEK_SET);
-  if (ret!=0) return ret;
+  /* Why the adjustment of 272, I don't know. It seems to work though */
+  if (lsn != 0) {
+    ret = cdio_stream_seek (_obj->gen.data_source, 
+			    (lsn * CDIO_CD_FRAMESIZE_RAW) - 272, SEEK_SET);
+    if (ret!=0) return ret;
 
-  ret = cdio_stream_read (_obj->gen.data_source, data, CDIO_CD_FRAMESIZE_RAW, 
-			  1);
-  if (ret==0) return ret;
+    ret = cdio_stream_read (_obj->gen.data_source, data, 
+			    CDIO_CD_FRAMESIZE_RAW, 1);
+  } else {
+    /* We need to pad out the first 272 bytes with 0's */
+    bzero(data, 272);
+    
+    ret = cdio_stream_seek (_obj->gen.data_source, 0, SEEK_SET);
 
-  return 0;
+    if (ret!=0) return ret;
+
+    ret = cdio_stream_read (_obj->gen.data_source, (uint8_t *) data+272, 
+			    CDIO_CD_FRAMESIZE_RAW - 272, 1);
+  }
+
+  return ret;
 }
 
 /*!
