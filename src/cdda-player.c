@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.21 2005/03/19 16:17:13 rocky Exp $
+    $Id: cdda-player.c,v 1.22 2005/03/19 23:31:11 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -359,7 +359,7 @@ static bool
 read_subchannel(CdIo_t *p_cdio)
 {
   bool b_ok = true;
-  if (!b_cd) return false;
+  if (!p_cdio) return false;
 
   b_ok = DRIVER_OP_SUCCESS == cdio_audio_read_subchannel(p_cdio, &sub);
   if (!b_ok) {
@@ -1322,9 +1322,6 @@ main(int argc, char *argv[])
   if (!interactive) {
     b_sig = true;
     nostop=1;
-    if (!b_cd && todo != EJECT_CD) {
-      cd_close(psz_device);
-    }
   }
 
   /* open device */
@@ -1332,6 +1329,10 @@ main(int argc, char *argv[])
     fprintf(stderr,"open %s... ", psz_device);
 
   p_cdio = cdio_open (psz_device, driver_id);
+  if (!p_cdio && todo != EJECT_CD) {
+    cd_close(psz_device);
+    p_cdio = cdio_open (psz_device, driver_id);
+  }
 
   if (p_cdio && b_verbose)
       fprintf(stderr,"ok\n");
@@ -1348,12 +1349,14 @@ main(int argc, char *argv[])
     if (EJECT_CD == todo) {
       i_rc = cd_eject() ? 0 : 1;
     } else {
-      read_toc(p_cdio);
-      if (!b_cd) {
-	cd_close(psz_device);
+      switch (todo) {
+      case PS_LIST_TRACKS:
+      case PLAY_TRACK:
 	read_toc(p_cdio);
+      default:
+	break;
       }
-      if (b_cd)
+      if (p_cdio)
 	switch (todo) {
 	case STOP_PLAYING:
 	  i_rc = cd_stop(p_cdio) ? 0 : 1;
