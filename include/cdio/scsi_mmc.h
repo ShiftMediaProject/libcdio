@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.4 2004/06/26 01:08:46 rocky Exp $
+    $Id: scsi_mmc.h,v 1.5 2004/06/27 22:00:08 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -48,6 +48,18 @@
 #define CDIO_MMC_GPCMD_READ_CD	        0xbe
 #define CDIO_MMC_GPCMD_READ_MSF	        0xb9
 
+
+/*! Page codes for MODE SENSE and MODE SET. */
+#define CDIO_MMC_R_W_ERROR_PAGE		0x01
+#define CDIO_MMC_WRITE_PARMS_PAGE	0x05
+#define CDIO_MMC_AUDIO_CTL_PAGE		0x0e
+#define CDIO_MMC_POWER_PAGE		0x1a
+#define CDIO_MMC_FAULT_FAIL_PAGE	0x1c
+#define CDIO_MMC_TO_PROTECT_PAGE	0x1d
+#define CDIO_MMC_CAPABILITIES_PAGE	0x2a
+#define CDIO_MMC_ALL_PAGES		0x3f
+
+
 /*! This is listed as optional in ATAPI 2.6, but is (curiously) 
   missing from Mt. Fuji, Table 57.  It _is_ mentioned in Mt. Fuji
   Table 377 as an MMC command for SCSi devices though...  Most ATAPI
@@ -80,5 +92,12 @@
 
 #define CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(rec, val) \
   rec[9] = val;
+
+/*!
+  On input A MODE_SENSE command was issued and we have the results
+  in p. We interpret this and return a bit mask set according to the 
+  capabilities.
+ */
+cdio_drive_cap_t cdio_get_drive_cap_mmc(const uint8_t *p);
 
 #endif /* __SCSI_MMC_H__ */

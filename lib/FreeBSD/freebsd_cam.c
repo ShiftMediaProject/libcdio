@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.13 2004/06/25 20:49:56 rocky Exp $
+    $Id: freebsd_cam.c,v 1.14 2004/06/27 22:00:09 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.13 2004/06/25 20:49:56 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.14 2004/06/27 22:00:09 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -173,7 +173,7 @@ static cdio_drive_cap_t
 get_drive_cap_freebsd_cam (img_private_t *env) 
 {
   int32_t i_drivetype = 0;
-  char buf[192] = { 0, };
+  uint8_t buf[192] = { 0, };
   int rc;
   
   memset(&env->ccb, 0, sizeof(env->ccb));
@@ -188,7 +188,8 @@ get_drive_cap_freebsd_cam (img_private_t *env)
   /* Initialize my_scsi_cdb as a Mode Select(6) */
   CDIO_MMC_SET_COMMAND(env->ccb.csio.cdb_io.cdb_bytes, CDIO_MMC_MODE_SENSE);
   env->ccb.csio.cdb_io.cdb_bytes[1] = 0x0;  
-  env->ccb.csio.cdb_io.cdb_bytes[2] = 0x2a; /* MODE_PAGE_CAPABILITIES*/
+                                      /* use ALL_PAGES?*/
+  env->ccb.csio.cdb_io.cdb_bytes[2] = CDIO_MMC_CAPABILITIES_PAGE; 
   env->ccb.csio.cdb_io.cdb_bytes[3] = 0;    /* Not used */
   env->ccb.csio.cdb_io.cdb_bytes[4] = 128; 
   env->ccb.csio.cdb_io.cdb_bytes[5] = 0;    /* Not used */
@@ -202,19 +203,7 @@ get_drive_cap_freebsd_cam (img_private_t *env)
 
   if(rc == 0) {
     unsigned int n=buf[3]+4;
-    /* Reader? */
-    if (buf[n+5] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_AUDIO;
-    if (buf[n+2] & 0x02) i_drivetype |= CDIO_DRIVE_CAP_CD_RW;
-    if (buf[n+2] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_DVD;
-    
-    /* Writer? */
-    if (buf[n+3] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_R;
-    if (buf[n+3] & 0x10) i_drivetype |= CDIO_DRIVE_CAP_DVD_R;
-    if (buf[n+3] & 0x20) i_drivetype |= CDIO_DRIVE_CAP_DVD_RAM;
-    
-    if (buf[n+6] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_OPEN_TRAY;
-    if (buf[n+6] >> 5 != 0) i_drivetype |= CDIO_DRIVE_CAP_CLOSE_TRAY;
-    
+    i_drivetype |= cdio_get_drive_cap_mmc(&(buf[n]));
   } else {
     i_drivetype = CDIO_DRIVE_CAP_CD_AUDIO | CDIO_DRIVE_CAP_UNKNOWN;
   }

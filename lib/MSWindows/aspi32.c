@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.10 2004/06/27 15:29:22 rocky Exp $
+    $Id: aspi32.c,v 1.11 2004/06/27 22:00:10 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.10 2004/06/27 15:29:22 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.11 2004/06/27 22:00:10 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -708,7 +708,7 @@ get_drive_cap_aspi (const _img_private_t *env)
   /* Operation code */
   CDIO_MMC_SET_COMMAND(ssc.CDBByte, CDIO_MMC_MODE_SENSE_10);
   ssc.CDBByte[1]             = 0x0;
-  ssc.CDBByte[2]             = 0x3F;  /* try narrower 0x2a "mode-page" ? */
+  ssc.CDBByte[2]             = CDIO_MMC_ALL_PAGES;
   ssc.CDBByte[7]             = 0x01;
   ssc.CDBByte[8]             = 0x00; 
 
@@ -751,19 +751,7 @@ get_drive_cap_aspi (const _img_private_t *env)
 	  /* Don't handle theses yet. */
 	  break;
 	case CDRCAPS:
-	  /* Reader? */
-	  if (p[5] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_AUDIO;
-	  if (p[2] & 0x02) i_drivetype |= CDIO_DRIVE_CAP_CD_RW;
-	  if (p[2] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_DVD;
-	  
-	  /* Writer? */
-	  if (p[3] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_CD_R;
-	  if (p[3] & 0x10) i_drivetype |= CDIO_DRIVE_CAP_DVD_R;
-	  if (p[3] & 0x20) i_drivetype |= CDIO_DRIVE_CAP_DVD_RAM;
-	  
-	  if (p[6] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_OPEN_TRAY;
-	  if (p[6] >> 5 != 0) 
-	    i_drivetype |= CDIO_DRIVE_CAP_CLOSE_TRAY;
+	  i_drivetype |= cdio_get_drive_cap_mmc(p);
 	  break;
 	default: ;
 	}

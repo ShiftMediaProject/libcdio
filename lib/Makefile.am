@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.39 2004/06/23 09:25:30 rocky Exp $
+#   $Id: Makefile.am,v 1.40 2004/06/27 22:00:09 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -85,6 +85,7 @@ libcdio_sources = \
 	MSWindows/win32.c \
 	MSWindows/win32.h \
 	sector.c \
+	scsi_mmc.c \
 	util.c
 
 lib_LTLIBRARIES    = libcdio.la libiso9660.la
