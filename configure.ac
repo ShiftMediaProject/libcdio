@@ -19,7 +19,7 @@ define(RELEASE_NUM, 69)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.84 2004/06/12 17:33:46 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.85 2004/06/19 16:17:09 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -345,7 +345,7 @@ if test x$enable_vcd_info = xyes; then
   [AC_DEFINE([HAVE_VCDINFO],1, 
   [Define this if you have libvcdinfo installed])], 
   [AC_MSG_WARN(a new enough libvcdinfo not found. 
-VCD info display in cd-read disabled.
+VCD info display in cd-info disabled.
 libvcdinfo is part of vcdimager. Get it from http://vcdimager.org)
    enable_vcd_info=no])
 fi
