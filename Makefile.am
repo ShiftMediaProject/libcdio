@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.7 2003/04/22 12:09:08 rocky Exp $
+#   $Id: Makefile.am,v 1.8 2003/04/25 21:28:39 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,7 +20,7 @@
 ##   which configure then turns into a Makefile  ...
 ##     which make can then use to produce stuff. Isn't configuration simple? 
 
-EXTRA_DIST = libpopt.m4 THANKS
+EXTRA_DIST = libpopt.m4 THANKS libcdio.spec.in
 
 # SUBDIRS =  doc include lib src test
 SUBDIRS =  include lib src test

@@ -1,5 +1,5 @@
 /*
-    $Id: cdinfo.c,v 1.16 2003/04/22 12:09:09 rocky Exp $
+    $Id: cd-info.c,v 1.1 2003/04/25 21:28:39 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>

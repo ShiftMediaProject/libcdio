@@ -1,20 +1,115 @@
-2003-04-20 15:23  rocky
+2003-04-23 18:05  rocky
 
-	* tests/: check_cue.sh, check_cue.sh.in: May need --no-cddb option.
+	* lib/_cdio_nrg.c, test/svcdgs.right: More blind guesses to CUES
+	format. Still wrong, but works better on the one sample I have to
+	go on: svcdgs.nrg.
+
+2003-04-22 08:40  rocky
+
+	* configure.ac, include/cdio/Makefile.am: Wasn't installing
+	version.h. This time, for sure!
+
+2003-04-22 08:20  rocky
+
+	* test/: isofs-m1.bin, isofs-m1.cue: ISO 9660 filesystem Mode1
+	regression test.
+
+2003-04-22 08:18  rocky
+
+	* test/cdda.bin: Sample CD-DA bin/cue image.
+
+2003-04-22 08:17  rocky
+
+	* test/cdda.cue: Regression test cue.
+
+2003-04-22 08:12  rocky
+
+	* include/cdio/version.h.in: [no log message]
+
+2003-04-22 08:10  rocky
+
+	* include/cdio/.cvsignore: config.h now is no longer derived while
+	version.h now is.
+
+2003-04-22 08:09  rocky
+
+	* Makefile.am, configure.ac, include/cdio/Makefile.am,
+	include/cdio/cdio.h, include/cdio/cdio.h.in, lib/_cdio_bincue.c,
+	lib/_cdio_bsdi.c, lib/_cdio_freebsd.c, lib/_cdio_generic.c,
+	lib/_cdio_linux.c, lib/_cdio_nrg.c, lib/_cdio_stdio.c,
+	lib/_cdio_stream.c, lib/_cdio_stream.h, lib/_cdio_sunos.c,
+	lib/bytesex.h, lib/bytesex_asm.h, lib/cdio.c, lib/cdio_assert.h,
+	lib/cdio_private.h, lib/ds.c, lib/ds.h, lib/logging.c,
+	lib/sector.c, lib/util.c, src/cdinfo.c, test/.cvsignore,
+	test/Makefile.am, test/cdda.right, test/check_common_fn,
+	test/check_cue.sh.in, test/check_nrg.sh, test/check_opts.sh,
+	test/check_opts0.right, test/check_opts1.right,
+	test/check_opts2.right, test/check_opts3.right,
+	test/check_opts4.right, test/check_opts5.right,
+	test/check_opts6.right, test/check_opts7.right, test/fsf.right,
+	test/isofs-m1.right, test/monvoisin.right,
+	test/svcd_ogt_test_ntsc.right, test/svcdgs.right,
+	test/vcd_demo.right: tests -> test All public includes are included
+	via #include <cdio/....h> rather than #include "....h"
+	
+	(removed -I $top_srcdir/include/cdio)
+
+2003-04-21 22:48  rocky
+
+	* lib/_cdio_freebsd.c: Probably closer.
+
+2003-04-21 21:34  rocky
+
+	* Makefile.am: Update regression version.
+
+2003-04-21 19:30  rocky
+
+	* TODO: Where we might be going...
+
+2003-04-21 19:28  rocky
+
+	* .cvsignore: Now that we're using pkg-config.
+
+2003-04-21 19:27  rocky
+
+	* include/cdio/cdio.h.in: Simple typo.
+
+2003-04-21 19:24  rocky
+
+	* lib/_cdio_nrg.c: Probably much closer to being able to handle
+	Nero CUES format. Seems to have 2336 sector size; 2 second pregap
+	seems to be included at the beginning of the image.
+
+2003-04-21 19:20  rocky
+
+	* src/cdinfo.c: Add tests for CVD. A lot of this probably should be
+	redone. For example, should get basic Video CD info from libvcdinfo
+	if that is around.
+
+2003-04-21 10:13  hvr
+
+	* include/cdio/: Makefile.am, logging.h, sector.h: public headers
+	must nuse unique #includes!
+
+2003-04-21 06:17  hvr
+
+	* Makefile.am, configure.ac, libcdio.pc.in, include/cdio/cdio.h.in:
+	added pkg-config(1) support
+
+2003-04-20 15:42  rocky
+
+	* ChangeLog, include/cdio/.cvsignore: CVS maintenance
+
+2003-04-20 15:27  rocky
+
+	* NEWS: [no log message]
 
 2003-04-20 13:24  rocky
 
 	* configure.ac, include/cdio/cdio.h, include/cdio/cdio.h.in,
-	src/cdinfo.c, tests/Makefile.am, tests/check_cue.sh,
-	tests/check_opts.sh, tests/check_opts.sh.in,
-	tests/check_opts0.right, tests/check_opts1.right,
-	tests/check_opts2.right, tests/check_opts3.right,
-	tests/check_opts4.right, tests/check_opts5.right,
-	tests/check_opts6.right, tests/check_opts7.right,
-	tests/fsf-tompox.bin, tests/fsf-tompox.right, tests/isofs-m1.bin,
-	tests/isofs-m1.cue: Reduce overall size yet again by replaing
-	isofs-m1 for fsf-tompox.  cdinfo: Add options for CDDB port and
-	CDDB http enable	 fix bug if no CD in cdrom drive.
+	src/cdinfo.c: Reduce overall size yet again by replaing isofs-m1
+	for fsf-tompox.  cdinfo: Add options for CDDB port and CDDB http
+	enable	       fix bug if no CD in cdrom drive.
 
 2003-04-20 11:35  rocky
 
@@ -22,10 +117,8 @@
 
 2003-04-20 11:34  rocky
 
-	* Makefile.am, configure.ac, lib/cdio.c, tests/Makefile.am,
-	tests/cdda.bin, tests/cdda.cue, tests/cdda.right,
-	tests/check_cue.sh: Add small cdda test.  cdio.c: cdio_open was
-	opening image drivers.
+	* Makefile.am, configure.ac, lib/cdio.c: Add small cdda test. 
+	cdio.c: cdio_open was opening image drivers.
 
 2003-04-19 21:39  rocky
 
@@ -39,14 +132,8 @@
 
 2003-04-19 15:12  rocky
 
-	* Makefile.am, NEWS, configure.ac, tests/Makefile.am,
-	tests/check_common_fn, tests/check_cue.sh, tests/check_nrg.sh,
-	tests/check_opts.sh.in, tests/check_opts0.right,
-	tests/check_opts1.right, tests/check_opts2.right,
-	tests/check_opts3.right, tests/check_opts4.right,
-	tests/check_opts5.right, tests/check_opts6.right,
-	tests/check_opts7.right: Break most of the larger regression tests
-	into a separate package.
+	* Makefile.am, NEWS, configure.ac: Break most of the larger
+	regression tests into a separate package.
 
 2003-04-19 05:13  rocky
 
@@ -65,9 +152,9 @@
 	include/cdio/logging.h, include/cdio/sector.h,
 	include/cdio/types.h, include/cdio/util.h, lib/Makefile.am,
 	lib/cdio.h, lib/logging.h, lib/sector.h, lib/types.h, lib/util.h,
-	src/cdinfo.c, tests/.cvsignore: Move public includes to
-	include/cdio. This should facilitate having this source installed
-	locally since it allows #include <cdio/cdio.h> in the source tree.
+	src/cdinfo.c: Move public includes to include/cdio. This should
+	facilitate having this source installed locally since it allows
+	#include <cdio/cdio.h> in the source tree.
 
 2003-04-18 20:53  rocky
 
@@ -106,26 +193,13 @@
 
 2003-04-14 06:03  rocky
 
-	* configure.ac, tests/Makefile.am, tests/check_opts.sh,
-	tests/check_opts.sh.in: Need to conditionally add --no-cddb so we
-	added check_opts.sh.in.  Rewrite for loop in lower-level
-	Bourne-shell style.
+	* configure.ac: Need to conditionally add --no-cddb so we added
+	check_opts.sh.in.  Rewrite for loop in lower-level Bourne-shell
+	style.
 
 2003-04-14 06:01  rocky
 
 	* src/cdinfo.c: One cddb reference not conditionally included.
-
-2003-04-14 04:54  rocky
-
-	* tests/Makefile.am: Add check files to distribution.
-
-2003-04-14 04:51  rocky
-
-	* tests/: Makefile.am, check_cue.sh, check_opts.sh,
-	check_opts0.right, check_opts1.right, check_opts2.right,
-	check_opts3.right, check_opts4.right, check_opts5.right,
-	check_opts6.right, check_opts7.right: Add regression test to check
-	cdinfo options processing.
 
 2003-04-14 00:58  rocky
 
@@ -139,11 +213,6 @@
 2003-04-14 00:29  rocky
 
 	* configure.ac: Check for libcddb and use that if it's there.
-
-2003-04-14 00:28  rocky
-
-	* tests/check_cue.sh: Don't give CDDB info for audio test since
-	it's not valid and we can't assume we're connected to the Internet.
 
 2003-04-14 00:27  rocky
 
@@ -297,24 +366,6 @@
 	lib/_cdio_sunos.c, lib/sector.h, src/cdinfo.c: Change sector.h
 	constants, yet again. This time for Herbert Valiero Riedel.
 
-2003-04-06 04:16  rocky
-
-	* tests/svcd_ogt_test_ntsc.bin: This file seems to get changed when
-	checking in.
-
-2003-04-06 04:13  rocky
-
-	* tests/: Makefile.am, svcd_ogt_test_ntsc.bin:
-	svcd_ogt_test_ntsc.bin corrupted.  Makefile: add other
-	bin/cue/nrg's
-
-2003-04-06 01:46  rocky
-
-	* tests/: Makefile.am, check_cue.sh, fsf-tompox.bin,
-	fsf-tompox.right, fsf.right, svcd_ogt_test_ntsc.bin, vcd_demo.bin:
-	Add a CD audio test and an ISO 9660 joliet extension tst.  Add in
-	the Video CD images I've been using.
-
 2003-04-06 01:46  rocky
 
 	* src/cdinfo.c: Use new sector.h constants.
@@ -408,10 +459,9 @@
 	lib/_cdio_generic.c, lib/_cdio_linux.c, lib/_cdio_nrg.c,
 	lib/_cdio_stdio.c, lib/_cdio_stream.c, lib/_cdio_stream.h,
 	lib/_cdio_sunos.c, lib/cdio.c, lib/cdio.h, lib/cdio_private.h,
-	lib/cdio_types.h, lib/sector.h, src/Makefile.am, src/cdinfo.c,
-	tests/monvoisin.right: Add simple (non-mode2) read/seek. 
-	_cdio_generic.c: place to save common driver routines add
-	cdio_get_track_sec_count.
+	lib/cdio_types.h, lib/sector.h, src/Makefile.am, src/cdinfo.c: Add
+	simple (non-mode2) read/seek.  _cdio_generic.c: place to save
+	common driver routines add cdio_get_track_sec_count.
 
 2003-03-24 21:10  rocky
 
@@ -445,11 +495,7 @@
 	lib/cdio_private.h, lib/cdio_types.h, lib/ds.c, lib/ds.h,
 	lib/logging.c, lib/logging.h, lib/sector.c, lib/sector.h,
 	lib/util.c, lib/util.h, src/.cvsignore, src/Makefile.am,
-	src/cdinfo-linux.c, src/cdinfo.c, tests/.cvsignore,
-	tests/Makefile.am, tests/check_common_fn, tests/check_cue.sh,
-	tests/check_nrg.sh, tests/monvoisin.right,
-	tests/svcd_ogt_test_ntsc.right, tests/vcd_demo.right: Initial
-	revision
+	src/cdinfo-linux.c, src/cdinfo.c: Initial revision
 
 2003-03-24 14:01  rocky
 
@@ -463,9 +509,5 @@
 	lib/cdio_private.h, lib/cdio_types.h, lib/ds.c, lib/ds.h,
 	lib/logging.c, lib/logging.h, lib/sector.c, lib/sector.h,
 	lib/util.c, lib/util.h, src/.cvsignore, src/Makefile.am,
-	src/cdinfo-linux.c, src/cdinfo.c, tests/.cvsignore,
-	tests/Makefile.am, tests/check_common_fn, tests/check_cue.sh,
-	tests/check_nrg.sh, tests/monvoisin.right,
-	tests/svcd_ogt_test_ntsc.right, tests/vcd_demo.right: Imported
-	sources
+	src/cdinfo-linux.c, src/cdinfo.c: Imported sources
 
