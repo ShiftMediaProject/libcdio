@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.64 2004/07/21 10:19:21 rocky Exp $
+    $Id: cdio.c,v 1.65 2004/07/21 11:28:32 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -39,7 +39,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.64 2004/07/21 10:19:21 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.65 2004/07/21 11:28:32 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -496,13 +496,13 @@ cdio_get_driver_id (const CdIo *cdio)
 
 
 /*!
-  Return the number of of the first track. 
+  Return the number of the first track. 
   CDIO_INVALID_TRACK is returned on error.
 */
 track_t
 cdio_get_first_track_num (const CdIo *cdio)
 {
-  cdio_assert (cdio != NULL);
+  if (NULL == cdio) return CDIO_INVALID_TRACK;
 
   if (cdio->op.get_first_track_num) {
     return cdio->op.get_first_track_num (cdio->env);
