@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.4 2005/01/18 00:57:20 rocky Exp $
+    $Id: scsi_mmc.c,v 1.5 2005/01/18 05:41:58 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -75,6 +75,37 @@ scsi_mmc_get_discmode( const CdIo_t *p_cdio )
     return CDIO_DISC_MODE_CD_XA;
   }
   return CDIO_DISC_MODE_NO_INFO;
+}
+
+/*!
+  Set the drive speed. 
+  
+  @return the drive speed if greater than 0. -1 if we had an error. is -2
+  returned if this is not implemented for the current driver.
+  
+  @see scsi_mmc_set_speed
+*/
+int
+scsi_mmc_set_speed( const CdIo_t *p_cdio, int i_speed )
+
+{
+  uint8_t buf[14] = { 0, };
+  scsi_mmc_cdb_t cdb;
+
+  /* If the requested speed is less than 1x 176 kb/s this command
+     will return an error - it's part of the ATAPI specs. Therefore, 
+     test and stop early. */
+
+  if ( i_speed < 1 ) return -1;
+  
+  memset(&cdb, 0, sizeof(scsi_mmc_cdb_t));
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_SET_SPEED);
+  CDIO_MMC_SET_LEN16(cdb.field, 2, i_speed);
+  /* Some drives like the Creative 24x CDRW require one to set a nonzero
+     write speed. So we set to the maximum value. */
+  CDIO_MMC_SET_LEN16(cdb.field, 4, 0xffff);
+  return scsi_mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_READ, 
+			  sizeof(buf), buf);
 }
 
 /*!

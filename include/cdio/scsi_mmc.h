@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.38 2005/01/18 00:57:20 rocky Exp $
+    $Id: scsi_mmc.h,v 1.39 2005/01/18 05:41:58 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -435,5 +435,17 @@ int scsi_mmc_set_blocksize ( const CdIo_t *p_cdio, unsigned int i_bsize);
   MODE_SENSE 6 command.
  */
 int scsi_mmc_get_blocksize ( const CdIo_t *p_cdio );
+
+/*!
+  Set the drive speed. 
+  
+  @return -1 if we had an error. is -2 returned if this is not
+  implemented for the current driver.
+  
+  @see scsi_mmc_get_speed
+*/
+int
+scsi_mmc_set_speed( const CdIo_t *p_cdio, int i_speed );
+
 
 #endif /* __SCSI_MMC_H__ */

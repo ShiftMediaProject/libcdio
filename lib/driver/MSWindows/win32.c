@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.5 2005/01/17 17:20:09 rocky Exp $
+    $Id: win32.c,v 1.6 2005/01/18 05:41:58 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.5 2005/01/17 17:20:09 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.6 2005/01/18 05:41:58 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -494,6 +494,20 @@ _get_arg_win32 (void *user_data, const char key[])
   return NULL;
 }
 
+static int
+set_speed_win32 (void *p_user_data, int i_speed) {
+  const _img_private_t *p_env = p_user_data;
+  if (!p_env) return -1;
+  return scsi_mmc_set_speed( p_env->gen.cdio, i_speed );
+}
+
+static int
+set_blocksize_win32 (void *p_user_data, int i_blocksize) {
+  const _img_private_t *p_env = p_user_data;
+  if (!p_env) return -1;
+  return scsi_mmc_set_blocksize( p_env->gen.cdio, i_blocksize );
+}
+
 /*!
   Return the media catalog number MCN.
 
@@ -759,6 +773,8 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.read_toc              = &read_toc_win32;
   _funcs.run_scsi_mmc_cmd      = &run_scsi_cmd_win32;
   _funcs.set_arg               = set_arg_win32;
+  _funcs.set_blocksize         = set_blocksize_win32;
+  _funcs.set_speed             = set_speed_win32;
   _funcs.stat_size             = stat_size_win32;
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
