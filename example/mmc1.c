@@ -1,5 +1,5 @@
 /*
-  $Id: mmc1.c,v 1.2 2005/02/06 11:13:37 rocky Exp $
+  $Id: mmc1.c,v 1.3 2005/02/07 03:36:01 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <cdio/cdio.h>
-#include <cdio/scsi_mmc.h>
+#include <cdio/mmc.h>
 #include <string.h>
 
 /* Set how long to wait for MMC commands to complete */

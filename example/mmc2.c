@@ -1,7 +1,7 @@
 /*
-  $Id: mmc2.c,v 1.2 2005/02/06 11:13:37 rocky Exp $
+  $Id: mmc2.c,v 1.3 2005/02/07 03:36:02 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <cdio/cdio.h>
-#include <cdio/scsi_mmc.h>
+#include <cdio/mmc.h>
 #include <string.h>
 
 /* Set how long do wto wait for SCSI-MMC commands to complete */

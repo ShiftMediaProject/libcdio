@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.25 2005/02/05 23:53:06 rocky Exp $
+  $Id: scan_devices.c,v 1.26 2005/02/07 03:36:02 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -28,7 +28,7 @@
 #include "common_interface.h"
 #include "low_interface.h"
 #include "utils.h"
-#include "cdio/scsi_mmc.h"
+#include "cdio/mmc.h"
 #include <limits.h>
 #include <ctype.h>
 
@@ -272,10 +272,8 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
       case SCSI_CDROM_MAJOR:   
       case SCSI_GENERIC_MAJOR: 
 	/* Nope nope nope */
-	idmessage(messagedest, ppsz_messages,
-		  "\t\t%s is not a cooked ioctl CDROM.",
-		  psz_device);
-	return(NULL);
+	description=strdup("SCSI CD-ROM");
+	break;
       default:
 	/* What the hell is this? */
 	idmessage(messagedest, ppsz_messages,
@@ -300,7 +298,7 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
   {
     cdio_hwinfo_t hw_info;
 
-    if ( scsi_mmc_get_hwinfo( p_cdio, &hw_info ) ) {
+    if ( mmc_get_hwinfo( p_cdio, &hw_info ) ) {
       unsigned int i_len = strlen(hw_info.psz_vendor) 
 	+ strlen(hw_info.psz_model) 
 	+ strlen(hw_info.psz_revision) + 5;

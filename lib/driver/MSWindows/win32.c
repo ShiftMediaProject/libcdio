@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.16 2005/02/06 17:36:17 rocky Exp $
+    $Id: win32.c,v 1.17 2005/02/07 03:36:02 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,12 +26,12 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.16 2005/02/06 17:36:17 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.17 2005/02/07 03:36:02 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
 #include <cdio/util.h>
-#include <cdio/scsi_mmc.h>
+#include <cdio/mmc.h>
 #include "cdio_assert.h"
 #include "cdio_private.h" /* protoype for cdio_is_device_win32 */
 

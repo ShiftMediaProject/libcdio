@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.2 2005/02/06 11:13:37 rocky Exp $
+    $Id: mmc.c,v 1.3 2005/02/07 03:36:02 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
-#include <cdio/scsi_mmc.h>
+#include <cdio/mmc.h>
 #include "cdio_private.h"
 
 #ifdef HAVE_STRING_H
@@ -765,6 +765,48 @@ mmc_eject_media( const CdIo_t *p_cdio )
                       mmc_get_cmd_len(cdb.field[0]), &cdb, 
                       SCSI_MMC_DATA_WRITE, 0, &buf);
   
+}
+
+/*!
+ * See if CD-ROM has feature with value value
+ * @return true if we have the feature and false if not.
+ */
+bool
+mmc_have_interface( const CdIo_t *p_cdio, mmc_feature_interface_t interface )
+{
+  int i_status;                  /* Result of MMC command */
+  uint8_t buf[500] = { 0, };     /* Place to hold returned data */
+  scsi_mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Buffer */
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_CONFIGURATION);
+  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
+  cdb.field[1] = CDIO_MMC_GET_CONF_NAMED_FEATURE;
+  cdb.field[3] = CDIO_MMC_FEATURE_CORE;
+
+  i_status = mmc_run_cmd(p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), 
+                         &buf);
+  if (i_status == 0) {
+    uint8_t *p;
+    uint32_t i_data;
+    uint8_t *p_max = buf + 65530;
+    
+    i_data = (unsigned int) CDIO_MMC_GET_LEN32(buf);
+    /* set to first sense feature code, and then walk through the masks */
+    p = buf + 8;
+    while( (p < &(buf[i_data])) && (p < p_max) ) {
+      uint16_t i_feature;
+      uint8_t i_feature_additional = p[3];
+
+      i_feature = CDIO_MMC_GET_LEN16(p);
+      if (CDIO_MMC_FEATURE_CORE == i_feature) {
+        uint8_t *q = p+4;
+        uint32_t i_interface_standard = CDIO_MMC_GET_LEN32(q);
+        if (interface == i_interface_standard) return true;
+      }
+      p += i_feature_additional + 4;
+    }
+  }
+  return false;
 }
 
 /*! Read sectors using SCSI-MMC GPCMD_READ_CD.

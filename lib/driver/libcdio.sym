@@ -148,6 +148,7 @@ cdtext_is_keyword
 cdtext_set
 discmode2str
 mmc_get_hwinfo
+mmc_have_interface
 mmc_run_cmd
 track_format2str
 CDIO_SECTOR_SYNC_HEADER

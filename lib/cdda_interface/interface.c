@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.20 2005/02/05 16:25:51 rocky Exp $
+  $Id: interface.c,v 1.21 2005/02/07 03:36:02 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -30,6 +30,7 @@
 #include "low_interface.h"
 #include "utils.h"
 #include <cdio/bytesex.h>
+#include <cdio/mmc.h>
 
 static void _clean_messages(cdrom_drive_t *d)
 {
@@ -118,8 +119,15 @@ cdio_cddap_open(cdrom_drive_t *d)
     return(ret);
     
   /*  d->select_speed(d,d->maxspeed); most drives are full speed by default */
-  if (d->bigendianp==-1)
-    d->bigendianp=data_bigendianp(d);
+
+  if ( -1 == d->bigendianp ) {
+    if (mmc_have_interface(d->p_cdio, CDIO_MMC_FEATURE_INTERFACE_ATAPI))
+      /* Is this right? */
+      d->bigendianp = 1;
+    else
+      d->bigendianp = data_bigendianp(d);
+  }
+  
 
   return(0);
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.12 2005/02/06 17:36:17 rocky Exp $
+    $Id: win32_ioctl.c,v 1.13 2005/02/07 03:36:02 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.12 2005/02/06 17:36:17 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.13 2005/02/07 03:36:02 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -61,7 +61,7 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.12 2005/02/06 17:36:17 rock
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
 #include "cdio_assert.h"
-#include <cdio/scsi_mmc.h>
+#include <cdio/mmc.h>
 #include "cdtext_private.h"
 #include "cdio/logging.h"
 

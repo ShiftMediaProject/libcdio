@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: mmc_private.h,v 1.2 2005/02/06 11:13:37 rocky Exp $
+    $Id: mmc_private.h,v 1.3 2005/02/07 03:36:02 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -19,7 +19,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include <cdio/scsi_mmc.h>
+#include <cdio/mmc.h>
 #include "cdtext_private.h"
 
 /*! Convert milliseconds to seconds taking the ceiling value, i.e.
