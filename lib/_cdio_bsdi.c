@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.21 2004/04/25 17:05:07 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.22 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.21 2004/04/25 17:05:07 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.22 2004/04/30 06:54:15 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -58,19 +58,19 @@ static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.21 2004/04/25 17:05:07 rocky
 #define TOTAL_TRACKS    (_obj->tochdr.cdth_trk1)
 #define FIRST_TRACK_NUM (_obj->tochdr.cdth_trk0)
 
+typedef  enum {
+  _AM_NONE,
+  _AM_IOCTL,
+} access_mode_t;
+
 typedef struct {
   /* Things common to all drivers like this. 
      This must be first. */
   generic_img_private_t gen; 
 
-  enum {
-    _AM_NONE,
-    _AM_IOCTL,
-  } access_mode;
-
   char *source_name;
   
-  bool init;
+  access_mode_t access_mode;
 
   /* Track information */
   bool toc_init;                         /* if true, info below is valid. */
@@ -683,6 +683,21 @@ cdio_get_default_device_bsdi(void)
 {
   return strdup(DEFAULT_CDIO_DEVICE);
 }
+
+/*!
+  Initialization routine. This is the only thing that doesn't
+  get called via a function pointer. In fact *we* are the
+  ones to set that up.
+ */
+CdIo *
+cdio_open_am_bsdi (const char *psz_source_name, const char *psz_access_mode)
+{
+  if (psz_access_mode != NULL)
+    cdio_warn ("there is only one access mode for bsdi. Arg %s ignored",
+	       psz_access_mode);
+  return cdio_open_bsdi(psz_source_name);
+}
+
 
 /*!
   Initialization routine. This is the only thing that doesn't

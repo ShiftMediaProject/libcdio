@@ -1,5 +1,5 @@
 /*
-    $Id: ioctl.c,v 1.10 2004/04/25 14:07:23 rocky Exp $
+    $Id: ioctl.c,v 1.11 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: ioctl.c,v 1.10 2004/04/25 14:07:23 rocky Exp $";
+static const char _rcsid[] = "$Id: ioctl.c,v 1.11 2004/04/30 06:54:15 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -334,6 +334,7 @@ win32ioctl_init_win32 (_img_private_t *env)
 					   NULL );
 	return (env->h_device_handle == NULL) ? false : true;
       }
+    env->b_ioctl_init = true;
     return true;
   }
   return false;

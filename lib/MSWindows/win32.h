@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.2 2004/04/24 04:46:33 rocky Exp $
+    $Id: win32.h,v 1.3 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -28,10 +28,22 @@ typedef struct {
   UCHAR          Format;
 } track_info_t;
 
+typedef enum {
+  _AM_NONE,
+  _AM_IOCTL,
+  _AM_READ_CD,
+  _AM_READ_10
+} access_mode_t;
+
 typedef struct {
   /* Things common to all drivers like this. 
      This must be first. */
   generic_img_private_t gen; 
+
+  access_mode_t access_mode;
+
+  bool b_ioctl_init;
+  bool b_aspi_init;
 
   HANDLE h_device_handle; /* device descriptor */
   long  hASPI;

@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.1 2004/03/05 12:32:45 rocky Exp $
+    $Id: aspi32.c,v 1.2 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.1 2004/03/05 12:32:45 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.2 2004/04/30 06:54:15 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -205,19 +205,19 @@ wnaspi32_init_win32 (_img_private_t *env)
   if( HIBYTE( LOWORD ( dwSupportInfo ) ) == SS_NO_ADAPTERS ) {
     cdio_debug("no host adapters found (ASPI)");
     FreeLibrary( hASPI );
-    return -1;
+    return false;
   }
   
   if( HIBYTE( LOWORD ( dwSupportInfo ) ) != SS_COMP ) {
     cdio_debug("unable to initalize ASPI layer");
     FreeLibrary( hASPI );
-    return -1;
+    return false;
   }
   
   i_num_adapters = LOBYTE( LOWORD( dwSupportInfo ) );
   if( i_num_adapters == 0 ) {
     FreeLibrary( hASPI );
-    return -1;
+    return false;
   }
   
   c_drive = toupper(c_drive) - 'A';
@@ -258,8 +258,9 @@ wnaspi32_init_win32 (_img_private_t *env)
 		env->i_sid = MAKEWORD( i, j );
 		env->hASPI = (long)hASPI;
 		env->lpSendCommand = lpSendCommand;
+		env->b_aspi_init   = true;
 		cdio_debug("Using ASPI layer");
-		
+
 		return true;
 	      } else {
 		FreeLibrary( hASPI );

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.18 2004/04/25 17:05:07 rocky Exp $
+    $Id: _cdio_osx.c,v 1.19 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.18 2004/04/25 17:05:07 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.19 2004/04/30 06:54:15 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -67,15 +67,17 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.18 2004/04/25 17:05:07 rocky 
 
 #define TOTAL_TRACKS    (_obj->num_tracks)
 
+typedef_  enum {
+  _AM_NONE,
+  _AM_OSX,
+} access_mode_t;
+
 typedef struct {
   /* Things common to all drivers like this. 
      This must be first. */
   generic_img_private_t gen; 
 
-  enum {
-    _AM_NONE,
-    _AM_OSX,
-  } access_mode;
+  access_mode_t access_mode;
 
   /* Track information */
   bool toc_init;                         /* if true, info below is valid. */
@@ -838,6 +840,22 @@ cdio_get_default_device_osx(void)
   return NULL;
 #endif /* HAVE_DARWIN_CDROM */
 }
+
+/*!
+  Initialization routine. This is the only thing that doesn't
+  get called via a function pointer. In fact *we* are the
+  ones to set that up.
+ */
+CdIo *
+cdio_open_am_osx (const char *psz_source_name, const char *psz_access_mode)
+{
+
+  if (psz_access_mode != NULL)
+    cdio_warn ("there is only one access mode for OS X. Arg %s ignored",
+	       psz_access_mode);
+  return cdio_open_osx(psz_source_name);
+}
+
 
 /*!
   Initialization routine. This is the only thing that doesn't

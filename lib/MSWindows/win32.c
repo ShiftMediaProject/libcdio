@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.7 2004/04/24 19:13:10 rocky Exp $
+    $Id: win32.c,v 1.8 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.7 2004/04/24 19:13:10 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.8 2004/04/30 06:54:15 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -70,6 +70,24 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
     cdio_warn("mciSendCommand() error: %s", error);
   }
   return(mci_error == 0);
+}
+
+static access_mode_t 
+str_to_access_mode_linux(const char *psz_access_mode) 
+{
+  const access_mode_t default_access_mode = 
+    WIN_NT ? _AM_IOCTL : _AM_ASPI;
+
+  if (NULL==psz_access_mode) return default_access_mode;
+  
+  if (!strcmp(psz_access_mode, "IOCTL"))
+    return _AM_IOCTL;
+  else if (!strcmp(psz_access_mode, "ASPI"))
+    return _AM_READ_CD;
+    cdio_warn ("unknown access type: %s. Default IOCTL used.", 
+	       psz_access_mode);
+    return default_access_mode;
+  }
 }
 
 static const char *
@@ -117,10 +135,12 @@ _cdio_init_win32 (void *user_data)
 
   /* Initializations */
   env->h_device_handle = NULL;
-  env->i_sid = 0;
-  env->hASPI = 0;
-  env->lpSendCommand = 0;
-  
+  env->i_sid           = 0;
+  env->hASPI           = 0;
+  env->lpSendCommand   = 0;
+  env->b_aspi_init     = false;
+  env->b_ioctl_init    = false;
+
   if ( WIN_NT ) {
     return win32ioctl_init_win32(env);
   } else {
@@ -301,7 +321,7 @@ _cdio_stat_size (void *user_data)
   Set the key "arg" to "value" in source device.
 */
 static int
-_cdio_set_arg (void *user_data, const char key[], const char value[])
+_set_arg_win32 (void *user_data, const char key[], const char value[])
 {
   _img_private_t *env = user_data;
 
@@ -313,6 +333,10 @@ _cdio_set_arg (void *user_data, const char key[], const char value[])
       free (env->gen.source_name);
       
       env->gen.source_name = strdup (value);
+    }
+  else if (!strcmp (key, "access-mode"))
+    {
+      return str_to_access_mode_linux(value);
     }
   else 
     return -1;
@@ -388,7 +412,7 @@ _cdio_get_arg (void *user_data, const char key[])
     if (env->hASPI) 
       return "ASPI";
     else if ( WIN_NT ) 
-      return "winNT/2K/XP ioctl";
+      return "IOCTL";
     else 
       return "undefined WIN32";
   } 
@@ -627,6 +651,25 @@ cdio_is_device_win32(const char *source_name)
 CdIo *
 cdio_open_win32 (const char *source_name)
 {
+#ifdef HAVE_WIN32_CDROM
+  if ( WIN_NT ) {
+    return cdio_open_am_win32(psz_source_name, "IOCTL");
+  } else {
+    return cdio_open_am_win32(psz_source_name, "ASPI");
+  }
+#else 
+  return NULL;
+#endif /* HAVE_WIN32_CDROM */
+}
+
+/*!
+  Initialization routine. This is the only thing that doesn't
+  get called via a function pointer. In fact *we* are the
+  ones to set that up.
+ */
+CdIo *
+cdio_open_am_win32 (const char *psz_source_name, const char *psz_access_mode)
+{
 
 #ifdef HAVE_WIN32_CDROM
   CdIo *ret;
@@ -653,7 +696,7 @@ cdio_open_win32 (const char *source_name)
     .read_mode1_sectors = _cdio_read_mode1_sectors,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
-    .set_arg            = _cdio_set_arg,
+    .set_arg            = _set_arg_win32,
     .stat_size          = _cdio_stat_size
   };
 
@@ -661,8 +704,8 @@ cdio_open_win32 (const char *source_name)
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
-  _cdio_set_arg(_data, "source", (NULL == source_name) 
-		? cdio_get_default_device_win32(): source_name);
+  _set_arg_win32(_data, "source", (NULL == source_name) 
+		 ? cdio_get_default_device_win32(): source_name);
 
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;

@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.10 2004/04/25 14:48:17 rocky Exp $
+    $Id: nrg.c,v 1.11 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.10 2004/04/25 14:48:17 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.11 2004/04/30 06:54:15 rocky Exp $";
 
 /* structures used */
 
@@ -1149,6 +1149,21 @@ _get_track_green_nrg(void *env, track_t track_num)
   if ( MTYP_AUDIO_CD == _obj->mtyp) return false;
   return _obj->tocent[track_num-1].track_green;
 }
+
+/*!
+  Initialization routine. This is the only thing that doesn't
+  get called via a function pointer. In fact *we* are the
+  ones to set that up.
+ */
+CdIo *
+cdio_open_am_nrg (const char *psz_source_name, const char *psz_access_mode)
+{
+  if (psz_access_mode != NULL)
+    cdio_warn ("there is only one access mode for nrg. Arg %s ignored",
+	       psz_access_mode);
+  return cdio_open_nrg(psz_source_name);
+}
+
 
 CdIo *
 cdio_open_nrg (const char *source_name)

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.47 2004/04/25 14:07:23 rocky Exp $
+    $Id: cdio.c,v 1.48 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.47 2004/04/25 14:07:23 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.48 2004/04/30 06:54:15 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -77,6 +77,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    NULL,
    NULL,
    NULL,
+   NULL,
    NULL
   },
 
@@ -86,6 +87,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    "BSDI ATAPI and SCSI driver",
    &cdio_have_bsdi,
    &cdio_open_bsdi,
+   &cdio_open_am_bsdi,
    &cdio_get_default_device_bsdi,
    &cdio_is_device_generic,
    &cdio_get_devices_bsdi
@@ -97,6 +99,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    "FreeBSD driver",
    &cdio_have_freebsd,
    &cdio_open_freebsd,
+   &cdio_open_am_freebsd,
    &cdio_get_default_device_freebsd,
    &cdio_is_device_generic,
    NULL
@@ -108,6 +111,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    "GNU/Linux ioctl and MMC driver",
    &cdio_have_linux,
    &cdio_open_linux,
+   &cdio_open_am_linux,
    &cdio_get_default_device_linux,
    &cdio_is_device_generic,
    &cdio_get_devices_linux
@@ -119,6 +123,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    "Solaris ATAPI and SCSI driver",
    &cdio_have_solaris,
    &cdio_open_solaris,
+   &cdio_open_am_solaris,
    &cdio_get_default_device_solaris,
    &cdio_is_device_generic,
    &cdio_get_devices_solaris
@@ -130,6 +135,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    "Apple Darwin OS X driver",
    &cdio_have_osx,
    &cdio_open_osx,
+   &cdio_open_am_osx,
    &cdio_get_default_device_osx,
    &cdio_is_device_generic,
    &cdio_get_devices_osx
@@ -141,6 +147,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    "MS Windows ASPI and ioctl driver",
    &cdio_have_win32,
    &cdio_open_win32,
+   &cdio_open_am_win32,
    &cdio_get_default_device_win32,
    &cdio_is_device_win32,
    &cdio_get_devices_win32
@@ -152,6 +159,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    "bin/cuesheet disk image driver",
    &cdio_have_bincue,
    &cdio_open_bincue,
+   &cdio_open_am_bincue,
    &cdio_get_default_device_bincue,
    NULL,
    &cdio_get_devices_bincue
@@ -163,6 +171,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    "Nero NRG disk image driver",
    &cdio_have_nrg,
    &cdio_open_nrg,
+   &cdio_open_am_nrg,
    &cdio_get_default_device_nrg,
    NULL,
    &cdio_get_devices_nrg

@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.21 2004/04/25 17:19:50 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.22 2004/04/30 06:54:15 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -217,7 +217,9 @@ libcddb (@url{http://libcdddb.sourceforge.net}) is available, the
 @command{cd-info} program will display CDDB matches on CD-DA
 discs. And if a new enough version of libvcdinfo is available (from
 the vcdimager project), then @command{cd-info} shows basic VCD
-information.
+information. The command @command{cd-drive} shows what drivers are
+available and some basic properties of cd-drives attached to the
+system. (But media may have to be inserted in order to get this info.)
 
 Other utility programs in the libcdio package are @command{cd-read},
 for performing low-level block reading of a CD or CD image,

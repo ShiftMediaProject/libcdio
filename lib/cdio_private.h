@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.21 2004/04/25 03:52:37 rocky Exp $
+    $Id: cdio_private.h,v 1.22 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -238,9 +238,11 @@ extern "C" {
     const char  *name;
     const char  *describe;
     bool (*have_driver) (void); 
-    CdIo *(*driver_open) (const char *source_name); 
+    CdIo *(*driver_open) (const char *psz_source_name); 
+    CdIo *(*driver_open_am) (const char *psz_source_name, 
+			     const char *psz_access_mode); 
     char *(*get_default_device) (void); 
-    bool (*is_device) (const char *source_name);
+    bool (*is_device) (const char *psz_source_name);
     char **(*get_devices) (void);
   } CdIo_driver_t;
 

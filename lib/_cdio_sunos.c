@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.27 2004/04/25 14:07:23 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.28 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -41,7 +41,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.27 2004/04/25 14:07:23 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.28 2004/04/30 06:54:15 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,12 +68,7 @@ static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.27 2004/04/25 14:07:23 rock
 
 /* reader */
 
-typedef struct {
-  /* Things common to all drivers like this. 
-     This must be first. */
-  generic_img_private_t gen; 
-  
-  enum {
+typedef  enum {
     _AM_NONE,
     _AM_SUN_CTRL_ATAPI,
     _AM_SUN_CTRL_SCSI
@@ -81,14 +76,41 @@ typedef struct {
     _AM_READ_CD,
     _AM_READ_10
 #endif
-  } access_mode;
+} access_mode_t;
 
+
+typedef struct {
+  /* Things common to all drivers like this. 
+     This must be first. */
+  generic_img_private_t gen; 
+  
+  access_mode_t access_mode;
 
   /* Track information */
   struct cdrom_tochdr    tochdr;
   struct cdrom_tocentry  tocent[100];    /* entry info for each track */
 
 } _img_private_t;
+
+static access_mode_t 
+str_to_access_mode_sunos(const char *psz_access_mode) 
+{
+  const access_mode_t default_access_mode = _AM_SUN_CTRL_SCSI_;
+
+  if (NULL==psz_access_mode) return default_access_mode;
+  
+  if (!strcmp(value, "ATAPI"))
+    _obj->access_mode = _AM_SUN_CTRL_SCSI; /* force ATAPI to be SCSI */
+  else if (!strcmp(value, "SCSI"))
+    _obj->access_mode = _AM_SUN_CTRL_SCSI;
+  else
+  else {
+    cdio_warn ("unknown access type: %s. Default SCSI used.", 
+	       psz_access_mode);
+    return default_access_mode;
+  }
+}
+
 
 /*!
   Initialize CD device.
@@ -330,12 +352,7 @@ _cdio_set_arg (void *env, const char key[], const char value[])
     }
   else if (!strcmp (key, "access-mode"))
     {
-      if (!strcmp(value, "ATAPI"))
-	_obj->access_mode = _AM_SUN_CTRL_SCSI; /* force ATAPI to be SCSI */
-      else if (!strcmp(value, "SCSI"))
-	_obj->access_mode = _AM_SUN_CTRL_SCSI;
-      else
-	cdio_warn ("unknown access type: %s. ignored.", value);
+      _obj->access_mode = str_to_access_mode_sunos(key);
     }
   else 
     return -1;
@@ -759,7 +776,18 @@ cdio_get_devices_solaris (void)
   ones to set that up.
  */
 CdIo *
-cdio_open_solaris (const char *source_name)
+cdio_open_solaris (const char *psz_source_name)
+{
+  return cdio_open_am_solaris(psz_source_name, NULL);
+}
+
+/*!
+  Initialization routine. This is the only thing that doesn't
+  get called via a function pointer. In fact *we* are the
+  ones to set that up.
+ */
+CdIo *
+cdio_open_am_solaris (const char *source_name, const char *access_mode)
 {
 
 #ifdef HAVE_SOLARIS_CDROM
@@ -792,6 +820,9 @@ cdio_open_solaris (const char *source_name)
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
+
+  _data->access_mode    = _AM_SUN_SCSI;
+  _data->gen.init       = false;
   _data->gen.fd         = -1;
 
   _cdio_set_arg(_data, "source", (NULL == source_name) 

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.39 2004/04/26 07:54:47 rocky Exp $
+    $Id: _cdio_linux.c,v 1.40 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.39 2004/04/26 07:54:47 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.40 2004/04/30 06:54:15 rocky Exp $";
 
 #include <string.h>
 
@@ -70,17 +70,19 @@ static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.39 2004/04/26 07:54:47 rock
 #define TOTAL_TRACKS    (_obj->tochdr.cdth_trk1)
 #define FIRST_TRACK_NUM (_obj->tochdr.cdth_trk0)
 
+typedef enum {
+  _AM_NONE,
+  _AM_IOCTL,
+  _AM_READ_CD,
+  _AM_READ_10
+} access_mode_t;
+
 typedef struct {
   /* Things common to all drivers like this. 
      This must be first. */
   generic_img_private_t gen; 
 
-  enum {
-    _AM_NONE,
-    _AM_IOCTL,
-    _AM_READ_CD,
-    _AM_READ_10
-  } access_mode;
+  access_mode_t access_mode;
 
   /* Track information */
   struct cdrom_tochdr    tochdr;
@@ -92,6 +94,25 @@ typedef struct {
 #define ERRNO_TRAYEMPTY(errno)	\
 	((errno == EIO) || (errno == ENOENT) || (errno == EINVAL))
 
+static access_mode_t 
+str_to_access_mode_linux(const char *psz_access_mode) 
+{
+  const access_mode_t default_access_mode = _AM_IOCTL;
+
+  if (NULL==psz_access_mode) return default_access_mode;
+  
+  if (!strcmp(psz_access_mode, "IOCTL"))
+    return _AM_IOCTL;
+  else if (!strcmp(psz_access_mode, "READ_CD"))
+    return _AM_READ_CD;
+  else if (!strcmp(psz_access_mode, "READ_10"))
+    return _AM_READ_10;
+  else {
+    cdio_warn ("unknown access type: %s. Default IOCTL used.", 
+	       psz_access_mode);
+    return default_access_mode;
+  }
+}
 
 /* Check a drive to see if it is a CD-ROM 
    Return 1 if a CD-ROM. 0 if it exists but isn't a CD-ROM drive
@@ -587,15 +608,7 @@ _set_arg_linux (void *env, const char key[], const char value[])
     }
   else if (!strcmp (key, "access-mode"))
     {
-      if (!strcmp(value, "IOCTL"))
-	_obj->access_mode = _AM_IOCTL;
-      else if (!strcmp(value, "READ_CD"))
-	_obj->access_mode = _AM_READ_CD;
-      else if (!strcmp(value, "READ_10"))
-	_obj->access_mode = _AM_READ_10;
-      else {
-	cdio_warn ("unknown access type: %s. ignored.", value);
-      }
+      return str_to_access_mode_linux(value);
     }
   else 
     return -1;
@@ -1066,7 +1079,18 @@ cdio_get_default_device_linux(void)
   ones to set that up.
  */
 CdIo *
-cdio_open_linux (const char *orig_source_name)
+cdio_open_linux (const char *psz_source_name)
+{
+  return cdio_open_am_linux(psz_source_name, NULL);
+}
+
+/*!
+  Initialization routine. This is the only thing that doesn't
+  get called via a function pointer. In fact *we* are the
+  ones to set that up.
+ */
+CdIo *
+cdio_open_am_linux (const char *orig_source_name, const char *access_mode)
 {
 
 #ifdef HAVE_LINUX_CDROM
@@ -1100,7 +1124,8 @@ cdio_open_linux (const char *orig_source_name)
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
-  _data->access_mode    = _AM_READ_CD;
+
+  _data->access_mode    = str_to_access_mode_linux(access_mode);
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 

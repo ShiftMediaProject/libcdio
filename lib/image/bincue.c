@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.15 2004/04/25 14:48:17 rocky Exp $
+    $Id: bincue.c,v 1.16 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.15 2004/04/25 14:48:17 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.16 2004/04/30 06:54:15 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -895,6 +895,25 @@ cdio_is_binfile(const char *bin_name)
   return NULL;
 }
 
+/*!
+  Initialization routine. This is the only thing that doesn't
+  get called via a function pointer. In fact *we* are the
+  ones to set that up.
+ */
+CdIo *
+cdio_open_am_bincue (const char *psz_source_name, const char *psz_access_mode)
+{
+  if (psz_access_mode != NULL)
+    cdio_warn ("there is only one access mode for bincue. Arg %s ignored",
+	       psz_access_mode);
+  return cdio_open_bincue(psz_source_name);
+}
+
+/*!
+  Initialization routine. This is the only thing that doesn't
+  get called via a function pointer. In fact *we* are the
+  ones to set that up.
+ */
 CdIo *
 cdio_open_bincue (const char *source_name)
 {

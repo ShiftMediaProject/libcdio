@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.43 2004/04/25 16:38:06 rocky Exp $
+    $Id: cdio.h,v 1.44 2004/04/30 06:54:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -368,21 +368,40 @@ extern "C" {
   const char *cdio_driver_describe (driver_id_t driver_id);
   
   /*! Sets up to read from place specified by source_name and
-     driver_id This should be called before using any other routine,
-     except cdio_init. This will call cdio_init, if that hasn't been
-     done previously.  to call one of the specific cdio_open_xxx 
-     routines.
+     driver_id. This or cdio_open_* should be called before using any
+     other routine, except cdio_init. This will call cdio_init, if
+     that hasn't been done previously.  to call one of the specific
+     cdio_open_xxx routines.
 
      NULL is returned on error.
   */
   CdIo * cdio_open (const char *source_name, driver_id_t driver_id);
+
+  /*! Sets up to read from place specified by source_name, driver_id
+     and access mode. This or cdio_open should be called before using
+     any other routine, except cdio_init. This will call cdio_init, if
+     that hasn't been done previously.  to call one of the specific
+     cdio_open_xxx routines.
+
+     NULL is returned on error.
+  */
+  CdIo * cdio_open_am (const char *psz_source_name, 
+		       driver_id_t driver_id, const char *psz_access_mode);
 
   /*! Set up BIN/CUE CD disk-image for reading. Source is the .bin or 
       .cue file
 
      NULL is returned on error.
    */
-  CdIo * cdio_open_bincue (const char *bin_name);
+  CdIo * cdio_open_bincue (const char *psz_cue_name);
+  
+  /*! Set up BIN/CUE CD disk-image for reading. Source is the .bin or 
+      .cue file
+
+     NULL is returned on error.
+   */
+  CdIo * cdio_open_am_bincue (const char *psz_cue_name, 
+			      const char *psz_access_mode);
   
   /*! Return a string containing the default CUE file that would
       be used when none is specified.
@@ -413,7 +432,17 @@ extern "C" {
 
      @see cdio_open
    */
-  CdIo * cdio_open_bsdi (const char *source_name);
+  CdIo * cdio_open_bsdi (const char *psz_source_name);
+  
+  /*! Set up CD-ROM for reading using the BSDI driver. The device_name is
+      the some sort of device name.
+
+     NULL is returned on error or there is no BSDI driver.
+
+     @see cdio_open
+   */
+  CdIo * cdio_open_am_bsdi (const char *psz_source_name,
+			    const char *psz_access_mode);
   
   /*! Return a string containing the default device name that the 
       BSDI driver would use when none is specified.
@@ -438,7 +467,18 @@ extern "C" {
      @see cdio_open_cd
      @see cdio_open
    */
-  CdIo * cdio_open_freebsd (const char *source_name);
+  CdIo * cdio_open_freebsd (const char *paz_source_name);
+  
+  /*! Set up CD-ROM for reading using the FreeBSD driver. The device_name is
+      the some sort of device name.
+
+     NULL is returned on error or there is no FreeBSD driver.
+
+     @see cdio_open_cd
+     @see cdio_open
+   */
+  CdIo * cdio_open_am_freebsd (const char *psz_source_name,
+			       const char *psz_access_mode);
   
   /*! Return a string containing the default device name that the 
       FreeBSD driver would use when none is specified.
@@ -458,6 +498,14 @@ extern "C" {
      NULL is returned on error or there is no GNU/Linux driver.
    */
   CdIo * cdio_open_linux (const char *source_name);
+
+  /*! Set up CD-ROM for reading using the GNU/Linux driver. The device_name is
+      the some sort of device name.
+
+     NULL is returned on error or there is no GNU/Linux driver.
+   */
+  CdIo * cdio_open_am_linux (const char *source_name,
+			     const char *access_mode);
 
   /*! Return a string containing the default device name that the 
       GNU/Linux driver would use when none is specified. A scan is made
@@ -481,6 +529,14 @@ extern "C" {
      NULL is returned on error or there is no Solaris driver.
    */
   CdIo * cdio_open_solaris (const char *source_name);
+  
+  /*! Set up CD-ROM for reading using the Sun Solaris driver. The
+      device_name is the some sort of device name.
+
+     NULL is returned on error or there is no Solaris driver.
+   */
+  CdIo * cdio_open_am_solaris (const char *psz_source_name, 
+			       const char *psz_access_mode);
   
   /*! Return a string containing the default device name that the 
       Solaris driver would use when none is specified. A scan is made
@@ -506,7 +562,18 @@ extern "C" {
      @see cdio_open_cd
      @see cdio_open
    */
-  CdIo * cdio_open_osx (const char *source_name);
+  CdIo * cdio_open_osx (const char *psz_source_name);
+
+  /*! Set up CD-ROM for reading using the Apple OSX driver. The
+      device_name is the some sort of device name.
+
+     NULL is returned on error or there is no OSX driver.
+
+     @see cdio_open_cd
+     @see cdio_open
+   */
+  CdIo * cdio_open_am_osx (const char *psz_source_name,
+			   const char *psz_access_mode);
 
   /*! Return a string containing the default device name that the 
       OSX driver would use when none is specified. A scan is made
@@ -528,6 +595,14 @@ extern "C" {
    */
   CdIo * cdio_open_win32 (const char *source_name);
   
+  /*! Set up CD-ROM for reading using the Microsoft Windows driver. The
+      device_name is the some sort of device name.
+
+     NULL is returned on error or there is no Microsof Windows driver.
+   */
+  CdIo * cdio_open_am_win32 (const char *psz_source_name,
+			     const char *psz_access_mode);
+  
   /*! Return a string containing the default device name that the 
       Win32 driver would use when none is specified. A scan is made
       for CD-ROM drives with CDs in them.
@@ -547,6 +622,14 @@ extern "C" {
      NULL is returned on error or there is no Nero driver.
    */
   CdIo * cdio_open_nrg (const char *source_name);
+  
+  /*! Set up CD-ROM for reading using the Nero driver. The
+      device_name is the some sort of device name.
+
+     NULL is returned on error or there is no Nero driver.
+   */
+  CdIo * cdio_open_am_nrg (const char *psz_source_name,
+			   const char *psz_access_mode);
   
   /*! Return a string containing the default device name that the 
       NRG driver would use when none is specified. A scan is made
