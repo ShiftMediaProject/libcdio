@@ -1,3 +1,112 @@
+2003-08-17 03:13  rocky
+
+	* NEWS, example/.cvsignore, example/sample3.c: [no log message]
+
+2003-08-17 03:12  rocky
+
+	* example/: Makefile, sample4.c: Yet another example.
+
+2003-08-17 02:32  rocky
+
+	* test/: .cvsignore, Makefile.am, check_sizeof.c: Makefile.am: add
+	check_sizeof and testischar
+
+2003-08-17 02:30  rocky
+
+	* libiso9660.pc.in: Remove dependence on vcd. We also don't use
+	glib just yet.
+
+2003-08-17 01:31  rocky
+
+	* .cvsignore, Makefile.am, configure.ac, libiso9660.pc.in,
+	include/cdio/Makefile.am, include/cdio/iso9660.h,
+	include/cdio/types.h, lib/Makefile.am, lib/cd_types.c,
+	lib/iso9660.c, lib/iso9660_private.h, test/.cvsignore,
+	test/Makefile.am, test/testassert.c, test/testischar.c: Add iso9660
+	library and regression test.  Will be deleted from vcdimager-cdio
+	branch.  cd_types.c: forgot to add previously.
+
+2003-08-16 18:45  rocky
+
+	* example/sample3.c: Typo in comment.
+
+2003-08-16 18:09  rocky
+
+	* configure.ac: Make sure we have the latest vcdinfo
+
+2003-08-16 13:31  rocky
+
+	* example/Makefile, example/sample3.c, src/cd-info.c: Add simple
+	program to show CD-type and filesystem determination.  cd-info.c:
+	minor code cleanups.
+
+2003-08-16 13:27  rocky
+
+	* example/.cvsignore: Add sample3
+
+2003-08-16 11:35  rocky
+
+	* test/check_cue.sh: Is derived from check_cue.sh.in
+
+2003-08-16 11:34  rocky
+
+	* include/cdio/Makefile.am, include/cdio/cd_types.h,
+	lib/Makefile.am, src/Makefile.am, src/analyze.c, src/analyze.h,
+	src/cd-info.c, test/check_cue.sh: Move routine to analyze/guess
+	what type of CD image we have got into the library.
+
+2003-08-16 09:25  rocky
+
+	* src/Makefile.am: Oooops--test version of Makefile.am got checked
+	in. Revert it.
+
+2003-08-16 08:59  rocky
+
+	* src/Makefile.am, src/analyze.c, src/analyze.h, src/cd-info.c,
+	test/check_cue.sh, test/monvoisin.right,
+	test/svcd_ogt_test_ntsc.right, test/svcdgs.right,
+	test/vcd_demo.right, test/videocd.right: Fix bug in storing
+	iso_9660 volume sector count. cd-info.c reduce global variables.
+	Regression tests output was incorrect with this long-standing bug.
+
+2003-08-14 09:41  rocky
+
+	* src/: Makefile.am, analyze.c, analyze.h, cd-info.c: First cut at
+	separating disc analysis part from standalone source.  More
+	modularity is needed.
+
+2003-08-13 08:33  rocky
+
+	* src/cd-info.c: Messed up on SVCD test.
+
+2003-08-13 08:18  rocky
+
+	* src/cd-info.c: Set VCD log handler.
+
+2003-08-11 05:19  rocky
+
+	* lib/_cdio_win32.c: A simple stupid mistake. Not sure why it
+	wasn't caught before.
+
+2003-08-10 10:33  rocky
+
+	* test/check_cue.sh: VCD tests when available.
+
+2003-08-09 22:29  rocky
+
+	* doc/.cvsignore, example/.cvsignore: lint.
+
+2003-08-09 22:27  rocky
+
+	* configure.ac, src/Makefile.am, src/cd-info.c: Changes brought
+	about by recent vcdimager-cdio changes.   - We use vcdinfo_t ** on
+	vcdinfo_open.	- Now make use of pkg-config for vcdimager in
+	configure.   - Remove reference to info_private.h.
+
+2003-08-09 07:59  rocky
+
+	* ChangeLog: [no log message]
+
 2003-08-09 07:52  rocky
 
 	* ChangeLog, Makefile.am, doc/Makefile.am, example/sample1.c,
