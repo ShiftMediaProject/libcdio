@@ -1,5 +1,5 @@
 /*
-  $Id: sample10.c,v 1.2 2004/08/07 01:48:36 rocky Exp $
+  $Id: sample10.c,v 1.3 2004/08/07 03:25:02 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -249,17 +249,14 @@ main(int argc, const char *argv[])
 	  case CDIO_MMC_FEATURE_RESTRICT_OVERW:
 	    printf("Restricted Overwrite Feature\n");
 	    break;
-	  case CDIO_MMC_FEATURE_LU_SN:
-	    printf("Logical Unit Serial Number Feature\n");
-	    break;
-	  case CDIO_MMC_FEATURE_MCODE_UPGRADE:
-	    printf("Microcode Upgrade Feature\n");
-	    break;
 	  case CDIO_MMC_FEATURE_CD_TAO:
 	    printf("CD Track at Once Feature\n");
 	    break;
 	  case CDIO_MMC_FEATURE_CD_SAO:
 	    printf("CD Mastering (Session at Once) Feature\n");
+	    break;
+	  case CDIO_MMC_FEATURE_POWER_MGMT:
+	    printf("Initiator and device directed power management\n");
 	    break;
 	  case CDIO_MMC_FEATURE_CDDA_EXT_PLAY:
 	    printf("CD Audio External Play Feature\n");
@@ -275,6 +272,21 @@ main(int argc, const char *argv[])
 	      printf("\t%d volume levels can be set\n", i_vol_levels);
 	    }
 	    printf("\n");
+	    break;
+	  case CDIO_MMC_FEATURE_MCODE_UPGRADE:
+	    printf("Ability for the device to accept new microcode via "
+		   "the interface\n");
+	    break;
+	  case CDIO_MMC_FEATURE_TIME_OUT:
+	    printf("Ability to respond to all commands within a "
+		   "specific time\n");
+	    break;
+          case CDIO_MMC_FEATURE_DVD_CSS:
+	    printf("Ability to perform DVD CSS/CPPM authentication and"
+		   " RPC\n");
+	    break;
+          case CDIO_MMC_FEATURE_LU_SN:
+	    printf("The Logical Unit has a unique identifier\n");
 	    break;
 	  default: 
 	    printf("Unknown feature code %x\n", i_feature);
