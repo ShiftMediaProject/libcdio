@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.13 2004/07/16 02:52:30 rocky Exp $
+    $Id: win32_ioctl.c,v 1.14 2004/07/16 03:06:53 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.13 2004/07/16 02:52:30 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.14 2004/07/16 03:06:53 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -230,10 +230,6 @@ read_raw_sector (const _img_private_t *env, void *buf, lsn_t lsn)
   sptd.Cdb[9]=0xF8;  /* Raw read, 2352 bytes per sector */
   sptd.Cdb[10]=0;   
   sptd.Cdb[11]=0;
-  sptd.Cdb[12]=0;
-  sptd.Cdb[13]=0;
-  sptd.Cdb[14]=0;
-  sptd.Cdb[15]=0;
   
   /* Send the command to drive */
   success=DeviceIoControl(env->h_device_handle,
