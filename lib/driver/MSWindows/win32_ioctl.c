@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.20 2005/03/07 00:55:31 rocky Exp $
+    $Id: win32_ioctl.c,v 1.21 2005/03/08 03:11:19 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.20 2005/03/07 00:55:31 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.21 2005/03/08 03:11:19 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -360,15 +360,39 @@ audio_stop_win32ioctl (void *p_user_data)
   
 */
 driver_return_code_t 
-close_tray_win32ioctl (void *p_user_data)
+close_tray_win32ioctl (const char *psz_win32_drive)
 {
-  const _img_private_t *p_env = p_user_data;
+#ifdef WIN32
   DWORD dw_bytes_returned;
+  DWORD dw_access_flags;
   
-  bool b_success = 
-    DeviceIoControl(p_env->h_device_handle, IOCTL_STORAGE_LOAD_MEDIA2,
-		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, NULL);
+  OSVERSIONINFO ov;
+  HANDLE h_device_handle;
+  bool b_success;
+  
+  memset(&ov,0,sizeof(OSVERSIONINFO));
+  ov.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
+  GetVersionEx(&ov);
+  
+  if((ov.dwPlatformId==VER_PLATFORM_WIN32_NT) &&        
+     (ov.dwMajorVersion>4))
+    dw_access_flags = GENERIC_READ|GENERIC_WRITE;  /* add gen write on W2k/XP */
+  else dw_access_flags = GENERIC_READ;
 
+  h_device_handle = CreateFile( psz_win32_drive, 
+				dw_access_flags,
+				FILE_SHARE_READ | FILE_SHARE_WRITE, 
+				NULL, 
+				OPEN_EXISTING,
+				FILE_ATTRIBUTE_NORMAL, 
+				NULL );
+  b_success = 
+    DeviceIoControl(h_device_handle, IOCTL_STORAGE_LOAD_MEDIA,
+		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, NULL);
+  
+
+  CloseHandle(h_device_handle);
+  
   if ( ! b_success ) {
     char *psz_msg = NULL;
     long int i_err = GetLastError();
@@ -381,6 +405,9 @@ close_tray_win32ioctl (void *p_user_data)
     return DRIVER_OP_ERROR;
   }
   return DRIVER_OP_SUCCESS;
+#else 
+  return DRIVER_OP_UNSUPPORTED;
+#endif
 }
 
 /*!

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.23 2005/03/07 07:23:52 rocky Exp $
+    $Id: cdio_private.h,v 1.24 2005/03/08 03:11:19 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -474,6 +474,7 @@ extern "C" {
 			    unsigned int *i_drives);
 
   driver_return_code_t close_tray_linux (const char *psz_device);
+  driver_return_code_t close_tray_win32 (const char *psz_win32_drive);
 
 
 #ifdef __cplusplus

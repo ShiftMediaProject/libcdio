@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.1 2005/03/07 12:55:12 rocky Exp $
+    $Id: cdda-player.c,v 1.2 2005/03/08 03:11:19 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -103,12 +103,15 @@ bool               b_db     = false; /* we have a database at all */
 bool               b_record = false; /* we have a record for
 					the inserted CD */
 
-#define PLAY_CD        1
-#define PLAY_TRACK     2
-#define STOP_PLAYING   3
-#define EJECT_CD       4
-#define LIST_TRACKS    5
-#define PS_LIST_TRACKS 6
+typedef enum {
+  PLAY_CD=1,
+  PLAY_TRACK=2,
+  STOP_PLAYING=3,
+  EJECT_CD=4,
+  CLOSE_CD=5,
+  LIST_TRACKS=6,
+  PS_LIST_TRACKS=7
+} cd_operation_t;
 
 char *psz_device=NULL;
 char *psz_program;
@@ -299,7 +302,7 @@ cd_eject(CdIo_t *p_cdio)
 }
 
 static void
-cd_close(CdIo_t *p_cdio)
+cd_close(const char *psz_device)
 {
   if (!b_cd) {
     action("close...");
@@ -388,7 +391,7 @@ play_track(track_t i_start_track, track_t i_end_track)
   char line[80];
   
   if (!b_cd) {
-    cd_close(p_cdio);
+    cd_close(psz_device);
     read_toc(p_cdio);
   }
   
@@ -1050,7 +1053,7 @@ main(int argc, char *argv[])
   
   /* parse options */
   while ( 1 ) {
-    if (-1 == (c = getopt(argc, argv, "xdhkvcpset:la")))
+    if (-1 == (c = getopt(argc, argv, "xdhkvcCpset:la")))
       break;
     switch (c) {
     case 'v':
@@ -1084,6 +1087,10 @@ main(int argc, char *argv[])
     case 'l':
       interactive = 0;
       todo = LIST_TRACKS;
+      break;
+    case 'C':
+      interactive = 0;
+      todo = CLOSE_CD;
       break;
     case 'c':
       interactive = 0;
@@ -1134,6 +1141,14 @@ main(int argc, char *argv[])
   if (b_verbose)
     fprintf(stderr,"open %s... ", psz_device);
 
+  if (!interactive) {
+    b_sig = true;
+    nostop=1;
+    if (!b_cd && todo != EJECT_CD) {
+      cd_close(psz_device);
+    }
+  }
+
   p_cdio = cdio_open (psz_device, driver_id);
 
   if (!p_cdio) {
@@ -1157,7 +1172,7 @@ main(int argc, char *argv[])
     nostop=1;
     read_toc(p_cdio);
     if (!b_cd && todo != EJECT_CD) {
-      cd_close(p_cdio);
+      cd_close(psz_device);
       read_toc(p_cdio);
     }
     if (b_cd || todo == EJECT_CD) {
@@ -1225,7 +1240,7 @@ main(int argc, char *argv[])
 	break;
       case 'C':
       case 'c':
-	cd_close(p_cdio);
+	cd_close(psz_device);
 	break;
       case ' ':
       case 'P':

@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.7 2005/03/07 00:55:31 rocky Exp $
+    $Id: win32.h,v 1.8 2005/03/08 03:11:19 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -120,7 +120,7 @@ audio_set_volume_win32ioctl ( void *p_user_data,
   @param p_user_data the CD object to be acted upon.
   
 */
-driver_return_code_t close_tray_win32ioctl (void *p_user_data);
+driver_return_code_t close_tray_win32ioctl (const char *psz_win32_drive);
 
 /*!
    Reads an audio device using the DeviceIoControl method into data

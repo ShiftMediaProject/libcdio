@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.15 2005/03/07 07:23:52 rocky Exp $
+    $Id: device.c,v 1.16 2005/03/08 03:11:19 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -186,7 +186,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_get_default_device_win32,
    &cdio_is_device_win32,
    &cdio_get_devices_win32,
-   NULL
+   &close_tray_win32
   },
 
   {DRIVER_CDRDAO,
@@ -312,7 +312,7 @@ cdio_close_tray (const char *psz_device, /*in/out*/ driver_id_t
     *p_driver_id = CDIO_MIN_DEVICE_DRIVER;
     
     /* Scan for driver */
-    for ( ; *p_driver_id<=CDIO_MAX_DRIVER; *p_driver_id++) {
+    for ( ; *p_driver_id<=CDIO_MAX_DRIVER; (*p_driver_id)++) {
       if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
            *CdIo_all_drivers[*p_driver_id].close_tray ) {
         return (*CdIo_all_drivers[*p_driver_id].close_tray)(psz_device);

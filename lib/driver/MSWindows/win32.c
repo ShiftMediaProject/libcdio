@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.25 2005/03/07 00:55:31 rocky Exp $
+    $Id: win32.c,v 1.26 2005/03/08 03:11:19 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.25 2005/03/07 00:55:31 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.26 2005/03/08 03:11:19 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -168,16 +168,6 @@ audio_stop_win32 ( void *p_user_data)
 {
   if ( WIN_NT ) {
     return audio_stop_win32ioctl (p_user_data);
-  } else {
-    return DRIVER_OP_UNSUPPORTED; /* not yet, but soon I hope */
-  }
-}
-
-static driver_return_code_t
-close_tray_win32 ( void *p_user_data)
-{
-  if ( WIN_NT ) {
-    return close_tray_win32ioctl (p_user_data);
   } else {
     return DRIVER_OP_UNSUPPORTED; /* not yet, but soon I hope */
   }
@@ -552,6 +542,16 @@ read_toc_win32 (void *p_user_data)
   return ret;
 }
 
+driver_return_code_t
+close_tray_win32 ( const char *psz_win32_drive)
+{
+  if ( WIN_NT ) {
+    return close_tray_win32ioctl (psz_win32_drive);
+  } else {
+    return DRIVER_OP_UNSUPPORTED; /* not yet, but soon I hope */
+  }
+}
+
 /*!
   Eject media. Return 1 if successful, 0 otherwise.
  */
@@ -856,7 +856,6 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.audio_resume           = audio_resume_win32;
   _funcs.audio_set_volume       = audio_set_volume_win32;
   _funcs.audio_stop             = audio_stop_win32;
-  _funcs.close_tray             = close_tray_win32;
   _funcs.eject_media            = eject_media_win32;
   _funcs.free                   = free_win32;
   _funcs.get_arg                = get_arg_win32;
