@@ -1,5 +1,5 @@
 /*
-  $Id: mmc2.c,v 1.5 2005/03/06 00:03:53 rocky Exp $
+  $Id: mmc2.c,v 1.6 2005/03/09 10:29:06 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -29,15 +29,12 @@
 #include <cdio/mmc.h>
 #include <string.h>
 
-/* Set how long do wto wait for SCSI-MMC commands to complete */
-#define DEFAULT_TIMEOUT_MS 10000
-
 int
 main(int argc, const char *argv[])
 {
   CdIo_t *p_cdio;
 
-  p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  p_cdio = cdio_open (NULL, DRIVER_DEVICE);
 
   if (NULL == p_cdio) {
     printf("Couldn't find CD\n");
@@ -93,22 +90,22 @@ main(int argc, const char *argv[])
 		uint32_t 	i_interface_standard = CDIO_MMC_GET_LEN32(q);
 		switch(i_interface_standard) {
 		case 0: 
-		  printf("\tunspecified interface\n");
+		  printf("\tunspecified interface.\n");
 		  break;
 		case 1: 
-		  printf("\tSCSI interface\n");
+		  printf("\tSCSI interface.\n");
 		  break;
 		case 2: 
-		  printf("\tATAPI interface\n");
+		  printf("\tATAPI interface.\n");
 		  break;
 		case 3: 
-		  printf("\tIEEE 1394 interface\n");
+		  printf("\tIEEE 1394 interface.\n");
 		  break;
 		case 4:
-		  printf("\tIEEE 1394A interface\n");
+		  printf("\tIEEE 1394A interface.\n");
 		  break;
 		case 5:
-		  printf("\tFibre Channel interface\n");
+		  printf("\tFibre Channel interface.\n");
 		}
 		printf("\n");
 		break;
@@ -116,45 +113,45 @@ main(int argc, const char *argv[])
 	    case CDIO_MMC_FEATURE_REMOVABLE_MEDIUM:
 	      switch(p[4] >> 5) {
 	      case 0:
-		printf("\tCaddy/Slot type loading mechanism\n");
+		printf("\tCaddy/Slot type loading mechanism,\n");
 		break;
 	      case 1:
-		printf("\tTray type loading mechanism\n");
+		printf("\tTray type loading mechanism,\n");
 		break;
 	      case 2:
-		printf("\tPop-up type loading mechanism\n");
+		printf("\tPop-up type loading mechanism,\n");
 		break;
 	      case 4:
-		printf("\tEmbedded changer with individually changeable discs\n");
+		printf("\tEmbedded changer with individually changeable discs,\n");
 		break;
 	      case 5:
-		printf("\tEmbedded changer using a magazine mechanism\n");
+		printf("\tEmbedded changer using a magazine mechanism,\n");
 		break;
 	      default:
-		printf("\tUnknown changer mechanism\n");
+		printf("\tUnknown changer mechanism,\n");
 	      }
 	      
 	      printf("\tcan%s eject the medium or magazine via the normal "
-		     "START/STOP command\n", 
+		     "START/STOP command,\n", 
 		     (p[4] & 8) ? "": "not");
-	      printf("\tcan%s be locked into the Logical Unit\n", 
+	      printf("\tcan%s be locked into the Logical Unit.\n", 
 		     (p[4] & 1) ? "": "not");
 	      printf("\n");
 	      break;
 	    case CDIO_MMC_FEATURE_CD_READ:
 	      printf("CD Read Feature\n");
-	      printf("\tC2 Error pointers are %ssupported\n", 
+	      printf("\tC2 Error pointers are %ssupported,\n", 
 		     (p[4] & 2) ? "": "not ");
-	      printf("\tCD-Text is %ssupported\n", 
+	      printf("\tCD-Text is %ssupported.\n", 
 		     (p[4] & 1) ? "": "not ");
 	      printf("\n");
 	      break;
 	    case CDIO_MMC_FEATURE_CDDA_EXT_PLAY:
-	      printf("\tSCAN command is %ssupported\n", 
+	      printf("\tSCAN command is %ssupported,\n", 
 		     (p[4] & 4) ? "": "not ");
-	      printf("\taudio channels can %sbe muted separately\n", 
+	      printf("\taudio channels can %sbe muted separately,\n", 
 		     (p[4] & 2) ? "": "not ");
-	      printf("\taudio channels can %shave separate volume levels\n", 
+	      printf("\taudio channels can %shave separate volume levels.\n", 
 		     (p[4] & 1) ? "": "not ");
 	      {
 		uint8_t *q = p+6;
@@ -178,10 +175,15 @@ main(int argc, const char *argv[])
 	}
       }
     } else {
-      printf("Didn't get all feature codes\n");
+      printf("Didn't get all feature codes.\n");
     }
   }
   
+  if (mmc_have_interface(p_cdio, CDIO_MMC_FEATURE_INTERFACE_ATAPI)) 
+    printf("CD-ROM is an ATAPI interface.\n");
+  else 
+    printf("CD-ROM is not an ATAPI interface.\n");
+
   cdio_destroy(p_cdio);
   
   return 0;

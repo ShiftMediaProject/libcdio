@@ -1,7 +1,7 @@
 /*
-  $Id: mmc1.c,v 1.4 2005/03/06 00:03:53 rocky Exp $
+  $Id: mmc1.c,v 1.5 2005/03/09 10:29:06 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to show use of SCSI MMC interface. Is basically the
-   the libdio scsi_mmc_get_hwinfo() routine.
+/* Simple program to show use of MMC interface. Is basically the
+   the libdio mmc_get_hwinfo() routine.
 */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -38,9 +38,9 @@ main(int argc, const char *argv[])
 {
   CdIo_t *p_cdio;
 
-  p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  p_cdio = cdio_open (NULL, DRIVER_DEVICE);
 
-  if (NULL == p_cdio) {
+  if (!p_cdio) {
     printf("Couldn't find CD\n");
     return 1;
   } else {
