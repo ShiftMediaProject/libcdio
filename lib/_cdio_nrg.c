@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.32 2004/02/08 03:00:37 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.33 2004/02/26 02:31:24 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.32 2004/02/08 03:00:37 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.33 2004/02/26 02:31:24 rocky Exp $";
 
 /* structures used */
 
@@ -922,17 +922,21 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
   return 0;
 }
 
+/*
+  Free memory resources associated with NRG object.
+*/
 static void 
 _cdio_nrg_destroy (void *obj) 
 {
   _img_private_t *env = obj;
 
   if (NULL == env) return;
-  _cdio_list_free (env->mapping, true); 
+  if (NULL != env->mapping)
+    _cdio_list_free (env->mapping, true); 
   cdio_generic_stdio_free(env);
 }
 
-/*!
+/*
   Set the device to use in I/O operations.
 */
 static int
