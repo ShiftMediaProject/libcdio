@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.23 2004/05/27 02:46:17 rocky Exp $
+#   $Id: Makefile.am,v 1.24 2004/09/11 13:02:36 rocky Exp $
 #
-#    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -59,4 +59,4 @@ endif
 
 # Put LIBPOPT_CFLAGS after local include in case LIBPOPT has headers common
 # to those in LIBCDIO_CFLAGS
-INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(VCDINFO_CFLAGS) $(LIBPOPT_CFLAGS) 
+INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(VCDINFO_CFLAGS) $(CDDB_CFLAGS) $(LIBPOPT_CFLAGS) 
