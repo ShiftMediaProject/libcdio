@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.46 2004/07/15 04:03:52 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.47 2004/07/15 11:55:45 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.46 2004/07/15 04:03:52 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.47 2004/07/15 11:55:45 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -406,7 +406,6 @@ _cdio_read_toc (_img_private_t *env)
   return true;
 }
 
-
 #define set_cdtext_field(FIELD)						\
   if( i_track == 0 )							\
     env->cdtext.field[FIELD] = strdup(buffer);				\
@@ -429,26 +428,25 @@ _get_cdtext_solaris (void *user_data)
 
   _img_private_t *env = user_data;
   int             status;
-  char            wdata[5000];
+  char            wdata[5000] = { 0, };
   struct uscsi_cmd my_cmd;
-  unsigned char my_scsi_cdb[10];
-  unsigned char my_rq_buf[26];
+  unsigned char my_rq_buf[26] = { 0, };
 
-  memset(&my_scsi_cdb, 0, sizeof(my_scsi_cdb));
-  memset(&my_rq_buf,   0, sizeof(my_rq_buf));
-  memset (&wdata, 0, sizeof (wdata));
+  /* Sizes for commands are set by the SCSI opcode. *
+     The size for READ TOC is 10. */
+  unsigned char scsi_cdb[10] = {0, }; 
 
-  CDIO_MMC_SET_COMMAND(my_scsi_cdb, CDIO_MMC_GPCMD_READ_TOC);
-  my_scsi_cdb[1]   = 0x02;   /* MSF mode */
-  my_scsi_cdb[2]   = 0x05;   /* CD text */
-  CDIO_MMC_SET_READ_LENGTH( my_scsi_cdb, sizeof(wdata) );
+  CDIO_MMC_SET_COMMAND(scsi_cdb, CDIO_MMC_GPCMD_READ_TOC);
+  scsi_cdb[1]   = 0x02;   /* MSF mode */
+  scsi_cdb[2]   = 0x05;   /* CD text */
+  CDIO_MMC_SET_READ_LENGTH( scsi_cdb, sizeof(wdata) );
 
   my_cmd.uscsi_flags = (USCSI_READ|USCSI_RQENABLE);  /* We're going get data */
   my_cmd.uscsi_timeout = 15;             /* Allow 15 seconds for completion */
-  my_cmd.uscsi_cdb = my_scsi_cdb;        /* We'll be using the array above for the CDB */
+  my_cmd.uscsi_cdb = scsi_cdb;        /* We'll be using the array above for the CDB */
   my_cmd.uscsi_bufaddr = wdata;   
   my_cmd.uscsi_buflen = sizeof(wdata); 
-  my_cmd.uscsi_cdblen = 10;              
+  my_cmd.uscsi_cdblen = sizeof(scsi_cdb);
   my_cmd.uscsi_rqlen =  24;        /* The request sense buffer (only valid on a check condition) is 26 bytes long */
   my_cmd.uscsi_rqbuf = my_rq_buf;        /* Pointer to the request sense buffer */
   
@@ -461,15 +459,13 @@ _get_cdtext_solaris (void *user_data)
     CDText_data_t *pdata;
     int           i;
     int           j;
-    char          buffer[256];
+    char          buffer[256] = { 0, };
     int           idx;
     int           i_track;
 
-    printf("READ CDTEXT!\n");
-    memset( buffer, 0x00, sizeof(buffer) );
     idx = 0;
   
-    pdata = (CDText_data_t *) (wdata[4]);
+    pdata = (CDText_data_t *) (&wdata[4]);
     for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ ) {
       if( pdata->seq != i )
 	break;
@@ -625,29 +621,29 @@ cdio_get_default_device_solaris(void)
 static cdio_drive_cap_t
 _cdio_get_drive_cap_solaris (const void *user_data)
 {
+  const _img_private_t *env = user_data;
+  int status;
   struct uscsi_cmd my_cmd;
   int32_t i_drivetype = 0;
   uint8_t buf[192] = { 0, };
-  unsigned char my_rq_buf[26];
-  unsigned char my_scsi_cdb[6];
-  const _img_private_t *env = user_data;
-  int status;
+  unsigned char my_rq_buf[26] = {0, };
+
+  /* Sizes for commands are set by the SCSI opcode. *
+     The size for MODE SENSE 10. */
+  unsigned char scsi_cdb[10] = {0, };
   
-  memset(&my_scsi_cdb, 0, sizeof(my_scsi_cdb));
-  memset(&my_rq_buf,   0, sizeof(my_rq_buf));
-  
-  CDIO_MMC_SET_COMMAND(my_scsi_cdb, CDIO_MMC_GPCMD_MODE_SENSE_10);
-  my_scsi_cdb[1] = 0x0;  
-  my_scsi_cdb[2] = CDIO_MMC_ALL_PAGES; 
-  my_scsi_cdb[7] = 0x01;
-  my_scsi_cdb[8] = 0x00;
+  CDIO_MMC_SET_COMMAND(scsi_cdb, CDIO_MMC_GPCMD_MODE_SENSE_10);
+  scsi_cdb[1] = 0x0;  
+  scsi_cdb[2] = CDIO_MMC_ALL_PAGES; 
+  scsi_cdb[7] = 0x01;
+  scsi_cdb[8] = 0x00;
   
   my_cmd.uscsi_flags = (USCSI_READ|USCSI_RQENABLE);  /* We're going get data */
   my_cmd.uscsi_timeout = 15;             /* Allow 15 seconds for completion */
-  my_cmd.uscsi_cdb = my_scsi_cdb;        /* We'll be using the array above for the CDB */
+  my_cmd.uscsi_cdb = scsi_cdb;        /* We'll be using the array above for the CDB */
   my_cmd.uscsi_bufaddr = buf;   /* The block and page data is stored here */
   my_cmd.uscsi_buflen = sizeof(buf); 
-  my_cmd.uscsi_cdblen = 12;              
+  my_cmd.uscsi_cdblen = sizeof(scsi_cdb); 
   my_cmd.uscsi_rqlen =  24;              /* The request sense buffer (only valid on a check condition) is 26 bytes long */
   my_cmd.uscsi_rqbuf = my_rq_buf;        /* Pointer to the request sense buffer */
   
@@ -696,34 +692,34 @@ _cdio_get_drive_cap_solaris (const void *user_data)
 static char *
 _cdio_get_mcn_solaris (const void *user_data)
 {
-#if 0
+#if 1
+  const _img_private_t *env = user_data;
   struct uscsi_cmd my_cmd;
   char buf[192] = { 0, };
-  unsigned char my_rq_buf[32];
-  unsigned char my_scsi_cdb[6];
-  const _img_private_t *env = user_data;
+  unsigned char my_rq_buf[32] = {0, };
   int rc;
+
+  /* Sizes for commands are set by the SCSI opcode. *
+     The size for READ SUBCHANNEL is 10. */
+  unsigned char scsi_cdb[10] = {0, };
   
-  memset(&my_scsi_cdb, 0, sizeof(my_scsi_cdb));
-  memset(&my_rq_buf,   0, sizeof(my_rq_buf));
-  
-  CDIO_MMC_SET_COMMAND(my_scsi_cdb, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
-  my_scsi_cdb[1] = 0x0;  
-  my_scsi_cdb[2] = 0x40; 
-  my_scsi_cdb[3] = 02;    /* Give media catalog number. */
-  my_scsi_cdb[4] = 0;    /* Not used */
-  my_scsi_cdb[5] = 0;    /* Not used */
-  my_scsi_cdb[6] = 0;    /* Not used */
-  my_scsi_cdb[7] = 0;    /* Not used */
-  my_scsi_cdb[8] = 28; 
-  my_scsi_cdb[9] = 0;    /* Not used */
+  CDIO_MMC_SET_COMMAND(scsi_cdb, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
+  scsi_cdb[1] = 0x0;  
+  scsi_cdb[2] = 0x40; 
+  scsi_cdb[3] = 02;    /* Give media catalog number. */
+  scsi_cdb[4] = 0;    /* Not used */
+  scsi_cdb[5] = 0;    /* Not used */
+  scsi_cdb[6] = 0;    /* Not used */
+  scsi_cdb[7] = 0;    /* Not used */
+  scsi_cdb[8] = 28; 
+  scsi_cdb[9] = 0;    /* Not used */
   
   my_cmd.uscsi_flags = (USCSI_READ|USCSI_RQENABLE);  /* We're going get data */
-  my_cmd.uscsi_timeout = 15;             /* Allow 15 seconds for completion */
-  my_cmd.uscsi_cdb = my_scsi_cdb;        /* We'll be using the array above for the CDB */
+  my_cmd.uscsi_timeout = 15;          /* Allow 15 seconds for completion */
+  my_cmd.uscsi_cdb = scsi_cdb;        /* We'll be using the array above for the CDB */
   my_cmd.uscsi_bufaddr = buf;   /* The block and page data is stored here */
   my_cmd.uscsi_buflen = sizeof(buf); 
-  my_cmd.uscsi_cdblen = 6;               /* The CDB is 6 bytes long */
+  my_cmd.uscsi_cdblen = sizeof(scsi_cdb);
   my_cmd.uscsi_rqlen =  24;              /* The request sense buffer (only valid on a check condition) is 26 bytes long */
   my_cmd.uscsi_rqbuf = my_rq_buf;        /* Pointer to the request sense buffer */
   
