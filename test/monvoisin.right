@@ -24,6 +24,12 @@ __________________________________
 CD Analysis Report
 CD-ROM with CD-RTOS and ISO 9660 filesystem
 ISO 9660: 1101 blocks, label `MONVOISIN                       '
+Application: CDI/CDI_VCD.APP;1
+Preparer   : 
+Publisher  : 
+System     : CD-RTOS CD-BRIDGE
+Volume     : MONVOISIN
+Volume Set : 
 ISO9660 filesystem
  root dir in PVD set to lsn 18
 

@@ -27,6 +27,12 @@ __________________________________
 CD Analysis Report
 CD-ROM with CD-RTOS and ISO 9660 filesystem
 ISO 9660: 676 blocks, label `SVIDEOCD                        '
+Application: SVIDEOCD.APP;1
+Preparer   : GNU VCDIMAGER CHECK MODE
+Publisher  : PUBL_ID
+System     : CD-RTOS CD-BRIDGE
+Volume     : SVIDEOCD
+Volume Set : 
 ISO9660 filesystem
  root dir in PVD set to lsn 18
 

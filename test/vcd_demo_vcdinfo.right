@@ -25,6 +25,12 @@ __________________________________
 CD Analysis Report
 CD-ROM with CD-RTOS and ISO 9660 filesystem
 ISO 9660: 1032 blocks, label `V0469                           '
+Application: 
+Preparer   : LKVCDIMAGER 5.0.7.10(WIN32)
+Publisher  : LAURENS KOEHOORN
+System     : CD-RTOS CD-BRIDGE
+Volume     : V0469
+Volume Set : 
 ISO9660 filesystem
  root dir in PVD set to lsn 18
 
@@ -95,15 +101,9 @@ ISO9660 filesystem
 
 XA sectors   Video CD   
 
-format: VCD 2.0
-album id: `LOEKI'
-volume count: 1
+Format      : VCD 2.0
+Album       : `LOEKI'
+Volume count: 1
 volume number: 1
-system id: `CD-RTOS CD-BRIDGE'
-volume id: `V0469'
-volumeset id: `'
-publisher id: `LAURENS KOEHOORN'
-preparer id: `LKVCDIMAGER 5.0.7.10(WIN32)'
-application id: `'
 session #2 starts at track  2, LSN: 1182, ISO 9660 blocks:   1032
 ISO 9660: 1032 blocks, label `V0469                           '

@@ -24,6 +24,12 @@ __________________________________
 CD Analysis Report
 CD-ROM with CD-RTOS and ISO 9660 filesystem
 ISO 9660: 376 blocks, label `SVCD_OGT_TEST_NTSC              '
+Application: 
+Preparer   : GNU VCDIMAGER 0.7.12 LINUX-GNU/I386
+Publisher  : 
+System     : CD-RTOS CD-BRIDGE
+Volume     : SVCD_OGT_TEST_NTSC
+Volume Set : 
 ISO9660 filesystem
  root dir in PVD set to lsn 18
 
