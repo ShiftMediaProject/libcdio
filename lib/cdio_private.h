@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.9 2003/06/07 16:48:33 rocky Exp $
+    $Id: cdio_private.h,v 1.10 2003/06/12 04:46:27 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -270,6 +270,12 @@ extern "C" {
     most Unix servers with block and character devices.
   */
   bool cdio_is_device_generic(const char *source_name);
+
+  
+  /*!  
+    Like above, but don't give a warning device doesn't exist.
+  */
+  bool cdio_is_device_quiet_generic(const char *source_name);
 
   
 #ifdef __cplusplus

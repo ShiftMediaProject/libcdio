@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.12 2003/05/16 07:18:27 rocky Exp $
+    $Id: _cdio_linux.c,v 1.13 2003/06/12 04:46:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.12 2003/05/16 07:18:27 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.13 2003/06/12 04:46:27 rocky Exp $";
 
 #include <string.h>
 
@@ -35,8 +35,6 @@ static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.12 2003/05/16 07:18:27 rock
 #include <cdio/util.h>
 #include "cdio_assert.h"
 #include "cdio_private.h"
-
-#define DEFAULT_CDIO_DEVICE "/dev/cdrom"
 
 #ifdef HAVE_LINUX_CDROM
 
@@ -56,6 +54,7 @@ static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.12 2003/05/16 07:18:27 rock
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <mntent.h>
 
 #include <linux/cdrom.h>
 #include <scsi/scsi.h>
@@ -87,6 +86,109 @@ typedef struct {
   struct cdrom_tocentry  tocent[100];    /* entry info for each track */
 
 } _img_private_t;
+
+/* Some ioctl() errno values which occur when the tray is empty */
+#define ERRNO_TRAYEMPTY(errno)	\
+	((errno == EIO) || (errno == ENOENT) || (errno == EINVAL))
+
+
+/* Check a drive to see if it is a CD-ROM 
+   Return 1 if a CD-ROM. 0 if it exists but isn't a CD-ROM drive
+   and -1 if no device exists .
+*/
+static int
+cdio_is_cdrom(char *drive, char *mnttype)
+{
+  bool is_cd=false;
+  int cdfd;
+  struct cdrom_tochdr    tochdr;
+  
+  /* If it doesn't exist, return -1 */
+  if ( !cdio_is_device_quiet_generic(drive) ) {
+    return(false);
+  }
+  
+  /* If it does exist, verify that it's an available CD-ROM */
+  cdfd = open(drive, (O_RDONLY|O_EXCL|O_NONBLOCK), 0);
+  if ( cdfd >= 0 ) {
+    if ( ioctl(cdfd, CDROMREADTOCHDR, &tochdr) != -1 ) {
+      is_cd = true;
+    }
+    close(cdfd);
+    }
+  /* Even if we can't read it, it might be mounted */
+  else if ( mnttype && (strcmp(mnttype, "iso9660") == 0) ) {
+    is_cd = true;
+  }
+  return(is_cd);
+}
+
+static char *
+cdio_check_mounts(const char *mtab)
+{
+  FILE *mntfp;
+  struct mntent *mntent;
+  
+  mntfp = setmntent(mtab, "r");
+  if ( mntfp != NULL ) {
+    char *tmp;
+    char *mnt_type;
+    char *mnt_dev;
+    
+    while ( (mntent=getmntent(mntfp)) != NULL ) {
+      mnt_type = malloc(strlen(mntent->mnt_type) + 1);
+      if (mnt_type == NULL)
+	continue;  /* maybe you'll get lucky next time. */
+      
+      mnt_dev = malloc(strlen(mntent->mnt_fsname) + 1);
+      if (mnt_dev == NULL) {
+	free(mnt_type);
+	continue;
+      }
+      
+      strcpy(mnt_type, mntent->mnt_type);
+      strcpy(mnt_dev, mntent->mnt_fsname);
+      
+      /* Handle "supermount" filesystem mounts */
+      if ( strcmp(mnt_type, "supermount") == 0 ) {
+	tmp = strstr(mntent->mnt_opts, "fs=");
+	if ( tmp ) {
+	  free(mnt_type);
+	  mnt_type = strdup(tmp + strlen("fs="));
+	  if ( mnt_type ) {
+	    tmp = strchr(mnt_type, ',');
+	    if ( tmp ) {
+	      *tmp = '\0';
+	    }
+	  }
+	}
+	tmp = strstr(mntent->mnt_opts, "dev=");
+	if ( tmp ) {
+	  free(mnt_dev);
+	  mnt_dev = strdup(tmp + strlen("dev="));
+	  if ( mnt_dev ) {
+	    tmp = strchr(mnt_dev, ',');
+	    if ( tmp ) {
+	      *tmp = '\0';
+	    }
+	  }
+	}
+      }
+      if ( strcmp(mnt_type, "iso9660") == 0 ) {
+	if (cdio_is_cdrom(mnt_dev, mnt_type) > 0) {
+	  free(mnt_dev);
+	  free(mnt_type);
+	  endmntent(mntfp);
+	  return strdup(mnt_dev);
+	}
+      }
+      free(mnt_dev);
+      free(mnt_type);
+    }
+    endmntent(mntfp);
+  }
+  return NULL;
+}
 
 static int 
 _set_bsize (int fd, unsigned int bsize)
@@ -766,7 +868,59 @@ _cdio_get_track_msf(void *user_data, track_t track_num, msf_t *msf)
 char *
 cdio_get_default_device_linux(void)
 {
-  return strdup(DEFAULT_CDIO_DEVICE);
+#ifndef HAVE_LINUX_CDROM
+  return NULL;
+  
+#else
+  /* checklist: /dev/cdrom, /dev/dvd /dev/hd?, /dev/scd? /dev/sr? */
+  static char checklist1[][40] = {
+    {"cdrom"}, {"dvd"}, {""}
+  };
+  static char checklist2[][40] = {
+    {"?a hd?"}, {"?0 scd?"}, {"?0 sr?"}, {""}
+  };
+  unsigned int i;
+  char drive[40];
+  int exists;
+  char *ret_drive;
+
+  /* Scan the system for CD-ROM drives.
+  */
+  for ( i=0; strlen(checklist1[i]) > 0; ++i ) {
+    sprintf(drive, "/dev/%s", checklist1[i]);
+    if ( (exists=cdio_is_cdrom(drive, NULL)) > 0 ) {
+      return strdup(drive);
+    }
+  }
+
+  /* Now check the currently mounted CD drives */
+  if (NULL != (ret_drive = cdio_check_mounts("/etc/mtab")))
+    return ret_drive;
+  
+  /* Finally check possible mountable drives in /etc/fstab */
+  if (NULL != (ret_drive = cdio_check_mounts("/etc/fstab")))
+    return ret_drive;
+
+  /* Scan the system for CD-ROM drives.
+     Not always 100% reliable, so use the USE_MNTENT code above first.
+  */
+  for ( i=0; strlen(checklist2[i]) > 0; ++i ) {
+    unsigned int j;
+    char *insert;
+    exists = 1;
+    for ( j=checklist2[i][1]; exists; ++j ) {
+      sprintf(drive, "/dev/%s", &checklist2[i][3]);
+      insert = strchr(drive, '?');
+      if ( insert != NULL ) {
+	*insert = j;
+      }
+      if ( (exists=cdio_is_cdrom(drive, NULL)) > 0 ) {
+	return(strdup(drive));
+      }
+    }
+  }
+  return NULL;
+#endif /*HAVE_LINUX_CDROM*/
 }
 /*!
   Initialization routine. This is the only thing that doesn't
@@ -774,12 +928,13 @@ cdio_get_default_device_linux(void)
   ones to set that up.
  */
 CdIo *
-cdio_open_linux (const char *source_name)
+cdio_open_linux (const char *orig_source_name)
 {
 
 #ifdef HAVE_LINUX_CDROM
   CdIo *ret;
   _img_private_t *_data;
+  char *source_name;
 
   cdio_funcs _funcs = {
     .eject_media        = _cdio_eject_media,
@@ -806,8 +961,13 @@ cdio_open_linux (const char *source_name)
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 
-  _cdio_set_arg(_data, "source", (NULL == source_name) 
-		? DEFAULT_CDIO_DEVICE: source_name);
+  if (NULL == orig_source_name) {
+    source_name=cdio_get_default_device_linux();
+    if (NULL == source_name) return NULL;
+    _cdio_set_arg(_data, "source", source_name);
+    free(source_name);
+  } else 
+    _cdio_set_arg(_data, "source", orig_source_name);
 
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;

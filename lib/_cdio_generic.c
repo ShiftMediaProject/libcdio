@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.9 2003/06/07 16:49:50 rocky Exp $
+    $Id: _cdio_generic.c,v 1.10 2003/06/12 04:46:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.9 2003/06/07 16:49:50 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.10 2003/06/12 04:46:27 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -148,8 +148,21 @@ cdio_is_device_generic(const char *source_name)
 {
   struct stat buf;
   if (0 != stat(source_name, &buf)) {
-    cdio_error ("Can't get file status for %s:\n%s", source_name, 
+    cdio_warn ("Can't get file status for %s:\n%s", source_name, 
 		strerror(errno));
+    return false;
+  }
+  return (S_ISBLK(buf.st_mode) || S_ISCHR(buf.st_mode));
+}
+
+/*!  
+  Like above, but don't give a warning device doesn't exist.
+*/
+bool
+cdio_is_device_quiet_generic(const char *source_name)
+{
+  struct stat buf;
+  if (0 != stat(source_name, &buf)) {
     return false;
   }
   return (S_ISBLK(buf.st_mode) || S_ISCHR(buf.st_mode));

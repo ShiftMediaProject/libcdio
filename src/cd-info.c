@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.11 2003/06/07 22:16:10 rocky Exp $
+    $Id: cd-info.c,v 1.12 2003/06/12 04:46:27 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -95,8 +95,9 @@
 #endif
 
 #define err_exit(fmt, args...) \
-  fprintf(stderr, "%s: "fmt, program_name, ##args); \
-  myexit(EXIT_FAILURE)		     
+  { fprintf(stderr, "%s: "fmt, program_name, ##args);	\
+    myexit(EXIT_FAILURE);				\
+  }							
   
 /*
 Subject:   -65- How can I read an IRIX (EFS) CD-ROM on a machine which
@@ -469,12 +470,17 @@ PARTICULAR PURPOSE.\n\
 "));
 
   if (version_only) {
+    char *default_device;
     for (driver_id=DRIVER_UNKNOWN+1; driver_id<=MAX_DRIVER; driver_id++) {
       if (cdio_have_driver(driver_id)) {
 	printf("Have driver: %s\n", cdio_driver_describe(driver_id));
       }
     }
-    printf("Default CD-ROM device: %s\n", cdio_get_default_device(NULL));
+    default_device=cdio_get_default_device(NULL);
+    if (default_device)
+      printf("Default CD-ROM device: %s\n", default_device);
+    else
+      printf("No CD-ROM device found.\n");
     exit(100);
   }
   
@@ -1033,23 +1039,43 @@ main(int argc, const char *argv[])
   case IMAGE_UNKNOWN:
   case IMAGE_AUTO:
     cdio = cdio_open (source_name, DRIVER_UNKNOWN);
+    if (cdio==NULL) {
+      err_exit("%s: Error in automatically selecting driver with input\n", 
+	       program_name);
+    } 
     break;
   case IMAGE_DEVICE:
     cdio = cdio_open (source_name, DRIVER_DEVICE);
+    if (cdio==NULL) {
+      err_exit("%s: Error in automatically selecting device with input\n", 
+	       program_name);
+    } 
     break;
   case IMAGE_BIN:
     cdio = cdio_open (source_name, DRIVER_BINCUE);
+    if (cdio==NULL) {
+      err_exit("%s: Error in opeing bin/cue\n", 
+	       program_name);
+    } 
     break;
   case IMAGE_CUE:
     cdio = cdio_open_cue(source_name);
+    if (cdio==NULL) {
+      err_exit("%s: Error in opening cue/bin with input\n", 
+	       program_name);
+    } 
     break;
   case IMAGE_NRG:
     cdio = cdio_open (source_name, DRIVER_NRG);
+    if (cdio==NULL) {
+      err_exit("%s: Error in opening NRG with input\n", 
+	       program_name);
+    } 
     break;
   }
 
   if (cdio==NULL) {
-    err_exit("%s: Error in finding a usable device driver\n", program_name);
+    err_exit("%s: Error in opening device driver\n", program_name);
   } 
 
   if (opts.debug_level > 0) {
@@ -1058,6 +1084,9 @@ main(int argc, const char *argv[])
   
   if (source_name==NULL) {
     source_name=strdup(cdio_get_arg(cdio, "source"));
+    if (NULL == source_name) {
+      err_exit("%s: No input device given/found\n", program_name);
+    }
   } 
 
   first_track_num = cdio_get_first_track_num(cdio);
