@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.11 2003/04/22 12:09:09 rocky Exp $
+    $Id: cdio.c,v 1.12 2003/05/16 07:18:27 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.11 2003/04/22 12:09:09 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.12 2003/05/16 07:18:27 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -135,15 +135,24 @@ CdIo_driver_t CdIo_all_drivers[MAX_DRIVER+1] = {
 /*!
   Eject media in CD drive if there is a routine to do so. 
   Return 0 if success and 1 for failure, and 2 if no routine.
+  If the CD is ejected *obj is freed and obj set to NULL.
  */
 int
-cdio_eject_media (const CdIo *obj)
+cdio_eject_media (CdIo **obj)
 {
-  cdio_assert (obj != NULL);
+  
+  if ((obj == NULL) || (*obj != NULL)) return 1;
 
-  if (obj->op.eject_media) {
-    return obj->op.eject_media (obj->user_data);
+  if ((*obj)->op.eject_media) {
+    int ret = (*obj)->op.eject_media ((*obj)->user_data);
+    if (0 == ret) {
+      cdio_destroy(*obj);
+      obj = NULL;
+    }
+    return ret;
   } else {
+    cdio_destroy(*obj);
+    obj = NULL;
     return 2;
   }
 }

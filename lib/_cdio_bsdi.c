@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.9 2003/04/22 12:09:08 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.10 2003/05/16 07:18:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.9 2003/04/22 12:09:08 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.10 2003/05/16 07:18:27 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -314,6 +314,8 @@ _cdio_eject_media (void *user_data) {
   int status;
   int fd;
 
+  close(_obj->gen.fd);
+  _obj->gen.fd = -1;
   if ((fd = open (_obj->source_name, O_RDONLY|O_NONBLOCK)) > -1) {
     if((status = ioctl(fd, CDROM_DRIVE_STATUS, (void *) CDSL_CURRENT)) > 0) {
       switch(status) {
@@ -334,7 +336,6 @@ _cdio_eject_media (void *user_data) {
       ret=1;
     }
     close(fd);
-    cdio_generic_free((void *) _obj);
   }
   return 2;
 }

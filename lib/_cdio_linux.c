@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.11 2003/04/22 12:09:09 rocky Exp $
+    $Id: _cdio_linux.c,v 1.12 2003/05/16 07:18:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.11 2003/04/22 12:09:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.12 2003/05/16 07:18:27 rocky Exp $";
 
 #include <string.h>
 
@@ -58,6 +58,11 @@ static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.11 2003/04/22 12:09:09 rock
 #include <fcntl.h>
 
 #include <linux/cdrom.h>
+#include <scsi/scsi.h>
+#include <scsi/sg.h>
+#include <scsi/scsi_ioctl.h>
+#include <sys/mount.h>
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -515,9 +520,63 @@ _cdio_read_toc (_img_private_t *_obj)
   return true;
 }
 
+/*
+ * Eject using SCSI commands. Return 1 if successful, 0 otherwise.
+ */
+static int 
+_cdio_eject_scsi(int fd)
+{
+  int status;
+  struct sdata {
+    int  inlen;
+    int  outlen;
+    char cmd[256];
+  } scsi_cmd;
+  
+  scsi_cmd.inlen	= 0;
+  scsi_cmd.outlen = 0;
+  scsi_cmd.cmd[0] = ALLOW_MEDIUM_REMOVAL;
+  scsi_cmd.cmd[1] = 0;
+  scsi_cmd.cmd[2] = 0;
+  scsi_cmd.cmd[3] = 0;
+  scsi_cmd.cmd[4] = 0;
+  scsi_cmd.cmd[5] = 0;
+  status = ioctl(fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
+  if (status != 0)
+    return 0;
+  
+  scsi_cmd.inlen  = 0;
+  scsi_cmd.outlen = 0;
+  scsi_cmd.cmd[0] = START_STOP;
+  scsi_cmd.cmd[1] = 0;
+  scsi_cmd.cmd[2] = 0;
+  scsi_cmd.cmd[3] = 0;
+  scsi_cmd.cmd[4] = 1;
+  scsi_cmd.cmd[5] = 0;
+  status = ioctl(fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
+  if (status != 0)
+    return 0;
+  
+  scsi_cmd.inlen  = 0;
+  scsi_cmd.outlen = 0;
+  scsi_cmd.cmd[0] = START_STOP;
+  scsi_cmd.cmd[1] = 0;
+  scsi_cmd.cmd[2] = 0;
+  scsi_cmd.cmd[3] = 0;
+  scsi_cmd.cmd[4] = 2;
+  scsi_cmd.cmd[5] = 0;
+  status = ioctl(fd, SCSI_IOCTL_SEND_COMMAND, (void *)&scsi_cmd);
+  if (status != 0)
+    return 0;
+  
+  /* force kernel to reread partition table when new disc inserted */
+  status = ioctl(fd, BLKRRPART);
+  return (status == 0);
+}
+
 /*!
-  Eject media in CD drive. If successful, as a side effect we 
-  also free obj.
+  Eject media in CD drive. 
+  Return 0 if success and 1 for failure, and 2 if no routine.
  */
 static int 
 _cdio_eject_media (void *user_data) {
@@ -527,27 +586,38 @@ _cdio_eject_media (void *user_data) {
   int status;
   int fd;
 
+  close(_obj->gen.fd);
+  _obj->gen.fd = -1;
   if ((fd = open (_obj->gen.source_name, O_RDONLY|O_NONBLOCK)) > -1) {
     if((status = ioctl(fd, CDROM_DRIVE_STATUS, CDSL_CURRENT)) > 0) {
       switch(status) {
       case CDS_TRAY_OPEN:
 	if((ret = ioctl(fd, CDROMCLOSETRAY)) != 0) {
 	  cdio_error ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
+	  ret = 1;
 	}
 	break;
       case CDS_DISC_OK:
 	if((ret = ioctl(fd, CDROMEJECT)) != 0) {
-	  cdio_error("ioctl CDROMEJECT failed: %s\n", strerror(errno));  
+	  int eject_error = errno;
+	  /* Try ejecting the SCSI way... */
+	  ret = _cdio_eject_scsi(fd);
+	  if (0 != ret) {
+	    cdio_error("ioctl CDROMEJECT failed: %s\n", strerror(eject_error));
+	    ret = 1;
+	  }
 	}
 	break;
+      default:
+	cdio_error ("Unknown CD-ROM (%d)\n", status);
+	ret = 1;
       }
-      ret=0;
     } else {
       cdio_error ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
       ret=1;
     }
     close(fd);
-    cdio_generic_free((void *) _obj);
+    return ret;
   }
   return 2;
 }

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.12 2003/04/22 12:09:09 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.13 2003/05/16 07:18:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -35,7 +35,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.12 2003/04/22 12:09:09 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.13 2003/05/16 07:18:27 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -473,13 +473,14 @@ _cdio_eject_media (void *user_data) {
   _img_private_t *_obj = user_data;
   int ret;
 
+  close(_obj->gen.fd);
+  _obj->gen.fd = -1;
   if (_obj->gen.fd > -1) {
     if ((ret = ioctl(_obj->gen.fd, CDROMEJECT)) != 0) {
       cdio_generic_free((void *) _obj);
       cdio_error ("CDROMEJECT failed: %s\n", strerror(errno));
       return 1;
     } else {
-      cdio_generic_free((void *) _obj);
       return 0;
     }
   }

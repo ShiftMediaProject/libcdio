@@ -23,3 +23,7 @@ cueparser: lex.cue.o cue.tab.o
 
 cuelexer: lex.cuelex.o 
 	gcc -g lex.cuelex.o -lfl -o cuelexer
+
+clean: 
+	rm -f lex.cue.c lex.cuelex.c lex.cue.o lex.cuelex.o cue.tab.c \
+	    cue.tab.o cueparser cuelexer

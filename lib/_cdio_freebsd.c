@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.9 2003/04/22 12:09:08 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.10 2003/05/16 07:18:27 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.9 2003/04/22 12:09:08 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.10 2003/05/16 07:18:27 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -361,7 +361,6 @@ _cdio_eject_media (void *user_data) {
       ret = 0;
     }
     close(fd);
-    _cdio_generic_free((void *) _obj);
   }
 
   return ret;

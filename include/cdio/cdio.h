@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.6 2003/04/22 12:09:08 rocky Exp $
+    $Id: cdio.h,v 1.7 2003/05/16 07:18:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -103,8 +103,9 @@ extern "C" {
   /*!
     Eject media in CD drive if there is a routine to do so. 
     Return 0 if success and 1 for failure, and 2 if no routine.
+    If the CD is ejected *obj is freed and obj set to NULL.
   */
-  int cdio_eject_media (const CdIo *obj);
+  int cdio_eject_media (CdIo **obj);
 
   /*!
     Free any resources associated with obj.
