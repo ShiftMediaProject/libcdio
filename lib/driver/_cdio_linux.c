@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.23 2005/02/07 03:36:02 rocky Exp $
+    $Id: _cdio_linux.c,v 1.24 2005/02/07 04:16:19 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.23 2005/02/07 03:36:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.24 2005/02/07 04:16:19 rocky Exp $";
 
 #include <string.h>
 
@@ -462,14 +462,12 @@ eject_media_linux (void *p_user_data) {
 }
 
 /*! 
-  Get disc type associated with the cd object.
+  Get disc type associated with cd object.
 */
 static discmode_t
-get_discmode_linux (void *p_user_data)
+dvd_discmode_linux (_img_private_t *p_env)
 {
-  _img_private_t *p_env = p_user_data;
-
-  discmode_t discmode = CDIO_DISC_MODE_NO_INFO;
+  discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
 
   /* See if this is a DVD. */
   cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
@@ -487,13 +485,32 @@ get_discmode_linux (void *p_user_data)
     default:                     return CDIO_DISC_MODE_DVD_OTHER;
     }
   }
+  return discmode;
+}
 
+/*! 
+  Get disc type associated with the cd object.
+*/
+static discmode_t
+get_discmode_linux (void *p_user_data)
+{
+  _img_private_t *p_env = p_user_data;
+
+  discmode_t discmode;
+
+  if (!p_env) return CDIO_DISC_MODE_ERROR;
+
+  /* Try DVD types first. See note below. */
+  discmode = dvd_discmode_linux(p_env);
+
+  if (CDIO_DISC_MODE_NO_INFO != discmode) return discmode;
   /* 
      Justin B Ruggles <jruggle@earthlink.net> reports that the
      GNU/Linux ioctl(.., CDROM_DISC_STATUS) does not return "CD DATA
-     Form 2" for SVCD's even though they are are form 2. There we
-     issue a SCSI MMC-2 FULL TOC command first to try get more
-     accurate information.
+     Form 2" for SVCD's even though they are are form 2.  In
+     mmc_get_discmode we issue a SCSI MMC-2 TOC command first to
+     try get more accurate information. But we took care above *not*
+     to issue a FULL TOC on DVD media.
   */
   discmode = mmc_get_discmode(p_env->gen.cdio);
   if (CDIO_DISC_MODE_NO_INFO != discmode) 
@@ -503,7 +520,6 @@ get_discmode_linux (void *p_user_data)
 
     if (i_discmode < 0) return CDIO_DISC_MODE_ERROR;
     
-    /* FIXME Need to add getting DVD types. */
     switch(i_discmode) {
     case CDS_AUDIO:
       return CDIO_DISC_MODE_CD_DA;

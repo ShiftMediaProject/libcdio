@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.13 2005/02/07 03:36:02 rocky Exp $
+    $Id: win32_ioctl.c,v 1.14 2005/02/07 04:16:19 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.13 2005/02/07 03:36:02 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.14 2005/02/07 04:16:19 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -684,19 +684,28 @@ read_toc_win32ioctl (_img_private_t *p_env)
      The MMC5 spec says:
        For media other than CD, information may be fabricated in order
                                             ^^^ ^^
-       to emulate a CD structure for teh specific media.
+       to emulate a CD structure for the specific media.
 
      There is no requirement though that it *has* to and some DVD
      drives like one by Thompson for XBOX don't support a
-     IOCTL_CDROM_READ_TOC for DVD's. So if we have a DVD we will not
+     IOCTL_CDROM_READ_TOC for DVD's. So if we have a DVD we should not
      prefer getting the TOC via MMC.
+
+     But on the other hand in GNU/Linux it is reported that using the
+     TOC via MMC gives better information such as for CD DATA Form 2 (used
+     in SVCDs). So if we *don't* have a DVD I think we want to try MMC
+     first. 
+
+     Is this complicated enough? I could be wrong...
+
    */
   b_fulltoc_first = (CDIO_DISC_MODE_NO_INFO == dvd_discmode_win32ioctl(p_env));
 
   if ( b_fulltoc_first && read_fulltoc_win32mmc(p_env) ) return true;
 
-  /* SCSI-MMC READ_TOC (FULTOC) read failed.  Try reading TOC via
-     DeviceIoControl instead */
+  /* SCSI-MMC READ_TOC (FULTOC) read failed or we don't want to try it
+     initiaily.  Try reading TOC via DeviceIoControl... */
+
   if( DeviceIoControl( p_env->h_device_handle,
 		       IOCTL_CDROM_READ_TOC,
 		       NULL, 0, &cdrom_toc, sizeof(CDROM_TOC),
