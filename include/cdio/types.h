@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.23 2004/09/03 23:20:11 rocky Exp $
+    $Id: types.h,v 1.24 2004/12/18 17:29:32 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -298,8 +298,6 @@ extern "C" {
 #define CDIO_DRIVE_CAP_MISC_MULTI_SESSION  0x00020 /**< read sessions>1 */
 #define CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED  0x00080 /**< media changed */
 #define CDIO_DRIVE_CAP_MISC_RESET          0x00100 /**< hard reset device */
-#define CDIO_DRIVE_CAP_MCN                 0x00200 /**< can read MCN      */
-#define CDIO_DRIVE_CAP_ISRC                0x00200 /**< can read ISRC     */
 #define CDIO_DRIVE_CAP_MISC_FILE           0x20000 /**< drive is really a file,
                                                       i.e a CD file image */
 
@@ -316,6 +314,10 @@ extern "C" {
 #define CDIO_DRIVE_CAP_READ_DVD_RW      0x00200 /**< drive can read DVD-RW  */
 #define CDIO_DRIVE_CAP_READ_DVD_RPW     0x00400 /**< drive can read DVD+RW  */
 #define CDIO_DRIVE_CAP_READ_C2_ERRS     0x00800 /**< has C2 error correction */
+#define CDIO_DRIVE_CAP_READ_MODE2_FORM1 0x01000 /**< can read mode 2 form 1 */
+#define CDIO_DRIVE_CAP_READ_MODE2_FORM2 0x02000 /**< can read mode 2 form 2 */
+#define CDIO_DRIVE_CAP_READ_MCN         0x04000 /**< can read MCN      */
+#define CDIO_DRIVE_CAP_READ_ISRC        0x08000 /**< can read ISRC     */
 
   /*! Writing masks.. */
 #define CDIO_DRIVE_CAP_WRITE_CD_R       0x00001 /**< drive can write CD-R */

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.67 2004/12/15 01:45:15 rocky Exp $
+    $Id: cdio.h,v 1.68 2004/12/18 17:29:32 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -469,65 +469,65 @@ extern "C" {
 			       unsigned int i_sectors);
 
   /*!
-    Reads a mode1 sector
+    Reads a mode 1 sector
 
     @param p_cdio object to read from
     @param buf place to read data into
     @param lsn sector to read
-    @param b_form2 true for reading mode1 form2 sectors or false for 
-    mode1 form1 sectors.
+    @param b_form2 true for reading mode1 form 2 sectors or false for 
+    mode 1 form 1 sectors.
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_mode1_sector (const CdIo *p_cdio, void *buf, lsn_t lsn, 
+  int cdio_read_mode1_sector (const CdIo *p_cdio, void *p_buf, lsn_t i_lsn, 
 			      bool b_form2);
   
   /*!
-    Reads mode1 sectors
+    Reads mode 1 sectors
 
     @param p_cdio object to read from
     @param buf place to read data into
     @param lsn sector to read
-    @param b_form2 true for reading mode1 form2 sectors or false for 
-    mode1 form1 sectors.
+    @param b_form2 true for reading mode 1 form 2 sectors or false for 
+    mode 1 form 1 sectors.
     @param i_sectors number of sectors to read
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_mode1_sectors (const CdIo *p_cdio, void *buf, lsn_t lsn, 
+  int cdio_read_mode1_sectors (const CdIo *p_cdio, void *p_buf, lsn_t i_lsn, 
 			       bool b_form2, unsigned int i_sectors);
   
   /*!
-    Reads a mode1 sector
+    Reads a mode 2 sector
 
     @param p_cdio object to read from
     @param buf place to read data into
     @param lsn sector to read
-    @param b_form2 true for reading mode1 form2 sectors or false for 
-    mode1 form1 sectors.
+    @param b_form2 true for reading mode 2 form 2 sectors or false for 
+    mode 2 form 1 sectors.
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_mode2_sector (const CdIo *p_cdio, void *buf, lsn_t lsn, 
+  int cdio_read_mode2_sector (const CdIo *p_cdio, void *p_buf, lsn_t i_lsn, 
 			      bool b_form2);
   
   /*!
-    Reads mode2 sectors
+    Reads mode 2 sectors
 
     @param p_cdio object to read from
     @param buf place to read data into
     @param lsn sector to read
-    @param b_form2 true for reading mode1 form2 sectors or false for 
-    mode1 form1 sectors.
+    @param b_form2 true for reading mode2 form 2 sectors or false for 
+    mode 2  form 1 sectors.
     @param i_sectors number of sectors to read
 
     @return 0 if no error, nonzero otherwise.
   */
-  int cdio_read_mode2_sectors (const CdIo *p_cdio, void *buf, lsn_t lsn, 
+  int cdio_read_mode2_sectors (const CdIo *p_cdio, void *p_buf, lsn_t i_lsn, 
 			       bool b_form2, unsigned int i_sectors);
   
   /*!
-    Set the arg "key" with "value" in "obj".
+    Set the arg "key" with "value" in "p_cdio".
 
     @param p_cdio the CD object to set
     @param key the key to set

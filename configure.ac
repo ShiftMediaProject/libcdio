@@ -19,7 +19,7 @@ define(RELEASE_NUM, 72)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.118 2004/12/15 01:45:15 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.119 2004/12/18 17:29:32 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
@@ -123,6 +123,12 @@ dnl headers
 
 AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h fcntl.h stdio.h sys/cdio.h glob.h stdbool.h stdarg.h)
+AC_CHECK_HEADERS(linux/sbpcd.h, SBPCD_H="-DSBPCD_H='1' ")
+AC_CHECK_HEADERS(linux/ucdrom.h, UCDROM_H="-DUCDROM_H='1' ")
+
+AC_SUBST(SBPCD_H)
+AC_SUBST(UCDROM_H)
+AC_SUBST(TYPESIZES)
 
 dnl compiler
 AC_C_BIGENDIAN
@@ -235,11 +241,17 @@ AM_CONDITIONAL(DISABLE_CPP, test "x$disable_cpp" = "xyes")
 
 dnl Checks for header files.
      
-LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/ -I$(top_srcdir)/include/'
-LIBCDIO_LIBS='$(top_builddir)/lib/libcdio.la'
-LIBISO9660_LIBS='$(top_builddir)/lib/libiso9660.la'
+LIBCDIO_CDDA_LIBS='$(top_builddir)/lib/cdda_interface/libcdio_cdda.la'
+LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/driver -I$(top_srcdir)/include/'
+LIBCDIO_LIBS='$(top_builddir)/lib/driver/libcdio.la'
+LIBCDIO_PARANOIA_LIBS='$(top_builddir)/lib/paranoia/libcdio_paranoia.la'
+LIBISO9660_CFLAGS='-I$(top_builddir)/lib/iso9660/'
+LIBISO9660_LIBS='$(top_builddir)/lib/iso9660/libiso9660.la'
+AC_SUBST(LIBCDIO_CDDA_LIBS)
 AC_SUBST(LIBCDIO_CFLAGS)
+AC_SUBST(LIBISO9660_CFLAGS)
 AC_SUBST(LIBCDIO_LIBS)
+AC_SUBST(LIBCDIO_PARANOIA_LIBS)
 AC_SUBST(LIBISO9660_LIBS)
 
 case $host_os in
@@ -421,7 +433,7 @@ AC_ARG_ENABLE(vcd_info,
 		enable_vcd_info=yes)
 fi
 if test x$enable_vcd_info = xyes; then
-  PKG_CHECK_MODULES(VCDINFO, libvcdinfo >= 0.7.20, 
+  PKG_CHECK_MODULES(VCDINFO, libvcdinfo >= 0.7.21, 
   [AC_DEFINE([HAVE_VCDINFO],1, 
   [Define this if you have libvcdinfo installed])], 
   [AC_MSG_WARN(a new enough libvcdinfo not found. 
@@ -439,7 +451,9 @@ AC_CONFIG_COMMANDS([checks],
 
 AC_CONFIG_FILES([ \
        Makefile \
+       libcdio_cdda.pc \
        libcdio.pc \
+       libcdio_paranoia.pc \
        libcdio.spec \
        libiso9660.pc \
        example/Makefile \
@@ -449,6 +463,11 @@ AC_CONFIG_FILES([ \
        doc/doxygen/Doxyfile \
        doc/Makefile \
        lib/Makefile \
+       lib/cdda_interface/Makefile \
+       lib/driver/Makefile \
+       lib/iso9660/Makefile \
+       lib/paranoia/Makefile \
+       src/cd-paranoia/Makefile \
        src/Makefile \
        test/check_nrg.sh \
        test/check_cue.sh \

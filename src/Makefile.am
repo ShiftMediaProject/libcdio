@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.26 2004/10/26 08:32:29 rocky Exp $
+#   $Id: Makefile.am,v 1.27 2004/12/18 17:29:32 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -19,6 +19,8 @@
 ####################################################
 # Things to make the sample/test programs
 ####################################################
+SUBDIRS =  cd-paranoia
+
 CDDB_LIBS=@CDDB_LIBS@
 
 if MAINTAINER_MODE

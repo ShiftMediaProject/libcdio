@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.101 2004/12/04 11:44:16 rocky Exp $
+    $Id: cd-info.c,v 1.102 2004/12/18 17:29:32 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -47,7 +47,6 @@
 #include <cdio/scsi_mmc.h>
 
 #include "cdio_assert.h"
-#include "iso9660_private.h"
 
 #include <fcntl.h>
 #ifdef __linux__
@@ -1060,9 +1059,13 @@ main(int argc, const char *argv[])
 
     psz_msf = cdio_msf_to_str(&msf);
     if (i == CDIO_CDROM_LEADOUT_TRACK) {
-      if (!opts.no_tracks)
-	printf("%3d: %8s  %06lu  leadout\n", (int) i, psz_msf,
-	       (long unsigned int) cdio_msf_to_lsn(&msf));
+      if (!opts.no_tracks) {
+	lsn_t lsn= cdio_msf_to_lsn(&msf);
+        long unsigned int i_mb = ( lsn * CDIO_CD_FRAMESIZE_RAW ) / 
+	  (1024 * 1024);
+	printf( "%3d: %8s  %06lu  leadout (%lu MB)\n", (int) i, psz_msf,
+	       (long unsigned int) lsn, i_mb );
+      }
       free(psz_msf);
       break;
     } else if (!opts.no_tracks) {

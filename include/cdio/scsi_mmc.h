@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.35 2004/12/04 12:01:48 rocky Exp $
+    $Id: scsi_mmc.h,v 1.36 2004/12/18 17:29:32 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -415,12 +415,18 @@ char *scsi_mmc_get_mcn ( const CdIo *p_cdio );
    Can read only up to 25 blocks.
 */
 int scsi_mmc_read_sectors ( const CdIo *p_cdio, void *p_buf, lba_t lba, 
-			    int sector_type, unsigned int nblocks);
+			    int sector_type, unsigned int i_blocks);
 
 /*!
   Set the block size for subsequest read requests, via a SCSI MMC 
   MODE_SELECT 6 command.
  */
-int scsi_mmc_set_blocksize ( const CdIo *p_cdio, unsigned int bsize);
+int scsi_mmc_set_blocksize ( const CdIo *p_cdio, unsigned int i_bsize);
+
+/*!
+  Set the block size for subsequest read requests, via a SCSI MMC 
+  MODE_SENSE 6 command.
+ */
+int scsi_mmc_get_blocksize ( const CdIo *p_cdio );
 
 #endif /* __SCSI_MMC_H__ */

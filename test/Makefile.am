@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.34 2004/11/21 04:02:09 rocky Exp $
+#   $Id: Makefile.am,v 1.35 2004/12/18 17:29:32 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -26,7 +26,7 @@
 hack = check_sizeof testassert testischar testiso9660 testtoc testbincue
 noinst_PROGRAMS = $(hack) testdefault 
 
-INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
+INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 
 check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 testassert_LDADD    = $(LIBCDIO_LIBS)
