@@ -1,7 +1,7 @@
 /*
-  $Id: overlap.c,v 1.2 2004/12/22 09:41:58 rocky Exp $
+  $Id: overlap.c,v 1.3 2005/01/07 02:42:29 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -45,7 +45,7 @@
 void 
 paranoia_resetcache(cdrom_paranoia_t *p)
 {
-  c_block *c=c_first(p);
+  c_block_t *c=c_first(p);
   v_fragment *v;
 
   while(c){
@@ -98,9 +98,9 @@ i_paranoia_trim(cdrom_paranoia_t *p, long int beginword, long int endword)
     }
 
     {
-      c_block *c=c_first(p);
+      c_block_t *c=c_first(p);
       while(c){
-	c_block *next=c_next(c);
+	c_block_t *next=c_next(c);
 	if(ce(c)<beginword-MAX_SECTOR_OVERLAP*CD_FRAMEWORDS)
 	  free_c_block(c);
 	c=next;
@@ -139,7 +139,7 @@ offset_adjust_settings(cdrom_paranoia_t *p,
       /* Adjust all the values in the cache otherwise we get a
 	 (potentially unstable) feedback loop */
       {
-	c_block *c=c_first(p);
+	c_block_t *c=c_first(p);
 	v_fragment *v=v_first(p);
 
 	while(v && v->one){

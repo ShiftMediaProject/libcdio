@@ -1,7 +1,7 @@
 /*
-  $Id: isort.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: isort.h,v 1.2 2005/01/07 02:42:29 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -26,8 +26,8 @@ typedef struct sort_link{
   struct sort_link *next;
 } sort_link;
 
-typedef struct sort_info{
-  int16_t *vector;                /* vector (storage doesn't belong to us) */
+typedef struct sort_info {
+  int16_t *vector;               /* vector (storage doesn't belong to us) */
 
   long  *abspos;                 /* pointer for side effects */
   long  size;                    /* vector size */
@@ -45,15 +45,16 @@ typedef struct sort_info{
   long lastbucket;
   sort_link *revindex;
 
-} sort_info;
+} sort_info_t;
 
-extern sort_info *sort_alloc(long size);
-extern void sort_unsortall(sort_info *i);
-extern void sort_setup(sort_info *i,int16_t *vector,long *abspos,long size,
+extern sort_info_t *sort_alloc(long size);
+extern void sort_unsortall(sort_info_t *i);
+extern void sort_setup(sort_info_t *i,int16_t *vector,long *abspos,long size,
 		       long sortlo, long sorthi);
-extern void sort_free(sort_info *i);
-extern sort_link *sort_getmatch(sort_info *i,long post,long overlap,int value);
-extern sort_link *sort_nextmatch(sort_info *i,sort_link *prev);
+extern void sort_free(sort_info_t *i);
+extern sort_link *sort_getmatch(sort_info_t *i, long post, long overlap,
+				int value);
+extern sort_link *sort_nextmatch(sort_info_t *i, sort_link *prev);
 
 #define is(i) (i->size)
 #define ib(i) (*i->abspos)

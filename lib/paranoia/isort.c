@@ -1,7 +1,7 @@
 /*
-  $Id: isort.c,v 1.2 2004/12/22 09:41:58 rocky Exp $
+  $Id: isort.c,v 1.3 2005/01/07 02:42:29 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -36,8 +36,10 @@
 #include "p_block.h"
 #include "isort.h"
 
-sort_info *sort_alloc(long size){
-  sort_info *ret=calloc(1,sizeof(sort_info));
+sort_info_t *
+sort_alloc(long size)
+{
+  sort_info_t *ret=calloc(1, sizeof(sort_info_t));
 
   ret->vector=NULL;
   ret->sortbegin=-1;
@@ -52,7 +54,9 @@ sort_info *sort_alloc(long size){
   return(ret);
 }
 
-void sort_unsortall(sort_info *i){
+void 
+sort_unsortall(sort_info_t *i)
+{
   if(i->lastbucket>2000){ /* a guess */
     memset(i->head,0,65536*sizeof(sort_link *));
   }else{
@@ -65,14 +69,18 @@ void sort_unsortall(sort_info *i){
   i->sortbegin=-1;
 }
 
-void sort_free(sort_info *i){
+void 
+sort_free(sort_info_t *i)
+{
   free(i->revindex);
   free(i->head);
   free(i->bucketusage);
   free(i);
 }
  
-static void sort_sort(sort_info *i,long sortlo,long sorthi){
+static void 
+sort_sort(sort_info_t *i,long sortlo,long sorthi)
+{
   long j;
 
   for(j=sorthi-1;j>=sortlo;j--){
@@ -90,8 +98,10 @@ static void sort_sort(sort_info *i,long sortlo,long sorthi){
 }
 
 /* size *must* be less than i->maxsize */
-void sort_setup(sort_info *i,int16_t *vector,long *abspos,
-		long size,long sortlo,long sorthi){
+void 
+sort_setup(sort_info_t *i, int16_t *vector, long *abspos, long size,
+	   long sortlo, long sorthi)
+{
   if(i->sortbegin!=-1)sort_unsortall(i);
 
   i->vector=vector;
@@ -103,7 +113,7 @@ void sort_setup(sort_info *i,int16_t *vector,long *abspos,
 }
 
 sort_link *
-sort_getmatch(sort_info *i,long post,long overlap,int value)
+sort_getmatch(sort_info_t *i, long post, long overlap, int value)
 {
   sort_link *ret;
 
@@ -130,7 +140,7 @@ sort_getmatch(sort_info *i,long post,long overlap,int value)
 }
 
 sort_link *
-sort_nextmatch(sort_info *i,sort_link *prev)
+sort_nextmatch(sort_info_t *i, sort_link *prev)
 {
   sort_link *ret=prev->next;
 

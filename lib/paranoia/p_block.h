@@ -1,5 +1,5 @@
 /*
-    $Id: p_block.h,v 1.2 2005/01/05 04:16:11 rocky Exp $
+    $Id: p_block.h,v 1.3 2005/01/07 02:42:29 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) by Monty (xiphmont@mit.edu)
@@ -69,7 +69,7 @@ extern void *get_elem(linked_element *e);
 extern linked_list *copy_list(linked_list *list); /* shallow; doesn't copy
 						     contained structures */
 
-typedef struct c_block{
+typedef struct c_block {
   /* The buffer */
   int16_t *vector;
   long begin;
@@ -91,14 +91,14 @@ typedef struct c_block{
   cdrom_paranoia_t *p;
   struct linked_element *e;
 
-} c_block;
+} c_block_t;
 
-extern void free_c_block(c_block *c);
-extern void i_cblock_destructor(c_block *c);
-extern c_block *new_c_block(cdrom_paranoia_t *p);
+extern void free_c_block(c_block_t *c);
+extern void i_cblock_destructor(c_block_t *c);
+extern c_block_t *new_c_block(cdrom_paranoia_t *p);
 
 typedef struct v_fragment{
-  c_block *one;
+  c_block_t *one;
 
   long begin;
   long size;
@@ -114,15 +114,15 @@ typedef struct v_fragment{
 } v_fragment;
 
 extern void free_v_fragment(v_fragment *c);
-extern v_fragment *new_v_fragment(cdrom_paranoia_t *p, c_block *one,
+extern v_fragment *new_v_fragment(cdrom_paranoia_t *p, c_block_t *one,
 				  long int begin, long int end, 
 				  int lastsector);
 extern int16_t *v_buffer(v_fragment *v);
 
-extern c_block *c_first(cdrom_paranoia_t *p);
-extern c_block *c_last(cdrom_paranoia_t *p);
-extern c_block *c_next(c_block *c);
-extern c_block *c_prev(c_block *c);
+extern c_block_t *c_first(cdrom_paranoia_t *p);
+extern c_block_t *c_last(cdrom_paranoia_t *p);
+extern c_block_t *c_next(c_block_t *c);
+extern c_block_t *c_prev(c_block_t *c);
 
 extern v_fragment *v_first(cdrom_paranoia_t *p);
 extern v_fragment *v_last(cdrom_paranoia_t *p);
@@ -134,7 +134,7 @@ typedef struct root_block{
   long lastsector;
   cdrom_paranoia_t *p;
 
-  c_block *vector; /* doesn't use any sorting */
+  c_block_t *vector; /* doesn't use any sorting */
   int silenceflag;
   long silencebegin;
 } root_block;
@@ -157,7 +157,7 @@ struct cdrom_paranoia_s {
   linked_list *cache;     /* our data as read from the cdrom */
   long int cache_limit;
   linked_list *fragments; /* fragments of blocks that have been 'verified' */
-  sort_info *sortcache;
+  sort_info_t *sortcache;
 
   int readahead;          /* sectors of readahead in each readop */
   int jitter;           
@@ -179,13 +179,13 @@ struct cdrom_paranoia_s {
 
 };
 
-extern c_block *c_alloc(int16_t *vector,long begin,long size);
-extern void c_set(c_block *v,long begin);
-extern void c_insert(c_block *v,long pos,int16_t *b,long size);
-extern void c_remove(c_block *v,long cutpos,long cutsize);
-extern void c_overwrite(c_block *v,long pos,int16_t *b,long size);
-extern void c_append(c_block *v, int16_t *vector, long size);
-extern void c_removef(c_block *v, long cut);
+extern c_block_t *c_alloc(int16_t *vector,long begin,long size);
+extern void c_set(c_block_t *v,long begin);
+extern void c_insert(c_block_t *v,long pos,int16_t *b,long size);
+extern void c_remove(c_block_t *v,long cutpos,long cutsize);
+extern void c_overwrite(c_block_t *v,long pos,int16_t *b,long size);
+extern void c_append(c_block_t *v, int16_t *vector, long size);
+extern void c_removef(c_block_t *v, long cut);
 
 #define ce(v) (v->begin+v->size)
 #define cb(v) (v->begin)

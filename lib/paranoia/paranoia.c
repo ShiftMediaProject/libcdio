@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.4 2005/01/06 01:15:51 rocky Exp $
+  $Id: paranoia.c,v 1.5 2005/01/07 02:42:29 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -191,10 +191,10 @@ afterward. */
 #define OVERLAP_ADJ (MIN_WORDS_OVERLAP/2-1)
 
 static inline long int 
-do_const_sync(c_block *A,
-	      sort_info *B,char *flagB,
-	      long posA,long posB,
-	      long *begin,long *end,long *offset)
+do_const_sync(c_block_t *A,
+	      sort_info_t *B, char *flagB,
+	      long posA, long posB,
+	      long *begin, long *end, long *offset)
 {
   char *flagA=A->flags;
   long ret=0;
@@ -223,8 +223,8 @@ do_const_sync(c_block *A,
 
 static inline long int 
 try_sort_sync(cdrom_paranoia_t *p,
-	      sort_info *A,char *Aflags,
-	      c_block *B,
+	      sort_info_t *A, char *Aflags,
+	      c_block_t *B,
 	      long int post,
 	      long int *begin,
 	      long int *end,
@@ -241,11 +241,11 @@ try_sort_sync(cdrom_paranoia_t *p,
     /* always try absolute offset zero first! */
     {
       long zeropos=post-ib(A);
-      if(zeropos>=0 && zeropos<is(A)){
+      if (zeropos>=0 && zeropos<is(A)) {
 	if ( cv(B)[post-cb(B)] == iv(A)[zeropos] ) {
-	  if(do_const_sync(B,A,Aflags,
-			   post-cb(B),zeropos,
-			   begin,end,offset)){
+	  if (do_const_sync(B, A, Aflags,
+			    post-cb(B), zeropos,
+			    begin, end, offset) ) {
 	    
 	    offset_add_value(p,&(p->stage1),*offset,callback);
 	    
@@ -277,7 +277,7 @@ try_sort_sync(cdrom_paranoia_t *p,
 }
 
 static inline void 
-stage1_matched(c_block *old,c_block *new,
+stage1_matched(c_block_t *old, c_block_t *new,
 	       long matchbegin,long matchend,
 	       long matchoffset,
 	       void (*callback)(long int, paranoia_cb_mode_t))
@@ -326,7 +326,7 @@ stage1_matched(c_block *old,c_block *new,
 }
 
 static long int 
-i_iterate_stage1(cdrom_paranoia_t *p, c_block *old, c_block *new,
+i_iterate_stage1(cdrom_paranoia_t *p, c_block_t *old, c_block_t *new,
 		 void(*callback)(long int, paranoia_cb_mode_t)) 
 {
 
@@ -336,7 +336,7 @@ i_iterate_stage1(cdrom_paranoia_t *p, c_block *old, c_block *new,
   long searchend=min(ce(old),ce(new));
   long searchbegin=max(cb(old),cb(new));
   long searchsize=searchend-searchbegin;
-  sort_info *i=p->sortcache;
+  sort_info_t *i=p->sortcache;
   long ret=0;
   long j;
 
@@ -380,16 +380,16 @@ i_iterate_stage1(cdrom_paranoia_t *p, c_block *old, c_block *new,
 }
 
 static long int
-i_stage1(cdrom_paranoia_t *p, c_block *new, 
+i_stage1(cdrom_paranoia_t *p, c_block_t *new, 
 	 void (*callback)(long int, paranoia_cb_mode_t))
 {
   long size=cs(new);
-  c_block *ptr=c_last(p);
+  c_block_t *ptr=c_last(p);
   int ret=0;
   long begin=0,end;
   
-  if(ptr)sort_setup(p->sortcache,cv(new),&cb(new),cs(new),
-		    cb(new),ce(new));
+  if (ptr) 
+    sort_setup( p->sortcache, cv(new), &cb(new), cs(new), cb(new), ce(new) );
 
   while(ptr && ptr!=new){
 
@@ -461,10 +461,10 @@ i_iterate_stage2(cdrom_paranoia_t *p,
        must strictly adhere to root */
     long searchend=min(fev+p->dynoverlap,re(root));
     long searchbegin=max(fbv-p->dynoverlap,rb(root));
-    sort_info *i=p->sortcache;
+    sort_info_t *i=p->sortcache;
     long j;
     
-    sort_setup(i,fv(v),&fb(v),fs(v),fbv,fev);
+    sort_setup(i, fv(v), &fb(v), fs(v), fbv, fev);
     for(j=searchbegin;j<searchend;j+=23){
       while(j<searchend && rv(root)[j-rb(root)]==0)j++;
       if(j==searchend)break;
@@ -593,7 +593,7 @@ i_stage2_each(root_block *root, v_fragment *v,
       long end=r.end-rb(root);
       long offset=r.begin+r.offset-fb(v)-begin;
       long temp;
-      c_block *l=NULL;
+      c_block_t *l=NULL;
 
       /* we have a match! We don't rematch off rift, we chase the
 	 match all the way to both extremes doing rift analysis. */
@@ -982,7 +982,7 @@ verify_skip_case(cdrom_paranoia_t *p,
 {
 
   root_block *root=&(p->root);
-  c_block *graft=NULL;
+  c_block_t *graft=NULL;
   int vflag=0;
   int gend=0;
   long post;
@@ -1004,7 +1004,7 @@ verify_skip_case(cdrom_paranoia_t *p,
      preferrably a verified area */
 
   {
-    c_block *c=c_first(p);
+    c_block_t *c=c_first(p);
     while(c){
       long cbegin=cb(c);
       long cend=ce(c);
@@ -1121,7 +1121,7 @@ paranoia_seek(cdrom_paranoia_t *p, off_t seek, int mode)
 }
 
 /* returns last block read, -1 on error */
-static c_block *
+static c_block_t *
 i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
 	       void(*callback)(long, paranoia_cb_mode_t))
 {
@@ -1136,7 +1136,7 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
   long totaltoread=p->readahead;
   long sectatonce=p->d->nsectors;
   long driftcomp=(float)p->dyndrift/CD_FRAMEWORDS+.5;
-  c_block *new=NULL;
+  c_block_t *new=NULL;
   root_block *root=&p->root;
   int16_t *buffer=NULL;
   char *flags=NULL;
@@ -1322,7 +1322,7 @@ paranoia_read_limited(cdrom_paranoia_t *p,
     /* Hmm, need more.  Read another block */
 
     {    
-      c_block *new=i_read_c_block(p,beginword,endword,callback);
+      c_block_t *new=i_read_c_block(p,beginword,endword,callback);
       
       if(new){
 	if(p->enable&(PARANOIA_MODE_OVERLAP|PARANOIA_MODE_VERIFY)){

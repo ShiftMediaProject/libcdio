@@ -1,5 +1,5 @@
 /*
-    $Id: p_block.c,v 1.3 2005/01/05 04:16:11 rocky Exp $
+    $Id: p_block.c,v 1.4 2005/01/07 02:42:29 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -117,15 +117,15 @@ linked_list *copy_list(linked_list *list)
 
 /**** C_block stuff ******************************************************/
 
-static c_block *
+static c_block_t *
 i_cblock_constructor(cdrom_paranoia_t *p)
 {
-  c_block *ret=calloc(1,sizeof(c_block));
+  c_block_t *ret=calloc(1,sizeof(c_block_t));
   return(ret);
 }
 
 void 
-i_cblock_destructor(c_block *c)
+i_cblock_destructor(c_block_t *c)
 {
   if(c){
     if(c->vector)free(c->vector);
@@ -135,17 +135,17 @@ i_cblock_destructor(c_block *c)
   }
 }
 
-c_block *
+c_block_t *
 new_c_block(cdrom_paranoia_t *p)
 {
   linked_element *e=new_elem(p->cache);
-  c_block *c=e->ptr;
+  c_block_t *c=e->ptr;
   c->e=e;
   c->p=p;
   return(c);
 }
 
-void free_c_block(c_block *c)
+void free_c_block(c_block_t *c)
 {
   /* also rid ourselves of v_fragments that reference this block */
   v_fragment *v=v_first(c->p);
@@ -173,7 +173,7 @@ i_v_fragment_destructor(v_fragment *v)
 }
 
 v_fragment *
-new_v_fragment(cdrom_paranoia_t *p, c_block *one,
+new_v_fragment(cdrom_paranoia_t *p, c_block_t *one,
 	       long int begin, long int end, int last)
 {
   linked_element *e=new_elem(p->fragments);
@@ -196,7 +196,7 @@ void free_v_fragment(v_fragment *v)
   free_elem(v->e,1);
 }
 
-c_block *
+c_block_t *
 c_first(cdrom_paranoia_t *p)
 {
   if(p->cache->head)
@@ -204,7 +204,7 @@ c_first(cdrom_paranoia_t *p)
   return(NULL);
 }
 
-c_block *
+c_block_t *
 c_last(cdrom_paranoia_t *p)
 {
   if(p->cache->tail)
@@ -212,16 +212,16 @@ c_last(cdrom_paranoia_t *p)
   return(NULL);
 }
 
-c_block *
-c_next(c_block *c)
+c_block_t *
+c_next(c_block_t *c)
 {
   if(c->e->next)
     return(c->e->next->ptr);
   return(NULL);
 }
 
-c_block *
-c_prev(c_block *c)
+c_block_t *
+c_prev(c_block_t *c)
 {
   if(c->e->prev)
     return(c->e->prev->ptr);
@@ -282,22 +282,23 @@ v_buffer(v_fragment *v)
 }
 
 /* alloc a c_block not on a cache list */
-c_block *
-c_alloc(int16_t *vector,long begin,long size)
+c_block_t *
+c_alloc(int16_t *vector, long begin, long size)
 {
-  c_block *c=calloc(1,sizeof(c_block));
+  c_block_t *c=calloc(1,sizeof(c_block_t));
   c->vector=vector;
   c->begin=begin;
   c->size=size;
   return(c);
 }
 
-void c_set(c_block *v,long begin){
+void c_set(c_block_t *v,long begin){
   v->begin=begin;
 }
 
 /* pos here is vector position from zero */
-void c_insert(c_block *v,long pos,int16_t *b,long size)
+void 
+c_insert(c_block_t *v,long pos,int16_t *b,long size)
 {
   int vs=cs(v);
   if(pos<0 || pos>vs)return;
@@ -314,7 +315,8 @@ void c_insert(c_block *v,long pos,int16_t *b,long size)
   v->size+=size;
 }
 
-void c_remove(c_block *v,long cutpos,long cutsize)
+void 
+c_remove(c_block_t *v, long cutpos, long cutsize)
 {
   int vs=cs(v);
   if(cutpos<0 || cutpos>vs)return;
@@ -328,7 +330,9 @@ void c_remove(c_block *v,long cutpos,long cutsize)
   v->size-=cutsize;
 }
 
-void c_overwrite(c_block *v,long pos,int16_t *b,long size){
+void 
+c_overwrite(c_block_t *v,long pos,int16_t *b,long size)
+{
   int vs=cs(v);
 
   if(pos<0)return;
@@ -338,7 +342,7 @@ void c_overwrite(c_block *v,long pos,int16_t *b,long size){
 }
 
 void 
-c_append(c_block *v, int16_t *vector, long size)
+c_append(c_block_t *v, int16_t *vector, long size)
 {
   int vs=cs(v);
 
@@ -352,7 +356,9 @@ c_append(c_block *v, int16_t *vector, long size)
   v->size+=size;
 }
 
-void c_removef(c_block *v, long cut){
+void 
+c_removef(c_block_t *v, long cut)
+{
   c_remove(v,0,cut);
   v->begin+=cut;
 }
