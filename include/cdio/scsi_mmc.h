@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.6 2004/07/08 01:27:59 rocky Exp $
+    $Id: scsi_mmc.h,v 1.7 2004/07/08 06:29:45 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -54,6 +54,7 @@
 #define CDIO_MMC_R_W_ERROR_PAGE		0x01
 #define CDIO_MMC_WRITE_PARMS_PAGE	0x05
 #define CDIO_MMC_AUDIO_CTL_PAGE		0x0e
+#define CDIO_MMC_CDR_PARMS_PAGE		0x0d
 #define CDIO_MMC_POWER_PAGE		0x1a
 #define CDIO_MMC_FAULT_FAIL_PAGE	0x1c
 #define CDIO_MMC_TO_PROTECT_PAGE	0x1d

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.43 2004/07/08 05:19:27 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.44 2004/07/08 06:29:58 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.43 2004/07/08 05:19:27 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.44 2004/07/08 06:29:58 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -517,26 +517,48 @@ _cdio_get_drive_cap_solaris (const void *user_data)
   memset(&my_rq_buf,   0, sizeof(my_rq_buf));
   
   /* Initialize my_scsi_cdb as a Mode Select(6) */
-  CDIO_MMC_SET_COMMAND(my_scsi_cdb, CDIO_MMC_GPCMD_MODE_SENSE);
+  CDIO_MMC_SET_COMMAND(my_scsi_cdb, CDIO_MMC_GPCMD_MODE_SENSE_10);
   my_scsi_cdb[1] = 0x0;  
-  my_scsi_cdb[2] = CDIO_MMC_CAPABILITIES_PAGE; 
-  my_scsi_cdb[3] = 0;    /* Not used */
-  my_scsi_cdb[4] = 128; 
-  my_scsi_cdb[5] = 0;    /* Not used */
+  my_scsi_cdb[2] = CDIO_MMC_ALL_PAGES; 
+  my_scsi_cdb[7] = 0x01;
+  my_scsi_cdb[8] = 0x00;
   
   my_cmd.uscsi_flags = (USCSI_READ|USCSI_RQENABLE);  /* We're going get data */
   my_cmd.uscsi_timeout = 15;             /* Allow 15 seconds for completion */
   my_cmd.uscsi_cdb = my_scsi_cdb;        /* We'll be using the array above for the CDB */
   my_cmd.uscsi_bufaddr = buf;   /* The block and page data is stored here */
   my_cmd.uscsi_buflen = sizeof(buf); 
-  my_cmd.uscsi_cdblen = 6;               /* The CDB is 6 bytes long */
+  my_cmd.uscsi_cdblen = 12;              
   my_cmd.uscsi_rqlen =  24;              /* The request sense buffer (only valid on a check condition) is 26 bytes long */
   my_cmd.uscsi_rqbuf = my_rq_buf;        /* Pointer to the request sense buffer */
   
   rc = ioctl(env->gen.fd, USCSICMD, &my_cmd);
   if(rc == 0) {
-    unsigned int n=buf[3]+4;
-    i_drivetype |= cdio_get_drive_cap_mmc(&(buf[n]));
+    uint8_t *p;
+    int lenData  = ((unsigned int)buf[0] << 8) + buf[1];
+    uint8_t *pMax = buf + 256;
+
+    i_drivetype = 0;
+    /* set to first sense mask, and then walk through the masks */
+    p = buf + 8;
+    while( (p < &(buf[2+lenData])) && (p < pMax) )       {
+      uint8_t which;
+      
+      which = p[0] & 0x3F;
+      switch( which )
+	{
+	case CDIO_MMC_AUDIO_CTL_PAGE:
+	case CDIO_MMC_R_W_ERROR_PAGE:
+	case CDIO_MMC_CDR_PARMS_PAGE:
+	  /* Don't handle these yet. */
+	  break;
+	case CDIO_MMC_CAPABILITIES_PAGE:
+	  i_drivetype |= cdio_get_drive_cap_mmc(p);
+	  break;
+	default: ;
+	}
+      p += (p[1] + 2);
+    }
   } else {
     cdio_info("%s: %s\n", 
             "error in ioctl USCSICMD MODE_SELECT", strerror(errno));

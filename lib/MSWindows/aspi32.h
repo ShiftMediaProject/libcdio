@@ -1,6 +1,6 @@
 /* Win32 aspi specific */
 /*
-    $Id: aspi32.h,v 1.3 2004/06/28 00:24:03 rocky Exp $
+    $Id: aspi32.h,v 1.4 2004/07/08 06:30:17 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -144,14 +144,6 @@ struct SRB_ExecSCSICmd
     unsigned char   CDBByte[16];
     unsigned char   SenseArea[SENSE_LEN+2];
 };
-
-/*! 
-  Values and structures used in MODE SENSE 10 command.
-*/
-#define READERRREC    0x01
-#define CDRPARMS      0x0D
-#define CDRAUDIOCTL   0x0E
-#define CDRCAPS       0x2A
 
 /*****************************************************************************
           %%% SRB - HOST ADAPTER INQUIRY - SC_HA_INQUIRY (0) %%%

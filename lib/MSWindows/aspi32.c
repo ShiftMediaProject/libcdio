@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.13 2004/07/08 01:28:01 rocky Exp $
+    $Id: aspi32.c,v 1.14 2004/07/08 06:30:01 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.13 2004/07/08 01:28:01 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.14 2004/07/08 06:30:01 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -746,12 +746,12 @@ get_drive_cap_aspi (const _img_private_t *env)
       which = p[0] & 0x3F;
       switch( which )
 	{
-	case CDRAUDIOCTL:
-	case READERRREC:
-	case CDRPARMS:
-	  /* Don't handle theses yet. */
+	case CDIO_MMC_AUDIO_CTL_PAGE:
+	case CDIO_MMC_R_W_ERROR_PAGE:
+	case CDIO_MMC_CDR_PARMS_PAGE:
+	  /* Don't handle these yet. */
 	  break;
-	case CDRCAPS:
+	case CDIO_MMC_CAPABILITIES_PAGE:
 	  i_drivetype |= cdio_get_drive_cap_mmc(p);
 	  break;
 	default: ;
