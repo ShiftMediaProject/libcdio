@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: scsi_mmc_private.h,v 1.7 2004/07/28 01:09:59 rocky Exp $
+    $Id: scsi_mmc_private.h,v 1.8 2004/07/28 01:14:42 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 */
 #define SECS2MSECS 1000
 static inline unsigned int 
-msec2secs(unsigned int msecs) 
+msecs2secs(unsigned int msecs) 
 {
   return (msecs+(SECS2MSECS-1)) / SECS2MSECS;
 }
