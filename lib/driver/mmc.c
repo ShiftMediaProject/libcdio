@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.15 2005/02/18 09:49:14 rocky Exp $
+    $Id: mmc.c,v 1.16 2005/02/28 02:56:26 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -1012,6 +1012,12 @@ mmc_have_interface( CdIo_t *p_cdio, mmc_feature_interface_t e_interface )
     return dunno;
 }
 
+/* Maximum blocks to retrieve. Would be nice to customize this based on
+   drive capabilities.
+*/
+#define MAX_CD_READ_BLOCKS 16
+#define CD_READ_TIMEOUT_MS DEFAULT_TIMEOUT_MS * (MAX_CD_READ_BLOCKS/2)
+
 /*! issue a MMC READ_CD command.
 */
 driver_return_code_t
@@ -1027,7 +1033,6 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   mmc_run_cmd_fn_t run_mmc_cmd;
   uint8_t i_read_type = 0;
   uint8_t cdb9 = 0;
-    
 
   if (!p_cdio) return DRIVER_OP_UNINIT;
   if (!p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
@@ -1040,7 +1045,6 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   if (b_digital_audio_play) i_read_type |= 0x2;
   
   CDIO_MMC_SET_READ_TYPE    (cdb.field, i_read_type);
-  CDIO_MMC_SET_READ_LBA     (cdb.field, i_lsn);
   CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks);
 
   
@@ -1051,12 +1055,32 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   cdb9 |= (c2_error_information & 3) << 1;
   cdb.field[9]  = cdb9;
   cdb.field[10] = (subchannel_selection & 7);
+  
+  {
+    unsigned int j = 0;
+    int i_ret = DRIVER_OP_SUCCESS;
+    const uint8_t i_cdb = mmc_get_cmd_len(cdb.field[0]);
+        
+    while (i_blocks > 0) {
+      const unsigned i_blocks2 = (i_blocks > MAX_CD_READ_BLOCKS) 
+        ? MAX_CD_READ_BLOCKS : i_blocks;
+      void *p_buf2 = ((char *)p_buf ) + (j * i_blocksize);
+      
+      CDIO_MMC_SET_READ_LBA (cdb.field, (i_lsn+j));
 
-  return run_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
-                      mmc_get_cmd_len(cdb.field[0]), &cdb, 
-                      SCSI_MMC_DATA_READ, 
-                      i_blocksize * i_blocks,
-                      p_buf);
+      i_ret = run_mmc_cmd (p_cdio->env, CD_READ_TIMEOUT_MS,
+                           i_cdb, &cdb, 
+                           SCSI_MMC_DATA_READ, 
+                           i_blocksize * i_blocks2,
+                           p_buf2);
+
+      if (i_ret) return i_ret;
+
+      i_blocks -= i_blocks2;
+      j += i_blocks2;
+    }
+    return i_ret;
+  }
 }
 
 /*! Read sectors using SCSI-MMC GPCMD_READ_CD.
