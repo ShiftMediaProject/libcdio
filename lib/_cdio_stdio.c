@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stdio.c,v 1.6 2004/02/07 18:53:02 rocky Exp $
+    $Id: _cdio_stdio.c,v 1.7 2004/02/21 18:29:59 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -35,7 +35,7 @@
 #include "_cdio_stream.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.6 2004/02/07 18:53:02 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.7 2004/02/21 18:29:59 rocky Exp $";
 
 #define CDIO_STDIO_BUFSIZE (128*1024)
 
@@ -190,7 +190,8 @@ cdio_stdio_new(const char pathname[])
   
   if (stat (pathname, &statbuf) == -1) 
     {
-      cdio_error ("could not stat() file `%s': %s", pathname, strerror (errno));
+      cdio_warn ("could not retrieve file info for `%s': %s", 
+                 pathname, strerror (errno));
       return NULL;
     }
 
