@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: _cdio_generic.c,v 1.2 2004/12/30 11:13:49 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.1 2004/12/18 17:29:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.2 2004/12/30 11:13:49 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -369,7 +369,7 @@ get_discmode_cd_generic (void *p_user_data )
 track_t
 get_first_track_num_generic(void *p_user_data) 
 {
-  generic_img_private_t *p_env = p_user_data;
+  const generic_img_private_t *p_env = p_user_data;
   
   if (!p_env->toc_init) 
     p_env->cdio->op.read_toc (p_user_data);
@@ -424,3 +424,11 @@ init_cdtext_generic (generic_img_private_t *p_env)
 				       );
 }
 
+
+/* 
+ * Local variables:
+ *  c-file-style: "gnu"
+ *  tab-width: 8
+ *  indent-tabs-mode: nil
+ * End:
+ */

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: cdio_private.h,v 1.2 2004/12/30 11:13:50 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -57,17 +57,17 @@ extern "C" {
       Eject media in CD drive. If successful, as a side effect we 
       also free obj. Return 0 if success and 1 for failure.
     */
-    int (*eject_media) (void *env);
+    int (*eject_media) (void *p_env);
     
     /*!
       Release and free resources associated with cd. 
     */
-    void (*free) (void *env);
+    void (*free) (void *p_env);
     
     /*!
       Return the value associated with the key "arg".
     */
-    const char * (*get_arg) (void *env, const char key[]);
+    const char * (*get_arg) (void *p_env, const char key[]);
     
     /*! 
       Get cdtext information for a CdIo object.
@@ -79,7 +79,7 @@ extern "C" {
       If i_track is 0 or CDIO_CDROM_LEADOUT_TRACK the track returned
       is the information assocated with the CD. 
     */
-    const cdtext_t * (*get_cdtext) (void *env, track_t i_track);
+    const cdtext_t * (*get_cdtext) (void *p_env, track_t i_track);
     
     /*!
       Return an array of device names. if CdIo is NULL (we haven't
@@ -105,7 +105,7 @@ extern "C" {
       
       See cd_types.h for a list of bitmasks for the drive type;
     */
-    void (*get_drive_cap) (const void *env,
+    void (*get_drive_cap) (const void *p_env,
 			   cdio_drive_read_cap_t  *p_read_cap,
 			   cdio_drive_write_cap_t *p_write_cap,
 			   cdio_drive_misc_cap_t  *p_misc_cap);
@@ -126,27 +126,27 @@ extern "C" {
       Return the media catalog number MCN from the CD or NULL if
       there is none or we don't have the ability to get it.
     */
-    char * (*get_mcn) (const void *env);
+    char * (*get_mcn) (const void *p_env);
 
     /*! 
       Return the number of tracks in the current medium.
       CDIO_INVALID_TRACK is returned on error.
     */
-    track_t (*get_num_tracks) (void *env);
+    track_t (*get_num_tracks) (void *p_env);
     
     /*!  
       Return the starting LBA for track number
-      track_num in obj.  Tracks numbers start at 1.
+      i_track in p_env.  Tracks numbers start at 1.
       The "leadout" track is specified either by
       using track_num LEADOUT_TRACK or the total tracks+1.
       CDIO_INVALID_LBA is returned on error.
     */
-    lba_t (*get_track_lba) (void *env, track_t track_num);
+    lba_t (*get_track_lba) (void *p_env, track_t i_track);
     
     /*!  
       Get format of track. 
     */
-    track_format_t (*get_track_format) (void *env, track_t track_num);
+    track_format_t (*get_track_format) (void *p_env, track_t i_track);
     
     /*!
       Return true if we have XA data (green, mode2 form1) or
@@ -156,52 +156,52 @@ extern "C" {
       
       FIXME: there's gotta be a better design for this and get_track_format?
     */
-    bool (*get_track_green) (void *env, track_t track_num);
+    bool (*get_track_green) (void *p_env, track_t i_track);
     
     /*!  
       Return the starting MSF (minutes/secs/frames) for track number
-      track_num in obj.  Tracks numbers start at 1.
+      i_track in p_env.  Tracks numbers start at 1.
       The "leadout" track is specified either by
-      using track_num LEADOUT_TRACK or the total tracks+1.
+      using i_track LEADOUT_TRACK or the total tracks+1.
       False is returned on error.
     */
-    bool (*get_track_msf) (void *env, track_t track_num, msf_t *msf);
+    bool (*get_track_msf) (void *p_env, track_t i_track, msf_t *p_msf);
     
     /*!
       lseek - reposition read/write file offset
       Returns (off_t) -1 on error. 
       Similar to libc's lseek()
     */
-    off_t (*lseek) (void *env, off_t offset, int whence);
+    off_t (*lseek) (void *p_env, off_t offset, int whence);
     
     /*!
       Reads into buf the next size bytes.
       Returns -1 on error. 
       Similar to libc's read()
     */
-    ssize_t (*read) (void *env, void *buf, size_t size);
+    ssize_t (*read) (void *p_env, void *p_buf, size_t size);
     
     /*!
       Reads a single mode2 sector from cd device into buf starting
       from lsn. Returns 0 if no error. 
     */
-    int (*read_audio_sectors) (void *env, void *buf, lsn_t lsn,
-			       unsigned int nblocks);
+    int (*read_audio_sectors) (void *p_env, void *p_buf, lsn_t lsn,
+			       unsigned int i_blocks);
     
     /*!
       Reads a single mode2 sector from cd device into buf starting
       from lsn. Returns 0 if no error. 
     */
-    int (*read_mode2_sector) (void *env, void *buf, lsn_t lsn, 
-			      bool mode2_form2);
+    int (*read_mode2_sector) (void *p_env, void *p_buf, lsn_t lsn, 
+			      bool b_mode2_form2);
     
     /*!
-      Reads nblocks of mode2 sectors from cd device into data starting
+      Reads i_blocks of mode2 sectors from cd device into data starting
       from lsn.
       Returns 0 if no error. 
     */
     int (*read_mode2_sectors) (void *p_env, void *p_buf, lsn_t lsn, 
-			       bool mode2_form2, unsigned int nblocks);
+			       bool b_mode2_form2, unsigned int i_blocks);
     
     /*!
       Reads a single mode1 sector from cd device into buf starting
@@ -211,12 +211,12 @@ extern "C" {
 			      bool mode1_form2);
     
     /*!
-      Reads nblocks of mode1 sectors from cd device into data starting
+      Reads i_blocks of mode1 sectors from cd device into data starting
       from lsn.
       Returns 0 if no error. 
     */
     int (*read_mode1_sectors) (void *p_env, void *p_buf, lsn_t lsn, 
-			       bool mode1_form2, unsigned int nblocks);
+			       bool mode1_form2, unsigned int i_blocks);
     
     bool (*read_toc) ( void *p_env ) ;
 
@@ -241,12 +241,12 @@ extern "C" {
     /*!
       Set the arg "key" with "value" in the source device.
     */
-    int (*set_arg) (void *env, const char key[], const char value[]);
+    int (*set_arg) (void *p_env, const char key[], const char value[]);
     
     /*!
       Return the size of the CD in logical block address (LBA) units.
     */
-    uint32_t (*stat_size) (void *env);
+    uint32_t (*stat_size) (void *p_env);
 
   } cdio_funcs;
 
@@ -255,7 +255,7 @@ extern "C" {
   struct _CdIo {
     driver_id_t driver_id; /**< Particular driver opened. */
     cdio_funcs op;         /**< driver-specific routines handling
-			      implementation*/
+			        implementation*/
     void *env;             /**< environment. Passed to routine above. */
   };
 

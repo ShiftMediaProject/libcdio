@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: generic.h,v 1.2 2004/12/30 11:13:50 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -66,8 +66,13 @@ extern "C" {
     iso9660_svd_t svd;      
     CdIo *cdio;             /**< a way to call general cdio routines. */
     cdtext_t  cdtext;       /**< CD-Text for disc. */
-    cdtext_t  cdtext_track[CDIO_CD_MAX_TRACKS+1]; /*CD-TEXT for each track*/
-
+    cdtext_t  cdtext_track[CDIO_CD_MAX_TRACKS+1]; /**< CD-TEXT for each track*/
+    uint8_t   flags[CDIO_CD_MAX_TRACKS+1]; /**< track flags: 
+					        bit 4: # channels 2 or 4
+					        bit 3: audio? 
+						bit 2: copy protection
+						bit 1: premphasis
+					    */  
   } generic_img_private_t;
 
   /*!

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.68 2004/12/18 17:29:32 rocky Exp $
+    $Id: cdio.h,v 1.69 2004/12/30 11:13:49 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -1022,6 +1022,18 @@ extern "C" {
     could have a CD disk image. 
   */
   bool cdio_is_device(const char *source_name, driver_id_t driver_id);
+  
+  /*! Return number of channels in track: 2 or 4 or -1 for error.
+    Not meaningful if track is not an audio track.
+  */
+  int cdio_track_channels(const CdIo *p_cdio, track_t i_track);
+  
+  /*! Return 1 if track is copy protected, 0 if not, or -1 for error.
+      Is this meaningful if not an audio track?
+   */
+  int cdio_track_copy_permit(const CdIo *p_cdio, track_t i_track);
+  
+  int cdio_track_preemphasis(const CdIo *p_cdio, track_t i_track);
   
 #ifdef __cplusplus
 }

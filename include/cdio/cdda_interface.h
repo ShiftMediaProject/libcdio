@@ -1,5 +1,5 @@
 /*
-  $Id: cdda_interface.h,v 1.2 2004/12/19 01:43:38 rocky Exp $
+  $Id: cdda_interface.h,v 1.3 2004/12/30 11:13:49 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -44,7 +44,10 @@ typedef struct TOC {	/* structure of table of contents */
   unsigned char bFlags;
   unsigned char bTrack;
   int32_t       dwStartSector;
-} TOC;
+} TOC_t;
+
+/** For compatibility. TOC is depricated, use TOC_t instead. */
+#define TOC TOC_t
 
 /** interface types */
 #define GENERIC_SCSI	0
@@ -75,7 +78,7 @@ struct cdrom_drive_s {
 
   int cd_extra;
   int tracks;
-  TOC disc_toc[MAXTRK];
+  TOC_t disc_toc[MAXTRK];
   long audio_first_sector;
   long audio_last_sector;
 
@@ -159,17 +162,17 @@ extern long cdda_disc_lastsector(cdrom_drive_t *d);
 /** transport errors: */
 
 #define TR_OK            0
-#define TR_EWRITE        1  /* Error writing packet command (transport) */
-#define TR_EREAD         2  /* Error reading packet data (transport) */
-#define TR_UNDERRUN      3  /* Read underrun */
-#define TR_OVERRUN       4  /* Read overrun */
-#define TR_ILLEGAL       5  /* Illegal/rejected request */
-#define TR_MEDIUM        6  /* Medium error */
-#define TR_BUSY          7  /* Device busy */
-#define TR_NOTREADY      8  /* Device not ready */
-#define TR_FAULT         9  /* Devive failure */
-#define TR_UNKNOWN      10  /* Unspecified error */
-#define TR_STREAMING    11  /* loss of streaming */
+#define TR_EWRITE        1  /**< Error writing packet command (transport) */
+#define TR_EREAD         2  /**< Error reading packet data (transport) */
+#define TR_UNDERRUN      3  /**< Read underrun */
+#define TR_OVERRUN       4  /**< Read overrun */
+#define TR_ILLEGAL       5  /**< Illegal/rejected request */
+#define TR_MEDIUM        6  /**< Medium error */
+#define TR_BUSY          7  /**< Device busy */
+#define TR_NOTREADY      8  /**< Device not ready */
+#define TR_FAULT         9  /**< Device failure */
+#define TR_UNKNOWN      10  /**< Unspecified error */
+#define TR_STREAMING    11  /**< loss of streaming */
 
 #ifdef NEED_STRERROR_TR
 const char *strerror_tr[]={
