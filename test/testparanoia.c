@@ -119,9 +119,10 @@ main(int argc, const char *argv[])
 	      i++, i_lsn++ ) {
 	  /* read a sector */
 	  int16_t *p_readbuf = paranoia_read(p, callback);
-	  memcpy(audio_buf[i], p_readbuf, CDIO_CD_FRAMESIZE_RAW);
 	  char *psz_err=cdda_errors(d);
 	  char *psz_mes=cdda_messages(d);
+
+	  memcpy(audio_buf[i], p_readbuf, CDIO_CD_FRAMESIZE_RAW);
 	  
 	  if (psz_mes || psz_err)
 	    printf("%s%s\n", psz_mes ? psz_mes: "", psz_err ? psz_err: "");
