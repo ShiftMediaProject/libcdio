@@ -1,5 +1,5 @@
 /*
-    $Id: ds.h,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: ds.h,v 1.2 2003/04/03 12:16:27 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -21,7 +21,7 @@
 #ifndef __CDIO_DS_H__
 #define __CDIO_DS_H__
 
-#include "cdio_types.h"
+#include "types.h"
 
 /* opaque... */
 typedef struct _CdioList CdioList;

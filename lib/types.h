@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_types.h,v 1.2 2003/03/29 17:32:00 rocky Exp $
+    $Id: types.h,v 1.1 2003/04/03 12:16:27 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>

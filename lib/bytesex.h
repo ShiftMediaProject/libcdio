@@ -1,5 +1,5 @@
 /*
-    $Id: bytesex.h,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: bytesex.h,v 1.2 2003/04/03 12:16:27 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -21,7 +21,7 @@
 #ifndef __CDIO_BYTESEX_H__
 #define __CDIO_BYTESEX_H__
 
-#include "cdio_types.h"
+#include "types.h"
 #include "logging.h"
 #include "bytesex_asm.h"
 

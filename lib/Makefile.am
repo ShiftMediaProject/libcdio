@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.3 2003/03/29 17:32:00 rocky Exp $
+#   $Id: Makefile.am,v 1.4 2003/04/03 12:16:27 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,7 +23,7 @@
 noinst_HEADERS = cdio_assert.h bytesex.h bytesex_asm.h \
 	cdio_private.h ds.h 
 
-include_HEADERS = cdio.h logging.h sector.h cdio_types.h util.h
+include_HEADERS = cdio.h logging.h sector.h types.h util.h
 
 libcdio_sources = \
 	_cdio_bincue.c \
@@ -43,7 +43,7 @@ libcdio_sources = \
 	cdio.h \
 	ds.c \
 	ds.h \
-	cdio_types.h \
+	types.h \
 	logging.c \
 	logging.h \
 	sector.c \

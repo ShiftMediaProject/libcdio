@@ -1,5 +1,5 @@
 /*
-    $Id: logging.h,v 1.1 2003/03/24 19:01:09 rocky Exp $
+    $Id: logging.h,v 1.2 2003/04/03 12:16:27 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -21,7 +21,7 @@
 #ifndef __LOGGING_H__
 #define __LOGGING_H__
 
-#include "cdio_types.h"
+#include "types.h"
 
 typedef enum {
   CDIO_LOG_DEBUG = 1,

@@ -1,5 +1,5 @@
 /*
-    $Id: sector.h,v 1.2 2003/03/29 17:32:00 rocky Exp $
+    $Id: sector.h,v 1.3 2003/04/03 12:16:27 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -25,7 +25,7 @@
 #ifndef _CDIO_SECTOR_H_
 #define _CDIO_SECTOR_H_
 
-#include "cdio_types.h"
+#include "types.h"
 
 #define CDIO_PREGAP_SECTORS 150
 #define CDIO_POSTGAP_SECTORS 150

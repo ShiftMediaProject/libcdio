@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.h,v 1.4 2003/03/30 13:01:22 rocky Exp $
+    $Id: cdio.h,v 1.5 2003/04/03 12:16:27 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -32,7 +32,7 @@
 #include <unistd.h>
 #endif
 
-#include "cdio_types.h"
+#include "types.h"
 #include "sector.h"
 
 /* Flags specifying the category of device to open or is opened. */
