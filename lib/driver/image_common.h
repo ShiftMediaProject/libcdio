@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.7 2005/02/06 11:13:37 rocky Exp $
+    $Id: image_common.h,v 1.8 2005/02/06 11:32:22 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -106,7 +106,7 @@ track_t _get_first_track_num_image(void *p_user_data);
   return codes are the same as driver_return_code_t
   We always return DRIVER_OP_UNSUPPORTED.
  */
-int get_media_changed_image(void *p_user_data);
+int get_media_changed_image(const void *p_user_data);
 
 /*!
   Return the media catalog number (MCN) from the CD or NULL if there

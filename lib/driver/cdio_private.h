@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.13 2005/02/06 11:13:37 rocky Exp $
+    $Id: cdio_private.h,v 1.14 2005/02/06 11:32:22 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -150,7 +150,7 @@ extern "C" {
       @return 1 if media has changed since last call, 0 if not. Error
       return codes are the same as driver_return_code_t
     */
-    int (*get_media_changed) (void *p_env);
+    int (*get_media_changed) (const void *p_env);
 
     /*!  
       Return the media catalog number MCN from the CD or NULL if

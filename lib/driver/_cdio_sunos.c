@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.19 2005/02/06 11:13:37 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.20 2005/02/06 11:32:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.19 2005/02/06 11:13:37 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.20 2005/02/06 11:32:22 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -145,10 +145,10 @@ init_solaris (_img_private_t *p_env)
   p_buf	        Buffer for data, both sending and receiving
  */
 static driver_return_code_t
-run_scsi_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
-		      unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		      mmc_direction_t e_direction, 
-		      unsigned int i_buf, /*in/out*/ void *p_buf )
+run_mmc_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
+		     unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		     scsi_mmc_direction_t e_direction, 
+		     unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   struct uscsi_cmd cgc;
@@ -855,6 +855,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.get_drive_cap          = get_drive_cap_mmc;
   _funcs.get_first_track_num    = get_first_track_num_generic;
   _funcs.get_hwinfo             = NULL;
+  _funcs.get_media_changed      = get_media_changed_mmc,
   _funcs.get_mcn                = get_mcn_mmc,
   _funcs.get_num_tracks         = get_num_tracks_generic;
   _funcs.get_track_channels     = get_track_channels_generic,

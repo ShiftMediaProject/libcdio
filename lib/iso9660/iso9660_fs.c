@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.9 2005/02/05 18:58:36 rocky Exp $
+    $Id: iso9660_fs.c,v 1.10 2005/02/06 11:32:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -58,7 +58,7 @@ typedef enum  {
 } bool_3way_t;
   
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.9 2005/02/05 18:58:36 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.10 2005/02/06 11:32:22 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -1220,10 +1220,11 @@ iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[])
 
   if (!p_cdio)   return NULL;
   if (!psz_path) return NULL;
-  if (!p_root)   return NULL;
 
   b_mode2 = cdio_get_track_green(p_cdio, 1);
   p_root = _fs_stat_root (p_cdio);
+
+  if (!p_root)   return NULL;
 
   switch(cdio_get_discmode(p_cdio)) {
   case CDIO_DISC_MODE_CD_XA: 
