@@ -1,7 +1,24 @@
-AC_REVISION([$Id: configure.ac,v 1.17 2003/04/22 12:40:42 rocky Exp $])dnl
+dnl Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+dnl
+dnl This program is free software; you can redistribute it and/or modify
+dnl it under the terms of the GNU General Public License as published by
+dnl the Free Software Foundation; either version 2, or (at your option)
+dnl any later version.
+dnl
+dnl This program is distributed in the hope that it will be useful,
+dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl GNU General Public License for more details.
+dnl
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program; if not, write to the Free Software
+dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+dnl 02111-1307, USA.
+
+AC_REVISION([$Id: configure.ac,v 1.18 2003/04/25 21:26:47 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(libcdio, 0.4)
+AM_INIT_AUTOMAKE(libcdio, 0.5)
      
 AM_SANITY_CHECK
 
@@ -216,6 +233,7 @@ AC_CONFIG_COMMANDS([checks],
 AC_OUTPUT([ \
        Makefile \
        libcdio.pc \
+       libcdio.spec \
        include/Makefile \
        include/cdio/Makefile \
        include/cdio/version.h \
