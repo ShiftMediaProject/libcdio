@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.55 2004/06/06 11:44:51 rocky Exp $
+    $Id: _cdio_linux.c,v 1.56 2004/06/25 21:10:43 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.55 2004/06/06 11:44:51 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.56 2004/06/25 21:10:43 rocky Exp $";
 
 #include <string.h>
 
@@ -397,7 +397,7 @@ _read_mode1_sector_linux (void *env, void *data, lsn_t lsn,
   switch (_obj->access_mode)
     {
     case _AM_NONE:
-      cdio_error ("no way to read mode1");
+      cdio_warn ("no way to read mode1");
       return 1;
       break;
       
@@ -492,7 +492,7 @@ _read_mode2_sector_linux (void *user_data, void *data, lsn_t lsn,
   switch (env->access_mode)
     {
     case _AM_NONE:
-      cdio_error ("no way to read mode2");
+      cdio_warn ("no way to read mode2");
       return 1;
       break;
       
@@ -627,7 +627,7 @@ _cdio_read_toc (_img_private_t *env)
 
   /* read TOC header */
   if ( ioctl(env->gen.fd, CDROMREADTOCHDR, &env->tochdr) == -1 ) {
-    cdio_error("%s: %s\n", 
+    cdio_warn("%s: %s\n", 
             "error in ioctl CDROMREADTOCHDR", strerror(errno));
     return false;
   }
@@ -638,7 +638,7 @@ _cdio_read_toc (_img_private_t *env)
     env->tocent[i-FIRST_TRACK_NUM].cdte_format = CDROM_MSF;
     if ( ioctl(env->gen.fd, CDROMREADTOCENTRY, 
 	       &env->tocent[i-FIRST_TRACK_NUM]) == -1 ) {
-      cdio_error("%s %d: %s\n",
+      cdio_warn("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
               i, strerror(errno));
       return false;
@@ -658,7 +658,7 @@ _cdio_read_toc (_img_private_t *env)
 
   if (ioctl(env->gen.fd, CDROMREADTOCENTRY, 
 	    &env->tocent[TOTAL_TRACKS]) == -1 ) {
-    cdio_error("%s: %s\n", 
+    cdio_warn("%s: %s\n", 
 	     "error in ioctl CDROMREADTOCENTRY for lead-out",
             strerror(errno));
     return false;
@@ -748,7 +748,7 @@ _eject_media_linux (void *user_data) {
       switch(status) {
       case CDS_TRAY_OPEN:
 	if((ret = ioctl(fd, CDROMCLOSETRAY)) != 0) {
-	  cdio_error ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
+	  cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
 	  ret = 1;
 	}
 	break;
@@ -758,17 +758,17 @@ _eject_media_linux (void *user_data) {
 	  /* Try ejecting the MMC way... */
 	  ret = _eject_media_mmc(fd);
 	  if (0 != ret) {
-	    cdio_error("ioctl CDROMEJECT failed: %s\n", strerror(eject_error));
+	    cdio_warn("ioctl CDROMEJECT failed: %s\n", strerror(eject_error));
 	    ret = 1;
 	  }
 	}
 	break;
       default:
-	cdio_error ("Unknown CD-ROM (%d)\n", status);
+	cdio_warn ("Unknown CD-ROM (%d)\n", status);
 	ret = 1;
       }
     } else {
-      cdio_error ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
+      cdio_warn ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
       ret=1;
     }
     close(fd);

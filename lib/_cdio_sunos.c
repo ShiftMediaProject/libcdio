@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.39 2004/06/13 20:38:58 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.40 2004/06/25 21:10:44 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.39 2004/06/13 20:38:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.40 2004/06/25 21:10:44 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -371,7 +371,7 @@ _cdio_read_toc (_img_private_t *env)
 
   /* read TOC header */
   if ( ioctl(env->gen.fd, CDROMREADTOCHDR, &env->tochdr) == -1 ) {
-    cdio_error("%s: %s\n", 
+    cdio_warn("%s: %s\n", 
             "error in ioctl CDROMREADTOCHDR", strerror(errno));
     return false;
   }
@@ -381,7 +381,7 @@ _cdio_read_toc (_img_private_t *env)
     env->tocent[i-1].cdte_track = i;
     env->tocent[i-1].cdte_format = CDROM_MSF;
     if ( ioctl(env->gen.fd, CDROMREADTOCENTRY, &env->tocent[i-1]) == -1 ) {
-      cdio_error("%s %d: %s\n",
+      cdio_warn("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
               i, strerror(errno));
       return false;
@@ -394,7 +394,7 @@ _cdio_read_toc (_img_private_t *env)
 
   if (ioctl(env->gen.fd, CDROMREADTOCENTRY, 
 	    &env->tocent[env->tochdr.cdth_trk1]) == -1 ) {
-    cdio_error("%s: %s\n", 
+    cdio_warn("%s: %s\n", 
 	     "error in ioctl CDROMREADTOCENTRY for lead-out",
             strerror(errno));
     return false;
@@ -419,7 +419,7 @@ _cdio_eject_media (void *user_data) {
   if (env->gen.fd > -1) {
     if ((ret = ioctl(env->gen.fd, CDROMEJECT)) != 0) {
       cdio_generic_free((void *) env);
-      cdio_error ("CDROMEJECT failed: %s\n", strerror(errno));
+      cdio_warn ("CDROMEJECT failed: %s\n", strerror(errno));
       return 1;
     } else {
       return 0;
@@ -436,7 +436,7 @@ _cdio_malloc_and_zero(size_t size) {
   if( !size ) size++;
     
   if((ptr = malloc(size)) == NULL) {
-    cdio_error("malloc() failed: %s", strerror(errno));
+    cdio_warn("malloc() failed: %s", strerror(errno));
     return NULL;
   }
 

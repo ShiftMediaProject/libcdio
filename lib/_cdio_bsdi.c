@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.26 2004/06/03 12:37:54 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.27 2004/06/25 21:10:43 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.26 2004/06/03 12:37:54 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.27 2004/06/25 21:10:43 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -122,7 +122,7 @@ static bool
 _cdio_init (_img_private_t *env)
 {
   if (env->gen.init) {
-    cdio_error ("init called more than once");
+    cdio_warn ("init called more than once");
     return false;
   }
   
@@ -130,7 +130,7 @@ _cdio_init (_img_private_t *env)
 
   if (env->gen.fd < 0)
     {
-      cdio_error ("open (%s): %s", env->source_name, strerror (errno));
+      cdio_warn ("open (%s): %s", env->source_name, strerror (errno));
       return false;
     }
 
@@ -173,7 +173,7 @@ _read_audio_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
  
   switch (env->access_mode) {
     case _AM_NONE:
-      cdio_error ("no way to read audio");
+      cdio_warn ("no way to read audio");
       return 1;
       break;
       
@@ -277,7 +277,7 @@ _read_mode2_sector_bsdi (void *user_data, void *data, lsn_t lsn,
   switch (env->access_mode)
     {
     case _AM_NONE:
-      cdio_error ("no way to read mode2");
+      cdio_warn ("no way to read mode2");
       return 1;
       break;
       
@@ -369,7 +369,7 @@ _set_arg_bsdi (void *user_data, const char key[], const char value[])
       if (!strcmp(value, "IOCTL"))
 	env->access_mode = _AM_IOCTL;
       else
-	cdio_error ("unknown access type: %s. ignored.", value);
+	cdio_warn ("unknown access type: %s. ignored.", value);
     }
   else 
     return -1;
@@ -388,7 +388,7 @@ _cdio_read_toc (_img_private_t *env)
 
   /* read TOC header */
   if ( ioctl(env->gen.fd, CDROMREADTOCHDR, &env->tochdr) == -1 ) {
-    cdio_error("%s: %s\n", 
+    cdio_warn("%s: %s\n", 
             "error in ioctl CDROMREADTOCHDR", strerror(errno));
     return false;
   }
@@ -398,7 +398,7 @@ _cdio_read_toc (_img_private_t *env)
     env->tocent[i-1].cdte_track = i;
     env->tocent[i-1].cdte_format = CDROM_MSF;
     if ( ioctl(env->gen.fd, CDROMREADTOCENTRY, &env->tocent[i-1]) == -1 ) {
-      cdio_error("%s %d: %s\n",
+      cdio_warn("%s %d: %s\n",
               "error in ioctl CDROMREADTOCENTRY for track", 
               i, strerror(errno));
       return false;
@@ -418,7 +418,7 @@ _cdio_read_toc (_img_private_t *env)
 
   if (ioctl(env->gen.fd, CDROMREADTOCENTRY, 
 	    &env->tocent[TOTAL_TRACKS]) == -1 ) {
-    cdio_error("%s: %s\n", 
+    cdio_warn("%s: %s\n", 
 	     "error in ioctl CDROMREADTOCENTRY for lead-out",
             strerror(errno));
     return false;
@@ -453,18 +453,18 @@ _eject_media_bsdi (void *user_data) {
       switch(status) {
       case CDS_TRAY_OPEN:
 	if((ret = ioctl(fd, CDROMCLOSETRAY, 0)) != 0) {
-	  cdio_error ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
+	  cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
 	}
 	break;
       case CDS_DISC_OK:
 	if((ret = ioctl(fd, CDROMEJECT, 0)) != 0) {
-	  cdio_error("ioctl CDROMEJECT failed: %s\n", strerror(errno));  
+	  cdio_warn("ioctl CDROMEJECT failed: %s\n", strerror(errno));  
 	}
 	break;
       }
       ret=0;
     } else {
-      cdio_error ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
+      cdio_warn ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
       ret=1;
     }
     close(fd);

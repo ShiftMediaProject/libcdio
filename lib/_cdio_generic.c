@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.17 2004/06/19 19:15:15 rocky Exp $
+    $Id: _cdio_generic.c,v 1.18 2004/06/25 21:10:43 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.17 2004/06/19 19:15:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.18 2004/06/25 21:10:43 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,7 +86,7 @@ cdio_generic_init (void *user_data)
 {
   generic_img_private_t *_env = user_data;
   if (_env->init) {
-    cdio_error ("init called more than once");
+    cdio_warn ("init called more than once");
     return false;
   }
   

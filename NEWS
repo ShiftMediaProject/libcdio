@@ -5,10 +5,11 @@
 - Redo types of lsn and lba to allow negative values. Should model MMC3
   specs. Add max/min values for lsn.
 - More complete MMC command set
-- FreeBSD drive reading works better (thanks to Heiner)
+- FreeBSD driver ioctl and CAM reading works better (thanks to Heiner)
 - OSX drive reading works better (thanks to Justin F. Hallett)
 - cd-read allows dumping bytes to stdout and hexdumps to a file
   via options --no-hexdump and --hexdump
+- fewer error exits in drivers. Instead, a failure code is returned.
 - better NRG reading (thanks to Michael Kukat via extractnrg.pl)
 - better tracking of allocated variables (cd-read, cd-info, FreeBSD)
 - iso9660: Add interface to read PVD and pick out some of the fields in that.
@@ -122,4 +123,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.46 2004/06/23 02:25:37 rocky Exp $
+$Id: NEWS,v 1.47 2004/06/25 21:10:36 rocky Exp $
