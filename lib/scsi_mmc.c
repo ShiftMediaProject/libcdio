@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.10 2004/07/26 03:58:25 rocky Exp $
+    $Id: scsi_mmc.c,v 1.11 2004/07/26 04:33:21 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -237,7 +237,7 @@ scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize)
 */
 discmode_t
 get_dvd_struct_physical_mmc ( void *p_env, 
-			      const scsi_mmc_run_cmd_fn_t *run_scsi_mmc_cmd, 
+			      const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
 			      cdio_dvd_struct_t *s)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
@@ -258,10 +258,10 @@ get_dvd_struct_physical_mmc ( void *p_env,
   cdb.field[7] = CDIO_DVD_STRUCT_PHYSICAL;
   cdb.field[9] = sizeof(buf) & 0xff;
   
-  i_status = (*run_scsi_mmc_cmd)(p_env, DEFAULT_TIMEOUT_MS, 
-				scsi_mmc_get_cmd_len(cdb.field[0]), 
-				&cdb, SCSI_MMC_DATA_READ, 
-				sizeof(buf), &buf);
+  i_status = run_scsi_mmc_cmd(p_env, DEFAULT_TIMEOUT_MS, 
+			      scsi_mmc_get_cmd_len(cdb.field[0]), 
+			      &cdb, SCSI_MMC_DATA_READ, 
+			      sizeof(buf), &buf);
   if (0 != i_status)
     return CDIO_DISC_MODE_ERROR;
   
@@ -299,7 +299,7 @@ scsi_mmc_get_dvd_struct_physical ( const CdIo *p_cdio, cdio_dvd_struct_t *s)
 {
   if ( ! p_cdio )  return -2;
   return get_dvd_struct_physical_mmc (p_cdio->env, 
-				      (&p_cdio->op.run_scsi_mmc_cmd), 
+				      p_cdio->op.run_scsi_mmc_cmd, 
 				      s);
 }
 

@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: scsi_mmc_private.h,v 1.3 2004/07/26 03:58:25 rocky Exp $
+    $Id: scsi_mmc_private.h,v 1.4 2004/07/26 04:33:21 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -37,7 +37,7 @@ int set_bsize_mmc ( const void *p_env,
 */
 discmode_t 
 get_dvd_struct_physical_mmc ( void *p_env, 
-			      const scsi_mmc_run_cmd_fn_t *run_scsi_mmc_cmd, 
+			      const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
 			      cdio_dvd_struct_t *s );
 
 
