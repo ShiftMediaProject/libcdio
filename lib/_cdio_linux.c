@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.19 2003/09/18 13:31:07 rocky Exp $
+    $Id: _cdio_linux.c,v 1.20 2003/09/19 04:37:31 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.19 2003/09/18 13:31:07 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.20 2003/09/19 04:37:31 rocky Exp $";
 
 #include <string.h>
 
@@ -236,7 +236,7 @@ _set_bsize (int fd, unsigned int bsize)
    Can read only up to 25 blocks.
 */
 static int
-_cdio_read_packet_raw_sector (int fd, void *buf, lba_t lba, int sector_type)
+_cdio_read_mmc_sector (int fd, void *buf, lba_t lba, int sector_type)
 {
   struct cdrom_generic_command cgc;
   const int nblocks = 1;
@@ -244,15 +244,8 @@ _cdio_read_packet_raw_sector (int fd, void *buf, lba_t lba, int sector_type)
   memset (&cgc, 0, sizeof (struct cdrom_generic_command));
 
   cgc.cmd[0] = CDIO_MMC_GPCMD_READ_CD;
-  cgc.cmd[1] = sector_type << 2; /* Any type of sectors returned */
-  /*sector_type = 0;*/	/* all types */
-  /*sector_type = 1;*/	/* CD-DA */
-  /*sector_type = 2;*/	/* mode1 */
-  /*sector_type = 3;*/	/* mode2 */
-  /*sector_type = 4;*/	/* mode2/form1 */
-  /*sector_type = 5;*/	/* mode2/form2 */
-  
-  CDIO_MMC_SET_READ_LBA(cgc.cmd, lba);
+  CDIO_MMC_SET_READ_TYPE  (cgc.cmd, sector_type);
+  CDIO_MMC_SET_READ_LBA   (cgc.cmd, lba);
   CDIO_MMC_SET_READ_LENGTH(cgc.cmd, nblocks);
 
   cgc.cmd[9] = 0x78; /* All headers  */
@@ -276,7 +269,7 @@ _cdio_read_packet_raw_sector (int fd, void *buf, lba_t lba, int sector_type)
 static int
 _read_packet_audio_sector (int fd, void *buf, lsn_t lsn)
 {
-  return _cdio_read_packet_raw_sector( fd, buf, lsn, 1);
+  return _cdio_read_mmc_sector( fd, buf, lsn, CDIO_MMC_READ_TYPE_CDDA);
 }
 
 /* Packet driver to read mode2 sectors. 
@@ -460,7 +453,8 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
 
     case _AM_READ_CD:
     case _AM_READ_10:
-      if (_cdio_read_packet_raw_sector (_obj->gen.fd, buf, lsn, 0)) {
+      if (_cdio_read_mmc_sector (_obj->gen.fd, buf, lsn, 
+				 CDIO_MMC_READ_TYPE_ANY)) {
 	perror ("ioctl()");
 	if (_obj->access_mode == _AM_READ_CD) {
 	  cdio_info ("READ_CD failed; switching to READ_10 mode...");
