@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.12 2005/02/06 11:13:37 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.13 2005/02/06 11:39:32 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.12 2005/02/06 11:13:37 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.13 2005/02/06 11:39:32 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -81,7 +81,7 @@ typedef struct {
 /* Define the Cdrom Generic Command structure */
 typedef struct  cgc
 {
-  mmc_cdb_t cdb;
+  scsi_mmc_cdb_t cdb;
   u_char  *buf;
   int     buflen;
   int     rw;
@@ -95,8 +95,8 @@ typedef struct  cgc
 */
 static driver_return_code_t
 run_mmc_cmd_bsdi(void *p_user_data, unsigned int i_timeout_ms,
-		 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		 mmc_direction_t e_direction, 
+		 unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		 scsi_mmc_direction_t e_direction, 
 		 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
@@ -105,7 +105,7 @@ run_mmc_cmd_bsdi(void *p_user_data, unsigned int i_timeout_ms,
   struct  scsi_sense   *sp;
   
  again:
-  suc.suc_flags = MMC_DATA_READ == e_direction ? 
+  suc.suc_flags = SCSI_MMC_DATA_READ == e_direction ? 
     SUC_READ : SUC_WRITE;
   suc.suc_cdblen = i_cdb;
   memcpy(suc.suc_cdb, p_cdb, i_cdb);
@@ -400,7 +400,7 @@ _read_mode2_sectors_bsdi (void *user_data, void *data, lsn_t lsn,
 /*!
    Return the size of the CD in logical block address (LBA) units.
  */
-static uint32_t 
+static lsn_t 
 get_disc_last_lsn_bsdi (void *user_data)
 {
   _img_private_t *p_env = user_data;
@@ -770,6 +770,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .get_discmode       = get_discmode_generic,
     .get_first_track_num= get_first_track_num_generic,
     .get_hwinfo         = NULL,
+    .get_media_changed  = get_media_changed_mmc, 
     .get_mcn            = _get_mcn_bsdi, 
     .get_num_tracks     = get_num_tracks_generic,
     .get_track_format   = get_track_format_bsdi,
