@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.15 2005/03/01 10:53:15 rocky Exp $
+    $Id: mmc.h,v 1.16 2005/03/02 04:24:00 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -180,13 +180,33 @@ typedef enum {
 /*! Page codes for MODE SENSE and MODE SET. */
 #define CDIO_MMC_R_W_ERROR_PAGE		0x01
 #define CDIO_MMC_WRITE_PARMS_PAGE	0x05
-#define CDIO_MMC_AUDIO_CTL_PAGE		0x0e
 #define CDIO_MMC_CDR_PARMS_PAGE		0x0d
+#define CDIO_MMC_AUDIO_CTL_PAGE		0x0e
 #define CDIO_MMC_POWER_PAGE		0x1a
 #define CDIO_MMC_FAULT_FAIL_PAGE	0x1c
 #define CDIO_MMC_TO_PROTECT_PAGE	0x1d
 #define CDIO_MMC_CAPABILITIES_PAGE	0x2a
 #define CDIO_MMC_ALL_PAGES		0x3f
+
+PRAGMA_BEGIN_PACKED
+  struct mmc_audio_volume_entry_s 
+  {
+    uint8_t  selection; /* Only the lower 4 bits are used. */
+    uint8_t  volume;
+  } GNUC_PACKED;
+
+  typedef struct mmc_audio_volume_entry_s mmc_audio_volume_entry_t;
+  
+  /*! This struct is used by cdio_audio_get_volume and cdio_audio_set_volume */
+  struct mmc_audio_volume_s
+  {
+    mmc_audio_volume_entry_t port[4];
+  } GNUC_PACKED;
+
+  typedef struct mmc_audio_volume_s mmc_audio_volume_t;
+  
+PRAGMA_END_PACKED
+  
 
 /*! Return type codes for GET_CONFIGURATION. */
 #define CDIO_MMC_GET_CONF_ALL_FEATURES     0  /**< all features without regard
@@ -500,6 +520,13 @@ int mmc_get_media_changed(const CdIo_t *p_cdio);
   
 */
 char * mmc_get_mcn ( const CdIo_t *p_cdio );
+
+/** Get the output port volumes and port selections used on AUDIO PLAY
+    commands via a MMC MODE SENSE command using the CD Audio Control
+    Page.
+ */
+driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
+                                           mmc_audio_volume_t *p_volume);
 
 /*!
   Report if CD-ROM has a praticular kind of interface (ATAPI, SCSCI, ...)

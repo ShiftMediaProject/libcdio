@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: audio.h,v 1.2 2005/03/01 10:53:15 rocky Exp $
+    $Id: audio.h,v 1.3 2005/03/02 04:23:59 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -49,10 +49,7 @@ extern "C" {
   /*! This struct is used by cdio_audio_get_volume and cdio_audio_set_volume */
   typedef struct cdio_audio_volume_s
   {
-    uint8_t	channel0;
-    uint8_t	channel1;
-    uint8_t	channel2;
-    uint8_t	channel3;
+    uint8_t level[4];
   } cdio_audio_volume_t;
   
 

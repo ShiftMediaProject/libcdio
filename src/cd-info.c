@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.125 2005/03/01 11:29:52 rocky Exp $
+    $Id: cd-info.c,v 1.126 2005/03/02 04:24:00 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -949,7 +949,7 @@ main(int argc, const char *argv[])
 	CdIo_t *p_cdio = cdio_open(source_name, driver_id); 
 	cdio_hwinfo_t hwinfo;
 	printf("Drive %s\n", *d);
-	if (scsi_mmc_get_hwinfo(p_cdio, &hwinfo)) {
+	if (mmc_get_hwinfo(p_cdio, &hwinfo)) {
 	  printf("%-8s: %s\n%-8s: %s\n%-8s: %s\n",
 		 "Vendor"  , hwinfo.psz_vendor, 
 		 "Model"   , hwinfo.psz_model, 
@@ -1162,32 +1162,54 @@ main(int argc, const char *argv[])
       report( stdout, "audio status: "); fflush(stdout);
 	
       if (DRIVER_OP_SUCCESS == rc) {
+	bool b_volume   = false;
+	bool b_position = false;
 	
 	switch (subchannel.audio_status) {
 	case CDIO_MMC_READ_SUB_ST_INVALID:
 	  report( stdout, "invalid\n" );   break;
 	case CDIO_MMC_READ_SUB_ST_PLAY:
 	  b_playing_audio = true;
+	  b_position      = true;
+	  b_volume        = true;
 	  report( stdout, "playing" );     break;
 	case CDIO_MMC_READ_SUB_ST_PAUSED:
+	  b_position      = true;
+	  b_volume        = true;
 	  report( stdout, "paused" );      break;
 	case CDIO_MMC_READ_SUB_ST_COMPLETED:
 	  report( stdout, "completed\n");  break;
 	case CDIO_MMC_READ_SUB_ST_ERROR:
 	  report( stdout, "error\n" );     break;
 	case CDIO_MMC_READ_SUB_ST_NO_STATUS:
+	  b_volume        = true;
 	  report( stdout, "no status\n" ); break;
 	default:                     
 	  report( stdout, "Oops: unknown\n" );
 	}
-	if (subchannel.audio_status == CDIO_MMC_READ_SUB_ST_PLAY ||
-	    subchannel.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED) {
+
+	if (b_position)
 	  report( stdout, " at: %02d:%02d abs / %02d:%02d track %d\n",
 		  subchannel.abs_addr.msf.m,
 		  subchannel.abs_addr.msf.s,
 		  subchannel.rel_addr.msf.m,
 		  subchannel.rel_addr.msf.s,
 		  subchannel.track );
+	
+	if (b_volume) {
+	  cdio_audio_volume_t volume;
+
+	  if (DRIVER_OP_SUCCESS == cdio_audio_get_volume (p_cdio, &volume)) {
+	    uint8_t i=0;
+	    for (i=0; i<4; i++) {
+	      uint8_t i_level     = volume.level[i];
+	      report( stdout, 
+		      "volume level port %d: %3d (0..255) %3d (0..100)\n",
+		      i, i_level, (i_level*100+128) / 256 );
+	    }
+	    
+	  } else 
+	    report( stdout, " can't get volume levels\n" );
 	}
       } else if (DRIVER_OP_UNSUPPORTED == rc) {
 	report( stdout, "not implemented\n" );

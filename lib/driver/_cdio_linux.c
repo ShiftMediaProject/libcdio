@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.34 2005/03/01 11:00:49 rocky Exp $
+    $Id: _cdio_linux.c,v 1.35 2005/03/02 04:24:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.34 2005/03/01 11:00:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.35 2005/03/02 04:24:00 rocky Exp $";
 
 #include <string.h>
 
@@ -195,6 +195,20 @@ check_mounts_linux(const char *mtab)
 }
 
 /*!
+  Get the volume of an audio CD.
+
+  @param p_cdio the CD object to be acted upon.
+*/
+static driver_return_code_t
+audio_get_volume_linux (void *p_user_data,
+                        /*out*/ cdio_audio_volume_t *p_volume)
+{
+
+  const _img_private_t *p_env = p_user_data;
+  return ioctl(p_env->gen.fd, CDROMVOLREAD, p_volume);
+}
+
+/*!
   Pause playing CD through analog output
   
   @param p_cdio the CD object to be acted upon.
@@ -265,7 +279,7 @@ audio_resume_linux (void *p_user_data)
 }
 
 /*!
-  Resume playing an audio CD.
+  Set the volume of an audio CD.
   
   @param p_cdio the CD object to be acted upon.
   
@@ -1268,7 +1282,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   char *psz_source;
 
   cdio_funcs_t _funcs = {
-    //  .audio_get_volume      = audio_get_volume_linux,
+    .audio_get_volume      = audio_get_volume_linux,
     .audio_pause           = audio_pause_linux,
     .audio_play_msf        = audio_play_msf_linux,
     .audio_play_track_index= audio_play_track_index_linux,

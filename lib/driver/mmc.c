@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.18 2005/03/01 10:53:15 rocky Exp $
+    $Id: mmc.c,v 1.19 2005/03/02 04:24:00 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -152,6 +152,30 @@ set_speed_mmc (void *p_user_data, int i_speed)
   generic_img_private_t *p_env = p_user_data;
   if (!p_env) return DRIVER_OP_UNINIT;
   return mmc_set_speed( p_env->cdio, i_speed );
+}
+
+/** Get the output port volumes and port selections used on AUDIO PLAY
+    commands via a MMC MODE SENSE command using the CD Audio Control
+    Page.
+ */
+driver_return_code_t
+mmc_audio_get_volume( CdIo_t *p_cdio, /*out*/ mmc_audio_volume_t *p_volume )
+{
+  uint8_t buf[16];
+  int i_rc = mmc_mode_sense(p_cdio, buf, sizeof(buf), CDIO_MMC_AUDIO_CTL_PAGE);
+  
+  if ( DRIVER_OP_SUCCESS == i_rc ) {
+    p_volume->port[0].selection = 0xF & buf[8];
+    p_volume->port[0].volume    = buf[9];
+    p_volume->port[1].selection = 0xF & buf[10];
+    p_volume->port[1].volume    = buf[11];
+    p_volume->port[2].selection = 0xF & buf[12];
+    p_volume->port[2].volume    = buf[13];
+    p_volume->port[3].selection = 0xF & buf[14];
+    p_volume->port[3].volume    = buf[15];
+    return DRIVER_OP_SUCCESS;
+  }
+  return i_rc;
 }
 
 /*!
