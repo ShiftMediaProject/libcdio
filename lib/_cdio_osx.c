@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.20 2004/05/01 01:05:26 rocky Exp $
+    $Id: _cdio_osx.c,v 1.21 2004/05/07 03:04:01 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.20 2004/05/01 01:05:26 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.21 2004/05/07 03:04:01 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -902,7 +902,7 @@ cdio_open_osx (const char *orig_source_name)
   _data->gen.fd         = -1;
 
   if (NULL == orig_source_name) {
-    source_name=cdio_get_default_device_linux();
+    source_name=cdio_get_default_device_osx();
     if (NULL == source_name) return NULL;
     _set_arg_osx(_data, "source", source_name);
     free(source_name);
