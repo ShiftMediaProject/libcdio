@@ -1,6 +1,6 @@
 /*  Common SCSI Multimedia Command (MMC) routines.
 
-    $Id: scsi_mmc.c,v 1.12 2004/07/27 01:06:02 rocky Exp $
+    $Id: scsi_mmc.c,v 1.13 2004/07/27 02:45:16 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -42,10 +42,10 @@
   capabilities.
  */
 void
-scsi_mmc_get_drive_cap(const uint8_t *p,
-		       /*out*/ cdio_drive_read_cap_t  *p_read_cap,
-		       /*out*/ cdio_drive_write_cap_t *p_write_cap,
-		       /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
+scsi_mmc_get_drive_cap_buf(const uint8_t *p,
+			   /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+			   /*out*/ cdio_drive_write_cap_t *p_write_cap,
+			   /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
   /* Reader */
   if (p[2] & 0x01) *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_R;
@@ -234,12 +234,102 @@ scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize)
     scsi_mmc_set_bsize_private (cdio->env, cdio->op.run_scsi_mmc_cmd, bsize);
 }
 
+/*!
+  Return the the kind of drive capabilities of device.
+ */
+void
+scsi_mmc_get_drive_cap_private (const void *p_env,
+				const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
+				/*out*/ cdio_drive_write_cap_t *p_write_cap,
+				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
+{
+  scsi_mmc_cdb_t cdb = {{0, }};
+  int i_status;
+
+  uint8_t buf[192] = { 0, };
+  
+  if ( ! p_env || ! run_scsi_mmc_cmd )
+    return;
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_10);
+  cdb.field[1] = 0x0;  
+  cdb.field[2] = CDIO_MMC_ALL_PAGES; 
+  cdb.field[7] = 0x01;
+  cdb.field[8] = 0x00;
+  
+  i_status = run_scsi_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
+			       scsi_mmc_get_cmd_len(cdb.field[0]), 
+			       &cdb, SCSI_MMC_DATA_READ, 
+			       sizeof(buf), &buf);
+  if (0 == i_status) {
+    uint8_t *p;
+    int lenData  = ((unsigned int)buf[0] << 8) + buf[1];
+    uint8_t *pMax = buf + 256;
+
+    *p_read_cap  = 0;
+    *p_write_cap = 0;
+    *p_misc_cap  = 0;
+
+    /* set to first sense mask, and then walk through the masks */
+    p = buf + 8;
+    while( (p < &(buf[2+lenData])) && (p < pMax) )       {
+      uint8_t which;
+      
+      which = p[0] & 0x3F;
+      switch( which )
+	{
+	case CDIO_MMC_AUDIO_CTL_PAGE:
+	case CDIO_MMC_R_W_ERROR_PAGE:
+	case CDIO_MMC_CDR_PARMS_PAGE:
+	  /* Don't handle these yet. */
+	  break;
+	case CDIO_MMC_CAPABILITIES_PAGE:
+	  scsi_mmc_get_drive_cap_buf(p, p_read_cap, p_write_cap, p_misc_cap);
+	  break;
+	default: ;
+	}
+      p += (p[1] + 2);
+    }
+  } else {
+    cdio_info("%s: %s\n", "error in MODE_SELECT", strerror(errno));
+    *p_read_cap  = CDIO_DRIVE_CAP_ERROR;
+    *p_write_cap = CDIO_DRIVE_CAP_ERROR;
+    *p_misc_cap  = CDIO_DRIVE_CAP_ERROR;
+  }
+  return;
+}
+
+void
+scsi_mmc_get_drive_cap (const CdIo *p_cdio,
+			/*out*/ cdio_drive_read_cap_t  *p_read_cap,
+			/*out*/ cdio_drive_write_cap_t *p_write_cap,
+			/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
+{
+  if ( ! p_cdio )  return;
+  scsi_mmc_get_drive_cap_private (p_cdio->env, 
+				  p_cdio->op.run_scsi_mmc_cmd, 
+				  p_read_cap, p_write_cap, p_misc_cap);
+}
+
+void
+scsi_mmc_get_drive_cap_generic (const void *p_user_data,
+				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
+				/*out*/ cdio_drive_write_cap_t *p_write_cap,
+				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
+{
+  const generic_img_private_t *p_env = p_user_data;
+  scsi_mmc_get_drive_cap( p_env->cdio,
+			  p_read_cap, p_write_cap, p_misc_cap );
+}
+
+
 /*! 
   Get the DVD type associated with cd object.
 */
 discmode_t
-scsi_mmc_get_dvd_struct_physical_private ( void *p_env, 
-			      const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+scsi_mmc_get_dvd_struct_physical_private ( void *p_env, const 
+					   scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
 					   cdio_dvd_struct_t *s)
 {
   scsi_mmc_cdb_t cdb = {{0, }};
@@ -347,6 +437,13 @@ scsi_mmc_get_mcn ( const CdIo *p_cdio )
   if ( ! p_cdio )  return NULL;
   return scsi_mmc_get_mcn_private (p_cdio->env, 
 				   p_cdio->op.run_scsi_mmc_cmd );
+}
+
+char *
+scsi_mmc_get_mcn_generic (const void *p_user_data)
+{
+  const generic_img_private_t *p_env = p_user_data;
+  return scsi_mmc_get_mcn( p_env->cdio );
 }
 
 /*

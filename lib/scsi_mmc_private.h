@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: scsi_mmc_private.h,v 1.5 2004/07/27 01:06:02 rocky Exp $
+    $Id: scsi_mmc_private.h,v 1.6 2004/07/27 02:45:16 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -47,15 +47,47 @@ scsi_mmc_set_bsize_private ( const void *p_env,
 			     const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
 			     unsigned int bsize);
 
-char *
-scsi_mmc_get_mcn_private ( void *p_env,
-			   const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd
-			   );
-bool
-scsi_mmc_init_cdtext_private ( void *user_data, const 
-			       scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
-			       set_cdtext_field_fn_t set_cdtext_field_fn
-			       );
+char *scsi_mmc_get_mcn_private ( void *p_env,
+				 const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd
+				 );
+
+char *scsi_mmc_get_mcn_generic (const void *p_user_data);
+
+bool scsi_mmc_init_cdtext_private ( void *user_data, const 
+				    scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd,
+				    set_cdtext_field_fn_t set_cdtext_field_fn
+				    );
+
+/*!
+  On input a MODE_SENSE command was issued and we have the results
+  in p. We interpret this and return a bit mask set according to the 
+  capabilities.
+ */
+void scsi_mmc_get_drive_cap_buf(const uint8_t *p,
+				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
+				/*out*/ cdio_drive_write_cap_t *p_write_cap,
+				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
+
+/*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+void
+scsi_mmc_get_drive_cap_private (const void *p_env,
+				const scsi_mmc_run_cmd_fn_t run_scsi_mmc_cmd, 
+				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
+				/*out*/ cdio_drive_write_cap_t *p_write_cap,
+				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
+void
+scsi_mmc_get_drive_cap_generic (const void *p_user_data,
+				/*out*/ cdio_drive_read_cap_t  *p_read_cap,
+				/*out*/ cdio_drive_write_cap_t *p_write_cap,
+				/*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
+
+
 
 
 

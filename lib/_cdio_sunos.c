@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.63 2004/07/27 01:36:37 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.64 2004/07/27 02:45:16 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.63 2004/07/27 01:36:37 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.64 2004/07/27 02:45:16 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -492,7 +492,7 @@ _init_cdtext_solaris (_img_private_t *p_env)
   or CD-TEXT information does not exist.
 */
 static const cdtext_t *
-_get_cdtext_solaris (void *p_user_data, track_t i_track)
+get_cdtext_solaris (void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -518,7 +518,7 @@ _get_cdtext_solaris (void *p_user_data, track_t i_track)
   also free obj.
  */
 static int 
-_eject_media_solaris (void *p_user_data) {
+eject_media_solaris (void *p_user_data) {
 
   _img_private_t *env = p_user_data;
   int ret;
@@ -557,7 +557,7 @@ _cdio_malloc_and_zero(size_t size) {
   Return the value associated with the key "arg".
 */
 static const char *
-_get_arg_solaris (void *p_user_data, const char key[])
+get_arg_solaris (void *p_user_data, const char key[])
 {
   _img_private_t *env = p_user_data;
 
@@ -699,95 +699,11 @@ get_discmode_solaris (void *p_user_data)
 }
 
 /*!
-  Return the the kind of drive capabilities of device.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
- */
-static void
-_get_drive_cap_solaris (const void *p_user_data,
-			/*out*/ cdio_drive_read_cap_t  *p_read_cap,
-			/*out*/ cdio_drive_write_cap_t *p_write_cap,
-			/*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
-{
-  const _img_private_t *p_env = p_user_data;
-  
-  scsi_mmc_cdb_t cdb = {{0, }};
-  int i_status;
-
-  uint8_t buf[192] = { 0, };
-  
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_10);
-  cdb.field[1] = 0x0;  
-  cdb.field[2] = CDIO_MMC_ALL_PAGES; 
-  cdb.field[7] = 0x01;
-  cdb.field[8] = 0x00;
-  
-  i_status = scsi_mmc_run_cmd_solaris (p_env, DEFAULT_TIMEOUT,
-				       scsi_mmc_get_cmd_len(cdb.field[0]), 
-				       &cdb, SCSI_MMC_DATA_READ, 
-				       sizeof(buf), &buf);
-  if (0 == i_status) {
-    uint8_t *p;
-    int lenData  = ((unsigned int)buf[0] << 8) + buf[1];
-    uint8_t *pMax = buf + 256;
-
-    *p_read_cap  = 0;
-    *p_write_cap = 0;
-    *p_misc_cap  = 0;
-
-    /* set to first sense mask, and then walk through the masks */
-    p = buf + 8;
-    while( (p < &(buf[2+lenData])) && (p < pMax) )       {
-      uint8_t which;
-      
-      which = p[0] & 0x3F;
-      switch( which )
-	{
-	case CDIO_MMC_AUDIO_CTL_PAGE:
-	case CDIO_MMC_R_W_ERROR_PAGE:
-	case CDIO_MMC_CDR_PARMS_PAGE:
-	  /* Don't handle these yet. */
-	  break;
-	case CDIO_MMC_CAPABILITIES_PAGE:
-	  scsi_mmc_get_drive_cap(p, p_read_cap, p_write_cap, p_misc_cap);
-	  break;
-	default: ;
-	}
-      p += (p[1] + 2);
-    }
-  } else {
-    cdio_info("%s: %s\n", 
-            "error in ioctl USCSICMD MODE_SELECT", strerror(errno));
-    *p_read_cap  = CDIO_DRIVE_CAP_ERROR;
-    *p_write_cap = CDIO_DRIVE_CAP_ERROR;
-    *p_misc_cap  = CDIO_DRIVE_CAP_ERROR;
-  }
-  return;
-}
-
-/*!
-  Return the the kind of drive capabilities of device.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
- */
-static char *
-_get_mcn_solaris (const void *p_user_data)
-{
-  const _img_private_t *p_env = p_user_data;
-  return scsi_mmc_get_mcn( p_env->gen.cdio );
-}
-
-
-/*!
   Return the number of of the first track. 
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_cdio_get_first_track_num(void *p_user_data) 
+get_first_track_num_solaris(void *p_user_data) 
 {
   _img_private_t *p_env = p_user_data;
   
@@ -965,16 +881,16 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   char *psz_source;
 
   cdio_funcs _funcs = {
-    .eject_media        = _eject_media_solaris,
+    .eject_media        = eject_media_solaris,
     .free               = cdio_generic_free,
-    .get_arg            = _get_arg_solaris,
-    .get_cdtext         = _get_cdtext_solaris,
+    .get_arg            = get_arg_solaris,
+    .get_cdtext         = get_cdtext_solaris,
     .get_default_device = cdio_get_default_device_solaris,
     .get_devices        = cdio_get_devices_solaris,
     .get_discmode       = get_discmode_solaris,
-    .get_drive_cap      = _get_drive_cap_solaris,
-    .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = _get_mcn_solaris,
+    .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
+    .get_first_track_num= get_first_track_num_solaris,
+    .get_mcn            = scsi_mmc_get_mcn_generic,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = get_track_format_solaris,
     .get_track_green    = _cdio_get_track_green,

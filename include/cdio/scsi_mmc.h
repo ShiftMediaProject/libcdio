@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.18 2004/07/27 01:06:01 rocky Exp $
+    $Id: scsi_mmc.h,v 1.19 2004/07/27 02:45:16 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -187,16 +187,6 @@ int scsi_mmc_run_cmd( const CdIo *cdio, int t_timeout,
 		      /*in/out*/ void *p_buf );
 
 /*!
-  On input a MODE_SENSE command was issued and we have the results
-  in p. We interpret this and return a bit mask set according to the 
-  capabilities.
- */
-void scsi_mmc_get_drive_cap(const uint8_t *p,
-			    /*out*/ cdio_drive_read_cap_t  *p_read_cap,
-			    /*out*/ cdio_drive_write_cap_t *p_write_cap,
-			    /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
-
-/*!
  * Eject using SCSI MMC commands. Return 0 if successful.
  */
 int scsi_mmc_eject_media( const CdIo *cdio);
@@ -208,6 +198,14 @@ int scsi_mmc_read_sectors ( const CdIo *cdio, void *p_buf, lba_t lba,
 			    int sector_type, unsigned int nblocks);
 
 int scsi_mmc_set_bsize ( const CdIo *cdio, unsigned int bsize);
+
+/*!
+  Return the the kind of drive capabilities of device.
+ */
+void scsi_mmc_get_drive_cap (const CdIo *p_cdio,
+			     /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+			     /*out*/ cdio_drive_write_cap_t *p_write_cap,
+			     /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
 
 /*! 
   Get the DVD type associated with cd object.
