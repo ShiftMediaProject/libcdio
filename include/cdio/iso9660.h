@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.42 2004/06/19 00:10:23 rocky Exp $
+    $Id: iso9660.h,v 1.43 2004/06/19 00:15:44 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -297,7 +297,7 @@ typedef struct _iso9660 iso9660_t;
   Read the Primary Volume Descriptor for an ISO 9660 image.
   True is returned if read, and false if there was an error.
 */
-  bool iso9660_iso_read_pvd (iso9660_t *p_iso, iso9660_pvd_t *p_pvd);
+  bool iso9660_ifs_read_pvd (iso9660_t *p_iso, iso9660_pvd_t *p_pvd);
 
 /*====================================================
   Time conversion 

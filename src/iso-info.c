@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.6 2004/06/19 00:10:23 rocky Exp $
+    $Id: iso-info.c,v 1.7 2004/06/19 00:15:44 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -284,7 +284,7 @@ main(int argc, const char *argv[])
 
     printf(STRONG "ISO 9660 image: %s\n", source_name);
 
-    if (iso9660_iso_read_pvd(p_iso, &pvd)) {
+    if (iso9660_ifs_read_pvd(p_iso, &pvd)) {
       printf("Application ID: %s\n", iso9660_get_application_id(&pvd));
       printf("System ID     : %s\n", iso9660_get_system_id(&pvd));
       printf("Volume ID     : %s\n", iso9660_get_volume_id(&pvd));
