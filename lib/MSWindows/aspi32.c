@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.17 2004/07/13 03:59:09 rocky Exp $
+    $Id: aspi32.c,v 1.18 2004/07/13 04:33:07 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.17 2004/07/13 03:59:09 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.18 2004/07/13 04:33:07 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -385,7 +385,7 @@ init_aspi (_img_private_t *env)
    Returns 0 if no error. 
  */
 static int
-mmc_read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
+read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
 		       int sector_type, unsigned int nblocks)
 {
   HANDLE hEvent;
@@ -396,7 +396,7 @@ mmc_read_sectors_aspi (const _img_private_t *env, void *data, lsn_t lsn,
 #endif
   int sync        = 0;
   int header_code = 2;
-  int i_user_data   = 1;
+  int i_user_data = 1;
   int edc_ecc     = 0;
   int error_field = 0;
   
@@ -487,8 +487,8 @@ int
 read_audio_sectors_aspi (_img_private_t *env, void *data, lsn_t lsn, 
 			     unsigned int nblocks) 
 {
-  if (mmc_read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_CDDA, 1)) {
-    return mmc_read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_ANY, 1);
+  if (read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_CDDA, 1)) {
+    return read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_ANY, 1);
   }
   return 0;
 }
@@ -501,7 +501,7 @@ int
 read_mode2_sector_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  return mmc_read_sectors_aspi(env, data, lsn, b_form2 
+  return read_sectors_aspi(env, data, lsn, b_form2 
 			       ? CDIO_MMC_READ_TYPE_M2F2 
 			       : CDIO_MMC_READ_TYPE_M2F1, 
 			       1);
@@ -515,7 +515,7 @@ int
 read_mode1_sector_aspi (const _img_private_t *env, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
-  return mmc_read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_MODE1, 1);
+  return read_sectors_aspi(env, data, lsn, CDIO_MMC_READ_TYPE_MODE1, 1);
 }
 
 /*! 

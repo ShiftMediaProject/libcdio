@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.61 2004/07/09 01:05:32 rocky Exp $
+    $Id: _cdio_linux.c,v 1.62 2004/07/13 04:33:05 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.61 2004/07/09 01:05:32 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.62 2004/07/13 04:33:05 rocky Exp $";
 
 #include <string.h>
 
@@ -261,7 +261,7 @@ _set_bsize (int fd, unsigned int bsize)
    Can read only up to 25 blocks.
 */
 static int
-_cdio_mmc_read_sectors (int fd, void *buf, lba_t lba, int sector_type, 
+_read_sectors_mmc (int fd, void *buf, lba_t lba, int sector_type, 
 			unsigned int nblocks)
 {
   cgc_t cgc;
@@ -295,16 +295,16 @@ _read_audio_sectors_linux (void *user_data, void *buf, lsn_t lsn,
 			   unsigned int nblocks)
 {
   _img_private_t *env = user_data;
-  return _cdio_mmc_read_sectors( env->gen.fd, buf, lsn, 
-				 CDIO_MMC_READ_TYPE_CDDA, nblocks);
+  return _read_sectors_mmc( env->gen.fd, buf, lsn, 
+			    CDIO_MMC_READ_TYPE_CDDA, nblocks);
 }
 
 /* Packet driver to read mode2 sectors. 
    Can read only up to 25 blocks.
 */
 static int
-_read_packet_mode2_sectors_mmc (int fd, void *buf, lba_t lba, 
-				unsigned int nblocks, bool b_read_10)
+_read_mode2_sectors_mmc (int fd, void *buf, lba_t lba, 
+			 unsigned int nblocks, bool b_read_10)
 {
   struct cdrom_generic_command cgc;
 
@@ -352,7 +352,7 @@ _read_packet_mode2_sectors_mmc (int fd, void *buf, lba_t lba,
 }
 
 static int
-_read_packet_mode2_sectors (int fd, void *buf, lba_t lba, 
+_read_mode2_sectors (int fd, void *buf, lba_t lba, 
 			    unsigned int nblocks, bool b_read_10)
 {
   unsigned int l = 0;
@@ -363,8 +363,8 @@ _read_packet_mode2_sectors (int fd, void *buf, lba_t lba,
       const unsigned nblocks2 = (nblocks > 25) ? 25 : nblocks;
       void *buf2 = ((char *)buf ) + (l * M2RAW_SECTOR_SIZE);
       
-      retval |= _read_packet_mode2_sectors_mmc (fd, buf2, lba + l, nblocks2, 
-						b_read_10);
+      retval |= _read_mode2_sectors_mmc (fd, buf2, lba + l, nblocks2, 
+					 b_read_10);
 
       if (retval)
 	break;
@@ -416,7 +416,7 @@ _read_mode1_sector_linux (void *env, void *data, lsn_t lsn,
       
     case _AM_READ_CD:
     case _AM_READ_10:
-      if (_read_packet_mode2_sectors (_obj->gen.fd, buf, lsn, 1, 
+      if (_read_mode2_sectors (_obj->gen.fd, buf, lsn, 1, 
 				      (_obj->access_mode == _AM_READ_10)))
 	{
 	  perror ("ioctl()");
@@ -507,7 +507,7 @@ _read_mode2_sector_linux (void *user_data, void *data, lsn_t lsn,
       
     case _AM_READ_CD:
     case _AM_READ_10:
-      if (_read_packet_mode2_sectors (env->gen.fd, buf, lsn, 1, 
+      if (_read_mode2_sectors (env->gen.fd, buf, lsn, 1, 
 				      (env->access_mode == _AM_READ_10)))
 	{
 	  perror ("ioctl()");

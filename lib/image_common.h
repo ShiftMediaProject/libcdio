@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.10 2004/07/13 03:45:25 rocky Exp $
+    $Id: image_common.h,v 1.11 2004/07/13 04:33:07 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -90,7 +90,7 @@ _get_arg_image (void *user_data, const char key[])
 }
 
 /*!
-  Return the value associated with the key "arg".
+  Return the CD-TEXT structure
 */
 static const cdtext_t *
 _get_cdtext_image (void *user_data)
