@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.28 2004/06/02 01:01:18 rocky Exp $
+    $Id: _cdio_osx.c,v 1.29 2004/06/02 04:52:55 thesin Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.28 2004/06/02 01:01:18 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.29 2004/06/02 04:52:55 thesin Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -94,7 +94,7 @@ typedef struct {
 } _img_private_t;
 
 static void 
-_free_osx (void *env) {
+_free_osx (void *user_data) {
   _img_private_t *env = user_data;
   if (NULL == env) return;
   cdio_generic_free(env);
@@ -713,7 +713,7 @@ cdio_get_devices_osx(void)
 #ifndef HAVE_DARWIN_CDROM
   return NULL;
 #else
-  ioenvect_t   next_media;
+  io_object_t   next_media;
   mach_port_t   master_port;
   kern_return_t kern_result;
   io_iterator_t media_iterator;
