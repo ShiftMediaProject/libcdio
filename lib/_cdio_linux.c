@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.31 2004/03/07 01:40:00 rocky Exp $
+    $Id: _cdio_linux.c,v 1.32 2004/03/07 02:42:22 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.31 2004/03/07 01:40:00 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.32 2004/03/07 02:42:22 rocky Exp $";
 
 #include <string.h>
 
@@ -358,7 +358,7 @@ _read_packet_mode2_sectors (int fd, void *buf, lba_t lba,
  */
 static int
 _cdio_read_mode1_sector (void *env, void *data, lsn_t lsn, 
-			 bool mode1_form2)
+			 bool b_form2)
 {
 
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
@@ -414,14 +414,14 @@ _cdio_read_mode1_sector (void *env, void *data, lsn_t lsn,
     }
 
   memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
-	  mode1_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
+	  b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
   
 #else
   if (0 > cdio_generic_lseek(env, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
     return -1;
   if (0 > cdio_generic_read(env, buf, CDIO_CD_FRAMESIZE))
     return -1;
-  memcpy (data, buf, mode1_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
+  memcpy (data, buf, b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
 #endif
   return 0;
 }
@@ -433,17 +433,17 @@ _cdio_read_mode1_sector (void *env, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode1_sectors (void *env, void *data, lsn_t lsn, 
-			  bool mode1_form2, unsigned int nblocks)
+			  bool b_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   unsigned int i;
   int retval;
-  unsigned int blocksize = mode1_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
+  unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
     if ( (retval = _cdio_read_mode1_sector (_obj, 
 					    ((char *)data) + (blocksize * i),
-					    lsn + i, mode1_form2)) )
+					    lsn + i, b_form2)) )
       return retval;
   }
   return 0;
@@ -455,7 +455,7 @@ _cdio_read_mode1_sectors (void *env, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
-			 bool mode2_form2)
+			 bool b_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
@@ -508,7 +508,7 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
       break;
     }
 
-  if (mode2_form2)
+  if (b_form2)
     memcpy (data, buf, M2RAW_SECTOR_SIZE);
   else
     memcpy (((char *)data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
@@ -523,17 +523,17 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn, 
-			  bool mode2_form2, unsigned int nblocks)
+			  bool b_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   unsigned int i;
   int retval;
-  unsigned int blocksize = mode2_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
+  unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
     if ( (retval = _cdio_read_mode2_sector (_obj, 
 					    ((char *)data) + (blocksize * i),
-					    lsn + i, mode2_form2)) )
+					    lsn + i, b_form2)) )
       return retval;
   }
   return 0;
