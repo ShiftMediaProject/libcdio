@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.23 2004/06/21 16:18:08 rocky Exp $
+    $Id: iso9660_fs.c,v 1.24 2004/10/09 03:20:28 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -28,19 +28,19 @@
 #endif
 
 #include <cdio/cdio.h>
+#include <cdio/ds.h>
 #include <cdio/iso9660.h>
 #include <cdio/util.h>
 
 /* Private headers */
 #include "cdio_assert.h"
 #include "bytesex.h"
-#include "ds.h"
 #include "_cdio_stdio.h"
 #include "cdio_private.h"
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.23 2004/06/21 16:18:08 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.24 2004/10/09 03:20:28 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {

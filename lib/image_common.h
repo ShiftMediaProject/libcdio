@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.16 2004/08/13 13:04:37 rocky Exp $
+    $Id: image_common.h,v 1.17 2004/10/09 03:20:28 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -40,22 +40,22 @@
 static void 
 _free_image (void *user_data) 
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
   track_t i_track;
 
-  if (NULL == env) return;
+  if (NULL == p_env) return;
 
-  for (i_track=0; i_track < env->gen.i_tracks; i_track++) {
-    free_if_notnull(env->tocent[i_track].filename);
-    free_if_notnull(env->tocent[i_track].isrc);
-    cdtext_destroy(&(env->tocent[i_track].cdtext));
+  for (i_track=0; i_track < p_env->gen.i_tracks; i_track++) {
+    free_if_notnull(p_env->tocent[i_track].filename);
+    free_if_notnull(p_env->tocent[i_track].isrc);
+    cdtext_destroy(&(p_env->tocent[i_track].cdtext));
   }
 
-  free_if_notnull(env->psz_mcn);
-  free_if_notnull(env->psz_cue_name);
-  cdtext_destroy(&(env->gen.cdtext));
-  cdio_generic_stdio_free(env);
-  free(env);
+  free_if_notnull(p_env->psz_mcn);
+  free_if_notnull(p_env->psz_cue_name);
+  cdtext_destroy(&(p_env->gen.cdtext));
+  cdio_generic_stdio_free(p_env);
+  free(p_env);
 }
 
 #ifdef NEED_MEDIA_EJECT_IMAGE
@@ -77,12 +77,12 @@ _eject_media_image(void *user_data)
 static const char *
 _get_arg_image (void *user_data, const char key[])
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = user_data;
 
   if (!strcmp (key, "source")) {
-    return env->gen.source_name;
+    return p_env->gen.source_name;
   } else if (!strcmp (key, "cue")) {
-    return env->psz_cue_name;
+    return p_env->psz_cue_name;
   } else if (!strcmp(key, "access-mode")) {
     return "image";
   } 

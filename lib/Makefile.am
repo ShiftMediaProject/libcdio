@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.48 2004/09/02 00:49:31 rocky Exp $
+#   $Id: Makefile.am,v 1.49 2004/10/09 03:20:28 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -51,7 +51,7 @@ libiso9660_la_AGE := 0
 EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile 
 
 noinst_HEADERS = cdio_assert.h bytesex.h bytesex_asm.h \
-	cdio_private.h ds.h 
+	cdio_private.h
 
 libcdio_sources = \
 	_cdio_bsdi.c \
@@ -70,7 +70,6 @@ libcdio_sources = \
 	cdtext.c \
 	cdtext_private.h \
 	ds.c \
-	ds.h \
         FreeBSD/freebsd.c \
         FreeBSD/freebsd.h \
         FreeBSD/freebsd_cam.c \

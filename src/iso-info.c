@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.9 2004/06/19 19:15:15 rocky Exp $
+    $Id: iso-info.c,v 1.10 2004/10/09 03:20:28 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -33,6 +33,7 @@
 #endif
 #include <sys/types.h>
 #include <cdio/cdio.h>
+#include <cdio/ds.h>
 #include <cdio/iso9660.h>
 
 #include <stdio.h>
@@ -45,7 +46,6 @@
 
 #include <errno.h>
 
-#include "ds.h"
 
 #if 0
 #define STRONG "\033[1m"
