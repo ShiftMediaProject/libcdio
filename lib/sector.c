@@ -1,5 +1,5 @@
 /*
-    $Id: sector.c,v 1.14 2004/09/03 23:20:11 rocky Exp $
+    $Id: sector.c,v 1.15 2004/11/18 01:56:09 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 
 #include <ctype.h>
 
-static const char _rcsid[] = "$Id: sector.c,v 1.14 2004/09/03 23:20:11 rocky Exp $";
+static const char _rcsid[] = "$Id: sector.c,v 1.15 2004/11/18 01:56:09 rocky Exp $";
 
 lba_t
 cdio_lba_to_lsn (lba_t lba)
@@ -75,9 +75,9 @@ cdio_lsn_to_msf (lsn_t lsn, msf_t *msf)
     m = 99;
   }
   
-  msf->m = to_bcd8 (m);
-  msf->s = to_bcd8 (s);
-  msf->f = to_bcd8 (f);
+  msf->m = cdio_to_bcd8 (m);
+  msf->s = cdio_to_bcd8 (s);
+  msf->f = cdio_to_bcd8 (f);
 }
 
 /*! 
@@ -129,13 +129,13 @@ cdio_msf_to_lba (const msf_t *msf)
 
   cdio_assert (msf != 0);
 
-  lba = from_bcd8 (msf->m);
+  lba = cdio_from_bcd8 (msf->m);
   lba *= CDIO_CD_SECS_PER_MIN;
 
-  lba += from_bcd8 (msf->s);
+  lba += cdio_from_bcd8 (msf->s);
   lba *= CDIO_CD_FRAMES_PER_SEC;
   
-  lba += from_bcd8 (msf->f);
+  lba += cdio_from_bcd8 (msf->f);
 
   return lba;
 }

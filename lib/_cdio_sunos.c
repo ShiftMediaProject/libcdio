@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.78 2004/11/13 23:36:22 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.79 2004/11/18 01:56:09 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.78 2004/11/13 23:36:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.79 2004/11/18 01:56:09 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -181,17 +181,16 @@ static int
 _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
-  char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
+  struct cdrom_msf solaris_msf;
   msf_t _msf;
   struct cdrom_cdda cdda;
 
   _img_private_t *p_env = p_user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
-  msf->cdmsf_min0   = from_bcd8(_msf.m);
-  msf->cdmsf_sec0   = from_bcd8(_msf.s);
-  msf->cdmsf_frame0 = from_bcd8(_msf.f);
+  solaris_msf.cdmsf_min0   = cdio_from_bcd8(_msf.m);
+  solaris_msf.cdmsf_sec0   = cdio_from_bcd8(_msf.s);
+  solaris_msf.cdmsf_frame0 = cdio_from_bcd8(_msf.f);
   
   if (p_env->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
@@ -207,15 +206,16 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
   
   p_env->gen.ioctls_debugged++;
   
-  cdda.cdda_addr   = lsn;
-  cdda.cdda_length = nblocks;
-  cdda.cdda_data   = (caddr_t) data;
+  cdda.cdda_addr    = lsn;
+  cdda.cdda_length  = nblocks;
+  cdda.cdda_data    = (caddr_t) data;
+  cdda.cdda_subcode = CDROM_DA_NO_SUBCODE;
+  
   if (ioctl (p_env->gen.fd, CDROMCDDA, &cdda) == -1) {
     perror ("ioctl(..,CDROMCDDA,..)");
 	return 1;
 	/* exit (EXIT_FAILURE); */
   }
-  memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
   
   return 0;
 }
@@ -268,7 +268,7 @@ _read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t lsn,
 			    bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  struct cdrom_msf *msf = (struct cdrom_msf *) &buf;
+  struct cdrom_msf solaris_msf;
   msf_t _msf;
   int offset = 0;
   struct cdrom_cdxa cd_read;
@@ -276,9 +276,9 @@ _read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t lsn,
   _img_private_t *p_env = p_user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(lsn), &_msf);
-  msf->cdmsf_min0 = from_bcd8(_msf.m);
-  msf->cdmsf_sec0 = from_bcd8(_msf.s);
-  msf->cdmsf_frame0 = from_bcd8(_msf.f);
+  solaris_msf.cdmsf_min0   = cdio_from_bcd8(_msf.m);
+  solaris_msf.cdmsf_sec0   = cdio_from_bcd8(_msf.s);
+  solaris_msf.cdmsf_frame0 = cdio_from_bcd8(_msf.f);
   
   if (p_env->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
@@ -291,7 +291,8 @@ _read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t lsn,
 	  && p_env->gen.ioctls_debugged % 75 == 0)
       || p_env->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %2.2d:%2.2d:%2.2d",
-	       msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
+		solaris_msf.cdmsf_min0, solaris_msf.cdmsf_sec0, 
+		solaris_msf.cdmsf_frame0);
   
   p_env->gen.ioctls_debugged++;
   
@@ -741,9 +742,9 @@ _cdio_get_track_msf(void *p_user_data, track_t i_track, msf_t *msf)
     return false;
   } else {
     struct cdrom_tocentry *msf0 = &p_env->tocent[i_track-1];
-    msf->m = to_bcd8(msf0->cdte_addr.msf.minute);
-    msf->s = to_bcd8(msf0->cdte_addr.msf.second);
-    msf->f = to_bcd8(msf0->cdte_addr.msf.frame);
+    msf->m = cdio_to_bcd8(msf0->cdte_addr.msf.minute);
+    msf->s = cdio_to_bcd8(msf0->cdte_addr.msf.second);
+    msf->f = cdio_to_bcd8(msf0->cdte_addr.msf.frame);
     return true;
   }
 }
