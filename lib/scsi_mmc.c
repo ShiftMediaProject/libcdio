@@ -1,6 +1,6 @@
 /*  Common MMC routines.
 
-    $Id: scsi_mmc.c,v 1.2 2004/06/28 00:26:19 rocky Exp $
+    $Id: scsi_mmc.c,v 1.3 2004/06/28 00:39:21 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -45,7 +45,7 @@ cdio_get_drive_cap_mmc(const uint8_t *p)
   if (p[3] & 0x10) i_drivetype |= CDIO_DRIVE_CAP_DVD_R;
   if (p[3] & 0x20) i_drivetype |= CDIO_DRIVE_CAP_DVD_RAM;
 
-  if (p[4] & 0x40) i_drivetype |= CDIO_DRIVE_CAP_MULTISESSION;
+  if (p[4] & 0x40) i_drivetype |= CDIO_DRIVE_CAP_MULTI_SESSION;
   
   if (p[6] & 0x01) i_drivetype |= CDIO_DRIVE_CAP_LOCK;
   if (p[6] & 0x08) i_drivetype |= CDIO_DRIVE_CAP_OPEN_TRAY;
