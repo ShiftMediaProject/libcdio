@@ -1,5 +1,5 @@
 /*
-    $Id: xa.h,v 1.12 2005/02/12 09:52:28 rocky Exp $
+    $Id: xa.h,v 1.13 2005/02/12 18:24:21 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -71,6 +71,8 @@ extern enum cdio_xa_enums {
 } cdio_xa_enums;
 
   
+extern const char ISO_XA_MARKER_STRING[sizeof("CD-XA001")-1];
+
 #define ISO_XA_MARKER_STRING    "CD-XA001"
 #define ISO_XA_MARKER_OFFSET    1024
 

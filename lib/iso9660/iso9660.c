@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.3 2005/02/12 10:23:18 rocky Exp $
+    $Id: iso9660.c,v 1.4 2005/02/12 18:24:21 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -19,6 +19,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+/*! String inside frame which identifies an ISO 9660 filesystem. This
+    string is the "id" field of an iso9660_pvd_t or an iso9660_svd_t.
+    Note should come *before* #include <cdio/iso9660.h> which does 
+    a #define of this name.
+*/
+const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
+
 /* Private headers */
 #include "iso9660_private.h"
 #include "cdio_assert.h"
@@ -37,7 +44,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.3 2005/02/12 10:23:18 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.4 2005/02/12 18:24:21 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enums1     iso_enums1;

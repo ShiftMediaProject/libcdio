@@ -1,5 +1,5 @@
 /*
-    $Id: xa.c,v 1.2 2005/02/05 17:29:01 rocky Exp $
+    $Id: xa.c,v 1.3 2005/02/12 18:24:21 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,6 +27,12 @@
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
+
+/*! String inside frame which identifies XA attributes.  Note should
+    come *before* public headers which does a #define of
+    this name.
+*/
+const char ISO_XA_MARKER_STRING[] = {'C', 'D', '-', 'X', 'A', '0', '0', '1'};
 
 /* Public headers */
 #include <cdio/iso9660.h>
