@@ -1,0 +1,256 @@
+2003-04-08 17:12  rocky
+
+	* lib/_cdio_linux.c: Small name changes.
+
+2003-04-08 06:35  rocky
+
+	* lib/_cdio_bsdi.c: Changes brought about by sector.h #define
+	changes.
+
+2003-04-08 06:17  rocky
+
+	* lib/_cdio_sunos.c: Revise for changed sector.h
+
+2003-04-07 07:31  rocky
+
+	* lib/cdio_private.h: Add opaque CdIoDataSource type and generic
+	free routine for stream-based drivers (nrg, bincue, network).
+
+2003-04-07 07:29  rocky
+
+	* lib/types.h: Indention formatting that Emacs prefers.
+
+2003-04-07 07:25  rocky
+
+	* lib/_cdio_nrg.c: Sync up with _cdio_bincue a little. free routine
+	replaced with a generic routine.
+
+2003-04-07 07:24  rocky
+
+	* lib/_cdio_bincue.c: Move free routine into a generic routine.
+	Some numbers replaced by #define constants.
+
+2003-04-07 07:24  rocky
+
+	* lib/_cdio_generic.c: Add generic_stream_free and remove out of
+	disk-image routines.
+
+2003-04-07 07:23  rocky
+
+	* lib/_cdio_stream.h: Opaque type CdioDataSource is now in
+	cdio_private.h. This forces us to use that. (And this might not be
+	the best, but I can't think of anything else that is as simple.)
+
+2003-04-06 23:05  rocky
+
+	* lib/_cdio_stream.c: Grammar typo.
+
+2003-04-06 22:58  rocky
+
+	* lib/_cdio_bincue.c: Another case of not checking the status of
+	operations and returning on error (rather than continuing). Not
+	serious this time...
+
+2003-04-06 22:41  rocky
+
+	* lib/_cdio_bincue.c: Propagate error results from seeks and reads.
+
+2003-04-06 19:40  rocky
+
+	* lib/: _cdio_stdio.c, _cdio_stream.c, _cdio_stream.h: Document
+	some of the interfaces.
+
+2003-04-06 19:09  rocky
+
+	* lib/_cdio_bincue.c: Back off a little with the #define thing a
+	little for now. I made a mistake somewhere.  (And don't want to
+	track it down further.)
+
+2003-04-06 14:26  rocky
+
+	* lib/sector.h: This time for sure?
+
+2003-04-06 14:12  rocky
+
+	* lib/_cdio_generic.c, lib/_cdio_linux.c, lib/_cdio_nrg.c,
+	lib/sector.h, src/cdinfo.c: More #define reductions/fixes.
+
+2003-04-06 13:57  rocky
+
+	* lib/_cdio_bincue.c, lib/_cdio_bsdi.c, lib/_cdio_bsdi_old.c,
+	lib/_cdio_linux.c, lib/_cdio_nrg.c, lib/_cdio_stream.c,
+	lib/_cdio_sunos.c, lib/sector.h, src/cdinfo.c: Change sector.h
+	constants, yet again. This time for Herbert Valiero Riedel.
+
+2003-04-06 04:16  rocky
+
+	* tests/svcd_ogt_test_ntsc.bin: This file seems to get changed when
+	checking in.
+
+2003-04-06 04:13  rocky
+
+	* tests/: Makefile.am, svcd_ogt_test_ntsc.bin:
+	svcd_ogt_test_ntsc.bin corrupted.  Makefile: add other
+	bin/cue/nrg's
+
+2003-04-06 01:46  rocky
+
+	* tests/: Makefile.am, check_cue.sh, fsf-tompox.bin,
+	fsf-tompox.right, fsf.right, svcd_ogt_test_ntsc.bin, vcd_demo.bin:
+	Add a CD audio test and an ISO 9660 joliet extension tst.  Add in
+	the Video CD images I've been using.
+
+2003-04-06 01:46  rocky
+
+	* src/cdinfo.c: Use new sector.h constants.
+
+2003-04-06 01:45  rocky
+
+	* lib/: _cdio_linux.c, _cdio_nrg.c, _cdio_sunos.c, cdio.h: 
+	Use new sector.h constants. More changes will no doubt follow.
+
+2003-04-06 01:44  rocky
+
+	* lib/_cdio_bincue.c: More complete. Fill out seek code.
+
+2003-04-06 01:43  rocky
+
+	* lib/sector.h: Go with Linux definitions rather than invent our
+	own. More changes will no doubt follow.
+
+2003-04-04 00:15  rocky
+
+	* lib/: _cdio_bincue.c, cdio_private.h: Close go getting simple
+	read working. Not completely correct, but close.
+
+2003-04-03 19:41  rocky
+
+	* lib/: cdio.c, cdio.h: Documentation improvment: Note that
+	get_default_device returns NULL on error.
+
+2003-04-03 07:16  rocky
+
+	* lib/: Makefile.am, _cdio_stream.h, bytesex.h, bytesex_asm.h,
+	cdio.h, cdio_assert.h, cdio_types.h, ds.c, ds.h, logging.h,
+	sector.h, types.h: cdio_types.h -> types.h
+
+2003-04-02 09:54  rocky
+
+	* lib/cdio.c: Note that device is uninit when destroying, 'cause it
+	is!
+
+2003-03-30 08:01  rocky
+
+	* lib/: _cdio_bincue.c, _cdio_bsdi.c, _cdio_generic.c,
+	_cdio_linux.c, _cdio_nrg.c, _cdio_sunos.c, cdio.c, cdio.h,
+	cdio_private.h: More common routiens and structures moved to
+	cdio_generic.c or cdio_private.h respectively.
+
+2003-03-30 07:59  rocky
+
+	* configure.ac: BSDI now requires Steve Schultz's libdvd.a and
+	dvd.h package.
+
+2003-03-29 20:31  rocky
+
+	* configure.ac: Having trouble getting aclocal include libpopt.m4
+	(and presumably other *.m4's)
+
+2003-03-29 20:11  rocky
+
+	* autogen.sh, configure.ac, src/Makefile.am: Rest: add libpopt
+	autoconfiguration.
+
+2003-03-29 20:11  rocky
+
+	* lib/_cdio_bsdi.c: Extend to larger interface using generic
+	routines.
+
+2003-03-29 19:40  rocky
+
+	* lib/_cdio_freebsd.c: Yet another typo.
+
+2003-03-29 19:38  rocky
+
+	* lib/_cdio_freebsd.c: Change default drive and fix typographical
+	mistake.
+
+2003-03-29 16:13  rocky
+
+	* lib/: _cdio_bincue.c, _cdio_generic.c, _cdio_nrg.c,
+	_cdio_sunos.c: Small lint-like errors. Solaris now works again with
+	new read/lseek functions.
+
+2003-03-29 15:28  rocky
+
+	* lib/: _cdio_freebsd.c, _cdio_sunos.c: Probably closer towards
+	compiling on those architectures.
+
+2003-03-29 12:32  rocky
+
+	* configure.ac, lib/Makefile.am, lib/_cdio_bincue.c,
+	lib/_cdio_bsdi.c, lib/_cdio_bsdi_old.c, lib/_cdio_freebsd.c,
+	lib/_cdio_generic.c, lib/_cdio_linux.c, lib/_cdio_nrg.c,
+	lib/_cdio_stdio.c, lib/_cdio_stream.c, lib/_cdio_stream.h,
+	lib/_cdio_sunos.c, lib/cdio.c, lib/cdio.h, lib/cdio_private.h,
+	lib/cdio_types.h, lib/sector.h, src/Makefile.am, src/cdinfo.c,
+	tests/monvoisin.right: Add simple (non-mode2) read/seek. 
+	_cdio_generic.c: place to save common driver routines add
+	cdio_get_track_sec_count.
+
+2003-03-24 21:10  rocky
+
+	* src/cdinfo.c: gcc < 3.0 compatibility.
+
+2003-03-24 19:00  rocky
+
+	* lib/_cdio_freebsd.c: A stab at FreeBSD support. Not finished.
+	More later...
+
+2003-03-24 18:59  rocky
+
+	* lib/: Makefile.am, _cdio_bsdi.c, _cdio_linux.c, cdio.c, cdio.h:
+	_cdio_linux.c: eject routines does it's own open and close. 
+	cdio.h, Makefile.am, cdio.c: Add FreeBSD routine (not complete
+	yet).
+
+2003-03-24 16:01  rocky
+
+	* src/cdinfo.c: Small clarity change
+
+2003-03-24 14:01  rocky
+
+	* .cvsignore, AUTHORS, ChangeLog, Makefile.am, NEWS, README,
+	autogen.sh, configure.ac, libpopt.m4, lib/.cvsignore,
+	lib/Makefile.am, lib/_cdio_bincue.c, lib/_cdio_bsdi.c,
+	lib/_cdio_bsdi.h, lib/_cdio_linux.c, lib/_cdio_nrg.c,
+	lib/_cdio_stdio.c, lib/_cdio_stdio.h, lib/_cdio_stream.c,
+	lib/_cdio_stream.h, lib/_cdio_sunos.c, lib/bytesex.h,
+	lib/bytesex_asm.h, lib/cdio.c, lib/cdio.h, lib/cdio_assert.h,
+	lib/cdio_private.h, lib/cdio_types.h, lib/ds.c, lib/ds.h,
+	lib/logging.c, lib/logging.h, lib/sector.c, lib/sector.h,
+	lib/util.c, lib/util.h, src/.cvsignore, src/Makefile.am,
+	src/cdinfo-linux.c, src/cdinfo.c, tests/.cvsignore,
+	tests/Makefile.am, tests/check_common_fn, tests/check_cue.sh,
+	tests/check_nrg.sh, tests/monvoisin.right,
+	tests/svcd_ogt_test_ntsc.right, tests/vcd_demo.right: Initial
+	revision
+
+2003-03-24 14:01  rocky
+
+	* .cvsignore, AUTHORS, ChangeLog, Makefile.am, NEWS, README,
+	autogen.sh, configure.ac, libpopt.m4, lib/.cvsignore,
+	lib/Makefile.am, lib/_cdio_bincue.c, lib/_cdio_bsdi.c,
+	lib/_cdio_bsdi.h, lib/_cdio_linux.c, lib/_cdio_nrg.c,
+	lib/_cdio_stdio.c, lib/_cdio_stdio.h, lib/_cdio_stream.c,
+	lib/_cdio_stream.h, lib/_cdio_sunos.c, lib/bytesex.h,
+	lib/bytesex_asm.h, lib/cdio.c, lib/cdio.h, lib/cdio_assert.h,
+	lib/cdio_private.h, lib/cdio_types.h, lib/ds.c, lib/ds.h,
+	lib/logging.c, lib/logging.h, lib/sector.c, lib/sector.h,
+	lib/util.c, lib/util.h, src/.cvsignore, src/Makefile.am,
+	src/cdinfo-linux.c, src/cdinfo.c, tests/.cvsignore,
+	tests/Makefile.am, tests/check_common_fn, tests/check_cue.sh,
+	tests/check_nrg.sh, tests/monvoisin.right,
+	tests/svcd_ogt_test_ntsc.right, tests/vcd_demo.right: Imported
+	sources
+
