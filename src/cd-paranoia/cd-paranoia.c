@@ -766,7 +766,7 @@ main(int argc,char *argv[])
       exit(1);
     }
   }else
-    span=strdup(argv[optind]);
+    if (argv[optind]) span=strdup(argv[optind]);
 
   report(PARANOIA_VERSION);
 
