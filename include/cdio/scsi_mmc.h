@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.26 2004/08/06 11:55:16 rocky Exp $
+    $Id: scsi_mmc.h,v 1.27 2004/08/06 22:08:07 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -115,25 +115,52 @@
 					           the GET_CONFIGURATION 
 					           cdb. */
 
-/*! FEATURE codes used in GET_CONFIGURATION. */
+/*! FEATURE codes used in GET CONFIGURATION. */
 
-#define CDIO_MMC_FEATURE_PROFILE_LIST     0x00
-#define CDIO_MMC_FEATURE_CORE             0x01
-#define CDIO_MMC_FEATURE_REMOVABLE_MEDIUM 0x02
-#define CDIO_MMC_FEATURE_WRITE_PROTECT    0x03
-#define CDIO_MMC_FEATURE_RANDOM_READABLE  0x10
-#define CDIO_MMC_FEATURE_MULTI_READ       0x1D
-#define CDIO_MMC_FEATURE_CD_READ          0x1E
-#define CDIO_MMC_FEATURE_DVD_READ         0x1F
-#define CDIO_MMC_FEATURE_RANDOM_WRITABLE  0x20
-#define CDIO_MMC_FEATURE_INCR_WRITE       0x21
-#define CDIO_MMC_FEATURE_SECTOR_ERASE     0x22
-#define CDIO_MMC_FEATURE_FORMATABLE       0x23
-#define CDIO_MMC_FEATURE_WRITE_ONCE       0x25
-#define CDIO_MMC_FEATURE_MRW              0x28
-#define CDIO_MMC_FEATURE_DVD_RPW          0x2A
-#define CDIO_MMC_FEATURE_CD_TAO           0x2D
+#define CDIO_MMC_FEATURE_PROFILE_LIST     0x000
+#define CDIO_MMC_FEATURE_CORE             0x001
+#define CDIO_MMC_FEATURE_REMOVABLE_MEDIUM 0x002
+#define CDIO_MMC_FEATURE_WRITE_PROTECT    0x003
+#define CDIO_MMC_FEATURE_RANDOM_READABLE  0x010
+#define CDIO_MMC_FEATURE_MULTI_READ       0x01D
+#define CDIO_MMC_FEATURE_CD_READ          0x01E
+#define CDIO_MMC_FEATURE_DVD_READ         0x01F
+#define CDIO_MMC_FEATURE_RANDOM_WRITABLE  0x020
+#define CDIO_MMC_FEATURE_INCR_WRITE       0x021
+#define CDIO_MMC_FEATURE_SECTOR_ERASE     0x022
+#define CDIO_MMC_FEATURE_FORMATABLE       0x023
+#define CDIO_MMC_FEATURE_WRITE_ONCE       0x025
+#define CDIO_MMC_FEATURE_RESTRICT_OVERW   0x026
+#define CDIO_MMC_FEATURE_CD_RW_CAV        0x027
+#define CDIO_MMC_FEATURE_MRW              0x028
+#define CDIO_MMC_FEATURE_DVD_PRW          0x02A
+#define CDIO_MMC_FEATURE_DVD_PR           0x02B
+#define CDIO_MMC_FEATURE_CD_TAO           0x02D
+#define CDIO_MMC_FEATURE_CD_SAO           0x02E
+#define CDIO_MMC_FEATURE_CDDA_EXT_PLAY    0x103
+#define CDIO_MMC_FEATURE_MCODE_UPGRADE    0x104
+#define CDIO_MMC_FEATURE_LU_SN            0x108
 				
+/*! Profile codes used in GET_CONFIGURATION - PROFILE LIST. */
+#define CDIO_MMC_FEATURE_PROF_NON_REMOVABLE 0x0001
+#define CDIO_MMC_FEATURE_PROF_REMOVABLE     0x0002
+#define CDIO_MMC_FEATURE_PROF_MO_ERASABLE   0x0003
+#define CDIO_MMC_FEATURE_PROF_MO_WRITE_ONCE 0x0004
+#define CDIO_MMC_FEATURE_PROF_AS_MO         0x0005
+#define CDIO_MMC_FEATURE_PROF_CD_ROM        0x0008
+#define CDIO_MMC_FEATURE_PROF_CD_R          0x0009
+#define CDIO_MMC_FEATURE_PROF_CD_RW         0x000A
+#define CDIO_MMC_FEATURE_PROF_DVD_ROM       0x0010
+#define CDIO_MMC_FEATURE_PROF_DVD_R_SEQ     0x0011
+#define CDIO_MMC_FEATURE_PROF_DVD_RAM       0x0012
+#define CDIO_MMC_FEATURE_PROF_DVD_RW_RO     0x0013
+#define CDIO_MMC_FEATURE_PROF_DVD_RW_SEQ    0x0014
+#define CDIO_MMC_FEATURE_PROF_DVD_PRW       0x001A
+#define CDIO_MMC_FEATURE_PROF_DVD_PR        0x001B
+#define CDIO_MMC_FEATURE_PROF_DDCD_ROM      0x0020
+#define CDIO_MMC_FEATURE_PROF_DDCD_R        0x0021
+#define CDIO_MMC_FEATURE_PROF_DDCD_RW       0x0022
+#define CDIO_MMC_FEATURE_PROF_NON_CONFORM   0xFFFF
 
 /*! Size of fields returned by an INQUIRY command */
 #define CDIO_MMC_HW_VENDOR_LEN    8 /**< length of vendor field */
@@ -191,6 +218,12 @@ typedef enum scsi_mmc_direction {
 
 #define CDIO_MMC_SET_READ_TYPE(cdb, sector_type) \
   cdb[1] = (sector_type << 2)
+
+#define CDIO_MMC_GET_LEN16(p) \
+  (p[0]<<8) + p[1]
+
+#define CDIO_MMC_GET_LEN32(p) \
+  (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
 
 #define CDIO_MMC_SET_LEN16(cdb, pos, len)  \
   cdb[pos  ] = (len >>  8) & 0xff; \
