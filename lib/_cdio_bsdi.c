@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.30 2004/07/27 13:10:20 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.31 2004/07/27 15:02:01 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.30 2004/07/27 13:10:20 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.31 2004/07/27 15:02:01 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -54,6 +54,8 @@ static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.30 2004/07/27 13:10:20 rocky
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include </sys/dev/scsi/scsi.h>
+#include </sys/dev/scsi/scsi_ioctl.h>
 
 #define TOTAL_TRACKS    (p_env->tochdr.cdth_trk1)
 
@@ -77,6 +79,86 @@ typedef struct {
   struct cdrom_tocentry  tocent[100];    /* entry info for each track */
 
 } _img_private_t;
+
+/* Define the Cdrom Generic Command structure */
+typedef struct  cgc
+{
+  u_char  cdb[12];
+  u_char  *buf;
+  int     buflen;
+  int     rw;
+  int     timeout;
+  scsi_user_sense_t *sus;
+} cgc_t;
+
+
+/* 
+   This code adapted from Steven M. Schultz's libdvd
+*/
+static int 
+scsi_mmc_run_cmd_bsdi(const void *p_user_data, int i_timeout,
+		      unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		      scsi_mmc_direction_t e_direction, 
+		      unsigned int i_buf, /*in/out*/ void *p_buf )
+{
+  const _img_private_t *p_env = p_user_data;
+  int     i_status, i_asc;
+  struct  scsi_user_cdb suc;
+  struct  scsi_sense   *sp;
+  
+ again:
+  suc.suc_flags = SCSI_MMC_DATA_READ == e_direction ? 
+    SUC_READ : SUC_WRITE;
+  suc.suc_cdblen = i_cdb;
+  memcpy(suc.suc_cdb, p_cdb, i_cdb);
+  suc.suc_data = p_buf;
+  suc.suc_datalen = i_buf;
+  suc.suc_timeout = i_timeout;
+  if      (ioctl(p_env->gen.fd, SCSIRAWCDB, &suc) == -1)
+    return(errno);
+  i_status = suc.suc_sus.sus_status;
+
+#if 0  
+  /*
+   * If the device returns a scsi sense error and debugging is enabled print
+   * some hopefully useful information on stderr.
+   */
+  if      (i_status && debug)
+    {
+      unsigned char   *cp;
+      int i;
+      cp = suc.suc_sus.sus_sense;
+      fprintf(stderr,"i_status = %x cdb =",
+	      i_status);
+      for     (i = 0; i < cdblen; i++)
+	fprintf(stderr, " %x", cgc->cdb[i]);
+      fprintf(stderr, "\nsense =");
+      for     (i = 0; i < 16; i++)
+	fprintf(stderr, " %x", cp[i]);
+      fprintf(stderr, "\n");
+    }
+#endif
+
+  /*
+   * HACK!  Some drives return a silly "medium changed" on the first
+   * command AND a non-zero i_status which gets turned into a fatal
+   * (EIO) error even though the operation was a success.  Retrying
+   * the operation clears the media changed status and gets the
+   * answer.  */
+
+  sp = (struct scsi_sense *)&suc.suc_sus.sus_sense;
+  i_asc = XSENSE_ASC(sp);
+  if      (i_status == STS_CHECKCOND && i_asc == 0x28)
+    goto again;
+#if 0
+  if      (cgc->sus)
+    memcpy(cgc->sus, &suc.suc_sus, sizeof (struct scsi_user_sense));
+#endif
+
+  return(i_status);
+}
+
+
 
 /* Check a drive to see if it is a CD-ROM 
    Return 1 if a CD-ROM. 0 if it exists but isn't a CD-ROM drive
@@ -713,7 +795,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .get_arg            = _get_arg_bsdi,
     .get_default_device = cdio_get_default_device_bsdi,
     .get_devices        = cdio_get_devices_bsdi,
-    .get_drive_cap      = NULL,
+    .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
     .get_first_track_num= _get_first_track_num_bsdi,
     .get_mcn            = _get_mcn_bsdi, 
     .get_num_tracks     = _get_num_tracks_bsdi,
@@ -728,6 +810,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .read_mode1_sectors = _read_mode1_sectors_bsdi,
     .read_mode2_sector  = _read_mode2_sector_bsdi,
     .read_mode2_sectors = _read_mode2_sectors_bsdi,
+    .run_scsi_mmc_cmd   = scsi_mmc_run_cmd_bsdi,
     .set_arg            = _set_arg_bsdi,
     .stat_size          = _stat_size_bsdi
   };
@@ -754,7 +837,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     }
   }
 
-  ret = cdio_new (_data, &_funcs);
+  ret = cdio_new ( (void *) _data, &_funcs);
   if (ret == NULL) return NULL;
 
   if (_cdio_init(_data))
