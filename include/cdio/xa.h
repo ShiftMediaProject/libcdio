@@ -1,5 +1,5 @@
 /*
-    $Id: xa.h,v 1.6 2003/11/17 12:06:58 rocky Exp $
+    $Id: xa.h,v 1.7 2004/02/25 09:33:31 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -78,7 +78,7 @@ typedef struct iso9660_xa
   uint8_t  signature[2];  /**< { 'X', 'A' } */
   uint8_t  filenum;       /**< file number, see also XA subheader */
   uint8_t  reserved[5];   /**< zero */
-} iso9660_xa_t GNUC_PACKED;
+} GNUC_PACKED iso9660_xa_t;
 
 
 /*!
