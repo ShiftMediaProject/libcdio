@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.19 2003/09/07 18:15:26 rocky Exp $
+    $Id: iso9660.h,v 1.20 2003/09/10 08:31:19 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -79,6 +79,10 @@
 
 #define ISO_STANDARD_ID      "CD001"
 #define ISO_BLOCKSIZE           2048
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 enum strncpy_pad_check {
   ISO9660_NOCHECK = 0,
@@ -361,6 +365,10 @@ iso9660_set_pvd (void *pd, const char volume_id[], const char application_id[],
 
 void 
 iso9660_set_evd (void *pd);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* __CDIO_ISO9660_H__ */
 
