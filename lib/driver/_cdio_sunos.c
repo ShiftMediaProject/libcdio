@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.16 2005/01/24 00:06:31 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.17 2005/01/24 00:10:46 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.16 2005/01/24 00:06:31 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.17 2005/01/24 00:10:46 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -344,8 +344,9 @@ _read_mode2_sectors_solaris (void *p_user_data, void *data, lsn_t lsn,
 
 /*!
    Return the size of the CD in logical block address (LBA) units.
+   @return the lsn. On error return CDIO_INVALID_LSN.
  */
-static uint32_t 
+static lsn_t 
 get_disc_last_lsn_sunos (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
