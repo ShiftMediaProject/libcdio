@@ -19,7 +19,7 @@ define(RELEASE_NUM, 73)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.142 2005/02/06 15:09:10 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.143 2005/02/18 23:49:45 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -471,6 +471,7 @@ if test x$enable_joliet = xyes; then
      AC_DEFINE(HAVE_JOLIET, [1], 
      [Define 1 if you want ISO-9660 Joliet extension support. 
      You must have also libiconv installed to get Joliet extension support.])
+     HAVE_JOLIET=1
   else
      AC_MSG_WARN([You must have iconv installed to get Joliet extension support.])
   fi
