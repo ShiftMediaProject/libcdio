@@ -1,5 +1,5 @@
 /*
-  $Id: sample3.c,v 1.2 2003/08/16 22:45:37 rocky Exp $
+  $Id: sample3.c,v 1.3 2003/08/17 07:16:10 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -20,7 +20,7 @@
 
 /* 
    A somewhat simplified program to show the use of cdio_guess_cd_type().
-   We figure out kind of CD image we've got.
+   Figure out the kind of CD image we've got.
 */
 #include <stdio.h>
 #include <string.h>
