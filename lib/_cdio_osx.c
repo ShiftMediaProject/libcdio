@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.40 2004/06/17 10:41:05 rocky Exp $
+    $Id: _cdio_osx.c,v 1.41 2004/06/22 03:38:59 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.40 2004/06/17 10:41:05 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.41 2004/06/22 03:38:59 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -399,6 +399,18 @@ _cdio_read_toc (_img_private_t *env)
       {
 	i_track = pTrackDescriptors[i].point;
 
+	cdio_warn( "point: %d, tno: %d, session: %d, adr: %d, control:%d, "
+		   "address: %d:%d:%d, p: %d:%d:%d", 
+		   pTrackDescriptors[i].point,
+		   pTrackDescriptors[i].tno, pTrackDescriptors[i].session,
+		   pTrackDescriptors[i].adr, pTrackDescriptors[i].control,
+		   pTrackDescriptors[i].address.minute,
+		   pTrackDescriptors[i].address.second,
+		   pTrackDescriptors[i].address.frame, 
+		   pTrackDescriptors[i].p.minute,
+		   pTrackDescriptors[i].p.second, 
+		   pTrackDescriptors[i].p.frame );
+
 	/* Skip information where session is 0. */
 	if ( 0 == pTrackDescriptors[i].session ) 
 	  continue;
@@ -448,7 +460,7 @@ _cdio_read_toc (_img_private_t *env)
        Note what OSX calls a LBA we call an LSN. So below re we 
        really have have MSF -> LSN -> LBA.
     */
-    env->pp_lba[i_leadout] =
+    env->pp_lba[env->i_last_track+1] =
       cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i_leadout].p ));
   }
 
