@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.22 2005/02/05 23:16:34 rocky Exp $
+  $Id: scan_devices.c,v 1.23 2005/02/05 23:45:57 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -130,37 +130,7 @@ cdio_cddap_find_a_cdrom(int messagedest, char **ppsz_messages){
   return(NULL);
 }
 
-cdrom_drive_t *
-cdda_identify(const char *psz_device, int messagedest,char **ppsz_messages)
-{
-  cdrom_drive_t *d=NULL;
-
-  if (psz_device) 
-    idmessage(messagedest, ppsz_messages, "Checking %s for cdrom...", 
-	      psz_device);
-  else 
-    idmessage(messagedest, ppsz_messages, "Checking for cdrom...", NULL);
-
-  d=cdio_cddap_identify_cooked(psz_device, messagedest, ppsz_messages);
-
-  return(d);
-}
-
-cdrom_drive_t *
-cdio_cddap_identify_cdio(CdIo_t *p_cdio, int messagedest, char **ppsz_messages)
-{
-  if (!p_cdio) return NULL;
-  { 
-    const char *psz_device = cdio_get_arg(p_cdio, "source");
-    idmessage(messagedest, ppsz_messages, "Checking %s for cdrom...", 
-	      psz_device);
-    return cdda_identify_device_cdio(p_cdio, psz_device, messagedest, 
-				     ppsz_messages);
-  }
-
-}
-
-#ifdef HAVE_LSTAT
+#ifdef DEVICE_IN_FILESYSTEM
 static char *
 test_resolve_symlink(const char *file, int messagedest, char **ppsz_messages)
 {
@@ -179,6 +149,61 @@ test_resolve_symlink(const char *file, int messagedest, char **ppsz_messages)
   return(NULL);
 }
 #endif
+
+/** Returns a paranoia CD-ROM drive object with a CD-DA in it.  
+    @see cdio_cddap_identify_cdio
+ */
+cdrom_drive_t *
+cdio_cddap_identify(const char *psz_dev, int messagedest,
+char **ppsz_messages)
+{
+  CdIo_t *p_cdio = NULL;
+
+  if (psz_dev) 
+    idmessage(messagedest, ppsz_messages, "Checking %s for cdrom...", 
+	      psz_dev);
+  else 
+    idmessage(messagedest, ppsz_messages, "Checking for cdrom...", NULL);
+
+#ifdef DEVICE_IN_FILESYSTEM
+  if (psz_dev) {
+    char *psz_device = test_resolve_symlink(psz_dev, messagedest, 
+					    ppsz_messages);
+    if ( psz_device ) {
+      cdrom_drive_t *d=NULL;
+      p_cdio = cdio_open(psz_device, DRIVER_UNKNOWN);
+      d = cdda_identify_device_cdio(p_cdio, psz_device, messagedest, 
+				    ppsz_messages);
+      free(psz_device);
+      return d;
+    }
+  }
+#endif
+
+  p_cdio = cdio_open(psz_dev, DRIVER_UNKNOWN);
+  return cdda_identify_device_cdio(p_cdio, psz_dev, messagedest, 
+				   ppsz_messages);
+}
+
+/** Returns a paranoia CD-ROM drive ojbect with a CD-DA in it.  
+    In contrast to cdio_cddap_identify, we start out with an initialzed p_cdio
+    object. For example you may have used that for other purposes such
+    as to get CDDB/CD-Text information.
+    @see cdio_cddap_identify
+ */
+cdrom_drive_t *
+cdio_cddap_identify_cdio(CdIo_t *p_cdio, int messagedest, char **ppsz_messages)
+{
+  if (!p_cdio) return NULL;
+  { 
+    const char *psz_device = cdio_get_arg(p_cdio, "source");
+    idmessage(messagedest, ppsz_messages, "Checking %s for cdrom...", 
+	      psz_device);
+    return cdda_identify_device_cdio(p_cdio, psz_device, messagedest, 
+				     ppsz_messages);
+  }
+
+}
 
 static cdrom_drive_t *
 cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device, 
@@ -299,34 +324,4 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
   }
   
   return(d);
-}
-
-/* Really has nothing to with "cooked" mode. This is historical stuff
-   put in to fool folks who love to give opinions based on a
-   superficial reading of code. Down the line when we're ready to deal
-   with such folks, perhaps this routine should be renamed.
-*/
-cdrom_drive_t *
-cdio_cddap_identify_cooked(const char *psz_dev, int messagedest, 
-			   char **ppsz_messages)
-{
-  CdIo_t *p_cdio = NULL;
-
-#ifdef DEVICE_IN_FILESYSTEM
-  if (psz_dev) {
-    char *psz_device = test_resolve_symlink(psz_dev, messagedest, 
-					    ppsz_messages);
-    if ( psz_device ) {
-      cdrom_drive_t *d=NULL;
-      p_cdio = cdio_open(psz_device, DRIVER_UNKNOWN);
-      d = cdda_identify_device_cdio(p_cdio, psz_device, messagedest, 
-				    ppsz_messages);
-      free(psz_device);
-      return d;
-    }
-  }
-#endif
-  p_cdio = cdio_open(psz_dev, DRIVER_UNKNOWN);
-  return cdda_identify_device_cdio(p_cdio, psz_dev, messagedest, 
-				   ppsz_messages);
 }
