@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.61 2005/02/12 10:23:18 rocky Exp $
+    $Id: iso9660.h,v 1.62 2005/02/12 16:35:35 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -34,11 +34,23 @@
 #ifndef __CDIO_ISO9660_H__
 #define __CDIO_ISO9660_H__
 
+#include <time.h>
+
 #include <cdio/cdio.h>
 #include <cdio/ds.h>
-#include <cdio/xa.h>
 
-#include <time.h>
+/** \brief ISO 9660 integer types */
+typedef uint8_t  iso711_t; /*! 7.1.1 encoded */
+typedef uint16_t iso721_t; /*! 7.2.1 encoded */
+typedef uint16_t iso722_t; /*! 7.2.2 encoded */
+typedef uint32_t iso723_t; /*! 7.2.3 encoded */
+typedef uint32_t iso731_t; /*! 7.3.1 encoded */
+typedef uint32_t iso732_t; /*! 7.3.2 encoded */
+typedef uint64_t iso733_t; /*! 7.3.3 encoded */
+typedef char     achar_t;  
+typedef char     dchar_t;  
+
+#include <cdio/xa.h>
 
 #define	_delta(from, to)	((to) - (from) + 1)
 
@@ -240,16 +252,16 @@ typedef struct iso9660_ltime_s  iso9660_ltime_t;
   @see iso9660_stat
 */
 struct iso9660_dir_s {
-  uint8_t          length;            /*! 7.1.1 encoded */
-  uint8_t          xa_length;         /*! 7.1.1 encoded */
-  uint64_t         extent;            /*! 7.3.3 encoded */
-  uint64_t         size;              /*! 7.3.3 encoded */
+  iso711_t         length;            /*! 7.1.1 encoded */
+  iso711_t         xa_length;         /*! 7.1.1 encoded */
+  iso733_t         extent;            /*! 7.3.3 encoded */
+  iso733_t         size;              /*! 7.3.3 encoded */
   iso9660_dtime_t  recording_time;    /*! 7 7.1.1-encoded units */
   uint8_t          file_flags;
-  uint8_t          file_unit_size;    /*! 7.1.1 encoded */
-  uint8_t          interleave_gap;    /*! 7.1.1 encoded */
-  uint32_t volume_sequence_number;    /*! 7.2.3 encoded */
-  uint8_t          filename_len;      /*! 7.1.1 encoded */
+  iso711_t         file_unit_size;    /*! 7.1.1 encoded */
+  iso711_t         interleave_gap;    /*! 7.1.1 encoded */
+  iso723_t volume_sequence_number;    /*! 7.2.3 encoded */
+  iso711_t         filename_len;      /*! number of bytes in filename field */
   char             filename[EMPTY_ARRAY_SIZE];
 } GNUC_PACKED;
 
@@ -259,50 +271,60 @@ typedef struct iso9660_dir_s  iso9660_dir_t;
   \brief ISO-9660 Primary Volume Descriptor.
  */
 struct iso9660_pvd_s {
-  uint8_t          type;                         /**< 7.1.1 encoded */
-  char             id[5];
-  uint8_t          version;                      /**< 7.1.1 encoded */
+  iso711_t         type;                         /**< ISO_VD_PRIMARY - 1 */
+  char             id[5];                        /**< ISO_STANDARD_ID "CD001"
+                                                  */
+  iso711_t         version;                      /**< value 1 */
   char             unused1[1];
-  char             system_id[ISO_MAX_SYSTEM_ID]; /**< each char is an achar */
-  char             volume_id[ISO_MAX_VOLUME_ID]; /**< each char is a dchar */
+  achar_t          system_id[ISO_MAX_SYSTEM_ID]; /**< each char is an achar */
+  dchar_t          volume_id[ISO_MAX_VOLUME_ID]; /**< each char is a dchar */
   char             unused2[8];
-  uint64_t         volume_space_size;            /**< 7.3.3 encoded */
+  iso733_t         volume_space_size;            /**< total number of 
+                                                    sectors */
   char             unused3[32];
-  uint32_t         volume_set_size;              /**< 7.2.3 encoded */
-  uint32_t         volume_sequence_number;       /**< 7.2.3 encoded */
-  uint32_t         logical_block_size;           /**< 7.2.3 encoded */
-  uint64_t         path_table_size;              /**< 7.3.3 encoded */
-  uint32_t         type_l_path_table;            /**< 7.3.1 encoded */
-  uint32_t         opt_type_l_path_table;        /**< 7.3.1 encoded */
-  uint32_t         type_m_path_table;            /**< 7.3.2 encoded */
-  uint32_t         opt_type_m_path_table;        /**< 7.3.2 encoded */
+  iso723_t         volume_set_size;              /**< often 1 */
+  iso723_t         volume_sequence_number;       /**< often 1 */
+  iso723_t         logical_block_size;           /**< sector size, e.g. 2048 */
+  iso733_t         path_table_size;              /**< bytes in path table */
+  iso731_t         type_l_path_table;            /**< first sector of little-
+                                                      endian path table */
+  iso731_t         opt_type_l_path_table;        /**< first sector of optional
+                                                    little-endian path table */
+  iso732_t         type_m_path_table;            /**< first sector of big-
+                                                    endian path table */
+  iso732_t         opt_type_m_path_table;        /**< first sector of optional
+                                                    big-endian path table */
   iso9660_dir_t    root_directory_record;        /**< See section 9.1 of
                                                     ISO 9660 spec. */
   char             root_directory_filename;      /**< Is '\\0' */
-  char             volume_set_id[ISO_MAX_VOLUMESET_ID];    /**< dchars */
-  char             publisher_id[ISO_MAX_PUBLISHER_ID];     /**< achars */
-  char             preparer_id[ISO_MAX_PREPARER_ID];       /**< achars */
-  char             application_id[ISO_MAX_APPLICATION_ID]; /**< achars */
-  char             copyright_file_id[37];     /**< See section 7.5 of
-                                                 ISO 9660 spec. Each char is 
-                                                 a dchar */
-  char             abstract_file_id[37];      /**< See section 7.5 of 
-                                                 ISO 9660 spec. Each char is 
-                                                 a dchar */
-  char             bibliographic_file_id[37]; /**< See section 7.5 of 
-                                                 ISO 9660 spec. Each char is
-                                                 a dchar. */
-  iso9660_ltime_t  creation_date;             /**< See section 8.4.26.1 of
+  dchar_t          volume_set_id[ISO_MAX_VOLUMESET_ID];    /**< dchars */
+  achar_t          publisher_id[ISO_MAX_PUBLISHER_ID];     /**< achars */
+  achar_t          preparer_id[ISO_MAX_PREPARER_ID];       /**< achars */
+  achar_t          application_id[ISO_MAX_APPLICATION_ID]; /**< achars */
+  dchar_t          copyright_file_id[37];     /**< See section 7.5 of
                                                  ISO 9660 spec. */
-  iso9660_ltime_t  modification_date;         /**< See section 8.4.26.1 of 
+  dchar_t          abstract_file_id[37];      /**< See section 7.5 of 
                                                  ISO 9660 spec. */
-  iso9660_ltime_t  expiration_date;           /**< See section 8.4.26.1 of
+  dchar_t          bibliographic_file_id[37]; /**< See section 7.5 of 
                                                  ISO 9660 spec. */
-  iso9660_ltime_t  effective_date;            /**< See section 8.4.26.1 of
+  iso9660_ltime_t  creation_date;             /**< date and time of volume
+                                                 creation. See section 8.4.26.1
+                                                 of the ISO 9660 spec. */
+  iso9660_ltime_t  modification_date;         /**< date and time of the most
+                                                 recent modification.
+                                                 See section 8.4.26.1 of the
                                                  ISO 9660 spec. */
-  uint8_t          file_structure_version;    /**< 7.1.1 encoded */
+  iso9660_ltime_t  expiration_date;           /**< date and time when volume
+                                                 expires. See section 8.4.26.1 
+                                                 of the ISO 9660 spec. */
+  iso9660_ltime_t  effective_date;            /**< date and time when volume
+                                                 is effective. See section 
+                                                 8.4.26.1 of the ISO 9660 
+                                                 spec. */
+  iso711_t         file_structure_version;    /**< value 1 usually */
   char             unused4[1];
-  char             application_data[512];
+  char             application_data[512];     /**< Application can put 
+                                                 whatever it wants here. */
   char             unused5[653];
 } GNUC_PACKED;
 
@@ -316,49 +338,60 @@ typedef struct iso9660_pvd_s  iso9660_pvd_t;
   become "flags and "escape_sequences" respectively.
 */
 struct iso9660_svd_s {
-  uint8_t          type;                         /**< 7.1.1 encoded */
-  char             id[5];
-  uint8_t          version;                      /**< 7.1.1 encoded */
+  iso711_t         type;                         /**< ISO_VD_SUPPLEMENTARY - 2 
+                                                  */
+  char             id[5];                        /**< ISO_STANDARD_ID "CD001" 
+                                                  */
+  iso711_t         version;                      /**< value 1 */
   char             flags;			 /**< 8.5.3 */
-  char             system_id[ISO_MAX_SYSTEM_ID]; /**< each char is an achar */
-  char             volume_id[ISO_MAX_VOLUME_ID]; /**< each char is a dchar */
+  achar_t          system_id[ISO_MAX_SYSTEM_ID]; /**< each char is an achar */
+  dchar_t          volume_id[ISO_MAX_VOLUME_ID]; /**< each char is a dchar */
   char             unused2[8];
-  uint64_t         volume_space_size;            /**< 7.3.3 encoded */
+  iso733_t         volume_space_size;            /**< total number of 
+                                                    sectors */
   char             escape_sequences[32];         /**< 8.5.6 */
-  uint32_t         volume_set_size;              /**< 7.2.3 encoded */
-  uint32_t         volume_sequence_number;       /**< 7.2.3 encoded */
-  uint32_t         logical_block_size;           /**< 7.2.3 encoded */
-  uint64_t         path_table_size;              /**< 7.3.3 encoded */
-  uint32_t         type_l_path_table;            /**< 7.3.1 encoded */
-  uint32_t         opt_type_l_path_table;        /**< 7.3.1 encoded */
-  uint32_t         type_m_path_table;            /**< 7.3.2 encoded */
-  uint32_t         opt_type_m_path_table;        /**< 7.3.2 encoded */
+  iso723_t         volume_set_size;              /**< often 1 */
+  iso723_t         volume_sequence_number;       /**< often 1 */
+  iso723_t         logical_block_size;           /**< sector size, e.g. 2048 */
+  iso733_t         path_table_size;              /**< bytes in path table */
+  iso731_t         type_l_path_table;            /**< first sector of little-
+                                                      endian path table */
+  iso731_t         opt_type_l_path_table;        /**< first sector of optional
+                                                    little-endian path table */
+  iso732_t         type_m_path_table;            /**< first sector of big-
+                                                    endian path table */
+  iso732_t         opt_type_m_path_table;        /**< first sector of optional
+                                                    big-endian path table */
   iso9660_dir_t    root_directory_record;        /**< See section 9.1 of
                                                     ISO 9660 spec. */
-  char             volume_set_id[ISO_MAX_VOLUMESET_ID];    /**< dchars */
-  char             publisher_id[ISO_MAX_PUBLISHER_ID];     /**< achars */
-  char             preparer_id[ISO_MAX_PREPARER_ID];       /**< achars */
-  char             application_id[ISO_MAX_APPLICATION_ID]; /**< achars */
-  char             copyright_file_id[37];     /**< See section 7.5 of
-                                                 ISO 9660 spec. Each char is 
-                                                 a dchar */
-  char             abstract_file_id[37];      /**< See section 7.5 of 
-                                                 ISO 9660 spec. Each char is 
-                                                 a dchar */
-  char             bibliographic_file_id[37]; /**< See section 7.5 of 
-                                                 ISO 9660 spec. Each char is
-                                                 a dchar. */
-  iso9660_ltime_t  creation_date;             /**< See section 8.4.26.1 of
+  dchar_t          volume_set_id[ISO_MAX_VOLUMESET_ID];    /**< dchars */
+  achar_t          publisher_id[ISO_MAX_PUBLISHER_ID];     /**< achars */
+  achar_t          preparer_id[ISO_MAX_PREPARER_ID];       /**< achars */
+  achar_t          application_id[ISO_MAX_APPLICATION_ID]; /**< achars */
+  dchar_t          copyright_file_id[37];     /**< See section 7.5 of
                                                  ISO 9660 spec. */
-  iso9660_ltime_t  modification_date;         /**< See section 8.4.26.1 of 
+  dchar_t          abstract_file_id[37];      /**< See section 7.5 of 
                                                  ISO 9660 spec. */
-  iso9660_ltime_t  expiration_date;           /**< See section 8.4.26.1 of
+  dchar_t          bibliographic_file_id[37]; /**< See section 7.5 of 
                                                  ISO 9660 spec. */
-  iso9660_ltime_t  effective_date;            /**< See section 8.4.26.1 of
+  iso9660_ltime_t  creation_date;             /**< date and time of volume
+                                                 creation. See section 8.4.26.1
+                                                 of the ISO 9660 spec. */
+  iso9660_ltime_t  modification_date;         /**< date and time of the most
+                                                 recent modification.
+                                                 See section 8.4.26.1 of the
                                                  ISO 9660 spec. */
-  uint8_t          file_structure_version;    /**< 7.1.1 encoded */
+  iso9660_ltime_t  expiration_date;           /**< date and time when volume
+                                                 expires. See section 8.4.26.1 
+                                                 of the ISO 9660 spec. */
+  iso9660_ltime_t  effective_date;            /**< date and time when volume
+                                                 is effective. See section 
+                                                 8.4.26.1 of the ISO 9660 
+                                                 spec. */
+  iso711_t         file_structure_version;    /**< value 1 usually */
   char             unused4[1];
-  char             application_data[512];
+  char             application_data[512];     /**< Application can put 
+                                                 whatever it wants here. */
   char             unused5[653];
 } GNUC_PACKED;
 
