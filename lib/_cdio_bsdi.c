@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.31 2004/07/27 15:02:01 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.32 2004/07/27 16:36:59 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.31 2004/07/27 15:02:01 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.32 2004/07/27 16:36:59 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -459,7 +459,7 @@ _set_arg_bsdi (void *user_data, const char key[], const char value[])
   Return false if successful or true if an error.
 */
 static bool
-_cdio_read_toc (_img_private_t *p_env) 
+read_toc_bsdi (_img_private_t *p_env) 
 {
   int i;
 
@@ -470,6 +470,8 @@ _cdio_read_toc (_img_private_t *p_env)
     return false;
   }
 
+  p_env->gen.i_first_track = p_env->tochdr.cdth_trk0;
+  
   /* read individual tracks */
   for (i= p_env->gen.i_first_track; i<=TOTAL_TRACKS; i++) {
     p_env->tocent[i-1].cdte_track = i;
@@ -508,6 +510,7 @@ _cdio_read_toc (_img_private_t *p_env)
 	   i, msf->minute, msf->second, msf->frame);
   */
 
+  p_env->gen.toc_init = true;
   return true;
 }
 
@@ -579,7 +582,7 @@ _get_first_track_num_bsdi(void *user_data)
 {
   _img_private_t *p_env = user_data;
   
-  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
+  if (!p_env->toc_init) read_toc_bsdi (p_env) ;
 
   return p_env->gen.i_first_track;
 }
@@ -608,7 +611,7 @@ _get_num_tracks_bsdi(void *user_data)
 {
   _img_private_t *p_env = user_data;
   
-  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
+  if (!p_env->toc_init) read_toc_bsdi (p_env) ;
 
   return TOTAL_TRACKS;
 }
@@ -617,11 +620,11 @@ _get_num_tracks_bsdi(void *user_data)
   Get format of track. 
 */
 static track_format_t
-_get_track_format_bsdi(void *user_data, track_t i_track) 
+get_track_format_bsdi(void *user_data, track_t i_track) 
 {
   _img_private_t *p_env = user_data;
   
-  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
+  if (!p_env->toc_init) read_toc_bsdi (p_env) ;
 
   if (i_track > TOTAL_TRACKS || i_track == 0)
     return TRACK_FORMAT_ERROR;
@@ -656,7 +659,7 @@ _get_track_green_bsdi(void *user_data, track_t i_track)
 {
   _img_private_t *p_env = user_data;
   
-  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
+  if (!p_env->toc_init) read_toc_bsdi (p_env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
@@ -683,7 +686,7 @@ _get_track_msf_bsdi(void *user_data, track_t i_track, msf_t *msf)
 
   if (NULL == msf) return false;
 
-  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
+  if (!p_env->toc_init) read_toc_bsdi (p_env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = TOTAL_TRACKS+1;
 
@@ -760,6 +763,97 @@ cdio_get_default_device_bsdi(void)
   return strdup(DEFAULT_CDIO_DEVICE);
 }
 
+/*! 
+  Get disc type associated with cd object.
+*/
+static discmode_t
+get_discmode_bsdi (void *p_user_data)
+{
+  _img_private_t *p_env = p_user_data;
+  track_t i_track;
+  discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
+
+  /* See if this is a DVD. */
+  cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
+
+  dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
+  dvd.physical.layer_num = 0;
+  if (0 == scsi_mmc_get_dvd_struct_physical_private (p_env, 
+						     &scsi_mmc_run_cmd_bsdi,
+						     &dvd)) {
+    switch(dvd.physical.layer[0].book_type) {
+    case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
+    case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
+    case CDIO_DVD_BOOK_DVD_R:    return CDIO_DISC_MODE_DVD_R;
+    case CDIO_DVD_BOOK_DVD_RW:   return CDIO_DISC_MODE_DVD_RW;
+    case CDIO_DVD_BOOK_DVD_PW:   return CDIO_DISC_MODE_DVD_PR;
+    case CDIO_DVD_BOOK_DVD_PRW:  return CDIO_DISC_MODE_DVD_PRW;
+    default: return CDIO_DISC_MODE_DVD_OTHER;
+    }
+  }
+
+  if (!p_env->gen.toc_init) 
+    read_toc_bsdi (p_env);
+
+  if (!p_env->gen.toc_init) 
+    return CDIO_DISC_MODE_NO_INFO;
+
+  for (i_track = p_env->gen.i_first_track; 
+       i_track < p_env->gen.i_first_track + TOTAL_TRACKS ; 
+       i_track ++) {
+    track_format_t track_fmt=get_track_format_bsdi(p_env, i_track);
+
+    switch(track_fmt) {
+    case TRACK_FORMAT_AUDIO:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_DA;
+	  break;
+	case CDIO_DISC_MODE_CD_DA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	  discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_XA:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_XA;
+	  break;
+	case CDIO_DISC_MODE_CD_XA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_DATA:
+      switch(discmode) {
+	case CDIO_DISC_MODE_NO_INFO:
+	  discmode = CDIO_DISC_MODE_CD_DATA;
+	  break;
+	case CDIO_DISC_MODE_CD_DATA:
+	case CDIO_DISC_MODE_CD_MIXED: 
+	case CDIO_DISC_MODE_ERROR: 
+	  /* No change*/
+	  break;
+      default:
+	discmode = CDIO_DISC_MODE_CD_MIXED;
+      }
+      break;
+    case TRACK_FORMAT_ERROR:
+    default:
+      discmode = CDIO_DISC_MODE_ERROR;
+    }
+  }
+  return discmode;
+}
+
 /*!
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
@@ -796,10 +890,11 @@ cdio_open_bsdi (const char *psz_orig_source)
     .get_default_device = cdio_get_default_device_bsdi,
     .get_devices        = cdio_get_devices_bsdi,
     .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
+    .get_discmode       = get_discmode_bsdi,
     .get_first_track_num= _get_first_track_num_bsdi,
     .get_mcn            = _get_mcn_bsdi, 
     .get_num_tracks     = _get_num_tracks_bsdi,
-    .get_track_format   = _get_track_format_bsdi,
+    .get_track_format   = get_track_format_bsdi,
     .get_track_green    = _get_track_green_bsdi,
     .get_track_lba      = NULL, /* This could be implemented if need be. */
     .get_track_msf      = _get_track_msf_bsdi,
