@@ -93,7 +93,7 @@ Super @acronym{VCD} @uref{http://www.dvdrhelp.com/svcd}
 
 A unit of data of a CD. The size of a track can vary; it can occupy
 the entire contents of the CD. Most CD standards however require that
-tracks have a 150 frame (or ``2 second'' lead in gap.
+tracks have a 150 frame (or ``2 second'') lead-in gap.
 
 @item VCD
 Video @acronym{CD} @uref{http://www.dvdrhelp.com/vcd}
