@@ -16,10 +16,11 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.62 2004/02/25 02:01:05 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.63 2004/02/27 02:35:24 rocky Exp $])dnl
 AC_INIT(libcdio, 0.67cvs)
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
+AC_CANONICAL_HOST
 AM_CONFIG_HEADER(config.h)
 
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
@@ -35,6 +36,10 @@ enable_cd_info="${withval}", enable_cd_info=yes)
 AC_ARG_WITH(cd_read,
 [  --without-cd-read	build program cd-read (enabled by default)],
 enable_cd_read="${withval}", enable_cd_read=yes)
+
+AC_ARG_WITH(cd_info,
+[  --without-versioned-libs	build versioned library symbols (enabled by default)],
+enable_versioned_libs="${withval}", enable_versioned_libs=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -169,9 +174,17 @@ LIBS="$LIBS -lm"
 CFLAGS="$CFLAGS $WARN_CFLAGS"
 
 AM_CONDITIONAL(CYGWIN, test "x$CYGWIN" = "xyes")
+case "$host_os" in
+  freebsd4* | netbsd* | bsdi* ) 
+     enable_versioned_libs=no
+     ;;
+  * )
+esac
+
 AM_CONDITIONAL(BUILD_CDINFO, test "x$enable_cd_info" = "xyes")
 AM_CONDITIONAL(BUILD_CDINFO_LINUX, test "x$enable_cd_info_linux" = "xyes")
 AM_CONDITIONAL(BUILD_CDIOTEST, test "x$enable_cdiotest" = "xyes")
+AM_CONDITIONAL(BUILD_VERSIONED_LIBS, test "x$enable_versioned_libs" = "xyes")
 
 AM_PROG_LIBTOOL
      

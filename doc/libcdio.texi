@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.15 2004/02/26 12:24:22 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.16 2004/02/27 02:35:24 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -572,7 +572,8 @@ device that is right for it.
 @section Example 3: figure out what kind of CD image we've got
 
 In this example is a somewhat simplified program to show the use of
-@command{cdio_guess_cd_type()} to  figure out the kind of CD image we've got.
+@command{cdio_guess_cd_type()} to  figure out the kind of CD image
+we've got. This can be in the distribution as @file{example/sample3.c}.
 
 @smallexample
 #ifdef HAVE_CONFIG_H
@@ -755,6 +756,11 @@ main(int argc, const char *argv[])
 
 @node Example 4
 @section Example 4: use libiso9660 to extract a file from an ISO-9660 image
+
+Next a program to show using @command{libiso9660} to extract a file
+from an ISO-9660 image.  This can be in the distribution as
+@file{example/sample7.c}. A more complete and expanded version of this
+is @command{iso-read}, part of this distribution.
 
 @smallexample
 /* This is the ISO 9660 image. */
