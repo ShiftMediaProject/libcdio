@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.15 2004/03/20 04:16:59 rocky Exp $
+    $Id: _cdio_osx.c,v 1.16 2004/04/25 15:41:26 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -33,7 +33,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.15 2004/03/20 04:16:59 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.16 2004/04/25 15:41:26 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -87,7 +87,7 @@ typedef struct {
 } _img_private_t;
 
 static void 
-_cdio_osx_free (void *env) {
+_free_osx (void *env) {
   _img_private_t *_obj = env;
   if (NULL == _obj) return;
   cdio_generic_free(_obj);
@@ -128,8 +128,8 @@ _cdio_getNumberOfTracks( CDTOC *pTOC, int i_descriptors )
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode1_sectors (void *env, void *data, lsn_t lsn, 
-			  bool is_form2, unsigned int nblocks)
+_get_read_mode1_sectors_osx (void *env, void *data, lsn_t lsn, 
+			  bool b_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   dk_cd_read_t cd_read;
@@ -140,7 +140,7 @@ _cdio_read_mode1_sectors (void *env, void *data, lsn_t lsn,
   cd_read.buffer      = data;
   cd_read.sectorType  = kCDSectorTypeMode1;
   
-  if (is_form2) {
+  if (b_form2) {
     cd_read.offset       = lsn * kCDSectorSizeMode2;
     cd_read.bufferLength = kCDSectorSizeMode2 * nblocks;
   } else {
@@ -163,8 +163,8 @@ _cdio_read_mode1_sectors (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn, 
-			  bool is_form2, unsigned int nblocks)
+_get_read_mode2_sectors_osx (void *env, void *data, lsn_t lsn, 
+			  bool b_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   dk_cd_read_t cd_read;
@@ -174,7 +174,7 @@ _cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn,
   cd_read.sectorArea = kCDSectorAreaUser;
   cd_read.buffer = data;
   
-  if (is_form2) {
+  if (b_form2) {
     cd_read.offset       = lsn * kCDSectorSizeMode2Form2;
     cd_read.sectorType   = kCDSectorTypeMode2Form2;
     cd_read.bufferLength = kCDSectorSizeMode2Form2 * nblocks;
@@ -198,7 +198,7 @@ _cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_audio_sectors (void *env, void *data, lsn_t lsn, 
+_get_read_audio_sectors_osx (void *env, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
   _img_private_t *_obj = env;
@@ -226,10 +226,10 @@ _cdio_read_audio_sectors (void *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_mode1_sector (void *env, void *data, lsn_t lsn, 
-			 bool is_form2)
+_get_read_mode1_sector_osx (void *env, void *data, lsn_t lsn, 
+			 bool b_form2)
 {
-  return _cdio_read_mode1_sectors(env, data, lsn, is_form2, 1);
+  return _get_read_mode1_sectors_osx(env, data, lsn, b_form2, 1);
 }
 
 /*!
@@ -237,17 +237,17 @@ _cdio_read_mode1_sector (void *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
-			 bool is_form2)
+_get_read_mode2_sector_osx (void *env, void *data, lsn_t lsn, 
+			 bool b_form2)
 {
-  return _cdio_read_mode2_sectors(env, data, lsn, is_form2, 1);
+  return _get_read_mode2_sectors_osx(env, data, lsn, b_form2, 1);
 }
 
 /*!
   Set the key "arg" to "value" in source device.
 */
 static int
-_cdio_set_arg (void *env, const char key[], const char value[])
+_set_arg_osx (void *env, const char key[], const char value[])
 {
   _img_private_t *_obj = env;
 
@@ -448,7 +448,7 @@ _cdio_read_toc (_img_private_t *_obj)
   False is returned if there is no track entry.
 */
 static lsn_t
-_cdio_get_track_lba(void *env, track_t track_num)
+_get_track_lba_osx(void *env, track_t track_num)
 {
   _img_private_t *_obj = env;
 
@@ -474,7 +474,7 @@ _cdio_get_track_lba(void *env, track_t track_num)
  */
 
 static int 
-_cdio_eject_media (void *env) {
+_eject_media_osx (void *env) {
 
   _img_private_t *_obj = env;
 
@@ -518,16 +518,16 @@ _cdio_eject_media (void *env) {
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_cdio_stat_size (void *env)
+_stat_size_osx (void *env)
 {
-  return _cdio_get_track_lba(env, CDIO_CDROM_LEADOUT_TRACK);
+  return _get_track_lba_osx(env, CDIO_CDROM_LEADOUT_TRACK);
 }
 
 /*!
   Return the value associated with the key "arg".
 */
 static const char *
-_cdio_get_arg (void *env, const char key[])
+_get_arg_osx (void *env, const char key[])
 {
   _img_private_t *_obj = env;
 
@@ -549,7 +549,7 @@ _cdio_get_arg (void *env, const char key[])
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_cdio_get_first_track_num(void *env) 
+_get_first_track_num_osx(void *env) 
 {
   _img_private_t *_obj = env;
   
@@ -579,7 +579,7 @@ _cdio_get_first_track_num(void *env)
   Return the media catalog number MCN.
  */
 static char *
-_cdio_get_mcn (void *env) {
+_get_mcn_osx (void *env) {
   _img_private_t *_obj = env;
   dk_cd_read_mcn_t cd_read;
 
@@ -600,7 +600,7 @@ _cdio_get_mcn (void *env) {
   This is the externally called interface.
 */
 static track_t
-_cdio_get_num_tracks(void *env) 
+_get_num_tracks_osx(void *env) 
 {
   _img_private_t *_obj = env;
   
@@ -612,7 +612,7 @@ _cdio_get_num_tracks(void *env)
   Get format of track. 
 */
 static track_format_t
-_cdio_get_track_format(void *env, track_t track_num) 
+_get_track_format_osx(void *env, track_t track_num) 
 {
   _img_private_t *_obj = env;
   CDTrackInfo a_track;
@@ -651,7 +651,7 @@ _cdio_get_track_format(void *env, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *env, track_t track_num) 
+_get_track_green_osx(void *env, track_t track_num) 
 {
 
 #if 0  
@@ -854,27 +854,27 @@ cdio_open_osx (const char *orig_source_name)
   char *source_name;
 
   cdio_funcs _funcs = {
-    .eject_media        = _cdio_eject_media,
-    .free               = _cdio_osx_free,
-    .get_arg            = _cdio_get_arg,
+    .eject_media        = _eject_media_osx,
+    .free               = _free_osx,
+    .get_arg            = _get_arg_osx,
     .get_default_device = cdio_get_default_device_osx,
     .get_devices        = cdio_get_devices_osx,
-    .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = _cdio_get_mcn,
-    .get_num_tracks     = _cdio_get_num_tracks,
-    .get_track_format   = _cdio_get_track_format,
-    .get_track_green    = _cdio_get_track_green,
-    .get_track_lba      = _cdio_get_track_lba,
+    .get_first_track_num= _get_first_track_num_osx,
+    .get_mcn            = _get_mcn_osx,
+    .get_num_tracks     = _get_num_tracks_osx,
+    .get_track_format   = _get_track_format_osx,
+    .get_track_green    = _get_track_green_osx,
+    .get_track_lba      = _get_track_lba_osx,
     .get_track_msf      = NULL,
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
-    .read_audio_sectors = _cdio_read_audio_sectors,
-    .read_mode1_sector  = _cdio_read_mode1_sector,
-    .read_mode1_sectors = _cdio_read_mode1_sectors,
-    .read_mode2_sector  = _cdio_read_mode2_sector,
-    .read_mode2_sectors = _cdio_read_mode2_sectors,
-    .set_arg            = _cdio_set_arg,
-    .stat_size          = _cdio_stat_size
+    .read_audio_sectors = _get_read_audio_sectors_osx,
+    .read_mode1_sector  = _get_read_mode1_sector_osx,
+    .read_mode1_sectors = _get_read_mode1_sectors_osx,
+    .read_mode2_sector  = _get_read_mode2_sector_osx,
+    .read_mode2_sectors = _get_read_mode2_sectors_osx,
+    .set_arg            = _set_arg_osx,
+    .stat_size          = _stat_size_osx
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
@@ -885,10 +885,10 @@ cdio_open_osx (const char *orig_source_name)
   if (NULL == orig_source_name) {
     source_name=cdio_get_default_device_linux();
     if (NULL == source_name) return NULL;
-    _cdio_set_arg(_data, "source", source_name);
+    _set_arg_osx(_data, "source", source_name);
     free(source_name);
   } else 
-    _cdio_set_arg(_data, "source", orig_source_name);
+    _set_arg_osx(_data, "source", orig_source_name);
 
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;
