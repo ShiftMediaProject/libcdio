@@ -31,7 +31,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.1 2003/07/28 02:25:37 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.2 2003/07/28 10:46:24 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -199,41 +199,26 @@ The CD-ROM specification or "Yellow Book" followed a few years later
 and describes the extension of CD's to store computer data,
 i.e. CD-ROM (Compact Disk Read Only Memory).  
 
-The Yellow book CD standard defines two modes:
+The Yellow book CD standard defines two modes: Mode1 and Mode1.
 
-@subsection Mode1
- Mode 1 is the data storage mode used by to store computer
- data. The data is laid out in basically the same way as in and audio
- CD format, except that the 2,352 bytes of data in each block are
- broken down further. 2,048 of these bytes are for "real" data. The
- other 304 bytes are used for an additional level of error detecting
- and correcting code. This is necessary because data CDs cannot
- tolerate the loss of a handful of bits now and then, the way audio
- CDs can.
-
-@subsection Mode2
- Mode 2 data CDs are the same as mode 1 CDs except that the error
- detecting and correcting codes are omitted. This is similar to audio
- CDs, i.e. the mode 2 format provides a more flexible vehicle for
- storing types of data that do not require high data integrity: for
- example, graphics and video can use this format. But in contrast to
- the Red book standard, different modes can be mixed together; this is
- the basis for the extensions to the original data CD standards known
- as CD-ROM Extended Architecture, or CD-ROM XA.  CD-ROM XA formats
- currently in use are CD-I Bridge formats, Photo CD and VideoCD plus
- Sony's Playstation.
+@menu
+* Mode1::           Mode 1 Format
+* Mode2::           Mode 2 Format
+@end menu
 
 @subsection ISO-9660
 The Yellow Book does not actually specify how data is to be stored on
 or retrieved from a CD-ROM.  It was feared that many different
 companies would implement proprietary data storage formats using this
 specification, resulting in many different incompatible data CDs. To
-try to prevent this, representatives of major manufacturers met at the
-High Sierra Hotel and Casino in Lake Tahoe, NV, in 1985, to come
-together on a common standard for data CDs. This format was nicknamed
-High Sierra Format. It was later modified slightly and adopted as ISO
-standard 9660. ISO 9660 consists of several "levels":
+prevent this, representatives of major manufacturers met at the High
+Sierra Hotel and Casino in Lake Tahoe, NV, in 1985, to define a
+standard for storing data on CDs. This format was nicknamed High
+Sierra Format. In a slightly modified form it was later adopted as ISO
+the ISO 9660 standard. This standard is further broken down into 
+3 "levels", the higher the level, the more permissive.
 
+@subsubsection Level1
 Level 1 ISO 9660 defines names in the 8+3 convention so familiar to
 MS-DOS: eight characters for the filename, a period, and
 then three characters for the file type, all in upper case. The
@@ -242,9 +227,11 @@ requires that files occupy a contiguous range of sectors. This allows
 a file to be specified with a start block and a count. The maximum
 directory depth is 8.
 
+@subsubsection Level2
 Level 2 ISO 9660 allows far more flexibility in filenames, but isn't
 usable on some systems, notably MS-DOS.
 
+@subsubsection Level3
 Level 3 ISO-9660 allows non-contiguous files, useful if the file was
 written in multiple packets with packet-writing software.
 
@@ -257,6 +244,30 @@ Windows 95 and subsequent versions of Windows.
 Another extension is the Rock Ridge Interchange Protocol (RRIP), which
 enables the recording of sufficient information to support POSIX File
 System semantics.
+
+@node Mode1
+@subsection Mode1
+Mode 1 is the data storage mode used by to store computer
+data. The data is laid out in basically the same way as in and audio
+CD format, except that the 2,352 bytes of data in each block are
+broken down further. 2,048 of these bytes are for "real" data. The
+other 304 bytes are used for an additional level of error detecting
+and correcting code. This is necessary because data CDs cannot
+tolerate the loss of a handful of bits now and then, the way audio
+CDs can.
+
+@node Mode2
+@subsection Mode2
+Mode 2 data CDs are the same as mode 1 CDs except that the error
+detecting and correcting codes are omitted. This is similar to audio
+CDs, i.e. the mode 2 format provides a more flexible vehicle for
+storing types of data that do not require high data integrity: for
+example, graphics and video can use this format. But in contrast to
+the Red book standard, different modes can be mixed together; this is
+the basis for the extensions to the original data CD standards known
+as CD-ROM Extended Architecture, or CD-ROM XA.  CD-ROM XA formats
+currently in use are CD-I Bridge formats, Photo CD and VideoCD plus
+Sony's Playstation.
 
 @node White Book
 @section White Book
