@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.3 2003/08/31 01:32:05 rocky Exp $
+    $Id: iso9660.c,v 1.4 2003/08/31 01:40:00 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -37,7 +37,7 @@
 #include "cdio_assert.h"
 #include "bytesex.h"
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.3 2003/08/31 01:32:05 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.4 2003/08/31 01:40:00 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"
@@ -202,9 +202,9 @@ iso9660_set_pvd(void *pd,
             uint32_t path_table_m_extent,
             uint32_t path_table_size)
 {
-  pvd_t ipd;
+  iso9660_pvd_t ipd;
 
-  cdio_assert (sizeof(pvd_t) == ISO_BLOCKSIZE);
+  cdio_assert (sizeof(iso9660_pvd_t) == ISO_BLOCKSIZE);
 
   cdio_assert (pd != NULL);
   cdio_assert (volume_id != NULL);
@@ -672,42 +672,42 @@ iso9660_get_dir_size(const iso_directory_record_t *idr)
 #endif
 
 uint8_t
-iso9660_get_pvd_type(const pvd_t *pvd) 
+iso9660_get_pvd_type(const iso9660_pvd_t *pvd) 
 {
   if (NULL == pvd) return 255;
   return(pvd->type);
 }
 
 const char *
-iso9660_get_pvd_id(const pvd_t *pvd) 
+iso9660_get_pvd_id(const iso9660_pvd_t *pvd) 
 {
   if (NULL == pvd) return "ERR";
   return(pvd->id);
 }
 
 int
-iso9660_get_pvd_space_size(const pvd_t *pvd) 
+iso9660_get_pvd_space_size(const iso9660_pvd_t *pvd) 
 {
   if (NULL == pvd) return 0;
   return from_733(pvd->volume_space_size);
 }
 
 int
-iso9660_get_pvd_block_size(const pvd_t *pvd) 
+iso9660_get_pvd_block_size(const iso9660_pvd_t *pvd) 
 {
   if (NULL == pvd) return 0;
   return from_723(pvd->logical_block_size);
 }
 
 int
-iso9660_get_pvd_version(const pvd_t *pvd) 
+iso9660_get_pvd_version(const iso9660_pvd_t *pvd) 
 {
   if (NULL == pvd) return 0;
   return pvd->version;
 }
 
 lsn_t
-iso9660_get_root_lsn(const pvd_t *pvd) 
+iso9660_get_root_lsn(const iso9660_pvd_t *pvd) 
 {
   if (NULL == pvd) 
     return CDIO_INVALID_LSN;
