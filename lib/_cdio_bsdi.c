@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.17 2003/10/03 03:46:54 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.18 2003/10/03 04:04:24 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.17 2003/10/03 03:46:54 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.18 2003/10/03 04:04:24 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -156,20 +156,20 @@ _read_audio_sectors (void *env, void *data, lsn_t lsn,
   msf->cdmsf_sec0 = from_bcd8(_msf.s);
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
 
-  if (_obj->ioctls_debugged == 75)
+  if (_obj->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
 
-  if (_obj->ioctls_debugged == 30 * 75)
+  if (_obj->gen.ioctls_debugged == 30 * 75)
     cdio_debug ("only displaying every 30*75th ioctl from now on");
   
-  if (_obj->ioctls_debugged < 75 
-      || (_obj->ioctls_debugged < (30 * 75)  
-	  && _obj->ioctls_debugged % 75 == 0)
-      || _obj->ioctls_debugged % (30 * 75) == 0)
+  if (_obj->gen.ioctls_debugged < 75 
+      || (_obj->gen.ioctls_debugged < (30 * 75)  
+	  && _obj->gen.ioctls_debugged % 75 == 0)
+      || _obj->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %2.2d:%2.2d:%2.2d",
 	       msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
   
-  _obj->ioctls_debugged++;
+  _obj->gen.ioctls_debugged++;
  
   switch (_obj->access_mode) {
     case _AM_NONE:
@@ -223,7 +223,7 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
   if (_obj->gen.ioctls_debugged < 75 
       || (_obj->gen.ioctls_debugged < (30 * 75)  
 	  && _obj->gen.ioctls_debugged % 75 == 0)
-      || _obj->ioctls_debugged % (30 * 75) == 0)
+      || _obj->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %2.2d:%2.2d:%2.2d",
 	       msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
   
@@ -261,7 +261,7 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn, 
-		     bool mode2_form2, unsigned int nblocks)
+			  bool mode2_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   int i;
@@ -470,6 +470,21 @@ _cdio_get_first_track_num(void *env)
 }
 
 /*!
+  Return the media catalog number MCN.
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+ */
+static char *
+_cdio_get_mcn (void *env) {
+
+  struct cdrom_mcn mcn;
+  _img_private_t *_obj = env;
+  if (ioctl(_obj->gen.fd, CDROM_GET_MCN, &mcn) != 0)
+    return NULL;
+  return strdup(mcn.medium_catalog_number);
+}
+
+/*!
   Return the number of tracks in the current medium.
   CDIO_INVALID_TRACK is returned on error.
 */
@@ -644,7 +659,7 @@ cdio_open_bsdi (const char *source_name)
     .get_default_device = cdio_get_default_device_bsdi,
     .get_devices        = cdio_get_devices_bsdi,
     .get_first_track_num= _cdio_get_first_track_num,
-    .get_mcn            = NULL, 
+    .get_mcn            = _cdio_get_mcn, 
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
     .get_track_green    = _cdio_get_track_green,

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.16 2003/09/25 09:38:16 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.17 2003/10/03 04:04:24 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.16 2003/09/25 09:38:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.17 2003/10/03 04:04:24 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -70,12 +70,52 @@ typedef struct {
     _AM_IOCTL,
   } access_mode;
 
+  char *source_name;
+  
+  bool init;
+
   /* Track information */
   bool toc_init;                         /* if true, info below is valid. */
   struct ioc_toc_header  tochdr;
   struct ioc_read_toc_single_entry tocent[100]; /* entry info for each track */
 
 } _img_private_t;
+
+/* Check a drive to see if it is a CD-ROM 
+   Return 1 if a CD-ROM. 0 if it exists but isn't a CD-ROM drive
+   and -1 if no device exists .
+*/
+static bool
+cdio_is_cdrom(char *drive, char *mnttype)
+{
+  bool is_cd=false;
+  int cdfd;
+  struct cdrom_tochdr    tochdr;
+  
+  /* If it doesn't exist, return -1 */
+  if ( !cdio_is_device_quiet_generic(drive) ) {
+    return(false);
+  }
+  
+  /* If it does exist, verify that it's an available CD-ROM */
+  cdfd = open(drive, (O_RDONLY|O_EXCL|O_NONBLOCK), 0);
+
+  /* Should we want to test the condition in more detail:
+     ENOENT is the error for /dev/xxxxx does not exist;
+     ENODEV means there's no drive present. */
+
+  if ( cdfd >= 0 ) {
+    if ( ioctl(cdfd, CDROMREADTOCHDR, &tochdr) != -1 ) {
+      is_cd = true;
+    }
+    close(cdfd);
+    }
+  /* Even if we can't read it, it might be mounted */
+  else if ( mnttype && (strcmp(mnttype, "iso9660") == 0) ) {
+    is_cd = true;
+  }
+  return(is_cd);
+}
 
 static int 
 _set_bsize (int fd, unsigned int bsize)
@@ -162,11 +202,11 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
   if (_obj->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
 
-  if (_obj->get.ioctls_debugged == 30 * 75)
+  if (_obj->gen.ioctls_debugged == 30 * 75)
     cdio_debug ("only displaying every 30*75th ioctl from now on");
   
   if (_obj->gen.ioctls_debugged < 75 
-      || (_obj->get.ioctls_debugged < (30 * 75)  
+      || (_obj->gen.ioctls_debugged < (30 * 75)  
 	  && _obj->gen.ioctls_debugged % 75 == 0)
       || _obj->ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %2.2d:%2.2d:%2.2d",
@@ -207,7 +247,7 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
  */
 static int
 _cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn, 
-		     bool mode2_form2, unsigned int nblocks)
+			  bool mode2_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   int i;
@@ -475,6 +515,53 @@ _cdio_get_track_msf(void *env, track_t track_num, msf_t *msf)
 #endif /* HAVE_FREEBSD_CDROM */
 
 /*!
+  Return an array of strings giving possible CD devices.
+ */
+char **
+cdio_get_devices_freebsd (void)
+{
+#ifndef HAVE_FREEBSD_CDROM
+  return NULL;
+#else
+  char drive[40];
+  char **drives = NULL;
+  unsigned int num_drives=0;
+  bool exists=true;
+  char c;
+  
+  /* Scan the system for CD-ROM drives.
+  */
+
+#ifdef USE_ETC_FSTAB
+
+  struct fstab *fs;
+  setfsent();
+  
+  /* Check what's in /etc/fstab... */
+  while ( (fs = getfsent()) )
+    {
+      if (strncmp(fs->fs_spec, "/dev/sr", 7))
+	cdio_add_device_list(&drives, fs->fs_spec, &num_drives);
+    }
+  
+#endif
+
+  /* Scan the system for CD-ROM drives.
+     Not always 100% reliable, so use the USE_MNTENT code above first.
+  */
+  for ( c='0'; exists && c <='9'; c++ ) {
+    sprintf(drive, "/dev/acd%cc", c);
+    exists = cdio_is_cdrom(drive, NULL);
+    if ( exists ) {
+      cdio_add_device_list(&drives, drive, &num_drives);
+    }
+  }
+  cdio_add_device_list(&drives, NULL, &num_drives);
+  return drives;
+#endif /*HAVE_FREEBSD_CDROM*/
+}
+
+/*!
   Return a string containing the default CD device if none is specified.
  */
 char *
@@ -501,6 +588,7 @@ cdio_open_freebsd (const char *source_name)
     .free               = _cdio_generic_free,
     .get_arg            = _cdio_get_arg,
     .get_default_device = _cdio_get_default_device_freebsd,
+    .get_devices        = cdio_get_devices_freebsd,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_mcn            = NULL,
     .get_num_tracks     = _cdio_get_num_tracks,
