@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.8 2003/05/24 15:43:06 rocky Exp $
+    $Id: cdio_private.h,v 1.9 2003/06/07 16:48:33 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -59,7 +59,7 @@ extern "C" {
     const char * (*get_arg) (void *user_data, const char key[]);
     
     /*!
-      Return a string containing the default VCD device if none is specified.
+      Return a string containing the default CD device if none is specified.
     */
     char * (*get_default_device)(void);
     
@@ -205,6 +205,9 @@ extern "C" {
     bool (*have_driver) (void); 
     CdIo *(*driver_open) (const char *source_name); 
     char *(*get_default_device) (void); 
+    bool (*is_device) (const char *source_name);
+  
+
   } CdIo_driver_t;
 
   /* The below array gives of the drivers that are currently available for 
@@ -254,6 +257,20 @@ extern "C" {
     Release and free resources associated with stream or disk image.
   */
   void cdio_generic_stream_free (void *user_data);
+
+  /*!  
+    Return true if source_name could be a device containing a CD-ROM on
+    Win32
+  */
+  bool cdio_is_device_win32(const char *source_name);
+
+  
+  /*!  
+    Return true if source_name could be a device containing a CD-ROM on
+    most Unix servers with block and character devices.
+  */
+  bool cdio_is_device_generic(const char *source_name);
+
   
 #ifdef __cplusplus
 }
