@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.8 2004/06/19 19:15:15 rocky Exp $
+  $Id: util.c,v 1.9 2004/06/27 16:37:34 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -93,29 +93,44 @@ print_drive_capabilities(cdio_drive_cap_t i_drive_cap)
   if (CDIO_DRIVE_CAP_ERROR == i_drive_cap) {
     printf("Error in getting drive properties\n");
   } else {
-    printf("Hardware             : %s\n", 
+    printf("Hardware                : %s\n", 
 	   i_drive_cap & CDIO_DRIVE_CAP_FILE  
 	   ? "Disk Image"  : "CD-ROM or DVD");
-    printf("Can open tray        : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_CAP_OPEN_TRAY  ? "Yes"  : "No");
-    printf("Can close tray       : %s\n\n", 
-	   i_drive_cap & CDIO_DRIVE_CAP_OPEN_TRAY  ? "Yes"  : "No");
+    printf(_("Can open tray           : %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_OPEN_TRAY     ? "Yes" : "No");
+    printf(_("Can close tray          : %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_CLOSE_TRAY    ? "Yes" : "No");
+    printf(_("Can disable manual eject: %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_LOCK          ? "Yes" : "No");
+    printf(_("Can select juke-box disc: %s\n\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_SELECT_DISC   ? "Yes" : "No");
+
+    printf(_("Can set drive speed     : %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_SELECT_SPEED  ? "Yes" : "No");
+    printf(_("Can detect if CD changed: %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_MEDIA_CHANGED ? "Yes" : "No");
+    printf(_("Can read Media Cat. No. : %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_MCN           ? "Yes" : "No");
+    printf(_("Can read sessions > 1 . : %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_MULTI_SESSION ? "Yes" : "No");
+    printf(_("Can hard reset device   : %s\n\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_RESET         ? "Yes" : "No");
     
-    printf("Compact Disc         : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_CAP_CD         ? "Yes"  : "No");
-    printf("   Can play audio    : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_CAP_CD_AUDIO   ?  "Yes" : "No");
-    printf("   Can read  CD-RW   : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_CAP_CD_RW      ?  "Yes" : "No");
-    printf("   Can write CD-R    : %s\n\n", 
-	   i_drive_cap & CDIO_DRIVE_CAP_CD_R       ?  "Yes" : "No");
+    printf(_("Compact Disc            : %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_CD            ? "Yes" : "No");
+    printf(_("   Can play audio       : %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_CD_AUDIO      ? "Yes" : "No");
+    printf(_("   Can read  CD-RW      : %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_CD_RW         ? "Yes" : "No");
+    printf(_("   Can write CD-R       : %s\n\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_CD_R          ? "Yes" : "No");
     
-    printf("Digital Versital Disc: %s\n", 
-	   i_drive_cap & CDIO_DRIVE_CAP_DVD        ?  "Yes" : "No");
-    printf("   Can write DVD-R   : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_CAP_DVD_R      ?  "Yes" : "No");
-    printf("   Can write DVD-RAM : %s\n", 
-	   i_drive_cap & CDIO_DRIVE_CAP_DVD_RAM    ?  "Yes" : "No");
+    printf(_("Digital Versital Disc   : %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_DVD           ? "Yes" : "No");
+    printf(_("   Can write DVD-R      : %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_DVD_R         ? "Yes" : "No");
+    printf(_("   Can write DVD-RAM    : %s\n"), 
+	   i_drive_cap & CDIO_DRIVE_CAP_DVD_RAM       ? "Yes" : "No");
   }
   if (CDIO_DRIVE_CAP_UNKNOWN == i_drive_cap) {
     printf("Not completely sure about drive properties\n\n");
