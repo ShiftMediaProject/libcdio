@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.h,v 1.1 2003/04/19 08:29:14 rocky Exp $
+    $Id: cdio.h,v 1.2 2003/04/19 09:02:30 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -24,6 +24,11 @@
 
 #ifndef __CDIO_H__
 #define __CDIO_H__
+
+/* Application Interface or Protocol version number. If the public
+   interface changes, we increase this number.
+ */
+#define CDIO_API_VERSION 1
 
 #ifdef  HAVE_SYS_TYPES_H
 #include <sys/types.h>
