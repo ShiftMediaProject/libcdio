@@ -48,7 +48,7 @@ and feature requests.
   (Revise vcdimager too)
 
 * API overhaul. hvr has expressed interest but it's unlikely he'll ever
-  have hthe time to do. It could be done in conjunction with a wrappers
+  have the time to do. It could be done in conjunction with a wrappers
   for C++, Perl, Python, ... The idea is that those interfaces would not
   show the ugliness of the current C interface. For example instead of 
   read_mode2, read_mode1, read_audio, there might be a read(mode, ...).
@@ -57,7 +57,7 @@ and feature requests.
 
 * UDF support.
 
-* Delete files in an iso9660 image (mephisto75 at web.de)
+* Delete and rename files in an iso9660 image (mephisto75 at web.de)
 
 * Some things where libcdio will probably not expand in:
  
@@ -73,4 +73,4 @@ to undertake doing it. Patches are always welcome (and CVS write
 access is available for those who have demonstrated reasonable ability
 through contributions.)
 
-$Id: TODO,v 1.7 2004/10/23 21:24:07 rocky Exp $
+$Id: TODO,v 1.8 2004/12/01 12:33:49 rocky Exp $
