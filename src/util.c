@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.38 2005/02/20 10:23:26 rocky Exp $
+  $Id: util.c,v 1.39 2005/02/20 10:34:45 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -460,11 +460,13 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
   char date_str[30];
 
   if (yep == p_statbuf->b_rock && b_rock) {
-    report (stdout, "  %s %d %d [LSN %6lu] ",
+    report (stdout, "  %s %d %d [LSN %6lu] %9u",
 	     iso9660_get_rock_attr_str (p_statbuf->st_mode),
 	     p_statbuf->st_uid,
 	     p_statbuf->st_gid,
-	     (long unsigned int) p_statbuf->lsn);
+	    (long unsigned int) p_statbuf->lsn,
+	    (unsigned int) p_statbuf->size);
+
   } else if (b_xa) {
     report (stdout, "  %s %d %d [fn %.2d] [LSN %6lu] ",
 	     iso9660_get_xa_attr_str (p_statbuf->xa.attributes),
@@ -480,8 +482,9 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
     } else 
       report (stdout, "%9u", (unsigned int) p_statbuf->size);
   } else {
-    report (stdout,"  %c %9u", 
+    report (stdout,"  %c [LSN %6lu] %9u", 
 	    (p_statbuf->type == _STAT_DIR) ? 'd' : '-',
+	    (long unsigned int) p_statbuf->lsn,
 	    (unsigned int) p_statbuf->size);
   }
   strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M ", &p_statbuf->tm);
