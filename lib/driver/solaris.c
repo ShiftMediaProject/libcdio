@@ -1,5 +1,5 @@
 /*
-    $Id: solaris.c,v 1.2 2005/03/05 10:48:41 rocky Exp $
+    $Id: solaris.c,v 1.3 2005/03/06 00:55:42 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: solaris.c,v 1.2 2005/03/05 10:48:41 rocky Exp $";
+static const char _rcsid[] = "$Id: solaris.c,v 1.3 2005/03/06 00:55:42 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -241,7 +241,7 @@ init_solaris (_img_private_t *p_env)
 static driver_return_code_t
 run_mmc_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
 		     unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		     scsi_mmc_direction_t e_direction, 
+		     mmc_direction_t e_direction, 
 		     unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
