@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.41 2004/10/09 03:20:28 rocky Exp $
+    $Id: nrg.c,v 1.42 2004/10/22 01:13:38 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,16 +37,16 @@
 #include <glob.h>
 #endif
 
+#include <cdio/bytesex.h>
 #include <cdio/ds.h>
 #include <cdio/logging.h>
 #include <cdio/util.h>
 #include <cdio/version.h>
 #include "cdio_assert.h"
-#include "bytesex.h"
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.41 2004/10/09 03:20:28 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.42 2004/10/22 01:13:38 rocky Exp $";
 
 
 /* reader */

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.16 2004/06/18 23:00:06 rocky Exp $
+    $Id: iso9660.c,v 1.17 2004/10/22 01:13:38 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -22,9 +22,9 @@
 /* Private headers */
 #include "iso9660_private.h"
 #include "cdio_assert.h"
-#include "bytesex.h"
 
 /* Public headers */
+#include <cdio/bytesex.h>
 #include <cdio/iso9660.h>
 #include <cdio/util.h>
 
@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.16 2004/06/18 23:00:06 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.17 2004/10/22 01:13:38 rocky Exp $";
 
 /* some parameters... */
 #define SYSTEM_ID         "CD-RTOS CD-BRIDGE"

@@ -1,8 +1,8 @@
 /*
-    $Id: bytesex_asm.h,v 1.3 2003/04/22 12:09:09 rocky Exp $
+    $Id: bytesex_asm.h,v 1.1 2004/10/22 01:13:38 rocky Exp $
 
     Copyright (C) 2001 Sven Ottemann <ac-logic@freenet.de>
-                  2001 Herbert Valerio Riedel <hvr@gnu.org>
+                  2001, 2004 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.25 2004/10/09 23:20:52 rocky Exp $
+    $Id: iso9660_fs.c,v 1.26 2004/10/22 01:13:38 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -28,23 +28,23 @@
 #endif
 
 #include <cdio/cdio.h>
+#include <cdio/bytesex.h>
 #include <cdio/iso9660.h>
 #include <cdio/util.h>
 
 /* Private headers */
 #include "cdio_assert.h"
-#include "bytesex.h"
 #include "_cdio_stdio.h"
 #include "cdio_private.h"
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.25 2004/10/09 23:20:52 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.26 2004/10/22 01:13:38 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
   CdioDataSource *stream; /* Stream pointer */
-  void *env;              /* environment. */
+  bool b_xa;              /* true if has XA attributes. */
 };
 
 /*!
@@ -54,17 +54,28 @@ struct _iso9660 {
 iso9660_t *
 iso9660_open (const char *pathname /*flags, mode */)
 {
-  iso9660_t *iso = (iso9660_t *) _cdio_malloc(sizeof(struct _iso9660)) ;
+  iso9660_t *p_iso = (iso9660_t *) _cdio_malloc(sizeof(struct _iso9660)) ;
+  iso9660_pvd_t pvd;
 
-  if (NULL == iso) return NULL;
+  if (NULL == p_iso) return NULL;
   
-  iso->stream = cdio_stdio_new( pathname );
-  if (NULL == iso->stream) {
-    free(iso);
-    return NULL;
-  }
+  p_iso->stream = cdio_stdio_new( pathname );
+  if (NULL == p_iso->stream) 
+    goto error;
   
-  return iso;
+  if (!iso9660_ifs_read_pvd(p_iso, &pvd))
+    goto error;
+  
+  /* Determine if image has XA attributes. */
+  
+  p_iso->b_xa = !strncmp ((char *) &pvd + ISO_XA_MARKER_OFFSET, 
+			  ISO_XA_MARKER_STRING, 
+			  strlen (ISO_XA_MARKER_STRING));
+  return p_iso;
+
+ error:
+  free(p_iso);
+  return NULL;
 }
 
 
@@ -760,4 +771,15 @@ iso9660_find_fs_lsn(const CdIo *cdio, lsn_t lsn)
 {
   return find_fs_lsn_recurse (cdio, "/", lsn);
 }
+
+/*!
+  Return true if ISO 9660 image has extended attrributes (XA).
+*/
+bool 
+iso9660_ifs_is_xa (const iso9660_t * p_iso) 
+{
+  if (!p_iso) return false;
+  return p_iso->b_xa;
+}
+
 

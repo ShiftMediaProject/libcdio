@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.49 2004/10/10 20:36:10 rocky Exp $
+    $Id: iso9660.h,v 1.50 2004/10/22 01:13:38 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -663,6 +663,12 @@ iso9660_set_pvd (void *pd, const char volume_id[], const char application_id[],
 
 void 
 iso9660_set_evd (void *pd);
+
+/*!
+  Return true if ISO 9660 image has extended attrributes (XA).
+*/
+bool iso9660_ifs_is_xa (const iso9660_t * p_iso);
+
 
 #ifdef __cplusplus
 }

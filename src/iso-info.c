@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.10 2004/10/09 03:20:28 rocky Exp $
+    $Id: iso-info.c,v 1.11 2004/10/22 01:13:38 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -32,6 +32,7 @@
 # include "config.h"
 #endif
 #include <sys/types.h>
+#include <cdio/bytesex.h>
 #include <cdio/cdio.h>
 #include <cdio/ds.h>
 #include <cdio/iso9660.h>
@@ -151,13 +152,13 @@ _log_handler (cdio_log_level_t level, const char message[])
 }
 
 static void
-print_iso9660_recurse (iso9660_t *iso, const char pathname[])
+print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
 {
   CdioList *entlist;
   CdioList *dirlist =  _cdio_list_new ();
   CdioListNode *entnode;
 
-  entlist = iso9660_ifs_readdir (iso, pathname);
+  entlist = iso9660_ifs_readdir (p_iso, pathname);
     
   printf ("%s:\n", pathname);
 
@@ -189,8 +190,8 @@ print_iso9660_recurse (iso9660_t *iso, const char pathname[])
           && strcmp (iso_name, ".."))
         _cdio_list_append (dirlist, strdup (_fullname));
 
-#if FINISHED
-      if (fs & CDIO_FS_ANAL_XA) {
+#if 1
+      if (iso9660_ifs_is_xa(p_iso)) {
 	printf ( "  %c %s %d %d [fn %.2d] [LSN %6lu] ",
 		 (statbuf->type == _STAT_DIR) ? 'd' : '-',
 		 iso9660_get_xa_attr_str (statbuf->xa.attributes),
@@ -222,7 +223,7 @@ print_iso9660_recurse (iso9660_t *iso, const char pathname[])
     {
       char *_fullname = _cdio_list_node_data (entnode);
 
-      print_iso9660_recurse (iso, _fullname);
+      print_iso9660_recurse (p_iso, _fullname);
     }
 
   _cdio_list_free (dirlist, true);
