@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.11 2005/01/14 03:41:11 rocky Exp $
+  $Id: interface.c,v 1.12 2005/01/14 04:09:30 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -111,15 +111,7 @@ cdda_open(cdrom_drive_t *d)
     
   /*  d->select_speed(d,d->maxspeed); most drives are full speed by default */
   if (d->bigendianp==-1)
-#ifdef USE_DATA_BIGENDIANP
     d->bigendianp=data_bigendianp(d);
-#else 
-#if WORDS_BIGENDIAN
-  d->bigendianp=1;
-#else  
-  d->bigendianp=0;
-#endif /*WORDS_BIGENDIAN*/
-#endif /*USE_DATA_BIGENDIANP*/
 
   return(0);
 }

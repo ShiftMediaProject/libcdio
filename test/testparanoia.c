@@ -34,6 +34,12 @@
 #include <string.h>
 #endif
 
+#ifdef WORDS_BIGENDIAN
+#define BIGENDIAN 1
+#else
+#define BIGENDIAN 0
+#endif
+ 
 #define SKIP_TEST_RC 77
 
 #define MAX_SECTORS 50
@@ -133,12 +139,26 @@ main(int argc, const char *argv[])
 	  if ( PARANOIA_CB_READ == audio_status[i] || 
 	       PARANOIA_CB_VERIFY == audio_status[i] ) {
 	    /* We read the block via paranoia without an error. */
+
 	    if ( 0 == cdio_read_audio_sector(d->p_cdio, readbuf, i_lsn) ) {
-	      if ( 0 != memcmp(audio_buf[i], readbuf, 
-			       CDIO_CD_FRAMESIZE_RAW) ) {
-		printf("LSN %ld doesn't match\n", (long int) i_lsn);
-		i_rc = 1;
-		goto out;
+	      if ( BIGENDIAN != d->bigendianp ) {
+		/* We will compare in the slow, pedantic way*/
+		int j;
+		for (j=0; j < CDIO_CD_FRAMESIZE_RAW ; j +=2) {
+		  if (audio_buf[i][j]   != readbuf[j+1] && 
+		      audio_buf[i][j+1] != readbuf[j] ) {
+		    printf("LSN %ld doesn't match\n", (long int) i_lsn);
+		    i_rc = 1;
+		    goto out;
+		  }
+		}
+	      } else {
+		if ( 0 != memcmp(audio_buf[i], readbuf, 
+				 CDIO_CD_FRAMESIZE_RAW) ) {
+		  printf("LSN %ld doesn't match\n", (long int) i_lsn);
+		  i_rc = 1;
+		  goto out;
+		}
 	      }
 	    }
 	  } else {
