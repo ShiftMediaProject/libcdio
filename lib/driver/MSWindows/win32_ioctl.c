@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.23 2005/03/15 02:04:51 rocky Exp $
+    $Id: win32_ioctl.c,v 1.24 2005/03/17 19:41:16 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.23 2005/03/15 02:04:51 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.24 2005/03/17 19:41:16 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -458,15 +458,21 @@ static discmode_t
 dvd_discmode_win32ioctl (_img_private_t *p_env)
 {
   discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
+  cdio_log_level_t old_loglevel = cdio_loglevel_default;
+  driver_return_code_t rc;
 
   /* See if this is a DVD. */
   cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
 
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
-  if (0 == mmc_get_dvd_struct_physical_private (p_env, 
-						&run_mmc_cmd_win32ioctl,
-						&dvd)) {
+
+  cdio_loglevel_default = CDIO_LOG_DEBUG;
+  rc = mmc_get_dvd_struct_physical_private (p_env, &run_mmc_cmd_win32ioctl,
+					    &dvd);
+  cdio_loglevel_default = old_loglevel;
+
+  if (DRIVER_OP_SUCCESS == rc) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
