@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.3 2005/01/17 17:20:09 rocky Exp $
+    $Id: freebsd.c,v 1.4 2005/01/18 04:03:06 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.3 2005/01/17 17:20:09 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.4 2005/01/18 04:03:06 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -179,6 +179,21 @@ _set_arg_freebsd (void *user_data, const char key[], const char value[])
     return -1;
 
   return 0;
+}
+
+/* Set CD-ROM drive speed */
+static int 
+set_speed_freebsd (void *p_user_data, int i_speed)
+{
+  const _img_private_t *p_env = p_user_data;
+
+  if (!p_env) return -1;
+#ifdef CDRIOCREADSPEED
+  i_speed *= 177;
+  return ioctl(p_env->gen.fd, CDRIOCREADSPEED, &i_speed);
+#else
+  return -2;
+#endif
 }
 
 /*! 
@@ -581,6 +596,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .read_toc               = read_toc_freebsd,
     .run_scsi_mmc_cmd       = run_scsi_cmd_freebsd,
     .set_arg                = _set_arg_freebsd,
+    .set_speed              = set_speed_freebsd,
     .stat_size              = _stat_size_freebsd
   };
 
