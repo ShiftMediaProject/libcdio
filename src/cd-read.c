@@ -1,7 +1,7 @@
 /*
-  $Id: cd-read.c,v 1.18 2004/05/26 00:52:53 rocky Exp $
+  $Id: cd-read.c,v 1.19 2004/05/31 14:52:04 rocky Exp $
 
-  Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -179,6 +179,7 @@ parse_options (int argc, const char *argv[])
 {
 
   int opt;
+  char *psz_my_source;
   char *opt_arg;
 
   /* Command-line options */
@@ -216,24 +217,24 @@ parse_options (int argc, const char *argv[])
      POPT_ARG_INT, &opts.num_sectors, 0,
      "Set number of sectors to read"},
     
-    {"bin-file", 'b', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+    {"bin-file", 'b', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_BIN, "set \"bin\" CD-ROM disk image file as source", "FILE"},
     
-    {"cue-file", 'c', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+    {"cue-file", 'c', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_CUE, "set \"cue\" CD-ROM disk image file as source", "FILE"},
     
-    {"input", 'i', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+    {"input", 'i', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_AUTO,
      "set source and determine if \"bin\" image or device", "FILE"},
     
-    {"cdrom-device", 'C', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+    {"cdrom-device", 'C', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name,
      OP_SOURCE_DEVICE,
      "set CD-ROM device as source", "DEVICE"},
     
-    {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+    {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
     
-    {"toc-file", 't', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
+    {"toc-file", 't', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
      OP_SOURCE_CDRDAO, "set \"TOC\" CD-ROM disk image file as source", "FILE"},
     
     {"output-file",     'o', POPT_ARG_STRING, &opts.output_file, 0,
@@ -264,6 +265,14 @@ parse_options (int argc, const char *argv[])
 		  program_name);
 	  break;
 	} 
+
+	/* For all input sources which are not a DEVICE, we need to make
+	   a copy of the string; for a DEVICE the fill-out routine makes
+	   the copy.
+	*/
+	if (OP_SOURCE_DEVICE != opt) 
+	  source_name = strdup(psz_my_source);
+
 	switch (opt) {
 	case OP_SOURCE_BIN: 
 	  opts.source_image  = IMAGE_BIN;
