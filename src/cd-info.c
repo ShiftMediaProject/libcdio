@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.65 2004/05/31 12:19:35 rocky Exp $
+    $Id: cd-info.c,v 1.66 2004/06/12 17:32:38 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -920,7 +920,7 @@ main(int argc, const char *argv[])
     printf(STRONG "CD-ROM Track List (%i - %i)\n" NORMAL, 
 	   first_track_num, num_tracks);
 
-    printf("  #: MSF        LSN     Type  Green?\n");
+    printf("  #: MSF       LSN     Type  Green?\n");
   }
   
   /* Read and possibly print track information. */
@@ -935,11 +935,11 @@ main(int argc, const char *argv[])
     psz_msf = cdio_msf_to_str(&msf);
     if (i == CDIO_CDROM_LEADOUT_TRACK) {
       if (!opts.no_tracks)
-	printf("%3d: %9s  %06lu  leadout\n", (int) i, psz_msf,
+	printf("%3d: %8s  %06lu  leadout\n", (int) i, psz_msf,
 	       (long unsigned int) cdio_msf_to_lsn(&msf));
       break;
     } else if (!opts.no_tracks) {
-      printf("%3d: %9s  %06lu  %-5s %s\n", (int) i, psz_msf,
+      printf("%3d: %8s  %06lu  %-5s %s\n", (int) i, psz_msf,
 	     (long unsigned int) cdio_msf_to_lsn(&msf),
 	     track_format2str[cdio_get_track_format(cdio, i)],
 	     cdio_get_track_green(cdio, i)? "true" : "false");
