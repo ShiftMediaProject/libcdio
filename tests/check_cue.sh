@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh,v 1.3 2003/04/14 04:28:40 rocky Exp $
+#$Id: check_cue.sh,v 1.4 2003/04/14 08:51:14 rocky Exp $
 
 if test -z $srcdir ; then
   srcdir=`pwd`
@@ -10,7 +10,7 @@ fi
 BASE=`basename $0 .sh`
 
 fname=fsf
-test_cdinfo "--cue-file ${srcdir}/${fname}.cue --nocddb" \
+test_cdinfo "--cue-file ${srcdir}/${fname}.cue --no-cddb" \
   ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC 'cdinfo CUE test 1'

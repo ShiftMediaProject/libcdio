@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.3 2003/04/06 08:13:25 rocky Exp $
+#   $Id: Makefile.am,v 1.4 2003/04/14 08:51:14 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,7 +20,7 @@
 # Things to regression testing
 ####################################################
 #
-check_SCRIPTS = check_nrg.sh check_cue.sh
+check_SCRIPTS = check_nrg.sh check_cue.sh check_opts.sh
 
 check_DATA = monvoisin.right svcd_ogt_test_ntsc.right vcd_demo.right \
 	     fsf-tompox.right fsf-tompox.cue fsf-tompox.bin monvoisin.nrg \
