@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.1 2005/02/07 03:36:02 rocky Exp $
+    $Id: mmc.h,v 1.2 2005/02/07 12:06:29 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -184,8 +184,10 @@ typedef enum {
 typedef enum {
   CDIO_MMC_FEATURE_PROFILE_LIST     = 0x000, /**< Profile List Feature */
   CDIO_MMC_FEATURE_CORE             = 0x001, 
-  CDIO_MMC_FEATURE_REMOVABLE_MEDIUM = 0x002, /**< Removable Medium Feature */
-  CDIO_MMC_FEATURE_WRITE_PROTECT    = 0x003, /**< Write Protect Feature */
+  CDIO_MMC_FEATURE_MORPHING         = 0x002, /**< Report/prevent operational
+                                                  changes  */
+  CDIO_MMC_FEATURE_REMOVABLE_MEDIUM = 0x003, /**< Removable Medium Feature */
+  CDIO_MMC_FEATURE_WRITE_PROTECT    = 0x004, /**< Write Protect Feature */
   CDIO_MMC_FEATURE_RANDOM_READABLE  = 0x010, /**< Random Readable Feature */
   CDIO_MMC_FEATURE_MULTI_READ       = 0x01D, /**< Multi-Read Feature */
   CDIO_MMC_FEATURE_CD_READ          = 0x01E, /**< CD Read Feature */
@@ -205,10 +207,16 @@ typedef enum {
 						Feature */
   CDIO_MMC_FEATURE_CD_RW_CAV        = 0x027, /**< CD-RW CAV Write Feature */
   CDIO_MMC_FEATURE_MRW              = 0x028, /**< MRW Feature */
+  CDIO_MMC_FEATURE_ENHANCED_DEFECT  = 0x029, /**< Enhanced Defect Reporting */
   CDIO_MMC_FEATURE_DVD_PRW          = 0x02A, /**< DVD+RW Feature */
   CDIO_MMC_FEATURE_DVD_PR           = 0x02B, /**< DVD+R Feature */
-  CDIO_MMC_FEATURE_CD_TAO           = 0x02D,
-  CDIO_MMC_FEATURE_CD_SAO           = 0x02E,
+  CDIO_MMC_FEATURE_RIGID_RES_OVERW  = 0x02C, /**< Rigid Restricted Overwrite */
+  CDIO_MMC_FEATURE_CD_TAO           = 0x02D, /**< CD Track at Once */ 
+  CDIO_MMC_FEATURE_CD_SAO           = 0x02E, /**< CD Mastering (Session at 
+						Once) */
+  CDIO_MMC_FEATURE_DVD_R_RW_WRITE   = 0x02F, /**< DVD-R/RW Write */
+  CDIO_MMC_FEATURE_CD_RW_MEDIA_WRITE= 0x037, /**< CD-RW Media Write Support */
+  CDIO_MMC_FEATURE_DVD_PR_2_LAYER   = 0x03B, /**< DVD+R Double Layer */
   CDIO_MMC_FEATURE_POWER_MGMT       = 0x100, /**< Initiator and device directed
 						power management */
   CDIO_MMC_FEATURE_CDDA_EXT_PLAY    = 0x103, /**< Ability to play audio CDs 
@@ -262,6 +270,8 @@ typedef enum {
   CDIO_MMC_FEATURE_PROF_DDCD_ROM      = 0x0020, /**< Read only  DDCD */
   CDIO_MMC_FEATURE_PROF_DDCD_R        = 0x0021, /**< DDCD-R Write only DDCD */
   CDIO_MMC_FEATURE_PROF_DDCD_RW       = 0x0022, /**< Re-Write only DDCD */
+  CDIO_MMC_FEATURE_PROF_DVD_PR2       = 0x002B, /**< DVD+R - DVD Recordable 
+                                                     double layer */
   CDIO_MMC_FEATURE_PROF_NON_CONFORM   = 0xFFFF, /**< The Logical Unit does not
 						   conform to any Profile. */
 } mmc_feature_t;

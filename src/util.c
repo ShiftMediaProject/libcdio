@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.32 2005/02/05 04:25:14 rocky Exp $
+  $Id: util.c,v 1.33 2005/02/07 12:06:29 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -266,6 +266,10 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 	      report( stdout, 
 		      "\tDVD+RW - DVD ReWritable");
 	      break;
+	    case CDIO_MMC_FEATURE_RIGID_RES_OVERW:
+	      report( stdout, 
+		      "\tRigid Restricted Overwrite");
+	      break;
 	    case CDIO_MMC_FEATURE_PROF_DVD_PR:
 	      report( stdout, 
 		      "\tDVD+R - DVD Recordable");
@@ -273,6 +277,10 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 	    case CDIO_MMC_FEATURE_PROF_DDCD_ROM:
 	      report( stdout, 
 		      "\tRead only DDCD");
+	      break;
+	    case CDIO_MMC_FEATURE_PROF_DVD_PR2:
+	      report( stdout, 
+		      "\tDVD+R Double Layer - DVD Recordable Double Layer");
 	      break;
 	    case CDIO_MMC_FEATURE_PROF_DDCD_R:
 	      report( stdout, 
@@ -305,27 +313,39 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 	    uint32_t 	i_interface_standard = CDIO_MMC_GET_LEN32(q);
 	    report( stdout, "Core Feature\n");
 	    switch(i_interface_standard) {
-	    case 0: 
+	    case CDIO_MMC_FEATURE_INTERFACE_UNSPECIFIED: 
 	      report( stdout, "\tunspecified interface\n");
 	      break;
-	    case 1: 
+	    case CDIO_MMC_FEATURE_INTERFACE_SCSI:
 	      report( stdout, "\tSCSI interface\n");
 	      break;
-	    case 2: 
+	    case CDIO_MMC_FEATURE_INTERFACE_ATAPI: 
 	      report( stdout, "\tATAPI interface\n");
 	      break;
-	    case 3: 
+	    case CDIO_MMC_FEATURE_INTERFACE_IEEE_1394: 
 	      report( stdout, "\tIEEE 1394 interface\n");
 	      break;
-	    case 4:
+	    case CDIO_MMC_FEATURE_INTERFACE_IEEE_1394A: 
 	      report( stdout, "\tIEEE 1394A interface\n");
 	      break;
-	    case 5:
+	    case CDIO_MMC_FEATURE_INTERFACE_FIBRE_CH: 
 	      report( stdout, "\tFibre Channel interface\n");
 	    }
 	    report( stdout, "\n");
 	    break;
 	  }
+	case CDIO_MMC_FEATURE_MORPHING:
+	  report( stdout, "Morphing Feature\n" );
+	  report( stdout, 
+		  "\tOperational Change Request/Notification %ssupported "
+		  "via GET EVENT/STATUS NOTIFICATION\n", 
+		  (p[4] & 2) ? "": "not " );
+	  report( stdout, "\tAsynchronous GET EVENT/STATUS NOTIFICATION "
+		  "%ssupported\n", 
+		 (p[4] & 1) ? "": "not " );
+	  break;
+	  ;
+	  
 	case CDIO_MMC_FEATURE_REMOVABLE_MEDIUM:
 	  report( stdout, "Removable Medium Feature\n" );
 	  switch(p[4] >> 5) {
@@ -410,6 +430,11 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 	case CDIO_MMC_FEATURE_MRW:
 	  report( stdout, "MRW Feature\n" );
 	  break;
+	case CDIO_MMC_FEATURE_ENHANCED_DEFECT:
+	  report( stdout, "Enhanced Defect Reporting\n" );
+	  report( stdout, "\t%s-DRM mode is supported\n", 
+		 (p[4] & 1) ? "DRT": "Persistent" );
+	  break;
 	case CDIO_MMC_FEATURE_DVD_PRW:
 	  report( stdout, "DVD+RW Feature\n" );
 	  break;
@@ -421,6 +446,15 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 	  break;
 	case CDIO_MMC_FEATURE_CD_SAO:
 	  report( stdout, "CD Mastering (Session at Once) Feature\n" );
+	  break;
+	case CDIO_MMC_FEATURE_DVD_R_RW_WRITE:
+	  report( stdout, "DVD-R/RW Write Feature\n" );
+	  break;
+	case CDIO_MMC_FEATURE_CD_RW_MEDIA_WRITE:
+	  report( stdout, "CD-RW Media Write Support\n" );
+	  break;
+	case CDIO_MMC_FEATURE_DVD_PR_2_LAYER:
+	  report( stdout, "DVD+R Double Layer\n" );
 	  break;
 	case CDIO_MMC_FEATURE_POWER_MGMT:
 	  report( stdout, 
