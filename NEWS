@@ -4,6 +4,7 @@
 -  Microsoft Windows ASPI/ DeviceIoControl code reorganization
 -  NRG image reading improvements 
 -  Remove memory leaks
+-  library symbol versioning (from Nicolas Boullis)
 
 0.65
 -  tag headers to give doxygen API documentation
