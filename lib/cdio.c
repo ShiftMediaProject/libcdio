@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.29 2003/09/29 02:56:22 rocky Exp $
+    $Id: cdio.c,v 1.30 2003/09/30 03:26:11 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.29 2003/09/29 02:56:22 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.30 2003/09/30 03:26:11 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -76,6 +76,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_have_false,
    NULL,
    NULL,
+   NULL,
    NULL
   },
 
@@ -86,7 +87,8 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_have_bsdi,
    &cdio_open_bsdi,
    &cdio_get_default_device_bsdi,
-   &cdio_is_device_generic
+   &cdio_is_device_generic,
+   NULL
   },
 
   {DRIVER_FREEBSD, 
@@ -96,7 +98,8 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_have_freebsd,
    &cdio_open_freebsd,
    &cdio_get_default_device_freebsd,
-   &cdio_is_device_generic
+   &cdio_is_device_generic,
+   NULL
   },
 
   {DRIVER_LINUX, 
@@ -106,7 +109,8 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_have_linux,
    &cdio_open_linux,
    &cdio_get_default_device_linux,
-   &cdio_is_device_generic
+   &cdio_is_device_generic,
+   &cdio_get_devices_linux
   },
 
   {DRIVER_SOLARIS, 
@@ -116,7 +120,8 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_have_solaris,
    &cdio_open_solaris,
    &cdio_get_default_device_solaris,
-   &cdio_is_device_generic
+   &cdio_is_device_generic,
+   NULL
   },
 
   {DRIVER_OSX, 
@@ -126,7 +131,8 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_have_osx,
    &cdio_open_osx,
    &cdio_get_default_device_osx,
-   &cdio_is_device_generic
+   &cdio_is_device_generic,
+   NULL
   },
 
   {DRIVER_WIN32, 
@@ -136,7 +142,8 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_have_win32,
    &cdio_open_win32,
    &cdio_get_default_device_win32,
-   &cdio_is_device_win32
+   &cdio_is_device_win32,
+   NULL
   },
 
   {DRIVER_BINCUE,
@@ -146,7 +153,8 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_have_bincue,
    &cdio_open_bincue,
    &cdio_get_default_device_bincue,
-   NULL
+   NULL,
+   &cdio_get_devices_bincue
   },
 
   {DRIVER_NRG,
@@ -156,7 +164,8 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_have_nrg,
    &cdio_open_nrg,
    &cdio_get_default_device_nrg,
-   NULL
+   NULL,
+   &cdio_get_devices_nrg
   }
 
 };
@@ -285,7 +294,7 @@ cdio_get_devices (driver_id_t driver_id)
     cdio = scan_for_driver(DRIVER_UNKNOWN, CDIO_MAX_DRIVER, NULL);
     break;
   default:
-    cdio = scan_for_driver(driver_id, driver_id, NULL);
+    return (*CdIo_all_drivers[driver_id].get_devices)();
   }
   
   if (cdio == NULL) return NULL;

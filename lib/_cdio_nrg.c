@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.19 2003/09/29 02:56:22 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.20 2003/09/30 03:26:11 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -47,7 +47,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.19 2003/09/29 02:56:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.20 2003/09/30 03:26:11 rocky Exp $";
 
 /* structures used */
 
@@ -763,10 +763,10 @@ _cdio_get_arg (void *env, const char key[])
 }
 
 /*!
-  Return a string containing the default VCD device if none is specified.
+  Return an array of strings giving possible NRG disk images.
  */
-static char **
-_cdio_get_devices (void)
+char **
+cdio_get_devices_nrg (void)
 {
   char **drives = NULL;
   unsigned int num_files=0;
@@ -792,7 +792,7 @@ _cdio_get_devices (void)
 char *
 cdio_get_default_device_nrg(void)
 {
-  char **drives = _cdio_get_devices();
+  char **drives = cdio_get_devices_nrg();
   char *drive = (drives[0] == NULL) ? NULL : strdup(drives[0]);
   cdio_free_device_list(drives);
   return drive;
@@ -888,7 +888,7 @@ cdio_open_nrg (const char *source_name)
     .eject_media        = cdio_generic_bogus_eject_media,
     .free               = cdio_generic_stream_free,
     .get_arg            = _cdio_get_arg,
-    .get_devices        = _cdio_get_devices,
+    .get_devices        = cdio_get_devices_nrg,
     .get_default_device = cdio_get_default_device_nrg,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_num_tracks     = _cdio_get_num_tracks,

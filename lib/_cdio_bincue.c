@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.32 2003/09/28 01:04:58 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.33 2003/09/30 03:26:11 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.32 2003/09/28 01:04:58 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.33 2003/09/30 03:26:11 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -42,6 +42,9 @@ static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.32 2003/09/28 01:04:58 roc
 #endif
 #ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+#ifdef HAVE_GLOB_H
+#include <glob.h>
 #endif
 #include <ctype.h>
 
@@ -642,12 +645,39 @@ _cdio_get_arg (void *env, const char key[])
 }
 
 /*!
-  Return a string containing the default VCD device if none is specified.
+  Return an array of strings giving possible NRG disk images.
+ */
+char **
+cdio_get_devices_bincue (void)
+{
+  char **drives = NULL;
+  unsigned int num_files=0;
+#ifdef HAVE_GLOB_H
+  unsigned int i;
+  glob_t globbuf;
+  globbuf.gl_offs = 0;
+  glob("*.cue", GLOB_DOOFFS, NULL, &globbuf);
+  for (i=0; i<globbuf.gl_pathc; i++) {
+    cdio_add_device_list(&drives, globbuf.gl_pathv[i], &num_files);
+  }
+  globfree(&globbuf);
+#else
+  cdio_add_device_list(&drives, DEFAULT_CDIO_DEVICE, &num_files);
+#endif /*HAVE_GLOB_H*/
+  cdio_add_device_list(&drives, NULL, &num_files);
+  return drives;
+}
+
+/*!
+  Return a string containing the default CD device.
  */
 char *
 cdio_get_default_device_bincue(void)
 {
-  return strdup(DEFAULT_CDIO_DEVICE);
+  char **drives = cdio_get_devices_nrg();
+  char *drive = (drives[0] == NULL) ? NULL : strdup(drives[0]);
+  cdio_free_device_list(drives);
+  return drive;
 }
 
 /*!

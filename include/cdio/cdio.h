@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.25 2003/09/29 02:56:22 rocky Exp $
+    $Id: cdio.h,v 1.26 2003/09/30 03:26:11 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -346,6 +346,8 @@ extern "C" {
   
   char * cdio_get_default_device_bincue(void);
 
+  char **cdio_get_devices_bincue(void);
+
   /*! CD routines. Source is the some sort of device.
 
      NULL is returned on error.
@@ -378,6 +380,8 @@ extern "C" {
   CdIo * cdio_open_linux (const char *source_name);
 
   char * cdio_get_default_device_linux(void);
+
+  char **cdio_get_devices_linux(void);
   
   /*! Solaris CD-reading routines. 
      NULL is returned on error.
@@ -406,6 +410,8 @@ extern "C" {
   CdIo * cdio_open_nrg (const char *source_name);
   
   char * cdio_get_default_device_nrg(void);
+
+  char **cdio_get_devices_nrg(void);
 
   /*! Return corresponding BIN file if cue_name is a cue file or NULL
     if not a CUE file.

@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.16 2003/09/29 02:56:23 rocky Exp $
+    $Id: cdio_private.h,v 1.17 2003/09/30 03:26:11 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -211,16 +211,15 @@ extern "C" {
   /* The below structure describes a specific CD Input driver  */
   typedef struct 
   {
-    unsigned int flags;
     driver_id_t  id;
+    unsigned int flags;
     const char  *name;
     const char  *describe;
     bool (*have_driver) (void); 
     CdIo *(*driver_open) (const char *source_name); 
     char *(*get_default_device) (void); 
     bool (*is_device) (const char *source_name);
-  
-
+    char **(*get_devices) (void);
   } CdIo_driver_t;
 
   /* The below array gives of the drivers that are currently available for 

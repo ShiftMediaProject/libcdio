@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.25 2003/09/29 02:56:22 rocky Exp $
+    $Id: _cdio_linux.c,v 1.26 2003/09/30 03:26:11 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.25 2003/09/29 02:56:22 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.26 2003/09/30 03:26:11 rocky Exp $";
 
 #include <string.h>
 
@@ -837,12 +837,17 @@ static char checklist2[][40] = {
   {"?a hd?"}, {"?0 scd?"}, {"?0 sr?"}, {""}
 };
 
+#endif /* HAVE_LINUX_CDROM */
+
 /*!
-  Return a string containing the default VCD device if none is specified.
+  Return an array of strings giving possible CD devices.
  */
-static char **
-_cdio_get_devices (void)
+char **
+cdio_get_devices_linux (void)
 {
+#ifndef HAVE_LINUX_CDROM
+  return NULL;
+#else
   unsigned int i;
   char drive[40];
   char *ret_drive;
@@ -889,8 +894,8 @@ _cdio_get_devices (void)
   }
   cdio_add_device_list(&drives, NULL, &num_drives);
   return drives;
+#endif /*HAVE_LINUX_CDROM*/
 }
-#endif /* HAVE_LINUX_CDROM */
 
 /*!
   Return a string containing the default CD device.
@@ -963,7 +968,7 @@ cdio_open_linux (const char *orig_source_name)
     .eject_media        = _cdio_eject_media,
     .free               = cdio_generic_free,
     .get_arg            = _cdio_get_arg,
-    .get_devices        = _cdio_get_devices,
+    .get_devices        = cdio_get_devices_linux,
     .get_default_device = cdio_get_default_device_linux,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_mcn            = _cdio_get_mcn,
