@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.4 2005/01/04 04:33:36 rocky Exp $
+    $Id: bincue.c,v 1.5 2005/01/17 17:20:09 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.4 2005/01/04 04:33:36 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.5 2005/01/17 17:20:09 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1093,7 +1093,7 @@ cdio_is_binfile(const char *psz_bin_name)
   get called via a function pointer. In fact *we* are the
   ones to set that up.
  */
-CdIo *
+CdIo_t *
 cdio_open_am_bincue (const char *psz_source_name, const char *psz_access_mode)
 {
   if (psz_access_mode != NULL)
@@ -1107,7 +1107,7 @@ cdio_open_am_bincue (const char *psz_source_name, const char *psz_access_mode)
   get called via a function pointer. In fact *we* are the
   ones to set that up.
  */
-CdIo *
+CdIo_t *
 cdio_open_bincue (const char *source_name)
 {
   char *psz_bin_name = cdio_is_cuefile(source_name);
@@ -1123,15 +1123,15 @@ cdio_open_bincue (const char *source_name)
   }
 }
 
-CdIo *
+CdIo_t *
 cdio_open_cue (const char *psz_cue_name)
 {
-  CdIo *ret;
+  CdIo_t *ret;
   _img_private_t *_data;
   char *psz_bin_name;
   
-  cdio_funcs _funcs;
-  
+  cdio_funcs_t _funcs;
+
   memset( &_funcs, 0, sizeof(_funcs) );
   
   _funcs.eject_media           = _eject_media_image;
@@ -1176,6 +1176,7 @@ cdio_open_cue (const char *psz_cue_name)
     return NULL;
   }
   
+  ret->driver_id = DRIVER_BINCUE;
   psz_bin_name = cdio_is_cuefile(psz_cue_name);
   
   if (NULL == psz_bin_name) {

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bsdi.c,v 1.2 2005/01/02 22:43:41 rocky Exp $
+    $Id: _cdio_bsdi.c,v 1.3 2005/01/17 17:20:09 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.2 2005/01/02 22:43:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bsdi.c,v 1.3 2005/01/17 17:20:09 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -764,7 +764,7 @@ cdio_open_bsdi (const char *psz_orig_source)
   _img_private_t *_data;
   char *psz_source;
 
-  cdio_funcs _funcs = {
+  cdio_funcs_t _funcs = {
     .eject_media        = _eject_media_bsdi,
     .free               = cdio_generic_free,
     .get_arg            = _get_arg_bsdi,
@@ -821,6 +821,8 @@ cdio_open_bsdi (const char *psz_orig_source)
 
   ret = cdio_new ( (void *) _data, &_funcs);
   if (ret == NULL) return NULL;
+
+  ret->driver_id = DRIVER_BSDI;
 
   if (_cdio_init(_data))
     return ret;

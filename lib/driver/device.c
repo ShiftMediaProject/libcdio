@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.2 2005/01/14 19:25:45 rocky Exp $
+    $Id: device.c,v 1.3 2005/01/17 17:20:09 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -530,10 +530,10 @@ cdio_get_drive_cap_dev (const char *device,
   then return NULL.
 */
 const char *
-cdio_get_driver_name (const CdIo_t *cdio) 
+cdio_get_driver_name (const CdIo_t *p_cdio) 
 {
-  if (NULL==cdio) return NULL;
-  return CdIo_all_drivers[cdio->driver_id].name;
+  if (NULL==p_cdio) return NULL;
+  return CdIo_all_drivers[p_cdio->driver_id].name;
 }
 
   /*!

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_aix.c,v 1.2 2005/01/02 22:43:41 rocky Exp $
+    $Id: _cdio_aix.c,v 1.3 2005/01/17 17:20:09 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -37,7 +37,7 @@
 
 #ifdef HAVE_AIX_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.2 2005/01/02 22:43:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_aix.c,v 1.3 2005/01/17 17:20:09 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -940,7 +940,7 @@ cdio_open_am_aix (const char *psz_orig_source, const char *access_mode)
   _img_private_t *_data;
   char *psz_source;
 
-  cdio_funcs _funcs;
+  cdio_funcs_t _funcs;
 
   _funcs.eject_media        = eject_media_aix;
   _funcs.free               = cdio_generic_free;
@@ -995,6 +995,8 @@ cdio_open_am_aix (const char *psz_orig_source, const char *access_mode)
       return NULL;
     }
   }
+
+  ret->driver_id = DRIVER_AIX;
 
   ret = cdio_new ( (void *) _data, &_funcs );
   if (ret == NULL) return NULL;

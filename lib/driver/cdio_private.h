@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.4 2005/01/04 04:33:36 rocky Exp $
+    $Id: cdio_private.h,v 1.5 2005/01/17 17:20:09 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -267,13 +267,13 @@ extern "C" {
     */
     uint32_t (*stat_size) (void *p_env);
 
-  } cdio_funcs;
+  } cdio_funcs_t;
 
 
   /*! Implementation of CdIo type */
   struct _CdIo {
     driver_id_t driver_id; /**< Particular driver opened. */
-    cdio_funcs op;         /**< driver-specific routines handling
+    cdio_funcs_t op;       /**< driver-specific routines handling
 			        implementation*/
     void *env;             /**< environment. Passed to routine above. */
   };
@@ -289,7 +289,7 @@ extern "C" {
     lba_t   lba;              /* Current LBA */
   } internal_position_t;
   
-  CdIo * cdio_new (generic_img_private_t *p_env, cdio_funcs *funcs);
+  CdIo_t * cdio_new (generic_img_private_t *p_env, cdio_funcs_t *p_funcs);
 
   /* The below structure describes a specific CD Input driver  */
   typedef struct 

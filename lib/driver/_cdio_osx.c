@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.4 2005/01/14 22:04:24 rocky Exp $
+    $Id: _cdio_osx.c,v 1.5 2005/01/17 17:20:09 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.4 2005/01/14 22:04:24 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.5 2005/01/17 17:20:09 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -1389,7 +1389,7 @@ cdio_open_osx (const char *psz_orig_source)
   _img_private_t *_data;
   char *psz_source;
 
-  cdio_funcs _funcs = {
+  cdio_funcs_t _funcs = {
     .eject_media        = _eject_media_osx,
     .free               = _free_osx,
     .get_arg            = _get_arg_osx,
@@ -1450,6 +1450,8 @@ cdio_open_osx (const char *psz_orig_source)
 
   ret = cdio_new ((void *)_data, &_funcs);
   if (ret == NULL) return NULL;
+
+  ret->driver_id = DRIVER_OSX;
 
   if (cdio_generic_init(_data) && init_osx(_data))
     return ret;
