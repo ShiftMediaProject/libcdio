@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_nrg.c,v 1.28 2004/01/03 13:50:17 rocky Exp $
+    $Id: _cdio_nrg.c,v 1.29 2004/02/01 15:45:30 rocky Exp $
 
     Copyright (C) 2001,2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.28 2004/01/03 13:50:17 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_nrg.c,v 1.29 2004/02/01 15:45:30 rocky Exp $";
 
 /* structures used */
 
@@ -266,7 +266,7 @@ _register_mapping (_img_private_t *_obj, lsn_t start_lsn, uint32_t sec_count,
   
   _obj->total_tracks++;
 
-  cdio_debug ("start lsn: %d sector count: %0d -> %8ld (%08lx)", 
+  cdio_debug ("start lsn: %lu sector count: %0lu -> %8ld (%08lx)", 
 	      start_lsn, sec_count, 
 	      (long unsigned int) img_offset,
 	      (long unsigned int) img_offset);
@@ -538,7 +538,7 @@ PRAGMA_END_PACKED
 	      blocksize    = CDIO_CD_FRAMESIZE_RAW;
 	      break;
 	    default:
-	      cdio_warn ("Don't know how to handle track mode (%d)?",
+	      cdio_warn ("Don't know how to handle track mode (%lu)?",
 			 track_mode);
 	      return false;
 	    }
@@ -605,14 +605,14 @@ PRAGMA_END_PACKED
 	      blocksize    = CDIO_CD_FRAMESIZE_RAW;
 	      break;
 	    default:
-	      cdio_warn ("Don't know how to handle track mode (%d)?",
+	      cdio_warn ("Don't know how to handle track mode (%lu)?",
 			 track_mode);
 	      return false;
 	    }
 	    
 	    if (_len % blocksize != 0) {
 	      cdio_warn ("length is not a multiple of blocksize " 
-			 "len %d, size %d, rem %d", 
+			 "len %lu, size %d, rem %lu", 
 			 _len, blocksize, _len % blocksize);
 	      if (0 == _len % CDIO_CD_FRAMESIZE) {
 		cdio_warn("Adjusting blocksize to %d", CDIO_CD_FRAMESIZE);
@@ -629,7 +629,7 @@ PRAGMA_END_PACKED
 	    _len /= blocksize;
 	    
 	    if (_start * blocksize != _start2) {
-	      cdio_warn ("%d * %d != %d", _start, blocksize, _start2);
+	      cdio_warn ("%lu * %d != %lu", _start, blocksize, _start2);
 	      if (_start * CDIO_CD_FRAMESIZE == _start2) {
 		cdio_warn("Adjusting blocksize to %d", CDIO_CD_FRAMESIZE);
 		blocksize = CDIO_CD_FRAMESIZE;
