@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.19 2004/06/12 17:40:07 rocky Exp $
+    $Id: freebsd.c,v 1.20 2004/06/12 18:45:54 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.19 2004/06/12 17:40:07 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.20 2004/06/12 18:45:54 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -467,7 +467,49 @@ cdio_get_devices_freebsd (void)
 char *
 cdio_get_default_device_freebsd()
 {
-  return strdup(DEFAULT_CDIO_DEVICE);
+#ifndef HAVE_FREEBSD_CDROM
+  return NULL;
+#else
+  char drive[40];
+  bool exists=true;
+  char c;
+  
+  /* Scan the system for CD-ROM drives.
+  */
+
+#ifdef USE_ETC_FSTAB
+
+  struct fstab *fs;
+  setfsent();
+  
+  /* Check what's in /etc/fstab... */
+  while ( (fs = getfsent()) )
+    {
+      if (strncmp(fs->fs_spec, "/dev/sr", 7))
+	return strdup(fs->fs_spec);
+    }
+  
+#endif
+
+  /* Scan the system for CD-ROM drives.
+     Not always 100% reliable, so use the USE_MNTENT code above first.
+  */
+  for ( c='0'; exists && c <='9'; c++ ) {
+    sprintf(drive, "/dev/cd%cc", c);
+    exists = cdio_is_cdrom(drive, NULL);
+    if ( exists ) {
+      return strdup(drive);
+    }
+  }
+  for ( c='0'; exists && c <='9'; c++ ) {
+    sprintf(drive, "/dev/acd%cc", c);
+    exists = cdio_is_cdrom(drive, NULL);
+    if ( exists ) {
+      return strdup(drive);
+    }
+  }
+  return NULL;
+#endif /*HAVE_FREEBSD_CDROM*/
 }
 
 /*!
