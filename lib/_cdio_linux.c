@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.91 2004/08/10 11:58:15 rocky Exp $
+    $Id: _cdio_linux.c,v 1.92 2004/08/16 00:52:53 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.91 2004/08/10 11:58:15 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.92 2004/08/16 00:52:53 rocky Exp $";
 
 #include <string.h>
 
@@ -227,14 +227,14 @@ get_arg_linux (void *env, const char key[])
  */
 static void
 get_drive_cap_linux (const void *p_user_data,
-                    cdio_drive_read_cap_t  *p_read_cap,
-                    cdio_drive_write_cap_t *p_write_cap,
-                    cdio_drive_misc_cap_t  *p_misc_cap)
+		     /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+		     /*out*/ cdio_drive_write_cap_t *p_write_cap,
+		     /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
-  const _img_private_t *_obj = p_user_data;
+  const _img_private_t *p_env = p_user_data;
   int32_t i_drivetype;
 
-  i_drivetype = ioctl (_obj->gen.fd, CDROM_GET_CAPABILITY, CDSL_CURRENT);
+  i_drivetype = ioctl (p_env->gen.fd, CDROM_GET_CAPABILITY, CDSL_CURRENT);
 
   if (i_drivetype < 0) {
     *p_read_cap  = CDIO_DRIVE_CAP_ERROR;
@@ -295,9 +295,9 @@ static char *
 _get_mcn_linux (const void *env) {
 
   struct cdrom_mcn mcn;
-  const _img_private_t *_obj = env;
+  const _img_private_t *p_env = env;
   memset(&mcn, 0, sizeof(mcn));
-  if (ioctl(_obj->gen.fd, CDROM_GET_MCN, &mcn) != 0)
+  if (ioctl(p_env->gen.fd, CDROM_GET_MCN, &mcn) != 0)
     return NULL;
   return strdup(mcn.medium_catalog_number);
 }
@@ -632,7 +632,7 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
 
  retry:
-  switch (_obj->access_mode)
+  switch (p_env->access_mode)
     {
     case _AM_NONE:
       cdio_warn ("no way to read mode1");
@@ -1123,7 +1123,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .read_mode2_sector  = _read_mode2_sector_linux,
     .read_mode2_sectors = _read_mode2_sectors_linux,
     .read_toc           = read_toc_linux,
-    .run_scsi_mmc_cmd   = &run_scsi_cmd_linux,
+    .run_scsi_mmc_cmd   = run_scsi_cmd_linux,
     .set_arg            = set_arg_linux,
     .stat_size          = stat_size_linux
   };

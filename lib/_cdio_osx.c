@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.51 2004/08/15 16:15:40 rocky Exp $
+    $Id: _cdio_osx.c,v 1.52 2004/08/16 00:52:53 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.51 2004/08/15 16:15:40 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.52 2004/08/16 00:52:53 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -44,6 +44,14 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.51 2004/08/15 16:15:40 rocky 
 #include <string.h>
 
 #ifdef HAVE_DARWIN_CDROM
+#undef VERSION 
+
+#include <mach/mach.h>
+#include <Carbon/Carbon.h>
+#include <IOKit/scsi-commands/SCSITaskLib.h>
+#include <IOKit/IOKitLib.h>
+#include <IOKit/IOCFPlugIn.h>
+#include <mach/mach_error.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,6 +62,7 @@ static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.51 2004/08/15 16:15:40 rocky 
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+
 
 #include <paths.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -102,9 +111,96 @@ typedef struct {
   track_t i_first_session;   /* first session number */
   lsn_t   *pp_lba;
   CFMutableDictionaryRef dict;
+  SCSITaskDeviceInterface **pp_scsiTaskDeviceInterface;
 
 } _img_private_t;
 
+/*!
+  Run a SCSI MMC command. 
+ 
+  cdio	        CD structure set by cdio_open().
+  i_timeout     time in milliseconds we will wait for the command
+                to complete. If this value is -1, use the default 
+		time-out value.
+  p_buf	        Buffer for data, both sending and receiving
+  i_buf	        Size of buffer
+  e_direction	direction the transfer is to go.
+  cdb	        CDB bytes. All values that are needed should be set on 
+                input. We'll figure out what the right CDB length should be.
+
+  We return true if command completed successfully and false if not.
+ */
+static int
+run_scsi_cmd_osx( const void *p_user_data, 
+		  unsigned int i_timeout_ms,
+		  unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
+		  scsi_mmc_direction_t e_direction, 
+		  unsigned int i_buf, /*in/out*/ void *p_buf )
+{
+  const _img_private_t *p_env = p_user_data;
+  SCSITaskDeviceInterface **sc;
+  SCSITaskInterface **cmd = NULL;
+  IOVirtualRange iov;
+  SCSI_Sense_Data senseData;
+  SCSITaskStatus status;
+  UInt64 bytesTransferred;
+  IOReturn ioReturnValue;
+  int ret = 0;
+
+  if (NULL == p_user_data) return 2;
+
+  sc = p_env->pp_scsiTaskDeviceInterface;
+
+  cmd = (*sc)->CreateSCSITask(sc);
+  if (cmd == NULL) {
+    cdio_warn("Failed to create SCSI task");
+    return -1;
+  }
+
+  iov.address = (IOVirtualAddress) p_buf;
+  iov.length = i_buf;
+
+  ioReturnValue = (*cmd)->SetCommandDescriptorBlock(cmd, (UInt8 *) p_cdb, 
+						    i_cdb);
+  if (ioReturnValue != kIOReturnSuccess) {
+    cdio_warn("SetCommandDescriptorBlock failed with status %x", 
+	      ioReturnValue);
+    return -1;
+  }
+
+  ioReturnValue = (*cmd)->SetScatterGatherEntries(cmd, &iov, 1, i_buf,
+						  (SCSI_MMC_DATA_READ == e_direction ) ? 
+						  kSCSIDataTransfer_FromTargetToInitiator :
+						  kSCSIDataTransfer_FromInitiatorToTarget);
+  if (ioReturnValue != kIOReturnSuccess) {
+    cdio_warn("SetScatterGatherEntries failed with status %x", ioReturnValue);
+    return -1;
+  }
+
+  ioReturnValue = (*cmd)->SetTimeoutDuration(cmd, i_timeout_ms );
+  if (ioReturnValue != kIOReturnSuccess) {
+    cdio_warn("SetTimeoutDuration failed with status %x", ioReturnValue);
+    return -1;
+  }
+
+  memset(&senseData, 0, sizeof(senseData));
+
+  ioReturnValue = (*cmd)->ExecuteTaskSync(cmd,
+					  &senseData, &status, &bytesTransferred);
+
+  if (ioReturnValue != kIOReturnSuccess) {
+    cdio_warn("Command execution failed with status %x", ioReturnValue);
+    return -1;
+  }
+
+  if (cmd != NULL) {
+    (*cmd)->Release(cmd);
+  }
+
+  return (ret);
+}
+
+#if 0
 /***************************************************************************
  * GetFeaturesFlagsForDrive -Gets the bitfield which represents the
  * features flags.
@@ -145,8 +241,6 @@ GetFeaturesFlagsForDrive ( CFMutableDictionaryRef dict,
   return true;
 }
 
-/*!
- */
 static void
 get_drive_cap_osx(const void *p_user_data,
 		  /*out*/ cdio_drive_read_cap_t  *p_read_cap,
@@ -186,15 +280,16 @@ get_drive_cap_osx(const void *p_user_data,
   if ( 0 != (i_dvdFlags & kDVDFeaturesReWriteableMask) )
     *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RW;
 
-#if 0
+  /***
   if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRMask) )
     *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PR;
   
   if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRWMask )
     *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PRW;
-#endif
+    ***/
 
 }
+#endif
 
 #if 0
 /****************************************************************************
@@ -249,6 +344,10 @@ _free_osx (void *p_user_data) {
   if (NULL != p_env->pp_lba) free((void *) p_env->pp_lba);
   if (NULL != p_env->pTOC)   free((void *) p_env->pTOC);
   if (NULL != p_env->dict)   CFRelease( p_env->dict ); 
+  if (NULL != p_env->pp_scsiTaskDeviceInterface) 
+    ( *(p_env->pp_scsiTaskDeviceInterface) )->
+      Release ( (p_env->pp_scsiTaskDeviceInterface) );
+
 }
 
 /*!
@@ -402,18 +501,62 @@ _set_arg_osx (void *user_data, const char key[], const char value[])
   return 0;
 }
 
+static void TestDevice(_img_private_t *p_env, io_service_t service)
+{
+  SInt32                          score;
+  HRESULT                         herr;
+  kern_return_t                   err;
+  IOCFPlugInInterface             **plugInInterface = NULL;
+  MMCDeviceInterface              **mmcInterface = NULL;
+
+  /* Create the IOCFPlugIn interface so we can query it. */
+
+  err = IOCreatePlugInInterfaceForService ( service,
+					    kIOMMCDeviceUserClientTypeID,
+					    kIOCFPlugInInterfaceID,
+					    &plugInInterface,
+					    &score );
+  if ( err != noErr ) {
+    printf("IOCreatePlugInInterfaceForService returned %d\n", err);
+    return;
+  }
+  
+  /* Query the interface for the MMCDeviceInterface. */
+  
+  herr = ( *plugInInterface )->QueryInterface ( plugInInterface,
+						CFUUIDGetUUIDBytes ( kIOMMCDeviceInterfaceID ),
+						( LPVOID ) &mmcInterface );
+  
+  if ( herr != S_OK )     {
+    printf("QueryInterface returned %ld\n", herr);
+    return;
+  }
+  
+  p_env->pp_scsiTaskDeviceInterface = 
+    ( *mmcInterface )->GetSCSITaskDeviceInterface ( mmcInterface );
+  
+  if ( NULL == p_env->pp_scsiTaskDeviceInterface )  {
+    printf("GetSCSITaskDeviceInterface returned NULL\n");
+    return;
+  }
+  
+  ( *mmcInterface )->Release ( mmcInterface );
+  IODestroyPlugInInterface ( plugInInterface );
+}
+
 /*! 
   Read and cache the CD's Track Table of Contents and track info.
   Return false if successful or true if an error.
 */
 static bool
-_cdio_read_toc (_img_private_t *p_env) 
+read_toc_osx (void *p_user_data) 
 {
+  _img_private_t *p_env = p_user_data;
   mach_port_t port;
   char *psz_devname;
   kern_return_t ret;
   io_iterator_t iterator;
-  io_registry_entry_t service;
+  io_service_t service;
   CFDataRef data;
   
   p_env->gen.fd = open( p_env->gen.source_name, O_RDONLY | O_NONBLOCK );
@@ -511,7 +654,8 @@ _cdio_read_toc (_img_private_t *p_env)
       cdio_warn( "CFDictionaryGetValue failed" );
       return false;
     }
-  
+
+  TestDevice(p_env, service);
   IOObjectRelease( service ); 
 
   p_env->i_descriptors = CDTOCGetDescriptorCount ( p_env->pTOC );
@@ -631,7 +775,7 @@ _get_track_lba_osx(void *user_data, track_t i_track)
 {
   _img_private_t *p_env = user_data;
 
-  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
+  if (!p_env->toc_init) read_toc_osx (p_env) ;
 
   if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = p_env->i_last_track+1;
 
@@ -732,7 +876,7 @@ _get_first_track_num_osx(void *user_data)
 {
   _img_private_t *p_env = user_data;
   
-  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
+  if (!p_env->toc_init) read_toc_osx (p_env) ;
 
   return p_env->i_first_track;
 }
@@ -766,7 +910,7 @@ _get_num_tracks_osx(void *user_data)
 {
   _img_private_t *p_env = user_data;
   
-  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
+  if (!p_env->toc_init) read_toc_osx (p_env) ;
 
   return( TOTAL_TRACKS );
 }
@@ -828,7 +972,7 @@ _get_track_green_osx(void *user_data, track_t i_track)
   _img_private_t *p_env = user_data;
   CDTrackInfo a_track;
 
-  if (!p_env->toc_init) _cdio_read_toc (p_env) ;
+  if (!p_env->toc_init) read_toc_osx (p_env) ;
 
   if ( i_track > p_env->i_last_track || i_track < p_env->i_first_track )
     return false;
@@ -1054,10 +1198,11 @@ cdio_open_osx (const char *psz_orig_source)
     .eject_media        = _eject_media_osx,
     .free               = _free_osx,
     .get_arg            = _get_arg_osx,
+    .get_cdtext         = get_cdtext_generic,
     .get_default_device = cdio_get_default_device_osx,
     .get_devices        = cdio_get_devices_osx,
-    .get_discmode       = NULL,
-    .get_drive_cap      = get_drive_cap_osx,
+    .get_discmode       = get_discmode_generic,
+    .get_drive_cap      = scsi_mmc_get_drive_cap_generic,
     .get_first_track_num= _get_first_track_num_osx,
     .get_mcn            = _get_mcn_osx,
     .get_num_tracks     = _get_num_tracks_osx,
@@ -1072,6 +1217,8 @@ cdio_open_osx (const char *psz_orig_source)
     .read_mode1_sectors = _get_read_mode1_sectors_osx,
     .read_mode2_sector  = _get_read_mode2_sector_osx,
     .read_mode2_sectors = _get_read_mode2_sectors_osx,
+    .read_toc           =  read_toc_osx,
+    .run_scsi_mmc_cmd   =  run_scsi_cmd_osx,
     .set_arg            = _set_arg_osx,
     .stat_size          = _stat_size_osx
   };
