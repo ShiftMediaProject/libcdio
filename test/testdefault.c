@@ -1,5 +1,5 @@
 /*
-  $Id: testdefault.c,v 1.4 2004/03/20 22:46:57 rocky Exp $
+  $Id: testdefault.c,v 1.5 2004/05/07 10:57:50 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -74,6 +74,7 @@ main(int argc, const char *argv[])
   char **imgs;
   char **c;
   unsigned int i;
+  int ret=0;
 
   const char *cue_files[2] = {"cdda.cue", "isofs-m1.cue"};
   const char *nrg_files[1] = {"videocd.nrg"};
@@ -92,7 +93,7 @@ main(int argc, const char *argv[])
   }
 
   if (!is_in(nrg_images, nrg_files[0])) {
-    return 1;
+    return 10;
   }
       
   bincue_images = cdio_get_devices(DRIVER_BINCUE);
@@ -102,10 +103,15 @@ main(int argc, const char *argv[])
   }
   
   for (i=0; i<2; i++) {
-    if (!is_in(bincue_images, cue_files[i])) {
-      return 2;
+    if (is_in(bincue_images, cue_files[i])) {
+      printf("%s parses as a CDRWIN BIN/CUE csheet.\n", cue_files[i]);
+    } else {
+      printf("%s doesn't parse as a CDRWIN BIN/CUE csheet.\n", cue_files[i]);
+      ret = i+1;
     }
   }
+
+  if (ret != 0) return ret;
     
   printf("-----\n");
   printf("ISO 9660 images...\n");
@@ -115,7 +121,7 @@ main(int argc, const char *argv[])
 
   if (NULL == imgs || *imgs == NULL) {
     printf("Failed to find an ISO 9660 image\n");
-    return 3;
+    return 11;
   }
     
   for( c = imgs; *c != NULL; c++ ) {
@@ -134,7 +140,7 @@ main(int argc, const char *argv[])
 
   if (NULL == imgs || *imgs == NULL) {
     printf("Failed to find CDDA image\n");
-    return 4;
+    return 12;
   }
     
   for( c = imgs; *c != NULL; c++ ) {
@@ -154,7 +160,7 @@ main(int argc, const char *argv[])
 					true);
   if (NULL == imgs || *imgs == NULL) {
     printf("Failed to find VCD image\n");
-    return 5;
+    return 13;
   }
     
   for( c = imgs; *c != NULL; c++ ) {
@@ -170,7 +176,7 @@ main(int argc, const char *argv[])
 
   if (NULL != imgs && *imgs != NULL) {
     printf("Found erroneous High Sierra image\n");
-    return 5;
+    return 14;
   }
     
   imgs = NULL;
@@ -179,7 +185,7 @@ main(int argc, const char *argv[])
 
   if (NULL != imgs && *imgs != NULL) {
     printf("Found erroneous UFS image\n");
-    return 6;
+    return 15;
   }
     
   cdio_free_device_list(imgs);

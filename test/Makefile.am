@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.20 2004/05/04 11:47:53 rocky Exp $
+#   $Id: Makefile.am,v 1.21 2004/05/07 10:57:50 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,16 +23,17 @@
 #
 # There's a problem with doing make distcheck for testdefault. 
 # A reminder of why I hate automake.
-hack = testassert testischar testiso9660 check_sizeof
+hack = check_sizeof testassert testischar testiso9660 testtoc
 noinst_PROGRAMS = $(hack) testdefault 
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
+check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 testassert_LDADD    = $(LIBCDIO_LIBS)
 testdefault_LDADD   = $(LIBCDIO_LIBS)
 testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
-check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
+testtoc_LDADD       = $(LIBCDIO_LIBS)
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
                 check_iso.sh  check_opts.sh 
@@ -47,6 +48,8 @@ check_DATA = vcd_demo.right \
              check_opts3.right check_opts4.right check_opts5.right \
              check_opts6.right check_opts7.right \
 	     isofs-m1-read.right cdda-read.right \
+	     t1.toc t2.toc t3.toc t4.toc t5.toc t6.toc t7.toc t8.toc t9.toc \
+	     bad-mode1.toc bad-msf-1.toc bad-msf-2.toc \
 	     copying.iso copying.right
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \

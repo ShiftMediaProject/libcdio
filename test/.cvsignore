@@ -8,9 +8,10 @@ check_iso.sh
 check_nrg.sh
 check_sizeof
 testassert
+testdefault
 testischar
 testiso9660
-testdefault
+testtoc
 *.dump
 *.cue
 *.bin
