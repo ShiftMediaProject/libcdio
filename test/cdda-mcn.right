@@ -1,0 +1,24 @@
+This is free software; see the source for copying conditions.
+There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+Hardware             : Disk Image
+Can open tray        : No
+Can close tray       : No
+
+Compact Disc         : Yes
+   Can play audio    : Yes
+   Can read  CD-RW   : No
+   Can write CD-R    : No
+
+Digital Versital Disc: No
+   Can write DVD-R   : No
+   Can write DVD-RAM : No
+__________________________________
+CD-ROM Track List (1 - 1)
+  #: MSF        LSN     Type  Green?
+  1: 000:02.00  000000  audio false
+170: 000:09.64  000589  leadout
+Media Catalog Number (MCN): 123456789ABCD
+__________________________________
+CD Analysis Report
+Audio CD, CDDB disc ID is 02000701
