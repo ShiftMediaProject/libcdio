@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.37 2004/08/13 13:04:37 rocky Exp $
+    $Id: nrg.c,v 1.38 2004/08/16 02:04:08 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -45,7 +45,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.37 2004/08/13 13:04:37 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.38 2004/08/16 02:04:08 rocky Exp $";
 
 
 /* reader */
@@ -735,6 +735,7 @@ parse_nrg (_img_private_t *env, const char *psz_nrg_name)
 
   env->gen.b_cdtext_init  = true;
   env->gen.b_cdtext_error = false;
+  env->gen.toc_init       = true;
   free(footer_buf);
   return true;
 }

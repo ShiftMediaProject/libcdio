@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.40 2004/08/13 13:04:37 rocky Exp $
+    $Id: bincue.c,v 1.41 2004/08/16 02:04:08 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.40 2004/08/13 13:04:37 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.41 2004/08/16 02:04:08 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -764,6 +764,10 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	goto err_exit;
       }
     }
+  }
+
+  if (NULL != cd) {
+    cd->gen.toc_init = true;
   }
 
   fclose (fp);
