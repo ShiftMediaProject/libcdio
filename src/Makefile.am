@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.21 2004/02/28 12:45:02 rocky Exp $
+#   $Id: Makefile.am,v 1.22 2004/04/25 00:46:34 rocky Exp $
 #
 #    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,7 +23,7 @@ CDDB_LIBS=@CDDB_LIBS@
 
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES = $(man_MANS)
-man_MANS = cd-info.1 cd-read.1 iso-read.1 iso-info.1
+man_MANS = cd-drive.1 cd-info.1 cd-read.1 iso-read.1 iso-info.1 
 $(man_MANS): %.1: %
 	-$(HELP2MAN) --output=$@ ./$<
 endif
@@ -31,6 +31,9 @@ endif
 if BUILD_CDINFO
 cd_info_SOURCES = cd-info.c util.c util.h
 cd_info_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS)
+
+cd_drive_SOURCES = cd-drive.c util.c util.h
+cd_drive_LDADD =  $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
 
 cd_read_SOURCES = cd-read.c util.c util.h
 cd_read_LDADD =  $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
@@ -44,13 +47,13 @@ iso_read_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
 if BUILD_CDINFO_LINUX
 cdinfo_linux_SOURCES = cdinfo-linux.c
 cdinfo_linux_LDADD = $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
-bin_PROGRAMS = cd-info cd-read cdinfo-linux iso-info iso-read
+bin_PROGRAMS = cd-drive cd-info cd-read cdinfo-linux iso-info iso-read
 else
-bin_PROGRAMS = cd-info cd-read iso-info iso-read
+bin_PROGRAMS = cd-drive cd-info cd-read iso-info iso-read
 EXTRA_DIST = cdinfo-linux.c $(man_MANS)
 endif
 else 
-EXTRA_DIST = cdinfo-linux.c cd-info.c cd-read.c $(man_MANS)
+EXTRA_DIST = cdinfo-linux.c cd-drive.c cd-info.c cd-read.c $(man_MANS)
 man_MANS = 
 endif
 

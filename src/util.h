@@ -1,7 +1,7 @@
 /*
-  $Id: util.h,v 1.2 2004/02/07 02:40:20 rocky Exp $
+  $Id: util.h,v 1.3 2004/04/25 00:46:34 rocky Exp $
 
-  Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -98,5 +98,8 @@ void print_version (char *program_name, const char *version,
 		    int no_header, bool version_only);
 
 char *fillout_device_name(const char *device_name);
+
+/* Prints out drive capabilities */
+void print_drive_capabilities(cdio_drive_cap_t i_drive_cap);
 
 #endif /* UTIL_H */

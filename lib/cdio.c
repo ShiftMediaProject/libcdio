@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.45 2004/04/23 22:10:52 rocky Exp $
+    $Id: cdio.c,v 1.46 2004/04/25 00:46:34 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -37,7 +37,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.45 2004/04/23 22:10:52 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.46 2004/04/25 00:46:34 rocky Exp $";
 
 
 const char *track_format2str[6] = 
@@ -138,7 +138,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
   {DRIVER_WIN32, 
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
    "WIN32",
-   "Windows 32-bit ASPI and winNT/2K/XP ioctl driver",
+   "MS Windows ASPI and ioctl driver",
    &cdio_have_win32,
    &cdio_open_win32,
    &cdio_get_default_device_win32,

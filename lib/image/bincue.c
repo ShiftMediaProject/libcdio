@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.11 2004/04/23 02:18:07 rocky Exp $
+    $Id: bincue.c,v 1.12 2004/04/25 00:46:34 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.11 2004/04/23 02:18:07 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.12 2004/04/25 00:46:34 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -743,6 +743,23 @@ cdio_get_default_device_bincue(void)
 }
 
 /*!
+  Return the the kind of drive capabilities of device.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static cdio_drive_cap_t
+_cdio_bincue_get_drive_cap (const void *env) {
+
+  /* There may be more in the future but these we can handle now. 
+     Also, we know we can't handle 
+     LOCK, OPEN_TRAY, CLOSE_TRAY, SELECT_SPEED, SELECT_DISC
+  */
+  return CDIO_DRIVE_FILE | CDIO_DRIVE_MCN | CDIO_DRIVE_CD_AUDIO ;
+}
+
+/*!
   Return the number of tracks in the current medium.
   CDIO_INVALID_TRACK is returned on error.
 */
@@ -895,7 +912,7 @@ cdio_open_cue (const char *cue_name)
     .free               = _cdio_bincue_destroy,
     .get_arg            = _cdio_get_arg,
     .get_default_device = cdio_get_default_device_bincue,
-    .get_drive_cap      = _cdio_image_get_drive_cap,
+    .get_drive_cap      = _cdio_bincue_get_drive_cap,
     .get_first_track_num= _cdio_image_get_first_track_num,
     .get_mcn            = _cdio_image_get_mcn,
     .get_num_tracks     = _cdio_image_get_num_tracks,

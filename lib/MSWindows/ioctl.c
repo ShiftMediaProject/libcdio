@@ -1,5 +1,5 @@
 /*
-    $Id: ioctl.c,v 1.8 2004/04/24 19:15:34 rocky Exp $
+    $Id: ioctl.c,v 1.9 2004/04/25 00:46:34 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: ioctl.c,v 1.8 2004/04/24 19:15:34 rocky Exp $";
+static const char _rcsid[] = "$Id: ioctl.c,v 1.9 2004/04/25 00:46:34 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -497,6 +497,9 @@ win32ioctl_get_drive_cap (const void *env)
       if (sptwb.DataBuf[n+3] & 0x01) i_drivetype |= CDIO_DRIVE_CD_R;
       if (sptwb.DataBuf[n+3] & 0x10) i_drivetype |= CDIO_DRIVE_DVD_R;
       if (sptwb.DataBuf[n+3] & 0x20) i_drivetype |= CDIO_DRIVE_DVD_RAM;
+
+      if (sptwb.DataBuf[n+6] & 0x08) i_drivetype |= CDIO_DRIVE_OPEN_TRAY;
+      if (sptwb.DataBuf[n+6] >> 5 != 0) i_drivetype |= CDIO_DRIVE_CLOSE_TRAY;
       
       return i_drivetype;
     } else {

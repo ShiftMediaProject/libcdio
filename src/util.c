@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.4 2004/02/07 02:40:20 rocky Exp $
+  $Id: util.c,v 1.5 2004/04/25 00:46:34 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -86,3 +86,37 @@ fillout_device_name(const char *device_name)
 #endif
 }
 
+/* Prints out drive capabilities */
+void
+print_drive_capabilities(cdio_drive_cap_t i_drive_cap)
+{
+  if (CDIO_DRIVE_ERROR == i_drive_cap) {
+    printf("Error in getting drive properties\n");
+  } else {
+    printf("Hardware             : %s\n", 
+	   i_drive_cap & CDIO_DRIVE_FILE  ? "Disk Image"  : "CD-ROM/DVD");
+    printf("Can open tray        : %s\n", 
+	   i_drive_cap & CDIO_DRIVE_OPEN_TRAY  ? "Yes"  : "No");
+    printf("Can close tray       : %s\n\n", 
+	   i_drive_cap & CDIO_DRIVE_OPEN_TRAY  ? "Yes"  : "No");
+    
+    printf("Compact Disc         : %s\n", 
+	   i_drive_cap & CDIO_DRIVE_CD         ? "Yes"  : "No");
+    printf("   Can play audio    : %s\n", 
+	   i_drive_cap & CDIO_DRIVE_CD_AUDIO   ?  "Yes" : "No");
+    printf("   Can read  CD-RW   : %s\n", 
+	   i_drive_cap & CDIO_DRIVE_CD_RW      ?  "Yes" : "No");
+    printf("   Can write CD-R    : %s\n\n", 
+	   i_drive_cap & CDIO_DRIVE_CD_R       ?  "Yes" : "No");
+    
+    printf("Digital Versital Disc: %s\n", 
+	   i_drive_cap & CDIO_DRIVE_DVD        ?  "Yes" : "No");
+    printf("   Can write DVD-R   : %s\n", 
+	   i_drive_cap & CDIO_DRIVE_DVD_R      ?  "Yes" : "No");
+    printf("   Can write DVD-RAM : %s\n", 
+	   i_drive_cap & CDIO_DRIVE_DVD_RAM    ?  "Yes" : "No");
+  }
+  if (CDIO_DRIVE_UNKNOWN == i_drive_cap) {
+    printf("Not completely sure about drive properties\n\n");
+  }
+}

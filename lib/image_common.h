@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.1 2004/04/23 02:18:07 rocky Exp $
+    $Id: image_common.h,v 1.2 2004/04/25 00:46:34 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -19,24 +19,6 @@
 */
 
 /* Common image routines. */
-
-/*!
-  Return the the kind of drive capabilities of device.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
- */
-static cdio_drive_cap_t
-_cdio_image_get_drive_cap (const void *env) {
-  const _img_private_t *_obj = env;
-
-  if  (_obj->gen.fd < 0 ) 
-    return CDIO_DRIVE_UNKNOWN;
-  else 
-    return CDIO_DRIVE_FILE;
-
-}
 
 /*!
   Return the media catalog number (MCN) from the CD or NULL if there

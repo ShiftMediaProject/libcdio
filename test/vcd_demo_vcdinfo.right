@@ -1,7 +1,18 @@
 This is free software; see the source for copying conditions.
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.
-Disc-image file
+Hardware             : Disk Image
+Can open tray        : No
+Can close tray       : No
+
+Compact Disc         : Yes
+   Can play audio    : Yes
+   Can read  CD-RW   : No
+   Can write CD-R    : No
+
+Digital Versital Disc: No
+   Can write DVD-R   : No
+   Can write DVD-RAM : No
 __________________________________
 CD-ROM Track List (1 - 3)
   #: MSF       LSN     Type  Green?

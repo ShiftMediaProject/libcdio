@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.57 2004/04/24 19:16:57 rocky Exp $
+    $Id: cd-info.c,v 1.58 2004/04/25 00:46:34 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -779,42 +779,43 @@ main(int argc, const char *argv[])
   case IMAGE_AUTO:
     cdio = cdio_open (source_name, DRIVER_UNKNOWN);
     if (cdio==NULL) {
-      err_exit("%s: Error in automatically selecting driver with input\n", 
-	       program_name);
+      err_exit("%s: Error in automatically selecting driver for input %s\n", 
+	       program_name, source_name);
     } 
     break;
   case IMAGE_DEVICE:
     cdio = cdio_open (source_name, DRIVER_DEVICE);
     if (cdio==NULL) {
-      err_exit("%s: Error in automatically selecting device with input\n", 
-	       program_name);
+      err_exit("%s: Error in automatically selecting device for input %s\n", 
+	       program_name, source_name);
     } 
     break;
   case IMAGE_BIN:
     cdio = cdio_open (source_name, DRIVER_BINCUE);
     if (cdio==NULL) {
-      err_exit("%s: Error in opeing bin/cue\n", 
-	       program_name);
+      err_exit("%s: Error in opening bin/cue for input %s\n", 
+	       program_name, source_name);
     } 
     break;
   case IMAGE_CUE:
     cdio = cdio_open_cue(source_name);
     if (cdio==NULL) {
-      err_exit("%s: Error in opening cue/bin with input\n", 
-	       program_name);
+      err_exit("%s: Error in opening cue/bin with input %s\n", 
+	       program_name, source_name);
     } 
     break;
   case IMAGE_NRG:
     cdio = cdio_open (source_name, DRIVER_NRG);
     if (cdio==NULL) {
-      err_exit("%s: Error in opening NRG with input\n", 
-	       program_name);
+      err_exit("%s: Error in opening NRG with input %s\n", 
+	       program_name, source_name);
     } 
     break;
   }
 
   if (cdio==NULL) {
-    err_exit("%s: Error in opening device driver\n", program_name);
+    err_exit("%s: Error in opening device driver for input %s\n", 
+	     program_name, source_name);
   } 
 
   if (source_name==NULL) {
@@ -826,37 +827,12 @@ main(int argc, const char *argv[])
 
   if (opts.silent == 0) {
     printf("CD location   : %s\n", source_name);
-    printf("CD driver name: %s\n", cdio_get_driver_name(cdio));
+    printf("CD driver name: %s\n\n", cdio_get_driver_name(cdio));
   }
   
   {
     cdio_drive_cap_t i_drive_cap =  cdio_get_drive_cap(cdio);
-    if (CDIO_DRIVE_ERROR == i_drive_cap) {
-      printf("Error in getting drive properties\n");
-    } else {
-      if (CDIO_DRIVE_FILE == i_drive_cap) {
-	printf("Disc-image file\n");
-      } else {
-	printf("Compact Disc         : %s\n", 
-	       i_drive_cap & CDIO_DRIVE_CD         ? "Yes"  : "No");
-	printf("   Can play audio    : %s\n", 
-	       i_drive_cap & CDIO_DRIVE_CD_AUDIO   ?  "Yes" : "No");
-	printf("   Can read  CD-RW   : %s\n", 
-	       i_drive_cap & CDIO_DRIVE_CD_RW      ?  "Yes" : "No");
-	printf("   Can write CD-R    : %s\n\n", 
-	       i_drive_cap & CDIO_DRIVE_CD_R       ?  "Yes" : "No");
-
-	printf("Digital Versital Disc: %s\n", 
-	       i_drive_cap & CDIO_DRIVE_DVD        ?  "Yes" : "No");
-	printf("   Can write DVD-R   : %s\n", 
-	       i_drive_cap & CDIO_DRIVE_DVD_R      ?  "Yes" : "No");
-	printf("   Can write DVD-RAM : %s\n", 
-	       i_drive_cap & CDIO_DRIVE_DVD_RAM    ?  "Yes" : "No");
-      }
-      if (CDIO_DRIVE_UNKNOWN == i_drive_cap) {
-	printf("Not sure about drive properties\n\n");
-      }
-    }
+    print_drive_capabilities(i_drive_cap);
   }
 
   if (opts.list_drives) {
