@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.66 2005/02/14 02:18:58 rocky Exp $
+    $Id: iso9660.h,v 1.67 2005/02/14 07:49:46 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -526,7 +526,7 @@ typedef uint32_t posix_gid_t;
    @see iso9660_dir
 */
 struct iso9660_stat_s { /* big endian!! */
-  bool          b_rock;               /**< has Rock Ridge extension. 
+  bool_3way_t   b_rock;               /**< has Rock Ridge extension. 
                                          If not true then the next 9 fields
                                          aren't used.
                                       */

@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.20 2005/01/22 22:21:36 rocky Exp $
+    $Id: iso-info.c,v 1.21 2005/02/14 07:49:46 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -185,21 +185,22 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
   
   _CDIO_LIST_FOREACH (entnode, entlist)
     {
-      iso9660_stat_t *statbuf = _cdio_list_node_data (entnode);
-      char *iso_name = statbuf->filename;
+      iso9660_stat_t *p_statbuf = _cdio_list_node_data (entnode);
+      char *iso_name = p_statbuf->filename;
       char _fullname[4096] = { 0, };
       char translated_name[MAX_ISONAME+1];
 #define DATESTR_SIZE 30
       char date_str[DATESTR_SIZE];
 
-      iso9660_name_translate_ext(iso_name, translated_name, i_joliet_level);
+      if (yep != p_statbuf->b_rock)
+	iso9660_name_translate_ext(iso_name, translated_name, i_joliet_level);
       
       snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
 		iso_name);
   
       strncat (_fullname, "/", sizeof (_fullname));
 
-      if (statbuf->type == _STAT_DIR
+      if (p_statbuf->type == _STAT_DIR
           && strcmp (iso_name, ".") 
           && strcmp (iso_name, ".."))
         _cdio_list_append (dirlist, strdup (_fullname));
@@ -207,26 +208,28 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
       if (opts.print_iso9660) {
 	if (iso9660_ifs_is_xa(p_iso)) {
 	  printf ( "  %c %s %d %d [fn %.2d] [LSN %6lu] ",
-		   (statbuf->type == _STAT_DIR) ? 'd' : '-',
-		   iso9660_get_xa_attr_str (statbuf->xa.attributes),
-		   uint16_from_be (statbuf->xa.user_id),
-		   uint16_from_be (statbuf->xa.group_id),
-		   statbuf->xa.filenum,
-		   (long unsigned int) statbuf->lsn);
+		   (p_statbuf->type == _STAT_DIR) ? 'd' : '-',
+		   iso9660_get_xa_attr_str (p_statbuf->xa.attributes),
+		   uint16_from_be (p_statbuf->xa.user_id),
+		   uint16_from_be (p_statbuf->xa.group_id),
+		   p_statbuf->xa.filenum,
+		   (long unsigned int) p_statbuf->lsn);
 	  
-	  if (uint16_from_be(statbuf->xa.attributes) & XA_ATTR_MODE2FORM2) {
+	  if (uint16_from_be(p_statbuf->xa.attributes) & XA_ATTR_MODE2FORM2) {
 	    printf ("%9u (%9u)",
-		    (unsigned int) statbuf->secsize * M2F2_SECTOR_SIZE,
-		    (unsigned int) statbuf->size);
+		    (unsigned int) p_statbuf->secsize * M2F2_SECTOR_SIZE,
+		    (unsigned int) p_statbuf->size);
 	  } else {
-	    printf ("%9u", (unsigned int) statbuf->size);
+	    printf ("%9u", (unsigned int) p_statbuf->size);
 	  }
 	}
-	strftime(date_str, DATESTR_SIZE, "%b %d %Y %H:%M ", &statbuf->tm);
-	printf (" %s %s\n", date_str, translated_name);
+	strftime(date_str, DATESTR_SIZE, "%b %d %Y %H:%M ", &p_statbuf->tm);
+	printf (" %s %s\n", date_str, 
+		yep == p_statbuf->b_rock ? iso_name : translated_name);
       } else 
 	if ( strcmp (iso_name, ".") && strcmp (iso_name, ".."))
-	  printf("%s%s\n", pathname, translated_name);
+	  printf("%s%s\n", pathname, 
+		 yep == p_statbuf->b_rock ? iso_name : translated_name);
     }
 
   _cdio_list_free (entlist, true);

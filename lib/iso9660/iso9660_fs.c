@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.13 2005/02/13 22:03:00 rocky Exp $
+    $Id: iso9660_fs.c,v 1.14 2005/02/14 07:49:46 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.13 2005/02/13 22:03:00 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.14 2005/02/14 07:49:46 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -833,7 +833,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool b_mode2,
   uint8_t dir_len= iso9660_get_dir_len(p_iso9660_dir);
   unsigned int filename_len;
   unsigned int stat_len;
-  iso9660_stat_t *stat;
+  iso9660_stat_t *p_stat;
 
   if (!dir_len) return NULL;
 
@@ -842,37 +842,45 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool b_mode2,
   /* .. string in statbuf is one longer than in p_iso9660_dir's listing '\1' */
   stat_len      = sizeof(iso9660_stat_t)+filename_len+2;
 
-  stat          = calloc(1, stat_len);
-  stat->type    = (p_iso9660_dir->file_flags & ISO_DIRECTORY) 
+  p_stat          = calloc(1, stat_len);
+  p_stat->type    = (p_iso9660_dir->file_flags & ISO_DIRECTORY) 
     ? _STAT_DIR : _STAT_FILE;
-  stat->lsn     = from_733 (p_iso9660_dir->extent);
-  stat->size    = from_733 (p_iso9660_dir->size);
-  stat->secsize = _cdio_len2blocks (stat->size, ISO_BLOCKSIZE);
+  p_stat->lsn     = from_733 (p_iso9660_dir->extent);
+  p_stat->size    = from_733 (p_iso9660_dir->size);
+  p_stat->secsize = _cdio_len2blocks (p_stat->size, ISO_BLOCKSIZE);
+  p_stat->b_rock  = dunno; /*FIXME should do based on mask */
 
   if ('\0' == p_iso9660_dir->filename[0] && 1 == filename_len)
-    strcpy (stat->filename, ".");
+    strcpy (p_stat->filename, ".");
   else if ('\1' == p_iso9660_dir->filename[0] && 1 == filename_len)
-    strcpy (stat->filename, "..");
+    strcpy (p_stat->filename, "..");
   else {
+    char rr_fname[256];
+    int  i_rr_fname_len = 
+      get_rock_ridge_filename(p_iso9660_dir, rr_fname, p_stat);
+    if (i_rr_fname_len > 0) {
+      strncpy(p_stat->filename, rr_fname, i_rr_fname_len+1);
+    } else {
 #ifdef HAVE_JOLIET
-    if (i_joliet_level) {
-      int i_inlen = filename_len;
-      int i_outlen = (i_inlen / 2);
-      char *p_psz_out = NULL;
-      ucs2be_to_locale(p_iso9660_dir->filename, i_inlen, 
-		       &p_psz_out, i_outlen);
-      strncpy(stat->filename, p_psz_out, filename_len);
-      free(p_psz_out);
-    } else
+      if (i_joliet_level && i_rr_fname_len > 0) {
+	int i_inlen = filename_len;
+	int i_outlen = (i_inlen / 2);
+	char *p_psz_out = NULL;
+	ucs2be_to_locale(p_iso9660_dir->filename, i_inlen, 
+			 &p_psz_out, i_outlen);
+	strncpy(p_stat->filename, p_psz_out, filename_len);
+	free(p_psz_out);
+      } else
 #endif /*HAVE_JOLIET*/
-      strncpy (stat->filename, p_iso9660_dir->filename, filename_len);
+	strncpy (p_stat->filename, p_iso9660_dir->filename, filename_len);
+    }
   }
   
 
-  iso9660_get_dtime(&(p_iso9660_dir->recording_time), true, &(stat->tm));
+  iso9660_get_dtime(&(p_iso9660_dir->recording_time), true, &(p_stat->tm));
 
   if (dir_len < sizeof (iso9660_dir_t)) {
-    free(stat);
+    free(p_stat);
     return NULL;
   }
   
@@ -886,10 +894,10 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool b_mode2,
       su_length--;
     
     if (su_length < 0 || su_length < sizeof (iso9660_xa_t))
-      return stat;
+      return p_stat;
     
     if (nope == b_xa) {
-      return stat;
+      return p_stat;
     } else {
       iso9660_xa_t *xa_data = 
 	(void *) (((char *) p_iso9660_dir)  
@@ -909,12 +917,12 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool b_mode2,
 		      su_length,
 		      xa_data->signature[0], xa_data->signature[1],
 		      xa_data->signature[0], xa_data->signature[1]);
-	  return stat;
+	  return p_stat;
 	}
-      stat->xa = *xa_data;
+      p_stat->xa = *xa_data;
     }
   }
-  return stat;
+  return p_stat;
     
 }
 

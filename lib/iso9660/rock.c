@@ -1,5 +1,5 @@
 /*
-  $Id: rock.c,v 1.2 2005/02/14 02:18:58 rocky Exp $
+  $Id: rock.c,v 1.3 2005/02/14 07:49:46 rocky Exp $
  
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -80,18 +80,22 @@
       }								\
   }
 
-/*! return length of name field; 0: not found, -1: to be ignored */
+/*! 
+  Get
+  @return length of name field; 0: not found, -1: to be ignored 
+*/
 int 
-get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * retname, 
-			/*out*/ iso9660_stat_t *p_stat)
+get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * psz_name, 
+			iso9660_stat_t *p_stat)
 {
   int len;
   unsigned char *chr;
   CONTINUE_DECLS;
-  int retnamlen = 0, truncate=0;
+  int retnamlen = 0;
+  int truncate=0;
 
-  if (!p_stat || !p_stat->b_rock) return 0;
-  *retname = 0;
+  if (!p_stat || nope == p_stat->b_rock) return 0;
+  *psz_name = 0;
 
   SETUP_ROCK_RIDGE(de, chr, len);
   /* repeat:*/
@@ -102,7 +106,7 @@ get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * retname,
     while (len > 1){ /* There may be one byte for padding somewhere */
       rr = (iso_extension_record_t *) chr;
       if (rr->len == 0) goto out; /* Something got screwed up here */
-      sig = from_721(*chr);
+      sig = *chr+(*(chr+1) << 8);
       chr += rr->len; 
       len -= rr->len;
 
@@ -114,6 +118,7 @@ get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * retname,
 	CHECK_CE;
 	break;
       case SIG('N','M'):
+	p_stat->b_rock = yep;
 	if (truncate) break;
         /*
 	 * If the flags are 2 or 4, this indicates '.' or '..'.
@@ -130,16 +135,51 @@ get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * retname,
 	  cdio_info("Unsupported NM flag settings (%d)",rr->u.NM.flags);
 	  break;
 	}
-	if((strlen(retname) + rr->len - 5) >= 254) {
+	if((strlen(psz_name) + rr->len - 5) >= 254) {
 	  truncate = 1;
 	  break;
 	}
-	strncat(retname, rr->u.NM.name, rr->len - 5);
+	strncat(psz_name, rr->u.NM.name, rr->len - 5);
 	retnamlen += rr->len - 5;
+	break;
+      case SIG('P','X'):
+	p_stat->st_mode   = from_733(rr->u.PX.st_mode);
+	p_stat->st_nlinks = from_733(rr->u.PX.st_nlinks);
+	p_stat->st_uid    = from_733(rr->u.PX.st_uid);
+	p_stat->st_gid    = from_733(rr->u.PX.st_gid);
+	p_stat->b_rock    = yep;
 	break;
       case SIG('R','E'):
 	free(buffer);
 	return -1;
+      case SIG('T','F'): 
+	{
+#ifdef TIME_FIXED
+	  int cnt = 0; /* Rock ridge never appears on a High Sierra disk */
+	  /* Some RRIP writers incorrectly place ctime in the
+	     ISO_ROCK_TF_CREATE field.  Try to handle this correctly for
+	     either case. */
+	  /*** FIXME: 
+	       Test on long format or not and use 
+	       iso9660_get_dtime or iso9660_get_ltime - which needs to be
+	       written.
+	  */
+	  if (rr->u.TF.flags & ISO_ROCK_TF_CREATE) { 
+	    p_stat->st_ctime = rr->u.TF.times[cnt++].time;
+	  }
+	  if(rr->u.TF.flags & ISO_ROCK_TF_MODIFY) {
+	    p_stat->st_mtime = rr->u.TF.times[cnt++].time;
+	  }
+	  if(rr->u.TF.flags & ISO_ROCK_TF_ACCESS) {
+	    p_stat->st_atime = rr->u.TF.times[cnt++].time;
+	  }
+	  if(rr->u.TF.flags & ISO_ROCK_TF_ATTRIBUTES) { 
+	    p_stat->st_ctime = rr->u.TF.times[cnt++].time;
+	  } 
+#endif
+	  p_stat->b_rock = yep;
+	  break;
+	}
       default:
 	break;
       }
@@ -161,7 +201,7 @@ parse_rock_ridge_stat_internal(iso9660_dir_t *de,
   int symlink_len = 0;
   CONTINUE_DECLS;
 
-  if (!p_stat->b_rock) return 0;
+  if (nope == p_stat->b_rock) return 0;
 
   SETUP_ROCK_RIDGE(de, chr, len);
   if (regard_xa)
@@ -192,7 +232,7 @@ parse_rock_ridge_stat_internal(iso9660_dir_t *de,
 	CHECK_CE;
 	break;
       case SIG('E','R'):
-	p_stat->b_rock = 1;
+	p_stat->b_rock = yep;
 	cdio_debug("ISO 9660 Extensions: ");
 	{ int p;
 	  for(p=0;p<rr->u.ER.len_id;p++) cdio_debug("%c",rr->u.ER.data[p]);
@@ -341,7 +381,7 @@ parse_rock_ridge_stat(iso9660_dir_t *de, /*out*/ iso9660_stat_t *p_stat)
   result = parse_rock_ridge_stat_internal(de, p_stat, 0);
   /* if Rock-Ridge flag was reset and we didn't look for attributes
    * behind eventual XA attributes, have a look there */
-  if (0xFF == p_stat->s_rock_offset && p_stat->b_rock) {
+  if (0xFF == p_stat->s_rock_offset && nope != p_stat->b_rock) {
     result = parse_rock_ridge_stat_internal(de, p_stat, 14);
   }
   return result;
