@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_osx.c,v 1.16 2005/02/06 11:46:12 rocky Exp $
+    $Id: _cdio_osx.c,v 1.17 2005/02/24 00:18:34 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.16 2005/02/06 11:46:12 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_osx.c,v 1.17 2005/02/24 00:18:34 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -900,32 +900,27 @@ _free_osx (void *p_user_data) {
 }
 
 /*!
-   Reads nblocks of mode2 form2 sectors from cd device into data starting
+   Reads i_blocks of mode2 form2 sectors from cd device into data starting
    from lsn.
    Returns 0 if no error. 
  */
 static int
-_get_read_mode1_sectors_osx (void *user_data, void *data, lsn_t lsn, 
-			     bool b_form2, unsigned int nblocks)
+read_data_sectors_osx (void *p_user_data, void *p_data, lsn_t lsn, 
+			    uint16_t i_blocksize, unsigned int i_blocks)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
   dk_cd_read_t cd_read;
   
   memset( &cd_read, 0, sizeof(cd_read) );
   
   cd_read.sectorArea  = kCDSectorAreaUser;
-  cd_read.buffer      = data;
-  cd_read.sectorType  = kCDSectorTypeMode1;
+  cd_read.buffer      = p_data;
+  cd_read.sectorType  = kCDSectorTypeUnknown;
   
-  if (b_form2) {
-    cd_read.offset       = lsn * kCDSectorSizeMode2;
-    cd_read.bufferLength = kCDSectorSizeMode2 * nblocks;
-  } else {
-    cd_read.offset       = lsn * kCDSectorSizeMode1;
-    cd_read.bufferLength = kCDSectorSizeMode1 * nblocks;
-  }
+  cd_read.offset       = lsn * i_blocksize;
+  cd_read.bufferLength = i_blocksize * i_blocks;
   
-   if( ioctl( env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
+   if( ioctl( p_env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
     cdio_info( "could not read block %d, %s", lsn, strerror(errno) );
     return -1;
@@ -935,48 +930,83 @@ _get_read_mode1_sectors_osx (void *user_data, void *data, lsn_t lsn,
 
   
 /*!
-   Reads nblocks of mode2 form2 sectors from cd device into data starting
+   Reads i_blocks of mode2 form2 sectors from cd device into data starting
    from lsn.
    Returns 0 if no error. 
  */
-static int
-_get_read_mode2_sectors_osx (void *user_data, void *data, lsn_t lsn, 
-			     bool b_form2, unsigned int nblocks)
+static driver_return_code_t
+read_mode1_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn, 
+			     bool b_form2, unsigned int i_blocks)
 {
-  _img_private_t *env = user_data;
+  _img_private_t *p_env = p_user_data;
+  dk_cd_read_t cd_read;
+  
+  memset( &cd_read, 0, sizeof(cd_read) );
+  
+  cd_read.sectorArea  = kCDSectorAreaUser;
+  cd_read.buffer      = p_data;
+  cd_read.sectorType  = kCDSectorTypeMode1;
+  
+  if (b_form2) {
+    cd_read.offset       = i_lsn * kCDSectorSizeMode2;
+    cd_read.bufferLength = kCDSectorSizeMode2 * i_blocks;
+  } else {
+    cd_read.offset       = i_lsn * kCDSectorSizeMode1;
+    cd_read.bufferLength = kCDSectorSizeMode1 * i_blocks;
+  }
+  
+   if( ioctl( p_env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
+  {
+    cdio_info( "could not read block %d, %s", i_lsn, strerror(errno) );
+    return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_SUCCESS;
+}
+
+  
+/*!
+   Reads i_blocks of mode2 form2 sectors from cd device into data starting
+   from lsn.
+   Returns DRIVER_OP_SUCCESS if no error. 
+ */
+static driver_return_code_t
+read_mode2_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
+			bool b_form2, unsigned int i_blocks)
+{
+  _img_private_t *p_env = p_user_data;
   dk_cd_read_t cd_read;
   
   memset( &cd_read, 0, sizeof(cd_read) );
   
   cd_read.sectorArea = kCDSectorAreaUser;
-  cd_read.buffer = data;
+  cd_read.buffer = p_data;
   
   if (b_form2) {
-    cd_read.offset       = lsn * kCDSectorSizeMode2Form2;
+    cd_read.offset       = i_lsn * kCDSectorSizeMode2Form2;
     cd_read.sectorType   = kCDSectorTypeMode2Form2;
-    cd_read.bufferLength = kCDSectorSizeMode2Form2 * nblocks;
+    cd_read.bufferLength = kCDSectorSizeMode2Form2 * i_blocks;
   } else {
-    cd_read.offset       = lsn * kCDSectorSizeMode2Form1;
+    cd_read.offset       = i_lsn * kCDSectorSizeMode2Form1;
     cd_read.sectorType   = kCDSectorTypeMode2Form1;
-    cd_read.bufferLength = kCDSectorSizeMode2Form1 * nblocks;
+    cd_read.bufferLength = kCDSectorSizeMode2Form1 * i_blocks;
   }
   
-  if( ioctl( env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
+  if( ioctl( p_env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
-    cdio_info( "could not read block %d, %s", lsn, strerror(errno) );
-    return -1;
+    cdio_info( "could not read block %d, %s", i_lsn, strerror(errno) );
+    return DRIVER_OP_ERROR;
   }
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
   
 /*!
-   Reads a single audio sector from CD device into data starting from lsn.
+   Reads a single audio sector from CD device into p_data starting from lsn.
    Returns 0 if no error. 
  */
 static int
-_get_read_audio_sectors_osx (void *user_data, void *data, lsn_t lsn, 
-			     unsigned int nblocks)
+read_audio_sectors_osx (void *user_data, void *p_data, lsn_t lsn, 
+			     unsigned int i_blocks)
 {
   _img_private_t *env = user_data;
   dk_cd_read_t cd_read;
@@ -987,47 +1017,47 @@ _get_read_audio_sectors_osx (void *user_data, void *data, lsn_t lsn,
   cd_read.sectorArea   = kCDSectorAreaUser;
   cd_read.sectorType   = kCDSectorTypeCDDA;
   
-  cd_read.buffer       = data;
-  cd_read.bufferLength = kCDSectorSizeCDDA * nblocks;
+  cd_read.buffer       = p_data;
+  cd_read.bufferLength = kCDSectorSizeCDDA * i_blocks;
   
   if( ioctl( env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
     cdio_info( "could not read block %d\n%s", lsn,
 	       strerror(errno));
-    return -1;
+    return DRIVER_OP_ERROR;
   }
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
-   Reads a single mode2 sector from cd device into data starting
+   Reads a single mode2 sector from cd device into p_data starting
    from lsn. Returns 0 if no error. 
  */
-static int
-_get_read_mode1_sector_osx (void *user_data, void *data, lsn_t lsn, 
-			    bool b_form2)
+static driver_return_code_t
+read_mode1_sector_osx (void *p_user_data, void *p_data, lsn_t i_lsn, 
+		       bool b_form2)
 {
-  return _get_read_mode1_sectors_osx(user_data, data, lsn, b_form2, 1);
+  return read_mode1_sectors_osx(p_user_data, p_data, i_lsn, b_form2, 1);
 }
 
 /*!
-   Reads a single mode2 sector from cd device into data starting
+   Reads a single mode2 sector from cd device into p_data starting
    from lsn. Returns 0 if no error. 
  */
-static int
-_get_read_mode2_sector_osx (void *user_data, void *data, lsn_t lsn, 
-			    bool b_form2)
+static driver_return_code_t
+read_mode2_sector_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
+		       bool b_form2)
 {
-  return _get_read_mode2_sectors_osx(user_data, data, lsn, b_form2, 1);
+  return read_mode2_sectors_osx(p_user_data, p_data, i_lsn, b_form2, 1);
 }
 
 /*!
   Set the key "arg" to "value" in source device.
 */
-static int
-_set_arg_osx (void *user_data, const char key[], const char value[])
+static driver_return_code_t
+_set_arg_osx (void *p_user_data, const char key[], const char value[])
 {
-  _img_private_t *p_env = user_data;
+  _img_private_t *p_env = p_user_data;
 
   if (!strcmp (key, "source"))
     {
@@ -1048,7 +1078,8 @@ _set_arg_osx (void *user_data, const char key[], const char value[])
 }
 
 #if 0
-static void TestDevice(_img_private_t *p_env, io_service_t service)
+static void 
+TestDevice(_img_private_t *p_env, io_service_t service)
 {
   SInt32                          score;
   HRESULT                         herr;
@@ -1267,7 +1298,7 @@ get_track_lba_osx(void *p_user_data, track_t i_track)
 }
 
 /*!
-  Eject media . Return 1 if successful, 0 otherwise.
+  Eject media . Return DRIVER_OP_SUCCESS if successful.
 
   The only way to cleanly unmount the disc under MacOS X is to use the
   'disktool' command line utility. It uses the non-public Disk
@@ -1300,7 +1331,7 @@ _eject_media_osx (void *user_data) {
 	  if( i_ret == 0 && ferror( p_eject ) != 0 )
             {
 	      pclose( p_eject );
-	      return DRIVER_OP_SUCCESS;
+	      return DRIVER_OP_ERROR;
             }
 	  
 	  pclose( p_eject );
@@ -1309,7 +1340,7 @@ _eject_media_osx (void *user_data) {
 	  
 	  if( strstr( psz_result, "Disk Ejected" ) != NULL )
             {
-	      return DRIVER_OP_ERROR;
+	      return DRIVER_OP_SUCCESS;
             }
         }
     }
@@ -1683,13 +1714,14 @@ cdio_open_osx (const char *psz_orig_source)
     .get_track_preemphasis = get_track_preemphasis_generic,
     .lseek                 = cdio_generic_lseek,
     .read                  = cdio_generic_read,
-    .read_audio_sectors    = _get_read_audio_sectors_osx,
-    .read_mode1_sector     = _get_read_mode1_sector_osx,
-    .read_mode1_sectors    = _get_read_mode1_sectors_osx,
-    .read_mode2_sector     = _get_read_mode2_sector_osx,
-    .read_mode2_sectors    = _get_read_mode2_sectors_osx,
-    .read_toc              =  read_toc_osx,
-    .run_mmc_cmd           =  run_mmc_cmd_osx,
+    .read_audio_sectors    = read_audio_sectors_osx,
+    .read_data_sectors     = read_data_sectors_osx,
+    .read_mode1_sector     = read_mode1_sector_osx,
+    .read_mode1_sectors    = read_mode1_sectors_osx,
+    .read_mode2_sector     = read_mode2_sector_osx,
+    .read_mode2_sectors    = read_mode2_sectors_osx,
+    .read_toc              = read_toc_osx,
+    .run_mmc_cmd           = run_mmc_cmd_osx,
     .set_arg               = _set_arg_osx,
     .set_speed             = set_speed_osx,
   };
