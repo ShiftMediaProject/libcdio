@@ -5,11 +5,12 @@
    a particular device. 
 -  cd-read: new program to help diagnose reading problems.
 -  cd-info: now displays date on iso9660 listing and translates filename 
-   to normal conventions
+   to normal conventions, gives track "green" info
 -  Add/expose routines to get/set time. time is reported back in entry
    stat. Routines to create ISO-9660 directories and entries must now
    supply the time to set on the entry.
--  Darwin and FreeBSD drivers closer to having native CD support.
+-  Darwin and FreeBSD drivers closer to having native CD support, MinGW
+   fixes (but not complete either)
 -  BSDI fixes
 -  Document more functions.
 
