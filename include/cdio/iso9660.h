@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.48 2004/10/09 23:20:52 rocky Exp $
+    $Id: iso9660.h,v 1.49 2004/10/10 20:36:10 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -552,13 +552,12 @@ iso9660_stat_t *iso9660_ifs_stat (iso9660_t *iso, const char pathname[]);
 iso9660_stat_t *iso9660_ifs_stat_translate (iso9660_t *iso, 
                                             const char pathname[]);
 
-
-
 /*! 
   Read pathname (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
-CdioList * iso9660_fs_readdir (const CdIo *obj, const char pathname[], bool mode2);
+CdioList * iso9660_fs_readdir (const CdIo *obj, const char pathname[], 
+                               bool mode2);
 
 /*! 
   Read pathname (a directory) and return a list of iso9660_stat_t
