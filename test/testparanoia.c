@@ -136,7 +136,7 @@ main(int argc, const char *argv[])
 	    if ( 0 == cdio_read_audio_sector(d->p_cdio, readbuf, i_lsn) ) {
 	      if ( 0 != memcmp(audio_buf[i], readbuf, 
 			       CDIO_CD_FRAMESIZE_RAW) ) {
-		printf("LSNs %ld don't match\n", (long int) i_lsn);
+		printf("LSN %ld doesn't match\n", (long int) i_lsn);
 		i_rc = 1;
 		goto out;
 	      }
