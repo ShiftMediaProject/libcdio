@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.15 2004/07/17 09:12:21 rocky Exp $
+    $Id: win32_ioctl.c,v 1.16 2004/07/17 10:05:54 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.15 2004/07/17 09:12:21 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.16 2004/07/17 10:05:54 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -449,68 +449,10 @@ init_cdtext_win32ioctl (_img_private_t *env)
     cdio_info("Error reading cdtext: %s", psz_msg);
     LocalFree(psz_msg);
     return false;
+  } else {
+    return cdtext_data_init(env, env->i_first_track, wdata, 
+			    set_cdtext_field_win32);
   }
-
-  {
-    CDText_data_t *pdata;
-    int           i;
-    int           j;
-    char          buffer[256];
-    int           idx;
-    int           i_track;
-
-    memset( buffer, 0x00, sizeof(buffer) );
-    idx = 0;
-  
-    pdata = (CDText_data_t *) (&wdata[4]);
-    for( i=0; i < CDIO_CDTEXT_MAX_PACK_DATA; i++ ) {
-      if( pdata->seq != i )
-	break;
-      
-      if( (pdata->type >= 0x80) 
-	  && (pdata->type <= 0x85) && (pdata->block == 0) ) {
-	i_track = pdata->i_track;
-	
-	for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++ ) {
-	  if( pdata->text[j] == 0x00 )
-	    {
-	      switch( pdata->type) {
-	      case CDIO_CDTEXT_TITLE: 
-		set_cdtext_field(CDTEXT_TITLE);
-		break;
-	      case CDIO_CDTEXT_PERFORMER:  
-		set_cdtext_field(CDTEXT_PERFORMER);
-		break;
-	      case CDIO_CDTEXT_SONGWRITER:
-		set_cdtext_field(CDTEXT_SONGWRITER);
-		break;
-	      case CDIO_CDTEXT_COMPOSER:
-		set_cdtext_field(CDTEXT_COMPOSER);
-		break;
-	      case CDIO_CDTEXT_ARRANGER:
-		set_cdtext_field(CDTEXT_ARRANGER);
-		break;
-	      case CDIO_CDTEXT_MESSAGE:
-		set_cdtext_field(CDTEXT_MESSAGE);
-		break;
-	      case CDIO_CDTEXT_DISCID: 
-		set_cdtext_field(CDTEXT_DISCID);
-		break;
-	      case CDIO_CDTEXT_GENRE: 
-		set_cdtext_field(CDTEXT_GENRE);
-		break;
-	      }
-	    }
-	  else 	    {
-	    buffer[idx++] = pdata->text[j];
-	  }
-	  buffer[idx] = 0x00;
-	}
-      }
-      pdata++;
-    }
-  }
-  return true;
 }
 
 /*!

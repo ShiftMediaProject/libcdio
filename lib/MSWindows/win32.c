@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.23 2004/07/17 09:12:21 rocky Exp $
+    $Id: win32.c,v 1.24 2004/07/17 10:05:54 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.23 2004/07/17 09:12:21 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.24 2004/07/17 10:05:54 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -427,6 +427,23 @@ _get_arg_win32 (void *user_data, const char key[])
   return NULL;
 }
 
+void
+set_cdtext_field_win32(void *user_data, track_t i_track, 
+		       track_t i_first_track,
+		       cdtext_field_t e_field, const char *psz_value)
+{
+  char **pp_field;
+  _img_private_t *env = user_data;
+  
+  if( i_track == 0 )
+    pp_field = &(env->cdtext.field[e_field]);
+  
+  else
+    pp_field = &(env->tocent[i_track-i_first_track].cdtext.field[e_field]);
+
+  *pp_field = strdup(psz_value);
+}
+
 /*!
   Return the value associated with the key "arg".
 */
@@ -553,7 +570,7 @@ _cdio_get_track_green(void *obj, track_t i_track)
   /* FIXME: Dunno if this is the right way, but it's what 
      I was using in cd-info for a while.
    */
-  return ((env->tocent[i_track-1].Control & 2) != 0);
+  return ((env->tocent[i_track-env->i_first_track].Control & 2) != 0);
 }
 
 /*!  

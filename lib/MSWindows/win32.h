@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.11 2004/07/17 09:12:21 rocky Exp $
+    $Id: win32.h,v 1.12 2004/07/17 10:05:54 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -136,3 +136,8 @@ cdio_drive_cap_t get_drive_cap_win32ioctl (const _img_private_t *env);
 */
 track_format_t get_track_format_win32ioctl(const _img_private_t *env, 
 					   track_t i_track); 
+
+void set_cdtext_field_win32(void *user_data, track_t i_track, 
+			    track_t i_first_track,
+			    cdtext_field_t e_field, const char *psz_value);
+
