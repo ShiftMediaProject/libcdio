@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.8 2003/04/06 23:09:30 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.9 2003/04/07 02:41:40 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.8 2003/04/06 23:09:30 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.9 2003/04/07 02:41:40 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -468,17 +468,20 @@ _read_mode2_sector (void *user_data, void *data, uint32_t lsn,
 		    bool mode2_form2)
 {
   _img_private_t *_obj = user_data;
+  int ret;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   int blocksize = _obj->sector_2336 
     ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
   _cdio_init (_obj);
 
-  cdio_stream_seek (_obj->data_source, lsn * blocksize, SEEK_SET);
+  ret = cdio_stream_seek (_obj->data_source, lsn * blocksize, SEEK_SET);
+  if (ret!=0) return ret;
 
-  cdio_stream_read (_obj->data_source,
-		    _obj->sector_2336 ? (buf + 12 + 4) : buf,
-		    blocksize, 1);
+  ret = cdio_stream_read (_obj->data_source,
+			  _obj->sector_2336 ? (buf + 12 + 4) : buf,
+			  blocksize, 1);
+  if (ret==0) return ret;
 
   if (mode2_form2)
     memcpy (data, buf + 12 + 4, M2RAW_SECTOR_SIZE);
