@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.6 2005/03/12 16:45:44 rocky Exp $
+    $Id: cdda-player.c,v 1.7 2005/03/12 16:53:29 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -401,7 +401,7 @@ read_toc(CdIo_t *p_cdio)
 	  {
 	    s = cdio_audio_get_msf_seconds(&toc[i]) 
 	      - cdio_audio_get_msf_seconds(&toc[i-1]);
-	    snprintf(cd_info[i].length, sizeof(cd_info[0].length), 
+	    snprintf(cd_info[i-1].length, sizeof(cd_info[0].length), 
 		     "%02d:%02d",
 		     s / CDIO_CD_SECS_PER_MIN,  s % CDIO_CD_SECS_PER_MIN);
 	  }
