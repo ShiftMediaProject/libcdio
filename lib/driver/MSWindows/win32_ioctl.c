@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.4 2005/01/06 16:37:31 rocky Exp $
+    $Id: win32_ioctl.c,v 1.5 2005/01/13 19:35:42 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.4 2005/01/06 16:37:31 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.5 2005/01/13 19:35:42 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -380,7 +380,7 @@ read_audio_sectors_win32ioctl (_img_private_t *env, void *data, lsn_t lsn,
     char *psz_msg = NULL;
     long int i_err = GetLastError();
     FORMAT_ERROR(i_err, psz_msg);
-    cdio_info("Error reading audio-mode lsn %lu\n%s (%d))", 
+    cdio_info("Error reading audio-mode lsn %lu\n%s (%ld))", 
 	      (long unsigned int) lsn, psz_msg, i_err);
     LocalFree(psz_msg);
     return 1;
@@ -552,7 +552,9 @@ read_fulltoc_win32mmc (_img_private_t *p_env)
 {
   scsi_mmc_cdb_t  cdb = {{0, }};
   CDROM_TOC_FULL  cdrom_toc_full;
-  int             i_status, i, j, i_track_format, i_seen_flag;
+  int             i_status, i, j, 
+  int             i_track_format = 0;
+  int             i_seen_flag;
 
   /* Operation code */
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
