@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.6 2003/04/10 04:13:41 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.7 2003/04/19 20:49:53 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.6 2003/04/10 04:13:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.7 2003/04/19 20:49:53 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -64,15 +64,11 @@ typedef struct {
      This must be first. */
   generic_img_private_t gen; 
 
-  int ioctls_debugged; /* for debugging */
-
   enum {
     _AM_NONE,
     _AM_IOCTL,
   } access_mode;
 
-  char *source_name;
-  
   /* Track information */
   bool toc_init;                         /* if true, info below is valid. */
   struct ioc_toc_header  tochdr;
@@ -141,11 +137,37 @@ _read_mode2 (int fd, void *buf, lba_t lba, unsigned nblocks,
 }
 
 /*!
+   Reads a single mode2 sector from cd device into data starting from lsn.
+   Returns 0 if no error. 
+ */
+static int
+_cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
+{
+  unsigned char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
+
+  struct cdrom_cdda cdda;
+
+  cdda.cdda_addr = frame;
+  cdda.cdda_length = 1;
+  cdda.cdda_data = buf;
+  cdda.cdda_subcode = CDROM_DA_NO_SUBCODE;
+
+  /* read a frame */
+  if(ioctl(fd, CDROMCDDA, &cdda) < 0) {
+    perror("CDROMCDDA");
+    return 1;
+  }
+  memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
+
+  return 0;
+}
+
+/*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
 static int
-_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
 		    bool mode2_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
@@ -159,20 +181,20 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
   msf->cdmsf_sec0 = from_bcd8(_msf.s);
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
 
-  if (_obj->ioctls_debugged == 75)
+  if (_obj->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
 
-  if (_obj->ioctls_debugged == 30 * 75)
+  if (_obj->get.ioctls_debugged == 30 * 75)
     cdio_debug ("only displaying every 30*75th ioctl from now on");
   
-  if (_obj->ioctls_debugged < 75 
-      || (_obj->ioctls_debugged < (30 * 75)  
-	  && _obj->ioctls_debugged % 75 == 0)
+  if (_obj->gen.ioctls_debugged < 75 
+      || (_obj->get.ioctls_debugged < (30 * 75)  
+	  && _obj->gen.ioctls_debugged % 75 == 0)
       || _obj->ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %2.2d:%2.2d:%2.2d",
 	       msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
   
-  _obj->ioctls_debugged++;
+  _obj->gen.ioctls_debugged++;
  
  retry:
   switch (_obj->access_mode)
@@ -206,7 +228,7 @@ _read_mode2_sector (void *user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
+_cdio_read_mode2_sectors (void *user_data, void *data, lsn_t lsn, 
 		     bool mode2_form2, unsigned nblocks)
 {
   _img_private_t *_obj = user_data;
@@ -215,13 +237,13 @@ _read_mode2_sectors (void *user_data, void *data, lsn_t lsn,
 
   for (i = 0; i < nblocks; i++) {
     if (mode2_form2) {
-      if ( (retval = _read_mode2_sector (_obj, 
+      if ( (retval = _cdio_read_mode2_sector (_obj, 
 					  ((char *)data) + (M2RAW_SECTOR_SIZE * i),
 					  lsn + i, true)) )
 	return retval;
     } else {
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = _read_mode2_sector (_obj, buf, lsn + i, true)) )
+      if ( (retval = _cdio_read_mode2_sector (_obj, buf, lsn + i, true)) )
 	return retval;
       
       memcpy (((char *)data) + (M2F1_SECTOR_SIZE * i), buf + 8, 
@@ -505,7 +527,7 @@ cdio_open_freebsd (const char *source_name)
     .eject_media        = _cdio_eject_media,
     .free               = _cdio_generic_free,
     .get_arg            = _cdio_get_arg,
-    .get_default_device = _cdio_get_default_device,
+    .get_default_device = _cdio_get_default_device_freebsd,
     .get_first_track_num= _cdio_get_first_track_num,
     .get_num_tracks     = _cdio_get_num_tracks,
     .get_track_format   = _cdio_get_track_format,
@@ -514,8 +536,9 @@ cdio_open_freebsd (const char *source_name)
     .get_track_msf      = _cdio_get_track_msf,
     .lseek              = cdio_generic_lseek,
     .read               = cdio_generic_read,
-    .read_mode2_sector  = _read_mode2_sector,
-    .read_mode2_sectors = _read_mode2_sectors,
+    .read_audio_sector  = _cdio_read_audio_sector,
+    .read_mode2_sector  = _cdio_read_mode2_sector,
+    .read_mode2_sectors = _cdio_read_mode2_sectors,
     .set_arg            = _cdio_set_arg,
     .stat_size          = _cdio_stat_size
   };
