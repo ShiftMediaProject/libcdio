@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.13 2005/03/06 11:21:52 rocky Exp $
+    $Id: device.c,v 1.14 2005/03/06 22:04:07 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -435,7 +435,7 @@ cdio_get_devices_ret (/*in/out*/ driver_id_t *p_driver_id)
   the value is NULL. This also means nothing was found.
 */
 char **
-cdio_get_devices_with_cap (/*out*/ char* search_devices[], 
+cdio_get_devices_with_cap (/*in*/ char* search_devices[], 
                            cdio_fs_anal_t capabilities, bool any)
 {
   driver_id_t p_driver_id;
@@ -444,18 +444,23 @@ cdio_get_devices_with_cap (/*out*/ char* search_devices[],
 }
 
 char **
-cdio_get_devices_with_cap_ret (/*out*/ char* search_devices[], 
+cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[], 
                                cdio_fs_anal_t capabilities, bool any,
                                /*out*/ driver_id_t *p_driver_id)
 {
   char **ppsz_drives=search_devices;
   char **ppsz_drives_ret=NULL;
   unsigned int i_drives=0;
+  bool b_free_ppsz_drives = false;
 
   *p_driver_id = DRIVER_DEVICE;
 
-  if (NULL == ppsz_drives) ppsz_drives=cdio_get_devices_ret(p_driver_id);
-  if (NULL == ppsz_drives) return NULL;
+  if (!ppsz_drives) {
+    ppsz_drives=cdio_get_devices_ret(p_driver_id);
+    b_free_ppsz_drives = true;
+  }
+  
+  if (!ppsz_drives) return NULL;
 
   if (capabilities == CDIO_FS_MATCH_ALL) {
     /* Duplicate drives into drives_ret. */
@@ -497,8 +502,10 @@ cdio_get_devices_with_cap_ret (/*out*/ char* search_devices[],
     }
   }
   cdio_add_device_list(&ppsz_drives_ret, NULL, &i_drives);
-  cdio_free_device_list(ppsz_drives);
-  free(ppsz_drives);
+  if (b_free_ppsz_drives) {
+    cdio_free_device_list(ppsz_drives);
+    free(ppsz_drives);
+  }
   return ppsz_drives_ret;
 }
 

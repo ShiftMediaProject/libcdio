@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.19 2005/03/06 11:21:52 rocky Exp $
+    $Id: device.h,v 1.20 2005/03/06 22:04:07 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -289,7 +289,7 @@ extern "C" {
     after dereferencing the the value is NULL. This also means nothing
     was found.
   */
-  char ** cdio_get_devices_with_cap (char* ppsz_search_devices[],
+  char ** cdio_get_devices_with_cap (/*in*/ char *ppsz_search_devices[],
 				     cdio_fs_anal_t capabilities, bool b_any);
 
   /*!
@@ -298,7 +298,7 @@ extern "C" {
     and then *open* it afterwards. Giving the driver back facilitates this,
     and speeds things up for libcdio as well.
   */
-  char ** cdio_get_devices_with_cap_ret (/*out*/ char* ppsz_search_devices[],
+  char ** cdio_get_devices_with_cap_ret (/*in*/ char* ppsz_search_devices[],
 					 cdio_fs_anal_t capabilities, 
 					 bool b_any,
 					 /*out*/ driver_id_t *p_driver_id);
