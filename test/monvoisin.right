@@ -17,31 +17,31 @@ ISO9660 filesystem
 /:
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
-  d d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048  CDI
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  EXT
-  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  MPEGAV
-  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  SEGMENT
-  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048  VCD
+  d d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048  cdi
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ext
+  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  mpegav
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  segment
+  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048  vcd
 
 /CDI/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
-  - ---2-xrxrxr 0 0 [fn 01] [LSN    211]   1494332 (  1315168)  CDI_IMAG.RTF;1
-  - ----1xrxrxr 0 0 [fn 01] [LSN    854]     13616  CDI_TEXT.FNT;1
-  - ----1xrxrxr 0 0 [fn 01] [LSN    861]    102400  CDI_VCD.APP;1
-  - ----1xrxrxr 0 0 [fn 01] [LSN    911]       279  CDI_VCD.CFG;1
+  - ---2-xrxrxr 0 0 [fn 01] [LSN    211]   1494332 (  1315168)  cdi_imag.rtf
+  - ----1xrxrxr 0 0 [fn 01] [LSN    854]     13616  cdi_text.fnt
+  - ----1xrxrxr 0 0 [fn 01] [LSN    861]    102400  cdi_vcd.app
+  - ----1xrxrxr 0 0 [fn 01] [LSN    911]       279  cdi_vcd.cfg
 
 /EXT/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
-  - ----1xrxrxr 0 0 [fn 01] [LSN    912]     65536  LOT_X.VCD;1
-  - ----1xrxrxr 0 0 [fn 01] [LSN    944]        24  PSD_X.VCD;1
-  - ----1xrxrxr 0 0 [fn 01] [LSN    945]       114  SCANDATA.DAT;1
+  - ----1xrxrxr 0 0 [fn 01] [LSN    912]     65536  lot_x.vcd
+  - ----1xrxrxr 0 0 [fn 01] [LSN    944]        24  psd_x.vcd
+  - ----1xrxrxr 0 0 [fn 01] [LSN    945]       114  scandata.dat
 
 /MPEGAV/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
-  - ---2-xrxrxr 0 0 [fn 01] [LSN   1251]   3655652 (  3221504)  AVSEQ01.DAT;1
+  - ---2-xrxrxr 0 0 [fn 01] [LSN   1251]   3655652 (  3221504)  avseq01.dat
 
 /SEGMENT/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  .
@@ -50,10 +50,10 @@ ISO9660 filesystem
 /VCD/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
-  - ----1xrxrxr 0 0 [fn 00] [LSN    151]      2048  ENTRIES.VCD;1
-  - ----1xrxrxr 0 0 [fn 00] [LSN    150]      2048  INFO.VCD;1
-  - ----1xrxrxr 0 0 [fn 00] [LSN    152]     65536  LOT.VCD;1
-  - ----1xrxrxr 0 0 [fn 00] [LSN    184]        24  PSD.VCD;1
+  - ----1xrxrxr 0 0 [fn 00] [LSN    151]      2048  entries.vcd
+  - ----1xrxrxr 0 0 [fn 00] [LSN    150]      2048  info.vcd
+  - ----1xrxrxr 0 0 [fn 00] [LSN    152]     65536  lot.vcd
+  - ----1xrxrxr 0 0 [fn 00] [LSN    184]        24  psd.vcd
 
 XA sectors   Video CD   
 format: VCD 2.0

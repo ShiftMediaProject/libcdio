@@ -17,13 +17,13 @@ ISO9660 filesystem
 /:
   d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
-  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  AUTORUN
-  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  DATA
-  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048  EXT
-  d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048  MPEGAV
-  d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048  SEGMENT
-  d d---1xrxrxr 0 0 [fn 00] [LSN     26]      2048  SVCD
-  d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048  VMP
+  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  autorun
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  data
+  d d---1xrxrxr 0 0 [fn 00] [LSN     23]      2048  ext
+  d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048  mpegav
+  d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048  segment
+  d d---1xrxrxr 0 0 [fn 00] [LSN     26]      2048  svcd
+  d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048  vmp
 
 /AUTORUN/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  .
@@ -32,7 +32,7 @@ ISO9660 filesystem
 /DATA/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
-  d d---1xrxrxr 0 0 [fn 00] [LSN    300]      2048  SVCDDATA
+  d d---1xrxrxr 0 0 [fn 00] [LSN    300]      2048  svcddata
 
 /DATA/SVCDDATA/:
   d d---1xrxrxr 0 0 [fn 00] [LSN    300]      2048  .
@@ -45,7 +45,7 @@ ISO9660 filesystem
 /MPEGAV/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     24]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
-  - ---2--r-r-r 0 0 [fn 01] [LSN    463]  13909140 ( 12257280)  AVSEQ01.MPG;1
+  - ---2--r-r-r 0 0 [fn 01] [LSN    463]  13909140 ( 12257280)  avseq01.mpg
 
 /SEGMENT/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     25]      2048  .
@@ -54,18 +54,18 @@ ISO9660 filesystem
 /SVCD/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     26]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
-  - ----1-rxrxr 0 0 [fn 00] [LSN    151]      2048  ENTRIES.SVD;1
-  - ----1-rxrxr 0 0 [fn 00] [LSN    150]      2048  INFO.SVD;1
-  - ----1-rxrxr 0 0 [fn 00] [LSN    152]     65536  LOT.SVD;1
-  - ----1-rxrxr 0 0 [fn 00] [LSN    184]        16  PSD.SVD;1
-  - ----1-rxrxr 0 0 [fn 00] [LSN    188]       427  SEARCH.DAT;1
-  - ----1-rxrxr 0 0 [fn 00] [LSN    186]      4096  SPICONTX.SVD;1
-  - ----1-rxrxr 0 0 [fn 00] [LSN    185]      2048  TRACKS.SVD;1
+  - ----1-rxrxr 0 0 [fn 00] [LSN    151]      2048  entries.svd
+  - ----1-rxrxr 0 0 [fn 00] [LSN    150]      2048  info.svd
+  - ----1-rxrxr 0 0 [fn 00] [LSN    152]     65536  lot.svd
+  - ----1-rxrxr 0 0 [fn 00] [LSN    184]        16  psd.svd
+  - ----1-rxrxr 0 0 [fn 00] [LSN    188]       427  search.dat
+  - ----1-rxrxr 0 0 [fn 00] [LSN    186]      4096  spicontx.svd
+  - ----1-rxrxr 0 0 [fn 00] [LSN    185]      2048  tracks.svd
 
 /VMP/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     27]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  ..
-  d d---1xrxrxr 0 0 [fn 00] [LSN     28]      2048  SVCDJ
+  d d---1xrxrxr 0 0 [fn 00] [LSN     28]      2048  svcdj
 
 /VMP/SVCDJ/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     28]      2048  .

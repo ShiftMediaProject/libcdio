@@ -17,35 +17,35 @@ ISO9660 filesystem
 /:
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
-  d d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048  EXT
-  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  MPEG2
-  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  SEGMENT
-  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  SVCD
+  d d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048  ext
+  d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  mpeg2
+  d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  segment
+  d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  svcd
 
 /EXT/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     19]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
-  - ----1xrxrxr 0 0 [fn 00] [LSN    375]       201  SCANDATA.DAT;1
+  - ----1xrxrxr 0 0 [fn 00] [LSN    375]       201  scandata.dat
 
 /MPEG2/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     20]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
-  - ---2-xrxrxr 0 0 [fn 00] [LSN    526]   7971320 (  7024640)  AVSEQ01.MPG;1
+  - ---2-xrxrxr 0 0 [fn 00] [LSN    526]   7971320 (  7024640)  avseq01.mpg
 
 /SEGMENT/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     21]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
-  - ---2-xrxrxr 0 0 [fn 00] [LSN    225]    183596 (   161792)  ITEM0001.MPG;1
+  - ---2-xrxrxr 0 0 [fn 00] [LSN    225]    183596 (   161792)  item0001.mpg
 
 /SVCD/:
   d d---1xrxrxr 0 0 [fn 00] [LSN     22]      2048  .
   d d---1xrxrxr 0 0 [fn 00] [LSN     18]      2048  ..
-  - ----1xrxrxr 0 0 [fn 00] [LSN    151]      2048  ENTRIES.SVD;1
-  - ----1xrxrxr 0 0 [fn 00] [LSN    150]      2048  INFO.SVD;1
-  - ----1xrxrxr 0 0 [fn 00] [LSN    152]     65536  LOT.SVD;1
-  - ----1xrxrxr 0 0 [fn 00] [LSN    184]        40  PSD.SVD;1
-  - ----1xrxrxr 0 0 [fn 00] [LSN    186]       190  SEARCH.DAT;1
-  - ----1xrxrxr 0 0 [fn 00] [LSN    185]      2048  TRACKS.SVD;1
+  - ----1xrxrxr 0 0 [fn 00] [LSN    151]      2048  entries.svd
+  - ----1xrxrxr 0 0 [fn 00] [LSN    150]      2048  info.svd
+  - ----1xrxrxr 0 0 [fn 00] [LSN    152]     65536  lot.svd
+  - ----1xrxrxr 0 0 [fn 00] [LSN    184]        40  psd.svd
+  - ----1xrxrxr 0 0 [fn 00] [LSN    186]       190  search.dat
+  - ----1xrxrxr 0 0 [fn 00] [LSN    185]      2048  tracks.svd
 
 XA sectors   Super Video CD (SVCD) or Chaoji Video CD (CVD)
 session #2 starts at track  2, LSN:    526, ISO 9660 blocks:    376

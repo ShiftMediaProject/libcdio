@@ -16,11 +16,11 @@ ISO9660 filesystem
 /:
   .
   ..
-  COPYING.;1
-  DOC
+  copying
+  doc
 
 /DOC/:
   .
   ..
-  README.TXT;1
+  readme.txt
 
