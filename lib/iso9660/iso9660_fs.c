@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.19 2005/02/18 22:35:48 rocky Exp $
+    $Id: iso9660_fs.c,v 1.20 2005/02/20 03:20:42 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.19 2005/02/18 22:35:48 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.20 2005/02/20 03:20:42 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -990,7 +990,7 @@ _fs_stat_iso_root (iso9660_t *p_iso)
 
 static iso9660_stat_t *
 _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root, 
-		   char **splitpath, bool b_xa, bool translate)
+		   char **splitpath)
 {
   unsigned offset = 0;
   uint8_t *_dirbuf = NULL;
@@ -1019,7 +1019,7 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
   
   _dirbuf = calloc(1, _root->secsize * ISO_BLOCKSIZE);
 
-  if (cdio_read_data_sectors (p_cdio, _dirbuf, _root->lsn, false, 
+  if (cdio_read_data_sectors (p_cdio, _dirbuf, _root->lsn, ISO_BLOCKSIZE, 
 			      _root->secsize))
       return NULL;
   
@@ -1038,7 +1038,9 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
       p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, dunno, 
 					p_env->i_joliet_level);
 
-      if (translate) {
+      cmp = strcmp(splitpath[0], p_stat->filename);
+
+      if ( 0 != cmp && 0 == p_env->i_joliet_level && yep != p_stat->b_rock ) {
 	char *trans_fname = malloc(strlen(p_stat->filename));
 	int trans_len;
 	
@@ -1051,13 +1053,11 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 					       p_env->i_joliet_level);
 	cmp = strcmp(splitpath[0], trans_fname);
 	free(trans_fname);
-      } else {
-	cmp = strcmp(splitpath[0], p_stat->filename);
       }
       
       if (!cmp) {
 	iso9660_stat_t *ret_stat 
-	  = _fs_stat_traverse (p_cdio, p_stat, &splitpath[1], b_xa, translate);
+	  = _fs_stat_traverse (p_cdio, p_stat, &splitpath[1]);
 	free(p_stat);
 	free (_dirbuf);
 	return ret_stat;
@@ -1077,7 +1077,7 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 
 static iso9660_stat_t *
 _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root, 
-		       char **splitpath, bool translate)
+		       char **splitpath)
 {
   unsigned offset = 0;
   uint8_t *_dirbuf = NULL;
@@ -1124,7 +1124,9 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
       p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_xa, 
 					p_iso->i_joliet_level);
 
-      if (translate) {
+      cmp = strcmp(splitpath[0], p_stat->filename);
+
+      if ( 0 != cmp && 0 == p_iso->i_joliet_level && yep != p_stat->b_rock ) {
 	char *trans_fname = malloc(strlen(p_stat->filename)+1);
 	int trans_len;
 	
@@ -1137,13 +1139,11 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 					       p_iso->i_joliet_level);
 	cmp = strcmp(splitpath[0], trans_fname);
 	free(trans_fname);
-      } else {
-	cmp = strcmp(splitpath[0], p_stat->filename);
       }
       
       if (!cmp) {
 	iso9660_stat_t *ret_stat 
-	  = _fs_iso_stat_traverse (p_iso, p_stat, &splitpath[1], translate);
+	  = _fs_iso_stat_traverse (p_iso, p_stat, &splitpath[1]);
 	free(p_stat);
 	free (_dirbuf);
 	return ret_stat;
@@ -1170,7 +1170,6 @@ iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[])
   iso9660_stat_t *p_root;
   char **p_psz_splitpath;
   iso9660_stat_t *p_stat;
-  bool_3way_t b_xa;
 
   if (!p_cdio)   return NULL;
   if (!psz_path) return NULL;
@@ -1179,19 +1178,8 @@ iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[])
 
   if (!p_root)   return NULL;
 
-  switch(cdio_get_discmode(p_cdio)) {
-  case CDIO_DISC_MODE_CD_XA: 
-    b_xa = yep;
-    break;
-  case CDIO_DISC_MODE_CD_DATA: 
-    b_xa = nope;
-    break;
-  default: 
-    b_xa = dunno;
-  }
-  
   p_psz_splitpath = _cdio_strsplit (psz_path, '/');
-  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath, b_xa, false);
+  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath);
   free(p_root);
   _cdio_strfreev (p_psz_splitpath);
 
@@ -1211,7 +1199,6 @@ iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[],
   iso9660_stat_t *p_root;
   char **p_psz_splitpath;
   iso9660_stat_t *p_stat;
-  bool_3way_t b_xa;
 
   if (!p_cdio)  return NULL;
   if (psz_path) return NULL;
@@ -1219,19 +1206,8 @@ iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[],
   p_root = _fs_stat_root (p_cdio);
   if (!p_root) return NULL;
 
-  switch(cdio_get_discmode(p_cdio)) {
-  case CDIO_DISC_MODE_CD_XA: 
-    b_xa = yep;
-    break;
-  case CDIO_DISC_MODE_CD_DATA: 
-    b_xa = nope;
-      break;
-  default: 
-    b_xa = dunno;
-  }
-
   p_psz_splitpath = _cdio_strsplit (psz_path, '/');
-  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath, b_xa, true);
+  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath);
   free(p_root);
   _cdio_strfreev (p_psz_splitpath);
 
@@ -1255,7 +1231,7 @@ iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[])
   if (!p_root) return NULL;
 
   splitpath = _cdio_strsplit (psz_path, '/');
-  stat = _fs_iso_stat_traverse (p_iso, p_root, splitpath, false);
+  stat = _fs_iso_stat_traverse (p_iso, p_root, splitpath);
   free(p_root);
   /*** FIXME _cdio_strfreev (splitpath); ***/
 
@@ -1282,7 +1258,7 @@ iso9660_ifs_stat_translate (iso9660_t *p_iso, const char psz_path[])
   if (NULL == p_root) return NULL;
 
   p_psz_splitpath = _cdio_strsplit (psz_path, '/');
-  p_stat = _fs_iso_stat_traverse (p_iso, p_root, p_psz_splitpath, true);
+  p_stat = _fs_iso_stat_traverse (p_iso, p_root, p_psz_splitpath);
   free(p_root);
   _cdio_strfreev (p_psz_splitpath);
 

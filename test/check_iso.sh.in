@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_iso.sh.in,v 1.7 2005/02/19 11:48:17 rocky Exp $
+#$Id: check_iso.sh.in,v 1.8 2005/02/20 03:20:42 rocky Exp $
 
 if test -z $srcdir ; then
   srcdir=`pwd`
@@ -14,12 +14,12 @@ fi
 BASE=`basename $0 .sh`
 fname=copying
 
-opts="--quiet ${srcdir}/${fname}.iso --no-header --iso9660 "
+opts="--quiet ${srcdir}/${fname}.iso --iso9660 "
 test_iso_info  "$opts" ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC 'iso-info basic test' "$ISO_INFO $opts"
 
-opts="--image ${srcdir}/${fname}.iso --no-header --extract $fname "
+opts="--image ${srcdir}/${fname}.iso --extract $fname "
 test_iso_read  "$opts" ${fname} ${srcdir}/../COPYING
 RC=$?
 check_result $RC 'iso-read basic test' "$ISO_READ $opts"
@@ -27,11 +27,11 @@ check_result $RC 'iso-read basic test' "$ISO_READ $opts"
 if test -n "@HAVE_JOLIET@" ; then
   BASE=`basename $0 .sh`
   fname=joliet
-  opts="--quiet ${srcdir}/${fname}.iso --no-header --iso9660 "
+  opts="--quiet ${srcdir}/${fname}.iso --iso9660 "
   test_iso_info  "$opts" ${fname}-nojoliet.dump ${srcdir}/${fname}.right
   RC=$?
   check_result $RC 'iso-info Joliet test' "$cmdline"
-  opts="--quiet ${srcdir}/${fname}.iso --iso9660 --no-header --no-joliet "
+  opts="--quiet ${srcdir}/${fname}.iso --iso9660 --no-joliet "
   test_iso_info  "$opts" ${fname}-nojoliet.dump \
                  ${srcdir}/${fname}-nojoliet.right
   RC=$?
