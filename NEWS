@@ -1,4 +1,13 @@
 0.72
+
+- cdparanoia included.
+- iso-info options more like cdrtools isoinfo.
+- cd-drive/cd-info show more reading capabilties and show that.
+- cd-info now shows the total disc size.
+- Filesystem reorganization to better support growth and paranoia inclusion
+- FreeBSD 6 tolerated
+- mode detection fixes
+- C++ fixes
 - Update doc
 
 0.71
@@ -157,4 +166,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.58 2004/11/21 22:32:03 rocky Exp $
+$Id: NEWS,v 1.59 2004/12/19 02:31:27 rocky Exp $
