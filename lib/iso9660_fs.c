@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.39 2004/10/30 04:43:43 rocky Exp $
+    $Id: iso9660_fs.c,v 1.40 2004/10/31 04:55:57 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -51,7 +51,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.39 2004/10/30 04:43:43 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.40 2004/10/31 04:55:57 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
@@ -717,10 +717,14 @@ _fs_stat_root (CdIo *p_cdio)
       cdio_warn("Could not read ISO-9660 Superblock.");
       return NULL;
     }
-    
+
+#ifdef HAVE_JOLIET    
     p_iso9660_dir = p_env->i_joliet_level 
       ? &(p_env->svd.root_directory_record) 
       : &(p_env->pvd.root_directory_record) ;
+#else
+    p_iso9660_dir = &(p_env->pvd.root_directory_record) ;
+#endif
     
     p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, 
 				      p_env->i_joliet_level);
@@ -735,9 +739,13 @@ _fs_stat_iso_root (iso9660_t *p_iso)
   iso9660_stat_t *p_stat;
   iso9660_dir_t *p_iso9660_dir;
 
+#ifdef HAVE_JOLIET
   p_iso9660_dir = p_iso->i_joliet_level 
     ? &(p_iso->svd.root_directory_record)
     : &(p_iso->pvd.root_directory_record) ;
+#else 
+  p_iso9660_dir = &(p_iso->pvd.root_directory_record) ;
+#endif
   
   p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, true, 
 				    p_iso->i_joliet_level);
