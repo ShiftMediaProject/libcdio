@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.28 2004/10/24 03:29:31 rocky Exp $
+    $Id: iso9660_fs.c,v 1.29 2004/10/24 12:26:28 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -31,7 +31,7 @@
 # include <errno.h>
 #endif
 
-#ifdef HAVE_ICONV_H
+#ifdef HAVE_ICONV
 # include <iconv.h>
 #endif
 
@@ -49,7 +49,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.28 2004/10/24 03:29:31 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.29 2004/10/24 12:26:28 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {

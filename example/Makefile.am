@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.9 2004/10/10 00:21:08 rocky Exp $
+#   $Id: Makefile.am,v 1.10 2004/10/24 12:26:28 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -29,9 +29,9 @@ cdtext_LDADD  = $(LIBCDIO_LIBS)
 
 drives_LDADD = $(LIBCDIO_LIBS)
 
-iso1_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
-iso2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
-iso3_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
+iso1_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBINTL)
+iso2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBINTL)
+iso3_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBINTL)
 
 scsi_mmc1_LDADD = $(LIBCDIO_LIBS)
 scsi_mmc2_LDADD = $(LIBCDIO_LIBS)

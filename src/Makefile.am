@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.24 2004/09/11 13:02:36 rocky Exp $
+#   $Id: Makefile.am,v 1.25 2004/10/24 12:26:28 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -30,19 +30,19 @@ endif
 
 if BUILD_CDINFO
 cd_info_SOURCES = cd-info.c util.c util.h
-cd_info_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS)
+cd_info_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS) $(LIBINTL)
 
 cd_drive_SOURCES = cd-drive.c util.c util.h
-cd_drive_LDADD =  $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
+cd_drive_LDADD =  $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBINTL)
 
 cd_read_SOURCES = cd-read.c util.c util.h
-cd_read_LDADD =  $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
+cd_read_LDADD =  $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBINTL)
 
 iso_info_SOURCES = iso-info.c util.c util.h
-iso_info_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
+iso_info_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBINTL)
 
 iso_read_SOURCES = iso-read.c util.c util.h
-iso_read_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
+iso_read_LDADD =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBINTL)
 
 if BUILD_CDINFO_LINUX
 cdinfo_linux_SOURCES = cdinfo-linux.c
