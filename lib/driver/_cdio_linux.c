@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.3 2004/12/31 08:27:49 rocky Exp $
+    $Id: _cdio_linux.c,v 1.4 2005/01/01 14:20:15 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.3 2004/12/31 08:27:49 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.4 2005/01/01 14:20:15 rocky Exp $";
 
 #include <string.h>
 
@@ -850,13 +850,16 @@ read_toc_linux (void *p_user_data)
 
     /** FIXME: Do in a more generic place? **/
     p_env->gen.track_flags[i].preemphasis = 
-      p_toc->cdte_ctrl & 0x1 ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
+      p_toc->cdte_ctrl & CDIO_TRACK_FLAG_PRE_EMPHASIS 
+      ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
 
     p_env->gen.track_flags[i].copy_permit = 
-      p_toc->cdte_ctrl & 0x2 ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
+      p_toc->cdte_ctrl & CDIO_TRACK_FLAG_COPY_PERMITTED 
+      ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
     
     p_env->gen.track_flags[i].channels = 
-      p_toc->cdte_ctrl & 0x8 ? 4 : 2;
+      p_toc->cdte_ctrl & CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO 
+      ? 4 : 2;
     
     /****
     struct cdrom_msf0 *msf= &env->tocent[i-1].cdte_addr.msf;

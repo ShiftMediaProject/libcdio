@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.2 2004/12/31 07:51:43 rocky Exp $
+    $Id: nrg.c,v 1.3 2005/01/01 14:20:15 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.2 2004/12/31 07:51:43 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.3 2005/01/01 14:20:15 rocky Exp $";
 
 
 /* reader */
@@ -62,7 +62,6 @@ typedef struct {
 			     include pregap before next entry. */
   uint64_t img_offset;    /* Bytes offset from beginning of disk image file.*/
   uint32_t blocksize;     /* Number of bytes in a block */
-  int      flags;         /* don't copy, 4 channel, pre-emphasis */
 } _mapping_t;
 
 
@@ -78,8 +77,7 @@ static uint32_t _stat_size_nrg (void *user_data);
 static void
 _register_mapping (_img_private_t *env, lsn_t start_lsn, uint32_t sec_count,
 		   uint64_t img_offset, uint32_t blocksize,
-		   track_format_t track_format, bool track_green,
-		   int flags)
+		   track_format_t track_format, bool track_green)
 {
   const int track_num=env->gen.i_tracks;
   track_info_t  *this_track=&(env->tocent[env->gen.i_tracks]);
@@ -89,7 +87,6 @@ _register_mapping (_img_private_t *env, lsn_t start_lsn, uint32_t sec_count,
   _map->sec_count  = sec_count;
   _map->img_offset = img_offset;
   _map->blocksize  = blocksize;
-  _map->flags      = flags;
 
   if (!env->mapping) env->mapping = _cdio_list_new ();
   _cdio_list_append (env->mapping, _map);
@@ -246,7 +243,8 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	  
 	  if (CUES_ID == opcode) {
 	    lsn_t lsn = UINT32_FROM_BE (_entries[0].lsn);
-	    int idx;
+	    unsigned int idx;
+	    unsigned int i = 0;
 	    
 	    cdio_info ("CUES type image detected" );
 
@@ -254,17 +252,32 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	       cdio_assert (lsn == 0?);
 	    */
 	    
-	    p_env->is_cues       = true; /* HACK alert. */
+	    p_env->is_cues           = true; /* HACK alert. */
 	    p_env->gen.i_tracks      = 0;
 	    p_env->gen.i_first_track = 1;
-	    for (idx = 1; idx < entries-1; idx += 2) {
+	    for (idx = 1; idx < entries-1; idx += 2, i++) {
 	      lsn_t sec_count;
-	      int addrtype = _entries[idx].addr_ctrl / 16;
-	      int control  = _entries[idx].addr_ctrl % 16;
-	      int flags = 0;
-	      if ( 1 == control )
-  		     flags &= ~CDIO_TRACK_FLAG_COPY_PERMITTED;
+	      int cdte_format = _entries[idx].addr_ctrl / 16;
+	      int cdte_ctrl   = _entries[idx].type >> 4;
 
+	      if ( COPY_PERMITTED & cdte_ctrl ) {
+		if (p_env) p_env->tocent[i].flags |= COPY_PERMITTED;
+	      } else {
+		if (p_env) p_env->tocent[i].flags &= ~COPY_PERMITTED;
+	      }
+	      
+	      if ( PRE_EMPHASIS & cdte_ctrl ) {
+		if (p_env) p_env->tocent[i].flags |= PRE_EMPHASIS;
+	      } else {
+		if (p_env) p_env->tocent[i].flags &= ~PRE_EMPHASIS;
+	      }
+	      
+	      if ( FOUR_CHANNEL_AUDIO & cdte_ctrl ) {
+		if (p_env) p_env->tocent[i].flags |= FOUR_CHANNEL_AUDIO;
+	      } else {
+		if (p_env) p_env->tocent[i].flags &= ~FOUR_CHANNEL_AUDIO;
+	      }
+	      
 	      cdio_assert (_entries[idx].track == _entries[idx + 1].track);
 	      
 	      /* lsn and sec_count*2 aren't correct, but it comes closer on the
@@ -273,7 +286,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 		 them correctly.
 	      */
 
-	      switch (addrtype) {
+	      switch (cdte_format) {
 	      case 0:
 		lsn = UINT32_FROM_BE (_entries[idx].lsn);
 		break;
@@ -290,39 +303,54 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 		}
 	      default:
 		lsn = CDIO_INVALID_LSN;
-		cdio_warn("unknown addrtype %d", addrtype);
+		cdio_warn("unknown cdte_format %d", cdte_format);
 	      }
 	      
 	      sec_count = UINT32_FROM_BE (_entries[idx + 1].lsn);
 	      
 	      _register_mapping (p_env, lsn, sec_count*2, 
 				 (lsn+CDIO_PREGAP_SECTORS) * M2RAW_SECTOR_SIZE,
-				 M2RAW_SECTOR_SIZE, TRACK_FORMAT_XA, true,
-				 flags);
+				 M2RAW_SECTOR_SIZE, TRACK_FORMAT_XA, true);
 	    }
 	  } else {
 	    lsn_t lsn = UINT32_FROM_BE (_entries[0].lsn);
-	    int idx;
+	    unsigned int idx;
+	    unsigned int i = 0;
 	    
 	    cdio_info ("CUEX type image detected");
 
 	    /* LSN must start at -150 (LBA 0)? */
 	    cdio_assert (lsn == -150); 
 	    
-	    for (idx = 2; idx < entries; idx += 2) {
+	    for (idx = 2; idx < entries; idx += 2, i++) {
 	      lsn_t sec_count;
-	      int addrtype = _entries[idx].addr_ctrl >> 4;
-	      int control  = _entries[idx].addr_ctrl & 0xf;
-	      int flags = 0;
-	      if ( 1 == control )
-  		     flags &= ~CDIO_TRACK_FLAG_COPY_PERMITTED;
+	      int cdte_format = _entries[idx].addr_ctrl >> 4;
+	      int cdte_ctrl   = _entries[idx].type >> 4;
 
-	      /* extractnrg.pl has addrtype for LBA's 0, and
+	      if ( COPY_PERMITTED & cdte_ctrl ) {
+		if (p_env) p_env->tocent[i].flags |= COPY_PERMITTED;
+	      } else {
+		if (p_env) p_env->tocent[i].flags &= ~COPY_PERMITTED;
+	      }
+	      
+	      if ( PRE_EMPHASIS & cdte_ctrl ) {
+		if (p_env) p_env->tocent[i].flags |= PRE_EMPHASIS;
+	      } else {
+		if (p_env) p_env->tocent[i].flags &= ~PRE_EMPHASIS;
+	      }
+	      
+	      if ( FOUR_CHANNEL_AUDIO & cdte_ctrl ) {
+		if (p_env) p_env->tocent[i].flags |= FOUR_CHANNEL_AUDIO;
+	      } else {
+		if (p_env) p_env->tocent[i].flags &= &FOUR_CHANNEL_AUDIO;
+	      }
+	      
+	      /* extractnrg.pl has cdte_format for LBA's 0, and
 		 for MSF 1. ???
 
-		 FIXME: Should decode as appropriate for addrtype.
+		 FIXME: Should decode as appropriate for cdte_format.
 	       */
-	      cdio_assert ( addrtype == 0 || addrtype == 1 );
+	      cdio_assert ( cdte_format == 0 || cdte_format == 1 );
 
 	      cdio_assert (_entries[idx].track != _entries[idx + 1].track);
 	      
@@ -331,8 +359,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	      
 	      _register_mapping (p_env, lsn, sec_count - lsn, 
 				 (lsn + CDIO_PREGAP_SECTORS)*M2RAW_SECTOR_SIZE,
-				 M2RAW_SECTOR_SIZE, TRACK_FORMAT_XA, true,
-				 flags);
+				 M2RAW_SECTOR_SIZE, TRACK_FORMAT_XA, true);
 	    }
 	  }
 	  break;
@@ -540,7 +567,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	    
 	    _start += idx * CDIO_PREGAP_SECTORS;
 	    _register_mapping (p_env, _start, _len, _start2, blocksize,
-			       track_format, track_green, 0);
+			       track_format, track_green);
 
 	  }
 	}
@@ -646,7 +673,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 	    
 	    _start += idx * CDIO_PREGAP_SECTORS;
 	    _register_mapping (p_env, _start, _len, _start2, blocksize,
-			       track_format, track_green, 0);
+			       track_format, track_green);
 	  }
 	}
 	break;
@@ -1177,31 +1204,34 @@ cdio_open_nrg (const char *psz_source)
 
   memset( &_funcs, 0, sizeof(_funcs) );
 
-  _funcs.eject_media        = _eject_media_nrg;
-  _funcs.free               = _free_nrg;
-  _funcs.get_arg            = _get_arg_image;
-  _funcs.get_cdtext         = get_cdtext_generic;
-  _funcs.get_devices        = cdio_get_devices_nrg;
-  _funcs.get_default_device = cdio_get_default_device_nrg;
-  _funcs.get_discmode       = _get_discmode_image;
-  _funcs.get_drive_cap      = _get_drive_cap_image;
-  _funcs.get_first_track_num= _get_first_track_num_image;
-  _funcs.get_hwinfo         = get_hwinfo_nrg;
-  _funcs.get_mcn            = _get_mcn_image;
-  _funcs.get_num_tracks     = _get_num_tracks_image;
-  _funcs.get_track_format   = get_track_format_nrg;
-  _funcs.get_track_green    = _get_track_green_nrg;
-  _funcs.get_track_lba      = NULL; /* Will use generic routine via msf */
-  _funcs.get_track_msf      = _get_track_msf_image;
-  _funcs.lseek              = _lseek_nrg;
-  _funcs.read               = _read_nrg;
-  _funcs.read_audio_sectors = _read_audio_sectors_nrg;
-  _funcs.read_mode1_sector  = _read_mode1_sector_nrg;
-  _funcs.read_mode1_sectors = _read_mode1_sectors_nrg;
-  _funcs.read_mode2_sector  = _read_mode2_sector_nrg;
-  _funcs.read_mode2_sectors = _read_mode2_sectors_nrg;
-  _funcs.set_arg            = _set_arg_image;
-  _funcs.stat_size          = _stat_size_nrg;
+  _funcs.eject_media           = _eject_media_nrg;
+  _funcs.free                  = _free_nrg;
+  _funcs.get_arg               = _get_arg_image;
+  _funcs.get_cdtext            = get_cdtext_generic;
+  _funcs.get_devices           = cdio_get_devices_nrg;
+  _funcs.get_default_device    = cdio_get_default_device_nrg;
+  _funcs.get_discmode          = _get_discmode_image;
+  _funcs.get_drive_cap         = _get_drive_cap_image;
+  _funcs.get_first_track_num   = _get_first_track_num_image;
+  _funcs.get_hwinfo            = get_hwinfo_nrg;
+  _funcs.get_mcn               = _get_mcn_image;
+  _funcs.get_num_tracks        = _get_num_tracks_image;
+  _funcs.get_track_channels    = get_track_channels_generic,
+  _funcs.get_track_copy_permit = get_track_copy_permit_image,
+  _funcs.get_track_format      = get_track_format_nrg;
+  _funcs.get_track_green       = _get_track_green_nrg;
+  _funcs.get_track_lba         = NULL; /* Will use generic routine via msf */
+  _funcs.get_track_msf         = _get_track_msf_image;
+  _funcs.get_track_preemphasis = get_track_preemphasis_generic,
+  _funcs.lseek                 = _lseek_nrg;
+  _funcs.read                  = _read_nrg;
+  _funcs.read_audio_sectors    = _read_audio_sectors_nrg;
+  _funcs.read_mode1_sector     = _read_mode1_sector_nrg;
+  _funcs.read_mode1_sectors    = _read_mode1_sectors_nrg;
+  _funcs.read_mode2_sector     = _read_mode2_sector_nrg;
+  _funcs.read_mode2_sectors    = _read_mode2_sectors_nrg;
+  _funcs.set_arg               = _set_arg_image;
+  _funcs.stat_size             = _stat_size_nrg;
 
   _data                   = _cdio_malloc (sizeof (_img_private_t));
   _data->gen.init         = false;
