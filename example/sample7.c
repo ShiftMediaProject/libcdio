@@ -1,5 +1,5 @@
 /*
-  $Id: sample7.c,v 1.1 2004/01/10 03:03:08 rocky Exp $
+  $Id: sample7.c,v 1.2 2004/01/29 04:22:49 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -18,7 +18,8 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to show using libiso9660 to extract a file. 
+/* Simple program to show using libiso9660 to extract a file from an
+   ISO-9660 image.
  */
 /* This is the ISO 9660 image. */
 #define ISO9660_IMAGE_PATH "../"

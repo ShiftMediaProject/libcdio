@@ -1,4 +1,4 @@
-$Id: README,v 1.3 2003/12/24 11:05:48 uid67423 Exp $
+$Id: README,v 1.4 2004/01/29 04:22:49 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -23,6 +23,10 @@ sample4.c: A slightly improved sample3 program: we handle cdio logging
 sample5.c: A program to show drivers installed and what the default
    CD-ROM drive is and what CD drives are available.
 
-sample6.c: A program to show drivers installed and what the default
-   CD-ROM drive is and what CD drives are available.
+sample6.c: A simple program to show using libiso9660 to extract a file
+   from a cue/bin CD-IMAGE.
+
+sample7.c: A program to show using libiso9660 to extract a file from an
+   ISO-9660 image.
+
 
