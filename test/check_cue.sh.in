@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.23 2004/12/31 08:27:49 rocky Exp $
+#$Id: check_cue.sh.in,v 1.24 2005/01/22 23:57:11 rocky Exp $
 # Tests to see that BIN/CUE and cdrdao TOC file iamge reading is correct
 # (via cd-info).
 
@@ -72,9 +72,9 @@ if test -f ${srcdir}/${fname}.bin ; then
   check_result $RC "cd-info CUE test $testnum" "${CD_INFO} $opts"
 
   if test -z "@VCDINFO_LIBS@" ; then
-    right=${srcdir}/${fname}_toc.right
+    right=${srcdir}/${fname}.right
   else
-    right=${srcdir}/${fname}_vcdinfo_toc.right
+    right=${srcdir}/${fname}_vcdinfo.right
   fi
   opts="-q --no-device-info --no-disc-mode -t ${srcdir}/${fname}.toc --iso9660"
   if test -f ${srcdir}/${fname}.toc ; then

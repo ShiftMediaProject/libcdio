@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.8 2005/01/21 10:11:24 rocky Exp $
+    $Id: cdrdao.c,v 1.9 2005/01/22 23:57:10 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.8 2005/01/21 10:11:24 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.9 2005/01/22 23:57:10 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -237,17 +237,22 @@ _stat_size_cdrdao (void *p_user_data)
   _img_private_t *p_env = p_user_data;
   track_t i_leadout = p_env->gen.i_tracks;
   long i_blocksize  = p_env->tocent[i_leadout-1].blocksize;
-  long i_size       = cdio_stream_stat(p_env->tocent[i_leadout-1].data_source)
-    - p_env->tocent[i_leadout-1].offset;
+  long i_size;
 
-  if (check_track_is_blocksize_multiple(p_env->tocent[i_leadout-1].filename, 
-					i_leadout-1, i_size, i_blocksize)) {
-    i_size /= i_blocksize;
+  if (p_env->tocent[i_leadout-1].sec_count) {
+    i_size = p_env->tocent[i_leadout-1].sec_count;
   } else {
-    /* Round up */
-    i_size = (i_size / i_blocksize) + 1;
+    i_size = cdio_stream_stat(p_env->tocent[i_leadout-1].data_source)
+      - p_env->tocent[i_leadout-1].offset;
+    if (check_track_is_blocksize_multiple(p_env->tocent[i_leadout-1].filename, 
+					  i_leadout-1, i_size, i_blocksize)) {
+      i_size /= i_blocksize;
+    } else {
+      /* Round up */
+      i_size = (i_size / i_blocksize) + 1;
+    }
   }
-  
+
   i_size += p_env->tocent[i_leadout-1].start_lba;
   i_size -= CDIO_PREGAP_SECTORS;
 
@@ -270,7 +275,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
   int          i = -1;              /* Position in tocent. Same as 
 				       cd->gen.i_tracks - 1 */
   char *psz_keyword, *psz_field;
-  cdio_log_level_t log_level = (NULL == cd) ? CDIO_LOG_INFO : CDIO_LOG_WARN;
+  cdio_log_level_t log_level = (cd) ? CDIO_LOG_WARN : CDIO_LOG_INFO ;
   cdtext_field_t cdtext_key;
 
   /* The below declaration(s) may be unique to this image-parse routine. */
@@ -291,17 +296,17 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
     cd->gen.b_cdtext_error = false;
   }
 
-  while ((fgets(psz_line, MAXLINE, fp)) != NULL) {
+  while (fgets(psz_line, MAXLINE, fp)) {
 
     i_line++;
 
     /* strip comment from line */
     /* todo: // in quoted strings? */
     /* //comment */
-    if (NULL != (psz_field = strstr (psz_line, "//")))
+    if ((psz_field = strstr (psz_line, "//")))
       *psz_field = '\0';
     
-    if (NULL != (psz_keyword = strtok (psz_line, " \t\n\r"))) {
+    if ((psz_keyword = strtok (psz_line, " \t\n\r"))) {
       /* CATALOG "ddddddddddddd" */
       if (0 == strcmp ("CATALOG", psz_keyword)) {
 	if (-1 == i) {
@@ -648,37 +653,70 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 		 || 0 == strcmp ("AUDIOFILE", psz_keyword)) {
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
+	    long i_size;
+
 	    /* Handle "<filename>" */
-	    if (NULL != cd) {
+	    if (cd) {
 	      cd->tocent[i].filename = strdup (psz_field);
-	      /* Todo: do something about reusing existing files. */
+	      /* To do: do something about reusing existing files. */
 	      if (!(cd->tocent[i].data_source = cdio_stdio_new (psz_field))) {
 		cdio_log (log_level, 
 			  "%s line %d: can't open file `%s' for reading", 
 			   psz_cue_name, i_line, psz_field);
 		goto err_exit;
 	      }
+	      i_size = cdio_stream_stat(cd->tocent[i].data_source);
+	    } else {
+	      CdioDataSource_t *s = cdio_stdio_new (psz_field);
+	      if (!s) {
+		cdio_log (log_level, 
+			  "%s line %d: can't open file `%s' for reading", 
+			  psz_cue_name, i_line, psz_field);
+		goto err_exit;
+	      }
+	      i_size = cdio_stream_stat(s);
+	      cdio_stdio_destroy (s);
 	    }
 	  }
 	  
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    /* Handle <start-msf> */
-	    lba_t lba = cdio_lsn_to_lba(cdio_mmssff_to_lba (psz_field));
-	    if (CDIO_INVALID_LBA == lba) {
+	    lba_t i_start_lba = 
+	      cdio_lsn_to_lba(cdio_mmssff_to_lba (psz_field));
+	    if (CDIO_INVALID_LBA == i_start_lba) {
 	      cdio_log(log_level, "%s line %d: invalid MSF string %s", 
 		       psz_cue_name, i_line, psz_field);
 	      goto err_exit;
 	    }
 	    
 	    if (NULL != cd) {
-	      cd->tocent[i].start_lba = lba;
-	      cdio_lba_to_msf(lba, &(cd->tocent[i].start_msf));
+	      cd->tocent[i].start_lba = i_start_lba;
+	      cdio_lba_to_msf(i_start_lba, &(cd->tocent[i].start_msf));
 	    }
 	  }
-	  if (NULL != (psz_field = strtok (NULL, " \t\n\r")))
+	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    /* Handle <length-msf> */
-	    if (NULL != cd)
-	      cd->tocent[i].length = cdio_mmssff_to_lba (psz_field);
+	    lba_t lba = cdio_mmssff_to_lba (psz_field);
+	    if (CDIO_INVALID_LBA == lba) {
+	      cdio_log(log_level, "%s line %d: invalid MSF string %s", 
+		       psz_cue_name, i_line, psz_field);
+	      goto err_exit;
+	    }
+	    if (cd) {
+	      long i_size = cdio_stream_stat(cd->tocent[i].data_source);
+	      if (lba) {
+		if ( (lba * cd->tocent[i].datasize) > i_size) {
+		  cdio_log(log_level, 
+			   "%s line %d: MSF length %s exceeds end of file", 
+			   psz_cue_name, i_line, psz_field);
+		  goto err_exit;
+		}
+	      } else {
+		lba = i_size / cd->tocent[i].blocksize;
+	      }
+	      cd->tocent[i].sec_count = lba;
+	    }
+	  }
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    goto format_error;
 	  }
@@ -691,15 +729,24 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
 	    /* Handle <filename> */
-	    if (NULL != cd) {
+	    if (cd) {
 	      cd->tocent[i].filename = strdup (psz_field);
-	      /* Todo: do something about reusing existing files. */
+	      /* To do: do something about reusing existing files. */
 	      if (!(cd->tocent[i].data_source = cdio_stdio_new (psz_field))) {
 		cdio_log (log_level, 
 			  "%s line %d: can't open file `%s' for reading", 
 			  psz_cue_name, i_line, psz_field);
 		goto err_exit;
 	      }
+	    } else {
+	      CdioDataSource_t *s = cdio_stdio_new (psz_field);
+	      if (!s) {
+		cdio_log (log_level, 
+			  "%s line %d: can't open file `%s' for reading", 
+			  psz_cue_name, i_line, psz_field);
+		goto err_exit;
+	      }
+	      cdio_stdio_destroy (s);
 	    }
 	  }
 	  
