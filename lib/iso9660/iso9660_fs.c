@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.7 2005/02/05 17:29:01 rocky Exp $
+    $Id: iso9660_fs.c,v 1.8 2005/02/05 18:41:31 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -58,12 +58,12 @@ typedef enum  {
 } bool_3way_t;
   
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.7 2005/02/05 17:29:01 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.8 2005/02/05 18:41:31 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660 {
   CdioDataSource_t *stream; /* Stream pointer */
-  bool_3way_t b_xa;                /* true if has XA attributes. If true
+  bool_3way_t b_xa;         /* true if has XA attributes. If true
 			       b_mode2 should be set true as well.
 			     */
   bool_3way_t b_mode2;      /* true if has mode 2, false for mode 1. */
@@ -129,13 +129,23 @@ adjust_fuzzy_pvd( iso9660_t *p_iso )
 						SEEK_SET) )
       return;
     if (sizeof(buf) == cdio_stream_read (p_iso->stream, buf, sizeof(buf), 1)) {
+      /* Does the sector frame header suggest Mode 1 format? */
       if (!memcmp(CDIO_SECTOR_SYNC_HEADER, buf+CDIO_CD_SUBHEADER_SIZE, 
 		  CDIO_CD_SYNC_SIZE)) {
-	
+	if (buf[14+CDIO_CD_SUBHEADER_SIZE] != 0x16) {
+	  cdio_warn ("Expecting the PVD sector header MSF to be 0x16, is: %x", 
+		     buf[14]);
+	}
 	p_iso->b_mode2 = nope;
 	p_iso->b_xa = nope;
       } else if (!memcmp(CDIO_SECTOR_SYNC_HEADER, buf, CDIO_CD_SYNC_SIZE)) {
+	/* Frame header indicates Mode 2 Form 1*/
+	if (buf[14] != 0x16) {
+	  cdio_warn ("Expecting the PVD sector header MSF to be 0x16, is: %x", 
+		     buf[14]);
+	}
 	p_iso->b_mode2 = yep;
+	/* Do do: check Mode 2 Form 2? */
       } else {
 	  /* Has no frame header */
 	  p_iso->i_framesize = M2RAW_SECTOR_SIZE;
@@ -945,9 +955,10 @@ _fs_stat_root (CdIo_t *p_cdio)
   {
     iso_extension_mask_t iso_extension_mask = ISO_EXTENSION_ALL;
     generic_img_private_t *p_env = (generic_img_private_t *) p_cdio->env;
-    bool b_mode2 = cdio_get_track_green(p_cdio, 1);
+    bool b_mode2;
     iso9660_dir_t *p_iso9660_dir;
     iso9660_stat_t *p_stat;
+    bool_3way_t b_xa;
 
     if (!p_env->i_joliet_level)
       iso_extension_mask &= ~ISO_EXTENSION_JOLIET;
@@ -958,6 +969,19 @@ _fs_stat_root (CdIo_t *p_cdio)
       return NULL;
     }
 
+    b_mode2 = cdio_get_track_green(p_cdio, 1);
+    
+    switch(cdio_get_discmode(p_cdio)) {
+    case CDIO_DISC_MODE_CD_XA: 
+      b_xa = yep;
+      break;
+    case CDIO_DISC_MODE_CD_DATA: 
+      b_xa = nope;
+      break;
+    default: 
+      b_xa = dunno;
+    }
+
 #ifdef HAVE_JOLIET    
     p_iso9660_dir = p_env->i_joliet_level 
       ? &(p_env->svd.root_directory_record) 
@@ -966,7 +990,7 @@ _fs_stat_root (CdIo_t *p_cdio)
     p_iso9660_dir = &(p_env->pvd.root_directory_record) ;
 #endif
     
-    p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, dunno, 
+    p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_mode2, b_xa, 
 				      p_env->i_joliet_level);
     return p_stat;
   }
@@ -994,7 +1018,8 @@ _fs_stat_iso_root (iso9660_t *p_iso)
 
 static iso9660_stat_t *
 _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root, 
-		   char **splitpath, bool b_mode2, bool translate)
+		   char **splitpath, bool b_mode2, bool b_xa, 
+		   bool translate)
 {
   unsigned offset = 0;
   uint8_t *_dirbuf = NULL;
@@ -1067,7 +1092,7 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
       
       if (!cmp) {
 	iso9660_stat_t *ret_stat 
-	  = _fs_stat_traverse (p_cdio, p_stat, &splitpath[1], b_mode2, 
+	  = _fs_stat_traverse (p_cdio, p_stat, &splitpath[1], b_mode2, b_xa,
 			       translate);
 	free(p_stat);
 	free (_dirbuf);
@@ -1183,16 +1208,29 @@ iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[])
   iso9660_stat_t *p_stat;
   /* A bit of a hack, we'll assume track 1 contains ISO_PVD_SECTOR.*/
   bool b_mode2;
+  bool_3way_t b_xa;
 
   if (!p_cdio)   return NULL;
   if (!psz_path) return NULL;
-
-  p_root = _fs_stat_root (p_cdio);
-  if (!p_root) return NULL;
+  if (!p_root)   return NULL;
 
   b_mode2 = cdio_get_track_green(p_cdio, 1);
+  p_root = _fs_stat_root (p_cdio);
+
+  switch(cdio_get_discmode(p_cdio)) {
+  case CDIO_DISC_MODE_CD_XA: 
+    b_xa = yep;
+    break;
+  case CDIO_DISC_MODE_CD_DATA: 
+    b_xa = nope;
+    break;
+  default: 
+    b_xa = dunno;
+  }
+  
   p_psz_splitpath = _cdio_strsplit (psz_path, '/');
-  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath, b_mode2, false);
+  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath, b_mode2, 
+			      b_xa, false);
   free(p_root);
   _cdio_strfreev (p_psz_splitpath);
 
@@ -1212,6 +1250,7 @@ iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[],
   iso9660_stat_t *p_root;
   char **p_psz_splitpath;
   iso9660_stat_t *p_stat;
+  bool_3way_t b_xa;
 
   if (!p_cdio)  return NULL;
   if (psz_path) return NULL;
@@ -1219,8 +1258,20 @@ iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[],
   p_root = _fs_stat_root (p_cdio);
   if (!p_root) return NULL;
 
+  switch(cdio_get_discmode(p_cdio)) {
+  case CDIO_DISC_MODE_CD_XA: 
+    b_xa = yep;
+    break;
+  case CDIO_DISC_MODE_CD_DATA: 
+    b_xa = nope;
+      break;
+  default: 
+    b_xa = dunno;
+  }
+
   p_psz_splitpath = _cdio_strsplit (psz_path, '/');
-  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath, b_mode2, true);
+  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath, b_mode2, 
+			      b_xa, true);
   free(p_root);
   _cdio_strfreev (p_psz_splitpath);
 
