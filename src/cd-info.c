@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.22 2003/08/29 03:03:07 rocky Exp $
+    $Id: cd-info.c,v 1.23 2003/08/31 02:51:41 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -53,6 +53,8 @@
 #include <cdio/logging.h>
 #include <cdio/util.h>
 #include <cdio/cd_types.h>
+
+#include "ds.h"
 
 #include <fcntl.h>
 #ifdef __linux__
@@ -586,6 +588,88 @@ print_vcd_info(void) {
     
 }
 #endif 
+
+#if ISO9600_FINISHED
+static void
+print_iso9660_recurse (const CdIo *cdio, const char pathname[])
+{
+  CdioList *entlist;
+  CdioList *dirlist =  _cdio_list_new ();
+  CdioListNode *entnode;
+
+  entlist = vcd_image_source_fs_readdir (cdio, pathname);
+    
+  printf ("%s:\n", pathname);
+
+  cdio_assert (entlist != NULL);
+
+  /* just iterate */
+  
+  _CDIO_LIST_FOREACH (entnode, entlist)
+    {
+      char *_name = _cdio_list_node_data (entnode);
+      char _fullname[4096] = { 0, };
+      vcd_image_stat_t statbuf;
+
+      snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, _name);
+  
+      if (vcd_image_source_fs_stat (cdio, _fullname, &statbuf))
+        cdio_assert_not_reached ();
+
+      strncat (_fullname, "/", sizeof (_fullname));
+
+      if (statbuf.type == _STAT_DIR
+          && strcmp (_name, ".") 
+          && strcmp (_name, ".."))
+        _cdio_list_append (dirlist, strdup (_fullname));
+
+      printf ( "  %c %s %d %d [fn %.2d] [LSN %6d] ",
+               (statbuf.type == _STAT_DIR) ? 'd' : '-',
+               vcdinfo_get_xa_attr_str (statbuf.xa.attributes),
+               uint16_from_be (statbuf.xa.user_id),
+               uint16_from_be (statbuf.xa.group_id),
+               statbuf.xa.filenum,
+               statbuf.lsn);
+
+      if (uint16_from_be(statbuf.xa.attributes) & XA_ATTR_MODE2FORM2) {
+        printf ("%9d (%9d)",
+                 statbuf.secsize * M2F2_SECTOR_SIZE,
+                 statbuf.size);
+      } else {
+        printf ("%9d", statbuf.size);
+      }
+      printf ("  %s\n", _name);
+
+    }
+
+  _cdio_list_free (entlist, true);
+
+  printf ("\n");
+
+  /* now recurse */
+
+  _CDIO_LIST_FOREACH (entnode, dirlist)
+    {
+      char *_fullname = _cdio_list_node_data (entnode);
+
+      print_iso9660_recurse (cdio, _fullname);
+    }
+
+  _cdio_list_free (dirlist, true);
+}
+
+static void
+print_iso9660_fs (const CdIo *cdio)
+{
+  const iso9660_pvd_t *pvd = vcdinfo_get_pvd(cdio);
+  lsn_t extent = iso9660_get_root_lsn(pvd);
+
+  printf ("ISO9660 filesystem\n");
+  printf (" root dir in PVD set to lsn %d\n\n", extent);
+
+  print_iso9660_recurse (cdio, "/");
+}
+#endif
 
 static void
 print_analysis(int ms_offset, cdio_analysis_t cdio_analysis, 
