@@ -1,5 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.2 2003/09/18 13:31:07 rocky Exp $
+    $Id: scsi_mmc.h,v 1.3 2003/09/19 04:36:41 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,23 @@
 #ifndef __SCSI_MMC_H__
 #define __SCSI_MMC_H__
 
+/* Leval values that can go into READ_CD */
+#define CDIO_MMC_READ_TYPE_ANY   0  /* All types */
+#define CDIO_MMC_READ_TYPE_CDDA  1  /* Only CD-DA sectors */
+#define CDIO_MMC_READ_TYPE_MODE1 2  /* Only mode1 sectors (user data = 2048) */
+#define CDIO_MMC_READ_TYPE_MODE2 3  /* mode2 sectors form1 or form2 */
+#define CDIO_MMC_READ_TYPE_M2F1  4  /* mode2 sectors form1 */
+#define CDIO_MMC_READ_TYPE_M2F2  5  /* mode2 sectors form2 */
+
+/* The generic packet command opcodes for CD/DVD Logical Units,
+ * From Table 57 of the SFF8090 Ver. 3 (Mt. Fuji) draft standard. */
 #define CDIO_MMC_GPCMD_READ_CD	0xbe
+#define CDIO_MMC_GPCMD_READ_10	0x28
+#define CDIO_MMC_GPCMD_READ_12	0xa8
+
+#define CDIO_MMC_SET_READ_TYPE(rec, sector_type) \
+  rec[1] = (sector_type << 2)
+  
 
 #define CDIO_MMC_SET_READ_LBA(rec, lba) \
   rec[2] = (lba >> 24) & 0xff; \
