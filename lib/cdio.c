@@ -1,5 +1,5 @@
 /*
-    $Id: cdio.c,v 1.18 2003/06/07 16:53:21 rocky Exp $
+    $Id: cdio.c,v 1.19 2003/06/07 20:42:49 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -35,7 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.18 2003/06/07 16:53:21 rocky Exp $";
+static const char _rcsid[] = "$Id: cdio.c,v 1.19 2003/06/07 20:42:49 rocky Exp $";
 
 
 const char *track_format2str[5] = 
@@ -494,6 +494,36 @@ cdio_read_audio_sector (CdIo *obj, void *buf, lsn_t lsn)
   return -1;
 }
 
+/*!
+   Reads a single yellow mode1 or mode2  sector from cd device 
+   into data starting from lsn. Returns 0 if no error. 
+ */
+int
+cdio_read_yellow_sector (CdIo *obj, void *data, uint32_t lsn, bool mode1)
+{
+  uint32_t size = mode1 ? CDIO_CD_FRAMESIZE : M2RAW_SECTOR_SIZE;
+  char buf[M2RAW_SECTOR_SIZE] = { 0, };
+  int ret;
+  
+  cdio_assert (obj != NULL);
+  cdio_assert (data != NULL);
+
+  if (obj->op.lseek && obj->op.read) {
+    if (0 > cdio_lseek(obj, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
+      return -1;
+    if (0 > cdio_read(obj, buf, CDIO_CD_FRAMESIZE))
+      return -1;
+    memcpy (data, buf, size);
+    return 0;
+  } else {
+    ret = cdio_read_mode2_sector(obj, data, lsn, mode1);
+    if (ret == 0) 
+      memcpy (data, buf+CDIO_CD_SUBHEADER_SIZE, size);
+  }
+  return ret;
+
+}
+
 int
 cdio_read_mode2_sectors (CdIo *obj, void *buf, lsn_t lsn, bool mode2raw, 
                          unsigned num_sectors)
@@ -621,7 +651,11 @@ cdio_open (const char *orig_source_name, driver_id_t driver_id)
             driver_id = DRIVER_BINCUE;
           else
             driver_id = DRIVER_BINCUE;
+        } else {
+          cdio_destroy(cdio);
+          return NULL;
         }
+        
       }
       cdio_destroy(cdio);
       goto retry;

@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_win32.c,v 1.5 2003/06/07 16:53:21 rocky Exp $
+    $Id: _cdio_win32.c,v 1.6 2003/06/07 20:42:49 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.5 2003/06/07 16:53:21 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_win32.c,v 1.6 2003/06/07 20:42:49 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -466,17 +466,34 @@ _cdio_read_raw_sector (void *user_data, void *data, lsn_t lsn)
 {
   unsigned char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   _img_private_t *_obj = user_data;
-  lba_t lba = cdio_lsn_to_lba(lsn);
 
   if( _obj->hASPI ) {
     HANDLE hEvent;
     struct SRB_ExecSCSICmd ssc;
+    int blocks = 1;
+    int sector_type;
+    int sync, header_code, user_data, edc_ecc, error_field;
+    int sub_channel;
     
     /* Create the transfer completion event */
     hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
     if( hEvent == NULL ) {
       return 1;
     }
+
+    /* Data selection */
+    sector_type = 0;		/* all types */
+    /*sector_type = 1;*/	/* CD-DA */
+    /*sector_type = 2;*/	/* mode1 */
+    /*sector_type = 3;*/	/* mode2 */
+    /*sector_type = 4;*/	/* mode2/form1 */
+    /*sector_type = 5;*/	/* mode2/form2 */
+    sync = 0;
+    header_code = 2;
+    user_data = 1;
+    edc_ecc = 0;
+    error_field = 0;
+    sub_channel = 0;
 
     memset( &ssc, 0, sizeof( ssc ) );
     
@@ -492,19 +509,24 @@ _cdio_read_raw_sector (void *user_data, void *data, lsn_t lsn)
     /* Operation code */
     ssc.CDBByte[ 0 ] = READ_CD;
 
-    /* Start of LBA */
-    ssc.CDBByte[ 2 ] = ( lba >> 24 ) & 0xff;
-    ssc.CDBByte[ 3 ] = ( lba >> 16 ) & 0xff;
-    ssc.CDBByte[ 4 ] = ( lba >>  8 ) & 0xff;
-    ssc.CDBByte[ 5 ] = ( lba       ) & 0xff;
+    /* Start of LSN */
+    ssc.CDBByte[ 1 ] = (sector_type) << 2;
+    ssc.CDBByte[ 2 ] = (lsn >> 24) & 0xff;
+    ssc.CDBByte[ 3 ] = (lsn >> 16) & 0xff;
+    ssc.CDBByte[ 4 ] = (lsn >>  8) & 0xff;
+    ssc.CDBByte[ 5 ] = (lsn      ) & 0xff;
     
     /* Transfer length */
-    ssc.CDBByte[ 6 ] = 0;
-    ssc.CDBByte[ 7 ] = 0;
-    ssc.CDBByte[ 8 ] = 1;
+    ssc.CDBByte[ 6 ] = (blocks >> 16) & 0xff;
+    ssc.CDBByte[ 7 ] = (blocks >>  8) & 0xff;
+    ssc.CDBByte[ 8 ] = blocks & 0xff;
     
-    /* Data selection */
-    ssc.CDBByte[ 9 ] = READ_CD_USERDATA_MODE2;
+    ssc.CDBByte[ 9 ] = (sync << 7) |
+      (header_code << 5) |
+      (user_data << 4) |
+      (edc_ecc << 3) |
+      (error_field << 1);
+    /* ssc.CDBByte[ 9 ] = READ_CD_USERDATA_MODE2; */
     
     /* Result buffer */
     ssc.SRB_BufPointer  = buf;
@@ -531,7 +553,7 @@ _cdio_read_raw_sector (void *user_data, void *data, lsn_t lsn)
     RAW_READ_INFO cdrom_raw;
     
     /* Initialize CDROM_RAW_READ structure */
-    cdrom_raw.DiskOffset.QuadPart = CDIO_CD_FRAMESIZE * lba;
+    cdrom_raw.DiskOffset.QuadPart = CDIO_CD_FRAMESIZE * lsn;
     cdrom_raw.SectorCount = 1;
     cdrom_raw.TrackMode = XAForm2;
     
@@ -543,8 +565,9 @@ _cdio_read_raw_sector (void *user_data, void *data, lsn_t lsn)
 	return 1;
       }
    }
-  
-  memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
+
+  /* FIXME! remove the 8 (SUBHEADER size) below... */
+  memcpy (data, buf+8, CDIO_CD_FRAMESIZE_RAW);
 
   return 0;
 }
@@ -1040,8 +1063,8 @@ cdio_open_win32 (const char *source_name)
     .get_track_green    = _cdio_get_track_green,
     .get_track_lba      = NULL, /* This could be implemented if need be. */
     .get_track_msf      = _cdio_get_track_msf,
-    .lseek              = cdio_generic_lseek,
-    .read               = cdio_generic_read,
+    .lseek              = NULL,
+    .read               = NULL,
     .read_audio_sector  = _cdio_read_raw_sector,
     .read_mode2_sector  = _cdio_read_mode2_sector,
     .read_mode2_sectors = _cdio_read_mode2_sectors,
@@ -1081,5 +1104,3 @@ cdio_have_win32 (void)
   return false;
 #endif /* HAVE_WIN32_CDROM */
 }
-
-
