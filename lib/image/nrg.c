@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.9 2004/04/25 14:07:23 rocky Exp $
+    $Id: nrg.c,v 1.10 2004/04/25 14:48:17 rocky Exp $
 
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.9 2004/04/25 14:07:23 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.10 2004/04/25 14:48:17 rocky Exp $";
 
 /* structures used */
 
@@ -175,7 +175,7 @@ typedef struct {
 } _img_private_t;
 
 static bool     _cdio_parse_nero_footer (_img_private_t *_obj);
-static uint32_t _cdio_stat_size (void *env);
+static uint32_t _stat_size_nrg (void *env);
 
 #include "image_common.h"
 
@@ -700,7 +700,7 @@ PRAGMA_END_PACKED
   }
 
   /* Fake out leadout track. */
-  /* Don't use _cdio_stat_size since that will lead to recursion since
+  /* Don't use _stat_size_nrg since that will lead to recursion since
      we haven't fully initialized things yet.
   */
   cdio_lsn_to_msf (_obj->size, &_obj->tocent[_obj->total_tracks].start_msf);
@@ -741,7 +741,7 @@ _cdio_init (_img_private_t *_obj)
   information in each sector.
 */
 static off_t
-_cdio_lseek (void *env, off_t offset, int whence)
+_lseek_nrg (void *env, off_t offset, int whence)
 {
   _img_private_t *_obj = env;
 
@@ -785,14 +785,14 @@ _cdio_lseek (void *env, off_t offset, int whence)
    boundaries.
 */
 static ssize_t
-_cdio_read (void *env, void *buf, size_t size)
+_read_nrg (void *env, void *buf, size_t size)
 {
   _img_private_t *_obj = env;
   return cdio_stream_read(_obj->gen.data_source, buf, size, 1);
 }
 
 static uint32_t 
-_cdio_stat_size (void *env)
+_stat_size_nrg (void *env)
 {
   _img_private_t *_obj = env;
 
@@ -804,7 +804,7 @@ _cdio_stat_size (void *env)
    from LSN. Returns 0 if no error. 
  */
 static int
-_cdio_read_audio_sectors (void *env, void *data, lsn_t lsn, 
+_read_audio_sectors_nrg (void *env, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
   _img_private_t *_obj = env;
@@ -844,7 +844,7 @@ _cdio_read_audio_sectors (void *env, void *data, lsn_t lsn,
 }
 
 static int
-_cdio_read_mode1_sector (void *env, void *data, lsn_t lsn, 
+_read_mode1_sector_nrg (void *env, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
   _img_private_t *_obj = env;
@@ -898,7 +898,7 @@ _cdio_read_mode1_sector (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode1_sectors (void *env, void *data, uint32_t lsn, 
+_read_mode1_sectors_nrg (void *env, void *data, uint32_t lsn, 
 			  bool b_form2, unsigned nblocks)
 {
   _img_private_t *_obj = env;
@@ -907,7 +907,7 @@ _cdio_read_mode1_sectors (void *env, void *data, uint32_t lsn,
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _cdio_read_mode1_sector (_obj, 
+    if ( (retval = _read_mode1_sector_nrg (_obj, 
 					    ((char *)data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -916,7 +916,7 @@ _cdio_read_mode1_sectors (void *env, void *data, uint32_t lsn,
 }
 
 static int
-_cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
+_read_mode2_sector_nrg (void *env, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
   _img_private_t *_obj = env;
@@ -971,7 +971,7 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn, 
+_read_mode2_sectors_nrg (void *env, void *data, uint32_t lsn, 
 			  bool b_form2, unsigned nblocks)
 {
   _img_private_t *_obj = env;
@@ -980,7 +980,7 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _cdio_read_mode2_sector (_obj, 
+    if ( (retval = _read_mode2_sector_nrg (_obj, 
 					    ((char *)data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -992,7 +992,7 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
   Free memory resources associated with NRG object.
 */
 static void 
-_cdio_destroy_nrg (void *obj) 
+_free_nrg (void *obj) 
 {
   _img_private_t *env = obj;
 
@@ -1003,11 +1003,22 @@ _cdio_destroy_nrg (void *obj)
   free(env);
 }
 
+/*!
+  Eject media -- there's nothing to do here except free resources.
+  We always return 2.
+ */
+static int
+_eject_media_nrg(void *obj)
+{
+  _free_nrg (obj);
+  return 2;
+}
+
 /*
   Set the device to use in I/O operations.
 */
 static int
-_cdio_set_arg (void *env, const char key[], const char value[])
+_set_arg_nrg (void *env, const char key[], const char value[])
 {
   _img_private_t *_obj = env;
 
@@ -1030,7 +1041,7 @@ _cdio_set_arg (void *env, const char key[], const char value[])
   Return the value associated with the key "arg".
 */
 static const char *
-_cdio_get_arg (void *env, const char key[])
+_get_arg_nrg (void *env, const char key[])
 {
   _img_private_t *_obj = env;
 
@@ -1084,7 +1095,7 @@ cdio_get_default_device_nrg(void)
 
  */
 static cdio_drive_cap_t
-_cdio_get_drive_cap_nrg (const void *env) {
+_get_drive_cap_nrg (const void *env) {
 
   /* There may be more in the future but these we can handle now. 
      Also, we know we can't handle 
@@ -1098,7 +1109,7 @@ _cdio_get_drive_cap_nrg (const void *env) {
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_format_t
-_cdio_get_track_format(void *env, track_t track_num) 
+_get_track_format_nrg(void *env, track_t track_num) 
 {
   _img_private_t *_obj = env;
   
@@ -1128,7 +1139,7 @@ _cdio_get_track_format(void *env, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *env, track_t track_num) 
+_get_track_green_nrg(void *env, track_t track_num) 
 {
   _img_private_t *_obj = env;
   
@@ -1146,28 +1157,28 @@ cdio_open_nrg (const char *source_name)
   _img_private_t *_data;
 
   cdio_funcs _funcs = {
-    .eject_media        = cdio_generic_bogus_eject_media,
-    .free               = _cdio_destroy_nrg,
-    .get_arg            = _cdio_get_arg,
+    .eject_media        = _eject_media_nrg,
+    .free               = _free_nrg,
+    .get_arg            = _get_arg_nrg,
     .get_devices        = cdio_get_devices_nrg,
     .get_default_device = cdio_get_default_device_nrg,
-    .get_drive_cap      = _cdio_get_drive_cap_nrg,
-    .get_first_track_num= _cdio_image_get_first_track_num,
-    .get_mcn            = _cdio_image_get_mcn,
-    .get_num_tracks     = _cdio_image_get_num_tracks,
-    .get_track_format   = _cdio_get_track_format,
-    .get_track_green    = _cdio_get_track_green,
+    .get_drive_cap      = _get_drive_cap_nrg,
+    .get_first_track_num= _get_first_track_num_image,
+    .get_mcn            = _get_mcn_image,
+    .get_num_tracks     = _get_num_tracks_image,
+    .get_track_format   = _get_track_format_nrg,
+    .get_track_green    = _get_track_green_nrg,
     .get_track_lba      = NULL, /* Will use generic routine via msf */
-    .get_track_msf      = _cdio_image_get_track_msf,
-    .lseek              = _cdio_lseek,
-    .read               = _cdio_read,
-    .read_audio_sectors = _cdio_read_audio_sectors,
-    .read_mode1_sector  = _cdio_read_mode1_sector,
-    .read_mode1_sectors = _cdio_read_mode1_sectors,
-    .read_mode2_sector  = _cdio_read_mode2_sector,
-    .read_mode2_sectors = _cdio_read_mode2_sectors,
-    .set_arg            = _cdio_set_arg,
-    .stat_size          = _cdio_stat_size,
+    .get_track_msf      = _get_track_msf_image,
+    .lseek              = _lseek_nrg,
+    .read               = _read_nrg,
+    .read_audio_sectors = _read_audio_sectors_nrg,
+    .read_mode1_sector  = _read_mode1_sector_nrg,
+    .read_mode1_sectors = _read_mode1_sectors_nrg,
+    .read_mode2_sector  = _read_mode2_sector_nrg,
+    .read_mode2_sectors = _read_mode2_sectors_nrg,
+    .set_arg            = _set_arg_nrg,
+    .stat_size          = _stat_size_nrg,
   };
 
   _data                 = _cdio_malloc (sizeof (_img_private_t));
@@ -1181,8 +1192,8 @@ cdio_open_nrg (const char *source_name)
   _data->is_cues        = false; /* FIXME: remove is_cues. */
 
 
-  _cdio_set_arg(_data, "source", (NULL == source_name) 
-		? DEFAULT_CDIO_DEVICE: source_name);
+  _set_arg_nrg(_data, "source", (NULL == source_name) 
+	       ? DEFAULT_CDIO_DEVICE: source_name);
 
   ret = cdio_new (_data, &_funcs);
   if (ret == NULL) return NULL;

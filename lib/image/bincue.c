@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.14 2004/04/25 14:07:23 rocky Exp $
+    $Id: bincue.c,v 1.15 2004/04/25 14:48:17 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004 Rocky Bernstein <rocky@panix.com>
@@ -24,7 +24,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.14 2004/04/25 14:07:23 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.15 2004/04/25 14:48:17 rocky Exp $";
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
@@ -101,8 +101,8 @@ typedef struct {
   bool have_cue;
 } _img_private_t;
 
-static bool     _cdio_image_read_cue (_img_private_t *_obj);
-static uint32_t _cdio_stat_size (void *env);
+static bool     _bincue_image_read_cue (_img_private_t *_obj);
+static uint32_t _stat_size_bincue (void *env);
 
 #include "image_common.h"
 
@@ -110,7 +110,7 @@ static uint32_t _cdio_stat_size (void *env);
   Initialize image structures.
  */
 static bool
-_cdio_init (_img_private_t *_obj)
+_bincue_init (_img_private_t *_obj)
 {
   lsn_t lead_lsn;
 
@@ -122,19 +122,19 @@ _cdio_init (_img_private_t *_obj)
     return false;
   }
 
-  /* Have to set init before calling _cdio_stat_size() or we will
+  /* Have to set init before calling _stat_size_bincue() or we will
      get into infinite recursion calling passing right here.
    */
   _obj->gen.init = true;  
 
-  lead_lsn = _cdio_stat_size( (_img_private_t *) _obj);
+  lead_lsn = _stat_size_bincue( (_img_private_t *) _obj);
 
   if (-1 == lead_lsn) 
     return false;
 
   /* Read in CUE sheet. */
   if ((_obj->cue_name != NULL)) {
-    _obj->have_cue = _cdio_image_read_cue(_obj);
+    _obj->have_cue = _bincue_image_read_cue(_obj);
   }
 
   if (!_obj->have_cue ) {
@@ -177,7 +177,7 @@ _cdio_init (_img_private_t *_obj)
   information in each sector.
 */
 static off_t
-_cdio_lseek (void *env, off_t offset, int whence)
+_lseek_bincue (void *env, off_t offset, int whence)
 {
   _img_private_t *_obj = env;
 
@@ -224,7 +224,7 @@ _cdio_lseek (void *env, off_t offset, int whence)
    boundaries.
 */
 static ssize_t
-_cdio_read (void *env, void *data, size_t size)
+_read_bincue (void *env, void *data, size_t size)
 {
   _img_private_t *_obj = env;
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -275,14 +275,14 @@ _cdio_read (void *env, void *data, size_t size)
    Return the size of the CD in logical block address (LBA) units.
  */
 static uint32_t 
-_cdio_stat_size (void *env)
+_stat_size_bincue (void *env)
 {
   _img_private_t *_obj = env;
   long size;
   int blocksize = _obj->sector_2336 
     ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
-  _cdio_init (_obj);
+  _bincue_init (_obj);
   
   size = cdio_stream_stat (_obj->gen.data_source);
 
@@ -305,7 +305,7 @@ _cdio_stat_size (void *env)
 #define MAXLINE 512
 
 static bool
-_cdio_image_read_cue (_img_private_t *_obj)
+_bincue_image_read_cue (_img_private_t *_obj)
 {
   FILE *fp;
   char line[MAXLINE];
@@ -475,13 +475,13 @@ _cdio_image_read_cue (_img_private_t *_obj)
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_audio_sectors (void *env, void *data, lsn_t lsn, 
+_read_audio_sectors_bincue (void *env, void *data, lsn_t lsn, 
 			  unsigned int nblocks)
 {
   _img_private_t *_obj = env;
   int ret;
 
-  _cdio_init (_obj);
+  _bincue_init (_obj);
 
   /* Why the adjustment of 272, I don't know. It seems to work though */
   if (lsn != 0) {
@@ -512,7 +512,7 @@ _cdio_read_audio_sectors (void *env, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_mode1_sector (void *env, void *data, lsn_t lsn, 
+_read_mode1_sector_bincue (void *env, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
   _img_private_t *_obj = env;
@@ -521,7 +521,7 @@ _cdio_read_mode1_sector (void *env, void *data, lsn_t lsn,
   int blocksize = _obj->sector_2336 
     ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
-  _cdio_init (_obj);
+  _bincue_init (_obj);
 
   ret = cdio_stream_seek (_obj->gen.data_source, lsn * blocksize, SEEK_SET);
   if (ret!=0) return ret;
@@ -546,7 +546,7 @@ _cdio_read_mode1_sector (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode1_sectors (void *env, void *data, uint32_t lsn, 
+_read_mode1_sectors_bincue (void *env, void *data, uint32_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
@@ -555,7 +555,7 @@ _cdio_read_mode1_sectors (void *env, void *data, uint32_t lsn,
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _cdio_read_mode1_sector (_obj, 
+    if ( (retval = _read_mode1_sector_bincue (_obj, 
 					    ((char *)data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -568,7 +568,7 @@ _cdio_read_mode1_sectors (void *env, void *data, uint32_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sector (void *env, void *data, lsn_t lsn, 
+_read_mode2_sector_bincue (void *env, void *data, lsn_t lsn, 
 			 bool b_form2)
 {
   _img_private_t *_obj = env;
@@ -584,7 +584,7 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
   int blocksize = _obj->sector_2336 
     ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE_RAW;
 
-  _cdio_init (_obj);
+  _bincue_init (_obj);
 
   ret = cdio_stream_seek (_obj->gen.data_source, lsn * blocksize, SEEK_SET);
   if (ret!=0) return ret;
@@ -613,7 +613,7 @@ _cdio_read_mode2_sector (void *env, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-_cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn, 
+_read_mode2_sectors_bincue (void *env, void *data, uint32_t lsn, 
 			  bool b_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
@@ -622,7 +622,7 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _cdio_read_mode2_sector (_obj, 
+    if ( (retval = _read_mode2_sector_bincue (_obj, 
 					    ((char *)data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -634,7 +634,7 @@ _cdio_read_mode2_sectors (void *env, void *data, uint32_t lsn,
   if (NULL != obj) { free(obj); obj=NULL; };
 
 static void 
-_cdio_destroy_bincue (void *obj) 
+_free_bincue (void *obj) 
 {
   _img_private_t *env = obj;
 
@@ -646,6 +646,17 @@ _cdio_destroy_bincue (void *obj)
 }
 
 /*!
+  Eject media -- there's nothing to do here except free resources.
+  We always return 2.
+ */
+static int
+_eject_media_bincue(void *obj)
+{
+  _free_bincue (obj);
+  return 2;
+}
+
+/*!
   Set the arg "key" with "value" in the source device.
   Currently "source" to set the source device in I/O operations 
   is the only valid key.
@@ -653,7 +664,7 @@ _cdio_destroy_bincue (void *obj)
   0 is returned if no error was found, and nonzero if there as an error.
 */
 static int
-_cdio_set_arg (void *env, const char key[], const char value[])
+_set_arg_bincue (void *env, const char key[], const char value[])
 {
   _img_private_t *_obj = env;
 
@@ -694,7 +705,7 @@ _cdio_set_arg (void *env, const char key[], const char value[])
   Return the value associated with the key "arg".
 */
 static const char *
-_cdio_get_arg (void *env, const char key[])
+_get_arg_bincue (void *env, const char key[])
 {
   _img_private_t *_obj = env;
 
@@ -707,7 +718,7 @@ _cdio_get_arg (void *env, const char key[])
 }
 
 /*!
-  Return an array of strings giving possible NRG disk images.
+  Return an array of strings giving possible BIN/CUE disk images.
  */
 char **
 cdio_get_devices_bincue (void)
@@ -750,7 +761,7 @@ cdio_get_default_device_bincue(void)
 
  */
 static cdio_drive_cap_t
-_cdio_get_drive_cap_bincue (const void *env) {
+_get_drive_cap_bincue (const void *env) {
 
   /* There may be more in the future but these we can handle now. 
      Also, we know we can't handle 
@@ -764,11 +775,11 @@ _cdio_get_drive_cap_bincue (const void *env) {
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_format_t
-_cdio_get_track_format(void *env, track_t track_num) 
+_get_track_format_bincue(void *env, track_t track_num) 
 {
   _img_private_t *_obj = env;
   
-  if (!_obj->gen.init) _cdio_init(_obj);
+  if (!_obj->gen.init) _bincue_init(_obj);
 
   if (track_num > _obj->total_tracks || track_num == 0) 
     return TRACK_FORMAT_ERROR;
@@ -785,11 +796,11 @@ _cdio_get_track_format(void *env, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *env, track_t track_num) 
+_get_track_green_bincue(void *env, track_t track_num) 
 {
   _img_private_t *_obj = env;
   
-  if (!_obj->gen.init) _cdio_init(_obj);
+  if (!_obj->gen.init) _bincue_init(_obj);
 
   if (track_num > _obj->total_tracks || track_num == 0) 
     return false;
@@ -805,10 +816,10 @@ _cdio_get_track_green(void *env, track_t track_num)
   False is returned if there is no track entry.
 */
 static lba_t
-_cdio_get_track_lba(void *env, track_t track_num)
+_get_lba_track_bincue(void *env, track_t track_num)
 {
   _img_private_t *_obj = env;
-  _cdio_init (_obj);
+  _bincue_init (_obj);
 
   if (track_num == CDIO_CDROM_LEADOUT_TRACK) track_num = _obj->total_tracks+1;
 
@@ -908,27 +919,28 @@ cdio_open_cue (const char *cue_name)
   char *bin_name;
 
   cdio_funcs _funcs = {
-    .eject_media        = cdio_generic_bogus_eject_media,
-    .free               = _cdio_destroy_bincue,
-    .get_arg            = _cdio_get_arg,
+    .eject_media        = _eject_media_bincue,
+    .free               = _free_bincue,
+    .get_arg            = _get_arg_bincue,
+    .get_devices        = cdio_get_devices_bincue,
     .get_default_device = cdio_get_default_device_bincue,
-    .get_drive_cap      = _cdio_get_drive_cap_bincue,
-    .get_first_track_num= _cdio_image_get_first_track_num,
-    .get_mcn            = _cdio_image_get_mcn,
-    .get_num_tracks     = _cdio_image_get_num_tracks,
-    .get_track_format   = _cdio_get_track_format,
-    .get_track_green    = _cdio_get_track_green,
-    .get_track_lba      = _cdio_get_track_lba, 
-    .get_track_msf      = _cdio_image_get_track_msf,
-    .lseek              = _cdio_lseek,
-    .read               = _cdio_read,
-    .read_audio_sectors = _cdio_read_audio_sectors,
-    .read_mode1_sector  = _cdio_read_mode1_sector,
-    .read_mode1_sectors = _cdio_read_mode1_sectors,
-    .read_mode2_sector  = _cdio_read_mode2_sector,
-    .read_mode2_sectors = _cdio_read_mode2_sectors,
-    .set_arg            = _cdio_set_arg,
-    .stat_size          = _cdio_stat_size
+    .get_drive_cap      = _get_drive_cap_bincue,
+    .get_first_track_num= _get_first_track_num_image,
+    .get_mcn            = _get_mcn_image,
+    .get_num_tracks     = _get_num_tracks_image,
+    .get_track_format   = _get_track_format_bincue,
+    .get_track_green    = _get_track_green_bincue,
+    .get_track_lba      = _get_lba_track_bincue, 
+    .get_track_msf      = _get_track_msf_image,
+    .lseek              = _lseek_bincue,
+    .read               = _read_bincue,
+    .read_audio_sectors = _read_audio_sectors_bincue,
+    .read_mode1_sector  = _read_mode1_sector_bincue,
+    .read_mode1_sectors = _read_mode1_sectors_bincue,
+    .read_mode2_sector  = _read_mode2_sector_bincue,
+    .read_mode2_sectors = _read_mode2_sectors_bincue,
+    .set_arg            = _set_arg_bincue,
+    .stat_size          = _stat_size_bincue
   };
 
   if (NULL == cue_name) return NULL;
@@ -948,14 +960,14 @@ cdio_open_cue (const char *cue_name)
     cdio_error ("source name %s is not recognized as a CUE file", cue_name);
   }
   
-  _cdio_set_arg (_data, "cue", cue_name);
-  _cdio_set_arg (_data, "source", bin_name);
+  _set_arg_bincue (_data, "cue", cue_name);
+  _set_arg_bincue (_data, "source", bin_name);
   free(bin_name);
 
-  if (_cdio_init(_data)) {
+  if (_bincue_init(_data)) {
     return ret;
   } else {
-    _cdio_destroy_bincue(_data);
+    _free_bincue(_data);
     free(ret);
     return NULL;
   }

@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.3 2004/04/25 03:52:37 rocky Exp $
+    $Id: image_common.h,v 1.4 2004/04/25 14:48:17 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -28,7 +28,7 @@
   string when done with it.
   */
 static char *
-_cdio_image_get_mcn(const void *env)
+_get_mcn_image(const void *env)
 {
   const _img_private_t *_obj = env;
   
@@ -44,7 +44,7 @@ _cdio_image_get_mcn(const void *env)
 
 */
 static bool
-_cdio_image_get_track_msf(void *env, track_t track_num, msf_t *msf)
+_get_track_msf_image(void *env, track_t track_num, msf_t *msf)
 {
   _img_private_t *_obj = env;
 
@@ -64,7 +64,7 @@ _cdio_image_get_track_msf(void *env, track_t track_num, msf_t *msf)
   CDIO_INVALID_TRACK is returned on error.
 */
 static track_t
-_cdio_image_get_first_track_num(void *env) 
+_get_first_track_num_image(void *env) 
 {
   _img_private_t *_obj = env;
   
@@ -76,7 +76,7 @@ _cdio_image_get_first_track_num(void *env)
   one big track. 
 */
 static track_t
-_cdio_image_get_num_tracks(void *env) 
+_get_num_tracks_image(void *env) 
 {
   _img_private_t *_obj = env;
 
