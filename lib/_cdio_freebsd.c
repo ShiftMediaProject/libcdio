@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_freebsd.c,v 1.22 2004/04/25 17:05:07 rocky Exp $
+    $Id: _cdio_freebsd.c,v 1.23 2004/04/26 06:40:16 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.22 2004/04/25 17:05:07 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_freebsd.c,v 1.23 2004/04/26 06:40:16 rocky Exp $";
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -117,30 +117,6 @@ cdio_is_cdrom(char *drive, char *mnttype)
   return(is_cd);
 }
 
-static int
-_read_mode2 (int fd, void *buf, lba_t lba, unsigned int nblocks, 
-	     bool _workaround)
-{
-  unsigned int l = 0;
-  int retval = 0;
-
-  while (nblocks > 0)
-    {
-      const unsigned int nblocks2 = (nblocks > 25) ? 25 : nblocks;
-      void *buf2 = ((char *)buf ) + (l * M2RAW_SECTOR_SIZE);
-      
-      retval |= _read_mode2 (fd, buf2, lba + l, nblocks2, _workaround);
-
-      if (retval)
-	break;
-
-      nblocks -= nblocks2;
-      l += nblocks2;
-    }
-
-  return retval;
-}
-
 /*!
    Reads a single mode2 sector from cd device into data starting from lsn.
    Returns 0 if no error. 
@@ -174,7 +150,7 @@ _read_audio_sectors_freebsd (void *env, void *data, lsn_t lsn,
  */
 static int
 _read_mode2_sector_freebsd (void *env, void *data, lsn_t lsn, 
-			 bool b_form2)
+			    bool b_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
   int retval;
