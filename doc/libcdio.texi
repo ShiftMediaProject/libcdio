@@ -28,8 +28,8 @@ o\input texinfo @c -*-texinfo-*-
 @ifinfo
 This file documents GNU CD Input and Control Library
 
-Copyright (C) 2003, 2004 Herbert Valerio Riedel @email{<hvr@@gnu.org>}
-and Rocky Bernstein @email{<rocky@@panix.com>}
+Copyright (C) 2003, 2004, 2005 Rocky Bernstein @email{<rocky@@panix.com>}
+and Herbert Valerio Riedel @email{<hvr@@gnu.org>}
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.29 2004/11/21 11:36:13 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.30 2005/01/24 05:01:14 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -76,7 +76,7 @@ development.''
 
 This file documents GNU CD input and control library
 
-Copyright (C) 2003, 2004 Herbert Valerio Riedel and Rocky Bernstein
+Copyright (C) 2003, 2004, 2005 Rocky Bernstein and Herbert Valerio Riedel
 
 @menu
 * History::           How this came about
@@ -250,6 +250,10 @@ navigation-capable Video CD plugin and CD-DA plugins for the media
 players xine (@url{http://xinehq.de}) and videolan's vlc
 (@url{http://videolan.org/vlc}).
 
+A version of the CD-DA extraction tool cdparanoia
+(@url{http://www.xiph.org/paranoia} and its library which corrects
+for CD-ROM jitter are part of the distribution.
+
 Also included in the libcdio package is a utility program
 @command{cd-info} which displays CD information: number of tracks,
 CD-format and if possible basic information about the format.  If
@@ -278,8 +282,8 @@ displays ISO-9660 information from an ISO-9660 image. Below is some
 sample output
 
 @smallexample
-iso-info version 0.71
-Copyright (c) 2003, 2004 R. Bernstein
+iso-info version 0.72
+Copyright (c) 2003, 2004, 2005 R. Bernstein
 This is free software; see the source for copying conditions.
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.
@@ -345,7 +349,7 @@ the early 1980s. The specifications for the layout is often referred
 to by the color of the cover on the specification. 
 
 @menu
-* Red Book::        Red Book (CD-DA)
+* Red Book::        Red Book (CD-DA) CD Text, CDDB
 * Yellow Book::     Yellow Book (CD-ROM Digital Data)
 * Green Book::      Green Book (CD-i)
 * White Book::      White Book (DV, Video CD)
@@ -353,6 +357,12 @@ to by the color of the cover on the specification.
 
 @node Red Book
 @section Red Book (CD-DA)
+
+@menu
+* CD Text::         CD Text and CD+G
+* CDDB::            Internet CD Database (CDDB)
+@end menu
+
 The first type of CD that was produced was the Compact Disc Digital
 Audio (CD-DA) or just plain ``audio CD''. The specification, ICE 908,
 is commonly called the ``Red Book''. Music CD's are recorded in this
@@ -376,6 +386,72 @@ sector. Other subchannels include a Media Catalog Number (also
 abbreviated as MCN and sometimes a UPC), or album meta data (also
 called CD-Text). Karioke graphics can also be stored in a format
 called @term{CD+G}.
+
+@node CD Text
+@subsection CD Text, CD+G
+
+CD Text is an extension to the CD-DA standard that adds the ability to
+album and track meta data (titles, artist/performer names, song
+titles) and and graphical (e.g. Karioke) information.  For an
+alternative way to get album and track meta-data see @xref{CDDB}.
+
+Information is stored in such a way that it doesn't interfere with the
+normal operation of any CD players or CDROM drives. There are two
+different parts of the CD where the data can be stored.
+
+The first place the information can be recorded is in the R-W sub
+codes in the lead in area of the CD giving a data capacity of about
+5,000 ASCII characters (or 2,500 Kanji or Unicode characters).  This
+information is stored as a single block of data and is the format used
+in virtually all of the CD Text CDs shipping today. The method for
+reading this data from a cdrom drive is covered under the Sony
+proposal to the MMC specification. The format of the data is partially
+covered in the MMC specification.
+
+The second place the information can be recorded is in the R-W sub
+codes in the program area of the CD giving a data capacity of roughly
+31MB. This information is stored in a format that follows the
+Interactive Text Transmission System (ITTS) which is the same data
+transmission standard used by such things as Digital Audio
+Broadcasting (DAB), and virtually the same as the data standard for
+the MiniDisc. Traditionally the R-W sub codes have been used for text
+and graphics in applications such as CD+G (CD w/graphics) or in the
+case of most audio CDs, not at all. The methods for reading this data
+from a CD-ROM drive is covered by the programming specs from the
+individual drive manufacturers. In the case of ATAPI drives, the
+SFF8020 spec covers the reading of the RW subcodes.
+
+Not all drives support reading the RW subcodes from the program
+area. However for those that do, @value{libcdio} provides a way to get
+at this information.
+
+@node CDDB
+@subsection Internet CD Database (CDDB)
+
+CDDB is an database on the Internet of of CD album/track, artist, and
+genre information similar to CD Text information. Using track
+information (number of tracks and length of the tracks), devices that
+have access to the Internet can query for meta information and
+contribute information for CD's where there is no existing
+information.  When storage is available (such as you'd expect for any
+program using @value{libcdio}, the information is often saved for
+later use when the Internet is not available; people tend request the
+same information since they via programs play the same music.
+
+Obtaining CD meta information when none is encoded in an audio CD is
+useful in media players or making one's own compilations from audio
+CDs. 
+
+There are currently two popular CDDB services on the Internet. The
+original database has been renamed Gracenote and is a profit making
+entity. FreeDB (@url{http://freedb.org} is an open source CD
+information resource that is free for developers and the public to
+use.
+
+As there already is an excellent library for handling CDDB libcddb
+(@url{http://libcddb.sourceforge.net} we suggest using that. Our
+utility program @command{cd-info} will make use it if it is available
+and it's what we use in our applications that need it.
 
 @node Yellow Book
 @section Yellow Book (CD-ROM Digital Data)
@@ -662,7 +738,7 @@ distribution as @file{example/tracks.c}.
  4: int
  5: main(int argc, const char *argv[])
  6: @{
- 7:  CdIo *p_cdio = cdio_open ("/dev/cdrom", DRIVER_UNKNOWN);
+ 7:  CdIo_t *p_cdio = cdio_open ("/dev/cdrom", DRIVER_UNKNOWN);
  8:  track_t first_track_num = cdio_get_first_track_num(p_cdio);
  9:  track_t num_tracks      = cdio_get_num_tracks(p_cdio);
 10:  int j, i=first_track_num;
@@ -748,7 +824,7 @@ device that is right for it.
  4: int
  5: main(int argc, const char *argv[])
  6: @{
- 7:   CdIo *cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+ 7:   CdIo_t *cdio = cdio_open (NULL, DRIVER_UNKNOWN);
  8:   driver_id_t driver_id;
  9:  
 10:  if (NULL != cdio) @{
@@ -790,7 +866,7 @@ we've got. This can be found in the distribution as @file{example/sample3.c}.
 static void
 print_analysis(cdio_iso_analysis_t cdio_iso_analysis, 
 	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
-	       track_t num_tracks, track_t first_track_num, CdIo *cdio)
+	       track_t num_tracks, track_t first_track_num, CdIo_t *cdio)
 @{
   switch(CDIO_FSTYPE(fs)) @{
   case CDIO_FS_AUDIO:
@@ -870,7 +946,7 @@ print_analysis(cdio_iso_analysis_t cdio_iso_analysis,
 int
 main(int argc, const char *argv[])
 @{
-  CdIo *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  CdIo_t *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
   cdio_fs_anal_t fs=0;
   
   track_t num_tracks;
@@ -1089,7 +1165,7 @@ This can be found in the distribution as @file{example/cdtext.c}.
 
 
 static void 
-print_cdtext_track_info(CdIo *p_cdio, track_t i_track, const char *message) @{
+print_cdtext_track_info(CdIo_t *p_cdio, track_t i_track, const char *message) @{
   const cdtext_t *cdtext    = cdio_get_cdtext(p_cdio, 0);
   if (NULL != cdtext) @{
     cdtext_field_t i;
@@ -1106,7 +1182,7 @@ print_cdtext_track_info(CdIo *p_cdio, track_t i_track, const char *message) @{
 @}
     
 static void 
-print_disc_info(CdIo *p_cdio, track_t i_tracks, track_t i_first_track) @{
+print_disc_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) @{
   track_t i_last_track = i_first_track+i_tracks;
   discmode_t cd_discmode = cdio_get_discmode(p_cdio);
 
@@ -1125,7 +1201,7 @@ main(int argc, const char *argv[])
 @{
   track_t i_first_track;
   track_t i_tracks;
-  CdIo *p_cdio;
+  CdIo_t *p_cdio;
   cdio = cdio_open (NULL, DRIVER_UNKNOWN);
   i_first_track = cdio_get_first_track_num(p_cdio);
   i_tracks      = cdio_get_num_tracks(p_cdio);
@@ -1170,7 +1246,7 @@ This can be found in the distribution as @file{example/scsi-mmc1.c}.
 int
 main(int argc, const char *argv[])
 @{
-  CdIo *p_cdio;
+  CdIo_t *p_cdio;
 
   p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
 
