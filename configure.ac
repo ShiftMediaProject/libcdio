@@ -16,7 +16,7 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 AC_PREREQ(2.54)
-AC_REVISION([$Id: configure.ac,v 1.45 2003/09/22 01:05:15 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.46 2003/09/27 23:29:29 rocky Exp $])dnl
 AC_INIT(lib/cdio.c)
 AM_INIT_AUTOMAKE(libcdio, 0.64-cvs)
 AM_CONFIG_HEADER(config.h)
@@ -177,7 +177,10 @@ AM_PROG_LIBTOOL
 dnl Checks for header files.
 AC_STDC_HEADERS
      
-AC_HAVE_HEADERS( stdbool.h  stdlib.h stdint.h stdio.h string.h strings.h linux/version.h sys/cdio.h sys/stat.h sys/types.h )
+AC_HAVE_HEADERS( errno.h fcntl.h \
+		 stdbool.h  stdlib.h stdint.h stdio.h string.h \
+		 strings.h linux/version.h sys/cdio.h sys/stat.h \
+		 sys/types.h )
 
 LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/ -I$(top_srcdir)/include/'
 LIBCDIO_LIBS='$(top_builddir)/lib/libcdio.la'

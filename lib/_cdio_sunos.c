@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_sunos.c,v 1.18 2003/09/26 09:11:19 rocky Exp $
+    $Id: _cdio_sunos.c,v 1.19 2003/09/27 23:29:29 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -36,7 +36,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.18 2003/09/26 09:11:19 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_sunos.c,v 1.19 2003/09/27 23:29:29 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -334,7 +334,12 @@ _cdio_stat_size (void *env)
 }
 
 /*!
-  Set the key "arg" to "value" in source device.
+  Set the arg "key" with "value" in the source device.
+  Currently "source" and "access-mode" are valid keys.
+  "source" sets the source device in I/O operations 
+  "access-mode" sets the the method of CD access 
+
+  0 is returned if no error was found, and nonzero if there as an error.
 */
 static int
 _cdio_set_arg (void *env, const char key[], const char value[])
@@ -357,7 +362,7 @@ _cdio_set_arg (void *env, const char key[], const char value[])
       else if (!strcmp(value, "SCSI"))
 	_obj->access_mode = _AM_SUN_CTRL_SCSI;
       else
-	cdio_error ("unknown access type: %s. ignored.", value);
+	cdio_warn ("unknown access type: %s. ignored.", value);
     }
   else 
     return -1;

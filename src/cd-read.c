@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.7 2003/09/22 01:00:10 rocky Exp $
+  $Id: cd-read.c,v 1.8 2003/09/27 23:29:29 rocky Exp $
 
   Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
   
@@ -21,6 +21,16 @@
 /* Program to debug read routines audio, mode1, mode2 forms 1 & 2. */
 
 #include "util.h"
+
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 /* Configuration option codes */
 enum {
@@ -75,6 +85,8 @@ subopt_entry_t modes_sublist[] = {
  */
 struct arguments
 {
+  char          *access_mode; /* Access method driver should use for control */
+  char          *output_file; /* file to output blocks if not NULL. */
   int            debug_level;
   read_mode_t    read_mode;
   int            version_only;
@@ -162,6 +174,9 @@ parse_options (int argc, const char *argv[])
   /* Command-line options */
   struct poptOption optionsTable[] = {
   
+    {"access-mode",       'a', POPT_ARG_STRING, &opts.access_mode, 0,
+     "Set CD control access mode"},
+    
     {"mode", 'm', 
      POPT_ARG_STRING, &opt_arg, 
      OP_READ_MODE,
@@ -200,6 +215,9 @@ parse_options (int argc, const char *argv[])
     
     {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
      OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
+    
+    {"output-file",     'o', POPT_ARG_STRING, &opts.output_file, 0,
+     "Output blocks to file rather than give a hexdump."},
     
     {"version", 'V', POPT_ARG_NONE, NULL, OP_VERSION,
      "display version and copyright information and exit"},
@@ -378,6 +396,7 @@ main(int argc, const char *argv[])
   uint8_t buffer[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   unsigned int blocklen=CDIO_CD_FRAMESIZE_RAW;
   CdIo *cdio=NULL;
+  int output_fd=-1;
   
   init();
 
@@ -392,39 +411,51 @@ main(int argc, const char *argv[])
   case IMAGE_AUTO:
     cdio = cdio_open (source_name, DRIVER_UNKNOWN);
     if (cdio==NULL) {
-      err_exit("%s: Error in automatically selecting driver with input\n", 
-	       program_name);
+      err_exit("Error in automatically selecting driver with input\n");
     } 
     break;
   case IMAGE_DEVICE:
     cdio = cdio_open (source_name, DRIVER_DEVICE);
     if (cdio==NULL) {
-      err_exit("%s: Error in automatically selecting device with input\n", 
-	       program_name);
+      err_exit("Error in automatically selecting device with input\n");
+
     } 
     break;
   case IMAGE_BIN:
     cdio = cdio_open (source_name, DRIVER_BINCUE);
     if (cdio==NULL) {
-      err_exit("%s: Error in opeing bin/cue\n", 
-	       program_name);
+      err_exit("Error in opening bin/cue file %s\n", 
+	       source_name);
     } 
     break;
   case IMAGE_CUE:
     cdio = cdio_open_cue(source_name);
     if (cdio==NULL) {
-      err_exit("%s: Error in opening cue/bin with input\n", 
-	       program_name);
+      err_exit("Error in opening cue/bin file %s with input\n", 
+	       source_name);
     } 
     break;
   case IMAGE_NRG:
     cdio = cdio_open (source_name, DRIVER_NRG);
     if (cdio==NULL) {
-      err_exit("%s: Error in opening NRG with input\n", 
-	       program_name);
+      err_exit("Error in opening NRG file %s for input\n", 
+	       source_name);
     } 
     break;
   }
+
+  if (opts.access_mode!=NULL) {
+    cdio_set_arg(cdio, "access-mode", opts.access_mode);
+  } 
+
+  if (opts.output_file!=NULL) {
+    output_fd = open(opts.output_file, O_WRONLY|O_CREAT|O_TRUNC, 0644);
+    if (-1 == output_fd) {
+      err_exit("Error opening output file %s: %s\n",
+	       opts.output_file, strerror(errno));
+
+    }
+  } 
 
 
   for ( ; opts.start_lsn <= opts.end_lsn; opts.start_lsn++ ) {
@@ -453,8 +484,14 @@ main(int argc, const char *argv[])
       break;
     }
 
-    hexdump(buffer, blocklen);
+    if (opts.output_file) {
+      write(output_fd, buffer, blocklen);
+    } else {
+      hexdump(buffer, blocklen);
+    }
   }
+
+  if (opts.output_file) close(output_fd);
 
   cdio_destroy(cdio);
   return 0;

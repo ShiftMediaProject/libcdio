@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.38 2003/09/25 09:38:16 rocky Exp $
+    $Id: cd-info.c,v 1.39 2003/09/27 23:29:29 rocky Exp $
 
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -77,6 +77,7 @@ struct arguments
   int            no_tracks;
   int            no_ioctl;
   int            no_analysis;
+  char          *access_mode; /* Access method driver should use for control */
 #ifdef HAVE_CDDB
   int            no_cddb;     /* If set the below are meaningless. */
   char          *cddb_email;  /* email to report to CDDB server. */
@@ -121,6 +122,9 @@ parse_options (int argc, const char *argv[])
   int opt;
 
   struct poptOption optionsTable[] = {
+    {"access-mode",       'a', POPT_ARG_STRING, &opts.access_mode, 0,
+     "Set CD access methed"},
+    
     {"debug",       'd', POPT_ARG_INT, &opts.debug_level, 0,
      "Set debugging to LEVEL"},
     
@@ -800,6 +804,10 @@ main(int argc, const char *argv[])
     }
   } 
 
+  if (opts.access_mode!=NULL) {
+    cdio_set_arg(cdio, "access-mode", opts.access_mode);
+  } 
+
   first_track_num = cdio_get_first_track_num(cdio);
   num_tracks      = cdio_get_num_tracks(cdio);
 
@@ -847,7 +855,7 @@ main(int argc, const char *argv[])
 
   /* get MCN */
   media_catalog_number = cdio_get_mcn(cdio);
-  printf("Get MCN     : "); fflush(stdout);
+  printf("Media Catalog Number (MCN): "); fflush(stdout);
   if (NULL == media_catalog_number)
     printf("not available\n");
   else {

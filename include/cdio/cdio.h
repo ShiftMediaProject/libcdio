@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.21 2003/09/25 09:38:15 rocky Exp $
+    $Id: cdio.h,v 1.22 2003/09/27 23:29:29 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -266,6 +266,7 @@ extern "C" {
   
   /*!
     Set the arg "key" with "value" in the source device.
+    0 is returned if no error was found, and nonzero if there as an error.
   */
   int cdio_set_arg (CdIo *obj, const char key[], const char value[]);
   

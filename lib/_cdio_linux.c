@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_linux.c,v 1.22 2003/09/25 09:38:16 rocky Exp $
+    $Id: _cdio_linux.c,v 1.23 2003/09/27 23:29:29 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.22 2003/09/25 09:38:16 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_linux.c,v 1.23 2003/09/27 23:29:29 rocky Exp $";
 
 #include <string.h>
 
@@ -487,7 +487,7 @@ _cdio_read_mode2_sectors (void *env, void *data, lsn_t lsn,
 			  bool mode2_form2, unsigned int nblocks)
 {
   _img_private_t *_obj = env;
-  int i;
+  unsigned int i;
   int retval;
 
   for (i = 0; i < nblocks; i++) {
@@ -534,7 +534,12 @@ _cdio_stat_size (void *env)
 }
 
 /*!
-  Set the key "arg" to "value" in source device.
+  Set the arg "key" with "value" in the source device.
+  Currently "source" and "access-mode" are valid keys.
+  "source" sets the source device in I/O operations 
+  "access-mode" sets the the method of CD access 
+
+  0 is returned if no error was found, and nonzero if there as an error.
 */
 static int
 _cdio_set_arg (void *env, const char key[], const char value[])
@@ -558,8 +563,9 @@ _cdio_set_arg (void *env, const char key[], const char value[])
 	_obj->access_mode = _AM_READ_CD;
       else if (!strcmp(value, "READ_10"))
 	_obj->access_mode = _AM_READ_10;
-      else
-	cdio_error ("unknown access type: %s. ignored.", value);
+      else {
+	cdio_warn ("unknown access type: %s. ignored.", value);
+      }
     }
   else 
     return -1;
