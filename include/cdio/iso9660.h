@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.33 2003/11/18 03:35:19 rocky Exp $
+    $Id: iso9660.h,v 1.34 2003/12/24 11:03:58 uid67423 Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
@@ -340,7 +340,7 @@ bool iso9660_dirname_valid_p (const char pathname[]);
 /*!  
   Take pathname and a version number and turn that into a ISO-9660
   pathname.  (That's just the pathname followd by ";" and the version
-  number. For example, mydir/file.ext -> mydir/file.ext;1 for version
+  number. For example, mydir/file.ext -> MYDIR/FILE.EXT;1 for version
   1. The resulting ISO-9660 pathname is returned.
 */
 char *iso9660_pathname_isofy (const char pathname[], uint16_t version);
