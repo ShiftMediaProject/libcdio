@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.130 2005/03/05 19:27:28 rocky Exp $
+    $Id: cd-info.c,v 1.131 2005/03/06 02:59:26 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1133,9 +1133,11 @@ main(int argc, const char *argv[])
 
   if (cdio_is_discmode_cdrom(discmode)) {
     /* get and print MCN */
+
+    report(stdout, "Media Catalog Number (MCN): "); fflush(stdout);
+
     media_catalog_number = cdio_get_mcn(p_cdio);
   
-    report(stdout, "Media Catalog Number (MCN): "); fflush(stdout);
     if (NULL == media_catalog_number) {
       if (i_read_cap & CDIO_DRIVE_CAP_READ_MCN)
 	report(stdout, "not available\n");
@@ -1170,35 +1172,29 @@ main(int argc, const char *argv[])
       memset(&subchannel, 0, sizeof(subchannel));
       subchannel.format = CDIO_CDROM_MSF;
       
-      rc = cdio_audio_read_subchannel(p_cdio, &subchannel);
-      
       report( stdout, "audio status: "); fflush(stdout);
 	
+      rc = cdio_audio_read_subchannel(p_cdio, &subchannel);
+      
       if (DRIVER_OP_SUCCESS == rc) {
 	bool b_volume   = false;
 	bool b_position = false;
-	
+
+	report ( stdout, "%s\n", 
+		 mmc_audio_state2str(subchannel.audio_status) );
+
 	switch (subchannel.audio_status) {
-	case CDIO_MMC_READ_SUB_ST_INVALID:
-	  report( stdout, "invalid\n" );   break;
 	case CDIO_MMC_READ_SUB_ST_PLAY:
 	  b_playing_audio = true;
-	  b_position      = true;
-	  b_volume        = true;
-	  report( stdout, "playing" );     break;
+	  /* Fall through to next case. */
 	case CDIO_MMC_READ_SUB_ST_PAUSED:
 	  b_position      = true;
-	  b_volume        = true;
-	  report( stdout, "paused" );      break;
-	case CDIO_MMC_READ_SUB_ST_COMPLETED:
-	  report( stdout, "completed\n");  break;
-	case CDIO_MMC_READ_SUB_ST_ERROR:
-	  report( stdout, "error\n" );     break;
+	  /* Fall through to next case. */
 	case CDIO_MMC_READ_SUB_ST_NO_STATUS:
 	  b_volume        = true;
-	  report( stdout, "no status\n" ); break;
+	  break;
 	default:                     
-	  report( stdout, "Oops: unknown\n" );
+	  ;
 	}
 
 	if (b_position)

@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.16 2005/03/02 04:24:00 rocky Exp $
+    $Id: mmc.h,v 1.17 2005/03/06 02:59:26 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -424,6 +424,12 @@ typedef struct mmc_subchannel_s
 */
 driver_return_code_t
 mmc_audio_read_subchannel (CdIo_t *p_cdio, cdio_subchannel_t *p_subchannel);
+
+/*!
+  Return a string containing the name of the audio state as returned from
+  the Q_SUBCHANNEL.
+ */
+const char *mmc_audio_state2str( uint8_t i_audio_state );
 
 /*!
  * Eject using MMC commands. 

@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.20 2005/03/06 00:03:53 rocky Exp $
+    $Id: mmc.c,v 1.21 2005/03/06 02:59:26 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -66,6 +66,30 @@ audio_read_subchannel_mmc ( void *p_user_data, cdio_subchannel_t *p_subchannel)
   generic_img_private_t *p_env = p_user_data;
   if (!p_env) return DRIVER_OP_UNINIT;
   return mmc_audio_read_subchannel(p_env->cdio, p_subchannel);
+}
+
+/*!
+  Return a string containing the name of the audio state as returned from
+  the Q_SUBCHANNEL.
+ */
+const char *mmc_audio_state2str( uint8_t i_audio_state )
+{
+  switch(i_audio_state) {
+  case CDIO_MMC_READ_SUB_ST_INVALID:
+    return "invalid";
+  case CDIO_MMC_READ_SUB_ST_PLAY:
+    return "playing";
+  case CDIO_MMC_READ_SUB_ST_PAUSED:
+    return "paused";
+  case CDIO_MMC_READ_SUB_ST_COMPLETED:
+    return "completed";
+  case CDIO_MMC_READ_SUB_ST_ERROR:
+    return "error";
+  case CDIO_MMC_READ_SUB_ST_NO_STATUS:
+    return "no status";
+  default:                     
+    return "unknown";
+  }
 }
 
 /*!
