@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.1 2005/01/09 16:07:46 rocky Exp $
+    $Id: device.c,v 1.2 2005/01/14 19:25:45 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -420,55 +420,58 @@ cdio_get_devices_with_cap_ret (/*out*/ char* search_devices[],
                                cdio_fs_anal_t capabilities, bool any,
                                /*out*/ driver_id_t *p_driver_id)
 {
-  char **drives=search_devices;
-  char **drives_ret=NULL;
+  char **ppsz_drives=search_devices;
+  char **ppsz_drives_ret=NULL;
   unsigned int i_drives=0;
 
   *p_driver_id = DRIVER_DEVICE;
 
-  if (NULL == drives) drives=cdio_get_devices_ret(p_driver_id);
-  if (NULL == drives) return NULL;
+  if (NULL == ppsz_drives) ppsz_drives=cdio_get_devices_ret(p_driver_id);
+  if (NULL == ppsz_drives) return NULL;
 
   if (capabilities == CDIO_FS_MATCH_ALL) {
     /* Duplicate drives into drives_ret. */
-    char **d = drives;
+    char **d = ppsz_drives;
     
     for( ; *d != NULL; d++ ) {
-      cdio_add_device_list(&drives_ret, *d, &i_drives);
+      cdio_add_device_list(&ppsz_drives_ret, *d, &i_drives);
     }
   } else {
     cdio_fs_anal_t got_fs=0;
     cdio_fs_anal_t need_fs = CDIO_FSTYPE(capabilities);
     cdio_fs_anal_t need_fs_ext;
-    char **d = drives;
+    char **d = ppsz_drives;
     need_fs_ext = capabilities & ~CDIO_FS_MASK;
       
     for( ;  *d != NULL; d++ ) {
-      CdIo_t *cdio = cdio_open(*d, *p_driver_id);
+      CdIo_t *p_cdio = cdio_open(*d, *p_driver_id);
       
-      if (NULL != cdio) {
-        track_t first_track = cdio_get_first_track_num(cdio);
+      if (NULL != p_cdio) {
+        track_t i_first_track = cdio_get_first_track_num(p_cdio);
         cdio_iso_analysis_t cdio_iso_analysis; 
-        got_fs = cdio_guess_cd_type(cdio, 0, first_track, 
-                                &cdio_iso_analysis);
-        /* Match on fs and add */
-        if ( (CDIO_FS_UNKNOWN == need_fs || CDIO_FSTYPE(got_fs) == need_fs) )
-          {
-            bool doit = any
-              ? (got_fs & need_fs_ext)  != 0
-              : (got_fs | ~need_fs_ext) == -1;
-            if (doit) 
-              cdio_add_device_list(&drives_ret, *d, &i_drives);
-          }
+
+        if (CDIO_INVALID_TRACK != i_first_track) {
+          got_fs = cdio_guess_cd_type(p_cdio, 0, i_first_track, 
+                                      &cdio_iso_analysis);
+          /* Match on fs and add */
+          if ( (CDIO_FS_UNKNOWN == need_fs || CDIO_FSTYPE(got_fs) == need_fs) )
+            {
+              bool doit = any
+                ? (got_fs & need_fs_ext)  != 0
+                : (got_fs | ~need_fs_ext) == -1;
+              if (doit) 
+                cdio_add_device_list(&ppsz_drives_ret, *d, &i_drives);
+            }
+        }
              
-        cdio_destroy(cdio);
+        cdio_destroy(p_cdio);
       }
     }
   }
-  cdio_add_device_list(&drives_ret, NULL, &i_drives);
-  cdio_free_device_list(drives);
-  free(drives);
-  return drives_ret;
+  cdio_add_device_list(&ppsz_drives_ret, NULL, &i_drives);
+  cdio_free_device_list(ppsz_drives);
+  free(ppsz_drives);
+  return ppsz_drives_ret;
 }
 
 /*!

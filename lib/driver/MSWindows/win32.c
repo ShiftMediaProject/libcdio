@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.2 2005/01/01 04:17:41 rocky Exp $
+    $Id: win32.c,v 1.3 2005/01/14 19:25:45 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.2 2005/01/01 04:17:41 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.3 2005/01/14 19:25:45 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -432,7 +432,7 @@ read_toc_win32 (void *p_user_data)
     ret = read_toc_win32ioctl( p_env );
   }
   if (ret) p_env->gen.toc_init = true ;
-  return true;
+  return ret;
 }
 
 /*!

@@ -66,7 +66,7 @@ main(int argc, const char *argv[])
   ppsz_cd_drives = cdio_get_devices_with_cap_ret(NULL, CDIO_FS_AUDIO, false,
 						 &driver_id);
 
-  if (ppsz_cd_drives) {
+  if (ppsz_cd_drives && *ppsz_cd_drives) {
     /* Found such a CD-ROM with a CD-DA loaded. Use the first drive in
        the list. */
     d=cdda_identify(*ppsz_cd_drives, 1, NULL);
