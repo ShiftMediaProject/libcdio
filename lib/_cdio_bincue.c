@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_bincue.c,v 1.24 2003/09/01 22:51:50 rocky Exp $
+    $Id: _cdio_bincue.c,v 1.25 2003/09/14 06:24:09 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002,2003 Rocky Bernstein <rocky@panix.com>
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.24 2003/09/01 22:51:50 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_bincue.c,v 1.25 2003/09/14 06:24:09 rocky Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -414,17 +414,20 @@ _cdio_image_read_cue (_img_private_t *_obj)
 	  /* Figure out number of sectors for previous track */
 	  track_info_t  *prev_track=&(_obj->tocent[_obj->total_tracks-2]);
 	  if ( this_track->start_lba < prev_track->start_lba ) {
-	    cdio_warn ("track %d at LBA %d starts before track %d at LBA %d", 
-		       _obj->total_tracks,   this_track->start_lba, 
-		       _obj->total_tracks-1, prev_track->start_lba);
+	    cdio_warn("track %d at LBA %lu starts before track %d at LBA %lu", 
+		     _obj->total_tracks,   
+		      (unsigned long int) this_track->start_lba, 
+		      _obj->total_tracks-1, 
+		      (unsigned long int) prev_track->start_lba);
 	    prev_track->sec_count = 0;
 	  } else if ( this_track->start_lba >= prev_track->start_lba 
 		      + CDIO_PREGAP_SECTORS ) {
 	    prev_track->sec_count = this_track->start_lba - 
 	      prev_track->start_lba - CDIO_PREGAP_SECTORS ;
 	  } else {
-	    cdio_warn ("%d fewer than pregap (%d) sectors in track %d", 
-		       this_track->start_lba - prev_track->start_lba,
+	    cdio_warn ("%lu fewer than pregap (%d) sectors in track %d", 
+		       (long unsigned int) 
+		         this_track->start_lba - prev_track->start_lba,
 		       CDIO_PREGAP_SECTORS,
 		       _obj->total_tracks-1);
 	    /* Include pregap portion in sec_count. Maybe the pregap
@@ -472,7 +475,7 @@ _cdio_read_audio_sector (void *user_data, void *data, lsn_t lsn)
  */
 static int
 _cdio_read_mode2_sector (void *user_data, void *data, lsn_t lsn, 
-		    bool mode2_form2)
+			 bool mode2_form2)
 {
   _img_private_t *_obj = user_data;
   int ret;
