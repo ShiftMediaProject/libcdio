@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.80 2004/07/31 07:43:26 rocky Exp $
+    $Id: cd-info.c,v 1.81 2004/08/06 00:53:58 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -1022,9 +1022,10 @@ main(int argc, const char *argv[])
   printf(STRONG "\n");
   
 
+  discmode = cdio_get_discmode(p_cdio);
   if ( 0 == opts.no_disc_mode ) {
     printf("Disc mode is listed as: %s\n", 
-	   discmode2str[cdio_get_discmode(p_cdio)]);
+	   discmode2str[discmode]);
   }
   
   i_first_track = cdio_get_first_track_num(p_cdio);

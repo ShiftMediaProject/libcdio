@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.11 2004/07/18 03:35:07 rocky Exp $
+  $Id: util.c,v 1.12 2004/08/06 00:53:59 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -137,10 +137,14 @@ void print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
   } else {
     printf("\nWriting....\n");
     printf(_("  Can write CD-RW           : %s\n"), 
-	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_RW     ? "Yes" : "No");
+	   i_read_cap & CDIO_DRIVE_CAP_WRITE_CD_RW     ? "Yes" : "No");
     printf(_("  Can write DVD-R           : %s\n"), 
-	   i_write_cap & CDIO_DRIVE_CAP_READ_DVD_R    ? "Yes" : "No");
+	   i_write_cap & CDIO_DRIVE_CAP_WRITE_DVD_R    ? "Yes" : "No");
     printf(_("  Can write DVD-RAM         : %s\n"), 
-	   i_write_cap & CDIO_DRIVE_CAP_READ_DVD_RAM  ? "Yes" : "No");
+	   i_write_cap & CDIO_DRIVE_CAP_WRITE_DVD_RAM  ? "Yes" : "No");
+    printf(_("  Can write DVD-RW          : %s\n"), 
+	   i_write_cap & CDIO_DRIVE_CAP_WRITE_DVD_RW   ? "Yes" : "No");
+    printf(_("  Can write DVD+RW          : %s\n"), 
+	   i_write_cap & CDIO_DRIVE_CAP_WRITE_DVD_RPW  ? "Yes" : "No");
   }
 }
