@@ -57,16 +57,5 @@ ISO9660 filesystem
   - ----1xrxrxr 0 0 [fn 00] [LSN    184]        24 Feb 19 2001 16:37  psd.vcd
 
 XA sectors   Video CD   
-format: VCD 2.0
-album id: `'
-volume count: 1
-volume number: 1
-system id: `CD-RTOS CD-BRIDGE'
-volume id: `MONVOISIN'
-volumeset id: `'
-publisher id: `'
-preparer id: `'
-application id: `CDI/CDI_VCD.APP;1'
-
 session #2 starts at track  2, LSN: 1251, ISO 9660 blocks:   1101
 ISO 9660: 1101 blocks, label `MONVOISIN                       '
