@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.16 2005/02/17 07:03:37 rocky Exp $
+    $Id: cdrdao.c,v 1.17 2005/04/09 22:56:07 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.16 2005/02/17 07:03:37 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.17 2005/04/09 22:56:07 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1315,6 +1315,7 @@ cdio_open_cdrdao (const char *psz_cue_name)
   if (!cdio_is_tocfile(psz_cue_name)) {
     cdio_debug ("source name %s is not recognized as a TOC file", 
 		psz_cue_name);
+    free(p_data);
     return NULL;
   }
   
