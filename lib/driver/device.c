@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.23 2005/04/05 02:13:58 rocky Exp $
+    $Id: device.c,v 1.24 2005/04/10 14:39:19 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -134,6 +134,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_open_am_freebsd,
    &cdio_get_default_device_freebsd,
    &cdio_is_device_generic,
+   &cdio_get_devices_freebsd,
    &close_tray_freebsd
   },
 
@@ -160,7 +161,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_get_default_device_solaris,
    &cdio_is_device_generic,
    &cdio_get_devices_solaris,
-   NULL
+   &close_tray_solaris
   },
 
   {DRIVER_OSX, 
@@ -173,7 +174,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_get_default_device_osx,
    &cdio_is_device_generic,
    &cdio_get_devices_osx,
-   &close_tray_solaris
+   &close_tray_osx
   },
 
   {DRIVER_WIN32, 
@@ -367,9 +368,11 @@ cdio_eject_media (CdIo_t **pp_cdio)
 */
 void cdio_free_device_list (char * device_list[]) 
 {
+  char **device_list_save=device_list;
   if (NULL == device_list) return;
   for ( ; *device_list != NULL ; device_list++ )
     free(*device_list);
+  free(device_list_save);
 }
 
 
