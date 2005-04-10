@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.30 2005/03/31 00:24:32 rocky Exp $
+    $Id: cdda-player.c,v 1.31 2005/04/10 14:52:52 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -279,7 +279,7 @@ xperror(const char *psz_msg)
 }
 
 static void 
-oops(const char *psz_msg, int rc)
+finish(const char *psz_msg, int rc)
 {
   if (interactive) {
     mvprintw(LINE_LAST, 0, (char *) "%s, exiting...\n", psz_msg);
@@ -289,7 +289,11 @@ oops(const char *psz_msg, int rc)
   tty_restore();
 #ifdef HAVE_CDDB
   if (p_conn) cddb_destroy(p_conn);
+  cddb_disc_destroy(p_cddb_disc);
+#if LIBCDDB_VERSION_NUM >= 1
+  libcddb_shutdown();
 #endif
+#endif /*HAVE_CDDB*/
   cdio_destroy (p_cdio);
   free (psz_device);
   exit (rc);
@@ -325,6 +329,7 @@ cd_eject(void)
     if (!b_ok)
       xperror("eject");
     b_cd = 0;
+    cdio_destroy (p_cdio);
     p_cdio = NULL;
   }
   return b_ok;
@@ -1575,7 +1580,7 @@ main(int argc, char *argv[])
   }
   if (!nostop) cd_stop(p_cdio);
   tty_restore();
-  oops("bye", i_rc);
+  finish("bye", i_rc);
   
   return 0; /* keep compiler happy */
 }
