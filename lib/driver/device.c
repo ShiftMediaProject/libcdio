@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.24 2005/04/10 14:39:19 rocky Exp $
+    $Id: device.c,v 1.25 2005/04/11 00:53:09 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -370,8 +370,10 @@ void cdio_free_device_list (char * device_list[])
 {
   char **device_list_save=device_list;
   if (NULL == device_list) return;
-  for ( ; *device_list != NULL ; device_list++ )
+  for ( ; *device_list != NULL ; device_list++ ) {
     free(*device_list);
+    *device_list = NULL;
+  }
   free(device_list_save);
 }
 
@@ -570,7 +572,6 @@ cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[],
   cdio_add_device_list(&ppsz_drives_ret, NULL, &i_drives);
   if (b_free_ppsz_drives) {
     cdio_free_device_list(ppsz_drives);
-    free(ppsz_drives);
   }
   return ppsz_drives_ret;
 }
