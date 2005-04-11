@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.26 2005/04/11 00:53:56 rocky Exp $
+    $Id: device.c,v 1.27 2005/04/11 01:03:46 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -367,15 +367,15 @@ cdio_eject_media (CdIo_t **pp_cdio)
   cdio_get_devices_with_cap.
 */
 void 
-cdio_free_device_list (char * device_list[]) 
+cdio_free_device_list (char * ppsz_device_list[]) 
 {
-  char **device_list_save=device_list;
-  if (NULL == device_list) return;
-  for ( ; *device_list != NULL ; device_list++ ) {
-    free(*device_list);
-    *device_list = NULL;
+  char **ppsz_device_list_save=ppsz_device_list;
+  if (!ppsz_device_list) return;
+  for ( ; NULL != *ppsz_device_list ; ppsz_device_list++ ) {
+    free(*ppsz_device_list);
+    *ppsz_device_list = NULL;
   }
-  free(device_list_save);
+  free(ppsz_device_list_save);
 }
 
 

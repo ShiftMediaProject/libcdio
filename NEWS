@@ -8,7 +8,7 @@
 - ISO 9660 more accurate more often
 - Add ability to look for ISO 9660 filesystem in unknown Disc image formats
 - Add routine for getting ISO9660 long date; short date fixes
-- remove memory leaks
+- remove even more memory leaks
 - Add enumerations and symbols to facilitate debugging
 - Break out C++ example programs into a separate directory. More C++ programs.
 - gcc 4 fixes
@@ -186,4 +186,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.66 2005/03/18 13:21:14 rocky Exp $
+$Id: NEWS,v 1.67 2005/04/11 01:03:46 rocky Exp $
