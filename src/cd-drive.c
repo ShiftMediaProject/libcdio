@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.18 2005/03/18 12:56:00 rocky Exp $
+  $Id: cd-drive.c,v 1.19 2005/04/11 01:37:38 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -247,7 +247,6 @@ main(int argc, const char *argv[])
       }
     
     cdio_free_device_list(ppsz_cdrives);
-    free(ppsz_cdrives);
     ppsz_cdrives = NULL;
   } else {
     /* Print CD-drive info for given source */

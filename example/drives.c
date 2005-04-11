@@ -1,5 +1,5 @@
 /*
-  $Id: drives.c,v 1.1 2004/10/10 00:21:08 rocky Exp $
+  $Id: drives.c,v 1.2 2005/04/11 01:37:38 rocky Exp $
 
   Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -63,7 +63,6 @@ main(int argc, const char *argv[])
     }
 
   cdio_free_device_list(ppsz_cd_drives);
-  free(ppsz_cd_drives);
   ppsz_cd_drives = NULL;
   
   printf("-----\n");
@@ -78,7 +77,6 @@ main(int argc, const char *argv[])
     
   }
   cdio_free_device_list(ppsz_cd_drives);
-  free(ppsz_cd_drives);
 
   printf("-----\n");
   printf("CD-DA drives...\n");
@@ -92,7 +90,6 @@ main(int argc, const char *argv[])
     }
   }
   cdio_free_device_list(ppsz_cd_drives);
-  free(ppsz_cd_drives);
     
   printf("-----\n");
   ppsz_cd_drives = NULL;
@@ -108,8 +105,6 @@ main(int argc, const char *argv[])
   }
 
   cdio_free_device_list(ppsz_cd_drives);
-  free(ppsz_cd_drives);
-  
   return 0;
   
 }

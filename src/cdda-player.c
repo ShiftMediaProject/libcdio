@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.31 2005/04/10 14:52:52 rocky Exp $
+    $Id: cdda-player.c,v 1.32 2005/04/11 01:37:39 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -328,7 +328,7 @@ cd_eject(void)
     b_ok = DRIVER_OP_SUCCESS == cdio_eject_media(&p_cdio);
     if (!b_ok)
       xperror("eject");
-    b_cd = 0;
+    b_cd = false;
     cdio_destroy (p_cdio);
     p_cdio = NULL;
   }

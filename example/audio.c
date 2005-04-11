@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.5 2005/03/19 16:17:13 rocky Exp $
+    $Id: audio.c,v 1.6 2005/04/11 01:37:38 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -64,7 +64,7 @@
 
 static bool play_track(track_t t1, track_t t2);
 
-CdIo_t             *p_cdio;               /* libcdio handle */
+CdIo_t             *p_cdio = NULL;            /* libcdio handle */
 driver_id_t        driver_id = DRIVER_DEVICE;
 
 /* cdrom data */
@@ -135,7 +135,7 @@ cd_eject(void)
     b_ok = DRIVER_OP_SUCCESS == cdio_eject_media(&p_cdio);
     if (!b_ok)
       xperror("eject");
-    b_cd = 0;
+    b_cd = false;
     p_cdio = NULL;
   }
   return b_ok;
@@ -300,6 +300,7 @@ usage(char *prog)
 }
 
 typedef enum {
+  NO_OP=0,
   PLAY_CD=1,
   PLAY_TRACK=2,
   STOP_PLAYING=3,
@@ -316,7 +317,7 @@ main(int argc, char *argv[])
   char *h;
   int  i_rc = 0;
   int  i_volume_level;
-  cd_operation_t todo; /* operation to do in non-interactive mode */
+  cd_operation_t todo = NO_OP; /* operation to do in non-interactive mode */
   
   psz_program = strrchr(argv[0],'/');
   psz_program = psz_program ? psz_program+1 : argv[0];
@@ -432,6 +433,8 @@ main(int argc, char *argv[])
       }
       if (b_cd)
 	switch (todo) {
+	case NO_OP:
+	  break;
 	case STOP_PLAYING:
 	  i_rc = cd_stop(p_cdio) ? 0 : 1;
 	  break;
