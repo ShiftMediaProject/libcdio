@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.137 2005/03/19 06:42:24 rocky Exp $
+    $Id: cd-info.c,v 1.138 2005/04/11 01:00:49 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -428,6 +428,9 @@ print_cddb_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track)
   
     cddb_disc_destroy(p_cddb_disc);
     cddb_destroy(p_conn);
+#if LIBCDDB_VERSION_NUM >= 1
+    libcddb_shutdown();
+#endif
   }
 }
 #endif
