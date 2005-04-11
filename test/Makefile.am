@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.49 2005/03/05 23:51:40 rocky Exp $
+#   $Id: Makefile.am,v 1.50 2005/04/11 02:57:04 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -83,7 +83,7 @@ XFAIL_TESTS = testassert
 
 MOSTLYCLEANFILES = core core.* *.dump cdda-orig.wav cdda-try.wav *.raw
 
-test: check
+test: check-am
 
 # This is a really bad hack to make sure check_nrg and check_cue.sh
 # are executable. Automake will remake check_nrg.sh and check_cue.sh
