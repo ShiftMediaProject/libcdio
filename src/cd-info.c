@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.138 2005/04/11 01:00:49 rocky Exp $
+    $Id: cd-info.c,v 1.139 2005/04/11 01:02:11 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -448,11 +448,11 @@ print_vcd_info(driver_id_t driver) {
       vcdinfo_close(p_vcd);
       return;
     }
-    report (stdout, "Format      : %s\n", 
+    report (stdout, "Format       : %s\n", 
 	    vcdinfo_get_format_version_str(p_vcd));
-    report (stdout, "Album       : `%.16s'\n",  vcdinfo_get_album_id(p_vcd));
-    report (stdout, "Volume count: %d\n",   vcdinfo_get_volume_count(p_vcd));
-    report (stdout, "volume number: %d\n",  vcdinfo_get_volume_num(p_vcd));
+    report (stdout, "Album        : `%.16s'\n",  vcdinfo_get_album_id(p_vcd));
+    report (stdout, "Volume count : %d\n",   vcdinfo_get_volume_count(p_vcd));
+    report (stdout, "volume number: %d\n",   vcdinfo_get_volume_num(p_vcd));
 
     break;
   case VCDINFO_OPEN_ERROR:
