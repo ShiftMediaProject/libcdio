@@ -1,16 +1,16 @@
 #!/bin/sh
-# $Id: check_paranoia.sh.in,v 1.9 2005/03/02 13:33:24 rocky Exp $
+# $Id: check_paranoia.sh.in,v 1.10 2005/04/11 02:36:36 rocky Exp $
 # Compare our cd-paranoia with an installed cdparanoia
 
-if test -z $srcdir ; then
+if test "X$srcdir" = "X" ; then
   srcdir=`pwd`
 fi
 
-if test -z $top_builddir ; then
+if test "X$top_builddir" = "X" ; then
   top_builddir=`pwd`/..
 fi
 
-if test -z $top_srcdir ; then
+if test "X$top_srcdir" = "X" ; then
   top_srcdir=`pwd`/..
 fi
 

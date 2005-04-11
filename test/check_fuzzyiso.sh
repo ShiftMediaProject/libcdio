@@ -1,15 +1,15 @@
 #!/bin/sh
-#$Id: check_fuzzyiso.sh,v 1.4 2005/03/03 01:04:27 rocky Exp $
+#$Id: check_fuzzyiso.sh,v 1.5 2005/04/11 02:36:36 rocky Exp $
 
-if test -z $srcdir ; then
+if test "X$srcdir" = "X" ; then
   srcdir=`pwd`
 fi
 
-if test -z $top_srcdir ; then
+if test "X$top_srcdir" = "X" ; then
   top_srcdir=`pwd`/..
 fi
 
-if test -z $top_builddir ; then
+if test "X$top_builddir" = "X" ; then
   top_builddir=`pwd`/..
 fi
 

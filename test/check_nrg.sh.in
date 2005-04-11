@@ -1,15 +1,15 @@
 #!/bin/sh
-#$Id: check_nrg.sh.in,v 1.14 2005/03/02 12:49:28 rocky Exp $
+#$Id: check_nrg.sh.in,v 1.15 2005/04/11 02:36:36 rocky Exp $
 
-if test -n "@VCDINFO_LIBS@" ; then
+if test "@VCDINFO_LIBS@X" != "X" ; then
   vcd_opt='--no-vcd'
 fi
 
-if test -z $srcdir ; then
+if test "X$srcdir" = "X" ; then
   srcdir=`pwd`
 fi
 
-if test -z $top_srcdir ; then
+if test "X$top_srcdir" = "X" ; then
   top_srcdir=`pwd`/..
 fi
 
