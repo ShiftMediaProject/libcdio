@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.29 2005/04/14 01:10:24 rocky Exp $
+    $Id: freebsd.c,v 1.30 2005/04/14 01:24:32 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.29 2005/04/14 01:10:24 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.30 2005/04/14 01:24:32 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -368,7 +368,6 @@ audio_read_subchannel_freebsd (void *p_user_data,
   read_subchannel.data = & bsdinfo;
   i_rc = ioctl(p_env->gen.fd, CDIOCREADSUBCHANNEL, &read_subchannel);
   if (0 == i_rc) {
-    msf_t msf;
     p_subchannel->audio_status = bsdinfo.header.audio_status;
     p_subchannel->address      = bsdinfo.what.position.addr_type;
 
