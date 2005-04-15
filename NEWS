@@ -1,7 +1,8 @@
-0.73cvs 
+0.73
 
 - Rock Ridge Extension support added
 - CD audio support (play track/index, pause, set volume, read audio subchannel)
+- add close tray interface (may need more work on more OSes)
 - utility cdda-player to (show off audio audio support) added
 - file time/size attributes fixes
 - cd-info/iso-info show more ls-like attributes and more often
@@ -186,4 +187,4 @@
 0.1
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.67 2005/04/11 01:03:46 rocky Exp $
+$Id: NEWS,v 1.68 2005/04/15 20:39:18 rocky Exp $
