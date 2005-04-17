@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.32 2005/04/11 01:37:39 rocky Exp $
+    $Id: cdda-player.c,v 1.33 2005/04/17 06:19:48 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -535,6 +535,7 @@ play_track(track_t i_start_track, track_t i_end_track)
   if (i_start_track > i_last_audio_track)  i_start_track = i_last_audio_track;
   if (i_end_track < i_first_track)         i_end_track   = i_first_track;
   if (i_end_track > i_last_audio_track)    i_end_track   = i_last_audio_track;
+  i_end_track++;
   if (debug)
     fprintf(stderr,"%d-%d\n",i_start_track, i_end_track);
   
