@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.43 2005/03/21 10:36:18 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.44 2005/04/18 15:43:36 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -1613,7 +1613,6 @@ main(int argc, const char *argv[])
 
   /* Don't need a list of CD's with CD-DA's any more. */
   cdio_free_device_list(ppsz_cd_drives);
-  free(ppsz_cd_drives);
 
   /* We'll set for verbose paranoia messages. */
   cdio_cddap_verbose_set(d, CDDA_MESSAGE_PRINTIT, CDDA_MESSAGE_PRINTIT);
@@ -1719,7 +1718,7 @@ Descriptions of the sample are as follows...
 A program to show using @code{libiso9660} to list files in a
 	directory of an ISO-9660 image.
 
-@item @code{iso1cpp.cpp}
+@item @code{C++/iso1.cpp}
 
 The same program as @code{iso1.c} written in C++.
 
@@ -1728,7 +1727,7 @@ The same program as @code{iso1.c} written in C++.
 A program to show using @code{libiso9660} to extract a file from a
 CDRWIN cue/bin CD image.
 
-@item @code{iso2cpp.cpp}
+@item @code{C++/iso2.cpp}
 
 The same program as @code{iso2.c} written in C++.
 
@@ -1737,7 +1736,7 @@ The same program as @code{iso2.c} written in C++.
 A program to show using libiso9660 to extract a file from an ISO-9660
 image.
 
-@item @code{iso3cpp.cpp}
+@item @code{C++/iso3.cpp}
 
 The same program as @code{iso3.c} written in C++.
 
@@ -1766,10 +1765,18 @@ beforehand.
 
 A program to show issuing a simple MMC command (@code{INQUIRY}).
 
+@item @code{C++/mmc1.cpp}
+
+The same program as @code{mmc1.c} written in C++.
+
 @item @code{mmc2.c}
 
 A more involved MMC command to list CD and drive features from a
 SCSI-MMC @code{GET_CONFIGURATION} command.
+
+@item @code{C++/mmc2.cpp}
+
+The same program as @code{mmc2.c} written in C++.
 
 @item @code{tracks.c}
 
