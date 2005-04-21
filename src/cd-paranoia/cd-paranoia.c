@@ -791,7 +791,6 @@ main(int argc,char *argv[])
     }
     
     cdio_free_device_list(ppsz_cd_drives);
-    free(ppsz_cd_drives);
   }
   
   if(!d){
