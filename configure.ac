@@ -19,7 +19,7 @@ define(RELEASE_NUM, 73)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.155 2005/04/22 02:54:10 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.156 2005/04/22 03:18:34 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -603,7 +603,7 @@ AC_OUTPUT
 
 echo "Using CD-ROM drivers: $cd_drivers"
 echo -n "Building cd-paranoia: "
-if test "x$enable_cdda_player" = "xyes"
+if test "x$enable_cd_paranoia" = "xyes"
 then
 echo "yes"
 else
