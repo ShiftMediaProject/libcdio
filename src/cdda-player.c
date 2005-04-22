@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.33 2005/04/17 06:19:48 rocky Exp $
+    $Id: cdda-player.c,v 1.34 2005/04/22 01:54:13 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -203,7 +203,9 @@ tty_raw()
   initscr();
   cbreak();
   noecho();
+#ifdef HAVE_KEYPAD
   keypad(stdscr,1);
+#endif
   refresh();
 }
 

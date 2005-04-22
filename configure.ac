@@ -19,7 +19,7 @@ define(RELEASE_NUM, 73)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.153 2005/04/14 00:35:03 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.154 2005/04/22 01:54:13 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -509,11 +509,17 @@ fi
 
 AC_SUBST(CDDB_LIBS)
 
+AC_DEFINE(HAVE_KEYPAD, [], [Define this if your libcurses has keypad])
 if test x$enable_cdda_player = xyes; then
-    AC_CHECK_LIB(curses, mvprintw, [CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
-    AC_CHECK_LIB(ncurses, mvprintw, [CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
-    [AC_MSG_WARN([Will not build cdda-player - did not find libcurses or libncurses])
-     enable_cdda_player=no]))
+    AC_CHECK_LIB(ncurses, mvprintw, 
+      [LIBCURSES=ncurses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
+      AC_CHECK_LIB(curses, mvprintw, 
+      [LIBCURSES=curses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
+      [AC_MSG_WARN([Will not build cdda-player - did not find libcurses or libncurses]) 
+      enable_cdda_player=no]))
+    if test x$enable_cdda_player = xyes; then
+      AC_CHECK_LIB($LIBCURSES, keypad, [HAVE_KEYPAD=yes])
+    fi   
 fi
 
 AC_SUBST(CDDA_PLAYER_LIBS)
