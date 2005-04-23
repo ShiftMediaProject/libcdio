@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.12 2005/03/29 12:00:23 rocky Exp $
+    $Id: gnu_linux.c,v 1.13 2005/04/23 01:16:19 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.12 2005/03/29 12:00:23 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.13 2005/04/23 01:16:19 rocky Exp $";
 
 #include <string.h>
 
@@ -610,6 +610,9 @@ eject_media_linux (void *p_user_data) {
         ret = DRIVER_OP_ERROR;
       }
       break;
+    default:
+      cdio_info ("Unknown state of CD-ROM (%d)\n", status);
+      /* Fall through */
     case CDS_DISC_OK:
       if((ret = ioctl(p_env->gen.fd, CDROMEJECT)) != 0) {
         int eject_error = errno;
@@ -624,9 +627,6 @@ eject_media_linux (void *p_user_data) {
       /* force kernel to reread partition table when new disc inserted */
       ret = ioctl(p_env->gen.fd, BLKRRPART);
       break;
-    default:
-      cdio_warn ("Unknown CD-ROM (%d)\n", status);
-      ret = DRIVER_OP_ERROR;
     }
   } else {
     cdio_warn ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
@@ -724,7 +724,6 @@ is_cdrom_linux(const char *drive, char *mnttype)
 {
   bool is_cd=false;
   int cdfd;
-  struct cdrom_tochdr    tochdr;
   
   /* If it doesn't exist, return -1 */
   if ( !cdio_is_device_quiet_generic(drive) ) {
@@ -734,7 +733,7 @@ is_cdrom_linux(const char *drive, char *mnttype)
   /* If it does exist, verify that it's an available CD-ROM */
   cdfd = open(drive, (O_RDONLY|O_NONBLOCK), 0);
   if ( cdfd >= 0 ) {
-    if ( ioctl(cdfd, CDROMREADTOCHDR, &tochdr) != -1 ) {
+    if ( ioctl(cdfd, CDROM_GET_CAPABILITY, 0) != -1 ) {
       is_cd = true;
     }
     close(cdfd);
@@ -1499,7 +1498,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
 
   ret->driver_id = DRIVER_LINUX;
 
-  if (cdio_generic_init(_data)) {
+  if (cdio_generic_init(_data, O_RDONLY|O_NONBLOCK)) {
     return ret;
   } else {
     cdio_generic_free (_data);

@@ -1,5 +1,5 @@
 /*
-    $Id: solaris.c,v 1.9 2005/03/19 18:50:46 rocky Exp $
+    $Id: solaris.c,v 1.10 2005/04/23 01:16:19 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -38,7 +38,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: solaris.c,v 1.9 2005/03/19 18:50:46 rocky Exp $";
+static const char _rcsid[] = "$Id: solaris.c,v 1.10 2005/04/23 01:16:19 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -258,7 +258,7 @@ static bool
 init_solaris (_img_private_t *p_env)
 {
 
-  if (!cdio_generic_init(p_env)) return false;
+  if (!cdio_generic_init(p_env, O_RDONLY)) return false;
   
   p_env->access_mode = _AM_SUN_CTRL_SCSI;    
 

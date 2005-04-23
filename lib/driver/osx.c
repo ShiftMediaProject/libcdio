@@ -1,5 +1,5 @@
 /*
-    $Id: osx.c,v 1.2 2005/03/13 04:42:38 rocky Exp $
+    $Id: osx.c,v 1.3 2005/04/23 01:16:19 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: osx.c,v 1.2 2005/03/13 04:42:38 rocky Exp $";
+static const char _rcsid[] = "$Id: osx.c,v 1.3 2005/04/23 01:16:19 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -1821,7 +1821,7 @@ cdio_open_osx (const char *psz_orig_source)
 
   ret->driver_id = DRIVER_OSX;
 
-  if (cdio_generic_init(_data) && init_osx(_data))
+  if (cdio_generic_init(_data, O_RDONLY) && init_osx(_data))
     return ret;
   else {
     cdio_generic_free (_data);

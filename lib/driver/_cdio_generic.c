@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.18 2005/03/01 00:40:39 rocky Exp $
+    $Id: _cdio_generic.c,v 1.19 2005/04/23 01:16:19 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.18 2005/03/01 00:40:39 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.19 2005/04/23 01:16:19 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -105,7 +105,7 @@ cdio_generic_free (void *p_user_data)
   Initialize CD device.
  */
 bool
-cdio_generic_init (void *user_data)
+cdio_generic_init (void *user_data, int open_flags)
 {
   generic_img_private_t *p_env = user_data;
   if (p_env->init) {
@@ -113,7 +113,7 @@ cdio_generic_init (void *user_data)
     return false;
   }
   
-  p_env->fd = open (p_env->source_name, O_RDONLY, 0);
+  p_env->fd = open (p_env->source_name, open_flags, 0);
 
   if (p_env->fd < 0)
     {

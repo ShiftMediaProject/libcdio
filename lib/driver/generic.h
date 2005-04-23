@@ -1,5 +1,5 @@
 /*
-    $Id: generic.h,v 1.13 2005/03/01 00:40:39 rocky Exp $
+    $Id: generic.h,v 1.14 2005/04/23 01:16:19 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -101,7 +101,7 @@ extern "C" {
   /*!
     Initialize CD device.
   */
-  bool cdio_generic_init (void *p_env);
+  bool cdio_generic_init (void *p_env, int open_mode);
 
   /*!
     Reads into buf the next size bytes.
