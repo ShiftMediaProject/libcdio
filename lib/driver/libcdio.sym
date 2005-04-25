@@ -158,6 +158,7 @@ cdio_warn
 cdtext_destroy
 cdtext_field2str
 cdtext_get
+cdtext_get_const
 cdtext_init
 cdtext_is_keyword
 cdtext_set

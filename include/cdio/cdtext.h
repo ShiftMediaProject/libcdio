@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.h,v 1.10 2005/01/29 20:54:20 rocky Exp $
+    $Id: cdtext.h,v 1.11 2005/04/25 23:06:21 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     adapted from cuetools
@@ -85,6 +85,17 @@ extern "C" {
     input here.
   */
   char *cdtext_get (cdtext_field_t key, const cdtext_t *cdtext);
+
+  /*! returns a const string associated with the given field.  NULL is
+    returned if key is CDTEXT_INVALID or the field is not set.
+
+    Don't use the string when the cdtext object (i.e. the CdIo_t object
+    you got it from) is no longer valid.
+
+    @see cdio_get_cdtext to retrieve the cdtext structure used as
+    input here.
+  */
+  const char *cdtext_get_const (cdtext_field_t key, const cdtext_t *cdtext);
   
   /*!
     returns enum of keyword if key is a CD-Text keyword, 

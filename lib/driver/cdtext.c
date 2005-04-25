@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.c,v 1.4 2005/03/23 11:15:25 rocky Exp $
+    $Id: cdtext.c,v 1.5 2005/04/25 23:06:21 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -89,9 +89,17 @@ cdtext_destroy (cdtext_t *p_cdtext)
 char *
 cdtext_get (cdtext_field_t key, const cdtext_t *p_cdtext)
 {
-  if (key == CDTEXT_INVALID) return NULL;
+  if ((key == CDTEXT_INVALID) || (!p_cdtext->field[key])) return NULL;
   return strdup(p_cdtext->field[key]);
 }
+
+const char *
+cdtext_get_const (cdtext_field_t key, const cdtext_t *p_cdtext)
+{
+  if (key == CDTEXT_INVALID) return NULL;
+  return p_cdtext->field[key];
+}
+
 
 /*! Initialize a new cdtext structure.
   When the structure is no longer needed, release the 
