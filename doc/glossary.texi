@@ -185,7 +185,7 @@ programming than an MSF.
 @item Lead in
 @cindex lead in
 
-The area of a CD where the Table Of Contents (TOC) and CDTEXT are
+The area of a CD where the Table Of Contents (TOC) and CD Text are
 stored.  I think it is supposed to be around 4500 (1 min) or more
 sectors in length.  On a CDR(W) the lead-in length is variable,
 because each manufacturer will have a different starting position

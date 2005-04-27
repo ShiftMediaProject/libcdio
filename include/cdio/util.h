@@ -1,5 +1,5 @@
 /*
-    $Id: util.h,v 1.7 2005/02/28 02:05:19 rocky Exp $
+    $Id: util.h,v 1.8 2005/04/27 23:31:47 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -42,12 +42,12 @@
 #undef  CLAMP
 #define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
 
-static inline uint16_t
-_cdio_len2blocks (unsigned int i_len, uint16_t i_blocksize)
+static inline uint32_t
+_cdio_len2blocks (uint32_t i_len, uint16_t i_blocksize)
 {
-  uint16_t i_blocks;
+  uint32_t i_blocks;
 
-  i_blocks = i_len / i_blocksize;
+  i_blocks = i_len / (uint32_t) i_blocksize;
   if (i_len % i_blocksize)
     i_blocks++;
 
