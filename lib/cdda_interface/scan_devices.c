@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.26 2005/02/07 03:36:02 rocky Exp $
+  $Id: scan_devices.c,v 1.27 2005/04/28 01:25:53 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -211,6 +211,7 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
 {
   cdrom_drive_t *d=NULL;
   int drive_type = 0;
+  int is_scsi    = -1;
   char *description=NULL;
 #ifdef HAVE_LINUX_MAJOR_H
   struct stat st;
@@ -232,6 +233,7 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
       case IDE3_MAJOR:
 	/* Yay, ATAPI... */
 	description=strdup("ATAPI compatible ");
+	is_scsi = 0;
 	break;
       case CDU31A_CDROM_MAJOR:
 	/* major indicates this is a cdrom; no ping necessary. */
@@ -273,6 +275,7 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
       case SCSI_GENERIC_MAJOR: 
 	/* Nope nope nope */
 	description=strdup("SCSI CD-ROM");
+	is_scsi = 1;
 	break;
       default:
 	/* What the hell is this? */
@@ -291,8 +294,9 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
   d->p_cdio           = p_cdio;
   d->cdda_device_name = strdup(psz_device);
   d->drive_type       = drive_type;
+  d->is_scsi          = is_scsi;
   d->bigendianp       = -1; /* We don't know yet... */
-  d->nsectors         = -1;
+  d->nsectors         = -1; /* We don't know yet... */
   d->b_swap_bytes     = true;
   
   {

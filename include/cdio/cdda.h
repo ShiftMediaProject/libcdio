@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.19 2005/02/05 23:53:06 rocky Exp $
+  $Id: cdda.h,v 1.20 2005/04/28 01:25:53 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -113,6 +113,7 @@ struct cdrom_drive_s {
 
   int is_atapi;
   int is_mmc;
+  int is_scsi;
 
   int i_test_flags; /**< Normally set 0. But if we are testing
 		       paranoia operation this can be set to one of
