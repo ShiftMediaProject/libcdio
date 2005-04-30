@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.25 2005/03/23 11:15:25 rocky Exp $
+    $Id: mmc.c,v 1.26 2005/04/30 09:42:37 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -729,6 +729,36 @@ mmc_get_drive_cap (CdIo_t *p_cdio,
     *p_misc_cap  = CDIO_DRIVE_CAP_ERROR;
   }
   return;
+}
+
+/*!
+  Get the MMC level supported by the device.
+*/
+cdio_mmc_level_t
+mmc_get_drive_mmc_cap(CdIo_t *p_cdio) 
+{
+  uint8_t buf[256] = { 0, };
+  uint8_t len;
+  int rc = mmc_mode_sense(p_cdio, buf, sizeof(buf), 
+			  CDIO_MMC_CAPABILITIES_PAGE);
+
+  if (DRIVER_OP_SUCCESS != rc) {
+    return CDIO_MMC_LEVEL_NONE;
+  }
+  
+  len = buf[1];
+  if (16 > len) {
+    return CDIO_MMC_LEVEL_WEIRD;
+  } else if (28 <= len) {
+    return CDIO_MMC_LEVEL_3;
+  } else if (24 <= len) {
+    return CDIO_MMC_LEVEL_2;
+    printf("MMC 2");
+  } else if (20 <= len) {
+    return CDIO_MMC_LEVEL_1;
+  } else {
+    return CDIO_MMC_LEVEL_WEIRD;
+  }
 }
 
 /*! 

@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.19 2005/03/21 09:19:06 rocky Exp $
+    $Id: mmc.h,v 1.20 2005/04/30 09:42:37 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -498,6 +498,20 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                            /*out*/ cdio_drive_write_cap_t *p_write_cap,
                            /*out*/ cdio_drive_misc_cap_t  *p_misc_cap);
   
+  typedef enum {
+    CDIO_MMC_LEVEL_WEIRD,
+    CDIO_MMC_LEVEL_1,
+    CDIO_MMC_LEVEL_2,
+    CDIO_MMC_LEVEL_3,
+    CDIO_MMC_LEVEL_NONE
+  } cdio_mmc_level_t;
+  
+  /*!
+    Get the MMC level supported by the device.
+  */
+  cdio_mmc_level_t mmc_get_drive_mmc_cap(CdIo_t *p_cdio);
+  
+
   /*! 
     Get the DVD type associated with cd object.
     
@@ -546,7 +560,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   /*!
     Report if CD-ROM has a praticular kind of interface (ATAPI, SCSCI, ...)
     Is it possible for an interface to have serveral? If not this 
-    routine could probably return the sincle mmc_feature_interface_t.
+    routine could probably return the single mmc_feature_interface_t.
     @return true if we have the interface and false if not.
   */
   bool_3way_t mmc_have_interface( CdIo_t *p_cdio, 

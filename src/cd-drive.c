@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.19 2005/04/11 01:37:38 rocky Exp $
+  $Id: cd-drive.c,v 1.20 2005/04/30 09:42:37 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -146,6 +146,34 @@ _log_handler (cdio_log_level_t level, const char message[])
   gl_default_cdio_log_handler (level, message);
 }
 
+/*! Prints out SCSI-MMC drive features  */
+static void 
+print_mmc_drive_level(CdIo_t *p_cdio)
+{
+  cdio_mmc_level_t mmc_level = mmc_get_drive_mmc_cap(p_cdio);
+    
+  printf( "CD-ROM drive supports " );
+
+  switch(mmc_level) {
+  case CDIO_MMC_LEVEL_WEIRD:
+    printf("some nonstandard or degenerate set of MMC\n");
+    break;
+  case CDIO_MMC_LEVEL_1:
+    printf("MMC 1\n");
+    break;
+  case CDIO_MMC_LEVEL_2:
+    printf("MMC 2\n");
+    break;
+  case CDIO_MMC_LEVEL_3:
+    printf("MMC 3\n");
+    break;
+  case CDIO_MMC_LEVEL_NONE:
+    printf("no MMC\n");
+    break;
+  }
+  printf("\n");
+}
+
 /* Initialize global variables. */
 static void 
 init(void) 
@@ -227,6 +255,8 @@ main(int argc, const char *argv[])
 	cdio_drive_misc_cap_t  i_misc_cap;
 	cdio_hwinfo_t          hwinfo;
 	CdIo_t *p_cdio = cdio_open(*ppsz_cd, driver_id); 
+
+	print_mmc_drive_level(p_cdio);
 
 	printf("%28s: %s\n", "Drive", *ppsz_cd);
 

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.22 2005/04/30 02:04:29 rocky Exp $
+#   $Id: Makefile.am,v 1.23 2005/04/30 09:42:37 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -24,7 +24,8 @@ if !DISABLE_CPP
 SUBDIRS =  C++
 endif
 noinst_PROGRAMS = audio cdtext device drives iso1 iso2 iso3 isofuzzy \
-	          mmc1 mmc2 paranoia paranoia2 tracks sample3 sample4 
+	          mmc1 mmc2 paranoia paranoia2 tracks \
+	          sample3 sample4 
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 

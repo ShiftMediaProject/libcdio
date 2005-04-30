@@ -168,6 +168,7 @@ mmc_audio_state2str
 mmc_eject_media
 mmc_get_blocksize
 mmc_get_discmode
+mmc_get_drive_mmc_cap
 mmc_get_dvd_struct_physical
 mmc_get_cmd_len
 mmc_get_media_changed
