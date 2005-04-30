@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.23 2005/04/28 01:25:53 rocky Exp $
+  $Id: interface.c,v 1.24 2005/04/30 07:15:51 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -121,11 +121,7 @@ cdio_cddap_open(cdrom_drive_t *d)
   /*  d->select_speed(d,d->maxspeed); most drives are full speed by default */
 
   if ( -1 == d->bigendianp ) {
-    if (1 != d->is_scsi && yep == cdio_have_atapi(d->p_cdio))
-      /* Is this right? */
-      d->bigendianp = 1;
-    else
-      d->bigendianp = data_bigendianp(d);
+    d->bigendianp = data_bigendianp(d);
   }
   
 
