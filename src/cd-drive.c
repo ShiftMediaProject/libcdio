@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.22 2005/04/30 10:02:15 rocky Exp $
+  $Id: cd-drive.c,v 1.23 2005/04/30 10:05:11 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -288,9 +288,10 @@ main(int argc, const char *argv[])
     printf("Drive %s\n", source_name);
     p_cdio = cdio_open (source_name, DRIVER_UNKNOWN);
 
-    print_mmc_drive_level(p_cdio);
+    if (p_cdio) {
 
-    if (NULL != p_cdio) {
+      print_mmc_drive_level(p_cdio);
+
       if (cdio_get_hwinfo(p_cdio, &hwinfo)) {
 	printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
 	       "Vendor"  , hwinfo.psz_vendor, 
