@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.50 2005/04/11 02:57:04 rocky Exp $
+#   $Id: Makefile.am,v 1.51 2005/04/30 02:04:50 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -17,7 +17,7 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ####################################################
-# Things to regression testing
+# Things for regression testing
 ####################################################
 #
 #
