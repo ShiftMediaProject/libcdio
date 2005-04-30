@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.20 2005/04/30 09:42:37 rocky Exp $
+  $Id: cd-drive.c,v 1.21 2005/04/30 09:52:17 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -285,6 +285,8 @@ main(int argc, const char *argv[])
     cdio_drive_misc_cap_t  i_misc_cap;
     cdio_hwinfo_t          hwinfo;
     
+
+    print_mmc_drive_level(p_cdio);
 
     printf("Drive %s\n", source_name);
     p_cdio = cdio_open (source_name, DRIVER_UNKNOWN);
