@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.30 2005/04/14 01:24:32 rocky Exp $
+    $Id: freebsd.c,v 1.31 2005/05/07 22:37:15 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.30 2005/04/14 01:24:32 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.31 2005/05/07 22:37:15 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -375,12 +375,12 @@ audio_read_subchannel_freebsd (void *p_user_data,
     p_subchannel->track        = bsdinfo.what.position.track_number;
     p_subchannel->index        = bsdinfo.what.position.index_number;
 
-    p_subchannel->abs_addr.m = cdio_from_bcd8 (bsdinfo.what.position.absaddr.msf.minute);
-    p_subchannel->abs_addr.s = cdio_from_bcd8 (bsdinfo.what.position.absaddr.msf.second);
-    p_subchannel->abs_addr.f = cdio_from_bcd8 (bsdinfo.what.position.absaddr.msf.frame);
-    p_subchannel->rel_addr.m = cdio_from_bcd8 (bsdinfo.what.position.reladdr.msf.minute);
-    p_subchannel->rel_addr.s = cdio_from_bcd8 (bsdinfo.what.position.reladdr.msf.second);
-    p_subchannel->rel_addr.f = cdio_from_bcd8 (bsdinfo.what.position.reladdr.msf.frame);
+    p_subchannel->abs_addr.m = cdio_to_bcd8 (bsdinfo.what.position.absaddr.msf.minute);
+    p_subchannel->abs_addr.s = cdio_to_bcd8 (bsdinfo.what.position.absaddr.msf.second);
+    p_subchannel->abs_addr.f = cdio_to_bcd8 (bsdinfo.what.position.absaddr.msf.frame);
+    p_subchannel->rel_addr.m = cdio_to_bcd8 (bsdinfo.what.position.reladdr.msf.minute);
+    p_subchannel->rel_addr.s = cdio_to_bcd8 (bsdinfo.what.position.reladdr.msf.second);
+    p_subchannel->rel_addr.f = cdio_to_bcd8 (bsdinfo.what.position.reladdr.msf.frame);
  }
   return i_rc;
 }
