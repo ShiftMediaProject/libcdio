@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.8 2005/04/05 02:13:58 rocky Exp $
+    $Id: freebsd_cam.c,v 1.9 2005/05/08 10:10:18 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.8 2005/04/05 02:13:58 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.9 2005/05/08 10:10:18 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -86,9 +86,9 @@ run_mmc_cmd_freebsd_cam( const void *p_user_data, unsigned int i_timeout_ms,
 		 direction | CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, p_buf, i_buf, 
  		 sizeof(ccb.csio.sense_data), ccb.csio.cdb_len, 30*1000);
 
-  if ((i_status = cam_send_ccb(p_env->cam, &ccb)) < 0)
+  if (cam_send_ccb(p_env->cam, &ccb) < 0)
     {
-      cdio_warn ("transport failed: %d", i_status);
+      cdio_warn ("transport failed: %s", strerror(errno));
       return -1;
     }
   if ((ccb.ccb_h.status & CAM_STATUS_MASK) == CAM_REQ_CMP)
