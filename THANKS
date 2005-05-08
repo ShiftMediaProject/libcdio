@@ -27,6 +27,9 @@ Michael Kukat <michael at unixiron.org>,
 Nicolas Boullis <nboullis at debian.org>
   Build issues, library symbol versioning, Debian packaging and issues
 
+Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
+  some GNU/Linux and CD-Text patches
+
 Steven M. Schultz <sms at 2BSD.COM>
   All things BSDI and the use of a really fabulous Darwin G5 box.
 
