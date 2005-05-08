@@ -1,4 +1,19 @@
-0.73
+$Id: NEWS,v 1.69 2005/05/08 09:35:05 rocky Exp $
+
+version 0.74
+=====================================
+2005-05-??
+
+- cd-paranoia fixes 
+- cdda-player fixes
+- cd-drive shows MMC level
+- CD Text improvements/fixes
+- eject of empty CD-ROM drives on GNU/Linux
+- FreeBSD audio sub-channel time reporting fixed
+
+version 0.73
+=====================================
+2005-04-15
 
 - Rock Ridge Extension support added
 - CD audio support (play track/index, pause, set volume, read audio subchannel)
@@ -8,30 +23,34 @@
 - cd-info/iso-info show more ls-like attributes and more often
 - ISO 9660 more accurate more often
 - Add ability to look for ISO 9660 filesystem in unknown Disc image formats
-- Add routine for getting ISO9660 long date; short date fixes
+- Add routine for getting ISO 9660 long date; short date fixes
 - remove even more memory leaks
 - Add enumerations and symbols to facilitate debugging
 - Break out C++ example programs into a separate directory. More C++ programs.
 - gcc 4 fixes
 
-0.72
+version 0.72
+=====================================
+2005-01-31
 
 - cdparanoia included -  with regression tests and sample library programs
 - added setting/getting CD speed, finding the track containing an LSN.
 - improve cdrdao image reading
 - iso-info options more like cdrtools isoinfo.
-- cd-drive/cd-info show more reading capabilties and show that.
+- cd-drive/cd-info show more reading capabilities and show that.
 - cd-info now shows the total disc size.
 - Filesystem reorganization to better support growth and paranoia inclusion
 - FreeBSD 6 tolerated, CAM audio read mode works.
 - improve Win32 driver, e.g. audio read mode works better for ioctl.
 - mode detection fixes
-- all read routines check and adjust the lsn so we don't try to access
+- all read routines check and adjust the LSN so we don't try to access
   beyond the end of the disc
 - C++ fixes
 - Update documentation
 
-0.71
+version 0.71
+=====================================
+2005-11-20
 
 - Some Joliet support.
 - Portability fixes for C++ and older C compilers. 
@@ -50,7 +69,9 @@
 - Some bug fixes
 
 
-0.70
+version 0.70
+=====================================
+2004-09-02
 
 - SCSI MMC interface routine (all except Darwin)
 - CD-Text support (all except Darwin)
@@ -62,12 +83,15 @@
 - new drive scanning routines which pass back driver as well 
   as drive string. Speeds up subsequent opens.
 
-0.69
+version 0.69
+=====================================
+2004-06-25
+
 - Add interface returning drive capabilities (cdio_get_drive_cap).
 - Minimal cdrdao image reading (thanks to Svend S. Sorensen)
 - Some important (I think) bug fixes
-- Redo types of lsn and lba to allow negative values. Should model MMC3
-  specs. Add max/min values for lsn.
+- Redo types of LSN and LBA to allow negative values. Should model MMC3
+  specs. Add max/min values for LSN.
 - More complete MMC command set
 - FreeBSD driver ioctl and CAM reading works better (thanks to Heiner)
 - OSX drive reading works better (thanks to Justin F. Hallett)
@@ -80,15 +104,21 @@
   cd-info now shows more PVD info for ISO 9660 filesystems
 - cd-info: X-Box CD detection (via xbox team mediacenter)
 
-0.68
+version 0.68
+=====================================
+2004-03-23
+
 - More honest about mode1 reading in backends. Remove some of the bogusness.
 - Fixes and simplifications to Solaris (from Ian MacIntosh): no longer
-  requires root access on Sunray environmentsa
+  requires root access on Sunray environments
 - Win32 ioctl works now on win2k and XP (and probably NT and ME) 
 - compiles on cygwin with -mno-cygwin (needed for videolan's vlc)
 - option --with-versioned-libs now checks for GNU ld.
 
-0.67
+version 0.67
+=====================================
+2004-03-01
+
 -  portability for ARM
 - add iso-read program and regression tests
 - libiso9960: stat routines that match level 1 ISO-9600 filenames
@@ -100,7 +130,10 @@
 - add README.libcdio and note possible problems on different OSs
   without GNU make
 
-0.66
+version 0.66
+=====================================
+2004-02-15
+
 -  Add interface for reading an ISO-9660 image
 -  portability fixes (Solaris, cygwin)
 -  Microsoft Windows ASPI/ DeviceIoControl code reorganization
@@ -109,12 +142,18 @@
 -  library symbol versioning (from Nicolas Boullis)
 -  Go over documentation
 
-0.65
+version 0.65
+=====================================
+2003-12-13
+
 -  tag headers to give doxygen API documentation
 -  cd-info/cd-read now can specify library level of output
 -  sample program using libiso9660 added.
 
-0.64
+version 0.64
+=====================================
+2003-11-22
+
 -  add routines to return a list of devices or scan a list of devices
    which satisfy any/all things in a capability mask. Should be useful
    for plugins that want to find a CD-DA to play or find a plugin that handles
@@ -130,7 +169,9 @@
 -  BSDI fixes
 -  Document more functions.
 
-0.63
+version 0.63
+=====================================
+
 -  create libiso9660 library and install that.
 -  More sample programs.
 -  add library routine cdio_guess_cd_type to analyze/guess what type of 
@@ -138,33 +179,49 @@
 -  cd-info can list the files of a ISO-9660 filesystem via libiso9660 
    with option --iso9660
 
-0.62
+version 0.62
+=====================================
+
 -  Some minimal documentation. More will follow.
 -  Add a simple sample programs.
 -  Add a simple regression test driver.
 -  "Smart" open was scanning devices rather than devices + image drivers.
 
-0.61
+version 0.61
+=====================================
+
 -   Cygwin/MinGW port.
 -   get-default-device reworked to be smarter about finding devices.
 -   cd-info: add --no-headers. version ID is from package now. Show default
             device on "--version" output.
 -   API: add routine report if string refers to a device or not
 -   Make use of features in libcddb 0.9.4.
-0.6
+
+version 0.6
+=====================================
+
 -   Bug: eject wouldn't.
 -   If given .bin find corresponding .cue. If no cue, complain.
-0.5
+
+version 0.5
+=====================================
+
 -  Add RPM spec file. Thanks to Manfred Tremmel <Manfred.Tremmel@iiv.de>
 -  cdinfo renamed to cd-info to avoid conflicts with other existing programs
 -  bug in ejecting CD's fixed
 -  find cue file if given bin. 
 -  cd-info: If libvcdinfo is installed show general Video CD properties   
-0.4
+
+version 0.4
+=====================================
+
 -  More regression tests. 
 -  Use pkg-config(1) support
 -  NRG may be closer to being correct.
-0.3 
+
+version 0.3 
+=====================================
+
 -  reduced overall size of package. Some regression moved to a separate (large)
    package.
 -  facilitate inclusion into another project's local source tree (e.g. xine)
@@ -175,16 +232,20 @@
 -  fix some small compile warnings and configure bugs. Require libcddb 0.9.0 
    or greater.
 
-0.2 
+version 0.2 
+=====================================
+
 -  Added Support for reading audio sectors
 -  cdinfo can use libcddb (http://libcddb.sourceforge.net). If installed and
    we have a CD-DA disk, we dump out CDDB information. 
 -  Regression tests added. 
 -  Don't need to open device to give get a default device.
 -  Better device driver selection: We test for file/device-ness. 
--  Bugs fixed (default device name on linux), 
+-  Bugs fixed (default device name on GNU/Linux), 
 
-0.1
+version 0.1
+=====================================
+
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.68 2005/04/15 20:39:18 rocky Exp $
+$Id: NEWS,v 1.69 2005/05/08 09:35:05 rocky Exp $
