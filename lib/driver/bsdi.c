@@ -1,5 +1,5 @@
 /*
-    $Id: bsdi.c,v 1.12 2005/03/23 11:26:49 rocky Exp $
+    $Id: bsdi.c,v 1.13 2005/05/09 01:06:39 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: bsdi.c,v 1.12 2005/03/23 11:26:49 rocky Exp $";
+static const char _rcsid[] = "$Id: bsdi.c,v 1.13 2005/05/09 01:06:39 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -215,7 +215,7 @@ _cdio_init (_img_private_t *p_env)
     return false;
   }
   
-  p_env->gen.fd = open (p_env->gen.source_name, O_RDONLY, 0);
+  p_env->gen.fd = open (p_env->gen.source_name, O_RDONLY|O_NONBLOCK, 0);
 
   if (p_env->gen.fd < 0)
     {
