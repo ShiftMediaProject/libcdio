@@ -16,10 +16,10 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 define(RELEASE_NUM, 74)
-define(CDIO_VERSION_STR, 0.$1cvs)
+define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.158 2005/04/28 01:44:32 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.159 2005/05/13 20:34:14 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -596,7 +596,7 @@ chmod +x test/check_nrg.sh
 chmod +x test/check_cue.sh
 chmod +x test/check_iso.sh
 chmod +x test/check_paranoia.sh
-head -196 config.h > include/cdio/cdio_config.h
+head -n 196 config.h > include/cdio/cdio_config.h
 ]],[[]])
 
 AC_OUTPUT
