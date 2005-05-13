@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.6 2005/04/11 01:37:38 rocky Exp $
+    $Id: audio.c,v 1.7 2005/05/13 21:34:57 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -316,7 +316,7 @@ main(int argc, char *argv[])
   int  c, nostop=0;
   char *h;
   int  i_rc = 0;
-  int  i_volume_level;
+  int  i_volume_level = -1;
   cd_operation_t todo = NO_OP; /* operation to do in non-interactive mode */
   
   psz_program = strrchr(argv[0],'/');
