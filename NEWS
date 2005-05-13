@@ -1,8 +1,8 @@
-$Id: NEWS,v 1.69 2005/05/08 09:35:05 rocky Exp $
+$Id: NEWS,v 1.70 2005/05/13 20:35:16 rocky Exp $
 
 version 0.74
 =====================================
-2005-05-??
+2005-05-13
 
 - cd-paranoia fixes 
 - cdda-player fixes
@@ -248,4 +248,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.69 2005/05/08 09:35:05 rocky Exp $
+$Id: NEWS,v 1.70 2005/05/13 20:35:16 rocky Exp $
