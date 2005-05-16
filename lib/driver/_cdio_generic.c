@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.19 2005/04/23 01:16:19 rocky Exp $
+    $Id: _cdio_generic.c,v 1.20 2005/05/16 08:11:31 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.19 2005/04/23 01:16:19 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.20 2005/05/16 08:11:31 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -262,8 +262,11 @@ get_cdtext_generic (void *p_user_data, track_t i_track)
 {
   generic_img_private_t *p_env = p_user_data;
 
-  if ( NULL == p_env ||
-       (0 != i_track 
+  if (!p_env) return NULL;
+  if (!p_env->toc_init) 
+    p_env->cdio->op.read_toc (p_user_data);
+
+  if ( (0 != i_track 
 	&& i_track >= p_env->i_tracks+p_env->i_first_track ) )
     return NULL;
 
