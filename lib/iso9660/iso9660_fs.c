@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.28 2005/04/15 05:06:09 rocky Exp $
+    $Id: iso9660_fs.c,v 1.29 2005/06/07 23:40:53 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.28 2005/04/15 05:06:09 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.29 2005/06/07 23:40:53 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -188,7 +188,7 @@ iso9660_open_ext_private (const char *pathname,
   
   p_iso->b_xa = strncmp ((char *) &(p_iso->pvd) + ISO_XA_MARKER_OFFSET, 
 			 ISO_XA_MARKER_STRING,
-			 strlen (ISO_XA_MARKER_STRING)) 
+			 sizeof (ISO_XA_MARKER_STRING)) 
     ? nope : yep;
   
   p_iso->iso_extension_mask = iso_extension_mask;
@@ -1438,9 +1438,7 @@ find_fs_lsn_recurse (CdIo_t *p_cdio, const char pathname[], lsn_t lsn)
       char _fullname[4096] = { 0, };
       char *filename = (char *) statbuf->filename;
 
-      snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, filename);
-  
-      strncat (_fullname, "/", sizeof (_fullname));
+      snprintf (_fullname, sizeof (_fullname), "%s%s/", pathname, filename);
 
       if (statbuf->type == _STAT_DIR
           && strcmp ((char *) statbuf->filename, ".") 
