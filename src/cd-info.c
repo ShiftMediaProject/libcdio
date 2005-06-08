@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.139 2005/04/11 01:02:11 rocky Exp $
+    $Id: cd-info.c,v 1.140 2005/06/08 08:20:36 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -857,7 +857,6 @@ main(int argc, const char *argv[])
       }
     }
     cdio_free_device_list(device_list);
-    if (device_list) free(device_list);
   }
 
   report(stdout, STRONG "\n");
