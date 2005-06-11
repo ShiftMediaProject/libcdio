@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.27 2005/03/21 08:33:36 rocky Exp $
+    $Id: win32_ioctl.c,v 1.28 2005/06/11 18:59:47 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.27 2005/03/21 08:33:36 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.28 2005/06/11 18:59:47 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -279,6 +279,33 @@ audio_set_volume_win32ioctl (void *p_user_data,
     DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_SET_VOLUME,
 		    p_volume, (DWORD) sizeof(cdio_audio_volume_t), 
 		    NULL, 0, &dw_bytes_returned, NULL);
+
+  if ( ! b_success ) {
+    char *psz_msg = NULL;
+    long int i_err = GetLastError();
+    FORMAT_ERROR(i_err, psz_msg);
+    if (psz_msg) 
+      cdio_info("Error: %s", psz_msg);
+    else 
+      cdio_info("Error: %ld", i_err);
+    LocalFree(psz_msg);
+    return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_SUCCESS;
+}
+
+driver_return_code_t
+audio_get_volume_win32ioctl (void *p_user_data, 
+			     /*out*/ cdio_audio_volume_t *p_volume)
+{
+  const _img_private_t *p_env = p_user_data;
+  DWORD dw_bytes_returned;
+
+  bool b_success = 
+    DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_GET_VOLUME,
+		    NULL, 0, 
+		    p_volume, (DWORD) sizeof(cdio_audio_volume_t), 
+		    &dw_bytes_returned, NULL);
 
   if ( ! b_success ) {
     char *psz_msg = NULL;

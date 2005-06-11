@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.8 2005/03/08 03:11:19 rocky Exp $
+    $Id: win32.h,v 1.9 2005/06/11 18:59:47 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -84,6 +84,16 @@ driver_return_code_t audio_resume_win32ioctl (void *p_user_data);
   Get disc type associated with cd object.
 */
 discmode_t get_discmode_win32ioctl (_img_private_t *p_env);
+
+/*!
+  Get the volume settings of an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+driver_return_code_t 
+audio_get_volume_win32ioctl ( void *p_user_data, 
+			      /*out*/ cdio_audio_volume_t *p_volume);
 
 /*!
   Read Audio Subchannel information

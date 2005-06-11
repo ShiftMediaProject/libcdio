@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.30 2005/03/09 11:04:34 rocky Exp $
+    $Id: win32.c,v 1.31 2005/06/11 18:59:47 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.30 2005/03/09 11:04:34 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.31 2005/06/11 18:59:47 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -83,6 +83,23 @@ static const char _rcsid[] = "$Id: win32.c,v 1.30 2005/03/09 11:04:34 rocky Exp 
 #else
 #define WIN_NT               ( GetVersion() < 0x80000000 )
 #endif
+
+/*!
+  Set the volume of an audio CD.
+  
+  @param p_cdio the CD object to be acted upon.
+  
+*/
+static driver_return_code_t
+audio_get_volume_win32 ( void *p_user_data, 
+			 /*out*/ cdio_audio_volume_t *p_volume)
+{
+  if ( WIN_NT ) {
+    return audio_get_volume_win32ioctl (p_user_data, p_volume);
+  } else {
+    return DRIVER_OP_UNSUPPORTED; /* not yet, but soon I hope */
+  }
+}
 
 /*!
   Pause playing CD through analog output
@@ -874,6 +891,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
 
   memset( &_funcs, 0, sizeof(_funcs) );
 
+  _funcs.audio_get_volume       = audio_get_volume_win32;
   _funcs.audio_pause            = audio_pause_win32;
   _funcs.audio_play_msf         = audio_play_msf_win32;
 #if 0
