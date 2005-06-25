@@ -1,4 +1,14 @@
-$Id: NEWS,v 1.70 2005/05/13 20:35:16 rocky Exp $
+$Id: NEWS,v 1.71 2005/06/25 10:14:00 rocky Exp $
+
+version 0.75
+=====================================
+2005-??
+
+- Windows audio volume level fix
+- fix build when --enable-shared, --disable-static
+- CD-Text retrieval fix
+- miscellaneous small bug fixes, removal of questionable idioms or 
+  memory leak fixes
 
 version 0.74
 =====================================
@@ -248,4 +258,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.70 2005/05/13 20:35:16 rocky Exp $
+$Id: NEWS,v 1.71 2005/06/25 10:14:00 rocky Exp $
