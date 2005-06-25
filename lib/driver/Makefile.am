@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.10 2005/03/29 01:40:19 rocky Exp $
+#   $Id: Makefile.am,v 1.11 2005/06/25 10:48:06 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -167,8 +167,9 @@ libcdio_la_DEPENDENCIES = libcdio.la.ver
 
 libcdio.la.ver: $(libcdio_la_OBJECTS) $(srcdir)/libcdio.sym
 	echo 'CDIO_$(libcdio_la_MAJOR) { ' > $@
-	nm $(patsubst %.lo,%.o,$(libcdio_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio.sym; then if test $$first = true; then echo "  global:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@
-	nm $(patsubst %.lo,%.o,$(libcdio_la_OBJECTS)) | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio.sym; then :; else if test $$first = true; then echo "  local:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@
+	objs=`for obj in $(libcdio_la_OBJECTS); do sed -ne "s/^pic_object='\(.*\)'$$/\1/p" $$obj; done`; \
+	nm $${objs} | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio.sym; then if test $$first = true; then echo "  global:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@; \
+	nm $${objs} | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio.sym; then :; else if test $$first = true; then echo "  local:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@
 	echo '};' >> $@
 else 
 libcdio_la_LDFLAGS = $(libcdio_la_ldflags)
