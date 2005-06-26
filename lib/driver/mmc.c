@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.26 2005/04/30 09:42:37 rocky Exp $
+    $Id: mmc.c,v 1.27 2005/06/26 18:29:49 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -45,8 +45,6 @@
 #include <errno.h>
 #endif
 
-#define DEFAULT_TIMEOUT_MS 6000
-  
 /*************************************************************************
   MMC CdIo Operations which a driver may use. 
   These are not accessible directly.
@@ -54,6 +52,14 @@
   Most of these routines just pick out the cdio pointer and call the
   corresponding publically-accessible routine.
 *************************************************************************/
+
+/*! The maximum value in milliseconds that we will wait on an MMC
+      command.  */
+uint32_t mmc_timeout_ms = MMC_TIMEOUT_DEFAULT;
+
+/*! The maximum value in milliseconds that we will wait on an MMC read
+  command.  */
+uint32_t mmc_read_timeout_ms = MMC_READ_TIMEOUT_DEFAULT;
 
 /*!
   Read Audio Subchannel information
@@ -267,7 +273,7 @@ mmc_get_dvd_struct_physical_private ( void *p_env,
   cdb.field[7] = CDIO_DVD_STRUCT_PHYSICAL;
   cdb.field[9] = sizeof(buf) & 0xff;
   
-  i_status = run_mmc_cmd(p_env, DEFAULT_TIMEOUT_MS, 
+  i_status = run_mmc_cmd(p_env, mmc_timeout_ms, 
 			      mmc_get_cmd_len(cdb.field[0]), 
 			      &cdb, SCSI_MMC_DATA_READ, 
 			      sizeof(buf), &buf);
@@ -325,7 +331,7 @@ mmc_get_mcn_private ( void *p_env,
   cdb.field[2] = 0x40; 
   cdb.field[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
 
-  i_status = run_mmc_cmd(p_env, DEFAULT_TIMEOUT_MS, 
+  i_status = run_mmc_cmd(p_env, mmc_timeout_ms, 
 			      mmc_get_cmd_len(cdb.field[0]), 
 			      &cdb, SCSI_MMC_DATA_READ, 
 			      sizeof(buf), buf);
@@ -372,7 +378,7 @@ mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
   cdb.field[4] = i_size;
   
   return p_cdio->op.run_mmc_cmd (p_cdio->env, 
-                                 DEFAULT_TIMEOUT_MS,
+                                 mmc_timeout_ms,
                                  mmc_get_cmd_len(cdb.field[0]), &cdb, 
                                  SCSI_MMC_DATA_READ, i_size, p_buf);
 }
@@ -398,7 +404,7 @@ mmc_mode_sense_10( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
   cdb.field[2] = 0x3F & page;
   
   return p_cdio->op.run_mmc_cmd (p_cdio->env, 
-                                 DEFAULT_TIMEOUT_MS,
+                                 mmc_timeout_ms,
                                  mmc_get_cmd_len(cdb.field[0]), &cdb, 
                                  SCSI_MMC_DATA_READ, i_size, p_buf);
 }
@@ -437,15 +443,12 @@ mmc_init_cdtext_private ( void *p_user_data,
 
   errno = 0;
 
-/* Set read timeout 3 minues. */
-#define READ_TIMEOUT 3*60*1000
-
   /* We may need to give CD-Text a little more time to complete. */
   /* First off, just try and read the size */
-  i_status = run_mmc_cmd (p_env, READ_TIMEOUT,
-			       mmc_get_cmd_len(cdb.field[0]), 
-			       &cdb, SCSI_MMC_DATA_READ, 
-			       4, &wdata);
+  i_status = run_mmc_cmd (p_env, mmc_read_timeout_ms,
+                          mmc_get_cmd_len(cdb.field[0]), 
+                          &cdb, SCSI_MMC_DATA_READ, 
+                          4, &wdata);
 
   if (i_status != 0) {
     cdio_info ("CD-Text read failed for header: %s\n", strerror(errno));  
@@ -459,10 +462,10 @@ mmc_init_cdtext_private ( void *p_user_data,
     if (i_cdtext > sizeof(wdata)) i_cdtext = sizeof(wdata);
     
     CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_cdtext);
-    i_status = run_mmc_cmd (p_env, READ_TIMEOUT,
-				 mmc_get_cmd_len(cdb.field[0]), 
-				 &cdb, SCSI_MMC_DATA_READ, 
-				 i_cdtext, &wdata);
+    i_status = run_mmc_cmd (p_env, mmc_read_timeout_ms,
+                            mmc_get_cmd_len(cdb.field[0]), 
+                            &cdb, SCSI_MMC_DATA_READ, 
+                            i_cdtext, &wdata);
     if (i_status != 0) {
       cdio_info ("CD-Text read for text failed: %s\n", strerror(errno));  
       i_errno = errno;
@@ -512,7 +515,7 @@ mmc_set_blocksize_private ( void *p_env,
   cdb.field[1] = 1 << 4;
   cdb.field[4] = 12;
   
-  return run_mmc_cmd (p_env, DEFAULT_TIMEOUT_MS,
+  return run_mmc_cmd (p_env, mmc_timeout_ms,
 			      mmc_get_cmd_len(cdb.field[0]), &cdb, 
 			      SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
 }
@@ -557,7 +560,7 @@ mmc_get_disc_last_lsn ( const CdIo_t *p_cdio )
 
   CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(buf));
   
-  i_status = mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, &cdb, SCSI_MMC_DATA_READ, 
+  i_status = mmc_run_cmd(p_cdio, mmc_timeout_ms, &cdb, SCSI_MMC_DATA_READ, 
                          sizeof(buf), buf);
 
   if (i_status) return CDIO_INVALID_LSN;
@@ -600,7 +603,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
   cdb.field[3] = CDIO_SUBCHANNEL_CURRENT_POSITION;
   cdb.field[6] = 0;    /* track number (only in isrc mode, ignored) */
 
-  i_rc = mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, &cdb, SCSI_MMC_DATA_READ, 
+  i_rc = mmc_run_cmd(p_cdio, mmc_timeout_ms, &cdb, SCSI_MMC_DATA_READ, 
                      sizeof(mmc_subchannel_t), &mmc_subchannel);
   if (DRIVER_OP_SUCCESS == i_rc) {
     p_subchannel->format       = mmc_subchannel.format;
@@ -791,7 +794,7 @@ mmc_get_hwinfo ( const CdIo_t *p_cdio,
 
   if (! p_cdio || ! hw_info ) return false;
   
-  i_status = mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, 
+  i_status = mmc_run_cmd(p_cdio, mmc_timeout_ms, 
 			      &cdb, SCSI_MMC_DATA_READ, 
 			      sizeof(buf), &buf);
   if (i_status == 0) {
@@ -836,7 +839,7 @@ int mmc_get_media_changed(const CdIo_t *p_cdio)
   cdb.field[1] = 1;      /* We poll for info */
   cdb.field[4] = 1 << 4; /* We want Media events */
 
-  i_status = p_cdio->op.run_mmc_cmd(p_cdio->env, DEFAULT_TIMEOUT_MS, 
+  i_status = p_cdio->op.run_mmc_cmd(p_cdio->env, mmc_timeout_ms, 
                                     mmc_get_cmd_len(cdb.field[0]), 
                                     &cdb, SCSI_MMC_DATA_READ, 
                                     sizeof(buf), buf);
@@ -948,7 +951,7 @@ mmc_start_stop_media(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
       cdb.field[4] = 3; /* close tray for tray-type */
   }
   
-  return p_cdio->op.run_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
+  return p_cdio->op.run_mmc_cmd (p_cdio->env, mmc_timeout_ms,
                                  mmc_get_cmd_len(cdb.field[0]), &cdb, 
                                  SCSI_MMC_DATA_WRITE, 0, &buf);
 }
@@ -981,7 +984,7 @@ mmc_eject_media( const CdIo_t *p_cdio )
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
 
-  i_status = p_cdio->op.run_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
+  i_status = p_cdio->op.run_mmc_cmd (p_cdio->env, mmc_timeout_ms,
                                      mmc_get_cmd_len(cdb.field[0]), &cdb, 
                                      SCSI_MMC_DATA_WRITE, 0, &buf);
   if (0 != i_status) return i_status;
@@ -1190,7 +1193,7 @@ mmc_have_interface( CdIo_t *p_cdio, mmc_feature_interface_t e_interface )
    drive capabilities.
 */
 #define MAX_CD_READ_BLOCKS 16
-#define CD_READ_TIMEOUT_MS DEFAULT_TIMEOUT_MS * (MAX_CD_READ_BLOCKS/2)
+#define CD_READ_TIMEOUT_MS mmc_timeout_ms * (MAX_CD_READ_BLOCKS/2)
 
 /*! issue a MMC READ_CD command.
 */
@@ -1303,7 +1306,7 @@ mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb.field, 
 					   CDIO_MMC_MCSB_ALL_HEADERS);
 
-  return run_mmc_cmd (p_cdio->env, DEFAULT_TIMEOUT_MS,
+  return run_mmc_cmd (p_cdio->env, mmc_timeout_ms,
                       mmc_get_cmd_len(cdb.field[0]), &cdb, 
                       SCSI_MMC_DATA_READ, 
                       CDIO_CD_FRAMESIZE_RAW * i_blocks,

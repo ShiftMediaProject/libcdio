@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.20 2005/04/30 09:42:37 rocky Exp $
+    $Id: mmc.h,v 1.21 2005/06/26 18:29:49 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -36,6 +36,22 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+  /*! Set this to the maximum value in milliseconds that we will
+      wait on an MMC command.  */
+  extern uint32_t mmc_timeout_ms; 
+
+  /*! The default timeout (non-read) is 6 seconds. */
+#define MMC_TIMEOUT_DEFAULT 6000
+
+  /*! Set this to the maximum value in milliseconds that we will
+      wait on an MMC read command.  */
+  extern uint32_t mmc_read_timeout_ms;
+
+  /*! The default read timeout is 3 minutes. */
+#define MMC_READ_TIMEOUT_DEFAULT 3*60*1000
+
+
   
   /*! \brief The opcode-portion (generic packet commands) of an MMC command.
     

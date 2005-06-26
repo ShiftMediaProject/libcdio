@@ -1,14 +1,15 @@
-$Id: NEWS,v 1.71 2005/06/25 10:14:00 rocky Exp $
+$Id: NEWS,v 1.72 2005/06/26 18:29:49 rocky Exp $
 
 version 0.75
 =====================================
 2005-??
 
-- Windows audio volume level fix
+- audio volume level fix on Microsoft Windows 
 - fix build when --enable-shared, --disable-static
 - CD-Text retrieval fix
 - miscellaneous small bug fixes, removal of questionable idioms or 
   memory leak fixes
+- allow the MMC timout to be adjusted by the application
 
 version 0.74
 =====================================
@@ -258,4 +259,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.71 2005/06/25 10:14:00 rocky Exp $
+$Id: NEWS,v 1.72 2005/06/26 18:29:49 rocky Exp $

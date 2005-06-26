@@ -184,9 +184,11 @@ mmc_mode_sense_6
 mmc_read_cd
 mmc_read_data_sectors
 mmc_read_sectors
+mmc_read_timeout_ms
 mmc_run_cmd
 mmc_set_blocksize
 mmc_set_speed
 mmc_start_stop_media
+mmc_timeout_ms
 track_format2str
 CDIO_SECTOR_SYNC_HEADER
