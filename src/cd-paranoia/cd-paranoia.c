@@ -94,6 +94,7 @@
 #include <cdio/cdda.h>
 #include <cdio/paranoia.h>
 #include <cdio/bytesex.h>
+#include <cdio/mmc.h>
 #include "utils.h"
 #include "report.h"
 #include "version.h"
@@ -546,37 +547,38 @@ callback(long int inpos, paranoia_cb_mode_t function)
 const char *optstring = "escCn:o:O:d:g:S:prRwafvqVQhZz::YXWBi:Tt:x:";
 
 struct option options [] = {
-	{"stderr-progress",           no_argument,       NULL, 'e'},
-	{"search-for-drive",          no_argument,       NULL, 's'},
-	{"force-cdrom-little-endian", no_argument,       NULL, 'c'},
+	{"abort-on-skip",             no_argument,       NULL, 'X'},
+	{"batch",                     no_argument,       NULL, 'B'},
+	{"disable-extra-paranoia",    no_argument,       NULL, 'Y'},
+	{"disable-fragmentation",     no_argument,       NULL, 'F'},
+	{"disable-paranoia",          no_argument,       NULL, 'Z'},
 	{"force-cdrom-big-endian",    no_argument,       NULL, 'C'},
-	{"force-default-sectors",     required_argument, NULL, 'n'},
-	{"force-search-overlap",      required_argument, NULL, 'o'},
 	{"force-cdrom-device",        required_argument, NULL, 'd'},
+	{"force-cdrom-little-endian", no_argument,       NULL, 'c'},
+	{"force-default-sectors",     required_argument, NULL, 'n'},
 	{"force-generic-device",      required_argument, NULL, 'g'},
 	{"force-read-speed",          required_argument, NULL, 'S'},
-	{"sample-offset",             required_argument, NULL, 'O'},
-	{"toc-offset",                required_argument, NULL, 't'},
-	{"toc-bias",                  no_argument,       NULL, 'T'},
-	{"output-raw",                no_argument,       NULL, 'p'},
-	{"output-raw-little-endian",  no_argument,       NULL, 'r'},
-	{"output-raw-big-endian",     no_argument,       NULL, 'R'},
-	{"output-wav",                no_argument,       NULL, 'w'},
-	{"output-aiff",               no_argument,       NULL, 'f'},
-	{"output-aifc",               no_argument,       NULL, 'a'},
-	{"batch",                     no_argument,       NULL, 'B'},
-	{"verbose",                   no_argument,       NULL, 'v'},
-	{"quiet",                     no_argument,       NULL, 'q'},
-	{"version",                   no_argument,       NULL, 'V'},
-	{"query",                     no_argument,       NULL, 'Q'},
+	{"force-search-overlap",      required_argument, NULL, 'o'},
 	{"help",                      no_argument,       NULL, 'h'},
-	{"disable-paranoia",          no_argument,       NULL, 'Z'},
-	{"disable-extra-paranoia",    no_argument,       NULL, 'Y'},
-	{"abort-on-skip",             no_argument,       NULL, 'X'},
-	{"test-mode",                 required_argument, NULL, 'x'},
-	{"disable-fragmentation",     no_argument,       NULL, 'F'},
-	{"output-info",               required_argument, NULL, 'i'},
+	{"mmc-timeout",               required_argument, NULL, 'm'},
 	{"never-skip",                optional_argument, NULL, 'z'},
+	{"output-aifc",               no_argument,       NULL, 'a'},
+	{"output-aiff",               no_argument,       NULL, 'f'},
+	{"output-info",               required_argument, NULL, 'i'},
+	{"output-raw",                no_argument,       NULL, 'p'},
+	{"output-raw-big-endian",     no_argument,       NULL, 'R'},
+	{"output-raw-little-endian",  no_argument,       NULL, 'r'},
+	{"output-wav",                no_argument,       NULL, 'w'},
+	{"query",                     no_argument,       NULL, 'Q'},
+	{"quiet",                     no_argument,       NULL, 'q'},
+	{"sample-offset",             required_argument, NULL, 'O'},
+	{"search-for-drive",          no_argument,       NULL, 's'},
+	{"stderr-progress",           no_argument,       NULL, 'e'},
+	{"test-mode",                 required_argument, NULL, 'x'},
+	{"toc-bias",                  no_argument,       NULL, 'T'},
+	{"toc-offset",                required_argument, NULL, 't'},
+	{"verbose",                   no_argument,       NULL, 'v'},
+	{"version",                   no_argument,       NULL, 'V'},
 
 	{NULL,0,NULL,0}
 };
@@ -630,6 +632,10 @@ main(int argc,char *argv[])
 
   while((c=getopt_long(argc,argv,optstring,options,&long_option_index))!=EOF){
     switch(c){
+    case 'a':
+      output_type=2;
+      output_endian=1;
+      break;
     case 'B':
       batch=1;
       break;
@@ -639,11 +645,17 @@ main(int argc,char *argv[])
     case 'C':
       force_cdrom_endian=1;
       break;
-    case 'n':
-      force_cdrom_sectors=atoi(optarg);
+    case 'e':
+      callscript=1;
+      fprintf(stderr,
+	      "Sending all callback output to stderr for wrapper script\n");
       break;
-    case 'o':
-      force_cdrom_overlap=atoi(optarg);
+    case 'f':
+      output_type=3;
+      output_endian=1;
+      break;
+    case 'F':
+      paranoia_mode&=~(PARANOIA_MODE_FRAGMENT);
       break;
     case 'g':
     case 'd':
@@ -655,8 +667,24 @@ main(int argc,char *argv[])
       }
       force_cdrom_device=strdup(optarg);
       break;
-    case 'S':
-      force_cdrom_speed=atoi(optarg);
+    case 'h':
+      usage(stdout);
+      exit(0);
+    case 'i':
+      if(info_file)free(info_file);
+      info_file=strdup(info_file);
+      break;
+    case 'm':
+      mmc_timeout_ms=1000*atoi(optarg);
+      break;
+    case 'n':
+      force_cdrom_sectors=atoi(optarg);
+      break;
+    case 'o':
+      force_cdrom_overlap=atoi(optarg);
+      break;
+    case 'O':
+      sample_offset=atoi(optarg);
       break;
     case 'p':
       output_type=0;
@@ -666,49 +694,57 @@ main(int argc,char *argv[])
       output_type=0;
       output_endian=0;
       break;
-    case 'R':
-      output_type=0;
-      output_endian=1;
-      break;
-    case 'w':
-      output_type=1;
-      output_endian=0;
-      break;
-    case 'a':
-      output_type=2;
-      output_endian=1;
-      break;
-    case 'f':
-      output_type=3;
-      output_endian=1;
-      break;
-    case 'v':
-      verbose=CDDA_MESSAGE_PRINTIT;
-      quiet=0;
-      break;
-    case 's':
-      search=1;
-      break;
     case 'q':
       verbose=CDDA_MESSAGE_FORGETIT;
       quiet=1;
       break;
-    case 'e':
-      callscript=1;
-      fprintf(stderr,
-	      "Sending all callback output to stderr for wrapper script\n");
+    case 'Q':
+      query_only=1;
+      break;
+    case 'R':
+      output_type=0;
+      output_endian=1;
+      break;
+    case 's':
+      search=1;
+      break;
+    case 'S':
+      force_cdrom_speed=atoi(optarg);
+      break;
+    case 't':
+      toc_offset=atoi(optarg);
+      break;
+    case 'T':
+      toc_bias=-1;
+      break;
+    case 'v':
+      verbose=CDDA_MESSAGE_PRINTIT;
+      quiet=0;
       break;
     case 'V':
       fprintf(stderr,PARANOIA_VERSION);
       fprintf(stderr,"\n");
       exit(0);
       break;
-    case 'Q':
-      query_only=1;
+    case 'w':
+      output_type=1;
+      output_endian=0;
       break;
-    case 'h':
-      usage(stdout);
-      exit(0);
+    case 'W':
+      paranoia_mode&=~PARANOIA_MODE_REPAIR;
+      break;
+    case 'x':
+      test_flags=atoi(optarg);
+      break;
+    case 'X':
+      /*paranoia_mode&=~(PARANOIA_MODE_SCRATCH|PARANOIA_MODE_REPAIR);*/
+      abort_on_skip=1;
+      break;
+    case 'Y':
+      paranoia_mode|=PARANOIA_MODE_OVERLAP; /* cdda2wav style overlap 
+						check only */
+      paranoia_mode&=~PARANOIA_MODE_VERIFY;
+      break;
     case 'Z':
       paranoia_mode=PARANOIA_MODE_DISABLE; 
       break;
@@ -719,37 +755,6 @@ main(int argc,char *argv[])
       } else {
         paranoia_mode|=PARANOIA_MODE_NEVERSKIP;
       }
-      break;
-    case 'Y':
-      paranoia_mode|=PARANOIA_MODE_OVERLAP; /* cdda2wav style overlap 
-						check only */
-      paranoia_mode&=~PARANOIA_MODE_VERIFY;
-      break;
-    case 'X':
-      /*paranoia_mode&=~(PARANOIA_MODE_SCRATCH|PARANOIA_MODE_REPAIR);*/
-      abort_on_skip=1;
-      break;
-    case 'W':
-      paranoia_mode&=~PARANOIA_MODE_REPAIR;
-      break;
-    case 'F':
-      paranoia_mode&=~(PARANOIA_MODE_FRAGMENT);
-      break;
-    case 'i':
-      if(info_file)free(info_file);
-      info_file=strdup(info_file);
-      break;
-    case 'T':
-      toc_bias=-1;
-      break;
-    case 't':
-      toc_offset=atoi(optarg);
-      break;
-    case 'O':
-      sample_offset=atoi(optarg);
-      break;
-    case 'x':
-      test_flags=atoi(optarg);
       break;
     default:
       usage(stderr);

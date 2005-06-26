@@ -39,6 +39,7 @@ OPTIONS:
                                     addressed as LBA 0.  Necessary for some
                                     Toshiba drives to get track boundaries
                                     correct
+  -M --mmc-timeout <n>            : Set SCSI-MMC timeout to <n> seconds.
   -O --sample-offset <n>          : Add <n> samples to the offset when
                                     reading data.  May be negative.
   -z --never-skip[=n]             : never accept any less than perfect
