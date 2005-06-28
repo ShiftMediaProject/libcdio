@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.140 2005/06/08 08:20:36 rocky Exp $
+    $Id: cd-info.c,v 1.141 2005/06/28 15:39:35 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -366,6 +366,16 @@ _log_handler (cdio_log_level_t level, const char message[])
 }
 
 static void 
+_cddb_log_handler (cddb_log_level_t level, const char message[])
+{
+  /* CDDB errors should not be considered fatal. */
+  if (level == CDIO_LOG_ERROR)
+    level = CDIO_LOG_WARN;
+  
+  _log_handler(level, message);
+}
+
+static void 
 print_cdtext_track_info(CdIo_t *p_cdio, track_t i_track, const char *psz_msg) {
    cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio, i_track);
 
@@ -710,7 +720,7 @@ init(void)
   
 
   gl_default_cddb_log_handler = 
-    cddb_log_set_handler ((cddb_log_handler_t) _log_handler);
+    cddb_log_set_handler ((cddb_log_handler_t) _cddb_log_handler);
 #endif
 
 #ifdef HAVE_VCDINFO
