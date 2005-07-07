@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.14 2005/06/07 23:41:38 rocky Exp $
+    $Id: gnu_linux.c,v 1.15 2005/07/07 06:53:04 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.14 2005/06/07 23:41:38 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.15 2005/07/07 06:53:04 rocky Exp $";
 
 #include <string.h>
 
@@ -489,7 +489,7 @@ get_mcn_linux (const void *p_user_data) {
   memset(&mcn, 0, sizeof(mcn));
   if (ioctl(p_env->gen.fd, CDROM_GET_MCN, &mcn) != 0)
     return NULL;
-  return strdup(mcn.medium_catalog_number);
+  return strdup((char *)mcn.medium_catalog_number);
 }
 
 /*!  
