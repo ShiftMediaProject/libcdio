@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.17 2005/06/08 08:07:00 rocky Exp $
+    $Id: nrg.c,v 1.18 2005/07/07 06:51:58 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.17 2005/06/08 08:07:00 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.18 2005/07/07 06:51:58 rocky Exp $";
 
 
 /* reader */
@@ -670,7 +670,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 		cdio_log(log_level,
 			 "Adjusting blocksize to %d", M2RAW_SECTOR_SIZE);
 		blocksize = M2RAW_SECTOR_SIZE;
-	      } else if (0 == _start * CDIO_CD_FRAMESIZE_RAW == _start2) {
+	      } else if (_start * CDIO_CD_FRAMESIZE_RAW == _start2) {
 		cdio_log(log_level,
 			 "Adjusting blocksize to %d", CDIO_CD_FRAMESIZE_RAW);
 		blocksize = CDIO_CD_FRAMESIZE_RAW;
