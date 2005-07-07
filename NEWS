@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.73 2005/07/02 09:44:19 rocky Exp $
+$Id: NEWS,v 1.74 2005/07/07 06:52:38 rocky Exp $
 
 version 0.75
 =====================================
@@ -9,6 +9,7 @@ version 0.75
 - CD-Text retrieval fix
 - allow the MMC timeout to be adjusted by the application
 - cd-paranoia: Add option --mmc-timeout (-m) to set MMC timeout. 
+- remove gcc 4.0 warnings
 - miscellaneous small bug fixes, removal of questionable idioms or 
   memory leak fixes
 
@@ -260,4 +261,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.73 2005/07/02 09:44:19 rocky Exp $
+$Id: NEWS,v 1.74 2005/07/07 06:52:38 rocky Exp $
