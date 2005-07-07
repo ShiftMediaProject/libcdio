@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.10 2005/02/06 15:09:10 rocky Exp $
+  $Id: paranoia.c,v 1.11 2005/07/07 06:51:13 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -159,7 +159,7 @@ i_paranoia_overlap(int16_t *buffA,int16_t *buffB,
 
 static inline long 
 i_paranoia_overlap2(int16_t *buffA,int16_t *buffB,
-		    char *flagsA,char *flagsB,
+		    unsigned char *flagsA, unsigned char *flagsB,
 		    long offsetA, long offsetB,
 		    long sizeA,long sizeB,
 		    long *ret_begin, long *ret_end)
@@ -208,20 +208,21 @@ afterward. */
 
 static inline long int 
 do_const_sync(c_block_t *A,
-	      sort_info_t *B, char *flagB,
+	      sort_info_t *B, unsigned char *flagB,
 	      long posA, long posB,
 	      long *begin, long *end, long *offset)
 {
-  char *flagA=A->flags;
+  unsigned char *flagA=A->flags;
   long ret=0;
 
   if(flagB==NULL)
-    ret=i_paranoia_overlap(cv(A),iv(B),posA,posB,
-			   cs(A),is(B),begin,end);
+    ret=i_paranoia_overlap(cv(A), iv(B), posA, posB,
+			   cs(A), is(B), begin, end);
   else
     if((flagB[posB]&2)==0)
-      ret=i_paranoia_overlap2(cv(A),iv(B),flagA,flagB,posA,posB,cs(A),
-			      is(B),begin,end);
+      ret=i_paranoia_overlap2(cv(A), iv(B), flagA, flagB, 
+			      posA, posB, cs(A), is(B),
+			      begin, end);
 	
   if(ret>MIN_WORDS_SEARCH){
     *offset=+(posA+cb(A))-(posB+ib(B));
@@ -239,7 +240,7 @@ do_const_sync(c_block_t *A,
 
 static inline long int 
 try_sort_sync(cdrom_paranoia_t *p,
-	      sort_info_t *A, char *Aflags,
+	      sort_info_t *A, unsigned char *Aflags,
 	      c_block_t *B,
 	      long int post,
 	      long int *begin,
@@ -250,7 +251,7 @@ try_sort_sync(cdrom_paranoia_t *p,
   
   long dynoverlap=p->dynoverlap;
   sort_link *ptr=NULL;
-  char *Bflags=B->flags;
+  unsigned char *Bflags=B->flags;
 
   /* block flag matches 0x02 (unmatchable) */
   if(Bflags==NULL || (Bflags[post-cb(B)]&2)==0){
@@ -355,7 +356,7 @@ i_iterate_stage1(cdrom_paranoia_t *p, c_block_t *old, c_block_t *new,
   long searchsize=searchend-searchbegin;
   sort_info_t *i=p->sortcache;
   long ret=0;
-  long j;
+  long int j;
 
   long tried=0,matched=0;
 
@@ -1164,7 +1165,7 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
   c_block_t *new=NULL;
   root_block *root=&p->root;
   int16_t *buffer=NULL;
-  char *flags=NULL;
+  unsigned char *flags=NULL;
   long sofar;
   long dynoverlap=(p->dynoverlap+CD_FRAMEWORDS-1)/CD_FRAMEWORDS; 
   long anyflag=0;
