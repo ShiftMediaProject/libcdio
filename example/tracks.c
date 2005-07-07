@@ -1,5 +1,5 @@
 /*
-  $Id: tracks.c,v 1.2 2005/01/04 04:40:22 rocky Exp $
+  $Id: tracks.c,v 1.3 2005/07/07 06:58:48 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -32,7 +32,7 @@ main(int argc, const char *argv[])
   CdIo_t *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
   track_t i_first_track;
   track_t i_tracks;
-  int j, i=i_first_track;
+  int j, i;
   
 
   if (NULL == p_cdio) {
