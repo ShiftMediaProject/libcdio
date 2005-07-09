@@ -1,5 +1,5 @@
 /*
-  $Id: cddb.c,v 1.3 2005/03/12 06:02:36 rocky Exp $
+  $Id: cddb.c,v 1.4 2005/07/09 15:22:44 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -117,13 +117,14 @@ init_cddb(CdIo_t *p_cdio, cddb_conn_t **pp_conn, cddb_disc_t **pp_cddb_disc,
   }
   for(i = 0; i < i_tracks; i++) {
     cddb_track_t *t = cddb_track_new(); 
-    t->frame_offset = cdio_get_track_lba(p_cdio, i+i_first_track);
+    cddb_track_set_frame_offset(t, 
+				cdio_get_track_lba(p_cdio, i+i_first_track));
     cddb_disc_add_track(*pp_cddb_disc, t);
   }
   
-  (*pp_cddb_disc)->length = 
-    cdio_get_track_lba(p_cdio, CDIO_CDROM_LEADOUT_TRACK) 
-    / CDIO_CD_FRAMES_PER_SEC;
+  cddb_disc_set_length(*pp_cddb_disc, 
+		       cdio_get_track_lba(p_cdio, CDIO_CDROM_LEADOUT_TRACK) 
+		       / CDIO_CD_FRAMES_PER_SEC);
   
   if (!cddb_disc_calc_discid(*pp_cddb_disc)) {
     errmsg("libcddb calc discid failed.");
