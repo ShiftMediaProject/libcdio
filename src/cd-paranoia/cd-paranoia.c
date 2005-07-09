@@ -544,7 +544,7 @@ callback(long int inpos, paranoia_cb_mode_t function)
     memset(dispcache,' ',graph);
 }
 
-const char *optstring = "escCn:o:O:d:g:S:prRwafvqVQhZz::YXWBi:Tt:x:";
+const char *optstring = "aBcCd:efg:hi:m:n:o:O:pqQrRsS:Tt:VvwWx:XYZz::";
 
 struct option options [] = {
 	{"abort-on-skip",             no_argument,       NULL, 'X'},
@@ -590,9 +590,12 @@ static char *force_cdrom_device   = NULL;
 static char *info_file            = NULL;
 
 #define free_and_null(p) \
-  if (p) free(p);	 \
+  free(p);		 \
   p=NULL;		 
-  
+
+/* This is run automatically before leaving the program. 
+   Free allocated resources.
+*/  
 static void 
 cleanup (void) 
 {
@@ -603,22 +606,57 @@ cleanup (void)
   free_and_null(info_file);
 }
 
+/* Returns true if we have an integer argument. 
+   If so, pi_arg is set.
+   If no argument or integer argument found, we give an error
+   message and return false.
+*/
+static bool 
+get_int_arg(char c, long int *pi_arg) 
+{
+  long int i_arg;
+  char *p_end;
+  if (!optarg) {
+    /* This shouldn't happen, but we'll check anyway. */
+    fprintf(stderr,
+	    "An (integer) argument for option -%c was expected "
+	    " but not found. Option ignored\n", c);
+    return false;
+  }
+  i_arg = strtol(optarg, &p_end, 10);
+  if (errno == ERANGE) {
+    fprintf(stderr,
+	    "Value '%s' for option -%c out of range. Value %ld "
+	    "used instead.\n", optarg, c, i_arg);
+    *pi_arg = i_arg;
+    return false;
+  } else if (*p_end) {
+    fprintf(stderr,
+	    "Can't convert '%s' for option -%c completely into an integer. "
+	    "Option ignored.\n", optarg, c);
+    return false;
+  } else {
+    *pi_arg = i_arg;
+    return true;
+  }
+}
+
 int 
 main(int argc,char *argv[])
 {
   int   toc_bias             =  0;
-  int   toc_offset           =  0;
-  int   sample_offset        =  0;
   int   force_cdrom_endian   = -1;
-  int   force_cdrom_sectors  = -1;
-  int   force_cdrom_overlap  = -1;
-  int   force_cdrom_speed    = -1;
-  int   test_flags           =  0;
-  int   max_retries          = 20;
   int   output_type          =  1; /* 0=raw, 1=wav, 2=aifc */
   int   output_endian        =  0; /* -1=host, 0=little, 1=big */
   int   query_only           =  0;
   int   batch                =  0;
+  long int force_cdrom_overlap  = -1;
+  long int force_cdrom_sectors  = -1;
+  long int force_cdrom_speed    = -1;
+  long int sample_offset        =  0;
+  long int test_flags           =  0;
+  long int toc_offset           =  0;
+  long int max_retries          = 20;
 
   /* full paranoia, but allow skipping */
   int paranoia_mode=PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP; 
@@ -675,16 +713,21 @@ main(int argc,char *argv[])
       info_file=strdup(info_file);
       break;
     case 'm':
-      mmc_timeout_ms=1000*atoi(optarg);
+      {
+	long int mmc_timeout_sec;
+	if (get_int_arg(c, &mmc_timeout_sec)) {
+	  mmc_timeout_ms = 1000*mmc_timeout_sec;
+	}
+      }
       break;
     case 'n':
-      force_cdrom_sectors=atoi(optarg);
+      get_int_arg(c, &force_cdrom_sectors);
       break;
     case 'o':
-      force_cdrom_overlap=atoi(optarg);
+      get_int_arg(c, &force_cdrom_overlap);
       break;
     case 'O':
-      sample_offset=atoi(optarg);
+      get_int_arg(c, &sample_offset);
       break;
     case 'p':
       output_type=0;
@@ -709,10 +752,10 @@ main(int argc,char *argv[])
       search=1;
       break;
     case 'S':
-      force_cdrom_speed=atoi(optarg);
+      get_int_arg(c, &force_cdrom_speed);
       break;
     case 't':
-      toc_offset=atoi(optarg);
+      get_int_arg(c, &toc_offset);
       break;
     case 'T':
       toc_bias=-1;
@@ -734,7 +777,7 @@ main(int argc,char *argv[])
       paranoia_mode&=~PARANOIA_MODE_REPAIR;
       break;
     case 'x':
-      test_flags=atoi(optarg);
+      get_int_arg(c, &test_flags);
       break;
     case 'X':
       /*paranoia_mode&=~(PARANOIA_MODE_SCRATCH|PARANOIA_MODE_REPAIR);*/
@@ -750,7 +793,7 @@ main(int argc,char *argv[])
       break;
     case 'z':
       if (optarg) {
-        max_retries = atoi (optarg);
+	get_int_arg(c, &max_retries);
         paranoia_mode&=~PARANOIA_MODE_NEVERSKIP;
       } else {
         paranoia_mode|=PARANOIA_MODE_NEVERSKIP;
@@ -830,8 +873,8 @@ main(int argc,char *argv[])
     }
     {
       char buffer[256];
-      sprintf(buffer,"Forcing default to read %d sectors; "
-	      "ignoring preset and autosense",force_cdrom_sectors);
+      sprintf(buffer,"Forcing default to read %ld sectors; "
+	      "ignoring preset and autosense", force_cdrom_sectors);
       report(buffer);
       d->nsectors=force_cdrom_sectors;
     }
@@ -845,8 +888,8 @@ main(int argc,char *argv[])
     }
     {
       char buffer[256];
-      sprintf(buffer,"Forcing search overlap to %d sectors; "
-	      "ignoring autosense",force_cdrom_overlap);
+      sprintf(buffer,"Forcing search overlap to %ld sectors; "
+	      "ignoring autosense", force_cdrom_overlap);
       report(buffer);
     }
   }
