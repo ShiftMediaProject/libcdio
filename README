@@ -17,14 +17,14 @@ and CD-DA plugins for the media players xine (http://xinehq.de),
 videolan's vlc (http://videolan.org), media players mplayerxp
 (http://mplayerxp.sourceforge.net/) and gmerlin
 (http://gmerlin.sourceforge.net), kiso, a KDE GUI for creating,
-extracting and editing of ISO-Images (http://kiso.sourceforge.net),
-and a Samba vfs module that allows you to export a CD without mounting
+extracting and editing ISO-9600 images (http://kiso.sourceforge.net),
+and a Samba vfs module that allows exporting a CD without mounting
 it (http://ontologistics.net/OpenSource/Samba/index.php).
 
 Also included in the libcdio package is a utility program cd-info which
 displays CD information: number of tracks, CD-format and if possible
 basic information about the format.  If libcddb
-(http://libcdddb.sourceforge.net) is available, the cd-info program
+(http://libcddb.sourceforge.net) is available, the cd-info program
 will display CDDB matches on CD-DA discs. And if a new enough version
 of libvcdinfo is available (from the vcdimager project), then cd-info
 shows basic VCD information. 
@@ -47,4 +47,4 @@ libcdio. (Any volunteers?) However at present there are already many
 gaps in this library so narrowing its scope in order to focus on these
 things I think is a good idea.
 
-$Id: README,v 1.8 2005/07/10 13:57:37 rocky Exp $
+$Id: README,v 1.9 2005/07/10 14:13:03 rocky Exp $
