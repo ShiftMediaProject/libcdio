@@ -14,11 +14,12 @@ images as though they were CD's.
 Projects using libcdio are the Video CD authoring and ripping tools
 VCDImager (http://vcdimager.org), a navigation-capable Video CD plugin
 and CD-DA plugins for the media players xine (http://xinehq.de),
-videolan's vlc (http://videolan.org), and kiso, a KDE GUI for
-creating, extracting and editing of ISO-Images
-(http://kiso.sourceforge.net), and a Samba vfs module that allows you
-to export a CD without mounting it
-(http://ontologistics.net/OpenSource/Samba/index.php).
+videolan's vlc (http://videolan.org), media players mplayerxp
+(http://mplayerxp.sourceforge.net/) and gmerlin
+(http://gmerlin.sourceforge.net), kiso, a KDE GUI for creating,
+extracting and editing of ISO-Images (http://kiso.sourceforge.net),
+and a Samba vfs module that allows you to export a CD without mounting
+it (http://ontologistics.net/OpenSource/Samba/index.php).
 
 Also included in the libcdio package is a utility program cd-info which
 displays CD information: number of tracks, CD-format and if possible
@@ -31,19 +32,19 @@ shows basic VCD information.
 Other utility programs in the libcdio package are cd-read, for
 performing low-level block reading of a CD or CD image, iso-info for
 displaying ISO-9660 information from an ISO-9660 image, iso-read for
-extracting files from an ISO-9660 image, and a version of the CD-DA
-extraction tool cdparanoia which corrects for CD-ROM jitter.
+extracting files from an ISO-9660 image, a version of the CD-DA
+extraction tool cdparanoia which corrects for CD-ROM jitter, and a
+simple curses-based CD player, cdda-player using the analog CD-ROM
+output.
 
-At present, there is no support for directing CD Audio control,
-e.g. playing, stopping, or pausing of a CD-CA where the blocks are not
-actually read into the computer. Nor is there any support for writing
-CD's. Nor is there any support for reading or writing DVDs. For some
-of these, there are other libraries (e.g. libdi, libscg, or libdvdread)
+At present, there is no support for writing CD's, reading UDF format;
+nor is there any support for reading or writing DVDs. For some of
+these, there are other libraries (e.g. libdi, libscg, or libdvdread)
 may be helpful.
 
-I'm not theoretically opposed to putting support like this into
-libcdio. However at present there are already many gaps in this
-library so narrowing its scope in order to focus on these things I
-think is a good idea.
+I'm not theoretically opposed to putting support such as UDF into
+libcdio. (Any volunteers?) However at present there are already many
+gaps in this library so narrowing its scope in order to focus on these
+things I think is a good idea.
 
-$Id: README,v 1.7 2005/02/22 10:42:50 rocky Exp $
+$Id: README,v 1.8 2005/07/10 13:57:37 rocky Exp $
