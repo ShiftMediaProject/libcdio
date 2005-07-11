@@ -2,26 +2,38 @@ It isn't look hard to find a gap in libcdio or libiso9660 or think of
 something you'd like added. Here are some of the many known problems
 and feature requests.
 
-* mmc_read_cd often doesn't work when request reading a large number of blocks.
+* UDF support.
+
+* API overhaul. hvr has expressed interest but it's unlikely he'll ever
+  have the time to do. It could be done in conjunction with a wrappers
+  for C++, Perl, Python, ... The idea is that those interfaces would not
+  show the ugliness of the current C interface. For example instead of 
+  read_mode2, read_mode1, read_audio, there might be a read(mode, ...).
+
+  - Address static loglevel variable (nboullis at debian.org)
 
 * All of the API should be finished on all OS's (or the API adjusted).
 
 * Fix the current gaps:
 
   - SCSI-MMC on OSX,
-  - CD-Text support working more often
+  - CD-Text support working more often? wide character support
+    (Burkhard Plaum has indicated he might do)
   - more accurate drive capabilities 
+  - wxwindows interface to cd-drive
   - more accurate CD track classification (Form 1/2, Mode 1/2)
   - complete the image readers, e.g. "silence" and ability to use
     more than one file in cdrdao.
   - multi-session CDs 
 
-* Exclusive access of CD-ROM versus non-exclusive? 
-   
+* mmc_read_cd often doesn't work when request reading a large number of blocks.
+
 * Is paranoia correct? Get a better handle on it. Ensure more of the
   drive and OS-specific features that work on GNU/Linux work
   elsewhere. Regression tests over more kinds of failures.
 
+* Exclusive access of CD-ROM versus non-exclusive? 
+   
 * Adjusting operations based on known models. Via MMC, We often have
   the ability to find out what drive is in use. That could be used (as
   it was in cdparanoia) to customize the method used for various
@@ -64,23 +76,12 @@ and feature requests.
 * Convert to use glib, removing ds.h 
   (Revise vcdimager too)
 
-* API overhaul. hvr has expressed interest but it's unlikely he'll ever
-  have the time to do. It could be done in conjunction with a wrappers
-  for C++, Perl, Python, ... The idea is that those interfaces would not
-  show the ugliness of the current C interface. For example instead of 
-  read_mode2, read_mode1, read_audio, there might be a read(mode, ...).
-
-  - Address static loglevel variable (nboullis at debian.org)
-
-* UDF support.
-
 * Delete and rename files in an iso9660 image (mephisto75 at web.de)
 
 * Some things where libcdio will probably not expand in:
  
   -  DVD things, especially DVD-ROM (use libdvdread) 
   -  writing applications (use cdrdao or cdrtools)
-  -  analog CD  (but this one I've been tempted to add for a while)
   -  more proprietary undocumented image format (unless someone else is willing
      to do the work). But the fuzzy ISO 9660 detection may help here.
 
@@ -91,4 +92,4 @@ to undertake doing it. Patches are always welcome (and CVS write
 access is available for those who have demonstrated reasonable ability
 through contributions.)
 
-$Id: TODO,v 1.10 2005/02/28 03:24:23 rocky Exp $
+$Id: TODO,v 1.11 2005/07/11 11:51:07 rocky Exp $
