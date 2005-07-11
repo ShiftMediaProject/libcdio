@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.44 2005/04/18 15:43:36 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.45 2005/07/11 00:36:56 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -230,8 +230,10 @@ The library, @command{libcdio}, encapsulates CD-ROM reading and
 control. Applications wishing to be oblivious of the OS- and
 device-dependent properties of a CD-ROM can use this library.
 
-Also included is a library, @command{libiso9660}, for working with ISO-9660
-filesystems.
+Also included is a library, @command{libiso9660}, for working with
+ISO-9660 filesystems, @command{libcdio_paranoia}, and
+@command{libcdio_cdda} libraries for applications which want to use
+cdparanoia's error-correction and jitter detection.
 
 Some support for disk-image types like cdrdao's TOC, CDRWIN's BIN/CUE
 and Ahead Nero's NRG format is available, so applications that use this
