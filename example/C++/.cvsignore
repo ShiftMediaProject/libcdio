@@ -3,6 +3,7 @@ Makefile.in
 .deps
 .libs
 copying
+device
 iso1
 iso2
 iso3
