@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.1 2005/02/19 11:42:18 rocky Exp $
+#   $Id: Makefile.am,v 1.2 2005/07/15 21:38:57 rocky Exp $
 #
 #    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,9 +20,12 @@
 # Things to regression testing
 ####################################################
 #
-noinst_PROGRAMS = iso1 iso2 iso3 mmc1 mmc2
+noinst_PROGRAMS = device iso1 iso2 iso3 mmc1 mmc2
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
+
+device_SOURCES  = device.cpp
+device_LDADD    = $(LIBCDIO_LIBS)
 
 iso1_SOURCES  = iso1.cpp
 iso1_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
