@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.15 2005/07/07 06:53:04 rocky Exp $
+    $Id: gnu_linux.c,v 1.16 2005/07/23 21:39:18 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.15 2005/07/07 06:53:04 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.16 2005/07/23 21:39:18 rocky Exp $";
 
 #include <string.h>
 
@@ -587,7 +587,10 @@ get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
 }
 
 /*!
-  Eject media in CD drive. 
+  Eject media in CD-ROM drive. Return DRIVER_OP_SUCCESS if successful, 
+  DRIVER_OP_ERROR on error.
+ */
+
  */
 static driver_return_code_t
 eject_media_linux (void *p_user_data) {

@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.4 2005/07/23 21:36:54 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.5 2005/07/23 21:39:19 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.4 2005/07/23 21:36:54 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.5 2005/07/23 21:39:19 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -140,20 +140,21 @@ get_disc_last_lsn_freebsd_ioctl (_img_private_t *_obj)
 }
 
 /*!
-  Eject media. Return 0 if successful, 1 otherwise.
+  Eject media in CD-ROM drive. Return DRIVER_OP_SUCCESS if successful, 
+  DRIVER_OP_ERROR on error.
  */
-int 
+static driver_return_code_t
 eject_media_freebsd_ioctl (_img_private_t *env) 
 {
   _img_private_t *_obj = env;
-  int ret=1;
+  int ret=DRIVER_OP_ERROR;
 
   if (ioctl(_obj->gen.fd, CDIOCALLOW) == -1) {
     cdio_warn("ioctl(fd, CDIOCALLOW) failed: %s\n", strerror(errno));
   } else if (ioctl(_obj->gen.fd, CDIOCEJECT) == -1) {
     cdio_warn("ioctl(CDIOCEJECT) failed: %s\n", strerror(errno));
   } else {
-    ret=0;
+    ret=DRIVER_OP_SUCCESS;;
   }
 
   return ret;
