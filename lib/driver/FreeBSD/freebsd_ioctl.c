@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.3 2005/01/27 04:00:48 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.4 2005/07/23 21:36:54 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.3 2005/01/27 04:00:48 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.4 2005/07/23 21:36:54 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -140,25 +140,20 @@ get_disc_last_lsn_freebsd_ioctl (_img_private_t *_obj)
 }
 
 /*!
-  Eject media. Return 1 if successful, 0 otherwise.
+  Eject media. Return 0 if successful, 1 otherwise.
  */
 int 
 eject_media_freebsd_ioctl (_img_private_t *env) 
 {
   _img_private_t *_obj = env;
-  int ret=2;
-  int fd;
+  int ret=1;
 
-  if ((fd = open(_obj->gen.source_name, O_RDONLY|O_NONBLOCK)) > -1) {
-    ret = 1;
-    if (ioctl(fd, CDIOCALLOW) == -1) {
-      cdio_warn("ioctl(fd, CDIOCALLOW) failed: %s\n", strerror(errno));
-    } else if (ioctl(fd, CDIOCEJECT) == -1) {
-      cdio_warn("ioctl(CDIOCEJECT) failed: %s\n", strerror(errno));
-    } else {
-      ret = 0;
-    }
-    close(fd);
+  if (ioctl(_obj->gen.fd, CDIOCALLOW) == -1) {
+    cdio_warn("ioctl(fd, CDIOCALLOW) failed: %s\n", strerror(errno));
+  } else if (ioctl(_obj->gen.fd, CDIOCEJECT) == -1) {
+    cdio_warn("ioctl(CDIOCEJECT) failed: %s\n", strerror(errno));
+  } else {
+    ret=0;
   }
 
   return ret;
