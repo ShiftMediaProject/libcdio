@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_ioctl.c,v 1.5 2005/07/23 21:39:19 rocky Exp $
+    $Id: freebsd_ioctl.c,v 1.6 2005/07/23 22:24:04 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.5 2005/07/23 21:39:19 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.6 2005/07/23 22:24:04 rocky Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -100,16 +100,16 @@ read_audio_sectors_freebsd_ioctl (_img_private_t *_obj, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 int
-read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data, lsn_t lsn, 
+read_mode2_sector_freebsd_ioctl (_img_private_t *p_env, void *data, lsn_t lsn, 
 				 bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   int retval;
 
   if ( !b_form2 )
-    return cdio_generic_read_form1_sector (env, buf, lsn);
+    return cdio_generic_read_form1_sector (p_env, buf, lsn);
   
-  if ( (retval = read_audio_sectors_freebsd_ioctl (env, buf, lsn, 1)) )
+  if ( (retval = read_audio_sectors_freebsd_ioctl (p_env, buf, lsn, 1)) )
     return retval;
     
   memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, M2RAW_SECTOR_SIZE);
@@ -121,14 +121,14 @@ read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data, lsn_t lsn,
    Return the size of the CD in logical block address (LBA) units.
  */
 lsn_t
-get_disc_last_lsn_freebsd_ioctl (_img_private_t *_obj)
+get_disc_last_lsn_freebsd_ioctl (_img_private_t *p_obj)
 {
   struct ioc_read_toc_single_entry tocent;
   uint32_t size;
 
   tocent.track = CDIO_CDROM_LEADOUT_TRACK;
   tocent.address_format = CDIO_CDROM_LBA;
-  if (ioctl (_obj->gen.fd, CDIOREADTOCENTRY, &tocent) == -1)
+  if (ioctl (p_obj->gen.fd, CDIOREADTOCENTRY, &tocent) == -1)
     {
       perror ("ioctl(CDROMREADTOCENTRY)");
       exit (EXIT_FAILURE);
@@ -143,15 +143,15 @@ get_disc_last_lsn_freebsd_ioctl (_img_private_t *_obj)
   Eject media in CD-ROM drive. Return DRIVER_OP_SUCCESS if successful, 
   DRIVER_OP_ERROR on error.
  */
-static driver_return_code_t
-eject_media_freebsd_ioctl (_img_private_t *env) 
+driver_return_code_t
+eject_media_freebsd_ioctl (_img_private_t *p_env) 
 {
-  _img_private_t *_obj = env;
+  _img_private_t *p_obj = p_env;
   int ret=DRIVER_OP_ERROR;
 
-  if (ioctl(_obj->gen.fd, CDIOCALLOW) == -1) {
+  if (ioctl(p_obj->gen.fd, CDIOCALLOW) == -1) {
     cdio_warn("ioctl(fd, CDIOCALLOW) failed: %s\n", strerror(errno));
-  } else if (ioctl(_obj->gen.fd, CDIOCEJECT) == -1) {
+  } else if (ioctl(p_obj->gen.fd, CDIOCEJECT) == -1) {
     cdio_warn("ioctl(CDIOCEJECT) failed: %s\n", strerror(errno));
   } else {
     ret=DRIVER_OP_SUCCESS;;
@@ -170,7 +170,7 @@ eject_media_freebsd_ioctl (_img_private_t *env)
 
  */
 char *
-get_mcn_freebsd_ioctl (const _img_private_t *env) {
+get_mcn_freebsd_ioctl (const _img_private_t *p_env) {
 
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
@@ -181,7 +181,7 @@ get_mcn_freebsd_ioctl (const _img_private_t *env) {
   subchannel.data_len       = sizeof(subchannel_info);
   subchannel.data           = &subchannel_info;
 
-  if(ioctl(env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
+  if(ioctl(p_env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
     perror("CDIOCREADSUBCHANNEL");
     return NULL;
   }
@@ -202,7 +202,7 @@ get_mcn_freebsd_ioctl (const _img_private_t *env) {
   
 */
 track_format_t
-get_track_format_freebsd_ioctl(const _img_private_t *env, track_t i_track) 
+get_track_format_freebsd_ioctl(const _img_private_t *p_env, track_t i_track) 
 {
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
@@ -213,7 +213,7 @@ get_track_format_freebsd_ioctl(const _img_private_t *env, track_t i_track)
   subchannel.data_len       = 1;
   subchannel.data           = &subchannel_info;
 
-  if(ioctl(env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
+  if(ioctl(p_env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
     perror("CDIOCREADSUBCHANNEL");
     return 1;
   }
@@ -238,7 +238,7 @@ get_track_format_freebsd_ioctl(const _img_private_t *env, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 bool
-get_track_green_freebsd_ioctl(const _img_private_t *env, track_t i_track) 
+get_track_green_freebsd_ioctl(const _img_private_t *p_env, track_t i_track) 
 {
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
@@ -249,7 +249,7 @@ get_track_green_freebsd_ioctl(const _img_private_t *env, track_t i_track)
   subchannel.data_len       = 1;
   subchannel.data           = &subchannel_info;
 
-  if(ioctl(env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
+  if(ioctl(p_env->gen.fd, CDIOCREADSUBCHANNEL, &subchannel) < 0) {
     perror("CDIOCREADSUBCHANNEL");
     return 1;
   }

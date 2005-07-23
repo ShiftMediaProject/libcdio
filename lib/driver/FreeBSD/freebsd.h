@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.3 2005/02/06 13:05:42 rocky Exp $
+    $Id: freebsd.h,v 1.4 2005/07/23 22:24:04 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -150,8 +150,8 @@ track_format_t get_track_format_freebsd_ioctl(const _img_private_t *env,
 bool get_track_green_freebsd_ioctl(const _img_private_t *env, 
 				   track_t i_track);
 
-int  eject_media_freebsd_ioctl (_img_private_t *env);
-int  eject_media_freebsd_cam (_img_private_t *env);
+driver_return_code_t eject_media_freebsd_ioctl (_img_private_t *p_env);
+driver_return_code_t  eject_media_freebsd_cam (_img_private_t *p_env);
 
 void get_drive_cap_freebsd_cam (const _img_private_t *p_env,
 				cdio_drive_read_cap_t  *p_read_cap,
