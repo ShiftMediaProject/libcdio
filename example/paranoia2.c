@@ -58,6 +58,11 @@ main(int argc, const char *argv[])
   /* Don't need a list of CD's with CD-DA's any more. */
   cdio_free_device_list(ppsz_cd_drives);
 
+  if ( !d ) {
+    printf("Unable to identify audio CD disc.\n");
+    exit(1);
+  }
+
   /* We'll set for verbose paranoia messages. */
   cdio_cddap_verbose_set(d, CDDA_MESSAGE_PRINTIT, CDDA_MESSAGE_PRINTIT);
 
@@ -94,4 +99,3 @@ main(int argc, const char *argv[])
 
   exit(0);
 }
-
