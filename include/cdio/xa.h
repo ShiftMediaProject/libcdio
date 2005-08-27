@@ -1,5 +1,5 @@
 /*
-    $Id: xa.h,v 1.15 2005/02/20 10:21:01 rocky Exp $
+    $Id: xa.h,v 1.16 2005/08/27 14:25:58 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -35,6 +35,10 @@
 
 #ifndef __CDIO_XA_H__
 #define __CDIO_XA_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 /*! An enumeration for some of the XA_* #defines below. This isn't
   really an enumeration one would really use in a program it is to
@@ -178,6 +182,10 @@ iso9660_get_xa_attr_str (uint16_t xa_attr);
 iso9660_xa_t *
 iso9660_xa_init (iso9660_xa_t *_xa, uint16_t uid, uint16_t gid, uint16_t attr, 
 		 uint8_t filenum);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* __CDIO_XA_H__ */
 
