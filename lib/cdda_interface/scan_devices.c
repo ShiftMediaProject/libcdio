@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.28 2005/04/30 07:15:51 rocky Exp $
+  $Id: scan_devices.c,v 1.29 2005/08/27 14:28:30 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -150,7 +150,8 @@ test_resolve_symlink(const char *file, int messagedest, char **ppsz_messages)
 }
 #endif
 
-/** Returns a paranoia CD-ROM drive object with a CD-DA in it.  
+/** Returns a paranoia CD-ROM drive object with a CD-DA in it or NULL
+    if there was an error.
     @see cdio_cddap_identify_cdio
  */
 cdrom_drive_t *
@@ -181,15 +182,21 @@ char **ppsz_messages)
 #endif
 
   p_cdio = cdio_open(psz_dev, DRIVER_UNKNOWN);
-  return cdda_identify_device_cdio(p_cdio, psz_dev, messagedest, 
-				   ppsz_messages);
+  if (p_cdio) {
+    if (!psz_dev) {
+      psz_dev = cdio_get_arg(p_cdio, "source");
+    }
+    return cdda_identify_device_cdio(p_cdio, psz_dev, messagedest, 
+				     ppsz_messages);
+  }
+  return NULL;
 }
 
-/** Returns a paranoia CD-ROM drive object with a CD-DA in it.  In
-    contrast to cdio_cddap_identify, we start out with an initialized
-    p_cdio object. For example you may have used that for other
-    purposes such as to get CDDB/CD-Text information.  @see
-    cdio_cddap_identify
+/** Returns a paranoia CD-ROM drive object with a CD-DA in it or NULL
+    if there was an error.  In contrast to cdio_cddap_identify, we
+    start out with an initialized p_cdio object. For example you may
+    have used that for other purposes such as to get CDDB/CD-Text
+    information.  @see cdio_cddap_identify
  */
 cdrom_drive_t *
 cdio_cddap_identify_cdio(CdIo_t *p_cdio, int messagedest, char **ppsz_messages)
