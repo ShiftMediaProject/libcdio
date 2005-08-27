@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.2 2005/07/15 21:38:57 rocky Exp $
+#   $Id: Makefile.am,v 1.3 2005/08/27 14:29:12 rocky Exp $
 #
 #    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,25 +20,32 @@
 # Things to regression testing
 ####################################################
 #
-noinst_PROGRAMS = device iso1 iso2 iso3 mmc1 mmc2
+noinst_PROGRAMS = device iso1 iso2 iso3 mmc1 mmc2 paranoia paranoia2
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
-device_SOURCES  = device.cpp
-device_LDADD    = $(LIBCDIO_LIBS)
+device_SOURCES    = device.cpp
+device_LDADD      = $(LIBCDIO_LIBS)
 
-iso1_SOURCES  = iso1.cpp
-iso1_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-iso2_SOURCES  = iso2.cpp
-iso2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-iso3_SOURCES  = iso3.cpp
-iso3_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+paranoia_SOURCES  = paranoia.cpp
+paranoia_LDADD    = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) \
+	            $(LIBCDIO_LIBS)
+paranoia2_SOURCES = paranoia.cpp
+paranoia2_LDADD   = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) \
+	            $(LIBCDIO_LIBS)
 
-mmc1_SOURCES  = mmc1.cpp
-mmc1_LDADD = $(LIBCDIO_LIBS)
+iso1_SOURCES      = iso1.cpp
+iso1_LDADD        = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso2_SOURCES      = iso2.cpp
+iso2_LDADD        = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso3_SOURCES      = iso3.cpp
+iso3_LDADD        = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
-mmc2_SOURCES  = mmc2.cpp
-mmc2_LDADD = $(LIBCDIO_LIBS)
+mmc1_SOURCES      = mmc1.cpp
+mmc1_LDADD        = $(LIBCDIO_LIBS)
+
+mmc2_SOURCES      = mmc2.cpp
+mmc2_LDADD        = $(LIBCDIO_LIBS)
 
 # iso programs create file "copying"
 MOSTLYCLEANFILES = copying
