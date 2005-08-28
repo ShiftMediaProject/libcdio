@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.8 2005/03/06 00:54:50 rocky Exp $
+    $Id: aspi32.c,v 1.9 2005/08/28 22:40:19 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.8 2005/03/06 00:54:50 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.9 2005/08/28 22:40:19 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -162,9 +162,9 @@ have_aspi( HMODULE *hASPI,
     return false;
   }
 
-  (FARPROC) *lpGetSupport = GetProcAddress( *hASPI,
+  *lpGetSupport =  (void *) GetProcAddress( *hASPI,
 					    "GetASPI32SupportInfo" );
-  (FARPROC) *lpSendCommand = GetProcAddress( *hASPI,
+  *lpSendCommand = (void *) GetProcAddress( *hASPI,
 					     "SendASPI32Command" );
   
   /* make sure that we've got both function addresses */
