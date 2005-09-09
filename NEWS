@@ -1,4 +1,15 @@
-$Id: NEWS,v 1.76 2005/07/11 12:23:52 rocky Exp $
+$Id: NEWS,v 1.77 2005/09/09 12:42:15 rocky Exp $
+
+version 0.76
+=====================================
+2005-??-??
+
+- Make libiso9660 and libcdio_cdda  compile under C++ and add example
+  programs to make sure this gets tested
+
+- a better eject routine for FreeBSD
+
+- Fix bug in not specifying a device name in libcio_cdda
 
 version 0.75
 =====================================
@@ -264,4 +275,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.76 2005/07/11 12:23:52 rocky Exp $
+$Id: NEWS,v 1.77 2005/09/09 12:42:15 rocky Exp $
