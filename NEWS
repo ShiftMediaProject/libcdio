@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.77 2005/09/09 12:42:15 rocky Exp $
+$Id: NEWS,v 1.78 2005/09/15 06:46:05 rocky Exp $
 
 version 0.76
 =====================================
@@ -10,6 +10,11 @@ version 0.76
 - a better eject routine for FreeBSD
 
 - Fix bug in not specifying a device name in libcio_cdda
+
+- Add IS_ISSOCK() or S_ISLNK() macros for Rock-Ridge when environment
+  doesn't have it, e.g. MSYS 1.0.10 with MinGW 3.4.2.
+
+
 
 version 0.75
 =====================================
@@ -275,4 +280,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.77 2005/09/09 12:42:15 rocky Exp $
+$Id: NEWS,v 1.78 2005/09/15 06:46:05 rocky Exp $
