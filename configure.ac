@@ -19,7 +19,7 @@ define(RELEASE_NUM, 76)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.162 2005/07/15 21:40:06 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.163 2005/09/15 06:36:01 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -42,19 +42,19 @@ AM_MAINTAINER_MODE
 AM_SANITY_CHECK
 
 AC_ARG_WITH(cd_drive,
-[  --without-cd-drive       build program cd-drive (enabled by default)],
+[  --without-cd-drive       don't build program cd-drive (default with)],
 enable_cd_drive="${withval}", enable_cd_drive=yes)
 
 AC_ARG_WITH(cd_info,
-[  --without-cd-info        build program cd-info (enabled by default)],
+[  --without-cd-info        don't build program cd-info (default with)],
 enable_cd_info="${withval}", enable_cd_info=yes)
 
 AC_ARG_WITH(cd_paranoia,
-[  --without-cd-paranoia    build program cd-paranoia (enabled by default)],
+[  --without-cd-paranoia    don't build program cd-paranoia (default with)],
 enable_cd_paranoia="${withval}", enable_cd_paranoia=yes)
 
 AC_ARG_WITH(cdda_player,
-[  --without-cdda-player    build program cdda-player (enabled by default)],
+[  --without-cdda-player    don't build program cdda-player (default with)],
 enable_cdda_player="${withval}", enable_cdda_player=yes)
 
 AC_ARG_WITH(cd_paranoia_name,
@@ -64,25 +64,27 @@ CDPARANOIA_NAME="$cd_paranoia_name"
 AC_SUBST(CDPARANOIA_NAME)
 
 AC_ARG_WITH(cd_read,
-[  --without-cd-read        build program cd-read (enabled by default)],
+[  --without-cd-read        don't build program cd-read (default with)],
 enable_cd_read="${withval}", enable_cd_read=yes)
 
 AC_ARG_WITH(iso_info,
-[  --without-iso-info       build program iso-info (enabled by default)],
+[  --without-iso-info       don't build program iso-info (default with)],
 enable_iso_info="${withval}", enable_iso_info=yes)
 
 AC_ARG_WITH(iso_read,
-[  --without-iso-read       build program iso-read (enabled by default)],
+[  --without-iso-read       don't build program iso-read (default with)],
 enable_iso_read="${withval}", enable_iso_read=yes)
 
 AC_ARG_WITH(versioned_libs,
-[  --without-versioned-libs build versioned library symbols (enabled by default if you have GNU ld)],
+[  --without-versioned-libs build versioned library symbols (default enabled if you have GNU ld)],
 enable_versioned_libs="${withval}", enable_versioned_libs=yes)
 
-AC_ARG_ENABLE(vcd_info,
-	[  --disable-cpp        don't make C++ example programs],
-		enable_cpp=no,
-		enable_cpp=yes)
+AC_ARG_ENABLE(cpp_progs,
+	[  --enable-cpp-progs      make C++ example programs (default enabled)],
+		enable_cpp_progs=no,
+		enable_cpp_progs=yes)
+
+AM_CONDITIONAL(ENABLE_CPP, test x"$enable_cpp_progs" = "xyes")
 
 dnl We use C 
 AC_PROG_CC
@@ -216,6 +218,41 @@ int main(int argc, char **argv) {
    [AC_MSG_RESULT(no); ac_getopt_long=no],
    [AC_MSG_RESULT(no); ac_getopt_long=no])
 AM_CONDITIONAL(HAVE_GETOPT_LONG, test x"$ac_getopt_long" = "xyes")
+
+##
+## Check for S_ISSOCK() and S_ISLNK() macros
+##
+AC_MSG_CHECKING(for S_ISLNK() macro)
+AC_TRY_RUN([
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+
+int main(int argc, char **argv) {
+  int i = S_ISLNK(0);
+  return 0;
+}
+], [AC_MSG_RESULT(yes); ac_have_islnk=yes; 
+     AC_DEFINE(HAVE_S_ISLNK, [], 
+     [Define this <sys/stat.h> defines S_ISLNK()])],
+   [AC_MSG_RESULT(no); ac_have_islnk=no],
+   [AC_MSG_RESULT(no); ac_have_islnk=no])
+
+AC_MSG_CHECKING(for S_ISSOCK() macro)
+AC_TRY_RUN([
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+
+int main(int argc, char **argv) {
+  int i = S_ISSOCK(0);
+  return 0;
+}
+], [AC_MSG_RESULT(yes); ac_have_islnk=yes; 
+     AC_DEFINE(HAVE_S_ISSOCK, [], 
+     [Define this <sys/stat.h> defines S_ISSOCK()])],
+   [AC_MSG_RESULT(no); ac_have_issock=no],
+   [AC_MSG_RESULT(no); ac_have_issock=no])
 
 dnl empty_array_size
 AC_MSG_CHECKING([how to create empty arrays])
@@ -471,11 +508,11 @@ fi
 
 if test x$enable_joliet = x; then
 AC_ARG_ENABLE(joliet,
-	[  --disable-joliet          don't include Joliet extension support],
-		enable_joliet=no,
-		enable_joliet=yes)
+	[  --enable-joliet         include Joliet extension support (default enabled)],
+		enable_joliet=yes,
+		enable_joliet=no)
 fi
-if test x$enable_joliet = xyes; then
+if test "${enable_jolet}" != "no" ; then
   AM_ICONV
   AM_LANGINFO_CODESET
   if test "$am_cv_func_iconv" = yes ; then 
@@ -489,14 +526,29 @@ if test x$enable_joliet = xyes; then
 fi
 AC_SUBST(HAVE_JOLIET)
 
-if test x$enable_cddb = x; then
-AC_ARG_ENABLE(cddb,
-	[  --disable-cddb          don't include CDDB lookups in cd_info],
-		enable_cddb=no,
-		enable_cddb=yes)
+if test x$enable_rock = x; then
+  enable_rock=yes
+  AC_ARG_ENABLE(rock,
+	[  --enable-rock           include Rock-Ridge extension support (default enabled)],
+	enable_rock=yes, enable_rock=no)
 fi
-if test x$enable_cddb = xyes; then
-   PKG_CHECK_MODULES(CDDB, libcddb >= 0.9.4, [
+
+if test "${enable_rock}" != "no" ; then
+   AC_DEFINE(HAVE_ROCK, [1], 
+   [Define 1 if you want ISO-9660 Rock-Ridge extension support.])
+   HAVE_ROCK=1
+fi
+AC_SUBST(HAVE_ROCK)
+AM_CONDITIONAL(ENABLE_ROCK, test x"$enable_rock" = "xyes")
+
+if test x$enable_cddb = x; then
+  enable_cddb=yes
+  AC_ARG_ENABLE(cddb,
+	[  --enable-cddb           include CDDB lookups in cd_info (default enabled)],	
+	enable_cddb=yes, enable_cddb=no)
+fi
+if test x$enable_cddb != "no" ; then
+   PKG_CHECK_MODULES(CDDB, libcddb >= 1.0.1, [
     HAVE_CDDB=yes 
     AC_DEFINE(HAVE_CDDB, [], [Define this if you have libcddb installed])
     ],
@@ -526,7 +578,7 @@ AC_SUBST(CDDA_PLAYER_LIBS)
 
 if test x$enable_vcd_info = x; then
 AC_ARG_ENABLE(vcd_info,
-	[  --disable-vcd-info        don't include Video CD Info from libvcd],
+	[  --disable-vcd-info      don't include Video CD Info from libvcd],
 		enable_vcd_info=no,
 		enable_vcd_info=yes)
 fi

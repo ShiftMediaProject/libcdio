@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.29 2005/06/07 23:40:53 rocky Exp $
+    $Id: iso9660_fs.c,v 1.30 2005/09/15 06:36:01 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.29 2005/06/07 23:40:53 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.30 2005/09/15 06:36:01 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -815,8 +815,14 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 
   {
     char rr_fname[256] = "";
+
     int  i_rr_fname = 
+#ifdef HAVE_ROCK
       get_rock_ridge_filename(p_iso9660_dir, rr_fname, p_stat);
+#else
+      0;
+#endif
+    
     if (i_rr_fname > 0) {
       if (i_rr_fname > i_fname) {
 	/* realloc gives valgrind errors */

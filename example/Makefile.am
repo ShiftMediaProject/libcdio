@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.23 2005/04/30 09:42:37 rocky Exp $
+#   $Id: Makefile.am,v 1.24 2005/09/15 06:36:01 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,7 +20,7 @@
 # Sample programs
 ####################################################
 #
-if !DISABLE_CPP
+if ENABLE_CPP
 SUBDIRS =  C++
 endif
 noinst_PROGRAMS = audio cdtext device drives iso1 iso2 iso3 isofuzzy \

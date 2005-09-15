@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.35 2005/07/09 15:22:44 rocky Exp $
+    $Id: cdda-player.c,v 1.36 2005/09/15 06:36:01 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -292,9 +292,7 @@ finish(const char *psz_msg, int rc)
 #ifdef HAVE_CDDB
   if (p_conn) cddb_destroy(p_conn);
   cddb_disc_destroy(p_cddb_disc);
-#if LIBCDDB_VERSION_NUM >= 1
   libcddb_shutdown();
-#endif
 #endif /*HAVE_CDDB*/
   cdio_destroy (p_cdio);
   free (psz_device);

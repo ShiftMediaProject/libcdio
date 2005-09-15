@@ -1,5 +1,5 @@
 /*
-  $Id: cddb.c,v 1.4 2005/07/09 15:22:44 rocky Exp $
+  $Id: cddb.c,v 1.5 2005/09/15 06:36:01 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -113,6 +113,7 @@ init_cddb(CdIo_t *p_cdio, cddb_conn_t **pp_conn, cddb_disc_t **pp_cddb_disc,
   *pp_cddb_disc = cddb_disc_new();
   if (!*pp_cddb_disc) {
     errmsg("unable to create CDDB disc structure");
+    cddb_destroy(*pp_conn);
     return false;
   }
   for(i = 0; i < i_tracks; i++) {
@@ -128,6 +129,7 @@ init_cddb(CdIo_t *p_cdio, cddb_conn_t **pp_conn, cddb_disc_t **pp_cddb_disc,
   
   if (!cddb_disc_calc_discid(*pp_cddb_disc)) {
     errmsg("libcddb calc discid failed.");
+    cddb_destroy(*pp_conn);
     return false;
   }
   

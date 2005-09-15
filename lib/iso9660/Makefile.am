@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.6 2005/03/29 01:40:19 rocky Exp $
+#   $Id: Makefile.am,v 1.7 2005/09/15 06:36:01 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -52,11 +52,17 @@ noinst_HEADERS = iso9660_private.h
 
 lib_LTLIBRARIES = libiso9660.la
 
+if ENABLE_ROCK
+rock_src = rock.c
+else
+rock_src =
+endif 
+
 libiso9660_la_SOURCES = \
 	iso9660.c \
 	iso9660_private.h \
 	iso9660_fs.c \
-	rock.c \
+	$(rock_src) \
 	xa.c
 
 libiso9660_la_LIBADD = @LIBCDIO_LIBS@
