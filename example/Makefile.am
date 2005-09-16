@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.24 2005/09/15 06:36:01 rocky Exp $
+#   $Id: Makefile.am,v 1.25 2005/09/16 09:31:39 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,8 +23,11 @@
 if ENABLE_CPP
 SUBDIRS =  C++
 endif
+if BUILD_CD_PARANOIA
+paranoia_progs = paranoia paranoia2
+endif
 noinst_PROGRAMS = audio cdtext device drives iso1 iso2 iso3 isofuzzy \
-	          mmc1 mmc2 paranoia paranoia2 tracks \
+	          mmc1 mmc2 $(paranoia_progs) tracks \
 	          sample3 sample4 
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
@@ -37,8 +40,10 @@ device_LDADD = $(LIBCDIO_LIBS)
 
 drives_LDADD = $(LIBCDIO_LIBS)
 
+if BUILD_CD_PARANOIA
 paranoia_LDADD  = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
 paranoia2_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
+endif
 
 iso1_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 iso2_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)

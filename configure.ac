@@ -19,7 +19,7 @@ define(RELEASE_NUM, 76)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.163 2005/09/15 06:36:01 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.164 2005/09/16 09:31:38 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -50,7 +50,7 @@ AC_ARG_WITH(cd_info,
 enable_cd_info="${withval}", enable_cd_info=yes)
 
 AC_ARG_WITH(cd_paranoia,
-[  --without-cd-paranoia    don't build program cd-paranoia (default with)],
+[  --without-cd-paranoia    don't build program cd-paranoia and paranoia libraries (default with)],
 enable_cd_paranoia="${withval}", enable_cd_paranoia=yes)
 
 AC_ARG_WITH(cdda_player,

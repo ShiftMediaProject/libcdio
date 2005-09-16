@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.3 2005/08/27 14:29:12 rocky Exp $
+#   $Id: Makefile.am,v 1.4 2005/09/16 09:31:39 rocky Exp $
 #
 #    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -27,12 +27,14 @@ INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 device_SOURCES    = device.cpp
 device_LDADD      = $(LIBCDIO_LIBS)
 
+if BUILD_CD_PARANOIA
 paranoia_SOURCES  = paranoia.cpp
 paranoia_LDADD    = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) \
 	            $(LIBCDIO_LIBS)
 paranoia2_SOURCES = paranoia.cpp
 paranoia2_LDADD   = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) \
 	            $(LIBCDIO_LIBS)
+endif
 
 iso1_SOURCES      = iso1.cpp
 iso1_LDADD        = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
