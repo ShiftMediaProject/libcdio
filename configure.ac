@@ -16,10 +16,10 @@ dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
 define(RELEASE_NUM, 76)
-define(CDIO_VERSION_STR, 0.$1cvs)
+define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.164 2005/09/16 09:31:38 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.165 2005/09/17 01:33:29 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -122,8 +122,9 @@ else
 fi
 
 # We use Perl for documentation and regression tests
-AC_PATH_PROG(PERL, perl, no)
+AC_PATH_PROG(PERL, perl, false)
 AC_SUBST(PERL)
+AM_CONDITIONAL(HAVE_PERL, test "$PERL" != "false")
 
 # We use a diff in regression testing
 AC_PATH_PROG(DIFF, diff, no)
