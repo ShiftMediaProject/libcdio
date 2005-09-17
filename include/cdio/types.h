@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.31 2005/03/21 10:43:08 rocky Exp $
+    $Id: types.h,v 1.32 2005/09/17 20:57:19 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -100,17 +100,17 @@ extern "C" {
 # endif
 #endif
   
-#if defined(HAVE_STDBOOL_H)
-#include <stdbool.h>
-#else
-  /* ISO/IEC 9899:1999 <stdbool.h> missing -- enabling workaround */
+#ifndef __cplusplus
+# if defined(HAVE_STDBOOL_H)
+#  include <stdbool.h>
+# else
+   /* ISO/IEC 9899:1999 <stdbool.h> missing -- enabling workaround */
   
-# ifndef __cplusplus
-#  define false   0
-#  define true    1
-#  define bool uint8_t
-# endif
-#endif
+#   define false   0
+#   define true    1
+#   define bool uint8_t
+# endif /*HAVE_STDBOOL_H*/
+#endif /*C++*/
   
   /* some GCC optimizations -- gcc 2.5+ */
   

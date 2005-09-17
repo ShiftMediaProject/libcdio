@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.4 2005/02/05 16:25:51 rocky Exp $
+#   $Id: Makefile.am,v 1.5 2005/09/17 20:57:19 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -44,7 +44,7 @@
 #     incompatibility with previous versions.
 
 libcdio_cdda_la_CURRENT := 0
-libcdio_cdda_la_REVISION := 0
+libcdio_cdda_la_REVISION := 1
 libcdio_cdda_la_AGE := 0
 
 noinst_HEADERS  = common_interface.h drive_exceptions.h low_interface.h \
