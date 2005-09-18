@@ -19,7 +19,7 @@ define(RELEASE_NUM, 76)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.167 2005/09/17 15:30:08 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.168 2005/09/18 20:30:33 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -409,7 +409,7 @@ int has_timeout=sizeof(test.timeout);],
 	if test "x$have_bsdi_dvd_h" = "xyes" ; then
      	  AC_DEFINE([HAVE_BSDI_CDROM], [1], 
                     [Define 1 if you have BSDI-type CD-ROM support])
-	  LIBS="$LIBS -ldvd"
+	 LIBS="$LIBS -ldvd -lcdrom"
          LIBCDIO_LIBS="$LIBCDIO_LIBS  -lcdrom"
 	  cd_drivers="${cd_drivers}, BSDI"
 	fi
