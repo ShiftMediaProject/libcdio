@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.24 2005/02/19 11:43:05 rocky Exp $
+  $Id: cd-read.c,v 1.25 2005/09/18 20:34:02 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -178,7 +178,7 @@ static bool
 parse_options (int argc, const char *argv[])
 {
 
-  char opt;
+  int opt;
   char *psz_my_source;
   char *opt_arg;
 

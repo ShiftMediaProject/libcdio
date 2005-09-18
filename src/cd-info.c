@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.143 2005/09/15 06:36:01 rocky Exp $
+    $Id: cd-info.c,v 1.144 2005/09/18 20:34:02 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -115,7 +115,7 @@ char *temp_str;
 static bool
 parse_options (int argc, const char *argv[])
 {
-  char opt; /* used for argument parsing */
+  int opt; /* used for argument parsing */
   char *psz_my_source;
   
   struct poptOption optionsTable[] = {
