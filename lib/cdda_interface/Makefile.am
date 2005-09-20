@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.6 2005/09/20 00:42:14 rocky Exp $
+#   $Id: Makefile.am,v 1.7 2005/09/20 01:01:17 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -42,6 +42,8 @@
 #  6. If any interfaces have been removed or changed since the last
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
+
+EXTRA_DIST = libcdio_cdda.sym
 
 libcdio_cdda_la_CURRENT := 0
 libcdio_cdda_la_REVISION := 1
