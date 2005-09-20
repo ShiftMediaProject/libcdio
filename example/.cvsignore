@@ -3,6 +3,7 @@
 .libs
 Makefile
 Makefile.in
+audio
 cdtext
 copying
 device

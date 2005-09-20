@@ -1,5 +1,5 @@
 /*
-    $Id: p_block.h,v 1.4 2005/02/06 15:09:10 rocky Exp $
+    $Id: p_block.h,v 1.5 2005/09/20 00:42:14 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) by Monty (xiphmont@mit.edu)
@@ -39,7 +39,7 @@
 
 #include "isort.h"
 
-typedef struct linked_list{
+typedef struct {
   /* linked list */
   struct linked_element *head;
   struct linked_element *tail;
@@ -49,25 +49,26 @@ typedef struct linked_list{
   long current;
   long active;
 
-} linked_list;
+} linked_list_t;
 
 typedef struct linked_element{
   void *ptr;
   struct linked_element *prev;
   struct linked_element *next;
   
-  struct linked_list *list;
+  linked_list_t *list;
   int stamp;
 } linked_element;
 
-extern linked_list *new_list(void *(*new)(void),void (*free)(void *));
-extern linked_element *new_elem(linked_list *list);
-extern linked_element *add_elem(linked_list *list,void *elem);
-extern void free_list(linked_list *list,int free_ptr); /* unlink or free */
+extern linked_list_t *new_list(void *(*new_fn)(void),void (*free)(void *));
+extern linked_element *new_elem(linked_list_t *list);
+extern linked_element *add_elem(linked_list_t *list,void *elem);
+extern void free_list(linked_list_t *list,int free_ptr); /* unlink or free */
 extern void free_elem(linked_element *e,int free_ptr); /* unlink or free */
 extern void *get_elem(linked_element *e);
-extern linked_list *copy_list(linked_list *list); /* shallow; doesn't copy
-						     contained structures */
+
+/* This is a shallow copy; it doesn't copy contained structures */
+extern linked_list_t *copy_list(linked_list_t *p_list); 
 
 typedef struct c_block {
   /* The buffer */
@@ -153,13 +154,13 @@ typedef struct offsets{
 struct cdrom_paranoia_s {
   cdrom_drive_t *d;
 
-  root_block root;        /* verified/reconstructed cached data */
-  linked_list *cache;     /* our data as read from the cdrom */
+  root_block root;           /* verified/reconstructed cached data */
+  linked_list_t *cache;      /* our data as read from the cdrom */
   long int cache_limit;
-  linked_list *fragments; /* fragments of blocks that have been 'verified' */
+  linked_list_t *fragments;  /* fragments of blocks that have been 'verified' */
   sort_info_t *sortcache;
 
-  int readahead;          /* sectors of readahead in each readop */
+  int readahead;             /* sectors of readahead in each readop */
   int jitter;           
   long lastread;
 
@@ -202,6 +203,11 @@ extern void i_paranoia_firstlast(cdrom_paranoia_t *p);
 #define fb(f) (f->begin)
 #define fs(f) (f->size)
 #define fv(f) (v_buffer(f))
+
+#ifndef DO_NOT_WANT_PARANOIA_COMPATIBILITY
+/** For compatibility with good ol' paranoia */
+#define linked_list linked_list_t
+#endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
 
 #define CDP_COMPILE
 #endif /*_P_BLOCK_H_*/

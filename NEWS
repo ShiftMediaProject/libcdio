@@ -1,8 +1,8 @@
-$Id: NEWS,v 1.81 2005/09/18 21:14:46 rocky Exp $
+$Id: NEWS,v 1.82 2005/09/20 00:42:14 rocky Exp $
 
 version 0.76
 =====================================
-2005-??-??
+2005-09-19
 
 - Better compatibility with C++
 
@@ -10,7 +10,7 @@ version 0.76
 
 - Fix bug in not specifying a device name in libcio_cdda
 
-- Add IS_ISSOCK() or S_ISLNK() macros for Rock-Ridge when environment
+- Add S_ISSOCK() or S_ISLNK() macros for Rock-Ridge when environment
   doesn't have it, e.g. MSYS 1.0.10 with MinGW 3.4.2.
 
 - Allow building cd-paranoia if Perl is not installed.
@@ -282,4 +282,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.81 2005/09/18 21:14:46 rocky Exp $
+$Id: NEWS,v 1.82 2005/09/20 00:42:14 rocky Exp $

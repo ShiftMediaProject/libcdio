@@ -1,5 +1,5 @@
 /*
-    $Id: p_block.c,v 1.7 2005/02/06 15:09:10 rocky Exp $
+    $Id: p_block.c,v 1.8 2005/09/20 00:42:14 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -35,15 +35,15 @@
 #include <cdio/cdda.h>
 #include <cdio/paranoia.h>
 
-linked_list *new_list(void *(*newp)(void),void (*freep)(void *))
+linked_list_t *new_list(void *(*newp)(void),void (*freep)(void *))
 {
-  linked_list *ret=calloc(1,sizeof(linked_list));
+  linked_list_t *ret=calloc(1,sizeof(linked_list_t));
   ret->new_poly=newp;
   ret->free_poly=freep;
   return(ret);
 }
 
-linked_element *add_elem(linked_list *l,void *elem)
+linked_element *add_elem(linked_list_t *l,void *elem)
 {
 
   linked_element *ret=calloc(1,sizeof(linked_element));
@@ -64,16 +64,16 @@ linked_element *add_elem(linked_list *l,void *elem)
 }
 
 linked_element *
-new_elem(linked_list *list)
+new_elem(linked_list_t *p_list)
 {
-  void *new=list->new_poly();
-  return(add_elem(list,new));
+  void *p_new=p_list->new_poly();
+  return(add_elem(p_list,p_new));
 }
 
 void 
 free_elem(linked_element *e,int free_ptr)
 {
-  linked_list *l=e->list;
+  linked_list_t *l=e->list;
   if(free_ptr)l->free_poly(e->ptr);
 
   if(e==l->head)
@@ -91,7 +91,7 @@ free_elem(linked_element *e,int free_ptr)
 } 
 
 void 
-free_list(linked_list *list,int free_ptr)
+free_list(linked_list_t *list,int free_ptr)
 {
   while(list->head)
     free_elem(list->head,free_ptr);
@@ -103,9 +103,9 @@ void *get_elem(linked_element *e)
   return(e->ptr);
 }
 
-linked_list *copy_list(linked_list *list)
+linked_list_t *copy_list(linked_list_t *list)
 {
-  linked_list *new=new_list(list->new_poly,list->free_poly);
+  linked_list_t *new=new_list(list->new_poly,list->free_poly);
   linked_element *i=list->tail;
 
   while(i){
@@ -264,7 +264,7 @@ v_prev(v_fragment_t *v)
 void 
 recover_cache(cdrom_paranoia_t *p)
 {
-  linked_list *l=p->cache;
+  linked_list_t *l=p->cache;
 
   /* Are we at/over our allowed cache size? */
   while(l->active>p->cache_limit)

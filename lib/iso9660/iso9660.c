@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.13 2005/03/03 10:32:01 rocky Exp $
+    $Id: iso9660.c,v 1.14 2005/09/20 00:42:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -48,7 +48,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.13 2005/03/03 10:32:01 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.14 2005/09/20 00:42:14 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -301,14 +301,15 @@ iso9660_name_translate(const char *psz_old, char *psz_new)
    The length of the translated string is returned.
 */
 int 
-iso9660_name_translate_ext(const char *old, char *new, uint8_t i_joliet_level)
+iso9660_name_translate_ext(const char *psz_oldname, char *psz_newname, 
+                           uint8_t i_joliet_level)
 {
-  int len = strlen(old);
+  int len = strlen(psz_oldname);
   int i;
 
   if (0 == len) return 0;
   for (i = 0; i < len; i++) {
-    unsigned char c = old[i];
+    unsigned char c = psz_oldname[i];
     if (!c)
       break;
     
@@ -316,20 +317,21 @@ iso9660_name_translate_ext(const char *old, char *new, uint8_t i_joliet_level)
     if (!i_joliet_level && isupper(c)) c = tolower(c);
     
     /* Drop trailing '.;1' (ISO 9660:1988 7.5.1 requires period) */
-    if (c == '.' && i == len - 3 && old[i + 1] == ';' && old[i + 2] == '1')
+    if (c == '.' && i == len - 3 
+        && psz_oldname[i + 1] == ';' && psz_oldname[i + 2] == '1')
       break;
     
     /* Drop trailing ';1' */
-    if (c == ';' && i == len - 2 && old[i + 1] == '1')
+    if (c == ';' && i == len - 2 && psz_oldname[i + 1] == '1')
       break;
     
     /* Convert remaining ';' to '.' */
     if (c == ';')
       c = '.';
     
-    new[i] = c;
+    psz_newname[i] = c;
   }
-  new[i] = '\0';
+  psz_newname[i] = '\0';
   return i;
 }
 
@@ -453,7 +455,8 @@ iso9660_set_evd(void *pd)
   memset(&ied, 0, sizeof(ied));
 
   ied.type = to_711(ISO_VD_END);
-  iso9660_strncpy_pad (ied.id, ISO_STANDARD_ID, sizeof(ied.id), ISO9660_DCHARS);
+  iso9660_strncpy_pad (ied.id, ISO_STANDARD_ID, sizeof(ied.id), 
+                       ISO9660_DCHARS);
   ied.version = to_711(ISO_VERSION);
 
   memcpy(pd, &ied, sizeof(ied));

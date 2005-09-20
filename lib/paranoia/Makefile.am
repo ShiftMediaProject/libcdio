@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.1 2004/12/18 17:29:32 rocky Exp $
+#   $Id: Makefile.am,v 1.2 2005/09/20 00:42:14 rocky Exp $
 #
 #    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -43,8 +43,10 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
+EXTRA_DIST = libcdio_cdda.sym
+
 libcdio_paranoia_la_CURRENT := 0
-libcdio_paranoia_la_REVISION := 0
+libcdio_paranoia_la_REVISION := 1
 libcdio_paranoia_la_AGE := 0
 
 noinst_HEADERS  = gap.h isort.h overlap.h p_block.h
@@ -56,8 +58,6 @@ lib_LTLIBRARIES = libcdio_paranoia.la
 
 libcdio_paranoia_la_SOURCES = $(libcdio_paranoia_sources)
 libcdio_paranoia_la_ldflags = -version-info $(libcdio_paranoia_la_CURRENT):$(libcdio_paranoia_la_REVISION):$(libcdio_paranoia_la_AGE)
-
-libcdio_paranoia_la_LDFLAGS = $(libcdio_paranoia_la_ldflags)
 
 INCLUDES = $(LIBCDIO_CFLAGS)
 
@@ -75,3 +75,79 @@ DEBUG=$(FLAGS)
 ##	$(MAKE) libcdio_paranoia.a CFLAGS="$(DEBUG)"
 
 LIBS = $(LIBCDIO_LIBS) $(LIBCDIO_CDDA_LIBS)
+
+
+########################################################
+# Things to version the symbols in the libraries
+########################################################
+
+# An explanation of the versioning problem from Nicolas Boullis and
+# the versioned symbol solution he uses below...
+# 
+# Currently, libvcdinfo uses the cdio_open function from libcdio.
+# Let's imagine a program foobar that uses both the vcdinfo_open
+# function from libvcdinfo and the cdio_open function from libcdio.
+
+# Currently, libcdio has SONAME libcdio.so.0, libvcdinfo has SONAME
+# libvcdinfo.so.0 and requires libcdio.so.0, and foobar requires both
+# libvcdinfo.so.0 and libcdio.so.0. Everything looks fine.
+#
+# Now, for some reason, you decide to change the cdio_open function.
+# That's your right, but you have to bump the CURRENT version and (if I
+# understand it correctly, athough this is not that clear in libtool's
+# documentation) set the AGE to 0. Anyway, this bumps the SONAME, which is
+# sane since the interface changes incompatibly.
+
+# Now, you have a new libcdio with SONAME libcdio.so.1. But libvcdinfo and
+# foobar still require libcdio.so.0. Everything is still fine.
+
+# Now, after some minor changes, the author of foobar recompiles foobar.
+# Then, foobar now requires libvcdinfo.so.0 and libcdio.so.1. And foobar
+# now segfaults...
+
+# What is happening? When you run foobar, if brings both libvcdinfo.so.0
+# and libcdio.so.1, but libvcdinfo.so.0 also brings libcdio.so.0. So you
+# have both libcdio.so.0 and libcdio.so.1 that bring their symbols to the
+# global namespace. Hence, you have to incompatible versions of the
+# cdio_open function in the name space. When foobar calls cdio_open, it
+# may choose the wrong function, and segfaults...
+
+# With versioned symbols, the cdio_open function from libcdio.so.0 may be
+# known as (something that looks like) cdio_open@@CDIO_0. An the cdio_open
+# function from libcdio.so.1 as cdio_open@@CDIO_1. Both versions of
+# libcdio would still be brought in by the most recent foobar, but foobar
+# (and libvcdinfo) know which versioned function to use and then use the
+# good one.
+
+
+# This is some simple versioning where every symbol is versioned with
+# something that looks like the SONAME of the library. More complex (and
+# better) versioning is possible; it is for example what is used by glibc.
+# But good complex versioning is something that requires much more
+# work...
+
+
+# The below is a impliments symbol versioning.  First of all, I
+# compute MAJOR as CURENT - AGE; that is what is used within libtool
+# (at least on GNU/Linux systems) for the number in the SONAME.  The
+# nm command gives the list of symbols known in each of the object
+# files that will be part of the shared library. And the sed command
+# extracts from this list those symbols that will be shared. (This sed
+# command comes from libtool.)
+
+libcdio_paranoia_la_MAJOR := $(shell expr $(libcdio_paranoia_la_CURRENT) - $(libcdio_paranoia_la_AGE))
+if BUILD_VERSIONED_LIBS
+libcdio_paranoia_la_LDFLAGS = $(libcdio_paranoia_la_ldflags) -Wl,--version-script=libcdio_paranoia.la.ver
+libcdio_paranoia_la_DEPENDENCIES = libcdio_paranoia.la.ver
+
+libcdio_paranoia.la.ver: $(libcdio_paranoia_la_OBJECTS) $(srcdir)/libcdio_paranoia.sym
+	echo 'CDIO_CDDA_$(libcdio_paranoia_la_MAJOR) { ' > $@
+	objs=`for obj in $(libcdio_paranoia_la_OBJECTS); do sed -ne "s/^pic_object='\(.*\)'$$/\1/p" $$obj; done`; \
+	nm $${objs} | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio_paranoia.sym; then if test $$first = true; then echo "  global:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@; \
+	nm $${objs} | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio_paranoia.sym; then :; else if test $$first = true; then echo "  local:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@
+	echo '};' >> $@
+else 
+libcdio_paranoia_la_LDFLAGS = $(libcdio_paranoia_la_ldflags)
+endif 
+
+MOSTLYCLEANFILES = libcdio_paranoia.la.ver
