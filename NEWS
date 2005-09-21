@@ -1,8 +1,8 @@
-$Id: NEWS,v 1.82 2005/09/20 00:42:14 rocky Exp $
+$Id: NEWS,v 1.83 2005/09/21 01:09:08 rocky Exp $
 
 version 0.76
 =====================================
-2005-09-19
+2005-09-2?
 
 - Better compatibility with C++
 
@@ -15,8 +15,7 @@ version 0.76
 
 - Allow building cd-paranoia if Perl is not installed.
 
-- Bugfix for cd-read and cd-info on archtectures where char is unsigned by
-  default.
+- Miscellaneous minor bug fixes.
 
 version 0.75
 =====================================
@@ -282,4 +281,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.82 2005/09/20 00:42:14 rocky Exp $
+$Id: NEWS,v 1.83 2005/09/21 01:09:08 rocky Exp $

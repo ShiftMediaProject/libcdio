@@ -19,7 +19,7 @@ define(RELEASE_NUM, 76)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.168 2005/09/18 20:30:33 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.169 2005/09/21 01:09:09 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -319,8 +319,9 @@ dnl system
 # FIXME:
 # I believe some OS's require -lm, but I don't recall for what function
 # When we find it, put it in below instead of "cos".
-AC_CHECK_LIB(m, cos, [LIBS="$LIBS -lm"])
+AC_CHECK_LIB(m, cos, [LIBS="$LIBS -lm"; COS_LIB="-lm"])
 CFLAGS="$CFLAGS $WARN_CFLAGS"
+AC_SUBST(COS_LIB)
 
 # Do we have GNU ld? If we don't, we can't build versioned symbols.
 if test "$with_gnu_ld" != yes; then
