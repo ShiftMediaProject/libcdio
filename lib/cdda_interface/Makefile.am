@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.7 2005/09/20 01:01:17 rocky Exp $
+#   $Id: Makefile.am,v 1.8 2005/09/21 17:45:59 nboullis Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -72,7 +72,7 @@ DEBUG=$(FLAGS) -DCDDA_TEST
 ##	$(CC) $(DEBUG) -c test_interface.c
 ##	$(LD) $(DEBUG) test_interface.o $(LDFLAGS) -o cdda_test $(LIBS) libcdio_cdda.a
 
-LIBS = $(LIBCDIO_LIBS)
+LIBS = $(LIBCDIO_LIBS) @COS_LIB@
 
 
 ########################################################
