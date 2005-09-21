@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.22 2005/08/27 14:25:58 rocky Exp $
+  $Id: cdda.h,v 1.23 2005/09/21 01:41:32 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -30,11 +30,18 @@
 #define _CDDA_INTERFACE_H_
 
 #include <cdio/cdio.h>
-#include <cdio/paranoia.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+/** cdrom_paranoia is an opaque structure which is used in all of the
+    library operations.
+ */
+typedef struct cdrom_paranoia_s cdrom_paranoia_t;
+typedef struct cdrom_drive_s   cdrom_drive_t;
+
+/** For compatibility. cdrom_drive_t is depricated, use cdrom_drive_t instead. */
 
 extern enum paranoia_cdda_enums {
   CDDA_MESSAGE_FORGETIT = 0,
@@ -377,6 +384,8 @@ const char *strerror_tr[]={
 #define cdda_track_preemp       cdio_cddap_track_preemp
 #define cdda_disc_firstsector   cdio_cddap_disc_firstsector
 #define cdda_disc_lastsector    cdio_cddap_disc_lastsector
+#define cdrom_drive              cdrom_drive_t
+
 #endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
 
 #ifdef __cplusplus

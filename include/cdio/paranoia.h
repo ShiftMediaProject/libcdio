@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.h,v 1.8 2005/01/29 20:54:20 rocky Exp $
+  $Id: paranoia.h,v 1.9 2005/09/21 01:41:32 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -29,7 +29,7 @@
 #ifndef _CDIO_PARANOIA_H_
 #define _CDIO_PARANOIA_H_
 
-#include <cdio/cdio.h>
+#include <cdio/cdda.h>
 
 /*! Paranoia likes to work with 16-bit numbers rather than
     (possibly byte-swapped) bytes. So there are this many 
@@ -48,16 +48,6 @@
 #define PARANOIA_MODE_SCRATCH     8
 #define PARANOIA_MODE_REPAIR      16
 #define PARANOIA_MODE_NEVERSKIP   32
-
-/** cdrom_paranoia is an opaque structure which is used in all of the
-    library operations.
- */
-typedef struct cdrom_paranoia_s cdrom_paranoia_t;
-typedef struct cdrom_drive_s   cdrom_drive_t;
-
-/** For compatibility. cdrom_drive_t is depricated, use cdrom_drive_t instead. */
-#define cdrom_drive cdrom_drive_t
-
 
 typedef enum  {
   PARANOIA_CB_READ,

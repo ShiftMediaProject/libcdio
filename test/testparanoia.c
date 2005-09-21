@@ -22,7 +22,7 @@
 # include "config.h"
 #endif
 
-#include <cdio/cdda.h>
+#include <cdio/paranoia.h>
 #include <cdio/cd_types.h>
 #include <stdio.h>
 
