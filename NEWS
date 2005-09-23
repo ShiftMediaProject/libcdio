@@ -1,8 +1,8 @@
-$Id: NEWS,v 1.84 2005/09/22 23:59:59 rocky Exp $
+$Id: NEWS,v 1.85 2005/09/23 09:08:48 rocky Exp $
 
 version 0.76
 =====================================
-2005-09-22
+2005-09-23
 
 - Better compatibility with C++
 
@@ -15,7 +15,13 @@ version 0.76
 
 - Allow building cd-paranoia if Perl is not installed.
 
+- More accurate library dependency tracking in linking and pkg-config 
+
 - Miscellaneous minor bug fixes.
+
+- cdio/cdda.h headers no longer depends on cdio/paranoia.h but vice versa
+  is true. This may require an #include <cdio/cdda.h> in some applications that
+  used <cdio/paranoia.h> but didn't include it.
 
 version 0.75
 =====================================
@@ -281,4 +287,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.84 2005/09/22 23:59:59 rocky Exp $
+$Id: NEWS,v 1.85 2005/09/23 09:08:48 rocky Exp $
