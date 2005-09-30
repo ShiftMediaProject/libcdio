@@ -15,11 +15,11 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 dnl 02111-1307, USA.
 
-define(RELEASE_NUM, 76)
-define(CDIO_VERSION_STR, 0.$1)
+define(RELEASE_NUM, 77)
+define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.170 2005/09/23 09:08:48 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.171 2005/09/30 01:09:16 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -379,7 +379,7 @@ case $host_os in
        ## AC_DEFINE([HAVE_AIX_CDROM], [1],
        ##     [Define 1 if you have AIX CD-ROM support])
        ;;
-     darwin6*|darwin7*)
+     darwin6*|darwin7*|darwin8*)
        AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h, 
                         [have_iokit_h="yes"])
        if test "x$have_iokit_h" = "xyes" ; then 
