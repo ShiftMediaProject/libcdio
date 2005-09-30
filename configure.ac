@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.171 2005/09/30 01:09:16 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.172 2005/09/30 01:10:54 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -650,7 +650,14 @@ chmod +x test/check_nrg.sh
 chmod +x test/check_cue.sh
 chmod +x test/check_iso.sh
 chmod +x test/check_paranoia.sh
-head -n 196 config.h > include/cdio/cdio_config.h
+# This is a big hack, but I don't know any other way around it.
+cat > include/cdio/cdio_config.h << EOF
+/** \file cdio_config.h 
+ *  \brief  configuration-time settings useful in compilation; a run-time
+    version of config.h
+*/
+EOF
+head -n 196 config.h >> include/cdio/cdio_config.h
 ]],[[]])
 
 AC_OUTPUT
