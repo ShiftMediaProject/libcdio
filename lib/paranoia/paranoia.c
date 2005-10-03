@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.11 2005/07/07 06:51:13 rocky Exp $
+  $Id: paranoia.c,v 1.12 2005/10/03 02:31:11 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -1213,19 +1213,7 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
     new=new_c_block(p);
   }
 
-  /* FIXME: We allocate one extra frame more than what we should be
-     using. In cdda_read() when the CD-ROM endian-ness is different
-     from the machine endian-ness and we need to swap bytes, we seem
-     to be accessing outside of buffer in some (but not all)
-     cases. This is probably due to this routine calling cdda_read
-     with parameter that would have it access outside the allocated
-     range. Since I don't know how to fix, we'll do the harmless over
-     allocation.
-     
-     On a sparc (Big Endian) Solaris with a little-endian CD-ROM. The
-     symptom would be that the calloc *after* the one below would fail.
-   */
-  buffer=calloc((totaltoread+1)*CDIO_CD_FRAMESIZE_RAW, 1);
+  buffer=calloc(totaltoread*CDIO_CD_FRAMESIZE_RAW, 1);
   sofar=0;
   firstread=-1;
   

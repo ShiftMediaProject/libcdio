@@ -1,5 +1,5 @@
 /*
-  $Id: cddap_interface.c,v 1.1 2005/02/05 16:25:51 rocky Exp $
+  $Id: cddap_interface.c,v 1.2 2005/10/03 02:31:11 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -191,9 +191,11 @@ jitter_read (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors,
     /* Had to reduce # of sectors due to read errors. So give full amount,
        with no jittering. */
     memcpy(p, p_buf, i_sectors*CDIO_CD_FRAMESIZE_RAW);
-  else 
+  else {
     /* Got full amount, but now adjust size for jittering. */
     memcpy(p, p_buf+i_jitter_offset, i_sectors_orig*CDIO_CD_FRAMESIZE_RAW);
+    i_sectors = i_sectors_orig;
+  }
 
   free(p_buf);
   return(i_sectors);
