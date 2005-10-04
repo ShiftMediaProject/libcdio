@@ -1,5 +1,5 @@
 /*
-  $Id: rock.c,v 1.13 2005/02/26 17:54:49 rocky Exp $
+  $Id: rock.c,v 1.14 2005/10/04 09:59:46 rocky Exp $
  
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -40,6 +40,8 @@
 #include <cdio/iso9660.h>
 #include <cdio/logging.h>
 #include <cdio/bytesex.h>
+
+#define CDIO_MKDEV(ma,mi)	((ma)<<16 | (mi))
 
 enum iso_rock_enums iso_rock_enums;
 iso_rock_nm_flag_t iso_rock_nm_flag;
@@ -365,11 +367,11 @@ parse_rock_ridge_stat_internal(iso9660_dir_t *p_iso9660_dir,
 	p_stat->rr.st_uid    = from_733(rr->u.PX.st_uid);
 	p_stat->rr.st_gid    = from_733(rr->u.PX.st_gid);
 	break;
-#ifdef DEV_FINISHED
       case SIG('P','N'):
-	{ int high, low;
-	  high = from_733(*rr->u.PN.dev_high);
-	  low = from_733(*rr->u.PN.dev_low);
+	/* Device major,minor number */
+	{ int32_t high, low;
+	  high = from_733(rr->u.PN.dev_high);
+	  low = from_733(rr->u.PN.dev_low);
 	  /*
 	   * The Rock Ridge standard specifies that if sizeof(dev_t) <= 4,
 	   * then the high field is unused, and the device number is completely
@@ -378,13 +380,12 @@ parse_rock_ridge_stat_internal(iso9660_dir_t *p_iso9660_dir,
 	   * stored in the low field, and use that.
 	   */
 	  if((low & ~0xff) && high == 0) {
-	    p_stat->rr.i_rdev = MKDEV(low >> 8, low & 0xff);
+	    p_stat->rr.i_rdev = CDIO_MKDEV(low >> 8, low & 0xff);
 	  } else {
-	    p_stat->rr.i_rdev = MKDEV(high, low);
+	    p_stat->rr.i_rdev = CDIO_MKDEV(high, low);
 	  }
 	}
 	break;
-#endif
       case SIG('T','F'): 
 	/* Time stamp(s) for a file */
 	{

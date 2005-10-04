@@ -1,5 +1,5 @@
 /*
-    $Id: rock.h,v 1.10 2005/09/15 06:36:01 rocky Exp $
+    $Id: rock.h,v 1.11 2005/10/04 09:59:46 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -318,6 +318,9 @@ typedef struct iso_rock_statbuf_s {
                                          9660:9.5.6. */
   iso_rock_time_t effective;          /**< Effective time; See ISO 9660:9.5.7.
                                        */
+  uint32_t i_rdev;                    /**< the upper 16-bits is major device 
+                                         number, the lower 16-bits is the
+                                         minor device number */
 
 } iso_rock_statbuf_t;
   
