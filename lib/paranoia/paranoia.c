@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.12 2005/10/03 02:31:11 rocky Exp $
+  $Id: paranoia.c,v 1.13 2005/10/04 00:38:34 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -1238,7 +1238,6 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
       
       if (firstread<0) firstread = adjread;
 
-      /* See FIXME note above about a possibly erroneous call here. */
       thisread = cdda_read(p->d, buffer+sofar*CD_FRAMEWORDS, adjread, secread);
 
       if ( thisread < secread) {

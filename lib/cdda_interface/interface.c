@@ -1,5 +1,5 @@
 /*
-  $Id: interface.c,v 1.24 2005/04/30 07:15:51 rocky Exp $
+  $Id: interface.c,v 1.25 2005/10/04 00:38:34 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -152,13 +152,6 @@ cdio_cddap_read(cdrom_drive_t *d, void *buffer, lsn_t beginsector,
 	  uint16_t *p=(uint16_t *)buffer;
 	  long els=sectors*CDIO_CD_FRAMESIZE_RAW/2;
 	  
-	  /* Note: Something perhaps in the original cdparanoia code might
-	     cause the code to access outside of the allocated range of
-	     buffer. This comment is just to serve as a marker for
-	     the loop where the data got clobbered. I don't think this
-	     code however is wrong. See the comment in i_read_c_block 
-	     of paranioa.c 
-	  */
 	  for(i=0;i<els;i++)
 	    p[i]=UINT16_SWAP_LE_BE_C(p[i]);
 	}
