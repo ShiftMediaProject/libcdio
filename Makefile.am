@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.35 2005/02/05 23:16:34 rocky Exp $
+#   $Id: Makefile.am,v 1.36 2005/10/05 09:48:11 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,7 +20,7 @@
 ##   which configure then turns into a Makefile  ...
 ##     which make can then use to produce stuff. Isn't configuration simple? 
 
-EXTRA_DIST = libpopt.m4 THANKS README.libcdio \
+EXTRA_DIST = THANKS README.libcdio \
 	     package/libcdio.spec.in package/libcdio.spec \
 	     libcdio.pc.in libcdio.pc \
 	     libcdio_cdda.pc.in libcdio_cdda.pc \

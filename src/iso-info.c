@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.30 2005/03/18 12:56:00 rocky Exp $
+    $Id: iso-info.c,v 1.31 2005/10/05 09:48:12 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -47,6 +47,7 @@
 
 #include <errno.h>
 
+#include <getopt.h>
 
 #if 0
 #define STRONG "\033[1m"
@@ -73,7 +74,10 @@ struct arguments
      
 /* Configuration option codes */
 enum {
-  
+  OP_HANDLED = 0,
+
+  OP_USAGE,
+
   /* These are the remaining configuration options */
   OP_VERSION,  
   
@@ -84,75 +88,95 @@ char *temp_str;
 
 /* Parse a all options. */
 static bool
-parse_options (int argc, const char *argv[])
+parse_options (int argc, char *argv[])
 {
   int opt;
 
-  struct poptOption optionsTable[] = {
-    {"debug",       'd', POPT_ARG_INT, &opts.debug_level, 0,
-     "Set debugging to LEVEL"},
-    
-    {"input", 'i', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 0,
-     "Filename to read ISO-9960 image from", "FILE"},
-    
-    {'\0',    'f', POPT_ARG_NONE, &opts.print_iso9660_short, 0,
-     "Generate output similar to 'find . -print'"},
-
-    {"iso9660",  'l', POPT_ARG_NONE, &opts.print_iso9660, 0,
-     "Generate output similar to 'ls -lR'"},
-    
-    {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
-     0, "Don't display header and copyright (for regression testing)"},
-
+  const char* helpText =
+    "Usage: %s [OPTION...]\n"
+    "  -d, --debug=INT        Set debugging to LEVEL\n"
+    "  -i, --input[=FILE]     Filename to read ISO-9960 image from\n"
+    "  -f                     Generate output similar to 'find . -print'\n"
+    "  -l, --iso9660          Generate output similar to 'ls -lR'\n"
+    "  --no-header            Don't display header and copyright (for regression\n"
+    "                         testing)\n"
 #ifdef HAVE_JOLIET    
-    {"no-joliet", '\0', POPT_ARG_NONE, &opts.no_joliet, 
-     0, "Don't use Joliet-extension information"},
+    "  --no-joliet            Don't use Joliet-extension information\n"
 #endif /*HAVE_JOLIET*/
-    
-    {"no-rock-ridge", '\0', POPT_ARG_NONE, &opts.no_rock_ridge, 
-     0, "Don't use Rock-Ridge-extension information"},
+    "  --no-rock-ridge        Don't use Rock-Ridge-extension information\n"
+    "  --no-xa                Don't use XA-extension information\n"
+    "  -q, --quiet            Don't produce warning output\n"
+    "  -V, --version          display version and copyright information and exit\n"
+    "\n"
+    "Help options:\n"
+    "  -?, --help             Show this help message\n"
+    "  --usage                Display brief usage message\n";
 
-    {"no-xa", '\0', POPT_ARG_NONE, &opts.no_xa, 
-     0, "Don't use XA-extension information"},
+  const char* usageText =
+    "Usage: %s [-d|--debug INT] [-i|--input FILE] [-f] [-l|--iso9660]\n"
+    "        [--no-header] [--no-joliet] [--no-rock-ridge] [--no-xa] [-q|--quiet]\n"
+    "        [-V|--version] [-?|--help] [--usage]\n";
 
-    {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
-     "Don't produce warning output" },
-    
-    {"version", 'V', POPT_ARG_NONE, &opts.version_only, 0,
-     "display version and copyright information and exit"},
-    POPT_AUTOHELP {NULL, 0, 0, NULL, 0}
+  const char* optionsString = "d:i::flqV?";
+  struct option optionsTable[] = {
+    {"debug", required_argument, NULL, 'd'},
+    {"input", optional_argument, NULL, 'i'},
+    {"iso9660", no_argument, NULL, 'l'},
+    {"no-header", no_argument, &opts.no_header, 1 },
+#ifdef HAVE_JOLIET    
+    {"no-joliet", no_argument, &opts.no_joliet, 1 },
+#endif /*HAVE_JOLIET*/
+    {"no-rock-ridge", no_argument, &opts.no_rock_ridge, 1 },
+    {"no-xa", no_argument, &opts.no_xa, 1 },
+    {"quiet", no_argument, NULL, 'q'},
+    {"version", no_argument, NULL, 'V'},
+
+    {"help", no_argument, NULL, '?' },
+    {"usage", no_argument, NULL, OP_USAGE },
+    { NULL, 0, NULL, 0 }
   };
-  poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
   program_name = strrchr(argv[0],'/');
   program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
-  while ((opt = poptGetNextOpt (optCon)) >= 0) {
-    ;
-  }
-  if (opt < -1) {
-    /* an error occurred during option processing */
-    report(stderr, "%s: %s\n",
-	    poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
-	    poptStrerror(opt));
-    free(program_name);
-    exit (EXIT_FAILURE);
-  }
-  {
-    const char *remaining_arg = poptGetArg(optCon);
-    if ( remaining_arg != NULL) {
-      if ( (poptGetArgs(optCon)) != NULL) {
-	report( stderr, "%s: Source specified in previously %s and %s\n", 
-		    program_name, source_name, remaining_arg );
-	poptFreeContext(optCon);
-	free(program_name);
-	exit (EXIT_FAILURE);
+  while ((opt = getopt_long(argc, argv, optionsString, optionsTable, NULL)) >= 0) {
+    switch (opt)
+      {
+      case 'd': opts.debug_level = atoi(optarg); break;
+      case 'i': if (optarg != NULL) source_name = strdup(optarg); break;
+      case 'f': opts.print_iso9660_short = 1; break;
+      case 'l': opts.print_iso9660 = 1; break;
+      case 'q': opts.silent = 1; break;
+      case 'V': opts.version_only = 1; break;
+	
+      case '?':
+        fprintf(stderr, helpText, program_name);
+        free(program_name);
+        exit(EXIT_FAILURE);
+        break;
+
+      case OP_USAGE:
+        fprintf(stderr, usageText, program_name);
+        free(program_name);
+        exit(EXIT_FAILURE);
+        break;
+
+      case OP_HANDLED:
+	break;
       }
-      source_name = strdup(remaining_arg);
+  }
+
+  if (optind < argc) {
+    const char *remaining_arg = argv[optind++];
+    if ( optind < argc ) {
+      report( stderr, "%s: Source specified in previously %s and %s\n", 
+	      program_name, source_name, remaining_arg );
+      free(program_name);
+      exit (EXIT_FAILURE);
     }
+    source_name = strdup(remaining_arg);
   }
   
-  poptFreeContext(optCon);
   return true;
 }
 
@@ -286,7 +310,7 @@ init(void)
 /* ------------------------------------------------------------------------ */
 
 int
-main(int argc, const char *argv[])
+main(int argc, char *argv[])
 {
 
   iso9660_t           *p_iso=NULL;

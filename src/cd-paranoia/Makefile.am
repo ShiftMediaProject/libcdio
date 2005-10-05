@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.15 2005/09/17 01:33:29 rocky Exp $
+#   $Id: Makefile.am,v 1.16 2005/10/05 09:48:12 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -19,17 +19,11 @@
 #
 ###############################################################################
 
-if HAVE_GETOPT_LONG
-else
-getopt_sources = getopt.c getopt1.c
-endif
-
-EXTRA_DIST = getopt.c getopt1.c \
-	     usage.txt.in usage-copy.h pod2c.pl \
+EXTRA_DIST = usage.txt.in usage-copy.h pod2c.pl \
              doc/FAQ.txt doc/overlapdef.txt
 
 
-noinst_HEADERS = getopt.h header.h report.h 
+noinst_HEADERS = header.h report.h 
 
 transform = s,cd-paranoia,@CDPARANOIA_NAME@,
 

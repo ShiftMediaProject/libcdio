@@ -1,5 +1,5 @@
 /*
-    $Id: osx.c,v 1.4 2005/09/30 00:01:09 rocky Exp $
+    $Id: osx.c,v 1.5 2005/10/05 09:48:12 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: osx.c,v 1.4 2005/09/30 00:01:09 rocky Exp $";
+static const char _rcsid[] = "$Id: osx.c,v 1.5 2005/10/05 09:48:12 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -1627,15 +1627,9 @@ cdio_get_devices_osx(void)
 				  sizeof(psz_buf) - dev_path_length,
 				  kCFStringEncodingASCII ) )
 	    {
-	      CFRelease( str_bsd_path );
-	      IOObjectRelease( next_media );
-	      IOObjectRelease( media_iterator );
 	      cdio_add_device_list(&drives, strdup(psz_buf), &num_drives);
 	    }
-	  else 
-	    {
-	      CFRelease( str_bsd_path );
-	    }
+	  CFRelease( str_bsd_path );
 	  IOObjectRelease( next_media );
 	  
 	} while( ( next_media = IOIteratorNext( media_iterator ) ) != 0 );

@@ -1,3 +1,6 @@
+Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
+  some GNU/Linux and CD-Text patches
+
 Diego 'Flameeyes' Pettenò 
   patches to FreeBSD and making Gentoo-friendly
 
@@ -30,8 +33,9 @@ Michael Kukat <michael at unixiron.org>,
 Nicolas Boullis <nboullis at debian.org>
   Build issues, library symbol versioning, Debian packaging and issues
 
-Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
-  some GNU/Linux and CD-Text patches
+Peter J. Creath
+  removal of libpopt, paranoia documentation, some bug fixes to 
+  cd-* programs and the paranoia lib
 
 Steven M. Schultz <sms at 2BSD.COM>
   All things BSDI and the use of a really fabulous Darwin G5 box.

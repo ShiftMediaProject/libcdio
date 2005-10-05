@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.172 2005/09/30 01:10:54 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.173 2005/10/05 09:48:11 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -152,14 +152,6 @@ AC_SUBST(CMP)
 AC_PATH_PROG(OLD_CDPARANOIA, cdparanoia, no)
 AC_SUBST(OLD_CDPARANOIA)
 
-AM_PATH_LIBPOPT(, 
-  [AC_MSG_WARN([Diagnostic programs cd-drive, cd-info, cd-read, iso-info, and is-read will not get built.])
-  		  enable_cd_info=no; 
-		  enable_cd_drive=no; 
-		  enable_cd_read=no; 
-		  enable_iso_info=no; 
-		  enable_iso_read=no])
-
 AC_DEFINE(LIBCDIO_CONFIG_H, 1, 
   [Is set when libcdio's config.h has been included. Applications wishing to sue their own config.h values (such as set by the application's configure script can define this before including any of libcdio's headers.])
 
@@ -168,8 +160,11 @@ dnl headers
 AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h fcntl.h glob.h pwd.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h)
-
 AC_CHECK_HEADERS(ncurses.h curses.h, break, [enable_cdda_player='no'])
+
+dnl FreeBSD 4 has getopt in unistd.h. So we include that before
+dnl getopt.h 
+AC_CHECK_HEADERS(unistd.h getopt.h)
 
 AC_SUBST(SBPCD_H)
 AC_SUBST(UCDROM_H)
@@ -187,38 +182,6 @@ AC_TRY_COMPILE([],[_Pragma("pack(1)")], [
   AC_DEFINE(HAVE_ISOC99_PRAGMA, [], [Supports ISO _Pragma() macro])
 ],ISOC99_PRAGMA=no)
 AC_MSG_RESULT($ISOC99_PRAGMA)
-
-##
-## Check for GNU getopt_long()
-##
-AC_MSG_CHECKING(for GNU getopt_long)
-AC_TRY_RUN([
-#include <stdio.h>
-#include <stdlib.h>
-#include <getopt.h>
-
-static struct option long_options[] = {
-  {"help"    , no_argument, 0, 1 },
-  {"version" , no_argument, 0, 2 },
-  {0         , no_argument, 0, 0 }
-};
-
-int main(int argc, char **argv) {
-  int option_index = 0;
-  int c;
-
-  opterr = 0;
-  while((c = getopt_long(argc, argv, "?hv", 
-			 long_options, &option_index)) != EOF) {
-  }
-  return 0;
-}
-], [AC_MSG_RESULT(yes); ac_getopt_long=yes; 
-     AC_DEFINE(HAVE_GETOPT_LONG, [], 
-     [Define this if you have GNU getopt_long()])],
-   [AC_MSG_RESULT(no); ac_getopt_long=no],
-   [AC_MSG_RESULT(no); ac_getopt_long=no])
-AM_CONDITIONAL(HAVE_GETOPT_LONG, test x"$ac_getopt_long" = "xyes")
 
 ##
 ## Check for S_ISSOCK() and S_ISLNK() macros

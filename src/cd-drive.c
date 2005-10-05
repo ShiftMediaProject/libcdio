@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.23 2005/04/30 10:05:11 rocky Exp $
+  $Id: cd-drive.c,v 1.24 2005/10/05 09:48:12 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -28,6 +28,7 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#include <getopt.h>
 #include <cdio/cdio.h>
 #include <cdio/scsi_mmc.h>
 
@@ -43,44 +44,64 @@ struct arguments
      
 /* Configuration option codes */
 enum {
+  OP_HANDLED,
+
   OP_SOURCE_DEVICE,
-  
+
+  OP_USAGE,
+
   /* These are the remaining configuration options */
   OP_VERSION,  
   
 };
 
-/* Parse a all options. */
+/* Parse all options. */
 static bool
-parse_options (int argc, const char *argv[])
+parse_options (int argc, char *argv[])
 {
   int opt;
 
-  struct poptOption optionsTable[] = {
-    {"debug",       'd', POPT_ARG_INT, &opts.debug_level, 0,
-     "Set debugging to LEVEL"},
-    
-    {"cdrom-device", 'i', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, 
-     &source_name, OP_SOURCE_DEVICE,
-     "show only info about CD-ROM device", "DEVICE"},
-    
-    {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
-     "Don't produce warning output" },
-    
-    {"version", 'V', POPT_ARG_NONE, &opts.version_only, 0,
-     "display version and copyright information and exit"},
-    POPT_AUTOHELP {NULL, 0, 0, NULL, 0}
+  const char* helpText =
+    "Usage: %s [OPTION...]\n" 
+    "  -d, --debug=INT                 Set debugging to LEVEL\n"
+    "  -i, --cdrom-device[=DEVICE]     show only info about CD-ROM device\n"
+    "  -q, --quiet                     Don't produce warning output\n"
+    "  -V, --version                   display version and copyright information\n"
+    "                                  and exit\n"
+    "\n"
+    "Help options:\n"
+    "  -?, --help                      Show this help message\n"
+    "  --usage                         Display brief usage message\n";
+  
+  const char* usageText =
+    "Usage: %s [-d|--debug INT] [-i|--cdrom-device DEVICE] [-q|--quiet]\n"
+    "        [-V|--version] [-?|--help] [--usage]\n";
+
+  const char* optionsString = "d:i::qV?";
+  struct option optionsTable[] = {
+    {"debug", required_argument, NULL, 'd' },
+    {"cdrom-device", optional_argument, NULL, 'i' },
+    {"quiet", no_argument, NULL, 'q' },
+    {"version", no_argument, NULL, 'V' },
+    {"help", no_argument, NULL, '?' },
+    {"usage", no_argument, NULL, OP_USAGE },
+    {NULL, 0, NULL, 0 }
   };
-  poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
   program_name = strrchr(argv[0],'/');
   program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
-  while ((opt = poptGetNextOpt (optCon)) != -1) {
+  while ((opt = getopt_long(argc, argv, optionsString, optionsTable, NULL)) != -1) {
     switch (opt) {
-      
-    case OP_SOURCE_DEVICE: 
+    case 'd':
+      opts.debug_level = atoi(optarg);
+      break;
+
+    case 'i': 
       if (opts.source_image != DRIVER_UNKNOWN) {
+	/* NOTE: The libpopt version already set source_name by this time.
+	   To restore this behavior, fall through to the else{} block.
+	*/
 	report( stderr, "%s: another source type option given before.\n", 
 		program_name );
 	report( stderr, "%s: give only one source type option.\n", 
@@ -88,44 +109,66 @@ parse_options (int argc, const char *argv[])
 	break;
       } else {
 	opts.source_image  = DRIVER_DEVICE;
-	source_name = fillout_device_name(source_name);
+	if (optarg != NULL) {
+	  source_name = fillout_device_name(optarg);
+	}
 	break;
       }
       break;
-      
+
+    case 'q':
+      opts.silent = 1;
+      break;
+
+    case 'V':
+      opts.version_only = 1;
+      break;
+
+    case '?':
+      fprintf(stderr, helpText, program_name);
+      free(program_name);
+      exit(EXIT_FAILURE);
+      break;
+
+    case OP_USAGE:
+      fprintf(stderr, usageText, program_name);
+      free(program_name);
+      exit(EXIT_FAILURE);
+      break;
+
+    case OP_HANDLED:
+      break;
+
     default:
-      poptFreeContext(optCon);
       return false;
     }
   }
-  {
-    const char *remaining_arg = poptGetArg(optCon);
-    if ( remaining_arg != NULL) {
-      if (opts.source_image != DRIVER_UNKNOWN) {
-	report( stderr, "%s: Source specified in option %s and as %s\n", 
-		program_name, source_name, remaining_arg);
-	poptFreeContext(optCon);
-	free(program_name);
-	exit (EXIT_FAILURE);
-      }
+  if (optind < argc) {
+    const char *remaining_arg = argv[optind++];
+
+    /* NOTE: A bug in the libpopt version checked source_image, which
+       rendered the subsequent source_image test useless.
+    */
+    if (source_name != NULL) {
+      report( stderr, "%s: Source specified in option %s and as %s\n", 
+	      program_name, source_name, remaining_arg);
+      free(program_name);
+      exit (EXIT_FAILURE);
+    }
       
-      if (opts.source_image == DRIVER_DEVICE)
-	source_name = fillout_device_name(remaining_arg);
-      else 
-	source_name = strdup(remaining_arg);
-      
-      if ( (poptGetArgs(optCon)) != NULL) {
-	report( stderr, "%s: Source specified in previously %s and %s\n", 
-		program_name, source_name, remaining_arg);
-	poptFreeContext(optCon);
-	free(program_name);
-	exit (EXIT_FAILURE);
-	
-      }
+    if (opts.source_image == DRIVER_DEVICE)
+      source_name = fillout_device_name(remaining_arg);
+    else 
+      source_name = strdup(remaining_arg);
+
+    if (optind < argc) {
+      report( stderr, "%s: Source specified in previously %s and %s\n", 
+	      program_name, source_name, remaining_arg);
+      free(program_name);
+      exit (EXIT_FAILURE);
     }
   }
   
-  poptFreeContext(optCon);
   return true;
 }
 
@@ -187,7 +230,7 @@ init(void)
 }
 
 int
-main(int argc, const char *argv[])
+main(int argc, char *argv[])
 {
   CdIo_t *p_cdio=NULL;
   

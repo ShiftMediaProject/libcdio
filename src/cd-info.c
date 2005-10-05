@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.144 2005/09/18 20:34:02 rocky Exp $
+    $Id: cd-info.c,v 1.145 2005/10/05 09:48:12 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -27,6 +27,7 @@
 #include "util.h"
 #include "cddb.h"
 #include <stdarg.h>
+#include <getopt.h>
 
 #ifdef HAVE_CDDB
 #include <cddb/cddb.h>
@@ -95,6 +96,7 @@ struct opts_s
      
 /* Configuration option codes */
 enum {
+  OP_HANDLED = 0,
   
   OP_SOURCE_UNDEF,
   OP_SOURCE_AUTO,
@@ -103,7 +105,15 @@ enum {
   OP_SOURCE_CDRDAO,
   OP_SOURCE_NRG ,
   OP_SOURCE_DEVICE,
-  
+
+  OP_CDDB_SERVER,
+  OP_CDDB_CACHE,
+  OP_CDDB_EMAIL,
+  OP_CDDB_NOCACHE,
+  OP_CDDB_TIMEOUT,
+
+  OP_USAGE,
+
   /* These are the remaining configuration options */
   OP_VERSION,  
   
@@ -111,235 +121,263 @@ enum {
 
 char *temp_str;
 
-/* Parse a all options. */
+/* Parse source options. */
+static void
+parse_source(int opt)
+{
+  /* NOTE: The libpopt version made use of an extra temporary
+     variable (psz_my_source) for all sources _except_ devices.
+     This distinction seemed to serve no purpose.
+  */
+
+  if (opts.source_image != INPUT_UNKNOWN) {
+    report(stderr, "%s: another source type option given before.\n", 
+	   program_name);
+    report(stderr, "%s: give only one source type option.\n", 
+	   program_name);
+    return;
+  } 
+
+  /* For all input sources which are not a DEVICE, we need to make
+     a copy of the string; for a DEVICE the fill-out routine makes
+     the copy.
+  */
+  if (OP_SOURCE_DEVICE != opt) 
+    if (optarg != NULL) source_name = strdup(optarg);
+  
+  switch (opt) {
+  case OP_SOURCE_BIN: 
+    opts.source_image  = INPUT_BIN;
+    break;
+  case OP_SOURCE_CUE: 
+    opts.source_image  = INPUT_CUE;
+    break;
+  case OP_SOURCE_CDRDAO: 
+    opts.source_image  = INPUT_CDRDAO;
+    break;
+  case OP_SOURCE_NRG: 
+    opts.source_image  = INPUT_NRG;
+    break;
+  case OP_SOURCE_AUTO:
+    opts.source_image  = INPUT_AUTO;
+    break;
+    
+  case OP_SOURCE_DEVICE: 
+    opts.source_image  = INPUT_DEVICE;
+    if (optarg != NULL) source_name = fillout_device_name(optarg);
+    break;
+  }
+}
+
+
+/* Parse all options. */
 static bool
-parse_options (int argc, const char *argv[])
+parse_options (int argc, char *argv[])
 {
   int opt; /* used for argument parsing */
-  char *psz_my_source;
-  
-  struct poptOption optionsTable[] = {
-    {"access-mode",       'a', POPT_ARG_STRING, &opts.access_mode, 0,
-     "Set CD access methed"},
-    
-    {"debug",       'd', POPT_ARG_INT, &opts.debug_level, 0,
-     "Set debugging to LEVEL"},
-    
-    {"no-tracks",   'T', POPT_ARG_NONE, &opts.no_tracks, 0,
-     "Don't show track information"},
-    
-    {"no-analyze",  'A', POPT_ARG_NONE, &opts.no_analysis, 0,
-     "Don't filesystem analysis"},
-    
+
+  const char* helpText =
+    "Usage: %s [OPTION...]\n"
+    "  -a, --access-mode=STRING        Set CD access method\n"
+    "  -d, --debug=INT                 Set debugging to LEVEL\n"
+    "  -T, --no-tracks                 Don't show track information\n"
+    "  -A, --no-analyze                Don't filesystem analysis\n"
 #ifdef HAVE_CDDB
-    {"no-cddb",     '\0', POPT_ARG_NONE, &opts.no_cddb, 0,
-     "Don't look up audio CDDB information or print that"},
-    
-    {"cddb-port",   'P', POPT_ARG_INT, &cddb_opts.port, 8880,
-     "CDDB port number to use (default 8880)"},
-    
-    {"cddb-http",   'H', POPT_ARG_NONE, &cddb_opts.http, 0,
-     "Lookup CDDB via HTTP proxy (default no proxy)"},
-    
-    {"cddb-server", '\0', POPT_ARG_STRING, &cddb_opts.server, 0,
-     "CDDB server to contact for information (default: freedb.freedb.org)"},
-    
-    {"cddb-cache",  '\0', POPT_ARG_STRING, &cddb_opts.cachedir, 0,
-     "Location of CDDB cache directory (default ~/.cddbclient)"},
-    
-    {"cddb-email",  '\0', POPT_ARG_STRING, &cddb_opts.email, 0,
-     "Email address to give CDDB server (default me@home"},
-    
-    {"no-cddb-cache", '\0', POPT_ARG_NONE, &cddb_opts.disable_cache, 0,
-     "Lookup CDDB via HTTP proxy (default no proxy)"},
-    
-    {"cddb-timeout",  '\0', POPT_ARG_INT, &cddb_opts.timeout, 0,
-     "CDDB timeout value in seconds (default 10 seconds)"},
-#else 
-    {"no-cddb",     '\0', POPT_ARG_NONE, &opts.no_cddb, 0,
-     "Does nothing since this program is not CDDB-enabled"},
-    
-    {"cddb-port",   'P', POPT_ARG_INT, &cddb_opts.port, 8880,
-     "Does nothing since this program is not CDDB-enabled"},
-    
-    {"cddb-http",   'H', POPT_ARG_NONE, &cddb_opts.http, 0,
-     "Does nothing since this program is not CDDB-enabled"},
-    
-    {"cddb-server", '\0', POPT_ARG_STRING, &cddb_opts.server, 0,
-     "Does nothing since this program is not CDDB-enabled"},
-    
-    {"cddb-cache",  '\0', POPT_ARG_STRING, &cddb_opts.cachedir, 0,
-     "Does nothing since this program is not CDDB-enabled"},
-    
-    {"cddb-email",  '\0', POPT_ARG_STRING, &cddb_opts.email, 0,
-     "Does nothing since this program is not CDDB-enabled"},
-    
-    {"no-cddb-cache", '\0', POPT_ARG_NONE, &cddb_opts.disable_cache, 0,
-     "Does nothing since this program is not CDDB-enabled"},
-    
-    {"cddb-timeout",  '\0', POPT_ARG_INT, &cddb_opts.timeout, 0,
-     "Does nothing since this program is not CDDB-enabled"},
+    "  --no-cddb                       Don't look up audio CDDB information\n"
+    "                                  or print it\n"
+    "  -P, --cddb-port=INT             CDDB port number to use (default 8880)\n"
+    "  -H, --cddb-http                 Lookup CDDB via HTTP proxy (default no\n"
+    "                                  proxy)\n"
+    "  --cddb-server=STRING            CDDB server to contact for information\n"
+    "                                  (default: freedb.freedb.org)\n"
+    "  --cddb-cache=STRING             Location of CDDB cache directory\n"
+    "                                  (default ~/.cddbclient)\n"
+    "  --cddb-email=STRING             Email address to give CDDB server\n"
+    "                                  (default me@home)\n"
+    "  --no-cddb-cache                 Disable caching of CDDB entries\n"
+    "                                  locally (default caches)\n"
+    "  --cddb-timeout=INT              CDDB timeout value in seconds\n"
+    "                                  (default 10 seconds)\n"
+#else
+    "  --no-cddb                       Does nothing since this program is not\n"
+    "  -P, --cddb-port=INT             CDDB-enabled\n"
+    "  -H, --cddb-http\n"
+    "  --cddb-server=STRING\n"
+    "  --cddb-cache=STRING\n"
+    "  --cddb-email=STRING\n"
+    "  --no-cddb-cache\n"
+    "  --cddb-timeout=INT\n"
 #endif
-  
-    {"no-device-info", '\0', POPT_ARG_NONE, &opts.no_device, 0,
-     "Don't show device info, just CD info"},
-    
-    {"no-disc-mode", '\0', POPT_ARG_NONE, &opts.no_disc_mode, 0,
-     "Don't show disc-mode info"},
-    
-    {"dvd",   '\0', POPT_ARG_NONE, &opts.show_dvd, 0,
-     "Attempt to give DVD information if a DVD is found."},
-
+    "  --no-device-info                Don't show device info, just CD info\n"
+    "  --no-disc-mode                  Don't show disc-mode info\n"
+    "  --dvd                           Attempt to give DVD information if a DVD is\n"
+    "                                  found.\n"
 #ifdef HAVE_VCDINFO
-    {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 0,
-     "Don't look up Video CD information"},
-#else 
-    {"no-vcd",   'v', POPT_ARG_NONE, &opts.no_vcd, 1,
-     "Don't look up Video CD information - for this build, this is always set"},
+    "  -v, --no-vcd                    Don't look up Video CD information\n"
+#else
+    "  -v, --no-vcd                    Don't look up Video CD information - for\n"
+    "                                  this build, this is always set\n"
 #endif
-    {"no-ioctl",  'I', POPT_ARG_NONE,  &opts.no_ioctl, 0,
-     "Don't show ioctl() information"},
-    
-    {"bin-file", 'b', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
-     OP_SOURCE_BIN, "set \"bin\" CD-ROM disk image file as source", "FILE"},
-    
-    {"cue-file", 'c', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
-     OP_SOURCE_CUE, "set \"cue\" CD-ROM disk image file as source", "FILE"},
-    
-    {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
-     OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
-    
-    {"toc-file", 't', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
-     OP_SOURCE_CDRDAO, "set cdrdao CD-ROM disk image file as source", "FILE"},
-    
-    {"input", 'i', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
-     OP_SOURCE_AUTO,
-     "set source and determine if \"bin\" image or device", "FILE"},
-    
-    {"iso9660",  '\0', POPT_ARG_NONE, &opts.print_iso9660, 0,
-     "print directory contents of any ISO-9660 filesystems"},
-    
-    {"cdrom-device", 'C', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name, 
-     OP_SOURCE_DEVICE,
-     "set CD-ROM device as source", "DEVICE"},
-    
-    {"list-drives",   'l', POPT_ARG_NONE, &opts.list_drives, 0,
-     "Give a list of CD-drives" },
-    
-    {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
-     0, "Don't display header and copyright (for regression testing)"},
+    "  -I, --no-ioctl                  Don't show ioctl() information\n"
+    "  -b, --bin-file[=FILE]           set \"bin\" CD-ROM disk image file as source\n"
+    "  -c, --cue-file[=FILE]           set \"cue\" CD-ROM disk image file as source\n"
+    "  -N, --nrg-file[=FILE]           set Nero CD-ROM disk image file as source\n"
+    "  -t, --toc-file[=FILE]           set cdrdao CD-ROM disk image file as source\n"
+    "  -i, --input[=FILE]              set source and determine if \"bin\" image or\n"
+    "                                  device\n"
+    "  --iso9660                       print directory contents of any ISO-9660\n"
+    "                                  filesystems\n"
+    "  -C, --cdrom-device[=DEVICE]     set CD-ROM device as source\n"
+    "  -l, --list-drives               Give a list of CD-drives\n"
+    "  --no-header                     Don't display header and copyright (for\n"
+    "                                  regression testing)\n"
+#ifdef HAVE_JOLIET
+    "  --no-joliet                     Don't use Joliet extensions\n"
+#endif
+    "  --no-rock-ridge                 Don't use Rock-Ridge-extension information\n"
+    "  --no-xa                         Don't use XA-extension information\n"
+    "  -q, --quiet                     Don't produce warning output\n"
+    "  -V, --version                   display version and copyright information\n"
+    "                                  and exit\n"
+    "\n"
+    "Help options:\n"
+    "  -?, --help                      Show this help message\n"
+    "  --usage                         Display brief usage message\n";
+  
+  const char* usageText = 
+    "Usage: %s [-a|--access-mode STRING] [-d|--debug INT] [-T|--no-tracks]\n"
+    "        [-A|--no-analyze] [--no-cddb] [-P|--cddb-port INT] [-H|--cddb-http]\n"
+    "        [--cddb-server=STRING] [--cddb-cache=STRING] [--cddb-email=STRING]\n"
+    "        [--no-cddb-cache] [--cddb-timeout=INT] [--no-device-info]\n"
+    "        [--no-disc-mode] [--dvd] [-v|--no-vcd] [-I|--no-ioctl]\n"
+    "        [-b|--bin-file FILE] [-c|--cue-file FILE] [-N|--nrg-file FILE]\n"
+    "        [-t|--toc-file FILE] [-i|--input FILE] [--iso9660]\n"
+    "        [-C|--cdrom-device DEVICE] [-l|--list-drives] [--no-header]\n"
+    "        [--no-joliet] [--no-rock-ridge] [--no-xa] [-q|--quiet] [-V|--version]\n"
+    "        [-?|--help] [--usage]\n";
 
+  const char* optionsString = "a:d:TAP:HvIb::c::N::t::i::C::lqV?";
+  struct option optionsTable[] = {
+    {"access-mode", required_argument, NULL, 'a'},
+    {"debug", required_argument, NULL, 'd' },
+    {"no-tracks", no_argument, NULL, 'T' },
+    {"no-analyze", no_argument, NULL, 'A' },
+    {"no-cddb", no_argument, &opts.no_cddb, 1 },
+    {"cddb-port", required_argument, NULL, 'P' },
+    {"cddb-http", no_argument, NULL, 'H' },
+    {"cddb-server", required_argument, NULL, OP_CDDB_SERVER },
+    {"cddb-cache", required_argument, NULL, OP_CDDB_CACHE },
+    {"cddb-email", required_argument, NULL, OP_CDDB_EMAIL },
+    {"no-cddb-cache", no_argument, NULL, OP_CDDB_NOCACHE },
+    {"cddb-timeout", required_argument, NULL, OP_CDDB_TIMEOUT },
+    {"no-device-info", no_argument, &opts.no_device, 1 },
+    {"no-disc-mode", no_argument, &opts.no_disc_mode, 1 },
+    {"dvd", no_argument, &opts.show_dvd, 1 },
+    {"no-vcd", no_argument, NULL, 'v' },
+    {"no-ioctl", no_argument, NULL, 'I' },
+    {"bin-file", optional_argument, NULL, 'b' },
+    {"cue-file", optional_argument, NULL, 'c' },
+    {"nrg-file", optional_argument, NULL, 'N' },
+    {"toc-file", optional_argument, NULL, 't' },
+    {"input", optional_argument, NULL, 'i' },
+    {"iso9660", no_argument, &opts.print_iso9660, 1 },
+    {"cdrom-device", optional_argument, NULL, 'C' },
+    {"list-drives", no_argument, NULL, 'l' },
+    {"no-header", no_argument, &opts.no_header, 1 }, 
 #ifdef HAVE_JOLIET    
-    {"no-joliet", '\0', POPT_ARG_NONE, &opts.no_joliet, 
-     0, "Don't use Joliet extensions"},
+    {"no-joliet", no_argument, &opts.no_joliet, 1 },
 #endif /*HAVE_JOLIET*/
-    
-    {"no-rock-ridge", '\0', POPT_ARG_NONE, &opts.no_rock_ridge, 
-     0, "Don't use Rock-Ridge-extension information"},
+    {"no-rock-ridge", no_argument, &opts.no_rock_ridge, 1 },
+    {"no-xa", no_argument, &opts.no_xa, 1 },
+    {"quiet", no_argument, NULL, 'q' },
+    {"version", no_argument, NULL, 'V' },
 
-    {"no-xa", '\0', POPT_ARG_NONE, &opts.no_xa, 
-     0, "Don't use XA-extension information"},
-
-    {"quiet",       'q', POPT_ARG_NONE, &opts.silent, 0,
-     "Don't produce warning output" },
-    
-    {"version", 'V', POPT_ARG_NONE, &opts.version_only, 0,
-     "display version and copyright information and exit"},
-    POPT_AUTOHELP {NULL, 0, 0, NULL, 0}
+    {"help", no_argument, NULL, '?' },
+    {"usage", no_argument, NULL, OP_USAGE },
+    { NULL, 0, NULL, 0 }
   };
-  poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
 
   program_name = strrchr(argv[0],'/');
   program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
-  while ((opt = poptGetNextOpt (optCon)) >= 0) {
+  while ((opt = getopt_long(argc, argv, optionsString, optionsTable, NULL)) >= 0) {
     switch (opt) {
-      
-    case OP_SOURCE_AUTO:
-    case OP_SOURCE_BIN: 
-    case OP_SOURCE_CUE: 
-    case OP_SOURCE_CDRDAO: 
-    case OP_SOURCE_NRG: 
-    case OP_SOURCE_DEVICE: 
-      if (opts.source_image != INPUT_UNKNOWN) {
-	report(stderr, "%s: another source type option given before.\n", 
-		   program_name);
-	report(stderr, "%s: give only one source type option.\n", 
-		   program_name);
-	break;
-      } 
+    case 'a': opts.access_mode = strdup(optarg); break;
+    case 'd': opts.debug_level = atoi(optarg); break;
+    case 'T': opts.no_tracks = 1; break;
+    case 'A': opts.no_analysis = 1; break;
+    case 'P': cddb_opts.port = atoi(optarg); break;
+    case 'H': cddb_opts.http = 1; break;
+    case OP_CDDB_SERVER: cddb_opts.server = strdup(optarg); break;
+    case OP_CDDB_CACHE: cddb_opts.cachedir = strdup(optarg); break;
+    case OP_CDDB_EMAIL: cddb_opts.email = strdup(optarg); break;
+    case OP_CDDB_NOCACHE: cddb_opts.disable_cache = 1; break;
+    case OP_CDDB_TIMEOUT: cddb_opts.timeout = atoi(optarg); break;
+    case 'v': opts.no_vcd = 1; break;
+    case 'I': opts.no_ioctl = 1; break;
+    case 'b': parse_source(OP_SOURCE_BIN); break;
+    case 'c': parse_source(OP_SOURCE_CUE); break;
+    case 'N': parse_source(OP_SOURCE_NRG); break;
+    case 't': parse_source(OP_SOURCE_CDRDAO); break;
+    case 'i': parse_source(OP_SOURCE_AUTO); break;
+    case 'C': parse_source(OP_SOURCE_DEVICE); break;
+    case 'l': opts.list_drives = 1; break;
+    case 'q': opts.silent = 1; break;
+    case 'V': opts.version_only = 1; break;
 
-      /* For all input sources which are not a DEVICE, we need to make
-	 a copy of the string; for a DEVICE the fill-out routine makes
-	 the copy.
-       */
-      if (OP_SOURCE_DEVICE != opt) 
-	source_name = strdup(psz_my_source);
-      
-      switch (opt) {
-      case OP_SOURCE_BIN: 
-	opts.source_image  = INPUT_BIN;
-	break;
-      case OP_SOURCE_CUE: 
-	opts.source_image  = INPUT_CUE;
-	break;
-      case OP_SOURCE_CDRDAO: 
-	opts.source_image  = INPUT_CDRDAO;
-	break;
-      case OP_SOURCE_NRG: 
-	opts.source_image  = INPUT_NRG;
-	break;
-      case OP_SOURCE_AUTO:
-	opts.source_image  = INPUT_AUTO;
-	break;
-      case OP_SOURCE_DEVICE: 
-	opts.source_image  = INPUT_DEVICE;
-	source_name = fillout_device_name(source_name);
-	break;
-      }
+    case '?':
+      fprintf(stderr, helpText, program_name);
+      free(program_name);
+      exit(EXIT_FAILURE);
+      break;
+
+    case OP_USAGE:
+      fprintf(stderr, usageText, program_name);
+      free(program_name);
+      exit(EXIT_FAILURE);
+      break;
+
+    case OP_HANDLED:
       break;
     }
   }
-  if (opt < -1) {
-    /* an error occurred during option processing */
-    report(stderr, "%s: %s\n",
-	    poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
-	    poptStrerror(opt));
+
+  if (optind < argc) {
+    const char *remaining_arg = argv[optind++];
+
+    /* NOTE: A bug in the libpopt version checked source_image, which
+       rendered the subsequent source_image test useless.
+    */
+    if (source_name != NULL) {
+      report(stderr, "%s: Source '%s' given as an argument of an option and as "
+	     "unnamed option '%s'\n", 
+	     program_name, source_name, remaining_arg);
+      free(program_name);
+      exit (EXIT_FAILURE);
+    }
+
+    if (opts.source_image == INPUT_DEVICE)
+      source_name = fillout_device_name(remaining_arg);
+    else 
+      source_name = strdup(remaining_arg);
+
+    if (optind < argc) {
+      report(stderr, "%s: Source specified in previously %s and %s\n", 
+	     program_name, source_name, remaining_arg);
+      free(program_name);
+      exit (EXIT_FAILURE);
+    }
+  }
+
+  if (NULL == source_name) {
+    report(stderr, "%s: No source specified.\n", program_name);
     free(program_name);
     exit (EXIT_FAILURE);
   }
-
-  {
-    const char *remaining_arg = poptGetArg(optCon);
-    if ( remaining_arg != NULL) {
-      if (opts.source_image != INPUT_UNKNOWN) {
-	report(stderr, "%s: Source '%s' given as an argument of an option and as "
-		   "unnamed option '%s'\n", 
-	       program_name, psz_my_source, remaining_arg);
-	poptFreeContext(optCon);
-	free(program_name);
-	exit (EXIT_FAILURE);
-      }
-      
-      if (opts.source_image == INPUT_DEVICE)
-	source_name = fillout_device_name(remaining_arg);
-      else 
-	source_name = strdup(remaining_arg);
-      
-      if ( (poptGetArgs(optCon)) != NULL) {
-	report(stderr, "%s: Source specified in previously %s and %s\n", 
-		   program_name, psz_my_source, remaining_arg);
-	poptFreeContext(optCon);
-	free(program_name);
-	exit (EXIT_FAILURE);
-	
-      }
-    }
-  }
   
-  poptFreeContext(optCon);
   return true;
 }
+
 
 /* CDIO logging routines */
 
@@ -764,7 +802,7 @@ init(void)
 /* ------------------------------------------------------------------------ */
 
 int
-main(int argc, const char *argv[])
+main(int argc, char *argv[])
 {
 
   CdIo_t                *p_cdio=NULL;

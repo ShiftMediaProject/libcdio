@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.25 2005/09/18 20:34:02 rocky Exp $
+  $Id: cd-read.c,v 1.26 2005/10/05 09:48:12 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -34,15 +34,19 @@
 
 /* Configuration option codes */
 enum {
+  OP_HANDLED = 0,
 
-  /* These correspond to driver_id_t in cdio.h and have to MATCH! */
-  OP_SOURCE_UNDEF       = DRIVER_UNKNOWN,
+  /* NOTE: libpopt version associated these with drivers.  That
+     appeared to be an unused historical artifact.
+  */
   OP_SOURCE_AUTO,
   OP_SOURCE_BIN,
   OP_SOURCE_CUE,
-  OP_SOURCE_NRG         = DRIVER_NRG,
-  OP_SOURCE_CDRDAO         = DRIVER_CDRDAO,
-  OP_SOURCE_DEVICE      = DRIVER_DEVICE,
+  OP_SOURCE_NRG,
+  OP_SOURCE_CDRDAO,
+  OP_SOURCE_DEVICE,
+
+  OP_USAGE,
 
   /* These are the remaining configuration options */
   OP_READ_MODE,
@@ -173,173 +177,198 @@ process_suboption(const char *subopt, subopt_entry_t *sublist, const int num,
   }
 }
 
+
+/* Parse source options. */
+static void
+parse_source(int opt)
+{
+  /* NOTE: The libpopt version made use of an extra temporary
+     variable (psz_my_source) for all sources _except_ devices.
+     This distinction seemed to serve no purpose.
+  */
+  /* NOTE: The libpopt version had a bug which kept it from
+     processing toc-file inputs
+  */
+
+  if (opts.source_image != INPUT_UNKNOWN) {
+    report( stderr, "%s: another source type option given before.\n", 
+	    program_name );
+    report( stderr, "%s: give only one source type option.\n", 
+	    program_name );
+    return;
+  } 
+  
+  /* For all input sources which are not a DEVICE, we need to make
+     a copy of the string; for a DEVICE the fill-out routine makes
+     the copy.
+  */
+  if (OP_SOURCE_DEVICE != opt) 
+    if (optarg != NULL) source_name = strdup(optarg);
+  
+  switch (opt) {
+  case OP_SOURCE_BIN: 
+    opts.source_image  = INPUT_BIN;
+    break;
+  case OP_SOURCE_CUE: 
+    opts.source_image  = INPUT_CUE;
+    break;
+  case OP_SOURCE_NRG: 
+    opts.source_image  = INPUT_NRG;
+    break;
+  case OP_SOURCE_AUTO:
+    opts.source_image  = INPUT_AUTO;
+    break;
+  case OP_SOURCE_DEVICE: 
+    opts.source_image  = INPUT_DEVICE;
+    if (optarg != NULL) source_name = fillout_device_name(optarg);
+    break;
+  }
+}
+
+
 /* Parse a options. */
 static bool
-parse_options (int argc, const char *argv[])
+parse_options (int argc, char *argv[])
 {
-
   int opt;
-  char *psz_my_source;
-  char *opt_arg;
 
-  /* Command-line options */
-  struct poptOption optionsTable[] = {
+  const char* helpText =
+    "Usage: %s [OPTION...]\n"
+    "  -a, --access-mode=STRING        Set CD control access mode\n"
+    "  -m, --mode=MODE-TYPE            set CD-ROM read mode (audio, m1f1, m1f2,\n"
+    "                                  m2mf1, m2f2)\n"
+    "  -d, --debug=INT                 Set debugging to LEVEL\n"
+    "  -x, --hexdump                   Show output as a hex dump. The default is a\n"
+    "                                  hex dump when output goes to stdout and no\n"
+    "                                  hex dump when output is to a file.\n"
+    "  --no-header                     Don't display header and copyright (for\n"
+    "                                  regression testing)\n"
+    "  --no-hexdump                    Don't show output as a hex dump.\n"
+    "  -s, --start=INT                 Set LBA to start reading from\n"
+    "  -e, --end=INT                   Set LBA to end reading from\n"
+    "  -n, --number=INT                Set number of sectors to read\n"
+    "  -b, --bin-file[=FILE]           set \"bin\" CD-ROM disk image file as source\n"
+    "  -c, --cue-file[=FILE]           set \"cue\" CD-ROM disk image file as source\n"
+    "  -i, --input[=FILE]              set source and determine if \"bin\" image or\n"
+    "                                  device\n"
+    "  -C, --cdrom-device[=DEVICE]     set CD-ROM device as source\n"
+    "  -N, --nrg-file[=FILE]           set Nero CD-ROM disk image file as source\n"
+    "  -t, --toc-file[=FILE]           set \"TOC\" CD-ROM disk image file as source\n"
+    "  -o, --output-file=FILE          Output blocks to file rather than give a\n"
+    "                                  hexdump.\n"
+    "  -V, --version                   display version and copyright information\n"
+    "                                  and exit\n"
+    "\n"
+    "Help options:\n"
+    "  -?, --help                      Show this help message\n"
+    "  --usage                         Display brief usage message\n";
   
-    {"access-mode",       'a', POPT_ARG_STRING, &opts.access_mode, 0,
-     "Set CD control access mode"},
-    
-    {"mode", 'm', 
-     POPT_ARG_STRING, &opt_arg, 
-     OP_READ_MODE,
-     "set CD-ROM read mode (audio, m1f1, m1f2, m2mf1, m2f2)", 
-     "MODE-TYPE"},
-    
-    {"debug",       'd', 
-     POPT_ARG_INT, &opts.debug_level, 0,
-     "Set debugging to LEVEL"},
-    
-    {"hexdump",  'x', POPT_ARG_NONE, &opts.hexdump, 0,
-     "Show output as a hex dump. The default is a hex dump when "
-     "output goes to stdout and no hex dump when output is to a file."},
-
-    {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
-     0, "Don't display header and copyright (for regression testing)"},
-
-    {"no-hexdump",  '\0', POPT_ARG_NONE, &opts.nohexdump, 0,
-     "Don't show output as a hex dump."},
-
-    {"start",       's', 
-     POPT_ARG_INT, &opts.start_lsn, 0,
-     "Set LBA to start reading from"},
-    
-    {"end",       'e', 
-     POPT_ARG_INT, &opts.end_lsn, 0,
-     "Set LBA to end reading from"},
-    
-    {"number",    'n', 
-     POPT_ARG_INT, &opts.num_sectors, 0,
-     "Set number of sectors to read"},
-    
-    {"bin-file", 'b', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
-     OP_SOURCE_BIN, "set \"bin\" CD-ROM disk image file as source", "FILE"},
-    
-    {"cue-file", 'c', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
-     OP_SOURCE_CUE, "set \"cue\" CD-ROM disk image file as source", "FILE"},
-    
-    {"input", 'i', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
-     OP_SOURCE_AUTO,
-     "set source and determine if \"bin\" image or device", "FILE"},
-    
-    {"cdrom-device", 'C', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &source_name,
-     OP_SOURCE_DEVICE,
-     "set CD-ROM device as source", "DEVICE"},
-    
-    {"nrg-file", 'N', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
-     OP_SOURCE_NRG, "set Nero CD-ROM disk image file as source", "FILE"},
-    
-    {"toc-file", 't', POPT_ARG_STRING|POPT_ARGFLAG_OPTIONAL, &psz_my_source, 
-     OP_SOURCE_CDRDAO, "set \"TOC\" CD-ROM disk image file as source", "FILE"},
-    
-    {"output-file",     'o', POPT_ARG_STRING, &opts.output_file, 0,
-     "Output blocks to file rather than give a hexdump.", "FILE"},
-    
-    {"version", 'V', POPT_ARG_NONE, NULL, OP_VERSION,
-     "display version and copyright information and exit"},
-    POPT_AUTOHELP {NULL, 0, 0, NULL, 0}
+  const char* usageText =
+    "Usage: %s [-a|--access-mode STRING] [-m|--mode MODE-TYPE]\n"
+    "        [-d|--debug INT] [-x|--hexdump] [--no-header] [--no-hexdump]\n"
+    "        [-s|--start INT] [-e|--end INT] [-n|--number INT] [-b|--bin-file FILE]\n"
+    "        [-c|--cue-file FILE] [-i|--input FILE] [-C|--cdrom-device DEVICE]\n"
+    "        [-N|--nrg-file FILE] [-t|--toc-file FILE] [-o|--output-file FILE]\n"
+    "        [-V|--version] [-?|--help] [--usage]\n";
+  
+  /* Command-line options */
+  const char* optionsString = "a:m:d:xs:e:n:b::c::i::C::N::t::o:V?";
+  struct option optionsTable[] = {
+  
+    {"access-mode", required_argument, NULL, 'a'},
+    {"mode", required_argument, NULL, 'm'},
+    {"debug", required_argument, NULL, 'd'},
+    {"hexdump", no_argument, NULL, 'x'},
+    {"no-header", no_argument, &opts.no_header, 1},
+    {"no-hexdump", no_argument, &opts.nohexdump, 1},
+    {"start", required_argument, NULL, 's'},
+    {"end", required_argument, NULL, 'e'},
+    {"number", required_argument, NULL, 'n'},
+    {"bin-file", optional_argument, NULL, 'b'},
+    {"cue-file", optional_argument, NULL, 'c'},
+    {"input", optional_argument, NULL, 'i'},
+    {"cdrom-device", optional_argument, NULL, 'C'},
+    {"nrg-file", optional_argument, NULL, 'N'},
+    {"toc-file", optional_argument, NULL, 't'},
+    {"output-file", required_argument, NULL, 'o'},
+    {"version", no_argument, NULL, 'V'},
+   
+    {"help", no_argument, NULL, '?' },
+    {"usage", no_argument, NULL, OP_USAGE },
+    { NULL, 0, NULL, 0 }
   };
-  poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
   
   program_name = strrchr(argv[0],'/');
   program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
-  while ((opt = poptGetNextOpt (optCon)) >= 0)
+  while ((opt = getopt_long(argc, argv, optionsString, optionsTable, NULL)) >= 0)
     switch (opt)
       {
-      case OP_SOURCE_AUTO:
-      case OP_SOURCE_BIN: 
-      case OP_SOURCE_CUE: 
-      case OP_SOURCE_NRG: 
-      case OP_SOURCE_DEVICE: 
-	if (opts.source_image != INPUT_UNKNOWN) {
-	  report( stderr, "%s: another source type option given before.\n", 
-		  program_name );
-	  report( stderr, "%s: give only one source type option.\n", 
-		  program_name );
-	  break;
-	} 
-
-	/* For all input sources which are not a DEVICE, we need to make
-	   a copy of the string; for a DEVICE the fill-out routine makes
-	   the copy.
-	*/
-	if (OP_SOURCE_DEVICE != opt) 
-	  source_name = strdup(psz_my_source);
-
-	switch (opt) {
-	case OP_SOURCE_BIN: 
-	  opts.source_image  = INPUT_BIN;
-	  break;
-	case OP_SOURCE_CUE: 
-	  opts.source_image  = INPUT_CUE;
-	  break;
-	case OP_SOURCE_NRG: 
-	  opts.source_image  = INPUT_NRG;
-	  break;
-	case OP_SOURCE_AUTO:
-	  opts.source_image  = INPUT_AUTO;
-	  break;
-	case OP_SOURCE_DEVICE: 
-	opts.source_image  = INPUT_DEVICE;
-	source_name = fillout_device_name(source_name);
-	break;
-	}
-	break;
-      
-      case OP_READ_MODE:
-	process_suboption(opt_arg, modes_sublist,
+      case 'a': opts.access_mode = strdup(optarg); break;
+      case 'd': opts.debug_level = atoi(optarg); break;
+      case 'x': opts.hexdump = 1; break;
+      case 's': opts.start_lsn = atoi(optarg); break;
+      case 'e': opts.end_lsn = atoi(optarg); break;
+      case 'n': opts.num_sectors = atoi(optarg); break;
+      case 'b': parse_source(OP_SOURCE_BIN); break;
+      case 'c': parse_source(OP_SOURCE_CUE); break;
+      case 'i': parse_source(OP_SOURCE_AUTO); break;
+      case 'C': parse_source(OP_SOURCE_DEVICE); break;
+      case 'N': parse_source(OP_SOURCE_NRG); break;
+      case 't': parse_source(OP_SOURCE_CDRDAO); break;
+      case 'o': opts.output_file = strdup(optarg); break;
+     
+      case 'm':
+	process_suboption(optarg, modes_sublist,
 			  sizeof(modes_sublist) / sizeof(subopt_entry_t),
                             "--mode");
         break;
-      case OP_VERSION:
+
+      case 'V':
         print_version(program_name, VERSION, 0, true);
-	poptFreeContext(optCon);
 	free(program_name);
         exit (EXIT_SUCCESS);
         break;
+
+      case '?':
+	fprintf(stderr, helpText, program_name);
+	free(program_name);
+	exit(EXIT_FAILURE);
+	break;
+	
+      case OP_USAGE:
+	fprintf(stderr, usageText, program_name);
+	free(program_name);
+	exit(EXIT_FAILURE);
+	break;
+
+      case OP_HANDLED:
+	break;
       }
 
-  if (opt < -1) {
-    report( stderr, "%s: %s\n", 
-	    poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
-	    poptStrerror(opt) );
-    free(program_name);
-    exit (EXIT_FAILURE);
-  }
-  
-  {
-    const char *remaining_arg = poptGetArg(optCon);
-    if ( remaining_arg != NULL) {
-      if (opts.source_image != INPUT_UNKNOWN) {
-	report( stderr, "%s: Source specified in option %s and as %s\n", 
-		program_name, source_name, remaining_arg );
-	poptFreeContext(optCon);
-	free(program_name);
-	exit (EXIT_FAILURE);
-      }
+  if (optind < argc) {
+    const char *remaining_arg = argv[optind++];
+
+    /* NOTE: A bug in the libpopt version checked source_image, which
+       rendered the subsequent source_image test useless.
+    */
+    if (source_name != NULL) {
+      report( stderr, "%s: Source specified in option %s and as %s\n", 
+	      program_name, source_name, remaining_arg );
+      free(program_name);
+      exit (EXIT_FAILURE);
+    }
+
+    if (opts.source_image == INPUT_DEVICE)
+      source_name = fillout_device_name(remaining_arg);
+    else 
+      source_name = strdup(remaining_arg);
       
-      if (opts.source_image == OP_SOURCE_DEVICE)
-	source_name = fillout_device_name(remaining_arg);
-      else 
-	source_name = strdup(remaining_arg);
-      
-      if ( (poptGetArgs(optCon)) != NULL) {
-	report( stderr, "%s: Source specified in previously %s and %s\n", 
-		program_name, source_name, remaining_arg );
-	poptFreeContext(optCon);
-	free(program_name);
-	exit (EXIT_FAILURE);
-	
-      }
+    if (optind < argc) {
+      report( stderr, "%s: Source specified in previously %s and %s\n", 
+	      program_name, source_name, remaining_arg );
+      free(program_name);
+      exit (EXIT_FAILURE);
     }
   }
   
@@ -354,7 +383,6 @@ parse_options (int argc, const char *argv[])
 	    "%s: Need to give a read mode "
 	    "(audio, m1f1, m1f2, m2f1 or m2f2)\n",
 	    program_name );
-    poptFreeContext(optCon);
     free(program_name);
     exit(10);
   }
@@ -382,7 +410,6 @@ parse_options (int argc, const char *argv[])
 		" the sector to read (%lu)\n",
 		program_name, (unsigned long) opts.end_lsn, 
 		(unsigned long) opts.num_sectors );
-	poptFreeContext(optCon);
 	exit(12);
       }
       opts.start_lsn = opts.end_lsn - opts.num_sectors + 1;
@@ -401,7 +428,6 @@ parse_options (int argc, const char *argv[])
 	      "%s: end LSN (%lu) needs to be less than start LSN (%lu)\n",
 	      program_name, (unsigned long) opts.start_lsn, 
 	      (unsigned long) opts.end_lsn );
-      poptFreeContext(optCon);
       free(program_name);
       exit(13);
     }
@@ -412,14 +438,12 @@ parse_options (int argc, const char *argv[])
 		 "and count (%d)\n",
 		 program_name, (unsigned long) opts.start_lsn, 
 		 (unsigned long) opts.end_lsn, opts.num_sectors );
-	 poptFreeContext(optCon);
 	 free(program_name);
 	 exit(14);
 	}
     opts.num_sectors = opts.end_lsn - opts.start_lsn + 1;
   }
   
-  poptFreeContext(optCon);
   return true;
 }
 
@@ -454,7 +478,7 @@ init(void)
 }
 
 int
-main(int argc, const char *argv[])
+main(int argc, char *argv[])
 {
   uint8_t buffer[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   unsigned int blocklen=CDIO_CD_FRAMESIZE_RAW;

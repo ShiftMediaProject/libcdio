@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.35 2005/03/10 12:47:03 rocky Exp $
+#   $Id: Makefile.am,v 1.36 2005/10/05 09:48:12 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -42,42 +42,40 @@ endif
 
 if BUILD_CD_DRIVE
 cd_drive_SOURCES = cd-drive.c util.c util.h
-cd_drive_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
+cd_drive_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 bin_cd_drive     = cd-drive
 endif
 
 if BUILD_CDINFO
 cd_info_SOURCES = cd-info.c cddb.c cddb.h util.c util.h
-cd_info_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS) $(LIBICONV)
+cd_info_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS) $(LIBICONV)
 bin_cd_info     = cd-info 
 endif
 
 if BUILD_CDINFO_LINUX
 cdinfo_linux_SOURCES = cdinfo-linux.c
-cdinfo_linux_LDADD   = $(LIBCDIO_LIBS) $(LIBPOPT_LIBS)
+cdinfo_linux_LDADD   = $(LIBCDIO_LIBS)
 bin_cdinfo_linux     = cdinfo-linux
 endif
 
 if BUILD_CD_READ
 cd_read_SOURCES = cd-read.c util.c util.h
-cd_read_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
+cd_read_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 bin_cd_read     = cd-read 
 endif
 
 if BUILD_ISO_INFO
 iso_info_SOURCES = iso-info.c util.c util.h
-iso_info_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
+iso_info_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 bin_iso_info     = iso-info
 endif
 
 if BUILD_ISO_READ
 iso_read_SOURCES = iso-read.c util.c util.h
-iso_read_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBPOPT_LIBS) $(LIBICONV)
+iso_read_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 bin_iso_read     = iso-read
 endif
 
 bin_PROGRAMS = $(bin_cd_drive) $(bin_cd_info)  $(bin_cdinfo_linux) $(bin_cd_read) $(bin_iso_info) $(bin_iso_read) $(bin_cdda_player)
 
-# Put LIBPOPT_CFLAGS after local include in case LIBPOPT has headers common
-# to those in LIBCDIO_CFLAGS
-INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(VCDINFO_CFLAGS) $(CDDB_CFLAGS) $(LIBPOPT_CFLAGS) 
+INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(VCDINFO_CFLAGS) $(CDDB_CFLAGS)

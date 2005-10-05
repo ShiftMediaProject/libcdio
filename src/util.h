@@ -1,5 +1,5 @@
 /*
-  $Id: util.h,v 1.12 2005/02/21 09:00:53 rocky Exp $
+  $Id: util.h,v 1.13 2005/10/05 09:48:12 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -44,10 +44,13 @@
 #include <stdarg.h>
 #endif
 
-#include <popt.h>
-/* Accomodate to older popt that doesn't support the "optional" flag */
-#ifndef POPT_ARGFLAG_OPTIONAL
-#define POPT_ARGFLAG_OPTIONAL 0
+/* FreeBSD 4 has getopt in unistd.h. So we include that before
+   getopt.h */
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
 #endif
 
 #ifdef ENABLE_NLS

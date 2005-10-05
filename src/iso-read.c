@@ -1,5 +1,5 @@
 /*
-  $Id: iso-read.c,v 1.9 2005/02/19 11:43:05 rocky Exp $
+  $Id: iso-read.c,v 1.10 2005/10/05 09:48:12 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -45,6 +45,8 @@
 #include <sys/types.h>
 #endif
 
+#include <getopt.h>
+
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
 struct arguments
@@ -58,100 +60,112 @@ struct arguments
 
 /* Parse a options. */
 static bool
-parse_options (int argc, const char *argv[])
+parse_options (int argc, char *argv[])
 {
 
   int opt;
 
   /* Configuration option codes */
   enum {
-    OP_VERSION=1
+    OP_HANDLED = 0,
+    OP_VERSION=1,
+    OP_USAGE
   };
 
+  const char* helpText =
+    "Usage: %s [OPTION...]\n"
+    "  -d, --debug=INT            Set debugging to LEVEL.\n"
+    "  -i, --image=FILE           Read from ISO-9660 image. This option is mandatory\n"
+    "  -e, --extract=FILE         Extract FILE from ISO-9660 image. This option is\n"
+    "                             mandatory.\n"
+    "  --no-header                Don't display header and copyright (for\n"
+    "                             regression testing)\n"
+    "  -o, --output-file=FILE     Output file. This option is mandatory.\n"
+    "  -V, --version              display version and copyright information and exit\n"
+    "\n"
+    "Help options:\n"
+    "  -?, --help                 Show this help message\n"
+    "  --usage                    Display brief usage message\n";
 
-  /* Command-line options */
-  struct poptOption optionsTable[] = {
+  const char* usageText =
+    "Usage: %s [-d|--debug INT] [-i|--image FILE] [-e|--extract FILE]\n"
+    "        [--no-header] [-o|--output-file FILE] [-V|--version] [-?|--help]\n"
+    "        [--usage]\n";
   
-    {"debug",       'd', 
-     POPT_ARG_INT, &opts.debug_level, 0,
-     "Set debugging to LEVEL."},
-    
-    {"image", 'i', POPT_ARG_STRING, &opts.iso9660_image, 0,
-     "Read from ISO-9660 image. This option is mandatory", 
-     "FILE"},
-    
-    {"extract", 'e', POPT_ARG_STRING, &opts.file_name, 0,
-     "Extract FILE from ISO-9660 image. This option is mandatory.", 
-     "FILE"},
-    
-    {"no-header", '\0', POPT_ARG_NONE, &opts.no_header, 
-     0, "Don't display header and copyright (for regression testing)"},
+  /* Command-line options */
+  const char* optionsString = "d:i:e:o:V?";
+  struct option optionsTable[] = {
+    {"debug", required_argument, NULL, 'd' },
+    {"image", required_argument, NULL, 'i' },
+    {"extract", required_argument, NULL, 'e' },
+    {"no-header", no_argument, &opts.no_header, 1 }, 
+    {"output-file", required_argument, NULL, 'o' },
+    {"version", no_argument, NULL, 'V' },
 
-    {"output-file",     'o', POPT_ARG_STRING, &opts.output_file, 0,
-     "Output file. This option is mandatory.", "FILE"},
-    
-    {"version", 'V', POPT_ARG_NONE, NULL, OP_VERSION,
-     "display version and copyright information and exit"},
-    POPT_AUTOHELP {NULL, 0, 0, NULL, 0}
+    {"help", no_argument, NULL, '?' },
+    {"usage", no_argument, NULL, OP_USAGE },
+    { NULL, 0, NULL, 0 }
   };
-  poptContext optCon = poptGetContext (NULL, argc, argv, optionsTable, 0);
   
   program_name = strrchr(argv[0],'/');
   program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
-  while ((opt = poptGetNextOpt (optCon)) != -1)
+  while ((opt = getopt_long(argc, argv, optionsString, optionsTable, NULL)) != -1)
     switch (opt)
       {
-      case OP_VERSION:
+      case 'd': opts.debug_level = atoi(optarg); break;
+      case 'i': opts.iso9660_image = strdup(optarg); break;
+      case 'e': opts.file_name = strdup(optarg); break;
+      case 'o': opts.output_file = strdup(optarg); break;
+
+      case 'V':
         print_version(program_name, CDIO_VERSION, 0, true);
-	poptFreeContext(optCon);
 	free(program_name);
         exit (EXIT_SUCCESS);
         break;
 
-      default:
-        report( stderr, "%s: %s\n", 
-		poptBadOption(optCon, POPT_BADOPTION_NOALIAS),
-		poptStrerror(opt) );
-        report( stderr, "Error while parsing command line - try --help.\n" );
-	poptFreeContext(optCon);
-	free(program_name);
-        exit (EXIT_FAILURE);
+      case '?':
+        fprintf(stderr, helpText, program_name);
+        free(program_name);
+        exit(EXIT_FAILURE);
+        break;
+
+      case OP_USAGE:
+        fprintf(stderr, usageText, program_name);
+        free(program_name);
+        exit(EXIT_FAILURE);
+        break;
+
+      case OP_HANDLED:
+	break;
       }
 
-  {
-    const char *remaining_arg = poptGetArg(optCon);
-    if ( remaining_arg != NULL) {
-      if (opts.iso9660_image != NULL) {
-	report( stderr, "%s: Source specified as --image %s and as %s\n", 
-		    program_name, opts.iso9660_image, remaining_arg );
-	poptFreeContext(optCon);
-	free(program_name);
-	exit (EXIT_FAILURE);
-      }
-
-      opts.iso9660_image = strdup(remaining_arg);
-      
-      if ( (poptGetArgs(optCon)) != NULL) {
-	report( stderr, 
-		    "%s: use only one unnamed argument for the ISO 9660 "
-		    "image name\n", 
-		    program_name );
-	poptFreeContext(optCon);
-	free(program_name);
-	exit (EXIT_FAILURE);
-	
-      }
+  if (optind < argc) {
+    const char *remaining_arg = argv[optind++];
+    if (opts.iso9660_image != NULL) {
+      report( stderr, "%s: Source specified as --image %s and as %s\n", 
+	      program_name, opts.iso9660_image, remaining_arg );
+      free(program_name);
+      exit (EXIT_FAILURE);
+    }
+    
+    opts.iso9660_image = strdup(remaining_arg);
+    
+    if (optind < argc ) {
+      report( stderr, 
+	      "%s: use only one unnamed argument for the ISO 9660 "
+	      "image name\n", 
+	      program_name );
+      free(program_name);
+      exit (EXIT_FAILURE);
     }
   }
 
-  poptFreeContext(optCon);
-
   if (NULL == opts.iso9660_image) {
     report( stderr, "%s: you need to specify an ISO-9660 image name.\n", 
-		program_name );
+	    program_name );
     report( stderr, "%s: Use option --image or try --help.\n", 
-		program_name );
+	    program_name );
     exit (EXIT_FAILURE);
   }
 
@@ -185,7 +199,7 @@ init(void)
 }
 
 int
-main(int argc, const char *argv[])
+main(int argc, char *argv[])
 {
   iso9660_stat_t *statbuf;
   FILE *outfd;

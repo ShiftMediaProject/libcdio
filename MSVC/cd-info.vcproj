@@ -340,18 +340,6 @@
 				RelativePath=".\src\findme.c">
 			</File>
 			<File
-				RelativePath=".\src\popt.c">
-			</File>
-			<File
-				RelativePath=".\src\poptconfig.c">
-			</File>
-			<File
-				RelativePath=".\src\popthelp.c">
-			</File>
-			<File
-				RelativePath=".\src\poptparse.c">
-			</File>
-			<File
 				RelativePath=".\src\util.c">
 			</File>
 		</Filter>
@@ -361,9 +349,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
 				RelativePath=".\src\findme.h">
-			</File>
-			<File
-				RelativePath=".\src\popt.h">
 			</File>
 			<File
 				RelativePath=".\src\util.h">
