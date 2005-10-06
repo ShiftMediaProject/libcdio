@@ -1,5 +1,5 @@
 /*
-  $Id: iso-read.c,v 1.10 2005/10/05 09:48:12 rocky Exp $
+  $Id: iso-read.c,v 1.11 2005/10/06 09:51:21 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -125,9 +125,9 @@ parse_options (int argc, char *argv[])
         break;
 
       case '?':
-        fprintf(stderr, helpText, program_name);
+        fprintf(stdout, helpText, program_name);
         free(program_name);
-        exit(EXIT_FAILURE);
+        exit(EXIT_INFO);
         break;
 
       case OP_USAGE:
