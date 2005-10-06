@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.145 2005/10/05 09:48:12 rocky Exp $
+    $Id: cd-info.c,v 1.146 2005/10/06 09:37:11 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -326,9 +326,9 @@ parse_options (int argc, char *argv[])
     case 'V': opts.version_only = 1; break;
 
     case '?':
-      fprintf(stderr, helpText, program_name);
+      fprintf(stdout, helpText, program_name);
       free(program_name);
-      exit(EXIT_FAILURE);
+      exit(EXIT_INFO);
       break;
 
     case OP_USAGE:
@@ -369,7 +369,7 @@ parse_options (int argc, char *argv[])
     }
   }
 
-  if (NULL == source_name) {
+  if (NULL == source_name && !opts.version_only) {
     report(stderr, "%s: No source specified.\n", program_name);
     free(program_name);
     exit (EXIT_FAILURE);

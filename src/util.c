@@ -1,5 +1,5 @@
 /*
-  $Id: util.c,v 1.50 2005/09/15 06:36:01 rocky Exp $
+  $Id: util.c,v 1.51 2005/10/06 09:37:11 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -71,7 +71,7 @@ PARTICULAR PURPOSE.\n\
     else
       report( stdout, "No CD-ROM device found.\n");
     free(program_name);
-    exit(100);
+    exit(EXIT_INFO);
   }
   
 }

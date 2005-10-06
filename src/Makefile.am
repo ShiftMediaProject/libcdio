@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.36 2005/10/05 09:48:12 rocky Exp $
+#   $Id: Makefile.am,v 1.37 2005/10/06 09:37:11 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -16,8 +16,11 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
+
+EXTRA_DIST = iso-info.help2man cd-info.help2man cd-drive.help2man
+
 ####################################################
-# Things to make the sample/test programs
+# Things to make the utility/diagnostic programs
 ####################################################
 
 if BUILD_CD_PARANOIA
@@ -31,7 +34,7 @@ if MAINTAINER_MODE
 MAINTAINERCLEANFILES = $(man_MANS)
 man_MANS = cd-drive.1 cd-info.1 cd-read.1 iso-read.1 iso-info.1 
 $(man_MANS): %.1: %
-	-$(HELP2MAN) --output=$@ ./$<
+	-$(HELP2MAN) --opt-include=$<.help2man --no-info --output=$@ ./$<
 endif
 
 if BUILD_CDDA_PLAYER

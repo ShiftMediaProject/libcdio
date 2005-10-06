@@ -1,5 +1,5 @@
 /*
-  $Id: util.h,v 1.13 2005/10/05 09:48:12 rocky Exp $
+  $Id: util.h,v 1.14 2005/10/06 09:37:11 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -72,6 +72,10 @@
 
 #ifndef EXIT_SUCCESS
 # define EXIT_SUCCESS 0
+#endif
+
+#ifndef EXIT_INFO
+# define EXIT_INFO 100
 #endif
 
 #define DEBUG 1

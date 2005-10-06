@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.31 2005/10/05 09:48:12 rocky Exp $
+    $Id: iso-info.c,v 1.32 2005/10/06 09:37:11 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -150,9 +150,9 @@ parse_options (int argc, char *argv[])
       case 'V': opts.version_only = 1; break;
 	
       case '?':
-        fprintf(stderr, helpText, program_name);
+        fprintf(stdout, helpText, program_name);
         free(program_name);
-        exit(EXIT_FAILURE);
+        exit(EXIT_INFO);
         break;
 
       case OP_USAGE:
