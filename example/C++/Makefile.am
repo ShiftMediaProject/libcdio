@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.4 2005/09/16 09:31:39 rocky Exp $
+#   $Id: Makefile.am,v 1.5 2005/10/06 00:14:22 rocky Exp $
 #
 #    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,7 +20,10 @@
 # Things to regression testing
 ####################################################
 #
-noinst_PROGRAMS = device iso1 iso2 iso3 mmc1 mmc2 paranoia paranoia2
+if BUILD_CD_PARANOIA
+paranoia_progs = paranoia paranoia2
+endif
+noinst_PROGRAMS = device iso1 iso2 iso3 mmc1 mmc2 $(paranoia_progs)
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
