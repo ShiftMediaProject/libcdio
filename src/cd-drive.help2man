@@ -5,3 +5,6 @@
 Shows CD-ROM drive characteristics.
 [SEE ALSO] 
 \&\f(CWcd-info(1)\fR for information about the CD inside a CD-ROM.
+[AUTHOR] 
+Rocky Bernstein rocky@panix.com
+
