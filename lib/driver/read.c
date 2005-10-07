@@ -1,5 +1,5 @@
 /*
-    $Id: read.c,v 1.8 2005/10/07 00:06:45 rocky Exp $
+    $Id: read.c,v 1.9 2005/10/07 07:15:19 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -125,7 +125,7 @@ cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 {
   check_lsn_blocks(i_lsn, i_blocks);
 
-  if (i_blocks == 0) return DRIVER_OP_SUCCESS;
+  if (0 == i_blocks) return DRIVER_OP_SUCCESS;
 
   if (p_cdio->op.read_audio_sectors)
     return (p_cdio->op.read_audio_sectors) (p_cdio->env, p_buf, i_lsn, 
@@ -142,6 +142,9 @@ cdio_read_data_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
                         uint16_t i_blocksize, uint32_t i_blocks) 
 {
   check_lsn(i_lsn);
+
+  if (0 == i_blocks) return DRIVER_OP_SUCCESS;
+
   if  (p_cdio->op.read_data_sectors)
     return p_cdio->op.read_data_sectors (p_cdio->env, p_buf, i_lsn, 
                                          i_blocksize, i_blocks);
@@ -194,6 +197,9 @@ cdio_read_mode1_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
                          bool b_form2,  uint32_t i_blocks)
 {
   check_lsn_blocks(i_lsn, i_blocks);
+
+  if (0 == i_blocks) return DRIVER_OP_SUCCESS;
+
   if (p_cdio->op.read_mode1_sectors)
     return (p_cdio->op.read_mode1_sectors) (p_cdio->env, p_buf, i_lsn, b_form2,
                                             i_blocks);
@@ -238,6 +244,9 @@ cdio_read_mode2_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
                          bool b_form2, uint32_t i_blocks)
 {
   check_lsn_blocks(i_lsn, i_blocks);
+
+  if (0 == i_blocks) return DRIVER_OP_SUCCESS;
+
   if (p_cdio->op.read_mode2_sectors) 
     return (p_cdio->op.read_mode2_sectors) (p_cdio->env, p_buf, i_lsn,
                                             b_form2, i_blocks);
