@@ -338,11 +338,11 @@ callback(long int inpos, paranoia_cb_mode_t function)
 
   int graph=30;
   char buffer[256];
-  static long c_sector=0,v_sector=0;
-  static char dispcache[30]="                              ";
+  static long c_sector=0, v_sector=0;
+  static char dispcache[]="                              ";
   static int last=0;
   static long lasttime=0;
-  long sector,osector=0;
+  long int sector, osector=0;
   struct timeval thistime;
   static char heartbeat=' ';
   int position=0,aheadposition=0;
