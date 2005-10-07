@@ -1,5 +1,5 @@
 /*
-    $Id: read.c,v 1.7 2005/03/18 12:56:00 rocky Exp $
+    $Id: read.c,v 1.8 2005/10/07 00:06:45 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -60,14 +60,16 @@
       cdio_get_track_lsn(p_cdio, CDIO_CDROM_LEADOUT_TRACK);             \
     if ( i_lsn > end_lsn ) {                                            \
       cdio_info("Trying to access past end of disk lsn: %ld, end lsn: %ld", \
-                (long int) i_lsn, (long int) end_lsn);                  \
-      return DRIVER_OP_ERROR;                                           \
-    }                                                                   \
-    if ( i_lsn + i_blocks -1 > end_lsn ) {                              \
+                (long int) i_lsn, (long int) end_lsn);                   \
+      return DRIVER_OP_ERROR;                                            \
+    }                                                                    \
+    /* Care is used in the expression below to be correct with */        \
+    /* respect to unsigned integers.                           */        \
+    if ( i_lsn + i_blocks > end_lsn + 1 ) {                              \
       cdio_info("Request truncated to end disk; lsn: %ld, end lsn: %ld", \
-                (long int) i_lsn, (long int) end_lsn);                  \
-      i_blocks = end_lsn - i_lsn + 1;                                   \
-    }                                                                   \
+                (long int) i_lsn, (long int) end_lsn);                   \
+      i_blocks = end_lsn - i_lsn + 1;                                    \
+    }                                                                    \
   }
 
 /*!
@@ -122,6 +124,9 @@ cdio_read_audio_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
                          uint32_t i_blocks) 
 {
   check_lsn_blocks(i_lsn, i_blocks);
+
+  if (i_blocks == 0) return DRIVER_OP_SUCCESS;
+
   if (p_cdio->op.read_audio_sectors)
     return (p_cdio->op.read_audio_sectors) (p_cdio->env, p_buf, i_lsn, 
                                             i_blocks);
