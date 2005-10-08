@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.15 2005/10/05 00:50:41 rocky Exp $
+  $Id: paranoia.c,v 1.16 2005/10/08 09:08:10 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -265,8 +265,8 @@ try_sort_sync(cdrom_paranoia_t *p,
 	      void (*callback)(long int, paranoia_cb_mode_t))
 {
   
-  long dynoverlap=p->dynoverlap;
-  sort_link *ptr=NULL;
+  long int dynoverlap=p->dynoverlap;
+  sort_link_t *ptr=NULL;
   unsigned char *Bflags=B->flags;
 
   /* block flag matches 0x02 (unmatchable) */

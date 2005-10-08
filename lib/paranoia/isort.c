@@ -1,5 +1,5 @@
 /*
-  $Id: isort.c,v 1.4 2005/01/23 05:31:03 rocky Exp $
+  $Id: isort.c,v 1.5 2005/10/08 09:08:10 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -46,9 +46,9 @@ sort_alloc(long size)
   ret->size=-1;
   ret->maxsize=size;
 
-  ret->head=calloc(65536,sizeof(sort_link *));
+  ret->head=calloc(65536,sizeof(sort_link_t *));
   ret->bucketusage=calloc(1, 65536*sizeof(long));
-  ret->revindex=calloc(size,sizeof(sort_link));
+  ret->revindex=calloc(size,sizeof(sort_link_t));
   ret->lastbucket=0;
 
   return(ret);
@@ -58,7 +58,7 @@ void
 sort_unsortall(sort_info_t *i)
 {
   if(i->lastbucket>2000){ /* a guess */
-    memset(i->head,0,65536*sizeof(sort_link *));
+    memset(i->head,0,65536*sizeof(sort_link_t *));
   }else{
     long b;
     for(b=0;b<i->lastbucket;b++)
@@ -84,8 +84,8 @@ sort_sort(sort_info_t *i,long sortlo,long sorthi)
   long j;
 
   for(j=sorthi-1;j>=sortlo;j--){
-    sort_link **hv=i->head+i->vector[j]+32768;
-    sort_link *l=i->revindex+j;
+    sort_link_t **hv=i->head+i->vector[j]+32768;
+    sort_link_t *l=i->revindex+j;
 
     if(*hv==NULL){
       i->bucketusage[i->lastbucket]=i->vector[j]+32768;
@@ -112,10 +112,10 @@ sort_setup(sort_info_t *i, int16_t *vector, long *abspos, long size,
   i->hi=max(0,min(sorthi-*abspos,size));
 }
 
-sort_link *
+sort_link_t *
 sort_getmatch(sort_info_t *i, long post, long overlap, int value)
 {
-  sort_link *ret;
+  sort_link_t *ret;
 
   if(i->sortbegin==-1)sort_sort(i,i->lo,i->hi);
   /* Now we reuse lo and hi */
@@ -139,10 +139,10 @@ sort_getmatch(sort_info_t *i, long post, long overlap, int value)
   return(ret);
 }
 
-sort_link *
-sort_nextmatch(sort_info_t *i, sort_link *prev)
+sort_link_t *
+sort_nextmatch(sort_info_t *i, sort_link_t *prev)
 {
-  sort_link *ret=prev->next;
+  sort_link_t *ret=prev->next;
 
   if(!ret || ipos(i,ret)>=i->hi)return(NULL); 
   return(ret);

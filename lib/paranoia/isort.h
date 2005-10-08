@@ -1,5 +1,5 @@
 /*
-  $Id: isort.h,v 1.2 2005/01/07 02:42:29 rocky Exp $
+  $Id: isort.h,v 1.3 2005/10/08 09:08:10 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -24,7 +24,7 @@
 
 typedef struct sort_link{
   struct sort_link *next;
-} sort_link;
+} sort_link_t;
 
 typedef struct sort_info {
   int16_t *vector;               /* vector (storage doesn't belong to us) */
@@ -39,22 +39,22 @@ typedef struct sort_info {
   int  val;                      /* ...and val */
 
   /* sort structs */
-  sort_link **head;           /* sort buckets (65536) */
+  sort_link_t **head;           /* sort buckets (65536) */
 
   long *bucketusage;          /*  of used buckets (65536) */
   long lastbucket;
-  sort_link *revindex;
+  sort_link_t *revindex;
 
 } sort_info_t;
 
-extern sort_info_t *sort_alloc(long size);
+extern sort_info_t *sort_alloc(long int size);
 extern void sort_unsortall(sort_info_t *i);
 extern void sort_setup(sort_info_t *i,int16_t *vector,long *abspos,long size,
 		       long sortlo, long sorthi);
 extern void sort_free(sort_info_t *i);
-extern sort_link *sort_getmatch(sort_info_t *i, long post, long overlap,
-				int value);
-extern sort_link *sort_nextmatch(sort_info_t *i, sort_link *prev);
+extern sort_link_t *sort_getmatch(sort_info_t *i, long post, long overlap,
+				  int value);
+extern sort_link_t *sort_nextmatch(sort_info_t *i, sort_link_t *prev);
 
 #define is(i) (i->size)
 #define ib(i) (*i->abspos)
