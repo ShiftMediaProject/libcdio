@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.74 2005/02/22 10:42:50 rocky Exp $
+    $Id: iso9660.h,v 1.75 2005/10/12 11:26:06 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -26,7 +26,7 @@
 /*!
  * \file iso9660.h 
  *
- * \brief The top-level interface eader for libiso9660: the ISO-9660
+ * \brief The top-level interface header for libiso9660: the ISO-9660
  * filesystem library; applications include this.
  *
  * See also the ISO-9660 specification. The freely available European

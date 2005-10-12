@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.23 2005/09/21 01:41:32 rocky Exp $
+  $Id: cdda.h,v 1.24 2005/10/12 11:26:06 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -133,10 +133,10 @@ struct cdrom_drive_s {
 };
 
 
-/*! An enumeration for some of the CDDA_TEST_* #defines below. This isn't
-  really an enumeration one would really use in a program it is to
-  be helpful in debuggers where wants just to refer to the CDDA_TEST_
-  names and get something.
+/*! An enumeration for some of the CDDA_TEST_* #defines below. This
+  isn't really an enumeration one would really use in a program. The
+  enumeration is created be helpful in debuggers where wants just to
+  refer to the CDDA_TEST_ names and get something.
 */
 extern enum paranoia_jitter_enums {
   CDDA_TEST_JITTER_SMALL   = 1,
