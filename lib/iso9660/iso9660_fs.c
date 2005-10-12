@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.30 2005/09/15 06:36:01 rocky Exp $
+    $Id: iso9660_fs.c,v 1.31 2005/10/12 11:25:17 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.30 2005/09/15 06:36:01 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.31 2005/10/12 11:25:17 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -163,7 +163,7 @@ adjust_fuzzy_pvd( iso9660_t *p_iso )
   Open an ISO 9660 image for reading in either fuzzy mode or not.
 */
 static iso9660_t *
-iso9660_open_ext_private (const char *pathname,
+iso9660_open_ext_private (const char *psz_path,
 			  iso_extension_mask_t iso_extension_mask,
 			  uint16_t i_fuzz, bool b_fuzzy)
 {
@@ -172,7 +172,7 @@ iso9660_open_ext_private (const char *pathname,
 
   if (!p_iso) return NULL;
   
-  p_iso->stream = cdio_stdio_new( pathname );
+  p_iso->stream = cdio_stdio_new( psz_path );
   if (NULL == p_iso->stream) 
     goto error;
 
@@ -204,9 +204,9 @@ iso9660_open_ext_private (const char *pathname,
   a mode. NULL is returned on error.
 */
 iso9660_t *
-iso9660_open (const char *pathname /*, mode*/)
+iso9660_open (const char *psz_path /*, mode*/)
 {
-  return iso9660_open_ext(pathname, ISO_EXTENSION_NONE);
+  return iso9660_open_ext(psz_path, ISO_EXTENSION_NONE);
 }
 
 /*!
@@ -1186,7 +1186,7 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 }
 
 /*!
-  Get file status for pathname into stat. NULL is returned on error.
+  Get file status for psz_path into stat. NULL is returned on error.
  */
 iso9660_stat_t *
 iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[])
@@ -1211,7 +1211,7 @@ iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[])
 }
 
 /*!
-  Get file status for pathname into stat. NULL is returned on error.
+  Get file status for psz_path into stat. NULL is returned on error.
   pathname version numbers in the ISO 9660
   name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
   are lowercased.
@@ -1239,7 +1239,7 @@ iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[],
 }
 
 /*!
-  Get file status for pathname into stat. NULL is returned on error.
+  Get file status for psz_path into stat. NULL is returned on error.
  */
 iso9660_stat_t *
 iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[])
@@ -1263,7 +1263,7 @@ iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[])
 }
 
 /*!
-  Get file status for pathname into stat. NULL is returned on error.
+  Get file status for psz_path into stat. NULL is returned on error.
   pathname version numbers in the ISO 9660
   name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
   are lowercased.
@@ -1290,7 +1290,7 @@ iso9660_ifs_stat_translate (iso9660_t *p_iso, const char psz_path[])
 }
 
 /*! 
-  Read pathname (a directory) and return a list of iso9660_stat_t
+  Read psz_path (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
 CdioList_t * 
@@ -1356,7 +1356,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
 }
 
 /*! 
-  Read pathname (a directory) and return a list of iso9660_stat_t
+  Read psz_path (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
 CdioList_t * 
@@ -1428,9 +1428,9 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
 }
 
 static iso9660_stat_t *
-find_fs_lsn_recurse (CdIo_t *p_cdio, const char pathname[], lsn_t lsn)
+find_fs_lsn_recurse (CdIo_t *p_cdio, const char psz_path[], lsn_t lsn)
 {
-  CdioList_t *entlist = iso9660_fs_readdir (p_cdio, pathname, true);
+  CdioList_t *entlist = iso9660_fs_readdir (p_cdio, psz_path, true);
   CdioList_t *dirlist =  _cdio_list_new ();
   CdioListNode_t *entnode;
     
@@ -1444,7 +1444,7 @@ find_fs_lsn_recurse (CdIo_t *p_cdio, const char pathname[], lsn_t lsn)
       char _fullname[4096] = { 0, };
       char *filename = (char *) statbuf->filename;
 
-      snprintf (_fullname, sizeof (_fullname), "%s%s/", pathname, filename);
+      snprintf (_fullname, sizeof (_fullname), "%s%s/", psz_path, filename);
 
       if (statbuf->type == _STAT_DIR
           && strcmp ((char *) statbuf->filename, ".") 
