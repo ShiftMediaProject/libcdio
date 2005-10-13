@@ -52,10 +52,10 @@
  * See http://www.ecma.ch
 */
 
-#include <cdio/types.h>
-
 #ifndef _ECMA_167_H
 #define _ECMA_167_H 1
+
+#include <cdio/types.h>
 
 /** Tag identifiers */
 typedef enum {
