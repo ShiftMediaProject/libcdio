@@ -253,7 +253,7 @@ struct NSR_desc_s
 /** Primary Volume Descriptor (ECMA 167r3 3/10.1) */
 struct udf_pvd_s
 {
-  desc_tag_t	  desc_tag;
+  desc_tag_t	  tag;
   le32_t	  vol_desc_seq_num;
   le32_t	  primary_vol_desc_num;
   dstring	  vol_ident[32];
@@ -285,7 +285,7 @@ typedef struct udf_pvd_s udf_pvd_t;
 /** Anchor Volume Descriptor Pointer (ECMA 167r3 3/10.2) */
 struct anchor_vol_desc_ptr_s
 {
-  desc_tag_t	desc_tag;
+  desc_tag_t	tag;
   extent_ad_t	main_vol_desc_seq_ext;
   extent_ad_t	reserve_vol_desc_seq_ext;
   uint8_t	reserved[480];
@@ -296,7 +296,7 @@ typedef struct anchor_vol_desc_ptr_s anchor_vol_desc_ptr_t;
 /** Volume Descriptor Pointer (ECMA 167r3 3/10.3) */
 struct vol_desc_ptr_s
 {
-  desc_tag_t	desc_tag;
+  desc_tag_t	tag;
   le32_t	vol_desc_seq_num;
   extent_ad_t	next_vol_desc_set_ext;
   uint8_t	reserved[484];
@@ -305,7 +305,7 @@ struct vol_desc_ptr_s
 /** Implementation Use Volume Descriptor (ECMA 167r3 3/10.4) */
 struct imp_use_vol_desc_s
 {
-  desc_tag_t  desc_tag;
+  desc_tag_t  tag;
   le32_t      vol_desc_seq_num;
   regid_t     imp_id;
   uint8_t     imp_use[460];
@@ -314,7 +314,7 @@ struct imp_use_vol_desc_s
 /** Partition Descriptor (ECMA 167r3 3/10.5) */
 struct partition_desc_s
 {
-  desc_tag_t    desc_tag;
+  desc_tag_t    tag;
   le32_t	vol_desc_seq_num;
   le16_t	flags;
   le16_t	partition_num;
@@ -350,7 +350,7 @@ struct partition_desc_s
 /** Logical Volume Descriptor (ECMA 167r3 3/10.6) */
 struct logical_vol_desc_s
 {
-  desc_tag_t     desc_tag;
+  desc_tag_t     tag;
   le32_t	 seq_num;
   udf_charspec_t desc_charset;
   dstring	 logvol_id[128];
@@ -398,7 +398,7 @@ struct generic_partition_map2
 /** Unallocated Space Descriptor (ECMA 167r3 3/10.8) */
 struct unalloc_space_desc_s
 {
-  desc_tag_t    desc_tag;
+  desc_tag_t    tag;
   le32_t	vol_desc_seq_num;
   le32_t	i_alloc_descs;
   extent_ad_t	allocDescs[0];
@@ -407,14 +407,14 @@ struct unalloc_space_desc_s
 /** Terminating Descriptor (ECMA 167r3 3/10.9) */
 struct terminating_desc_s
 {
-  desc_tag_t    desc_tag;
+  desc_tag_t    tag;
   uint8_t	reserved[496];
 } GNUC_PACKED;
 
 /** Logical Volume Integrity Descriptor (ECMA 167r3 3/10.10) */
 struct logvol_integrity_desc_s
 {
-  desc_tag_t   desc_tag;
+  desc_tag_t   tag;
   udf_time_t   recording_time;
   le32_t       integrity_type;
   extent_ad_t  next_integrity_ext;
@@ -487,7 +487,7 @@ typedef struct ext_ad_s ext_ad_t;
 /** File Set Descriptor (ECMA 167r3 4/14.1) */
 struct fileset_desc_s
 {
-  desc_tag_t      desc_tag;
+  desc_tag_t      tag;
   udf_time_t      recording_time;
   le16_t	  interchange_lvl;
   le16_t	  maxInterchange_lvl;
@@ -526,7 +526,7 @@ typedef struct partition_header_desc_s partition_header_desc_t;
 /** File Identifier Descriptor (ECMA 167r3 4/14.4) */
 struct fileIdentDesc
 {
-  desc_tag_t    desc_tag;
+  desc_tag_t    tag;
   le16_t	file_version_num;
   uint8_t	file_characteristics;
   uint8_t	length_file_id;
@@ -554,7 +554,7 @@ struct fileIdentDesc
 /** Allocation Ext Descriptor (ECMA 167r3 4/14.5) */
 struct allocExtDesc
 {
-  desc_tag_t   desc_tag;
+  desc_tag_t   tag;
   le32_t       previous_alloc_ext_loc;
   le32_t       i_alloc_descs;
 } GNUC_PACKED;
@@ -622,7 +622,7 @@ typedef struct icbtag_s icbtag_t;
 /** Indirect Entry (ECMA 167r3 4/14.7) */
 struct indirect_entry_s
 {
-  desc_tag_t      desc_tag;
+  desc_tag_t      tag;
   icbtag_t	  icb_tag;
   long_ad_t	  indirect_ICB;
 } GNUC_PACKED;
@@ -630,14 +630,14 @@ struct indirect_entry_s
 /** Terminal Entry (ECMA 167r3 4/14.8) */
 struct terminal_entry_s
 {
-  desc_tag_t      desc_tag;
+  desc_tag_t      tag;
   icbtag_t	  icb_tag;
 } GNUC_PACKED;
 
 /** File Entry (ECMA 167r3 4/14.9) */
 struct file_entry_s
 {
-  desc_tag_t      desc_tag;
+  desc_tag_t      tag;
   icbtag_t	  icb_tag;
   le32_t	  uid;
   le32_t	  gid;
@@ -706,7 +706,7 @@ struct file_entry_s
 /** Extended Attribute Header Descriptor (ECMA 167r3 4/14.10.1) */
 struct extended_attr_header_desc_s
 {
-  desc_tag_t      desc_tag;
+  desc_tag_t      tag;
   le32_t	  imp_attr_location;
   le32_t	  app_attr_location;
 } GNUC_PACKED;
@@ -824,7 +824,7 @@ struct appUseExtAttr
 /** Unallocated Space Entry (ECMA 167r3 4/14.11) */
 struct unallocSpaceEntry
 {
-  desc_tag_t    desc_tag;
+  desc_tag_t    tag;
   icbtag_t	icb_tag;
   le32_t	lengthAllocDescs;
   uint8_t	allocDescs[0];
@@ -833,7 +833,7 @@ struct unallocSpaceEntry
 /** Space Bitmap Descriptor (ECMA 167r3 4/14.12) */
 struct spaceBitmapDesc
 {
-  desc_tag_t      desc_tag;
+  desc_tag_t      tag;
   le32_t	  i_bits;
   le32_t	  i_bytes;
   uint8_t	  bitmap[0];
@@ -842,7 +842,7 @@ struct spaceBitmapDesc
 /** Partition Integrity Entry (ECMA 167r3 4/14.13) */
 struct partitionIntegrityEntry
 {
-  desc_tag_t      desc_tag;
+  desc_tag_t      tag;
   icbtag_t	  icb_tag;
   udf_time_t      recording_time;
   uint8_t	  integrityType;
@@ -884,7 +884,7 @@ struct pathComponent
 /** File Entry (ECMA 167r3 4/14.17) */
 struct extended_file_entry
 {
-  desc_tag_t desc_tag;
+  desc_tag_t tag;
   icbtag_t   icb_tag;
   le32_t     uid;
   le32_t     gid;
