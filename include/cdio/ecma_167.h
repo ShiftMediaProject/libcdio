@@ -45,10 +45,7 @@
 /*!
  * \file ecma_167.h
  *
- * \brief The top-level interface header for libudf: the UDF
- * library; applications include this.
- *
- * These definitions are based on ECMA-167 3rd edition (June 1997)
+ * \brief Definitions based on ECMA-167 3rd edition (June 1997)
  * See http://www.ecma.ch
 */
 
