@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.16 2005/10/08 09:08:10 rocky Exp $
+  $Id: paranoia.c,v 1.17 2005/10/14 01:20:55 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -235,7 +235,7 @@ do_const_sync(c_block_t *A,
     ret=i_paranoia_overlap(cv(A), iv(B), posA, posB,
 			   cs(A), is(B), begin, end);
   else
-    if((flagB[posB]&2)==0)
+    if((flagB[posB]&FLAGS_UNREAD)==0)
       ret=i_paranoia_overlap2(cv(A), iv(B), flagA, flagB, 
 			      posA, posB, cs(A), is(B),
 			      begin, end);
@@ -857,7 +857,7 @@ i_stage2_each(root_block *root, v_fragment_t *v,
       free_v_fragment(v);
       return(1);
       
-    }else{
+    } else {
       /* D'oh.  No match.  What to do with the fragment? */
       if(fe(v)+dynoverlap<re(root) && !root->silenceflag){
 	/* It *should* have matched.  No good; free it. */
@@ -1162,7 +1162,40 @@ paranoia_seek(cdrom_paranoia_t *p, off_t seek, int mode)
   return(ret);
 }
 
-/* returns last block read, -1 on error */
+
+
+/* ===========================================================================
+ * read_c_block() (internal)
+ *
+ * This funtion reads many (p->readahead) sectors, encompassing at least
+ * the requested words.
+ *
+ * It returns a c_block which encapsulates these sectors' data and sector
+ * number.  The sectors come come from multiple low-level read requests.
+ *
+ * This function reads many sectors in order to exhaust any caching on the
+ * drive itself, as caching would simply return the same incorrect data
+ * over and over.  Paranoia depends on truly re-reading portions of the
+ * disc to make sure the reads are accurate and correct any inaccuracies.
+ *
+ * Which precise sectors are read varies ("jiggles") between calls to
+ * read_c_block, to prevent consistent errors across multiple reads
+ * from being misinterpreted as correct data.
+ *
+ * The size of each low-level read is determined by the underlying driver
+ * (p->d->nsectors), which allows the driver to specify how many sectors
+ * can be read in a single request.  Historically, the Linux kernel could
+ * only read 8 sectors at a time, with likely dropped samples between each
+ * read request.  Other operating systems may have different limitations.
+ *
+ * This function is called by paranoia_read_limited(), which breaks the
+ * c_block of read data into runs of samples that are likely to be
+ * contiguous, verifies them and stores them in verified fragments, and
+ * eventually merges the fragments into the verified root.
+ *
+ * This function returns the last c_block read or NULL on error.
+ */
+
 static c_block_t *
 i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
 	       void(*callback)(long, paranoia_cb_mode_t))
@@ -1186,6 +1219,16 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
   long dynoverlap=(p->dynoverlap+CD_FRAMEWORDS-1)/CD_FRAMEWORDS; 
   long anyflag=0;
 
+
+  /* Calculate the first sector to read.  This calculation takes
+   * into account the need to jitter the starting point of the read
+   * to reveal consistent errors as well as the low reliability of
+   * the edge words of a read.
+   *
+   * ???: Document more clearly how dynoverlap and MIN_SECTOR_BACKUP
+   * are calculated and used.
+   */
+
   /* What is the first sector to read?  want some pre-buffer if
      we're not at the extreme beginning of the disc */
   
@@ -1200,7 +1243,7 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
 	
     if(target+MIN_SECTOR_BACKUP>p->lastread && target<=p->lastread)
       target=p->lastread-MIN_SECTOR_BACKUP;
-      
+
     /* we want to jitter the read alignment boundary, as some
        drives, beginning from a specific point, will tend to
        lose bytes between sectors in the same place.  Also, as
@@ -1232,13 +1275,29 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
   buffer=calloc(totaltoread*CDIO_CD_FRAMESIZE_RAW, 1);
   sofar=0;
   firstread=-1;
-  
+
+
+  /* Issue each of the low-level reads until we've read enough sectors
+   * to exhaust the drive's cache.
+   *
+   * p->readahead   = total number of sectors to read
+   * p->d->nsectors = number of sectors to read per request
+   *
+   * The driver determines this latter number, which is the maximum
+   * number of sectors the kernel can reliably read per request.  In
+   * old Linux kernels, there was a hard limit of 8 sectors per read.
+   * While this limit has since been removed, certain motherboards
+   * can't handle DMA requests larger than 64K.  And other operating
+   * systems may have similar limitations.  So the method of splitting
+   * up reads is still useful.
+   */
+
   /* actual read loop */
 
   while(sofar<totaltoread){
-    long secread=sectatonce;
-    long adjread=readat;
-    long thisread;
+    long secread=sectatonce;  /* number of sectors to read this request */
+    long adjread=readat;      /* first sector to read for this request */
+    long thisread;            /* how many sectors were read this request */
 
     /* don't under/overflow the audio session */
     if(adjread<p->current_firstsector){
@@ -1254,8 +1313,21 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
       
       if (firstread<0) firstread = adjread;
 
+      /* Issue the low-level read to the driver.
+       */
+
       thisread = cdda_read(p->d, buffer+sofar*CD_FRAMEWORDS, adjread, secread);
 
+
+      /* If the low-level read returned too few sectors, pad the result
+       * with null data and mark it as invalid (FLAGS_UNREAD).  We pad
+       * because we're going to be appending further reads to the current
+       * c_block.
+       *
+       * ???: Why not re-read?  It might be to keep you from getting
+       * hung up on a bad sector.  Or it might be to avoid interrupting
+       * the streaming as much as possible.
+       */
       if ( thisread < secread) {
 
 	if (thisread<0) thisread=0;
@@ -1272,7 +1344,21 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
 	         CD_FRAMEWORDS*(secread-thisread));
       }
       if(thisread!=0)anyflag=1;
-      
+
+
+      /* Because samples are likely to be dropped between read requests,
+       * mark the samples near the the boundaries of the read requests
+       * as suspicious (FLAGS_EDGE).  This means that any span of samples
+       * against which these adjacent read requests are compared must
+       * overlap beyond the edges and into the more trustworthy data.
+       * Such overlapping spans are accordingly at least MIN_WORDS_OVERLAP
+       * words long (and naturally longer if any samples were dropped
+       * between the read requests).
+       *
+       *          (EEEEE...overlapping span...EEEEE)
+       * (read 1 ...........EEEEE)   (EEEEE...... read 2 ......EEEEE) ...
+       *         dropped samples --^
+       */
       if(flags && sofar!=0){
 	/* Don't verify across overlaps that are too close to one
            another */
@@ -1281,6 +1367,12 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
 	  flags[sofar*CD_FRAMEWORDS+i]|=FLAGS_EDGE;
       }
 
+
+      /* Move the read cursor ahead by the number of sectors we attempted
+       * to read.
+       *
+       * ???: Again, why not move it ahead by the number actually read?
+       */
       p->lastread=adjread+secread;
       
       if(adjread+secread-1==p->current_lastsector)
@@ -1290,13 +1382,24 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
       
       sofar+=secread;
       readat=adjread+secread; 
-    } else
+    } else /* secread <= 0 */
       if(readat<p->current_firstsector)
 	readat+=sectatonce; /* due to being before the readable area */
       else
 	break; /* due to being past the readable area */
-  }
 
+
+    /* Keep issuing read requests until we've read enough sectors to
+     * exhaust the drive's cache.
+     */
+
+  } /* end while */
+
+
+  /* If we managed to read any sectors at all (anyflag), create a new
+   * c_block containing the read data.  Otherwise, free our buffers and
+   * return NULL.
+   */
   if (anyflag) {
     new->vector=buffer;
     new->begin=firstread*CD_FRAMEWORDS-p->dyndrift;
@@ -1311,11 +1414,20 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
   return(new);
 }
 
-/* The returned buffer is *not* to be freed by the caller.  It will
-   persist only until the next call to paranoia_read() for this p */
+
+/** ==========================================================================
+ * cdio_paranoia_read(), cdio_paranoia_read_limited()
+ *
+ * These functions "read" the next sector of audio data and returns
+ * a pointer to a full sector of verified samples (2352 bytes).
+ *
+ * The returned buffer is *not* to be freed by the caller.  It will
+ *   persist only until the next call to paranoia_read() for this p 
+*/
 
 int16_t *
-paranoia_read(cdrom_paranoia_t *p, void(*callback)(long, paranoia_cb_mode_t))
+cdio_paranoia_read(cdrom_paranoia_t *p, 
+		   void(*callback)(long, paranoia_cb_mode_t))
 {
   return paranoia_read_limited(p, callback, 20);
 }
@@ -1324,9 +1436,9 @@ paranoia_read(cdrom_paranoia_t *p, void(*callback)(long, paranoia_cb_mode_t))
    breaking any old apps using the nerw libs.  cdparanoia 9.8 will
    need the updated libs, but nothing else will require it. */
 int16_t *
-paranoia_read_limited(cdrom_paranoia_t *p, 
-		      void(*callback)(long int, paranoia_cb_mode_t),
-		      int max_retries)
+cdio_paranoia_read_limited(cdrom_paranoia_t *p, 
+			   void(*callback)(long int, paranoia_cb_mode_t),
+			   int max_retries)
 {
   long int beginword  =  p->cursor*(CD_FRAMEWORDS);
   long int endword    =  beginword+CD_FRAMEWORDS;
@@ -1337,6 +1449,16 @@ paranoia_read_limited(cdrom_paranoia_t *p,
   if (beginword > p->root.returnedlimit)
     p->root.returnedlimit=beginword;
   lastend=re(root);
+
+
+  /* Since paranoia reads and verifies chunks of data at a time
+   * (which it needs to counteract dropped samples and inaccurate
+   * seeking), the requested samples may already be in memory,
+   * in the verified "root".
+   *
+   * The root is where paranoia stores samples that have been
+   * verified and whose position has been accurately determined.
+   */
   
   /* First, is the sector we want already in the root? */
   while(rv(root)==NULL ||
@@ -1346,35 +1468,83 @@ paranoia_read_limited(cdrom_paranoia_t *p,
 	re(root)<endword){
     
     /* Nope; we need to build or extend the root verified range */
-    
+
+    /* We may have already read the necessary samples and placed
+     * them into verified fragments, but not yet merged them into
+     * the verified root.  We'll check that before we actually
+     * try to read data from the drive.
+     */
+
     if(p->enable&(PARANOIA_MODE_VERIFY|PARANOIA_MODE_OVERLAP)){
+
+      /* We need to make sure our memory consumption doesn't grow
+       * to the size of the whole CD.  But at the same time, we
+       * need to hang onto some of the verified data (even perhaps
+       * data that's already been returned by paranoia_read()) in
+       * order to verify and accurately position future samples.
+       *
+       * Therefore, we free some of the verified data that we
+       * no longer need.
+       */
       i_paranoia_trim(p,beginword,endword);
       recover_cache(p);
+
       if(rb(root)!=-1 && p->root.lastsector)
 	i_end_case(p, endword+(MAX_SECTOR_OVERLAP*CD_FRAMEWORDS),
 			callback);
       else
+
+	/* Merge as many verified fragments into the verified root
+	 * as we need to satisfy the pending request.  We may
+	 * not have all the fragments we need, in which case we'll
+	 * read data from the CD further below.
+	 */
 	i_stage2(p, beginword,
 		      endword+(MAX_SECTOR_OVERLAP*CD_FRAMEWORDS),
 		      callback);
     }else
       i_end_case(p,endword+(MAX_SECTOR_OVERLAP*CD_FRAMEWORDS),
 		 callback); /* only trips if we're already done */
-    
+
+    /* If we were able to fill the verified root with data already
+     * in memory, we don't need to read any more data from the drive.
+     */
     if(!(rb(root)==-1 || rb(root)>beginword || 
 	 re(root)<endword+(MAX_SECTOR_OVERLAP*CD_FRAMEWORDS))) 
       break;
     
     /* Hmm, need more.  Read another block */
 
-    {    
+    {
+      /* Read many sectors, encompassing at least the requested words.
+       *
+       * The returned c_block encapsulates these sectors' data and
+       * sector number.  The sectors come come from multiple low-level
+       * read requests, and words which were near the boundaries of
+       * those read requests are marked with FLAGS_EDGE.
+       */
       c_block_t *new=i_read_c_block(p,beginword,endword,callback);
       
       if(new){
 	if(p->enable&(PARANOIA_MODE_OVERLAP|PARANOIA_MODE_VERIFY)){
       
+	  /* If we need to verify these samples, send them to
+	   * stage 1 verification, which will add verified samples
+	   * to the set of verified fragments.  Verified fragments
+	   * will be merged into the verified root during stage 2
+	   * overlap analysis.
+	   */
 	  if(p->enable&PARANOIA_MODE_VERIFY)
 	    i_stage1(p,new,callback);
+
+	  /* If we're only doing overlapping reads (no stage 1
+	   * verification), consider each low-level read in the
+	   * c_block to be a verified fragment.  We exclude the
+	   * edges from these fragments to enforce the requirement
+	   * that we overlap the reads by the minimum amount.
+	   * These fragments will be merged into the verified
+	   * root during stage 2 overlap analysis.
+	   */
 	  else{
 	    /* just make v_fragments from the boundary information. */
 	    long begin=0,end=0;
@@ -1394,6 +1564,11 @@ paranoia_read_limited(cdrom_paranoia_t *p,
 	  
 	}else{
 
+	  /* If we're not doing any overlapping reads or verification
+	   * of data, skip over the stage 1 and stage 2 verification and
+	   * promote this c_block directly to the current "verified" root.
+	   */
+
 	  if(p->root.vector)i_cblock_destructor(p->root.vector);
 	  free_elem(new->e,0);
 	  p->root.vector=new;
@@ -1406,7 +1581,10 @@ paranoia_read_limited(cdrom_paranoia_t *p,
     }
 
     /* Are we doing lots of retries?  **************************************/
-    
+
+    /* ???: To be studied
+     */
+
     /* Check unaddressable sectors first.  There's no backoff here; 
        jiggle and minimum backseek handle that for us */
     
@@ -1438,15 +1616,25 @@ paranoia_read_limited(cdrom_paranoia_t *p,
 	}
       }
     }
-  }
+
+    /* Having read data from the drive and placed it into verified
+     * fragments, we now loop back to try to extend the root with
+     * the newly loaded data.  Alternatively, if the root already
+     * contains the needed data, we'll just fall through.
+     */
+
+  } /* end while */
   p->cursor++;
 
+  /* Return a pointer into the verified root.  Thus, the caller
+   * must NOT free the returned pointer!
+   */
   return(rv(root)+(beginword-rb(root)));
 }
 
 /* a temporary hack */
 void 
-paranoia_overlapset(cdrom_paranoia_t *p, long int overlap)
+cdio_paranoia_overlapset(cdrom_paranoia_t *p, long int overlap)
 {
   p->dynoverlap=overlap*CD_FRAMEWORDS;
   p->stage1.offpoints=-1; 
