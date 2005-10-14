@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.h,v 1.9 2005/09/21 01:41:32 rocky Exp $
+  $Id: paranoia.h,v 1.10 2005/10/14 01:18:59 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -103,21 +103,29 @@ extern void cdio_paranoia_modeset(cdrom_paranoia_t *p, int mode);
   */
 extern lsn_t cdio_paranoia_seek(cdrom_paranoia_t *p, off_t seek, int whence);
 
-  /*!  @return the audio data read CDIO_CD_FRAMESIZE_RAW bytes. This data
-       is not freed by the caller, but will persist only until the next
-       call.
-  */
+  /*!
+    Reads the next sector of audio data and returns a pointer to a full
+    sector of verified samples. 
+    
+    @param p paranoia object.
+
+    @param callback callback routine which gets called with the status
+    on each read.
+
+    @return the audio data read, CDIO_CD_FRAMESIZE_RAW (2352)
+    bytes. This data is not to be freed by the caller. It will persist
+    only until the next call to paranoia_read() for this p.
+*/
 extern int16_t *cdio_paranoia_read(cdrom_paranoia_t *p,
 			      void(*callback)(long int, paranoia_cb_mode_t));
 
   /*! The same as cdio_paranoia_read but the number of retries is set.
     @param p paranoia object.
 
-
     @param callback callback routine which gets called with the status
     on each read.
 
-    @param maxretries number of times to try re-reading a block before
+    @param max_retries number of times to try re-reading a block before
     failing.
 
     @return the block of CDIO_FRAMEIZE_RAW bytes (or
@@ -130,9 +138,10 @@ extern int16_t *cdio_paranoia_read(cdrom_paranoia_t *p,
 extern int16_t *cdio_paranoia_read_limited(cdrom_paranoia_t *p,
 					   void(*callback)(long int, 
 							   paranoia_cb_mode_t),
-					   int maxretries);
+					   int max_retries);
 
 
+/*! a temporary hack */
 extern void cdio_paranoia_overlapset(cdrom_paranoia_t *p,long overlap);
 
 extern void cdio_paranoia_set_range(cdrom_paranoia_t *p, long int start, 
