@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.h,v 1.10 2005/10/14 01:18:59 rocky Exp $
+  $Id: paranoia.h,v 1.11 2005/10/14 02:07:06 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -115,7 +115,7 @@ extern lsn_t cdio_paranoia_seek(cdrom_paranoia_t *p, off_t seek, int whence);
     @return the audio data read, CDIO_CD_FRAMESIZE_RAW (2352)
     bytes. This data is not to be freed by the caller. It will persist
     only until the next call to paranoia_read() for this p.
-*/
+  */
 extern int16_t *cdio_paranoia_read(cdrom_paranoia_t *p,
 			      void(*callback)(long int, paranoia_cb_mode_t));
 
