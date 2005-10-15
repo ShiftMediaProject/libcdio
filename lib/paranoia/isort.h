@@ -1,5 +1,5 @@
 /*
-  $Id: isort.h,v 1.3 2005/10/08 09:08:10 rocky Exp $
+  $Id: isort.h,v 1.4 2005/10/15 03:18:42 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -47,13 +47,70 @@ typedef struct sort_info {
 
 } sort_info_t;
 
+/*! ========================================================================
+ * sort_alloc()
+ *
+ * Allocates and initializes a new, empty sort_info object, which can
+ * be used to index up to (size) samples from a vector.
+ */
 extern sort_info_t *sort_alloc(long int size);
+
+/*! ========================================================================
+ * sort_unsortall() (internal)
+ *
+ * This function resets the index for further use with a different
+ * vector or range, without the overhead of an unnecessary free/alloc.
+ */
 extern void sort_unsortall(sort_info_t *i);
-extern void sort_setup(sort_info_t *i,int16_t *vector,long *abspos,long size,
-		       long sortlo, long sorthi);
+
+/*! ========================================================================
+ * sort_setup()
+ *
+ * This function initializes a previously allocated sort_info_t.  The
+ * sort_info_t is associated with a vector of samples of length
+ * (size), whose position begins at (*abspos) within the CD's stream
+ * of samples.  Only the range of samples between (sortlo, sorthi)
+ * will eventually be indexed for fast searching.  (sortlo, sorthi)
+ * are absolute sample positions.
+ *
+ * ???: Why is abspos a pointer?  Why not just store a copy?
+ *
+ * Note: size *must* be <= the size given to the preceding sort_alloc(),
+ * but no error checking is done here.
+ */
+extern void sort_setup(sort_info_t *i, int16_t *vector, long int *abspos,
+		       long int size, long int sortlo, long int sorthi);
+
+/* =========================================================================
+ * sort_free()
+ *
+ * Releases all memory consumed by a sort_info object.
+ */
 extern void sort_free(sort_info_t *i);
+
+/*! ========================================================================
+ * sort_getmatch()
+ *
+ * This function returns a sort_link_t pointer which refers to the
+ * first sample equal to (value) in the vector.  It only searches for
+ * hits within (overlap) samples of (post), where (post) is an offset
+ * within the vector.  The caller can determine the position of the
+ * matched sample using ipos(sort_info *, sort_link *).
+ *
+ * This function returns NULL if no matches were found.
+ */
 extern sort_link_t *sort_getmatch(sort_info_t *i, long post, long overlap,
 				  int value);
+
+/*! ========================================================================
+ * sort_nextmatch()
+ *
+ * This function returns a sort_link_t pointer which refers to the
+ * next sample matching the criteria previously passed to
+ * sort_getmatch().  See sort_getmatch() for details.
+ *
+ * This function returns NULL if no further matches were found.
+ */
 extern sort_link_t *sort_nextmatch(sort_info_t *i, sort_link_t *prev);
 
 #define is(i) (i->size)
@@ -62,5 +119,5 @@ extern sort_link_t *sort_nextmatch(sort_info_t *i, sort_link_t *prev);
 #define iv(i) (i->vector)
 #define ipos(i,l) (l-i->revindex)
 
-#endif
+#endif /* _ISORT_H_ */
 
