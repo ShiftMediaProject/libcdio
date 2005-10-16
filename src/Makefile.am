@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.38 2005/10/06 12:57:39 rocky Exp $
+#   $Id: Makefile.am,v 1.39 2005/10/16 22:21:14 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -46,7 +46,7 @@ endif
 
 if BUILD_CD_DRIVE
 cd_drive_SOURCES = cd-drive.c util.c util.h
-cd_drive_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+cd_drive_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV) @LIBGETOPT_LIB@
 bin_cd_drive     = cd-drive
 endif
 
@@ -64,19 +64,19 @@ endif
 
 if BUILD_CD_READ
 cd_read_SOURCES = cd-read.c util.c util.h
-cd_read_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+cd_read_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV) @LIBGETOPT_LIB@
 bin_cd_read     = cd-read 
 endif
 
 if BUILD_ISO_INFO
 iso_info_SOURCES = iso-info.c util.c util.h
-iso_info_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso_info_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV) @LIBGETOPT_LIB@
 bin_iso_info     = iso-info
 endif
 
 if BUILD_ISO_READ
 iso_read_SOURCES = iso-read.c util.c util.h
-iso_read_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso_read_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV) @LIBGETOPT_LIB@
 bin_iso_read     = iso-read
 endif
 

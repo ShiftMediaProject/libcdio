@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.173 2005/10/05 09:48:11 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.174 2005/10/16 22:21:13 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -165,6 +165,16 @@ AC_CHECK_HEADERS(ncurses.h curses.h, break, [enable_cdda_player='no'])
 dnl FreeBSD 4 has getopt in unistd.h. So we include that before
 dnl getopt.h 
 AC_CHECK_HEADERS(unistd.h getopt.h)
+
+AC_CHECK_FUNC(getopt_long,
+              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [long getopt support])],
+              [ # Some BSD (BSD/OS) have a gnugetopt library for this:
+               AC_CHECK_LIB([gnugetopt], [getopt_long],
+                            [AC_DEFINE(HAVE_GETOPT_LONG, 1,
+                                       [long getopt support])
+                             LIBGETOPT_LIB="-lgnugetopt"])
+              ])
+AC_SUBST(LIBGETOPT_LIB)
 
 AC_SUBST(SBPCD_H)
 AC_SUBST(UCDROM_H)
