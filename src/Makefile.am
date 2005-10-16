@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.39 2005/10/16 22:21:14 rocky Exp $
+#   $Id: Makefile.am,v 1.40 2005/10/16 23:33:41 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -52,7 +52,7 @@ endif
 
 if BUILD_CDINFO
 cd_info_SOURCES = cd-info.c cddb.c cddb.h util.c util.h
-cd_info_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS) $(LIBICONV)
+cd_info_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS) $(LIBICONV) @LIBGETOPT_LIB@
 bin_cd_info     = cd-info 
 endif
 
