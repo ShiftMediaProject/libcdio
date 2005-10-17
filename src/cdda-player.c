@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.36 2005/09/15 06:36:01 rocky Exp $
+    $Id: cdda-player.c,v 1.37 2005/10/17 00:54:47 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -714,7 +714,7 @@ get_cdtext_track_info(track_t i_track)
 
   if (NULL != p_cdtext) {
     add_cdtext_track_info("%s", title, CDTEXT_TITLE);
-    add_cdtext_track_info("%s", title, CDTEXT_PERFORMER);
+    add_cdtext_track_info("%s", artist, CDTEXT_PERFORMER);
     cdtext_destroy(p_cdtext);
   }
 }
@@ -857,7 +857,7 @@ display_tracks(void)
   if (b_record) {
     i_line=LINE_TRACK_PREV - 1;
     for (i = i_first_track; i <= i_last_track; i++) {
-      char line[80];
+      char line[200]="";
       s = cdio_audio_get_msf_seconds(&toc[i+1]) 
 	- cdio_audio_get_msf_seconds(&toc[i]);
       read_subchannel(p_cdio);
@@ -1182,8 +1182,17 @@ ps_list_tracks(void)
     
     printf("labelfont setfont\n");
     printf("120 %d moveto (%d) show\n", y, i);
-    printf("150 %d moveto (%s) show\n", y, cd_info[i].title);
-    
+    {
+      char line[200]="";
+      if ( strlen(cd_info[i].title) )
+	strcat(line, cd_info[i].title);
+      if ( strlen(cd_info[i].artist) > 0 ) {
+	if (strlen(cd_info[i].title))
+	  strcat(line, " / ");
+	strcat(line, cd_info[i].artist);
+      }
+      printf("150 %d moveto (%s) show\n", y, line);
+    }
     printf("timefont setfont\n");
     printf("420 %d moveto (%2d:%02d) show\n", y, 
 	   s / CDIO_CD_SECS_PER_MIN, s % CDIO_CD_SECS_PER_MIN);
