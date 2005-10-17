@@ -1,5 +1,5 @@
 /*
-  $Id: isort.h,v 1.4 2005/10/15 03:18:42 rocky Exp $
+  $Id: isort.h,v 1.5 2005/10/17 20:56:51 pjcreath Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -113,10 +113,49 @@ extern sort_link_t *sort_getmatch(sort_info_t *i, long post, long overlap,
  */
 extern sort_link_t *sort_nextmatch(sort_info_t *i, sort_link_t *prev);
 
+/* ===========================================================================
+ * is()
+ *
+ * This macro returns the size of the vector indexed by the given sort_info_t.
+ */
 #define is(i) (i->size)
+
+/* ===========================================================================
+ * ib()
+ *
+ * This macro returns the absolute position of the first sample in the vector
+ * indexed by the given sort_info_t.
+ */
 #define ib(i) (*i->abspos)
+
+/* ===========================================================================
+ * ie()
+ *
+ * This macro returns the absolute position of the sample after the last
+ * sample in the vector indexed by the given sort_info_t.
+ */
 #define ie(i) (i->size+*i->abspos)
+
+/* ===========================================================================
+ * iv()
+ *
+ * This macro returns the vector indexed by the given sort_info_t.
+ */
 #define iv(i) (i->vector)
+
+/* ===========================================================================
+ * ipos()
+ *
+ * This macro returns the relative position (offset) within the indexed vector
+ * at which the given match was found.
+ *
+ * It uses a little-known and frightening aspect of C pointer arithmetic:
+ * subtracting a pointer is not an arithmetic subtraction, but rather the
+ * additive inverse.  In other words, since
+ *   q     = p + n returns a pointer to the nth object in p,
+ *   q - p = p + n - p, and
+ *   q - p = n, not the difference of the two addresses.
+ */
 #define ipos(i,l) (l-i->revindex)
 
 #endif /* _ISORT_H_ */
