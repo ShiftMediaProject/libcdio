@@ -364,35 +364,35 @@ struct lb_addr_s
 typedef struct lb_addr_s lb_addr_t;
 
 /** Short Allocation Descriptor (ECMA 167r3 4/14.14.1) */
-struct short_ad_s
+struct udf_short_ad_s
 {
   udf_Uint32_t	len;
   udf_Uint32_t	pos;
 } GNUC_PACKED;
 
-typedef struct short_ad_s short_ad_t;
+typedef struct udf_short_ad_s udf_short_ad_t;
 
 /** Long Allocation Descriptor (ECMA 167r3 4/14.14.2) */
-struct long_ad_s
+struct udf_long_ad_s
 {
   udf_Uint32_t	len;
   lb_addr_t	loc;
   udf_Uint8_t	imp_use[6];
 } GNUC_PACKED;
 
-typedef struct long_ad_s long_ad_t;
+typedef struct udf_long_ad_s udf_long_ad_t;
 
 /** Logical Volume Descriptor (ECMA 167r3 3/10.6) */
 struct logical_vol_desc_s
 {
-  udf_tag_t     tag;
+  udf_tag_t      tag;
   udf_Uint32_t	 seq_num;
   udf_charspec_t desc_charset;
   udf_dstring	 logvol_id[128];
   udf_Uint32_t	 logical_blocksize;
   udf_regid_t	 domain_id;
   union {
-    long_ad_t    fsd_loc;
+    udf_long_ad_t    fsd_loc;
     udf_Uint8_t	 logvol_content_use[16];
   } lvd_use;
   udf_Uint8_t	 logvol_contents_use[16];
@@ -503,10 +503,10 @@ struct fileset_desc_s
   udf_dstring	  fileSet_id[32];
   udf_dstring	  copyright_file_id[32];
   udf_dstring	  abstract_file_id[32];
-  long_ad_t	  root_directory_ICB;
+  udf_long_ad_t	  root_directory_ICB;
   udf_regid_t	  domain_id;
-  long_ad_t	  next_ext;
-  long_ad_t	  stream_directory_ICB;
+  udf_long_ad_t	  next_ext;
+  udf_long_ad_t	  stream_directory_ICB;
   udf_Uint8_t	  reserved[32];
 } GNUC_PACKED;
 
@@ -515,12 +515,12 @@ typedef struct fileset_desc_s fileset_desc_t;
 /** Partition Header Descriptor (ECMA 167r3 4/14.3) */
 struct partition_header_desc_s
 {
-  short_ad_t	unalloc_space_table;
-  short_ad_t	unalloc_space_bitmap;
-  short_ad_t	partition_integrity_table;
-  short_ad_t	freed_space_table;
-  short_ad_t	freed_space_bitmap;
-  udf_Uint8_t	reserved[88];
+  udf_short_ad_t unalloc_space_table;
+  udf_short_ad_t unalloc_space_bitmap;
+  udf_short_ad_t partition_integrity_table;
+  udf_short_ad_t freed_space_table;
+  udf_short_ad_t freed_space_bitmap;
+  udf_Uint8_t	 reserved[88];
 } GNUC_PACKED;
 
 typedef struct partition_header_desc_s partition_header_desc_t;
@@ -532,7 +532,7 @@ struct fileIdentDesc
   udf_Uint16_t	file_version_num;
   udf_Uint8_t	file_characteristics;
   udf_Uint8_t	length_file_id;
-  long_ad_t	icb;
+  udf_long_ad_t	icb;
   udf_Uint16_t	i_imp_use;
   udf_Uint8_t	imp_use[0];
   udf_Uint8_t	file_id[0];
@@ -626,7 +626,7 @@ struct indirect_entry_s
 {
   udf_tag_t      tag;
   icbtag_t	  icb_tag;
-  long_ad_t	  indirect_ICB;
+  udf_long_ad_t	  indirect_ICB;
 } GNUC_PACKED;
 
 /** Terminal Entry (ECMA 167r3 4/14.8) */
@@ -654,7 +654,7 @@ struct file_entry_s
   udf_timestamp_t modification_time;
   udf_timestamp_t attr_time;
   udf_Uint32_t	  checkpoint;
-  long_ad_t	  ext_attr_ICB;
+  udf_long_ad_t	  ext_attr_ICB;
   udf_regid_t	  imp_id;
   udf_Uint64_t	  unique_iD;
   udf_Uint32_t	  length_extended_attr;
@@ -904,8 +904,8 @@ struct extended_file_entry
   udf_timestamp_t attr_time;
   udf_Uint32_t    checkpoint;
   udf_Uint32_t    reserved;
-  long_ad_t  	  ext_attr_ICB;
-  long_ad_t  	  stream_directory_ICB;
+  udf_long_ad_t   ext_attr_ICB;
+  udf_long_ad_t   stream_directory_ICB;
   udf_regid_t     imp_id;
   udf_Uint64_t    unique_ID;
   udf_Uint32_t    length_extended_attr;
