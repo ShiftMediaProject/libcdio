@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.18 2005/10/14 02:07:06 rocky Exp $
+  $Id: paranoia.c,v 1.19 2005/10/17 15:31:08 pjcreath Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -99,7 +99,7 @@ const char *paranoia_cb_mode2str[] = {
   "fixup duplicated",
   "read error"
 };
-  
+
 static inline long 
 re(root_block *root)
 {
@@ -149,8 +149,23 @@ enum  {
 #define FLAGS_UNREAD   0x02 
 #define FLAGS_VERIFIED 0x04
 
+
 /**** matching and analysis code *****************************************/
 
+/* ===========================================================================
+ * i_paranoia_overlap() (internal)
+ *
+ * This function is called when buffA[offsetA] == buffB[offsetB].  This
+ * function searches backward and forward to see how many consecutive
+ * samples also match.
+ *
+ * This function is called by do_const_sync() when we're not doing any
+ * verification.  Its more complicated sibling is i_paranoia_overlap2.
+ *
+ * This function returns the number of consecutive matching samples.
+ * If (ret_begin) or (ret_end) are not NULL, it fills them with the
+ * offsets of the first and last matching samples in A.
+ */
 static inline long 
 i_paranoia_overlap(int16_t *buffA,int16_t *buffB,
 		   long offsetA, long offsetB,
@@ -160,19 +175,39 @@ i_paranoia_overlap(int16_t *buffA,int16_t *buffB,
   long beginA=offsetA,endA=offsetA;
   long beginB=offsetB,endB=offsetB;
 
-  for(;beginA>=0 && beginB>=0;beginA--,beginB--)
-    if (buffA[beginA]!=buffB[beginB])break;
+  /* Scan backward to extend the matching run in that direction. */
+  for(; beginA>=0 && beginB>=0; beginA--,beginB--)
+    if (buffA[beginA] != buffB[beginB]) break;
   beginA++;
   beginB++;
-  
-  for(;endA<sizeA && endB<sizeB;endA++,endB++)
-    if (buffA[endA]!=buffB[endB])break;
-  
-  if (ret_begin)*ret_begin=beginA;
-  if (ret_end)*ret_end=endA;
-  return(endA-beginA);
+
+  /* Scan forward to extend the matching run in that direction. */
+  for(; endA<sizeA && endB<sizeB; endA++,endB++)
+    if (buffA[endA] != buffB[endB]) break;
+
+  /* Return the result of our search. */
+  if (ret_begin) *ret_begin = beginA;
+  if (ret_end) *ret_end = endA;
+  return (endA-beginA);
 }
 
+
+/* ===========================================================================
+ * i_paranoia_overlap2() (internal)
+ *
+ * This function is called when buffA[offsetA] == buffB[offsetB].  This
+ * function searches backward and forward to see how many consecutive
+ * samples also match.
+ *
+ * This function is called by do_const_sync() when we're verifying the
+ * data coming off the CD.  Its less complicated sibling is
+ * i_paranoia_overlap, which is a good place to look to see the simplest
+ * outline of how this function works.
+ *
+ * This function returns the number of consecutive matching samples.
+ * If (ret_begin) or (ret_end) are not NULL, it fills them with the
+ * offsets of the first and last matching samples in A.
+ */
 static inline long 
 i_paranoia_overlap2(int16_t *buffA,int16_t *buffB,
 		    unsigned char *flagsA, unsigned char *flagsB,
@@ -183,45 +218,69 @@ i_paranoia_overlap2(int16_t *buffA,int16_t *buffB,
   long beginA=offsetA, endA=offsetA;
   long beginB=offsetB, endB=offsetB;
   
-  for( ; beginA>=0 && beginB>=0; beginA--,beginB-- ) {
-    if ( buffA[beginA] != buffB[beginB] ) break;
+  /* Scan backward to extend the matching run in that direction. */
+  for (; beginA>=0 && beginB>=0; beginA--,beginB--) {
+    if (buffA[beginA] != buffB[beginB]) break;
+
     /* don't allow matching across matching sector boundaries */
-    /* don't allow matching through known missing data */
-    if ((flagsA[beginA]&flagsB[beginB]&FLAGS_EDGE)){
+    /* Stop if both samples were at the edges of a low-level read.
+     * ???: What implications does this have?
+     * ???: Why do we include the first sample for which this is true?
+     */
+    if ((flagsA[beginA]&flagsB[beginB]&FLAGS_EDGE)) {
       beginA--;
       beginB--;
       break;
     }
-    if ((flagsA[beginA]&FLAGS_UNREAD) || (flagsB[beginB]&FLAGS_UNREAD))break;
+
+    /* don't allow matching through known missing data */
+    if ((flagsA[beginA]&FLAGS_UNREAD) || (flagsB[beginB]&FLAGS_UNREAD))
+      break;
   }
   beginA++;
   beginB++;
   
-  for(;endA<sizeA && endB<sizeB;endA++,endB++){
-    if (buffA[endA]!=buffB[endB])break;
+  /* Scan forward to extend the matching run in that direction. */
+  for (; endA<sizeA && endB<sizeB; endA++,endB++) {
+    if (buffA[endA] != buffB[endB]) break;
+
     /* don't allow matching across matching sector boundaries */
+    /* Stop if both samples were at the edges of a low-level read.
+     * ???: What implications does this have?
+     * ???: Why do we not stop if endA == beginA?
+     */
     if ((flagsA[endA]&flagsB[endB]&FLAGS_EDGE) && endA!=beginA){
       break;
     }
 
     /* don't allow matching through known missing data */
-    if ((flagsA[endA]&FLAGS_UNREAD) || (flagsB[endB]&FLAGS_UNREAD))break;
+    if ((flagsA[endA]&FLAGS_UNREAD) || (flagsB[endB]&FLAGS_UNREAD))
+      break;
   }
 
-  if (ret_begin)*ret_begin=beginA;
-  if (ret_end)*ret_end=endA;
-  return(endA-beginA);
+  /* Return the result of our search. */
+  if (ret_begin) *ret_begin = beginA;
+  if (ret_end) *ret_end = endA;
+  return (endA-beginA);
 }
 
-/* Top level of the first stage matcher */
 
-/* We match each analysis point of new to the preexisting blocks
-recursively.  We can also optionally maintain a list of fragments of
-the preexisting block that didn't match anything, and match them back
-afterward. */
-
-#define OVERLAP_ADJ (MIN_WORDS_OVERLAP/2-1)
-
+/* ===========================================================================
+ * do_const_sync() (internal)
+ *
+ * This function is called when samples A[posA] == B[posB].  It tries to
+ * build a matching run from that point, looking forward and backward to
+ * see how many consecutive samples match.  Since the starting samples
+ * might only be coincidentally identical, we only consider the run to
+ * be a true match if it's longer than MIN_WORDS_SEARCH.
+ *
+ * This function returns the length of the run if a matching run was found,
+ * or 0 otherwise.  If a matching run was found, (begin) and (end) are set
+ * to the absolute positions of the beginning and ending samples of the
+ * run in A, and (offset) is set to the jitter between the c_blocks.
+ * (I.e., offset indicates the distance between what A considers sample N
+ * on the CD and what B considers sample N.)
+ */
 static inline long int 
 do_const_sync(c_block_t *A,
 	      sort_info_t *B, unsigned char *flagB,
@@ -231,6 +290,10 @@ do_const_sync(c_block_t *A,
   unsigned char *flagA=A->flags;
   long ret=0;
 
+  /* If we're doing any verification whatsoever, we have flags and will
+   * take them into account.  Otherwise, we just do the simple equality
+   * test for samples on both sides of the initial match.
+   */
   if (flagB==NULL)
     ret=i_paranoia_overlap(cv(A), iv(B), posA, posB,
 			   cs(A), is(B), begin, end);
@@ -240,8 +303,15 @@ do_const_sync(c_block_t *A,
 			      posA, posB, cs(A), is(B),
 			      begin, end);
 	
-  if (ret>MIN_WORDS_SEARCH){
+  /* Small matching runs could just be coincidental.  We only consider this
+   * a real match if it's long enough.
+   */
+  if (ret > MIN_WORDS_SEARCH) {
     *offset=+(posA+cb(A))-(posB+ib(B));
+
+    /* ???: Contrary to the original comment, this appears to be relative to
+     * A, not B.
+     */
     *begin+=cb(A);
     *end+=cb(A);
     return(ret);
@@ -249,6 +319,30 @@ do_const_sync(c_block_t *A,
   
   return(0);
 }
+
+
+/* ===========================================================================
+ * try_sort_sync() (internal)
+ *
+ * Starting from the sample in B with the absolute position (post), look
+ * for a matching run in A.  This search will look in A for a first
+ * matching sample within (p->dynoverlap) samples around (post).  If it
+ * finds one, it will then determine how many consecutive samples match
+ * both A and B from that point, looking backwards and forwards.  If
+ * this search produces a matching run longer than MIN_WORDS_SEARCH, we
+ * consider it a match.
+ *
+ * When used by stage 1, the "post" is planted with respect to the old
+ * c_block being compare to the new c_block.  In stage 2, the "post" is
+ * planted with respect to the verified root.
+ *
+ * This function returns 1 if a match is found and 0 if not.  When a match
+ * is found, (begin) and (end) are set to the boundaries of the run, and
+ * (offset) is set to the difference in position of the run in A and B.
+ * (begin) and (end) are the absolute positions of the samples in
+ * A.  (offset) counts from B's frame of reference.  I.e., an offset of
+ * -2 would mean that A's absolute 3 is equivalent to B's 5.
+ */
 
 /* post is w.r.t. B.  in stage one, we post from old.  In stage 2 we
    post from root. Begin, end, offset count from B's frame of
@@ -275,11 +369,24 @@ try_sort_sync(cdrom_paranoia_t *p,
     {
       long zeropos=post-ib(A);
       if (zeropos>=0 && zeropos<is(A)) {
+
+	/* Before we bother with the search for a matching samples,
+	 * we check the simple case.  If there's no jitter at all
+	 * (i.e. the absolute positions of A's and B's samples are
+	 * consistent), A's sample at (post) should be identical
+	 * to B's sample at the same position.
+	 */
 	if ( cv(B)[post-cb(B)] == iv(A)[zeropos] ) {
+
+	  /* The first sample matched, now try to grow the matching run
+	   * in both directions.  We only consider it a match if more
+	   * than MIN_WORDS_SEARCH consecutive samples match.
+	   */
 	  if (do_const_sync(B, A, Aflags,
 			    post-cb(B), zeropos,
 			    begin, end, offset) ) {
-	    
+
+	    /* ???: To be studied. */
 	    offset_add_value(p,&(p->stage1),*offset,callback);
 	    
 	    return(1);
@@ -289,26 +396,80 @@ try_sort_sync(cdrom_paranoia_t *p,
     }
   } else
     return(0);
-  
+
+  /* If the samples with the same absolute position didn't match, it's
+   * either a bad sample, or the two c_blocks are jittered with respect
+   * to each other.  Now we search through A for samples that do have
+   * the same value as B's post.  The search looks from first to last
+   * occurrence witin (dynoverlap) samples of (post).
+   */
   ptr=sort_getmatch(A,post-ib(A),dynoverlap,cv(B)[post-cb(B)]);
   
   while (ptr){
-    
+
+    /* We've found a matching sample, so try to grow the matching run in
+     * both directions.  If we find a long enough run (longer than
+     * MIN_WORDS_SEARCH), we've found a match.
+     */
     if (do_const_sync(B,A,Aflags,
 		     post-cb(B),ipos(A,ptr),
 		     begin,end,offset)){
+      /* ???: To be studied. */
       offset_add_value(p,&(p->stage1),*offset,callback);
       return(1);
     }
+
+    /* The matching sample was just a fluke -- there weren't enough adjacent
+     * samples that matched to consider a matching run.  So now we check
+     * for the next occurrence of that value in A.
+     */
     ptr=sort_nextmatch(A,ptr);
   }
-  
+
+  /* We didn't find any matches. */
   *begin=-1;
   *end=-1;
   *offset=-1;
   return(0);
 }
 
+
+/* ===========================================================================
+ * STAGE 1 MATCHING
+ *
+ * ???: Insert high-level explanation here.
+ * ===========================================================================
+ */
+
+/* Top level of the first stage matcher */
+
+/* We match each analysis point of new to the preexisting blocks
+recursively.  We can also optionally maintain a list of fragments of
+the preexisting block that didn't match anything, and match them back
+afterward. */
+
+#define OVERLAP_ADJ (MIN_WORDS_OVERLAP/2-1)
+
+
+/* ===========================================================================
+ * stage1_matched() (internal)
+ *
+ * This function is called whenever stage 1 verification finds two identical
+ * runs of samples from different reads.  The runs must be more than
+ * MIN_WORDS_SEARCH samples long.  They may be jittered (i.e. their absolute
+ * positions on the CD may not match due to inaccurate seeking) with respect
+ * to each other, but they have been verified to have no dropped samples
+ * within them.
+ *
+ * This function provides feedback via the callback mechanism and marks the
+ * runs as verified.  The details of the marking are somehwat subtle and
+ * are described near the relevant code.
+ *
+ * Subsequent portions of the stage 1 code will build a verified fragment
+ * from this run.  The verified fragment will eventually be merged
+ * into the verified root (and its absolute position determined) in
+ * stage 2.
+ */
 static inline void 
 stage1_matched(c_block_t *old, c_block_t *new,
 	       long matchbegin,long matchend,
@@ -320,7 +481,16 @@ stage1_matched(c_block_t *old, c_block_t *new,
   long oldadjend=matchend-cb(old);
   long newadjbegin=matchbegin-matchoffset-cb(new);
   long newadjend=matchend-matchoffset-cb(new);
-  
+
+
+  /* Provide feedback via the callback about the samples we've just
+   * verified.
+   *
+   * ???: How can matchbegin ever be < cb(old)?
+   *
+   * ???: Why do edge samples get logged only when there's jitter
+   * between the matched runs (matchoffset != 0)?
+   */
   if ( matchbegin-matchoffset<=cb(new)
        || matchbegin<=cb(old)
        || (new->flags[newadjbegin]&FLAGS_EDGE) 
@@ -340,13 +510,61 @@ stage1_matched(c_block_t *old, c_block_t *new,
   } else
     if (callback) 
       (*callback)(matchend, PARANOIA_CB_FIXUP_ATOM);
-  
+
+
+  /* Mark verified samples as "verified," but trim the verified region
+   * by OVERLAP_ADJ samples on each side.  There are several significant
+   * implications of this trimming:
+   *
+   * 1) Why we trim at all:  We have to trim to distinguish between two
+   * adjacent verified runs and one long verified run.  We encounter this
+   * situation when samples have been dropped:
+   *
+   *   matched portion of read 1 ....)(.... matched portion of read 1
+   *       read 2 adjacent run  .....)(..... read 2 adjacent run
+   *                                 ||
+   *                      dropped samples in read 2
+   *
+   * So at this point, the fact that we have two adjacent runs means
+   * that we have not yet verified that the two runs really are adjacent.
+   * (In fact, just the opposite:  there are two runs because they were
+   * matched by separate runs, indicating that some samples didn't match
+   * across the length of read 2.)
+   *
+   * If we verify that they are actually adjacent (e.g. if the two runs
+   * are simply a result of matching runs from different reads, not from
+   * dropped samples), we will indeed mark them as one long merged run.
+   *
+   * 2) Why we trim by this amount: We want to ensure that when we
+   * verify the relationship between these two runs, we do so with
+   * an overlapping fragment at least OVERLAP samples long.  Following
+   * from the above example:
+   *
+   *                (..... matched portion of read 3 .....)
+   *       read 2 adjacent run  .....)(..... read 2 adjacent run
+   *
+   * Assuming there were no dropped samples between the adjacent runs,
+   * the matching portion of read 3 will need to be at least OVERLAP
+   * samples long to mark the two runs as one long verified run.
+   * If there were dropped samples, read 3 wouldn't match across the
+   * two runs, proving our caution worthwhile.
+   *
+   * 3) Why we partially discard the work we've done:  We don't.
+   * When subsequently creating verified fragments from this run,
+   * we compensate for this trimming.  Thus the verified fragment will
+   * contain the full length of verified samples.  Only the c_blocks
+   * will reflect this trimming.
+   *
+   * ???: The comment below indicates that the sort cache is updated in
+   * some way, but this does not appear to be the case.
+   */
+
   /* Mark the verification flags.  Don't mark the first or
      last OVERLAP/2 elements so that overlapping fragments
      have to overlap by OVERLAP to actually merge. We also
      remove elements from the sort such that later sorts do
      not have to sift through already matched data */
-  
+
   newadjbegin+=OVERLAP_ADJ;
   newadjend-=OVERLAP_ADJ;
   for(i=newadjbegin;i<newadjend;i++)
@@ -359,52 +577,112 @@ stage1_matched(c_block_t *old, c_block_t *new,
     
 }
 
+
+/* ===========================================================================
+ * i_iterate_stage1 (internal)
+ *
+ * This function is called by i_stage1() to compare newly read samples with
+ * previously read samples, searching for contiguous runs of identical
+ * samples.  Matching runs indicate that at least two reads of the CD
+ * returned identical data, with no dropped samples in that run.
+ * The runs may be jittered (i.e. their absolute positions on the CD may
+ * not be accurate due to inaccurate seeking) at this point.  Their
+ * positions will be determined in stage 2.
+ *
+ * This function compares the new c_block (which has been indexed in
+ * p->sortcache) to a previous c_block.  It is called for each previous
+ * c_block.  It searches for runs of identical samples longer than
+ * MIN_WORDS_SEARCH.  Samples in matched runs are marked as verified.
+ *
+ * Subsequent stage 1 code builds verified fragments from the runs of
+ * verified samples.  These fragments are merged into the verified root
+ * in stage 2.
+ *
+ * This function returns the number of distinct runs verified in the new
+ * c_block when compared against this old c_block.
+ */
 static long int 
 i_iterate_stage1(cdrom_paranoia_t *p, c_block_t *old, c_block_t *new,
 		 void(*callback)(long int, paranoia_cb_mode_t)) 
 {
+  long matchbegin = -1;
+  long matchend   = -1;
+  long matchoffset;
 
-  long matchbegin=-1,matchend=-1,matchoffset;
-
+  /* ???: Why do we limit our search only to the samples with overlapping
+   * absolute positions?  It could be because it eliminates some further
+   * bounds checking.
+   *
+   * Why do we "no longer try to spread the ... search" as mentioned below?
+   */
   /* we no longer try to spread the stage one search area by dynoverlap */
-  long searchend=min(ce(old),ce(new));
-  long searchbegin=max(cb(old),cb(new));
-  long searchsize=searchend-searchbegin;
-  sort_info_t *i=p->sortcache;
-  long ret=0;
+  long searchend   = min(ce(old), ce(new));
+  long searchbegin = max(cb(old), cb(new));
+  long searchsize  = searchend-searchbegin;
+  sort_info_t *i = p->sortcache;
+  long ret = 0;
   long int j;
 
-  long tried=0,matched=0;
+  long tried = 0;
+  long matched = 0;
 
-  if (searchsize<=0)return(0);
-  
+  if (searchsize<=0)
+    return(0);
+
   /* match return values are in terms of the new vector, not old */
 
-  for(j=searchbegin;j<searchend;j+=23){
-    if ((new->flags[j-cb(new)]&(FLAGS_VERIFIED|FLAGS_UNREAD))==0){      
+  /* ???: Why 23?  */
+
+  for (j=searchbegin; j<searchend; j+=23) {
+
+    /* Skip past any samples verified in previous comparisons to
+     * other old c_blocks.  Also, obviously, don't bother verifying
+     * unread/unmatchable samples.
+     */
+    if ((new->flags[j-cb(new)] & (FLAGS_VERIFIED|FLAGS_UNREAD)) == 0) {
       tried++;
-      if (try_sort_sync(p,i,new->flags,old,j,&matchbegin,&matchend,&matchoffset,
-		       callback)==1){
-	
+
+      /* Starting from the sample in the old c_block with the absolute
+       * position j, look for a matching run in the new c_block.  This
+       * search will look a certain distance around j, and if successful
+       * will extend the matching run as far backward and forward as
+       * it can.
+       *
+       * The search will only return 1 if it finds a matching run long
+       * enough to be deemed significant.
+       */
+      if (try_sort_sync(p, i, new->flags, old, j,
+			&matchbegin, &matchend, &matchoffset,
+			callback) == 1) {
+
 	matched+=matchend-matchbegin;
 
 	/* purely cosmetic: if we're matching zeros, don't use the
            callback because they will appear to be all skewed */
 	{
-	  long j=matchbegin-cb(old);
-	  long end=matchend-cb(old);
-	  for(;j<end;j++)if (cv(old)[j]!=0)break;
-	  if (j<end){
+	  long j = matchbegin-cb(old);
+	  long end = matchend-cb(old);
+	  for (; j<end; j++) if (cv(old)[j]!=0) break;
+
+	  /* Mark the matched samples in both c_blocks as verified.
+	   * In reality, not all the samples are marked.  See
+	   * stage1_matched() for details.
+	   */
+	  if (j<end) {
 	    stage1_matched(old,new,matchbegin,matchend,matchoffset,callback);
 	  } else {
 	    stage1_matched(old,new,matchbegin,matchend,matchoffset,NULL);
 	  }
 	}
 	ret++;
-	if (matchend-1>j)j=matchend-1;
+
+	/* Skip past this verified run to look for more matches. */
+	if (matchend-1 > j)
+	  j = matchend-1;
       }
     }
-  }
+  } /* end for */
+
 #ifdef NOISY 
   fprintf(stderr,"iterate_stage1: search area=%ld[%ld-%ld] tried=%ld matched=%ld spans=%ld\n",
 	  searchsize,searchbegin,searchend,tried,matched,ret);
@@ -413,6 +691,36 @@ i_iterate_stage1(cdrom_paranoia_t *p, c_block_t *old, c_block_t *new,
   return(ret);
 }
 
+
+/* ===========================================================================
+ * i_stage1() (internal)
+ *
+ * Compare newly read samples against previously read samples, searching
+ * for contiguous runs of identical samples.  Matching runs indicate that
+ * at least two reads of the CD returned identical data, with no dropped
+ * samples in that run.  The runs may be jittered (i.e. their absolute
+ * positions on the CD may not be accurate due to inaccurate seeking) at
+ * this point.  Their positions will be determined in stage 2.
+ *
+ * This function compares a new c_block against all other c_blocks in memory,
+ * searching for sufficiently long runs of identical samples.  Since each
+ * c_block represents a separate call to read_c_block, this ensures that
+ * multiple reads have returned identical data.  (Additionally, read_c_block
+ * varies the reads so that multiple reads are unlikely to produce identical
+ * errors, so any matches between reads are considered verified.  See
+ * i_read_c_block for more details.)
+ *
+ * Each time we find such a  run (longer than MIN_WORDS_SEARCH), we mark
+ * the samples as "verified" in both c_blocks.  Runs of verified samples in
+ * the new c_block are promoted into verified fragments, which will later
+ * be merged into the verified root in stage 2.
+ *
+ * In reality, not all the verified samples are marked as "verified."
+ * See stage1_matched() for an explanation.
+ *
+ * This function returns the number of verified fragments created by the
+ * stage 1 matching.
+ */
 static long int
 i_stage1(cdrom_paranoia_t *p, c_block_t *p_new, 
 	 void (*callback)(long int, paranoia_cb_mode_t))
@@ -423,10 +731,23 @@ i_stage1(cdrom_paranoia_t *p, c_block_t *p_new,
   long int begin=0;
   long int end;
   
+  /* We're going to be comparing the new c_block against the other
+   * c_blocks in memory.  Initialize the "sort cache" index to allow
+   * for fast searching through the new c_block.  (The index will
+   * actually be built the first time we search.)
+   */
   if (ptr) 
     sort_setup( p->sortcache, cv(p_new), &cb(p_new), cs(p_new), cb(p_new), 
 		ce(p_new) );
 
+  /* Iterate from oldest to newest c_block, comparing the new c_block
+   * to each, looking for a sufficiently long run of identical samples
+   * (longer than MIN_WORDS_SEARCH), which will be marked as "verified"
+   * in both c_blocks.
+   *
+   * Since the new c_block is already in the list (at the head), don't
+   * compare it against itself.
+   */
   while ( ptr && ptr != p_new ) {
     if (callback)
       (*callback)(cb(p_new), PARANOIA_CB_VERIFY);
@@ -436,7 +757,10 @@ i_stage1(cdrom_paranoia_t *p, c_block_t *p_new,
   }
 
   /* parse the verified areas of p_new into v_fragments */
-  
+
+  /* Find each run of contiguous verified samples in the new c_block
+   * and create a verified fragment from each run.
+   */
   begin=0;
   while (begin<size) {
     for ( ; begin < size; begin++)
@@ -447,15 +771,35 @@ i_stage1(cdrom_paranoia_t *p, c_block_t *p_new,
     
     ret++;
 
+    /* We create a new verified fragment from the contiguous run
+     * of verified samples.
+     *
+     * We expand the "verified" range by OVERLAP_ADJ on each side
+     * to compensate for trimming done to the verified range by
+     * stage1_matched().  The samples were actually verified, and
+     * hence belong in the verified fragment.  See stage1_matched()
+     * for an explanation of the trimming.
+     */
     new_v_fragment(p,p_new,cb(p_new)+max(0,begin-OVERLAP_ADJ),
 		   cb(p_new)+min(size,end+OVERLAP_ADJ),
 		   (end+OVERLAP_ADJ>=size && p_new->lastsector));
 
     begin=end;
   }
-  
+
+  /* Return the number of distinct verified fragments we found with
+   * stage 1 matching.
+   */
   return(ret);
 }
+
+
+/* ===========================================================================
+ * STAGE 2 MATCHING
+ *
+ * ???: Insert high-level explanation here.
+ * ===========================================================================
+ */
 
 typedef struct sync_result {
   long offset;
@@ -1272,7 +1616,11 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
   }
   
   readat+=driftcomp;
-  
+
+  /* Create a new, empty c_block and add it to the head of the
+   * list of c_blocks in memory.  It will be empty until the end of
+   * this subroutine.
+   */
   if (p->enable&(PARANOIA_MODE_OVERLAP|PARANOIA_MODE_VERIFY)) {
     flags=calloc(totaltoread*CD_FRAMEWORDS, 1);
     new=new_c_block(p);
@@ -1407,9 +1755,9 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
   } /* end while */
 
 
-  /* If we managed to read any sectors at all (anyflag), create a new
-   * c_block containing the read data.  Otherwise, free our buffers and
-   * return NULL.
+  /* If we managed to read any sectors at all (anyflag), fill in the
+   * previously allocated c_block with the read data.  Otherwise, free
+   * our buffers, dispose of the c_block, and return NULL.
    */
   if (anyflag) {
     new->vector=buffer;
