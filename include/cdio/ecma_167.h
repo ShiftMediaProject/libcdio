@@ -98,6 +98,7 @@ typedef uint32_t udf_Uint32_t; /*! Section 1/7.1.5 */
 typedef uint64_t udf_Uint64_t; /*! Section 1/7.1.7 */
 typedef char	 udf_dstring;  /*! Section 1/7.1.12 */
 
+#define udf_length_mask 0x3fffffff
 
 PRAGMA_BEGIN_PACKED
 
@@ -136,14 +137,14 @@ typedef struct udf_timestamp_s udf_timestamp_t;
 
 /** Entity identifier (ECMA 167r3 1/7.4) */
 #define	UDF_REGID_ID_SIZE	23
-struct regid_s
+struct udf_regid_s
 {
   udf_Uint8_t		flags;
   udf_Uint8_t		id[UDF_REGID_ID_SIZE];
   udf_Uint8_t		id_suffix[8];
 } GNUC_PACKED;
 
-typedef struct regid_s regid_t;
+typedef struct udf_regid_s udf_regid_t;
 
 /** Flags (ECMA 167r3 1/7.4.1) */
 #define ENTITYID_FLAGS_DIRTY		0x00
@@ -195,8 +196,8 @@ struct boot_desc_s
   udf_Uint8_t		std_ident[VSD_STD_ID_LEN];
   udf_Uint8_t		struct_version;
   udf_Uint8_t		reserved1;
-  regid_t		arch_type;
-  regid_t		boot_ident;
+  udf_regid_t		arch_type;
+  udf_regid_t		boot_ident;
   udf_Uint32_t		bool_ext_location;
   udf_Uint32_t		bool_ext_length;
   udf_Uint64_t		load_address;
@@ -220,19 +221,19 @@ struct extent_ad_s
 typedef struct extent_ad_s extent_ad_t;
 
 /** Descriptor Tag (ECMA 167r3 3/7.2) */
-struct desc_tag_s
+struct udf_tag_s
 {
-  udf_Uint16_t		tag_id;
+  udf_Uint16_t		id;
   udf_Uint16_t		desc_version;
   udf_Uint8_t		cksum;
   udf_Uint8_t		reserved;
   udf_Uint16_t		i_serial;
   udf_Uint16_t		desc_CRC;
   udf_Uint16_t		desc_CRC_len;
-  udf_Uint32_t		tag_loc;
+  udf_Uint32_t		loc;
 } GNUC_PACKED;
 
-typedef struct desc_tag_s desc_tag_t;
+typedef struct udf_tag_s udf_tag_t;
 
 /** NSR Descriptor (ECMA 167r3 3/9.1) */
 struct NSR_desc_s
@@ -247,7 +248,7 @@ struct NSR_desc_s
 /** Primary Volume Descriptor (ECMA 167r3 3/10.1) */
 struct udf_pvd_s
 {
-  desc_tag_t	  tag;
+  udf_tag_t	  tag;
   udf_Uint32_t	  vol_desc_seq_num;
   udf_Uint32_t	  primary_vol_desc_num;
   udf_dstring	  vol_ident[32];
@@ -262,9 +263,9 @@ struct udf_pvd_s
   udf_charspec_t  explanatory_charset;
   extent_ad_t	  vol_abstract;
   extent_ad_t	  vol_copyright;
-  regid_t	  app_ident;
+  udf_regid_t	  app_ident;
   udf_timestamp_t recording_time;
-  regid_t	  imp_ident;
+  udf_regid_t	  imp_ident;
   udf_Uint8_t	  imp_use[64];
   udf_Uint32_t	  predecessor_vol_desc_seq_location;
   udf_Uint16_t	  flags;
@@ -279,7 +280,7 @@ typedef struct udf_pvd_s udf_pvd_t;
 /** Anchor Volume Descriptor Pointer (ECMA 167r3 3/10.2) */
 struct anchor_vol_desc_ptr_s
 {
-  desc_tag_t	tag;
+  udf_tag_t	tag;
   extent_ad_t	main_vol_desc_seq_ext;
   extent_ad_t	reserve_vol_desc_seq_ext;
   udf_Uint8_t	reserved[480];
@@ -290,7 +291,7 @@ typedef struct anchor_vol_desc_ptr_s anchor_vol_desc_ptr_t;
 /** Volume Descriptor Pointer (ECMA 167r3 3/10.3) */
 struct vol_desc_ptr_s
 {
-  desc_tag_t	tag;
+  udf_tag_t	tag;
   udf_Uint32_t	vol_desc_seq_num;
   extent_ad_t	next_vol_desc_set_ext;
   udf_Uint8_t	reserved[484];
@@ -299,28 +300,30 @@ struct vol_desc_ptr_s
 /** Implementation Use Volume Descriptor (ECMA 167r3 3/10.4) */
 struct imp_use_vol_desc_s
 {
-  desc_tag_t   tag;
+  udf_tag_t    tag;
   udf_Uint32_t vol_desc_seq_num;
-  regid_t      imp_id;
+  udf_regid_t  imp_id;
   udf_Uint8_t  imp_use[460];
 } GNUC_PACKED;
 
 /** Partition Descriptor (ECMA 167r3 3/10.5) */
 struct partition_desc_s
 {
-  desc_tag_t    tag;
+  udf_tag_t     tag;
   udf_Uint32_t	vol_desc_seq_num;
   udf_Uint16_t	flags;
-  udf_Uint16_t	partition_num;
-  regid_t	contents;
+  udf_Uint16_t	number;             /**< Partition number */
+  udf_regid_t	contents;
   udf_Uint8_t	contents_use[128];
   udf_Uint32_t	access_type;
   udf_Uint32_t	start_loc;
   udf_Uint32_t	part_len;
-  regid_t	imp_id;
+  udf_regid_t	imp_id;
   udf_Uint8_t	imp_use[128];
   udf_Uint8_t	reserved[156];
 } GNUC_PACKED;
+
+typedef struct partition_desc_s partition_desc_t;
 
 /** Partition Flags (ECMA 167r3 3/10.5.3) */
 #define PD_PARTITION_FLAGS_ALLOC	0x0001
@@ -341,23 +344,57 @@ struct partition_desc_s
 #define PD_ACCESS_TYPE_REWRITABLE	0x00000003
 #define PD_ACCESS_TYPE_OVERWRITABLE	0x00000004
 
+/** Recorded Address (ECMA 167r3 4/7.1) */
+struct lb_addr_s
+{
+  udf_Uint32_t	lba;
+  udf_Uint16_t	partitionReferenceNum;
+} GNUC_PACKED;
+
+typedef struct lb_addr_s lb_addr_t;
+
+/** Short Allocation Descriptor (ECMA 167r3 4/14.14.1) */
+struct short_ad_s
+{
+  udf_Uint32_t	len;
+  udf_Uint32_t	pos;
+} GNUC_PACKED;
+
+typedef struct short_ad_s short_ad_t;
+
+/** Long Allocation Descriptor (ECMA 167r3 4/14.14.2) */
+struct long_ad_s
+{
+  udf_Uint32_t	len;
+  lb_addr_t	loc;
+  udf_Uint8_t	imp_use[6];
+} GNUC_PACKED;
+
+typedef struct long_ad_s long_ad_t;
+
 /** Logical Volume Descriptor (ECMA 167r3 3/10.6) */
 struct logical_vol_desc_s
 {
-  desc_tag_t     tag;
+  udf_tag_t     tag;
   udf_Uint32_t	 seq_num;
   udf_charspec_t desc_charset;
   udf_dstring	 logvol_id[128];
   udf_Uint32_t	 logical_blocksize;
-  regid_t	 domain_id;
+  udf_regid_t	 domain_id;
+  union {
+    long_ad_t    fsd_loc;
+    udf_Uint8_t	 logvol_content_use[16];
+  } lvd_use;
   udf_Uint8_t	 logvol_contents_use[16];
   udf_Uint32_t	 maptable_len;
   udf_Uint32_t	 i_partition_maps;
-  regid_t	 imp_id;
+  udf_regid_t	 imp_id;
   udf_Uint8_t	 imp_use[128];
   extent_ad_t	 integrity_seq_ext;
   udf_Uint8_t	 partition_maps[0];
 } GNUC_PACKED;
+
+typedef struct logical_vol_desc_s logical_vol_desc_t;
 
 /** Generic Partition Map (ECMA 167r3 3/10.7.1) */
 struct generic_partition_map
@@ -392,7 +429,7 @@ struct generic_partition_map2
 /** Unallocated Space Descriptor (ECMA 167r3 3/10.8) */
 struct unalloc_space_desc_s
 {
-  desc_tag_t    tag;
+  udf_tag_t    tag;
   udf_Uint32_t	vol_desc_seq_num;
   udf_Uint32_t	i_alloc_descs;
   extent_ad_t	allocDescs[0];
@@ -401,14 +438,14 @@ struct unalloc_space_desc_s
 /** Terminating Descriptor (ECMA 167r3 3/10.9) */
 struct terminating_desc_s
 {
-  desc_tag_t    tag;
+  udf_tag_t    tag;
   udf_Uint8_t	reserved[496];
 } GNUC_PACKED;
 
 /** Logical Volume Integrity Descriptor (ECMA 167r3 3/10.10) */
 struct logvol_integrity_desc_s
 {
-  desc_tag_t      tag;
+  udf_tag_t      tag;
   udf_timestamp_t recording_time;
   udf_Uint32_t    integrity_type;
   extent_ad_t     next_integrity_ext;
@@ -423,34 +460,6 @@ struct logvol_integrity_desc_s
 /** Integrity Type (ECMA 167r3 3/10.10.3) */
 #define LVID_INTEGRITY_TYPE_OPEN	0x00000000
 #define LVID_INTEGRITY_TYPE_CLOSE	0x00000001
-
-/** Recorded Address (ECMA 167r3 4/7.1) */
-struct lb_addr_s
-{
-  udf_Uint32_t	logical_blockNum;
-  udf_Uint16_t	partitionReferenceNum;
-} GNUC_PACKED;
-
-typedef struct lb_addr_s lb_addr_t;
-
-/** Short Allocation Descriptor (ECMA 167r3 4/14.14.1) */
-struct short_ad_s
-{
-  udf_Uint32_t	len;
-  udf_Uint32_t	pos;
-} GNUC_PACKED;
-
-typedef struct short_ad_s short_ad_t;
-
-/** Long Allocation Descriptor (ECMA 167r3 4/14.14.2) */
-struct long_ad_s
-{
-  udf_Uint32_t	len;
-  lb_addr_t	loc;
-  udf_Uint8_t	imp_use[6];
-} GNUC_PACKED;
-
-typedef struct long_ad_s long_ad_t;
 
 /** Extended Allocation Descriptor (ECMA 167r3 4/14.14.3) */
 struct ext_ad_s
@@ -470,7 +479,7 @@ typedef struct ext_ad_s ext_ad_t;
 /** File Set Descriptor (ECMA 167r3 4/14.1) */
 struct fileset_desc_s
 {
-  desc_tag_t      tag;
+  udf_tag_t      tag;
   udf_timestamp_t recording_time;
   udf_Uint16_t	  interchange_lvl;
   udf_Uint16_t	  maxInterchange_lvl;
@@ -485,7 +494,7 @@ struct fileset_desc_s
   udf_dstring	  copyright_file_id[32];
   udf_dstring	  abstract_file_id[32];
   long_ad_t	  root_directory_ICB;
-  regid_t	  domain_id;
+  udf_regid_t	  domain_id;
   long_ad_t	  next_ext;
   long_ad_t	  stream_directory_ICB;
   udf_Uint8_t	  reserved[32];
@@ -509,7 +518,7 @@ typedef struct partition_header_desc_s partition_header_desc_t;
 /** File Identifier Descriptor (ECMA 167r3 4/14.4) */
 struct fileIdentDesc
 {
-  desc_tag_t    tag;
+  udf_tag_t    tag;
   udf_Uint16_t	file_version_num;
   udf_Uint8_t	file_characteristics;
   udf_Uint8_t	length_file_id;
@@ -537,7 +546,7 @@ struct fileIdentDesc
 /** Allocation Ext Descriptor (ECMA 167r3 4/14.5) */
 struct allocExtDesc
 {
-  desc_tag_t   tag;
+  udf_tag_t   tag;
   udf_Uint32_t previous_alloc_ext_loc;
   udf_Uint32_t i_alloc_descs;
 } GNUC_PACKED;
@@ -605,7 +614,7 @@ typedef struct icbtag_s icbtag_t;
 /** Indirect Entry (ECMA 167r3 4/14.7) */
 struct indirect_entry_s
 {
-  desc_tag_t      tag;
+  udf_tag_t      tag;
   icbtag_t	  icb_tag;
   long_ad_t	  indirect_ICB;
 } GNUC_PACKED;
@@ -613,14 +622,14 @@ struct indirect_entry_s
 /** Terminal Entry (ECMA 167r3 4/14.8) */
 struct terminal_entry_s
 {
-  desc_tag_t      tag;
+  udf_tag_t      tag;
   icbtag_t	  icb_tag;
 } GNUC_PACKED;
 
 /** File Entry (ECMA 167r3 4/14.9) */
 struct file_entry_s
 {
-  desc_tag_t      tag;
+  udf_tag_t      tag;
   icbtag_t	  icb_tag;
   udf_Uint32_t	  uid;
   udf_Uint32_t	  gid;
@@ -636,7 +645,7 @@ struct file_entry_s
   udf_timestamp_t attr_time;
   udf_Uint32_t	  checkpoint;
   long_ad_t	  ext_attr_ICB;
-  regid_t	  imp_id;
+  udf_regid_t	  imp_id;
   udf_Uint64_t	  unique_iD;
   udf_Uint32_t	  length_extended_attr;
   udf_Uint32_t	  length_alloc_descs;
@@ -689,7 +698,7 @@ struct file_entry_s
 /** Extended Attribute Header Descriptor (ECMA 167r3 4/14.10.1) */
 struct extended_attr_header_desc_s
 {
-  desc_tag_t      tag;
+  udf_tag_t       tag;
   udf_Uint32_t	  imp_attr_location;
   udf_Uint32_t	  app_attr_location;
 } GNUC_PACKED;
@@ -779,7 +788,7 @@ struct impUseExtAttr
   udf_Uint8_t	reserved[3];
   udf_Uint32_t	attrLength;
   udf_Uint32_t	imp_useLength;
-  regid_t	imp_id;
+  udf_regid_t	imp_id;
   udf_Uint8_t	imp_use[0];
 } GNUC_PACKED;
 
@@ -791,7 +800,7 @@ struct appUseExtAttr
   udf_Uint8_t	reserved[3];
   udf_Uint32_t	attrLength;
   udf_Uint32_t	appUseLength;
-  regid_t	app_id;
+  udf_regid_t	app_id;
   udf_Uint8_t	appUse[0];
 } GNUC_PACKED;
 
@@ -807,7 +816,7 @@ struct appUseExtAttr
 /** Unallocated Space Entry (ECMA 167r3 4/14.11) */
 struct unallocSpaceEntry
 {
-  desc_tag_t    tag;
+  udf_tag_t     tag;
   icbtag_t	icb_tag;
   udf_Uint32_t	lengthAllocDescs;
   udf_Uint8_t	allocDescs[0];
@@ -816,21 +825,21 @@ struct unallocSpaceEntry
 /** Space Bitmap Descriptor (ECMA 167r3 4/14.12) */
 struct spaceBitmapDesc
 {
-  desc_tag_t      tag;
-  udf_Uint32_t	  i_bits;
-  udf_Uint32_t	  i_bytes;
-  udf_Uint8_t	  bitmap[0];
+  udf_tag_t     tag;
+  udf_Uint32_t	i_bits;
+  udf_Uint32_t	i_bytes;
+  udf_Uint8_t	bitmap[0];
 } GNUC_PACKED;
 
 /** Partition Integrity Entry (ECMA 167r3 4/14.13) */
 struct partitionIntegrityEntry
 {
-  desc_tag_t      tag;
+  udf_tag_t       tag;
   icbtag_t	  icb_tag;
   udf_timestamp_t recording_time;
   udf_Uint8_t	  integrityType;
   udf_Uint8_t	  reserved[175];
-  regid_t	  imp_id;
+  udf_regid_t	  imp_id;
   udf_Uint8_t	  imp_use[256];
 } GNUC_PACKED;
 
@@ -867,7 +876,7 @@ struct pathComponent
 /** File Entry (ECMA 167r3 4/14.17) */
 struct extended_file_entry
 {
-  desc_tag_t 	  tag;
+  udf_tag_t 	  tag;
   icbtag_t   	  icb_tag;
   udf_Uint32_t    uid;
   udf_Uint32_t    gid;
@@ -887,7 +896,7 @@ struct extended_file_entry
   udf_Uint32_t    reserved;
   long_ad_t  	  ext_attr_ICB;
   long_ad_t  	  stream_directory_ICB;
-  regid_t    	  imp_id;
+  udf_regid_t     imp_id;
   udf_Uint64_t    unique_ID;
   udf_Uint32_t    length_extended_attr;
   udf_Uint32_t    length_alloc_descs;
