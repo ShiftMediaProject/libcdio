@@ -71,3 +71,4 @@ iso9660_set_ltime
 iso9660_set_pvd
 iso9660_strncpy_pad
 iso9660_xa_init
+ISO_STANDARD_ID
