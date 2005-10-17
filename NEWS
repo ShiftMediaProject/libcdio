@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.86 2005/10/05 09:54:23 rocky Exp $
+$Id: NEWS,v 1.87 2005/10/17 03:25:33 rocky Exp $
 
 version 0.77cvs
 =====================================
@@ -9,6 +9,10 @@ version 0.77cvs
 - OSX was freeing too much in listing drives
 
 - Some provision for handling Rock-Ridge device numbers.
+
+- Document cd-paranoia (Peter J. Creath)
+
+- Start UDF handling
 
 version 0.76
 =====================================
@@ -297,4 +301,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.86 2005/10/05 09:54:23 rocky Exp $
+$Id: NEWS,v 1.87 2005/10/17 03:25:33 rocky Exp $
