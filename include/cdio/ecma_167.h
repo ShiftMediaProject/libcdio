@@ -625,7 +625,7 @@ typedef struct udf_icbtag_s udf_icbtag_t;
 struct indirect_entry_s
 {
   udf_tag_t       tag;
-  icbtag_t	  icb_tag;
+  udf_icbtag_t	  icb_tag;
   udf_long_ad_t	  indirect_ICB;
 } GNUC_PACKED;
 
