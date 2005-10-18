@@ -562,7 +562,7 @@ struct allocExtDesc
 } GNUC_PACKED;
 
 /** ICB Tag (ECMA 167r3 4/14.6) */
-struct icbtag_s
+struct udf_icbtag_s
 {
   udf_Uint32_t	prev_num_dirs;
   udf_Uint16_t	strat_type;
@@ -574,7 +574,7 @@ struct icbtag_s
   udf_Uint16_t	flags;
 } GNUC_PACKED;
 
-typedef struct icbtag_s icbtag_t;
+typedef struct udf_icbtag_s udf_icbtag_t;
 
 #define	UDF_ICB_TAG_FLAGS_SETUID	0x40
 #define	UDF_ICB_TAG_FLAGS_SETGID	0x80
@@ -633,14 +633,14 @@ struct indirect_entry_s
 struct terminal_entry_s
 {
   udf_tag_t       tag;
-  icbtag_t	  icb_tag;
+  udf_icbtag_t	  icb_tag;
 } GNUC_PACKED;
 
 /** File Entry (ECMA 167r3 4/14.9) */
 struct file_entry_s
 {
   udf_tag_t       tag;
-  icbtag_t	  icb_tag;
+  udf_icbtag_t	  icb_tag;
   udf_Uint32_t	  uid;
   udf_Uint32_t	  gid;
   udf_Uint32_t	  permissions;
@@ -829,7 +829,7 @@ struct appUseExtAttr
 struct unallocSpaceEntry
 {
   udf_tag_t     tag;
-  icbtag_t	icb_tag;
+  udf_icbtag_t	icb_tag;
   udf_Uint32_t	lengthAllocDescs;
   udf_Uint8_t	allocDescs[0];
 } GNUC_PACKED;
@@ -847,7 +847,7 @@ struct spaceBitmapDesc
 struct partitionIntegrityEntry
 {
   udf_tag_t       tag;
-  icbtag_t	  icb_tag;
+  udf_icbtag_t	  icb_tag;
   udf_timestamp_t recording_time;
   udf_Uint8_t	  integrityType;
   udf_Uint8_t	  reserved[175];
@@ -889,7 +889,7 @@ struct pathComponent
 struct extended_file_entry
 {
   udf_tag_t 	  tag;
-  icbtag_t   	  icb_tag;
+  udf_icbtag_t    icb_tag;
   udf_Uint32_t    uid;
   udf_Uint32_t    gid;
   udf_Uint32_t    permissions;
