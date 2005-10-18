@@ -70,7 +70,7 @@ typedef enum {
   TAGID_AED		 = 0x0102,
   TAGID_IE		 = 0x0103,
   TAGID_TE		 = 0x0104,
-  TAGID_FE		 = 0x0105,
+  TAGID_FILE_ENTRY	 = 0x0105,
   TAGID_EAHD		 = 0x0106,
   TAGID_USE		 = 0x0107,
   TAGID_SBD		 = 0x0108,
@@ -503,7 +503,7 @@ struct fileset_desc_s
   udf_dstring	  fileSet_id[32];
   udf_dstring	  copyright_file_id[32];
   udf_dstring	  abstract_file_id[32];
-  udf_long_ad_t	  root_directory_ICB;
+  udf_long_ad_t	  root_icb;
   udf_regid_t	  domain_id;
   udf_long_ad_t	  next_ext;
   udf_long_ad_t	  stream_directory_ICB;
@@ -624,7 +624,7 @@ typedef struct icbtag_s icbtag_t;
 /** Indirect Entry (ECMA 167r3 4/14.7) */
 struct indirect_entry_s
 {
-  udf_tag_t      tag;
+  udf_tag_t       tag;
   icbtag_t	  icb_tag;
   udf_long_ad_t	  indirect_ICB;
 } GNUC_PACKED;
@@ -632,14 +632,14 @@ struct indirect_entry_s
 /** Terminal Entry (ECMA 167r3 4/14.8) */
 struct terminal_entry_s
 {
-  udf_tag_t      tag;
+  udf_tag_t       tag;
   icbtag_t	  icb_tag;
 } GNUC_PACKED;
 
 /** File Entry (ECMA 167r3 4/14.9) */
 struct file_entry_s
 {
-  udf_tag_t      tag;
+  udf_tag_t       tag;
   icbtag_t	  icb_tag;
   udf_Uint32_t	  uid;
   udf_Uint32_t	  gid;
@@ -662,6 +662,8 @@ struct file_entry_s
   udf_Uint8_t	  ext_attr[0];
   udf_Uint8_t	  alloc_descs[0];
 } GNUC_PACKED;
+
+typedef struct file_entry_s file_entry_t;
 
 #define	UDF_FENTRY_SIZE	176
 #define	UDF_FENTRY_PERM_USER_MASK	0x07
