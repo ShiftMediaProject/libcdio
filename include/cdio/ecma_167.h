@@ -98,7 +98,7 @@ typedef uint32_t udf_Uint32_t; /*! Section 1/7.1.5 */
 typedef uint64_t udf_Uint64_t; /*! Section 1/7.1.7 */
 typedef char	 udf_dstring;  /*! Section 1/7.1.12 */
 
-#define udf_length_mask 0x3fffffff
+#define UDF_LENGTH_MASK 0x3fffffff
 
 PRAGMA_BEGIN_PACKED
 
@@ -472,7 +472,7 @@ struct logvol_integrity_desc_s
 #define LVID_INTEGRITY_TYPE_CLOSE	0x00000001
 
 /** Extended Allocation Descriptor (ECMA 167r3 4/14.14.3) */
-struct ext_ad_s
+struct udf_ext_ad_s
 {
   udf_Uint32_t	len;
   udf_Uint32_t	recorded_len;
@@ -480,23 +480,23 @@ struct ext_ad_s
   udf_lb_addr_t	ext_loc;
 } GNUC_PACKED ext_ad;
 
-typedef struct ext_ad_s ext_ad_t;
+typedef struct udf_ext_ad_s udf_ext_ad_t;
 
 /** Descriptor Tag (ECMA 167r3 4/7.2 - See 3/7.2) */
 
 /** Tag Identifier (ECMA 167r3 4/7.2.1) */
 
 /** File Set Descriptor (ECMA 167r3 4/14.1) */
-struct fileset_desc_s
+struct udf_fsd_s
 {
-  udf_tag_t      tag;
+  udf_tag_t       tag;
   udf_timestamp_t recording_time;
   udf_Uint16_t	  interchange_lvl;
   udf_Uint16_t	  maxInterchange_lvl;
   udf_Uint32_t	  charset_list;
   udf_Uint32_t	  max_charset_list;
   udf_Uint32_t	  fileset_num;
-  udf_Uint32_t	  fileset_desc_num;
+  udf_Uint32_t	  udf_fsd_num;
   udf_charspec_t  logical_vol_id_charset;
   udf_dstring	  logical_vol_id[128];
   udf_charspec_t  fileset_charset;
@@ -510,7 +510,7 @@ struct fileset_desc_s
   udf_Uint8_t	  reserved[32];
 } GNUC_PACKED;
 
-typedef struct fileset_desc_s fileset_desc_t;
+typedef struct udf_fsd_s udf_fsd_t;
 
 /** Partition Header Descriptor (ECMA 167r3 4/14.3) */
 struct partition_header_desc_s
@@ -639,7 +639,7 @@ struct terminal_entry_s
 } GNUC_PACKED;
 
 /** File Entry (ECMA 167r3 4/14.9) */
-struct file_entry_s
+struct udf_file_entry_s
 {
   udf_tag_t       tag;
   udf_icbtag_t	  icb_tag;
@@ -659,13 +659,13 @@ struct file_entry_s
   udf_long_ad_t	  ext_attr_ICB;
   udf_regid_t	  imp_id;
   udf_Uint64_t	  unique_iD;
-  udf_Uint32_t	  length_extended_attr;
-  udf_Uint32_t	  length_alloc_descs;
+  udf_Uint32_t	  i_extended_attr;
+  udf_Uint32_t	  i_alloc_descs;
   udf_Uint8_t	  ext_attr[0];
   udf_Uint8_t	  alloc_descs[0];
 } GNUC_PACKED;
 
-typedef struct file_entry_s file_entry_t;
+typedef struct udf_file_entry_s udf_file_entry_t;
 
 #define	UDF_FENTRY_SIZE	176
 #define	UDF_FENTRY_PERM_USER_MASK	0x07

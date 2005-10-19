@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.2 2005/10/19 05:41:40 rocky Exp $
+    $Id: udf.h,v 1.3 2005/10/19 06:55:55 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -41,12 +41,8 @@ typedef struct
   bool              b_root;  /* True if root directory, so b_dir should be
 			        true if this is true. */
 
-  uint8_t           *sector;
-  udf_fileid_desc_t fid;
-  uint32_t          partition_lba;
+  uint32_t          i_part_start;
   uint32_t          dir_lba, dir_end_lba;
-  uint32_t          sec_size;
-  int	            dir_left;
 } udf_file_t;
 
 /** This is an opaque structure. */
@@ -72,8 +68,14 @@ long int udf_read_sectors (const udf_t *p_udf, void *ptr, lsn_t i_start,
 udf_t *udf_open (const char *psz_path);
 
 /*!
-  Close UDF and fee resources associated with that.
+  Close UDF and free resources associated with p_udf.
 */
 bool udf_close (udf_t *p_udf);
+
+/*!
+  free free resources associated with p_fe.
+*/
+bool udf_file_free(udf_file_t * p_fe);
+
 
 #endif /*UDF_H*/
