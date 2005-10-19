@@ -222,13 +222,13 @@ struct boot_desc_s
 #define BOOT_FLAGS_ERASE		0x01
 
 /** Extent Descriptor (ECMA 167r3 3/7.1) */
-struct extent_ad_s
+struct udf_extent_ad_s
 {
   udf_Uint32_t		len;
   udf_Uint32_t		loc;
 } GNUC_PACKED;
 
-typedef struct extent_ad_s extent_ad_t;
+typedef struct udf_extent_ad_s udf_extent_ad_t;
 
 /** Descriptor Tag (ECMA 167r3 3/7.2) */
 struct udf_tag_s
@@ -271,8 +271,8 @@ struct udf_pvd_s
   udf_dstring	  volSet_id[128];
   udf_charspec_t  desc_charset;
   udf_charspec_t  explanatory_charset;
-  extent_ad_t	  vol_abstract;
-  extent_ad_t	  vol_copyright;
+  udf_extent_ad_t vol_abstract;
+  udf_extent_ad_t vol_copyright;
   udf_regid_t	  app_ident;
   udf_timestamp_t recording_time;
   udf_regid_t	  imp_ident;
@@ -290,10 +290,10 @@ typedef struct udf_pvd_s udf_pvd_t;
 /** Anchor Volume Descriptor Pointer (ECMA 167r3 3/10.2) */
 struct anchor_vol_desc_ptr_s
 {
-  udf_tag_t	tag;
-  extent_ad_t	main_vol_desc_seq_ext;
-  extent_ad_t	reserve_vol_desc_seq_ext;
-  udf_Uint8_t	reserved[480];
+  udf_tag_t	  tag;
+  udf_extent_ad_t main_vol_desc_seq_ext;
+  udf_extent_ad_t reserve_vol_desc_seq_ext;
+  udf_Uint8_t	  reserved[480];
 } GNUC_PACKED;
 
 typedef struct anchor_vol_desc_ptr_s anchor_vol_desc_ptr_t;
@@ -301,10 +301,10 @@ typedef struct anchor_vol_desc_ptr_s anchor_vol_desc_ptr_t;
 /** Volume Descriptor Pointer (ECMA 167r3 3/10.3) */
 struct vol_desc_ptr_s
 {
-  udf_tag_t	tag;
-  udf_Uint32_t	vol_desc_seq_num;
-  extent_ad_t	next_vol_desc_set_ext;
-  udf_Uint8_t	reserved[484];
+  udf_tag_t	  tag;
+  udf_Uint32_t	  vol_desc_seq_num;
+  udf_extent_ad_t next_vol_desc_set_ext;
+  udf_Uint8_t	  reserved[484];
 } GNUC_PACKED;
 
 /** Implementation Use Volume Descriptor (ECMA 167r3 3/10.4) */
@@ -355,13 +355,13 @@ typedef struct partition_desc_s partition_desc_t;
 #define PD_ACCESS_TYPE_OVERWRITABLE	0x00000004
 
 /** Recorded Address (ECMA 167r3 4/7.1) */
-struct lb_addr_s
+struct udf_lb_addr_s
 {
   udf_Uint32_t	lba;
   udf_Uint16_t	partitionReferenceNum;
 } GNUC_PACKED;
 
-typedef struct lb_addr_s lb_addr_t;
+typedef struct udf_lb_addr_s udf_lb_addr_t;
 
 /** Short Allocation Descriptor (ECMA 167r3 4/14.14.1) */
 struct udf_short_ad_s
@@ -376,7 +376,7 @@ typedef struct udf_short_ad_s udf_short_ad_t;
 struct udf_long_ad_s
 {
   udf_Uint32_t	len;
-  lb_addr_t	loc;
+  udf_lb_addr_t	loc;
   udf_Uint8_t	imp_use[6];
 } GNUC_PACKED;
 
@@ -385,23 +385,23 @@ typedef struct udf_long_ad_s udf_long_ad_t;
 /** Logical Volume Descriptor (ECMA 167r3 3/10.6) */
 struct logical_vol_desc_s
 {
-  udf_tag_t      tag;
-  udf_Uint32_t	 seq_num;
-  udf_charspec_t desc_charset;
-  udf_dstring	 logvol_id[128];
-  udf_Uint32_t	 logical_blocksize;
-  udf_regid_t	 domain_id;
+  udf_tag_t       tag;
+  udf_Uint32_t	  seq_num;
+  udf_charspec_t  desc_charset;
+  udf_dstring	  logvol_id[128];
+  udf_Uint32_t	  logical_blocksize;
+  udf_regid_t	  domain_id;
   union {
-    udf_long_ad_t    fsd_loc;
-    udf_Uint8_t	 logvol_content_use[16];
+    udf_long_ad_t fsd_loc;
+    udf_Uint8_t	  logvol_content_use[16];
   } lvd_use;
-  udf_Uint8_t	 logvol_contents_use[16];
-  udf_Uint32_t	 maptable_len;
-  udf_Uint32_t	 i_partition_maps;
-  udf_regid_t	 imp_id;
-  udf_Uint8_t	 imp_use[128];
-  extent_ad_t	 integrity_seq_ext;
-  udf_Uint8_t	 partition_maps[0];
+  udf_Uint8_t	  logvol_contents_use[16];
+  udf_Uint32_t	  maptable_len;
+  udf_Uint32_t	  i_partition_maps;
+  udf_regid_t	  imp_id;
+  udf_Uint8_t	  imp_use[128];
+  udf_extent_ad_t integrity_seq_ext;
+  udf_Uint8_t	  partition_maps[0];
 } GNUC_PACKED;
 
 typedef struct logical_vol_desc_s logical_vol_desc_t;
@@ -439,10 +439,10 @@ struct generic_partition_map2
 /** Unallocated Space Descriptor (ECMA 167r3 3/10.8) */
 struct unalloc_space_desc_s
 {
-  udf_tag_t    tag;
-  udf_Uint32_t	vol_desc_seq_num;
-  udf_Uint32_t	i_alloc_descs;
-  extent_ad_t	allocDescs[0];
+  udf_tag_t       tag;
+  udf_Uint32_t	  vol_desc_seq_num;
+  udf_Uint32_t	  i_alloc_descs;
+  udf_extent_ad_t allocDescs[0];
 } GNUC_PACKED;
 
 /** Terminating Descriptor (ECMA 167r3 3/10.9) */
@@ -455,10 +455,10 @@ struct terminating_desc_s
 /** Logical Volume Integrity Descriptor (ECMA 167r3 3/10.10) */
 struct logvol_integrity_desc_s
 {
-  udf_tag_t      tag;
+  udf_tag_t       tag;
   udf_timestamp_t recording_time;
   udf_Uint32_t    integrity_type;
-  extent_ad_t     next_integrity_ext;
+  udf_extent_ad_t next_integrity_ext;
   udf_Uint8_t     logvol_contents_use[32];
   udf_Uint32_t    i_partitions;
   udf_Uint32_t    imp_use_len;
@@ -477,7 +477,7 @@ struct ext_ad_s
   udf_Uint32_t	len;
   udf_Uint32_t	recorded_len;
   udf_Uint32_t	information_len;
-  lb_addr_t	ext_loc;
+  udf_lb_addr_t	ext_loc;
 } GNUC_PACKED ext_ad;
 
 typedef struct ext_ad_s ext_ad_t;
@@ -526,18 +526,20 @@ struct partition_header_desc_s
 typedef struct partition_header_desc_s partition_header_desc_t;
 
 /** File Identifier Descriptor (ECMA 167r3 4/14.4) */
-struct fileIdentDesc
+struct udf_fileid_desc_s
 {
-  udf_tag_t    tag;
+  udf_tag_t     tag;
   udf_Uint16_t	file_version_num;
   udf_Uint8_t	file_characteristics;
-  udf_Uint8_t	length_file_id;
+  udf_Uint8_t	i_file_id;
   udf_long_ad_t	icb;
   udf_Uint16_t	i_imp_use;
   udf_Uint8_t	imp_use[0];
   udf_Uint8_t	file_id[0];
   udf_Uint8_t	padding[0];
 } GNUC_PACKED;
+
+typedef struct udf_fileid_desc_s udf_fileid_desc_t;
 
 #define	UDF_FID_SIZE	38
 #define	UDF_FILE_CHAR_VIS	(1 << 0) /* Visible */
@@ -570,7 +572,7 @@ struct udf_icbtag_s
   udf_Uint16_t	max_num_entries;
   udf_Uint8_t	reserved;
   udf_Uint8_t	file_type;
-  lb_addr_t	parent_ICB;
+  udf_lb_addr_t	parent_ICB;
   udf_Uint16_t	flags;
 } GNUC_PACKED;
 
