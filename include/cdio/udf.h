@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.1 2005/10/13 02:39:43 rocky Exp $
+    $Id: udf.h,v 1.2 2005/10/19 05:41:40 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -26,11 +26,28 @@
 */
 
 #ifndef UDF_H
-#define UDF__H 
+#define UDF_H 
 
-#include <cdio/types.h>
+#include <cdio/ecma_167.h>
+
+/* FIXME: these probably don't go here. */
 typedef uint16_t unicode16_t;
 typedef uint8_t  ubyte;
+
+typedef struct
+{
+  char	           *psz_name;
+  bool	            b_dir;   /* true if this entry is a directory. */
+  bool              b_root;  /* True if root directory, so b_dir should be
+			        true if this is true. */
+
+  uint8_t           *sector;
+  udf_fileid_desc_t fid;
+  uint32_t          partition_lba;
+  uint32_t          dir_lba, dir_end_lba;
+  uint32_t          sec_size;
+  int	            dir_left;
+} udf_file_t;
 
 /** This is an opaque structure. */
 typedef struct udf_s udf_t; 
@@ -40,15 +57,23 @@ extern enum udf_enum1_s {
 } udf_enums1;
 
 /*!
-  Seek to a position and then read n blocks. Size read is returned.
+  Seek to a position i_start and then read i_blocks. Number of blocks read is 
+  returned. One normally expects the return to be equal to i_blocks.
 */
-long int udf_seek_read (const udf_t *p_udf, void *ptr, lsn_t start, 
-			long int size);
+long int udf_read_sectors (const udf_t *p_udf, void *ptr, lsn_t i_start, 
+			   long int i_blocks);
 
 /*!
-  Open an UDF image for reading. Maybe in the future we will have
+  Open an UDF for reading. Maybe in the future we will have
   a mode. NULL is returned on error.
+
+  Caller must free result - use udf_close for that.
 */
 udf_t *udf_open (const char *psz_path);
+
+/*!
+  Close UDF and fee resources associated with that.
+*/
+bool udf_close (udf_t *p_udf);
 
 #endif /*UDF_H*/
