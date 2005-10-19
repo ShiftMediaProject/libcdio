@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.3 2005/10/19 06:55:55 rocky Exp $
+    $Id: udf.h,v 1.4 2005/10/19 07:06:35 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -48,9 +48,9 @@ typedef struct
 /** This is an opaque structure. */
 typedef struct udf_s udf_t; 
 
-extern enum udf_enum1_s {
+typedef enum {
   UDF_BLOCKSIZE       = 2048
-} udf_enums1;
+} udf_enum1_t; 
 
 /*!
   Seek to a position i_start and then read i_blocks. Number of blocks read is 
