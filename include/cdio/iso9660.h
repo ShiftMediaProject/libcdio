@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.76 2005/10/21 11:46:13 rocky Exp $
+    $Id: iso9660.h,v 1.77 2005/10/21 11:51:42 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -72,10 +72,11 @@ typedef char     dchar_t;  /*! See section 7.4.1 */
 #define MIN_TRACK_SIZE 4*75
 #define MIN_ISO_SIZE MIN_TRACK_SIZE
 
-/*! An enumeration for some of the ISO_* #defines below. This isn't
-    really an enumeration one would really use in a program it is here
-    to be helpful in debuggers where wants just to refer to the
-    ISO_*_ names and get something.
+/*! The below isn't really an enumeration one would really use in a
+    program; things are done this way so that in a debugger one can to
+    refer to the enumeration value names such as in a debugger
+    expression and get something. With the more common a #define
+    mechanism, the name/value assocation is lost at run time.
   */
 extern enum iso_enum1_s {
   ISO_PVD_SECTOR      =   16, /**< Sector of Primary Volume Descriptor */
