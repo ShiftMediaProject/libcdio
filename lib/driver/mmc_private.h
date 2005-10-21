@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: mmc_private.h,v 1.8 2005/03/06 00:03:53 rocky Exp $
+    $Id: mmc_private.h,v 1.9 2005/10/21 11:13:54 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -110,7 +110,7 @@ typedef driver_return_code_t (*mmc_run_cmd_fn_t)
        unsigned int i_timeout_ms,
        unsigned int i_cdb, 
        const mmc_cdb_t *p_cdb, 
-       mmc_direction_t e_direction, 
+       cdio_mmc_direction_t e_direction, 
        unsigned int i_buf, /*in/out*/ void *p_buf );
 			     
 int mmc_set_blocksize_mmc_private ( const void *p_env, const

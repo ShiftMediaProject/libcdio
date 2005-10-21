@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.27 2005/06/26 18:29:49 rocky Exp $
+    $Id: mmc.c,v 1.28 2005/10/21 11:13:54 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -44,6 +44,17 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+
+/** The below variables are trickery to force the above enum symbol
+    values to be recorded in debug symbol tables. They are used to
+    allow one refer to the enumeration value names in the typedefs
+    above in a debugger and debugger expressions
+*/
+cdio_mmc_gpcmd_t             debug_cdio_mmc_gpcmd;
+cdio_mmc_read_sub_state_t    debug_cdio_mmc_read_sub_state;
+cdio_mmc_feature_t           debug_cdio_mmc_feature;
+cdio_mmc_feature_profile_t   debug_cdio_mmc_feature_profile;
+cdio_mmc_feature_interface_t debug_cdio_mmc_feature_interface;
 
 /*************************************************************************
   MMC CdIo Operations which a driver may use. 
@@ -587,7 +598,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
 {
   mmc_cdb_t cdb;
   driver_return_code_t i_rc;
-  mmc_subchannel_t mmc_subchannel;
+  cdio_mmc_subchannel_t mmc_subchannel;
 
   if (!p_cdio) return DRIVER_OP_UNINIT;
   
@@ -596,7 +607,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
   memset(&cdb, 0, sizeof(mmc_cdb_t));
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
-  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(mmc_subchannel_t));
+  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(cdio_mmc_subchannel_t));
 
   cdb.field[1] = CDIO_CDROM_MSF;
   cdb.field[2] = 0x40; /* subq */
@@ -604,7 +615,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
   cdb.field[6] = 0;    /* track number (only in isrc mode, ignored) */
 
   i_rc = mmc_run_cmd(p_cdio, mmc_timeout_ms, &cdb, SCSI_MMC_DATA_READ, 
-                     sizeof(mmc_subchannel_t), &mmc_subchannel);
+                     sizeof(cdio_mmc_subchannel_t), &mmc_subchannel);
   if (DRIVER_OP_SUCCESS == i_rc) {
     p_subchannel->format       = mmc_subchannel.format;
     p_subchannel->audio_status = mmc_subchannel.audio_status;
@@ -872,7 +883,7 @@ mmc_get_mcn ( const CdIo_t *p_cdio )
 driver_return_code_t
 mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms, 
 		  const mmc_cdb_t *p_cdb,
-		  mmc_direction_t e_direction, unsigned int i_buf, 
+		  cdio_mmc_direction_t e_direction, unsigned int i_buf, 
 		  /*in/out*/ void *p_buf )
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
@@ -1148,7 +1159,7 @@ const char *mmc_feature_profile2str( int i_feature_profile )
  * @return true if we have the feature and false if not.
  */
 bool_3way_t
-mmc_have_interface( CdIo_t *p_cdio, mmc_feature_interface_t e_interface )
+mmc_have_interface( CdIo_t *p_cdio, cdio_mmc_feature_interface_t e_interface )
 {
   int i_status;                  /* Result of MMC command */
   uint8_t buf[500] = { 0, };     /* Place to hold returned data */

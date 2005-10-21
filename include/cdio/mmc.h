@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.21 2005/06/26 18:29:49 rocky Exp $
+    $Id: mmc.h,v 1.22 2005/10/21 11:13:54 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -52,10 +52,8 @@ extern "C" {
 #define MMC_READ_TIMEOUT_DEFAULT 3*60*1000
 
 
-  
   /*! \brief The opcode-portion (generic packet commands) of an MMC command.
     
-  
   In general, those opcodes that end in 6 take a 6-byte command
   descriptor, those that end in 10 take a 10-byte
   descriptor and those that in in 12 take a 12-byte descriptor. 
@@ -176,7 +174,7 @@ extern "C" {
     CDIO_MMC_READ_SUB_ST_NO_STATUS = 0x15, /**< no current audio status to
                                               return */
   } cdio_mmc_read_sub_state_t;
-  
+
 /*! Level values that can go into READ_CD */
 #define CDIO_MMC_READ_TYPE_ANY   0  /**< All types */
 #define CDIO_MMC_READ_TYPE_CDDA  1  /**< Only CD-DA sectors */
@@ -293,7 +291,7 @@ typedef enum {
 						identifier. */
   CDIO_MMC_FEATURE_FIRMWARE_DATE    = 0x1FF, /**< Firmware creation date 
 						report */
-} mmc_feature_t;
+} cdio_mmc_feature_t;
 				
 /*! Profile profile codes used in GET_CONFIGURATION - PROFILE LIST. */
 typedef enum {
@@ -331,7 +329,7 @@ typedef enum {
                                                      double layer */
   CDIO_MMC_FEATURE_PROF_NON_CONFORM   = 0xFFFF, /**< The Logical Unit does not
 						   conform to any Profile. */
-} mmc_feature_profile_t;
+} cdio_mmc_feature_profile_t;
   
 typedef enum {
   CDIO_MMC_FEATURE_INTERFACE_UNSPECIFIED = 0,
@@ -340,7 +338,7 @@ typedef enum {
   CDIO_MMC_FEATURE_INTERFACE_IEEE_1394   = 3,
   CDIO_MMC_FEATURE_INTERFACE_IEEE_1394A  = 4,
   CDIO_MMC_FEATURE_INTERFACE_FIBRE_CH    = 5
-} mmc_feature_interface_t;
+} cdio_mmc_feature_interface_t;
   
 
 /*! The largest Command Descriptor Block (CDB) size.
@@ -367,7 +365,7 @@ typedef struct mmc_cdb_s {
     unsigned char reserved2;
     unsigned char profile_msb;
     unsigned char profile_lsb;
-  } mmc_feature_list_header_t;
+  } cdio_mmc_feature_list_header_t;
 
   /*! An enumeration indicating whether an MMC command is sending
     data or getting data.
@@ -375,21 +373,21 @@ typedef struct mmc_cdb_s {
   typedef enum mmc_direction_s {
     SCSI_MMC_DATA_READ,
     SCSI_MMC_DATA_WRITE
-  } mmc_direction_t;
+  } cdio_mmc_direction_t;
   
   typedef struct mmc_subchannel_s
   {
     uint8_t       reserved;
     uint8_t       audio_status;
-    uint16_t      data_length; /* Really 7.2.2 */
-    uint8_t	format;
-    uint8_t	address:	4;
-    uint8_t	control:	4;
-    uint8_t	track;
-    uint8_t	index;
+    uint16_t      data_length; /**< Really ISO 9660 7.2.2 */
+    uint8_t	  format;
+    uint8_t	  address:	4;
+    uint8_t	  control:	4;
+    uint8_t	  track;
+    uint8_t	  index;
     uint8_t       abs_addr[4];
     uint8_t       rel_addr[4];
-  } mmc_subchannel_t;
+  } cdio_mmc_subchannel_t;
   
 #define CDIO_MMC_SET_COMMAND(cdb, command) \
   cdb[0] = command
@@ -580,7 +578,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     @return true if we have the interface and false if not.
   */
   bool_3way_t mmc_have_interface( CdIo_t *p_cdio, 
-                                  mmc_feature_interface_t e_interface );
+                                  cdio_mmc_feature_interface_t e_interface );
   
   /*! Run a MODE_SENSE command (6- or 10-byte version) 
     and put the results in p_buf 
@@ -758,7 +756,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   */
   int mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
                    const mmc_cdb_t *p_cdb,
-                   mmc_direction_t e_direction, unsigned int i_buf, 
+                   cdio_mmc_direction_t e_direction, unsigned int i_buf, 
                    /*in/out*/ void *p_buf );
   /*!
     Set the block size for subsequest read requests, via MMC.
@@ -790,7 +788,21 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
 }
 #endif /* __cplusplus */
 
+/** The below variables are trickery to force the above enum symbol
+    values to be recorded in debug symbol tables. They are used to
+    allow one refer to the enumeration value names in the typedefs
+    above in a debugger and debugger expressions
+*/
+extern cdio_mmc_gpcmd_t             debug_cdio_mmc_gpcmd;
+extern cdio_mmc_read_sub_state_t    debug_cdio_mmc_read_sub_state;
+extern cdio_mmc_feature_t           debug_cdio_mmc_feature;
+extern cdio_mmc_feature_profile_t   debug_cdio_mmc_feature_profile;
+extern cdio_mmc_feature_interface_t debug_cdio_mmc_feature_interface;
+  
 /** For backward compatibility. */
+#define mmc_direction_t                  cdio_mmc_direction_t
+#define mmc_feature_interface_t          cdio_mmc_feature_interface_t
+#define mmc_subchannel_t                 cdio_mmc_subchannel_t
 #define scsi_mmc_cdb_t                   mmc_cdb_t
 #define scsi_mmc_direction_t             mmc_direction_t
 #define scsi_mmc_get_cmd_len             mmc_get_cmd_len

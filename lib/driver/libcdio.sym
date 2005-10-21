@@ -162,6 +162,11 @@ cdtext_get_const
 cdtext_init
 cdtext_is_keyword
 cdtext_set
+debug_cdio_mmc_gpcmd_t
+debug_cdio_mmc_read_sub_state_t
+debug_cdio_mmc_feature_t
+debug_cdio_mmc_feature_profile_t
+debug_cdio_mmc_feature_interface_t
 discmode2str
 mmc_audio_read_subchannel
 mmc_audio_state2str
