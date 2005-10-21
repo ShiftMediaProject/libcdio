@@ -55,6 +55,7 @@
 #include <cdio/types.h>
 
 /** Tag Identifier (ECMA 167r3 3/7.2.1) */
+
 typedef enum {
   TAGID_PRI_VOL          = 0x0001,
   TAGID_ANCHOR           = 0x0002,
@@ -76,7 +77,7 @@ typedef enum {
   TAGID_SBD		 = 0x0108,
   TAGID_PIE		 = 0x0109,
   TAGID_EFE		 = 0x010A,
-} tag_id_enum_t ;
+} tag_id_t ;
 
 /** Character Set Type (ECMA 167r3 1/7.2.1.1) */
 typedef enum {
@@ -542,23 +543,24 @@ struct udf_fileid_desc_s
 typedef struct udf_fileid_desc_s udf_fileid_desc_t;
 
 #define	UDF_FID_SIZE	38
-#define	UDF_FILE_CHAR_VIS	(1 << 0) /* Visible */
-#define	UDF_FILE_CHAR_DIR	(1 << 1) /* Directory */
-#define	UDF_FILE_CHAR_DEL	(1 << 2) /* Deleted */
-#define	UDF_FILE_CHAR_PAR	(1 << 3) /* Parent Directory */
-#define	UDF_FILE_CHAR_META	(1 << 4) /* Stream metadata */
 
-/** File Characteristics (ECMA 167r3 4/14.4.3) */
-#define FID_FILE_CHAR_HIDDEN		0x01
-#define FID_FILE_CHAR_DIRECTORY		0x02
-#define FID_FILE_CHAR_DELETED		0x04
-#define FID_FILE_CHAR_PARENT		0x08
-#define FID_FILE_CHAR_METADATA		0x10
+/** File Characteristics (ECMA 167r3 4/14.4.3) 
+
+    Imagine the below enumeration values are #defines to be used in a
+    bitmask rather than distinct values of an enum.
+*/
+typedef enum {
+  UDF_FILE_HIDDEN 	= (1 << 0),
+  UDF_FILE_DIRECTORY	= (1 << 1),
+  UDF_FILE_DELETED 	= (1 << 2),
+  UDF_FILE_PARENT 	= (1 << 3),
+  UDF_FILE_METADATA	= (1 << 4)
+} file_characteristics_t;
 
 /** Allocation Ext Descriptor (ECMA 167r3 4/14.5) */
 struct allocExtDesc
 {
-  udf_tag_t   tag;
+  udf_tag_t    tag;
   udf_Uint32_t previous_alloc_ext_loc;
   udf_Uint32_t i_alloc_descs;
 } GNUC_PACKED;
@@ -919,5 +921,14 @@ struct extended_file_entry
 } GNUC_PACKED;
 
 PRAGMA_END_PACKED
+
+/** The below variables are trickery to force the above enum symbol
+    values to be recorded in debug symbol tables. They are used to
+    allow one refer to the enumeration value names in the typedefs
+    above in a debugger and debugger expressions
+*/
+extern file_characteristics_t debug_file_characteristics;
+extern tag_id_t debug_tagid;
+
 
 #endif /* _ECMA_167_H */
