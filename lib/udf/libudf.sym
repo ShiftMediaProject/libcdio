@@ -1,0 +1,13 @@
+debug_file_characteristics
+debug_tagid
+debug_udf_enums1
+VSD_STD_ID_BEA01
+VSD_STD_ID_BOOT2
+VSD_STD_ID_CD001
+VSD_STD_ID_CDW01
+VSD_STD_ID_NSR03
+VSD_STD_ID_TEA01
+udf_close
+udf_file_free
+udf_open
+udf_read_sectors
