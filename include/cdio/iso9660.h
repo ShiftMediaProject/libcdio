@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.75 2005/10/12 11:26:06 rocky Exp $
+    $Id: iso9660.h,v 1.76 2005/10/21 11:46:13 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -88,8 +88,9 @@ extern enum iso_enum1_s {
                                  portion + null byte */
   ISO_MAX_PREPARER_ID =  128, /**< Maximum number of characters in a
                                  preparer id. */
-  MAX_ISOPATHNAME     =  255,
-  ISO_BLOCKSIZE       = 2048
+  MAX_ISOPATHNAME     =  255, /**< Maximum number of characters in the
+                                 entire ISO 9660 filename. */
+  ISO_BLOCKSIZE       = 2048  /**< Number of bytes in an ISO 9660 block */
 
 } iso_enums1;
 
@@ -98,6 +99,8 @@ extern enum iso_enum1_s {
     to be helpful in debuggers where wants just to refer to the
     ISO_*_ names and get something.
   */
+
+/**! ISO 9660 directory flags. */
 extern enum iso_flag_enum_s {
   ISO_FILE	      =   0,   /**<  Not really a flag...	         */
   ISO_EXISTENCE	      =   1,   /**< Do not make existence known (hidden) */
@@ -110,12 +113,13 @@ extern enum iso_flag_enum_s {
   ISO_MULTIEXTENT     = 128,   /**< Not final entry of a mult. ext. file */
 } iso_flag_enums;
 
+/**! Volume descriptor types */
 extern enum iso_vd_enum_s {
-  ISO_VD_BOOT_RECORD  =  0,  /**< CD is bootable */
-  ISO_VD_PRIMARY      =  1,  /**< Is in any ISO-9660 */
-  ISO_VD_SUPPLEMENARY =  2,  /**< Used by Joliet, for example */
-  ISO_VD_PARITION     =  3,  /**< Indicates a partition of a CD */
-  ISO_VD_END	      = 255
+  ISO_VD_BOOT_RECORD   =  0,  /**< CD is bootable */
+  ISO_VD_PRIMARY       =  1,  /**< Is in any ISO-9660 */
+  ISO_VD_SUPPLEMENTARY =  2,  /**< Used by Joliet, for example */
+  ISO_VD_PARITION      =  3,  /**< Indicates a partition of a CD */
+  ISO_VD_END	       = 255
 } iso_vd_enums;
 
   
@@ -135,27 +139,11 @@ extern enum iso_vd_enum_s {
 
 */
 
-
-/*! \brief size in bytes of the filename portion + null byte */
-#define LEN_ISONAME      31
-
-/*! \brief Maximum number of characters in the entire ISO 9660 filename. */
-#define MAX_ISONAME      37
-
-/*! \brief Maximum number of characters in the entire ISO 9660 filename. */
-#define MAX_ISOPATHNAME 255
-
-/*! \brief Maximum number of characters in a preparer id. */
-#define ISO_MAX_PREPARER_ID 128
-
 /*! \brief Maximum number of characters in a publisher id. */
 #define ISO_MAX_PUBLISHER_ID 128
 
 /*! \brief Maximum number of characters in an application id. */
 #define ISO_MAX_APPLICATION_ID 128
-
-/*! \brief Maximum number of characters in a system id. */
-#define ISO_MAX_SYSTEM_ID 32
 
 /*! \brief Maximum number of characters in a volume id. */
 #define ISO_MAX_VOLUME_ID 32
@@ -163,40 +151,12 @@ extern enum iso_vd_enum_s {
 /*! \brief Maximum number of characters in a volume-set id. */
 #define ISO_MAX_VOLUMESET_ID 128
 
-/**! ISO 9660 directory flags. */
-#define	ISO_FILE	  0	/**< Not really a flag...		  */
-#define	ISO_EXISTENCE	  1	/**< Do not make existence known (hidden) */
-#define	ISO_DIRECTORY	  2	/**< This file is a directory		  */
-#define	ISO_ASSOCIATED	  4	/**< This file is an associated file	  */
-#define	ISO_RECORD	  8	/**< Record format in extended attr. != 0 */
-#define	ISO_PROTECTION	 16	/**< No read/execute perm. in ext. attr.  */
-#define	ISO_DRESERVED1	 32	/**< Reserved bit 5			  */
-#define	ISO_DRESERVED2	 64	/**< Reserved bit 6			  */
-#define	ISO_MULTIEXTENT	128	/**< Not final entry of a mult. ext. file */
-
-/**! Volume descriptor types */
-#define ISO_VD_BOOT_RECORD         0  /**< CD is bootable */
-#define ISO_VD_PRIMARY             1  /**< Is in any ISO-9660 */
-#define ISO_VD_SUPPLEMENTARY	   2  /**< Used by Joliet, for example */
-#define ISO_VD_PARITION	           3  /**< Indicates a partition of a CD */
-#define ISO_VD_END	         255
-
-/*! Sector of Primary Volume Descriptor */
-#define ISO_PVD_SECTOR  16
-
-/*! Sector of End Volume Descriptor */
-#define ISO_EVD_SECTOR  17  
-
 /*! String inside frame which identifies an ISO 9660 filesystem. This
     string is the "id" field of an iso9660_pvd_t or an iso9660_svd_t.
 */
 extern const char ISO_STANDARD_ID[sizeof("CD001")-1];
 
 #define ISO_STANDARD_ID      "CD001" 
-
-
-/*! Number of bytes in an ISO 9660 block */
-#define ISO_BLOCKSIZE           2048 
 
 #ifdef __cplusplus
 extern "C" {
@@ -562,12 +522,6 @@ extern enum iso_extension_enum_s {
   ISO_EXTENSION_HIGH_SIERRA   = 0x10
 } iso_extension_enums;
   
-
-#define ISO_EXTENSION_JOLIET_LEVEL1 0x01
-#define ISO_EXTENSION_JOLIET_LEVEL2 0x02
-#define ISO_EXTENSION_JOLIET_LEVEL3 0x04
-#define ISO_EXTENSION_ROCK_RIDGE    0x08
-#define ISO_EXTENSION_HIGH_SIERRA   0x10
 
 #define ISO_EXTENSION_ALL           0xFF
 #define ISO_EXTENSION_NONE          0x00
