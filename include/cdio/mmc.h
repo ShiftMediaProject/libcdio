@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.22 2005/10/21 11:13:54 rocky Exp $
+    $Id: mmc.h,v 1.23 2005/10/21 11:27:09 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -223,14 +223,16 @@ PRAGMA_END_PACKED
   
 
 /*! Return type codes for GET_CONFIGURATION. */
-#define CDIO_MMC_GET_CONF_ALL_FEATURES     0  /**< all features without regard
-					           to currency. */
-#define CDIO_MMC_GET_CONF_CURRENT_FEATURES 1  /**< features which are currently
-					           in effect (e.g. based on
-					           medium inserted). */
-#define CDIO_MMC_GET_CONF_NAMED_FEATURE    2  /**< just the feature named in
-					           the GET_CONFIGURATION 
-					           cdb. */
+typedef enum {
+  CDIO_MMC_GET_CONF_ALL_FEATURES     = 0,  /**< all features without regard
+                                              to currency. */
+  CDIO_MMC_GET_CONF_CURRENT_FEATURES = 1,  /**< features which are currently
+                                              in effect (e.g. based on
+                                              medium inserted). */
+  CDIO_MMC_GET_CONF_NAMED_FEATURE    = 2   /**< just the feature named in
+                                              the GET_CONFIGURATION cdb. */
+} cdio_mmc_get_conf_t;
+  
 
 /*! FEATURE codes used in GET CONFIGURATION. */
 
@@ -790,14 +792,15 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
 
 /** The below variables are trickery to force the above enum symbol
     values to be recorded in debug symbol tables. They are used to
-    allow one refer to the enumeration value names in the typedefs
+    allow one to refer to the enumeration value names in the typedefs
     above in a debugger and debugger expressions
 */
+extern cdio_mmc_feature_t           debug_cdio_mmc_feature;
+extern cdio_mmc_feature_interface_t debug_cdio_mmc_feature_interface;
+extern cdio_mmc_feature_profile_t   debug_cdio_mmc_feature_profile;
+extern cdio_mmc_get_conf_t          debug_cdio_mmc_get_conf;
 extern cdio_mmc_gpcmd_t             debug_cdio_mmc_gpcmd;
 extern cdio_mmc_read_sub_state_t    debug_cdio_mmc_read_sub_state;
-extern cdio_mmc_feature_t           debug_cdio_mmc_feature;
-extern cdio_mmc_feature_profile_t   debug_cdio_mmc_feature_profile;
-extern cdio_mmc_feature_interface_t debug_cdio_mmc_feature_interface;
   
 /** For backward compatibility. */
 #define mmc_direction_t                  cdio_mmc_direction_t

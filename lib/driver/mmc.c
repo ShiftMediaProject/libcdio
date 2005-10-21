@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.28 2005/10/21 11:13:54 rocky Exp $
+    $Id: mmc.c,v 1.29 2005/10/21 11:27:09 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -45,16 +45,17 @@
 #include <errno.h>
 #endif
 
-/** The below variables are trickery to force the above enum symbol
-    values to be recorded in debug symbol tables. They are used to
-    allow one refer to the enumeration value names in the typedefs
-    above in a debugger and debugger expressions
+/** The below variables are trickery to force enum symbol values to be
+    recorded in debug symbol tables. They are used to allow one to refer
+    to the enumeration value names in the typedefs above in a debugger
+    and debugger expressions
 */
+cdio_mmc_feature_t           debug_cdio_mmc_feature;
+cdio_mmc_feature_interface_t debug_cdio_mmc_feature_interface;
+cdio_mmc_feature_profile_t   debug_cdio_mmc_feature_profile;
+cdio_mmc_get_conf_t          debug_cdio_mmc_get_conf;
 cdio_mmc_gpcmd_t             debug_cdio_mmc_gpcmd;
 cdio_mmc_read_sub_state_t    debug_cdio_mmc_read_sub_state;
-cdio_mmc_feature_t           debug_cdio_mmc_feature;
-cdio_mmc_feature_profile_t   debug_cdio_mmc_feature_profile;
-cdio_mmc_feature_interface_t debug_cdio_mmc_feature_interface;
 
 /*************************************************************************
   MMC CdIo Operations which a driver may use. 
