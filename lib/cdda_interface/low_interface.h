@@ -1,5 +1,5 @@
 /*
-  $Id: low_interface.h,v 1.7 2005/02/05 16:25:51 rocky Exp $
+  $Id: low_interface.h,v 1.8 2005/10/23 11:32:57 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -63,7 +63,5 @@
 #define SG_OFF sizeof(struct sg_header)
 
 extern int  cddap_init_drive (cdrom_drive_t *d);
-extern unsigned char *scsi_inquiry (cdrom_drive_t *d);
-extern int  scsi_init_drive (cdrom_drive_t *d);
 #endif /*_CDDA_LOW_INTERFACE_*/
 
