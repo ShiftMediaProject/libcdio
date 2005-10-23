@@ -1,5 +1,5 @@
 /*
-  $Id: cddap_interface.c,v 1.2 2005/10/03 02:31:11 rocky Exp $
+  $Id: cddap_interface.c,v 1.3 2005/10/23 11:28:20 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -21,12 +21,15 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-/******************************************************************
- *
- * CDROM code specific to the cooked ioctl interface
- *
- ******************************************************************/
+/**
+ 
+  CD-ROM code which interfaces between user-level visible CD paranoia
+  routines and libddio routines. (There is some GNU/Linux-specific
+  code here too that should probably be removed.
 
+**/
+
+#include "config.h"
 #include "common_interface.h"
 #include "low_interface.h"
 #include "utils.h"
@@ -141,7 +144,11 @@ jitter_read (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors,
   if (d->i_test_flags & CDDA_TEST_ALWAYS_JITTER)
     jitter_flag = 1;
   else 
+#ifdef HAVE_DRAND48
     jitter_flag = (drand48() > .9) ? 1 : 0;
+#else
+    jitter_flag = (rand() > .9) ? 1 : 0;
+#endif
   
   if (jitter_flag) {
     int i_coeff = 0;
@@ -153,7 +160,11 @@ jitter_read (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors,
     case JITTER_NONE   :
     default            : ;
     }
+#ifdef HAVE_DRAND48
     i_jitter = i_coeff * (int)((drand48()-.5)*CDIO_CD_FRAMESIZE_RAW/8);
+#else
+    i_jitter = i_coeff * (int)((rand()-.5)*CDIO_CD_FRAMESIZE_RAW/8);
+#endif
     
     /* We may need to add another sector to compensate for the bytes that
        will be dropped off when jittering, and the begin location may
