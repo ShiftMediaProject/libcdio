@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.19 2005/10/17 15:31:08 pjcreath Exp $
+  $Id: paranoia.c,v 1.20 2005/10/23 12:17:30 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -133,21 +133,22 @@ rv(root_block *root){
 
 #define rc(r) (r->vector)
 
-/** The below variable isn't used. It's here to make it possible to
-    refer to the names/values in the enumeration (as appears in code
-    and which are really handled by #define's below) in expressions
-    when debugging.
+/** 
+    Flags indicating the status of a read samples.
+
+    Imagine the below enumeration values are #defines to be used in a
+    bitmask rather than distinct values of an enum.
+
+    The variable part of the declaration is trickery to force the enum
+    symbol values to be recorded in debug symbol tables. They are used
+    to allow one refer to the enumeration value names in a debugger
+    and in debugger expressions.
 */
 enum  {
   FLAGS_EDGE    =0x1, /**< first/last N words of frame */
   FLAGS_UNREAD  =0x2, /**< unread, hence missing and unmatchable */
   FLAGS_VERIFIED=0x4  /**< block read and verified */
 } paranoia_read_flags;
-
-/* Please make sure the below #defines match the above enum values */
-#define FLAGS_EDGE     0x01 
-#define FLAGS_UNREAD   0x02 
-#define FLAGS_VERIFIED 0x04
 
 
 /**** matching and analysis code *****************************************/
