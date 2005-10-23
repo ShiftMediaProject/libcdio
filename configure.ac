@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.174 2005/10/16 22:21:13 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.175 2005/10/23 12:56:40 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -160,6 +160,7 @@ dnl headers
 AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h fcntl.h glob.h pwd.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h)
+AC_CHECK_HEADERS(sys/time.h sys/timeb.h)
 AC_CHECK_HEADERS(ncurses.h curses.h, break, [enable_cdda_player='no'])
 
 dnl FreeBSD 4 has getopt in unistd.h. So we include that before
@@ -338,12 +339,15 @@ LIBCDIO_LIBS='$(top_builddir)/lib/driver/libcdio.la'
 LIBCDIO_PARANOIA_LIBS='$(top_builddir)/lib/paranoia/libcdio_paranoia.la'
 LIBISO9660_CFLAGS='-I$(top_srcdir)/lib/iso9660/'
 LIBISO9660_LIBS='$(top_builddir)/lib/iso9660/libiso9660.la'
+LIBUDF_CFLAGS='-I$(top_srcdir)/lib/udf/'
+LIBUDF_LIBS='$(top_builddir)/lib/udf/libudf.la'
 AC_SUBST(LIBCDIO_CDDA_LIBS)
 AC_SUBST(LIBCDIO_CFLAGS)
 AC_SUBST(LIBISO9660_CFLAGS)
 AC_SUBST(LIBCDIO_LIBS)
 AC_SUBST(LIBCDIO_PARANOIA_LIBS)
 AC_SUBST(LIBISO9660_LIBS)
+AC_SUBST(LIBUDF_LIBS)
 
 case $host_os in
      aix*)
@@ -434,8 +438,9 @@ AC_DEFINE_UNQUOTED(LIBCDIO_SOURCE_PATH, "$LIBCDIO_SOURCE_PATH",
 	[Full path to libcdio top_sourcedir.])
 AC_SUBST(LIBCDIO_SOURCE_PATH)
 
-AC_CHECK_FUNCS( [bzero drand48 rand ftruncate lstat memcpy memset snprintf \
-		 tzset vsnprintf getpwuid geteuid] )
+AC_CHECK_FUNCS( [bzero drand48 ftruncate geteuid getgid \
+		 getuid getpwuid gettimeofday lstat memcpy memset \
+		 rand seteuid setegid snprintf  tzset vsnprintf] )
 
 AC_CHECK_MEMBER([struct tm.tm_gmtoff],
                 [AC_DEFINE(HAVE_TM_GMTOFF, 1,
@@ -600,6 +605,7 @@ AC_CONFIG_FILES([ \
        libcdio_cdda.pc \
        libcdio_paranoia.pc \
        libiso9660.pc \
+       libudf.pc \
        package/libcdio.spec \
        src/cd-paranoia/Makefile \
        src/cd-paranoia/usage.txt \
