@@ -96,6 +96,15 @@
 # include <sys/stat.h>
 #endif
 
+#if !defined(HAVE_GETTIMEOFDAY)
+/* MinGW uses sys/time.h and sys/timeb.h to roll its own gettimeofday() */
+# if defined(HAVE_SYS_TIME_H) && defined(HAVE_SYS_TIMEB_H)
+# include <sys/time.h>
+# include <sys/timeb.h>
+static void gettimeofday(struct timeval* tv, void* timezone);
+# endif
+#endif /* !defined(HAVE_GETTIMEOFDAY) */
+
 #include <cdio/cdio.h>
 #include <cdio/cd_types.h>
 #include <cdio/cdda.h>
@@ -600,6 +609,17 @@ static char *info_file            = NULL;
   free(p);		 \
   p=NULL;		 
 
+#if !defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H) && defined(HAVE_SYS_TIMEB_H)
+static void 
+gettimeofday(struct timeval* tv, void* timezone)
+{ 
+  struct timeb timebuffer;
+  ftime( &timebuffer );
+  tv->tv_sec=timebuffer.time;
+  tv->tv_usec=1000*timebuffer.millitm;
+}
+#endif
+
 /* This is run automatically before leaving the program. 
    Free allocated resources.
 */  
@@ -1070,8 +1090,12 @@ main(int argc,char *argv[])
       paranoia_seek(p,cursor=i_first_lsn,SEEK_SET);      
 
       /* this is probably a good idea in general */
+#if defined(HAVE_GETUID) && defined(HAVE_SETEUID)
       seteuid(getuid());
+#endif
+#if defined(HAVE_GETGID) && defined(HAVE_SETEGID)
       setegid(getgid());
+#endif
 
       /* we'll need to be able to read one sector past user data if we
 	 have a sample offset in order to pick up the last bytes.  We
