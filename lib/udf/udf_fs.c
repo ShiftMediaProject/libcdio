@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.1 2005/10/21 12:31:02 rocky Exp $
+    $Id: udf_fs.c,v 1.2 2005/10/24 03:12:30 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -134,13 +134,11 @@ struct udf_s {
   CdioDataSource_t      *stream;  /* Stream pointer if stream */
   CdIo_t                *cdio;    /* Cdio pointer if read device */
   anchor_vol_desc_ptr_t anchor_vol_desc_ptr;
-  uint32_t      pvd_lba;          /* sector of Primary Volume Descriptor */
-  uint16_t      i_partition;      /* partition number */
-  uint32_t      i_part_start;     /* start of Partition Descriptor */
-  uint32_t      lvd_lba;          /* sector of Logical Volume Descriptor */
-  uint32_t      fsd_offset;       /* lba of fileset descriptor */
-  udf_long_ad_t root_icb;        
-  udf_file_t    *p_root;
+  uint32_t              pvd_lba;  /* sector of Primary Volume Descriptor */
+  partition_num_t       i_partition;  /* partition number */
+  uint32_t              i_part_start; /* start of Partition Descriptor */
+  uint32_t              lvd_lba;      /* sector of Logical Volume Descriptor */
+  uint32_t              fsd_offset;   /* lba of fileset descriptor */
 };
 
 /**
@@ -216,6 +214,57 @@ udf_get_lba(const udf_file_entry_t *p_fe,
   return false;
 }
 
+#define udf_PATH_DELIMITERS "/\\"
+
+static 
+udf_file_t *
+udf_ff_traverse(udf_t *p_udf, udf_file_t *p_udf_file, char *psz_token)
+{
+  while (udf_get_next(p_udf, p_udf_file)) {
+    if (strcmp(psz_token, p_udf_file->psz_name) == 0) {
+      char *next_tok = strtok(NULL, udf_PATH_DELIMITERS);
+      
+      if (!next_tok)
+	return p_udf_file; /* found */
+      else if (p_udf_file->b_dir) {
+	udf_file_t * p_udf_file2 = udf_get_sub(p_udf, p_udf_file);
+	
+	if (p_udf_file2) {
+	  udf_file_t * p_udf_file3 = 
+	    udf_ff_traverse(p_udf, p_udf_file2, next_tok);
+	  
+	  if (!p_udf_file3) udf_file_free(p_udf_file2);
+	  return p_udf_file3;
+	}
+      }
+    }
+  }
+  return NULL;
+}
+
+/* FIXME! */
+#define udf_MAX_PATHLEN 2048
+
+udf_file_t * 
+udf_find_file(udf_t *p_udf, const char *psz_name, const bool b_any_partition,
+	      const partition_num_t i_partition)
+{
+  udf_file_t *p_udf_file = udf_get_root(p_udf, b_any_partition, i_partition);
+  udf_file_t *p_udf_file2 = NULL;
+  
+  if (p_udf_file) {
+    char tokenline[udf_MAX_PATHLEN];
+    char *psz_token;
+    
+    strcpy(tokenline, psz_name);
+    psz_token = strtok(tokenline, udf_PATH_DELIMITERS);
+    if (psz_token)
+      p_udf_file2 = udf_ff_traverse(p_udf, p_udf_file, psz_token);
+    udf_file_free(p_udf_file);
+  }
+  return p_udf_file2;
+}
+
 /* Convert unicode16 to 8-bit char by dripping MSB. 
    Wonder if iconv can be used here
 */
@@ -240,16 +289,16 @@ static udf_file_t *
 udf_new_file(udf_file_entry_t *p_fe, uint32_t i_part_start, 
 	     const char *psz_name, bool b_dir, bool b_parent) 
 {
-  udf_file_t *p_fid = (udf_file_t *) calloc(1, sizeof(udf_file_t));
-  if (!p_fid) return NULL;
-  p_fid->psz_name     = strdup(psz_name);
-  p_fid->b_dir        = b_dir;
-  p_fid->b_parent     = b_parent;
-  p_fid->i_part_start = i_part_start;
-  p_fid->dir_left     = uint64_from_le(p_fe->info_len); 
+  udf_file_t *p_udf_file = (udf_file_t *) calloc(1, sizeof(udf_file_t));
+  if (!p_udf_file) return NULL;
+  p_udf_file->psz_name     = strdup(psz_name);
+  p_udf_file->b_dir        = b_dir;
+  p_udf_file->b_parent     = b_parent;
+  p_udf_file->i_part_start = i_part_start;
+  p_udf_file->dir_left     = uint64_from_le(p_fe->info_len); 
 
-  udf_get_lba( p_fe, &(p_fid->dir_lba), &(p_fid->dir_end_lba) );
-  return p_fid;
+  udf_get_lba( p_fe, &(p_udf_file->dir_lba), &(p_udf_file->dir_end_lba) );
+  return p_udf_file;
 }
 
 /*!
@@ -290,13 +339,16 @@ udf_open (const char *psz_path)
 
   if (!p_udf) return NULL;
 
-  /* FIXME:
-     Some magic should be put here to figure out if we mean a UDF file
-     image or a CD-ROM or DVD. For now we'll go with stream. */
-  p_udf->b_stream = true;
-  p_udf->stream = cdio_stdio_new( psz_path );
-  if (NULL == p_udf->stream) 
-    goto error;
+  p_udf->b_stream = !cdio_is_device(psz_path, DRIVER_UNKNOWN);
+  if (p_udf->b_stream) {
+    p_udf->stream = cdio_stdio_new( psz_path );
+    if (!p_udf->stream) 
+      goto error;
+  } else {
+    p_udf->cdio = cdio_open(psz_path, DRIVER_UNKNOWN);
+    if (!p_udf->cdio)
+      goto error;
+  }
 
   /*
    * Look for an Anchor Volume Descriptor Pointer at sector 256.
@@ -340,73 +392,97 @@ udf_open (const char *psz_path)
      */
     if (i_lba == mvds_end)
       goto error;
-
-    /* 
-       Now we have the joy of finding the Partition Descriptor and the
-       Logical Volume Descriptor for the Main Volume Descriptor
-       Sequence. Once we've got that, we use the Logical Volume
-       Descriptor to get a Fileset Descriptor and that has the Root
-       Directory File Entry.
-     */
-    for (i_lba = mvds_start; i_lba < mvds_end; i_lba++) {
-
-      partition_desc_t *p_partition = (partition_desc_t *) &data;
-      
-      if (! udf_read_sectors (p_udf, p_partition, i_lba, 1) ) 
-	goto error;
-
-      if (!udf_checktag(&p_partition->tag, TAGID_PARTITION)) {
-	/* Squirrel away some data regarding partition */
-	p_udf->i_partition = uint16_from_le(p_partition->number);
- 	p_udf->i_part_start = uint32_from_le(p_partition->start_loc);
-	if (p_udf->lvd_lba) break;
-      } else if (!udf_checktag(&p_partition->tag, TAGID_LOGVOL)) {
-	/* Get fileset descriptor */
-	logical_vol_desc_t *p_logvol = (logical_vol_desc_t *) &data;
-	bool b_valid = 
-	  UDF_BLOCKSIZE == uint32_from_le(p_logvol->logical_blocksize);
-
-	if (b_valid) {
-	  p_udf->lvd_lba = i_lba;
-	  p_udf->fsd_offset = 
-	    uint32_from_le(p_logvol->lvd_use.fsd_loc.loc.lba);
-	  if (p_udf->i_part_start) break;
-	}
-	
-      } 
-    }
-    if (p_udf->lvd_lba && p_udf->i_part_start) {
-      udf_fsd_t *p_fsd = (udf_fsd_t *) &data;
-
-      int i_sectors = udf_read_sectors(p_udf, p_fsd, 
-				       p_udf->i_part_start + p_udf->fsd_offset,
-				       1);
-
-      if (i_sectors > 0 && !udf_checktag(&p_fsd->tag, TAGID_FSD)) {
-	udf_file_entry_t *p_fe = (udf_file_entry_t *) &data;
-	const uint32_t parent_icb = uint32_from_le(p_fsd->root_icb.loc.lba);
-
-	/* Check partition numbers match of last-read block?  */
-
-	memcpy(&p_udf->root_icb, &p_fsd->root_icb, sizeof(udf_long_ad_t));
-	udf_read_sectors(p_udf, p_fe, p_udf->i_part_start + parent_icb, 1);
-	if (!udf_checktag(&p_fe->tag, TAGID_FILE_ENTRY)) {
-
-	  /* Check partition numbers match of last-read block? */
-
-	  /* We win! - Save root directory information. */
-	  p_udf->p_root = udf_new_file(p_fe, p_udf->i_part_start, "/",
-				       true, false );
-	}
-      }
-    }
-    
   }
 
   return p_udf;
 
  error:
   free(p_udf);
+  return NULL;
+}
+
+/*!
+  Get the root in p_udf. If b_any_partition is false then
+  the root must be in the given partition.
+  NULL is returned if the partition is not found or a root is not found or
+  there is on error.
+
+  Caller must free result - use udf_file_free for that.
+*/
+udf_file_t *
+udf_get_root (udf_t *p_udf, const bool b_any_partition,
+	      const partition_num_t i_partition)
+{
+  const anchor_vol_desc_ptr_t *p_avdp = &p_udf->anchor_vol_desc_ptr;
+  const uint32_t mvds_start = 
+    uint32_from_le(p_avdp->main_vol_desc_seq_ext.loc);
+  const uint32_t mvds_end   = mvds_start + 
+    (uint32_from_le(p_avdp->main_vol_desc_seq_ext.len) - 1) / UDF_BLOCKSIZE;
+  uint32_t i_lba;
+  uint8_t data[UDF_BLOCKSIZE];
+
+  /* 
+     Now we have the joy of finding the Partition Descriptor and the
+     Logical Volume Descriptor for the Main Volume Descriptor
+     Sequence. Once we've got that, we use the Logical Volume
+     Descriptor to get a Fileset Descriptor and that has the Root
+     Directory File Entry.
+  */
+  for (i_lba = mvds_start; i_lba < mvds_end; i_lba++) {
+    uint8_t data[UDF_BLOCKSIZE];
+    
+    partition_desc_t *p_partition = (partition_desc_t *) &data;
+    
+    if (! udf_read_sectors (p_udf, p_partition, i_lba, 1) ) 
+      return NULL;
+    
+    if (!udf_checktag(&p_partition->tag, TAGID_PARTITION)) {
+      const partition_num_t i_partition_check 
+	= uint16_from_le(p_partition->number);
+      if (b_any_partition || i_partition_check == i_partition) {
+	/* Squirrel away some data regarding partition */
+	p_udf->i_partition = uint16_from_le(p_partition->number);
+	p_udf->i_part_start = uint32_from_le(p_partition->start_loc);
+	if (p_udf->lvd_lba) break;
+      }
+    } else if (!udf_checktag(&p_partition->tag, TAGID_LOGVOL)) {
+      /* Get fileset descriptor */
+      logical_vol_desc_t *p_logvol = (logical_vol_desc_t *) &data;
+      bool b_valid = 
+	UDF_BLOCKSIZE == uint32_from_le(p_logvol->logical_blocksize);
+      
+      if (b_valid) {
+	p_udf->lvd_lba = i_lba;
+	p_udf->fsd_offset = 
+	  uint32_from_le(p_logvol->lvd_use.fsd_loc.loc.lba);
+	if (p_udf->i_part_start) break;
+      }
+    } 
+  }
+  if (p_udf->lvd_lba && p_udf->i_part_start) {
+    udf_fsd_t *p_fsd = (udf_fsd_t *) &data;
+    
+    int i_sectors = udf_read_sectors(p_udf, p_fsd, 
+				     p_udf->i_part_start + p_udf->fsd_offset,
+				     1);
+    
+    if (i_sectors > 0 && !udf_checktag(&p_fsd->tag, TAGID_FSD)) {
+      udf_file_entry_t *p_fe = (udf_file_entry_t *) &data;
+      const uint32_t parent_icb = uint32_from_le(p_fsd->root_icb.loc.lba);
+      
+      /* Check partition numbers match of last-read block?  */
+      
+      udf_read_sectors(p_udf, p_fe, p_udf->i_part_start + parent_icb, 1);
+      if (!udf_checktag(&p_fe->tag, TAGID_FILE_ENTRY)) {
+	
+	/* Check partition numbers match of last-read block? */
+	
+	/* We win! - Save root directory information. */
+	return udf_new_file(p_fe, p_udf->i_part_start, "/", true, false );
+      }
+    }
+  }
+
   return NULL;
 }
 
@@ -423,8 +499,6 @@ udf_close (udf_t *p_udf)
     cdio_destroy(p_udf->cdio);
   }
 
-  udf_file_free(p_udf->p_root);
-
   /* Get rid of root directory if allocated. */
 
   free(p_udf);
@@ -432,21 +506,22 @@ udf_close (udf_t *p_udf)
 }
 
 udf_file_t * 
-udf_get_sub(udf_t *p_udf, udf_file_t *p_file)
+udf_get_sub(udf_t *p_udf, udf_file_t *p_udf_file)
 {
-  if (p_file->b_dir && !p_file->b_parent && p_file->fid) {
+  if (p_udf_file->b_dir && !p_udf_file->b_parent && p_udf_file->fid) {
     uint8_t data[UDF_BLOCKSIZE];
     udf_file_entry_t *p_fe = (udf_file_entry_t *) &data;
     
     int i_sectors = udf_read_sectors(p_udf, p_fe, p_udf->i_part_start 
-				     + p_file->fid->icb.loc.lba, 1);
+				     + p_udf_file->fid->icb.loc.lba, 1);
 
     if (i_sectors && !udf_checktag(&p_fe->tag, TAGID_FILE_ENTRY)) {
       
       if (ICBTAG_FILE_TYPE_DIRECTORY == p_fe->icb_tag.file_type) {
-	udf_file_t *p_file_new = udf_new_file(p_fe, p_udf->i_part_start, 
-					      p_file->psz_name, true, true);
-	return p_file_new;
+	udf_file_t *p_udf_file_new = udf_new_file(p_fe, p_udf->i_part_start, 
+						  p_udf_file->psz_name, 
+						  true, true);
+	return p_udf_file_new;
       }
     }
   }
@@ -454,51 +529,53 @@ udf_get_sub(udf_t *p_udf, udf_file_t *p_file)
 }
 
 udf_file_t *
-udf_get_next(udf_t *p_udf, udf_file_t *p_file)
+udf_get_next(udf_t *p_udf, udf_file_t *p_udf_file)
 {
 
-  if (p_file->dir_left <= 0) {
-    p_file->fid = NULL;
+  if (p_udf_file->dir_left <= 0) {
+    p_udf_file->fid = NULL;
     return NULL;
   }
   
-  if (p_file->fid) { 
+  if (p_udf_file->fid) { 
     /* advance to next File Identifier Descriptor */
     uint32_t ofs = 4 * 
-      ((sizeof *(p_file->fid) + p_file->fid->i_imp_use + p_file->fid->i_file_id + 3)
-       / 4);
+      ((sizeof(*(p_udf_file->fid)) + p_udf_file->fid->i_imp_use 
+	+ p_udf_file->fid->i_file_id + 3) / 4);
     
-    p_file->fid = (udf_fileid_desc_t *)((uint8_t *)p_file->fid + ofs);
+    p_udf_file->fid = (udf_fileid_desc_t *)((uint8_t *)p_udf_file->fid + ofs);
   }
   
-  if (!p_file->fid) {
-    uint32_t i_sectors = (p_file->dir_end_lba - p_file->dir_lba + 1);
+  if (!p_udf_file->fid) {
+    uint32_t i_sectors = (p_udf_file->dir_end_lba - p_udf_file->dir_lba + 1);
     uint32_t size = UDF_BLOCKSIZE * i_sectors;
     int      i_read;
 
-    if (!p_file->sector)
-      p_file->sector = (uint8_t*) malloc(size);
-    i_read = udf_read_sectors(p_udf, p_file->sector, 
-			      p_file->i_part_start + p_file->dir_lba, 
+    if (!p_udf_file->sector)
+      p_udf_file->sector = (uint8_t*) malloc(size);
+    i_read = udf_read_sectors(p_udf, p_udf_file->sector, 
+			      p_udf_file->i_part_start + p_udf_file->dir_lba, 
 			      i_sectors);
     if (i_read)
-      p_file->fid = (udf_fileid_desc_t *) p_file->sector;
+      p_udf_file->fid = (udf_fileid_desc_t *) p_udf_file->sector;
     else
-      p_file->fid = NULL;
+      p_udf_file->fid = NULL;
   }
   
-  if (p_file->fid && udf_checktag(&(p_file->fid->tag), TAGID_FID))
+  if (p_udf_file->fid && !udf_checktag(&(p_udf_file->fid->tag), TAGID_FID))
     {
-      uint32_t ofs = 4 * ((sizeof *p_file->fid + p_file->fid->i_imp_use + p_file->fid->i_file_id + 3) / 4);
+      uint32_t ofs = 
+	4 * ((sizeof(*p_udf_file->fid) + p_udf_file->fid->i_imp_use 
+	      + p_udf_file->fid->i_file_id + 3) / 4);
       
-      p_file->dir_left -= ofs;
-      p_file->b_dir = 
-	(p_file->fid->file_characteristics & UDF_FILE_DIRECTORY) != 0;
-      p_file->b_parent = 
-	(p_file->fid->file_characteristics & UDF_FILE_PARENT) != 0;
-      unicode16_decode(p_file->fid->imp_use + p_file->fid->i_imp_use, 
-		       p_file->fid->i_file_id, p_file->psz_name);
-      return p_file;
+      p_udf_file->dir_left -= ofs;
+      p_udf_file->b_dir = 
+	(p_udf_file->fid->file_characteristics & UDF_FILE_DIRECTORY) != 0;
+      p_udf_file->b_parent = 
+	(p_udf_file->fid->file_characteristics & UDF_FILE_PARENT) != 0;
+      unicode16_decode(p_udf_file->fid->imp_use + p_udf_file->fid->i_imp_use, 
+		       p_udf_file->fid->i_file_id, p_udf_file->psz_name);
+      return p_udf_file;
     }
   return NULL;
 }
@@ -507,12 +584,12 @@ udf_get_next(udf_t *p_udf, udf_file_t *p_file)
   free free resources associated with p_fe.
 */
 bool 
-udf_file_free(udf_file_t * p_fe) 
+udf_file_free(udf_file_t *p_udf_file) 
 {
-  if (p_fe) {
-    free(p_fe->psz_name);
-    free(p_fe->sector);
-    free(p_fe);
+  if (p_udf_file) {
+    free(p_udf_file->psz_name);
+    free(p_udf_file->sector);
+    free(p_udf_file);
   }
   return true;
 }

@@ -925,7 +925,7 @@ PRAGMA_END_PACKED
 /** The below variables are trickery to force the above enum symbol
     values to be recorded in debug symbol tables. They are used to
     allow one refer to the enumeration value names in the typedefs
-    above in a debugger and debugger expressions
+    above in a debugger and in debugger expressions.
 */
 extern file_characteristics_t debug_file_characteristics;
 extern tag_id_t debug_tagid;

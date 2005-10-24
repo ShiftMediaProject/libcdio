@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.5 2005/10/21 12:33:46 rocky Exp $
+    $Id: udf.h,v 1.6 2005/10/24 03:12:30 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -30,22 +30,24 @@
 
 #include <cdio/ecma_167.h>
 
+typedef uint16_t partition_num_t;
+
 /* FIXME: these probably don't go here. */
 typedef uint16_t unicode16_t;
 typedef uint8_t  ubyte;
 
 typedef struct
 {
-  char	           *psz_name;
-  bool	            b_dir;    /* true if this entry is a directory. */
-  bool              b_parent; /* True if has parent directory (e.g. not root
-				 directory). If not set b_dir will probably
-				 be true. */
+  char	            *psz_name;
+  bool	             b_dir;    /* true if this entry is a directory. */
+  bool               b_parent; /* True if has parent directory (e.g. not root
+				  directory). If not set b_dir will probably
+				  be true. */
 
-  uint32_t          i_part_start;
-  uint32_t          dir_lba, dir_end_lba;
-  uint64_t          dir_left;
-  uint8_t          *sector;
+  uint32_t           i_part_start;
+  uint32_t           dir_lba, dir_end_lba;
+  uint64_t           dir_left;
+  uint8_t           *sector;
   udf_fileid_desc_t *fid;
 } udf_file_t;
 
@@ -81,9 +83,34 @@ long int udf_read_sectors (const udf_t *p_udf, void *ptr, lsn_t i_start,
 */
 udf_t *udf_open (const char *psz_path);
 
-udf_file_t *udf_get_sub(udf_t *p_udf, udf_file_t *p_file);
+/*!
+  Get the root in p_udf. If b_any_partition is false then
+  the root must be in the given partition.
+  NULL is returned if the partition is not found or a root is not found or
+  there is on error.
 
-udf_file_t *udf_get_next(udf_t *p_udf, udf_file_t * p_file);
+  Caller must free result - use udf_file_free for that.
+*/
+udf_file_t *udf_get_root (udf_t *p_udf, const bool b_any_partition, 
+			  const partition_num_t i_partition);
+
+/*!
+  Return a file pointer matching pzz_name. If b_any_partition is false then
+  the root must be in the given partition. 
+ */
+udf_file_t *udf_find_file(udf_t *p_udf, const char *psz_name,
+			  const bool b_any_partition,
+			  const partition_num_t i_partition);
+
+/*!
+  Return the next subdirectory. 
+ */
+udf_file_t *udf_get_sub(udf_t *p_udf, udf_file_t *p_udf_file);
+
+/*!
+  Return the next file.
+ */
+udf_file_t *udf_get_next(udf_t *p_udf, udf_file_t *p_udf_file);
 
 /*!
   Close UDF and free resources associated with p_udf.
@@ -93,7 +120,7 @@ bool udf_close (udf_t *p_udf);
 /*!
   free free resources associated with p_fe.
 */
-bool udf_file_free(udf_file_t * p_fe);
+bool udf_file_free(udf_file_t *p_udf_file);
 
 
 #endif /*UDF_H*/

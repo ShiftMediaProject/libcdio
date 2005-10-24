@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.175 2005/10/23 12:56:40 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.176 2005/10/24 03:12:30 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -601,6 +601,7 @@ AC_CONFIG_FILES([ \
        lib/driver/Makefile \
        lib/iso9660/Makefile \
        lib/paranoia/Makefile \
+       lib/udf/Makefile \
        libcdio.pc \
        libcdio_cdda.pc \
        libcdio_paranoia.pc \

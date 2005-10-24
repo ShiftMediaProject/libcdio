@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.66 2004/12/22 10:04:46 rocky Exp $
+#   $Id: Makefile.am,v 1.67 2005/10/24 03:12:30 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -21,7 +21,7 @@
 ########################################################
 
 if BUILD_CD_PARANOIA
-SUBDIRS =  driver iso9660 cdda_interface paranoia
+SUBDIRS =  driver iso9660 cdda_interface paranoia udf
 else 
-SUBDIRS =  driver iso9660
+SUBDIRS =  driver iso9660 udf
 endif
