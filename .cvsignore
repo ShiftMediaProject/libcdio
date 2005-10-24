@@ -49,6 +49,7 @@ libcdio.pc
 libcdio_cdda.pc
 libcdio_paranoia.pc
 libiso9660.pc
+libudf.pc
 ltmain.sh
 mkinstalldirs
 stamp-h1
