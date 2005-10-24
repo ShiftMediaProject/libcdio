@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.146 2005/10/06 09:37:11 rocky Exp $
+    $Id: cd-info.c,v 1.147 2005/10/24 02:57:00 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -345,9 +345,6 @@ parse_options (int argc, char *argv[])
   if (optind < argc) {
     const char *remaining_arg = argv[optind++];
 
-    /* NOTE: A bug in the libpopt version checked source_image, which
-       rendered the subsequent source_image test useless.
-    */
     if (source_name != NULL) {
       report(stderr, "%s: Source '%s' given as an argument of an option and as "
 	     "unnamed option '%s'\n", 
@@ -369,12 +366,6 @@ parse_options (int argc, char *argv[])
     }
   }
 
-  if (NULL == source_name && !opts.version_only) {
-    report(stderr, "%s: No source specified.\n", program_name);
-    free(program_name);
-    exit (EXIT_FAILURE);
-  }
-  
   return true;
 }
 
