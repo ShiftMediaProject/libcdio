@@ -9,7 +9,9 @@ VSD_STD_ID_NSR03
 VSD_STD_ID_TEA01
 udf_close
 udf_file_free
+udf_get_name
 udf_get_next
 udf_get_sub
+udf_is_dir
 udf_open
 udf_read_sectors

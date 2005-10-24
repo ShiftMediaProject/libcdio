@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.6 2005/10/24 03:12:30 rocky Exp $
+    $Id: udf.h,v 1.7 2005/10/24 10:14:58 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #ifndef UDF_H
 #define UDF_H 
 
+#include <cdio/cdio.h>
 #include <cdio/ecma_167.h>
 
 typedef uint16_t partition_num_t;
@@ -36,23 +37,10 @@ typedef uint16_t partition_num_t;
 typedef uint16_t unicode16_t;
 typedef uint8_t  ubyte;
 
-typedef struct
-{
-  char	            *psz_name;
-  bool	             b_dir;    /* true if this entry is a directory. */
-  bool               b_parent; /* True if has parent directory (e.g. not root
-				  directory). If not set b_dir will probably
-				  be true. */
 
-  uint32_t           i_part_start;
-  uint32_t           dir_lba, dir_end_lba;
-  uint64_t           dir_left;
-  uint8_t           *sector;
-  udf_fileid_desc_t *fid;
-} udf_file_t;
-
-/** This is an opaque structure. */
+/** Opaque structures. */
 typedef struct udf_s udf_t; 
+typedef struct udf_file_s udf_file_t;
 
 /**
    Imagine the below a #define'd value rather than distinct values of
@@ -72,8 +60,8 @@ extern udf_enum1_t debug_udf_enums1;
   Seek to a position i_start and then read i_blocks. Number of blocks read is 
   returned. One normally expects the return to be equal to i_blocks.
 */
-long int udf_read_sectors (const udf_t *p_udf, void *ptr, lsn_t i_start, 
-			   long int i_blocks);
+driver_return_code_t udf_read_sectors (const udf_t *p_udf, void *ptr, 
+				       lsn_t i_start,  long int i_blocks);
 
 /*!
   Open an UDF for reading. Maybe in the future we will have
@@ -91,26 +79,31 @@ udf_t *udf_open (const char *psz_path);
 
   Caller must free result - use udf_file_free for that.
 */
-udf_file_t *udf_get_root (udf_t *p_udf, const bool b_any_partition, 
-			  const partition_num_t i_partition);
+udf_file_t *udf_get_root (udf_t *p_udf, bool b_any_partition, 
+			  partition_num_t i_partition);
 
 /*!
   Return a file pointer matching pzz_name. If b_any_partition is false then
   the root must be in the given partition. 
  */
 udf_file_t *udf_find_file(udf_t *p_udf, const char *psz_name,
-			  const bool b_any_partition,
-			  const partition_num_t i_partition);
+			  bool b_any_partition,
+			  partition_num_t i_partition);
 
 /*!
   Return the next subdirectory. 
  */
-udf_file_t *udf_get_sub(udf_t *p_udf, udf_file_t *p_udf_file);
+udf_file_t *udf_get_sub(const udf_t *p_udf, const udf_file_t *p_udf_file);
+
+/*!
+  Return the name of the file
+ */
+const char *udf_get_name(const udf_file_t *p_udf_file);
 
 /*!
   Return the next file.
  */
-udf_file_t *udf_get_next(udf_t *p_udf, udf_file_t *p_udf_file);
+udf_file_t *udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file);
 
 /*!
   Close UDF and free resources associated with p_udf.
@@ -121,6 +114,11 @@ bool udf_close (udf_t *p_udf);
   free free resources associated with p_fe.
 */
 bool udf_file_free(udf_file_t *p_udf_file);
+
+/*!
+  Return true if the file is a directory.
+ */
+bool udf_is_dir(const udf_file_t *p_udf_file);
 
 
 #endif /*UDF_H*/

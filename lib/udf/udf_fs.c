@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.2 2005/10/24 03:12:30 rocky Exp $
+    $Id: udf_fs.c,v 1.3 2005/10/24 10:14:58 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -67,9 +67,8 @@ const char VSD_STD_ID_CDW01[] = {'C', 'D', 'W', '0', '2'};
 const char VSD_STD_ID_NSR03[] = {'N', 'S', 'R', '0', '3'};
 const char VSD_STD_ID_TEA01[] = {'T', 'E', 'A', '0', '1'};
 
-#include <cdio/udf.h>
-#include <cdio/ecma_167.h>
 #include <cdio/bytesex.h>
+#include "udf_private.h"
 
 /** The below variables are trickery to force enum symbol values to be
     recorded in debug symbol tables. They are used to allow one to refer
@@ -80,8 +79,6 @@ tag_id_t debug_tagid;
 file_characteristics_t debug_file_characteristics;
 udf_enum1_t debug_udf_enums1;
 
-/* Private headers */
-#include "_cdio_stdio.h"
 
 /*
  * The UDF specs are pretty clear on how each data structure is made
@@ -125,21 +122,6 @@ udf_enum1_t debug_udf_enums1;
  *								|
  *								|-->File data
  */
-
-/* Implementation of udf_t type */
-struct udf_s {
-  bool          b_stream;         /* Use stream pointer, else use 
-				    p_cdio.
-				  */
-  CdioDataSource_t      *stream;  /* Stream pointer if stream */
-  CdIo_t                *cdio;    /* Cdio pointer if read device */
-  anchor_vol_desc_ptr_t anchor_vol_desc_ptr;
-  uint32_t              pvd_lba;  /* sector of Primary Volume Descriptor */
-  partition_num_t       i_partition;  /* partition number */
-  uint32_t              i_part_start; /* start of Partition Descriptor */
-  uint32_t              lvd_lba;      /* sector of Logical Volume Descriptor */
-  uint32_t              fsd_offset;   /* lba of fileset descriptor */
-};
 
 /**
  * Check the descriptor tag for both the correct id and correct checksum.
@@ -246,8 +228,8 @@ udf_ff_traverse(udf_t *p_udf, udf_file_t *p_udf_file, char *psz_token)
 #define udf_MAX_PATHLEN 2048
 
 udf_file_t * 
-udf_find_file(udf_t *p_udf, const char *psz_name, const bool b_any_partition,
-	      const partition_num_t i_partition)
+udf_find_file(udf_t *p_udf, const char *psz_name, bool b_any_partition,
+	      partition_num_t i_partition)
 {
   udf_file_t *p_udf_file = udf_get_root(p_udf, b_any_partition, i_partition);
   udf_file_t *p_udf_file2 = NULL;
@@ -305,11 +287,12 @@ udf_new_file(udf_file_entry_t *p_fe, uint32_t i_part_start,
   Seek to a position i_start and then read i_blocks. Number of blocks read is 
   returned. One normally expects the return to be equal to i_blocks.
 */
-long int 
+driver_return_code_t
 udf_read_sectors (const udf_t *p_udf, void *ptr, lsn_t i_start, 
 		 long int i_blocks) 
 {
-  long int ret;
+  driver_return_code_t ret;
+  long int i_read;
   long int i_byte_offset;
   
   if (!p_udf) return 0;
@@ -317,8 +300,10 @@ udf_read_sectors (const udf_t *p_udf, void *ptr, lsn_t i_start,
 
   if (p_udf->b_stream) {
     ret = cdio_stream_seek (p_udf->stream, i_byte_offset, SEEK_SET);
-    if (ret!=0) return 0;
-    return cdio_stream_read (p_udf->stream, ptr, UDF_BLOCKSIZE, i_blocks);
+    if (DRIVER_OP_SUCCESS != ret) return ret;
+    i_read = cdio_stream_read (p_udf->stream, ptr, UDF_BLOCKSIZE, i_blocks);
+    if (i_read) return DRIVER_OP_SUCCESS;
+    return DRIVER_OP_ERROR;
   } else {
     return cdio_read_data_sectors(p_udf->cdio, ptr, i_start, UDF_BLOCKSIZE,
 				  i_blocks);
@@ -339,21 +324,21 @@ udf_open (const char *psz_path)
 
   if (!p_udf) return NULL;
 
-  p_udf->b_stream = !cdio_is_device(psz_path, DRIVER_UNKNOWN);
-  if (p_udf->b_stream) {
+  p_udf->cdio = cdio_open(psz_path, DRIVER_UNKNOWN);
+  if (!p_udf->cdio) {
+    /* Not a CD-ROM drive or CD Image. Maybe it's a UDF file not
+       encapsulated as a CD-ROM Image (e.g. often .UDF or (sic) .ISO)
+    */
     p_udf->stream = cdio_stdio_new( psz_path );
     if (!p_udf->stream) 
       goto error;
-  } else {
-    p_udf->cdio = cdio_open(psz_path, DRIVER_UNKNOWN);
-    if (!p_udf->cdio)
-      goto error;
+    p_udf->b_stream = true;
   }
 
   /*
    * Look for an Anchor Volume Descriptor Pointer at sector 256.
    */
-  if (! udf_read_sectors (p_udf, &data, 256, 1) )
+  if (DRIVER_OP_SUCCESS != udf_read_sectors (p_udf, &data, 256, 1) )
     goto error;
   
   memcpy(&(p_udf->anchor_vol_desc_ptr), &data, sizeof(anchor_vol_desc_ptr_t));
@@ -377,7 +362,7 @@ udf_open (const char *psz_path)
 
       udf_pvd_t *p_pvd = (udf_pvd_t *) &data;
       
-      if (! udf_read_sectors (p_udf, p_pvd, i_lba, 1) ) 
+      if (DRIVER_OP_SUCCESS != udf_read_sectors (p_udf, p_pvd, i_lba, 1) ) 
 	goto error;
 
       if (!udf_checktag(&p_pvd->tag, TAGID_PRI_VOL)) {
@@ -410,8 +395,7 @@ udf_open (const char *psz_path)
   Caller must free result - use udf_file_free for that.
 */
 udf_file_t *
-udf_get_root (udf_t *p_udf, const bool b_any_partition,
-	      const partition_num_t i_partition)
+udf_get_root (udf_t *p_udf, bool b_any_partition, partition_num_t i_partition)
 {
   const anchor_vol_desc_ptr_t *p_avdp = &p_udf->anchor_vol_desc_ptr;
   const uint32_t mvds_start = 
@@ -433,7 +417,7 @@ udf_get_root (udf_t *p_udf, const bool b_any_partition,
     
     partition_desc_t *p_partition = (partition_desc_t *) &data;
     
-    if (! udf_read_sectors (p_udf, p_partition, i_lba, 1) ) 
+    if (DRIVER_OP_SUCCESS != udf_read_sectors (p_udf, p_partition, i_lba, 1) ) 
       return NULL;
     
     if (!udf_checktag(&p_partition->tag, TAGID_PARTITION)) {
@@ -462,18 +446,19 @@ udf_get_root (udf_t *p_udf, const bool b_any_partition,
   if (p_udf->lvd_lba && p_udf->i_part_start) {
     udf_fsd_t *p_fsd = (udf_fsd_t *) &data;
     
-    int i_sectors = udf_read_sectors(p_udf, p_fsd, 
-				     p_udf->i_part_start + p_udf->fsd_offset,
-				     1);
+    driver_return_code_t ret = 
+      udf_read_sectors(p_udf, p_fsd, p_udf->i_part_start + p_udf->fsd_offset,
+		       1);
     
-    if (i_sectors > 0 && !udf_checktag(&p_fsd->tag, TAGID_FSD)) {
+    if (DRIVER_OP_SUCCESS == ret && !udf_checktag(&p_fsd->tag, TAGID_FSD)) {
       udf_file_entry_t *p_fe = (udf_file_entry_t *) &data;
       const uint32_t parent_icb = uint32_from_le(p_fsd->root_icb.loc.lba);
       
       /* Check partition numbers match of last-read block?  */
       
-      udf_read_sectors(p_udf, p_fe, p_udf->i_part_start + parent_icb, 1);
-      if (!udf_checktag(&p_fe->tag, TAGID_FILE_ENTRY)) {
+      ret = udf_read_sectors(p_udf, p_fe, p_udf->i_part_start + parent_icb, 1);
+      if (ret == DRIVER_OP_SUCCESS && 
+	  !udf_checktag(&p_fe->tag, TAGID_FILE_ENTRY)) {
 	
 	/* Check partition numbers match of last-read block? */
 	
@@ -506,16 +491,18 @@ udf_close (udf_t *p_udf)
 }
 
 udf_file_t * 
-udf_get_sub(udf_t *p_udf, udf_file_t *p_udf_file)
+udf_get_sub(const udf_t *p_udf, const udf_file_t *p_udf_file)
 {
-  if (p_udf_file->b_dir && !p_udf_file->b_parent && p_udf_file->fid) {
+  if (p_udf_file->b_dir && p_udf_file->fid) {
     uint8_t data[UDF_BLOCKSIZE];
     udf_file_entry_t *p_fe = (udf_file_entry_t *) &data;
     
-    int i_sectors = udf_read_sectors(p_udf, p_fe, p_udf->i_part_start 
-				     + p_udf_file->fid->icb.loc.lba, 1);
+    driver_return_code_t i_ret = 
+      udf_read_sectors(p_udf, p_fe, p_udf->i_part_start 
+		       + p_udf_file->fid->icb.loc.lba, 1);
 
-    if (i_sectors && !udf_checktag(&p_fe->tag, TAGID_FILE_ENTRY)) {
+    if (DRIVER_OP_SUCCESS == i_ret 
+	&& !udf_checktag(&p_fe->tag, TAGID_FILE_ENTRY)) {
       
       if (ICBTAG_FILE_TYPE_DIRECTORY == p_fe->icb_tag.file_type) {
 	udf_file_t *p_udf_file_new = udf_new_file(p_fe, p_udf->i_part_start, 
@@ -529,7 +516,7 @@ udf_get_sub(udf_t *p_udf, udf_file_t *p_udf_file)
 }
 
 udf_file_t *
-udf_get_next(udf_t *p_udf, udf_file_t *p_udf_file)
+udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file)
 {
 
   if (p_udf_file->dir_left <= 0) {
@@ -549,14 +536,14 @@ udf_get_next(udf_t *p_udf, udf_file_t *p_udf_file)
   if (!p_udf_file->fid) {
     uint32_t i_sectors = (p_udf_file->dir_end_lba - p_udf_file->dir_lba + 1);
     uint32_t size = UDF_BLOCKSIZE * i_sectors;
-    int      i_read;
+    driver_return_code_t i_ret;
 
     if (!p_udf_file->sector)
       p_udf_file->sector = (uint8_t*) malloc(size);
-    i_read = udf_read_sectors(p_udf, p_udf_file->sector, 
-			      p_udf_file->i_part_start + p_udf_file->dir_lba, 
-			      i_sectors);
-    if (i_read)
+    i_ret = udf_read_sectors(p_udf, p_udf_file->sector, 
+			     p_udf_file->i_part_start + p_udf_file->dir_lba, 
+			     i_sectors);
+    if (DRIVER_OP_SUCCESS == i_ret)
       p_udf_file->fid = (udf_fileid_desc_t *) p_udf_file->sector;
     else
       p_udf_file->fid = NULL;

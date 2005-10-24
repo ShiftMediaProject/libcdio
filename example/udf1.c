@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.1 2005/10/24 03:12:30 rocky Exp $
+  $Id: udf1.c,v 1.2 2005/10/24 10:14:57 rocky Exp $
 
   Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
   
@@ -52,15 +52,16 @@
 
 static 
 udf_file_t *
-list_directory(udf_t *p_udf, udf_file_t *p_udf_file, char *psz_token)
+list_directory(const udf_t *p_udf, udf_file_t *p_udf_file, 
+	       const char *psz_token)
 {
   if (!p_udf_file) return NULL;
   while (udf_get_next(p_udf, p_udf_file)) {
     printf("%s\n", psz_token);
-    if (strcmp(psz_token, p_udf_file->psz_name) == 0) {
-      char *next_tok = strtok(NULL, udf_PATH_DELIMITERS);
+    if (strcmp(psz_token, udf_get_name(p_udf_file)) == 0) {
+      const char *next_tok = strtok(NULL, udf_PATH_DELIMITERS);
       
-      if (p_udf_file->b_dir) {
+      if (udf_is_dir(p_udf_file)) {
 	udf_file_t * p_udf_file2 = udf_get_sub(p_udf, p_udf_file);
 	
 	if (p_udf_file2) {
@@ -101,7 +102,7 @@ main(int argc, const char *argv[])
       return 1;
     }
 
-    list_directory(p_udf, p_udf_file, p_udf_file->psz_name);
+    list_directory(p_udf, p_udf_file, udf_get_name(p_udf_file));
     /* Go over: udf_file_free(p_udf_file);*/
   }
   

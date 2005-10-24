@@ -30,12 +30,11 @@ libudf_la_AGE := 0
 
 EXTRA_DIST = libudf.sym
 
-# noinst_HEADERS = crc.h osta.h
+noinst_HEADERS = udf_private.h
 
 lib_LTLIBRARIES = libudf.la
 
-#libudf_la_SOURCES = crc.c osta.c udf_fs.c
-libudf_la_SOURCES = udf_fs.c
+libudf_la_SOURCES = udf.c udf_fs.c
 
 libudf_la_LIBADD = @LIBCDIO_LIBS@
 
