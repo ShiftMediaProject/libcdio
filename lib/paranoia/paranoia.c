@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.20 2005/10/23 12:17:30 rocky Exp $
+  $Id: paranoia.c,v 1.21 2005/10/24 19:42:15 pjcreath Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -291,9 +291,10 @@ do_const_sync(c_block_t *A,
   unsigned char *flagA=A->flags;
   long ret=0;
 
-  /* If we're doing any verification whatsoever, we have flags and will
-   * take them into account.  Otherwise, we just do the simple equality
-   * test for samples on both sides of the initial match.
+  /* If we're doing any verification whatsoever, we have flags in stage
+   * 1, and will take them into account.  Otherwise (e.g. in stage 2),
+   * we just do the simple equality test for samples on both sides of
+   * the initial match.
    */
   if (flagB==NULL)
     ret=i_paranoia_overlap(cv(A), iv(B), posA, posB,
@@ -513,6 +514,12 @@ stage1_matched(c_block_t *old, c_block_t *new,
       (*callback)(matchend, PARANOIA_CB_FIXUP_ATOM);
 
 
+#if TRACE_PARANOIA & 1
+  fprintf(stderr, "-   Matched [%ld-%ld] against [%ld-%ld]\n",
+	  newadjbegin+cb(new), newadjend+cb(new),
+	  oldadjbegin+cb(old), oldadjend+cb(old));
+#endif
+
   /* Mark verified samples as "verified," but trim the verified region
    * by OVERLAP_ADJ samples on each side.  There are several significant
    * implications of this trimming:
@@ -575,7 +582,6 @@ stage1_matched(c_block_t *old, c_block_t *new,
   oldadjend-=OVERLAP_ADJ;
   for(i=oldadjbegin;i<oldadjend;i++)
     old->flags[i]|=FLAGS_VERIFIED; /* mark verified */
-    
 }
 
 
@@ -731,6 +737,14 @@ i_stage1(cdrom_paranoia_t *p, c_block_t *p_new,
   int ret=0;
   long int begin=0;
   long int end;
+
+#if TRACE_PARANOIA & 1
+  long int block_count = 0;
+  fprintf(stderr,
+	  "Verifying block %ld:[%ld-%ld] against previously read blocks...\n",
+	  p->cache->active,
+	  cb(p_new), ce(p_new));
+#endif
   
   /* We're going to be comparing the new c_block against the other
    * c_blocks in memory.  Initialize the "sort cache" index to allow
@@ -750,6 +764,13 @@ i_stage1(cdrom_paranoia_t *p, c_block_t *p_new,
    * compare it against itself.
    */
   while ( ptr && ptr != p_new ) {
+#if TRACE_PARANOIA & 1
+    block_count++;
+    fprintf(stderr,
+	    "- Verifying against block %ld:[%ld-%ld] dynoverlap=%ld\n",
+	    block_count, cb(ptr), ce(ptr), p->dynoverlap);
+#endif
+
     if (callback)
       (*callback)(cb(p_new), PARANOIA_CB_VERIFY);
     i_iterate_stage1(p,ptr,p_new,callback);
@@ -824,6 +845,11 @@ i_iterate_stage2(cdrom_paranoia_t *p,
   long matchbegin=-1,matchend=-1,offset;
   long fbv,fev;
   
+#if TRACE_PARANOIA & 2
+  fprintf(stderr, "- Comparing fragment [%ld-%ld] to root [%ld-%ld]...",
+	  fb(v), fe(v), rb(root), re(root));
+#endif
+
 #ifdef NOISY
       fprintf(stderr,"Stage 2 search: fbv=%ld fev=%ld\n",fb(v),fe(v));
 #endif
@@ -873,24 +899,56 @@ i_iterate_stage2(cdrom_paranoia_t *p,
   return(0);
 }
 
+
 /* simple test for a root vector that ends in silence*/
+/* ===========================================================================
+ * i_silence_test() (internal)
+ *
+ * If the entire root is silent, or there's enough trailing silence
+ * to be significant (MIN_SILENCE_BOUNDARY samples), mark the beginning
+ * of the silence and "light" the silence flag.
+ *
+ * ???: Why?
+ */
 static void 
 i_silence_test(root_block *root)
 {
   int16_t *vec=rv(root);
   long end=re(root)-rb(root)-1;
   long j;
-  
+
+  /* Look backward from the end of the root to find the first non-silent
+   * sample.
+   */
   for(j=end-1;j>=0;j--)
     if (vec[j]!=0) break;
+
+  /* If the entire root is silent, or there's enough trailing silence
+   * to be significant, mark the beginning of the silence and "light"
+   * the silence flag.
+   */
   if (j<0 || end-j>MIN_SILENCE_BOUNDARY) {
-    if (j<0)j=0;
+    /* ???BUG???:
+     *
+     * The original code appears to have a bug, as it points to the
+     * last non-zero sample, and silence matching appears to treat
+     * silencebegin as the first silent sample.  As a result, in certain
+     * situations, the last non-zero sample can get clobbered.
+     *
+     * The original code was:
+     * if (j<0)j=0;
+     */
+    j++;
+
     root->silenceflag=1;
     root->silencebegin=rb(root)+j;
+
+    /* ???: To be studied. */
     if (root->silencebegin<root->returnedlimit)
       root->silencebegin=root->returnedlimit;
   }
 }
+
 
 /* match into silence vectors at offset zero if at all possible.  This
    also must be called with vectors in ascending begin order in case
@@ -905,12 +963,22 @@ i_silence_match(root_block *root, v_fragment_t *v,
   long end=fs(v),begin;
   long j;
 
+#if TRACE_PARANOIA & 2
+  fprintf(stderr, "- Silence matching fragment [%ld-%ld] to root [%ld-%ld]"
+	  " silencebegin=%ld\n",
+	  fb(v), fe(v), rb(root), re(root), root->silencebegin);
+#endif
+
   /* does this vector begin wet? */
   if (end<MIN_SILENCE_BOUNDARY) return(0);
   for(j=0;j<end;j++)
     if (vec[j]!=0) break;
   if (j<MIN_SILENCE_BOUNDARY) return(0);
   j+=fb(v);
+
+#if TRACE_PARANOIA & 2
+  fprintf(stderr, "- Fragment begins with silence [%ld-%ld]\n", fb(v), j);
+#endif
 
   /* is the new silent section ahead of the end of the old by <
      p->dynoverlap? */
@@ -920,6 +988,10 @@ i_silence_match(root_block *root, v_fragment_t *v,
     int16_t *vec = calloc(addto, sizeof(int16_t));
     c_append(rc(root), vec, addto);
     free(vec);
+#if TRACE_PARANOIA & 2
+    fprintf(stderr, "* Adding silence [%ld-%ld] to root\n",
+	    re(root)-addto, re(root));
+#endif
   }
 
   /* do we have an 'effortless' overlap? */
@@ -935,6 +1007,10 @@ i_silence_match(root_block *root, v_fragment_t *v,
       
       c_remove(rc(root),begin-rb(root),-1);
       c_append(rc(root),vec+voff,fs(v)-voff);
+#if TRACE_PARANOIA & 2
+      fprintf(stderr, "* Adding [%ld-%ld] to root (easy)\n",
+	      begin, re(root));
+#endif
     }
     offset_add_value(p,&p->stage2,0,callback);
 
@@ -948,6 +1024,10 @@ i_silence_match(root_block *root, v_fragment_t *v,
       if (begin+fs(v)-voff>re(root)) {
 	c_remove(rc(root),root->silencebegin-rb(root),-1);
 	c_append(rc(root),vec+voff,fs(v)-voff);
+#if TRACE_PARANOIA & 2
+	fprintf(stderr, "* Adding [%ld-%ld] to root (force)\n",
+		root->silencebegin, re(root));
+#endif
       }
       offset_add_value(p,&p->stage2,end-begin,callback);
     } else
@@ -989,6 +1069,11 @@ i_stage2_each(root_block *root, v_fragment_t *v,
       /* we have a match! We don't rematch off rift, we chase the
 	 match all the way to both extremes doing rift analysis. */
 
+#if TRACE_PARANOIA & 2
+      fprintf(stderr, "matched [%ld-%ld], offset=%ld\n",
+	      r.begin, r.end, r.offset);
+      int traced = 0;
+#endif
 #ifdef NOISY
       fprintf(stderr,"Stage 2 match\n");
 #endif
@@ -998,6 +1083,13 @@ i_stage2_each(root_block *root, v_fragment_t *v,
       while ((begin+offset>0 && begin>0)){
 	long matchA=0,matchB=0,matchC=0;
 	long beginL=begin+offset;
+
+#if TRACE_PARANOIA & 2
+	if ((traced & 1) == 0) {
+	  fprintf(stderr, "- Analyzing leading rift...\n");
+	  traced |= 1;
+	}
+#endif
 
 	if (l==NULL){
 	  int16_t *buff=malloc(fs(v)*sizeof(int16_t));
@@ -1084,7 +1176,7 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 			   begin,beginL,
 			   rs(root),cs(l),
 			   &begin,&end);	
-      }
+      } /* end while */
       
       /* chase forward */
       temp=l ? cs(l) : fs(v);
@@ -1093,6 +1185,13 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 	long beginL=begin+offset;
 	long endL=end+offset;
 	
+#if TRACE_PARANOIA & 2
+	if ((traced & 2) == 0) {
+	  fprintf(stderr, "- Analyzing trailing rift...\n");
+	  traced |= 2;
+	}
+#endif
+
 	if (l==NULL){
 	  int16_t *buff=malloc(fs(v)*sizeof(int16_t));
 	  l=c_alloc(buff,fb(v),fs(v));
@@ -1174,7 +1273,7 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 			   begin,beginL,
 			   rs(root),cs(l),
 			   NULL,&end);
-      }
+      } /* end while */
 
       /* if this extends our range, let's glom */
       {
@@ -1203,6 +1302,11 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 	  if (sizeB-offset-end)c_append(rc(root),vector+end+offset,
 					 sizeB-offset-end);
 	  
+#if TRACE_PARANOIA & 2
+	  fprintf(stderr, "* Adding [%ld-%ld] to root\n",
+		  rb(root)+end, re(root));
+#endif
+
 	  i_silence_test(root);
 
 	  /* add offset into dynoverlap stats */
@@ -1213,12 +1317,22 @@ i_stage2_each(root_block *root, v_fragment_t *v,
       free_v_fragment(v);
       return(1);
       
-    } else {
+    } else { /* !i_iterate_stage2(...) */
+#if TRACE_PARANOIA & 2
+      fprintf(stderr, "no match");
+#endif
       /* D'oh.  No match.  What to do with the fragment? */
       if (fe(v)+dynoverlap<re(root) && !root->silenceflag){
 	/* It *should* have matched.  No good; free it. */
 	free_v_fragment(v);
+#if TRACE_PARANOIA & 2
+	fprintf(stderr, ", discarding fragment.");
+#endif
       }
+#if TRACE_PARANOIA & 2
+      fprintf(stderr, "\n");
+#endif
+
       /* otherwise, we likely want this for an upcoming match */
       /* we don't free the sort info (if it was collected) */
       return(0);
@@ -1248,6 +1362,12 @@ i_init_root(root_block *root, v_fragment_t *v,long int begin,
     }    
 
     i_silence_test(root);
+
+#if TRACE_PARANOIA & 2
+    fprintf(stderr,
+	    "* Assigning fragment [%ld-%ld] to root, silencebegin=%ld\n",
+	    rb(root), re(root), root->silencebegin);
+#endif
 
     return(1);
   } else
@@ -1332,7 +1452,14 @@ i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
       }
     }
     free(list);
-  }
+
+#if TRACE_PARANOIA & 2
+    if (flag)
+      fprintf(stderr,
+	      "- Root updated, comparing remaining fragments again.\n");
+#endif
+
+  } /* end while */
   return(ret);
 }
 
@@ -1636,6 +1763,10 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
   sofar=0;
   firstread=-1;
 
+#if TRACE_PARANOIA
+  fprintf(stderr, "Reading [%ld-%ld] from media\n",
+	  readat*CD_FRAMEWORDS, (readat+totaltoread)*CD_FRAMEWORDS);
+#endif
 
   /* Issue each of the low-level reads until we've read enough sectors
    * to exhaust the drive's cache.
@@ -1678,6 +1809,13 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
 
       thisread = cdda_read(p->d, buffer+sofar*CD_FRAMEWORDS, adjread, secread);
 
+#if TRACE_PARANOIA & 1
+      fprintf(stderr, "- Read [%ld-%ld] (0x%04X...0x%04X)%s",
+	      adjread*CD_FRAMEWORDS, (adjread+thisread)*CD_FRAMEWORDS,
+	      buffer[sofar*CD_FRAMEWORDS] & 0xFFFF,
+	      buffer[(sofar+thisread)*CD_FRAMEWORDS - 1] & 0xFFFF,
+	      thisread < secread ? "" : "\n");
+#endif
 
       /* If the low-level read returned too few sectors, pad the result
        * with null data and mark it as invalid (FLAGS_UNREAD).  We pad
@@ -1691,6 +1829,12 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
       if ( thisread < secread) {
 
 	if (thisread<0) thisread=0;
+
+#if TRACE_PARANOIA & 1
+	fprintf(stderr, " -- couldn't read [%ld-%ld]\n",
+		(adjread+thisread)*CD_FRAMEWORDS,
+		(adjread+secread)*CD_FRAMEWORDS);
+#endif
 
 	/* Uhhh... right.  Make something up. But don't make us seek
            backward! */
@@ -1765,6 +1909,11 @@ i_read_c_block(cdrom_paranoia_t *p,long beginword,long endword,
     new->begin=firstread*CD_FRAMEWORDS-p->dyndrift;
     new->size=sofar*CD_FRAMEWORDS;
     new->flags=flags;
+
+#if TRACE_PARANOIA
+    fprintf(stderr, "- Read block %ld:[%ld-%ld] from media\n",
+	    p->cache->active, cb(new), ce(new));
+#endif
   } else {
     if (new)free_c_block(new);
     free(buffer);
@@ -1829,6 +1978,11 @@ cdio_paranoia_read_limited(cdrom_paranoia_t *p,
     
     /* Nope; we need to build or extend the root verified range */
 
+#if TRACE_PARANOIA
+    fprintf(stderr, "Trying to expand root [%ld-%ld]...\n",
+	    rb(root), re(root));
+#endif
+
     /* We may have already read the necessary samples and placed
      * them into verified fragments, but not yet merged them into
      * the verified root.  We'll check that before we actually
@@ -1865,6 +2019,11 @@ cdio_paranoia_read_limited(cdrom_paranoia_t *p,
     } else
       i_end_case(p,endword+(MAX_SECTOR_OVERLAP*CD_FRAMEWORDS),
 		 callback); /* only trips if we're already done */
+
+#if TRACE_PARANOIA
+    fprintf(stderr, "- Root is now [%ld-%ld] silencebegin=%ld\n",
+	    rb(root), re(root), root->silencebegin);
+#endif
 
     /* If we were able to fill the verified root with data already
      * in memory, we don't need to read any more data from the drive.

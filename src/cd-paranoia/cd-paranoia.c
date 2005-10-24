@@ -317,6 +317,15 @@ long callbegin;
 long callend;
 long callscript=0;
 
+static int skipped_flag=0;
+static int abort_on_skip=0;
+
+#if TRACE_PARANOIA
+static void
+callback(long int inpos, paranoia_cb_mode_t function)
+{
+}
+#else
 static const char *callback_strings[15]={
   "wrote",
   "finished",
@@ -334,8 +343,6 @@ static const char *callback_strings[15]={
   "duped",
   "transport error"};
 
-static int skipped_flag=0;
-static int abort_on_skip=0;
 static void 
 callback(long int inpos, paranoia_cb_mode_t function)
 {
@@ -559,6 +566,7 @@ callback(long int inpos, paranoia_cb_mode_t function)
   if(function==-1)
     memset(dispcache,' ',graph);
 }
+#endif /* !TRACE_PARANOIA */
 
 const char *optstring = "aBcCd:efg:hi:m:n:o:O:pqQrRsS:Tt:VvwWx:XYZz::";
 

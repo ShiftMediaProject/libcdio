@@ -1,5 +1,5 @@
 /*
-    $Id: p_block.c,v 1.8 2005/09/20 00:42:14 rocky Exp $
+    $Id: p_block.c,v 1.9 2005/10/24 19:42:15 pjcreath Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -187,6 +187,13 @@ new_v_fragment(cdrom_paranoia_t *p, c_block_t *one,
   b->vector=one->vector+begin-one->begin;
   b->size=end-begin;
   b->lastsector=last;
+
+#if TRACE_PARANOIA
+  fprintf(stderr, "- Verified [%ld-%ld] (0x%04X...0x%04X)%s\n",
+	  begin, end,
+	  b->vector[0]&0xFFFF, b->vector[b->size-1]&0xFFFF,
+	  last ? " *" : "");
+#endif
 
   return(b);
 }
