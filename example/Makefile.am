@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.26 2005/10/24 03:12:30 rocky Exp $
+#   $Id: Makefile.am,v 1.27 2005/10/25 14:16:41 pjcreath Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -58,7 +58,7 @@ sample4_LDADD = $(LIBCDIO_LIBS)
 
 tracks_LDADD  = $(LIBCDIO_LIBS)
 
-udf1_DEPENDENCIES = $(LIBUDF_LIBS) $(LIBCDIO_LIBS)
+udf1_DEPENDENCIES = $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
 udf1_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS)
 
 

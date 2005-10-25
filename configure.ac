@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.176 2005/10/24 03:12:30 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.177 2005/10/25 14:16:41 pjcreath Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -336,6 +336,7 @@ dnl Checks for header files.
 LIBCDIO_CDDA_LIBS='$(top_builddir)/lib/cdda_interface/libcdio_cdda.la'
 LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/driver -I$(top_srcdir)/include/'
 LIBCDIO_LIBS='$(top_builddir)/lib/driver/libcdio.la'
+LIBCDIO_DEPS="$LIBCDIO_LIBS"
 LIBCDIO_PARANOIA_LIBS='$(top_builddir)/lib/paranoia/libcdio_paranoia.la'
 LIBISO9660_CFLAGS='-I$(top_srcdir)/lib/iso9660/'
 LIBISO9660_LIBS='$(top_builddir)/lib/iso9660/libiso9660.la'
@@ -345,6 +346,7 @@ AC_SUBST(LIBCDIO_CDDA_LIBS)
 AC_SUBST(LIBCDIO_CFLAGS)
 AC_SUBST(LIBISO9660_CFLAGS)
 AC_SUBST(LIBCDIO_LIBS)
+AC_SUBST(LIBCDIO_DEPS)
 AC_SUBST(LIBCDIO_PARANOIA_LIBS)
 AC_SUBST(LIBISO9660_LIBS)
 AC_SUBST(LIBUDF_LIBS)
@@ -362,8 +364,9 @@ case $host_os in
        if test "x$have_iokit_h" = "xyes" ; then 
          AC_DEFINE([HAVE_DARWIN_CDROM], [1],
 	      [Define 1 if you have Darwin OS X-type CD-ROM support])
-         LIBCDIO_LIBS="$LIBCDIO_LIBS  -Wl,-framework -Wl,CoreFoundation -Wl,-framework -Wl,IOKit"
-	 DARWIN_PKG_LIB_HACK=" -Wl,-framework -Wl,CoreFoundation \"-Wl,-framework -Wl,IOKit\""
+	 DARWIN_PKG_LIB_HACK="-Wl,-framework,CoreFoundation -Wl,-framework,IOKit"
+	 AC_SUBST(DARWIN_PKG_LIB_HACK)
+	 LIBCDIO_LIBS="$LIBCDIO_LIBS $DARWIN_PKG_LIB_HACK"
          cd_drivers="${cd_drivers}, Darwin"
        fi
      ;;
