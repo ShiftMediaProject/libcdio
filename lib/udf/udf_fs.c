@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.3 2005/10/24 10:14:58 rocky Exp $
+    $Id: udf_fs.c,v 1.4 2005/10/25 01:19:48 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -251,18 +251,21 @@ udf_find_file(udf_t *p_udf, const char *psz_name, bool b_any_partition,
    Wonder if iconv can be used here
 */
 static int 
-unicode16_decode( uint8_t *data, int len, char *target ) 
+unicode16_decode( uint8_t *data, int len, char **ppsz_target ) 
 {
     int p = 1, i = 0;
+
+    if (strlen(*ppsz_target) < len) 
+      *ppsz_target = realloc(*ppsz_target, sizeof(char)*len+1);
 
     if( ( data[ 0 ] == 8 ) || ( data[ 0 ] == 16 ) ) do {
         if( data[ 0 ] == 16 ) p++;  /* Ignore MSB of unicode16 */
         if( p < len ) {
-            target[ i++ ] = data[ p++ ];
+	  (*ppsz_target)[ i++ ] = data[ p++ ];
         }
     } while( p < len );
 
-    target[ i ] = '\0';
+    (*ppsz_target)[ i ] = '\0';
     return 0;
 }
 
@@ -493,7 +496,7 @@ udf_close (udf_t *p_udf)
 udf_file_t * 
 udf_get_sub(const udf_t *p_udf, const udf_file_t *p_udf_file)
 {
-  if (p_udf_file->b_dir && p_udf_file->fid) {
+  if (p_udf_file->b_dir && !p_udf_file->b_parent && p_udf_file->fid) {
     uint8_t data[UDF_BLOCKSIZE];
     udf_file_entry_t *p_fe = (udf_file_entry_t *) &data;
     
@@ -561,7 +564,7 @@ udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file)
       p_udf_file->b_parent = 
 	(p_udf_file->fid->file_characteristics & UDF_FILE_PARENT) != 0;
       unicode16_decode(p_udf_file->fid->imp_use + p_udf_file->fid->i_imp_use, 
-		       p_udf_file->fid->i_file_id, p_udf_file->psz_name);
+		       p_udf_file->fid->i_file_id, &(p_udf_file->psz_name));
       return p_udf_file;
     }
   return NULL;

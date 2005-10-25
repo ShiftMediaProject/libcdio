@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.2 2005/10/24 10:14:57 rocky Exp $
+  $Id: udf1.c,v 1.3 2005/10/25 01:19:48 rocky Exp $
 
   Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
   
@@ -52,28 +52,28 @@
 
 static 
 udf_file_t *
-list_directory(const udf_t *p_udf, udf_file_t *p_udf_file, 
-	       const char *psz_token)
+list_files(const udf_t *p_udf, udf_file_t *p_udf_file, char *psz_token)
 {
   if (!p_udf_file) return NULL;
+  if (psz_token) printf("%s\n", psz_token);
   while (udf_get_next(p_udf, p_udf_file)) {
-    printf("%s\n", psz_token);
-    if (strcmp(psz_token, udf_get_name(p_udf_file)) == 0) {
-      const char *next_tok = strtok(NULL, udf_PATH_DELIMITERS);
+    char *next_tok = strtok(psz_token, udf_PATH_DELIMITERS);
       
-      if (udf_is_dir(p_udf_file)) {
-	udf_file_t * p_udf_file2 = udf_get_sub(p_udf, p_udf_file);
+    if (udf_is_dir(p_udf_file)) {
+      udf_file_t * p_udf_file2 = udf_get_sub(p_udf, p_udf_file);
+      
+      if (p_udf_file2) {
+	udf_file_t *p_udf_file3 = 
+	  list_files(p_udf, p_udf_file2, next_tok);
 	
-	if (p_udf_file2) {
-	  udf_file_t *p_udf_file3 = 
-	    list_directory(p_udf, p_udf_file2, next_tok);
-	  
-	  if (!p_udf_file3) udf_file_free(p_udf_file2);
-	  return p_udf_file3;
-	}
+	if (!p_udf_file3) udf_file_free(p_udf_file2);
+	udf_file_free(p_udf_file3);
       }
+    } else {
+      printf("%s\n", udf_get_name(p_udf_file));
     }
   }
+  free(psz_token);
   return p_udf_file;
 }
 
@@ -102,8 +102,8 @@ main(int argc, const char *argv[])
       return 1;
     }
 
-    list_directory(p_udf, p_udf_file, udf_get_name(p_udf_file));
-    /* Go over: udf_file_free(p_udf_file);*/
+    list_files(p_udf, p_udf_file, strdup(udf_get_name(p_udf_file)));
+    udf_file_free(p_udf_file);
   }
   
   udf_close(p_udf);
