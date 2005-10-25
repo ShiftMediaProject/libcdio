@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.5 2005/10/25 13:19:05 rocky Exp $
+  $Id: udf1.c,v 1.6 2005/10/25 13:20:31 rocky Exp $
 
   Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
   
@@ -18,8 +18,8 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to show using libiso9660 to list files in a directory of
-   an ISO-9660 image.
+/* Simple program to show using libudf to list files in a directory of
+   an UDF image.
  */
 
 /* This is the UDF image. */
