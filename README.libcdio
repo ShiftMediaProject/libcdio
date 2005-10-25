@@ -15,6 +15,10 @@ section.  You might also try the option --without-versioned-libs. However
 this option does help with the situtation described below so it is
 preferred all other things being equal.
 
+If you are debugging libcdio, the libtool and the dynamic libraries
+can make things harder. I suggest setting CFLAGS to include
+'-fno-inline -g' and using --disable-shared on configure.
+
 
 VCD dependency:
 ---------------
@@ -37,6 +41,26 @@ Another thing one can do is "make install" inside the library, or run
 "configure --without-vcd-info --without-cddb" (since libcddb also has
 an optional dependency on libcdio).
 
+Microsoft Windows
+-------
+
+The building under Microsoft Windows the thing to do is to install
+cygwin (http://www.cygwin.com). It has been reported that MinGW
+(http://www.mingw.org/) also works, but it is possible you may
+encounter more problems there. 
+
+Folks may have used Microsoft compilers (e.g. Visual C), but you may
+find you need to make your own "project" files.  Don't undertake this
+unless you are willing to spend time hacking. xboxmediacenter team
+folks I believe go this route, so you may be able to use their project
+files as a starting point. 
+
+XBOX
+-------
+
+Consult the xboxmediacenter team (www.xboxmediacenter.de)
+
+
 BSD
 ---
 
@@ -56,19 +80,21 @@ building libcdio or libiso9660.
 OS Support
 ---------------
 
-Support for Operating Systems's other than GNU/Linux is really based
-on the desire, ability and willingness of others to help out. To date
-it's been almost zip. I use GNU/Linux so that probably works
-best. Occasionally, I'll test on an old Solaris box I have. Steve
-Shultz has done a great job making BSDI CD support look like GNU/Linux
-and usually let's me know where I've blown things on BSDI. Derk-Jan
-Hartman started Mac OSX, but that's not complete yet. Calls for help
-in FreeBSD (NetBSD whatever) and Solaris have gone out but no one yet
-seems all that interested. Maybe it's just as well. Microsoft support
-is also meager. It works on my Windows 98 laptop sort of. Personally I
-find it a drag to develop on Microsoft Operating Systems and have
-spent far more time on this platform than I care for. If someone is
-interested in fixing the Microsoft OS support great.
+Support for Operating Systems's is really based on the desire, ability
+and willingness of others to help out. I use GNU/Linux so that
+probably works best. Before a release I'll test on servers I have
+available. I also announce a pending release on libcdio-devel@gnu.org
+and ask others to test out.
 
+Steve Schultz has done a great job making BSDI CD support look like
+GNU/Linux and usually he let's me know where I've blown things on BSDI
+and Darwin. Usage on Darwin has been picking up although Darwin is in
+a world of its own so support for that (e.g. issuing MMC commnads)
+seems to lag behind.
 
-$Id: README.libcdio,v 1.9 2005/01/30 09:48:59 rocky Exp $
+Of late FreeBSD folks have been pretty good about testing new releases
+and reporting problems. If you search the Internet, you'll see that
+someone has copied and modified the FreeBSD code to work on
+NetBSD. Because that is not GPL, it can't be included here.
+
+$Id: README.libcdio,v 1.10 2005/10/25 12:58:54 rocky Exp $
