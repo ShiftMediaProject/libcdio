@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.4 2005/10/25 01:19:48 rocky Exp $
+    $Id: udf_fs.c,v 1.5 2005/10/25 03:13:13 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -77,8 +77,8 @@ const char VSD_STD_ID_TEA01[] = {'T', 'E', 'A', '0', '1'};
 */
 tag_id_t debug_tagid;
 file_characteristics_t debug_file_characteristics;
-udf_enum1_t debug_udf_enums1;
-
+udf_enum1_t debug_udf_enum1;
+ecma_167_enum1_t ecma167_enum1;
 
 /*
  * The UDF specs are pretty clear on how each data structure is made
@@ -251,22 +251,19 @@ udf_find_file(udf_t *p_udf, const char *psz_name, bool b_any_partition,
    Wonder if iconv can be used here
 */
 static int 
-unicode16_decode( uint8_t *data, int len, char **ppsz_target ) 
+unicode16_decode( const uint8_t *data, int i_len, char *target ) 
 {
-    int p = 1, i = 0;
-
-    if (strlen(*ppsz_target) < len) 
-      *ppsz_target = realloc(*ppsz_target, sizeof(char)*len+1);
-
-    if( ( data[ 0 ] == 8 ) || ( data[ 0 ] == 16 ) ) do {
-        if( data[ 0 ] == 16 ) p++;  /* Ignore MSB of unicode16 */
-        if( p < len ) {
-	  (*ppsz_target)[ i++ ] = data[ p++ ];
-        }
-    } while( p < len );
-
-    (*ppsz_target)[ i ] = '\0';
-    return 0;
+  int p = 1, i = 0;
+  
+  if( ( data[ 0 ] == 8 ) || ( data[ 0 ] == 16 ) ) do {
+    if( data[ 0 ] == 16 ) p++;  /* Ignore MSB of unicode16 */
+    if( p < i_len ) {
+      target[ i++ ] = data[ p++ ];
+    }
+  } while( p < i_len );
+  
+  target[ i ] = '\0';
+  return 0;
 }
 
 
@@ -387,6 +384,36 @@ udf_open (const char *psz_path)
  error:
   free(p_udf);
   return NULL;
+}
+
+/**
+ * Gets the Volume Identifier string, in 8bit unicode (latin-1)
+ * psz_volid, place to put the string
+ * i_volid_size, size of the buffer volid points to
+ * returns the size of buffer needed for all data
+ */
+int 
+udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,  unsigned int i_volid)
+{
+  uint8_t data[UDF_BLOCKSIZE];
+  const udf_pvd_t *p_pvd = (udf_pvd_t *) &data;
+  unsigned int volid_len;
+
+  /* get primary volume descriptor */
+  if ( DRIVER_OP_SUCCESS != udf_read_sectors(p_udf, &data, p_udf->pvd_lba, 1) )
+    return 0;
+
+  volid_len = p_pvd->vol_ident[31];
+  if(volid_len > 31) {
+    /* this field is only 32 bytes something is wrong */
+    volid_len = 31;
+  }
+  if(i_volid > volid_len) {
+    i_volid = volid_len;
+  }
+  unicode16_decode((uint8_t *) p_pvd->vol_ident, i_volid, psz_volid);
+  
+  return volid_len;
 }
 
 /*!
@@ -563,8 +590,17 @@ udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file)
 	(p_udf_file->fid->file_characteristics & UDF_FILE_DIRECTORY) != 0;
       p_udf_file->b_parent = 
 	(p_udf_file->fid->file_characteristics & UDF_FILE_PARENT) != 0;
-      unicode16_decode(p_udf_file->fid->imp_use + p_udf_file->fid->i_imp_use, 
-		       p_udf_file->fid->i_file_id, &(p_udf_file->psz_name));
+      
+      {
+	const unsigned int i_len = p_udf_file->fid->i_file_id;
+	if (strlen(p_udf_file->psz_name) < i_len) 
+	  p_udf_file->psz_name = (char *)
+	    realloc(p_udf_file->psz_name, sizeof(char)*i_len+1);
+	
+	unicode16_decode(p_udf_file->fid->imp_use 
+			 + p_udf_file->fid->i_imp_use, 
+			 i_len, p_udf_file->psz_name);
+      }
       return p_udf_file;
     }
   return NULL;

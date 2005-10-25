@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.7 2005/10/24 10:14:58 rocky Exp $
+    $Id: udf.h,v 1.8 2005/10/25 03:13:13 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -20,8 +20,8 @@
 /*!
  * \file udf.h 
  *
- * \brief The top-level interface header for libudf: the ISO-9660
- * filesystem library; applications include this.
+ * \brief The top-level interface header for libudf: UDF filesystem
+ * library; applications include this.
  *
 */
 
@@ -81,6 +81,15 @@ udf_t *udf_open (const char *psz_path);
 */
 udf_file_t *udf_get_root (udf_t *p_udf, bool b_any_partition, 
 			  partition_num_t i_partition);
+
+/**
+ * Gets the Volume Identifier string, in 8bit unicode (latin-1)
+ * psz_volid, place to put the string
+ * i_volid_size, size of the buffer volid points to
+ * returns the size of buffer needed for all data
+ */
+int udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,  
+		      unsigned int i_volid);
 
 /*!
   Return a file pointer matching pzz_name. If b_any_partition is false then

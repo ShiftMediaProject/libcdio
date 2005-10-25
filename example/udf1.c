@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.3 2005/10/25 01:19:48 rocky Exp $
+  $Id: udf1.c,v 1.4 2005/10/25 03:13:13 rocky Exp $
 
   Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
   
@@ -101,6 +101,14 @@ main(int argc, const char *argv[])
 	      psz_fname);
       return 1;
     }
+    
+    {
+      char volid[UDF_VOLID_SIZE] = "";
+      
+      if (0 < udf_get_volume_id(p_udf, volid, sizeof(volid)) )
+	printf("volume id: %s\n", volid);
+    }
+    
 
     list_files(p_udf, p_udf_file, strdup(udf_get_name(p_udf_file)));
     udf_file_free(p_udf_file);

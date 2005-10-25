@@ -54,6 +54,25 @@
 
 #include <cdio/types.h>
 
+/**
+   Imagine the below  #define'd values rather than distinct values of
+   an enum.
+*/
+typedef enum {
+  VSD_STD_ID_SIZE    =	  5, /** Volume Structure Descriptor (ECMA 167r3 
+				2/9.1) */
+  UDF_REGID_ID_SIZE  =	 23, /**< See identifier (ECMA 167r3 1/7.4) */
+  UDF_VOLID_SIZE     =   32,
+  UDF_FID_SIZE	     =   38,
+  UDF_VOLSET_ID_SIZE =  128
+} ecma_167_enum1_t ;
+
+/** This variable is trickery to force the above enum symbol value to
+    be recorded in debug symbol tables. It is used to allow one refer
+    to above enumeration values in a debugger and debugger
+    expressions */
+extern ecma_167_enum1_t debug_ecma_167_enums1;
+
 /** Tag Identifier (ECMA 167r3 3/7.2.1) */
 
 typedef enum {
@@ -137,7 +156,6 @@ typedef struct udf_timestamp_s udf_timestamp_t;
 #define TIMESTAMP_TIMEZONE_MASK		0x0FFF
 
 /** Entity identifier (ECMA 167r3 1/7.4) */
-#define	UDF_REGID_ID_SIZE	23
 struct udf_regid_s
 {
   udf_Uint8_t		flags;
@@ -152,11 +170,10 @@ typedef struct udf_regid_s udf_regid_t;
 #define ENTITYID_FLAGS_PROTECTED	0x01
 
 /** Volume Structure Descriptor (ECMA 167r3 2/9.1) */
-#define VSD_STD_ID_LEN			5
 struct vol_struct_desc_s
 {
   udf_Uint8_t		struct_type;
-  udf_Uint8_t		std_id[VSD_STD_ID_LEN];
+  udf_Uint8_t		std_id[VSD_STD_ID_SIZE];
   udf_Uint8_t		struct_version;
   udf_Uint8_t		struct_data[2041];
 } GNUC_PACKED;
@@ -186,7 +203,7 @@ extern const char VSD_STD_ID_TEA01[sizeof("TEA01")-1];
 struct beginning_extended_area_desc_s
 {
   udf_Uint8_t		struct_type;
-  udf_Uint8_t		std_id[VSD_STD_ID_LEN];
+  udf_Uint8_t		std_id[VSD_STD_ID_SIZE];
   udf_Uint8_t		struct_version;
   udf_Uint8_t		struct_data[2041];
 } GNUC_PACKED;
@@ -195,7 +212,7 @@ struct beginning_extended_area_desc_s
 struct terminating_extended_area_desc_s
 {
   udf_Uint8_t		struct_type;
-  udf_Uint8_t		std_id[VSD_STD_ID_LEN];
+  udf_Uint8_t		std_id[VSD_STD_ID_SIZE];
   udf_Uint8_t		struct_version;
   udf_Uint8_t		struct_data[2041];
 } GNUC_PACKED;
@@ -204,7 +221,7 @@ struct terminating_extended_area_desc_s
 struct boot_desc_s
 {
   udf_Uint8_t		struct_type;
-  udf_Uint8_t		std_ident[VSD_STD_ID_LEN];
+  udf_Uint8_t		std_ident[VSD_STD_ID_SIZE];
   udf_Uint8_t		struct_version;
   udf_Uint8_t		reserved1;
   udf_regid_t		arch_type;
@@ -250,7 +267,7 @@ typedef struct udf_tag_s udf_tag_t;
 struct NSR_desc_s
 {
   udf_Uint8_t	struct_type;
-  udf_Uint8_t	std_id[VSD_STD_ID_LEN];
+  udf_Uint8_t	std_id[VSD_STD_ID_SIZE];
   udf_Uint8_t	struct_version;
   udf_Uint8_t	reserved;
   udf_Uint8_t	struct_data[2040];
@@ -262,14 +279,14 @@ struct udf_pvd_s
   udf_tag_t	  tag;
   udf_Uint32_t	  vol_desc_seq_num;
   udf_Uint32_t	  primary_vol_desc_num;
-  udf_dstring	  vol_ident[32];
+  udf_dstring	  vol_ident[UDF_VOLID_SIZE];
   udf_Uint16_t	  vol_seq_num;
   udf_Uint16_t	  max_vol_seqnum;
   udf_Uint16_t	  interchange_lvl;
   udf_Uint16_t	  max_interchange_lvl;
   udf_Uint32_t	  charset_list;
   udf_Uint32_t	  max_charset_list;
-  udf_dstring	  volSet_id[128];
+  udf_dstring	  volset_id[UDF_VOLSET_ID_SIZE];
   udf_charspec_t  desc_charset;
   udf_charspec_t  explanatory_charset;
   udf_extent_ad_t vol_abstract;
@@ -541,8 +558,6 @@ struct udf_fileid_desc_s
 } GNUC_PACKED;
 
 typedef struct udf_fileid_desc_s udf_fileid_desc_t;
-
-#define	UDF_FID_SIZE	38
 
 /** File Characteristics (ECMA 167r3 4/14.4.3) 
 
