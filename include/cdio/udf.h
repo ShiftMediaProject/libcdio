@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.8 2005/10/25 03:13:13 rocky Exp $
+    $Id: udf.h,v 1.9 2005/10/25 13:19:05 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -90,6 +90,18 @@ udf_file_t *udf_get_root (udf_t *p_udf, bool b_any_partition,
  */
 int udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,  
 		      unsigned int i_volid);
+
+/**
+ * Gets the Volume Set Identifier, as a 128-byte dstring (not decoded)
+ * WARNING This is not a null terminated string
+ * volsetid, place to put the data
+ * volsetid_size, size of the buffer volsetid points to 
+ * the buffer should be >=128 bytes to store the whole volumesetidentifier
+ * returns the size of the available volsetid information (128)
+ * or 0 on error
+ */
+int udf_get_volumeset_id(udf_t *p_udf, /*out*/ uint8_t *volsetid,
+			 unsigned int i_volsetid);
 
 /*!
   Return a file pointer matching pzz_name. If b_any_partition is false then

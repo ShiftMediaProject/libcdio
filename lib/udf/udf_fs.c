@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.5 2005/10/25 03:13:13 rocky Exp $
+    $Id: udf_fs.c,v 1.6 2005/10/25 13:19:05 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -403,10 +403,10 @@ udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,  unsigned int i_volid)
   if ( DRIVER_OP_SUCCESS != udf_read_sectors(p_udf, &data, p_udf->pvd_lba, 1) )
     return 0;
 
-  volid_len = p_pvd->vol_ident[31];
-  if(volid_len > 31) {
-    /* this field is only 32 bytes something is wrong */
-    volid_len = 31;
+  volid_len = p_pvd->vol_ident[UDF_VOLID_SIZE-1];
+  if(volid_len > UDF_VOLID_SIZE-1) {
+    /* this field is only UDF_VOLID_SIZE bytes something is wrong */
+    volid_len = UDF_VOLID_SIZE-1;
   }
   if(i_volid > volid_len) {
     i_volid = volid_len;
@@ -414,6 +414,35 @@ udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,  unsigned int i_volid)
   unicode16_decode((uint8_t *) p_pvd->vol_ident, i_volid, psz_volid);
   
   return volid_len;
+}
+
+/**
+ * Gets the Volume Set Identifier, as a 128-byte dstring (not decoded)
+ * WARNING This is not a null terminated string
+ * volsetid, place to put the data
+ * volsetid_size, size of the buffer volsetid points to 
+ * the buffer should be >=128 bytes to store the whole volumesetidentifier
+ * returns the size of the available volsetid information (128)
+ * or 0 on error
+ */
+int 
+udf_get_volumeset_id(udf_t *p_udf, /*out*/ uint8_t *volsetid,
+		     unsigned int i_volsetid)
+{
+  uint8_t data[UDF_BLOCKSIZE];
+  const udf_pvd_t *p_pvd = (udf_pvd_t *) &data;
+
+  /* get primary volume descriptor */
+  if ( DRIVER_OP_SUCCESS != udf_read_sectors(p_udf, &data, p_udf->pvd_lba, 1) )
+    return 0;
+
+  if (i_volsetid > UDF_VOLSET_ID_SIZE) {
+    i_volsetid = UDF_VOLSET_ID_SIZE;
+  }
+  
+  memcpy(volsetid, p_pvd->volset_id, i_volsetid);
+  
+  return UDF_VOLSET_ID_SIZE;
 }
 
 /*!

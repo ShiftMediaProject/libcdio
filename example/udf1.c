@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.4 2005/10/25 03:13:13 rocky Exp $
+  $Id: udf1.c,v 1.5 2005/10/25 13:19:05 rocky Exp $
 
   Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
   
@@ -103,10 +103,16 @@ main(int argc, const char *argv[])
     }
     
     {
-      char volid[UDF_VOLID_SIZE] = "";
+      char vol_id[UDF_VOLID_SIZE] = "";
+      char volset_id[UDF_VOLSET_ID_SIZE+1] = "";
       
-      if (0 < udf_get_volume_id(p_udf, volid, sizeof(volid)) )
-	printf("volume id: %s\n", volid);
+      if (0 < udf_get_volume_id(p_udf, vol_id, sizeof(vol_id)) )
+	printf("volume id: %s\n", vol_id);
+
+      if (0 < udf_get_volume_id(p_udf, volset_id, sizeof(volset_id)) ) {
+	volset_id[UDF_VOLSET_ID_SIZE+1]='\0';
+	printf("volume set id: %s\n", volset_id);
+      }
     }
     
 
