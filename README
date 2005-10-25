@@ -37,14 +37,8 @@ extraction tool cdparanoia which corrects for CD-ROM jitter, and a
 simple curses-based CD player, cdda-player using the analog CD-ROM
 output.
 
-At present, there is no support for writing CD's, reading UDF format;
-nor is there any support for reading or writing DVDs. For some of
-these, there are other libraries (e.g. libdi, libscg, or libdvdread)
-may be helpful.
+At present, there is no support for writing CD's, nor is there any
+support for reading or writing DVDs. For some of these, there are
+other libraries (e.g. libdi, libscg, or libdvdread) may be helpful.
 
-I'm not theoretically opposed to putting support such as UDF into
-libcdio. (Any volunteers?) However at present there are already many
-gaps in this library so narrowing its scope in order to focus on these
-things I think is a good idea.
-
-$Id: README,v 1.9 2005/07/10 14:13:03 rocky Exp $
+$Id: README,v 1.10 2005/10/25 12:35:10 rocky Exp $
