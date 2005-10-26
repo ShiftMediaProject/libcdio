@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: track.h,v 1.8 2005/02/25 09:47:10 rocky Exp $
+    $Id: track.h,v 1.9 2005/10/26 23:55:02 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -199,7 +199,7 @@ extern "C" {
   lba_t cdio_get_track_lba(const CdIo_t *p_cdio, track_t i_track);
   
   /*!  
-    Return the starting MSF (minutes/secs/frames) for track number
+    Return the starting LSN for track number
     i_track in p_cdio.  Track numbers usually start at something 
     greater than 0, usually 1.
 
