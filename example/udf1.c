@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.6 2005/10/25 13:20:31 rocky Exp $
+  $Id: udf1.c,v 1.7 2005/10/26 02:05:53 rocky Exp $
 
   Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
   
@@ -55,7 +55,11 @@ udf_file_t *
 list_files(const udf_t *p_udf, udf_file_t *p_udf_file, char *psz_token)
 {
   if (!p_udf_file) return NULL;
-  if (psz_token) printf("%s\n", psz_token);
+  if (psz_token) {
+    time_t mod_time = udf_get_modification_time(p_udf_file);
+    printf("%s %s\n", psz_token, ctime(&mod_time));
+  }
+  
   while (udf_get_next(p_udf, p_udf_file)) {
     char *next_tok = strtok(psz_token, udf_PATH_DELIMITERS);
       

@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.6 2005/10/25 13:19:05 rocky Exp $
+    $Id: udf_fs.c,v 1.7 2005/10/26 02:05:54 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -279,6 +279,7 @@ udf_new_file(udf_file_entry_t *p_fe, uint32_t i_part_start,
   p_udf_file->i_part_start = i_part_start;
   p_udf_file->dir_left     = uint64_from_le(p_fe->info_len); 
 
+  memcpy(&(p_udf_file->fe), p_fe, sizeof(udf_file_entry_t));
   udf_get_lba( p_fe, &(p_udf_file->dir_lba), &(p_udf_file->dir_end_lba) );
   return p_udf_file;
 }
@@ -530,6 +531,10 @@ udf_get_root (udf_t *p_udf, bool b_any_partition, partition_num_t i_partition)
   return NULL;
 }
 
+#define free_and_null(x) \
+  free(x);		 \
+  x=NULL		 
+
 /*!
   Close UDF and free resources associated with p_udf.
 */
@@ -545,7 +550,7 @@ udf_close (udf_t *p_udf)
 
   /* Get rid of root directory if allocated. */
 
-  free(p_udf);
+  free_and_null(p_udf);
   return true;
 }
 
@@ -585,6 +590,7 @@ udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file)
   
   if (p_udf_file->fid) { 
     /* advance to next File Identifier Descriptor */
+    /* FIXME: need to advance file entry (fe) as well.  */
     uint32_t ofs = 4 * 
       ((sizeof(*(p_udf_file->fid)) + p_udf_file->fid->i_imp_use 
 	+ p_udf_file->fid->i_file_id + 3) / 4);
@@ -635,6 +641,7 @@ udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file)
   return NULL;
 }
 
+  
 /*!
   free free resources associated with p_fe.
 */
@@ -642,9 +649,9 @@ bool
 udf_file_free(udf_file_t *p_udf_file) 
 {
   if (p_udf_file) {
-    free(p_udf_file->psz_name);
-    free(p_udf_file->sector);
-    free(p_udf_file);
+    free_and_null(p_udf_file->psz_name);
+    free_and_null(p_udf_file->sector);
+    free_and_null(p_udf_file);
   }
   return true;
 }

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.25 2005/10/13 02:37:20 rocky Exp $
+#   $Id: Makefile.am,v 1.26 2005/10/26 02:05:53 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -48,6 +48,7 @@ libcdioinclude_HEADERS = \
         track.h \
         types.h \
 	udf.h \
+	udf_time.h \
 	util.h \
 	version.h \
 	xa.h 

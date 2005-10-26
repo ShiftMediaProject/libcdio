@@ -34,7 +34,7 @@ noinst_HEADERS = udf_private.h
 
 lib_LTLIBRARIES = libudf.la
 
-libudf_la_SOURCES = udf.c udf_fs.c
+libudf_la_SOURCES = udf.c udf_fs.c udf_time.c
 
 libudf_la_LIBADD = @LIBCDIO_LIBS@
 

@@ -16,3 +16,5 @@ udf_get_sub
 udf_is_dir
 udf_open
 udf_read_sectors
+udf_stamp_to_time
+udf_time_to_stamp

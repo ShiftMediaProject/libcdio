@@ -1,5 +1,5 @@
 /*
-    $Id: udf_private.h,v 1.1 2005/10/24 10:14:58 rocky Exp $
+    $Id: udf_private.h,v 1.2 2005/10/26 02:05:54 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -51,6 +51,7 @@ struct udf_file_s
   uint32_t           dir_lba, dir_end_lba;
   uint64_t           dir_left;
   uint8_t           *sector;
+  udf_file_entry_t   fe;
   udf_fileid_desc_t *fid;
 };
 

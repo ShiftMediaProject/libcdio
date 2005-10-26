@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.9 2005/10/25 13:19:05 rocky Exp $
+    $Id: udf.h,v 1.10 2005/10/26 02:05:54 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -55,6 +55,10 @@ typedef enum {
     to above enumeration values in a debugger and debugger
     expressions */
 extern udf_enum1_t debug_udf_enums1;
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 /*!
   Seek to a position i_start and then read i_blocks. Number of blocks read is 
@@ -132,7 +136,7 @@ udf_file_t *udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file);
 bool udf_close (udf_t *p_udf);
 
 /*!
-  free free resources associated with p_fe.
+  free free resources associated with p_udf_file.
 */
 bool udf_file_free(udf_file_t *p_udf_file);
 
@@ -141,5 +145,10 @@ bool udf_file_free(udf_file_t *p_udf_file);
  */
 bool udf_is_dir(const udf_file_t *p_udf_file);
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#include <cdio/udf_time.h>
 
 #endif /*UDF_H*/
