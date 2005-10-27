@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.179 2005/10/27 03:26:39 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.180 2005/10/27 03:47:32 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -283,25 +283,6 @@ else
 fi
 dnl
 
-dnl bitfield order
-AC_MSG_CHECKING(extern long timezone variable)
-AC_TRY_RUN([
-#ifdef NEED_TIMEZONEVAR
-#define timezonevar 1
-#endif
-
-#include <time.h>
-extern long timezone;
-int main(int argc, char **argv) {
-  long test_timezone = timezone;
-  return 0; 
-}
-], [AC_MSG_RESULT(yes); 
-   AC_DEFINE([HAVE_TIMEZONE_VAR], 1, 
-	[Define if you have an extern long timenzone variable.])],
-   [AC_MSG_RESULT(no)])
-dnl
-
 dnl AM_PROG_LIBTOOL tests whether we have GNU ld
 dnl this must come before checking --with-versioned-libs
 dnl which requires GNU ld.
@@ -449,6 +430,25 @@ int has_timeout=sizeof(test.timeout);],
 	AC_MSG_WARN([Will use generic support.])
 	;;
 esac
+
+AC_MSG_CHECKING(extern long timezone variable)
+AC_TRY_RUN([
+#ifdef NEED_TIMEZONEVAR
+#define timezonevar 1
+#endif
+
+#include <time.h>
+extern long timezone;
+int main(int argc, char **argv) {
+  long test_timezone = timezone;
+  return 0; 
+}
+], [AC_MSG_RESULT(yes); 
+   AC_DEFINE([HAVE_TIMEZONE_VAR], 1, 
+	[Define if you have an extern long timenzone variable.])],
+   [AC_MSG_RESULT(no)])
+dnl
+
 AC_SUBST(LINUX_CDROM_TIMEOUT)
 AC_SUBST(DARWIN_PKG_LIB_HACK)
 AC_SUBST(HAVE_BSDI_CDROM)
