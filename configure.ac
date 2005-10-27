@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.178 2005/10/27 03:03:42 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.179 2005/10/27 03:26:39 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -281,6 +281,25 @@ if test "x$bf_lsbf" = "x1"; then
 else
  AC_MSG_RESULT(MSBF)
 fi
+dnl
+
+dnl bitfield order
+AC_MSG_CHECKING(extern long timezone variable)
+AC_TRY_RUN([
+#ifdef NEED_TIMEZONEVAR
+#define timezonevar 1
+#endif
+
+#include <time.h>
+extern long timezone;
+int main(int argc, char **argv) {
+  long test_timezone = timezone;
+  return 0; 
+}
+], [AC_MSG_RESULT(yes); 
+   AC_DEFINE([HAVE_TIMEZONE_VAR], 1, 
+	[Define if you have an extern long timenzone variable.])],
+   [AC_MSG_RESULT(no)])
 dnl
 
 dnl AM_PROG_LIBTOOL tests whether we have GNU ld

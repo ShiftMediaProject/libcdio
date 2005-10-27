@@ -93,7 +93,9 @@ static time_t year_seconds[MAX_YEAR_SECONDS]= {
   /*2038*/ SPY(68,17,0)
 };
 
+#ifdef HAVE_TIMEZONE_VAR
 extern long timezone;
+#endif
 
 #define SECS_PER_HOUR	(60 * 60)
 #define SECS_PER_DAY	(SECS_PER_HOUR * 24)
@@ -142,8 +144,10 @@ udf_time_to_stamp(udf_timestamp_t *dest, struct timespec ts)
   long int days, rem, y;
   const unsigned short int *ip;
   int16_t offset;
-  
+
+#ifdef HAVE_TIMEZONE_VAR  
   offset = -timezone;
+#endif
   
   if (!dest)
     return NULL;
