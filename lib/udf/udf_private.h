@@ -1,5 +1,5 @@
 /*
-    $Id: udf_private.h,v 1.2 2005/10/26 02:05:54 rocky Exp $
+    $Id: udf_private.h,v 1.3 2005/10/27 03:03:43 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -17,6 +17,13 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
+#ifndef __CDIO_UDF_PRIVATE_H__
+#define __CDIO_UDF_PRIVATE_H__
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include <cdio/types.h>
 #include <cdio/ecma_167.h>
@@ -55,3 +62,13 @@ struct udf_file_s
   udf_fileid_desc_t *fid;
 };
 
+#endif /* __CDIO_UDF_PRIVATE_H__ */
+
+
+/* 
+ * Local variables:
+ *  c-file-style: "gnu"
+ *  tab-width: 8
+ *  indent-tabs-mode: nil
+ * End:
+ */

@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.177 2005/10/25 14:16:41 pjcreath Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.178 2005/10/27 03:03:42 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -407,6 +407,9 @@ int has_timeout=sizeof(test.timeout);],
                   [Define 1 if you have MinGW CD-ROM support])
  	LIBS="$LIBS -lwinmm"
   	cd_drivers="${cd_drivers}, MinGW"
+     	AC_DEFINE([NEED_TIMEZONEVAR], [1], 
+                  [Define 1 if you need timezone defined to get timzone
+		   defined as a variable. In cygwin it is a function too])
 	;;
      mingw*)
 	AC_DEFINE([MINGW32], [1], 

@@ -39,8 +39,16 @@
  *  http://www.boulder.nist.gov/timefreq/pubs/bulletin/leapsecond.htm
  */
 
-#include <cdio/udf.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef NEED_TIMEZONEVAR
+#define timezonevar 1
+#endif
+
 #include "udf_private.h"
+#include <cdio/udf.h>
 
 #define EPOCH_YEAR 1970
 
