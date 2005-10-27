@@ -1,5 +1,5 @@
 /*
-    $Id: udf.c,v 1.2 2005/10/27 01:23:48 rocky Exp $
+    $Id: udf.c,v 1.3 2005/10/27 11:18:57 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,6 +26,17 @@
 # include <string.h>
 #endif
 
+/** The below variables are trickery to force enum symbol values to be
+    recorded in debug symbol tables. They are used to allow one to refer
+    to the enumeration value names in the typedefs above in a debugger
+    and debugger expressions
+*/
+tag_id_t debug_tagid;
+file_characteristics_t debug_file_characteristics;
+udf_enum1_t debug_udf_enum1;
+ecma_167_enum1_t ecma167_enum1;
+ecma_167_timezone_enum_t debug_ecma_167_timezone_enum;
+
 /*!
   Returns a string which interpreting the extended attribute permissions
 */
@@ -38,9 +49,9 @@ udf_get_attr_str(udf_Uint32_t permissions, char *result)
   result[ 1] = (i_perms & FE_PERM_U_WRITE) ? 'w' : '-';
   result[ 2] = (i_perms & FE_PERM_U_EXEC)  ? 'x' : '-';
 
-  result[ 3] = (i_perms & FE_PERM_G_READ) ?  'r' : '-';
+  result[ 3] = (i_perms & FE_PERM_G_READ)  ? 'r' : '-';
   result[ 4] = (i_perms & FE_PERM_G_WRITE) ? 'w' : '-';
-  result[ 5] = (i_perms & FE_PERM_G_EXEC) ?  'x' : '-';
+  result[ 5] = (i_perms & FE_PERM_G_EXEC)  ? 'x' : '-';
 
   result[ 6] = (i_perms & FE_PERM_O_READ)  ? 'r' : '-';
   result[ 7] = (i_perms & FE_PERM_O_WRITE) ? 'w' : '-';
@@ -71,5 +82,3 @@ udf_is_dir(const udf_file_t *p_udf_file)
 {
   return p_udf_file->b_dir;
 }
-
-

@@ -1,5 +1,5 @@
 /*  
-    $Id: udf_time.h,v 1.1 2005/10/26 02:05:54 rocky Exp $
+    $Id: udf_time.h,v 1.2 2005/10/27 11:18:56 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -34,19 +34,19 @@ extern "C" {
 #endif /* __cplusplus */
 
 /*!
-  Return the access time of the file
+  Return the access time of the file.
  */
 time_t udf_get_access_time(const udf_file_t *p_udf_file);
 
 /*!
-  Return the modification time of the file
+  Return the attribute (most recent create or access) time of the file
  */
-time_t udf_get_modification_time(const udf_file_t *p_udf_file);
+time_t udf_get_attribute_time(const udf_file_t *p_udf_file);
 
 /*!
-  Return the attr time of the file
+  Return the modification time of the file.
  */
-time_t udf_get_attr_time(const udf_file_t *p_udf_file);
+time_t udf_get_modification_time(const udf_file_t *p_udf_file);
 
 /*!
   Return the access timestamp of the file

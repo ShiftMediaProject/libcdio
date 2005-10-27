@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.11 2005/10/27 01:23:48 rocky Exp $
+    $Id: udf.h,v 1.12 2005/10/27 11:18:56 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -116,9 +116,15 @@ int udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,
 			    partition_num_t i_partition);
   
   /*!
-    Returns a string which interpreting the extended attribute permissions
+    Returns a string which interprets the extended attribute permissions
   */
   const char *udf_get_attr_str(udf_Uint32_t permissions, char perms[]);
+
+  /*!  
+    Returns a POSIX filemode string for a given p_udf_file.
+  */
+  const char *udf_get_posix_filemode_str(const udf_file_t *p_udf_file, 
+					 char perms[]);
 
   /*!
   Return the name of the file

@@ -55,8 +55,8 @@
 #include <cdio/types.h>
 
 /**
-   Imagine the below  #define'd values rather than distinct values of
-   an enum.
+   Imagine the below enum values as #define'd values rather than
+   distinct values of an enum.
 */
 typedef enum {
   VSD_STD_ID_SIZE    =	  5, /** Volume Structure Descriptor (ECMA 167r3 
@@ -67,7 +67,7 @@ typedef enum {
   UDF_VOLSET_ID_SIZE =  128
 } ecma_167_enum1_t ;
 
-/** This variable is trickery to force the above enum symbol value to
+/** This variable is trickery to force the above enum symbol values to
     be recorded in debug symbol tables. It is used to allow one refer
     to above enumeration values in a debugger and debugger
     expressions */
@@ -148,7 +148,26 @@ struct udf_timestamp_s
 
 typedef struct udf_timestamp_s udf_timestamp_t;
 
-/** Type and Time Zone (ECMA 167r3 1/7.3.1) */
+/** Type and Time Zone (ECMA 167r3 1/7.3.1) 
+
+    Imagine the below enum values as #define'd values rather than
+    distinct values of an enum.
+*/
+typedef enum { 
+  TIMESTAMP_TYPE_CUT        =	0x0000,
+  TIMESTAMP_TYPE_LOCAL      =	0x1000,
+  TIMESTAMP_TYPE_AGREEMENT  =	0x2000,
+  TIMESTAMP_TYPE_MASK       =   0xF000,
+  TIMESTAMP_TIMEZONE_MASK   =	0x0FFF,
+} ecma_167_timezone_enum_t ;
+
+/** This variable is trickery to force the above enum symbol values to
+    be recorded in debug symbol tables. It is used to allow one refer
+    to above enumeration values in a debugger and debugger
+    expressions */
+extern ecma_167_timezone_enum_t debug_ecma_167_timezone_enum;
+
+
 #define TIMESTAMP_TYPE_MASK		0xF000
 #define TIMESTAMP_TYPE_CUT		0x0000
 #define TIMESTAMP_TYPE_LOCAL		0x1000
@@ -658,20 +677,24 @@ struct terminal_entry_s
 /** File Entry (ECMA 167r3 4/14.9) */
 struct udf_file_entry_s
 {
-  udf_tag_t       tag;
-  udf_icbtag_t	  icb_tag;
-  udf_Uint32_t	  uid;
-  udf_Uint32_t	  gid;
-  udf_Uint32_t	  permissions;
-  udf_Uint16_t	  link_count;
-  udf_Uint8_t	  rec_format;
-  udf_Uint8_t	  rec_disp_attr;
-  udf_Uint32_t	  rec_len;
-  udf_Uint64_t	  info_len;
-  udf_Uint64_t	  logblks_recorded;
-  udf_timestamp_t access_time;
-  udf_timestamp_t modification_time;
-  udf_timestamp_t attr_time;
+  udf_tag_t       tag;                   
+  udf_icbtag_t	  icb_tag;                /**< 4/14.9.2 */
+  udf_Uint32_t	  uid;                    /**< 4/14.9.3 */
+  udf_Uint32_t	  gid;                    /**< 4/14.9.4 */
+  udf_Uint32_t	  permissions;            /**< 4/14.9.5 */
+  udf_Uint16_t	  link_count;             /**< 4/14.9.6 */
+  udf_Uint8_t	  rec_format;             /**< 4/14.9.7 */ 
+  udf_Uint8_t	  rec_disp_attr;          /**< 4/14.9.8 */
+  udf_Uint32_t	  rec_len;                /**< 4/14.9.9 */
+  udf_Uint64_t	  info_len;               /**< 4/14.9.10 */
+  udf_Uint64_t	  logblks_recorded;       /**< 4/14.9.11 */
+  udf_timestamp_t access_time;            /**< 4/14.9.12 - last access to 
+					   any stream of file prior to 
+					   recording file entry */
+  udf_timestamp_t modification_time;      /**< 4/14.9.13 - last access to 
+					     modification to any stream of 
+					     file */
+  udf_timestamp_t attribute_time;
   udf_Uint32_t	  checkpoint;
   udf_long_ad_t	  ext_attr_ICB;
   udf_regid_t	  imp_id;
@@ -907,24 +930,29 @@ struct pathComponent
 /** File Entry (ECMA 167r3 4/14.17) */
 struct extended_file_entry
 {
-  udf_tag_t 	  tag;
-  udf_icbtag_t    icb_tag;
-  udf_Uint32_t    uid;
-  udf_Uint32_t    gid;
-  udf_Uint32_t    permissions;
-  udf_Uint16_t    link_count;
-  udf_Uint8_t     rec_format;
-  udf_Uint8_t     rec_display_attr;
-  udf_Uint32_t    record_len;
-  udf_Uint64_t    info_len;
-  udf_Uint64_t    object_size;
-  udf_Uint64_t    logblks_recorded;
-  udf_timestamp_t access_time;
-  udf_timestamp_t modification_time;
-  udf_timestamp_t create_time;
-  udf_timestamp_t attr_time;
+  udf_tag_t 	  tag;                     /**< 4/14.17.1 - id = 266  */
+  udf_icbtag_t    icb_tag;                 /**< 4/14.17.2  & 4/14.9.2 */
+  udf_Uint32_t    uid;                     /**< 4/14.17.3  & 4/14.9.3 */
+  udf_Uint32_t    gid;                     /**< 4/14.17.4  & 4/14.9.4 */
+  udf_Uint32_t    permissions;             /**< 4/14.17.5  & 4/14.9.5 */
+  udf_Uint16_t    link_count;              /**< 4/14.17.6  & 4/14.9.6 */
+  udf_Uint8_t     rec_format;              /**< 4/14.17.7  & 4/14.9.7 */
+  udf_Uint8_t     rec_display_attr;        /**< 4/14.17.8  & 4/14.9.8 */
+  udf_Uint32_t    record_len;              /**< 4/14.17.9  & 4/14.9.9 */
+  udf_Uint64_t    info_len;                /**< 4/14.17.10 & 4/14.9.10 */
+  udf_Uint64_t    object_size;             /**< 4/14.17.11 */
+  udf_Uint64_t    logblks_recorded;        /**< 4/14.17.12 & 4/14.9.11 */
+  udf_timestamp_t access_time;             /**< 4/14.17.13 & 4/14.9.12 - last 
+					      access to any stream of file */
+  udf_timestamp_t modification_time;       /**< 4/14.17.14 & 4/14.9.13 - last
+					      modification to any stream of 
+					      file*/
+  udf_timestamp_t create_time;             /**< 4/14.17.15 */
+  udf_timestamp_t attribute_time;          /**< 4/14.17.16 & 4/14.9.14 - 
+					      most recent create or modify 
+					      time */
   udf_Uint32_t    checkpoint;
-  udf_Uint32_t    reserved;
+  udf_Uint32_t    reserved;                /**< #00 bytes */
   udf_long_ad_t   ext_attr_ICB;
   udf_long_ad_t   stream_directory_ICB;
   udf_regid_t     imp_id;

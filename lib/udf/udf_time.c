@@ -192,6 +192,9 @@ udf_time_to_stamp(udf_timestamp_t *dest, struct timespec ts)
   return dest;
 }
 
+/*!
+  Return the modification time of the file.
+ */
 time_t
 udf_get_modification_time(const udf_file_t *p_udf_file)
 {
@@ -204,6 +207,9 @@ udf_get_modification_time(const udf_file_t *p_udf_file)
   return 0;
 }
 
+/*!
+  Return the access time of the file.
+ */
 time_t
 udf_get_access_time(const udf_file_t *p_udf_file)
 {
@@ -211,6 +217,21 @@ udf_get_access_time(const udf_file_t *p_udf_file)
     time_t ret_time;
     long int usec;
     udf_stamp_to_time(&ret_time, &usec, p_udf_file->fe.access_time);
+    return ret_time;
+  }
+  return 0;
+}
+
+/*!
+  Return the attribute (most recent create or access) time of the file
+ */
+time_t
+udf_get_attribute_time(const udf_file_t *p_udf_file)
+{
+  if (p_udf_file) {
+    time_t ret_time;
+    long int usec;
+    udf_stamp_to_time(&ret_time, &usec, p_udf_file->fe.attribute_time);
     return ret_time;
   }
   return 0;

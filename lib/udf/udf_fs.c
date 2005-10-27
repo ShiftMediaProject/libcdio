@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.8 2005/10/27 01:23:48 rocky Exp $
+    $Id: udf_fs.c,v 1.9 2005/10/27 11:18:57 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -69,16 +69,6 @@ const char VSD_STD_ID_TEA01[] = {'T', 'E', 'A', '0', '1'};
 
 #include <cdio/bytesex.h>
 #include "udf_private.h"
-
-/** The below variables are trickery to force enum symbol values to be
-    recorded in debug symbol tables. They are used to allow one to refer
-    to the enumeration value names in the typedefs above in a debugger
-    and debugger expressions
-*/
-tag_id_t debug_tagid;
-file_characteristics_t debug_file_characteristics;
-udf_enum1_t debug_udf_enum1;
-ecma_167_enum1_t ecma167_enum1;
 
 /*
  * The UDF specs are pretty clear on how each data structure is made
