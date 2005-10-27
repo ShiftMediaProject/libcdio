@@ -1,5 +1,5 @@
 /*
-    $Id: udf.c,v 1.1 2005/10/24 10:14:58 rocky Exp $
+    $Id: udf.c,v 1.2 2005/10/27 01:23:48 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -19,12 +19,51 @@
 */
 /* Access routines */
 
+#include <cdio/bytesex.h>
 #include "udf_private.h"
 
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+
+/*!
+  Returns a string which interpreting the extended attribute permissions
+*/
 const char *
-udf_get_name(const udf_file_t *p_udf_file)
+udf_get_attr_str(udf_Uint32_t permissions, char *result) 
 {
+  uint32_t i_perms = uint32_from_le(permissions);
+
+  result[ 0] = (i_perms & FE_PERM_U_READ)  ? 'r' : '-';
+  result[ 1] = (i_perms & FE_PERM_U_WRITE) ? 'w' : '-';
+  result[ 2] = (i_perms & FE_PERM_U_EXEC)  ? 'x' : '-';
+
+  result[ 3] = (i_perms & FE_PERM_G_READ) ?  'r' : '-';
+  result[ 4] = (i_perms & FE_PERM_G_WRITE) ? 'w' : '-';
+  result[ 5] = (i_perms & FE_PERM_G_EXEC) ?  'x' : '-';
+
+  result[ 6] = (i_perms & FE_PERM_O_READ)  ? 'r' : '-';
+  result[ 7] = (i_perms & FE_PERM_O_WRITE) ? 'w' : '-';
+  result[ 8] = (i_perms & FE_PERM_O_EXEC)  ? 'x' : '-';
+
+  result[ 9] = '\0';
+  return result;
+}
+
+const char *
+udf_get_filename(const udf_file_t *p_udf_file)
+{
+  if (!p_udf_file) return NULL;
   return p_udf_file->psz_name;
+}
+
+bool
+udf_get_file_entry(const udf_file_t *p_udf_file, 
+		   /*out*/ udf_file_entry_t *p_udf_fe)
+{
+  if (!p_udf_file) return false;
+  memcpy(p_udf_fe, &p_udf_file->fe, sizeof(udf_file_entry_t));
+  return true;
 }
 
 bool

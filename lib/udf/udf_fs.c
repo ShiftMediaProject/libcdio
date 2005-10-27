@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.7 2005/10/26 02:05:54 rocky Exp $
+    $Id: udf_fs.c,v 1.8 2005/10/27 01:23:48 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -150,17 +150,17 @@ udf_checktag(udf_tag_t *p_tag, udf_Uint16_t tag_id)
 }
 
 static bool 
-udf_get_lba(const udf_file_entry_t *p_fe, 
+udf_get_lba(const udf_file_entry_t *p_udf_fe, 
 	    /*out*/ uint32_t *start, /*out*/ uint32_t *end)
 {
-  if (! p_fe->i_alloc_descs)
+  if (! p_udf_fe->i_alloc_descs)
     return false;
 
-  switch (p_fe->icb_tag.flags & ICBTAG_FLAG_AD_MASK) {
+  switch (p_udf_fe->icb_tag.flags & ICBTAG_FLAG_AD_MASK) {
   case ICBTAG_FLAG_AD_SHORT:
     {
       udf_short_ad_t *p_ad = (udf_short_ad_t *) 
-	(p_fe->ext_attr + p_fe->i_extended_attr);
+	(p_udf_fe->ext_attr + p_udf_fe->i_extended_attr);
       
       *start = uint32_from_le(p_ad->pos);
       *end = *start + 
@@ -171,7 +171,7 @@ udf_get_lba(const udf_file_entry_t *p_fe,
   case ICBTAG_FLAG_AD_LONG:
     {
       udf_long_ad_t *p_ad = (udf_long_ad_t *) 
-	(p_fe->ext_attr + p_fe->i_extended_attr);
+	(p_udf_fe->ext_attr + p_udf_fe->i_extended_attr);
       
       *start = uint32_from_le(p_ad->loc.lba); /* ignore partition number */
       *end = *start + 
@@ -182,7 +182,7 @@ udf_get_lba(const udf_file_entry_t *p_fe,
   case ICBTAG_FLAG_AD_EXTENDED:
     {
       udf_ext_ad_t *p_ad = (udf_ext_ad_t *)
-	(p_fe->ext_attr + p_fe->i_extended_attr);
+	(p_udf_fe->ext_attr + p_udf_fe->i_extended_attr);
       
       *start = uint32_from_le(p_ad->ext_loc.lba); /* ignore partition number */
       *end = *start + 
@@ -268,7 +268,7 @@ unicode16_decode( const uint8_t *data, int i_len, char *target )
 
 
 static udf_file_t *
-udf_new_file(udf_file_entry_t *p_fe, uint32_t i_part_start, 
+udf_new_file(udf_file_entry_t *p_udf_fe, uint32_t i_part_start, 
 	     const char *psz_name, bool b_dir, bool b_parent) 
 {
   udf_file_t *p_udf_file = (udf_file_t *) calloc(1, sizeof(udf_file_t));
@@ -277,10 +277,10 @@ udf_new_file(udf_file_entry_t *p_fe, uint32_t i_part_start,
   p_udf_file->b_dir        = b_dir;
   p_udf_file->b_parent     = b_parent;
   p_udf_file->i_part_start = i_part_start;
-  p_udf_file->dir_left     = uint64_from_le(p_fe->info_len); 
+  p_udf_file->dir_left     = uint64_from_le(p_udf_fe->info_len); 
 
-  memcpy(&(p_udf_file->fe), p_fe, sizeof(udf_file_entry_t));
-  udf_get_lba( p_fe, &(p_udf_file->dir_lba), &(p_udf_file->dir_end_lba) );
+  memcpy(&(p_udf_file->fe), p_udf_fe, sizeof(udf_file_entry_t));
+  udf_get_lba( p_udf_fe, &(p_udf_file->dir_lba), &(p_udf_file->dir_end_lba) );
   return p_udf_file;
 }
 
@@ -511,19 +511,20 @@ udf_get_root (udf_t *p_udf, bool b_any_partition, partition_num_t i_partition)
 		       1);
     
     if (DRIVER_OP_SUCCESS == ret && !udf_checktag(&p_fsd->tag, TAGID_FSD)) {
-      udf_file_entry_t *p_fe = (udf_file_entry_t *) &data;
+      udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) &data;
       const uint32_t parent_icb = uint32_from_le(p_fsd->root_icb.loc.lba);
       
       /* Check partition numbers match of last-read block?  */
       
-      ret = udf_read_sectors(p_udf, p_fe, p_udf->i_part_start + parent_icb, 1);
+      ret = udf_read_sectors(p_udf, p_udf_fe, 
+			     p_udf->i_part_start + parent_icb, 1);
       if (ret == DRIVER_OP_SUCCESS && 
-	  !udf_checktag(&p_fe->tag, TAGID_FILE_ENTRY)) {
+	  !udf_checktag(&p_udf_fe->tag, TAGID_FILE_ENTRY)) {
 	
 	/* Check partition numbers match of last-read block? */
 	
 	/* We win! - Save root directory information. */
-	return udf_new_file(p_fe, p_udf->i_part_start, "/", true, false );
+	return udf_new_file(p_udf_fe, p_udf->i_part_start, "/", true, false );
       }
     }
   }
@@ -559,19 +560,19 @@ udf_get_sub(const udf_t *p_udf, const udf_file_t *p_udf_file)
 {
   if (p_udf_file->b_dir && !p_udf_file->b_parent && p_udf_file->fid) {
     uint8_t data[UDF_BLOCKSIZE];
-    udf_file_entry_t *p_fe = (udf_file_entry_t *) &data;
+    udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) &data;
     
     driver_return_code_t i_ret = 
-      udf_read_sectors(p_udf, p_fe, p_udf->i_part_start 
+      udf_read_sectors(p_udf, p_udf_fe, p_udf->i_part_start 
 		       + p_udf_file->fid->icb.loc.lba, 1);
 
     if (DRIVER_OP_SUCCESS == i_ret 
-	&& !udf_checktag(&p_fe->tag, TAGID_FILE_ENTRY)) {
+	&& !udf_checktag(&p_udf_fe->tag, TAGID_FILE_ENTRY)) {
       
-      if (ICBTAG_FILE_TYPE_DIRECTORY == p_fe->icb_tag.file_type) {
-	udf_file_t *p_udf_file_new = udf_new_file(p_fe, p_udf->i_part_start, 
-						  p_udf_file->psz_name, 
-						  true, true);
+      if (ICBTAG_FILE_TYPE_DIRECTORY == p_udf_fe->icb_tag.file_type) {
+	udf_file_t *p_udf_file_new = 
+	  udf_new_file(p_udf_fe, p_udf->i_part_start, p_udf_file->psz_name, 
+		       true, true);
 	return p_udf_file_new;
       }
     }
@@ -625,9 +626,17 @@ udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file)
 	(p_udf_file->fid->file_characteristics & UDF_FILE_DIRECTORY) != 0;
       p_udf_file->b_parent = 
 	(p_udf_file->fid->file_characteristics & UDF_FILE_PARENT) != 0;
-      
+
       {
 	const unsigned int i_len = p_udf_file->fid->i_file_id;
+	uint8_t data[UDF_BLOCKSIZE] = {0};
+	udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) &data;
+
+	udf_read_sectors(p_udf, p_udf_fe, p_udf->i_part_start 
+			 + p_udf_file->fid->icb.loc.lba, 1);
+      
+	memcpy(&(p_udf_file->fe), p_udf_fe, sizeof(udf_file_entry_t));
+
 	if (strlen(p_udf_file->psz_name) < i_len) 
 	  p_udf_file->psz_name = (char *)
 	    realloc(p_udf_file->psz_name, sizeof(char)*i_len+1);
@@ -643,7 +652,7 @@ udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file)
 
   
 /*!
-  free free resources associated with p_fe.
+  free free resources associated with p_udf_file.
 */
 bool 
 udf_file_free(udf_file_t *p_udf_file) 

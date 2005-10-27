@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.7 2005/10/26 02:05:53 rocky Exp $
+  $Id: udf1.c,v 1.8 2005/10/27 01:23:48 rocky Exp $
 
   Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
   
@@ -50,14 +50,27 @@
 
 #define udf_PATH_DELIMITERS "/\\"
 
-static 
-udf_file_t *
+static void 
+print_file_info(const udf_file_t *p_udf_file) 
+{
+  time_t mod_time = udf_get_modification_time(p_udf_file);
+  udf_file_entry_t udf_fe;
+  if (udf_get_file_entry(p_udf_file, &udf_fe)) {
+    char perms[10]="invalid";
+    /* Print directory attributes*/
+      printf("%s ", udf_get_attr_str (udf_fe.permissions, perms));
+  }
+  
+  printf("%s %s", udf_get_filename(p_udf_file), ctime(&mod_time));
+}
+
+
+static udf_file_t *
 list_files(const udf_t *p_udf, udf_file_t *p_udf_file, char *psz_token)
 {
   if (!p_udf_file) return NULL;
   if (psz_token) {
-    time_t mod_time = udf_get_modification_time(p_udf_file);
-    printf("%s %s\n", psz_token, ctime(&mod_time));
+    print_file_info(p_udf_file);
   }
   
   while (udf_get_next(p_udf, p_udf_file)) {
@@ -74,7 +87,7 @@ list_files(const udf_t *p_udf, udf_file_t *p_udf_file, char *psz_token)
 	udf_file_free(p_udf_file3);
       }
     } else {
-      printf("%s\n", udf_get_name(p_udf_file));
+      print_file_info(p_udf_file);
     }
   }
   free(psz_token);
@@ -119,8 +132,7 @@ main(int argc, const char *argv[])
       }
     }
     
-
-    list_files(p_udf, p_udf_file, strdup(udf_get_name(p_udf_file)));
+    list_files(p_udf, p_udf_file, strdup(udf_get_filename(p_udf_file)));
     udf_file_free(p_udf_file);
   }
   

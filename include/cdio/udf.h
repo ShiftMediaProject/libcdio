@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.10 2005/10/26 02:05:54 rocky Exp $
+    $Id: udf.h,v 1.11 2005/10/27 01:23:48 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -104,47 +104,58 @@ int udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,
  * returns the size of the available volsetid information (128)
  * or 0 on error
  */
-int udf_get_volumeset_id(udf_t *p_udf, /*out*/ uint8_t *volsetid,
-			 unsigned int i_volsetid);
-
+  int udf_get_volumeset_id(udf_t *p_udf, /*out*/ uint8_t *volsetid,
+			   unsigned int i_volsetid);
+  
 /*!
   Return a file pointer matching pzz_name. If b_any_partition is false then
   the root must be in the given partition. 
  */
-udf_file_t *udf_find_file(udf_t *p_udf, const char *psz_name,
-			  bool b_any_partition,
-			  partition_num_t i_partition);
+  udf_file_t *udf_find_file(udf_t *p_udf, const char *psz_name,
+			    bool b_any_partition,
+			    partition_num_t i_partition);
+  
+  /*!
+    Returns a string which interpreting the extended attribute permissions
+  */
+  const char *udf_get_attr_str(udf_Uint32_t permissions, char perms[]);
+
+  /*!
+  Return the name of the file
+ */
+  bool udf_get_file_entry(const udf_file_t *p_udf_file, 
+			  /*out*/ udf_file_entry_t *p_udf_fe);
 
 /*!
   Return the next subdirectory. 
  */
-udf_file_t *udf_get_sub(const udf_t *p_udf, const udf_file_t *p_udf_file);
+  udf_file_t *udf_get_sub(const udf_t *p_udf, const udf_file_t *p_udf_file);
 
-/*!
+  /*!
   Return the name of the file
- */
-const char *udf_get_name(const udf_file_t *p_udf_file);
+  */
+  const char *udf_get_filename(const udf_file_t *p_udf_file);
 
-/*!
-  Return the next file.
- */
-udf_file_t *udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file);
-
-/*!
-  Close UDF and free resources associated with p_udf.
-*/
-bool udf_close (udf_t *p_udf);
-
-/*!
-  free free resources associated with p_udf_file.
-*/
-bool udf_file_free(udf_file_t *p_udf_file);
-
-/*!
-  Return true if the file is a directory.
- */
-bool udf_is_dir(const udf_file_t *p_udf_file);
-
+  /*!
+    Return the next file.
+  */
+  udf_file_t *udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file);
+  
+  /*!
+    Close UDF and free resources associated with p_udf.
+  */
+  bool udf_close (udf_t *p_udf);
+  
+  /*!
+    free free resources associated with p_udf_file.
+  */
+  bool udf_file_free(udf_file_t *p_udf_file);
+  
+  /*!
+    Return true if the file is a directory.
+  */
+  bool udf_is_dir(const udf_file_t *p_udf_file);
+  
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
