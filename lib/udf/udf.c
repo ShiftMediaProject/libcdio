@@ -1,5 +1,5 @@
 /*
-    $Id: udf.c,v 1.4 2005/10/29 14:43:50 rocky Exp $
+    $Id: udf.c,v 1.5 2005/10/29 14:52:47 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -67,6 +67,29 @@ udf_get_filename(const udf_file_t *p_udf_file)
   if (!p_udf_file) return NULL;
   return p_udf_file->psz_name;
 }
+
+/*!  
+  Returns a POSIX filemode string for a given p_udf_file.
+*/
+const char *
+udf_get_posix_filemode_str(const udf_file_t *p_udf_file, char perms[]) 
+{
+  udf_file_entry_t udf_fe;
+
+  if (p_udf_file->b_dir) {
+    perms[0] = 'd';
+  } else {
+    perms[0] = '-';
+  }
+  
+  if (udf_get_file_entry(p_udf_file, &udf_fe)) {
+    /* Print directory attributes*/
+    udf_get_attr_str (udf_fe.permissions, &perms[1]);
+    return perms;
+  }
+  return "";
+}
+
 
 bool
 udf_get_file_entry(const udf_file_t *p_udf_file, 

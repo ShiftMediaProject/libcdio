@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.8 2005/10/27 01:23:48 rocky Exp $
+  $Id: udf1.c,v 1.9 2005/10/29 14:52:47 rocky Exp $
 
   Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
   
@@ -56,9 +56,9 @@ print_file_info(const udf_file_t *p_udf_file)
   time_t mod_time = udf_get_modification_time(p_udf_file);
   udf_file_entry_t udf_fe;
   if (udf_get_file_entry(p_udf_file, &udf_fe)) {
-    char perms[10]="invalid";
+    char perms[11]="invalid";
     /* Print directory attributes*/
-      printf("%s ", udf_get_attr_str (udf_fe.permissions, perms));
+      printf("%s ", udf_get_posix_filemode_str (p_udf_file, perms));
   }
   
   printf("%s %s", udf_get_filename(p_udf_file), ctime(&mod_time));
@@ -130,6 +130,10 @@ main(int argc, const char *argv[])
 	volset_id[UDF_VOLSET_ID_SIZE+1]='\0';
 	printf("volume set id: %s\n", volset_id);
       }
+
+      printf("partition number: %d\n", udf_get_part_number(p_udf));
+
+
     }
     
     list_files(p_udf, p_udf_file, strdup(udf_get_filename(p_udf_file)));
