@@ -515,7 +515,7 @@ struct udf_ext_ad_s
   udf_Uint32_t	recorded_len;
   udf_Uint32_t	information_len;
   udf_lb_addr_t	ext_loc;
-} GNUC_PACKED ext_ad;
+} GNUC_PACKED;
 
 typedef struct udf_ext_ad_s udf_ext_ad_t;
 
