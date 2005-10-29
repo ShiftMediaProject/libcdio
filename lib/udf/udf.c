@@ -1,5 +1,5 @@
 /*
-    $Id: udf.c,v 1.3 2005/10/27 11:18:57 rocky Exp $
+    $Id: udf.c,v 1.4 2005/10/29 14:43:50 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -75,6 +75,32 @@ udf_get_file_entry(const udf_file_t *p_udf_file,
   if (!p_udf_file) return false;
   memcpy(p_udf_fe, &p_udf_file->fe, sizeof(udf_file_entry_t));
   return true;
+}
+
+  /*!
+    Return the file id descriptor of the given file.
+  */
+bool udf_get_fileid_descriptor(const udf_file_t *p_udf_file, 
+			       /*out*/ udf_fileid_desc_t *p_udf_fid)
+{
+  
+  if (!p_udf_file) return false;
+  if (!p_udf_file->fid) {
+    /* FIXME do something about trying to get the descriptor. */
+    return false;
+  }
+  memcpy(p_udf_fid, p_udf_file->fid, sizeof(udf_fileid_desc_t));
+  return true;
+}
+
+
+/*!
+  Return the partition number of the file
+*/
+int16_t udf_get_part_number(const udf_t *p_udf)
+{
+  if (!p_udf) return -1;
+  return p_udf->i_partition;
 }
 
 bool

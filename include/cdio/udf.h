@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.12 2005/10/27 11:18:56 rocky Exp $
+    $Id: udf.h,v 1.13 2005/10/29 14:43:50 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -60,57 +60,64 @@ extern udf_enum1_t debug_udf_enums1;
 extern "C" {
 #endif /* __cplusplus */
 
-/*!
-  Seek to a position i_start and then read i_blocks. Number of blocks read is 
-  returned. One normally expects the return to be equal to i_blocks.
-*/
-driver_return_code_t udf_read_sectors (const udf_t *p_udf, void *ptr, 
-				       lsn_t i_start,  long int i_blocks);
+  /*!
+    Close UDF and free resources associated with p_udf.
+  */
+  bool udf_close (udf_t *p_udf);
+  
+  /*!  
+    Seek to a position i_start and then read i_blocks. Number of
+    blocks read is returned. One normally expects the return to be
+    equal to i_blocks.
+  */
 
-/*!
-  Open an UDF for reading. Maybe in the future we will have
-  a mode. NULL is returned on error.
+  driver_return_code_t udf_read_sectors (const udf_t *p_udf, void *ptr, 
+					 lsn_t i_start,  long int i_blocks);
 
-  Caller must free result - use udf_close for that.
-*/
-udf_t *udf_open (const char *psz_path);
+  /*!
+    Open an UDF for reading. Maybe in the future we will have
+    a mode. NULL is returned on error.
+    
+    Caller must free result - use udf_close for that.
+  */
+  udf_t *udf_open (const char *psz_path);
+  
+  /*!
+    Get the root in p_udf. If b_any_partition is false then
+    the root must be in the given partition.
+    NULL is returned if the partition is not found or a root is not found or
+    there is on error.
 
-/*!
-  Get the root in p_udf. If b_any_partition is false then
-  the root must be in the given partition.
-  NULL is returned if the partition is not found or a root is not found or
-  there is on error.
-
-  Caller must free result - use udf_file_free for that.
-*/
-udf_file_t *udf_get_root (udf_t *p_udf, bool b_any_partition, 
-			  partition_num_t i_partition);
-
-/**
- * Gets the Volume Identifier string, in 8bit unicode (latin-1)
- * psz_volid, place to put the string
- * i_volid_size, size of the buffer volid points to
- * returns the size of buffer needed for all data
- */
-int udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,  
-		      unsigned int i_volid);
-
-/**
- * Gets the Volume Set Identifier, as a 128-byte dstring (not decoded)
- * WARNING This is not a null terminated string
- * volsetid, place to put the data
- * volsetid_size, size of the buffer volsetid points to 
- * the buffer should be >=128 bytes to store the whole volumesetidentifier
- * returns the size of the available volsetid information (128)
- * or 0 on error
- */
+    Caller must free result - use udf_file_free for that.
+  */
+  udf_file_t *udf_get_root (udf_t *p_udf, bool b_any_partition, 
+			    partition_num_t i_partition);
+  
+  /**
+   * Gets the Volume Identifier string, in 8bit unicode (latin-1)
+   * psz_volid, place to put the string
+   * i_volid_size, size of the buffer volid points to
+   * returns the size of buffer needed for all data
+   */
+  int udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,  
+			unsigned int i_volid);
+  
+  /**
+   * Gets the Volume Set Identifier, as a 128-byte dstring (not decoded)
+   * WARNING This is not a null terminated string
+   * volsetid, place to put the data
+   * volsetid_size, size of the buffer volsetid points to 
+   * the buffer should be >=128 bytes to store the whole volumesetidentifier
+   * returns the size of the available volsetid information (128)
+   * or 0 on error
+   */
   int udf_get_volumeset_id(udf_t *p_udf, /*out*/ uint8_t *volsetid,
 			   unsigned int i_volsetid);
   
-/*!
-  Return a file pointer matching pzz_name. If b_any_partition is false then
-  the root must be in the given partition. 
- */
+  /*!
+    Return a file pointer matching pzz_name. If b_any_partition is false then
+    the root must be in the given partition. 
+  */
   udf_file_t *udf_find_file(udf_t *p_udf, const char *psz_name,
 			    bool b_any_partition,
 			    partition_num_t i_partition);
@@ -120,6 +127,23 @@ int udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,
   */
   const char *udf_get_attr_str(udf_Uint32_t permissions, char perms[]);
 
+  /*!
+    Return the file id descriptor of the given file.
+  */
+  bool udf_get_fileid_descriptor(const udf_file_t *p_udf_file, 
+				 /*out*/ udf_fileid_desc_t *p_udf_fid);
+
+  /*!
+    Return the name of the file
+  */
+  const char *udf_get_filename(const udf_file_t *p_udf_file);
+  
+  /*!
+    Return the name of the file
+  */
+  bool udf_get_file_entry(const udf_file_t *p_udf_file, 
+			  /*out*/ udf_file_entry_t *p_udf_fe);
+
   /*!  
     Returns a POSIX filemode string for a given p_udf_file.
   */
@@ -127,31 +151,20 @@ int udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,
 					 char perms[]);
 
   /*!
-  Return the name of the file
- */
-  bool udf_get_file_entry(const udf_file_t *p_udf_file, 
-			  /*out*/ udf_file_entry_t *p_udf_fe);
-
-/*!
-  Return the next subdirectory. 
- */
-  udf_file_t *udf_get_sub(const udf_t *p_udf, const udf_file_t *p_udf_file);
-
-  /*!
-  Return the name of the file
+    Return the next subdirectory. 
   */
-  const char *udf_get_filename(const udf_file_t *p_udf_file);
-
+  udf_file_t *udf_get_sub(const udf_t *p_udf, const udf_file_t *p_udf_file);
+  
   /*!
     Return the next file.
   */
   udf_file_t *udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file);
   
   /*!
-    Close UDF and free resources associated with p_udf.
+    Return the partition number of the file
   */
-  bool udf_close (udf_t *p_udf);
-  
+  int16_t udf_get_part_number(const udf_t *p_udf);
+
   /*!
     free free resources associated with p_udf_file.
   */
