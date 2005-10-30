@@ -50,8 +50,20 @@
 #include "udf_private.h"
 #include <cdio/udf.h>
 
-#define EPOCH_YEAR 1970
-
+/**
+   Imagine the below enum values as #define'd or constant values
+   rather than distinct values of an enum.
+*/
+enum {
+  HOURS_PER_DAY    =   24,
+  SECS_PER_MINUTE  =   60,
+  MAX_YEAR_SECONDS =   69,
+  DAYS_PER_YEAR    =  365,  /* That is, in most of the years. */
+  EPOCH_YEAR       = 1970,
+  SECS_PER_HOUR	   = (60 * SECS_PER_MINUTE),
+  SECS_PER_DAY	   = SECS_PER_HOUR * HOURS_PER_DAY
+} debug_udf_time_enum;
+  
 #ifndef __isleap
 /* Nonzero if YEAR is a leap year (every 4 years,
    except every 100th isn't, and every 400th is).  */
@@ -63,14 +75,12 @@
 static const unsigned short int __mon_yday[2][13] =
   {
     /* Normal years.  */
-    { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
+    { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, DAYS_PER_YEAR },
     /* Leap years.  */
-    { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
+    { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, DAYS_PER_YEAR+1 }
   };
 
-#define MAX_YEAR_SECONDS	69
-#define SPD 0x15180 /* Seconds per day: 3600*24*/
-#define SPY(y,l,s) (SPD * (365*y+l)+s) /* Seconds per year */
+#define SPY(y,l,s) (SECS_PER_DAY * (DAYS_PER_YEAR*y+l)+s) /* Seconds per year */
 
 static time_t year_seconds[MAX_YEAR_SECONDS]= {
   /*1970*/ SPY( 0, 0,0), SPY( 1, 0,0), SPY( 2, 0,0), SPY( 3, 1,0), 
@@ -96,9 +106,6 @@ static time_t year_seconds[MAX_YEAR_SECONDS]= {
 #ifdef HAVE_TIMEZONE_VAR
 extern long timezone;
 #endif
-
-#define SECS_PER_HOUR	(60 * 60)
-#define SECS_PER_DAY	(SECS_PER_HOUR * 24)
 
 time_t *
 udf_stamp_to_time(time_t *dest, long int *dest_usec, 
@@ -126,11 +133,14 @@ udf_stamp_to_time(time_t *dest, long int *dest_usec,
       return NULL;
     }
   *dest = year_seconds[src.year - EPOCH_YEAR];
-  *dest -= offset * 60;
+  *dest -= offset * SECS_PER_MINUTE;
   
   yday = ((__mon_yday[__isleap (src.year)]
 	   [src.month-1]) + (src.day-1));
-  *dest += ( ( (yday* 24) + src.hour ) * 60 + src.minute ) * 60 + src.second;
+  *dest += src.second + 
+    ( SECS_PER_MINUTE *
+      ( ( (yday* HOURS_PER_DAY) + src.hour ) * 60 + src.minute ) );
+
   *dest_usec = src.microseconds
     + (src.centiseconds * 10000)
     + (src.hundreds_of_microseconds * 100);
@@ -154,23 +164,23 @@ udf_time_to_stamp(udf_timestamp_t *dest, struct timespec ts)
   
   dest->type_tz = 0x1000 | (offset & 0x0FFF);
   
-  ts.tv_sec   += offset * 60;
+  ts.tv_sec   += offset * SECS_PER_MINUTE;
   days         = ts.tv_sec / SECS_PER_DAY;
   rem          = ts.tv_sec % SECS_PER_DAY;
   dest->hour   = rem / SECS_PER_HOUR;
   rem         %= SECS_PER_HOUR;
-  dest->minute = rem / 60;
-  dest->second = rem % 60;
+  dest->minute = rem / SECS_PER_MINUTE;
+  dest->second = rem % SECS_PER_MINUTE;
   y            = EPOCH_YEAR;
   
 #define DIV(a,b) ((a) / (b) - ((a) % (b) < 0))
 #define LEAPS_THRU_END_OF(y) (DIV (y, 4) - DIV (y, 100) + DIV (y, 400))
   
-  while (days < 0 || days >= (__isleap(y) ? 366 : 365)) {
-    long int yg = y + days / 365 - (days % 365 < 0);
+  while (days < 0 || days >= (__isleap(y) ? DAYS_PER_YEAR+1 : DAYS_PER_YEAR)) {
+    long int yg = y + days / DAYS_PER_YEAR - (days % DAYS_PER_YEAR < 0);
     
     /* Adjust DAYS and Y to match the guessed year.  */
-    days -= ((yg - y) * 365
+    days -= ((yg - y) * DAYS_PER_YEAR
 	     + LEAPS_THRU_END_OF (yg - 1)
 	     - LEAPS_THRU_END_OF (y - 1));
     y = yg;
