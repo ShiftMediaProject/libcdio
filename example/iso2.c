@@ -1,5 +1,5 @@
 /*
-  $Id: iso2.c,v 1.8 2005/02/20 03:20:05 rocky Exp $
+  $Id: iso2.c,v 1.9 2005/10/30 14:26:11 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -22,7 +22,7 @@
    cue/bin CD-IMAGE.
 
    This program can be compiled with either a C or C++ compiler. In 
-   the distributuion we perfer C++ just to make sure we haven't broken
+   the distribution we prefer C++ just to make sure we haven't broken
    things on the C++ side.
  */
 
