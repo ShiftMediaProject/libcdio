@@ -1,7 +1,7 @@
 /*
-  $Id: udf1.c,v 1.11 2005/10/30 07:35:36 rocky Exp $
+  $Id: udf1.c,v 1.12 2005/10/30 15:58:37 rocky Exp $
 
-  Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -51,44 +51,48 @@
 #define udf_PATH_DELIMITERS "/\\"
 
 static void 
-print_file_info(const udf_file_t *p_udf_file) 
+print_file_info(const udf_file_t *p_udf_file, const char* psz_dirname)
 {
   time_t mod_time = udf_get_modification_time(p_udf_file);
   char psz_mode[11]="invalid";
+  const char *psz_fname= psz_dirname 
+    ? psz_dirname : udf_get_filename(p_udf_file);
+
+  if ('\0' == *psz_fname) psz_fname = strdup(".");
   
   /* Print directory attributes*/
   printf("%s ", udf_mode_string(udf_get_posix_filemode(p_udf_file),
 				psz_mode));
   printf("%4d ", udf_get_link_count(p_udf_file));
-  printf("%s %s", udf_get_filename(p_udf_file), ctime(&mod_time));
+  printf("%s %s", psz_fname, ctime(&mod_time));
 }
 
 static udf_file_t *
-list_files(const udf_t *p_udf, udf_file_t *p_udf_file, char *psz_token)
+list_files(const udf_t *p_udf, udf_file_t *p_udf_file, const char *psz_path)
 {
   if (!p_udf_file) return NULL;
-  if (psz_token) {
-    print_file_info(p_udf_file);
-  }
   
+  print_file_info(p_udf_file, psz_path);
+
   while (udf_get_next(p_udf, p_udf_file)) {
-    char *next_tok = strtok(psz_token, udf_PATH_DELIMITERS);
       
     if (udf_is_dir(p_udf_file)) {
-      udf_file_t * p_udf_file2 = udf_get_sub(p_udf, p_udf_file);
       
+      udf_file_t *p_udf_file2 = udf_get_sub(p_udf, p_udf_file);
       if (p_udf_file2) {
-	udf_file_t *p_udf_file3 = 
-	  list_files(p_udf, p_udf_file2, next_tok);
+	const char *psz_dirname = udf_get_filename(p_udf_file);
+	const unsigned int i_newlen=2 + strlen(psz_path) + strlen(psz_dirname);
+	char *psz_newpath = calloc(1, sizeof(char)*i_newlen);
 	
-	if (!p_udf_file3) udf_file_free(p_udf_file2);
-	udf_file_free(p_udf_file3);
+	snprintf(psz_newpath, i_newlen, "%s%s/", psz_path, psz_dirname);
+	list_files(p_udf, p_udf_file2, psz_newpath);
+	free(psz_newpath);
+	udf_file_free(p_udf_file2);
       }
     } else {
-      print_file_info(p_udf_file);
+      print_file_info(p_udf_file, NULL);
     }
   }
-  free(psz_token);
   return p_udf_file;
 }
 
@@ -134,7 +138,7 @@ main(int argc, const char *argv[])
 
     }
     
-    list_files(p_udf, p_udf_file, strdup(udf_get_filename(p_udf_file)));
+    list_files(p_udf, p_udf_file, "");
     udf_file_free(p_udf_file);
   }
   

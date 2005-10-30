@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.32 2005/10/06 09:37:11 rocky Exp $
+    $Id: iso-info.c,v 1.33 2005/10/30 15:58:37 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -198,17 +198,17 @@ _log_handler (cdio_log_level_t level, const char message[])
 }
 
 static void
-print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
+print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
 {
   CdioList_t *entlist;
   CdioList_t *dirlist =  _cdio_list_new ();
   CdioListNode_t *entnode;
   uint8_t i_joliet_level = iso9660_ifs_get_joliet_level(p_iso);
 
-  entlist = iso9660_ifs_readdir (p_iso, pathname);
+  entlist = iso9660_ifs_readdir (p_iso, psz_path);
     
   if (opts.print_iso9660) {
-    printf ("%s:\n", pathname);
+    printf ("%s:\n", psz_path);
   }
 
   if (NULL == entlist) {
@@ -228,10 +228,10 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
       if (yep != p_statbuf->rr.b3_rock || 1 == opts.no_rock_ridge) {
 	iso9660_name_translate_ext(psz_iso_name, translated_name, 
 				   i_joliet_level);
-	snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
+	snprintf (_fullname, sizeof (_fullname), "%s%s", psz_path, 
 		  translated_name);
       } else {
-	snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
+	snprintf (_fullname, sizeof (_fullname), "%s%s", psz_path, 
 		  psz_iso_name);
       }
       
@@ -249,7 +249,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char pathname[])
 		       psz_iso_name, translated_name);
       } else 
 	if ( strcmp (psz_iso_name, ".") && strcmp (psz_iso_name, ".."))
-	  printf("%9u %s%s\n", (unsigned int) p_statbuf->size, pathname, 
+	  printf("%9u %s%s\n", (unsigned int) p_statbuf->size, psz_path, 
 		 yep == p_statbuf->rr.b3_rock 
 		 ? psz_iso_name : translated_name);
       if (p_statbuf->rr.i_symlink) {
