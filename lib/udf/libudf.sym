@@ -4,6 +4,7 @@ debug_file_characteristics
 debug_icbtag_file_type_enum
 debug_tagid
 debug_udf_enums1
+debug_udf_time_enum
 VSD_STD_ID_BEA01
 VSD_STD_ID_BOOT2
 VSD_STD_ID_CD001
@@ -15,6 +16,7 @@ udf_file_free
 udf_get_file_entry
 udf_get_fileid_descriptor
 udf_get_filename
+udf_get_link_count
 udf_get_part_number
 udf_get_posix_filemode
 udf_get_next

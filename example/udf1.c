@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.10 2005/10/30 05:43:01 rocky Exp $
+  $Id: udf1.c,v 1.11 2005/10/30 07:35:36 rocky Exp $
 
   Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
   
@@ -54,17 +54,14 @@ static void
 print_file_info(const udf_file_t *p_udf_file) 
 {
   time_t mod_time = udf_get_modification_time(p_udf_file);
-  udf_file_entry_t udf_fe;
-  if (udf_get_file_entry(p_udf_file, &udf_fe)) {
-    /* Print directory attributes*/
-    char psz_mode[11]="invalid";
-    printf("%s ", udf_mode_string(udf_get_posix_filemode(p_udf_file),
-				  psz_mode));
-  }
+  char psz_mode[11]="invalid";
   
+  /* Print directory attributes*/
+  printf("%s ", udf_mode_string(udf_get_posix_filemode(p_udf_file),
+				psz_mode));
+  printf("%4d ", udf_get_link_count(p_udf_file));
   printf("%s %s", udf_get_filename(p_udf_file), ctime(&mod_time));
 }
-
 
 static udf_file_t *
 list_files(const udf_t *p_udf, udf_file_t *p_udf_file, char *psz_token)

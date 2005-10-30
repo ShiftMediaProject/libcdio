@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.14 2005/10/30 05:43:01 rocky Exp $
+    $Id: udf.h,v 1.15 2005/10/30 07:35:37 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -85,6 +85,12 @@ extern "C" {
   udf_t *udf_open (const char *psz_path);
   
   /*!
+    Return the partition number of the the opened udf handle. -1 
+    Is returned if we have an error.
+  */
+  int16_t udf_get_part_number(const udf_t *p_udf);
+
+  /*!
     Get the root in p_udf. If b_any_partition is false then
     the root must be in the given partition.
     NULL is returned if the partition is not found or a root is not found or
@@ -124,57 +130,11 @@ extern "C" {
 			    bool b_any_partition,
 			    partition_num_t i_partition);
   
-  /*!
-    Return the file id descriptor of the given file.
-  */
-  bool udf_get_fileid_descriptor(const udf_file_t *p_udf_file, 
-				 /*out*/ udf_fileid_desc_t *p_udf_fid);
+  /*! udf_mode_string - fill in string PSZ_STR with an ls-style ASCII
+    representation of the i_mode. PSZ_STR is returned.
 
-  /*!
-    Return the name of the file
-  */
-  const char *udf_get_filename(const udf_file_t *p_udf_file);
-  
-  /*!
-    Return the name of the file
-  */
-  bool udf_get_file_entry(const udf_file_t *p_udf_file, 
-			  /*out*/ udf_file_entry_t *p_udf_fe);
-
-  /*!  
-    Returns a POSIX mode for a given p_udf_file.
-  */
-  mode_t udf_get_posix_filemode(const udf_file_t *p_udf_file);
-
-  /*!
-    Return the next subdirectory. 
-  */
-  udf_file_t *udf_get_sub(const udf_t *p_udf, const udf_file_t *p_udf_file);
-  
-  /*!
-    Return the next file.
-  */
-  udf_file_t *udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file);
-  
-  /*!
-    Return the partition number of the file
-  */
-  int16_t udf_get_part_number(const udf_t *p_udf);
-
-  /*!
-    free free resources associated with p_udf_file.
-  */
-  bool udf_file_free(udf_file_t *p_udf_file);
-  
-  /*!
-    Return true if the file is a directory.
-  */
-  bool udf_is_dir(const udf_file_t *p_udf_file);
-  
-  /*! udf_mode_string - fill in string STR with an ls-style ASCII
-    representation of the st_mode field of file stats block STATP.
-    10 characters are stored in STR; no terminating null is added.
-    The characters stored in STR are:
+    10 characters are stored in PSZ_STR; a terminating null byte is added.
+    The characters stored in PSZ_STR are:
     
     0	File type.  'd' for directory, 'c' for character
 	special, 'b' for block special, 'm' for multiplex,
@@ -207,12 +167,13 @@ extern "C" {
 	otherwise.
 	'T' if the file is sticky but not executable.  */
 
-  char *udf_mode_string (mode_t mode, char *str);
+  char *udf_mode_string (mode_t i_mode, char *psz_str);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
 #include <cdio/udf_time.h>
+#include <cdio/udf_file.h>
 
 #endif /*UDF_H*/

@@ -266,18 +266,19 @@ ftypelet (mode_t bits)
 	'T' if the file is sticky but not executable.  */
 
 char *
-udf_mode_string (mode_t mode, char *str)
+udf_mode_string (mode_t i_mode, char *psz_str)
 {
-  str[0] = ftypelet (mode);
-  str[1] = mode & S_IRUSR ? 'r' : '-';
-  str[2] = mode & S_IWUSR ? 'w' : '-';
-  str[3] = mode & S_IXUSR ? 'x' : '-';
-  str[4] = mode & S_IRGRP ? 'r' : '-';
-  str[5] = mode & S_IWGRP ? 'w' : '-';
-  str[6] = mode & S_IXGRP ? 'x' : '-';
-  str[7] = mode & S_IROTH ? 'r' : '-';
-  str[8] = mode & S_IWOTH ? 'w' : '-';
-  str[9] = mode & S_IXOTH ? 'x' : '-';
-  setst (mode, str);
-  return str;
+  psz_str[ 0] = ftypelet (i_mode);
+  psz_str[ 1] = i_mode & S_IRUSR ? 'r' : '-';
+  psz_str[ 2] = i_mode & S_IWUSR ? 'w' : '-';
+  psz_str[ 3] = i_mode & S_IXUSR ? 'x' : '-';
+  psz_str[ 4] = i_mode & S_IRGRP ? 'r' : '-';
+  psz_str[ 5] = i_mode & S_IWGRP ? 'w' : '-';
+  psz_str[ 6] = i_mode & S_IXGRP ? 'x' : '-';
+  psz_str[ 7] = i_mode & S_IROTH ? 'r' : '-';
+  psz_str[ 8] = i_mode & S_IWOTH ? 'w' : '-';
+  psz_str[ 9] = i_mode & S_IXOTH ? 'x' : '-';
+  psz_str[10] = '\0';
+  setst (i_mode, psz_str);
+  return psz_str;
 }

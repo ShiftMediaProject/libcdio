@@ -1,5 +1,5 @@
 /*
-    $Id: udf.c,v 1.6 2005/10/30 05:43:01 rocky Exp $
+    $Id: udf.c,v 1.7 2005/10/30 07:35:37 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -101,41 +101,9 @@ udf_get_posix_filemode(const udf_file_t *p_udf_file)
   
 }
 
-const char *
-udf_get_filename(const udf_file_t *p_udf_file)
-{
-  if (!p_udf_file) return NULL;
-  return p_udf_file->psz_name;
-}
-
-bool
-udf_get_file_entry(const udf_file_t *p_udf_file, 
-		   /*out*/ udf_file_entry_t *p_udf_fe)
-{
-  if (!p_udf_file) return false;
-  memcpy(p_udf_fe, &p_udf_file->fe, sizeof(udf_file_entry_t));
-  return true;
-}
-
-  /*!
-    Return the file id descriptor of the given file.
-  */
-bool udf_get_fileid_descriptor(const udf_file_t *p_udf_file, 
-			       /*out*/ udf_fileid_desc_t *p_udf_fid)
-{
-  
-  if (!p_udf_file) return false;
-  if (!p_udf_file->fid) {
-    /* FIXME do something about trying to get the descriptor. */
-    return false;
-  }
-  memcpy(p_udf_fid, p_udf_file->fid, sizeof(udf_fileid_desc_t));
-  return true;
-}
-
-
 /*!
-  Return the partition number of the file
+  Return the partition number of the the opened udf handle. -1 
+  Is returned if we have an error.
 */
 int16_t udf_get_part_number(const udf_t *p_udf)
 {
@@ -143,8 +111,3 @@ int16_t udf_get_part_number(const udf_t *p_udf)
   return p_udf->i_partition;
 }
 
-bool
-udf_is_dir(const udf_file_t *p_udf_file)
-{
-  return p_udf_file->b_dir;
-}
