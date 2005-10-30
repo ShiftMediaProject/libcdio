@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.13 2005/10/29 14:43:50 rocky Exp $
+    $Id: udf.h,v 1.14 2005/10/30 05:43:01 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,8 @@
 
 #include <cdio/cdio.h>
 #include <cdio/ecma_167.h>
+
+#include <sys/stat.h>
 
 typedef uint16_t partition_num_t;
 
@@ -123,11 +125,6 @@ extern "C" {
 			    partition_num_t i_partition);
   
   /*!
-    Returns a string which interprets the extended attribute permissions
-  */
-  const char *udf_get_attr_str(udf_Uint32_t permissions, char perms[]);
-
-  /*!
     Return the file id descriptor of the given file.
   */
   bool udf_get_fileid_descriptor(const udf_file_t *p_udf_file, 
@@ -145,10 +142,9 @@ extern "C" {
 			  /*out*/ udf_file_entry_t *p_udf_fe);
 
   /*!  
-    Returns a POSIX filemode string for a given p_udf_file.
+    Returns a POSIX mode for a given p_udf_file.
   */
-  const char *udf_get_posix_filemode_str(const udf_file_t *p_udf_file, 
-					 char perms[]);
+  mode_t udf_get_posix_filemode(const udf_file_t *p_udf_file);
 
   /*!
     Return the next subdirectory. 
@@ -175,6 +171,44 @@ extern "C" {
   */
   bool udf_is_dir(const udf_file_t *p_udf_file);
   
+  /*! udf_mode_string - fill in string STR with an ls-style ASCII
+    representation of the st_mode field of file stats block STATP.
+    10 characters are stored in STR; no terminating null is added.
+    The characters stored in STR are:
+    
+    0	File type.  'd' for directory, 'c' for character
+	special, 'b' for block special, 'm' for multiplex,
+	'l' for symbolic link, 's' for socket, 'p' for fifo,
+	'-' for regular, '?' for any other file type
+
+    1	'r' if the owner may read, '-' otherwise.
+
+    2	'w' if the owner may write, '-' otherwise.
+
+    3	'x' if the owner may execute, 's' if the file is
+	set-user-id, '-' otherwise.
+	'S' if the file is set-user-id, but the execute
+	bit isn't set.
+
+    4	'r' if group members may read, '-' otherwise.
+
+    5	'w' if group members may write, '-' otherwise.
+
+    6	'x' if group members may execute, 's' if the file is
+	set-group-id, '-' otherwise.
+	'S' if it is set-group-id but not executable.
+
+    7	'r' if any user may read, '-' otherwise.
+
+    8	'w' if any user may write, '-' otherwise.
+
+    9	'x' if any user may execute, 't' if the file is "sticky"
+	(will be retained in swap space after execution), '-'
+	otherwise.
+	'T' if the file is sticky but not executable.  */
+
+  char *udf_mode_string (mode_t mode, char *str);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

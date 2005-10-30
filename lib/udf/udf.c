@@ -1,5 +1,5 @@
 /*
-    $Id: udf.c,v 1.5 2005/10/29 14:52:47 rocky Exp $
+    $Id: udf.c,v 1.6 2005/10/30 05:43:01 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,6 +26,10 @@
 # include <string.h>
 #endif
 
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+
 /** The below variables are trickery to force enum symbol values to be
     recorded in debug symbol tables. They are used to allow one to refer
     to the enumeration value names in the typedefs above in a debugger
@@ -34,31 +38,67 @@
 tag_id_t debug_tagid;
 file_characteristics_t debug_file_characteristics;
 udf_enum1_t debug_udf_enum1;
+icbtag_file_type_enum_t debug_icbtag_file_type_enum;
 ecma_167_enum1_t ecma167_enum1;
 ecma_167_timezone_enum_t debug_ecma_167_timezone_enum;
 
 /*!
-  Returns a string which interpreting the extended attribute permissions
+  Returns POSIX mode bitstring for a given file.
 */
-const char *
-udf_get_attr_str(udf_Uint32_t permissions, char *result) 
+mode_t 
+udf_get_posix_filemode(const udf_file_t *p_udf_file) 
 {
-  uint32_t i_perms = uint32_from_le(permissions);
+  udf_file_entry_t udf_fe;
+  mode_t mode = 0;
 
-  result[ 0] = (i_perms & FE_PERM_U_READ)  ? 'r' : '-';
-  result[ 1] = (i_perms & FE_PERM_U_WRITE) ? 'w' : '-';
-  result[ 2] = (i_perms & FE_PERM_U_EXEC)  ? 'x' : '-';
+  if (udf_get_file_entry(p_udf_file, &udf_fe)) {
+    uint16_t i_flags;
+    uint32_t i_perms;
 
-  result[ 3] = (i_perms & FE_PERM_G_READ)  ? 'r' : '-';
-  result[ 4] = (i_perms & FE_PERM_G_WRITE) ? 'w' : '-';
-  result[ 5] = (i_perms & FE_PERM_G_EXEC)  ? 'x' : '-';
+    i_perms = uint32_from_le(udf_fe.permissions);
+    i_flags = uint16_from_le(udf_fe.icb_tag.flags);
 
-  result[ 6] = (i_perms & FE_PERM_O_READ)  ? 'r' : '-';
-  result[ 7] = (i_perms & FE_PERM_O_WRITE) ? 'w' : '-';
-  result[ 8] = (i_perms & FE_PERM_O_EXEC)  ? 'x' : '-';
+    if (i_perms & FE_PERM_U_READ)  mode |= S_IRUSR;
+    if (i_perms & FE_PERM_U_WRITE) mode |= S_IWUSR;
+    if (i_perms & FE_PERM_U_EXEC)  mode |= S_IXUSR;
+    
+    if (i_perms & FE_PERM_G_READ)  mode |= S_IRGRP;
+    if (i_perms & FE_PERM_G_WRITE) mode |= S_IWGRP;
+    if (i_perms & FE_PERM_G_EXEC)  mode |= S_IXGRP;
+    
+    if (i_perms & FE_PERM_O_READ)  mode |= S_IROTH;
+    if (i_perms & FE_PERM_O_WRITE) mode |= S_IWOTH;
+    if (i_perms & FE_PERM_O_EXEC)  mode |= S_IXOTH;
 
-  result[ 9] = '\0';
-  return result;
+    switch (udf_fe.icb_tag.file_type) {
+    case ICBTAG_FILE_TYPE_DIRECTORY: 
+      mode |= S_IFDIR;
+      break;
+    case ICBTAG_FILE_TYPE_REGULAR:
+      mode |= S_IFREG;
+      break;
+    case ICBTAG_FILE_TYPE_SYMLINK:
+      mode |= S_IFLNK;
+      break;
+    case ICBTAG_FILE_TYPE_CHAR:
+      mode |= S_IFCHR;
+      break;
+    case ICBTAG_FILE_TYPE_SOCKET:
+      mode |= S_IFSOCK;
+      break;
+    case ICBTAG_FILE_TYPE_BLOCK:
+      mode |= S_IFBLK;
+      break;
+    default: ;
+    };
+  
+    if (i_flags & ICBTAG_FLAG_SETUID) mode |= S_ISUID;
+    if (i_flags & ICBTAG_FLAG_SETGID) mode |= S_ISGID;
+    if (i_flags & ICBTAG_FLAG_STICKY) mode |= S_ISVTX;
+  }
+  
+  return mode;
+  
 }
 
 const char *
@@ -67,29 +107,6 @@ udf_get_filename(const udf_file_t *p_udf_file)
   if (!p_udf_file) return NULL;
   return p_udf_file->psz_name;
 }
-
-/*!  
-  Returns a POSIX filemode string for a given p_udf_file.
-*/
-const char *
-udf_get_posix_filemode_str(const udf_file_t *p_udf_file, char perms[]) 
-{
-  udf_file_entry_t udf_fe;
-
-  if (p_udf_file->b_dir) {
-    perms[0] = 'd';
-  } else {
-    perms[0] = '-';
-  }
-  
-  if (udf_get_file_entry(p_udf_file, &udf_fe)) {
-    /* Print directory attributes*/
-    udf_get_attr_str (udf_fe.permissions, &perms[1]);
-    return perms;
-  }
-  return "";
-}
-
 
 bool
 udf_get_file_entry(const udf_file_t *p_udf_file, 

@@ -625,21 +625,33 @@ typedef struct udf_icbtag_s udf_icbtag_t;
 #define ICBTAG_STRATEGY_TYPE_3		0x0003
 #define ICBTAG_STRATEGY_TYPE_4		0x0004
 
-/** File Type (ECMA 167r3 4/14.6.6) */
-#define ICBTAG_FILE_TYPE_UNDEF		0x00
-#define ICBTAG_FILE_TYPE_USE		0x01
-#define ICBTAG_FILE_TYPE_PIE		0x02
-#define ICBTAG_FILE_TYPE_IE		0x03
-#define ICBTAG_FILE_TYPE_DIRECTORY	0x04
-#define ICBTAG_FILE_TYPE_REGULAR	0x05
-#define ICBTAG_FILE_TYPE_BLOCK		0x06
-#define ICBTAG_FILE_TYPE_CHAR		0x07
-#define ICBTAG_FILE_TYPE_EA		0x08
-#define ICBTAG_FILE_TYPE_FIFO		0x09
-#define ICBTAG_FILE_TYPE_SOCKET		0x0A
-#define ICBTAG_FILE_TYPE_TE		0x0B
-#define ICBTAG_FILE_TYPE_SYMLINK	0x0C
-#define ICBTAG_FILE_TYPE_STREAMDIR	0x0D
+/** File Type (ECMA 167r3 4/14.6.6) 
+
+   Imagine the below enum values as #define'd values rather than
+   distinct values of an enum.
+*/
+typedef enum {
+  ICBTAG_FILE_TYPE_UNDEF =	0x00,
+  ICBTAG_FILE_TYPE_USE =	0x01,
+  ICBTAG_FILE_TYPE_PIE =	0x02,
+  ICBTAG_FILE_TYPE_IE =		0x03,
+  ICBTAG_FILE_TYPE_DIRECTORY =	0x04,
+  ICBTAG_FILE_TYPE_REGULAR =	0x05,
+  ICBTAG_FILE_TYPE_BLOCK =	0x06,
+  ICBTAG_FILE_TYPE_CHAR =	0x07,
+  ICBTAG_FILE_TYPE_EA =		0x08,
+  ICBTAG_FILE_TYPE_FIFO =	0x09,
+  ICBTAG_FILE_TYPE_SOCKET =	0x0A,
+  ICBTAG_FILE_TYPE_TE =		0x0B,
+  ICBTAG_FILE_TYPE_SYMLINK =	0x0C,
+  ICBTAG_FILE_TYPE_STREAMDIR =	0x0D
+} icbtag_file_type_enum_t;
+
+/** This variable is trickery to force the above enum symbol values to
+    be recorded in debug symbol tables. It is used to allow one refer
+    to above enumeration values in a debugger and debugger
+    expressions */
+extern icbtag_file_type_enum_t debug_icbtag_file_type_enum;
 
 /** Flags (ECMA 167r3 4/14.6.8) */
 #define ICBTAG_FLAG_AD_MASK		0x0007

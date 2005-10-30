@@ -1,6 +1,7 @@
 debug_ecma_167_enums1
 debug_ecma_167_timezone_enum
 debug_file_characteristics
+debug_icbtag_file_type_enum
 debug_tagid
 debug_udf_enums1
 VSD_STD_ID_BEA01
@@ -15,7 +16,7 @@ udf_get_file_entry
 udf_get_fileid_descriptor
 udf_get_filename
 udf_get_part_number
-udf_get_posix_filemode_str
+udf_get_posix_filemode
 udf_get_next
 udf_get_sub
 udf_is_dir
