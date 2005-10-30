@@ -30,7 +30,7 @@
    blf 09/27/99: ripped out all the old code and inserted new table from
                  John Brockmeyer (without leap second corrections)
                  rewrote udf_stamp_to_time and fixed timezone
-                 accounting in udf_time_to_stamp.
+                 accounting in udf_timespec_to_stamp.
 */
 
 /*
@@ -148,25 +148,29 @@ udf_stamp_to_time(time_t *dest, long int *dest_usec,
 }
 
 
+/*!
+  Convert a UDF timestamp to a time_t. If microseconds are desired,
+  use dest_usec. The return value is the same as dest. */
 udf_timestamp_t *
-udf_time_to_stamp(udf_timestamp_t *dest, struct timespec ts)
+udf_timespec_to_stamp(const struct timespec ts, udf_timestamp_t *dest)
 {
   long int days, rem, y;
   const unsigned short int *ip;
   int16_t offset;
+  int16_t tv_sec;
 
 #ifdef HAVE_TIMEZONE_VAR  
   offset = -timezone;
 #endif
   
   if (!dest)
-    return NULL;
+    return dest;
   
   dest->type_tz = 0x1000 | (offset & 0x0FFF);
   
-  ts.tv_sec   += offset * SECS_PER_MINUTE;
-  days         = ts.tv_sec / SECS_PER_DAY;
-  rem          = ts.tv_sec % SECS_PER_DAY;
+  tv_sec       = ts.tv_sec + (offset * SECS_PER_MINUTE);
+  days         = tv_sec / SECS_PER_DAY;
+  rem          = tv_sec % SECS_PER_DAY;
   dest->hour   = rem / SECS_PER_HOUR;
   rem         %= SECS_PER_HOUR;
   dest->minute = rem / SECS_PER_MINUTE;

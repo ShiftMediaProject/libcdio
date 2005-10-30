@@ -1,5 +1,5 @@
 /*  
-    $Id: udf_time.h,v 1.2 2005/10/27 11:18:56 rocky Exp $
+    $Id: udf_time.h,v 1.3 2005/10/30 14:10:44 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -33,44 +33,45 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/*!
-  Return the access time of the file.
- */
-time_t udf_get_access_time(const udf_file_t *p_udf_file);
+  /*!
+    Return the access time of the file.
+  */
+  time_t udf_get_access_time(const udf_file_t *p_udf_file);
 
-/*!
-  Return the attribute (most recent create or access) time of the file
- */
-time_t udf_get_attribute_time(const udf_file_t *p_udf_file);
+  /*!
+    Return the attribute (most recent create or access) time of the file
+  */
+  time_t udf_get_attribute_time(const udf_file_t *p_udf_file);
 
-/*!
-  Return the modification time of the file.
- */
-time_t udf_get_modification_time(const udf_file_t *p_udf_file);
+  /*!
+    Return the modification time of the file.
+  */
+  time_t udf_get_modification_time(const udf_file_t *p_udf_file);
 
-/*!
-  Return the access timestamp of the file
- */
-udf_timestamp_t *udf_get_access_timestamp(const udf_file_t *p_udf_file);
+  /*!
+    Return the access timestamp of the file
+  */
+  udf_timestamp_t *udf_get_access_timestamp(const udf_file_t *p_udf_file);
 
-/*!
-  Return the modification timestamp of the file
- */
-udf_timestamp_t *udf_get_modification_timestamp(const udf_file_t *p_udf_file);
+  /*!
+    Return the modification timestamp of the file
+  */
+  udf_timestamp_t *udf_get_modification_timestamp(const udf_file_t 
+						  *p_udf_file);
 
-/*!
-  Return the attr timestamp of the file
- */
-udf_timestamp_t *udf_get_attr_timestamp(const udf_file_t *p_udf_file);
+  /*!
+    Return the attr timestamp of the file
+  */
+  udf_timestamp_t *udf_get_attr_timestamp(const udf_file_t *p_udf_file);
 
-/*!
-  Convert a UDF timestamp to a time_t. If microseconds are desired,
-  use dest_usec. The return value is the same as dest. */
-time_t *udf_stamp_to_time(time_t *dest, long int *dest_usec, 
+  /*!
+    Convert a UDF timestamp to a time_t. If microseconds are desired,
+    use dest_usec. The return value is the same as dest. */
+  time_t *udf_stamp_to_time(time_t *dest, long int *dest_usec, 
 			  const udf_timestamp_t src);
 
-udf_timestamp_t *udf_time_to_stamp(udf_timestamp_t *dest, 
-				   const struct timespec ts);
+  udf_timestamp_t *udf_timespec_to_stamp(const struct timespec ts,
+					 udf_timestamp_t *dest);
 
 #ifdef __cplusplus
 }
