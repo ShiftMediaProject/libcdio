@@ -1,5 +1,5 @@
 /*
-    $Id: iso-info.c,v 1.33 2005/10/30 15:58:37 rocky Exp $
+    $Id: iso-info.c,v 1.34 2005/10/30 16:09:35 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,6 +26,7 @@
 #define err_exit(fmt, args...)			    \
   report (stderr, "%s: "fmt, program_name, ##args); \
   iso9660_close(p_iso);				    \
+  free(program_name);				    \
   return(EXIT_FAILURE);
 
 #ifdef HAVE_CONFIG_H
