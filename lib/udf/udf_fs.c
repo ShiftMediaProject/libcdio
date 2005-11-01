@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.10 2005/11/01 03:14:50 rocky Exp $
+    $Id: udf_fs.c,v 1.11 2005/11/01 03:21:04 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -199,7 +199,7 @@ udf_ff_traverse(udf_t *p_udf, udf_dirent_t *p_udf_dirent, char *psz_token)
       if (!next_tok)
 	return p_udf_dirent; /* found */
       else if (p_udf_dirent->b_dir) {
-	udf_dirent_t * p_udf_dirent2 = udf_opendir(p_udf, p_udf_dirent);
+	udf_dirent_t * p_udf_dirent2 = udf_opendir(p_udf_dirent);
 	
 	if (p_udf_dirent2) {
 	  udf_dirent_t * p_udf_dirent3 = 
@@ -550,9 +550,10 @@ udf_close (udf_t *p_udf)
 }
 
 udf_dirent_t * 
-udf_opendir(udf_t *p_udf, const udf_dirent_t *p_udf_dirent)
+udf_opendir(const udf_dirent_t *p_udf_dirent)
 {
   if (p_udf_dirent->b_dir && !p_udf_dirent->b_parent && p_udf_dirent->fid) {
+    udf_t *p_udf = p_udf_dirent->p_udf;
     uint8_t data[UDF_BLOCKSIZE];
     udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) &data;
     

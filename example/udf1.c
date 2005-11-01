@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.14 2005/11/01 03:14:49 rocky Exp $
+  $Id: udf1.c,v 1.15 2005/11/01 03:21:04 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -76,7 +76,7 @@ list_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const char *psz_path)
       
     if (udf_is_dir(p_udf_dirent)) {
       
-      udf_dirent_t *p_udf_dirent2 = udf_opendir(p_udf, p_udf_dirent);
+      udf_dirent_t *p_udf_dirent2 = udf_opendir(p_udf_dirent);
       if (p_udf_dirent2) {
 	const char *psz_dirname = udf_get_filename(p_udf_dirent);
 	const unsigned int i_newlen=2 + strlen(psz_path) + strlen(psz_dirname);

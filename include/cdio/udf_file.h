@@ -1,5 +1,5 @@
 /*  
-    $Id: udf_file.h,v 1.2 2005/11/01 03:14:50 rocky Exp $
+    $Id: udf_file.h,v 1.3 2005/11/01 03:21:04 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -61,7 +61,7 @@ extern "C" {
   /*!
     Return the next subdirectory. 
   */
-  udf_dirent_t *udf_opendir(udf_t *p_udf, const udf_dirent_t *p_udf_dirent);
+  udf_dirent_t *udf_opendir(const udf_dirent_t *p_udf_dirent);
   
   /*!
     Advances p_udf_direct to the the next directory entry in the
