@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.9 2005/10/27 11:18:57 rocky Exp $
+    $Id: udf_fs.c,v 1.10 2005/11/01 03:14:50 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -189,24 +189,24 @@ udf_get_lba(const udf_file_entry_t *p_udf_fe,
 #define udf_PATH_DELIMITERS "/\\"
 
 static 
-udf_file_t *
-udf_ff_traverse(udf_t *p_udf, udf_file_t *p_udf_file, char *psz_token)
+udf_dirent_t *
+udf_ff_traverse(udf_t *p_udf, udf_dirent_t *p_udf_dirent, char *psz_token)
 {
-  while (udf_get_next(p_udf, p_udf_file)) {
-    if (strcmp(psz_token, p_udf_file->psz_name) == 0) {
+  while (udf_readdir(p_udf_dirent)) {
+    if (strcmp(psz_token, p_udf_dirent->psz_name) == 0) {
       char *next_tok = strtok(NULL, udf_PATH_DELIMITERS);
       
       if (!next_tok)
-	return p_udf_file; /* found */
-      else if (p_udf_file->b_dir) {
-	udf_file_t * p_udf_file2 = udf_get_sub(p_udf, p_udf_file);
+	return p_udf_dirent; /* found */
+      else if (p_udf_dirent->b_dir) {
+	udf_dirent_t * p_udf_dirent2 = udf_opendir(p_udf, p_udf_dirent);
 	
-	if (p_udf_file2) {
-	  udf_file_t * p_udf_file3 = 
-	    udf_ff_traverse(p_udf, p_udf_file2, next_tok);
+	if (p_udf_dirent2) {
+	  udf_dirent_t * p_udf_dirent3 = 
+	    udf_ff_traverse(p_udf, p_udf_dirent2, next_tok);
 	  
-	  if (!p_udf_file3) udf_file_free(p_udf_file2);
-	  return p_udf_file3;
+	  if (!p_udf_dirent3) udf_dirent_free(p_udf_dirent2);
+	  return p_udf_dirent3;
 	}
       }
     }
@@ -217,24 +217,25 @@ udf_ff_traverse(udf_t *p_udf, udf_file_t *p_udf_file, char *psz_token)
 /* FIXME! */
 #define udf_MAX_PATHLEN 2048
 
-udf_file_t * 
+udf_dirent_t * 
 udf_find_file(udf_t *p_udf, const char *psz_name, bool b_any_partition,
 	      partition_num_t i_partition)
 {
-  udf_file_t *p_udf_file = udf_get_root(p_udf, b_any_partition, i_partition);
-  udf_file_t *p_udf_file2 = NULL;
+  udf_dirent_t *p_udf_dirent = 
+    udf_get_root(p_udf, b_any_partition, i_partition);
+  udf_dirent_t *p_udf_dirent2 = NULL;
   
-  if (p_udf_file) {
+  if (p_udf_dirent) {
     char tokenline[udf_MAX_PATHLEN];
     char *psz_token;
     
     strcpy(tokenline, psz_name);
     psz_token = strtok(tokenline, udf_PATH_DELIMITERS);
     if (psz_token)
-      p_udf_file2 = udf_ff_traverse(p_udf, p_udf_file, psz_token);
-    udf_file_free(p_udf_file);
+      p_udf_dirent2 = udf_ff_traverse(p_udf, p_udf_dirent, psz_token);
+    udf_dirent_free(p_udf_dirent);
   }
-  return p_udf_file2;
+  return p_udf_dirent2;
 }
 
 /* Convert unicode16 to 8-bit char by dripping MSB. 
@@ -257,21 +258,24 @@ unicode16_decode( const uint8_t *data, int i_len, char *target )
 }
 
 
-static udf_file_t *
-udf_new_file(udf_file_entry_t *p_udf_fe, uint32_t i_part_start, 
-	     const char *psz_name, bool b_dir, bool b_parent) 
+static udf_dirent_t *
+udf_new_dirent(udf_file_entry_t *p_udf_fe, udf_t *p_udf,
+	       const char *psz_name, bool b_dir, bool b_parent) 
 {
-  udf_file_t *p_udf_file = (udf_file_t *) calloc(1, sizeof(udf_file_t));
-  if (!p_udf_file) return NULL;
-  p_udf_file->psz_name     = strdup(psz_name);
-  p_udf_file->b_dir        = b_dir;
-  p_udf_file->b_parent     = b_parent;
-  p_udf_file->i_part_start = i_part_start;
-  p_udf_file->dir_left     = uint64_from_le(p_udf_fe->info_len); 
+  udf_dirent_t *p_udf_dirent = 
+    (udf_dirent_t *) calloc(1, sizeof(udf_dirent_t));
+  if (!p_udf_dirent) return NULL;
+  p_udf_dirent->psz_name     = strdup(psz_name);
+  p_udf_dirent->b_dir        = b_dir;
+  p_udf_dirent->b_parent     = b_parent;
+  p_udf_dirent->p_udf        = p_udf;
+  p_udf_dirent->i_part_start = p_udf->i_part_start;
+  p_udf_dirent->dir_left     = uint64_from_le(p_udf_fe->info_len); 
 
-  memcpy(&(p_udf_file->fe), p_udf_fe, sizeof(udf_file_entry_t));
-  udf_get_lba( p_udf_fe, &(p_udf_file->dir_lba), &(p_udf_file->dir_end_lba) );
-  return p_udf_file;
+  memcpy(&(p_udf_dirent->fe), p_udf_fe, sizeof(udf_file_entry_t));
+  udf_get_lba( p_udf_fe, &(p_udf_dirent->dir_lba), 
+	       &(p_udf_dirent->dir_end_lba) );
+  return p_udf_dirent;
 }
 
 /*!
@@ -444,7 +448,7 @@ udf_get_volumeset_id(udf_t *p_udf, /*out*/ uint8_t *volsetid,
 
   Caller must free result - use udf_file_free for that.
 */
-udf_file_t *
+udf_dirent_t *
 udf_get_root (udf_t *p_udf, bool b_any_partition, partition_num_t i_partition)
 {
   const anchor_vol_desc_ptr_t *p_avdp = &p_udf->anchor_vol_desc_ptr;
@@ -514,7 +518,7 @@ udf_get_root (udf_t *p_udf, bool b_any_partition, partition_num_t i_partition)
 	/* Check partition numbers match of last-read block? */
 	
 	/* We win! - Save root directory information. */
-	return udf_new_file(p_udf_fe, p_udf->i_part_start, "/", true, false );
+	return udf_new_dirent(p_udf_fe, p_udf, "/", true, false );
       }
     }
   }
@@ -545,112 +549,115 @@ udf_close (udf_t *p_udf)
   return true;
 }
 
-udf_file_t * 
-udf_get_sub(const udf_t *p_udf, const udf_file_t *p_udf_file)
+udf_dirent_t * 
+udf_opendir(udf_t *p_udf, const udf_dirent_t *p_udf_dirent)
 {
-  if (p_udf_file->b_dir && !p_udf_file->b_parent && p_udf_file->fid) {
+  if (p_udf_dirent->b_dir && !p_udf_dirent->b_parent && p_udf_dirent->fid) {
     uint8_t data[UDF_BLOCKSIZE];
     udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) &data;
     
     driver_return_code_t i_ret = 
       udf_read_sectors(p_udf, p_udf_fe, p_udf->i_part_start 
-		       + p_udf_file->fid->icb.loc.lba, 1);
+		       + p_udf_dirent->fid->icb.loc.lba, 1);
 
     if (DRIVER_OP_SUCCESS == i_ret 
 	&& !udf_checktag(&p_udf_fe->tag, TAGID_FILE_ENTRY)) {
       
       if (ICBTAG_FILE_TYPE_DIRECTORY == p_udf_fe->icb_tag.file_type) {
-	udf_file_t *p_udf_file_new = 
-	  udf_new_file(p_udf_fe, p_udf->i_part_start, p_udf_file->psz_name, 
-		       true, true);
-	return p_udf_file_new;
+	udf_dirent_t *p_udf_dirent_new = 
+	  udf_new_dirent(p_udf_fe, p_udf, p_udf_dirent->psz_name, true, true);
+	return p_udf_dirent_new;
       }
     }
   }
   return NULL;
 }
 
-udf_file_t *
-udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file)
+udf_dirent_t *
+udf_readdir(udf_dirent_t *p_udf_dirent)
 {
-
-  if (p_udf_file->dir_left <= 0) {
-    p_udf_file->fid = NULL;
+  udf_t *p_udf;
+  
+  if (p_udf_dirent->dir_left <= 0) {
+    udf_dirent_free(p_udf_dirent);
     return NULL;
   }
-  
-  if (p_udf_file->fid) { 
+
+  p_udf = p_udf_dirent->p_udf;
+  if (p_udf_dirent->fid) { 
     /* advance to next File Identifier Descriptor */
     /* FIXME: need to advance file entry (fe) as well.  */
     uint32_t ofs = 4 * 
-      ((sizeof(*(p_udf_file->fid)) + p_udf_file->fid->i_imp_use 
-	+ p_udf_file->fid->i_file_id + 3) / 4);
+      ((sizeof(*(p_udf_dirent->fid)) + p_udf_dirent->fid->i_imp_use 
+	+ p_udf_dirent->fid->i_file_id + 3) / 4);
     
-    p_udf_file->fid = (udf_fileid_desc_t *)((uint8_t *)p_udf_file->fid + ofs);
+    p_udf_dirent->fid = 
+      (udf_fileid_desc_t *)((uint8_t *)p_udf_dirent->fid + ofs);
   }
   
-  if (!p_udf_file->fid) {
-    uint32_t i_sectors = (p_udf_file->dir_end_lba - p_udf_file->dir_lba + 1);
+  if (!p_udf_dirent->fid) {
+    uint32_t i_sectors = 
+      (p_udf_dirent->dir_end_lba - p_udf_dirent->dir_lba + 1);
     uint32_t size = UDF_BLOCKSIZE * i_sectors;
     driver_return_code_t i_ret;
 
-    if (!p_udf_file->sector)
-      p_udf_file->sector = (uint8_t*) malloc(size);
-    i_ret = udf_read_sectors(p_udf, p_udf_file->sector, 
-			     p_udf_file->i_part_start + p_udf_file->dir_lba, 
+    if (!p_udf_dirent->sector)
+      p_udf_dirent->sector = (uint8_t*) malloc(size);
+    i_ret = udf_read_sectors(p_udf, p_udf_dirent->sector, 
+			     p_udf_dirent->i_part_start+p_udf_dirent->dir_lba, 
 			     i_sectors);
     if (DRIVER_OP_SUCCESS == i_ret)
-      p_udf_file->fid = (udf_fileid_desc_t *) p_udf_file->sector;
+      p_udf_dirent->fid = (udf_fileid_desc_t *) p_udf_dirent->sector;
     else
-      p_udf_file->fid = NULL;
+      p_udf_dirent->fid = NULL;
   }
   
-  if (p_udf_file->fid && !udf_checktag(&(p_udf_file->fid->tag), TAGID_FID))
+  if (p_udf_dirent->fid && !udf_checktag(&(p_udf_dirent->fid->tag), TAGID_FID))
     {
       uint32_t ofs = 
-	4 * ((sizeof(*p_udf_file->fid) + p_udf_file->fid->i_imp_use 
-	      + p_udf_file->fid->i_file_id + 3) / 4);
+	4 * ((sizeof(*p_udf_dirent->fid) + p_udf_dirent->fid->i_imp_use 
+	      + p_udf_dirent->fid->i_file_id + 3) / 4);
       
-      p_udf_file->dir_left -= ofs;
-      p_udf_file->b_dir = 
-	(p_udf_file->fid->file_characteristics & UDF_FILE_DIRECTORY) != 0;
-      p_udf_file->b_parent = 
-	(p_udf_file->fid->file_characteristics & UDF_FILE_PARENT) != 0;
+      p_udf_dirent->dir_left -= ofs;
+      p_udf_dirent->b_dir = 
+	(p_udf_dirent->fid->file_characteristics & UDF_FILE_DIRECTORY) != 0;
+      p_udf_dirent->b_parent = 
+	(p_udf_dirent->fid->file_characteristics & UDF_FILE_PARENT) != 0;
 
       {
-	const unsigned int i_len = p_udf_file->fid->i_file_id;
+	const unsigned int i_len = p_udf_dirent->fid->i_file_id;
 	uint8_t data[UDF_BLOCKSIZE] = {0};
 	udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) &data;
 
 	udf_read_sectors(p_udf, p_udf_fe, p_udf->i_part_start 
-			 + p_udf_file->fid->icb.loc.lba, 1);
+			 + p_udf_dirent->fid->icb.loc.lba, 1);
       
-	memcpy(&(p_udf_file->fe), p_udf_fe, sizeof(udf_file_entry_t));
+	memcpy(&(p_udf_dirent->fe), p_udf_fe, sizeof(udf_file_entry_t));
 
-	if (strlen(p_udf_file->psz_name) < i_len) 
-	  p_udf_file->psz_name = (char *)
-	    realloc(p_udf_file->psz_name, sizeof(char)*i_len+1);
+	if (strlen(p_udf_dirent->psz_name) < i_len) 
+	  p_udf_dirent->psz_name = (char *)
+	    realloc(p_udf_dirent->psz_name, sizeof(char)*i_len+1);
 	
-	unicode16_decode(p_udf_file->fid->imp_use 
-			 + p_udf_file->fid->i_imp_use, 
-			 i_len, p_udf_file->psz_name);
+	unicode16_decode(p_udf_dirent->fid->imp_use 
+			 + p_udf_dirent->fid->i_imp_use, 
+			 i_len, p_udf_dirent->psz_name);
       }
-      return p_udf_file;
+      return p_udf_dirent;
     }
   return NULL;
 }
 
-  
 /*!
-  free free resources associated with p_udf_file.
+  free free resources associated with p_udf_dirent.
 */
 bool 
-udf_file_free(udf_file_t *p_udf_file) 
+udf_dirent_free(udf_dirent_t *p_udf_dirent) 
 {
-  if (p_udf_file) {
-    free_and_null(p_udf_file->psz_name);
-    free_and_null(p_udf_file->sector);
-    free_and_null(p_udf_file);
+  if (p_udf_dirent) {
+    p_udf_dirent->fid = NULL;
+    free_and_null(p_udf_dirent->psz_name);
+    free_and_null(p_udf_dirent->sector);
+    free_and_null(p_udf_dirent);
   }
   return true;
 }

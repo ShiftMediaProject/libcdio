@@ -1,5 +1,5 @@
 /*
-    $Id: udf_private.h,v 1.3 2005/10/27 03:03:43 rocky Exp $
+    $Id: udf_private.h,v 1.4 2005/11/01 03:14:50 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -46,14 +46,14 @@ struct udf_s {
   uint32_t              fsd_offset;   /* lba of fileset descriptor */
 };
 
-struct udf_file_s
+struct udf_dirent_s
 {
   char	            *psz_name;
   bool	             b_dir;    /* true if this entry is a directory. */
   bool               b_parent; /* True if has parent directory (e.g. not root
 				  directory). If not set b_dir will probably
 				  be true. */
-
+  udf_t             *p_udf;
   uint32_t           i_part_start;
   uint32_t           dir_lba, dir_end_lba;
   uint64_t           dir_left;

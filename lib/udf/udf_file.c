@@ -1,5 +1,5 @@
 /*
-    $Id: udf_file.c,v 1.1 2005/10/30 07:35:37 rocky Exp $
+    $Id: udf_file.c,v 1.2 2005/11/01 03:14:50 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,34 +27,34 @@
 #endif
 
 const char *
-udf_get_filename(const udf_file_t *p_udf_file)
+udf_get_filename(const udf_dirent_t *p_udf_dirent)
 {
-  if (!p_udf_file) return NULL;
-  return p_udf_file->psz_name;
+  if (!p_udf_dirent) return NULL;
+  return p_udf_dirent->psz_name;
 }
 
 bool
-udf_get_file_entry(const udf_file_t *p_udf_file, 
+udf_get_file_entry(const udf_dirent_t *p_udf_dirent, 
 		   /*out*/ udf_file_entry_t *p_udf_fe)
 {
-  if (!p_udf_file) return false;
-  memcpy(p_udf_fe, &p_udf_file->fe, sizeof(udf_file_entry_t));
+  if (!p_udf_dirent) return false;
+  memcpy(p_udf_fe, &p_udf_dirent->fe, sizeof(udf_file_entry_t));
   return true;
 }
 
 /*!
   Return the file id descriptor of the given file.
 */
-bool udf_get_fileid_descriptor(const udf_file_t *p_udf_file, 
+bool udf_get_fileid_descriptor(const udf_dirent_t *p_udf_dirent, 
 			       /*out*/ udf_fileid_desc_t *p_udf_fid)
 {
   
-  if (!p_udf_file) return false;
-  if (!p_udf_file->fid) {
+  if (!p_udf_dirent) return false;
+  if (!p_udf_dirent->fid) {
     /* FIXME do something about trying to get the descriptor. */
     return false;
   }
-  memcpy(p_udf_fid, p_udf_file->fid, sizeof(udf_fileid_desc_t));
+  memcpy(p_udf_fid, p_udf_dirent->fid, sizeof(udf_fileid_desc_t));
   return true;
 }
 
@@ -62,11 +62,11 @@ bool udf_get_fileid_descriptor(const udf_file_t *p_udf_file,
 /*!
   Return the number of hard links of the file. Return 0 if error.
 */
-uint16_t udf_get_link_count(const udf_file_t *p_udf_file) 
+uint16_t udf_get_link_count(const udf_dirent_t *p_udf_dirent) 
 {
-  if (p_udf_file) {
+  if (p_udf_dirent) {
     udf_file_entry_t udf_fe;
-    if (udf_get_file_entry(p_udf_file, &udf_fe)) {
+    if (udf_get_file_entry(p_udf_dirent, &udf_fe)) {
       return uint16_from_le(udf_fe.link_count);
     }
   }
@@ -77,7 +77,7 @@ uint16_t udf_get_link_count(const udf_file_t *p_udf_file)
   Return true if the file is a directory.
 */
 bool
-udf_is_dir(const udf_file_t *p_udf_file)
+udf_is_dir(const udf_dirent_t *p_udf_dirent)
 {
-  return p_udf_file->b_dir;
+  return p_udf_dirent->b_dir;
 }

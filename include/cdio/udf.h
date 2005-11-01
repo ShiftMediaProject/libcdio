@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.15 2005/10/30 07:35:37 rocky Exp $
+    $Id: udf.h,v 1.16 2005/11/01 03:14:49 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -43,6 +43,7 @@ typedef uint8_t  ubyte;
 /** Opaque structures. */
 typedef struct udf_s udf_t; 
 typedef struct udf_file_s udf_file_t;
+typedef struct udf_dirent_s udf_dirent_t;
 
 /**
    Imagine the below a #define'd value rather than distinct values of
@@ -98,8 +99,8 @@ extern "C" {
 
     Caller must free result - use udf_file_free for that.
   */
-  udf_file_t *udf_get_root (udf_t *p_udf, bool b_any_partition, 
-			    partition_num_t i_partition);
+  udf_dirent_t *udf_get_root (udf_t *p_udf, bool b_any_partition, 
+			      partition_num_t i_partition);
   
   /**
    * Gets the Volume Identifier string, in 8bit unicode (latin-1)
@@ -126,9 +127,9 @@ extern "C" {
     Return a file pointer matching pzz_name. If b_any_partition is false then
     the root must be in the given partition. 
   */
-  udf_file_t *udf_find_file(udf_t *p_udf, const char *psz_name,
-			    bool b_any_partition,
-			    partition_num_t i_partition);
+  udf_dirent_t *udf_find_file(udf_t *p_udf, const char *psz_name,
+			      bool b_any_partition,
+			      partition_num_t i_partition);
   
   /*! udf_mode_string - fill in string PSZ_STR with an ls-style ASCII
     representation of the i_mode. PSZ_STR is returned.

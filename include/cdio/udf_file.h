@@ -1,5 +1,5 @@
 /*  
-    $Id: udf_file.h,v 1.1 2005/10/30 07:36:15 rocky Exp $
+    $Id: udf_file.h,v 1.2 2005/11/01 03:14:50 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -34,49 +34,54 @@ extern "C" {
   /*!
     Return the file id descriptor of the given file.
   */
-  bool udf_get_fileid_descriptor(const udf_file_t *p_udf_file, 
+  bool udf_get_fileid_descriptor(const udf_dirent_t *p_udf_dirent, 
 				 /*out*/ udf_fileid_desc_t *p_udf_fid);
 
   /*!
     Return the name of the file
   */
-  const char *udf_get_filename(const udf_file_t *p_udf_file);
+  const char *udf_get_filename(const udf_dirent_t *p_udf_dirent);
   
   /*!
     Return the name of the file
   */
-  bool udf_get_file_entry(const udf_file_t *p_udf_file, 
+  bool udf_get_file_entry(const udf_dirent_t *p_udf_dirent, 
 			  /*out*/ udf_file_entry_t *p_udf_fe);
 
   /*!
     Return the number of hard links of the file. Return 0 if error.
   */
-  uint16_t udf_get_link_count(const udf_file_t *p_udf_file);
+  uint16_t udf_get_link_count(const udf_dirent_t *p_udf_dirent);
 
   /*!  
-    Returns a POSIX mode for a given p_udf_file.
+    Returns a POSIX mode for a given p_udf_dirent.
   */
-  mode_t udf_get_posix_filemode(const udf_file_t *p_udf_file);
+  mode_t udf_get_posix_filemode(const udf_dirent_t *p_udf_dirent);
 
   /*!
     Return the next subdirectory. 
   */
-  udf_file_t *udf_get_sub(const udf_t *p_udf, const udf_file_t *p_udf_file);
+  udf_dirent_t *udf_opendir(udf_t *p_udf, const udf_dirent_t *p_udf_dirent);
   
   /*!
-    Return the next file.
+    Advances p_udf_direct to the the next directory entry in the
+    pointed to by p_udf_dir. It also returns this as the value.  NULL
+    is returned on reaching the end-of-file or if an error. Also
+    p_udf_dirent is free'd. If the end of is not reached the caller
+    must call udf_dirent_free() with p_udf_dirent when done with it to 
+    release resources.
   */
-  udf_file_t *udf_get_next(const udf_t *p_udf, udf_file_t *p_udf_file);
+  udf_dirent_t *udf_readdir(udf_dirent_t *p_udf_dirent);
   
   /*!
-    free free resources associated with p_udf_file.
+    free free resources associated with p_udf_dirent.
   */
-  bool udf_file_free(udf_file_t *p_udf_file);
+  bool udf_dirent_free(udf_dirent_t *p_udf_dirent);
   
   /*!
     Return true if the file is a directory.
   */
-  bool udf_is_dir(const udf_file_t *p_udf_file);
+  bool udf_is_dir(const udf_dirent_t *p_udf_dirent);
   
 #ifdef __cplusplus
 }

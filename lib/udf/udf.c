@@ -1,5 +1,5 @@
 /*
-    $Id: udf.c,v 1.7 2005/10/30 07:35:37 rocky Exp $
+    $Id: udf.c,v 1.8 2005/11/01 03:14:50 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -46,12 +46,12 @@ ecma_167_timezone_enum_t debug_ecma_167_timezone_enum;
   Returns POSIX mode bitstring for a given file.
 */
 mode_t 
-udf_get_posix_filemode(const udf_file_t *p_udf_file) 
+udf_get_posix_filemode(const udf_dirent_t *p_udf_dirent) 
 {
   udf_file_entry_t udf_fe;
   mode_t mode = 0;
 
-  if (udf_get_file_entry(p_udf_file, &udf_fe)) {
+  if (udf_get_file_entry(p_udf_dirent, &udf_fe)) {
     uint16_t i_flags;
     uint32_t i_perms;
 

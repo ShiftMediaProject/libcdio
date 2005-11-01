@@ -1,5 +1,5 @@
 /*  
-    $Id: udf_time.h,v 1.3 2005/10/30 14:10:44 rocky Exp $
+    $Id: udf_time.h,v 1.4 2005/11/01 03:14:50 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -36,33 +36,33 @@ extern "C" {
   /*!
     Return the access time of the file.
   */
-  time_t udf_get_access_time(const udf_file_t *p_udf_file);
+  time_t udf_get_access_time(const udf_dirent_t *p_udf_dirent);
 
   /*!
     Return the attribute (most recent create or access) time of the file
   */
-  time_t udf_get_attribute_time(const udf_file_t *p_udf_file);
+  time_t udf_get_attribute_time(const udf_dirent_t *p_udf_dirent);
 
   /*!
     Return the modification time of the file.
   */
-  time_t udf_get_modification_time(const udf_file_t *p_udf_file);
+  time_t udf_get_modification_time(const udf_dirent_t *p_udf_dirent);
 
   /*!
     Return the access timestamp of the file
   */
-  udf_timestamp_t *udf_get_access_timestamp(const udf_file_t *p_udf_file);
+  udf_timestamp_t *udf_get_access_timestamp(const udf_dirent_t *p_udf_dirent);
 
   /*!
     Return the modification timestamp of the file
   */
-  udf_timestamp_t *udf_get_modification_timestamp(const udf_file_t 
-						  *p_udf_file);
+  udf_timestamp_t *udf_get_modification_timestamp(const udf_dirent_t 
+						  *p_udf_dirent);
 
   /*!
     Return the attr timestamp of the file
   */
-  udf_timestamp_t *udf_get_attr_timestamp(const udf_file_t *p_udf_file);
+  udf_timestamp_t *udf_get_attr_timestamp(const udf_dirent_t *p_udf_dirent);
 
   /*!
     Convert a UDF timestamp to a time_t. If microseconds are desired,

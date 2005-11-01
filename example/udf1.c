@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.13 2005/10/30 16:04:11 rocky Exp $
+  $Id: udf1.c,v 1.14 2005/11/01 03:14:49 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -51,47 +51,46 @@
 #define udf_PATH_DELIMITERS "/\\"
 
 static void 
-print_file_info(const udf_file_t *p_udf_file, const char* psz_dirname)
+print_file_info(const udf_dirent_t *p_udf_dirent, const char* psz_dirname)
 {
-  time_t mod_time = udf_get_modification_time(p_udf_file);
+  time_t mod_time = udf_get_modification_time(p_udf_dirent);
   char psz_mode[11]="invalid";
   const char *psz_fname= psz_dirname 
-    ? psz_dirname : udf_get_filename(p_udf_file);
+    ? psz_dirname : udf_get_filename(p_udf_dirent);
 
   /* Print directory attributes*/
-  printf("%s ", udf_mode_string(udf_get_posix_filemode(p_udf_file),
+  printf("%s ", udf_mode_string(udf_get_posix_filemode(p_udf_dirent),
 				psz_mode));
-  printf("%4d ", udf_get_link_count(p_udf_file));
+  printf("%4d ", udf_get_link_count(p_udf_dirent));
   printf("%s %s",  *psz_fname ? psz_fname : "/", ctime(&mod_time));
 }
 
-static udf_file_t *
-list_files(const udf_t *p_udf, udf_file_t *p_udf_file, const char *psz_path)
+static udf_dirent_t *
+list_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const char *psz_path)
 {
-  if (!p_udf_file) return NULL;
+  if (!p_udf_dirent) return NULL;
   
-  print_file_info(p_udf_file, psz_path);
+  print_file_info(p_udf_dirent, psz_path);
 
-  while (udf_get_next(p_udf, p_udf_file)) {
+  while (udf_readdir(p_udf_dirent)) {
       
-    if (udf_is_dir(p_udf_file)) {
+    if (udf_is_dir(p_udf_dirent)) {
       
-      udf_file_t *p_udf_file2 = udf_get_sub(p_udf, p_udf_file);
-      if (p_udf_file2) {
-	const char *psz_dirname = udf_get_filename(p_udf_file);
+      udf_dirent_t *p_udf_dirent2 = udf_opendir(p_udf, p_udf_dirent);
+      if (p_udf_dirent2) {
+	const char *psz_dirname = udf_get_filename(p_udf_dirent);
 	const unsigned int i_newlen=2 + strlen(psz_path) + strlen(psz_dirname);
 	char *psz_newpath = calloc(1, sizeof(char)*i_newlen);
 	
 	snprintf(psz_newpath, i_newlen, "%s%s/", psz_path, psz_dirname);
-	list_files(p_udf, p_udf_file2, psz_newpath);
+	list_files(p_udf, p_udf_dirent2, psz_newpath);
 	free(psz_newpath);
-	udf_file_free(p_udf_file2);
       }
     } else {
-      print_file_info(p_udf_file, NULL);
+      print_file_info(p_udf_dirent, NULL);
     }
   }
-  return p_udf_file;
+  return p_udf_dirent;
 }
 
 int
@@ -112,8 +111,8 @@ main(int argc, const char *argv[])
 	    psz_fname);
     return 1;
   } else {
-    udf_file_t *p_udf_file = udf_get_root(p_udf, true, 0);
-    if (NULL == p_udf_file) {
+    udf_dirent_t *p_udf_dirent = udf_get_root(p_udf, true, 0);
+    if (NULL == p_udf_dirent) {
       fprintf(stderr, "Sorry, couldn't find / in %s\n", 
 	      psz_fname);
       return 1;
@@ -136,8 +135,7 @@ main(int argc, const char *argv[])
 
     }
     
-    list_files(p_udf, p_udf_file, "");
-    udf_file_free(p_udf_file);
+    list_files(p_udf, p_udf_dirent, "");
   }
   
   udf_close(p_udf);
