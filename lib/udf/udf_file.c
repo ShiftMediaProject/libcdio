@@ -1,5 +1,5 @@
 /*
-    $Id: udf_file.c,v 1.2 2005/11/01 03:14:50 rocky Exp $
+    $Id: udf_file.c,v 1.3 2005/11/01 13:07:01 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -30,6 +30,7 @@ const char *
 udf_get_filename(const udf_dirent_t *p_udf_dirent)
 {
   if (!p_udf_dirent) return NULL;
+  if (!p_udf_dirent->psz_name) return ".";
   return p_udf_dirent->psz_name;
 }
 

@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.16 2005/11/01 03:14:49 rocky Exp $
+    $Id: udf.h,v 1.17 2005/11/01 13:07:01 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -124,12 +124,9 @@ extern "C" {
 			   unsigned int i_volsetid);
   
   /*!
-    Return a file pointer matching pzz_name. If b_any_partition is false then
-    the root must be in the given partition. 
+    Return a file pointer matching pzz_name. 
   */
-  udf_dirent_t *udf_find_file(udf_t *p_udf, const char *psz_name,
-			      bool b_any_partition,
-			      partition_num_t i_partition);
+  udf_dirent_t *udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name);
   
   /*! udf_mode_string - fill in string PSZ_STR with an ls-style ASCII
     representation of the i_mode. PSZ_STR is returned.

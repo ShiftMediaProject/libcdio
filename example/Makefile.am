@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.27 2005/10/25 14:16:41 pjcreath Exp $
+#   $Id: Makefile.am,v 1.28 2005/11/01 13:07:01 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -28,7 +28,7 @@ paranoia_progs = paranoia paranoia2
 endif
 noinst_PROGRAMS = audio cdtext device drives iso1 iso2 iso3 isofuzzy \
 	          mmc1 mmc2 $(paranoia_progs) tracks \
-	          sample3 sample4 udf1
+	          sample3 sample4 udf1 udf2
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
@@ -60,6 +60,9 @@ tracks_LDADD  = $(LIBCDIO_LIBS)
 
 udf1_DEPENDENCIES = $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
 udf1_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS)
+
+udf2_DEPENDENCIES = $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
+udf2_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS)
 
 
 # iso programs create file "copying"

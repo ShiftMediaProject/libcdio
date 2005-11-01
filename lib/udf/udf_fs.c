@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.11 2005/11/01 03:21:04 rocky Exp $
+    $Id: udf_fs.c,v 1.12 2005/11/01 13:07:01 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -113,6 +113,10 @@ const char VSD_STD_ID_TEA01[] = {'T', 'E', 'A', '0', '1'};
  *								|-->File data
  */
 
+static udf_dirent_t *
+udf_new_dirent(udf_file_entry_t *p_udf_fe, udf_t *p_udf,
+	       const char *psz_name, bool b_dir, bool b_parent);
+
 /**
  * Check the descriptor tag for both the correct id and correct checksum.
  * Return zero if all is good, -1 if not.
@@ -190,7 +194,7 @@ udf_get_lba(const udf_file_entry_t *p_udf_fe,
 
 static 
 udf_dirent_t *
-udf_ff_traverse(udf_t *p_udf, udf_dirent_t *p_udf_dirent, char *psz_token)
+udf_ff_traverse(udf_dirent_t *p_udf_dirent, char *psz_token)
 {
   while (udf_readdir(p_udf_dirent)) {
     if (strcmp(psz_token, p_udf_dirent->psz_name) == 0) {
@@ -203,7 +207,7 @@ udf_ff_traverse(udf_t *p_udf, udf_dirent_t *p_udf_dirent, char *psz_token)
 	
 	if (p_udf_dirent2) {
 	  udf_dirent_t * p_udf_dirent3 = 
-	    udf_ff_traverse(p_udf, p_udf_dirent2, next_tok);
+	    udf_ff_traverse(p_udf_dirent2, next_tok);
 	  
 	  if (!p_udf_dirent3) udf_dirent_free(p_udf_dirent2);
 	  return p_udf_dirent3;
@@ -218,24 +222,27 @@ udf_ff_traverse(udf_t *p_udf, udf_dirent_t *p_udf_dirent, char *psz_token)
 #define udf_MAX_PATHLEN 2048
 
 udf_dirent_t * 
-udf_find_file(udf_t *p_udf, const char *psz_name, bool b_any_partition,
-	      partition_num_t i_partition)
+udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name)
 {
-  udf_dirent_t *p_udf_dirent = 
-    udf_get_root(p_udf, b_any_partition, i_partition);
-  udf_dirent_t *p_udf_dirent2 = NULL;
+  udf_dirent_t *p_udf_file = NULL;
   
-  if (p_udf_dirent) {
+  if (p_udf_root) {
     char tokenline[udf_MAX_PATHLEN];
     char *psz_token;
     
     strcpy(tokenline, psz_name);
     psz_token = strtok(tokenline, udf_PATH_DELIMITERS);
     if (psz_token)
-      p_udf_dirent2 = udf_ff_traverse(p_udf, p_udf_dirent, psz_token);
-    udf_dirent_free(p_udf_dirent);
+      p_udf_file = udf_ff_traverse(p_udf_root, psz_token);
+    else if ( 0 == strncmp("/", psz_name, sizeof("/")) ) {
+      p_udf_file = calloc(1, sizeof(udf_dirent_t));
+      udf_new_dirent(&p_udf_root->fe, p_udf_root->p_udf,
+		     p_udf_root->psz_name, p_udf_root->b_dir, 
+		     p_udf_root->b_parent);
+      return p_udf_file;
+    }
   }
-  return p_udf_dirent2;
+  return p_udf_file;
 }
 
 /* Convert unicode16 to 8-bit char by dripping MSB. 

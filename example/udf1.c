@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.15 2005/11/01 03:21:04 rocky Exp $
+  $Id: udf1.c,v 1.16 2005/11/01 13:07:01 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -97,24 +97,24 @@ int
 main(int argc, const char *argv[])
 {
   udf_t *p_udf;
-  char const *psz_fname;
+  char const *psz_udf_image;
 
   if (argc > 1) 
-    psz_fname = argv[1];
+    psz_udf_image = argv[1];
   else 
-    psz_fname = UDF_IMAGE;
+    psz_udf_image = UDF_IMAGE;
 
-  p_udf = udf_open (psz_fname);
+  p_udf = udf_open (psz_udf_image);
   
   if (NULL == p_udf) {
     fprintf(stderr, "Sorry, couldn't open %s as something using UDF\n", 
-	    psz_fname);
+	    psz_udf_image);
     return 1;
   } else {
-    udf_dirent_t *p_udf_dirent = udf_get_root(p_udf, true, 0);
-    if (NULL == p_udf_dirent) {
+    udf_dirent_t *p_udf_root = udf_get_root(p_udf, true, 0);
+    if (NULL == p_udf_root) {
       fprintf(stderr, "Sorry, couldn't find / in %s\n", 
-	      psz_fname);
+	      psz_udf_image);
       return 1;
     }
     
@@ -135,7 +135,7 @@ main(int argc, const char *argv[])
 
     }
     
-    list_files(p_udf, p_udf_dirent, "");
+    list_files(p_udf, p_udf_root, "");
   }
   
   udf_close(p_udf);
