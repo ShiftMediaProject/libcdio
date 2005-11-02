@@ -1,5 +1,5 @@
 /*  
-    $Id: udf_file.h,v 1.4 2005/11/02 03:42:49 rocky Exp $
+    $Id: udf_file.h,v 1.5 2005/11/02 03:49:15 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -54,7 +54,7 @@ extern "C" {
   uint16_t udf_get_link_count(const udf_dirent_t *p_udf_dirent);
 
   /*!
-    Return the Length of the file/directory.
+    Return the file length the file. Return 2147483647L if error.
   */
   uint64_t udf_get_file_length(const udf_dirent_t *p_udf_dirent);
 

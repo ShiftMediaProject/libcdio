@@ -1,5 +1,5 @@
 /*
-    $Id: udf_file.c,v 1.4 2005/11/02 03:42:50 rocky Exp $
+    $Id: udf_file.c,v 1.5 2005/11/02 03:49:15 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -72,14 +72,14 @@ uint16_t udf_get_link_count(const udf_dirent_t *p_udf_dirent)
 }
 
 /*!
-  Return the number of hard links of the file. Return 0 if error.
+  Return the file length the file. Return 2147483647L if error.
 */
 uint64_t udf_get_file_length(const udf_dirent_t *p_udf_dirent) 
 {
   if (p_udf_dirent) {
     return uint64_from_le(p_udf_dirent->fe.info_len);
   }
-  return 0; /* Error. Non-error case handled above. */
+  return 2147483647L; /* Error. Non-error case handled above. */
 }
 
 /*!
