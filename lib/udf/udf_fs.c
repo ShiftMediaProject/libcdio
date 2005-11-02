@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.12 2005/11/01 13:07:01 rocky Exp $
+    $Id: udf_fs.c,v 1.13 2005/11/02 03:42:50 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -235,11 +235,9 @@ udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name)
     if (psz_token)
       p_udf_file = udf_ff_traverse(p_udf_root, psz_token);
     else if ( 0 == strncmp("/", psz_name, sizeof("/")) ) {
-      p_udf_file = calloc(1, sizeof(udf_dirent_t));
-      udf_new_dirent(&p_udf_root->fe, p_udf_root->p_udf,
-		     p_udf_root->psz_name, p_udf_root->b_dir, 
-		     p_udf_root->b_parent);
-      return p_udf_file;
+      return udf_new_dirent(&p_udf_root->fe, p_udf_root->p_udf,
+			    p_udf_root->psz_name, p_udf_root->b_dir, 
+			    p_udf_root->b_parent);
     }
   }
   return p_udf_file;

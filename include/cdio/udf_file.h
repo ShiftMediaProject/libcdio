@@ -1,5 +1,5 @@
 /*  
-    $Id: udf_file.h,v 1.3 2005/11/01 03:21:04 rocky Exp $
+    $Id: udf_file.h,v 1.4 2005/11/02 03:42:49 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -52,6 +52,11 @@ extern "C" {
     Return the number of hard links of the file. Return 0 if error.
   */
   uint16_t udf_get_link_count(const udf_dirent_t *p_udf_dirent);
+
+  /*!
+    Return the Length of the file/directory.
+  */
+  uint64_t udf_get_file_length(const udf_dirent_t *p_udf_dirent);
 
   /*!  
     Returns a POSIX mode for a given p_udf_dirent.

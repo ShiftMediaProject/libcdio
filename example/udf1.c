@@ -1,5 +1,5 @@
 /*
-  $Id: udf1.c,v 1.16 2005/11/01 13:07:01 rocky Exp $
+  $Id: udf1.c,v 1.17 2005/11/02 03:42:49 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -62,6 +62,7 @@ print_file_info(const udf_dirent_t *p_udf_dirent, const char* psz_dirname)
   printf("%s ", udf_mode_string(udf_get_posix_filemode(p_udf_dirent),
 				psz_mode));
   printf("%4d ", udf_get_link_count(p_udf_dirent));
+  printf("%lu ", (long unsigned int) udf_get_file_length(p_udf_dirent));
   printf("%s %s",  *psz_fname ? psz_fname : "/", ctime(&mod_time));
 }
 

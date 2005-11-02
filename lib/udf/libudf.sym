@@ -14,6 +14,7 @@ VSD_STD_ID_TEA01
 udf_close
 udf_dirent_free
 udf_get_file_entry
+udf_get_file_length
 udf_get_fileid_descriptor
 udf_get_filename
 udf_get_link_count
