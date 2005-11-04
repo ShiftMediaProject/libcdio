@@ -1,5 +1,5 @@
 /*
-  $Id: udf2.c,v 1.1 2005/11/04 04:23:34 rocky Exp $
+  $Id: udf2.c,v 1.2 2005/11/04 08:15:18 rocky Exp $
 
   Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
   
@@ -105,11 +105,13 @@ main(int argc, const char *argv[])
     
     p_udf_file = udf_fopen(p_udf_root, psz_udf_fname);
     print_file_info(p_udf_file, udf_get_filename(p_udf_file));
+#if 0
     {
       char buf[2048];
       udf_read_block(p_udf_file, buf, 1);
       printf("%s", buf);
     }
+#endif
     udf_dirent_free(p_udf_file);
     udf_dirent_free(p_udf_root);
   }
