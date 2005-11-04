@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.19 2005/10/25 14:16:41 pjcreath Exp $
+#   $Id: Makefile.am,v 1.20 2005/11/04 09:38:57 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -37,7 +37,7 @@ cd_paranoia_SOURCES = cd-paranoia.c \
 
 cd_paranoia_LDADD =  $(LIBCDIO_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_PARANOIA_LIBS) @LIBGETOPT_LIB@
 
-cd_paranoia_DEPENDENCIES =  $(LIBCDIO_DEPS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_PARANOIA_LIBS) @LIBGETOPT_LIB@
+cd_paranoia_DEPENDENCIES =  $(LIBCDIO_DEPS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_PARANOIA_LIBS)
 
 
 bin_PROGRAMS = cd-paranoia
