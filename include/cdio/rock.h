@@ -1,5 +1,5 @@
 /*
-    $Id: rock.h,v 1.12 2005/11/06 00:39:37 rocky Exp $
+    $Id: rock.h,v 1.13 2005/11/06 20:02:39 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -335,7 +335,7 @@ int get_rock_ridge_filename(iso9660_dir_t * de, /*out*/ char * retname,
   /*!
     Returns POSIX mode bitstring for a given file.
   */
-  posix_mode_t 
+  mode_t 
   iso9660_get_posix_filemode_from_rock(const iso_rock_statbuf_t *rr);
 
 /*!
