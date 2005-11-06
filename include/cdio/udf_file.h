@@ -1,5 +1,5 @@
 /*  
-    $Id: udf_file.h,v 1.6 2005/11/06 00:39:37 rocky Exp $
+    $Id: udf_file.h,v 1.7 2005/11/06 19:12:35 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -61,7 +61,7 @@ extern "C" {
   /*!  
     Returns a POSIX mode for a given p_udf_dirent.
   */
-  posix_mode_t udf_get_posix_filemode(const udf_dirent_t *p_udf_dirent);
+  mode_t udf_get_posix_filemode(const udf_dirent_t *p_udf_dirent);
 
   /*!
     Return the next subdirectory. 
