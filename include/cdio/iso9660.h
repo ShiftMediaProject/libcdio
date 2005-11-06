@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.78 2005/11/06 00:39:37 rocky Exp $
+    $Id: iso9660.h,v 1.79 2005/11/06 19:15:43 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -871,7 +871,7 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
   /*!  
     Returns a POSIX mode for a given p_udf_dirent.
   */
-  posix_mode_t iso9660_get_posix_filemode(const iso9660_stat_t *p_iso_dirent);
+  mode_t iso9660_get_posix_filemode(const iso9660_stat_t *p_iso_dirent);
 
   /*!
     Return a string containing the preparer id with trailing

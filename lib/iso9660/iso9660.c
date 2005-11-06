@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.15 2005/11/06 00:39:37 rocky Exp $
+    $Id: iso9660.c,v 1.16 2005/11/06 19:15:43 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -51,7 +51,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.15 2005/11/06 00:39:37 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.16 2005/11/06 19:15:43 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -690,10 +690,10 @@ iso9660_pathtable_init (void *pt)
 /*!
   Returns POSIX mode bitstring for a given file.
 */
-posix_mode_t 
+mode_t 
 iso9660_get_posix_filemode(const iso9660_stat_t *p_iso_dirent) 
 {
-  posix_mode_t mode = 0;
+  mode_t mode = 0;
 
   if (yep == p_iso_dirent->rr.b3_rock) {
     return iso9660_get_posix_filemode_from_rock(&p_iso_dirent->rr);
