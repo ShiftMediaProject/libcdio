@@ -1,5 +1,5 @@
 /*
-  $Id: rock.c,v 1.14 2005/10/04 09:59:46 rocky Exp $
+  $Id: rock.c,v 1.15 2005/11/06 00:39:37 rocky Exp $
  
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -608,3 +608,14 @@ iso9660_get_rock_attr_str(posix_mode_t st_mode)
 
   return result;
 }
+
+/*!
+  Returns POSIX mode bitstring for a given file.
+*/
+posix_mode_t 
+iso9660_get_posix_filemode_from_rock(const iso_rock_statbuf_t *rr) 
+{
+  return rr->st_mode;
+}
+
+

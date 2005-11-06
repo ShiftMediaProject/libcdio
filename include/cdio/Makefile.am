@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.27 2005/10/30 07:35:36 rocky Exp $
+#   $Id: Makefile.am,v 1.28 2005/11/06 00:39:37 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -41,6 +41,7 @@ libcdioinclude_HEADERS = \
 	iso9660.h \
 	logging.h \
 	mmc.h \
+	posix.h \
 	read.h \
 	rock.h \
 	sector.h \

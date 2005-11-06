@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.14 2005/09/20 00:42:14 rocky Exp $
+    $Id: iso9660.c,v 1.15 2005/11/06 00:39:37 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -43,12 +43,15 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
 
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.14 2005/09/20 00:42:14 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.15 2005/11/06 00:39:37 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -682,6 +685,22 @@ iso9660_pathtable_init (void *pt)
   cdio_assert (pt != NULL);
   
   memset (pt, 0, ISO_BLOCKSIZE); /* fixme */
+}
+
+/*!
+  Returns POSIX mode bitstring for a given file.
+*/
+posix_mode_t 
+iso9660_get_posix_filemode(const iso9660_stat_t *p_iso_dirent) 
+{
+  posix_mode_t mode = 0;
+
+  if (yep == p_iso_dirent->rr.b3_rock) {
+    return iso9660_get_posix_filemode_from_rock(&p_iso_dirent->rr);
+  } else if (p_iso_dirent->b_xa) {
+    return iso9660_get_posix_filemode_from_xa(p_iso_dirent->xa.attributes);
+  }
+  return mode;
 }
 
 static const iso_path_table_t *

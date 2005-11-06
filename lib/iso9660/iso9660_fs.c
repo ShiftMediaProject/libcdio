@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.31 2005/10/12 11:25:17 rocky Exp $
+    $Id: iso9660_fs.c,v 1.32 2005/11/06 00:39:37 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.31 2005/10/12 11:25:17 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.32 2005/11/06 00:39:37 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -812,6 +812,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
   p_stat->size    = from_733 (p_iso9660_dir->size);
   p_stat->secsize = _cdio_len2blocks (p_stat->size, ISO_BLOCKSIZE);
   p_stat->rr.b3_rock = dunno; /*FIXME should do based on mask */
+  p_stat->b_xa    = false; 
 
   {
     char rr_fname[256] = "";
@@ -899,7 +900,8 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 		      xa_data->signature[0], xa_data->signature[1]);
 	  return p_stat;
 	}
-      p_stat->xa = *xa_data;
+      p_stat->b_xa = true;
+      p_stat->xa   = *xa_data;
     }
   }
   return p_stat;

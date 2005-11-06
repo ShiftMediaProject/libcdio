@@ -1,5 +1,5 @@
 /*
-    $Id: xa.c,v 1.4 2005/02/20 10:21:01 rocky Exp $
+    $Id: xa.c,v 1.5 2005/11/06 00:39:37 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2005 Rocky Bernstein <rocky@panix.com>
@@ -26,6 +26,10 @@
 
 #ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
 #endif
 
 /*! String inside frame which identifies XA attributes.  Note should
@@ -143,3 +147,26 @@ iso9660_xa_init (iso9660_xa_t *_xa, uint16_t uid, uint16_t gid, uint16_t attr,
 
   return _xa;
 }
+
+/*!
+  Returns POSIX mode bitstring for a given file.
+*/
+posix_mode_t 
+iso9660_get_posix_filemode_from_xa(uint16_t i_perms) 
+{
+  posix_mode_t mode = 0;
+  
+  if (i_perms & XA_PERM_RUSR)  mode |= S_IRUSR;
+  if (i_perms & XA_PERM_XUSR)  mode |= S_IXUSR;
+  
+  if (i_perms & XA_PERM_RGRP)  mode |= S_IRGRP;
+  if (i_perms & XA_PERM_XGRP)  mode |= S_IXGRP;
+  
+  if (i_perms & XA_PERM_ROTH)  mode |= S_IROTH;
+  if (i_perms & XA_PERM_XOTH)  mode |= S_IXOTH;
+  
+  if (i_perms & XA_ATTR_DIRECTORY)  mode |= S_IFDIR;
+  
+  return mode;
+}
+

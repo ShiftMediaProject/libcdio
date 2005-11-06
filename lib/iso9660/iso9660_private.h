@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_private.h,v 1.3 2005/02/12 10:23:18 rocky Exp $
+    $Id: iso9660_private.h,v 1.4 2005/11/06 00:39:37 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -57,13 +57,12 @@ typedef struct iso_volume_descriptor_s {
  * See mkisofs.h
  */
 
-/* We use this to help us look up the parent inode numbers. */
-
+/** We use this to help us look up the parent inode numbers. */
 typedef struct iso_path_table_s {
-  uint8_t  name_len; /* 7.1.1 */
-  uint8_t  xa_len;   /* 7.1.1 */
-  uint32_t extent;   /* 7.3.1/7.3.2 */
-  uint16_t parent;   /* 7.2.1/7.2.2 */
+  uint8_t  name_len; /**< 7.1.1 */
+  uint8_t  xa_len;   /**< 7.1.1 */
+  uint32_t extent;   /**< 7.3.1/7.3.2 */
+  uint16_t parent;   /**< 7.2.1/7.2.2 */
   char     name[EMPTY_ARRAY_SIZE];
 } GNUC_PACKED iso_path_table_t;
 

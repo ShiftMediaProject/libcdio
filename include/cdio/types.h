@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.32 2005/09/17 20:57:19 rocky Exp $
+    $Id: types.h,v 1.33 2005/11/06 00:39:37 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -55,6 +55,8 @@ extern "C" {
   /* fixme */
 #endif /* HAVE_STDINT_H */
   
+typedef uint8_t ubyte;
+
   /* default HP/UX macros are broken */
 #if defined(__hpux__)
 # undef UINT16_C

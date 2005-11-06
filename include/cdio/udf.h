@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.17 2005/11/01 13:07:01 rocky Exp $
+    $Id: udf.h,v 1.18 2005/11/06 00:39:37 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -30,15 +30,9 @@
 
 #include <cdio/cdio.h>
 #include <cdio/ecma_167.h>
-
-#include <sys/stat.h>
+#include <cdio/posix.h>
 
 typedef uint16_t partition_num_t;
-
-/* FIXME: these probably don't go here. */
-typedef uint16_t unicode16_t;
-typedef uint8_t  ubyte;
-
 
 /** Opaque structures. */
 typedef struct udf_s udf_t; 
@@ -165,7 +159,7 @@ extern "C" {
 	otherwise.
 	'T' if the file is sticky but not executable.  */
 
-  char *udf_mode_string (mode_t i_mode, char *psz_str);
+  char *udf_mode_string (posix_mode_t i_mode, char *psz_str);
 
 #ifdef __cplusplus
 }

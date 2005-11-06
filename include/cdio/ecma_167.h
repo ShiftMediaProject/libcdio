@@ -211,12 +211,14 @@ extern const char VSD_STD_ID_CDW01[sizeof("CDW02")-1];
 extern const char VSD_STD_ID_NSR03[sizeof("NSR03")-1];
 extern const char VSD_STD_ID_TEA01[sizeof("TEA01")-1];
 
-#define VSD_STD_ID_BEA01		"BEA01"	/**< (2/9.2) */
-#define VSD_STD_ID_BOOT2		"BOOT2"	/**< (2/9.4) */
-#define VSD_STD_ID_CD001		"CD001"	/**< (ECMA-119) */
-#define VSD_STD_ID_CDW02		"CDW02"	/**< (ECMA-168) */
-#define VSD_STD_ID_NSR03		"NSR03"	/**< (3/9.1) */
-#define VSD_STD_ID_TEA01		"TEA01"	/**< (2/9.3) */
+#define VSD_STD_ID_BEA01		"BEA01"	/**< ECMA-167 2/9.2 */
+#define VSD_STD_ID_BOOT2		"BOOT2"	/**< ECMA-167 2/9.4 */
+#define VSD_STD_ID_CD001		"CD001"	/**< ECMA-119 */
+#define VSD_STD_ID_CDW02		"CDW02"	/**< ECMA-168 */
+#define VSD_STD_ID_NSR02                "NSR02" /**< ECMA-167, 3/9.1 
+					       NOTE: ECMA-167, 2nd edition */
+#define VSD_STD_ID_NSR03		"NSR03"	/**< ECMA-167 3/9.1 */
+#define VSD_STD_ID_TEA01		"TEA01"	/**< ECMA-168 2/9.3 */
 
 /** Beginning Extended Area Descriptor (ECMA 167r3 2/9.2) */
 struct beginning_extended_area_desc_s

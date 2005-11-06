@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.77 2005/10/21 11:51:42 rocky Exp $
+    $Id: iso9660.h,v 1.78 2005/11/06 00:39:37 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -41,6 +41,7 @@
 
 #include <cdio/cdio.h>
 #include <cdio/ds.h>
+#include <cdio/posix.h>
 
 /** \brief ISO 9660 Integer and Character types 
 
@@ -224,11 +225,6 @@ struct	iso9660_ltime_s {
 typedef struct iso9660_ltime_s  iso9660_ltime_t;
 typedef struct iso9660_dir_s    iso9660_dir_t;
 typedef struct iso9660_stat_s   iso9660_stat_t;
-
-typedef uint32_t posix_mode_t;
-typedef uint32_t posix_nlink_t;
-typedef uint32_t posix_uid_t;
-typedef uint32_t posix_gid_t;
 
 #include <cdio/rock.h>
 
@@ -503,6 +499,7 @@ struct iso9660_stat_s { /* big endian!! */
   uint32_t           secsize;         /**< number of sectors allocated */
   iso9660_xa_t       xa;              /**< XA attributes */
   enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;
+  bool               b_xa;
   char         filename[EMPTY_ARRAY_SIZE]; /**< filename */
 };
 
@@ -864,129 +861,132 @@ uint8_t iso9660_get_dir_size(const iso9660_dir_t *p_idr);
 lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
 #endif
 
-/*!
-  Return the directory name stored in the iso9660_dir_t
-
-  A string is allocated: the caller must deallocate.
-*/
-char * iso9660_dir_to_name (const iso9660_dir_t *p_iso9660_dir);
+  /*!
+    Return the directory name stored in the iso9660_dir_t
+    
+    A string is allocated: the caller must deallocate.
+  */
+  char * iso9660_dir_to_name (const iso9660_dir_t *p_iso9660_dir);
   
-/*!
-   Return a string containing the preparer id with trailing
-   blanks removed.
-*/
-char *iso9660_get_preparer_id(const iso9660_pvd_t *p_pvd);
+  /*!  
+    Returns a POSIX mode for a given p_udf_dirent.
+  */
+  posix_mode_t iso9660_get_posix_filemode(const iso9660_stat_t *p_iso_dirent);
+
+  /*!
+    Return a string containing the preparer id with trailing
+    blanks removed.
+  */
+  char *iso9660_get_preparer_id(const iso9660_pvd_t *p_pvd);
   
-/*!  
-  Get the preparer ID.  psz_preparer_id is set to NULL if there
-  is some problem in getting this and false is returned.
-*/
-bool iso9660_ifs_get_preparer_id(iso9660_t *p_iso,
-                                 /*out*/ char **p_psz_preparer_id);
+  /*!  
+    Get the preparer ID.  psz_preparer_id is set to NULL if there
+    is some problem in getting this and false is returned.
+  */
+  bool iso9660_ifs_get_preparer_id(iso9660_t *p_iso,
+                                   /*out*/ char **p_psz_preparer_id);
   
-/*!
-   Return a string containing the PVD's publisher id with trailing
-   blanks removed.
-*/
-char *iso9660_get_publisher_id(const iso9660_pvd_t *p_pvd);
-
-/*!  
-  Get the publisher ID.  psz_publisher_id is set to NULL if there
-  is some problem in getting this and false is returned.
-*/
-bool iso9660_ifs_get_publisher_id(iso9660_t *p_iso,
-                                  /*out*/ char **p_psz_publisher_id);
-
-uint8_t iso9660_get_pvd_type(const iso9660_pvd_t *p_pvd);
-
-const char * iso9660_get_pvd_id(const iso9660_pvd_t *p_pvd);
-
-int iso9660_get_pvd_space_size(const iso9660_pvd_t *p_pvd);
-
-int iso9660_get_pvd_block_size(const iso9660_pvd_t *p_pvd) ;
-
-/*! Return the primary volume id version number (of pvd).
+  /*!
+    Return a string containing the PVD's publisher id with trailing
+    blanks removed.
+  */
+  char *iso9660_get_publisher_id(const iso9660_pvd_t *p_pvd);
+  
+  /*!  
+    Get the publisher ID.  psz_publisher_id is set to NULL if there
+    is some problem in getting this and false is returned.
+  */
+  bool iso9660_ifs_get_publisher_id(iso9660_t *p_iso,
+                                    /*out*/ char **p_psz_publisher_id);
+  
+  uint8_t iso9660_get_pvd_type(const iso9660_pvd_t *p_pvd);
+  
+  const char * iso9660_get_pvd_id(const iso9660_pvd_t *p_pvd);
+  
+  int iso9660_get_pvd_space_size(const iso9660_pvd_t *p_pvd);
+  
+  int iso9660_get_pvd_block_size(const iso9660_pvd_t *p_pvd) ;
+  
+  /*! Return the primary volume id version number (of pvd).
     If there is an error 0 is returned. 
- */
-int iso9660_get_pvd_version(const iso9660_pvd_t *pvd) ;
-
-/*!
-   Return a string containing the PVD's system id with trailing
-   blanks removed.
-*/
-char *iso9660_get_system_id(const iso9660_pvd_t *p_pvd);
+  */
+  int iso9660_get_pvd_version(const iso9660_pvd_t *pvd) ;
   
-/*!  
-  Get the system ID.  psz_system_id is set to NULL if there
-  is some problem in getting this and false is returned.
-*/
-bool iso9660_ifs_get_system_id(iso9660_t *p_iso,
-                               /*out*/ char **p_psz_system_id);
-
-
-/*! Return the LSN of the root directory for pvd.
+  /*!
+    Return a string containing the PVD's system id with trailing
+    blanks removed.
+  */
+  char *iso9660_get_system_id(const iso9660_pvd_t *p_pvd);
+  
+  /*!  
+    Get the system ID.  psz_system_id is set to NULL if there
+    is some problem in getting this and false is returned.
+  */
+  bool iso9660_ifs_get_system_id(iso9660_t *p_iso,
+                                 /*out*/ char **p_psz_system_id);
+  
+  
+  /*! Return the LSN of the root directory for pvd.
     If there is an error CDIO_INVALID_LSN is returned. 
- */
-lsn_t iso9660_get_root_lsn(const iso9660_pvd_t *p_pvd);
-
-/*!
-  Return the PVD's volume ID.
-*/
-char *iso9660_get_volume_id(const iso9660_pvd_t *p_pvd);
-
-/*!  
-  Get the system ID.  psz_system_id is set to NULL if there
-  is some problem in getting this and false is returned.
-*/
-bool iso9660_ifs_get_volume_id(iso9660_t *p_iso,
-                               /*out*/ char **p_psz_volume_id);
-
-/*!
-  Return the PVD's volumeset ID.
-  NULL is returned if there is some problem in getting this. 
-*/
-char *iso9660_get_volumeset_id(const iso9660_pvd_t *p_pvd);
-
-/*!  
-  Get the systemset ID.  psz_systemset_id is set to NULL if there
-  is some problem in getting this and false is returned.
-*/
-bool iso9660_ifs_get_volumeset_id(iso9660_t *p_iso,
-                                  /*out*/ char **p_psz_volumeset_id);
-
-/* pathtable */
-
-/*! Zero's out pathable. Do this first. */
-void iso9660_pathtable_init (void *pt);
-
-unsigned int iso9660_pathtable_get_size (const void *pt);
-
-uint16_t
-iso9660_pathtable_l_add_entry (void *pt, const char name[], uint32_t extent,
-                               uint16_t parent);
-
-uint16_t
-iso9660_pathtable_m_add_entry (void *pt, const char name[], uint32_t extent,
-                               uint16_t parent);
-
+  */
+  lsn_t iso9660_get_root_lsn(const iso9660_pvd_t *p_pvd);
+  
+  /*!
+    Return the PVD's volume ID.
+  */
+  char *iso9660_get_volume_id(const iso9660_pvd_t *p_pvd);
+  
+  /*!  
+    Get the system ID.  psz_system_id is set to NULL if there
+    is some problem in getting this and false is returned.
+  */
+  bool iso9660_ifs_get_volume_id(iso9660_t *p_iso,
+                                 /*out*/ char **p_psz_volume_id);
+  
+  /*!
+    Return the PVD's volumeset ID.
+    NULL is returned if there is some problem in getting this. 
+  */
+  char *iso9660_get_volumeset_id(const iso9660_pvd_t *p_pvd);
+  
+  /*!  
+    Get the systemset ID.  psz_systemset_id is set to NULL if there
+    is some problem in getting this and false is returned.
+  */
+  bool iso9660_ifs_get_volumeset_id(iso9660_t *p_iso,
+                                    /*out*/ char **p_psz_volumeset_id);
+  
+  /* pathtable */
+  
+  /*! Zero's out pathable. Do this first. */
+  void iso9660_pathtable_init (void *pt);
+  
+  unsigned int iso9660_pathtable_get_size (const void *pt);
+  
+  uint16_t iso9660_pathtable_l_add_entry (void *pt, const char name[], 
+                                          uint32_t extent, uint16_t parent);
+  
+  uint16_t iso9660_pathtable_m_add_entry (void *pt, const char name[], 
+                                          uint32_t extent, uint16_t parent);
+  
   /**=====================================================================
      Volume Descriptors
      ======================================================================*/
 
-void
-iso9660_set_pvd (void *pd, const char volume_id[], const char application_id[],
-                 const char publisher_id[], const char preparer_id[],
-                 uint32_t iso_size, const void *root_dir, 
-                 uint32_t path_table_l_extent, uint32_t path_table_m_extent,
-                 uint32_t path_table_size, const time_t *pvd_time);
+  void iso9660_set_pvd (void *pd, const char volume_id[], 
+                        const char application_id[], 
+                        const char publisher_id[], const char preparer_id[],
+                        uint32_t iso_size, const void *root_dir, 
+                        uint32_t path_table_l_extent, 
+                        uint32_t path_table_m_extent,
+                        uint32_t path_table_size, const time_t *pvd_time);
 
-void 
-iso9660_set_evd (void *pd);
+  void iso9660_set_evd (void *pd);
 
-/*!
-  Return true if ISO 9660 image has extended attrributes (XA).
-*/
-bool iso9660_ifs_is_xa (const iso9660_t * p_iso);
+  /*!
+    Return true if ISO 9660 image has extended attrributes (XA).
+  */
+  bool iso9660_ifs_is_xa (const iso9660_t * p_iso);
 
 
 #ifdef __cplusplus

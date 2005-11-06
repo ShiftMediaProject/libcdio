@@ -1,5 +1,5 @@
 /*
-    $Id: xa.h,v 1.16 2005/08/27 14:25:58 rocky Exp $
+    $Id: xa.h,v 1.17 2005/11/06 00:39:37 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -140,7 +140,12 @@ typedef struct iso9660_xa_s
   uint8_t  filenum;       /**< file number, see also XA subheader */
   uint8_t  reserved[5];   /**< zero */
 } GNUC_PACKED iso9660_xa_t;
-
+  
+  
+  /*!
+    Returns POSIX mode bitstring for a given file.
+  */
+  posix_mode_t iso9660_get_posix_filemode_from_xa(uint16_t i_perms);
 
 /*!
   Returns a string interpreting the extended attribute xa_attr. 

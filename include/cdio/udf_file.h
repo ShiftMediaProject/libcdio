@@ -1,5 +1,5 @@
 /*  
-    $Id: udf_file.h,v 1.5 2005/11/02 03:49:15 rocky Exp $
+    $Id: udf_file.h,v 1.6 2005/11/06 00:39:37 rocky Exp $
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -61,13 +61,23 @@ extern "C" {
   /*!  
     Returns a POSIX mode for a given p_udf_dirent.
   */
-  mode_t udf_get_posix_filemode(const udf_dirent_t *p_udf_dirent);
+  posix_mode_t udf_get_posix_filemode(const udf_dirent_t *p_udf_dirent);
 
   /*!
     Return the next subdirectory. 
   */
   udf_dirent_t *udf_opendir(const udf_dirent_t *p_udf_dirent);
   
+  /*!
+    Attempts to read up to count bytes from file descriptor fd into
+    the buffer starting at buf.
+    
+    If count is zero, read() returns zero and has no other results. If
+    count is greater than SSIZE_MAX, the result is unspecified.
+  */
+  driver_return_code_t udf_read_block(const udf_dirent_t *p_udf_dirent, 
+				      void * buf, size_t count);
+
   /*!
     Advances p_udf_direct to the the next directory entry in the
     pointed to by p_udf_dir. It also returns this as the value.  NULL
