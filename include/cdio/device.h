@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.23 2005/03/21 09:19:06 rocky Exp $
+    $Id: device.h,v 1.24 2005/11/06 22:50:37 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -20,7 +20,7 @@
 
 /** \file device.h 
  *
- *  \brief The top-level header for driver- or device-related libcdio
+ *  \brief C header for driver- or device-related libcdio
  *          calls.  ("device" includes CD-image reading devices).
  */
 #ifndef __CDIO_DEVICE_H__
@@ -379,7 +379,7 @@ extern "C" {
     False is returned if we had an error getting the information.
   */
   bool cdio_get_hwinfo ( const CdIo_t *p_cdio, 
-			 /* out*/ cdio_hwinfo_t *p_hw_info );
+			 /*out*/ cdio_hwinfo_t *p_hw_info );
 
 
   /*! Get the LSN of the first track of the last session of
