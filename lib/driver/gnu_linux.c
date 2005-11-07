@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.18 2005/10/21 11:13:54 rocky Exp $
+    $Id: gnu_linux.c,v 1.19 2005/11/07 07:41:29 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.18 2005/10/21 11:13:54 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.19 2005/11/07 07:41:29 rocky Exp $";
 
 #include <string.h>
 
@@ -628,7 +628,9 @@ eject_media_linux (void *p_user_data) {
         }
       }
       /* force kernel to reread partition table when new disc inserted */
-      ret = ioctl(p_env->gen.fd, BLKRRPART);
+      if (0 != ioctl(p_env->gen.fd, BLKRRPART)) {
+        cdio_info ("BLKRRPART request failed: %s\n", strerror(errno));
+      }
       break;
     }
   } else {
