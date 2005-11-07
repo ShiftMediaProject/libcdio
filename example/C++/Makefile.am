@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.5 2005/10/06 00:14:22 rocky Exp $
+#   $Id: Makefile.am,v 1.6 2005/11/07 07:53:40 rocky Exp $
 #
 #    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,12 +23,17 @@
 if BUILD_CD_PARANOIA
 paranoia_progs = paranoia paranoia2
 endif
-noinst_PROGRAMS = device iso1 iso2 iso3 mmc1 mmc2 $(paranoia_progs)
+noinst_PROGRAMS = device eject iso1 iso2 iso3 mmc1 mmc2 $(paranoia_progs)
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
-device_SOURCES    = device.cpp
-device_LDADD      = $(LIBCDIO_LIBS)
+device_DEPENDENCIES = $(LIBCDIO_DEPS)
+device_SOURCES      = device.cpp
+device_LDADD        = $(LIBCDIO_LIBS)
+
+eject_DEPENDENCIES  = $(LIBCDIO_DEPS)
+eject_SOURCES       = eject.cpp
+eject_LDADD         = $(LIBCDIO_LIBS)
 
 if BUILD_CD_PARANOIA
 paranoia_SOURCES  = paranoia.cpp
