@@ -4,6 +4,7 @@ Makefile.in
 .libs
 copying
 device
+eject
 iso1
 iso2
 iso3
