@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.80 2005/02/10 01:59:05 rocky Exp $
+    $Id: cdio.h,v 1.81 2005/11/07 07:44:00 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -50,7 +50,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/* For compatability. */
+/* For compatibility. */
 #define CdIo CdIo_t
     
   /** This is an opaque structure for the CD object. */

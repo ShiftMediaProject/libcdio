@@ -1,5 +1,5 @@
 /*
-  $Id: isofuzzy.c,v 1.1 2005/02/09 02:50:47 rocky Exp $
+  $Id: isofuzzy.c,v 1.2 2005/11/07 07:44:00 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -19,6 +19,10 @@
 */
 
 /* Program to show using libiso9660 with fuzzy search to get file info.
+
+   If a single argument is given, it is used as the ISO 9660 image.
+   Otherwise we use a compiled-in default ISO 9660 image
+   name.
  */
 
 /* This is the BIN we think there is an ISO 9660 image inside of. */

@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.27 2005/04/11 01:03:46 rocky Exp $
+    $Id: device.c,v 1.28 2005/11/07 07:44:00 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -345,7 +345,6 @@ cdio_close_tray (const char *psz_drive, /*in/out*/ driver_id_t
 driver_return_code_t
 cdio_eject_media (CdIo_t **pp_cdio)
 {
-  
   if ((pp_cdio == NULL) || (*pp_cdio == NULL)) return DRIVER_OP_UNINIT;
 
   if ((*pp_cdio)->op.eject_media) {
@@ -359,6 +358,23 @@ cdio_eject_media (CdIo_t **pp_cdio)
     cdio_destroy(*pp_cdio);
     *pp_cdio = NULL;
     return DRIVER_OP_UNSUPPORTED;
+  }
+}
+
+/*!
+  Eject media in CD drive if there is a routine to do so. If you want
+  to scan for any CD-ROM and eject that, pass NULL for psz_drive.
+  
+  @param psz_drive the CD object to be acted upon.
+*/
+driver_return_code_t
+cdio_eject_media_drive (const char *psz_drive)
+{
+  CdIo_t *p_cdio = cdio_open (psz_drive, DRIVER_DEVICE);
+  if (p_cdio) {
+    return cdio_eject_media(&p_cdio);
+  } else {
+    return DRIVER_OP_UNINIT;
   }
 }
 

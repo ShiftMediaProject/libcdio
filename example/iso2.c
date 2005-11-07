@@ -1,5 +1,5 @@
 /*
-  $Id: iso2.c,v 1.9 2005/10/30 14:26:11 rocky Exp $
+  $Id: iso2.c,v 1.10 2005/11/07 07:44:00 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -19,7 +19,11 @@
 */
 
 /* Simple program to show using libiso9660 to extract a file from a
-   cue/bin CD-IMAGE.
+   CUE/BIN CD image.
+
+   If a single argument is given, it is used as the CUE file of a CD image
+   to use. Otherwise a compiled-in default image name (that
+   comes with the libcdio distribution) will be used.
 
    This program can be compiled with either a C or C++ compiler. In 
    the distribution we prefer C++ just to make sure we haven't broken

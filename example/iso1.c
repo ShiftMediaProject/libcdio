@@ -1,5 +1,5 @@
 /*
-  $Id: iso1.c,v 1.4 2005/02/03 07:32:32 rocky Exp $
+  $Id: iso1.c,v 1.5 2005/11/07 07:44:00 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -20,6 +20,10 @@
 
 /* Simple program to show using libiso9660 to list files in a directory of
    an ISO-9660 image.
+
+   If a single argument is given, it is used as the ISO 9660 image to
+   use in the listing. Otherwise a compiled-in default ISO 9660 image
+   name (that comes with the libcdio distribution) will be used.
  */
 
 /* This is the ISO 9660 image. */

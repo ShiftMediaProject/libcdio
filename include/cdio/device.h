@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.24 2005/11/06 22:50:37 rocky Exp $
+    $Id: device.h,v 1.25 2005/11/07 07:44:00 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -236,6 +236,13 @@ extern "C" {
     If the CD is ejected *p_cdio is free'd and p_cdio set to NULL.
   */
   driver_return_code_t cdio_eject_media (CdIo_t **p_cdio);
+
+  /*!
+    Eject media in CD drive if there is a routine to do so. 
+
+    @param psz_drive the name of the device to be acted upon.
+  */
+  driver_return_code_t cdio_eject_media_drive (const char *psz_drive);
 
   /*!
     Free device list returned by cdio_get_devices or

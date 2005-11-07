@@ -1,7 +1,7 @@
 /*
-  $Id: iso3.c,v 1.4 2005/02/19 11:42:18 rocky Exp $
+  $Id: iso3.c,v 1.5 2005/11/07 07:44:00 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,10 @@
 
 /* Simple program to show using libiso9660 to extract a file from an
    ISO-9660 image.
+
+   If a single argument is given, it is used as the ISO 9660 image to
+   use in the extraction. Otherwise a compiled in default ISO 9660 image
+   name (that comes with the libcdio distribution) will be used.
  */
 
 /* This is the ISO 9660 image. */
