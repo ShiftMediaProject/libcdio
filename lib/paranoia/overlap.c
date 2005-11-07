@@ -1,5 +1,5 @@
 /*
-  $Id: overlap.c,v 1.4 2005/02/06 15:09:10 rocky Exp $
+  $Id: overlap.c,v 1.5 2005/11/07 20:06:46 pjcreath Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -121,6 +121,20 @@ rootfree:
 
 /**** Statistical and heuristic[al? :-] management ************************/
 
+/* ===========================================================================
+ * offset_adjust_settings (internal)
+ *
+ * This function is called by offset_add_value() every time 10 samples have
+ * been accumulated.  This function updates the internal statistics for
+ * paranoia (dynoverlap, dyndrift) that compensate for jitter and drift.
+ *
+ * (dynoverlap) influences how far stage 1 and stage 2 search for matching
+ * runs.  In low-jitter conditions, it will be very small (or even 0),
+ * narrowing our search.  In high-jitter conditions, it will be much larger,
+ * widening our search at the cost of speed.
+ *
+ * ???: To be studied further.
+ */
 void 
 offset_adjust_settings(cdrom_paranoia_t *p, 
 		       void(*callback)(long int, paranoia_cb_mode_t))
@@ -199,19 +213,43 @@ offset_adjust_settings(cdrom_paranoia_t *p,
   }
 }
 
+
+/* ===========================================================================
+ * offset_add_value (internal)
+ *
+ * This function adds the given jitter detected (value) to the statistics
+ * for the given stage (o).  It is called whenever jitter has been identified
+ * by stage 1 or 2.  After every 10 samples, we update the overall jitter-
+ * compensation settings (e.g. dynoverlap).  This allows us to narrow our
+ * search for matching runs (in both stages) in low-jitter conditions
+ * and also widen our search appropriately when there is jitter.
+ *
+ * ???BUG???:
+ * Note that there is a bug in the way that this is called by try_sort_sync().
+ * Silence looks like zero jitter, and dynoverlap may be incorrectly reduced
+ * when there's lots of silence but also jitter.
+ *
+ * See the bug notes in try_sort_sync() for details.
+ */
 void 
 offset_add_value(cdrom_paranoia_t *p,offsets *o,long value,
 		 void(*callback)(long int, paranoia_cb_mode_t))
 {
   if(o->offpoints!=-1){
 
+    /* Track the average magnitude of jitter (in either direction) */
     o->offdiff+=abs(value);
     o->offpoints++;
     o->newpoints++;
+
+    /* Track the net value of the jitter (to track drift) */
     o->offaccum+=value;
+
+    /* Track the largest jitter we've encountered in each direction */
     if(value<o->offmin)o->offmin=value;
     if(value>o->offmax)o->offmax=value;
-    
+
+    /* After 10 samples, update dynoverlap, etc. */
     if(o->newpoints>=10)offset_adjust_settings(p,callback);
   }
 }

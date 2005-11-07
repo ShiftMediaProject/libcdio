@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.22 2005/11/07 19:48:53 pjcreath Exp $
+  $Id: paranoia.c,v 1.23 2005/11/07 20:06:46 pjcreath Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -311,8 +311,9 @@ do_const_sync(c_block_t *A,
   if (ret > MIN_WORDS_SEARCH) {
     *offset=+(posA+cb(A))-(posB+ib(B));
 
-    /* ???: Contrary to the original comment, this appears to be relative to
-     * A, not B.
+    /* Note that try_sort_sync()'s swaps A & B when it calls this function,
+     * so while we adjust begin & end to be relative to A here, that means
+     * it's relative to B in try_sort_sync().
      */
     *begin+=cb(A);
     *end+=cb(A);
@@ -342,8 +343,8 @@ do_const_sync(c_block_t *A,
  * is found, (begin) and (end) are set to the boundaries of the run, and
  * (offset) is set to the difference in position of the run in A and B.
  * (begin) and (end) are the absolute positions of the samples in
- * A.  (offset) counts from B's frame of reference.  I.e., an offset of
- * -2 would mean that A's absolute 3 is equivalent to B's 5.
+ * B.  (offset) transforms A to B's frame of reference.  I.e., an offset of
+ * 2 would mean that A's absolute 3 is equivalent to B's 5.
  */
 
 /* post is w.r.t. B.  in stage one, we post from old.  In stage 2 we
@@ -388,6 +389,20 @@ try_sort_sync(cdrom_paranoia_t *p,
 			    post-cb(B), zeropos,
 			    begin, end, offset) ) {
 
+	    /* ???BUG??? Jitter cannot be accurately detected when there are
+	     * large regions of silence.  Silence all looks alike, so if
+	     * there is actually jitter but lots of silence, jitter (offset)
+	     * will be incorrectly identified as 0.  When the incorrect zero
+	     * jitter is passed to offset_add_value, it eventually reduces
+	     * dynoverlap so much that it's impossible for stage 2 to merge
+	     * jittered fragments into the root (it doesn't search far enough).
+	     *
+	     * A potential solution (tested, but not committed) is to check
+	     * for silence in do_const_sync and simply not call
+	     * offset_add_value if the match is all silence.
+	     *
+	     * This bug is not fixed yet.
+	     */
 	    /* ???: To be studied. */
 	    offset_add_value(p,&(p->stage1),*offset,callback);
 	    
@@ -416,6 +431,21 @@ try_sort_sync(cdrom_paranoia_t *p,
     if (do_const_sync(B,A,Aflags,
 		     post-cb(B),ipos(A,ptr),
 		     begin,end,offset)){
+
+      /* ???BUG??? Jitter cannot be accurately detected when there are
+       * large regions of silence.  Silence all looks alike, so if
+       * there is actually jitter but lots of silence, jitter (offset)
+       * will be incorrectly identified as 0.  When the incorrect zero
+       * jitter is passed to offset_add_value, it eventually reduces
+       * dynoverlap so much that it's impossible for stage 2 to merge
+       * jittered fragments into the root (it doesn't search far enough).
+       *
+       * A potential solution (tested, but not committed) is to check
+       * for silence in do_const_sync and simply not call
+       * offset_add_value if the match is all silence.
+       *
+       * This bug is not fixed yet.
+       */
       /* ???: To be studied. */
       offset_add_value(p,&(p->stage1),*offset,callback);
       return(1);
@@ -835,6 +865,32 @@ typedef struct sync_result {
    Do *not* match using zero posts
 */
 
+/* ===========================================================================
+ * i_iterate_stage2 (internal)
+ *
+ * This function searches for a sufficiently long run of identical samples
+ * between the passed verified fragment and the verified root.  The search
+ * is similar to that performed by i_iterate_stage1.  Of course, what we do
+ * as a result of a match is different.
+ *
+ * Our search is slightly different in that we refuse to match silence to
+ * silence.  All silence looks alike, and it would result in too many false
+ * positives here, so we handle silence separately.
+ *
+ * Also, because we're trying to determine whether this fragment as a whole
+ * overlaps with the root at all, we narrow our search (since it should match
+ * immediately or not at all).  This is in contrast to stage 1, where we
+ * search the entire vector looking for all possible matches.
+ *
+ * This function returns 0 if no match was found (including failure to find
+ * one due to silence), or 1 if we found a match.
+ *
+ * When a match is found, the sync_result_t is set to the boundaries of
+ * matching run (begin/end, in terms of the root) and how far out of sync
+ * the fragment is from the canonical root (offset).  Note that this offset
+ * is opposite in sign from the notion of offset used by try_sort_sync()
+ * and stage 1 generally.
+ */
 static long int 
 i_iterate_stage2(cdrom_paranoia_t *p,
 		 v_fragment_t *v,
@@ -854,6 +910,15 @@ i_iterate_stage2(cdrom_paranoia_t *p,
       fprintf(stderr,"Stage 2 search: fbv=%ld fev=%ld\n",fb(v),fe(v));
 #endif
 
+  /* Quickly check whether there could possibly be any overlap between
+   * the verified fragment and the root.  Our search will allow up to
+   * (p->dynoverlap) jitter between the two, so we expand the fragment
+   * search area by p->dynoverlap on both sides and see if that expanded
+   * area overlaps with the root.
+   *
+   * We could just as easily expand root's boundaries by p->dynoverlap
+   * instead and achieve the same result.
+   */
   if (min(fe(v) + p->dynoverlap,re(root)) -
     max(fb(v) - p->dynoverlap,rb(root)) <= 0) 
     return(0);
@@ -861,32 +926,101 @@ i_iterate_stage2(cdrom_paranoia_t *p,
   if (callback)
     (*callback)(fb(v), PARANOIA_CB_VERIFY);
 
-  /* just a bit of v; determine the correct area */
+  /* We're going to try to match the fragment to the root while allowing
+   * for p->dynoverlap jitter, so we'll actually be looking at samples
+   * in the fragment whose position claims to be up to p->dynoverlap
+   * outside the boundaries of the root.  But, of course, don't extend
+   * past the edges of the fragment.
+   */
   fbv = max(fb(v), rb(root)-p->dynoverlap);
 
-  /* we want to avoid zeroes */
+  /* Skip past leading zeroes in the fragment, and bail if there's nothing
+   * but silence.  We handle silence later separately.
+   */
   while (fbv<fe(v) && fv(v)[fbv-fb(v)]==0)
     fbv++;
   if (fbv == fe(v))
     return(0);
+
+  /* This is basically the same idea as the initial calculation for fbv
+   * above.  Look at samples up to p->dynoverlap outside the boundaries
+   * of the root, but don't extend past the edges of the fragment.
+   *
+   * However, we also limit the search to no more than 256 samples.
+   * Unlike stage 1, we're not trying to find all possible matches within
+   * two runs -- rather, we're trying to see if the fragment as a whole
+   * overlaps with the root.  If we can't find a match within 256 samples,
+   * there's probably no match to be found (because this fragment doesn't
+   * overlap with the root).
+   *
+   * ??? Is this why?  Why 256?
+   */
   fev = min(min(fbv+256, re(root)+p->dynoverlap), fe(v));
   
   {
-    /* spread the search area a bit.  We post from root, so containment
-       must strictly adhere to root */
+    /* Because we'll allow for up to (p->dynoverlap) jitter between the
+     * fragment and the root, we expand the search area (fbv to fev) by
+     * p->dynoverlap on both sides.  But, because we're iterating through
+     * root, we need to constrain the search area not to extend beyond
+     * the root's boundaries.
+     */
     long searchend=min(fev+p->dynoverlap,re(root));
     long searchbegin=max(fbv-p->dynoverlap,rb(root));
     sort_info_t *i=p->sortcache;
     long j;
-    
+
+    /* Initialize the "sort cache" index to allow for fast searching
+     * through the verified fragment between (fbv,fev).  (The index will
+     * actually be built the first time we search.)
+     */
     sort_setup(i, fv(v), &fb(v), fs(v), fbv, fev);
+
+    /* ??? Why 23? */
     for(j=searchbegin; j<searchend; j+=23){
+
+      /* Skip past silence in the root.  If there are just a few silent
+       * samples, the effect is minimal.  The real reason we need this is
+       * for large regions of silence.  All silence looks alike, so you
+       * could false-positive "match" two runs of silence that are either
+       * unrelated or ought to be jittered, and try_sort_sync can't
+       * accurately determine jitter (offset) from silence.
+       *
+       * Therefore, we want to post on a non-zero sample.  If there's
+       * nothing but silence left in the root, bail.  We don't want
+       * to match it here.
+       */
       while (j<searchend && rv(root)[j-rb(root)]==0)j++;
       if (j==searchend) break;
 
+      /* Starting from the (non-zero) sample in the root with the absolute
+       * position j, look for a matching run in the verified fragment.  This
+       * search will look a certain distance around j, and if successful
+       * will extend the matching run as far backward and forward as
+       * it can.
+       *
+       * The search will only return 1 if it finds a matching run long
+       * enough to be deemed significant.  Note that the search is limited
+       * by the boundaries given to sort_setup() above.
+       *
+       * Note also that flags aren't used in stage 2 (since neither verified
+       * fragments nor the root have them).
+       */
       if (try_sort_sync(p, i, NULL, rc(root), j,
 			&matchbegin,&matchend,&offset,callback)){
-	
+
+	/* If we found a matching run, we return the results of our match.
+	 *
+	 * Note that we flip the sign of (offset) because try_sort_sync()
+	 * returns it in terms of the fragment (i.e. what we add
+	 * to the fragment's position to yield the corresponding position
+	 * in the root), but here we consider the root to be canonical,
+	 * and so our returned "offset" reflects how the fragment is offset
+	 * from the root.
+	 *
+	 * E.g.: If the fragment's sample 10 corresponds to root's 12,
+	 * try_sort_sync() would return 2.  But since root is canonical,
+	 * we say that the fragment is off by -2.
+	 */
 	r->begin=matchbegin;
 	r->end=matchend;
 	r->offset=-offset;
@@ -935,8 +1069,9 @@ i_silence_test(root_block *root)
      * silencebegin as the first silent sample.  As a result, in certain
      * situations, the last non-zero sample can get clobbered.
      *
-     * The original code was:
-     * if (j<0)j=0;
+     * This bug has been tentatively fixed, since it allows more regression
+     * tests to pass.  The original code was:
+     *   if (j<0)j=0;
      */
     j++;
 
@@ -1043,25 +1178,66 @@ i_silence_match(root_block *root, v_fragment_t *v,
   return(1);
 }
 
+
+/* ===========================================================================
+ * i_stage2_each (internal)
+ *
+ * This function (which is entirely too long) attempts to merge the passed
+ * verified fragment into the verified root.
+ *
+ * First this function looks for a run of identical samples between
+ * the root and the fragment.  If it finds a long enough run, it then
+ * checks for "rifts" (see below) and fixes the root and/or fragment as
+ * necessary.  Finally, if the fragment will extend the tail of the root,
+ * we merge the fragment and extend the root.
+ *
+ * Most of the ugliness in this function has to do with handling "rifts",
+ * which are points of disagreement between the root and the verified
+ * fragment.  This can happen when a drive consistently drops a few samples
+ * or stutters and repeats a few samples.  It has to be consistent enough
+ * to result in a verified fragment (i.e. it happens twice), but inconsistent
+ * enough (e.g. due to the jiggled reads) not to happen every time.
+ *
+ * This function returns 1 if the fragment was successfully merged into the
+ * root, and 0 if not.
+ */
 static long int 
 i_stage2_each(root_block *root, v_fragment_t *v,
 	      void(*callback)(long int, paranoia_cb_mode_t))
 {
 
   cdrom_paranoia_t *p=v->p;
+
+  /* ??? Why do we round down to an even dynoverlap? */
   long dynoverlap=p->dynoverlap/2*2;
   
+  /* If this fragment has already been merged & freed, abort. */
   if (!v || !v->one) return(0);
 
+  /* If there's no verified root yet, abort. */
   if (!rv(root)){
     return(0);
   } else {
     sync_result_t r;
 
+    /* Search for a sufficiently long run of identical samples between
+     * the verified fragment and the verified root.  There's a little
+     * bit of subtlety in the search when silence is involved.
+     */
     if (i_iterate_stage2(p,v,&r,callback)){
 
+      /* Convert the results of the search to be relative to the root. */
       long int begin=r.begin-rb(root);
       long int end=r.end-rb(root);
+
+      /* Convert offset into a value that will transform a relative
+       * position in the root to the corresponding relative position in
+       * the fragment.  I.e., if offset = -2, then the sample at relative
+       * position 2 in the root is at relative position 0 in the fragment.
+       *
+       * While a bit opaque, this does reduce the number of calculations
+       * below.
+       */
       long int offset=r.begin+r.offset-fb(v)-begin;
       long int temp;
       c_block_t *l=NULL;
@@ -1078,10 +1254,56 @@ i_stage2_each(root_block *root, v_fragment_t *v,
       fprintf(stderr,"Stage 2 match\n");
 #endif
 
-      /* chase backward */
-      /* note that we don't extend back right now, only forward. */
+      /* Now that we've found a sufficiently long run of identical samples
+       * between the fragment and the root, we need to check for rifts.
+       *
+       * A "rift", as mentioned above, is a disagreement between the
+       * fragment and the root.  When there's a rift, the matching run
+       * found by i_iterate_stage2() will obviously stop where the root
+       * and the fragment disagree.
+       *
+       * So we detect rifts by checking whether the matching run extends
+       * to the ends of the fragment and root.  If the run does extend to
+       * the ends of the fragment and root, then all overlapping samples
+       * agreed, and there's no rift.  If, however, the matching run
+       * stops with samples left over in both the root and the fragment,
+       * that means the root and fragment disagreed at that point.
+       * Leftover samples at the beginning of the match indicate a
+       * leading rift, and leftover samples at the end of the match indicate
+       * a trailing rift.
+       *
+       * Once we detect a rift, we attempt to fix it, depending on the
+       * nature of the disagreement.  See i_analyze_rift_[rf] for details
+       * on how we determine what kind of rift it is.  See below for
+       * how we attempt to fix the rifts.
+       */
+
+      /* First, check for a leading rift, fix it if possible, and then
+       * extend the match forward until either we hit the limit of the
+       * overlapping samples, or until we encounter another leading rift.
+       * Keep doing this until we hit the beginning of the overlap.
+       *
+       * Note that while we do fix up leading rifts, we don't extend
+       * the root backward (earlier samples) -- only forward (later
+       * samples).
+       */
+
+      /* If the beginning of the match didn't reach the beginning of
+       * either the fragment or the root, we have a leading rift to be
+       * examined.
+       *
+       * Remember that (begin) is the offset into the root, and (begin+offset)
+       * is the equivalent offset into the fragment.  If neither one is at
+       * zero, then they both have samples before the match, and hence a
+       * rift.
+       */
       while ((begin+offset>0 && begin>0)){
 	long matchA=0,matchB=0,matchC=0;
+
+	/* (begin) is the offset into the root of the first matching sample,
+	 * (beginL) is the offset into the fragment of the first matching
+	 * sample.  These samples are at the edge of the rift.
+	 */
 	long beginL=begin+offset;
 
 #if TRACE_PARANOIA & 2
@@ -1091,12 +1313,28 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 	}
 #endif
 
+	/* The first time we encounter a leading rift, allocate a
+	 * scratch copy of the verified fragment which we'll use if
+	 * we need to fix up the fragment before merging it into
+	 * the root.
+	 */
 	if (l==NULL){
 	  int16_t *buff=malloc(fs(v)*sizeof(int16_t));
 	  l=c_alloc(buff,fb(v),fs(v));
 	  memcpy(buff,fv(v),fs(v)*sizeof(int16_t));
 	}
 
+	/* Starting at the first mismatching sample, see how far back the
+	 * rift goes, and determine what kind of rift it is.  Note that
+	 * we're searching through the fixed up copy of the fragment.
+	 *
+	 * matchA  > 0 if there are samples missing from the root
+	 * matchA  < 0 if there are duplicate samples (stuttering) in the root
+	 * matchB  > 0 if there are samples missing from the fragment
+	 * matchB  < 0 if there are duplicate samples in the fragment
+	 * matchC != 0 if there's a section of garbage, after which
+	 *             the fragment and root agree and are in sync
+	 */
 	i_analyze_rift_r(rv(root),cv(l),
 			 rs(root),cs(l),
 			 begin-1,beginL-1,
@@ -1107,82 +1345,206 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 		matchA,matchB,matchC);
 #endif		
 	
+	/* ??? The root.returnedlimit checks below are presently a mystery. */
+
 	if (matchA){
-	  /* a problem with root */
+	  /* There's a problem with the root */
+
 	  if (matchA>0){
-	    /* dropped bytes; add back from v */
+	    /* There were (matchA) samples dropped from the root.  We'll add
+	     * them back from the fixed up fragment.
+	     */
 	    if (callback)
 	      (*callback)(begin+rb(root)-1,PARANOIA_CB_FIXUP_DROPPED);
 	    if (rb(root)+begin<p->root.returnedlimit)
 	      break;
 	    else{
+
+	      /* At the edge of the rift in the root, insert the missing
+	       * samples from the fixed up fragment.  They're the (matchA)
+	       * samples immediately preceding the edge of the rift in the
+	       * fragment.
+	       */
 	      c_insert(rc(root),begin,cv(l)+beginL-matchA,
 		       matchA);
+
+	      /* We just inserted (matchA) samples into the root, so update
+	       * our begin/end offsets accordingly.  Also adjust the
+	       * (offset) to compensate (since we use it to find samples in
+	       * the fragment, and the fragment hasn't changed).
+	       */
 	      offset-=matchA;
 	      begin+=matchA;
 	      end+=matchA;
 	    }
+
 	  } else {
-	    /* duplicate bytes; drop from root */
+	    /* There were (-matchA) duplicate samples (stuttering) in the
+	     * root.  We'll drop them.
+	     */
 	    if (callback)
 	      (*callback)(begin+rb(root)-1,PARANOIA_CB_FIXUP_DUPED);
 	    if (rb(root)+begin+matchA<p->root.returnedlimit) 
 	      break;
 	    else{
+
+	      /* Remove the (-matchA) samples immediately preceding the
+	       * edge of the rift in the root.
+	       */
 	      c_remove(rc(root),begin+matchA,-matchA);
+
+	      /* We just removed (-matchA) samples from the root, so update
+	       * our begin/end offsets accordingly.  Also adjust the offset
+	       * to compensate.  Remember that matchA < 0, so we're actually
+	       * subtracting from begin/end.
+	       */
 	      offset-=matchA;
 	      begin+=matchA;
 	      end+=matchA;
 	    }
 	  }
 	} else if (matchB){
-	  /* a problem with the fragment */
+	  /* There's a problem with the fragment */
+
 	  if (matchB>0){
-	    /* dropped bytes */
+	    /* There were (matchB) samples dropped from the fragment.  We'll
+	     * add them back from the root.
+	     */
 	    if (callback)
 	      (*callback)(begin+rb(root)-1,PARANOIA_CB_FIXUP_DROPPED);
+
+	    /* At the edge of the rift in the fragment, insert the missing
+	     * samples from the root.  They're the (matchB) samples
+	     * immediately preceding the edge of the rift in the root.
+	     * Note that we're fixing up the scratch copy of the fragment.
+	     */
 	    c_insert(l,beginL,rv(root)+begin-matchB,
 			 matchB);
+
+	    /* We just inserted (matchB) samples into the fixed up fragment,
+	     * so update (offset), since we use it to find samples in the
+	     * fragment based on the root's unchanged offsets.
+	     */
 	    offset+=matchB;
+
 	  } else {
-	    /* duplicate bytes */
+	    /* There were (-matchB) duplicate samples (stuttering) in the
+	     * fixed up fragment.  We'll drop them.
+	     */
 	    if (callback)
 	      (*callback)(begin+rb(root)-1,PARANOIA_CB_FIXUP_DUPED);
+
+	    /* Remove the (-matchB) samples immediately preceding the edge
+	     * of the rift in the fixed up fragment.
+	     */
 	    c_remove(l,beginL+matchB,-matchB);
+
+	    /* We just removed (-matchB) samples from the fixed up fragment,
+	     * so update (offset), since we use it to find samples in the
+	     * fragment based on the root's unchanged offsets.
+	     */
 	    offset+=matchB;
 	  }
+
 	} else if (matchC){
-	  /* Uhh... problem with both */
-	  
-	  /* Set 'disagree' flags in root */
+
+	  /* There are (matchC) samples that simply disagree between the
+	   * fragment and the root.  On the other side of the mismatch, the
+	   * fragment and root agree again.  We can't classify the mismatch
+	   * as either a stutter or dropped samples, and we have no way of
+	   * telling whether the fragment or the root is right.
+	   *
+	   * The original comment indicated that we set "disagree" flags
+	   * in the root, but it seems to be historical.
+	   */
+
 	  if (rb(root)+begin-matchC<p->root.returnedlimit)
 	    break;
+
+	  /* Overwrite the mismatching (matchC) samples in root with the
+	   * samples from the fixed up fragment.
+	   *
+	   * ??? Do we think the fragment is more likely correct, is this
+	   * just arbitrary, or is there some other reason for overwriting
+	   * the root?
+	   */
 	  c_overwrite(rc(root),begin-matchC,
 			cv(l)+beginL-matchC,matchC);
 	  
 	} else {
-	  /* do we have a mismatch due to silence beginning/end case? */
-	  /* in the 'chase back' case, we don't do anything. */
 
-	  /* Did not determine nature of difficulty... 
-	     report and bail */
+	  /* We may have had a mismatch because we ran into leading silence.
+	   *
+	   * ??? To be studied: why would this cause a mismatch?  Neither
+	   * i_analyze_rift_f nor i_iterate_stage2() nor i_paranoia_overlap()
+	   * appear to take silence into consideration in this regard.
+	   *
+	   * Since we don't extend the root in that direction, we don't
+	   * do anything, just move on to trailing rifts.
+	   */
+
+	  /* If the rift was too complex to fix (see i_analyze_rift_r),
+	   * we just stop and leave the leading edge where it is.
+	   */
 	    
 	  /*RRR(*callback)(post,PARANOIA_CB_XXX);*/
 	  break;
 	}
-	/* not the most efficient way, but it will do for now */
+
+	/* Recalculate the offset of the edge of the rift in the fixed
+	 * up fragment, in case it changed.
+	 *
+	 * ??? Why is this done here rather than in the (matchB) case above,
+	 * which should be the only time beginL will change.
+	 */
 	beginL=begin+offset;
+
+	/* Now that we've fixed up the root or fragment as necessary, see
+	 * how far we can extend the matching run.  This function is
+	 * overkill, as it tries to extend the matching run in both
+	 * directions (and rematches what we already matched), but it works.
+	 */
 	i_paranoia_overlap(rv(root),cv(l),
 			   begin,beginL,
 			   rs(root),cs(l),
 			   &begin,&end);	
-      } /* end while */
-      
-      /* chase forward */
+
+      } /* end while (leading rift) */
+
+
+      /* Second, check for a trailing rift, fix it if possible, and then
+       * extend the match forward until either we hit the limit of the
+       * overlapping samples, or until we encounter another trailing rift.
+       * Keep doing this until we hit the end of the overlap.
+       */
+
+      /* If the end of the match didn't reach the end of either the fragment
+       * or the root, we have a trailing rift to be examined.
+       *
+       * Remember that (end) is the offset into the root, and (end+offset)
+       * is the equivalent offset into the fragment.  If neither one is
+       * at the end of the vector, then they both have samples after the
+       * match, and hence a rift.
+       *
+       * (temp) is the size of the (potentially fixed-up) fragment.  If
+       * there was a leading rift, (l) is the fixed up fragment, and
+       * (offset) is now relative to it.
+       */
       temp=l ? cs(l) : fs(v);
       while (end+offset<temp && end<rs(root)){
 	long matchA=0,matchB=0,matchC=0;
+
+	/* (begin) is the offset into the root of the first matching sample,
+	 * (beginL) is the offset into the fragment of the first matching
+	 * sample.  We know these samples match and will use these offsets
+	 * later when we try to extend the matching run.
+	 */
 	long beginL=begin+offset;
+
+	/* (end) is the offset into the root of the first mismatching sample
+	 * after the matching run, (endL) is the offset into the fragment of
+	 * the equivalent sample.  These samples are at the edge of the rift.
+	 */
 	long endL=end+offset;
 	
 #if TRACE_PARANOIA & 2
@@ -1192,12 +1554,30 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 	}
 #endif
 
+	/* The first time we encounter a rift, allocate a scratch copy of
+	 * the verified fragment which we'll use if we need to fix up the
+	 * fragment before merging it into the root.
+	 *
+	 * Note that if there was a leading rift, we'll already have
+	 * this (potentially fixed-up) scratch copy allocated.
+	 */
 	if (l==NULL){
 	  int16_t *buff=malloc(fs(v)*sizeof(int16_t));
 	  l=c_alloc(buff,fb(v),fs(v));
 	  memcpy(buff,fv(v),fs(v)*sizeof(int16_t));
 	}
 
+	/* Starting at the first mismatching sample, see how far forward the
+	 * rift goes, and determine what kind of rift it is.  Note that we're
+	 * searching through the fixed up copy of the fragment.
+	 *
+	 * matchA  > 0 if there are samples missing from the root
+	 * matchA  < 0 if there are duplicate samples (stuttering) in the root
+	 * matchB  > 0 if there are samples missing from the fragment
+	 * matchB  < 0 if there are duplicate samples in the fragment
+	 * matchC != 0 if there's a section of garbage, after which
+	 *             the fragment and root agree and are in sync
+	 */
 	i_analyze_rift_f(rv(root),cv(l),
 			 rs(root),cs(l),
 			 end,endL,
@@ -1207,41 +1587,118 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 	fprintf(stderr,"matching rootF: matchA:%ld matchB:%ld matchC:%ld\n",
 		matchA,matchB,matchC);
 #endif
+
+	/* ??? The root.returnedlimit checks below are presently a mystery. */
 	
 	if (matchA){
-	  /* a problem with root */
+	  /* There's a problem with the root */
+
 	  if (matchA>0){
-	    /* dropped bytes; add back from v */
+	    /* There were (matchA) samples dropped from the root.  We'll add
+	     * them back from the fixed up fragment.
+	     */
 	    if (callback)(*callback)(end+rb(root),PARANOIA_CB_FIXUP_DROPPED);
 	    if (end+rb(root)<p->root.returnedlimit)
 	      break;
+
+	    /* At the edge of the rift in the root, insert the missing
+	     * samples from the fixed up fragment.  They're the (matchA)
+	     * samples immediately preceding the edge of the rift in the
+	     * fragment.
+	     */
 	    c_insert(rc(root),end,cv(l)+endL,matchA);
+
+	    /* Although we just inserted samples into the root, we did so
+	     * after (begin) and (end), so we needn't update those offsets.
+	     */
+
 	  } else {
-	    /* duplicate bytes; drop from root */
+	    /* There were (-matchA) duplicate samples (stuttering) in the
+	     * root.  We'll drop them.
+	     */
 	    if (callback)(*callback)(end+rb(root),PARANOIA_CB_FIXUP_DUPED);
 	    if (end+rb(root)<p->root.returnedlimit)
 	      break;
+
+	    /* Remove the (-matchA) samples immediately following the edge
+	     * of the rift in the root.
+	     */
 	    c_remove(rc(root),end,-matchA);
+
+	    /* Although we just removed samples from the root, we did so
+	     * after (begin) and (end), so we needn't update those offsets.
+	     */
+
 	  }
 	} else if (matchB){
-	  /* a problem with the fragment */
+	  /* There's a problem with the fragment */
+
 	  if (matchB>0){
-	    /* dropped bytes */
+	    /* There were (matchB) samples dropped from the fragment.  We'll
+	     * add them back from the root.
+	     */
 	    if (callback)(*callback)(end+rb(root),PARANOIA_CB_FIXUP_DROPPED);
+
+	    /* At the edge of the rift in the fragment, insert the missing
+	     * samples from the root.  They're the (matchB) samples
+	     * immediately following the dge of the rift in the root.
+	     * Note that we're fixing up the scratch copy of the fragment.
+	     */
 	    c_insert(l,endL,rv(root)+end,matchB);
+
+	    /* Although we just inserted samples into the fragment, we did so
+	     * after (begin) and (end), so (offset) hasn't changed either.
+	     */
+
 	  } else {
-	    /* duplicate bytes */
+	    /* There were (-matchB) duplicate samples (stuttering) in the
+	     * fixed up fragment.  We'll drop them.
+	     */
 	    if (callback)(*callback)(end+rb(root),PARANOIA_CB_FIXUP_DUPED);
+
+	    /* Remove the (-matchB) samples immediately following the edge
+	     * of the rift in the fixed up fragment.
+	     */
 	    c_remove(l,endL,-matchB);
+
+	    /* Although we just removed samples from the fragment, we did so
+	     * after (begin) and (end), so (offset) hasn't changed either.
+	     */
 	  }
 	} else if (matchC){
-	  /* Uhh... problem with both */
-	  
-	  /* Set 'disagree' flags in root */
+
+          /* There are (matchC) samples that simply disagree between the
+           * fragment and the root.  On the other side of the mismatch, the
+           * fragment and root agree again.  We can't classify the mismatch
+           * as either a stutter or dropped samples, and we have no way of
+           * telling whether the fragment or the root is right.
+           *
+           * The original comment indicated that we set "disagree" flags
+           * in the root, but it seems to be historical.
+           */
+
 	  if (end+rb(root)<p->root.returnedlimit)
 	    break;
+
+          /* Overwrite the mismatching (matchC) samples in root with the
+           * samples from the fixed up fragment.
+           *
+           * ??? Do we think the fragment is more likely correct, is this
+           * just arbitrary, or is there some other reason for overwriting
+           * the root?
+           */
 	  c_overwrite(rc(root),end,cv(l)+endL,matchC);
+
 	} else {
+
+	  /* We may have had a mismatch because we ran into trailing silence.
+	   *
+	   * ??? To be studied: why would this cause a mismatch?  Neither
+	   * i_analyze_rift_f nor i_iterate_stage2() nor i_paranoia_overlap()
+	   * appear to take silence into consideration in this regard.
+	   *
+	   * ??? To be studied: why do we drop the silence?
+	   */
 	  analyze_rift_silence_f(rv(root),cv(l),
 				 rs(root),cs(l),
 				 end,endL,
@@ -1261,27 +1718,64 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 	    return(1);
 
 	  } else {
-	    /* Could not determine nature of difficulty... 
-	       report and bail */
+
+	    /* If the rift was too complex to fix (see i_analyze_rift_f),
+	     * we just stop and leave the trailing edge where it is.
+	     */
 	    
 	    /*RRR(*callback)(post,PARANOIA_CB_XXX);*/
 	  }
 	  break;
 	}
-	/* not the most efficient way, but it will do for now */
+
+        /* Now that we've fixed up the root or fragment as necessary, see
+         * how far we can extend the matching run.  This function is
+         * overkill, as it tries to extend the matching run in both
+         * directions (and rematches what we already matched), but it works.
+         */
 	i_paranoia_overlap(rv(root),cv(l),
 			   begin,beginL,
 			   rs(root),cs(l),
 			   NULL,&end);
-      } /* end while */
 
-      /* if this extends our range, let's glom */
+	/* ???BUG??? (temp) never gets updated within the loop, even if the
+	 * fragment gets fixed up.  In contrast, rs(root) is inherently
+	 * updated when the verified root gets fixed up.
+	 *
+	 * This bug is not fixed yet.
+	 */
+
+      } /* end while (trailing rift) */
+
+
+      /* Third and finally, if the overlapping verified fragment extends
+       * our range forward (later samples), we append ("glom") the new
+       * samples to the end of the root.
+       *
+       * Note that while we did fix up leading rifts, we don't extend
+       * the root backward (earlier samples) -- only forward (later
+       * samples).
+       *
+       * This is generally fine, since the verified root is supposed to
+       * slide from earlier samples to later samples across multiple calls
+       * to paranoia_read().
+       *
+       * ??? But, is this actually right?  Because of this, we don't
+       * extend the root to hold the earliest read sample, if we happened
+       * to initialize the root with a later sample due to jitter.
+       * There are probably some ugly side effects from extending the root
+       * backward, in the general case, but it may not be so dire if we're
+       * near sample 0.  To be investigated.
+       */
       {
 	long sizeA=rs(root);
 	long sizeB;
 	long vecbegin;
 	int16_t *vector;
-	  
+
+	/* If there were any rifts, we'll use the fixed up fragment (l),
+	 * otherwise, we use the original fragment (v).
+	 */
 	if (l){
 	  sizeB=cs(l);
 	  vector=cv(l);
@@ -1292,13 +1786,26 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 	  vecbegin=fb(v);
 	}
 
+	/* Convert the fragment-relative offset (sizeB) into an offset
+	 * relative to the root (A), and see if the offset is past the
+	 * end of the root (> sizeA).  If it is, this fragment will extend
+	 * our root.
+	 *
+	 * ??? Why do we check for v->lastsector separately?
+	 */
 	if (sizeB-offset>sizeA || v->lastsector){	  
 	  if (v->lastsector){
 	    root->lastsector=1;
 	  }
-	  
+
+	  /* ??? Why would end be < sizeA? Why do we truncate root? */
 	  if (end<sizeA)c_remove(rc(root),end,-1);
-	  
+
+	  /* Extend the root with the samples from the end of the
+	   * (potentially fixed up) fragment.
+	   *
+	   * ??? When would this condition not be true?
+	   */
 	  if (sizeB-offset-end)c_append(rc(root),vector+end+offset,
 					 sizeB-offset-end);
 	  
@@ -1307,9 +1814,22 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 		  rb(root)+end, re(root));
 #endif
 
+	  /* ???TODO??? */
 	  i_silence_test(root);
 
-	  /* add offset into dynoverlap stats */
+	  /* Add the offset into our stage 2 statistics.
+	   *
+	   * Note that we convert our peculiar offset (which is in terms of
+	   * the relative positions of samples within each vector) back into
+	   * the actual offset between what A considers sample N and what B
+	   * considers sample N.
+	   *
+	   * We do this at the end of rift handling because any original
+	   * offset returned by i_iterate_stage2() might have been due to
+	   * dropped or duplicated samples.  Once we've fixed up the root
+	   * and the fragment, we have an offset which more reliably
+	   * indicates jitter.
+	   */
 	  offset_add_value(p,&p->stage2,offset+vecbegin-rb(root),callback);
 	}
       }
@@ -1338,7 +1858,7 @@ i_stage2_each(root_block *root, v_fragment_t *v,
       return(0);
       
     }
-  }
+  } /* endif rv(root) */
 }
 
 static int 
@@ -1380,6 +1900,27 @@ vsort(const void *a,const void *b)
   return((*(v_fragment_t **)a)->begin-(*(v_fragment_t **)b)->begin);
 }
 
+
+/* ===========================================================================
+ * i_stage2 (internal)
+ *
+ * This function attempts to extend the verified root by merging verified
+ * fragments into it.  It keeps extending the tail end of the root until
+ * it runs out of matching fragments.  See i_stage2_each (and
+ * i_iterate_stage2) for details of fragment matching and merging.
+ *
+ * This function is called by paranoia_read_limited when the verified root
+ * doesn't contain sufficient data to satisfy the request for samples.
+ * If this function fails to extend the verified root far enough (having
+ * exhausted the currently available verified fragments), the caller
+ * will then read the device again to try and establish more verified
+ * fragments.
+ *
+ * ??? TODO: Silence matching ???
+ *
+ * This function returns the number of verified fragments successfully
+ * merged into the verified root.
+ */
 static int 
 i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
 	 void (*callback)(long int, paranoia_cb_mode_t))
@@ -1397,8 +1938,16 @@ i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
      matching in the event that there are still audio vectors with
      content to be sunk before the silence */
 
+  /* This flag is not the silence flag.  Rather, it indicates whether
+   * we succeeded in adding a verified fragment to the verified root.
+   * In short, we keep adding fragments until we no longer find a
+   * match.
+   */
   while (flag) {
-    /* loop through all the current fragments */
+
+    /* Convert the linked list of verified fragments into an array,
+     * to be sorted in order of beginning sample position
+     */
     v_fragment_t *first=v_first(p);
     long active=p->fragments->active,count=0;
     v_fragment_t **list = calloc(active, sizeof(v_fragment_t *));
@@ -1409,26 +1958,71 @@ i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
       first=next;
     }
 
+    /* Reset the flag so that if we don't match any fragments, we
+     * stop looping.  Then, proceed only if there are any fragments
+     * to match.
+     */
     flag=0;
     if (count){
-      /* sorted in ascending order of beginning */
-      qsort(list,active,sizeof(v_fragment_t *),&vsort);
-      
-      /* we try a nonzero based match even if in silent mode in
-	 the case that there are still cached vectors to sink
-	 behind continent->ocean boundary */
 
+      /* Sort the array of verified fragments in order of beginning
+       * sample position.
+       */
+      qsort(list,active,sizeof(v_fragment_t *),&vsort);
+
+      /* We don't check for the silence flag yet, because even if the
+       * verified root ends in silence (and thus the silence flag is set),
+       * there may be a non-silent region at the beginning of the verified
+       * root, into which we can merge the verified fragments.
+       */
+
+      /* Iterate through the verified fragments, starting at the fragment
+       * with the lowest beginning sample position.
+       */
       for(count=0;count<active;count++){
 	first=list[count];
+
+	/* Make sure this fragment hasn't already been merged (and
+	 * thus freed). */
 	if (first->one){
+
+	  /* If we don't have a verified root yet, just promote the first
+	   * fragment (with lowest beginning sample) to be the verified
+	   * root.
+	   *
+	   * ??? It seems that this could be fairly arbitrary if jitter
+	   * is an issue.  If we've verified two fragments allegedly
+	   * beginning at "0" (which are actually slightly offset due to
+	   * jitter), the root might not begin at the earliest read
+	   * sample.  Additionally, because subsequent fragments are
+	   * only merged at the tail end of the root, this situation
+	   * won't be fixed by merging the earlier samples.
+	   *
+	   * Practically, this ends up not being critical since most
+	   * drives insert some extra silent samples at the beginning
+	   * of the stream.  Missing a few of them doesn't cause any
+	   * real lost data.  But it is non-deterministic.
+	   */
 	  if (rv(root)==NULL){
 	    if (i_init_root(&(p->root),first,beginword,callback)){
 	      free_v_fragment(first);
+
+	      /* Consider this a merged fragment, so set the flag
+	       * to keep looping.
+	       */
 	      flag=1;
 	      ret++;
 	    }
 	  } else {
+
+	    /* Try to merge this fragment with the verified root,
+	     * extending the tail of the root.
+	     */
 	    if (i_stage2_each(root,first,callback)){
+
+	      /* If we successfully merged the fragment, set the flag
+	       * to keep looping.
+	       */
 	      ret++;
 	      flag=1;
 	    }
@@ -1436,13 +2030,24 @@ i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
 	}
       }
 
-      /* silence handling */
+      /* If the verified root ends in silence, iterate through the
+       * remaining unmerged fragments to ... TODO???
+       */
       if (!flag && p->root.silenceflag){
 	for(count=0;count<active;count++){
 	  first=list[count];
+
+	  /* Make sure this fragment hasn't already been merged (and
+	   * thus freed). */
 	  if (first->one){
 	    if (rv(root)!=NULL){
+
+	      /* ???TODO??? */
 	      if (i_silence_match(root,first,callback)){
+
+		/* If we successfully merged the fragment, set the flag
+		 * to keep looping.
+		 */
 		ret++;
 		flag=1;
 	      }
@@ -1450,8 +2055,13 @@ i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
 	  }
 	}
       }
-    }
+    } /* end if(count) */
     free(list);
+
+    /* If we were able to extend the verified root at all during this pass
+     * through the loop, loop again to see if we can merge any remaining
+     * fragments with the extended root.
+     */
 
 #if TRACE_PARANOIA & 2
     if (flag)
@@ -1460,8 +2070,13 @@ i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
 #endif
 
   } /* end while */
+
+  /* Return the number of fragments we successfully merged into the
+   * verified root.
+   */
   return(ret);
 }
+
 
 static void 
 i_end_case(cdrom_paranoia_t *p,long endword, 
@@ -2084,6 +2699,10 @@ cdio_paranoia_read_limited(cdrom_paranoia_t *p,
 	    long begin=0,end=0;
 	    
 	    while (begin<cs(new)){
+	      /* ???BUG??? This while() should probably read begin<cs(new).
+	       *
+	       * This bug is not fixed yet.
+	       */
 	      while (end<cs(new) && (new->flags[begin]&FLAGS_EDGE))begin++;
 	      end=begin+1;
 	      while (end<cs(new) && (new->flags[end]&FLAGS_EDGE)==0)end++;
