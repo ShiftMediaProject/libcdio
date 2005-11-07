@@ -1,4 +1,4 @@
-$Id: README,v 1.17 2005/03/15 04:18:29 rocky Exp $
+$Id: README,v 1.18 2005/11/07 07:45:20 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -21,6 +21,9 @@ cdtext.c: A program to show CD-Text and CD disc mode info.
 
 drives.c: A program to show drivers installed and what the default
 	  CD-ROM drive is and what CD drives are available.
+
+eject.c:  A program eject a CD from a CD-ROM drive and then close the door
+	  again.
 
 iso1.c:   A program to show using libiso9660 to list files in a
 	  directory of an ISO-9660 image.
