@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.21 2005/10/24 19:42:15 pjcreath Exp $
+  $Id: paranoia.c,v 1.22 2005/11/07 19:48:53 pjcreath Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -1523,6 +1523,10 @@ verify_skip_case(cdrom_paranoia_t *p,
 
   if (callback)(*callback)(post,PARANOIA_CB_SKIP);
   
+#if TRACE_PARANOIA
+  fprintf(stderr, "Skipping [%ld-", post);
+#endif
+
   /* We want to add a sector.  Look for a c_block that spans,
      preferrably a verified area */
 
@@ -1573,6 +1577,12 @@ verify_skip_case(cdrom_paranoia_t *p,
 		 gend-post);
       }
 
+#if TRACE_PARANOIA
+      fprintf(stderr, "%d], filled with %s data from block [%ld-%ld]\n",
+	      gend, (graft->flags[post-cbegin]&FLAGS_VERIFIED)
+	      ? "verified" : "unverified", cbegin, cend);
+#endif
+
       root->returnedlimit=re(root);
       return;
     }
@@ -1588,6 +1598,11 @@ verify_skip_case(cdrom_paranoia_t *p,
       c_append(rc(root),temp,CDIO_CD_FRAMESIZE_RAW);
       free(temp);
     }
+
+#if TRACE_PARANOIA
+    fprintf(stderr, "%ld], filled with zero\n", re(root));
+#endif
+
     root->returnedlimit=re(root);
   }
 }    

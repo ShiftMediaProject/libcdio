@@ -1,5 +1,5 @@
 /*
-  $Id: cddap_interface.c,v 1.3 2005/10/23 11:28:20 rocky Exp $
+  $Id: cddap_interface.c,v 1.4 2005/11/07 19:48:50 pjcreath Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -182,10 +182,12 @@ jitter_read (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors,
     
     
     if (begin + i_jitter_sectors > 0) {
+#if !TRACE_PARANOIA
       char buffer[256];
       sprintf(buffer, "jittering by %d, offset %ld\n", i_jitter, 
 	      i_jitter_offset);
       cdmessage(d,buffer); 
+#endif
 
       begin += i_jitter_sectors;
       i_sectors ++; 
