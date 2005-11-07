@@ -27,6 +27,7 @@ cdio_debug
 cdio_destroy
 cdio_driver_describe
 cdio_eject_media
+cdio_eject_media_drive
 cdio_error
 cdio_free_device_list
 cdio_from_bcd8
