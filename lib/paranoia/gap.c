@@ -1,5 +1,5 @@
 /*
-  $Id: gap.c,v 1.2 2005/11/07 20:06:45 pjcreath Exp $
+  $Id: gap.c,v 1.3 2005/11/08 23:21:40 pjcreath Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -484,7 +484,29 @@ i_analyze_rift_r(int16_t *A,int16_t *B,
 }
 
 
-/* ??? To be studied. */
+/* ===========================================================================
+ * analyze_rift_silence_f (internal)
+ *
+ * This function examines the fragment and root from the rift onward to
+ * see if they have a rift's worth of silence (or if they end with silence).
+ * It sets (*matchA) to -1 if A's rift is silence, (*matchB) to -1 if B's
+ * rift is silence, and sets them to 0 otherwise.
+ *
+ * Note that, unlike every other function in cdparanoia, this function
+ * considers any repeated value to be silence (which, in effect, it is).
+ * All other functions only consider repeated zeroes to be silence.
+ *
+ * ??? Is this function name just a misnomer, as it's really looking for
+ * repeated garbage?
+ *
+ * This function is called by i_stage2_each() if it runs into a trailing rift
+ * that i_analyze_rift_f couldn't diagnose.  This checks for another variant:
+ * where one vector has silence and the other doesn't.  We then assume
+ * that the silence (and anything following it) is garbage.
+ *
+ * Note that while this function checks both A and B for silence, the caller
+ * assumes that only one or the other has silence.
+ */
 void
 analyze_rift_silence_f(int16_t *A,int16_t *B,long sizeA,long sizeB,
 		       long aoffset, long boffset,
@@ -493,12 +515,18 @@ analyze_rift_silence_f(int16_t *A,int16_t *B,long sizeA,long sizeB,
   *matchA=-1;
   *matchB=-1;
 
+  /* Search for MIN_WORDS_RIFT samples, or to the end of the vector,
+   * whichever comes first.
+   */
   sizeA=min(sizeA,aoffset+MIN_WORDS_RIFT);
   sizeB=min(sizeB,boffset+MIN_WORDS_RIFT);
 
   aoffset++;
   boffset++;
 
+  /* Check whether A has only "silence" within the search range.  Note
+   * that "silence" here is a single, repeated value (zero or not).
+   */
   while(aoffset<sizeA){
     if(A[aoffset]!=A[aoffset-1]){
       *matchA=0;
@@ -507,6 +535,12 @@ analyze_rift_silence_f(int16_t *A,int16_t *B,long sizeA,long sizeB,
     aoffset++;
   }
 
+  /* Check whether B has only "silence" within the search range.  Note
+   * that "silence" here is a single, repeated value (zero or not).
+   *
+   * Also note that while the caller assumes that only matchA or matchB
+   * is set, we check both vectors here.
+   */
   while(boffset<sizeB){
     if(B[boffset]!=B[boffset-1]){
       *matchB=0;

@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.23 2005/11/07 20:06:46 pjcreath Exp $
+  $Id: paranoia.c,v 1.24 2005/11/08 23:21:40 pjcreath Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -62,6 +62,30 @@
   audio that interfaces with silence; an edge must be 'wet'.
 
   **************************************************************/
+
+/* ===========================================================================
+ * Let's translate the above vivid metaphor into something a mere mortal
+ * can understand:
+ *
+ * Non-silent audio is "solid."  Silent audio is "wet" and fluid.  The reason
+ * to treat silence as fluid is that if there's a long enough span of
+ * silence, we can't reliably detect jitter or dropped samples within that
+ * span (since all silence looks alike).  Non-silent audio, on the other
+ * hand, is distinctive and can be reliably reassembled.
+ *
+ * So we treat long spans of silence specially.  We only consider an edge
+ * of a non-silent region ("continent" or "island") to be "wet" if it borders
+ * a long span of silence.  Short spans of silence are merely damp and can
+ * be reliably placed within a continent.
+ *
+ * We position ("anchor") the non-silent regions somewhat arbitrarily (since
+ * they may be jittered and we have no way to verify their exact position),
+ * and fill the intervening space with silence.
+ *
+ * See i_silence_match() for the gory details.
+ * ===========================================================================
+ */
+
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1034,15 +1058,17 @@ i_iterate_stage2(cdrom_paranoia_t *p,
 }
 
 
-/* simple test for a root vector that ends in silence*/
 /* ===========================================================================
  * i_silence_test() (internal)
  *
  * If the entire root is silent, or there's enough trailing silence
  * to be significant (MIN_SILENCE_BOUNDARY samples), mark the beginning
- * of the silence and "light" the silence flag.
+ * of the silence and "light" the silence flag.  This flag will remain lit
+ * until i_silence_match() appends some non-silent samples to the root.
  *
- * ???: Why?
+ * We do this because if there's a long enough span of silence, we can't
+ * reliably detect jitter or dropped samples within that span.  See
+ * i_silence_match() for details on how we recover from this situation.
  */
 static void 
 i_silence_test(root_block *root)
@@ -1085,9 +1111,31 @@ i_silence_test(root_block *root)
 }
 
 
-/* match into silence vectors at offset zero if at all possible.  This
-   also must be called with vectors in ascending begin order in case
-   there are nonzero islands */
+/* ===========================================================================
+ * i_silence_match() (internal)
+ *
+ * This function is merges verified fragments into the verified root in cases
+ * where there is a problematic amount of silence (MIN_SILENCE_BOUNDARY
+ * samples) at the end of the root.
+ *
+ * We need a special approach because if there's a long enough span of
+ * silence, we can't reliably detect jitter or dropped samples within that
+ * span (since all silence looks alike).
+ *
+ * Only fragments that begin with MIN_SILENCE_BOUNDARY samples are eligible
+ * to be merged in this case.  Fragments that are too far beyond the edge
+ * of the root to possibly overlap are also disregarded.
+ *
+ * Our first approach is to assume that such fragments have no jitter (since
+ * we can't establish otherwise) and merge them.  However, if it's clear
+ * that there must be jitter (i.e. because non-silent samples overlap when
+ * we assume no jitter), we assume the fragment has the minimum possible
+ * jitter and then merge it.
+ *
+ * This function extends silence fairly aggressively, so it must be called
+ * with fragments in ascending order (beginning position) in case there are
+ * small non-silent regions within the silence.
+ */
 static long int 
 i_silence_match(root_block *root, v_fragment_t *v, 
 		void(*callback)(long int, paranoia_cb_mode_t))
@@ -1104,75 +1152,170 @@ i_silence_match(root_block *root, v_fragment_t *v,
 	  fb(v), fe(v), rb(root), re(root), root->silencebegin);
 #endif
 
-  /* does this vector begin wet? */
+  /* See how much leading silence this fragment has.  If there are fewer than
+   * MIN_SILENCE_BOUNDARY leading silent samples, we don't do this special
+   * silence matching.
+   *
+   * This fragment could actually belong here, but we can't be sure unless
+   * it has enough silence on its leading edge.  This fragment will likely
+   * stick around until we do successfully extend the root, at which point
+   * it will be merged using the usual method.
+   */
   if (end<MIN_SILENCE_BOUNDARY) return(0);
   for(j=0;j<end;j++)
     if (vec[j]!=0) break;
   if (j<MIN_SILENCE_BOUNDARY) return(0);
+
+  /* Convert the offset of the first non-silent sample to an absolute
+   * position.  For the time being, we will assume that this position
+   * is accurate, with no jitter.
+   */
   j+=fb(v);
 
 #if TRACE_PARANOIA & 2
   fprintf(stderr, "- Fragment begins with silence [%ld-%ld]\n", fb(v), j);
 #endif
 
-  /* is the new silent section ahead of the end of the old by <
-     p->dynoverlap? */
+  /* If this fragment is ahead of the root, see if that could just be due
+   * to jitter (if it's within p->dynoverlap samples of the end of root).
+   */
   if (fb(v)>=re(root) && fb(v)-p->dynoverlap<re(root)){
-    /* extend the zeroed area of root */
+
+    /* This fragment is within jitter range of the root, so we extend the
+     * root's silence so that it overlaps with this fragment.  At this point
+     * we know that the fragment has at least MIN_SILENCE_BOUNDARY silent
+     * samples at the beginning, so we overlap by that amount.
+     */
     long addto   = fb(v) + MIN_SILENCE_BOUNDARY - re(root);
     int16_t *vec = calloc(addto, sizeof(int16_t));
     c_append(rc(root), vec, addto);
     free(vec);
+
 #if TRACE_PARANOIA & 2
     fprintf(stderr, "* Adding silence [%ld-%ld] to root\n",
 	    re(root)-addto, re(root));
 #endif
   }
 
-  /* do we have an 'effortless' overlap? */
+  /* Calculate the overlap of the root's trailing silence and the fragment's
+   * leading silence.  (begin,end) are the boundaries of that overlap.
+   */
   begin = max(fb(v),root->silencebegin);
   end = min(j,re(root));
-  
+
+  /* If there is an overlap, we assume that both the root and the fragment
+   * are jitter-free (since there's no way for us to tell otherwise).
+   */
   if (begin<end){
 
-    /* don't use it unless it will extend... */
-
+    /* If the fragment will extend the root, then we append it to the root.
+     * Otherwise, no merging is necessary, as the fragment should already
+     * be contained within the root.
+     */
     if (fe(v)>re(root)){
       long int voff = begin-fb(v);
-      
+
+      /* Truncate the overlapping silence from the end of the root.
+       */
       c_remove(rc(root),begin-rb(root),-1);
+
+      /* Append the fragment to the root, starting from the point of overlap.
+       */
       c_append(rc(root),vec+voff,fs(v)-voff);
+
 #if TRACE_PARANOIA & 2
-      fprintf(stderr, "* Adding [%ld-%ld] to root (easy)\n",
+      fprintf(stderr, "* Adding [%ld-%ld] to root (no jitter)\n",
 	      begin, re(root));
 #endif
     }
+
+    /* Record the fact that we merged this fragment assuming zero jitter.
+     */
     offset_add_value(p,&p->stage2,0,callback);
 
   } else {
+
+    /* We weren't able to merge the fragment assuming zero jitter.
+     *
+     * Check whether the fragment's leading silence ends before the root's
+     * trailing silence begins.  If it does, we assume that the root is
+     * jittered forward.
+     */
     if (j<begin){
-      /* OK, we'll have to force it a bit as the root is jittered
-         forward */
+
+      /* We're going to append the non-silent samples of the fragment
+       * to the root where its silence begins.
+       *
+       * ??? This seems to be a very strange approach.  At this point
+       * the root has a lot of trailing silence, and the fragment has
+       * the lot of leading silence.  This merge will drop the silence
+       * and just splice the non-silence together.
+       *
+       * In theory, rift analysis will either confirm or fix this result.
+       * What circumstances motivated this approach?
+       */
+
+      /* Compute the amount of silence at the beginning of the fragment.
+       */
       long voff = j - fb(v);
 
-      /* don't use it unless it will extend... */
+      /* If attaching the non-silent tail of the fragment to the end
+       * of the non-silent portion of the root will extend the root,
+       * then we'll append the samples to the root.  Otherwise, no
+       * merging is necessary, as the fragment should already be contained
+       * within the root.
+       */
       if (begin+fs(v)-voff>re(root)) {
+
+	/* Truncate the trailing silence from the root.
+	 */
 	c_remove(rc(root),root->silencebegin-rb(root),-1);
+
+	/* Append the non-silent tail of the fragment to the root.
+	 */
 	c_append(rc(root),vec+voff,fs(v)-voff);
+
 #if TRACE_PARANOIA & 2
-	fprintf(stderr, "* Adding [%ld-%ld] to root (force)\n",
-		root->silencebegin, re(root));
+	fprintf(stderr, "* Adding [%ld-%ld] to root (jitter=%ld)\n",
+		root->silencebegin, re(root), end-begin);
 #endif
       }
+
+      /* Record the fact that we merged this fragment assuming (end-begin)
+       * jitter.
+       */
       offset_add_value(p,&p->stage2,end-begin,callback);
+
     } else
+
+      /* We only get here if the fragment is past the end of the root,
+       * which means it must be farther than (dynoverlap) away, due to our
+       * root extension above.
+       */
+
+      /* We weren't able to merge this fragment into the root after all.
+       */
       return(0);
   }
 
-  /* test the new root vector for ending in silence */
+
+  /* We only get here if we merged the fragment into the root.  Update
+   * the root's silence flag.
+   *
+   * Note that this is the only place silenceflag is reset.  In other words,
+   * once i_silence_test() lights the silence flag, it can only be reset
+   * by i_silence_match().
+   */
   root->silenceflag = 0;
+
+  /* Now see if the new, extended root ends in silence.
+   */
   i_silence_test(root);
 
+
+  /* Since we merged the fragment, we can free it now.  But first we propagate
+   * its lastsector flag.
+   */
   if (v->lastsector) root->lastsector=1;
   free_v_fragment(v);
   return(1);
@@ -1476,8 +1619,10 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 	  /* We may have had a mismatch because we ran into leading silence.
 	   *
 	   * ??? To be studied: why would this cause a mismatch?  Neither
-	   * i_analyze_rift_f nor i_iterate_stage2() nor i_paranoia_overlap()
+	   * i_analyze_rift_r nor i_iterate_stage2() nor i_paranoia_overlap()
 	   * appear to take silence into consideration in this regard.
+	   * It could be due to our skipping of silence when searching for
+	   * a match.
 	   *
 	   * Since we don't extend the root in that direction, we don't
 	   * do anything, just move on to trailing rifts.
@@ -1696,23 +1841,51 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 	   * ??? To be studied: why would this cause a mismatch?  Neither
 	   * i_analyze_rift_f nor i_iterate_stage2() nor i_paranoia_overlap()
 	   * appear to take silence into consideration in this regard.
-	   *
-	   * ??? To be studied: why do we drop the silence?
+           * It could be due to our skipping of silence when searching for
+           * a match.
+	   */
+
+	  /* At this point we have a trailing rift.  We check whether
+	   * one of the vectors (fragment or root) has trailing silence.
 	   */
 	  analyze_rift_silence_f(rv(root),cv(l),
 				 rs(root),cs(l),
 				 end,endL,
 				 &matchA,&matchB);
 	  if (matchA){
-	    /* silence in root */
+
+	    /* The contents of the root's trailing rift are silence.  The
+	     * fragment's are not (otherwise there wouldn't be a rift).
+	     * We therefore assume that the root has garbage from this
+	     * point forward and truncate it.
+	     *
+	     * This will have the effect of eliminating the trailing
+	     * rift, causing the fragment's samples to be appended to
+	     * the root.
+	     *
+	     * ??? Does this have any negative side effects?  Why is this
+	     * a good idea?
+	     */
+	    /* ??? TODO: returnedlimit */
 	    /* Can only do this if we haven't already returned data */
 	    if (end+rb(root)>=p->root.returnedlimit){
 	      c_remove(rc(root),end,-1);
 	    }
 
 	  } else if (matchB){
-	    /* silence in fragment; lose it */
-	    
+
+	    /* The contents of the fragment's trailing rift are silence.
+	     * The root's are not (otherwise there wouldn't be a rift).
+	     * We therefore assume that the fragment has garbage from this
+	     * point forward.
+	     *
+	     * We needn't actually truncate the fragment, because the root
+	     * has already been fixed up from this fragment as much as
+	     * possible, and the truncated fragment wouldn't extend the
+	     * root.  Therefore, we can consider this (truncated) fragment
+	     * to be already merged into the root.  So we dispose of it and
+	     * return a success.
+	     */
 	    if (l)i_cblock_destructor(l);
 	    free_v_fragment(v);
 	    return(1);
@@ -1814,7 +1987,9 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 		  rb(root)+end, re(root));
 #endif
 
-	  /* ???TODO??? */
+	  /* Any time we update the root we need to check whether it ends
+	   * with a large span of silence.
+	   */
 	  i_silence_test(root);
 
 	  /* Add the offset into our stage 2 statistics.
@@ -1841,7 +2016,23 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 #if TRACE_PARANOIA & 2
       fprintf(stderr, "no match");
 #endif
-      /* D'oh.  No match.  What to do with the fragment? */
+
+      /* We were unable to merge this fragment into the root.
+       *
+       * Check whether the fragment should have overlapped with the root,
+       * even taking possible jitter into account.  (I.e., If the fragment
+       * ends so far before the end of the root that even (dynoverlap)
+       * samples of jitter couldn't push it beyond the end of the root,
+       * it should have overlapped.)
+       *
+       * It is, however, possible that we failed to match using the normal
+       * tests because we're dealing with silence, which we handle
+       * separately.
+       *
+       * If the fragment should have overlapped, and we're not dealing
+       * with the special silence case, we don't know what to make of
+       * this fragment, and we just discard it.
+       */
       if (fe(v)+dynoverlap<re(root) && !root->silenceflag){
 	/* It *should* have matched.  No good; free it. */
 	free_v_fragment(v);
@@ -1849,6 +2040,7 @@ i_stage2_each(root_block *root, v_fragment_t *v,
 	fprintf(stderr, ", discarding fragment.");
 #endif
       }
+
 #if TRACE_PARANOIA & 2
       fprintf(stderr, "\n");
 #endif
@@ -1881,6 +2073,8 @@ i_init_root(root_block *root, v_fragment_t *v,long int begin,
       root->vector=c_alloc(buff,fb(v),fs(v));
     }    
 
+    /* Check whether the new root has a long span of trailing silence.
+     */
     i_silence_test(root);
 
 #if TRACE_PARANOIA & 2
@@ -1916,7 +2110,12 @@ vsort(const void *a,const void *b)
  * will then read the device again to try and establish more verified
  * fragments.
  *
- * ??? TODO: Silence matching ???
+ * We first try to merge all the fragments in ascending order using the
+ * standard method (i_stage2_each()), and then we try to merge the
+ * remaining fragments using silence matching (i_silence_match())
+ * if the root has a long span of trailing silence.  See the initial
+ * comments on silence and  i_silence_match() for an explanation of this
+ * distinction.
  *
  * This function returns the number of verified fragments successfully
  * merged into the verified root.
@@ -2030,8 +2229,9 @@ i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
 	}
       }
 
-      /* If the verified root ends in silence, iterate through the
-       * remaining unmerged fragments to ... TODO???
+      /* If the verified root ends in a long span of silence, iterate
+       * through the remaining unmerged fragments to see if they can be
+       * merged using our special silence matching.
        */
       if (!flag && p->root.silenceflag){
 	for(count=0;count<active;count++){
@@ -2042,7 +2242,13 @@ i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
 	  if (first->one){
 	    if (rv(root)!=NULL){
 
-	      /* ???TODO??? */
+	      /* Try to merge the fragment into the root.  This will only
+	       * succeed if the fragment overlaps and begins with sufficient
+	       * silence to be a presumed match.
+	       *
+	       * Note that the fragments must be passed to i_silence_match()
+	       * in ascending order, as they are here.
+	       */
 	      if (i_silence_match(root,first,callback)){
 
 		/* If we successfully merged the fragment, set the flag
@@ -2053,7 +2259,7 @@ i_stage2(cdrom_paranoia_t *p, long int beginword, long int endword,
 	      }
 	    }
 	  }
-	}
+	} /* end for */
       }
     } /* end if(count) */
     free(list);
