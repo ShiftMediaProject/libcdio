@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.29 2005/11/10 11:02:14 rocky Exp $
+#   $Id: Makefile.am,v 1.30 2005/11/10 11:08:21 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -57,13 +57,19 @@ iso2_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 iso3_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 isofuzzy_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
-mmc1_LDADD = $(LIBCDIO_LIBS)
-mmc2_LDADD = $(LIBCDIO_LIBS)
+mmc1_DEPENDENCIES = $(LIBCDIO_DEPS)
+mmc1_LDADD        = $(LIBCDIO_LIBS)
+mmc2_DEPENDENCIES = $(LIBCDIO_DEPS)
+mmc2_LDADD        = $(LIBCDIO_LIBS)
 
+sample3_DEPENDENCIES = $(LIBCDIO_DEPS)
 sample3_LDADD = $(LIBCDIO_LIBS)
+
+sample4_DEPENDENCIES = $(LIBCDIO_DEPS)
 sample4_LDADD = $(LIBCDIO_LIBS)
 
-tracks_LDADD  = $(LIBCDIO_LIBS)
+tracks_DEPENDENCIES = $(LIBCDIO_DEPS)
+tracks_LDADD        = $(LIBCDIO_LIBS)
 
 udf1_DEPENDENCIES = $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
 udf1_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS)
