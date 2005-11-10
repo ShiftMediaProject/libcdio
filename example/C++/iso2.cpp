@@ -1,5 +1,5 @@
 /*
-  $Id: iso2.cpp,v 1.5 2005/11/07 07:44:00 rocky Exp $
+  $Id: iso2.cpp,v 1.6 2005/11/10 11:22:55 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -81,7 +81,7 @@ main(int argc, const char *argv[])
 {
   iso9660_stat_t *p_statbuf;
   FILE *p_outfd;
-  int i;
+  unsigned int i;
   char const *psz_image;
   char const *psz_fname;
   char translated_name[256];
