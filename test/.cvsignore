@@ -8,6 +8,7 @@ cdda-try.wav
 cdda-1.raw
 cdda-2.raw
 cdda-good.raw
+cdda-jitter.raw
 cdda-underrun.raw
 check_cue.sh
 check_paranoia.sh
