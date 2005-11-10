@@ -1,5 +1,5 @@
 /*
-  $Id: tracks.c,v 1.3 2005/07/07 06:58:48 rocky Exp $
+  $Id: tracks.c,v 1.4 2005/11/10 10:59:15 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -24,7 +24,9 @@
 # include "config.h"
 #endif
 #include <stdio.h>
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
 #include <cdio/cdio.h>
 int
 main(int argc, const char *argv[])
