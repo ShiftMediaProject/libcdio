@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.6 2005/11/07 07:53:40 rocky Exp $
+#   $Id: Makefile.am,v 1.7 2005/11/10 11:11:15 rocky Exp $
 #
 #    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -16,10 +16,12 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-####################################################
-# Things to regression testing
-####################################################
+##########################################################
+# Sample C++ programs using libcdio (without OO wrapper)
+#########################################################
 #
+SUBDIRS = OO
+
 if BUILD_CD_PARANOIA
 paranoia_progs = paranoia paranoia2
 endif
@@ -52,9 +54,11 @@ iso3_SOURCES      = iso3.cpp
 iso3_LDADD        = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
 mmc1_SOURCES      = mmc1.cpp
+mmc1_DEPENDENCIES = $(LIBCDIO_DEPS)
 mmc1_LDADD        = $(LIBCDIO_LIBS)
 
 mmc2_SOURCES      = mmc2.cpp
+mmc2_DEPENDENCIES = $(LIBCDIO_DEPS)
 mmc2_LDADD        = $(LIBCDIO_LIBS)
 
 # iso programs create file "copying"

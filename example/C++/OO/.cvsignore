@@ -1,0 +1,9 @@
+.deps
+.libs
+Makefile
+Makefile.am
+Makefile.in
+cdtext
+device
+eject
+tracks

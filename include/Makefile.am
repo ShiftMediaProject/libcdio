@@ -1,2 +1,2 @@
 
-SUBDIRS	= cdio
+SUBDIRS	= cdio cdio++

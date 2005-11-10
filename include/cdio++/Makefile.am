@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.68 2005/11/10 11:11:15 rocky Exp $
+#   $Id: Makefile.am,v 1.1 2005/11/10 11:11:16 rocky Exp $
 #
-#    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -17,11 +17,16 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 ########################################################
-# make all libraries
+# Things to make the install (public) libcdio++ headers
 ########################################################
+#
 
-if BUILD_CD_PARANOIA
-SUBDIRS =  cdio++ driver iso9660 cdda_interface paranoia udf
-else 
-SUBDIRS =  cdio++ driver iso9660 udf
-endif
+libcdioincludedir=$(includedir)/cdio++
+libcdioinclude_HEADERS = \
+	cdio.hpp \
+	cdtext.hpp \
+	device.hpp \
+	devices.hpp \
+	disc.hpp \
+	read.hpp \
+	track.hpp

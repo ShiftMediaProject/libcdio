@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.180 2005/10/27 03:47:32 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.181 2005/11/10 11:11:15 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -337,6 +337,7 @@ LIBCDIO_CDDA_LIBS='$(top_builddir)/lib/cdda_interface/libcdio_cdda.la'
 LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/driver -I$(top_srcdir)/include/'
 LIBCDIO_LIBS='$(top_builddir)/lib/driver/libcdio.la'
 LIBCDIO_DEPS="$LIBCDIO_LIBS"
+LIBCDIOPP_LIBS='$(top_builddir)/lib/cdio++/libcdio++.la'
 LIBCDIO_PARANOIA_LIBS='$(top_builddir)/lib/paranoia/libcdio_paranoia.la'
 LIBISO9660_CFLAGS='-I$(top_srcdir)/lib/iso9660/'
 LIBISO9660_LIBS='$(top_builddir)/lib/iso9660/libiso9660.la'
@@ -346,6 +347,7 @@ AC_SUBST(LIBCDIO_CDDA_LIBS)
 AC_SUBST(LIBCDIO_CFLAGS)
 AC_SUBST(LIBISO9660_CFLAGS)
 AC_SUBST(LIBCDIO_LIBS)
+AC_SUBST(LIBCDIOPP_LIBS)
 AC_SUBST(LIBCDIO_DEPS)
 AC_SUBST(LIBCDIO_PARANOIA_LIBS)
 AC_SUBST(LIBISO9660_LIBS)
@@ -615,14 +617,17 @@ dnl
 AC_CONFIG_FILES([ \
        Makefile \
        example/C++/Makefile \
+       example/C++/OO/Makefile \
        example/Makefile \
        include/Makefile \
        include/cdio/Makefile \
+       include/cdio++/Makefile \
        include/cdio/version.h \
        doc/doxygen/Doxyfile \
        doc/Makefile \
        lib/Makefile \
        lib/cdda_interface/Makefile \
+       lib/cdio++/Makefile \
        lib/driver/Makefile \
        lib/iso9660/Makefile \
        lib/paranoia/Makefile \
