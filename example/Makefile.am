@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.28 2005/11/01 13:07:01 rocky Exp $
+#   $Id: Makefile.am,v 1.29 2005/11/10 11:02:14 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -26,19 +26,26 @@ endif
 if BUILD_CD_PARANOIA
 paranoia_progs = paranoia paranoia2
 endif
-noinst_PROGRAMS = audio cdtext device drives iso1 iso2 iso3 isofuzzy \
+noinst_PROGRAMS = audio cdtext device drives eject iso1 iso2 iso3 isofuzzy \
 	          mmc1 mmc2 $(paranoia_progs) tracks \
 	          sample3 sample4 udf1 udf2
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
-audio_LDADD  = $(LIBCDIO_LIBS)
+audio_DEPENDENCIES  = $(LIBCDIO_LIBS)
+audio_LDADD         = $(LIBCDIO_LIBS)
 
-cdtext_LDADD  = $(LIBCDIO_LIBS)
+cdtext_DEPENDENCIES = $(LIBCDIO_DEPS)
+cdtext_LDADD        = $(LIBCDIO_LIBS)
 
-device_LDADD = $(LIBCDIO_LIBS)
+device_DEPENDENCIES = $(LIBCDIO_DEPS)
+device_LDADD        = $(LIBCDIO_LIBS)
 
-drives_LDADD = $(LIBCDIO_LIBS)
+drives_DEPENDENCIES = $(LIBCDIO_DEPS)
+drives_LDADD        = $(LIBCDIO_LIBS)
+
+eject_DEPENDENCIES  = $(LIBCDIO_DEPS)
+eject_LDADD         = $(LIBCDIO_LIBS)
 
 if BUILD_CD_PARANOIA
 paranoia_LDADD  = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
