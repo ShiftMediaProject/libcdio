@@ -1,5 +1,5 @@
 /*
-    $Id: read.c,v 1.9 2005/10/07 07:15:19 rocky Exp $
+    $Id: read.c,v 1.10 2005/11/10 00:44:41 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -254,6 +254,65 @@ cdio_read_mode2_sectors (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   
 }
 
+
+/** The special case of reading a single block is a common one so we
+    provide a routine for that as a convenience.
+*/
+driver_return_code_t 
+cdio_read_sector(const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
+                 cdio_read_mode_t read_mode)
+{
+  return cdio_read_sectors(p_cdio, p_buf, i_lsn, read_mode, 1);
+}
+
+/*!
+  Reads a number of sectors (AKA blocks).
+  
+  @param p_buf place to read data into. The caller should make sure
+  this location is large enough. See below for size information.
+  @param read_mode the kind of "mode" to use in reading.
+  @param i_lsn sector to read
+  @param i_blocks number of sectors to read
+  @return DRIVER_OP_SUCCESS (0) if no error, other (negative) enumerations
+  are returned on error.
+  
+  If read_mode is CDIO_MODE_AUDIO,
+    *p_buf should hold at least CDIO_FRAMESIZE_RAW * i_blocks bytes.
+
+  If read_mode is CDIO_MODE_DATA,
+    *p_buf should hold at least i_blocks times either ISO_BLOCKSIZE, 
+    M1RAW_SECTOR_SIZE or M2F2_SECTOR_SIZE depending on the kind of 
+    sector getting read. If you don't know whether you have a Mode 1/2, 
+    Form 1/ Form 2/Formless sector best to reserve space for the maximum
+    which is M2RAW_SECTOR_SIZE.
+
+  If read_mode is CDIO_MODE_M2F1,
+    *p_buf should hold at least M2RAW_SECTOR_SIZE * i_blocks bytes.
+
+  If read_mode is CDIO_MODE_M2F2,
+    *p_buf should hold at least CDIO_CD_FRAMESIZE * i_blocks bytes.
+
+
+*/
+driver_return_code_t 
+cdio_read_sectors(const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
+                  cdio_read_mode_t read_mode, uint32_t i_blocks)
+{
+  switch(read_mode) {
+  case CDIO_READ_MODE_AUDIO:
+    return cdio_read_audio_sectors (p_cdio, p_buf, i_lsn, i_blocks);
+  case CDIO_READ_MODE_M1F1:
+    return cdio_read_mode1_sectors (p_cdio, p_buf, i_lsn, false, i_blocks);
+  case CDIO_READ_MODE_M1F2:
+    return cdio_read_mode1_sectors (p_cdio, p_buf, i_lsn, true,  i_blocks);
+  case CDIO_READ_MODE_M2F1:
+    return cdio_read_mode2_sectors (p_cdio, p_buf, i_lsn, false, i_blocks);
+  case CDIO_READ_MODE_M2F2:
+    return cdio_read_mode2_sectors (p_cdio, p_buf, i_lsn, true,  i_blocks);
+  }
+  /* Can't happen. Just to shut up gcc. */
+  return DRIVER_OP_ERROR; 
+}
 
 /* 
  * Local variables:

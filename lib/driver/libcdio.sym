@@ -147,6 +147,8 @@ cdio_read_mode1_sector
 cdio_read_mode1_sectors
 cdio_read_mode2_sector
 cdio_read_mode2_sectors
+cdio_read_sector
+cdio_read_sectors
 cdio_set_arg
 cdio_set_blocksize
 cdio_set_speed

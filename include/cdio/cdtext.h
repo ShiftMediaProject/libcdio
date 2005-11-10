@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.h,v 1.11 2005/04/25 23:06:21 rocky Exp $
+    $Id: cdtext.h,v 1.12 2005/11/10 00:44:40 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     adapted from cuetools
@@ -81,8 +81,8 @@ extern "C" {
 
     The user needs to free the string when done with it.
 
-    @see cdio_get_cdtext to retrieve the cdtext structure used as
-    input here.
+    @see cdio_get_const to retrieve a constant string that doesn't
+    have to be freed.
   */
   char *cdtext_get (cdtext_field_t key, const cdtext_t *cdtext);
 
@@ -92,8 +92,8 @@ extern "C" {
     Don't use the string when the cdtext object (i.e. the CdIo_t object
     you got it from) is no longer valid.
 
-    @see cdio_get_cdtext to retrieve the cdtext structure used as
-    input here.
+    @see cdio_get to retrieve an allocated string that persists past
+    the cdtext object.
   */
   const char *cdtext_get_const (cdtext_field_t key, const cdtext_t *cdtext);
   
