@@ -1,5 +1,5 @@
 /*
-  $Id: iso1.c,v 1.5 2005/11/07 07:44:00 rocky Exp $
+  $Id: iso1.c,v 1.6 2005/11/10 10:58:05 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -26,9 +26,9 @@
    name (that comes with the libcdio distribution) will be used.
  */
 
-/* This is the ISO 9660 image. */
-#define ISO9660_IMAGE_PATH "../"
-#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
+/* Set up a CD-DA image to test on which is in the libcdio distribution. */
+#define ISO9660_IMAGE_PATH "../test/"
+#define ISO9660_IMAGE ISO9660_IMAGE_PATH "copying.iso"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
