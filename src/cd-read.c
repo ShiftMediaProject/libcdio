@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.27 2005/10/06 09:51:21 rocky Exp $
+  $Id: cd-read.c,v 1.28 2005/11/11 12:47:02 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -56,12 +56,12 @@ enum {
 
 typedef enum
 {
-  READ_MODE_UNINIT,
-  READ_AUDIO,
-  READ_M1F1,
-  READ_M1F2,
-  READ_M2F1,
-  READ_M2F2
+  READ_AUDIO = CDIO_READ_MODE_AUDIO,
+  READ_M1F1  = CDIO_READ_MODE_M1F1,
+  READ_M1F2  = CDIO_READ_MODE_M1F2,
+  READ_M2F1  = CDIO_READ_MODE_M2F1,
+  READ_M2F2  = CDIO_READ_MODE_M2F2,
+  READ_MODE_UNINIT
 #if AUTO_FINISHED
   READ_AUTO
 #endif
@@ -519,43 +519,31 @@ main(int argc, char *argv[])
   for ( ; opts.start_lsn <= opts.end_lsn; opts.start_lsn++ ) {
     switch (opts.read_mode) {
     case READ_AUDIO:
-      if (cdio_read_audio_sector(p_cdio, &buffer, opts.start_lsn)) {
+    case READ_M1F1:
+    case READ_M1F2:
+    case READ_M2F1:
+    case READ_M2F2:
+      if (DRIVER_OP_SUCCESS != 
+	  cdio_read_sector(p_cdio, &buffer, 
+			   opts.start_lsn, 
+			   (cdio_read_mode_t) opts.read_mode)) {
 	report( stderr, "error reading block %u\n", 
 		(unsigned int) opts.start_lsn );
 	blocklen = 0;
+      } else {
+	switch (opts.read_mode) {
+	case READ_M1F1:
+	  blocklen=CDIO_CD_FRAMESIZE;
+	  break;
+	case READ_M1F2:
+	  blocklen=M2RAW_SECTOR_SIZE;
+	case READ_M2F1:
+	  blocklen=CDIO_CD_FRAMESIZE;
+	case READ_M2F2:
+	  blocklen=M2F2_SECTOR_SIZE;
+	default: ;
+	}
       }
-      break;
-    case READ_M1F1:
-      if (cdio_read_mode1_sector(p_cdio, &buffer, opts.start_lsn, false)) {
-        report( stderr, "error reading block %u\n", 
-		(unsigned int) opts.start_lsn);
-	blocklen = 0;
-      } else
-	blocklen=CDIO_CD_FRAMESIZE;
-      break;
-    case READ_M1F2:
-      if (cdio_read_mode1_sector(p_cdio, &buffer, opts.start_lsn, true)) {
-        report( stderr, "error reading block %u\n", 
-		(unsigned int) opts.start_lsn);
-	blocklen = 0;
-      } else 
-	blocklen=M2RAW_SECTOR_SIZE;
-      break;
-    case READ_M2F1:
-      if (cdio_read_mode2_sector(p_cdio, &buffer, opts.start_lsn, false)) {
-        report( stderr, "error reading block %u\n", 
-		(unsigned int) opts.start_lsn);
-	blocklen=0;
-      } else
-	blocklen=CDIO_CD_FRAMESIZE;
-      break;
-    case READ_M2F2:
-      if (cdio_read_mode2_sector(p_cdio, &buffer, opts.start_lsn, true)) {
-        report( stderr, "error reading block %u\n",  
-		(unsigned int) opts.start_lsn);
-	blocklen=0;
-      } else
-	blocklen=M2F2_SECTOR_SIZE;
       break;
 #if AUTO_FINISHED
     case READ_AUTO:
