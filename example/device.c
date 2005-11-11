@@ -1,5 +1,5 @@
 /*
-  $Id: device.c,v 1.1 2005/02/06 15:09:10 rocky Exp $
+  $Id: device.c,v 1.2 2005/11/11 12:26:57 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -18,8 +18,9 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to show drivers installed and what the default 
-   CD-ROM drive is. */
+/* Simple program to show drivers installed and what the default
+   CD-ROM drive is. See also corresponding C++ programs of similar
+   names .*/
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -100,7 +101,6 @@ int
 main(int argc, const char *argv[])
 {
   CdIo_t *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
-  driver_id_t driver_id;
   
   if (NULL != p_cdio) {
     char *default_device = cdio_get_default_device(p_cdio);
@@ -123,11 +123,14 @@ main(int argc, const char *argv[])
   } else {
     printf("Problem in trying to find a driver.\n\n");
   }
-
-  for (driver_id=CDIO_MIN_DRIVER; driver_id<=CDIO_MAX_DRIVER; driver_id++)
-    if (cdio_have_driver(driver_id))
-      printf("We have: %s\n", cdio_driver_describe(driver_id));
-    else
-      printf("We don't have: %s\n", cdio_driver_describe(driver_id));
+  
+  {
+    driver_id_t driver_id;
+    for (driver_id=CDIO_MIN_DRIVER; driver_id<=CDIO_MAX_DRIVER; driver_id++)
+      if (cdio_have_driver(driver_id))
+	printf("We have: %s\n", cdio_driver_describe(driver_id));
+      else
+	printf("We don't have: %s\n", cdio_driver_describe(driver_id));
+  }
   return 0;
 }

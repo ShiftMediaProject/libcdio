@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.25 2005/11/07 07:44:00 rocky Exp $
+    $Id: device.h,v 1.26 2005/11/11 12:26:57 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -136,6 +136,8 @@ extern "C" {
    * different than what is available on a given host.
    *
    * Order is a little significant since the order is used in scans.
+   * Also the enumeration values are assumed not to leave any holes so 
+   * we can use ++ to iterate over values. 
    * We have to start with DRIVER_UNKNOWN and devices should come before
    * disk-image readers. By putting something towards the top (a lower
    * enumeration number), in an iterative scan we prefer that to

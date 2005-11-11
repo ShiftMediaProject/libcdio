@@ -1,5 +1,5 @@
 /*
-  $Id: cdtext.cpp,v 1.1 2005/11/10 11:11:15 rocky Exp $
+  $Id: cdtext.cpp,v 1.2 2005/11/11 12:26:57 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -18,9 +18,22 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to list CD-Text info of a Compact Disc using libcdio. */
+/* Simple program to list CD-Text info of a Compact Disc using
+   libcdio.  See also corresponding C program of a similar name.
+ */
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
+
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+
 #include <cdio++/cdio.hpp>
 
 /* Set up a CD-DA image to test on which is in the libcdio distribution. */
@@ -33,12 +46,10 @@ print_cdtext_track_info(CdioDevice *device, track_t i_track,
   cdtext_t *cdtext = device->getCdtext(0);
   if (NULL != cdtext) {
     cdtext_field_t i;
-    int j=0;
     
     printf("%s\n", psz_msg);
     
-    for (j=0; j < MAX_CDTEXT_FIELDS; j++) {
-      i = (cdtext_field_t) j;
+    for (i= (cdtext_field_t) MIN_CDTEXT_FIELD; i < MAX_CDTEXT_FIELDS; i++) {
       if (cdtext->field[i]) {
 	printf("\t%s: %s\n", cdtext_field2str(i), cdtext->field[i]);
       }

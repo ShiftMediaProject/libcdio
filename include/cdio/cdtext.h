@@ -1,5 +1,5 @@
 /*
-    $Id: cdtext.h,v 1.12 2005/11/10 00:44:40 rocky Exp $
+    $Id: cdtext.h,v 1.13 2005/11/11 12:26:57 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     adapted from cuetools
@@ -37,6 +37,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define MAX_CDTEXT_FIELDS 13
+#define MIN_CDTEXT_FIELD  0
   
   /*! \brief structure for holding CD-Text information
 
@@ -46,7 +47,9 @@ extern "C" {
     char *field[MAX_CDTEXT_FIELDS];
   };
   
-  /*! \brief A list of all of the CD-Text fields */
+  /*! \brief A list of all of the CD-Text fields. Because
+    the interval has no gaps, we can use ++ to iterate over fields.
+   */
   typedef enum {
     CDTEXT_ARRANGER   =  0,   /**< name(s) of the arranger(s) */
     CDTEXT_COMPOSER   =  1,   /**< name(s) of the composer(s) */

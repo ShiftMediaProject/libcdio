@@ -1,5 +1,5 @@
 /*
-  $Id: cdtext.c,v 1.2 2005/01/04 04:40:22 rocky Exp $
+  $Id: cdtext.c,v 1.3 2005/11/11 12:26:57 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -18,12 +18,20 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to list CD-Text info of  a Compact Disc using libcdio. */
+/* Simple program to list CD-Text info of a Compact Disc using
+   libcdio.  See also corresponding C++ programs of similar names. */
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
+
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
 #include <cdio/cdio.h>
 #include <cdio/cdtext.h>
 
@@ -77,7 +85,7 @@ main(int argc, const char *argv[])
     cdio_destroy(p_cdio);
   }
 
-  p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  p_cdio = cdio_open (NULL, DRIVER_DEVICE);
   i_first_track = cdio_get_first_track_num(p_cdio);
   i_tracks      = cdio_get_num_tracks(p_cdio);
 

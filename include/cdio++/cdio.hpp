@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: cdio.hpp,v 1.1 2005/11/10 11:11:16 rocky Exp $
+    $Id: cdio.hpp,v 1.2 2005/11/11 12:26:57 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -28,6 +28,10 @@
 #define __CDIO_HPP__
 
 #include <cdio/cdio.h>
+
+// Make pre- and post-increment operators for enums in libcdio where it 
+// makes sense.
+#include <cdio++/enum.hpp>
 
 class Cdio {
 

@@ -1,5 +1,5 @@
 /*
-  $Id: eject.cpp,v 1.1 2005/11/10 11:11:15 rocky Exp $
+  $Id: eject.cpp,v 1.2 2005/11/11 12:26:57 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -22,6 +22,8 @@
 
    If a single argument is given, it is used as the CD-ROM device to 
    eject/close. Otherwise a CD-ROM drive will be scanned for.
+
+   See also corresponding C program of a similar name. 
 */
 #ifdef HAVE_CONFIG_H
 # include "config.h"

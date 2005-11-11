@@ -1,5 +1,5 @@
 /*
-  $Id: device.cpp,v 1.1 2005/11/10 11:11:15 rocky Exp $
+  $Id: device.cpp,v 1.2 2005/11/11 12:26:57 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -18,8 +18,9 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to show drivers installed and what the default 
-   CD-ROM drive is. */
+/* Simple program to show drivers installed and what the default
+   CD-ROM drive is. See also corresponding C program of a similar
+   name. */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -123,5 +124,16 @@ main(int argc, const char *argv[])
   } else {
     printf("Problem in trying to find a driver.\n\n");
   }
+  
+  {
+    driver_id_t driver_id;
+    for (driver_id=CDIO_MIN_DRIVER; driver_id<=CDIO_MAX_DRIVER; driver_id++)
+      if (cdio_have_driver(driver_id))
+	printf("We have: %s\n", cdio_driver_describe(driver_id));
+      else
+	printf("We don't have: %s\n", cdio_driver_describe(driver_id));
+  }
+  
+  return 0;
 
 }
