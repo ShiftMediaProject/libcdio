@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.30 2005/11/10 11:08:21 rocky Exp $
+#   $Id: Makefile.am,v 1.31 2005/11/12 10:27:04 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -32,7 +32,7 @@ noinst_PROGRAMS = audio cdtext device drives eject iso1 iso2 iso3 isofuzzy \
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
-audio_DEPENDENCIES  = $(LIBCDIO_LIBS)
+audio_DEPENDENCIES  = $(LIBCDIO_DEPS)
 audio_LDADD         = $(LIBCDIO_LIBS)
 
 cdtext_DEPENDENCIES = $(LIBCDIO_DEPS)
