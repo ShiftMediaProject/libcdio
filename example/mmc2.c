@@ -1,5 +1,5 @@
 /*
-  $Id: mmc2.c,v 1.6 2005/03/09 10:29:06 rocky Exp $
+  $Id: mmc2.c,v 1.7 2005/11/14 01:15:33 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -24,17 +24,24 @@
 # include "config.h"
 #endif
 #include <stdio.h>
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
 #include <cdio/cdio.h>
 #include <cdio/mmc.h>
-#include <string.h>
 
 int
 main(int argc, const char *argv[])
 {
   CdIo_t *p_cdio;
 
-  p_cdio = cdio_open (NULL, DRIVER_DEVICE);
+  const char *psz_drive = NULL;
+
+  if (argc > 1) psz_drive = argv[1];
+  p_cdio = cdio_open (psz_drive, DRIVER_DEVICE);
 
   if (NULL == p_cdio) {
     printf("Couldn't find CD\n");

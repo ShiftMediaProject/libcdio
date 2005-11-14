@@ -1,7 +1,7 @@
 /*
-  $Id: mmc1.c,v 1.6 2005/11/14 01:15:33 rocky Exp $
+  $Id: mmc1.cpp,v 1.1 2005/11/14 01:15:33 rocky Exp $
 
-  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 /* Sample program to show use of the MMC interface. 
    An optional drive name can be supplied as an argument.
    This basically the libdio mmc_get_hwinfo() routine.
-   See also corresponding C++ programs.
+   See also corresponding C and non OO C++ program.
 */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -33,8 +33,7 @@
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
-#include <cdio/cdio.h>
-#include <cdio/mmc.h>
+#include <cdio++/cdio.hpp>
 
 /* Set how long to wait for MMC commands to complete */
 #define DEFAULT_TIMEOUT_MS 10000
@@ -42,13 +41,12 @@
 int
 main(int argc, const char *argv[])
 {
-  CdIo_t *p_cdio;
+  CdioDevice device;
   const char *psz_drive = NULL;
 
   if (argc > 1) psz_drive = argv[1];
-  p_cdio = cdio_open (psz_drive, DRIVER_UNKNOWN);
 
-  if (!p_cdio) {
+  if (!device.open(psz_drive)) {
     printf("Couldn't find CD\n");
     return 1;
   } else {
@@ -59,8 +57,8 @@ main(int argc, const char *argv[])
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_INQUIRY);
     cdb.field[4] = sizeof(buf);
 
-    i_status = mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, &cdb, 
-			   SCSI_MMC_DATA_READ, sizeof(buf), &buf);
+    i_status = device.mmcRunCmd(DEFAULT_TIMEOUT_MS, &cdb, 
+				SCSI_MMC_DATA_READ, sizeof(buf), &buf);
     if (i_status == 0) {
       char psz_vendor[CDIO_MMC_HW_VENDOR_LEN+1];
       char psz_model[CDIO_MMC_HW_MODEL_LEN+1];
@@ -83,8 +81,6 @@ main(int argc, const char *argv[])
       printf("Couldn't get INQUIRY data (vendor, model, and revision).\n");
     }
   }
-  
-  cdio_destroy(p_cdio);
   
   return 0;
 }

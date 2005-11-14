@@ -1,5 +1,5 @@
 /*
-  $Id: cdtext.cpp,v 1.2 2005/11/11 12:26:57 rocky Exp $
+  $Id: cdtext.cpp,v 1.3 2005/11/14 01:15:33 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -19,7 +19,8 @@
 */
 
 /* Simple program to list CD-Text info of a Compact Disc using
-   libcdio.  See also corresponding C program of a similar name.
+   libcdio.  An optional drive name can be supplied as an argument.
+   See also corresponding C program of a similar name.
  */
 
 #ifdef HAVE_CONFIG_H

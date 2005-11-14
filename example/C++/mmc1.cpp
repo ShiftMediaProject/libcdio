@@ -1,7 +1,7 @@
 /*
-  $Id: mmc1.cpp,v 1.2 2005/03/06 00:03:53 rocky Exp $
+  $Id: mmc1.cpp,v 1.3 2005/11/14 01:15:33 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,8 +18,10 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to show use of SCSI MMC interface. Is basically the
-   the libdio scsi_mmc_get_hwinfo() routine.
+/* Sample program to show use of the MMC interface. 
+   An optional drive name can be supplied as an argument.
+   This basically the libdio mmc_get_hwinfo() routine.
+   See also corresponding C and OO C++ program.
 */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -37,8 +39,11 @@ int
 main(int argc, const char *argv[])
 {
   CdIo_t *p_cdio;
+  const char *psz_drive = NULL;
 
-  p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
+  if (argc > 1) psz_drive = argv[1];
+
+  p_cdio = cdio_open (psz_drive, DRIVER_UNKNOWN);
 
   if (NULL == p_cdio) {
     printf("Couldn't find CD\n");

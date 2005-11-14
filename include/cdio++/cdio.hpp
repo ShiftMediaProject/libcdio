@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: cdio.hpp,v 1.2 2005/11/11 12:26:57 rocky Exp $
+    $Id: cdio.hpp,v 1.3 2005/11/14 01:15:33 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -28,6 +28,9 @@
 #define __CDIO_HPP__
 
 #include <cdio/cdio.h>
+#include <cdio/audio.h>
+#include <cdio/dvd.h>
+#include <cdio/mmc.h>
 
 // Make pre- and post-increment operators for enums in libcdio where it 
 // makes sense.
@@ -41,9 +44,7 @@ public:
 #include "devices.hpp"
 };
 
-/** A class relating to tracks. A track object basically saves device
-    and track number information so that in track operations these
-    don't have be specified. Note use invalid track number 0 to specify
+/** A class relating to CD-Text. Use invalid track number 0 to specify
     CD-Text for the CD (as opposed to a specific track).
 */
 class CdioCDText
@@ -112,6 +113,7 @@ public:
   // Other member functions  
 #include "device.hpp"
 #include "disc.hpp"
+#include "mmc.hpp"
 #include "read.hpp"
 
 private:
