@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.26 2005/11/11 12:26:57 rocky Exp $
+    $Id: device.h,v 1.27 2005/11/29 07:16:33 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -98,7 +98,7 @@ extern "C" {
 
 /**< Masks derived from above... */
 #define CDIO_DRIVE_CAP_WRITE_DVD (               \
-    | CDIO_DRIVE_CAP_WRITE_DVD_R                 \
+      CDIO_DRIVE_CAP_WRITE_DVD_R                 \
     | CDIO_DRIVE_CAP_WRITE_DVD_PR                \
     | CDIO_DRIVE_CAP_WRITE_DVD_RAM               \
     | CDIO_DRIVE_CAP_WRITE_DVD_RW                \
