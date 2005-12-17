@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.20 2005/11/04 09:38:57 rocky Exp $
+#   $Id: Makefile.am,v 1.21 2005/12/17 19:37:55 rocky Exp $
 #
 #    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -33,7 +33,7 @@ SUBDIRS = doc
 
 cd_paranoia_SOURCES = cd-paranoia.c \
 	buffering_write.c buffering_write.h \
-	$(getopt_sources) header.c report.c usage.h utils.h version.h
+	header.c report.c usage.h utils.h version.h
 
 cd_paranoia_LDADD =  $(LIBCDIO_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_PARANOIA_LIBS) @LIBGETOPT_LIB@
 
