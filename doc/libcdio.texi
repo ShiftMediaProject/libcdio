@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.45 2005/07/11 00:36:56 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.46 2005/12/22 17:26:12 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -1845,7 +1845,7 @@ image.
 @node iso-read
 @section @samp{iso-read}
 
-@samp{iso-info} can be used to extract a file in an ISO-9660 image.
+@samp{iso-read} can be used to extract a file in an ISO-9660 image.
 
 @node CD-ROM Access and Drivers
 @chapter CD-ROM Access and Drivers
