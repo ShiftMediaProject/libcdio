@@ -1,6 +1,6 @@
 See also @uref{http://www.dvdrhelp.com/glossary}.
 
-@table @acronym
+@table @dfn
 
 @item ASPI
 @cindex ASPI
