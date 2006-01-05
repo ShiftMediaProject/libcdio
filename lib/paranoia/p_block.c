@@ -1,5 +1,5 @@
 /*
-    $Id: p_block.c,v 1.9 2005/10/24 19:42:15 pjcreath Exp $
+    $Id: p_block.c,v 1.10 2006/01/05 21:58:52 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -166,7 +166,7 @@ i_vfragment_constructor(void)
   return(ret);
 }
 
-static inline void 
+static void 
 i_v_fragment_destructor(v_fragment_t *v)
 {
   free(v);
