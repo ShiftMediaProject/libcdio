@@ -47,9 +47,10 @@
   cvs commit .
 
 - copy libcdio manual to web page:
+     cd libcdio-www
      (cd ../libcdio/doc && make libcdio.html)
      cp ../libcdio/doc/libcdio.html .
-     cvs commit .
+     cvs commit libcdio.html
 
 - Remove old cvs versions 
 
