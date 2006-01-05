@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.181 2005/11/10 11:11:15 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.182 2006/01/05 21:57:40 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -144,6 +144,26 @@ else
 fi
 AC_SUBST(DIFF)
 AC_SUBST(DIFF_OPTS)
+
+dnl check for large file support
+AC_SYS_LARGEFILE
+
+dnl we need to define _FILE_OFFSET_BITS or _LARGE_FILES on the compiler command
+dnl line because otherwise the system headers risk being included before
+dnl problems
+if test "x$ac_cv_sys_largefiles" = "xyes"; then
+    if test "x$ac_cv_sys_file_offset_bits" = "x64"; then
+        LIBCDIO_LARGEFILE_FLAGS="-D_FILE_OFFSET_BITS=64 -D_LARGE_FILES"
+    else
+        LIBCDIO_LARGEFILE_FLAGS="-D_LARGE_FILES"
+    fi
+    dnl AC_FUNC_FSEEKO sets HAVE_FSEEKO and $ac_cv_sys_largefile_source
+    AC_FUNC_FSEEKO
+    if test "$ac_cv_sys_largefile_source" != no; then
+        LIBCDIO_LARGEFILE_FLAGS="$LIBDDIO_LARGEFILE_FLAGS -D_LARGEFILE_SOURCE=$ac_cv_sys_largefile_source"
+    fi
+    CPPFLAGS="$CPPFLAGS $LIBCDIO_LARGEFILE_FLAGS"
+fi
 
 # We use  cmp and cdparanoia in cd-paranoia regression testing
 AC_PATH_PROG(CMP, cmp, no)
