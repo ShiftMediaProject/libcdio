@@ -1,4 +1,4 @@
-o\input texinfo @c -*-texinfo-*-
+\input texinfo @c -*-texinfo-*-
 
 @c %**start of header
 @setfilename libcdio.info
@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.46 2005/12/22 17:26:12 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.47 2006/01/06 01:27:56 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
