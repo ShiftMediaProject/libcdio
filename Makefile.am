@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.36 2005/10/05 09:48:11 rocky Exp $
+#   $Id: Makefile.am,v 1.37 2006/01/08 21:44:14 rocky Exp $
 #
-#    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004, 2006 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -20,14 +20,20 @@
 ##   which configure then turns into a Makefile  ...
 ##     which make can then use to produce stuff. Isn't configuration simple? 
 
-EXTRA_DIST = THANKS README.libcdio \
-	     package/libcdio.spec.in package/libcdio.spec \
-	     libcdio.pc.in libcdio.pc \
-	     libcdio_cdda.pc.in libcdio_cdda.pc \
-	     libiso9660.pc.in libiso9660.pc \
-	     example/README \
-	     MSVC/config.h    MSVC/README MSVC/cd-info.vcproj \
-             MSVC/libcdio.sln MSVC/libcdio.vcproj 
+EXTRA_DIST = 
+	MSVC/README MSVC/cd-info.vcproj \
+	MSVC/config.h \
+	MSVC/libcdio.sln \
+	MSVC/libcdio.vcproj  \
+	README.libcdio \
+	THANKS \
+	example/README \
+	libcdio.pc.in libcdio.pc \
+	libcdio_cdda.pc \
+	libcdio_cdda.pc.in \
+	libiso9660.pc.in libiso9660.pc \
+	package/libcdio.spec \
+	package/libcdio.spec.in 
 
 SUBDIRS =  doc include lib src test example
 
