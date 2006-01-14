@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.29 2006/01/14 09:45:44 rocky Exp $
+    $Id: device.c,v 1.30 2006/01/14 10:10:34 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -377,6 +377,7 @@ cdio_eject_media (CdIo_t **pp_cdio)
   to scan for any CD-ROM and eject that, pass NULL for psz_drive.
   
   @param psz_drive the CD object to be acted upon.
+  If NULL is given as the drive, we'll use the default driver device.
 */
 driver_return_code_t
 cdio_eject_media_drive (const char *psz_drive)
