@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.28 2006/01/14 09:44:53 rocky Exp $
+    $Id: device.h,v 1.29 2006/01/14 10:09:55 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -246,6 +246,7 @@ extern "C" {
     Eject media in CD drive if there is a routine to do so. 
 
     @param psz_drive the name of the device to be acted upon.
+    If NULL is given as the drive, we'll use the default driver device.
   */
   driver_return_code_t cdio_eject_media_drive (const char *psz_drive);
 
@@ -470,6 +471,7 @@ extern "C" {
      cdio_open_xxx routines.
 
      @return the cdio object or NULL on error or no device.
+     If NULL is given as the source, we'll use the default driver device.
   */
   CdIo_t * cdio_open (const char *psz_source, driver_id_t driver_id);
 
@@ -478,6 +480,7 @@ extern "C" {
      any other routine, except cdio_init. This will call cdio_init, if
      that hasn't been done previously.  to call one of the specific
      cdio_open_xxx routines.
+     If NULL is given as the source, we'll use the default driver device.
 
      @return the cdio object or NULL on error or no device.
   */
