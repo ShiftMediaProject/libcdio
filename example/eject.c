@@ -1,7 +1,7 @@
 /*
-  $Id: eject.c,v 1.3 2006/01/14 10:46:23 rocky Exp $
+  $Id: eject.c,v 1.4 2006/01/14 10:47:12 rocky Exp $
 
-  Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
