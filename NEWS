@@ -1,8 +1,12 @@
-$Id: NEWS,v 1.87 2005/10/17 03:25:33 rocky Exp $
+$Id: NEWS,v 1.88 2006/01/14 10:39:34 rocky Exp $
 
 version 0.77cvs
 =====================================
 ????-??-??
+
+- NULL drive in cdio_eject_media_drive uses default drive to close.
+  Document that NULL also uses default drive in close_tray, cdio_open
+  and cdio_open_am.
 
 - replace libpopt with getopt (cd-drive, cd-info, iso-info, iso-read)
 
@@ -13,6 +17,12 @@ version 0.77cvs
 - Document cd-paranoia (Peter J. Creath)
 
 - Start UDF handling
+
+- increase use of enumerations more and decrease use of #defines
+
+- Add an object-oriented C++ wrapper.
+
+- Doxygen formatting improvements.
 
 version 0.76
 =====================================
@@ -301,4 +311,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.87 2005/10/17 03:25:33 rocky Exp $
+$Id: NEWS,v 1.88 2006/01/14 10:39:34 rocky Exp $
