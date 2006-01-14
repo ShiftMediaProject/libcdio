@@ -1,7 +1,7 @@
 /* -*- c -*-
-    $Id: track.h,v 1.9 2005/10/26 23:55:02 rocky Exp $
+    $Id: track.h,v 1.10 2006/01/14 09:44:53 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ extern "C" {
 			      */
   } track_flags_t;
     
-  /*! An enumeration for some of the CDIO_CDROM_* #defines below. This
+  /*! An enumeration for some of the CDIO_CDROM_* \#defines below. This
     isn't really an enumeration one would really use in a program; it
     is to be helpful in debuggers where wants just to refer to the
     CDIO_CDROM_* names and get something.

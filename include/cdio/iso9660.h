@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660.h,v 1.79 2005/11/06 19:15:43 rocky Exp $
+    $Id: iso9660.h,v 1.80 2006/01/14 09:44:53 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     See also iso9660.h by Eric Youngdale (1993).
 
@@ -76,7 +76,7 @@ typedef char     dchar_t;  /*! See section 7.4.1 */
 /*! The below isn't really an enumeration one would really use in a
     program; things are done this way so that in a debugger one can to
     refer to the enumeration value names such as in a debugger
-    expression and get something. With the more common a #define
+    expression and get something. With the more common a \#define
     mechanism, the name/value assocation is lost at run time.
   */
 extern enum iso_enum1_s {
@@ -507,7 +507,7 @@ struct iso9660_stat_s { /* big endian!! */
     of extensions we allow, eg. Joliet, Rock Ridge, etc. */
 typedef uint8_t iso_extension_mask_t;
 
-/*! An enumeration for some of the ISO_EXTENSION_* #defines below. This isn't
+/*! An enumeration for some of the ISO_EXTENSION_* \#defines below. This isn't
     really an enumeration one would really use in a program it is here
     to be helpful in debuggers where wants just to refer to the
     ISO_EXTENSION_*_ names and get something.

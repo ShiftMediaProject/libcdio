@@ -1,6 +1,6 @@
 /*  
-    $Id: udf.h,v 1.19 2005/11/06 19:26:12 rocky Exp $
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    $Id: udf.h,v 1.20 2006/01/14 09:44:53 rocky Exp $
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ typedef struct udf_file_s udf_file_t;
 typedef struct udf_dirent_s udf_dirent_t;
 
 /**
-   Imagine the below a #define'd value rather than distinct values of
+   Imagine the below a \#define'd value rather than distinct values of
    an enum.
 */
 typedef enum {

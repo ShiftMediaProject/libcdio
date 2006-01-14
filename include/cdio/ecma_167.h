@@ -1,5 +1,5 @@
  /* 
-  Copyright (c) 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (c) 2005, 2006 Rocky Bernstein <rocky@panix.com>
   Copyright (c) 2001-2002  Ben Fennema <bfennema@falcon.csc.calpoly.edu>
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@
 #include <cdio/types.h>
 
 /**
-   Imagine the below enum values as #define'd values rather than
+   Imagine the below enum values as \#define'd values rather than
    distinct values of an enum.
 */
 typedef enum {
@@ -150,7 +150,7 @@ typedef struct udf_timestamp_s udf_timestamp_t;
 
 /** Type and Time Zone (ECMA 167r3 1/7.3.1) 
 
-    Imagine the below enum values as #define'd values rather than
+    Imagine the below enum values as \#define'd values rather than
     distinct values of an enum.
 */
 typedef enum { 
@@ -582,7 +582,7 @@ typedef struct udf_fileid_desc_s udf_fileid_desc_t;
 
 /** File Characteristics (ECMA 167r3 4/14.4.3) 
 
-    Imagine the below enumeration values are #defines to be used in a
+    Imagine the below enumeration values are \#defines to be used in a
     bitmask rather than distinct values of an enum.
 */
 typedef enum {
@@ -629,7 +629,7 @@ typedef struct udf_icbtag_s udf_icbtag_t;
 
 /** File Type (ECMA 167r3 4/14.6.6) 
 
-   Imagine the below enum values as #define'd values rather than
+   Imagine the below enum values as \#define'd values rather than
    distinct values of an enum.
 */
 typedef enum {

@@ -1,7 +1,7 @@
 /* -*- c -*-
-    $Id: device.h,v 1.27 2005/11/29 07:16:33 rocky Exp $
+    $Id: device.h,v 1.28 2006/01/14 09:44:53 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,84 +36,84 @@ extern "C" {
   typedef uint32_t cdio_drive_misc_cap_t;
   
   /*!
-    \brief Drive types returned by cdio_get_drive_cap()
-    
+    \brief Drive capability bits returned by cdio_get_drive_cap()
     NOTE: Setting a bit here means the presence of a capability.
   */ 
 
-#define CDIO_DRIVE_CAP_ERROR          0x40000 /**< Error */
-#define CDIO_DRIVE_CAP_UNKNOWN        0x80000 /**< Dunno. It can be on if we
+  /** Miscellaneous capabilities. */
+  typedef enum {
+    CDIO_DRIVE_CAP_ERROR             = 0x40000, /**< Error */
+    CDIO_DRIVE_CAP_UNKNOWN           = 0x80000, /**< Dunno. It can be on if we
 					        have only partial information 
                                                 or are not completely certain
-                                              */
-
-#define CDIO_DRIVE_CAP_MISC_CLOSE_TRAY     0x00001 /**< caddy systems can't 
-                                                   close... */
-#define CDIO_DRIVE_CAP_MISC_EJECT          0x00002 /**< but can eject.  */
-#define CDIO_DRIVE_CAP_MISC_LOCK	   0x00004 /**< disable manual eject */
-#define CDIO_DRIVE_CAP_MISC_SELECT_SPEED   0x00008 /**< programmable speed */
-#define CDIO_DRIVE_CAP_MISC_SELECT_DISC    0x00010 /**< select disc from 
+						*/
+    CDIO_DRIVE_CAP_MISC_CLOSE_TRAY   = 0x00001, /**< caddy systems can't 
+                                                     close... */
+    CDIO_DRIVE_CAP_MISC_EJECT        = 0x00002, /**< but can eject.  */
+    CDIO_DRIVE_CAP_MISC_LOCK	     = 0x00004, /**< disable manual eject */
+    CDIO_DRIVE_CAP_MISC_SELECT_SPEED = 0x00008, /**< programmable speed */
+    CDIO_DRIVE_CAP_MISC_SELECT_DISC  = 0x00010, /**< select disc from 
                                                       juke-box */
-#define CDIO_DRIVE_CAP_MISC_MULTI_SESSION  0x00020 /**< read sessions>1 */
-#define CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED  0x00080 /**< media changed */
-#define CDIO_DRIVE_CAP_MISC_RESET          0x00100 /**< hard reset device */
-#define CDIO_DRIVE_CAP_MISC_FILE           0x20000 /**< drive is really a file,
-                                                      i.e a CD file image */
+    CDIO_DRIVE_CAP_MISC_MULTI_SESSION= 0x00020, /**< read sessions>1 */
+    CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED= 0x00080, /**< media changed */
+    CDIO_DRIVE_CAP_MISC_RESET        = 0x00100, /**< hard reset device */
+    CDIO_DRIVE_CAP_MISC_FILE         = 0x20000 /**< drive is really a file,
+						  i.e a CD file image */
+  } cdio_drive_cap_misc_t;
 
   /*! Reading masks.. */
-#define CDIO_DRIVE_CAP_READ_AUDIO       0x00001 /**< drive can play CD audio */
-#define CDIO_DRIVE_CAP_READ_CD_DA       0x00002 /**< drive can read CD-DA */
-#define CDIO_DRIVE_CAP_READ_CD_G        0x00004 /**< drive can read CD+G  */
-#define CDIO_DRIVE_CAP_READ_CD_R        0x00008 /**< drive can read CD-R  */
-#define CDIO_DRIVE_CAP_READ_CD_RW       0x00010 /**< drive can read CD-RW */
-#define CDIO_DRIVE_CAP_READ_DVD_R       0x00020 /**< drive can read DVD-R */
-#define CDIO_DRIVE_CAP_READ_DVD_PR      0x00040 /**< drive can read DVD+R */
-#define CDIO_DRIVE_CAP_READ_DVD_RAM     0x00080 /**< drive can read DVD-RAM */
-#define CDIO_DRIVE_CAP_READ_DVD_ROM     0x00100 /**< drive can read DVD-ROM */
-#define CDIO_DRIVE_CAP_READ_DVD_RW      0x00200 /**< drive can read DVD-RW  */
-#define CDIO_DRIVE_CAP_READ_DVD_RPW     0x00400 /**< drive can read DVD+RW  */
-#define CDIO_DRIVE_CAP_READ_C2_ERRS     0x00800 /**< has C2 error correction */
-#define CDIO_DRIVE_CAP_READ_MODE2_FORM1 0x01000 /**< can read mode 2 form 1 */
-#define CDIO_DRIVE_CAP_READ_MODE2_FORM2 0x02000 /**< can read mode 2 form 2 */
-#define CDIO_DRIVE_CAP_READ_MCN         0x04000 /**< can read MCN      */
-#define CDIO_DRIVE_CAP_READ_ISRC        0x08000 /**< can read ISRC     */
+  typedef enum {
+    CDIO_DRIVE_CAP_READ_AUDIO        = 0x00001, /**< drive can play CD audio */
+    CDIO_DRIVE_CAP_READ_CD_DA        = 0x00002, /**< drive can read CD-DA */
+    CDIO_DRIVE_CAP_READ_CD_G         = 0x00004, /**< drive can read CD+G  */
+    CDIO_DRIVE_CAP_READ_CD_R         = 0x00008, /**< drive can read CD-R  */
+    CDIO_DRIVE_CAP_READ_CD_RW        = 0x00010, /**< drive can read CD-RW */
+    CDIO_DRIVE_CAP_READ_DVD_R        = 0x00020, /**< drive can read DVD-R */
+    CDIO_DRIVE_CAP_READ_DVD_PR       = 0x00040, /**< drive can read DVD+R */
+    CDIO_DRIVE_CAP_READ_DVD_RAM      = 0x00080, /**< drive can read DVD-RAM */
+    CDIO_DRIVE_CAP_READ_DVD_ROM      = 0x00100, /**< drive can read DVD-ROM */
+    CDIO_DRIVE_CAP_READ_DVD_RW       = 0x00200, /**< drive can read DVD-RW  */
+    CDIO_DRIVE_CAP_READ_DVD_RPW      = 0x00400, /**< drive can read DVD+RW  */
+    CDIO_DRIVE_CAP_READ_C2_ERRS      = 0x00800, /**< has C2 error correction */
+    CDIO_DRIVE_CAP_READ_MODE2_FORM1  = 0x01000, /**< can read mode 2 form 1 */
+    CDIO_DRIVE_CAP_READ_MODE2_FORM2  = 0x02000, /**< can read mode 2 form 2 */
+    CDIO_DRIVE_CAP_READ_MCN          = 0x04000, /**< can read MCN      */
+    CDIO_DRIVE_CAP_READ_ISRC         = 0x08000 /**< can read ISRC     */
+  } cdio_drive_cap_read_t;
 
   /*! Writing masks.. */
-#define CDIO_DRIVE_CAP_WRITE_CD_R       0x00001 /**< drive can write CD-R */
-#define CDIO_DRIVE_CAP_WRITE_CD_RW      0x00002 /**< drive can write CD-R */
-#define CDIO_DRIVE_CAP_WRITE_DVD_R      0x00004 /**< drive can write DVD-R */
-#define CDIO_DRIVE_CAP_WRITE_DVD_PR     0x00008 /**< drive can write DVD+R */
-#define CDIO_DRIVE_CAP_WRITE_DVD_RAM    0x00010 /**< drive can write DVD-RAM */
-#define CDIO_DRIVE_CAP_WRITE_DVD_RW     0x00020 /**< drive can write DVD-RW */
-#define CDIO_DRIVE_CAP_WRITE_DVD_RPW    0x00040 /**< drive can write DVD+RW */
-#define CDIO_DRIVE_CAP_WRITE_MT_RAINIER 0x00080 /**< Mount Rainier           */
-#define CDIO_DRIVE_CAP_WRITE_BURN_PROOF 0x00100 /**< burn proof */
+  typedef enum {
+    CDIO_DRIVE_CAP_WRITE_CD_R        = 0x00001, /**< drive can write CD-R */
+    CDIO_DRIVE_CAP_WRITE_CD_RW       = 0x00002, /**< drive can write CD-RW */
+    CDIO_DRIVE_CAP_WRITE_DVD_R       = 0x00004, /**< drive can write DVD-R */
+    CDIO_DRIVE_CAP_WRITE_DVD_PR      = 0x00008, /**< drive can write DVD+R */
+    CDIO_DRIVE_CAP_WRITE_DVD_RAM     = 0x00010, /**< drive can write DVD-RAM */
+    CDIO_DRIVE_CAP_WRITE_DVD_RW      = 0x00020, /**< drive can write DVD-RW */
+    CDIO_DRIVE_CAP_WRITE_DVD_RPW     = 0x00040, /**< drive can write DVD+RW */
+    CDIO_DRIVE_CAP_WRITE_MT_RAINIER  = 0x00080, /**< Mount Rainier           */
+    CDIO_DRIVE_CAP_WRITE_BURN_PROOF  = 0x00100, /**< burn proof */
+    CDIO_DRIVE_CAP_WRITE_CD =
+    (CDIO_DRIVE_CAP_WRITE_CD_R | CDIO_DRIVE_CAP_WRITE_CD_RW),
+    /**< Has some sort of CD writer ability */
 
-/**< Masks derived from above... */
-#define CDIO_DRIVE_CAP_WRITE_CD (                \
-    CDIO_DRIVE_CAP_WRITE_CD_R                    \
-    | CDIO_DRIVE_CAP_WRITE_CD_RW                 \
-    ) 
-/**< Has some sort of CD writer ability */
+    CDIO_DRIVE_CAP_WRITE_DVD = 
+    (CDIO_DRIVE_CAP_WRITE_DVD_R | CDIO_DRIVE_CAP_WRITE_DVD_PR 
+     | CDIO_DRIVE_CAP_WRITE_DVD_RAM | CDIO_DRIVE_CAP_WRITE_DVD_RW 
+     | CDIO_DRIVE_CAP_WRITE_DVD_RPW ),
+    /**< Has some sort of DVD writer ability */
 
-/**< Masks derived from above... */
-#define CDIO_DRIVE_CAP_WRITE_DVD (               \
-      CDIO_DRIVE_CAP_WRITE_DVD_R                 \
-    | CDIO_DRIVE_CAP_WRITE_DVD_PR                \
-    | CDIO_DRIVE_CAP_WRITE_DVD_RAM               \
-    | CDIO_DRIVE_CAP_WRITE_DVD_RW                \
-    | CDIO_DRIVE_CAP_WRITE_DVD_RPW               \
-    ) 
-/**< Has some sort of DVD writer ability */
-
-#define CDIO_DRIVE_CAP_WRITE \
-   (CDIO_DRIVE_CAP_WRITE_CD | CDIO_DRIVE_CAP_WRITE_DVD)
-/**< Has some sort of DVD or CD writing ability */
-
+    CDIO_DRIVE_CAP_WRITE = 
+    (CDIO_DRIVE_CAP_WRITE_CD | CDIO_DRIVE_CAP_WRITE_DVD)
+    /**< Has some sort of DVD or CD writing ability */
+  } cdio_drive_cap_write_t;
+    
 /*! Size of fields returned by an INQUIRY command */
-#define CDIO_MMC_HW_VENDOR_LEN    8 /**< length of vendor field */
-#define CDIO_MMC_HW_MODEL_LEN    16 /**< length of model field */
-#define CDIO_MMC_HW_REVISION_LEN  4 /**< length of revision field */
+  typedef enum {
+    CDIO_MMC_HW_VENDOR_LEN   =  8, /**< length of vendor field */
+    CDIO_MMC_HW_MODEL_LEN    = 16, /**< length of model field */
+    CDIO_MMC_HW_REVISION_LEN =  4  /**< length of revision field */
+  } cdio_mmc_hw_len_t;
+    
 
   /*! \brief Structure to return CD vendor, model, and revision-level
       strings obtained via the INQUIRY command  */
@@ -124,12 +124,15 @@ extern "C" {
     char psz_revision[CDIO_MMC_HW_REVISION_LEN+1];
   } cdio_hwinfo_t;
 
-  /**! Flags specifying the category of device to open or is opened. */
 
-#define CDIO_SRC_IS_DISK_IMAGE_MASK 0x0001 /**< Read source is a CD image. */
-#define CDIO_SRC_IS_DEVICE_MASK     0x0002 /**< Read source is a CD device. */
-#define CDIO_SRC_IS_SCSI_MASK       0x0004 /**< Read source SCSI device. */
-#define CDIO_SRC_IS_NATIVE_MASK     0x0008
+  /** Flags specifying the category of device to open or is opened. */
+  typedef enum {
+    CDIO_SRC_IS_DISK_IMAGE_MASK = 0x0001, /**< Read source is a CD image. */
+    CDIO_SRC_IS_DEVICE_MASK     = 0x0002, /**< Read source is a CD device. */
+    CDIO_SRC_IS_SCSI_MASK       = 0x0004, /**< Read source SCSI device. */
+    CDIO_SRC_IS_NATIVE_MASK     = 0x0008
+  } cdio_src_category_mask_t;
+    
 
   /** The driver_id_t enumerations may be used to tag a specific driver
    * that is opened or is desired to be opened. Note that this is
@@ -919,5 +922,16 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+/** The below variables are trickery to force the above enum symbol
+    values to be recorded in debug symbol tables. They are used to
+    allow one to refer to the enumeration value names in the typedefs
+    above in a debugger and debugger expressions.
+*/
+extern cdio_drive_cap_misc_t          debug_cdio_drive_cap_misc;
+extern cdio_drive_cap_read_t          debug_cdio_drive_cap_read_t;
+extern cdio_drive_cap_write_t         debug_drive_cap_write_t;
+extern cdio_mmc_hw_len_t              debug_cdio_mmc_hw_len;
+extern cdio_src_category_mask_t       debug_cdio_src_category_mask;
 
 #endif /* __CDIO_DEVICE_H__ */

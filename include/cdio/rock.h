@@ -1,7 +1,7 @@
 /*
-    $Id: rock.h,v 1.13 2005/11/06 20:02:39 rocky Exp $
+    $Id: rock.h,v 1.14 2006/01/14 09:44:53 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     See also rock.c by Eric Youngdale (1993) from GNU/Linux 
     This is Copyright 1993 Yggdrasil Computing, Incorporated
@@ -47,7 +47,7 @@ extern "C" {
 #define S_ISLNK(st_mode) ((((st_mode)) & 0170000) == (0010000))
 #endif
 
-/*! An enumeration for some of the ISO_ROCK_* #defines below. This isn't
+/*! An enumeration for some of the ISO_ROCK_* \#defines below. This isn't
   really an enumeration one would really use in a program it is to
   be helpful in debuggers where wants just to refer to the ISO_ROCK_*
   names and get something.
@@ -375,7 +375,7 @@ const char *iso9660_get_rock_attr_str(posix_mode_t st_mode);
 
 /** These variables are not used, but are defined to facilatate debugging
     by letting us use enumerations values (which also correspond to 
-    #define's inside a debugged program.
+    \#define's inside a debugged program.
  */
 extern iso_rock_nm_flag_t iso_rock_nm_flag;
 extern iso_rock_sl_flag_t iso_rock_sl_flag;

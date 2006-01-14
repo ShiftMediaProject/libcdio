@@ -1,7 +1,7 @@
 /* -*- c -*-
-    $Id: read.h,v 1.7 2005/11/10 00:44:40 rocky Exp $
+    $Id: read.h,v 1.8 2006/01/14 09:44:53 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -186,6 +186,7 @@ extern "C" {
   /*!
     Reads a number of sectors (AKA blocks).
 
+    @param p_cdio cdio object
     @param p_buf place to read data into. The caller should make sure
     this location is large enough. See below for size information.
     @param read_mode the kind of "mode" to use in reading.

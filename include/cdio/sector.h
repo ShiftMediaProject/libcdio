@@ -1,8 +1,8 @@
 /*
-    $Id: sector.h,v 1.36 2005/03/06 11:21:52 rocky Exp $
+    $Id: sector.h,v 1.37 2006/01/14 09:44:53 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -90,7 +90,7 @@
 #define CDIO_PREGAP_SECTORS  150
 #define CDIO_POSTGAP_SECTORS 150
       
-      /*! An enumeration for some of the CDIO_CD #defines below. This isn't
+      /*! An enumeration for some of the CDIO_CD \#defines below. This isn't
         really an enumeration one would really use in a program it is to
         be helpful in debuggers where wants just to refer to the CDIO_CD_
         names and get something.
@@ -171,7 +171,7 @@
         {0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0};
       */
       
-      /*! An enumeration for some of the M2*_SECTOR_SIZE #defines
+      /*! An enumeration for some of the M2*_SECTOR_SIZE \#defines
         below. This isn't really an enumeration one would really use in a
         program it is to be helpful in debuggers where wants just to refer
         to the M2*_SECTOR_SIZE names and get something.
