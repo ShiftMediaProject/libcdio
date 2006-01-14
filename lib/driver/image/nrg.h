@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.h,v 1.1 2004/12/18 17:29:32 rocky Exp $
+    $Id: nrg.h,v 1.2 2006/01/14 08:58:25 rocky Exp $
 
     Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -61,32 +61,32 @@ typedef struct {
 } _etn2_array_t;
 
 typedef struct {
-  uint8_t  type       GNUC_PACKED; /* has track copy bit and whether audiofile
+  uint8_t  type;                   /* has track copy bit and whether audiofile
 				      or datafile. Is often 0x41 == 'A' */
-  uint8_t  track      GNUC_PACKED; /* binary or BCD?? */
-  uint8_t  addr_ctrl  GNUC_PACKED; /* addresstype: MSF or LBA in lower 4 bits
+  uint8_t  track;                  /* binary or BCD?? */
+  uint8_t  addr_ctrl;              /* addresstype: MSF or LBA in lower 4 bits
 				      control in upper 4 bits. 
 				      makes 0->1 transitions */
-  uint8_t  res        GNUC_PACKED; /* ?? */
+  uint8_t  res;                    /* ?? */
   uint32_t lsn        GNUC_PACKED; 
 } _cuex_array_t;
 
 typedef struct {
   uint32_t _unknown1  GNUC_PACKED;
-  char      psz_mcn[CDIO_MCN_SIZE]  GNUC_PACKED;
-  uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint32_t)]  GNUC_PACKED;
+  char      psz_mcn[CDIO_MCN_SIZE];             
+  uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint32_t)];
 } _daox_array_t;
 
 typedef struct {
   uint32_t _unknown1  GNUC_PACKED;
-  char      psz_mcn[CDIO_MCN_SIZE]  GNUC_PACKED;
-  uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint32_t)]  GNUC_PACKED;
+  char      psz_mcn[CDIO_MCN_SIZE];
+  uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint32_t)];
 } _daoi_array_t;
 
 typedef struct {
   uint32_t id                    GNUC_PACKED;
   uint32_t len                   GNUC_PACKED;
-  char data[EMPTY_ARRAY_SIZE]    GNUC_PACKED;
+  char data[EMPTY_ARRAY_SIZE];
 } _chunk_t;
 
 PRAGMA_END_PACKED
