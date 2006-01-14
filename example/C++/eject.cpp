@@ -1,5 +1,5 @@
 /*
-  $Id: eject.cpp,v 1.1 2005/11/07 07:53:40 rocky Exp $
+  $Id: eject.cpp,v 1.2 2006/01/14 10:46:23 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -74,5 +74,27 @@ main(int argc, const char *argv[])
   }
   free(psz_drive);
   
+  ret = cdio_eject_media_drive(NULL);
+  switch(ret) {
+  case DRIVER_OP_UNSUPPORTED:
+    printf("Eject not supported for default device.\n");
+    break;
+  case DRIVER_OP_SUCCESS:
+    printf("CD-ROM drive ejected for default device.\n");
+    break;
+  default:
+    printf("Eject of CD-ROM drive failed for default device.\n");
+    break;
+  }
+
+  driver_id = DRIVER_DEVICE;
+  if (DRIVER_OP_SUCCESS == cdio_close_tray(NULL, &driver_id)) {
+    printf("Closed tray of CD-ROM drive for default disc driver:\n\t%s\n", 
+	   cdio_driver_describe(driver_id));
+  } else {
+    printf("Closing tray of CD-ROM drive failed for default "
+	   "disc driver:\n\t%s\n", cdio_driver_describe(driver_id));
+  }
+
   return 0;
 }
