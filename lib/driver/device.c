@@ -1,7 +1,7 @@
 /*
-    $Id: device.c,v 1.28 2005/11/07 07:44:00 rocky Exp $
+    $Id: device.c,v 1.29 2006/01/14 09:45:44 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -75,6 +75,17 @@ const driver_id_t cdio_os_driver = DRIVER_WIN32;
 #else 
 const driver_id_t cdio_os_driver = DRIVER_UNKNOWN;
 #endif
+
+/** The below variables are trickery to force enum symbol values to be
+    recorded in debug symbol tables. They are used to allow one to refer
+    to the enumeration value names in the typedefs above in a debugger
+    and debugger expressions.
+*/
+cdio_drive_cap_misc_t          debug_cdio_drive_cap_misc;
+cdio_drive_cap_read_t          debug_cdio_drive_cap_read_t;
+cdio_drive_cap_write_t         debug_drive_cap_write_t;
+cdio_mmc_hw_len_t              debug_cdio_mmc_hw_len;
+cdio_src_category_mask_t       debug_cdio_src_category_mask;
 
 static bool 
 cdio_have_false(void)

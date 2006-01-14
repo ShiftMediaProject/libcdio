@@ -1,7 +1,7 @@
 /*
-    $Id: nrg.c,v 1.18 2005/07/07 06:51:58 rocky Exp $
+    $Id: nrg.c,v 1.19 2006/01/14 09:45:44 rocky Exp $
 
-    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
@@ -46,11 +46,12 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.18 2005/07/07 06:51:58 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.19 2006/01/14 09:45:44 rocky Exp $";
 
+nero_id_t    nero_id;
+nero_dtype_t nero_dtype;
 
 /* reader */
-
 #define DEFAULT_CDIO_DEVICE "image.nrg"
 
 /* 

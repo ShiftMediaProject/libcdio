@@ -1,7 +1,7 @@
 /*
-    $Id: nrg.h,v 1.2 2006/01/14 08:58:25 rocky Exp $
+    $Id: nrg.h,v 1.3 2006/01/14 09:45:44 rocky Exp $
 
-    Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
@@ -92,24 +92,37 @@ typedef struct {
 PRAGMA_END_PACKED
 
 /* Nero images are Big Endian. */
-#define CDTX_ID  0x43445458  /* CD TEXT */
-#define CUEX_ID  0x43554558  /* Nero version 5.5.x-6.x */
-#define CUES_ID  0x43554553  /* Nero pre version 5.5.x-6.x */
-#define DAOX_ID  0x44414f58  /* Nero version 5.5.x-6.x */
-#define DAOI_ID  0x44414f49
-#define END1_ID  0x454e4421
-#define ETN2_ID  0x45544e32
-#define ETNF_ID  0x45544e46
-#define NER5_ID  0x4e455235  /* Nero version 5.5.x */
-#define NERO_ID  0x4e45524f  /* Nero pre 5.5.x */
-#define SINF_ID  0x53494e46  /* Session information */
-#define MTYP_ID  0x4d545950  /* Disc Media type? */
+typedef enum {
+  CDTX_ID  = 0x43445458,   /* CD TEXT */
+  CUEX_ID  = 0x43554558,  /* Nero version 5.5.x-6.x */
+  CUES_ID  = 0x43554553,  /* Nero pre version 5.5.x-6.x */
+  DAOX_ID  = 0x44414f58,  /* Nero version 5.5.x-6.x */
+  DAOI_ID  = 0x44414f49,
+  END1_ID  = 0x454e4421,
+  ETN2_ID  = 0x45544e32,
+  ETNF_ID  = 0x45544e46,
+  NER5_ID  = 0x4e455235,  /* Nero version 5.5.x */
+  NERO_ID  = 0x4e45524f,  /* Nero pre 5.5.x */
+  SINF_ID  = 0x53494e46,  /* Session information */
+  MTYP_ID  = 0x4d545950,  /* Disc Media type? */
+} nero_id_t;
 
 #define MTYP_AUDIO_CD 1 /* This isn't correct. But I don't know the
 			   the right thing is and it sometimes works (and
 			   sometimes is wrong). */
 
 /* Disk track type Values gleaned from DAOX */
-#define DTYP_MODE1     0 
-#define DTYP_MODE2_XA  2 
-#define DTYP_INVALID 255
+typedef enum {
+  DTYP_MODE1    =   0,
+  DTYP_MODE2_XA =   2,
+  DTYP_INVALID  = 255
+} nero_dtype_t;
+
+/** The below variables are trickery to force the above enum symbol
+    values to be recorded in debug symbol tables. They are used to
+    allow one to refer to the enumeration value names in the typedefs
+    above in a debugger and debugger expressions.
+*/
+extern nero_id_t    nero_id;
+extern nero_dtype_t nero_dtype;
+  
