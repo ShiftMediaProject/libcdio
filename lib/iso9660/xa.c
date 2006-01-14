@@ -1,5 +1,5 @@
 /*
-    $Id: xa.c,v 1.5 2005/11/06 00:39:37 rocky Exp $
+    $Id: xa.c,v 1.6 2006/01/14 09:48:42 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2005 Rocky Bernstein <rocky@panix.com>
@@ -46,8 +46,12 @@ const char ISO_XA_MARKER_STRING[] = {'C', 'D', '-', 'X', 'A', '0', '0', '1'};
 /* Private headers */
 #include "cdio_assert.h"
 
-/* Variables to hold debugger-helping enumerations */
-enum cdio_xa_enums;
+/** The below variable is trickery to force enum symbol values to be
+    recorded in debug symbol tables. It is used to allow one to refer
+    to the enumeration value names in the typedefs above in a debugger
+    and debugger expressions.
+*/
+xa_misc_enum_t debugger_xa_misc_enum;
 
 #define BUF_COUNT 16
 #define BUF_SIZE 80
