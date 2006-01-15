@@ -1,7 +1,7 @@
 /* -*- C++ -*-
-    $Id: cdio.hpp,v 1.3 2005/11/14 01:15:33 rocky Exp $
+    $Id: cdio.hpp,v 1.4 2006/01/15 10:39:15 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -110,6 +110,22 @@ public:
     p_cdio = (CdIo_t *) NULL;
   };
 
+  /** Class for driver exceptions. **/
+  class DriverOpException 
+  {
+  public:
+    driver_return_code_t driver_return_code;
+    DriverOpException( driver_return_code_t drc ) { 
+      driver_return_code = drc; 
+    };
+    driver_return_code_t get_code(void) { 
+      return driver_return_code; 
+    };
+    const char *get_msg(void) { 
+      return cdio_driver_return_code_to_str(driver_return_code); 
+    };
+  };
+
   // Other member functions  
 #include "device.hpp"
 #include "disc.hpp"
@@ -118,6 +134,11 @@ public:
 
 private:
   CdIo_t *p_cdio;
+  void throw_device_exception(driver_return_code_t drc) 
+  {
+    if (DRIVER_OP_SUCCESS == drc) return;
+    throw DriverOpException(drc);
+  }
 };
 
 #endif /* __CDIO_HPP__ */

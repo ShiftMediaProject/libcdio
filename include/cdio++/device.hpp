@@ -1,7 +1,7 @@
 /* -*- C++ -*-
-    $Id: device.hpp,v 1.1 2005/11/10 11:11:16 rocky Exp $
+    $Id: device.hpp,v 1.2 2006/01/15 10:39:15 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,22 +44,21 @@ close()
   it was DRIVER_UNKNOWN or DRIVER_DEVICE; If this is NULL, we won't
   report back the driver used.
 */
-driver_return_code_t closeTray (const char *psz_drive, 
-				/*in/out*/ driver_id_t &driver_id) 
+void closeTray (const char *psz_drive, /*in/out*/ driver_id_t &driver_id) 
 {
-  return cdio_close_tray (psz_drive, &driver_id);
+  driver_return_code_t drc = cdio_close_tray (psz_drive, &driver_id);
+  throw_device_exception(drc);
 }
-
 
 /*!
   Close media tray in CD drive if there is a routine to do so. 
   
   @param psz_drive the name of CD-ROM to be closed.
 */
-driver_return_code_t closeTray (const char *psz_drive) 
+void closeTray (const char *psz_drive) 
 {
   driver_id_t driver_id = DRIVER_UNKNOWN;
-  return closeTray(psz_drive, driver_id);
+  closeTray(psz_drive, driver_id);
 }
 
 
@@ -68,10 +67,11 @@ driver_return_code_t closeTray (const char *psz_drive)
   
   If the CD is ejected, object is destroyed.
 */
-driver_return_code_t 
+void
 ejectMedia () 
 {
-  return cdio_eject_media(&p_cdio);
+  driver_return_code_t drc = cdio_eject_media(&p_cdio);
+  throw_device_exception(drc);
 }
 
 /*!
@@ -79,10 +79,11 @@ ejectMedia ()
   
   If the CD is ejected, object is destroyed.
 */
-driver_return_code_t 
+void
 ejectMedia (const char *psz_drive) 
 {
-  return cdio_eject_media_drive(psz_drive);
+  driver_return_code_t drc = cdio_eject_media_drive(psz_drive);
+  throw_device_exception(drc);
 }
 
 /*! 
@@ -316,10 +317,11 @@ getHWinfo ( /*out*/ cdio_hwinfo_t &hw_info )
   
   @param i_last_session pointer to the session number to be returned.
 */
-driver_return_code_t 
+void
 getLastSession (/*out*/ lsn_t &i_last_session) 
 {
-  return cdio_get_last_session(p_cdio, &i_last_session);
+  driver_return_code_t drc = cdio_get_last_session(p_cdio, &i_last_session);
+  throw_device_exception(drc);
 }
 
 /*! 
@@ -466,19 +468,21 @@ isDevice(const char *psz_source, driver_id_t driver_id)
 /*!
   Set the blocksize for subsequent reads. 
 */
-driver_return_code_t 
+void
 setBlocksize ( int i_blocksize )
 {
-  return cdio_set_blocksize ( p_cdio, i_blocksize );
+  driver_return_code_t drc = cdio_set_blocksize ( p_cdio, i_blocksize );
+  throw_device_exception(drc);
 }
 
 /*!
     Set the drive speed. 
 */
-driver_return_code_t 
+void
 setSpeed ( int i_speed ) 
 {
-  return cdio_set_speed ( p_cdio, i_speed );
+  driver_return_code_t drc = cdio_set_speed ( p_cdio, i_speed );
+  throw_device_exception(drc);
 }
 
 /*!
@@ -487,9 +491,10 @@ setSpeed ( int i_speed )
     @param key the key to set
     @param value the value to assocaiate with key
 */
-driver_return_code_t 
+void
 setArg (const char key[], const char value[]) 
 {
-  return cdio_set_arg (p_cdio, key, value);
+  driver_return_code_t drc = cdio_set_arg (p_cdio, key, value);
+  throw_device_exception(drc);
 }
   

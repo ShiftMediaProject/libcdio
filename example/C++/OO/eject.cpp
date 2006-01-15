@@ -1,5 +1,5 @@
 /*
-  $Id: eject.cpp,v 1.2 2005/11/11 12:26:57 rocky Exp $
+  $Id: eject.cpp,v 1.3 2006/01/15 10:39:15 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -53,27 +53,25 @@ main(int argc, const char *argv[])
   if (!psz_drive) {
     psz_drive = device.getDefaultDevice(driver_id);
     if (!psz_drive) {
-      printf("Can't find a CD-ROM to eject\n");
+      printf("Can't find a CD-ROM to perform eject operation\n");
       exit(1);
     }
   }
-  ret = device.ejectMedia(psz_drive);
-  switch(ret) {
-  case DRIVER_OP_UNSUPPORTED:
-    printf("Eject not supported for %s.\n", psz_drive);
-    break;
-  case DRIVER_OP_SUCCESS:
-    printf("CD-ROM drive %s ejected.\n", psz_drive);
-    break;
-  default:
-    printf("Eject of CD-ROM drive %s failed.\n", psz_drive);
-    break;
+  try {
+    device.ejectMedia(psz_drive);
+    printf("CD in CD-ROM drive %s ejected.\n", psz_drive);
   }
-  
-  if (DRIVER_OP_SUCCESS == device.closeTray(psz_drive, driver_id)) {
-    printf("Closed tray of CD-ROM drive %s.\n", psz_drive);
-  } else {
-    printf("Closing tray of CD-ROM drive %s failed.\n", psz_drive);
+  catch ( CdioDevice::DriverOpException e ) {
+    printf("Ejecting CD from CD-ROM drive %s operation error:\n\t%s.\n", 
+	   psz_drive, e.get_msg());
+  }
+
+  try {
+    device.closeTray(psz_drive, driver_id);
+  }
+  catch ( CdioDevice::DriverOpException e ) {
+    printf("Closing CD-ROM %s tray operation error error:\n\t%s.\n", 
+	   psz_drive, e.get_msg());
   }
   free(psz_drive);
   
