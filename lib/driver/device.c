@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.30 2006/01/14 10:10:34 rocky Exp $
+    $Id: device.c,v 1.31 2006/01/15 01:26:50 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -242,6 +242,31 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
 
 };
 
+const char *
+cdio_driver_return_code_to_str(driver_return_code_t drc)
+{
+  switch(drc) {
+  case DRIVER_OP_SUCCESS: 
+    return "driver operation was successful";
+  case DRIVER_OP_ERROR:
+    return "driver I/O error";
+  case DRIVER_OP_UNSUPPORTED:
+    return "driver operatation not supported";
+  case DRIVER_OP_UNINIT:
+    return "driver not initialized";
+  case DRIVER_OP_NOT_PERMITTED:
+    return "driver operatation not permitted";
+  case DRIVER_OP_BAD_PARAMETER:
+    return "bad parameter passed";
+  case DRIVER_OP_BAD_POINTER:
+    return "bad pointer to memory area";
+  case DRIVER_OP_NO_DRIVER:
+    return "driver not available";
+  default:
+    return "unknown or bad driver return status";
+  }
+}
+
 static CdIo *
 scan_for_driver(driver_id_t start, driver_id_t end, 
                 const char *psz_source, const char *access_mode) 
@@ -313,18 +338,26 @@ cdio_destroy (CdIo_t *p_cdio)
 /*!
   Close media tray in CD drive if there is a routine to do so. 
   
-  @param psz_drive the name of CD-ROM to be closed.
+  @param psz_drive the name of CD-ROM to be closed. If NULL, we will
+  use the default device.
   @param p_driver_id is the driver to be used or that got used if
   it was DRIVER_UNKNOWN or DRIVER_DEVICE; If this is NULL, we won't
   report back the driver used.
 */
 driver_return_code_t 
-cdio_close_tray (const char *psz_drive, /*in/out*/ driver_id_t
+cdio_close_tray (const char *psz_orig_drive, /*in/out*/ driver_id_t
                  *p_driver_id)
 {
   driver_id_t temp_driver_id = DRIVER_DEVICE;
+  char *psz_drive;
+  driver_return_code_t drc;
 
   if (!p_driver_id) p_driver_id = &temp_driver_id;
+  
+  if (!psz_orig_drive || !*psz_orig_drive)
+    psz_drive = cdio_get_default_device_driver(p_driver_id);
+  else 
+    psz_drive = strdup(psz_orig_drive);
   
   if (DRIVER_UNKNOWN == *p_driver_id || DRIVER_DEVICE == *p_driver_id) {
     *p_driver_id = CDIO_MIN_DEVICE_DRIVER;
@@ -333,7 +366,9 @@ cdio_close_tray (const char *psz_drive, /*in/out*/ driver_id_t
     for ( ; *p_driver_id<=CDIO_MAX_DRIVER; (*p_driver_id)++) {
       if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
            *CdIo_all_drivers[*p_driver_id].close_tray ) {
-        return (*CdIo_all_drivers[*p_driver_id].close_tray)(psz_drive);
+        drc = (*CdIo_all_drivers[*p_driver_id].close_tray)(psz_drive);
+        free(psz_drive);
+        return drc;
       }
     }
     return DRIVER_OP_UNSUPPORTED;
@@ -342,7 +377,9 @@ cdio_close_tray (const char *psz_drive, /*in/out*/ driver_id_t
   /* The driver id was specified. Use that. */
   if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
        *CdIo_all_drivers[*p_driver_id].close_tray ) {
-    return (*CdIo_all_drivers[*p_driver_id].close_tray)(psz_drive);
+    drc = (*CdIo_all_drivers[*p_driver_id].close_tray)(psz_drive);
+    free(psz_drive);
+    return drc;
   }
   return DRIVER_OP_UNSUPPORTED;
 }
@@ -839,7 +876,7 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
   
   if (CdIo_last_driver == -1) cdio_init();
 
-  if (NULL == psz_orig_source || strlen(psz_orig_source)==0) 
+  if (!psz_orig_source || !*psz_orig_source)
     psz_source = cdio_get_default_device(NULL);
   else 
     psz_source = strdup(psz_orig_source);

@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.29 2006/01/14 10:09:55 rocky Exp $
+    $Id: device.h,v 1.30 2006/01/15 01:26:50 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -226,7 +226,8 @@ extern "C" {
   /*!
     Close media tray in CD drive if there is a routine to do so. 
     
-    @param psz_drive the name of CD-ROM to be closed.
+    @param psz_drive the name of CD-ROM to be closed. If NULL, we will
+    use the default device.
     @param p_driver_id is the driver to be used or that got used if
     it was DRIVER_UNKNOWN or DRIVER_DEVICE; If this is NULL, we won't
     report back the driver used.
@@ -234,6 +235,12 @@ extern "C" {
   driver_return_code_t cdio_close_tray (const char *psz_drive, 
 					/*in/out*/ driver_id_t *p_driver_id);
 
+  /*!
+    @param drc the return code you want interpreted.
+    @return the string information about drc
+  */
+  const char *cdio_driver_return_code_to_str(driver_return_code_t drc);
+  
   /*!
     Eject media in CD drive if there is a routine to do so. 
 
@@ -466,20 +473,21 @@ extern "C" {
   
   /*! Sets up to read from place specified by psz_source and
      driver_id. This or cdio_open_* should be called before using any
-     other routine, except cdio_init. This will call cdio_init, if
-     that hasn't been done previously.  to call one of the specific
-     cdio_open_xxx routines.
+     other routine, except cdio_init or any routine that accesses the
+     CD-ROM drive by name. cdio_open will call cdio_init, if that hasn't
+     been done previously.
 
-     @return the cdio object or NULL on error or no device.
-     If NULL is given as the source, we'll use the default driver device.
+     @return the cdio object or NULL on error or no device.  If NULL
+     is given as the source, we'll use the default driver device.
   */
   CdIo_t * cdio_open (const char *psz_source, driver_id_t driver_id);
 
   /*! Sets up to read from place specified by psz_source, driver_id
-     and access mode. This or cdio_open should be called before using
-     any other routine, except cdio_init. This will call cdio_init, if
-     that hasn't been done previously.  to call one of the specific
-     cdio_open_xxx routines.
+     and access mode. This or cdio_open* should be called before using
+     any other routine, except cdio_init or any routine that accesses
+     the CD-ROM drive by name. This will call cdio_init, if that
+     hasn't been done previously.
+
      If NULL is given as the source, we'll use the default driver device.
 
      @return the cdio object or NULL on error or no device.

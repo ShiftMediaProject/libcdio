@@ -1,3 +1,4 @@
+CDIO_SECTOR_SYNC_HEADER
 _cdio_list_append
 _cdio_list_begin
 _cdio_list_end
@@ -26,6 +27,7 @@ cdio_close_tray
 cdio_debug
 cdio_destroy
 cdio_driver_describe
+cdio_driver_return_code_to_str
 cdio_eject_media
 cdio_eject_media_drive
 cdio_error
@@ -66,10 +68,10 @@ cdio_get_driver_name
 cdio_get_first_track_num
 cdio_get_hwinfo
 cdio_get_joliet_level
-cdio_get_last_track_num
 cdio_get_last_session
-cdio_get_media_changed
+cdio_get_last_track_num
 cdio_get_mcn
+cdio_get_media_changed
 cdio_get_num_tracks
 cdio_get_track
 cdio_get_track_channels
@@ -175,17 +177,17 @@ discmode2str
 mmc_audio_read_subchannel
 mmc_audio_state2str
 mmc_eject_media
+mmc_feature2str
+mmc_feature_profile2str
 mmc_get_blocksize
+mmc_get_cmd_len
 mmc_get_discmode
 mmc_get_drive_mmc_cap
 mmc_get_dvd_struct_physical
-mmc_get_cmd_len
-mmc_get_media_changed
-mmc_get_mcn
 mmc_get_hwinfo
 mmc_get_last_lsn
-mmc_feature2str
-mmc_feature_profile2str
+mmc_get_mcn
+mmc_get_media_changed
 mmc_have_interface
 mmc_mode_sense
 mmc_mode_sense_10
@@ -200,4 +202,3 @@ mmc_set_speed
 mmc_start_stop_media
 mmc_timeout_ms
 track_format2str
-CDIO_SECTOR_SYNC_HEADER
