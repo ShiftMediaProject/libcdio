@@ -1,7 +1,7 @@
 /* -*- c -*-
-    $Id: disc.h,v 1.5 2005/02/05 14:42:28 rocky Exp $
+    $Id: disc.h,v 1.6 2006/01/17 12:53:41 rocky Exp $
 
-    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,7 +64,6 @@ extern "C" {
   */
   lsn_t cdio_get_disc_last_lsn(const CdIo_t *p_cdio);
   
-
   /*!  
     Return the Joliet level recognized for p_cdio.
   */
@@ -73,7 +72,7 @@ extern "C" {
   /*!
     Get the media catalog number (MCN) from the CD.
 
-    @return the media catalog number r NULL if there is none or we
+    @return the media catalog number or NULL if there is none or we
     don't have the ability to get it.
 
     Note: string is malloc'd so caller has to free() the returned
@@ -109,4 +108,3 @@ extern "C" {
 #endif /* __cplusplus */
 
 #endif /* __CDIO_DISC_H__ */
-
