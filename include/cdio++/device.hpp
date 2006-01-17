@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: device.hpp,v 1.2 2006/01/15 10:39:15 rocky Exp $
+    $Id: device.hpp,v 1.3 2006/01/17 02:09:32 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -47,7 +47,7 @@ close()
 void closeTray (const char *psz_drive, /*in/out*/ driver_id_t &driver_id) 
 {
   driver_return_code_t drc = cdio_close_tray (psz_drive, &driver_id);
-  throw_device_exception(drc);
+  possible_throw_device_exception(drc);
 }
 
 /*!
@@ -71,7 +71,7 @@ void
 ejectMedia () 
 {
   driver_return_code_t drc = cdio_eject_media(&p_cdio);
-  throw_device_exception(drc);
+  possible_throw_device_exception(drc);
 }
 
 /*!
@@ -83,7 +83,7 @@ void
 ejectMedia (const char *psz_drive) 
 {
   driver_return_code_t drc = cdio_eject_media_drive(psz_drive);
-  throw_device_exception(drc);
+  possible_throw_device_exception(drc);
 }
 
 /*! 
@@ -321,7 +321,7 @@ void
 getLastSession (/*out*/ lsn_t &i_last_session) 
 {
   driver_return_code_t drc = cdio_get_last_session(p_cdio, &i_last_session);
-  throw_device_exception(drc);
+  possible_throw_device_exception(drc);
 }
 
 /*! 
@@ -472,7 +472,7 @@ void
 setBlocksize ( int i_blocksize )
 {
   driver_return_code_t drc = cdio_set_blocksize ( p_cdio, i_blocksize );
-  throw_device_exception(drc);
+  possible_throw_device_exception(drc);
 }
 
 /*!
@@ -482,7 +482,7 @@ void
 setSpeed ( int i_speed ) 
 {
   driver_return_code_t drc = cdio_set_speed ( p_cdio, i_speed );
-  throw_device_exception(drc);
+  possible_throw_device_exception(drc);
 }
 
 /*!
@@ -495,6 +495,6 @@ void
 setArg (const char key[], const char value[]) 
 {
   driver_return_code_t drc = cdio_set_arg (p_cdio, key, value);
-  throw_device_exception(drc);
+  possible_throw_device_exception(drc);
 }
   

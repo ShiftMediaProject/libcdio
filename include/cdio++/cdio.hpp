@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: cdio.hpp,v 1.4 2006/01/15 10:39:15 rocky Exp $
+    $Id: cdio.hpp,v 1.5 2006/01/17 02:09:32 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -115,6 +115,7 @@ public:
   {
   public:
     driver_return_code_t driver_return_code;
+    DriverOpException( void ) { };
     DriverOpException( driver_return_code_t drc ) { 
       driver_return_code = drc; 
     };
@@ -126,6 +127,48 @@ public:
     };
   };
 
+  class DriverOpError: public DriverOpException
+  {
+  public:
+    DriverOpError(void) { driver_return_code = DRIVER_OP_ERROR; }
+  };
+
+  class DriverOpUnsupported: public DriverOpException 
+  { 
+  public:
+    DriverOpUnsupported(void) { driver_return_code = DRIVER_OP_UNSUPPORTED; }
+  };
+
+  class DriverOpUninit: public DriverOpException
+  {
+  public:
+    DriverOpUninit(void) { driver_return_code = DRIVER_OP_UNINIT; }
+  };
+
+  class DriverOpNotPermitted: public DriverOpException
+  {
+  public:
+    DriverOpNotPermitted(void) {driver_return_code = DRIVER_OP_NOT_PERMITTED;}
+  };
+
+  class DriverOpBadParameter: public DriverOpException
+  {
+  public:
+    DriverOpBadParameter(void) {driver_return_code = DRIVER_OP_BAD_PARAMETER;}
+  };
+
+  class DriverOpBadPointer: public DriverOpException
+  {
+  public:
+    DriverOpBadPointer(void) {driver_return_code = DRIVER_OP_BAD_POINTER;}
+  };
+
+  class DriverOpNoDriver: public DriverOpException
+  {
+  public:
+    DriverOpNoDriver(void) {driver_return_code = DRIVER_OP_NO_DRIVER;}
+  };
+
   // Other member functions  
 #include "device.hpp"
 #include "disc.hpp"
@@ -134,10 +177,28 @@ public:
 
 private:
   CdIo_t *p_cdio;
-  void throw_device_exception(driver_return_code_t drc) 
+  void possible_throw_device_exception(driver_return_code_t drc) 
   {
-    if (DRIVER_OP_SUCCESS == drc) return;
-    throw DriverOpException(drc);
+    switch (drc) {
+    case DRIVER_OP_SUCCESS:
+      return;
+    case DRIVER_OP_ERROR:
+      throw DriverOpError();
+    case DRIVER_OP_UNSUPPORTED:
+      throw DriverOpUnsupported();
+    case DRIVER_OP_UNINIT:
+      throw DriverOpUninit();
+    case DRIVER_OP_NOT_PERMITTED:
+      throw DriverOpNotPermitted();
+    case DRIVER_OP_BAD_PARAMETER:
+      throw DriverOpBadParameter();
+    case DRIVER_OP_BAD_POINTER:
+      throw DriverOpBadPointer();
+    case DRIVER_OP_NO_DRIVER:
+      throw DriverOpNoDriver();
+    default:
+      throw DriverOpException(drc);
+    }
   }
 };
 

@@ -1,5 +1,5 @@
 /*
-  $Id: eject.cpp,v 1.3 2006/01/15 10:39:15 rocky Exp $
+  $Id: eject.cpp,v 1.4 2006/01/17 02:09:32 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -60,6 +60,10 @@ main(int argc, const char *argv[])
   try {
     device.ejectMedia(psz_drive);
     printf("CD in CD-ROM drive %s ejected.\n", psz_drive);
+  }
+  catch ( CdioDevice::DriverOpUninit e ) {
+    printf("Can't Ejecting CD from CD-ROM drive: driver is not initialized.\n",
+	   psz_drive);
   }
   catch ( CdioDevice::DriverOpException e ) {
     printf("Ejecting CD from CD-ROM drive %s operation error:\n\t%s.\n", 
