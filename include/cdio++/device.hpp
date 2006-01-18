@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: device.hpp,v 1.3 2006/01/17 02:09:32 rocky Exp $
+    $Id: device.hpp,v 1.4 2006/01/18 21:01:59 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -53,9 +53,10 @@ void closeTray (const char *psz_drive, /*in/out*/ driver_id_t &driver_id)
 /*!
   Close media tray in CD drive if there is a routine to do so. 
   
-  @param psz_drive the name of CD-ROM to be closed.
+  @param psz_drive the name of CD-ROM to be closed. If omitted or 
+  NULL, we'll scan for a suitable CD-ROM.
 */
-void closeTray (const char *psz_drive) 
+void closeTray (const char *psz_drive=(const char *)NULL) 
 {
   driver_id_t driver_id = DRIVER_UNKNOWN;
   closeTray(psz_drive, driver_id);
