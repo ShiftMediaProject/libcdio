@@ -1,7 +1,7 @@
 /*
-  $Id: eject.cpp,v 1.4 2006/01/17 02:09:32 rocky Exp $
+  $Id: eject.cpp,v 1.5 2006/01/18 20:58:53 rocky Exp $
 
-  Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ main(int argc, const char *argv[])
     printf("CD in CD-ROM drive %s ejected.\n", psz_drive);
   }
   catch ( CdioDevice::DriverOpUninit e ) {
-    printf("Can't Ejecting CD from CD-ROM drive: driver is not initialized.\n",
+    printf("Can't Eject CD from CD-ROM drive: driver is not initialized.\n",
 	   psz_drive);
   }
   catch ( CdioDevice::DriverOpException e ) {
@@ -71,7 +71,8 @@ main(int argc, const char *argv[])
   }
 
   try {
-    device.closeTray(psz_drive, driver_id);
+    device.closeTray(psz_drive);
+    printf("Closed CD-ROM %s tray.\n", psz_drive);
   }
   catch ( CdioDevice::DriverOpException e ) {
     printf("Closing CD-ROM %s tray operation error error:\n\t%s.\n", 
