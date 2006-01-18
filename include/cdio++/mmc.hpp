@@ -1,7 +1,7 @@
 /*
-    $Id: mmc.hpp,v 1.1 2005/11/14 01:15:33 rocky Exp $
+    $Id: mmc.hpp,v 1.2 2006/01/18 21:31:37 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,21 +28,27 @@
   
   @param p_cdio the CD object to be acted upon.
   @param p_subchannel place for returned subchannel information
+
+  A DriverOpException is raised on error.
 */
-driver_return_code_t
+void
 mmcAudioReadSubchannel (/*out*/ cdio_subchannel_t *p_subchannel) 
 {
-  return mmc_audio_read_subchannel (p_cdio, p_subchannel);
+  driver_return_code_t drc = mmc_audio_read_subchannel (p_cdio, p_subchannel);
+  possible_throw_device_exception(drc);
 }
 
 /*!
   Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.
   Command is not "immediate" -- we'll wait for the command to complete.
   For a more general (and lower-level) routine, @see mmc_start_stop_media.
+
+  A DriverOpException is raised on error.
 */
-driver_return_code_t mmcEjectMedia() 
+void mmcEjectMedia() 
 {
-  return mmc_eject_media( p_cdio );
+  driver_return_code_t drc = mmc_eject_media( p_cdio );
+  possible_throw_device_exception(drc);
 }
   
 /*!  
@@ -138,10 +144,13 @@ char * mmcGetMcn ()
 /** Get the output port volumes and port selections used on AUDIO PLAY
     commands via a MMC MODE SENSE command using the CD Audio Control
     Page.
+
+    A DriverOpException is raised on error.
 */
-driver_return_code_t mmcAudioGetVolume (mmc_audio_volume_t *p_volume) 
+void mmcAudioGetVolume (mmc_audio_volume_t *p_volume) 
 {
-  return mmc_audio_get_volume (p_cdio, p_volume);
+  driver_return_code_t drc = mmc_audio_get_volume (p_cdio, p_volume);
+  possible_throw_device_exception(drc);
 }
 
 /*!
@@ -280,19 +289,22 @@ int mmcModeSense6( /*out*/ void *p_buf, int i_size, int page)
    @param i_blocksize size of the a block expected to be returned
      
    @param i_blocks number of blocks expected to be returned.
-     
+
+   A DriverOpException is raised on error.     
   */
-driver_return_code_t
+void 
 mmcReadCd ( void *p_buf, lsn_t i_lsn, int expected_sector_type, 
             bool b_digital_audio_play, bool b_sync, uint8_t header_codes, 
             bool b_user_data, bool b_edc_ecc, uint8_t c2_error_information, 
             uint8_t subchannel_selection, uint16_t i_blocksize, 
             uint32_t i_blocks ) 
 {
-  return mmc_read_cd ( p_cdio, p_buf, i_lsn, expected_sector_type, 
-                       b_digital_audio_play, b_sync, header_codes, 
-                       b_user_data, b_edc_ecc, c2_error_information, 
-                       subchannel_selection, i_blocksize, i_blocks );
+  driver_return_code_t drc = 
+    mmc_read_cd ( p_cdio, p_buf, i_lsn, expected_sector_type, 
+                  b_digital_audio_play, b_sync, header_codes, 
+                  b_user_data, b_edc_ecc, c2_error_information, 
+                  subchannel_selection, i_blocksize, i_blocks );
+  possible_throw_device_exception(drc);
 }
 
 /*! Read just the user data part of some sort of data sector (via 
@@ -313,20 +325,25 @@ mmcReadCd ( void *p_buf, lsn_t i_lsn, int expected_sector_type,
     @param i_blocks number of blocks to read
 
   */
-driver_return_code_t mmcReadDataSectors ( void *p_buf, lsn_t i_lsn, 
-                                          uint16_t i_blocksize,
-                                          uint32_t i_blocks ) 
+void mmcReadDataSectors ( void *p_buf, lsn_t i_lsn, uint16_t i_blocksize,
+                          uint32_t i_blocks=1) 
 {
-  return mmc_read_data_sectors ( p_cdio, p_buf, i_lsn, i_blocksize, i_blocks );
+  driver_return_code_t drc = mmc_read_data_sectors ( p_cdio, p_buf, i_lsn, 
+                                                     i_blocksize, i_blocks );
+  possible_throw_device_exception(drc);
 }
 
 
-/*! issue a MMC read mode2 sectors. - depricated.
+/*! Read MMC read mode2 sectors
+
+    A DriverOpException is raised on error.
  */
-driver_return_code_t mmcReadSectors ( void *p_buf, lsn_t i_lsn,  
-                                   int read_sector_type, uint32_t i_blocks) 
+void mmcReadSectors ( void *p_buf, lsn_t i_lsn,  int read_sector_type, 
+                      uint32_t i_blocks=1) 
 {
-  return mmc_read_sectors ( p_cdio, p_buf, i_lsn, read_sector_type, i_blocks);
+  driver_return_code_t drc = mmc_read_sectors ( p_cdio, p_buf, i_lsn, 
+                                                read_sector_type, i_blocks);
+  possible_throw_device_exception(drc);
 }
 
 /*!
@@ -352,20 +369,30 @@ int mmcRunCmd( unsigned int i_timeout_ms, const mmc_cdb_t *p_cdb,
 }
 
 /*!
-  Set the block size for subsequest read requests, via MMC.
+  Set the block size for subsequent read requests, via MMC.
+
+  @param i_blocksize size to set for subsequent requests
+
+  A DriverOpException is raised on error.
 */
-driver_return_code_t mmcSetBlocksize ( uint16_t i_blocksize) 
+void mmcSetBlocksize ( uint16_t i_blocksize) 
 {
-  return mmc_set_blocksize ( p_cdio, i_blocksize);
+  driver_return_code_t drc = mmc_set_blocksize ( p_cdio, i_blocksize);
+  possible_throw_device_exception(drc);
 }
 
 
 /*!
-  Set the drive speed. 
+  Set the drive speed via MMC. 
+
+  @param i_speed speed to set drive to.
+
+  A DriverOpException is raised on error.
 */
-driver_return_code_t mmcSetSpeed( int i_speed )
+void mmcSetSpeed( int i_speed )
 {
-  return mmc_set_speed( p_cdio, i_speed );
+  driver_return_code_t drc = mmc_set_speed( p_cdio, i_speed );
+  possible_throw_device_exception(drc);
 }
 
 /*!
@@ -378,11 +405,15 @@ driver_return_code_t mmcSetSpeed( int i_speed )
   eject/load is ignored, so set to 0 if you want to eject or load.
   
   @see mmc_eject_media or mmc_close_tray
+
+  A DriverOpException is raised on error.
 */
-driver_return_code_t
-mmcStartStopMedia(bool b_eject, bool b_immediate, uint8_t power_condition) 
+void mmcStartStopMedia(bool b_eject, bool b_immediate, 
+                       uint8_t power_condition) 
 {
-  return mmc_start_stop_media(p_cdio, b_eject, b_immediate, power_condition);
+  driver_return_code_t drc = 
+    mmc_start_stop_media(p_cdio, b_eject, b_immediate, power_condition);
+ possible_throw_device_exception(drc);
 }
 
 

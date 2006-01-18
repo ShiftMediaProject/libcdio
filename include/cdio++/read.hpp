@@ -1,7 +1,7 @@
 /* -*- C++ -*-
-    $Id: read.hpp,v 1.1 2005/11/10 11:11:16 rocky Exp $
+    $Id: read.hpp,v 1.2 2006/01/18 21:31:37 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,9 +62,7 @@ ssize_t read(void *p_buf, size_t i_size)
   @param read_mode the kind of "mode" to use in reading.
   @param i_lsn sector to read
   @param i_blocks number of sectors to read
-  @return DRIVER_OP_SUCCESS (0) if no error, other (negative) enumerations
-  are returned on error.
-  
+
   If read_mode is CDIO_MODE_AUDIO,
     *p_buf should hold at least CDIO_FRAMESIZE_RAW * i_blocks bytes.
 
@@ -81,24 +79,16 @@ ssize_t read(void *p_buf, size_t i_size)
   If read_mode is CDIO_MODE_M2F2,
     *p_buf should hold at least CDIO_CD_FRAMESIZE * i_blocks bytes.
 
-
+  A DriverOpException is raised on error.
 */
 
-driver_return_code_t readSectors(void *p_buf, lsn_t i_lsn, 
-				 cdio_read_mode_t read_mode, uint32_t i_blocks)
+void readSectors(void *p_buf, lsn_t i_lsn, cdio_read_mode_t read_mode, 
+		 uint32_t i_blocks=1)
 {
-  return cdio_read_sectors(p_cdio, p_buf, i_lsn, read_mode, i_blocks);
+  driver_return_code_t drc = cdio_read_sectors(p_cdio, p_buf, i_lsn, read_mode,
+					       i_blocks);
+  possible_throw_device_exception(drc);
 }
-
-/** The special case of reading a single block is a common one so we
-    provide a routine for that as a convenience.
- */
-driver_return_code_t readSector(void *p_buf, lsn_t i_lsn, 
-				cdio_read_mode_t read_mode)
-{
-  return cdio_read_sectors(p_cdio, p_buf, i_lsn, read_mode, 1);
-}
-
 
 /*!
   Reads a number of data sectors (AKA blocks).
@@ -119,40 +109,14 @@ driver_return_code_t readSector(void *p_buf, lsn_t i_lsn,
 
   @param i_blocks number of sectors to read
 
-  @return DRIVER_OP_SUCCESS (0) if no error, other (negative) enumerations
-  are returned on error.
+  A DriverOpException is raised on error.
   
 */
 
-driver_return_code_t readDataBlocks(void *p_buf, lsn_t i_lsn, 
-				    uint16_t i_blocksize, uint32_t i_blocks) 
+void readDataBlocks(void *p_buf, lsn_t i_lsn, uint16_t i_blocksize, 
+		    uint32_t i_blocks=1) 
 {
-  return cdio_read_data_sectors (p_cdio, p_buf, i_lsn, i_blocksize, i_blocks);
-}
-
-/** The special case of reading a single block is a common one so we
-    provide a routine for that as a convenience.
-
-  @param p_buf place to read data into. The caller should make sure
-  this location is large enough. See below for size information.
-
-  *p_buf should hold at least i_blocks times either ISO_BLOCKSIZE, 
-  M1RAW_SECTOR_SIZE or M2F2_SECTOR_SIZE depending on the kind of 
-  sector getting read. If you don't know whether you have a Mode 1/2, 
-  Form 1/ Form 2/Formless sector best to reserve space for the maximum
-  which is M2RAW_SECTOR_SIZE.
-
-  @param i_lsn sector to read
-
-  @param i_blocksize size of block. Should be either CDIO_CD_FRAMESIZE, 
-  M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE. See comment above under p_buf.
-
-  @return DRIVER_OP_SUCCESS (0) if no error, other (negative) enumerations
-  are returned on error.
-  
-*/
-driver_return_code_t readDataBlock(void *p_buf, lsn_t i_lsn, 
-				   uint16_t i_blocksize)
-{
-  return readDataBlocks(p_buf, i_lsn, i_blocksize, 1);
+  driver_return_code_t drc = cdio_read_data_sectors (p_cdio, p_buf, i_lsn, 
+						     i_blocksize, i_blocks);
+  possible_throw_device_exception(drc);
 }
