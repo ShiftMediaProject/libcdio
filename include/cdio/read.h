@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: read.h,v 1.8 2006/01/14 09:44:53 rocky Exp $
+    $Id: read.h,v 1.9 2006/01/21 12:02:55 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -26,6 +26,12 @@
 
 #ifndef __CDIO_READ_H__
 #define __CDIO_READ_H__
+
+#ifndef LIBCDIO_CONFIG_H
+#define LIBCDIO_CONFIG_H
+/* Need for HAVE_SYS_TYPES_H */
+#include <cdio/cdio_config.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

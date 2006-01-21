@@ -1,8 +1,9 @@
 /*
-    $Id: types.h,v 1.33 2005/11/06 00:39:37 rocky Exp $
+    $Id: types.h,v 1.34 2006/01/21 12:02:55 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2002, 2003, 2004, 2005, 2006
+    Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,7 +33,12 @@ extern "C" {
 #endif /* __cplusplus */
 
 #ifndef LIBCDIO_CONFIG_H
+#define LIBCDIO_CONFIG_H
 #include <cdio/cdio_config.h>
+#endif
+
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
 #endif
 
   /* provide some C99 definitions */

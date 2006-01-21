@@ -1,4 +1,4 @@
-dnl Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+dnl Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 dnl
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.182 2006/01/05 21:57:40 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.183 2006/01/21 12:02:55 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -687,7 +687,7 @@ cat > include/cdio/cdio_config.h << EOF
     version of config.h
 */
 EOF
-head -n 196 config.h >> include/cdio/cdio_config.h
+head -n 199 config.h >> include/cdio/cdio_config.h
 ]],[[]])
 
 AC_OUTPUT

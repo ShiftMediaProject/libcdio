@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.88 2006/01/14 10:39:34 rocky Exp $
+$Id: NEWS,v 1.89 2006/01/21 12:02:55 rocky Exp $
 
 version 0.77cvs
 =====================================
@@ -23,6 +23,10 @@ version 0.77cvs
 - Add an object-oriented C++ wrapper.
 
 - Doxygen formatting improvements.
+
+- Misc bugs: fixed bincue driver caused core dump on set_speed and 
+  set_blocksize. read.h didn't make sure off_t was defined. Switch from
+  fseek to lseek.
 
 version 0.76
 =====================================
@@ -311,4 +315,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.88 2006/01/14 10:39:34 rocky Exp $
+$Id: NEWS,v 1.89 2006/01/21 12:02:55 rocky Exp $

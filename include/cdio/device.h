@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.30 2006/01/15 01:26:50 rocky Exp $
+    $Id: device.h,v 1.31 2006/01/21 12:02:55 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -355,8 +355,8 @@ extern "C" {
     @param p_misc_cap pointer to return miscellaneous other capabilities
 
     In some situations of drivers or OS's we can't find a CD device if
-    there is no media in it and it is possible for this routine to return
-    NULL even though there may be a hardware CD-ROM.
+    there is no media in it. In this situation capabilities will show up as 
+    NULL even though there isa hardware CD-ROM.
   */
   void cdio_get_drive_cap (const CdIo_t *p_cdio,
 			   cdio_drive_read_cap_t  *p_read_cap,
@@ -366,11 +366,11 @@ extern "C" {
   /*!
     Get the drive capabilities for a specified device.
 
-    @return a list of device capabilities.
+    Return a list of device capabilities.
 
     In some situations of drivers or OS's we can't find a CD device if
-    there is no media in it and it is possible for this routine to return
-    NULL even though there may be a hardware CD-ROM.
+    there is no media in it. In this situation capabilities will show up as 
+    NULL even though there isa hardware CD-ROM.
   */
   void cdio_get_drive_cap_dev (const char *device,
 			       cdio_drive_read_cap_t  *p_read_cap,
@@ -467,7 +467,7 @@ extern "C" {
     Get a string decribing driver_id. 
 
     @param driver_id the driver you want the description for
-    @return a sring of driver description
+    @return a string of driver description
   */
   const char *cdio_driver_describe (driver_id_t driver_id);
   
@@ -866,7 +866,7 @@ extern "C" {
   char *cdio_is_cuefile(const char *cue_name);
   
   /*! 
-    Determine if psg_nrg is a Nero CD disk image.
+    Determine if psg_nrg is a Nero CD disc image.
 
     @param psz_nrg location of presumed NRG image file.
     @return true if psz_nrg is a Nero NRG image or false
@@ -875,7 +875,7 @@ extern "C" {
   bool cdio_is_nrg(const char *psz_nrg);
   
   /*! 
-    Determine if psg_toc is a TOC file for a cdrdao CD disk image.
+    Determine if psz_toc is a TOC file for a cdrdao CD disc image.
 
     @param psz_toc location of presumed TOC image file.
     @return true if toc_name is a cdrdao TOC file or false
