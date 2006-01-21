@@ -1,5 +1,5 @@
 /*
-  $Id: test_interface.c,v 1.1 2004/12/18 17:29:32 rocky Exp $
+  $Id: test_interface.c,v 1.2 2006/01/21 11:35:38 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -21,6 +21,9 @@
 /******************************************************************
  *
  * Fake interface backend for testing paranoia layer
+ * NOTE: THIS CODE HAVE BEEN FOLDED INTO THE MAINLINE CODE SO IT IS
+ * NOT USED ANYMORE. (It's not clear that it had been used
+ * for a while in the non-libcdio cdparaonoia either.)
  *
  ******************************************************************/
 
