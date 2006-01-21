@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.15 2005/02/17 07:03:37 rocky Exp $
+    $Id: bincue.c,v 1.16 2006/01/21 11:04:30 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.15 2005/02/17 07:03:37 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.16 2006/01/21 11:04:30 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1166,6 +1166,8 @@ cdio_open_cue (const char *psz_cue_name)
   _funcs.read_mode2_sectors    = _read_mode2_sectors_bincue;
   _funcs.run_mmc_cmd           =  NULL;
   _funcs.set_arg               = _set_arg_image;
+  _funcs.set_speed             = cdio_generic_unimplemented_set_speed;
+  _funcs.set_blocksize         = cdio_generic_unimplemented_set_blocksize;
   
   if (NULL == psz_cue_name) return NULL;
   
