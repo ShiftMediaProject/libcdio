@@ -1,5 +1,5 @@
 /*
-  $Id: testbincue.c,v 1.5 2004/10/26 01:21:05 rocky Exp $
+  $Id: testbincue.c,v 1.6 2006/01/21 11:05:00 rocky Exp $
 
   Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
   
@@ -100,5 +100,17 @@ main(int argc, const char *argv[])
     }
   }
   
+  {
+    CdIo_t *p_cdio = cdio_open ("cdda.cue", DRIVER_UNKNOWN);
+    if (!p_cdio) {
+      printf("Can't open cdda.cue\n");
+      ret = -1;
+    } else {
+      /* Just test performing some operations. */
+      driver_return_code_t drc = cdio_set_blocksize(p_cdio, 2048);
+      drc = cdio_set_speed(p_cdio, 5);
+    }
+  }
+
   return ret;
 }
