@@ -1,7 +1,7 @@
 /*
-  $Id: tracks.c,v 1.4 2005/11/10 10:59:15 rocky Exp $
+  $Id: tracks.c,v 1.5 2006/01/22 08:17:40 rocky Exp $
 
-  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -45,7 +45,8 @@ main(int argc, const char *argv[])
   i_tracks      = cdio_get_num_tracks(p_cdio);
   i_first_track = i = cdio_get_first_track_num(p_cdio);
 
-  printf("CD-ROM Track List (%i - %i)\n", i_first_track, i_tracks);
+  printf("CD-ROM Track List (%i - %i)\n", i_first_track, 
+	 i_first_track+i_tracks-1);
 
   printf("  #:  LSN\n");
   
