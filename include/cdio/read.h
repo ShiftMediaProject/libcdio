@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: read.h,v 1.9 2006/01/21 12:02:55 rocky Exp $
+    $Id: read.h,v 1.10 2006/01/23 20:33:42 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -48,11 +48,11 @@ extern "C" {
   
   /*!
     Reposition read offset
-    Similar to (if not the same as) libc's lseek()
+    Similar to (if not the same as) libc's fseek()
 
-    @param p_cdio object to get information from
+    @param p_cdio object which gets adjusted
     @param offset amount to seek
-    @param whence  like corresponding parameter in libc's lseek, e.g. 
+    @param whence  like corresponding parameter in libc's fseek, e.g. 
                    SEEK_SET or SEEK_END.
     @return (off_t) -1 on error. 
   */
