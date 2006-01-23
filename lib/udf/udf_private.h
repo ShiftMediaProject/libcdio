@@ -1,7 +1,7 @@
 /*
-    $Id: udf_private.h,v 1.4 2005/11/01 03:14:50 rocky Exp $
+    $Id: udf_private.h,v 1.5 2006/01/23 20:31:11 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,10 +20,6 @@
 
 #ifndef __CDIO_UDF_PRIVATE_H__
 #define __CDIO_UDF_PRIVATE_H__
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include <cdio/types.h>
 #include <cdio/ecma_167.h>
@@ -61,6 +57,9 @@ struct udf_dirent_s
   udf_file_entry_t   fe;
   udf_fileid_desc_t *fid;
 };
+
+bool udf_get_lba(const udf_file_entry_t *p_udf_fe, 
+                 /*out*/ uint32_t *start, /*out*/ uint32_t *end);
 
 #endif /* __CDIO_UDF_PRIVATE_H__ */
 
