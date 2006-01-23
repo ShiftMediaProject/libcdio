@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.183 2006/01/21 12:02:55 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.184 2006/01/23 04:07:22 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -666,20 +666,17 @@ AC_CONFIG_FILES([ \
        src/cd-paranoia/doc/jp/cd-paranoia.1 \
        src/cd-paranoia/doc/jp/Makefile \
        src/Makefile \
-       test/check_nrg.sh \
-       test/check_cue.sh \
-       test/check_iso.sh \
-       test/check_paranoia.sh \
        test/check_common_fn \
        test/Makefile \
        ])
 
+AC_CONFIG_FILES([test/check_cue.sh], [chmod +x test/check_cue.sh])
+AC_CONFIG_FILES([test/check_iso.sh], [chmod +x test/check_iso.sh])
+AC_CONFIG_FILES([test/check_nrg.sh], [chmod +x test/check_nrg.sh])
+AC_CONFIG_FILES([test/check_paranoia.sh], [chmod +x test/check_paranoia.sh])
+
 AC_CONFIG_COMMANDS([default],[[
 # Make sure scripts are executable
-chmod +x test/check_nrg.sh
-chmod +x test/check_cue.sh
-chmod +x test/check_iso.sh
-chmod +x test/check_paranoia.sh
 # This is a big hack, but I don't know any other way around it.
 cat > include/cdio/cdio_config.h << EOF
 /** \file cdio_config.h 
