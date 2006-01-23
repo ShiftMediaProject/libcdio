@@ -2,13 +2,14 @@
 *.cp
 *.cps
 *.dvi 
+*.fn
 *.info
 *.info-?
-*.fn
 *.ky
 *.log
-*.pg
 *.pdf
+*.pg
+*.ps
 *.tmp
 *.toc
 *.tp
