@@ -1,7 +1,7 @@
 /*
-    $Id: generic.h,v 1.14 2005/04/23 01:16:19 rocky Exp $
+    $Id: generic.h,v 1.15 2006/01/23 20:48:11 rocky Exp $
 
-    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #ifndef __CDIO_GENERIC_H__
 #define __CDIO_GENERIC_H__
 
-#ifdef HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H) && !defined(LIBCDIO_CONFIG_H)
 # include "config.h"
 #endif
 
