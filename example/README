@@ -1,4 +1,4 @@
-$Id: README,v 1.19 2005/11/07 07:49:34 rocky Exp $
+$Id: README,v 1.20 2006/01/24 02:25:07 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -16,49 +16,51 @@ vlc CD-DA plugin which are part of those distributions.
 
 Descriptions of the programs in this example directory are as follows...
 
-audio.c:  Sample program to show audio controls.
+audio.c:     Sample program to show audio controls.
 
-cdtext.c: A program to show CD-Text and CD disc mode info.
+cdchange.c:  A program to show CD-Text and CD disc mode info.
 
-drives.c: A program to show drivers installed and what the default
-	  CD-ROM drive is and what CD drives are available.
+cdtext.c:    A program to show CD-Text and CD disc mode info.
 
-eject.c:  A program eject a CD from a CD-ROM drive and then close the door
-	  again.
+drives.c:    A program to show drivers installed and what the default
+	     CD-ROM drive is and what CD drives are available.
 
-iso1.c:   A program to show using libiso9660 to list files in a
-	  directory of an ISO-9660 image.
+eject.c:     A program eject a CD from a CD-ROM drive and then close the door
+	     again.
 
-iso2.c:   A program to show using libiso9660 to extract a file
-	  from a CDRWIN cue/bin CD image.
+iso1.c:      A program to show using libiso9660 to list files in a
+	     directory of an ISO-9660 image.
 
-iso3.c:   A program to show using libiso9660 to extract a file from an
-	  ISO-9660 image.
+iso2.c:      A program to show using libiso9660 to extract a file
+	     from a CDRWIN cue/bin CD image.
 
-isofuzzy.c :  A program showing fuzzy ISO-9660 detection/reading.
+iso3.c:      A program to show using libiso9660 to extract a file from an
+	     ISO-9660 image.
 
-mmc1.c:    A program to show issuing a simple MMC command (INQUIRY).
+isofuzzy.c : A program showing fuzzy ISO-9660 detection/reading.
 
-mmc2.c:    A more involved MMC command to list features from 
-	   a MMC GET_CONFIGURATION command.
+mmc1.c:      A program to show issuing a simple MMC command (INQUIRY).
 
-paranoia:  A program to show using CD-DA paranoia (a library for jitter
-	   detection and audio-read error correction). This program uses
-	   an interface compatible (mostly) with cdparanoia.
+mmc2.c:      A more involved MMC command to list features from 
+	     a MMC GET_CONFIGURATION command.
 
-paranoia2: Another program to show using CD-DA paranoia using a more
-	   libcdio-oriented initialization. Probably more suited to
-	   things that otherwise use libcdio such as media players 
-	   (e.g. for getting CDDB or CD-Text info)
+paranoia:    A program to show using CD-DA paranoia (a library for jitter
+	     detection and audio-read error correction). This program uses
+	     an interface compatible (mostly) with cdparanoia.
 
-sample2.c: A simple program to show drivers installed and what the
-   default CD-ROM drive is.
+paranoia2:   Another program to show using CD-DA paranoia using a more
+	     libcdio-oriented initialization. Probably more suited to
+	     things that otherwise use libcdio such as media players 
+	     (e.g. for getting CDDB or CD-Text info)
 
-sample3.c: A simple program to show the use of cdio_guess_cd_type().
-   Figure out the kind of CD image we've got.
+sample2.c:   A simple program to show drivers installed and what the
+	     default CD-ROM drive is.
 
-sample4.c: A slightly improved sample3 program: we handle cdio logging
-   and take an optional CD-location.
+sample3.c:   A simple program to show the use of cdio_guess_cd_type().
+             Figure out the kind of CD image we've got.
+
+sample4.c:   A slightly improved sample3 program: we handle cdio logging
+             and take an optional CD-location.
 
 tracks.c:    A program to list track numbers and logical sector
 	     numbers of a Compact Disc using libcdio.
