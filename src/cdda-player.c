@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.37 2005/10/17 00:54:47 rocky Exp $
+    $Id: cdda-player.c,v 1.38 2006/01/25 22:30:34 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -105,15 +105,15 @@ int                i_vol_port   = -1; /* If -1 get retrieve volume port.
 					 of a working volume port.
 				       */
 
-bool               b_cd         = false;
-bool               auto_mode    = false;
-bool               b_verbose    = false;
-bool               debug        = false;
-bool               interactive  = true;
+bool               b_cd            = false;
+bool               auto_mode       = false;
+bool               b_verbose       = false;
+bool               debug           = false;
+bool               b_interactive   = true;
 bool               b_prefer_cdtext = true; 
-bool               b_cddb   = false; /* CDDB database present */
-bool               b_db     = false; /* we have a database at all */
-bool               b_record = false; /* we have a record for
+bool               b_cddb          = false; /* CDDB database present */
+bool               b_db            = false; /* we have a database at all */
+bool               b_record        = false; /* we have a record for
 					the inserted CD */
 bool               b_all_tracks = false; /* True if we display all tracks*/
 
@@ -198,7 +198,7 @@ typedef enum {
 static void
 tty_raw()
 {
-  if (!interactive) return;
+  if (!b_interactive) return;
   
   initscr();
   cbreak();
@@ -213,7 +213,7 @@ tty_raw()
 static void
 tty_restore()
 {
-  if (!interactive) return;
+  if (!b_interactive) return;
   endwin();
 }
 
@@ -243,7 +243,7 @@ select_wait(int sec)
 static void 
 action(const char *psz_action)
 {
-  if (!interactive) {
+  if (!b_interactive) {
     if (b_verbose && psz_action)
       fprintf(stderr,"action: %s\n", psz_action);
     return;
@@ -257,12 +257,13 @@ action(const char *psz_action)
   refresh();
 }
 
-static void inline
+
+static void 
 xperror(const char *psz_msg)
 {
   char line[80];
   
-  if (!interactive) {
+  if (!b_interactive) {
     if (b_verbose) {
       fprintf(stderr, "error: ");
       perror(psz_msg);
@@ -283,7 +284,7 @@ xperror(const char *psz_msg)
 static void 
 finish(const char *psz_msg, int rc)
 {
-  if (interactive) {
+  if (b_interactive) {
     mvprintw(LINE_LAST, 0, (char *) "%s, exiting...\n", psz_msg);
     clrtoeol();
     refresh();
@@ -379,6 +380,31 @@ read_subchannel(CdIo_t *p_cdio)
   return b_ok;
 }
 
+#ifdef HAVE_CDDB
+/*! This routine is called by vcd routines on error. 
+   Setup is done by init_input_plugin.
+*/
+static void 
+cddb_log_handler (cddb_log_level_t level, const char message[])
+{
+  switch (level) {
+  case CDDB_LOG_DEBUG:
+  case CDDB_LOG_INFO:
+    if (!b_verbose)
+      return;
+    /* Fall through if to warn case */
+  case CDDB_LOG_WARN:
+  case CDDB_LOG_ERROR:
+  case CDDB_LOG_CRITICAL:
+  default:
+    xperror(message);
+    break;
+  }
+  
+  /* gl_default_cdio_log_handler (level, message); */
+}
+#endif /* HAVE_CDDB  */
+
 static void 
 get_cddb_disc_info(CdIo_t *p_cdio) 
 {
@@ -393,7 +419,7 @@ get_cddb_disc_info(CdIo_t *p_cdio)
     cddb_disc_set_genre(p_cddb_disc, genre);
     cddb_disc_set_year(p_cddb_disc, i_year);
   }
-#endif
+#endif /* HAVE_CDDB */
   return;
 }
 
@@ -595,7 +621,7 @@ display_status(bool b_status_only)
 {
   char line[80];
 
-  if (!interactive) return;
+  if (!b_interactive) return;
 
   if (!b_cd) {
     sprintf(line,"no CD in drive (%s)", psz_device);
@@ -746,7 +772,7 @@ display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track)
   int len;
   char line[80];
   
-  if (!interactive) return;
+  if (!b_interactive) return;
 
   if (!b_cd) sprintf(line, "-");
   else {
@@ -1291,35 +1317,35 @@ main(int argc, char *argv[])
 	stop_track = start_track+1;
 	one_track = 1;
       }
-      interactive = false;
+      b_interactive = false;
       cd_op = PLAY_TRACK;
       break;
     case 'p':
-      interactive = false;
+      b_interactive = false;
       cd_op = PLAY_CD;
       break;
     case 'l':
-      interactive = false;
+      b_interactive = false;
       cd_op = LIST_TRACKS;
       break;
     case 'C':
-      interactive = false;
+      b_interactive = false;
       cd_op = CLOSE_CD;
       break;
     case 'c':
-      interactive = false;
+      b_interactive = false;
       cd_op = PS_LIST_TRACKS;
       break;
     case 's':
-      interactive = false;
+      b_interactive = false;
       cd_op = STOP_PLAYING;
       break;
     case 'S':
-      interactive = false;
+      b_interactive = false;
       cd_op = LIST_SUBCHANNEL;
       break;
     case 'e':
-      interactive = false;
+      b_interactive = false;
       cd_op = EJECT_CD;
       break;
     case 'k':
@@ -1355,7 +1381,7 @@ main(int argc, char *argv[])
     cdio_free_device_list(ppsz_cdda_drives);
   }
   
-  if (!interactive) {
+  if (!b_interactive) {
     b_sig = true;
     nostop=1;
   }
@@ -1380,7 +1406,13 @@ main(int argc, char *argv[])
       fprintf(stderr,"ok\n");
   }
   
-  if (!interactive) {
+  if (b_interactive) {
+#ifdef HAVE_CDDB
+    cddb_log_set_handler (cddb_log_handler);
+#else
+    ;
+#endif
+  }  else {
     b_sig = true;
     nostop=1;
     if (EJECT_CD == cd_op) {
