@@ -1,4 +1,4 @@
-$Id: README,v 1.20 2006/01/24 02:25:07 rocky Exp $
+$Id: README,v 1.21 2006/01/25 15:41:45 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -18,7 +18,8 @@ Descriptions of the programs in this example directory are as follows...
 
 audio.c:     Sample program to show audio controls.
 
-cdchange.c:  A program to show CD-Text and CD disc mode info.
+cdchange.c:  A program to test if a CD has been changed since the last
+	     change test.
 
 cdtext.c:    A program to show CD-Text and CD disc mode info.
 
