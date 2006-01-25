@@ -1,5 +1,5 @@
 /*
-  $Id: drives.cpp,v 1.1 2006/01/25 06:30:22 rocky Exp $
+  $Id: drives.cpp,v 1.2 2006/01/25 07:21:52 rocky Exp $
 
   Copyright (C) 2003, 2004, 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -57,7 +57,7 @@ main(int argc, const char *argv[])
 
   /* Print out a list of CD-drives */
   printf("All CD-ROM/DVD drives...\n");
-  ppsz_cd_drives = getDevices(DRIVER_DEVICE);
+  ppsz_cd_drives = getDevices();
   if (NULL != ppsz_cd_drives) 
     for( c = ppsz_cd_drives; *c != NULL; c++ ) {
       printf("Drive %s\n", *c);

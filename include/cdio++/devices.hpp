@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: devices.hpp,v 1.2 2006/01/25 06:36:07 rocky Exp $
+    $Id: devices.hpp,v 1.3 2006/01/25 07:21:52 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -20,9 +20,61 @@
 
 /** \file devices.hpp
  *
- *  \brief methods relating to getting lists of devices. This file
- *  should not be #included directly.
+ *  \brief methods relating to devices. It is *not* part of a class. 
+ *  This file should not be #included directly.
  */
+
+
+/*!
+  Close media tray in CD drive if there is a routine to do so. 
+  
+  @param psz_drive the name of CD-ROM to be closed.
+  @param driver_id is the driver to be used or that got used if
+  it was DRIVER_UNKNOWN or DRIVER_DEVICE; If this is NULL, we won't
+  report back the driver used.
+v*/
+void closeTray (const char *psz_drive, /*in/out*/ driver_id_t &driver_id) 
+{
+  driver_return_code_t drc = cdio_close_tray (psz_drive, &driver_id);
+  possible_throw_device_exception(drc);
+}
+
+/*!
+  Close media tray in CD drive if there is a routine to do so. 
+  
+  @param psz_drive the name of CD-ROM to be closed. If omitted or 
+  NULL, we'll scan for a suitable CD-ROM.
+*/
+void closeTray (const char *psz_drive=(const char *)NULL) 
+{
+  driver_id_t driver_id = DRIVER_UNKNOWN;
+  closeTray(psz_drive, driver_id);
+}
+
+/*! 
+  Get a string decribing driver_id. 
+  
+  @param driver_id the driver you want the description for
+  @return a sring of driver description
+*/
+const char *
+driverDescribe (driver_id_t driver_id) 
+{
+  return cdio_driver_describe(driver_id);
+}
+
+/*!
+  Eject media in CD drive if there is a routine to do so. 
+  
+  If the CD is ejected, object is destroyed.
+*/
+void
+ejectMedia (const char *psz_drive) 
+{
+  driver_return_code_t drc = cdio_eject_media_drive(psz_drive);
+  possible_throw_device_exception(drc);
+}
+
 /*!
   Free device list returned by GetDevices
   
@@ -35,6 +87,19 @@ void
 freeDeviceList (char * device_list[]) 
 {
   cdio_free_device_list(device_list);
+}
+
+/*!
+  Return a string containing the default CD device if none is specified.
+  if p_driver_id is DRIVER_UNKNOWN or DRIVER_DEVICE
+  then find a suitable one set the default device for that.
+  
+  NULL is returned if we couldn't get a default device.
+*/
+char *
+getDefaultDevice(/*in/out*/ driver_id_t &driver_id) 
+{
+  return cdio_get_default_device_driver(&driver_id);
 }
 
 /*! Return an array of device names. If you want a specific
@@ -104,4 +169,78 @@ getDevices(/*in*/ char* ppsz_search_devices[],
 {
   return cdio_get_devices_with_cap_ret(ppsz_search_devices, capabilities,
 				       b_any, &driver_id);
+}
+
+/*! Like cdio_have_xxx but uses an enumeration instead. */
+bool 
+haveDriver (driver_id_t driver_id) 
+{
+  return cdio_have_driver(driver_id);
+}
+
+/*! 
+
+Determine if bin_name is the bin file part of  a CDRWIN CD disk image.
+
+@param bin_name location of presumed CDRWIN bin image file.
+    @return the corresponding CUE file if bin_name is a BIN file or
+    NULL if not a BIN file.
+  */
+char *
+isBinFile(const char *bin_name)
+{
+  return cdio_is_binfile(bin_name);
+}
+  
+/*! 
+    Determine if cue_name is the cue sheet for a CDRWIN CD disk image.
+    
+    @return corresponding BIN file if cue_name is a CDRWIN cue file or
+    NULL if not a CUE file.
+  */
+char *
+isCueFile(const char *cue_name)
+{
+  return cdio_is_cuefile(cue_name);
+}
+  
+/*! 
+    Determine if psg_nrg is a Nero CD disk image.
+    
+    @param psz_nrg location of presumed NRG image file.
+    @return true if psz_nrg is a Nero NRG image or false
+    if not a NRG image.
+*/
+bool 
+isNero(const char *psz_nrg)
+{
+  return cdio_is_nrg(psz_nrg);
+}
+
+/*! 
+  Determine if psg_toc is a TOC file for a cdrdao CD disk image.
+  
+  @param psz_toc location of presumed TOC image file.
+  @return true if toc_name is a cdrdao TOC file or false
+  if not a TOC file.
+*/
+bool 
+isTocFile(const char *psz_toc)
+{
+  return cdio_is_tocfile(psz_toc);
+}
+  
+/*! 
+    Determine if psz_source refers to a real hardware CD-ROM.
+    
+    @param psz_source location name of object
+    @param driver_id   driver for reading object. Use DRIVER_UNKNOWN if you
+    don't know what driver to use.
+    @return true if psz_source is a device; If false is returned we
+    could have a CD disk image. 
+*/
+bool 
+isDevice(const char *psz_source, driver_id_t driver_id)
+{
+  return cdio_is_device(psz_source, driver_id);
 }

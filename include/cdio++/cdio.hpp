@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: cdio.hpp,v 1.6 2006/01/25 06:36:07 rocky Exp $
+    $Id: cdio.hpp,v 1.7 2006/01/25 07:21:52 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -36,8 +36,88 @@
 // makes sense.
 #include <cdio++/enum.hpp>
 
-/* Things related to devices. No class or object is needed. */
-#include "devices.hpp"
+/** Class for driver exceptions. **/
+class DriverOpException 
+{
+public:
+  driver_return_code_t driver_return_code;
+  DriverOpException( void ) { };
+  DriverOpException( driver_return_code_t drc ) { 
+    driver_return_code = drc; 
+  };
+  driver_return_code_t get_code(void) { 
+    return driver_return_code; 
+  };
+  const char *get_msg(void) { 
+    return cdio_driver_return_code_to_str(driver_return_code); 
+  };
+};
+
+class DriverOpError: public DriverOpException
+{
+public:
+  DriverOpError(void) { driver_return_code = DRIVER_OP_ERROR; }
+};
+
+class DriverOpUnsupported: public DriverOpException 
+{ 
+public:
+  DriverOpUnsupported(void) { driver_return_code = DRIVER_OP_UNSUPPORTED; }
+};
+
+class DriverOpUninit: public DriverOpException
+{
+public:
+  DriverOpUninit(void) { driver_return_code = DRIVER_OP_UNINIT; }
+};
+
+class DriverOpNotPermitted: public DriverOpException
+{
+public:
+  DriverOpNotPermitted(void) {driver_return_code = DRIVER_OP_NOT_PERMITTED;}
+};
+
+class DriverOpBadParameter: public DriverOpException
+{
+public:
+  DriverOpBadParameter(void) {driver_return_code = DRIVER_OP_BAD_PARAMETER;}
+};
+
+class DriverOpBadPointer: public DriverOpException
+{
+public:
+  DriverOpBadPointer(void) {driver_return_code = DRIVER_OP_BAD_POINTER;}
+};
+
+class DriverOpNoDriver: public DriverOpException
+{
+public:
+  DriverOpNoDriver(void) {driver_return_code = DRIVER_OP_NO_DRIVER;}
+};
+
+void possible_throw_device_exception(driver_return_code_t drc) 
+  {
+    switch (drc) {
+    case DRIVER_OP_SUCCESS:
+      return;
+    case DRIVER_OP_ERROR:
+      throw DriverOpError();
+    case DRIVER_OP_UNSUPPORTED:
+      throw DriverOpUnsupported();
+    case DRIVER_OP_UNINIT:
+      throw DriverOpUninit();
+    case DRIVER_OP_NOT_PERMITTED:
+      throw DriverOpNotPermitted();
+    case DRIVER_OP_BAD_PARAMETER:
+      throw DriverOpBadParameter();
+    case DRIVER_OP_BAD_POINTER:
+      throw DriverOpBadPointer();
+    case DRIVER_OP_NO_DRIVER:
+      throw DriverOpNoDriver();
+    default:
+      throw DriverOpException(drc);
+    }
+  }
 
 /** A class relating to CD-Text. Use invalid track number 0 to specify
     CD-Text for the CD (as opposed to a specific track).
@@ -105,65 +185,6 @@ public:
     p_cdio = (CdIo_t *) NULL;
   };
 
-  /** Class for driver exceptions. **/
-  class DriverOpException 
-  {
-  public:
-    driver_return_code_t driver_return_code;
-    DriverOpException( void ) { };
-    DriverOpException( driver_return_code_t drc ) { 
-      driver_return_code = drc; 
-    };
-    driver_return_code_t get_code(void) { 
-      return driver_return_code; 
-    };
-    const char *get_msg(void) { 
-      return cdio_driver_return_code_to_str(driver_return_code); 
-    };
-  };
-
-  class DriverOpError: public DriverOpException
-  {
-  public:
-    DriverOpError(void) { driver_return_code = DRIVER_OP_ERROR; }
-  };
-
-  class DriverOpUnsupported: public DriverOpException 
-  { 
-  public:
-    DriverOpUnsupported(void) { driver_return_code = DRIVER_OP_UNSUPPORTED; }
-  };
-
-  class DriverOpUninit: public DriverOpException
-  {
-  public:
-    DriverOpUninit(void) { driver_return_code = DRIVER_OP_UNINIT; }
-  };
-
-  class DriverOpNotPermitted: public DriverOpException
-  {
-  public:
-    DriverOpNotPermitted(void) {driver_return_code = DRIVER_OP_NOT_PERMITTED;}
-  };
-
-  class DriverOpBadParameter: public DriverOpException
-  {
-  public:
-    DriverOpBadParameter(void) {driver_return_code = DRIVER_OP_BAD_PARAMETER;}
-  };
-
-  class DriverOpBadPointer: public DriverOpException
-  {
-  public:
-    DriverOpBadPointer(void) {driver_return_code = DRIVER_OP_BAD_POINTER;}
-  };
-
-  class DriverOpNoDriver: public DriverOpException
-  {
-  public:
-    DriverOpNoDriver(void) {driver_return_code = DRIVER_OP_NO_DRIVER;}
-  };
-
   // Other member functions  
 #include "device.hpp"
 #include "disc.hpp"
@@ -172,29 +193,9 @@ public:
 
 private:
   CdIo_t *p_cdio;
-  void possible_throw_device_exception(driver_return_code_t drc) 
-  {
-    switch (drc) {
-    case DRIVER_OP_SUCCESS:
-      return;
-    case DRIVER_OP_ERROR:
-      throw DriverOpError();
-    case DRIVER_OP_UNSUPPORTED:
-      throw DriverOpUnsupported();
-    case DRIVER_OP_UNINIT:
-      throw DriverOpUninit();
-    case DRIVER_OP_NOT_PERMITTED:
-      throw DriverOpNotPermitted();
-    case DRIVER_OP_BAD_PARAMETER:
-      throw DriverOpBadParameter();
-    case DRIVER_OP_BAD_POINTER:
-      throw DriverOpBadPointer();
-    case DRIVER_OP_NO_DRIVER:
-      throw DriverOpNoDriver();
-    default:
-      throw DriverOpException(drc);
-    }
-  }
 };
+
+/* Things related to devices. No class or object is needed. */
+#include "devices.hpp"
 
 #endif /* __CDIO_HPP__ */

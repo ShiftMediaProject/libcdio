@@ -1,5 +1,5 @@
 /*
-  $Id: eject.cpp,v 1.5 2006/01/18 20:58:53 rocky Exp $
+  $Id: eject.cpp,v 1.6 2006/01/25 07:21:52 rocky Exp $
 
   Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -51,30 +51,30 @@ main(int argc, const char *argv[])
     psz_drive = strdup(argv[1]);
 
   if (!psz_drive) {
-    psz_drive = device.getDefaultDevice(driver_id);
+    psz_drive = getDefaultDevice(driver_id);
     if (!psz_drive) {
       printf("Can't find a CD-ROM to perform eject operation\n");
       exit(1);
     }
   }
   try {
-    device.ejectMedia(psz_drive);
+    ejectMedia(psz_drive);
     printf("CD in CD-ROM drive %s ejected.\n", psz_drive);
   }
-  catch ( CdioDevice::DriverOpUninit e ) {
+  catch ( DriverOpUninit e ) {
     printf("Can't Eject CD from CD-ROM drive: driver is not initialized.\n",
 	   psz_drive);
   }
-  catch ( CdioDevice::DriverOpException e ) {
+  catch ( DriverOpException e ) {
     printf("Ejecting CD from CD-ROM drive %s operation error:\n\t%s.\n", 
 	   psz_drive, e.get_msg());
   }
 
   try {
-    device.closeTray(psz_drive);
+    closeTray(psz_drive);
     printf("Closed CD-ROM %s tray.\n", psz_drive);
   }
-  catch ( CdioDevice::DriverOpException e ) {
+  catch ( DriverOpException e ) {
     printf("Closing CD-ROM %s tray operation error error:\n\t%s.\n", 
 	   psz_drive, e.get_msg());
   }

@@ -1,5 +1,5 @@
 /*
-  $Id: device.cpp,v 1.2 2005/11/11 12:26:57 rocky Exp $
+  $Id: device.cpp,v 1.3 2006/01/25 07:21:52 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -105,7 +105,7 @@ main(int argc, const char *argv[])
   CdioDevice device;
   
   if (device.open(NULL)) {
-    char *default_device = device.getDefaultDevice();
+    char *default_device = device.getDevice();
     cdio_drive_read_cap_t  i_read_cap;
     cdio_drive_write_cap_t i_write_cap;
     cdio_drive_misc_cap_t  i_misc_cap;
