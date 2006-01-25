@@ -1,7 +1,7 @@
 /* -*- C++ -*-
-    $Id: devices.hpp,v 1.1 2005/11/10 11:11:16 rocky Exp $
+    $Id: devices.hpp,v 1.2 2006/01/25 06:36:07 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ freeDeviceList (char * device_list[])
   NULL even though there may be a hardware CD-ROM.
 */
 char ** 
-getDevices(driver_id_t driver_id) 
+getDevices(driver_id_t driver_id=DRIVER_DEVICE) 
 {
   return cdio_get_devices(driver_id);
 }
@@ -86,7 +86,7 @@ getDevices (driver_id_t &driver_id)
 */
 char ** 
 getDevices(/*in*/ char *ppsz_search_devices[],
-	   cdio_fs_anal_t capabilities, bool b_any) 
+	   cdio_fs_anal_t capabilities, bool b_any=false) 
 {
   return cdio_get_devices_with_cap(ppsz_search_devices, capabilities, b_any);
 }
@@ -99,8 +99,8 @@ getDevices(/*in*/ char *ppsz_search_devices[],
 */
 char ** 
 getDevices(/*in*/ char* ppsz_search_devices[],
-	   cdio_fs_anal_t capabilities, bool b_any,
-	   /*out*/ driver_id_t &driver_id) 
+	   cdio_fs_anal_t capabilities, /*out*/ driver_id_t &driver_id,
+	   bool b_any=false) 
 {
   return cdio_get_devices_with_cap_ret(ppsz_search_devices, capabilities,
 				       b_any, &driver_id);

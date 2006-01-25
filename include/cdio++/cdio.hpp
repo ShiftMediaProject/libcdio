@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: cdio.hpp,v 1.5 2006/01/17 02:09:32 rocky Exp $
+    $Id: cdio.hpp,v 1.6 2006/01/25 06:36:07 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -36,13 +36,8 @@
 // makes sense.
 #include <cdio++/enum.hpp>
 
-class Cdio {
-
-public:
-
-  // Other member functions
+/* Things related to devices. No class or object is needed. */
 #include "devices.hpp"
-};
 
 /** A class relating to CD-Text. Use invalid track number 0 to specify
     CD-Text for the CD (as opposed to a specific track).
