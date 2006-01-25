@@ -5,5 +5,8 @@ Makefile.am
 Makefile.in
 cdtext
 device
+drives
 eject
+mmc1
+mmc2
 tracks

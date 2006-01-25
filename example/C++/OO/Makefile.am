@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.2 2005/11/14 01:15:33 rocky Exp $
+#   $Id: Makefile.am,v 1.3 2006/01/25 06:30:22 rocky Exp $
 #
-#    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 # Sample C++ programs using libcdio++ (with C++ OO wrapper)
 ############################################################
 #
-noinst_PROGRAMS = cdtext device eject mmc1 mmc2 tracks
+noinst_PROGRAMS = cdtext device drives eject mmc1 mmc2 tracks
 
 INCLUDES = -I$(top_srcdir)/include
 
@@ -31,6 +31,10 @@ cdtext_LDADD        = $(LIBCDIOPP_LIBS) $(LIBCDIO_LIBS)
 device_SOURCES      = device.cpp
 device_DEPENDENCIES = $(LIBCDIO_DEPS)
 device_LDADD        = $(LIBCDIOPP_LIBS) $(LIBCDIO_LIBS)
+
+drives_SOURCES      = drives.cpp
+drives_DEPENDENCIES = $(LIBCDIO_DEPS)
+drives_LDADD        = $(LIBCDIOPP_LIBS) $(LIBCDIO_LIBS)
 
 eject_SOURCES       = eject.cpp
 eject_DEPENDENCIES  = $(LIBCDIO_DEPS)
