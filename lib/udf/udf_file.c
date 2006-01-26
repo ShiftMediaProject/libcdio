@@ -1,5 +1,5 @@
 /*
-    $Id: udf_file.c,v 1.5 2005/11/02 03:49:15 rocky Exp $
+    $Id: udf_file.c,v 1.6 2006/01/26 04:41:50 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -30,7 +30,7 @@ const char *
 udf_get_filename(const udf_dirent_t *p_udf_dirent)
 {
   if (!p_udf_dirent) return NULL;
-  if (!p_udf_dirent->psz_name) return ".";
+  if (!p_udf_dirent->psz_name) return "..";
   return p_udf_dirent->psz_name;
 }
 
@@ -89,4 +89,19 @@ bool
 udf_is_dir(const udf_dirent_t *p_udf_dirent)
 {
   return p_udf_dirent->b_dir;
+}
+
+/*!
+  Attempts to read up to count bytes from file descriptor fd into
+  the buffer starting at buf.
+
+  If count is zero, read() returns zero and has no other results. If
+  count is greater than SSIZE_MAX, the result is unspecified.
+*/
+driver_return_code_t
+udf_read_block(const udf_dirent_t *p_udf_dirent, void * buf, size_t count)
+{
+  const udf_t *p_udf = p_udf_dirent->p_udf;
+  return udf_read_sectors(p_udf, buf, 
+			  p_udf->i_part_start+p_udf_dirent->dir_lba, count);
 }

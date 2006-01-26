@@ -1,5 +1,5 @@
 /*
-    $Id: udf_private.h,v 1.5 2006/01/23 20:31:11 rocky Exp $
+    $Id: udf_private.h,v 1.6 2006/01/26 04:41:50 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -20,6 +20,10 @@
 
 #ifndef __CDIO_UDF_PRIVATE_H__
 #define __CDIO_UDF_PRIVATE_H__
+
+#if defined(HAVE_CONFIG_H) && !defined(LIBCDIO_CONFIG_H)
+#include "config.h"
+#endif
 
 #include <cdio/types.h>
 #include <cdio/ecma_167.h>

@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.13 2005/11/02 03:42:50 rocky Exp $
+    $Id: udf_fs.c,v 1.14 2006/01/26 04:41:50 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -143,7 +143,7 @@ udf_checktag(udf_tag_t *p_tag, udf_Uint16_t tag_id)
   return -1;
 }
 
-static bool 
+bool 
 udf_get_lba(const udf_file_entry_t *p_udf_fe, 
 	    /*out*/ uint32_t *start, /*out*/ uint32_t *end)
 {
