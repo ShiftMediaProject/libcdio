@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+ * Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -75,6 +75,12 @@ main(int argc, const char *argv[])
     exit(SKIP_TEST_RC);
   }
 
+  /** We had a bug in is_device when driver_id == DRIVER_UNKNOWN or
+     DRIVER_DEVICE. Let's make sure we've fixed that problem. **/
+  if (!cdio_is_device(*ppsz_cd_drives, DRIVER_UNKNOWN) || 
+      !cdio_is_device(*ppsz_cd_drives, DRIVER_DEVICE))
+    exit(99);
+  
   /* Don't need a list of CD's with CD-DA's any more. */
   cdio_free_device_list(ppsz_cd_drives);
 

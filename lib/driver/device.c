@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.31 2006/01/15 01:26:50 rocky Exp $
+    $Id: device.c,v 1.32 2006/02/01 00:45:45 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -843,6 +843,20 @@ cdio_have_driver(driver_id_t driver_id)
 bool
 cdio_is_device(const char *psz_source, driver_id_t driver_id)
 {
+  if (DRIVER_UNKNOWN == driver_id || DRIVER_DEVICE == driver_id) {
+    if (DRIVER_UNKNOWN == driver_id) 
+      driver_id++;
+    else 
+      driver_id = CDIO_MIN_DEVICE_DRIVER;
+    
+    /* Scan for driver */
+    for ( ; driver_id<=CDIO_MAX_DRIVER; driver_id++) {
+      if ( (*CdIo_all_drivers[driver_id].have_driver)() &&
+           CdIo_all_drivers[driver_id].is_device ) {
+        return (*CdIo_all_drivers[driver_id].is_device)(psz_source);
+      }
+    }
+  }
   if (CdIo_all_drivers[driver_id].is_device == NULL) return false;
   return (*CdIo_all_drivers[driver_id].is_device)(psz_source);
 }
