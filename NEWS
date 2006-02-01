@@ -1,32 +1,34 @@
-$Id: NEWS,v 1.89 2006/01/21 12:02:55 rocky Exp $
+$Id: NEWS,v 1.90 2006/02/01 00:52:17 rocky Exp $
 
 version 0.77cvs
 =====================================
 ????-??-??
 
-- NULL drive in cdio_eject_media_drive uses default drive to close.
-  Document that NULL also uses default drive in close_tray, cdio_open
-  and cdio_open_am.
+- Add an object-oriented C++ wrapper.
 
 - replace libpopt with getopt (cd-drive, cd-info, iso-info, iso-read)
 
-- OSX was freeing too much in listing drives
+- Document cd-paranoia (Peter J. Creath)
+
+- Add cdio_eject_media_drive().
+
+- Add more generic read_sectors() 
+
+- Document that NULL also uses default drive in close_tray, cdio_open
+  and cdio_open_am.
 
 - Some provision for handling Rock-Ridge device numbers.
-
-- Document cd-paranoia (Peter J. Creath)
 
 - Start UDF handling
 
 - increase use of enumerations more and decrease use of #defines
 
-- Add an object-oriented C++ wrapper.
-
 - Doxygen formatting improvements.
 
 - Misc bugs: fixed bincue driver caused core dump on set_speed and 
-  set_blocksize. read.h didn't make sure off_t was defined. Switch from
-  fseek to lseek.
+  set_blocksize. read.h didn't make sure off_t was defined. fixed bug in
+  is_device() when driver_id = DRIVER_UNKNOWN or DRIVER_DEVICE.
+  OSX was freeing too much in listing drives
 
 version 0.76
 =====================================
@@ -315,4 +317,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.89 2006/01/21 12:02:55 rocky Exp $
+$Id: NEWS,v 1.90 2006/02/01 00:52:17 rocky Exp $
