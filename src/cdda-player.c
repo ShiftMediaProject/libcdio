@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.38 2006/01/25 22:30:34 rocky Exp $
+    $Id: cdda-player.c,v 1.39 2006/02/02 06:24:34 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -1429,6 +1429,7 @@ main(int argc, char *argv[])
       if (p_cdio)
 	switch (cd_op) {
 	case STOP_PLAYING:
+	  b_cd = true;
 	  i_rc = cd_stop(p_cdio) ? 0 : 1;
 	  break;
 	case EJECT_CD:
