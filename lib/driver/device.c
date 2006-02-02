@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.32 2006/02/01 00:45:45 rocky Exp $
+    $Id: device.c,v 1.33 2006/02/02 04:37:29 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -243,7 +243,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
 };
 
 const char *
-cdio_driver_return_code_to_str(driver_return_code_t drc)
+cdio_driver_errmsg(driver_return_code_t drc)
 {
   switch(drc) {
   case DRIVER_OP_SUCCESS: 

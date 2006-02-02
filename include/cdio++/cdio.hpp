@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: cdio.hpp,v 1.7 2006/01/25 07:21:52 rocky Exp $
+    $Id: cdio.hpp,v 1.8 2006/02/02 04:37:29 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -49,7 +49,7 @@ public:
     return driver_return_code; 
   };
   const char *get_msg(void) { 
-    return cdio_driver_return_code_to_str(driver_return_code); 
+    return cdio_driver_errmsg(driver_return_code); 
   };
 };
 

@@ -27,7 +27,7 @@ cdio_close_tray
 cdio_debug
 cdio_destroy
 cdio_driver_describe
-cdio_driver_return_code_to_str
+cdio_driver_errmsg
 cdio_eject_media
 cdio_eject_media_drive
 cdio_error

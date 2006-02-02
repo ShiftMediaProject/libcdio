@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.31 2006/01/21 12:02:55 rocky Exp $
+    $Id: device.h,v 1.32 2006/02/02 04:37:29 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -239,7 +239,7 @@ extern "C" {
     @param drc the return code you want interpreted.
     @return the string information about drc
   */
-  const char *cdio_driver_return_code_to_str(driver_return_code_t drc);
+  const char *cdio_driver_errmsg(driver_return_code_t drc);
   
   /*!
     Eject media in CD drive if there is a routine to do so. 

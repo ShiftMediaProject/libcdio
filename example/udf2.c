@@ -1,5 +1,5 @@
 /*
-  $Id: udf2.c,v 1.2 2005/11/04 08:15:18 rocky Exp $
+  $Id: udf2.c,v 1.3 2006/02/02 04:37:29 rocky Exp $
 
   Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
   
@@ -96,8 +96,8 @@ main(int argc, const char *argv[])
     return 1;
   } else {
     udf_dirent_t *p_udf_root = udf_get_root(p_udf, true, 0);
-    udf_dirent_t *p_udf_file;
-    if (NULL == p_udf_file) {
+    udf_dirent_t *p_udf_file = NULL;
+    if (NULL == p_udf_root) {
       fprintf(stderr, "Sorry, couldn't find / in %s\n", 
 	      psz_udf_image);
       return 1;
@@ -105,13 +105,11 @@ main(int argc, const char *argv[])
     
     p_udf_file = udf_fopen(p_udf_root, psz_udf_fname);
     print_file_info(p_udf_file, udf_get_filename(p_udf_file));
-#if 0
     {
       char buf[2048];
       udf_read_block(p_udf_file, buf, 1);
       printf("%s", buf);
     }
-#endif
     udf_dirent_free(p_udf_file);
     udf_dirent_free(p_udf_root);
   }
