@@ -1,7 +1,7 @@
 /*
-  $Id: drives.c,v 1.2 2005/04/11 01:37:38 rocky Exp $
+  $Id: drives.c,v 1.3 2006/02/09 18:16:29 rocky Exp $
 
-  Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -48,6 +48,21 @@ log_handler (cdio_log_level_t level, const char message[])
   }
 }
 
+static void 
+print_drive_class(const char *psz_msg, cdio_fs_anal_t bitmask, bool b_any) {
+  char **ppsz_cd_drives=NULL, **c;
+
+  printf("%s...\n", psz_msg);
+  ppsz_cd_drives = cdio_get_devices_with_cap(NULL, bitmask, b_any);
+  if (NULL != ppsz_cd_drives) 
+    for( c = ppsz_cd_drives; *c != NULL; c++ ) {
+      printf("Drive %s\n", *c);
+    }
+
+  cdio_free_device_list(ppsz_cd_drives);
+  printf("-----\n");
+}
+
 int
 main(int argc, const char *argv[])
 {
@@ -68,43 +83,12 @@ main(int argc, const char *argv[])
   printf("-----\n");
 
   /* Print out a list of CD-drives the harder way. */
-  ppsz_cd_drives = cdio_get_devices_with_cap(NULL, CDIO_FS_MATCH_ALL, false);
-
-  if (NULL != ppsz_cd_drives) {
-    for( c = ppsz_cd_drives; *c != NULL; c++ ) {
-      printf("Drive %s\n", *c);
-    }
-    
-  }
-  cdio_free_device_list(ppsz_cd_drives);
-
-  printf("-----\n");
-  printf("CD-DA drives...\n");
-  ppsz_cd_drives = NULL;
-  /* Print out a list of CD-drives with CD-DA's in them. */
-  ppsz_cd_drives = cdio_get_devices_with_cap(NULL,  CDIO_FS_AUDIO, false);
-
-  if (NULL != ppsz_cd_drives) {
-    for( c = ppsz_cd_drives; *c != NULL; c++ ) {
-      printf("drive: %s\n", *c);
-    }
-  }
-  cdio_free_device_list(ppsz_cd_drives);
-    
-  printf("-----\n");
-  ppsz_cd_drives = NULL;
-  printf("VCD drives...\n");
-  /* Print out a list of CD-drives with VCD's in them. */
-  ppsz_cd_drives = cdio_get_devices_with_cap(NULL, 
-(CDIO_FS_ANAL_SVCD|CDIO_FS_ANAL_CVD|CDIO_FS_ANAL_VIDEOCD|CDIO_FS_UNKNOWN),
-					true);
-  if (NULL != ppsz_cd_drives) {
-    for( c = ppsz_cd_drives; *c != NULL; c++ ) {
-      printf("drive: %s\n", *c);
-    }
-  }
-
-  cdio_free_device_list(ppsz_cd_drives);
+  print_drive_class("All CD-ROM drives (again)", CDIO_FS_MATCH_ALL, false);
+  print_drive_class("CD-DA drives...", CDIO_FS_AUDIO, false);
+  print_drive_class("All drives with ISO 9660...", CDIO_FS_ISO_9660, false);
+  print_drive_class("VCD drives...", 
+		    (CDIO_FS_ANAL_SVCD|CDIO_FS_ANAL_CVD|
+		     CDIO_FS_ANAL_VIDEOCD|CDIO_FS_UNKNOWN), true);
   return 0;
   
 }
