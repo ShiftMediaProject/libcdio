@@ -1,7 +1,7 @@
 /*
-    $Id: cd_types.h,v 1.12 2005/01/27 03:10:06 rocky Exp $
+    $Id: cd_types.h,v 1.13 2006/02/10 22:02:39 rocky Exp $
 
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
          and       Heiko Eiﬂfeldt <heiko@hexco.de>
 
@@ -39,12 +39,12 @@ extern "C" {
  */
 #define CDIO_FS_AUDIO                1 /**< audio only - not really a 
                                           filesystem */
-#define CDIO_FS_HIGH_SIERRA	     2 
+#define CDIO_FS_HIGH_SIERRA	     2 /**< High-Sierra Filesystem */
 #define CDIO_FS_ISO_9660	     3 /**< ISO 9660 filesystem */
 #define CDIO_FS_INTERACTIVE	     4
 #define CDIO_FS_HFS		     5 /**< file system used on the Macintosh 
                                             system in MacOS 6 through MacOS 9
-                                            and depricated in OSX. */
+                                            and deprecated in OSX. */
 #define CDIO_FS_UFS		     6 /**< Generic Unix file system derived
                                             from the Berkeley fast file 
                                             system. */
@@ -76,11 +76,6 @@ extern "C" {
 #define CDIO_FS_ISO_UDF             14
 
 
-#define CDIO_FS_MASK		    15  /**< Note: this should be 2**n-1 and
-                                             and greater than the highest 
-                                             CDIO_FS number above */
-#define CDIO_FS_UNKNOWN	            CDIO_FS_MASK
-
 /** 
  * Macro to extract just the FS type portion defined above 
 */
@@ -91,25 +86,37 @@ extern "C" {
  *  higher-level than the fs-type information above and may be determined
  *  based of the fs type information.
  */
-#define CDIO_FS_ANAL_XA		    0x0010 /**< eXtended Architecture format */
-#define CDIO_FS_ANAL_MULTISESSION   0x0020 /**< CD has multisesion */
-#define CDIO_FS_ANAL_PHOTO_CD	    0x0040 /**< Is a Kodak Photo CD */
-#define CDIO_FS_ANAL_HIDDEN_TRACK   0x0080 /**< Hidden track at the 
-                                                beginning of the CD */
-#define CDIO_FS_ANAL_CDTV	    0x0100
-#define CDIO_FS_ANAL_BOOTABLE       0x0200 /**< CD is bootable */
-#define CDIO_FS_ANAL_VIDEOCD        0x0400 /**< VCD 1.1 */
-#define CDIO_FS_ANAL_ROCKRIDGE      0x0800 /**< Has Rock Ridge Extensions to
-                                                ISO 9660 */
-#define CDIO_FS_ANAL_JOLIET         0x1000 /**< Microsoft Joliet extensions 
-                                                to ISO 9660 */
-#define CDIO_FS_ANAL_SVCD           0x2000 /**< Super VCD or Choiji Video CD */
-#define CDIO_FS_ANAL_CVD       	    0x4000 /**< Choiji Video CD */
-#define CDIO_FS_ANAL_XISO      	    0x8000 /**< XBOX CD */
+  typedef enum {
+    CDIO_FS_MASK	      =	  0x000f, /**< Note: this should be 2**n-1 and
+                                               and greater than the highest 
+                                               CDIO_FS number above */
+    CDIO_FS_ANAL_XA           =	  0x0010, /**< eXtended Architecture format */
+    CDIO_FS_ANAL_MULTISESSION =   0x0020, /**< CD has multisesion */
+    CDIO_FS_ANAL_PHOTO_CD     =	  0x0040, /**< Is a Kodak Photo CD */
+    CDIO_FS_ANAL_HIDDEN_TRACK =   0x0080, /**< Hidden track at the 
+                                               beginning of the CD */
+    CDIO_FS_ANAL_CDTV         =	  0x0100,
+    CDIO_FS_ANAL_BOOTABLE     =   0x0200, /**< CD is bootable */
+    CDIO_FS_ANAL_VIDEOCD      =   0x0400, /**< VCD 1.1 */
+    CDIO_FS_ANAL_ROCKRIDGE    =   0x0800, /**< Has Rock Ridge Extensions to
+                                               ISO 9660, */
+    CDIO_FS_ANAL_JOLIET       =   0x1000, /**< Microsoft Joliet extensions 
+                                                to ISO 9660, */
+    CDIO_FS_ANAL_SVCD         =   0x2000, /**< Super VCD or Choiji Video CD */
+    CDIO_FS_ANAL_CVD          =   0x4000, /**< Choiji Video CD */
+    CDIO_FS_ANAL_XISO         =   0x8000, /**< XBOX CD */
+    CDIO_FS_MATCH_ALL         =  ~CDIO_FS_MASK /**< bitmask which can
+                                                 be used by
+                                                 cdio_get_devices to
+                                                 specify matching any
+                                                 sort of CD. */
+  } cdio_fs_cap_t;
+    
+
+#define CDIO_FS_UNKNOWN	            CDIO_FS_MASK
 
 /**
- * Pattern which can be used by cdio_get_devices to specify matching
- * any sort of CD.
+ * 
  */
 #define CDIO_FS_MATCH_ALL            (cdio_fs_anal_t) (~CDIO_FS_MASK)
 
@@ -143,6 +150,13 @@ cdio_fs_anal_t cdio_guess_cd_type(const CdIo_t *cdio, int start_session,
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+/** The below variables are trickery to force the above enum symbol
+    values to be recorded in debug symbol tables. They are used to
+    allow one to refer to the enumeration value names in the typedefs
+    above in a debugger and debugger expressions.
+*/
+extern cdio_fs_cap_t debug_cdio_fs_cap_t;
 
 #endif /* __CDIO_CD_TYPES_H__ */
 
