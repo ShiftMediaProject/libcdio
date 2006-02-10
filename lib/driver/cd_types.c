@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.c,v 1.3 2005/02/17 11:54:28 rocky Exp $
+    $Id: cd_types.c,v 1.4 2006/02/10 18:04:17 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -59,6 +59,13 @@ and
 ! ftp://bifrost.seastrom.com/pub/mac/CDROM-Jumpstart.sit151.hqx.
 
 */
+
+/** The below variables are trickery to force enum symbol values to be
+    recorded in debug symbol tables. They are used to allow one to refer
+    to the enumeration value names in the typedefs above in a debugger
+    and debugger expressions.
+*/
+cdio_fs_cap_t debug_cdio_fs_cap_t;
 
 static char buffer[6][CDIO_CD_FRAMESIZE_RAW];  /* for CD-Data */
 

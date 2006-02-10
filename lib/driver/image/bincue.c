@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.16 2006/01/21 11:04:30 rocky Exp $
+    $Id: bincue.c,v 1.17 2006/02/10 18:04:17 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -26,7 +26,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.16 2006/01/21 11:04:30 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.17 2006/02/10 18:04:17 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -944,7 +944,7 @@ cdio_get_devices_bincue (void)
 char *
 cdio_get_default_device_bincue(void)
 {
-  char **drives = cdio_get_devices_nrg();
+  char **drives = cdio_get_devices_bincue();
   char *drive = (drives[0] == NULL) ? NULL : strdup(drives[0]);
   cdio_free_device_list(drives);
   return drive;
