@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.20 2006/02/12 05:32:28 rocky Exp $
+    $Id: nrg.c,v 1.21 2006/02/12 10:48:11 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.20 2006/02/12 05:32:28 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.21 2006/02/12 10:48:11 rocky Exp $";
 
 nero_id_t    nero_id;
 nero_dtype_t nero_dtype;
@@ -69,7 +69,8 @@ typedef struct {
 #define NEED_NERO_STRUCT
 #include "image_common.h"
 
-static bool  parse_nrg (_img_private_t *env, const char *psz_cue_name);
+static bool  parse_nrg (_img_private_t *env, const char *psz_cue_name,
+			const cdio_log_level_t log_level);
 static lsn_t get_disc_last_lsn_nrg (void *p_user_data);
 
 /* Updates internal track TOC, so we can later 
@@ -175,13 +176,12 @@ _register_mapping (_img_private_t *env, lsn_t start_lsn, uint32_t sec_count,
    FIXME: right now psz_nrg_name is not used. It will be in the future.
  */
 static bool
-parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
+parse_nrg (_img_private_t *p_env, const char *psz_nrg_name, 
+	   const cdio_log_level_t log_level)
 {
   long unsigned int footer_start;
   long unsigned int size;
   char *footer_buf = NULL;
-  cdio_log_level_t log_level = (NULL == p_env) ? CDIO_LOG_INFO : CDIO_LOG_WARN;
-
   size = cdio_stream_stat (p_env->gen.data_source);
   if (-1 == size) return false;
 
@@ -299,12 +299,14 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name)
 #else
 		  lsn = CDIO_INVALID_LSN;
 #endif		  
-		  cdio_warn ("untested (i.e. probably wrong) CUE MSF code");
+		  cdio_log (log_level, 
+			    "untested (i.e. probably wrong) CUE MSF code");
 		  break;
 		}
 	      default:
 		lsn = CDIO_INVALID_LSN;
-		cdio_warn("unknown cdte_format %d", cdte_format);
+		cdio_log(log_level,
+			 "unknown cdte_format %d", cdte_format);
 	      }
 	      
 	      sec_count = UINT32_FROM_BE (_entries[idx + 1].lsn);
@@ -774,7 +776,7 @@ _init_nrg (_img_private_t *p_env)
 
   cdtext_init (&(p_env->gen.cdtext));
 
-  if ( !parse_nrg (p_env, p_env->gen.source_name) ) {
+  if ( !parse_nrg (p_env, p_env->gen.source_name, CDIO_LOG_WARN) ) {
     cdio_warn ("image file %s is not a Nero image", 
 	       p_env->gen.source_name);
     return false;
@@ -1166,22 +1168,34 @@ _get_track_green_nrg(void *p_user_data, track_t track_num)
 
 /*! 
   Check that a NRG file is valid. 
-
-*/
-/* Later we'll probably do better. For now though, this gets us 
-   started for now.
 */
 bool
 cdio_is_nrg(const char *psz_nrg) 
 {
-  size_t psz_len;
+  _img_private_t env;
+  bool is_nrg = false;
   
   if (psz_nrg == NULL) return false;
-  psz_len = strlen(psz_nrg);
-  /* At least 4 characters needed for .nrg extension */
-  if ( psz_len < 4 ) return false; 
 
-  return strncasecmp( psz_nrg+(psz_len-3), "nrg", 3 ) == 0;
+  memset(&env, 0, sizeof(env));
+  if (!(env.gen.data_source = cdio_stdio_new (psz_nrg))) {
+    cdio_warn ("can't open nrg image file %s for reading", psz_nrg);
+    return false;
+  }
+
+  if (parse_nrg(&env, psz_nrg, CDIO_LOG_INFO)) {
+    is_nrg = true;
+#ifdef ALSO_TEST_NAME
+    size_t psz_len;
+    psz_len = strlen(psz_nrg);
+    /* At least 4 characters needed for .nrg extension */
+    if ( psz_len < 4 ) return false; 
+    
+    is_nrg = strncasecmp( psz_nrg+(psz_len-3), "nrg", 3 ) == 0;
+#endif
+  }
+  cdio_stdio_destroy(env.gen.data_source);
+  return is_nrg;
 }
 
 /*!
