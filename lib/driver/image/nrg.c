@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.19 2006/01/14 09:45:44 rocky Exp $
+    $Id: nrg.c,v 1.20 2006/02/12 05:32:28 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.19 2006/01/14 09:45:44 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.20 2006/02/12 05:32:28 rocky Exp $";
 
 nero_id_t    nero_id;
 nero_dtype_t nero_dtype;
@@ -1174,21 +1174,14 @@ _get_track_green_nrg(void *p_user_data, track_t track_num)
 bool
 cdio_is_nrg(const char *psz_nrg) 
 {
-  unsigned int i;
+  size_t psz_len;
   
   if (psz_nrg == NULL) return false;
+  psz_len = strlen(psz_nrg);
+  /* At least 4 characters needed for .nrg extension */
+  if ( psz_len < 4 ) return false; 
 
-  i=strlen(psz_nrg)-strlen("nrg");
-  
-  if (i>0) {
-    if (psz_nrg[i]=='n' && psz_nrg[i+1]=='r' && psz_nrg[i+2]=='g') {
-      return true;
-    } 
-    else if (psz_nrg[i]=='N' && psz_nrg[i+1]=='R' && psz_nrg[i+2]=='G') {
-      return true;
-    }
-  }
-  return false;
+  return strncasecmp( psz_nrg+(psz_len-3), "nrg", 3 ) == 0;
 }
 
 /*!
