@@ -1,7 +1,7 @@
 /*
-  $Id: testbincue.c,v 1.6 2006/01/21 11:05:00 rocky Exp $
+  $Id: testbincue.c,v 1.7 2006/02/12 09:38:36 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -108,6 +108,11 @@ main(int argc, const char *argv[])
     } else {
       /* Just test performing some operations. */
       driver_return_code_t drc = cdio_set_blocksize(p_cdio, 2048);
+      char *psz_device = cdio_get_default_device(p_cdio);
+      if (psz_device) 
+	free(psz_device);
+      else
+	ret = -2;
       drc = cdio_set_speed(p_cdio, 5);
     }
   }
