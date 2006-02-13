@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.90 2006/02/01 00:52:17 rocky Exp $
+$Id: NEWS,v 1.91 2006/02/13 01:44:38 rocky Exp $
 
 version 0.77cvs
 =====================================
@@ -6,7 +6,8 @@ version 0.77cvs
 
 - Add an object-oriented C++ wrapper.
 
-- replace libpopt with getopt (cd-drive, cd-info, iso-info, iso-read)
+- replace libpopt with getopt in cd-drive, cd-info, iso-info, iso-read
+  (Peter J. Creath)
 
 - Document cd-paranoia (Peter J. Creath)
 
@@ -19,16 +20,30 @@ version 0.77cvs
 
 - Some provision for handling Rock-Ridge device numbers.
 
+- block read routines return success if asked to read 0 blocks.
+
 - Start UDF handling
 
 - increase use of enumerations more and decrease use of #defines
 
+- OS Support: 
+    DragonFly recognized as FreeBSD, 
+    MinGW better tolerated,
+    GNU/Linux (and others?) LARGEFILE support
+
 - Doxygen formatting improvements.
 
 - Misc bugs: fixed bincue driver caused core dump on set_speed and 
-  set_blocksize. read.h didn't make sure off_t was defined. fixed bug in
+  set_blocksize; also called NRG routine to get a list of
+  cd-images. read.h didn't make sure off_t was defined. fixed bug in
   is_device() when driver_id = DRIVER_UNKNOWN or DRIVER_DEVICE.
-  OSX was freeing too much in listing drives
+  OSX was freeing too much in listing drives.
+
+- small cdda-player improvements - shows more Cd-Text, and fix bug in
+  non-interactive use (Yes, I sometimes use it.)
+
+- NRG checking parses file. string tests were invalid on short < 4
+  character filenames.
 
 version 0.76
 =====================================
@@ -317,4 +332,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.90 2006/02/01 00:52:17 rocky Exp $
+$Id: NEWS,v 1.91 2006/02/13 01:44:38 rocky Exp $
