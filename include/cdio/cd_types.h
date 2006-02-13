@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.h,v 1.13 2006/02/10 22:02:39 rocky Exp $
+    $Id: cd_types.h,v 1.14 2006/02/13 08:44:17 rocky Exp $
 
     Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -37,43 +37,46 @@ extern "C" {
  * Filesystem types we understand. The highest-numbered fs type should
  *  be less than CDIO_FS_MASK defined below.
  */
-#define CDIO_FS_AUDIO                1 /**< audio only - not really a 
-                                          filesystem */
-#define CDIO_FS_HIGH_SIERRA	     2 /**< High-Sierra Filesystem */
-#define CDIO_FS_ISO_9660	     3 /**< ISO 9660 filesystem */
-#define CDIO_FS_INTERACTIVE	     4
-#define CDIO_FS_HFS		     5 /**< file system used on the Macintosh 
-                                            system in MacOS 6 through MacOS 9
-                                            and deprecated in OSX. */
-#define CDIO_FS_UFS		     6 /**< Generic Unix file system derived
-                                            from the Berkeley fast file 
-                                            system. */
+  typedef enum {
+    CDIO_FS_AUDIO                = 1, /**< audio only - not really a 
+                                         filesystem */
+    CDIO_FS_HIGH_SIERRA	         = 2, /**< High-Sierra Filesystem */
+    CDIO_FS_ISO_9660	         = 3, /**< ISO 9660 filesystem */
+    CDIO_FS_INTERACTIVE	         = 4,
+    CDIO_FS_HFS		         = 5, /**< file system used on the Macintosh 
+                                         system in MacOS 6 through MacOS 9
+                                         and deprecated in OSX. */
+    CDIO_FS_UFS		         = 6, /**< Generic Unix file system derived
+                                         from the Berkeley fast file 
+                                         system. */
+    
+    /**<
+     * EXT2 was the GNU/Linux native filesystem for early kernels. Newer
+     * GNU/Linux OS's may use EXT3 which EXT2 with a journal. 
+     */
+    CDIO_FS_EXT2		 = 7,
 
-/** 
- * EXT2 was the GNU/Linux native filesystem for early kernels. Newer
- * GNU/Linux OS's may use EXT3 which EXT2 with a journal. 
- */
-#define CDIO_FS_EXT2		     7
-
-#define CDIO_FS_ISO_HFS              8  /**< both HFS & ISO-9660 filesystem */
-#define CDIO_FS_ISO_9660_INTERACTIVE 9  /**< both CD-RTOS and ISO filesystem */
+    CDIO_FS_ISO_HFS              = 8,  /**< both HFS & ISO-9660 filesystem */
+    CDIO_FS_ISO_9660_INTERACTIVE = 9,  /**< both CD-RTOS and ISO filesystem */
 
 
-/** 
- * The 3DO is, technically, a set of specifications created by the 3DO
- * company.  These specs are for making a 3DO Interactive Multiplayer
- * which uses a CD-player. Panasonic in the early 90's was the first
- * company to manufacture and market a 3DO player. 
- */
-#define CDIO_FS_3DO		    10
+    /**<
+     * The 3DO is, technically, a set of specifications created by the 3DO
+     * company.  These specs are for making a 3DO Interactive Multiplayer
+     * which uses a CD-player. Panasonic in the early 90's was the first
+     * company to manufacture and market a 3DO player. 
+     */
+    CDIO_FS_3DO		        = 10,
 
-/**
-   Microsoft X-BOX CD.
- */
-#define CDIO_FS_XISO 		    11
-#define CDIO_FS_UDFX 		    12
-#define CDIO_FS_UDF 		    13
-#define CDIO_FS_ISO_UDF             14
+
+    /**<
+       Microsoft X-BOX CD.
+    */
+    CDIO_FS_XISO 		= 11,
+    CDIO_FS_UDFX 		= 12,
+    CDIO_FS_UDF 		= 13,
+    CDIO_FS_ISO_UDF             = 14
+  } cdio_fs_t;
 
 
 /** 
@@ -84,7 +87,7 @@ extern "C" {
 /**
  *  Bit masks for the classes of CD-images. These are generally
  *  higher-level than the fs-type information above and may be determined
- *  based of the fs type information.
+ *  based of the fs type information. This 
  */
   typedef enum {
     CDIO_FS_MASK	      =	  0x000f, /**< Note: this should be 2**n-1 and
@@ -156,7 +159,8 @@ cdio_fs_anal_t cdio_guess_cd_type(const CdIo_t *cdio, int start_session,
     allow one to refer to the enumeration value names in the typedefs
     above in a debugger and debugger expressions.
 */
-extern cdio_fs_cap_t debug_cdio_fs_cap_t;
+extern cdio_fs_cap_t debug_cdio_fs_cap;
+extern cdio_fs_t     debug_cdio_fs;
 
 #endif /* __CDIO_CD_TYPES_H__ */
 

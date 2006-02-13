@@ -1,7 +1,8 @@
 /*
-    $Id: cd_types.c,v 1.4 2006/02/10 18:04:17 rocky Exp $
+    $Id: cd_types.c,v 1.5 2006/02/13 08:44:17 rocky Exp $
 
-    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein
+    <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,7 +66,8 @@ and
     to the enumeration value names in the typedefs above in a debugger
     and debugger expressions.
 */
-cdio_fs_cap_t debug_cdio_fs_cap_t;
+cdio_fs_cap_t debug_cdio_fs_cap;
+cdio_fs_t     debug_cdio_fs;
 
 static char buffer[6][CDIO_CD_FRAMESIZE_RAW];  /* for CD-Data */
 
