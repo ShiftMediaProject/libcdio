@@ -156,7 +156,7 @@ udf_timespec_to_stamp(const struct timespec ts, udf_timestamp_t *dest)
 {
   long int days, rem, y;
   const unsigned short int *ip;
-  int16_t offset;
+  int16_t offset = 0;
   int16_t tv_sec;
 
 #ifdef HAVE_TIMEZONE_VAR  
