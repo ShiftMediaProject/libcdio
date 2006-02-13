@@ -1,7 +1,7 @@
 /*
-    $Id: cdrdao.c,v 1.18 2005/06/08 08:07:00 rocky Exp $
+    $Id: cdrdao.c,v 1.19 2006/02/13 01:43:29 rocky Exp $
 
-    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
     Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.18 2005/06/08 08:07:00 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.19 2006/02/13 01:43:29 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1144,11 +1144,16 @@ cdio_get_default_device_cdrdao(void)
 static bool
 get_hwinfo_cdrdao ( const CdIo_t *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
 {
-  strcpy(hw_info->psz_vendor, "libcdio");
-  strcpy(hw_info->psz_model, "cdrdao");
-  strcpy(hw_info->psz_revision, CDIO_VERSION);
+  strncpy(hw_info->psz_vendor, "libcdio",
+	 sizeof(hw_info->psz_model)-1);
+  hw_info->psz_vendor[sizeof(hw_info->psz_vendor)-1] = '\0';
+  strncpy(hw_info->psz_model, "cdrdao",
+	 sizeof(hw_info->psz_model)-1);
+  hw_info->psz_model[sizeof(hw_info->psz_model)-1] = '\0';
+  strncpy(hw_info->psz_revision, CDIO_VERSION, 
+	  sizeof(hw_info->psz_revision)-1);
+  hw_info->psz_revision[sizeof(hw_info->psz_revision)-1] = '\0';
   return true;
-  
 }
 
 /*!
