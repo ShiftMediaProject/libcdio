@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.22 2006/02/13 01:43:29 rocky Exp $
+    $Id: nrg.c,v 1.23 2006/02/13 11:00:53 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.22 2006/02/13 01:43:29 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.23 2006/02/13 11:00:53 rocky Exp $";
 
 nero_id_t    nero_id;
 nero_dtype_t nero_dtype;
@@ -1114,7 +1114,7 @@ static bool
 get_hwinfo_nrg ( const CdIo *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
 {
   strncpy(hw_info->psz_vendor, "libcdio",
-	 sizeof(hw_info->psz_model)-1);
+	 sizeof(hw_info->psz_vendor)-1);
   hw_info->psz_vendor[sizeof(hw_info->psz_vendor)-1] = '\0';
   strncpy(hw_info->psz_model, "Nero",
 	  sizeof(hw_info->psz_model)-1);

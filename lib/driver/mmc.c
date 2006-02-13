@@ -1,8 +1,8 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.29 2005/10/21 11:27:09 rocky Exp $
+    $Id: mmc.c,v 1.30 2006/02/13 11:00:53 rocky Exp $
 
-    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.18 2006/02/13 01:43:29 rocky Exp $
+    $Id: bincue.c,v 1.19 2006/02/13 11:00:53 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005, 2006 
     Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.18 2006/02/13 01:43:29 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.19 2006/02/13 11:00:53 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -955,7 +955,7 @@ static bool
 get_hwinfo_bincue ( const CdIo_t *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
 {
   strncpy(hw_info->psz_vendor, "libcdio",
-	  sizeof(hw_info->psz_model)-1);
+	  sizeof(hw_info->psz_vendor)-1);
   hw_info->psz_vendor[sizeof(hw_info->psz_vendor)-1] = '\0';
   strncpy(hw_info->psz_model, "CDRWIN",
 	 sizeof(hw_info->psz_model)-1);
