@@ -1,7 +1,7 @@
 /*
-    $Id: mmc.h,v 1.23 2005/10/21 11:27:09 rocky Exp $
+    $Id: mmc.h,v 1.24 2006/02/16 20:09:27 rocky Exp $
 
-    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -735,7 +735,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                                                uint16_t i_blocksize,
                                                uint32_t i_blocks );
   
-  /*! issue a MMC read mode2 sectors. - depricated.
+  /*! issue a MMC read mode2 sectors. - deprecated.
    */
   driver_return_code_t mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, 
                                           lsn_t i_lsn,  int read_sector_type, 
@@ -802,26 +802,6 @@ extern cdio_mmc_get_conf_t          debug_cdio_mmc_get_conf;
 extern cdio_mmc_gpcmd_t             debug_cdio_mmc_gpcmd;
 extern cdio_mmc_read_sub_state_t    debug_cdio_mmc_read_sub_state;
   
-/** For backward compatibility. */
-#define mmc_direction_t                  cdio_mmc_direction_t
-#define mmc_feature_interface_t          cdio_mmc_feature_interface_t
-#define mmc_subchannel_t                 cdio_mmc_subchannel_t
-#define scsi_mmc_cdb_t                   mmc_cdb_t
-#define scsi_mmc_direction_t             mmc_direction_t
-#define scsi_mmc_get_cmd_len             mmc_get_cmd_len
-#define scsi_mmc_run_cmd                 mmc_run_cmd
-#define scsi_mmc_eject_media             mmc_eject_media
-#define scsi_mmc_get_disc_last_lsn       mmc_get_disc_last_lsn
-#define scsi_mmc_get_discmode            mmc_get_discmode
-#define scsi_mmc_get_drive_cap           mmc_get_drive_cap 
-#define scsi_mmc_get_dvd_struct_physical mmc_get_dvd_struct_physical 
-#define scsi_mmc_get_hwinfo              mmc_get_hwinfo 
-#define scsi_mmc_get_mcn                 mmc_get_mcn 
-#define scsi_mmc_read_sectors            mmc_read_sectors 
-#define scsi_mmc_set_blocksize           mmc_set_blocksize 
-#define scsi_mmc_get_blocksize           mmc_get_blocksize 
-#define scsi_mmc_set_speed               mmc_set_speed
-
 #endif /* __MMC_H__ */
 
 /* 

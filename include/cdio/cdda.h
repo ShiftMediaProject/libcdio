@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.25 2006/01/14 09:44:53 rocky Exp $
+  $Id: cdda.h,v 1.26 2006/02/16 20:09:27 rocky Exp $
 
   Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -41,7 +41,8 @@ extern "C" {
 typedef struct cdrom_paranoia_s cdrom_paranoia_t;
 typedef struct cdrom_drive_s   cdrom_drive_t;
 
-/** For compatibility. cdrom_drive_t is depricated, use cdrom_drive_t instead. */
+/** For compatibility. cdrom_drive_t is deprecated, use cdrom_drive_t
+    instead. */
 
 extern enum paranoia_cdda_enums {
   CDDA_MESSAGE_FORGETIT = 0,
@@ -66,7 +67,7 @@ typedef struct TOC_s {
   int32_t       dwStartSector;
 } TOC_t;
 
-/** For compatibility. TOC is depricated, use TOC_t instead. */
+/** For compatibility. TOC is deprecated, use TOC_t instead. */
 #define TOC TOC_t
 
 #define CDDA_MESSAGE_FORGETIT 0

@@ -1,8 +1,8 @@
 /*
-    $Id: util.h,v 1.8 2005/04/27 23:31:47 rocky Exp $
+    $Id: util.h,v 1.9 2006/02/16 20:09:27 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -102,20 +102,6 @@ _cdio_strsplit(const char str[], char delim);
 
 uint8_t cdio_to_bcd8(uint8_t n);
 uint8_t cdio_from_bcd8(uint8_t p);
-
-#if defined(__GNUC__) && __GNUC__ >= 3
-static inline __attribute__((deprecated))
-uint8_t to_bcd8(uint8_t n) {
-  return cdio_to_bcd8(n);
-}
-static inline __attribute__((deprecated))
-uint8_t from_bcd8(uint8_t p) {
-  return cdio_from_bcd8(p);
-}
-#else
-#define to_bcd8 cdio_to_bcd8
-#define from_bcd8 cdio_from_bcd8
-#endif
 
 #ifdef __cplusplus
 }
