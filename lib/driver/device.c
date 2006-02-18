@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.33 2006/02/02 04:37:29 rocky Exp $
+    $Id: device.c,v 1.34 2006/02/18 19:36:07 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -729,7 +729,7 @@ cdio_get_hwinfo (const CdIo_t *p_cdio, cdio_hwinfo_t *hw_info)
     return p_cdio->op.get_hwinfo (p_cdio, hw_info);
   } else {
     /* Perhaps driver forgot to initialize.  We are no worse off Using
-       scsi_mmc than returning false here. */
+      mmc than returning false here. */
     return mmc_get_hwinfo(p_cdio, hw_info);
   }
 }

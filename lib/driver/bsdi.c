@@ -1,5 +1,5 @@
 /*
-    $Id: bsdi.c,v 1.13 2005/05/09 01:06:39 rocky Exp $
+    $Id: bsdi.c,v 1.14 2006/02/18 19:36:07 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: bsdi.c,v 1.13 2005/05/09 01:06:39 rocky Exp $";
+static const char _rcsid[] = "$Id: bsdi.c,v 1.14 2006/02/18 19:36:07 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -105,7 +105,7 @@ static lsn_t  get_disc_last_lsn_bsdi (void *p_user_data);
 static driver_return_code_t
 run_mmc_cmd_bsdi(void *p_user_data, unsigned int i_timeout_ms,
 		 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		 scsi_mmc_direction_t e_direction, 
+		 cdio_mmc_direction_t e_direction, 
 		 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;

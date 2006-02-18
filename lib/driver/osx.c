@@ -1,5 +1,5 @@
 /*
-    $Id: osx.c,v 1.5 2005/10/05 09:48:12 rocky Exp $
+    $Id: osx.c,v 1.6 2006/02/18 19:36:07 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: osx.c,v 1.5 2005/10/05 09:48:12 rocky Exp $";
+static const char _rcsid[] = "$Id: osx.c,v 1.6 2006/02/18 19:36:07 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -350,7 +350,7 @@ static int
 run_mmc_cmd_osx( void *p_user_data, 
 		 unsigned int i_timeout_ms,
 		 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		 scsi_mmc_direction_t e_direction, 
+		 cdio_mmc_direction_t e_direction, 
 		 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;
@@ -483,7 +483,7 @@ static int
 run_mmc_cmd_osx( const void *p_user_data, 
 		 unsigned int i_timeout_ms,
 		 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		 scsi_mmc_direction_t e_direction, 
+		 cdio_mmc_direction_t e_direction, 
 		 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
 
