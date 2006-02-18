@@ -1,7 +1,7 @@
 /*
-    $Id: osx.c,v 1.7 2006/02/18 19:37:55 rocky Exp $
+    $Id: osx.c,v 1.8 2006/02/18 22:47:41 rocky Exp $
 
-    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     and VideoLAN code Copyright (C) 1998-2001 VideoLAN
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: osx.c,v 1.7 2006/02/18 19:37:55 rocky Exp $";
+static const char _rcsid[] = "$Id: osx.c,v 1.8 2006/02/18 22:47:41 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -1204,7 +1204,7 @@ read_toc_osx (void *p_user_data)
     p_env->i_first_session   = CDIO_CD_MAX_TRACKS+1;
     p_env->i_last_session    = CDIO_CD_MIN_TRACK_NO;
     
-    for( i = 0; i <= p_env->i_descriptors; i++ )
+    for( i = 0; i < p_env->i_descriptors; i++ )
       {
 	track_t i_track     = pTrackDescriptors[i].point;
 	session_t i_session = pTrackDescriptors[i].session;
@@ -1247,7 +1247,7 @@ read_toc_osx (void *p_user_data)
     /* Now that we know what the first track number is, we can make sure
        index positions are ordered starting at 0.
      */
-    for( i = 0; i <= p_env->i_descriptors; i++ )
+    for( i = 0; i < p_env->i_descriptors; i++ )
       {
 	track_t i_track = pTrackDescriptors[i].point;
 
