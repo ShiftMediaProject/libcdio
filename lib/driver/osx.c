@@ -1,5 +1,5 @@
 /*
-    $Id: osx.c,v 1.6 2006/02/18 19:36:07 rocky Exp $
+    $Id: osx.c,v 1.7 2006/02/18 19:37:55 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com> 
     from vcdimager code: 
@@ -34,7 +34,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: osx.c,v 1.6 2006/02/18 19:36:07 rocky Exp $";
+static const char _rcsid[] = "$Id: osx.c,v 1.7 2006/02/18 19:37:55 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -92,7 +92,8 @@ static const char _rcsid[] = "$Id: osx.c,v 1.6 2006/02/18 19:36:07 rocky Exp $";
 #define kIOCDBlockStorageDeviceClassString		"IOCDBlockStorageDevice"
 
 /* Note leadout is normally defined 0xAA, But on OSX 0xA0 is "lead in" while
-   0xA2 is "lead out". Don't ask me why. */
+   0xA2 is "lead out". I don't understand the distinction, and therefore
+   something could be wrong. */
 #define	OSX_CDROM_LEADOUT_TRACK 0xA2
 
 #define TOTAL_TRACKS    (p_env->i_last_track - p_env->gen.i_first_track + 1)
@@ -1198,10 +1199,10 @@ read_toc_osx (void *p_user_data)
     
     pTrackDescriptors = p_env->pTOC->descriptors;
 
-    p_env->gen.i_first_track   = CDIO_CD_MAX_TRACKS+1;
-    p_env->i_last_track    = CDIO_CD_MIN_TRACK_NO;
-    p_env->i_first_session = CDIO_CD_MAX_TRACKS+1;
-    p_env->i_last_session  = CDIO_CD_MIN_TRACK_NO;
+    p_env->gen.i_first_track = CDIO_CD_MAX_TRACKS+1;
+    p_env->i_last_track      = CDIO_CD_MIN_TRACK_NO;
+    p_env->i_first_session   = CDIO_CD_MAX_TRACKS+1;
+    p_env->i_last_session    = CDIO_CD_MIN_TRACK_NO;
     
     for( i = 0; i <= p_env->i_descriptors; i++ )
       {
