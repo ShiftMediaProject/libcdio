@@ -1,5 +1,5 @@
 /*
-    $Id: testiso9660.c,v 1.6 2006/02/25 12:02:02 rocky Exp $
+    $Id: testiso9660.c,v 1.7 2006/02/25 12:10:53 rocky Exp $
 
     Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -45,6 +45,11 @@ main (int argc, const char *argv[])
   char *dst_p;
   int achars[] = {'!', '"', '%', '&', '(', ')', '*', '+', ',', '-', '.',
                   '/', '?', '<', '=', '>'};
+
+  /*********************************************
+   * Test ACHAR and DCHAR
+   *********************************************/
+
   for (c='A'; c<='Z'; c++ ) {
     if (!iso9660_isdchar(c)) {
       printf("Failed iso9660_isdchar test on %c\n", c);
@@ -85,7 +90,10 @@ main (int argc, const char *argv[])
 
   if (i_bad) return i_bad;
 
-  /* Test iso9660_strncpy_pad */
+  /*********************************************
+   * Test iso9660_strncpy_pad
+   *********************************************/
+
   dst_p = iso9660_strncpy_pad(dst, "1_3", 5, ISO9660_DCHARS);
   if ( 0 != strncmp(dst, "1_3  ", 5) ) {
     printf("Failed iso9660_strncpy_pad DCHARS\n");
@@ -97,7 +105,10 @@ main (int argc, const char *argv[])
     return 32;
   }
 
-  /* Test iso9660_dirname_valid_p */
+  /*********************************************
+   * Test iso9660_dirname_valid_p 
+   *********************************************/
+
   if ( iso9660_dirname_valid_p("/NOGOOD") ) {
     printf("/NOGOOD should fail iso9660_dirname_valid_p\n");
     return 33;
@@ -115,7 +126,10 @@ main (int argc, const char *argv[])
     return 36;
   }
 
-  /* Test iso9660_pathname_valid_p */
+  /*********************************************
+   * Test iso9660_pathname_valid_p 
+   *********************************************/
+
   if ( !iso9660_pathname_valid_p("OKAY/FILE.EXT") ) {
     printf("OKAY/FILE.EXT should pass iso9660_dirname_valid_p\n");
     return 37;
@@ -137,7 +151,10 @@ main (int argc, const char *argv[])
   }
   free(dst_p);
 
-  /* Test get/set date */
+  /*********************************************
+   * Test get/set date 
+   *********************************************/
+
   {
     struct tm *p_tm, tm;
     iso9660_dtime_t dtime;
