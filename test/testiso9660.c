@@ -1,7 +1,7 @@
 /*
-    $Id: testiso9660.c,v 1.4 2005/03/03 10:33:26 rocky Exp $
+    $Id: testiso9660.c,v 1.5 2006/02/25 11:58:22 rocky Exp $
 
-    Copyright (C) 2003 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,52 +40,60 @@ main (int argc, const char *argv[])
 {
   int c;
   int i;
+  int i_bad = 0;
   char dst[100];
   char *dst_p;
   int achars[] = {'!', '"', '%', '&', '(', ')', '*', '+', ',', '-', '.',
                   '/', '?', '<', '=', '>'};
   for (c='A'; c<='Z'; c++ ) {
     if (!iso9660_isdchar(c)) {
-      printf("Failed iso9660_isdchar test on %d\n", c);
-      return c;
+      printf("Failed iso9660_isdchar test on %c\n", c);
+      i_bad++;
     }
     if (!iso9660_isachar(c)) {
-      printf("Failed iso9660_isachar test on %d\n", c);
-      return c;
+      printf("Failed iso9660_isachar test on %c\n", c);
+      i_bad++;
     }
   }
+
+  if (i_bad) return i_bad;
+  
   for (c='0'; c<='9'; c++ ) {
     if (!iso9660_isdchar(c)) {
-      printf("Failed iso9660_isdchar test on %d\n", c);
-      return c;
+      printf("Failed iso9660_isdchar test on %c\n", c);
+      i_bad++;
     }
     if (!iso9660_isachar(c)) {
-      printf("Failed iso9660_isachar test on %d\n", c);
-      return c;
+      printf("Failed iso9660_isachar test on %c\n", c);
+      i_bad++;
     }
   }
+
+  if (i_bad) return i_bad;
 
   for (i=0; i<=13; i++ ) {
     c=achars[i];
     if (iso9660_isdchar(c)) {
-      printf("Should not pass iso9660_isdchar test on %d\n", c);
-      return c;
+      printf("Should not pass iso9660_isdchar test on %c\n", c);
+      i_bad++;
     }
     if (!iso9660_isachar(c)) {
-      printf("Failed iso9660_isachar test on symbol %d\n", c);
-      return c;
+      printf("Failed iso9660_isachar test on symbol %c\n", c);
+      i_bad++;
     }
   }
+
+  if (i_bad) return i_bad;
 
   /* Test iso9660_strncpy_pad */
   dst_p = iso9660_strncpy_pad(dst, "1_3", 5, ISO9660_DCHARS);
   if ( 0 != strncmp(dst, "1_3  ", 5) ) {
-    printf("Failed iso9660_strncpy_pad test 1\n");
+    printf("Failed iso9660_strncpy_pad DCHARS\n");
     return 1;
   }
   dst_p = iso9660_strncpy_pad(dst, "ABC!123", 2, ISO9660_ACHARS);
   if ( 0 != strncmp(dst, "AB", 2) ) {
-    printf("Failed iso9660_strncpy_pad test 2\n");
+    printf("Failed iso9660_strncpy_pad ACHARS truncation\n");
     return 2;
   }
 
