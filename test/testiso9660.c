@@ -1,5 +1,5 @@
 /*
-    $Id: testiso9660.c,v 1.5 2006/02/25 11:58:22 rocky Exp $
+    $Id: testiso9660.c,v 1.6 2006/02/25 12:02:02 rocky Exp $
 
     Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -89,51 +89,51 @@ main (int argc, const char *argv[])
   dst_p = iso9660_strncpy_pad(dst, "1_3", 5, ISO9660_DCHARS);
   if ( 0 != strncmp(dst, "1_3  ", 5) ) {
     printf("Failed iso9660_strncpy_pad DCHARS\n");
-    return 1;
+    return 31;
   }
   dst_p = iso9660_strncpy_pad(dst, "ABC!123", 2, ISO9660_ACHARS);
   if ( 0 != strncmp(dst, "AB", 2) ) {
     printf("Failed iso9660_strncpy_pad ACHARS truncation\n");
-    return 2;
+    return 32;
   }
 
   /* Test iso9660_dirname_valid_p */
   if ( iso9660_dirname_valid_p("/NOGOOD") ) {
     printf("/NOGOOD should fail iso9660_dirname_valid_p\n");
-    return 3;
+    return 33;
   }
   if ( iso9660_dirname_valid_p("LONGDIRECTORY/NOGOOD") ) {
     printf("LONGDIRECTORY/NOGOOD should fail iso9660_dirname_valid_p\n");
-    return 4;
+    return 34;
   }
   if ( !iso9660_dirname_valid_p("OKAY/DIR") ) {
     printf("OKAY/DIR should pass iso9660_dirname_valid_p\n");
-    return 5;
+    return 35;
   }
   if ( iso9660_dirname_valid_p("OKAY/FILE.EXT") ) {
     printf("OKAY/FILENAME.EXT should fail iso9660_dirname_valid_p\n");
-    return 6;
+    return 36;
   }
 
   /* Test iso9660_pathname_valid_p */
   if ( !iso9660_pathname_valid_p("OKAY/FILE.EXT") ) {
     printf("OKAY/FILE.EXT should pass iso9660_dirname_valid_p\n");
-    return 7;
+    return 37;
   }
   if ( iso9660_pathname_valid_p("OKAY/FILENAMETOOLONG.EXT") ) {
     printf("OKAY/FILENAMETOOLONG.EXT should fail iso9660_dirname_valid_p\n");
-    return 8;
+    return 38;
   }
   if ( iso9660_pathname_valid_p("OKAY/FILE.LONGEXT") ) {
     printf("OKAY/FILE.LONGEXT should fail iso9660_dirname_valid_p\n");
-    return 9;
+    return 39;
   }
 
   dst_p = iso9660_pathname_isofy ("this/file.ext", 1);
   if ( 0 != strncmp(dst_p, "this/file.ext;1", 16) ) {
     printf("Failed iso9660_pathname_isofy\n");
     free(dst_p);
-    return 10;
+    return 40;
   }
   free(dst_p);
 
@@ -150,7 +150,7 @@ main (int argc, const char *argv[])
     if ( memcmp(p_tm, &tm, sizeof(tm)) != 0 ) {
       printf("Local time retrieved with iso9660_get_dtime not same as\n");
       printf("that set with iso9660_set_dtime().\n");
-      return 11;
+      return 41;
     }
     p_tm = gmtime(&now);
     iso9660_set_dtime(p_tm, &dtime);
@@ -158,7 +158,7 @@ main (int argc, const char *argv[])
     if ( memcmp(p_tm, &tm, sizeof(tm)) != 0 ) {
       printf("GMT time retrieved with iso9660_get_dtime() not same as that\n");
       printf("set with iso9660_set_dtime().\n");
-      return 12;
+      return 42;
     }
   }
 
