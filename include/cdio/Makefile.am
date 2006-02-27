@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.29 2006/02/16 20:09:27 rocky Exp $
+#   $Id: Makefile.am,v 1.30 2006/02/27 10:10:08 flameeyes Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -57,4 +57,4 @@ libcdioinclude_HEADERS = \
 EXTRA_DIST = version.h.in
 BUILT_SOURCES = version.h
 
-MOSTLYCLEANFILES = cdio_config.h
+DISTCLEANFILES = cdio_config.h
