@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.c,v 1.5 2006/02/13 08:44:17 rocky Exp $
+    $Id: cd_types.c,v 1.6 2006/02/27 10:29:20 flameeyes Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein
     <rocky@panix.com>
@@ -107,7 +107,7 @@ static signature_t sigs[] =
     {3,     7, "EL TORITO",  "BOOTABLE"}, 
     {4,     0, "VIDEO_CD",   "VIDEO CD"}, 
     {4,     0, "SUPERVCD",   "SVCD or Chaoji VCD"}, 
-    { 0 }
+    {0, 0, NULL, NULL }
   };
 
 

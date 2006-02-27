@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.34 2006/02/18 19:36:07 rocky Exp $
+    $Id: device.c,v 1.35 2006/02/27 10:29:20 flameeyes Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -48,7 +48,7 @@
 /* The below array gives of the drivers that are currently available for 
    on a particular host. */
 
-CdIo_driver_t CdIo_driver[CDIO_MAX_DRIVER] = { {0} };
+CdIo_driver_t CdIo_driver[CDIO_MAX_DRIVER] = { {0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} };
 
 /* The last valid entry of Cdio_driver. 
    -1 or (CDIO_DRIVER_UNINIT) means uninitialzed. 

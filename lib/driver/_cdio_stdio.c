@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_stdio.c,v 1.4 2005/02/05 04:25:14 rocky Exp $
+    $Id: _cdio_stdio.c,v 1.5 2006/02/27 10:29:20 flameeyes Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -39,7 +39,7 @@
 #include "_cdio_stream.h"
 #include "_cdio_stdio.h"
 
-static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.4 2005/02/05 04:25:14 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.5 2006/02/27 10:29:20 flameeyes Exp $";
 
 #define CDIO_STDIO_BUFSIZE (128*1024)
 
@@ -187,7 +187,7 @@ CdioDataSource_t *
 cdio_stdio_new(const char pathname[])
 {
   CdioDataSource_t *new_obj = NULL;
-  cdio_stream_io_functions funcs = { 0, };
+  cdio_stream_io_functions funcs = { NULL, NULL, NULL, NULL, NULL, NULL };
   _UserData *ud = NULL;
   struct stat statbuf;
   
