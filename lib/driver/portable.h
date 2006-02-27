@@ -1,5 +1,5 @@
 /*
-    $Id: portable.h,v 1.2 2005/02/06 15:09:10 rocky Exp $
+    $Id: portable.h,v 1.3 2006/02/27 09:48:55 flameeyes Exp $
 
     Copyright (C) Rocky Bernstein <rocky@panix.com>
 
@@ -72,7 +72,7 @@
 #elif  HAVE_BZERO
 # define BZERO(ptr, size) bzero(ptr, size)
 #else 
-  Error -- you need either memset or bzero
+#error  You need either memset or bzero
 #endif
 
 #endif /* __CDIO_PORTABLE_H__ */
