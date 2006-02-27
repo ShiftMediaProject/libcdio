@@ -1,5 +1,5 @@
 /*
-    $Id: audio.c,v 1.7 2005/05/13 21:34:57 rocky Exp $
+    $Id: audio.c,v 1.8 2006/02/27 10:28:25 flameeyes Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -90,7 +90,7 @@ bool               b_record = false; /* we have a record for
 char *psz_device=NULL;
 char *psz_program;
 
-static void inline
+inline static void
 xperror(const char *psz_msg)
 {
   if (b_verbose) {
