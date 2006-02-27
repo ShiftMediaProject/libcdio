@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.23 2006/02/13 11:00:53 rocky Exp $
+    $Id: nrg.c,v 1.24 2006/02/27 10:23:52 flameeyes Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.23 2006/02/13 11:00:53 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.24 2006/02/27 10:23:52 flameeyes Exp $";
 
 nero_id_t    nero_id;
 nero_dtype_t nero_dtype;
@@ -207,7 +207,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
     cdio_debug (".NRG footer start = %ld, length = %ld", 
 	       (long) footer_start, (long) (size - footer_start));
 
-    cdio_assert (IN ((size - footer_start), 0, 4096));
+    cdio_assert ((size - footer_start) <= 4096);
 
     footer_buf = calloc(1, size - footer_start);
 
