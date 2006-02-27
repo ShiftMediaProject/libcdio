@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.20 2006/02/13 11:00:53 rocky Exp $
+    $Id: cdrdao.c,v 1.21 2006/02/27 10:27:39 flameeyes Exp $
 
     Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.20 2006/02/13 11:00:53 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.21 2006/02/27 10:27:39 flameeyes Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -587,11 +587,13 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  }
 	}
 	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
-	  /* todo: set sub-channel-mode */
+	  /* \todo: set sub-channel-mode */
+#ifdef TODO
 	  if (0 == strcmp ("RW", psz_field))
 	    ;
 	  else if (0 == strcmp ("RW_RAW", psz_field))
 	    ;
+#endif
 	}
 	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	  goto format_error;
