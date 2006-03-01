@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660.c,v 1.17 2006/03/01 20:48:55 rocky Exp $
+    $Id: iso9660.c,v 1.18 2006/03/01 20:49:54 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.17 2006/03/01 20:48:55 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.18 2006/03/01 20:49:54 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
