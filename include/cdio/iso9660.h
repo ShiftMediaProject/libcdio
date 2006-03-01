@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.81 2006/03/01 14:19:59 rocky Exp $
+    $Id: iso9660.h,v 1.82 2006/03/01 20:48:55 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -680,22 +680,32 @@ bool iso9660_isdchar (int c);
 bool iso9660_isachar (int c);
 
 /*!
-   Convert ISO-9660 file name that stored in a directory entry into 
+   Convert an ISO-9660 file name that stored in a directory entry into 
    what's usually listed as the file name in a listing.
    Lowercase name, and remove trailing ;1's or .;1's and
    turn the other ;'s into version numbers.
 
-   The length of the translated string is returned.
+   @param psz_oldname the ISO-9660 filename to be translated.
+   @param psz_newname returned string. The caller allocates this and
+   it should be at least the size of psz_oldname.
+   @return length of the translated string is returned.
 */
-int iso9660_name_translate(const char *psz_oldname, char *psz_newname);
+int iso9660_name_translate(const char *psz_oldname, 
+                           /*out*/ char *psz_newname);
 
 /*!
-   Convert ISO-9660 file name that stored in a directory entry into
+   Convert an ISO-9660 file name that stored in a directory entry into
    what's usually listed as the file name in a listing.  Lowercase
-   name if not using Joliet extension. Remove trailing ;1's or .;1's and
-   turn the other ;'s into version numbers.
+   name if no Joliet Extension interpretation. Remove trailing ;1's or
+   .;1's and turn the other ;'s into version numbers.
 
-   The length of the translated string is returned.
+   @param psz_oldname the ISO-9660 filename to be translated.
+   @param psz_newname returned string. The caller allocates this and
+   it should be at least the size of psz_oldname.
+   @param i_joliet_level 0 if not using Joliet Extension. Otherwise the
+   Joliet level.
+   @return length of the translated string is returned. It will be no greater
+   than the length of psz_oldname.
 */
 int iso9660_name_translate_ext(const char *psz_old, char *psz_new, 
                                uint8_t i_joliet_level);
