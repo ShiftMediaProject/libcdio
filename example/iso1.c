@@ -1,7 +1,7 @@
 /*
-  $Id: iso1.c,v 1.6 2005/11/10 10:58:05 rocky Exp $
+  $Id: iso1.c,v 1.7 2006/03/01 14:11:16 rocky Exp $
 
-  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -56,8 +56,8 @@
 int
 main(int argc, const char *argv[])
 {
-  CdioList_t *entlist;
-  CdioListNode_t *entnode;
+  CdioList_t *p_entlist;
+  CdioListNode_t *p_entnode;
   char const *psz_fname;
   iso9660_t *p_iso;
 
@@ -74,22 +74,22 @@ main(int argc, const char *argv[])
     return 1;
   }
 
-  entlist = iso9660_ifs_readdir (p_iso, "/");
+  p_entlist = iso9660_ifs_readdir (p_iso, "/");
     
   /* Iterate over the list of nodes that iso9660_ifs_readdir gives  */
   
-  if (entlist) {
-    _CDIO_LIST_FOREACH (entnode, entlist)
+  if (p_entlist) {
+    _CDIO_LIST_FOREACH (p_entnode, p_entlist)
     {
       char filename[4096];
       iso9660_stat_t *p_statbuf = 
-	(iso9660_stat_t *) _cdio_list_node_data (entnode);
+	(iso9660_stat_t *) _cdio_list_node_data (p_entnode);
       iso9660_name_translate(p_statbuf->filename, filename);
       printf ("/%s\n", filename);
       free(p_statbuf);
     }
     
-    _cdio_list_free (entlist, true);
+    _cdio_list_free (p_entlist, true);
   }
   
 

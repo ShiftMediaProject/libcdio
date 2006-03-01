@@ -1,7 +1,7 @@
 /*
-  $Id: iso1.cpp,v 1.2 2005/03/06 00:03:53 rocky Exp $
+  $Id: iso1.cpp,v 1.3 2006/03/01 14:11:16 rocky Exp $
 
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,12 +21,16 @@
 /* Simple program to show using libiso9660 to list files in a directory of
    an ISO-9660 image.
 
+   If a single argument is given, it is used as the ISO 9660 image to
+   use in the listing. Otherwise a compiled-in default ISO 9660 image
+   name (that comes with the libcdio distribution) will be used.
+
    This program can be compiled with either a C or C++ compiler. In 
    the distributuion we perfer C++ just to make sure we haven't broken
    things on the C++ side.
  */
 
-/* This is the ISO 9660 image. */
+/* Set up a CD-DA image to test on which is in the libcdio distribution. */
 #define ISO9660_IMAGE_PATH "../../"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
 
@@ -56,8 +60,8 @@
 int
 main(int argc, const char *argv[])
 {
-  CdioList_t *entlist;
-  CdioListNode_t *entnode;
+  CdioList_t *p_entlist;
+  CdioListNode_t *p_entnode;
   char const *psz_fname;
   iso9660_t *p_iso;
 
@@ -69,24 +73,28 @@ main(int argc, const char *argv[])
   p_iso = iso9660_open (psz_fname);
   
   if (NULL == p_iso) {
-    fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", ISO9660_IMAGE);
+    fprintf(stderr, "Sorry, couldn't open %s as an ISO-9660 image\n", 
+	    psz_fname);
     return 1;
   }
 
-  entlist = iso9660_ifs_readdir (p_iso, "/");
+  p_entlist = iso9660_ifs_readdir (p_iso, "/");
     
   /* Iterate over the list of nodes that iso9660_ifs_readdir gives  */
   
-  _CDIO_LIST_FOREACH (entnode, entlist)
+  if (p_entlist) {
+    _CDIO_LIST_FOREACH (p_entnode, p_entlist)
     {
       char filename[4096];
       iso9660_stat_t *p_statbuf = 
-	(iso9660_stat_t *) _cdio_list_node_data (entnode);
+	(iso9660_stat_t *) _cdio_list_node_data (p_entnode);
       iso9660_name_translate(p_statbuf->filename, filename);
       printf ("/%s\n", filename);
     }
-
-  _cdio_list_free (entlist, true);
+    
+    _cdio_list_free (p_entlist, true);
+  }
+  
 
   iso9660_close(p_iso);
   return 0;
