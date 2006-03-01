@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.80 2006/01/14 09:44:53 rocky Exp $
+    $Id: iso9660.h,v 1.81 2006/03/01 14:19:59 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -548,10 +548,10 @@ typedef struct _iso9660_s iso9660_t;
 
 /*!
   Open an ISO 9660 image for reading with some tolerence for positioning
-  of the ISO9660 image. Here we will scan for ISO_STANDARD_ID and set
-  that position as the 
-  Maybe in the future we will have
-  a mode. NULL is returned on error.
+  of the ISO9660 image. We scan for ISO_STANDARD_ID and use that to set
+  the eventual offset to adjust by (as long as that is <= i_fuzz).
+
+  Maybe in the future we will have a mode. NULL is returned on error.
 
   @see iso9660_open
 */
@@ -560,10 +560,10 @@ typedef struct _iso9660_s iso9660_t;
 
 /*!
   Open an ISO 9660 image for reading with some tolerence for positioning
-  of the ISO9660 image. Here we will scan for ISO_STANDARD_ID and set
-  that position as the 
-  Maybe in the future we will have
-  a mode. NULL is returned on error.
+  of the ISO9660 image. We scan for ISO_STANDARD_ID and use that to set
+  the eventual offset to adjust by (as long as that is <= i_fuzz).
+
+  Maybe in the future we will have a mode. NULL is returned on error.
 
   @see iso9660_open
 */
@@ -619,7 +619,7 @@ typedef struct _iso9660_s iso9660_t;
                                    iso_extension_mask_t iso_extension_mask);
 
 /*!
-  Read the Supper block of an ISO 9660 image. This is the 
+  Read the Super block of an ISO 9660 image. This is the 
   Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
   Descriptor if (Joliet) extensions are acceptable.
 */
