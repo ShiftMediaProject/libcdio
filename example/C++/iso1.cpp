@@ -1,5 +1,5 @@
 /*
-  $Id: iso1.cpp,v 1.4 2006/03/02 01:28:58 rocky Exp $
+  $Id: iso1.cpp,v 1.5 2006/03/02 18:57:31 rocky Exp $
 
   Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -19,7 +19,8 @@
 */
 
 /* Simple program to show using libiso9660 to list files in a directory of
-   an ISO-9660 image.
+   an ISO-9660 image and give some iso9660 information. See the code
+   to iso-info for a more complete example.
 
    If a single argument is given, it is used as the ISO 9660 image to
    use in the listing. Otherwise a compiled-in default ISO 9660 image
@@ -56,6 +57,13 @@
 #include <sys/types.h>
 #endif
 
+#define print_vd_info(title, fn)	  \
+  if (fn(p_iso, &psz_str)) {		  \
+    printf(title ": %s\n", psz_str);	  \
+  }					  \
+  free(psz_str);			  \
+  psz_str = NULL;			  
+
 
 int
 main(int argc, const char *argv[])
@@ -79,6 +87,17 @@ main(int argc, const char *argv[])
     return 1;
   }
 
+  /* Show basic CD info from the Primary Volume Descriptor. */
+  {
+    char *psz_str = NULL;
+    print_vd_info("Application", iso9660_ifs_get_application_id);
+    print_vd_info("Preparer   ", iso9660_ifs_get_preparer_id);
+    print_vd_info("Publisher  ", iso9660_ifs_get_publisher_id);
+    print_vd_info("System     ", iso9660_ifs_get_system_id);
+    print_vd_info("Volume     ", iso9660_ifs_get_volume_id);
+    print_vd_info("Volume Set ", iso9660_ifs_get_volumeset_id);
+  }
+    
   p_entlist = iso9660_ifs_readdir (p_iso, psz_path);
     
   /* Iterate over the list of nodes that iso9660_ifs_readdir gives  */

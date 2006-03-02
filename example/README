@@ -1,4 +1,4 @@
-$Id: README,v 1.21 2006/01/25 15:41:45 rocky Exp $
+$Id: README,v 1.22 2006/03/02 18:57:31 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -30,7 +30,8 @@ eject.c:     A program eject a CD from a CD-ROM drive and then close the door
 	     again.
 
 iso1.c:      A program to show using libiso9660 to list files in a
-	     directory of an ISO-9660 image.
+	     directory of an ISO-9660 image and give basic iso9660 
+	     information.
 
 iso2.c:      A program to show using libiso9660 to extract a file
 	     from a CDRWIN cue/bin CD image.
