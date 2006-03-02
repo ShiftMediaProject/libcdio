@@ -1,5 +1,5 @@
 /*
-  $Id: iso3.c,v 1.5 2005/11/07 07:44:00 rocky Exp $
+  $Id: iso3.c,v 1.6 2006/03/02 01:28:58 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -60,6 +60,8 @@
 #include <sys/types.h>
 #endif
 
+#define CEILING(x, y) ((x+(y-1))/y)
+
 #define my_exit(rc)				\
   fclose (p_outfd);				\
   free(p_statbuf);				\
@@ -107,21 +109,21 @@ main(int argc, const char *argv[])
     }
 
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
-  for (i = 0; i < p_statbuf->size; i += ISO_BLOCKSIZE)
+  {
+    const unsigned int i_blocks = CEILING(p_statbuf->size, ISO_BLOCKSIZE);
+    for (i = 0; i < i_blocks ; i++) 
     {
       char buf[ISO_BLOCKSIZE];
+      const lsn_t lsn = p_statbuf->lsn + i;
 
       memset (buf, 0, ISO_BLOCKSIZE);
       
-      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (p_iso, buf, p_statbuf->lsn 
-						   + (i / ISO_BLOCKSIZE),
-						   1) )
+      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (p_iso, buf, lsn, 1) )
       {
-	fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
-		(long unsigned int) p_statbuf->lsn + (i / ISO_BLOCKSIZE));
+	fprintf(stderr, "Error reading ISO 9660 file %s at LSN %lu\n",
+		LOCAL_FILENAME, (long unsigned int) lsn);
 	my_exit(4);
       }
-      
       
       fwrite (buf, ISO_BLOCKSIZE, 1, p_outfd);
       
@@ -131,6 +133,7 @@ main(int argc, const char *argv[])
 	  my_exit(5);
 	}
     }
+  }
   
   fflush (p_outfd);
 
@@ -140,7 +143,8 @@ main(int argc, const char *argv[])
   if (ftruncate (fileno (p_outfd), p_statbuf->size))
     perror ("ftruncate()");
 
-  printf("Extraction of file 'copying' from %s successful.\n", ISO9660_IMAGE);
+  printf("Extraction of file '%s' from %s successful.\n", 
+	 LOCAL_FILENAME, ISO9660_IMAGE);
 
   my_exit(0);
 }
