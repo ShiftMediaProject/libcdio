@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.18 2006/03/01 20:49:54 rocky Exp $
+    $Id: iso9660.c,v 1.19 2006/03/02 18:59:13 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -51,7 +51,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.18 2006/03/01 20:49:54 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.19 2006/03/02 18:59:13 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -282,10 +282,10 @@ iso9660_set_ltime (const struct tm *_tm, /*out*/ iso9660_ltime_t *pvd_date)
 }
 
 /*!
-   Convert an ISO-9660 file name that stored in a directory entry into 
-   what's usually listed as the file name in a listing.
-   Lowercase name, and remove trailing ;1's or .;1's and
-   turn the other ;'s into version numbers.
+   Convert an ISO-9660 file name which is in the format usually stored
+   in a ISO 9660 directory entry into what's usually listed as the
+   file name in a listing.  Lowercase name, and remove trailing ;1's
+   or .;1's and turn the other ;'s into version numbers.
 
    @param psz_oldname the ISO-9660 filename to be translated.
    @param psz_newname returned string. The caller allocates this and
@@ -300,10 +300,11 @@ iso9660_name_translate(const char *psz_old, char *psz_new)
 }
 
 /*!
-   Convert an ISO-9660 file name that stored in a directory entry into
-   what's usually listed as the file name in a listing.  Lowercase
-   name if no Joliet Extension interpretation. Remove trailing ;1's or
-   .;1's and turn the other ;'s into version numbers.
+   Convert an ISO-9660 file name which is in the format usually stored
+   in a ISO 9660 directory entry into what's usually listed as the
+   file name in a listing.  Lowercase name if no Joliet Extension
+   interpretation. Remove trailing ;1's or .;1's and turn the other
+   ;'s into version numbers.
 
    @param psz_oldname the ISO-9660 filename to be translated.
    @param psz_newname returned string. The caller allocates this and

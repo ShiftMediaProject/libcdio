@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.82 2006/03/01 20:48:55 rocky Exp $
+    $Id: iso9660.h,v 1.83 2006/03/02 18:59:13 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -80,19 +80,19 @@ typedef char     dchar_t;  /*! See section 7.4.1 */
     mechanism, the name/value assocation is lost at run time.
   */
 extern enum iso_enum1_s {
-  ISO_PVD_SECTOR      =   16, /**< Sector of Primary Volume Descriptor */
-  ISO_EVD_SECTOR      =   17, /**< Sector of End Volume Descriptor */
-  LEN_ISONAME         =   31, /**<  size in bytes of the filename 
-                                 portion + null byte */
+  ISO_PVD_SECTOR      =   16, /**< Sector of Primary Volume Descriptor. */
+  ISO_EVD_SECTOR      =   17, /**< Sector of End Volume Descriptor. */
+  LEN_ISONAME         =   31, /**< Size in bytes of the filename 
+                                 portion + null byte. */
   ISO_MAX_SYSTEM_ID   =   32, /**< Maximum number of characters in a system 
                                  id. */
-  MAX_ISONAME         =   37, /**< size in bytes of the filename 
-                                 portion + null byte */
+  MAX_ISONAME         =   37, /**< Size in bytes of the filename 
+                                 portion + null byte. */
   ISO_MAX_PREPARER_ID =  128, /**< Maximum number of characters in a
                                  preparer id. */
   MAX_ISOPATHNAME     =  255, /**< Maximum number of characters in the
                                  entire ISO 9660 filename. */
-  ISO_BLOCKSIZE       = 2048  /**< Number of bytes in an ISO 9660 block */
+  ISO_BLOCKSIZE       = 2048  /**< Number of bytes in an ISO 9660 block. */
 
 } iso_enums1;
 
@@ -109,7 +109,7 @@ extern enum iso_flag_enum_s {
   ISO_DIRECTORY	      =   2,   /**< This file is a directory		 */
   ISO_ASSOCIATED      =   4,   /**< This file is an associated file	 */
   ISO_RECORD	      =   8,   /**< Record format in extended attr. != 0 */
-  ISO_PROECTION	      =  16,   /**< No read/execute perm. in ext. attr.  */
+  ISO_PROTECTION      =  16,   /**< No read/execute perm. in ext. attr.  */
   ISO_DRESERVED1      =  32,   /**<, Reserved bit 5			 */
   ISO_DRESERVED2      =  64,   /**<, Reserved bit 6			 */
   ISO_MULTIEXTENT     = 128,   /**< Not final entry of a mult. ext. file */
@@ -663,7 +663,7 @@ typedef struct _iso9660_s iso9660_t;
                           /*out*/ struct tm *p_tm);
 
 /*====================================================
-  Characters used in file and directory and manipulation
+  Character Classification and String Manipulation
  ====================================================*/
 /*!
    Return true if c is a DCHAR - a character that can appear in an an
@@ -680,10 +680,10 @@ bool iso9660_isdchar (int c);
 bool iso9660_isachar (int c);
 
 /*!
-   Convert an ISO-9660 file name that stored in a directory entry into 
-   what's usually listed as the file name in a listing.
-   Lowercase name, and remove trailing ;1's or .;1's and
-   turn the other ;'s into version numbers.
+   Convert an ISO-9660 file name which is in the format usually stored
+   in a ISO 9660 directory entry into what's usually listed as the
+   file name in a listing.  Lowercase name, and remove trailing ;1's
+   or .;1's and turn the other ;'s into version numbers.
 
    @param psz_oldname the ISO-9660 filename to be translated.
    @param psz_newname returned string. The caller allocates this and
@@ -694,10 +694,11 @@ int iso9660_name_translate(const char *psz_oldname,
                            /*out*/ char *psz_newname);
 
 /*!
-   Convert an ISO-9660 file name that stored in a directory entry into
-   what's usually listed as the file name in a listing.  Lowercase
-   name if no Joliet Extension interpretation. Remove trailing ;1's or
-   .;1's and turn the other ;'s into version numbers.
+   Convert an ISO-9660 file name which is in the format usually stored
+   in a ISO 9660 directory entry into what's usually listed as the
+   file name in a listing.  Lowercase name if no Joliet Extension
+   interpretation. Remove trailing ;1's or .;1's and turn the other
+   ;'s into version numbers.
 
    @param psz_oldname the ISO-9660 filename to be translated.
    @param psz_newname returned string. The caller allocates this and
@@ -725,7 +726,7 @@ char *iso9660_strncpy_pad(char dst[], const char src[], size_t len,
                           enum strncpy_pad_check _check);
 
 /*=====================================================================
-  file/dirname's 
+  File and Directory Names 
 ======================================================================*/
 
 /*!
@@ -879,7 +880,7 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
   char * iso9660_dir_to_name (const iso9660_dir_t *p_iso9660_dir);
   
   /*!  
-    Returns a POSIX mode for a given p_udf_dirent.
+    Returns a POSIX mode for a given p_iso_dirent.
   */
   mode_t iso9660_get_posix_filemode(const iso9660_stat_t *p_iso_dirent);
 
