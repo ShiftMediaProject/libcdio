@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.33 2005/05/09 23:19:40 rocky Exp $
+    $Id: freebsd.c,v 1.34 2006/03/02 20:48:34 flameeyes Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.33 2005/05/09 23:19:40 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.34 2006/03/02 20:48:34 flameeyes Exp $";
 
 #include "freebsd.h"
 
@@ -36,6 +36,8 @@ static const char _rcsid[] = "$Id: freebsd.c,v 1.33 2005/05/09 23:19:40 rocky Ex
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
+
+#include <netinet/in.h>
 
 #include <cdio/sector.h>
 
