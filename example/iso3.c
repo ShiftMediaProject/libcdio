@@ -1,7 +1,7 @@
 /*
-  $Id: iso3.c,v 1.6 2006/03/02 01:28:58 rocky Exp $
+  $Id: iso3.c,v 1.7 2006/03/02 18:46:30 rocky Exp $
 
-  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -74,33 +74,45 @@ main(int argc, const char *argv[])
   iso9660_stat_t *p_statbuf;
   FILE *p_outfd;
   int i;
+  char const *psz_image;
   char const *psz_fname;
   iso9660_t *p_iso;
+
+  if (argc > 3) {
+    printf("usage %s [ISO9660-image.ISO [filename]]\n", argv[0]);
+    printf("Extracts filename from ISO-9660-image.ISO\n");
+    return 1;
+  }
   
   if (argc > 1) 
-    psz_fname = argv[1];
+    psz_image = argv[1];
   else 
-    psz_fname = ISO9660_IMAGE;
+    psz_image = ISO9660_IMAGE;
 
-  p_iso = iso9660_open (psz_fname);
+  if (argc > 2) 
+    psz_fname = argv[2];
+  else 
+    psz_fname = LOCAL_FILENAME;
+
+  p_iso = iso9660_open (psz_image);
   
   if (NULL == p_iso) {
-    fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", ISO9660_IMAGE);
+    fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", psz_image);
     return 1;
   }
 
-  p_statbuf = iso9660_ifs_stat_translate (p_iso, LOCAL_FILENAME);
+  p_statbuf = iso9660_ifs_stat_translate (p_iso, psz_fname);
 
   if (NULL == p_statbuf) 
     {
       fprintf(stderr, 
 	      "Could not get ISO-9660 file information for file %s\n",
-	      LOCAL_FILENAME);
+	      psz_fname);
       iso9660_close(p_iso);
       return 2;
     }
 
-  if (!(p_outfd = fopen (LOCAL_FILENAME, "wb")))
+  if (!(p_outfd = fopen (psz_fname, "wb")))
     {
       perror ("fopen()");
       free(p_statbuf);
@@ -121,7 +133,7 @@ main(int argc, const char *argv[])
       if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (p_iso, buf, lsn, 1) )
       {
 	fprintf(stderr, "Error reading ISO 9660 file %s at LSN %lu\n",
-		LOCAL_FILENAME, (long unsigned int) lsn);
+		psz_fname, (long unsigned int) lsn);
 	my_exit(4);
       }
       
@@ -144,7 +156,7 @@ main(int argc, const char *argv[])
     perror ("ftruncate()");
 
   printf("Extraction of file '%s' from %s successful.\n", 
-	 LOCAL_FILENAME, ISO9660_IMAGE);
+	 psz_fname, psz_image);
 
   my_exit(0);
 }

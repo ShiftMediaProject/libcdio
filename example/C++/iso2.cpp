@@ -1,7 +1,7 @@
 /*
-  $Id: iso2.cpp,v 1.6 2005/11/10 11:22:55 rocky Exp $
+  $Id: iso2.cpp,v 1.7 2006/03/02 18:46:30 rocky Exp $
 
-  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 */
 
 /* Simple program to show using libiso9660 to extract a file from a
-   cue/bin CD-IMAGE.
+   CUE/BIN CD image.
 
    If a single argument is given, it is used as the CUE file of a CD image
    to use. Otherwise a compiled-in default image name (that
@@ -69,6 +69,8 @@
 #include <sys/types.h>
 #endif
 
+#define CEILING(x, y) ((x+(y-1))/y)
+
 #define my_exit(rc)				\
   fclose (p_outfd);				\
   free(p_statbuf);				\
@@ -87,6 +89,12 @@ main(int argc, const char *argv[])
   char translated_name[256];
   char untranslated_name[256] = ISO9660_PATH;
   CdIo_t *p_cdio;
+  
+  if (argc > 3) {
+    printf("usage %s [CD-ROM-or-image [filename]]\n", argv[0]);
+    printf("Extracts filename from CD-ROM-or-image.\n");
+    return 1;
+  }
   
   if (argc > 1) 
     psz_image = argv[1];
@@ -128,30 +136,33 @@ main(int argc, const char *argv[])
     }
 
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
-  for (i = 0; i < p_statbuf->size; i += ISO_BLOCKSIZE)
-    {
-      char buf[ISO_BLOCKSIZE];
-
-      memset (buf, 0, ISO_BLOCKSIZE);
-      
-      if ( 0 != cdio_read_data_sectors (p_cdio, buf, 
-					p_statbuf->lsn + (i / ISO_BLOCKSIZE),
-					ISO_BLOCKSIZE, 1) )
+  {
+    const unsigned int i_blocks = CEILING(p_statbuf->size, ISO_BLOCKSIZE);
+    for (i = 0; i < i_blocks; i ++)
       {
-	fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
-		(long unsigned int) p_statbuf->lsn + (i / ISO_BLOCKSIZE));
-	my_exit(4);
+	char buf[ISO_BLOCKSIZE];
+	const lsn_t lsn = p_statbuf->lsn + i;
+	
+	memset (buf, 0, ISO_BLOCKSIZE);
+	
+	if ( 0 != cdio_read_data_sectors (p_cdio, buf, lsn, ISO_BLOCKSIZE, 1) )
+	  {
+	    fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
+		    (long unsigned int) p_statbuf->lsn);
+	    my_exit(4);
+	  }
+	
+	
+	fwrite (buf, ISO_BLOCKSIZE, 1, p_outfd);
+	
+	if (ferror (p_outfd))
+	  {
+	    perror ("fwrite()");
+	    my_exit(5);
+	  }
       }
-      
-      
-      fwrite (buf, ISO_BLOCKSIZE, 1, p_outfd);
-      
-      if (ferror (p_outfd))
-	{
-	  perror ("fwrite()");
-	  my_exit(5);
-	}
-    }
+  }
+  
   
   fflush (p_outfd);
 
