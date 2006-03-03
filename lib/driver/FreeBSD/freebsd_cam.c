@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd_cam.c,v 1.10 2005/07/23 22:24:04 rocky Exp $
+    $Id: freebsd_cam.c,v 1.11 2006/03/03 09:50:30 flameeyes Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.10 2005/07/23 22:24:04 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.11 2006/03/03 09:50:30 flameeyes Exp $";
 
 #ifdef HAVE_FREEBSD_CDROM
 
@@ -54,8 +54,8 @@ static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.10 2005/07/23 22:24:04 rock
  */
 int
 run_mmc_cmd_freebsd_cam( const void *p_user_data, unsigned int i_timeout_ms,
-			 unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-			 scsi_mmc_direction_t e_direction, 
+			 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+			 cdio_mmc_direction_t e_direction, 
 			 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
@@ -181,7 +181,7 @@ int
 read_mode2_sectors_freebsd_cam (_img_private_t *p_env, void *p_buf, 
 				lsn_t lsn, unsigned int nblocks)
 {
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
 
   bool b_read_10 = false;
 
@@ -229,7 +229,7 @@ driver_return_code_t
 eject_media_freebsd_cam (_img_private_t *p_env) 
 {
   int i_status;
-  scsi_mmc_cdb_t cdb = {{0, }};
+  mmc_cdb_t cdb = {{0, }};
   uint8_t buf[1];
   
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);

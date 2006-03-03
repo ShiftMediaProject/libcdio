@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.34 2006/03/02 20:48:34 flameeyes Exp $
+    $Id: freebsd.c,v 1.35 2006/03/03 09:50:30 flameeyes Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.34 2006/03/02 20:48:34 flameeyes Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.35 2006/03/03 09:50:30 flameeyes Exp $";
 
 #include "freebsd.h"
 
@@ -511,8 +511,8 @@ get_drive_cap_freebsd (const void *p_user_data,
  */
 static driver_return_code_t
 run_mmc_cmd_freebsd( void *p_user_data, unsigned int i_timeout_ms,
-		     unsigned int i_cdb, const scsi_mmc_cdb_t *p_cdb, 
-		     scsi_mmc_direction_t e_direction, 
+		     unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+		     cdio_mmc_direction_t e_direction, 
 		     unsigned int i_buf, /*in/out*/ void *p_buf ) 
 {
   const _img_private_t *p_env = p_user_data;

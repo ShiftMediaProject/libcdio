@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.4 2005/07/23 22:24:04 rocky Exp $
+    $Id: freebsd.h,v 1.5 2006/03/03 09:50:30 flameeyes Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -215,8 +215,8 @@ bool read_toc_freebsd_ioctl (_img_private_t *env);
 int run_mmc_cmd_freebsd_cam( const void *p_user_data, 
 			     unsigned int i_timeout_ms,
 			     unsigned int i_cdb, 
-			     const scsi_mmc_cdb_t *p_cdb, 
-			     scsi_mmc_direction_t e_direction, 
+			     const mmc_cdb_t *p_cdb, 
+			     cdio_mmc_direction_t e_direction, 
 			     unsigned int i_buf, 
 			     /*in/out*/ void *p_buf );
 
