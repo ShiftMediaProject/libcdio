@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.84 2006/03/05 06:52:15 rocky Exp $
+    $Id: iso9660.h,v 1.85 2006/03/05 08:31:03 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -800,7 +800,8 @@ iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
    Given a directory pointer, find the filesystem entry that contains
    lsn and return information about it.
 
-   Returns stat_t of entry if we found lsn, or NULL otherwise.
+   @return stat_t of entry if we found lsn, or NULL otherwise.
+   Caller must free return value.
  */
 iso9660_stat_t *iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
 
@@ -809,7 +810,8 @@ iso9660_stat_t *iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
    Given a directory pointer, find the filesystem entry that contains
    lsn and return information about it.
 
-   Returns stat_t of entry if we found lsn, or NULL otherwise.
+   @return stat_t of entry if we found lsn, or NULL otherwise.
+   Caller must free return value.
  */
 iso9660_stat_t *iso9660_find_ifs_lsn(const iso9660_t *p_iso, lsn_t i_lsn);
 
@@ -951,26 +953,27 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
   */
   lsn_t iso9660_get_root_lsn(const iso9660_pvd_t *p_pvd);
   
-  /*!
-    Return the PVD's volume ID.
+  /*!  
+    Get the volume ID in the PVD.  psz_volume_id is set to NULL if there
+    is some problem in getting this and false is returned.
   */
   char *iso9660_get_volume_id(const iso9660_pvd_t *p_pvd);
   
   /*!  
-    Get the system ID.  psz_system_id is set to NULL if there
+    Get the volume ID in the PVD.  psz_volume_id is set to NULL if there
     is some problem in getting this and false is returned.
   */
   bool iso9660_ifs_get_volume_id(iso9660_t *p_iso,
                                  /*out*/ char **p_psz_volume_id);
   
   /*!
-    Return the PVD's volumeset ID.
+    Return the volumeset ID in the PVD.
     NULL is returned if there is some problem in getting this. 
   */
   char *iso9660_get_volumeset_id(const iso9660_pvd_t *p_pvd);
   
   /*!  
-    Get the systemset ID.  psz_systemset_id is set to NULL if there
+    Get the volumeset ID.  psz_systemset_id is set to NULL if there
     is some problem in getting this and false is returned.
   */
   bool iso9660_ifs_get_volumeset_id(iso9660_t *p_iso,
