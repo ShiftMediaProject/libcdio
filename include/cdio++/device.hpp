@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: device.hpp,v 1.5 2006/01/25 07:21:52 rocky Exp $
+    $Id: device.hpp,v 1.6 2006/03/05 06:52:15 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -195,7 +195,7 @@ haveATAPI ()
 
   Sets up to read from the device specified by psz_source.  An open
   routine should be called before using any read routine. If device
-  object was previously opened it is "closed".
+  object was previously opened it is closed first.
   
   @return true if open succeeded or false if error.
 
@@ -209,21 +209,6 @@ open(const char *psz_source)
 }
 
 /*! 
-  Sets up to read from the device specified by psz_source and
-  driver_id. An open routine should be called before using any read
-  routine. If device object was previously opened it is "closed".
-  
-  @return true if open succeeded or false if error.
-*/
-bool 
-open (const char *psz_source, driver_id_t driver_id) 
-{
-  if (p_cdio) cdio_destroy(p_cdio);
-  p_cdio = cdio_open(psz_source, driver_id);
-  return NULL != p_cdio ;
-}
-
-/*! 
 
   Sets up to read from the device specified by psz_source and access
   mode.  An open routine should be called before using any read
@@ -233,10 +218,13 @@ open (const char *psz_source, driver_id_t driver_id)
 */
 bool 
 open (const char *psz_source, driver_id_t driver_id, 
-	    const char *psz_access_mode) 
+      const char *psz_access_mode = (const char *) NULL) 
 {
   if (p_cdio) cdio_destroy(p_cdio);
-  p_cdio = cdio_open_am(psz_source, driver_id, psz_access_mode);
+  if (psz_access_mode)
+    p_cdio = cdio_open_am(psz_source, driver_id, psz_access_mode);
+  else 
+    p_cdio = cdio_open(psz_source, driver_id);
   return NULL != p_cdio ;
 }
 

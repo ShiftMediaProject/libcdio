@@ -1,7 +1,7 @@
 /*
-  $Id: device.cpp,v 1.1 2005/07/15 21:38:57 rocky Exp $
+  $Id: device.cpp,v 1.2 2006/03/05 06:52:15 rocky Exp $
 
-  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,8 +18,10 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to show drivers installed and what the default 
-   CD-ROM drive is. */
+/* Simple program to show drivers installed and what the default
+   CD-ROM drive is. See also corresponding C program of a similar
+   name. */
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif

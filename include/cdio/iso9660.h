@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.83 2006/03/02 18:59:13 rocky Exp $
+    $Id: iso9660.h,v 1.84 2006/03/05 06:52:15 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -532,84 +532,93 @@ extern enum iso_extension_enum_s {
 /** This is an opaque structure. */
 typedef struct _iso9660_s iso9660_t; 
 
-/*!
-  Open an ISO 9660 image for reading. Maybe in the future we will have
-  a mode. NULL is returned on error.
-*/
-  iso9660_t *iso9660_open (const char *psz_path /*flags, mode */);
+  /*! Close previously opened ISO 9660 image and free resources
+    associated with the image. Call this when done using using an ISO
+    9660 image.
+    
+    @return true is unconditionally returned. If there was an error
+    false would be returned.
+  */
+  bool iso9660_close (iso9660_t * p_iso);
 
-/*!
-  Open an ISO 9660 image for reading allowing various ISO 9660
-  extensions.  Maybe in the future we will have a mode. NULL is
-  returned on error.
-*/
+
+  /*!
+    Open an ISO 9660 image for reading. Maybe in the future we will have
+    a mode. NULL is returned on error.
+  */
+  iso9660_t *iso9660_open (const char *psz_path /*flags, mode */);
+  
+  /*!
+    Open an ISO 9660 image for reading allowing various ISO 9660
+    extensions.  Maybe in the future we will have a mode. NULL is
+    returned on error.
+
+    @see iso9660_open_fuzzy
+  */
   iso9660_t *iso9660_open_ext (const char *psz_path, 
                                iso_extension_mask_t iso_extension_mask);
+  
+  /*! Open an ISO 9660 image for "fuzzy" reading. This means that we
+    will try to guess various internal offset based on internal
+    checks. This may be useful when trying to read an ISO 9660 image
+    contained in a file format that libiso9660 doesn't know natively
+    (or knows imperfectly.)
 
-/*!
-  Open an ISO 9660 image for reading with some tolerence for positioning
-  of the ISO9660 image. We scan for ISO_STANDARD_ID and use that to set
-  the eventual offset to adjust by (as long as that is <= i_fuzz).
+    Some tolerence allowed for positioning the ISO 9660 image. We scan
+    for STANDARD_ID and use that to set the eventual offset to adjust
+    by (as long as that is <= i_fuzz).
 
-  Maybe in the future we will have a mode. NULL is returned on error.
-
-  @see iso9660_open
-*/
+    Maybe in the future we will have a mode. NULL is returned on error.
+    
+    @see iso9660_open, @see iso9660_fuzzy_ext
+  */
   iso9660_t *iso9660_open_fuzzy (const char *psz_path /*flags, mode */,
                                  uint16_t i_fuzz);
 
-/*!
-  Open an ISO 9660 image for reading with some tolerence for positioning
-  of the ISO9660 image. We scan for ISO_STANDARD_ID and use that to set
-  the eventual offset to adjust by (as long as that is <= i_fuzz).
-
-  Maybe in the future we will have a mode. NULL is returned on error.
-
-  @see iso9660_open
-*/
+  /*!
+    Open an ISO 9660 image for reading with some tolerence for positioning
+    of the ISO9660 image. We scan for ISO_STANDARD_ID and use that to set
+    the eventual offset to adjust by (as long as that is <= i_fuzz).
+    
+    Maybe in the future we will have a mode. NULL is returned on error.
+    
+    @see iso9660_open_ext @see iso9660_open_fuzzy
+  */
   iso9660_t *iso9660_open_fuzzy_ext (const char *psz_path,
                                      iso_extension_mask_t iso_extension_mask,
                                      uint16_t i_fuzz
                                      /*flags, mode */);
 
-/*!
-  Read the Super block of an ISO 9660 image but determine framesize
-  and datastart and a possible additional offset. Generally here we are
-  not reading an ISO 9660 image but a CD-Image which contains an ISO 9660
-  filesystem.
-*/
+  /*!
+    Read the Super block of an ISO 9660 image but determine framesize
+    and datastart and a possible additional offset. Generally here we are
+    not reading an ISO 9660 image but a CD-Image which contains an ISO 9660
+    filesystem.
+  */
   bool iso9660_ifs_fuzzy_read_superblock (iso9660_t *p_iso, 
                                           iso_extension_mask_t iso_extension_mask,
                                           uint16_t i_fuzz);
   
-/*!
-  Close previously opened ISO 9660 image.
-  True is unconditionally returned. If there was an error false would
-  be returned.
-*/
-  bool iso9660_close (iso9660_t * p_iso);
-
-
-/*!
-  Seek to a position and then read n bytes. Size read is returned.
-*/
+  /*!
+    Seek to a position and then read n bytes. Size read is returned.
+  */
   long int iso9660_iso_seek_read (const iso9660_t *p_iso, void *ptr, 
                                   lsn_t start, long int i_size);
-
-/*!
-  Read the Primary Volume Descriptor for a CD.
-  True is returned if read, and false if there was an error.
-*/
+  
+  /*!
+    Read the Primary Volume Descriptor for a CD.
+    True is returned if read, and false if there was an error.
+  */
   bool iso9660_fs_read_pvd ( const CdIo_t *p_cdio, 
                              /*out*/ iso9660_pvd_t *p_pvd );
-
-/*!
-  Read the Primary Volume Descriptor for an ISO 9660 image.
-  True is returned if read, and false if there was an error.
-*/
+  
+  /*!
+    Read the Primary Volume Descriptor for an ISO 9660 image.
+    True is returned if read, and false if there was an error.
+  */
   bool iso9660_ifs_read_pvd (const iso9660_t *p_iso, 
                              /*out*/ iso9660_pvd_t *p_pvd);
-
+  
 /*!
   Read the Super block of an ISO 9660 image. This is the 
   Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
@@ -617,12 +626,12 @@ typedef struct _iso9660_s iso9660_t;
 */
   bool iso9660_fs_read_superblock (CdIo_t *p_cdio, 
                                    iso_extension_mask_t iso_extension_mask);
-
-/*!
-  Read the Super block of an ISO 9660 image. This is the 
-  Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
-  Descriptor if (Joliet) extensions are acceptable.
-*/
+  
+  /*!
+    Read the Super block of an ISO 9660 image. This is the 
+    Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
+    Descriptor if (Joliet) extensions are acceptable.
+  */
   bool iso9660_ifs_read_superblock (iso9660_t *p_iso,
                                     iso_extension_mask_t iso_extension_mask);
 
@@ -637,130 +646,130 @@ typedef struct _iso9660_s iso9660_t;
                           /*out*/ iso9660_dtime_t *idr_date);
 
 
-/*!
-  Set "long" time in format used in ISO 9660 primary volume descriptor
-  from a Unix time structure. */
+  /*!
+    Set "long" time in format used in ISO 9660 primary volume descriptor
+    from a Unix time structure. */
   void iso9660_set_ltime (const struct tm *_tm, 
                           /*out*/ iso9660_ltime_t *p_pvd_date);
-
-/*!
-  Get Unix time structure from format use in an ISO 9660 directory index 
-  record. Even though tm_wday and tm_yday fields are not explicitly in
-  idr_date, they are calculated from the other fields.
-
-  If tm is to reflect the localtime, set "use_localtime" true, otherwise
-  tm will reported in GMT.
-*/
+  
+  /*!
+    Get Unix time structure from format use in an ISO 9660 directory index 
+    record. Even though tm_wday and tm_yday fields are not explicitly in
+    idr_date, they are calculated from the other fields.
+    
+    If tm is to reflect the localtime, set "use_localtime" true, otherwise
+    tm will reported in GMT.
+  */
   bool iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool use_localtime,
                           /*out*/ struct tm *tm);
-
-
-/*!
-  Get "long" time in format used in ISO 9660 primary volume descriptor
-  from a Unix time structure. 
-*/
+  
+  
+  /*!
+    Get "long" time in format used in ISO 9660 primary volume descriptor
+    from a Unix time structure. 
+  */
   bool iso9660_get_ltime (const iso9660_ltime_t *p_ldate, 
                           /*out*/ struct tm *p_tm);
-
-/*====================================================
-  Character Classification and String Manipulation
- ====================================================*/
-/*!
-   Return true if c is a DCHAR - a character that can appear in an an
-   ISO-9600 level 1 directory name. These are the ASCII capital
-   letters A-Z, the digits 0-9 and an underscore.
-*/
-bool iso9660_isdchar (int c);
-
-/*!
-   Return true if c is an ACHAR - 
-   These are the DCHAR's plus some ASCII symbols including the space 
-   symbol.   
-*/
-bool iso9660_isachar (int c);
-
-/*!
-   Convert an ISO-9660 file name which is in the format usually stored
-   in a ISO 9660 directory entry into what's usually listed as the
-   file name in a listing.  Lowercase name, and remove trailing ;1's
-   or .;1's and turn the other ;'s into version numbers.
-
-   @param psz_oldname the ISO-9660 filename to be translated.
-   @param psz_newname returned string. The caller allocates this and
-   it should be at least the size of psz_oldname.
-   @return length of the translated string is returned.
-*/
-int iso9660_name_translate(const char *psz_oldname, 
-                           /*out*/ char *psz_newname);
-
-/*!
-   Convert an ISO-9660 file name which is in the format usually stored
-   in a ISO 9660 directory entry into what's usually listed as the
-   file name in a listing.  Lowercase name if no Joliet Extension
-   interpretation. Remove trailing ;1's or .;1's and turn the other
-   ;'s into version numbers.
-
-   @param psz_oldname the ISO-9660 filename to be translated.
-   @param psz_newname returned string. The caller allocates this and
-   it should be at least the size of psz_oldname.
-   @param i_joliet_level 0 if not using Joliet Extension. Otherwise the
-   Joliet level.
-   @return length of the translated string is returned. It will be no greater
-   than the length of psz_oldname.
-*/
-int iso9660_name_translate_ext(const char *psz_old, char *psz_new, 
-                               uint8_t i_joliet_level);
   
-/*!  
-  Pad string src with spaces to size len and copy this to dst. If
-  len is less than the length of src, dst will be truncated to the
-  first len characters of src.
-
-  src can also be scanned to see if it contains only ACHARs, DCHARs, 
-  7-bit ASCII chars depending on the enumeration _check.
-
-  In addition to getting changed, dst is the return value.
-  Note: this string might not be NULL terminated.
- */
-char *iso9660_strncpy_pad(char dst[], const char src[], size_t len, 
-                          enum strncpy_pad_check _check);
-
-/*=====================================================================
-  File and Directory Names 
-======================================================================*/
-
-/*!
-  Check that psz_path is a valid ISO-9660 directory name.
-
-  A valid directory name should not start out with a slash (/), 
-  dot (.) or null byte, should be less than 37 characters long, 
-  have no more than 8 characters in a directory component 
-  which is separated by a /, and consist of only DCHARs. 
-
-  True is returned if psz_path is valid.
- */
-bool iso9660_dirname_valid_p (const char psz_path[]);
-
-/*!  
-  Take psz_path and a version number and turn that into a ISO-9660
-  pathname.  (That's just the pathname followd by ";" and the version
-  number. For example, mydir/file.ext -> MYDIR/FILE.EXT;1 for version
-  1. The resulting ISO-9660 pathname is returned.
-*/
-char *iso9660_pathname_isofy (const char psz_path[], uint16_t i_version);
-
-/*!
-  Check that psz_path is a valid ISO-9660 pathname.  
-
-  A valid pathname contains a valid directory name, if one appears and
-  the filename portion should be no more than 8 characters for the
-  file prefix and 3 characters in the extension (or portion after a
-  dot). There should be exactly one dot somewhere in the filename
-  portion and the filename should be composed of only DCHARs.
+  /*====================================================
+    Character Classification and String Manipulation
+    ====================================================*/
+  /*!
+    Return true if c is a DCHAR - a character that can appear in an an
+    ISO-9600 level 1 directory name. These are the ASCII capital
+    letters A-Z, the digits 0-9 and an underscore.
+  */
+  bool iso9660_isdchar (int c);
   
-  True is returned if psz_path is valid.
- */
-bool iso9660_pathname_valid_p (const char psz_path[]);
+  /*!
+    Return true if c is an ACHAR - 
+    These are the DCHAR's plus some ASCII symbols including the space 
+    symbol.   
+  */
+  bool iso9660_isachar (int c);
+  
+  /*!
+    Convert an ISO-9660 file name which is in the format usually stored
+    in a ISO 9660 directory entry into what's usually listed as the
+    file name in a listing.  Lowercase name, and remove trailing ;1's
+    or .;1's and turn the other ;'s into version numbers.
+    
+    @param psz_oldname the ISO-9660 filename to be translated.
+    @param psz_newname returned string. The caller allocates this and
+    it should be at least the size of psz_oldname.
+    @return length of the translated string is returned.
+  */
+  int iso9660_name_translate(const char *psz_oldname, 
+                             /*out*/ char *psz_newname);
+  
+  /*!
+    Convert an ISO-9660 file name which is in the format usually stored
+    in a ISO 9660 directory entry into what's usually listed as the
+    file name in a listing.  Lowercase name if no Joliet Extension
+    interpretation. Remove trailing ;1's or .;1's and turn the other
+    ;'s into version numbers.
+    
+    @param psz_oldname the ISO-9660 filename to be translated.
+    @param psz_newname returned string. The caller allocates this and
+    it should be at least the size of psz_oldname.
+    @param i_joliet_level 0 if not using Joliet Extension. Otherwise the
+    Joliet level.
+    @return length of the translated string is returned. It will be no greater
+    than the length of psz_oldname.
+  */
+  int iso9660_name_translate_ext(const char *psz_old, char *psz_new, 
+                                 uint8_t i_joliet_level);
+  
+  /*!  
+    Pad string src with spaces to size len and copy this to dst. If
+    len is less than the length of src, dst will be truncated to the
+    first len characters of src.
+    
+    src can also be scanned to see if it contains only ACHARs, DCHARs, 
+    7-bit ASCII chars depending on the enumeration _check.
+    
+    In addition to getting changed, dst is the return value.
+    Note: this string might not be NULL terminated.
+  */
+  char *iso9660_strncpy_pad(char dst[], const char src[], size_t len, 
+                            enum strncpy_pad_check _check);
+  
+  /*=====================================================================
+    File and Directory Names 
+    ======================================================================*/
+  
+  /*!
+    Check that psz_path is a valid ISO-9660 directory name.
+    
+    A valid directory name should not start out with a slash (/), 
+    dot (.) or null byte, should be less than 37 characters long, 
+    have no more than 8 characters in a directory component 
+    which is separated by a /, and consist of only DCHARs. 
+    
+    True is returned if psz_path is valid.
+  */
+  bool iso9660_dirname_valid_p (const char psz_path[]);
+  
+  /*!  
+    Take psz_path and a version number and turn that into a ISO-9660
+    pathname.  (That's just the pathname followd by ";" and the version
+    number. For example, mydir/file.ext -> MYDIR/FILE.EXT;1 for version
+    1. The resulting ISO-9660 pathname is returned.
+  */
+  char *iso9660_pathname_isofy (const char psz_path[], uint16_t i_version);
+  
+  /*!
+    Check that psz_path is a valid ISO-9660 pathname.  
+    
+    A valid pathname contains a valid directory name, if one appears and
+    the filename portion should be no more than 8 characters for the
+    file prefix and 3 characters in the extension (or portion after a
+    dot). There should be exactly one dot somewhere in the filename
+    portion and the filename should be composed of only DCHARs.
+    
+    True is returned if psz_path is valid.
+  */
+  bool iso9660_pathname_valid_p (const char psz_path[]);
 
 /*=====================================================================
   directory tree 

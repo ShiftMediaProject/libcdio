@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: cdio.hpp,v 1.8 2006/02/02 04:37:29 rocky Exp $
+    $Id: cdio.hpp,v 1.9 2006/03/05 06:52:15 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -174,9 +174,9 @@ class CdioDevice
 {
 
 public:
-  CdioDevice(CdIo_t *p = (CdIo_t *) NULL)
+  CdioDevice()
   { 
-    p_cdio=p; 
+      p_cdio = (CdIo_t *) NULL; 
   };
 
   ~CdioDevice() 
