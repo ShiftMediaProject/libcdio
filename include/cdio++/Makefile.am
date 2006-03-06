@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.3 2005/11/29 03:56:26 rocky Exp $
+#   $Id: Makefile.am,v 1.4 2006/03/06 22:34:13 rocky Exp $
 #
 #    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -29,6 +29,7 @@ libcdioinclude_HEADERS = \
 	devices.hpp \
 	disc.hpp \
 	enum.hpp \
+	iso9660.hpp \
 	mmc.hpp \
 	read.hpp \
 	track.hpp

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.37 2006/01/08 21:44:14 rocky Exp $
+#   $Id: Makefile.am,v 1.38 2006/03/06 22:34:13 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -29,9 +29,11 @@ EXTRA_DIST =
 	THANKS \
 	example/README \
 	libcdio.pc.in libcdio.pc \
+	libcdio++.pc.in libcdio++.pc \
 	libcdio_cdda.pc \
 	libcdio_cdda.pc.in \
 	libiso9660.pc.in libiso9660.pc \
+	libiso9660++.pc.in libiso9660++.pc \
 	package/libcdio.spec \
 	package/libcdio.spec.in 
 
