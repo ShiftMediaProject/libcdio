@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.48 2006/02/16 20:11:14 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.49 2006/03/06 19:39:35 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -2187,7 +2187,7 @@ CD-ROM device names
 There are a some other naming conventions. Generally if a routine
 name starts @code{cdio_}, e.g. @code{cdio_open}, then it is an
 externally visible routine in @code{libcdio}. If a name starts
-@code{iso9660_}, e.g. @code{iso9660_isdchar} then it is an externally
+@code{iso9660_}, e.g. @code{iso9660_is_dchar} then it is an externally
 visible routine in @code{libiso9660}. If a name starts
 @code{scsi_mmc_}, e.g. @code{scsi_mmc_get_discmode}, then it is an
 externally visible MMC routine. (We don't have a separate library for

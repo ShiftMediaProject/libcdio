@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.19 2006/03/02 18:59:13 rocky Exp $
+    $Id: iso9660.c,v 1.20 2006/03/06 19:39:35 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -51,7 +51,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.19 2006/03/02 18:59:13 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.20 2006/03/06 19:39:35 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -388,7 +388,7 @@ iso9660_strncpy_pad(char dst[], const char src[], size_t len,
 
     case ISO9660_ACHARS:
       for (idx = 0; src[idx]; idx++)
-        if (!iso9660_isachar (src[idx]))
+        if (!iso9660_is_achar (src[idx]))
           {
             cdio_warn ("string '%s' fails a-character constraint (pos = %d)",
                       src, idx);
@@ -398,7 +398,7 @@ iso9660_strncpy_pad(char dst[], const char src[], size_t len,
 
     case ISO9660_DCHARS:
       for (idx = 0; src[idx]; idx++)
-        if (!iso9660_isdchar (src[idx]))
+        if (!iso9660_is_dchar (src[idx]))
           {
             cdio_warn ("string '%s' fails d-character constraint (pos = %d)",
                       src, idx);
@@ -429,7 +429,7 @@ iso9660_strncpy_pad(char dst[], const char src[], size_t len,
    underscore.
 */
 bool
-iso9660_isdchar (int c)
+iso9660_is_dchar (int c)
 {
   if (!IN (c, 0x30, 0x5f)
       || IN (c, 0x3a, 0x40)
@@ -446,7 +446,7 @@ iso9660_isdchar (int c)
    symbol.   
 */
 bool
-iso9660_isachar (int c)
+iso9660_is_achar (int c)
 {
   if (!IN (c, 0x20, 0x5f)
       || IN (c, 0x23, 0x24)
@@ -874,7 +874,7 @@ iso9660_dirname_valid_p (const char pathname[])
   
   len = 0;
   for (; *p; p++)
-    if (iso9660_isdchar (*p))
+    if (iso9660_is_dchar (*p))
       {
         len++;
         if (len > 8)
@@ -940,7 +940,7 @@ iso9660_pathname_valid_p (const char pathname[])
     int dots = 0;
 
     for (; *p; p++)
-      if (iso9660_isdchar (*p))
+      if (iso9660_is_dchar (*p))
         {
           len++;
           if (dots == 0 ? len > 8 : len > 3)

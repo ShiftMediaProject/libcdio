@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.85 2006/03/05 08:31:03 rocky Exp $
+    $Id: iso9660.h,v 1.86 2006/03/06 19:39:35 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -679,14 +679,14 @@ typedef struct _iso9660_s iso9660_t;
     ISO-9600 level 1 directory name. These are the ASCII capital
     letters A-Z, the digits 0-9 and an underscore.
   */
-  bool iso9660_isdchar (int c);
+  bool iso9660_is_dchar (int c);
   
   /*!
     Return true if c is an ACHAR - 
     These are the DCHAR's plus some ASCII symbols including the space 
     symbol.   
   */
-  bool iso9660_isachar (int c);
+  bool iso9660_is_achar (int c);
   
   /*!
     Convert an ISO-9660 file name which is in the format usually stored
@@ -1011,6 +1011,12 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
   */
   bool iso9660_ifs_is_xa (const iso9660_t * p_iso);
 
+
+#ifndef DO_NOT_WANT_PARANOIA_COMPATIBILITY
+/** For compatibility with good ol' paranoia */
+#define iso9660_isdchar       iso9660_is_dchar
+#define iso9660_isachar       iso9660_is_achar
+#endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
 
 #ifdef __cplusplus
 }

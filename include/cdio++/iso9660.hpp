@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: iso9660.hpp,v 1.4 2006/03/06 04:48:38 rocky Exp $
+    $Id: iso9660.hpp,v 1.5 2006/03/06 19:39:35 rocky Exp $
 
     Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -39,6 +39,24 @@ class ISO9660
 
 public:
 
+  /*!
+    Convert an ISO-9660 file name which is in the format usually stored
+    in a ISO 9660 directory entry into what's usually listed as the
+    file name in a listing.  Lowercase name, and remove trailing ;1's
+    or .;1's and turn the other ;'s into version numbers.
+    
+    @param psz_oldname the ISO-9660 filename to be translated.
+    @param psz_newname returned string. The caller allocates this and
+    it should be at least the size of psz_oldname.
+    @return length of the translated string is returned.
+  */
+  int name_translate(const char *psz_oldname, 
+		     /*out*/ char *psz_newname) 
+  {
+    return iso9660_name_translate(psz_oldname, psz_newname);
+  }
+  
+  
   class Stat
   {
   public:
@@ -377,19 +395,23 @@ public:
       pointers for the files inside that directory. The caller must free
       the returned result.
     */
-    list< ISO9660::Stat *> readdir (const char psz_path[]) 
+    bool
+    readdir (const char psz_path[], list< ISO9660::Stat *>& stat_list) 
     {
       CdioList_t *p_stat_list = iso9660_ifs_readdir (p_iso9660, psz_path);
-      CdioListNode_t *p_entnode;
-      list< ISO9660::Stat *> stat_list;
-      _CDIO_LIST_FOREACH (p_entnode, p_stat_list) {
-	iso9660_stat_t *p_statbuf = 
-	  (iso9660_stat_t *) _cdio_list_node_data (p_entnode);
-	stat_list.push_back(new ISO9660::Stat(p_statbuf));
-      }
-      _cdio_list_free (p_stat_list, false);
       
-      return stat_list;
+      if (p_stat_list) {
+	CdioListNode_t *p_entnode;
+	_CDIO_LIST_FOREACH (p_entnode, p_stat_list) {
+	  iso9660_stat_t *p_statbuf = 
+	    (iso9660_stat_t *) _cdio_list_node_data (p_entnode);
+	  stat_list.push_back(new ISO9660::Stat(p_statbuf));
+	}
+	_cdio_list_free (p_stat_list, false);
+	return true;
+      } else {
+	return false;
+      }
     }
 
     /*!

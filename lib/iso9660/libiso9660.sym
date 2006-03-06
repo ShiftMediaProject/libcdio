@@ -53,8 +53,8 @@ iso9660_ifs_read_superblock
 iso9660_ifs_readdir
 iso9660_ifs_stat
 iso9660_ifs_stat_translate
-iso9660_isachar
-iso9660_isdchar
+iso9660_is_achar
+iso9660_is_dchar
 iso9660_iso_seek_read
 iso9660_name_translate
 iso9660_name_translate_ext

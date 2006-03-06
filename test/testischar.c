@@ -1,5 +1,5 @@
 /*
-    $Id: testischar.c,v 1.1 2003/08/17 05:31:19 rocky Exp $
+    $Id: testischar.c,v 1.2 2006/03/06 19:39:35 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -52,7 +52,7 @@ main (int argc, const char *argv[])
 	{
 	  int c = (j << 4) + i;
 
-	  printf (" %c", iso9660_isdchar (c) ? c : ' ');
+	  printf (" %c", iso9660_is_dchar (c) ? c : ' ');
 	}
 
       printf (" |");

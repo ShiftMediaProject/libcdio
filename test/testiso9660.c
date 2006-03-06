@@ -1,5 +1,5 @@
 /*
-    $Id: testiso9660.c,v 1.7 2006/02/25 12:10:53 rocky Exp $
+    $Id: testiso9660.c,v 1.8 2006/03/06 19:39:35 rocky Exp $
 
     Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -51,12 +51,12 @@ main (int argc, const char *argv[])
    *********************************************/
 
   for (c='A'; c<='Z'; c++ ) {
-    if (!iso9660_isdchar(c)) {
-      printf("Failed iso9660_isdchar test on %c\n", c);
+    if (!iso9660_is_dchar(c)) {
+      printf("Failed iso9660_is_dchar test on %c\n", c);
       i_bad++;
     }
-    if (!iso9660_isachar(c)) {
-      printf("Failed iso9660_isachar test on %c\n", c);
+    if (!iso9660_is_achar(c)) {
+      printf("Failed iso9660_is_achar test on %c\n", c);
       i_bad++;
     }
   }
@@ -64,12 +64,12 @@ main (int argc, const char *argv[])
   if (i_bad) return i_bad;
   
   for (c='0'; c<='9'; c++ ) {
-    if (!iso9660_isdchar(c)) {
-      printf("Failed iso9660_isdchar test on %c\n", c);
+    if (!iso9660_is_dchar(c)) {
+      printf("Failed iso9660_is_dchar test on %c\n", c);
       i_bad++;
     }
-    if (!iso9660_isachar(c)) {
-      printf("Failed iso9660_isachar test on %c\n", c);
+    if (!iso9660_is_achar(c)) {
+      printf("Failed iso9660_is_achar test on %c\n", c);
       i_bad++;
     }
   }
@@ -78,12 +78,12 @@ main (int argc, const char *argv[])
 
   for (i=0; i<=13; i++ ) {
     c=achars[i];
-    if (iso9660_isdchar(c)) {
-      printf("Should not pass iso9660_isdchar test on %c\n", c);
+    if (iso9660_is_dchar(c)) {
+      printf("Should not pass iso9660_is_dchar test on %c\n", c);
       i_bad++;
     }
-    if (!iso9660_isachar(c)) {
-      printf("Failed iso9660_isachar test on symbol %c\n", c);
+    if (!iso9660_is_achar(c)) {
+      printf("Failed iso9660_is_achar test on symbol %c\n", c);
       i_bad++;
     }
   }

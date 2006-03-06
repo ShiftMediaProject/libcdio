@@ -1,5 +1,5 @@
 /*
-  $Id: iso1.cpp,v 1.1 2006/03/06 04:48:38 rocky Exp $
+  $Id: iso1.cpp,v 1.2 2006/03/06 19:39:35 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -67,7 +67,7 @@
 int
 main(int argc, const char *argv[])
 {
-  list < ISO9660::Stat > entlist;
+  list < ISO9660::Stat *> stat_list;
   ISO9660::IFS *p_iso = new ISO9660::IFS;
   char const *psz_fname;
   const char *psz_path="/";
@@ -94,25 +94,23 @@ main(int argc, const char *argv[])
     print_vd_info("Volume Set ", get_volumeset_id);
   }
 
-#if 0
-  entlist = p_iso->readdir (psz_path);
-    
-  /* Iterate over the list of nodes that iso9660_ifs_readdir gives  */
-  
+  if (p_iso->readdir (psz_path, stat_list))
   {
-    ISO9660::Stat *p_stat;
-    for(p_stat=entlist.begin(); p_stat != entlist.end(); ++p_stat)
+    /* Iterate over the list of files.  */
+    list <ISO9660::Stat *>::iterator i;
+    for(i=stat_list.begin(); i != stat_list.end(); ++i)
       {
 	char filename[4096];
-	p_stat->iso9660_name_translate(p_statbuf->filename, filename);
+	ISO9660::Stat *p_s = *i;
+	iso9660_name_translate(p_s->p_stat->filename, filename);
 	printf ("%s [LSN %6d] %8u %s%s\n", 
-		2 == p_statbuf->type ? "d" : "-",
-		p_statbuf->lsn, p_statbuf->size, psz_path, filename);
+		2 == p_s->p_stat->type ? "d" : "-",
+		p_s->p_stat->lsn, p_s->p_stat->size, psz_path, filename);
+	delete(p_s);
       }
     
-    delete(stat);
+    stat_list.clear();
   }
-#endif  
 
   delete(p_iso);
   return 0;
