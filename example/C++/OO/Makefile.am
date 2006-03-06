@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.5 2006/03/06 04:48:38 rocky Exp $
+#   $Id: Makefile.am,v 1.6 2006/03/06 21:54:56 rocky Exp $
 #
 #    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,7 +20,7 @@
 # Sample C++ programs using libcdio++ (with C++ OO wrapper)
 ############################################################
 #
-noinst_PROGRAMS = cdtext device drives eject iso1 iso3 mmc1 mmc2 tracks
+noinst_PROGRAMS = cdtext device drives eject iso1 iso2 iso3 mmc1 mmc2 tracks
 
 INCLUDES = -I$(top_srcdir)/include $(LIBCDIO_CFLAGS)
 
@@ -46,6 +46,10 @@ iso1_LDADD          = $(LIBISO966PP0_LIBS) $(LIBISO9660_LIBS) \
 
 iso3_SOURCES        = iso3.cpp
 iso3_LDADD          = $(LIBISO966PP0_LIBS) $(LIBISO9660_LIBS) \
+	              $(LIBCDIOPP_LIBS) $(LIBICONV)
+
+iso2_SOURCES        = iso2.cpp
+iso2_LDADD          = $(LIBISO966PP0_LIBS) $(LIBISO9660_LIBS) \
 	              $(LIBCDIOPP_LIBS) $(LIBICONV)
 
 mmc1_SOURCES        = mmc1.cpp

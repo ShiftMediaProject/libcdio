@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: cdio.hpp,v 1.9 2006/03/05 06:52:15 rocky Exp $
+    $Id: cdio.hpp,v 1.10 2006/03/06 21:54:56 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -174,6 +174,9 @@ class CdioDevice
 {
 
 public:
+  CdIo_t *p_cdio;  // Make private? If so, subclasses would have to 
+                   // use their own.
+
   CdioDevice()
   { 
       p_cdio = (CdIo_t *) NULL; 
@@ -191,8 +194,6 @@ public:
 #include "mmc.hpp"
 #include "read.hpp"
 
-private:
-  CdIo_t *p_cdio;
 };
 
 /* Things related to devices. No class or object is needed. */

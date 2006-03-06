@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.32 2005/11/06 00:39:37 rocky Exp $
+    $Id: iso9660_fs.c,v 1.33 2006/03/06 21:54:56 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -52,7 +52,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.32 2005/11/06 00:39:37 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.33 2006/03/06 21:54:56 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -987,7 +987,7 @@ _fs_stat_root (CdIo_t *p_cdio)
 }
 
 static iso9660_stat_t *
-_fs_stat_iso_root (iso9660_t *p_iso)
+_ifs_stat_root (iso9660_t *p_iso)
 {
   iso9660_stat_t *p_stat;
   iso9660_dir_t *p_iso9660_dir;
@@ -1253,7 +1253,7 @@ iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[])
   if (!p_iso)    return NULL;
   if (!psz_path) return NULL;
 
-  p_root = _fs_stat_iso_root (p_iso);
+  p_root = _ifs_stat_root (p_iso);
   if (!p_root) return NULL;
 
   splitpath = _cdio_strsplit (psz_path, '/');
@@ -1280,7 +1280,7 @@ iso9660_ifs_stat_translate (iso9660_t *p_iso, const char psz_path[])
   if (!p_iso)    return NULL;
   if (!psz_path) return NULL;
 
-  p_root = _fs_stat_iso_root (p_iso);
+  p_root = _ifs_stat_root (p_iso);
   if (NULL == p_root) return NULL;
 
   p_psz_splitpath = _cdio_strsplit (psz_path, '/');
@@ -1483,6 +1483,60 @@ find_fs_lsn_recurse (CdIo_t *p_cdio, const char psz_path[], lsn_t lsn)
   return NULL;
 }
 
+static iso9660_stat_t *
+find_ifs_lsn_recurse (iso9660_t *p_iso, const char psz_path[], lsn_t lsn)
+{
+  CdioList_t *entlist = iso9660_ifs_readdir (p_iso, psz_path);
+  CdioList_t *dirlist =  _cdio_list_new ();
+  CdioListNode_t *entnode;
+    
+  cdio_assert (entlist != NULL);
+
+  /* iterate over each entry in the directory */
+  
+  _CDIO_LIST_FOREACH (entnode, entlist)
+    {
+      iso9660_stat_t *statbuf = _cdio_list_node_data (entnode);
+      char _fullname[4096] = { 0, };
+      char *filename = (char *) statbuf->filename;
+
+      snprintf (_fullname, sizeof (_fullname), "%s%s/", psz_path, filename);
+
+      if (statbuf->type == _STAT_DIR
+          && strcmp ((char *) statbuf->filename, ".") 
+          && strcmp ((char *) statbuf->filename, ".."))
+        _cdio_list_append (dirlist, strdup (_fullname));
+
+      if (statbuf->lsn == lsn) {
+	unsigned int len=sizeof(iso9660_stat_t)+strlen(statbuf->filename)+1;
+	iso9660_stat_t *ret_stat = calloc(1, len);
+	memcpy(ret_stat, statbuf, len);
+        _cdio_list_free (entlist, true);
+        _cdio_list_free (dirlist, true);
+        return ret_stat;
+      }
+      
+    }
+
+  _cdio_list_free (entlist, true);
+
+  /* now recurse/descend over directories encountered */
+
+  _CDIO_LIST_FOREACH (entnode, dirlist)
+    {
+      char *_fullname = _cdio_list_node_data (entnode);
+      iso9660_stat_t *ret_stat = find_ifs_lsn_recurse (p_iso, _fullname, lsn);
+
+      if (NULL != ret_stat) {
+        _cdio_list_free (dirlist, true);
+        return ret_stat;
+      }
+    }
+
+  _cdio_list_free (dirlist, true);
+  return NULL;
+}
+
 /*!
    Given a directory pointer, find the filesystem entry that contains
    lsn and return information about it.
@@ -1490,9 +1544,21 @@ find_fs_lsn_recurse (CdIo_t *p_cdio, const char psz_path[], lsn_t lsn)
    Returns stat_t of entry if we found lsn, or NULL otherwise.
  */
 iso9660_stat_t *
-iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn)
+iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn)
 {
   return find_fs_lsn_recurse (p_cdio, "/", i_lsn);
+}
+
+/*!
+   Given a directory pointer, find the filesystem entry that contains
+   lsn and return information about it.
+
+   Returns stat_t of entry if we found lsn, or NULL otherwise.
+ */
+iso9660_stat_t *
+iso9660_ifs_find_lsn(iso9660_t *p_iso, lsn_t i_lsn)
+{
+  return find_ifs_lsn_recurse (p_iso, "/", i_lsn);
 }
 
 /*!

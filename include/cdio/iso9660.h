@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.86 2006/03/06 19:39:35 rocky Exp $
+    $Id: iso9660.h,v 1.87 2006/03/06 21:54:56 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -803,7 +803,7 @@ iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
    @return stat_t of entry if we found lsn, or NULL otherwise.
    Caller must free return value.
  */
-iso9660_stat_t *iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
+iso9660_stat_t *iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
 
 
 /*!
@@ -813,7 +813,7 @@ iso9660_stat_t *iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
    @return stat_t of entry if we found lsn, or NULL otherwise.
    Caller must free return value.
  */
-iso9660_stat_t *iso9660_find_ifs_lsn(const iso9660_t *p_iso, lsn_t i_lsn);
+iso9660_stat_t *iso9660_ifs_find_lsn(iso9660_t *p_iso, lsn_t i_lsn);
 
 
 /*!
@@ -1012,11 +1012,12 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
   bool iso9660_ifs_is_xa (const iso9660_t * p_iso);
 
 
-#ifndef DO_NOT_WANT_PARANOIA_COMPATIBILITY
-/** For compatibility with good ol' paranoia */
+#ifndef DO_NOT_WANT_COMPATIBILITY
+/** For compatibility with < 0.77 */
 #define iso9660_isdchar       iso9660_is_dchar
 #define iso9660_isachar       iso9660_is_achar
-#endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
+#define iso9660_find_fs_lsn   iso9660_fs_find_lsn  
+#endif /*DO_NOT_WANT_COMPATIBILITY*/
 
 #ifdef __cplusplus
 }

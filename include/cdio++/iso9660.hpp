@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: iso9660.hpp,v 1.5 2006/03/06 19:39:35 rocky Exp $
+    $Id: iso9660.hpp,v 1.6 2006/03/06 21:54:56 rocky Exp $
 
     Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -28,6 +28,7 @@
 #define __ISO9660_HPP__
 
 #include <cdio/iso9660.h>
+#include <cdio++/cdio.hpp>
 #include <string.h>
 #include <list>		// list class library
 using namespace std;
@@ -39,24 +40,6 @@ class ISO9660
 
 public:
 
-  /*!
-    Convert an ISO-9660 file name which is in the format usually stored
-    in a ISO 9660 directory entry into what's usually listed as the
-    file name in a listing.  Lowercase name, and remove trailing ;1's
-    or .;1's and turn the other ;'s into version numbers.
-    
-    @param psz_oldname the ISO-9660 filename to be translated.
-    @param psz_newname returned string. The caller allocates this and
-    it should be at least the size of psz_oldname.
-    @return length of the translated string is returned.
-  */
-  int name_translate(const char *psz_oldname, 
-		     /*out*/ char *psz_newname) 
-  {
-    return iso9660_name_translate(psz_oldname, psz_newname);
-  }
-  
-  
   class Stat
   {
   public:
@@ -225,11 +208,11 @@ public:
       Given a directory pointer, find the filesystem entry that contains
       lsn and return information about it.
       
-      Returns stat_t of entry if we found lsn, or NULL otherwise.
+      Returns Stat*  of entry if we found lsn, or NULL otherwise.
     */
     Stat *find_lsn(lsn_t i_lsn) 
     {
-      return new Stat(iso9660_find_ifs_lsn(p_iso9660, i_lsn));
+      return new Stat(iso9660_ifs_find_lsn(p_iso9660, i_lsn));
     };
 
     /*!  
@@ -437,7 +420,89 @@ public:
     iso9660_t *p_iso9660;
   };
 
-};
+  class FS : public CdioDevice
+  {
+  public:
 
+    /*!
+      Given a directory pointer, find the filesystem entry that contains
+      lsn and return information about it.
+      
+      @return Stat * of entry if we found lsn, or NULL otherwise.
+      Caller must free return value.
+    */
+    Stat *find_lsn(lsn_t i_lsn) 
+    {
+      return new Stat(iso9660_find_fs_lsn(p_cdio, i_lsn));
+    }
+
+    /*!
+      Read the Primary Volume Descriptor for a CD.
+      True is returned if read, and false if there was an error.
+    */
+    bool read_pvd ( /*out*/ iso9660_pvd_t *p_pvd ) 
+    {
+      return iso9660_fs_read_pvd ( p_cdio, p_pvd );
+    }
+
+    /*!
+      Read the Super block of an ISO 9660 image. This is the 
+      Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
+      Descriptor if (Joliet) extensions are acceptable.
+    */
+    bool read_superblock (iso_extension_mask_t iso_extension_mask) 
+    {
+      return iso9660_fs_read_superblock (p_cdio, iso_extension_mask);
+    }
+
+    /*! Read psz_path (a directory) and return a list of iso9660_stat_t
+      pointers for the files inside that directory. The caller must free the
+      returned result.
+    */
+    bool readdir (const char psz_path[], bool b_mode2,
+		  list< ISO9660::Stat *>& stat_list)
+    {
+      CdioList_t * p_stat_list = iso9660_fs_readdir (p_cdio, psz_path, 
+						     b_mode2);
+      if (p_stat_list) {
+	CdioListNode_t *p_entnode;
+	_CDIO_LIST_FOREACH (p_entnode, p_stat_list) {
+	  iso9660_stat_t *p_statbuf = 
+	    (iso9660_stat_t *) _cdio_list_node_data (p_entnode);
+	  stat_list.push_back(new ISO9660::Stat(p_statbuf));
+	}
+	_cdio_list_free (p_stat_list, false);
+	return true;
+      } else {
+	return false;
+      }
+    }
+
+    /*!
+      Return file status for path name psz_path. NULL is returned on
+      error.
+
+      If translate is true, version numbers in the ISO 9660 name are
+      dropped, i.e. ;1 is removed and if level 1 ISO-9660 names are
+      lowercased.
+
+      Mode2 is used only if translate is true and is a hack that
+      really should go away in libcdio sometime. If set use mode 2
+      reading, otherwise use mode 1 reading.
+
+      @return file status object for psz_path. NULL is returned on
+      error.
+    */
+    Stat *stat (const char psz_path[], bool b_translate=false, 
+		bool b_mode2=false) 
+    {
+      if (b_translate) 
+	return new ISO9660::Stat(iso9660_fs_stat_translate (p_cdio, psz_path, 
+							    b_mode2));
+      else 
+	return new ISO9660::Stat(iso9660_fs_stat (p_cdio, psz_path));
+    }
+  };
+};
 
 #endif /* __ISO9660_HPP__ */
