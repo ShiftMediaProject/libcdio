@@ -4,9 +4,11 @@ Makefile
 Makefile.am
 Makefile.in
 cdtext
+copying
 device
 drives
 eject
+iso3
 mmc1
 mmc2
 tracks

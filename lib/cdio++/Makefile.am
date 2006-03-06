@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.2 2006/03/05 06:52:15 rocky Exp $
+#   $Id: Makefile.am,v 1.3 2006/03/06 01:34:22 rocky Exp $
 #
 #    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -42,7 +42,7 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-lib_LTLIBRARIES    = libiso9660pp.la libcdio++.la 
+lib_LTLIBRARIES    = libiso9660++.la libcdio++.la 
 
 libcdiopp_la_CURRENT := 0
 libcdiopp_la_REVISION := 0
@@ -59,7 +59,7 @@ libiso9660pp_la_AGE := 0
 
 libiso9660pp_sources = iso9660_stub.cpp
 
-libiso9660pp_la_SOURCES = $(libiso9660pp_sources)
-libiso9660pp_la_ldflags = -version-info $(libiso9660pp_la_CURRENT):$(libiso9660pp_la_REVISION):$(libiso9660pp_la_AGE)
+libiso9660___la_SOURCES = $(libiso9660pp_sources)
+libiso9660___la_ldflags = -version-info $(libiso9660pp_la_CURRENT):$(libiso9660pp_la_REVISION):$(libiso9660pp_la_AGE)
 
 INCLUDES = -I$(top_srcdir)/include/

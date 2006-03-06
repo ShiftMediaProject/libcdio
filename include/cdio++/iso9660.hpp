@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: iso9660.hpp,v 1.2 2006/03/05 08:31:03 rocky Exp $
+    $Id: iso9660.hpp,v 1.3 2006/03/06 01:34:22 rocky Exp $
 
     Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -29,6 +29,7 @@
 
 #include <cdio/iso9660.h>
 #include <string.h>
+#include <list>		// list class library
 
 /** ISO 9660 class.
 */
@@ -37,29 +38,141 @@ class ISO9660
 
 public:
 
-  class PVD
-  {
-    PVD(iso9660_pvd_t *p_new_pvd)
-    { 
-      p_pvd = p_new_pvd;
-    };
-
-  private:
-    iso9660_pvd_t *p_pvd;
-  };
-    
   class Stat
   {
-  public: 
+  public:
+    iso9660_stat_t *p_stat;  // Make private?
+
     Stat(iso9660_stat_t *p_new_stat)
     { 
       p_stat = p_new_stat;
     };
 
-  private:
-    iso9660_stat_t * p_stat;
+    Stat(const Stat& copy_in) 
+    {
+      free(p_stat);
+      p_stat = (iso9660_stat_t *) 
+	calloc( 1, sizeof(iso9660_stat_t) 
+		+ strlen(copy_in.p_stat->filename)+1 );
+      p_stat = copy_in.p_stat;
+    }
+      
+    const Stat& operator= (const Stat& right) 
+    {
+      free(p_stat);
+      this->p_stat = right.p_stat;
+    }
+    
+    ~Stat() 
+    {
+      free(p_stat);
+      p_stat = NULL;
+    }
+    
+    
   };
+  class PVD
+  {
+  public:
 
+    iso9660_pvd_t pvd;  // Make private?
+
+    PVD(iso9660_pvd_t *p_new_pvd)
+    { 
+      memcpy(&pvd, p_new_pvd, sizeof(pvd));
+    };
+
+    /*!
+      Return the PVD's application ID.
+      NULL is returned if there is some problem in getting this. 
+    */
+    char * get_application_id() 
+    {
+      return iso9660_get_application_id(&pvd);
+    };
+    
+    int get_pvd_block_size() 
+    {
+      return iso9660_get_pvd_block_size(&pvd);
+    }
+    
+    /*!
+      Return the PVD's preparer ID.
+      NULL is returned if there is some problem in getting this. 
+    */
+    char * get_preparer_id() 
+    {
+      return iso9660_get_preparer_id(&pvd);
+    };
+    
+    /*!
+      Return the PVD's publisher ID.
+      NULL is returned if there is some problem in getting this. 
+    */
+    char * get_publisher_id() 
+    {
+      return iso9660_get_publisher_id(&pvd);
+    };
+    
+    const char *get_pvd_id() 
+    {
+      return iso9660_get_pvd_id(&pvd);
+    };
+    
+    int get_pvd_space_size() 
+    {
+      return iso9660_get_pvd_space_size(&pvd);
+    };
+    
+    uint8_t get_pvd_type() {
+      return iso9660_get_pvd_type(&pvd);
+    };
+    
+    /*! Return the primary volume id version number (of pvd).
+      If there is an error 0 is returned. 
+    */
+    int get_pvd_version() 
+    {
+      return iso9660_get_pvd_version(&pvd);
+    }
+    
+    /*! Return the LSN of the root directory for pvd.
+      If there is an error CDIO_INVALID_LSN is returned. 
+    */
+    lsn_t get_root_lsn() 
+    {
+      return iso9660_get_root_lsn(&pvd);
+    }
+  
+    /*!
+      Return the PVD's system ID.
+      NULL is returned if there is some problem in getting this. 
+    */
+    char * get_system_id() 
+    {
+      return iso9660_get_system_id(&pvd);
+    };
+    
+    /*!
+      Return the PVD's volume ID.
+      NULL is returned if there is some problem in getting this. 
+    */
+    char * get_volume_id() 
+    {
+      return iso9660_get_volume_id(&pvd);
+    };
+    
+    /*!
+      Return the PVD's volumeset ID.
+      NULL is returned if there is some problem in getting this. 
+    */
+    char * get_volumeset_id() 
+    {
+      return iso9660_get_volumeset_id(&pvd);
+    };
+    
+  };
+    
   class IFS
   {
   public:
@@ -97,9 +210,7 @@ public:
     */
     Stat *find_lsn(lsn_t i_lsn) 
     {
-      iso9660_stat_t *p_stat = iso9660_find_ifs_lsn(p_iso9660, i_lsn);
-      if (!p_stat) return (Stat *) NULL;
-      return new Stat(p_stat);
+      return new Stat(iso9660_find_ifs_lsn(p_iso9660, i_lsn));
     };
 
     /*!  
@@ -215,6 +326,19 @@ public:
       return true;
     };
 
+    /*! Read the Primary Volume Descriptor for an ISO 9660 image.  A
+      PVD object is returned if read, and NULL if there was an error.
+    */
+    PVD *read_pvd () 
+    {
+      iso9660_pvd_t pvd;
+      bool b_okay = iso9660_ifs_read_pvd (p_iso9660, &pvd);
+      if (b_okay) {
+	return new PVD(&pvd);
+      }
+      return (PVD *) NULL;
+    }
+  
     /*!
       Read the Super block of an ISO 9660 image but determine framesize
       and datastart and a possible additional offset. Generally here we are
@@ -229,7 +353,6 @@ public:
 		     uint16_t i_fuzz=20)
     {
       return iso9660_ifs_read_superblock (p_iso9660, iso_extension_mask);
-
     };
     
     /*!
@@ -249,7 +372,20 @@ public:
 						i_fuzz);
 
     };
-    
+
+#if 0    
+    /*! Read psz_path (a directory) and return a list of iso9660_stat_t
+      pointers for the files inside that directory. The caller must free
+      the returned result.
+    */
+    list<Stat>::readdir (const char psz_path[]) 
+    {
+      CdioList_t *p_stat_list = iso9660_ifs_readdir (p_iso9660, psz_path);
+      list<Stat> stat_list;
+    }
+#endif
+
+
     /*!
       Seek to a position and then read n bytes. Size read is returned.
     */
@@ -263,14 +399,10 @@ public:
     */
     Stat *stat (const char psz_path[], bool b_translate=false) 
     {
-      iso9660_stat_t *p_stat;
-      
       if (b_translate) 
-	p_stat = iso9660_ifs_stat_translate (p_iso9660, psz_path);
+	return new Stat(iso9660_ifs_stat_translate (p_iso9660, psz_path));
       else 
-	p_stat = iso9660_ifs_stat (p_iso9660, psz_path);
-      if (!p_stat) return (Stat *) NULL;
-      return new Stat(p_stat);
+	return new Stat(iso9660_ifs_stat (p_iso9660, psz_path));
     }
     
   private:

@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.185 2006/02/12 04:26:44 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.186 2006/03/06 01:34:22 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -358,6 +358,7 @@ LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/driver -I$(top_srcdir)/include/'
 LIBCDIO_LIBS='$(top_builddir)/lib/driver/libcdio.la'
 LIBCDIO_DEPS="$LIBCDIO_LIBS"
 LIBCDIOPP_LIBS='$(top_builddir)/lib/cdio++/libcdio++.la'
+LIBISO9660PP_LIBS='$(top_builddir)/lib/cdio++/libiso9660++.la'
 LIBCDIO_PARANOIA_LIBS='$(top_builddir)/lib/paranoia/libcdio_paranoia.la'
 LIBISO9660_CFLAGS='-I$(top_srcdir)/lib/iso9660/'
 LIBISO9660_LIBS='$(top_builddir)/lib/iso9660/libiso9660.la'
@@ -366,6 +367,7 @@ LIBUDF_LIBS='$(top_builddir)/lib/udf/libudf.la'
 AC_SUBST(LIBCDIO_CDDA_LIBS)
 AC_SUBST(LIBCDIO_CFLAGS)
 AC_SUBST(LIBISO9660_CFLAGS)
+AC_SUBST(LIBCDISO9660PP_LIBS)
 AC_SUBST(LIBCDIO_LIBS)
 AC_SUBST(LIBCDIOPP_LIBS)
 AC_SUBST(LIBCDIO_DEPS)
