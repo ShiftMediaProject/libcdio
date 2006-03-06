@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.3 2006/03/06 01:34:22 rocky Exp $
+#   $Id: Makefile.am,v 1.4 2006/03/06 04:48:38 rocky Exp $
 #
-#    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by

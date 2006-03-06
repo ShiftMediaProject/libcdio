@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: iso9660.hpp,v 1.3 2006/03/06 01:34:22 rocky Exp $
+    $Id: iso9660.hpp,v 1.4 2006/03/06 04:48:38 rocky Exp $
 
     Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -30,6 +30,7 @@
 #include <cdio/iso9660.h>
 #include <string.h>
 #include <list>		// list class library
+using namespace std;
 
 /** ISO 9660 class.
 */
@@ -370,21 +371,26 @@ public:
     {
       return iso9660_ifs_fuzzy_read_superblock (p_iso9660, iso_extension_mask, 
 						i_fuzz);
-
     };
 
-#if 0    
     /*! Read psz_path (a directory) and return a list of iso9660_stat_t
       pointers for the files inside that directory. The caller must free
       the returned result.
     */
-    list<Stat>::readdir (const char psz_path[]) 
+    list< ISO9660::Stat *> readdir (const char psz_path[]) 
     {
       CdioList_t *p_stat_list = iso9660_ifs_readdir (p_iso9660, psz_path);
-      list<Stat> stat_list;
+      CdioListNode_t *p_entnode;
+      list< ISO9660::Stat *> stat_list;
+      _CDIO_LIST_FOREACH (p_entnode, p_stat_list) {
+	iso9660_stat_t *p_statbuf = 
+	  (iso9660_stat_t *) _cdio_list_node_data (p_entnode);
+	stat_list.push_back(new ISO9660::Stat(p_statbuf));
+      }
+      _cdio_list_free (p_stat_list, false);
+      
+      return stat_list;
     }
-#endif
-
 
     /*!
       Seek to a position and then read n bytes. Size read is returned.

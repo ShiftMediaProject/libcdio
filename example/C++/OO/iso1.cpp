@@ -1,7 +1,7 @@
 /*
-  $Id: iso1.cpp,v 1.6 2006/03/06 04:48:37 rocky Exp $
+  $Id: iso1.cpp,v 1.1 2006/03/06 04:48:38 rocky Exp $
 
-  Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -32,13 +32,14 @@
  */
 
 /* Set up a CD-DA image to test on which is in the libcdio distribution. */
-#define ISO9660_IMAGE_PATH "../../"
+#define ISO9660_IMAGE_PATH "../../../"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
-#include <cdio/iso9660.h>
+#include <sys/types.h>
+#include <cdio++/iso9660.hpp>
 
 #include <stdio.h>
 
@@ -56,7 +57,7 @@
 #endif
 
 #define print_vd_info(title, fn)	  \
-  if (fn(p_iso, &psz_str)) {		  \
+  if (p_iso->fn(psz_str)) {		  \
     printf(title ": %s\n", psz_str);	  \
   }					  \
   free(psz_str);			  \
@@ -66,10 +67,9 @@
 int
 main(int argc, const char *argv[])
 {
-  CdioList_t *p_entlist;
-  CdioListNode_t *p_entnode;
+  list < ISO9660::Stat > entlist;
+  ISO9660::IFS *p_iso = new ISO9660::IFS;
   char const *psz_fname;
-  iso9660_t *p_iso;
   const char *psz_path="/";
 
   if (argc > 1) 
@@ -77,9 +77,7 @@ main(int argc, const char *argv[])
   else 
     psz_fname = ISO9660_IMAGE;
 
-  p_iso = iso9660_open (psz_fname);
-  
-  if (NULL == p_iso) {
+  if (!p_iso->open(psz_fname)) {
     fprintf(stderr, "Sorry, couldn't open %s as an ISO-9660 image\n", 
 	    psz_fname);
     return 1;
@@ -88,35 +86,35 @@ main(int argc, const char *argv[])
   /* Show basic CD info from the Primary Volume Descriptor. */
   {
     char *psz_str = NULL;
-    print_vd_info("Application", iso9660_ifs_get_application_id);
-    print_vd_info("Preparer   ", iso9660_ifs_get_preparer_id);
-    print_vd_info("Publisher  ", iso9660_ifs_get_publisher_id);
-    print_vd_info("System     ", iso9660_ifs_get_system_id);
-    print_vd_info("Volume     ", iso9660_ifs_get_volume_id);
-    print_vd_info("Volume Set ", iso9660_ifs_get_volumeset_id);
+    print_vd_info("Application", get_application_id);
+    print_vd_info("Preparer   ", get_preparer_id);
+    print_vd_info("Publisher  ", get_publisher_id);
+    print_vd_info("System     ", get_system_id);
+    print_vd_info("Volume     ", get_volume_id);
+    print_vd_info("Volume Set ", get_volumeset_id);
   }
-    
-  p_entlist = iso9660_ifs_readdir (p_iso, psz_path);
+
+#if 0
+  entlist = p_iso->readdir (psz_path);
     
   /* Iterate over the list of nodes that iso9660_ifs_readdir gives  */
   
-  if (p_entlist) {
-    _CDIO_LIST_FOREACH (p_entnode, p_entlist)
-    {
-      char filename[4096];
-      iso9660_stat_t *p_statbuf = 
-	(iso9660_stat_t *) _cdio_list_node_data (p_entnode);
-      iso9660_name_translate(p_statbuf->filename, filename);
-      printf ("%s [LSN %6d] %8u %s%s\n", 
-	      2 == p_statbuf->type ? "d" : "-",
-	      p_statbuf->lsn, p_statbuf->size, psz_path, filename);
-    }
+  {
+    ISO9660::Stat *p_stat;
+    for(p_stat=entlist.begin(); p_stat != entlist.end(); ++p_stat)
+      {
+	char filename[4096];
+	p_stat->iso9660_name_translate(p_statbuf->filename, filename);
+	printf ("%s [LSN %6d] %8u %s%s\n", 
+		2 == p_statbuf->type ? "d" : "-",
+		p_statbuf->lsn, p_statbuf->size, psz_path, filename);
+      }
     
-    _cdio_list_free (p_entlist, true);
+    delete(stat);
   }
-  
+#endif  
 
-  iso9660_close(p_iso);
+  delete(p_iso);
   return 0;
 }
 

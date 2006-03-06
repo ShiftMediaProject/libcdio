@@ -1,5 +1,5 @@
 /*
-  $Id: iso3.cpp,v 1.1 2006/03/06 01:34:22 rocky Exp $
+  $Id: iso3.cpp,v 1.2 2006/03/06 04:48:38 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -63,12 +63,14 @@
 
 #define my_exit(rc)				\
   fclose (p_outfd);				\
+  delete (p_stat);				\
+  delete (p_iso);				\
   return rc;					\
 
 int
 main(int argc, const char *argv[])
 {
-  ISO9660::Stat *stat;
+  ISO9660::Stat *p_stat;
   FILE *p_outfd;
   int i;
   char const *psz_image;
@@ -96,30 +98,32 @@ main(int argc, const char *argv[])
     return 1;
   }
 
-  stat = p_iso->stat(psz_fname, true);
+  p_stat = p_iso->stat(psz_fname, true);
 
-  if (!stat) 
+  if (!p_stat) 
     {
       fprintf(stderr, 
 	      "Could not get ISO-9660 file information for file %s\n",
 	      psz_fname);
-      p_iso->close();
+      delete(p_iso);
       return 2;
     }
 
   if (!(p_outfd = fopen (psz_fname, "wb")))
     {
       perror ("fopen()");
+      delete (p_stat);
+      delete (p_iso);
       return 3;
     }
 
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
   {
-    const unsigned int i_blocks = CEILING(stat->p_stat->size, ISO_BLOCKSIZE);
+    const unsigned int i_blocks = CEILING(p_stat->p_stat->size, ISO_BLOCKSIZE);
     for (i = 0; i < i_blocks ; i++) 
     {
       char buf[ISO_BLOCKSIZE];
-      const lsn_t lsn = stat->p_stat->lsn + i;
+      const lsn_t lsn = p_stat->p_stat->lsn + i;
 
       memset (buf, 0, ISO_BLOCKSIZE);
       
@@ -145,7 +149,7 @@ main(int argc, const char *argv[])
   /* Make sure the file size has the exact same byte size. Without the
      truncate below, the file will a multiple of ISO_BLOCKSIZE.
    */
-  if (ftruncate (fileno (p_outfd), stat->p_stat->size))
+  if (ftruncate (fileno (p_outfd), p_stat->p_stat->size))
     perror ("ftruncate()");
 
   printf("Extraction of file '%s' from %s successful.\n", 
