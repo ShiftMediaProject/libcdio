@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.6 2006/03/06 21:54:56 rocky Exp $
+#   $Id: Makefile.am,v 1.7 2006/03/06 22:15:35 rocky Exp $
 #
 #    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -44,12 +44,12 @@ iso1_SOURCES        = iso1.cpp
 iso1_LDADD          = $(LIBISO966PP0_LIBS) $(LIBISO9660_LIBS) \
 	              $(LIBCDIOPP_LIBS) $(LIBICONV)
 
-iso3_SOURCES        = iso3.cpp
-iso3_LDADD          = $(LIBISO966PP0_LIBS) $(LIBISO9660_LIBS) \
-	              $(LIBCDIOPP_LIBS) $(LIBICONV)
-
 iso2_SOURCES        = iso2.cpp
 iso2_LDADD          = $(LIBISO966PP0_LIBS) $(LIBISO9660_LIBS) \
+	              $(LIBCDIOPP_LIBS) $(LIBICONV)
+
+iso3_SOURCES        = iso3.cpp
+iso3_LDADD          = $(LIBISO966PP0_LIBS) $(LIBISO9660_LIBS) \
 	              $(LIBCDIOPP_LIBS) $(LIBICONV)
 
 mmc1_SOURCES        = mmc1.cpp

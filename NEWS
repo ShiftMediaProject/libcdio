@@ -1,10 +1,10 @@
-$Id: NEWS,v 1.92 2006/02/16 20:11:14 rocky Exp $
+$Id: NEWS,v 1.93 2006/03/06 22:15:35 rocky Exp $
 
 version 0.77cvs
 =====================================
 ????-??-??
 
-- Add an object-oriented C++ wrapper.
+- Add an object-oriented C++ wrapper. (libcdio++ and libiso9660++)
 
 - replace libpopt with getopt in cd-drive, cd-info, iso-info, iso-read
   (Peter J. Creath)
@@ -333,4 +333,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.92 2006/02/16 20:11:14 rocky Exp $
+$Id: NEWS,v 1.93 2006/03/06 22:15:35 rocky Exp $
