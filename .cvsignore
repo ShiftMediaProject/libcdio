@@ -31,9 +31,11 @@ libcdio*.tar.gz
 libcdio*.tar.gz.directive
 libcdio*.tar.gz.directive.asc
 libcdio*.tar.gz.sig
+libcdio++.pc
 libcdio.pc
 libcdio_cdda.pc
 libcdio_paranoia.pc
+libiso9660++.pc
 libiso9660.pc
 libtool
 libudf.pc
