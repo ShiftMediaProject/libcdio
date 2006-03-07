@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.4 2006/03/06 04:48:38 rocky Exp $
+#   $Id: Makefile.am,v 1.5 2006/03/07 10:46:36 rocky Exp $
 #
 #    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -48,7 +48,7 @@ libcdiopp_la_CURRENT := 0
 libcdiopp_la_REVISION := 0
 libcdiopp_la_AGE := 0
 
-libcdiopp_sources = cdio_stub.cpp
+libcdiopp_sources = cdio.cpp devices.cpp
 
 libcdio___la_SOURCES = $(libcdiopp_sources)
 libcdio___la_ldflags = -version-info $(libcdiopp_la_CURRENT):$(libcdiopp_la_REVISION):$(libcdiopp_la_AGE)
@@ -57,7 +57,7 @@ libiso9660pp_la_CURRENT := 0
 libiso9660pp_la_REVISION := 0
 libiso9660pp_la_AGE := 0
 
-libiso9660pp_sources = iso9660_stub.cpp
+libiso9660pp_sources = iso9660.cpp
 
 libiso9660___la_SOURCES = $(libiso9660pp_sources)
 libiso9660___la_ldflags = -version-info $(libiso9660pp_la_CURRENT):$(libiso9660pp_la_REVISION):$(libiso9660pp_la_AGE)

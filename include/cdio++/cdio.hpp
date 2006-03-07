@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: cdio.hpp,v 1.10 2006/03/06 21:54:56 rocky Exp $
+    $Id: cdio.hpp,v 1.11 2006/03/07 10:46:36 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -95,29 +95,7 @@ public:
   DriverOpNoDriver(void) {driver_return_code = DRIVER_OP_NO_DRIVER;}
 };
 
-void possible_throw_device_exception(driver_return_code_t drc) 
-  {
-    switch (drc) {
-    case DRIVER_OP_SUCCESS:
-      return;
-    case DRIVER_OP_ERROR:
-      throw DriverOpError();
-    case DRIVER_OP_UNSUPPORTED:
-      throw DriverOpUnsupported();
-    case DRIVER_OP_UNINIT:
-      throw DriverOpUninit();
-    case DRIVER_OP_NOT_PERMITTED:
-      throw DriverOpNotPermitted();
-    case DRIVER_OP_BAD_PARAMETER:
-      throw DriverOpBadParameter();
-    case DRIVER_OP_BAD_POINTER:
-      throw DriverOpBadPointer();
-    case DRIVER_OP_NO_DRIVER:
-      throw DriverOpNoDriver();
-    default:
-      throw DriverOpException(drc);
-    }
-  }
+void possible_throw_device_exception(driver_return_code_t drc);
 
 /** A class relating to CD-Text. Use invalid track number 0 to specify
     CD-Text for the CD (as opposed to a specific track).
@@ -174,8 +152,8 @@ class CdioDevice
 {
 
 public:
-  CdIo_t *p_cdio;  // Make private? If so, subclasses would have to 
-                   // use their own.
+
+  CdIo_t *p_cdio;
 
   CdioDevice()
   { 
