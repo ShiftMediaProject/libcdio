@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: disc.h,v 1.7 2006/02/16 20:09:27 rocky Exp $
+    $Id: disc.h,v 1.8 2006/03/07 23:54:43 rocky Exp $
 
     Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -99,6 +99,9 @@ extern "C" {
   */
   bool cdio_is_discmode_dvd (discmode_t discmode);
   
+  /*! cdio_stat_size is deprecated. @see cdio_get_disc_last_lsn  */
+#define cdio_stat_size cdio_get_disc_last_lsn
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
