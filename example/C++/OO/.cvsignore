@@ -8,7 +8,10 @@ copying
 device
 drives
 eject
+iso1
+iso2
 iso3
+iso4
 mmc1
 mmc2
 tracks
