@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: iso9660.cpp,v 1.1 2006/03/07 10:46:37 rocky Exp $
+    $Id: iso9660.cpp,v 1.2 2006/03/07 19:55:11 rocky Exp $
 
     Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -36,10 +36,15 @@ ISO9660::FS::find_lsn(lsn_t i_lsn)
   Read the Primary Volume Descriptor for a CD.
   True is returned if read, and false if there was an error.
 */
-bool 
-ISO9660::FS::read_pvd ( /*out*/ iso9660_pvd_t *p_pvd ) 
+ISO9660::PVD *
+ISO9660::FS::read_pvd ()
 {
-  return iso9660_fs_read_pvd ( p_cdio, p_pvd );
+  iso9660_pvd_t pvd;
+  bool b_okay = iso9660_fs_read_pvd (p_cdio, &pvd);
+  if (b_okay) {
+    return new PVD(&pvd);
+  }
+  return (PVD *) NULL;
 }
 
 /*!
@@ -58,8 +63,8 @@ ISO9660::FS::read_superblock (iso_extension_mask_t iso_extension_mask)
   returned result.
 */
 bool 
-ISO9660::FS::readdir (const char psz_path[], bool b_mode2,
-		      stat_list_t& stat_list)
+ISO9660::FS::readdir (const char psz_path[], stat_vector_t& stat_vector,
+		      bool b_mode2)
 {
   CdioList_t * p_stat_list = iso9660_fs_readdir (p_cdio, psz_path, 
 						 b_mode2);
@@ -68,7 +73,7 @@ ISO9660::FS::readdir (const char psz_path[], bool b_mode2,
     _CDIO_LIST_FOREACH (p_entnode, p_stat_list) {
       iso9660_stat_t *p_statbuf = 
 	(iso9660_stat_t *) _cdio_list_node_data (p_entnode);
-      stat_list.push_back(new ISO9660::Stat(p_statbuf));
+      stat_vector.push_back(new ISO9660::Stat(p_statbuf));
     }
     _cdio_list_free (p_stat_list, false);
     return true;
@@ -301,7 +306,7 @@ ISO9660::IFS::read_superblock_fuzzy (iso_extension_mask_t iso_extension_mask,
 */
 bool
 ISO9660::IFS::readdir (const char psz_path[], 
-		       stat_list_t& stat_list) 
+		       stat_vector_t& stat_vector) 
 {
   CdioList_t *p_stat_list = iso9660_ifs_readdir (p_iso9660, psz_path);
   
@@ -310,7 +315,7 @@ ISO9660::IFS::readdir (const char psz_path[],
     _CDIO_LIST_FOREACH (p_entnode, p_stat_list) {
       iso9660_stat_t *p_statbuf = 
 	(iso9660_stat_t *) _cdio_list_node_data (p_entnode);
-      stat_list.push_back(new ISO9660::Stat(p_statbuf));
+      stat_vector.push_back(new ISO9660::Stat(p_statbuf));
     }
     _cdio_list_free (p_stat_list, false);
     return true;

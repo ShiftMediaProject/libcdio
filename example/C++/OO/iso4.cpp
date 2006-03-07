@@ -1,5 +1,5 @@
 /*
-  $Id: iso1.cpp,v 1.3 2006/03/07 19:55:11 rocky Exp $
+  $Id: iso4.cpp,v 1.1 2006/03/07 19:55:11 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -33,7 +33,7 @@
 
 /* Set up a CD-DA image to test on which is in the libcdio distribution. */
 #define ISO9660_IMAGE_PATH "../../../"
-#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
+#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/isofs-m1.cue"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -57,34 +57,35 @@
 #endif
 
 #define print_vd_info(title, fn)	  \
-  if (p_iso->fn(psz_str)) {		  \
+  psz_str = p_pvd->fn();		  \
+  if (psz_str) {			  \
     printf(title ": %s\n", psz_str);	  \
-  }					  \
-  free(psz_str);			  \
-  psz_str = NULL;			  
-
+    free(psz_str);			  \
+    psz_str = NULL;			  \
+  }
 
 int
 main(int argc, const char *argv[])
 {
   stat_vector_t stat_vector;
-  ISO9660::IFS *p_iso = new ISO9660::IFS;
+  ISO9660::FS *p_iso = new ISO9660::FS;
   char const *psz_fname;
   const char *psz_path="/";
+  ISO9660::PVD *p_pvd;
 
   if (argc > 1) 
     psz_fname = argv[1];
   else 
     psz_fname = ISO9660_IMAGE;
 
-  if (!p_iso->open(psz_fname)) {
-    fprintf(stderr, "Sorry, couldn't open %s as an ISO-9660 image\n", 
+  if (!p_iso->open(psz_fname, DRIVER_UNKNOWN)) {
+    fprintf(stderr, "Sorry, couldn't open %s as a CD or CD image.\n", 
 	    psz_fname);
     return 1;
   }
 
-  /* Show basic CD info from the Primary Volume Descriptor. */
-  {
+  p_pvd = p_iso->read_pvd();
+  if (p_pvd) {
     char *psz_str = NULL;
     print_vd_info("Application", get_application_id);
     print_vd_info("Preparer   ", get_preparer_id);
@@ -93,7 +94,7 @@ main(int argc, const char *argv[])
     print_vd_info("Volume     ", get_volume_id);
     print_vd_info("Volume Set ", get_volumeset_id);
   }
-
+  
   if (p_iso->readdir (psz_path, stat_vector))
   {
     /* Iterate over the list of files.  */

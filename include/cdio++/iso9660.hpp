@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: iso9660.hpp,v 1.7 2006/03/07 10:46:36 rocky Exp $
+    $Id: iso9660.hpp,v 1.8 2006/03/07 19:55:11 rocky Exp $
 
     Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -30,7 +30,7 @@
 #include <cdio/iso9660.h>
 #include <cdio++/cdio.hpp>
 #include <string.h>
-#include <list>		// list class library
+#include <vector>		// vector class library
 using namespace std;
 
 /** ISO 9660 class.
@@ -46,6 +46,11 @@ public:
 
     iso9660_pvd_t pvd;  // Make private?
 
+    PVD()
+    {
+      memset(&pvd, 0, sizeof(pvd));
+    }
+    
     PVD(iso9660_pvd_t *p_new_pvd)
     { 
       memcpy(&pvd, p_new_pvd, sizeof(pvd));
@@ -112,7 +117,7 @@ public:
   public:
 
     iso9660_stat_t *p_stat;
-    typedef list< ISO9660::Stat *> stat_list_t;
+    typedef vector< ISO9660::Stat *> stat_vector_t;
 
     Stat(iso9660_stat_t *p_new_stat)
     { 
@@ -146,7 +151,7 @@ public:
   {
   public:
 
-    typedef list< ISO9660::Stat *> stat_list_t;
+    typedef vector< ISO9660::Stat *> stat_vector_t;
 
     /*!
       Given a directory pointer, find the filesystem entry that contains
@@ -157,11 +162,10 @@ public:
     */
     Stat *find_lsn(lsn_t i_lsn);
 
-    /*!
-      Read the Primary Volume Descriptor for a CD.
-      True is returned if read, and false if there was an error.
+    /*! Read the Primary Volume Descriptor for a CD.  A
+      PVD object is returned if read, and NULL if there was an error.
     */
-    bool read_pvd (/*out*/ iso9660_pvd_t *p_pvd);
+    PVD *read_pvd ();
 
     /*!
       Read the Super block of an ISO 9660 image. This is the 
@@ -170,12 +174,12 @@ public:
     */
     bool read_superblock (iso_extension_mask_t iso_extension_mask);
 
-    /*! Read psz_path (a directory) and return a list of iso9660_stat_t
+    /*! Read psz_path (a directory) and return a vector of iso9660_stat_t
       pointers for the files inside that directory. The caller must free the
       returned result.
     */
-    bool readdir (const char psz_path[], bool b_mode2,
-		  stat_list_t& stat_list);
+    bool readdir (const char psz_path[], stat_vector_t& stat_vector,
+		  bool b_mode2=false);
 
     /*!
       Return file status for path name psz_path. NULL is returned on
@@ -200,7 +204,7 @@ public:
   {
   public:
 
-    typedef list< ISO9660::Stat *> stat_list_t;
+    typedef vector< ISO9660::Stat *> stat_vector_t;
 
     IFS()
     { 
@@ -338,11 +342,11 @@ public:
 			   =ISO_EXTENSION_NONE,
 			   uint16_t i_fuzz=20);
 
-    /*! Read psz_path (a directory) and return a list of iso9660_stat_t
+    /*! Read psz_path (a directory) and return a vector of iso9660_stat_t
       pointers for the files inside that directory. The caller must free
       the returned result.
     */
-    bool readdir (const char psz_path[], stat_list_t& stat_list);
+    bool readdir (const char psz_path[], stat_vector_t& stat_vector);
 
     /*!
       Seek to a position and then read n bytes. Size read is returned.
@@ -359,5 +363,8 @@ public:
   };
 
 };
+
+typedef vector< ISO9660::Stat *> stat_vector_t;
+typedef vector <ISO9660::Stat *>::iterator stat_vector_iterator_t;
 
 #endif /* __ISO9660_HPP__ */
