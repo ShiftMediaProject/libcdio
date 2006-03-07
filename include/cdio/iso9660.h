@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.87 2006/03/06 21:54:56 rocky Exp $
+    $Id: iso9660.h,v 1.88 2006/03/07 00:06:19 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -803,6 +803,7 @@ iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
    @return stat_t of entry if we found lsn, or NULL otherwise.
    Caller must free return value.
  */
+#define iso9660_fs_find_lsn  iso9660_find_fs_lsn 
 iso9660_stat_t *iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
 
 
@@ -1016,7 +1017,6 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
 /** For compatibility with < 0.77 */
 #define iso9660_isdchar       iso9660_is_dchar
 #define iso9660_isachar       iso9660_is_achar
-#define iso9660_find_fs_lsn   iso9660_fs_find_lsn  
 #endif /*DO_NOT_WANT_COMPATIBILITY*/
 
 #ifdef __cplusplus

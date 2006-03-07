@@ -1,5 +1,5 @@
 /*
-  $Id: testbincue.c,v 1.7 2006/02/12 09:38:36 rocky Exp $
+  $Id: testbincue.c,v 1.8 2006/03/07 00:06:20 rocky Exp $
 
   Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -101,10 +101,12 @@ main(int argc, const char *argv[])
   }
   
   {
-    CdIo_t *p_cdio = cdio_open ("cdda.cue", DRIVER_UNKNOWN);
+    snprintf(psz_cuefile, sizeof(psz_cuefile)-1,
+	     "%s/%s", TEST_DIR, "cdda.cue");
+    CdIo_t *p_cdio = cdio_open (psz_cuefile, DRIVER_UNKNOWN);
     if (!p_cdio) {
       printf("Can't open cdda.cue\n");
-      ret = -1;
+      ret = 77;
     } else {
       /* Just test performing some operations. */
       driver_return_code_t drc = cdio_set_blocksize(p_cdio, 2048);
