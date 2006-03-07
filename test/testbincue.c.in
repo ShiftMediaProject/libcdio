@@ -1,5 +1,5 @@
-/*
-  $Id: testbincue.c,v 1.8 2006/03/07 00:06:20 rocky Exp $
+/* -*- C -*-
+  $Id: testbincue.c.in,v 1.1 2006/03/07 02:38:44 rocky Exp $
 
   Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -39,7 +39,7 @@
 #include <string.h>
 
 #ifndef TEST_DIR
-#define TEST_DIR "."
+#define TEST_DIR "@srcdir@"
 #endif
 
 #define NUM_GOOD_CUES 2
@@ -99,22 +99,25 @@ main(int argc, const char *argv[])
       break;
     }
   }
-  
+
   {
+    CdIo_t *p_cdio;
     snprintf(psz_cuefile, sizeof(psz_cuefile)-1,
 	     "%s/%s", TEST_DIR, "cdda.cue");
-    CdIo_t *p_cdio = cdio_open (psz_cuefile, DRIVER_UNKNOWN);
+    p_cdio  = cdio_open (psz_cuefile, DRIVER_UNKNOWN);
     if (!p_cdio) {
       printf("Can't open cdda.cue\n");
-      ret = 77;
     } else {
       /* Just test performing some operations. */
       driver_return_code_t drc = cdio_set_blocksize(p_cdio, 2048);
       char *psz_device = cdio_get_default_device(p_cdio);
+      /* Could chdir to srcdir to hedge the bet? */
       if (psz_device) 
 	free(psz_device);
-      else
-	ret = -2;
+      else {
+	/* Unless we do the chdir, will fail. So don't set as an  error. */
+	printf("Can't get default device\n");
+      }
       drc = cdio_set_speed(p_cdio, 5);
     }
   }

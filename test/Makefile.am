@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.51 2005/04/30 02:04:50 rocky Exp $
+#   $Id: Makefile.am,v 1.52 2006/03/07 02:38:44 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -76,7 +76,8 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 	     joliet.iso joliet.right joliet-nojoliet.right
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
-	check_common_fn check_cue.sh.in check_nrg.sh.in check_iso.sh.in
+	check_common_fn check_cue.sh.in check_nrg.sh.in \
+	testbincue.c.in check_iso.sh.in
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
 XFAIL_TESTS = testassert
