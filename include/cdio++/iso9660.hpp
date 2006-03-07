@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: iso9660.hpp,v 1.8 2006/03/07 19:55:11 rocky Exp $
+    $Id: iso9660.hpp,v 1.9 2006/03/07 20:54:22 rocky Exp $
 
     Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -184,22 +184,29 @@ public:
     /*!
       Return file status for path name psz_path. NULL is returned on
       error.
-
+      
       If translate is true, version numbers in the ISO 9660 name are
       dropped, i.e. ;1 is removed and if level 1 ISO-9660 names are
       lowercased.
-
+      
       Mode2 is used only if translate is true and is a hack that
       really should go away in libcdio sometime. If set use mode 2
       reading, otherwise use mode 1 reading.
-
+      
       @return file status object for psz_path. NULL is returned on
       error.
     */
-    Stat *stat (const char psz_path[], bool b_translate=false, 
-		bool b_mode2=false) ;
+    Stat *
+    stat (const char psz_path[], bool b_translate=false, bool b_mode2=false)
+    {
+      if (b_translate) 
+	return new Stat(iso9660_fs_stat_translate (p_cdio, psz_path, 
+							    b_mode2));
+      else 
+	return new Stat(iso9660_fs_stat (p_cdio, psz_path));
+    }
   };
-
+  
   class IFS  // ISO 9660 filesystem image
   {
   public:
@@ -238,7 +245,10 @@ public:
       Get the application ID.  psz_app_id is set to NULL if there
       is some problem in getting this and false is returned.
     */
-    bool get_application_id(/*out*/ char * &psz_app_id);
+    bool get_application_id(/*out*/ char * &psz_app_id) 
+    {
+      return iso9660_ifs_get_application_id(p_iso9660, &psz_app_id);
+    }
     
     /*!  
       Return the Joliet level recognized. 
@@ -249,32 +259,47 @@ public:
       Get the preparer ID.  psz_preparer_id is set to NULL if there
       is some problem in getting this and false is returned.
     */
-    bool get_preparer_id(/*out*/ char * &psz_preparer_id);
-    
+    bool get_preparer_id(/*out*/ char * &psz_preparer_id) 
+    {
+      return iso9660_ifs_get_preparer_id(p_iso9660, &psz_preparer_id);
+    }
+
     /*!  
       Get the publisher ID.  psz_publisher_id is set to NULL if there
       is some problem in getting this and false is returned.
     */
-    bool get_publisher_id(/*out*/ char * &psz_publisher_id);
+    bool get_publisher_id(/*out*/ char * &psz_publisher_id) 
+    {
+      return iso9660_ifs_get_publisher_id(p_iso9660, &psz_publisher_id);
+    }
     
     /*!  
       Get the system ID.  psz_system_id is set to NULL if there
       is some problem in getting this and false is returned.
     */
-    bool get_system_id(/*out*/ char * &psz_system_id);
+    bool get_system_id(/*out*/ char * &psz_system_id)
+    {
+      return iso9660_ifs_get_system_id(p_iso9660, &psz_system_id);
+    }
     
     /*! Return the volume ID in the PVD. psz_volume_id is set to
       NULL if there is some problem in getting this and false is
       returned.
     */
-    bool get_volume_id(/*out*/ char * &psz_volume_id);
+    bool get_volume_id(/*out*/ char * &psz_volume_id) 
+    {
+      return iso9660_ifs_get_volume_id(p_iso9660, &psz_volume_id);
+    }
     
     /*! Return the volumeset ID in the PVD. psz_volumeset_id is set to
       NULL if there is some problem in getting this and false is
       returned.
     */
-    bool get_volumeset_id(/*out*/ char * &psz_volumeset_id);
-    
+    bool get_volumeset_id(/*out*/ char * &psz_volumeset_id) 
+    {
+      return iso9660_ifs_get_volumeset_id(p_iso9660, &psz_volumeset_id);
+    }
+
     /*!
       Return true if ISO 9660 image has extended attrributes (XA).
     */
@@ -294,8 +319,13 @@ public:
       @see open_fuzzy
     */
     bool open(const char *psz_path, 
-	      iso_extension_mask_t iso_extension_mask=ISO_EXTENSION_NONE);
-    
+	      iso_extension_mask_t iso_extension_mask=ISO_EXTENSION_NONE)
+    {
+      if (p_iso9660) iso9660_close(p_iso9660);
+      p_iso9660 = iso9660_open_ext(psz_path, iso_extension_mask);
+      return NULL != (iso9660_t *) p_iso9660 ;
+    }
+
     /*! Open an ISO 9660 image for "fuzzy" reading. This means that we
       will try to guess various internal offset based on internal
       checks. This may be useful when trying to read an ISO 9660 image
@@ -342,21 +372,48 @@ public:
 			   =ISO_EXTENSION_NONE,
 			   uint16_t i_fuzz=20);
 
-    /*! Read psz_path (a directory) and return a vector of iso9660_stat_t
+    /*! Read psz_path (a directory) and return a list of iso9660_stat_t
       pointers for the files inside that directory. The caller must free
       the returned result.
     */
-    bool readdir (const char psz_path[], stat_vector_t& stat_vector);
+    bool readdir (const char psz_path[], stat_vector_t& stat_vector) 
+    {
+      CdioList_t *p_stat_list = iso9660_ifs_readdir (p_iso9660, psz_path);
+      
+      if (p_stat_list) {
+	CdioListNode_t *p_entnode;
+	_CDIO_LIST_FOREACH (p_entnode, p_stat_list) {
+	  iso9660_stat_t *p_statbuf = 
+	    (iso9660_stat_t *) _cdio_list_node_data (p_entnode);
+	  stat_vector.push_back(new ISO9660::Stat(p_statbuf));
+	}
+	_cdio_list_free (p_stat_list, false);
+	return true;
+      } else {
+	return false;
+      }
+    }
 
     /*!
       Seek to a position and then read n bytes. Size read is returned.
     */
-    long int seek_read (void *ptr, lsn_t start, long int i_size=1);
-
+    long int 
+    seek_read (void *ptr, lsn_t start, long int i_size=1) 
+    {
+      return iso9660_iso_seek_read (p_iso9660, ptr, start, i_size);
+    }
+    
     /*!  
       Return file status for pathname. NULL is returned on error.
     */
-    Stat *stat (const char psz_path[], bool b_translate=false);
+    Stat *
+    stat (const char psz_path[], bool b_translate=false) 
+    {
+      if (b_translate) 
+	return new Stat(iso9660_ifs_stat_translate (p_iso9660, psz_path));
+      else 
+	return new Stat(iso9660_ifs_stat (p_iso9660, psz_path));
+    }
     
   private:
     iso9660_t *p_iso9660;
