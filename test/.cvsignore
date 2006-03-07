@@ -18,6 +18,7 @@ check_nrg.sh
 check_sizeof
 testassert
 testbincue
+testbincue.c
 testdefault
 testischar
 testiso9660
