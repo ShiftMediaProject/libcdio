@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.24 2005/11/08 23:21:40 pjcreath Exp $
+  $Id: paranoia.c,v 1.25 2006/03/13 02:08:14 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -390,7 +390,7 @@ try_sort_sync(cdrom_paranoia_t *p,
   sort_link_t *ptr=NULL;
   unsigned char *Bflags=B->flags;
 
-  /* block flag matches 0x02 (unmatchable) */
+  /* block flag matches FLAGS_UNREAD (and hence unmatchable) */
   if (Bflags==NULL || (Bflags[post-cb(B)]&FLAGS_UNREAD)==0){
     /* always try absolute offset zero first! */
     {
