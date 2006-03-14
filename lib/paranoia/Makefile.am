@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.5 2006/03/07 11:19:12 rocky Exp $
+#   $Id: Makefile.am,v 1.6 2006/03/14 12:05:16 rocky Exp $
 #
 #    Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -14,7 +14,8 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, write to the Free Software
-#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+#    02110-1301 USA.
 #
 ########################################################
 # Things to make the libcdio_paranoia library
@@ -46,7 +47,7 @@
 EXTRA_DIST = libcdio_paranoia.sym
 
 libcdio_paranoia_la_CURRENT := 0
-libcdio_paranoia_la_REVISION := 1
+libcdio_paranoia_la_REVISION := 2
 libcdio_paranoia_la_AGE := 0
 
 noinst_HEADERS  = gap.h isort.h overlap.h p_block.h

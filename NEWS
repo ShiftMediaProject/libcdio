@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.93 2006/03/06 22:15:35 rocky Exp $
+$Id: NEWS,v 1.94 2006/03/14 12:05:16 rocky Exp $
 
 version 0.77cvs
 =====================================
@@ -16,7 +16,8 @@ version 0.77cvs
 - Add more generic read_sectors() 
 
 - Document that NULL also uses default drive in close_tray, cdio_open
-  and cdio_open_am.
+  and cdio_open_am. Document b_mode2 paramenter not used in cdio ISO
+  read.
 
 - Some provision for handling Rock-Ridge device numbers.
 
@@ -45,6 +46,8 @@ version 0.77cvs
 
 - NRG checking parses file. string tests were invalid on short < 4
   character filenames.
+
+- Revise and improve example programs
 
 version 0.76
 =====================================
@@ -333,4 +336,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.93 2006/03/06 22:15:35 rocky Exp $
+$Id: NEWS,v 1.94 2006/03/14 12:05:16 rocky Exp $

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.9 2006/03/07 11:19:12 rocky Exp $
+#   $Id: Makefile.am,v 1.10 2006/03/14 12:05:16 rocky Exp $
 #
 #    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -14,7 +14,8 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, write to the Free Software
-#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+#    02110-1301 USA.
 #
 ########################################################
 # Things to make the cdda_interface library
@@ -46,7 +47,7 @@
 EXTRA_DIST = libcdio_cdda.sym
 
 libcdio_cdda_la_CURRENT := 0
-libcdio_cdda_la_REVISION := 1
+libcdio_cdda_la_REVISION := 2
 libcdio_cdda_la_AGE := 0
 
 noinst_HEADERS  = common_interface.h drive_exceptions.h low_interface.h \

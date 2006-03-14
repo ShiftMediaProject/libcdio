@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.14 2006/03/07 11:19:12 rocky Exp $
+#   $Id: Makefile.am,v 1.15 2006/03/14 12:05:16 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -14,7 +14,8 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, write to the Free Software
-#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+#    02110-1301 USA.
 #
 ########################################################
 # Things to make the libcdio library
@@ -42,8 +43,8 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libcdio_la_CURRENT := 6
-libcdio_la_REVISION := 1
+libcdio_la_CURRENT := 7
+libcdio_la_REVISION := 0
 libcdio_la_AGE := 0
 
 EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile \
