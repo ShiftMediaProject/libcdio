@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660_fs.c,v 1.33 2006/03/06 21:54:56 rocky Exp $
+    $Id: iso9660_fs.c,v 1.34 2006/03/14 11:40:05 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +16,8 @@
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+    02110-1301 USA.
 */
 /* iso9660 filesystem-based routines */
 
@@ -52,7 +53,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.33 2006/03/06 21:54:56 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.34 2006/03/14 11:40:05 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -718,7 +719,7 @@ iso9660_fs_read_superblock (CdIo_t *p_cdio,
       cdio_read_data_sectors ( p_cdio, buf, ISO_PVD_SECTOR+1, ISO_BLOCKSIZE,
 			       1 );
 
-  if (DRIVER_OP_SUCCESS == driver_return) {
+    if (DRIVER_OP_SUCCESS == driver_return) {
       /* The size of a PVD or SVD is smaller than a sector. So we
 	 allocated a bigger block above (buf) and now we'll copy just
 	 the part we need to save.
@@ -1294,6 +1295,8 @@ iso9660_ifs_stat_translate (iso9660_t *p_iso, const char psz_path[])
 /*! 
   Read psz_path (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
+
+  b_mode2 is historical. It is not used.
 */
 CdioList_t * 
 iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.88 2006/03/07 00:06:19 rocky Exp $
+    $Id: iso9660.h,v 1.89 2006/03/14 11:40:05 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -21,7 +21,8 @@
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+    02110-1301 USA.
 */
 /*!
  * \file iso9660.h 
@@ -827,6 +828,8 @@ iso9660_stat_t *iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[]);
   Return file status for path name psz_path. NULL is returned on error.
   pathname version numbers in the ISO 9660 name are dropped, i.e. ;1
   is removed and if level 1 ISO-9660 names are lowercased.
+
+  b_mode2 is historical. It is not used.
  */
 iso9660_stat_t *iso9660_fs_stat_translate (CdIo_t *p_cdio, 
                                            const char psz_path[], 
@@ -848,6 +851,8 @@ iso9660_stat_t *iso9660_ifs_stat_translate (iso9660_t *p_iso,
 /*!  Read psz_path (a directory) and return a list of iso9660_stat_t
   pointers for the files inside that directory. The caller must free the
   returned result.
+
+  b_mode2 is historical. It is not used.
 */
 CdioList_t * iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], 
                                  bool b_mode2);
