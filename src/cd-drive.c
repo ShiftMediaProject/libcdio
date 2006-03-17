@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.25 2005/10/06 09:37:11 rocky Exp $
+  $Id: cd-drive.c,v 1.26 2006/03/17 18:15:10 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -30,7 +30,7 @@
 #endif
 #include <getopt.h>
 #include <cdio/cdio.h>
-#include <cdio/scsi_mmc.h>
+#include <cdio/mmc.h>
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
