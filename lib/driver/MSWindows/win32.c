@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.32 2005/10/28 12:43:30 rocky Exp $
+    $Id: win32.c,v 1.33 2006/03/17 03:10:53 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.32 2005/10/28 12:43:30 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.33 2006/03/17 03:10:53 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -274,7 +274,7 @@ is_cdrom_win32(const char drive_letter) {
 static int
 run_mmc_cmd_win32( void *p_user_data, unsigned int i_timeout_ms,
 		   unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		   mmc_direction_t e_direction, 
+		   cdio_mmc_direction_t e_direction, 
 		   unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;

@@ -1,5 +1,5 @@
 /*
-    $Id: win32.h,v 1.9 2005/06/11 18:59:47 rocky Exp $
+    $Id: win32.h,v 1.10 2006/03/17 03:10:53 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -173,7 +173,7 @@ int run_mmc_cmd_win32ioctl( void *p_user_data,
 			    unsigned int i_timeout,
 			    unsigned int i_cdb, 
 			    const mmc_cdb_t * p_cdb,
-			    mmc_direction_t e_direction, 
+			    cdio_mmc_direction_t e_direction, 
 			    unsigned int i_buf, /*in/out*/ void *p_buf );
 
 /*!

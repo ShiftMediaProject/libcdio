@@ -1,5 +1,5 @@
 /*
-    $Id: aspi32.c,v 1.9 2005/08/28 22:40:19 rocky Exp $
+    $Id: aspi32.c,v 1.10 2006/03/17 03:10:53 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: aspi32.c,v 1.9 2005/08/28 22:40:19 rocky Exp $";
+static const char _rcsid[] = "$Id: aspi32.c,v 1.10 2006/03/17 03:10:53 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -489,7 +489,7 @@ init_aspi (_img_private_t *env)
 int
 run_mmc_cmd_aspi( void *p_user_data, unsigned int i_timeout_ms,
 		  unsigned int i_cdb, const mmc_cdb_t * p_cdb,  
-		  mmc_direction_t e_direction, 
+		  cdio_mmc_direction_t e_direction, 
 		  unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;

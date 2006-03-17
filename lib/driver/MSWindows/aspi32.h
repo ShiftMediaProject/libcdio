@@ -1,6 +1,6 @@
 /* Win32 aspi specific */
 /*
-    $Id: aspi32.h,v 1.4 2005/03/06 00:54:50 rocky Exp $
+    $Id: aspi32.h,v 1.5 2006/03/17 03:10:53 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -244,6 +244,6 @@ int run_mmc_cmd_aspi( void *p_user_data,
 		      unsigned int i_timeout,
 		      unsigned int i_cdb, 
 		      const mmc_cdb_t * p_cdb,
-		      mmc_direction_t e_direction, 
+		      cdio_mmc_direction_t e_direction, 
 		      unsigned int i_buf, /*in/out*/ void *p_buf );
 

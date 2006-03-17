@@ -1,5 +1,5 @@
 /*
-    $Id: win32_ioctl.c,v 1.28 2005/06/11 18:59:47 rocky Exp $
+    $Id: win32_ioctl.c,v 1.29 2006/03/17 03:10:53 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.28 2005/06/11 18:59:47 rocky Exp $";
+static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.29 2006/03/17 03:10:53 rocky Exp $";
 
 #ifdef HAVE_WIN32_CDROM
 
@@ -432,7 +432,7 @@ int
 run_mmc_cmd_win32ioctl( void *p_user_data, 
 			unsigned int i_timeout_ms,
 			unsigned int i_cdb, const mmc_cdb_t * p_cdb,
-			mmc_direction_t e_direction, 
+			cdio_mmc_direction_t e_direction, 
 			unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
