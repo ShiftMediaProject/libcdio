@@ -1,7 +1,7 @@
 /*
-    $Id: aix.c,v 1.1 2005/03/05 09:26:52 rocky Exp $
+    $Id: aix.c,v 1.2 2006/03/17 19:06:51 rocky Exp $
 
-    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,7 +15,8 @@
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+    02110-1301 USA.
 */
 
 #ifdef HAVE_CONFIG_H
@@ -37,7 +38,7 @@
 
 #ifdef HAVE_AIX_CDROM
 
-static const char _rcsid[] = "$Id: aix.c,v 1.1 2005/03/05 09:26:52 rocky Exp $";
+static const char _rcsid[] = "$Id: aix.c,v 1.2 2006/03/17 19:06:51 rocky Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -197,7 +198,7 @@ init_aix (_img_private_t *p_env)
 static driver_return_code_t
 run_mmc_cmd_aix( void *p_user_data, unsigned int i_timeout_ms,
                  unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-                 mmc_direction_t e_direction, 
+                 cdio_mmc_direction_t e_direction, 
                  unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
