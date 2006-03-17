@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.21 2006/03/17 01:05:54 rocky Exp $
+    $Id: iso9660.c,v 1.22 2006/03/17 03:19:15 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -54,7 +54,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.21 2006/03/17 01:05:54 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.22 2006/03/17 03:19:15 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -202,6 +202,7 @@ iso9660_get_ltime (const iso9660_ltime_t *p_ldate,
     char psz_gmt_tzset[]="TZ=GMT";
 
     putenv(psz_gmt_tzset);
+    tzset();
     t = mktime(p_tm);
     p_temp_tm = gmtime(&t);
     if (old_tzname) {
