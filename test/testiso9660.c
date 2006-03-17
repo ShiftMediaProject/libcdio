@@ -1,5 +1,5 @@
 /*
-    $Id: testiso9660.c,v 1.10 2006/03/17 13:00:44 rocky Exp $
+    $Id: testiso9660.c,v 1.11 2006/03/17 16:31:38 rocky Exp $
 
     Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -252,22 +252,32 @@ main (int argc, const char *argv[])
       printf("set with iso9660_set_dtime().\n");
       return 42;
     }
+    
+    {
+        time_t t1, t2;
+	p_tm = localtime(&now);
+	t1 = mktime(p_tm);
+	iso9660_set_ltime(p_tm, &ltime);
+	iso9660_get_ltime(&ltime, &tm);
+	t2 = mktime(&tm);
+	if ( t1 != t2 ) {
+	  time_compare(p_tm, &tm) ;
+	  printf("local time retrieved with iso9660_get_ltime() not\n");
+	  printf("same as that set with iso9660_set_ltime().\n");
+	  return 43;
+	}
 
-    p_tm = localtime(&now);
-    iso9660_set_ltime(p_tm, &ltime);
-    iso9660_get_ltime(&ltime, &tm);
-    if ( ! time_compare(p_tm, &tm) ) {
-      printf("local time retrieved with iso9660_get_ltime() not same as\n");
-      printf("that set with iso9660_set_ltime().\n");
-      return 43;
-    }
-
-    iso9660_set_ltime(p_tm, &ltime);
-    iso9660_get_ltime(&ltime, &tm);
-    if ( ! time_compare(p_tm, &tm) ) {
-      printf("GMT time retrieved with iso9660_get_ltime() not same as that\n");
-      printf("set with iso9660_set_ltime().\n");
-      return 44;
+	p_tm = gmtime(&now);
+	t1 = mktime(p_tm);
+	iso9660_set_ltime(p_tm, &ltime);
+	iso9660_get_ltime(&ltime, &tm);
+	t2 = mktime(&tm);
+	if ( t1 != t2 ) {
+	  time_compare(p_tm, &tm) ;
+	  printf("GMT time retrieved with iso9660_get_ltime() not\n");
+	  printf("same as that set with iso9660_set_ltime().\n");
+	  return 44;
+	}
     }
   }
 
