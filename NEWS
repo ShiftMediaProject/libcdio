@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.95 2006/03/17 01:05:54 rocky Exp $
+$Id: NEWS,v 1.96 2006/03/17 16:36:33 rocky Exp $
 
 version 0.77cvs
 =====================================
@@ -34,15 +34,19 @@ version 0.77cvs
 
 - Doxygen formatting improvements.
 
-- Misc bugs: fixed bincue driver caused core dump on set_speed and 
-  set_blocksize; also called NRG routine to get a list of
-  cd-images. read.h didn't make sure off_t was defined. fixed bug in
-  is_device() when driver_id = DRIVER_UNKNOWN or DRIVER_DEVICE.
-  OSX was freeing too much in listing drives. get_hwinfo was not respecting
-  fixed-length field boundaries in image drivers (strcpy->strncpy).
-  iso9660_get_{l,d}time() anot accounting for the timezone properly.
+- Misc bugs: 
+  * fixed bincue driver caused core dump on set_speed and 
+    set_blocksize; it also called the wrong routine (from NRG) to get a
+    list of cd-images. 
+  * read.h didn't make sure off_t was defined. 
+  * fixed bug in is_device() when driver_id = DRIVER_UNKNOWN or DRIVER_DEVICE.
+  * OSX was freeing too much in listing drives. 
+  * get_hwinfo was not respecting fixed-length field boundaries in 
+    image drivers (strcpy->strncpy).
+  * A number ISO 9660 time conversion routines corrected with respect to
+    various timezone offsets, daylight savings time, and tm capabilities
 
-- small cdda-player improvements - shows more Cd-Text, and fix bug in
+- small cdda-player improvements - shows more CD-TEXT, and fix bug in
   non-interactive use (Yes, I sometimes use it.)
 
 - NRG checking parses file. string tests were invalid on short < 4
@@ -337,4 +341,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.95 2006/03/17 01:05:54 rocky Exp $
+$Id: NEWS,v 1.96 2006/03/17 16:36:33 rocky Exp $
