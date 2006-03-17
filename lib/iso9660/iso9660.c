@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.20 2006/03/06 19:39:35 rocky Exp $
+    $Id: iso9660.c,v 1.21 2006/03/17 01:05:54 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -43,6 +43,9 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -51,7 +54,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.20 2006/03/06 19:39:35 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.21 2006/03/17 01:05:54 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -136,32 +139,16 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
   p_tm->tm_mday   = idr_date->dt_day;
   p_tm->tm_hour   = idr_date->dt_hour;
   p_tm->tm_min    = idr_date->dt_minute;
-  p_tm->tm_sec    = idr_date->dt_second;
+  p_tm->tm_sec    = idr_date->dt_second - idr_date->dt_gmtoff * (15 * 60);
   p_tm->tm_isdst  = -1; /* information not available */
+
+  /* Recompute tm_wday and tm_yday via mktime. mktime will also renormalize
+     date values to account for the timezone offset. */
   {
     time_t t = 0;
     struct tm *p_temp_tm = b_localtime ? localtime(&t): gmtime(&t);
     
-    /* Recompute tm_wday and tm_yday via mktime. Also adjust for 
-       time-zone differences */
     t = mktime(p_tm);
-    t -= idr_date->dt_gmtoff * (15 * 60);
-#ifdef HAVE_TM_GMTOFF
-    t += p_temp_tm->tm_gmtoff;
-#else 
-    {
-      static bool i_first_time = true;
-      static time_t gmt_off;
-      if (i_first_time) {
-        struct tm tm_local, tm_gmt;
-        memcpy(&tm_local, localtime(&t), sizeof(struct tm));
-        memcpy(&tm_gmt  , gmtime(&t)   , sizeof(struct tm));
-        gmt_off      = mktime(&tm_local) - mktime(&tm_gmt);
-        i_first_time = false;
-      }
-      t += gmt_off;
-    }
-#endif
     
     p_temp_tm = b_localtime ? localtime(&t) : gmtime(&t);
 
@@ -179,7 +166,10 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
 
 #define set_ltime_field(TM_FIELD, LT_FIELD, ADD_CONSTANT)               \
   {                                                                     \
-    p_tm->TM_FIELD = strtol(p_ldate->LT_FIELD,                          \
+    char num[10];                                                       \
+    memcpy(num, p_ldate->LT_FIELD, sizeof(p_ldate->LT_FIELD));          \
+    num[sizeof(p_ldate->LT_FIELD)+1] = '\0';                            \
+    p_tm->TM_FIELD = strtol(num,                                        \
                             (char **)NULL, 10)+ADD_CONSTANT;            \
     if (0 != errno) return false;                                       \
   }
@@ -194,24 +184,30 @@ iso9660_get_ltime (const iso9660_ltime_t *p_ldate,
 {
   if (!p_tm) return false;
   memset(p_tm, 0, sizeof(struct tm));
-  set_ltime_field(tm_year, lt_year,   0);
+  set_ltime_field(tm_year, lt_year,  -1900);
   set_ltime_field(tm_mon,  lt_month, -1);
   set_ltime_field(tm_mday, lt_day,    0);
   set_ltime_field(tm_hour, lt_hour,   0);
   set_ltime_field(tm_min,  lt_minute, 0);
   set_ltime_field(tm_sec,  lt_second, 0);
   p_tm->tm_isdst= -1; /* information not available */
-#ifdef HAVE_TM_GMTOFF
-  p_tm->tm_gmtoff = - p_ldate->lt_gmtoff * (15 * 60);
-#endif
+  p_tm->tm_sec += p_ldate->lt_gmtoff * (15 * 60);
 
-  /* Recompute tm_wday and tm_yday via mktime. */
+  /* Recompute tm_wday and tm_yday via mktime. mktime will also renormalize
+     date values to account for the timezone offset. */
   {
     time_t t;
     struct tm *p_temp_tm;
-    
+    const char *old_tzname=getenv("TZ");
+    char psz_gmt_tzset[]="TZ=GMT";
+
+    putenv(psz_gmt_tzset);
     t = mktime(p_tm);
     p_temp_tm = gmtime(&t);
+    if (old_tzname) {
+      char psz_tzset[10];
+      snprintf(psz_tzset, sizeof(psz_tzset), "TZ=%s", old_tzname);
+    }
     
     p_tm->tm_wday = p_temp_tm->tm_wday;
     p_tm->tm_yday = p_temp_tm->tm_yday;

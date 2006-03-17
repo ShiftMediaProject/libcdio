@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.94 2006/03/14 12:05:16 rocky Exp $
+$Id: NEWS,v 1.95 2006/03/17 01:05:54 rocky Exp $
 
 version 0.77cvs
 =====================================
@@ -40,6 +40,7 @@ version 0.77cvs
   is_device() when driver_id = DRIVER_UNKNOWN or DRIVER_DEVICE.
   OSX was freeing too much in listing drives. get_hwinfo was not respecting
   fixed-length field boundaries in image drivers (strcpy->strncpy).
+  iso9660_get_{l,d}time() anot accounting for the timezone properly.
 
 - small cdda-player improvements - shows more Cd-Text, and fix bug in
   non-interactive use (Yes, I sometimes use it.)
@@ -336,4 +337,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.94 2006/03/14 12:05:16 rocky Exp $
+$Id: NEWS,v 1.95 2006/03/17 01:05:54 rocky Exp $

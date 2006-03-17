@@ -1,5 +1,5 @@
 /*
-    $Id: testiso9660.c,v 1.8 2006/03/06 19:39:35 rocky Exp $
+    $Id: testiso9660.c,v 1.9 2006/03/17 01:05:54 rocky Exp $
 
     Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -34,6 +34,80 @@
 #include <stdio.h>
 #endif
 #include <cdio/iso9660.h>
+
+static bool 
+time_compare(struct tm *p_tm1, struct tm *p_tm2) 
+{
+  bool okay = true;
+  if (!p_tm1) {
+    printf("get time is NULL\n");
+    return false;
+  }
+  if (!p_tm2) {
+    printf("set time is NULL\n");
+    return false;
+  }
+  if (p_tm1->tm_year != p_tm2->tm_year) {
+    printf("Years aren't equal. get: %d, set %d\n", 
+	   p_tm1->tm_year, p_tm2->tm_year);
+    okay=false;
+  }
+  if (p_tm1->tm_mon != p_tm2->tm_mon) {
+    printf("Months aren't equal. get: %d, set %d\n", 
+	   p_tm1->tm_mon, p_tm2->tm_mon);
+    okay=false;
+  }
+  if (p_tm1->tm_mday != p_tm2->tm_mday) {
+    printf("Month days aren't equal. get: %d, set %d\n", 
+	   p_tm1->tm_mday, p_tm2->tm_mday);
+    okay=false;
+  }
+  if (p_tm1->tm_min != p_tm2->tm_min) {
+    printf("minute aren't equal. get: %d, set %d\n", 
+	   p_tm1->tm_min, p_tm2->tm_min);
+    okay=false;
+  }
+  if (p_tm1->tm_hour != p_tm2->tm_hour) {
+    printf("hours aren't equal. get: %d, set %d\n", 
+	   p_tm1->tm_hour, p_tm2->tm_hour);
+    okay=false;
+  }
+  if (p_tm1->tm_sec != p_tm2->tm_sec) {
+    printf("seconds aren't equal. get: %d, set %d\n", 
+	   p_tm1->tm_sec, p_tm2->tm_sec);
+    okay=false;
+  }
+  if (p_tm1->tm_wday != p_tm2->tm_wday) {
+    printf("Week days aren't equal. get: %d, set %d\n", 
+	   p_tm1->tm_wday, p_tm2->tm_wday);
+    okay=false;
+  }
+  if (p_tm1->tm_yday != p_tm2->tm_yday) {
+    printf("Year days aren't equal. get: %d, set %d\n", 
+	   p_tm1->tm_yday, p_tm2->tm_yday);
+    okay=false;
+  }
+  if (p_tm1->tm_isdst != p_tm2->tm_isdst) {
+    printf("Is daylight savings times aren't equal. get: %d, set %d\n", 
+	   p_tm1->tm_isdst, p_tm2->tm_isdst);
+    okay=false;
+  }
+#ifdef HAVE_TM_GMTOFF
+  if (p_tm1->tm_gmtoff != p_tm2->tm_gmtoff) {
+    printf("GMT offsets aren't equal. get: %ld, set %ld\n", 
+	   p_tm1->tm_gmtoff, p_tm2->tm_gmtoff);
+    okay=false;
+  }
+  if (p_tm1 != p_tm2) {
+    if (strcmp(p_tm1->tm_zone, p_tm2->tm_zone) != 0) {
+      printf("Time Zone values. get: %s, set %s\n", 
+	     p_tm1->tm_zone, p_tm2->tm_zone);
+      okay=false;
+    }
+  }
+#endif
+  return okay;
+}
 
 int
 main (int argc, const char *argv[])
@@ -158,6 +232,7 @@ main (int argc, const char *argv[])
   {
     struct tm *p_tm, tm;
     iso9660_dtime_t dtime;
+    iso9660_ltime_t ltime;
     time_t now = time(NULL);
 
     memset(&dtime, 0, sizeof(dtime));
@@ -176,6 +251,14 @@ main (int argc, const char *argv[])
       printf("GMT time retrieved with iso9660_get_dtime() not same as that\n");
       printf("set with iso9660_set_dtime().\n");
       return 42;
+    }
+
+    iso9660_set_ltime(p_tm, &ltime);
+    iso9660_get_ltime(&ltime, &tm);
+    if ( ! time_compare(p_tm, &tm) ) {
+      printf("GMT time retrieved with iso9660_get_ltime() not same as that\n");
+      printf("set with iso9660_set_ltime().\n");
+      return 43;
     }
   }
 
