@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cd_read.sh,v 1.7 2005/01/29 20:54:20 rocky Exp $
+#$Id: check_cd_read.sh,v 1.8 2006/03/17 23:37:19 rocky Exp $
 #
 #    Copyright (C) 2003, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -33,7 +33,7 @@ BASE=`basename $0 .sh`
 
 fname=cdda
 testnum=CD-DA
-opts="-c ${srcdir}/${fname}.cue --mode=red --start=0"
+opts="-c ${srcdir}/${fname}.cue --mode=red --just-hex --start=0"
 test_cd_read  "$opts" ${fname}-read.dump ${srcdir}/${fname}-read.right
 RC=$?
 check_result $RC "cd-read CUE test $testnum" "cd-read $opts"

@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.29 2006/03/17 19:36:54 rocky Exp $
+  $Id: cd-read.c,v 1.30 2006/03/17 23:37:19 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -104,6 +104,8 @@ struct arguments
 				 how to get popt to combine these as 
 				 one variable.
 			       */
+  int            just_hex;    /* Don't try to print "printable" characters
+				 in hex dump.    */
   read_mode_t    read_mode;
   int            version_only;
   int            no_header;
@@ -115,7 +117,8 @@ struct arguments
 } opts;
      
 static void
-hexdump (FILE *stream,  uint8_t * buffer, unsigned int len)
+hexdump (FILE *stream,  uint8_t * buffer, unsigned int len,
+	 int just_hex)
 {
   unsigned int i;
   for (i = 0; i < len; i++, buffer++)
@@ -126,10 +129,12 @@ hexdump (FILE *stream,  uint8_t * buffer, unsigned int len)
       if (i % 2 == 1)
 	fprintf (stream, " ");
       if (i % 16 == 15) {
-	uint8_t *p; 
-	fprintf (stream, "  ");
-	for (p=buffer-15; p <= buffer; p++) {
-	  fprintf(stream, "%c", isprint(*p) ?  *p : '.');
+	if (!just_hex) {
+	  uint8_t *p; 
+	  fprintf (stream, "  ");
+	  for (p=buffer-15; p <= buffer; p++) {
+	    fprintf(stream, "%c", isprint(*p) ?  *p : '.');
+	  }
 	}
 	fprintf (stream, "\n");
       }
@@ -244,6 +249,8 @@ parse_options (int argc, char *argv[])
     "  -x, --hexdump                   Show output as a hex dump. The default is a\n"
     "                                  hex dump when output goes to stdout and no\n"
     "                                  hex dump when output is to a file.\n"
+    "  -j, --just-hex                  Don't display printable chars on hex\n"
+    "                                  dump. The default is print chars too.\n"
     "  --no-header                     Don't display header and copyright (for\n"
     "                                  regression testing)\n"
     "  --no-hexdump                    Don't show output as a hex dump.\n"
@@ -275,7 +282,7 @@ parse_options (int argc, char *argv[])
     "        [-V|--version] [-?|--help] [--usage]\n";
   
   /* Command-line options */
-  const char* optionsString = "a:m:d:xs:e:n:b::c::i::C::N::t::o:V?";
+  const char* optionsString = "a:m:d:xjs:e:n:b::c::i::C::N::t::o:V?";
   struct option optionsTable[] = {
   
     {"access-mode", required_argument, NULL, 'a'},
@@ -284,6 +291,7 @@ parse_options (int argc, char *argv[])
     {"hexdump", no_argument, NULL, 'x'},
     {"no-header", no_argument, &opts.no_header, 1},
     {"no-hexdump", no_argument, &opts.nohexdump, 1},
+    {"just-hex", no_argument, &opts.just_hex, 'j'},
     {"start", required_argument, NULL, 's'},
     {"end", required_argument, NULL, 'e'},
     {"number", required_argument, NULL, 'n'},
@@ -569,7 +577,7 @@ main(int argc, char *argv[])
     }
     
     if (opts.hexdump)
-      hexdump(output_stream, buffer, blocklen);
+      hexdump(output_stream, buffer, blocklen, opts.just_hex);
     else if (opts.output_file)
       write(output_fd, buffer, blocklen);
     else {
