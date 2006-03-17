@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.34 2006/03/14 11:40:05 rocky Exp $
+    $Id: iso9660_fs.c,v 1.35 2006/03/17 22:36:31 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -53,7 +53,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.34 2006/03/14 11:40:05 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.35 2006/03/17 22:36:31 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -837,9 +837,9 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
       strncpy(p_stat->filename, rr_fname, i_rr_fname+1);
     } else {
       if ('\0' == p_iso9660_dir->filename[0] && 1 == i_fname)
-	strcpy (p_stat->filename, ".");
+	strncpy (p_stat->filename, ".", sizeof("."));
       else if ('\1' == p_iso9660_dir->filename[0] && 1 == i_fname)
-	strcpy (p_stat->filename, "..");
+	strncpy (p_stat->filename, "..", sizeof(".."));
 #ifdef HAVE_JOLIET
       else if (i_joliet_level) {
 	int i_inlen = i_fname;
@@ -927,9 +927,9 @@ iso9660_dir_to_name (const iso9660_dir_t *iso9660_dir)
   /* (iso9660_dir->file_flags & ISO_DIRECTORY) */
   
   if (iso9660_dir->filename[0] == '\0')
-    strcpy (namebuf, ".");
+    strncpy (namebuf, ".", sizeof("."));
   else if (iso9660_dir->filename[0] == '\1')
-    strcpy (namebuf, "..");
+    strncpy (namebuf, "..", sizeof(".."));
   else
     strncpy (namebuf, iso9660_dir->filename, iso9660_dir->filename_len);
 

@@ -1,5 +1,5 @@
 /*
-  $Id: rock.c,v 1.16 2005/11/06 20:02:39 rocky Exp $
+  $Id: rock.c,v 1.17 2006/03/17 22:36:31 rocky Exp $
  
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -202,11 +202,10 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
 	if (truncate) break;
 	if (rr->u.NM.flags & ISO_ROCK_NM_PARENT) {
 	  i_namelen = sizeof("..");
-	  strcat(psz_name, "..");
-	  break;
+	  strncat(psz_name, "..", i_namelen);
 	} else if (rr->u.NM.flags & ISO_ROCK_NM_CURRENT) {
 	  i_namelen = sizeof(".");
-	  strcat(psz_name, ".");
+	  strncat(psz_name, ".", i_namelen);
 	  break;
 	}
 

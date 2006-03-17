@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.23 2006/03/17 13:00:43 rocky Exp $
+    $Id: iso9660.c,v 1.24 2006/03/17 22:36:31 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -54,7 +54,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.23 2006/03/17 13:00:43 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.24 2006/03/17 22:36:31 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -515,7 +515,8 @@ iso9660_set_pvd(void *pd,
   memset(&ipd,0,sizeof(ipd)); /* paranoia? */
 
   /* magic stuff ... thatis CD XA marker... */
-  strcpy(((char*)&ipd)+ISO_XA_MARKER_OFFSET, ISO_XA_MARKER_STRING);
+  strncpy(((char*)&ipd)+ISO_XA_MARKER_OFFSET, ISO_XA_MARKER_STRING,
+          sizeof(ISO_XA_MARKER_STRING));
 
   ipd.type = to_711(ISO_VD_PRIMARY);
   iso9660_strncpy_pad (ipd.id, ISO_STANDARD_ID, 5, ISO9660_DCHARS);
