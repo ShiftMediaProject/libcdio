@@ -12,14 +12,14 @@ dnl GNU General Public License for more details.
 dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
-dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-dnl 02111-1307, USA.
+dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+dnl 02110-1301 USA.
 
 define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.189 2006/03/07 10:46:36 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.190 2006/03/17 19:36:54 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -186,16 +186,6 @@ AC_CHECK_HEADERS(ncurses.h curses.h, break, [enable_cdda_player='no'])
 dnl FreeBSD 4 has getopt in unistd.h. So we include that before
 dnl getopt.h 
 AC_CHECK_HEADERS(unistd.h getopt.h)
-
-AC_CHECK_FUNC(getopt_long,
-              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [long getopt support])],
-              [ # Some BSD (BSD/OS) have a gnugetopt library for this:
-               AC_CHECK_LIB([gnugetopt], [getopt_long],
-                            [AC_DEFINE(HAVE_GETOPT_LONG, 1,
-                                       [long getopt support])
-                             LIBGETOPT_LIB="-lgnugetopt"])
-              ])
-AC_SUBST(LIBGETOPT_LIB)
 
 AC_SUBST(SBPCD_H)
 AC_SUBST(UCDROM_H)

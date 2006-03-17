@@ -1,7 +1,7 @@
 /*
-  $Id: iso-read.c,v 1.11 2005/10/06 09:51:21 rocky Exp $
+  $Id: iso-read.c,v 1.12 2006/03/17 19:36:54 rocky Exp $
 
-  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@
 #include <sys/types.h>
 #endif
 
-#include <getopt.h>
+#include "getopt.h"
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */

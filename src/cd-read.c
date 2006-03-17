@@ -1,7 +1,7 @@
 /*
-  $Id: cd-read.c,v 1.28 2005/11/11 12:47:02 rocky Exp $
+  $Id: cd-read.c,v 1.29 2006/03/17 19:36:54 rocky Exp $
 
-  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -15,7 +15,8 @@
   
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+  02110-1301 USA.
 */
 
 /* Program to debug read routines audio, mode1, mode2 forms 1 & 2. */
@@ -31,6 +32,8 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+
+#include "getopt.h"
 
 /* Configuration option codes */
 enum {

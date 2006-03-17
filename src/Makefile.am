@@ -1,6 +1,7 @@
-#   $Id: Makefile.am,v 1.40 2005/10/16 23:33:41 rocky Exp $
+#   $Id: Makefile.am,v 1.41 2006/03/17 19:36:54 rocky Exp $
 #
-#    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004, 2005, 2006
+#    Rocky Bernstein <rocky@panix.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -14,11 +15,16 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, write to the Free Software
-#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+#    02110-1301 USA.
 #
 
-EXTRA_DIST = cd-drive.help2man cd-info.help2man cd-read.help2man \
-	     iso-info.help2man  iso-read.help2man
+GETOPT_C := getopt.c getopt1.c
+
+EXTRA_DIST := cd-drive.help2man cd-info.help2man cd-read.help2man \
+	      iso-info.help2man iso-read.help2man $(GETOPT_C) getopt.h
+
+noinst_HEADERS := cddb.h getopt.h util.h
 
 ####################################################
 # Things to make the utility/diagnostic programs
@@ -39,20 +45,20 @@ $(man_MANS): %.1: % %.help2man
 endif
 
 if BUILD_CDDA_PLAYER
-cdda_player_SOURCES = cdda-player.c cddb.c cddb.h
+cdda_player_SOURCES = cdda-player.c cddb.c cddb.h $(GETOPT_C)
 cdda_player_LDADD   = $(LIBCDIO_LIBS) $(CDDB_LIBS) $(CDDA_PLAYER_LIBS)
 bin_cdda_player     = cdda-player
 endif
 
 if BUILD_CD_DRIVE
-cd_drive_SOURCES = cd-drive.c util.c util.h
-cd_drive_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV) @LIBGETOPT_LIB@
+cd_drive_SOURCES = cd-drive.c util.c util.h $(GETOPT_C)
+cd_drive_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 bin_cd_drive     = cd-drive
 endif
 
 if BUILD_CDINFO
-cd_info_SOURCES = cd-info.c cddb.c cddb.h util.c util.h
-cd_info_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS) $(LIBICONV) @LIBGETOPT_LIB@
+cd_info_SOURCES = cd-info.c cddb.c cddb.h util.c util.h $(GETOPT_C)
+cd_info_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS) $(LIBICONV)
 bin_cd_info     = cd-info 
 endif
 
@@ -63,20 +69,20 @@ bin_cdinfo_linux     = cdinfo-linux
 endif
 
 if BUILD_CD_READ
-cd_read_SOURCES = cd-read.c util.c util.h
-cd_read_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV) @LIBGETOPT_LIB@
+cd_read_SOURCES = cd-read.c util.c util.h $(GETOPT_C)
+cd_read_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 bin_cd_read     = cd-read 
 endif
 
 if BUILD_ISO_INFO
-iso_info_SOURCES = iso-info.c util.c util.h
-iso_info_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV) @LIBGETOPT_LIB@
+iso_info_SOURCES = iso-info.c util.c util.h $(GETOPT_C)
+iso_info_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 bin_iso_info     = iso-info
 endif
 
 if BUILD_ISO_READ
-iso_read_SOURCES = iso-read.c util.c util.h
-iso_read_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV) @LIBGETOPT_LIB@
+iso_read_SOURCES = iso-read.c util.c util.h $(GETOPT_C)
+iso_read_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 bin_iso_read     = iso-read
 endif
 

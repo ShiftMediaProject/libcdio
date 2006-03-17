@@ -1,7 +1,7 @@
 /*
-    $Id: iso-info.c,v 1.34 2005/10/30 16:09:35 rocky Exp $
+    $Id: iso-info.c,v 1.35 2006/03/17 19:36:54 rocky Exp $
 
-    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,11 +15,13 @@
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+    02110-1301 USA.
 */
 /*
   ISO Info - prints various information about a ISO 9660 image.
 */
+#include "getopt.h"
 #include "util.h"
 #undef err_exit
 
@@ -47,8 +49,6 @@
 #include <sys/types.h>
 
 #include <errno.h>
-
-#include <getopt.h>
 
 #if 0
 #define STRONG "\033[1m"

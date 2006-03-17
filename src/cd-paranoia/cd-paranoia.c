@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+ * Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
  *           (C) 1998 Monty <xiphmont@mit.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -14,7 +14,8 @@
  *
  *   You should have received a copy of the GNU General Public License
  *   along with this program; if not, write to the Free Software
- *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ *   02110-1301 USA.
  *
  *
  * See ChangeLog for recent changes.
@@ -76,14 +77,7 @@
 #include <fcntl.h>
 #endif
 
-/* FreeBSD 4 has getopt in unistd.h. So we include that before
-   getopt.h */
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif
+#include "getopt.h"
 
 #ifdef HAVE_ERRNO_H
 #include <errno.h>

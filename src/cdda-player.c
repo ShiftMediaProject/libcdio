@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.40 2006/03/14 11:40:05 rocky Exp $
+    $Id: cdda-player.c,v 1.41 2006/03/17 19:36:54 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -50,10 +50,6 @@
 
 #include <signal.h>
 
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif
-
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
@@ -75,6 +71,7 @@
 #include <cdio/logging.h>
 
 #include "cddb.h"
+#include "getopt.h"
 
 static bool play_track(track_t t1, track_t t2);
 static void display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, 

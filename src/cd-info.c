@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.147 2005/10/24 02:57:00 rocky Exp $
+    $Id: cd-info.c,v 1.148 2006/03/17 19:36:54 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -26,8 +26,8 @@
 
 #include "util.h"
 #include "cddb.h"
+#include "getopt.h"
 #include <stdarg.h>
-#include <getopt.h>
 
 #ifdef HAVE_CDDB
 #include <cddb/cddb.h>
