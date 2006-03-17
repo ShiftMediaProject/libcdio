@@ -1,5 +1,5 @@
 /*
-    $Id: testiso9660.c,v 1.9 2006/03/17 01:05:54 rocky Exp $
+    $Id: testiso9660.c,v 1.10 2006/03/17 13:00:44 rocky Exp $
 
     Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -253,12 +253,21 @@ main (int argc, const char *argv[])
       return 42;
     }
 
+    p_tm = localtime(&now);
+    iso9660_set_ltime(p_tm, &ltime);
+    iso9660_get_ltime(&ltime, &tm);
+    if ( ! time_compare(p_tm, &tm) ) {
+      printf("local time retrieved with iso9660_get_ltime() not same as\n");
+      printf("that set with iso9660_set_ltime().\n");
+      return 43;
+    }
+
     iso9660_set_ltime(p_tm, &ltime);
     iso9660_get_ltime(&ltime, &tm);
     if ( ! time_compare(p_tm, &tm) ) {
       printf("GMT time retrieved with iso9660_get_ltime() not same as that\n");
       printf("set with iso9660_set_ltime().\n");
-      return 43;
+      return 44;
     }
   }
 

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.22 2006/03/17 03:19:15 rocky Exp $
+    $Id: iso9660.c,v 1.23 2006/03/17 13:00:43 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -54,7 +54,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.22 2006/03/17 03:19:15 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.23 2006/03/17 13:00:43 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -239,7 +239,7 @@ iso9660_set_dtime (const struct tm *p_tm, /*out*/ iso9660_dtime_t *p_idr_date)
      represents a 15-minute interval. */
   p_idr_date->dt_gmtoff = p_tm->tm_gmtoff / (15 * 60);
 
-  if (p_tm->tm_isdst) p_idr_date->dt_gmtoff -= 4;
+  if (p_tm->tm_isdst > 0) p_idr_date->dt_gmtoff -= 4;
 
   if (p_idr_date->dt_gmtoff < -48 ) {
     
@@ -260,22 +260,39 @@ iso9660_set_dtime (const struct tm *p_tm, /*out*/ iso9660_dtime_t *p_idr_date)
   Set "long" time in format used in ISO 9660 primary volume descriptor
   from a Unix time structure. */
 void
-iso9660_set_ltime (const struct tm *_tm, /*out*/ iso9660_ltime_t *pvd_date)
+iso9660_set_ltime (const struct tm *p_tm, /*out*/ iso9660_ltime_t *pvd_date)
 {
   char *_pvd_date = (char *) pvd_date; 
 
   memset (_pvd_date, '0', 16);
-  _pvd_date[16] = (int8_t) 0; /* tz */
+  _pvd_date[16] = (iso712_t) 0; /* Start out with time zone GMT. */
 
-  if (!_tm) return;
+  if (!p_tm) return;
 
   snprintf(_pvd_date, 17, 
            "%4.4d%2.2d%2.2d" "%2.2d%2.2d%2.2d" "%2.2d",
-           _tm->tm_year + 1900, _tm->tm_mon + 1, _tm->tm_mday,
-           _tm->tm_hour, _tm->tm_min, _tm->tm_sec,
+           p_tm->tm_year + 1900, p_tm->tm_mon + 1, p_tm->tm_mday,
+           p_tm->tm_hour, p_tm->tm_min, p_tm->tm_sec,
            0 /* 1/100 secs */ );
-  
-  _pvd_date[16] = (int8_t) 0; /* tz */
+
+  /* Adjust for daylight savings time. */
+  if (p_tm->tm_isdst > 0) _pvd_date[16] -= (iso712_t) 4;
+
+#ifdef HAVE_TM_GMTOFF
+  /* Set time zone in 15-minute interval encoding. */
+  _pvd_date[16] -= p_tm->tm_gmtoff / (15 * 60);
+  if (_pvd_date[16] < -48 ) {
+    
+    cdio_warn ("Converted ISO 9660 timezone %d is less than -48. Adjusted", 
+               (int) _pvd_date[16]);
+    _pvd_date[16] = -48;
+  } else if (_pvd_date[16] > 52) {
+    cdio_warn ("Converted ISO 9660 timezone %d is over 52. Adjusted", 
+               (int) _pvd_date[16]);
+    _pvd_date[16] = 52;
+  }
+#endif
+
 }
 
 /*!
