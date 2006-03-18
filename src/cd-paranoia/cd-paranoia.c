@@ -1154,16 +1154,16 @@ main(int argc,char *argv[])
 	    if(file[0]=='\0'){
 	      switch (output_type) {
 	      case 0: /* raw */
-		strcat(outfile_name, "cdda.raw");
+		strncat(outfile_name, "cdda.raw", sizeof("cdda.raw"));
 		break;
 	      case 1:
-		strcat(outfile_name, "cdda.wav");
+		strncat(outfile_name, "cdda.wav", sizeof("cdda.wav"));
 		break;
 	      case 2:
-		strcat(outfile_name, "cdda.aifc");
+		strncat(outfile_name, "cdda.aifc", sizeof("cdda.aifc"));
 		break;
 	      case 3:
-		strcat(outfile_name, "cdda.aiff");
+		strncat(outfile_name, "cdda.aiff", sizeof("cdda.aiff"));
 		break;
 	      }
 	    }
@@ -1185,16 +1185,16 @@ main(int argc,char *argv[])
 	  
 	  switch(output_type){
 	  case 0: /* raw */
-	    strcat(outfile_name,"cdda.raw");
+	    strncat(outfile_name, "cdda.raw", sizeof("cdda.raw"));
 	    break;
 	  case 1:
-	    strcat(outfile_name,"cdda.wav");
+	    strncat(outfile_name, "cdda.wav", sizeof("cdda.wav"));
 	    break;
 	  case 2:
-	    strcat(outfile_name,"cdda.aifc");
+	    strncat(outfile_name, "cdda.aifc", sizeof("cdda.aifc"));
 	    break;
 	  case 3:
-	    strcat(outfile_name,"cdda.aiff");
+	    strncat(outfile_name, "cdda.aiff", sizeof("cdda.aiff"));
 	    break;
 	  }
 	  

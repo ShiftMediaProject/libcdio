@@ -1,7 +1,7 @@
 /*
-  $Id: iso2.c,v 1.11 2006/03/02 18:46:30 rocky Exp $
+  $Id: iso2.c,v 1.12 2006/03/18 01:28:13 rocky Exp $
 
-  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -89,6 +89,7 @@ main(int argc, const char *argv[])
   char translated_name[256];
   char untranslated_name[256] = ISO9660_PATH;
   CdIo_t *p_cdio;
+  unsigned int i_fname=sizeof(ISO9660_FILENAME);
   
   if (argc > 3) {
     printf("usage %s [CD-ROM-or-image [filename]]\n", argv[0]);
@@ -101,12 +102,13 @@ main(int argc, const char *argv[])
   else 
     psz_image = ISO9660_IMAGE;
 
-  if (argc > 2) 
+  if (argc > 2) {
     psz_fname = argv[2];
-  else 
+    i_fname   = strlen(psz_fname)+1;    
+  } else 
     psz_fname = ISO9660_FILENAME;
 
-  strcat(untranslated_name, psz_fname);
+  strncat(untranslated_name, psz_fname, i_fname);
 
   p_cdio = cdio_open (psz_image, DRIVER_UNKNOWN);
   if (!p_cdio) {

@@ -1,7 +1,7 @@
 /*
-  $Id: cdtext.c,v 1.3 2005/11/11 12:26:57 rocky Exp $
+  $Id: cdtext.c,v 1.4 2006/03/18 01:28:13 rocky Exp $
 
-  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ print_disc_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
   print_cdtext_track_info(p_cdio, 0, "\nCD-Text for Disc:");
   for ( ; i_first_track < i_last_track; i_first_track++ ) {
     char psz_msg[50];
-    sprintf(psz_msg, "CD-Text for Track %d:", i_first_track);
+    snprintf(psz_msg, sizeof(psz_msg), "CD-Text for Track %d:", i_first_track);
     print_cdtext_track_info(p_cdio, i_first_track, psz_msg);
   }
 }
