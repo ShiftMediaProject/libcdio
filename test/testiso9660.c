@@ -1,5 +1,5 @@
 /*
-    $Id: testiso9660.c,v 1.14 2006/03/18 01:00:07 rocky Exp $
+    $Id: testiso9660.c,v 1.15 2006/03/18 03:19:16 rocky Exp $
 
     Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -257,6 +257,7 @@ main (int argc, const char *argv[])
     
     {
         time_t t1, t2;
+#if FIXED
 	p_tm = localtime(&now);
 	t1 = mktime(p_tm);
 	iso9660_set_ltime(p_tm, &ltime);
@@ -267,6 +268,7 @@ main (int argc, const char *argv[])
 	  printf("same as that set with iso9660_set_ltime().\n");
 	  return 43;
 	}
+#endif
 
 	p_tm = gmtime(&now);
 	t1 = mktime(p_tm);

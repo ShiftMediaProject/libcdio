@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.38 2006/03/06 22:34:13 rocky Exp $
+#   $Id: Makefile.am,v 1.39 2006/03/18 03:19:16 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -20,7 +20,7 @@
 ##   which configure then turns into a Makefile  ...
 ##     which make can then use to produce stuff. Isn't configuration simple? 
 
-EXTRA_DIST = 
+EXTRA_DIST = \
 	MSVC/README MSVC/cd-info.vcproj \
 	MSVC/config.h \
 	MSVC/libcdio.sln \
@@ -42,7 +42,7 @@ SUBDIRS =  doc include lib src test example
 # pkg-config(1) related rules
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libcdio.pc libcdio_paranoia.pc \
-	         libcdio_cdda.pc libiso9660.pc 
+	         libcdio_cdda.pc libiso9660.pc
 
 $(pkgconfig_DATA): config.status
 
