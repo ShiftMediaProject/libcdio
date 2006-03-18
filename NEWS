@@ -1,8 +1,8 @@
-$Id: NEWS,v 1.98 2006/03/18 02:35:06 rocky Exp $
+$Id: NEWS,v 1.99 2006/03/18 04:15:07 rocky Exp $
 
-version 0.77cvs
+version 0.77
 =====================================
-????-??-??
+2006-03-17
 
 - Add an object-oriented C++ wrapper. (libcdio++ and libiso9660++)
 
@@ -344,4 +344,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.98 2006/03/18 02:35:06 rocky Exp $
+$Id: NEWS,v 1.99 2006/03/18 04:15:07 rocky Exp $
