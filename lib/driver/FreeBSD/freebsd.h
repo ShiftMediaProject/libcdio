@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.5 2006/03/03 09:50:30 flameeyes Exp $
+    $Id: freebsd.h,v 1.6 2006/03/18 01:56:19 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -41,7 +41,7 @@
 #define DEFAULT_CDIO_DEVICE "/dev/cd0c"
 #endif
 
-#ifndef DEFUALT_FREEBSD_AM
+#ifndef DEFAULT_FREEBSD_AM
 #define DEFAULT_FREEBSD_AM _AM_CAM
 #endif
 
