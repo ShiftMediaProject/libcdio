@@ -1,5 +1,5 @@
 /*
-  $Id: cddap_interface.c,v 1.4 2005/11/07 19:48:50 pjcreath Exp $
+  $Id: cddap_interface.c,v 1.5 2006/03/18 18:37:56 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Original interface.c Copyright (C) 1994-1997 
@@ -33,6 +33,15 @@
 #include "common_interface.h"
 #include "low_interface.h"
 #include "utils.h"
+
+/** The below variables are trickery to force the above enum symbol
+    values to be recorded in debug symbol tables. They are used to
+    allow one to refer to the enumeration value names in the typedefs
+    above in a debugger and debugger expressions
+*/
+
+paranoia_jitter_t     debug_paranoia_jitter;
+paranoia_cdda_enums_t debug_paranoia_cdda_enums;
 
 /*! reads TOC via libcdio and returns the number of tracks in the disc. 
     0 is returned if there was an error.

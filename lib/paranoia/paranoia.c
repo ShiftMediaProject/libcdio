@@ -1,7 +1,7 @@
 /*
-  $Id: paranoia.c,v 1.25 2006/03/13 02:08:14 rocky Exp $
+  $Id: paranoia.c,v 1.26 2006/03/18 18:37:56 rocky Exp $
 
-  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -123,6 +123,15 @@ const char *paranoia_cb_mode2str[] = {
   "fixup duplicated",
   "read error"
 };
+
+/** The below variables are trickery to force the above enum symbol
+    values to be recorded in debug symbol tables. They are used to
+    allow one to refer to the enumeration value names in the typedefs
+    above in a debugger and debugger expressions
+*/
+
+paranoia_mode_t    debug_paranoia_mode;
+paranoia_cb_mode_t debug_paranoia_cb_mode;
 
 static inline long 
 re(root_block *root)
@@ -2440,18 +2449,35 @@ paranoia_free(cdrom_paranoia_t *p)
   free(p);
 }
 
+/*! 
+  Set the kind of repair you want to on for reading. 
+  The modes are listed above
+  
+  @param p       paranoia type
+  @mode  mode    paranoia mode flags built from values in 
+  paranoia_mode_t, e.g. 
+  PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP
+*/
 void 
-paranoia_modeset(cdrom_paranoia_t *p, int enable)
+paranoia_modeset(cdrom_paranoia_t *p, int mode_flags)
 {
-  p->enable=enable;
+  p->enable=mode_flags;
 }
 
+/*!
+  reposition reading offset. 
+  
+  @param p       paranoia type
+  @param seek    byte offset to seek to
+  @param whence  like corresponding parameter in libc's lseek, e.g. 
+  SEEK_SET or SEEK_END.
+*/
 lsn_t
-paranoia_seek(cdrom_paranoia_t *p, off_t seek, int mode)
+paranoia_seek(cdrom_paranoia_t *p, off_t seek, int whence)
 {
   long sector;
   long ret;
-  switch(mode){
+  switch(whence){
   case SEEK_SET:
     sector=seek;
     break;

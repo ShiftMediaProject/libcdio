@@ -1,7 +1,7 @@
 /*
-  $Id: paranoia.h,v 1.11 2005/10/14 02:07:06 rocky Exp $
+  $Id: paranoia.h,v 1.12 2006/03/18 18:37:56 rocky Exp $
 
-  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -37,32 +37,51 @@
 */
 #define CD_FRAMEWORDS (CDIO_CD_FRAMESIZE_RAW/2)
 
-/**! Flags used in paranoia_modeset. */
+/**
+  Flags used in paranoia_modeset. 
 
-#define PARANOIA_MODE_FULL        0xff
-#define PARANOIA_MODE_DISABLE     0
-
-#define PARANOIA_MODE_VERIFY      1
-#define PARANOIA_MODE_FRAGMENT    2
-#define PARANOIA_MODE_OVERLAP     4
-#define PARANOIA_MODE_SCRATCH     8
-#define PARANOIA_MODE_REPAIR      16
-#define PARANOIA_MODE_NEVERSKIP   32
+  The enumeration type one probably wouldn't really use in a program.
+  It is here instead of #defines to give symbolic names that can be
+  helpful in debuggers where wants just to say refer to
+  PARANOIA_MODE_DISABLE and get the correct value.
+*/
 
 typedef enum  {
-  PARANOIA_CB_READ,
-  PARANOIA_CB_VERIFY,
-  PARANOIA_CB_FIXUP_EDGE,
-  PARANOIA_CB_FIXUP_ATOM,
-  PARANOIA_CB_SCRATCH,
-  PARANOIA_CB_REPAIR,
-  PARANOIA_CB_SKIP,
-  PARANOIA_CB_DRIFT,
-  PARANOIA_CB_BACKOFF,
-  PARANOIA_CB_OVERLAP,
-  PARANOIA_CB_FIXUP_DROPPED,
-  PARANOIA_CB_FIXUP_DUPED,
-  PARANOIA_CB_READERR
+  PARANOIA_MODE_DISABLE   =  0x00, /**< No fixups */
+  PARANOIA_MODE_VERIFY    =  0x01, /**< Verify data integrety in overlap area*/
+  PARANOIA_MODE_FRAGMENT  =  0x02, /**< unsupported */
+  PARANOIA_MODE_OVERLAP   =  0x04, /**< Perform overlapped reads */
+  PARANOIA_MODE_SCRATCH   =  0x08, /**< unsupported */
+  PARANOIA_MODE_REPAIR    =  0x10, /**< unsupported */
+  PARANOIA_MODE_NEVERSKIP =  0x20, /**< Do not skip failed reads (retry 
+				      maxretries) */
+  PARANOIA_MODE_FULL      =  0xff, /**< Maximum paranoia - all of the above 
+				        (except disable) */
+} paranoia_mode_t;
+  
+
+/**
+   Flags set in a callback.
+
+  The enumeration type one probably wouldn't really use in a program.
+  It is here instead of #defines to give symbolic names that can be
+  helpful in debuggers where wants just to say refer to
+  PARANOIA_CB_READ and get the correct value.
+*/
+typedef enum  {
+  PARANOIA_CB_READ,           /**< Read off adjust ??? */
+  PARANOIA_CB_VERIFY,         /**< Verifying jitter */
+  PARANOIA_CB_FIXUP_EDGE,     /**< Fixed edge jitter */
+  PARANOIA_CB_FIXUP_ATOM,     /**< Fixed atom jitter */
+  PARANOIA_CB_SCRATCH,        /**< Unsupported */
+  PARANOIA_CB_REPAIR,         /**< Unsupported */
+  PARANOIA_CB_SKIP,           /**< Skip exhausted retry */
+  PARANOIA_CB_DRIFT,          /**< Skip exhausted retry */
+  PARANOIA_CB_BACKOFF,        /**< Unsupported */
+  PARANOIA_CB_OVERLAP,        /**< Dynamic overlap adjust */
+  PARANOIA_CB_FIXUP_DROPPED,  /**< Fixed dropped bytes */
+  PARANOIA_CB_FIXUP_DUPED,    /**< Fixed duplicate bytes */
+  PARANOIA_CB_READERR         /**< Hard read error */
 } paranoia_cb_mode_t;
 
   extern const char *paranoia_cb_mode2str[];
@@ -78,20 +97,27 @@ extern "C" {
     @return new cdrom_paranoia object Call paranoia_free() when you are
     done with it
    */
-extern cdrom_paranoia_t *cdio_paranoia_init(cdrom_drive_t *d);
-
+  extern cdrom_paranoia_t *cdio_paranoia_init(cdrom_drive_t *d);
+  
   /*!
-    Free any resources associated with obj.
+    Free any resources associated with p.
+
+    @param p       paranoia object to for which resources are to be freed.
 
     @see paranoia_init.
    */
-extern void cdio_paranoia_free(cdrom_paranoia_t *p);
+  extern void cdio_paranoia_free(cdrom_paranoia_t *p);
 
   /*! 
     Set the kind of repair you want to on for reading. 
     The modes are listed above
+
+    @param p       paranoia type
+    @mode  mode    paranoia mode flags built from values in 
+                   paranoia_mode_t, e.g. 
+		   PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP
    */
-extern void cdio_paranoia_modeset(cdrom_paranoia_t *p, int mode);
+  extern void cdio_paranoia_modeset(cdrom_paranoia_t *p, int mode_flags);
 
   /*!
     reposition reading offset. 
@@ -101,7 +127,7 @@ extern void cdio_paranoia_modeset(cdrom_paranoia_t *p, int mode);
     @param whence  like corresponding parameter in libc's lseek, e.g. 
                    SEEK_SET or SEEK_END.
   */
-extern lsn_t cdio_paranoia_seek(cdrom_paranoia_t *p, off_t seek, int whence);
+  extern lsn_t cdio_paranoia_seek(cdrom_paranoia_t *p, off_t seek, int whence);
 
   /*!
     Reads the next sector of audio data and returns a pointer to a full
@@ -116,8 +142,9 @@ extern lsn_t cdio_paranoia_seek(cdrom_paranoia_t *p, off_t seek, int whence);
     bytes. This data is not to be freed by the caller. It will persist
     only until the next call to paranoia_read() for this p.
   */
-extern int16_t *cdio_paranoia_read(cdrom_paranoia_t *p,
-			      void(*callback)(long int, paranoia_cb_mode_t));
+  extern int16_t *cdio_paranoia_read(cdrom_paranoia_t *p,
+				     void(*callback)(long int, 
+						     paranoia_cb_mode_t));
 
   /*! The same as cdio_paranoia_read but the number of retries is set.
     @param p paranoia object.
@@ -135,17 +162,17 @@ extern int16_t *cdio_paranoia_read(cdrom_paranoia_t *p,
     @see cdio_paranoia_read.
     
   */
-extern int16_t *cdio_paranoia_read_limited(cdrom_paranoia_t *p,
-					   void(*callback)(long int, 
+  extern int16_t *cdio_paranoia_read_limited(cdrom_paranoia_t *p,
+					     void(*callback)(long int, 
 							   paranoia_cb_mode_t),
-					   int max_retries);
+					     int max_retries);
 
 
 /*! a temporary hack */
-extern void cdio_paranoia_overlapset(cdrom_paranoia_t *p,long overlap);
+  extern void cdio_paranoia_overlapset(cdrom_paranoia_t *p,long overlap);
 
-extern void cdio_paranoia_set_range(cdrom_paranoia_t *p, long int start, 
-				    long int end);
+  extern void cdio_paranoia_set_range(cdrom_paranoia_t *p, long int start, 
+				      long int end);
 
 #ifndef DO_NOT_WANT_PARANOIA_COMPATIBILITY
 /** For compatibility with good ol' paranoia */
@@ -162,5 +189,14 @@ extern void cdio_paranoia_set_range(cdrom_paranoia_t *p, long int start,
 #ifdef __cplusplus
 }
 #endif
+
+/** The below variables are trickery to force the above enum symbol
+    values to be recorded in debug symbol tables. They are used to
+    allow one to refer to the enumeration value names in the typedefs
+    above in a debugger and debugger expressions
+*/
+
+extern paranoia_mode_t    debug_paranoia_mode;
+extern paranoia_cb_mode_t debug_paranoia_cb_mode;
 
 #endif /*_CDIO_PARANOIA_H_*/

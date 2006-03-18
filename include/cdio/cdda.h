@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.26 2006/02/16 20:09:27 rocky Exp $
+  $Id: cdda.h,v 1.27 2006/03/18 18:37:56 rocky Exp $
 
   Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2001 Xiph.org
@@ -19,6 +19,7 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
 /** \file cdda.h
  *
  *  \brief The top-level interface header for libcdio_cdda.
@@ -35,24 +36,31 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/** cdrom_paranoia is an opaque structure which is used in all of the
-    library operations.
- */
-typedef struct cdrom_paranoia_s cdrom_paranoia_t;
-typedef struct cdrom_drive_s   cdrom_drive_t;
-
-/** For compatibility. cdrom_drive_t is deprecated, use cdrom_drive_t
-    instead. */
-
-extern enum paranoia_cdda_enums {
-  CDDA_MESSAGE_FORGETIT = 0,
-  CDDA_MESSAGE_PRINTIT  = 1,
-  CDDA_MESSAGE_LOGIT    = 2,
-  CD_FRAMESAMPLES       = CDIO_CD_FRAMESIZE_RAW / 4,
-  MAXTRK                = (CDIO_CD_MAX_TRACKS+1)
-} paranoia_cdda_enums;
+  /** cdrom_paranoia is an opaque structure which is used in all of the
+      library operations.
+  */
+  typedef struct cdrom_paranoia_s cdrom_paranoia_t;
+  typedef struct cdrom_drive_s   cdrom_drive_t;
   
-#define CD_FRAMESAMPLES (CDIO_CD_FRAMESIZE_RAW / 4)
+  /** For compatibility. cdrom_drive_t is deprecated, use cdrom_drive_t
+      instead. */
+
+  /**
+     Flags for simulating jitter used in testing.
+
+     The enumeration type one probably wouldn't really use in a program.
+     It is here instead of #defines to give symbolic names that can be
+     helpful in debuggers where wants just to say refer to
+     CDDA_TEST_JITTER_SMALL and get the correct value.
+  */
+  typedef enum {
+    CDDA_MESSAGE_FORGETIT = 0,
+    CDDA_MESSAGE_PRINTIT  = 1,
+    CDDA_MESSAGE_LOGIT    = 2,
+    CD_FRAMESAMPLES       = CDIO_CD_FRAMESIZE_RAW / 4,
+    MAXTRK                = (CDIO_CD_MAX_TRACKS+1)
+  } paranoia_cdda_enums_t;
+  
 
 #include <signal.h>
 
@@ -69,10 +77,6 @@ typedef struct TOC_s {
 
 /** For compatibility. TOC is deprecated, use TOC_t instead. */
 #define TOC TOC_t
-
-#define CDDA_MESSAGE_FORGETIT 0
-#define CDDA_MESSAGE_PRINTIT 1
-#define CDDA_MESSAGE_LOGIT 2
 
 /** \brief Structure for cdparanoia's CD-ROM access */
 struct cdrom_drive_s {
@@ -134,28 +138,27 @@ struct cdrom_drive_s {
 };
 
 
-/*! An enumeration for some of the CDDA_TEST_* \#defines below. This
-  isn't really an enumeration one would really use in a program. The
-  enumeration is created be helpful in debuggers where wants just to
-  refer to the CDDA_TEST_ names and get something.
-*/
-extern enum paranoia_jitter_enums {
-  CDDA_TEST_JITTER_SMALL   = 1,
-  CDDA_TEST_JITTER_LARGE   = 2,
-  CDDA_TEST_JITTER_MASSIVE = 3,
-  CDDA_TEST_FRAG_SMALL     = (1<<3),
-  CDDA_TEST_FRAG_LARGE     = (2<<3),
-  CDDA_TEST_FRAG_MASSIVE   = (3<<3),
-  CDDA_TEST_UNDERRUN       = 64 
-} paranoia_jitter_enums;
+  /**
+     Flags for simulating jitter used in testing.
+
+     The enumeration type one probably wouldn't really use in a program.
+     It is here instead of #defines to give symbolic names that can be
+     helpful in debuggers where wants just to say refer to
+     CDDA_TEST_JITTER_SMALL and get the correct value.
+  */
+  typedef enum {
+    CDDA_TEST_JITTER_SMALL   = 1,
+    CDDA_TEST_JITTER_LARGE   = 2,
+    CDDA_TEST_JITTER_MASSIVE = 3,
+    CDDA_TEST_FRAG_SMALL     = (1<<3),
+    CDDA_TEST_FRAG_LARGE     = (2<<3),
+    CDDA_TEST_FRAG_MASSIVE   = (3<<3),
+    CDDA_TEST_UNDERRUN       = 64 
+  } paranoia_jitter_t;
   
 /** jitter testing. The first two bits are set to determine the
      byte-distance we will jitter the data; 0 is no shifting.
  */
-
-#define CDDA_TEST_JITTER_SMALL      1 
-#define CDDA_TEST_JITTER_LARGE      2 
-#define CDDA_TEST_JITTER_MASSIVE    3 
 
 /**< jitter testing. Set the below bit to always cause jittering on reads.
      The below bit only has any effect if the first two (above) bits are 
@@ -339,6 +342,7 @@ const char *strerror_tr[]={
 
 /** Errors returned by lib: 
 
+\verbatim 
 001: Unable to set CDROM to read audio mode
 002: Unable to read table of contents lead-out
 003: CDROM reporting illegal number of tracks
@@ -361,6 +365,7 @@ const char *strerror_tr[]={
 401: Invalid track number
 402: Track not audio data
 403: No audio tracks on disc
+\endverbatim
 
 */
 
@@ -385,13 +390,22 @@ const char *strerror_tr[]={
 #define cdda_track_preemp       cdio_cddap_track_preemp
 #define cdda_disc_firstsector   cdio_cddap_disc_firstsector
 #define cdda_disc_lastsector    cdio_cddap_disc_lastsector
-#define cdrom_drive              cdrom_drive_t
+#define cdrom_drive             cdrom_drive_t
 
 #endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+/** The below variables are trickery to force the above enum symbol
+    values to be recorded in debug symbol tables. They are used to
+    allow one to refer to the enumeration value names in the typedefs
+    above in a debugger and debugger expressions
+*/
+
+extern paranoia_jitter_t     debug_paranoia_jitter;
+extern paranoia_cdda_enums_t debug_paranoia_cdda_enums;
 
 #endif /*_CDDA_INTERFACE_H_*/
 
