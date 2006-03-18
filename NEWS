@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.97 2006/03/18 00:53:20 rocky Exp $
+$Id: NEWS,v 1.98 2006/03/18 02:35:06 rocky Exp $
 
 version 0.77cvs
 =====================================
@@ -31,6 +31,7 @@ version 0.77cvs
     DragonFly recognized as FreeBSD, 
     MinGW better tolerated,
     GNU/Linux (and others?) LARGEFILE support
+    OpenBSD tested (no native CD driver though)
 
 - Doxygen formatting improvements.
 
@@ -343,4 +344,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.97 2006/03/18 00:53:20 rocky Exp $
+$Id: NEWS,v 1.98 2006/03/18 02:35:06 rocky Exp $

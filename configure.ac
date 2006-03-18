@@ -16,10 +16,10 @@ dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 dnl 02110-1301 USA.
 
 define(RELEASE_NUM, 77)
-define(CDIO_VERSION_STR, 0.$1cvs)
+define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.190 2006/03/17 19:36:54 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.191 2006/03/18 02:35:07 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 

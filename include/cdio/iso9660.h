@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.89 2006/03/14 11:40:05 rocky Exp $
+    $Id: iso9660.h,v 1.90 2006/03/18 02:35:07 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -718,7 +718,7 @@ typedef struct _iso9660_s iso9660_t;
     @return length of the translated string is returned. It will be no greater
     than the length of psz_oldname.
   */
-  int iso9660_name_translate_ext(const char *psz_old, char *psz_new, 
+  int iso9660_name_translate_ext(const char *psz_oldname, char *psz_newname, 
                                  uint8_t i_joliet_level);
   
   /*!  

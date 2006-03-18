@@ -13,14 +13,15 @@
                                      ^^^
     ...
 
+- make doxygen documentation
+  cd doc/doxygen; ./run_doxygen
+     remove any errors.
+
 - Make sure sources are current and checked in:
     cvs update -dPA .
     cvs commit .
 
 - autogen.sh && make && make check
-
-- make doxygen documentation
-  cd doc/doxygen; ./run_doxygen
 
 - Tag release in CVS: 
    cvs log -h configure.ac
