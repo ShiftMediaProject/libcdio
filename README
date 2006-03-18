@@ -1,3 +1,5 @@
+See README.libcdio for installation instructions.
+
 The libcdio package contains a library which encapsulates CD-ROM
 reading and control. Applications wishing to be oblivious of the OS-
 and device-dependent properties of a CD-ROM can use this library.
@@ -41,4 +43,4 @@ At present, there is no support for writing CD's, nor is there any
 support for reading or writing DVDs. For some of these, there are
 other libraries (e.g. libdi, libscg, or libdvdread) may be helpful.
 
-$Id: README,v 1.10 2005/10/25 12:35:10 rocky Exp $
+$Id: README,v 1.11 2006/03/18 01:05:42 rocky Exp $

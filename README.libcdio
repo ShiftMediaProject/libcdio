@@ -75,7 +75,13 @@ Solaris
 -------
 
 You may need to use --without-versioned-libs if you get a problem
-building libcdio or libiso9660.
+building libcdio or libiso9660. 
+
+If you get a message like:
+   libcdio.so: attempted multiple inclusion of file
+
+because you have enable vcd-info and it is installed, then the only
+way I know how to get around is to use configure with --disable-shared.
 
 OS Support
 ---------------
@@ -97,4 +103,4 @@ and reporting problems. If you search the Internet, you'll see that
 someone has copied and modified the FreeBSD code to work on
 NetBSD. Because that is not GPL, it can't be included here.
 
-$Id: README.libcdio,v 1.10 2005/10/25 12:58:54 rocky Exp $
+$Id: README.libcdio,v 1.11 2006/03/18 01:05:42 rocky Exp $
