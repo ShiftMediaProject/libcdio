@@ -1,5 +1,5 @@
 /*
-    $Id: util.c,v 1.2 2005/02/03 07:35:15 rocky Exp $
+    $Id: util.c,v 1.3 2006/03/18 00:53:20 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -36,7 +36,7 @@
 #include <cdio/types.h>
 #include <cdio/util.h>
 
-static const char _rcsid[] = "$Id: util.c,v 1.2 2005/02/03 07:35:15 rocky Exp $";
+static const char _rcsid[] = "$Id: util.c,v 1.3 2006/03/18 00:53:20 rocky Exp $";
 
 size_t
 _cdio_strlenv(char **str_array)
@@ -62,36 +62,6 @@ _cdio_strfreev(char **strv)
     free(strv[n]);
 
   free(strv);
-}
-
-char *
-_cdio_strjoin (char *strv[], unsigned count, const char delim[])
-{
-  size_t len;
-  char *new_str;
-  unsigned n;
-
-  cdio_assert (strv != NULL);
-  cdio_assert (delim != NULL);
-
-  len = (count-1) * strlen (delim);
-
-  for (n = 0;n < count;n++)
-    len += strlen (strv[n]);
-
-  len++;
-
-  new_str = calloc (1, len);
-  new_str[0] = '\0';
-
-  for (n = 0;n < count;n++)
-    {
-      if (n)
-        strcat (new_str, delim);
-      strcat (new_str, strv[n]);
-    }
-  
-  return new_str;
 }
 
 char **

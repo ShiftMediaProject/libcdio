@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.96 2006/03/17 16:36:33 rocky Exp $
+$Id: NEWS,v 1.97 2006/03/18 00:53:20 rocky Exp $
 
 version 0.77cvs
 =====================================
@@ -53,6 +53,8 @@ version 0.77cvs
   character filenames.
 
 - Revise and improve example programs
+
+- Security: replace all uses of strcat and strcpy with strncat and strncpy
 
 version 0.76
 =====================================
@@ -341,4 +343,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.96 2006/03/17 16:36:33 rocky Exp $
+$Id: NEWS,v 1.97 2006/03/18 00:53:20 rocky Exp $

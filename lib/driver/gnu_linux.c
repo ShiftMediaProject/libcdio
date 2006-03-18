@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.19 2005/11/07 07:41:29 rocky Exp $
+    $Id: gnu_linux.c,v 1.20 2006/03/18 00:53:20 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.19 2005/11/07 07:41:29 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.20 2006/03/18 00:53:20 rocky Exp $";
 
 #include <string.h>
 
@@ -140,20 +140,24 @@ check_mounts_linux(const char *mtab)
     char *tmp;
     char *mnt_type;
     char *mnt_dev;
+    unsigned int i_mnt_type;
+    unsigned int i_mnt_dev;
     
     while ( (mntent=getmntent(mntfp)) != NULL ) {
-      mnt_type = malloc(strlen(mntent->mnt_type) + 1);
+      i_mnt_type = strlen(mntent->mnt_type) + 1;
+      mnt_type = calloc(1, i_mnt_type);
       if (mnt_type == NULL)
 	continue;  /* maybe you'll get lucky next time. */
       
-      mnt_dev = malloc(strlen(mntent->mnt_fsname) + 1);
+      i_mnt_dev = strlen(mntent->mnt_fsname) + 1;
+      mnt_dev = calloc(1, i_mnt_dev);
       if (mnt_dev == NULL) {
 	free(mnt_type);
 	continue;
       }
       
-      strcpy(mnt_type, mntent->mnt_type);
-      strcpy(mnt_dev, mntent->mnt_fsname);
+      strncpy(mnt_type, mntent->mnt_type, i_mnt_type);
+      strncpy(mnt_dev, mntent->mnt_fsname, i_mnt_dev);
       
       /* Handle "supermount" filesystem mounts */
       if ( strcmp(mnt_type, "supermount") == 0 ) {

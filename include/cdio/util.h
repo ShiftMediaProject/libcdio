@@ -1,5 +1,5 @@
 /*
-    $Id: util.h,v 1.9 2006/02/16 20:09:27 rocky Exp $
+    $Id: util.h,v 1.10 2006/03/18 00:53:20 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -90,9 +90,6 @@ _cdio_strdup_upper (const char str[]);
 
 void
 _cdio_strfreev(char **strv);
-
-char *
-_cdio_strjoin (char *strv[], unsigned count, const char delim[]);
 
 size_t
 _cdio_strlenv(char **str_array);

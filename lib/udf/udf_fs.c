@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.14 2006/01/26 04:41:50 rocky Exp $
+    $Id: udf_fs.c,v 1.15 2006/03/18 00:53:20 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -230,7 +230,7 @@ udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name)
     char tokenline[udf_MAX_PATHLEN];
     char *psz_token;
     
-    strcpy(tokenline, psz_name);
+    strncpy(tokenline, psz_name, udf_MAX_PATHLEN);
     psz_token = strtok(tokenline, udf_PATH_DELIMITERS);
     if (psz_token)
       p_udf_file = udf_ff_traverse(p_udf_root, psz_token);
