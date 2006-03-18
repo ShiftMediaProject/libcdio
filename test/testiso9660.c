@@ -1,5 +1,5 @@
 /*
-    $Id: testiso9660.c,v 1.15 2006/03/18 03:19:16 rocky Exp $
+    $Id: testiso9660.c,v 1.16 2006/03/18 03:30:17 rocky Exp $
 
     Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -92,6 +92,7 @@ time_compare(struct tm *p_tm1, struct tm *p_tm2)
 	   p_tm1->tm_isdst, p_tm2->tm_isdst);
     okay=false;
   }
+#if FIXED
 #ifdef HAVE_TM_GMTOFF
   if (p_tm1->tm_gmtoff != p_tm2->tm_gmtoff) {
     printf("GMT offsets aren't equal. get: %ld, set %ld\n", 
@@ -107,6 +108,7 @@ time_compare(struct tm *p_tm1, struct tm *p_tm2)
        */
     }
   }
+#endif
 #endif
   return okay;
 }
@@ -257,7 +259,6 @@ main (int argc, const char *argv[])
     
     {
         time_t t1, t2;
-#if FIXED
 	p_tm = localtime(&now);
 	t1 = mktime(p_tm);
 	iso9660_set_ltime(p_tm, &ltime);
@@ -268,7 +269,6 @@ main (int argc, const char *argv[])
 	  printf("same as that set with iso9660_set_ltime().\n");
 	  return 43;
 	}
-#endif
 
 	p_tm = gmtime(&now);
 	t1 = mktime(p_tm);
