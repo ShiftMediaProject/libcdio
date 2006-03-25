@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.29 2005/08/27 14:28:30 rocky Exp $
+  $Id: scan_devices.c,v 1.30 2006/03/25 00:20:28 rocky Exp $
 
   Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -294,12 +294,13 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
 
   /* Minimum init */
   
-  d=calloc(1,sizeof(cdrom_drive_t));
+  d=calloc(1, sizeof(cdrom_drive_t));
   d->p_cdio           = p_cdio;
   d->cdda_device_name = strdup(psz_device);
   d->drive_type       = drive_type;
   d->bigendianp       = -1; /* We don't know yet... */
   d->nsectors         = -1; /* We don't know yet... */
+  d->messagedest      = messagedest;
   d->b_swap_bytes     = true;
   
   {
