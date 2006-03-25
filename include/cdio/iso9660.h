@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.90 2006/03/18 02:35:07 rocky Exp $
+    $Id: iso9660.h,v 1.91 2006/03/25 00:21:56 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -601,9 +601,22 @@ typedef struct _iso9660_s iso9660_t;
                                           uint16_t i_fuzz);
   
   /*!
-    Seek to a position and then read n bytes. Size read is returned.
+    Seek to a position and then read i_size blocks. 
+
+    @param p_iso the ISO-9660 filename to get data from
+
+    @param ptr place to put returned data. It should be able to store
+    a least i_size bytes
+
+    @param start location to start reading from
+
+    @i_size number of blocks to read. Each block is ISO_BLOCKSIZE bytes
+    long.
+
+    @return number of bytes (not blocks) read
+
   */
-  long int iso9660_iso_seek_read (const iso9660_t *p_iso, void *ptr, 
+  long int iso9660_iso_seek_read (const iso9660_t *p_iso, /*out*/ void *ptr, 
                                   lsn_t start, long int i_size);
   
   /*!
