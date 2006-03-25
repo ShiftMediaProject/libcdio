@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.191 2006/03/18 02:35:07 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.192 2006/03/25 00:22:47 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -433,7 +433,7 @@ int has_timeout=sizeof(test.timeout);],
  	LIBS="$LIBS -lwinmm -mwindows"
   	cd_drivers="${cd_drivers}, MinGW "
 	;;
-     freebsd4.*|freebsd5.*|freebsd6*|dragonfly*)
+     freebsd4.*|freebsd5.*|freebsd6*|freebsd7*|dragonfly*)
      	AC_DEFINE([HAVE_FREEBSD_CDROM], [1], 
                   [Define 1 if you have FreeBSD CD-ROM support])
  	LIBS="$LIBS -lcam"
