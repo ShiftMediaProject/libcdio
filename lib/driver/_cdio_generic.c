@@ -1,7 +1,8 @@
 /*
-    $Id: _cdio_generic.c,v 1.21 2006/03/26 02:34:41 rocky Exp $
+    $Id: _cdio_generic.c,v 1.22 2006/03/26 02:35:26 rocky Exp $
 
-    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2006
+    Rocky Bernstein <rockyb@users.sourceforge.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.21 2006/03/26 02:34:41 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.22 2006/03/26 02:35:26 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -191,7 +192,7 @@ cdio_is_device_generic(const char *source_name)
   struct stat buf;
   if (0 != stat(source_name, &buf)) {
     cdio_warn ("Can't get file status for %s:\n%s", source_name, 
-		strerror(errno));
+                strerror(errno));
     return false;
   }
   return (S_ISBLK(buf.st_mode) || S_ISCHR(buf.st_mode));
@@ -216,7 +217,7 @@ cdio_is_device_quiet_generic(const char *source_name)
 */
 void 
 cdio_add_device_list(char **device_list[], const char *drive, 
-		     unsigned int *num_drives)
+                     unsigned int *num_drives)
 {
   if (NULL != drive) {
     unsigned int j;
@@ -230,10 +231,10 @@ cdio_add_device_list(char **device_list[], const char *drive,
       /* Drive not in list. Add it. */
       (*num_drives)++;
       if (*device_list) {
-	*device_list = realloc(*device_list, (*num_drives) * sizeof(char *));
+        *device_list = realloc(*device_list, (*num_drives) * sizeof(char *));
       } else {
-	/* num_drives should be 0. Add assert? */
-	*device_list = malloc((*num_drives) * sizeof(char *));
+        /* num_drives should be 0. Add assert? */
+        *device_list = malloc((*num_drives) * sizeof(char *));
       }
       
       (*device_list)[*num_drives-1] = strdup(drive);
@@ -266,7 +267,7 @@ get_cdtext_generic (void *p_user_data, track_t i_track)
     p_env->cdio->op.read_toc (p_user_data);
 
   if ( (0 != i_track 
-	&& i_track >= p_env->i_tracks+p_env->i_first_track ) )
+        && i_track >= p_env->i_tracks+p_env->i_first_track ) )
     return NULL;
 
   if (!p_env->b_cdtext_init)
@@ -333,45 +334,45 @@ get_discmode_cd_generic (void *p_user_data )
     switch(track_fmt) {
     case TRACK_FORMAT_AUDIO:
       switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_DA;
-	  break;
-	case CDIO_DISC_MODE_CD_DA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
+        case CDIO_DISC_MODE_NO_INFO:
+          discmode = CDIO_DISC_MODE_CD_DA;
+          break;
+        case CDIO_DISC_MODE_CD_DA:
+        case CDIO_DISC_MODE_CD_MIXED: 
+        case CDIO_DISC_MODE_ERROR: 
+          /* No change*/
+          break;
       default:
-	  discmode = CDIO_DISC_MODE_CD_MIXED;
+          discmode = CDIO_DISC_MODE_CD_MIXED;
       }
       break;
     case TRACK_FORMAT_XA:
       switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_XA;
-	  break;
-	case CDIO_DISC_MODE_CD_XA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
+        case CDIO_DISC_MODE_NO_INFO:
+          discmode = CDIO_DISC_MODE_CD_XA;
+          break;
+        case CDIO_DISC_MODE_CD_XA:
+        case CDIO_DISC_MODE_CD_MIXED: 
+        case CDIO_DISC_MODE_ERROR: 
+          /* No change*/
+          break;
       default:
-	discmode = CDIO_DISC_MODE_CD_MIXED;
+        discmode = CDIO_DISC_MODE_CD_MIXED;
       }
       break;
     case TRACK_FORMAT_CDI:
     case TRACK_FORMAT_DATA:
       switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_DATA;
-	  break;
-	case CDIO_DISC_MODE_CD_DATA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
+        case CDIO_DISC_MODE_NO_INFO:
+          discmode = CDIO_DISC_MODE_CD_DATA;
+          break;
+        case CDIO_DISC_MODE_CD_DATA:
+        case CDIO_DISC_MODE_CD_MIXED: 
+        case CDIO_DISC_MODE_ERROR: 
+          /* No change*/
+          break;
       default:
-	discmode = CDIO_DISC_MODE_CD_MIXED;
+        discmode = CDIO_DISC_MODE_CD_MIXED;
       }
       break;
     case TRACK_FORMAT_ERROR:
@@ -414,8 +415,8 @@ get_num_tracks_generic(void *p_user_data)
 
 void
 set_cdtext_field_generic(void *p_user_data, track_t i_track, 
-		       track_t i_first_track,
-		       cdtext_field_t e_field, const char *psz_value)
+                       track_t i_first_track,
+                       cdtext_field_t e_field, const char *psz_value)
 {
   char **pp_field;
   generic_img_private_t *p_env = p_user_data;
