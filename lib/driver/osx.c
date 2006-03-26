@@ -1,7 +1,8 @@
 /*
-    $Id: osx.c,v 1.8 2006/02/18 22:47:41 rocky Exp $
+    $Id: osx.c,v 1.9 2006/03/26 02:34:41 rocky Exp $
 
-    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com> 
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
+    <rockyb@users.sourceforge.net> 
     from vcdimager code: 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     and VideoLAN code Copyright (C) 1998-2001 VideoLAN
@@ -34,7 +35,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: osx.c,v 1.8 2006/02/18 22:47:41 rocky Exp $";
+static const char _rcsid[] = "$Id: osx.c,v 1.9 2006/03/26 02:34:41 rocky Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -89,12 +90,12 @@ static const char _rcsid[] = "$Id: osx.c,v 1.8 2006/02/18 22:47:41 rocky Exp $";
 /* FIXME */
 #define MAX_BIG_BUFF_SIZE  65535
 
-#define kIOCDBlockStorageDeviceClassString		"IOCDBlockStorageDevice"
+#define kIOCDBlockStorageDeviceClassString              "IOCDBlockStorageDevice"
 
 /* Note leadout is normally defined 0xAA, But on OSX 0xA0 is "lead in" while
    0xA2 is "lead out". I don't understand the distinction, and therefore
    something could be wrong. */
-#define	OSX_CDROM_LEADOUT_TRACK 0xA2
+#define OSX_CDROM_LEADOUT_TRACK 0xA2
 
 #define TOTAL_TRACKS    (p_env->i_last_track - p_env->gen.i_first_track + 1)
 
@@ -140,7 +141,7 @@ typedef struct {
 
 static bool read_toc_osx (void *p_user_data);
 static track_format_t get_track_format_osx(void *p_user_data, 
-					   track_t i_track);
+                                           track_t i_track);
 
 /****
  * GetRegistryEntryProperties - Gets the registry entry properties for
@@ -150,10 +151,11 @@ static track_format_t get_track_format_osx(void *p_user_data,
 static CFMutableDictionaryRef
 GetRegistryEntryProperties ( io_service_t service )
 {
-  IOReturn			err	= kIOReturnSuccess;
-  CFMutableDictionaryRef	dict	= 0;
+  IOReturn                      err     = kIOReturnSuccess;
+  CFMutableDictionaryRef        dict    = 0;
   
-  err = IORegistryEntryCreateCFProperties (service, &dict, kCFAllocatorDefault, 0); 
+  err = IORegistryEntryCreateCFProperties (service, &dict, 
+					   kCFAllocatorDefault, 0); 
   if ( err != kIOReturnSuccess )
     cdio_warn( "IORegistryEntryCreateCFProperties: 0x%08x", err );
 
@@ -169,10 +171,10 @@ get_scsi(_img_private_t *p_env)
   HRESULT herr;
   
   err = IOCreatePlugInInterfaceForService(p_env->MediaClass_service, 
-					  kIOMMCDeviceUserClientTypeID,
-					  kIOCFPlugInInterfaceID,
-					  &p_env->plugin, 
-					  &score);
+                                          kIOMMCDeviceUserClientTypeID,
+                                          kIOCFPlugInInterfaceID,
+                                          &p_env->plugin, 
+                                          &score);
 
   if (err != noErr) {
     fprintf(stderr, "Error %x accessing MMC plugin.\n", err);
@@ -181,7 +183,7 @@ get_scsi(_img_private_t *p_env)
 
   herr = (*p_env->plugin) ->
     QueryInterface(p_env->plugin, CFUUIDGetUUIDBytes(kIOMMCDeviceInterfaceID),
-		   (void *)&p_env->mmc);
+                   (void *)&p_env->mmc);
 
   if (herr != S_OK) {
     fprintf(stderr, "Error %x accessing MMC interface.\n", (int) herr);
@@ -194,7 +196,7 @@ get_scsi(_img_private_t *p_env)
   
   if (!p_env->pp_scsiTaskDeviceInterface) {
     fprintf(stderr, 
-	    "Could not get SCSITaskkDevice interface from MMC interface.\n");
+            "Could not get SCSITaskkDevice interface from MMC interface.\n");
     (*p_env->mmc)->Release(p_env->mmc);
     IODestroyPlugInInterface(p_env->plugin);
     return false;
@@ -204,13 +206,13 @@ get_scsi(_img_private_t *p_env)
     ObtainExclusiveAccess(p_env->pp_scsiTaskDeviceInterface);
   if (err != kIOReturnSuccess) {
     fprintf(stderr, "Could not obtain exclusive access to the device (%x).\n",
-	    err);
+            err);
     
     if (err == kIOReturnBusy)
       fprintf(stderr, "The volume is already mounted.\n");
     else if (err == kIOReturnExclusiveAccess)
       fprintf(stderr, "Another application already has exclusive access "
-	      "to this device.\n");
+              "to this device.\n");
     else
       fprintf(stderr, "I don't know why.\n");
     
@@ -250,7 +252,7 @@ init_osx(_img_private_t *p_env) {
   p_env->gen.fd = open( p_env->gen.source_name, O_RDONLY | O_NONBLOCK );
   if (-1 == p_env->gen.fd) {
     cdio_warn("Failed to open %s: %s", p_env->gen.source_name,
-	       strerror(errno));
+               strerror(errno));
     return false;
   }
 
@@ -275,8 +277,8 @@ init_osx(_img_private_t *p_env) {
     }
   
   ret = IOServiceGetMatchingServices( port, 
-				      IOBSDNameMatching(port, 0, psz_devname),
-				      &iterator );
+                                      IOBSDNameMatching(port, 0, psz_devname),
+                                      &iterator );
   
   /* get service iterator for the device */
   if( ret != KERN_SUCCESS )
@@ -291,18 +293,18 @@ init_osx(_img_private_t *p_env) {
   
   /* search for kIOCDMediaClass or kIOCDVDMediaClass */ 
   while( p_env->MediaClass_service && 
-	 (!IOObjectConformsTo(p_env->MediaClass_service, kIOCDMediaClass)) &&
-	 (!IOObjectConformsTo(p_env->MediaClass_service, kIODVDMediaClass)) )
+         (!IOObjectConformsTo(p_env->MediaClass_service, kIOCDMediaClass)) &&
+         (!IOObjectConformsTo(p_env->MediaClass_service, kIODVDMediaClass)) )
     {
 
       ret = IORegistryEntryGetParentIterator( p_env->MediaClass_service, 
-					      kIOServicePlane, 
-					      &iterator );
+                                              kIOServicePlane, 
+                                              &iterator );
       if( ret != KERN_SUCCESS )
         {
-	  cdio_warn( "IORegistryEntryGetParentIterator: 0x%08x", ret );
-	  IOObjectRelease( p_env->MediaClass_service );
-	  return false;
+          cdio_warn( "IORegistryEntryGetParentIterator: 0x%08x", ret );
+          IOObjectRelease( p_env->MediaClass_service );
+          return false;
         }
       
       IOObjectRelease( p_env->MediaClass_service );
@@ -320,7 +322,7 @@ init_osx(_img_private_t *p_env) {
      variable to test or way to do.
    */
   IORegistryEntryGetPath(p_env->MediaClass_service, kIOServicePlane, 
-			 p_env->psz_MediaClass_service);
+                         p_env->psz_MediaClass_service);
 #ifdef GET_SCSI_FIXED
   return get_scsi(p_env);
 #else 
@@ -331,14 +333,14 @@ init_osx(_img_private_t *p_env) {
 /*!
   Run a SCSI MMC command. 
  
-  cdio	        CD structure set by cdio_open().
+  cdio          CD structure set by cdio_open().
   i_timeout     time in milliseconds we will wait for the command
                 to complete. If this value is -1, use the default 
-		time-out value.
-  p_buf	        Buffer for data, both sending and receiving
-  i_buf	        Size of buffer
-  e_direction	direction the transfer is to go.
-  cdb	        CDB bytes. All values that are needed should be set on 
+                time-out value.
+  p_buf         Buffer for data, both sending and receiving
+  i_buf         Size of buffer
+  e_direction   direction the transfer is to go.
+  cdb           CDB bytes. All values that are needed should be set on 
                 input. We'll figure out what the right CDB length should be.
 
   We return true if command completed successfully and false if not.
@@ -349,10 +351,10 @@ init_osx(_img_private_t *p_env) {
 // handle_scsi_cmd(cdrom_drive *d,
 static int 
 run_mmc_cmd_osx( void *p_user_data, 
-		 unsigned int i_timeout_ms,
-		 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		 cdio_mmc_direction_t e_direction, 
-		 unsigned int i_buf, /*in/out*/ void *p_buf )
+                 unsigned int i_timeout_ms,
+                 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+                 cdio_mmc_direction_t e_direction, 
+                 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;
   uint8_t cmdbuf[16];
@@ -380,22 +382,22 @@ run_mmc_cmd_osx( void *p_user_data,
   buf.length = i_buf;
 
   ret = (*p_env->scsi_task)->SetCommandDescriptorBlock(p_env->scsi_task, 
-						       cmdbuf, i_cdb);
+                                                       cmdbuf, i_cdb);
   if (ret != kIOReturnSuccess) {
     fprintf(stderr, "SetCommandDescriptorBlock: %x\n", ret);
     return TR_UNKNOWN;
   }
   
   ret = (*p_env->scsi_task)->SetScatterGatherEntries(p_env->scsi_task, &buf, 1,
-						     i_buf, dir);
+                                                     i_buf, dir);
   if (ret != kIOReturnSuccess) {
     fprintf(stderr, "SetScatterGatherEntries: %x\n", ret);
     return TR_UNKNOWN;
   }
   
   ret = (*p_env->scsi_task)->ExecuteTaskSync(p_env->scsi_task, &p_env->sense, 
-					     &p_env->status, 
-					     &p_env->realized_len);
+                                             &p_env->status, 
+                                             &p_env->realized_len);
   if (ret != kIOReturnSuccess) {
     fprintf(stderr, "ExecuteTaskSync: %x\n", ret);
     return TR_UNKNOWN;
@@ -406,9 +408,9 @@ run_mmc_cmd_osx( void *p_user_data,
     
     fprintf(stderr, "SCSI status: %x\n", p_env->status);
     fprintf(stderr, "Sense: %x %x %x\n",
-	    p_env->sense.SENSE_KEY,
-	    p_env->sense.ADDITIONAL_SENSE_CODE,
-	    p_env->sense.ADDITIONAL_SENSE_CODE_QUALIFIER);
+            p_env->sense.SENSE_KEY,
+            p_env->sense.ADDITIONAL_SENSE_CODE,
+            p_env->sense.ADDITIONAL_SENSE_CODE_QUALIFIER);
     
     for (i = 0; i < i_cdb; i++)
       fprintf(stderr, "%02x ", cmdbuf[i]);
@@ -425,36 +427,36 @@ run_mmc_cmd_osx( void *p_user_data,
     switch (key) {
     case 0:
       if (errno == 0)
-	errno = EIO;
+        errno = EIO;
       return (TR_UNKNOWN);
     case 1:
       break;
     case 2:
       if (errno == 0)
-	errno = EBUSY;
+        errno = EBUSY;
       return (TR_BUSY);
     case 3:
       if (ASC == 0x0C && ASCQ == 0x09) {
-	/* loss of streaming */
-	if (errno == 0)
-	  errno = EIO;
-	return (TR_STREAMING);
+        /* loss of streaming */
+        if (errno == 0)
+          errno = EIO;
+        return (TR_STREAMING);
       } else {
-	if (errno == 0)
-	  errno = EIO;
-	return (TR_MEDIUM);
+        if (errno == 0)
+          errno = EIO;
+        return (TR_MEDIUM);
       }
     case 4:
       if (errno == 0)
-	errno = EIO;
+        errno = EIO;
       return (TR_FAULT);
     case 5:
       if (errno == 0)
-	errno = EINVAL;
+        errno = EINVAL;
       return (TR_ILLEGAL);
     default:
       if (errno == 0)
-	errno = EIO;
+        errno = EIO;
       return (TR_UNKNOWN);
     }
   }
@@ -468,24 +470,24 @@ run_mmc_cmd_osx( void *p_user_data,
 /*!
   Run a SCSI MMC command. 
  
-  cdio	        CD structure set by cdio_open().
+  cdio          CD structure set by cdio_open().
   i_timeout     time in milliseconds we will wait for the command
                 to complete. If this value is -1, use the default 
-		time-out value.
-  p_buf	        Buffer for data, both sending and receiving
-  i_buf	        Size of buffer
-  e_direction	direction the transfer is to go.
-  cdb	        CDB bytes. All values that are needed should be set on 
+                time-out value.
+  p_buf         Buffer for data, both sending and receiving
+  i_buf         Size of buffer
+  e_direction   direction the transfer is to go.
+  cdb           CDB bytes. All values that are needed should be set on 
                 input. We'll figure out what the right CDB length should be.
 
   We return true if command completed successfully and false if not.
  */
 static int
 run_mmc_cmd_osx( const void *p_user_data, 
-		 unsigned int i_timeout_ms,
-		 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		 cdio_mmc_direction_t e_direction, 
-		 unsigned int i_buf, /*in/out*/ void *p_buf )
+                 unsigned int i_timeout_ms,
+                 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+                 cdio_mmc_direction_t e_direction, 
+                 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
 
 #ifndef SCSI_MMC_FIXED
@@ -521,17 +523,17 @@ run_mmc_cmd_osx( const void *p_user_data,
   iov.length = i_buf;
 
   ioReturnValue = (*cmd)->SetCommandDescriptorBlock(cmd, (UInt8 *) p_cdb, 
-						    i_cdb);
+                                                    i_cdb);
   if (ioReturnValue != kIOReturnSuccess) {
     cdio_warn("SetCommandDescriptorBlock failed with status %x", 
-	      ioReturnValue);
+              ioReturnValue);
     return -1;
   }
 
   ioReturnValue = (*cmd)->SetScatterGatherEntries(cmd, &iov, 1, i_buf,
-						  (SCSI_MMC_DATA_READ == e_direction ) ? 
-						  kSCSIDataTransfer_FromTargetToInitiator :
-						  kSCSIDataTransfer_FromInitiatorToTarget);
+                                                  (SCSI_MMC_DATA_READ == e_direction ) ? 
+                                                  kSCSIDataTransfer_FromTargetToInitiator :
+                                                  kSCSIDataTransfer_FromInitiatorToTarget);
   if (ioReturnValue != kIOReturnSuccess) {
     cdio_warn("SetScatterGatherEntries failed with status %x", ioReturnValue);
     return -1;
@@ -546,7 +548,7 @@ run_mmc_cmd_osx( const void *p_user_data,
   memset(&senseData, 0, sizeof(senseData));
 
   ioReturnValue = (*cmd)->ExecuteTaskSync(cmd,&senseData, &status, &
-					  bytesTransferred);
+                                          bytesTransferred);
 
   if (ioReturnValue != kIOReturnSuccess) {
     cdio_warn("Command execution failed with status %x", ioReturnValue);
@@ -570,12 +572,12 @@ static io_iterator_t
 GetDeviceIterator ( const char * deviceClass )
 {
   
-  IOReturn	err	 = kIOReturnSuccess;
-  io_iterator_t	iterator = MACH_PORT_NULL;
+  IOReturn      err      = kIOReturnSuccess;
+  io_iterator_t iterator = MACH_PORT_NULL;
   
   err = IOServiceGetMatchingServices ( kIOMasterPortDefault,
-				       IOServiceMatching ( deviceClass ),
-				       &iterator );
+                                       IOServiceMatching ( deviceClass ),
+                                       &iterator );
   check ( err == kIOReturnSuccess );
   
   return iterator;
@@ -589,8 +591,8 @@ GetDeviceIterator ( const char * deviceClass )
 
 static bool
 GetFeaturesFlagsForDrive ( CFDictionaryRef dict,
-			   uint32_t *i_cdFlags,
-			   uint32_t *i_dvdFlags )
+                           uint32_t *i_cdFlags,
+                           uint32_t *i_dvdFlags )
 {
   CFDictionaryRef propertiesDict = 0;
   CFNumberRef     flagsNumberRef = 0;
@@ -600,14 +602,14 @@ GetFeaturesFlagsForDrive ( CFDictionaryRef dict,
   
   propertiesDict = ( CFDictionaryRef ) 
     CFDictionaryGetValue ( dict, 
-			   CFSTR ( kIOPropertyDeviceCharacteristicsKey ) );
+                           CFSTR ( kIOPropertyDeviceCharacteristicsKey ) );
 
   if ( propertiesDict == 0 ) return false;
   
   /* Get the CD features */
   flagsNumberRef = ( CFNumberRef ) 
     CFDictionaryGetValue ( propertiesDict, 
-			   CFSTR ( kIOPropertySupportedCDFeatures ) );
+                           CFSTR ( kIOPropertySupportedCDFeatures ) );
   if ( flagsNumberRef != 0 ) {
     CFNumberGetValue ( flagsNumberRef, kCFNumberLongType, i_cdFlags );
   }
@@ -615,7 +617,7 @@ GetFeaturesFlagsForDrive ( CFDictionaryRef dict,
   /* Get the DVD features */
   flagsNumberRef = ( CFNumberRef ) 
     CFDictionaryGetValue ( propertiesDict, 
-			   CFSTR ( kIOPropertySupportedDVDFeatures ) );
+                           CFSTR ( kIOPropertySupportedDVDFeatures ) );
   if ( flagsNumberRef != 0 ) {
     CFNumberGetValue ( flagsNumberRef, kCFNumberLongType, i_dvdFlags );
   }
@@ -643,7 +645,7 @@ get_discmode_osx (void *p_user_data)
     CFDictionaryGetValue ( propertiesDict, CFSTR ( kIODVDMediaTypeKey ) );
 
   if( CFStringGetCString( data, str, sizeof(str),
-			  kCFStringEncodingASCII ) ) {
+                          kCFStringEncodingASCII ) ) {
     if (0 == strncmp(str, "DVD+R", strlen(str)) )
       i_discmode = CDIO_DISC_MODE_DVD_PR;
     else if (0 == strncmp(str, "DVD+RW", strlen(str)) ) 
@@ -693,15 +695,15 @@ get_drive_service_osx(const _img_private_t *p_env)
       psz_service[MAX_SERVICE_NAME-1] = '\0';
       
       /* FIXME: This is all hoaky. Here we need info from a parent class,
-	 psz_service of what we opened above. We are relying on the
-	 fact that the name  will be a substring of the name we
-	 openned with.
+         psz_service of what we opened above. We are relying on the
+         fact that the name  will be a substring of the name we
+         openned with.
       */
       if (0 == strncmp(psz_service, p_env->psz_MediaClass_service, 
-		       strlen(psz_service))) {
-	/* Found our device */
-	IOObjectRelease( service_iterator );
-	return service;
+                       strlen(psz_service))) {
+        /* Found our device */
+        IOObjectRelease( service_iterator );
+        return service;
       }
       
       IOObjectRelease( service );
@@ -714,9 +716,9 @@ get_drive_service_osx(const _img_private_t *p_env)
 
 static void
 get_drive_cap_osx(const void *p_user_data,
-		  /*out*/ cdio_drive_read_cap_t  *p_read_cap,
-		  /*out*/ cdio_drive_write_cap_t *p_write_cap,
-		  /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
+                  /*out*/ cdio_drive_read_cap_t  *p_read_cap,
+                  /*out*/ cdio_drive_write_cap_t *p_write_cap,
+                  /*out*/ cdio_drive_misc_cap_t  *p_misc_cap)
 {
   const _img_private_t *p_env = p_user_data;
   uint32_t i_cdFlags;
@@ -731,7 +733,7 @@ get_drive_cap_osx(const void *p_user_data,
     CFDictionaryRef  properties = GetRegistryEntryProperties ( service );
     
     if (! GetFeaturesFlagsForDrive ( properties, &i_cdFlags, 
-				     &i_dvdFlags ) ) {
+                                     &i_dvdFlags ) ) {
       IOObjectRelease( service );
       goto err_exit;
     }
@@ -763,25 +765,25 @@ get_drive_cap_osx(const void *p_user_data,
       *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_RW;
     
     /***
-	if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRMask) )
-	*p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PR;
-	
-	if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRWMask )
-	*p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PRW;
-	***/
+        if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRMask) )
+        *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PR;
+        
+        if ( 0 != (i_dvdFlags & kDVDFeaturesPlusRWMask )
+        *p_write_cap |= CDIO_DRIVE_CAP_WRITE_DVD_PRW;
+        ***/
 
     /* FIXME: fill out. For now assume CD-ROM is relatively modern. */
       *p_misc_cap = (
-		     CDIO_DRIVE_CAP_MISC_CLOSE_TRAY 
-		     | CDIO_DRIVE_CAP_MISC_EJECT
-		     | CDIO_DRIVE_CAP_MISC_LOCK
-		     | CDIO_DRIVE_CAP_MISC_SELECT_SPEED
-		     | CDIO_DRIVE_CAP_MISC_MULTI_SESSION
-		     | CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED
-		     | CDIO_DRIVE_CAP_MISC_RESET
-		     | CDIO_DRIVE_CAP_READ_MCN
-		     | CDIO_DRIVE_CAP_READ_ISRC
-		     );
+                     CDIO_DRIVE_CAP_MISC_CLOSE_TRAY 
+                     | CDIO_DRIVE_CAP_MISC_EJECT
+                     | CDIO_DRIVE_CAP_MISC_LOCK
+                     | CDIO_DRIVE_CAP_MISC_SELECT_SPEED
+                     | CDIO_DRIVE_CAP_MISC_MULTI_SESSION
+                     | CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED
+                     | CDIO_DRIVE_CAP_MISC_RESET
+                     | CDIO_DRIVE_CAP_READ_MCN
+                     | CDIO_DRIVE_CAP_READ_ISRC
+                     );
 
     IOObjectRelease( service );
   }
@@ -815,7 +817,7 @@ get_hwinfo_osx ( const CdIo_t *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
     CFDictionaryRef  properties  = GetRegistryEntryProperties ( service );
     CFDictionaryRef  deviceDict  = ( CFDictionaryRef ) 
       CFDictionaryGetValue ( properties, 
-			     CFSTR ( kIOPropertyDeviceCharacteristicsKey ) );
+                             CFSTR ( kIOPropertyDeviceCharacteristicsKey ) );
     
     if ( deviceDict == 0 ) return false;
     
@@ -823,28 +825,28 @@ get_hwinfo_osx ( const CdIo_t *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
       CFDictionaryGetValue ( deviceDict, CFSTR ( kIOPropertyVendorNameKey ) );
     
     if ( CFStringGetCString( vendor,
-			     (char *) &(hw_info->psz_vendor),
-			     sizeof(hw_info->psz_vendor),
-			     kCFStringEncodingASCII ) )
+                             (char *) &(hw_info->psz_vendor),
+                             sizeof(hw_info->psz_vendor),
+                             kCFStringEncodingASCII ) )
       CFRelease( vendor );
     
     product = ( CFStringRef ) 
       CFDictionaryGetValue ( deviceDict, CFSTR ( kIOPropertyProductNameKey ) );
     
     if ( CFStringGetCString( product,
-			     (char *) &(hw_info->psz_model),
-			     sizeof(hw_info->psz_model),
-			     kCFStringEncodingASCII ) )
+                             (char *) &(hw_info->psz_model),
+                             sizeof(hw_info->psz_model),
+                             kCFStringEncodingASCII ) )
       CFRelease( product );
     
     revision = ( CFStringRef ) 
       CFDictionaryGetValue ( deviceDict, 
-			     CFSTR ( kIOPropertyProductRevisionLevelKey ) );
+                             CFSTR ( kIOPropertyProductRevisionLevelKey ) );
     
     if ( CFStringGetCString( revision,
-			     (char *) &(hw_info->psz_revision),
-			     sizeof(hw_info->psz_revision),
-			     kCFStringEncodingASCII ) )
+                             (char *) &(hw_info->psz_revision),
+                             sizeof(hw_info->psz_revision),
+                             kCFStringEncodingASCII ) )
       CFRelease( revision );
   }
   return true;
@@ -852,13 +854,14 @@ get_hwinfo_osx ( const CdIo_t *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
 }
 #endif
 
-/*!
-  Return the media catalog number MCN.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
- */
+/*
+  Get cdtext information in p_user_data for track i_track. 
+  For disc information i_track is 0.
+  
+  Return the CD-TEXT or NULL if obj is NULL,
+  CD-TEXT information does not exist, or (as is the case here)
+  we don't know how to get this implemented.
+*/
 static cdtext_t *
 get_cdtext_osx (void *p_user_data, track_t i_track) 
 {
@@ -901,7 +904,7 @@ _free_osx (void *p_user_data) {
  */
 static driver_return_code_t
 read_data_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn, 
-		       uint16_t i_blocksize, uint32_t i_blocks)
+                       uint16_t i_blocksize, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -935,8 +938,8 @@ read_data_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
     
     if( ioctl( p_env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
       {
-	cdio_info( "could not read block %d, %s", i_lsn, strerror(errno) );
-	return DRIVER_OP_ERROR;
+        cdio_info( "could not read block %d, %s", i_lsn, strerror(errno) );
+        return DRIVER_OP_ERROR;
       }
     return DRIVER_OP_SUCCESS;
   }
@@ -950,7 +953,7 @@ read_data_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
  */
 static driver_return_code_t
 read_mode1_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn, 
-			bool b_form2, uint32_t i_blocks)
+                        bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   dk_cd_read_t cd_read;
@@ -984,7 +987,7 @@ read_mode1_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
  */
 static driver_return_code_t
 read_mode2_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
-			bool b_form2, uint32_t i_blocks)
+                        bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   dk_cd_read_t cd_read;
@@ -1019,7 +1022,7 @@ read_mode2_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
  */
 static int
 read_audio_sectors_osx (void *user_data, void *p_data, lsn_t lsn, 
-			     unsigned int i_blocks)
+                             unsigned int i_blocks)
 {
   _img_private_t *env = user_data;
   dk_cd_read_t cd_read;
@@ -1036,7 +1039,7 @@ read_audio_sectors_osx (void *user_data, void *p_data, lsn_t lsn,
   if( ioctl( env->gen.fd, DKIOCCDREAD, &cd_read ) == -1 )
   {
     cdio_info( "could not read block %d\n%s", lsn,
-	       strerror(errno));
+               strerror(errno));
     return DRIVER_OP_ERROR;
   }
   return DRIVER_OP_SUCCESS;
@@ -1048,7 +1051,7 @@ read_audio_sectors_osx (void *user_data, void *p_data, lsn_t lsn,
  */
 static driver_return_code_t
 read_mode1_sector_osx (void *p_user_data, void *p_data, lsn_t i_lsn, 
-		       bool b_form2)
+                       bool b_form2)
 {
   return read_mode1_sectors_osx(p_user_data, p_data, i_lsn, b_form2, 1);
 }
@@ -1059,7 +1062,7 @@ read_mode1_sector_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
  */
 static driver_return_code_t
 read_mode2_sector_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
-		       bool b_form2)
+                       bool b_form2)
 {
   return read_mode2_sectors_osx(p_user_data, p_data, i_lsn, b_form2, 1);
 }
@@ -1081,9 +1084,9 @@ _set_arg_osx (void *p_user_data, const char key[], const char value[])
   else if (!strcmp (key, "access-mode"))
     {
       if (!strcmp(value, "OSX"))
-	p_env->access_mode = _AM_OSX;
+        p_env->access_mode = _AM_OSX;
       else
-	cdio_warn ("unknown access type: %s. ignored.", value);
+        cdio_warn ("unknown access type: %s. ignored.", value);
     }
   else return DRIVER_OP_ERROR;
 
@@ -1103,10 +1106,10 @@ TestDevice(_img_private_t *p_env, io_service_t service)
   /* Create the IOCFPlugIn interface so we can query it. */
 
   err = IOCreatePlugInInterfaceForService ( service,
-					    kIOMMCDeviceUserClientTypeID,
-					    kIOCFPlugInInterfaceID,
-					    &plugInInterface,
-					    &score );
+                                            kIOMMCDeviceUserClientTypeID,
+                                            kIOCFPlugInInterfaceID,
+                                            &plugInInterface,
+                                            &score );
   if ( err != noErr ) {
     printf("IOCreatePlugInInterfaceForService returned %d\n", err);
     return;
@@ -1115,8 +1118,8 @@ TestDevice(_img_private_t *p_env, io_service_t service)
   /* Query the interface for the MMCDeviceInterface. */
   
   herr = ( *plugInInterface )->QueryInterface ( plugInInterface,
-						CFUUIDGetUUIDBytes ( kIOMMCDeviceInterfaceID ),
-						( LPVOID ) &mmcInterface );
+                                                CFUUIDGetUUIDBytes ( kIOMMCDeviceInterfaceID ),
+                                                ( LPVOID ) &mmcInterface );
   
   if ( herr != S_OK )     {
     printf("QueryInterface returned %ld\n", herr);
@@ -1156,7 +1159,7 @@ read_toc_osx (void *p_user_data)
 
   /* get the TOC from the dictionary */
   data = (CFDataRef) CFDictionaryGetValue( propertiesDict,
-					   CFSTR(kIOCDMediaTOCKey) );
+                                           CFSTR(kIOCDMediaTOCKey) );
   if ( data  != NULL ) {
     CFRange range;
     CFIndex buf_len;
@@ -1192,9 +1195,9 @@ read_toc_osx (void *p_user_data)
     p_env->pp_lba = malloc( p_env->i_descriptors * sizeof(int) );
     if( p_env->pp_lba == NULL )
       {
-	cdio_warn("Out of memory in allocating track starting LSNs" );
-	free( p_env->pTOC );
-	return false;
+        cdio_warn("Out of memory in allocating track starting LSNs" );
+        free( p_env->pTOC );
+        return false;
       }
     
     pTrackDescriptors = p_env->pTOC->descriptors;
@@ -1206,42 +1209,42 @@ read_toc_osx (void *p_user_data)
     
     for( i = 0; i < p_env->i_descriptors; i++ )
       {
-	track_t i_track     = pTrackDescriptors[i].point;
-	session_t i_session = pTrackDescriptors[i].session;
+        track_t i_track     = pTrackDescriptors[i].point;
+        session_t i_session = pTrackDescriptors[i].session;
 
-	cdio_debug( "point: %d, tno: %d, session: %d, adr: %d, control:%d, "
-		    "address: %d:%d:%d, p: %d:%d:%d", 
-		    i_track,
-		    pTrackDescriptors[i].tno, i_session,
-		    pTrackDescriptors[i].adr, pTrackDescriptors[i].control,
-		    pTrackDescriptors[i].address.minute,
-		    pTrackDescriptors[i].address.second,
-		    pTrackDescriptors[i].address.frame, 
-		    pTrackDescriptors[i].p.minute,
-		    pTrackDescriptors[i].p.second, 
-		    pTrackDescriptors[i].p.frame );
+        cdio_debug( "point: %d, tno: %d, session: %d, adr: %d, control:%d, "
+                    "address: %d:%d:%d, p: %d:%d:%d", 
+                    i_track,
+                    pTrackDescriptors[i].tno, i_session,
+                    pTrackDescriptors[i].adr, pTrackDescriptors[i].control,
+                    pTrackDescriptors[i].address.minute,
+                    pTrackDescriptors[i].address.second,
+                    pTrackDescriptors[i].address.frame, 
+                    pTrackDescriptors[i].p.minute,
+                    pTrackDescriptors[i].p.second, 
+                    pTrackDescriptors[i].p.frame );
 
-	/* track information has adr = 1 */
-	if ( 0x01 != pTrackDescriptors[i].adr ) 
-	  continue;
+        /* track information has adr = 1 */
+        if ( 0x01 != pTrackDescriptors[i].adr ) 
+          continue;
 
-	if( i_track == OSX_CDROM_LEADOUT_TRACK )
-	  i_leadout = i;
+        if( i_track == OSX_CDROM_LEADOUT_TRACK )
+          i_leadout = i;
 
-	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
-	  continue;
+        if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
+          continue;
 
-	if (p_env->gen.i_first_track > i_track) 
-	  p_env->gen.i_first_track = i_track;
-	
-	if (p_env->i_last_track < i_track) 
-	  p_env->i_last_track = i_track;
-	
-	if (p_env->i_first_session > i_session) 
-	  p_env->i_first_session = i_session;
-	
-	if (p_env->i_last_session < i_session) 
-	  p_env->i_last_session = i_session;
+        if (p_env->gen.i_first_track > i_track) 
+          p_env->gen.i_first_track = i_track;
+        
+        if (p_env->i_last_track < i_track) 
+          p_env->i_last_track = i_track;
+        
+        if (p_env->i_first_session > i_session) 
+          p_env->i_first_session = i_session;
+        
+        if (p_env->i_last_session < i_session) 
+          p_env->i_last_session = i_session;
       }
 
     /* Now that we know what the first track number is, we can make sure
@@ -1249,26 +1252,26 @@ read_toc_osx (void *p_user_data)
      */
     for( i = 0; i < p_env->i_descriptors; i++ )
       {
-	track_t i_track = pTrackDescriptors[i].point;
+        track_t i_track = pTrackDescriptors[i].point;
 
-	if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
-	  continue;
+        if( i_track > CDIO_CD_MAX_TRACKS || i_track < CDIO_CD_MIN_TRACK_NO )
+          continue;
 
-	/* Note what OSX calls a LBA we call an LSN. So below re we 
-	   really have have MSF -> LSN -> LBA.
-	 */
-	p_env->pp_lba[i_track - p_env->gen.i_first_track] =
-	  cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i].p ));
-	set_track_flags(&(p_env->gen.track_flags[i_track]), 
-			pTrackDescriptors[i].control);
+        /* Note what OSX calls a LBA we call an LSN. So below re we 
+           really have have MSF -> LSN -> LBA.
+         */
+        p_env->pp_lba[i_track - p_env->gen.i_first_track] =
+          cdio_lsn_to_lba(CDConvertMSFToLBA( pTrackDescriptors[i].p ));
+        set_track_flags(&(p_env->gen.track_flags[i_track]), 
+                        pTrackDescriptors[i].control);
       }
     
     if( i_leadout == -1 )
       {
-	cdio_warn( "CD leadout not found" );
-	free( p_env->pp_lba );
-	free( (void *) p_env->pTOC );
-	return false;
+        cdio_warn( "CD leadout not found" );
+        free( p_env->pp_lba );
+        free( (void *) p_env->pTOC );
+        return false;
       }
     
     /* Set leadout sector. 
@@ -1338,22 +1341,22 @@ _eject_media_osx (void *user_data) {
       
       if( ( p_file = popen( sz_cmd, "r" ) ) != NULL )
         {
-	  char psz_result[0x200];
-	  int i_ret = fread( psz_result, 1, sizeof(psz_result) - 1, p_file );
-	  
-	  if( i_ret == 0 && ferror( p_file ) != 0 )
+          char psz_result[0x200];
+          int i_ret = fread( psz_result, 1, sizeof(psz_result) - 1, p_file );
+          
+          if( i_ret == 0 && ferror( p_file ) != 0 )
             {
-	      pclose( p_file );
-	      return DRIVER_OP_ERROR;
+              pclose( p_file );
+              return DRIVER_OP_ERROR;
             }
-	  
-	  pclose( p_file );
-	  
-	  psz_result[ i_ret ] = 0;
-	  
-	  if( strstr( psz_result, "Disk Ejected" ) != NULL )
+          
+          pclose( p_file );
+          
+          psz_result[ i_ret ] = 0;
+          
+          if( strstr( psz_result, "Disk Ejected" ) != NULL )
             {
-	      return DRIVER_OP_SUCCESS;
+              return DRIVER_OP_SUCCESS;
             }
         }
     }
@@ -1436,12 +1439,12 @@ get_track_format_osx(void *p_user_data, track_t i_track)
   if( ioctl( p_env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 )
   {
     cdio_warn( "could not read trackinfo for track %d:\n%s", i_track,
-	       strerror(errno));
+               strerror(errno));
     return TRACK_FORMAT_ERROR;
   }
 
   cdio_debug( "%d: trackinfo trackMode: %x dataMode: %x", i_track, 
-	      a_track.trackMode, a_track.dataMode );
+              a_track.trackMode, a_track.dataMode );
 
   if (a_track.trackMode == CDIO_CDROM_DATA_TRACK) {
     if (a_track.dataMode == CDROM_CDI_TRACK) {
@@ -1490,7 +1493,7 @@ get_track_green_osx(void *p_user_data, track_t i_track)
     
     if( ioctl( p_env->gen.fd, DKIOCCDREADTRACKINFO, &cd_read ) == -1 ) {
       cdio_warn( "could not read trackinfo for track %d:\n%s", i_track,
-		 strerror(errno));
+                 strerror(errno));
       return false;
     }
     return ((a_track.trackMode & CDIO_CDROM_DATA_TRACK) != 0);
@@ -1540,19 +1543,19 @@ close_tray_osx (const char *psz_drive)
       int i_ret = fread( psz_result, 1, sizeof(psz_result) - 1, p_file );
       
       if( i_ret == 0 && ferror( p_file ) != 0 )
-	{
-	  pclose( p_file );
-	  return DRIVER_OP_ERROR;
-	}
+        {
+          pclose( p_file );
+          return DRIVER_OP_ERROR;
+        }
       
       pclose( p_file );
       
       psz_result[ i_ret ] = 0;
       
       if( 0 == i_ret )
-	{
-	  return DRIVER_OP_SUCCESS;
-	}
+        {
+          return DRIVER_OP_SUCCESS;
+        }
     }
   
   return DRIVER_OP_ERROR;
@@ -1591,11 +1594,11 @@ cdio_get_devices_osx(void)
     }
   
   CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaEjectableKey),
-			kCFBooleanTrue );
+                        kCFBooleanTrue );
   
   kern_result = IOServiceGetMatchingServices( master_port, 
-					      classes_to_match,
-					      &media_iterator );
+                                              classes_to_match,
+                                              &media_iterator );
   if( kern_result != KERN_SUCCESS )
     {
       return( NULL );
@@ -1609,31 +1612,35 @@ cdio_get_devices_osx(void)
       CFTypeRef str_bsd_path;
       
       do
-	{
-	  str_bsd_path = IORegistryEntryCreateCFProperty( next_media,
-							  CFSTR( kIOBSDNameKey ),
-							  kCFAllocatorDefault,
-							  0 );
-	  if( str_bsd_path == NULL )
-	    {
-	      IOObjectRelease( next_media );
-	      continue;
-	    }
-	  
-	  snprintf( psz_buf, sizeof(psz_buf), "%s%c", _PATH_DEV, 'r' );
-	  dev_path_length = strlen( psz_buf );
-	  
-	  if( CFStringGetCString( str_bsd_path,
-				  (char*)&psz_buf + dev_path_length,
-				  sizeof(psz_buf) - dev_path_length,
-				  kCFStringEncodingASCII ) )
-	    {
-	      cdio_add_device_list(&drives, strdup(psz_buf), &num_drives);
-	    }
-	  CFRelease( str_bsd_path );
-	  IOObjectRelease( next_media );
-	  
-	} while( ( next_media = IOIteratorNext( media_iterator ) ) != 0 );
+        {
+          str_bsd_path = 
+            IORegistryEntryCreateCFProperty( next_media,
+                                             CFSTR( kIOBSDNameKey ),
+                                             kCFAllocatorDefault,
+                                             0 );
+          if( str_bsd_path == NULL )
+            {
+              IOObjectRelease( next_media );
+              continue;
+            }
+          
+          /* Below, by appending 'r' to the BSD node name, we indicate
+             a raw disk. Raw disks receive I/O requests directly and
+             don't go through a buffer cache. */        
+          snprintf( psz_buf, sizeof(psz_buf), "%s%c", _PATH_DEV, 'r' );
+          dev_path_length = strlen( psz_buf );
+          
+          if( CFStringGetCString( str_bsd_path,
+                                  (char*)&psz_buf + dev_path_length,
+                                  sizeof(psz_buf) - dev_path_length,
+                                  kCFStringEncodingASCII ) )
+            {
+              cdio_add_device_list(&drives, strdup(psz_buf), &num_drives);
+            }
+          CFRelease( str_bsd_path );
+          IOObjectRelease( next_media );
+          
+        } while( ( next_media = IOIteratorNext( media_iterator ) ) != 0 );
     }
   IOObjectRelease( media_iterator );
   cdio_add_device_list(&drives, NULL, &num_drives);
@@ -1669,11 +1676,11 @@ cdio_get_default_device_osx(void)
     }
   
   CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaEjectableKey),
-			kCFBooleanTrue );
+                        kCFBooleanTrue );
   
   kern_result = IOServiceGetMatchingServices( master_port, 
-					      classes_to_match,
-					      &media_iterator );
+                                              classes_to_match,
+                                              &media_iterator );
   if( kern_result != KERN_SUCCESS )
     {
       return( NULL );
@@ -1687,35 +1694,35 @@ cdio_get_default_device_osx(void)
       CFTypeRef str_bsd_path;
       
       do
-	{
-	  str_bsd_path = IORegistryEntryCreateCFProperty( next_media,
-							  CFSTR( kIOBSDNameKey ),
-							  kCFAllocatorDefault,
-							  0 );
-	  if( str_bsd_path == NULL )
-	    {
-	      IOObjectRelease( next_media );
-	      continue;
-	    }
-	  
-	  snprintf( psz_buf, sizeof(psz_buf), "%s%c", _PATH_DEV, 'r' );
-	  dev_path_length = strlen( psz_buf );
-	  
-	  if( CFStringGetCString( str_bsd_path,
-				  (char*)&psz_buf + dev_path_length,
-				  sizeof(psz_buf) - dev_path_length,
-				  kCFStringEncodingASCII ) )
-	    {
-	      CFRelease( str_bsd_path );
-	      IOObjectRelease( next_media );
-	      IOObjectRelease( media_iterator );
-	      return strdup( psz_buf );
-	    }
-	  
-	  CFRelease( str_bsd_path );
-	  IOObjectRelease( next_media );
-	  
-	} while( ( next_media = IOIteratorNext( media_iterator ) ) != 0 );
+        {
+          str_bsd_path = IORegistryEntryCreateCFProperty( next_media,
+                                                          CFSTR( kIOBSDNameKey ),
+                                                          kCFAllocatorDefault,
+                                                          0 );
+          if( str_bsd_path == NULL )
+            {
+              IOObjectRelease( next_media );
+              continue;
+            }
+          
+          snprintf( psz_buf, sizeof(psz_buf), "%s%c", _PATH_DEV, 'r' );
+          dev_path_length = strlen( psz_buf );
+          
+          if( CFStringGetCString( str_bsd_path,
+                                  (char*)&psz_buf + dev_path_length,
+                                  sizeof(psz_buf) - dev_path_length,
+                                  kCFStringEncodingASCII ) )
+            {
+              CFRelease( str_bsd_path );
+              IOObjectRelease( next_media );
+              IOObjectRelease( media_iterator );
+              return strdup( psz_buf );
+            }
+          
+          CFRelease( str_bsd_path );
+          IOObjectRelease( next_media );
+          
+        } while( ( next_media = IOIteratorNext( media_iterator ) ) != 0 );
     }
   IOObjectRelease( media_iterator );
   return NULL;
@@ -1733,7 +1740,7 @@ cdio_open_am_osx (const char *psz_source_name, const char *psz_access_mode)
 
   if (psz_access_mode != NULL)
     cdio_warn ("there is only one access mode for OS X. Arg %s ignored",
-	       psz_access_mode);
+               psz_access_mode);
   return cdio_open_osx(psz_source_name);
 }
 

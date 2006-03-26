@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.20 2005/05/16 08:11:31 rocky Exp $
+    $Id: _cdio_generic.c,v 1.21 2006/03/26 02:34:41 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,7 +25,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.20 2005/05/16 08:11:31 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.21 2006/03/26 02:34:41 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -249,13 +249,12 @@ cdio_add_device_list(char **device_list[], const char *drive,
   }
 }
 
-
-/*! 
-  Get cdtext information for a CdIo_t object .
+/*
+  Get cdtext information in p_user_data for track i_track. 
+  For disc information i_track is 0.
   
-  @param obj the CD object that may contain CD-TEXT information.
-  @return the CD-TEXT object or NULL if obj is NULL
-  or CD-TEXT information does not exist.
+  Return the CD-TEXT or NULL if obj is NULL, CD-TEXT information does
+  not exist, or we don't know how to get this implemented.
 */
 cdtext_t *
 get_cdtext_generic (void *p_user_data, track_t i_track)
