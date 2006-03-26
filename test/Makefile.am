@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.52 2006/03/07 02:38:44 rocky Exp $
+#   $Id: Makefile.am,v 1.53 2006/03/26 04:02:35 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -29,7 +29,8 @@ testparanoia=testparanoia
 testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
 endif
 
-hack = check_sizeof testassert  testbincue testischar testiso9660 \
+hack = check_sizeof testassert  testbincue testischar \
+       testisocd testiso9660 \
        $(testparanoia) testtoc
 
 noinst_PROGRAMS = $(hack) testdefault 
@@ -41,6 +42,8 @@ testassert_LDADD    = $(LIBCDIO_LIBS)
 testdefault_LDADD   = $(LIBCDIO_LIBS)
 testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+
+testisocd_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
 testtoc_LDADD       = $(LIBCDIO_LIBS)
 testtoc_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
