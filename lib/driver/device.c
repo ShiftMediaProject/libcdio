@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.35 2006/02/27 10:29:20 flameeyes Exp $
+    $Id: device.c,v 1.36 2006/03/26 20:47:55 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -606,9 +606,7 @@ cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[],
   } else {
     cdio_fs_anal_t got_fs=0;
     cdio_fs_anal_t need_fs = CDIO_FSTYPE(capabilities);
-    cdio_fs_anal_t need_fs_ext;
     char **d = ppsz_drives;
-    need_fs_ext = capabilities & ~CDIO_FS_MASK;
       
     for( ;  *d != NULL; d++ ) {
       CdIo_t *p_cdio = cdio_open(*d, *p_driver_id);
@@ -621,11 +619,9 @@ cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[],
           got_fs = cdio_guess_cd_type(p_cdio, 0, i_first_track, 
                                       &cdio_iso_analysis);
           /* Match on fs and add */
-          if ( (CDIO_FS_UNKNOWN == need_fs || CDIO_FSTYPE(got_fs) == need_fs) )
+          if ( (CDIO_FS_UNKNOWN == need_fs || CDIO_FSTYPE(got_fs & need_fs)) )
             {
-              bool doit = any
-                ? (got_fs & need_fs_ext)  != 0
-                : (got_fs | ~need_fs_ext) == -1;
+              bool doit = any ? true : (got_fs & need_fs) == need_fs;
               if (doit) 
                 cdio_add_device_list(&ppsz_drives_ret, *d, &i_drives);
             }

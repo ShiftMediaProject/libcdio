@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.h,v 1.14 2006/02/13 08:44:17 rocky Exp $
+    $Id: cd_types.h,v 1.15 2006/03/26 20:47:55 rocky Exp $
 
     Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -52,7 +52,7 @@ extern "C" {
     
     /**<
      * EXT2 was the GNU/Linux native filesystem for early kernels. Newer
-     * GNU/Linux OS's may use EXT3 which EXT2 with a journal. 
+     * GNU/Linux OS's may use EXT3 which is EXT2 with a journal. 
      */
     CDIO_FS_EXT2		 = 7,
 

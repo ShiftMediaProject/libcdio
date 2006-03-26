@@ -1,4 +1,4 @@
-/* $Id: testisocd.c,v 1.1 2006/03/26 15:05:21 rocky Exp $
+/* $Id: testisocd.c,v 1.2 2006/03/26 20:47:55 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
   <rockyb@users.sourceforge.net>
@@ -64,8 +64,13 @@ main(int argc, const char *argv[])
 
   /* See if we can find a device with a loaded CD-DA in it. If successful
      drive_id will be set.  */
-  ppsz_cd_drives = cdio_get_devices_with_cap_ret(NULL, CDIO_FS_ISO_9660, false,
-						 &driver_id);
+  ppsz_cd_drives = 
+    cdio_get_devices_with_cap_ret(NULL, 
+				  (CDIO_FS_ISO_9660
+				   |CDIO_FS_ISO_HFS
+				   |CDIO_FS_ISO_9660_INTERACTIVE), 
+				  true,
+				  &driver_id);
 
   if (ppsz_cd_drives && ppsz_cd_drives[0]) {
     /* Found such a CD-ROM with an ISO 9660 filesystem. Use the first drive in
