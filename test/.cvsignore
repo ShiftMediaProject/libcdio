@@ -22,6 +22,7 @@ testbincue.c
 testdefault
 testischar
 testiso9660
+testisocd
 testparanoia
 testtoc
 *.dump
