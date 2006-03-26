@@ -1,8 +1,9 @@
 /*
-    $Id: iso9660.h,v 1.91 2006/03/25 00:21:56 rocky Exp $
+    $Id: iso9660.h,v 1.92 2006/03/26 15:03:54 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
+    <rockyb@users.sourceforge.net>
 
     See also iso9660.h by Eric Youngdale (1993).
 
@@ -603,7 +604,7 @@ typedef struct _iso9660_s iso9660_t;
   /*!
     Seek to a position and then read i_size blocks. 
 
-    @param p_iso the ISO-9660 filename to get data from
+    @param p_iso the ISO-9660 file image to get data from
 
     @param ptr place to put returned data. It should be able to store
     a least i_size bytes
@@ -833,6 +834,21 @@ iso9660_stat_t *iso9660_ifs_find_lsn(iso9660_t *p_iso, lsn_t i_lsn);
 
 /*!
   Return file status for psz_path. NULL is returned on error.
+
+  @param p_cdio the CD object to read from
+
+  @param psz_path filename path to look up and get information about
+
+  @return ISO 9660 file information
+
+  Important note:
+
+  You make get different results looking up "/" versus "/." and the
+  latter may give more complete information. "/" will take information
+  from the PVD only, whereas "/." will force a directory read of "/" and
+  find "." and in that Rock-Ridge information might be found which fills
+  in more stat information. Ideally iso9660_fs_stat should be fixed.
+  Patches anyone?
  */
 iso9660_stat_t *iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[]);
   
