@@ -1,5 +1,5 @@
 /*
-  $Id: drives.c,v 1.3 2006/02/09 18:16:29 rocky Exp $
+  $Id: drives.c,v 1.4 2006/03/27 02:48:41 rocky Exp $
 
   Copyright (C) 2003, 2004, 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -84,9 +84,13 @@ main(int argc, const char *argv[])
 
   /* Print out a list of CD-drives the harder way. */
   print_drive_class("All CD-ROM drives (again)", CDIO_FS_MATCH_ALL, false);
-  print_drive_class("CD-DA drives...", CDIO_FS_AUDIO, false);
-  print_drive_class("All drives with ISO 9660...", CDIO_FS_ISO_9660, false);
-  print_drive_class("VCD drives...", 
+  print_drive_class("CD-ROM drives with a CD-DA loaded...",
+		    CDIO_FS_AUDIO, false);
+  print_drive_class("CD-ROM drives with some sort of ISO 9660 filesystem...", 
+		    (CDIO_FS_ISO_9660
+		     |CDIO_FS_ISO_HFS
+		     |CDIO_FS_ISO_9660_INTERACTIVE), true);
+  print_drive_class("(S)VCD drives...", 
 		    (CDIO_FS_ANAL_SVCD|CDIO_FS_ANAL_CVD|
 		     CDIO_FS_ANAL_VIDEOCD|CDIO_FS_UNKNOWN), true);
   return 0;

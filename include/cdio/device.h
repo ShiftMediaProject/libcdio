@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.32 2006/02/02 04:37:29 rocky Exp $
+    $Id: device.h,v 1.33 2006/03/27 02:48:41 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -310,12 +310,33 @@ extern "C" {
     Get an array of device names in search_devices that have at least
     the capabilities listed by the capabities parameter.  If
     search_devices is NULL, then we'll search all possible CD drives.
-    
-    If "b_any" is set false then every capability listed in the
-    extended portion of capabilities (i.e. not the basic filesystem)
-    must be satisified. If "any" is set true, then if any of the
-    capabilities matches, we call that a success.
 
+    Capabilities have two parts to them, a "filesystem" part and an
+    "analysis" part.
+
+    The filesystem part is mutually exclusive. For example either the
+    filesystem is at most one of the High-Sierra, UFS, or HFS, ISO9660,
+    fileystems. Valid combinations of say HFS and ISO9660 are
+    specified as a separate "filesystem".
+
+    Capabilities on the other hand are not mutually exclusive. For example
+    a filesystem may have none, either, or both of the XA or Rock-Ridge
+    extension properties.
+
+    If "b_any" is set false then every capability listed in the
+    analysis portion of capabilities (i.e. not the basic filesystem)
+    must be satisified. If no analysis capabilities are specified,
+    that's a match.
+
+    If "b_any" is set true, then if any of the analysis capabilities
+    matches, we call that a success. 
+
+    In either case, you can specify in the filesystem portion
+    different filesystem types and a match will succeed only if one of
+    them matches. (It doesn't make sense to try to match on *all* of
+    the filesystems as a CD can only have one). Again, if no fileystem
+    is specified, that's a match. 
+    
     To find a CD-drive of any type, use the mask CDIO_FS_MATCH_ALL.
 
     @return the array of device names or NULL if we couldn't get a

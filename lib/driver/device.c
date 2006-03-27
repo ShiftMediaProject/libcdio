@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.36 2006/03/26 20:47:55 rocky Exp $
+    $Id: device.c,v 1.37 2006/03/27 02:48:41 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -579,7 +579,7 @@ cdio_get_devices_with_cap (/*in*/ char* search_devices[],
 
 char **
 cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[], 
-                               cdio_fs_anal_t capabilities, bool any,
+                               cdio_fs_anal_t need_cap, bool b_any,
                                /*out*/ driver_id_t *p_driver_id)
 {
   char **ppsz_drives=search_devices;
@@ -596,7 +596,7 @@ cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[],
   
   if (!ppsz_drives) return NULL;
 
-  if (capabilities == CDIO_FS_MATCH_ALL) {
+  if (need_cap == CDIO_FS_MATCH_ALL) {
     /* Duplicate drives into drives_ret. */
     char **d = ppsz_drives;
     
@@ -604,8 +604,7 @@ cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[],
       cdio_add_device_list(&ppsz_drives_ret, *d, &i_drives);
     }
   } else {
-    cdio_fs_anal_t got_fs=0;
-    cdio_fs_anal_t need_fs = CDIO_FSTYPE(capabilities);
+    const cdio_fs_anal_t need_fs = CDIO_FSTYPE(need_cap);
     char **d = ppsz_drives;
       
     for( ;  *d != NULL; d++ ) {
@@ -616,13 +615,26 @@ cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[],
         cdio_iso_analysis_t cdio_iso_analysis; 
 
         if (CDIO_INVALID_TRACK != i_first_track) {
-          got_fs = cdio_guess_cd_type(p_cdio, 0, i_first_track, 
-                                      &cdio_iso_analysis);
-          /* Match on fs and add */
-          if ( (CDIO_FS_UNKNOWN == need_fs || CDIO_FSTYPE(got_fs & need_fs)) )
-            {
-              bool doit = any ? true : (got_fs & need_fs) == need_fs;
-              if (doit) 
+          const cdio_fs_anal_t got_cap = 
+            cdio_guess_cd_type(p_cdio, 0, i_first_track, &cdio_iso_analysis);
+
+          /* Match on filesystem. Here either we don't know what the
+             filesystem is - automatic match, or we no that the file
+             system is in the set of those specified.
+             We refine the logic further after this initial test. */
+          if ( CDIO_FS_UNKNOWN == need_fs 
+               || (CDIO_FSTYPE(got_cap) & need_fs) ) {
+              /* Match on analysis type. If we haven't set any 
+                 analysis type, then an automatic match. Otherwise
+                 a match is determined by whether we need all 
+                 analysis types or any of them. */
+              const cdio_fs_anal_t need_anal = need_cap & ~CDIO_FS_MASK;
+              const cdio_fs_anal_t got_anal  = got_cap  & ~CDIO_FS_MASK;
+              const bool b_match = !need_anal 
+                || (b_any  
+                    ? (got_anal & need_anal) != 0
+                    : (got_anal & need_anal) == need_anal);
+              if (b_match) 
                 cdio_add_device_list(&ppsz_drives_ret, *d, &i_drives);
             }
         }
