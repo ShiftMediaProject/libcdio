@@ -1,7 +1,8 @@
 /*
-    $Id: win32.c,v 1.33 2006/03/17 03:10:53 rocky Exp $
+    $Id: win32.c,v 1.34 2006/03/28 13:16:09 rocky Exp $
 
-    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
+    <rockyb@users.sourceforge.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.33 2006/03/17 03:10:53 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.34 2006/03/28 13:16:09 rocky Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -374,12 +375,30 @@ read_audio_sectors (void *p_user_data, void *p_buf, lsn_t i_lsn,
 }
 
 /*!
-   Reads a single mode1 sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
+   Reads an audio device into data starting from lsn.
+   Returns 0 if no error. 
+ */
+static driver_return_code_t
+read_data_sectors_win32 (void *p_user_data, void *p_buf, lsn_t i_lsn, 
+			 uint16_t i_blocksize, uint32_t i_blocks) 
+{
+  driver_return_code_t rc =
+    read_data_sectors_mmc(p_user_data, p_buf, i_lsn, i_blocksize, i_blocks);
+  if ( DRIVER_OP_SUCCESS != rc  ) {
+    /* Try using generic "cooked" mode. */
+    return read_data_sectors_generic( p_user_data, p_buf, i_lsn, 
+				      i_blocksize, i_blocks );
+  } 
+  return DRIVER_OP_SUCCESS;
+}
+
+/*!
+   Reads a single mode1 sector from cd device into data starting from
+   lsn. Returns 0 if no error.
  */
 static int
-read_mode1_sector (void *p_user_data, void *p_buf, lsn_t lsn, 
-		   bool b_form2)
+read_mode1_sector_win32 (void *p_user_data, void *p_buf, lsn_t lsn, 
+			 bool b_form2)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -410,8 +429,8 @@ read_mode1_sector (void *p_user_data, void *p_buf, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-read_mode1_sectors (void *p_user_data, void *p_buf, lsn_t lsn, 
-		    bool b_form2, unsigned int nblocks)
+read_mode1_sectors_win32 (void *p_user_data, void *p_buf, lsn_t lsn, 
+			  bool b_form2, unsigned int nblocks)
 {
   _img_private_t *p_env = p_user_data;
   int i;
@@ -419,13 +438,13 @@ read_mode1_sectors (void *p_user_data, void *p_buf, lsn_t lsn,
 
   for (i = 0; i < nblocks; i++) {
     if (b_form2) {
-      if ( (retval = read_mode1_sector (p_env, 
-					  ((char *)p_buf) + (M2RAW_SECTOR_SIZE * i),
-					  lsn + i, true)) )
-	return retval;
+      retval = read_mode1_sector_win32 (p_env, ((char *)p_buf) + 
+					(M2RAW_SECTOR_SIZE * i),
+					lsn + i, true);
+      if ( retval ) return retval;
     } else {
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
-      if ( (retval = read_mode1_sector (p_env, buf, lsn + i, false)) )
+      if ( (retval = read_mode1_sector_win32 (p_env, buf, lsn + i, false)) )
 	return retval;
       
       memcpy (((char *)p_buf) + (CDIO_CD_FRAMESIZE * i), 
@@ -440,8 +459,8 @@ read_mode1_sectors (void *p_user_data, void *p_buf, lsn_t lsn,
    from lsn. Returns 0 if no error. 
  */
 static int
-read_mode2_sector (void *p_user_data, void *data, lsn_t lsn, 
-		    bool b_form2)
+read_mode2_sector_win32 (void *p_user_data, void *data, lsn_t lsn, 
+			 bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   _img_private_t *p_env = p_user_data;
@@ -480,17 +499,17 @@ read_mode2_sector (void *p_user_data, void *data, lsn_t lsn,
    Returns 0 if no error. 
  */
 static int
-read_mode2_sectors (void *p_user_data, void *data, lsn_t lsn, 
-		    bool b_form2, unsigned int i_blocks)
+read_mode2_sectors_win32 (void *p_user_data, void *data, lsn_t lsn, 
+			  bool b_form2, unsigned int i_blocks)
 {
   int i;
   int retval;
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < i_blocks; i++) {
-    if ( (retval = read_mode2_sector (p_user_data, 
-				      ((char *)data) + (blocksize * i),
-				      lsn + i, b_form2)) )
+    if ( (retval = read_mode2_sector_win32 (p_user_data, 
+					    ((char *)data) + (blocksize * i),
+					    lsn + i, b_form2)) )
       return retval;
   }
   return 0;
@@ -925,15 +944,11 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.lseek                  = NULL;
   _funcs.read                   = NULL;
   _funcs.read_audio_sectors     = read_audio_sectors;
-#if 0
-  _funcs.read_data_sectors      = read_data_sectors_generic;
-#else
-  _funcs.read_data_sectors      = read_data_sectors_mmc;
-#endif
-  _funcs.read_mode1_sector      = read_mode1_sector;
-  _funcs.read_mode1_sectors     = read_mode1_sectors;
-  _funcs.read_mode2_sector      = read_mode2_sector;
-  _funcs.read_mode2_sectors     = read_mode2_sectors;
+  _funcs.read_data_sectors      = read_data_sectors_win32;
+  _funcs.read_mode1_sector      = read_mode1_sector_win32;
+  _funcs.read_mode1_sectors     = read_mode1_sectors_win32;
+  _funcs.read_mode2_sector      = read_mode2_sector_win32;
+  _funcs.read_mode2_sectors     = read_mode2_sectors_win32;
   _funcs.read_toc               = read_toc_win32;
   _funcs.run_mmc_cmd            = run_mmc_cmd_win32;
   _funcs.set_arg                = set_arg_win32;
