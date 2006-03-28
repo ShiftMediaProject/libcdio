@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.c,v 1.6 2006/02/27 10:29:20 flameeyes Exp $
+    $Id: cd_types.c,v 1.7 2006/03/28 03:26:16 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein
     <rocky@panix.com>
@@ -261,7 +261,7 @@ cdio_guess_cd_type(const CdIo_t *p_cdio, int start_session, track_t i_track,
   /* We have something that smells of a filesystem. */
   if (_cdio_is_it(INDEX_CD_I) && _cdio_is_it(INDEX_CD_RTOS) 
       && !_cdio_is_it(INDEX_BRIDGE) && !_cdio_is_it(INDEX_XA)) {
-    return CDIO_FS_INTERACTIVE;
+    return (CDIO_FS_INTERACTIVE | CDIO_FS_ANAL_ISO9660_ANY);
   } else {	
     /* read sector 0 ONLY, when NO greenbook CD-I !!!! */
 
@@ -272,11 +272,11 @@ cdio_guess_cd_type(const CdIo_t *p_cdio, int start_session, track_t i_track,
       ret |= CDIO_FS_HIGH_SIERRA;
     else if (_cdio_is_it(INDEX_ISOFS)) {
       if (_cdio_is_it(INDEX_CD_RTOS) && _cdio_is_it(INDEX_BRIDGE))
-	ret = CDIO_FS_ISO_9660_INTERACTIVE;
+	ret = (CDIO_FS_ISO_9660_INTERACTIVE | CDIO_FS_ANAL_ISO9660_ANY);
       else if (_cdio_is_hfs())
 	ret = CDIO_FS_ISO_HFS;
       else
-	ret = CDIO_FS_ISO_9660;
+	ret = (CDIO_FS_ISO_9660 | CDIO_FS_ANAL_ISO9660_ANY);
       iso_analysis->isofs_size = _cdio_get_iso9660_fs_sec_count();
       strncpy(iso_analysis->iso_label, buffer[0]+40,33);
       iso_analysis->iso_label[32] = '\0';
@@ -316,7 +316,7 @@ cdio_guess_cd_type(const CdIo_t *p_cdio, int start_session, track_t i_track,
       
       if (_cdio_is_joliet()) {
 	iso_analysis->joliet_level = _cdio_get_joliet_level();
-	ret |= CDIO_FS_ANAL_JOLIET;
+	ret |= (CDIO_FS_ANAL_JOLIET | CDIO_FS_ANAL_ISO9660_ANY);
       }
       if (_cdio_is_it(INDEX_BOOTABLE))
 	ret |= CDIO_FS_ANAL_BOOTABLE;
@@ -329,6 +329,7 @@ cdio_guess_cd_type(const CdIo_t *p_cdio, int start_session, track_t i_track,
 	  return ret;
 	
 	if (_cdio_is_it(INDEX_BRIDGE) && _cdio_is_it(INDEX_CD_RTOS)) {
+	  ret |= CDIO_FS_ANAL_ISO9660_ANY;
 	  if (_cdio_is_it(INDEX_VIDEO_CD))  ret |= CDIO_FS_ANAL_VIDEOCD;
 	  else if (_cdio_is_it(INDEX_SVCD)) ret |= CDIO_FS_ANAL_SVCD;
 	} else if (_cdio_is_it(INDEX_SVCD)) ret |= CDIO_FS_ANAL_CVD;
@@ -336,7 +337,8 @@ cdio_guess_cd_type(const CdIo_t *p_cdio, int start_session, track_t i_track,
       }
     } 
     else if (_cdio_is_hfs())          ret |= CDIO_FS_HFS;
-    else if (sector0_read_ok && _cdio_is_it(INDEX_EXT2)) ret |= CDIO_FS_EXT2;
+    else if (sector0_read_ok && _cdio_is_it(INDEX_EXT2)) 
+      ret |= (CDIO_FS_EXT2 | CDIO_FS_ANAL_ISO9660_ANY);
     else if (_cdio_is_3do())          ret |= CDIO_FS_3DO;
     else {
       if ( _cdio_read_block(p_cdio, UFS_SUPERBLOCK_SECTOR, start_session, 2, 
@@ -351,8 +353,11 @@ cdio_guess_cd_type(const CdIo_t *p_cdio, int start_session, track_t i_track,
   }
   
   /* other checks */
-  if (_cdio_is_it(INDEX_XA))       ret |= CDIO_FS_ANAL_XA;
-  if (_cdio_is_it(INDEX_PHOTO_CD)) ret |= CDIO_FS_ANAL_PHOTO_CD;
-  if (_cdio_is_it(INDEX_CDTV))     ret |= CDIO_FS_ANAL_CDTV;
+  if (_cdio_is_it(INDEX_XA))       
+    ret |= (CDIO_FS_ANAL_XA | CDIO_FS_ANAL_ISO9660_ANY);
+  if (_cdio_is_it(INDEX_PHOTO_CD)) 
+    ret |= (CDIO_FS_ANAL_PHOTO_CD | CDIO_FS_ANAL_ISO9660_ANY);
+  if (_cdio_is_it(INDEX_CDTV))     
+    ret |= CDIO_FS_ANAL_CDTV;
   return ret;
 }

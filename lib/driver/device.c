@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.37 2006/03/27 02:48:41 rocky Exp $
+    $Id: device.c,v 1.38 2006/03/28 03:26:16 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -622,8 +622,8 @@ cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[],
              filesystem is - automatic match, or we no that the file
              system is in the set of those specified.
              We refine the logic further after this initial test. */
-          if ( CDIO_FS_UNKNOWN == need_fs 
-               || (CDIO_FSTYPE(got_cap) & need_fs) ) {
+          if ( CDIO_FS_UNKNOWN == need_fs || 0 == need_fs
+               || (CDIO_FSTYPE(got_cap) == need_fs) ) {
               /* Match on analysis type. If we haven't set any 
                  analysis type, then an automatic match. Otherwise
                  a match is determined by whether we need all 

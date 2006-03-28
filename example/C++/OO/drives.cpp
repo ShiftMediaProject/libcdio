@@ -1,5 +1,5 @@
 /*
-  $Id: drives.cpp,v 1.4 2006/03/27 02:48:41 rocky Exp $
+  $Id: drives.cpp,v 1.5 2006/03/28 03:26:16 rocky Exp $
 
   Copyright (C) 2003, 2004, 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -84,12 +84,8 @@ main(int argc, const char *argv[])
   print_drive_class("All CD-ROM drives (again)", CDIO_FS_MATCH_ALL);
   print_drive_class("CD-ROM drives with a CD-DA loaded...", CDIO_FS_AUDIO);
   print_drive_class("CD-ROM drives with some sort of ISO 9660 filesystem...", 
-		    (CDIO_FS_ISO_9660
-		     |CDIO_FS_ISO_HFS
-		     |CDIO_FS_ISO_9660_INTERACTIVE), true);
-  print_drive_class("(S)VCD drives...", 
-		    (CDIO_FS_ANAL_SVCD|CDIO_FS_ANAL_CVD|
-		     CDIO_FS_ANAL_VIDEOCD|CDIO_FS_UNKNOWN), true);
+		    CDIO_FS_ANAL_ISO9660_ANY, true);
+  print_drive_class("(S)VCD drives...", CDIO_FS_ANAL_VCD_ANY, true);
   return 0;
   
 }

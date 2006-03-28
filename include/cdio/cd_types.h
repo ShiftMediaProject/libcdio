@@ -1,5 +1,5 @@
 /*
-    $Id: cd_types.h,v 1.15 2006/03/26 20:47:55 rocky Exp $
+    $Id: cd_types.h,v 1.16 2006/03/28 03:26:16 rocky Exp $
 
     Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
@@ -93,21 +93,24 @@ extern "C" {
     CDIO_FS_MASK	      =	  0x000f, /**< Note: this should be 2**n-1 and
                                                and greater than the highest 
                                                CDIO_FS number above */
-    CDIO_FS_ANAL_XA           =	  0x0010, /**< eXtended Architecture format */
-    CDIO_FS_ANAL_MULTISESSION =   0x0020, /**< CD has multisesion */
-    CDIO_FS_ANAL_PHOTO_CD     =	  0x0040, /**< Is a Kodak Photo CD */
-    CDIO_FS_ANAL_HIDDEN_TRACK =   0x0080, /**< Hidden track at the 
+    CDIO_FS_ANAL_XA           =	  0x00010, /**< eXtended Architecture format */
+    CDIO_FS_ANAL_MULTISESSION =   0x00020, /**< CD has multisesion */
+    CDIO_FS_ANAL_PHOTO_CD     =	  0x00040, /**< Is a Kodak Photo CD */
+    CDIO_FS_ANAL_HIDDEN_TRACK =   0x00080, /**< Hidden track at the 
                                                beginning of the CD */
-    CDIO_FS_ANAL_CDTV         =	  0x0100,
-    CDIO_FS_ANAL_BOOTABLE     =   0x0200, /**< CD is bootable */
-    CDIO_FS_ANAL_VIDEOCD      =   0x0400, /**< VCD 1.1 */
-    CDIO_FS_ANAL_ROCKRIDGE    =   0x0800, /**< Has Rock Ridge Extensions to
+    CDIO_FS_ANAL_CDTV         =	  0x00100,
+    CDIO_FS_ANAL_BOOTABLE     =   0x00200, /**< CD is bootable */
+    CDIO_FS_ANAL_VIDEOCD      =   0x00400, /**< VCD 1.1 */
+    CDIO_FS_ANAL_ROCKRIDGE    =   0x00800, /**< Has Rock Ridge Extensions to
                                                ISO 9660, */
-    CDIO_FS_ANAL_JOLIET       =   0x1000, /**< Microsoft Joliet extensions 
+    CDIO_FS_ANAL_JOLIET       =   0x01000, /**< Microsoft Joliet extensions 
                                                 to ISO 9660, */
-    CDIO_FS_ANAL_SVCD         =   0x2000, /**< Super VCD or Choiji Video CD */
-    CDIO_FS_ANAL_CVD          =   0x4000, /**< Choiji Video CD */
-    CDIO_FS_ANAL_XISO         =   0x8000, /**< XBOX CD */
+    CDIO_FS_ANAL_SVCD         =   0x02000, /**< Super VCD or Choiji Video CD */
+    CDIO_FS_ANAL_CVD          =   0x04000, /**< Choiji Video CD */
+    CDIO_FS_ANAL_XISO         =   0x08000, /**< XBOX CD */
+    CDIO_FS_ANAL_ISO9660_ANY  =   0x10000, /**< Any sort fo ISO9660 FS */
+    CDIO_FS_ANAL_VCD_ANY      =   (CDIO_FS_ANAL_VIDEOCD|CDIO_FS_ANAL_SVCD|
+                                   CDIO_FS_ANAL_CVD),
     CDIO_FS_MATCH_ALL         =  ~CDIO_FS_MASK /**< bitmask which can
                                                  be used by
                                                  cdio_get_devices to

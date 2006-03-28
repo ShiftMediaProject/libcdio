@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.33 2006/03/27 02:48:41 rocky Exp $
+    $Id: device.h,v 1.34 2006/03/28 03:26:16 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -331,11 +331,9 @@ extern "C" {
     If "b_any" is set true, then if any of the analysis capabilities
     matches, we call that a success. 
 
-    In either case, you can specify in the filesystem portion
-    different filesystem types and a match will succeed only if one of
-    them matches. (It doesn't make sense to try to match on *all* of
-    the filesystems as a CD can only have one). Again, if no fileystem
-    is specified, that's a match. 
+    In either case, in the filesystem portion different filesystem
+    either specify 0 to match any filesystem or the specific
+    filesystem type.
     
     To find a CD-drive of any type, use the mask CDIO_FS_MATCH_ALL.
 
