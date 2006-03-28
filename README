@@ -41,6 +41,9 @@ Also included in the libcdio package are a number of utility programs:
              CD-ROM jitter, and a simple curses-based CD player,
              cdda-player using the analog CD-ROM output.
 
+* cd-paranoia - port of cdparanoia (CD-DA jitter and error correction)
+                using libcdio back-end CD-reading. 
+
 At present, there is no support for writing CD's, nor is there any
 support for reading or writing DVDs. For some of these, there are
 other libraries (e.g. libdi, libscg, or libdvdread) may be helpful.
@@ -55,4 +58,4 @@ extracting and editing ISO-9600 images (http://kiso.sourceforge.net),
 and a Samba vfs module that allows exporting a CD without mounting it
 (http://ontologistics.net/OpenSource/Samba/index.php).
 
-$Id: README,v 1.12 2006/03/28 14:11:56 rocky Exp $
+$Id: README,v 1.13 2006/03/28 14:48:44 rocky Exp $
