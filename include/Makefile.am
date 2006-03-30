@@ -1,2 +1,5 @@
+if ENABLE_CXX_BINDINGS
+cxxdirs = cdio++
+endif
 
-SUBDIRS	= cdio cdio++
+SUBDIRS	= cdio $(cxxdirs)

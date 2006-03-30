@@ -19,7 +19,7 @@ define(RELEASE_NUM, 77)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.192 2006/03/25 00:22:47 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.193 2006/03/30 10:47:51 flameeyes Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -79,16 +79,17 @@ AC_ARG_WITH(versioned_libs,
 [  --without-versioned-libs build versioned library symbols (default enabled if you have GNU ld)],
 enable_versioned_libs="${withval}", enable_versioned_libs=yes)
 
-AC_ARG_ENABLE(cpp_progs,
-	[  --enable-cpp-progs      make C++ example programs (default enabled)],
-		enable_cpp_progs=no,
-		enable_cpp_progs=yes)
+AC_ARG_ENABLE([cxx],
+	AC_HELP_STRING([--disable-cxx], [Disable C++ bindings (default enabled)]))
+AM_CONDITIONAL([ENABLE_CXX_BINDINGS], [test "x$enable_cxx" != "xno"])
 
+AC_ARG_ENABLE(cpp_progs,
+	[  --enable-cpp-progs      make C++ example programs (default enabled)])
 AM_CONDITIONAL(ENABLE_CPP, test x"$enable_cpp_progs" = "xyes")
 
 dnl We use C 
 AC_PROG_CC
-dnl We also use C++ in example programs
+dnl We also use C++ in example programs and for CXX bindings
 AC_PROG_CXX
 
 dnl Checks for programs.
