@@ -1,4 +1,4 @@
-$Id: README,v 1.22 2006/03/02 18:57:31 rocky Exp $
+$Id: README,v 1.23 2006/04/03 18:50:46 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -45,6 +45,9 @@ mmc1.c:      A program to show issuing a simple MMC command (INQUIRY).
 
 mmc2.c:      A more involved MMC command to list features from 
 	     a MMC GET_CONFIGURATION command.
+
+mmc2a.c:     Show MODE_SENSE page 2A paramaters:
+	     CD/DVD Capabilities and Mechanical Status Page
 
 paranoia:    A program to show using CD-DA paranoia (a library for jitter
 	     detection and audio-read error correction). This program uses
