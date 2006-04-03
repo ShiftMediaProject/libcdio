@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.24 2006/02/16 20:09:27 rocky Exp $
+    $Id: mmc.h,v 1.25 2006/04/03 18:51:46 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -175,32 +175,39 @@ extern "C" {
                                               return */
   } cdio_mmc_read_sub_state_t;
 
-/*! Level values that can go into READ_CD */
-#define CDIO_MMC_READ_TYPE_ANY   0  /**< All types */
-#define CDIO_MMC_READ_TYPE_CDDA  1  /**< Only CD-DA sectors */
-#define CDIO_MMC_READ_TYPE_MODE1 2  /**< mode1 sectors (user data = 2048) */
-#define CDIO_MMC_READ_TYPE_MODE2 3  /**< mode2 sectors form1 or form2 */
-#define CDIO_MMC_READ_TYPE_M2F1  4  /**< mode2 sectors form1 */
-#define CDIO_MMC_READ_TYPE_M2F2  5  /**< mode2 sectors form2 */
+  /*! Level values that can go into READ_CD */
+  typedef enum {
+    CDIO_MMC_READ_TYPE_ANY  =  0,  /**< All types */
+    CDIO_MMC_READ_TYPE_CDDA =  1,  /**< Only CD-DA sectors */
+    CDIO_MMC_READ_TYPE_MODE1 = 2,  /**< mode1 sectors (user data = 2048) */
+    CDIO_MMC_READ_TYPE_MODE2 = 3,  /**< mode2 sectors form1 or form2 */
+    CDIO_MMC_READ_TYPE_M2F1 =  4,  /**< mode2 sectors form1 */
+    CDIO_MMC_READ_TYPE_M2F2 =  5   /**< mode2 sectors form2 */
+  } cdio_mmc_read_cd_type_t;
 
-/*! Format values for READ_TOC */
-#define CDIO_MMC_READTOC_FMT_TOC      0
-#define CDIO_MMC_READTOC_FMT_SESSION  1  
-#define CDIO_MMC_READTOC_FMT_FULTOC   2  
-#define CDIO_MMC_READTOC_FMT_PMA      3  /**< Q subcode data */
-#define CDIO_MMC_READTOC_FMT_ATIP     4  /**< includes media type */
-#define CDIO_MMC_READTOC_FMT_CDTEXT   5  /**< CD-TEXT info  */
-
+  /*! Format values for READ_TOC */
+  typedef enum {
+    CDIO_MMC_READTOC_FMT_TOC     =  0,
+    CDIO_MMC_READTOC_FMT_SESSION =  1,  
+    CDIO_MMC_READTOC_FMT_FULTOC  =  2,
+    CDIO_MMC_READTOC_FMT_PMA     =  3,  /**< Q subcode data */
+    CDIO_MMC_READTOC_FMT_ATIP    =  4,  /**< includes media type */
+    CDIO_MMC_READTOC_FMT_CDTEXT  =  5   /**< CD-TEXT info  */
+  } cdio_mmc_readtoc_t;
+    
 /*! Page codes for MODE SENSE and MODE SET. */
-#define CDIO_MMC_R_W_ERROR_PAGE		0x01
-#define CDIO_MMC_WRITE_PARMS_PAGE	0x05
-#define CDIO_MMC_CDR_PARMS_PAGE		0x0d
-#define CDIO_MMC_AUDIO_CTL_PAGE		0x0e
-#define CDIO_MMC_POWER_PAGE		0x1a
-#define CDIO_MMC_FAULT_FAIL_PAGE	0x1c
-#define CDIO_MMC_TO_PROTECT_PAGE	0x1d
-#define CDIO_MMC_CAPABILITIES_PAGE	0x2a
-#define CDIO_MMC_ALL_PAGES		0x3f
+  typedef enum {
+    CDIO_MMC_R_W_ERROR_PAGE	= 0x01,
+    CDIO_MMC_WRITE_PARMS_PAGE	= 0x05,
+    CDIO_MMC_CDR_PARMS_PAGE	= 0x0d,
+    CDIO_MMC_AUDIO_CTL_PAGE	= 0x0e,
+    CDIO_MMC_POWER_PAGE		= 0x1a,
+    CDIO_MMC_FAULT_FAIL_PAGE	= 0x1c,
+    CDIO_MMC_TO_PROTECT_PAGE	= 0x1d,
+    CDIO_MMC_CAPABILITIES_PAGE	= 0x2a,
+    CDIO_MMC_ALL_PAGES		= 0x3f,
+  } cdio_mmc_mode_page_t;
+    
 
 PRAGMA_BEGIN_PACKED
   struct mmc_audio_volume_entry_s 
@@ -391,23 +398,26 @@ typedef struct mmc_cdb_s {
     uint8_t       rel_addr[4];
   } cdio_mmc_subchannel_t;
   
-#define CDIO_MMC_SET_COMMAND(cdb, command) \
+#define CDIO_MMC_SET_COMMAND(cdb, command)      \
   cdb[0] = command
   
 #define CDIO_MMC_SET_READ_TYPE(cdb, sector_type) \
   cdb[1] = (sector_type << 2)
   
-#define CDIO_MMC_GET_LEN16(p) \
+#define CDIO_MMC_GETPOS_LEN16(p, pos)           \
+  (p[pos]<<8) + p[pos+1]
+  
+#define CDIO_MMC_GET_LEN16(p)                   \
   (p[0]<<8) + p[1]
   
 #define CDIO_MMC_GET_LEN32(p) \
   (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
   
-#define CDIO_MMC_SET_LEN16(cdb, pos, len)  \
-  cdb[pos  ] = (len >>  8) & 0xff; \
+#define CDIO_MMC_SET_LEN16(cdb, pos, len)       \
+  cdb[pos  ] = (len >>  8) & 0xff;              \
   cdb[pos+1] = (len      ) & 0xff
 
-#define CDIO_MMC_SET_READ_LBA(cdb, lba) \
+#define CDIO_MMC_SET_READ_LBA(cdb, lba)         \
   cdb[2] = (lba >> 24) & 0xff; \
   cdb[3] = (lba >> 16) & 0xff; \
   cdb[4] = (lba >>  8) & 0xff; \
@@ -735,14 +745,15 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                                                uint16_t i_blocksize,
                                                uint32_t i_blocks );
   
-  /*! issue a MMC read mode2 sectors. - deprecated.
+  /*! Read sectors using SCSI-MMC GPCMD_READ_CD. 
+      Can read only up to 25 blocks.
    */
   driver_return_code_t mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, 
                                           lsn_t i_lsn,  int read_sector_type, 
                                           uint32_t i_blocks);
   
   /*!
-    Run an MMC command. 
+    Run a Multimedia command (MMC). 
     
     @param p_cdio	 CD structure set by cdio_open().
     @param i_timeout_ms  time in milliseconds we will wait for the command
@@ -801,6 +812,9 @@ extern cdio_mmc_feature_profile_t   debug_cdio_mmc_feature_profile;
 extern cdio_mmc_get_conf_t          debug_cdio_mmc_get_conf;
 extern cdio_mmc_gpcmd_t             debug_cdio_mmc_gpcmd;
 extern cdio_mmc_read_sub_state_t    debug_cdio_mmc_read_sub_state;
+extern cdio_mmc_read_cd_type_t      debug_cdio_mmc_read_cd_type;
+extern cdio_mmc_readtoc_t           debug_cdio_mmc_readtoc;
+extern cdio_mmc_mode_page_t         debug_cdio_mmc_mode_page;
   
 #endif /* __MMC_H__ */
 
