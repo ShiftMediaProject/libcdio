@@ -1,5 +1,5 @@
 /*
-  $Id: mmc2a.c,v 1.1 2006/04/03 18:50:46 rocky Exp $
+  $Id: mmc2a.c,v 1.2 2006/04/03 19:54:06 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -85,7 +85,7 @@ print_mode_sense (const char *psz_drive, const char *six_or_ten,
     printf("\tCan play audio.\n");
   }
   if (buf[4] & 0x02) {
-    printf("\tDelivers compoistion A/V stream.\n");
+    printf("\tDelivers composition A/V stream.\n");
   }
   if (buf[4] & 0x04) {
     printf("\tSupports digital output on port 2.\n");
@@ -121,7 +121,7 @@ print_mode_sense (const char *psz_drive, const char *six_or_ten,
     printf("\tSupports C2 error pointers.\n");
   }
   if (buf[5] & 0x20) {
-    printf("\tReads ISRC informaton.\n");
+    printf("\tReads ISRC information.\n");
   }
   if (buf[5] & 0x40) {
     printf("\tReads ISRC informaton.\n");
@@ -138,7 +138,7 @@ print_mode_sense (const char *psz_drive, const char *six_or_ten,
   printf("\tLock state is %slocked.\n", (buf[6] & 0x02) ? "" : "un");
   printf("\tPREVENT/ALLOW jumper is %spresent.\n", (buf[6] & 0x04) ? "": "not ");
   if (buf[6] & 0x08) {
-    printf("\tEjects tray or cartidge with STOP L on Eject.\n");
+    printf("\tEjects media with START STOP UNIT.\n");
   }
   {
     const unsigned int i_load_type = (buf[6]>>5 & 0x07);
@@ -175,7 +175,7 @@ print_mode_sense (const char *psz_drive, const char *six_or_ten,
     printf("\tVolume controls each channel separately.\n");
   }
   if (buf[7] & 0x02) {
-    printf("\tChanges support disc present rep.\n");
+    printf("\tHas a changer that supports disc present reporting.\n");
   }
   if (buf[7] & 0x04) {
     printf("\tCan load empty slot in changer.\n");
@@ -184,7 +184,7 @@ print_mode_sense (const char *psz_drive, const char *six_or_ten,
     printf("\tSide change capable.\n");
   }
   if (buf[7] & 0x10) {
-    printf("\tReads raw p-W subcode from lead in.\n");
+    printf("\tReads raw R-W subchannel information from lead in.\n");
   }
   printf("\tMaximum read speed is %d\n",      CDIO_MMC_GETPOS_LEN16(buf,  8));
   printf("\tNumber of Volume levels is %d\n", CDIO_MMC_GETPOS_LEN16(buf, 10));
