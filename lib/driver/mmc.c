@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.30 2006/02/13 11:00:53 rocky Exp $
+    $Id: mmc.c,v 1.31 2006/04/03 19:31:18 rocky Exp $
 
     Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -56,6 +56,9 @@ cdio_mmc_feature_profile_t   debug_cdio_mmc_feature_profile;
 cdio_mmc_get_conf_t          debug_cdio_mmc_get_conf;
 cdio_mmc_gpcmd_t             debug_cdio_mmc_gpcmd;
 cdio_mmc_read_sub_state_t    debug_cdio_mmc_read_sub_state;
+cdio_mmc_read_cd_type_t      debug_cdio_mmc_read_cd_type;
+cdio_mmc_readtoc_t           debug_cdio_mmc_readtoc;
+cdio_mmc_mode_page_t         debug_cdio_mmc_mode_page;
 
 /*************************************************************************
   MMC CdIo Operations which a driver may use. 
@@ -1363,7 +1366,7 @@ mmc_set_speed( const CdIo_t *p_cdio, int i_speed )
      the maximum allowable speed.
   */
   CDIO_MMC_SET_LEN16(cdb.field, 4, 0xffff);
-  return mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_READ, 
+  return mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_WRITE, 
                      sizeof(buf), buf);
 }
 

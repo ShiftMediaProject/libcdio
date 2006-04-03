@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.20 2006/03/18 00:53:20 rocky Exp $
+    $Id: gnu_linux.c,v 1.21 2006/04/03 19:31:18 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.20 2006/03/18 00:53:20 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.21 2006/04/03 19:31:18 rocky Exp $";
 
 #include <string.h>
 
@@ -1472,7 +1472,11 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .run_mmc_cmd           = run_mmc_cmd_linux,
     .set_arg               = set_arg_linux,
     .set_blocksize         = set_blocksize_mmc,
+#if 1
     .set_speed             = set_speed_linux,
+#else
+    .set_speed             = set_speed_mmc,
+#endif
   };
 
   _data                 = calloc (1, sizeof (_img_private_t));
