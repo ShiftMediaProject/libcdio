@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.41 2006/03/17 19:36:54 rocky Exp $
+#   $Id: Makefile.am,v 1.42 2006/04/04 00:20:13 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006
 #    Rocky Bernstein <rocky@panix.com>
@@ -82,10 +82,14 @@ endif
 
 if BUILD_ISO_READ
 iso_read_SOURCES = iso-read.c util.c util.h $(GETOPT_C)
-iso_read_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+iso_read_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 bin_iso_read     = iso-read
 endif
 
-bin_PROGRAMS = $(bin_cd_drive) $(bin_cd_info)  $(bin_cdinfo_linux) $(bin_cd_read) $(bin_iso_info) $(bin_iso_read) $(bin_cdda_player)
+mmc_tool_SOURCES = mmc-tool.c util.c util.h $(GETOPT_C)
+mmc_tool_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+bin_mmc_tool     = mmc-tool
+
+bin_PROGRAMS = $(bin_cd_drive) $(bin_cd_info)  $(bin_cdinfo_linux) $(bin_cd_read) $(bin_iso_info) $(bin_iso_read) $(bin_cdda_player) $(bin_mmc_tool)
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(VCDINFO_CFLAGS) $(CDDB_CFLAGS)
