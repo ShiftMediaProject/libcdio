@@ -1,5 +1,5 @@
 /*
-  $Id: mmc-tool.c,v 1.2 2006/04/04 02:06:13 rocky Exp $
+  $Id: mmc-tool.c,v 1.3 2006/04/04 02:09:19 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -88,7 +88,7 @@ parse_options (int argc, char *argv[])
     "  -e, --eject                     eject drive\n"
     "  -m, --mcn                       get media catalog number (AKA UPC)\n"
     "  -s, --speed=INT                 Set drive speed to SPEED K bytes/sec\n"
-    "                                  Note: 1x = 4234KB/s          \n"
+    "                                  Note: 1x = 176.4 KB/s          \n"
     "  -V, --version                   display version and copyright information\n"
     "                                  and exit\n"
     "\n"
