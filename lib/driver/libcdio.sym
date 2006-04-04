@@ -153,6 +153,7 @@ cdio_read_sector
 cdio_read_sectors
 cdio_set_arg
 cdio_set_blocksize
+cdio_set_drive_speed
 cdio_set_speed
 cdio_stdio_destroy
 cdio_stdio_new

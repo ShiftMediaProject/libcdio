@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.21 2006/04/03 19:31:18 rocky Exp $
+    $Id: gnu_linux.c,v 1.22 2006/04/04 02:06:13 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.21 2006/04/03 19:31:18 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.22 2006/04/04 02:06:13 rocky Exp $";
 
 #include <string.h>
 
@@ -1216,12 +1216,12 @@ static char checklist2[][40] = {
 
 /* Set CD-ROM drive speed */
 static driver_return_code_t
-set_speed_linux (void *p_user_data, int i_speed)
+set_speed_linux (void *p_user_data, int i_drive_speed)
 {
   const _img_private_t *p_env = p_user_data;
 
   if (!p_env) return DRIVER_OP_UNINIT;
-  return ioctl(p_env->gen.fd, CDROM_SELECT_SPEED, i_speed);
+  return ioctl(p_env->gen.fd, CDROM_SELECT_SPEED, i_drive_speed);
 }
 
 #endif /* HAVE_LINUX_CDROM */

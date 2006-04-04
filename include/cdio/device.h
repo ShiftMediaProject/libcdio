@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.34 2006/03/28 03:26:16 rocky Exp $
+    $Id: device.h,v 1.35 2006/04/04 02:06:12 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -921,8 +921,20 @@ extern "C" {
 
   /*!
     Set the drive speed. 
+
+    @param p_cdio          CD structure set by cdio_open().
+    @param i_drive_speed   speed in CD-ROM speed units. Note this
+                           not Kbs as would be used in the MMC spec or
+		           in mmc_set_speed(). To convert CD-ROM speed units 
+			   to Kbs, multiply the number by 176 (for raw data)
+			   and by 150 (for filesystem data). On many CD-ROM 
+			   drives, specifying a value too large will result 
+			   in using the fastest speed.
+
+      @see mmc_set_speed and mmc_set_drive_speed
   */
-  driver_return_code_t cdio_set_speed ( const CdIo_t *p_cdio, int i_speed );
+  driver_return_code_t cdio_set_speed ( const CdIo_t *p_cdio, 
+					int i_drive_speed );
 
   /*!
     Get the value associatied with key. 

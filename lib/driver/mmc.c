@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.31 2006/04/03 19:31:18 rocky Exp $
+    $Id: mmc.c,v 1.32 2006/04/04 02:06:13 rocky Exp $
 
     Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -1339,13 +1339,37 @@ mmc_set_blocksize ( const CdIo_t *p_cdio, uint16_t i_blocksize)
 
 
 /*!
+  Set the drive speed in CD-ROM speed units.
+  
+  @param p_cdio	   CD structure set by cdio_open().
+  @param i_drive_speed   speed in CD-ROM speed units. Note this
+                         not Kbytes/sec as would be used in the MMC spec or
+	                 in mmc_set_speed(). To convert CD-ROM speed units 
+		         to Kbs, multiply the number by 176 (for raw data)
+		         and by 150 (for filesystem data). On many CD-ROM 
+		         drives, specifying a value too large will result 
+		         in using the fastest speed.
+
+  @return the drive speed if greater than 0. -1 if we had an error. is -2
+  returned if this is not implemented for the current driver.
+
+   @see cdio_set_speed and mmc_set_speed
+*/
+driver_return_code_t 
+mmc_set_drive_speed( const CdIo_t *p_cdio, int i_drive_speed )
+{
+  return mmc_set_speed(p_cdio, i_drive_speed * 176);
+}
+
+  
+/*!
   Set the drive speed. 
   
   @return the drive speed if greater than 0. -1 if we had an error. is -2
   returned if this is not implemented for the current driver.
 */
 int
-mmc_set_speed( const CdIo_t *p_cdio, int i_speed )
+mmc_set_speed( const CdIo_t *p_cdio, int i_Kbs_speed )
 
 {
   uint8_t buf[14] = { 0, };
@@ -1355,11 +1379,11 @@ mmc_set_speed( const CdIo_t *p_cdio, int i_speed )
      will return an error - it's part of the ATAPI specs. Therefore, 
      test and stop early. */
 
-  if ( i_speed < 1 ) return -1;
+  if ( i_Kbs_speed < 176 ) return -1;
   
   memset(&cdb, 0, sizeof(mmc_cdb_t));
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_SET_SPEED);
-  CDIO_MMC_SET_LEN16(cdb.field, 2, i_speed);
+  CDIO_MMC_SET_LEN16(cdb.field, 2, i_Kbs_speed);
   /* Some drives like the Creative 24x CDRW require one to set a
      nonzero write speed or else one gets an error back.  Some
      specifications have setting the value 0xfffff indicate setting to
