@@ -1,6 +1,6 @@
 /*  private MMC helper routines.
 
-    $Id: mmc_private.h,v 1.9 2005/10/21 11:13:54 rocky Exp $
+    $Id: mmc_private.h,v 1.10 2006/04/05 02:20:07 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -97,8 +97,11 @@ char *get_mcn_mmc (const void *p_user_data);
 driver_return_code_t set_blocksize_mmc (void *p_user_data, 
 					uint16_t i_blocksize);
 
-/* Set CD-ROM drive speed (via MMC) */
-driver_return_code_t set_speed_mmc (void *p_user_data, int i_speed);
+/* Set the drive speed in CD-ROM speed units (via MMC). */
+driver_return_code_t set_drive_speed_mmc (void *p_user_data, int i_speed);
+
+/* Set CD-ROM drive speed  in K bytes per second. (via MMC) */
+driver_return_code_t set_speed_mmc (void *p_user_data, int i_Kbs_speed);
 
 /***********************************************************
   Miscellaenous other "private" routines. Probably need

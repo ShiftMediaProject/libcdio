@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.32 2006/04/04 02:06:13 rocky Exp $
+    $Id: mmc.c,v 1.33 2006/04/05 02:20:06 rocky Exp $
 
     Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -191,13 +191,23 @@ set_blocksize_mmc (void *p_user_data, uint16_t i_blocksize)
   return mmc_set_blocksize(p_env->cdio, i_blocksize);
 }
 
-/* Set CD-ROM drive speed (via MMC) */
+/* Set the drive speed Set the drive speed in K bytes per second. (via
+   MMC). */
 driver_return_code_t
 set_speed_mmc (void *p_user_data, int i_speed)
 {
   generic_img_private_t *p_env = p_user_data;
   if (!p_env) return DRIVER_OP_UNINIT;
   return mmc_set_speed( p_env->cdio, i_speed );
+}
+
+/* Set the drive speed in CD-ROM speed units (via MMC). */
+driver_return_code_t
+set_drive_speed_mmc (void *p_user_data, int i_Kbs_speed)
+{
+  generic_img_private_t *p_env = p_user_data;
+  if (!p_env) return DRIVER_OP_UNINIT;
+  return mmc_set_drive_speed( p_env->cdio, i_Kbs_speed );
 }
 
 /** Get the output port volumes and port selections used on AUDIO PLAY
@@ -1363,7 +1373,7 @@ mmc_set_drive_speed( const CdIo_t *p_cdio, int i_drive_speed )
 
   
 /*!
-  Set the drive speed. 
+  Set the drive speed in K bytes per second. 
   
   @return the drive speed if greater than 0. -1 if we had an error. is -2
   returned if this is not implemented for the current driver.
