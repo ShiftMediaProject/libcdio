@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.44 2006/04/05 04:11:33 rocky Exp $
+    $Id: cdda-player.c,v 1.45 2006/04/05 11:46:54 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -99,11 +99,13 @@ int                i_data;     /* # of data tracks present ? */
 int                start_track = 0;
 int                stop_track = 0;
 int                one_track = 0;
-int                i_vol_port   = -1; /* If -1 get retrieve volume port.
+int                i_vol_port   = 5; /* If 5, retrieve volume port.
 					 Otherwise the port number 0..3
-					 of a working volume port.
+					 of a working volume port and 
+					 4 for no working port.
 				       */
 
+/* settings which can be set from the command or interactively. */
 bool               b_cd            = false;
 bool               auto_mode       = false;
 bool               b_verbose       = false;
@@ -113,8 +115,10 @@ bool               b_prefer_cdtext = true;
 bool               b_cddb          = false; /* CDDB database present */
 bool               b_db            = false; /* we have a database at all */
 bool               b_record        = false; /* we have a record for
-					the inserted CD */
+					       the inserted CD */
 bool               b_all_tracks = false; /* True if we display all tracks*/
+uint8_t            i_volume_level = 0;   /* Valid range is 1..100 */
+
 
 char *psz_device=NULL;
 char *psz_program;
@@ -144,6 +148,8 @@ bool b_cdtext_genre;     /* true if from CD-Text, false if from CDDB */
 bool b_cdtext_category;  /* true if from CD-Text, false if from CDDB */
 bool b_cdtext_year;  /* true if from CD-Text, false if from CDDB */
 
+cdio_audio_volume_t audio_volume;
+
 #ifdef HAVE_CDDB
 cddb_conn_t *p_conn = NULL;
 cddb_disc_t *p_cddb_disc = NULL;
@@ -168,6 +174,8 @@ const char key_bindings[][MAX_KEY_STR] = {
   "    q, ^C     quit",
   "    x         quit and continue playing",
   "    a         toggle auto-mode",
+  "    -         decrease volume level",
+  "    +         increase volume level",
 };
 
 const unsigned int i_key_bindings = sizeof(key_bindings) / MAX_KEY_STR;
@@ -191,12 +199,17 @@ typedef enum {
 
 } track_line_t;
 
-unsigned int  LINE_ACTION = 24;
-unsigned int  LINE_LAST   = 25;
+unsigned int  LINE_ACTION = 25;
 unsigned int  COLS_LAST;
 char psz_action_line[300] = "";
 
-/*! Curses window initialization. */
+static int rounded_div(unsigned int i_a, unsigned int i_b) 
+{
+  const unsigned int i_b_half=i_b/2;
+  return ((i_a)+i_b_half)/i_b;
+}
+
+/** Curses window initialization. */
 static void
 tty_raw()
 {
@@ -204,16 +217,17 @@ tty_raw()
   
   initscr();
   cbreak();
+  clear();
   noecho();
 #ifdef HAVE_KEYPAD
   keypad(stdscr,1);
 #endif
-  getmaxyx(stdscr, LINE_LAST, COLS_LAST);
-  LINE_ACTION = LINE_LAST - 1;
+  getmaxyx(stdscr, LINE_ACTION, COLS_LAST);
+  LINE_ACTION--;
   refresh();
 }
 
-/*! Curses window finalization. */
+/** Curses window finalization. */
 static void
 tty_restore()
 {
@@ -276,6 +290,7 @@ action(const char *psz_action)
 }
 
 
+/* Display an error message.. */
 static void 
 xperror(const char *psz_msg)
 {
@@ -291,7 +306,9 @@ xperror(const char *psz_msg)
   
   if (b_verbose) {
     sprintf(line,"%s: %s", psz_msg, strerror(errno));
+    attron(A_STANDOUT);
     mvprintw(LINE_ACTION, 0, (char *) "error  : %s", line);
+    attroff(A_STANDOUT);
     clrtoeol();
     refresh();
     select_wait(3);
@@ -303,7 +320,9 @@ static void
 finish(const char *psz_msg, int rc)
 {
   if (b_interactive) {
-    mvprintw(LINE_LAST, 0, (char *) "%s, exiting...\n", psz_msg);
+    attron(A_STANDOUT);
+    mvprintw(LINE_ACTION, 0, (char *) "%s, exiting...\n", psz_msg);
+    attroff(A_STANDOUT);
     clrtoeol();
     refresh();
   }
@@ -320,7 +339,40 @@ finish(const char *psz_msg, int rc)
 
 /* ---------------------------------------------------------------------- */
 
-/*! Stop playing audio CD */
+/* Set all audio channels to level. level is assumed to be in the range
+   0..100.
+*/
+static bool
+set_volume_level(CdIo_t *p_cdio, uint8_t i_level) 
+{
+  const unsigned int i_new_level= rounded_div(i_level*256, 100);
+  unsigned int i;
+  for (i=0; i<=3; i++) {
+    audio_volume.level[i] = i_new_level;
+  }
+  return DRIVER_OP_SUCCESS == cdio_audio_set_volume(p_cdio, &audio_volume);
+}
+
+
+static bool
+decrease_volume_level(CdIo_t *p_cdio)
+{
+  if (i_volume_level <= 1) 
+    return false;
+  else
+    return set_volume_level(p_cdio, --i_volume_level);
+}
+
+static bool
+increase_volume_level(CdIo_t *p_cdio)
+{
+  if (i_volume_level >= 100) 
+    return false;
+  else 
+    return set_volume_level(p_cdio, ++i_volume_level);
+}
+
+/** Stop playing audio CD */
 static bool
 cd_stop(CdIo_t *p_cdio)
 {
@@ -336,7 +388,7 @@ cd_stop(CdIo_t *p_cdio)
   return b_ok;
 }
 
-/*! Eject CD */
+/** Eject CD */
 static bool
 cd_eject(void)
 {
@@ -354,7 +406,7 @@ cd_eject(void)
   return b_ok;
 }
 
-/*! Close CD tray */
+/** Close CD tray */
 static bool
 cd_close(const char *psz_device)
 {
@@ -368,7 +420,7 @@ cd_close(const char *psz_device)
   return b_ok;
 }
 
-/*! Pause playing audio CD */
+/** Pause playing audio CD */
 static bool
 cd_pause(CdIo_t *p_cdio)
 {
@@ -381,7 +433,7 @@ cd_pause(CdIo_t *p_cdio)
   return b_ok;
 }
 
-/*! Get status/track/position info of an audio CD */
+/** Get status/track/position info of an audio CD */
 static bool
 read_subchannel(CdIo_t *p_cdio)
 {
@@ -399,7 +451,7 @@ read_subchannel(CdIo_t *p_cdio)
 }
 
 #ifdef HAVE_CDDB
-/*! This routine is called by vcd routines on error. 
+/** This routine is called by vcd routines on error. 
    Setup is done by init_input_plugin.
 */
 static void 
@@ -474,7 +526,7 @@ get_disc_info(CdIo_t *p_cdio)
   }
 }
 
-/*! Read CD TOC  and set CD information. */
+/** Read CD TOC and set CD information. */
 static void
 read_toc(CdIo_t *p_cdio)
 {
@@ -492,15 +544,10 @@ read_toc(CdIo_t *p_cdio)
   i_last_audio_track  = i_last_track;
 
 
-  if ( DRIVER_OP_SUCCESS == cdio_audio_get_volume(p_cdio, NULL) ) {
+  if ( DRIVER_OP_SUCCESS == cdio_audio_get_volume(p_cdio, &audio_volume) ) {
     for (i_vol_port=0; i_vol_port<4; i_vol_port++) {
-      if (i_vol_port > 0) break;
+      if (audio_volume.level[i_vol_port] > 0) break;
     }
-    if (4 == i_vol_port) 
-      /* Didn't find a non-zero volume level, maybe we've got everthing muted.
-	 Set port to 0 to distinguis from -1 (driver can't get volume).
-      */
-      i_vol_port = 0;
   }
   
   if ( CDIO_INVALID_TRACK == i_first_track ||
@@ -554,7 +601,7 @@ read_toc(CdIo_t *p_cdio)
     display_cdinfo(p_cdio, i_tracks, i_first_track);
 }
 
-/*! Play an audio track. */
+/** Play an audio track. */
 static bool
 play_track(track_t i_start_track, track_t i_end_track)
 {
@@ -570,17 +617,17 @@ play_track(track_t i_start_track, track_t i_end_track)
     return false;
   
   if (debug)
-    fprintf(stderr,"play tracks: %d-%d => ", i_start_track, i_end_track);
+    fprintf(stderr,"play tracks: %d-%d => ", i_start_track, i_end_track-1);
   if (i_start_track < i_first_track)       i_start_track = i_first_track;
   if (i_start_track > i_last_audio_track)  i_start_track = i_last_audio_track;
   if (i_end_track < i_first_track)         i_end_track   = i_first_track;
   if (i_end_track > i_last_audio_track)    i_end_track   = i_last_audio_track;
   i_end_track++;
   if (debug)
-    fprintf(stderr,"%d-%d\n",i_start_track, i_end_track);
+    fprintf(stderr,"%d-%d\n",i_start_track, i_end_track-1);
   
   cd_pause(p_cdio);
-  sprintf(line,"play track %d to track %d.", i_start_track, i_end_track);
+  sprintf(line,"play track %d to track %d.", i_start_track, i_end_track-1);
   action(line);
   b_ok = (DRIVER_OP_SUCCESS == cdio_audio_play_msf(p_cdio, 
 						   &(toc[i_start_track]),
@@ -631,7 +678,7 @@ toggle_pause()
   return b_ok;
 }
 
-/*! Update windows with status and possibly track info. This used in 
+/** Update windows with status and possibly track info. This used in 
   interactive playing not batch mode.
  */
 static void
@@ -649,19 +696,17 @@ display_status(bool b_status_only)
     
   } else if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
 	     sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
-    cdio_audio_volume_t audio_volume;
-    if (i_vol_port > 0 && 
+    if (i_vol_port < 4 && 
 	DRIVER_OP_SUCCESS == cdio_audio_get_volume(p_cdio, &audio_volume) ) 
       {
-	uint8_t i_level = audio_volume.level[i_vol_port];
+	i_volume_level = rounded_div(audio_volume.level[i_vol_port]*100, 256);
 	sprintf(line,
 		"track %2d - %02x:%02x of %s (%02x:%02x abs) %s volume: %d",
 		sub.track, sub.rel_addr.m, sub.rel_addr.s, 
 		cd_info[sub.track].length,
 		sub.abs_addr.m, sub.abs_addr.s,
 		mmc_audio_state2str(sub.audio_status),
-		(i_level*100+128) / 256 );
-      
+		i_volume_level);
       } else 
 	sprintf(line,"track %2d - %02x:%02x of %s (%02x:%02x abs) %s",
 		sub.track, sub.rel_addr.m, sub.rel_addr.s,
@@ -671,7 +716,10 @@ display_status(bool b_status_only)
     sprintf(line,"%s", mmc_audio_state2str(sub.audio_status));
     
   }
-  mvprintw(LINE_STATUS, 0, (char *) "status%s: %s",auto_mode ? "*" : " ", line);
+
+  action(NULL);
+  mvprintw(LINE_STATUS, 0, (char *) "status%s: %s",
+	   auto_mode ? "*" : " ", line);
   clrtoeol();
   
   if ( !b_status_only && b_db && i_last_display_track != sub.track && 
@@ -679,7 +727,8 @@ display_status(bool b_status_only)
 	sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY)  &&
 	b_cd) {
 
-    if (b_all_tracks) display_tracks();
+    if (b_all_tracks) 
+      display_tracks();
     else {
       const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track];
       i_last_display_track = sub.track;
@@ -919,7 +968,12 @@ display_tracks(void)
 	  strcat(line, cd_info[i].artist);
 	}
       }
-      mvprintw(i_line++, 0, line);
+      if (sub.track == i) {
+	attron(A_STANDOUT);
+	mvprintw(i_line++, 0, line);
+	attroff(A_STANDOUT);
+      }	else 
+	mvprintw(i_line++, 0, line);
       clrtoeol();
     }
   }
@@ -1290,7 +1344,6 @@ main(int argc, char *argv[])
   int  c, nostop=0;
   char *h;
   int  i_rc = 0;
-  int  i_volume_level = 0;
   cd_operation_t cd_op = NO_OP; /* operation to do in non-interactive mode */
   
   
@@ -1318,11 +1371,13 @@ main(int argc, char *argv[])
     case 'a':
       auto_mode = 1;
       break;
+
     case 'L':
-      if (NULL != (h = strchr(optarg,'-'))) {
-	i_volume_level = atoi(optarg);
-	cd_op = SET_VOLUME;
-      }
+      i_volume_level = atoi(optarg);
+      cd_op = SET_VOLUME;
+      b_interactive = false;
+      break;
+
     case 't':
       if (NULL != (h = strchr(optarg,'-'))) {
 	*h = 0;
@@ -1461,6 +1516,7 @@ main(int argc, char *argv[])
 	case PS_LIST_TRACKS:
 	  ps_list_tracks();
 	  break;
+
 	case PLAY_TRACK:
 	  /* play just this one track */
 	  if (b_record) {
@@ -1470,20 +1526,17 @@ main(int argc, char *argv[])
 	  }
 	  i_rc = play_track(start_track, stop_track) ? 0 : 1;
 	  break;
+
 	case PLAY_CD:
 	  if (b_record)
 	    printf("%s / %s\n", artist, title);
 	  play_track(1,CDIO_CDROM_LEADOUT_TRACK);
 	  break;
+
 	case SET_VOLUME:
-	  {
-	    cdio_audio_volume_t volume;
-	    volume.level[0] = i_volume_level;
-	    i_rc = (DRIVER_OP_SUCCESS == cdio_audio_set_volume(p_cdio, 
-							       &volume))
-	      ? 0 : 1;
-	    break;
-	  }
+	  i_rc = set_volume_level(p_cdio, i_volume_level);
+	  break;
+
 	case LIST_SUBCHANNEL: 
 	  if (read_subchannel(p_cdio)) {
 	    if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
@@ -1532,6 +1585,12 @@ main(int argc, char *argv[])
     
     if (1 == select_wait(b_cd ? 1 : 5)) {
       switch (key = getch()) {
+      case '-':
+	decrease_volume_level(p_cdio);
+	break;
+      case '+':
+	increase_volume_level(p_cdio);
+	break;
       case 'A':
       case 'a':
 	auto_mode = !auto_mode;
