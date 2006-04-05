@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.43 2006/04/05 03:52:21 rocky Exp $
+    $Id: cdda-player.c,v 1.44 2006/04/05 04:11:33 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -213,23 +213,21 @@ tty_raw()
   refresh();
 }
 
-/* Called when window is resized. */
-static void 
-sigwinch()
-{
-  endwin();
-  initscr();
-  getmaxyx(stdscr, LINE_LAST, COLS_LAST);
-  LINE_ACTION = LINE_LAST - 1;
-  action(NULL);
-}
-
 /*! Curses window finalization. */
 static void
 tty_restore()
 {
   if (!b_interactive) return;
   endwin();
+}
+
+/* Called when window is resized. */
+static void 
+sigwinch()
+{
+  tty_restore();
+  tty_raw();
+  action(NULL);
 }
 
 /* Signal handler - Ctrl-C and others. */
@@ -853,7 +851,7 @@ usage(char *prog)
 	    "way on a spare console and forget about it...\n"
 	    "\n"
 	    "(c) 1997,98 Gerd Knorr <kraxel@goldbach.in-berlin.de>\n"
-	    "(c) 2005 Rocky Bernstein <rocky@panix.com>\n"
+	    "(c) 2005, 2006 Rocky Bernstein <rocky@panix.com>\n"
 	    , prog, prog);
 }
 
