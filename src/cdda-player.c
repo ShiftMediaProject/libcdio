@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.42 2006/04/05 02:35:55 rocky Exp $
+    $Id: cdda-player.c,v 1.43 2006/04/05 03:52:21 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -73,13 +73,14 @@
 #include "cddb.h"
 #include "getopt.h"
 
-static bool play_track(track_t t1, track_t t2);
+static void action(const char *psz_action);
 static void display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, 
 			   track_t i_first_track);
+static void display_tracks(void);
 static void get_cddb_track_info(track_t i_track);
 static void get_cdtext_track_info(track_t i_track);
 static void get_track_info(track_t i_track);
-static void display_tracks(void);
+static bool play_track(track_t t1, track_t t2);
 
 CdIo_t             *p_cdio;               /* libcdio handle */
 driver_id_t        driver_id = DRIVER_DEVICE;
@@ -188,9 +189,12 @@ typedef enum {
   LINE_TRACK_ARTIST = 10,
   LINE_TRACK_NEXT   = 11,
 
-  LINE_ACTION       = 24,
-  LINE_LAST         = 25
 } track_line_t;
+
+unsigned int  LINE_ACTION = 24;
+unsigned int  LINE_LAST   = 25;
+unsigned int  COLS_LAST;
+char psz_action_line[300] = "";
 
 /*! Curses window initialization. */
 static void
@@ -204,7 +208,20 @@ tty_raw()
 #ifdef HAVE_KEYPAD
   keypad(stdscr,1);
 #endif
+  getmaxyx(stdscr, LINE_LAST, COLS_LAST);
+  LINE_ACTION = LINE_LAST - 1;
   refresh();
+}
+
+/* Called when window is resized. */
+static void 
+sigwinch()
+{
+  endwin();
+  initscr();
+  getmaxyx(stdscr, LINE_LAST, COLS_LAST);
+  LINE_ACTION = LINE_LAST - 1;
+  action(NULL);
 }
 
 /*! Curses window finalization. */
@@ -238,6 +255,7 @@ select_wait(int sec)
 
 /* ---------------------------------------------------------------------- */
 
+/* Display the action line. */
 static void 
 action(const char *psz_action)
 {
@@ -247,10 +265,14 @@ action(const char *psz_action)
     return;
   }
   
-  if (psz_action && strlen(psz_action))
-    mvprintw(LINE_ACTION, 0, (char *) "action : %s\n", psz_action);
+  if (!psz_action) 
+    psz_action = psz_action_line;
+  else if (psz_action && strlen(psz_action))
+    snprintf(psz_action_line, sizeof(psz_action_line), "action : %s", 
+	     psz_action);
   else
-    mvprintw(LINE_ACTION, 0, (char *) "");
+    snprintf(psz_action_line, sizeof(psz_action_line), "%s", "" );
+  mvprintw(LINE_ACTION, 0, psz_action_line);
   clrtoeol();
   refresh();
 }
@@ -275,7 +297,7 @@ xperror(const char *psz_msg)
     clrtoeol();
     refresh();
     select_wait(3);
-    action(NULL);
+    action("");
   }
 }
 
@@ -529,7 +551,7 @@ read_toc(CdIo_t *p_cdio)
     if (auto_mode && sub.audio_status != CDIO_MMC_READ_SUB_ST_PLAY)
       play_track(1, CDIO_CDROM_LEADOUT_TRACK);
   }
-  action(NULL);
+  action("");
   if (!b_all_tracks)
     display_cdinfo(p_cdio, i_tracks, i_first_track);
 }
@@ -701,7 +723,7 @@ display_status(bool b_status_only)
     }
   }
 
-  refresh();
+  action(NULL); /* Redisplay action line. */
 
 }
 
@@ -789,7 +811,7 @@ display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track)
   
   mvprintw(LINE_CDINFO, 0, (char *) "CD info: %0s", line);
   clrtoeol();
-  refresh();
+  action(NULL);
 }
     
 /* ---------------------------------------------------------------------- */
@@ -1389,6 +1411,7 @@ main(int argc, char *argv[])
   signal(SIGQUIT,ctrlc);
   signal(SIGTERM,ctrlc);
   signal(SIGHUP,ctrlc);
+  signal(SIGWINCH, sigwinch);
 
   if (CLOSE_CD != cd_op) {
     /* open device */
@@ -1494,8 +1517,15 @@ main(int argc, char *argv[])
       }
     }
   }
-  
-  play_track(1, CDIO_CDROM_LEADOUT_TRACK);
+
+  /* Play all tracks *unless* we have a play or paused status
+     already. */
+
+  read_subchannel(p_cdio);
+  if (sub.audio_status != CDIO_MMC_READ_SUB_ST_PAUSED &&
+      sub.audio_status != CDIO_MMC_READ_SUB_ST_PLAY)
+    play_track(1, CDIO_CDROM_LEADOUT_TRACK);
+
   while ( !b_sig ) {
     int key;
     if (!b_cd) read_toc(p_cdio);
