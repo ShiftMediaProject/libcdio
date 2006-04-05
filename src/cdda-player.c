@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.41 2006/03/17 19:36:54 rocky Exp $
+    $Id: cdda-player.c,v 1.42 2006/04/05 02:35:55 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -560,7 +560,7 @@ play_track(track_t i_start_track, track_t i_end_track)
     fprintf(stderr,"%d-%d\n",i_start_track, i_end_track);
   
   cd_pause(p_cdio);
-  sprintf(line,"play track %d...", i_start_track);
+  sprintf(line,"play track %d to track %d.", i_start_track, i_end_track);
   action(line);
   b_ok = (DRIVER_OP_SUCCESS == cdio_audio_play_msf(p_cdio, 
 						   &(toc[i_start_track]),
@@ -1495,6 +1495,7 @@ main(int argc, char *argv[])
     }
   }
   
+  play_track(1, CDIO_CDROM_LEADOUT_TRACK);
   while ( !b_sig ) {
     int key;
     if (!b_cd) read_toc(p_cdio);
