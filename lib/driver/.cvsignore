@@ -6,4 +6,5 @@ Makefile.in
 *.lo
 *.la
 *.la.ver
+*.dll
 
