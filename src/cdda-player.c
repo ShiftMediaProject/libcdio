@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.45 2006/04/05 11:46:54 rocky Exp $
+    $Id: cdda-player.c,v 1.46 2006/04/07 02:01:46 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -347,16 +347,33 @@ set_volume_level(CdIo_t *p_cdio, uint8_t i_level)
 {
   const unsigned int i_new_level= rounded_div(i_level*256, 100);
   unsigned int i;
+  driver_return_code_t rc;
   for (i=0; i<=3; i++) {
     audio_volume.level[i] = i_new_level;
   }
-  return DRIVER_OP_SUCCESS == cdio_audio_set_volume(p_cdio, &audio_volume);
+  
+  cdio_audio_set_volume(p_cdio, &audio_volume);
+  if ( DRIVER_OP_SUCCESS != rc ) {
+    /* If we can't do a get volume, audio_volume.level is used as
+       a second-best guess. But if this set failed restore it to 
+       an invalid value so we don't get confused and think that this
+       was set. */
+    for (i=0; i<=3; i++) {
+      audio_volume.level[i] = 0;
+    }
+  } else {
+    /* Set i_vol_port so volume levels set above will get used. */
+    i_vol_port=0;
+  }
+  return rc;
+  
 }
 
 
 static bool
 decrease_volume_level(CdIo_t *p_cdio)
 {
+  if (i_volume_level == 0) i_volume_level = 50;
   if (i_volume_level <= 1) 
     return false;
   else
@@ -366,6 +383,7 @@ decrease_volume_level(CdIo_t *p_cdio)
 static bool
 increase_volume_level(CdIo_t *p_cdio)
 {
+  if (i_volume_level == 0) i_volume_level = 50;
   if (i_volume_level >= 100) 
     return false;
   else 
@@ -544,10 +562,9 @@ read_toc(CdIo_t *p_cdio)
   i_last_audio_track  = i_last_track;
 
 
-  if ( DRIVER_OP_SUCCESS == cdio_audio_get_volume(p_cdio, &audio_volume) ) {
-    for (i_vol_port=0; i_vol_port<4; i_vol_port++) {
-      if (audio_volume.level[i_vol_port] > 0) break;
-    }
+  cdio_audio_get_volume(p_cdio, &audio_volume);
+  for (i_vol_port=0; i_vol_port<4; i_vol_port++) {
+    if (audio_volume.level[i_vol_port] > 0) break;
   }
   
   if ( CDIO_INVALID_TRACK == i_first_track ||
@@ -696,9 +713,8 @@ display_status(bool b_status_only)
     
   } else if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
 	     sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
-    if (i_vol_port < 4 && 
-	DRIVER_OP_SUCCESS == cdio_audio_get_volume(p_cdio, &audio_volume) ) 
-      {
+    cdio_audio_get_volume(p_cdio, &audio_volume);
+    if (i_vol_port < 4) {
 	i_volume_level = rounded_div(audio_volume.level[i_vol_port]*100, 256);
 	sprintf(line,
 		"track %2d - %02x:%02x of %s (%02x:%02x abs) %s volume: %d",
