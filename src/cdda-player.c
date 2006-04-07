@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.46 2006/04/07 02:01:46 rocky Exp $
+    $Id: cdda-player.c,v 1.47 2006/04/07 02:32:03 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -117,7 +117,7 @@ bool               b_db            = false; /* we have a database at all */
 bool               b_record        = false; /* we have a record for
 					       the inserted CD */
 bool               b_all_tracks = false; /* True if we display all tracks*/
-uint8_t            i_volume_level = 0;   /* Valid range is 1..100 */
+int8_t             i_volume_level = -1;   /* Valid range is 0..100 */
 
 
 char *psz_device=NULL;
@@ -369,25 +369,32 @@ set_volume_level(CdIo_t *p_cdio, uint8_t i_level)
   
 }
 
-
+/* Add 1 to volume level. If we are at the max or min value wrap
+   around. If volume level is undefined, then this means we
+   could not get the current value and we'll' set it to 50 the midway
+   point.
+   Return status of setting the volume level.
+*/
 static bool
 decrease_volume_level(CdIo_t *p_cdio)
 {
-  if (i_volume_level == 0) i_volume_level = 50;
-  if (i_volume_level <= 1) 
-    return false;
-  else
-    return set_volume_level(p_cdio, --i_volume_level);
+  if (i_volume_level == -1) i_volume_level = 50;
+  if (i_volume_level == 0)  i_volume_level = 100;
+  return set_volume_level(p_cdio, --i_volume_level);
 }
 
+/* Subtract 1 to volume level. If we are at the max or min value wrap
+   around. If volume level is undefined, then this means we
+   could not get the current value and we'll' set it to 50 the midway
+   point.
+   Return status of setting the volume level.
+*/
 static bool
 increase_volume_level(CdIo_t *p_cdio)
 {
-  if (i_volume_level == 0) i_volume_level = 50;
-  if (i_volume_level >= 100) 
-    return false;
-  else 
-    return set_volume_level(p_cdio, ++i_volume_level);
+  if (i_volume_level == -1) i_volume_level = 50;
+  if (i_volume_level == 100) i_volume_level = -1;
+  return set_volume_level(p_cdio, ++i_volume_level);
 }
 
 /** Stop playing audio CD */

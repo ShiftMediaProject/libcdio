@@ -1,5 +1,5 @@
 /*
-  $Id: mmc-tool.c,v 1.3 2006/04/04 02:09:19 rocky Exp $
+  $Id: mmc-tool.c,v 1.4 2006/04/07 02:32:03 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -62,6 +62,7 @@ typedef enum {
   /* These are the remaining configuration options */
   OP_BLOCKSIZE,
   OP_EJECT,
+  OP_IDLE,
   OP_MCN,
   OP_SPEED,
   OP_VERSION,
@@ -85,10 +86,15 @@ parse_options (int argc, char *argv[])
     "  -b, --blocksize[=INT]           set blocksize. If no block size or a \n"
     "                                  zero blocksize is given we return the\n"
     "                                  current setting.\n"
-    "  -e, --eject                     eject drive\n"
+    "  -e, --eject                     eject drive via ALLOW_MEDIUM_REMOVAL\n"
+    "                                  and a MMC START/STOP command\n"
+    "  -I, --idle                      set CD-ROM to idle or power down\n"
+    "                                  via MMC START/STOP command"
     "  -m, --mcn                       get media catalog number (AKA UPC)\n"
-    "  -s, --speed=INT                 Set drive speed to SPEED K bytes/sec\n"
-    "                                  Note: 1x = 176.4 KB/s          \n"
+    "  -s, --speed-KB=INT              Set drive speed to SPEED K bytes/sec\n"
+    "                                  Note: 1x = 176 KB/s          \n"
+    "  -S, --speed-X=INT               Set drive speed to INT X\n"
+    "                                  Note: 1x = 176 KB/s          \n"
     "  -V, --version                   display version and copyright information\n"
     "                                  and exit\n"
     "\n"
@@ -102,13 +108,15 @@ parse_options (int argc, char *argv[])
     "        [-V|--version] [-?|--help] [--usage]\n";
   
   /* Command-line options */
-  const char* optionsString = "b::s:V?";
+  const char* optionsString = "b::Is:V?";
   struct option optionsTable[] = {
   
     {"blocksize", optional_argument, &opts.i_blocksize, 'b' },
     {"eject", no_argument, NULL, 'e'},
+    {"idle", no_argument, NULL, 'I'},
     {"mcn",   no_argument, NULL, 'm'},
-    {"speed", required_argument, NULL, 's'},
+    {"speed-KB", required_argument, NULL, 's'},
+    {"speed-X",  required_argument, NULL, 'S'},
 
     {"version", no_argument, NULL, 'V'},
     {"help", no_argument, NULL, '?' },
@@ -125,11 +133,18 @@ parse_options (int argc, char *argv[])
       case 'e': 
 	operation[last_op++] = OP_EJECT;
 	break;
+      case 'I': 
+	operation[last_op++] = OP_IDLE;
+	break;
       case 'm': 
 	operation[last_op++] = OP_MCN;
 	break;
       case 's': 
 	opts.i_speed = atoi(optarg); 
+	operation[last_op++] = OP_SPEED;
+	break;
+      case 'S': 
+	opts.i_speed = 176 * atoi(optarg); 
 	operation[last_op++] = OP_SPEED;
 	break;
       case 'V':
@@ -222,6 +237,11 @@ main(int argc, char *argv[])
       rc = mmc_eject_media(p_cdio);
       report(stdout, "%s (mmc_eject_media): %s\n", program_name, 
 	     cdio_driver_errmsg(rc));
+      break;
+    case OP_IDLE:
+      rc = mmc_start_stop_media(p_cdio, false, false, true);
+      report(stdout, "%s (mmc_start_stop_media - powerdown): %s\n", 
+	     program_name, cdio_driver_errmsg(rc));
       break;
     case OP_MCN: 
       {
