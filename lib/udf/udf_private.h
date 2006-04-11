@@ -1,7 +1,7 @@
 /*
-    $Id: udf_private.h,v 1.7 2006/04/11 00:26:54 rocky Exp $
+    $Id: udf_private.h,v 1.8 2006/04/11 05:47:58 rocky Exp $
 
-    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rockyb@users.sourceforge.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -64,13 +64,6 @@ struct udf_dirent_s
 
 bool udf_get_lba(const udf_file_entry_t *p_udf_fe, 
                  /*out*/ uint32_t *start, /*out*/ uint32_t *end);
-
-/* FIXME createudf_fs.h and put this in there. */
-/**
- * Check the descriptor tag for both the correct id and correct checksum.
- * Return zero if all is good, -1 if not.
- */
-int udf_checktag(udf_tag_t *p_tag, udf_Uint16_t tag_id);
 
 #endif /* __CDIO_UDF_PRIVATE_H__ */
 

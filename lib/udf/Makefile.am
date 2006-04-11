@@ -30,7 +30,7 @@ libudf_la_AGE := 0
 
 EXTRA_DIST = libudf.sym
 
-noinst_HEADERS = udf_private.h
+noinst_HEADERS = udf_fs.h udf_private.h
 
 lib_LTLIBRARIES = libudf.la
 

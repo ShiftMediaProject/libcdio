@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.16 2006/04/11 00:26:54 rocky Exp $
+    $Id: udf_fs.c,v 1.17 2006/04/11 05:47:58 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -69,6 +69,7 @@ const char VSD_STD_ID_TEA01[] = {'T', 'E', 'A', '0', '1'};
 
 #include <cdio/bytesex.h>
 #include "udf_private.h"
+#include "udf_fs.h"
 
 /*
  * The UDF specs are pretty clear on how each data structure is made
@@ -122,7 +123,7 @@ udf_new_dirent(udf_file_entry_t *p_udf_fe, udf_t *p_udf,
  * Return zero if all is good, -1 if not.
  */
 int
-udf_checktag(udf_tag_t *p_tag, udf_Uint16_t tag_id)
+udf_checktag(const udf_tag_t *p_tag, udf_Uint16_t tag_id)
 {
   uint8_t *itag;
   uint8_t i;
