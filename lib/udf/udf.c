@@ -1,5 +1,5 @@
 /*
-    $Id: udf.c,v 1.8 2005/11/01 03:14:50 rocky Exp $
+    $Id: udf.c,v 1.9 2006/04/11 00:26:54 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -35,11 +35,12 @@
     to the enumeration value names in the typedefs above in a debugger
     and debugger expressions
 */
-tag_id_t debug_tagid;
-file_characteristics_t debug_file_characteristics;
-udf_enum1_t debug_udf_enum1;
-icbtag_file_type_enum_t debug_icbtag_file_type_enum;
-ecma_167_enum1_t ecma167_enum1;
+tag_id_t                 debug_tagid;
+file_characteristics_t   debug_file_characteristics;
+udf_enum1_t              debug_udf_enum1;
+icbtag_file_type_enum_t  debug_icbtag_file_type_enum;
+icbtag_flag_enum_t       debug_flag_enum;
+ecma_167_enum1_t         ecma167_enum1;
 ecma_167_timezone_enum_t debug_ecma_167_timezone_enum;
 
 /*!

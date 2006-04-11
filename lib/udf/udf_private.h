@@ -1,5 +1,5 @@
 /*
-    $Id: udf_private.h,v 1.6 2006/01/26 04:41:50 rocky Exp $
+    $Id: udf_private.h,v 1.7 2006/04/11 00:26:54 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -55,7 +55,7 @@ struct udf_dirent_s
 				  be true. */
   udf_t             *p_udf;
   uint32_t           i_part_start;
-  uint32_t           dir_lba, dir_end_lba;
+  uint32_t           i_loc, i_loc_end;
   uint64_t           dir_left;
   uint8_t           *sector;
   udf_file_entry_t   fe;
@@ -64,6 +64,13 @@ struct udf_dirent_s
 
 bool udf_get_lba(const udf_file_entry_t *p_udf_fe, 
                  /*out*/ uint32_t *start, /*out*/ uint32_t *end);
+
+/* FIXME createudf_fs.h and put this in there. */
+/**
+ * Check the descriptor tag for both the correct id and correct checksum.
+ * Return zero if all is good, -1 if not.
+ */
+int udf_checktag(udf_tag_t *p_tag, udf_Uint16_t tag_id);
 
 #endif /* __CDIO_UDF_PRIVATE_H__ */
 

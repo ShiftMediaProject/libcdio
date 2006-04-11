@@ -1,5 +1,5 @@
 /*
-    $Id: udf_file.c,v 1.6 2006/01/26 04:41:50 rocky Exp $
+    $Id: udf_file.c,v 1.7 2006/04/11 00:26:54 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -25,6 +25,8 @@
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif
+
+#include <stdio.h>  /* Remove when adding cdio/logging.h */
 
 const char *
 udf_get_filename(const udf_dirent_t *p_udf_dirent)
@@ -102,6 +104,21 @@ driver_return_code_t
 udf_read_block(const udf_dirent_t *p_udf_dirent, void * buf, size_t count)
 {
   const udf_t *p_udf = p_udf_dirent->p_udf;
-  return udf_read_sectors(p_udf, buf, 
-			  p_udf->i_part_start+p_udf_dirent->dir_lba, count);
+  uint8_t data[UDF_BLOCKSIZE];
+  udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) data;
+  driver_return_code_t ret = 
+    udf_read_sectors(p_udf, data, p_udf_dirent->fe.unique_ID, 1);
+  if (ret == DRIVER_OP_SUCCESS && 
+      !udf_checktag(&p_udf_fe->tag, TAGID_FILE_ENTRY)) {
+    uint32_t i_lba_start, i_lba_end;
+    udf_get_lba( p_udf_fe, &i_lba_start, &i_lba_end);
+        
+    if ( (i_lba_end - i_lba_start+1) < count ) {
+      printf("Warning: don't know how to handle yet\n" );
+      count = i_lba_end - i_lba_start+1;
+    }
+    return udf_read_sectors(p_udf, buf, p_udf->i_part_start+i_lba_start, 
+			    count);
+  }
+  return ret;
 }

@@ -174,12 +174,22 @@ extern ecma_167_timezone_enum_t debug_ecma_167_timezone_enum;
 #define TIMESTAMP_TYPE_AGREEMENT	0x2000
 #define TIMESTAMP_TIMEZONE_MASK		0x0FFF
 
+struct udf_id_suffix_s
+{
+  udf_Uint16_t  udf_revision;
+  udf_Uint8_t   os_class;
+  udf_Uint8_t   os_identifier;
+  udf_Uint8_t   reserved[4];
+} GNUC_PACKED;
+
+typedef struct udf_id_suffix_s udf_id_suffix_t;
+
 /** Entity identifier (ECMA 167r3 1/7.4) */
 struct udf_regid_s
 {
   udf_Uint8_t		flags;
   udf_Uint8_t		id[UDF_REGID_ID_SIZE];
-  udf_Uint8_t		id_suffix[8];
+  udf_id_suffix_t	id_suffix;
 } GNUC_PACKED;
 
 typedef struct udf_regid_s udf_regid_t;
@@ -649,30 +659,26 @@ typedef enum {
   ICBTAG_FILE_TYPE_STREAMDIR =	0x0D
 } icbtag_file_type_enum_t;
 
-/** This variable is trickery to force the above enum symbol values to
-    be recorded in debug symbol tables. It is used to allow one refer
-    to above enumeration values in a debugger and debugger
-    expressions */
-extern icbtag_file_type_enum_t debug_icbtag_file_type_enum;
-
 /** Flags (ECMA 167r3 4/14.6.8) */
-#define ICBTAG_FLAG_AD_MASK		0x0007
-#define ICBTAG_FLAG_AD_SHORT		0x0000
-#define ICBTAG_FLAG_AD_LONG		0x0001
-#define ICBTAG_FLAG_AD_EXTENDED		0x0002
-#define ICBTAG_FLAG_AD_IN_ICB		0x0003
-#define ICBTAG_FLAG_SORTED		0x0008
-#define ICBTAG_FLAG_NONRELOCATABLE	0x0010
-#define ICBTAG_FLAG_ARCHIVE		0x0020
-#define ICBTAG_FLAG_SETUID		0x0040
-#define ICBTAG_FLAG_SETGID		0x0080
-#define ICBTAG_FLAG_STICKY		0x0100
-#define ICBTAG_FLAG_CONTIGUOUS		0x0200
-#define ICBTAG_FLAG_SYSTEM		0x0400
-#define ICBTAG_FLAG_TRANSFORMED		0x0800
-#define ICBTAG_FLAG_MULTIVERSIONS	0x1000
-#define ICBTAG_FLAG_STREAM		0x2000
-
+typedef enum {
+  ICBTAG_FLAG_AD_MASK        =	0x0007,
+  ICBTAG_FLAG_AD_SHORT       =	0x0000,
+  ICBTAG_FLAG_AD_LONG        =	0x0001,
+  ICBTAG_FLAG_AD_EXTENDED    =	0x0002,
+  ICBTAG_FLAG_AD_IN_ICB      =	0x0003,
+  ICBTAG_FLAG_SORTED         =	0x0008,
+  ICBTAG_FLAG_NONRELOCATABLE =	0x0010,
+  ICBTAG_FLAG_ARCHIVE        =	0x0020,
+  ICBTAG_FLAG_SETUID         =	0x0040,
+  ICBTAG_FLAG_SETGID         =	0x0080,
+  ICBTAG_FLAG_STICKY         =	0x0100,
+  ICBTAG_FLAG_CONTIGUOUS     =	0x0200,
+  ICBTAG_FLAG_SYSTEM         =	0x0400,
+  ICBTAG_FLAG_TRANSFORMED    =	0x0800,
+  ICBTAG_FLAG_MULTIVERSIONS  =	0x1000,
+  ICBTAG_FLAG_STREAM =		0x2000
+} icbtag_flag_enum_t;
+  
 /** Indirect Entry (ECMA 167r3 4/14.7) */
 struct indirect_entry_s
 {
@@ -712,7 +718,7 @@ struct udf_file_entry_s
   udf_Uint32_t	  checkpoint;
   udf_long_ad_t	  ext_attr_ICB;
   udf_regid_t	  imp_id;
-  udf_Uint64_t	  unique_iD;
+  udf_Uint64_t	  unique_ID;
   udf_Uint32_t	  i_extended_attr;
   udf_Uint32_t	  i_alloc_descs;
   udf_Uint8_t	  ext_attr[0];
@@ -984,8 +990,9 @@ PRAGMA_END_PACKED
     allow one refer to the enumeration value names in the typedefs
     above in a debugger and in debugger expressions.
 */
-extern file_characteristics_t debug_file_characteristics;
-extern tag_id_t debug_tagid;
-
+extern file_characteristics_t  debug_file_characteristics;
+extern tag_id_t                debug_tagid;
+extern icbtag_file_type_enum_t debug_icbtag_file_type_enum;
+extern icbtag_flag_enum_t      debug_flag_enum;
 
 #endif /* _ECMA_167_H */

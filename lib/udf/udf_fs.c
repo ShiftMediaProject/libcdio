@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.15 2006/03/18 00:53:20 rocky Exp $
+    $Id: udf_fs.c,v 1.16 2006/04/11 00:26:54 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -121,7 +121,7 @@ udf_new_dirent(udf_file_entry_t *p_udf_fe, udf_t *p_udf,
  * Check the descriptor tag for both the correct id and correct checksum.
  * Return zero if all is good, -1 if not.
  */
-static int
+int
 udf_checktag(udf_tag_t *p_tag, udf_Uint16_t tag_id)
 {
   uint8_t *itag;
@@ -278,8 +278,8 @@ udf_new_dirent(udf_file_entry_t *p_udf_fe, udf_t *p_udf,
   p_udf_dirent->dir_left     = uint64_from_le(p_udf_fe->info_len); 
 
   memcpy(&(p_udf_dirent->fe), p_udf_fe, sizeof(udf_file_entry_t));
-  udf_get_lba( p_udf_fe, &(p_udf_dirent->dir_lba), 
-	       &(p_udf_dirent->dir_end_lba) );
+  udf_get_lba( p_udf_fe, &(p_udf_dirent->i_loc), 
+	       &(p_udf_dirent->i_loc_end) );
   return p_udf_dirent;
 }
 
@@ -603,14 +603,14 @@ udf_readdir(udf_dirent_t *p_udf_dirent)
   
   if (!p_udf_dirent->fid) {
     uint32_t i_sectors = 
-      (p_udf_dirent->dir_end_lba - p_udf_dirent->dir_lba + 1);
+      (p_udf_dirent->i_loc_end - p_udf_dirent->i_loc + 1);
     uint32_t size = UDF_BLOCKSIZE * i_sectors;
     driver_return_code_t i_ret;
 
     if (!p_udf_dirent->sector)
       p_udf_dirent->sector = (uint8_t*) malloc(size);
     i_ret = udf_read_sectors(p_udf, p_udf_dirent->sector, 
-			     p_udf_dirent->i_part_start+p_udf_dirent->dir_lba, 
+			     p_udf_dirent->i_part_start+p_udf_dirent->i_loc, 
 			     i_sectors);
     if (DRIVER_OP_SUCCESS == i_ret)
       p_udf_dirent->fid = (udf_fileid_desc_t *) p_udf_dirent->sector;
