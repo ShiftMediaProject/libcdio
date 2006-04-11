@@ -1,7 +1,7 @@
 /*
-  $Id: udf2.c,v 1.3 2006/02/02 04:37:29 rocky Exp $
+  $Id: udf2.c,v 1.4 2006/04/11 01:02:18 rocky Exp $
 
-  Copyright (C)  2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2005, 2006 Rocky Bernstein <rockyb@users.sourceforge.net>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -52,6 +52,8 @@
 #include <sys/types.h>
 #endif
 
+#define CEILING(x, y) ((x+(y-1))/y)
+
 #define udf_PATH_DELIMITERS "/\\"
 
 static void 
@@ -67,7 +69,7 @@ print_file_info(const udf_dirent_t *p_udf_dirent, const char* psz_dirname)
 				psz_mode));
   printf("%4d ", udf_get_link_count(p_udf_dirent));
   printf("%ld ", (long unsigned int) udf_get_file_length(p_udf_dirent));
-  printf("%s %s",  *psz_fname ? psz_fname : "/", ctime(&mod_time));
+  printf("%s %s\n",  *psz_fname ? psz_fname : "/", ctime(&mod_time));
 }
 
 int
@@ -106,9 +108,16 @@ main(int argc, const char *argv[])
     p_udf_file = udf_fopen(p_udf_root, psz_udf_fname);
     print_file_info(p_udf_file, udf_get_filename(p_udf_file));
     {
-      char buf[2048];
-      udf_read_block(p_udf_file, buf, 1);
-      printf("%s", buf);
+      long unsigned int i_file_length = udf_get_file_length(p_udf_file);
+      char *p_buf;
+      unsigned int i_blocks = CEILING(i_file_length, UDF_BLOCKSIZE);
+      char fmt_string[100] = {'\0'};
+      snprintf(fmt_string, sizeof(fmt_string), "%%%lus", i_file_length);
+      
+      p_buf = (char *) calloc(sizeof(char), UDF_BLOCKSIZE*i_blocks);
+      udf_read_block(p_udf_file, p_buf, i_blocks);
+      printf(fmt_string, p_buf);
+      free(p_buf);
     }
     udf_dirent_free(p_udf_file);
     udf_dirent_free(p_udf_root);
