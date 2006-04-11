@@ -1,5 +1,5 @@
 /*
-  $Id: udf2.c,v 1.4 2006/04/11 01:02:18 rocky Exp $
+  $Id: udf2.c,v 1.5 2006/04/11 06:46:29 rocky Exp $
 
   Copyright (C) 2005, 2006 Rocky Bernstein <rockyb@users.sourceforge.net>
   
@@ -106,6 +106,12 @@ main(int argc, const char *argv[])
     }
     
     p_udf_file = udf_fopen(p_udf_root, psz_udf_fname);
+    if (!p_udf_file) {
+      fprintf(stderr, "Sorry, couldn't find %s in %s\n", 
+	      psz_udf_fname, psz_udf_image);
+      return 2;
+      
+    }
     print_file_info(p_udf_file, udf_get_filename(p_udf_file));
     {
       long unsigned int i_file_length = udf_get_file_length(p_udf_file);

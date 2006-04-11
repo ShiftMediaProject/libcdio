@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.17 2006/04/11 05:47:58 rocky Exp $
+    $Id: udf_fs.c,v 1.18 2006/04/11 06:46:29 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -209,8 +209,8 @@ udf_ff_traverse(udf_dirent_t *p_udf_dirent, char *psz_token)
 	if (p_udf_dirent2) {
 	  udf_dirent_t * p_udf_dirent3 = 
 	    udf_ff_traverse(p_udf_dirent2, next_tok);
-	  
-	  if (!p_udf_dirent3) udf_dirent_free(p_udf_dirent2);
+
+	  /* if p_udf_dirent3 is null p_udf_dirent2 is free'd. */
 	  return p_udf_dirent3;
 	}
       }
