@@ -1,5 +1,5 @@
 /*
-    $Id: udf_file.c,v 1.7 2006/04/11 00:26:54 rocky Exp $
+    $Id: udf_file.c,v 1.8 2006/04/11 01:05:44 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -108,17 +108,21 @@ udf_read_block(const udf_dirent_t *p_udf_dirent, void * buf, size_t count)
   udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) data;
   driver_return_code_t ret = 
     udf_read_sectors(p_udf, data, p_udf_dirent->fe.unique_ID, 1);
-  if (ret == DRIVER_OP_SUCCESS && 
-      !udf_checktag(&p_udf_fe->tag, TAGID_FILE_ENTRY)) {
-    uint32_t i_lba_start, i_lba_end;
-    udf_get_lba( p_udf_fe, &i_lba_start, &i_lba_end);
-        
-    if ( (i_lba_end - i_lba_start+1) < count ) {
-      printf("Warning: don't know how to handle yet\n" );
-      count = i_lba_end - i_lba_start+1;
+  if (ret == DRIVER_OP_SUCCESS) {
+    if (!udf_checktag(&p_udf_fe->tag, TAGID_FILE_ENTRY)) {
+      uint32_t i_lba_start, i_lba_end;
+      udf_get_lba( p_udf_fe, &i_lba_start, &i_lba_end);
+      
+      if ( (i_lba_end - i_lba_start+1) < count ) {
+	printf("Warning: don't know how to handle yet\n" );
+	count = i_lba_end - i_lba_start+1;
+      }
+      return udf_read_sectors(p_udf, buf, p_udf->i_part_start+i_lba_start, 
+			      count);
     }
-    return udf_read_sectors(p_udf, buf, p_udf->i_part_start+i_lba_start, 
-			    count);
+    else {
+      return DRIVER_OP_ERROR;
+    }
   }
   return ret;
 }
