@@ -1,7 +1,7 @@
 /*
-    $Id: mmc.h,v 1.26 2006/04/04 02:06:13 rocky Exp $
+    $Id: mmc.h,v 1.27 2006/04/12 09:30:14 rocky Exp $
 
-    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/*!
+/**
  *  \file mmc.h 
  * 
  *  \brief Common definitions for MMC (Multimedia Commands). Applications
@@ -37,22 +37,22 @@
 extern "C" {
 #endif /* __cplusplus */
 
-  /*! Set this to the maximum value in milliseconds that we will
+  /** Set this to the maximum value in milliseconds that we will
       wait on an MMC command.  */
   extern uint32_t mmc_timeout_ms; 
 
-  /*! The default timeout (non-read) is 6 seconds. */
+  /** The default timeout (non-read) is 6 seconds. */
 #define MMC_TIMEOUT_DEFAULT 6000
 
-  /*! Set this to the maximum value in milliseconds that we will
+  /** Set this to the maximum value in milliseconds that we will
       wait on an MMC read command.  */
   extern uint32_t mmc_read_timeout_ms;
 
-  /*! The default read timeout is 3 minutes. */
+  /** The default read timeout is 3 minutes. */
 #define MMC_READ_TIMEOUT_DEFAULT 3*60*1000
 
 
-  /*! \brief The opcode-portion (generic packet commands) of an MMC command.
+  /** \brief The opcode-portion (generic packet commands) of an MMC command.
     
   In general, those opcodes that end in 6 take a 6-byte command
   descriptor, those that end in 10 take a 10-byte
@@ -175,7 +175,7 @@ extern "C" {
                                               return */
   } cdio_mmc_read_sub_state_t;
 
-  /*! Level values that can go into READ_CD */
+  /** Level values that can go into READ_CD */
   typedef enum {
     CDIO_MMC_READ_TYPE_ANY  =  0,  /**< All types */
     CDIO_MMC_READ_TYPE_CDDA =  1,  /**< Only CD-DA sectors */
@@ -185,7 +185,7 @@ extern "C" {
     CDIO_MMC_READ_TYPE_M2F2 =  5   /**< mode2 sectors form2 */
   } cdio_mmc_read_cd_type_t;
 
-  /*! Format values for READ_TOC */
+  /** Format values for READ_TOC */
   typedef enum {
     CDIO_MMC_READTOC_FMT_TOC     =  0,
     CDIO_MMC_READTOC_FMT_SESSION =  1,  
@@ -195,7 +195,7 @@ extern "C" {
     CDIO_MMC_READTOC_FMT_CDTEXT  =  5   /**< CD-TEXT info  */
   } cdio_mmc_readtoc_t;
     
-/*! Page codes for MODE SENSE and MODE SET. */
+/** Page codes for MODE SENSE and MODE SET. */
   typedef enum {
     CDIO_MMC_R_W_ERROR_PAGE	= 0x01,
     CDIO_MMC_WRITE_PARMS_PAGE	= 0x05,
@@ -218,7 +218,7 @@ PRAGMA_BEGIN_PACKED
 
   typedef struct mmc_audio_volume_entry_s mmc_audio_volume_entry_t;
   
-  /*! This struct is used by cdio_audio_get_volume and cdio_audio_set_volume */
+  /** This struct is used by cdio_audio_get_volume and cdio_audio_set_volume */
   struct mmc_audio_volume_s
   {
     mmc_audio_volume_entry_t port[4];
@@ -229,7 +229,7 @@ PRAGMA_BEGIN_PACKED
 PRAGMA_END_PACKED
   
 
-/*! Return type codes for GET_CONFIGURATION. */
+/** Return type codes for GET_CONFIGURATION. */
 typedef enum {
   CDIO_MMC_GET_CONF_ALL_FEATURES     = 0,  /**< all features without regard
                                               to currency. */
@@ -241,7 +241,7 @@ typedef enum {
 } cdio_mmc_get_conf_t;
   
 
-/*! FEATURE codes used in GET CONFIGURATION. */
+/** FEATURE codes used in GET CONFIGURATION. */
 
 typedef enum {
   CDIO_MMC_FEATURE_PROFILE_LIST     = 0x000, /**< Profile List Feature */
@@ -302,7 +302,7 @@ typedef enum {
 						report */
 } cdio_mmc_feature_t;
 				
-/*! Profile profile codes used in GET_CONFIGURATION - PROFILE LIST. */
+/** Profile profile codes used in GET_CONFIGURATION - PROFILE LIST. */
 typedef enum {
   CDIO_MMC_FEATURE_PROF_NON_REMOVABLE = 0x0001, /**< Re-writable disk, capable
 						   of changing behavior */
@@ -350,19 +350,19 @@ typedef enum {
 } cdio_mmc_feature_interface_t;
   
 
-/*! The largest Command Descriptor Block (CDB) size.
+/** The largest Command Descriptor Block (CDB) size.
     The possible sizes are 6, 10, and 12 bytes.
  */
 #define MAX_CDB_LEN 12
 
-/*! \brief A Command Descriptor Block (CDB) used in sending MMC 
+/** \brief A Command Descriptor Block (CDB) used in sending MMC 
     commands.
  */
 typedef struct mmc_cdb_s {
   uint8_t field[MAX_CDB_LEN];
 } mmc_cdb_t;
   
-  /*! \brief Format of header block in data returned from an MMC
+  /** \brief Format of header block in data returned from an MMC
     GET_CONFIGURATION command.
   */
   typedef struct mmc_feature_list_header_s {
@@ -376,7 +376,7 @@ typedef struct mmc_cdb_s {
     unsigned char profile_lsb;
   } cdio_mmc_feature_list_header_t;
 
-  /*! An enumeration indicating whether an MMC command is sending
+  /** An enumeration indicating whether an MMC command is sending
     data or getting data.
   */
   typedef enum mmc_direction_s {
@@ -442,7 +442,7 @@ typedef struct mmc_cdb_s {
 #define CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb, val) \
   cdb[9] = val << 3;
 
-/*!
+/**
   Read Audio Subchannel information
   
   @param p_cdio the CD object to be acted upon.
@@ -452,58 +452,55 @@ driver_return_code_t
 mmc_audio_read_subchannel (CdIo_t *p_cdio, 
                            /*out*/ cdio_subchannel_t *p_subchannel);
   
-  /*!
+  /**
     Return a string containing the name of the audio state as returned from
     the Q_SUBCHANNEL.
   */
   const char *mmc_audio_state2str( uint8_t i_audio_state );
   
-  /*!
+  /**
     Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.
     Command is not "immediate" -- we'll wait for the command to complete.
     For a more general (and lower-level) routine, @see mmc_start_stop_media.
   */
   driver_return_code_t mmc_eject_media( const CdIo_t *p_cdio );
   
-  /*!
+  /**
     Return a string containing the name of the given feature
   */
   const char *mmc_feature2str( int i_feature );
   
-  /*!
+  /**
     Return a string containing the name of the given feature
   */
   const char *mmc_feature_profile2str( int i_feature_profile );
   
-  /*!  
+  /**  
     Return the length in bytes of the Command Descriptor
     Buffer (CDB) for a given MMC command. The length will be 
     either 6, 10, or 12. 
   */
   uint8_t mmc_get_cmd_len(uint8_t mmc_cmd);
   
-  /*!
+  /**
     Get the block size used in read requests, via MMC.
     @return the blocksize if > 0; error if <= 0
   */
   int mmc_get_blocksize ( CdIo_t *p_cdio );
   
-#if 0
-  /*! Don't know how to implement yet. */
-  /*!
+  /**
    * Close tray using a MMC START STOP command.
    */
-  driver_return_code_t mmc_close_tray( const char *psz_device );
-#endif
+  driver_return_code_t mmc_close_tray( CdIo_t *p_cdio );
   
-  /*!  
+  /**  
     Get the lsn of the end of the CD
     
     @return the lsn. On error return CDIO_INVALID_LSN.
   */
   lsn_t mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
   
-  /*! 
+  /** 
     Return the discmode as reported by the MMC Read (FULL) TOC
     command.
     
@@ -515,7 +512,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   discmode_t mmc_get_discmode( const CdIo_t *p_cdio );
   
   
-  /*!
+  /**
     Get drive capabilities for a device.
     @return the drive capabilities.
   */
@@ -532,13 +529,13 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     CDIO_MMC_LEVEL_NONE
   } cdio_mmc_level_t;
   
-  /*!
+  /**
     Get the MMC level supported by the device.
   */
   cdio_mmc_level_t mmc_get_drive_mmc_cap(CdIo_t *p_cdio);
   
 
-  /*! 
+  /** 
     Get the DVD type associated with cd object.
     
     @return the DVD discmode.
@@ -546,7 +543,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   discmode_t mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, 
                                            cdio_dvd_struct_t *s);
   
-  /*! 
+  /** 
     Get the CD-ROM hardware info via an MMC INQUIRY command.
     
     @return true if we were able to get hardware info, false if we had
@@ -556,7 +553,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                         /* out*/ cdio_hwinfo_t *p_hw_info );
   
   
-  /*! 
+  /** 
     Find out if media has changed since the last call.
     @param p_cdio the CD object to be acted upon.
     @return 1 if media has changed since last call, 0 if not. Error
@@ -564,7 +561,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   */
   int mmc_get_media_changed(const CdIo_t *p_cdio);
   
-  /*!
+  /**
     Get the media catalog number (MCN) from the CD via MMC.
     
     @return the media catalog number r NULL if there is none or we
@@ -583,7 +580,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
                                              mmc_audio_volume_t *p_volume);
   
-  /*!
+  /**
     Report if CD-ROM has a praticular kind of interface (ATAPI, SCSCI, ...)
     Is it possible for an interface to have serveral? If not this 
     routine could probably return the single mmc_feature_interface_t.
@@ -592,7 +589,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   bool_3way_t mmc_have_interface( CdIo_t *p_cdio, 
                                   cdio_mmc_feature_interface_t e_interface );
   
-  /*! Run a MODE_SENSE command (6- or 10-byte version) 
+  /** Run a MODE_SENSE command (6- or 10-byte version) 
     and put the results in p_buf 
     @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
@@ -600,21 +597,21 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                       int page);
   
   
-  /*! Run a MODE_SENSE command (10-byte version) 
+  /** Run a MODE_SENSE command (10-byte version) 
     and put the results in p_buf 
     @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   int  mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
                           int page);
   
-  /*! Run a MODE_SENSE command (6-byte version) 
+  /** Run a MODE_SENSE command (6-byte version) 
     and put the results in p_buf 
     @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   int  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
                          int page);
   
-  /*! Issue a MMC READ_CD command.
+  /** Issue a MMC READ_CD command.
     
   @param p_cdio  object to read from 
   
@@ -722,7 +719,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                 uint8_t subchannel_selection, uint16_t i_blocksize, 
                 uint32_t i_blocks );
   
-  /*! Read just the user data part of some sort of data sector (via 
+  /** Read just the user data part of some sort of data sector (via 
     mmc_read_cd). 
     
     @param p_cdio object to read from
@@ -745,14 +742,14 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                                                uint16_t i_blocksize,
                                                uint32_t i_blocks );
   
-  /*! Read sectors using SCSI-MMC GPCMD_READ_CD. 
+  /** Read sectors using SCSI-MMC GPCMD_READ_CD. 
       Can read only up to 25 blocks.
    */
   driver_return_code_t mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, 
                                           lsn_t i_lsn,  int read_sector_type, 
                                           uint32_t i_blocks);
   
-  /*!
+  /**
     Run a Multimedia command (MMC). 
     
     @param p_cdio	 CD structure set by cdio_open().
@@ -771,13 +768,13 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                    const mmc_cdb_t *p_cdb,
                    cdio_mmc_direction_t e_direction, unsigned int i_buf, 
                    /*in/out*/ void *p_buf );
-  /*!
+  /**
     Set the block size for subsequest read requests, via MMC.
   */
   driver_return_code_t mmc_set_blocksize ( const CdIo_t *p_cdio, 
                                            uint16_t i_blocksize);
   
-  /*!
+  /**
     Set the drive speed in CD-ROM speed units.
 
     @param p_cdio	   CD structure set by cdio_open().
@@ -797,7 +794,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   driver_return_code_t mmc_set_drive_speed( const CdIo_t *p_cdio, 
                                             int i_drive_speed );
   
-  /*!
+  /**
     Set the drive speed in K bytes per second.
 
     @param p_cdio	 CD structure set by cdio_open().
@@ -821,7 +818,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   driver_return_code_t mmc_set_speed( const CdIo_t *p_cdio, 
                                       int i_Kbs_speed );
   
-  /*!
+  /**
     Load or Unload media using a MMC START STOP command. 
     
     @param p_cdio  the CD object to be acted upon.

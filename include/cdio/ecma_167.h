@@ -1,5 +1,5 @@
  /* 
-  Copyright (c) 2005, 2006 Rocky Bernstein <rocky@panix.com>
+  Copyright (c) 2005, 2006 Rocky Bernstein <rocky@cpan.org>
   Copyright (c) 2001-2002  Ben Fennema <bfennema@falcon.csc.calpoly.edu>
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

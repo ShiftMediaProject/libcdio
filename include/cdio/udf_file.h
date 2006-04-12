@@ -1,6 +1,6 @@
 /*  
-    $Id: udf_file.h,v 1.8 2006/04/11 05:47:57 rocky Exp $
-    Copyright (C) 2005, 2006 Rocky Bernstein <rockyb@users.sourceforge.net>
+    $Id: udf_file.h,v 1.9 2006/04/12 09:30:14 rocky Exp $
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

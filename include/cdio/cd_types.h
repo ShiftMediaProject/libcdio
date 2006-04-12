@@ -1,7 +1,7 @@
 /*
-    $Id: cd_types.h,v 1.16 2006/03/28 03:26:16 rocky Exp $
+    $Id: cd_types.h,v 1.17 2006/04/12 09:30:14 rocky Exp $
 
-    Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2006 Rocky Bernstein <rocky@cpan.org>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
          and       Heiko Eiﬂfeldt <heiko@hexco.de>
 

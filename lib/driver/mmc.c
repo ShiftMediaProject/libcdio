@@ -1,8 +1,8 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.33 2006/04/05 02:20:06 rocky Exp $
+    $Id: mmc.c,v 1.34 2006/04/12 09:30:14 rocky Exp $
 
-    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -981,16 +981,18 @@ mmc_start_stop_media(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
                                  SCSI_MMC_DATA_WRITE, 0, &buf);
 }
 
-#if 0
-/*!
+/**
  * Close tray using a MMC START STOP command.
  */
-driver_return_code_t
-mmc_close_tray( const CdIo_t *p_cdio )
+driver_return_code_t 
+mmc_close_tray( CdIo_t *p_cdio )
 {
-  return mmc_start_stop_media(p_cdio, false, false, 0);
+  if (p_cdio) {
+    return mmc_start_stop_media(p_cdio, false, false, 0);
+  } else {
+    return DRIVER_OP_ERROR;
+  }
 }
-#endif
 
 /*!
  Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.

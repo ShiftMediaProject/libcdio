@@ -1,7 +1,7 @@
 /*
-  $Id: mmc2a.c,v 1.2 2006/04/03 19:54:06 rocky Exp $
+  $Id: mmc2a.c,v 1.3 2006/04/12 09:30:14 rocky Exp $
 
-  Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2006 Rocky Bernstein <rocky@cpan.org>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
 
 /* Sample program to show use of the MMC interface. 
    An optional drive name can be supplied as an argument.
-   This basically the libdio mmc_get_hwinfo() routine.
-   See also corresponding C++ programs.
+   This basically calls to the libdio mmc_mode_sense_10() and mmc_mode_sense_6 
+   routines.
 */
 #ifdef HAVE_CONFIG_H
 # include "config.h"

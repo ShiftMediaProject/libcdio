@@ -1,7 +1,7 @@
 /* -*- c -*-
-    $Id: device.h,v 1.35 2006/04/04 02:06:12 rocky Exp $
+    $Id: device.h,v 1.36 2006/04/12 09:30:14 rocky Exp $
 
-    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
