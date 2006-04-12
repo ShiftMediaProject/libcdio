@@ -1,4 +1,10 @@
-$Id: NEWS,v 1.99 2006/03/18 04:15:07 rocky Exp $
+$Id: NEWS,v 1.100 2006/04/12 09:38:45 rocky Exp $
+
+version 0.78cvs
+=====================================
+- add mmc-tool
+- add mmc-close-tray
+- libudf: can now read (extract) file data
 
 version 0.77
 =====================================
@@ -344,4 +350,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.99 2006/03/18 04:15:07 rocky Exp $
+$Id: NEWS,v 1.100 2006/04/12 09:38:45 rocky Exp $

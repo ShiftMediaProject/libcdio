@@ -1,5 +1,5 @@
 /*
-  $Id: mmc2a.c,v 1.3 2006/04/12 09:30:14 rocky Exp $
+  $Id: mmc2a.c,v 1.4 2006/04/12 09:38:45 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@cpan.org>
   
@@ -186,12 +186,16 @@ print_mode_sense (const char *psz_drive, const char *six_or_ten,
   if (buf[7] & 0x10) {
     printf("\tReads raw R-W subchannel information from lead in.\n");
   }
-  printf("\tMaximum read speed is %d\n",      CDIO_MMC_GETPOS_LEN16(buf,  8));
-  printf("\tNumber of Volume levels is %d\n", CDIO_MMC_GETPOS_LEN16(buf, 10));
+  {
+    const unsigned int i_speed_Kbs = CDIO_MMC_GETPOS_LEN16(buf,  8);
+    printf("\tMaximum read speed is %d K bytes/sec (about %dX)\n", 
+	   i_speed_Kbs, i_speed_Kbs / 176) ;
+  }
+  printf("\tNumber of Volume levels is %d\n",  CDIO_MMC_GETPOS_LEN16(buf, 10));
   printf("\tBuffers size for data is %d KB\n", CDIO_MMC_GETPOS_LEN16(buf, 12));
-  printf("\tCurrent read speed is %d KB\n",   CDIO_MMC_GETPOS_LEN16(buf, 14));
-  printf("\tMaximum write speed is %d KB\n",  CDIO_MMC_GETPOS_LEN16(buf, 18));
-  printf("\tCurrent write speed is %d KB\n",  CDIO_MMC_GETPOS_LEN16(buf, 28));
+  printf("\tCurrent read speed is %d KB\n",    CDIO_MMC_GETPOS_LEN16(buf, 14));
+  printf("\tMaximum write speed is %d KB\n",   CDIO_MMC_GETPOS_LEN16(buf, 18));
+  printf("\tCurrent write speed is %d KB\n",   CDIO_MMC_GETPOS_LEN16(buf, 28));
 }
 
 
