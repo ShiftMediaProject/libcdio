@@ -1,5 +1,5 @@
 /*
-  $Id: mmc-tool.c,v 1.4 2006/04/07 02:32:03 rocky Exp $
+  $Id: mmc-tool.c,v 1.5 2006/04/12 03:23:46 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -56,28 +56,53 @@ init(const char *argv0)
 
 /* Configuration option codes */
 typedef enum {
-  OP_HANDLED = 0,
-  OP_USAGE,
+  OPT_HANDLED = 0,
+  OPT_USAGE,
+  OPT_VERSION,
+} option_t;
 
+typedef enum {
   /* These are the remaining configuration options */
+  OP_FINISHED = 0,
   OP_BLOCKSIZE,
+  OP_CLOSETRAY,
   OP_EJECT,
   OP_IDLE,
   OP_MCN,
   OP_SPEED,
-  OP_VERSION,
+} operation_enum_t;
+
+typedef struct 
+{
+  operation_enum_t op;
+  union 
+  {
+    long int i_num;
+    char * psz;
+  } arg;
 } operation_t;
+  
 
 enum { MAX_OPS = 10 };
 
 unsigned int last_op = 0;
-operation_t operation[MAX_OPS] = {OP_HANDLED,};
+operation_t operation[MAX_OPS] = { {OP_FINISHED, {0}} };
+
+static void 
+push_op(operation_t *p_op) 
+{
+  if (last_op < MAX_OPS) {
+    memcpy(&operation[last_op], p_op, sizeof(operation_t));
+    last_op++;
+  }
+}
 
 /* Parse a options. */
 static bool
 parse_options (int argc, char *argv[])
 {
   int opt;
+  operation_t op;
 
   const char* helpText =
     "Usage: %s [OPTION...]\n"
@@ -86,7 +111,7 @@ parse_options (int argc, char *argv[])
     "  -b, --blocksize[=INT]           set blocksize. If no block size or a \n"
     "                                  zero blocksize is given we return the\n"
     "                                  current setting.\n"
-    "  -e, --eject                     eject drive via ALLOW_MEDIUM_REMOVAL\n"
+    "  -e, --eject [drive]             eject drive via ALLOW_MEDIUM_REMOVAL\n"
     "                                  and a MMC START/STOP command\n"
     "  -I, --idle                      set CD-ROM to idle or power down\n"
     "                                  via MMC START/STOP command"
@@ -108,11 +133,12 @@ parse_options (int argc, char *argv[])
     "        [-V|--version] [-?|--help] [--usage]\n";
   
   /* Command-line options */
-  const char* optionsString = "b::Is:V?";
+  const char* optionsString = "b::c:e::Is:V?";
   struct option optionsTable[] = {
   
     {"blocksize", optional_argument, &opts.i_blocksize, 'b' },
-    {"eject", no_argument, NULL, 'e'},
+    /*    {"close", required_argument, NULL, 'c'}, */
+    {"eject", optional_argument, NULL, 'e'},
     {"idle", no_argument, NULL, 'I'},
     {"mcn",   no_argument, NULL, 'm'},
     {"speed-KB", required_argument, NULL, 's'},
@@ -120,7 +146,7 @@ parse_options (int argc, char *argv[])
 
     {"version", no_argument, NULL, 'V'},
     {"help", no_argument, NULL, '?' },
-    {"usage", no_argument, NULL, OP_USAGE },
+    {"usage", no_argument, NULL, OPT_USAGE },
     { NULL, 0, NULL, 0 }
   };
   
@@ -128,24 +154,40 @@ parse_options (int argc, char *argv[])
     switch (opt)
       {
       case 'b': 
-	operation[last_op++] = OP_BLOCKSIZE;
+	op.op = OP_BLOCKSIZE;
+	op.arg.i_num = opts.i_blocksize;
+	push_op(&op);
+	break;
+      case 'c': 
+	op.op = OP_CLOSETRAY;
+	op.arg.psz = strdup(optarg);
+	push_op(&op);
 	break;
       case 'e': 
-	operation[last_op++] = OP_EJECT;
+	op.op = OP_EJECT;
+	op.arg.psz=NULL;
+	if (optarg) op.arg.psz = strdup(optarg);
+	push_op(&op);
 	break;
       case 'I': 
-	operation[last_op++] = OP_IDLE;
+	op.op = OP_IDLE;
+	op.arg.psz=NULL;
+	push_op(&op);
 	break;
       case 'm': 
-	operation[last_op++] = OP_MCN;
+	op.op = OP_MCN;
+	op.arg.psz=NULL;
+	push_op(&op);
 	break;
       case 's': 
-	opts.i_speed = atoi(optarg); 
-	operation[last_op++] = OP_SPEED;
+	op.op = OP_SPEED;
+	op.arg.i_num=atoi(optarg);
+	push_op(&op);
 	break;
       case 'S': 
-	opts.i_speed = 176 * atoi(optarg); 
-	operation[last_op++] = OP_SPEED;
+	op.op = OP_SPEED;
+	op.arg.i_num=176 * atoi(optarg);
+	push_op(&op);
 	break;
       case 'V':
         print_version(program_name, VERSION, 0, true);
@@ -159,13 +201,13 @@ parse_options (int argc, char *argv[])
 	exit(EXIT_INFO);
 	break;
 	
-      case OP_USAGE:
+      case OPT_USAGE:
 	fprintf(stderr, usageText, program_name);
 	free(program_name);
 	exit(EXIT_FAILURE);
 	break;
 
-      case OP_HANDLED:
+      case OPT_HANDLED:
 	break;
       }
 
@@ -211,15 +253,16 @@ main(int argc, char *argv[])
   } 
 
   for (i=0; i < last_op; i++) {
-    switch (operation[i]) {
+    const operation_t *p_op = &operation[i];
+    switch (p_op->op) {
     case OP_SPEED:
-      rc = mmc_set_speed(p_cdio, opts.i_speed);
+      rc = mmc_set_speed(p_cdio, p_op->arg.i_num);
       report(stdout, "%s (mmc_set_speed): %s\n", program_name, 
 	     cdio_driver_errmsg(rc));
       break;
     case OP_BLOCKSIZE:
-      if (opts.i_blocksize) {
-	driver_return_code_t rc = mmc_set_blocksize(p_cdio, opts.i_blocksize);
+      if (p_op->arg.i_num) {
+	driver_return_code_t rc = mmc_set_blocksize(p_cdio, p_op->arg.i_num);
 	report(stdout, "%s (mmc_set_blocksize): %s\n", program_name, 
 	       cdio_driver_errmsg(rc));
       } else {
@@ -233,10 +276,19 @@ main(int argc, char *argv[])
 	}
       }
       break;
+#if 0
+    case OP_CLOSETRAY:
+      rc = mmc_close_tray(p_cdio, op.arg.psz);
+      report(stdout, "%s (mmc_close_tray): %s\n", program_name, 
+	     cdio_driver_errmsg(rc));
+      free(p_op->arg.psz);
+      break;
+#endif
     case OP_EJECT:
       rc = mmc_eject_media(p_cdio);
       report(stdout, "%s (mmc_eject_media): %s\n", program_name, 
 	     cdio_driver_errmsg(rc));
+      if (p_op->arg.psz) free(p_op->arg.psz);
       break;
     case OP_IDLE:
       rc = mmc_start_stop_media(p_cdio, false, false, true);
