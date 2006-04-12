@@ -1,5 +1,5 @@
 /*
-  $Id: mmc-tool.c,v 1.6 2006/04/12 09:30:14 rocky Exp $
+  $Id: mmc-tool.c,v 1.7 2006/04/12 14:49:21 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@cpan.org>
   
@@ -60,6 +60,7 @@ typedef enum {
   OP_CLOSETRAY,
   OP_EJECT,
   OP_IDLE,
+  OP_INQUIRY,
   OP_MODE_SENSE_2A,
   OP_MCN,
   OP_SPEED,
@@ -100,7 +101,9 @@ parse_options (int argc, char *argv[])
 
   const char* helpText =
     "Usage: %s [OPTION...]\n"
-    " Issues libcdio Multimedia commands\n"
+    " Issues libcdio Multimedia commands. Operations occur in the order\n"
+    " in which the options are given and a given operation may appear\n"
+    " more than once to have it run more than once.\n"
     "options: \n"
     "  -b, --blocksize[=INT]           set blocksize. If no block size or a \n"
     "                                  zero blocksize is given we return the\n"
@@ -110,6 +113,8 @@ parse_options (int argc, char *argv[])
     "  -c, --close drive               close drive via ALLOW_MEDIUM_REMOVAL\n"
     "  -e, --eject [drive]             eject drive via ALLOW_MEDIUM_REMOVAL\n"
     "                                  and a MMC START/STOP command\n"
+    "  -i, --inquiry                   print HW info via INQUIRY\n"
+    "                                  via MMC START/STOP command"
     "  -I, --idle                      set CD-ROM to idle or power down\n"
     "                                  via MMC START/STOP command"
     "  -m, --mcn                       get media catalog number (AKA UPC)\n"
@@ -125,12 +130,12 @@ parse_options (int argc, char *argv[])
     "  --usage                         Display brief usage message\n";
   
   const char* usageText =
-    "Usage: %s [-a|--access-mode STRING] [-m|--mode MODE-TYPE]\n"
-    "        [-s|--speed INT]\n"
+    "Usage: %s [-b|--blocksize[=INT]] [-m|--mcn]\n"
+    "        [-I|--idle] [-I|inquiry] [-m[-s|--speed-KB INT]\n"
     "        [-V|--version] [-?|--help] [--usage]\n";
   
   /* Command-line options */
-  const char* optionsString = "b::c:C::e::Is:V?";
+  const char* optionsString = "b::c:C::e::Iis:V?";
   struct option optionsTable[] = {
   
     {"blocksize", optional_argument, &i_blocksize, 'b' },
@@ -138,6 +143,7 @@ parse_options (int argc, char *argv[])
     {"drive-cap", optional_argument, NULL, 'C'},
     {"eject", optional_argument, NULL, 'e'},
     {"idle", no_argument, NULL, 'I'},
+    {"inquiry", no_argument, NULL, 'i'},
     {"mcn",   no_argument, NULL, 'm'},
     {"speed-KB", required_argument, NULL, 's'},
     {"speed-X",  required_argument, NULL, 'S'},
@@ -182,6 +188,11 @@ parse_options (int argc, char *argv[])
 	op.op = OP_EJECT;
 	op.arg.psz=NULL;
 	if (optarg) op.arg.psz = strdup(optarg);
+	push_op(&op);
+	break;
+      case 'i': 
+	op.op = OP_INQUIRY;
+	op.arg.psz=NULL;
 	push_op(&op);
 	break;
       case 'I': 
@@ -484,6 +495,19 @@ main(int argc, char *argv[])
       report(stdout, "%s (mmc_start_stop_media - powerdown): %s\n", 
 	     program_name, cdio_driver_errmsg(rc));
       break;
+    case OP_INQUIRY: 
+      {
+	cdio_hwinfo_t hw_info = { "", "", ""}; 
+	if (mmc_get_hwinfo(p_cdio, &hw_info)) {
+	  printf("%-8s: %s\n%-8s: %s\n%-8s: %s\n",
+		 "Vendor"  , hw_info.psz_vendor, 
+		 "Model"   , hw_info.psz_model, 
+		 "Revision", hw_info.psz_revision);
+	} else {
+	  report(stdout, "%s (mmc_gpcmd_inquiry error)\n", program_name);
+	}
+      }
+      break;
     case OP_MCN: 
       {
 	char *psz_mcn = mmc_get_mcn(p_cdio);
@@ -493,7 +517,6 @@ main(int argc, char *argv[])
 	} else
 	  report(stdout, "%s (mmc_get_mcn): can't retrieve\n", program_name);
       }
-      
       break;
     default:
       ;
