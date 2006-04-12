@@ -1,5 +1,5 @@
 /*
-  $Id: mmc-tool.c,v 1.7 2006/04/12 14:49:21 rocky Exp $
+  $Id: mmc-tool.c,v 1.8 2006/04/12 14:55:27 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@cpan.org>
   
@@ -113,10 +113,9 @@ parse_options (int argc, char *argv[])
     "  -c, --close drive               close drive via ALLOW_MEDIUM_REMOVAL\n"
     "  -e, --eject [drive]             eject drive via ALLOW_MEDIUM_REMOVAL\n"
     "                                  and a MMC START/STOP command\n"
-    "  -i, --inquiry                   print HW info via INQUIRY\n"
-    "                                  via MMC START/STOP command"
     "  -I, --idle                      set CD-ROM to idle or power down\n"
-    "                                  via MMC START/STOP command"
+    "                                  via MMC START/STOP command\n"
+    "  -i, --inquiry                   print HW info via INQUIRY\n"
     "  -m, --mcn                       get media catalog number (AKA UPC)\n"
     "  -s, --speed-KB=INT              Set drive speed to SPEED K bytes/sec\n"
     "                                  Note: 1x = 176 KB/s          \n"
