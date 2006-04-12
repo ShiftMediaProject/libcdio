@@ -1,4 +1,4 @@
-$Id: README,v 1.23 2006/04/03 18:50:46 rocky Exp $
+$Id: README,v 1.24 2006/04/12 10:17:49 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -69,6 +69,12 @@ sample4.c:   A slightly improved sample3 program: we handle cdio logging
 
 tracks.c:    A program to list track numbers and logical sector
 	     numbers of a Compact Disc using libcdio.
+
+udf1.c:      A program to show using libudf to list files in a directory of
+	     an UDF image.
+
+udf2.c:      A program to show using libudf to extract a file from
+	     an UDF image.
 
 Many of the above programs can be compiled in C++. See that directory
 for C++ examples which include some of the above.

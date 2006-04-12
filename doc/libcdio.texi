@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.49 2006/03/06 19:39:35 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.50 2006/04/12 10:17:49 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -213,7 +213,7 @@ although there are common internal structures defined, there is no
 common syntax for representing the structures or an OS-independent
 library or API for issuing MMC-commands which a programmer would need
 to use. Instead each Operating System has its own interface.  For
-example Adaptec's ASPI or the Microsoft's DeviceIoControl on Microsoft
+example Adaptec's ASPI or Microsoft's DeviceIoControl on Microsoft
 Windows, or IOKit for Apple's OS/X, or FreeBSD's CAM. I've been
 positively awed at how many different variations and differing levels
 of complexity there are for doing basically the same thing. How easy
@@ -250,11 +250,11 @@ hardware command language is common for printers such as using
 ghostscript to private postscript emulation for a non-postscript
 printer.}
 
-Immediate of the library in this package are the Video CD authoring
-and ripping tools, VCDImager (@url{http://vcdimager.org}), a
-navigation-capable Video CD plugin and CD-DA plugins for the media
-players xine (@url{http://xinehq.de}) and videolan's vlc
-(@url{http://videolan.org/vlc}).
+The first use of the library in this package are the Video CD
+authoring and ripping tools, VCDImager
+(@url{http://vcdimager.org}). See
+@url{http://www.gnu.org/software/libcdio/projects.html} for a list of
+projects using @command{libcdio}.
 
 A version of the CD-DA extraction tool cdparanoia
 (@url{http://www.xiph.org/paranoia} and its library which corrects
@@ -1715,6 +1715,23 @@ Descriptions of the sample are as follows...
 
 @table @code 
 
+@item @code{cdchange.c}
+
+A program to test if a CD has been changed since the last change test.
+
+@item @code{cdtext.c}
+
+A program to show CD-Text and CD disc mode info.
+
+@item @code{drives.c}
+
+A program to show drivers installed and what the default CD-ROM drive
+is and what CD drives are available.
+
+@item @code{eject.c}
+
+A program eject a CD from a CD-ROM drive and then close the door again.
+
 @item @code{iso1.c}
 
 A program to show using @code{libiso9660} to list files in a
@@ -1742,26 +1759,9 @@ image.
 
 The same program as @code{iso3.c} written in C++.
 
-@item @code{cdtext.c}
+@item @code{isofuzzy.c}
 
-A program to show CD-Text and CD disc mode info.
-
-@item @code{drives.c}
-
-A program to show drivers installed and what the default CD-ROM drive
-is and what CD drives are available.
-
-@item @code{paranoia.c}
-
-A program to show using libcdio's version of the CD-DA paranoia. 
-
-@item @code{paranoia2.c}
-
-A program to show using libcdio's version of the CD-DA paranoia
-library. But in this version, we'll open a cdio object before calling
-paranoia's open. I imagine in many cases such as media players this
-may be what will be done since, one may want to get CDDB/CD-Text info
-beforehand. 
+A program showing fuzzy ISO-9660 detection/reading.
 
 @item @code{mmc1.c}
 
@@ -1776,9 +1776,26 @@ The same program as @code{mmc1.c} written in C++.
 A more involved MMC command to list CD and drive features from a
 SCSI-MMC @code{GET_CONFIGURATION} command.
 
+@item @code{mmc2a.c}
+
+Prints MMC @command{MODE_SENSE} page 2A paramaters. 
+Page 2a are the CD/DVD Capabilities and Mechanical Status.
+
 @item @code{C++/mmc2.cpp}
 
 The same program as @code{mmc2.c} written in C++.
+
+@item @code{paranoia.c}
+
+A program to show using libcdio's version of the CD-DA paranoia. 
+
+@item @code{paranoia2.c}
+
+A program to show using libcdio's version of the CD-DA paranoia
+library. But in this version, we'll open a cdio object before calling
+paranoia's open. I imagine in many cases such as media players this
+may be what will be done since, one may want to get CDDB/CD-Text info
+beforehand. 
 
 @item @code{tracks.c}
 
@@ -1799,6 +1816,15 @@ the kind of CD image we've got.
 
  A slightly improved sample3 program: we handle cdio logging and take
 an optional CD-location.
+
+@item @code{udf1.c}
+
+A program to show using libudf to list files in a directory of an UDF
+image.
+
+@item @code{udf2.c}
+
+A program to show using libudf to extract a file from an UDF image.
 
 @end table
 
