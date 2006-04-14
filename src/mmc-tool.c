@@ -1,5 +1,5 @@
 /*
-  $Id: mmc-tool.c,v 1.8 2006/04/12 14:55:27 rocky Exp $
+  $Id: mmc-tool.c,v 1.9 2006/04/14 22:17:08 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@cpan.org>
   
@@ -422,7 +422,7 @@ main(int argc, char *argv[])
 {
   CdIo_t *p_cdio;
 
-  driver_return_code_t rc;
+  driver_return_code_t rc = DRIVER_OP_SUCCESS;
   unsigned int i;
 
   init(argv[0]);

@@ -177,6 +177,7 @@ debug_cdio_mmc_read_sub_state
 discmode2str
 mmc_audio_read_subchannel
 mmc_audio_state2str
+mmc_close_tray
 mmc_eject_media
 mmc_feature2str
 mmc_feature_profile2str

@@ -1,5 +1,5 @@
 /*
-    $Id: cdda-player.c,v 1.47 2006/04/07 02:32:03 rocky Exp $
+    $Id: cdda-player.c,v 1.48 2006/04/14 22:17:08 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -352,7 +352,7 @@ set_volume_level(CdIo_t *p_cdio, uint8_t i_level)
     audio_volume.level[i] = i_new_level;
   }
   
-  cdio_audio_set_volume(p_cdio, &audio_volume);
+  rc = cdio_audio_set_volume(p_cdio, &audio_volume);
   if ( DRIVER_OP_SUCCESS != rc ) {
     /* If we can't do a get volume, audio_volume.level is used as
        a second-best guess. But if this set failed restore it to 
