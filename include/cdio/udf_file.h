@@ -1,5 +1,5 @@
 /*  
-    $Id: udf_file.h,v 1.9 2006/04/12 09:30:14 rocky Exp $
+    $Id: udf_file.h,v 1.10 2006/04/14 21:09:55 rocky Exp $
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
     This program is free software; you can redistribute it and/or modify
@@ -86,8 +86,8 @@ extern "C" {
     If count is zero, read() returns zero and has no other results. If
     count is greater than SSIZE_MAX, the result is unspecified.
   */
-  driver_return_code_t udf_read_block(const udf_dirent_t *p_udf_dirent, 
-				      void * buf, size_t count);
+  ssize_t udf_read_block(const udf_dirent_t *p_udf_dirent, 
+			 void * buf, size_t count);
 
   /**
     Advances p_udf_direct to the the next directory entry in the
