@@ -1,7 +1,7 @@
 /*
-    $Id: udf_fs.c,v 1.18 2006/04/11 06:46:29 rocky Exp $
+    $Id: udf_fs.c,v 1.19 2006/04/15 03:05:14 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

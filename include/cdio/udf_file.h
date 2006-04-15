@@ -1,5 +1,5 @@
 /*  
-    $Id: udf_file.h,v 1.10 2006/04/14 21:09:55 rocky Exp $
+    $Id: udf_file.h,v 1.11 2006/04/15 03:05:14 rocky Exp $
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
     This program is free software; you can redistribute it and/or modify
@@ -71,7 +71,8 @@ extern "C" {
   /**
      Attempts to read up to count bytes from UDF directory entry
      p_udf_dirent into the buffer starting at buf. buf should be a
-     multiple of UDF_BLOCKSIZE bytes.
+     multiple of UDF_BLOCKSIZE bytes. Reading continues after the
+     point at which we last read or from the beginning the first time.
      
      If count is zero, read() returns zero and has no other results. If
      count is greater than SSIZE_MAX, the result is unspecified.

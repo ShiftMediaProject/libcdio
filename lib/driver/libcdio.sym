@@ -157,6 +157,7 @@ cdio_set_drive_speed
 cdio_set_speed
 cdio_stdio_destroy
 cdio_stdio_new
+cdio_stream_getpos
 cdio_stream_read
 cdio_stream_seek
 cdio_to_bcd8

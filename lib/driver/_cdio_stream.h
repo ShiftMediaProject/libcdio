@@ -1,8 +1,9 @@
 /*
-    $Id: _cdio_stream.h,v 1.3 2005/02/05 04:25:14 rocky Exp $
+    $Id: _cdio_stream.h,v 1.4 2006/04/15 03:05:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
+    <rocky@cpan.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -57,10 +58,22 @@ extern "C" {
     cdio_data_free_t free;
   } cdio_stream_io_functions;
   
+  /**
+     Like 3 fgetpos.
+     
+     This function gets the current file position indicator for the stream
+     pointed to by stream.  
+     
+     @return unpon successful completion, return value is positive, else,
+     the global variable errno is set to indicate the error.
+  */
+  ssize_t cdio_stream_getpos(CdioDataSource_t* p_obj, 
+                             /*out*/ ssize_t *i_offset);
+  
   CdioDataSource_t *
   cdio_stream_new(void *user_data, const cdio_stream_io_functions *funcs);
 
-  /*!
+  /**
      Like fread(3) and in fact may be the same.
 
      DESCRIPTION:
@@ -77,10 +90,10 @@ extern "C" {
      We do not distinguish between end-of-file and error, and callers
      must use feof(3) and ferror(3) to determine which occurred.
   */
-  long cdio_stream_read(CdioDataSource_t* p_obj, void *ptr, long i_size, 
-                        long nmemb);
+  ssize_t cdio_stream_read(CdioDataSource_t* p_obj, void *ptr, long i_size, 
+                           long nmemb);
   
-  /*! 
+  /** 
     Like fseek(3) and in fact may be the same.
 
     This  function sets the file position indicator for the stream
@@ -96,17 +109,17 @@ extern "C" {
     DRIVER_OP_ERROR is returned and the global variable errno is set to
     indicate the error.
    */
-  driver_return_code_t cdio_stream_seek(CdioDataSource_t *p_obj, long offset, 
-                                        int whence);
+  ssize_t cdio_stream_seek(CdioDataSource_t *p_obj, ssize_t i_offset, 
+                           int whence);
   
-  /*!
+  /**
     Return whatever size of stream reports, I guess unit size is bytes. 
     On error return -1;
   */
-  long int cdio_stream_stat(CdioDataSource_t *p_obj);
+  ssize_t cdio_stream_stat(CdioDataSource_t *p_obj);
   
-  /*!
-    Deallocate resources assocaited with p_obj. After this p_obj is unusable.
+  /**
+    Deallocate resources associated with p_obj. After this p_obj is unusable.
   */
   void cdio_stream_destroy(CdioDataSource_t *p_obj);
   

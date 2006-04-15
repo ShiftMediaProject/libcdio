@@ -1,5 +1,5 @@
 /*
-    $Id: udf_private.h,v 1.8 2006/04/11 05:47:58 rocky Exp $
+    $Id: udf_private.h,v 1.9 2006/04/15 03:05:14 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rockyb@users.sourceforge.net>
 
@@ -34,8 +34,8 @@
 
 struct udf_s {
   bool          b_stream;         /* Use stream pointer, else use 
-				    p_cdio.
-				  */
+				    p_cdio.  */
+  ssize_t               i_position; /* Position in file if positive. */
   CdioDataSource_t      *stream;  /* Stream pointer if stream */
   CdIo_t                *cdio;    /* Cdio pointer if read device */
   anchor_vol_desc_ptr_t anchor_vol_desc_ptr;

@@ -1,5 +1,5 @@
 /*
-    $Id: udf_file.c,v 1.9 2006/04/11 05:47:58 rocky Exp $
+    $Id: udf_file.c,v 1.10 2006/04/15 03:05:14 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rockyb@users.sourceforge.net>
 
@@ -99,7 +99,8 @@ udf_is_dir(const udf_dirent_t *p_udf_dirent)
 /**
   Attempts to read up to count bytes from UDF directory entry
   p_udf_dirent into the buffer starting at buf. buf should be a
-  multiple of UDF_BLOCKSIZE bytes.
+  multiple of UDF_BLOCKSIZE bytes. Reading continues after the point
+  at which we last read or from the beginning the first time.
 
   If count is zero, read() returns zero and has no other results. If
   count is greater than SSIZE_MAX, the result is unspecified.
@@ -112,7 +113,7 @@ udf_read_block(const udf_dirent_t *p_udf_dirent, void * buf, size_t count)
 {
   if (count == 0) return 0;
   else {
-    const udf_t *p_udf = p_udf_dirent->p_udf;
+    udf_t *p_udf = p_udf_dirent->p_udf;
     uint8_t data[UDF_BLOCKSIZE];
     const udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) data;
     driver_return_code_t ret;
@@ -123,6 +124,9 @@ udf_read_block(const udf_dirent_t *p_udf_dirent, void * buf, size_t count)
       if (!udf_checktag(&p_udf_fe->tag, TAGID_FILE_ENTRY)) {
 	uint32_t i_lba_start, i_lba_end;
 	udf_get_lba( p_udf_fe, &i_lba_start, &i_lba_end);
+
+	/* set i_lba_start to position of where we last left off. */
+	i_lba_start += (p_udf->i_position / UDF_BLOCKSIZE);
 	
 	if ( (i_lba_end - i_lba_start+1) < count ) {
 	  printf("Warning: don't know how to handle yet\n" );
@@ -131,7 +135,9 @@ udf_read_block(const udf_dirent_t *p_udf_dirent, void * buf, size_t count)
 	  const uint32_t i_lba = p_udf->i_part_start+i_lba_start;
 	  ret = udf_read_sectors(p_udf, buf, i_lba, count);
 	  if (DRIVER_OP_SUCCESS == ret) {
-	    return MIN(i_file_length, count * UDF_BLOCKSIZE);
+	    ssize_t i_read_len = MIN(i_file_length, count * UDF_BLOCKSIZE);
+	    p_udf->i_position += i_read_len;
+	    return i_read_len;
 	  }
 	}
 	
