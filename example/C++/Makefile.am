@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.8 2006/04/15 15:45:25 rocky Exp $
+#   $Id: Makefile.am,v 1.9 2006/04/15 16:16:05 rocky Exp $
 #
 #    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 #
@@ -25,7 +25,7 @@ SUBDIRS = OO
 if BUILD_CD_PARANOIA
 paranoia_progs = paranoia paranoia2
 endif
-noinst_PROGRAMS = device eject isolist isofile2 isofile \
+noinst_PROGRAMS = device eject isofile isofile2 isolist \
 	          mmc1 mmc2 $(paranoia_progs)
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
