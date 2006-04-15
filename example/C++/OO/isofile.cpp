@@ -1,7 +1,7 @@
 /*
-  $Id: iso3.cpp,v 1.3 2006/03/02 18:46:30 rocky Exp $
+  $Id: isofile.cpp,v 1.1 2006/04/15 16:12:51 rocky Exp $
 
-  Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  */
 
 /* This is the ISO 9660 image. */
-#define ISO9660_IMAGE_PATH "../../"
+#define ISO9660_IMAGE_PATH "../../../"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
 
 #define LOCAL_FILENAME "copying"
@@ -39,8 +39,7 @@
 #include "portable.h"
 
 #include <sys/types.h>
-#include <cdio/cdio.h>
-#include <cdio/iso9660.h>
+#include <cdio++/iso9660.hpp>
 
 #include <stdio.h>
 
@@ -64,19 +63,19 @@
 
 #define my_exit(rc)				\
   fclose (p_outfd);				\
-  free(p_statbuf);				\
-  iso9660_close(p_iso);				\
+  delete (p_stat);				\
+  delete (p_iso);				\
   return rc;					\
 
 int
 main(int argc, const char *argv[])
 {
-  iso9660_stat_t *p_statbuf;
+  ISO9660::Stat *p_stat;
   FILE *p_outfd;
   int i;
   char const *psz_image;
   char const *psz_fname;
-  iso9660_t *p_iso;
+  ISO9660::IFS *p_iso = new ISO9660::IFS;
 
   if (argc > 3) {
     printf("usage %s [ISO9660-image.ISO [filename]]\n", argv[0]);
@@ -94,43 +93,41 @@ main(int argc, const char *argv[])
   else 
     psz_fname = LOCAL_FILENAME;
 
-  p_iso = iso9660_open (psz_image);
-  
-  if (NULL == p_iso) {
+  if (!p_iso->open(psz_image)) {
     fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", psz_image);
     return 1;
   }
 
-  p_statbuf = iso9660_ifs_stat_translate (p_iso, psz_fname);
+  p_stat = p_iso->stat(psz_fname, true);
 
-  if (NULL == p_statbuf) 
+  if (!p_stat) 
     {
       fprintf(stderr, 
 	      "Could not get ISO-9660 file information for file %s\n",
 	      psz_fname);
-      iso9660_close(p_iso);
+      delete(p_iso);
       return 2;
     }
 
   if (!(p_outfd = fopen (psz_fname, "wb")))
     {
       perror ("fopen()");
-      free(p_statbuf);
-      iso9660_close(p_iso);
+      delete (p_stat);
+      delete (p_iso);
       return 3;
     }
 
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
   {
-    const unsigned int i_blocks = CEILING(p_statbuf->size, ISO_BLOCKSIZE);
+    const unsigned int i_blocks = CEILING(p_stat->p_stat->size, ISO_BLOCKSIZE);
     for (i = 0; i < i_blocks ; i++) 
     {
       char buf[ISO_BLOCKSIZE];
-      const lsn_t lsn = p_statbuf->lsn + i;
+      const lsn_t lsn = p_stat->p_stat->lsn + i;
 
       memset (buf, 0, ISO_BLOCKSIZE);
       
-      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (p_iso, buf, lsn, 1) )
+      if ( ISO_BLOCKSIZE != p_iso->seek_read (buf, lsn, 1) )
       {
 	fprintf(stderr, "Error reading ISO 9660 file %s at LSN %lu\n",
 		psz_fname, (long unsigned int) lsn);
@@ -152,7 +149,7 @@ main(int argc, const char *argv[])
   /* Make sure the file size has the exact same byte size. Without the
      truncate below, the file will a multiple of ISO_BLOCKSIZE.
    */
-  if (ftruncate (fileno (p_outfd), p_statbuf->size))
+  if (ftruncate (fileno (p_outfd), p_stat->p_stat->size))
     perror ("ftruncate()");
 
   printf("Extraction of file '%s' from %s successful.\n", 

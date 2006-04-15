@@ -1,7 +1,7 @@
 /*
-  $Id: iso2.cpp,v 1.7 2006/03/02 18:46:30 rocky Exp $
+  $Id: isofile2.cpp,v 1.1 2006/04/15 16:12:51 rocky Exp $
 
-  Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,24 +18,18 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Simple program to show using libiso9660 to extract a file from a
-   CUE/BIN CD image.
+/* Simple program to show using libiso9660 to extract a file from an
+   ISO-9660 image.
 
-   If a single argument is given, it is used as the CUE file of a CD image
-   to use. Otherwise a compiled-in default image name (that
-   comes with the libcdio distribution) will be used.
-
-   This program can be compiled with either a C or C++ compiler. In 
-   the distribution we prefer C++ just to make sure we haven't broken
-   things on the C++ side.
+   If a single argument is given, it is used as the ISO 9660 image to
+   use in the extraction. Otherwise a compiled in default ISO 9660 image
+   name (that comes with the libcdio distribution) will be used.
  */
 
-/* This is the CD-image with an ISO-9660 filesystem */
+/* This is the ISO 9660 image. */
 #define ISO9660_IMAGE_PATH "../../"
-#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/isofs-m1.cue"
+#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
 
-#define ISO9660_PATH "/"
-#define ISO9660_FILENAME "COPYING"
 #define LOCAL_FILENAME "copying"
 
 #ifdef HAVE_CONFIG_H
@@ -44,20 +38,17 @@
 
 #include "portable.h"
 
+#include <sys/types.h>
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
 
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
+#include <stdio.h>
+
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
 #endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
-#ifdef HAVE_STDIO_H
-#include <stdio.h>
-#endif
-#ifdef HAVE_ERRNO_H
-#include <errno.h>
 #endif
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -74,25 +65,22 @@
 #define my_exit(rc)				\
   fclose (p_outfd);				\
   free(p_statbuf);				\
-  cdio_destroy(p_cdio);				\
+  iso9660_close(p_iso);				\
   return rc;					\
-  
 
 int
 main(int argc, const char *argv[])
 {
   iso9660_stat_t *p_statbuf;
   FILE *p_outfd;
-  unsigned int i;
+  int i;
   char const *psz_image;
   char const *psz_fname;
-  char translated_name[256];
-  char untranslated_name[256] = ISO9660_PATH;
-  CdIo_t *p_cdio;
-  
+  iso9660_t *p_iso;
+
   if (argc > 3) {
-    printf("usage %s [CD-ROM-or-image [filename]]\n", argv[0]);
-    printf("Extracts filename from CD-ROM-or-image.\n");
+    printf("usage %s [ISO9660-image.ISO [filename]]\n", argv[0]);
+    printf("Extracts filename from ISO-9660-image.ISO.\n");
     return 1;
   }
   
@@ -104,65 +92,60 @@ main(int argc, const char *argv[])
   if (argc > 2) 
     psz_fname = argv[2];
   else 
-    psz_fname = ISO9660_FILENAME;
+    psz_fname = LOCAL_FILENAME;
 
-  strcat(untranslated_name, psz_fname);
-
-  p_cdio = cdio_open (psz_image, DRIVER_UNKNOWN);
-  if (!p_cdio) {
-    fprintf(stderr, "Sorry, couldn't open %s\n", psz_image);
+  p_iso = iso9660_open (psz_image);
+  
+  if (NULL == p_iso) {
+    fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", psz_image);
     return 1;
   }
 
-  p_statbuf = iso9660_fs_stat (p_cdio, untranslated_name);
+  p_statbuf = iso9660_ifs_stat_translate (p_iso, psz_fname);
 
   if (NULL == p_statbuf) 
     {
       fprintf(stderr, 
 	      "Could not get ISO-9660 file information for file %s\n",
-	      untranslated_name);
-      cdio_destroy(p_cdio);
+	      psz_fname);
+      iso9660_close(p_iso);
       return 2;
     }
 
-  iso9660_name_translate(psz_fname, translated_name);
-  
-  if (!(p_outfd = fopen (translated_name, "wb")))
+  if (!(p_outfd = fopen (psz_fname, "wb")))
     {
       perror ("fopen()");
-      cdio_destroy(p_cdio);
       free(p_statbuf);
+      iso9660_close(p_iso);
       return 3;
     }
 
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
   {
     const unsigned int i_blocks = CEILING(p_statbuf->size, ISO_BLOCKSIZE);
-    for (i = 0; i < i_blocks; i ++)
+    for (i = 0; i < i_blocks ; i++) 
+    {
+      char buf[ISO_BLOCKSIZE];
+      const lsn_t lsn = p_statbuf->lsn + i;
+
+      memset (buf, 0, ISO_BLOCKSIZE);
+      
+      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (p_iso, buf, lsn, 1) )
       {
-	char buf[ISO_BLOCKSIZE];
-	const lsn_t lsn = p_statbuf->lsn + i;
-	
-	memset (buf, 0, ISO_BLOCKSIZE);
-	
-	if ( 0 != cdio_read_data_sectors (p_cdio, buf, lsn, ISO_BLOCKSIZE, 1) )
-	  {
-	    fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
-		    (long unsigned int) p_statbuf->lsn);
-	    my_exit(4);
-	  }
-	
-	
-	fwrite (buf, ISO_BLOCKSIZE, 1, p_outfd);
-	
-	if (ferror (p_outfd))
-	  {
-	    perror ("fwrite()");
-	    my_exit(5);
-	  }
+	fprintf(stderr, "Error reading ISO 9660 file %s at LSN %lu\n",
+		psz_fname, (long unsigned int) lsn);
+	my_exit(4);
       }
+      
+      fwrite (buf, ISO_BLOCKSIZE, 1, p_outfd);
+      
+      if (ferror (p_outfd))
+	{
+	  perror ("fwrite()");
+	  my_exit(5);
+	}
+    }
   }
-  
   
   fflush (p_outfd);
 
@@ -172,8 +155,8 @@ main(int argc, const char *argv[])
   if (ftruncate (fileno (p_outfd), p_statbuf->size))
     perror ("ftruncate()");
 
-  printf("Extraction of file '%s' from '%s' successful.\n", 
-	 translated_name, untranslated_name);
+  printf("Extraction of file '%s' from %s successful.\n", 
+	 psz_fname, psz_image);
 
   my_exit(0);
 }

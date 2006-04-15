@@ -1,5 +1,5 @@
 /*
-  $Id: iso1.cpp,v 1.3 2006/03/07 19:55:11 rocky Exp $
+  $Id: isolist.cpp,v 1.1 2006/04/15 16:12:51 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
   
