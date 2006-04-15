@@ -8,10 +8,10 @@ copying
 device
 drives
 eject
-iso1
-iso2
-iso3
 iso4
+isofile2
+isofile
+isolist
 mmc1
 mmc2
 tracks

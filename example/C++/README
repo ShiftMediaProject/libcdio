@@ -1,4 +1,4 @@
-$Id: README,v 1.2 2006/03/02 18:57:31 rocky Exp $
+$Id: README,v 1.3 2006/04/15 15:47:05 rocky Exp $
 
 This directory contains some simple C++ examples of the use of the libcdio
 library.
@@ -11,15 +11,15 @@ device.cpp: A program to show drivers installed and what the default
 eject.cpp:  A program eject a CD from a CD-ROM drive and then close the door
 	    again.
 
-iso1.cpp:   A program to show using libiso9660 to list files in a
-	    directory of an ISO-9660 image and give basic iso9660 
-	    information.
+isolist.cpp:   A program to show using libiso9660 to list files in a
+	       directory of an ISO-9660 image and give basic iso9660 
+	       information.
 
-iso2.cpp:   A program to show using libiso9660 to extract a file
-	    from a CDRWIN cue/bin CD image.
+isofile.cpp:  A program to show using libiso9660 to extract a file from an
+	      ISO-9660 image.
 
-iso3.cpp:   A program to show using libiso9660 to extract a file from an
-	    ISO-9660 image.
+isofile2.cpp: A program to show using libiso9660 to extract a file
+	      from a CDRWIN cue/bin CD image.
 
 mmc1.cpp:   A program to show issuing a simple MMC command (INQUIRY).
 

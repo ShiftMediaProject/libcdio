@@ -5,9 +5,9 @@ Makefile.in
 copying
 device
 eject
-iso1
-iso2
-iso3
+isolist
+isofile
+isofile2
 mmc1
 mmc2
 paranoia

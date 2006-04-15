@@ -10,8 +10,9 @@ copying
 device
 drives
 eject
-iso?
-iso?cpp
+isofile
+isofile2
+isolist
 isofuzzy
 mmc1
 mmc2
