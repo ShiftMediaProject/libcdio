@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.9 2006/04/15 16:16:05 rocky Exp $
+#   $Id: Makefile.am,v 1.10 2006/04/15 16:18:33 rocky Exp $
 #
 #    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 #
@@ -47,12 +47,12 @@ paranoia2_LDADD   = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) \
 	            $(LIBCDIO_LIBS)
 endif
 
-isolist_SOURCES   = isolist.cpp
-isolist_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 isofile_SOURCES   = isofile.cpp
 isofile_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 isofile2_SOURCES  = isofile2.cpp
 isofile2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+isolist_SOURCES   = isolist.cpp
+isolist_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
 mmc1_SOURCES      = mmc1.cpp
 mmc1_DEPENDENCIES = $(LIBCDIO_DEPS)

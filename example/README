@@ -1,4 +1,4 @@
-$Id: README,v 1.25 2006/04/15 15:45:25 rocky Exp $
+$Id: README,v 1.26 2006/04/15 16:22:49 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -29,10 +29,6 @@ drives.c:    A program to show drivers installed and what the default
 eject.c:     A program eject a CD from a CD-ROM drive and then close the door
 	     again.
 
-isolist.c:   A program to show using libiso9660 to list files in a
-	     directory of an ISO-9660 image and give basic iso9660 
-	     information.
-
 isofile.c:   A program to show using libiso9660 to extract a file from an
 	     ISO-9660 image.
 
@@ -40,6 +36,10 @@ isofile2.c:  A program to show using libiso9660 to extract a file
 	     from a CDRWIN cue/bin CD image.
 
 isofuzzy.c : A program showing fuzzy ISO-9660 detection/reading.
+
+isolist.c:   A program to show using libiso9660 to list files in a
+	     directory of an ISO-9660 image and give basic iso9660 
+	     information.
 
 mmc1.c:      A program to show issuing a simple MMC command (INQUIRY).
 
