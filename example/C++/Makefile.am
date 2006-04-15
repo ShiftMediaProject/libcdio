@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.7 2005/11/10 11:11:15 rocky Exp $
+#   $Id: Makefile.am,v 1.8 2006/04/15 15:45:25 rocky Exp $
 #
-#    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@ SUBDIRS = OO
 if BUILD_CD_PARANOIA
 paranoia_progs = paranoia paranoia2
 endif
-noinst_PROGRAMS = device eject iso1 iso2 iso3 mmc1 mmc2 $(paranoia_progs)
+noinst_PROGRAMS = device eject isolist isofile2 isofile \
+	          mmc1 mmc2 $(paranoia_progs)
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
@@ -46,12 +47,12 @@ paranoia2_LDADD   = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) \
 	            $(LIBCDIO_LIBS)
 endif
 
-iso1_SOURCES      = iso1.cpp
-iso1_LDADD        = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-iso2_SOURCES      = iso2.cpp
-iso2_LDADD        = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-iso3_SOURCES      = iso3.cpp
-iso3_LDADD        = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+isolist_SOURCES   = isolist.cpp
+isolist_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+isofile_SOURCES   = isofile.cpp
+isofile_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+isofile2_SOURCES  = isofile2.cpp
+isofile2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
 mmc1_SOURCES      = mmc1.cpp
 mmc1_DEPENDENCIES = $(LIBCDIO_DEPS)

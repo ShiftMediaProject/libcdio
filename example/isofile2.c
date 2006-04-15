@@ -1,5 +1,5 @@
 /*
-  $Id: iso2.c,v 1.12 2006/03/18 01:28:13 rocky Exp $
+  $Id: isofile2.c,v 1.1 2006/04/15 15:45:25 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   

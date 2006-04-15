@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.9 2006/03/07 19:55:11 rocky Exp $
+#   $Id: Makefile.am,v 1.10 2006/04/15 15:45:25 rocky Exp $
 #
 #    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -21,7 +21,7 @@
 ############################################################
 #
 noinst_PROGRAMS = cdtext device drives eject \
-	          iso1 iso2 iso3 iso4 mmc1 mmc2 tracks
+	          isolist isofile isofile2 iso4 mmc1 mmc2 tracks
 
 INCLUDES = -I$(top_srcdir)/include $(LIBCDIO_CFLAGS)
 
@@ -41,16 +41,16 @@ eject_SOURCES       = eject.cpp
 eject_DEPENDENCIES  = $(LIBCDIO_DEPS)
 eject_LDADD         = $(LIBCDIOPP_LIBS) $(LIBCDIO_LIBS)
 
-iso1_SOURCES        = iso1.cpp
-iso1_LDADD          = $(LIBISO9660PP_LIBS) $(LIBISO9660_LIBS) \
+isolist_SOURCES     = isolist.cpp
+isolist_LDADD       = $(LIBISO9660PP_LIBS) $(LIBISO9660_LIBS) \
 	              $(LIBCDIOPP_LIBS) $(LIBICONV)
 
-iso2_SOURCES        = iso2.cpp
-iso2_LDADD          = $(LIBISO9660PP_LIBS) $(LIBISO9660_LIBS) \
+isofile_SOURCES     = isofile.cpp
+isofile_LDADD       = $(LIBISO9660PP_LIBS) $(LIBISO9660_LIBS) \
 	              $(LIBCDIOPP_LIBS) $(LIBICONV)
 
-iso3_SOURCES        = iso3.cpp
-iso3_LDADD          = $(LIBISO9660PP_LIBS) $(LIBISO9660_LIBS) \
+isofile2_SOURCES    = isofile2.cpp
+isofile2_LDADD      = $(LIBISO9660PP_LIBS) $(LIBISO9660_LIBS) \
 	              $(LIBCDIOPP_LIBS) $(LIBICONV)
 
 iso4_SOURCES        = iso4.cpp
