@@ -67,12 +67,6 @@ typedef enum {
   UDF_VOLSET_ID_SIZE =  128
 } ecma_167_enum1_t ;
 
-/** This variable is trickery to force the above enum symbol values to
-    be recorded in debug symbol tables. It is used to allow one refer
-    to above enumeration values in a debugger and debugger
-    expressions */
-extern ecma_167_enum1_t debug_ecma_167_enums1;
-
 /** Tag Identifier (ECMA 167r3 3/7.2.1) */
 
 typedef enum {
@@ -160,12 +154,6 @@ typedef enum {
   TIMESTAMP_TYPE_MASK       =   0xF000,
   TIMESTAMP_TIMEZONE_MASK   =	0x0FFF,
 } ecma_167_timezone_enum_t ;
-
-/** This variable is trickery to force the above enum symbol values to
-    be recorded in debug symbol tables. It is used to allow one refer
-    to above enumeration values in a debugger and debugger
-    expressions */
-extern ecma_167_timezone_enum_t debug_ecma_167_timezone_enum;
 
 
 #define TIMESTAMP_TYPE_MASK		0xF000
@@ -990,9 +978,15 @@ PRAGMA_END_PACKED
     allow one refer to the enumeration value names in the typedefs
     above in a debugger and in debugger expressions.
 */
-extern file_characteristics_t  debug_file_characteristics;
-extern tag_id_t                debug_tagid;
-extern icbtag_file_type_enum_t debug_icbtag_file_type_enum;
-extern icbtag_flag_enum_t      debug_flag_enum;
-
+typedef union
+{
+  tag_id_t                 debug_tagid;
+  file_characteristics_t   debug_file_characteristics;
+  icbtag_file_type_enum_t  debug_icbtag_file_type_enum;
+  icbtag_flag_enum_t       debug_flag_enum;
+  ecma_167_enum1_t         debug_ecma_167_enum1;
+  ecma_167_timezone_enum_t debug_ecma_167_timezone_enum;
+} debug_ecma167_t;
+extern debug_ecma167_t debug_ecma_167;
+  
 #endif /* _ECMA_167_H */

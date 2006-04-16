@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.50 2006/04/12 10:17:49 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.51 2006/04/16 02:34:08 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -1732,14 +1732,14 @@ is and what CD drives are available.
 
 A program eject a CD from a CD-ROM drive and then close the door again.
 
-@item @code{iso1.c}
+@item @code{isolist.c}
 
 A program to show using @code{libiso9660} to list files in a
 	directory of an ISO-9660 image.
 
-@item @code{C++/iso1.cpp}
+@item @code{C++/isolist.cpp}
 
-The same program as @code{iso1.c} written in C++.
+The same program as @code{isolist.c} written in C++.
 
 @item @code{iso2.c}
 

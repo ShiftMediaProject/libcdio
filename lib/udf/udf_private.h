@@ -1,5 +1,5 @@
 /*
-    $Id: udf_private.h,v 1.9 2006/04/15 03:05:14 rocky Exp $
+    $Id: udf_private.h,v 1.10 2006/04/16 02:34:10 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rockyb@users.sourceforge.net>
 
@@ -60,6 +60,7 @@ struct udf_dirent_s
   uint8_t           *sector;
   udf_file_entry_t   fe;
   udf_fileid_desc_t *fid;
+  uint8_t data[UDF_BLOCKSIZE];
 };
 
 bool udf_get_lba(const udf_file_entry_t *p_udf_fe, 

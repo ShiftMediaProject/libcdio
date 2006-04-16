@@ -1,5 +1,5 @@
 /*  
-    $Id: udf.h,v 1.20 2006/01/14 09:44:53 rocky Exp $
+    $Id: udf.h,v 1.21 2006/04/16 02:34:10 rocky Exp $
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
     This program is free software; you can redistribute it and/or modify
@@ -51,7 +51,7 @@ typedef enum {
     be recorded in debug symbol tables. It is used to allow one refer
     to above enumeration values in a debugger and debugger
     expressions */
-extern udf_enum1_t debug_udf_enums1;
+extern udf_enum1_t debug_udf_enum1;
 
 #ifdef __cplusplus
 extern "C" {

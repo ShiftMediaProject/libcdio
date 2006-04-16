@@ -1,5 +1,5 @@
 /*
-    $Id: udf_file.c,v 1.10 2006/04/15 03:05:14 rocky Exp $
+    $Id: udf_file.c,v 1.11 2006/04/16 02:34:10 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rockyb@users.sourceforge.net>
 
@@ -29,7 +29,7 @@
 
 #include <stdio.h>  /* Remove when adding cdio/logging.h */
 
-#define MIN(a, b) (a>b) ? (a) : (b)
+#define MIN(a, b) (a<b) ? (a) : (b)
 
 const char *
 udf_get_filename(const udf_dirent_t *p_udf_dirent)
@@ -113,14 +113,18 @@ udf_read_block(const udf_dirent_t *p_udf_dirent, void * buf, size_t count)
 {
   if (count == 0) return 0;
   else {
+    /* FIXME this code seems a bit convoluted. */
     udf_t *p_udf = p_udf_dirent->p_udf;
-    uint8_t data[UDF_BLOCKSIZE];
-    const udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) data;
+    const udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) p_udf_dirent->data;
     driver_return_code_t ret;
     const unsigned long int i_file_length = udf_get_file_length(p_udf_dirent);
-    
-    ret = udf_read_sectors(p_udf, data, p_udf_dirent->fe.unique_ID, 1);
-    if (ret == DRIVER_OP_SUCCESS) {
+
+    if (0 == p_udf->i_position) {
+      ret = udf_read_sectors(p_udf, p_udf_dirent->data, 
+			     p_udf_dirent->fe.unique_ID, 1);
+      if (ret != DRIVER_OP_SUCCESS) return DRIVER_OP_ERROR;
+    } 
+    {
       if (!udf_checktag(&p_udf_fe->tag, TAGID_FILE_ENTRY)) {
 	uint32_t i_lba_start, i_lba_end;
 	udf_get_lba( p_udf_fe, &i_lba_start, &i_lba_end);
@@ -140,9 +144,6 @@ udf_read_block(const udf_dirent_t *p_udf_dirent, void * buf, size_t count)
 	    return i_read_len;
 	  }
 	}
-	
-      } else {
-	return DRIVER_OP_ERROR;
       }
     }
     return ret;
