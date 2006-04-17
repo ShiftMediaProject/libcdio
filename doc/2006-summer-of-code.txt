@@ -35,7 +35,7 @@
    
    UDF (Universal Data File) is used for example in DVD discs and
    Data. It will be used by in the new Blue-Ray technology. Think of
-   it as a modernized Unicode version of the old ISO 9660 standard).
+   it as a modernized Unicode version of the old ISO 9660 standard.
 
    UDF support is probably the most often requested missing feature of
    libcdio.  Some work has been done to define the UDF structures and
@@ -88,28 +88,9 @@
    [Burkhard Plaum has might want to mentor this. If so he should
    write a more detailed description than given above]
 
-8. libcdio API overhaul. 
-
-   The current C API is ugly and it has become apparent if you compare
-   some of the OO interfaces to C API. Some deliberately missing routines
-
-   * read_mode1, read_mode2, and read_audio routines which are 
-     combined into a single read audio routine. 
-   * cdio_have_xxx (where xxx is aix, bsdi, etc) routines which are
-     subsumed by a cdio_have_driver suffices. 
-
-   The "mode_access" parameter on the open_cd is largely not used and
-   would be better done via CD-ROM drive customization. (See 6). There
-   might be a CD-ROM "exclusive access" mode versus shared read as
-   currently exists.
-   
-   The API is also non-reentrant; for example particular there is a
-   static loglevel variable. However tricky here either maintaining
-   backward compatibility or coming up with a workable proposal for
-   having the multiple APIs.
-
-   [Herbert Valerio Riedel or Nicolas Boullis may want to mentor
-   this. If so they might want to elaborate or expand on the above.]
+[8. libcdio API overhaul removed. This may not be too difficult
+   for a student project. But if someone is really interested, look in
+   CVS revision 1.1. for what this might entail.]
 
 9. Revise to use glib rather than home-grown routines. 
    
@@ -117,4 +98,4 @@
    particular the routines in bytesex.h and ds.h. Replace these with
    the corresponding glib routines.
 
-$Id: 2006-summer-of-code.txt,v 1.1 2006/04/15 09:19:03 rocky Exp $
+$Id: 2006-summer-of-code.txt,v 1.2 2006/04/17 13:24:56 rocky Exp $
