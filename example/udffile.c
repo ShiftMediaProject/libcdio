@@ -1,5 +1,5 @@
 /*
-  $Id: udffile.c,v 1.1 2006/04/17 03:37:58 rocky Exp $
+  $Id: udffile.c,v 1.2 2006/04/17 11:45:22 rocky Exp $
 
   Copyright (C) 2005, 2006 Rocky Bernstein <rocky@cpan.org>
   
@@ -27,9 +27,9 @@
 
 /* This is the UDF image. */
 #define UDF_IMAGE_PATH "../"
-#define UDF_IMAGE "/src2/cd-images/udf/test2.iso"
-#define UDF_FILENAME "/parse/cue.L"
-#define LOCAL_FILENAME "cue.L"
+#define UDF_IMAGE "../test/udf102.iso"
+#define UDF_FILENAME "/COPYING"
+#define LOCAL_FILENAME "copying"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

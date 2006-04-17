@@ -1,6 +1,7 @@
-#   $Id: Makefile.am,v 1.53 2006/03/26 04:02:35 rocky Exp $
+#   $Id: Makefile.am,v 1.54 2006/04/17 11:45:22 rocky Exp $
 #
-#    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
+#    <rocky@cpan.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -76,7 +77,8 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 	     bad-cat1.cue bad-cat2.cue bad-cat3.cue \
 	     bad-cat1.toc bad-cat2.toc bad-cat3.toc bad-file.toc \
 	     copying.iso  copying.right copying-rr.iso copying-rr.right \
-	     joliet.iso joliet.right joliet-nojoliet.right
+	     joliet.iso joliet.right joliet-nojoliet.right \
+	     udf102.iso
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
