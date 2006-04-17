@@ -618,12 +618,16 @@ typedef struct udf_icbtag_s udf_icbtag_t;
 #define	UDF_ICB_TAG_FLAGS_SETGID	0x80
 #define	UDF_ICB_TAG_FLAGS_STICKY	0x100
 
-/** Strategy Type (ECMA 167r3 4/14.6.2) */
-#define ICBTAG_STRATEGY_TYPE_UNDEF	0x0000
-#define ICBTAG_STRATEGY_TYPE_1		0x0001
-#define ICBTAG_STRATEGY_TYPE_2		0x0002
-#define ICBTAG_STRATEGY_TYPE_3		0x0003
-#define ICBTAG_STRATEGY_TYPE_4		0x0004
+/** Strategy Type (ECMA 167r3 4/14.6.2) which helpfully points
+    largely to 4/A.x */
+#define ICBTAG_STRATEGY_TYPE_UNDEF 0x0000 
+#define ICBTAG_STRATEGY_TYPE_1	   0x0001 /**< 4/A.2 Direct entries Uint16 */
+#define ICBTAG_STRATEGY_TYPE_2	   0x0002 /**< 4/A.3 List of ICB direct entries */
+#define ICBTAG_STRATEGY_TYPE_3	   0x0003 /**< 4/A.4 */
+#define ICBTAG_STRATEGY_TYPE_4	   0x0004 /**< 4/A.5 Hierarchy having one
+					   single ICB with one direct entry.
+					   This is what's most often used.
+					  */
 
 /** File Type (ECMA 167r3 4/14.6.6) 
 
@@ -649,11 +653,25 @@ typedef enum {
 
 /** Flags (ECMA 167r3 4/14.6.8) */
 typedef enum {
-  ICBTAG_FLAG_AD_MASK        =	0x0007,
-  ICBTAG_FLAG_AD_SHORT       =	0x0000,
-  ICBTAG_FLAG_AD_LONG        =	0x0001,
+  ICBTAG_FLAG_AD_MASK        =	0x0007, /**< "&" this to get below address
+					     flags */
+  ICBTAG_FLAG_AD_SHORT       =	0x0000, /**< The allocation descriptor
+					     field is filled with
+					     short_ad's.  If the
+					     offset is beyond the
+					     current extent, look for
+					     the next extent. */
+  ICBTAG_FLAG_AD_LONG        =	0x0001, /**< The allocation descriptor
+					     field is filled with
+					     long_ad's If the offset
+					     is beyond the current
+					     extent, look for the next
+					     extent. */
   ICBTAG_FLAG_AD_EXTENDED    =	0x0002,
-  ICBTAG_FLAG_AD_IN_ICB      =	0x0003,
+  ICBTAG_FLAG_AD_IN_ICB      =	0x0003, /**< This type means that the
+					     file *data* is stored in
+					     the allocation descriptor
+					     field of the file entry. */
   ICBTAG_FLAG_SORTED         =	0x0008,
   ICBTAG_FLAG_NONRELOCATABLE =	0x0010,
   ICBTAG_FLAG_ARCHIVE        =	0x0020,
@@ -978,15 +996,11 @@ PRAGMA_END_PACKED
     allow one refer to the enumeration value names in the typedefs
     above in a debugger and in debugger expressions.
 */
-typedef union
-{
-  tag_id_t                 debug_tagid;
-  file_characteristics_t   debug_file_characteristics;
-  icbtag_file_type_enum_t  debug_icbtag_file_type_enum;
-  icbtag_flag_enum_t       debug_flag_enum;
-  ecma_167_enum1_t         debug_ecma_167_enum1;
-  ecma_167_timezone_enum_t debug_ecma_167_timezone_enum;
-} debug_ecma167_t;
-extern debug_ecma167_t debug_ecma_167;
+extern tag_id_t                 debug_tagid;
+extern file_characteristics_t   debug_file_characteristics;
+extern icbtag_file_type_enum_t  debug_icbtag_file_type_enum;
+extern icbtag_flag_enum_t       debug_flag_enum;
+extern ecma_167_enum1_t         debug_ecma_167_enum1;
+extern ecma_167_timezone_enum_t debug_ecma_167_timezone_enum;
   
 #endif /* _ECMA_167_H */

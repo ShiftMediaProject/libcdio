@@ -1,5 +1,5 @@
 /*
-    $Id: udf_private.h,v 1.10 2006/04/16 02:34:10 rocky Exp $
+    $Id: udf_private.h,v 1.11 2006/04/17 03:32:38 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rockyb@users.sourceforge.net>
 
@@ -58,9 +58,10 @@ struct udf_dirent_s
   uint32_t           i_loc, i_loc_end;
   uint64_t           dir_left;
   uint8_t           *sector;
-  udf_file_entry_t   fe;
   udf_fileid_desc_t *fid;
-  uint8_t data[UDF_BLOCKSIZE];
+
+ /* This field has to come last because it is variable in length. */
+  udf_file_entry_t   fe;
 };
 
 bool udf_get_lba(const udf_file_entry_t *p_udf_fe, 

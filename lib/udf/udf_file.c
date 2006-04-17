@@ -1,5 +1,5 @@
 /*
-    $Id: udf_file.c,v 1.11 2006/04/16 02:34:10 rocky Exp $
+    $Id: udf_file.c,v 1.12 2006/04/17 03:32:38 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rockyb@users.sourceforge.net>
 
@@ -29,7 +29,13 @@
 
 #include <stdio.h>  /* Remove when adding cdio/logging.h */
 
+/* Useful defines */
+
 #define MIN(a, b) (a<b) ? (a) : (b)
+#define CEILING(x, y) ((x+(y-1))/y)
+
+#define	GETICB(offset)	\
+	&p_udf_fe->alloc_descs[offset]
 
 const char *
 udf_get_filename(const udf_dirent_t *p_udf_dirent)
@@ -39,6 +45,8 @@ udf_get_filename(const udf_dirent_t *p_udf_dirent)
   return p_udf_dirent->psz_name;
 }
 
+/* Get UDF File Entry. However we do NOT get the variable-length extended
+ attributes. */
 bool
 udf_get_file_entry(const udf_dirent_t *p_udf_dirent, 
 		   /*out*/ udf_file_entry_t *p_udf_fe)
@@ -96,6 +104,112 @@ udf_is_dir(const udf_dirent_t *p_udf_dirent)
   return p_udf_dirent->b_dir;
 }
 
+/*
+ * Translate a file offset into a logical block and then into a physical
+ * block.
+ */
+static lba_t
+offset_to_lba(const udf_dirent_t *p_udf_dirent, off_t i_offset, 
+	      /*out*/ lba_t *pi_lba, /*out*/ uint32_t *pi_max_size)
+{
+  udf_t *p_udf = p_udf_dirent->p_udf;
+  const udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) 
+    &p_udf_dirent->fe;
+  const udf_icbtag_t *p_icb_tag = &p_udf_fe->icb_tag;
+  const uint16_t strat_type= uint16_from_le(p_icb_tag->strat_type);
+  
+  switch (strat_type) {
+  case 4096:
+    printf("Cannot deal with strategy4096 yet!\n");
+    return CDIO_INVALID_LBA;
+    break;
+  case ICBTAG_STRATEGY_TYPE_4:
+    {
+      uint32_t icblen = 0;
+      lba_t lsector;
+      int ad_offset, ad_num = 0;
+      uint16_t addr_ilk = uint16_from_le(p_icb_tag->flags&ICBTAG_FLAG_AD_MASK);
+      
+      switch (addr_ilk) {
+      case ICBTAG_FLAG_AD_SHORT: 
+	{
+	  udf_short_ad_t *p_icb;
+	  /*
+	   * The allocation descriptor field is filled with short_ad's.
+	   * If the offset is beyond the current extent, look for the
+	   * next extent.
+	   */
+	  do {
+	    i_offset -= icblen;
+	    ad_offset = sizeof(udf_short_ad_t) * ad_num;
+	    if (ad_offset > uint32_from_le(p_udf_fe->i_alloc_descs)) {
+	      printf("File offset out of bounds\n");
+	      return CDIO_INVALID_LBA;
+	    }
+	    p_icb = (udf_short_ad_t *) 
+	      GETICB( uint32_from_le(p_udf_fe->i_extended_attr) 
+		      + ad_offset );
+	    icblen = p_icb->len;
+	    ad_num++;
+	  } while(i_offset >= icblen);
+	  
+	  lsector = (i_offset / UDF_BLOCKSIZE) + p_icb->pos;
+	  
+	  *pi_max_size = p_icb->len;
+	}
+	break;
+      case ICBTAG_FLAG_AD_LONG: 
+	{
+	  /*
+	   * The allocation descriptor field is filled with long_ad's
+	   * If the i_offset is beyond the current extent, look for the
+	   * next extent.
+	   */
+	  udf_long_ad_t *p_icb;
+	  do {
+	    i_offset -= icblen;
+	    ad_offset = sizeof(udf_long_ad_t) * ad_num;
+	    if (ad_offset > uint32_from_le(p_udf_fe->i_alloc_descs)) {
+	      printf("File offset out of bounds\n");
+	      return CDIO_INVALID_LBA;
+	    }
+	    p_icb = (udf_long_ad_t *) 
+	      GETICB( uint32_from_le(p_udf_fe->i_extended_attr)
+		      + ad_offset );
+	    icblen = p_icb->len;
+	    ad_num++;
+	  } while(i_offset >= icblen);
+	
+	  lsector = (i_offset / UDF_BLOCKSIZE) +
+	    uint32_from_le(((udf_long_ad_t *)(p_icb))->loc.lba);
+	  
+	  *pi_max_size = p_icb->len;
+	}
+	break;
+      case ICBTAG_FLAG_AD_IN_ICB:
+	/*
+	 * This type means that the file *data* is stored in the
+	 * allocation descriptor field of the file entry.
+	 */
+	*pi_max_size = 0;
+	printf("Don't know how to data in ICB handle yet\n");
+	
+      case ICBTAG_FLAG_AD_EXTENDED:
+	printf("Don't know how to handle extended addresses yet\n");
+      default:
+	printf("Unsupported allocation descriptor %d\n", addr_ilk);
+	return CDIO_INVALID_LBA;
+      }
+      
+      *pi_lba = lsector + p_udf->i_part_start;
+      return *pi_lba;
+    }
+  default:
+    printf("Unknown strategy type %d\n", strat_type);
+    return DRIVER_OP_ERROR;
+  }
+}
+
 /**
   Attempts to read up to count bytes from UDF directory entry
   p_udf_dirent into the buffer starting at buf. buf should be a
@@ -113,39 +227,26 @@ udf_read_block(const udf_dirent_t *p_udf_dirent, void * buf, size_t count)
 {
   if (count == 0) return 0;
   else {
-    /* FIXME this code seems a bit convoluted. */
-    udf_t *p_udf = p_udf_dirent->p_udf;
-    const udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) p_udf_dirent->data;
     driver_return_code_t ret;
-    const unsigned long int i_file_length = udf_get_file_length(p_udf_dirent);
-
-    if (0 == p_udf->i_position) {
-      ret = udf_read_sectors(p_udf, p_udf_dirent->data, 
-			     p_udf_dirent->fe.unique_ID, 1);
-      if (ret != DRIVER_OP_SUCCESS) return DRIVER_OP_ERROR;
-    } 
-    {
-      if (!udf_checktag(&p_udf_fe->tag, TAGID_FILE_ENTRY)) {
-	uint32_t i_lba_start, i_lba_end;
-	udf_get_lba( p_udf_fe, &i_lba_start, &i_lba_end);
-
-	/* set i_lba_start to position of where we last left off. */
-	i_lba_start += (p_udf->i_position / UDF_BLOCKSIZE);
-	
-	if ( (i_lba_end - i_lba_start+1) < count ) {
-	  printf("Warning: don't know how to handle yet\n" );
-	  count = i_lba_end - i_lba_start+1;
-	} else {
-	  const uint32_t i_lba = p_udf->i_part_start+i_lba_start;
-	  ret = udf_read_sectors(p_udf, buf, i_lba, count);
-	  if (DRIVER_OP_SUCCESS == ret) {
-	    ssize_t i_read_len = MIN(i_file_length, count * UDF_BLOCKSIZE);
-	    p_udf->i_position += i_read_len;
-	    return i_read_len;
-	  }
-	}
+    uint32_t i_max_size;
+    udf_t *p_udf = p_udf_dirent->p_udf;
+    lba_t i_lba = offset_to_lba(p_udf_dirent, p_udf->i_position, &i_lba, 
+				&i_max_size);
+    if (i_lba != CDIO_INVALID_LBA) {
+      uint32_t i_max_blocks = CEILING(i_max_size, UDF_BLOCKSIZE);
+      if ( i_max_blocks < count ) {
+	printf("Warning: don't know how to handle yet\n" );
+	count = i_max_blocks;
       }
+      ret = udf_read_sectors(p_udf, buf, i_lba, count);
+      if (DRIVER_OP_SUCCESS == ret) {
+	ssize_t i_read_len = MIN(i_max_size, count * UDF_BLOCKSIZE);
+	p_udf->i_position += i_read_len;
+	return i_read_len;
+      }
+      return ret;
+    } else {
+      return DRIVER_OP_ERROR;
     }
-    return ret;
   }
 }

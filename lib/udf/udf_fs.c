@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.19 2006/04/15 03:05:14 rocky Exp $
+    $Id: udf_fs.c,v 1.20 2006/04/17 03:32:38 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
@@ -154,6 +154,7 @@ udf_get_lba(const udf_file_entry_t *p_udf_fe,
   switch (p_udf_fe->icb_tag.flags & ICBTAG_FLAG_AD_MASK) {
   case ICBTAG_FLAG_AD_SHORT:
     {
+      /* The allocation descriptor field is filled with short_ad's. */
       udf_short_ad_t *p_ad = (udf_short_ad_t *) 
 	(p_udf_fe->ext_attr + p_udf_fe->i_extended_attr);
       
@@ -165,6 +166,7 @@ udf_get_lba(const udf_file_entry_t *p_udf_fe,
     break;
   case ICBTAG_FLAG_AD_LONG:
     {
+      /* The allocation descriptor field is filled with long_ad's */
       udf_long_ad_t *p_ad = (udf_long_ad_t *) 
 	(p_udf_fe->ext_attr + p_udf_fe->i_extended_attr);
       
@@ -193,6 +195,11 @@ udf_get_lba(const udf_file_entry_t *p_udf_fe,
 
 #define udf_PATH_DELIMITERS "/\\"
 
+/* Searches p_udf_dirent a directory entry called psz_token.
+   Note p_udf_dirent is continuously updated. If the entry is
+   not found p_udf_dirent is useless and thus the caller should
+   not use it afterwards.
+*/
 static 
 udf_dirent_t *
 udf_ff_traverse(udf_dirent_t *p_udf_dirent, char *psz_token)
@@ -216,6 +223,7 @@ udf_ff_traverse(udf_dirent_t *p_udf_dirent, char *psz_token)
       }
     }
   }
+  free(p_udf_dirent->psz_name);
   return NULL;
 }
 
@@ -233,8 +241,18 @@ udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name)
     
     strncpy(tokenline, psz_name, udf_MAX_PATHLEN);
     psz_token = strtok(tokenline, udf_PATH_DELIMITERS);
-    if (psz_token)
-      p_udf_file = udf_ff_traverse(p_udf_root, psz_token);
+    if (psz_token) {
+      /*** FIXME??? udf_dirent can be variable size due to the
+	   extended attributes and descriptors. Given that, is this
+	   correct? 
+       */
+      udf_dirent_t *p_udf_dirent = 
+	udf_new_dirent(&p_udf_root->fe, p_udf_root->p_udf,
+		       p_udf_root->psz_name, p_udf_root->b_dir, 
+		       p_udf_root->b_parent);
+      p_udf_file = udf_ff_traverse(p_udf_dirent, psz_token);
+      udf_dirent_free(p_udf_dirent);
+    }
     else if ( 0 == strncmp("/", psz_name, sizeof("/")) ) {
       return udf_new_dirent(&p_udf_root->fe, p_udf_root->p_udf,
 			    p_udf_root->psz_name, p_udf_root->b_dir, 
@@ -268,9 +286,13 @@ static udf_dirent_t *
 udf_new_dirent(udf_file_entry_t *p_udf_fe, udf_t *p_udf,
 	       const char *psz_name, bool b_dir, bool b_parent) 
 {
-  udf_dirent_t *p_udf_dirent = 
-    (udf_dirent_t *) calloc(1, sizeof(udf_dirent_t));
+  const unsigned int i_alloc_size = p_udf_fe->i_alloc_descs
+    + p_udf_fe->i_extended_attr;;
+  
+  udf_dirent_t *p_udf_dirent = (udf_dirent_t *) 
+    calloc(1, sizeof(udf_dirent_t) + i_alloc_size);
   if (!p_udf_dirent) return NULL;
+  
   p_udf_dirent->psz_name     = strdup(psz_name);
   p_udf_dirent->b_dir        = b_dir;
   p_udf_dirent->b_parent     = b_parent;
@@ -278,7 +300,8 @@ udf_new_dirent(udf_file_entry_t *p_udf_fe, udf_t *p_udf,
   p_udf_dirent->i_part_start = p_udf->i_part_start;
   p_udf_dirent->dir_left     = uint64_from_le(p_udf_fe->info_len); 
 
-  memcpy(&(p_udf_dirent->fe), p_udf_fe, sizeof(udf_file_entry_t));
+  memcpy(&(p_udf_dirent->fe), p_udf_fe, 
+	 sizeof(udf_file_entry_t) + i_alloc_size);
   udf_get_lba( p_udf_fe, &(p_udf_dirent->i_loc), 
 	       &(p_udf_dirent->i_loc_end) );
   return p_udf_dirent;
@@ -639,7 +662,9 @@ udf_readdir(udf_dirent_t *p_udf_dirent)
 	udf_read_sectors(p_udf, p_udf_fe, p_udf->i_part_start 
 			 + p_udf_dirent->fid->icb.loc.lba, 1);
       
-	memcpy(&(p_udf_dirent->fe), p_udf_fe, sizeof(udf_file_entry_t));
+	memcpy(&(p_udf_dirent->fe), p_udf_fe, 
+	       sizeof(udf_file_entry_t) + p_udf_fe->i_alloc_descs 
+	       + p_udf_fe->i_extended_attr );
 
 	if (strlen(p_udf_dirent->psz_name) < i_len) 
 	  p_udf_dirent->psz_name = (char *)
