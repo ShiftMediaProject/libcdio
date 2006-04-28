@@ -1,5 +1,5 @@
 /*
-    $Id: udf_fs.c,v 1.20 2006/04/17 03:32:38 rocky Exp $
+    $Id: udf_fs.c,v 1.21 2006/04/28 16:38:23 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
@@ -287,7 +287,7 @@ udf_new_dirent(udf_file_entry_t *p_udf_fe, udf_t *p_udf,
 	       const char *psz_name, bool b_dir, bool b_parent) 
 {
   const unsigned int i_alloc_size = p_udf_fe->i_alloc_descs
-    + p_udf_fe->i_extended_attr;;
+    + p_udf_fe->i_extended_attr;
   
   udf_dirent_t *p_udf_dirent = (udf_dirent_t *) 
     calloc(1, sizeof(udf_dirent_t) + i_alloc_size);
