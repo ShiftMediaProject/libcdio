@@ -1,7 +1,7 @@
 /*
-  $Id: cdda.h,v 1.27 2006/03/18 18:37:56 rocky Exp $
+  $Id: cdda.h,v 1.28 2006/05/03 00:29:40 rocky Exp $
 
-  Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Xiph.org
   and Heiko Eissfeldt heiko@escape.colossus.de
 
@@ -92,7 +92,9 @@ struct cdrom_drive_s {
 		       not. 1 if big endian, 0 if little endian and -1 if
 		       we don't know.
 		   */
-  int nsectors;
+  int nsectors;   /**< Number of sectors use in reading. Multiply by 
+		   CDIO_CD_FRAMESIZE_RAW to get number of bytes used in
+		  the read buffer. */
 
   int cd_extra;   /**< -1 if we can't get multisession info, 0 if
                        there is one session only or the multi-session
