@@ -1,9 +1,8 @@
 /*
-    $Id: iso9660.h,v 1.92 2006/03/26 15:03:54 rocky Exp $
+    $Id: iso9660.h,v 1.93 2006/05/06 16:08:06 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
-    <rockyb@users.sourceforge.net>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
 
     See also iso9660.h by Eric Youngdale (1993).
 
@@ -301,9 +300,12 @@ struct iso9660_pvd_s {
                                                     table */
   iso732_t         opt_type_m_path_table;        /**< first sector of optional
                                                     M Path table */
-  iso9660_dir_t    root_directory_record;        /**< See section 9.1 of
+  iso9660_dir_t    root_directory_record;        /**< See 8.4.18 and 
+                                                    section 9.1 of
                                                     ISO 9660 spec. */
-  char             root_directory_filename;      /**< Is '\\0' */
+  char             root_directory_filename;      /**< Is '\\0' or root
+                                                  directory. Also pads previous
+                                                  field to 34 bytes */
   dchar_t          volume_set_id[ISO_MAX_VOLUMESET_ID]; /**< Volume Set of 
                                                            which the volume is
                                                            a member. See 
@@ -390,8 +392,10 @@ struct iso9660_svd_s {
                                                   */
   iso711_t         version;                      /**< value 1 */
   char             flags;			 /**< Section 8.5.3 */
-  achar_t          system_id[ISO_MAX_SYSTEM_ID]; /**< each char is an achar */
-  dchar_t          volume_id[ISO_MAX_VOLUME_ID]; /**< each char is a dchar */
+  achar_t          system_id[ISO_MAX_SYSTEM_ID]; /**< Section 8.5.4; each char 
+                                                    is an achar */
+  dchar_t          volume_id[ISO_MAX_VOLUME_ID]; /**< Section 8.5.5; each char
+                                                    is a dchar */
   char             unused2[8];
   iso733_t         volume_space_size;            /**< total number of 
                                                     sectors */
@@ -399,40 +403,49 @@ struct iso9660_svd_s {
   iso723_t         volume_set_size;              /**< often 1 */
   iso723_t         volume_sequence_number;       /**< often 1 */
   iso723_t         logical_block_size;           /**< sector size, e.g. 2048 */
-  iso733_t         path_table_size;              /**< bytes in path table */
-  iso731_t         type_l_path_table;            /**< first sector of little-
-                                                      endian path table */
-  iso731_t         opt_type_l_path_table;        /**< first sector of optional
+  iso733_t         path_table_size;              /**< 8.5.7; bytes in path 
+                                                    table */
+  iso731_t         type_l_path_table;            /**< 8.5.8; first sector of 
                                                     little-endian path table */
-  iso732_t         type_m_path_table;            /**< first sector of big-
-                                                    endian path table */
-  iso732_t         opt_type_m_path_table;        /**< first sector of optional
+  iso731_t         opt_type_l_path_table;        /**< 8.5.9; first sector of 
+                                                    optional little-endian 
+                                                    path table */
+  iso732_t         type_m_path_table;            /**< 8.5.10; first sector of 
                                                     big-endian path table */
-  iso9660_dir_t    root_directory_record;        /**< See section 9.1 of
-                                                    ISO 9660 spec. */
-  dchar_t          volume_set_id[ISO_MAX_VOLUMESET_ID];    /**< dchars */
-  achar_t          publisher_id[ISO_MAX_PUBLISHER_ID];  /**< Publisher of
-                                                         volume. If the first
-                                                         character is '_' 0x5F,
-                                                         the remaining bytes
-                                                         specify a file 
-                                                         containing the user.
-                                                         If all bytes are " "
-                                                         (0x20) no publisher 
-                                                         is specified. See 
-                                                         section 8.4.20 of
-                                                         ECMA 119 */
-  achar_t          preparer_id[ISO_MAX_PREPARER_ID]; /**< preparer of
-                                                         volume. If the first
-                                                         character is '_' 0x5F,
-                                                         the remaining bytes
-                                                         specify a file 
-                                                         containing the user.
-                                                         If all bytes are " "
-                                                         (0x20) no preparer 
-                                                         is specified. 
-                                                         See section 8.4.21 
-                                                         of ECMA 119 */
+  iso732_t         opt_type_m_path_table;        /**< 8.5.11; first sector of 
+                                                    optional big-endian path 
+                                                    table */
+  iso9660_dir_t    root_directory_record;        /**< See section 8.5.12 and
+                                                    9.1 of ISO 9660 spec. */
+  char             root_directory_filename;      /**< Is '\\0' or root
+                                                  directory. Also pads previous
+                                                  field to 34 bytes */
+  dchar_t          volume_set_id[ISO_MAX_VOLUMESET_ID];    /**< 8.5.13; 
+                                                              dchars */
+  achar_t          publisher_id[ISO_MAX_PUBLISHER_ID]; /**< 
+                                                          Publisher of volume.
+                                                          If the first char-
+                                                          aracter is '_' 0x5F,
+                                                          the remaining bytes
+                                                          specify a file 
+                                                          containing the user.
+                                                          If all bytes are " "
+                                                          (0x20) no publisher 
+                                                          is specified. See 
+                                                          section 8.5.14 of
+                                                          ECMA 119 */
+  achar_t          preparer_id[ISO_MAX_PREPARER_ID]; /**< 
+                                                        Data preparer of
+                                                        volume. If the first
+                                                        character is '_' 0x5F,
+                                                        the remaining bytes
+                                                        specify a file 
+                                                        containing the user.
+                                                        If all bytes are " "
+                                                        (0x20) no preparer 
+                                                        is specified. 
+                                                        See section 8.5.15
+                                                        of ECMA 119 */
   achar_t          application_id[ISO_MAX_APPLICATION_ID]; /**< application
                                                          use to create the
                                                          volume. If the first
@@ -443,19 +456,19 @@ struct iso9660_svd_s {
                                                          If all bytes are " "
                                                          (0x20) no application 
                                                          is specified.
-                                                         See section of 8.4.22 
+                                                         See section of 8.5.16
                                                          of ECMA 119 */
   dchar_t          copyright_file_id[37];     /**< Name of file for
                                                  copyright info. If
                                                  all bytes are " "
                                                  (0x20), then no file
                                                  is identified.  See
-                                                 section 8.4.23 of ECMA 119
+                                                 section 8.5.17 of ECMA 119
                                                  9660 spec. */
-  dchar_t          abstract_file_id[37];      /**< See section 8.4.24 of 
+  dchar_t          abstract_file_id[37];      /**< See section 8.5.18 of 
                                                  ECMA 119. */
-  dchar_t          bibliographic_file_id[37]; /**< See section 7.5 of 
-                                                 ISO 9660 spec. */
+  dchar_t          bibliographic_file_id[37]; /**< See section 8.5.19 of 
+                                                 ECMA 119. */
   iso9660_ltime_t  creation_date;             /**< date and time of volume
                                                  creation. See section 8.4.26.1
                                                  of the ECMA 119 spec. */
@@ -472,7 +485,7 @@ struct iso9660_svd_s {
                                                  spec. */
   iso711_t         file_structure_version;    /**< value 1 for ECMA 119 */
   uint8_t           unused4[1];                /**< unused - value 0 */
-  char             application_data[512];     /**< Application can put 
+  char             application_data[512];     /**< 8.5.20 Application can put 
                                                  whatever it wants here. */
   uint8_t          unused5[653];              /**< Unused - value 0 */
 } GNUC_PACKED;

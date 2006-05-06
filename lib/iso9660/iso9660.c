@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660.c,v 1.25 2006/03/18 02:35:07 rocky Exp $
+    $Id: iso9660.c,v 1.26 2006/05/06 16:08:06 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.25 2006/03/18 02:35:07 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.26 2006/05/06 16:08:06 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -541,12 +541,16 @@ iso9660_set_pvd(void *pd,
   memcpy(&(ipd.root_directory_record), root_dir, 
          sizeof(ipd.root_directory_record));
   ipd.root_directory_filename='\0';
-  ipd.root_directory_record.length = 33+1;
-  iso9660_strncpy_pad (ipd.volume_set_id, VOLUME_SET_ID, 128, ISO9660_DCHARS);
+  ipd.root_directory_record.length = sizeof(ipd.root_directory_record)+1;
+  iso9660_strncpy_pad (ipd.volume_set_id, VOLUME_SET_ID, 
+                       ISO_MAX_VOLUMESET_ID, ISO9660_DCHARS);
 
-  iso9660_strncpy_pad (ipd.publisher_id, publisher_id, 128, ISO9660_ACHARS);
-  iso9660_strncpy_pad (ipd.preparer_id, preparer_id, 128, ISO9660_ACHARS);
-  iso9660_strncpy_pad (ipd.application_id, application_id, 128, ISO9660_ACHARS); 
+  iso9660_strncpy_pad (ipd.publisher_id, publisher_id, ISO_MAX_PUBLISHER_ID, 
+                       ISO9660_ACHARS);
+  iso9660_strncpy_pad (ipd.preparer_id, preparer_id, ISO_MAX_PREPARER_ID, 
+                       ISO9660_ACHARS);
+  iso9660_strncpy_pad (ipd.application_id, application_id, 
+                       ISO_MAX_APPLICATION_ID, ISO9660_ACHARS); 
 
   iso9660_strncpy_pad (ipd.copyright_file_id    , "", 37, ISO9660_DCHARS);
   iso9660_strncpy_pad (ipd.abstract_file_id     , "", 37, ISO9660_DCHARS);
