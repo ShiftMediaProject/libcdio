@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.15 2006/03/14 12:05:16 rocky Exp $
+#   $Id: Makefile.am,v 1.16 2006/06/02 21:54:21 gmerlin Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -94,6 +94,7 @@ libcdio_sources = \
 	sector.c \
 	solaris.c \
 	track.c \
+	utf8.c \
 	util.c
 
 lib_LTLIBRARIES    = libcdio.la

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.93 2006/05/06 16:08:06 rocky Exp $
+    $Id: iso9660.h,v 1.94 2006/06/02 21:54:21 gmerlin Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
@@ -916,7 +916,7 @@ char * iso9660_get_application_id(iso9660_pvd_t *p_pvd);
   is some problem in getting this and false is returned.
 */
 bool iso9660_ifs_get_application_id(iso9660_t *p_iso,
-                                    /*out*/ char **p_psz_app_id);
+                                    /*out*/ cdio_utf8_t **p_psz_app_id);
 
 /*!  
   Return the Joliet level recognized for p_iso.
@@ -954,7 +954,7 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
     is some problem in getting this and false is returned.
   */
   bool iso9660_ifs_get_preparer_id(iso9660_t *p_iso,
-                                   /*out*/ char **p_psz_preparer_id);
+                                   /*out*/ cdio_utf8_t **p_psz_preparer_id);
   
   /*!
     Return a string containing the PVD's publisher id with trailing
@@ -967,7 +967,7 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
     is some problem in getting this and false is returned.
   */
   bool iso9660_ifs_get_publisher_id(iso9660_t *p_iso,
-                                    /*out*/ char **p_psz_publisher_id);
+                                    /*out*/ cdio_utf8_t **p_psz_publisher_id);
   
   uint8_t iso9660_get_pvd_type(const iso9660_pvd_t *p_pvd);
   
@@ -993,7 +993,7 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
     is some problem in getting this and false is returned.
   */
   bool iso9660_ifs_get_system_id(iso9660_t *p_iso,
-                                 /*out*/ char **p_psz_system_id);
+                                 /*out*/ cdio_utf8_t **p_psz_system_id);
   
   
   /*! Return the LSN of the root directory for pvd.
@@ -1012,7 +1012,7 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
     is some problem in getting this and false is returned.
   */
   bool iso9660_ifs_get_volume_id(iso9660_t *p_iso,
-                                 /*out*/ char **p_psz_volume_id);
+                                 /*out*/ cdio_utf8_t **p_psz_volume_id);
   
   /*!
     Return the volumeset ID in the PVD.
@@ -1025,7 +1025,7 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
     is some problem in getting this and false is returned.
   */
   bool iso9660_ifs_get_volumeset_id(iso9660_t *p_iso,
-                                    /*out*/ char **p_psz_volumeset_id);
+                                    /*out*/ cdio_utf8_t **p_psz_volumeset_id);
   
   /* pathtable */
   

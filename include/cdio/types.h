@@ -1,5 +1,5 @@
 /*
-    $Id: types.h,v 1.35 2006/01/23 20:47:33 rocky Exp $
+    $Id: types.h,v 1.36 2006/06/02 21:54:21 gmerlin Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005, 2006
@@ -202,7 +202,15 @@ typedef uint8_t ubyte;
   typedef struct msf_s msf_t;
 
 #define msf_t_SIZEOF 3
-  
+
+  /*!
+    \brief UTF-8 char definition 
+
+    Type to denote UTF-8 strings.
+  */
+
+  typedef char cdio_utf8_t;
+
   typedef enum  {
     nope  = 0,
     yep   = 1,

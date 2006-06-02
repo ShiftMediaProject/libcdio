@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.35 2006/03/17 22:36:31 rocky Exp $
+    $Id: iso9660_fs.c,v 1.36 2006/06/02 21:54:21 gmerlin Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -33,10 +33,6 @@
 # include <errno.h>
 #endif
 
-#ifdef HAVE_ICONV
-# include <iconv.h>
-#endif
-
 #ifdef HAVE_LANGINFO_CODESET
 #include <langinfo.h>
 #endif
@@ -45,6 +41,7 @@
 #include <cdio/bytesex.h>
 #include <cdio/iso9660.h>
 #include <cdio/util.h>
+#include <cdio/utf8.h>
 
 /* Private headers */
 #include "cdio_assert.h"
@@ -53,7 +50,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.35 2006/03/17 22:36:31 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.36 2006/06/02 21:54:21 gmerlin Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -277,71 +274,13 @@ check_pvd (const iso9660_pvd_t *p_pvd, cdio_log_level_t log_level)
   return true;
 }
 
-#ifdef HAVE_JOLIET
-static bool
-ucs2be_to_locale(ICONV_CONST char *psz_ucs2be,  size_t i_inlen, 
-		 char **p_psz_out,  size_t i_outlen)
-{
-
-  iconv_t ic = 
-#if defined(HAVE_LANGINFO_CODESET)
-    iconv_open(nl_langinfo(CODESET), "UCS-2BE");
-#else 
-    iconv_open("ASCII", "UCS-2BE");
-#endif
-
-  int rc;
-  char *psz_buf = NULL;
-  char *psz_buf2;
-  int i_outlen_max = i_outlen;
-  int i_outlen_actual;
-
-  if (-1 == (size_t) ic) {
-#if defined(HAVE_LANGINFO_CODESET)
-    cdio_info("Failed to get conversion table for locale, trying ASCII");
-    ic = iconv_open("ASCII", "UCS-2BE");
-    if (-1 == (size_t) ic) {
-      cdio_info("Failed to get conversion table for ASCII too");
-      return false;
-    }
-#else 
-    cdio_info("Failed to get conversion table for locale");
-    return false;
-#endif
-  }
-  
-  psz_buf = (char *) realloc(psz_buf, i_outlen);
-  psz_buf2 = psz_buf;
-  if (!psz_buf) {
-    /* XXX: report out of memory error */
-    goto error;
-  }
-  rc = iconv(ic, &psz_ucs2be, &i_inlen, &psz_buf2, &i_outlen);
-  iconv_close(ic);
-  if ((rc == -1) && (errno != E2BIG)) {
-    /* conversion failed */
-    goto error;
-  }
-  i_outlen_actual = i_outlen_max - i_outlen;
-  *p_psz_out = malloc(i_outlen_actual + 1);
-  memcpy(*p_psz_out, psz_buf, i_outlen_actual);
-  *(*p_psz_out + i_outlen_actual) = '\0';
-  free(psz_buf);
-  return true;
- error:
-  free(psz_buf);
-  *p_psz_out = NULL; 
-  return false;
-}
-#endif /*HAVE_JOLIET*/
-
 /*!  
   Return the application ID.  NULL is returned in psz_app_id if there
   is some problem in getting this.
 */
 bool
 iso9660_ifs_get_application_id(iso9660_t *p_iso, 
-			       /*out*/ char **p_psz_app_id)
+			       /*out*/ cdio_utf8_t **p_psz_app_id)
 {
   if (!p_iso) {
     *p_psz_app_id = NULL;
@@ -355,10 +294,9 @@ iso9660_ifs_get_application_id(iso9660_t *p_iso,
        longer results *and* have the same character using
        the PVD, do that.
      */
-    if ( ucs2be_to_locale(p_iso->svd.application_id, 
-			  ISO_MAX_APPLICATION_ID, 
-			  p_psz_app_id, 
-			  ISO_MAX_APPLICATION_ID))
+  if ( cdio_charset_to_utf8(p_iso->svd.application_id,
+                            ISO_MAX_APPLICATION_ID,
+                            p_psz_app_id, "UCS-2BE"))
       return true;
   }
 #endif /*HAVE_JOLIET*/ 
@@ -381,7 +319,7 @@ uint8_t iso9660_ifs_get_joliet_level(iso9660_t *p_iso)
 */
 bool
 iso9660_ifs_get_preparer_id(iso9660_t *p_iso,
-			/*out*/ char **p_psz_preparer_id)
+			/*out*/ cdio_utf8_t **p_psz_preparer_id)
 {
   if (!p_iso) {
     *p_psz_preparer_id = NULL;
@@ -395,8 +333,8 @@ iso9660_ifs_get_preparer_id(iso9660_t *p_iso,
        longer results *and* have the same character using
        the PVD, do that.
      */
-    if ( ucs2be_to_locale(p_iso->svd.preparer_id, ISO_MAX_PREPARER_ID, 
-			  p_psz_preparer_id, ISO_MAX_PREPARER_ID) )
+    if ( cdio_charset_to_utf8(p_iso->svd.preparer_id, ISO_MAX_PREPARER_ID,
+                              p_psz_preparer_id, "UCS-2BE") )
       return true;
   }
 #endif /*HAVE_JOLIET*/
@@ -409,7 +347,7 @@ iso9660_ifs_get_preparer_id(iso9660_t *p_iso,
    blanks removed.
 */
 bool iso9660_ifs_get_publisher_id(iso9660_t *p_iso,
-                                  /*out*/ char **p_psz_publisher_id)
+                                  /*out*/ cdio_utf8_t **p_psz_publisher_id)
 {
   if (!p_iso) {
     *p_psz_publisher_id = NULL;
@@ -423,8 +361,8 @@ bool iso9660_ifs_get_publisher_id(iso9660_t *p_iso,
        longer results *and* have the same character using
        the PVD, do that.
      */
-    if( ucs2be_to_locale(p_iso->svd.publisher_id, ISO_MAX_PUBLISHER_ID, 
-			 p_psz_publisher_id, ISO_MAX_PUBLISHER_ID) )
+    if( cdio_charset_to_utf8(p_iso->svd.publisher_id, ISO_MAX_PUBLISHER_ID,
+                             p_psz_publisher_id, "UCS-2BE") )
       return true;
   }
 #endif /*HAVE_JOLIET*/
@@ -438,7 +376,7 @@ bool iso9660_ifs_get_publisher_id(iso9660_t *p_iso,
    blanks removed.
 */
 bool iso9660_ifs_get_system_id(iso9660_t *p_iso,
-			       /*out*/ char **p_psz_system_id)
+			       /*out*/ cdio_utf8_t **p_psz_system_id)
 {
   if (!p_iso) {
     *p_psz_system_id = NULL;
@@ -452,8 +390,8 @@ bool iso9660_ifs_get_system_id(iso9660_t *p_iso,
        longer results *and* have the same character using
        the PVD, do that.
      */
-    if ( ucs2be_to_locale(p_iso->svd.system_id, ISO_MAX_SYSTEM_ID, 
-			  p_psz_system_id, ISO_MAX_SYSTEM_ID) )
+    if ( cdio_charset_to_utf8(p_iso->svd.system_id, ISO_MAX_SYSTEM_ID,
+                              p_psz_system_id, "UCS-2BE") )
       return true;
   }
 #endif /*HAVE_JOLIET*/
@@ -467,7 +405,7 @@ bool iso9660_ifs_get_system_id(iso9660_t *p_iso,
    blanks removed.
 */
 bool iso9660_ifs_get_volume_id(iso9660_t *p_iso,
-			       /*out*/ char **p_psz_volume_id)
+			       /*out*/ cdio_utf8_t **p_psz_volume_id)
 {
   if (!p_iso) {
     *p_psz_volume_id = NULL;
@@ -481,8 +419,8 @@ bool iso9660_ifs_get_volume_id(iso9660_t *p_iso,
        longer results *and* have the same character using
        the PVD, do that.
      */
-    if ( ucs2be_to_locale(p_iso->svd.volume_id, ISO_MAX_VOLUME_ID, 
-			  p_psz_volume_id, ISO_MAX_VOLUME_ID) )
+    if ( cdio_charset_to_utf8(p_iso->svd.volume_id, ISO_MAX_VOLUME_ID,
+                              p_psz_volume_id, "UCS-2BE") )
       return true;
   }
 #endif /* HAVE_JOLIET */
@@ -496,7 +434,7 @@ bool iso9660_ifs_get_volume_id(iso9660_t *p_iso,
    blanks removed.
 */
 bool iso9660_ifs_get_volumeset_id(iso9660_t *p_iso,
-				  /*out*/ char **p_psz_volumeset_id)
+				  /*out*/ cdio_utf8_t **p_psz_volumeset_id)
 {
   if (!p_iso) {
     *p_psz_volumeset_id = NULL;
@@ -510,10 +448,10 @@ bool iso9660_ifs_get_volumeset_id(iso9660_t *p_iso,
        longer results *and* have the same character using
        the PVD, do that.
      */
-    if ( ucs2be_to_locale(p_iso->svd.volume_set_id, 
-			  ISO_MAX_VOLUMESET_ID, 
-			  p_psz_volumeset_id, 
-			  ISO_MAX_VOLUMESET_ID) )
+    if ( cdio_charset_to_utf8(p_iso->svd.volume_set_id, 
+                              ISO_MAX_VOLUMESET_ID, 
+                              p_psz_volumeset_id,
+                              "UCS-2BE") )
       return true;
   }
 #endif /*HAVE_JOLIET*/
@@ -843,10 +781,10 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 #ifdef HAVE_JOLIET
       else if (i_joliet_level) {
 	int i_inlen = i_fname;
-	int i_outlen = (i_inlen / 2);
-	char *p_psz_out = NULL;
-	ucs2be_to_locale(p_iso9660_dir->filename, i_inlen, &p_psz_out, 
-			 i_outlen);
+	cdio_utf8_t *p_psz_out = NULL;
+	cdio_charset_to_utf8(p_iso9660_dir->filename, i_inlen,
+                             &p_psz_out, "UCS-2BE");
+        
 	strncpy(p_stat->filename, p_psz_out, i_fname);
 	free(p_psz_out);
       }
