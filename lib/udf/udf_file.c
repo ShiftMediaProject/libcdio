@@ -1,5 +1,5 @@
 /*
-    $Id: udf_file.c,v 1.12 2006/04/17 03:32:38 rocky Exp $
+    $Id: udf_file.c,v 1.13 2006/06/03 00:05:57 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rockyb@users.sourceforge.net>
 
@@ -228,7 +228,7 @@ udf_read_block(const udf_dirent_t *p_udf_dirent, void * buf, size_t count)
   if (count == 0) return 0;
   else {
     driver_return_code_t ret;
-    uint32_t i_max_size;
+    uint32_t i_max_size=0;
     udf_t *p_udf = p_udf_dirent->p_udf;
     lba_t i_lba = offset_to_lba(p_udf_dirent, p_udf->i_position, &i_lba, 
 				&i_max_size);
