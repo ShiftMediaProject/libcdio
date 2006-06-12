@@ -1,11 +1,14 @@
-$Id: NEWS,v 1.100 2006/04/12 09:38:45 rocky Exp $
+$Id: NEWS,v 1.101 2006/06/12 22:51:26 gmerlin Exp $
 
 version 0.78cvs
 =====================================
 - add mmc-tool
 - add mmc-close-tray
 - libudf: can now read (extract) file data
-
+- libcdio is starting to get updated for UTF-8 support. Strings,
+  which are garantueed to be in UTF-8, are returned as a new type
+  cdio_utf8_t, which is typedef'd to char.
+  
 version 0.77
 =====================================
 2006-03-17
@@ -350,4 +353,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.100 2006/04/12 09:38:45 rocky Exp $
+$Id: NEWS,v 1.101 2006/06/12 22:51:26 gmerlin Exp $
