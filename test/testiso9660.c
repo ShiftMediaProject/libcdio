@@ -1,5 +1,5 @@
 /*
-    $Id: testiso9660.c,v 1.16 2006/03/18 03:30:17 rocky Exp $
+    $Id: testiso9660.c,v 1.17 2006/07/30 14:10:16 rocky Exp $
 
     Copyright (C) 2003, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -67,11 +67,14 @@ time_compare(struct tm *p_tm1, struct tm *p_tm2)
 	   p_tm1->tm_min, p_tm2->tm_min);
     okay=false;
   }
+#if FIXED
+  /* Differences in daylight savings time may make these different.*/
   if (p_tm1->tm_hour != p_tm2->tm_hour) {
     printf("hours aren't equal. get: %d, set %d\n", 
 	   p_tm1->tm_hour, p_tm2->tm_hour);
     okay=false;
   }
+#endif
   if (p_tm1->tm_sec != p_tm2->tm_sec) {
     printf("seconds aren't equal. get: %d, set %d\n", 
 	   p_tm1->tm_sec, p_tm2->tm_sec);
@@ -87,12 +90,12 @@ time_compare(struct tm *p_tm1, struct tm *p_tm2)
 	   p_tm1->tm_yday, p_tm2->tm_yday);
     okay=false;
   }
+#if FIXED
   if (p_tm1->tm_isdst != p_tm2->tm_isdst) {
     printf("Is daylight savings times aren't equal. get: %d, set %d\n", 
 	   p_tm1->tm_isdst, p_tm2->tm_isdst);
     okay=false;
   }
-#if FIXED
 #ifdef HAVE_TM_GMTOFF
   if (p_tm1->tm_gmtoff != p_tm2->tm_gmtoff) {
     printf("GMT offsets aren't equal. get: %ld, set %ld\n", 
