@@ -1,5 +1,5 @@
 /*
-  $Id: tracks.c,v 1.5 2006/01/22 08:17:40 rocky Exp $
+  $Id: tracks.c,v 1.6 2006/07/30 13:19:49 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   
@@ -35,13 +35,15 @@ main(int argc, const char *argv[])
   track_t i_first_track;
   track_t i_tracks;
   int j, i;
-  
+
 
   if (NULL == p_cdio) {
     printf("Couldn't find a driver.. leaving.\n");
     return 1;
   }
   
+  printf("Disc last LSN: %d\n", cdio_get_disc_last_lsn(p_cdio));
+
   i_tracks      = cdio_get_num_tracks(p_cdio);
   i_first_track = i = cdio_get_first_track_num(p_cdio);
 

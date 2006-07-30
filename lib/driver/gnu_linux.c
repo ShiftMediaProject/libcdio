@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.22 2006/04/04 02:06:13 rocky Exp $
+    $Id: gnu_linux.c,v 1.23 2006/07/30 13:19:49 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.22 2006/04/04 02:06:13 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.23 2006/07/30 13:19:49 rocky Exp $";
 
 #include <string.h>
 
@@ -1165,7 +1165,7 @@ get_disc_last_lsn_linux (void *p_user_data)
   uint32_t i_size;
 
   tocent.cdte_track = CDIO_CDROM_LEADOUT_TRACK;
-  tocent.cdte_format = CDROM_LBA;
+  tocent.cdte_format = CDROM_MSF;
   if (ioctl (p_env->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
       cdio_warn ("ioctl CDROMREADTOCENTRY failed: %s\n", strerror(errno));  
