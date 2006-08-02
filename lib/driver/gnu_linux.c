@@ -1,8 +1,9 @@
 /*
-    $Id: gnu_linux.c,v 1.23 2006/07/30 13:19:49 rocky Exp $
+    $Id: gnu_linux.c,v 1.24 2006/08/02 11:00:31 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2002, 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2002, 2003, 2004, 2005, 2006 Rocky Bernstein 
+    <rockyb@users.sourceforge.net>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.23 2006/07/30 13:19:49 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.24 2006/08/02 11:00:31 rocky Exp $";
 
 #include <string.h>
 
@@ -1155,6 +1156,18 @@ run_mmc_cmd_linux( void *p_user_data,
 /*!
    Return the size of the CD in logical block address (LBA) units.
    @return the lsn. On error return CDIO_INVALID_LSN.
+
+   As of GNU/Linux 2.6, CDROMTOCENTRY gives
+   ioctl CDROMREADTOCENTRY failed: Invalid argument
+
+
+   In some cases CDROMREADTOCHDR seems to fix this, but I haven't been
+   able to find anything that documents this requirement or behavior. It's 
+   not the way CDROMREADTOCHDR works on other 'nixs.
+
+   Also note that in one at least one test the corresponding MMC gives
+   a different answer, so there may be some disagreement about what is in
+   fact the last lsn.
  */
 static lsn_t
 get_disc_last_lsn_linux (void *p_user_data)
@@ -1164,8 +1177,10 @@ get_disc_last_lsn_linux (void *p_user_data)
   struct cdrom_tocentry tocent;
   uint32_t i_size;
 
+  if (!p_env->gen.toc_init) read_toc_linux (p_user_data) ;
+
   tocent.cdte_track = CDIO_CDROM_LEADOUT_TRACK;
-  tocent.cdte_format = CDROM_MSF;
+  tocent.cdte_format = CDROM_LBA;
   if (ioctl (p_env->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
       cdio_warn ("ioctl CDROMREADTOCENTRY failed: %s\n", strerror(errno));  
