@@ -7,5 +7,5 @@ Name: @PACKAGE_NAME@
 Description: Portable CD-ROM I/O library
 Version: @PACKAGE_VERSION@
 #Requires: glib-2.0 
-Libs: -L${libdir} -lcdio @LIBS@ @DARWIN_PKG_LIB_HACK@
+Libs: -L${libdir} -lcdio @LIBS@ @LIBICONV@ @DARWIN_PKG_LIB_HACK@
 Cflags: -I${includedir}
