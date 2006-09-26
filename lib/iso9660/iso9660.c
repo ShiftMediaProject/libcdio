@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.26 2006/05/06 16:08:06 rocky Exp $
+    $Id: iso9660.c,v 1.27 2006/09/26 18:07:59 flameeyes Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
@@ -54,7 +54,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.26 2006/05/06 16:08:06 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.27 2006/09/26 18:07:59 flameeyes Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -73,7 +73,7 @@ enum iso_extension_enum_s iso_extension_enums;
 static char *
 strip_trail (const char str[], size_t n)
 {
-  static char buf[1024];
+  static char buf[1025];
   int j;
 
   cdio_assert (n < 1024);
