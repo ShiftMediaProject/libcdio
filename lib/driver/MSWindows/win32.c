@@ -1,5 +1,5 @@
 /*
-    $Id: win32.c,v 1.35 2006/04/04 02:06:13 rocky Exp $
+    $Id: win32.c,v 1.36 2006/09/26 22:08:13 flameeyes Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
     <rockyb@users.sourceforge.net>
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32.c,v 1.35 2006/04/04 02:06:13 rocky Exp $";
+static const char _rcsid[] = "$Id: win32.c,v 1.36 2006/09/26 22:08:13 flameeyes Exp $";
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -834,8 +834,8 @@ cdio_is_device_win32(const char *source_name)
 {
   unsigned int len;
 
-  len = strlen(source_name);
   if (NULL == source_name) return false;
+  len = strlen(source_name);
 
 #ifdef HAVE_WIN32_CDROM
   if ((len == 2) && isalpha(source_name[0]) 
