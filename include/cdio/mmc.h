@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.27 2006/04/12 09:30:14 rocky Exp $
+    $Id: mmc.h,v 1.28 2006/10/11 12:38:18 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
@@ -543,6 +543,22 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   discmode_t mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, 
                                            cdio_dvd_struct_t *s);
   
+  /*! 
+    Return results of media status
+    @param p_cdio the CD object to be acted upon.
+    @return DRIVER_OP_SUCCESS (0) if we got the status.
+    return codes are the same as driver_return_code_t
+   */
+  int mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2]);
+
+  /*! 
+    Find out if media tray is open or closed.
+    @param p_cdio the CD object to be acted upon.
+    @return 1 if media is open, 0 if closed. Error
+    return codes are the same as driver_return_code_t
+  */
+  int mmc_get_tray_status ( const CdIo_t *p_cdio );
+
   /** 
     Get the CD-ROM hardware info via an MMC INQUIRY command.
     

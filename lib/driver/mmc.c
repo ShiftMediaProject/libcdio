@@ -1,6 +1,6 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.34 2006/04/12 09:30:14 rocky Exp $
+    $Id: mmc.c,v 1.35 2006/10/11 12:38:18 rocky Exp $
 
     Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
@@ -167,6 +167,13 @@ get_mcn_mmc (const void *p_user_data)
 {
   const generic_img_private_t *p_env = p_user_data;
   return mmc_get_mcn( p_env->cdio );
+}
+
+driver_return_code_t
+get_tray_status (const void *p_user_data)
+{
+  const generic_img_private_t *p_env = p_user_data;
+  return mmc_get_tray_status( p_env->cdio );
 }
 
 /*! Read sectors using SCSI-MMC GPCMD_READ_CD.
@@ -842,12 +849,12 @@ mmc_get_hwinfo ( const CdIo_t *p_cdio,
 }
 
 /*! 
-  Find out if media has changed since the last call.
+  Return results of media status
   @param p_cdio the CD object to be acted upon.
-  @return 1 if media has changed since last call, 0 if not. Error
+  @return DRIVER_OP_SUCCESS (0) if we got the status.
   return codes are the same as driver_return_code_t
    */
-int mmc_get_media_changed(const CdIo_t *p_cdio)
+int mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
 {
   mmc_cdb_t cdb = {{0, }};
   uint8_t buf[8] = { 0, };
@@ -869,9 +876,28 @@ int mmc_get_media_changed(const CdIo_t *p_cdio)
                                     &cdb, SCSI_MMC_DATA_READ, 
                                     sizeof(buf), buf);
   if(i_status == 0) {
-    return 0 != (buf[4] & 0x02);
+    out_buf[0] = buf[4];
+    out_buf[1] = buf[5];
+    return DRIVER_OP_SUCCESS;
   }
   return DRIVER_OP_ERROR;
+}
+
+/*! 
+  Find out if media has changed since the last call.
+  @param p_cdio the CD object to be acted upon.
+  @return 1 if media has changed since last call, 0 if not. Error
+  return codes are the same as driver_return_code_t
+   */
+int mmc_get_media_changed(const CdIo_t *p_cdio)
+{
+  uint8_t status_buf[2];
+  int i_status;
+
+  i_status = mmc_get_event_status(p_cdio, status_buf);
+  if (i_status != DRIVER_OP_SUCCESS)
+    return i_status;
+  return (status_buf[0] & 0x02) ? 1 : 0;
 }
 
 char *
@@ -879,6 +905,23 @@ mmc_get_mcn ( const CdIo_t *p_cdio )
 {
   if ( ! p_cdio )  return NULL;
   return mmc_get_mcn_private (p_cdio->env, p_cdio->op.run_mmc_cmd );
+}
+
+/*! 
+  Find out if media tray is open or closed.
+  @param p_cdio the CD object to be acted upon.
+  @return 1 if media is open, 0 if closed. Error
+  return codes are the same as driver_return_code_t
+   */
+int mmc_get_tray_status(const CdIo_t *p_cdio)
+{
+  uint8_t status_buf[2];
+  int i_status;
+
+  i_status = mmc_get_event_status(p_cdio, status_buf);
+  if (i_status != DRIVER_OP_SUCCESS)
+    return i_status;
+  return (status_buf[1] & 0x01) ? 1 : 0;
 }
 
 /*!

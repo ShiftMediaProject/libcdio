@@ -1,8 +1,8 @@
 /*  private MMC helper routines.
 
-    $Id: mmc_private.h,v 1.10 2006/04/05 02:20:07 rocky Exp $
+    $Id: mmc_private.h,v 1.11 2006/10/11 12:38:18 rocky Exp $
 
-    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -68,6 +68,8 @@ void get_drive_cap_mmc (const void *p_user_data,
 int get_media_changed_mmc (const void *p_user_data);
 
 char *get_mcn_mmc (const void *p_user_data);
+
+driver_return_code_t get_tray_status (const void *p_user_data);
 
 /*! Read just the user data part of some sort of data sector (via 
     mmc_read_cd). 

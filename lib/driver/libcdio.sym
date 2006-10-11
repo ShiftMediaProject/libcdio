@@ -191,6 +191,7 @@ mmc_get_hwinfo
 mmc_get_last_lsn
 mmc_get_mcn
 mmc_get_media_changed
+mmc_get_tray_status
 mmc_have_interface
 mmc_mode_sense
 mmc_mode_sense_10
