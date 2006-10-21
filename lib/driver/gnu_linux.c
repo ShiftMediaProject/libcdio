@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.24 2006/08/02 11:00:31 rocky Exp $
+    $Id: gnu_linux.c,v 1.25 2006/10/21 10:55:18 gmerlin Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005, 2006 Rocky Bernstein 
@@ -28,9 +28,12 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.24 2006/08/02 11:00:31 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.25 2006/10/21 10:55:18 gmerlin Exp $";
 
 #include <string.h>
+#include <limits.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -593,6 +596,107 @@ get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
 }
 
 /*!
+  Follow symlinks until we have the real device file
+  (idea taken from libunieject). 
+*/
+
+static void follow_symlink (const char * src, char * dst) {
+  char tmp_src[PATH_MAX];
+  char tmp_dst[PATH_MAX];
+  
+  int len;
+
+  strcpy(tmp_src, src);
+  while(1) {
+    len = readlink(tmp_src, tmp_dst, PATH_MAX);
+    if(len < 0) {
+      strcpy(dst, tmp_src);
+      return;
+    }
+    else {
+      tmp_dst[len] = '\0';
+      strcpy(tmp_src, tmp_dst);
+    }
+  }
+}
+
+/*!
+  Check, if a device is mounted and return the target (=mountpoint)
+  needed for umounting (idea taken from libunieject).
+ */
+
+static int is_mounted (const char * device, char * target) {
+  FILE * fp;
+  char real_device_1[PATH_MAX];
+  char real_device_2[PATH_MAX];
+
+  char file_device[PATH_MAX];
+  char file_target[PATH_MAX];
+  
+  fp = fopen ( "/proc/mounts", "r");
+  /* Older systems just have /etc/mtab */
+  if(!fp)
+    fp = fopen ( "/etc/mtab", "r");
+
+  /* Neither /proc/mounts nor /etc/mtab could be opened, give up here */
+  if(!fp) return 0;
+
+  /* Get real device */
+  follow_symlink(device, real_device_1);
+    
+  /* Read entries */
+
+  while ( fscanf(fp, "%s %s %*s %*s %*d %*d\n", file_device, file_target) != EOF ) {
+    follow_symlink(file_device, real_device_2);
+    if(!strcmp(real_device_1, real_device_2)) {
+      strcpy(target, file_target);
+      fclose(fp);
+      return 1;
+    }
+      
+  }
+  fclose(fp);
+  return 0;
+}
+
+/*!
+  Umount a filesystem specified by it's mountpoint. We must do this
+  by forking and calling the umount command, because the raw umount
+  (or umount2) system calls will *always* trigger an EPERM even if 
+  we are allowed to umount the filesystem. The umount command is 
+  suid root.
+
+  Code here is inspired by the standard linux eject command by
+  Jeff Tranter and Frank Lichtenheld.
+ */
+
+static int do_umount(char * target) {
+  int status;
+
+  switch (fork()) {
+  case 0: /* child */
+    execlp("pumount", "pumount", target, NULL);
+    execlp("umount", "umount", target, NULL);
+    return -1;
+    break;
+  case -1:
+    return -1;
+    break;
+  default: /* parent */
+    wait(&status);
+    if (WIFEXITED(status) == 0) {
+      return -1;
+    }
+    if (WEXITSTATUS(status) != 0) {
+      return -1;
+    }
+    break;
+  }
+  return 0;
+}
+     
+
+/*!
   Eject media in CD-ROM drive. Return DRIVER_OP_SUCCESS if successful, 
   DRIVER_OP_ERROR on error.
  */
@@ -603,9 +707,14 @@ eject_media_linux (void *p_user_data) {
   _img_private_t *p_env = p_user_data;
   driver_return_code_t ret=DRIVER_OP_SUCCESS;
   int status;
-
+  int was_open = 0;
+  char mount_target[PATH_MAX];
+  
   if ( p_env->gen.fd <= -1 ) {
     p_env->gen.fd = open (p_env->gen.source_name, O_RDONLY|O_NONBLOCK);
+  }
+  else {
+    was_open = 1;
   }
   
   if ( p_env->gen.fd <= -1 ) return DRIVER_OP_ERROR;
@@ -622,6 +731,23 @@ eject_media_linux (void *p_user_data) {
       cdio_info ("Unknown state of CD-ROM (%d)\n", status);
       /* Fall through */
     case CDS_DISC_OK:
+      /* Some systems automount the drive, so we must umount it.
+         We check if the drive is actually mounted */
+      if(is_mounted (p_env->gen.source_name, mount_target)) {
+        /* Try to umount the drive */
+        if(do_umount(mount_target)) {
+          cdio_log(CDIO_LOG_WARN, "Could not umount %s\n",
+                   p_env->gen.source_name);
+          ret=DRIVER_OP_ERROR;
+          break;
+        }
+        /* For some reason, we must close and reopen the device after
+           it got umounted (at least the commandline eject program
+           opens the device just after umounting it) */
+        close(p_env->gen.fd);
+        p_env->gen.fd = open (p_env->gen.source_name, O_RDONLY|O_NONBLOCK);
+      }
+      
       if((ret = ioctl(p_env->gen.fd, CDROMEJECT)) != 0) {
         int eject_error = errno;
         /* Try ejecting the MMC way... */
@@ -642,7 +768,10 @@ eject_media_linux (void *p_user_data) {
     cdio_warn ("CDROM_DRIVE_STATUS failed: %s\n", strerror(errno));
     ret=DRIVER_OP_ERROR;
   }
-  p_env->gen.fd = -1;
+  if(!was_open) {
+    close(p_env->gen.fd);
+    p_env->gen.fd = -1;
+  }
   return ret;
 }
 

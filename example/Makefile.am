@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.38 2006/10/11 12:38:18 rocky Exp $
+#   $Id: Makefile.am,v 1.39 2006/10/21 10:55:18 gmerlin Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006
 #    Rocky Bernstein <rocky@cpan.org>
@@ -30,7 +30,7 @@ endif
 noinst_PROGRAMS = audio cdchange cdtext device drives eject \
 	          isofile isofile2 isofuzzy isolist \
 	          mmc1 mmc2 mmc2a mmc3 $(paranoia_progs) tracks \
-	          sample3 sample4 udf1 udffile
+	          sample3 sample4 udf1 udffile cdio-eject
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
@@ -51,6 +51,9 @@ drives_LDADD          = $(LIBCDIO_LIBS)
 
 eject_DEPENDENCIES    = $(LIBCDIO_DEPS)
 eject_LDADD           = $(LIBCDIO_LIBS)
+
+cdio_eject_DEPENDENCIES = $(LIBCDIO_DEPS)
+cdio_eject_LDADD        = $(LIBCDIO_LIBS)
 
 if BUILD_CD_PARANOIA
 paranoia_LDADD  = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
