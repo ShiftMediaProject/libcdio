@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.102 2006/07/30 13:19:49 rocky Exp $
+$Id: NEWS,v 1.103 2006/10/21 11:38:16 rocky Exp $
 
 version 0.78cvs
 =====================================
@@ -9,6 +9,7 @@ version 0.78cvs
 - libcdio is starting to get updated for UTF-8 support. Strings,
   which are guaranteed to be in UTF-8, are returned as a new type
   cdio_utf8_t, which is typedef'd to char.
+- fixes to eject. On GNU/Linux we unmount filesystems first.
   
 version 0.77
 =====================================
@@ -354,4 +355,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.102 2006/07/30 13:19:49 rocky Exp $
+$Id: NEWS,v 1.103 2006/10/21 11:38:16 rocky Exp $

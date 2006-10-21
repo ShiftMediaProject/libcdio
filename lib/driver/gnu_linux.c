@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.25 2006/10/21 10:55:18 gmerlin Exp $
+    $Id: gnu_linux.c,v 1.26 2006/10/21 11:38:16 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005, 2006 Rocky Bernstein 
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.25 2006/10/21 10:55:18 gmerlin Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.26 2006/10/21 11:38:16 rocky Exp $";
 
 #include <string.h>
 #include <limits.h>
@@ -707,14 +707,14 @@ eject_media_linux (void *p_user_data) {
   _img_private_t *p_env = p_user_data;
   driver_return_code_t ret=DRIVER_OP_SUCCESS;
   int status;
-  int was_open = 0;
+  bool was_open = false;
   char mount_target[PATH_MAX];
   
   if ( p_env->gen.fd <= -1 ) {
     p_env->gen.fd = open (p_env->gen.source_name, O_RDONLY|O_NONBLOCK);
   }
   else {
-    was_open = 1;
+    was_open = true;
   }
   
   if ( p_env->gen.fd <= -1 ) return DRIVER_OP_ERROR;
@@ -722,10 +722,7 @@ eject_media_linux (void *p_user_data) {
   if ((status = ioctl(p_env->gen.fd, CDROM_DRIVE_STATUS, CDSL_CURRENT)) > 0) {
     switch(status) {
     case CDS_TRAY_OPEN:
-      if((ret = ioctl(p_env->gen.fd, CDROMCLOSETRAY)) != 0) {
-        cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
-        ret = DRIVER_OP_ERROR;
-      }
+      cdio_info ("Drive status reports that tray is open\n");
       break;
     default:
       cdio_info ("Unknown state of CD-ROM (%d)\n", status);

@@ -1,4 +1,4 @@
-$Id: README,v 1.26 2006/04/15 16:22:49 rocky Exp $
+$Id: README,v 1.27 2006/10/21 11:38:16 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -20,6 +20,9 @@ audio.c:     Sample program to show audio controls.
 
 cdchange.c:  A program to test if a CD has been changed since the last
 	     change test.
+
+cdio-eject.c: a stripped-down "eject" command to open or close a CDROM
+             tray
 
 cdtext.c:    A program to show CD-Text and CD disc mode info.
 
