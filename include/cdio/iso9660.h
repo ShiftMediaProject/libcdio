@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.94 2006/06/02 21:54:21 gmerlin Exp $
+    $Id: iso9660.h,v 1.95 2006/10/27 10:38:41 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
@@ -624,7 +624,7 @@ typedef struct _iso9660_s iso9660_t;
 
     @param start location to start reading from
 
-    @i_size number of blocks to read. Each block is ISO_BLOCKSIZE bytes
+    @param i_size number of blocks to read. Each block is ISO_BLOCKSIZE bytes
     long.
 
     @return number of bytes (not blocks) read

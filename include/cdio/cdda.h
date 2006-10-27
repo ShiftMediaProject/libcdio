@@ -1,5 +1,5 @@
 /*
-  $Id: cdda.h,v 1.28 2006/05/03 00:29:40 rocky Exp $
+  $Id: cdda.h,v 1.29 2006/10/27 10:38:41 rocky Exp $
 
   Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Xiph.org
@@ -49,7 +49,7 @@ extern "C" {
      Flags for simulating jitter used in testing.
 
      The enumeration type one probably wouldn't really use in a program.
-     It is here instead of #defines to give symbolic names that can be
+     It is here instead of defines to give symbolic names that can be
      helpful in debuggers where wants just to say refer to
      CDDA_TEST_JITTER_SMALL and get the correct value.
   */
@@ -144,7 +144,7 @@ struct cdrom_drive_s {
      Flags for simulating jitter used in testing.
 
      The enumeration type one probably wouldn't really use in a program.
-     It is here instead of #defines to give symbolic names that can be
+     It is here instead of defines to give symbolic names that can be
      helpful in debuggers where wants just to say refer to
      CDDA_TEST_JITTER_SMALL and get the correct value.
   */

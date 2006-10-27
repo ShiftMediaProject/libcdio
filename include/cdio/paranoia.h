@@ -1,5 +1,5 @@
 /*
-  $Id: paranoia.h,v 1.12 2006/03/18 18:37:56 rocky Exp $
+  $Id: paranoia.h,v 1.13 2006/10/27 10:38:41 rocky Exp $
 
   Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -41,7 +41,7 @@
   Flags used in paranoia_modeset. 
 
   The enumeration type one probably wouldn't really use in a program.
-  It is here instead of #defines to give symbolic names that can be
+  It is here instead of defines to give symbolic names that can be
   helpful in debuggers where wants just to say refer to
   PARANOIA_MODE_DISABLE and get the correct value.
 */
@@ -64,7 +64,7 @@ typedef enum  {
    Flags set in a callback.
 
   The enumeration type one probably wouldn't really use in a program.
-  It is here instead of #defines to give symbolic names that can be
+  It is here instead of defines to give symbolic names that can be
   helpful in debuggers where wants just to say refer to
   PARANOIA_CB_READ and get the correct value.
 */
@@ -112,10 +112,10 @@ extern "C" {
     Set the kind of repair you want to on for reading. 
     The modes are listed above
 
-    @param p       paranoia type
-    @mode  mode    paranoia mode flags built from values in 
-                   paranoia_mode_t, e.g. 
-		   PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP
+    @param p             paranoia type
+    @param mode_flags    paranoia mode flags built from values in 
+                         paranoia_mode_t, e.g. 
+		         PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP
    */
   extern void cdio_paranoia_modeset(cdrom_paranoia_t *p, int mode_flags);
 

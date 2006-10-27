@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.28 2006/10/11 12:38:18 rocky Exp $
+    $Id: mmc.h,v 1.29 2006/10/27 10:38:41 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@cpan.org>
 
@@ -546,6 +546,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   /*! 
     Return results of media status
     @param p_cdio the CD object to be acted upon.
+    @param out_buf media status code from operation
     @return DRIVER_OP_SUCCESS (0) if we got the status.
     return codes are the same as driver_return_code_t
    */
