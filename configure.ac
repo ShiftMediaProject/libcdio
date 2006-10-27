@@ -19,7 +19,7 @@ define(RELEASE_NUM, 78)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.195 2006/10/27 09:11:14 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.196 2006/10/27 10:43:32 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -540,7 +540,7 @@ if test "${enable_jolet}" != "no" ; then
      You must have also libiconv installed to get Joliet extension support.])
      HAVE_JOLIET=1
   else
-     AC_MSG_WARN([You must have iconv installed to get Joliet extension support.])
+     AC_MSG_ERROR([You must have iconv installed.])
   fi
 fi
 AC_SUBST(HAVE_JOLIET)
@@ -583,7 +583,7 @@ AC_SUBST(CDDB_LIBS)
 AC_DEFINE(HAVE_KEYPAD, [], [Define this if your libcurses has keypad])
 if test x$enable_cdda_player = xyes; then
     AC_CHECK_LIB(ncurses, mvprintw, 
-      [LIBCURSES=ncurses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
+E      [LIBCURSES=ncurses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
       AC_CHECK_LIB(curses, mvprintw, 
       [LIBCURSES=curses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
       [AC_MSG_WARN([Will not build cdda-player - did not find libcurses or libncurses]) 
