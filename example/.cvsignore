@@ -5,6 +5,7 @@
 Makefile
 Makefile.in
 audio
+cdio-eject
 cdtext
 copying
 device
