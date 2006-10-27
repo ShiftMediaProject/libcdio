@@ -1,6 +1,7 @@
-$Id: NEWS,v 1.103 2006/10/21 11:38:16 rocky Exp $
+$Id: NEWS,v 1.104 2006/10/27 09:09:08 rocky Exp $
 
-version 0.78cvs
+version 0.78
+2006-10-27
 =====================================
 - add mmc-tool
 - add mmc-close-tray
@@ -355,4 +356,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.103 2006/10/21 11:38:16 rocky Exp $
+$Id: NEWS,v 1.104 2006/10/27 09:09:08 rocky Exp $
