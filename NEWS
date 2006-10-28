@@ -1,4 +1,10 @@
-$Id: NEWS,v 1.104 2006/10/27 09:09:08 rocky Exp $
+$Id: NEWS,v 1.105 2006/10/28 02:18:13 rocky Exp $
+
+version 0.78.1
+2006-10-27
+
+- Fix bug in libcdio.so version numbering. Also another small bug.
+  Thanks to Janos Farkas 
 
 version 0.78
 2006-10-27
@@ -356,4 +362,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.104 2006/10/27 09:09:08 rocky Exp $
+$Id: NEWS,v 1.105 2006/10/28 02:18:13 rocky Exp $
