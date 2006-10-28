@@ -15,11 +15,11 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 dnl 02110-1301 USA.
 
-define(RELEASE_NUM, 78)
+define(RELEASE_NUM, 78.1)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.196 2006/10/27 10:43:32 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.197 2006/10/28 02:11:24 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -583,7 +583,7 @@ AC_SUBST(CDDB_LIBS)
 AC_DEFINE(HAVE_KEYPAD, [], [Define this if your libcurses has keypad])
 if test x$enable_cdda_player = xyes; then
     AC_CHECK_LIB(ncurses, mvprintw, 
-E      [LIBCURSES=ncurses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
+      [LIBCURSES=ncurses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
       AC_CHECK_LIB(curses, mvprintw, 
       [LIBCURSES=curses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
       [AC_MSG_WARN([Will not build cdda-player - did not find libcurses or libncurses]) 
