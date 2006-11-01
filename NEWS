@@ -1,4 +1,10 @@
-$Id: NEWS,v 1.105 2006/10/28 02:18:13 rocky Exp $
+$Id: NEWS,v 1.106 2006/11/01 04:09:20 rocky Exp $
+
+version 0.78.1
+2006-10-31
+- preprocessor symbol LIBCDIO_VERSION number has to be an integer.
+  (Bug caused by naming version 0.78.1)
+                                     ^
 
 version 0.78.1
 2006-10-27
@@ -362,4 +368,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.105 2006/10/28 02:18:13 rocky Exp $
+$Id: NEWS,v 1.106 2006/11/01 04:09:20 rocky Exp $
