@@ -1,7 +1,7 @@
 /*
-  $Id: iso-read.c,v 1.12 2006/03/17 19:36:54 rocky Exp $
+  $Id: iso-read.c,v 1.13 2006/11/16 00:31:28 rocky Exp $
 
-  Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@ struct arguments
   char          *iso9660_image; 
   int            debug_level;
   int            no_header;
+  int            ignore;
 } opts;
 
 /* Parse a options. */
@@ -78,6 +79,7 @@ parse_options (int argc, char *argv[])
     "  -i, --image=FILE           Read from ISO-9660 image. This option is mandatory\n"
     "  -e, --extract=FILE         Extract FILE from ISO-9660 image. This option is\n"
     "                             mandatory.\n"
+    "  -k, --ignore               Ignore read error(s), i.e. keep going\n"
     "  --no-header                Don't display header and copyright (for\n"
     "                             regression testing)\n"
     "  -o, --output-file=FILE     Output file. This option is mandatory.\n"
@@ -93,12 +95,13 @@ parse_options (int argc, char *argv[])
     "        [--usage]\n";
   
   /* Command-line options */
-  const char* optionsString = "d:i:e:o:V?";
+  const char* optionsString = "d:i:e:o:Vk?";
   struct option optionsTable[] = {
     {"debug", required_argument, NULL, 'd' },
     {"image", required_argument, NULL, 'i' },
     {"extract", required_argument, NULL, 'e' },
     {"no-header", no_argument, &opts.no_header, 1 }, 
+    {"ignore", no_argument, &opts.ignore, 1, 'k' }, 
     {"output-file", required_argument, NULL, 'o' },
     {"version", no_argument, NULL, 'V' },
 
@@ -115,6 +118,7 @@ parse_options (int argc, char *argv[])
       {
       case 'd': opts.debug_level = atoi(optarg); break;
       case 'i': opts.iso9660_image = strdup(optarg); break;
+      case 'k': opts.ignore        = 1; break;
       case 'e': opts.file_name = strdup(optarg); break;
       case 'o': opts.output_file = strdup(optarg); break;
 
@@ -193,6 +197,7 @@ static void
 init(void) 
 {
   opts.debug_level   = 0;
+  opts.ignore        = 0;
   opts.file_name     = NULL;
   opts.output_file   = NULL;
   opts.iso9660_image = NULL;
@@ -260,7 +265,7 @@ main(int argc, char *argv[])
       {
 	report(stderr, "Error reading ISO 9660 file at lsn %lu\n",
 	       (long unsigned int) statbuf->lsn + (i / ISO_BLOCKSIZE));
-	return 4;
+	if (!opts.ignore) return 4;
       }
       
       
