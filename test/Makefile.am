@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.55 2006/06/03 00:04:54 rocky Exp $
+#   $Id: Makefile.am,v 1.56 2006/11/16 15:07:07 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
 #    <rocky@cpan.org>
@@ -78,7 +78,7 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 	     bad-cat1.toc bad-cat2.toc bad-cat3.toc bad-file.toc \
 	     copying.iso  copying.right copying-rr.iso copying-rr.right \
 	     joliet.iso joliet.right joliet-nojoliet.right \
-	     udf102.iso copying.gpl
+	     udf102.iso copying.gpl copying-rr.gpl
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \

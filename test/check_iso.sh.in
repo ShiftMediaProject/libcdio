@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_iso.sh.in,v 1.11 2006/06/03 00:04:54 rocky Exp $
+#$Id: check_iso.sh.in,v 1.12 2006/11/16 15:07:07 rocky Exp $
 
 if test -z $srcdir ; then
   srcdir=`pwd`
@@ -19,7 +19,7 @@ test_iso_info  "$opts" ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC 'iso-info basic test' "$ISO_INFO $opts"
 
-opts="--image ${srcdir}/${fname}.iso --extract $fname "
+opts="--ignore --image ${srcdir}/${fname}.iso --extract $fname "
 test_iso_read  "$opts" ${fname} ${srcdir}/copying.gpl
 RC=$?
 check_result $RC 'iso-read basic test' "$ISO_READ $opts"
@@ -30,6 +30,11 @@ if test -n "@HAVE_ROCK@"; then
   test_iso_info  "$opts" ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
   check_result $RC 'iso-info Rock Ridge test' "$ISO_INFO $opts"
+
+  opts="--image ${srcdir}/${fname}.iso --extract COPYING"
+  test_iso_read  "$opts" ${fname} ${srcdir}/copying-rr.gpl
+  RC=$?
+  check_result $RC 'iso-read RR test' "$ISO_READ $opts"
 fi
 
 if test -n "@HAVE_JOLIET@" ; then
