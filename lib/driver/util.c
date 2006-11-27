@@ -1,5 +1,5 @@
 /*
-    $Id: util.c,v 1.3 2006/03/18 00:53:20 rocky Exp $
+    $Id: util.c,v 1.4 2006/11/27 19:31:37 gmerlin Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -27,6 +27,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
+
+#ifdef HAVE_UNISTD_H // readlink
+#include <unistd.h>
+#endif
 
 #ifdef HAVE_INTTYPES_H
 #include "inttypes.h"
@@ -36,7 +41,7 @@
 #include <cdio/types.h>
 #include <cdio/util.h>
 
-static const char _rcsid[] = "$Id: util.c,v 1.3 2006/03/18 00:53:20 rocky Exp $";
+static const char _rcsid[] = "$Id: util.c,v 1.4 2006/11/27 19:31:37 gmerlin Exp $";
 
 size_t
 _cdio_strlenv(char **str_array)
@@ -143,6 +148,36 @@ uint8_t
 cdio_from_bcd8(uint8_t p)
 {
   return (0xf & p)+(10*(p >> 4));
+}
+
+/*!
+  Follow symlinks until we have the real device file
+  (idea taken from libunieject). 
+*/
+
+void cdio_follow_symlink (const char * src, char * dst) {
+#ifdef HAVE_READLINK
+  char tmp_src[PATH_MAX];
+  char tmp_dst[PATH_MAX];
+  
+  int len;
+
+  strcpy(tmp_src, src);
+  while(1) {
+    len = readlink(tmp_src, tmp_dst, PATH_MAX);
+    if(len < 0) {
+      strcpy(dst, tmp_src);
+      return;
+    }
+    else {
+      tmp_dst[len] = '\0';
+      strcpy(tmp_src, tmp_dst);
+    }
+  }
+#else
+  strcpy(dst, src);
+#endif
+  
 }
 
 

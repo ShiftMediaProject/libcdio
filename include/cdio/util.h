@@ -1,5 +1,5 @@
 /*
-    $Id: util.h,v 1.10 2006/03/18 00:53:20 rocky Exp $
+    $Id: util.h,v 1.11 2006/11/27 19:31:37 gmerlin Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
@@ -100,6 +100,8 @@ _cdio_strsplit(const char str[], char delim);
 uint8_t cdio_to_bcd8(uint8_t n);
 uint8_t cdio_from_bcd8(uint8_t p);
 
+void cdio_follow_symlink (const char * src, char * dst);
+  
 #ifdef __cplusplus
 }
 #endif

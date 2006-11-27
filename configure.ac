@@ -19,7 +19,7 @@ define(RELEASE_NUM, 79cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.203 2006/11/16 00:47:28 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.204 2006/11/27 19:31:37 gmerlin Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -32,7 +32,7 @@ AM_INIT_AUTOMAKE([1.7])
 AC_CANONICAL_HOST
 AM_CONFIG_HEADER(config.h)
 
-LIBCDIO_VERSION_NUM=`echo RELEASE_NUM | cut -d . -f 1`
+LIBCDIO_VERSION_NUM=`echo RELEASE_NUM | cut -d . -f 1 | tr -d a-z`
 AC_SUBST(LIBCDIO_VERSION_NUM)
 
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
@@ -480,7 +480,7 @@ AC_SUBST(LIBCDIO_SOURCE_PATH)
 
 AC_CHECK_FUNCS( [bzero drand48 ftruncate geteuid getgid \
 		 getuid getpwuid gettimeofday lstat memcpy memset \
-		 rand seteuid setegid snprintf  tzset vsnprintf] )
+		 rand seteuid setegid snprintf  tzset vsnprintf readlink] )
 
 AC_CHECK_MEMBER([struct tm.tm_gmtoff],
                 [AC_DEFINE(HAVE_TM_GMTOFF, 1,

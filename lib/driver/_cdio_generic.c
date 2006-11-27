@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.22 2006/03/26 02:35:26 rocky Exp $
+    $Id: _cdio_generic.c,v 1.23 2006/11/27 19:31:37 gmerlin Exp $
 
     Copyright (C) 2004, 2005, 2006
     Rocky Bernstein <rockyb@users.sourceforge.net>
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.22 2006/03/26 02:35:26 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.23 2006/11/27 19:31:37 gmerlin Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,6 +38,7 @@ static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.22 2006/03/26 02:35:26 ro
 #endif /*HAVE_UNISTD_H*/
 
 #include <fcntl.h>
+#include <limits.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -221,24 +222,22 @@ cdio_add_device_list(char **device_list[], const char *drive,
 {
   if (NULL != drive) {
     unsigned int j;
-
+    char real_device_1[PATH_MAX];
+    char real_device_2[PATH_MAX];
+    cdio_follow_symlink(drive, real_device_1);
     /* Check if drive is already in list. */
     for (j=0; j<*num_drives; j++) {
-      if (strcmp((*device_list)[j], drive) == 0) break;
+      cdio_follow_symlink((*device_list)[j], real_device_2);
+      if (strcmp(real_device_1, real_device_2) == 0) break;
     }
 
     if (j==*num_drives) {
       /* Drive not in list. Add it. */
       (*num_drives)++;
-      if (*device_list) {
-        *device_list = realloc(*device_list, (*num_drives) * sizeof(char *));
-      } else {
-        /* num_drives should be 0. Add assert? */
-        *device_list = malloc((*num_drives) * sizeof(char *));
+      *device_list = realloc(*device_list, (*num_drives) * sizeof(char *));
+      (*device_list)[*num_drives-1] = strdup(drive);
       }
       
-      (*device_list)[*num_drives-1] = strdup(drive);
-    }
   } else {
     (*num_drives)++;
     if (*device_list) {

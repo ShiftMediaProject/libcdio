@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.26 2006/10/21 11:38:16 rocky Exp $
+    $Id: gnu_linux.c,v 1.27 2006/11/27 19:31:37 gmerlin Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005, 2006 Rocky Bernstein 
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.26 2006/10/21 11:38:16 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.27 2006/11/27 19:31:37 gmerlin Exp $";
 
 #include <string.h>
 #include <limits.h>
@@ -595,30 +595,6 @@ get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
   }
 }
 
-/*!
-  Follow symlinks until we have the real device file
-  (idea taken from libunieject). 
-*/
-
-static void follow_symlink (const char * src, char * dst) {
-  char tmp_src[PATH_MAX];
-  char tmp_dst[PATH_MAX];
-  
-  int len;
-
-  strcpy(tmp_src, src);
-  while(1) {
-    len = readlink(tmp_src, tmp_dst, PATH_MAX);
-    if(len < 0) {
-      strcpy(dst, tmp_src);
-      return;
-    }
-    else {
-      tmp_dst[len] = '\0';
-      strcpy(tmp_src, tmp_dst);
-    }
-  }
-}
 
 /*!
   Check, if a device is mounted and return the target (=mountpoint)
@@ -642,12 +618,12 @@ static int is_mounted (const char * device, char * target) {
   if(!fp) return 0;
 
   /* Get real device */
-  follow_symlink(device, real_device_1);
+  cdio_follow_symlink(device, real_device_1);
     
   /* Read entries */
 
   while ( fscanf(fp, "%s %s %*s %*s %*d %*d\n", file_device, file_target) != EOF ) {
-    follow_symlink(file_device, real_device_2);
+    cdio_follow_symlink(file_device, real_device_2);
     if(!strcmp(real_device_1, real_device_2)) {
       strcpy(target, file_target);
       fclose(fp);
@@ -1351,9 +1327,20 @@ set_arg_linux (void *p_user_data, const char key[], const char value[])
 static char checklist1[][40] = {
   {"cdrom"}, {"dvd"}, {""}
 };
-static char checklist2[][40] = {
-  {"?a hd?"}, {"?0 scd?"}, {"?0 sr?"}, {""}
-};
+
+static struct
+  {
+    const char * format;
+    int num_min;
+    int num_max;
+  }
+checklist2[] =
+  {
+    { "/dev/hd%c",  'a', 'z' },
+    { "/dev/scd%d", 0,   27 },
+    { "/dev/sr%d",  0,   27 },
+    { /* End of array */ }
+  };
 
 /* Set CD-ROM drive speed */
 static driver_return_code_t
@@ -1379,15 +1366,14 @@ cdio_get_devices_linux (void)
   unsigned int i;
   char drive[40];
   char *ret_drive;
-  bool exists;
   char **drives = NULL;
   unsigned int num_drives=0;
-  
+
   /* Scan the system for CD-ROM drives.
   */
   for ( i=0; strlen(checklist1[i]) > 0; ++i ) {
     sprintf(drive, "/dev/%s", checklist1[i]);
-    if ( (exists=is_cdrom_linux(drive, NULL)) > 0 ) {
+    if ( is_cdrom_linux(drive, NULL) > 0 ) {
       cdio_add_device_list(&drives, drive, &num_drives);
     }
   }
@@ -1407,17 +1393,11 @@ cdio_get_devices_linux (void)
   /* Scan the system for CD-ROM drives.
      Not always 100% reliable, so use the USE_MNTENT code above first.
   */
-  for ( i=0; strlen(checklist2[i]) > 0; ++i ) {
+  for ( i=0; checklist2[i].format; ++i ) {
     unsigned int j;
-    char *insert;
-    exists = true;
-    for ( j=checklist2[i][1]; exists; ++j ) {
-      sprintf(drive, "/dev/%s", &checklist2[i][3]);
-      insert = strchr(drive, '?');
-      if ( insert != NULL ) {
-	*insert = j;
-      }
-      if ( (exists=is_cdrom_linux(drive, NULL)) > 0 ) {
+    for ( j=checklist2[i].num_min; j<=checklist2[i].num_max; ++j ) {
+      sprintf(drive, checklist2[i].format, j);
+      if ( (is_cdrom_linux(drive, NULL)) > 0 ) {
 	cdio_add_device_list(&drives, drive, &num_drives);
       }
     }
@@ -1439,14 +1419,13 @@ cdio_get_default_device_linux(void)
 #else
   unsigned int i;
   char drive[40];
-  bool exists;
   char *ret_drive;
 
   /* Scan the system for CD-ROM drives.
   */
   for ( i=0; strlen(checklist1[i]) > 0; ++i ) {
     sprintf(drive, "/dev/%s", checklist1[i]);
-    if ( (exists=is_cdrom_linux(drive, NULL)) > 0 ) {
+    if ( is_cdrom_linux(drive, NULL) > 0 ) {
       return strdup(drive);
     }
   }
@@ -1462,17 +1441,11 @@ cdio_get_default_device_linux(void)
   /* Scan the system for CD-ROM drives.
      Not always 100% reliable, so use the USE_MNTENT code above first.
   */
-  for ( i=0; strlen(checklist2[i]) > 0; ++i ) {
+  for ( i=0; checklist2[i].format; ++i ) {
     unsigned int j;
-    char *insert;
-    exists = true;
-    for ( j=checklist2[i][1]; exists; ++j ) {
-      sprintf(drive, "/dev/%s", &checklist2[i][3]);
-      insert = strchr(drive, '?');
-      if ( insert != NULL ) {
-	*insert = j;
-      }
-      if ( (exists=is_cdrom_linux(drive, NULL)) > 0 ) {
+    for ( j=checklist2[i].num_min; j<=checklist2[i].num_max; ++j ) {
+      sprintf(drive, checklist2[i].format, j);
+      if ( is_cdrom_linux(drive, NULL) > 0 ) {
 	return(strdup(drive));
       }
     }
