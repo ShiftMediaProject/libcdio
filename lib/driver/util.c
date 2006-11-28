@@ -1,5 +1,5 @@
 /*
-    $Id: util.c,v 1.4 2006/11/27 19:31:37 gmerlin Exp $
+    $Id: util.c,v 1.5 2006/11/28 12:14:16 gmerlin Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
@@ -41,7 +41,7 @@
 #include <cdio/types.h>
 #include <cdio/util.h>
 
-static const char _rcsid[] = "$Id: util.c,v 1.4 2006/11/27 19:31:37 gmerlin Exp $";
+static const char _rcsid[] = "$Id: util.c,v 1.5 2006/11/28 12:14:16 gmerlin Exp $";
 
 size_t
 _cdio_strlenv(char **str_array)
@@ -157,8 +157,8 @@ cdio_from_bcd8(uint8_t p)
 
 void cdio_follow_symlink (const char * src, char * dst) {
 #ifdef HAVE_READLINK
-  char tmp_src[PATH_MAX];
-  char tmp_dst[PATH_MAX];
+  char tmp_src[PATH_MAX+1];
+  char tmp_dst[PATH_MAX+1];
   
   int len;
 
@@ -166,16 +166,16 @@ void cdio_follow_symlink (const char * src, char * dst) {
   while(1) {
     len = readlink(tmp_src, tmp_dst, PATH_MAX);
     if(len < 0) {
-      strcpy(dst, tmp_src);
+      strncpy(dst, tmp_src, PATH_MAX);
       return;
     }
     else {
       tmp_dst[len] = '\0';
-      strcpy(tmp_src, tmp_dst);
+      strncpy(tmp_src, tmp_dst, PATH_MAX);
     }
   }
 #else
-  strcpy(dst, src);
+  strncpy(dst, src, PATH_MAX);
 #endif
   
 }
