@@ -19,7 +19,7 @@ define(RELEASE_NUM, 79cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.204 2006/11/27 19:31:37 gmerlin Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.205 2006/11/30 02:08:14 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -593,7 +593,7 @@ if test x$enable_cdda_player = xyes; then
     fi   
 fi
 
-AM_CONDITIONAL(BUILD_CDDA_PLAYER, test "x$enable_cdda_player" = "xyes")
+AM_CONDITIONAL(BUILD_CDDA_PLAYER, test "x$enable_cdda_player" = "xno")
 AC_SUBST(CDDA_PLAYER_LIBS)
 
 if test x$enable_vcd_info = x; then
