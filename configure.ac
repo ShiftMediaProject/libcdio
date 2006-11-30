@@ -19,7 +19,7 @@ define(RELEASE_NUM, 79cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.205 2006/11/30 02:08:14 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.206 2006/11/30 02:22:01 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -593,14 +593,14 @@ if test x$enable_cdda_player = xyes; then
     fi   
 fi
 
-AM_CONDITIONAL(BUILD_CDDA_PLAYER, test "x$enable_cdda_player" = "xno")
+AM_CONDITIONAL(BUILD_CDDA_PLAYER, test "x$enable_cdda_player" = "xyes")
 AC_SUBST(CDDA_PLAYER_LIBS)
 
 if test x$enable_vcd_info = x; then
 AC_ARG_ENABLE(vcd_info,
-	[  --disable-vcd-info      don't include Video CD Info from libvcd],
-		enable_vcd_info=no,
-		enable_vcd_info=yes)
+	[  --enable-vcd-info      include Video CD Info from libvcd],
+		enable_vcd_info=yes,
+		enable_vcd_info=no)
 fi
 if test x$enable_vcd_info = xyes; then
   PKG_CHECK_MODULES(VCDINFO, libvcdinfo >= 0.7.21, 
