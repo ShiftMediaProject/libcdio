@@ -1,5 +1,5 @@
 /*
-  $Id: iso-read.c,v 1.13 2006/11/16 00:31:28 rocky Exp $
+  $Id: iso-read.c,v 1.14 2006/12/04 02:53:10 rocky Exp $
 
   Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
   
@@ -101,7 +101,7 @@ parse_options (int argc, char *argv[])
     {"image", required_argument, NULL, 'i' },
     {"extract", required_argument, NULL, 'e' },
     {"no-header", no_argument, &opts.no_header, 1 }, 
-    {"ignore", no_argument, &opts.ignore, 1, 'k' }, 
+    {"ignore", no_argument, &opts.ignore, 'k' }, 
     {"output-file", required_argument, NULL, 'o' },
     {"version", no_argument, NULL, 'V' },
 
