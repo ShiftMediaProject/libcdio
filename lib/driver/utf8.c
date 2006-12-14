@@ -18,6 +18,7 @@
 */
 /* UTF-8 support */
 
+#ifdef HAVE_JOLIET
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -200,3 +201,4 @@ bool cdio_charset_to_utf8(char *src, size_t src_len, cdio_utf8_t **dst,
   iconv_close(ic);
   return result;
   }
+#endif /* HAVE_JOLIET */
