@@ -19,7 +19,7 @@ define(RELEASE_NUM, 79cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.206 2006/11/30 02:22:01 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.207 2006/12/14 00:19:58 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -531,7 +531,7 @@ AC_ARG_ENABLE(joliet,
 		enable_joliet=yes,
 		enable_joliet=no)
 fi
-if test "${enable_jolet}" != "no" ; then
+if test "${enable_joliet}" != "no" ; then
   AM_ICONV
   AM_LANGINFO_CODESET
   if test "$am_cv_func_iconv" = yes ; then 
