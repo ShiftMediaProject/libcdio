@@ -1,5 +1,5 @@
 /*
-    $Id: read.c,v 1.10 2005/11/10 00:44:41 rocky Exp $
+    $Id: read.c,v 1.11 2007/02/25 15:58:31 rocky Exp $
 
     Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -87,10 +87,17 @@ cdio_lseek (const CdIo_t *p_cdio, off_t offset, int whence)
   return DRIVER_OP_UNSUPPORTED;
 }
 
-/*!
-  Reads into buf the next size bytes.
-  Returns -1 on error. 
-  Similar to (if not the same as) libc's read()
+/*!  Reads into buf the next size bytes.  Similar to (if not the
+  same as) libc's read(). This is a "cooked" read, or one handled by
+  the OS. It probably won't work on audio data. For that use
+  cdio_read_audio_sector(s).
+
+  @param p_cdio object to read from
+  @param p_buf place to read data into. The caller should make sure
+               this location can store at least i_size bytes.
+  @param i_size number of bytes to read
+
+  @return (ssize_t) -1 on error. 
 */
 ssize_t
 cdio_read (const CdIo_t *p_cdio, void *p_buf, size_t i_size)

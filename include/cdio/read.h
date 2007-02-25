@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: read.h,v 1.11 2006/01/23 20:47:33 rocky Exp $
+    $Id: read.h,v 1.12 2007/02/25 15:58:31 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -59,9 +59,10 @@ extern "C" {
 
   off_t cdio_lseek(const CdIo_t *p_cdio, off_t offset, int whence);
     
-  /*!
-    Reads into buf the next size bytes.
-    Similar to (if not the same as) libc's read()
+  /*!  Reads into buf the next size bytes.  Similar to (if not the
+    same as) libc's read(). This is a "cooked" read, or one handled by
+    the OS. It probably won't work on audio data. For that use
+    cdio_read_audio_sector(s).
 
     @param p_cdio object to read from
     @param p_buf place to read data into. The caller should make sure
