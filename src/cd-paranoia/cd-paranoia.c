@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+ * Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
  *           (C) 1998 Monty <xiphmont@mit.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -652,6 +652,7 @@ get_int_arg(char c, long int *pi_arg)
 	    " but not found. Option ignored\n", c);
     return false;
   }
+  errno = 0;
   i_arg = strtol(optarg, &p_end, 10);
   if (errno == ERANGE) {
     fprintf(stderr,

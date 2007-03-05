@@ -1,7 +1,7 @@
 /*
-  $Id: cdchange.c,v 1.2 2006/01/24 00:53:19 rocky Exp $
+  $Id: cdchange.c,v 1.3 2007/03/05 11:18:49 rocky Exp $
 
-  Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -50,6 +50,7 @@ main(int argc, const char *argv[])
   if (argc > 1) {
     p_cdio = cdio_open (argv[1], DRIVER_DEVICE);
     if (argc > 2) {
+      errno = 0;
       i_sleep = strtol(argv[2], (char **)NULL, 10);
       if (errno != 0) {
 	printf("Invalid sleep parameter %s\n", argv[2]);

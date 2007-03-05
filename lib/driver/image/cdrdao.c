@@ -1,7 +1,7 @@
 /*
-    $Id: cdrdao.c,v 1.21 2006/02/27 10:27:39 flameeyes Exp $
+    $Id: cdrdao.c,v 1.22 2007/03/05 11:18:49 rocky Exp $
 
-    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
     toc reading routine adapted from cuetools
     Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.21 2006/02/27 10:27:39 flameeyes Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.22 2007/03/05 11:18:49 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -758,6 +758,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	    if ( psz_field[0] == '#') {
 	      long int offset;
 	      psz_field++;
+	      errno = 0;
 	      offset = strtol(psz_field, (char **)NULL, 10);
 	      if ( 0 != errno ) {
 		cdio_log (log_level, 

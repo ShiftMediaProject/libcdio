@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660.c,v 1.27 2006/09/26 18:07:59 flameeyes Exp $
+    $Id: iso9660.c,v 1.28 2007/03/05 11:18:49 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.27 2006/09/26 18:07:59 flameeyes Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.28 2007/03/05 11:18:49 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -169,6 +169,7 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
     char num[10];                                                       \
     memcpy(num, p_ldate->LT_FIELD, sizeof(p_ldate->LT_FIELD));          \
     num[sizeof(p_ldate->LT_FIELD)+1] = '\0';                            \
+    errno = 0;                                                          \
     p_tm->TM_FIELD = strtol(num,                                        \
                             (char **)NULL, 10)+ADD_CONSTANT;            \
     if (0 != errno) return false;                                       \
