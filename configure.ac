@@ -19,7 +19,7 @@ define(RELEASE_NUM, 79cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.207 2006/12/14 00:19:58 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.208 2007/03/05 11:49:24 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -179,7 +179,7 @@ AC_DEFINE(LIBCDIO_CONFIG_H, 1,
 dnl headers
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(errno.h fcntl.h glob.h pwd.h)
+AC_CHECK_HEADERS(errno.h fcntl.h glob.h limits.h pwd.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h)
 AC_CHECK_HEADERS(sys/time.h sys/timeb.h)
 AC_CHECK_HEADERS(ncurses.h curses.h, break, [enable_cdda_player='no'])

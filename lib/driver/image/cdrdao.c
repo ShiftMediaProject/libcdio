@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.22 2007/03/05 11:18:49 rocky Exp $
+    $Id: cdrdao.c,v 1.23 2007/03/05 11:49:24 rocky Exp $
 
     Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.22 2007/03/05 11:18:49 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.23 2007/03/05 11:49:24 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -36,6 +36,9 @@ static const char _rcsid[] = "$Id: cdrdao.c,v 1.22 2007/03/05 11:18:49 rocky Exp
 #include <cdio/util.h>
 #include <cdio/version.h>
 
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
@@ -760,7 +763,8 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	      psz_field++;
 	      errno = 0;
 	      offset = strtol(psz_field, (char **)NULL, 10);
-	      if ( 0 != errno ) {
+	      if ( (LONG_MIN == offset || LONG_MAX == offset) 
+		   && 0 != errno ) {
 		cdio_log (log_level, 
 			  "%s line %d: can't convert `%s' to byte offset", 
 			  psz_cue_name, i_line, psz_field);

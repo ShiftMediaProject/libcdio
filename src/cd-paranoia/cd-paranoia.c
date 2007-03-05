@@ -61,6 +61,10 @@
 # include <stdarg.h>
 #endif
 
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
+
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
@@ -654,7 +658,7 @@ get_int_arg(char c, long int *pi_arg)
   }
   errno = 0;
   i_arg = strtol(optarg, &p_end, 10);
-  if (errno == ERANGE) {
+  if ( (LONG_MIN == i_arg || LONG_MAX == i_arg) && (0 != errno) ) {
     fprintf(stderr,
 	    "Value '%s' for option -%c out of range. Value %ld "
 	    "used instead.\n", optarg, c, i_arg);

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.28 2007/03/05 11:18:49 rocky Exp $
+    $Id: iso9660.c,v 1.29 2007/03/05 11:49:24 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
@@ -43,6 +43,9 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -54,7 +57,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.28 2007/03/05 11:18:49 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.29 2007/03/05 11:49:24 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -172,7 +175,9 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
     errno = 0;                                                          \
     p_tm->TM_FIELD = strtol(num,                                        \
                             (char **)NULL, 10)+ADD_CONSTANT;            \
-    if (0 != errno) return false;                                       \
+    errno = 0;                                                          \
+    if ((LONG_MIN==p_tm->TM_FIELD || LONG_MAX==p_tm->TM_FIELD) &&       \
+        0 != errno) return false;                                       \
   }
     
 /*!
