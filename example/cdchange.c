@@ -1,5 +1,5 @@
 /*
-  $Id: cdchange.c,v 1.4 2007/03/05 11:49:24 rocky Exp $
+  $Id: cdchange.c,v 1.5 2007/03/07 04:35:47 rocky Exp $
 
   Copyright (C) 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
   
@@ -56,7 +56,7 @@ main(int argc, const char *argv[])
     if (argc > 2) {
       errno = 0;
       i_sleep = strtol(argv[2], (char **)NULL, 10);
-      if ( (LONG_MIN == i_sleep || LONG_MAX == i_sleep && Lerrno != 0) ) {
+      if ( (LONG_MIN == i_sleep || LONG_MAX == i_sleep && errno != 0) ) {
 	printf("Invalid sleep parameter %s\n", argv[2]);
 	printf("Error reported back from strtol: %s\n", strerror(errno));
 	return 2;

@@ -1,5 +1,5 @@
 /*
-    $Id: gnu_linux.c,v 1.27 2006/11/27 19:31:37 gmerlin Exp $
+    $Id: gnu_linux.c,v 1.28 2007/03/07 04:35:47 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2002, 2003, 2004, 2005, 2006 Rocky Bernstein 
@@ -28,7 +28,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.27 2006/11/27 19:31:37 gmerlin Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.28 2007/03/07 04:35:47 rocky Exp $";
 
 #include <string.h>
 #include <limits.h>
@@ -1633,6 +1633,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     return ret;
   } else {
     cdio_generic_free (_data);
+    free(ret);
     return NULL;
   }
   
