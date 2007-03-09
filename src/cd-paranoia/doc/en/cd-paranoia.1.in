@@ -1,8 +1,8 @@
 .TH @CDPARANOIA_NAME@ 1 "version III release alpha 9.8 libcdio"
 .SH NAME
-cdparanoia 9.8 (Paranoia release III libcdio) \- an audio CD reading utility which includes extra data verification features
+@CDPARANOIA_NAME@ 9.8 (Paranoia release III via libcdio) \- an audio CD reading utility which includes extra data verification features
 .SH SYNOPSIS
-.B cdparanoia
+.B @CDPARANOIA_NAME@
 .RB [ options ]
 .B span 
 .RB [ outfile ]
@@ -19,6 +19,10 @@ In addition to simple reading,
 .B @CDPARANOIA_NAME@
 adds extra-robust data verification, synchronization, error handling
 and scratch reconstruction capability.
+.P
+This version uses the libcdio library for interaction with a CD-ROM
+drive. The jitter and error correction however are the same as used in
+Xiph's cdparanoia.
 .SH OPTIONS
 
 .TP
