@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: devices.cpp,v 1.1 2006/03/07 20:01:26 rocky Exp $
+    $Id: devices.cpp,v 1.2 2007/03/10 23:57:58 rocky Exp $
 
     Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -17,6 +17,10 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+#include "config.h"
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
 
 #include <cdio/cdio.h>
 #include <cdio++/cdio.hpp>
