@@ -1,7 +1,7 @@
 /* -*- c -*-
-    $Id: audio.h,v 1.10 2005/03/21 09:19:06 rocky Exp $
+    $Id: audio.h,v 1.11 2007/03/16 15:32:48 rocky Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2007 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -53,13 +53,13 @@ extern "C" {
   } cdio_audio_volume_t;
   
 
-  /* This struct is used by the CDROMPLAYTRKIND ioctl */
+  /*! This struct is used by the CDROMPLAYTRKIND ioctl */
   typedef struct cdio_track_index_s
   {
-    uint8_t	i_start_track;	/* start track */
-    uint8_t	i_start_index;	/* start index */
-    uint8_t	i_end_track;	/* end track */
-    uint8_t	i_end_index;	/* end index */
+    uint8_t	i_start_track;	/**< start track */
+    uint8_t	i_start_index;	/**< start index */
+    uint8_t	i_end_track;	/**< end track */
+    uint8_t	i_end_index;	/**< end index */
   } cdio_track_index_t;
 
   /*!

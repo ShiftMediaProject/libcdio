@@ -1,7 +1,7 @@
 /* -*- c -*-
-    $Id: read.h,v 1.12 2007/02/25 15:58:31 rocky Exp $
+    $Id: read.h,v 1.13 2007/03/16 15:32:48 rocky Exp $
 
-    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ extern "C" {
     CDIO_READ_MODE_M1F1,   /**< Mode 1 Form 1 */
     CDIO_READ_MODE_M1F2,   /**< Mode 1 Form 2 */
     CDIO_READ_MODE_M2F1,   /**< Mode 2 Form 1 */
-    CDIO_READ_MODE_M2F2,   /**< Mode 2 Form 2 */
+    CDIO_READ_MODE_M2F2    /**< Mode 2 Form 2 */
   } cdio_read_mode_t;
   
   /*!
