@@ -1,5 +1,5 @@
 /*
-  $Id: cdchange.c,v 1.6 2007/04/15 16:39:18 rocky Exp $
+  $Id: cdchange.c,v 1.7 2007/04/15 16:42:23 rocky Exp $
 
   Copyright (C) 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
   
@@ -39,10 +39,6 @@
 #ifdef HAVE_ERRNO_H
 # include <errno.h>
 #endif 
-
-#ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
 
 #include <cdio/cdio.h>
 int
