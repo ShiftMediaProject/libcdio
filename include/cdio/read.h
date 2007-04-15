@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: read.h,v 1.13 2007/03/16 15:32:48 rocky Exp $
+    $Id: read.h,v 1.14 2007/04/15 16:23:58 rocky Exp $
 
     Copyright (C) 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
 
@@ -31,6 +31,11 @@
 #define EXTERNAL_LIBCDIO_CONFIG_H
 /* Need for HAVE_SYS_TYPES_H */
 #include <cdio/cdio_config.h>
+#endif
+
+#ifdef HAVE_SYS_TYPES_H
+/* Some systems need this for off_t and ssize. */
+#include <sys/types.h>
 #endif
 
 #ifdef __cplusplus
