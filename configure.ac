@@ -19,7 +19,7 @@ define(RELEASE_NUM, 79cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.208 2007/03/05 11:49:24 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.209 2007/04/15 16:34:36 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -680,7 +680,7 @@ cat > include/cdio/cdio_config.h << EOF
     version of config.h
 */
 EOF
-head -n 199 config.h >> include/cdio/cdio_config.h
+head -n 202 config.h >> include/cdio/cdio_config.h
 ]],[[]])
 
 AC_OUTPUT
