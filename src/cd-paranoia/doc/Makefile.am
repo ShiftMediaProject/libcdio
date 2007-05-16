@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.2 2005/01/29 08:17:56 rocky Exp $
+#   $Id: Makefile.am,v 1.3 2007/05/16 10:00:50 rocky Exp $
 #
-#    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2005, 2007 Rocky Bernstein <rocky@gnu.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 #
 ###############################################################################
 
-SUBDIRS = en jp
+SUBDIRS = en ja
 EXTRA_DIST = FAQ.txt overlapdef.txt
 
 mostlyclean-generic:

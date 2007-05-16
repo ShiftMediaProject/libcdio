@@ -1,4 +1,4 @@
-dnl Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
+dnl Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
 dnl
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ define(RELEASE_NUM, 79cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.209 2007/04/15 16:34:36 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.210 2007/05/16 10:00:50 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -658,8 +658,8 @@ AC_CONFIG_FILES([ \
        src/cd-paranoia/doc/Makefile \
        src/cd-paranoia/doc/en/cd-paranoia.1 \
        src/cd-paranoia/doc/en/Makefile \
-       src/cd-paranoia/doc/jp/cd-paranoia.1 \
-       src/cd-paranoia/doc/jp/Makefile \
+       src/cd-paranoia/doc/ja/cd-paranoia.1 \
+       src/cd-paranoia/doc/ja/Makefile \
        src/Makefile \
        test/testbincue.c \
        test/check_common_fn \
