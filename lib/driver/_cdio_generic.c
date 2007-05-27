@@ -1,8 +1,8 @@
 /*
-    $Id: _cdio_generic.c,v 1.24 2007/05/27 14:59:23 rocky Exp $
+    $Id: _cdio_generic.c,v 1.25 2007/05/27 15:02:13 rocky Exp $
 
-    Copyright (C) 2004, 2005, 2006
-    Rocky Bernstein <rockyb@users.sourceforge.net>
+    Copyright (C) 2004, 2005, 2006, 2007
+    Rocky Bernstein <rocky@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.24 2007/05/27 14:59:23 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.25 2007/05/27 15:02:13 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
