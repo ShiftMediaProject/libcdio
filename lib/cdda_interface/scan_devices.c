@@ -1,7 +1,7 @@
 /*
-  $Id: scan_devices.c,v 1.30 2006/03/25 00:20:28 rocky Exp $
+  $Id: scan_devices.c,v 1.31 2007/05/27 17:14:14 rocky Exp $
 
-  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2007 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -304,7 +304,9 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
   d->b_swap_bytes     = true;
   
   {
-    cdio_hwinfo_t hw_info;
+    cdio_hwinfo_t hw_info = {
+      "UNKNOWN", "Unknown model", "????"
+    };
 
     if ( mmc_get_hwinfo( p_cdio, &hw_info ) ) {
       unsigned int i_len = strlen(hw_info.psz_vendor) 
