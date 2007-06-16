@@ -1,7 +1,7 @@
 /*
-    $Id: cd-info.c,v 1.148 2006/03/17 19:36:54 rocky Exp $
+    $Id: cd-info.c,v 1.149 2007/06/16 20:12:16 rocky Exp $
 
-    Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2007 Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
          and Heiko Eiﬂfeldt <heiko@hexco.de>
 
@@ -619,7 +619,7 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
   switch(CDIO_FSTYPE(fs)) {
   case CDIO_FS_AUDIO:
     if (num_audio > 0) {
-      printf("Audio CD, CDDB disc ID is %08lx\n", 
+      printf("Audio CD, CDDB disc ID is %08x\n", 
 	     cddb_discid(p_cdio, i_tracks));
 #ifdef HAVE_CDDB
       if (!opts.no_cddb) print_cddb_info(p_cdio, i_tracks, i_first_track);

@@ -1,5 +1,5 @@
 /*
-  $Id: cddb.c,v 1.5 2005/09/15 06:36:01 rocky Exp $
+  $Id: cddb.c,v 1.6 2007/06/16 20:12:16 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   
@@ -48,7 +48,7 @@ cddb_dec_digit_sum(int n)
       the total length of the disk, and 
       the number of tracks.
 */
-unsigned long
+u_int32_t
 cddb_discid(CdIo_t *p_cdio, track_t i_tracks)
 {
   int i,t,n=0;
