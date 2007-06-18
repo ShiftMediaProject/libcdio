@@ -1057,7 +1057,7 @@ main(int argc,char *argv[])
       int i;
 
       for( i=track1; i<=track2; i++ )
-	if(!cdda_track_audiop(d,i)){
+	if(i != 0 && !cdda_track_audiop(d,i)){
 	  report("Selected span contains non audio tracks.  Aborting.\n\n");
 	  exit(1);
 	}
