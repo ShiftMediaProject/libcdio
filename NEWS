@@ -1,10 +1,14 @@
-$Id: NEWS,v 1.108 2007/05/27 17:45:26 rocky Exp $
+$Id: NEWS,v 1.109 2007/06/18 00:57:05 rocky Exp $
 
 version 0.79cvs
 
 - iso-read: Add --ignore -k to ignore errors. 
 - Fix Bugs #18522, #18563, #18131 #19221 (possibly), #19880 and other
   miscelleaneous bugs
+- cd-info: force CDDB disc id to be 32-bits. Problem reported 
+  by Eric Shattow.
+- cd-paranoia: allow ripping before the first track. Problem reported 
+  by Eric Shattow.
 
 version 0.78.2
 2006-10-31
@@ -374,4 +378,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.108 2007/05/27 17:45:26 rocky Exp $
+$Id: NEWS,v 1.109 2007/06/18 00:57:05 rocky Exp $
