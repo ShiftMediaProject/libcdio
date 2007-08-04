@@ -1,5 +1,5 @@
 /*
-    $Id: _cdio_generic.c,v 1.25 2007/05/27 15:02:13 rocky Exp $
+    $Id: _cdio_generic.c,v 1.26 2007/08/04 21:40:46 rocky Exp $
 
     Copyright (C) 2004, 2005, 2006, 2007
     Rocky Bernstein <rocky@gnu.org>
@@ -19,14 +19,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* This file contains generic implementations of device-dirver routines.
+/* This file contains generic implementations of device-driver routines.
 */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.25 2007/05/27 15:02:13 rocky Exp $";
+static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.26 2007/08/04 21:40:46 rocky Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
