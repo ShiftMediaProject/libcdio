@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.29 2007/03/05 11:49:24 rocky Exp $
+    $Id: iso9660.c,v 1.30 2007/08/04 00:43:26 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
@@ -57,7 +57,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.29 2007/03/05 11:49:24 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.30 2007/08/04 00:43:26 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -167,6 +167,18 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
   return true;
 }
 
+/* 
+   A note regarding the strange strtol() testing below as pointed out SMS.
+   From man strtol:
+
+     If an underflow occurs, strtol() returns LONG_MIN. If an overflow
+     occurs, strtol() returns LONG_MAX.  In both cases, errno is set to
+     ERANGE.
+
+   This implies that one should only look at errno if the value is
+   LONG_MIN or LONG_MAX.
+*/
+
 #define set_ltime_field(TM_FIELD, LT_FIELD, ADD_CONSTANT)               \
   {                                                                     \
     char num[10];                                                       \
@@ -175,7 +187,6 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
     errno = 0;                                                          \
     p_tm->TM_FIELD = strtol(num,                                        \
                             (char **)NULL, 10)+ADD_CONSTANT;            \
-    errno = 0;                                                          \
     if ((LONG_MIN==p_tm->TM_FIELD || LONG_MAX==p_tm->TM_FIELD) &&       \
         0 != errno) return false;                                       \
   }
