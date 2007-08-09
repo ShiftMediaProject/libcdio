@@ -19,7 +19,7 @@ define(RELEASE_NUM, 79cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.210 2007/05/16 10:00:50 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.211 2007/08/09 02:19:40 flameeyes Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -298,7 +298,7 @@ dnl AM_PROG_LIBTOOL tests whether we have GNU ld
 dnl this must come before checking --with-versioned-libs
 dnl which requires GNU ld.
 AM_PROG_LIBTOOL
-     
+
 dnl system
 
 # FIXME:
@@ -380,6 +380,20 @@ case $host_os in
          AC_DEFINE([HAVE_DARWIN_CDROM], [1],
 	      [Define 1 if you have Darwin OS X-type CD-ROM support])
 	 DARWIN_PKG_LIB_HACK="-Wl,-framework,CoreFoundation -Wl,-framework,IOKit"
+
+	 dnl Prior to Mac OS X 10.4 (Tiger), DiskArbitration was a private framework.
+	 dnl It's now public, and it's needed to do cd/dvd unmount/eject.
+	 AC_MSG_CHECKING([for DiskArbitration framework])
+	 ac_save_LIBS="$LIBS" LIBS="$LIBS -framework CoreFoundation -framework DiskArbitration"
+	 AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <DiskArbitration/DiskArbitration.h>]], [[]])],
+	      [have_diskarbitration_framework=yes], [have_diskarbitration_framework=no])
+	 LIBS="$ac_save_LIBS"
+	 AC_MSG_RESULT([$have_diskarbitration_framework])
+	 if test x"$have_diskarbitration_framework" = x"yes"; then
+	     AC_DEFINE([HAVE_DISKARBITRATION], 1, [Define to 1 if you have the Apple DiskArbitration framework])
+	     DARWIN_PKG_LIB_HACK="$DARWIN_PKG_LIB_HACK -Wl,-framework,DiskArbitration"
+	 fi
+
 	 AC_SUBST(DARWIN_PKG_LIB_HACK)
 	 LIBCDIO_LIBS="$LIBCDIO_LIBS $DARWIN_PKG_LIB_HACK"
          cd_drivers="${cd_drivers}, Darwin"

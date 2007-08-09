@@ -1,5 +1,5 @@
 /*
-    $Id: osx.c,v 1.9 2006/03/26 02:34:41 rocky Exp $
+    $Id: osx.c,v 1.10 2007/08/09 02:19:40 flameeyes Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
     <rockyb@users.sourceforge.net> 
@@ -35,7 +35,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: osx.c,v 1.9 2006/03/26 02:34:41 rocky Exp $";
+static const char _rcsid[] = "$Id: osx.c,v 1.10 2007/08/09 02:19:40 flameeyes Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -86,6 +86,10 @@ static const char _rcsid[] = "$Id: osx.c,v 1.9 2006/03/26 02:34:41 rocky Exp $";
 #include <IOKit/storage/IOCDMediaBSDClient.h>
 #include <IOKit/storage/IODVDMediaBSDClient.h>
 #include <IOKit/storage/IOStorageDeviceCharacteristics.h>
+
+#ifdef HAVE_DISKARBITRATION
+#include <DiskArbitration/DiskArbitration.h>
+#endif
 
 /* FIXME */
 #define MAX_BIG_BUFF_SIZE  65535
@@ -1316,13 +1320,17 @@ get_track_lba_osx(void *p_user_data, track_t i_track)
 /*!
   Eject media . Return DRIVER_OP_SUCCESS if successful.
 
-  The only way to cleanly unmount the disc under MacOS X is to use the
-  'disktool' command line utility. It uses the non-public Disk
-  Arbitration API, which can not be used by Cocoa or Carbon
-  applications.
+  The only way to cleanly unmount the disc under MacOS X (before
+  Tiger) is to use the 'disktool' command line utility. It uses the
+  non-public DiskArbitration API, which can not be used by Cocoa or
+  Carbon applications.
+
+  Since Tiger (MacOS X 10.4), DiskArbitration is a public framework
+  and we can use it as needed.
 
  */
 
+#ifndef HAVE_DISKARBITRATION
 static driver_return_code_t
 _eject_media_osx (void *user_data) {
 
@@ -1363,6 +1371,110 @@ _eject_media_osx (void *user_data) {
   
   return DRIVER_OP_ERROR;
 }
+#else /* HAVE_DISKARBITRATION */
+typedef struct dacontext_s {
+    int                 result;
+    Boolean             completed;
+    DASessionRef        session;
+    CFRunLoopRef        runloop;
+    CFRunLoopSourceRef  cancel;
+} dacontext_t;
+
+static void cancel_runloop(void *info) { /* do nothing */ }
+
+static CFRunLoopSourceContext cancelRunLoopSourceContext = {
+    .perform = cancel_runloop
+};
+
+static void media_eject_callback(DADiskRef disk, DADissenterRef dissenter, void *context)
+{
+    dacontext_t *dacontext = (dacontext_t *)context;
+
+    dacontext->result    = (dissenter ? DRIVER_OP_ERROR : DRIVER_OP_SUCCESS);
+    dacontext->completed = TRUE;
+    CFRunLoopSourceSignal(dacontext->cancel);
+    CFRunLoopWakeUp(dacontext->runloop);
+}
+
+static void media_unmount_callback(DADiskRef disk, DADissenterRef dissenter, void *context)
+{
+    dacontext_t *dacontext = (dacontext_t *)context;
+
+    if (!dissenter) {
+        DADiskEject(disk, kDADiskEjectOptionDefault, media_eject_callback, context);
+    }
+    else {
+        dacontext->result    = DRIVER_OP_ERROR;
+        dacontext->completed = TRUE;
+        CFRunLoopSourceSignal(dacontext->cancel);
+        CFRunLoopWakeUp(dacontext->runloop);
+    }
+}
+
+static driver_return_code_t
+_eject_media_osx (void *user_data) {
+
+  _img_private_t *p_env = user_data;
+  char *psz_drive;
+
+  DADiskRef       disk;
+  dacontext_t     dacontext;
+  CFDictionaryRef description;
+
+  if( ( psz_drive = (char *)strstr( p_env->gen.source_name, "disk" ) ) == NULL ||
+      strlen( psz_drive ) <= 4 )
+    {
+      return DRIVER_OP_ERROR;
+    }
+
+  dacontext.result    = DRIVER_OP_SUCCESS;
+  dacontext.completed = FALSE;
+  dacontext.runloop   = CFRunLoopGetCurrent();
+  dacontext.cancel    = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &cancelRunLoopSourceContext);
+  
+  if (!dacontext.cancel)
+    {
+      return DRIVER_OP_ERROR;
+    }
+  
+  if (!(dacontext.session = DASessionCreate(kCFAllocatorDefault)))
+    {
+      CFRelease(dacontext.cancel);
+      return DRIVER_OP_ERROR;
+    }
+  
+  if ((disk = DADiskCreateFromBSDName(kCFAllocatorDefault, dacontext.session, psz_drive)) != NULL)
+    {
+      if ((description = DADiskCopyDescription(disk)) != NULL)
+	{
+	  /* Does the device need to be unmounted first? */
+	  DASessionScheduleWithRunLoop(dacontext.session, dacontext.runloop, kCFRunLoopDefaultMode);
+	  if (CFDictionaryGetValueIfPresent(description, kDADiskDescriptionVolumePathKey, NULL))
+	    {
+	      DADiskUnmount(disk, kDADiskUnmountOptionDefault, media_unmount_callback, &dacontext);
+            }
+	  else
+	    {
+	      DADiskEject(disk, kDADiskEjectOptionDefault, media_eject_callback, &dacontext);
+            }
+	  CFRunLoopAddSource(dacontext.runloop, dacontext.cancel, kCFRunLoopDefaultMode);
+	  if (!dacontext.completed)
+	    {
+	      CFRunLoopRunInMode(kCFRunLoopDefaultMode, 30.0, TRUE);  /* timeout after 30 seconds */
+            }
+	  CFRunLoopRemoveSource(dacontext.runloop, dacontext.cancel, kCFRunLoopDefaultMode);
+	  DASessionUnscheduleFromRunLoop(dacontext.session, dacontext.runloop, kCFRunLoopDefaultMode);
+	  CFRelease(description);
+        }
+      CFRelease(disk);
+    }
+  
+  CFRunLoopSourceInvalidate(dacontext.cancel);
+  CFRelease(dacontext.cancel);
+  CFRelease(dacontext.session);
+  return dacontext.result;
+}
+#endif
 
 /*!
    Return the size of the CD in logical block address (LBA) units.
