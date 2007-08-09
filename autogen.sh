@@ -41,7 +41,7 @@ grep "^AM_GNU_GETTEXT" $srcdir/configure.ac >/dev/null && {
 
 if automake --version > /dev/null 2>&1; then
   case "`automake --version | sed -e '1s/[^0-9]*//' -e q`" in
-    1.[6789]|1.[6789][-.]*)
+    1.[6789]|1.[6789][-.]*|1.10|1.10[-.]*)
      ;;
     0|0.*|1|1.[012345]|1.[012345][-.]*|*)
       echo "**Error**: You must have \`automake' 1.6 or greater installed."
