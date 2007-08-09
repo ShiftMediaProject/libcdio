@@ -15,13 +15,17 @@ DIE=0
 }
 
 (grep "^AM_PROG_LIBTOOL" $srcdir/configure.ac >/dev/null) && {
-  (libtool --version) < /dev/null > /dev/null 2>&1 || {
+  if (libtool --version) < /dev/null > /dev/null 2>&1; then
+     LIBTOOL=libtool
+  elif (glibtool --version) < /dev/null > /dev/null 2>&1; then
+     LIBTOOL=glibtool
+  else
     echo
     echo "**Error**: You must have \`libtool' installed."
     echo "Get ftp://ftp.gnu.org/pub/gnu/libtool-1.2d.tar.gz"
     echo "(or a newer version if it is available)"
     DIE=1
-  }
+  fi
 }
 
 grep "^AM_GNU_GETTEXT" $srcdir/configure.ac >/dev/null && {
@@ -99,7 +103,7 @@ do
       fi
       if grep "^AM_PROG_LIBTOOL" configure.ac >/dev/null; then
 	echo "Running libtoolize..."
-	libtoolize --force --copy
+	${LIBTOOL}ize --force --copy
       fi
       echo "Running aclocal -I . $aclocalinclude ..."
       aclocal -I . $aclocalinclude
