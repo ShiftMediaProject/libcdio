@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: cdio-eject.c,v 1.2 2007/04/15 16:23:58 rocky Exp $
+    $Id: cdio-eject.c,v 1.3 2007/08/09 01:49:09 flameeyes Exp $
   Copyright (C) 2007 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software; you can redistribute it and/or modify
@@ -16,6 +16,10 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include <cdio/cdio.h>
 #include <stdio.h>
