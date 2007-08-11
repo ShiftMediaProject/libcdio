@@ -1,5 +1,5 @@
 /*
-    $Id: osx.c,v 1.10 2007/08/09 02:19:40 flameeyes Exp $
+    $Id: osx.c,v 1.11 2007/08/11 12:28:25 flameeyes Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
     <rockyb@users.sourceforge.net> 
@@ -35,7 +35,7 @@
 #include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: osx.c,v 1.10 2007/08/09 02:19:40 flameeyes Exp $";
+static const char _rcsid[] = "$Id: osx.c,v 1.11 2007/08/11 12:28:25 flameeyes Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -1390,6 +1390,21 @@ static void media_eject_callback(DADiskRef disk, DADissenterRef dissenter, void 
 {
     dacontext_t *dacontext = (dacontext_t *)context;
 
+    if ( dissenter )
+      {
+	CFStringRef status = DADissenterGetStatusString(dissenter);
+	size_t cstr_size = CFStringGetLength(status);
+	char *cstr = malloc(cstr_size);
+	if ( CFStringGetCString( status,
+				 cstr, cstr_size,
+				 kCFStringEncodingASCII ) )
+	  CFRelease( status );
+
+	cdio_warn("%s", cstr);
+
+	free(cstr);
+      }
+
     dacontext->result    = (dissenter ? DRIVER_OP_ERROR : DRIVER_OP_SUCCESS);
     dacontext->completed = TRUE;
     CFRunLoopSourceSignal(dacontext->cancel);
@@ -1402,6 +1417,7 @@ static void media_unmount_callback(DADiskRef disk, DADissenterRef dissenter, voi
 
     if (!dissenter) {
         DADiskEject(disk, kDADiskEjectOptionDefault, media_eject_callback, context);
+        dacontext->result = dacontext->result == DRIVER_OP_UNINIT ? DRIVER_OP_SUCCESS : dacontext->result;
     }
     else {
         dacontext->result    = DRIVER_OP_ERROR;
@@ -1427,7 +1443,7 @@ _eject_media_osx (void *user_data) {
       return DRIVER_OP_ERROR;
     }
 
-  dacontext.result    = DRIVER_OP_SUCCESS;
+  dacontext.result    = DRIVER_OP_UNINIT;
   dacontext.completed = FALSE;
   dacontext.runloop   = CFRunLoopGetCurrent();
   dacontext.cancel    = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &cancelRunLoopSourceContext);
@@ -1449,6 +1465,8 @@ _eject_media_osx (void *user_data) {
 	{
 	  /* Does the device need to be unmounted first? */
 	  DASessionScheduleWithRunLoop(dacontext.session, dacontext.runloop, kCFRunLoopDefaultMode);
+	  CFRunLoopAddSource(dacontext.runloop, dacontext.cancel, kCFRunLoopDefaultMode);
+
 	  if (CFDictionaryGetValueIfPresent(description, kDADiskDescriptionVolumePathKey, NULL))
 	    {
 	      DADiskUnmount(disk, kDADiskUnmountOptionDefault, media_unmount_callback, &dacontext);
@@ -1456,8 +1474,8 @@ _eject_media_osx (void *user_data) {
 	  else
 	    {
 	      DADiskEject(disk, kDADiskEjectOptionDefault, media_eject_callback, &dacontext);
+	      dacontext.result = dacontext.result == DRIVER_OP_UNINIT ? DRIVER_OP_SUCCESS : dacontext.result;
             }
-	  CFRunLoopAddSource(dacontext.runloop, dacontext.cancel, kCFRunLoopDefaultMode);
 	  if (!dacontext.completed)
 	    {
 	      CFRunLoopRunInMode(kCFRunLoopDefaultMode, 30.0, TRUE);  /* timeout after 30 seconds */
