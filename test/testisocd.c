@@ -1,7 +1,7 @@
-/* $Id: testisocd.c,v 1.3 2006/03/28 03:26:16 rocky Exp $
+/* $Id: testisocd.c,v 1.4 2007/08/11 16:26:14 rocky Exp $
 
-  Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
-  <rockyb@users.sourceforge.net>
+  Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein 
+  <rocky@gnu.org>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -101,14 +101,34 @@ main(int argc, const char *argv[])
     } else {
       /* Now try getting the statbuf another way */
       char buf[ISO_BLOCKSIZE];
+      char *psz_path = NULL;
       const lsn_t i_lsn = p_statbuf->lsn;
       const iso9660_stat_t *p_statbuf2 = iso9660_fs_find_lsn (p_cdio, i_lsn);
+      const iso9660_stat_t *p_statbuf3 = 
+	iso9660_fs_find_lsn_with_path (p_cdio, i_lsn, &psz_path);
 
       /* Compare the two statbufs. */
       if (0 != memcmp(p_statbuf, p_statbuf2, sizeof(iso9660_stat_t))) {
 	  fprintf(stderr, "File stat information between fs_stat and "
 		  "fs_find_lsn isn't the same\n");
 	  exit(3);
+      }
+
+      if (0 != memcmp(p_statbuf3, p_statbuf2, sizeof(iso9660_stat_t))) {
+	  fprintf(stderr, "File stat information between fs_find_lsn and "
+		  "fs_find_lsn_with_path isn't the same\n");
+	  exit(4);
+      }
+
+      if (psz_path != NULL) {
+	if (0 != strncmp("/./", psz_path, strlen("/./"))) {
+	  fprintf(stderr, "Path returned for fs_find_lsn_with_path "
+		  "is not correct should be /./, is %s\n", psz_path);
+	  exit(5);
+	}
+      } else {
+	fprintf(stderr, "Path returned for fs_find_lsn_with_path is NULL\n");
+	exit(6);
       }
       
       /* Try reading from the directory. */
@@ -117,7 +137,7 @@ main(int argc, const char *argv[])
 	{
 	  fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
 		  (long unsigned int) p_statbuf->lsn);
-	  exit(4);
+	  exit(7);
 	}
       exit(0);
     }

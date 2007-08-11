@@ -15,6 +15,7 @@ iso9660_dir_to_name
 iso9660_dirname_valid_p
 iso9660_find_fs_lsn
 iso9660_fs_find_lsn
+iso9660_fs_find_lsn_with_path
 iso9660_fs_read_pvd
 iso9660_fs_read_superblock
 iso9660_fs_readdir
@@ -41,6 +42,7 @@ iso9660_get_volume_id
 iso9660_get_volumeset_id
 iso9660_get_xa_attr_str
 iso9660_ifs_find_lsn
+iso9660_ifs_find_lsn_with_path
 iso9660_ifs_fuzzy_read_superblock
 iso9660_ifs_get_application_id
 iso9660_ifs_get_joliet_level

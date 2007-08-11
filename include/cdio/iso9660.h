@@ -1,8 +1,8 @@
 /*
-    $Id: iso9660.h,v 1.95 2006/10/27 10:38:41 rocky Exp $
+    $Id: iso9660.h,v 1.96 2007/08/11 16:26:14 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
 
     See also iso9660.h by Eric Youngdale (1993).
 
@@ -842,7 +842,36 @@ iso9660_stat_t *iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
    @return stat_t of entry if we found lsn, or NULL otherwise.
    Caller must free return value.
  */
+iso9660_stat_t *iso9660_fs_find_lsn_with_path(CdIo_t *p_cdio, lsn_t i_lsn,
+                                              /*out*/ char **ppsz_path);
+
+/*!
+   Given a directory pointer, find the filesystem entry that contains
+   lsn and return information about it.
+
+   @return stat_t of entry if we found lsn, or NULL otherwise.
+   Caller must free return value.
+ */
 iso9660_stat_t *iso9660_ifs_find_lsn(iso9660_t *p_iso, lsn_t i_lsn);
+
+
+/*!
+   Given a directory pointer, find the filesystem entry that contains
+   lsn and return information about it.
+
+   @param p_iso pointer to iso_t 
+   @param i_lsn LSN to find
+   @param ppsz_path  full path of lsn filename. On entry *ppsz_path should be
+   NULL. On return it will be allocated an point to the full path of the
+   file at lsn or NULL if the lsn is not found. You should deallocate
+   *ppsz_path when you are done using it.
+
+   @return stat_t of entry if we found lsn, or NULL otherwise.
+   Caller must free return value.
+ */
+iso9660_stat_t *iso9660_ifs_find_lsn_with_path(iso9660_t *p_iso, 
+                                               lsn_t i_lsn,
+                                               /*out*/ char **ppsz_path);
 
 
 /*!
