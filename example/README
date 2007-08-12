@@ -1,4 +1,4 @@
-$Id: README,v 1.27 2006/10/21 11:38:16 rocky Exp $
+$Id: README,v 1.28 2007/08/12 00:56:10 rocky Exp $
 
 This directory contains some simple examples of the use of the libcdio
 library.
@@ -43,6 +43,9 @@ isofuzzy.c : A program showing fuzzy ISO-9660 detection/reading.
 isolist.c:   A program to show using libiso9660 to list files in a
 	     directory of an ISO-9660 image and give basic iso9660 
 	     information.
+
+isolsn.c:    A program to show using libiso9660 to get the file 
+	     path for a given LSN.
 
 mmc1.c:      A program to show issuing a simple MMC command (INQUIRY).
 

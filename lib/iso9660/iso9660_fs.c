@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.39 2007/08/11 16:26:14 rocky Exp $
+    $Id: iso9660_fs.c,v 1.40 2007/08/12 00:56:10 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
@@ -50,7 +50,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.39 2007/08/11 16:26:14 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.40 2007/08/12 00:56:10 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -1374,73 +1374,15 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
   }
 }
 
-static iso9660_stat_t *
-find_fs_lsn_recurse (CdIo_t *p_cdio, const char psz_path[], lsn_t lsn,
-		      /*out*/ char **ppsz_full_filename)
-{
-  CdioList_t *entlist = iso9660_fs_readdir (p_cdio, psz_path, true);
-  CdioList_t *dirlist =  _cdio_list_new ();
-  CdioListNode_t *entnode;
-    
-  cdio_assert (entlist != NULL);
-
-  /* iterate over each entry in the directory */
-  
-  _CDIO_LIST_FOREACH (entnode, entlist)
-    {
-      iso9660_stat_t *statbuf = _cdio_list_node_data (entnode);
-      const char *psz_filename  = (char *) statbuf->filename;
-      const unsigned int len = strlen(psz_path) + strlen(psz_filename)+2;
-
-      if (*ppsz_full_filename != NULL) free(*ppsz_full_filename);
-      *ppsz_full_filename = calloc(1, len);
-      snprintf (*ppsz_full_filename, len, "%s%s/", psz_path, psz_filename);
-
-      if (statbuf->type == _STAT_DIR
-          && strcmp ((char *) statbuf->filename, ".") 
-          && strcmp ((char *) statbuf->filename, ".."))
-        _cdio_list_append (dirlist, strdup(*ppsz_full_filename));
-
-      if (statbuf->lsn == lsn) {
-	unsigned int len=sizeof(iso9660_stat_t)+strlen(statbuf->filename)+1;
-	iso9660_stat_t *ret_stat = calloc(1, len);
-	memcpy(ret_stat, statbuf, len);
-        _cdio_list_free (entlist, true);
-        _cdio_list_free (dirlist, true);
-        return ret_stat;
-      }
-      
-    }
-
-  _cdio_list_free (entlist, true);
-
-  /* now recurse/descend over directories encountered */
-
-  _CDIO_LIST_FOREACH (entnode, dirlist)
-    {
-      char *psz_path_prefix = _cdio_list_node_data (entnode);
-      iso9660_stat_t *ret_stat;
-      free(ppsz_full_filename);
-      ret_stat = find_fs_lsn_recurse (p_cdio, psz_path_prefix, lsn,
-				       ppsz_full_filename);
-
-      if (NULL != ret_stat) {
-        _cdio_list_free (dirlist, true);
-        return ret_stat;
-      }
-    }
-
-  free(ppsz_full_filename);
-  *ppsz_full_filename = NULL;
-  _cdio_list_free (dirlist, true);
-  return NULL;
-}
+typedef CdioList_t * (iso9660_readdir_t) 
+  (void *p_image,  const char * psz_path);
 
 static iso9660_stat_t *
-find_ifs_lsn_recurse (iso9660_t *p_iso, const char psz_path[], lsn_t lsn,
-		      /*out*/ char **ppsz_full_filename)
+find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
+		  const char psz_path[], lsn_t lsn,
+		  /*out*/ char **ppsz_full_filename)
 {
-  CdioList_t *entlist = iso9660_ifs_readdir (p_iso, psz_path);
+  CdioList_t *entlist = iso9660_readdir (p_image, psz_path);
   CdioList_t *dirlist =  _cdio_list_new ();
   CdioListNode_t *entnode;
     
@@ -1483,9 +1425,11 @@ find_ifs_lsn_recurse (iso9660_t *p_iso, const char psz_path[], lsn_t lsn,
     {
       char *psz_path_prefix = _cdio_list_node_data (entnode);
       iso9660_stat_t *ret_stat;
-      free(ppsz_full_filename);
-      ret_stat = find_ifs_lsn_recurse (p_iso, psz_path_prefix, lsn,
-				       ppsz_full_filename);
+      free(*ppsz_full_filename);
+      *ppsz_full_filename = NULL;
+      ret_stat = find_lsn_recurse (p_image, iso9660_readdir, 
+				   psz_path_prefix, lsn,
+				   ppsz_full_filename);
 
       if (NULL != ret_stat) {
         _cdio_list_free (dirlist, true);
@@ -1493,8 +1437,10 @@ find_ifs_lsn_recurse (iso9660_t *p_iso, const char psz_path[], lsn_t lsn,
       }
     }
 
-  free(ppsz_full_filename);
-  *ppsz_full_filename = NULL;
+  if (*ppsz_full_filename != NULL) {      
+    free(*ppsz_full_filename);
+    *ppsz_full_filename = NULL;
+  }
   _cdio_list_free (dirlist, true);
   return NULL;
 }
@@ -1509,7 +1455,8 @@ iso9660_stat_t *
 iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn)
 {
   char *psz_full_filename = NULL;
-  return find_fs_lsn_recurse (p_cdio, "/", i_lsn, &psz_full_filename);
+  return find_lsn_recurse (p_cdio, (iso9660_readdir_t *) iso9660_fs_readdir, 
+			   "/", i_lsn, &psz_full_filename);
 }
 
 /*!
@@ -1522,7 +1469,8 @@ iso9660_stat_t *
 iso9660_fs_find_lsn_with_path(CdIo_t *p_cdio, lsn_t i_lsn,
 			      /*out*/ char **ppsz_full_filename)
 {
-  return find_fs_lsn_recurse (p_cdio, "/", i_lsn, ppsz_full_filename);
+  return find_lsn_recurse (p_cdio, (iso9660_readdir_t *) iso9660_fs_readdir, 
+			   "/", i_lsn, ppsz_full_filename);
 }
 
 /*!
@@ -1535,7 +1483,8 @@ iso9660_stat_t *
 iso9660_ifs_find_lsn(iso9660_t *p_iso, lsn_t i_lsn)
 {
   char *psz_full_filename = NULL;
-  return find_ifs_lsn_recurse (p_iso, "/", i_lsn, &psz_full_filename);
+  return find_lsn_recurse (p_iso, (iso9660_readdir_t *) iso9660_ifs_readdir, 
+			   "/", i_lsn, &psz_full_filename);
 }
 
 /*!
@@ -1548,7 +1497,8 @@ iso9660_stat_t *
 iso9660_ifs_find_lsn_with_path(iso9660_t *p_iso, lsn_t i_lsn,
 			       /*out*/ char **ppsz_full_filename)
 {
-  return find_ifs_lsn_recurse (p_iso, "/", i_lsn, ppsz_full_filename);
+  return find_lsn_recurse (p_iso, (iso9660_readdir_t *) iso9660_ifs_readdir, 
+			   "/", i_lsn, ppsz_full_filename);
 }
 
 /*!
