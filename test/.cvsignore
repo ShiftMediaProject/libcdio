@@ -23,6 +23,8 @@ testdefault
 testischar
 testiso9660
 testisocd
+testisocd2
+testisocd2.c
 testparanoia
 testtoc
 *.dump

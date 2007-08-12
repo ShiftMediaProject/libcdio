@@ -19,7 +19,7 @@ define(RELEASE_NUM, 79cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.211 2007/08/09 02:19:40 flameeyes Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.212 2007/08/12 12:41:10 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -676,6 +676,7 @@ AC_CONFIG_FILES([ \
        src/cd-paranoia/doc/ja/Makefile \
        src/Makefile \
        test/testbincue.c \
+       test/testisocd2.c \
        test/check_common_fn \
        test/Makefile \
        ])

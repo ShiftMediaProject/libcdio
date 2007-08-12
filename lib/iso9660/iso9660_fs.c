@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.40 2007/08/12 00:56:10 rocky Exp $
+    $Id: iso9660_fs.c,v 1.41 2007/08/12 12:41:10 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
@@ -50,7 +50,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.40 2007/08/12 00:56:10 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.41 2007/08/12 12:41:10 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -958,6 +958,9 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
       unsigned int len=sizeof(iso9660_stat_t) + strlen(_root->filename)+1;
       p_stat = calloc(1, len);
       memcpy(p_stat, _root, len);
+      p_stat->rr.psz_symlink = calloc(1, p_stat->rr.i_symlink_max);
+      memcpy(p_stat->rr.psz_symlink, _root->rr.psz_symlink, 
+	     p_stat->rr.i_symlink_max);
       return p_stat;
     }
 
@@ -996,7 +999,8 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 
       cmp = strcmp(splitpath[0], p_stat->filename);
 
-      if ( 0 != cmp && 0 == p_env->i_joliet_level && yep != p_stat->rr.b3_rock ) {
+      if ( 0 != cmp && 0 == p_env->i_joliet_level 
+	   && yep != p_stat->rr.b3_rock ) {
 	char *trans_fname = NULL;
 	unsigned int i_trans_fname=strlen(p_stat->filename);
 	int trans_len;
@@ -1052,7 +1056,8 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
       p_stat = calloc(1, len);
       memcpy(p_stat, _root, len);
       p_stat->rr.psz_symlink = calloc(1, p_stat->rr.i_symlink_max);
-      memcpy(p_stat->rr.psz_symlink, _root->rr.psz_symlink, p_stat->rr.i_symlink_max);
+      memcpy(p_stat->rr.psz_symlink, _root->rr.psz_symlink, 
+	     p_stat->rr.i_symlink_max);
       return p_stat;
     }
 
@@ -1092,7 +1097,8 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 
       if ( 0 != cmp && 0 == p_iso->i_joliet_level 
 	   && yep != p_stat->rr.b3_rock ) {
-	char *trans_fname = malloc(strlen(p_stat->filename)+1);
+	char *trans_fname = NULL;
+	unsigned int i_trans_fname=strlen(p_stat->filename);
 	int trans_len;
 	
 	if (trans_fname == NULL) {
@@ -1100,10 +1106,18 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 		    (long unsigned int) strlen(p_stat->filename));
 	  return NULL;
 	}
-	trans_len = iso9660_name_translate_ext(p_stat->filename, trans_fname, 
-					       p_iso->i_joliet_level);
-	cmp = strcmp(splitpath[0], trans_fname);
-	free(trans_fname);
+	if (i_trans_fname) {
+	  trans_fname = calloc(1, i_trans_fname+1);
+	  if (!trans_fname) {
+	    cdio_warn("can't allocate %lu bytes", 
+		      (long unsigned int) strlen(p_stat->filename));
+	    return NULL;
+	  }
+	  trans_len = iso9660_name_translate_ext(p_stat->filename, trans_fname, 
+						 p_iso->i_joliet_level);
+	  cmp = strcmp(splitpath[0], trans_fname);
+	  free(trans_fname);
+	}
       }
       
       if (!cmp) {
@@ -1153,6 +1167,48 @@ iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[])
   return p_stat;
 }
 
+typedef iso9660_stat_t * (stat_root_t) (void *p_image);
+typedef iso9660_stat_t * (stat_traverse_t)
+  (const void *p_image, const iso9660_stat_t *_root, char **splitpath);
+
+/*!
+  Get file status for psz_path into stat. NULL is returned on error.
+  pathname version numbers in the ISO 9660
+  name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
+  are lowercased.
+ */
+static iso9660_stat_t *
+fs_stat_translate (void *p_image, stat_root_t stat_root, 
+		   stat_traverse_t stat_traverse,
+		   const char psz_path[])
+{
+  iso9660_stat_t *p_root;
+  char **p_psz_splitpath;
+  iso9660_stat_t *p_stat;
+
+  if (!p_image)  return NULL;
+  if (psz_path) return NULL;
+
+  p_root = stat_root (p_image);
+  if (!p_root) return NULL;
+
+  p_psz_splitpath = _cdio_strsplit (psz_path, '/');
+  p_stat = _fs_stat_traverse (p_image, p_root, p_psz_splitpath);
+  free(p_root);
+  _cdio_strfreev (p_psz_splitpath);
+
+  return p_stat;
+}
+
+iso9660_stat_t *
+iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[], 
+			   bool b_mode2)
+{
+  return fs_stat_translate(p_cdio, (stat_root_t *) _fs_stat_root, 
+			   (stat_traverse_t *) _fs_stat_traverse,
+			   psz_path);
+}
+
 /*!
   Get file status for psz_path into stat. NULL is returned on error.
   pathname version numbers in the ISO 9660
@@ -1160,26 +1216,13 @@ iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[])
   are lowercased.
  */
 iso9660_stat_t *
-iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[], 
-			   bool b_mode2)
+iso9660_ifs_stat_translate (iso9660_t *p_iso, const char psz_path[])
 {
-  iso9660_stat_t *p_root;
-  char **p_psz_splitpath;
-  iso9660_stat_t *p_stat;
-
-  if (!p_cdio)  return NULL;
-  if (psz_path) return NULL;
-
-  p_root = _fs_stat_root (p_cdio);
-  if (!p_root) return NULL;
-
-  p_psz_splitpath = _cdio_strsplit (psz_path, '/');
-  p_stat = _fs_stat_traverse (p_cdio, p_root, p_psz_splitpath);
-  free(p_root);
-  _cdio_strfreev (p_psz_splitpath);
-
-  return p_stat;
+  return fs_stat_translate(p_iso, (stat_root_t *) _ifs_stat_root, 
+			   (stat_traverse_t *) _fs_iso_stat_traverse,
+			   psz_path);
 }
+
 
 /*!
   Get file status for psz_path into stat. NULL is returned on error.
@@ -1203,33 +1246,6 @@ iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[])
   _cdio_strfreev (splitpath);
 
   return stat;
-}
-
-/*!
-  Get file status for psz_path into stat. NULL is returned on error.
-  pathname version numbers in the ISO 9660
-  name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
-  are lowercased.
- */
-iso9660_stat_t *
-iso9660_ifs_stat_translate (iso9660_t *p_iso, const char psz_path[])
-{
-  iso9660_stat_t *p_root;
-  char **p_psz_splitpath;
-  iso9660_stat_t *p_stat;
-
-  if (!p_iso)    return NULL;
-  if (!psz_path) return NULL;
-
-  p_root = _ifs_stat_root (p_iso);
-  if (NULL == p_root) return NULL;
-
-  p_psz_splitpath = _cdio_strsplit (psz_path, '/');
-  p_stat = _fs_iso_stat_traverse (p_iso, p_root, p_psz_splitpath);
-  free(p_root);
-  _cdio_strfreev (p_psz_splitpath);
-
-  return p_stat;
 }
 
 /*! 
