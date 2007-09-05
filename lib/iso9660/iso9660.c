@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.30 2007/08/04 00:43:26 rocky Exp $
+    $Id: iso9660.c,v 1.31 2007/09/05 11:17:36 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
@@ -57,7 +57,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.30 2007/08/04 00:43:26 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.31 2007/09/05 11:17:36 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -183,7 +183,7 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
   {                                                                     \
     char num[10];                                                       \
     memcpy(num, p_ldate->LT_FIELD, sizeof(p_ldate->LT_FIELD));          \
-    num[sizeof(p_ldate->LT_FIELD)+1] = '\0';                            \
+    num[sizeof(p_ldate->LT_FIELD)] = '\0';                              \
     errno = 0;                                                          \
     p_tm->TM_FIELD = strtol(num,                                        \
                             (char **)NULL, 10)+ADD_CONSTANT;            \

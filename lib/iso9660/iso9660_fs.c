@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.41 2007/08/12 12:41:10 rocky Exp $
+    $Id: iso9660_fs.c,v 1.42 2007/09/05 11:17:36 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
@@ -50,7 +50,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.41 2007/08/12 12:41:10 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.42 2007/09/05 11:17:36 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -1101,11 +1101,6 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 	unsigned int i_trans_fname=strlen(p_stat->filename);
 	int trans_len;
 	
-	if (trans_fname == NULL) {
-	  cdio_warn("can't allocate %lu bytes", 
-		    (long unsigned int) strlen(p_stat->filename));
-	  return NULL;
-	}
 	if (i_trans_fname) {
 	  trans_fname = calloc(1, i_trans_fname+1);
 	  if (!trans_fname) {
@@ -1187,13 +1182,13 @@ fs_stat_translate (void *p_image, stat_root_t stat_root,
   iso9660_stat_t *p_stat;
 
   if (!p_image)  return NULL;
-  if (psz_path) return NULL;
+  if (!psz_path) return NULL;
 
   p_root = stat_root (p_image);
   if (!p_root) return NULL;
 
   p_psz_splitpath = _cdio_strsplit (psz_path, '/');
-  p_stat = _fs_stat_traverse (p_image, p_root, p_psz_splitpath);
+  p_stat = stat_traverse (p_image, p_root, p_psz_splitpath);
   free(p_root);
   _cdio_strfreev (p_psz_splitpath);
 
