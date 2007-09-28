@@ -1,7 +1,7 @@
 /*
-  $Id: paranoia.h,v 1.13 2006/10/27 10:38:41 rocky Exp $
+  $Id: paranoia.h,v 1.14 2007/09/28 12:09:38 rocky Exp $
 
-  Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -183,7 +183,7 @@ extern "C" {
 #define paranoia_read         cdio_paranoia_read
 #define paranoia_read_limited cdio_paranoia_read_limited
 #define paranoia_overlapset   cdio_paranoia_overlapset
-#define paranoia_set_range    cdio_paranoia_read_overlapset
+#define paranoia_set_range    cdio_paranoia_set_range
 #endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
 
 #ifdef __cplusplus

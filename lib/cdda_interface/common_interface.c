@@ -1,5 +1,5 @@
 /*
-  $Id: common_interface.c,v 1.15 2007/09/28 00:28:18 rocky Exp $
+  $Id: common_interface.c,v 1.16 2007/09/28 12:09:39 rocky Exp $
 
   Copyright (C) 2004, 2005, 2007 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
@@ -186,8 +186,9 @@ data_bigendianp(cdrom_drive_t *d)
 /*! Here we fix up a couple of things that will never happen.  yeah,
    right.  
 
-   The multisession stuff is from Hannu's code; it assumes it knows
-   the leadout/leadin size.
+   The multisession stuff is from Hannu code; it assumes it knows the
+   leadout/leadin size.  [I think Hannu refers to Hannu Savolainen
+   from GNU/Linux Kernel code.]
 
    @return -1 if we can't get multisession info, 0 if there is one
    session only or the last session LBA is the same as the first audio

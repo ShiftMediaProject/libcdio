@@ -1,7 +1,7 @@
 /*
-    $Id: p_block.c,v 1.10 2006/01/05 21:58:52 rocky Exp $
+    $Id: p_block.c,v 1.11 2007/09/28 12:09:39 rocky Exp $
 
-    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2007 Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 1998 Monty xiphmont@mit.edu
 
     This program is free software; you can redistribute it and/or modify
@@ -452,3 +452,9 @@ paranoia_init(cdrom_drive_t *d)
   return(p);
 }
 
+void paranoia_set_range(cdrom_paranoia *p, long start, long end)
+{
+  p->cursor = start;
+  p->current_firstsector = start;
+  p->current_lastsector = end;
+}
