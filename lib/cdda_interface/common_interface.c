@@ -1,5 +1,5 @@
 /*
-  $Id: common_interface.c,v 1.14 2007/09/28 00:25:43 rocky Exp $
+  $Id: common_interface.c,v 1.15 2007/09/28 00:28:18 rocky Exp $
 
   Copyright (C) 2004, 2005, 2007 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
@@ -252,11 +252,11 @@ FixupTOC(cdrom_drive_t *d, track_t i_tracks)
 	   *
 	   * That makes a control data section of (90+60+2)*75 sectors in the 
 	   * last audio track */
-	  const int lead_out_gap = ((90+60+2) * CDIO_CD_FRAMES_PER_SEC);
+	  const int gap = ((90+60+2) * CDIO_CD_FRAMES_PER_SEC);
 	  
-	  if ((last_ses_lsn - lead_out_gap >= d->disc_toc[j-1].dwStartSector) &&
-	      (last_ses_lsn - lead_out_gap < d->disc_toc[j].dwStartSector)) {
-	    d->audio_last_sector = last_ses_lsn - lead_out_gap - 1;
+	  if ((last_ses_lsn - gap >= d->disc_toc[j-1].dwStartSector) &&
+	      (last_ses_lsn - gap < d->disc_toc[j].dwStartSector)) {
+	    d->audio_last_sector = last_ses_lsn - gap - 1;
 	    break;
 	  }
 	}
