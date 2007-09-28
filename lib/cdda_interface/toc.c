@@ -1,5 +1,5 @@
 /*
-  $Id: toc.c,v 1.5 2005/01/10 02:10:46 rocky Exp $
+  $Id: toc.c,v 1.6 2007/09/28 00:25:43 rocky Exp $
 
   Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -109,6 +109,15 @@ cdda_track_lastsector(cdrom_drive_t *d, track_t i_track)
     cderror(d,"401: Invalid track number\n");
     return -1;
   }
+  
+  /* CD Extra have their first session ending at the last audio track */
+  if (d->cd_extra > 0 && i_track+1 <= d->tracks) {
+    if (d->audio_last_sector >= d->disc_toc[i_track-1].dwStartSector &&
+        d->audio_last_sector < d->disc_toc[i_track].dwStartSector) {
+      return d->audio_last_sector;
+    }
+  }
+
   /* Safe, we've always the leadout at disc_toc[tracks] */
   return(d->disc_toc[i_track].dwStartSector-1);
 }

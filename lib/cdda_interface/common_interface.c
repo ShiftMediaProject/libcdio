@@ -1,7 +1,7 @@
 /*
-  $Id: common_interface.c,v 1.13 2005/02/05 12:37:35 rocky Exp $
+  $Id: common_interface.c,v 1.14 2007/09/28 00:25:43 rocky Exp $
 
-  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2007 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
   
   This program is free software; you can redistribute it and/or modify
@@ -186,14 +186,12 @@ data_bigendianp(cdrom_drive_t *d)
 /*! Here we fix up a couple of things that will never happen.  yeah,
    right.  
 
-   rocky OMITTED FOR NOW:
    The multisession stuff is from Hannu's code; it assumes it knows
    the leadout/leadin size.
 
    @return -1 if we can't get multisession info, 0 if there is one
-   session only or the multi-session LBA is less than or 100 (don't
-   ask me why -- I don't know), and 1 if the multi-session lba is
-   greater than 100.
+   session only or the last session LBA is the same as the first audio
+   track and 1 if the multi-session lba is higher than first audio track
 */
 int 
 FixupTOC(cdrom_drive_t *d, track_t i_tracks)
@@ -231,37 +229,42 @@ FixupTOC(cdrom_drive_t *d, track_t i_tracks)
     }
   }
 
-#if LOOKED_OVER
-  /* For a scsi device, the ioctl must go to the specialized SCSI
-     CDROM device, not the generic device. */
-
-  if (d->ioctl_fd != -1) {
-    struct cdrom_multisession ms_str;
-    int result;
-
-    ms_str.addr_format = CDROM_LBA;
-    result = ioctl(d->ioctl_fd, CDROMMULTISESSION, &ms_str);
-    if (result == -1) return -1;
-
-    if (ms_str.addr.lba > 100) {
-
-      /* This is an odd little piece of code --Monty */
-
-      /* believe the multisession offset :-) */
-      /* adjust end of last audio track to be in the first session */
-      for (j = i_tracks-1; j >= 0; j--) {
-	if (j > 0 && !IS_AUDIO(d,j) && IS_AUDIO(d,j-1)) {
-	  if ((d->disc_toc[j].dwStartSector > ms_str.addr.lba - 11400) &&
-	      (ms_str.addr.lba - 11400 > d->disc_toc[j-1].dwStartSector))
-	    d->disc_toc[j].dwStartSector = ms_str.addr.lba - 11400;
-	  break;
+  d->audio_last_sector = CDIO_INVALID_LSN;
+  
+  {
+    lsn_t last_ses_lsn;
+    if (cdio_get_last_session (d->p_cdio, &last_ses_lsn) < 0)
+      return -1;
+    
+    /* A Red Book Disc must have only one session, otherwise this is a 
+     * CD Extra */
+    if (last_ses_lsn > d->disc_toc[0].dwStartSector) {
+      /* CD Extra discs have two session, the first one ending after 
+       * the last audio track 
+       * Thus the need to fix the length of the the audio data portion to 
+       * not cross the lead-out of this session */
+      for (j = i_tracks-1; j > 1; j--) {
+	if (cdio_get_track_format(d->p_cdio, j+1) != TRACK_FORMAT_AUDIO && 
+	    cdio_get_track_format(d->p_cdio, j) == TRACK_FORMAT_AUDIO) {
+	  /* First session lead-out is 1:30
+	   * Lead-ins are 1:00
+	   * Every session's first track have a 0:02 pregap
+	   *
+	   * That makes a control data section of (90+60+2)*75 sectors in the 
+	   * last audio track */
+	  const int lead_out_gap = ((90+60+2) * CDIO_CD_FRAMES_PER_SEC);
+	  
+	  if ((last_ses_lsn - lead_out_gap >= d->disc_toc[j-1].dwStartSector) &&
+	      (last_ses_lsn - lead_out_gap < d->disc_toc[j].dwStartSector)) {
+	    d->audio_last_sector = last_ses_lsn - lead_out_gap - 1;
+	    break;
+	  }
 	}
       }
       return 1;
     }
   }
-#endif
-
+    
   return 0;
 }
 
