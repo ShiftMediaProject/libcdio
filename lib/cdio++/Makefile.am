@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.5 2006/03/07 10:46:36 rocky Exp $
+#   $Id: Makefile.am,v 1.6 2007/10/13 08:42:57 rocky Exp $
 #
-#    Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@
 lib_LTLIBRARIES    = libiso9660++.la libcdio++.la 
 
 libcdiopp_la_CURRENT := 0
-libcdiopp_la_REVISION := 0
+libcdiopp_la_REVISION := 1
 libcdiopp_la_AGE := 0
 
 libcdiopp_sources = cdio.cpp devices.cpp

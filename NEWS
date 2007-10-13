@@ -1,14 +1,18 @@
-$Id: NEWS,v 1.109 2007/06/18 00:57:05 rocky Exp $
+$Id: NEWS,v 1.110 2007/10/13 08:42:57 rocky Exp $
 
 version 0.79cvs
 
 - iso-read: Add --ignore -k to ignore errors. 
-- Fix Bugs #18522, #18563, #18131 #19221 (possibly), #19880 and other
-  miscelleaneous bugs
+- Fix Savannah Bugs #18522, #18563, #18131 #19221 (possibly), #19880, 
+  #21147 and other miscelleaneous bugs and memory leaks
 - cd-info: force CDDB disc id to be 32-bits. Problem reported 
-  by Eric Shattow.
+           by Eric Shattow.
 - cd-paranoia: allow ripping before the first track. Problem reported 
-  by Eric Shattow.
+               by Eric Shattow.
+- Support for multisession CD-Extra Discs - via of Patrick Guimond
+- Add iso9660_fs_find_lsn_with_path and iso9660_ifs_find_lsn_with_path to report the 
+  full filename path of lsn.
+- improve eject code for OSX
 
 version 0.78.2
 2006-10-31
@@ -378,4 +382,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.109 2007/06/18 00:57:05 rocky Exp $
+$Id: NEWS,v 1.110 2007/10/13 08:42:57 rocky Exp $

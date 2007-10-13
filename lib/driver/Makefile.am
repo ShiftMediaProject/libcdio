@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.19 2006/10/28 02:11:24 rocky Exp $
+#   $Id: Makefile.am,v 1.20 2007/10/13 08:42:57 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -44,7 +44,7 @@
 #     incompatibility with previous versions.
 
 libcdio_la_CURRENT := 8
-libcdio_la_REVISION := 0
+libcdio_la_REVISION := 1
 libcdio_la_AGE := 1
 
 EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile \
