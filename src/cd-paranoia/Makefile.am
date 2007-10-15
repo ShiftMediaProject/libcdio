@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.22 2006/03/17 19:36:54 rocky Exp $
+#   $Id: Makefile.am,v 1.23 2007/10/15 04:54:00 rocky Exp $
 #
-#    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -24,9 +24,9 @@ transform = s,cd-paranoia,@CDPARANOIA_NAME@,
 
 if BUILD_CD_PARANOIA
 
-SUBDIRS := doc
+SUBDIRS = doc
 
-GETOPT_C:=getopt1.c getopt.c
+GETOPT_C = getopt1.c getopt.c
 
 EXTRA_DIST = usage.txt.in usage-copy.h pod2c.pl \
              doc/FAQ.txt doc/overlapdef.txt $(GETOPT_C) getopt.h
@@ -43,7 +43,7 @@ cd_paranoia_LDADD =  $(LIBCDIO_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_PARANOIA_LIB
 cd_paranoia_DEPENDENCIES =  $(LIBCDIO_DEPS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_PARANOIA_LIBS)
 
 
-bin_PROGRAMS := cd-paranoia
+bin_PROGRAMS = cd-paranoia
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 

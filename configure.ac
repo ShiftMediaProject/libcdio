@@ -19,7 +19,7 @@ define(RELEASE_NUM, 79cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.212 2007/08/12 12:41:10 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.213 2007/10/15 04:53:59 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -89,6 +89,7 @@ AM_CONDITIONAL(ENABLE_CPP, test x"$enable_cpp_progs" = "xyes")
 
 dnl We use C 
 AC_PROG_CC
+AM_PROG_CC_C_O
 dnl We also use C++ in example programs and for CXX bindings
 AC_PROG_CXX
 

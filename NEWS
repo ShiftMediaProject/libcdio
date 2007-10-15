@@ -1,6 +1,7 @@
-$Id: NEWS,v 1.110 2007/10/13 08:42:57 rocky Exp $
+$Id: NEWS,v 1.111 2007/10/15 04:53:59 rocky Exp $
 
 version 0.79cvs
+2007-10-27
 
 - iso-read: Add --ignore -k to ignore errors. 
 - Fix Savannah Bugs #18522, #18563, #18131 #19221 (possibly), #19880, 
@@ -382,4 +383,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.110 2007/10/13 08:42:57 rocky Exp $
+$Id: NEWS,v 1.111 2007/10/15 04:53:59 rocky Exp $

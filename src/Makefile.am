@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.42 2006/04/04 00:20:13 rocky Exp $
+#   $Id: Makefile.am,v 1.43 2007/10/15 04:53:59 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006
 #    Rocky Bernstein <rocky@panix.com>
@@ -19,12 +19,12 @@
 #    02110-1301 USA.
 #
 
-GETOPT_C := getopt.c getopt1.c
+GETOPT_C = getopt.c getopt1.c
 
-EXTRA_DIST := cd-drive.help2man cd-info.help2man cd-read.help2man \
+EXTRA_DIST = cd-drive.help2man cd-info.help2man cd-read.help2man \
 	      iso-info.help2man iso-read.help2man $(GETOPT_C) getopt.h
 
-noinst_HEADERS := cddb.h getopt.h util.h
+noinst_HEADERS = cddb.h getopt.h util.h
 
 ####################################################
 # Things to make the utility/diagnostic programs

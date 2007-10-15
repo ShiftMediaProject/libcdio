@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.11 2007/10/13 08:42:57 rocky Exp $
+#   $Id: Makefile.am,v 1.12 2007/10/15 04:53:59 rocky Exp $
 #
 #    Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
 #
@@ -46,9 +46,9 @@
 
 EXTRA_DIST = libcdio_cdda.sym
 
-libcdio_cdda_la_CURRENT := 0
-libcdio_cdda_la_REVISION := 3
-libcdio_cdda_la_AGE := 0
+libcdio_cdda_la_CURRENT = 0
+libcdio_cdda_la_REVISION = 3
+libcdio_cdda_la_AGE = 0
 
 noinst_HEADERS  = common_interface.h drive_exceptions.h low_interface.h \
 		  smallft.h utils.h
@@ -134,7 +134,7 @@ LIBS = $(LIBCDIO_LIBS) @COS_LIB@
 # extracts from this list those symbols that will be shared. (This sed
 # command comes from libtool.)
 
-libcdio_cdda_la_MAJOR := $(shell expr $(libcdio_cdda_la_CURRENT) - $(libcdio_cdda_la_AGE))
+libcdio_cdda_la_MAJOR = $(shell expr $(libcdio_cdda_la_CURRENT) - $(libcdio_cdda_la_AGE))
 if BUILD_VERSIONED_LIBS
 libcdio_cdda_la_LDFLAGS = $(libcdio_cdda_la_ldflags) -Wl,--version-script=libcdio_cdda.la.ver
 libcdio_cdda_la_DEPENDENCIES = libcdio_cdda.la.ver

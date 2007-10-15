@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.14 2007/10/13 08:42:57 rocky Exp $
+#   $Id: Makefile.am,v 1.15 2007/10/15 04:53:59 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006, 2007 
 #    Rocky Bernstein <rocky@gnu.org>
@@ -44,9 +44,9 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libiso9660_la_CURRENT := 6
-libiso9660_la_REVISION := 0
-libiso9660_la_AGE := 1
+libiso9660_la_CURRENT = 6
+libiso9660_la_REVISION = 0
+libiso9660_la_AGE = 1
 
 EXTRA_DIST = libiso9660.sym
 
@@ -131,7 +131,7 @@ INCLUDES = $(LIBCDIO_CFLAGS)
 # extracts from this list those symbols that will be shared. (This sed
 # command comes from libtool.)
 
-libiso9660_la_MAJOR := $(shell expr $(libiso9660_la_CURRENT) - $(libiso9660_la_AGE))
+libiso9660_la_MAJOR = $(shell expr $(libiso9660_la_CURRENT) - $(libiso9660_la_AGE))
 if BUILD_VERSIONED_LIBS
 libiso9660_la_LDFLAGS = $(libiso9660_la_ldflags) -Wl,--version-script=libiso9660.la.ver
 libiso9660_la_DEPENDENCIES = $(libcdio9660_la_dependencies) libiso9660.la.ver

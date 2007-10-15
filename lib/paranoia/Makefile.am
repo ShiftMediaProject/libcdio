@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.6 2006/03/14 12:05:16 rocky Exp $
+#   $Id: Makefile.am,v 1.7 2007/10/15 04:53:59 rocky Exp $
 #
 #    Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -46,9 +46,9 @@
 
 EXTRA_DIST = libcdio_paranoia.sym
 
-libcdio_paranoia_la_CURRENT := 0
-libcdio_paranoia_la_REVISION := 2
-libcdio_paranoia_la_AGE := 0
+libcdio_paranoia_la_CURRENT = 0
+libcdio_paranoia_la_REVISION = 2
+libcdio_paranoia_la_AGE = 0
 
 noinst_HEADERS  = gap.h isort.h overlap.h p_block.h
 
@@ -136,7 +136,7 @@ LIBS = $(LIBCDIO_LIBS) $(LIBCDIO_CDDA_LIBS)
 # extracts from this list those symbols that will be shared. (This sed
 # command comes from libtool.)
 
-libcdio_paranoia_la_MAJOR := $(shell expr $(libcdio_paranoia_la_CURRENT) - $(libcdio_paranoia_la_AGE))
+libcdio_paranoia_la_MAJOR = $(shell expr $(libcdio_paranoia_la_CURRENT) - $(libcdio_paranoia_la_AGE))
 if BUILD_VERSIONED_LIBS
 libcdio_paranoia_la_LDFLAGS = $(libcdio_paranoia_la_ldflags) -Wl,--version-script=libcdio_paranoia.la.ver
 libcdio_paranoia_la_DEPENDENCIES = libcdio_paranoia.la.ver

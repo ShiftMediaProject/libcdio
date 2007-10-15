@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.6 2007/10/13 08:42:57 rocky Exp $
+#   $Id: Makefile.am,v 1.7 2007/10/15 04:53:59 rocky Exp $
 #
 #    Copyright (C) 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
 #
@@ -44,18 +44,18 @@
 
 lib_LTLIBRARIES    = libiso9660++.la libcdio++.la 
 
-libcdiopp_la_CURRENT := 0
-libcdiopp_la_REVISION := 1
-libcdiopp_la_AGE := 0
+libcdiopp_la_CURRENT = 0
+libcdiopp_la_REVISION = 1
+libcdiopp_la_AGE = 0
 
 libcdiopp_sources = cdio.cpp devices.cpp
 
 libcdio___la_SOURCES = $(libcdiopp_sources)
 libcdio___la_ldflags = -version-info $(libcdiopp_la_CURRENT):$(libcdiopp_la_REVISION):$(libcdiopp_la_AGE)
 
-libiso9660pp_la_CURRENT := 0
-libiso9660pp_la_REVISION := 0
-libiso9660pp_la_AGE := 0
+libiso9660pp_la_CURRENT = 0
+libiso9660pp_la_REVISION = 0
+libiso9660pp_la_AGE = 0
 
 libiso9660pp_sources = iso9660.cpp
 
