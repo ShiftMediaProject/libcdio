@@ -1,7 +1,7 @@
 /*
-  $Id: cddap_interface.c,v 1.5 2006/03/18 18:37:56 rocky Exp $
+  $Id: cddap_interface.c,v 1.6 2007/10/16 15:32:02 rocky Exp $
 
-  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2007 Rocky Bernstein <rocky@gnu.org>
   Original interface.c Copyright (C) 1994-1997 
              Eissfeldt heiko@colossus.escape.de
   Current blenderization Copyright (C) 1998-1999 Monty xiphmont@mit.edu
@@ -95,7 +95,7 @@ read_blocks (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors)
   do {
     err = cdio_read_audio_sectors( d->p_cdio, buffer, begin, i_sectors);
     
-    if ( 0 != err ) {
+    if ( DRIVER_OP_SUCCESS != err ) {
       if (!d->error_retry) return -7;
       
       if (i_sectors==1) {
@@ -110,7 +110,6 @@ read_blocks (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors)
 	  cderror(d, b);
 	  return -10;
 	}
-	break;
       }
 
       if(retry_count>4)
