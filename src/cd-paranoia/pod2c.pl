@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: pod2c.pl,v 1.1 2005/01/11 04:00:26 rocky Exp $
+# $Id: pod2c.pl,v 1.2 2007/11/09 01:25:04 rocky Exp $
 # Utility to turn pieces of pod text to help text.
 use File::Basename;
 
@@ -16,7 +16,7 @@ open(STDIN, "<$filename")
 #  || die "Can't open $outfile for writing:\n$!";
 
 print "/*
-   Copyright (C) 1999, 2005 Rocky Bernstein
+   Copyright (C) 1999, 2005, 2007 Rocky Bernstein
    
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -39,6 +39,9 @@ while(<STDIN>) {
   # See "y" and "z" (with \'s around the quotes)
   s/[C,L,I,B,F]<(.+?)>/\\"$1\\"/g; 
   chomp;
+  if ( $^O eq "cygwin" ) {
+     s/\//
+  }
   print "\"$_\\n\"\n";
 }
 print ";\n";
