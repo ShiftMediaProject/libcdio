@@ -19,7 +19,7 @@ define(RELEASE_NUM, 79)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.215 2007/10/27 04:02:36 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.216 2007/11/16 13:52:55 flameeyes Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -540,12 +540,10 @@ int
    AC_MSG_RESULT($has_tzname)
 fi
 
-if test x$enable_joliet = x; then
 AC_ARG_ENABLE(joliet,
-	[  --enable-joliet         include Joliet extension support (default enabled)],
-		enable_joliet=yes,
-		enable_joliet=no)
-fi
+	AS_HELP_STRING([--disable-joliet], [don't include Joliet extension support (default enabled)]),
+	[enable_joliet=$enableval],
+	[enable_joliet=yes])
 if test "${enable_joliet}" != "no" ; then
   AM_ICONV
   AM_LANGINFO_CODESET
