@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.c,v 1.31 2007/09/05 11:17:36 rocky Exp $
+    $Id: iso9660.c,v 1.32 2007/11/16 21:46:11 flameeyes Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
@@ -57,7 +57,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.31 2007/09/05 11:17:36 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.32 2007/11/16 21:46:11 flameeyes Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -181,14 +181,17 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
 
 #define set_ltime_field(TM_FIELD, LT_FIELD, ADD_CONSTANT)               \
   {                                                                     \
-    char num[10];                                                       \
+    char num[10]; long tmp;                                             \
     memcpy(num, p_ldate->LT_FIELD, sizeof(p_ldate->LT_FIELD));          \
     num[sizeof(p_ldate->LT_FIELD)] = '\0';                              \
     errno = 0;                                                          \
-    p_tm->TM_FIELD = strtol(num,                                        \
-                            (char **)NULL, 10)+ADD_CONSTANT;            \
-    if ((LONG_MIN==p_tm->TM_FIELD || LONG_MAX==p_tm->TM_FIELD) &&       \
-        0 != errno) return false;                                       \
+    tmp = strtol(num,                                                   \
+                 (char **)NULL, 10);                                    \
+    if ( tmp < INT_MIN || tmp > INT_MAX ||                              \
+         ((unsigned long)num + ADD_CONSTANT) > INT_MAX ||               \
+         ((unsigned long)num + ADD_CONSTANT) < INT_MAX )                \
+      return false;                                                     \
+    p_tm->TM_FIELD = tmp + ADD_CONSTANT;                                \
   }
     
 /*!
