@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.57 2007/08/12 12:41:10 rocky Exp $
+#   $Id: Makefile.am,v 1.58 2007/11/16 22:29:01 flameeyes Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
 #    <rocky@cpan.org>
@@ -34,7 +34,7 @@ hack = check_sizeof testassert  testbincue testischar \
        testisocd testisocd2 testiso9660 \
        $(testparanoia) testtoc
 
-noinst_PROGRAMS = $(hack) testdefault 
+noinst_PROGRAMS = testdefault 
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 
