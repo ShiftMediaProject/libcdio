@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cd_read.sh,v 1.8 2006/03/17 23:37:19 rocky Exp $
+#$Id: check_cd_read.sh,v 1.9 2007/11/16 22:25:08 flameeyes Exp $
 #
 #    Copyright (C) 2003, 2005 Rocky Bernstein <rocky@panix.com>
 #
@@ -23,7 +23,7 @@ if test -z $srcdir ; then
   srcdir=`pwd`
 fi
 
-. ${srcdir}/check_common_fn
+. check_common_fn
 
 if test ! -x ../src/cd-read ; then
   exit 77

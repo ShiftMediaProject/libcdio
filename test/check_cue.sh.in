@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_cue.sh.in,v 1.29 2005/09/15 06:36:01 rocky Exp $
+#$Id: check_cue.sh.in,v 1.30 2007/11/16 22:25:08 flameeyes Exp $
 # Tests to see that BIN/CUE and cdrdao TOC file iamge reading is correct
 # (via cd-info).
 
@@ -15,7 +15,7 @@ if test "X$top_srcdir" = "X" ; then
   top_srcdir=`pwd`/..
 fi
 
-. ${srcdir}/check_common_fn
+. check_common_fn
 
 if test ! -x $top_srcdir/src/cd-info ; then
   exit 77

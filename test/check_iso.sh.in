@@ -1,11 +1,11 @@
 #!/bin/sh
-#$Id: check_iso.sh.in,v 1.12 2006/11/16 15:07:07 rocky Exp $
+#$Id: check_iso.sh.in,v 1.13 2007/11/16 22:25:09 flameeyes Exp $
 
 if test -z $srcdir ; then
   srcdir=`pwd`
 fi
 
-. ${srcdir}/check_common_fn
+. check_common_fn
 
 if test ! -x ../src/iso-info ; then
   exit 77

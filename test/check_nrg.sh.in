@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_nrg.sh.in,v 1.15 2005/04/11 02:36:36 rocky Exp $
+#$Id: check_nrg.sh.in,v 1.16 2007/11/16 22:25:09 flameeyes Exp $
 
 if test "@VCDINFO_LIBS@X" != "X" ; then
   vcd_opt='--no-vcd'
@@ -13,7 +13,7 @@ if test "X$top_srcdir" = "X" ; then
   top_srcdir=`pwd`/..
 fi
 
-. ${srcdir}/check_common_fn
+. check_common_fn
 
 if test ! -x $top_srcdir/src/cd-info ; then
   exit 77
