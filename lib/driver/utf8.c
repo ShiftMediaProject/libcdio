@@ -18,11 +18,11 @@
 */
 /* UTF-8 support */
 
-#ifdef HAVE_JOLIET
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
+#ifdef HAVE_JOLIET
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif
