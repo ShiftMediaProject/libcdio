@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.40 2007/11/16 21:49:20 flameeyes Exp $
+#   $Id: Makefile.am,v 1.41 2007/11/16 22:26:46 flameeyes Exp $
 #
 #    Copyright (C) 2003, 2004, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -122,7 +122,7 @@ if MAINTAINER_MODE
 
 .PHONY: ChangeLog
 ChangeLog:
-	$(CVS2CL) -W 450 --header $(srcdir)/cvs2cl_header --utc -w -I ChangeLog --usermap $(srcdir)/cvs2cl_usermap -P 
+	( cd $(srcdir); $(CVS2CL) -W 450 --header cvs2cl_header --utc -w -I ChangeLog --usermap cvs2cl_usermap -P --stdout ) > ChangeLog
 
 ACLOCAL_AMFLAGS=-I .
 
