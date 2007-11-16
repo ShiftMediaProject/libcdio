@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.39 2006/03/18 03:19:16 rocky Exp $
+#   $Id: Makefile.am,v 1.40 2007/11/16 21:49:20 flameeyes Exp $
 #
 #    Copyright (C) 2003, 2004, 2006 Rocky Bernstein <rocky@panix.com>
 #
@@ -39,10 +39,15 @@ EXTRA_DIST = \
 
 SUBDIRS =  doc include lib src test example
 
+if BUILD_CD_PARANOIA
+paranoiapcs = libcdio_paranoia.pc libcdio_cdda.pc
+endif
+
 # pkg-config(1) related rules
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libcdio.pc libcdio_paranoia.pc \
-	         libcdio_cdda.pc libiso9660.pc
+pkgconfig_DATA = libcdio.pc libiso9660.pc \
+		 $(paranoiapcs)
+
 
 $(pkgconfig_DATA): config.status
 
