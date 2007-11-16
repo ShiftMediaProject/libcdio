@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.31 2006/06/02 21:54:21 gmerlin Exp $
+#   $Id: Makefile.am,v 1.32 2007/11/16 21:52:08 flameeyes Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -21,17 +21,17 @@
 ########################################################
 #
 
+if BUILD_CD_PARANOIA
+paranoiaheaders = cdda.h cdtext.h 
+endif
+
 libcdioincludedir=$(includedir)/cdio
 libcdioinclude_HEADERS = \
 	audio.h \
 	bytesex.h \
 	bytesex_asm.h \
-	paranoia.h \
-	cdda.h \
 	cdio.h \
 	cdio_config.h \
-	cdtext.h \
-	cdtext.h \
 	cd_types.h \
 	device.h \
 	disc.h \
@@ -53,7 +53,8 @@ libcdioinclude_HEADERS = \
 	utf8.h \
 	util.h \
 	version.h \
-	xa.h 
+	xa.h \
+	$(paranoiaheaders)
 
 EXTRA_DIST = version.h.in
 BUILT_SOURCES = version.h
