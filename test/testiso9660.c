@@ -1,5 +1,5 @@
 /*
-    $Id: testiso9660.c,v 1.19 2007/09/28 00:25:43 rocky Exp $
+    $Id: testiso9660.c,v 1.20 2007/11/16 22:44:57 flameeyes Exp $
 
     Copyright (C) 2003, 2006, 2007  Rocky Bernstein <rocky@gnu.org>
 
@@ -271,7 +271,7 @@ main (int argc, const char *argv[])
 	iso9660_set_ltime(p_tm, &ltime);
 	  
 	if (!iso9660_get_ltime(&ltime, &tm)) {
-	  printf("Problem running iso966)get_ltime\n");
+	  printf("Problem running iso9660_get_ltime\n");
 	  return 44;
 	}
 
