@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.23 2007/10/15 04:54:00 rocky Exp $
+#   $Id: Makefile.am,v 1.24 2007/11/17 11:58:27 flameeyes Exp $
 #
 #    Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -47,13 +47,10 @@ bin_PROGRAMS = cd-paranoia
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
-# These are the implict rules we've got here.
-SUFFIXES = .txt .h
-
 cd-paranoia.$(OBJEXT): usage.h
 
 if HAVE_PERL
-.txt.h:  $(srcdir)/pod2c.pl
+usage.h: usage.txt $(srcdir)/pod2c.pl
 	$(PERL) $(srcdir)/pod2c.pl $< >$@
 else
 usage.h: usage-copy.h
