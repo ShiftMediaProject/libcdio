@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-    $Id: iso9660.hpp,v 1.9 2006/03/07 20:54:22 rocky Exp $
+    $Id: iso9660.hpp,v 1.10 2007/11/19 19:32:11 flameeyes Exp $
 
     Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -30,6 +30,7 @@
 #include <cdio/iso9660.h>
 #include <cdio++/cdio.hpp>
 #include <string.h>
+#include <cstdlib>
 #include <vector>		// vector class library
 using namespace std;
 
