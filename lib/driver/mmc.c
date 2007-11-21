@@ -1,8 +1,8 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.35 2006/10/11 12:38:18 rocky Exp $
+    $Id: mmc.c,v 1.36 2007/11/21 03:01:58 rocky Exp $
 
-    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@cpan.org>
+    Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -949,6 +949,21 @@ mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 				     mmc_get_cmd_len(p_cdb->field[0]),
 				     p_cdb, e_direction, i_buf, p_buf);
 }
+
+/* Added by SukkoPera to allow CDB length to be specified manually */
+driver_return_code_t
+mmc_run_cmd_len( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
+                  const mmc_cdb_t *p_cdb, unsigned int i_cdb,
+                  cdio_mmc_direction_t e_direction, unsigned int i_buf,
+                  /*in/out*/ void *p_buf )
+{
+  if (!p_cdio) return DRIVER_OP_UNINIT;
+  if (!p_cdio->op.run_mmc_cmd) return DRIVER_OP_UNSUPPORTED;
+  return p_cdio->op.run_mmc_cmd(p_cdio->env, i_timeout_ms,
+                                     i_cdb,
+                                     p_cdb, e_direction, i_buf, p_buf);
+}
+
 
 /*! Return the byte size returned on a MMC READ command (e.g. READ_10,
     READ_MSF, ..)

@@ -201,6 +201,7 @@ mmc_read_data_sectors
 mmc_read_sectors
 mmc_read_timeout_ms
 mmc_run_cmd
+mmc_run_cmd_len
 mmc_set_blocksize
 mmc_set_speed
 mmc_start_stop_media
