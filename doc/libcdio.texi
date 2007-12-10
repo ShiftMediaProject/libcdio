@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.51 2006/04/16 02:34:08 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.52 2007/12/10 09:01:08 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -379,7 +379,7 @@ to by the color of the cover on the specification.
 
 The first type of CD that was produced was the Compact Disc Digital
 Audio (CD-DA) or just plain ``audio CD''. The specification, ICE 908,
-is commonly called the ``Red Book''. Music CD's are recorded in this
+is commonly called the ``Red Book'', @cite{@url{http://en.wikipedia.org/wiki/Red_Book_(audio_CD_standard)}}. Music CD's are recorded in this
 format which basically allows for around 74 minutes of audio per disc
 and for that information to be split up into tracks. Tracks are broken
 up into "sectors" and each sector contains up to 2,352 bytes. To play

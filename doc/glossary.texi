@@ -37,10 +37,12 @@ Compact Disc
 
 @item CD-DA
 @cindex CD-DA
-Compact Disc Digital Audio, described in the ``Red Book'' or ICE
+Compact Disc Digital Audio, described in the ``Red Book'' or IEC
 908. This commonly referred to as an audio @acronym{CD} and what most
 people think of when you play a @acronym{CD} as it was the first to
 use the @acronym{CD} medium.
+
+See @url{http://en.wikipedia.org/wiki/Red_Book_(audio_CD_standard)}
 
 @item CD+G
 @cindex CD+G
