@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.h,v 1.7 2007/12/15 22:36:35 rocky Exp $
+    $Id: freebsd.h,v 1.8 2007/12/28 01:01:06 rocky Exp $
 
     Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 
@@ -157,6 +157,8 @@ void get_drive_cap_freebsd_cam (const _img_private_t *p_env,
 				cdio_drive_read_cap_t  *p_read_cap,
 				cdio_drive_write_cap_t *p_write_cap,
 				cdio_drive_misc_cap_t  *p_misc_cap);
+
+int get_media_changed_freebsd (const void *p_user_data);
 
 char *get_mcn_freebsd_ioctl (const _img_private_t *p_env);
 
