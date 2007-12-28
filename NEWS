@@ -1,4 +1,7 @@
-$Id: NEWS,v 1.112 2007/10/27 04:02:36 rocky Exp $
+$Id: NEWS,v 1.113 2007/12/28 02:11:01 rocky Exp $
+
+version 0.80
+- Add get_media_changed for FreeBSD
 
 version 0.79
 2007-10-27
@@ -387,4 +390,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.112 2007/10/27 04:02:36 rocky Exp $
+$Id: NEWS,v 1.113 2007/12/28 02:11:01 rocky Exp $

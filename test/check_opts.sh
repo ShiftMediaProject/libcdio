@@ -1,11 +1,15 @@
 #!/bin/sh
-#$Id: check_opts.sh,v 1.9 2007/11/16 22:25:08 flameeyes Exp $
+#$Id: check_opts.sh,v 1.10 2007/12/28 02:11:01 rocky Exp $
 # Check cd-info options
 if test -z "$srcdir" ; then
   srcdir=`pwd`
 fi
 
-. check_common_fn
+if test "X$top_builddir" = "X" ; then
+  top_builddir=`pwd`/..
+fi
+
+. ${top_builddir}/test/check_common_fn
 
 if test ! -x ../src/cd-info ; then
   exit 77
