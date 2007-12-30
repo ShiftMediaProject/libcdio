@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.149 2007/06/16 20:12:16 rocky Exp $
+    $Id: cd-info.c,v 1.150 2007/12/30 15:09:00 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2007 Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -539,7 +539,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
       iso9660_stat_t *p_statbuf = _cdio_list_node_data (entnode);
       char *psz_iso_name = p_statbuf->filename;
       char _fullname[4096] = { 0, };
-      char translated_name[MAX_ISONAME+1];
+      char *translated_name = (char *) alloca(strlen(psz_iso_name+1));
 
       if (yep != p_statbuf->rr.b3_rock || 1 == opts.no_rock_ridge) {
 	iso9660_name_translate_ext(psz_iso_name, translated_name, 
