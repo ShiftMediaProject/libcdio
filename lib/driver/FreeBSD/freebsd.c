@@ -1,5 +1,5 @@
 /*
-    $Id: freebsd.c,v 1.36 2007/12/28 01:01:05 rocky Exp $
+    $Id: freebsd.c,v 1.37 2007/12/30 16:15:21 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.36 2007/12/28 01:01:05 rocky Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.37 2007/12/30 16:15:21 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -743,26 +743,23 @@ close_tray_freebsd (const char *psz_device)
 #endif /*HAVE_FREEBSD_CDROM*/
 }
 
+#ifdef HAVE_FREEBSD_CDROM
 /*! Find out if media has changed since the last call.  @param
   p_user_data the environment of the CD object to be acted upon.
   @return 1 if media has changed since last call, 0 if not. Error
   return codes are the same as driver_return_code_t
    */
-int
+static int
 get_media_changed_freebsd (const void *p_user_data)
 {
-#ifdef HAVE_FREEBSD_CDROM
   const _img_private_t *p_env = p_user_data;
   if ( p_env->access_mode == _AM_CAM ) {
     return mmc_get_media_changed( p_env->gen.cdio );
   }
   else
     return DRIVER_OP_UNSUPPORTED;
-#else 
-  return DRIVER_OP_NO_DRIVER;
-#endif /*HAVE_FREEBSD_CDROM*/
 }
-
+#endif /*HAVE_FREEBSD_CDROM*/
 
 /*!
   Initialization routine. This is the only thing that doesn't
