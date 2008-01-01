@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.40 2007/08/12 00:56:09 rocky Exp $
+#   $Id: Makefile.am,v 1.41 2008/01/01 03:14:17 flameeyes Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006
 #    Rocky Bernstein <rocky@cpan.org>
@@ -27,10 +27,12 @@ endif
 if BUILD_CD_PARANOIA
 paranoia_progs = paranoia paranoia2
 endif
+if BUILD_EXAMPLES
 noinst_PROGRAMS = audio cdchange cdtext device drives eject \
 	          isofile isofile2 isofuzzy isolist isolsn \
 	          mmc1 mmc2 mmc2a mmc3 $(paranoia_progs) tracks \
 	          sample3 sample4 udf1 udffile cdio-eject
+endif
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
