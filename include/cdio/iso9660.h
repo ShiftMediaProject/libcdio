@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.96 2007/08/11 16:26:14 rocky Exp $
+    $Id: iso9660.h,v 1.97 2008/01/05 12:12:52 rocky Exp $
 
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
@@ -963,7 +963,8 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
   /*!
     Return the directory name stored in the iso9660_dir_t
     
-    A string is allocated: the caller must deallocate.
+    A string is allocated: the caller must deallocate. This routine
+    can return NULL if memory allocation fails.
   */
   char * iso9660_dir_to_name (const iso9660_dir_t *p_iso9660_dir);
   

@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.44 2008/01/05 09:54:31 rocky Exp $
+    $Id: iso9660_fs.c,v 1.45 2008/01/05 12:12:52 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
@@ -50,7 +50,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.44 2008/01/05 09:54:31 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.45 2008/01/05 12:12:52 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -853,7 +853,8 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 /*!
   Return the directory name stored in the iso9660_dir_t
 
-  A string is allocated: the caller must deallocate.
+  A string is allocated: the caller must deallocate. This routine
+  can return NULL if memory allocation fails.
  */
 char *
 iso9660_dir_to_name (const iso9660_dir_t *iso9660_dir)
