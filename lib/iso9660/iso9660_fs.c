@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660_fs.c,v 1.43 2007/09/26 05:30:15 rocky Exp $
+    $Id: iso9660_fs.c,v 1.44 2008/01/05 09:54:31 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
@@ -50,7 +50,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.43 2007/09/26 05:30:15 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.44 2008/01/05 09:54:31 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -858,7 +858,6 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 char *
 iso9660_dir_to_name (const iso9660_dir_t *iso9660_dir)
 {
-  char namebuf[256] = { 0, };
   uint8_t len=iso9660_get_dir_len(iso9660_dir);
 
   if (!len) return NULL;
@@ -868,13 +867,12 @@ iso9660_dir_to_name (const iso9660_dir_t *iso9660_dir)
   /* (iso9660_dir->file_flags & ISO_DIRECTORY) */
   
   if (iso9660_dir->filename[0] == '\0')
-    strncpy (namebuf, ".", sizeof("."));
+    return strdup(".");
   else if (iso9660_dir->filename[0] == '\1')
-    strncpy (namebuf, "..", sizeof(".."));
-  else
-    strncpy (namebuf, iso9660_dir->filename, iso9660_dir->filename_len);
-
-  return strdup (namebuf);
+    return strdup("..");
+  else {
+    return strdup(iso9660_dir->filename);
+  }
 }
 
 /* 
