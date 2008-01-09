@@ -1,7 +1,7 @@
 /*
-    $Id: iso-info.c,v 1.37 2008/01/03 14:39:29 rocky Exp $
+    $Id: iso-info.c,v 1.38 2008/01/09 04:26:24 rocky Exp $
 
-    Copyright (C) 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -205,7 +205,8 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
   CdioList_t *dirlist =  _cdio_list_new ();
   CdioListNode_t *entnode;
   uint8_t i_joliet_level = iso9660_ifs_get_joliet_level(p_iso);
-
+  char *translated_name = (char *) malloc(4096);
+  size_t translated_name_size = 4096;
   entlist = iso9660_ifs_readdir (p_iso, psz_path);
     
   if (opts.print_iso9660) {
@@ -224,7 +225,15 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
       iso9660_stat_t *p_statbuf = _cdio_list_node_data (entnode);
       char *psz_iso_name = p_statbuf->filename;
       char _fullname[4096] = { 0, };
-      char *translated_name = (char *) alloca(strlen(psz_iso_name)+1);
+       if (strlen(psz_iso_name) >= translated_name_size) {
+         translated_name_size = strlen(psz_iso_name)+1;
+         free(translated_name);
+         translated_name = (char *) malloc(translated_name_size);
+         if (!translated_name) {
+           report( stderr, "Error allocating memory\n" );
+           return;
+         }
+       }
 
       if (yep != p_statbuf->rr.b3_rock || 1 == opts.no_rock_ridge) {
 	iso9660_name_translate_ext(psz_iso_name, translated_name, 
@@ -258,6 +267,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
 	p_statbuf->rr.i_symlink = 0;
       }
     }
+    free (translated_name);
 
   _cdio_list_free (entlist, true);
 

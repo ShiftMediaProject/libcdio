@@ -1,5 +1,5 @@
 /*
-    $Id: cd-info.c,v 1.151 2008/01/03 14:39:29 rocky Exp $
+    $Id: cd-info.c,v 1.152 2008/01/09 04:26:24 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -518,6 +518,8 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
   CdioList_t *p_dirlist =  _cdio_list_new ();
   CdioListNode_t *entnode;
   uint8_t i_joliet_level;
+  char *translated_name = (char *) malloc(4096);
+  size_t translated_name_size = 4096;
 
   i_joliet_level = (opts.no_joliet) 
     ? 0
@@ -539,7 +541,15 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
       iso9660_stat_t *p_statbuf = _cdio_list_node_data (entnode);
       char *psz_iso_name = p_statbuf->filename;
       char _fullname[4096] = { 0, };
-      char *translated_name = (char *) alloca(strlen(psz_iso_name)+1);
+       if (strlen(psz_iso_name) >= translated_name_size) {
+         translated_name_size = strlen(psz_iso_name)+1;
+         free(translated_name);
+         translated_name = (char *) malloc(translated_name_size);
+         if (!translated_name) {
+           report( stderr, "Error allocating memory\n" );
+           return;
+         }
+       }
 
       if (yep != p_statbuf->rr.b3_rock || 1 == opts.no_rock_ridge) {
 	iso9660_name_translate_ext(psz_iso_name, translated_name, 
@@ -564,6 +574,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
 	p_statbuf->rr.i_symlink = 0;
       }
     }
+    free (translated_name);
 
   _cdio_list_free (p_entlist, true);
 

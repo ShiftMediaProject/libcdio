@@ -1,5 +1,5 @@
 /*
-  $Id: mmc-tool.c,v 1.9 2006/04/14 22:17:08 rocky Exp $
+  $Id: mmc-tool.c,v 1.10 2008/01/09 04:26:24 rocky Exp $
 
   Copyright (C) 2006 Rocky Bernstein <rocky@cpan.org>
   
@@ -261,7 +261,7 @@ parse_options (int argc, char *argv[])
 }
 
 static void 
-print_mode_sense (unsigned int i_mmc_size, const uint8_t buf[22])
+print_mode_sense (unsigned int i_mmc_size, const uint8_t buf[30])
 {
   printf("Mode sense %d information\n", i_mmc_size);
   if (buf[2] & 0x01) {
@@ -461,7 +461,7 @@ main(int argc, char *argv[])
       break;
     case OP_MODE_SENSE_2A: 
       {
-	uint8_t buf[22] = { 0, };    /* Place to hold returned data */
+	uint8_t buf[30] = { 0, };    /* Place to hold returned data */
 	if (p_op->arg.i_num == 10) {
 	  rc = mmc_mode_sense_10(p_cdio, buf, sizeof(buf),
 				 CDIO_MMC_CAPABILITIES_PAGE);

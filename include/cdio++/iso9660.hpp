@@ -1,7 +1,7 @@
 /* -*- C++ -*-
-    $Id: iso9660.hpp,v 1.10 2007/11/19 19:32:11 flameeyes Exp $
+    $Id: iso9660.hpp,v 1.11 2008/01/09 04:26:23 rocky Exp $
 
-    Copyright (C) 2006 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include <string.h>
 #include <cstdlib>
 #include <vector>		// vector class library
+#include <cstdlib>
 using namespace std;
 
 /** ISO 9660 class.
@@ -138,6 +139,7 @@ public:
     {
       free(p_stat);
       this->p_stat = right.p_stat;
+      return right;
     }
     
     ~Stat() 
