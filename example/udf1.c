@@ -1,7 +1,7 @@
 /*
-  $Id: udf1.c,v 1.17 2005/11/02 03:42:49 rocky Exp $
+  $Id: udf1.c,v 1.18 2008/01/09 04:27:16 rocky Exp $
 
-  Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -127,7 +127,7 @@ main(int argc, const char *argv[])
 	printf("volume id: %s\n", vol_id);
 
       if (0 < udf_get_volume_id(p_udf, volset_id, sizeof(volset_id)) ) {
-	volset_id[UDF_VOLSET_ID_SIZE+1]='\0';
+	volset_id[UDF_VOLSET_ID_SIZE]='\0';
 	printf("volume set id: %s\n", volset_id);
       }
 
