@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
  *           (C) 1998 Monty <xiphmont@mit.edu>
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -368,10 +368,11 @@ callback(long int inpos, paranoia_cb_mode_t function)
   static int stimeout=0;
   const char *smilie="= :-)";
   
-  if(callscript)
-    fprintf(stderr,"##: %d [%s] @ %ld\n",
-	    function,(function>=-2&&function<=13?callback_strings[function+2]:
-		      ""),inpos);
+  if (callscript)
+    fprintf(stderr, "##: %d [%s] @ %ld\n",
+	    function, ((int) function >= -2 && (int) function <= 13 ?
+		       callback_strings[function+2] : ""),
+	    inpos);
 
   if(!quiet){
     long test;
