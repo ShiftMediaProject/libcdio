@@ -1,8 +1,9 @@
 /*
-    $Id: iso9660_fs.c,v 1.45 2008/01/05 12:12:52 rocky Exp $
+    $Id: iso9660_fs.c,v 1.46 2008/02/08 08:53:33 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 
+    Rocky Bernstein <rocky@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,7 +51,7 @@
 
 #include <stdio.h>
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.45 2008/01/05 12:12:52 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.46 2008/02/08 08:53:33 rocky Exp $";
 
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
@@ -748,6 +749,11 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
   stat_len      = sizeof(iso9660_stat_t)+i_fname+2;
 
   p_stat          = calloc(1, stat_len);
+  if (!p_stat)
+    {
+    cdio_warn("Couldn't calloc(1, %d)", stat_len);
+    return NULL;
+    }
   p_stat->type    = (p_iso9660_dir->file_flags & ISO_DIRECTORY) 
     ? _STAT_DIR : _STAT_FILE;
   p_stat->lsn     = from_733 (p_iso9660_dir->extent);
@@ -771,6 +777,11 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 	/* realloc gives valgrind errors */
 	iso9660_stat_t *p_stat_new = 
 	  calloc(1, sizeof(iso9660_stat_t)+i_rr_fname+2);
+        if (!p_stat_new)
+          {
+          cdio_warn("Couldn't calloc(1, %d)", sizeof(iso9660_stat_t)+i_rr_fname+2);
+          return NULL;
+          }
 	memcpy(p_stat_new, p_stat, stat_len);
 	free(p_stat);
 	p_stat = p_stat_new;
@@ -785,11 +796,14 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
       else if (i_joliet_level) {
 	int i_inlen = i_fname;
 	cdio_utf8_t *p_psz_out = NULL;
-	cdio_charset_to_utf8(p_iso9660_dir->filename, i_inlen,
-                             &p_psz_out, "UCS-2BE");
-        
-	strncpy(p_stat->filename, p_psz_out, i_fname);
-	free(p_psz_out);
+	if (cdio_charset_to_utf8(p_iso9660_dir->filename, i_inlen,
+                             &p_psz_out, "UCS-2BE")) {
+          strncpy(p_stat->filename, p_psz_out, i_fname);
+          free(p_psz_out);
+        }
+        else {
+          return NULL;
+        }
       }
 #endif /*HAVE_JOLIET*/
       else {
@@ -979,6 +993,11 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
     }
   
   _dirbuf = calloc(1, _root->secsize * ISO_BLOCKSIZE);
+  if (!_dirbuf)
+    {
+    cdio_warn("Couldn't calloc(1, %d)", _root->secsize * ISO_BLOCKSIZE);
+    return NULL;
+    }
 
   if (cdio_read_data_sectors (p_cdio, _dirbuf, _root->lsn, ISO_BLOCKSIZE, 
 			      _root->secsize))
@@ -1056,6 +1075,11 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
       iso9660_stat_t *p_stat;
       unsigned int len=sizeof(iso9660_stat_t) + strlen(_root->filename)+1;
       p_stat = calloc(1, len);
+      if (!p_stat)
+        {
+        cdio_warn("Couldn't calloc(1, %d)", len);
+        return NULL;
+        }
       memcpy(p_stat, _root, len);
       p_stat->rr.psz_symlink = calloc(1, p_stat->rr.i_symlink_max);
       memcpy(p_stat->rr.psz_symlink, _root->rr.psz_symlink, 
@@ -1076,6 +1100,11 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
     }
   
   _dirbuf = calloc(1, _root->secsize * ISO_BLOCKSIZE);
+  if (!_dirbuf)
+    {
+    cdio_warn("Couldn't calloc(1, %d)", _root->secsize * ISO_BLOCKSIZE);
+    return NULL;
+    }
 
   ret = iso9660_iso_seek_read (p_iso, _dirbuf, _root->lsn, _root->secsize);
   if (ret!=ISO_BLOCKSIZE*_root->secsize) return NULL;
@@ -1284,6 +1313,11 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
       }
 
     _dirbuf = calloc(1, p_stat->secsize * ISO_BLOCKSIZE);
+    if (!_dirbuf)
+      {
+      cdio_warn("Couldn't calloc(1, %d)", p_stat->secsize * ISO_BLOCKSIZE);
+      return NULL;
+      }
 
     if (cdio_read_data_sectors (p_cdio, _dirbuf, p_stat->lsn, 
 				ISO_BLOCKSIZE, p_stat->secsize))
@@ -1350,6 +1384,11 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
       }
 
     _dirbuf = calloc(1, p_stat->secsize * ISO_BLOCKSIZE);
+    if (!_dirbuf)
+      {
+        cdio_warn("Couldn't calloc(1, %d)", p_stat->secsize * ISO_BLOCKSIZE);
+        return NULL;
+      }
 
     ret = iso9660_iso_seek_read (p_iso, _dirbuf, p_stat->lsn, p_stat->secsize);
     if (ret != ISO_BLOCKSIZE*p_stat->secsize) return NULL;
@@ -1422,6 +1461,11 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
       if (statbuf->lsn == lsn) {
 	unsigned int len=sizeof(iso9660_stat_t)+strlen(statbuf->filename)+1;
 	iso9660_stat_t *ret_stat = calloc(1, len);
+	if (!ret_stat)
+	  {
+          cdio_warn("Couldn't calloc(1, %d)", len);
+          return NULL;
+	  }
 	memcpy(ret_stat, statbuf, len);
         _cdio_list_free (entlist, true);
         _cdio_list_free (dirlist, true);

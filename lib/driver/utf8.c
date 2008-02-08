@@ -140,11 +140,17 @@ do_convert(iconv_t cd, char * src, int src_len,
           outbytesleft += BYTES_INCREMENT;
 
           ret = realloc(ret, alloc_size);
+          if (ret == NULL)
+            {
+            fprintf(stderr, "Can't realloc(%d).\n", alloc_size);
+            return false;
+            }
           outbuf = ret + output_pos;
           break;
         default:
           fprintf(stderr, "Iconv failed: %s\n", strerror(errno));
-          free(ret);
+          if (ret != NULL)
+            free(ret);
           return false;
           break;
         }
