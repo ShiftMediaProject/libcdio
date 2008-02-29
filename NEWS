@@ -1,8 +1,12 @@
-$Id: NEWS,v 1.114 2008/01/05 12:12:52 rocky Exp $
+$Id: NEWS,v 1.115 2008/02/29 11:34:15 rocky Exp $
 
 version 0.80
+2008-03-15
+
 - Add get_media_changed for FreeBSD
-- Savannah bug #21910
+- Add option to log summary output in cd-paranoia
+- More string bounds checking to eliminate known string overflow conditions,
+  e.g. Savannah bug #21910
 
 version 0.79
 2007-10-27
@@ -391,4 +395,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.114 2008/01/05 12:12:52 rocky Exp $
+$Id: NEWS,v 1.115 2008/02/29 11:34:15 rocky Exp $

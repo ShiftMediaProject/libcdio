@@ -1,6 +1,6 @@
 #!/bin/sh
-# $Id: check_paranoia.sh.in,v 1.11 2005/10/17 15:10:55 pjcreath Exp $
-# Compare our cd-paranoia with an installed cdparanoia
+# $Id: check_paranoia.sh.in,v 1.12 2008/02/29 11:34:15 rocky Exp $
+# Compare our cd-paranoia with known good results.
 
 if test "X$srcdir" = "X" ; then
   srcdir=`pwd`
@@ -68,7 +68,11 @@ if test "@CMP@" != no -a "@BUILD_CD_PARANOIA_TRUE@"X = X ; then
   ### FIXME: large jitter is known to fail. Investigate.
   exit 0
 else 
-  echo "Don't see libcdio cd-paranoia program. Test skipped."
+  if test "@CMP@" != no ; then
+    echo "Don't see 'cmp' program. Test skipped."
+  else  
+    echo "Don't see libcdio 'cd-paranoia' program. Test skipped."
+  fi
   exit 77
 fi
 fi

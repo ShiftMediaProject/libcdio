@@ -6,6 +6,7 @@ OPTIONS:
   -q --quiet                      : quiet operation
   -e --stderr-progress            : force output of progress information to
                                     stderr (for wrapper scripts)
+  -l --log-summary         <file> : save result summary to file
   -V --version                    : print version info and quit
   -Q --query                      : autosense drive, query disc and quit
   -B --batch                      : 'batch' mode (saves each track to a

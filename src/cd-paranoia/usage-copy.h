@@ -23,6 +23,7 @@ const char usage_help[] =
 "  -v --verbose                    : extra verbose operation\n"
 "  -q --quiet                      : quiet operation\n"
 "  -e --stderr-progress            : force output of progress information to\n"
+"  -l --log-summary         <file> : save result summary to file\n"
 "                                    stderr (for wrapper scripts)\n"
 "  -V --version                    : print version info and quit\n"
 "  -Q --query                      : autosense drive, query disc and quit\n"

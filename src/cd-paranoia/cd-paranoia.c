@@ -20,33 +20,6 @@
  *
  * See ChangeLog for recent changes.
  *
- * last changes:
- *   22.01.98 - first version
- *   15.02.98 - alpha 2: juggled two includes from interface/low_interface.h
- *                       that move contents in Linux 2.1
- *                       Linked status bar to isatty to avoid it appearing
- *                       in a redirected file.
- *                       Played with making TOC less verbose.
- *   04.04.98 - alpha 3: zillions of bugfixes, also added MMC and IDE_SCSI
- *                       emulation support
- *   05.04.98 - alpha 4: Segfault fix, cosmetic repairs
- *   05.04.98 - alpha 5: another segfault fix, cosmetic repairs, 
- *                       Gadi Oxman provided code to identify/fix nonstandard
- *                       ATAPI CDROMs 
- *   07.04.98 - alpha 6: Bugfixes to autodetection
- *   18.06.98 - alpha 7: Additional SCSI error handling code
- *                       cosmetic fixes
- *                       segfault fixes
- *                       new sync/silence code, smaller fft      
- *   15.07.98 - alpha 8: More new SCSI code, better error recovery
- *                       more segfault fixes (two linux bugs, one my fault)
- *                       Fixup reporting fixes, smilie fixes.
- *                       AIFF support (in addition to AIFC)
- *                       Path parsing fixes
- *   Changes are becoming TNTC. Will resume the log at beta.
- *
- *   09.04.04 - conversion to use libcdio. See top-level Changelog for
- *              libcdio history.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -317,6 +290,7 @@ long callscript=0;
 
 static int skipped_flag=0;
 static int abort_on_skip=0;
+FILE *logfile = NULL;
 
 #if TRACE_PARANOIA
 static void
@@ -557,6 +531,12 @@ callback(long int inpos, paranoia_cb_mode_t function)
 	}
    
 	fprintf(stderr,buffer);
+
+	if (logfile != NULL && function==-1) {
+	  fprintf(logfile,buffer+1);
+	  fprintf(logfile,"\n\n");
+	  fflush(logfile);
+	}
       }
     }
   }
@@ -567,7 +547,7 @@ callback(long int inpos, paranoia_cb_mode_t function)
 }
 #endif /* !TRACE_PARANOIA */
 
-const char *optstring = "aBcCd:efg:hi:m:n:o:O:pqQrRsS:Tt:VvwWx:XYZz::";
+const char *optstring = "aBcCd:efg:hi:l:m:n:o:O:pqQrRsS:Tt:VvwWx:XYZz::";
 
 struct option options [] = {
 	{"abort-on-skip",             no_argument,       NULL, 'X'},
@@ -583,6 +563,7 @@ struct option options [] = {
 	{"force-read-speed",          required_argument, NULL, 'S'},
 	{"force-search-overlap",      required_argument, NULL, 'o'},
 	{"help",                      no_argument,       NULL, 'h'},
+ 	{"log-summary",               required_argument, NULL, 'l'},
 	{"mmc-timeout",               required_argument, NULL, 'm'},
 	{"never-skip",                optional_argument, NULL, 'z'},
 	{"output-aifc",               no_argument,       NULL, 'a'},
@@ -638,6 +619,10 @@ cleanup (void)
   free_and_null(force_cdrom_device);
   free_and_null(span);
   free_and_null(info_file);
+  if(logfile && logfile != stdout) {
+      fclose(logfile);
+      logfile = NULL;
+    }
 }
 
 /* Returns true if we have an integer argument. 
@@ -747,6 +732,19 @@ main(int argc,char *argv[])
       if(info_file)free(info_file);
       info_file=strdup(info_file);
       break;
+    case 'l':
+      if(logfile && logfile != stdout)fclose(logfile);
+      if(!strcmp(optarg,"-"))
+	logfile=stdout;
+      else{
+	logfile=fopen(optarg,"w");
+	if(logfile==NULL){
+	  report3("Cannot open log summary file %s: %s",(char*)optarg,
+		  strerror(errno));
+	  exit(1);
+	}
+      }
+      break;
     case 'm':
       {
 	long int mmc_timeout_sec;
@@ -839,6 +837,18 @@ main(int argc,char *argv[])
       exit(1);
     }
   }
+  
+  if(logfile){
+    /* log command line and version */
+    int i;
+    for (i = 0; i < argc; i++) 
+      fprintf(logfile,"%s ",argv[i]);
+    fprintf(logfile,"\n");
+    
+    fprintf(logfile,VERSION);
+    fprintf(logfile,"\n");
+    fflush(logfile);
+  }
 
   if(optind>=argc && !query_only){
     if(batch)
@@ -919,6 +929,8 @@ main(int argc,char *argv[])
       report("Search overlap sectors must be 0<= n <=75\n");
       cdda_close(d);
       d=NULL;
+      if(logfile && logfile != stdout)
+        fclose(logfile);
       exit(1);
     }
     {
@@ -1138,6 +1150,10 @@ main(int argc,char *argv[])
 	      report("Are you sure you wanted 'batch' "
 		     "(-B) output with stdout?");
 	    report("outputting to stdout\n");
+	    if(logfile){
+	      fprintf(logfile,"outputting to stdout\n");
+	      fflush(logfile);
+	    }
 	    outfile_name[0]='\0';
 	  } else {
 	    char path[256];
@@ -1181,6 +1197,10 @@ main(int argc,char *argv[])
 	      exit(1);
 	    }
 	    report2("outputting to %s\n", outfile_name);
+	    if(logfile){
+	      fprintf(logfile,"outputting to %s\n",outfile_name);
+	      fflush(logfile);
+	    }
 	  }
 	} else {
 	  /* default */
@@ -1211,6 +1231,11 @@ main(int argc,char *argv[])
 	    exit(1);
 	  }
 	  report2("outputting to %s\n", outfile_name);
+	  if(logfile){
+	    fprintf(logfile,"outputting to %s\n",outfile_name);
+	    fflush(logfile);
+	  }
+
 	}
 	
 	switch(output_type) {
