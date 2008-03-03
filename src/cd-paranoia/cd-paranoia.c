@@ -568,7 +568,6 @@ struct option options [] = {
 	{"never-skip",                optional_argument, NULL, 'z'},
 	{"output-aifc",               no_argument,       NULL, 'a'},
 	{"output-aiff",               no_argument,       NULL, 'f'},
-	{"output-info",               required_argument, NULL, 'i'},
 	{"output-raw",                no_argument,       NULL, 'p'},
 	{"output-raw-big-endian",     no_argument,       NULL, 'R'},
 	{"output-raw-little-endian",  no_argument,       NULL, 'r'},
@@ -591,7 +590,6 @@ static cdrom_drive_t    *d        = NULL;
 static cdrom_paranoia_t *p        = NULL;
 static char             *span     = NULL;
 static char *force_cdrom_device   = NULL;
-static char *info_file            = NULL;
 
 #define free_and_null(p) \
   free(p);		 \
@@ -618,7 +616,6 @@ cleanup (void)
   if (d) cdda_close(d);
   free_and_null(force_cdrom_device);
   free_and_null(span);
-  free_and_null(info_file);
   if(logfile && logfile != stdout) {
       fclose(logfile);
       logfile = NULL;
@@ -728,10 +725,6 @@ main(int argc,char *argv[])
     case 'h':
       usage(stdout);
       exit(0);
-    case 'i':
-      if(info_file)free(info_file);
-      info_file=strdup(info_file);
-      break;
     case 'l':
       if(logfile && logfile != stdout)fclose(logfile);
       if(!strcmp(optarg,"-"))
