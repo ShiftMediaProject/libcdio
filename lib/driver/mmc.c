@@ -1,8 +1,8 @@
 /*  Common Multimedia Command (MMC) routines.
 
-    $Id: mmc.c,v 1.36 2007/11/21 03:01:58 rocky Exp $
+    $Id: mmc.c,v 1.37 2008/03/04 10:27:54 rocky Exp $
 
-    Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1362,7 +1362,7 @@ mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf,
                      true,  /* return user data */
                      false, /* return EDC ECC */
                      false, /* return C2 Error information */
-                     0,     /* suchannel selection bits */
+                     0,     /* subchannel selection bits */
                      ISO_BLOCKSIZE, /* blocksize*/ 
                      i_blocks       /* Number of blocks. */);
 
