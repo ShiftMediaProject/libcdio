@@ -1,7 +1,7 @@
 /*
-  $Id: util.h,v 1.14 2005/10/06 09:37:11 rocky Exp $
+  $Id: util.h,v 1.15 2008/03/06 01:16:49 rocky Exp $
 
-  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by

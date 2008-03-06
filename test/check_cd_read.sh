@@ -1,7 +1,7 @@
 #!/bin/sh
-#$Id: check_cd_read.sh,v 1.10 2007/12/28 02:11:01 rocky Exp $
+#$Id: check_cd_read.sh,v 1.11 2008/03/06 01:16:49 rocky Exp $
 #
-#    Copyright (C) 2003, 2005 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by

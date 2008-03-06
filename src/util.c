@@ -1,7 +1,7 @@
 /*
-  $Id: util.c,v 1.52 2007/10/21 21:57:09 rocky Exp $
+  $Id: util.c,v 1.53 2008/03/06 01:16:49 rocky Exp $
 
-  Copyright (C) 2003, 2004, 2005, 2007 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ print_version (char *program_name, const char *version,
 
   if (no_header == 0)
     report( stdout,  
-	    "%s version %s\nCopyright (c) 2003, 2004, 2005, 2007 R. Bernstein\n",
+	    "%s version %s\nCopyright (c) 2003, 2004, 2005, 2007, 2008 R. Bernstein\n",
 	    program_name, version);
   report( stdout,  
 	  _("This is free software; see the source for copying conditions.\n\

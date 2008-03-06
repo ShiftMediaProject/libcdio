@@ -1,7 +1,7 @@
 /*
-  $Id: cd-read.c,v 1.30 2006/03/17 23:37:19 rocky Exp $
+  $Id: cd-read.c,v 1.31 2008/03/06 01:16:49 rocky Exp $
 
-  Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,9 +19,10 @@
   02110-1301 USA.
 */
 
-/* Program to debug read routines audio, mode1, mode2 forms 1 & 2. */
+/* Program to debug read routines audio, auto, mode1, mode2 forms 1 & 2. */
 
 #include "util.h"
+#include <cdio/mmc.h>
 
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
@@ -64,10 +65,8 @@ typedef enum
   READ_M1F2  = CDIO_READ_MODE_M1F2,
   READ_M2F1  = CDIO_READ_MODE_M2F1,
   READ_M2F2  = CDIO_READ_MODE_M2F2,
-  READ_MODE_UNINIT
-#if AUTO_FINISHED
-  READ_AUTO
-#endif
+  READ_MODE_UNINIT,
+  READ_ANY
 } read_mode_t;
 
 /* Structure used so we can binary sort and set the --mode switch. */
@@ -80,6 +79,7 @@ typedef struct
 
 /* Sub-options for --mode.  Note: entries must be sorted! */
 subopt_entry_t modes_sublist[] = {
+  {"any",        READ_ANY},
   {"audio",      READ_AUDIO},
   {"m1f1",       READ_M1F1},
   {"m1f2",       READ_M1F2},
@@ -243,7 +243,7 @@ parse_options (int argc, char *argv[])
   const char* helpText =
     "Usage: %s [OPTION...]\n"
     "  -a, --access-mode=STRING        Set CD control access mode\n"
-    "  -m, --mode=MODE-TYPE            set CD-ROM read mode (audio, m1f1, m1f2,\n"
+    "  -m, --mode=MODE-TYPE            set CD-ROM read mode (audio, auto, m1f1, m1f2,\n"
     "                                  m2mf1, m2f2)\n"
     "  -d, --debug=INT                 Set debugging to LEVEL\n"
     "  -x, --hexdump                   Show output as a hex dump. The default is a\n"
@@ -392,7 +392,7 @@ parse_options (int argc, char *argv[])
   if (opts.read_mode == READ_MODE_UNINIT) {
     report( stderr, 
 	    "%s: Need to give a read mode "
-	    "(audio, m1f1, m1f2, m2f1 or m2f2)\n",
+	    "(audio, m1f1, m1f2, m2f1, m2f2, or auto)\n",
 	    program_name );
     free(program_name);
     exit(10);
@@ -556,16 +556,26 @@ main(int argc, char *argv[])
 	}
       }
       break;
-#if AUTO_FINISHED
-    case READ_AUTO:
-      /* Find what track lsn is in. Then 
-         switch cdio_get_track_format(p_cdio, i)
-         and also test using is_green
 
-      */
+    case READ_ANY:
+      {
+	driver_id_t driver_id = cdio_get_driver_id(p_cdio);
+	if (cdio_is_device(source_name, driver_id)) {
+	  if (DRIVER_OP_SUCCESS != 
+	      mmc_read_sectors(p_cdio, &buffer, 
+			       opts.start_lsn, CDIO_MMC_READ_TYPE_ANY, 1)) {
+	    report( stderr, "error reading block %u\n", 
+		    (unsigned int) opts.start_lsn );
+	    blocklen = 0;
+	  }
+	} else {
+	  err_exit(
+		   "%s: mode 'any' must be used with a real CD-ROM, not an image file.\n", program_name);
+	}
+      }
       break;
-#endif 
-    case READ_MODE_UNINIT:
+
+      case READ_MODE_UNINIT: 
       err_exit("%s: Reading mode not set\n", program_name);
       break;
     }

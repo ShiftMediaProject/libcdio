@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.115 2008/02/29 11:34:15 rocky Exp $
+$Id: NEWS,v 1.116 2008/03/06 01:16:49 rocky Exp $
 
 version 0.80
 2008-03-15
@@ -7,6 +7,8 @@ version 0.80
 - Add option to log summary output in cd-paranoia
 - More string bounds checking to eliminate known string overflow conditions,
   e.g. Savannah bug #21910
+- add --mode="any" on cd-read which uses a mmc_read_sectors with read-type
+       CDIO_MMC_READ_TYPE_ANY.
 
 version 0.79
 2007-10-27
@@ -395,4 +397,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.115 2008/02/29 11:34:15 rocky Exp $
+$Id: NEWS,v 1.116 2008/03/06 01:16:49 rocky Exp $
