@@ -1,7 +1,7 @@
-#   $Id: Makefile.am,v 1.58 2007/11/16 22:29:01 flameeyes Exp $
+#   $Id: Makefile.am,v 1.59 2008/03/06 01:34:09 rocky Exp $
 #
-#    Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein 
-#    <rocky@cpan.org>
+#    Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein 
+#    <rocky@gnu.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -66,6 +66,7 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 	     cdda.right cdda.toc cdda.cue cdda.bin \
 	     isofs-m1.right isofs-m1-no-rr.right \
 	     isofs-m1.toc isofs-m1.cue isofs-m1.bin \
+	     cd-paranoia-log.right \
 	     check_opts0.right check_opts1.right check_opts2.right \
              check_opts3.right check_opts4.right check_opts5.right \
              check_opts6.right check_opts7.right \
