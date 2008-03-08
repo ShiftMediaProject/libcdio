@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_paranoia.sh.in,v 1.13 2008/03/06 01:34:10 rocky Exp $
+# $Id: check_paranoia.sh.in,v 1.14 2008/03/08 16:45:19 rocky Exp $
 # Compare our cd-paranoia with known good results.
 
 if test "X$srcdir" = "X" ; then
@@ -53,7 +53,7 @@ if test "@CMP@" != no -a "@BUILD_CD_PARANOIA_TRUE@"X = X ; then
     exit 3
   fi
   tail -3 ./cd-paranoia.log > ./cd-paranoia-filtered.log
-  if @CMP@ ./cd-paranoia-log.right ./cd-paranoia-filtered.log ; then
+  if @CMP@ $srcdir/cd-paranoia-log.right ./cd-paranoia-filtered.log ; then
     echo "** --log option okay"
     rm ./cd-paranoia.log ./cd-paranoia-filtered.log
   else

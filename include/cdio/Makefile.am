@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.32 2007/11/16 21:52:08 flameeyes Exp $
+#   $Id: Makefile.am,v 1.33 2008/03/08 16:45:19 rocky Exp $
 #
 #    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
 #
@@ -41,6 +41,7 @@ libcdioinclude_HEADERS = \
 	iso9660.h \
 	logging.h \
 	mmc.h \
+	paranoia.h \
 	posix.h \
 	read.h \
 	rock.h \
