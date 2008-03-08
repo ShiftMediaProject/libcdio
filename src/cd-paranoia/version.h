@@ -1,7 +1,7 @@
 /*
-  $Id: version.h,v 1.4 2005/01/22 19:39:16 rocky Exp $
+  $Id: version.h,v 1.5 2008/03/08 18:11:11 rocky Exp $
 
-  Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004, 2005, 2008  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Monty xiphmont@mit.edu
   
   This program is free software; you can redistribute it and/or modify
@@ -26,5 +26,5 @@
 #define PARANOIA_VERSION \
   "cdparanoia III release 9.8 libcdio " CDIO_VERSION "\n"		\
   "(C) 2001 Monty <monty@xiph.org> and Xiphophorus\n"			\
-  "(C) 2004, 2005 Rocky Bernstein <rocky@panix.com>\n\n"		\
+  "(C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>\n\n"		\
   "Report bugs to bug-libcdio@gnu.org\n"
