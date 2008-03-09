@@ -38,7 +38,7 @@ grep "^AM_GNU_GETTEXT" $srcdir/configure.ac >/dev/null && {
     DIE=1
   }
 }
-if ! test -f po/Makefile.in.in 
+if ! test -f po/Makefile.in.in ; then 
   gettextize
 fi
 
