@@ -40,6 +40,10 @@ grep "^AM_GNU_GETTEXT" $srcdir/configure.ac >/dev/null && {
 }
 if ! test -f po/Makefile.in.in ; then 
   gettextize
+  echo "*** Gettextize messes things up in ways we don't want. ***"
+  echo "*** Trying to fix.***" 
+  rm configure.ac Makefile.am
+  cvs up
 fi
 
 (automake --version) < /dev/null > /dev/null 2>&1 || {
