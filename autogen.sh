@@ -38,7 +38,9 @@ grep "^AM_GNU_GETTEXT" $srcdir/configure.ac >/dev/null && {
     DIE=1
   }
 }
-gettextize
+if ! test -f po/Makefile.in.in 
+  gettextize
+fi
 
 (automake --version) < /dev/null > /dev/null 2>&1 || {
   echo

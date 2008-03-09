@@ -19,7 +19,7 @@ define(RELEASE_NUM, 80)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.219 2008/01/01 03:14:17 flameeyes Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.220 2008/03/09 18:41:27 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -645,7 +645,8 @@ AC_CONFIG_COMMANDS([checks],
 dnl
 dnl Output configuration files
 dnl
-AC_CONFIG_FILES([ \
+## AC_CONFIG_FILES([  po/Makefile.in\
+AC_CONFIG_FILES([
        Makefile \
        example/C++/Makefile \
        example/C++/OO/Makefile \
@@ -685,6 +686,7 @@ AC_CONFIG_FILES([ \
        test/Makefile \
        ])
 
+# AC_CONFIG_FILES([po/Makefile])
 AC_CONFIG_FILES([test/check_cue.sh], [chmod +x test/check_cue.sh])
 AC_CONFIG_FILES([test/check_iso.sh], [chmod +x test/check_iso.sh])
 AC_CONFIG_FILES([test/check_nrg.sh], [chmod +x test/check_nrg.sh])
