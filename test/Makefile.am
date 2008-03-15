@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.59 2008/03/06 01:34:09 rocky Exp $
+#   $Id: Makefile.am,v 1.60 2008/03/15 17:02:51 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein 
 #    <rocky@gnu.org>
@@ -27,7 +27,7 @@
 
 if BUILD_CD_PARANOIA
 testparanoia=testparanoia
-testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS)
+testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 endif
 
 hack = check_sizeof testassert  testbincue testischar \
@@ -39,15 +39,15 @@ noinst_PROGRAMS = testdefault
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 
 check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-testassert_LDADD    = $(LIBCDIO_LIBS)
-testdefault_LDADD   = $(LIBCDIO_LIBS)
+testassert_LDADD    = $(LIBCDIO_LIBS) $(LIBICONV)
+testdefault_LDADD   = $(LIBCDIO_LIBS) $(LIBICONV)
 testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
 testisocd_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 testisocd2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
-testtoc_LDADD       = $(LIBCDIO_LIBS)
+testtoc_LDADD       = $(LIBCDIO_LIBS) $(LIBICONV)
 testtoc_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
 
 testbincue_LDADD    = $(LIBCDIO_LIBS)
