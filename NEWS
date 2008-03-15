@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.116 2008/03/06 01:16:49 rocky Exp $
+$Id: NEWS,v 1.117 2008/03/15 16:44:08 rocky Exp $
 
 version 0.80
 2008-03-15
@@ -9,6 +9,10 @@ version 0.80
   e.g. Savannah bug #21910
 - add --mode="any" on cd-read which uses a mmc_read_sectors with read-type
        CDIO_MMC_READ_TYPE_ANY.
+- add --log-summary option to cd-paranoia. Unused option --output-info (-i) removed
+- some small packaging bugs fixed
+
+Note: this is probably the last GPL v2 release; GPL v3 on the horizon.
 
 version 0.79
 2007-10-27
@@ -397,4 +401,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.116 2008/03/06 01:16:49 rocky Exp $
+$Id: NEWS,v 1.117 2008/03/15 16:44:08 rocky Exp $
