@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.60 2008/03/15 17:02:51 rocky Exp $
+#   $Id: Makefile.am,v 1.61 2008/03/15 17:26:13 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein 
 #    <rocky@gnu.org>
@@ -50,7 +50,7 @@ testisocd2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 testtoc_LDADD       = $(LIBCDIO_LIBS) $(LIBICONV)
 testtoc_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
 
-testbincue_LDADD    = $(LIBCDIO_LIBS)
+testbincue_LDADD    = $(LIBCDIO_LIBS) $(LIBICONV)
 testbincue_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \

@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.24 2007/11/17 11:58:27 flameeyes Exp $
+#   $Id: Makefile.am,v 1.25 2008/03/15 17:26:13 rocky Exp $
 #
-#    Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
+#    Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
 #    Copyright (C) 1998 Monty xiphmont@mit.edu
 #
 #    This program is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@ cd_paranoia_SOURCES = cd-paranoia.c \
 	buffering_write.c buffering_write.h \
 	header.c report.c usage.h utils.h version.h $(GETOPT_C)
 
-cd_paranoia_LDADD =  $(LIBCDIO_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_PARANOIA_LIBS)
+cd_paranoia_LDADD =  $(LIBCDIO_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_PARANOIA_LIBS) $(LIBICONV)
 
 cd_paranoia_DEPENDENCIES =  $(LIBCDIO_DEPS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_PARANOIA_LIBS)
 
