@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.43 2008/03/09 18:41:27 rocky Exp $
+#   $Id: Makefile.am,v 1.44 2008/03/15 16:21:28 rocky Exp $
 #
-#    Copyright (C) 2003, 2004, 2006 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -28,13 +28,12 @@ EXTRA_DIST = \
 	README.libcdio \
 	THANKS \
 	example/README \
-	libcdio.pc.in libcdio.pc \
-	libcdio++.pc.in libcdio++.pc \
-	libcdio_cdda.pc \
+	libcdio.pc.in \
+	libcdio++.pc.in \
 	libcdio_cdda.pc.in \
-	libiso9660.pc.in libiso9660.pc \
-	libiso9660++.pc.in libiso9660++.pc \
-	package/libcdio.spec \
+	libiso9660.pc.in \
+	libiso9660++.pc.in \
+	libudf.pc.in \
 	package/libcdio.spec.in 
 
 SUBDIRS = doc include lib src test example
@@ -45,7 +44,11 @@ endif
 
 # pkg-config(1) related rules
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libcdio.pc libiso9660.pc \
+pkgconfig_DATA = libcdio.pc  \
+	         libcdio++.pc  \
+	         libiso9660.pc \
+	         libiso9660++.pc \
+	         libudf.pc
 		 $(paranoiapcs)
 
 

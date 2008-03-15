@@ -1,7 +1,7 @@
-#   $Id: Makefile.am,v 1.43 2007/10/15 04:53:59 rocky Exp $
+#   $Id: Makefile.am,v 1.44 2008/03/15 16:21:28 rocky Exp $
 #
-#    Copyright (C) 2003, 2004, 2005, 2006
-#    Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004, 2005, 2006, 2008
+#    Rocky Bernstein <rocky@gnu.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -21,8 +21,10 @@
 
 GETOPT_C = getopt.c getopt1.c
 
+man_MANS = cd-drive.1 cd-info.1 cd-read.1 iso-read.1 iso-info.1 
 EXTRA_DIST = cd-drive.help2man cd-info.help2man cd-read.help2man \
-	      iso-info.help2man iso-read.help2man $(GETOPT_C) getopt.h
+	     iso-info.help2man iso-read.help2man $(GETOPT_C) getopt.h \
+             $(man_MANS)
 
 noinst_HEADERS = cddb.h getopt.h util.h
 
@@ -37,12 +39,9 @@ endif
 CDDB_LIBS=@CDDB_LIBS@
 CDDA_PLAYER_LIBS=@CDDA_PLAYER_LIBS@
 
-if MAINTAINER_MODE
-MAINTAINERCLEANFILES = $(man_MANS)
-man_MANS = cd-drive.1 cd-info.1 cd-read.1 iso-read.1 iso-info.1 
 $(man_MANS): %.1: % %.help2man
 	-$(HELP2MAN) --opt-include=$<.help2man --no-info --output=$@ ./$<
-endif
+MOSTLYCLEANFILES = $(man_MANS)
 
 if BUILD_CDDA_PLAYER
 cdda_player_SOURCES = cdda-player.c cddb.c cddb.h $(GETOPT_C)
