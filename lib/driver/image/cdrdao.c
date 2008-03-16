@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.23 2007/03/05 11:49:24 rocky Exp $
+    $Id: cdrdao.c,v 1.24 2008/03/16 00:12:43 rocky Exp $
 
     Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.23 2007/03/05 11:49:24 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.24 2008/03/16 00:12:43 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -825,6 +825,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    /* todo: line is too long! */
 	    if (NULL != cd) {
+	      cd->tocent[i].pregap = cd->tocent[i].start_lba;
 	      cd->tocent[i].start_lba += cdio_mmssff_to_lba (psz_field);
 	      cdio_lba_to_msf(cd->tocent[i].start_lba, 
 			      &(cd->tocent[i].start_msf));
@@ -843,7 +844,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    if (NULL != cd) 
-	      cd->tocent[i].pregap = cdio_mmssff_to_lba (psz_field);
+	      cd->tocent[i].silence = cdio_mmssff_to_lba (psz_field);
 	  } else {
 	    goto format_error;
 	  }
@@ -1295,6 +1296,7 @@ cdio_open_cdrdao (const char *psz_cue_name)
   _funcs.get_track_lba         = _get_lba_track_cdrdao;
   _funcs.get_track_msf         = _get_track_msf_image;
   _funcs.get_track_preemphasis = get_track_preemphasis_image,
+  _funcs.get_track_pregap_lba  = get_track_pregap_lba_image;
   _funcs.lseek                 = _lseek_cdrdao;
   _funcs.read                  = _read_cdrdao;
   _funcs.read_audio_sectors    = _read_audio_sectors_cdrdao;

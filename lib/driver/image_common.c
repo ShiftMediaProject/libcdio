@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.c,v 1.12 2005/02/17 07:03:37 rocky Exp $
+    $Id: image_common.c,v 1.13 2008/03/16 00:12:43 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -244,6 +244,30 @@ get_track_preemphasis_image(const void *p_user_data, track_t i_track)
   const _img_private_t *p_env = p_user_data;
   return ( p_env->tocent[i_track-p_env->gen.i_first_track].flags 
 	   & PRE_EMPHASIS ) ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
+}
+
+/*! Return the starting LBA for the pregap for track number i_track.
+  Track numbers start at 1.
+  CDIO_INVALID_LBA is returned on error.
+*/
+lba_t
+get_track_pregap_lba_image(const void *p_user_data, track_t i_track)
+{
+  const _img_private_t *p_env = p_user_data;
+  lba_t pregap, start_lba;
+
+  pregap    = p_env->tocent[i_track-p_env->gen.i_first_track].pregap;
+  start_lba = p_env->tocent[i_track-p_env->gen.i_first_track].start_lba;
+
+  /* avoid initializing pregap to CDIO_INVALID_LBA by letting calloc
+     do the work.  also, nero files have the pregap set equal
+     to the start of the track when there is no pregap
+  */
+  if (!pregap || pregap == start_lba) {
+    pregap = CDIO_INVALID_LBA;
+  }
+
+  return pregap;
 }
 
 /*!

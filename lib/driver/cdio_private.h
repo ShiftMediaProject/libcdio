@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.31 2006/01/23 20:48:11 rocky Exp $
+    $Id: cdio_private.h,v 1.32 2008/03/16 00:12:43 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -260,6 +260,13 @@ extern "C" {
       CDIO_INVALID_LBA is returned on error.
     */
     lba_t (*get_track_lba) ( void *p_env, track_t i_track );
+
+    /*!  
+      Return the starting LBA for the pregap for track number
+      i_track in p_env.  Tracks numbers start at 1.
+      CDIO_INVALID_LBA is returned on error.
+    */
+    lba_t (*get_track_pregap_lba) ( const void *p_env, track_t i_track );
     
     /*!  
       Get format of track. 

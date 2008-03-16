@@ -1,5 +1,5 @@
 /*
-    $Id: image.h,v 1.7 2005/02/17 04:57:21 rocky Exp $
+    $Id: image.h,v 1.8 2008/03/16 00:12:43 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -48,7 +48,8 @@ typedef struct {
   msf_t          start_msf;
   lba_t          start_lba;
   int            start_index;
-  lba_t          pregap;	/**< pre-gap with zero audio data */
+  lba_t          pregap;	/**< pre-gap */
+  lba_t          silence;	/**< pre-gap with zero audio data */
   int            sec_count;     /**< Number of sectors in this track. Does not
 				     include pregap */
   int            num_indices;

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.21 2007/10/15 04:53:59 rocky Exp $
+#   $Id: Makefile.am,v 1.22 2008/03/16 00:12:42 rocky Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
 #
@@ -43,9 +43,9 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libcdio_la_CURRENT = 8
-libcdio_la_REVISION = 1
-libcdio_la_AGE = 1
+libcdio_la_CURRENT = 9
+libcdio_la_REVISION = 0
+libcdio_la_AGE = 2
 
 EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile \
 	     libcdio.sym

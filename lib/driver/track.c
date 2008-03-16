@@ -1,5 +1,5 @@
 /*
-    $Id: track.c,v 1.4 2005/02/06 04:20:25 rocky Exp $
+    $Id: track.c,v 1.5 2008/03/16 00:12:43 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -229,7 +229,7 @@ cdio_get_track_lba(const CdIo_t *p_cdio, track_t i_track)
   i_track in cdio.  Tracks numbers start at 1.
   The "leadout" track is specified either by
   using i_track LEADOUT_TRACK or the total tracks+1.
-  CDIO_INVALID_LBA is returned on error.
+  CDIO_INVALID_LSN is returned on error.
 */
 lsn_t
 cdio_get_track_lsn(const CdIo_t *p_cdio, track_t i_track)
@@ -244,6 +244,34 @@ cdio_get_track_lsn(const CdIo_t *p_cdio, track_t i_track)
       return cdio_msf_to_lsn(&msf);
     return CDIO_INVALID_LSN;
   }
+}
+
+/*!  
+  Return the starting LBA for the pregap for track number
+  i_track in cdio.  Track numbers start at 1.
+  CDIO_INVALID_LBA is returned on error.
+*/
+lba_t
+cdio_get_track_pregap_lba(const CdIo_t *p_cdio, track_t i_track)
+{
+  if (p_cdio == NULL) return CDIO_INVALID_LBA;
+
+  if (p_cdio->op.get_track_pregap_lba) {
+    return p_cdio->op.get_track_pregap_lba (p_cdio->env, i_track);
+  } else {
+    return CDIO_INVALID_LBA;
+  }
+}
+
+/*!  
+  Return the starting LSN for the pregap for track number
+  i_track in cdio.  Track numbers start at 1.
+  CDIO_INVALID_LSN is returned on error.
+*/
+lsn_t
+cdio_get_track_pregap_lsn(const CdIo_t *p_cdio, track_t i_track)
+{
+  return cdio_lba_to_lsn(cdio_get_track_pregap_lba(p_cdio, i_track));
 }
 
 /*!  

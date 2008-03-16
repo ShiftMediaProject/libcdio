@@ -46,7 +46,7 @@ development.''
 
 @titlepage
 @title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.53 2007/12/10 10:08:46 rocky Exp $
+@subtitle $Id: libcdio.texi,v 1.54 2008/03/16 00:12:42 rocky Exp $
 @author Rocky Bernstein et al.
 @page
 
@@ -876,18 +876,20 @@ editor.
 @menu
 * Tracks::   Tracks
 * Sectors::  Block addressing (MSF, LSN, LBA)
+* Pre-gaps::  Track pre-gaps
 @end menu
 
 @node Tracks
 @section tracks --- disc subdivisions
 @cindex track
+@cindex gaps
 
 In this section we describe CD properties and terms that we make use
 of in @value{libcdio}.
 
 A CD is formated into a number of @term{tracks}, and a CD can hold at
 most 99 such tracks. This is defined by @code{CDIO_CD_MAX_TRACKS} in
-@file{cdio/sector.h}. Between the tracks CD specifications require a
+@file{cdio/sector.h}. Between some tracks CD specifications require a
 ``2 second'' in gap (called a @term{lead-in gap}. This is unused space
 with no ``data'' similar to the space between tracks on an old
 phonograph. The word ``second'' here really refers to a measure of
@@ -900,9 +902,9 @@ The beginning (or inner edge) of the CD is supposed to have a ``2
 second'' lead-in gap and there is supposed to be another ``2 second''
 @term{lead-out} gap at the end (or outer edge) of the CD.
 
-People have discovered that they can put useful data in the various
-gaps and their equipment can read this, violating the standards but
-allowing a CD to store more data.
+People have discovered that they can put useful data in the @term{lead-in}
+and @term{lead-out} gaps, and their equipment can read this, violating
+the standards but allowing a CD to store more data.
 
 In order to determine the number of tracks on a CD and where they
 start, commands are used to get this table-of-contents or @term{TOC}
@@ -922,7 +924,7 @@ largest legal track position. In @value{libcdio},
 @cindex frames
 
 A track is broken up into a number of 2352-byte @emph{blocks} which we
-sometimes call @emph{sectors} or @emph{frames}. Whereas tracks have to
+sometimes call @emph{sectors} or @emph{frames}. Whereas tracks may
 have a gap between them, a block or sector does not. (In
 @value{libcdio} the block size constant is defined using
 @code{CDIO_CD_FRAMESIZE_RAW}).
@@ -980,6 +982,138 @@ the same as a LSN but the 150 blocks associated with the initial
 lead-in is are not counted. So to convert a LBA into an LSN you just
 add 150. Why the distinction between LBA and LSN? I don't know,
 perhaps this has something to do with ``multisession'' CDs.
+
+@node Pre-gaps
+@section track pre-gaps -- @acronym{CD-DA} discs and gaps
+@cindex CD-DA
+@cindex gaps
+@cindex lead in
+@cindex lead out
+@cindex pre-gap
+@cindex Q sub-channel
+
+Gaps are possibly one of the least understood topics in audio discs.
+In the case of @acronym{CD-DA} discs, standards require a silent 2
+second gap before the first audio track and after the last audio track
+(in each session.)  These are respectively referred to as
+@term{lead-in} and @term{lead-out} gaps.  No other gaps are required.
+It is important not to confuse the required @term{lead-in} and
+@term{lead-out} gaps with the optional track @term{pre-gap}s.  Track
+@term{pre-gap}s are the gaps that may occur between audio tracks.
+Typically, track @term{pre-gap}s are filled with silence so that the
+listener knows that one song has ended, and the next will soon begin.
+However, track @term{pre-gap}s do not have to contain silence.  One
+exception is an audio disc of a live performance.  Because the
+performer may seamlessly move from one piece of the performance to the
+next, it would be unnatural for the disc to contain silence between
+the two pieces.  Instead, the track number updates with no
+interruption in the performance.  This allows the listener to either
+hear the entire performance without unnatural interruptions, or to
+conveniently skip to certain pieces of the performance.  Finally, some
+@acronym{CD-DA} discs--whose behavior will be described below--lack
+track @term{pre-gap}s altogether although they must still include the
+@term{lead-in} and @term{lead-out} gaps.
+
+In order to understand the track @term{pre-gap}s that occur between
+audio tracks, it is necessary to understand how CD players display the
+track number and time.  Embedded in each block of audio data is
+non-audio information known as the @term{Q sub-channel}.  The
+@term{Q sub-channel} data tells the CD player what track number and time
+it should display while it is playing the block of audio data in which
+the @term{Q sub-channel} data is embedded.  Near the end of some
+tracks, the @term{Q sub-channel} may instruct the CD player to update
+the track number to the next track, and display a count down to the
+next track, often starting at -2 seconds and proceeding to zero.  This
+is known as an audio track @term{pre-gap}.  It may either contain
+silence, or as previously discussed--in the case of live
+performances--it may contain audio.  Almost as often as not, there is
+no @term{pre-gap} whatsoever.  Regardless, an audio track
+@term{pre-gap} is purely determined by the contents of the
+@term{Q sub-channel}, which is embedded in each audio sector.  This has
+some interesting implications for the track forward button.
+
+When the track forward button is pressed on a CD player, the CD player
+advances to the next track, skipping that track's @term{pre-gap}.
+This is because the CD player uses the starting address of the track
+from the disc's table of contents (TOC) to determine where to start
+playing a track when either the track forward or track backward
+buttons are pressed.  So to hear a @term{pre-gap} for track 4, the
+listener must either listen to track 3 first, or use the track forward
+or backward buttons to go to track 4, then use the seek backward
+button to back up into track 4's @term{pre-gap}, which is really part
+of track 3, at least according to the TOC.  Track 1 @term{pre-gap}s
+are especially interesting because some commercial discs have audio
+hidden before the beginning of the first track!  The only way to hear
+this hidden audio with a standard player is to use the seek backward
+button as soon as track 1 begins playing!
+
+Audio track @term{pre-gap}s may be specified in a couple of different
+ways in the popular cue file format.  The first way of specifying a
+@term{pre-gap} is to use the @command{PREGAP} command.  This will
+place a @term{pre-gap} containing silence before a track.  The second
+way of specifying a @term{pre-gap} is to give a track an
+@command{INDEX 00} as well as the more normal @command{INDEX 01}.
+@command{INDEX 01} will be used to specify the start of the track in
+the disc's TOC, while @command{INDEX 00} will be used to specify the
+start of the track's @term{pre-gap} as recorded in the @term{Q sub-channel}.
+@command{INDEX 00} is ordinarily used for specifying
+track @term{pre-gap}s that contain audio rather than silence.  Thus,
+the cue file format may be used to specify track @term{pre-gap}s with
+silence or audio, depending on whether the @command{PREGAP} or
+@command{INDEX 00} commands are specified.  If neither type of
+@term{pre-gap} is specified for a track, no @term{pre-gap} is created
+for that track, which merely means the absence of @term{pre-gap}
+information in the @term{Q sub-channel}, and the lack of a short count
+down to the next track.
+
+Various @acronym{CD-DA} ripping programs take various approaches to
+track @term{pre-gap}s.  Some ripping programs ignore track
+@term{pre-gap}s altogether, relying solely on the disc's TOC to
+determine where tracks begin and end.  If a disc is ripped with such a
+program, then re-burned later, the resulting disc will lack track
+@term{pre-gap}s, and thereby lack the playback behavior of counting
+down to the next track.  Other ripping programs detect track
+@term{pre-gap}s and record them in the popular cue file format among
+others.  Such ripping programs sometimes allow the user to determine
+whether track @term{pre-gap}s will be appended to the prior track or
+pre-pended to the track to which they "belong".  Note that if a
+ripping program is ignorant of track @term{pre-gap}s, the track
+@term{pre-gap}s will be appended to the prior track, because that is
+where the disc's TOC puts them.  Thus, there are many different ways
+an application may chose to deal with track @term{pre-gap}s.
+Consequently, @kbd{libcdio} does not dictate the policy a ripping
+program should use in dealing with track @term{pre-gap}s.  Hence,
+@kbd{libcdio} provides the @code{cdio_get_track_pregap_[lba|lsn]()}
+interfaces to allow the application to deal with track @term{pre-gap}s
+as it sees fit.
+
+Note that the @code{cdio_get_track_pregap_[lba|lsn]()} interfaces
+currently only provide information for CDRDAO TOC, CDRWIN BIN/CUE, and
+NRG images.  Getting the track @term{pre-gap}s from a CD drive is a
+more complicated problem because not all CD drives support reading the
+@term{Q sub-channel} DIRECTLY at @emph{high} speed, and there is no
+interface to determine whether or not a drive supports this optional
+feature, aside from trying to read the @term{Q sub-channel}, and
+possibly incurring IO errors.  However, all drives DO support reading
+the @term{Q sub-channel} INDIRECTLY while playing an audio disc by
+asking the drive for the current position.  Unfortunately, this occurs
+at normal playback speed, and requires a certain settling time after
+the disc starts playing.  Thus, using this @emph{slow} interface
+requires a more sophisticated algorithm, such as binary search or some
+heuristic, like backing up progressively from the end of the prior
+track to look for the next track's @term{pre-gap}.  Note that CD
+drives seek @emph{slow}ly, so it is better to simply use a drive that
+can read the @term{Q sub-channel} directly at @emph{high} speed, and
+avoid complicated software solutions.  (Not to mention that if the
+user has an older system with an analog audio cable hooked up between
+their soundboard and their drive, and a ripping program uses the
+@emph{slow} interface, the user will hear bits of the audio on the
+disc!)  Consequently, because there is no good universal solution to
+the problem of reading the @term{Q sub-channel} from a drive,
+@kbd{libcdio} currently leaves this problem up to the application, a
+problem which is readily approachable through either @kbd{libcdio}'s
+MMC interface or @kbd{libcdio}'s cdda interface.  For an example of
+one such application, see @url{https://gna.org/projects/cued/}.
 
 @node How to use
 @chapter How to use

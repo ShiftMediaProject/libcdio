@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.24 2006/02/27 10:23:52 flameeyes Exp $
+    $Id: nrg.c,v 1.25 2008/03/16 00:12:43 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.24 2006/02/27 10:23:52 flameeyes Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.25 2008/03/16 00:12:43 rocky Exp $";
 
 nero_id_t    nero_id;
 nero_dtype_t nero_dtype;
@@ -371,24 +371,24 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
       case DAOX_ID: /* "DAOX" */ 
       case DAOI_ID: /* "DAOI" */
 	{
+	  _daox_t *_xentries = NULL;
+	  _daoi_t *_ientries = NULL;
+	  _dao_common_t	 *_dao_common = (void *) chunk->data;
+	  int disc_mode = _dao_common->unknown[1];
 	  track_format_t track_format;
-	  int disc_mode;
+	  int i;
 
 	  /* We include an extra 0 byte so these can be used as C strings.*/
-	  p_env->psz_mcn    = calloc(1, CDIO_MCN_SIZE+1);
+	  p_env->psz_mcn = calloc(1, CDIO_MCN_SIZE+1);
+	  memcpy(p_env->psz_mcn, &(_dao_common->psz_mcn), CDIO_MCN_SIZE);
+	  p_env->psz_mcn[CDIO_MCN_SIZE] = '\0';
 
 	  if (DAOX_ID == opcode) {
-	    _daox_array_t *_entries = (void *) chunk->data;
-	    disc_mode    = _entries->_unknown[1];
-	    p_env->dtyp  = _entries->_unknown[19];
-	    memcpy(p_env->psz_mcn, &(_entries->psz_mcn), CDIO_MCN_SIZE);
-	    p_env->psz_mcn[CDIO_MCN_SIZE] = '\0';
+	    _xentries = (void *) chunk->data;
+	    p_env->dtyp = _xentries->track_info[0].common.unknown[0];
 	  } else {
-	    _daoi_array_t *_entries = (void *) chunk->data;
-	    disc_mode    = _entries->_unknown[1];
-	    p_env->dtyp  = _entries->_unknown[19];
-	    memcpy(p_env->psz_mcn, &(_entries->psz_mcn), CDIO_MCN_SIZE);
-	    p_env->psz_mcn[CDIO_MCN_SIZE] = '\0';
+	    _ientries = (void *) chunk->data;
+	    p_env->dtyp = _ientries->track_info[0].common.unknown[0];
 	  }
 
 	  p_env->is_dao = true;
@@ -430,7 +430,6 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 	    track_format = TRACK_FORMAT_AUDIO;
 	  }
 	  if (0 == disc_mode) {
-	    int i;
 	    for (i=0; i<p_env->gen.i_tracks; i++) {
 	      cdtext_init (&(p_env->gen.cdtext_track[i]));
 	      p_env->tocent[i].track_format= track_format;
@@ -446,7 +445,6 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 	      }
 	    }
 	  } else if (2 == disc_mode) {
-	    int i;
 	    for (i=0; i<p_env->gen.i_tracks; i++) {
 	      cdtext_init (&(p_env->gen.cdtext_track[i]));
 	      p_env->tocent[i].track_green = true;
@@ -473,6 +471,20 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 		      "Don't know if mode 1, mode 2 or mixed: %x\n", 
 		      disc_mode);
 	  }
+
+	  for (i=0; i<p_env->gen.i_tracks; i++) {
+	    if (!p_env->tocent[i].datasize) {
+	      continue;
+	    }
+	    if (DAOX_ID == opcode) {
+	       p_env->tocent[i].pregap = (uint64_from_be
+		(_xentries->track_info[i].index0)) / (p_env->tocent[i].datasize);
+	    } else {
+	       p_env->tocent[i].pregap = (uint32_from_be
+		(_ientries->track_info[i].index0)) / (p_env->tocent[i].datasize);
+	    }
+	  }
+
 	  break;
 	}
       case NERO_ID: 
@@ -1243,13 +1255,14 @@ cdio_open_nrg (const char *psz_source)
   _funcs.get_media_changed     = get_media_changed_image;
   _funcs.get_mcn               = _get_mcn_image;
   _funcs.get_num_tracks        = _get_num_tracks_image;
-  _funcs.get_track_channels    = get_track_channels_generic,
-  _funcs.get_track_copy_permit = get_track_copy_permit_image,
+  _funcs.get_track_channels    = get_track_channels_generic;
+  _funcs.get_track_copy_permit = get_track_copy_permit_image;
   _funcs.get_track_format      = get_track_format_nrg;
   _funcs.get_track_green       = _get_track_green_nrg;
   _funcs.get_track_lba         = NULL; /* Will use generic routine via msf */
   _funcs.get_track_msf         = _get_track_msf_image;
-  _funcs.get_track_preemphasis = get_track_preemphasis_generic,
+  _funcs.get_track_preemphasis = get_track_preemphasis_generic;
+  _funcs.get_track_pregap_lba  = get_track_pregap_lba_image;
   _funcs.lseek                 = _lseek_nrg;
   _funcs.read                  = _read_nrg;
   _funcs.read_audio_sectors    = _read_audio_sectors_nrg;

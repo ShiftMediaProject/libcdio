@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.10 2005/02/17 07:03:37 rocky Exp $
+    $Id: image_common.h,v 1.11 2008/03/16 00:12:43 rocky Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -150,6 +150,13 @@ track_flag_t get_track_copy_permit_image(void *p_user_data, track_t i_track);
 */
 track_flag_t get_track_preemphasis_image(const void *p_user_data, 
 					 track_t i_track);
+
+/*! Return the starting LBA for the pregap for track number i_track.
+  Track numbers start at 1.
+  CDIO_INVALID_LBA is returned on error.
+*/
+lba_t get_track_pregap_lba_image(const void *p_user_data, track_t i_track);
+
 /*!
   Read a data sector
   

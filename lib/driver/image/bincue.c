@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.19 2006/02/13 11:00:53 rocky Exp $
+    $Id: bincue.c,v 1.20 2008/03/16 00:12:43 rocky Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005, 2006 
     Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.19 2006/02/13 11:00:53 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.20 2008/03/16 00:12:43 rocky Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -632,7 +632,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      goto err_exit;
 	    }
 	    if (cd) {
-	      cd->tocent[i].pregap = lba;
+	      cd->tocent[i].silence = lba;
 	    }
 	  } else {
 	    goto format_error;
@@ -672,7 +672,14 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	      track_info_t  *this_track=
 		&(cd->tocent[cd->gen.i_tracks - cd->gen.i_first_track]);
 
-	      if (start_index != 0) {
+	      switch (start_index) {
+
+	      case 0:
+		lba += CDIO_PREGAP_SECTORS;
+		this_track->pregap = lba;
+		break;
+
+	      case 1:
 		if (!b_first_index_for_track) {
 		  lba += CDIO_PREGAP_SECTORS;
 		  cdio_lba_to_msf(lba, &(this_track->start_msf));
@@ -709,6 +716,10 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 		  }
 		}
 		this_track->num_indices++;
+		break;
+
+	      default:
+		break;
 	      }
 	    }
 #endif  
@@ -1163,6 +1174,7 @@ cdio_open_cue (const char *psz_cue_name)
   _funcs.get_track_lba         = _get_lba_track_bincue;
   _funcs.get_track_msf         = _get_track_msf_image;
   _funcs.get_track_preemphasis = get_track_preemphasis_image,
+  _funcs.get_track_pregap_lba  = get_track_pregap_lba_image;
   _funcs.lseek                 = _lseek_bincue;
   _funcs.read                  = _read_bincue;
   _funcs.read_audio_sectors    = _read_audio_sectors_bincue;

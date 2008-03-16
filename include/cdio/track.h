@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: track.h,v 1.11 2006/01/23 20:30:28 rocky Exp $
+    $Id: track.h,v 1.12 2008/03/16 00:12:42 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -196,6 +196,28 @@ extern "C" {
     @return the starting LSN or CDIO_INVALID_LSN on error.
   */
   lsn_t cdio_get_track_lsn(const CdIo_t *p_cdio, track_t i_track);
+
+  /*!  
+    Return the starting LBA for the pregap for track number
+    i_track in p_cdio.  Track numbers usually start at something 
+    greater than 0, usually 1.
+
+    @param p_cdio object to get information from
+    @param i_track  the track number we want the LBA for
+    @return the starting LBA or CDIO_INVALID_LBA on error.
+  */
+  lba_t cdio_get_track_pregap_lba(const CdIo_t *p_cdio, track_t i_track);
+
+  /*!  
+    Return the starting LSN for the pregap for track number
+    i_track in p_cdio.  Track numbers usually start at something 
+    greater than 0, usually 1.
+
+    @param p_cdio object to get information from
+    @param i_track  the track number we want the LSN for
+    @return the starting LSN or CDIO_INVALID_LSN on error.
+  */
+  lsn_t cdio_get_track_pregap_lsn(const CdIo_t *p_cdio, track_t i_track);
   
   /*!  
     Return the starting MSF (minutes/secs/frames) for track number

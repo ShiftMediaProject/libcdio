@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.h,v 1.3 2006/01/14 09:45:44 rocky Exp $
+    $Id: nrg.h,v 1.4 2008/03/16 00:12:43 rocky Exp $
 
     Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -71,17 +71,46 @@ typedef struct {
   uint32_t lsn        GNUC_PACKED; 
 } _cuex_array_t;
 
+/* New DAO[XI] Information from http://en.wikipedia.org/wiki/NRG_(file_format)
+*/
+
 typedef struct {
-  uint32_t _unknown1  GNUC_PACKED;
-  char      psz_mcn[CDIO_MCN_SIZE];             
-  uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint32_t)];
+  uint8_t  zero[10];
+  uint32_t sector_size         GNUC_PACKED;
+  uint8_t  unknown[4];
+} _dao_array_common_t;
+
+typedef struct {
+  _dao_array_common_t common;
+  uint64_t index0              GNUC_PACKED;
+  uint64_t index1              GNUC_PACKED;
+  uint64_t end_of_track        GNUC_PACKED;
 } _daox_array_t;
 
 typedef struct {
-  uint32_t _unknown1  GNUC_PACKED;
-  char      psz_mcn[CDIO_MCN_SIZE];
-  uint8_t  _unknown[64-CDIO_MCN_SIZE-sizeof(uint32_t)];
+  _dao_array_common_t common;
+  uint32_t index0              GNUC_PACKED;
+  uint32_t index1              GNUC_PACKED;
+  uint32_t end_of_track        GNUC_PACKED;
 } _daoi_array_t;
+
+typedef struct {
+  uint32_t chunk_size_le       GNUC_PACKED;
+  char     psz_mcn[CDIO_MCN_SIZE];
+  uint8_t  unknown[3];
+  uint8_t  first_track;
+  uint8_t  last_track;
+} _dao_common_t;
+
+typedef struct {
+  _dao_common_t common;
+  _daox_array_t track_info[EMPTY_ARRAY_SIZE];
+} _daox_t;
+
+typedef struct {
+  _dao_common_t common;
+  _daoi_array_t track_info[EMPTY_ARRAY_SIZE];
+} _daoi_t;
 
 typedef struct {
   uint32_t id                    GNUC_PACKED;

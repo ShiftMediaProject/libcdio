@@ -80,6 +80,8 @@ cdio_get_track_format
 cdio_get_track_green
 cdio_get_track_last_lsn
 cdio_get_track_lba
+cdio_get_track_pregap_lba
+cdio_get_track_pregap_lsn
 cdio_get_track_lsn
 cdio_get_track_msf
 cdio_get_track_preemphasis
