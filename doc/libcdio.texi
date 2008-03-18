@@ -1,12 +1,26 @@
 \input texinfo @c -*-texinfo-*-
-
 @c %**start of header
 @setfilename libcdio.info
-@settitle The GNU Compact Disc Input and Control library
-@setchapternewpage on
+@include version.texi
+@settitle GNU @code{libcdio}: Compact Disc Input and Control Library
 @c %**end of header
 
-@include version.texi
+@copying
+This manual documents @code{libcdio}, the GNU CD Input and Control
+Library.
+
+Copyright @copyright{} 2003, 2004, 2005, 2006, 2007, 2008 Rocky
+Bernstein and Herbert Valerio Riedel.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+@end quotation
+@end copying
 
 @paragraphindent 0
 @exampleindent 0
@@ -20,63 +34,29 @@
 @emph{\varname\}
 @end macro
 
-@dircategory Libraries
+@dircategory Software libraries
 @direntry
-* libcdio: (libcdio).      Compact Disc Input and Control Library.
+* libcdio: (libcdio).           GNU Compact Disc Input and Control Library.
 @end direntry
 
-@ifinfo
-This file documents GNU CD Input and Control Library
-
-Copyright (C) 2003, 2004, 2005, 2006, 2007 Rocky Bernstein @email{<rocky@@gnu.org>}
-and Herbert Valerio Riedel @email{<hvr@@gnu.org>}
-
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``Free Software'' and ``Free Software Needs
-Free Documentation'', with the Front-Cover Texts being ``A GNU Manual,''
-and with the Back-Cover Texts as in (a) below.
-
-(a) The Free Software Foundation's Back-Cover Text is: ``You have
-freedom to copy and modify this GNU Manual, like GNU software.  Copies
-published by the Free Software Foundation raise funds for GNU
-development.''
-@end ifinfo
-
 @titlepage
-@title GNU libcdio library
-@subtitle $Id: libcdio.texi,v 1.54 2008/03/16 00:12:42 rocky Exp $
-@author Rocky Bernstein et al.
+@title GNU @code{libcdio}
+@subtitle GNU Compact Disc Input and Control Library
+@subtitle for version @value{VERSION}, @value{UPDATED}
+@author Rocky Bernstein et al. (@email{bug-libcdio@@gnu.org})
 @page
-
 @vskip 0pt plus 1filll
-
-Copyright @copyright{} 2003, 2004 2006, 2007 Herbert Valerio Riedel
-@email{<hvr@@gnu.org>} and Rocky Bernstein @email{<rocky@@gnu.org>}
-@sp 1
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``Free Software'' and ``Free Software Needs
-Free Documentation'', with the Front-Cover Texts being ``A GNU Manual,''
-and with the Back-Cover Texts as in (a) below.
-
-(a) The Free Software Foundation's Back-Cover Text is: ``You have
-freedom to copy and modify this GNU Manual, like GNU software.  Copies
-published by the Free Software Foundation raise funds for GNU
-development.''
+@insertcopying
 @end titlepage
-@page
+
+@contents
 
 @ifnottex
-@node Top, History, (dir), (dir)
+@node Top
+@top GNU @value{libcdio}
 
-@top @value{program}
-
-This file documents GNU CD Input and Control library
-
-Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein and Herbert Valerio Riedel
+This manual documents @value{libcdio}, the GNU CD Input and Control
+Library.
 
 @menu
 * History::           How this came about
@@ -87,21 +67,18 @@ Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein and Herbert Valerio Riedel
 * CD Units::          The units that make up a CD
 * How to use::        Okay enough babble, lemme at the library!
 * Utility Programs::  Diagnostic programs that come with this library
-* CD-ROM Access and Drivers::     CD-ROM Access and Drivers
+* CD-ROM Access and Drivers::     CD-ROM access and drivers
 * Internal Program Organization:: Looking under the hood
 
 Appendices
 * ISO-9660 Character Sets::
 * Glossary::          
-* GNU General Public License::
 * GNU Free Documentation License::
 
 Indices
 * General Index::       Overall index
 @end menu
 @end ifnottex
-
-@contents
 
 @node History
 @chapter History
@@ -146,7 +123,7 @@ CD paranoia support. And from there, the rest is history.
 @chapter The problem and previous work
 
 If around the year 2002 you were to look at the code for a number of
-open-source CD or media players that work on several platforms such as
+free software CD or media players that work on several platforms such as
 vlc, MPlayer, xine, or xmms to name but a few, you'd find the code to
 read a CD sprinkled with conditional compilation for this or that
 platform. That is there was @emph{no} OS-independent programmer
@@ -1965,7 +1942,7 @@ A program to show using libudf to extract a file from an UDF image.
 @end table
 
 @node Utility Programs
-@chapter Diagnostic programs (@samp{cd-drive}, @samp{cd-info}, @samp{cd-read}, @samp{iso-info}, @samp{iso-read})
+@chapter Diagnostic programs: @command{cd-drive}, @command{cd-info}, @command{cd-read}, @command{iso-info}, @command{iso-read}
 
 @menu
 * cd-drive::       list out CD-ROM drive information
@@ -2422,17 +2399,9 @@ f |     / ? O _
 
 @include glossary.texi
 
-@node GNU General Public License
-@appendix GNU General Public License
-@cindex GPL, GNU General Public License
-@center Version 2, June 1991
-
-@include gpl.texi
-
 @node GNU Free Documentation License
 @appendix GNU Free Documentation License
 @cindex FDL, GNU Free Documentation License
-@center Version 1.1, March 2000
 
 @include fdl.texi
 

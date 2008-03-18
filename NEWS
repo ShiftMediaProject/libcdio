@@ -1,4 +1,6 @@
-$Id: NEWS,v 1.117 2008/03/15 16:44:08 rocky Exp $
+$Id: NEWS,v 1.118 2008/03/18 00:37:20 karl Exp $
+
+- license of manual now GFDL 1.2 or later, with no invariant sections.
 
 version 0.80
 2008-03-15
@@ -401,4 +403,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.117 2008/03/15 16:44:08 rocky Exp $
+$Id: NEWS,v 1.118 2008/03/18 00:37:20 karl Exp $
