@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.61 2008/03/15 17:26:13 rocky Exp $
+#   $Id: Makefile.am,v 1.62 2008/03/18 05:57:05 edsdead Exp $
 #
 #    Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein 
 #    <rocky@gnu.org>
@@ -32,7 +32,7 @@ endif
 
 hack = check_sizeof testassert  testbincue testischar \
        testisocd testisocd2 testiso9660 \
-       $(testparanoia) testtoc
+       $(testparanoia) testtoc testpregap
 
 noinst_PROGRAMS = testdefault 
 
@@ -49,6 +49,9 @@ testisocd2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
 
 testtoc_LDADD       = $(LIBCDIO_LIBS) $(LIBICONV)
 testtoc_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
+
+testpregap_LDADD    = $(LIBCDIO_LIBS) $(LIBICONV)
+testpregap_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
 testbincue_LDADD    = $(LIBCDIO_LIBS) $(LIBICONV)
 testbincue_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
