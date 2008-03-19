@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.20 2008/03/16 00:12:43 rocky Exp $
+    $Id: bincue.c,v 1.21 2008/03/19 04:38:52 edsdead Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005, 2006 
     Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.20 2008/03/16 00:12:43 rocky Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.21 2008/03/19 04:38:52 edsdead Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -793,25 +793,12 @@ _read_audio_sectors_bincue (void *p_user_data, void *data, lsn_t lsn,
   _img_private_t *p_env = p_user_data;
   int ret;
 
-  /* Why the adjustment of 272, I don't know. It seems to work though */
-  if (lsn != 0) {
-    ret = cdio_stream_seek (p_env->gen.data_source, 
-			    (lsn * CDIO_CD_FRAMESIZE_RAW) - 272, SEEK_SET);
-    if (ret!=0) return ret;
+  ret = cdio_stream_seek (p_env->gen.data_source, 
+            lsn * CDIO_CD_FRAMESIZE_RAW, SEEK_SET);
+  if (ret!=0) return ret;
 
-    ret = cdio_stream_read (p_env->gen.data_source, data, 
-			    CDIO_CD_FRAMESIZE_RAW, nblocks);
-  } else {
-    /* We need to pad out the first 272 bytes with 0's */
-    BZERO(data, 272);
-    
-    ret = cdio_stream_seek (p_env->gen.data_source, 0, SEEK_SET);
-
-    if (ret!=0) return ret;
-
-    ret = cdio_stream_read (p_env->gen.data_source, (uint8_t *) data+272, 
-			    CDIO_CD_FRAMESIZE_RAW - 272, nblocks);
-  }
+  ret = cdio_stream_read (p_env->gen.data_source, data, 
+            CDIO_CD_FRAMESIZE_RAW, nblocks);
 
   /* ret is number of bytes if okay, but we need to return 0 okay. */
   return ret == 0;

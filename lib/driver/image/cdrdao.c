@@ -1,5 +1,5 @@
 /*
-    $Id: cdrdao.c,v 1.24 2008/03/16 00:12:43 rocky Exp $
+    $Id: cdrdao.c,v 1.25 2008/03/19 04:38:52 edsdead Exp $
 
     Copyright (C) 2004, 2005, 2006, 2007 Rocky Bernstein <rocky@gnu.org>
     toc reading routine adapted from cuetools
@@ -25,7 +25,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.24 2008/03/16 00:12:43 rocky Exp $";
+static const char _rcsid[] = "$Id: cdrdao.c,v 1.25 2008/03/19 04:38:52 edsdead Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -975,25 +975,12 @@ _read_audio_sectors_cdrdao (void *user_data, void *data, lsn_t lsn,
   _img_private_t *env = user_data;
   int ret;
 
-  /* Why the adjustment of 272, I don't know. It seems to work though */
-  if (lsn != 0) {
-    ret = cdio_stream_seek (env->tocent[0].data_source, 
-			    (lsn * CDIO_CD_FRAMESIZE_RAW) - 272, SEEK_SET);
-    if (ret!=0) return ret;
+  ret = cdio_stream_seek (env->tocent[0].data_source, 
+            lsn * CDIO_CD_FRAMESIZE_RAW, SEEK_SET);
+  if (ret!=0) return ret;
 
-    ret = cdio_stream_read (env->tocent[0].data_source, data, 
-			    CDIO_CD_FRAMESIZE_RAW, nblocks);
-  } else {
-    /* We need to pad out the first 272 bytes with 0's */
-    BZERO(data, 272);
-    
-    ret = cdio_stream_seek (env->tocent[0].data_source, 0, SEEK_SET);
-
-    if (ret!=0) return ret;
-
-    ret = cdio_stream_read (env->tocent[0].data_source, (uint8_t *) data+272, 
-			    CDIO_CD_FRAMESIZE_RAW - 272, nblocks);
-  }
+  ret = cdio_stream_read (env->tocent[0].data_source, data, 
+            CDIO_CD_FRAMESIZE_RAW, nblocks);
 
   /* ret is number of bytes if okay, but we need to return 0 okay. */
   return ret == 0;

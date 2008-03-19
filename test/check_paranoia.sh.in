@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_paranoia.sh.in,v 1.15 2008/03/08 18:11:11 rocky Exp $
+# $Id: check_paranoia.sh.in,v 1.16 2008/03/19 04:38:52 edsdead Exp $
 # Compare our cd-paranoia with known good results.
 
 if test "X$srcdir" = "X" ; then
@@ -19,8 +19,8 @@ if test "@CMP@" != no -a "@BUILD_CD_PARANOIA_TRUE@"X = X ; then
   if test $? -ne 0 ; then
     exit 6
   fi
-  dd bs=16 skip=17 if=cdda.raw of=cdda-1.raw
-  dd bs=16 if=cdda.bin of=cdda-2.raw count=44377
+  dd bs=16 if=cdda.raw of=cdda-1.raw
+  dd bs=16 if=cdda.bin of=cdda-2.raw count=44394
   if @CMP@ cdda-1.raw cdda-2.raw ; then
     echo "** Raw cdda.bin extraction okay"
   else
