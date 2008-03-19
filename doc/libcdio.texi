@@ -1092,6 +1092,9 @@ problem which is readily approachable through either @kbd{libcdio}'s
 MMC interface or @kbd{libcdio}'s cdda interface.  For an example of
 one such application, see @url{https://gna.org/projects/cued/}.
 
+The preceding section on track @term{pre-gaps} and @acronym{CD-DA} was
+contributed by Robert William Fuller (@email{hydrologiccycle@@gmail.com}).
+
 @node How to use
 @chapter How to use
 
