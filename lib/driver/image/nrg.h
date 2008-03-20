@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.h,v 1.4 2008/03/16 00:12:43 rocky Exp $
+    $Id: nrg.h,v 1.5 2008/03/20 01:40:29 edsdead Exp $
 
     Copyright (C) 2004, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -75,9 +75,8 @@ typedef struct {
 */
 
 typedef struct {
-  uint8_t  zero[10];
-  uint32_t sector_size         GNUC_PACKED;
-  uint8_t  unknown[4];
+  char     psz_isrc[CDIO_ISRC_SIZE];
+  uint8_t  unknown[6];
 } _dao_array_common_t;
 
 typedef struct {

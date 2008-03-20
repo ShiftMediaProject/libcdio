@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.h,v 1.11 2008/03/16 00:12:43 rocky Exp $
+    $Id: image_common.h,v 1.12 2008/03/20 01:40:29 edsdead Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -156,6 +156,15 @@ track_flag_t get_track_preemphasis_image(const void *p_user_data,
   CDIO_INVALID_LBA is returned on error.
 */
 lba_t get_track_pregap_lba_image(const void *p_user_data, track_t i_track);
+
+/*!
+  Return the International Standard Recording Code (ISRC) for track number
+  i_track in p_cdio.  Track numbers start at 1.
+
+  Note: string is malloc'd so caller has to free() the returned
+  string when done with it.
+*/
+char *get_track_isrc_image(const void *p_user_data, track_t i_track);
 
 /*!
   Read a data sector

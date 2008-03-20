@@ -1,5 +1,5 @@
 /*
-    $Id: track.c,v 1.5 2008/03/16 00:12:43 rocky Exp $
+    $Id: track.c,v 1.6 2008/03/20 01:40:29 edsdead Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -243,6 +243,25 @@ cdio_get_track_lsn(const CdIo_t *p_cdio, track_t i_track)
     if (cdio_get_track_msf(p_cdio, i_track, &msf))
       return cdio_msf_to_lsn(&msf);
     return CDIO_INVALID_LSN;
+  }
+}
+
+/*!
+  Return the International Standard Recording Code (ISRC) for track number
+  i_track in p_cdio.  Track numbers start at 1.
+
+  Note: string is malloc'd so caller has to free() the returned
+  string when done with it.
+*/
+char *
+cdio_get_track_isrc (const CdIo_t *p_cdio, track_t i_track)
+{
+  if (p_cdio == NULL) return NULL;
+
+  if (p_cdio->op.get_track_isrc) {
+    return p_cdio->op.get_track_isrc (p_cdio->env, i_track);
+  } else {
+    return NULL;
   }
 }
 

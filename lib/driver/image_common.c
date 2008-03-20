@@ -1,5 +1,5 @@
 /*
-    $Id: image_common.c,v 1.13 2008/03/16 00:12:43 rocky Exp $
+    $Id: image_common.c,v 1.14 2008/03/20 01:40:29 edsdead Exp $
 
     Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -268,6 +268,26 @@ get_track_pregap_lba_image(const void *p_user_data, track_t i_track)
   }
 
   return pregap;
+}
+
+/*!
+  Return the International Standard Recording Code (ISRC) for track number
+  i_track in p_cdio.  Track numbers start at 1.
+
+  Note: string is malloc'd so caller has to free() the returned
+  string when done with it.
+*/
+char *
+get_track_isrc_image(const void *p_user_data, track_t i_track)
+{
+  const _img_private_t *p_env = p_user_data;
+  char *isrc = p_env->tocent[i_track-p_env->gen.i_first_track].isrc;
+
+  if (isrc && isrc[0]) {
+    return strdup(isrc);
+  } else {
+    return NULL;
+  }
 }
 
 /*!

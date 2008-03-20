@@ -1,5 +1,5 @@
 /*
-    $Id: bincue.c,v 1.21 2008/03/19 04:38:52 edsdead Exp $
+    $Id: bincue.c,v 1.22 2008/03/20 01:40:29 edsdead Exp $
 
     Copyright (C) 2002, 2003, 2004, 2005, 2006 
     Rocky Bernstein <rocky@panix.com>
@@ -27,7 +27,7 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.21 2008/03/19 04:38:52 edsdead Exp $";
+static const char _rcsid[] = "$Id: bincue.c,v 1.22 2008/03/20 01:40:29 edsdead Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -1154,14 +1154,15 @@ cdio_open_cue (const char *psz_cue_name)
   _funcs.get_media_changed     = get_media_changed_image;
   _funcs.get_mcn               = _get_mcn_image;
   _funcs.get_num_tracks        = _get_num_tracks_image;
-  _funcs.get_track_channels    = get_track_channels_image,
-  _funcs.get_track_copy_permit = get_track_copy_permit_image,
+  _funcs.get_track_channels    = get_track_channels_image;
+  _funcs.get_track_copy_permit = get_track_copy_permit_image;
   _funcs.get_track_format      = _get_track_format_bincue;
   _funcs.get_track_green       = _get_track_green_bincue;
   _funcs.get_track_lba         = _get_lba_track_bincue;
   _funcs.get_track_msf         = _get_track_msf_image;
-  _funcs.get_track_preemphasis = get_track_preemphasis_image,
+  _funcs.get_track_preemphasis = get_track_preemphasis_image;
   _funcs.get_track_pregap_lba  = get_track_pregap_lba_image;
+  _funcs.get_track_isrc        = get_track_isrc_image;
   _funcs.lseek                 = _lseek_bincue;
   _funcs.read                  = _read_bincue;
   _funcs.read_audio_sectors    = _read_audio_sectors_bincue;

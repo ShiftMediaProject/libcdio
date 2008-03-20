@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.32 2008/03/16 00:12:43 rocky Exp $
+    $Id: cdio_private.h,v 1.33 2008/03/20 01:40:29 edsdead Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -267,6 +267,15 @@ extern "C" {
       CDIO_INVALID_LBA is returned on error.
     */
     lba_t (*get_track_pregap_lba) ( const void *p_env, track_t i_track );
+
+    /*!
+      Return the International Standard Recording Code (ISRC) for track number
+      i_track in p_cdio.  Track numbers start at 1.
+
+      Note: string is malloc'd so caller has to free() the returned
+      string when done with it.
+    */
+    char * (*get_track_isrc) ( const CdIo_t *p_cdio, track_t i_track );
     
     /*!  
       Get format of track. 

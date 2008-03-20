@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.25 2008/03/16 00:12:43 rocky Exp $
+    $Id: nrg.c,v 1.26 2008/03/20 01:40:29 edsdead Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.25 2008/03/16 00:12:43 rocky Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.26 2008/03/20 01:40:29 edsdead Exp $";
 
 nero_id_t    nero_id;
 nero_dtype_t nero_dtype;
@@ -373,7 +373,8 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 	{
 	  _daox_t *_xentries = NULL;
 	  _daoi_t *_ientries = NULL;
-	  _dao_common_t	 *_dao_common = (void *) chunk->data;
+	  _dao_array_common_t *_dao_array_common = NULL;
+	  _dao_common_t *_dao_common = (void *) chunk->data;
 	  int disc_mode = _dao_common->unknown[1];
 	  track_format_t track_format;
 	  int i;
@@ -385,10 +386,10 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 
 	  if (DAOX_ID == opcode) {
 	    _xentries = (void *) chunk->data;
-	    p_env->dtyp = _xentries->track_info[0].common.unknown[0];
+	    p_env->dtyp = _xentries->track_info[0].common.unknown[2];
 	  } else {
 	    _ientries = (void *) chunk->data;
-	    p_env->dtyp = _ientries->track_info[0].common.unknown[0];
+	    p_env->dtyp = _ientries->track_info[0].common.unknown[2];
 	  }
 
 	  p_env->is_dao = true;
@@ -473,6 +474,19 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 	  }
 
 	  for (i=0; i<p_env->gen.i_tracks; i++) {
+
+	    if (DAOX_ID == opcode) {
+	      _dao_array_common = &_xentries->track_info[i].common;
+	    } else {
+	      _dao_array_common = &_ientries->track_info[i].common;
+	    }
+	    p_env->tocent[i].isrc = calloc(1, CDIO_ISRC_SIZE+1);
+	    memcpy(p_env->tocent[i].isrc, _dao_array_common->psz_isrc, CDIO_ISRC_SIZE);
+	    p_env->tocent[i].isrc[CDIO_ISRC_SIZE] = '\0';
+	    if (p_env->tocent[i].isrc[0]) {
+	       cdio_info("nrg isrc has value \"%s\"", p_env->tocent[i].isrc);
+	    }
+
 	    if (!p_env->tocent[i].datasize) {
 	      continue;
 	    }
@@ -1263,6 +1277,7 @@ cdio_open_nrg (const char *psz_source)
   _funcs.get_track_msf         = _get_track_msf_image;
   _funcs.get_track_preemphasis = get_track_preemphasis_generic;
   _funcs.get_track_pregap_lba  = get_track_pregap_lba_image;
+  _funcs.get_track_isrc        = get_track_isrc_image;
   _funcs.lseek                 = _lseek_nrg;
   _funcs.read                  = _read_nrg;
   _funcs.read_audio_sectors    = _read_audio_sectors_nrg;

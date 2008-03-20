@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: track.h,v 1.12 2008/03/16 00:12:42 rocky Exp $
+    $Id: track.h,v 1.13 2008/03/20 01:40:28 edsdead Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -218,6 +218,20 @@ extern "C" {
     @return the starting LSN or CDIO_INVALID_LSN on error.
   */
   lsn_t cdio_get_track_pregap_lsn(const CdIo_t *p_cdio, track_t i_track);
+
+  /*!
+    Get the International Standard Recording Code (ISRC) for track number
+    i_track in p_cdio.  Track numbers usually start at something
+    greater than 0, usually 1.
+
+    @return the International Standard Recording Code (ISRC) or NULL
+    if there is none or we don't have the ability to get it.
+
+    Note: string is malloc'd so caller has to free() the returned
+    string when done with it.
+
+  */
+  char * cdio_get_track_isrc (const CdIo_t *p_cdio, track_t i_track);
   
   /*!  
     Return the starting MSF (minutes/secs/frames) for track number
