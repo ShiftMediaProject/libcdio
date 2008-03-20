@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.27 2008/03/20 08:07:44 edsdead Exp $
+    $Id: nrg.c,v 1.28 2008/03/20 08:14:40 edsdead Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.27 2008/03/20 08:07:44 edsdead Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.28 2008/03/20 08:14:40 edsdead Exp $";
 
 nero_id_t    nero_id;
 nero_dtype_t nero_dtype;
@@ -895,6 +895,13 @@ _read_audio_sectors_nrg (void *p_user_data, void *data, lsn_t lsn,
   _img_private_t *p_env = p_user_data;
   CdioListNode_t *node;
 
+  if (lsn >= p_env->size)
+    {
+      cdio_warn ("trying to read beyond image size (%lu >= %lu)", 
+		 (long unsigned int) lsn, (long unsigned int) p_env->size);
+      return -1;
+    }
+
   if (p_env->is_dao) {
     int ret;
 
@@ -908,13 +915,6 @@ _read_audio_sectors_nrg (void *p_user_data, void *data, lsn_t lsn,
     /* ret is number of bytes if okay, but we need to return 0 okay. */
     return ret == 0;
   }
-
-  if (lsn >= p_env->size)
-    {
-      cdio_warn ("trying to read beyond image size (%lu >= %lu)", 
-		 (long unsigned int) lsn, (long unsigned int) p_env->size);
-      return -1;
-    }
 
   _CDIO_LIST_FOREACH (node, p_env->mapping) {
     _mapping_t *_map = _cdio_list_node_data (node);
