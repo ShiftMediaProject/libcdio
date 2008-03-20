@@ -1068,11 +1068,11 @@ Note that the @code{cdio_get_track_pregap_[lba|lsn]()} interfaces
 currently only provide information for CDRDAO TOC, CDRWIN BIN/CUE, and
 NRG images.  Getting the track @term{pre-gap}s from a CD drive is a
 more complicated problem because not all CD drives support reading the
-@term{Q sub-channel} DIRECTLY at @emph{high} speed, and there is no
+@term{Q sub-channel} @emph{directly} at @emph{high} speed, and there is no
 interface to determine whether or not a drive supports this optional
 feature, aside from trying to read the @term{Q sub-channel}, and
-possibly incurring IO errors.  However, all drives DO support reading
-the @term{Q sub-channel} INDIRECTLY while playing an audio disc by
+possibly incurring IO errors.  However, all drives @emph{do} support reading
+the @term{Q sub-channel} @emph{indirectly} while playing an audio disc by
 asking the drive for the current position.  Unfortunately, this occurs
 at normal playback speed, and requires a certain settling time after
 the disc starts playing.  Thus, using this @emph{slow} interface
