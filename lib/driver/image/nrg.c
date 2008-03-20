@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.26 2008/03/20 01:40:29 edsdead Exp $
+    $Id: nrg.c,v 1.27 2008/03/20 08:07:44 edsdead Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.26 2008/03/20 01:40:29 edsdead Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.27 2008/03/20 08:07:44 edsdead Exp $";
 
 nero_id_t    nero_id;
 nero_dtype_t nero_dtype;
@@ -893,8 +893,21 @@ _read_audio_sectors_nrg (void *p_user_data, void *data, lsn_t lsn,
 			  unsigned int nblocks)
 {
   _img_private_t *p_env = p_user_data;
-
   CdioListNode_t *node;
+
+  if (p_env->is_dao) {
+    int ret;
+
+    ret = cdio_stream_seek (p_env->gen.data_source, 
+              (lsn + CDIO_PREGAP_SECTORS) * CDIO_CD_FRAMESIZE_RAW, SEEK_SET);
+    if (ret!=0) return ret;
+
+    ret = cdio_stream_read (p_env->gen.data_source, data, 
+              CDIO_CD_FRAMESIZE_RAW, nblocks);
+
+    /* ret is number of bytes if okay, but we need to return 0 okay. */
+    return ret == 0;
+  }
 
   if (lsn >= p_env->size)
     {
