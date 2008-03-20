@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_fuzzyiso.sh,v 1.5 2005/04/11 02:36:36 rocky Exp $
+#$Id: check_fuzzyiso.sh,v 1.6 2008/03/20 03:45:43 edsdead Exp $
 
 if test "X$srcdir" = "X" ; then
   srcdir=`pwd`
@@ -22,7 +22,7 @@ fi
 cd $srcdir; src_dir=`pwd`
 for file in $src_dir/*.bin $src_dir/*.iso $src_dir/*.nrg ; do 
   case "$file" in
-  $src_dir/cdda.bin | $src_dir/cdda-mcn.nrg | $src_dir/svcdgs.nrg )
+  $src_dir/p1.nrg | $src_dir/p1.bin | $src_dir/cdda.bin | $src_dir/cdda-mcn.nrg | $src_dir/svcdgs.nrg )
     good_rc=1
     ;;
   *) 
