@@ -1,6 +1,6 @@
-#   $Id: Makefile.am,v 1.7 2004/10/24 11:20:30 rocky Exp $
+#   $Id: Makefile.am,v 1.8 2008/03/21 10:42:36 rocky Exp $
 #
-#    Copyright (C) 2003, 2004 Rocky Bernstein <rocky@panix.com>
+#    Copyright (C) 2003, 2004, 2008 Rocky Bernstein <rocky@gnu.org>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 #
 EXTRA_DIST = doxygen/Doxyfile.in doxygen/run_doxygen
 info_TEXINFOS = libcdio.texi 
-libcdio_TEXINFOS = fdl.texi gpl.texi glossary.texi
+libcdio_TEXINFOS = fdl.texi glossary.texi
 
 reference:
 	-( cd ${top_srcdir} && $(MAKE) doxygen )
