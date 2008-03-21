@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.28 2008/03/20 08:14:40 edsdead Exp $
+    $Id: nrg.c,v 1.29 2008/03/21 08:06:36 edsdead Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.28 2008/03/20 08:14:40 edsdead Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.29 2008/03/21 08:06:36 edsdead Exp $";
 
 nero_id_t    nero_id;
 nero_dtype_t nero_dtype;
@@ -743,10 +743,11 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 	break;
 	
       case CDTX_ID: { /* "CD TEXT" */
-	
-	cdio_log (log_level,
-		  "Don't know how to handle CD TEXT yet" );
-	break;
+        uint8_t *wdata = (uint8_t *) chunk->data;
+        int len = UINT32_FROM_BE (chunk->len);
+        cdio_assert (len % sizeof (CDText_data_t) == 0);
+        cdtext_data_init (&p_env->gen, p_env->gen.i_first_track, &wdata[-4], len, set_cdtext_field_generic);
+        break;
       }
 
       default:
