@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.119 2008/03/21 10:19:38 rocky Exp $
+$Id: NEWS,v 1.120 2008/03/21 10:59:16 rocky Exp $
 
 version 0.81cvs
 
@@ -36,7 +36,9 @@ version 0.79
 - cd-info: force CDDB disc id to be 32-bits. Problem reported 
            by Eric Shattow.
 - cd-paranoia: allow ripping before the first track. Problem reported 
-               by Eric Shattow.
+               by Eric Shattow. Fix erroneous #defines when
+               DO_NO_WANT_PARANOIA_COMPATIBILITY is set - reported by
+               David Stockwell.
 - Support for multisession CD-Extra Discs - via of Patrick Guimond
 
 - Add iso9660_fs_find_lsn_with_path and iso9660_ifs_find_lsn_with_path
@@ -412,4 +414,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.119 2008/03/21 10:19:38 rocky Exp $
+$Id: NEWS,v 1.120 2008/03/21 10:59:16 rocky Exp $
