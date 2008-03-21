@@ -1,5 +1,5 @@
 /*
-    $Id: nrg.c,v 1.29 2008/03/21 08:06:36 edsdead Exp $
+    $Id: nrg.c,v 1.30 2008/03/21 10:19:38 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@panix.com>
     Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -46,7 +46,7 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 
-static const char _rcsid[] = "$Id: nrg.c,v 1.29 2008/03/21 08:06:36 edsdead Exp $";
+static const char _rcsid[] = "$Id: nrg.c,v 1.30 2008/03/21 10:19:38 rocky Exp $";
 
 nero_id_t    nero_id;
 nero_dtype_t nero_dtype;
@@ -832,6 +832,7 @@ _lseek_nrg (void *p_user_data, off_t offset, int whence)
 
   unsigned int i;
 
+  p_env->pos.lba = 0;
   for (i=0; i<p_env->gen.i_tracks; i++) {
     track_info_t  *this_track=&(p_env->tocent[i]);
     p_env->pos.index = i;

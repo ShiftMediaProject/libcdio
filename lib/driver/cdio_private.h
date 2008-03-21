@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.33 2008/03/20 01:40:29 edsdead Exp $
+    $Id: cdio_private.h,v 1.34 2008/03/21 10:19:38 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -275,7 +275,7 @@ extern "C" {
       Note: string is malloc'd so caller has to free() the returned
       string when done with it.
     */
-    char * (*get_track_isrc) ( const CdIo_t *p_cdio, track_t i_track );
+    char * (*get_track_isrc) ( const void *p_env, track_t i_track );
     
     /*!  
       Get format of track. 

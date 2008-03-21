@@ -1,6 +1,15 @@
-$Id: NEWS,v 1.118 2008/03/18 00:37:20 karl Exp $
+$Id: NEWS,v 1.119 2008/03/21 10:19:38 rocky Exp $
+
+version 0.81cvs
 
 - license of manual now GFDL 1.2 or later, with no invariant sections.
+
+- Nero image handling more complete. 
+    CD-Text processing.
+    DAO in read_audio_sectors
+
+- Allow reading pregap of a track via get_track_pregap_lsn(). Add
+  Section on "CD-DA pregap" in libcdio manual
 
 version 0.80
 2008-03-15
@@ -403,4 +412,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.118 2008/03/18 00:37:20 karl Exp $
+$Id: NEWS,v 1.119 2008/03/21 10:19:38 rocky Exp $
