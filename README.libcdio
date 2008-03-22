@@ -99,8 +99,6 @@ a world of its own so support for that (e.g. issuing MMC commnads)
 seems to lag behind.
 
 Of late FreeBSD folks have been pretty good about testing new releases
-and reporting problems. If you search the Internet, you'll see that
-someone has copied and modified the FreeBSD code to work on
-NetBSD. Because that is not GPL, it can't be included here.
+and reporting problems. 
 
-$Id: README.libcdio,v 1.11 2006/03/18 01:05:42 rocky Exp $
+$Id: README.libcdio,v 1.12 2008/03/22 22:51:30 rocky Exp $
