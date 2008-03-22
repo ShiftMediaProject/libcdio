@@ -20,7 +20,7 @@ define(RELEASE_NUM, 81)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.222 2008/03/16 00:12:42 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.223 2008/03/22 22:43:56 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -683,6 +683,7 @@ AC_CONFIG_FILES([
        src/Makefile \
        test/testbincue.c \
        test/testisocd2.c \
+       test/testnrg.c \
        test/check_common_fn \
        test/Makefile \
        ])

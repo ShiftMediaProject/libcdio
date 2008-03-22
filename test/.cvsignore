@@ -25,6 +25,8 @@ testiso9660
 testisocd
 testisocd2
 testisocd2.c
+testnrg
+testnrg.c
 testparanoia
 testpregap
 testtoc

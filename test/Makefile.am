@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.63 2008/03/20 19:02:38 karl Exp $
+#   $Id: Makefile.am,v 1.64 2008/03/22 22:43:56 rocky Exp $
 #
 #   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -30,7 +30,7 @@ endif
 
 hack = check_sizeof testassert  testbincue testischar \
        testisocd testisocd2 testiso9660 \
-       $(testparanoia) testtoc testpregap
+       testnrg $(testparanoia) testtoc testpregap
 
 noinst_PROGRAMS = testdefault 
 
@@ -53,6 +53,9 @@ testpregap_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
 testbincue_LDADD    = $(LIBCDIO_LIBS) $(LIBICONV)
 testbincue_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
+
+testnrg_LDADD       = $(LIBCDIO_LIBS) $(LIBICONV)
+testnrg_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
                 check_iso.sh  check_fuzzyiso.sh check_paranoia.sh check_opts.sh
@@ -85,7 +88,7 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
-	testbincue.c.in check_iso.sh.in
+	testbincue.c.in testnrg.c.in check_iso.sh.in
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
 XFAIL_TESTS = testassert
