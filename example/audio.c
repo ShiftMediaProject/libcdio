@@ -1,24 +1,23 @@
 /*
-    $Id: audio.c,v 1.8 2006/02/27 10:28:25 flameeyes Exp $
+  $Id: audio.c,v 1.9 2008/03/24 15:30:55 karl Exp $
 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
 
-    Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
-    Copyright (C) 1997, 1998 
+  Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
+  Copyright (C) 1997, 1998 
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /* A program to show use of audio controls. For a more expanded
