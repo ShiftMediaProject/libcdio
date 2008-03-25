@@ -1,13 +1,13 @@
 /*
-    $Id: cdtext.h,v 1.13 2005/11/11 12:26:57 rocky Exp $
+    $Id: cdtext.h,v 1.14 2008/03/25 15:59:08 karl Exp $
 
-    Copyright (C) 2004, 2005 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
     adapted from cuetools
     Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
-    This program is free software; you can redistribute it and/or modify
+    This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
+    the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
@@ -16,8 +16,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 /*!
  * \file cdtext.h 
