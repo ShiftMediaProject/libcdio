@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.120 2008/03/21 10:59:16 rocky Exp $
+$Id: NEWS,v 1.121 2008/03/27 10:45:24 edsdead Exp $
 
 version 0.81cvs
 
@@ -6,7 +6,10 @@ version 0.81cvs
 
 - Nero image handling more complete. 
     CD-Text processing.
-    DAO in read_audio_sectors
+    DAO in read_audio_sectors.
+    ISRC processing.
+
+- ISRC query for image files.
 
 - Allow reading pregap of a track via get_track_pregap_lsn(). Add
   Section on "CD-DA pregap" in libcdio manual
@@ -414,4 +417,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.120 2008/03/21 10:59:16 rocky Exp $
+$Id: NEWS,v 1.121 2008/03/27 10:45:24 edsdead Exp $
