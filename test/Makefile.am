@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.64 2008/03/22 22:43:56 rocky Exp $
+#   $Id: Makefile.am,v 1.65 2008/03/27 17:40:51 rocky Exp $
 #
 #   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -88,7 +88,7 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
-	testbincue.c.in testnrg.c.in check_iso.sh.in
+	testbincue.c.in testnrg.c.in check_iso.sh.in p1.cue
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
 XFAIL_TESTS = testassert

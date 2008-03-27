@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.37 2008/03/25 15:59:08 karl Exp $
+    $Id: device.h,v 1.38 2008/03/27 17:40:50 rocky Exp $
 
     Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -158,7 +158,8 @@ extern "C" {
     DRIVER_SOLARIS, /**< Sun Solaris Driver */
     DRIVER_OSX,     /**< Apple OSX Driver */
     DRIVER_WIN32,   /**< Microsoft Windows Driver. Includes ASPI and 
-		         ioctl acces. */
+		         ioctl access. */
+    DRIVER_NETBSD,  /**< NetBSD Driver. */
     DRIVER_CDRDAO,  /**< cdrdao format CD image. This is listed
 		         before BIN/CUE, to make the code prefer cdrdao
 		         over BIN/CUE when both exist. */
@@ -184,7 +185,7 @@ extern "C" {
 #define CDIO_MIN_DRIVER        DRIVER_AIX
 #define CDIO_MIN_DEVICE_DRIVER CDIO_MIN_DRIVER
 #define CDIO_MAX_DRIVER        DRIVER_NRG
-#define CDIO_MAX_DEVICE_DRIVER DRIVER_WIN32
+#define CDIO_MAX_DEVICE_DRIVER DRIVER_NETBSD
 
   /** The following are status codes for completion of a given cdio
      operation. By design 0 is successful completion and -1 is error
@@ -440,25 +441,32 @@ extern "C" {
   /*! True if CD-ROM understand ATAPI commands. */
   bool_3way_t cdio_have_atapi (CdIo_t *p_cdio);
 
-  /*! True if AIX driver is available. */
+  /*! DEPRICATED: use cdio_have_driver().
+    True if AIX driver is available. */
   bool cdio_have_aix    (void);
 
-  /*! True if BSDI driver is available. */
+  /*! DEPRICATED: use cdio_have_driver().
+    True if BSDI driver is available. */
   bool cdio_have_bsdi    (void);
 
-  /*! True if FreeBSD driver is available. */
+  /*! DEPRICATED: use cdio_have_driver().
+    True if FreeBSD driver is available. */
   bool cdio_have_freebsd (void);
 
-  /*! True if GNU/Linux driver is available. */
+  /*! DEPRICATED: use cdio_have_driver().
+    True if GNU/Linux driver is available. */
   bool cdio_have_linux   (void);
 
-  /*! True if Sun Solaris driver is available. */
+  /*! DEPRICATED: use cdio_have_driver().
+    True if Sun Solaris driver is available. */
   bool cdio_have_solaris (void);
 
-  /*! True if Apple OSX driver is available. */
+  /*! DEPRICATED: use cdio_have_driver().
+    True if Apple OSX driver is available. */
   bool cdio_have_osx     (void);
 
-  /*! True if Microsoft Windows driver is available. */
+  /*! DEPRICATED: use cdio_have_driver().
+    True if Microsoft Windows driver is available. */
   bool cdio_have_win32   (void);
 
   /*! True if Nero driver is available. */
@@ -586,7 +594,7 @@ extern "C" {
       the some sort of device name.
 
      @return the cdio object for subsequent operations. 
-     NULL on error or there is no BSDI driver.
+     NULL on error or there is no AIX driver.
 
      @see cdio_open
    */
@@ -597,7 +605,7 @@ extern "C" {
       the some sort of device name.
 
      @return the cdio object for subsequent operations. 
-     NULL on error or there is no BSDI driver.
+     NULL on error or there is no AIX driver.
 
      @see cdio_open
    */

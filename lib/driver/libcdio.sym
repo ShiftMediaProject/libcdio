@@ -95,6 +95,7 @@ cdio_have_cdrdao
 cdio_have_driver
 cdio_have_freebsd
 cdio_have_linux
+cdio_have_netbsd
 cdio_have_nrg
 cdio_have_osx
 cdio_have_solaris
@@ -128,6 +129,7 @@ cdio_open_am_cd
 cdio_open_am_cdrdao
 cdio_open_am_freebsd
 cdio_open_am_linux
+cdio_open_am_netbsd
 cdio_open_am_nrg
 cdio_open_am_osx
 cdio_open_am_solaris
@@ -139,6 +141,7 @@ cdio_open_cdrdao
 cdio_open_cue
 cdio_open_freebsd
 cdio_open_linux
+cdio_open_netbsd
 cdio_open_nrg
 cdio_open_osx
 cdio_open_solaris

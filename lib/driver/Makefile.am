@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.23 2008/03/20 19:02:38 karl Exp $
+#   $Id: Makefile.am,v 1.24 2008/03/27 17:40:50 rocky Exp $
 #
 #   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
 #   Rocky Bernstein <rocky@gnu.org>
@@ -88,6 +88,7 @@ libcdio_sources = \
 	MSWindows/win32_ioctl.c \
 	MSWindows/win32.c \
 	MSWindows/win32.h \
+	netbsd.c \
 	osx.c \
 	read.c \
 	sector.c \

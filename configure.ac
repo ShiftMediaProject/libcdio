@@ -20,7 +20,7 @@ define(RELEASE_NUM, 81)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.223 2008/03/22 22:43:56 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.224 2008/03/27 17:40:50 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -460,6 +460,12 @@ int has_timeout=sizeof(test.timeout);],
                   [Define 1 if you have FreeBSD CD-ROM support])
  	LIBS="$LIBS -lcam"
   	cd_drivers="${cd_drivers}, FreeBSD "
+	;;
+     netbsd*)
+     	AC_DEFINE([HAVE_NETBSD_CDROM], [1], 
+                  [Define 1 if you have NetBSD CD-ROM support])
+ 	# LIBS="$LIBS -lcam"
+  	cd_drivers="${cd_drivers}, NetBSD "
 	;;
      *)
 	AC_MSG_WARN([Don't have OS CD-reading support for ${host_os}...])

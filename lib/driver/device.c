@@ -1,5 +1,5 @@
 /*
-    $Id: device.c,v 1.39 2006/04/04 02:06:13 rocky Exp $
+    $Id: device.c,v 1.40 2008/03/27 17:40:50 rocky Exp $
 
     Copyright (C) 2005, 2006 Rocky Bernstein <rocky@panix.com>
 
@@ -147,6 +147,19 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_is_device_generic,
    &cdio_get_devices_freebsd,
    &close_tray_freebsd
+  },
+
+  {DRIVER_NETBSD, 
+   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
+   "NetBSD",
+   "NetBSD driver",
+   &cdio_have_netbsd,
+   &cdio_open_netbsd,
+   &cdio_open_am_netbsd,
+   &cdio_get_default_device_netbsd,
+   &cdio_is_device_generic,
+   &cdio_get_devices_netbsd,
+   &close_tray_netbsd
   },
 
   {DRIVER_LINUX, 
@@ -923,6 +936,7 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
   case DRIVER_BSDI:
   case DRIVER_FREEBSD:
   case DRIVER_LINUX:
+  case DRIVER_NETBSD:
   case DRIVER_SOLARIS:
   case DRIVER_WIN32:
   case DRIVER_OSX:

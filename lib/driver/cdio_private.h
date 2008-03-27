@@ -1,5 +1,5 @@
 /*
-    $Id: cdio_private.h,v 1.34 2008/03/21 10:19:38 rocky Exp $
+    $Id: cdio_private.h,v 1.35 2008/03/27 17:40:50 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005 Rocky Bernstein <rocky@panix.com>
 
@@ -485,10 +485,24 @@ extern "C" {
   driver_return_code_t close_tray_bsdi    (const char *psz_drive);
   driver_return_code_t close_tray_freebsd (const char *psz_drive);
   driver_return_code_t close_tray_linux   (const char *psz_drive);
+  driver_return_code_t close_tray_netbsd  (const char *psz_drive);
   driver_return_code_t close_tray_osx     (const char *psz_drive);
   driver_return_code_t close_tray_solaris (const char *psz_drive);
   driver_return_code_t close_tray_win32   (const char *psz_drive);
 
+  bool cdio_have_netbsd(void);
+  CdIo_t * cdio_open_netbsd (const char *psz_source);
+  char * cdio_get_default_device_netbsd(void);
+  char **cdio_get_devices_netbsd(void);
+  /*! Set up CD-ROM for reading using the NetBSD driver. The device_name is
+      the some sort of device name.
+
+     NULL is returned on error or there is no FreeBSD driver.
+
+     @see cdio_open_cd, cdio_open
+   */
+  CdIo_t * cdio_open_am_netbsd (const char *psz_source,
+				const char *psz_access_mode);
 
 #ifdef __cplusplus
 }
