@@ -1,5 +1,5 @@
 /* -*- c -*-
-    $Id: device.h,v 1.38 2008/03/27 17:40:50 rocky Exp $
+    $Id: device.h,v 1.39 2008/03/28 01:28:50 rocky Exp $
 
     Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -440,43 +440,6 @@ extern "C" {
 
   /*! True if CD-ROM understand ATAPI commands. */
   bool_3way_t cdio_have_atapi (CdIo_t *p_cdio);
-
-  /*! DEPRICATED: use cdio_have_driver().
-    True if AIX driver is available. */
-  bool cdio_have_aix    (void);
-
-  /*! DEPRICATED: use cdio_have_driver().
-    True if BSDI driver is available. */
-  bool cdio_have_bsdi    (void);
-
-  /*! DEPRICATED: use cdio_have_driver().
-    True if FreeBSD driver is available. */
-  bool cdio_have_freebsd (void);
-
-  /*! DEPRICATED: use cdio_have_driver().
-    True if GNU/Linux driver is available. */
-  bool cdio_have_linux   (void);
-
-  /*! DEPRICATED: use cdio_have_driver().
-    True if Sun Solaris driver is available. */
-  bool cdio_have_solaris (void);
-
-  /*! DEPRICATED: use cdio_have_driver().
-    True if Apple OSX driver is available. */
-  bool cdio_have_osx     (void);
-
-  /*! DEPRICATED: use cdio_have_driver().
-    True if Microsoft Windows driver is available. */
-  bool cdio_have_win32   (void);
-
-  /*! True if Nero driver is available. */
-  bool cdio_have_nrg     (void);
-
-  /*! True if BIN/CUE driver is available. */
-  bool cdio_have_bincue  (void);
-
-  /*! True if cdrdao CDRDAO driver is available. */
-  bool cdio_have_cdrdao  (void);
 
   /*! Like cdio_have_xxx but uses an enumeration instead. */
   bool cdio_have_driver (driver_id_t driver_id);
