@@ -1,9 +1,9 @@
 /*
-    $Id: gnu_linux.c,v 1.28 2007/03/07 04:35:47 rocky Exp $
+    $Id: gnu_linux.c,v 1.29 2008/03/28 02:03:13 rocky Exp $
 
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-    Copyright (C) 2002, 2003, 2004, 2005, 2006 Rocky Bernstein 
-    <rockyb@users.sourceforge.net>
+    Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008 Rocky Bernstein 
+    <rockyb@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,12 +28,11 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.28 2007/03/07 04:35:47 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.29 2008/03/28 02:03:13 rocky Exp $";
 
+#ifdef HAVE_STRING_H
 #include <string.h>
-#include <limits.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+#endif
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -46,6 +45,10 @@ static const char _rcsid[] = "$Id: gnu_linux.c,v 1.28 2007/03/07 04:35:47 rocky 
 #include "cdio_private.h"
 
 #ifdef HAVE_LINUX_CDROM
+
+#include <limits.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #if defined(HAVE_LINUX_VERSION_H)
 # include <linux/version.h>
