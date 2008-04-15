@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.45 2008/03/20 19:02:37 karl Exp $
+#   $Id: Makefile.am,v 1.46 2008/04/15 17:35:23 rocky Exp $
 #
 #   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -47,7 +47,7 @@ pkgconfig_DATA = libcdio.pc  \
 	         libcdio++.pc  \
 	         libiso9660.pc \
 	         libiso9660++.pc \
-	         libudf.pc
+	         libudf.pc \
 		 $(paranoiapcs)
 
 
