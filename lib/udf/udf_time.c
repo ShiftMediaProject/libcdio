@@ -1,23 +1,24 @@
 /* 
-    Copyright (C) 2005 Rocky Bernstein <rocky@panix.com>
-    Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+  $Id: udf_time.c,v 1.9 2008/04/18 16:02:10 karl Exp $
 
-    Modified From part of the GNU C Library.
-    Contributed by Paul Eggert (eggert@twinsun.com).
+  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+  Modified From part of the GNU C Library.
+  Contributed by Paul Eggert.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /* Some history from the GNU/Linux kernel from which this is also taken...
