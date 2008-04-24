@@ -1,5 +1,5 @@
 /*
-  $Id: xa.c,v 1.7 2008/04/18 16:02:10 karl Exp $
+  $Id: xa.c,v 1.8 2008/04/24 07:28:00 rocky Exp $
 
   Copyright (C) 2003, 2005, 2008 Rocky Bernstein <rocky@panix.com>
   Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
@@ -162,11 +162,19 @@ iso9660_get_posix_filemode_from_xa(uint16_t i_perms)
   if (i_perms & XA_PERM_RUSR)  mode |= S_IRUSR;
   if (i_perms & XA_PERM_XUSR)  mode |= S_IXUSR;
   
+#ifdef S_IRGRP
   if (i_perms & XA_PERM_RGRP)  mode |= S_IRGRP;
+#endif
+#ifdef S_IXGRP
   if (i_perms & XA_PERM_XGRP)  mode |= S_IXGRP;
+#endif
   
+#ifdef S_IROTH
   if (i_perms & XA_PERM_ROTH)  mode |= S_IROTH;
+#endif
+#ifdef S_IXOTH
   if (i_perms & XA_PERM_XOTH)  mode |= S_IXOTH;
+#endif
   
   if (i_perms & XA_ATTR_DIRECTORY)  mode |= S_IFDIR;
   

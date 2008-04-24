@@ -1,5 +1,5 @@
 /* 
-  $Id: udf_time.c,v 1.9 2008/04/18 16:02:10 karl Exp $
+  $Id: udf_time.c,v 1.10 2008/04/24 07:28:00 rocky Exp $
 
   Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
@@ -148,7 +148,7 @@ udf_stamp_to_time(time_t *dest, long int *dest_usec,
   return dest;
 }
 
-
+#ifdef HAVE_STRUCT_TIMESPEC
 /*!
   Convert a UDF timestamp to a time_t. If microseconds are desired,
   use dest_usec. The return value is the same as dest. */
@@ -206,6 +206,7 @@ udf_timespec_to_stamp(const struct timespec ts, udf_timestamp_t *dest)
 			 - (dest->hundreds_of_microseconds * 100) );
   return dest;
 }
+#endif
 
 /*!
   Return the modification time of the file.

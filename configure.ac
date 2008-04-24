@@ -20,7 +20,7 @@ define(RELEASE_NUM, 81)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.224 2008/03/27 17:40:50 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.225 2008/04/24 07:28:00 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -247,6 +247,15 @@ int main(int argc, char **argv) {
    [AC_MSG_RESULT(no); ac_have_issock=no],
    [AC_MSG_RESULT(no); ac_have_issock=no])
 
+AC_MSG_CHECKING([for struct timespec])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+],[struct timespec ts;])],
+[ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_STRUCT_TIMESPEC, [], [Define this if you have struct timespec]) ],
+[ AC_MSG_RESULT(no) ])
+
 dnl empty_array_size
 AC_MSG_CHECKING([how to create empty arrays])
 
@@ -272,6 +281,49 @@ dnl empty_array_size
 
 dnl bitfield order
 AC_MSG_CHECKING(bitfield ordering in structs)
+dnl First see whether we can work out ordering without running a program --
+dnl for instance, when cross-compiling
+boring_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -O2"
+AC_LINK_IFELSE([
+int conftest_undefined_reference_();
+int main() {
+  union {
+    unsigned int x;
+    struct {
+      unsigned int x0: 1;
+      unsigned int x1: 31;
+    } s;
+  } u;
+
+  u.x = 0;
+  u.s.x0 = 1;
+  if (u.x == 1)
+    return conftest_undefined_reference_();
+  return 0;
+}
+], [bf_lsbf=0])
+AC_LINK_IFELSE([
+int conftest_undefined_reference_();
+int main() {
+  union {
+    unsigned int x;
+    struct {
+      unsigned int x0: 1;
+      unsigned int x1: 31;
+    } s;
+  } u;
+
+  u.x = 0;
+  u.s.x0 = 1;
+  if (u.x == 0x80000000)
+    return conftest_undefined_reference_();
+  return 0;
+}
+], [bf_lsbf=1])
+CFLAGS="$boring_CFLAGS"
+dnl If we haven't found out for certain yet, try the runtime test
+if test "x$bf_lsbf" = "x"; then
 AC_TRY_RUN([
 int
  main() {
@@ -293,6 +345,7 @@ main() {
   if (sizeof (bf) != 1) return 1;
   return *((unsigned char*) &bf) != 0xa5; }
 ], bf_lsbf=0, AC_MSG_ERROR([unsupported bitfield ordering])))
+fi
 if test "x$bf_lsbf" = "x1"; then
  AC_MSG_RESULT(LSBF)
  AC_DEFINE(BITFIELD_LSBF, [], [compiler does least-significant bit first in struct bitfields])
@@ -474,7 +527,7 @@ int has_timeout=sizeof(test.timeout);],
 esac
 
 AC_MSG_CHECKING(extern long timezone variable)
-AC_TRY_RUN([
+AC_LINK_IFELSE([
 #ifdef NEED_TIMEZONEVAR
 #define timezonevar 1
 #endif

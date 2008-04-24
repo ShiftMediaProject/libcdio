@@ -1,4 +1,4 @@
-$Id: NEWS,v 1.121 2008/03/27 10:45:24 edsdead Exp $
+$Id: NEWS,v 1.122 2008/04/24 07:28:00 rocky Exp $
 
 version 0.81cvs
 
@@ -13,6 +13,8 @@ version 0.81cvs
 
 - Allow reading pregap of a track via get_track_pregap_lsn(). Add
   Section on "CD-DA pregap" in libcdio manual
+
+- Allow cross-compiling to mingw32. Patch from Peter Hartley.
 
 version 0.80
 2008-03-15
@@ -42,7 +44,7 @@ version 0.79
                by Eric Shattow. Fix erroneous #defines when
                DO_NO_WANT_PARANOIA_COMPATIBILITY is set - reported by
                David Stockwell.
-- Support for multisession CD-Extra Discs - via of Patrick Guimond
+- Support for multisession CD-Extra Discs. Patch from Patrick Guimond
 
 - Add iso9660_fs_find_lsn_with_path and iso9660_ifs_find_lsn_with_path
   to report the full filename path of lsn.
@@ -417,4 +419,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.121 2008/03/27 10:45:24 edsdead Exp $
+$Id: NEWS,v 1.122 2008/04/24 07:28:00 rocky Exp $

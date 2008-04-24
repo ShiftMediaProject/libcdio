@@ -1,5 +1,5 @@
 /*
-  $Id: gnu_linux.c,v 1.30 2008/04/22 15:29:12 karl Exp $
+  $Id: gnu_linux.c,v 1.31 2008/04/24 07:28:00 rocky Exp $
 
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.30 2008/04/22 15:29:12 karl Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.31 2008/04/24 07:28:00 rocky Exp $";
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -45,9 +45,9 @@ static const char _rcsid[] = "$Id: gnu_linux.c,v 1.30 2008/04/22 15:29:12 karl E
 
 #ifdef HAVE_LINUX_CDROM
 
-#include <limits.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <limits.h>
 
 #if defined(HAVE_LINUX_VERSION_H)
 # include <linux/version.h>

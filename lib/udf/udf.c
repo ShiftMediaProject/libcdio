@@ -1,5 +1,5 @@
 /*
-  $Id: udf.c,v 1.12 2008/04/18 16:02:10 karl Exp $
+  $Id: udf.c,v 1.13 2008/04/24 07:28:00 rocky Exp $
 
   Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -63,13 +63,17 @@ udf_get_posix_filemode(const udf_dirent_t *p_udf_dirent)
     if (i_perms & FE_PERM_U_WRITE) mode |= S_IWUSR;
     if (i_perms & FE_PERM_U_EXEC)  mode |= S_IXUSR;
     
+#ifdef S_IRGRP
     if (i_perms & FE_PERM_G_READ)  mode |= S_IRGRP;
     if (i_perms & FE_PERM_G_WRITE) mode |= S_IWGRP;
     if (i_perms & FE_PERM_G_EXEC)  mode |= S_IXGRP;
+#endif
     
+#ifdef S_IROTH
     if (i_perms & FE_PERM_O_READ)  mode |= S_IROTH;
     if (i_perms & FE_PERM_O_WRITE) mode |= S_IWOTH;
     if (i_perms & FE_PERM_O_EXEC)  mode |= S_IXOTH;
+#endif
 
     switch (udf_fe.icb_tag.file_type) {
     case ICBTAG_FILE_TYPE_DIRECTORY: 
@@ -78,24 +82,30 @@ udf_get_posix_filemode(const udf_dirent_t *p_udf_dirent)
     case ICBTAG_FILE_TYPE_REGULAR:
       mode |= S_IFREG;
       break;
+#ifdef S_IFLNK
     case ICBTAG_FILE_TYPE_SYMLINK:
       mode |= S_IFLNK;
       break;
+#endif
     case ICBTAG_FILE_TYPE_CHAR:
       mode |= S_IFCHR;
       break;
+#ifdef S_IFSOCK
     case ICBTAG_FILE_TYPE_SOCKET:
       mode |= S_IFSOCK;
       break;
+#endif
     case ICBTAG_FILE_TYPE_BLOCK:
       mode |= S_IFBLK;
       break;
     default: ;
     };
   
+#ifdef S_ISUID
     if (i_flags & ICBTAG_FLAG_SETUID) mode |= S_ISUID;
     if (i_flags & ICBTAG_FLAG_SETGID) mode |= S_ISGID;
     if (i_flags & ICBTAG_FLAG_STICKY) mode |= S_ISVTX;
+#endif
   }
   
   return mode;
