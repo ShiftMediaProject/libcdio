@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.46 2008/04/24 07:28:00 rocky Exp $
+#   $Id: Makefile.am,v 1.47 2008/04/26 15:16:06 rocky Exp $
 #
 #   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -90,6 +90,6 @@ EXTRA_DIST = cd-drive.help2man cd-info.help2man cd-read.help2man \
              iso-info.help2man iso-read.help2man $(GETOPT_C) getopt.h \
              $(man_MANS)
 
-$(man_MANS): %.1: % %.help2man
-        -$(HELP2MAN) --opt-include=$<.help2man --no-info --output=$@ ./$<
+$(man_MANS): %.1: % %.help2man 
+	-$(HELP2MAN) --opt-include=$<.help2man --no-info --output=$@ ./$<
 MOSTLYCLEANFILES = $(man_MANS)
