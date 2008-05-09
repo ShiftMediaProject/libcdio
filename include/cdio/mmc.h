@@ -1,5 +1,5 @@
 /*
-    $Id: mmc.h,v 1.31 2008/03/25 15:59:09 karl Exp $
+    $Id: mmc.h,v 1.32 2008/05/09 06:13:32 edsdead Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
                   Rocky Bernstein <rocky@gnu.org>
@@ -781,10 +781,11 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
 
     @return 0 if command completed successfully.
   */
-  int mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
-                   const mmc_cdb_t *p_cdb,
-                   cdio_mmc_direction_t e_direction, unsigned int i_buf, 
-                   /*in/out*/ void *p_buf );
+  driver_return_code_t
+  mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
+               const mmc_cdb_t *p_cdb,
+               cdio_mmc_direction_t e_direction, unsigned int i_buf, 
+               /*in/out*/ void *p_buf );
 
   /**
     Run a Multimedia command (MMC) specifying the CDB length.
@@ -805,7 +806,8 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
 
     @return 0 if command completed successfully.
   */
-  int mmc_run_cmd_len( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
+  driver_return_code_t
+  mmc_run_cmd_len( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
                    const mmc_cdb_t *p_cdb, unsigned int i_cdb,
                    cdio_mmc_direction_t e_direction, unsigned int i_buf,
                    /*in/out*/ void *p_buf );
