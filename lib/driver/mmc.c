@@ -1,6 +1,6 @@
 /* Common Multimedia Command (MMC) routines.
 
-  $Id: mmc.c,v 1.39 2008/05/09 06:43:53 edsdead Exp $
+  $Id: mmc.c,v 1.40 2008/05/09 09:54:39 edsdead Exp $
 
   Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -1292,7 +1292,6 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   mmc_cdb_t cdb = {{0, }};
 
   mmc_run_cmd_fn_t run_mmc_cmd;
-  uint8_t i_read_type = 0;
   uint8_t cdb9 = 0;
 
   if (!p_cdio) return DRIVER_OP_UNINIT;
@@ -1300,11 +1299,9 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 
   run_mmc_cmd = p_cdio->op.run_mmc_cmd;
 
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
-
-  i_read_type = read_sector_type << 2;
-  if (b_digital_audio_play) i_read_type |= 0x2;
-  CDIO_MMC_SET_READ_TYPE(cdb.field, i_read_type);
+  CDIO_MMC_SET_COMMAND  (cdb.field, CDIO_MMC_GPCMD_READ_CD);
+  CDIO_MMC_SET_READ_TYPE(cdb.field, read_sector_type);
+  if (b_digital_audio_play) cdb.field[1] |= 0x2;
   
   if (b_sync)      cdb9 |= 128;
   if (b_user_data) cdb9 |=  16;
