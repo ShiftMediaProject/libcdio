@@ -1,6 +1,6 @@
 /* Common Multimedia Command (MMC) routines.
 
-  $Id: mmc.c,v 1.38 2008/04/22 15:29:12 karl Exp $
+  $Id: mmc.c,v 1.39 2008/05/09 06:43:53 edsdead Exp $
 
   Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -1304,10 +1304,7 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
 
   i_read_type = read_sector_type << 2;
   if (b_digital_audio_play) i_read_type |= 0x2;
-  
-  CDIO_MMC_SET_READ_TYPE    (cdb.field, i_read_type);
-  CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks);
-
+  CDIO_MMC_SET_READ_TYPE(cdb.field, i_read_type);
   
   if (b_sync)      cdb9 |= 128;
   if (b_user_data) cdb9 |=  16;
@@ -1327,7 +1324,8 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
         ? MAX_CD_READ_BLOCKS : i_blocks;
       void *p_buf2 = ((char *)p_buf ) + (j * i_blocksize);
       
-      CDIO_MMC_SET_READ_LBA (cdb.field, (i_lsn+j));
+      CDIO_MMC_SET_READ_LBA     (cdb.field, (i_lsn+j));
+      CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks2);
 
       i_ret = run_mmc_cmd (p_cdio->env, CD_READ_TIMEOUT_MS,
                            i_cdb, &cdb, 
