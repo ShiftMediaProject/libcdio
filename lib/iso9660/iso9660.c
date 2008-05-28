@@ -1,5 +1,5 @@
 /*
-  $Id: iso9660.c,v 1.35 2008/04/18 16:02:09 karl Exp $
+  $Id: iso9660.c,v 1.36 2008/05/28 01:48:37 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
     Rocky Bernstein <rocky@gnu.org>
@@ -57,7 +57,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.35 2008/04/18 16:02:09 karl Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.36 2008/05/28 01:48:37 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -128,10 +128,10 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
        0 == idr_date->dt_day    && 0 == idr_date->dt_hour  &&
        0 == idr_date->dt_minute && 0 == idr_date->dt_second ) {
     time_t t = 0;
-    struct tm *p_temp_tm;
-    p_temp_tm = localtime(&t);
+    struct tm temp_tm;
+    localtime_r(&t, &temp_tm);
     
-    memcpy(p_tm, p_temp_tm, sizeof(struct tm));
+    memcpy(p_tm, &temp_tm, sizeof(struct tm));
     return true;
   }
   
@@ -217,21 +217,21 @@ iso9660_get_ltime (const iso9660_ltime_t *p_ldate,
      date values to account for the timezone offset. */
   {
     time_t t;
-    struct tm *p_temp_tm;
+    struct tm temp_tm;
     const char *old_tzname=getenv("TZ");
     char psz_gmt_tzset[]="TZ=GMT";
 
     putenv(psz_gmt_tzset);
     tzset();
     t = mktime(p_tm);
-    p_temp_tm = gmtime(&t);
+    gmtime_r(&t, &temp_tm);
     if (old_tzname) {
       char psz_tzset[10];
       snprintf(psz_tzset, sizeof(psz_tzset), "TZ=%s", old_tzname);
     }
     
-    p_tm->tm_wday = p_temp_tm->tm_wday;
-    p_tm->tm_yday = p_temp_tm->tm_yday;
+    p_tm->tm_wday = temp_tm.tm_wday;
+    p_tm->tm_yday = temp_tm.tm_yday;
   }
   return true;
 }
@@ -619,6 +619,7 @@ iso9660_dir_add_entry_su(void *dir,
   unsigned int offset = 0;
   uint32_t dsize = from_733(idr->size);
   int length, su_offset;
+  struct tm temp_tm;
   cdio_assert (sizeof(iso9660_dir_t) == 33);
 
   if (!dsize && !idr->length)
@@ -675,7 +676,8 @@ iso9660_dir_add_entry_su(void *dir,
   idr->extent = to_733(extent);
   idr->size = to_733(size);
   
-  iso9660_set_dtime (gmtime(entry_time), &(idr->recording_time));
+  gmtime_r(entry_time, &temp_tm);
+  iso9660_set_dtime (&temp_tm, &(idr->recording_time));
   
   idr->file_flags = to_711(file_flags);
 

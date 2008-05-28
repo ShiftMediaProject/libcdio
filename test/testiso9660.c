@@ -1,5 +1,5 @@
 /*
-  $Id: testiso9660.c,v 1.21 2008/03/22 18:08:25 karl Exp $
+  $Id: testiso9660.c,v 1.22 2008/05/28 01:48:38 rocky Exp $
 
   Copyright (C) 2003, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -245,9 +245,7 @@ main (int argc, const char *argv[])
     p_tm = localtime(&now);
     iso9660_set_dtime(p_tm, &dtime);
     iso9660_get_dtime(&dtime, true, &tm);
-    if ( memcmp(p_tm, &tm, sizeof(tm)) != 0 ) {
-      printf("Local time retrieved with iso9660_get_dtime not same as\n");
-      printf("that set with iso9660_set_dtime().\n");
+    if ( !time_compare(p_tm, &tm) ) {
       return 41;
     }
     p_tm = gmtime(&now);
@@ -257,7 +255,7 @@ main (int argc, const char *argv[])
       return 42;
     }
     
-    if ( memcmp(p_tm, &tm, sizeof(tm)) != 0 ) {
+    if ( !time_compare(p_tm, &tm) ) {
       printf("GMT time retrieved with iso9660_get_dtime() not same as that\n");
       printf("set with iso9660_set_dtime().\n");
       return 43;

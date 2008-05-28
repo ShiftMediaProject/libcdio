@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.98 2008/03/25 15:59:09 karl Exp $
+    $Id: iso9660.h,v 1.99 2008/05/28 01:48:37 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
                   Rocky Bernstein <rocky@gnu.org>
@@ -684,10 +684,10 @@ typedef struct _iso9660_s iso9660_t;
     record. Even though tm_wday and tm_yday fields are not explicitly in
     idr_date, they are calculated from the other fields.
     
-    If tm is to reflect the localtime, set "use_localtime" true, otherwise
+    If tm is to reflect the localtime, set "b_localtime" true, otherwise
     tm will reported in GMT.
   */
-  bool iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool use_localtime,
+  bool iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
                           /*out*/ struct tm *tm);
   
   
