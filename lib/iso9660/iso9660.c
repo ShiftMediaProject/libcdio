@@ -1,5 +1,5 @@
 /*
-  $Id: iso9660.c,v 1.36 2008/05/28 01:48:37 rocky Exp $
+  $Id: iso9660.c,v 1.37 2008/05/29 02:28:27 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
     Rocky Bernstein <rocky@gnu.org>
@@ -57,7 +57,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.36 2008/05/28 01:48:37 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.37 2008/05/29 02:28:27 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -285,7 +285,7 @@ iso9660_set_ltime (const struct tm *p_tm, /*out*/ iso9660_ltime_t *pvd_date)
   char *_pvd_date = (char *) pvd_date; 
 
   memset (_pvd_date, '0', 16);
-  _pvd_date[16] = (iso712_t) 0; /* Start out with time zone GMT. */
+  pvd_date->lt_gmtoff = (iso712_t) 0; /* Start out with time zone GMT. */
 
   if (!p_tm) return;
 
@@ -300,16 +300,16 @@ iso9660_set_ltime (const struct tm *p_tm, /*out*/ iso9660_ltime_t *pvd_date)
 
 #ifdef HAVE_TM_GMTOFF
   /* Set time zone in 15-minute interval encoding. */
-  _pvd_date[16] -= p_tm->tm_gmtoff / (15 * 60);
-  if (_pvd_date[16] < -48 ) {
+  pvd_date->lt_gmtoff -= p_tm->tm_gmtoff / (15 * 60);
+  if (pvd_date->lt_gmtoff < -48 ) {
     
     cdio_warn ("Converted ISO 9660 timezone %d is less than -48. Adjusted", 
-               (int) _pvd_date[16]);
-    _pvd_date[16] = -48;
-  } else if (_pvd_date[16] > 52) {
+               (int) pvd_date->lt_gmtoff);
+    pvd_date->lt_gmtoff = -48;
+  } else if (pvd_date->lt_gmtoff > 52) {
     cdio_warn ("Converted ISO 9660 timezone %d is over 52. Adjusted", 
-               (int) _pvd_date[16]);
-    _pvd_date[16] = 52;
+               (int) pvd_date->lt_gmtoff);
+    pvd_date->lt_gmtoff = 52;
   }
 #endif
 

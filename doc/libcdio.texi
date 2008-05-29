@@ -5,6 +5,12 @@
 @settitle GNU @code{libcdio}: Compact Disc Input and Control Library
 @c %**end of header
 
+@c Karl Berry informs me that this will add straight quotes in 
+@c typewriter text.
+@c See the "Inserting Quote Characters" node in the Texinfo manual
+@set txicodequoteundirected
+@set txicodequotebacktick
+
 @copying
 This manual documents @code{libcdio}, the GNU CD Input and Control
 Library.
@@ -111,7 +117,7 @@ the library for this is called @value{libcdio} rather than
 
 While on the topic of the name @value{libcdio}, I should also explain that
 the library really doesn't handle writing or output (the final "o" in
-the name). However it was felt that if I put libcdi that might be
+the name). However it was felt that if I put @code{libcdi} that might be
 confused with a particular CD format called CD-I.
 
 Later on, the ISO-9660 filesystem handling component from
@@ -134,7 +140,7 @@ independence.
 One early CD player, @kbd{xmcd} by Ti Kan, was I think a bit better
 than most in that it tried to @emph{encapsulate} the kinds of CD
 control mechanisms (SCSI, Linux ioctl, Toshiba, etc.) in a "CD Audio
-Device Interface Library" called libdi.  However this library is for
+Device Interface Library" called @code{libdi}.  However this library is for
 Audio CD's only and I don't believe this library has been used outside
 of xmcd.
 
@@ -317,7 +323,7 @@ extracts files from an ISO-9660 image.
 
 At present, there is no support for writing CD's. Nor is there any
 support for reading or writing DVDs. For some of these, there are
-other libraries (e.g. libdi, libscg, or libdvdread) may be helpful.
+other libraries (e.g. @code{libdi}, @code{libscg}, or @code{libdvdread}) may be helpful.
 
 I'm not theoretically opposed to putting support like this into
 libcdio. However at present there are already many gaps in this
@@ -387,7 +393,7 @@ called @term{CD+G}.
 
 CD Text is an extension to the CD-DA standard that adds the ability to
 album and track meta data (titles, artist/performer names, song
-titles) and and graphical (e.g. Karioke) information.  For an
+titles) and and graphical (e.g. Karaoke) information.  For an
 alternative way to get album and track meta-data see @xref{CDDB}.
 
 Information is stored in such a way that it doesn't interfere with the
@@ -435,7 +441,7 @@ later use when the Internet is not available; people tend request the
 same information since they via programs play the same music.
 
 Obtaining CD meta information when none is encoded in an audio CD is
-useful in media players or making one's own compilations from audio
+useful in media players or making ones own compilations from audio
 CDs. 
 
 There are currently two popular CDDB services on the Internet. The
@@ -526,7 +532,7 @@ Joliet extensions were an upward-compatible extension to the ISO 9660
 specification that removes the limitation initially put in to deal
 with the limited filename conventions found in Microsoft DOS OS. In
 particular, the Joliet specification allows for long filenames and
-allows for UCS-BE (Big-endian Unicode) encoding of filenames which
+allows for UCS-BE (BigEndian Unicode) encoding of filenames which
 include mixed case letter, accented characters spaces and various
 symbols. 
 
@@ -864,7 +870,7 @@ editor.
 In this section we describe CD properties and terms that we make use
 of in @value{libcdio}.
 
-A CD is formated into a number of @term{tracks}, and a CD can hold at
+A CD is formatted into a number of @term{tracks}, and a CD can hold at
 most 99 such tracks. This is defined by @code{CDIO_CD_MAX_TRACKS} in
 @file{cdio/sector.h}. Between some tracks CD specifications require a
 ``2 second'' in gap (called a @term{lead-in gap}. This is unused space
@@ -930,7 +936,7 @@ familiar (if awkward) 60 seconds in a minute. @emph{Frame} here is
 what we called a @emph{block} above. The CD specification defines
 ``frame'' to be @emph{another} unit which makes up a block. Very
 confusing. A frame is also sometimes called a sector, analogous to
-hard-disk terminalogy.
+hard-disk terminology.
 
 Even more confusing is using this time-like notation for an address or
 for a length. Too often people confuse the MSF notation this with an
@@ -1894,7 +1900,7 @@ SCSI-MMC @code{GET_CONFIGURATION} command.
 
 @item @code{mmc2a.c}
 
-Prints MMC @command{MODE_SENSE} page 2A paramaters. 
+Prints MMC @command{MODE_SENSE} page 2A parameters. 
 Page 2a are the CD/DVD Capabilities and Mechanical Status.
 
 @item @code{C++/mmc2.cpp}
@@ -2118,7 +2124,7 @@ some ioctl code.
 More work on this driver is needed. Volunteers? 
 
 @node OS X
-@section OS X (non-exclussive access)
+@section OS X (non-exclusive access)
 
 A problem with OS/X is that if the OS thinks it understands the drive
 it gains exclusive access to it and thus prevents a library like this
@@ -2231,7 +2237,7 @@ routine to perform some sort of function.
 The generic CD structure would also be useful in a utility to convert
 one CD-image format to another. Basically the first image format is
 ``parsed'' into the common internal format and then from this
-structure it is unparsed.
+structure it is not parsed.
 
 @subsection @samp{libiso9660}
 
@@ -2297,7 +2303,7 @@ array for example.
 
 @item @code{b_}
 
-A boolean type of some sort. A variable of this ilk one might find
+A Boolean type of some sort. A variable of this ilk one might find
 being in an @code{if} condition for example.
 
 @item @code{p_}
