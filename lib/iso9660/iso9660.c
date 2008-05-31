@@ -1,5 +1,5 @@
 /*
-  $Id: iso9660.c,v 1.37 2008/05/29 02:28:27 rocky Exp $
+  $Id: iso9660.c,v 1.38 2008/05/31 11:59:06 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
     Rocky Bernstein <rocky@gnu.org>
@@ -57,7 +57,7 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.37 2008/05/29 02:28:27 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.38 2008/05/31 11:59:06 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -218,17 +218,22 @@ iso9660_get_ltime (const iso9660_ltime_t *p_ldate,
   {
     time_t t;
     struct tm temp_tm;
-    const char *old_tzname=getenv("TZ");
+    char *old_tzname=getenv("TZ");
     char psz_gmt_tzset[]="TZ=GMT";
+
+    /* Put old_tzname at the beginning of the environment string,
+       so it can be restored as is with putenv. */
+    if (old_tzname)
+      old_tzname -= sizeof("TZ=")-1;
 
     putenv(psz_gmt_tzset);
     tzset();
     t = mktime(p_tm);
     gmtime_r(&t, &temp_tm);
-    if (old_tzname) {
-      char psz_tzset[10];
-      snprintf(psz_tzset, sizeof(psz_tzset), "TZ=%s", old_tzname);
-    }
+    if (old_tzname)
+      putenv(old_tzname);
+    else
+      unsetenv("TZ");
     
     p_tm->tm_wday = temp_tm.tm_wday;
     p_tm->tm_yday = temp_tm.tm_yday;
