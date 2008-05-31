@@ -1,5 +1,5 @@
 /*
-  $Id: iso9660.c,v 1.38 2008/05/31 11:59:06 rocky Exp $
+  $Id: iso9660.c,v 1.39 2008/05/31 12:18:33 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
     Rocky Bernstein <rocky@gnu.org>
@@ -57,7 +57,27 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.38 2008/05/31 11:59:06 rocky Exp $";
+#ifndef HAVE_TIMEGM
+static time_t
+timegm(struct tm *tm)
+{
+  time_t ret;
+  char *tz;
+  
+  tz = getenv("TZ");
+  setenv("TZ", "", 1);
+  tzset();
+  ret = mktime(tm);
+  if (tz)
+    setenv("TZ", tz, 1);
+  else
+    unsetenv("TZ");
+  tzset();
+  return ret;
+}
+#endif
+
+static const char _rcsid[] = "$Id: iso9660.c,v 1.39 2008/05/31 12:18:33 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -149,18 +169,16 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
      date values to account for the timezone offset. */
   {
     time_t t = 0;
-    struct tm *p_temp_tm = b_localtime ? localtime(&t): gmtime(&t);
-    
-    t = mktime(p_tm);
-    
-    p_temp_tm = b_localtime ? localtime(&t) : gmtime(&t);
+    struct tm temp_tm;
 
-    if (p_temp_tm->tm_isdst) {
-      t += 60*60;
-      p_temp_tm = b_localtime ? localtime(&t) : gmtime(&t);
-    }
+    t = timegm(p_tm);
     
-    memcpy(p_tm, p_temp_tm, sizeof(struct tm));
+    if (b_localtime)
+      localtime_r(&t, &temp_tm);
+    else
+      gmtime_r(&t, &temp_tm);
+
+    memcpy(p_tm, &temp_tm, sizeof(struct tm));
   }
 
 
@@ -264,8 +282,6 @@ iso9660_set_dtime (const struct tm *p_tm, /*out*/ iso9660_dtime_t *p_idr_date)
      represents a 15-minute interval. */
   p_idr_date->dt_gmtoff = p_tm->tm_gmtoff / (15 * 60);
 
-  if (p_tm->tm_isdst > 0) p_idr_date->dt_gmtoff -= 4;
-
   if (p_idr_date->dt_gmtoff < -48 ) {
     
     cdio_warn ("Converted ISO 9660 timezone %d is less than -48. Adjusted", 
@@ -278,6 +294,8 @@ iso9660_set_dtime (const struct tm *p_tm, /*out*/ iso9660_dtime_t *p_idr_date)
   }
 #else 
   p_idr_date->dt_gmtoff = 0;
+
+  if (p_tm->tm_isdst > 0) p_idr_date->dt_gmtoff -= 4;
 #endif
 }
 
@@ -300,10 +318,11 @@ iso9660_set_ltime (const struct tm *p_tm, /*out*/ iso9660_ltime_t *pvd_date)
            p_tm->tm_hour, p_tm->tm_min, p_tm->tm_sec,
            0 /* 1/100 secs */ );
 
+#ifndef HAVE_TM_GMTOFF
   /* Adjust for daylight savings time. */
   if (p_tm->tm_isdst > 0) _pvd_date[16] -= (iso712_t) 4;
 
-#ifdef HAVE_TM_GMTOFF
+#else
   /* Set time zone in 15-minute interval encoding. */
   pvd_date->lt_gmtoff -= p_tm->tm_gmtoff / (15 * 60);
   if (pvd_date->lt_gmtoff < -48 ) {
@@ -530,6 +549,7 @@ iso9660_set_pvd(void *pd,
                 )
 {
   iso9660_pvd_t ipd;
+  struct tm temp_tm;
 
   cdio_assert (sizeof(iso9660_pvd_t) == ISO_BLOCKSIZE);
 
@@ -581,10 +601,12 @@ iso9660_set_pvd(void *pd,
   iso9660_strncpy_pad (ipd.abstract_file_id     , "", 37, ISO9660_DCHARS);
   iso9660_strncpy_pad (ipd.bibliographic_file_id, "", 37, ISO9660_DCHARS);
 
-  iso9660_set_ltime (gmtime (pvd_time), &(ipd.creation_date));
-  iso9660_set_ltime (gmtime (pvd_time), &(ipd.modification_date));
-  iso9660_set_ltime (NULL,              &(ipd.expiration_date));
-  iso9660_set_ltime (NULL,              &(ipd.effective_date));
+  gmtime_r(pvd_time, &temp_tm);
+  iso9660_set_ltime (&temp_tm, &(ipd.creation_date));
+  gmtime_r(pvd_time, &temp_tm);
+  iso9660_set_ltime (&temp_tm, &(ipd.modification_date));
+  iso9660_set_ltime (NULL,     &(ipd.expiration_date));
+  iso9660_set_ltime (NULL,     &(ipd.effective_date));
 
   ipd.file_structure_version = to_711(1);
 

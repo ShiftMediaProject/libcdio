@@ -20,7 +20,7 @@ define(RELEASE_NUM, 81)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.226 2008/05/05 23:58:28 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.227 2008/05/31 12:18:33 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -561,6 +561,10 @@ AC_SUBST(LIBCDIO_SOURCE_PATH)
 AC_CHECK_FUNCS( [bzero drand48 ftruncate geteuid getgid \
 		 getuid getpwuid gettimeofday lstat memcpy memset \
 		 rand seteuid setegid snprintf  tzset vsnprintf readlink] )
+
+# check for timegm() support
+AC_CHECK_FUNC(timegm, AC_DEFINE(HAVE_TIMEGM,1,
+		      [Define to 1 if timegm is available]))
 
 AC_CHECK_MEMBER([struct tm.tm_gmtoff],
                 [AC_DEFINE(HAVE_TM_GMTOFF, 1,
