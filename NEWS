@@ -1,20 +1,28 @@
-$Id: NEWS,v 1.122 2008/04/24 07:28:00 rocky Exp $
+$Id: NEWS,v 1.123 2008/06/03 08:40:14 rocky Exp $
 
 version 0.81cvs
 
 - license of manual now GFDL 1.2 or later, with no invariant sections.
+  Source is GPL 3.
+
+  Thanks to Karl Berry. 
 
 - Nero image handling more complete. 
     CD-Text processing.
     DAO in read_audio_sectors.
-    ISRC processing.
+    ISRC processing. 
 
 - ISRC query for image files.
+
+  Thanks to Robert William Fuller on the above two items
 
 - Allow reading pregap of a track via get_track_pregap_lsn(). Add
   Section on "CD-DA pregap" in libcdio manual
 
 - Allow cross-compiling to mingw32. Patch from Peter Hartley.
+
+- Make iso9660 time setting/getting routines (iso9660_{g,s}et_{d,l}time)
+  reentrant and remove bugs in that code. Courtesy Nicolas Boullis.
 
 version 0.80
 2008-03-15
@@ -419,4 +427,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.122 2008/04/24 07:28:00 rocky Exp $
+$Id: NEWS,v 1.123 2008/06/03 08:40:14 rocky Exp $

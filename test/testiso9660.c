@@ -1,5 +1,5 @@
 /*
-  $Id: testiso9660.c,v 1.22 2008/05/28 01:48:38 rocky Exp $
+  $Id: testiso9660.c,v 1.23 2008/06/03 08:40:15 rocky Exp $
 
   Copyright (C) 2003, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -62,18 +62,15 @@ time_compare(struct tm *p_tm1, struct tm *p_tm2)
     okay=false;
   }
   if (p_tm1->tm_min != p_tm2->tm_min) {
-    printf("minute aren't equal. get: %d, set %d\n", 
+    printf("minutes aren't equal. get: %d, set %d\n", 
 	   p_tm1->tm_min, p_tm2->tm_min);
     okay=false;
   }
-#if FIXED
-  /* Differences in daylight savings time may make these different.*/
   if (p_tm1->tm_hour != p_tm2->tm_hour) {
     printf("hours aren't equal. get: %d, set %d\n", 
 	   p_tm1->tm_hour, p_tm2->tm_hour);
     okay=false;
   }
-#endif
   if (p_tm1->tm_sec != p_tm2->tm_sec) {
     printf("seconds aren't equal. get: %d, set %d\n", 
 	   p_tm1->tm_sec, p_tm2->tm_sec);
@@ -95,6 +92,7 @@ time_compare(struct tm *p_tm1, struct tm *p_tm2)
 	   p_tm1->tm_isdst, p_tm2->tm_isdst);
     okay=false;
   }
+#endif
 #ifdef HAVE_TM_GMTOFF
   if (p_tm1->tm_gmtoff != p_tm2->tm_gmtoff) {
     printf("GMT offsets aren't equal. get: %ld, set %ld\n", 
@@ -102,6 +100,7 @@ time_compare(struct tm *p_tm1, struct tm *p_tm2)
     okay=false;
   }
   if (p_tm1 != p_tm2 && p_tm1 && p_tm2) {
+#ifdef FIXED    
     if (strcmp(p_tm1->tm_zone, p_tm2->tm_zone) != 0) {
       printf("Time Zone values. get: %s, set %s\n", 
 	     p_tm1->tm_zone, p_tm2->tm_zone);
@@ -109,8 +108,8 @@ time_compare(struct tm *p_tm1, struct tm *p_tm2)
 	 Let's not call this a failure if everything else was okay.
        */
     }
-  }
 #endif
+  }
 #endif
   return okay;
 }
@@ -262,9 +261,7 @@ main (int argc, const char *argv[])
     }
     
     {
-        time_t t1, t2;
 	p_tm = localtime(&now);
-	t1 = mktime(p_tm);
 	iso9660_set_ltime(p_tm, &ltime);
 	  
 	if (!iso9660_get_ltime(&ltime, &tm)) {
@@ -272,21 +269,16 @@ main (int argc, const char *argv[])
 	  return 44;
 	}
 
-#ifdef FIXED	
-	t2 = mktime(&tm);
-	if ( t1 != t2  && ! time_compare(p_tm, &tm) ) {
+	if ( ! time_compare(p_tm, &tm) ) {
 	  printf("local time retrieved with iso9660_get_ltime() not\n");
 	  printf("same as that set with iso9660_set_ltime().\n");
 	  return 45;
 	}
-#endif
 
 	p_tm = gmtime(&now);
-	t1 = mktime(p_tm);
 	iso9660_set_ltime(p_tm, &ltime);
 	iso9660_get_ltime(&ltime, &tm);
-	t2 = mktime(&tm);
-	if ( t1 != t2 && ! time_compare(p_tm, &tm) ) {
+	if ( ! time_compare(p_tm, &tm) ) {
 	  printf("GMT time retrieved with iso9660_get_ltime() not\n");
 	  printf("same as that set with iso9660_set_ltime().\n");
 	  return 46;

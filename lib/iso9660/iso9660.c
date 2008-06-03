@@ -1,5 +1,5 @@
 /*
-  $Id: iso9660.c,v 1.39 2008/05/31 12:18:33 rocky Exp $
+  $Id: iso9660.c,v 1.40 2008/06/03 08:40:15 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
     Rocky Bernstein <rocky@gnu.org>
@@ -77,7 +77,7 @@ timegm(struct tm *tm)
 }
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.39 2008/05/31 12:18:33 rocky Exp $";
+static const char _rcsid[] = "$Id: iso9660.c,v 1.40 2008/06/03 08:40:15 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;
@@ -229,33 +229,26 @@ iso9660_get_ltime (const iso9660_ltime_t *p_ldate,
   set_ltime_field(tm_min,  lt_minute, 0);
   set_ltime_field(tm_sec,  lt_second, 0);
   p_tm->tm_isdst= -1; /* information not available */
+#ifndef HAVE_TM_GMTOFF
   p_tm->tm_sec += p_ldate->lt_gmtoff * (15 * 60);
+#endif
 
   /* Recompute tm_wday and tm_yday via mktime. mktime will also renormalize
      date values to account for the timezone offset. */
   {
     time_t t;
     struct tm temp_tm;
-    char *old_tzname=getenv("TZ");
-    char psz_gmt_tzset[]="TZ=GMT";
 
-    /* Put old_tzname at the beginning of the environment string,
-       so it can be restored as is with putenv. */
-    if (old_tzname)
-      old_tzname -= sizeof("TZ=")-1;
-
-    putenv(psz_gmt_tzset);
-    tzset();
     t = mktime(p_tm);
-    gmtime_r(&t, &temp_tm);
-    if (old_tzname)
-      putenv(old_tzname);
-    else
-      unsetenv("TZ");
-    
-    p_tm->tm_wday = temp_tm.tm_wday;
-    p_tm->tm_yday = temp_tm.tm_yday;
+
+    localtime_r(&t, &temp_tm);
+
+    memcpy(p_tm, &temp_tm, sizeof(struct tm));
   }
+  p_tm->tm_isdst= -1; /* information not available */
+#ifdef HAVE_TM_GMTOFF
+  p_tm->tm_gmtoff = -p_ldate->lt_gmtoff * (15 * 60);
+#endif
   return true;
 }
 
