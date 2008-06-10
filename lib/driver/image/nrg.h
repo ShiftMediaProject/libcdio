@@ -1,5 +1,5 @@
 /*
-  $Id: nrg.h,v 1.6 2008/04/21 18:30:22 karl Exp $
+  $Id: nrg.h,v 1.7 2008/06/10 00:45:08 pjcreath Exp $
 
   Copyright (C) 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
@@ -92,7 +92,7 @@ typedef struct {
   uint32_t end_of_track        GNUC_PACKED;
 } _daoi_array_t;
 
-typedef struct {
+typedef struct GNUC_PACKED {
   uint32_t chunk_size_le       GNUC_PACKED;
   char     psz_mcn[CDIO_MCN_SIZE];
   uint8_t  unknown[3];
