@@ -1,5 +1,5 @@
 /*
-  $Id: gnu_linux.c,v 1.31 2008/04/24 07:28:00 rocky Exp $
+  $Id: gnu_linux.c,v 1.32 2008/06/13 19:33:13 flameeyes Exp $
 
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.31 2008/04/24 07:28:00 rocky Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.32 2008/06/13 19:33:13 flameeyes Exp $";
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -1326,13 +1326,13 @@ set_arg_linux (void *p_user_data, const char key[], const char value[])
 }
 
 /* checklist: /dev/cdrom, /dev/dvd /dev/hd?, /dev/scd? /dev/sr? */
-static char checklist1[][40] = {
+static const char checklist1[][40] = {
   {"cdrom"}, {"dvd"}, {""}
 };
 
-static struct
+static const struct
   {
-    const char * format;
+    char format[22];
     int num_min;
     int num_max;
   }
