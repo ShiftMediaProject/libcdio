@@ -1,5 +1,5 @@
 /*
-  $Id: scsi_interface.c,v 1.3 2008/04/17 17:39:47 karl Exp $
+  $Id: scsi_interface.c,v 1.4 2008/06/13 19:26:23 flameeyes Exp $
 
   Copyright (C) 2004, 2008 Rocky Bernstein <rocky@gnu.org>
   Original interface.c Copyright (C) 1994-1997 
@@ -35,12 +35,6 @@
 #include "utils.h"
 #include <cdio/scsi_mmc.h>
 #include <cdio/bytesex.h>
-
-/* hook */
-static int 
-Dummy (cdrom_drive_t *d,int s){
-  return(0);
-}
 
 #include "drive_exceptions.h"
 
@@ -1272,7 +1266,7 @@ verify_read_command(cdrom_drive_t *d)
 	switch(i){
 	case 0:
 	  d->density=0;
-	  d->enable_cdda=Dummy;
+	  d->enable_cdda=dummy_exception;
 	  es="none    ";
 	  if(!densitypossible)i=-2; /* short circuit MMC style commands */
 	  break;
@@ -1510,7 +1504,7 @@ scsi_init_drive(cdrom_drive_t *d){
 
   /* generic Sony type defaults; specialize from here */
   d->density = 0x0;
-  d->enable_cdda = Dummy;
+  d->enable_cdda = dummy_exception;
   d->read_audio = scsi_read_D8;
   d->fua=0x0;
   if(d->is_atapi)d->lun=0; /* it should already be; just to make sure */

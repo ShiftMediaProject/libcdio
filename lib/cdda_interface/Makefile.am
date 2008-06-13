@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.13 2008/03/20 19:02:38 karl Exp $
+#   $Id: Makefile.am,v 1.14 2008/06/13 19:26:22 flameeyes Exp $
 #
 #   Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -45,14 +45,14 @@
 EXTRA_DIST = libcdio_cdda.sym
 
 libcdio_cdda_la_CURRENT = 0
-libcdio_cdda_la_REVISION = 3
+libcdio_cdda_la_REVISION = 4
 libcdio_cdda_la_AGE = 0
 
 noinst_HEADERS  = common_interface.h drive_exceptions.h low_interface.h \
 		  smallft.h utils.h
 
 libcdio_cdda_sources =  common_interface.c cddap_interface.c interface.c \
-	scan_devices.c	smallft.c toc.c utils.c
+	scan_devices.c	smallft.c toc.c utils.c drive_exceptions.c
 
 lib_LTLIBRARIES = libcdio_cdda.la
 

@@ -1,5 +1,5 @@
 /*
-  $Id: cddap_interface.c,v 1.7 2008/04/16 17:00:40 karl Exp $
+  $Id: cddap_interface.c,v 1.8 2008/06/13 19:26:22 flameeyes Exp $
 
   Copyright (C) 2004, 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
   Original interface.c Copyright (C) 1994-1997 
@@ -246,12 +246,6 @@ cddap_read (cdrom_drive_t *d, void *p, lsn_t begin, long i_sectors)
   
 }
 
-/* hook */
-static int Dummy (cdrom_drive_t *d,int Switch)
-{
-  return(0);
-}
-
 static int 
 verify_read_command(cdrom_drive_t *d)
 {
@@ -387,7 +381,7 @@ cddap_init_drive (cdrom_drive_t *d)
   } 	 
 #endif /*HAVE_LINUX_MAJOR_H*/
 
-  d->enable_cdda = Dummy;
+  d->enable_cdda = dummy_exception;
   d->set_speed   = cddap_setspeed;
   d->read_toc    = cddap_readtoc;
   d->read_audio  = cddap_read;

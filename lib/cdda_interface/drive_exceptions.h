@@ -1,5 +1,5 @@
 /*
-  $Id: drive_exceptions.h,v 1.5 2008/04/16 17:00:40 karl Exp $
+  $Id: drive_exceptions.h,v 1.6 2008/06/13 19:26:23 flameeyes Exp $
 
   Copyright (C) 2004, 2008 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -43,59 +43,16 @@ extern long scsi_read_mmc2(cdrom_drive_t *d, void *,long,long);
 #define scsi_read_mmc2 NULL
 #endif
 
+int dummy_exception (cdrom_drive_t *d,int Switch);
+
 #if HAVE_LINUX_MAJOR_H
-/* list of drives that affect autosensing in ATAPI specific portions of code 
-   (force drives to detect as ATAPI or SCSI, force ATAPI read command */
-
-static exception_t atapi_list[]={
-  {"SAMSUNG SCR-830 REV 2.09 2.09 ", 1,   0,         Dummy,scsi_read_mmc2,0},
-  {"Memorex CR-622",                 1,   0,         Dummy,          NULL,0},
-  {"SONY CD-ROM CDU-561",            0,   0,         Dummy,          NULL,0},
-  {"Chinon CD-ROM CDS-525",          0,   0,         Dummy,          NULL,0},
-  {NULL,0,0,NULL,NULL,0}};
-#endif /*HAVE_LINUX_MAJOR_H*/
-
-/* list of drives that affect MMC default settings */
+extern const exception_t atapi_list[];
+#endif
 
 #ifdef NEED_MMC_LIST
-static exception_t mmc_list[]={
-  {"SAMSUNG SCR-830 REV 2.09 2.09 ", 1,   0,         Dummy,scsi_read_mmc2,0},
-  {"Memorex CR-622",                 1,   0,         Dummy,          NULL,0},
-  {"SONY CD-ROM CDU-561",            0,   0,         Dummy,          NULL,0},
-  {"Chinon CD-ROM CDS-525",          0,   0,         Dummy,          NULL,0},
-  {"KENWOOD CD-ROM UCR",          -1,   0,            NULL,scsi_read_D8,  0},
-  {NULL,0,0,NULL,NULL,0}};
-#endif /*NEED_MMC_LIST*/
-
-/* list of drives that affect SCSI default settings */
+extern const exception_t mmc_list[];
+#endif
 
 #ifdef NEED_SCSI_LIST
-static exception_t scsi_list[]={
-  {"TOSHIBA",                     -1,0x82,scsi_enable_cdda,scsi_read_28,  0},
-  {"IBM",                         -1,0x82,scsi_enable_cdda,scsi_read_28,  0},
-  {"DEC",                         -1,0x82,scsi_enable_cdda,scsi_read_28,  0},
-  
-  {"IMS",                         -1,   0,scsi_enable_cdda,scsi_read_28,  1},
-  {"KODAK",                       -1,   0,scsi_enable_cdda,scsi_read_28,  1},
-  {"RICOH",                       -1,   0,scsi_enable_cdda,scsi_read_28,  1},
-  {"HP",                          -1,   0,scsi_enable_cdda,scsi_read_28,  1},
-  {"PHILIPS",                     -1,   0,scsi_enable_cdda,scsi_read_28,  1},
-  {"PLASMON",                     -1,   0,scsi_enable_cdda,scsi_read_28,  1},
-  {"GRUNDIG CDR100IPW",           -1,   0,scsi_enable_cdda,scsi_read_28,  1},
-  {"MITSUMI CD-R ",               -1,   0,scsi_enable_cdda,scsi_read_28,  1},
-  {"KENWOOD CD-ROM UCR",          -1,   0,            NULL,scsi_read_D8,  0},
-
-  {"YAMAHA",                      -1,   0,scsi_enable_cdda,        NULL,  0},
-
-  {"PLEXTOR",                     -1,   0,            NULL,        NULL,  0},
-  {"SONY",                        -1,   0,            NULL,        NULL,  0},
-
-  {"NEC",                         -1,   0,           NULL,scsi_read_D4_10,0},
-
-  /* the 7501 locks up if hit with the 10 byte version from the
-     autoprobe first */
-  {"MATSHITA CD-R   CW-7501",     -1,   0,           NULL,scsi_read_D4_12,-1},
-
-  {NULL,0,0,NULL,NULL,0}};
-
-#endif /* NEED_SCSI_LIST*/
+extern const exception_t scsi_list[];
+#endif

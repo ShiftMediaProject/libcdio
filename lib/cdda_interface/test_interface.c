@@ -1,5 +1,5 @@
 /*
-  $Id: test_interface.c,v 1.3 2008/04/16 17:00:40 karl Exp $
+  $Id: test_interface.c,v 1.4 2008/06/13 19:26:23 flameeyes Exp $
 
   Copyright (C) 2004, 2008 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -215,19 +215,14 @@ test_read(cdrom_drive *d, void *p, long begin, long sectors)
   return(sectors);
 }
 
-/* hook */
-static int Dummy (cdrom_drive *d,int Switch){
-  return(0);
-}
-
 /* set function pointers to use the ioctl routines */
 int test_init_drive (cdrom_drive *d){
 
   d->nsectors=13;
-  d->enable_cdda = Dummy;
+  d->enable_cdda = dummy_exception;
   d->read_audio = test_read;
   d->read_toc = test_readtoc;
-  d->set_speed = Dummy;
+  d->set_speed = dummy_exception;
   d->tracks=d->read_toc(d);
   if(d->tracks==-1)
     return(d->tracks);
