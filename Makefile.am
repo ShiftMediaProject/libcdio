@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.47 2008/06/13 14:29:08 flameeyes Exp $
+#   $Id: Makefile.am,v 1.48 2008/06/13 15:54:49 flameeyes Exp $
 #
 #   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -46,7 +46,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libcdio.pc  \
 	         libiso9660.pc \
 	         libudf.pc \
-		 $(paranoiapcs) \
+		 $(paranoiapcs)
 
 if ENABLE_CPP
 pkgconfig_DATA += \
