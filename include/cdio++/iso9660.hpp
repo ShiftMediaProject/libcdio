@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.hpp,v 1.12 2008/03/25 15:59:10 karl Exp $
+    $Id: iso9660.hpp,v 1.13 2008/06/13 15:58:50 flameeyes Exp $
 
     Copyright (C) 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -28,10 +28,9 @@
 
 #include <cdio/iso9660.h>
 #include <cdio++/cdio.hpp>
-#include <string.h>
-#include <cstdlib>
 #include <vector>		// vector class library
 #include <cstdlib>
+#include <cstring>
 using namespace std;
 
 /** ISO 9660 class.
