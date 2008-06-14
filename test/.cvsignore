@@ -29,6 +29,7 @@ testnrg
 testnrg.c
 testparanoia
 testpregap
+testpregap.c
 testtoc
 *.dump
 *.cue

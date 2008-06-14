@@ -20,7 +20,7 @@ define(RELEASE_NUM, 81)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.227 2008/05/31 12:18:33 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.228 2008/06/14 22:41:29 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -89,7 +89,7 @@ AC_ARG_ENABLE(cpp_progs,
 AM_CONDITIONAL(ENABLE_CPP, test x"$enable_cpp_progs" = "xyes")
 
 AC_ARG_ENABLE(example_progs,
-	AC_HELP_STRING([--disable-example-progs], [Disable libcdio example programs building]))
+	AC_HELP_STRING([--disable-example-progs], [Don't build libcdio sample programs]))
 
 AM_CONDITIONAL(BUILD_EXAMPLES, test "x$enable_example_progs" != "xno")
 
