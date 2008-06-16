@@ -7,6 +7,7 @@ Makefile.in
 aclocal.m4
 autom4te.cache
 codeset.m4
+compile
 config.guess
 config.h
 config.h.in
@@ -15,9 +16,11 @@ config.rpath
 config.status
 config.sub
 configure
+depcomp
 gettext.m4
 glibc21.m4
 iconv.m4
+install-sh
 intdiv0.m4
 intmax.m4
 inttypes-pri.m4
@@ -43,6 +46,7 @@ libudf.pc
 longdouble.m4
 longlong.m4
 ltmain.sh
+missing
 mkinstalldirs
 nls.m4
 po.m4
