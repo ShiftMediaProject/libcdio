@@ -1,5 +1,5 @@
 /*
-  $Id: cdtext.c,v 1.6 2008/04/22 15:29:11 karl Exp $
+  $Id: cdtext.c,v 1.7 2008/06/16 22:41:44 flameeyes Exp $
 
   Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
   toc reading routine adapted from cuetools
@@ -37,7 +37,7 @@
 
 /*! Note: the order and number items (except CDTEXT_INVALID) should
   match the cdtext_field_t enumeration. */
-const char *cdtext_keywords[] = 
+static const char cdtext_keywords[][16] = 
   {
     "ARRANGER",
     "COMPOSER",
