@@ -1,5 +1,5 @@
 /*
-  $Id: scan_devices.c,v 1.32 2008/04/16 17:00:40 karl Exp $
+  $Id: scan_devices.c,v 1.33 2008/06/16 19:45:44 flameeyes Exp $
 
   Copyright (C) 2004, 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
@@ -41,19 +41,19 @@
 
 #define MAX_DEV_LEN 20 /* Safe because strings only come from below */
 /* must be absolute paths! */
-const char *scsi_cdrom_prefixes[]={
+static const char scsi_cdrom_prefixes[][16]={
   "/dev/scd",
   "/dev/sr",
-  NULL};
-const char *scsi_generic_prefixes[]={
+  ""};
+static const char scsi_generic_prefixes[][16]={
   "/dev/sg",
-  NULL};
+  ""};
 
-const char *devfs_scsi_test="/dev/scsi/";
-const char *devfs_scsi_cd="cd";
-const char *devfs_scsi_generic="generic";
+static const char devfs_scsi_test[]="/dev/scsi/";
+static const char devfs_scsi_cd[]="cd";
+static const char devfs_scsi_generic[]="generic";
 
-const char *cdrom_devices[]={
+static const char cdrom_devices[][32]={
   "/dev/cdrom",
   "/dev/cdroms/cdrom?",
   "/dev/hd?",
@@ -68,7 +68,8 @@ const char *cdrom_devices[]={
   /* "/dev/aztcd", timeout is too long */
   "/dev/cm206cd",
   "/dev/gscd",
-  "/dev/optcd",NULL};
+  "/dev/optcd",
+  ""};
 
 static cdrom_drive_t *
 cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device, 
@@ -84,7 +85,7 @@ cdio_cddap_find_a_cdrom(int messagedest, char **ppsz_messages){
   int i=0;
   cdrom_drive_t *d;
 
-  while(cdrom_devices[i]!=NULL){
+  while(*cdrom_devices[i]!='\0'){
 
     /* is it a name or a pattern? */
     char *pos;
