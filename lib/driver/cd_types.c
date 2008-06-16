@@ -1,5 +1,5 @@
 /*
-  $Id: cd_types.c,v 1.8 2008/04/22 15:29:11 karl Exp $
+  $Id: cd_types.c,v 1.9 2008/06/16 19:39:30 flameeyes Exp $
 
   Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -83,11 +83,11 @@ typedef struct signature
 {
   unsigned int buf_num;
   unsigned int offset;
-  const char *sig_str;
-  const char *description;
+  char sig_str[60];
+  char description[60];
 } signature_t;
 
-static signature_t sigs[] =
+static const signature_t sigs[] =
   {
 /*buffer[x] off look for     description */
     {0,     0, "MICROSOFT*XBOX*MEDIA", "XBOX CD"},
@@ -104,8 +104,7 @@ static signature_t sigs[] =
     {2,  1372, "\x54\x19\x01\x0", "UFS"}, 
     {3,     7, "EL TORITO",  "BOOTABLE"}, 
     {4,     0, "VIDEO_CD",   "VIDEO CD"}, 
-    {4,     0, "SUPERVCD",   "SVCD or Chaoji VCD"}, 
-    {0, 0, NULL, NULL }
+    {4,     0, "SUPERVCD",   "SVCD or Chaoji VCD"}
   };
 
 
@@ -158,7 +157,7 @@ _cdio_read_block(const CdIo_t *p_cdio, int superblock, uint32_t offset,
 static bool 
 _cdio_is_it(int num) 
 {
-  signature_t *sigp=&sigs[num];
+  const signature_t *sigp=&sigs[num];
   int len=strlen(sigp->sig_str);
 
   /* TODO: check that num < largest sig. */
