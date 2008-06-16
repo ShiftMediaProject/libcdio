@@ -20,7 +20,7 @@ define(RELEASE_NUM, 81)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.228 2008/06/14 22:41:29 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.229 2008/06/16 22:36:09 flameeyes Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -32,6 +32,7 @@ AM_INIT_AUTOMAKE([1.7])
 
 AC_CANONICAL_HOST
 AM_CONFIG_HEADER(config.h)
+AC_CONFIG_MACRO_DIR([m4])
 
 LIBCDIO_VERSION_NUM=`echo RELEASE_NUM | cut -d . -f 1 | tr -d a-z`
 AC_SUBST(LIBCDIO_VERSION_NUM)

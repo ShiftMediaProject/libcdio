@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.48 2008/06/13 15:54:49 flameeyes Exp $
+#   $Id: Makefile.am,v 1.49 2008/06/16 22:36:14 flameeyes Exp $
 #
 #   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -130,6 +130,6 @@ if MAINTAINER_MODE
 ChangeLog:
 	( cd $(srcdir); $(CVS2CL) -W 450 --header cvs2cl_header --utc -w -I ChangeLog --usermap cvs2cl_usermap -P --stdout ) > ChangeLog
 
-ACLOCAL_AMFLAGS=-I .
+ACLOCAL_AMFLAGS=-I m4
 
 endif
