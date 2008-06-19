@@ -1,5 +1,5 @@
 /*
-  $Id: buffering_write.h,v 1.3 2008/04/11 15:44:00 karl Exp $
+  $Id: buffering_write.h,v 1.4 2008/06/19 15:44:30 flameeyes Exp $
  
   Copyright (C) 2004, 2008 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty <xiphmont@mit.edu>
@@ -17,8 +17,6 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-extern long blocking_write(int outf, char *buffer, long i_num);
 
 /** buffering_write() - buffers data to a specified size before writing.
  *

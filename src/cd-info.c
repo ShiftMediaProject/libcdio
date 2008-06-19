@@ -1,5 +1,5 @@
 /*
-  $Id: cd-info.c,v 1.153 2008/04/14 17:30:26 karl Exp $
+  $Id: cd-info.c,v 1.154 2008/06/19 15:44:12 flameeyes Exp $
 
   Copyright (C) 2003, 2004, 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -64,13 +64,13 @@
 #define NORMAL ""
 
 #if CDIO_IOCTL_FINISHED
-struct cdrom_multisession  ms;
-struct cdrom_subchnl       sub;
+static struct cdrom_multisession  ms;
+static struct cdrom_subchnl       sub;
 #endif
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
-struct opts_s
+static struct opts_s
 {
   int            no_tracks;
   int            no_ioctl;
@@ -117,8 +117,6 @@ enum {
   OP_VERSION,  
   
 };
-
-char *temp_str;
 
 /* Parse source options. */
 static void
@@ -175,7 +173,7 @@ parse_options (int argc, char *argv[])
 {
   int opt; /* used for argument parsing */
 
-  const char* helpText =
+  static const char helpText[] =
     "Usage: %s [OPTION...]\n"
     "  -a, --access-mode=STRING        Set CD access method\n"
     "  -d, --debug=INT                 Set debugging to LEVEL\n"
@@ -243,7 +241,7 @@ parse_options (int argc, char *argv[])
     "  -?, --help                      Show this help message\n"
     "  --usage                         Display brief usage message\n";
   
-  const char* usageText = 
+  static const char usageText[] = 
     "Usage: %s [-a|--access-mode STRING] [-d|--debug INT] [-T|--no-tracks]\n"
     "        [-A|--no-analyze] [--no-cddb] [-P|--cddb-port INT] [-H|--cddb-http]\n"
     "        [--cddb-server=STRING] [--cddb-cache=STRING] [--cddb-email=STRING]\n"
@@ -255,8 +253,8 @@ parse_options (int argc, char *argv[])
     "        [--no-joliet] [--no-rock-ridge] [--no-xa] [-q|--quiet] [-V|--version]\n"
     "        [-?|--help] [--usage]\n";
 
-  const char* optionsString = "a:d:TAP:HvIb::c::N::t::i::C::lqV?";
-  struct option optionsTable[] = {
+  static const char optionsString[] = "a:d:TAP:HvIb::c::N::t::i::C::lqV?";
+  static const struct option optionsTable[] = {
     {"access-mode", required_argument, NULL, 'a'},
     {"debug", required_argument, NULL, 'd' },
     {"no-tracks", no_argument, NULL, 'T' },

@@ -1,5 +1,5 @@
 /*
-  $Id: cdda-player.c,v 1.49 2008/04/14 17:30:26 karl Exp $
+  $Id: cdda-player.c,v 1.50 2008/06/19 15:44:14 flameeyes Exp $
 
   Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -80,46 +80,46 @@ static void get_cdtext_track_info(track_t i_track);
 static void get_track_info(track_t i_track);
 static bool play_track(track_t t1, track_t t2);
 
-CdIo_t             *p_cdio;               /* libcdio handle */
-driver_id_t        driver_id = DRIVER_DEVICE;
-int b_sig = false;                                /* set on some signals */
+static CdIo_t             *p_cdio;               /* libcdio handle */
+static driver_id_t        driver_id = DRIVER_DEVICE;
+static int b_sig = false;                        /* set on some signals */
 
 /* cdrom data */
-track_t            i_first_track;
-track_t            i_last_track;
-track_t            i_first_audio_track;
-track_t            i_last_audio_track;
-track_t            i_last_display_track = CDIO_INVALID_TRACK;
-track_t            i_tracks;
-msf_t              toc[CDIO_CDROM_LEADOUT_TRACK+1];
-cdio_subchannel_t  sub;      /* subchannel last time read */
-int                i_data;     /* # of data tracks present ? */
-int                start_track = 0;
-int                stop_track = 0;
-int                one_track = 0;
-int                i_vol_port   = 5; /* If 5, retrieve volume port.
+static track_t            i_first_track;
+static track_t            i_last_track;
+static track_t            i_first_audio_track;
+static track_t            i_last_audio_track;
+static track_t            i_last_display_track = CDIO_INVALID_TRACK;
+static track_t            i_tracks;
+static msf_t              toc[CDIO_CDROM_LEADOUT_TRACK+1];
+static cdio_subchannel_t  sub;      /* subchannel last time read */
+static int                i_data;     /* # of data tracks present ? */
+static int                start_track = 0;
+static int                stop_track = 0;
+static int                one_track = 0;
+static int                i_vol_port   = 5; /* If 5, retrieve volume port.
 					 Otherwise the port number 0..3
 					 of a working volume port and 
 					 4 for no working port.
 				       */
 
 /* settings which can be set from the command or interactively. */
-bool               b_cd            = false;
-bool               auto_mode       = false;
-bool               b_verbose       = false;
-bool               debug           = false;
-bool               b_interactive   = true;
-bool               b_prefer_cdtext = true; 
-bool               b_cddb          = false; /* CDDB database present */
-bool               b_db            = false; /* we have a database at all */
-bool               b_record        = false; /* we have a record for
-					       the inserted CD */
-bool               b_all_tracks = false; /* True if we display all tracks*/
-int8_t             i_volume_level = -1;   /* Valid range is 0..100 */
+static bool               b_cd            = false;
+static bool               auto_mode       = false;
+static bool               b_verbose       = false;
+static bool               debug           = false;
+static bool               b_interactive   = true;
+static bool               b_prefer_cdtext = true; 
+static bool               b_cddb          = false; /* CDDB database present */
+static bool               b_db            = false; /* we have a database at all */
+static bool               b_record        = false; /* we have a record for
+static 					       the inserted CD */
+static bool               b_all_tracks = false; /* True if we display all tracks*/
+static int8_t             i_volume_level = -1;   /* Valid range is 0..100 */
 
 
-char *psz_device=NULL;
-char *psz_program;
+static char *psz_device=NULL;
+static char *psz_program;
 
 /* Info about songs and titles. The 0 entry will contain the disc info.
  */
@@ -132,30 +132,30 @@ typedef struct
   bool b_cdtext;  /* true if from CD-Text, false if from CDDB */
 } cd_track_info_rec_t;
 
-cd_track_info_rec_t cd_info[CDIO_CD_MAX_TRACKS+2];
+static cd_track_info_rec_t cd_info[CDIO_CD_MAX_TRACKS+2];
 
-char title[80];
-char artist[80];
-char genre[40];
-char category[40];
-char year[5];
+static char title[80];
+static char artist[80];
+static char genre[40];
+static char category[40];
+static char year[5];
 
-bool b_cdtext_title;     /* true if from CD-Text, false if from CDDB */
-bool b_cdtext_artist;    /* true if from CD-Text, false if from CDDB */
-bool b_cdtext_genre;     /* true if from CD-Text, false if from CDDB */
-bool b_cdtext_category;  /* true if from CD-Text, false if from CDDB */
-bool b_cdtext_year;  /* true if from CD-Text, false if from CDDB */
+static bool b_cdtext_title;     /* true if from CD-Text, false if from CDDB */
+static bool b_cdtext_artist;    /* true if from CD-Text, false if from CDDB */
+static bool b_cdtext_genre;     /* true if from CD-Text, false if from CDDB */
+static bool b_cdtext_category;  /* true if from CD-Text, false if from CDDB */
+static bool b_cdtext_year;  /* true if from CD-Text, false if from CDDB */
 
-cdio_audio_volume_t audio_volume;
+static cdio_audio_volume_t audio_volume;
 
 #ifdef HAVE_CDDB
-cddb_conn_t *p_conn = NULL;
-cddb_disc_t *p_cddb_disc = NULL;
-int i_cddb_matches = 0;
+static cddb_conn_t *p_conn = NULL;
+static cddb_disc_t *p_cddb_disc = NULL;
+static int i_cddb_matches = 0;
 #endif
 
 #define MAX_KEY_STR 50
-const char key_bindings[][MAX_KEY_STR] = {
+static const char key_bindings[][MAX_KEY_STR] = {
   "    right     play / next track",
   "    left      previous track",
   "    up/down   10 sec forward / back",
@@ -176,7 +176,7 @@ const char key_bindings[][MAX_KEY_STR] = {
   "    +         increase volume level",
 };
 
-const unsigned int i_key_bindings = sizeof(key_bindings) / MAX_KEY_STR;
+static const unsigned int i_key_bindings = sizeof(key_bindings) / MAX_KEY_STR;
 
 /* ---------------------------------------------------------------------- */
 /* tty stuff                                                              */
@@ -197,9 +197,9 @@ typedef enum {
 
 } track_line_t;
 
-unsigned int  LINE_ACTION = 25;
-unsigned int  COLS_LAST;
-char psz_action_line[300] = "";
+static unsigned int  LINE_ACTION = 25;
+static unsigned int  COLS_LAST;
+static char psz_action_line[300] = "";
 
 static int rounded_div(unsigned int i_a, unsigned int i_b) 
 {

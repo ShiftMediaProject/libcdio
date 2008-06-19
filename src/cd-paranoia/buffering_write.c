@@ -1,5 +1,5 @@
 /*
-  $Id: buffering_write.c,v 1.3 2008/04/11 15:44:00 karl Exp $
+  $Id: buffering_write.c,v 1.4 2008/06/19 15:44:28 flameeyes Exp $
  
   Copyright (C) 2004, 2008 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998, 1999 Monty <xiphmont@mit.edu>
@@ -39,7 +39,7 @@ static char bw_outbuf[OUTBUFSZ];
 
 
 
-long int
+static long int
 blocking_write(int outf, char *buffer, long num){
   long int words=0,temp;
 

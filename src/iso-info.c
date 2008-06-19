@@ -1,5 +1,5 @@
 /*
-  $Id: iso-info.c,v 1.39 2008/04/14 17:30:27 karl Exp $
+  $Id: iso-info.c,v 1.40 2008/06/19 15:44:16 flameeyes Exp $
 
   Copyright (C) 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -58,7 +58,7 @@
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
-struct arguments
+static struct arguments
 {
   uint32_t       debug_level;
   int            version_only;
@@ -82,16 +82,13 @@ enum {
   
 };
 
-char *temp_str;
-
-
 /* Parse a all options. */
 static bool
 parse_options (int argc, char *argv[])
 {
   int opt;
 
-  const char* helpText =
+  static const char helpText[] =
     "Usage: %s [OPTION...]\n"
     "  -d, --debug=INT        Set debugging to LEVEL\n"
     "  -i, --input[=FILE]     Filename to read ISO-9960 image from\n"
@@ -111,13 +108,13 @@ parse_options (int argc, char *argv[])
     "  -?, --help             Show this help message\n"
     "  --usage                Display brief usage message\n";
 
-  const char* usageText =
+  static const char usageText[] =
     "Usage: %s [-d|--debug INT] [-i|--input FILE] [-f] [-l|--iso9660]\n"
     "        [--no-header] [--no-joliet] [--no-rock-ridge] [--no-xa] [-q|--quiet]\n"
     "        [-V|--version] [-?|--help] [--usage]\n";
 
-  const char* optionsString = "d:i::flqV?";
-  struct option optionsTable[] = {
+  static const char optionsString[] = "d:i::flqV?";
+  static const struct option optionsTable[] = {
     {"debug", required_argument, NULL, 'd'},
     {"input", optional_argument, NULL, 'i'},
     {"iso9660", no_argument, NULL, 'l'},

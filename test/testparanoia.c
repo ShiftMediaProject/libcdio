@@ -1,5 +1,5 @@
 /*
-  $Id: testparanoia.c,v 1.13 2008/03/22 18:08:25 karl Exp $
+  $Id: testparanoia.c,v 1.14 2008/06/19 15:44:31 flameeyes Exp $
 
   Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -44,9 +44,9 @@
 #define SKIP_TEST_RC 77
 
 #define MAX_SECTORS 50
-uint8_t audio_buf[MAX_SECTORS][CDIO_CD_FRAMESIZE_RAW] = { {0}, };
-paranoia_cb_mode_t audio_status[MAX_SECTORS];
-unsigned int i = 0;
+static uint8_t audio_buf[MAX_SECTORS][CDIO_CD_FRAMESIZE_RAW] = { {0}, };
+static paranoia_cb_mode_t audio_status[MAX_SECTORS];
+static unsigned int i = 0;
 
 static void 
 callback(long int inpos, paranoia_cb_mode_t function)

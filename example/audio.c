@@ -1,5 +1,5 @@
 /*
-  $Id: audio.c,v 1.9 2008/03/24 15:30:55 karl Exp $
+  $Id: audio.c,v 1.10 2008/06/19 15:44:10 flameeyes Exp $
 
   Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
 
@@ -63,31 +63,31 @@
 
 static bool play_track(track_t t1, track_t t2);
 
-CdIo_t             *p_cdio = NULL;            /* libcdio handle */
-driver_id_t        driver_id = DRIVER_DEVICE;
+static CdIo_t             *p_cdio = NULL;            /* libcdio handle */
+static driver_id_t        driver_id = DRIVER_DEVICE;
 
 /* cdrom data */
-track_t            i_first_track;
-track_t            i_last_track;
-track_t            i_first_audio_track;
-track_t            i_last_audio_track;
-track_t            i_tracks;
-msf_t              toc[CDIO_CDROM_LEADOUT_TRACK+1];
-cdio_subchannel_t  sub;      /* subchannel last time read */
-int                i_data;     /* # of data tracks present ? */
-int                start_track = 0;
-int                stop_track = 0;
-int                one_track = 0;
+static track_t            i_first_track;
+static track_t            i_last_track;
+static track_t            i_first_audio_track;
+static track_t            i_last_audio_track;
+static track_t            i_tracks;
+static msf_t              toc[CDIO_CDROM_LEADOUT_TRACK+1];
+static cdio_subchannel_t  sub;      /* subchannel last time read */
+static int                i_data;     /* # of data tracks present ? */
+static int                start_track = 0;
+static int                stop_track = 0;
+static int                one_track = 0;
 
-bool               b_cd         = false;
-bool               auto_mode    = false;
-bool               b_verbose    = false;
-bool               debug        = false;
-bool               b_record = false; /* we have a record for
+static bool               b_cd         = false;
+static bool               auto_mode    = false;
+static bool               b_verbose    = false;
+static bool               debug        = false;
+static bool               b_record = false; /* we have a record for
 					the inserted CD */
 
-char *psz_device=NULL;
-char *psz_program;
+static char *psz_device=NULL;
+static char *psz_program;
 
 inline static void
 xperror(const char *psz_msg)

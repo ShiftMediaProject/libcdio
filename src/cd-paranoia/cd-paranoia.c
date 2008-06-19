@@ -1,5 +1,5 @@
 /*
-  $Id: cd-paranoia.c,v 1.36 2008/04/11 15:44:00 karl Exp $
+  $Id: cd-paranoia.c,v 1.37 2008/06/19 15:44:30 flameeyes Exp $
 
   Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
             (C) 1998 Monty <xiphmont@mit.edu>
@@ -282,13 +282,13 @@ static void usage(FILE *f)
   fprintf( f, usage_help);
 }
 
-long callbegin;
-long callend;
-long callscript=0;
+static long callbegin;
+static long callend;
+static long callscript=0;
 
 static int skipped_flag=0;
 static int abort_on_skip=0;
-FILE *logfile = NULL;
+static FILE *logfile = NULL;
 
 #if TRACE_PARANOIA
 static void
@@ -545,9 +545,9 @@ callback(long int inpos, paranoia_cb_mode_t function)
 }
 #endif /* !TRACE_PARANOIA */
 
-const char *optstring = "aBcCd:efg:hi:l:m:n:o:O:pqQrRsS:Tt:VvwWx:XYZz::";
+static const char optstring[] = "aBcCd:efg:hi:l:m:n:o:O:pqQrRsS:Tt:VvwWx:XYZz::";
 
-struct option options [] = {
+static const struct option options [] = {
 	{"abort-on-skip",             no_argument,       NULL, 'X'},
 	{"batch",                     no_argument,       NULL, 'B'},
 	{"disable-extra-paranoia",    no_argument,       NULL, 'Y'},

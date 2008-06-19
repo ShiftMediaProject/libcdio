@@ -1,5 +1,5 @@
 /*
-  $Id: cd-read.c,v 1.32 2008/04/14 17:30:26 karl Exp $
+  $Id: cd-read.c,v 1.33 2008/06/19 15:44:13 flameeyes Exp $
 
   Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
   
@@ -76,7 +76,7 @@ typedef struct
 
 
 /* Sub-options for --mode.  Note: entries must be sorted! */
-subopt_entry_t modes_sublist[] = {
+static const subopt_entry_t modes_sublist[] = {
   {"any",        READ_ANY},
   {"audio",      READ_AUDIO},
   {"m1f1",       READ_M1F1},
@@ -92,7 +92,7 @@ subopt_entry_t modes_sublist[] = {
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
-struct arguments
+static struct arguments
 {
   char          *access_mode; /* Access method driver should use for control */
   char          *output_file; /* file to output blocks if not NULL. */
@@ -155,7 +155,7 @@ compare_subopts(const void *key1, const void *key2)
    flag variable to true as well as the "show.all" false. 
 */
 static void
-process_suboption(const char *subopt, subopt_entry_t *sublist, const int num,
+process_suboption(const char *subopt, const subopt_entry_t *sublist, const int num,
                   const char *subopt_name) 
 {
   subopt_entry_t *subopt_rec = 
@@ -238,7 +238,7 @@ parse_options (int argc, char *argv[])
 {
   int opt;
 
-  const char* helpText =
+  static const char helpText[] =
     "Usage: %s [OPTION...]\n"
     "  -a, --access-mode=STRING        Set CD control access mode\n"
     "  -m, --mode=MODE-TYPE            set CD-ROM read mode (audio, auto, m1f1, m1f2,\n"
@@ -271,7 +271,7 @@ parse_options (int argc, char *argv[])
     "  -?, --help                      Show this help message\n"
     "  --usage                         Display brief usage message\n";
   
-  const char* usageText =
+  static const char usageText[] =
     "Usage: %s [-a|--access-mode STRING] [-m|--mode MODE-TYPE]\n"
     "        [-d|--debug INT] [-x|--hexdump] [--no-header] [--no-hexdump]\n"
     "        [-s|--start INT] [-e|--end INT] [-n|--number INT] [-b|--bin-file FILE]\n"
@@ -280,8 +280,8 @@ parse_options (int argc, char *argv[])
     "        [-V|--version] [-?|--help] [--usage]\n";
   
   /* Command-line options */
-  const char* optionsString = "a:m:d:xjs:e:n:b::c::i::C::N::t::o:V?";
-  struct option optionsTable[] = {
+  static const char optionsString[] = "a:m:d:xjs:e:n:b::c::i::C::N::t::o:V?";
+  static const struct option optionsTable[] = {
   
     {"access-mode", required_argument, NULL, 'a'},
     {"mode", required_argument, NULL, 'm'},

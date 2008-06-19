@@ -1,5 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.28 2008/04/14 17:30:26 karl Exp $
+  $Id: cd-drive.c,v 1.29 2008/06/19 15:44:10 flameeyes Exp $
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
-struct arguments
+static struct arguments
 {
   uint32_t       debug_level;
   int            version_only;
@@ -58,7 +58,7 @@ parse_options (int argc, char *argv[])
 {
   int opt;
 
-  const char* helpText =
+  static const char helpText[] =
     "Usage: %s [OPTION...]\n" 
     "  -d, --debug=INT                 Set debugging to LEVEL\n"
     "  -i, --cdrom-device[=DEVICE]     show only info about CD-ROM device\n"
@@ -70,12 +70,12 @@ parse_options (int argc, char *argv[])
     "  -?, --help                      Show this help message\n"
     "  --usage                         Display brief usage message\n";
   
-  const char* usageText =
+  static const char usageText[] =
     "Usage: %s [-d|--debug INT] [-i|--cdrom-device DEVICE] [-q|--quiet]\n"
     "        [-V|--version] [-?|--help] [--usage]\n";
 
-  const char* optionsString = "d:i::qV?";
-  struct option optionsTable[] = {
+  static const char optionsString[] = "d:i::qV?";
+  static const struct option optionsTable[] = {
     {"debug", required_argument, NULL, 'd' },
     {"cdrom-device", optional_argument, NULL, 'i' },
     {"quiet", no_argument, NULL, 'q' },

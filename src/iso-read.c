@@ -1,5 +1,5 @@
 /*
-  $Id: iso-read.c,v 1.15 2008/04/14 17:30:27 karl Exp $
+  $Id: iso-read.c,v 1.16 2008/06/19 15:44:19 flameeyes Exp $
 
   Copyright (C) 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
   
@@ -48,7 +48,7 @@
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
-struct arguments
+static struct arguments
 {
   char          *file_name; 
   char          *output_file; 
@@ -72,7 +72,7 @@ parse_options (int argc, char *argv[])
     OP_USAGE
   };
 
-  const char* helpText =
+  static const char helpText[] =
     "Usage: %s [OPTION...]\n"
     "  -d, --debug=INT            Set debugging to LEVEL.\n"
     "  -i, --image=FILE           Read from ISO-9660 image. This option is mandatory\n"
@@ -88,14 +88,14 @@ parse_options (int argc, char *argv[])
     "  -?, --help                 Show this help message\n"
     "  --usage                    Display brief usage message\n";
 
-  const char* usageText =
+  static const char usageText[] =
     "Usage: %s [-d|--debug INT] [-i|--image FILE] [-e|--extract FILE]\n"
     "        [--no-header] [-o|--output-file FILE] [-V|--version] [-?|--help]\n"
     "        [--usage]\n";
   
   /* Command-line options */
-  const char* optionsString = "d:i:e:o:Vk?";
-  struct option optionsTable[] = {
+  static const char* optionsString = "d:i:e:o:Vk?";
+  static const struct option optionsTable[] = {
     {"debug", required_argument, NULL, 'd' },
     {"image", required_argument, NULL, 'i' },
     {"extract", required_argument, NULL, 'e' },

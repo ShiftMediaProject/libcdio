@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: pod2c.pl,v 1.3 2008/04/14 17:30:27 karl Exp $
+# $Id: pod2c.pl,v 1.4 2008/06/19 15:44:31 flameeyes Exp $
 # Utility to turn pieces of pod text to help text.
 use File::Basename;
 
@@ -31,7 +31,7 @@ print "/*
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-const char ${name}_help[] =\n";
+static const char ${name}_help[] =\n";
 while(<STDIN>) {
   s/["]/\\"/g; 
   # Change POD'ed items to quoted items, e.g. See L<y> and L<z> becomes

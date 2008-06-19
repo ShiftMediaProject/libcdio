@@ -1,5 +1,5 @@
 /*
-  $Id: mmc-tool.c,v 1.11 2008/04/14 17:30:27 karl Exp $
+  $Id: mmc-tool.c,v 1.12 2008/06/19 15:44:24 flameeyes Exp $
 
   Copyright (C) 2006, 2008 Rocky Bernstein <rocky@gnu.org>
   
@@ -78,8 +78,8 @@ typedef struct
 
 enum { MAX_OPS = 10 };
 
-unsigned int last_op = 0;
-operation_t operation[MAX_OPS] = { {OP_FINISHED, {0}} };
+static unsigned int last_op = 0;
+static operation_t operation[MAX_OPS] = { {OP_FINISHED, {0}} };
 
 static void 
 push_op(operation_t *p_op) 
@@ -98,7 +98,7 @@ parse_options (int argc, char *argv[])
   operation_t op;
   int i_blocksize = 0;
 
-  const char* helpText =
+  static const char helpText[] =
     "Usage: %s [OPTION...]\n"
     " Issues libcdio Multimedia commands. Operations occur in the order\n"
     " in which the options are given and a given operation may appear\n"
@@ -127,14 +127,14 @@ parse_options (int argc, char *argv[])
     "  -?, --help                      Show this help message\n"
     "  --usage                         Display brief usage message\n";
   
-  const char* usageText =
+  static const char usageText[] =
     "Usage: %s [-b|--blocksize[=INT]] [-m|--mcn]\n"
     "        [-I|--idle] [-I|inquiry] [-m[-s|--speed-KB INT]\n"
     "        [-V|--version] [-?|--help] [--usage]\n";
   
   /* Command-line options */
-  const char* optionsString = "b::c:C::e::Iis:V?";
-  struct option optionsTable[] = {
+  static const char optionsString[] = "b::c:C::e::Iis:V?";
+  const struct option optionsTable[] = {
   
     {"blocksize", optional_argument, &i_blocksize, 'b' },
     {"close", required_argument, NULL, 'c'},
