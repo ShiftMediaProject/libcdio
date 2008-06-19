@@ -20,7 +20,7 @@ define(RELEASE_NUM, 81)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.229 2008/06/16 22:36:09 flameeyes Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.230 2008/06/19 13:41:40 flameeyes Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -43,41 +43,41 @@ AM_MAINTAINER_MODE
 
 AM_SANITY_CHECK
 
-AC_ARG_WITH(cd_drive,
+AC_ARG_WITH(cd-drive,
 [  --without-cd-drive       don't build program cd-drive (default with)],
 enable_cd_drive="${withval}", enable_cd_drive=yes)
 
-AC_ARG_WITH(cd_info,
+AC_ARG_WITH(cd-info,
 [  --without-cd-info        don't build program cd-info (default with)],
 enable_cd_info="${withval}", enable_cd_info=yes)
 
-AC_ARG_WITH(cd_paranoia,
+AC_ARG_WITH(cd-paranoia,
 [  --without-cd-paranoia    don't build program cd-paranoia and paranoia libraries (default with)],
 enable_cd_paranoia="${withval}", enable_cd_paranoia=yes)
 
-AC_ARG_WITH(cdda_player,
+AC_ARG_WITH(cdda-player,
 [  --without-cdda-player    don't build program cdda-player (default with)],
 enable_cdda_player="${withval}", enable_cdda_player=yes)
 
-AC_ARG_WITH(cd_paranoia_name,
+AC_ARG_WITH(cd-paranoia-name,
 [  --with-cd-paranoia-name  name to use as the cd-paranoia program name (default cd-paranoia)],
 cd_paranoia_name="${withval}", cd_paranoia_name="cd-paranoia")
 CDPARANOIA_NAME="$cd_paranoia_name"
 AC_SUBST(CDPARANOIA_NAME)
 
-AC_ARG_WITH(cd_read,
+AC_ARG_WITH(cd-read,
 [  --without-cd-read        don't build program cd-read (default with)],
 enable_cd_read="${withval}", enable_cd_read=yes)
 
-AC_ARG_WITH(iso_info,
+AC_ARG_WITH(iso-info,
 [  --without-iso-info       don't build program iso-info (default with)],
 enable_iso_info="${withval}", enable_iso_info=yes)
 
-AC_ARG_WITH(iso_read,
+AC_ARG_WITH(iso-read,
 [  --without-iso-read       don't build program iso-read (default with)],
 enable_iso_read="${withval}", enable_iso_read=yes)
 
-AC_ARG_WITH(versioned_libs,
+AC_ARG_WITH(versioned-libs,
 [  --without-versioned-libs build versioned library symbols (default enabled if you have GNU ld)],
 enable_versioned_libs="${withval}", enable_versioned_libs=yes)
 
@@ -85,11 +85,11 @@ AC_ARG_ENABLE([cxx],
 	AC_HELP_STRING([--disable-cxx], [Disable C++ bindings (default enabled)]))
 AM_CONDITIONAL([ENABLE_CXX_BINDINGS], [test "x$enable_cxx" != "xno"])
 
-AC_ARG_ENABLE(cpp_progs,
+AC_ARG_ENABLE(cpp-progs,
 	[  --enable-cpp-progs      make C++ example programs (default enabled)])
 AM_CONDITIONAL(ENABLE_CPP, test x"$enable_cpp_progs" = "xyes")
 
-AC_ARG_ENABLE(example_progs,
+AC_ARG_ENABLE(example-progs,
 	AC_HELP_STRING([--disable-example-progs], [Don't build libcdio sample programs]))
 
 AM_CONDITIONAL(BUILD_EXAMPLES, test "x$enable_example_progs" != "xno")
