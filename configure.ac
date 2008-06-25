@@ -20,7 +20,7 @@ define(RELEASE_NUM, 81)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.230 2008/06/19 13:41:40 flameeyes Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.231 2008/06/25 08:01:53 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -355,6 +355,9 @@ else
 fi
 dnl
 
+dnl Enable the creation of shared libraries under Win32.
+AC_LIBTOOL_WIN32_DLL
+
 dnl AM_PROG_LIBTOOL tests whether we have GNU ld
 dnl this must come before checking --with-versioned-libs
 dnl which requires GNU ld.
@@ -406,7 +409,7 @@ AM_CONDITIONAL(DISABLE_CPP, test "x$disable_cpp" = "xyes")
 dnl Checks for header files.
      
 LIBCDIO_CDDA_LIBS='$(top_builddir)/lib/cdda_interface/libcdio_cdda.la'
-LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/driver -I$(top_srcdir)/include/'
+LIBCDIO_CFLAGS='-I$(top_srcdir)/lib/driver -I$(top_builddir)/include -I$(top_srcdir)/include/'
 LIBCDIO_LIBS='$(top_builddir)/lib/driver/libcdio.la'
 LIBCDIO_DEPS="$LIBCDIO_LIBS"
 LIBCDIOPP_LIBS='$(top_builddir)/lib/cdio++/libcdio++.la'
@@ -426,6 +429,9 @@ AC_SUBST(LIBCDIO_DEPS)
 AC_SUBST(LIBCDIO_PARANOIA_LIBS)
 AC_SUBST(LIBISO9660_LIBS)
 AC_SUBST(LIBUDF_LIBS)
+
+dnl Libtool flag for strict linkage
+LT_NO_UNDEFINED=
 
 case $host_os in
      aix*)
@@ -502,11 +508,13 @@ int has_timeout=sizeof(test.timeout);],
 		   defined as a variable. In cygwin it is a function too])
 	;;
      mingw*)
+	AC_CHECK_HEADERS(windows.h)
 	AC_DEFINE([MINGW32], [1], 
                   [Define 1 if you are compiling using MinGW])
      	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
                   [Define 1 if you have MinGW CD-ROM support])
  	LIBS="$LIBS -lwinmm -mwindows"
+ 	LT_NO_UNDEFINED="-no-undefined"
   	cd_drivers="${cd_drivers}, MinGW "
 	;;
      freebsd4.*|freebsd5.*|freebsd6*|freebsd7*|dragonfly*|kfreebsd*)
@@ -526,6 +534,8 @@ int has_timeout=sizeof(test.timeout);],
 	AC_MSG_WARN([Will use generic support.])
 	;;
 esac
+
+AC_SUBST(LT_NO_UNDEFINED)
 
 AC_MSG_CHECKING(extern long timezone variable)
 AC_LINK_IFELSE([
@@ -561,7 +571,8 @@ AC_SUBST(LIBCDIO_SOURCE_PATH)
 
 AC_CHECK_FUNCS( [bzero drand48 ftruncate geteuid getgid \
 		 getuid getpwuid gettimeofday lstat memcpy memset \
-		 rand seteuid setegid snprintf  tzset vsnprintf readlink] )
+		 rand seteuid setegid snprintf setenv unsetenv tzset \
+		 sleep vsnprintf readlink gmtime_r localtime_r] )
 
 # check for timegm() support
 AC_CHECK_FUNC(timegm, AC_DEFINE(HAVE_TIMEGM,1,

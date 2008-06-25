@@ -1,5 +1,5 @@
 /*
-  $Id: cddb.h,v 1.5 2008/04/14 17:30:27 karl Exp $
+  $Id: cddb.h,v 1.6 2008/06/25 08:01:54 rocky Exp $
 
   Copyright (C) 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
   
@@ -37,7 +37,7 @@ cddb_opts_t cddb_opts;
       the total length of the disk, and 
       the number of tracks.
 */
-u_int32_t cddb_discid(CdIo_t *p_cdio, track_t i_tracks);
+uint32_t cddb_discid(CdIo_t *p_cdio, track_t i_tracks);
 
 #ifdef HAVE_CDDB
 #include <cddb/cddb.h>

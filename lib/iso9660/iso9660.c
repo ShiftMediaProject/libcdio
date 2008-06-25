@@ -1,5 +1,5 @@
 /*
-  $Id: iso9660.c,v 1.40 2008/06/03 08:40:15 rocky Exp $
+  $Id: iso9660.c,v 1.41 2008/06/25 08:01:54 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
     Rocky Bernstein <rocky@gnu.org>
@@ -57,6 +57,22 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <errno.h>
 #endif
 
+#ifndef HAVE_SETENV
+static int
+setenv(const char *envname, const char *envval, int overwrite)
+{
+  return -1;
+}
+#endif
+
+#ifndef HAVE_UNSETENV
+static int
+unsetenv(const char *envname)
+{
+  return -1;
+}
+#endif
+
 #ifndef HAVE_TIMEGM
 static time_t
 timegm(struct tm *tm)
@@ -77,7 +93,35 @@ timegm(struct tm *tm)
 }
 #endif
 
-static const char _rcsid[] = "$Id: iso9660.c,v 1.40 2008/06/03 08:40:15 rocky Exp $";
+#ifndef HAVE_GMTIME_R
+static struct tm *
+gmtime_r(const time_t *timer, struct tm *result)
+{
+    struct tm *tmp = gmtime(timer);
+
+    if (tmp) {
+        *result = *tmp;
+        return result;
+    }
+    return tmp;
+}
+#endif
+
+#ifndef HAVE_LOCALTIME_R
+static struct tm *
+localtime_r(const time_t *timer, struct tm *result)
+{
+    struct tm *tmp = localtime(timer);
+
+    if (tmp) {
+        *result = *tmp;
+        return result;
+    }
+    return tmp;
+}
+#endif
+
+static const char _rcsid[] = "$Id: iso9660.c,v 1.41 2008/06/25 08:01:54 rocky Exp $";
 
 /* Variables to hold debugger-helping enumerations */
 enum iso_enum1_s     iso_enums1;

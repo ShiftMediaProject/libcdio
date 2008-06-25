@@ -1,5 +1,5 @@
 /*
-  $Id: cdchange.c,v 1.8 2008/03/24 15:30:55 karl Exp $
+  $Id: cdchange.c,v 1.9 2008/06/25 08:01:53 rocky Exp $
 
   Copyright (C) 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
   
@@ -38,6 +38,22 @@
 #ifdef HAVE_ERRNO_H
 # include <errno.h>
 #endif 
+
+#ifdef HAVE_WINDOWS_H
+# include <windows.h>
+#endif
+
+#ifndef HAVE_SLEEP
+static void
+sleep(unsigned int ms)
+{
+#if defined(_WIN32)
+    Sleep(ms);
+#else
+#error sleep() unimplemented
+#endif
+}
+#endif
 
 #include <cdio/cdio.h>
 int

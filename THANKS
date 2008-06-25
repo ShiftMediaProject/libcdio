@@ -1,6 +1,9 @@
 Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
   some GNU/Linux and CD-Text patches
 
+Carlo Bramini 
+  fixes for Mingw+MSYS and DLL support
+
 Diego 'Flameeyes' Pettenò 
   patches to FreeBSD and making Gentoo-friendly
 

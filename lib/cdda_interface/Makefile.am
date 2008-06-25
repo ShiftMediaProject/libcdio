@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.14 2008/06/13 19:26:22 flameeyes Exp $
+#   $Id: Makefile.am,v 1.15 2008/06/25 08:01:53 rocky Exp $
 #
 #   Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -57,7 +57,7 @@ libcdio_cdda_sources =  common_interface.c cddap_interface.c interface.c \
 lib_LTLIBRARIES = libcdio_cdda.la
 
 libcdio_cdda_la_SOURCES = $(libcdio_cdda_sources)
-libcdio_cdda_la_ldflags = -version-info $(libcdio_cdda_la_CURRENT):$(libcdio_cdda_la_REVISION):$(libcdio_cdda_la_AGE)
+libcdio_cdda_la_ldflags = -version-info $(libcdio_cdda_la_CURRENT):$(libcdio_cdda_la_REVISION):$(libcdio_cdda_la_AGE) @LT_NO_UNDEFINED@
 
 INCLUDES = $(LIBCDIO_CFLAGS)
 

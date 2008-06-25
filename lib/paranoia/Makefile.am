@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.8 2008/03/20 19:02:38 karl Exp $
+#   $Id: Makefile.am,v 1.9 2008/06/25 08:01:54 rocky Exp $
 #
 #   Copyright (C) 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -56,7 +56,7 @@ libcdio_paranoia_sources = gap.c isort.c overlap.c overlap.h \
 lib_LTLIBRARIES = libcdio_paranoia.la
 
 libcdio_paranoia_la_SOURCES = $(libcdio_paranoia_sources)
-libcdio_paranoia_la_ldflags = -version-info $(libcdio_paranoia_la_CURRENT):$(libcdio_paranoia_la_REVISION):$(libcdio_paranoia_la_AGE)
+libcdio_paranoia_la_ldflags = -version-info $(libcdio_paranoia_la_CURRENT):$(libcdio_paranoia_la_REVISION):$(libcdio_paranoia_la_AGE) @LT_NO_UNDEFINED@
 
 INCLUDES = $(LIBCDIO_CFLAGS)
 

@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.16 2008/03/20 19:02:38 karl Exp $
+#   $Id: Makefile.am,v 1.17 2008/06/25 08:01:54 rocky Exp $
 #
 #   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
 #   Rocky Bernstein <rocky@gnu.org>
@@ -66,7 +66,7 @@ libiso9660_la_SOURCES = \
 	xa.c
 
 libiso9660_la_LIBADD = @LIBCDIO_LIBS@
-libiso9660_la_ldflags = -version-info $(libiso9660_la_CURRENT):$(libiso9660_la_REVISION):$(libiso9660_la_AGE)
+libiso9660_la_ldflags = -version-info $(libiso9660_la_CURRENT):$(libiso9660_la_REVISION):$(libiso9660_la_AGE) @LT_NO_UNDEFINED@
 libiso9660_la_dependencies = libcdio.la
 
 INCLUDES = $(LIBCDIO_CFLAGS)

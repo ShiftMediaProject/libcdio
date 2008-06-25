@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.8 2008/03/20 19:02:38 karl Exp $
+#   $Id: Makefile.am,v 1.9 2008/06/25 08:01:54 rocky Exp $
 #
 #   Copyright (C) 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -50,7 +50,7 @@ libcdiopp_la_AGE = 0
 libcdiopp_sources = cdio.cpp devices.cpp
 
 libcdio___la_SOURCES = $(libcdiopp_sources)
-libcdio___la_ldflags = -version-info $(libcdiopp_la_CURRENT):$(libcdiopp_la_REVISION):$(libcdiopp_la_AGE)
+libcdio___la_ldflags = -version-info $(libcdiopp_la_CURRENT):$(libcdiopp_la_REVISION):$(libcdiopp_la_AGE) @LT_NO_UNDEFINED@
 
 libiso9660pp_la_CURRENT = 0
 libiso9660pp_la_REVISION = 0
@@ -59,6 +59,6 @@ libiso9660pp_la_AGE = 0
 libiso9660pp_sources = iso9660.cpp
 
 libiso9660___la_SOURCES = $(libiso9660pp_sources)
-libiso9660___la_ldflags = -version-info $(libiso9660pp_la_CURRENT):$(libiso9660pp_la_REVISION):$(libiso9660pp_la_AGE)
+libiso9660___la_ldflags = -version-info $(libiso9660pp_la_CURRENT):$(libiso9660pp_la_REVISION):$(libiso9660pp_la_AGE) @LT_NO_UNDEFINED@
 
-INCLUDES = -I$(top_srcdir)/include/
+INCLUDES = -I$(top_srcdir)/include/ -I$(top_builddir)/include

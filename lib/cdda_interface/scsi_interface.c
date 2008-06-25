@@ -1,5 +1,5 @@
 /*
-  $Id: scsi_interface.c,v 1.4 2008/06/13 19:26:23 flameeyes Exp $
+  $Id: scsi_interface.c,v 1.5 2008/06/25 08:01:53 rocky Exp $
 
   Copyright (C) 2004, 2008 Rocky Bernstein <rocky@gnu.org>
   Original interface.c Copyright (C) 1994-1997 
@@ -575,7 +575,7 @@ scsi_read_toc (cdrom_drive_t *d)
 static int 
 scsi_read_toc2 (cdrom_drive_t *d)
 {
-  u_int32_t foo,bar;
+  uint32_t foo,bar;
 
   int i;
   track_t i_tracks;
