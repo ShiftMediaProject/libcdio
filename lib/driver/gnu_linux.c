@@ -1,5 +1,5 @@
 /*
-  $Id: gnu_linux.c,v 1.32 2008/06/13 19:33:13 flameeyes Exp $
+  $Id: gnu_linux.c,v 1.33 2008/06/25 07:46:21 rocky Exp $
 
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008 
@@ -27,7 +27,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.32 2008/06/13 19:33:13 flameeyes Exp $";
+static const char _rcsid[] = "$Id: gnu_linux.c,v 1.33 2008/06/25 07:46:21 rocky Exp $";
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -1327,8 +1327,9 @@ set_arg_linux (void *p_user_data, const char key[], const char value[])
 
 /* checklist: /dev/cdrom, /dev/dvd /dev/hd?, /dev/scd? /dev/sr? */
 static const char checklist1[][40] = {
-  {"cdrom"}, {"dvd"}, {""}
+  {"cdrom"}, {"dvd"}
 };
+static const int checklist1_size = sizeof(checklist1) / sizeof(checklist1[0]);
 
 static const struct
   {
@@ -1341,8 +1342,9 @@ checklist2[] =
     { "/dev/hd%c",  'a', 'z' },
     { "/dev/scd%d", 0,   27 },
     { "/dev/sr%d",  0,   27 },
-    { /* End of array */ }
   };
+static const int checklist2_size = sizeof(checklist2) / sizeof(checklist2[0]);
+
 
 /* Set CD-ROM drive speed */
 static driver_return_code_t
@@ -1373,8 +1375,9 @@ cdio_get_devices_linux (void)
 
   /* Scan the system for CD-ROM drives.
   */
-  for ( i=0; strlen(checklist1[i]) > 0; ++i ) {
-    sprintf(drive, "/dev/%s", checklist1[i]);
+  for ( i=0; i < checklist1_size; ++i ) {
+    if (snprintf(drive, sizeof(drive), "/dev/%s", checklist1[i]) < 0)
+      continue;
     if ( is_cdrom_linux(drive, NULL) > 0 ) {
       cdio_add_device_list(&drives, drive, &num_drives);
     }
@@ -1395,10 +1398,11 @@ cdio_get_devices_linux (void)
   /* Scan the system for CD-ROM drives.
      Not always 100% reliable, so use the USE_MNTENT code above first.
   */
-  for ( i=0; checklist2[i].format; ++i ) {
+  for ( i=0; i < checklist2_size; ++i ) {
     unsigned int j;
     for ( j=checklist2[i].num_min; j<=checklist2[i].num_max; ++j ) {
-      sprintf(drive, checklist2[i].format, j);
+      if (snprintf(drive, sizeof(drive), checklist2[i].format, j) < 0)
+        continue;
       if ( (is_cdrom_linux(drive, NULL)) > 0 ) {
 	cdio_add_device_list(&drives, drive, &num_drives);
       }
@@ -1426,7 +1430,8 @@ cdio_get_default_device_linux(void)
   /* Scan the system for CD-ROM drives.
   */
   for ( i=0; strlen(checklist1[i]) > 0; ++i ) {
-    sprintf(drive, "/dev/%s", checklist1[i]);
+    if (snprintf(drive, sizeof(drive), "/dev/%s", checklist1[i]) < 0)
+      continue;
     if ( is_cdrom_linux(drive, NULL) > 0 ) {
       return strdup(drive);
     }
@@ -1446,7 +1451,8 @@ cdio_get_default_device_linux(void)
   for ( i=0; checklist2[i].format; ++i ) {
     unsigned int j;
     for ( j=checklist2[i].num_min; j<=checklist2[i].num_max; ++j ) {
-      sprintf(drive, checklist2[i].format, j);
+      if (snprintf(drive, sizeof(drive), checklist2[i].format, j) < 0)
+        continue;
       if ( is_cdrom_linux(drive, NULL) > 0 ) {
 	return(strdup(drive));
       }
