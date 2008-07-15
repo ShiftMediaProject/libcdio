@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.100 2008/07/15 12:00:54 rocky Exp $
+    $Id: iso9660.h,v 1.101 2008/07/15 13:37:30 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
                   Rocky Bernstein <rocky@gnu.org>
@@ -67,6 +67,7 @@ typedef char     dchar_t;  /*! See section 7.4.1 */
 #include <cdio/types.h>
 #include <cdio/xa.h>
 
+/* This part borrowed from the bsd386 isofs */
 #define	ISODCL(from, to)	((to) - (from) + 1)
 
 #define MIN_TRACK_SIZE 4*75
@@ -1098,6 +1099,7 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
 }
 #endif /* __cplusplus */
 
+#undef ISODCL
 #endif /* __CDIO_ISO9660_H__ */
 
 /* 
