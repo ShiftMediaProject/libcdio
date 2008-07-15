@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.99 2008/05/28 01:48:37 rocky Exp $
+    $Id: iso9660.h,v 1.100 2008/07/15 12:00:54 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
                   Rocky Bernstein <rocky@gnu.org>
@@ -8,7 +8,6 @@
     See also iso9660.h by Eric Youngdale (1993).
 
     Copyright 1993 Yggdrasil Computing, Incorporated
-    Copyright (c) 1999,2000 J. Schilling
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -68,7 +67,7 @@ typedef char     dchar_t;  /*! See section 7.4.1 */
 #include <cdio/types.h>
 #include <cdio/xa.h>
 
-#define	_delta(from, to)	((to) - (from) + 1)
+#define	ISODCL(from, to)	((to) - (from) + 1)
 
 #define MIN_TRACK_SIZE 4*75
 #define MIN_ISO_SIZE MIN_TRACK_SIZE
@@ -202,18 +201,18 @@ typedef struct iso9660_dtime_s  iso9660_dtime_t;
   @see iso9660_ltime
  */
 struct	iso9660_ltime_s {
-  char	 lt_year	[_delta(   1,	4)];   /**< Add 1900 to value
+  char	 lt_year	[ISODCL(   1,	4)];   /**< Add 1900 to value
                                                     for the Julian
                                                     year */
-  char	 lt_month	[_delta(   5,	6)];   /**< Has value in range
+  char	 lt_month	[ISODCL(   5,	6)];   /**< Has value in range
                                                   1..12. Note starts
                                                   at 1, not 0 like a
                                                   tm struct. */
-  char	 lt_day		[_delta(   7,	8)];   /**< Day of month: 1..31 */
-  char	 lt_hour	[_delta(   9,	10)];  /**< hour: 0..23 */
-  char	 lt_minute	[_delta(  11,	12)];  /**< minute: 0..59 */
-  char	 lt_second	[_delta(  13,	14)];  /**< second: 0..59 */
-  char	 lt_hsecond	[_delta(  15,	16)];  /**< The value is in
+  char	 lt_day		[ISODCL(   7,	8)];   /**< Day of month: 1..31 */
+  char	 lt_hour	[ISODCL(   9,	10)];  /**< hour: 0..23 */
+  char	 lt_minute	[ISODCL(  11,	12)];  /**< minute: 0..59 */
+  char	 lt_second	[ISODCL(  13,	14)];  /**< second: 0..59 */
+  char	 lt_hsecond	[ISODCL(  15,	16)];  /**< The value is in
                                                   units of 1/100's of
                                                   a second */
   iso712_t lt_gmtoff;  /**< Offset from Greenwich Mean Time in number
