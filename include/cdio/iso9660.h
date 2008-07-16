@@ -1,5 +1,5 @@
 /*
-    $Id: iso9660.h,v 1.101 2008/07/15 13:37:30 rocky Exp $
+    $Id: iso9660.h,v 1.102 2008/07/16 00:28:54 rocky Exp $
 
     Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
                   Rocky Bernstein <rocky@gnu.org>
@@ -67,6 +67,9 @@ typedef char     dchar_t;  /*! See section 7.4.1 */
 #include <cdio/types.h>
 #include <cdio/xa.h>
 
+#ifdef ISODCL
+#undef ISODCL
+#endif
 /* This part borrowed from the bsd386 isofs */
 #define	ISODCL(from, to)	((to) - (from) + 1)
 
