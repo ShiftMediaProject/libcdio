@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.25 2008/06/25 07:46:20 rocky Exp $
+#   $Id: Makefile.am,v 1.26 2008/08/31 13:38:22 flameeyes Exp $
 #
 #   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
 #   Rocky Bernstein <rocky@gnu.org>
@@ -98,7 +98,7 @@ libcdio_sources = \
 	util.c
 
 lib_LTLIBRARIES    = libcdio.la
-libcdio_la_LIBADD  = @LIBICONV@
+libcdio_la_LIBADD  = $(LTLIBICONV)@
 
 libcdio_la_SOURCES = $(libcdio_sources)
 libcdio_la_ldflags = -version-info $(libcdio_la_CURRENT):$(libcdio_la_REVISION):$(libcdio_la_AGE) @LT_NO_UNDEFINED@

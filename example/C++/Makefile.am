@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.12 2008/03/20 19:02:37 karl Exp $
+#   $Id: Makefile.am,v 1.13 2008/08/31 13:38:21 flameeyes Exp $
 #
 #   Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -49,11 +49,11 @@ paranoia2_LDADD   = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) \
 endif
 
 isofile_SOURCES   = isofile.cpp
-isofile_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+isofile_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 isofile2_SOURCES  = isofile2.cpp
-isofile2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+isofile2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 isolist_SOURCES   = isolist.cpp
-isolist_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+isolist_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 mmc1_SOURCES      = mmc1.cpp
 mmc1_DEPENDENCIES = $(LIBCDIO_DEPS)

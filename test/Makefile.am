@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.68 2008/06/14 08:27:20 flameeyes Exp $
+#   $Id: Makefile.am,v 1.69 2008/08/31 13:38:22 flameeyes Exp $
 #
 #   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -25,7 +25,7 @@
 
 if BUILD_CD_PARANOIA
 testparanoia=testparanoia
-testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 endif
 
 hack = check_sizeof testassert  testbincue testischar \
@@ -36,25 +36,25 @@ EXTRA_PROGRAMS = testdefault
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 
-check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-testassert_LDADD    = $(LIBCDIO_LIBS) $(LIBICONV)
-testdefault_LDADD   = $(LIBCDIO_LIBS) $(LIBICONV)
-testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+testassert_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
+testdefault_LDADD   = $(LIBCDIO_LIBS) $(LTLIBICONV)
+testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
-testisocd_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
-testisocd2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LIBICONV)
+testisocd_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+testisocd2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
-testtoc_LDADD       = $(LIBCDIO_LIBS) $(LIBICONV)
+testtoc_LDADD       = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testtoc_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
 
-testpregap_LDADD    = $(LIBCDIO_LIBS) $(LIBICONV)
+testpregap_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testpregap_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
-testbincue_LDADD    = $(LIBCDIO_LIBS) $(LIBICONV)
+testbincue_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testbincue_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
-testnrg_LDADD       = $(LIBCDIO_LIBS) $(LIBICONV)
+testnrg_LDADD       = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testnrg_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
