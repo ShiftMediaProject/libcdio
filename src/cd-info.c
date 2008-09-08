@@ -1,5 +1,5 @@
 /*
-  $Id: cd-info.c,v 1.154 2008/06/19 15:44:12 flameeyes Exp $
+  $Id: cd-info.c,v 1.155 2008/09/08 14:45:12 rocky Exp $
 
   Copyright (C) 2003, 2004, 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
@@ -24,12 +24,12 @@
 */
 
 #include "util.h"
-#include "cddb.h"
 #include "getopt.h"
 #include <stdarg.h>
 
 #ifdef HAVE_CDDB
 #include <cddb/cddb.h>
+#include "cddb.h"
 #endif
 
 #ifdef HAVE_VCDINFO
@@ -303,6 +303,7 @@ parse_options (int argc, char *argv[])
     case 'd': opts.debug_level = atoi(optarg); break;
     case 'T': opts.no_tracks = 1; break;
     case 'A': opts.no_analysis = 1; break;
+#ifdef HAVE_CDDB
     case 'P': cddb_opts.port = atoi(optarg); break;
     case 'H': cddb_opts.http = 1; break;
     case OP_CDDB_SERVER: cddb_opts.server = strdup(optarg); break;
@@ -310,6 +311,7 @@ parse_options (int argc, char *argv[])
     case OP_CDDB_EMAIL: cddb_opts.email = strdup(optarg); break;
     case OP_CDDB_NOCACHE: cddb_opts.disable_cache = 1; break;
     case OP_CDDB_TIMEOUT: cddb_opts.timeout = atoi(optarg); break;
+#endif
     case 'v': opts.no_vcd = 1; break;
     case 'I': opts.no_ioctl = 1; break;
     case 'b': parse_source(OP_SOURCE_BIN); break;
@@ -627,9 +629,9 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
   switch(CDIO_FSTYPE(fs)) {
   case CDIO_FS_AUDIO:
     if (num_audio > 0) {
+#ifdef HAVE_CDDB
       printf("Audio CD, CDDB disc ID is %08x\n", 
 	     cddb_discid(p_cdio, i_tracks));
-#ifdef HAVE_CDDB
       if (!opts.no_cddb) print_cddb_info(p_cdio, i_tracks, i_first_track);
 #endif      
       print_cdtext_info(p_cdio, i_tracks, i_first_track);
