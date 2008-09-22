@@ -185,7 +185,7 @@ inordinately complicated and in some places arcane.}
 Finally at the hardware level where a similar chaos exists, there has
 been an attempt to do something similar with the MMC (multimedia
 commands). This attempts to provide a uniform command set for CD
-devices PostScript does for printer commands.@footnote{I wrote
+devices like PostScript does for printer commands.@footnote{I wrote
 ``attempts'' because over time the command set has changed and now
 there are several different commands to do a particular function like
 read a CD table of contents and some hardware understands some of the
