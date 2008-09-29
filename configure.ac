@@ -20,7 +20,7 @@ define(RELEASE_NUM, 81)
 define(CDIO_VERSION_STR, 0.$1cvs)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.231 2008/06/25 08:01:53 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.232 2008/09/29 03:34:49 flameeyes Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -785,45 +785,9 @@ head -n 233 config.h >> include/cdio/cdio_config.h
 AC_OUTPUT
 
 echo "Using CD-ROM drivers: $cd_drivers"
-echo -n "Building cd-paranoia: "
-if test "x$enable_cd_paranoia" = "xyes"
-then
-echo "yes"
-else
-echo "no"
-fi
-echo -n "Building cd-info    : "
-if test "x$enable_cd_info" = "xyes" 
-then
-echo "yes"
-else
-echo "no"
-fi
-echo -n "Building cd-read    : "
-if test "x$enable_cd_read" = "xyes" 
-then
-echo "yes"
-else
-echo "no"
-fi
-echo -n "Building cdda-player: "
-if test "x$enable_cdda_player" = "xyes" 
-then
-echo "yes"
-else
-echo "no"
-fi
-echo -n "Building iso-info   : "
-if test "x$enable_iso_info" = "xyes" 
-then
-echo "yes"
-else
-echo "no"
-fi
-echo -n "Building iso-read   : "
-if test "x$enable_iso_read" = "xyes" 
-then
-echo "yes"
-else
-echo "no"
-fi
+echo "Building cd-paranoia: $(test "x$enable_cd_paranoia" = "xyes" && echo yes || echo no)"
+echo "Building cd-info    : $(test "x$enable_cd_info" = "xyes" && echo yes || echo no)"
+echo "Building cd-read    : $(test "x$enable_cd_read" = "xyes" && echo yes || echo no)"
+echo "Building cdda-player: $(test "x$enable_cdda_player" = "xyes" && echo yes || echo no)"
+echo "Building iso-info   : $(test "x$enable_iso_info" = "xyes" && echo yes || echo no)"
+echo "Building iso-read   : $(test "x$enable_iso_read" = "xyes" && echo yes || echo no)"
