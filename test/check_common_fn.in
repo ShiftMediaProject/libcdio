@@ -1,4 +1,4 @@
-#   $Id: check_common_fn.in,v 1.13 2008/03/22 18:08:25 karl Exp $
+#   $Id: check_common_fn.in,v 1.14 2008/10/17 01:51:43 rocky Exp $
 #
 #   Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -52,7 +52,7 @@ test_cdinfo() {
   outfile="$2"
   rightfile="$3"
 
-  CD_INFO="../src/cd-info"
+  CD_INFO="../src/cd-info@EXEEXT@"
 
   if [ ! -x ${CD_INFO} ]; then
     echo "$0: No ${CD_INFO}"
@@ -85,7 +85,7 @@ test_iso_info() {
   outfile="$2"
   rightfile="$3"
 
-  ISO_INFO="../src/iso-info"
+  ISO_INFO="../src/iso-info@EXEEXT@"
 
   if [ ! -x ${ISO_INFO} ]; then
     echo "$0: No ${ISO_INFO}"
@@ -119,7 +119,7 @@ test_iso_read() {
   outfile="$2"
   rightfile="$3"
 
-  ISO_READ="../src/iso-read"
+  ISO_READ="../src/iso-read@EXEEXT@"
 
   if [ ! -x ${ISO_READ} ]; then
     echo "$0: No ${ISO_READ}"
@@ -152,7 +152,7 @@ test_cd_read() {
   outfile="$2"
   rightfile="$3"
 
-  CD_READ="../src/cd-read"
+  CD_READ="../src/cd-read@EXEEXT@"
 
   if [ ! -x ${CD_READ} ]; then
     echo "$0: No ${CD_READ}"

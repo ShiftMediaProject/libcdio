@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_paranoia.sh.in,v 1.17 2008/03/20 00:45:56 edsdead Exp $
+# $Id: check_paranoia.sh.in,v 1.18 2008/10/17 01:51:47 rocky Exp $
 # Compare our cd-paranoia with known good results.
 
 if test "X$srcdir" = "X" ; then
@@ -15,7 +15,8 @@ if test "X$top_srcdir" = "X" ; then
 fi
 
 if test "@CMP@" != no -a "@BUILD_CD_PARANOIA_TRUE@"X = X ; then
-  $top_srcdir/src/cd-paranoia/cd-paranoia -d $srcdir/cdda.cue -v -r -- "1-"
+  cd_paranoia=$top_builddir/src/cd-paranoia/cd-paranoia@EXEEXT@ 
+  $cd_paranoia -d $srcdir/cdda.cue -v -r -- "1-"
   if test $? -ne 0 ; then
     exit 6
   fi
@@ -28,9 +29,9 @@ if test "@CMP@" != no -a "@BUILD_CD_PARANOIA_TRUE@"X = X ; then
     exit 3
   fi
   mv cdda.raw cdda-good.raw
-  $top_builddir/src/cd-paranoia/cd-paranoia -d $srcdir/cdda.cue -x 64 -v -r -- "1-"
+  $cd_paranoia -d $srcdir/cdda.cue -x 64 -v -r -- "1-"
   mv cdda.raw cdda-underrun.raw
-  $top_builddir/src/cd-paranoia/cd-paranoia -d $srcdir/cdda.cue -r -- "1-"
+  $cd_paranoia -d $srcdir/cdda.cue -r -- "1-"
   if test $? -ne 0 ; then
     exit 6
   fi
@@ -41,7 +42,7 @@ if test "@CMP@" != no -a "@BUILD_CD_PARANOIA_TRUE@"X = X ; then
     exit 3
   fi
   # Start out with small jitter
-  $top_builddir/src/cd-paranoia/cd-paranoia -l ./cd-paranoia.log -d $srcdir/cdda.cue -x 5 -v -r -- "1-"
+  $cd_paranoia -l ./cd-paranoia.log -d $srcdir/cdda.cue -x 5 -v -r -- "1-"
   if test $? -ne 0 ; then
     exit 6
   fi
@@ -61,7 +62,7 @@ if test "@CMP@" != no -a "@BUILD_CD_PARANOIA_TRUE@"X = X ; then
     exit 4
   fi
   # A more massive set of failures: underrun + small jitter
-  $top_builddir/src/cd-paranoia/cd-paranoia -d $srcdir/cdda.cue -x 69 -v -r -- "1-"
+  $cd_paranoia -d $srcdir/cdda.cue -x 69 -v -r -- "1-"
   if test $? -ne 0 ; then
     exit 6
   fi

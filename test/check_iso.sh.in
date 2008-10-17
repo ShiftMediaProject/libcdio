@@ -1,5 +1,5 @@
 #!/bin/sh
-#$Id: check_iso.sh.in,v 1.14 2007/12/28 02:11:01 rocky Exp $
+#$Id: check_iso.sh.in,v 1.15 2008/10/17 01:51:47 rocky Exp $
 
 if test -z $srcdir ; then
   srcdir=`pwd`
@@ -11,7 +11,7 @@ fi
 
 . ${top_builddir}/test/check_common_fn
 
-if test ! -x ../src/iso-info ; then
+if test ! -x ../src/iso-info@EXEEXT@ ; then
   exit 77
 fi
 
