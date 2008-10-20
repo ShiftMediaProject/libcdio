@@ -1,6 +1,7 @@
-$Id: NEWS,v 1.123 2008/06/03 08:40:14 rocky Exp $
+$Id: NEWS,v 1.124 2008/10/20 01:10:19 rocky Exp $
 
-version 0.81cvs
+version 0.81
+2008-10-27
 
 - license of manual now GFDL 1.2 or later, with no invariant sections.
   Source is GPL 3.
@@ -23,6 +24,8 @@ version 0.81cvs
 
 - Make iso9660 time setting/getting routines (iso9660_{g,s}et_{d,l}time)
   reentrant and remove bugs in that code. Courtesy Nicolas Boullis.
+
+- OSX fixes
 
 version 0.80
 2008-03-15
@@ -427,4 +430,4 @@ version 0.1
 
   Routines split off from VCDImager.
 
-$Id: NEWS,v 1.123 2008/06/03 08:40:14 rocky Exp $
+$Id: NEWS,v 1.124 2008/10/20 01:10:19 rocky Exp $
