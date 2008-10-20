@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.9 2008/06/25 08:01:54 rocky Exp $
+#   $Id: Makefile.am,v 1.10 2008/10/20 01:25:15 rocky Exp $
 #
 #   Copyright (C) 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -45,7 +45,7 @@
 EXTRA_DIST = libcdio_paranoia.sym
 
 libcdio_paranoia_la_CURRENT = 0
-libcdio_paranoia_la_REVISION = 2
+libcdio_paranoia_la_REVISION = 3
 libcdio_paranoia_la_AGE = 0
 
 noinst_HEADERS  = gap.h isort.h overlap.h p_block.h

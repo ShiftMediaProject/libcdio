@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.17 2008/06/25 08:01:54 rocky Exp $
+#   $Id: Makefile.am,v 1.18 2008/10/20 01:25:15 rocky Exp $
 #
 #   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
 #   Rocky Bernstein <rocky@gnu.org>
@@ -42,9 +42,9 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libiso9660_la_CURRENT = 6
+libiso9660_la_CURRENT = 7
 libiso9660_la_REVISION = 0
-libiso9660_la_AGE = 1
+libiso9660_la_AGE = 0
 
 EXTRA_DIST = libiso9660.sym
 
