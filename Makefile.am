@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.49 2008/06/16 22:36:14 flameeyes Exp $
+#   $Id: Makefile.am,v 1.50 2008/10/25 13:56:15 rocky Exp $
 #
 #   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -18,6 +18,8 @@
 ## Process this file with automake to produce Makefile.in
 ##   which configure then turns into a Makefile  ...
 ##     which make can then use to produce stuff. Isn't configuration simple? 
+
+AUTOMAKE_OPTIONS = dist-bzip2
 
 EXTRA_DIST = \
 	MSVC/README MSVC/cd-info.vcproj \
