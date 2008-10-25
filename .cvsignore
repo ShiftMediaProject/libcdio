@@ -32,6 +32,7 @@ lib-ld.m4
 lib-link.m4
 lib-prefix.m4
 libcdio*.tar.gz
+libcdio*.tar.bz2
 libcdio*.tar.gz.directive
 libcdio*.tar.gz.directive.asc
 libcdio*.tar.gz.sig
