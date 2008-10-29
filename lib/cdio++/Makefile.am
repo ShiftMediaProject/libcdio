@@ -1,4 +1,4 @@
-#   $Id: Makefile.am,v 1.10 2008/10/20 01:25:15 rocky Exp $
+#   $Id: Makefile.am,v 1.11 2008/10/29 09:53:00 rocky Exp $
 #
 #   Copyright (C) 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
 #
@@ -59,6 +59,7 @@ libiso9660pp_la_AGE = 0
 libiso9660pp_sources = iso9660.cpp
 
 libiso9660___la_SOURCES = $(libiso9660pp_sources)
+libiso9660___la_LIBADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) 
 libiso9660___la_ldflags = -version-info $(libiso9660pp_la_CURRENT):$(libiso9660pp_la_REVISION):$(libiso9660pp_la_AGE) @LT_NO_UNDEFINED@
 
 INCLUDES = -I$(top_srcdir)/include/ -I$(top_builddir)/include
