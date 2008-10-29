@@ -20,11 +20,11 @@ define(RELEASE_NUM, 82cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.233 2008/10/29 09:53:00 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.234 2008/10/29 09:55:22 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
-dnl For multilanguage manual pages (e.g. japanese cdparaoia) we use
+dnl For multilanguage manual pages (e.g. japanese cdparanoia) we use
 dnl $make_p and according to Steve Schultz this is a make_p is a 1.8
 dnl feature.
 
