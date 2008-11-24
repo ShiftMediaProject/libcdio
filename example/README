@@ -1,0 +1,38 @@
+A description of the example programs.
+
+audio.py      show mostly audio (analog) controls. Can be used to play
+	      a CD. Because libcdio supports Disc Images as well as a real
+	      CD-ROM, a CDRWIN (BIN/CUE), cdrdao (TOC) or Nero NRG disc
+	      image can be played as well. Run --help to get a list of 
+              options
+
+cdchange.py:  A program to test if a CD has been changed since the last
+	      change test.
+
+device.py     A program to show drive capabilities..
+	      Various drives on various OS/s may or may not report
+              information correctly. (Perhaps someday libcdio will figure
+	      out enough work arounds. voluneteers welcome!)
+
+drives.py:    A program list CD-ROMs and CD properties in the drives.
+	      Various drives on various OS/s may or may not report
+              information correctly. (Perhaps someday libcdio will figure
+	      out enough work arounds. voluneteers welcome!)
+
+eject.py      A program to eject a CD from a CD-ROM drive and then close the 
+	      door again.
+
+iso1.py:      A program to show using iso9660.ISO9660.IFS to list files in a
+	      directory of an ISO-9660 image.
+
+iso2.py:      A program to show using iso9660.ISO9660.FS to extract a file
+	      from a CDRWIN cue/bin CD image.
+
+iso3.py:      A program to show using iso9660.ISO9660.IFS to extract a file 
+	      from an ISO-9660 image.
+
+tracks.py     A program to list track numbers and logical sector
+	      numbers of a Compact Disc
+
+
+
