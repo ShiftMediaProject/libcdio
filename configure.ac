@@ -20,7 +20,7 @@ define(RELEASE_NUM, 82cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.235 2008/11/25 01:47:36 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.236 2008/11/25 01:57:16 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -390,7 +390,7 @@ case $host_os in
          cd_drivers="${cd_drivers}, Darwin"
        fi
      ;;
-     linux*)
+     linux*|uclinux)
         AC_CHECK_HEADERS(linux/version.h linux/major.h)
         AC_CHECK_HEADERS(linux/cdrom.h, [have_linux_cdrom_h="yes"])
 	if test "x$have_linux_cdrom_h" = "xyes" ; then
