@@ -20,7 +20,7 @@ define(RELEASE_NUM, 82cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.236 2008/11/25 01:57:16 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.237 2008/11/25 02:20:17 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -260,7 +260,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 dnl empty_array_size
 AC_MSG_CHECKING([how to create empty arrays])
 
-empty_array_size="xxx"
+empty_array_size="xxxx"
 AC_TRY_COMPILE([],[struct { int foo; int bar[]; } doo;], empty_array_size="")
 
 if test "x$empty_array_size" = "xxxx";then
