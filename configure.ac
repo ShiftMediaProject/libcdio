@@ -20,7 +20,7 @@ define(RELEASE_NUM, 82cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.234 2008/10/29 09:55:22 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.235 2008/11/25 01:47:36 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -278,82 +278,6 @@ else
   changequote([,])
   AC_MSG_RESULT($msg)
 fi
-dnl empty_array_size
-
-dnl bitfield order
-AC_MSG_CHECKING(bitfield ordering in structs)
-dnl First see whether we can work out ordering without running a program --
-dnl for instance, when cross-compiling
-boring_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS -O2"
-AC_LINK_IFELSE([
-int conftest_undefined_reference_();
-int main() {
-  union {
-    unsigned int x;
-    struct {
-      unsigned int x0: 1;
-      unsigned int x1: 31;
-    } s;
-  } u;
-
-  u.x = 0;
-  u.s.x0 = 1;
-  if (u.x == 1)
-    return conftest_undefined_reference_();
-  return 0;
-}
-], [bf_lsbf=0])
-AC_LINK_IFELSE([
-int conftest_undefined_reference_();
-int main() {
-  union {
-    unsigned int x;
-    struct {
-      unsigned int x0: 1;
-      unsigned int x1: 31;
-    } s;
-  } u;
-
-  u.x = 0;
-  u.s.x0 = 1;
-  if (u.x == 0x80000000)
-    return conftest_undefined_reference_();
-  return 0;
-}
-], [bf_lsbf=1])
-CFLAGS="$boring_CFLAGS"
-dnl If we haven't found out for certain yet, try the runtime test
-if test "x$bf_lsbf" = "x"; then
-AC_TRY_RUN([
-int
- main() {
-  struct { char bit_0:1, bit_12:2, bit_345:3, bit_67:2; }
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)
-  __attribute__((packed))
-#endif
-  bf = { 1,1,1,1 };
-  if (sizeof (bf) != 1) return 1;
-  return *((unsigned char*) &bf) != 0x4b; }
-], bf_lsbf=1, AC_TRY_RUN([ 
-int
-main() {
-  struct { char bit_0:1, bit_12:2, bit_345:3, bit_67:2; }
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)
-  __attribute__((packed))
-#endif
-  bf = { 1,1,1,1 };
-  if (sizeof (bf) != 1) return 1;
-  return *((unsigned char*) &bf) != 0xa5; }
-], bf_lsbf=0, AC_MSG_ERROR([unsupported bitfield ordering])))
-fi
-if test "x$bf_lsbf" = "x1"; then
- AC_MSG_RESULT(LSBF)
- AC_DEFINE(BITFIELD_LSBF, [], [compiler does least-significant bit first in struct bitfields])
-else
- AC_MSG_RESULT(MSBF)
-fi
-dnl
 
 dnl Enable the creation of shared libraries under Win32.
 AC_LIBTOOL_WIN32_DLL
