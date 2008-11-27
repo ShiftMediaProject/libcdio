@@ -20,7 +20,7 @@ define(RELEASE_NUM, 82cvs)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.237 2008/11/25 02:20:17 rocky Exp $])dnl
+AC_REVISION([$Id: configure.ac,v 1.238 2008/11/27 21:09:51 rocky Exp $])dnl
 AC_INIT(libcdio, CDIO_VERSION_STR(RELEASE_NUM))
 AC_CONFIG_SRCDIR(src/cd-info.c)
 
@@ -217,36 +217,22 @@ AC_MSG_RESULT($ISOC99_PRAGMA)
 ## Check for S_ISSOCK() and S_ISLNK() macros
 ##
 AC_MSG_CHECKING(for S_ISLNK() macro)
-AC_TRY_RUN([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 #ifdef HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif
+],[return S_ISLNK(0);])],
+[ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_S_ISLNK, [], [Define this <sys/stat.h> defines S_ISLNK()]) ],
+[ AC_MSG_RESULT(no) ])
 
-int main(int argc, char **argv) {
-  int i = S_ISLNK(0);
-  return 0;
-}
-], [AC_MSG_RESULT(yes); ac_have_islnk=yes; 
-     AC_DEFINE(HAVE_S_ISLNK, [], 
-     [Define this <sys/stat.h> defines S_ISLNK()])],
-   [AC_MSG_RESULT(no); ac_have_islnk=no],
-   [AC_MSG_RESULT(no); ac_have_islnk=no])
-
-AC_MSG_CHECKING(for S_ISSOCK() macro)
-AC_TRY_RUN([
+AC_MSG_CHECKING([for S_ISSOCK() macro])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 #ifdef HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif
-
-int main(int argc, char **argv) {
-  int i = S_ISSOCK(0);
-  return 0;
-}
-], [AC_MSG_RESULT(yes); ac_have_islnk=yes; 
-     AC_DEFINE(HAVE_S_ISSOCK, [], 
-     [Define this <sys/stat.h> defines S_ISSOCK()])],
-   [AC_MSG_RESULT(no); ac_have_issock=no],
-   [AC_MSG_RESULT(no); ac_have_issock=no])
+],[return S_ISSOCK(0);])],
+[ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_S_ISSOCK, [], [Define this <sys/stat.h> defines S_ISSOCK()]) ],
+[ AC_MSG_RESULT(no) ])
 
 AC_MSG_CHECKING([for struct timespec])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
@@ -510,35 +496,20 @@ AC_CHECK_MEMBER([struct tm.tm_gmtoff],
 
 if test $ac_cv_member_struct_tm_tm_gmtoff = yes ; then
   AC_MSG_CHECKING([whether time.h defines daylight and timezone variables])
-  AC_TRY_RUN([
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 #include <time.h>
-
-
-       extern char *tzname[2];
-       extern long timezone;
-       extern int daylight;
-
-int
- main() {
-  return (timezone != 0) + daylight;
-}
-  ],[AC_DEFINE(HAVE_DAYLIGHT, 1,
+],[return (timezone != 0) + daylight;])],
+  [AC_DEFINE(HAVE_DAYLIGHT, 1,
    [Define if time.h defines extern long timezone and int daylight vars.])
    has_daylight=yes
    ],[has_daylight=no])
   AC_MSG_RESULT($has_daylight)
+
   AC_MSG_CHECKING([whether time.h defines tzname variable])
-  AC_TRY_RUN([
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 #include <time.h>
-
-
-       extern char *tzname[2];
-
-int
- main() {
-  return (tzname != NULL);
-}
-  ],[AC_DEFINE(HAVE_TZNAME, 1,
+],[return (tzname != NULL);])],
+  [AC_DEFINE(HAVE_TZNAME, 1,
    [Define if time.h defines extern extern char *tzname[2] variable])
    has_tzname=yes
    ],[has_tzname=no])
