@@ -5,7 +5,8 @@ Note: for compatibility with old unittest 1.46 we won't use assertTrue
 or assertFalse."""
 import unittest, sys, os
 
-libdir = os.path.join(os.path.dirname(__file__), '..')
+libdir = os.path.join(os.path.dirname(__file__), 
+                      '..', 'build', 'lib.linux-i686-2.5')
 if libdir[-1] != os.path.sep:
     libdir += os.path.sep
 sys.path.insert(0, libdir)
