@@ -10,6 +10,10 @@ libdir = os.path.join(os.path.dirname(__file__),
 if libdir[-1] != os.path.sep:
     libdir += os.path.sep
 sys.path.insert(0, libdir)
+libdir = os.path.join(os.path.dirname(__file__), '..')
+if libdir[-1] != os.path.sep:
+    libdir += os.path.sep
+sys.path.insert(0, libdir)
 import pycdio
 import cdio
 

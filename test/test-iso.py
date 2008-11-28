@@ -6,6 +6,12 @@ This is basically the same thing as libcdio's testiso9660.c"""
 
 import unittest, sys, os
 
+
+libdir = os.path.join(os.path.dirname(__file__), 
+                      '..', 'build', 'lib.linux-i686-2.5')
+if libdir[-1] != os.path.sep:
+    libdir += os.path.sep
+sys.path.insert(0, libdir)
 libdir = os.path.join(os.path.dirname(__file__), '..')
 if libdir[-1] != os.path.sep:
     libdir += os.path.sep

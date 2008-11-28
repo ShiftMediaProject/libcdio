@@ -13,8 +13,12 @@ import os
 README = os.path.join(os.path.dirname(__file__), 'README.txt')
 long_description = open(README).read() + '\n\n'
 
-pycdio_module    = Extension('_pycdio', sources=['swig/pycdio.i'])
-pyiso9660_module = Extension('_pyiso9660', sources=['swig/pyiso9660.i'])
+pycdio_module    = Extension('_pycdio', 
+                             libraries=['cdio'],
+                             sources=['swig/pycdio.i'])
+pyiso9660_module = Extension('_pyiso9660', 
+                             libraries=['iso9660'],
+                             sources=['swig/pyiso9660.i'])
 setup (name = 'pycdio',
        author             = 'Rocky Bernstein',
        author_email       = 'rocky@gnu.org',
