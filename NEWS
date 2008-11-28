@@ -1,0 +1,44 @@
+0.14
+- Convert to use setuptools
+
+0.13
+2007-10-27
+
+- Small bugfix 
+
+0.12
+2006-12-10
+
+- Add get_msg() 
+
+- Add pathname_isofy() in iso9660.py
+
+- Correct bugs in SWIG pathname_isofy() and close_tray()
+
+- Correct bug in get_devices when there was only one device.
+
+0.11
+2006-03-27
+
+- Add ISO 9660 library 
+  * add example programs to extract a file from an ISO fileystem 
+  * add regression tsets
+
+- Changes to make building outside of source tree (e.g. "make
+  distcheck") work
+
+- Include SWIG-derived files. In theory you don't need SWIG installed
+  any more (although you do need a C compiler and libcdio installed).
+
+- Remove bug in is_device()
+
+- Fixes for Solaris and cygwin builds (compilation/linking flags)
+
+- Minor SWIG changes to be more precise.
+
+0.10
+2006-01-30
+
+Initial Python wrapper
+
+$Id: NEWS,v 1.8 2007/10/21 22:28:58 rocky Exp $

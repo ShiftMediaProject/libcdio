@@ -1,5 +1,3 @@
 /build
 /dist
-/pycdio.pyc
-/pycdio_wrap.c
-/pyiso9660_wrap.c
+/*.pyc
