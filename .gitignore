@@ -1,3 +1,4 @@
 /build
 /dist
 /*.pyc
+/pycdio.egg-info
