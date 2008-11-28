@@ -18,10 +18,6 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 import sys, time
-libdir = os.path.join(os.path.dirname(__file__), '..')
-if libdir[-1] != os.path.sep:
-    libdir += os.path.sep
-sys.path.insert(0, libdir)
 import pycdio
 import cdio
 from time import sleep
