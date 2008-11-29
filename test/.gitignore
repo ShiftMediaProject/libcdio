@@ -1,0 +1,12 @@
+/.deps
+/Makefile
+/Makefile.in
+/check_common_fn
+/check_cue.sh
+/check_iso.sh
+/check_nrg.sh
+/check_paranoia.sh
+/testbincue.c
+/testisocd2.c
+/testnrg.c
+/testpregap.c

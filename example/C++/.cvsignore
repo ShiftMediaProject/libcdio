@@ -1,0 +1,15 @@
+Makefile
+Makefile.in
+.deps
+.libs
+copying
+device
+eject
+isolist
+isofile
+isofile2
+mmc1
+mmc2
+paranoia
+paranoia2
+

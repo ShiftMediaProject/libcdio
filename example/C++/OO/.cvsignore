@@ -1,0 +1,17 @@
+.deps
+.libs
+Makefile
+Makefile.am
+Makefile.in
+cdtext
+copying
+device
+drives
+eject
+iso4
+isofile2
+isofile
+isolist
+mmc1
+mmc2
+tracks
