@@ -109,7 +109,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    NULL
   },
 
-  {DRIVER_BSDI, 
+  {DRIVER_AIX, 
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
    "AIX",
    "AIX SCSI driver",
