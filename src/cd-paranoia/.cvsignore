@@ -1,8 +1,0 @@
-.deps
-.libs
-Makefile
-Makefile.in
-*.o
-cd-paranoia
-usage.h
-usage.txt

@@ -130,7 +130,7 @@ if MAINTAINER_MODE
 
 .PHONY: ChangeLog
 ChangeLog:
-	( cd $(srcdir); $(CVS2CL) -W 450 --header cvs2cl_header --utc -w -I ChangeLog --usermap cvs2cl_usermap -P --stdout ) > ChangeLog
+	git log --pretty --numstat --summary | $(GIT2CL) >$@
 
 ACLOCAL_AMFLAGS=-I m4
 
