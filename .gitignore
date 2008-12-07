@@ -1,5 +1,6 @@
 /*~
 /COPYING
+/INSTALL
 /Makefile
 /Makefile.in
 /aclocal.m4
@@ -16,6 +17,8 @@
 /depcomp
 /install-sh
 /libcdio++.pc
+/libcdio-*.tar.bz2
+/libcdio-*.tar.gz
 /libcdio.pc
 /libcdio_cdda.pc
 /libcdio_paranoia.pc
