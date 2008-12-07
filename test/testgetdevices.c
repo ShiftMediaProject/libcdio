@@ -101,12 +101,30 @@ main(int argc, const char *argv[])
 		return 6;
 	      }
 	  }
-	else if (0 == strncmp("Cygwin", utsname.sysname, sizeof("Cygwin"))) 
+	else if (0 == strncmp("CYGWIN", utsname.sysname, sizeof("CYGWIN"))) 
 	  {
 	    if (!cdio_have_driver(DRIVER_WIN32)) 
 	      {
 		fprintf(stderr, 
 			"You should have been able to get Win32 driver\n");
+		return 6;
+	      }
+	  }
+	else if (0 == strncmp("OSX", utsname.sysname, sizeof("OSX"))) 
+	  {
+	    if (!cdio_have_driver(DRIVER_OSX)) 
+	      {
+		fprintf(stderr, 
+			"You should have been able to get OS/X driver\n");
+		return 6;
+	      }
+	  }
+	else if (0 == strncmp("NetBSD", utsname.sysname, sizeof("NetBSD"))) 
+	  {
+	    if (!cdio_have_driver(DRIVER_NETBSD)) 
+	      {
+		fprintf(stderr, 
+			"You should have been able to get NetBSD driver\n");
 		return 6;
 	      }
 	  }
