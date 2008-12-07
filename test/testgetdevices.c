@@ -110,7 +110,7 @@ main(int argc, const char *argv[])
 		return 6;
 	      }
 	  }
-	else if (0 == strncmp("OSX", utsname.sysname, sizeof("OSX"))) 
+	else if (0 == strncmp("Darwin", utsname.sysname, sizeof("Darwin"))) 
 	  {
 	    if (!cdio_have_driver(DRIVER_OSX)) 
 	      {
