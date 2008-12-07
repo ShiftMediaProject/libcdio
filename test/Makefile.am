@@ -28,7 +28,7 @@ testparanoia=testparanoia
 testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 endif
 
-hack = check_sizeof testassert  testbincue testischar \
+hack = check_sizeof testassert testbincue testgetdevices testischar \
        testisocd testisocd2 testiso9660 \
        testnrg $(testparanoia) testtoc testpregap
 
@@ -39,6 +39,7 @@ INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testassert_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testdefault_LDADD   = $(LIBCDIO_LIBS) $(LTLIBICONV)
+testgetdevices_LDADD= $(LIBCDIO_LIBS) $(LTLIBICONV)
 testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 

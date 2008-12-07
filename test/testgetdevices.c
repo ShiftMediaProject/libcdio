@@ -1,7 +1,5 @@
 /*
-  $Id: testdefault.c,v 1.8 2008/03/22 18:08:25 karl Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2008 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -71,7 +69,6 @@ main(int argc, const char *argv[])
   char **nrg_images=NULL;
   char **bincue_images=NULL;
   char **imgs;
-  char **c;
   unsigned int i;
   int ret=0;
 
@@ -119,85 +116,9 @@ main(int argc, const char *argv[])
   }
 
   if (ret != 0) return ret;
-    
-  printf("-----\n");
-  printf("ISO 9660 images...\n");
-  imgs = NULL;
-  /* Print out a list of CDDA-drives. */
-  imgs = cdio_get_devices_with_cap(bincue_images, CDIO_FS_ISO_9660, false);
 
-  if (NULL == imgs || *imgs == NULL) {
-    printf("Failed to find an ISO 9660 image\n");
-    return 11;
-  }
-    
-  for( c = imgs; *c != NULL; c++ ) {
-    printf("%s\n", *c);
-  }
-    
-  cdio_free_device_list(imgs);
-  free(imgs);
-  
-  
-  printf("-----\n");
-  printf("CD-DA images...\n");
-  imgs = NULL;
-  /* Print out a list of CDDA-drives. */
-  imgs = cdio_get_devices_with_cap(bincue_images, CDIO_FS_AUDIO, false);
-
-  if (NULL == imgs || *imgs == NULL) {
-    printf("Failed to find CDDA image\n");
-    return 12;
-  }
-    
-  for( c = imgs; *c != NULL; c++ ) {
-    printf("%s\n", *c);
-  }
-    
-  cdio_free_device_list(imgs);
-  free(imgs);
-  
-  
-  printf("-----\n");
-  imgs = NULL;
-  printf("VCD images...\n");
-  /* Print out a list of CD-drives with VCD's in them. */
-  imgs = cdio_get_devices_with_cap(nrg_images, 
-(CDIO_FS_ANAL_SVCD|CDIO_FS_ANAL_CVD|CDIO_FS_ANAL_VIDEOCD|CDIO_FS_UNKNOWN),
-					true);
-  if (NULL == imgs || *imgs == NULL) {
-    printf("Failed to find VCD image\n");
-    return 13;
-  }
-    
-  for( c = imgs; *c != NULL; c++ ) {
-    printf("image: %s\n", *c);
-  }
-
-  cdio_free_device_list(imgs);
-  free(imgs);
-
-  imgs = NULL;
-  /* Print out a list of CDDA-drives. */
-  imgs = cdio_get_devices_with_cap(bincue_images, CDIO_FS_HIGH_SIERRA, false);
-
-  if (NULL != imgs && *imgs != NULL) {
-    printf("Found erroneous High Sierra image\n");
-    return 14;
-  }
-    
-  imgs = NULL;
-  /* Print out a list of CDDA-drives. */
-  imgs = cdio_get_devices_with_cap(bincue_images, CDIO_FS_UFS, true);
-
-  if (NULL != imgs && *imgs != NULL) {
-    printf("Found erroneous UFS image\n");
-    return 15;
-  }
-    
   cdio_free_device_list(nrg_images);
   cdio_free_device_list(bincue_images);
-  cdio_free_device_list(imgs);
   return 0;
   
 }

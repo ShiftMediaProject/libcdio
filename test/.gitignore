@@ -1,4 +1,5 @@
 /*.o
+/*~
 /.deps
 /.libs
 /Makefile
@@ -17,6 +18,8 @@
 /testassert
 /testbincue
 /testbincue.c
+/testdefault
+/testgetdevices
 /testischar
 /testiso9660
 /testisocd
