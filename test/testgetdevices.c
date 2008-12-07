@@ -104,7 +104,7 @@ main(int argc, const char *argv[])
 	      }
 	    
 	  }
-	else if (0 == strncmp("CYGWIN", utsname.sysname, sizeof("CYGWIN"))) 
+	else if (0 == strncmp("CYGWIN", utsname.sysname, sizeof("CYGWIN")))
 	  {
 	    if (!cdio_have_driver(DRIVER_WIN32)) 
 	      {
@@ -115,7 +115,7 @@ main(int argc, const char *argv[])
 		printf("Good! You have the Win32 driver installed.\n");
 	      }
 	  }
-	else if (0 == strncmp("Darwin", utsname.sysname, sizeof("Darwin"))) 
+	else if (0 == strncmp("Darwin", utsname.sysname, sizeof("Darwin")))
 	  {
 	    if (!cdio_have_driver(DRIVER_OSX)) 
 	      {
@@ -126,9 +126,9 @@ main(int argc, const char *argv[])
 		printf("Good! You have the OS/X driver installed.\n");
 	      }
 	  }
-	else if (0 == strncmp("NetBSD", utsname.sysname, sizeof("NetBSD"))) 
+	else if (0 == strncmp("NetBSD", utsname.sysname, sizeof("NetBSD")))
 	  {
-	    if (!cdio_have_driver(DRIVER_NETBSD)) 
+	    if (!cdio_have_driver(DRIVER_NETBSD))
 	      {
 		fprintf(stderr, 
 			"You should have been able to get NetBSD driver\n");
