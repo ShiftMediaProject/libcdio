@@ -99,7 +99,10 @@ main(int argc, const char *argv[])
 		fprintf(stderr, 
 			"You should have been able to get GNU/Linux driver\n");
 		return 6;
+	      } else {
+		printf("Good! You have the GNU/Linux driver installed.\n");
 	      }
+	    
 	  }
 	else if (0 == strncmp("CYGWIN", utsname.sysname, sizeof("CYGWIN"))) 
 	  {
@@ -108,6 +111,8 @@ main(int argc, const char *argv[])
 		fprintf(stderr, 
 			"You should have been able to get Win32 driver\n");
 		return 6;
+	      } else {
+		printf("Good! You have the Win32 driver installed.\n");
 	      }
 	  }
 	else if (0 == strncmp("Darwin", utsname.sysname, sizeof("Darwin"))) 
@@ -117,6 +122,8 @@ main(int argc, const char *argv[])
 		fprintf(stderr, 
 			"You should have been able to get OS/X driver\n");
 		return 6;
+	      } else {
+		printf("Good! You have the OS/X driver installed.\n");
 	      }
 	  }
 	else if (0 == strncmp("NetBSD", utsname.sysname, sizeof("NetBSD"))) 
@@ -126,6 +133,8 @@ main(int argc, const char *argv[])
 		fprintf(stderr, 
 			"You should have been able to get NetBSD driver\n");
 		return 6;
+	      } else {
+		printf("Good! You have the OS/X driver installed.\n");
 	      }
 	  }
       }
