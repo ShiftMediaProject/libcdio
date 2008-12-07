@@ -154,12 +154,12 @@ extern "C" {
     DRIVER_AIX,     /**< AIX driver */
     DRIVER_BSDI,    /**< BSDI driver */
     DRIVER_FREEBSD, /**< FreeBSD driver - includes CAM and ioctl access */
+    DRIVER_NETBSD,  /**< NetBSD Driver. */
     DRIVER_LINUX,   /**< GNU/Linux Driver */
     DRIVER_SOLARIS, /**< Sun Solaris Driver */
     DRIVER_OSX,     /**< Apple OSX Driver */
     DRIVER_WIN32,   /**< Microsoft Windows Driver. Includes ASPI and 
 		         ioctl access. */
-    DRIVER_NETBSD,  /**< NetBSD Driver. */
     DRIVER_CDRDAO,  /**< cdrdao format CD image. This is listed
 		         before BIN/CUE, to make the code prefer cdrdao
 		         over BIN/CUE when both exist. */
@@ -185,7 +185,7 @@ extern "C" {
 #define CDIO_MIN_DRIVER        DRIVER_AIX
 #define CDIO_MIN_DEVICE_DRIVER CDIO_MIN_DRIVER
 #define CDIO_MAX_DRIVER        DRIVER_NRG
-#define CDIO_MAX_DEVICE_DRIVER DRIVER_NETBSD
+#define CDIO_MAX_DEVICE_DRIVER DRIVER_WIN32
 
   /** The following are status codes for completion of a given cdio
      operation. By design 0 is successful completion and -1 is error

@@ -38,7 +38,7 @@ LIBCDIO_VERSION_NUM=`echo RELEASE_NUM | cut -d . -f 1 | tr -d a-z`
 AC_SUBST(LIBCDIO_VERSION_NUM)
 
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
-AM_MISSING_PROG(CVS2CL, cvs2cl, $missing_dir)
+AM_MISSING_PROG(GIT2CL, git2cl, $missing_dir)
 AM_MAINTAINER_MODE
 
 AM_SANITY_CHECK

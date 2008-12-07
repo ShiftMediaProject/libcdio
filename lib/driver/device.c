@@ -109,7 +109,7 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    NULL
   },
 
-  {DRIVER_BSDI, 
+  {DRIVER_AIX, 
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
    "AIX",
    "AIX SCSI driver",
@@ -857,6 +857,9 @@ cdio_have_atapi(CdIo_t *p_cdio)
 bool
 cdio_have_driver(driver_id_t driver_id)
 {
+  if (driver_id < CDIO_MIN_DRIVER || 
+      driver_id > CDIO_MAX_DRIVER) 
+    return false;
   return (*CdIo_all_drivers[driver_id].have_driver)();
 }
 
