@@ -35,6 +35,10 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#ifdef HAVE_SYS_UTSNAME_H
+#include <sys/utsname.h>
+#endif
+
 #include <string.h>
 
 static void 
@@ -79,10 +83,36 @@ main(int argc, const char *argv[])
 
   if (cdio_have_driver(-1) != false) 
     {
-      printf("Bogus driver number -1 should be regexted\n");
+      fprintf(stderr, "Bogus driver number -1 should be regexted\n");
       return 5;
     }
   
+#ifdef HAVE_SYS_UTSNAME_H
+  {
+    struct utsname utsname;
+    if (0 == uname(&utsname)) 
+      {
+	if (0 == strncmp("Linux", utsname.sysname, sizeof("Linux")))
+	  {
+	    if (!cdio_have_driver(DRIVER_LINUX)) 
+	      {
+		fprintf(stderr, 
+			"You should have been able to get GNU/Linux driver\n");
+		return 6;
+	      }
+	  }
+	else if (0 == strncmp("Cygwin", utsname.sysname, sizeof("Cygwin"))) 
+	  {
+	    if (!cdio_have_driver(DRIVER_WIN32)) 
+	      {
+		fprintf(stderr, 
+			"You should have been able to get Win32 driver\n");
+		return 6;
+	      }
+	  }
+      }
+  }
+#endif
 
   if (! (cdio_have_driver(DRIVER_NRG) && cdio_have_driver(DRIVER_BINCUE)) )  {
     printf("You don't have enough drivers for this test\n");

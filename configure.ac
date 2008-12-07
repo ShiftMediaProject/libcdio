@@ -188,8 +188,8 @@ dnl headers
 
 AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h fcntl.h glob.h limits.h pwd.h)
-AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h)
-AC_CHECK_HEADERS(sys/time.h sys/timeb.h)
+AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h \
+		 sys/time.h sys/timeb.h sys/utsname.h)
 AC_CHECK_HEADERS(ncurses.h curses.h, break, [enable_cdda_player='no'])
 
 dnl FreeBSD 4 has getopt in unistd.h. So we include that before
@@ -674,7 +674,7 @@ cat > include/cdio/cdio_config.h << EOF
     version of config.h
 */
 EOF
-head -n 233 config.h >> include/cdio/cdio_config.h
+head -n 254 config.h >> include/cdio/cdio_config.h
 ]],[[]])
 
 AC_OUTPUT
