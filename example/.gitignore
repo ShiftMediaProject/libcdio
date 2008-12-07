@@ -1,10 +1,7 @@
 /*.o
 /.deps
 /.libs
-<<<<<<< HEAD:example/.gitignore
-=======
 /*~
->>>>>>> 4f0228e99f37dedd16bc56df7b3982b589cf4122:example/.gitignore
 /Makefile
 /Makefile.in
 /audio

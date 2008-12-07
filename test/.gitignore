@@ -21,11 +21,8 @@
 /testassert
 /testbincue
 /testbincue.c
-<<<<<<< HEAD:test/.gitignore
-=======
 /testdefault
 /testgetdevices
->>>>>>> 4f0228e99f37dedd16bc56df7b3982b589cf4122:test/.gitignore
 /testischar
 /testiso9660
 /testisocd

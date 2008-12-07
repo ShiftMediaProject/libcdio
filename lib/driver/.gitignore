@@ -2,10 +2,7 @@
 /*.o
 /.deps
 /.libs
-<<<<<<< HEAD:lib/driver/.gitignore
-=======
-/*.c~
->>>>>>> 4f0228e99f37dedd16bc56df7b3982b589cf4122:lib/driver/.gitignore
+/*~
 /Makefile
 /Makefile.in
 /libcdio.la
