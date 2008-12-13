@@ -1216,7 +1216,7 @@ indicate we're done with the CD.
 @node Example 2
 @section Example 2: list drivers available and default CD device 
 
-One thing that's a bit hoaky in Example 1 is hard-coding the name of
+One thing that's a bit hockey in Example 1 is hard-coding the name of
 the device used: @code{/dev/cdrom}. Although often this is the name of
 a CD-ROM device on GNU/Linux and possibly some other Unix derivatives,
 there are many OSs for which use a different device name.
@@ -2078,7 +2078,7 @@ find a little bit of this for example via the routine
 @node GNU/Linux
 @section GNU/Linux
 
-The GNU/Linux uses a hybrid of methods. Somethings are done vai ioctl
+The GNU/Linux uses a hybrid of methods. Somethings are done via ioctl
 and some things via MMC. GNU/Linux has a rather nice and complete
 ioctl mechanism. On the other hand, the MMC mechanism is more
 universal.  There are other ``access modes'' listed which are not
@@ -2126,9 +2126,9 @@ More work on this driver is needed. Volunteers?
 @node OS X
 @section OS X (non-exclusive access)
 
-A problem with OS/X is that if the OS thinks it understands the drive
-it gains exclusive access to it and thus prevents a library like this
-to get non-exclusive access. 
+A problem with libcdio on OS/X is that if the OS thinks it understands
+the drive, it will get exclusive access to the drive and thus prevents
+a library like this from obtaining non-exclusive access.
 
 Currently @value{libcdio} access the CD-ROM non-exclusively. However
 in order to be able to issue MMC, the current belief is that
