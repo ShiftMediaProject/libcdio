@@ -90,6 +90,6 @@ EXTRA_DIST = cd-drive.help2man cd-info.help2man cd-read.help2man \
              iso-info.help2man iso-read.help2man $(GETOPT_C) getopt.h \
              $(man_MANS)
 
-$(man_MANS): %.1: % %.help2man 
-	-$(HELP2MAN) --opt-include=$<.help2man --no-info --output=$@ ./$<
+$(man_MANS): %.1: %$(EXEEXT) %.help2man 
+	-$(HELP2MAN) --opt-include=$(srcdir)/$(<:.exe=).help2man --no-info --output=$@ ./$<
 MOSTLYCLEANFILES = $(man_MANS)
