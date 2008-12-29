@@ -67,9 +67,9 @@ const driver_id_t cdio_os_driver = DRIVER_FREEBSD;
 const driver_id_t cdio_os_driver = DRIVER_LINUX;
 #elif  HAVE_DARWIN_CDROM
 const driver_id_t cdio_os_driver = DRIVER_OSX;
-#elif  HAVE_DARWIN_SOLARIS
+#elif  HAVE_SOLARIS_CDROM
 const driver_id_t cdio_os_driver = DRIVER_SOLARIS;
-#elif  HAVE_DARWIN_WIN32
+#elif  HAVE_WIN32_CDROM
 const driver_id_t cdio_os_driver = DRIVER_WIN32;
 #else 
 const driver_id_t cdio_os_driver = DRIVER_UNKNOWN;
