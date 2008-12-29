@@ -175,6 +175,7 @@ extern "C" {
 
 #ifndef DO_NOT_WANT_PARANOIA_COMPATIBILITY
 /** For compatibility with good ol' paranoia */
+#define cdrom_paranoia        cdrom_paranoia_t
 #define paranoia_init         cdio_paranoia_init
 #define paranoia_free         cdio_paranoia_free
 #define paranoia_modeset      cdio_paranoia_modeset

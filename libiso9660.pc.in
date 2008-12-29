@@ -2,11 +2,11 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
-libiconv=@LIBICONV@
+libiconv=@LTLIBICONV@
 
 Name: libiso9660
 Description: ISO-9660 library of libcdio
 Version: @PACKAGE_VERSION@
 Requires: libcdio 
-Libs: -L${libdir} -liso9660 @LIBICONV@ -lcdio
+Libs: -L${libdir} -liso9660 @LTLIBICONV@ -lcdio
 Cflags: -I${includedir}

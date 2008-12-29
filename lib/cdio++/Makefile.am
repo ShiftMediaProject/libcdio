@@ -50,7 +50,8 @@ libcdiopp_la_AGE = 0
 libcdiopp_sources = cdio.cpp devices.cpp
 
 libcdio___la_SOURCES = $(libcdiopp_sources)
-libcdio___la_ldflags = -version-info $(libcdiopp_la_CURRENT):$(libcdiopp_la_REVISION):$(libcdiopp_la_AGE) @LT_NO_UNDEFINED@
+libcdio___la_LDFLAGS = -version-info $(libcdiopp_la_CURRENT):$(libcdiopp_la_REVISION):$(libcdiopp_la_AGE) @LT_NO_UNDEFINED@
+libcdio___la_LIBADD = $(top_builddir)/lib/driver/libcdio.la
 
 libiso9660pp_la_CURRENT = 0
 libiso9660pp_la_REVISION = 0
@@ -60,6 +61,6 @@ libiso9660pp_sources = iso9660.cpp
 
 libiso9660___la_SOURCES = $(libiso9660pp_sources)
 libiso9660___la_LIBADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) 
-libiso9660___la_ldflags = -version-info $(libiso9660pp_la_CURRENT):$(libiso9660pp_la_REVISION):$(libiso9660pp_la_AGE) @LT_NO_UNDEFINED@
+libiso9660___la_LDFLAGS = -version-info $(libiso9660pp_la_CURRENT):$(libiso9660pp_la_REVISION):$(libiso9660pp_la_AGE) @LT_NO_UNDEFINED@
 
 INCLUDES = -I$(top_srcdir)/include/ -I$(top_builddir)/include

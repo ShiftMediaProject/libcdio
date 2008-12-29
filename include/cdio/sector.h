@@ -269,6 +269,11 @@
     }
 #endif
 
+#ifndef DO_NOT_WANT_PARANOIA_COMPATIBILITY
+/** For compatibility with good ol' paranoia */
+#define CD_FRAMESIZE_RAW        CDIO_CD_FRAMESIZE_RAW
+#endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
+
 #endif /* _CDIO_SECTOR_H_ */
 
 

@@ -412,6 +412,7 @@ int has_timeout=sizeof(test.timeout);],
      	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
                   [Define 1 if you have MinGW CD-ROM support])
  	LIBS="$LIBS -lwinmm"
+ 	LT_NO_UNDEFINED="-no-undefined"
   	cd_drivers="${cd_drivers}, MinGW"
      	AC_DEFINE([NEED_TIMEZONEVAR], [1], 
                   [Define 1 if you need timezone defined to get timzone
