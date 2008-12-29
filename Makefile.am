@@ -50,7 +50,7 @@ pkgconfig_DATA = libcdio.pc  \
 	         libudf.pc \
 		 $(paranoiapcs)
 
-if ENABLE_CPP
+if ENABLE_CXX_BINDINGS
 pkgconfig_DATA += \
 	libcdio++.pc \
 	libiso9660++.pc
