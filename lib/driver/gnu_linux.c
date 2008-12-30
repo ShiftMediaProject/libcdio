@@ -1448,7 +1448,7 @@ cdio_get_default_device_linux(void)
   /* Scan the system for CD-ROM drives.
      Not always 100% reliable, so use the USE_MNTENT code above first.
   */
-  for ( i=0; checklist2[i].format; ++i ) {
+  for ( i=0; i < checklist2_size; ++i ) {
     unsigned int j;
     for ( j=checklist2[i].num_min; j<=checklist2[i].num_max; ++j ) {
       if (snprintf(drive, sizeof(drive), checklist2[i].format, j) < 0)
