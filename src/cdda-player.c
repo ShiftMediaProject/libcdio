@@ -1,7 +1,7 @@
 /*
   $Id: cdda-player.c,v 1.50 2008/06/19 15:44:14 flameeyes Exp $
 
-  Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
   Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
   Copyright (C) 1997, 1998 
@@ -110,7 +110,9 @@ static bool               b_verbose       = false;
 static bool               debug           = false;
 static bool               b_interactive   = true;
 static bool               b_prefer_cdtext = true; 
+#ifdef CDDB_ADDED
 static bool               b_cddb          = false; /* CDDB database present */
+#endif
 static bool               b_db            = false; /* we have a database at all */
 static bool               b_record        = false; /* we have a record for
 static 					       the inserted CD */
@@ -143,7 +145,9 @@ static char year[5];
 static bool b_cdtext_title;     /* true if from CD-Text, false if from CDDB */
 static bool b_cdtext_artist;    /* true if from CD-Text, false if from CDDB */
 static bool b_cdtext_genre;     /* true if from CD-Text, false if from CDDB */
+#ifdef CDTEXT_CATEGORY_ADDED
 static bool b_cdtext_category;  /* true if from CD-Text, false if from CDDB */
+#endif
 static bool b_cdtext_year;  /* true if from CD-Text, false if from CDDB */
 
 static cdio_audio_volume_t audio_volume;

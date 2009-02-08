@@ -1,7 +1,7 @@
 /* -*- c -*-
     $Id: device.h,v 1.39 2008/03/28 01:28:50 rocky Exp $
 
-    Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2005, 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -157,6 +157,7 @@ extern "C" {
     DRIVER_NETBSD,  /**< NetBSD Driver. */
     DRIVER_LINUX,   /**< GNU/Linux Driver */
     DRIVER_SOLARIS, /**< Sun Solaris Driver */
+    DRIVER_OS2,     /**< IBM OS/2 Driver */
     DRIVER_OSX,     /**< Apple OSX Driver */
     DRIVER_WIN32,   /**< Microsoft Windows Driver. Includes ASPI and 
 		         ioctl access. */
@@ -575,7 +576,7 @@ extern "C" {
   CdIo_t * cdio_open_aix (const char *psz_source);
   
   /*! Return a string containing the default device name that the 
-      BSDI driver would use when none is specified.
+      AIX driver would use when none is specified.
 
      @return the cdio object for subsequent operations. 
      NULL on error or there is no AIX driver.
@@ -810,6 +811,44 @@ extern "C" {
 
   char **cdio_get_devices_win32(void);
   
+  /*! Set up CD-ROM for reading using the IBM OS/2 driver. The
+      device_name is the some sort of device name.
+
+     NULL is returned on error or there is no OS/2 driver.
+
+     In some situations of drivers or OS's we can't find a CD device if
+     there is no media in it and it is possible for this routine to return
+     NULL even though there may be a hardware CD-ROM.
+
+     @see cdio_open_cd, cdio_open
+   */
+  CdIo_t * cdio_open_os2 (const char *psz_source);
+
+  /*! Set up CD-ROM for reading using the IBM OS/2 driver. The
+      device_name is the some sort of device name.
+
+     NULL is returned on error or there is no OS/2 driver.
+
+     @see cdio_open_cd, cdio_open
+   */
+  CdIo_t * cdio_open_am_os2 (const char *psz_source,
+                            const char *psz_access_mode);
+
+  /*! Return a string containing the default device name that the
+      OS/2 driver would use when none is specified. A scan is made
+      for CD-ROM drives with CDs in them.
+
+     In some situations of drivers or OS's we can't find a CD device if
+     there is no media in it and it is possible for this routine to return
+     NULL even though there may be a hardware CD-ROM.
+   */
+  char * cdio_get_default_device_os2(void);
+
+  /*! Return a list of all of the CD-ROM devices that the OS/2 driver
+      can find.
+   */
+  char **cdio_get_devices_os2(void);
+
   /*! Set up CD-ROM for reading using the Nero driver. The
       device_name is the some sort of device name.
 

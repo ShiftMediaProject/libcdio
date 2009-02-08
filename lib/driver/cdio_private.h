@@ -1,7 +1,7 @@
 /*
   $Id: cdio_private.h,v 1.37 2008/04/22 15:29:11 karl Exp $
 
-  Copyright (C) 2003, 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -485,6 +485,7 @@ extern "C" {
   driver_return_code_t close_tray_freebsd (const char *psz_drive);
   driver_return_code_t close_tray_linux   (const char *psz_drive);
   driver_return_code_t close_tray_netbsd  (const char *psz_drive);
+  driver_return_code_t close_tray_os2     (const char *psz_drive);
   driver_return_code_t close_tray_osx     (const char *psz_drive);
   driver_return_code_t close_tray_solaris (const char *psz_drive);
   driver_return_code_t close_tray_win32   (const char *psz_drive);
@@ -522,6 +523,10 @@ extern "C" {
   /*! DEPRICATED: use cdio_have_driver().
     True if Sun Solaris driver is available. */
   bool cdio_have_solaris (void);
+
+  /*! DEPRICATED: use cdio_have_driver().
+    True if IBM OS2 driver is available. */
+  bool cdio_have_os2     (void);
 
   /*! DEPRICATED: use cdio_have_driver().
     True if Apple OSX driver is available. */

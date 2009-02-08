@@ -1,7 +1,7 @@
 /*
   $Id: util.c,v 1.54 2008/04/14 17:30:27 karl Exp $
 
-  Copyright (C) 2003, 2004, 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -160,7 +160,7 @@ open_input(const char *psz_source, source_image_t source_image,
 char *
 fillout_device_name(const char *device_name) 
 {
-#if defined(HAVE_WIN32_CDROM)
+#if defined(HAVE_WIN32_CDROM) || defined(HAVE_OS2_CDROM)
   return strdup(device_name);
 #else
   unsigned int prefix_len = strlen(DEV_PREFIX);

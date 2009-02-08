@@ -47,7 +47,8 @@
 /* The below array gives of the drivers that are currently available for 
    on a particular host. */
 
-CdIo_driver_t CdIo_driver[CDIO_MAX_DRIVER] = { {0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} };
+CdIo_driver_t CdIo_driver[CDIO_MAX_DRIVER] = { 
+  {0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} };
 
 /* The last valid entry of Cdio_driver. 
    -1 or (CDIO_DRIVER_UNINIT) means uninitialzed. 
@@ -67,6 +68,8 @@ const driver_id_t cdio_os_driver = DRIVER_FREEBSD;
 const driver_id_t cdio_os_driver = DRIVER_LINUX;
 #elif  HAVE_DARWIN_CDROM
 const driver_id_t cdio_os_driver = DRIVER_OSX;
+#elif  HAVE_OS2_CDROM
+const driver_id_t cdio_os_driver = DRIVER_OS2;
 #elif  HAVE_SOLARIS_CDROM
 const driver_id_t cdio_os_driver = DRIVER_SOLARIS;
 #elif  HAVE_WIN32_CDROM
@@ -185,6 +188,19 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
    &cdio_is_device_generic,
    &cdio_get_devices_solaris,
    &close_tray_solaris
+  },
+
+  {DRIVER_OS2,
+   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
+   "OS2",
+   "IBM OS/2 driver",
+   &cdio_have_os2,
+   &cdio_open_os2,
+   &cdio_open_am_os2,
+   &cdio_get_default_device_os2,
+   &cdio_is_device_os2,
+   &cdio_get_devices_os2,
+   &close_tray_os2
   },
 
   {DRIVER_OSX, 
@@ -942,6 +958,7 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
   case DRIVER_SOLARIS:
   case DRIVER_WIN32:
   case DRIVER_OSX:
+  case DRIVER_OS2:
   case DRIVER_NRG:
   case DRIVER_BINCUE:
   case DRIVER_CDRDAO:

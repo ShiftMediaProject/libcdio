@@ -134,6 +134,12 @@ extern "C" {
   */
   bool cdio_is_device_win32(const char *source_name);
 
+  /*!
+    Return true if source_name could be a device containing a CD-ROM on
+    OS/2
+  */
+  bool cdio_is_device_os2(const char *source_name);
+
   
   /*!  
     Return true if source_name could be a device containing a CD-ROM on

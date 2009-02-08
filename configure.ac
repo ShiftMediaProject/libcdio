@@ -440,6 +440,13 @@ int has_timeout=sizeof(test.timeout);],
  	# LIBS="$LIBS -lcam"
   	cd_drivers="${cd_drivers}, NetBSD "
 	;;
+     os2*)
+       AC_DEFINE([HAVE_OS2_CDROM], [1],
+                  [Define 1 if you have OS/2 CD-ROM support])
+       LT_NO_UNDEFINED="-no-undefined"
+       LDFLAGS="$LDFLAGS -Zbin-files"
+       cd_drivers="${cd_drivers}, OS2 "
+       ;;
      *)
 	AC_MSG_WARN([Don't have OS CD-reading support for ${host_os}...])
 	AC_MSG_WARN([Will use generic support.])
@@ -474,6 +481,7 @@ AC_SUBST(HAVE_FREEBSD_CDROM)
 AC_SUBST(HAVE_LINUX_CDROM)
 AC_SUBST(HAVE_SOLARIS_CDROM)
 AC_SUBST(HAVE_WIN32_CDROM)
+AC_SUBST(HAVE_OS2_CDROM)
 
 LIBCDIO_SOURCE_PATH="`pwd`"
 AC_DEFINE_UNQUOTED(LIBCDIO_SOURCE_PATH, "$LIBCDIO_SOURCE_PATH",

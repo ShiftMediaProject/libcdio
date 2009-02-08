@@ -1,7 +1,7 @@
 /*
   $Id: cd-paranoia.c,v 1.37 2008/06/19 15:44:30 flameeyes Exp $
 
-  Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
             (C) 1998 Monty <xiphmont@mit.edu>
 
   This program is free software: you can redistribute it and/or modify
@@ -528,10 +528,10 @@ callback(long int inpos, paranoia_cb_mode_t function)
 	    buffer[aheadposition+19]='>';
 	}
    
-	fprintf(stderr,buffer);
+	fprintf(stderr, "%s", buffer);
 
 	if (logfile != NULL && function==-1) {
-	  fprintf(logfile,buffer+1);
+	  fprintf(logfile, "%s", buffer+1);
 	  fprintf(logfile,"\n\n");
 	  fflush(logfile);
 	}

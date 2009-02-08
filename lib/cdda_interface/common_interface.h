@@ -1,7 +1,7 @@
 /*
   $Id: common_interface.h,v 1.7 2008/04/16 17:00:40 karl Exp $
 
-  Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@
 #include <cdio/types.h>
 #include "low_interface.h"
 
-#if defined(HAVE_LSTAT) && !defined(HAVE_WIN32_CDROM)
+#if defined(HAVE_LSTAT) && !defined(HAVE_WIN32_CDROM) && !defined(HAVE_OS2_CDROM)
 /* Define this if the CD-ROM device is a file in the filesystem
    that can be lstat'd
 */

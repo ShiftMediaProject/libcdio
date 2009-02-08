@@ -36,7 +36,7 @@ void
 report(const char *s)
 {
   if (!quiet) {
-    fprintf(stderr,s);
+    fprintf(stderr, "%s", s);
     fputc('\n',stderr);
   }
 }

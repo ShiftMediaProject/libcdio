@@ -1,6 +1,6 @@
 #   $Id: Makefile.am,v 1.28 2008/10/20 01:25:15 rocky Exp $
 #
-#   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+#   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -42,7 +42,7 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libcdio_la_CURRENT = 10
+libcdio_la_CURRENT = 11
 libcdio_la_REVISION = 0
 libcdio_la_AGE = 0
 
@@ -89,6 +89,7 @@ libcdio_sources = \
 	MSWindows/win32.c \
 	MSWindows/win32.h \
 	netbsd.c \
+	os2.c \
 	osx.c \
 	read.c \
 	sector.c \
