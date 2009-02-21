@@ -61,8 +61,7 @@ Texts.  A copy of the license is included in the section entitled
 @node Top
 @top GNU @value{libcdio}
 
-This manual documents @value{libcdio}, the GNU CD Input and Control
-Library.
+@insertcopying
 
 @menu
 * History::           How this came about
