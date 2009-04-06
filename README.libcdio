@@ -1,13 +1,31 @@
-If you check out the source from CVS run
-  ./autogen.sh then follow as below, except you don't need to run 
-  ./configure.
+See README.develop if you plan use the git or development version.
 
-To compile the source:
+0. To compile the source, you'll need a POSIX shell and utilites (sh,
+sed, grep, cat), an ANSI C compiler like gcc, and a POSIX "make"
+program like GNU make. You may also want to have "libtool" installed
+for building portable shared libraries.
 
-  ./configure MAKE=gmake 
+1. Uncompress and unpack the source code using for example "tar". Recent
+versions of GNU tar can do this in one step like this:
+  tar -xpf libcdio-*.bz  # or libcdio-*.gz
+
+2. Go into the directory, run "configure" followed by "make":
+
+  cd libcdio-*
+  sh ./configure MAKE=gmake 
+
+3. If step 2 works, Now compile everything:
+
   make
+
+4. Run the regression tests if you want:
+
   make check
-  make install  # may have to do this as root 
+
+5. Install. If the preceeding steps were successful:
+
+  make install  # you may have to do this as root 
+                # or "sudo make install"
 
 
 If you have problems linking libcdio or libiso9660, see the BSD
@@ -100,5 +118,3 @@ seems to lag behind.
 
 Of late FreeBSD folks have been pretty good about testing new releases
 and reporting problems. 
-
-$Id: README.libcdio,v 1.12 2008/03/22 22:51:30 rocky Exp $
