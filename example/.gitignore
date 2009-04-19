@@ -1,7 +1,7 @@
 /*.o
+/*~
 /.deps
 /.libs
-/*~
 /Makefile
 /Makefile.in
 /audio
@@ -24,6 +24,7 @@
 /paranoia2
 /sample3
 /sample4
+/track-01.wav
 /tracks
 /udf1
 /udffile
