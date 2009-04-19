@@ -57,7 +57,9 @@ mmc2a.c:     Show MODE_SENSE page 2A paramaters:
 
 paranoia:    A program to show using CD-DA paranoia (a library for jitter
 	     detection and audio-read error correction). This program uses
-	     an interface compatible (mostly) with cdparanoia.
+	     an interface compatible (mostly) with cdparanoia. It looks for
+	     a CD-ROM with an audio CD in it and rips the first 300 sectors
+	     of track 1 to file track-01.wav.
 
 paranoia2:   Another program to show using CD-DA paranoia using a more
 	     libcdio-oriented initialization. Probably more suited to

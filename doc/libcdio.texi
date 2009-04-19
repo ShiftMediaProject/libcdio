@@ -1703,6 +1703,10 @@ main(int argc, const char *argv[])
 @node Example 7
 @section Example 7: Using the CD Paranoia library for CD-DA reading
 
+The below program reads CD-DA data. For a more complete program to add
+a WAV header so that the CD can be played from a copy on a hard disk,
+see the corresponding distribution program.
+
 @smallexample
 #ifdef HAVE_CONFIG_H
 # include "config.h"

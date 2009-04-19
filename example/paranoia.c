@@ -1,7 +1,7 @@
 /*
   $Id: paranoia.c,v 1.9 2008/03/24 15:30:56 karl Exp $
 
-  Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,6 +31,53 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+
+#include <fcntl.h>
+
+static void 
+put_num(long int num, int f, int bytes)
+{
+  unsigned int i;
+  unsigned char c;
+
+  for (i=0; bytes--; i++) {
+    c = (num >> (i<<3)) & 0xff;
+    if (write(f, &c, 1)==-1) {
+      perror("Could not write to output.");
+      exit(1);
+    }
+  }
+}
+
+/* Write a the header for a WAV file. */
+static void 
+write_WAV_header(int fd, long int i_bytecount){
+  /* quick and dirty */
+  write(fd, "RIFF", 4);             /*  0-3 */
+  put_num(i_bytecount+44-8, fd, 4); /*  4-7 */
+  write(fd, "WAVEfmt ", 8);         /*  8-15 */
+  put_num(16, fd, 4);               /* 16-19 */
+  put_num(1, fd, 2);                /* 20-21 */
+  put_num(2, fd, 2);                /* 22-23 */
+  put_num(44100, fd, 4);            /* 24-27 */
+  put_num(44100*2*2, fd, 4);        /* 28-31 */
+  put_num(4, fd, 2);                /* 32-33 */
+  put_num(16, fd, 2);               /* 34-35 */
+  write(fd, "data", 4);             /* 36-39 */
+  put_num(i_bytecount, fd, 4);      /* 40-43 */
+}
 
 int
 main(int argc, const char *argv[])
@@ -78,6 +125,7 @@ main(int argc, const char *argv[])
       lsn_t   i_cursor;
       track_t i_track    = cdda_sector_gettrack(d, i_first_lsn);
       lsn_t   i_last_lsn = cdda_track_lastsector(d, i_track);
+      int     fd         = creat("track-01.wav", 0644);
 
       /* For demo purposes we'll read only 300 frames (about 4
 	 seconds).  We don't want this to take too long. On the other
@@ -90,8 +138,8 @@ main(int argc, const char *argv[])
 
       /* Set reading mode for full paranoia, but allow skipping sectors. */
       paranoia_modeset(p, PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP);
-
       paranoia_seek(p, i_first_lsn, SEEK_SET);
+      write_WAV_header(fd, (i_last_lsn-i_first_lsn+1) * CDIO_CD_FRAMESIZE_RAW);
 
       for ( i_cursor = i_first_lsn; i_cursor <= i_last_lsn; i_cursor ++) {
 	/* read a sector */
@@ -108,7 +156,9 @@ main(int argc, const char *argv[])
 	  printf("paranoia read error. Stopping.\n");
 	  break;
 	}
+	write(fd, p_readbuf, CDIO_CD_FRAMESIZE_RAW);
       }
+      close(fd);
     }
     paranoia_free(p);
   }
