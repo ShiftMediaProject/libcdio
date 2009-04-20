@@ -1,7 +1,7 @@
 /*
   $Id: paranoia.cpp,v 1.3 2008/03/24 15:30:56 karl Exp $
 
-  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,13 +24,23 @@
 # include "config.h"
 #endif
 
-#include <cdio/paranoia.h>
-#include <cdio/cd_types.h>
-#include <stdio.h>
+#include <iostream>
+#include <cstdlib>
+#include <fstream>
+#include <iomanip>
+using namespace std;
+
+extern "C"{
+  #include <cdio/paranoia.h>
+  #include <cdio/cd_types.h>
+  #include <stdio.h>
 
 #ifdef HAVE_STDLIB_H
-#include <stdlib.h>
+  #include <stdlib.h>
 #endif
+
+}
+
 
 int
 main(int argc, const char *argv[])
@@ -44,26 +54,26 @@ main(int argc, const char *argv[])
   if (ppsz_cd_drives) {
     /* Found such a CD-ROM with a CD-DA loaded. Use the first drive in
        the list. */
-    d=cdda_identify(*ppsz_cd_drives, 1, NULL);
+    d = cdda_identify(*ppsz_cd_drives, 1, NULL);
   } else {
-    printf("Unable find or access a CD-ROM drive with an audio CD in it.\n");
-    exit(1);
+    cerr << "Unable to access to a CD-ROM drive with audio CD in it";
+    return -1;
   }
 
   /* Don't need a list of CD's with CD-DA's any more. */
   cdio_free_device_list(ppsz_cd_drives);
 
   if ( !d ) {
-    printf("Unable to identify audio CD disc.\n");
-    exit(1);
+    cerr << "Unable to identify audio CD disc.\n";
+    return -1;
   }
 
   /* We'll set for verbose paranoia messages. */
   cdda_verbose_set(d, CDDA_MESSAGE_PRINTIT, CDDA_MESSAGE_PRINTIT);
 
   if ( 0 != cdda_open(d) ) {
-    printf("Unable to open disc.\n");
-    exit(1);
+    cerr << "Unable to open disc.\n";
+    return -1;
   }
 
   /* Okay now set up to read up to the first 300 frames of the first
@@ -92,6 +102,37 @@ main(int argc, const char *argv[])
       paranoia_modeset(p, PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP);
 
       paranoia_seek(p, i_first_lsn, SEEK_SET);
+      //Get the track size in bytes and conver it to string
+      unsigned int byte_count = 
+	( i_last_lsn - i_first_lsn + 1 ) * CDIO_CD_FRAMESIZE_RAW;
+
+      // Open the output file
+      ofstream outfile ("track01.wav",
+			ofstream::binary | ofstream::app | ofstream::out);
+       
+      // Write format header specification
+      const int waweChunkLength   = byte_count + 44 - 8;
+      const int fmtChunkLength    = 16;
+      const int compressionCode   = 1;
+      const int numberOfChannels  = 2;
+      const int sampleRate        = 44100;  // Hz
+      const int blockAlign        = sampleRate*2*2;
+      const int significantBps    = 4;
+      const int extraFormatBytes  = 16;
+
+#define writestr(str) outfile.write(str, sizeof(str)-1)	
+      writestr("RIFF");
+      outfile.write((char*)&waweChunkLength, 4);
+      writestr("WAVEfmt ");
+      outfile.write((char*) &fmtChunkLength, 4);
+      outfile.write((char*) &compressionCode, 2);
+      outfile.write((char*) &numberOfChannels, 2);
+      outfile.write((char*) &sampleRate, 4);
+      outfile.write((char*) &blockAlign, 4);
+      outfile.write((char*) &significantBps, 2);
+      outfile.write((char*) &extraFormatBytes, 2);
+      writestr("data");
+      outfile.write((char*) &byte_count,4);
 
       for ( i_cursor = i_first_lsn; i_cursor <= i_last_lsn; i_cursor ++) {
 	/* read a sector */
@@ -100,14 +141,18 @@ main(int argc, const char *argv[])
 	char *psz_mes=cdda_messages(d);
 
 	if (psz_mes || psz_err)
-	  printf("%s%s\n", psz_mes ? psz_mes: "", psz_err ? psz_err: "");
+	  cerr << psz_err << psz_mes;
 
 	if (psz_err) free(psz_err);
 	if (psz_mes) free(psz_mes);
 	if( !p_readbuf ) {
-	  printf("paranoia read error. Stopping.\n");
+	  cerr << "paranoia read error. Stopping.\n";
 	  break;
 	}
+
+	char *temp= (char*) p_readbuf;
+	outfile.write(temp, CDIO_CD_FRAMESIZE_RAW);
+
       }
     }
     paranoia_free(p);

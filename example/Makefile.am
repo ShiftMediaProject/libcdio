@@ -94,4 +94,4 @@ udffile_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 
 # iso programs create file "copying"
-MOSTLYCLEANFILES = copying
+MOSTLYCLEANFILES = copying *.wav

@@ -64,4 +64,4 @@ mmc2_DEPENDENCIES = $(LIBCDIO_DEPS)
 mmc2_LDADD        = $(LIBCDIO_LIBS)
 
 # iso programs create file "copying"
-MOSTLYCLEANFILES = copying
+MOSTLYCLEANFILES = copying *.wav
