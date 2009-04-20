@@ -71,7 +71,7 @@ main(int argc, const char *argv[])
 {
   ISO9660::Stat *p_stat;
   FILE *p_outfd;
-  int i;
+  unsigned int i;
   char const *psz_image;
   char const *psz_fname;
   ISO9660::IFS *p_iso = new ISO9660::IFS;

@@ -1,5 +1,13 @@
+/*.o
+/*~
 /.deps
 /Makefile
 /Makefile.in
-/*~
-/*.o
+/device
+/eject
+/isofile
+/isofile2
+/isolist
+/main
+/mmc1
+/mmc2

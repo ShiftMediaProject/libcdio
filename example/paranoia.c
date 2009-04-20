@@ -61,22 +61,25 @@ put_num(long int num, int f, int bytes)
   }
 }
 
+#define writestr(fd, s) \
+  write(fd, s, sizeof(s)-1)  /* Subtract 1 for trailing '\0'. */
+
 /* Write a the header for a WAV file. */
 static void 
-write_WAV_header(int fd, long int i_bytecount){
+write_WAV_header(int fd, int32_t i_bytecount){
   /* quick and dirty */
-  write(fd, "RIFF", 4);             /*  0-3 */
-  put_num(i_bytecount+44-8, fd, 4); /*  4-7 */
-  write(fd, "WAVEfmt ", 8);         /*  8-15 */
-  put_num(16, fd, 4);               /* 16-19 */
-  put_num(1, fd, 2);                /* 20-21 */
-  put_num(2, fd, 2);                /* 22-23 */
-  put_num(44100, fd, 4);            /* 24-27 */
-  put_num(44100*2*2, fd, 4);        /* 28-31 */
-  put_num(4, fd, 2);                /* 32-33 */
-  put_num(16, fd, 2);               /* 34-35 */
-  write(fd, "data", 4);             /* 36-39 */
-  put_num(i_bytecount, fd, 4);      /* 40-43 */
+  writestr(fd, "RIFF");              /*  0-3 */
+  put_num(i_bytecount+44-8, fd, 4);  /*  4-7 */
+  writestr(fd, "WAVEfmt ");          /*  8-15 */
+  put_num(16, fd, 4);                /* 16-19 */
+  put_num(1, fd, 2);                 /* 20-21 */
+  put_num(2, fd, 2);                 /* 22-23 */
+  put_num(44100, fd, 4);             /* 24-27 */
+  put_num(44100*2*2, fd, 4);         /* 28-31 */
+  put_num(4, fd, 2);                 /* 32-33 */
+  put_num(16, fd, 2);                /* 34-35 */
+  writestr(fd, "data");              /* 36-39 */
+  put_num(i_bytecount, fd, 4);       /* 40-43 */
 }
 
 int

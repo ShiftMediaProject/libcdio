@@ -1,4 +1,14 @@
+/*.o
 /.deps
 /Makefile
 /Makefile.in
-/*.o
+/cdtext
+/device
+/drives
+/eject
+/iso4
+/isofile
+/isolist
+/mmc1
+/mmc2
+/tracks

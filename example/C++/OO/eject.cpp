@@ -41,7 +41,6 @@
 int
 main(int argc, const char *argv[])
 {
-  driver_return_code_t ret;
   driver_id_t driver_id = DRIVER_DEVICE;
   char *psz_drive = NULL;
   CdioDevice device;
@@ -61,7 +60,7 @@ main(int argc, const char *argv[])
     printf("CD in CD-ROM drive %s ejected.\n", psz_drive);
   }
   catch ( DriverOpUninit e ) {
-    printf("Can't Eject CD from CD-ROM drive: driver is not initialized.\n",
+    printf("Can't Eject CD %s from CD-ROM drive: driver is not initialized.\n",
 	   psz_drive);
   }
   catch ( DriverOpException e ) {

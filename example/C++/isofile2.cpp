@@ -72,7 +72,7 @@ main(int argc, const char *argv[])
 {
   iso9660_stat_t *p_statbuf;
   FILE *p_outfd;
-  int i;
+  unsigned int i;
   char const *psz_image;
   char const *psz_fname;
   iso9660_t *p_iso;
