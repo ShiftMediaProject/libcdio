@@ -1,7 +1,7 @@
 /*
   $Id: freebsd_cam.c,v 1.12 2008/04/21 18:30:20 karl Exp $
 
-  Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -121,6 +121,8 @@ init_freebsd_cam (_img_private_t *p_env)
       cdio_warn ("open (%s): %s", p_env->device, strerror (errno));
       return false;
     }
+
+  (void)ioctl(p_env->gen.fd, CDIOCALLOW);
 
   if (ioctl (p_env->gen.fd, CAMGETPASSTHRU, &p_env->ccb) < 0)
     {
