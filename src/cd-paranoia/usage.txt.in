@@ -113,7 +113,7 @@ A few examples, protected from the shell:
      of autosense:
        @CDPARANOIA_NAME@ -vsQ
 
-  B) extract up to and including track 3, putting each track in a seperate
+  B) extract up to and including track 3, putting each track in a separate
      file:
        @CDPARANOIA_NAME@ -B -- "-3"
 
