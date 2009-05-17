@@ -88,7 +88,8 @@ cdtext_destroy (cdtext_t *p_cdtext)
 char *
 cdtext_get (cdtext_field_t key, const cdtext_t *p_cdtext)
 {
-  if ((key == CDTEXT_INVALID) || (!p_cdtext->field[key])) return NULL;
+  if ((key == CDTEXT_INVALID) || !p_cdtext 
+      || (!p_cdtext->field[key])) return NULL;
   return strdup(p_cdtext->field[key]);
 }
 
