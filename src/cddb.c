@@ -1,7 +1,7 @@
 /*
   $Id: cddb.c,v 1.8 2008/06/25 08:01:54 rocky Exp $
 
-  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@
 #include <cdio/cdio.h>
 #include <cdio/audio.h>
 #include "cddb.h"
+
+cddb_opts_t cddb_opts;
 
 /*!
    Returns the sum of the decimal digits in a number. Eg. 1955 = 20
