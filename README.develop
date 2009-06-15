@@ -4,6 +4,7 @@ Software you'll need to build a development version libcdio
   - automake 
   - m4 (used by autoconf)
   - texinfo (for building documentation)
+  - help2man (turns help for libcdio standalone programs into manual pages)
 
 This is in addition to the software needed to build starting from a the 
 source tar. See README.libcdio for that additional software.

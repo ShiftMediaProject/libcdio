@@ -115,7 +115,7 @@ parse_offset(cdrom_drive_t *d, char *offset, int begin)
 
   if (!offset) return -1;
 
-  /* seperate track from time offset */
+  /* separate track from time offset */
   temp=strchr(offset,']');
   if(temp){
     *temp='\0';
