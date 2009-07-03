@@ -2,7 +2,7 @@
   $Id: gnu_linux.c,v 1.33 2008/06/25 07:46:21 rocky Exp $
 
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008 
+  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008, 2009
     Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -76,6 +76,10 @@ static const char _rcsid[] = "$Id: gnu_linux.c,v 1.33 2008/06/25 07:46:21 rocky 
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 typedef enum {
   _AM_NONE,
@@ -1429,7 +1433,7 @@ cdio_get_default_device_linux(void)
 
   /* Scan the system for CD-ROM drives.
   */
-  for ( i=0; strlen(checklist1[i]) > 0; ++i ) {
+  for ( i=0; i < checklist1_size; ++i ) {
     if (snprintf(drive, sizeof(drive), "/dev/%s", checklist1[i]) < 0)
       continue;
     if ( is_cdrom_linux(drive, NULL) > 0 ) {

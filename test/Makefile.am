@@ -90,7 +90,7 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
 	testbincue.c.in testpregap.c.in testnrg.c.in \
-	check_iso.sh.in p1.bin p1.cue p1.nrg
+	testgetdevices.c.in check_iso.sh.in p1.bin p1.cue p1.nrg
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
 XFAIL_TESTS = testassert

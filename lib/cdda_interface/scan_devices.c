@@ -1,7 +1,7 @@
 /*
   $Id: scan_devices.c,v 1.33 2008/06/16 19:45:44 flameeyes Exp $
 
-  Copyright (C) 2004, 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2007, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software: you can redistribute it and/or modify
@@ -37,6 +37,10 @@
 
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#endif
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
 #endif
 
 #define MAX_DEV_LEN 20 /* Safe because strings only come from below */

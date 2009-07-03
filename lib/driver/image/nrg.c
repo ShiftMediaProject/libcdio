@@ -1,7 +1,8 @@
 /*
   $Id: nrg.c,v 1.31 2008/04/21 18:30:22 karl Exp $
 
-  Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009
+  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -715,23 +716,28 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 	
       case SINF_ID: { /* "SINF" */
 	
-	uint32_t *_sessions = (void *) chunk->data;
+	uint32_t _sessions;
 	
 	cdio_assert (UINT32_FROM_BE (chunk->len) == 4);
 	
+	memcpy(&_sessions, chunk->data, 4);
+
 	cdio_debug ("SINF: %lu sessions", 
-		    (long unsigned int) UINT32_FROM_BE (*_sessions));
+		    (long unsigned int) UINT32_FROM_BE (_sessions));
       }
 	break;
 	
       case MTYP_ID: { /* "MTYP" */
-	uint32_t *mtyp_p = (void *) chunk->data;
-	uint32_t mtyp  = UINT32_FROM_BE (*mtyp_p);
+	uint32_t mtyp_be;
+	uint32_t mtyp;
 	
 	cdio_assert (UINT32_FROM_BE (chunk->len) == 4);
 
+	memcpy(&mtyp_be, chunk->data, 4);
+	mtyp = UINT32_FROM_BE (mtyp_be);
+
 	cdio_debug ("MTYP: %lu", 
-		    (long unsigned int) UINT32_FROM_BE (*mtyp_p));
+		    (long unsigned int) mtyp);
 
 	if (mtyp != MTYP_AUDIO_CD) {
 	  cdio_log (log_level,

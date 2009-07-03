@@ -1,7 +1,8 @@
 /*
   $Id: util.c,v 1.6 2008/04/22 15:29:12 karl Exp $
 
-  Copyright (C) 2003, 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2008, 2009 
+  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -39,6 +40,10 @@
 #include "cdio_assert.h"
 #include <cdio/types.h>
 #include <cdio/util.h>
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 static const char _rcsid[] = "$Id: util.c,v 1.6 2008/04/22 15:29:12 karl Exp $";
 

@@ -1,7 +1,8 @@
 /*
   $Id: _cdio_generic.c,v 1.27 2008/04/22 15:29:11 karl Exp $
 
-  Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+  Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -48,6 +49,10 @@ static const char _rcsid[] = "$Id: _cdio_generic.c,v 1.27 2008/04/22 15:29:11 ka
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
 #include "portable.h"
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 /*!
   Eject media -- there's nothing to do here. We always return -2.

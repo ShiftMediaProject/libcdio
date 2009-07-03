@@ -1,4 +1,6 @@
 /*.o
+/*.orig
+/*.rej
 /.deps
 /.libs
 /Makefile
@@ -7,6 +9,7 @@
 /cd-drive.1
 /cd-info
 /cd-info.1
+/*~
 /cd-read
 /cd-read.1
 /cdda-player
