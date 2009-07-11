@@ -26,8 +26,10 @@ cdio_audio_stop
 cdio_close_tray
 cdio_debug
 cdio_destroy
+cdio_device_drivers
 cdio_driver_describe
 cdio_driver_errmsg
+cdio_drivers
 cdio_eject_media
 cdio_eject_media_drive
 cdio_error
