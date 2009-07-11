@@ -463,7 +463,7 @@ extern "C" {
 
   /* The below array gives of the drivers that are currently available for 
      on a particular host. */
-  extern CdIo_driver_t CdIo_driver[CDIO_MAX_DRIVER];
+  extern CdIo_driver_t CdIo_driver[];
 
   /* The last valid entry of Cdio_driver. -1 means uninitialzed. -2 
      means some sort of error.
@@ -472,7 +472,7 @@ extern "C" {
 
   /* The below array gives all drivers that can possibly appear.
      on a particular host. */
-  extern CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1];
+  extern CdIo_driver_t CdIo_all_drivers[];
 
   /*! 
     Add/allocate a drive to the end of drives. 

@@ -44,12 +44,6 @@
 #include <sys/stat.h>
 #endif
 
-/* The below array gives of the drivers that are currently available for 
-   on a particular host. */
-
-CdIo_driver_t CdIo_driver[CDIO_MAX_DRIVER] = { 
-  {0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} };
-
 /* The last valid entry of Cdio_driver. 
    -1 or (CDIO_DRIVER_UNINIT) means uninitialzed. 
    -2 means some sort of error.
@@ -98,7 +92,7 @@ cdio_have_false(void)
 /* The below array gives all drivers that can possibly appear.
    on a particular host. */
 
-CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
+CdIo_driver_t CdIo_all_drivers[] = {
   {DRIVER_UNKNOWN, 
    0,
    "Unknown", 
@@ -270,6 +264,12 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
 
 };
 
+/* The below array gives of the drivers that are currently available for 
+   on a particular host. */
+
+CdIo_driver_t CdIo_driver[sizeof(CdIo_all_drivers)/sizeof(CdIo_all_drivers[0])-1] = { 
+  {0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} };
+
 const driver_id_t cdio_drivers[] = {
   DRIVER_AIX,
   DRIVER_BSDI,
@@ -359,16 +359,16 @@ cdio_init(void)
   
   CdIo_driver_t *all_dp;
   CdIo_driver_t *dp = CdIo_driver;
-  driver_id_t driver_id;
+  const driver_id_t *driver_id_p;
 
   if (CdIo_last_driver != CDIO_DRIVER_UNINIT) {
     cdio_warn ("Init routine called more than once.");
     return false;
   }
 
-  for (driver_id=DRIVER_UNKNOWN+1; driver_id<=CDIO_MAX_DRIVER; driver_id++) {
-    all_dp = &CdIo_all_drivers[driver_id];
-    if ((*CdIo_all_drivers[driver_id].have_driver)()) {
+  for (driver_id_p=cdio_drivers; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
+    all_dp = &CdIo_all_drivers[*driver_id_p];
+    if ((*CdIo_all_drivers[*driver_id_p].have_driver)()) {
       *dp++ = *all_dp;
       CdIo_last_driver++;
     }
@@ -417,14 +417,15 @@ cdio_close_tray (const char *psz_orig_drive, /*in/out*/ driver_id_t
     psz_drive = strdup(psz_orig_drive);
   
   if (DRIVER_UNKNOWN == *p_driver_id || DRIVER_DEVICE == *p_driver_id) {
-    *p_driver_id = CDIO_MIN_DEVICE_DRIVER;
+    const driver_id_t *driver_id_p = (DRIVER_DEVICE == *p_driver_id)?cdio_device_drivers:cdio_drivers;
     
     /* Scan for driver */
-    for ( ; *p_driver_id<=CDIO_MAX_DRIVER; (*p_driver_id)++) {
-      if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
-           *CdIo_all_drivers[*p_driver_id].close_tray ) {
-        drc = (*CdIo_all_drivers[*p_driver_id].close_tray)(psz_drive);
+    for ( ; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
+      if ( (*CdIo_all_drivers[*driver_id_p].have_driver)() &&
+           *CdIo_all_drivers[*driver_id_p].close_tray ) {
+        drc = (*CdIo_all_drivers[*driver_id_p].close_tray)(psz_drive);
         free(psz_drive);
+        *p_driver_id = *driver_id_p;
         return drc;
       }
     }
@@ -512,12 +513,12 @@ char *
 cdio_get_default_device (const CdIo_t *p_cdio)
 {
   if (p_cdio == NULL) {
-    driver_id_t driver_id;
+    const driver_id_t *driver_id_p;
     /* Scan for driver */
-    for (driver_id=DRIVER_UNKNOWN+1; driver_id<=CDIO_MAX_DRIVER; driver_id++) {
-      if ( (*CdIo_all_drivers[driver_id].have_driver)() &&
-           *CdIo_all_drivers[driver_id].get_default_device ) {
-        return (*CdIo_all_drivers[driver_id].get_default_device)();
+    for (driver_id_p=cdio_drivers; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
+      if ( (*CdIo_all_drivers[*driver_id_p].have_driver)() &&
+           *CdIo_all_drivers[*driver_id_p].get_default_device ) {
+        return (*CdIo_all_drivers[*driver_id_p].get_default_device)();
       }
     }
     return NULL;
@@ -541,16 +542,14 @@ char *
 cdio_get_default_device_driver (/*in/out*/ driver_id_t *p_driver_id)
 {
   if (DRIVER_UNKNOWN == *p_driver_id || DRIVER_DEVICE == *p_driver_id) {
-    if (DRIVER_UNKNOWN == *p_driver_id) 
-      (*p_driver_id)++;
-    else 
-      *p_driver_id = CDIO_MIN_DEVICE_DRIVER;
-    
+    const driver_id_t *driver_id_p = (DRIVER_DEVICE == *p_driver_id)?cdio_device_drivers:cdio_drivers;
+
     /* Scan for driver */
-    for ( ; *p_driver_id<=CDIO_MAX_DRIVER; (*p_driver_id)++) {
-      if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
-           *CdIo_all_drivers[*p_driver_id].get_default_device ) {
-        return (*CdIo_all_drivers[*p_driver_id].get_default_device)();
+    for ( ; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
+      if ( (*CdIo_all_drivers[*driver_id_p].have_driver)() &&
+           *CdIo_all_drivers[*driver_id_p].get_default_device ) {
+        *p_driver_id = *driver_id_p;
+        return (*CdIo_all_drivers[*driver_id_p].get_default_device)();
       }
     }
     return NULL;
@@ -900,8 +899,8 @@ cdio_have_atapi(CdIo_t *p_cdio)
 bool
 cdio_have_driver(driver_id_t driver_id)
 {
-  if (driver_id < CDIO_MIN_DRIVER || 
-      driver_id > CDIO_MAX_DRIVER) 
+  if (driver_id < 0 || 
+      driver_id >= sizeof(CdIo_all_drivers)/sizeof(CdIo_all_drivers[0]))
     return false;
   return (*CdIo_all_drivers[driver_id].have_driver)();
 }
@@ -910,16 +909,13 @@ bool
 cdio_is_device(const char *psz_source, driver_id_t driver_id)
 {
   if (DRIVER_UNKNOWN == driver_id || DRIVER_DEVICE == driver_id) {
-    if (DRIVER_UNKNOWN == driver_id) 
-      driver_id++;
-    else 
-      driver_id = CDIO_MIN_DEVICE_DRIVER;
+    const driver_id_t *driver_id_p = (DRIVER_DEVICE == driver_id)?cdio_device_drivers:cdio_drivers;
     
     /* Scan for driver */
-    for ( ; driver_id<=CDIO_MAX_DRIVER; driver_id++) {
-      if ( (*CdIo_all_drivers[driver_id].have_driver)() &&
-           CdIo_all_drivers[driver_id].is_device ) {
-        return (*CdIo_all_drivers[driver_id].is_device)(psz_source);
+    for ( ; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
+      if ( (*CdIo_all_drivers[*driver_id_p].have_driver)() &&
+           CdIo_all_drivers[*driver_id_p].is_device ) {
+        return (*CdIo_all_drivers[*driver_id_p].is_device)(psz_source);
       }
     }
   }
