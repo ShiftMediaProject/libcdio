@@ -270,6 +270,35 @@ CdIo_driver_t CdIo_all_drivers[CDIO_MAX_DRIVER+1] = {
 
 };
 
+const driver_id_t cdio_drivers[] = {
+  DRIVER_AIX,
+  DRIVER_BSDI,
+  DRIVER_FREEBSD,
+  DRIVER_NETBSD,
+  DRIVER_LINUX,
+  DRIVER_SOLARIS,
+  DRIVER_OS2,
+  DRIVER_OSX,
+  DRIVER_WIN32,
+  DRIVER_CDRDAO,
+  DRIVER_BINCUE,
+  DRIVER_NRG,
+  DRIVER_UNKNOWN
+};
+
+const driver_id_t cdio_device_drivers[] = {
+  DRIVER_AIX,
+  DRIVER_BSDI,
+  DRIVER_FREEBSD,
+  DRIVER_NETBSD,
+  DRIVER_LINUX,
+  DRIVER_SOLARIS,
+  DRIVER_OS2,
+  DRIVER_OSX,
+  DRIVER_WIN32,
+  DRIVER_UNKNOWN
+};
+
 const char *
 cdio_driver_errmsg(driver_return_code_t drc)
 {

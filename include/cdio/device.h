@@ -171,6 +171,15 @@ extern "C" {
     DRIVER_DEVICE   /**< Is really a set of the above; should come last */
   } driver_id_t;
 
+  /** A null-terminated (that is DRIVER_UNKNOWN-terminated) ordered (in
+     order of preference) array of drivers.
+  */
+  extern const driver_id_t cdio_drivers[];
+  /** A null-terminated (that is DRIVER_UNKNOWN-terminated) ordered (in
+     order of preference) array of device drivers.
+  */
+  extern const driver_id_t cdio_device_drivers[];
+
   /** There will generally be only one hardware for a given
      build/platform from the list above. You can use the variable
      below to determine which you've got. If the build doesn't make an
