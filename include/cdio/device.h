@@ -137,13 +137,9 @@ extern "C" {
    * that is opened or is desired to be opened. Note that this is
    * different than what is available on a given host.
    *
-   * Order is a little significant since the order is used in scans.
-   * Also the enumeration values are assumed not to leave any holes so 
-   * we can use ++ to iterate over values. 
-   * We have to start with DRIVER_UNKNOWN and devices should come before
-   * disk-image readers. By putting something towards the top (a lower
-   * enumeration number), in an iterative scan we prefer that to
-   * something with a higher enumeration number.
+   * Order should not be changed lightly because it breaks the ABI.
+   * One is not supposed to iterate over the values, but iterate over the
+   * cdio_drivers and cdio_device_drivers arrays.
    *
    * NOTE: IF YOU MODIFY ENUM MAKE SURE INITIALIZATION IN CDIO.C AGREES.
    *     
@@ -188,7 +184,9 @@ extern "C" {
   extern const driver_id_t cdio_os_driver;
   
 
-/** Make sure what's listed for CDIO_MIN_DRIVER is the last
+/** Those are deprecated; use cdio_drivers or cdio_device_drivers to
+    iterate over all drivers or only the device drivers.
+    Make sure what's listed for CDIO_MIN_DRIVER is the last
     enumeration in driver_id_t. Since we have a bogus (but useful) 0th
     entry above we don't have to add one.
 */
