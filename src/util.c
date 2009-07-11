@@ -45,8 +45,6 @@ print_version (char *program_name, const char *version,
 	       int no_header, bool version_only)
 {
   
-  driver_id_t driver_id;
-
   if (no_header == 0)
     report( stdout,  
 	    "%s version %s\nCopyright (c) 2003, 2004, 2005, 2007, 2008 R. Bernstein\n",
@@ -59,9 +57,10 @@ PARTICULAR PURPOSE.\n\
 
   if (version_only) {
     char *default_device;
-    for (driver_id=DRIVER_UNKNOWN+1; driver_id<=CDIO_MAX_DRIVER; driver_id++) {
-      if (cdio_have_driver(driver_id)) {
-	report( stdout, "Have driver: %s\n", cdio_driver_describe(driver_id));
+    const driver_id_t *driver_id_p;
+    for (driver_id_p=cdio_drivers; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
+      if (cdio_have_driver(*driver_id_p)) {
+	report( stdout, "Have driver: %s\n", cdio_driver_describe(*driver_id_p));
       }
     }
     default_device=cdio_get_default_device(NULL);

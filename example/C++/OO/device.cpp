@@ -125,12 +125,12 @@ main(int argc, const char *argv[])
   }
   
   {
-    driver_id_t driver_id;
-    for (driver_id=CDIO_MIN_DRIVER; driver_id<=CDIO_MAX_DRIVER; driver_id++)
-      if (cdio_have_driver(driver_id))
-	printf("We have: %s\n", cdio_driver_describe(driver_id));
+    const driver_id_t *driver_id_p;
+    for (driver_id_p=cdio_drivers; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++)
+      if (cdio_have_driver(*driver_id_p))
+	printf("We have: %s\n", cdio_driver_describe(*driver_id_p));
       else
-	printf("We don't have: %s\n", cdio_driver_describe(driver_id));
+	printf("We don't have: %s\n", cdio_driver_describe(*driver_id_p));
   }
   
   return 0;

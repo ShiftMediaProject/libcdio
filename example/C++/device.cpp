@@ -97,17 +97,11 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
   }
 }
 
-inline
-driver_id_t &operator++(driver_id_t &d)
-{
-  return d = driver_id_t(d + 1);
-}
-
 int
 main(int argc, const char *argv[])
 {
   CdIo_t *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
-  driver_id_t driver_id;
+  const driver_id_t *driver_id_p;
   
   if (NULL != p_cdio) {
     char *default_device = cdio_get_default_device(p_cdio);
@@ -131,10 +125,10 @@ main(int argc, const char *argv[])
     printf("Problem in trying to find a driver.\n\n");
   }
 
-  for (driver_id=CDIO_MIN_DRIVER; driver_id<=CDIO_MAX_DRIVER; ++driver_id)
-    if (cdio_have_driver(driver_id))
-      printf("We have: %s\n", cdio_driver_describe(driver_id));
+  for (driver_id_p=cdio_drivers; *driver_id_p!=DRIVER_UNKNOWN; ++driver_id_p)
+    if (cdio_have_driver(*driver_id_p))
+      printf("We have: %s\n", cdio_driver_describe(*driver_id_p));
     else
-      printf("We don't have: %s\n", cdio_driver_describe(driver_id));
+      printf("We don't have: %s\n", cdio_driver_describe(*driver_id_p));
   return 0;
 }

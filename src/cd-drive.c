@@ -270,12 +270,12 @@ main(int argc, char *argv[])
   
   /* Print out a drivers available */
   {
-    driver_id_t driver_id;
+    const driver_id_t *driver_id_p;
 
     printf("Drivers available...\n");
-    for (driver_id=CDIO_MIN_DRIVER; driver_id<=CDIO_MAX_DRIVER; driver_id++)
-      if (cdio_have_driver(driver_id)) {
-	printf("  %-35s\n", cdio_driver_describe(driver_id));
+    for (driver_id_p=cdio_drivers; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++)
+      if (cdio_have_driver(*driver_id_p)) {
+	printf("  %-35s\n", cdio_driver_describe(*driver_id_p));
       }
     printf("\n");
   }

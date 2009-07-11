@@ -1231,7 +1231,7 @@ device that is right for it.
  5: main(int argc, const char *argv[])
  6: @{
  7:   CdIo_t *p_cdio = cdio_open (NULL, DRIVER_DEVICE);
- 8:   driver_id_t driver_id;
+ 8:   const driver_id_t *driver_id_p;
  9:  
 10:  if (NULL != p_cdio) @{
 11:    printf("The driver selected is %s\n", cdio_get_driver_name(p_cdio));
@@ -1242,11 +1242,11 @@ device that is right for it.
 16:    printf("Problem in trying to find a driver.\n\n");
 17:  @}
 18:
-19:  for (driver_id=CDIO_MIN_DRIVER; driver_id<=CDIO_MAX_DRIVER; driver_id++)
-20:    if (cdio_have_driver(driver_id))
-21:      printf("We have: %s\n", cdio_driver_describe(driver_id));
+19:  for (driver_id_p=cdio_drivers; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++)
+20:    if (cdio_have_driver(*driver_id_p))
+21:      printf("We have: %s\n", cdio_driver_describe(*driver_id_p));
 22:    else
-23:      printf("We don't have: %s\n", cdio_driver_describe(driver_id));
+23:      printf("We don't have: %s\n", cdio_driver_describe(*driver_id_p));
 24:  return 0;
 25: @}
 @end smallexample
