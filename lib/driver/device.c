@@ -325,17 +325,17 @@ cdio_driver_errmsg(driver_return_code_t drc)
 }
 
 static CdIo *
-scan_for_driver(driver_id_t start, driver_id_t end, 
+scan_for_driver(const driver_id_t drivers[], 
                 const char *psz_source, const char *access_mode) 
 {
-  driver_id_t driver_id;
+  const driver_id_t *driver_id_p;
   
-  for (driver_id=start; driver_id<=end; driver_id++) {
-    if ((*CdIo_all_drivers[driver_id].have_driver)()) {
+  for (driver_id_p=drivers; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
+    if ((*CdIo_all_drivers[*driver_id_p].have_driver)()) {
       CdIo *ret=
-        (*CdIo_all_drivers[driver_id].driver_open_am)(psz_source, access_mode);
+        (*CdIo_all_drivers[*driver_id_p].driver_open_am)(psz_source, access_mode);
       if (ret != NULL) {
-        ret->driver_id = driver_id;
+        ret->driver_id = *driver_id_p;
         return ret;
       }
     }
@@ -587,12 +587,11 @@ cdio_get_devices_ret (/*in/out*/ driver_id_t *p_driver_id)
   switch (*p_driver_id) {
     /* FIXME: spit out unknown to give image drivers as well.  */
   case DRIVER_DEVICE:
-    p_cdio = scan_for_driver(DRIVER_UNKNOWN+1, CDIO_MAX_DEVICE_DRIVER, 
-                             NULL, NULL);
+    p_cdio = scan_for_driver(cdio_device_drivers, NULL, NULL);
     *p_driver_id = cdio_get_driver_id(p_cdio);
     break;
   case DRIVER_UNKNOWN:
-    p_cdio = scan_for_driver(DRIVER_UNKNOWN+1, CDIO_MAX_DRIVER, NULL, NULL);
+    p_cdio = scan_for_driver(cdio_drivers, NULL, NULL);
     *p_driver_id = cdio_get_driver_id(p_cdio);
     break;
   default:
@@ -744,8 +743,7 @@ cdio_get_drive_cap_dev (const char *device,
 			cdio_drive_misc_cap_t  *p_misc_cap)
 {
   /* This seems like a safe bet. */
-  CdIo_t *cdio=scan_for_driver(CDIO_MIN_DRIVER, CDIO_MAX_DRIVER, 
-                             device, NULL);
+  CdIo_t *cdio=scan_for_driver(cdio_drivers, device, NULL);
   if (cdio) {
     cdio_get_drive_cap(cdio, p_read_cap, p_write_cap, p_misc_cap);
     cdio_destroy(cdio);
@@ -966,7 +964,7 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
   switch (driver_id) {
   case DRIVER_UNKNOWN: 
     {
-      CdIo_t *p_cdio=scan_for_driver(CDIO_MIN_DRIVER, CDIO_MAX_DRIVER, 
+      CdIo_t *p_cdio=scan_for_driver(cdio_drivers,
                                      psz_source, psz_access_mode);
       free(psz_source);
       return p_cdio;
@@ -1040,8 +1038,7 @@ cdio_open_am_cd (const char *psz_source, const char *psz_access_mode)
   if (CdIo_last_driver == -1) cdio_init();
 
   /* Scan for a driver. */
-  return scan_for_driver(CDIO_MIN_DEVICE_DRIVER, CDIO_MAX_DEVICE_DRIVER, 
-                         psz_source, psz_access_mode);
+  return scan_for_driver(cdio_device_drivers, psz_source, psz_access_mode);
 }
 
 /*!
