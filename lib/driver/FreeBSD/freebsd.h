@@ -159,6 +159,8 @@ void get_drive_cap_freebsd_cam (const _img_private_t *p_env,
 
 static int get_media_changed_freebsd (const void *p_user_data);
 
+int get_media_changed_freebsd (const void *p_user_data);
+
 char *get_mcn_freebsd_ioctl (const _img_private_t *p_env);
 
 void free_freebsd_cam (void *obj);

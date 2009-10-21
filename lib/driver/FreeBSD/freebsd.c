@@ -21,7 +21,7 @@
    control of the CD drive. Culled initially I think from xine's or
    mplayer's FreeBSD code with lots of modifications.
 */
-
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -651,6 +651,8 @@ cdio_get_devices_freebsd (void)
   }
 
   /* Scan are ATAPI devices */
+  exists = true;
+  
   for ( c='0'; exists && c <='9'; c++ ) {
     sprintf(drive, "/dev/acd%c%s", c, DEVICE_POSTFIX);
     exists = cdio_is_cdrom(drive, NULL);
@@ -707,6 +709,8 @@ cdio_get_default_device_freebsd()
   }
 
   /* Scan are ATAPI devices */
+  exists = true;
+  
   for ( c='0'; exists && c <='9'; c++ ) {
     sprintf(drive, "/dev/acd%c%s", c, DEVICE_POSTFIX);
     exists = cdio_is_cdrom(drive, NULL);
@@ -760,6 +764,57 @@ get_media_changed_freebsd (const void *p_user_data)
 }
 #endif /*HAVE_FREEBSD_CDROM*/
 
+/*! Find out if media has changed since the last call.  @param
+  p_user_data the environment of the CD object to be acted upon.
+  @return 1 if media has changed since last call, 0 if not. Error
+  return codes are the same as driver_return_code_t
+   */
+   
+int
+get_media_changed_freebsd (const void *p_user_data)
+{
+#ifdef HAVE_FREEBSD_CDROM
+  const _img_private_t *p_env = p_user_data;
+  int changed = 0 ;
+  
+  if ( p_env->access_mode == _AM_CAM ) {
+    changed = mmc_get_media_changed( p_env->gen.cdio );
+  }
+  else if ( p_env->access_mode == _AM_IOCTL ) {
+    changed = mmc_get_media_changed( p_env->gen.cdio );
+  }
+  else
+    return DRIVER_OP_UNSUPPORTED;
+    
+  return ((changed > 0) ? changed : 0);
+  
+#else 
+  return DRIVER_OP_NO_DRIVER;
+  
+#endif /*HAVE_FREEBSD_CDROM*/
+}
+
+static const char* 
+get_access_mode(const char *source)
+{
+	if(source) {
+		if (!(strncmp(source, "/dev/acd", 8))) 
+			 return "ioctl";
+		else {
+			char devname[256];
+			int  bytes = readlink(source, devname, 255);
+	
+			if(bytes >0) {
+				devname[bytes]=0;
+				if (!(strncmp(devname, "acd", 3))) 
+					return "ioctl";
+			}
+		}
+	}
+	
+	return "CAM";
+}
+
 /*!
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
@@ -786,6 +841,9 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
   CdIo *ret;
   _img_private_t *_data;
   char *psz_source_name;
+  
+  if(!psz_access_mode) 
+  	psz_access_mode = get_access_mode(psz_orig_source_name);
 
   cdio_funcs_t _funcs = {
     .audio_get_volume       = audio_get_volume_freebsd,

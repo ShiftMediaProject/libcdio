@@ -76,21 +76,17 @@ int
 read_audio_sectors_freebsd_ioctl (_img_private_t *_obj, void *data, lsn_t lsn,
 				  unsigned int nblocks)
 {
-  unsigned char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
-  struct ioc_read_audio cdda;
-
-  cdda.address.lba    = lsn;
-  cdda.buffer         = buf;
-  cdda.nframes        = nblocks;
-  cdda.address_format = CDIO_CDROM_LBA;
-
+  int bsize = CDIO_CD_FRAMESIZE_RAW; 
+    
+  /* set block size */
+  if (ioctl(_obj->gen.fd, CDRIOCSETBLOCKSIZE, &bsize) == -1) return 1; 
+ 
   /* read a frame */
-  if(ioctl(_obj->gen.fd, CDIOCREADAUDIO, &cdda) < 0) {
-    perror("CDIOCREADAUDIO");
+  if (pread(_obj->gen.fd, data, nblocks*bsize, lsn*bsize) != nblocks*bsize) { 
+    perror("read_audio_sectors_freebsd_ioctl");
     return 1;
   }
-  memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
-
+ 
   return 0;
 }
 
