@@ -1,8 +1,7 @@
+/*.exe
+/*.exe.stackdump
 /*.o
-<<<<<<< HEAD:test/.gitignore
-=======
 /*~
->>>>>>> 4f0228e99f37dedd16bc56df7b3982b589cf4122:test/.gitignore
 /.deps
 /.libs
 /Makefile
