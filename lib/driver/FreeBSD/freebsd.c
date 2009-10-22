@@ -1,7 +1,7 @@
 /*
   $Id: freebsd.c,v 1.38 2008/04/21 18:30:20 karl Exp $
 
-  Copyright (C) 2003, 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd.c,v 1.38 2008/04/21 18:30:20 karl Exp $";
+static const char _rcsid[] = "$Id: freebsd.c,v 1.38 2009/10/22 18:30:20 rocky Exp $";
 
 #include "freebsd.h"
 
@@ -746,24 +746,6 @@ close_tray_freebsd (const char *psz_device)
 #endif /*HAVE_FREEBSD_CDROM*/
 }
 
-#ifdef HAVE_FREEBSD_CDROM
-/*! Find out if media has changed since the last call.  @param
-  p_user_data the environment of the CD object to be acted upon.
-  @return 1 if media has changed since last call, 0 if not. Error
-  return codes are the same as driver_return_code_t
-   */
-static int
-get_media_changed_freebsd (const void *p_user_data)
-{
-  const _img_private_t *p_env = p_user_data;
-  if ( p_env->access_mode == _AM_CAM ) {
-    return mmc_get_media_changed( p_env->gen.cdio );
-  }
-  else
-    return DRIVER_OP_UNSUPPORTED;
-}
-#endif /*HAVE_FREEBSD_CDROM*/
-
 /*! Find out if media has changed since the last call.  @param
   p_user_data the environment of the CD object to be acted upon.
   @return 1 if media has changed since last call, 0 if not. Error
@@ -777,14 +759,7 @@ get_media_changed_freebsd (const void *p_user_data)
   const _img_private_t *p_env = p_user_data;
   int changed = 0 ;
   
-  if ( p_env->access_mode == _AM_CAM ) {
-    changed = mmc_get_media_changed( p_env->gen.cdio );
-  }
-  else if ( p_env->access_mode == _AM_IOCTL ) {
-    changed = mmc_get_media_changed( p_env->gen.cdio );
-  }
-  else
-    return DRIVER_OP_UNSUPPORTED;
+  changed = mmc_get_media_changed( p_env->gen.cdio );
     
   return ((changed > 0) ? changed : 0);
   
@@ -794,26 +769,27 @@ get_media_changed_freebsd (const void *p_user_data)
 #endif /*HAVE_FREEBSD_CDROM*/
 }
 
+#ifdef HAVE_FREEBSD_CDROM
 static const char* 
 get_access_mode(const char *source)
 {
-	if(source) {
-		if (!(strncmp(source, "/dev/acd", 8))) 
-			 return "ioctl";
-		else {
-			char devname[256];
-			int  bytes = readlink(source, devname, 255);
+  if (source) {
+    if (!(strncmp(source, "/dev/acd", 8))) 
+	return "ioctl";
+    else {
+      char devname[256];
+      int  bytes = readlink(source, devname, 255);
 	
-			if(bytes >0) {
-				devname[bytes]=0;
-				if (!(strncmp(devname, "acd", 3))) 
-					return "ioctl";
-			}
-		}
-	}
-	
-	return "CAM";
+      if (bytes > 0) {
+	devname[bytes]=0;
+	if (!(strncmp(devname, "acd", 3))) 
+	  return "ioctl";
+      }
+    }
+  }
+  return "CAM";
 }
+#endif /*HAVE_FREEBSD_CDROM*/
 
 /*!
   Initialization routine. This is the only thing that doesn't
@@ -842,8 +818,8 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
   _img_private_t *_data;
   char *psz_source_name;
   
-  if(!psz_access_mode) 
-  	psz_access_mode = get_access_mode(psz_orig_source_name);
+  if (!psz_access_mode) 
+      psz_access_mode = get_access_mode(psz_orig_source_name);
 
   cdio_funcs_t _funcs = {
     .audio_get_volume       = audio_get_volume_freebsd,
