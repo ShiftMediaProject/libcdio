@@ -752,24 +752,18 @@ close_tray_freebsd (const char *psz_device)
   return codes are the same as driver_return_code_t
    */
    
+#ifdef HAVE_FREEBSD_CDROM
 int
 get_media_changed_freebsd (const void *p_user_data)
 {
-#ifdef HAVE_FREEBSD_CDROM
   const _img_private_t *p_env = p_user_data;
   int changed = 0 ;
   
   changed = mmc_get_media_changed( p_env->gen.cdio );
     
   return ((changed > 0) ? changed : 0);
-  
-#else 
-  return DRIVER_OP_NO_DRIVER;
-  
-#endif /*HAVE_FREEBSD_CDROM*/
 }
 
-#ifdef HAVE_FREEBSD_CDROM
 static const char* 
 get_access_mode(const char *source)
 {
