@@ -9,7 +9,7 @@
 
 - Go over Changelog and add NEWS. Update date of release.
 
-- Remove "cvs" from configure.ac's release name. E.g.
+- Remove "git" from configure.ac's release name. E.g.
     define(RELEASE_NUM, 23)
     define(LIBVCD_VERSION_STR, 0.7.$1cvs)
                                      ^^^
@@ -20,14 +20,12 @@
      remove any errors.
 
 - Make sure sources are current and checked in:
-    cvs update -dPA .
-    cvs commit .
+    git pull
 
 - autogen.sh && make && make check
 
-- Tag release in CVS: 
-   cvs log -h configure.ac
-   cvs tag release_*0_80* .
+- Tag release in git: 
+   cvs tag release-*0.83* .
 
 - "make distcheck" one more time
 

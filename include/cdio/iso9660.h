@@ -99,13 +99,13 @@ extern enum iso_enum1_s {
 
 } iso_enums1;
 
-/*! An enumeration for some of the ISO_* #defines below. This isn't
+/*! An enumeration for some of the ISO_* \#defines below. This isn't
     really an enumeration one would really use in a program it is here
     to be helpful in debuggers where wants just to refer to the
     ISO_*_ names and get something.
   */
 
-/**! ISO 9660 directory flags. */
+/*! ISO 9660 directory flags. */
 extern enum iso_flag_enum_s {
   ISO_FILE	      =   0,   /**<  Not really a flag...	         */
   ISO_EXISTENCE	      =   1,   /**< Do not make existence known (hidden) */
@@ -118,7 +118,7 @@ extern enum iso_flag_enum_s {
   ISO_MULTIEXTENT     = 128,   /**< Not final entry of a mult. ext. file */
 } iso_flag_enums;
 
-/**! Volume descriptor types */
+/*! Volume descriptor types */
 extern enum iso_vd_enum_s {
   ISO_VD_BOOT_RECORD   =  0,  /**< CD is bootable */
   ISO_VD_PRIMARY       =  1,  /**< Is in any ISO-9660 */
@@ -129,7 +129,9 @@ extern enum iso_vd_enum_s {
 
   
 /*!
-   An ISO filename is: "abcde.eee;1" -> <filename> '.' <ext> ';' <version #>
+   An ISO filename is: 
+   <em>abcd</em>.<em>eee</em> -> 
+   <em>filename</em>.<em>ext</em>;<em>version#</em>
 
     For ISO-9660 Level 1, the maximum needed string length is:
 
