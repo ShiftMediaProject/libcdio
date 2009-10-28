@@ -1374,7 +1374,6 @@ verify_read_command(cdrom_drive_t *d)
 
 static void 
 check_fua_bit(cdrom_drive_t *d){
-  int16_t *buff=malloc(CDIO_CD_FRAMESIZE_RAW);
   long i;
 
   if(d->read_audio==scsi_read_mmc)return;
@@ -1386,26 +1385,29 @@ check_fua_bit(cdrom_drive_t *d){
   
   d->enable_cdda(d,1);
   d->fua=1;
-  
-  for(i=1;i<=d->tracks;i++){
-    if(cdda_track_audiop(d,i)==1){
-      long firstsector=cdda_track_firstsector(d,i);
-      long lastsector=cdda_track_lastsector(d,i);
-      long sector=(firstsector+lastsector)>>1;
+
+  {
+    int16_t *buff=malloc(CDIO_CD_FRAMESIZE_RAW);
+    for(i=1;i<=d->tracks;i++){
+      if(cdda_track_audiop(d,i)==1){
+        long firstsector=cdda_track_firstsector(d,i);
+        long lastsector=cdda_track_lastsector(d,i);
+        long sector=(firstsector+lastsector)>>1;
       
-      if(d->read_audio(d,buff,sector,1)>0){
-	cdmessage(d,"\tDrive accepted FUA bit.\n");
-	d->enable_cdda(d,0);
-	free(buff);
-	return;
+        if(d->read_audio(d,buff,sector,1)>0){
+	  cdmessage(d,"\tDrive accepted FUA bit.\n");
+	  d->enable_cdda(d,0);
+	  free(buff);
+	  return;
+        }
       }
     }
-  }
   
-  d->fua=0;
-  cdmessage(d,"\tDrive rejected FUA bit.\n");
-  free(buff);
-  return;
+    d->fua=0;
+    cdmessage(d,"\tDrive rejected FUA bit.\n");
+    free(buff);
+    return;
+  }
 }
 
 static int 

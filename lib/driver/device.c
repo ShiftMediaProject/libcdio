@@ -429,6 +429,7 @@ cdio_close_tray (const char *psz_orig_drive, /*in/out*/ driver_id_t
         return drc;
       }
     }
+    free(psz_drive);
     return DRIVER_OP_UNSUPPORTED;
   }
   
