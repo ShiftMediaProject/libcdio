@@ -133,8 +133,8 @@ main(int argc, const char *argv[])
 	  if (psz_mes || psz_err)
 	    printf("%s%s\n", psz_mes ? psz_mes: "", psz_err ? psz_err: "");
 	  
-	  if (psz_err) free(psz_err);
-	  if (psz_mes) free(psz_mes);
+	  free(psz_err);
+	  free(psz_mes);
 	  if( !p_readbuf ) {
 	    printf("paranoia read error. Stopping.\n");
 	    goto out;

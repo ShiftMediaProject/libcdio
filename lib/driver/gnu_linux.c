@@ -660,10 +660,8 @@ static int do_umount(char * target) {
     execlp("pumount", "pumount", target, NULL);
     execlp("umount", "umount", target, NULL);
     return -1;
-    break;
   case -1:
     return -1;
-    break;
   default: /* parent */
     wait(&status);
     if (WIFEXITED(status) == 0) {

@@ -507,7 +507,6 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 		    opcode==NERO_ID ? 'O': '5');
 	free(footer_buf);
 	return false;
-	break;
 
       case END1_ID: /* "END!" */
 	cdio_debug ("nrg end tag detected");

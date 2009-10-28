@@ -176,7 +176,6 @@ data_bigendianp(cdrom_drive_t *d)
 
     cdmessage(d,"\n\tCannot determine CDROM drive endianness.\n");
     return(bigendianp());
-    return(-1);
   }
 }
 

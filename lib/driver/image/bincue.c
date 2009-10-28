@@ -257,7 +257,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 
   /* The below declarations may be unique to this image-parse routine. */
   int start_index;
-  bool b_first_index_for_track=false;
+  bool b_first_index_for_track;
 
   if (NULL == psz_cue_name) 
     return false;

@@ -266,7 +266,7 @@ static void dradf4(int ido,int l1,float *cc,float *ch,float *wa1,
 static void drftf1(int n,float *c,float *ch,float *wa,int *ifac){
   int i,k1,l1,l2;
   int na,kh,nf;
-  int ip,iw,ido,idl1,ix2,ix3;
+  int ip,iw,ido,ix2,ix3;
 
   nf=ifac[1];
   na=1;
@@ -278,7 +278,6 @@ static void drftf1(int n,float *c,float *ch,float *wa,int *ifac){
     ip=ifac[kh+1];
     l1=l2/ip;
     ido=n/l2;
-    idl1=ido*l1;
     iw-=(ip-1)*ido;
     na=1-na;
 
@@ -466,7 +465,7 @@ static void dradb4(int ido,int l1,float *cc,float *ch,float *wa1,
 static void drftb1(int n, float *c, float *ch, float *wa, int *ifac){
   int i,k1,l1,l2;
   int na;
-  int nf,ip,iw,ix2,ix3,ido,idl1;
+  int nf,ip,iw,ix2,ix3,ido;
 
   nf=ifac[1];
   na=0;
@@ -477,7 +476,6 @@ static void drftb1(int n, float *c, float *ch, float *wa, int *ifac){
     ip=ifac[k1 + 2];
     l2=ip*l1;
     ido=n/l2;
-    idl1=ido*l1;
     if(ip!=4)goto L103;
     ix2=iw+ido;
     ix3=ix2+ido;

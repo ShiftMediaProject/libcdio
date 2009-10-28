@@ -81,10 +81,10 @@ test_read(cdrom_drive *d, void *p, long begin, long sectors)
 #if defined(CDDA_TEST_SEEKJITTER) \
   || defined(CDDA_TEST_ALLJITTER) \
   || defined(CDDA_TEST_SOMEJITTER)
-  int jitter_flag=0;
+  int jitter_flag;
 #endif
 
-  int los_flag=0;
+  int los_flag;
   static int jitter=0;
   int bytes_so_far=0;
   long bytestotal;
@@ -172,7 +172,6 @@ test_read(cdrom_drive *d, void *p, long begin, long sectors)
 #endif
 
 
-    if(this_bytes>inner_bytes)this_bytes=inner_bytes;
     if(begin+jitter+bytes_so_far<0)jitter=0;    
     seeki=begin+bytes_so_far+jitter;
 
