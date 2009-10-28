@@ -194,8 +194,10 @@ iso9660_open_ext_private (const char *psz_path,
  error:
   if (p_iso && p_iso->stream) {
     cdio_stdio_destroy(p_iso->stream);
-    free(p_iso);
+
+    if (p_iso) free(p_iso);
   }
+  
   return NULL;
 }
 

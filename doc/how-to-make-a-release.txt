@@ -33,6 +33,7 @@
    gnu-ftp-upload libcdio 0.*80*
 
    Also gnupload from the automake distribution.
+   /src/build/automake-1.10/lib/gnupload --to ftp.gnu.org:libcdio libcdio-0.82.tar.gz  (Use "is" password)
 
 - Update/Announce on Freshmeat:
    http://freshmeat.net/add-release/36670/
@@ -45,7 +46,7 @@
   rm *.html
   cp ../../libcdio/doc/doxygen/html/*.html .
   cvs update . 
-    for each "U" html *except libcdio.hmtl* put back remove it 
+    for each "U" html *except libcdio.html* put back remove it 
       with "rm" and "cvs remove"
     for each new "?" html add it
   cvs commit .
@@ -56,9 +57,7 @@
      cp ../libcdio/doc/libcdio.html .
      cvs commit libcdio.html
 
-- Remove old cvs versions 
-
-- Bump version in configure.ac and add "cvs". See place above in 
+- Bump version in configure.ac and add "git". See place above in 
   removal. 
 
 

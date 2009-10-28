@@ -92,6 +92,7 @@ main(int argc, const char *argv[])
 
   if (!device->open(psz_drive, DRIVER_DEVICE)) {
     printf("Couldn't find CD\n");
+    delete(device);
     return 1;
   } else {
     i_first_track = device->getFirstTrackNum();

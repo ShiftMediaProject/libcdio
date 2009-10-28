@@ -737,6 +737,7 @@ close_tray_freebsd (const char *psz_device)
   
   if((i_rc = ioctl(fd, CDIOCCLOSE)) != 0) {
     cdio_warn ("ioctl CDIOCCLOSE failed: %s\n", strerror(errno));  
+    close(fd);
     return DRIVER_OP_ERROR;
   }
   close(fd);

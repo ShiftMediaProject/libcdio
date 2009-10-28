@@ -356,6 +356,7 @@ eject_media_netbsd(void *user_data) {
 		ret = 1;
 	}
 
+	close(fd);
 	return ret;
 }
 

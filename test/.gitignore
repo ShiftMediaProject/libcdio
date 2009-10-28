@@ -22,6 +22,7 @@
 /testbincue.c
 /testdefault
 /testgetdevices
+/testgetdevices.c
 /testischar
 /testiso9660
 /testisocd
