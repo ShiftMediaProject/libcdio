@@ -20,10 +20,6 @@
 /* Simple program to show using libcdio's version of the CD-DA paranoia. 
    library.  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
 #include <iostream>
 #include <cstdlib>
 #include <fstream>

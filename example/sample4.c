@@ -1,7 +1,5 @@
 /*
-  $Id: sample4.c,v 1.8 2008/03/24 15:30:56 karl Exp $
-
-  Copyright (C) 2003, 2004 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,9 +19,6 @@
    A slightly improved sample3 program: we handle cdio logging and
    take an optional CD-location.
 */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>

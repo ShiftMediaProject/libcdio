@@ -1,7 +1,5 @@
 /*
-  $Id: drives.c,v 1.6 2008/03/24 15:30:55 karl Exp $
-
-  Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,9 +17,7 @@
 
 /* Simple program to show drivers installed and what the default 
    CD-ROM drive is and what CD drives are available. */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <cdio/cdio.h>
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
@@ -31,7 +27,6 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#include <cdio/cdio.h>
 #include <cdio/cd_types.h>
 #include <cdio/logging.h>
 

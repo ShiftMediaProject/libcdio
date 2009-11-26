@@ -1,6 +1,4 @@
 /*
-  $Id: isofile.cpp,v 1.2 2008/03/24 15:30:56 karl Exp $
-
   Copyright (C) 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
@@ -31,15 +29,11 @@
 
 #define LOCAL_FILENAME "copying"
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
-#include "portable.h"
-
 #include <sys/types.h>
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
+
+#include "portable.h"
 
 #include <stdio.h>
 

@@ -1,7 +1,6 @@
 /*
-  $Id: tracks.c,v 1.7 2008/03/24 15:30:56 karl Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009 
+  Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,9 +18,6 @@
 
 /* Simple program to list track numbers and logical sector numbers of
    a Compact Disc using libcdio. */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 #include <stdio.h>
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>

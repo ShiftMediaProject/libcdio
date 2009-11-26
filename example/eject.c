@@ -24,16 +24,13 @@
 
    See also corresponding C++ program of a similar name. 
 */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <cdio/cdio.h>
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
-#include <cdio/cdio.h>
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif

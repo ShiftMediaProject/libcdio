@@ -1,7 +1,5 @@
 /*
-  $Id: audio.c,v 1.10 2008/06/19 15:44:10 flameeyes Exp $
-
-  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
   Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
   Copyright (C) 1997, 1998 
@@ -24,9 +22,7 @@
    CDDA player program using curses display see cdda-player in this
    distribution.
 */
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include <cdio/cdio.h>
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -56,7 +52,6 @@
 #include <errno.h>
 #endif
 
-#include <cdio/cdio.h>
 #include <cdio/mmc.h>
 #include <cdio/util.h>
 #include <cdio/cd_types.h>

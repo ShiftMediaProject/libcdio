@@ -1,6 +1,5 @@
-#   $Id: Makefile.am,v 1.44 2008/08/31 13:38:21 flameeyes Exp $
-#
-#   Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009
+#   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -92,6 +91,11 @@ udf1_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 udffile_DEPENDENCIES = $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
 udffile_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
+check_PROGRAMS      = cdtext device drives eject isofile isofile2 isolist \
+                      isolsn mmc1 mmc2 mmc2a mmc3 $(paranoia_progs) sample4 \
+	              udffile
+
+TESTS               = $(check_PROGRAMS)
 
 # iso programs create file "copying"
 MOSTLYCLEANFILES = copying *.wav

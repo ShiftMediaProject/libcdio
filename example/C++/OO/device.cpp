@@ -1,7 +1,7 @@
 /*
   $Id: device.cpp,v 1.4 2008/03/24 15:30:57 karl Exp $
 
-  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,9 +21,8 @@
    CD-ROM drive is. See also corresponding C program of a similar
    name. */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <cdio++/cdio.hpp>
+
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
@@ -33,8 +32,6 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-
-#include <cdio++/cdio.hpp>
 
 #define _(x) x
 

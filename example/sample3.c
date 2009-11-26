@@ -21,9 +21,6 @@
    A somewhat simplified program to show the use of cdio_guess_cd_type().
    Figure out the kind of CD image we've got.
 */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>

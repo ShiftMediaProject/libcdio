@@ -1,7 +1,5 @@
 /*
-  $Id: cdchange.c,v 1.9 2008/06/25 08:01:53 rocky Exp $
-
-  Copyright (C) 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2006, 2007, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -17,10 +15,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cdio/cdio.h>
+
 /* Test media changed */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 #include <stdio.h>
 
 #ifdef HAVE_LIMITS_H
@@ -55,7 +52,6 @@ sleep(unsigned int ms)
 }
 #endif
 
-#include <cdio/cdio.h>
 int
 main(int argc, const char *argv[])
 {
