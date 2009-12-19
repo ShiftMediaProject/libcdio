@@ -374,18 +374,20 @@ typedef struct mmc_cdb_s {
     unsigned char reserved2;
     unsigned char profile_msb;
     unsigned char profile_lsb;
-  } cdio_mmc_feature_list_header_t;
-
+ } cdio_mmc_feature_list_header_t;
   /** An enumeration indicating whether an MMC command is sending
-    data or getting data.
+    data, or getting data, or does none of both.
+ */
+ typedef enum mmc_direction_s {
+   SCSI_MMC_DATA_READ,
+    SCSI_MMC_DATA_WRITE,
+    SCSI_MMC_DATA_NONE
+ } cdio_mmc_direction_t;
+  /** Indicate to applications that SCSI_MMC_DATA_NONE is available
   */
-  typedef enum mmc_direction_s {
-    SCSI_MMC_DATA_READ,
-    SCSI_MMC_DATA_WRITE
-  } cdio_mmc_direction_t;
-  
+#define SCSI_MMC_HAS_DIR_NONE 1
   typedef struct mmc_subchannel_s
-  {
+ {
     uint8_t       reserved;
     uint8_t       audio_status;
     uint16_t      data_length; /**< Really ISO 9660 7.2.2 */
