@@ -1,6 +1,4 @@
-#   $Id: Makefile.am,v 1.13 2008/08/31 13:38:21 flameeyes Exp $
-#
-#   Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2005, 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -67,3 +65,6 @@ mmc2_LDADD          = $(LIBCDIOPP_LIBS) $(LIBCDIO_LIBS)
 tracks_SOURCES      = tracks.cpp
 tracks_LDADD        = $(LIBCDIOPP_LIBS) $(LIBCDIO_LIBS)
 
+check_PROGRAMS      = $(noinst_PROGRAMS)
+
+TESTS               = $(check_PROGRAMS)

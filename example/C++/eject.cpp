@@ -1,7 +1,5 @@
 /*
-  $Id: eject.cpp,v 1.4 2008/03/24 15:30:56 karl Exp $
-
-  Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2006, 2008, 209 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,16 +20,13 @@
    If a single argument is given, it is used as the CD-ROM device to 
    eject/close. Otherwise a CD-ROM drive will be scanned for.
 */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <cdio/cdio.h>
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
-#include <cdio/cdio.h>
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif

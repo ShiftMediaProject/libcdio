@@ -34,9 +34,6 @@
 #define ISO9660_IMAGE_PATH "../../../"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 #include <sys/types.h>
 #include <cdio++/iso9660.hpp>
 

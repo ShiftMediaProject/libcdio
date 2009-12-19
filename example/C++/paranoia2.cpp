@@ -1,7 +1,5 @@
 /*
-  $Id: paranoia2.cpp,v 1.2 2008/03/24 15:30:57 karl Exp $
-
-  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,10 +20,6 @@
    calling paranoia's open. I imagine in many cases such as media
    players this may be what will be done since, one may want to get
    CDDB/CD-Text info beforehand.  */
-
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 
 #include <cdio/cdda.h>
 #include <cdio/cd_types.h>

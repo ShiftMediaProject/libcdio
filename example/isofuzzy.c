@@ -1,7 +1,5 @@
 /*
-  $Id: isofuzzy.c,v 1.3 2008/03/24 15:30:56 karl Exp $
-
-  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,16 +26,11 @@
 #define ISO9660_IMAGE_PATH "/tmp/"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "vcd_demo.bin"
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
-#include "portable.h"
-
 #include <sys/types.h>
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
 
+#include "portable.h"
 #include <stdio.h>
 
 #ifdef HAVE_ERRNO_H

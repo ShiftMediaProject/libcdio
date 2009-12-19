@@ -1,7 +1,5 @@
 /* -*- c -*-
-    $Id: cdio.h,v 1.82 2008/03/25 15:59:08 karl Exp $
-
-    Copyright (C) 2003, 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2003, 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -34,7 +32,7 @@
 #define CDIO_API_VERSION 5
 
 #include <cdio/version.h>
-
+#include <cdio/types.h>
 #ifdef  HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -42,7 +40,6 @@
 #include <unistd.h>
 #endif
 
-#include <cdio/types.h>
 #include <cdio/sector.h>
 
 #ifdef __cplusplus

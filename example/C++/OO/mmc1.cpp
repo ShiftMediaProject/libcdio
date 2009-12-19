@@ -1,7 +1,5 @@
 /*
-  $Id: mmc1.cpp,v 1.2 2008/03/24 15:30:57 karl Exp $
-
-  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,9 +20,7 @@
    This basically the libdio mmc_get_hwinfo() routine.
    See also corresponding C and non OO C++ program.
 */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include <cdio++/cdio.hpp>
 #include <stdio.h>
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -32,7 +28,6 @@
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
-#include <cdio++/cdio.hpp>
 
 /* Set how long to wait for MMC commands to complete */
 #define DEFAULT_TIMEOUT_MS 10000

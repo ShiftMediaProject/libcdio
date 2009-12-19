@@ -25,9 +25,6 @@
 #define UDF_IMAGE_PATH "../"
 #define UDF_IMAGE "/src2/cd-images/udf/UDF102ISO.iso"
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 #include <sys/types.h>
 #include <cdio/cdio.h>
 #include <cdio/udf.h>

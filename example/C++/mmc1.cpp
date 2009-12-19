@@ -1,7 +1,5 @@
 /*
-  $Id: mmc1.cpp,v 1.4 2008/03/24 15:30:56 karl Exp $
-
-  Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,9 +20,6 @@
    This basically the libdio mmc_get_hwinfo() routine.
    See also corresponding C and OO C++ program.
 */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 #include <stdio.h>
 #include <sys/types.h>
 #include <cdio/cdio.h>

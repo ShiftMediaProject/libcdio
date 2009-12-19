@@ -1,7 +1,5 @@
 /*
-  $Id: isofile2.c,v 1.2 2008/03/24 15:30:55 karl Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2006, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -37,14 +35,10 @@
 #define ISO9660_FILENAME "COPYING"
 #define LOCAL_FILENAME "copying"
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
-#include "portable.h"
-
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
+
+#include "portable.h"
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>

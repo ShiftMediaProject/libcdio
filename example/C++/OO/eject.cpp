@@ -24,10 +24,6 @@
 
    See also corresponding C program of a similar name. 
 */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
 #include <cdio++/cdio.hpp>
 
 #include <stdio.h>
