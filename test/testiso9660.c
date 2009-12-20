@@ -1,7 +1,7 @@
 /*
   $Id: testiso9660.c,v 1.23 2008/06/03 08:40:15 rocky Exp $
 
-  Copyright (C) 2003, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2006, 2007, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -244,6 +244,7 @@ main (int argc, const char *argv[])
     p_tm = localtime(&now);
     iso9660_set_dtime(p_tm, &dtime);
     iso9660_get_dtime(&dtime, true, &tm);
+#ifdef HAVE_TM_GMTOFF    
     if ( !time_compare(p_tm, &tm) ) {
       return 41;
     }
@@ -253,12 +254,13 @@ main (int argc, const char *argv[])
       printf("Error returned by iso9660_get_dtime\n");
       return 42;
     }
-    
+
     if ( !time_compare(p_tm, &tm) ) {
       printf("GMT time retrieved with iso9660_get_dtime() not same as that\n");
       printf("set with iso9660_set_dtime().\n");
       return 43;
     }
+#endif
     
     {
 	p_tm = localtime(&now);
