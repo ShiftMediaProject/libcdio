@@ -1646,7 +1646,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   ret->driver_id = DRIVER_LINUX;
 
   open_access_mode = (_AM_MMC_RDWR == _data->access_mode) 
-      ? (O_RDWR|O_EXCL) : (O_RDONLY|O_NONBLOCK);
+      ? (O_RDWR|O_EXCL|O_NONBLOCK) : (O_RDONLY|O_NONBLOCK);
       
   if (cdio_generic_init(_data, open_access_mode)) {
     return ret;
