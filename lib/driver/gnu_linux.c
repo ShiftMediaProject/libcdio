@@ -85,7 +85,8 @@ typedef enum {
   _AM_NONE,
   _AM_IOCTL,
   _AM_READ_CD,
-  _AM_READ_10
+  _AM_READ_10,
+  _AM_MMC_RDWR
 } access_mode_t;
 
 typedef struct {
@@ -132,6 +133,8 @@ str_to_access_mode_linux(const char *psz_access_mode)
     return _AM_READ_CD;
   else if (!strcmp(psz_access_mode, "READ_10"))
     return _AM_READ_10;
+  else if (!strcmp(psz_access_mode, "MMC_RDWR"))
+    return _AM_MMC_RDWR;
   else {
     cdio_warn ("unknown access type: %s. Default IOCTL used.", 
 	       psz_access_mode);
@@ -369,11 +372,13 @@ get_arg_linux (void *env, const char key[])
   } else if (!strcmp (key, "access-mode")) {
     switch (_obj->access_mode) {
     case _AM_IOCTL:
-      return "ioctl";
+      return "IOCTL";
     case _AM_READ_CD:
       return "READ_CD";
     case _AM_READ_10:
       return "READ_10";
+    case _AM_MMC_RDWR:
+      return "MMC_RDWR";
     case _AM_NONE:
       return "no access method";
     }
@@ -1068,6 +1073,7 @@ _read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
       break;
       
     case _AM_IOCTL:
+    case _AM_MMC_RDWR:
       if (ioctl (p_env->gen.fd, CDROMREADMODE2, &buf) == -1)
 	{
 	  perror ("ioctl()");
@@ -1538,6 +1544,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   CdIo_t *ret;
   _img_private_t *_data;
   char *psz_source;
+  int open_access_mode;  /* Access mode passed to cdio_generic_init. */
 
   cdio_funcs_t _funcs = {
     .audio_get_volume      = audio_get_volume_linux,
@@ -1638,7 +1645,10 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
 
   ret->driver_id = DRIVER_LINUX;
 
-  if (cdio_generic_init(_data, O_RDWR|O_NONBLOCK)) {
+  open_access_mode = (_AM_MMC_RDWR == _data->access_mode) 
+      ? (O_RDWR|O_NONBLOCK) : (O_RDONLY|O_NONBLOCK);
+      
+  if (cdio_generic_init(_data, open_access_mode)) {
     return ret;
   } else {
     cdio_generic_free (_data);

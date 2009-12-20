@@ -1,6 +1,4 @@
-#   $Id: Makefile.am,v 1.69 2008/08/31 13:38:22 flameeyes Exp $
-#
-#   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2004, 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -29,7 +27,7 @@ testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIB
 endif
 
 hack = check_sizeof testassert testbincue testgetdevices testischar \
-       testisocd testisocd2 testiso9660 \
+       testisocd testisocd2 testiso9660 testlinux \
        testnrg $(testparanoia) testtoc testpregap
 
 EXTRA_PROGRAMS = testdefault 
@@ -48,6 +46,9 @@ testisocd2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 testtoc_LDADD       = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testtoc_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
+
+testlinux_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
+testlinux_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
 testpregap_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testpregap_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
