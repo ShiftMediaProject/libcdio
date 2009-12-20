@@ -1224,13 +1224,12 @@ run_mmc_cmd_linux( void *p_user_data,
   const _img_private_t *p_env = p_user_data;
   struct cdrom_generic_command cgc;
   memset (&cgc, 0, sizeof (struct cdrom_generic_command));
-  memcpy(&cgc.cmd, p_cdb, i_cdb);
-  cgc.buflen = i_buf;
-  cgc.buffer = p_buf;
-  cgc.data_direction = (SCSI_MMC_DATA_READ == cgc.data_direction)
-    ? CGC_DATA_READ : CGC_DATA_WRITE;
-
-#ifdef HAVE_LINUX_CDROM_TIMEOUT
+ memcpy(&cgc.cmd, p_cdb, i_cdb);
+ cgc.buflen = i_buf;
+ cgc.buffer = p_buf;
+  cgc.data_direction = (SCSI_MMC_DATA_READ == e_direction)
+   ? CGC_DATA_READ : CGC_DATA_WRITE;
+ #ifdef HAVE_LINUX_CDROM_TIMEOUT
   cgc.timeout = i_timeout_ms;
 #endif
 
@@ -1639,7 +1638,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
 
   ret->driver_id = DRIVER_LINUX;
 
-  if (cdio_generic_init(_data, O_RDONLY|O_NONBLOCK)) {
+  if (cdio_generic_init(_data, O_RDWR|O_NONBLOCK)) {
     return ret;
   } else {
     cdio_generic_free (_data);
