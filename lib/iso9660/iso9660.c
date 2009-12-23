@@ -1,8 +1,8 @@
 /*
   $Id: iso9660.c,v 1.41 2008/06/25 08:01:54 rocky Exp $
 
-  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
-    Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -296,12 +296,15 @@ iso9660_get_ltime (const iso9660_ltime_t *p_ldate,
   return true;
 }
 
-
 /*!
   Set time in format used in ISO 9660 directory index record
-  from a Unix time structure. */
+  from a Unix time structure. timezone is given as an offset
+  correction in minutes. 
+*/
 void
-iso9660_set_dtime (const struct tm *p_tm, /*out*/ iso9660_dtime_t *p_idr_date)
+iso9660_set_dtime_with_timezone (const struct tm *p_tm, 
+                                 int timezone,
+                                 /*out*/ iso9660_dtime_t *p_idr_date)
 {
   memset (p_idr_date, 0, 7);
 
@@ -314,10 +317,9 @@ iso9660_set_dtime (const struct tm *p_tm, /*out*/ iso9660_dtime_t *p_idr_date)
   p_idr_date->dt_minute = p_tm->tm_min;
   p_idr_date->dt_second = p_tm->tm_sec;
 
-#ifdef HAVE_TM_GMTOFF
   /* The ISO 9660 timezone is in the range -48..+52 and each unit
      represents a 15-minute interval. */
-  p_idr_date->dt_gmtoff = p_tm->tm_gmtoff / (15 * 60);
+  p_idr_date->dt_gmtoff = timezone / 15;
 
   if (p_idr_date->dt_gmtoff < -48 ) {
     
@@ -329,18 +331,33 @@ iso9660_set_dtime (const struct tm *p_tm, /*out*/ iso9660_dtime_t *p_idr_date)
                p_idr_date->dt_gmtoff);
     p_idr_date->dt_gmtoff = 52;
   }
-#else 
-  p_idr_date->dt_gmtoff = 0;
+}
 
-  if (p_tm->tm_isdst > 0) p_idr_date->dt_gmtoff -= 4;
+/*!
+  Set time in format used in ISO 9660 directory index record
+  from a Unix time structure. */
+void
+iso9660_set_dtime (const struct tm *p_tm, /*out*/ iso9660_dtime_t *p_idr_date)
+{
+  int timezone;
+#ifdef HAVE_TM_GMTOFF
+  /* Convert seconds to minutes */
+  timezone = p_tm->tm_gmtoff / 60;
+#else 
+  timezone = (p_tm->tm_isdst > 0) ? 0 : -60;
 #endif
+  iso9660_set_dtime_with_timezone (p_tm, timezone, p_idr_date);
 }
 
 /*!
   Set "long" time in format used in ISO 9660 primary volume descriptor
-  from a Unix time structure. */
+  from a Unix time structure. timezone is given as an offset
+  correction in minutes. 
+*/
 void
-iso9660_set_ltime (const struct tm *p_tm, /*out*/ iso9660_ltime_t *pvd_date)
+iso9660_set_ltime_with_timezone (const struct tm *p_tm, 
+                                 int timezone,
+                                 /*out*/ iso9660_ltime_t *pvd_date)
 {
   char *_pvd_date = (char *) pvd_date; 
 
@@ -355,13 +372,8 @@ iso9660_set_ltime (const struct tm *p_tm, /*out*/ iso9660_ltime_t *pvd_date)
            p_tm->tm_hour, p_tm->tm_min, p_tm->tm_sec,
            0 /* 1/100 secs */ );
 
-#ifndef HAVE_TM_GMTOFF
-  /* Adjust for daylight savings time. */
-  if (p_tm->tm_isdst > 0) _pvd_date[16] -= (iso712_t) 4;
-
-#else
   /* Set time zone in 15-minute interval encoding. */
-  pvd_date->lt_gmtoff -= p_tm->tm_gmtoff / (15 * 60);
+  pvd_date->lt_gmtoff -= (timezone / 15);
   if (pvd_date->lt_gmtoff < -48 ) {
     
     cdio_warn ("Converted ISO 9660 timezone %d is less than -48. Adjusted", 
@@ -372,8 +384,22 @@ iso9660_set_ltime (const struct tm *p_tm, /*out*/ iso9660_ltime_t *pvd_date)
                (int) pvd_date->lt_gmtoff);
     pvd_date->lt_gmtoff = 52;
   }
-#endif
+}
 
+/*!
+  Set "long" time in format used in ISO 9660 primary volume descriptor
+  from a Unix time structure. */
+void
+iso9660_set_ltime (const struct tm *p_tm, /*out*/ iso9660_ltime_t *pvd_date)
+{
+  int timezone;
+#ifdef HAVE_TM_GMTOFF
+  /* Set time zone in 15-minute interval encoding. */
+  timezone = p_tm->tm_gmtoff / 60;
+#else
+  timezone = (p_tm->tm_isdst > 0) ? 0 : -60;
+#endif
+  iso9660_set_ltime_with_timezone (p_tm, timezone, pvd_date);
 }
 
 /*!

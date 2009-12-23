@@ -651,11 +651,11 @@ typedef struct _iso9660_s iso9660_t;
   bool iso9660_ifs_read_pvd (const iso9660_t *p_iso, 
                              /*out*/ iso9660_pvd_t *p_pvd);
   
-/*!
-  Read the Super block of an ISO 9660 image. This is the 
-  Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
-  Descriptor if (Joliet) extensions are acceptable.
-*/
+  /*!
+    Read the Super block of an ISO 9660 image. This is the 
+    Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
+    Descriptor if (Joliet) extensions are acceptable.
+  */
   bool iso9660_fs_read_superblock (CdIo_t *p_cdio, 
                                    iso_extension_mask_t iso_extension_mask);
   
@@ -671,18 +671,36 @@ typedef struct _iso9660_s iso9660_t;
 /*====================================================
   Time conversion 
  ====================================================*/
-/*!
-  Set time in format used in ISO 9660 directory index record
-  from a Unix time structure. */
+
+  /*!
+    Set time in format used in ISO 9660 directory index record
+    from a Unix time structure. 
+  */
   void iso9660_set_dtime (const struct tm *tm, 
                           /*out*/ iso9660_dtime_t *idr_date);
-
-
+    
+    
+  /*!
+    Set time in format used in ISO 9660 directory index record
+    from a Unix time structure. timezone is given as an offset
+    correction in minutes. 
+  */
+  void iso9660_set_dtime_with_timezone (const struct tm *p_tm, 
+                                        int timezone,
+                                        /*out*/ iso9660_dtime_t *p_idr_date);
+    
   /*!
     Set "long" time in format used in ISO 9660 primary volume descriptor
     from a Unix time structure. */
   void iso9660_set_ltime (const struct tm *_tm, 
                           /*out*/ iso9660_ltime_t *p_pvd_date);
+  
+  /*!
+    Set "long" time in format used in ISO 9660 primary volume descriptor
+    from a Unix time structure. */
+  void iso9660_set_ltime_with_timezone (const struct tm *_tm, 
+                                        int timezone,
+                                        /*out*/ iso9660_ltime_t *p_pvd_date);
   
   /*!
     Get Unix time structure from format use in an ISO 9660 directory index 
