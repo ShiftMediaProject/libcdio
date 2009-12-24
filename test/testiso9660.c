@@ -237,35 +237,34 @@ main (int argc, const char *argv[])
   {
     struct tm *p_tm, tm;
     iso9660_dtime_t dtime;
-    iso9660_ltime_t ltime;
     time_t now = time(NULL);
 
     memset(&dtime, 0, sizeof(dtime));
     p_tm = localtime(&now);
     iso9660_set_dtime(p_tm, &dtime);
     iso9660_get_dtime(&dtime, true, &tm);
+
+    p_tm = gmtime(&now);
+    iso9660_set_dtime_with_timezone(p_tm, 0, &dtime);
+    if (!iso9660_get_dtime(&dtime, false, &tm)) {
+      printf("Error returned by iso9660_get_dtime_with_timezone\n");
+      return 41;
+    }
+
+    if ( !time_compare(p_tm, &tm) ) {
+      printf("GMT time retrieved with iso9660_get_dtime_with_timezone() not same as that\n");
+      printf("set with iso9660_set_dtime().\n");
+      return 42;
+    }
+
 #ifdef HAVE_TM_GMTOFF    
     if ( !time_compare(p_tm, &tm) ) {
-      return 41;
+      return 43;
     }
     p_tm = gmtime(&now);
     iso9660_set_dtime(p_tm, &dtime);
     if (!iso9660_get_dtime(&dtime, false, &tm)) {
       printf("Error returned by iso9660_get_dtime\n");
-      return 42;
-    }
-
-    if ( !time_compare(p_tm, &tm) ) {
-      printf("GMT time retrieved with iso9660_get_dtime() not same as that\n");
-      printf("set with iso9660_set_dtime().\n");
-      return 43;
-    }
-#endif
-    
-    p_tm = gmtime(&now);
-    iso9660_set_dtime_with_timezone(p_tm, 0, &dtime);
-    if (!iso9660_get_dtime(&dtime, false, &tm)) {
-      printf("Error returned by iso9660_get_dtime_with_timezone\n");
       return 44;
     }
 
@@ -274,30 +273,34 @@ main (int argc, const char *argv[])
       printf("set with iso9660_set_dtime().\n");
       return 45;
     }
+    
     {
-	p_tm = localtime(&now);
-	iso9660_set_ltime(p_tm, &ltime);
-	  
-	if (!iso9660_get_ltime(&ltime, &tm)) {
-	  printf("Problem running iso9660_get_ltime\n");
-	  return 46;
-	}
-
-	if ( ! time_compare(p_tm, &tm) ) {
-	  printf("local time retrieved with iso9660_get_ltime() not\n");
-	  printf("same as that set with iso9660_set_ltime().\n");
-	  return 47;
-	}
-
-	p_tm = gmtime(&now);
-	iso9660_set_ltime(p_tm, &ltime);
-	iso9660_get_ltime(&ltime, &tm);
-	if ( ! time_compare(p_tm, &tm) ) {
-	  printf("GMT time retrieved with iso9660_get_ltime() not\n");
-	  printf("same as that set with iso9660_set_ltime().\n");
-	  return 48;
-	}
+      iso9660_ltime_t ltime;
+      p_tm = localtime(&now);
+      iso9660_set_ltime(p_tm, &ltime);
+      
+      if (!iso9660_get_ltime(&ltime, &tm)) {
+	printf("Problem running iso9660_get_ltime\n");
+	return 46;
+      }
+      
+      if ( ! time_compare(p_tm, &tm) ) {
+	printf("local time retrieved with iso9660_get_ltime() not\n");
+	printf("same as that set with iso9660_set_ltime().\n");
+	return 47;
+      }
     }
+    {
+      p_tm = gmtime(&now);
+      iso9660_set_ltime(p_tm, &ltime);
+      iso9660_get_ltime(&ltime, &tm);
+      if ( ! time_compare(p_tm, &tm) ) {
+	printf("GMT time retrieved with iso9660_get_ltime() not\n");
+	printf("same as that set with iso9660_set_ltime().\n");
+	return 48;
+      }
+    }
+#endif
   }
 
   return 0;
