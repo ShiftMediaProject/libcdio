@@ -96,7 +96,7 @@ typedef struct {
 } _img_private_t;
 
 static track_format_t get_track_format_solaris(void *p_user_data, 
-					       track_t i_track);
+                                               track_t i_track);
 
 static access_mode_t 
 str_to_access_mode_solaris(const char *psz_access_mode) 
@@ -111,7 +111,7 @@ str_to_access_mode_solaris(const char *psz_access_mode)
     return _AM_SUN_CTRL_SCSI;
   else {
     cdio_warn ("unknown access type: %s. Default SCSI used.", 
-	       psz_access_mode);
+               psz_access_mode);
     return default_access_mode;
   }
 }
@@ -137,7 +137,7 @@ audio_pause_solaris (void *p_user_data)
 */
 static driver_return_code_t
 audio_play_msf_solaris (void *p_user_data, msf_t *p_start_msf, 
-			msf_t *p_end_msf)
+                        msf_t *p_end_msf)
 {
 
   const _img_private_t *p_env = p_user_data;
@@ -161,7 +161,7 @@ audio_play_msf_solaris (void *p_user_data, msf_t *p_start_msf,
 */
 static driver_return_code_t
 audio_play_track_index_solaris (void *p_user_data, 
-				cdio_track_index_t *p_track_index)
+                                cdio_track_index_t *p_track_index)
 {
 
   const _img_private_t *p_env = p_user_data;
@@ -176,7 +176,7 @@ audio_play_track_index_solaris (void *p_user_data,
 */
 static driver_return_code_t
 audio_read_subchannel_solaris (void *p_user_data, 
-			       cdio_subchannel_t *p_subchannel)
+                               cdio_subchannel_t *p_subchannel)
 {
   const _img_private_t *p_env = p_user_data;
   struct cdrom_subchnl subchannel;
@@ -231,7 +231,7 @@ audio_resume_solaris (void *p_user_data)
 */
 static driver_return_code_t
 audio_set_volume_solaris (void *p_user_data, 
-			  cdio_audio_volume_t *p_volume) {
+                          cdio_audio_volume_t *p_volume) {
 
   const _img_private_t *p_env = p_user_data;
   return ioctl(p_env->gen.fd, CDROMVOLCTRL, p_volume);
@@ -270,17 +270,17 @@ init_solaris (_img_private_t *p_env)
   p_user_data   internal CD structure.
   i_timeout_ms   time in milliseconds we will wait for the command
                 to complete. 
-  i_cdb	        Size of p_cdb
-  p_cdb	        CDB bytes. 
-  e_direction	direction the transfer is to go.
-  i_buf	        Size of buffer
-  p_buf	        Buffer for data, both sending and receiving
+  i_cdb         Size of p_cdb
+  p_cdb         CDB bytes. 
+  e_direction   direction the transfer is to go.
+  i_buf         Size of buffer
+  p_buf         Buffer for data, both sending and receiving
  */
 static driver_return_code_t
 run_mmc_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
-		     unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		     cdio_mmc_direction_t e_direction, 
-		     unsigned int i_buf, /*in/out*/ void *p_buf )
+                     unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+                     cdio_mmc_direction_t e_direction, 
+                     unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
   struct uscsi_cmd cgc;
@@ -316,10 +316,12 @@ run_mmc_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
       return DRIVER_OP_ERROR;
       break;
     }
-    return DRIVER_OP_ERROR;
   }
-  /*Not sure if this the best thing, but we'll use anyway. */
-  return DRIVER_OP_SUCCESS;
+  else if (i_rc < -1)
+    return DRIVER_OP_ERROR;
+  else
+    /*Not sure if this the best thing, but we'll use anyway. */
+    return DRIVER_OP_SUCCESS;
 }
 
 /*!
@@ -332,7 +334,7 @@ run_mmc_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
 
 static int
 _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t i_lsn, 
-			     unsigned int i_blocks)
+                             unsigned int i_blocks)
 {
   struct cdrom_msf solaris_msf;
   msf_t _msf;
@@ -353,7 +355,7 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t i_lsn,
   
   if (p_env->gen.ioctls_debugged < 75 
       || (p_env->gen.ioctls_debugged < (30 * 75)  
-	  && p_env->gen.ioctls_debugged % 75 == 0)
+          && p_env->gen.ioctls_debugged % 75 == 0)
       || p_env->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %d", i_lsn);
   
@@ -361,7 +363,7 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t i_lsn,
 
   if (i_blocks > 60) {
     cdio_warn("%s:\n", 
-	      "we can't handle reading more than 60 blocks. Reset to 60");
+              "we can't handle reading more than 60 blocks. Reset to 60");
   }
 
   cdda.cdda_addr    = i_lsn;
@@ -384,7 +386,7 @@ _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t i_lsn,
  */
 static driver_return_code_t
 _read_mode1_sector_solaris (void *p_env, void *data, lsn_t i_lsn, 
-			    bool b_form2)
+                            bool b_form2)
 {
 
 #if FIXED
@@ -400,7 +402,7 @@ _read_mode1_sector_solaris (void *p_env, void *data, lsn_t i_lsn,
  */
 static driver_return_code_t
 _read_mode1_sectors_solaris (void *p_user_data, void *p_data, lsn_t i_lsn, 
-			     bool b_form2, unsigned int i_blocks)
+                             bool b_form2, unsigned int i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   unsigned int i;
@@ -409,8 +411,8 @@ _read_mode1_sectors_solaris (void *p_user_data, void *p_data, lsn_t i_lsn,
 
   for (i = 0; i < i_blocks; i++) {
     if ( (retval = _read_mode1_sector_solaris (p_env, 
-					    ((char *)p_data) + (blocksize * i),
-					       i_lsn + i, b_form2)) )
+                                            ((char *)p_data) + (blocksize * i),
+                                               i_lsn + i, b_form2)) )
       return retval;
   }
   return DRIVER_OP_SUCCESS;
@@ -421,7 +423,7 @@ _read_mode1_sectors_solaris (void *p_user_data, void *p_data, lsn_t i_lsn,
  */
 static driver_return_code_t
 _read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t i_lsn, 
-			    bool b_form2)
+                            bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
   struct cdrom_msf solaris_msf;
@@ -444,11 +446,11 @@ _read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t i_lsn,
   
   if (p_env->gen.ioctls_debugged < 75 
       || (p_env->gen.ioctls_debugged < (30 * 75)  
-	  && p_env->gen.ioctls_debugged % 75 == 0)
+          && p_env->gen.ioctls_debugged % 75 == 0)
       || p_env->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %2.2d:%2.2d:%2.2d",
-		solaris_msf.cdmsf_min0, solaris_msf.cdmsf_sec0, 
-		solaris_msf.cdmsf_frame0);
+                solaris_msf.cdmsf_min0, solaris_msf.cdmsf_sec0, 
+                solaris_msf.cdmsf_frame0);
   
   p_env->gen.ioctls_debugged++;
   
@@ -480,7 +482,7 @@ _read_mode2_sector_solaris (void *p_user_data, void *p_data, lsn_t i_lsn,
  */
 static driver_return_code_t
 _read_mode2_sectors_solaris (void *p_user_data, void *data, lsn_t i_lsn, 
-			     bool b_form2, unsigned int i_blocks)
+                             bool b_form2, unsigned int i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   unsigned int i;
@@ -489,8 +491,8 @@ _read_mode2_sectors_solaris (void *p_user_data, void *data, lsn_t i_lsn,
 
   for (i = 0; i < i_blocks; i++) {
     if ( (retval = _read_mode2_sector_solaris (p_env, 
-					    ((char *)data) + (blocksize * i),
-					       i_lsn + i, b_form2)) )
+                                            ((char *)data) + (blocksize * i),
+                                               i_lsn + i, b_form2)) )
       return retval;
   }
   return 0;
@@ -593,9 +595,9 @@ read_toc_solaris (void *p_user_data)
   p_env->tocent[p_env->tochdr.cdth_trk1].cdte_format = CDIO_CDROM_MSF;
 
   if (ioctl(p_env->gen.fd, CDROMREADTOCENTRY, 
-	    &p_env->tocent[p_env->tochdr.cdth_trk1]) == -1 ) {
+            &p_env->tocent[p_env->tochdr.cdth_trk1]) == -1 ) {
     cdio_warn("%s: %s\n", 
-	     "error in ioctl CDROMREADTOCENTRY for lead-out",
+             "error in ioctl CDROMREADTOCENTRY for lead-out",
             strerror(errno));
     return false;
   }
@@ -689,7 +691,7 @@ cdio_get_default_device_solaris(void)
       strcmp(volume_action, "insert") == 0) {
 
     device = calloc(1, strlen(volume_device) 
-				  + strlen(volume_name) + 2);
+                                  + strlen(volume_name) + 2);
     if (device == NULL)
       return strdup(DEFAULT_CDIO_DEVICE);
     sprintf(device, "%s/%s", volume_device, volume_name);
@@ -724,7 +726,7 @@ get_discmode_solaris (void *p_user_data)
   /* Get the media info */
   if((ret = ioctl(p_env->gen.fd, DKIOCGMEDIAINFO, &media)) != 0) {
      cdio_warn ("DKIOCGMEDIAINFO failed: %s\n", strerror(errno));
-	 return CDIO_DISC_MODE_NO_INFO;
+         return CDIO_DISC_MODE_NO_INFO;
   }
   switch(media.dki_media_type) {
   case DK_CDROM:
@@ -732,13 +734,13 @@ get_discmode_solaris (void *p_user_data)
   case DK_CDRW:
   /* Do cdrom detection */
   break;
-  case DK_DVDROM:	return CDIO_DISC_MODE_DVD_ROM;
-  case DK_DVDR:		discmode = CDIO_DISC_MODE_DVD_R;
+  case DK_DVDROM:       return CDIO_DISC_MODE_DVD_ROM;
+  case DK_DVDR:         discmode = CDIO_DISC_MODE_DVD_R;
   break;
-  case DK_DVDRAM:	discmode = CDIO_DISC_MODE_DVD_RAM;
+  case DK_DVDRAM:       discmode = CDIO_DISC_MODE_DVD_RAM;
   break;
   case DK_DVDRW:
-  case DK_DVDRW+1:	discmode = CDIO_DISC_MODE_DVD_RW;
+  case DK_DVDRW+1:      discmode = CDIO_DISC_MODE_DVD_RW;
   break;
   default: /* no valid match */
   return CDIO_DISC_MODE_NO_INFO; 
@@ -777,44 +779,44 @@ get_discmode_solaris (void *p_user_data)
     switch(track_fmt) {
     case TRACK_FORMAT_AUDIO:
       switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_DA;
-	  break;
-	case CDIO_DISC_MODE_CD_DA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
+        case CDIO_DISC_MODE_NO_INFO:
+          discmode = CDIO_DISC_MODE_CD_DA;
+          break;
+        case CDIO_DISC_MODE_CD_DA:
+        case CDIO_DISC_MODE_CD_MIXED: 
+        case CDIO_DISC_MODE_ERROR: 
+          /* No change*/
+          break;
       default:
-	  discmode = CDIO_DISC_MODE_CD_MIXED;
+          discmode = CDIO_DISC_MODE_CD_MIXED;
       }
       break;
     case TRACK_FORMAT_XA:
       switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_XA;
-	  break;
-	case CDIO_DISC_MODE_CD_XA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
+        case CDIO_DISC_MODE_NO_INFO:
+          discmode = CDIO_DISC_MODE_CD_XA;
+          break;
+        case CDIO_DISC_MODE_CD_XA:
+        case CDIO_DISC_MODE_CD_MIXED: 
+        case CDIO_DISC_MODE_ERROR: 
+          /* No change*/
+          break;
       default:
-	discmode = CDIO_DISC_MODE_CD_MIXED;
+        discmode = CDIO_DISC_MODE_CD_MIXED;
       }
       break;
     case TRACK_FORMAT_DATA:
       switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_DATA;
-	  break;
-	case CDIO_DISC_MODE_CD_DATA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
+        case CDIO_DISC_MODE_NO_INFO:
+          discmode = CDIO_DISC_MODE_CD_DATA;
+          break;
+        case CDIO_DISC_MODE_CD_DATA:
+        case CDIO_DISC_MODE_CD_MIXED: 
+        case CDIO_DISC_MODE_ERROR: 
+          /* No change*/
+          break;
       default:
-	discmode = CDIO_DISC_MODE_CD_MIXED;
+        discmode = CDIO_DISC_MODE_CD_MIXED;
       }
       break;
     case TRACK_FORMAT_ERROR:
@@ -833,7 +835,7 @@ get_discmode_solaris (void *p_user_data)
 */
 static driver_return_code_t 
 get_last_session_solaris (void *p_user_data, 
-			  /*out*/ lsn_t *i_last_session_lsn)
+                          /*out*/ lsn_t *i_last_session_lsn)
 {
   const _img_private_t *p_env = p_user_data;
   int i_rc;
@@ -1040,7 +1042,7 @@ cdio_get_devices_solaris (void)
       sprintf(volpath, "%s/s0", globbuf.gl_pathv[i]);
       if(stat(volpath, &st) == 0)
         cdio_add_device_list(&drives, volpath, &i_files);
-	}else
+        }else
       cdio_add_device_list(&drives, globbuf.gl_pathv[i], &i_files);
   }
   globfree(&globbuf);
