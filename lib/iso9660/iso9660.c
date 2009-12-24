@@ -81,7 +81,7 @@ timegm(struct tm *tm)
   char *tz;
   
   tz = getenv("TZ");
-  setenv("TZ", "UTC", 1);
+  setenv("TZ", "", 1);
   tzset();
   ret = mktime(tm);
   if (tz)
@@ -344,7 +344,7 @@ iso9660_set_dtime (const struct tm *p_tm, /*out*/ iso9660_dtime_t *p_idr_date)
   /* Convert seconds to minutes */
   timezone = p_tm->tm_gmtoff / 60;
 #else 
-  timezone = (p_tm->tm_isdst > 0) ? 0 : -60;
+  timezone = (p_tm->tm_isdst > 0) ? -60 : 0;
 #endif
   iso9660_set_dtime_with_timezone (p_tm, timezone, p_idr_date);
 }
@@ -397,7 +397,7 @@ iso9660_set_ltime (const struct tm *p_tm, /*out*/ iso9660_ltime_t *pvd_date)
   /* Set time zone in 15-minute interval encoding. */
   timezone = p_tm->tm_gmtoff / 60;
 #else
-  timezone = (p_tm->tm_isdst > 0) ? 0 : -60;
+  timezone = (p_tm->tm_isdst > 0) ? -60 : 0;
 #endif
   iso9660_set_ltime_with_timezone (p_tm, timezone, pvd_date);
 }

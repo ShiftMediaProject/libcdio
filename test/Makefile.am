@@ -28,7 +28,7 @@ endif
 
 hack = check_sizeof testassert testbincue testgetdevices testischar \
        testisocd testisocd2 testiso9660 testlinux \
-       testnrg $(testparanoia) testtoc testpregap
+       testnrg $(testparanoia) testtoc testpregap testsolaris
 
 EXTRA_PROGRAMS = testdefault 
 
@@ -49,6 +49,9 @@ testtoc_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
 
 testlinux_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testlinux_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
+
+testsolaris_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
+testsolaris_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
 testpregap_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testpregap_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"

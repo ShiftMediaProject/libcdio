@@ -284,6 +284,7 @@ run_mmc_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
 {
   const _img_private_t *p_env = p_user_data;
   struct uscsi_cmd cgc;
+  int i_rc;
 
   memset (&cgc, 0, sizeof (struct uscsi_cmd));
   cgc.uscsi_cdb = (caddr_t) p_cdb;
@@ -296,7 +297,29 @@ run_mmc_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
   cgc.uscsi_buflen  = i_buf;
   cgc.uscsi_cdblen  = i_cdb;
   
-  return ioctl(p_env->gen.fd, USCSICMD, &cgc);
+  i_rc = ioctl(p_env->gen.fd, USCSICMD, &cgc);
+  if (0 == i_rc) return DRIVER_OP_SUCCESS;
+  if (-1 == i_rc) {
+    cdio_info ("ioctl USCSICMD failed: %s", strerror(errno));  
+    switch (errno) {
+    case EPERM:
+      return DRIVER_OP_NOT_PERMITTED;
+      break;
+    case EINVAL:
+      return DRIVER_OP_BAD_PARAMETER;
+      break;
+    case EFAULT:
+      return DRIVER_OP_BAD_POINTER;
+      break;
+    case EIO: 
+    default:
+      return DRIVER_OP_ERROR;
+      break;
+    }
+    return DRIVER_OP_ERROR;
+  }
+  /*Not sure if this the best thing, but we'll use anyway. */
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!
