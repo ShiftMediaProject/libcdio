@@ -1262,6 +1262,8 @@ run_mmc_cmd_linux( void *p_user_data,
     }
     return DRIVER_OP_ERROR;
   }
+  /*Not sure if this the best thing, but we'll use anyway. */
+  return DRIVER_OP_SUCCESS;
 }
 
 /*!

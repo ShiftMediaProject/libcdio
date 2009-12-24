@@ -289,8 +289,7 @@ main (int argc, const char *argv[])
 	printf("same as that set with iso9660_set_ltime().\n");
 	return 47;
       }
-    }
-    {
+
       p_tm = gmtime(&now);
       iso9660_set_ltime(p_tm, &ltime);
       iso9660_get_ltime(&ltime, &tm);
