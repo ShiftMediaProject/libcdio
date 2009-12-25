@@ -64,6 +64,7 @@ xboxmediacenter team (www.xboxmediacenter.de)
 
 Thomas Schmitt
   Recording and retrieval of SCSI sense reply. Write/burning interface.
+  MMC bug fixes
 
 Daniel Schwarz
  log-summary option in cd-paranoia.

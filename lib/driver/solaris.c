@@ -1,7 +1,6 @@
 /*
-  $Id: solaris.c,v 1.12 2008/04/22 15:29:12 karl Exp $
-
-  Copyright (C) 2002, 2003, 2004, 2005, 2006 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2009
+  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -277,10 +276,10 @@ init_solaris (_img_private_t *p_env)
   p_buf         Buffer for data, both sending and receiving
  */
 static driver_return_code_t
-run_mmc_cmd_solaris( void *p_user_data, unsigned int i_timeout_ms,
-                     unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-                     cdio_mmc_direction_t e_direction, 
-                     unsigned int i_buf, /*in/out*/ void *p_buf )
+run_mmc_cmd_solaris(void *p_user_data, unsigned int i_timeout_ms,
+		    unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+		    cdio_mmc_direction_t e_direction, 
+		    unsigned int i_buf, /*in/out*/ void *p_buf)
 {
   const _img_private_t *p_env = p_user_data;
   struct uscsi_cmd cgc;

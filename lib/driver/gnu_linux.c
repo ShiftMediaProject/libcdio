@@ -1,6 +1,4 @@
 /*
-  $Id: gnu_linux.c,v 1.33 2008/06/25 07:46:21 rocky Exp $
-
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008, 2009
     Rocky Bernstein <rocky@gnu.org>
@@ -86,7 +84,8 @@ typedef enum {
   _AM_IOCTL,
   _AM_READ_CD,
   _AM_READ_10,
-  _AM_MMC_RDWR
+  _AM_MMC_RDWR,
+  _AM_MMC_RDWR_EXCL,
 } access_mode_t;
 
 typedef struct {
@@ -135,6 +134,8 @@ str_to_access_mode_linux(const char *psz_access_mode)
     return _AM_READ_10;
   else if (!strcmp(psz_access_mode, "MMC_RDWR"))
     return _AM_MMC_RDWR;
+  else if (!strcmp(psz_access_mode, "MMC_RDWR_EXCL"))
+    return _AM_MMC_RDWR_EXCL;
   else {
     cdio_warn ("unknown access type: %s. Default IOCTL used.", 
                psz_access_mode);
@@ -379,6 +380,8 @@ get_arg_linux (void *env, const char key[])
       return "READ_10";
     case _AM_MMC_RDWR:
       return "MMC_RDWR";
+    case _AM_MMC_RDWR_EXCL:
+      return "MMC_RDWR_EXCL";
     case _AM_NONE:
       return "no access method";
     }
@@ -958,7 +961,7 @@ _read_mode2_sectors (_img_private_t *p_env, void *p_buf, lba_t lba,
  */
 static driver_return_code_t
 _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn, 
-                         bool b_form2)
+                          bool b_form2)
 {
 
 #if 0
@@ -1029,7 +1032,7 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
  */
 static driver_return_code_t
 _read_mode1_sectors_linux (void *p_user_data, void *p_data, lsn_t lsn, 
-                          bool b_form2, uint32_t i_blocks)
+                           bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   unsigned int i;
@@ -1074,6 +1077,7 @@ _read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
       
     case _AM_IOCTL:
     case _AM_MMC_RDWR:
+    case _AM_MMC_RDWR_EXCL:
       if (ioctl (p_env->gen.fd, CDROMREADMODE2, &buf) == -1)
         {
           perror ("ioctl()");
@@ -1120,7 +1124,7 @@ _read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
  */
 static driver_return_code_t
 _read_mode2_sectors_linux (void *p_user_data, void *data, lsn_t lsn, 
-                          bool b_form2, uint32_t i_blocks)
+                           bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   unsigned int i;
@@ -1221,26 +1225,51 @@ read_toc_linux (void *p_user_data)
   We return true if command completed successfully and false if not.
  */
 static driver_return_code_t
-run_mmc_cmd_linux( void *p_user_data, 
-                   unsigned int i_timeout_ms,
-                   unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-                   cdio_mmc_direction_t e_direction, 
-                   unsigned int i_buf, /*in/out*/ void *p_buf )
+run_mmc_cmd_linux(void *p_user_data, 
+                  unsigned int i_timeout_ms,
+                  unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+                  cdio_mmc_direction_t e_direction, 
+                  unsigned int i_buf, /*in/out*/ void *p_buf)
 {
-  const _img_private_t *p_env = p_user_data;
+  _img_private_t *p_env = p_user_data;
   struct cdrom_generic_command cgc;
+  struct request_sense sense;
+  unsigned char *u_sense = (unsigned char *) &sense;
+  int sense_size;
+
+  p_env->gen.scsi_mmc_sense_valid = 0;
   memset (&cgc, 0, sizeof (struct cdrom_generic_command));
- memcpy(&cgc.cmd, p_cdb, i_cdb);
- cgc.buflen = i_buf;
- cgc.buffer = p_buf;
- cgc.data_direction = (SCSI_MMC_DATA_READ == e_direction)
-   ? CGC_DATA_READ : CGC_DATA_WRITE;
- #ifdef HAVE_LINUX_CDROM_TIMEOUT
+  memcpy(&cgc.cmd, p_cdb, i_cdb);
+  cgc.buflen = i_buf;
+  cgc.buffer = p_buf;
+
+  cgc.sense = &sense;
+
+  if (SCSI_MMC_DATA_NONE == e_direction)
+    i_buf = 0;
+  cgc.data_direction = (SCSI_MMC_DATA_READ == e_direction) ? CGC_DATA_READ :
+                       (SCSI_MMC_DATA_WRITE == e_direction) ? CGC_DATA_WRITE :
+                       CGC_DATA_NONE;
+
+#ifdef HAVE_LINUX_CDROM_TIMEOUT
   cgc.timeout = i_timeout_ms;
 #endif
 
+  memset(u_sense, 0, sizeof(sense));
   { 
     int i_rc = ioctl (p_env->gen.fd, CDROM_SEND_PACKET, &cgc);
+
+    /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
+    */
+    if (u_sense[7]) {
+      sense_size = u_sense[7] + 8; /* SPC 4.5.3, Table 26 :
+                                      252 bytes legal , 263 bytes possible */
+      if (sense_size > sizeof(sense))
+        sense_size = sizeof(sense);
+      memcpy((void *) p_env->gen.scsi_mmc_sense, &sense, sense_size);
+      p_env->gen.scsi_mmc_sense_valid = sense_size;
+    }
+
     if (0 == i_rc) return DRIVER_OP_SUCCESS;
     if (-1 == i_rc) {
       cdio_info ("ioctl CDROM_SEND_PACKET failed: %s", strerror(errno));  
@@ -1648,9 +1677,13 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
 
   ret->driver_id = DRIVER_LINUX;
 
-  open_access_mode = (_AM_MMC_RDWR == _data->access_mode) 
-      ? (O_RDWR|O_EXCL|O_NONBLOCK) : (O_RDONLY|O_NONBLOCK);
-      
+  open_access_mode = O_NONBLOCK;
+  if (_AM_MMC_RDWR == _data->access_mode)
+    open_access_mode |= O_RDWR;
+  else if (_AM_MMC_RDWR_EXCL == _data->access_mode)
+    open_access_mode |= O_RDWR | O_EXCL;
+  else
+    open_access_mode |= O_RDONLY;
   if (cdio_generic_init(_data, open_access_mode)) {
     return ret;
   } else {
