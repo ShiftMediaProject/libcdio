@@ -27,7 +27,7 @@ testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIB
 endif
 
 hack = check_sizeof testassert testbincue testgetdevices testischar \
-       testisocd testisocd2 testiso9660 testlinux \
+       testisocd testisocd2 testiso9660 testlinux test_lib_driver_util \
        testnrg $(testparanoia) testtoc testpregap testsolaris
 
 EXTRA_PROGRAMS = testdefault 
@@ -46,6 +46,9 @@ testisocd2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 testtoc_LDADD       = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testtoc_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
+
+test_lib_driver_util_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
+tets_lib_driver_util_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
 testlinux_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testlinux_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"

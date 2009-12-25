@@ -5,8 +5,15 @@
  *  number (@LIBCDIO_VERSION_NUM@) and OS build name. 
  */
 
-/*! CDIO_VERSION can as a string in programs to show what version is used. */
+/*! CDIO_VERSION can as a string in programs to show what version is
+    used.  cdio_version_string is the same thing but represented as a
+    constant in memory. */
 #define CDIO_VERSION "@VERSION@ @build@"
+extern const char *cdio_version_string; /**< = CDIO_VERSION */
 
-/*! LIBCDIO_VERSION_NUM  can be used for testing in the C preprocessor */
+/*! LIBCDIO_VERSION_NUM can be used for testing in the C preprocessor,
+    libcdio_version_num is the same thing but reresented as a constant
+    in memory.  */
 #define LIBCDIO_VERSION_NUM @LIBCDIO_VERSION_NUM@
+
+extern const unsigned int libcdio_version_num; /**< = LIBCDIO_VERSION_NUM */

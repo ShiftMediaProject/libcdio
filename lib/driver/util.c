@@ -40,6 +40,7 @@
 #include "cdio_assert.h"
 #include <cdio/types.h>
 #include <cdio/util.h>
+#include <cdio/version.h>
 
 #ifndef PATH_MAX
 #define PATH_MAX 4096
@@ -183,6 +184,8 @@ void cdio_follow_symlink (const char * src, char * dst) {
 #endif
   
 }
+const char *cdio_version_string = CDIO_VERSION;
+const unsigned int libcdio_version_num = LIBCDIO_VERSION_NUM;
 
 
 /* 
