@@ -963,6 +963,23 @@ mmc_run_cmd_len( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
                                      p_cdb, e_direction, i_buf, p_buf);
 }
 
+/* Added in version 0.83 by scdbackup */
+int
+mmc_last_cmd_sense( const CdIo_t *p_cdio, unsigned char **sense)
+{
+  generic_img_private_t *gen = p_cdio->env;
+
+  if (!p_cdio) return DRIVER_OP_UNINIT;
+  *sense = NULL;
+  if (gen->scsi_mmc_sense_valid <= 0)
+	return 0;
+  *sense = calloc(1, gen->scsi_mmc_sense_valid);
+  if (*sense == NULL)
+    return DRIVER_OP_ERROR;
+  memcpy(*sense, gen->scsi_mmc_sense, gen->scsi_mmc_sense_valid);
+  return gen->scsi_mmc_sense_valid;
+}
+
 
 /*! Return the byte size returned on a MMC READ command (e.g. READ_10,
     READ_MSF, ..)

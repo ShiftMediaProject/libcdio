@@ -1236,7 +1236,7 @@ run_mmc_cmd_linux( void *p_user_data,
  cgc.data_direction = (SCSI_MMC_DATA_READ == e_direction)
    ? CGC_DATA_READ : CGC_DATA_WRITE;
  #ifdef HAVE_LINUX_CDROM_TIMEOUT
- cgc.timeout = i_timeout_ms;
+  cgc.timeout = i_timeout_ms;
 #endif
 
   { 

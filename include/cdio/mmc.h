@@ -1,7 +1,5 @@
 /*
-    $Id: mmc.h,v 1.32 2008/05/09 06:13:32 edsdead Exp $
-
-    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
                   Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -63,100 +61,100 @@ extern "C" {
   
   */
   typedef enum {
-  CDIO_MMC_GPCMD_INQUIRY 	        = 0x12, /**< Request drive 
-						   information. */
-  CDIO_MMC_GPCMD_MODE_SELECT_6	        = 0x15, /**< Select medium 
-						   (6 bytes). */
-  CDIO_MMC_GPCMD_MODE_SENSE_6 	        = 0x1a, /**< Get medium or device
-						 information. Should be issued
-						 before MODE SELECT to get
-						 mode support or save current
-						 settings. (6 bytes). */
+  CDIO_MMC_GPCMD_INQUIRY                = 0x12, /**< Request drive 
+                                                   information. */
+  CDIO_MMC_GPCMD_MODE_SELECT_6          = 0x15, /**< Select medium 
+                                                   (6 bytes). */
+  CDIO_MMC_GPCMD_MODE_SENSE_6           = 0x1a, /**< Get medium or device
+                                                 information. Should be issued
+                                                 before MODE SELECT to get
+                                                 mode support or save current
+                                                 settings. (6 bytes). */
   CDIO_MMC_GPCMD_START_STOP             = 0x1b, /**< Enable/disable Disc
-						     operations. (6 bytes). */
+                                                     operations. (6 bytes). */
   CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL   = 0x1e, /**< Enable/disable Disc 
-						   removal. (6 bytes). */
+                                                   removal. (6 bytes). */
 
   /** Group 2 Commands (CDB's here are 10-bytes)   
    */
-  CDIO_MMC_GPCMD_READ_10	        = 0x28, /**< Read data from drive 
-						   (10 bytes). */
-  CDIO_MMC_GPCMD_READ_SUBCHANNEL	= 0x42, /**< Read Sub-Channel data.
-						   (10 bytes). */
+  CDIO_MMC_GPCMD_READ_10                = 0x28, /**< Read data from drive 
+                                                   (10 bytes). */
+  CDIO_MMC_GPCMD_READ_SUBCHANNEL        = 0x42, /**< Read Sub-Channel data.
+                                                   (10 bytes). */
   CDIO_MMC_GPCMD_READ_TOC               = 0x43, /**< READ TOC/PMA/ATIP. 
-						   (10 bytes). */
+                                                   (10 bytes). */
   CDIO_MMC_GPCMD_READ_HEADER            = 0x44,
-  CDIO_MMC_GPCMD_PLAY_AUDIO_10	        = 0x45, /**< Begin audio playing at
-						   current position
-						   (10 bytes). */
+  CDIO_MMC_GPCMD_PLAY_AUDIO_10          = 0x45, /**< Begin audio playing at
+                                                   current position
+                                                   (10 bytes). */
   CDIO_MMC_GPCMD_GET_CONFIGURATION      = 0x46, /**< Get drive Capabilities 
-						   (10 bytes) */
-  CDIO_MMC_GPCMD_PLAY_AUDIO_MSF	        = 0x47, /**< Begin audio playing at
-						   specified MSF (10
-						   bytes). */
+                                                   (10 bytes) */
+  CDIO_MMC_GPCMD_PLAY_AUDIO_MSF         = 0x47, /**< Begin audio playing at
+                                                   specified MSF (10
+                                                   bytes). */
   CDIO_MMC_GPCMD_PLAY_AUDIO_TI          = 0x48,
   CDIO_MMC_GPCMD_PLAY_TRACK_REL_10      = 0x49, /**< Play audio at the track
-						   relative LBA. (10 bytes).
-						   Doesn't seem to be part
-						   of MMC standards but is
-						   handled by Plextor drives.
-						*/
-						   
+                                                   relative LBA. (10 bytes).
+                                                   Doesn't seem to be part
+                                                   of MMC standards but is
+                                                   handled by Plextor drives.
+                                                */
+                                                   
   CDIO_MMC_GPCMD_GET_EVENT_STATUS       = 0x4a, /**< Report events and 
-						   Status. */
+                                                   Status. */
   CDIO_MMC_GPCMD_PAUSE_RESUME           = 0x4b, /**< Stop or restart audio 
-						   playback. (10 bytes). 
-						   Used with a PLAY command. */
+                                                   playback. (10 bytes). 
+                                                   Used with a PLAY command. */
 
-  CDIO_MMC_GPCMD_READ_DISC_INFO	        = 0x51, /**< Get CD information.
-						   (10 bytes). */
-  CDIO_MMC_GPCMD_MODE_SELECT_10	        = 0x55, /**< Select medium 
-						   (10-bytes). */
-  CDIO_MMC_GPCMD_MODE_SENSE_10	        = 0x5a, /**< Get medium or device
-						 information. Should be issued
-						 before MODE SELECT to get
-						 mode support or save current
-						 settings. (6 bytes). */
+  CDIO_MMC_GPCMD_READ_DISC_INFO         = 0x51, /**< Get CD information.
+                                                   (10 bytes). */
+  CDIO_MMC_GPCMD_MODE_SELECT_10         = 0x55, /**< Select medium 
+                                                   (10-bytes). */
+  CDIO_MMC_GPCMD_MODE_SENSE_10          = 0x5a, /**< Get medium or device
+                                                 information. Should be issued
+                                                 before MODE SELECT to get
+                                                 mode support or save current
+                                                 settings. (6 bytes). */
 
   /** Group 5 Commands (CDB's here are 12-bytes) 
    */
-  CDIO_MMC_GPCMD_PLAY_AUDIO_12	        = 0xa5, /**< Begin audio playing at
-						   current position
-						 (12 bytes) */
-  CDIO_MMC_GPCMD_LOAD_UNLOAD	        = 0xa6, /**< Load/unload a Disc
-						 (12 bytes) */
-  CDIO_MMC_GPCMD_READ_12	        = 0xa8, /**< Read data from drive 
-						   (12 bytes). */
+  CDIO_MMC_GPCMD_PLAY_AUDIO_12          = 0xa5, /**< Begin audio playing at
+                                                   current position
+                                                 (12 bytes) */
+  CDIO_MMC_GPCMD_LOAD_UNLOAD            = 0xa6, /**< Load/unload a Disc
+                                                 (12 bytes) */
+  CDIO_MMC_GPCMD_READ_12                = 0xa8, /**< Read data from drive 
+                                                   (12 bytes). */
   CDIO_MMC_GPCMD_PLAY_TRACK_REL_12      = 0xa9, /**< Play audio at the track
-						   relative LBA. (12 bytes).
-						   Doesn't seem to be part
-						   of MMC standards but is
-						   handled by Plextor drives.
-						*/
+                                                   relative LBA. (12 bytes).
+                                                   Doesn't seem to be part
+                                                   of MMC standards but is
+                                                   handled by Plextor drives.
+                                                */
   CDIO_MMC_GPCMD_READ_DVD_STRUCTURE     = 0xad, /**< Get DVD structure info
-						   from media (12 bytes). */
-  CDIO_MMC_GPCMD_READ_MSF	        = 0xb9, /**< Read almost any field 
-						   of a CD sector at specified
-						   MSF. (12 bytes). */
-  CDIO_MMC_GPCMD_SET_SPEED	        = 0xbb, /**< Set drive speed 
-						   (12 bytes). This is listed 
-						   as optional in ATAPI 2.6, 
-						   but is (curiously)
-						   missing from Mt. Fuji, 
-						   Table 57. It is mentioned
-						   in Mt. Fuji Table 377 as an 
-						   MMC command for SCSI
-						   devices though...  Most
-						   ATAPI drives support it. */
-  CDIO_MMC_GPCMD_READ_CD	        = 0xbe, /**< Read almost any field 
-						   of a CD sector at current
-						   location. (12 bytes). */
+                                                   from media (12 bytes). */
+  CDIO_MMC_GPCMD_READ_MSF               = 0xb9, /**< Read almost any field 
+                                                   of a CD sector at specified
+                                                   MSF. (12 bytes). */
+  CDIO_MMC_GPCMD_SET_SPEED              = 0xbb, /**< Set drive speed 
+                                                   (12 bytes). This is listed 
+                                                   as optional in ATAPI 2.6, 
+                                                   but is (curiously)
+                                                   missing from Mt. Fuji, 
+                                                   Table 57. It is mentioned
+                                                   in Mt. Fuji Table 377 as an 
+                                                   MMC command for SCSI
+                                                   devices though...  Most
+                                                   ATAPI drives support it. */
+  CDIO_MMC_GPCMD_READ_CD                = 0xbe, /**< Read almost any field 
+                                                   of a CD sector at current
+                                                   location. (12 bytes). */
   /** Vendor-unique Commands  
    */
   CDIO_MMC_GPCMD_CD_PLAYBACK_STATUS  = 0xc4 /**< SONY unique  = command */,
   CDIO_MMC_GPCMD_PLAYBACK_CONTROL    = 0xc9 /**< SONY unique  = command */,
-  CDIO_MMC_GPCMD_READ_CDDA	     = 0xd8 /**< Vendor unique  = command */,
-  CDIO_MMC_GPCMD_READ_CDXA	     = 0xdb /**< Vendor unique  = command */,
+  CDIO_MMC_GPCMD_READ_CDDA           = 0xd8 /**< Vendor unique  = command */,
+  CDIO_MMC_GPCMD_READ_CDXA           = 0xdb /**< Vendor unique  = command */,
   CDIO_MMC_GPCMD_READ_ALL_SUBCODES   = 0xdf /**< Vendor unique  = command */
   } cdio_mmc_gpcmd_t;
 
@@ -197,15 +195,15 @@ extern "C" {
     
 /** Page codes for MODE SENSE and MODE SET. */
   typedef enum {
-    CDIO_MMC_R_W_ERROR_PAGE	= 0x01,
-    CDIO_MMC_WRITE_PARMS_PAGE	= 0x05,
-    CDIO_MMC_CDR_PARMS_PAGE	= 0x0d,
-    CDIO_MMC_AUDIO_CTL_PAGE	= 0x0e,
-    CDIO_MMC_POWER_PAGE		= 0x1a,
-    CDIO_MMC_FAULT_FAIL_PAGE	= 0x1c,
-    CDIO_MMC_TO_PROTECT_PAGE	= 0x1d,
-    CDIO_MMC_CAPABILITIES_PAGE	= 0x2a,
-    CDIO_MMC_ALL_PAGES		= 0x3f,
+    CDIO_MMC_R_W_ERROR_PAGE     = 0x01,
+    CDIO_MMC_WRITE_PARMS_PAGE   = 0x05,
+    CDIO_MMC_CDR_PARMS_PAGE     = 0x0d,
+    CDIO_MMC_AUDIO_CTL_PAGE     = 0x0e,
+    CDIO_MMC_POWER_PAGE         = 0x1a,
+    CDIO_MMC_FAULT_FAIL_PAGE    = 0x1c,
+    CDIO_MMC_TO_PROTECT_PAGE    = 0x1d,
+    CDIO_MMC_CAPABILITIES_PAGE  = 0x2a,
+    CDIO_MMC_ALL_PAGES          = 0x3f,
   } cdio_mmc_mode_page_t;
     
 
@@ -256,17 +254,17 @@ typedef enum {
   CDIO_MMC_FEATURE_DVD_READ         = 0x01F, /**< DVD Read Feature */
   CDIO_MMC_FEATURE_RANDOM_WRITABLE  = 0x020, /**< Random Writable Feature */
   CDIO_MMC_FEATURE_INCR_WRITE       = 0x021, /**< Incremental Streaming 
-						Writable Feature */
+                                                Writable Feature */
   CDIO_MMC_FEATURE_SECTOR_ERASE     = 0x022, /**< Sector Erasable Feature */
   CDIO_MMC_FEATURE_FORMATABLE       = 0x023, /**< Formattable Feature */
   CDIO_MMC_FEATURE_DEFECT_MGMT      = 0x024, /**< Management Ability of the 
-						Logical Unit/media system to
-						provide an apparently 
-						defect-free space.*/
+                                                Logical Unit/media system to
+                                                provide an apparently 
+                                                defect-free space.*/
   CDIO_MMC_FEATURE_WRITE_ONCE       = 0x025, /**< Write Once
-						   Feature */
+                                                   Feature */
   CDIO_MMC_FEATURE_RESTRICT_OVERW   = 0x026, /**< Restricted Overwrite
-						Feature */
+                                                Feature */
   CDIO_MMC_FEATURE_CD_RW_CAV        = 0x027, /**< CD-RW CAV Write Feature */
   CDIO_MMC_FEATURE_MRW              = 0x028, /**< MRW Feature */
   CDIO_MMC_FEATURE_ENHANCED_DEFECT  = 0x029, /**< Enhanced Defect Reporting */
@@ -275,60 +273,60 @@ typedef enum {
   CDIO_MMC_FEATURE_RIGID_RES_OVERW  = 0x02C, /**< Rigid Restricted Overwrite */
   CDIO_MMC_FEATURE_CD_TAO           = 0x02D, /**< CD Track at Once */ 
   CDIO_MMC_FEATURE_CD_SAO           = 0x02E, /**< CD Mastering (Session at 
-						Once) */
+                                                Once) */
   CDIO_MMC_FEATURE_DVD_R_RW_WRITE   = 0x02F, /**< DVD-R/RW Write */
   CDIO_MMC_FEATURE_CD_RW_MEDIA_WRITE= 0x037, /**< CD-RW Media Write Support */
   CDIO_MMC_FEATURE_DVD_PR_2_LAYER   = 0x03B, /**< DVD+R Double Layer */
   CDIO_MMC_FEATURE_POWER_MGMT       = 0x100, /**< Initiator and device directed
-						power management */
+                                                power management */
   CDIO_MMC_FEATURE_CDDA_EXT_PLAY    = 0x103, /**< Ability to play audio CDs 
-						via the Logical Unit's own
-						analog output */
+                                                via the Logical Unit's own
+                                                analog output */
   CDIO_MMC_FEATURE_MCODE_UPGRADE    = 0x104, /* Ability for the device to 
-						accept  new microcode via
-						the interface */
+                                                accept  new microcode via
+                                                the interface */
   CDIO_MMC_FEATURE_TIME_OUT         = 0x105, /**< Ability to respond to all
-						commands within a specific 
-						time */
+                                                commands within a specific 
+                                                time */
   CDIO_MMC_FEATURE_DVD_CSS          = 0x106, /**< Ability to perform DVD
-						CSS/CPPM authentication and
-						RPC */
+                                                CSS/CPPM authentication and
+                                                RPC */
   CDIO_MMC_FEATURE_RT_STREAMING     = 0x107, /**< Ability to read and write 
-						using Initiator requested
-						performance parameters   */
+                                                using Initiator requested
+                                                performance parameters   */
   CDIO_MMC_FEATURE_LU_SN            = 0x108, /**< The Logical Unit has a unique
-						identifier. */
+                                                identifier. */
   CDIO_MMC_FEATURE_FIRMWARE_DATE    = 0x1FF, /**< Firmware creation date 
-						report */
+                                                report */
 } cdio_mmc_feature_t;
-				
+                                
 /** Profile profile codes used in GET_CONFIGURATION - PROFILE LIST. */
 typedef enum {
   CDIO_MMC_FEATURE_PROF_NON_REMOVABLE = 0x0001, /**< Re-writable disk, capable
-						   of changing behavior */
+                                                   of changing behavior */
   CDIO_MMC_FEATURE_PROF_REMOVABLE     = 0x0002, /**< disk Re-writable; with 
-						   removable  media */
+                                                   removable  media */
   CDIO_MMC_FEATURE_PROF_MO_ERASABLE   = 0x0003, /**< Erasable Magneto-Optical
-						   disk with sector erase
-						   capability */
+                                                   disk with sector erase
+                                                   capability */
   CDIO_MMC_FEATURE_PROF_MO_WRITE_ONCE = 0x0004, /**< Write Once Magneto-Optical
-						   write once */
+                                                   write once */
   CDIO_MMC_FEATURE_PROF_AS_MO         = 0x0005, /**< Advance Storage
-						   Magneto-Optical */
+                                                   Magneto-Optical */
   CDIO_MMC_FEATURE_PROF_CD_ROM        = 0x0008, /**< Read only Compact Disc
-						   capable */
+                                                   capable */
   CDIO_MMC_FEATURE_PROF_CD_R          = 0x0009, /**< Write once Compact Disc
-						   capable */
+                                                   capable */
   CDIO_MMC_FEATURE_PROF_CD_RW         = 0x000A, /**< CD-RW Re-writable
-						   Compact Disc capable */
+                                                   Compact Disc capable */
   CDIO_MMC_FEATURE_PROF_DVD_ROM       = 0x0010, /**< Read only DVD */
   CDIO_MMC_FEATURE_PROF_DVD_R_SEQ     = 0x0011, /**< Re-recordable DVD using
-						   Sequential recording */
+                                                   Sequential recording */
   CDIO_MMC_FEATURE_PROF_DVD_RAM       = 0x0012, /**< Re-writable DVD */
   CDIO_MMC_FEATURE_PROF_DVD_RW_RO     = 0x0013, /**< Re-recordable DVD using
-						   Restricted Overwrite */
+                                                   Restricted Overwrite */
   CDIO_MMC_FEATURE_PROF_DVD_RW_SEQ    = 0x0014, /**< Re-recordable DVD using
-						   Sequential recording */
+                                                   Sequential recording */
   CDIO_MMC_FEATURE_PROF_DVD_PRW       = 0x001A, /**< DVD+RW - DVD ReWritable */
   CDIO_MMC_FEATURE_PROF_DVD_PR        = 0x001B, /**< DVD+R - DVD Recordable */
   CDIO_MMC_FEATURE_PROF_DDCD_ROM      = 0x0020, /**< Read only  DDCD */
@@ -337,7 +335,7 @@ typedef enum {
   CDIO_MMC_FEATURE_PROF_DVD_PR2       = 0x002B, /**< DVD+R - DVD Recordable 
                                                      double layer */
   CDIO_MMC_FEATURE_PROF_NON_CONFORM   = 0xFFFF, /**< The Logical Unit does not
-						   conform to any Profile. */
+                                                   conform to any Profile. */
 } cdio_mmc_feature_profile_t;
   
 typedef enum {
@@ -374,28 +372,33 @@ typedef struct mmc_cdb_s {
     unsigned char reserved2;
     unsigned char profile_msb;
     unsigned char profile_lsb;
- } cdio_mmc_feature_list_header_t;
+  } cdio_mmc_feature_list_header_t;
+
   /** An enumeration indicating whether an MMC command is sending
     data, or getting data, or does none of both.
- */
- typedef enum mmc_direction_s {
-   SCSI_MMC_DATA_READ,
+  */
+  typedef enum mmc_direction_s {
+    SCSI_MMC_DATA_READ,
     SCSI_MMC_DATA_WRITE,
     SCSI_MMC_DATA_NONE
- } cdio_mmc_direction_t;
-  /** Indicate to applications that SCSI_MMC_DATA_NONE is available
+  } cdio_mmc_direction_t;
+  /** Indicate to applications that SCSI_MMC_DATA_NONE is available.
+      It has been added after version 0.82 and should be used with commands
+      that neither read nor write payload bytes. (At least on Linux such
+      commands did work with SCSI_MMC_DATA_READ or SCSI_MMC_DATA_WRITE, too.)
   */
 #define SCSI_MMC_HAS_DIR_NONE 1
+  
   typedef struct mmc_subchannel_s
- {
+  {
     uint8_t       reserved;
     uint8_t       audio_status;
     uint16_t      data_length; /**< Really ISO 9660 7.2.2 */
-    uint8_t	  format;
-    uint8_t	  address:	4;
-    uint8_t	  control:	4;
-    uint8_t	  track;
-    uint8_t	  index;
+    uint8_t       format;
+    uint8_t       address:      4;
+    uint8_t       control:      4;
+    uint8_t       track;
+    uint8_t       index;
     uint8_t       abs_addr[4];
     uint8_t       rel_addr[4];
   } cdio_mmc_subchannel_t;
@@ -771,15 +774,15 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   /**
     Run a Multimedia command (MMC). 
     
-    @param p_cdio	 CD structure set by cdio_open().
+    @param p_cdio        CD structure set by cdio_open().
     @param i_timeout_ms  time in milliseconds we will wait for the command
                          to complete. 
-    @param p_cdb	 CDB bytes. All values that are needed should be set 
+    @param p_cdb         CDB bytes. All values that are needed should be set 
                          on input. We'll figure out what the right CDB length 
                          should be.
     @param e_direction   direction the transfer is to go.
-    @param i_buf	 Size of buffer
-    @param p_buf	 Buffer for data, both sending and receiving.
+    @param i_buf         Size of buffer
+    @param p_buf         Buffer for data, both sending and receiving.
 
     @return 0 if command completed successfully.
   */
@@ -796,15 +799,15 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     miscalculated by mmc_get_cmd_len(); it doesn't follow the usual 
     code number to length conventions. Patch supplied by SukkoPera.
 
-    @param p_cdio	 CD structure set by cdio_open().
+    @param p_cdio        CD structure set by cdio_open().
     @param i_timeout_ms  time in milliseconds we will wait for the command
                          to complete. 
-    @param p_cdb	 CDB bytes. All values that are needed should be set 
+    @param p_cdb         CDB bytes. All values that are needed should be set 
                          on input. 
-    @param i_cdb	 number of CDB bytes. 
+    @param i_cdb         number of CDB bytes. 
     @param e_direction   direction the transfer is to go.
-    @param i_buf	 Size of buffer
-    @param p_buf	 Buffer for data, both sending and receiving.
+    @param i_buf         Size of buffer
+    @param p_buf         Buffer for data, both sending and receiving.
 
     @return 0 if command completed successfully.
   */
@@ -813,6 +816,23 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                    const mmc_cdb_t *p_cdb, unsigned int i_cdb,
                    cdio_mmc_direction_t e_direction, unsigned int i_buf,
                    /*in/out*/ void *p_buf );
+
+  /** Obtain the SCSI sense reply of the most-recently-performed MMC command.
+      These bytes give an indication of possible problems which occured in
+      the drive while the command was performed. With some commands they tell
+      about the current state of the drive (e.g. 00h TEST UNIT READY).
+      @param sense       returns the sense bytes received from the drive.
+                         This is allocated memory or NULL if no sense bytes are
+                         available. Dispose non-NULL pointers by free() when
+                         no longer needed.
+                         See SPC-3 4.5.3 Fixed format sense data.
+                         SCSI error codes as of SPC-3 Annex D, MMC-5 Annex F:
+                         sense[2]&15 = Key , sense[12] = ASC , sense[13] = ASCQ
+      @return            number of valid bytes in sense,
+                         0 in case of no sense bytes available,
+                         <0 in case of internal error.
+  */
+  int mmc_last_cmd_sense ( const CdIo_t *p_cdio, unsigned char **sense);
 
   /**
     Set the block size for subsequest read requests, via MMC.
@@ -823,14 +843,14 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   /**
     Set the drive speed in CD-ROM speed units.
 
-    @param p_cdio	   CD structure set by cdio_open().
+    @param p_cdio          CD structure set by cdio_open().
     @param i_drive_speed   speed in CD-ROM speed units. Note this
                            not Kbs as would be used in the MMC spec or
-		           in mmc_set_speed(). To convert CD-ROM speed units 
-			   to Kbs, multiply the number by 176 (for raw data)
-			   and by 150 (for filesystem data). On many CD-ROM 
-			   drives, specifying a value too large will result 
-			   in using the fastest speed.
+                           in mmc_set_speed(). To convert CD-ROM speed units 
+                           to Kbs, multiply the number by 176 (for raw data)
+                           and by 150 (for filesystem data). On many CD-ROM 
+                           drives, specifying a value too large will result 
+                           in using the fastest speed.
 
     @return the drive speed if greater than 0. -1 if we had an error. is -2
     returned if this is not implemented for the current driver.
@@ -843,7 +863,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   /**
     Set the drive speed in K bytes per second.
 
-    @param p_cdio	 CD structure set by cdio_open().
+    @param p_cdio        CD structure set by cdio_open().
     @param i_Kbs_speed   speed in K bytes per second. Note this is 
                          not in standard CD-ROM speed units, e.g.
                          1x, 4x, 16x as it is in cdio_set_speed.

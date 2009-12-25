@@ -62,6 +62,9 @@ Svend S. Sorensen <ssorensen at fastmail.fm>
 xboxmediacenter team (www.xboxmediacenter.de)
  X-Box detection and XDF filesystem things
 
+Thomas Schmitt
+  Recording and retrieval of SCSI sense reply. Write/burning interface.
+
 Daniel Schwarz
  log-summary option in cd-paranoia.
 

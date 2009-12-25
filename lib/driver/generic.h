@@ -1,7 +1,5 @@
 /*
-  $Id: generic.h,v 1.16 2008/04/22 15:29:12 karl Exp $
-
-  Copyright (C) 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -67,6 +65,15 @@ extern "C" {
     cdtext_t  cdtext;       /**< CD-Text for disc. */
     cdtext_t  cdtext_track[CDIO_CD_MAX_TRACKS+1]; /**< CD-TEXT for each track*/
     track_flags_t track_flags[CDIO_CD_MAX_TRACKS+1];
+
+    /* Memorized sense reply of the most recent SCSI command.
+       Recorded by driver implementations of cdio_funcs_t.run_mmc_cmd(). 
+       Read by API function mmc_get_cmd_scsi_sense().
+    */
+    unsigned char  scsi_mmc_sense[263];   /* See SPC-3 4.5.3 : 252 bytes legal
+                                             but 263 bytes possible */
+    int            scsi_mmc_sense_valid;  /* Number of valid sense bytes */
+
   } generic_img_private_t;
 
   /*!
@@ -82,7 +89,7 @@ extern "C" {
   */
   driver_return_code_t 
   cdio_generic_unimplemented_set_blocksize (void *p_user_data, 
-					    uint16_t i_blocksize);
+                                            uint16_t i_blocksize);
 
   /*!
     Set the drive speed.
@@ -90,7 +97,7 @@ extern "C" {
     @return -2 since it's not implemented.
   */
   driver_return_code_t cdio_generic_unimplemented_set_speed (void *p_user_data,
-							     int i_speed);
+                                                             int i_speed);
   
   /*!
     Release and free resources associated with cd. 
@@ -121,7 +128,7 @@ extern "C" {
     from lsn. Returns 0 if no error. 
   */
   int cdio_generic_read_form1_sector (void * user_data, void *data, 
-				      lsn_t lsn);
+                                      lsn_t lsn);
   
   /*!
     Release and free resources associated with stream or disk image.
@@ -226,3 +233,12 @@ extern "C" {
 #endif /* __cplusplus */
 
 #endif /* __CDIO_GENERIC_H__ */
+
+
+/* 
+ * Local variables:
+ *  c-file-style: "gnu"
+ *  tab-width: 8
+ *  indent-tabs-mode: nil
+ * End:
+ */

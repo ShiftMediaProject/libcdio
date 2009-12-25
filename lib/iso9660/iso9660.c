@@ -1,6 +1,4 @@
 /*
-  $Id: iso9660.c,v 1.41 2008/06/25 08:01:54 rocky Exp $
-
   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
