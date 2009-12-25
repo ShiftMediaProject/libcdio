@@ -1262,8 +1262,8 @@ run_mmc_cmd_linux(void *p_user_data,
     /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
     */
     if (u_sense[7]) {
-      sense_size = u_sense[7] + 8; /* SPC 4.5.3, Table 26 :
-                                      252 bytes legal , 263 bytes possible */
+      sense_size = u_sense[7] + 8; /* SPC 4.5.3, Table 26:
+                                      252 bytes legal, 263 bytes possible */
       if (sense_size > sizeof(sense))
         sense_size = sizeof(sense);
       memcpy((void *) p_env->gen.scsi_mmc_sense, &sense, sense_size);

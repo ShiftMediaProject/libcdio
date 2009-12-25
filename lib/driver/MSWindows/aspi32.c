@@ -1,7 +1,5 @@
 /*
-  $Id: aspi32.c,v 1.11 2008/04/21 18:30:21 karl Exp $
-
-  Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -150,8 +148,8 @@ mciSendCommand_aspi(int id, UINT msg, DWORD flags, void *arg)
  */
 static bool
 have_aspi( HMODULE *hASPI, 
-	   long (**lpGetSupport)( void ), 
-	   long (**lpSendCommand)( void* ) )
+           long (**lpGetSupport)( void ), 
+           long (**lpSendCommand)( void* ) )
 {
   /* check if aspi is available */
   *hASPI = LoadLibrary( "wnaspi32.dll" );
@@ -162,9 +160,9 @@ have_aspi( HMODULE *hASPI,
   }
 
   *lpGetSupport =  (void *) GetProcAddress( *hASPI,
-					    "GetASPI32SupportInfo" );
+                                            "GetASPI32SupportInfo" );
   *lpSendCommand = (void *) GetProcAddress( *hASPI,
-					     "SendASPI32Command" );
+                                             "SendASPI32Command" );
   
   /* make sure that we've got both function addresses */
   if( *lpGetSupport == NULL || *lpSendCommand == NULL ) {
@@ -191,7 +189,7 @@ get_discmode_aspi (_img_private_t *p_env)
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
   if (0 == mmc_get_dvd_struct_physical_private (p_env, &run_mmc_cmd_aspi,
-						&dvd)) {
+                                                &dvd)) {
     switch(dvd.physical.layer[0].book_type) {
     case CDIO_DVD_BOOK_DVD_ROM:  return CDIO_DISC_MODE_DVD_ROM;
     case CDIO_DVD_BOOK_DVD_RAM:  return CDIO_DISC_MODE_DVD_RAM;
@@ -217,44 +215,44 @@ get_discmode_aspi (_img_private_t *p_env)
     switch(track_fmt) {
     case TRACK_FORMAT_AUDIO:
       switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_DA;
-	  break;
-	case CDIO_DISC_MODE_CD_DA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
+        case CDIO_DISC_MODE_NO_INFO:
+          discmode = CDIO_DISC_MODE_CD_DA;
+          break;
+        case CDIO_DISC_MODE_CD_DA:
+        case CDIO_DISC_MODE_CD_MIXED: 
+        case CDIO_DISC_MODE_ERROR: 
+          /* No change*/
+          break;
       default:
-	  discmode = CDIO_DISC_MODE_CD_MIXED;
+          discmode = CDIO_DISC_MODE_CD_MIXED;
       }
       break;
     case TRACK_FORMAT_XA:
       switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_XA;
-	  break;
-	case CDIO_DISC_MODE_CD_XA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
+        case CDIO_DISC_MODE_NO_INFO:
+          discmode = CDIO_DISC_MODE_CD_XA;
+          break;
+        case CDIO_DISC_MODE_CD_XA:
+        case CDIO_DISC_MODE_CD_MIXED: 
+        case CDIO_DISC_MODE_ERROR: 
+          /* No change*/
+          break;
       default:
-	discmode = CDIO_DISC_MODE_CD_MIXED;
+        discmode = CDIO_DISC_MODE_CD_MIXED;
       }
       break;
     case TRACK_FORMAT_DATA:
       switch(discmode) {
-	case CDIO_DISC_MODE_NO_INFO:
-	  discmode = CDIO_DISC_MODE_CD_DATA;
-	  break;
-	case CDIO_DISC_MODE_CD_DATA:
-	case CDIO_DISC_MODE_CD_MIXED: 
-	case CDIO_DISC_MODE_ERROR: 
-	  /* No change*/
-	  break;
+        case CDIO_DISC_MODE_NO_INFO:
+          discmode = CDIO_DISC_MODE_CD_DATA;
+          break;
+        case CDIO_DISC_MODE_CD_DATA:
+        case CDIO_DISC_MODE_CD_MIXED: 
+        case CDIO_DISC_MODE_ERROR: 
+          /* No change*/
+          break;
       default:
-	discmode = CDIO_DISC_MODE_CD_MIXED;
+        discmode = CDIO_DISC_MODE_CD_MIXED;
       }
       break;
     case TRACK_FORMAT_ERROR:
@@ -315,39 +313,39 @@ is_cdrom_aspi(const char drive_letter)
     
     for(i_target=0; i_target < srbInquiry.HA_Unique[3]; i_target++)
       {
-	int i_lun;
-	for( i_lun=0; i_lun<8; i_lun++)
-	  {
-	    srbDiskInfo.SRB_Cmd         = SC_GET_DISK_INFO;
-	    srbDiskInfo.SRB_Flags       = 0;
-	    srbDiskInfo.SRB_Hdr_Rsvd    = 0;
-	    srbDiskInfo.SRB_HaId        = i_adapter;
-	    srbDiskInfo.SRB_Target      = i_target;
-	    srbDiskInfo.SRB_Lun         = i_lun;
-	    
-	    lpSendCommand( (void*) &srbDiskInfo );
-	    
-	    if( (srbDiskInfo.SRB_Status == SS_COMP) &&
-		(srbDiskInfo.SRB_Int13HDriveInfo == c_drive) ) {
-	      /* Make sure this is a CD-ROM device. */
-	      struct SRB_GDEVBlock   srbGDEVBlock;
-	      
-	      memset( &srbGDEVBlock, 0, sizeof(struct SRB_GDEVBlock) );
-	      srbGDEVBlock.SRB_Cmd    = SC_GET_DEV_TYPE;
-	      srbDiskInfo.SRB_HaId    = i_adapter;
-	      srbGDEVBlock.SRB_Target = i_target;
-	      srbGDEVBlock.SRB_Lun    = i_lun;
-	      
-	      lpSendCommand( (void*) &srbGDEVBlock );
-	      
-	      if( ( srbGDEVBlock.SRB_Status == SS_COMP ) &&
-		  ( srbGDEVBlock.SRB_DeviceType == DTYPE_CDROM ) ) {
-		sprintf( psz_win32_drive, "%c:", drive_letter );
-		FreeLibrary( hASPI );
-		return(psz_win32_drive);
-	      }
-	    }
-	  }
+        int i_lun;
+        for( i_lun=0; i_lun<8; i_lun++)
+          {
+            srbDiskInfo.SRB_Cmd         = SC_GET_DISK_INFO;
+            srbDiskInfo.SRB_Flags       = 0;
+            srbDiskInfo.SRB_Hdr_Rsvd    = 0;
+            srbDiskInfo.SRB_HaId        = i_adapter;
+            srbDiskInfo.SRB_Target      = i_target;
+            srbDiskInfo.SRB_Lun         = i_lun;
+            
+            lpSendCommand( (void*) &srbDiskInfo );
+            
+            if( (srbDiskInfo.SRB_Status == SS_COMP) &&
+                (srbDiskInfo.SRB_Int13HDriveInfo == c_drive) ) {
+              /* Make sure this is a CD-ROM device. */
+              struct SRB_GDEVBlock   srbGDEVBlock;
+              
+              memset( &srbGDEVBlock, 0, sizeof(struct SRB_GDEVBlock) );
+              srbGDEVBlock.SRB_Cmd    = SC_GET_DEV_TYPE;
+              srbDiskInfo.SRB_HaId    = i_adapter;
+              srbGDEVBlock.SRB_Target = i_target;
+              srbGDEVBlock.SRB_Lun    = i_lun;
+              
+              lpSendCommand( (void*) &srbGDEVBlock );
+              
+              if( ( srbGDEVBlock.SRB_Status == SS_COMP ) &&
+                  ( srbGDEVBlock.SRB_DeviceType == DTYPE_CDROM ) ) {
+                sprintf( psz_win32_drive, "%c:", drive_letter );
+                FreeLibrary( hASPI );
+                return(psz_win32_drive);
+              }
+            }
+          }
       }
   }
   FreeLibrary( hASPI );
@@ -372,7 +370,7 @@ init_aspi (_img_private_t *env)
   {
     c_drive = env->gen.source_name[0];
   } else if ( 6 == strlen(env->gen.source_name) 
-	      && isalpha(env->gen.source_name[4] )) {
+              && isalpha(env->gen.source_name[4] )) {
     c_drive = env->gen.source_name[4];
   } else {
     c_drive = 'C';
@@ -416,52 +414,52 @@ init_aspi (_img_private_t *env)
     
     for(i_target=0; i_target < srbInquiry.HA_Unique[3]; i_target++)
       {
-	int i_lun;
-	for (i_lun = 0; i_lun < 8; i_lun++ ) {
-	  srbDiskInfo.SRB_Cmd         = SC_GET_DISK_INFO;
-	  srbDiskInfo.SRB_Flags       = 0;
-	  srbDiskInfo.SRB_Hdr_Rsvd    = 0;
-	  srbDiskInfo.SRB_HaId        = i_adapter;
-	  srbDiskInfo.SRB_Target      = i_target;
-	  srbDiskInfo.SRB_Lun         = i_lun;
-	  
-	  lpSendCommand( (void*) &srbDiskInfo );
-	  
-	  if( (srbDiskInfo.SRB_Status == SS_COMP) ) {
-	    
-	    if (srbDiskInfo.SRB_Int13HDriveInfo != c_drive)
-	      {
-		continue;
-	      } else {
-		/* Make sure this is a CD-ROM device. */
-		struct SRB_GDEVBlock   srbGDEVBlock;
-		
-		memset( &srbGDEVBlock, 0, sizeof(struct SRB_GDEVBlock) );
-		srbGDEVBlock.SRB_Cmd    = SC_GET_DEV_TYPE;
-		srbGDEVBlock.SRB_HaId   = i_adapter;
-		srbGDEVBlock.SRB_Target = i_target;
-		
-		lpSendCommand( (void*) &srbGDEVBlock );
-		
-		if( ( srbGDEVBlock.SRB_Status == SS_COMP ) &&
-		    ( srbGDEVBlock.SRB_DeviceType == DTYPE_CDROM ) ) {
-		  env->i_sid = MAKEWORD( i_adapter, i_target );
-		  env->hASPI = (long)hASPI;
-		  env->lpSendCommand = lpSendCommand;
-		  env->b_aspi_init   = true;
-		  env->i_lun         = i_lun;
-		  cdio_debug("Using ASPI layer");
-		  
-		  return true;
-		} else {
-		  FreeLibrary( hASPI );
-		  cdio_debug( "%c: is not a CD-ROM drive",
-			      env->gen.source_name[0] );
-		  return false;
-		}
-	      }
-	  }
-	}
+        int i_lun;
+        for (i_lun = 0; i_lun < 8; i_lun++ ) {
+          srbDiskInfo.SRB_Cmd         = SC_GET_DISK_INFO;
+          srbDiskInfo.SRB_Flags       = 0;
+          srbDiskInfo.SRB_Hdr_Rsvd    = 0;
+          srbDiskInfo.SRB_HaId        = i_adapter;
+          srbDiskInfo.SRB_Target      = i_target;
+          srbDiskInfo.SRB_Lun         = i_lun;
+          
+          lpSendCommand( (void*) &srbDiskInfo );
+          
+          if( (srbDiskInfo.SRB_Status == SS_COMP) ) {
+            
+            if (srbDiskInfo.SRB_Int13HDriveInfo != c_drive)
+              {
+                continue;
+              } else {
+                /* Make sure this is a CD-ROM device. */
+                struct SRB_GDEVBlock   srbGDEVBlock;
+                
+                memset( &srbGDEVBlock, 0, sizeof(struct SRB_GDEVBlock) );
+                srbGDEVBlock.SRB_Cmd    = SC_GET_DEV_TYPE;
+                srbGDEVBlock.SRB_HaId   = i_adapter;
+                srbGDEVBlock.SRB_Target = i_target;
+                
+                lpSendCommand( (void*) &srbGDEVBlock );
+                
+                if( ( srbGDEVBlock.SRB_Status == SS_COMP ) &&
+                    ( srbGDEVBlock.SRB_DeviceType == DTYPE_CDROM ) ) {
+                  env->i_sid = MAKEWORD( i_adapter, i_target );
+                  env->hASPI = (long)hASPI;
+                  env->lpSendCommand = lpSendCommand;
+                  env->b_aspi_init   = true;
+                  env->i_lun         = i_lun;
+                  cdio_debug("Using ASPI layer");
+                  
+                  return true;
+                } else {
+                  FreeLibrary( hASPI );
+                  cdio_debug( "%c: is not a CD-ROM drive",
+                              env->gen.source_name[0] );
+                  return false;
+                }
+              }
+          }
+        }
     }
   }
   
@@ -473,27 +471,28 @@ init_aspi (_img_private_t *env)
 /*!
   Run a SCSI MMC command. 
  
-  env	        private CD structure 
+  env           private CD structure 
   i_timeout_ms  time in milliseconds we will wait for the command
                 to complete. If this value is -1, use the default 
-		time-out value.
-  p_buf	        Buffer for data, both sending and receiving
-  i_buf	        Size of buffer
-  e_direction	direction the transfer is to go.
-  cdb	        CDB bytes. All values that are needed should be set on 
+                time-out value.
+  p_buf         Buffer for data, both sending and receiving
+  i_buf         Size of buffer
+  e_direction   direction the transfer is to go.
+  cdb           CDB bytes. All values that are needed should be set on 
                 input. We'll figure out what the right CDB length should be.
 
   We return 0 if command completed successfully.
  */
 int
 run_mmc_cmd_aspi( void *p_user_data, unsigned int i_timeout_ms,
-		  unsigned int i_cdb, const mmc_cdb_t * p_cdb,  
-		  cdio_mmc_direction_t e_direction, 
-		  unsigned int i_buf, /*in/out*/ void *p_buf )
+                  unsigned int i_cdb, const mmc_cdb_t * p_cdb,  
+                  cdio_mmc_direction_t e_direction, 
+                  unsigned int i_buf, /*in/out*/ void *p_buf )
 {
-  const _img_private_t *p_env = p_user_data;
+  _img_private_t *p_env = p_user_data;
   HANDLE hEvent;
   struct SRB_ExecSCSICmd ssc;
+  int sense_size;
 
   /* Create the transfer completion event */
   hEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
@@ -502,6 +501,7 @@ run_mmc_cmd_aspi( void *p_user_data, unsigned int i_timeout_ms,
     return 1;
   }
   
+  p_env->gen.scsi_mmc_sense_valid = 0;
   memset( &ssc, 0, sizeof( ssc ) );
 
   ssc.SRB_Cmd         = SC_EXEC_SCSI_CMD;
@@ -536,10 +536,18 @@ run_mmc_cmd_aspi( void *p_user_data, unsigned int i_timeout_ms,
   /* check that the transfer went as planned */
   if( ssc.SRB_Status != SS_COMP ) {
     cdio_info("ASPI: %s", aspierror(ssc.SRB_Status));
-    return 2;
+    return DRIVER_OP_ERROR;
+  } else {
+    sense_size = ssc.SenseArea[7] + 8; /* SPC 4.5.3, Table 26:
+                                          252 bytes legal, 
+                                          263 bytes possible */
+    if (sense_size > SENSE_LEN)
+      sense_size = SENSE_LEN;
+    memcpy((void *) p_env->gen.scsi_mmc_sense, ssc.SenseArea, sense_size);
+    p_env->gen.scsi_mmc_sense_valid = sense_size;
   }
 
-  return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 
@@ -549,7 +557,7 @@ run_mmc_cmd_aspi( void *p_user_data, unsigned int i_timeout_ms,
  */
 static int
 read_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn, 
-		   int sector_type, unsigned int nblocks)
+                   int sector_type, unsigned int nblocks)
 {
   mmc_cdb_t cdb = {{0, }};
   unsigned int i_buf;
@@ -579,7 +587,7 @@ read_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
   /* ssc.CDBByte[ 9 ] = READ_CD_USERDATA_MODE2; */
 #else 
   CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cmd,
-					   CDIO_MMC_MCSB_ALL_HEADERS);
+                                           CDIO_MMC_MCSB_ALL_HEADERS);
 #endif
   
   switch (sector_type) {
@@ -601,8 +609,8 @@ read_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
   }
 
   return run_mmc_cmd_aspi(p_env, OP_TIMEOUT_MS, 
-			  mmc_get_cmd_len(cdb.field[0]), 
-			  &cdb, SCSI_MMC_DATA_READ, i_buf*nblocks, data);
+                          mmc_get_cmd_len(cdb.field[0]), 
+                          &cdb, SCSI_MMC_DATA_READ, i_buf*nblocks, data);
 }
 
 /*!
@@ -611,11 +619,11 @@ read_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
  */
 int
 read_audio_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn, 
-			 unsigned int i_blocks) 
+                         unsigned int i_blocks) 
 {
   if (read_sectors_aspi(p_env, data, lsn, CDIO_MMC_READ_TYPE_CDDA, i_blocks)) {
     return read_sectors_aspi(p_env, data, lsn, 
-			     CDIO_MMC_READ_TYPE_ANY, i_blocks);
+                             CDIO_MMC_READ_TYPE_ANY, i_blocks);
   }
   return 0;
 }
@@ -626,12 +634,12 @@ read_audio_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
  */
 int
 read_mode2_sector_aspi (_img_private_t *p_env, void *data, lsn_t lsn, 
-			 bool b_form2)
+                         bool b_form2)
 {
   return read_sectors_aspi(p_env, data, lsn, b_form2 
-			       ? CDIO_MMC_READ_TYPE_M2F2 
-			       : CDIO_MMC_READ_TYPE_M2F1, 
-			       1);
+                               ? CDIO_MMC_READ_TYPE_M2F2 
+                               : CDIO_MMC_READ_TYPE_M2F1, 
+                               1);
 }
 
 /*!
@@ -640,7 +648,7 @@ read_mode2_sector_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
  */
 int
 read_mode1_sector_aspi (_img_private_t *p_env, void *data, lsn_t lsn, 
-			 bool b_form2)
+                         bool b_form2)
 {
   return read_sectors_aspi(p_env, data, lsn, CDIO_MMC_READ_TYPE_MODE1, 1);
 }
@@ -668,9 +676,9 @@ read_toc_aspi (_img_private_t *p_env)
   CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(tocheader));
 
   i_status = run_mmc_cmd_aspi (p_env, OP_TIMEOUT_MS,
-			       mmc_get_cmd_len(cdb.field[0]), 
-			       &cdb, SCSI_MMC_DATA_READ, 
-			       sizeof(tocheader), &tocheader);
+                               mmc_get_cmd_len(cdb.field[0]), 
+                               &cdb, SCSI_MMC_DATA_READ, 
+                               sizeof(tocheader), &tocheader);
   
   if (0 != i_status) return false;
   
@@ -694,9 +702,9 @@ read_toc_aspi (_img_private_t *p_env)
     CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_toclength);
 
     i_status = run_mmc_cmd_aspi (p_env, OP_TIMEOUT_MS,
-				 mmc_get_cmd_len(cdb.field[0]), 
-				 &cdb, SCSI_MMC_DATA_READ, 
-				 i_toclength, p_fulltoc);
+                                 mmc_get_cmd_len(cdb.field[0]), 
+                                 &cdb, SCSI_MMC_DATA_READ, 
+                                 i_toclength, p_fulltoc);
     if( 0 != i_status ) {
       p_env->gen.i_tracks = 0;
     }
@@ -706,15 +714,15 @@ read_toc_aspi (_img_private_t *p_env)
     for( i = 0 ; i <= p_env->gen.i_tracks ; i++, j++ ) {
       int i_index = 8 + 8 * i;
       p_env->tocent[ i ].start_lsn = ((int)p_fulltoc[ i_index ] << 24) +
-	((int)p_fulltoc[ i_index+1 ] << 16) +
-	((int)p_fulltoc[ i_index+2 ] << 8) +
-	(int)p_fulltoc[ i_index+3 ];
+        ((int)p_fulltoc[ i_index+1 ] << 16) +
+        ((int)p_fulltoc[ i_index+2 ] << 8) +
+        (int)p_fulltoc[ i_index+3 ];
       p_env->tocent[i].Control   = (UCHAR)p_fulltoc[ 1 + 8 * i ];
       
       set_track_flags(&(p_env->gen.track_flags[j]), p_env->tocent[i].Control);
     
       cdio_debug( "p_sectors: %i %lu", 
-		  i, (unsigned long int) p_env->tocent[i].start_lsn );
+                  i, (unsigned long int) p_env->tocent[i].start_lsn );
     }
     
     free( p_fulltoc );
@@ -755,7 +763,7 @@ wnaspi32_eject_media (void *user_data) {
     st.dwItem = MCI_STATUS_READY;
     /* Eject disc */
     ret = mciSendCommand_aspi( op.wDeviceID, MCI_SET, 
-				 MCI_SET_DOOR_OPEN, 0 ) != 0;
+                                 MCI_SET_DOOR_OPEN, 0 ) != 0;
     /* Release access to the device */
     mciSendCommand_aspi( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
   } else 
