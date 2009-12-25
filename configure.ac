@@ -689,10 +689,11 @@ head -n 254 config.h >> include/cdio/cdio_config.h
 
 AC_OUTPUT
 
-echo "Using CD-ROM drivers: $cd_drivers"
-echo "Building cd-paranoia: $(test "x$enable_cd_paranoia" = "xyes" && echo yes || echo no)"
-echo "Building cd-info    : $(test "x$enable_cd_info" = "xyes" && echo yes || echo no)"
-echo "Building cd-read    : $(test "x$enable_cd_read" = "xyes" && echo yes || echo no)"
-echo "Building cdda-player: $(test "x$enable_cdda_player" = "xyes" && echo yes || echo no)"
-echo "Building iso-info   : $(test "x$enable_iso_info" = "xyes" && echo yes || echo no)"
-echo "Building iso-read   : $(test "x$enable_iso_read" = "xyes" && echo yes || echo no)"
+echo "Using CD-ROM drivers : $cd_drivers"
+echo "Building cd-paranoia : $(test "x$enable_cd_paranoia" = "xyes" && echo yes || echo no)"
+echo "Building cd-info     : $(test "x$enable_cd_info" = "xyes" && echo yes || echo no)"
+echo "Building cd-read     : $(test "x$enable_cd_read" = "xyes" && echo yes || echo no)"
+echo "Building cdda-player : $(test "x$enable_cdda_player" = "xyes" && echo yes || echo no)"
+echo "Building iso-info    : $(test "x$enable_iso_info" = "xyes" && echo yes || echo no)"
+echo "Building iso-read    : $(test "x$enable_iso_read" = "xyes" && echo yes || echo no)"
+echo "Building C++ programs: $(test "x$enable_cxx" != "xno" && echo yes || echo no)"
