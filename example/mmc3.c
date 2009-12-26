@@ -41,6 +41,7 @@ main(int argc, const char *argv[])
   driver_id_t driver_id = DRIVER_DEVICE;
   char *psz_drive = NULL;
   bool do_eject = false;
+  bool do_close = false;
   
   if (argc > 1) 
     psz_drive = strdup(argv[1]);
@@ -64,6 +65,7 @@ main(int argc, const char *argv[])
   case 0:
     printf("CD-ROM drive %s is closed.\n", psz_drive);
     do_eject = true;
+    do_close = true;
     break;
   case 1:
     printf("CD-ROM drive %s is open.\n", psz_drive);
@@ -71,7 +73,7 @@ main(int argc, const char *argv[])
   default:
     printf("Error status for drive %s: %s.\n", psz_drive,
 	   cdio_driver_errmsg(ret));
-    return 1;
+    return 77;
   }
   
   ret = mmc_get_media_changed(p_cdio);
@@ -85,10 +87,10 @@ main(int argc, const char *argv[])
   default:
     printf("Error status for drive %s: %s.\n", psz_drive, 
 	   cdio_driver_errmsg(ret));
-    return 1;
+    return 77;
   }
 
-  if (do_eject)
+  if (do_eject && argc > 2)
     ret = cdio_eject_media_drive(psz_drive);
   else
     ret = cdio_close_tray(psz_drive, &driver_id);
@@ -104,7 +106,7 @@ main(int argc, const char *argv[])
   default:
     printf("Error status for drive %s: %s.\n", psz_drive,
 	   cdio_driver_errmsg(ret));
-    return 1;
+    return 77;
   }
   
   ret = mmc_get_media_changed(p_cdio);
@@ -118,8 +120,11 @@ main(int argc, const char *argv[])
   default:
     printf("Error status for drive %s: %s.\n", psz_drive,
 	   cdio_driver_errmsg(ret));
-    return 1;
+    return 77;
   }
+
+  if (do_close)
+    cdio_close_tray(psz_drive, &driver_id);
 
   free(psz_drive);
   cdio_destroy(p_cdio);
