@@ -21,7 +21,10 @@ gnu_linux_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 solaris_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 solaris_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
-check_PROGRAMS = gnu_linux solaris
+win32_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
+win32_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
+
+check_PROGRAMS = gnu_linux solaris win32
 
 TESTS = $(check_PROGRAMS)
 
