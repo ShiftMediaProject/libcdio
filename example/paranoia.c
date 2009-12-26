@@ -1,6 +1,4 @@
 /*
-  $Id: paranoia.c,v 1.9 2008/03/24 15:30:56 karl Exp $
-
   Copyright (C) 2005, 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -93,7 +91,7 @@ main(int argc, const char *argv[])
     d=cdda_identify(*ppsz_cd_drives, 1, NULL);
   } else {
     printf("Unable find or access a CD-ROM drive with an audio CD in it.\n");
-    exit(1);
+    exit(77);
   }
 
   /* Don't need a list of CD's with CD-DA's any more. */
@@ -101,7 +99,7 @@ main(int argc, const char *argv[])
 
   if ( !d ) {
     printf("Unable to identify audio CD disc.\n");
-    exit(1);
+    exit(77);
   }
 
   /* We'll set for verbose paranoia messages. */
@@ -109,7 +107,7 @@ main(int argc, const char *argv[])
 
   if ( 0 != cdda_open(d) ) {
     printf("Unable to open disc.\n");
-    exit(1);
+    exit(77);
   }
 
   /* Okay now set up to read up to the first 300 frames of the first

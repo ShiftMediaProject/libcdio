@@ -1,6 +1,4 @@
 /*
-  $Id: testiso9660.c,v 1.23 2008/06/03 08:40:15 rocky Exp $
-
   Copyright (C) 2003, 2006, 2007, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify

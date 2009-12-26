@@ -1,7 +1,5 @@
 /*
-  $Id: mmc2a.c,v 1.5 2008/03/24 15:30:56 karl Exp $
-
-  Copyright (C) 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -209,7 +207,7 @@ main(int argc, const char *argv[])
 
   if (!p_cdio) {
     printf("Couldn't find CD\n");
-    return 1;
+    return 77;
   } else {
     uint8_t buf[22] = { 0, };    /* Place to hold returned data */
     char *psz_cd = cdio_get_default_device(p_cdio);

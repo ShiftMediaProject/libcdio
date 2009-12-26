@@ -84,7 +84,7 @@ main(int argc, const char *argv[])
 
   if (NULL == p_cdio) {
     printf("Couldn't find CD\n");
-    return 1;
+    return 77;
   } else {
     print_disc_info(p_cdio, i_tracks, i_first_track);
   }

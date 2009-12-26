@@ -1,7 +1,5 @@
 /*
-  $Id: mmc3.c,v 1.2 2008/03/24 15:30:56 karl Exp $
-
-  Copyright (C) 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -51,14 +49,14 @@ main(int argc, const char *argv[])
     psz_drive = cdio_get_default_device_driver(&driver_id);
     if (!psz_drive) {
       printf("Can't find a CD-ROM\n");
-     exit(1);
+     exit(77);
     }
   }
 
   p_cdio = cdio_open (psz_drive, driver_id);
   if (!p_cdio) {
     printf("Can't open %s\n", psz_drive);
-    exit(2);
+    exit(77);
   }
   
   ret = mmc_get_tray_status(p_cdio);

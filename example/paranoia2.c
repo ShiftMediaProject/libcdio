@@ -47,7 +47,7 @@ main(int argc, const char *argv[])
     d=cdio_cddap_identify_cdio(p_cdio, 1, NULL);
   } else {
     printf("Unable find or access a CD-ROM drive with an audio CD in it.\n");
-    exit(1);
+    exit(77);
   }
 
   /* Don't need a list of CD's with CD-DA's any more. */
@@ -55,7 +55,7 @@ main(int argc, const char *argv[])
 
   if ( !d ) {
     printf("Unable to identify audio CD disc.\n");
-    exit(1);
+    exit(77);
   }
 
   /* We'll set for verbose paranoia messages. */
@@ -63,7 +63,7 @@ main(int argc, const char *argv[])
 
   if ( 0 != cdio_cddap_open(d) ) {
     printf("Unable to open disc.\n");
-    exit(1);
+    exit(77);
   }
 
   /* In the paranoia example was a reading. Here we are going to do

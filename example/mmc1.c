@@ -1,7 +1,5 @@
 /*
-  $Id: mmc1.c,v 1.7 2008/03/24 15:30:56 karl Exp $
-
-  Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -49,7 +47,7 @@ main(int argc, const char *argv[])
 
   if (!p_cdio) {
     printf("Couldn't find CD\n");
-    return 1;
+    return 77;
   } else {
     int i_status;             /* Result of MMC command */
     char buf[36] = { 0, };    /* Place to hold returned data */

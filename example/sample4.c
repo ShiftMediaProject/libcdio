@@ -145,7 +145,7 @@ main(int argc, const char *argv[])
 
   if (NULL == p_cdio) {
     printf("Problem in trying to find a driver.\n\n");
-    return 1;
+    return 77;
   }
 
   first_track_num = cdio_get_first_track_num(p_cdio);
