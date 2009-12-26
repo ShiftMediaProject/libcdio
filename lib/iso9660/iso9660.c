@@ -79,7 +79,7 @@ timegm(struct tm *tm)
   char *tz;
   
   tz = getenv("TZ");
-  setenv("TZ", "", 1);
+  setenv("TZ", "UTC", 1);
   tzset();
   ret = mktime(tm);
   if (tz)
