@@ -660,6 +660,7 @@ AC_CONFIG_FILES([
        src/cd-paranoia/doc/ja/cd-paranoia.1 \
        src/cd-paranoia/doc/ja/Makefile \
        src/Makefile \
+       test/driver/Makefile \
        test/testbincue.c \
        test/testgetdevices.c \
        test/testisocd2.c \

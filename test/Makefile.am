@@ -21,14 +21,16 @@
 # There's a problem with doing make distcheck for testdefault. 
 # A reminder of why I hate automake.
 
+SUBDIRS = driver
+
 if BUILD_CD_PARANOIA
 testparanoia=testparanoia
 testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 endif
 
 hack = check_sizeof testassert testbincue testgetdevices testischar \
-       testisocd testisocd2 testiso9660 testlinux test_lib_driver_util \
-       testnrg $(testparanoia) testtoc testpregap testsolaris
+       testisocd testisocd2 testiso9660 test_lib_driver_util \
+       testnrg $(testparanoia) testtoc testpregap 
 
 EXTRA_PROGRAMS = testdefault 
 
@@ -49,12 +51,6 @@ testtoc_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
 
 test_lib_driver_util_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 tets_lib_driver_util_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
-
-testlinux_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
-testlinux_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
-
-testsolaris_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
-testsolaris_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
 testpregap_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testpregap_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
