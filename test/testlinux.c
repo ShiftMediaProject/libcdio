@@ -16,7 +16,7 @@
 */
 
 /* 
-   Regression test for cdio_nrgfile().
+   Unit test for lib/driver/gnu_linux.c
 */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
