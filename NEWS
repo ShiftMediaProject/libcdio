@@ -3,6 +3,8 @@ version 0.83 (git)
 - Add Recording and retrieval of SCSI sense reply. 
 - Add Write/burning interface.
 - MMC bug fixes
+- Add ability to retrieve SCSI tuple for a name and/or fake one up for
+  programs that wanto to cd-record compatible.
 - Tolerance for OS's without timezone in their struct tm (e.g. Solaris)
   added iso9660_set_{d,l}time_with_timezone
 
