@@ -385,6 +385,10 @@ get_arg_linux (void *env, const char key[])
     case _AM_NONE:
       return "no access method";
     }
+  } else if (!strcmp (key, "scsi-tuple")) {
+    return _obj->gen.scsi_tuple;
+  } else if (!strcmp (key, "scsi-tuple-linux")) {
+    return _obj->gen.scsi_tuple;
   } 
   return NULL;
 }
@@ -1549,6 +1553,77 @@ close_tray_linux (const char *psz_device)
 }
 
 /*!
+  Produce a text composed from the system SCSI address tuple according to
+  habits of Linux 2.4 and 2.6 :  "Bus,Host,Channel,Target,Lun" and store
+  it in generic_img_private_t.scsi_tuple.
+  To be accessed via cdio_get_arg("scsi-tuple-linux") or ("scsi-tuple").
+  Drivers which implement this code have to return 5 valid decimal numbers
+  separated by comma, or empty text if no such numbers are available.
+  @return   1=success , 0=failure
+*/
+static int
+set_scsi_tuple_linux(_img_private_t *env)
+{
+  int bus_no = -1, host_no = -1, channel_no = -1, target_no = -1, lun_no = -1; 
+  int ret, i;
+  char tuple[160], hdx[10];
+#ifdef SCSI_IOCTL_GET_IDLUN
+  struct my_scsi_idlun {
+    int x;
+    int host_unique_id;
+  };
+  struct my_scsi_idlun idlun;
+#endif
+  struct stat stbuf, env_stbuf;
+
+  /* Check whether this is a hdX and declare tuple unavailable.
+     /dev/hdX is traditionally for IDE drives and the ioctls here traditionally
+     return ok and all 0s for all IDE drives. So the tuples are no unique ids.
+  */
+  if (fstat(env->gen.fd, &env_stbuf) == -1)
+    goto no_tuple;
+  strcpy(hdx, "/dev/hdX");
+  for (i = 'a'; i <= 'z'; i++) {
+    hdx[7] = i;
+    if (stat(hdx, &stbuf) == -1)
+  continue;
+    if (env_stbuf.st_dev == stbuf.st_dev && env_stbuf.st_ino == stbuf.st_ino)
+      goto no_tuple;
+  }
+
+#ifdef SCSI_IOCTL_GET_BUS_NUMBER
+  if (ioctl(env->gen.fd, SCSI_IOCTL_GET_BUS_NUMBER, &bus_no) == -1)
+    bus_no = -1;
+#endif
+
+#ifdef SCSI_IOCTL_GET_IDLUN
+  /* http://www.tldp.org/HOWTO/SCSI-Generic-HOWTO/scsi_g_idlun.html */
+
+  ret = ioctl(env->gen.fd, SCSI_IOCTL_GET_IDLUN, &idlun);
+  if (ret != -1) {
+    host_no= (idlun.x >> 24) & 255;
+    channel_no= (idlun.x >> 16) & 255;
+    target_no= (idlun.x) & 255;
+    lun_no= (idlun.x >> 8) & 255;
+  }
+#endif
+
+  if (env->gen.scsi_tuple != NULL)
+    free (env->gen.scsi_tuple);
+  env->gen.scsi_tuple = NULL;
+  if (bus_no < 0 || host_no < 0 || channel_no < 0 || target_no < 0 ||
+      lun_no < 0) {
+no_tuple:;
+    env->gen.scsi_tuple = strdup("");
+    return 0;
+  }
+  sprintf(tuple, "%d,%d,%d,%d,%d",
+          bus_no, host_no, channel_no, target_no, lun_no);
+  env->gen.scsi_tuple = strdup(tuple);
+  return 1; 
+}
+
+/*!
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
   ones to set that up.
@@ -1685,6 +1760,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   else
     open_access_mode |= O_RDONLY;
   if (cdio_generic_init(_data, open_access_mode)) {
+    set_scsi_tuple_linux(_data);
     return ret;
   } else {
     cdio_generic_free (_data);

@@ -43,7 +43,7 @@ main(int argc, const char *argv[])
   
   cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
   /* snprintf(psz_nrgfile, sizeof(psz_nrgfile)-1,
-	     "%s/%s", TEST_DIR, cue_file[i]);
+             "%s/%s", TEST_DIR, cue_file[i]);
   */
   if (!cdio_have_driver(DRIVER_LINUX)) return(77);
   ppsz_drives = cdio_get_devices(DRIVER_DEVICE);
@@ -56,14 +56,32 @@ main(int argc, const char *argv[])
   if (p_cdio) {
       const char *psz_source = cdio_get_arg(p_cdio, "source");
       if (0 != strncmp(psz_source, ppsz_drives[0],
-		       strlen(ppsz_drives[0]))) {
-	  fprintf(stderr, 
-		  "Got %s; should get back %s, the name we opened.\n",
-		  psz_source, ppsz_drives[0]);
-	  exit(1);
+                       strlen(ppsz_drives[0]))) {
+          fprintf(stderr, 
+                  "Got %s; should get back %s, the name we opened.\n",
+                  psz_source, ppsz_drives[0]);
+          exit(1);
       }
   }
-  
+
+  {
+    const char *psz_source = NULL, *scsi_tuple, *scsi_tuple_linux;
+
+    scsi_tuple_linux = cdio_get_arg(p_cdio, "scsi-tuple-linux");
+    if (scsi_tuple_linux == NULL) {
+      fprintf(stderr, "cdio_get_arg(\"scsi-tuple-linux\") returns NULL.\n");
+      exit(3);
+    }
+    scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
+    if (scsi_tuple != scsi_tuple_linux) {
+	fprintf(stderr, 
+		"cdio_get_arg(\"scsi-tuple\") differs from cdio_get_arg(\"scsi-tuple-linux\").\n");
+	exit(4);
+    }
+    if (cdio_loglevel_default == CDIO_LOG_DEBUG)
+	printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
+	       psz_source, scsi_tuple);
+  }
   
   cdio_destroy(p_cdio);
   p_cdio = cdio_open_am_linux(ppsz_drives[0], "MMC_RDWR");
@@ -71,10 +89,10 @@ main(int argc, const char *argv[])
       const char *psz_access_mode = cdio_get_arg(p_cdio, "access-mode");
       
       if (0 != strncmp(psz_access_mode, "MMC_RDWR", strlen("MMC_RDWR"))) {
-	  fprintf(stderr,
-		  "Got %s; Should get back %s, the access mode requested.\n",
-		  psz_access_mode, "MMC_RDWR");
-	  exit(2);
+          fprintf(stderr,
+                  "Got %s; Should get back %s, the access mode requested.\n",
+                  psz_access_mode, "MMC_RDWR");
+          exit(2);
       }
   }
 

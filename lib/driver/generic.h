@@ -74,6 +74,16 @@ extern "C" {
                                              but 263 bytes possible */
     int            scsi_mmc_sense_valid;  /* Number of valid sense bytes */
 
+    /* Memorized eventual system specific SCSI address tuple text.
+       Empty text means that there is no such text defined for the drive.
+       NULL means that the driver does not support "scsi-tuple".
+       To be read by cdio_get_arg("scsi-tuple").
+       System specific suffixes to the key may demand and eventually
+       guarantee a further specified format.
+       E.g. "scsi-tuple-linux" guarantees either "Bus,Host,Channel,Target,Lun",
+                               or empty text, or NULL. No other forms.
+    */
+    char *scsi_tuple;
   } generic_img_private_t;
 
   /*!

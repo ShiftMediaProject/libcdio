@@ -1,6 +1,4 @@
 /*
-  $Id: _cdio_generic.c,v 1.27 2008/04/22 15:29:11 karl Exp $
-
   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
   Rocky Bernstein <rocky@gnu.org>
 
@@ -104,6 +102,9 @@ cdio_generic_free (void *p_user_data)
 
   if (p_env->fd >= 0)
     close (p_env->fd);
+
+  if (p_env->scsi_tuple != NULL)
+    free (p_env->scsi_tuple);
 
   free (p_env);
 }
