@@ -967,9 +967,10 @@ mmc_run_cmd_len( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 int
 mmc_last_cmd_sense( const CdIo_t *p_cdio, unsigned char **sense)
 {
-  generic_img_private_t *gen = p_cdio->env;
+  generic_img_private_t *gen;
 
   if (!p_cdio) return DRIVER_OP_UNINIT;
+  gen = p_cdio->env;
   *sense = NULL;
   if (gen->scsi_mmc_sense_valid <= 0)
 	return 0;

@@ -18,6 +18,9 @@ INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 gnu_linux_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
 gnu_linux_CFLAGS = -DTEST_DIR=\"$(srcdir)\"
 
+mmc_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
+mmc_CFLAGS       = -DTEST_DIR=\"$(srcdir)\"
+
 osx_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
 osx_CFLAGS       = -DTEST_DIR=\"$(srcdir)\"
 
@@ -27,7 +30,7 @@ solaris_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 win32_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
 win32_CFLAGS     = -DTEST_DIR=\"$(srcdir)\"
 
-check_PROGRAMS   = gnu_linux osx solaris win32
+check_PROGRAMS   = gnu_linux mmc osx solaris win32
 
 TESTS = $(check_PROGRAMS)
 
