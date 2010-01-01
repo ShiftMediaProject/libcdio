@@ -227,6 +227,10 @@ str_to_access_mode_win32(const char *psz_access_mode)
 #else 
     return _AM_ASPI;
 #endif    
+  } else if (!strcmp(psz_access_mode, "MMC_RDWR")) {
+    return _AM_MMC_RDWR;
+  } else if (!strcmp(psz_access_mode, "MMC_RDWR_EXCL")) {
+    return _AM_MMC_RDWR_EXCL;
   } else {
     cdio_warn ("unknown access type: %s. Default used instead.", 
 	       psz_access_mode);
@@ -315,10 +319,17 @@ init_win32 (void *p_user_data)
   p_env->b_ioctl_init    = false;
 
 
-  if ( _AM_IOCTL == p_env->access_mode ) {
+  switch (p_env->access_mode) {
+  case _AM_IOCTL:
+  case _AM_MMC_RDWR:
+  case _AM_MMC_RDWR_EXCL:
     b_ret = init_win32ioctl(p_env);
-  } else {
+    break;
+  case _AM_ASPI:
     b_ret = init_aspi(p_env);
+    break;
+  default:
+    return 0;
   }
 
   /* It looks like get_media_changed_mmc will always
@@ -646,11 +657,19 @@ get_arg_win32 (void *p_user_data, const char key[])
   if (!strcmp (key, "source")) {
     return p_env->gen.source_name;
   } else if (!strcmp (key, "access-mode")) {
-    if (p_env->hASPI) 
+    switch (p_env->access_mode) {
+    case _AM_IOCTL:
+      return "IOCTL";
+    case _AM_ASPI:
       return "ASPI";
-    else 
-      return "ioctl";
-  } 
+    case _AM_MMC_RDWR:
+      return "MMC_RDWR";
+    case _AM_MMC_RDWR_EXCL:
+      return "MMC_RDWR_EXCL";
+    case _AM_NONE:
+      return "no access method";
+    }
+  }
   return NULL;
 }
 

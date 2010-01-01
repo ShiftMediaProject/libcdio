@@ -32,6 +32,8 @@ typedef enum {
   _AM_NONE,
   _AM_IOCTL,
   _AM_ASPI,
+  _AM_MMC_RDWR,
+  _AM_MMC_RDWR_EXCL,
 } access_mode_t;
 
 typedef struct {
