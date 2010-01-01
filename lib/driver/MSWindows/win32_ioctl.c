@@ -1,7 +1,7 @@
 /*
   $Id: win32_ioctl.c,v 1.30 2008/04/21 18:30:21 karl Exp $
 
-  Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -88,11 +88,11 @@ typedef struct _CDROM_TOC_FULL {
 } CDROM_TOC_FULL, *PCDROM_TOC_FULL;
 
 typedef struct {
-   SCSI_PASS_THROUGH Spt;
+   SCSI_PASS_THROUGH_DIRECT sptd;
    ULONG Filler;
-   UCHAR SenseBuf[32];
-   UCHAR DataBuf[512];
-} SCSI_PASS_THROUGH_WITH_BUFFERS;
+   UCHAR ucSenseBuf[32];
+} SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER;
+
 
 #include "win32.h"
 
@@ -434,32 +434,40 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 			cdio_mmc_direction_t e_direction, 
 			unsigned int i_buf, /*in/out*/ void *p_buf )
 {
-  const _img_private_t *p_env = p_user_data;
-  SCSI_PASS_THROUGH_DIRECT sptd;
+  _img_private_t *p_env = p_user_data;
+  SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER sptdwb;
+  
   bool b_success;
   DWORD dw_bytes_returned;
-  
-  sptd.Length  = sizeof(sptd);
-  sptd.PathId  = 0;      /* SCSI card ID will be filled in automatically */
-  sptd.TargetId= 0;      /* SCSI target ID will also be filled in */
-  sptd.Lun=0;            /* SCSI lun ID will also be filled in */
-  sptd.CdbLength         = i_cdb;
-  sptd.SenseInfoLength   = 0; /* Don't return any sense data */
-  sptd.DataIn            = SCSI_MMC_DATA_READ == e_direction ? 
-    SCSI_IOCTL_DATA_IN : SCSI_IOCTL_DATA_OUT; 
-  sptd.DataTransferLength= i_buf; 
-  sptd.TimeOutValue      = msecs2secs(i_timeout_ms);
-  sptd.DataBuffer        = (void *) p_buf;
-  sptd.SenseInfoOffset   = 0;
 
-  memcpy(sptd.Cdb, p_cdb, i_cdb);
+  memset(&sptdwb, 0, sizeof(sptdwb));
+  
+  sptdwb.sptd.Length  = sizeof(sptdwb.sptd);
+  sptdwb.sptd.PathId  = 0;      /* SCSI card ID will be filled in
+				   automatically */
+  sptdwb.sptd.TargetId= 0;      /* SCSI target ID will also be filled in */
+  sptdwb.sptd.Lun     = 0;      /* SCSI lun ID will also be filled in */
+  sptdwb.sptd.CdbLength         = i_cdb;
+  sptdwb.sptd.SenseInfoLength   = sizeof(sptdwb.ucSenseBuf);
+  sptdwb.sptd.DataIn            = 
+    (SCSI_MMC_DATA_READ  == e_direction) ? SCSI_IOCTL_DATA_IN :
+    (SCSI_MMC_DATA_WRITE == e_direction) ? SCSI_IOCTL_DATA_OUT :
+    SCSI_IOCTL_DATA_UNSPECIFIED;
+  sptdwb.sptd.DataTransferLength= i_buf; 
+  sptdwb.sptd.TimeOutValue      = msecs2secs(i_timeout_ms);
+  sptdwb.sptd.DataBuffer        = (void *) p_buf;
+  sptdwb.sptd.SenseInfoOffset   = offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER,
+					   ucSenseBuf);
+
+  memcpy(sptdwb.sptd.Cdb, p_cdb, i_cdb);
 
   /* Send the command to drive */
   b_success = DeviceIoControl(p_env->h_device_handle,
 			      IOCTL_SCSI_PASS_THROUGH_DIRECT,               
-			      (void *)&sptd, 
-			      (DWORD)sizeof(SCSI_PASS_THROUGH_DIRECT),
-			      NULL, 0,                        
+			      (void *)&sptdwb, 
+			      (DWORD)sizeof(sptdwb),
+			      &sptdwb, 
+			      (DWORD)sizeof(sptdwb),
 			      &dw_bytes_returned,
 			      NULL);
 
@@ -474,6 +482,19 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
     LocalFree(psz_msg);
     return DRIVER_OP_ERROR;
   }
+
+  /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
+   */
+  if (sptdwb.ucSenseBuf[7]) {
+    int sense_size = sptdwb.ucSenseBuf[7] + 8; /* SPC 4.5.3, Table 26: 
+						  252 bytes legal, 263 bytes
+						  possible */
+    if (sense_size > sizeof(sptdwb.ucSenseBuf))
+      sense_size = sizeof(sptdwb.ucSenseBuf);
+    memcpy((void *) p_env->gen.scsi_mmc_sense, &sptdwb.ucSenseBuf, sense_size);
+    p_env->gen.scsi_mmc_sense_valid = sense_size;
+  }
+
   return DRIVER_OP_SUCCESS;
 }
 

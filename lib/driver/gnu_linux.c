@@ -1239,19 +1239,15 @@ run_mmc_cmd_linux(void *p_user_data,
   struct cdrom_generic_command cgc;
   struct request_sense sense;
   unsigned char *u_sense = (unsigned char *) &sense;
-  int sense_size;
 
   p_env->gen.scsi_mmc_sense_valid = 0;
   memset (&cgc, 0, sizeof (struct cdrom_generic_command));
   memcpy(&cgc.cmd, p_cdb, i_cdb);
   cgc.buflen = i_buf;
   cgc.buffer = p_buf;
+  cgc.sense  = &sense;
 
-  cgc.sense = &sense;
-
-  if (SCSI_MMC_DATA_NONE == e_direction)
-    i_buf = 0;
-  cgc.data_direction = (SCSI_MMC_DATA_READ == e_direction) ? CGC_DATA_READ :
+  cgc.data_direction = (SCSI_MMC_DATA_READ  == e_direction) ? CGC_DATA_READ  :
                        (SCSI_MMC_DATA_WRITE == e_direction) ? CGC_DATA_WRITE :
                        CGC_DATA_NONE;
 
@@ -1266,8 +1262,9 @@ run_mmc_cmd_linux(void *p_user_data,
     /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
     */
     if (u_sense[7]) {
-      sense_size = u_sense[7] + 8; /* SPC 4.5.3, Table 26:
-                                      252 bytes legal, 263 bytes possible */
+      int sense_size = u_sense[7] + 8; /* SPC 4.5.3, Table 26: 
+                                          252 bytes legal, 263 bytes
+                                          possible */
       if (sense_size > sizeof(sense))
         sense_size = sizeof(sense);
       memcpy((void *) p_env->gen.scsi_mmc_sense, &sense, sense_size);
