@@ -703,7 +703,7 @@ main(int argc, const char *argv[])
     exit(SKIP_TEST);
   }
   
-  p_cdio = cdio_open_linux(ppsz_drives[0]);
+  p_cdio = cdio_open(ppsz_drives[0], DRIVER_DEVICE);
   if (p_cdio) {
     psz_source = cdio_get_arg(p_cdio, "source");
     if (0 != strncmp(psz_source, ppsz_drives[0],
