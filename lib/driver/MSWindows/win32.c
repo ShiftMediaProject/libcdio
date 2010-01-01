@@ -221,11 +221,11 @@ str_to_access_mode_win32(const char *psz_access_mode)
     return _AM_IOCTL;
   else if (!strcmp(psz_access_mode, "ASPI")) {
 #ifdef _XBOX
-    return _AM_ASPI;
-#else 
     cdio_warn ("XBOX doesn't support access type: %s. Default used instead.", 
 	       psz_access_mode);
     return default_access_mode;
+#else 
+    return _AM_ASPI;
 #endif    
   } else {
     cdio_warn ("unknown access type: %s. Default used instead.", 

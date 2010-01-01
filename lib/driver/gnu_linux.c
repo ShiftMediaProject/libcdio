@@ -1552,6 +1552,7 @@ close_tray_linux (const char *psz_device)
 #endif /*HAVE_LINUX_CDROM*/
 }
 
+#ifdef HAVE_LINUX_CDROM
 /*!
   Produce a text composed from the system SCSI address tuple according to
   habits of Linux 2.4 and 2.6 :  "Bus,Host,Channel,Target,Lun" and store
@@ -1622,6 +1623,7 @@ no_tuple:;
   env->gen.scsi_tuple = strdup(tuple);
   return 1; 
 }
+#endif
 
 /*!
   Initialization routine. This is the only thing that doesn't
