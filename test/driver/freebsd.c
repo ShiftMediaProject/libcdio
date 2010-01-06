@@ -46,45 +46,17 @@ main(int argc, const char *argv[])
 	     "%s/%s", TEST_DIR, cue_file[i]);
   */
   if (!cdio_have_driver(DRIVER_FREEBSD)) return(77);
-  ppsz_drives = cdio_get_devices(DRIVER_DEVICE);
-  if (!ppsz_drives) {
-      printf("Can't find a CD-ROM drive. Skipping test.\n");
-      exit(77);
-  }
-  
-  p_cdio = cdio_open_freebsd(ppsz_drives[0]);
+  p_cdio = cdio_open_am (NULL, DRIVER_UNKNOWN, NULL);
   if (p_cdio) {
-      const char *psz_source = cdio_get_arg(p_cdio, "source");
-      if (0 != strncmp(psz_source, ppsz_drives[0],
-		       strlen(ppsz_drives[0]))) {
-	  fprintf(stderr, 
-		  "Got %s; should get back %s, the name we opened.\n",
-		  psz_source, ppsz_drives[0]);
-	  exit(1);
+      const char *psz_access_mode = cdio_get_arg(p_cdio, "access-mode");
+      if (0 != strncmp(psz_access_mode, "ioctl", strlen("ioctl")) &&
+	  0 != strncmp(psz_access_mode, "CAM", strlen("CAM"))) {
+	  fprintf(stderr,
+		  "Got %s; Should get back ioctl or CAM.\n",
+		  psz_access_mode);
+	  exit(2);
       }
   }
-  
-  
-  cdio_destroy(p_cdio);
-  {
-      const char *access_mode[2] = {"ioctl", "CAM"};
-      unsigned int i;
-      for (i=0; i<=1; i++) {
-	  p_cdio = cdio_open_am_freebsd(ppsz_drives[0], access_mode[i]);
-	  if (p_cdio) {
-	      const char *psz_access_mode = cdio_get_arg(p_cdio, "access-mode");
-	      if (0 != strncmp(psz_access_mode, access_mode[i], 
-			       strlen(access_mode[i]))) {
-		  fprintf(stderr,
-			  "Got %s; Should get back %s, the access mode requested.\n",
-			  psz_access_mode, access_mode[i]);
-		  exit(2);
-	      }
-	  }
-      }
-  }
-  
-  
 
   cdio_destroy(p_cdio);
   cdio_free_device_list(ppsz_drives);
