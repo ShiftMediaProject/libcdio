@@ -57,8 +57,25 @@ main(int argc, const char *argv[])
 	  exit(2);
       }
   }
-
   cdio_destroy(p_cdio);
+
+  ppsz_drives = cdio_get_devices(DRIVER_DEVICE);
+  if (!ppsz_drives) {
+      printf("Can't find a CD-ROM drive. Skipping test.\n");
+      exit(77);
+  }
+
+  p_cdio = cdio_open_freebsd(ppsz_drives[0]);
+  if (p_cdio) {
+      const char *psz_source = cdio_get_arg(p_cdio, "source");
+      if (0 != strncmp(psz_source, ppsz_drives[0],
+                       strlen(ppsz_drives[0]))) {
+          fprintf(stderr, 
+                  "Got %s; should get back %s, the name we opened.\n",
+                  psz_source, ppsz_drives[0]);
+          exit(1);
+      }
+  }
   cdio_free_device_list(ppsz_drives);
 
   return 0;

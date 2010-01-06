@@ -1,7 +1,8 @@
 /*
   $Id: freebsd.c,v 1.38 2008/04/21 18:30:20 karl Exp $
 
-  Copyright (C) 2003, 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2008, 2009, 2010 
+  Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -766,23 +767,30 @@ get_media_changed_freebsd (const void *p_user_data)
 }
 
 static const char* 
-get_access_mode(const char *source)
+get_access_mode(const char *psz_source)
 {
-  if (source) {
-    if (!(strncmp(source, "/dev/acd", 8))) 
-	return "ioctl";
-    else {
-      char devname[256];
-      int  bytes = readlink(source, devname, 255);
-	
-      if (bytes > 0) {
-	devname[bytes]=0;
-	if (!(strncmp(devname, "acd", 3))) 
-	  return "ioctl";
-      }
+    char *psz_src;
+    if (!psz_source) {
+	psz_src = cdio_get_default_device_freebsd();
+    } else {
+	psz_src = strdup(psz_source);
     }
-  }
-  return "CAM";
+
+    if (psz_src) {
+	if (!(strncmp(psz_src, "/dev/acd", 8))) 
+	    return "ioctl";
+	else {
+	    char devname[256];
+	    int  bytes = readlink(psz_src, devname, 255);
+	    
+	    if (bytes > 0) {
+		devname[bytes]=0;
+		if (!(strncmp(devname, "acd", 3))) 
+		    return "ioctl";
+	    }
+	}
+    }
+    return "CAM";
 }
 #endif /*HAVE_FREEBSD_CDROM*/
 
