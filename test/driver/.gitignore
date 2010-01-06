@@ -1,1 +1,17 @@
 /*~
+/.deps
+/.libs
+/Makefile
+/Makefile.in
+/freebsd
+/freebsd-freebsd.o
+/gnu_linux
+/gnu_linux-gnu_linux.o
+/mmc
+/mmc-mmc.o
+/osx
+/osx-osx.o
+/solaris
+/solaris-solaris.o
+/win32
+/win32-win32.o

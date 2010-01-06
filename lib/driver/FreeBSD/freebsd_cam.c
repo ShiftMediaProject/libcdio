@@ -122,8 +122,9 @@ init_freebsd_cam (_img_private_t *p_env)
       return false;
     }
 
-  (void)ioctl(p_env->gen.fd, CDIOCALLOW);
-
+  if (ioctl(p_env->gen.fd, CDIOCALLOW) == -1) {
+      cdio_warn("ioctl(fd, CDIOCALLOW) failed: %s\n", strerror(errno));
+  }
   if (ioctl (p_env->gen.fd, CAMGETPASSTHRU, &p_env->ccb) < 0)
     {
       cdio_warn ("open: %s", strerror (errno));
