@@ -1,6 +1,4 @@
 /*
-  $Id: freebsd.c,v 1.38 2008/04/21 18:30:20 karl Exp $
-
   Copyright (C) 2003, 2004, 2005, 2008, 2009, 2010 
   Rocky Bernstein <rocky@gnu.org>
 
@@ -54,6 +52,8 @@ str_to_access_mode_freebsd(const char *psz_access_mode)
     return _AM_IOCTL;
   else if (!strcmp(psz_access_mode, "CAM"))
     return _AM_CAM;
+  else if (!strcmp(psz_access_mode, "MMC_RDWR_EXCL"))
+    return _AM_MMC_RDWR_EXCL;
   else {
     cdio_warn ("unknown access type: %s. Default ioctl used.", 
 	       psz_access_mode);
@@ -70,10 +70,17 @@ free_freebsd (void *p_obj)
 
   if (NULL != p_env->device) free(p_env->device);
 
-  if (_AM_CAM == p_env->access_mode) 
-    return free_freebsd_cam(p_env);
-  else 
-    return cdio_generic_free(p_obj);
+  switch (p_env->access_mode) {
+    case _AM_CAM:
+    case _AM_MMC_RDWR_EXCL:
+      free_freebsd_cam(p_env);
+      break;
+    case _AM_IOCTL:
+      cdio_generic_free(p_obj);
+      break;
+    case _AM_NONE:
+      break;
+  }
 }
 
 /* Check a drive to see if it is a CD-ROM 
@@ -95,12 +102,19 @@ read_audio_sectors_freebsd (void *p_user_data, void *p_buf, lsn_t i_lsn,
 			     unsigned int i_blocks)
 {
   _img_private_t *p_env = p_user_data;
-  if ( p_env->access_mode == _AM_CAM ) {
-    return mmc_read_sectors( p_env->gen.cdio, p_buf, i_lsn,
+  switch (p_env->access_mode) {
+    case _AM_CAM:
+    case _AM_MMC_RDWR_EXCL:
+      return mmc_read_sectors( p_env->gen.cdio, p_buf, i_lsn,
                                   CDIO_MMC_READ_TYPE_CDDA, i_blocks);
-  } else 
-    return read_audio_sectors_freebsd_ioctl(p_user_data, p_buf, i_lsn, 
-					    i_blocks);
+    case _AM_IOCTL:
+      return read_audio_sectors_freebsd_ioctl(p_user_data, p_buf, i_lsn, 
+					      i_blocks);
+    case _AM_NONE:
+      cdio_info ("access mode not set");
+      return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_ERROR;
 }
 
 /*!
@@ -113,10 +127,17 @@ read_mode2_sector_freebsd (void *p_user_data, void *data, lsn_t i_lsn,
 {
   _img_private_t *p_env = p_user_data;
 
-  if ( p_env->access_mode == _AM_CAM )
+  switch (p_env->access_mode) {
+    case _AM_CAM:
+    case _AM_MMC_RDWR_EXCL:
     return read_mode2_sector_freebsd_cam(p_env, data, i_lsn, b_form2);
-  else
-    return read_mode2_sector_freebsd_ioctl(p_env, data, i_lsn, b_form2);
+    case _AM_IOCTL:
+      return read_mode2_sector_freebsd_ioctl(p_env, data, i_lsn, b_form2);
+    case _AM_NONE:
+      cdio_info ("access mode not set");
+      return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_ERROR;
 }
 
 /*!
@@ -129,7 +150,9 @@ read_mode2_sectors_freebsd (void *p_user_data, void *p_data, lsn_t i_lsn,
 {
   _img_private_t *p_env = p_user_data;
 
-  if ( p_env->access_mode == _AM_CAM  && b_form2 ) {
+  if ( (p_env->access_mode == _AM_CAM ||
+	p_env->access_mode == _AM_MMC_RDWR_EXCL)
+       && b_form2 ) {
     /* We have a routine that covers this case without looping. */
     return read_mode2_sectors_freebsd_cam(p_env, p_data, i_lsn, i_blocks);
   } else {
@@ -159,10 +182,17 @@ get_disc_last_lsn_freebsd (void *p_obj)
 
   if (!p_env) return CDIO_INVALID_LSN;
 
-  if (_AM_CAM == p_env->access_mode) 
-    return get_disc_last_lsn_mmc(p_env);
-  else 
-    return get_disc_last_lsn_freebsd_ioctl(p_env);
+  switch (p_env->access_mode) {
+    case _AM_CAM:
+    case _AM_MMC_RDWR_EXCL:
+      return get_disc_last_lsn_mmc(p_env);
+    case _AM_IOCTL:
+      return get_disc_last_lsn_freebsd_ioctl(p_env);
+    case _AM_NONE:
+      cdio_info ("access mode not set");
+      return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_ERROR;
 }
 
 /*!
@@ -423,9 +453,17 @@ eject_media_freebsd (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
 
-  return (p_env->access_mode == _AM_IOCTL) 
-    ? eject_media_freebsd_ioctl(p_env) 
-    : eject_media_freebsd_cam(p_env);
+  switch (p_env->access_mode) {
+    case _AM_CAM:
+    case _AM_MMC_RDWR_EXCL:
+      return eject_media_freebsd_cam(p_env);
+    case _AM_IOCTL:
+      return eject_media_freebsd_ioctl(p_env);
+    case _AM_NONE:
+      cdio_info ("access mode not set");
+      return 0;
+  }
+  return 0;
 }
 
 /*!
@@ -457,6 +495,8 @@ get_arg_freebsd (void *user_data, const char key[])
       return "ioctl";
     case _AM_CAM:
       return "CAM";
+    case _AM_MMC_RDWR_EXCL:
+      return "MMC_RDWR_EXCL";
     case _AM_NONE:
       return "no access method";
     }
@@ -477,10 +517,17 @@ static char *
 get_mcn_freebsd (const void *p_user_data) {
   const _img_private_t *p_env = p_user_data;
 
-  return (p_env->access_mode == _AM_IOCTL) 
-    ? get_mcn_freebsd_ioctl(p_env) 
-    : mmc_get_mcn(p_env->gen.cdio);
-
+  switch (p_env->access_mode) {
+    case _AM_CAM:
+    case _AM_MMC_RDWR_EXCL:
+      return mmc_get_mcn(p_env->gen.cdio);
+    case _AM_IOCTL:
+      return mmc_get_mcn(p_env->gen.cdio);
+    case _AM_NONE:
+      cdio_info ("access mode not set");
+      return NULL;
+  }
+  return NULL;
 }
 
 static void
@@ -491,9 +538,17 @@ get_drive_cap_freebsd (const void *p_user_data,
 {
   const _img_private_t *p_env = p_user_data;
 
-  if (p_env->access_mode == _AM_CAM) 
-    get_drive_cap_mmc (p_user_data, p_read_cap, p_write_cap, p_misc_cap);
-  
+  switch (p_env->access_mode) {
+    case _AM_CAM:
+    case _AM_MMC_RDWR_EXCL:
+      get_drive_cap_mmc (p_user_data, p_read_cap, p_write_cap, p_misc_cap);
+    case _AM_IOCTL:
+      cdio_info ("get_drive_cap not supported in ioctl access mode");
+      return;
+    case _AM_NONE:
+      cdio_info ("access mode not set");
+      return;
+  }
 }  
 
 /*!
@@ -517,11 +572,18 @@ run_mmc_cmd_freebsd( void *p_user_data, unsigned int i_timeout_ms,
 {
   const _img_private_t *p_env = p_user_data;
 
-  if (p_env->access_mode == _AM_CAM) 
-    return run_mmc_cmd_freebsd_cam( p_user_data, i_timeout_ms, i_cdb, p_cdb, 
-				     e_direction, i_buf, p_buf );
-  else 
-    return DRIVER_OP_UNSUPPORTED;
+  switch (p_env->access_mode) {
+    case _AM_CAM:
+    case _AM_MMC_RDWR_EXCL:
+      return run_mmc_cmd_freebsd_cam( p_user_data, i_timeout_ms, i_cdb, p_cdb, 
+				      e_direction, i_buf, p_buf );
+    case _AM_IOCTL:
+      return DRIVER_OP_UNSUPPORTED;
+    case _AM_NONE:
+      cdio_info ("access mode not set");
+      return DRIVER_OP_ERROR;
+  }
+  return DRIVER_OP_ERROR;
 }  
 
 /*!  

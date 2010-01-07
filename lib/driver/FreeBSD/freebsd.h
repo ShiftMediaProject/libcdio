@@ -1,7 +1,5 @@
 /*
-  $Id: freebsd.h,v 1.10 2008/05/11 09:50:54 rocky Exp $
-
-  Copyright (C) 2003, 2004, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -115,7 +113,8 @@ struct ioc_read_audio
 typedef  enum {
   _AM_NONE,
   _AM_IOCTL,
-  _AM_CAM
+  _AM_CAM,
+  _AM_MMC_RDWR_EXCL,
 } access_mode_t;
 
 typedef struct {
