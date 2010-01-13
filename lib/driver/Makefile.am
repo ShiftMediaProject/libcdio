@@ -67,6 +67,7 @@ libcdio_sources = \
 	device.c \
 	disc.c \
 	ds.c \
+        follow_symlink.c \
         FreeBSD/freebsd.c \
         FreeBSD/freebsd.h \
         FreeBSD/freebsd_cam.c \

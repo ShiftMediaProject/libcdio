@@ -1,7 +1,5 @@
 /*
-  $Id: util.c,v 1.6 2008/04/22 15:29:12 karl Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2008, 2009 
+  Copyright (C) 2003, 2004, 2005, 2008, 2009, 2010
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -24,13 +22,13 @@
 #endif
 
 #include <ctype.h>
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
 #include <stdio.h>
-#include <string.h>
-#include <limits.h>
 
-#ifdef HAVE_UNISTD_H // readlink
-#include <unistd.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
 #endif
 
 #ifdef HAVE_INTTYPES_H
@@ -41,12 +39,6 @@
 #include <cdio/types.h>
 #include <cdio/util.h>
 #include <cdio/version.h>
-
-#ifndef PATH_MAX
-#define PATH_MAX 4096
-#endif
-
-static const char _rcsid[] = "$Id: util.c,v 1.6 2008/04/22 15:29:12 karl Exp $";
 
 size_t
 _cdio_strlenv(char **str_array)
@@ -155,35 +147,6 @@ cdio_from_bcd8(uint8_t p)
   return (0xf & p)+(10*(p >> 4));
 }
 
-/*!
-  Follow symlinks until we have the real device file
-  (idea taken from libunieject). 
-*/
-
-void cdio_follow_symlink (const char * src, char * dst) {
-#ifdef HAVE_READLINK
-  char tmp_src[PATH_MAX+1];
-  char tmp_dst[PATH_MAX+1];
-  
-  int len;
-
-  strcpy(tmp_src, src);
-  while(1) {
-    len = readlink(tmp_src, tmp_dst, PATH_MAX);
-    if(len < 0) {
-      strncpy(dst, tmp_src, PATH_MAX);
-      return;
-    }
-    else {
-      tmp_dst[len] = '\0';
-      strncpy(tmp_src, tmp_dst, PATH_MAX);
-    }
-  }
-#else
-  strncpy(dst, src, PATH_MAX);
-#endif
-  
-}
 const char *cdio_version_string = CDIO_VERSION;
 const unsigned int libcdio_version_num = LIBCDIO_VERSION_NUM;
 
