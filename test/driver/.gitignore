@@ -3,6 +3,8 @@
 /.libs
 /Makefile
 /Makefile.in
+/follow_symlink
+/follow_symlink-follow_symlink.o
 /freebsd
 /freebsd-freebsd.o
 /gnu_linux
