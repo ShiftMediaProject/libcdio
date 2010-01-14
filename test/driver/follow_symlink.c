@@ -90,6 +90,7 @@ main(int argc, const char *argv[])
     char psz_file_check[PATH_MAX+1];
     char *psz_last_slash;
     unsigned int i_last_slash;
+    char *psz_symlink_file = NULL;
 
     psz_tmp_subdir = get_temporary_name(NULL, "temporary directory");
     if (NULL == psz_tmp_subdir) {
@@ -112,7 +113,6 @@ main(int argc, const char *argv[])
     psz_orig_file = get_temporary_name(NULL, "file");
     if (NULL != psz_orig_file) {
 	FILE *fp = fopen(psz_orig_file, "w");
-	char *psz_symlink_file;
 	int rc;
 	fprintf(fp, "testing\n");
 	fclose(fp);
@@ -134,7 +134,8 @@ main(int argc, const char *argv[])
 	    
     }
     
-
+    if (NULL != psz_symlink_file)
+	check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
     check_rc(unlink(psz_orig_file), "unlink", psz_orig_file);
     check_rc(rmdir(psz_tmp_subdir), "rmdir", psz_tmp_subdir);
 
