@@ -86,7 +86,6 @@ main(int argc, const char *argv[])
     char *psz_tmp_subdir;
     char *psz_orig_file;
     char tmp_dir[PATH_MAX+1];
-    char tmp_subdir[PATH_MAX+1];
     char psz_file_check[PATH_MAX+1];
     char *psz_last_slash;
     unsigned int i_last_slash;
@@ -118,24 +117,34 @@ main(int argc, const char *argv[])
 	fclose(fp);
 	psz_symlink_file = get_temporary_name(NULL, "symlink file");
 	rc = check_rc(symlink(psz_orig_file, psz_symlink_file),
-		      "unlink", psz_symlink_file);
+		      "symlink", psz_symlink_file);
 	if (0 == rc) {
 	    /* Just when you thought we'd forgotten, here is our first
 	       test! */
 	    cdio_follow_symlink(psz_symlink_file, psz_file_check);
 	    if (0 != strncmp(psz_file_check, psz_orig_file, PATH_MAX)) {
-		fprintf(stderr, "simple cdio_follow_symlink failed. %s vs %s",
+		fprintf(stderr, "simple cdio_follow_symlink failed. %s vs %s\n",
 			psz_file_check, psz_orig_file);
 		exit(1);
 	    }
+	    check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
+	}
 	    
-		
+	/* Make sure we handle a cyclic symbolic name, e.g. xx -> xx */
+	rc = check_rc(symlink(psz_symlink_file, psz_symlink_file),
+		      "symlink", psz_symlink_file);
+	if (0 == rc) {
+	    cdio_follow_symlink(psz_symlink_file, psz_file_check);
+	    if (0 != strncmp(psz_file_check, psz_symlink_file, PATH_MAX)) {
+		fprintf(stderr, "direct cdio_follow_symlink cycle test failed. %s vs %s\n",
+			psz_file_check, psz_orig_file);
+		exit(2);
+	    }
+	    check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
 	}
 	    
     }
     
-    if (NULL != psz_symlink_file)
-	check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
     check_rc(unlink(psz_orig_file), "unlink", psz_orig_file);
     check_rc(rmdir(psz_tmp_subdir), "rmdir", psz_tmp_subdir);
 
