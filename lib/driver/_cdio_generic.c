@@ -230,10 +230,10 @@ cdio_add_device_list(char **device_list[], const char *drive,
     unsigned int j;
     char real_device_1[PATH_MAX];
     char real_device_2[PATH_MAX];
-    cdio_follow_symlink(drive, real_device_1);
+    cdio_realpath(drive, real_device_1);
     /* Check if drive is already in list. */
     for (j=0; j<*num_drives; j++) {
-      cdio_follow_symlink((*device_list)[j], real_device_2);
+      cdio_realpath((*device_list)[j], real_device_2);
       if (strcmp(real_device_1, real_device_2) == 0) break;
     }
 

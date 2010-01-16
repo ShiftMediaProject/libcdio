@@ -1,7 +1,5 @@
 /*
-    $Id: util.h,v 1.12 2008/03/25 15:59:10 karl Exp $
-
-    Copyright (C) 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2004, 2005, 2006, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -28,6 +26,7 @@
    Warning: this will probably get removed/replaced by using glib.h
 */
 #include <stdlib.h>
+#include <cdio/types.h>
 
 #undef  MAX
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
@@ -99,7 +98,13 @@ _cdio_strsplit(const char str[], char delim);
 uint8_t cdio_to_bcd8(uint8_t n);
 uint8_t cdio_from_bcd8(uint8_t p);
 
-void cdio_follow_symlink (const char * src, char * dst);
+/*!  cdio_realpath() same as POSIX.1-2001 realpath if that's
+around. If not we do poor-man's simulation of that behavior.  */
+char *cdio_realpath (const char *psz_src, char *psz_dst);
+
+#ifdef WANT_FOLLOW_SYMLINK_COMPATIBILITY
+# define cdio_follow_symlink cdio_realpath
+#endif
   
 #ifdef __cplusplus
 }

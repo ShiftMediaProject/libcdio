@@ -636,12 +636,18 @@ static int is_mounted (const char * device, char * target) {
   if(!fp) return 0;
 
   /* Get real device */
-  cdio_follow_symlink(device, real_device_1);
+  if (NULL == cdio_realpath(device, real_device_1)) {
+    cdio_warn("Problems resolving device %s: %s\n", device, strerror(errno));
+  }
+    
     
   /* Read entries */
 
   while ( fscanf(fp, "%s %s %*s %*s %*d %*d\n", file_device, file_target) != EOF ) {
-    cdio_follow_symlink(file_device, real_device_2);
+      if (NULL == cdio_realpath(file_device, real_device_2)) {
+          cdio_warn("Problems resolving device %s: %s\n", 
+                    file_device, strerror(errno));
+      }
     if(!strcmp(real_device_1, real_device_2)) {
       strcpy(target, file_target);
       fclose(fp);

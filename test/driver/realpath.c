@@ -121,9 +121,9 @@ main(int argc, const char *argv[])
 	if (0 == rc) {
 	    /* Just when you thought we'd forgotten, here is our first
 	       test! */
-	    cdio_follow_symlink(psz_symlink_file, psz_file_check);
+	    cdio_realpath(psz_symlink_file, psz_file_check);
 	    if (0 != strncmp(psz_file_check, psz_orig_file, PATH_MAX)) {
-		fprintf(stderr, "simple cdio_follow_symlink failed. %s vs %s\n",
+		fprintf(stderr, "simple cdio_realpath failed: %s vs %s\n",
 			psz_file_check, psz_orig_file);
 		exit(1);
 	    }
@@ -134,9 +134,9 @@ main(int argc, const char *argv[])
 	rc = check_rc(symlink(psz_symlink_file, psz_symlink_file),
 		      "symlink", psz_symlink_file);
 	if (0 == rc) {
-	    cdio_follow_symlink(psz_symlink_file, psz_file_check);
+	    cdio_realpath(psz_symlink_file, psz_file_check);
 	    if (0 != strncmp(psz_file_check, psz_symlink_file, PATH_MAX)) {
-		fprintf(stderr, "direct cdio_follow_symlink cycle test failed. %s vs %s\n",
+		fprintf(stderr, "direct cdio_realpath cycle test failed. %s vs %s\n",
 			psz_file_check, psz_orig_file);
 		exit(2);
 	    }

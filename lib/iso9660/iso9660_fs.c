@@ -779,7 +779,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 	  calloc(1, sizeof(iso9660_stat_t)+i_rr_fname+2);
         if (!p_stat_new)
           {
-          cdio_warn("Couldn't calloc(1, %d)", sizeof(iso9660_stat_t)+i_rr_fname+2);
+          cdio_warn("Couldn't calloc(1, %zd)", sizeof(iso9660_stat_t)+i_rr_fname+2);
           return NULL;
           }
 	memcpy(p_stat_new, p_stat, stat_len);

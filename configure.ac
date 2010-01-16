@@ -491,7 +491,7 @@ AC_SUBST(LIBCDIO_SOURCE_PATH)
 AC_CHECK_FUNCS( [bzero drand48 ftruncate geteuid getgid \
 		 getuid getpwuid gettimeofday lstat memcpy memset \
 		 rand seteuid setegid snprintf setenv unsetenv tzset \
-		 sleep vsnprintf readlink gmtime_r localtime_r] )
+		 sleep vsnprintf readlink realpath gmtime_r localtime_r] )
 
 # check for timegm() support
 AC_CHECK_FUNC(timegm, AC_DEFINE(HAVE_TIMEGM,1,

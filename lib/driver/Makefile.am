@@ -1,6 +1,4 @@
-#   $Id: Makefile.am,v 1.28 2008/10/20 01:25:15 rocky Exp $
-#
-#   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+#   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -67,7 +65,6 @@ libcdio_sources = \
 	device.c \
 	disc.c \
 	ds.c \
-        follow_symlink.c \
         FreeBSD/freebsd.c \
         FreeBSD/freebsd.h \
         FreeBSD/freebsd_cam.c \
@@ -93,6 +90,7 @@ libcdio_sources = \
 	os2.c \
 	osx.c \
 	read.c \
+        realpath.c \
 	sector.c \
 	solaris.c \
 	track.c \

@@ -18,15 +18,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 /*
-  Resolves symbolic links. 
+  POSIX realpath if that's around, and something like it if not.
 
   To compile as a standalone program:
-  gcc -Wall -g -I../.. -DHAVE_CONFIG_H -DSTANDALONE -o follow_symlink follow_symlink.c
+  gcc -Wall -g -I../.. -DHAVE_CONFIG_H -DSTANDALONE -o realpath realpath.c
 */
 /*
   Make sure we handle:
   - resolve relative links like  /dev/cdrom -> sr2
-  - abort on deep link nesting   /dev/cdrom -> /dev/cdrom
+  - abort on cyclic linking like /dev/cdrom -> /dev/cdrom
 */
 
 #ifdef HAVE_CONFIG_H
@@ -62,28 +62,30 @@
 #define PATH_MAX 4096
 #endif
 
-/*!
-  Follow symlinks until we have the real device file
-  (idea taken from libunieject). 
-*/
+#include <cdio/util.h>
 
-void cdio_follow_symlink (const char * src, char * dst) {
-#ifdef HAVE_READLINK
+/*!  cdio_realpath() same as POSIX.1-2001 realpath if that's
+around. If not we do poor-man's simulation of that behavior.  */
+char *cdio_realpath (const char *psz_src_path, char *psz_resolved_path) {
+
+#ifdef HAVE_REALPATH
+  psz_resolved_path = realpath(psz_src_path, psz_resolved_path);
+
+#elif defined(HAVE_READLINK)
   char tmp_src[PATH_MAX+1];
   char tmp_dst[PATH_MAX+1];
   char *p_adr;
-  int link_loop_limit = 100, i;
-  int len;
+  int i, len;
+  const int loop_limit = 100;
 
-  strcpy(tmp_src, src);
+  strcpy(tmp_src, psz_src_path);
 
   /* FIXME: 
      remove loop and change with stat before and after readlink 
      which looks direct symlink. Rely on errno to figure out other
      non-existent or looped symlinks. 
   */
-  for(i = 0; i < link_loop_limit; i++) {
-
+  for(i = 0; i < loop_limit; i++) {
     len = readlink(tmp_src, tmp_dst, PATH_MAX);
     if (-1 == len) {
 	/* Right now we expect a "not symlink" error. However after
@@ -93,7 +95,6 @@ void cdio_follow_symlink (const char * src, char * dst) {
 	break;
     } else {
 	tmp_dst[len] = '\0';
-	
 	if (tmp_dst[0] != '/') {
 	    /* Take care of relative link like  /dev/cdrom -> sr2 */
 	    p_adr = strrchr(tmp_src, '/');
@@ -108,11 +109,12 @@ void cdio_follow_symlink (const char * src, char * dst) {
 	tmp_src[PATH_MAX - 1] = 0; /* strncpy() does not always set a 0 */
     }
   }
-  strncpy(dst, tmp_src, PATH_MAX);
-  
+  strncpy(psz_resolved_path, tmp_src, PATH_MAX);
 #else
-  strncpy(dst, src, PATH_MAX);
+  strncpy(psz_resolved_path, psz_src_path, PATH_MAX);
 #endif
+
+  return psz_resolved_path;
   
 }
 
@@ -130,7 +132,7 @@ int main(int argc, char **argv)
   }
   for (i= 1; i < argc; i++) {
     dest[0] = 0;
-    cdio_follow_symlink (argv[i], dest);
+    cdio_realpath (argv[i], dest);
     printf("%s -> %s\n", argv[i], dest);
   }
   exit(0);

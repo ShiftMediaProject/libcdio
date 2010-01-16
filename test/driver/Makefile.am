@@ -18,8 +18,8 @@ INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 freebsd_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 freebsd_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 
-follow_symlink_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
-follow_symlink_CFLAGS = -DTEST_DIR=\"$(srcdir)\"
+realpath_LDADD   = $(LIBCDIO_LIBS) $(LTLIBICONV)
+realpath_CFLAGS  = -DTEST_DIR=\"$(srcdir)\"
 
 gnu_linux_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
 gnu_linux_CFLAGS = -DTEST_DIR=\"$(srcdir)\"
@@ -36,7 +36,7 @@ solaris_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
 win32_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
 win32_CFLAGS     = -DTEST_DIR=\"$(srcdir)\"
 
-check_PROGRAMS   = follow_symlink freebsd gnu_linux mmc osx solaris win32
+check_PROGRAMS   = freebsd gnu_linux mmc osx realpath solaris win32
 
 TESTS = $(check_PROGRAMS)
 
