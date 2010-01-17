@@ -65,18 +65,12 @@ main(int argc, const char *argv[])
   }
 
   {
-    const char *psz_source = NULL, *scsi_tuple, *scsi_tuple_linux;
+    const char *psz_source = NULL, *scsi_tuple;
 
-    scsi_tuple_linux = cdio_get_arg(p_cdio, "scsi-tuple-linux");
-    if (scsi_tuple_linux == NULL) {
-      fprintf(stderr, "cdio_get_arg(\"scsi-tuple-linux\") returns NULL.\n");
-      exit(3);
-    }
     scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
-    if (scsi_tuple != scsi_tuple_linux) {
-	fprintf(stderr, 
-		"cdio_get_arg(\"scsi-tuple\") differs from cdio_get_arg(\"scsi-tuple-linux\").\n");
-	exit(4);
+    if (scsi_tuple == NULL) {
+      fprintf(stderr, "cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
+      exit(3);
     }
     if (cdio_loglevel_default == CDIO_LOG_DEBUG)
 	printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
