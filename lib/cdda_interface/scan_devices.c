@@ -28,6 +28,7 @@
 #include "low_interface.h"
 #include "utils.h"
 #include "cdio/mmc.h"
+#include "cdio/util.h"
 #include <limits.h>
 #include <ctype.h>
 
@@ -145,7 +146,7 @@ test_resolve_symlink(const char *file, int messagedest, char **ppsz_messages)
     return(NULL);
   }
 
-  if (realpath(file,resolved))
+  if (cdio_realpath(file,resolved))
     return(strdup(resolved));
 
   idperror(messagedest, ppsz_messages, "\t\tCould not resolve symlink %s",
