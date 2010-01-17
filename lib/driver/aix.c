@@ -1,7 +1,7 @@
 /*
   $Id: aix.c,v 1.3 2008/04/22 15:29:11 karl Exp $
 
-  Copyright (C) 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2006, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -679,6 +679,13 @@ _cdio_malloc_and_zero(size_t size) {
 }
 #endif
 
+static bool
+is_mmc_supported(void *user_data)
+{
+    _img_private_t *env = user_data;
+    return (_AM_NONE == env->access_mode) ? false : true;
+}
+
 /*!
   Return the value associated with the key "arg".
 */
@@ -696,6 +703,8 @@ get_arg_aix (void *p_user_data, const char key[])
     case _AM_NONE:
       return "no access method";
     }
+  } else if (!strcmp (key, "mmc-supported?")) {
+      return is_mmc_supported(env) ? "true" : "false";
   } 
   return NULL;
 }

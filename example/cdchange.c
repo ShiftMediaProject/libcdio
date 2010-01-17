@@ -20,6 +20,10 @@
 /* Test media changed */
 #include <stdio.h>
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
@@ -30,6 +34,10 @@
 
 #ifdef HAVE_STRING_H
 # include <string.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
 #endif
 
 #ifdef HAVE_ERRNO_H

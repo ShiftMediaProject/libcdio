@@ -65,6 +65,18 @@ main(int argc, const char *argv[])
   }
 
   {
+    const char *psz_response = cdio_get_arg(p_cdio, "mmc-supported?");
+    if ( psz_response == NULL || 
+	 ((0 != strncmp("true", psz_response, sizeof("true"))) && 
+	  (0 != strncmp("false", psz_response, sizeof("false")))) ) {
+      fprintf(stderr, 
+	      "cdio_get_arg(\"mmc-supported?\") should return \"true\" or \"false\"; got: %s.\n",
+	  psz_response);
+      exit(2);
+    }
+  }
+  
+  {
     const char *psz_source = NULL, *scsi_tuple;
 
     scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
@@ -86,7 +98,7 @@ main(int argc, const char *argv[])
           fprintf(stderr,
                   "Got %s; Should get back %s, the access mode requested.\n",
                   psz_access_mode, "MMC_RDWR");
-          exit(2);
+          exit(4);
       }
   }
 

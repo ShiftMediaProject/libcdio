@@ -1,7 +1,5 @@
 /*
-  $Id: image_common.c,v 1.15 2008/04/22 15:29:12 karl Exp $
-
-  Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -91,6 +89,8 @@ _get_arg_image (void *user_data, const char key[])
     return p_env->psz_cue_name;
   } else if (!strcmp(key, "access-mode")) {
     return "image";
+  } else if (!strcmp (key, "mmc-supported?")) {
+    return "false";
   } 
   return NULL;
 }
