@@ -566,6 +566,10 @@ tmmc_test(char *drive_path, int flag)
      insufficient access mode "IOCTL" */
   static int emul_lack_of_wperm = 0;
 
+  /* If non-0 then demand that cdio_get_arg(,"scsi-tuple") return non-NULL */
+  static int demand_scsi_tuple = 0;
+
+  const char *scsi_tuple;
 
   old_log_level = cdio_loglevel_default;
   verbose = flag & 1;
@@ -589,6 +593,44 @@ tmmc_test(char *drive_path, int flag)
     */
     cdio_loglevel_default = CDIO_LOG_WARN;
 
+  /* Test availability of info for cdrecord style adresses .
+  */
+  scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
+  if (scsi_tuple == NULL) {
+    if (demand_scsi_tuple) {
+      fprintf(stderr, "Error: cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
+      {ret = 6; goto ex;}
+    } else if (flag & 1)
+      fprintf(stderr, "cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
+  } else if (flag & 1)
+    printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
+           drive_path, scsi_tuple);
+
+
+  /* Test availability of sense reply in case of unready drive.
+     E.g. if the tray is already ejected.
+  */
+  ret = tmmc_test_unit_ready(p_cdio, &sense_avail, sense, !!verbose);
+  if (ret != 0 && sense_avail < 18) {
+    fprintf(stderr,
+            "Error: Drive not ready. Only %d sense bytes. Expected >= 18.\n",
+            sense_avail);
+    {ret = 2; goto ex;}
+  }
+  /* Provoke sense reply by requesting inappropriate mode page 3Eh */
+  ret = tmmc_mode_sense(p_cdio, &sense_avail, sense,
+                       0x3e, 0, alloc_len, buf, &buf_fill, !!verbose);
+  if (ret != 0 && sense_avail < 18) {
+    fprintf(stderr,
+            "Error: Deliberately illegal command yields only %d sense bytes. Expected >= 18.\n",
+            sense_avail);
+    {ret = 2; goto ex;}
+  } else if(ret == 0) {
+    fprintf(stderr,
+       "Warning: tmmc_mode_sense() cannot provoke failure by mode page 3Eh\n");
+    fprintf(stderr,
+       "Hint: Consider to set in tmmc_test(): with_tray_dance = 1\n");
+  }
 
     /* Test availability of sense reply in case of unready drive.
        E.g. if the tray is already ejected.
@@ -687,6 +729,7 @@ ex:;
 int
 main(int argc, const char *argv[])
 {
+  const char *scsi_tuple;
   CdIo_t *p_cdio;
   char **ppsz_drives=NULL;
   const char *psz_source = NULL;
@@ -705,6 +748,8 @@ main(int argc, const char *argv[])
   
   p_cdio = cdio_open(ppsz_drives[0], DRIVER_DEVICE);
   if (p_cdio) {
+    const char *psz_have_mmc = cdio_get_arg(p_cdio, "mmc-supported?");
+    
     psz_source = cdio_get_arg(p_cdio, "source");
     if (0 != strncmp(psz_source, ppsz_drives[0],
                      strlen(ppsz_drives[0]))) {
@@ -713,18 +758,28 @@ main(int argc, const char *argv[])
               psz_source, ppsz_drives[0]);
       exit(1);
     }
+
+    if (psz_have_mmc && 0 == strncmp("true", psz_have_mmc, sizeof("true"))) {
+	scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
+	if (scsi_tuple == NULL) {
+	    fprintf(stderr, "cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
+	    exit(3);
+	} else if (cdio_loglevel_default == CDIO_LOG_DEBUG)
+	    printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
+		   psz_source, scsi_tuple);
+
+	/* Test the MMC enhancements of version 0.83 in december 2009 */
+	ret = tmmc_test(ppsz_drives[0], 
+			cdio_loglevel_default == CDIO_LOG_DEBUG);
+	if (ret != 0) exit(ret + 16);
+    }
+
+    cdio_destroy(p_cdio);
+
   } else {
-    fprintf(stderr, "cdio_open_linux('%s') failed\n", ppsz_drives[0]);
+    fprintf(stderr, "cdio_open('%s') failed\n", ppsz_drives[0]);
     exit(2);
   }
-
-  cdio_destroy(p_cdio);
-
-
-  /* Test the MMC enhancements of version 0.83 in december 2009 */
-  ret = tmmc_test(ppsz_drives[0], cdio_loglevel_default == CDIO_LOG_DEBUG);
-  if (ret != 0)
-    exit(ret + 16);
 
   cdio_free_device_list(ppsz_drives);
 

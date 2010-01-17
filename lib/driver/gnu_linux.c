@@ -387,8 +387,6 @@ get_arg_linux (void *env, const char key[])
     }
   } else if (!strcmp (key, "scsi-tuple")) {
     return _obj->gen.scsi_tuple;
-  } else if (!strcmp (key, "scsi-tuple-linux")) {
-    return _obj->gen.scsi_tuple;
   } 
   return NULL;
 }

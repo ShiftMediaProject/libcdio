@@ -47,6 +47,17 @@ cdio_is_cdrom_freebsd_ioctl(char *drive, char *mnttype)
   if ( !cdio_is_device_quiet_generic(drive) ) {
     return(false);
   }
+
+  /* ts 13 Jan 2009
+     The ioctl below seems to be of little significance if one does not insist
+     in readable media.
+     Various of its failures are not caused by not being a CD drive
+     but by unreadable media situations. A burn program must handle these
+     situations rather than refusing to see the drive.
+   */
+ return(true);
+
+#ifndef Libcdio_on_freeBSD_unsuitable_code
   
   /* If it does exist, verify that it's an available CD-ROM */
   cdfd = open(drive, (O_RDONLY|O_EXCL|O_NONBLOCK), 0);
@@ -56,16 +67,41 @@ cdio_is_cdrom_freebsd_ioctl(char *drive, char *mnttype)
      ENODEV means there's no drive present. */
 
   if ( cdfd >= 0 ) {
-    if ( ioctl(cdfd, CDIOREADTOCHEADER, &tochdr) != -1 ) {
+    int ret;
+
+   ret = ioctl(cdfd, CDIOREADTOCHEADER, &tochdr);
+
+/*
+  fprintf(stderr, "libcdio_DEBUG: ioctl(\"%s\", (O_RDONLY|O_EXCL|O_NONBLOCK) = %d (errno= %d)\n", drive, ret, errno);
+*/
+  
+    if ( ret != -1 ) {
+      is_cd = true;
+    } else if ( errno == ENXIO ) { /* Device not configured */
+      /* ts 9 Jan 2010 , FreeBSD 8.0
+         This error is issued with CAM device cd0 if no media is loaded.
+      */
+      is_cd = true;
+    } else if ( errno == EIO ) { /* I/O error */
+      /* ts 9 Jan 2010 , FreeBSD 8.0
+         This error is issued with ATAPI device acd0 if no media is loaded.
+      */
+      is_cd = true;
+    } else if ( errno == EINVAL ) { /* Invalid argument */
+      /* ts 13 Jan 2010 , FreeBSD 8.0
+         This error is issued with USB device cd1 if a blank CD-RW is loaded.
+      */
       is_cd = true;
     }
     close(cdfd);
-    }
-  /* Even if we can't read it, it might be mounted */
-  else if ( mnttype && (strcmp(mnttype, "iso9660") == 0) ) {
+  } else if ( mnttype && (strcmp(mnttype, "iso9660") == 0) ) {
+    /* Even if we can't read it, it might be mounted */
     is_cd = true;
   }
   return(is_cd);
+
+#endif /* Libcdio_on_freeBSD_unsuitable_codE */
+
 }
 
 /*!

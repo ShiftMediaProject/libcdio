@@ -1,7 +1,5 @@
 /*
-  $Id: freebsd_cam.c,v 1.12 2008/04/21 18:30:20 karl Exp $
-
-  Copyright (C) 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2009, 2010 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -52,16 +50,17 @@ static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.12 2008/04/21 18:30:20 karl
   Return 0 if no error.
  */
 int
-run_mmc_cmd_freebsd_cam( const void *p_user_data, unsigned int i_timeout_ms,
+run_mmc_cmd_freebsd_cam( void *p_user_data, unsigned int i_timeout_ms,
 			 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
 			 cdio_mmc_direction_t e_direction, 
 			 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
-  const _img_private_t *p_env = p_user_data;
-  int   i_status;
+  _img_private_t *p_env = p_user_data;
+  int   i_status, sense_size;
   int direction = CAM_DEV_QFRZDIS;
   union ccb ccb;
 
+  p_env->gen.scsi_mmc_sense_valid = 0;
   if (!p_env || !p_env->cam) return -2;
     
   memset(&ccb, 0, sizeof(ccb));
@@ -71,6 +70,8 @@ run_mmc_cmd_freebsd_cam( const void *p_user_data, unsigned int i_timeout_ms,
   ccb.ccb_h.target_lun = p_env->cam->target_lun;
   ccb.ccb_h.timeout    = i_timeout_ms;
 
+  if (SCSI_MMC_DATA_NONE == e_direction)
+    i_buf = 0;
   if (!i_buf)
     direction |= CAM_DIR_NONE;
   else
@@ -94,13 +95,28 @@ run_mmc_cmd_freebsd_cam( const void *p_user_data, unsigned int i_timeout_ms,
     {
       return 0;
     }
+
+  /* Record SCSI sense reply for API call mmc_last_cmd_sense().
+  */
+  sense_size = ccb.csio.sense_len;
+  if (sense_size > sizeof(p_env->gen.scsi_mmc_sense))
+    sense_size = sizeof(p_env->gen.scsi_mmc_sense);
+  memcpy((void *) p_env->gen.scsi_mmc_sense, &ccb.csio.sense_data, sense_size);
+  p_env->gen.scsi_mmc_sense_valid = sense_size;
+
   errno = EIO;
   i_status = ERRCODE(((unsigned char *)&ccb.csio.sense_data));
   if (i_status == 0)
     i_status = -1;
   else
     CREAM_ON_ERRNO(((unsigned char *)&ccb.csio.sense_data));
-  cdio_warn ("transport failed: %d", i_status);
+
+/* There are many harmless or intentional reasons why to get an SCSI
+   error condition. Higher levels should decide whether this is an incident
+   or just a normal outcome.
+
+  cdio_warn ("scsi error condition detected : 0x%X", i_status);
+*/
   return i_status;
 }
 
@@ -255,6 +271,245 @@ eject_media_freebsd_cam (_img_private_t *p_env)
 				  mmc_get_cmd_len(cdb.field[0]), 
 				  &cdb, 
 				  SCSI_MMC_DATA_WRITE, 0, &buf);
+}
+
+
+
+/* This is a CAM based device enumerator.
+   Currently its only purpose is to eventually obtain the info needed for
+    cdio_get_arg("scsi-tuple")
+*/
+/* Stemming from code in libburn/sg-freebsd.c ,
+   originally contributed by Alexander Nedotsukov <bland@FreeBSD.org>,
+   without copyright claim to libburn in October 2006.
+   Contributed by libburn and adapted to libcdio without copyright claim
+   in January 2010.
+*/
+
+struct burn_drive_enumeration_state {
+  int fd;
+  union ccb ccb;
+  unsigned int i;
+  int skip_device;
+};
+typedef struct burn_drive_enumeration_state *burn_drive_enumerator_t;
+
+
+/* Some helper functions for scsi_give_next_adr() */
+
+static int sg_init_enumerator(burn_drive_enumerator_t *idx_)
+{
+  struct burn_drive_enumeration_state *idx;
+  int bufsize;
+
+  idx = malloc(sizeof(*idx));
+  if (idx == NULL) {
+    cdio_warn("cannot malloc memory for CAM based drive enumerator");
+    return -1;
+  }
+  idx->skip_device = 0;
+
+  if ((idx->fd = open(XPT_DEVICE, O_RDWR)) == -1) {
+    cdio_warn("could not open %s (errno = %d  \"%s\")",
+              XPT_DEVICE, errno, strerror(errno));
+    free(idx);
+    idx = NULL;
+    return -1;
+  }
+
+  bzero(&(idx->ccb), sizeof(union ccb));
+
+  idx->ccb.ccb_h.path_id = CAM_XPT_PATH_ID;
+  idx->ccb.ccb_h.target_id = CAM_TARGET_WILDCARD;
+  idx->ccb.ccb_h.target_lun = CAM_LUN_WILDCARD;
+
+  idx->ccb.ccb_h.func_code = XPT_DEV_MATCH;
+  bufsize = sizeof(struct dev_match_result) * 100;
+  idx->ccb.cdm.match_buf_len = bufsize;
+  idx->ccb.cdm.matches = (struct dev_match_result *)malloc(bufsize);
+  if (idx->ccb.cdm.matches == NULL) {
+    cdio_warn("cannot malloc memory for CAM enumerator matches");
+    close(idx->fd);
+    free(idx);
+    return -1;
+  }
+  idx->ccb.cdm.num_matches = 0;
+  idx->i = idx->ccb.cdm.num_matches; /* to trigger buffer load */
+
+  /*
+   * We fetch all nodes, since we display most of them in the default
+   * case, and all in the verbose case.
+   */
+  idx->ccb.cdm.num_patterns = 0;
+  idx->ccb.cdm.pattern_buf_len = 0;
+
+  *idx_ = idx;
+
+  return 1; 
+}
+
+
+static void sg_destroy_enumerator(burn_drive_enumerator_t *idx_)
+{
+  struct burn_drive_enumeration_state *idx = *idx_;
+
+  if(idx->fd != -1)
+    close(idx->fd);
+
+  free(idx->ccb.cdm.matches);
+  free(idx);
+
+  *idx_ = NULL;
+}
+
+
+static int sg_next_enumeration_buffer(burn_drive_enumerator_t *idx_)
+{
+  struct burn_drive_enumeration_state *idx = *idx_;
+
+  /*
+   * We do the ioctl multiple times if necessary, in case there are
+   * more than 100 nodes in the EDT.
+   */
+  if (ioctl(idx->fd, CAMIOCOMMAND, &(idx->ccb)) == -1) {
+    cdio_warn("error sending CAMIOCOMMAND ioctl, (errno = %d  \"%s\")",
+              errno, strerror(errno));
+    return -1;
+  }
+
+  if ((idx->ccb.ccb_h.status != CAM_REQ_CMP)
+      || ((idx->ccb.cdm.status != CAM_DEV_MATCH_LAST)
+           && (idx->ccb.cdm.status != CAM_DEV_MATCH_MORE))) {
+    cdio_warn("got CAM error %#x, CDM error %d\n",
+              idx->ccb.ccb_h.status, idx->ccb.cdm.status);
+    return -1;
+  }
+  return 1;
+}
+
+
+/** Returns the next index object state and the next enumerated drive address.
+    @param idx An opaque handle. Make no own theories about it.
+    @param adr Takes the reply
+    @param adr_size Gives maximum size of reply including final 0
+    @param initialize  1 = start new,
+     0 = continue, use no other values for now
+    -1 = finish
+    @return 1 = reply is a valid address , 0 = no further address available
+     -1 = severe error (e.g. adr_size too small)
+*/
+/* This would be the public interface of the enumerator.
+   In libcdio it is private for now.
+*/
+static
+int give_next_adr_freebsd_cam(burn_drive_enumerator_t *idx_,
+                              char adr[], int adr_size, int initialize)
+{
+  struct burn_drive_enumeration_state *idx;
+  int ret;
+
+  if (initialize == 1) {
+    ret = sg_init_enumerator(idx_);
+    if (ret<=0)
+      return ret;
+  } else if (initialize == -1) {
+    sg_destroy_enumerator(idx_);
+    return 0;
+  }
+    
+  idx = *idx_;
+
+  do {
+    if (idx->i >= idx->ccb.cdm.num_matches) { 
+      ret = sg_next_enumeration_buffer(idx_);
+      if (ret<=0)
+        return -1;
+      idx->i = 0;
+    } else
+      (idx->i)++;
+
+    while (idx->i < idx->ccb.cdm.num_matches) {
+      switch (idx->ccb.cdm.matches[idx->i].type) {
+      case DEV_MATCH_BUS:
+        break;
+      case DEV_MATCH_DEVICE: {
+        struct device_match_result* result;
+
+        result = &(idx->ccb.cdm.matches[idx->i].result.device_result);
+        if (result->flags & DEV_RESULT_UNCONFIGURED)
+          idx->skip_device = 1;
+        else
+          idx->skip_device = 0;
+        break;
+      }
+      case DEV_MATCH_PERIPH: {
+        struct periph_match_result* result;
+
+        result = &(idx->ccb.cdm.matches[idx->i].result.periph_result);
+
+        /* A specialized CD drive enumerator would have to test for
+             strcmp(result->periph_name, "cd") != 0
+           rather than
+             strcmp(result->periph_name, "pass") == 0
+        */
+        if (idx->skip_device ||
+            strcmp(result->periph_name, "pass") == 0)
+          break;
+
+       ret = snprintf(adr, adr_size, "/dev/%s%d",
+                       result->periph_name, result->unit_number);
+        if(ret >= adr_size)
+          return -1;
+
+        /* Found next enumerable address */
+        return 1;
+
+      }
+      default:
+        /* fprintf(stderr, "unknown match type\n"); */
+        break;
+      }
+      (idx->i)++;
+    }
+  } while ((idx->ccb.ccb_h.status == CAM_REQ_CMP)
+           && (idx->ccb.cdm.status == CAM_DEV_MATCH_MORE));
+
+  return 0;
+}
+
+
+/** Try to obtain SCSI address tuple of path.
+    @return  1 is success , 0 is failure
+*/
+int obtain_scsi_adr_freebsd_cam(char *path,
+                                int *bus_no, int *host_no, int *channel_no,
+                                int *target_no, int *lun_no)
+{
+  burn_drive_enumerator_t idx;
+  int ret;
+  char buf[64];
+  struct periph_match_result* result;
+
+  ret = sg_init_enumerator(&idx);
+  if (ret <= 0)
+          return 0;
+  while(1) {
+    ret = give_next_adr_freebsd_cam(&idx, buf, sizeof(buf), 0);
+    if (ret <= 0)
+      break;
+    if (strcmp(path, buf) == 0) {
+      result = &(idx->ccb.cdm.matches[idx->i].result.periph_result);
+      *bus_no = result->path_id;
+      *host_no = result->path_id;
+      *channel_no = 0;
+      *target_no = result->target_id;
+      *lun_no = result->target_lun;
+      sg_destroy_enumerator(&idx);
+      return 1;
+    }
+  }
+  sg_destroy_enumerator(&idx);
+  return (0);
 }
 
 #endif /* HAVE_FREEBSD_CDROM */

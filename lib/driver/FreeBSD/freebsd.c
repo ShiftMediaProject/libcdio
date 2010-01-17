@@ -37,6 +37,19 @@ static const char _rcsid[] = "$Id: freebsd.c,v 1.38 2009/10/22 18:30:20 rocky Ex
 
 #include <netinet/in.h>
 
+/* For freebsd_dev_lock() */
+#include <sys/file.h>
+
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#ifdef _HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
 #include <cdio/sector.h>
 
 static lba_t get_track_lba_freebsd(void *p_user_data, track_t i_track);
@@ -52,10 +65,12 @@ str_to_access_mode_freebsd(const char *psz_access_mode)
     return _AM_IOCTL;
   else if (!strcmp(psz_access_mode, "CAM"))
     return _AM_CAM;
+  else if (!strcmp(psz_access_mode, "MMC_RDWR"))
+    return _AM_MMC_RDWR;
   else if (!strcmp(psz_access_mode, "MMC_RDWR_EXCL"))
     return _AM_MMC_RDWR_EXCL;
   else {
-    cdio_warn ("unknown access type: %s. Default ioctl used.", 
+    cdio_warn ("unknown access type: %s. Default used.", 
 	       psz_access_mode);
     return default_access_mode;
   }
@@ -72,6 +87,7 @@ free_freebsd (void *p_obj)
 
   switch (p_env->access_mode) {
     case _AM_CAM:
+    case _AM_MMC_RDWR:
     case _AM_MMC_RDWR_EXCL:
       free_freebsd_cam(p_env);
       break;
@@ -104,6 +120,7 @@ read_audio_sectors_freebsd (void *p_user_data, void *p_buf, lsn_t i_lsn,
   _img_private_t *p_env = p_user_data;
   switch (p_env->access_mode) {
     case _AM_CAM:
+    case _AM_MMC_RDWR:
     case _AM_MMC_RDWR_EXCL:
       return mmc_read_sectors( p_env->gen.cdio, p_buf, i_lsn,
                                   CDIO_MMC_READ_TYPE_CDDA, i_blocks);
@@ -129,6 +146,7 @@ read_mode2_sector_freebsd (void *p_user_data, void *data, lsn_t i_lsn,
 
   switch (p_env->access_mode) {
     case _AM_CAM:
+    case _AM_MMC_RDWR:
     case _AM_MMC_RDWR_EXCL:
     return read_mode2_sector_freebsd_cam(p_env, data, i_lsn, b_form2);
     case _AM_IOCTL:
@@ -151,6 +169,7 @@ read_mode2_sectors_freebsd (void *p_user_data, void *p_data, lsn_t i_lsn,
   _img_private_t *p_env = p_user_data;
 
   if ( (p_env->access_mode == _AM_CAM ||
+	p_env->access_mode == _AM_MMC_RDWR ||
 	p_env->access_mode == _AM_MMC_RDWR_EXCL)
        && b_form2 ) {
     /* We have a routine that covers this case without looping. */
@@ -184,6 +203,7 @@ get_disc_last_lsn_freebsd (void *p_obj)
 
   switch (p_env->access_mode) {
     case _AM_CAM:
+    case _AM_MMC_RDWR:
     case _AM_MMC_RDWR_EXCL:
       return get_disc_last_lsn_mmc(p_env);
     case _AM_IOCTL:
@@ -455,6 +475,7 @@ eject_media_freebsd (void *p_user_data)
 
   switch (p_env->access_mode) {
     case _AM_CAM:
+    case _AM_MMC_RDWR:
     case _AM_MMC_RDWR_EXCL:
       return eject_media_freebsd_cam(p_env);
     case _AM_IOCTL:
@@ -480,6 +501,63 @@ audio_stop_freebsd (void *p_user_data)
 }
 
 /*!
+  Produce a text composed from the system SCSI address tuple according to
+  habits of Linux 2.4 and 2.6 :  "Bus,Host,Channel,Target,Lun" and store
+  it in generic_img_private_t.scsi_tuple.
+  Channel has no meaning on FreeBSD. Expect it to be 0. It is only in
+  the text to avoid an unnecessary difference in format.
+  Bus and Host will always be the same.
+  To be accessed via cdio_get_arg("scsi-tuple-freebsd") or "scsi-tuple".
+  For simplicity the FreeBSD driver also replies on "scsi-tuple-linux".
+  Drivers which implement this code have to return 5 valid decimal numbers
+  separated by comma, or empty text if no such numbers are available.
+  @return   1=success , 0=failure
+*/
+static int
+set_scsi_tuple_freebsd(_img_private_t *env)
+{   
+  int bus_no = -1, host_no = -1, channel_no = -1, target_no = -1, lun_no = -1;
+  int ret;
+  char tuple[160]; 
+
+  ret = obtain_scsi_adr_freebsd_cam(env->gen.source_name,
+                                   &bus_no, &host_no, &channel_no,
+                                   &target_no, &lun_no);
+  if (ret != 1)
+    return 0;
+  if (env->gen.scsi_tuple != NULL)
+    free (env->gen.scsi_tuple);
+  env->gen.scsi_tuple = NULL;
+  if (bus_no < 0 || host_no < 0 || channel_no < 0 || target_no < 0 ||
+      lun_no < 0) {
+    env->gen.scsi_tuple = strdup("");
+    return 0;
+  }
+  sprintf(tuple, "%d,%d,%d,%d,%d",
+          bus_no, host_no, channel_no, target_no, lun_no);
+  env->gen.scsi_tuple = strdup(tuple);
+  return 1; 
+} 
+
+static bool
+is_mmc_supported(void *user_data)
+{
+    _img_private_t *env = user_data;
+    switch (env->access_mode) {
+      case _AM_IOCTL:
+      case _AM_NONE:
+	return false;
+      case _AM_CAM:
+      case _AM_MMC_RDWR:
+      case _AM_MMC_RDWR_EXCL:
+	return true;
+    }
+    /* Not reached. */
+    return false;
+}
+
+
+/*!
   Return the value associated with the key "arg".
 */
 static const char *
@@ -495,11 +573,19 @@ get_arg_freebsd (void *user_data, const char key[])
       return "ioctl";
     case _AM_CAM:
       return "CAM";
+    case _AM_MMC_RDWR:
+      return "MMC_RDWR";
     case _AM_MMC_RDWR_EXCL:
       return "MMC_RDWR_EXCL";
     case _AM_NONE:
       return "no access method";
     }
+  } else if (strcmp (key, "scsi-tuple") == 0) {
+    if (env->gen.scsi_tuple == NULL)
+      set_scsi_tuple_freebsd(env);
+    return env->gen.scsi_tuple;
+  } else if (!strcmp (key, "mmc-supported?")) {
+      is_mmc_supported(user_data) ? "true" : "false";
   } 
   return NULL;
 }
@@ -519,6 +605,7 @@ get_mcn_freebsd (const void *p_user_data) {
 
   switch (p_env->access_mode) {
     case _AM_CAM:
+    case _AM_MMC_RDWR:
     case _AM_MMC_RDWR_EXCL:
       return mmc_get_mcn(p_env->gen.cdio);
     case _AM_IOCTL:
@@ -540,6 +627,7 @@ get_drive_cap_freebsd (const void *p_user_data,
 
   switch (p_env->access_mode) {
     case _AM_CAM:
+    case _AM_MMC_RDWR:
     case _AM_MMC_RDWR_EXCL:
       get_drive_cap_mmc (p_user_data, p_read_cap, p_write_cap, p_misc_cap);
     case _AM_IOCTL:
@@ -571,12 +659,17 @@ run_mmc_cmd_freebsd( void *p_user_data, unsigned int i_timeout_ms,
 		     unsigned int i_buf, /*in/out*/ void *p_buf ) 
 {
   const _img_private_t *p_env = p_user_data;
+  int ret;
 
   switch (p_env->access_mode) {
     case _AM_CAM:
+    case _AM_MMC_RDWR:
     case _AM_MMC_RDWR_EXCL:
-      return run_mmc_cmd_freebsd_cam( p_user_data, i_timeout_ms, i_cdb, p_cdb, 
-				      e_direction, i_buf, p_buf );
+      ret = run_mmc_cmd_freebsd_cam( p_user_data, i_timeout_ms, i_cdb, p_cdb, 
+                                     e_direction, i_buf, p_buf );
+      if (ret != 0)
+        return DRIVER_OP_ERROR;
+      return 0;
     case _AM_IOCTL:
       return DRIVER_OP_UNSUPPORTED;
     case _AM_NONE:
@@ -680,7 +773,7 @@ cdio_get_devices_freebsd (void)
   char drive[40];
   char **drives = NULL;
   unsigned int num_drives=0;
-  bool exists=true;
+  bool exists = true, have_cam_drive = false;
   char c;
   
   /* Scan the system for CD-ROM drives.
@@ -705,15 +798,31 @@ cdio_get_devices_freebsd (void)
   */
 
   /* Scan SCSI and CAM devices */
+  exists = true;
   for ( c='0'; exists && c <='9'; c++ ) {
     sprintf(drive, "/dev/cd%c%s", c, DEVICE_POSTFIX);
     exists = cdio_is_cdrom(drive, NULL);
     if ( exists ) {
       cdio_add_device_list(&drives, drive, &num_drives);
+      have_cam_drive = true;
     }
   }
 
-  /* Scan are ATAPI devices */
+  /* Scan ATAPI devices */
+ 
+  /* ??? ts 9 Jan 2009 
+     For now i assume atapicam running if a cdN device was found.
+     man atapicam strongly discourages to mix usage of CAM and ATAPI device.
+     So on the risk to sabotage systems without atapicam but with real old
+     SCSI drives, i list no ATAPI addresses if there was a CAM/SCSI address.
+
+  exists = !have_cam_drive;
+
+     ts 13 Jan 2009
+     Regrettably USB drives appear as SCSI drives. We rather need to determine
+     whether atapicam runs, or to make pairs of cd and acd.
+
+  */
   exists = true;
   
   for ( c='0'; exists && c <='9'; c++ ) {
@@ -854,6 +963,108 @@ get_access_mode(const char *psz_source)
     }
     return "CAM";
 }
+
+
+/* Lock the inode associated to dev_fd and the inode associated to devname.
+   Return OS errno, number of pass device of dev_fd, locked fd to devname,
+   error message.
+   A return value of > 0 means success, <= 0 means failure.
+*/
+static int freebsd_dev_lock(int dev_fd, char *devname,
+   int *os_errno, int *pass_dev_no, int *lock_fd, char msg[4096],
+   int flag)
+{
+  int lock_denied = 0, fd_stbuf_valid, name_stbuf_valid, i, pass_l = 100;
+  int max_retry = 3, tries;
+  struct stat fd_stbuf, name_stbuf;
+  char pass_name[16], *lock_name;
+
+  *os_errno = 0;
+  *pass_dev_no = -1;
+  *lock_fd = -1;
+  msg[0] = 0;
+
+  fd_stbuf_valid = !fstat(dev_fd, &fd_stbuf);
+
+  /* Try to find name of pass device by inode number */
+  lock_name = (char *) "effective device";
+  if(fd_stbuf_valid) {
+    for (i = 0; i < pass_l; i++) {
+      sprintf(pass_name, "/dev/pass%d", i);
+      if (stat(pass_name, &name_stbuf) != -1)
+        if(fd_stbuf.st_ino == name_stbuf.st_ino &&
+           fd_stbuf.st_dev == name_stbuf.st_dev)  
+    break;
+    }
+    if (i < pass_l) {
+      lock_name = pass_name;
+      *pass_dev_no = i;
+    }
+  }
+
+  name_stbuf_valid = !stat(devname, &name_stbuf);
+  for (tries= 0; tries <= max_retry; tries++) {
+    lock_denied = flock(dev_fd, LOCK_EX | LOCK_NB);
+    *os_errno = errno;
+    if (lock_denied) {
+      if (errno == EAGAIN && tries < max_retry) {
+        /* <<< debugging
+        fprintf(stderr, "\nlibcdio_DEBUG: EAGAIN , tries= %d\n", tries);
+        */
+        usleep(2000000);
+  continue;
+      }
+      sprintf(msg,
+        "Device busy. flock(LOCK_EX) failed on %s of %s",
+        strlen(lock_name) > 2000 || *pass_dev_no < 0 ?
+               "pass device" : lock_name,
+        strlen(devname) > 2000 ? "drive" : devname);
+      return 0;
+    }
+  break;
+  }
+
+/*
+  fprintf(stderr, "libburn_DEBUG: flock obtained on %s of %s\n", 
+                  lock_name, devname);
+*/
+
+  /* Eventually lock the official device node too */
+  if (fd_stbuf_valid && name_stbuf_valid &&
+    (fd_stbuf.st_ino != name_stbuf.st_ino ||
+     fd_stbuf.st_dev != name_stbuf.st_dev)) {
+
+    *lock_fd = open(devname, O_RDONLY);
+    if (*lock_fd == 0) {
+      close(*lock_fd);
+      *lock_fd = -1;
+    } if (*lock_fd > 0) {
+      for (tries = 0; tries <= max_retry; tries++) {
+        lock_denied = flock(*lock_fd, LOCK_EX | LOCK_NB);
+        if (lock_denied) {
+          if (errno == EAGAIN && tries < max_retry) {
+            usleep(2000000);
+      continue;
+          }
+          close(*lock_fd);
+          *lock_fd = -1;
+          sprintf(msg, "Device busy. flock(LOCK_EX) failed on %s",
+                  strlen(devname) > 4000 ? "drive" : devname);
+          return 0;
+        }
+      break;
+      }
+    }
+
+/*
+    fprintf(stderr, "libburn_DEBUG: flock obtained on %s\n",
+        devname);
+*/
+
+  }
+  return 1;
+}
+
 #endif /*HAVE_FREEBSD_CDROM*/
 
 /*!
@@ -882,6 +1093,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
   CdIo *ret;
   _img_private_t *_data;
   char *psz_source_name;
+  int open_access_mode;  /* Access mode passed to cdio_generic_init. */
   
   if (!psz_access_mode) 
       psz_access_mode = get_access_mode(psz_orig_source_name);
@@ -959,7 +1171,39 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
   ret = cdio_new ((void *)_data, &_funcs);
   if (ret == NULL) return NULL;
 
-  if (cdio_generic_init(_data, O_RDONLY))
+  open_access_mode = 0;
+  if (_AM_MMC_RDWR == _data->access_mode) {
+    open_access_mode |= O_RDWR;
+  } else if (_AM_MMC_RDWR_EXCL == _data->access_mode) {
+    open_access_mode |= O_RDWR;
+  } else {
+    open_access_mode |= O_RDONLY;
+  }
+/*
+  fprintf(stderr,
+      "libcdio_DEBUG: am = %d (MMC_RDWR_EXCL = %d), open = %d (O_RDWR = %d)\n",
+      _data->access_mode, _AM_MMC_RDWR_EXCL, open_access_mode, O_RDWR);
+*/
+
+  if (cdio_generic_init(_data, open_access_mode)) {
+    if (_AM_MMC_RDWR_EXCL == _data->access_mode) {
+      int os_errno, pass_dev_no = -1, flock_fd = -1, lock_result;
+      char msg[4096];
+
+      lock_result = freebsd_dev_lock(_data->gen.fd, _data->gen.source_name,
+                                   &os_errno, &pass_dev_no, &flock_fd, msg, 0);
+      if (lock_result <= 0) {
+        cdio_warn ("%s", msg);
+        cdio_generic_free (_data);
+        return NULL;
+      }
+      /* One should rather keep this fd open until _data->gen.fd gets closed.
+         It eventually locks a device sibling of _data->gen.source_name.
+      */
+      if (flock_fd > 0)
+        close(flock_fd);
+    }
+
     if ( _data->access_mode == _AM_IOCTL ) {
       return ret;
     } else {
@@ -970,7 +1214,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
 	return NULL;
       }
     }
-  else {
+  } else {
     cdio_generic_free (_data);
     return NULL;
   }

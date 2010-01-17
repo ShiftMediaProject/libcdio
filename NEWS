@@ -1,8 +1,10 @@
 version 0.83 (git)
 
-- Add Recording and retrieval of SCSI sense reply. 
-- Add Write/burning interface.
+- Add retrieval SCSI sense reply from the most-recent MMC command.
+- Add exclusive read/write access for devices which is used for experimental
+  writing/burning. Currently only on GNU/Linux and FreeBSD.
 - MMC bug fixes
+- FreeBSD drive list now shows empty drives.
 - Add ability to retrieve SCSI tuple for a name and/or fake one up for
   programs that wanto to cd-record compatible.
 - Tolerance for OS's without timezone in their struct tm (e.g. Solaris)

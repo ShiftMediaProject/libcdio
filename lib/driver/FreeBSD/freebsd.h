@@ -114,6 +114,7 @@ typedef  enum {
   _AM_NONE,
   _AM_IOCTL,
   _AM_CAM,
+  _AM_MMC_RDWR,
   _AM_MMC_RDWR_EXCL,
 } access_mode_t;
 
@@ -212,7 +213,7 @@ bool read_toc_freebsd_ioctl (_img_private_t *env);
 
   Return 0 if no error.
  */
-int run_mmc_cmd_freebsd_cam( const void *p_user_data, 
+int run_mmc_cmd_freebsd_cam( void *p_user_data, 
 			     unsigned int i_timeout_ms,
 			     unsigned int i_cdb, 
 			     const mmc_cdb_t *p_cdb, 
@@ -227,5 +228,13 @@ lsn_t get_disc_last_lsn_freebsd_ioctl (_img_private_t *_obj);
 
 bool init_freebsd_cam (_img_private_t *env);
 void free_freebsd_cam (void *user_data);
+
+/** Try to obtain SCSI address tuple of path.
+    @return  1 is success , 0 is failure
+*/
+int obtain_scsi_adr_freebsd_cam(char *path, 
+                                int *bus_no, int *host_no, int *channel_no,
+                                int *target_no, int *lun_no);
+
 
 #endif /*HAVE_FREEBSD_CDROM*/
