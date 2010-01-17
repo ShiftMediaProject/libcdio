@@ -360,6 +360,13 @@ audio_stop_linux (void *p_user_data)
   return ioctl(p_env->gen.fd, CDROMSTOP);
 }
 
+static bool
+is_mmc_supported(void *user_data)
+{
+    _img_private_t *env = user_data;
+    return (_AM_NONE == env->access_mode) ? false : true;
+}
+
 /*!
   Return the value associated with the key "arg".
 */
@@ -387,6 +394,8 @@ get_arg_linux (void *env, const char key[])
     }
   } else if (!strcmp (key, "scsi-tuple")) {
     return _obj->gen.scsi_tuple;
+  } else if (!strcmp (key, "mmc-supported?")) {
+      return is_mmc_supported(env) ? "true" : "false";
   } 
   return NULL;
 }
