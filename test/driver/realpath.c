@@ -85,9 +85,8 @@ main(int argc, const char *argv[])
 {
     char *psz_tmp_subdir;
     char *psz_orig_file;
-    char orig_file[PATH_MAX+1];
-    char tmp_dir[PATH_MAX+1];
-    char tmp_subdir[PATH_MAX+1];
+    char tmp_dir[PATH_MAX+1] = {0};
+    char tmp_subdir[PATH_MAX+1] = {0};
     char psz_file_check[PATH_MAX+1];
     char *psz_last_slash;
     unsigned int i_last_slash;
@@ -101,26 +100,41 @@ main(int argc, const char *argv[])
 	printf("extract parent directory from temporary directory name\n");
 	exit(77);
     }
+
+    if (-1 == check_rc(mkdir(psz_tmp_subdir, 0755),
+		       "mkdir", psz_tmp_subdir))
+	exit(77);
+    
     cdio_realpath(psz_tmp_subdir, tmp_subdir);
+
+    if (0 == strlen(tmp_subdir)) {
+      fprintf(stderr, "cdio_realpath on temp directory %s failed\n",
+	      psz_tmp_subdir);
+      exit(1);
+    }
+
     psz_last_slash = strrchr(tmp_subdir, MY_DIR_SEPARATOR);
     i_last_slash = psz_last_slash - tmp_subdir + 1;
     memcpy(tmp_dir, tmp_subdir, i_last_slash);
     tmp_dir[i_last_slash] = '\0';
     printf("Temp directory is %s\n", tmp_dir);
 
-    if (-1 == check_rc(mkdir(psz_tmp_subdir, 0755),
-		       "mkdir", psz_tmp_subdir))
-	exit(77);
-    
     psz_orig_file = get_temporary_name(NULL, "file");
     if (NULL != psz_orig_file) {
 	FILE *fp = fopen(psz_orig_file, "w");
+	char orig_file[PATH_MAX+1] = {0};
 	int rc;
-	char symlink_file[PATH_MAX+1];
+	char symlink_file[PATH_MAX+1] = {0};
 
 	fprintf(fp, "testing\n");
 	fclose(fp);
 	cdio_realpath(psz_orig_file, orig_file);
+	if (0 == strlen(orig_file)) {
+	  fprintf(stderr, "cdio_realpath on temp file %s failed\n",
+		  psz_orig_file);
+	  exit(2);
+	}
+
 	psz_symlink_file = get_temporary_name(NULL, "symlink file");
 	rc = check_rc(symlink(psz_orig_file, psz_symlink_file),
 		      "symlink", psz_symlink_file);
@@ -131,7 +145,7 @@ main(int argc, const char *argv[])
 	    if (0 != strncmp(psz_file_check, orig_file, PATH_MAX)) {
 		fprintf(stderr, "simple cdio_realpath failed: %s vs %s\n",
 			psz_file_check, orig_file);
-		exit(1);
+		exit(3);
 	    }
 	    check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
 	}
@@ -145,7 +159,7 @@ main(int argc, const char *argv[])
 	    if (0 != strncmp(psz_file_check, symlink_file, PATH_MAX)) {
 		fprintf(stderr, "direct cdio_realpath cycle test failed. %s vs %s\n",
 			psz_file_check, symlink_file);
-		exit(2);
+		exit(4);
 	    }
 	    check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
 	}

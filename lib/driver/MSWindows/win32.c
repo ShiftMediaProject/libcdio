@@ -659,7 +659,7 @@ get_arg_win32 (void *p_user_data, const char key[])
   } else if (!strcmp (key, "access-mode")) {
     switch (p_env->access_mode) {
     case _AM_IOCTL:
-      return "IOCTL";
+      return "ioctl";
     case _AM_ASPI:
       return "ASPI";
     case _AM_MMC_RDWR:
