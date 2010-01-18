@@ -2003,6 +2003,9 @@ image.
 
 @menu
 * MMC::  ``SCSI'' Multimedia Commands (MMC)
+* Access Modes::  Access Modes
+* Accessing Driver Parameters:: Accessing Driver Parameters
+
 * GNU/Linux:: GNU/Linux ioctl
 * Microsoft:: Microsoft Windows ioctl and ASPI
 * Solaris:: Solaris ATAPI and SCSI
@@ -2078,6 +2081,51 @@ alternative-size MMC commands. In @code{cdio/scsi-mmc.h} you will
 find a little bit of this for example via the routine
 @code{scsi_mmc_get_drive_cap()}. However much more work is needed.
 
+@node Access Modes
+@section Access Modes
+
+There are serveral ways that you can open a CD-ROM drive for
+subsequent use.  Each way is called an @emph{access
+mode}. Historically libcdio only supported a reading kind of
+access. 
+
+Adding the abilty to writing to a drive for ``burning'' is being added
+by Thomas Schmitt, and this is accomplished by opening the drive in a
+read-write mode. Currently writing modes are only supported via the
+MMC command interface. Under this, one can get exclusive read-write
+access or non-exclusive read-write access. The names of these two
+modes are @code{MMC_RDWR_EXCL} and @code{MMC_RDWR} respectively.
+
+On various OS's often there are two kinds of read modes that are
+supported, one which uses MMC commands and one which uses some sort of
+OS-specific native command interface. For example on Unix, there is
+often a access mode associated with issuing an device-specific
+@code{ioctl}'s that the OS supports. 
+
+To specify a particular kind of access mode, use @code{cdio_open_am}
+which is like @code{cdio_open} but it requires one to specify an
+access mode.
+
+@node Accessing Driver Parameters
+@section Accessing Driver Parameters --- @code{cdio_get_arg}
+
+Once a driver is opened, you can use call @code{cdio_get_arg} to get
+information about the driver. Each driver can have specific features
+that can be queried, but there are features that are common to all
+drivers. These are listed below:
+
+@table @code 
+
+@item @code{access-mode}
+This returns a string which is the name of the access mode in use.
+@item @code{mmc-supported?}
+This returns a string ``true'' or ``false'' depending whether the
+driver with this access mode support MMC commands. 
+@item @code{scsi-tuple}
+On drivers that support MMC commands, this returns the SCSI name or a
+faked-up SCSI name that ripping front ends typically use.
+@end table
+
 @node GNU/Linux
 @section GNU/Linux
 
@@ -2114,7 +2162,7 @@ There is currently only one CD drive access methods in Solaris: SCSI
 (called ``USCSI'' or ``user SCSI'' in Solaris). There used to be an
 ATAPI method and it could be resurrected if needed. USCSI was
 preferred since on newer releases of Solaris and Solaris environments
-one would needs to have root access for ATAPI.
+one needs to have root access for ATAPI.
 
 @node FreeBSD
 @section FreeBSD ioctl and CAM
