@@ -1,6 +1,4 @@
 /*
-  $Id: aix.c,v 1.3 2008/04/22 15:29:11 karl Exp $
-
   Copyright (C) 2004, 2005, 2006, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify

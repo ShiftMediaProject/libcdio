@@ -2137,18 +2137,22 @@ really access modes and should probably be redone/rethought.  They are
 just different ways to run the read command. But for completeness
 These are ``READ_CD'' and ``READ_10''.
 
+Writing/burning to a drive is supported via access modes
+@code{MMC_RDWR_EXCL} or @code{MMC_RDWR}.
+
 @node Microsoft
 @section Microsoft Windows ioctl and ASPI
 
 There are two CD drive access methods on Microsoft Windows platforms:
 ioctl and ASPI. 
 
-The ASPI interface specification was developed by Adaptec for 
-sending commands to a SCSI host adapter (such as those controlling CD
-and DVD drives) and used on Window 9x/NT and later. Emulation for
-ATAPI drives was added so that the same sets of commands worked those
-even though the drives might not be SCSI nor might there even be a
-SCSI controller attached.
+The ASPI interface specification was developed by Adaptec for sending
+commands to a SCSI host adapter (such as those controlling CD and DVD
+drives) and used on Window 9x/NT and later. Emulation for ATAPI drives
+was added so that the same sets of commands worked those even though
+the drives might not be SCSI nor might there even be a SCSI controller
+attached. The DLL is not part of Microsoft Windows and has to be
+downloaded and installed separately.
 
 However in Windows NT/2K/XP, Microsoft provides their Win32 ioctl
 interface, and has taken steps to make using ASPI more inaccessible
@@ -2167,12 +2171,13 @@ one needs to have root access for ATAPI.
 @node FreeBSD
 @section FreeBSD ioctl and CAM
 
-There are two CD drive access methods on Solaris: ioctl and CAM
+There are two classes of access methods on Solaris: ioctl and CAM
 (common access method). CAM is preferred when possible, especially on
 newer releases. However CAM is right now sort of a hybrid and includes
 some ioctl code.
 
-More work on this driver is needed. Volunteers? 
+Writing/burning to a drive is supported via access modes
+@code{MMC_RDWR_EXCL} or @code{MMC_RDWR} which underneath use CAM access.
 
 @node OS X
 @section OS X (non-exclusive access)
