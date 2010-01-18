@@ -1,5 +1,5 @@
 /* -*- C -*-
-  Copyright (C) 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2009, 2010 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -81,13 +81,23 @@ main(int argc, const char *argv[])
   p_cdio = cdio_open_am_win32(ppsz_drives[0], "ioctl");
   if (p_cdio) {
       const char *psz_access_mode = cdio_get_arg(p_cdio, "access-mode");
+      const char *psz_response = cdio_get_arg(p_cdio, "mmc-supported?");
       
       if (0 != strncmp(psz_access_mode, "ioctl", strlen("ioctl"))) {
 	  fprintf(stderr,
 		  "Got %s; Should get back %s, the access mode requested.\n",
 		  psz_access_mode, "ioctl");
-	  exit(2);
+	  exit(3);
       }
+
+      if ( psz_response == NULL || 
+	   ((0 != strncmp("true", psz_response, sizeof("true")))) ) {
+	fprintf(stderr, 
+		"cdio_get_arg(\"mmc-supported?\") should return \"true\"; got: %s.\n",
+		psz_response);
+	exit(4);
+    }
+
   }
 
   cdio_destroy(p_cdio);

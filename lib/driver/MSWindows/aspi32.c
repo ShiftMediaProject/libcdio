@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2009, 2010 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -155,7 +155,7 @@ have_aspi( HMODULE *hASPI,
   *hASPI = LoadLibrary( "wnaspi32.dll" );
 
   if( *hASPI == NULL ) {
-    cdio_debug("Unable to load ASPI DLL");
+    cdio_warn("Unable to load ASPI DLL");
     return false;
   }
 

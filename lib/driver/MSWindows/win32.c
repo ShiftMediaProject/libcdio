@@ -1,7 +1,6 @@
 /*
-  $Id: win32.c,v 1.37 2008/04/21 18:30:21 karl Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2010 
+  Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -646,6 +645,23 @@ eject_media_win32 (void *p_user_data)
   return open_close_media_win32(psz_drive, MCI_SET_DOOR_OPEN);
 }
 
+static bool
+is_mmc_supported(void *user_data)
+{
+    _img_private_t *env = user_data;
+    switch (env->access_mode) {
+      case _AM_NONE:
+	return false;
+      case _AM_IOCTL:
+      case _AM_ASPI:
+      case _AM_MMC_RDWR:
+      case _AM_MMC_RDWR_EXCL:
+	return true;
+    }
+    /* Not reached. */
+    return false;
+}
+
 /*!
   Return the value associated with the key "arg".
 */
@@ -669,6 +685,8 @@ get_arg_win32 (void *p_user_data, const char key[])
     case _AM_NONE:
       return "no access method";
     }
+  } else if (!strcmp (key, "mmc-supported?")) {
+      return is_mmc_supported(p_user_data) ? "true" : "false";
   }
   return NULL;
 }
