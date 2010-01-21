@@ -9,6 +9,8 @@
 /freebsd
 /gnu_linux
 /mmc
+/nrg
+/nrg.c
 /osx
 /realpath
 /solaris
