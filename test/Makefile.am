@@ -30,7 +30,7 @@ endif
 
 hack = check_sizeof testassert testgetdevices testischar \
        testisocd testisocd2 testiso9660 test_lib_driver_util \
-       testnrg $(testparanoia) testtoc testpregap 
+       $(testparanoia) testtoc testpregap 
 
 EXTRA_PROGRAMS = testdefault 
 DATA_DIR       = @abs_top_srcdir@/test/data
@@ -57,9 +57,6 @@ test_lib_driver_util_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 testpregap_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testpregap_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
-testnrg_LDADD       = $(LIBCDIO_LIBS) $(LTLIBICONV)
-testnrg_CFLAGS      = -DDATA_DIR=\"$(DATA_DIR)\"
-
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
                 check_iso.sh  check_fuzzyiso.sh check_paranoia.sh check_opts.sh
 # If we beefed this up so it checked to see if a CD-DA was loaded
@@ -83,7 +80,7 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
-	testpregap.c.in testnrg.c.in \
+	testpregap.c.in \
 	testgetdevices.c.in check_iso.sh.in
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 

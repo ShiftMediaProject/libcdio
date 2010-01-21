@@ -16,7 +16,7 @@
 */
 
 /* 
-   Regression test for BIN/CUE device driver.
+   Regression test for BIN/CUE device driver: lib/driver/image/bincue.c.
 */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -146,7 +146,6 @@ main(int argc, const char *argv[])
 	  }
       }
 
-
       {
 	  const char *psz_source = cdio_get_arg(p_cdio, "source");
 	  const char *psz_device = cdio_get_default_device(p_cdio);
@@ -155,7 +154,7 @@ main(int argc, const char *argv[])
 	      fprintf(stderr, 
 		      "cdio_get_arg(\"source\") should return \"%s\"; got: \"%s\".\n",
 		      psz_source, psz_device);
-	      exit(4);
+	      exit(5);
 	  }
       }
 

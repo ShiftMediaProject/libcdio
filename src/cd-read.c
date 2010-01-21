@@ -586,9 +586,10 @@ main(int argc, char *argv[])
     
     if (opts.hexdump)
       hexdump(output_stream, buffer, blocklen, opts.just_hex);
-    else if (opts.output_file)
-      write(output_fd, buffer, blocklen);
-    else {
+    else if (opts.output_file) {
+      ssize_t bytes_ret;
+      bytes_ret = write(output_fd, buffer, blocklen);
+    } else {
       unsigned int i;
       for (i=0; i<blocklen; i++) printf("%c", buffer[i]);
     }

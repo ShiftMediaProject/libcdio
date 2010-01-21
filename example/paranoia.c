@@ -65,19 +65,20 @@ put_num(long int num, int f, int bytes)
 /* Write a the header for a WAV file. */
 static void 
 write_WAV_header(int fd, int32_t i_bytecount){
+  ssize_t bytes_ret;
   /* quick and dirty */
-  writestr(fd, "RIFF");              /*  0-3 */
-  put_num(i_bytecount+44-8, fd, 4);  /*  4-7 */
-  writestr(fd, "WAVEfmt ");          /*  8-15 */
-  put_num(16, fd, 4);                /* 16-19 */
-  put_num(1, fd, 2);                 /* 20-21 */
-  put_num(2, fd, 2);                 /* 22-23 */
-  put_num(44100, fd, 4);             /* 24-27 */
-  put_num(44100*2*2, fd, 4);         /* 28-31 */
-  put_num(4, fd, 2);                 /* 32-33 */
-  put_num(16, fd, 2);                /* 34-35 */
-  writestr(fd, "data");              /* 36-39 */
-  put_num(i_bytecount, fd, 4);       /* 40-43 */
+  bytes_ret = writestr(fd, "RIFF");     /*  0-3 */
+  put_num(i_bytecount+44-8, fd, 4);     /*  4-7 */
+  bytes_ret = writestr(fd, "WAVEfmt "); /*  8-15 */
+  put_num(16, fd, 4);                   /* 16-19 */
+  put_num(1, fd, 2);                    /* 20-21 */
+  put_num(2, fd, 2);                    /* 22-23 */
+  put_num(44100, fd, 4);                /* 24-27 */
+  put_num(44100*2*2, fd, 4);            /* 28-31 */
+  put_num(4, fd, 2);                    /* 32-33 */
+  put_num(16, fd, 2);                   /* 34-35 */
+  bytes_ret = writestr(fd, "data");     /* 36-39 */
+  put_num(i_bytecount, fd, 4);          /* 40-43 */
 }
 
 int
@@ -124,6 +125,7 @@ main(int argc, const char *argv[])
       printf("Trouble getting starting LSN\n");
     } else {
       lsn_t   i_cursor;
+      ssize_t bytes_ret;
       track_t i_track    = cdda_sector_gettrack(d, i_first_lsn);
       lsn_t   i_last_lsn = cdda_track_lastsector(d, i_track);
       int     fd         = creat("track1s.wav", 0644);
@@ -157,7 +159,7 @@ main(int argc, const char *argv[])
 	  printf("paranoia read error. Stopping.\n");
 	  break;
 	}
-	write(fd, p_readbuf, CDIO_CD_FRAMESIZE_RAW);
+	bytes_ret = write(fd, p_readbuf, CDIO_CD_FRAMESIZE_RAW);
       }
       close(fd);
     }

@@ -1,7 +1,5 @@
 /* -*- C -*-
-  $Id: testnrg.c.in,v 1.1 2008/03/22 22:43:56 rocky Exp $
-
-  Copyright (C) 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2008, 2010 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,14 +16,15 @@
 */
 
 /* 
-   Regression test for cdio_nrgfile().
+   Regression test for Nero image driver: lib/driver/image/nrg.c.
 */
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
 #include <cdio/cdtext.h>
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -85,6 +84,41 @@ main(int argc, const char *argv[])
       }
     }
   }
+
+  {
+      const char *psz_response = cdio_get_arg(p_cdio, "mmc-supported?");
+      if ( psz_response == NULL || 
+	   ((0 != strncmp("false", psz_response, sizeof("false")))) ) {
+	  fprintf(stderr, 
+		  "cdio_get_arg(\"mmc-supported?\") should return \"false\"; got: \"%s\".\n",
+		  psz_response);
+	  exit(3);
+      }
+  }
+
+  {
+      const char *psz_access_mode = cdio_get_arg(p_cdio, "access-mode");
+      if ( psz_access_mode == NULL || 
+	   ((0 != strncmp("image", psz_access_mode, sizeof("image")))) ) {
+	  fprintf(stderr, 
+		  "cdio_get_arg(\"access-mode?\") should return \"image\"; got: \"%s\".\n",
+		  psz_access_mode);
+	  exit(4);
+      }
+  }
+
+
+  {
+      const char *psz_source = cdio_get_arg(p_cdio, "source");
+      if ( psz_source == NULL || 
+	   (0 != strcmp(psz_nrgfile, psz_source)) ) {
+	  fprintf(stderr, 
+		  "cdio_get_arg(\"source\") should return \"%s\"; got: \"%s\".\n",
+		  psz_source, psz_nrgfile);
+	  exit(4);
+      }
+  }
+
   cdio_destroy(p_cdio);
 
   return 0;

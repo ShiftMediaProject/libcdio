@@ -31,6 +31,9 @@ gnu_linux_CFLAGS = -DDATA_DIR=\"$(DATA_DIR)\"
 mmc_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
 mmc_CFLAGS       = -DDATA_DIR=\"$(DATA_DIR)\"
 
+nrg_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
+nrg_CFLAGS       = -DDATA_DIR=\"$(DATA_DIR)\"
+
 osx_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
 osx_CFLAGS       = -DDATA_DIR=\"$(DATA_DIR)\"
 
@@ -40,14 +43,19 @@ solaris_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 win32_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
 win32_CFLAGS     = -DDATA_DIR=\"$(DATA_DIR)\"
 
-hack             = bincue freebsd gnu_linux mmc osx realpath solaris win32
-check_PROGRAMS   = $(hack)
+check_PROGRAMS   = \
+	bincue freebsd gnu_linux mmc nrg \
+	osx realpath solaris win32
 
 TESTS = $(check_PROGRAMS)
 
-EXTRA_DIST = bincue.c.in
+EXTRA_DIST = \
+	bincue.c.in \
+	nrg.c.in
 
-MOSTLYCLEANFILES = core core.* *.dump cdda-orig.wav cdda-try.wav *.raw
+MOSTLYCLEANFILES = \
+	$(check_PROGRAMS) \
+	core core.* *.dump cdda-orig.wav cdda-try.wav *.raw
 
 test: check-am
 

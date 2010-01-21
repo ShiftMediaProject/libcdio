@@ -1,7 +1,7 @@
 /*
   $Id: utils.c,v 1.4 2008/04/16 17:00:41 karl Exp $
 
-  Copyright (C) 2004, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software: you can redistribute it and/or modify
@@ -18,15 +18,22 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include "common_interface.h"
 #include "utils.h"
 void 
 cderror(cdrom_drive_t *d,const char *s)
 {
+  ssize_t bytes_ret;
   if(s && d){
     switch(d->errordest){
     case CDDA_MESSAGE_PRINTIT:
-      write(STDERR_FILENO,s,strlen(s));
+      bytes_ret = write(STDERR_FILENO, s, strlen(s));
+      if (strlen(s) != bytes_ret)
+	  
       break;
     case CDDA_MESSAGE_LOGIT:
       d->errorbuf=catstring(d->errorbuf,s);
@@ -40,10 +47,11 @@ cderror(cdrom_drive_t *d,const char *s)
 void 
 cdmessage(cdrom_drive_t *d, const char *s)
 {
+  ssize_t bytes_ret;
   if(s && d){
     switch(d->messagedest){
     case CDDA_MESSAGE_PRINTIT:
-      write(STDERR_FILENO,s,strlen(s));
+      bytes_ret = write(STDERR_FILENO, s, strlen(s));
       break;
     case CDDA_MESSAGE_LOGIT:
       d->messagebuf=catstring(d->messagebuf,s);
@@ -73,13 +81,14 @@ idperror(int messagedest,char **messages,const char *f,
     }
 
   if(buffer){
+    ssize_t bytes_ret;
     switch(messagedest){
     case CDDA_MESSAGE_PRINTIT:
-      write(STDERR_FILENO,buffer,strlen(buffer));
+      bytes_ret = write(STDERR_FILENO,buffer,strlen(buffer));
       if(errno){
-	write(STDERR_FILENO,": ",2);
-	write(STDERR_FILENO,strerror(errno),strlen(strerror(errno)));
-	write(STDERR_FILENO,"\n",1);
+	bytes_ret = write(STDERR_FILENO,": ",2);
+	bytes_ret = write(STDERR_FILENO,strerror(errno),strlen(strerror(errno)));
+	bytes_ret = write(STDERR_FILENO,"\n",1);
       }
       break;
     case CDDA_MESSAGE_LOGIT:
@@ -118,11 +127,13 @@ idmessage(int messagedest,char **messages,const char *f,
       malloced=1;
     }
 
-  if(buffer){
+  if(buffer) {
+    ssize_t bytes_ret;
     switch(messagedest){
     case CDDA_MESSAGE_PRINTIT:
-      write(STDERR_FILENO,buffer,strlen(buffer));
-      if(!malloced)write(STDERR_FILENO,"\n",1);
+      bytes_ret = write(STDERR_FILENO,buffer,strlen(buffer));
+      if(!malloced)
+	  bytes_ret = write(STDERR_FILENO,"\n",1);
       break;
     case CDDA_MESSAGE_LOGIT:
       if(messages){

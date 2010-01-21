@@ -663,10 +663,10 @@ AC_CONFIG_FILES([
        test/data/Makefile \
        test/driver/Makefile \
        test/driver/bincue.c \
+       test/driver/nrg.c \
        test/testgetdevices.c \
        test/testisocd2.c \
        test/testpregap.c \
-       test/testnrg.c \
        test/check_common_fn \
        test/Makefile \
        ])
