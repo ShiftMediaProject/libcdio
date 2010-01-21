@@ -28,7 +28,7 @@ dnl For multilanguage manual pages (e.g. japanese cdparanoia) we use
 dnl $make_p and according to Steve Schultz this is a make_p is a 1.8
 dnl feature.
 
-AM_INIT_AUTOMAKE([1.11])
+AM_INIT_AUTOMAKE([1.10])
 
 AC_CANONICAL_HOST
 AM_CONFIG_HEADER(config.h)
