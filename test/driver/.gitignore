@@ -4,6 +4,7 @@
 /.libs
 /Makefile
 /Makefile.in
+/bincue
 /follow_symlink
 /freebsd
 /gnu_linux

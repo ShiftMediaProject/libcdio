@@ -40,9 +40,12 @@ solaris_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 win32_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
 win32_CFLAGS     = -DDATA_DIR=\"$(DATA_DIR)\"
 
-check_PROGRAMS   = bincue freebsd gnu_linux mmc osx realpath solaris win32
+hack             = bincue freebsd gnu_linux mmc osx realpath solaris win32
+check_PROGRAMS   = $(hack)
 
 TESTS = $(check_PROGRAMS)
+
+EXTRA_DIST = bincue.c.in
 
 MOSTLYCLEANFILES = core core.* *.dump cdda-orig.wav cdda-try.wav *.raw
 

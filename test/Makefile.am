@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2004, 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2004, 2006, 2008, 2009, 2010 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 # There's a problem with doing make distcheck for testdefault. 
 # A reminder of why I hate automake.
 
-SUBDIRS = driver
+SUBDIRS = data driver
 
 if BUILD_CD_PARANOIA
 testparanoia=testparanoia
@@ -83,7 +83,7 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
-	testbincue.c.in testpregap.c.in testnrg.c.in \
+	testpregap.c.in testnrg.c.in \
 	testgetdevices.c.in check_iso.sh.in
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
