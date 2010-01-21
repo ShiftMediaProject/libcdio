@@ -1,3 +1,4 @@
+Thomas Schmitt has made significant contributions to this glossary.
 See also @uref{http://www.dvdrhelp.com/glossary}.
 
 @table @dfn
@@ -20,8 +21,8 @@ IDE (also called ATA) was originally designed for hard drives only,
 but with help of ATAPI it is possible to connect other devices, in
 particular CD-ROMS to the IDE/EIDE connections.
 
-The ATAPI CD-ROM drives understand a subset of MMC commands. In
-particular multi-initiator commands are neither needed nor deviced for
+The ATAPI CD-ROM drives understand a subset of SCSI commands. In
+particular multi-initiator commands are neither needed nor defined for
 ATAPI devices.
 
 @item BIN/CUE
@@ -60,7 +61,7 @@ around a set-top computer that connects to a TV to provide interactive
 home entertainment, including digital audio and video, video games,
 and software applications. Defined by the ``Green Book'' standard.
 @uref{http://www.icdia.org/}. CD-i for video and video music has
-largely (if not totally) been superceded by VCDs.
+largely (if not totally) been superseded by VCDs.
 
 @item CD-i Bridge
 @cindex CD-i Bridge
@@ -109,15 +110,34 @@ sector, file numbers, etc).
 
 The data written on a CD-XA is consistent with and can be in ISO-9660
 file system format and therefore be readable by ISO-9660 file system
-translators. But also a CD-I player can also read CD-XA discs even if
+translators. But also a CD-I player can read CD-XA discs even if
 its own `Green Book' file system only resembles ISO 9660 and isn't
 fully compatible. 
 
 @item Command Packet
 @cindex Command Packet
 
-The data structure that is used to issue an ATAPI command. The same
-thing as a SCSI Command Descriptor Block (CDB).
+The data structure that is used to issue an ATAPI command. It contains
+a SCSI Command Descriptor Block (CDB).
+
+@item ECMA-119 (ISO-9660)
+@cindex ECMA-119
+
+(@uref{http://www.ecma-international.org/publications/standards/Ecma-119.htm}
+is a freely available specification which is technically identical to ISO 9660.
+
+@item ECMA-167 (UDF)
+@cindex ECMA-167
+
+(@uref{http://www.ecma-international.org/publications/standards/Ecma-167.htm}
+is a freely available specification which is also approved as ISO 13346.
+It serves as base for UDF.
+
+@item ECMA-168
+@cindex ECMA-168
+
+(@uref{http://www.ecma-international.org/publications/standards/Ecma-168.htm}
+is a freely available specification which is also approved as ISO 13490.
 
 @item FSF
 @cindex FSF
@@ -140,26 +160,38 @@ but offers slightly less in terms of performance.
 
 International Standards Organization. 
 
+@item ISO 13346
+@cindex ISO 13346
+
+ISO 13346 / ECMA-167 is a filesystem framework for data exchange on
+overwriteable or pseudo-overwriteable media. It serves as base of UDF.
+
+@item ISO 13490
+@cindex ISO 13490
+
+ISO 13490 / ECMA-168 is an attempt to replace ISO 9660 by a format that
+allows finer write granularity and representation of typical disk file
+properties. It resembles ECMA-167 which led to UDF.
+
 @item ISO 9660
 @cindex ISO 9660
 
-The ISO 9660 is an operating-system independent filesystem format for
-CD-ROM media and DVD-ROMs. It was standardized in 1988 and replaced the
-High Sierra standard for the logical format on CD-ROM media (ISO 9660
-and High Sierra are identical in content, but the exact format is
-different).
+ISO 9660 / ECMA-119 is an operating-system independent filesystem format
+originally intended for CD-ROM media. It was standardized in 1988 and
+replaced the High Sierra standard for the logical format on CD-ROM media
+(ISO 9660 and High Sierra are identical in content, but the exact format is
+different). ISO 9660 and ECMA-119 are technically identical meanwhile.
 
 There are several specification levels. In Level 1, file names must be
 in the 8.3 format (no more than eight characters in the name, no more
 than three characters in the suffix) and in capital letters. Directory
 names can be no longer than eight characters. There can be no more
 than eight nested directory levels. Level 2 and 3 specifications allow
-file names up to 32 characters long.
-
-ECMA-119
-(@uref{http://www.ecma-international.org/publications/standards/Ecma-119.htm}
-is the European specification which is identical to ISO 9660.
-ISO 13490 is basically ISO 9660 with multisession support.
+file names up to 32 characters long. Level 3 allows data file sizes to be
+4 GB or larger. File data content is stored in extents, i.e. contiguous
+sequences of blocks. A single extent can hold only up to 2 exp 32 - 1 bytes.
+So files of 4 GB or larger need more than one extent to be stored.
+Older operating systems might have trouble with multi-extent files.
 
 @item Joliet extensions
 @cindex Joliet extensions
@@ -190,9 +222,16 @@ programming than an MSF.
 The area of a CD where the Table Of Contents (TOC) and CD Text are
 stored.  I think it is supposed to be around 4500 (1 min) or more
 sectors in length.  On a CDR(W) the lead-in length is variable,
-because each manufacturer will have a different starting position
+because manufacturers have a different starting position
 indicated by the ATIP start of lead-in position that is recorded in
-the ATIP groove on the disk.
+the ATIP groove on the disk. For example:
+
+@table @dfn
+@item Ricoh Company Limited
+97:27:00, 97:27:06, 97:27:66
+@item Mitsubishi Chemical (Verbatim)
+97:34:21 to 97:34:25
+@end table
 
 @item LSN
 @cindex LSN
@@ -232,20 +271,42 @@ video data. Video CD's can be Mixed Mode CDs.
 @item Multisession 
 @cindex Multisession 
 
-A way of writing to a CD that allows more data to be
-added to readable discs at a later time.
+A way of writing to a CD , DVD or Blu-ray Disc that allows more data to be
+added to readable discs at a later time. The media must not have been closed
+by the previous write session. This applies originally to unformatted CD-R,
+CD-RW, DVD-R, DVD-RW, DVD+R, and sequential BD-R which all can record more
+than one session. They hold a table-of-content with sessions and tracks.
+Formatted CD-RW, DVD-RAM, DVD+RW, DVD-RW, and BD-RE have only one track.
+Multisession on these media needs help by the recorded data formats.
+
+Multisession can be used to add a changeset to an existing ISO 9660
+filesystem. Typically the add-on session contains a whole new filesystem tree
+with old and new files. It also contains the data blocks of the newly
+introduced or freshly overwritten files.
+The convention for mounting multisession ISO 9660 images is to load the
+superblock from the start of the first track in the last session as listed
+in the media table-of-content. Formatted media are assumed to have a single
+track starting at block 0. So ISO 9660 multisession on formatted media has
+to overwrite the volume descriptors at block 16 ff. with every new session.
+A chain of recognizable sessions can be achieved by starting the first
+ISO 9660 image at block 32 so that its descriptors get not overwritten later.
 
 @item Nero NRG format file
 @cindex Nero NRG, CD-Image format
 
 A proprietary CD image file format use by a popular program for
 Microsoft Windows, Ahead Nero. The specification of this format is
-not to our knowlege published. 
+not to our knowledge published. 
 
 @item Rock Ridge Extensions
 @cindex Rock Ridge extensions
 
 An extension to the ISO-9660 standard which adds POSIX information to files.
+It allows long file names, owner, group, access permissions @code{ugo+-rwx},
+inode numbers, hard-link count, file types other than directory or regular
+file. Rock Ridge is described by unapproved standard IEEE P1282 / RRIP-1.12
+and based on unapproved IEEE P1281 / SUSP-1.10. It has become a de-facto
+standard on X/Open systems like GNU/Linux, FreeBSD, Solaris, et.\ al.
 
 @item SCSI 
 @cindex SCSI 
@@ -254,6 +315,11 @@ Small Computer System Interface.  A set of ANSI standard electronic
 interfaces (originally developed at Apple Computer) that allow
 personal computers to communicate with peripheral hardware such as
 CD-ROM drives, disk drives, printers, etc.
+
+Although the original hardware is outdated since years, the SCSI command
+set nowadays controls most storage devices including all optical disc drives.
+The contemporary electronic technologies which transport SCSI commands
+to optical drives are P-ATA, SATA, and USB.
 
 @item SCSI CDB
 @cindex SCSI CDB
@@ -271,7 +337,8 @@ SCSI-attached drive. See also @acronym{MMC} and @acronym{ASPI}.
 @item Session
 
 A fully readable complete recording that contains one or more tracks
-of computer data or audio on a CD.
+of computer data or audio on a CD. On a DVD or Blu-ray Disc, there are only
+data sessions.
 
 @item SVCD
 @cindex Super VCD (SVCD)
@@ -292,12 +359,13 @@ See @uref{http://www.dvdrhelp.com/svcd}
 @item TOC
 @cindex TOC (CD Table of Contents)
 
-(Compact Disc) Table of Contents. The TOC contains the starting track
-number, last track number individual track starting time, and some
-track flags (copy protection, linear audio preemphasis, track format:
-CDDA or data).  Every CD must have at least 1 TOC, the first TOC is
-always recorded at the start of the CD (lead-in area).  A
-multi-session CD may have several TOCs.
+(Compact Disc) Table of Contents. The TOC contains a list of sessions
+and their tracks. For sessions, it records the starting track
+number and the last track number. For tracks it records starting time
+block address, size, copy protection, linear audio preemphasis, track format
+(CDDA or data) in that order.
+Session and track information is also available on sequential DVD and
+Blu-ray Discs. Several track properties are fixed to equivalents of CD data.
 
 @item Track 
 @cindex track
@@ -305,6 +373,19 @@ multi-session CD may have several TOCs.
 A unit of data of a CD. The size of a track can vary; it can occupy
 the entire contents of the CD. Most CD standards however require that
 tracks have a 150 frame (or ``2 second'') lead-in gap.
+
+An abstraction of tracks for CD, DVD and Blu-ray Discs is the Logical Track
+as of MMC specs. Overwriteable media have a single logical track, sequential
+media can have one or more logical tracks which they describe in their TOC.
+
+@item UDF
+@cindex UDF
+
+Universal Disc Format was designed as successor of ISO 9660. It allows
+to record long file names and advanced file properties. Although intended
+as format for data exchange its main importance is with DVD video players.
+Video DVDs have to bear a simple UDF filesystem with a prescribed set
+of files.
 
 @item VCD
 @cindex Video CD (VCD)
@@ -319,9 +400,9 @@ multimedia support.
 A Video CD is made up of @acronym{CD-ROM XA} sectors,
 i.e. @acronym{CD-ROM} mode 2 form 1 & 2 sectors. Non-@acronym{MPEG} data
 is stored in mode 2 form 1 sectors with a user data area of 2048 byte,
-which have a similiar L2 error correction and detection
+which have a similar L2 error correction and detection
 (@acronym{ECC}/@acronym{EDC}) to @acronym{CD-ROM} mode 1 sectors. While
-realtime @acronym{MPEG} streams is stored in @acronym{CD-ROM} mode 2
+real-time @acronym{MPEG} streams is stored in @acronym{CD-ROM} mode 2
 form 2 sectors, which by have no L2 @acronym{ECC}, yield a ~14% greater
 user data area consisting of 2324 bytes@footnote{actually raw mode 2
 sectors have a 2336 byte user data area, but parts of it are used for
@@ -342,7 +423,7 @@ SCSI controller attached.
 
 However in Windows NT/2K/XP, Microsoft provides their Win32 ioctl
 interface, and has take steps to make using ASPI more inaccessible
-(e.g. requiring adminstrative access to use ASPI).
+(e.g. requiring administrative access to use ASPI).
 
 See also @acronym{MMC}
 
