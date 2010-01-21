@@ -320,9 +320,14 @@ extracts files from an ISO-9660 image.
 
 @end table
 
-At present, there is no support for writing CD's. Nor is there any
-support for reading or writing DVDs. For some of these, there are
-other libraries (e.g. @code{libdi}, @code{libscg}, or @code{libdvdread}) may be helpful.
+Historically, @code{libcdio} did not support write access to
+drives. In conjunction with additional work in a separate project
+@code{libburn}, Thomas Schmitt has modified @code{libcdio} to add
+write support; @code{libburn} write audio and data CD's and reads data
+CD's. It reads and write DVD's and Blu-Ray discs.
+
+Other writing libraries include (e.g. @code{libdi}, @code{libscg}, or
+@code{libdvdread}) may be helpful.
 
 I'm not theoretically opposed to putting support like this into
 libcdio. However at present there are already many gaps in this
@@ -2166,12 +2171,12 @@ There is currently only one CD drive access methods in Solaris: SCSI
 (called ``USCSI'' or ``user SCSI'' in Solaris). There used to be an
 ATAPI method and it could be resurrected if needed. USCSI was
 preferred since on newer releases of Solaris and Solaris environments
-one needs to have root access for ATAPI.
+one need to have root access for ATAPI.
 
 @node FreeBSD
 @section FreeBSD ioctl and CAM
 
-There are two classes of access methods on Solaris: ioctl and CAM
+There are two classes of access methods on FreeBSD: ioctl and CAM
 (common access method). CAM is preferred when possible, especially on
 newer releases. However CAM is right now sort of a hybrid and includes
 some ioctl code.
