@@ -1,6 +1,4 @@
 /* -*- C -*-
-  $Id: testbincue.c.in,v 1.2 2008/03/22 18:08:25 karl Exp $
-
   Copyright (C) 2004, 2006, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
@@ -18,7 +16,7 @@
 */
 
 /* 
-   Regression test for cdio_binfile().
+   Regression test for BIN/CUE device driver.
 */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -125,6 +123,45 @@ main(int argc, const char *argv[])
 	  }
 	  drc = cdio_set_speed(p_cdio, 5);
       }
+
+      {
+	  const char *psz_response = cdio_get_arg(p_cdio, "mmc-supported?");
+	  if ( psz_response == NULL || 
+	       ((0 != strncmp("false", psz_response, sizeof("false")))) ) {
+	      fprintf(stderr, 
+		      "cdio_get_arg(\"mmc-supported?\") should return \"false\"; got: \"%s\".\n",
+		      psz_response);
+	      exit(3);
+	  }
+      }
+
+      {
+	  const char *psz_access_mode = cdio_get_arg(p_cdio, "access-mode");
+	  if ( psz_access_mode == NULL || 
+	       ((0 != strncmp("image", psz_access_mode, sizeof("image")))) ) {
+	      fprintf(stderr, 
+		      "cdio_get_arg(\"access-mode?\") should return \"image\"; got: \"%s\".\n",
+		      psz_access_mode);
+	      exit(4);
+	  }
+      }
+
+
+      {
+	  const char *psz_source = cdio_get_arg(p_cdio, "source");
+	  const char *psz_device = cdio_get_default_device(p_cdio);
+	  if ( psz_source == NULL || 
+	       (0 != strcmp(psz_device, psz_device)) ) {
+	      fprintf(stderr, 
+		      "cdio_get_arg(\"source\") should return \"%s\"; got: \"%s\".\n",
+		      psz_source, psz_device);
+	      exit(4);
+	  }
+      }
+
+
+      cdio_destroy(p_cdio);
+
     }
     
   }

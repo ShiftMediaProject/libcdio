@@ -1,5 +1,5 @@
 /* -*- C -*-
-  Copyright (C) 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2009, 2010 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ main(int argc, const char *argv[])
 	 ((0 != strncmp("true", psz_response, sizeof("true"))) && 
 	  (0 != strncmp("false", psz_response, sizeof("false")))) ) {
       fprintf(stderr, 
-	      "cdio_get_arg(\"mmc-supported?\") should return \"true\" or \"false\"; got: %s.\n",
+	      "cdio_get_arg(\"mmc-supported?\") should return \"true\" or \"false\"; got: \"%s\".\n",
 	  psz_response);
       exit(2);
     }
@@ -96,7 +96,7 @@ main(int argc, const char *argv[])
       
       if (0 != strncmp(psz_access_mode, "MMC_RDWR", strlen("MMC_RDWR"))) {
           fprintf(stderr,
-                  "Got %s; Should get back %s, the access mode requested.\n",
+                  "Got \"%s\"; Should get back \"%s\", the access mode requested.\n",
                   psz_access_mode, "MMC_RDWR");
           exit(4);
       }
