@@ -1,6 +1,17 @@
 /Makefile
 /Makefile.in
+/libcdio.aux
+/libcdio.cp
+/libcdio.cps
+/libcdio.dvi
+/libcdio.fn
 /libcdio.info
+/libcdio.ky
+/libcdio.log
+/libcdio.pg
+/libcdio.toc
+/libcdio.tp
+/libcdio.vr
 /mdate-sh
 /stamp-vti
 /texinfo.tex

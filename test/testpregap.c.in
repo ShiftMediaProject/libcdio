@@ -39,8 +39,8 @@
 #endif
 #include <string.h>
 
-#ifndef TEST_DIR
-#define TEST_DIR "@srcdir@"
+#ifndef DATA_DIR
+#define DATA_DIR "@srcdir@/data"
 #endif
 
 static void 
@@ -65,14 +65,14 @@ typedef struct _pregap_list_t {
 
 static pregap_list_t pregapList[] =
 {
-    { "@srcdir@/t2.toc", 1, 4425 },
-    { "@srcdir@/t2.toc", 2, CDIO_INVALID_LSN },
-    { "@srcdir@/p1.cue", 1, 0 },
-    { "@srcdir@/p1.cue", 2, 150 },
-    { "@srcdir@/p1.cue", 3, CDIO_INVALID_LSN },
+    { "@abs_top_srcdir@/test/data/t2.toc", 1, 4425 },
+    { "@abs_top_srcdir@/test/data/t2.toc", 2, CDIO_INVALID_LSN },
+    { "@abs_top_srcdir@/test/data/p1.cue", 1, 0 },
+    { "@abs_top_srcdir@/test/data/p1.cue", 2, 150 },
+    { "@abs_top_srcdir@/test/data/p1.cue", 3, CDIO_INVALID_LSN },
 /*    { "p1.nrg", 1, 0 }, Nero did not create the proper pre-gap - bleh */
-    { "@srcdir@/p1.nrg", 2, 225 },
-    { "@srcdir@/p1.nrg", 3, CDIO_INVALID_LSN }
+    { "@abs_top_srcdir@/test/data/p1.nrg", 2, 225 },
+    { "@abs_top_srcdir@/test/data/p1.nrg", 3, CDIO_INVALID_LSN }
 };
 
 #define NELEMS(v) (sizeof(v) / sizeof(v[0]))

@@ -52,7 +52,7 @@
 #endif
 
 /* Set up a CD-DA image to test on which is in the libcdio distribution. */
-#define ISO9660_IMAGE_PATH "@srcdir@/"
+#define ISO9660_IMAGE_PATH "@abs_top_srcdir@/test/data/"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "copying.iso"
 
 #define SKIP_TEST_RC 77

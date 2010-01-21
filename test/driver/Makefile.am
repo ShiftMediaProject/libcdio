@@ -1,4 +1,4 @@
-#   Copyright (C) 2009 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2009, 2010 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -14,29 +14,33 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
+DATA_DIR = $(abs_top_srcdir)/test/data
+
+bincue_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
+bincue_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
 
 freebsd_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
-freebsd_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
+freebsd_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
 realpath_LDADD   = $(LIBCDIO_LIBS) $(LTLIBICONV)
-realpath_CFLAGS  = -DTEST_DIR=\"$(srcdir)\"
+realpath_CFLAGS  = -DDATA_DIR=\"$(DATA_DIR)\"
 
 gnu_linux_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
-gnu_linux_CFLAGS = -DTEST_DIR=\"$(srcdir)\"
+gnu_linux_CFLAGS = -DDATA_DIR=\"$(DATA_DIR)\"
 
 mmc_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
-mmc_CFLAGS       = -DTEST_DIR=\"$(srcdir)\"
+mmc_CFLAGS       = -DDATA_DIR=\"$(DATA_DIR)\"
 
 osx_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
-osx_CFLAGS       = -DTEST_DIR=\"$(srcdir)\"
+osx_CFLAGS       = -DDATA_DIR=\"$(DATA_DIR)\"
 
 solaris_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
-solaris_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
+solaris_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
 win32_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
-win32_CFLAGS     = -DTEST_DIR=\"$(srcdir)\"
+win32_CFLAGS     = -DDATA_DIR=\"$(DATA_DIR)\"
 
-check_PROGRAMS   = freebsd gnu_linux mmc osx realpath solaris win32
+check_PROGRAMS   = bincue freebsd gnu_linux mmc osx realpath solaris win32
 
 TESTS = $(check_PROGRAMS)
 

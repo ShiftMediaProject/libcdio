@@ -28,38 +28,37 @@ testparanoia=testparanoia
 testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 endif
 
-hack = check_sizeof testassert testbincue testgetdevices testischar \
+hack = check_sizeof testassert testgetdevices testischar \
        testisocd testisocd2 testiso9660 test_lib_driver_util \
        testnrg $(testparanoia) testtoc testpregap 
 
 EXTRA_PROGRAMS = testdefault 
+DATA_DIR       = @abs_top_srcdir@/test/data
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 
-check_sizeof_LDADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
-testassert_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
-testdefault_LDADD   = $(LIBCDIO_LIBS) $(LTLIBICONV)
-testgetdevices_LDADD= $(LIBCDIO_LIBS) $(LTLIBICONV)
-testischar_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
-testiso9660_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+check_sizeof_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+testassert_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
+testdefault_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
+testgetdevices_CFLAGS = -DDATA_DIR=\"$(DATA_DIR)\"
+testgetdevices_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
+testischar_LDADD      = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+testiso9660_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 testisocd_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testisocd2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 testtoc_LDADD       = $(LIBCDIO_LIBS) $(LTLIBICONV)
-testtoc_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
+testtoc_CFLAGS      = -DDATA_DIR=\"$(DATA_DIR)\"
 
 test_lib_driver_util_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
-tets_lib_driver_util_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
+test_lib_driver_util_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
 testpregap_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
-testpregap_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
-
-testbincue_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
-testbincue_CFLAGS   = -DTEST_DIR=\"$(srcdir)\"
+testpregap_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
 testnrg_LDADD       = $(LIBCDIO_LIBS) $(LTLIBICONV)
-testnrg_CFLAGS      = -DTEST_DIR=\"$(srcdir)\"
+testnrg_CFLAGS      = -DDATA_DIR=\"$(DATA_DIR)\"
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
                 check_iso.sh  check_fuzzyiso.sh check_paranoia.sh check_opts.sh
@@ -70,30 +69,22 @@ check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
 check_PROGRAMS = $(hack)
 
 check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
-	     videocd.right videocd.nrg \
-	     cdda.right cdda.toc cdda.cue cdda.bin \
+	     videocd.right \
+	     cdda.right \
 	     isofs-m1.right isofs-m1-no-rr.right \
-	     isofs-m1.toc isofs-m1.cue isofs-m1.bin \
 	     cd-paranoia-log.right \
 	     check_opts0.right check_opts1.right check_opts2.right \
              check_opts3.right check_opts4.right check_opts5.right \
              check_opts6.right check_opts7.right \
 	     isofs-m1-read.right cdda-read.right \
-	     t1.toc t2.toc t3.toc t4.toc t5.toc t6.toc t7.toc t8.toc t9.toc \
-	     data1.toc data2.toc data5.toc data6.toc data7.toc \
-	     vcd2.toc cdtext.toc \
-	     bad-mode1.cue bad-msf-1.cue bad-msf-2.cue bad-msf-3.cue \
-	     bad-mode1.toc bad-msf-1.toc bad-msf-2.toc bad-msf-3.toc \
-	     bad-cat1.cue bad-cat2.cue bad-cat3.cue \
-	     bad-cat1.toc bad-cat2.toc bad-cat3.toc bad-file.toc \
-	     copying.iso  copying.right copying-rr.iso copying-rr.right \
-	     joliet.iso joliet.right joliet-nojoliet.right \
+	     copying.right copying-rr.right \
+	     joliet.right joliet-nojoliet.right \
 	     udf102.iso copying.gpl copying-rr.gpl
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
 	testbincue.c.in testpregap.c.in testnrg.c.in \
-	testgetdevices.c.in check_iso.sh.in p1.bin p1.cue p1.nrg
+	testgetdevices.c.in check_iso.sh.in
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
 XFAIL_TESTS = testassert
@@ -113,5 +104,5 @@ test: check-am
 check-am:	make-executable
 make-executable: check_nrg.sh check_cue.sh check_paranoia.sh
 	chmod +x *.sh
-	if test ! -f cdda.bin ; then $(LN_S) $(srcdir)/cdda.bin cdda.bin ; fi
-	if test ! -f isofs-m1.bin ; then $(LN_S) $(srcdir)/isofs-m1.bin isofs-m1.bin ; fi
+	if test ! -f cdda.bin ; then $(LN_S) $(abs_top_srcdir)/test/data/cdda.bin cdda.bin ; fi
+	if test ! -f isofs-m1.bin ; then $(LN_S) $(abs_top_srcdir)/test/data/isofs-m1.bin isofs-m1.bin ; fi

@@ -29,18 +29,18 @@ BASE=`basename $0 .sh`
 
 fname=cdda
 testnum=CD-DA
-opts="--quiet --no-device-info --cue-file ${srcdir}/${fname}.cue --no-cddb"
+opts="--quiet --no-device-info --cue-file ${srcdir}/data/${fname}.cue --no-cddb"
 test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC "cd-info CUE test $testnum" "${CD_INFO} $opts"
   
 
-opts="--quiet --no-device-info --bin-file ${srcdir}/${fname}.bin --no-cddb"
+opts="--quiet --no-device-info --bin-file ${srcdir}/data/${fname}.bin --no-cddb"
 test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC "cd-info BIN test $testnum" "${CD_INFO} $opts"
 
-opts="--quiet --no-device-info --toc-file ${srcdir}/${fname}.toc --no-cddb"
+opts="--quiet --no-device-info --toc-file ${srcdir}/data/${fname}.toc --no-cddb"
 test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC "cd-info TOC test $testnum" "${CD_INFO} $opts"
@@ -49,30 +49,30 @@ fname=isofs-m1
 testnum='ISO 9660 mode1 CUE'
 if test -f  ${srcdir}/${fname}.bin ; then
   if test -n "@HAVE_ROCK@"; then 
-    opts="-q --no-device-info --no-disc-mode --cue-file ${srcdir}/${fname}.cue --iso9660"
+    opts="-q --no-device-info --no-disc-mode --cue-file ${srcdir}/data/${fname}.cue --iso9660"
     test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
     RC=$?
     check_result $RC "cd-info Rock-Ridge CUE test $testnum" "${CD_INFO} $opts"
 
-    opts="-q --no-device-info --no-disc-mode --no-rock-ridge --cue-file ${srcdir}/${fname}.cue --iso9660"
+    opts="-q --no-device-info --no-disc-mode --no-rock-ridge --cue-file ${srcdir}/data/${fname}.cue --iso9660"
     test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}-no-rr.right
     RC=$?
     check_result $RC "cd-info no Rock-Ridge CUE test $testnum" "${CD_INFO} $opts"
   fi
 
 else 
-  echo "Don't see CUE file ${srcdir}/${fname}.bin. Test $testnum skipped."
+  echo "Don't see CUE file ${srcdir}/data/${fname}.bin. Test $testnum skipped."
 fi
 
 if test -n "@HAVE_ROCK@"; then 
   testnum='ISO 9660 mode1 TOC'
-  if test -f  ${srcdir}/${fname}.bin ; then
-    opts="-q --no-device-info --no-disc-mode --toc-file ${srcdir}/${fname}.toc --iso9660"
+  if test -f  ${srcdir}/data/${fname}.bin ; then
+    opts="-q --no-device-info --no-disc-mode --toc-file ${srcdir}/data/${fname}.toc --iso9660"
     test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
     RC=$?
     check_result $RC "cd-info TOC test $testnum" "${CD_INFO} $opts"
   else 
-    echo "Don't see TOC file ${srcdir}/${fname}.bin. Test $testnum skipped."
+    echo "Don't see TOC file ${srcdir}/data/${fname}.bin. Test $testnum skipped."
   fi
 fi
 
@@ -84,7 +84,7 @@ else
 fi
 testnum='Video CD'
 if test -f ${srcdir}/${fname}.bin ; then
-  opts="-q --no-device-info --no-disc-mode -c ${srcdir}/${fname}.cue --iso9660"
+  opts="-q --no-device-info --no-disc-mode -c ${srcdir}/data/${fname}.cue --iso9660"
   test_cdinfo "$opts" ${fname}.dump $right
   RC=$?
   check_result $RC "cd-info CUE test $testnum" "${CD_INFO} $opts"
@@ -94,7 +94,7 @@ if test -f ${srcdir}/${fname}.bin ; then
   else
     right=${srcdir}/${fname}_vcdinfo.right
   fi
-  opts="-q --no-device-info --no-disc-mode -t ${srcdir}/${fname}.toc --iso9660"
+  opts="-q --no-device-info --no-disc-mode -t ${srcdir}/data/${fname}.toc --iso9660"
   if test -f ${srcdir}/${fname}.toc ; then
     test_cdinfo "$opts" ${fname}.dump $right
     RC=$?
@@ -109,12 +109,12 @@ fi
 fname=svcd_ogt_test_ntsc
 testnum='Super Video CD'
 if test -f ${srcdir}/${fname}.bin ; then
-  opts="-q --no-device-info --no-disc-mode --cue-file ${srcdir}/${fname}.cue $vcd_opt --iso9660"
+  opts="-q --no-device-info --no-disc-mode --cue-file ${srcdir}/data/${fname}.cue $vcd_opt --iso9660"
   test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
   RC=$?
   check_result $RC "cd-info CUE test $testnum" "${CD_INFO} $opts"
 else 
-  echo "Don't see CUE file ${srcdir}/${fname}.bin. Test $testnum skipped."
+  echo "Don't see CUE file ${srcdir}/data/${fname}.bin. Test $testnum skipped."
 fi
 
 exit $RC

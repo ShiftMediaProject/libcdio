@@ -22,7 +22,7 @@ i=0
 for opt in '-T' '--no-tracks' '-A' '--no-analyze' '-I' '--no-ioctl' \
       '-q' '--quiet' ; do 
   testname=${BASE}$i
-  opts="--no-device-info --cue-file ${srcdir}/${fname}.cue $opt --quiet"
+  opts="--no-device-info --cue-file ${srcdir}/data/${fname}.cue $opt --quiet"
   test_cdinfo  "$opts" ${testname}.dump ${srcdir}/${testname}.right
   RC=$?
   check_result $RC "cd-info option test $opt" "../src/cd-info $opts"

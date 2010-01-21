@@ -1,4 +1,4 @@
-dnl Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+dnl Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2010
 dnl Rocky Bernstein <rocky@gnu.org>
 dnl
 dnl This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@ dnl For multilanguage manual pages (e.g. japanese cdparanoia) we use
 dnl $make_p and according to Steve Schultz this is a make_p is a 1.8
 dnl feature.
 
-AM_INIT_AUTOMAKE([1.7])
+AM_INIT_AUTOMAKE([1.11])
 
 AC_CANONICAL_HOST
 AM_CONFIG_HEADER(config.h)
@@ -488,7 +488,7 @@ AC_DEFINE_UNQUOTED(LIBCDIO_SOURCE_PATH, "$LIBCDIO_SOURCE_PATH",
 	[Full path to libcdio top_sourcedir.])
 AC_SUBST(LIBCDIO_SOURCE_PATH)
 
-AC_CHECK_FUNCS( [bzero drand48 ftruncate geteuid getgid \
+AC_CHECK_FUNCS( [bzero chdir drand48 ftruncate geteuid getgid \
 		 getuid getpwuid gettimeofday lstat memcpy memset \
 		 rand seteuid setegid snprintf setenv unsetenv tzset \
 		 sleep vsnprintf readlink realpath gmtime_r localtime_r] )
@@ -660,8 +660,9 @@ AC_CONFIG_FILES([
        src/cd-paranoia/doc/ja/cd-paranoia.1 \
        src/cd-paranoia/doc/ja/Makefile \
        src/Makefile \
+       test/data/Makefile \
        test/driver/Makefile \
-       test/testbincue.c \
+       test/driver/bincue.c \
        test/testgetdevices.c \
        test/testisocd2.c \
        test/testpregap.c \

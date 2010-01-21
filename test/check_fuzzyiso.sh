@@ -20,9 +20,9 @@ if test ! -x $check_program ; then
 fi
 
 cd $srcdir; src_dir=`pwd`
-for file in $src_dir/*.bin $src_dir/*.iso $src_dir/*.nrg ; do 
+for file in $src_dir/data/*.bin $src_dir/data/*.iso $src_dir/data/*.nrg ; do 
   case "$file" in
-  $src_dir/p1.nrg | $src_dir/p1.bin | $src_dir/cdda.bin | $src_dir/cdda-mcn.nrg | $src_dir/svcdgs.nrg )
+  $src_dir/data/p1.nrg | $src_dir/data/p1.bin | $src_dir/data/cdda.bin | $src_dir/data/cdda-mcn.nrg | $src_dir/data/svcdgs.nrg )
     good_rc=1
     ;;
   *) 

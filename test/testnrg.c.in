@@ -38,8 +38,8 @@
 #endif
 #include <string.h>
 
-#ifndef TEST_DIR
-#define TEST_DIR "@srcdir@"
+#ifndef DATA_DIR
+#define DATA_DIR "@abs_top_srcdir@/test/data"
 #endif
 
 #define NUM_FIELDS 2
@@ -57,12 +57,12 @@ main(int argc, const char *argv[])
 
   cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
   /* snprintf(psz_nrgfile, sizeof(psz_nrgfile)-1,
-	     "%s/%s", TEST_DIR, cue_file[i]);
+	     "%s/%s", DATA_DIR, cue_file[i]);
   */
   if (!cdio_have_driver(DRIVER_NRG)) return(77);
   
   snprintf(psz_nrgfile, sizeof(psz_nrgfile)-1, "%s/%s",  
-	   TEST_DIR, "./p1.nrg");
+	   DATA_DIR, "p1.nrg");
 
   p_cdio = cdio_open_nrg(psz_nrgfile);
   if (!p_cdio) {

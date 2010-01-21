@@ -44,8 +44,8 @@
 
 #include <string.h>
 
-#ifndef TEST_DIR
-#define TEST_DIR "@srcdir@"
+#ifndef DATA_DIR
+#define DATA_DIR "@abs_top_srcdir@/test/data/"
 #endif
 
 
@@ -162,7 +162,7 @@ main(int argc, const char *argv[])
   
   if (ret != 0) return ret;
 
-  if (0 == chdir(TEST_DIR)) {
+  if (0 == chdir(DATA_DIR)) {
      nrg_images = cdio_get_devices(DRIVER_NRG);
 	  
      for (imgs=nrg_images; *imgs != NULL; imgs++) {

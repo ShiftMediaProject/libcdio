@@ -37,8 +37,8 @@
 #endif
 #include <string.h>
 
-#ifndef TEST_DIR
-#define TEST_DIR "."
+#ifndef DATA_DIR
+#define DATA_DIR "./data/"
 #endif
 
 #define NUM_GOOD_TOCS 16
@@ -84,7 +84,7 @@ main(int argc, const char *argv[])
   cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
   for (i=0; i<NUM_GOOD_TOCS; i++) {
     snprintf(psz_tocfile, sizeof(psz_tocfile)-1,
-	     "%s/%s", TEST_DIR, toc_file[i]);
+	     "%s/%s", DATA_DIR, toc_file[i]);
     if (!cdio_is_tocfile(psz_tocfile)) {
       printf("Incorrect: %s doesn't parse as a cdrdao TOC file.\n", 
 	     toc_file[i]);
@@ -97,7 +97,7 @@ main(int argc, const char *argv[])
 
   for (i=0; i<NUM_BAD_TOCS; i++) {
     snprintf(psz_tocfile, sizeof(psz_tocfile)-1,
-	     "%s/%s", TEST_DIR, badtoc_file[i]);
+	     "%s/%s", DATA_DIR, badtoc_file[i]);
     if (!cdio_is_tocfile(psz_tocfile)) {
       printf("Correct: %s doesn't parse as a cdrdao TOC file.\n", 
 	     badtoc_file[i]);

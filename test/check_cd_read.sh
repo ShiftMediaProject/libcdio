@@ -1,7 +1,7 @@
 #!/bin/sh
 #   $Id: check_cd_read.sh,v 1.12 2008/03/22 18:08:25 karl Exp $
 #
-#   Copyright (C) 2003, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2005, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -36,14 +36,14 @@ BASE=`basename $0 .sh`
 
 fname=cdda
 testnum=CD-DA
-opts="-c ${srcdir}/${fname}.cue --mode=red --just-hex --start=0"
+opts="-c ${srcdir}/data/${fname}.cue --mode=red --just-hex --start=0"
 test_cd_read  "$opts" ${fname}-read.dump ${srcdir}/${fname}-read.right
 RC=$?
 check_result $RC "cd-read CUE test $testnum" "cd-read $opts"
 
 fname=isofs-m1
 testnum=MODE1
-opts="-i ${srcdir}/${fname}.cue --mode m1f1 -s 26 -n 2"
+opts="-i ${srcdir}/data/${fname}.cue --mode m1f1 -s 26 -n 2"
 test_cd_read "$opts" ${fname}-read.dump ${srcdir}/${fname}-read.right
 RC=$?
 check_result $RC "cd-read CUE test $testnum" "$CD_READ $opts"
