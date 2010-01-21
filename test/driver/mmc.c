@@ -759,7 +759,9 @@ main(int argc, const char *argv[])
       exit(1);
     }
 
-    if (psz_have_mmc && 0 == strncmp("true", psz_have_mmc, sizeof("true"))) {
+    if ( psz_have_mmc 
+	 && 0 == strncmp("true", psz_have_mmc, sizeof("true"))
+	 && (DRIVER_WIN32 != cdio_get_driver_id(p_cdio)) ) {
 	scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
 	if (scsi_tuple == NULL) {
 	    fprintf(stderr, "cdio_get_arg(\"scsi-tuple\") returns NULL.\n");

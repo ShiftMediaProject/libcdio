@@ -101,5 +101,11 @@ test: check-am
 check-am:	make-executable
 make-executable: check_nrg.sh check_cue.sh check_paranoia.sh
 	chmod +x *.sh
-	if test ! -f cdda.bin ; then $(LN_S) $(abs_top_srcdir)/test/data/cdda.bin cdda.bin ; fi
-	if test ! -f isofs-m1.bin ; then $(LN_S) $(abs_top_srcdir)/test/data/isofs-m1.bin isofs-m1.bin ; fi
+	if test ! -f cdda.bin ; then \
+		test -L cdda.bin && $(RM) cdda.bin ; \
+		$(LN_S) $(abs_top_srcdir)/test/data/cdda.bin cdda.bin ; \
+	fi
+	if test ! -f isofs-m1.bin ; then \
+		test -L cdda.bin && $(RM) isofs-m1.bin ; \
+		$(LN_S) $(abs_top_srcdir)/test/data/isofs-m1.bin isofs-m1.bin ;  \
+	fi

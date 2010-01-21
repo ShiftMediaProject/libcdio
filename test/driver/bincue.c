@@ -36,7 +36,7 @@
 #include <string.h>
 
 #ifndef DATA_DIR
-#define DATA_DIR "/src/external-vcs/libcdio/test/data"
+#define DATA_DIR "/home/rocky/src/external-vcs/libcdio/test/data"
 #endif
 
 #define NUM_GOOD_CUES 2
