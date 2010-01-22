@@ -15,7 +15,7 @@
 This manual documents @code{libcdio}, the GNU CD Input and Control
 Library.
 
-Copyright @copyright{} 2003, 2004, 2005, 2006, 2007, 2008 Rocky
+Copyright @copyright{} 2003, 2004, 2005, 2006, 2007, 2008, 2010 Rocky
 Bernstein and Herbert Valerio Riedel.
 
 @quotation
@@ -2007,7 +2007,7 @@ image.
 @chapter CD-ROM Access and Drivers
 
 @menu
-* MMC::  ``SCSI'' Multimedia Commands (MMC)
+* SCSI mess::  SCSI, SCSI commands, and MMC commands
 * Access Modes::  Access Modes
 * Accessing Driver Parameters:: Accessing Driver Parameters
 
@@ -2018,43 +2018,56 @@ image.
 * OS X::  OSX (non-exclussive access)
 @end menu
 
-@node MMC
-@section Multimedia Commands (MMC)
+@node SCSI mess
+@section SCSI, SCSI commands, and MMC commands
 
-In contrast to the rest of the sections in this chapter, MMC
-(Multimedia commands) is not a driver per se, although many of the
-CD-ROM drivers do in fact issue MMC commands. MMC commands
-gives (in theory) a broad and uniform way to access a CD-ROM drive.
+Historically, SCSI referred to a class of hardware devices and device
+controllers, bus technology and the data cables and protocols which
+attached to such devices. This is now called ``Parallel SCSI''.
 
-If your CD-ROM drive understands MMC commands this is probably gives
-the most flexibility in control. SCSI and ATAPI CD-ROM devices
-generally support a fairly large set of MMC commands.
+A specification standard grew out of the @emph{commands} that
+controlled such SCSI devices, but now covers a wider variety of bus
+technologies including Parallel SCSI, ATA/ATAPI, Serial ATA, Universal
+Serial Bus (USB versions 1.1 and 2.0), and High Performance Serial Bus
+(IEEE 1394, 1394A, and 1394B).
+
+Another similar class of hardware devices and controllers is called ATA
+and a command interface to that is called ATAPI (ATA Packetized
+Interface). ATAPI provides a mechanism for transferring and executing
+SCSI commands.
+
+MMC (Multimedia commands) is a specification which adds special SCSI
+commands for CD, DVD, Blu-Ray devices.
+
+If your optical drive understands MMC commands as most do nowadays,
+this is probably gives the most flexibility in control. SCSI and ATAPI
+CD-ROM devices generally support a fairly large set of MMC
+commands. Unfortunately on most Operating Systems, one may need to do
+additional steps to allow access in this manner.
 
 The name ``SCSI MMC'' is often found in the literature in
 specifications and on the Internet. The ``SCSI'' part is probably a
 little bit misleading because a drive can understand ``SCSI MMC''
-commands but not use a SCSI interface---ATAPI CD-ROMs are one such
+commands but not use a SCSI bus protocol---ATAPI CD-ROMs are one such
 broad class of examples. In fact there are drivers to ``encapsulate''
-non-SCSI drives or a non-MMC-compliant drives and make them act like
-MMC drives. I believe that many OS SCSI ``pass-through'' mechanisms do
-roughly the same thing.
-
-The name ``SCSI MMC'' is no doubt due to the fact that these commands
-grew out of the SCSI command set and thus were bundled in them. 
+non-SCSI drives on non-MMC-compliant drives and make them act like MMC
+drives. I believe that many Operating System SCSI ``pass-through''
+mechanisms do roughly the same thing.
 
 For clarity and precision we will use the term ``MMC'' rather than
 ``SCSI MMC''.
 
 One of the problems with MMC is that there are so many different
-``standards''. In particular there are MMC
-@url{ftp://ftp.t10.org/t10/drafts/mmc/}, MMC 2
-@url{ftp://ftp.t10.org/t10/drafts/mmc2/}, MMC 3
-@url{ftp://ftp.t10.org/t10/drafts/mmc3/}, MMC 4
-@url{ftp://ftp.t10.org/t10/drafts/mmc4/}, and MMC 5
-@url{ftp://ftp.t10.org/t10/drafts/mmc5/} standards several ``drafts''
-for each standard. The good news about ATAPI drives is that they too
-understand some sort of MMC subset. The bad news (as I understand
-it) is that they do not understand any full MMC command set.
+``standards''. In particular:
+@itemize
+@item MMC --- @url{ftp://ftp.t10.org/t10/drafts/mmc/}, 
+@item MMC 2 --- @url{ftp://ftp.t10.org/t10/drafts/mmc2/}
+@item MMC 3 --- @url{ftp://ftp.t10.org/t10/drafts/mmc3/}
+@item MMC 4 --- @url{ftp://ftp.t10.org/t10/drafts/mmc4/}
+@item MMC 5 --- @url{ftp://ftp.t10.org/t10/drafts/mmc5/} 
+@end itemize
+along with the several ``drafts'' of these.
+for each standard.
 
 Another problem with the MMC commands related to the variations in
 standards is the variation in the commands themselves and there are
@@ -2085,6 +2098,11 @@ remove a distinction between the various alternative and
 alternative-size MMC commands. In @code{cdio/scsi-mmc.h} you will
 find a little bit of this for example via the routine
 @code{scsi_mmc_get_drive_cap()}. However much more work is needed.
+
+Finally, in @code{libcdio} there is a driver access mode (not a
+driver) called ``MMC''. It indicates to the specific drivers to in
+issue MMC commands instead of other OS-specific or native drive
+commands. 
 
 @node Access Modes
 @section Access Modes
@@ -2300,7 +2318,34 @@ one CD-image format to another. Basically the first image format is
 ``parsed'' into the common internal format and then from this
 structure it is not parsed.
 
+@subsection @samp{libcdio_cdda}
+
+This library is intended to give access CD-DA disks using Monty's
+cd-paranoia library underneath.
+
+To be completed....
+
+@subsection @samp{libcdio_paranoia}
+
+This library is intended to give access Monty's cd-paranoia
+library. It is the gap detection and jitter correction part without
+the part dealing with CD-DA reading.
+
+To be completed....
 @subsection @samp{libiso9660}
+
+This library is intended to give access and manipulate a ISO-9600 file
+image. One part of it is concerned with the the entire ISO-9660 file
+system image, and the other part access routines for manipulating data
+structures and fields that go into such an image.
+
+
+To be completed....
+
+@subsection @samp{libudf}
+
+This library is intended to give access and manipulate a UDF file
+image.
 
 To be completed....
 
