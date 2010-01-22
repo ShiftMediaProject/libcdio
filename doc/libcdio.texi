@@ -12,7 +12,7 @@
 @set txicodequotebacktick
 
 @copying
-This manual documents @code{libcdio}, the GNU CD Input, Output and Control
+This manual documents @code{libcdio}, the GNU CD Input, Output, and Control
 Library.
 
 Copyright @copyright{} 2003, 2004, 2005, 2006, 2007, 2008, 2010 Rocky
@@ -47,7 +47,7 @@ Texts.  A copy of the license is included in the section entitled
 
 @titlepage
 @title GNU @code{libcdio}
-@subtitle GNU Compact Disc Input, Output and Control Library
+@subtitle GNU Compact Disc Input, Output, and Control Library
 @subtitle for version @value{VERSION}, @value{UPDATED}
 @author Rocky Bernstein et al. (@email{bug-libcdio@@gnu.org})
 @page
@@ -287,7 +287,7 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.
 __________________________________
 ISO 9660 image: ../test/joliet.iso
-Application: K3B THE CD KREATOR VERSION 0.11.12 (C) 2003 SEBASTIAN TRUEG AND THE K3B TEAM
+Application: K3B THE CD KREATOR VERSION 0.11.12 (C) 2003 SEBASTIAN TRUEG AND...
 Preparer   : K3b - Version 0.11.12
 Publisher  : Rocky Bernstein
 System     : LINUX           
@@ -322,17 +322,13 @@ extracts files from an ISO-9660 image.
 
 Historically, @code{libcdio} did not support write access to
 drives. In conjunction with additional work in a separate project
-@code{libburn}, Thomas Schmitt has modified @code{libcdio} to add
-write support; @code{libburn} write audio and data CD's and reads data
-CD's. It reads and write DVD's and Blu-Ray discs.
+@code{libburn}, Thomas Schmitt has modified @code{libcdio} to enable
+sending SCSI write commands on some of the drivers. This enables other
+programs like @code{libburn} to write to CD's, DVD's and Blu-Ray
+discs.
 
-Other writing libraries include (e.g. @code{libdi}, @code{libscg}, or
-@code{libdvdread}) may be helpful.
-
-I'm not theoretically opposed to putting support like this into
-libcdio. However at present there are already many gaps in this
-package, so narrowing its scope in order to focus on these things I
-think is a good idea.
+For the OS drivers which are lacking write access, volunteers are
+welcome.
 
 @node CD Formats
 @chapter CD Formats
@@ -2040,19 +2036,19 @@ MMC (Multimedia commands) is a specification which adds special SCSI
 commands for CD, DVD, Blu-Ray devices.
 
 If your optical drive understands MMC commands as most do nowadays,
-this is probably gives the most flexibility in control. SCSI and ATAPI
+this probably gives the most flexibility in control. SCSI and ATAPI
 CD-ROM devices generally support a fairly large set of MMC
-commands. Unfortunately on most Operating Systems, one may need to do
-additional steps to allow access in this manner.
+commands. Unfortunately, on most Operating Systems one may need to do
+some additional setup, such as install drivers or modules, to allow
+access in this manner.
 
 The name ``SCSI MMC'' is often found in the literature in
 specifications and on the Internet. The ``SCSI'' part is probably a
 little bit misleading because a drive can understand ``SCSI MMC''
 commands but not use a SCSI bus protocol---ATAPI CD-ROMs are one such
 broad class of examples. In fact there are drivers to ``encapsulate''
-non-SCSI drives on non-MMC-compliant drives and make them act like MMC
-drives. I believe that many Operating System SCSI ``pass-through''
-mechanisms do roughly the same thing.
+non-SCSI drives to make them act like more like SCSI drives, such as
+by adding SCSI address naming.
 
 For clarity and precision we will use the term ``MMC'' rather than
 ``SCSI MMC''.
@@ -2067,7 +2063,6 @@ One of the problems with MMC is that there are so many different
 @item MMC 5 --- @url{ftp://ftp.t10.org/t10/drafts/mmc5/} 
 @end itemize
 along with the several ``drafts'' of these.
-for each standard.
 
 Another problem with the MMC commands related to the variations in
 standards is the variation in the commands themselves and there are
@@ -2100,9 +2095,8 @@ find a little bit of this for example via the routine
 @code{scsi_mmc_get_drive_cap()}. However much more work is needed.
 
 Finally, in @code{libcdio} there is a driver access mode (not a
-driver) called ``MMC''. It indicates to the specific drivers to in
-issue MMC commands instead of other OS-specific or native drive
-commands. 
+driver) called ``MMC''. It tells the specific drivers to use MMC
+commands instead of other OS-specific mechanisms.
 
 @node Access Modes
 @section Access Modes
@@ -2220,7 +2214,14 @@ More work on this driver is needed. Volunteers?
 @node Internal Program Organization
 @chapter Internal Program Organization
 
-@subsection file organization
+@menu
+* File Organization::
+* Library Organization::
+* Programming Conventions::
+@end menu
+
+@node File Organization
+@section File Organization
 
 Here is a list of @value{libcdio} directories.
 
@@ -2296,6 +2297,18 @@ location @code{lib/driver}
 
 @end itemize
 
+@node Library Organization
+@section Library Organization
+
+@menu
+* libcdio::
+* libcdio_cdda:: Access to CD-DA via the CD Paranoia library
+* libcdio_paranoia:: Access to the CD Paranoia library
+* libiso9660::  Access to ISO 9660 file systems and structures
+* libudf:: Access to UDF file systems and structures
+@end menu
+
+@node libcdio
 @subsection @samp{libcdio}
 
 @value{libcdio} exports one opaque type @code{CdIo_t}. Internally this
@@ -2328,6 +2341,7 @@ one CD-image format to another. Basically the first image format is
 ``parsed'' into the common internal format and then from this
 structure it is not parsed.
 
+@node libcdio_cdda
 @subsection @samp{libcdio_cdda}
 
 This library is intended to give access CD-DA disks using Monty's
@@ -2335,6 +2349,7 @@ cd-paranoia library underneath.
 
 To be completed....
 
+@node libcdio_paranoia
 @subsection @samp{libcdio_paranoia}
 
 This library is intended to give access Monty's cd-paranoia
@@ -2342,6 +2357,8 @@ library. It is the gap detection and jitter correction part without
 the part dealing with CD-DA reading.
 
 To be completed....
+
+@node libiso9660
 @subsection @samp{libiso9660}
 
 This library is intended to give access and manipulate a ISO-9600 file
@@ -2352,6 +2369,7 @@ structures and fields that go into such an image.
 
 To be completed....
 
+@node libudf
 @subsection @samp{libudf}
 
 This library is intended to give access and manipulate a UDF file
@@ -2359,13 +2377,23 @@ image.
 
 To be completed....
 
+@node Programming Conventions
+@section Programming Conventions
+
+@menu
+* Coding Conventions::
+* Namespace Conventions::
+@end menu
+
+@node Coding Conventions
 @subsection Coding Conventions
 
 In @value{libcdio} there are a number of conventions used. If you
 understand some of these conventions it may facilitate understanding
 the code a little. 
 
-@subsubsection namespace names
+@node Namespace Conventions
+@subsection Namespace Conventions
 
 For the most part, the visible external @value{libcdio} names follow
 conventions so as not to be confused with other applications or

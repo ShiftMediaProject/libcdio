@@ -33,8 +33,15 @@ format. The @code{.CUE} file is a text file which contains CD format
 and track layout information, while the @code{.BIN} file holds the
 actual data of each track.
 
+@item Blu-ray Disc (BD)
+@cindex Blu-ray Disc (BD)
+Optical media with capacity of 25 GB as single layer and 50 GB
+as double layer. See also "Media models and profiles".
+
+
 @item CD
-Compact Disc
+@cindex CD
+Compact Disc. Capacity up to 900 MB. See also "Media models and profiles".
 
 @item CD-DA
 @cindex CD-DA
@@ -113,6 +120,20 @@ file system format and therefore be readable by ISO-9660 file system
 translators. But also a CD-I player can read CD-XA discs even if
 its own `Green Book' file system only resembles ISO 9660 and isn't
 fully compatible. 
+
+@item DVD
+@cindex DVD
+Digital Versatile Disc. Capacity up to 4.5 GB as single layer and
+8.5 GB as double layer media. See also "Media models and profiles".
+
+@item Defect management
+@cindex Defect management
+A method to compensate small amounts of bad spots on media by replacing
+them out of a pool of reserve blocks and performing address translation.
+The necessary checkreading slows down write performance by a factor of 2 or 3.
+Defect management applies by default to DVD-RAM and BD-RE. Optionally it
+can be formatted onto CD-RW and DVD+RW, where it has the name "Mount Rainier".
+Sequential BD-R can be formatted for defect management too.
 
 @item Command Packet
 @cindex Command Packet
@@ -259,6 +280,70 @@ DVD-Rewriters, etc.
 
 Many manufacturers have adopted this standard and it also applies to
 ATAPI versions of their drives.
+
+@item Media models and profiles
+@cindex Media models and profiles
+
+MMC classifies media as models, which describe their logical structure,
+and as profiles, which describe the capabilities of the drive with the
+particular media. So both are closely related but not identical.
+
+There are three model families: CD, DVD, Blu-ray.
+CD allows special sector formats like audio as well as data
+sectors of 2048 bytes. DVD and Blu-ray only record data sectors.
+@table @dfn
+@item Non-writable media: CD-ROM, DVD-ROM, BD-ROM.
+@item Write-once media: CD-R, DVD-R, DVD+R, BD-R.
+@item Reusable media: CD-RW, DVD-RW, DVD+RW, DVD-RAM, BD-RE.
+@end table
+
+Profiles depend on drive type and media state. They are expressed as
+numbers. It is unfortunate that formatted CD-RW have the same
+profile number as unformatted ones.
+
+ROM drives often announce all media as ROM profiles.
+Some writer drives show closed sequential media as ROM profile.
+@table @dfn
+@item CD-ROM     0x08
+@item DVD-ROM    0x10
+@item BD-ROM     0x40
+@end table
+
+Sequentially recordable profiles allow multisession in most cases.
+Special burn programs are needed for writing to them.
+@table @dfn
+@item CD-R       0x09
+@item CD-RW      0x0a (unformatted)
+@item DVD-R      0x11
+@item DVD-RW     0x14 (unformatted)
+@item DVD-R DL   0x15 (double layer)
+@item DVD+R      0x1a
+@item DVD+R DL   0x2a (double layer)
+@item BD-R       0x41 (single or double layer, formatted or not)
+@end table
+They can assume three states:
+@table @dfn
+@item "Blank" is not readable but writeable from scratch
+@item "Appendable" is readable and after the readable part still writeable
+@item "Closed" is only readable
+@end table
+CD-RW and DVD-RW can be brought back to blank state,
+or they can be formatted to become overwriteable.
+
+Overwriteable profiles allow random read-write access with a
+granularity of 2 kB or 32 kB.
+One can hope for having read-write access via the normal
+POSIX operations lseek(), read(), write() of the operating system.
+@table @dfn
+@item CD-RW      0x0a (formatted)
+@item DVD-RAM    0x12
+@item DVD-RW     0x13 (formatted, 32 kB write granularity)
+@item DVD+RW     0x1a
+@item BD-R       0x42 (formatted for pseudo-random recording)
+@item BD-RE      0x43 (single or double layer)
+@end table
+BD-R profile 0x42 is defined by MMC but not implemented by the consumer
+priced Blu-ray burners as of year 2009.
 
 @item Mixed Mode CD
 @cindex Mixed Mode CD
