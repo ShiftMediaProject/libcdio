@@ -61,9 +61,10 @@ main(int argc, const char *argv[])
   int ret=0;
   unsigned int i;
   char psz_cuefile[500];
+  unsigned int verbose = (argc > 1);
 
   psz_cuefile[sizeof(psz_cuefile)-1] = '\0';
-  cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
+  cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_WARN;
   for (i=0; i<NUM_GOOD_CUES; i++) {
     char *psz_binfile;
     snprintf(psz_cuefile, sizeof(psz_cuefile)-1,
@@ -74,8 +75,9 @@ main(int argc, const char *argv[])
 	     cue_file[i]);
       ret=i+1;
     } else {
-      printf("Correct: %s parses as a CDRWin CUE file.\n", 
-	     cue_file[i]);
+	if (verbose) 
+	    printf("Correct: %s parses as a CDRWin CUE file.\n", 
+		   cue_file[i]);
       free(psz_binfile);
     }
   }
@@ -86,8 +88,9 @@ main(int argc, const char *argv[])
 	     "%s/%s", DATA_DIR, badcue_file[i]);
     psz_binfile=cdio_is_cuefile(psz_cuefile);
     if (!psz_binfile) {
-      printf("Correct: %s doesn't parse as a CDRWin CUE file.\n", 
-	     badcue_file[i]);
+	if (verbose)
+	    printf("Correct: %s doesn't parse as a CDRWin CUE file.\n", 
+		   badcue_file[i]);
     } else {
       printf("Incorrect: %s parses as a CDRWin CUE file.\n", 
 	     badcue_file[i]);

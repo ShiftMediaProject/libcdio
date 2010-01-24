@@ -76,6 +76,8 @@ main(int argc, const char *argv[])
   int ret=0;
   unsigned int i;
   char psz_tocfile[500];
+  unsigned int verbose = (argc > 1);
+  
 
 #ifdef HAVE_CHDIR
       if (0 == chdir(DATA_DIR))
@@ -83,7 +85,7 @@ main(int argc, const char *argv[])
       {
 	  psz_tocfile[sizeof(psz_tocfile)-1] = '\0';
   
-	  cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
+	  cdio_loglevel_default = verbose ? CDIO_LOG_DEBUG : CDIO_LOG_WARN;
 	  for (i=0; i<NUM_GOOD_TOCS; i++) {
 	      snprintf(psz_tocfile, sizeof(psz_tocfile)-1,
 		       "%s/%s", DATA_DIR, toc_file[i]);
@@ -92,8 +94,9 @@ main(int argc, const char *argv[])
 			 toc_file[i]);
 		  ret=i+1;
 	      } else {
-		  printf("Correct: %s parses as a cdrdao TOC file.\n", 
-			 toc_file[i]);
+		  if (verbose)
+		      printf("Correct: %s parses as a cdrdao TOC file.\n", 
+			     toc_file[i]);
 	      }
 	  }
 	  
@@ -101,7 +104,8 @@ main(int argc, const char *argv[])
 	      snprintf(psz_tocfile, sizeof(psz_tocfile)-1,
 		       "%s/%s", DATA_DIR, badtoc_file[i]);
 	      if (!cdio_is_tocfile(psz_tocfile)) {
-		  printf("Correct: %s doesn't parse as a cdrdao TOC file.\n", 
+		  if (verbose)
+		      printf("Correct: %s doesn't parse as a cdrdao TOC file.\n", 
 			 badtoc_file[i]);
 	      } else {
 		  printf("Incorrect: %s parses as a cdrdao TOC file.\n", 
