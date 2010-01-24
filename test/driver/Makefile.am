@@ -19,6 +19,9 @@ DATA_DIR = $(abs_top_srcdir)/test/data
 bincue_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
 bincue_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
 
+cdrdao_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
+cdrdao_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
+
 freebsd_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 freebsd_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
@@ -44,13 +47,14 @@ win32_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
 win32_CFLAGS     = -DDATA_DIR=\"$(DATA_DIR)\"
 
 check_PROGRAMS   = \
-	bincue freebsd gnu_linux mmc nrg \
+	bincue cdrdao freebsd gnu_linux mmc nrg \
 	osx realpath solaris win32
 
 TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST = \
 	bincue.c.in \
+	cdrdao.c.in \
 	nrg.c.in
 
 MOSTLYCLEANFILES = \

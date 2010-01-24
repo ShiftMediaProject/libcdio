@@ -663,6 +663,7 @@ AC_CONFIG_FILES([
        test/data/Makefile \
        test/driver/Makefile \
        test/driver/bincue.c \
+       test/driver/cdrdao.c \
        test/driver/nrg.c \
        test/testgetdevices.c \
        test/testisocd2.c \
