@@ -448,13 +448,14 @@ init_aspi (_img_private_t *env)
                   env->lpSendCommand = lpSendCommand;
                   env->b_aspi_init   = true;
                   env->i_lun         = i_lun;
-                  cdio_debug("Using ASPI layer");
+                  cdio_debug("Using ASPI layer for %s",
+			     env->gen.source_name);
                   
                   return true;
                 } else {
                   FreeLibrary( hASPI );
-                  cdio_debug( "%c: is not a CD-ROM drive",
-                              env->gen.source_name[0] );
+                  cdio_debug( "%s: is not a CD-ROM drive",
+                              env->gen.source_name );
                   return false;
                 }
               }
@@ -464,7 +465,8 @@ init_aspi (_img_private_t *env)
   }
   
   FreeLibrary( hASPI );
-  cdio_debug( "Unable to get HaId and target (ASPI)" );
+  cdio_info( "Unable to find host adapter id and target (ASPI) for %s",
+	     env->gen.source_name );
   return false;
 }
 

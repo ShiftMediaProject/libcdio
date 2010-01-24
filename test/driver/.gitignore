@@ -1,10 +1,12 @@
 /*.o
+/*.exe
 /*~
 /.deps
 /.libs
 /Makefile
 /Makefile.in
 /bincue
+/bincue.c
 /follow_symlink
 /freebsd
 /bincue

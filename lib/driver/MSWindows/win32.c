@@ -1004,10 +1004,9 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
     if (cdio_is_device_win32(psz_orig_source))
       set_arg_win32(_data, "source", psz_orig_source);
     else {
-      /* The below would be okay if all device drivers worked this way. */
-#if 0
-      cdio_info ("source %s is a not a device", psz_orig_source);
-#endif
+      /* The below would be okay as an info message if all device
+	 drivers worked this way. */
+      cdio_debug ("source %s is a not a device", psz_orig_source);
       free(_data);
       return NULL;
     }
