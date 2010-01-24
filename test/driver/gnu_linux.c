@@ -33,7 +33,11 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+
+#include "helper.h"
 
 int
 main(int argc, const char *argv[])
@@ -54,52 +58,25 @@ main(int argc, const char *argv[])
   
   p_cdio = cdio_open_linux(ppsz_drives[0]);
   if (p_cdio) {
-      const char *psz_source = cdio_get_arg(p_cdio, "source");
-      if (0 != strncmp(psz_source, ppsz_drives[0],
-                       strlen(ppsz_drives[0]))) {
-          fprintf(stderr, 
-                  "Got %s; should get back %s, the name we opened.\n",
-                  psz_source, ppsz_drives[0]);
-          exit(1);
+      const char *psz_source = NULL, *scsi_tuple;
+
+      check_get_arg_source(p_cdio, ppsz_drives[0]);
+      check_mmc_supported(p_cdio, 3);
+  
+      scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
+      if (scsi_tuple == NULL) {
+	  fprintf(stderr, "cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
+	  exit(3);
       }
-  }
-
-  {
-    const char *psz_response = cdio_get_arg(p_cdio, "mmc-supported?");
-    if ( psz_response == NULL || 
-	 ((0 != strncmp("true", psz_response, sizeof("true"))) && 
-	  (0 != strncmp("false", psz_response, sizeof("false")))) ) {
-      fprintf(stderr, 
-	      "cdio_get_arg(\"mmc-supported?\") should return \"true\" or \"false\"; got: \"%s\".\n",
-	  psz_response);
-      exit(2);
-    }
+      if (cdio_loglevel_default == CDIO_LOG_DEBUG)
+	  printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
+		 psz_source, scsi_tuple);
+      cdio_destroy(p_cdio);
   }
   
-  {
-    const char *psz_source = NULL, *scsi_tuple;
-
-    scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
-    if (scsi_tuple == NULL) {
-      fprintf(stderr, "cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
-      exit(3);
-    }
-    if (cdio_loglevel_default == CDIO_LOG_DEBUG)
-	printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
-	       psz_source, scsi_tuple);
-  }
-  
-  cdio_destroy(p_cdio);
   p_cdio = cdio_open_am_linux(ppsz_drives[0], "MMC_RDWR");
   if (p_cdio) {
-      const char *psz_access_mode = cdio_get_arg(p_cdio, "access-mode");
-      
-      if (0 != strncmp(psz_access_mode, "MMC_RDWR", strlen("MMC_RDWR"))) {
-          fprintf(stderr,
-                  "Got \"%s\"; Should get back \"%s\", the access mode requested.\n",
-                  psz_access_mode, "MMC_RDWR");
-          exit(4);
-      }
+      check_access_mode(p_cdio, "MMC_RDWR");
   }
 
   cdio_destroy(p_cdio);

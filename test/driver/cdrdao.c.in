@@ -33,7 +33,11 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+
+#include "helper.h"
 
 #ifndef DATA_DIR
 #define DATA_DIR "@abs_top_srcdir@/test/data"
@@ -90,8 +94,8 @@ main(int argc, const char *argv[])
 	      snprintf(psz_tocfile, sizeof(psz_tocfile)-1,
 		       "%s/%s", DATA_DIR, toc_file[i]);
 	      if (!cdio_is_tocfile(psz_tocfile)) {
-		  printf("Incorrect: %s doesn't parse as a cdrdao TOC file.\n", 
-			 toc_file[i]);
+		  fprintf(stderr, 
+			  "Incorrect: %s doesn't parse as a cdrdao TOC file.\n",			 toc_file[i]);
 		  ret=i+1;
 	      } else {
 		  if (verbose)
@@ -108,12 +112,33 @@ main(int argc, const char *argv[])
 		      printf("Correct: %s doesn't parse as a cdrdao TOC file.\n", 
 			 badtoc_file[i]);
 	      } else {
-		  printf("Incorrect: %s parses as a cdrdao TOC file.\n", 
-			 badtoc_file[i]);
+		  fprintf(stderr, 
+			  "Incorrect: %s parses as a cdrdao TOC file.\n", 
+			  badtoc_file[i]);
 		  ret+=50*i+1;
 		  break;
 	      }
 	  }
+
+	  {
+	      CdIo_t *p_cdio;
+	      snprintf(psz_tocfile, sizeof(psz_tocfile)-1,
+		       "%s/%s", DATA_DIR, "cdda.toc");
+
+	      p_cdio = cdio_open (psz_tocfile, DRIVER_CDRDAO);
+	      if (!p_cdio) {
+		  fprintf(stderr, "Can't open %s as a cdrdao TOC file.\n", 
+			  psz_tocfile);
+		  exit(5);
+	      }
+	      
+	      check_mmc_supported(p_cdio, 1);
+	      check_access_mode(p_cdio, "image");
+	      check_get_arg_source(p_cdio, psz_tocfile);
+	      cdio_destroy(p_cdio);
+	  }
+	  
+
       }
   
   return ret;

@@ -16,9 +16,11 @@
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 DATA_DIR = $(abs_top_srcdir)/test/data
 
+bincue_SOURCES   = helper.c bincue.c
 bincue_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
 bincue_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
 
+cdrdao_SOURCES   = helper.c cdrdao.c
 cdrdao_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
 cdrdao_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
 
@@ -28,12 +30,14 @@ freebsd_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 realpath_LDADD   = $(LIBCDIO_LIBS) $(LTLIBICONV)
 realpath_CFLAGS  = -DDATA_DIR=\"$(DATA_DIR)\"
 
+gnu_linux_SOURCES= helper.c gnu_linux.c
 gnu_linux_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
 gnu_linux_CFLAGS = -DDATA_DIR=\"$(DATA_DIR)\"
 
 mmc_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
 mmc_CFLAGS       = -DDATA_DIR=\"$(DATA_DIR)\"
 
+nrg_SOURCES      = helper.c nrg.c 
 nrg_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
 nrg_CFLAGS       = -DDATA_DIR=\"$(DATA_DIR)\"
 
@@ -54,6 +58,7 @@ TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST = \
 	bincue.c.in \
+	helper.c    \
 	cdrdao.c.in \
 	nrg.c.in
 

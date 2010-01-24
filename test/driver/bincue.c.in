@@ -33,7 +33,12 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+
+#include "helper.h"
+
 
 #ifndef DATA_DIR
 #define DATA_DIR "@abs_top_srcdir@/test/data"
@@ -117,6 +122,11 @@ main(int argc, const char *argv[])
 #endif
       {
 	  psz_device = cdio_get_default_device(p_cdio);
+
+	  check_mmc_supported(p_cdio, 1);
+	  check_access_mode(p_cdio, "image");
+	  // check_get_arg_source(p_cdio, psz_device);
+
 	  /* Could chdir to srcdir to hedge the bet? */
 	  if (psz_device) 
 	      free(psz_device);
@@ -126,41 +136,6 @@ main(int argc, const char *argv[])
 	  }
 	  drc = cdio_set_speed(p_cdio, 5);
       }
-
-      {
-	  const char *psz_response = cdio_get_arg(p_cdio, "mmc-supported?");
-	  if ( psz_response == NULL || 
-	       ((0 != strncmp("false", psz_response, sizeof("false")))) ) {
-	      fprintf(stderr, 
-		      "cdio_get_arg(\"mmc-supported?\") should return \"false\"; got: \"%s\".\n",
-		      psz_response);
-	      exit(3);
-	  }
-      }
-
-      {
-	  const char *psz_access_mode = cdio_get_arg(p_cdio, "access-mode");
-	  if ( psz_access_mode == NULL || 
-	       ((0 != strncmp("image", psz_access_mode, sizeof("image")))) ) {
-	      fprintf(stderr, 
-		      "cdio_get_arg(\"access-mode?\") should return \"image\"; got: \"%s\".\n",
-		      psz_access_mode);
-	      exit(4);
-	  }
-      }
-
-      {
-	  const char *psz_source = cdio_get_arg(p_cdio, "source");
-	  const char *psz_device = cdio_get_default_device(p_cdio);
-	  if ( psz_source == NULL || 
-	       (0 != strcmp(psz_device, psz_device)) ) {
-	      fprintf(stderr, 
-		      "cdio_get_arg(\"source\") should return \"%s\"; got: \"%s\".\n",
-		      psz_source, psz_device);
-	      exit(5);
-	  }
-      }
-
 
       cdio_destroy(p_cdio);
 
