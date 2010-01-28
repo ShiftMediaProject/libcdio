@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
                   Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -35,29 +35,35 @@
 extern "C" {
 #endif /* __cplusplus */
 
-  /** Set this to the maximum value in milliseconds that we will
-      wait on an MMC command.  */
+  /**
+      Set this to the maximum value in milliseconds that we will
+      wait on an MMC command.  
+  */
   extern uint32_t mmc_timeout_ms; 
 
-  /** The default timeout (non-read) is 6 seconds. */
+  /**
+      The default timeout (non-read) is 6 seconds. 
+  */
 #define MMC_TIMEOUT_DEFAULT 6000
 
-  /** Set this to the maximum value in milliseconds that we will
-      wait on an MMC read command.  */
+  /**
+      Set this to the maximum value in milliseconds that we will
+      wait on an MMC read command.  
+  */
   extern uint32_t mmc_read_timeout_ms;
 
   /** The default read timeout is 3 minutes. */
 #define MMC_READ_TIMEOUT_DEFAULT 3*60*1000
 
-
-  /** \brief The opcode-portion (generic packet commands) of an MMC command.
+  /**
+      \brief The opcode-portion (generic packet commands) of an MMC command.
     
-  In general, those opcodes that end in 6 take a 6-byte command
-  descriptor, those that end in 10 take a 10-byte
-  descriptor and those that in in 12 take a 12-byte descriptor. 
-  
-  (Not that you need to know that, but it seems to be a
-  big deal in the MMC specification.)
+      In general, those opcodes that end in 6 take a 6-byte command
+      descriptor, those that end in 10 take a 10-byte
+      descriptor and those that in in 12 take a 12-byte descriptor. 
+      
+      (Not that you need to know that, but it seems to be a
+      big deal in the MMC specification.)
   
   */
   typedef enum {
@@ -75,8 +81,9 @@ extern "C" {
   CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL   = 0x1e, /**< Enable/disable Disc 
                                                    removal. (6 bytes). */
 
-  /** Group 2 Commands (CDB's here are 10-bytes)   
-   */
+  /**
+      Group 2 Commands (CDB's here are 10-bytes)   
+  */
   CDIO_MMC_GPCMD_READ_10                = 0x28, /**< Read data from drive 
                                                    (10 bytes). */
   CDIO_MMC_GPCMD_READ_SUBCHANNEL        = 0x42, /**< Read Sub-Channel data.
@@ -116,8 +123,9 @@ extern "C" {
                                                  mode support or save current
                                                  settings. (6 bytes). */
 
-  /** Group 5 Commands (CDB's here are 12-bytes) 
-   */
+  /**
+      Group 5 Commands (CDB's here are 12-bytes) 
+  */
   CDIO_MMC_GPCMD_PLAY_AUDIO_12          = 0xa5, /**< Begin audio playing at
                                                    current position
                                                  (12 bytes) */
@@ -149,8 +157,9 @@ extern "C" {
   CDIO_MMC_GPCMD_READ_CD                = 0xbe, /**< Read almost any field 
                                                    of a CD sector at current
                                                    location. (12 bytes). */
-  /** Vendor-unique Commands  
-   */
+  /**
+      Vendor-unique Commands  
+  */
   CDIO_MMC_GPCMD_CD_PLAYBACK_STATUS  = 0xc4 /**< SONY unique  = command */,
   CDIO_MMC_GPCMD_PLAYBACK_CONTROL    = 0xc9 /**< SONY unique  = command */,
   CDIO_MMC_GPCMD_READ_CDDA           = 0xd8 /**< Vendor unique  = command */,
@@ -159,7 +168,9 @@ extern "C" {
   } cdio_mmc_gpcmd_t;
 
 
-  /** Read Subchannel states */
+  /**
+      Read Subchannel states 
+  */
   typedef enum {
     CDIO_MMC_READ_SUB_ST_INVALID   = 0x00, /**< audio status not supported */
     CDIO_MMC_READ_SUB_ST_PLAY      = 0x11, /**< audio play operation in 
@@ -183,7 +194,9 @@ extern "C" {
     CDIO_MMC_READ_TYPE_M2F2 =  5   /**< mode2 sectors form2 */
   } cdio_mmc_read_cd_type_t;
 
-  /** Format values for READ_TOC */
+  /**
+      Format values for READ_TOC 
+  */
   typedef enum {
     CDIO_MMC_READTOC_FMT_TOC     =  0,
     CDIO_MMC_READTOC_FMT_SESSION =  1,  
@@ -193,7 +206,9 @@ extern "C" {
     CDIO_MMC_READTOC_FMT_CDTEXT  =  5   /**< CD-TEXT info  */
   } cdio_mmc_readtoc_t;
     
-/** Page codes for MODE SENSE and MODE SET. */
+  /**
+     Page codes for MODE SENSE and MODE SET. 
+  */
   typedef enum {
     CDIO_MMC_R_W_ERROR_PAGE     = 0x01,
     CDIO_MMC_WRITE_PARMS_PAGE   = 0x05,
@@ -216,7 +231,9 @@ PRAGMA_BEGIN_PACKED
 
   typedef struct mmc_audio_volume_entry_s mmc_audio_volume_entry_t;
   
-  /** This struct is used by cdio_audio_get_volume and cdio_audio_set_volume */
+  /**
+      This struct is used by cdio_audio_get_volume and cdio_audio_set_volume 
+  */
   struct mmc_audio_volume_s
   {
     mmc_audio_volume_entry_t port[4];
@@ -227,7 +244,9 @@ PRAGMA_BEGIN_PACKED
 PRAGMA_END_PACKED
   
 
-/** Return type codes for GET_CONFIGURATION. */
+/**
+    Return type codes for GET_CONFIGURATION. 
+*/
 typedef enum {
   CDIO_MMC_GET_CONF_ALL_FEATURES     = 0,  /**< all features without regard
                                               to currency. */
@@ -239,7 +258,9 @@ typedef enum {
 } cdio_mmc_get_conf_t;
   
 
-/** FEATURE codes used in GET CONFIGURATION. */
+/**
+    FEATURE codes used in GET CONFIGURATION. 
+*/
 
 typedef enum {
   CDIO_MMC_FEATURE_PROFILE_LIST     = 0x000, /**< Profile List Feature */
@@ -300,7 +321,9 @@ typedef enum {
                                                 report */
 } cdio_mmc_feature_t;
                                 
-/** Profile profile codes used in GET_CONFIGURATION - PROFILE LIST. */
+/** 
+    Profile profile codes used in GET_CONFIGURATION - PROFILE LIST. 
+*/
 typedef enum {
   CDIO_MMC_FEATURE_PROF_NON_REMOVABLE = 0x0001, /**< Re-writable disk, capable
                                                    of changing behavior */
@@ -348,9 +371,10 @@ typedef enum {
 } cdio_mmc_feature_interface_t;
   
 
-/** The largest Command Descriptor Block (CDB) size.
+/**
+    The largest Command Descriptor Block (CDB) size.
     The possible sizes are 6, 10, and 12 bytes.
- */
+*/
 #define MAX_CDB_LEN 12
 
 /** \brief A Command Descriptor Block (CDB) used in sending MMC 
@@ -467,6 +491,10 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.
     Command is not "immediate" -- we'll wait for the command to complete.
     For a more general (and lower-level) routine, @see mmc_start_stop_media.
+
+   @param p_cdio the CD object to be acted upon.
+   @return DRIVER_OP_SUCCESS (0) if we got the status.
+   return codes are the same as driver_return_code_t  
   */
   driver_return_code_t mmc_eject_media( const CdIo_t *p_cdio );
   
@@ -480,7 +508,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   */
   const char *mmc_feature_profile2str( int i_feature_profile );
   
-  /**  
+  /**
     Return the length in bytes of the Command Descriptor
     Buffer (CDB) for a given MMC command. The length will be 
     either 6, 10, or 12. 
@@ -488,24 +516,30 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   uint8_t mmc_get_cmd_len(uint8_t mmc_cmd);
   
   /**
-    Get the block size used in read requests, via MMC.
-    @return the blocksize if > 0; error if <= 0
+     Get the block size used in read requests, via MMC (e.g. READ_10, 
+     READ_MSF, ...)
+     @param p_cdio the CD object to be acted upon.
+     @return the blocksize if > 0; error if <= 0
   */
   int mmc_get_blocksize ( CdIo_t *p_cdio );
   
   /**
-   * Close tray using a MMC START STOP command.
-   */
+     Close tray using a MMC START STOP command.
+     @param p_cdio the CD object to be acted upon.
+     @return DRIVER_OP_SUCCESS (0) if we got the status.
+     return codes are the same as driver_return_code_t
+  */
   driver_return_code_t mmc_close_tray( CdIo_t *p_cdio );
   
-  /**  
+  /**
     Get the lsn of the end of the CD
     
+    @param p_cdio the CD object to be acted upon.
     @return the lsn. On error return CDIO_INVALID_LSN.
   */
   lsn_t mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
   
-  /** 
+  /**
     Return the discmode as reported by the MMC Read (FULL) TOC
     command.
     
@@ -519,6 +553,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   
   /**
     Get drive capabilities for a device.
+    @param p_cdio the CD object to be acted upon.
     @return the drive capabilities.
   */
   void mmc_get_drive_cap ( CdIo_t *p_cdio,
@@ -540,15 +575,16 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   cdio_mmc_level_t mmc_get_drive_mmc_cap(CdIo_t *p_cdio);
   
 
-  /** 
+  /**
     Get the DVD type associated with cd object.
     
+    @param p_cdio the CD object to be acted upon.
     @return the DVD discmode.
   */
   discmode_t mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, 
                                            cdio_dvd_struct_t *s);
   
-  /*! 
+  /**
     Return results of media status
     @param p_cdio the CD object to be acted upon.
     @param out_buf media status code from operation
@@ -557,7 +593,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
    */
   int mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2]);
 
-  /*! 
+  /**
     Find out if media tray is open or closed.
     @param p_cdio the CD object to be acted upon.
     @return 1 if media is open, 0 if closed. Error
@@ -565,9 +601,10 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   */
   int mmc_get_tray_status ( const CdIo_t *p_cdio );
 
-  /** 
+  /**
     Get the CD-ROM hardware info via an MMC INQUIRY command.
     
+    @param p_cdio the CD object to be acted upon.
     @return true if we were able to get hardware info, false if we had
     an error.
   */
@@ -575,7 +612,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                         /* out*/ cdio_hwinfo_t *p_hw_info );
   
   
-  /** 
+  /**
     Find out if media has changed since the last call.
     @param p_cdio the CD object to be acted upon.
     @return 1 if media has changed since last call, 0 if not. Error
@@ -586,6 +623,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   /**
     Get the media catalog number (MCN) from the CD via MMC.
     
+    @param p_cdio the CD object to be acted upon.
     @return the media catalog number r NULL if there is none or we
     don't have the ability to get it.
     
@@ -595,9 +633,11 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   */
   char * mmc_get_mcn ( const CdIo_t *p_cdio );
   
-  /** Get the output port volumes and port selections used on AUDIO PLAY
+  /**
+      Get the output port volumes and port selections used on AUDIO PLAY
       commands via a MMC MODE SENSE command using the CD Audio Control
       Page.
+      @param p_cdio the CD object to be acted upon.
   */
   driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
                                              mmc_audio_volume_t *p_volume);
@@ -606,132 +646,139 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     Report if CD-ROM has a praticular kind of interface (ATAPI, SCSCI, ...)
     Is it possible for an interface to have serveral? If not this 
     routine could probably return the single mmc_feature_interface_t.
+    @param p_cdio the CD object to be acted upon.
     @return true if we have the interface and false if not.
   */
   bool_3way_t mmc_have_interface( CdIo_t *p_cdio, 
                                   cdio_mmc_feature_interface_t e_interface );
   
-  /** Run a MODE_SENSE command (6- or 10-byte version) 
-    and put the results in p_buf 
-    @return DRIVER_OP_SUCCESS if we ran the command ok.
+  /**
+     Run a MODE_SENSE command (6- or 10-byte version) 
+     and put the results in p_buf 
+     @param p_cdio the CD object to be acted upon.
+     @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   int mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
                       int page);
   
   
-  /** Run a MODE_SENSE command (10-byte version) 
-    and put the results in p_buf 
-    @return DRIVER_OP_SUCCESS if we ran the command ok.
+  /**
+     Run a MODE_SENSE command (10-byte version) 
+     and put the results in p_buf 
+     @param p_cdio the CD object to be acted upon.
+     @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   int  mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
                           int page);
   
-  /** Run a MODE_SENSE command (6-byte version) 
-    and put the results in p_buf 
-    @return DRIVER_OP_SUCCESS if we ran the command ok.
+  /**
+      Run a MODE_SENSE command (6-byte version) 
+      and put the results in p_buf 
+      @param p_cdio the CD object to be acted upon.
+      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   int  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
                          int page);
   
-  /** Issue a MMC READ_CD command.
+  /**
+      Issue a MMC READ_CD command.
     
-  @param p_cdio  object to read from 
+      @param p_cdio  object to read from 
   
-  @param p_buf   Place to store data. The caller should ensure that 
-  p_buf can hold at least i_blocksize * i_blocks  bytes.
+      @param p_buf   Place to store data. The caller should ensure that 
+      p_buf can hold at least i_blocksize * i_blocks  bytes.
   
-  @param i_lsn   sector to read 
+      @param i_lsn   sector to read 
   
-  @param expected_sector_type restricts reading to a specific CD
-  sector type.  Only 3 bits with values 1-5 are used:
-    0 all sector types
-    1 CD-DA sectors only 
-    2 Mode 1 sectors only
-    3 Mode 2 formless sectors only. Note in contrast to all other
-      values an MMC CD-ROM is not required to support this mode.
-    4 Mode 2 Form 1 sectors only
+      @param expected_sector_type restricts reading to a specific CD
+      sector type.  Only 3 bits with values 1-5 are used:
+      0 all sector types
+      1 CD-DA sectors only 
+      2 Mode 1 sectors only
+      3 Mode 2 formless sectors only. Note in contrast to all other
+        values an MMC CD-ROM is not required to support this mode.
+      4 Mode 2 Form 1 sectors only
     5 Mode 2 Form 2 sectors only
 
-  @param b_digital_audio_play Control error concealment when the
-  data being read is CD-DA.  If the data being read is not CD-DA,
-  this parameter is ignored.  If the data being read is CD-DA and
-  DAP is false zero, then the user data returned should not be
-  modified by flaw obscuring mechanisms such as audio data mute and
-  interpolate.  If the data being read is CD-DA and DAP is true,
-  then the user data returned should be modified by flaw obscuring
-  mechanisms such as audio data mute and interpolate.  
-  
-  b_sync_header return the sync header (which will probably have
-  the same value as CDIO_SECTOR_SYNC_HEADER of size
-  CDIO_CD_SYNC_SIZE).
-  
-  @param header_codes Header Codes refer to the sector header and
-  the sub-header that is present in mode 2 formed sectors: 
-  
-   0 No header information is returned.  
-   1 The 4-byte sector header of data sectors is be returned, 
-   2 The 8-byte sector sub-header of mode 2 formed sectors is
-     returned.  
-   3 Both sector header and sub-header (12 bytes) is returned.  
-   The Header preceeds the rest of the bytes (e.g. user-data bytes) 
-   that might get returned.
-   
-   @param b_user_data  Return user data if true. 
-   
-   For CD-DA, the User Data is CDIO_CD_FRAMESIZE_RAW bytes.
-
-   For Mode 1, The User Data is ISO_BLOCKSIZE bytes beginning at
-   offset CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE.
-   
-   For Mode 2 formless, The User Data is M2RAW_SECTOR_SIZE bytes
-   beginning at offset CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE.
-   
-   For data Mode 2, form 1, User Data is ISO_BLOCKSIZE bytes beginning at
-   offset CDIO_CD_XA_SYNC_HEADER.
-   
-   For data Mode 2, form 2, User Data is 2 324 bytes beginning at
-   offset CDIO_CD_XA_SYNC_HEADER.
-   
-   @param b_sync 
-
-   @param b_edc_ecc true if we return EDC/ECC error detection/correction bits.
-   
-   The presence and size of EDC redundancy or ECC parity is defined
-   according to sector type: 
-   
-   CD-DA sectors have neither EDC redundancy nor ECC parity.  
-   
-   Data Mode 1 sectors have 288 bytes of EDC redundancy, Pad, and
-   ECC parity beginning at offset 2064.
-   
-   Data Mode 2 formless sectors have neither EDC redundancy nor ECC
-   parity
-   
-   Data Mode 2 form 1 sectors have 280 bytes of EDC redundancy and
-   ECC parity beginning at offset 2072
-   
-   Data Mode 2 form 2 sectors optionally have 4 bytes of EDC
-   redundancy beginning at offset 2348.
-   
-   
-   @param c2_error_information If true associate a bit with each
-   sector for C2 error The resulting bit field is ordered exactly as
-   the main channel bytes.  Each 8-bit boundary defines a byte of
-   flag bits.
-   
-   @param subchannel_selection subchannel-selection bits
-   
-     0  No Sub-channel data shall be returned.  (0 bytes)
-     1  RAW P-W Sub-channel data shall be returned.  (96 byte)
-     2  Formatted Q sub-channel data shall be transferred (16 bytes)
-     3  Reserved     
-     4  Corrected and de-interleaved R-W sub-channel (96 bytes)
-     5-7  Reserved
-
-   @param i_blocksize size of the a block expected to be returned
+    @param b_digital_audio_play Control error concealment when the
+    data being read is CD-DA.  If the data being read is not CD-DA,
+    this parameter is ignored.  If the data being read is CD-DA and
+    DAP is false zero, then the user data returned should not be
+    modified by flaw obscuring mechanisms such as audio data mute and
+    interpolate.  If the data being read is CD-DA and DAP is true,
+    then the user data returned should be modified by flaw obscuring
+    mechanisms such as audio data mute and interpolate.  
+    
+    b_sync_header return the sync header (which will probably have
+    the same value as CDIO_SECTOR_SYNC_HEADER of size
+    CDIO_CD_SYNC_SIZE).
+    
+    @param header_codes Header Codes refer to the sector header and
+    the sub-header that is present in mode 2 formed sectors: 
+    
+    0 No header information is returned.  
+    1 The 4-byte sector header of data sectors is be returned, 
+    2 The 8-byte sector sub-header of mode 2 formed sectors is
+    returned.  
+    3 Both sector header and sub-header (12 bytes) is returned.  
+    The Header preceeds the rest of the bytes (e.g. user-data bytes) 
+    that might get returned.
+    
+    @param b_user_data  Return user data if true. 
+    
+    For CD-DA, the User Data is CDIO_CD_FRAMESIZE_RAW bytes.
+    
+    For Mode 1, The User Data is ISO_BLOCKSIZE bytes beginning at
+    offset CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE.
+    
+    For Mode 2 formless, The User Data is M2RAW_SECTOR_SIZE bytes
+    beginning at offset CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE.
+    
+    For data Mode 2, form 1, User Data is ISO_BLOCKSIZE bytes beginning at
+    offset CDIO_CD_XA_SYNC_HEADER.
+    
+    For data Mode 2, form 2, User Data is 2 324 bytes beginning at
+    offset CDIO_CD_XA_SYNC_HEADER.
+    
+    @param b_sync 
+    
+    @param b_edc_ecc true if we return EDC/ECC error detection/correction bits.
+    
+    The presence and size of EDC redundancy or ECC parity is defined
+    according to sector type: 
+    
+    CD-DA sectors have neither EDC redundancy nor ECC parity.  
+    
+    Data Mode 1 sectors have 288 bytes of EDC redundancy, Pad, and
+    ECC parity beginning at offset 2064.
+    
+    Data Mode 2 formless sectors have neither EDC redundancy nor ECC
+    parity
+    
+    Data Mode 2 form 1 sectors have 280 bytes of EDC redundancy and
+    ECC parity beginning at offset 2072
+    
+    Data Mode 2 form 2 sectors optionally have 4 bytes of EDC
+    redundancy beginning at offset 2348.
+    
+    
+    @param c2_error_information If true associate a bit with each
+    sector for C2 error The resulting bit field is ordered exactly as
+    the main channel bytes.  Each 8-bit boundary defines a byte of
+    flag bits.
+    
+    @param subchannel_selection subchannel-selection bits
+    
+    0  No Sub-channel data shall be returned.  (0 bytes)
+    1  RAW P-W Sub-channel data shall be returned.  (96 byte)
+    2  Formatted Q sub-channel data shall be transferred (16 bytes)
+    3  Reserved     
+    4  Corrected and de-interleaved R-W sub-channel (96 bytes)
+    5-7  Reserved
+    
+    @param i_blocksize size of the a block expected to be returned
      
-   @param i_blocks number of blocks expected to be returned.
-     
+    @param i_blocks number of blocks expected to be returned.
   */
   driver_return_code_t
   mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
@@ -741,22 +788,22 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                 uint8_t subchannel_selection, uint16_t i_blocksize, 
                 uint32_t i_blocks );
   
-  /** Read just the user data part of some sort of data sector (via 
-    mmc_read_cd). 
+  /**
+      Read just the user data part of some sort of data sector (via 
+      mmc_read_cd). 
     
-    @param p_cdio object to read from
+      @param p_cdio object to read from
 
-    @param p_buf place to read data into.  The caller should make sure
-                 this location can store at least CDIO_CD_FRAMESIZE,
-                 M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE depending on
-                 the kind of sector getting read. If you don't know
-                 whether you have a Mode 1/2, Form 1/ Form 2/Formless
-                 sector best to reserve space for the maximum,
-                 M2RAW_SECTOR_SIZE.
+      @param p_buf place to read data into.  The caller should make
+             sure this location can store at least CDIO_CD_FRAMESIZE,
+             M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE depending on the
+             kind of sector getting read. If you don't know whether
+             you have a Mode 1/2, Form 1/ Form 2/Formless sector best
+             to reserve space for the maximum, M2RAW_SECTOR_SIZE.
 
-    @param i_lsn sector to read
-    @param i_blocksize size of each block
-    @param i_blocks number of blocks to read
+      @param i_lsn sector to read
+      @param i_blocksize size of each block
+      @param i_blocks number of blocks to read
 
   */
   driver_return_code_t mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf, 
@@ -764,9 +811,10 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                                                uint16_t i_blocksize,
                                                uint32_t i_blocks );
   
-  /** Read sectors using SCSI-MMC GPCMD_READ_CD. 
+  /**
+      Read sectors using SCSI-MMC GPCMD_READ_CD. 
       Can read only up to 25 blocks.
-   */
+  */
   driver_return_code_t mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, 
                                           lsn_t i_lsn,  int read_sector_type, 
                                           uint32_t i_blocks);
@@ -817,7 +865,8 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                    cdio_mmc_direction_t e_direction, unsigned int i_buf,
                    /*in/out*/ void *p_buf );
 
-  /** Obtain the SCSI sense reply of the most-recently-performed MMC command.
+  /**
+      Obtain the SCSI sense reply of the most-recently-performed MMC command.
       These bytes give an indication of possible problems which occured in
       the drive while the command was performed. With some commands they tell
       about the current state of the drive (e.g. 00h TEST UNIT READY).
@@ -890,8 +939,8 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     @param p_cdio  the CD object to be acted upon.
     @param b_eject eject if true and close tray if false
     @param b_immediate wait or don't wait for operation to complete
-    @param power_condition Set CD-ROM to idle/standby/sleep. If nonzero
-    eject/load is ignored, so set to 0 if you want to eject or load.
+    @param power_condition Set CD-ROM to idle/standby/sleep. If nonzero,
+           eject/load is ignored, so set to 0 if you want to eject or load.
     
     @see mmc_eject_media or mmc_close_tray
   */
@@ -903,7 +952,8 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
 }
 #endif /* __cplusplus */
 
-/** The below variables are trickery to force the above enum symbol
+/**
+    The below variables are trickery to force the above enum symbol
     values to be recorded in debug symbol tables. They are used to
     allow one to refer to the enumeration value names in the typedefs
     above in a debugger and debugger expressions

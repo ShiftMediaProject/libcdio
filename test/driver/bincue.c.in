@@ -131,7 +131,8 @@ main(int argc, const char *argv[])
 	  if (psz_device) 
 	      free(psz_device);
 	  else {
-	      /* Unless we do the chdir, will fail. So don't set as an  error. */
+	      /* Unless we do the chdir, will fail. So don't set as an
+	       * error. */
 	      printf("Can't get default device\n");
 	  }
 	  drc = cdio_set_speed(p_cdio, 5);
