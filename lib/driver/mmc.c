@@ -382,9 +382,14 @@ mmc_get_mcn_private ( void *p_env,
   return NULL;
 }
 
-/** 
-    Run a MODE SENSE command (either the 6- or 10-byte version
-    @return DRIVER_OP_SUCCESS if we ran the command ok.
+/**
+   Run a MODE_SENSE command (6- or 10-byte version) 
+   and put the results in p_buf 
+   @param p_cdio the CD object to be acted upon.
+   @param p_buf pointer to location to store mode sense information
+   @param i_size number of bytes allocated to p_buf
+   @param page which "page" of the mode sense command we are interested in
+   @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
 int 
 mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
@@ -400,10 +405,14 @@ mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size,
   return mmc_mode_sense_10(p_cdio, p_buf, i_size, page);
 }
 
-/** 
-    Run a MODE_SENSE command (6-byte version) 
-    and put the results in p_buf 
-    @return DRIVER_OP_SUCCESS if we ran the command ok.
+/**
+   Run a MODE_SENSE command (10-byte version) 
+   and put the results in p_buf 
+   @param p_cdio the CD object to be acted upon.
+   @param p_buf pointer to location to store mode sense information
+   @param i_size number of bytes allocated to p_buf
+   @param page which "page" of the mode sense command we are interested in
+   @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
 int 
 mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
@@ -427,10 +436,14 @@ mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
 }
 
 
-/** 
-    Run a MODE_SENSE command (10-byte version) 
-    and put the results in p_buf 
-    @return DRIVER_OP_SUCCESS if we ran the command ok.
+/**
+   Run a MODE_SENSE command (10-byte version) 
+   and put the results in p_buf 
+   @param p_cdio the CD object to be acted upon.
+   @param p_buf pointer to location to store mode sense information
+   @param i_size number of bytes allocated to p_buf
+   @param page which "page" of the mode sense command we are interested in
+   @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
 int 
 mmc_mode_sense_10( CdIo_t *p_cdio, void *p_buf, int i_size, int page)

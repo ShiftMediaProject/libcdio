@@ -554,7 +554,10 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   /**
     Get drive capabilities for a device.
     @param p_cdio the CD object to be acted upon.
-    @return the drive capabilities.
+    @param p_read_cap  list of read capabilities that are set on return
+    @param p_write_cap list of write capabilities that are set on return
+    @param p_misc_cap  list of miscellaneous capabilities (that are neither
+    read nor write related) that are set on return
   */
   void mmc_get_drive_cap ( CdIo_t *p_cdio,
                            /*out*/ cdio_drive_read_cap_t  *p_read_cap,
@@ -571,6 +574,8 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   
   /**
     Get the MMC level supported by the device.
+    @param p_cdio the CD object to be acted upon.
+    @return MMC level supported by the device.
   */
   cdio_mmc_level_t mmc_get_drive_mmc_cap(CdIo_t *p_cdio);
   
@@ -579,6 +584,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     Get the DVD type associated with cd object.
     
     @param p_cdio the CD object to be acted upon.
+    @param s location to store DVD information.
     @return the DVD discmode.
   */
   discmode_t mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, 
@@ -605,6 +611,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     Get the CD-ROM hardware info via an MMC INQUIRY command.
     
     @param p_cdio the CD object to be acted upon.
+    @param p_hw_info place to store hardware information retrieved
     @return true if we were able to get hardware info, false if we had
     an error.
   */
@@ -638,6 +645,8 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
       commands via a MMC MODE SENSE command using the CD Audio Control
       Page.
       @param p_cdio the CD object to be acted upon.
+      @param p_volume volume parameters retrieved
+      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
                                              mmc_audio_volume_t *p_volume);
@@ -647,6 +656,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     Is it possible for an interface to have serveral? If not this 
     routine could probably return the single mmc_feature_interface_t.
     @param p_cdio the CD object to be acted upon.
+    @param e_interface 
     @return true if we have the interface and false if not.
   */
   bool_3way_t mmc_have_interface( CdIo_t *p_cdio, 
@@ -656,6 +666,9 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
      Run a MODE_SENSE command (6- or 10-byte version) 
      and put the results in p_buf 
      @param p_cdio the CD object to be acted upon.
+     @param p_buf pointer to location to store mode sense information
+     @param i_size number of bytes allocated to p_buf
+     @param page which "page" of the mode sense command we are interested in
      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   int mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
@@ -666,6 +679,9 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
      Run a MODE_SENSE command (10-byte version) 
      and put the results in p_buf 
      @param p_cdio the CD object to be acted upon.
+     @param p_buf pointer to location to store mode sense information
+     @param i_size number of bytes allocated to p_buf
+     @param page which "page" of the mode sense command we are interested in
      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   int  mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
@@ -675,6 +691,9 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
       Run a MODE_SENSE command (6-byte version) 
       and put the results in p_buf 
       @param p_cdio the CD object to be acted upon.
+      @param p_buf pointer to location to store mode sense information
+      @param i_size number of bytes allocated to p_buf
+      @param page which "page" of the mode sense command we are interested in
       @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   int  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
@@ -870,6 +889,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
       These bytes give an indication of possible problems which occured in
       the drive while the command was performed. With some commands they tell
       about the current state of the drive (e.g. 00h TEST UNIT READY).
+      @param p_cdio      CD structure set by cdio_open().
       @param sense       returns the sense bytes received from the drive.
                          This is allocated memory or NULL if no sense bytes are
                          available. Dispose non-NULL pointers by free() when
