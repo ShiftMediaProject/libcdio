@@ -683,21 +683,22 @@ mmc_get_cmd_len(uint8_t scsi_cmd)
 /**
   Detects if a disc (CD or DVD) is erasable or not.
   @param p_user_data the CD object to be acted upon.
+  @param i_status on return will be set indicate whether the operation
+  was a success (DRIVER_OP_SUCCESS) or if not to some other value.
   @return true if the disc is detected as erasable (rewritable), false
 otherwise.
  */
 bool
-mmc_get_disc_erasable( const CdIo_t *p_cdio ) {
+    mmc_get_disc_erasable( const CdIo_t *p_cdio, driver_return_code_t *i_status ) {
     mmc_cdb_t cdb = {{0, }};
     uint8_t buf[42] = { 0, };
-    int i_status;
 
     CDIO_MMC_SET_COMMAND (cdb.field, CDIO_MMC_GPCMD_READ_DISC_INFO);
     CDIO_MMC_SET_READ_LENGTH8 (cdb.field, sizeof(buf));
     
-    i_status = mmc_run_cmd (p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, 
+    *i_status = mmc_run_cmd (p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, 
                             sizeof(buf), &buf);
-    if (i_status == 0) {
+    if (*i_status == 0) {
         if (buf[2] & 0x10)
             return true;
         else
@@ -960,7 +961,8 @@ mmc_get_hwinfo ( const CdIo_t *p_cdio,
   @return DRIVER_OP_SUCCESS (0) if we got the status.
   return codes are the same as driver_return_code_t
 */
-int mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
+driver_return_code_t 
+mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
 {
   mmc_cdb_t cdb = {{0, }};
   uint8_t buf[8] = { 0, };
@@ -981,12 +983,11 @@ int mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
                                     mmc_get_cmd_len(cdb.field[0]), 
                                     &cdb, SCSI_MMC_DATA_READ, 
                                     sizeof(buf), buf);
-  if(i_status == 0) {
+  if(i_status == DRIVER_OP_SUCCESS) {
     out_buf[0] = buf[4];
     out_buf[1] = buf[5];
-    return DRIVER_OP_SUCCESS;
   }
-  return DRIVER_OP_ERROR;
+  return i_status;
 }
 
 /**

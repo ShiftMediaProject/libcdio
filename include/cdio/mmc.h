@@ -540,11 +540,13 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   /**
      Detects if a disc (CD or DVD) is erasable or not.
      @param p_user_data the CD object to be acted upon.
+     @param i_status on return will be set indicate whether the operation
+     was a success (DRIVER_OP_SUCCESS) or if not to some other value.
      @return true if the disc is detected as erasable (rewritable), false
      otherwise.
   */
-    bool
-    mmc_get_disc_erasable( const CdIo_t *p_cdio );
+  bool mmc_get_disc_erasable( const CdIo_t *p_cdio, 
+                              driver_return_code_t *i_status );
 
   /**
     Get the lsn of the end of the CD
@@ -620,7 +622,8 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     @return DRIVER_OP_SUCCESS (0) if we got the status.
     return codes are the same as driver_return_code_t
    */
-  int mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2]);
+  driver_return_code_t mmc_get_event_status(const CdIo_t *p_cdio, 
+                                            uint8_t out_buf[2]);
 
   /**
     Find out if media tray is open or closed.

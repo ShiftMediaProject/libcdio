@@ -45,8 +45,9 @@ static int tmmc_eject_load_cycle(CdIo_t *p_cdio, int flag);
 
 static int tmmc_eject_test_load(CdIo_t *p_cdio, int flag);
 
-static void tmmc_get_disc_erasable(const CdIo_t *p_cdio, const char *psz_source,
-				   int verbose);
+static driver_return_code_t tmmc_get_disc_erasable(const CdIo_t *p_cdio, 
+						   const char *psz_source,
+						   int verbose);
 
 static int tmmc_handle_outcome(CdIo_t *p_cdio, int i_status,
 			       int *sense_avail, 
@@ -78,12 +79,14 @@ static int tmmc_test(char *drive_path, int flag);
 /* ------------------------- Helper functions ---------------------------- */
 
 
-static void
+static driver_return_code_t
 tmmc_get_disc_erasable(const CdIo_t *p_cdio, const char *psz_source,
 		       int verbose) 
 {
-    bool b_erasable = mmc_get_disc_erasable(p_cdio);
+    driver_return_code_t drc;
+    bool b_erasable = mmc_get_disc_erasable(p_cdio, &drc);
     printf("disk is %serasable.\n", b_erasable ? "" : "not ");
+    return drc;
 }
 
 
@@ -743,7 +746,10 @@ main(int argc, const char *argv[])
   char **ppsz_drives=NULL;
   const char *psz_source = NULL;
   int ret;
+  int exitrc = 0;
   bool b_verbose = (argc > 1);
+  driver_return_code_t drc;
+  
 
   cdio_loglevel_default = b_verbose ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
 
@@ -769,8 +775,12 @@ main(int argc, const char *argv[])
       exit(1);
     }
 
-    tmmc_get_disc_erasable(p_cdio, psz_source, b_verbose);
-
+    drc = tmmc_get_disc_erasable(p_cdio, psz_source, b_verbose);
+    if (DRIVER_OP_SUCCESS != drc) {
+	printf("Got status %d back from get_disc_erasable(%s)\n",
+	       drc, psz_source);
+    }
+	
     if ( psz_have_mmc 
 	 && 0 == strncmp("true", psz_have_mmc, sizeof("true"))
 	 && (DRIVER_WIN32 != cdio_get_driver_id(p_cdio)) ) {
@@ -797,7 +807,7 @@ main(int argc, const char *argv[])
 
   cdio_free_device_list(ppsz_drives);
 
-  return 0;
+  return exitrc;
 }
 
 
