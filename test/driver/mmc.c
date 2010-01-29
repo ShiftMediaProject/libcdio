@@ -1,5 +1,6 @@
 /* -*- C -*-
   Copyright (C) 2009 Thomas Schmitt <scdbackup@gmx.net>
+  Copyright (C) 20010 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -40,42 +41,50 @@
 
 /* The compiler warns if no prototypes are given before function definition */
 
-static void
-tmmc_print_status_sense(int i_status, int sense_valid,
-                        unsigned char sense_reply[18], int flag);
-static int
-tmmc_handle_outcome(CdIo_t *p_cdio, int i_status,
-                    int *sense_avail, unsigned char sense_reply[18], int flag);
+static int tmmc_eject_load_cycle(CdIo_t *p_cdio, int flag);
 
-int
-tmmc_test_unit_ready(CdIo_t *p_cdio, int *sense_avail,
-                     unsigned char sense_reply[18], int flag);
-int
-tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
-                unsigned char sense_reply[18], int flag);
-int
-tmmc_mode_sense(CdIo_t *p_cdio, int *sense_avail,unsigned char sense_reply[18],
-                int page_code, int subpage_code, int alloc_len,
-                unsigned char *buf, int *buf_fill, int flag);
-int
-tmmc_mode_select(CdIo_t *p_cdio,
-                 int *sense_avail, unsigned char sense_reply[18],
-                 unsigned char *buf, int buf_fill, int flag);
+static int tmmc_eject_test_load(CdIo_t *p_cdio, int flag);
 
-int
-tmmc_wait_for_drive(CdIo_t *p_cdio, int max_tries, int flag);
-int
-tmmc_eject_load_cycle(CdIo_t *p_cdio, int flag);
-int
-tmmc_eject_test_load(CdIo_t *p_cdio, int flag);
-int
-tmmc_rwr_mode_page(CdIo_t *p_cdio, int flag);
+static void tmmc_get_disc_erasable(const CdIo_t *p_cdio, const char *psz_source,
+				   int verbose);
 
-int
-tmmc_test(char *drive_path, int flag);
+static int tmmc_handle_outcome(CdIo_t *p_cdio, int i_status,
+			       int *sense_avail, 
+			       unsigned char sense_reply[18], int flag);
+
+static void tmmc_print_status_sense(int i_status, int sense_valid,
+				    unsigned char sense_reply[18], int flag);
+
+static int tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
+			   unsigned char sense_reply[18], int flag);
+static int tmmc_mode_select(CdIo_t *p_cdio,
+			    int *sense_avail, unsigned char sense_reply[18],
+			    unsigned char *buf, int buf_fill, int flag);
+
+static int tmmc_mode_sense(CdIo_t *p_cdio, int *sense_avail,
+			   unsigned char sense_reply[18],
+			   int page_code, int subpage_code, int alloc_len,
+			   unsigned char *buf, int *buf_fill, int flag);
+
+static int tmmc_test_unit_ready(CdIo_t *p_cdio, int *sense_avail,
+				unsigned char sense_reply[18], int flag);
+static int tmmc_wait_for_drive(CdIo_t *p_cdio, int max_tries, int flag);
+
+static int tmmc_rwr_mode_page(CdIo_t *p_cdio, int flag);
+
+static int tmmc_test(char *drive_path, int flag);
 
 
 /* ------------------------- Helper functions ---------------------------- */
+
+
+static void
+tmmc_get_disc_erasable(const CdIo_t *p_cdio, const char *psz_source,
+		       int verbose) 
+{
+    bool b_erasable = mmc_get_disc_erasable(p_cdio);
+    printf("disk is %serasable.\n", b_erasable ? "" : "not ");
+}
 
 
 /* @param flag bit0= verbose
@@ -125,7 +134,7 @@ tmmc_handle_outcome(CdIo_t *p_cdio, int i_status,
    @param sense_reply  eventual sense bytes
    @return             return value of mmc_run_cmd()
 */
-int
+static int
 tmmc_test_unit_ready(CdIo_t *p_cdio,
                      int *sense_avail, unsigned char sense_reply[18], int flag)
 {
@@ -151,7 +160,7 @@ tmmc_test_unit_ready(CdIo_t *p_cdio,
                bit2= Load (else Eject)
    @return     return value of mmc_run_cmd()
 */
-int
+static int
 tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
                 unsigned char sense_reply[18], int flag)
 {
@@ -193,7 +202,7 @@ tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
    @return           return value of mmc_run_cmd(),
                      or other driver_return_code_t
 */
-int
+static int
 tmmc_mode_sense(CdIo_t *p_cdio, int *sense_avail,unsigned char sense_reply[18],
                 int page_code, int subpage_code, int alloc_len,
                 unsigned char *buf, int *buf_fill, int flag)
@@ -238,7 +247,7 @@ tmmc_mode_sense(CdIo_t *p_cdio, int *sense_avail,unsigned char sense_reply[18],
    @return           return value of mmc_run_cmd(),
                      or other driver_return_code_t
 */
-int
+static int
 tmmc_mode_select(CdIo_t *p_cdio,
                  int *sense_avail, unsigned char sense_reply[18],
                  unsigned char *buf, int buf_fill, int flag)
@@ -284,7 +293,7 @@ tmmc_mode_select(CdIo_t *p_cdio,
                bit1= expect media (do not end on no-media sense)
    @return     1= all seems well , 0= minor failure , -1= severe failure
 */
-int
+static int
 tmmc_wait_for_drive(CdIo_t *p_cdio, int max_tries, int flag)
 {
   int ret, i, sense_avail;
@@ -338,7 +347,7 @@ tmmc_wait_for_drive(CdIo_t *p_cdio, int max_tries, int flag)
                bit1= expect media (do not end on no-media sense)
    @return    1= all seems well , 0= minor failure , -1= severe failure
 */
-int
+static int
 tmmc_eject_load_cycle(CdIo_t *p_cdio, int flag)
 {
   int ret, sense_avail;
@@ -371,7 +380,7 @@ tmmc_eject_load_cycle(CdIo_t *p_cdio, int flag)
    @param flag bit0= verbose
    @return    1= all seems well , 0= minor failure , -1= severe failure
 */
-int
+static int
 tmmc_eject_test_load(CdIo_t *p_cdio, int flag)
 {
   int ret, sense_avail;
@@ -420,7 +429,7 @@ tmmc_eject_test_load(CdIo_t *p_cdio, int flag)
    @param flag bit0= verbose
    @return    1= all seems well , 0= minor failure , -1= severe failure
 */
-int
+static int
 tmmc_rwr_mode_page(CdIo_t *p_cdio, int flag)
 {
   int ret, sense_avail, page_code = 5, subpage_code = 0, alloc_len, buf_fill;
@@ -547,7 +556,7 @@ tmmc_rwr_mode_page(CdIo_t *p_cdio, int flag)
    @return            0= no severe failure
                       else an proposal for an exit() value is returned
 */
-int
+static int
 tmmc_test(char *drive_path, int flag)
 {
   int sense_avail = 0, ret, sense_valid, buf_fill, alloc_len = 10, verbose;
@@ -734,8 +743,9 @@ main(int argc, const char *argv[])
   char **ppsz_drives=NULL;
   const char *psz_source = NULL;
   int ret;
+  bool b_verbose = (argc > 1);
 
-  cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
+  cdio_loglevel_default = b_verbose ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
 
   /* snprintf(psz_nrgfile, sizeof(psz_nrgfile)-1,
 	     "%s/%s", TEST_DIR, cue_file[i]);
@@ -758,6 +768,8 @@ main(int argc, const char *argv[])
               psz_source, ppsz_drives[0]);
       exit(1);
     }
+
+    tmmc_get_disc_erasable(p_cdio, psz_source, b_verbose);
 
     if ( psz_have_mmc 
 	 && 0 == strncmp("true", psz_have_mmc, sizeof("true"))

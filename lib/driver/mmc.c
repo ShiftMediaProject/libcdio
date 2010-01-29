@@ -1,7 +1,4 @@
 /* Common Multimedia Command (MMC) routines.
-
-  $Id: mmc.c,v 1.40 2008/05/09 09:54:39 edsdead Exp $
-
   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010 
   Rocky Bernstein <rocky@gnu.org>
 
@@ -581,60 +578,6 @@ mmc_set_blocksize_private ( void *p_env,
   User-accessible Operations.
 ************************************************************/
 /**
-  Return the number of length in bytes of the Command Descriptor
-  buffer (CDB) for a given MMC command. The length will be 
-  either 6, 10, or 12. 
-*/
-uint8_t
-mmc_get_cmd_len(uint8_t scsi_cmd) 
-{
-  static const uint8_t scsi_cdblen[8] = {6, 10, 10, 12, 12, 12, 10, 10};
-  return scsi_cdblen[((scsi_cmd >> 5) & 7)];
-}
-
-/**
-   Return the size of the CD in logical block address (LBA) units.
-   @param p_cdio the CD object to be acted upon.
-   @return the lsn. On error 0 or CDIO_INVALD_LSN.
- */
-lsn_t
-mmc_get_disc_last_lsn ( const CdIo_t *p_cdio )
-{
-  mmc_cdb_t cdb = {{0, }};
-  uint8_t buf[12] = { 0, };
-
-  lsn_t retval = 0;
-  int i_status;
-
-  /* Operation code */
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
-
-  cdb.field[1] = 0; /* lba; msf: 0x2 */
-
-  /* Format */
-  cdb.field[2] = CDIO_MMC_READTOC_FMT_TOC;
-
-  CDIO_MMC_SET_START_TRACK(cdb.field, CDIO_CDROM_LEADOUT_TRACK);
-
-  CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(buf));
-  
-  i_status = mmc_run_cmd(p_cdio, mmc_timeout_ms, &cdb, SCSI_MMC_DATA_READ, 
-                         sizeof(buf), buf);
-
-  if (i_status) return CDIO_INVALID_LSN;
-
-  {
-    int i;
-    for (i = 8; i < 12; i++) {
-      retval <<= 8;
-      retval += buf[i];
-    }
-  }
-
-  return retval;
-}
-
-/**
   Read Audio Subchannel information
   
   @param p_cdio the CD object to be acted upon.
@@ -677,6 +620,132 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
     p_subchannel->rel_addr.f   = cdio_to_bcd8(mmc_subchannel.rel_addr[3]);
   }
   return i_rc;
+}
+
+/**
+   Get the block size used in read requests, via MMC (e.g. READ_10, 
+   READ_MSF, ...)
+
+   @param p_cdio the CD object to be acted upon.
+   @return the blocksize if > 0; error if <= 0
+*/
+int 
+mmc_get_blocksize ( CdIo_t *p_cdio)
+{
+  int i_status;
+
+  uint8_t buf[255] = { 0, };
+  uint8_t *p;
+
+  /* First try using the 6-byte MODE SENSE command. */
+  i_status = mmc_mode_sense_6(p_cdio, buf, sizeof(buf), 
+                              CDIO_MMC_R_W_ERROR_PAGE);
+  
+  if (DRIVER_OP_SUCCESS == i_status && buf[3]>=8) {
+    p = &buf[4+5];
+    return CDIO_MMC_GET_LEN16(p);
+  }
+  
+  /* Next try using the 10-byte MODE SENSE command. */
+  i_status = mmc_mode_sense_10(p_cdio, buf, sizeof(buf), 
+                               CDIO_MMC_R_W_ERROR_PAGE);
+  p = &buf[6];
+  if (DRIVER_OP_SUCCESS == i_status && CDIO_MMC_GET_LEN16(p)>=8) {
+    return CDIO_MMC_GET_LEN16(p);
+  }
+
+#ifdef IS_THIS_CORRECT
+  /* Lastly try using the READ CAPACITY command. */
+  {
+    lba_t    lba = 0;
+    uint16_t i_blocksize;
+
+    i_status = mmc_read_capacity(p_cdio, &lba, &i_blocksize);
+    if ( DRIVER_OP_SUCCESS == i_status )
+      return i_blocksize;
+#endif
+
+  return DRIVER_OP_UNSUPPORTED;
+}
+
+/**
+  Return the number of length in bytes of the Command Descriptor
+  buffer (CDB) for a given MMC command. The length will be 
+  either 6, 10, or 12. 
+*/
+uint8_t
+mmc_get_cmd_len(uint8_t scsi_cmd) 
+{
+  static const uint8_t scsi_cdblen[8] = {6, 10, 10, 12, 12, 12, 10, 10};
+  return scsi_cdblen[((scsi_cmd >> 5) & 7)];
+}
+
+/**
+  Detects if a disc (CD or DVD) is erasable or not.
+  @param p_user_data the CD object to be acted upon.
+  @return true if the disc is detected as erasable (rewritable), false
+otherwise.
+ */
+bool
+mmc_get_disc_erasable( const CdIo_t *p_cdio ) {
+    mmc_cdb_t cdb = {{0, }};
+    uint8_t buf[42] = { 0, };
+    int i_status;
+
+    CDIO_MMC_SET_COMMAND (cdb.field, CDIO_MMC_GPCMD_READ_DISC_INFO);
+    CDIO_MMC_SET_READ_LENGTH8 (cdb.field, sizeof(buf));
+    
+    i_status = mmc_run_cmd (p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, 
+                            sizeof(buf), &buf);
+    if (i_status == 0) {
+        if (buf[2] & 0x10)
+            return true;
+        else
+            return false;
+    } else
+        return false;
+}
+
+/**
+   Return the size of the CD in logical block address (LBA) units.
+   @param p_cdio the CD object to be acted upon.
+   @return the lsn. On error 0 or CDIO_INVALD_LSN.
+ */
+lsn_t
+mmc_get_disc_last_lsn ( const CdIo_t *p_cdio )
+{
+  mmc_cdb_t cdb = {{0, }};
+  uint8_t buf[12] = { 0, };
+
+  lsn_t retval = 0;
+  int i_status;
+
+  /* Operation code */
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
+
+  cdb.field[1] = 0; /* lba; msf: 0x2 */
+
+  /* Format */
+  cdb.field[2] = CDIO_MMC_READTOC_FMT_TOC;
+
+  CDIO_MMC_SET_START_TRACK(cdb.field, CDIO_CDROM_LEADOUT_TRACK);
+
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(buf));
+  
+  i_status = mmc_run_cmd(p_cdio, mmc_timeout_ms, &cdb, SCSI_MMC_DATA_READ, 
+                         sizeof(buf), buf);
+
+  if (i_status) return CDIO_INVALID_LSN;
+
+  {
+    int i;
+    for (i = 8; i < 12; i++) {
+      retval <<= 8;
+      retval += buf[i];
+    }
+  }
+
+  return retval;
 }
 
 /**
@@ -972,6 +1041,40 @@ int mmc_get_tray_status(const CdIo_t *p_cdio)
   return (status_buf[1] & 0x01) ? 1 : 0;
 }
 
+/* Added in version 0.83 by scdbackup */
+/**
+    Obtain the SCSI sense reply of the most-recently-performed MMC command.
+    These bytes give an indication of possible problems which occured in
+    the drive while the command was performed. With some commands they tell
+    about the current state of the drive (e.g. 00h TEST UNIT READY).
+    @param sense       returns the sense bytes received from the drive.
+    This is allocated memory or NULL if no sense bytes are
+    available. Dispose non-NULL pointers by free() when
+                         no longer needed.
+                         See SPC-3 4.5.3 Fixed format sense data.
+                         SCSI error codes as of SPC-3 Annex D, MMC-5 Annex F:
+                         sense[2]&15 = Key , sense[12] = ASC , sense[13] = ASCQ
+      @return            number of valid bytes in sense,
+                         0 in case of no sense bytes available,
+                         <0 in case of internal error.
+*/
+int
+mmc_last_cmd_sense( const CdIo_t *p_cdio, unsigned char **sense)
+{
+  generic_img_private_t *gen;
+
+  if (!p_cdio) return DRIVER_OP_UNINIT;
+  gen = p_cdio->env;
+  *sense = NULL;
+  if (gen->scsi_mmc_sense_valid <= 0)
+	return 0;
+  *sense = calloc(1, gen->scsi_mmc_sense_valid);
+  if (*sense == NULL)
+    return DRIVER_OP_ERROR;
+  memcpy(*sense, gen->scsi_mmc_sense, gen->scsi_mmc_sense_valid);
+  return gen->scsi_mmc_sense_valid;
+}
+
 /**
   Run a MMC command. 
  
@@ -1019,6 +1122,7 @@ mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 
    @return 0 if command completed successfully.
 */
+
 driver_return_code_t
 mmc_run_cmd_len( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
                   const mmc_cdb_t *p_cdb, unsigned int i_cdb,
@@ -1030,87 +1134,6 @@ mmc_run_cmd_len( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
   return p_cdio->op.run_mmc_cmd(p_cdio->env, i_timeout_ms,
                                      i_cdb,
                                      p_cdb, e_direction, i_buf, p_buf);
-}
-
-/* Added in version 0.83 by scdbackup */
-/**
-    Obtain the SCSI sense reply of the most-recently-performed MMC command.
-    These bytes give an indication of possible problems which occured in
-    the drive while the command was performed. With some commands they tell
-    about the current state of the drive (e.g. 00h TEST UNIT READY).
-    @param sense       returns the sense bytes received from the drive.
-    This is allocated memory or NULL if no sense bytes are
-    available. Dispose non-NULL pointers by free() when
-                         no longer needed.
-                         See SPC-3 4.5.3 Fixed format sense data.
-                         SCSI error codes as of SPC-3 Annex D, MMC-5 Annex F:
-                         sense[2]&15 = Key , sense[12] = ASC , sense[13] = ASCQ
-      @return            number of valid bytes in sense,
-                         0 in case of no sense bytes available,
-                         <0 in case of internal error.
-*/
-int
-mmc_last_cmd_sense( const CdIo_t *p_cdio, unsigned char **sense)
-{
-  generic_img_private_t *gen;
-
-  if (!p_cdio) return DRIVER_OP_UNINIT;
-  gen = p_cdio->env;
-  *sense = NULL;
-  if (gen->scsi_mmc_sense_valid <= 0)
-	return 0;
-  *sense = calloc(1, gen->scsi_mmc_sense_valid);
-  if (*sense == NULL)
-    return DRIVER_OP_ERROR;
-  memcpy(*sense, gen->scsi_mmc_sense, gen->scsi_mmc_sense_valid);
-  return gen->scsi_mmc_sense_valid;
-}
-
-
-/**
-   Get the block size used in read requests, via MMC (e.g. READ_10, 
-   READ_MSF, ...)
-
-   @param p_cdio the CD object to be acted upon.
-   @return the blocksize if > 0; error if <= 0
-*/
-int 
-mmc_get_blocksize ( CdIo_t *p_cdio)
-{
-  int i_status;
-
-  uint8_t buf[255] = { 0, };
-  uint8_t *p;
-
-  /* First try using the 6-byte MODE SENSE command. */
-  i_status = mmc_mode_sense_6(p_cdio, buf, sizeof(buf), 
-                              CDIO_MMC_R_W_ERROR_PAGE);
-  
-  if (DRIVER_OP_SUCCESS == i_status && buf[3]>=8) {
-    p = &buf[4+5];
-    return CDIO_MMC_GET_LEN16(p);
-  }
-  
-  /* Next try using the 10-byte MODE SENSE command. */
-  i_status = mmc_mode_sense_10(p_cdio, buf, sizeof(buf), 
-                               CDIO_MMC_R_W_ERROR_PAGE);
-  p = &buf[6];
-  if (DRIVER_OP_SUCCESS == i_status && CDIO_MMC_GET_LEN16(p)>=8) {
-    return CDIO_MMC_GET_LEN16(p);
-  }
-
-#ifdef IS_THIS_CORRECT
-  /* Lastly try using the READ CAPACITY command. */
-  {
-    lba_t    lba = 0;
-    uint16_t i_blocksize;
-
-    i_status = mmc_read_capacity(p_cdio, &lba, &i_blocksize);
-    if ( DRIVER_OP_SUCCESS == i_status )
-      return i_blocksize;
-#endif
-
-  return DRIVER_OP_UNSUPPORTED;
 }
 
 /**

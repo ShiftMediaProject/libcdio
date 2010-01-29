@@ -321,9 +321,8 @@ typedef enum {
                                                 report */
 } cdio_mmc_feature_t;
                                 
-/** 
-    Profile profile codes used in GET_CONFIGURATION - PROFILE LIST. 
-*/
+/**
+    Profile profile codes used in GET_CONFIGURATION - PROFILE LIST. */
 typedef enum {
   CDIO_MMC_FEATURE_PROF_NON_REMOVABLE = 0x0001, /**< Re-writable disk, capable
                                                    of changing behavior */
@@ -377,14 +376,16 @@ typedef enum {
 */
 #define MAX_CDB_LEN 12
 
-/** \brief A Command Descriptor Block (CDB) used in sending MMC 
+/**
+    \brief A Command Descriptor Block (CDB) used in sending MMC 
     commands.
  */
 typedef struct mmc_cdb_s {
   uint8_t field[MAX_CDB_LEN];
 } mmc_cdb_t;
   
-  /** \brief Format of header block in data returned from an MMC
+  /**
+      \brief Format of header block in data returned from an MMC
     GET_CONFIGURATION command.
   */
   typedef struct mmc_feature_list_header_s {
@@ -398,18 +399,20 @@ typedef struct mmc_cdb_s {
     unsigned char profile_lsb;
   } cdio_mmc_feature_list_header_t;
 
-  /** An enumeration indicating whether an MMC command is sending
-    data, or getting data, or does none of both.
+  /**
+      An enumeration indicating whether an MMC command is sending
+      data, or getting data, or does none of both.
   */
   typedef enum mmc_direction_s {
     SCSI_MMC_DATA_READ,
     SCSI_MMC_DATA_WRITE,
     SCSI_MMC_DATA_NONE
   } cdio_mmc_direction_t;
-  /** Indicate to applications that SCSI_MMC_DATA_NONE is available.
-      It has been added after version 0.82 and should be used with commands
-      that neither read nor write payload bytes. (At least on Linux such
-      commands did work with SCSI_MMC_DATA_READ or SCSI_MMC_DATA_WRITE, too.)
+  /**
+     Indicate to applications that SCSI_MMC_DATA_NONE is available.
+     It has been added after version 0.82 and should be used with commands
+     that neither read nor write payload bytes. (At least on Linux such
+     commands did work with SCSI_MMC_DATA_READ or SCSI_MMC_DATA_WRITE, too.)
   */
 #define SCSI_MMC_HAS_DIR_NONE 1
   
@@ -472,6 +475,17 @@ typedef struct mmc_cdb_s {
   cdb[9] = val << 3;
 
 /**
+   Get the output port volumes and port selections used on AUDIO PLAY
+   commands via a MMC MODE SENSE command using the CD Audio Control
+   Page.
+   @param p_cdio the CD object to be acted upon.
+   @param p_volume volume parameters retrieved
+   @return DRIVER_OP_SUCCESS if we ran the command ok.
+*/
+driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
+                                           mmc_audio_volume_t *p_volume);
+  
+/**
   Read Audio Subchannel information
   
   @param p_cdio the CD object to be acted upon.
@@ -509,13 +523,6 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   const char *mmc_feature_profile2str( int i_feature_profile );
   
   /**
-    Return the length in bytes of the Command Descriptor
-    Buffer (CDB) for a given MMC command. The length will be 
-    either 6, 10, or 12. 
-  */
-  uint8_t mmc_get_cmd_len(uint8_t mmc_cmd);
-  
-  /**
      Get the block size used in read requests, via MMC (e.g. READ_10, 
      READ_MSF, ...)
      @param p_cdio the CD object to be acted upon.
@@ -524,13 +531,21 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   int mmc_get_blocksize ( CdIo_t *p_cdio );
   
   /**
-     Close tray using a MMC START STOP command.
-     @param p_cdio the CD object to be acted upon.
-     @return DRIVER_OP_SUCCESS (0) if we got the status.
-     return codes are the same as driver_return_code_t
+    Return the length in bytes of the Command Descriptor
+    Buffer (CDB) for a given MMC command. The length will be 
+    either 6, 10, or 12. 
   */
-  driver_return_code_t mmc_close_tray( CdIo_t *p_cdio );
+  uint8_t mmc_get_cmd_len(uint8_t mmc_cmd);
   
+  /**
+     Detects if a disc (CD or DVD) is erasable or not.
+     @param p_user_data the CD object to be acted upon.
+     @return true if the disc is detected as erasable (rewritable), false
+     otherwise.
+  */
+    bool
+    mmc_get_disc_erasable( const CdIo_t *p_cdio );
+
   /**
     Get the lsn of the end of the CD
     
@@ -538,6 +553,14 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     @return the lsn. On error return CDIO_INVALID_LSN.
   */
   lsn_t mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
+  
+  /**
+     Close tray using a MMC START STOP command.
+     @param p_cdio the CD object to be acted upon.
+     @return DRIVER_OP_SUCCESS (0) if we got the status.
+     return codes are the same as driver_return_code_t
+  */
+  driver_return_code_t mmc_close_tray( CdIo_t *p_cdio );
   
   /**
     Return the discmode as reported by the MMC Read (FULL) TOC
@@ -639,17 +662,6 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     
   */
   char * mmc_get_mcn ( const CdIo_t *p_cdio );
-  
-  /**
-      Get the output port volumes and port selections used on AUDIO PLAY
-      commands via a MMC MODE SENSE command using the CD Audio Control
-      Page.
-      @param p_cdio the CD object to be acted upon.
-      @param p_volume volume parameters retrieved
-      @return DRIVER_OP_SUCCESS if we ran the command ok.
-  */
-  driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
-                                             mmc_audio_volume_t *p_volume);
   
   /**
     Report if CD-ROM has a praticular kind of interface (ATAPI, SCSCI, ...)

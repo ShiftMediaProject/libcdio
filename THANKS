@@ -10,6 +10,9 @@ Carlo Bramini
 Diego 'Flameeyes' Pettenò 
   patches to FreeBSD and making Gentoo-friendly
 
+Frank Endres
+  mmc_get_disc_erasable
+
 Frantisek Dvorak <valtri at atlas.cz>:
   bug reports and miscellaneous fixes
 

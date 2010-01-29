@@ -9,6 +9,7 @@ version 0.83 (git)
   programs that wanto to cd-record compatible.
 - Tolerance for OS's without timezone in their struct tm (e.g. Solaris)
   added iso9660_set_{d,l}time_with_timezone
+- Add mmc_get_disk_erasable
 
 version 0.82
 2009-10-27
