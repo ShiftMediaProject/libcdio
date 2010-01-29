@@ -341,6 +341,7 @@ typedef enum {
                                                    capable */
   CDIO_MMC_FEATURE_PROF_CD_RW         = 0x000A, /**< CD-RW Re-writable
                                                    Compact Disc capable */
+
   CDIO_MMC_FEATURE_PROF_DVD_ROM       = 0x0010, /**< Read only DVD */
   CDIO_MMC_FEATURE_PROF_DVD_R_SEQ     = 0x0011, /**< Re-recordable DVD using
                                                    Sequential recording */
@@ -349,13 +350,30 @@ typedef enum {
                                                    Restricted Overwrite */
   CDIO_MMC_FEATURE_PROF_DVD_RW_SEQ    = 0x0014, /**< Re-recordable DVD using
                                                    Sequential recording */
+  CDIO_MMC_FEATURE_PROF_DVD_R_DL_SEQ  = 0x0015, /**< DVD-R/DL sequential
+                                                     recording */
+  CDIO_MMC_FEATURE_PROF_DVD_R_DL_JR   = 0x0016, /**< DVD-R/DL layer jump 
+                                                   recording */
   CDIO_MMC_FEATURE_PROF_DVD_PRW       = 0x001A, /**< DVD+RW - DVD ReWritable */
   CDIO_MMC_FEATURE_PROF_DVD_PR        = 0x001B, /**< DVD+R - DVD Recordable */
+
   CDIO_MMC_FEATURE_PROF_DDCD_ROM      = 0x0020, /**< Read only  DDCD */
   CDIO_MMC_FEATURE_PROF_DDCD_R        = 0x0021, /**< DDCD-R Write only DDCD */
   CDIO_MMC_FEATURE_PROF_DDCD_RW       = 0x0022, /**< Re-Write only DDCD */
+  CDIO_MMC_FEATURE_PROF_DVD_RW_DL     = 0x002A, /**< "DVD+RW/DL */
   CDIO_MMC_FEATURE_PROF_DVD_PR2       = 0x002B, /**< DVD+R - DVD Recordable 
                                                      double layer */
+
+  CDIO_MMC_FEATURE_PROF_BD_ROM        = 0x0040, /**< BD-ROM */
+  CDIO_MMC_FEATURE_PROF_BD_SEQ        = 0x0041, /**< BD-R sequential 
+                                                   recording */
+  CDIO_MMC_FEATURE_PROF_BD_R_RANDOM   = 0x0042, /**< BD-R random recording */
+  CDIO_MMC_FEATURE_PROF_BD_RE         = 0x0043, /**< BD-RE */
+
+  CDIO_MMC_FEATURE_PROF_HD_DVD_ROM    = 0x0050, /**< HD-DVD-ROM */
+  CDIO_MMC_FEATURE_PROF_HD_DVD_R      = 0x0051, /**< HD-DVD-R */
+  CDIO_MMC_FEATURE_PROF_HD_DVD_RAM    = 0x0052, /**<"HD-DVD-RAM */
+
   CDIO_MMC_FEATURE_PROF_NON_CONFORM   = 0xFFFF, /**< The Logical Unit does not
                                                    conform to any Profile. */
 } cdio_mmc_feature_profile_t;

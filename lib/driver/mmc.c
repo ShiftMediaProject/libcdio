@@ -1345,21 +1345,41 @@ const char *mmc_feature_profile2str( int i_feature_profile )
   case CDIO_MMC_FEATURE_PROF_DVD_RW_RO:
     return "Re-recordable DVD using Restricted Overwrite";
   case CDIO_MMC_FEATURE_PROF_DVD_RW_SEQ:
-    return "Re-recordable DVD using Sequential recording";
+    return "Re-recordable DVD using Sequential Recording";
+  case CDIO_MMC_FEATURE_PROF_DVD_R_DL_SEQ:
+    return "DVD-R - Double-Layer Sequential Recording";
+  case CDIO_MMC_FEATURE_PROF_DVD_R_DL_JR:
+    return "DVD-R - Double-layer Jump Recording";
   case CDIO_MMC_FEATURE_PROF_DVD_PRW:
-    return "DVD+RW - DVD ReWritable";
+    return "DVD+RW - DVD Rewritable";
   case CDIO_MMC_FEATURE_RIGID_RES_OVERW:
     return "Rigid Restricted Overwrite";
   case CDIO_MMC_FEATURE_PROF_DVD_PR:
     return "DVD+R - DVD Recordable";
   case CDIO_MMC_FEATURE_PROF_DDCD_ROM:
     return "Read only DDCD";
-  case CDIO_MMC_FEATURE_PROF_DVD_PR2:
-    return "DVD+R Double Layer - DVD Recordable Double Layer";
   case CDIO_MMC_FEATURE_PROF_DDCD_R:
     return "DDCD-R Write only DDCD";
   case CDIO_MMC_FEATURE_PROF_DDCD_RW:
     return "Re-Write only DDCD";
+  case CDIO_MMC_FEATURE_PROF_DVD_RW_DL:
+    return "DVD+RW - Double Layer";
+  case CDIO_MMC_FEATURE_PROF_DVD_PR2:
+    return "DVD+R Double Layer - DVD Recordable Double Layer";
+  case CDIO_MMC_FEATURE_PROF_BD_ROM:
+    return "Blu Ray BD-ROM";
+  case CDIO_MMC_FEATURE_PROF_BD_SEQ:
+    return "Blu Ray BD-R sequential recording";
+  case CDIO_MMC_FEATURE_PROF_BD_R_RANDOM:
+    return "Blu Ray BD-R random recording";
+  case CDIO_MMC_FEATURE_PROF_BD_RE:
+    return "Blu Ray BD-RE";
+  case CDIO_MMC_FEATURE_PROF_HD_DVD_ROM:
+    return "HD-DVD-ROM";
+  case CDIO_MMC_FEATURE_PROF_HD_DVD_R:
+      return "HD-DVD-R";
+  case CDIO_MMC_FEATURE_PROF_HD_DVD_RAM:
+    return "HD-DVD-RAM";
   case CDIO_MMC_FEATURE_PROF_NON_CONFORM:
     return "The Logical Unit does not conform to any Profile";
   default: 
