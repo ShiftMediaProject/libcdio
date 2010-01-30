@@ -50,8 +50,8 @@ main(int argc, const char *argv[])
     return 77;
   } else {
     int i_status;             /* Result of MMC command */
-    char buf[36] = { 0, };    /* Place to hold returned data */
     mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Buffer */
+    char buf[36] = { 0, };    /* Place to hold returned data */
 
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_INQUIRY);
     cdb.field[4] = sizeof(buf);
@@ -59,26 +59,36 @@ main(int argc, const char *argv[])
     i_status = mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, &cdb, 
 			   SCSI_MMC_DATA_READ, sizeof(buf), &buf);
     if (i_status == 0) {
-      char psz_vendor[CDIO_MMC_HW_VENDOR_LEN+1];
-      char psz_model[CDIO_MMC_HW_MODEL_LEN+1];
-      char psz_rev[CDIO_MMC_HW_REVISION_LEN+1];
-      
-      memcpy(psz_vendor, buf + 8, sizeof(psz_vendor)-1);
-      psz_vendor[sizeof(psz_vendor)-1] = '\0';
-      memcpy(psz_model,
-	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN, 
-	     sizeof(psz_model)-1);
-      psz_model[sizeof(psz_model)-1] = '\0';
-      memcpy(psz_rev,
-	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN +CDIO_MMC_HW_MODEL_LEN,
-	     sizeof(psz_rev)-1);
-      psz_rev[sizeof(psz_rev)-1] = '\0';
-
-      printf("Vendor: %s\nModel: %s\nRevision: %s\n",
-	     psz_vendor, psz_model, psz_rev);
+	char psz_vendor[CDIO_MMC_HW_VENDOR_LEN+1];
+	char psz_model[CDIO_MMC_HW_MODEL_LEN+1];
+	char psz_rev[CDIO_MMC_HW_REVISION_LEN+1];
+	
+	memcpy(psz_vendor, buf + 8, sizeof(psz_vendor)-1);
+	psz_vendor[sizeof(psz_vendor)-1] = '\0';
+	memcpy(psz_model,
+	       buf + 8 + CDIO_MMC_HW_VENDOR_LEN, 
+	       sizeof(psz_model)-1);
+	psz_model[sizeof(psz_model)-1] = '\0';
+	memcpy(psz_rev,
+	       buf + 8 + CDIO_MMC_HW_VENDOR_LEN +CDIO_MMC_HW_MODEL_LEN,
+	       sizeof(psz_rev)-1);
+	psz_rev[sizeof(psz_rev)-1] = '\0';
+	
+	printf("Vendor: %s\nModel: %s\nRevision: %s\n",
+	       psz_vendor, psz_model, psz_rev);
     } else {
       printf("Couldn't get INQUIRY data (vendor, model, and revision).\n");
     }
+
+    {
+	driver_return_code_t drc;
+	bool b_erasable = mmc_get_disc_erasable(p_cdio, &drc);
+	if (DRIVER_OP_SUCCESS == drc)
+	    printf("disk is %serasable.\n", b_erasable ? "" : "not ");
+	else
+	    printf("Can't determine if disk is erasable.\n");
+    }
+
   }
   
   cdio_destroy(p_cdio);
