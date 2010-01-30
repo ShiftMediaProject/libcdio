@@ -685,6 +685,8 @@ get_arg_win32 (void *p_user_data, const char key[])
     case _AM_NONE:
       return "no access method";
     }
+  } else if (!strcmp (key, "scsi-tuple")) {
+    return p_env->gen.scsi_tuple;
   } else if (!strcmp (key, "mmc-supported?")) {
       return is_mmc_supported(p_user_data) ? "true" : "false";
   }

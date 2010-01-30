@@ -65,6 +65,9 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.30 2008/04/21 18:30:21 karl
 #include "cdtext_private.h"
 #include "cdio/logging.h"
 
+#define MAX_ERROR_BUFFER    256
+#define MAX_DATA_BUFFER     2048
+
 typedef struct _TRACK_DATA_FULL {
     UCHAR SessionNumber;
     UCHAR Control : 4;
@@ -411,6 +414,54 @@ close_tray_win32ioctl (const char *psz_win32_drive)
   return DRIVER_OP_UNSUPPORTED;
 #endif
 }
+
+/*!
+  Produce a text composed from the system SCSI address tuple
+  "Port,Path,Target,Lun" and store
+  it in generic_img_private_t.scsi_tuple.
+  To be accessed via cdio_get_arg("scsi-tuple-linux") or ("scsi-tuple").
+  Drivers which implement this code have to return 5 valid decimal numbers
+  separated by comma, or empty text if no such numbers are available.
+  @return   1=success , 0=failure
+*/
+static int
+set_scsi_tuple_win32ioctl(_img_private_t *env)
+#ifdef WIN32
+{
+  char tuple[160];
+  char dataBuffer[MAX_DATA_BUFFER];
+  PSCSI_ADDRESS scsiAddress = (PSCSI_ADDRESS) dataBuffer;
+  ULONG bytesReturned;
+
+  memset(dataBuffer, 0, sizeof(dataBuffer));
+  if (DeviceIoControl(env->h_device_handle,
+		      IOCTL_SCSI_GET_ADDRESS,
+		      NULL,
+		      0,
+		      dataBuffer,
+		      sizeof(dataBuffer),
+		      &bytesReturned,
+		      FALSE
+		      )) {
+    sprintf(tuple, "%d,%d,%d,%d",
+	    scsiAddress->PortNumber,
+	    scsiAddress->PathId, 
+	    scsiAddress->TargetId, 
+	    scsiAddress->Lun);
+    env->gen.scsi_tuple = strdup(tuple);
+    return 1; 
+  } else {
+    /* No tuple. */
+    env->gen.scsi_tuple = strdup("");
+    return 0;
+  }
+}
+#else
+{
+  env->gen.scsi_tuple = strdup("");
+  return 0;
+}
+#endif
 
 /*!
   Run a SCSI MMC command. 
@@ -828,6 +879,7 @@ init_win32ioctl (_img_private_t *env)
     }
 #endif
     env->b_ioctl_init = true;
+    set_scsi_tuple_win32ioctl(env);
     return true;
   }
   return false;

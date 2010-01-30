@@ -58,19 +58,20 @@ main(int argc, const char *argv[])
   
   p_cdio = cdio_open_linux(ppsz_drives[0]);
   if (p_cdio) {
-      const char *psz_source = NULL, *scsi_tuple;
+      const char *psz_source = NULL, *psz_scsi_tuple;
 
       check_get_arg_source(p_cdio, ppsz_drives[0]);
       check_mmc_supported(p_cdio, 3);
   
-      scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
-      if (scsi_tuple == NULL) {
+      psz_scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
+      if (psz_scsi_tuple == NULL) {
 	  fprintf(stderr, "cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
+	  cdio_destroy(p_cdio);
 	  exit(3);
       }
       if (cdio_loglevel_default == CDIO_LOG_DEBUG)
 	  printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
-		 psz_source, scsi_tuple);
+		 psz_source, psz_scsi_tuple);
       cdio_destroy(p_cdio);
   }
   
