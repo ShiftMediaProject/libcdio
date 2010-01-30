@@ -84,9 +84,9 @@ main(int argc, const char *argv[])
 	driver_return_code_t drc;
 	bool b_erasable = mmc_get_disc_erasable(p_cdio, &drc);
 	if (DRIVER_OP_SUCCESS == drc)
-	    printf("disk is %serasable.\n", b_erasable ? "" : "not ");
+	    printf("Disc is %serasable.\n", b_erasable ? "" : "not ");
 	else
-	    printf("Can't determine if disk is erasable.\n");
+	    printf("Can't determine if disc is erasable.\n");
     }
 
   }
