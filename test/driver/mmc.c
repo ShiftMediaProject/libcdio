@@ -1,6 +1,6 @@
 /* -*- C -*-
   Copyright (C) 2009 Thomas Schmitt <scdbackup@gmx.net>
-  Copyright (C) 20010 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2010 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -629,19 +629,19 @@ tmmc_test(char *drive_path, int flag)
             sense_avail);
     {ret = 2; goto ex;}
   }
-  /* Provoke sense reply by requesting inappropriate mode page 3Eh */
+  /* Cause sense reply failure by requesting inappropriate mode page 3Eh */
   ret = tmmc_mode_sense(p_cdio, &sense_avail, sense,
                        0x3e, 0, alloc_len, buf, &buf_fill, !!verbose);
   if (ret != 0 && sense_avail < 18) {
     fprintf(stderr,
-            "Error: Deliberately illegal command yields only %d sense bytes. Expected >= 18.\n",
+            "Error: An illegal command yields only %d sense bytes. Expected >= 18.\n",
             sense_avail);
     {ret = 2; goto ex;}
   } else if(ret == 0) {
     fprintf(stderr,
-       "Warning: tmmc_mode_sense() cannot provoke failure by mode page 3Eh\n");
+       "Warning: tmmc_mode_sense() cannot cause a failure via mode page 3Eh\n");
     fprintf(stderr,
-       "Hint: Consider to set in tmmc_test(): with_tray_dance = 1\n");
+       "Consider to set in tmmc_test(): with_tray_dance = 1\n");
   }
 
     /* Test availability of sense reply in case of unready drive.
@@ -665,9 +665,9 @@ tmmc_test(char *drive_path, int flag)
       {ret = 2; goto ex;}
     } else if(ret == 0) {
       fprintf(stderr,
-	      "Warning: tmmc_mode_sense() cannot provoke failure by mode page 3Eh\n");
+	      "Warning: tmmc_mode_sense() cannot cause failure via mode page 3Eh\n");
       fprintf(stderr,
-	      "Hint: Consider to set in tmmc_test(): with_tray_dance = 1\n");
+	      "Consider to set in tmmc_test(): with_tray_dance = 1\n");
     }
     
     

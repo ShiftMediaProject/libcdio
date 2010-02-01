@@ -1,6 +1,4 @@
 /*
-  $Id: win32_ioctl.c,v 1.30 2008/04/21 18:30:21 karl Exp $
-
   Copyright (C) 2004, 2005, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -92,9 +90,18 @@ typedef struct _CDROM_TOC_FULL {
 
 typedef struct {
    SCSI_PASS_THROUGH_DIRECT sptd;
-   ULONG Filler;
+   ULONG Filler; /* Realign buffer to double-word boundary */
    UCHAR ucSenseBuf[32];
+   UCHAR DataBuf[512];
 } SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER;
+
+typedef struct _SCSI_PASS_THROUGH_WITH_BUFFER {
+    SCSI_PASS_THROUGH Spt;
+    ULONG             Filler;      /* realign buffer to double-word boundary */
+    UCHAR             SenseBuf[32];
+    UCHAR             DataBuf[512];
+} SCSI_PASS_THROUGH_WITH_BUFFER;
+
 
 
 #include "win32.h"
@@ -478,6 +485,7 @@ set_scsi_tuple_win32ioctl(_img_private_t *env)
 
   Return 0 if command completed successfully.
  */
+#if 0
 int
 run_mmc_cmd_win32ioctl( void *p_user_data, 
 			unsigned int i_timeout_ms,
@@ -489,6 +497,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER sptdwb;
   
   bool b_success;
+  unsigned long length = 0;
   DWORD dw_bytes_returned;
 
   memset(&sptdwb, 0, sizeof(sptdwb));
@@ -506,19 +515,28 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
     SCSI_IOCTL_DATA_UNSPECIFIED;
   sptdwb.sptd.DataTransferLength= i_buf; 
   sptdwb.sptd.TimeOutValue      = msecs2secs(i_timeout_ms);
+
   sptdwb.sptd.DataBuffer        = (void *) p_buf;
+  /*
   sptdwb.sptd.SenseInfoOffset   = offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER,
 					   ucSenseBuf);
+  */
+  sptdwb.sptd.SenseInfoOffset   = 0;
 
   memcpy(sptdwb.sptd.Cdb, p_cdb, i_cdb);
+  length = offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER,DataBuf) + 
+    sptdwb.sptd.DataTransferLength;
 
   /* Send the command to drive */
   b_success = DeviceIoControl(p_env->h_device_handle,
-			      IOCTL_SCSI_PASS_THROUGH_DIRECT,               
+			      IOCTL_SCSI_PASS_THROUGH, 
 			      (void *)&sptdwb, 
-			      (DWORD)sizeof(sptdwb),
+			      sizeof(SCSI_PASS_THROUGH),
+			      NULL, 0,
+			      /*
 			      &sptdwb, 
-			      (DWORD)sizeof(sptdwb),
+			      length,
+			      */
 			      &dw_bytes_returned,
 			      NULL);
 
@@ -548,6 +566,89 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 
   return DRIVER_OP_SUCCESS;
 }
+#else
+int
+run_mmc_cmd_win32ioctl( void *p_user_data, 
+			unsigned int i_timeout_ms,
+			unsigned int i_cdb, const mmc_cdb_t * p_cdb,
+			cdio_mmc_direction_t e_direction, 
+			unsigned int i_buf, /*in/out*/ void *p_buf )
+{
+  _img_private_t *p_env = p_user_data;
+  SCSI_PASS_THROUGH_WITH_BUFFER sptwb;
+  
+  bool b_success;
+  unsigned long length = 0;
+  DWORD dw_bytes_returned;
+
+  memset(&sptwb, 0, sizeof(sptwb));
+  
+  sptwb.Spt.Length  = sizeof(sptwb.Spt);
+  sptwb.Spt.PathId  = 0;      /* SCSI card ID will be filled in
+				   automatically */
+  sptwb.Spt.TargetId= 0;      /* SCSI target ID will also be filled in */
+  sptwb.Spt.Lun     = 0;      /* SCSI lun ID will also be filled in */
+  sptwb.Spt.CdbLength         = i_cdb;
+  sptwb.Spt.SenseInfoLength   = sizeof(sptwb.SenseBuf);
+  sptwb.Spt.DataIn            = 
+    (SCSI_MMC_DATA_READ  == e_direction) ? SCSI_IOCTL_DATA_IN :
+    (SCSI_MMC_DATA_WRITE == e_direction) ? SCSI_IOCTL_DATA_OUT :
+    SCSI_IOCTL_DATA_UNSPECIFIED;
+
+  if (SCSI_MMC_DATA_WRITE == e_direction) memcpy(&sptwb.DataBuf, p_buf, i_buf);
+
+  sptwb.Spt.DataTransferLength= i_buf;
+  sptwb.Spt.TimeOutValue      = msecs2secs(i_timeout_ms);
+
+  sptwb.Spt.DataBufferOffset =
+    offsetof(SCSI_PASS_THROUGH_WITH_BUFFER,DataBuf);
+  sptwb.Spt.SenseInfoOffset = 
+    offsetof(SCSI_PASS_THROUGH_WITH_BUFFER, SenseBuf);
+
+  memcpy(sptwb.Spt.Cdb, p_cdb, i_cdb);
+  sptwb.Spt.Cdb[4] = i_buf;
+  length = offsetof(SCSI_PASS_THROUGH_WITH_BUFFER,DataBuf) + 
+    sptwb.Spt.DataTransferLength;
+
+  /* Send the command to drive */
+  b_success = DeviceIoControl(p_env->h_device_handle,
+			      IOCTL_SCSI_PASS_THROUGH, 
+			      (void *)&sptwb, 
+			      sizeof(SCSI_PASS_THROUGH),
+			      &sptwb, 
+			      length,
+			      &dw_bytes_returned,
+			      NULL);
+
+  if ( !b_success ) {
+    char *psz_msg = NULL;
+    long int i_err = GetLastError();
+    FORMAT_ERROR(i_err, psz_msg);
+    if (psz_msg) 
+      cdio_info("Error: %s", psz_msg);
+    else 
+      cdio_info("Error: %ld", i_err);
+    LocalFree(psz_msg);
+    return DRIVER_OP_ERROR;
+  }
+
+  memcpy(p_buf, &sptwb.DataBuf, i_buf);
+
+  /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
+   */
+  if (sptwb.SenseBuf[7]) {
+    int sense_size = sptwb.SenseBuf[7] + 8; /* SPC 4.5.3, Table 26: 
+					       252 bytes legal, 263 bytes
+					       possible */
+    if (sense_size > sizeof(sptwb.SenseBuf))
+      sense_size = sizeof(sptwb.SenseBuf);
+    memcpy((void *) p_env->gen.scsi_mmc_sense, &sptwb.SenseBuf, sense_size);
+    p_env->gen.scsi_mmc_sense_valid = sense_size;
+  }
+
+  return DRIVER_OP_SUCCESS;
+}
+#endif
 
 /*! 
   Get disc type associated with cd object.
@@ -1112,7 +1213,7 @@ get_mcn_win32ioctl (const _img_private_t *p_env) {
 		       &dw_bytes_returned, NULL ) ) {
     cdio_warn( "could not read Q Channel at track %d", 1);
   } else if (mcn.Mcval) 
-    return strdup(mcn.MediaCatalog);
+    return strdup((const char *) mcn.MediaCatalog);
   return NULL;
 }
 
