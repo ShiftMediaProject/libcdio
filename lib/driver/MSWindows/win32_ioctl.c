@@ -28,21 +28,13 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.30 2008/04/21 18:30:21 karl
 #ifdef HAVE_WIN32_CDROM
 
 #if defined (_XBOX)
-#include "inttypes.h"
-#include "NtScsi.h"
-#include "undocumented.h"
-#define FORMAT_ERROR(i_err, psz_msg) \
-   psz_msg=(char *)LocalAlloc(LMEM_ZEROINIT, 255); \
-   sprintf(psz_msg, "error file %s: line %d (%s) %d\n", 
-	   _FILE__, __LINE__, __PRETTY_FUNCTION__, i_err)
+# include "inttypes.h"
+# include "NtScsi.h"
+# include "undocumented.h"
 #else
-#include <ddk/ntddcdrm.h>
-#include <ddk/ntddscsi.h>
-#include <ddk/scsi.h>
-#define FORMAT_ERROR(i_err, psz_msg) \
-   FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, \
-		 NULL, i_err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), \
-		 (LPSTR) psz_msg, 0, NULL)
+# include <ddk/ntddcdrm.h>
+# include <ddk/ntddscsi.h>
+# include <ddk/scsi.h>
 #endif
 
 #ifdef WIN32
@@ -62,6 +54,28 @@ static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.30 2008/04/21 18:30:21 karl
 #include <cdio/mmc.h>
 #include "cdtext_private.h"
 #include "cdio/logging.h"
+
+#if defined (_XBOX)
+#define windows_error(loglevel,i_err) {			   \
+   cdio_log(loglevel, "Error: file %s: line %d (%s) %ld\n", \
+		  __FILE__, __LINE__, __PRETTY_FUNCTION__, i_err); \
+}
+#else
+#define windows_error(loglevel,i_err) {					\
+  char error_msg[80];							\
+  long int count;							\
+  count = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,			\
+			NULL, i_err, MAKELANGID(LANG_NEUTRAL,		\
+						SUBLANG_DEFAULT),	\
+			error_msg, sizeof(error_msg), NULL);		\
+  (count != 0) ?							\
+    cdio_log(loglevel, "Error: file %s: line %d (%s)\n\t%s\n",		\
+	     __FILE__, __LINE__, __PRETTY_FUNCTION__, error_msg)	\
+    :									\
+    cdio_log(loglevel, "Error: file %s: line %d (%s) %ld\n",		\
+	     __FILE__, __LINE__, __PRETTY_FUNCTION__, i_err);		\
+}
+#endif
 
 #define MAX_ERROR_BUFFER    256
 #define MAX_DATA_BUFFER     2048
@@ -124,14 +138,7 @@ audio_pause_win32ioctl (void *p_user_data)
 		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, NULL);
 
   if ( ! b_success ) {
-    char *psz_msg = NULL;
-    long int i_err = GetLastError();
-    FORMAT_ERROR(i_err, psz_msg);
-    if (psz_msg) 
-      cdio_info("Error: %s", psz_msg);
-    else 
-      cdio_info("Error: %ld", i_err);
-    LocalFree(psz_msg);
+    windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
   return DRIVER_OP_SUCCESS;
@@ -163,14 +170,7 @@ audio_play_msf_win32ioctl (void *p_user_data, msf_t *p_start_msf,
 		    &play, sizeof(play), NULL, 0, &dw_bytes_returned, NULL);
   
   if ( ! b_success ) {
-    char *psz_msg = NULL;
-    long int i_err = GetLastError();
-    FORMAT_ERROR(i_err, psz_msg);
-    if (psz_msg) 
-      cdio_info("Error: %s", psz_msg);
-    else 
-      cdio_info("Error: %ld", i_err);
-    LocalFree(psz_msg);
+    windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
   return DRIVER_OP_SUCCESS;
@@ -201,14 +201,7 @@ audio_read_subchannel_win32ioctl (void *p_user_data,
 		       &q_data_format, sizeof(q_data_format), 
 		       &q_subchannel_data, sizeof(q_subchannel_data),
 		       &dw_bytes_returned, NULL ) ) {
-    char *psz_msg = NULL;
-    long int i_err = GetLastError();
-    FORMAT_ERROR(i_err, psz_msg);
-    if (psz_msg) 
-      cdio_info("Error: %s", psz_msg);
-    else 
-      cdio_info("Error: %ld", i_err);
-    LocalFree(psz_msg);
+    windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
   p_subchannel->audio_status = 
@@ -257,14 +250,7 @@ audio_resume_win32ioctl (void *p_user_data)
 		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, NULL);
 
   if ( ! b_success ) {
-    char *psz_msg = NULL;
-    long int i_err = GetLastError();
-    FORMAT_ERROR(i_err, psz_msg);
-    if (psz_msg) 
-      cdio_info("Error: %s", psz_msg);
-    else 
-      cdio_info("Error: %ld", i_err);
-    LocalFree(psz_msg);
+    windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
   return DRIVER_OP_SUCCESS;
@@ -290,14 +276,7 @@ audio_set_volume_win32ioctl (void *p_user_data,
 		    NULL, 0, &dw_bytes_returned, NULL);
 
   if ( ! b_success ) {
-    char *psz_msg = NULL;
-    long int i_err = GetLastError();
-    FORMAT_ERROR(i_err, psz_msg);
-    if (psz_msg) 
-      cdio_info("Error: %s", psz_msg);
-    else 
-      cdio_info("Error: %ld", i_err);
-    LocalFree(psz_msg);
+    windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
   return DRIVER_OP_SUCCESS;
@@ -317,14 +296,7 @@ audio_get_volume_win32ioctl (void *p_user_data,
 		    &dw_bytes_returned, NULL);
 
   if ( ! b_success ) {
-    char *psz_msg = NULL;
-    long int i_err = GetLastError();
-    FORMAT_ERROR(i_err, psz_msg);
-    if (psz_msg) 
-      cdio_info("Error: %s", psz_msg);
-    else 
-      cdio_info("Error: %ld", i_err);
-    LocalFree(psz_msg);
+    windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
   return DRIVER_OP_SUCCESS;
@@ -347,14 +319,7 @@ audio_stop_win32ioctl (void *p_user_data)
 		    NULL, (DWORD) 0, NULL, 0, &dw_bytes_returned, NULL);
 
   if ( ! b_success ) {
-    char *psz_msg = NULL;
-    long int i_err = GetLastError();
-    FORMAT_ERROR(i_err, psz_msg);
-    if (psz_msg) 
-      cdio_info("Error: %s", psz_msg);
-    else 
-      cdio_info("Error: %ld", i_err);
-    LocalFree(psz_msg);
+    windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
   return DRIVER_OP_SUCCESS;
@@ -406,14 +371,7 @@ close_tray_win32ioctl (const char *psz_win32_drive)
   CloseHandle(h_device_handle);
   
   if ( ! b_success ) {
-    char *psz_msg = NULL;
-    long int i_err = GetLastError();
-    FORMAT_ERROR(i_err, psz_msg);
-    if (psz_msg) 
-      cdio_info("Error: %s", psz_msg);
-    else 
-      cdio_info("Error: %ld", i_err);
-    LocalFree(psz_msg);
+    windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
   return DRIVER_OP_SUCCESS;
@@ -541,14 +499,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 			      NULL);
 
   if ( !b_success ) {
-    char *psz_msg = NULL;
-    long int i_err = GetLastError();
-    FORMAT_ERROR(i_err, psz_msg);
-    if (psz_msg) 
-      cdio_info("Error: %s", psz_msg);
-    else 
-      cdio_info("Error: %ld", i_err);
-    LocalFree(psz_msg);
+    windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
 
@@ -621,14 +572,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 			      NULL);
 
   if ( !b_success ) {
-    char *psz_msg = NULL;
-    long int i_err = GetLastError();
-    FORMAT_ERROR(i_err, psz_msg);
-    if (psz_msg) 
-      cdio_info("Error: %s", psz_msg);
-    else 
-      cdio_info("Error: %ld", i_err);
-    LocalFree(psz_msg);
+    windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
 
@@ -815,17 +759,9 @@ read_audio_sectors_win32ioctl (_img_private_t *p_env, void *data, lsn_t lsn,
 		       sizeof(RAW_READ_INFO), data,
 		       CDIO_CD_FRAMESIZE_RAW * nblocks,
 		       &dw_bytes_returned, NULL ) == 0 ) {
-    char *psz_msg = NULL;
-    long int i_err = GetLastError();
-    FORMAT_ERROR(i_err, psz_msg);
-    if (psz_msg) {
-      cdio_info("Error reading audio-mode lsn %lu\n%s (%ld))", 
-		(long unsigned int) lsn, psz_msg, i_err);
-    } else {
-      cdio_info("Error reading audio-mode lsn %lu\n (%ld))",
-		(long unsigned int) lsn, i_err);
-    }
-    LocalFree(psz_msg);
+    cdio_info("Error reading audio-mode lsn %lu\n)", 
+		(long unsigned int) lsn);
+    windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
   return DRIVER_OP_SUCCESS;
@@ -1134,17 +1070,12 @@ read_toc_win32ioctl (_img_private_t *p_env)
 		       IOCTL_CDROM_READ_TOC,
 		       NULL, 0, &cdrom_toc, sizeof(CDROM_TOC),
 		       &dw_bytes_returned, NULL ) == 0 ) {
-    char *psz_msg = NULL;
-    long int i_err = GetLastError();
     cdio_log_level_t loglevel = b_fulltoc_first 
       ? CDIO_LOG_WARN : CDIO_LOG_DEBUG;
+    
 
-    FORMAT_ERROR(i_err, psz_msg);
-    if (psz_msg) {
-      cdio_log(loglevel, "could not read TOC (%ld): %s", i_err, psz_msg);
-      LocalFree(psz_msg);
-    } else 
-      cdio_log(loglevel, "could not read TOC (%ld)", i_err);
+    cdio_log(loglevel, "could not read TOC");
+    windows_error(loglevel, GetLastError());
 
     if ( !b_fulltoc_first && read_fulltoc_win32mmc(p_env) ) return true;
     return false;
