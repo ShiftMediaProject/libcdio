@@ -557,11 +557,15 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   
   /**
      Detects if a disc (CD or DVD) is erasable or not.
+     
      @param p_user_data the CD object to be acted upon.
-     @param i_status on return will be set indicate whether the operation
-     was a success (DRIVER_OP_SUCCESS) or if not to some other value.
-     @return true if the disc is detected as erasable (rewritable), false
-     otherwise.
+  
+     @param i_status, if not NULL, on return will be set indicate
+     whether the operation was a success (DRIVER_OP_SUCCESS) or if not
+     to some other value.
+     
+     @return true if the disc is detected as erasable (rewritable),
+     false otherwise.
   */
   bool mmc_get_disc_erasable( const CdIo_t *p_cdio, 
                               driver_return_code_t *i_status );

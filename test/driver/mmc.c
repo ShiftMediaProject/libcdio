@@ -85,7 +85,10 @@ tmmc_get_disc_erasable(const CdIo_t *p_cdio, const char *psz_source,
 {
     driver_return_code_t drc;
     bool b_erasable = mmc_get_disc_erasable(p_cdio, &drc);
-    printf("disk is %serasable.\n", b_erasable ? "" : "not ");
+    if (verbose)
+	printf("Disc is %serasable.\n", b_erasable ? "" : "not ");
+    /* Try also with NULL. */
+    b_erasable = mmc_get_disc_erasable(p_cdio, NULL);
     return drc;
 }
 
