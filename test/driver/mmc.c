@@ -622,6 +622,7 @@ tmmc_test(char *drive_path, int flag)
            drive_path, scsi_tuple);
 
 
+#if 0
   /* Test availability of sense reply in case of unready drive.
      E.g. if the tray is already ejected.
   */
@@ -632,6 +633,8 @@ tmmc_test(char *drive_path, int flag)
             sense_avail);
     {ret = 2; goto ex;}
   }
+#endif 
+
   /* Cause sense reply failure by requesting inappropriate mode page 3Eh */
   ret = tmmc_mode_sense(p_cdio, &sense_avail, sense,
                        0x3e, 0, alloc_len, buf, &buf_fill, !!verbose);
@@ -642,6 +645,7 @@ tmmc_test(char *drive_path, int flag)
     {ret = 2; goto ex;}
   } 
 
+#if 0
   /* Test availability of sense reply in case of unready drive.
      E.g. if the tray is already ejected.
   */
@@ -652,6 +656,7 @@ tmmc_test(char *drive_path, int flag)
 	    sense_avail);
     {ret = 2; goto ex;}
   }
+#endif
 
   /* Cause sense reply failure by requesting inappropriate mode page 3Eh */
   ret = tmmc_mode_sense(p_cdio, &sense_avail, sense,
