@@ -1,7 +1,5 @@
 /*
-  $Id: osx.c,v 1.14 2008/10/17 11:58:52 rocky Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org> 
+  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2010 Rocky Bernstein <rocky@gnu.org> 
   from vcdimager code: 
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
   and VideoLAN code Copyright (C) 1998-2001 VideoLAN
@@ -145,10 +143,10 @@ static bool read_toc_osx (void *p_user_data);
 static track_format_t get_track_format_osx(void *p_user_data, 
                                            track_t i_track);
 
-/****
+/**
  * GetRegistryEntryProperties - Gets the registry entry properties for
  *  an io_service_t.
- *****/
+ */
 
 static CFMutableDictionaryRef
 GetRegistryEntryProperties ( io_service_t service )
@@ -327,7 +325,7 @@ init_osx(_img_private_t *p_env) {
 #endif
 }
 
-/*!
+/**
   Run a SCSI MMC command. 
  
   cdio          CD structure set by cdio_open().
@@ -345,7 +343,6 @@ init_osx(_img_private_t *p_env) {
 #if 1
 
 /* process a complete scsi command. */
-// handle_scsi_cmd(cdrom_drive *d,
 static int 
 run_mmc_cmd_osx( void *p_user_data, 
                  unsigned int i_timeout_ms,
@@ -361,11 +358,15 @@ run_mmc_cmd_osx( void *p_user_data,
 
   if (!p_env->scsi_task) return DRIVER_OP_UNSUPPORTED;
 
+  p_env->gen.scsi_mmc_sense_valid = 0;
   memcpy(cmdbuf, p_cdb, i_cdb);
 
-  dir = ( SCSI_MMC_DATA_READ == e_direction)
-    ? kSCSIDataTransfer_FromTargetToInitiator
-    : kSCSIDataTransfer_FromInitiatorToTarget;
+  dir = 
+      (SCSI_MMC_DATA_READ == e_direction) 
+      ? kSCSIDataTransfer_FromTargetToInitiator :
+      (SCSI_MMC_DATA_WRITE == e_direction) 
+      ? kSCSIDataTransfer_FromInitiatorToTarget
+      : kSCSIDataTransfer_NoDataTransfer;
   
   if (!i_buf)
     dir = kSCSIDataTransfer_NoDataTransfer;
@@ -413,6 +414,8 @@ run_mmc_cmd_osx( void *p_user_data,
       fprintf(stderr, "%02x ", cmdbuf[i]);
     
     fprintf(stderr, "\n");
+    memcpy((void *) p_env->gen.scsi_mmc_sense, &p_env->sense, kSenseDefaultSize);
+
     return TR_UNKNOWN;
   }
   
@@ -464,7 +467,7 @@ run_mmc_cmd_osx( void *p_user_data,
 #endif
 
 #if 0
-/*!
+/**
   Run a SCSI MMC command. 
  
   cdio          CD structure set by cdio_open().
@@ -622,7 +625,7 @@ GetFeaturesFlagsForDrive ( CFDictionaryRef dict,
   return true;
 }
 
-/*! 
+/**
   Get disc type associated with the cd object.
 */
 static discmode_t
@@ -895,7 +898,7 @@ _free_osx (void *p_user_data) {
 
 }
 
-/*!
+/**
    Reads i_blocks of data sectors from cd device into p_data starting
    from i_lsn.
    Returns DRIVER_OP_SUCCESS if no error. 
@@ -944,7 +947,7 @@ read_data_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
 }
 
   
-/*!
+/**
    Reads i_blocks of mode2 form2 sectors from cd device into data starting
    from i_lsn.
    Returns 0 if no error. 
@@ -978,7 +981,7 @@ read_mode1_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
   return DRIVER_OP_SUCCESS;
 }
 
-/*!
+/**
    Reads i_blocks of mode2 form2 sectors from cd device into data starting
    from lsn.
    Returns DRIVER_OP_SUCCESS if no error. 
@@ -1014,7 +1017,7 @@ read_mode2_sectors_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
 }
 
   
-/*!
+/**
    Reads a single audio sector from CD device into p_data starting from lsn.
    Returns 0 if no error. 
  */
@@ -1043,7 +1046,7 @@ read_audio_sectors_osx (void *user_data, void *p_data, lsn_t lsn,
   return DRIVER_OP_SUCCESS;
 }
 
-/*!
+/**
    Reads a single mode2 sector from cd device into p_data starting
    from lsn. Returns 0 if no error. 
  */
@@ -1054,7 +1057,7 @@ read_mode1_sector_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
   return read_mode1_sectors_osx(p_user_data, p_data, i_lsn, b_form2, 1);
 }
 
-/*!
+/**
    Reads a single mode2 sector from cd device into p_data starting
    from lsn. Returns 0 if no error. 
  */
@@ -1065,7 +1068,7 @@ read_mode2_sector_osx (void *p_user_data, void *p_data, lsn_t i_lsn,
   return read_mode2_sectors_osx(p_user_data, p_data, i_lsn, b_form2, 1);
 }
 
-/*!
+/**
   Set the key "arg" to "value" in source device.
 */
 static driver_return_code_t
@@ -1137,7 +1140,7 @@ TestDevice(_img_private_t *p_env, io_service_t service)
 }
 #endif
 
-/*! 
+/**
   Read and cache the CD's Track Table of Contents and track info.
   Return false if successful or true if an error.
 */
@@ -1289,7 +1292,7 @@ read_toc_osx (void *p_user_data)
 
 }
 
-/*!  
+/**
   Return the starting LSN track number
   i_track in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
@@ -1313,7 +1316,7 @@ get_track_lba_osx(void *p_user_data, track_t i_track)
   }
 }
 
-/*!
+/**
   Eject media . Return DRIVER_OP_SUCCESS if successful.
 
   The only way to cleanly unmount the disc under MacOS X (before
@@ -1497,7 +1500,7 @@ _eject_media_osx (void *user_data) {
 }
 #endif
 
-/*!
+/**
    Return the size of the CD in logical block address (LBA) units.
  */
 static lsn_t
@@ -1506,7 +1509,7 @@ get_disc_last_lsn_osx (void *user_data)
   return get_track_lba_osx(user_data, CDIO_CDROM_LEADOUT_TRACK);
 }
 
-/*!
+/**
   Return the value associated with the key "arg".
 */
 static const char *
@@ -1527,7 +1530,7 @@ _get_arg_osx (void *user_data, const char key[])
   return NULL;
 }
 
-/*!
+/**
   Return the media catalog number MCN.
  */
 static char *
@@ -1546,7 +1549,7 @@ get_mcn_osx (const void *user_data) {
 }
 
 
-/*!  
+/**
   Get format of track. 
 */
 static track_format_t
@@ -1593,7 +1596,7 @@ get_track_format_osx(void *p_user_data, track_t i_track)
 
 }
 
-/*!
+/**
   Return true if we have XA data (green, mode2 form1) or
   XA data (green, mode2 form2). That is track begins:
   sync - header - subheader
@@ -1645,7 +1648,7 @@ set_speed_osx (void *p_user_data, int i_speed)
 
 #endif /* HAVE_DARWIN_CDROM */
 
-/*!
+/**
   Close tray on CD-ROM.
   
   @param psz_drive the CD-ROM drive to be closed.
@@ -1697,7 +1700,7 @@ close_tray_osx (const char *psz_drive)
 #endif /*HAVE_DARWIN_CDROM*/
 }
 
-/*!
+/**
   Return a string containing the default CD device if none is specified.
  */
 char **
@@ -1781,7 +1784,7 @@ cdio_get_devices_osx(void)
 #endif /* HAVE_DARWIN_CDROM */
 }
 
-/*!
+/**
   Return a string containing the default CD device if none is specified.
  */
 char *
@@ -1855,7 +1858,7 @@ cdio_get_default_device_osx(void)
 #endif /* HAVE_DARWIN_CDROM */
 }
 
-/*!
+/**
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
   ones to set that up.
@@ -1871,7 +1874,7 @@ cdio_open_am_osx (const char *psz_source_name, const char *psz_access_mode)
 }
 
 
-/*!
+/**
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
   ones to set that up.
