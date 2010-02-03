@@ -43,7 +43,7 @@ extern "C" {
       See SCSI Primary Commands-2 (SPC-2) table 102 or
       SPC 4.5.3, Table 26.
     */
-    struct mmc_request_sense {
+    typedef struct mmc_request_sense {
 #if defined(WORDS_BIGENDIAN)
 	uint8_t valid		: 1;  /**< valid bit is 1 if info is valid */
 	uint8_t error_code	: 7;
@@ -79,7 +79,7 @@ extern "C" {
 	uint8_t fruc;                 /**< Field replaceable unit code */
 	uint8_t sks[3];               /**< Sense-key specific */
 	uint8_t asb[46];              /**< Additional sense bytes */
-    };
+    } mmc_request_sense_t;
 
   /**
       Set this to the maximum value in milliseconds that we will

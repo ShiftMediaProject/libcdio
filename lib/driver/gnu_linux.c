@@ -1250,7 +1250,7 @@ run_mmc_cmd_linux(void *p_user_data,
 {
   _img_private_t *p_env = p_user_data;
   struct cdrom_generic_command cgc;
-  struct mmc_request_sense sense;
+  mmc_request_sense_t sense;
   unsigned char *u_sense = (unsigned char *) &sense;
 
   p_env->gen.scsi_mmc_sense_valid = 0;
@@ -1258,7 +1258,7 @@ run_mmc_cmd_linux(void *p_user_data,
   memcpy(&cgc.cmd, p_cdb, i_cdb);
   cgc.buflen = i_buf;
   cgc.buffer = p_buf;
-  cgc.sense  = (struct request_sense *) &sense;
+  cgc.sense  = (mmc_sense_request_t *) &sense;
 
   cgc.data_direction = (SCSI_MMC_DATA_READ  == e_direction) ? CGC_DATA_READ  :
                        (SCSI_MMC_DATA_WRITE == e_direction) ? CGC_DATA_WRITE :

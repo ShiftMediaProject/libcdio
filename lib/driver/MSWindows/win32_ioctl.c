@@ -103,15 +103,15 @@ typedef struct _CDROM_TOC_FULL {
 typedef struct {
    SCSI_PASS_THROUGH_DIRECT sptd;
    ULONG Filler; /* Realign buffer to double-word boundary */
-   UCHAR ucSenseBuf[32];
+   mmc_request_sense_t   SenseBuf;
    UCHAR DataBuf[512];
 } SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER;
 
 typedef struct _SCSI_PASS_THROUGH_WITH_BUFFER {
-    SCSI_PASS_THROUGH Spt;
-    ULONG             Filler;      /* realign buffer to double-word boundary */
-    UCHAR             SenseBuf[32];
-    UCHAR             DataBuf[512];
+    SCSI_PASS_THROUGH    Spt;
+    ULONG                Filler;      /* realign buffer to double-word boundary */
+    mmc_request_sense_t  SenseBuf;
+    UCHAR                DataBuf[512];
 } SCSI_PASS_THROUGH_WITH_BUFFER;
 
 
@@ -462,7 +462,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   swb.sptd.TargetId= 0;      /* SCSI target ID will also be filled in */
   swb.sptd.Lun     = 0;      /* SCSI lun ID will also be filled in */
   swb.sptd.CdbLength         = i_cdb;
-  swb.sptd.SenseInfoLength   = sizeof(swb.ucSenseBuf);
+  swb.sptd.SenseInfoLength   = sizeof(swb.SenseBuf);
   swb.sptd.DataIn            = 
     (SCSI_MMC_DATA_READ  == e_direction) ? SCSI_IOCTL_DATA_IN :
     (SCSI_MMC_DATA_WRITE == e_direction) ? SCSI_IOCTL_DATA_OUT :
@@ -470,7 +470,8 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   swb.sptd.DataBuffer        = p_buf;
   swb.sptd.DataTransferLength= i_buf; 
   swb.sptd.TimeOutValue      = msecs2secs(i_timeout_ms);
-  swb.sptd.SenseInfoOffset   = offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER, ucSenseBuf);
+  swb.sptd.SenseInfoOffset   = offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER, 
+					SenseBuf);
 
   memcpy(swb.sptd.Cdb, p_cdb, i_cdb);
 
@@ -491,13 +492,13 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 
   /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
    */
-  if (swb.ucSenseBuf[7]) {
-    int sense_size = swb.ucSenseBuf[7] + 8; /* SPC 4.5.3, Table 26: 
-						  252 bytes legal, 263 bytes
-						  possible */
-    if (sense_size > sizeof(swb.ucSenseBuf))
-      sense_size = sizeof(swb.ucSenseBuf);
-    memcpy((void *) p_env->gen.scsi_mmc_sense, &swb.ucSenseBuf, sense_size);
+  if (swb.SenseBuf.additional_sense_len) {
+    /* SCSI Primary Command standard 
+       SPC 4.5.3, Table 26: 252 bytes legal, 263 bytes possible */
+    int sense_size = swb.SenseBuf.additional_sense_len + 8; 
+    if (sense_size > sizeof(swb.SenseBuf))
+      sense_size = sizeof(swb.SenseBuf);
+    memcpy((void *) p_env->gen.scsi_mmc_sense, &swb.SenseBuf, sense_size);
     p_env->gen.scsi_mmc_sense_valid = sense_size;
   }
 
