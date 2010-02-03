@@ -1258,7 +1258,7 @@ run_mmc_cmd_linux(void *p_user_data,
   memcpy(&cgc.cmd, p_cdb, i_cdb);
   cgc.buflen = i_buf;
   cgc.buffer = p_buf;
-  cgc.sense  = (mmc_sense_request_t *) &sense;
+  cgc.sense  = (struct request_sense *) &sense;
 
   cgc.data_direction = (SCSI_MMC_DATA_READ  == e_direction) ? CGC_DATA_READ  :
                        (SCSI_MMC_DATA_WRITE == e_direction) ? CGC_DATA_WRITE :
