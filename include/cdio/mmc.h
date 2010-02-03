@@ -35,6 +35,52 @@
 extern "C" {
 #endif /* __cplusplus */
 
+   /**
+      Structure of a SCSI/MMC sense reply.
+     
+      This has been adapted from GNU/Linux request_sense of <linux/cdrom.h>
+      include this for direct MMC access.
+      See SCSI Primary Commands-2 (SPC-2) table 102 or
+      SPC 4.5.3, Table 26.
+    */
+    struct mmc_request_sense {
+#if defined(WORDS_BIGENDIAN)
+	uint8_t valid		: 1;  /**< valid bit is 1 if info is valid */
+	uint8_t error_code	: 7;
+#else
+	uint8_t error_code	: 7;
+	uint8_t valid		: 1;  /**< valid bit is 1 if info is valid */
+#endif
+	uint8_t segment_number;
+#if defined(WORDS_BIGENDIAN)
+	uint8_t filemark	: 1; /**< manditory in sequential
+                                      * access devices */
+	uint8_t eom	        : 1; /**< end of medium. manditory in
+                                      * sequential access and
+                                      * printer devices */
+	uint8_t ili		: 1; /**< incorrect length indicator */
+	uint8_t reserved1	: 1;
+	uint8_t sense_key	: 4;
+#else
+	uint8_t sense_key	: 4;
+	uint8_t reserved1	: 1;
+	uint8_t ili		: 1; /**< incorrect length indicator */
+	uint8_t eom	        : 1; /**< end of medium. manditory in
+                                      * sequential access and
+                                      * printer devices */
+	uint8_t filemark	: 1; /**< manditory in sequential
+                                      * access devices */
+#endif
+	uint8_t information[4];
+	uint8_t additional_sense_len; /**< Additional sense length (n-7) */
+	uint8_t command_info[4];      /**< Command-specific information */
+	uint8_t asc;                  /**< Additional sense code */
+	uint8_t ascq;                 /**< Additional sense code qualifier */
+	uint8_t fruc;                 /**< Field replaceable unit code */
+	uint8_t sks[3];               /**< Sense-key specific */
+	uint8_t asb[46];              /**< Additional sense bytes */
+    };
+
   /**
       Set this to the maximum value in milliseconds that we will
       wait on an MMC command.  

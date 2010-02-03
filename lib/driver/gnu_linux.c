@@ -1250,7 +1250,7 @@ run_mmc_cmd_linux(void *p_user_data,
 {
   _img_private_t *p_env = p_user_data;
   struct cdrom_generic_command cgc;
-  struct request_sense sense;
+  struct mmc_request_sense sense;
   unsigned char *u_sense = (unsigned char *) &sense;
 
   p_env->gen.scsi_mmc_sense_valid = 0;
@@ -1258,7 +1258,7 @@ run_mmc_cmd_linux(void *p_user_data,
   memcpy(&cgc.cmd, p_cdb, i_cdb);
   cgc.buflen = i_buf;
   cgc.buffer = p_buf;
-  cgc.sense  = &sense;
+  cgc.sense  = (struct request_sense *) &sense;
 
   cgc.data_direction = (SCSI_MMC_DATA_READ  == e_direction) ? CGC_DATA_READ  :
                        (SCSI_MMC_DATA_WRITE == e_direction) ? CGC_DATA_WRITE :
@@ -1274,14 +1274,15 @@ run_mmc_cmd_linux(void *p_user_data,
 
     /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
     */
-    if (u_sense[7]) {
-      int sense_size = u_sense[7] + 8; /* SPC 4.5.3, Table 26: 
-                                          252 bytes legal, 263 bytes
-                                          possible */
-      if (sense_size > sizeof(sense))
-        sense_size = sizeof(sense);
-      memcpy((void *) p_env->gen.scsi_mmc_sense, &sense, sense_size);
-      p_env->gen.scsi_mmc_sense_valid = sense_size;
+    if (sense.additional_sense_len) {
+        /* SCSI Primary Command standard 
+           SPC 4.5.3, Table 26: 252 bytes legal, 263 bytes possible */
+        int sense_size = sense.additional_sense_len + 8; 
+    
+        if (sense_size > sizeof(sense))
+            sense_size = sizeof(sense);
+        memcpy((void *) p_env->gen.scsi_mmc_sense, &sense, sense_size);
+        p_env->gen.scsi_mmc_sense_valid = sense_size;
     }
 
     if (0 == i_rc) return DRIVER_OP_SUCCESS;

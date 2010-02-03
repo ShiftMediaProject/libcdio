@@ -1,6 +1,4 @@
 /*
-    $Id: types.h,v 1.37 2008/03/25 15:59:09 karl Exp $
-
     Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008
                   Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
