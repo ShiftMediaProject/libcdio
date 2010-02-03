@@ -146,14 +146,14 @@ tmmc_test_unit_ready(CdIo_t *p_cdio,
 {
   int i_status;
   mmc_cdb_t cdb = {{0, }};
-  char buf[1]; /* just to have an address to pass to mmc_run_cmd() */
+  char buf[2]; /* just to have an address to pass to mmc_run_cmd() */
 
   memset(cdb.field, 0, 6);
   cdb.field[0] = 0x00;  /* TEST UNIT READY, SPC-3 6.33 */
 
   if (flag & 1)
     fprintf(stderr, "tmmc_test_unit_ready ... ");
-  i_status = mmc_run_cmd(p_cdio, 10000, &cdb, SCSI_MMC_DATA_NONE, 0, buf);
+  i_status = mmc_run_cmd(p_cdio, 10000, &cdb, SCSI_MMC_DATA_NONE, 2, buf);
 
   return tmmc_handle_outcome(p_cdio, i_status, sense_avail, sense_reply,
                              flag & 1);
@@ -635,100 +635,90 @@ tmmc_test(char *drive_path, int flag)
   /* Cause sense reply failure by requesting inappropriate mode page 3Eh */
   ret = tmmc_mode_sense(p_cdio, &sense_avail, sense,
                        0x3e, 0, alloc_len, buf, &buf_fill, !!verbose);
-  if (ret != 0 && sense_avail < 18) {
+  if (sense_avail < 18) {
     fprintf(stderr,
             "Error: An illegal command yields only %d sense bytes. Expected >= 18.\n",
             sense_avail);
     {ret = 2; goto ex;}
-  } else if(ret == 0) {
+  } 
+
+  /* Test availability of sense reply in case of unready drive.
+     E.g. if the tray is already ejected.
+  */
+  ret = tmmc_test_unit_ready(p_cdio, &sense_avail, sense, !!verbose);
+  if (sense_avail < 18) {
     fprintf(stderr,
-       "Warning: tmmc_mode_sense() cannot cause a failure via mode page 3Eh\n");
-    fprintf(stderr,
-       "Consider to set in tmmc_test(): with_tray_dance = 1\n");
+	    "Error: Drive not ready. Only %d sense bytes. Expected >= 18.\n",
+	    sense_avail);
+    {ret = 2; goto ex;}
   }
 
-    /* Test availability of sense reply in case of unready drive.
-       E.g. if the tray is already ejected.
-    */
-    ret = tmmc_test_unit_ready(p_cdio, &sense_avail, sense, !!verbose);
-    if (ret != 0 && sense_avail < 18) {
-      fprintf(stderr,
-	      "Error: Drive not ready. Only %d sense bytes. Expected >= 18.\n",
-	      sense_avail);
-      {ret = 2; goto ex;}
-    }
-
-    /* Provoke sense reply by requesting inappropriate mode page 3Eh */
-    ret = tmmc_mode_sense(p_cdio, &sense_avail, sense,
-			  0x3e, 0, alloc_len, buf, &buf_fill, !!verbose);
-    if (ret != 0 && sense_avail < 18) {
-      fprintf(stderr,
-	      "Error: Deliberately illegal command yields only %d sense bytes. Expected >= 18.\n",
-	      sense_avail);
-      {ret = 2; goto ex;}
-    } else if(ret == 0) {
-      fprintf(stderr,
-	      "Warning: tmmc_mode_sense() cannot cause failure via mode page 3Eh\n");
-      fprintf(stderr,
-	      "Consider to set in tmmc_test(): with_tray_dance = 1\n");
-    }
+  /* Cause sense reply failure by requesting inappropriate mode page 3Eh */
+  ret = tmmc_mode_sense(p_cdio, &sense_avail, sense,
+			0x3e, 0, alloc_len, buf, &buf_fill, !!verbose);
+  if (sense_avail < 18) {
+    fprintf(stderr,
+	    "Error: Deliberately illegal command yields only %d sense bytes. Expected >= 18.\n",
+	    sense_avail);
+    {ret = 2; goto ex;}
+  }
     
     
-    if (emul_lack_of_wperm) { /* To check behavior with lack of w-permission */
-      fprintf(stderr,
-	      "tmmc_test: SIMULATING LACK OF WRITE CAPABILITIES by access mode IOCTL\n");
-      cdio_destroy(p_cdio);
-      p_cdio = cdio_open_am(drive_path, DRIVER_DEVICE, "IOCTL");
-    }
+  if (emul_lack_of_wperm) { /* To check behavior with lack of w-permission */
+    fprintf(stderr,
+	    "tmmc_test: SIMULATING LACK OF WRITE CAPABILITIES by access mode IOCTL\n");
+    cdio_destroy(p_cdio);
+    p_cdio = cdio_open_am(drive_path, DRIVER_DEVICE, "IOCTL");
+  }
     
     
-    /* Test write permission */ /* Try whether a mode page 2Ah can be set */
-    ret = tmmc_rwr_mode_page(p_cdio, !!verbose);
-    if (ret <= 0) {
-      if (ret < 0) {
-	fprintf(stderr, "Error: tmmc_rwr_mode_page() had severe failure.\n");
-	{ret = 3; goto ex;}
-      }
-      fprintf(stderr, "Warning: tmmc_rwr_mode_page() had minor failure.\n");
+  /* Test write permission */ /* Try whether a mode page 2Ah can be set */
+  ret = tmmc_rwr_mode_page(p_cdio, !!verbose);
+  if (ret <= 0) {
+    if (ret < 0) {
+      fprintf(stderr, "Error: tmmc_rwr_mode_page() had severe failure.\n");
+      {ret = 3; goto ex;}
     }
-
-
-    if (with_tray_dance) {
-      /* More surely provoke a non-trivial sense reply */
-      if (test_cycle_with_media) {
-	/* Eject, wait, load, watch by test unit ready loop */
-	ret = tmmc_eject_load_cycle(p_cdio, 2 | !!verbose);
-	if (ret <= 0) {
-	  if (ret < 0) {
-	    fprintf(stderr,
-		    "Error: tmmc_eject_load_cycle() had severe failure.\n");
-	    {ret = 4; goto ex;}
-	  }
+    fprintf(stderr, "Warning: tmmc_rwr_mode_page() had minor failure.\n");
+  }
+  
+  
+  if (with_tray_dance) {
+    /* More surely provoke a non-trivial sense reply */
+    if (test_cycle_with_media) {
+      /* Eject, wait, load, watch by test unit ready loop */
+      ret = tmmc_eject_load_cycle(p_cdio, 2 | !!verbose);
+      if (ret <= 0) {
+	if (ret < 0) {
 	  fprintf(stderr,
-		  "Warning: tmmc_eject_load_cycle() had minor failure.\n");
+		  "Error: tmmc_eject_load_cycle() had severe failure.\n");
+	  {ret = 4; goto ex;}
 	}
-      } else {
-	/* Eject, test for proper unreadiness, load */
-	ret = tmmc_eject_test_load(p_cdio, !!verbose);
-	if (ret <= 0) {
-	  if (ret < 0) {
-	    fprintf(stderr,
-		    "Error: tmmc_eject_test_load() had severe failure.\n");
-	    {ret = 5; goto ex;}
-	  }
-	  fprintf(stderr,
-		  "Warning: tmmc_eject_test_load() had minor failure.\n");
-	}
-	/* Wait for drive attention */
-	tmmc_wait_for_drive(p_cdio, 15, 2 | !!verbose);
+	fprintf(stderr,
+		"Warning: tmmc_eject_load_cycle() had minor failure.\n");
       }
+    } else {
+      /* Eject, test for proper unreadiness, load */
+      ret = tmmc_eject_test_load(p_cdio, !!verbose);
+      if (ret <= 0) {
+	if (ret < 0) {
+	  fprintf(stderr,
+		  "Error: tmmc_eject_test_load() had severe failure.\n");
+	  {ret = 5; goto ex;}
+	}
+	fprintf(stderr,
+		"Warning: tmmc_eject_test_load() had minor failure.\n");
+      }
+      /* Wait for drive attention */
+      tmmc_wait_for_drive(p_cdio, 15, 2 | !!verbose);
     }
-    
-    /* How are we, finally ? */
-    ret = tmmc_test_unit_ready(p_cdio, &sense_valid, sense, !!verbose);
-    if ((flag & 1) && ret != 0 && sense[2] == 2 && sense[12] == 0x3a)
-      fprintf(stderr, "tmmc_test: Note: No loaded media detected.\n");
-    ret = 0;
+  }
+  
+  /* How are we, finally ? */
+  ret = tmmc_test_unit_ready(p_cdio, &sense_valid, sense, !!verbose);
+  if ((flag & 1) && ret != 0 && sense[2] == 2 && sense[12] == 0x3a)
+    fprintf(stderr, "tmmc_test: Note: No loaded media detected.\n");
+  ret = 0;
   }
 
 ex:;
@@ -785,8 +775,7 @@ main(int argc, const char *argv[])
     }
 	
     if ( psz_have_mmc 
-	 && 0 == strncmp("true", psz_have_mmc, sizeof("true"))
-	 && (DRIVER_WIN32 != cdio_get_driver_id(p_cdio)) ) {
+	 && 0 == strncmp("true", psz_have_mmc, sizeof("true")) ) {
 	scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
 	if (scsi_tuple == NULL) {
 	    fprintf(stderr, "cdio_get_arg(\"scsi-tuple\") returns NULL.\n");

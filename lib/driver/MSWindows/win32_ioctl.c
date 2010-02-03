@@ -23,8 +23,6 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: win32_ioctl.c,v 1.30 2008/04/21 18:30:21 karl Exp $";
-
 #ifdef HAVE_WIN32_CDROM
 
 #if defined (_XBOX)
@@ -232,8 +230,7 @@ audio_read_subchannel_win32ioctl (void *p_user_data,
   return DRIVER_OP_SUCCESS;
 }
 
-
-/*!
+/**
   Resume playing an audio CD.
   
   @param p_user_data the CD object to be acted upon.
@@ -256,7 +253,7 @@ audio_resume_win32ioctl (void *p_user_data)
   return DRIVER_OP_SUCCESS;
 }
 
-/*!
+/**
   Set the volume of an audio CD.
   
   @param p_user_data pointer to the CD object to be acted upon.
@@ -302,7 +299,7 @@ audio_get_volume_win32ioctl (void *p_user_data,
   return DRIVER_OP_SUCCESS;
 }
 
-/*!
+/**
   Stop playing an audio CD.
   
   @param p_user_data the CD object to be acted upon.
@@ -325,7 +322,7 @@ audio_stop_win32ioctl (void *p_user_data)
   return DRIVER_OP_SUCCESS;
 }
 
-/*!
+/**
   Close the tray of a CD-ROM
   
   @param p_user_data the CD object to be acted upon.
@@ -340,7 +337,7 @@ close_tray_win32ioctl (const char *psz_win32_drive)
   
   OSVERSIONINFO ov;
   HANDLE h_device_handle;
-  bool b_success;
+  BOOL   b_success;
   
   memset(&ov,0,sizeof(OSVERSIONINFO));
   ov.dwOSVersionInfoSize=sizeof(OSVERSIONINFO);
@@ -356,7 +353,7 @@ close_tray_win32ioctl (const char *psz_win32_drive)
 				FILE_SHARE_READ | FILE_SHARE_WRITE, 
 				NULL, 
 				OPEN_EXISTING,
-				FILE_ATTRIBUTE_NORMAL, 
+				0, 
 				NULL );
 
   if( h_device_handle == INVALID_HANDLE_VALUE ) {
@@ -370,7 +367,7 @@ close_tray_win32ioctl (const char *psz_win32_drive)
 
   CloseHandle(h_device_handle);
   
-  if ( ! b_success ) {
+  if ( b_success != 0 ) {
     windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
@@ -380,7 +377,7 @@ close_tray_win32ioctl (const char *psz_win32_drive)
 #endif
 }
 
-/*!
+/**
   Produce a text composed from the system SCSI address tuple
   "Port,Path,Target,Lun" and store
   it in generic_img_private_t.scsi_tuple.
@@ -428,7 +425,7 @@ set_scsi_tuple_win32ioctl(_img_private_t *env)
 }
 #endif
 
-/*!
+/**
   Run a SCSI MMC command. 
  
   env	        private CD structure 
@@ -443,7 +440,7 @@ set_scsi_tuple_win32ioctl(_img_private_t *env)
 
   Return 0 if command completed successfully.
  */
-#if 0
+#if 1
 int
 run_mmc_cmd_win32ioctl( void *p_user_data, 
 			unsigned int i_timeout_ms,
@@ -452,66 +449,55 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 			unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;
-  SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER sptdwb;
+  SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER swb;
   
-  bool b_success;
-  unsigned long length = 0;
+  BOOL b_success;
   DWORD dw_bytes_returned;
 
-  memset(&sptdwb, 0, sizeof(sptdwb));
+  memset(&swb, 0, sizeof(swb));
   
-  sptdwb.sptd.Length  = sizeof(sptdwb.sptd);
-  sptdwb.sptd.PathId  = 0;      /* SCSI card ID will be filled in
-				   automatically */
-  sptdwb.sptd.TargetId= 0;      /* SCSI target ID will also be filled in */
-  sptdwb.sptd.Lun     = 0;      /* SCSI lun ID will also be filled in */
-  sptdwb.sptd.CdbLength         = i_cdb;
-  sptdwb.sptd.SenseInfoLength   = sizeof(sptdwb.ucSenseBuf);
-  sptdwb.sptd.DataIn            = 
+  swb.sptd.Length  = sizeof(SCSI_PASS_THROUGH_DIRECT);
+  swb.sptd.PathId  = 0;      /* SCSI card ID will be filled in
+				automatically */
+  swb.sptd.TargetId= 0;      /* SCSI target ID will also be filled in */
+  swb.sptd.Lun     = 0;      /* SCSI lun ID will also be filled in */
+  swb.sptd.CdbLength         = i_cdb;
+  swb.sptd.SenseInfoLength   = sizeof(swb.ucSenseBuf);
+  swb.sptd.DataIn            = 
     (SCSI_MMC_DATA_READ  == e_direction) ? SCSI_IOCTL_DATA_IN :
     (SCSI_MMC_DATA_WRITE == e_direction) ? SCSI_IOCTL_DATA_OUT :
     SCSI_IOCTL_DATA_UNSPECIFIED;
-  sptdwb.sptd.DataTransferLength= i_buf; 
-  sptdwb.sptd.TimeOutValue      = msecs2secs(i_timeout_ms);
+  swb.sptd.DataBuffer        = p_buf;
+  swb.sptd.DataTransferLength= i_buf; 
+  swb.sptd.TimeOutValue      = msecs2secs(i_timeout_ms);
+  swb.sptd.SenseInfoOffset   = offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER, ucSenseBuf);
 
-  sptdwb.sptd.DataBuffer        = (void *) p_buf;
-  /*
-  sptdwb.sptd.SenseInfoOffset   = offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER,
-					   ucSenseBuf);
-  */
-  sptdwb.sptd.SenseInfoOffset   = 0;
-
-  memcpy(sptdwb.sptd.Cdb, p_cdb, i_cdb);
-  length = offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER,DataBuf) + 
-    sptdwb.sptd.DataTransferLength;
+  memcpy(swb.sptd.Cdb, p_cdb, i_cdb);
 
   /* Send the command to drive */
   b_success = DeviceIoControl(p_env->h_device_handle,
-			      IOCTL_SCSI_PASS_THROUGH, 
-			      (void *)&sptdwb, 
-			      sizeof(SCSI_PASS_THROUGH),
-			      NULL, 0,
-			      /*
-			      &sptdwb, 
-			      length,
-			      */
+			      IOCTL_SCSI_PASS_THROUGH_DIRECT, 
+			      (void *)&swb, 
+			      sizeof(swb),
+			      &swb, 
+			      sizeof(swb),
 			      &dw_bytes_returned,
 			      NULL);
 
-  if ( !b_success ) {
+  if ( 0 == b_success ) {
     windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
 
   /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
    */
-  if (sptdwb.ucSenseBuf[7]) {
-    int sense_size = sptdwb.ucSenseBuf[7] + 8; /* SPC 4.5.3, Table 26: 
+  if (swb.ucSenseBuf[7]) {
+    int sense_size = swb.ucSenseBuf[7] + 8; /* SPC 4.5.3, Table 26: 
 						  252 bytes legal, 263 bytes
 						  possible */
-    if (sense_size > sizeof(sptdwb.ucSenseBuf))
-      sense_size = sizeof(sptdwb.ucSenseBuf);
-    memcpy((void *) p_env->gen.scsi_mmc_sense, &sptdwb.ucSenseBuf, sense_size);
+    if (sense_size > sizeof(swb.ucSenseBuf))
+      sense_size = sizeof(swb.ucSenseBuf);
+    memcpy((void *) p_env->gen.scsi_mmc_sense, &swb.ucSenseBuf, sense_size);
     p_env->gen.scsi_mmc_sense_valid = sense_size;
   }
 
@@ -528,7 +514,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   _img_private_t *p_env = p_user_data;
   SCSI_PASS_THROUGH_WITH_BUFFER sptwb;
   
-  bool b_success;
+  BOOL b_success;
   unsigned long length = 0;
   DWORD dw_bytes_returned;
 
@@ -571,7 +557,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 			      &dw_bytes_returned,
 			      NULL);
 
-  if ( !b_success ) {
+  if ( 0 == b_success ) {
     windows_error(CDIO_LOG_INFO, GetLastError());
     return DRIVER_OP_ERROR;
   }
@@ -594,7 +580,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 }
 #endif
 
-/*! 
+/**
   Get disc type associated with cd object.
 */
 static discmode_t
@@ -627,7 +613,7 @@ dvd_discmode_win32ioctl (_img_private_t *p_env)
 }
 
 
-/*! 
+/**
   Get disc type associated with cd object.
 */
 discmode_t
@@ -738,7 +724,7 @@ is_cdrom_win32ioctl(const char c_drive_letter)
 #endif
 }
   
-/*!
+/**
    Reads an audio device using the DeviceIoControl method into data
    starting from lsn.  Returns 0 if no error.
  */
@@ -767,7 +753,7 @@ read_audio_sectors_win32ioctl (_img_private_t *p_env, void *data, lsn_t lsn,
   return DRIVER_OP_SUCCESS;
 }
 
-/*!
+/**
    Reads a single raw sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
@@ -789,7 +775,7 @@ read_raw_sector (_img_private_t *p_env, void *p_buf, lsn_t lsn)
 				CDIO_CD_FRAMESIZE_RAW, p_buf);
 }
 
-/*!
+/**
    Reads a single mode2 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
@@ -810,7 +796,7 @@ read_mode2_sector_win32ioctl (_img_private_t *p_env, void *p_data,
 
 }
 
-/*!
+/**
    Reads a single mode2 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
@@ -831,7 +817,7 @@ read_mode1_sector_win32ioctl (_img_private_t *env, void *data,
 
 }
 
-/*!
+/**
   Initialize internal structures for CD device.
  */
 bool
@@ -897,7 +883,7 @@ init_win32ioctl (_img_private_t *env)
 				       FILE_SHARE_READ | FILE_SHARE_WRITE, 
 				       NULL, 
 				       OPEN_EXISTING,
-				       FILE_ATTRIBUTE_NORMAL, 
+				       0, 
 				       NULL );
 
     if( env->h_device_handle == INVALID_HANDLE_VALUE )
@@ -909,7 +895,7 @@ init_win32ioctl (_img_private_t *env)
 					     FILE_SHARE_READ,  
 					     NULL, 
 					     OPEN_EXISTING, 
-					     FILE_ATTRIBUTE_NORMAL, 
+					     0, 
 					     NULL );
 	  if (env->h_device_handle == NULL)
 		return false;
@@ -922,7 +908,7 @@ init_win32ioctl (_img_private_t *env)
   return false;
 }
 
-/*!  
+/**
   Read and cache the CD's Track Table of Contents and track info.
   via a SCSI MMC READ_TOC (FULTOC).  Return true if successful or
   false if an error.
@@ -1026,7 +1012,7 @@ read_fulltoc_win32mmc (_img_private_t *p_env)
   return false;
 }
 
-/*! 
+/**
   Read and cache the CD's Track Table of Contents and track info.
   Return true if successful or false if an error.
 */
@@ -1114,7 +1100,7 @@ read_toc_win32ioctl (_img_private_t *p_env)
   return true;
 }
 
-/*!
+/**
   Return the media catalog number MCN.
 
   Note: string is malloc'd so caller should free() then returned
@@ -1148,7 +1134,7 @@ get_mcn_win32ioctl (const _img_private_t *p_env) {
   return NULL;
 }
 
-/*!  
+/**
   Get the format (XA, DATA, AUDIO) of a track. 
 */
 track_format_t
