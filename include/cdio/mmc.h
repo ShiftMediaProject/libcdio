@@ -113,6 +113,8 @@ extern "C" {
   
   */
   typedef enum {
+  CDIO_MMC_TEST_UNIT_READY              = 0x00, /**< Request drive 
+                                                   information. */
   CDIO_MMC_GPCMD_INQUIRY                = 0x12, /**< Request drive 
                                                    information. */
   CDIO_MMC_GPCMD_MODE_SELECT_6          = 0x15, /**< Select medium 

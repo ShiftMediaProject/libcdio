@@ -146,21 +146,21 @@ tmmc_test_unit_ready(CdIo_t *p_cdio,
 {
   int i_status;
   mmc_cdb_t cdb = {{0, }};
-  char buf[2]; /* just to have an address to pass to mmc_run_cmd() */
+  char buf[1]; /* just to have an address to pass to mmc_run_cmd() */
 
   memset(cdb.field, 0, 6);
-  cdb.field[0] = 0x00;  /* TEST UNIT READY, SPC-3 6.33 */
+  cdb.field[0] = CDIO_MMC_TEST_UNIT_READY;  /* SPC-3 6.33 */
 
   if (flag & 1)
     fprintf(stderr, "tmmc_test_unit_ready ... ");
-  i_status = mmc_run_cmd(p_cdio, 10000, &cdb, SCSI_MMC_DATA_NONE, 2, buf);
+  i_status = mmc_run_cmd(p_cdio, 10000, &cdb, SCSI_MMC_DATA_NONE, 0, buf);
 
   return tmmc_handle_outcome(p_cdio, i_status, sense_avail, sense_reply,
                              flag & 1);
 }
 
 
-/* OBTRUSIVE , PHYSICAL EFFECT , DANGER OF HUMAN INJURY */
+/* OBTRUSIVE. PHYSICAL EFFECT: DANGER OF HUMAN INJURY */
 /* @param flag bit0= verbose
                bit1= Asynchronous operation
                bit2= Load (else Eject)
@@ -188,7 +188,7 @@ tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
 }
 
 
-/* BARELY OBTRUSIVE, MIGHT SPOIL BURN RUNS */
+/* BARELY OBTRUSIVE: MIGHT SPOIL BURN RUNS */
 /* Fetch a mode page or a part of it from the drive.
    @param alloc_len  The number of bytes to be requested from the drive and to
                      be copied into parameter buf.
@@ -241,7 +241,8 @@ tmmc_mode_sense(CdIo_t *p_cdio, int *sense_avail,unsigned char sense_reply[18],
 }
 
 
-/* OBTRUSIVE, SPOILS BURN RUNS , might return minor failure with -ROM drives */
+/* OBTRUSIVE. SPOILS BURN RUNS and might return minor failure with
+   -ROM drives */
 /* Send a mode page to the drive.
    @param buf        Contains the payload bytes. The first 8 shall be a Mode
                      Parameter Header as of SPC-3 7.4.3, table 240.
@@ -622,7 +623,6 @@ tmmc_test(char *drive_path, int flag)
            drive_path, scsi_tuple);
 
 
-#if 0
   /* Test availability of sense reply in case of unready drive.
      E.g. if the tray is already ejected.
   */
@@ -633,35 +633,32 @@ tmmc_test(char *drive_path, int flag)
             sense_avail);
     {ret = 2; goto ex;}
   }
-#endif 
 
   /* Cause sense reply failure by requesting inappropriate mode page 3Eh */
   ret = tmmc_mode_sense(p_cdio, &sense_avail, sense,
                        0x3e, 0, alloc_len, buf, &buf_fill, !!verbose);
-  if (sense_avail < 18) {
+  if (ret != 0 && sense_avail < 18) {
     fprintf(stderr,
             "Error: An illegal command yields only %d sense bytes. Expected >= 18.\n",
             sense_avail);
     {ret = 2; goto ex;}
   } 
 
-#if 0
   /* Test availability of sense reply in case of unready drive.
      E.g. if the tray is already ejected.
   */
   ret = tmmc_test_unit_ready(p_cdio, &sense_avail, sense, !!verbose);
-  if (sense_avail < 18) {
+  if (ret != 0 && sense_avail < 18) {
     fprintf(stderr,
 	    "Error: Drive not ready. Only %d sense bytes. Expected >= 18.\n",
 	    sense_avail);
     {ret = 2; goto ex;}
   }
-#endif
 
   /* Cause sense reply failure by requesting inappropriate mode page 3Eh */
   ret = tmmc_mode_sense(p_cdio, &sense_avail, sense,
 			0x3e, 0, alloc_len, buf, &buf_fill, !!verbose);
-  if (sense_avail < 18) {
+  if (ret != 0 && sense_avail < 18) {
     fprintf(stderr,
 	    "Error: Deliberately illegal command yields only %d sense bytes. Expected >= 18.\n",
 	    sense_avail);

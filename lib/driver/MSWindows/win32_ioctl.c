@@ -453,6 +453,8 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   
   BOOL b_success;
   DWORD dw_bytes_returned;
+  char dummy_buf[2]; /* Used if we can't use p_buf. See below. */
+  int rc = DRIVER_OP_SUCCESS;
 
   memset(&swb, 0, sizeof(swb));
   
@@ -467,8 +469,20 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
     (SCSI_MMC_DATA_READ  == e_direction) ? SCSI_IOCTL_DATA_IN :
     (SCSI_MMC_DATA_WRITE == e_direction) ? SCSI_IOCTL_DATA_OUT :
     SCSI_IOCTL_DATA_UNSPECIFIED;
-  swb.sptd.DataBuffer        = p_buf;
-  swb.sptd.DataTransferLength= i_buf; 
+
+  /* MS Windows seems to flip out of the size of the buffer is 0 or
+     1. For the 1 byte case see: BUG: SCSI Pass Through Fails with
+     Invalid User Buffer Error http://support.microsoft.com/kb/259573
+     So in those cases we will provide our own.
+  */
+  if (i_buf <= 1) {
+    swb.sptd.DataBuffer         = &dummy_buf;
+    swb.sptd.DataTransferLength = 2;
+  } else {
+    swb.sptd.DataBuffer         = p_buf;
+    swb.sptd.DataTransferLength = i_buf;
+  }
+
   swb.sptd.TimeOutValue      = msecs2secs(i_timeout_ms);
   swb.sptd.SenseInfoOffset   = offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER, 
 					SenseBuf);
@@ -485,9 +499,18 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 			      &dw_bytes_returned,
 			      NULL);
 
+  if (i_buf == 1) memcpy(p_buf, &dummy_buf[0], 1);
+
   if ( 0 == b_success ) {
-    windows_error(CDIO_LOG_INFO, GetLastError());
-    return DRIVER_OP_ERROR;
+    long int last_error = GetLastError();
+    windows_error(CDIO_LOG_INFO, last_error);
+    switch (last_error) {
+    case 87:
+      rc = DRIVER_OP_BAD_PARAMETER;
+      break;
+    default:
+      rc = DRIVER_OP_ERROR;
+    }
   }
 
   /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
@@ -500,9 +523,10 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
       sense_size = sizeof(swb.SenseBuf);
     memcpy((void *) p_env->gen.scsi_mmc_sense, &swb.SenseBuf, sense_size);
     p_env->gen.scsi_mmc_sense_valid = sense_size;
+    if (DRIVER_OP_SUCCESS == rc) 
+      rc = DRIVER_OP_MMC_SENSE_DATA;
   }
-
-  return DRIVER_OP_SUCCESS;
+  return rc;
 }
 #else
 int
