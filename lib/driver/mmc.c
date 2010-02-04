@@ -423,7 +423,7 @@ mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_6);
 
-  cdb.field[2] = 0x3F & page;
+  cdb.field[2] = CDIO_MMC_ALL_PAGES & page;
   cdb.field[4] = i_size;
   
   return p_cdio->op.run_mmc_cmd (p_cdio->env, 
@@ -455,7 +455,7 @@ mmc_mode_sense_10( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_10);
   CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_size);
 
-  cdb.field[2] = 0x3F & page;
+  cdb.field[2] = CDIO_MMC_ALL_PAGES & page;
   
   return p_cdio->op.run_mmc_cmd (p_cdio->env, 
                                  mmc_timeout_ms,
@@ -1095,13 +1095,13 @@ mmc_last_cmd_sense( const CdIo_t *p_cdio, unsigned char **sense)
 */
 driver_return_code_t
 mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms, 
-		  const mmc_cdb_t *p_cdb,
-		  cdio_mmc_direction_t e_direction, unsigned int i_buf, 
-		  /*in/out*/ void *p_buf )
+             const mmc_cdb_t *p_cdb,
+             cdio_mmc_direction_t e_direction, unsigned int i_buf, 
+             /*in/out*/ void *p_buf )
 {
-  if (!p_cdio) return DRIVER_OP_UNINIT;
-  if (!p_cdio->op.run_mmc_cmd) return DRIVER_OP_UNSUPPORTED;
-  return p_cdio->op.run_mmc_cmd(p_cdio->env, i_timeout_ms,
+    if (!p_cdio) return DRIVER_OP_UNINIT;
+    if (!p_cdio->op.run_mmc_cmd) return DRIVER_OP_UNSUPPORTED;
+    return p_cdio->op.run_mmc_cmd(p_cdio->env, i_timeout_ms,
 				     mmc_get_cmd_len(p_cdb->field[0]),
 				     p_cdb, e_direction, i_buf, p_buf);
 }

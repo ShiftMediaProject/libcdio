@@ -208,30 +208,25 @@ tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
    @return           return value of mmc_run_cmd(),
                      or other driver_return_code_t
 */
-static int
+static driver_return_code_t
 tmmc_mode_sense(CdIo_t *p_cdio, int *sense_avail,unsigned char sense_reply[18],
                 int page_code, int subpage_code, int alloc_len,
                 unsigned char *buf, int *buf_fill, int flag)
 {
-  int i_status;
+  driver_return_code_t i_status;
   mmc_cdb_t cdb = {{0, }};
 
   if (alloc_len < 10)
     return DRIVER_OP_BAD_PARAMETER;
 
-  memset(cdb.field, 0, 10);
-  cdb.field[0] = 0x5a;                 /* MODE SENSE(10), SPC-3 6.10 */
-  cdb.field[2] = page_code & 0x3f;     /* PC=0 : Current values */
-  cdb.field[3] = subpage_code & 0xff;
-  cdb.field[7] = (alloc_len >> 8) & 0xff;
-  cdb.field[8] = alloc_len & 0xff;
+  mmc_mode_sense_10(p_cdio, buf, alloc_len, page_code);
   if (flag & 1)
     fprintf(stderr, "tmmc_mode_sense(0x%X, %X, %d) ... ",
 	    (unsigned int) page_code, (unsigned int) subpage_code, alloc_len);
   i_status = mmc_run_cmd(p_cdio, 10000, &cdb, SCSI_MMC_DATA_READ,
                          alloc_len, buf);
   tmmc_handle_outcome(p_cdio, i_status, sense_avail, sense_reply, flag & 1);
-  if (i_status != 0)
+  if (DRIVER_OP_SUCCESS != i_status)
     return i_status;
   if (flag & 2)
     *buf_fill = buf[9] + 10;                /* MMC-5 7.2.3 */
@@ -276,11 +271,9 @@ tmmc_mode_select(CdIo_t *p_cdio,
       printf("\n");
   }
 
-  memset(cdb.field, 0, 10);
-  cdb.field[0] = 0x55;                 /* MODE SELECT(10), SPC-3 6.8 */
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SELECT_10); /* SPC-3 6.8 */
   cdb.field[1] = 0x10;                 /* PF = 1 : official SCSI mode page */
-  cdb.field[7] = (buf_fill >> 8) & 0xff;
-  cdb.field[8] = buf_fill & 0xff;
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, buf_fill);
   if (flag & 1)
     fprintf(stderr, "tmmc_mode_select(0x%X, %d, %d) ... ",
 	    (unsigned int) buf[8], (unsigned int) buf[9], buf_fill);
@@ -305,30 +298,30 @@ tmmc_wait_for_drive(CdIo_t *p_cdio, int max_tries, int flag)
 {
   int ret, i, sense_avail;
   unsigned char sense_reply[18];
-
+  mmc_request_sense_t *p_sense_reply = (mmc_request_sense_t *) sense_reply;
+  
   for (i = 0; i < max_tries; i++) {
     ret = tmmc_test_unit_ready(p_cdio, &sense_avail, sense_reply, flag & 1);
     if (ret == 0) /* Unit is ready */
       return 1;
     if (sense_avail < 18)
       return -1;
-    sense_reply[2] &= 0xf;
-    if (sense_reply[2] == 2 && sense_reply[12] == 0x04) {
+    if (p_sense_reply->sense_key == 2 && sense_reply[12] == 0x04) {
 
       /* Not ready */;
 
-    } else if (sense_reply[2] == 6 && sense_reply[12] == 0x28
+    } else if (p_sense_reply->sense_key == 6 && sense_reply[12] == 0x28
                && sense_reply[13] == 0x00) {
 
       /* Media change notice = try again */;
 
-    } else if (sense_reply[2] == 2 && sense_reply[12] == 0x3a) {
+    } else if (p_sense_reply->sense_key == 2 && sense_reply[12] == 0x3a) {
 
       /* Medium not present */;
 
       if (!(flag & 2))
         return 1;
-    } else if (sense_reply[2] == 0 && sense_reply[12] == 0) {
+    } else if (p_sense_reply->sense_key == 0 && sense_reply[12] == 0) {
 
       /* Error with no sense */;
 

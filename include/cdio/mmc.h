@@ -35,6 +35,11 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/* On GNU/Linux see <linux/byteorder/big_endian.h> */
+#ifndef __BIG_ENDIAN_BITFIELD
+#define __MMC_BIG_ENDIAN_BITFIELD
+#endif
+
    /**
       Structure of a SCSI/MMC sense reply.
      
@@ -44,7 +49,7 @@ extern "C" {
       SPC 4.5.3, Table 26.
     */
     typedef struct mmc_request_sense {
-#if defined(WORDS_BIGENDIAN)
+#if defined(__MMC_BIG_ENDIAN_BITFIELD)
 	uint8_t valid		: 1;  /**< valid bit is 1 if info is valid */
 	uint8_t error_code	: 7;
 #else
@@ -52,7 +57,7 @@ extern "C" {
 	uint8_t valid		: 1;  /**< valid bit is 1 if info is valid */
 #endif
 	uint8_t segment_number;
-#if defined(WORDS_BIGENDIAN)
+#if defined(__MMC_BIG_ENDIAN_BITFIELD)
 	uint8_t filemark	: 1; /**< manditory in sequential
                                       * access devices */
 	uint8_t eom	        : 1; /**< end of medium. manditory in
