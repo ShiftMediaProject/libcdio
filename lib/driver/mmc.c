@@ -42,6 +42,28 @@
 #include <errno.h>
 #endif
 
+/**
+   Maps a mmc_sense_key_t into a string name.
+ */
+const char mmc_sense_key2str[16][40] = {
+    "No Sense",              /**< 0 No specific Sense Key info reported */
+    "Recovered Error",       /**< 1 Completed ok with recovery */
+    "Not Ready",             /**< 2 */
+    "Medium Error",          /**< 3 */
+    "Hardware Error",        /**< 4 */
+    "Illegal Request",       /**< 5 */
+    "Unit Attention",        /**< 6 */
+    "Data Protect",          /**< 7 */
+    "Blank/Nonblank",        /**< 8 */
+    "Firmware Error",        /**< 9  - Vendor-specific */
+    "Copy aborted",          /**< A */
+    "Aborted Command",       /**< B */
+    "Equal",                 /**< C */
+    "Volume Overflow",       /**< D */
+    "Miscompare",            /**< E */
+    "(reserved error code)", /**< F */
+};
+
 /** The below variables are trickery to force enum symbol values to be
     recorded in debug symbol tables. They are used to allow one to refer
     to the enumeration value names in the typedefs above in a debugger

@@ -86,38 +86,63 @@ extern "C" {
 	uint8_t asb[46];              /**< Additional sense bytes */
     } mmc_request_sense_t;
 
-  /**
-      Set this to the maximum value in milliseconds that we will
-      wait on an MMC command.  
-  */
-  extern uint32_t mmc_timeout_ms; 
 
-  /**
-      The default timeout (non-read) is 6 seconds. 
-  */
+    /**
+       Meanings of the values of mmc_request_sense.sense_key
+     */
+    typedef enum {
+        MMC_SENSE_KEY_NO_SENSE        =  0,
+        MMC_SENSE_KEY_RECOVERED_ERROR =  1,
+        MMC_SENSE_KEY_NOT_READY       =  2,
+        MMC_SENSE_KEY_MEDIUM_ERROR    =  3,
+        MMC_SENSE_KEY_HARDWARE_ERROR  =  4,
+        MMC_SENSE_KEY_ILLEGAL_REQUEST =  5,
+        MMC_SENSE_KEY_UNIT_ATTENTION  =  6,
+        MMC_SENSE_KEY_DATA_PROTECT    =  7,
+        MMC_SENSE_KEY_FIRMWARE_ERROR  =  9,
+        MMC_SENSE_KEY_ABORTED_COMMAND = 11,
+        MMC_SENSE_KEY_EQUAL           = 12,
+        MMC_SENSE_KEY_VOLUME_OVERFLOW = 13,
+        MMC_SENSE_KEY_MISCOMPARE      = 14,
+    } mmc_sense_key_t;
+
+   /**
+      Maps a mmc_sense_key_t into a string name.
+   */
+    extern const char mmc_sense_key2str[16][40];
+
+    /**
+       Set this to the maximum value in milliseconds that we will
+       wait on an MMC command.  
+    */
+    extern uint32_t mmc_timeout_ms; 
+
+    /**
+       The default timeout (non-read) is 6 seconds. 
+    */
 #define MMC_TIMEOUT_DEFAULT 6000
 
-  /**
-      Set this to the maximum value in milliseconds that we will
-      wait on an MMC read command.  
-  */
-  extern uint32_t mmc_read_timeout_ms;
-
-  /** The default read timeout is 3 minutes. */
-#define MMC_READ_TIMEOUT_DEFAULT 3*60*1000
-
-  /**
-      \brief The opcode-portion (generic packet commands) of an MMC command.
+    /**
+       Set this to the maximum value in milliseconds that we will
+       wait on an MMC read command.  
+    */
+    extern uint32_t mmc_read_timeout_ms;
     
-      In general, those opcodes that end in 6 take a 6-byte command
-      descriptor, those that end in 10 take a 10-byte
-      descriptor and those that in in 12 take a 12-byte descriptor. 
-      
-      (Not that you need to know that, but it seems to be a
-      big deal in the MMC specification.)
-  
-  */
-  typedef enum {
+    /** The default read timeout is 3 minutes. */
+#define MMC_READ_TIMEOUT_DEFAULT 3*60*1000
+    
+    /**
+       \brief The opcode-portion (generic packet commands) of an MMC command.
+       
+       In general, those opcodes that end in 6 take a 6-byte command
+       descriptor, those that end in 10 take a 10-byte
+       descriptor and those that in in 12 take a 12-byte descriptor. 
+       
+       (Not that you need to know that, but it seems to be a
+       big deal in the MMC specification.)
+       
+    */
+    typedef enum {
   CDIO_MMC_TEST_UNIT_READY              = 0x00, /**< Request drive 
                                                    information. */
   CDIO_MMC_GPCMD_INQUIRY                = 0x12, /**< Request drive 
