@@ -54,14 +54,14 @@ const char mmc_sense_key2str[16][40] = {
     "Illegal Request",       /**< 5 */
     "Unit Attention",        /**< 6 */
     "Data Protect",          /**< 7 */
-    "Blank/Nonblank",        /**< 8 */
-    "Firmware Error",        /**< 9  - Vendor-specific */
+    "Blank Check",           /**< 8 */
+    "Vendor Specific",       /**< 9 */
     "Copy aborted",          /**< A */
     "Aborted Command",       /**< B */
-    "Equal",                 /**< C */
-    "Volume Overflow",       /**< D */
-    "Miscompare",            /**< E */
-    "(reserved error code)", /**< F */
+    "Obsolete",              /**< C */
+    "Unknown - 13",          /**< D */
+    "Unknown - 14",          /**< E */
+    "Unknown - 15",          /**< F */
 };
 
 /** The below variables are trickery to force enum symbol values to be
@@ -1085,19 +1085,19 @@ int mmc_get_tray_status(const CdIo_t *p_cdio)
                          <0 in case of internal error.
 */
 int
-mmc_last_cmd_sense( const CdIo_t *p_cdio, unsigned char **sense)
+mmc_last_cmd_sense( const CdIo_t *p_cdio, mmc_request_sense_t **pp_sense)
 {
   generic_img_private_t *gen;
 
   if (!p_cdio) return DRIVER_OP_UNINIT;
   gen = p_cdio->env;
-  *sense = NULL;
+  *pp_sense = NULL;
   if (gen->scsi_mmc_sense_valid <= 0)
 	return 0;
-  *sense = calloc(1, gen->scsi_mmc_sense_valid);
-  if (*sense == NULL)
+  *pp_sense = calloc(1, gen->scsi_mmc_sense_valid);
+  if (*pp_sense == NULL)
     return DRIVER_OP_ERROR;
-  memcpy(*sense, gen->scsi_mmc_sense, gen->scsi_mmc_sense_valid);
+  memcpy(*pp_sense, gen->scsi_mmc_sense, gen->scsi_mmc_sense_valid);
   return gen->scsi_mmc_sense_valid;
 }
 

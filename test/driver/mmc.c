@@ -54,7 +54,7 @@ static int tmmc_handle_outcome(CdIo_t *p_cdio, int i_status,
 			       unsigned char sense_reply[18], int flag);
 
 static void tmmc_print_status_sense(int i_status, int sense_valid,
-				    unsigned char sense_reply[18], int flag);
+				    mmc_request_sense_t *, int flag);
 
 static int tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
 			   unsigned char sense_reply[18], int flag);
@@ -97,15 +97,17 @@ tmmc_get_disc_erasable(const CdIo_t *p_cdio, const char *psz_source,
 */
 static void
 tmmc_print_status_sense(int i_status, int sense_valid,
-                        unsigned char sense[18], int flag)
+                        mmc_request_sense_t *p_sense, int flag)
 {
-  if (!(flag & 1))
-    return;
-  fprintf(stderr, "return= %d , sense(%d)", i_status, sense_valid);
-  if (sense_valid >= 14)
-    fprintf(stderr, ":  KEY= %1.1X , ASC= %2.2X , ASCQ= %2.2X",
-            sense[2] & 0x0f, sense[12], sense[13]);
-  if (flag & 1)
+    if (!(flag & 1))
+	return;
+    fprintf(stderr, "return= %d , sense(%d)", i_status, sense_valid);
+    if (sense_valid >= 14)
+	fprintf(stderr, ":  KEY=%s (%1.1X), ASC= %2.2X , ASCQ= %2.2X",
+		mmc_sense_key2str[p_sense->sense_key],
+		p_sense->sense_key,
+		p_sense->asc, 
+		p_sense->ascq);
     fprintf(stderr, "\n");  
 }
 
@@ -116,16 +118,16 @@ static int
 tmmc_handle_outcome(CdIo_t *p_cdio, int i_status,
                     int *sense_avail, unsigned char sense_reply[18], int flag)
 {
-  unsigned char *sense = NULL;
+  mmc_request_sense_t *p_sense = NULL;
 
-  *sense_avail = mmc_last_cmd_sense(p_cdio, &sense);
-  tmmc_print_status_sense(i_status, *sense_avail, sense, flag & 1);
+  *sense_avail = mmc_last_cmd_sense(p_cdio, &p_sense);
+  tmmc_print_status_sense(i_status, *sense_avail, p_sense, flag & 1);
   if (*sense_avail >= 18)
-    memcpy(sense_reply, sense, 18);
+    memcpy(sense_reply, p_sense, 18);
   else
     memset(sense_reply, 0, 18);
-  if (sense != NULL)
-    free(sense);
+  if (p_sense != NULL)
+    free(p_sense);
   return i_status;
 }
 

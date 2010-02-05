@@ -35,9 +35,17 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/* On GNU/Linux see <linux/byteorder/big_endian.h> */
-#ifndef __BIG_ENDIAN_BITFIELD
-#define __MMC_BIG_ENDIAN_BITFIELD
+/* On GNU/Linux see <linux/byteorder/big_endian.h> and 
+   <linux/byteorder/little_endian.h>
+*/
+#ifdef WORDS_BIGENDIAN
+#  if !defined(__LITTLE_ENDIAN_BITFIELD) && !defined(__BIG_ENDIAN_BITFIELD)
+#  define __MMC_BIG_ENDIAN_BITFIELD
+#  endif
+#else 
+#  if !defined(__LITTLE_ENDIAN_BITFIELD) && !defined(__BIG_ENDIAN_BITFIELD)
+#  define __MMC_LITTLE_ENDIAN_BITFIELD
+#  endif
 #endif
 
    /**
@@ -99,11 +107,11 @@ extern "C" {
         MMC_SENSE_KEY_ILLEGAL_REQUEST =  5,
         MMC_SENSE_KEY_UNIT_ATTENTION  =  6,
         MMC_SENSE_KEY_DATA_PROTECT    =  7,
-        MMC_SENSE_KEY_FIRMWARE_ERROR  =  9,
+        MMC_SENSE_KEY_BLANK_CHECK     =  8,
+        MMC_SENSE_KEY_VENDOR_SPECIFIC =  9,
+        MMC_SENSE_KEY_COPY_ABORTED    = 10,
         MMC_SENSE_KEY_ABORTED_COMMAND = 11,
-        MMC_SENSE_KEY_EQUAL           = 12,
-        MMC_SENSE_KEY_VOLUME_OVERFLOW = 13,
-        MMC_SENSE_KEY_MISCOMPARE      = 14,
+        MMC_SENSE_KEY_OBSOLTE         = 12,
     } mmc_sense_key_t;
 
    /**
@@ -1016,7 +1024,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
                          0 in case of no sense bytes available,
                          <0 in case of internal error.
   */
-  int mmc_last_cmd_sense ( const CdIo_t *p_cdio, unsigned char **sense);
+  int mmc_last_cmd_sense ( const CdIo_t *p_cdio, mmc_request_sense_t **pp_sense);
 
   /**
     Set the block size for subsequest read requests, via MMC.
