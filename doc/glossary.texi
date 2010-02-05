@@ -3,13 +3,13 @@ See also @uref{http://www.dvdrhelp.com/glossary}.
 
 @table @dfn
 
-@item ASPI
+@item @anchor{ASPI}ASPI
 @cindex ASPI
 See @acronym{Win32 ASPI}
 
 @item ATA
 
-Advanced Technology Attachment (ATA). The same things as IDE.
+Advanced Technology Attachment (ATA). The same thing as IDE.
 
 @item ATAPI
 
@@ -35,13 +35,15 @@ actual data of each track.
 
 @item Blu-ray Disc (BD)
 @cindex Blu-ray Disc (BD)
-Optical media with capacity of 25 GB as single layer and 50 GB
-as double layer. See also "Media models and profiles".
+Optical media with capacity of 25 GB as single layer and 50 GB as
+double layer. See also @pxref{models-profiles,,"Media models and
+profiles"}.
 
 
 @item CD
 @cindex CD
-Compact Disc. Capacity up to 900 MB. See also "Media models and profiles".
+Compact Disc. Capacity up to 900 MB. See also
+@pxref{models-profiles,,"Media models and profiles"}.
 
 @item CD-DA
 @cindex CD-DA
@@ -100,7 +102,7 @@ information such as artist name, title, songwriter, composer, or
 arranger. Commercially available audio CDs sometimes contain CD Text
 information.
 
-@item CD XA
+@item @anchor{XA}CD XA
 @cindex CD XA
 
 CD-ROM EXtended Architecture. A modification to the CD-ROM
@@ -123,8 +125,9 @@ fully compatible.
 
 @item DVD
 @cindex DVD
-Digital Versatile Disc. Capacity up to 4.5 GB as single layer and
-8.5 GB as double layer media. See also "Media models and profiles".
+Digital Versatile Disc. Capacity up to 4.5 GB as single layer and 8.5
+GB as double layer media. See also @pxref{models-profiles,,"Media
+models and profiles"}.
 
 @item Defect management
 @cindex Defect management
@@ -270,18 +273,24 @@ it can be represented as an unsigned value.
 Media Catalog Number. A identification number on an audio CD.  Also
 called a UPC. Another identification number is ISRC.
 
-@item MMC
+@item @anchor{MMC}MMC
 @cindex MMC (Multimedia Commands)
 
-MMC (Multimedia Commands). A SCSI programming specification made by
-the SCSI committee T10 organization @url{http://www.t10.org/}.  MMC
-are raw commands for communicating with CDROM drives, CD-Rewriters,
-DVD-Rewriters, etc.
+MMC (Multimedia Commands). 
+
+MMC are raw commands for communicating with CDROM drives,
+CD-Rewriters, DVD-Rewriters, etc. The are subset of the larger SCSI
+command set. See also @pxref{SCSI,,@acronym{SCSI}}.
 
 Many manufacturers have adopted this standard and it also applies to
 ATAPI versions of their drives.
 
-@item Media models and profiles
+The documents @code{libcdio} makes use of are described in the
+Multi-Media Commands standard (MMC). This document generally has a
+numeric level number appended. For example MMC-5 refers to
+``Multi-Media Commands - 5.
+
+@item @anchor{models-profiles}Media models and profiles
 @cindex Media models and profiles
 
 MMC classifies media as models, which describe their logical structure,
@@ -343,7 +352,7 @@ POSIX operations lseek(), read(), write() of the operating system.
 @item BD-RE      0x43 (single or double layer)
 @end table
 BD-R profile 0x42 is defined by MMC but not implemented by the consumer
-priced Blu-ray burners as of year 2009.
+priced Blu-ray burners as of year 2010.
 
 @item Mixed Mode CD
 @cindex Mixed Mode CD
@@ -393,7 +402,7 @@ file. Rock Ridge is described by unapproved standard IEEE P1282 / RRIP-1.12
 and based on unapproved IEEE P1281 / SUSP-1.10. It has become a de-facto
 standard on X/Open systems like GNU/Linux, FreeBSD, Solaris, et.\ al.
 
-@item SCSI 
+@item @anchor{SCSI}SCSI 
 @cindex SCSI 
 
 Small Computer System Interface.  A set of ANSI standard electronic
@@ -406,6 +415,17 @@ set nowadays controls most storage devices including all optical disc drives.
 The contemporary electronic technologies which transport SCSI commands
 to optical drives are P-ATA, SATA, and USB.
 
+A SCSI programming specification made by the SCSI committee T10
+organization @url{http://www.t10.org/}.
+
+The documents @code{libcdio} makes use of are described in SCSI
+standards documents SCSI Primary Commands (SPC), SCSI Block Commands
+(SBC), and Multi-Media Commands (MMC). These documents generally have
+a numeric level number appended. For example SPC-3 refers to 
+``SCSI Primary Commands - 3'.
+
+In year 2010 the current versions were SPC-3, SBC-2, MMC-5.
+
 @item SCSI CDB
 @cindex SCSI CDB
 
@@ -417,7 +437,8 @@ issue a SCSI command.
 
 Yet another way of issuing MMC commands for accessing a CD-ROM. As
 with MMC or ASPI, the CD-ROM doesn't necessarily have to be a
-SCSI-attached drive. See also @acronym{MMC} and @acronym{ASPI}.
+SCSI-attached drive. See also @pxref{MMC,,@acronym{MMC}} and
+@pxref{MMC,,@acronym{ASPI}}.
 
 @item Session
 
@@ -510,7 +531,7 @@ However in Windows NT/2K/XP, Microsoft provides their Win32 ioctl
 interface, and has take steps to make using ASPI more inaccessible
 (e.g. requiring administrative access to use ASPI).
 
-See also @acronym{MMC}
+See also @pxref{MMC,,@acronym{MMC}}.
 
 @item Win32 ioctl driver
 
@@ -521,6 +542,6 @@ defined codes and structures.
 @item XA
 @cindex XA
 
-See @acronym{CD-ROM XA}
+@xref{XA,,@acronym{CD-ROM XA}}.
 
 @end table

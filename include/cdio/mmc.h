@@ -17,10 +17,20 @@
 */
 
 /**
- *  \file mmc.h 
- * 
- *  \brief Common definitions for MMC (Multimedia Commands). Applications
- *  include this for direct MMC access.
+   \file mmc.h 
+   
+   \brief Common definitions for MMC (Multimedia Commands). Applications
+   include this for direct MMC access.
+
+   The documents we make use of are described in several
+   specifications made by the SCSI committee T10
+   http://www.t10.org. In particular, SCSI Primary Commands (SPC),
+   SCSI Block Commands (SBC), and Multi-Media Commands (MMC). These
+   documents generally have a numeric level number appended. For
+   example SPC-3 refers to ``SCSI Primary Commands - 3'.
+
+   In year 2010 the current versions were SPC-3, SBC-2, MMC-5.
+
 */
 
 #ifndef __CDIO_MMC_H__
@@ -53,8 +63,7 @@ extern "C" {
      
       This has been adapted from GNU/Linux request_sense of <linux/cdrom.h>
       include this for direct MMC access.
-      See SCSI Primary Commands-2 (SPC-2) table 102 or
-      SPC 4.5.3, Table 26.
+      See SCSI Primary Commands-2 (SPC-3) table 26 page 38.
     */
     typedef struct mmc_request_sense {
 #if defined(__MMC_BIG_ENDIAN_BITFIELD)
@@ -1012,17 +1021,17 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
       These bytes give an indication of possible problems which occured in
       the drive while the command was performed. With some commands they tell
       about the current state of the drive (e.g. 00h TEST UNIT READY).
-      @param p_cdio      CD structure set by cdio_open().
-      @param sense       returns the sense bytes received from the drive.
-                         This is allocated memory or NULL if no sense bytes are
-                         available. Dispose non-NULL pointers by free() when
-                         no longer needed.
-                         See SPC-3 4.5.3 Fixed format sense data.
-                         SCSI error codes as of SPC-3 Annex D, MMC-5 Annex F:
-                         sense[2]&15 = Key , sense[12] = ASC , sense[13] = ASCQ
-      @return            number of valid bytes in sense,
-                         0 in case of no sense bytes available,
-                         <0 in case of internal error.
+      @param p_cdio CD structure set by cdio_open().
+
+      @param sense returns the sense bytes received from the drive.
+      This is allocated memory or NULL if no sense bytes are
+      available. Dispose non-NULL pointers by free() when no longer
+      needed.  See SPC-3 4.5.3 Fixed format sense data.  SCSI error
+      codes as of SPC-3 Annex D, MMC-5 Annex F: sense[2]&15 = Key ,
+      sense[12] = ASC , sense[13] = ASCQ
+
+      @return number of valid bytes in sense, 0 in case of no sense
+              bytes available, <0 in case of internal error.
   */
   int mmc_last_cmd_sense ( const CdIo_t *p_cdio, mmc_request_sense_t **pp_sense);
 

@@ -174,16 +174,13 @@ tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
 {
   int i_status;
   mmc_cdb_t cdb = {{0, }};
-  char buf[1]; /* just to have an address to pass to mmc_run_cmd() */
+  bool b_eject = !!(flag & 4);
+  bool b_immediate = !!(flag & 2);
 
-  memset(cdb.field, 0, 6);
-  cdb.field[0] = 0x1b;                 /* START/STOP UNIT, SBC-2 5.17 */
-  cdb.field[1] = !!(flag & 2);         /* bit0= Immed */
-  cdb.field[4] = (flag & 4) ? 3 : 2;   /* bit0= Start , bit1= Load/Eject */
+  i_status = mmc_start_stop_media(p_cdio, b_eject, b_immediate, 0);
 
   if (flag & 1)
     fprintf(stderr, "tmmc_load_eject(0x%X) ... ", (unsigned int) flag);
-  i_status = mmc_run_cmd(p_cdio, 10000, &cdb, SCSI_MMC_DATA_NONE, 0, buf);
 
   return tmmc_handle_outcome(p_cdio, i_status, sense_avail, sense_reply,
                              flag & 1);

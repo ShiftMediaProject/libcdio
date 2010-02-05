@@ -1069,21 +1069,22 @@ int mmc_get_tray_status(const CdIo_t *p_cdio)
 
 /* Added in version 0.83 by scdbackup */
 /**
-    Obtain the SCSI sense reply of the most-recently-performed MMC command.
-    These bytes give an indication of possible problems which occured in
-    the drive while the command was performed. With some commands they tell
-    about the current state of the drive (e.g. 00h TEST UNIT READY).
-    @param sense       returns the sense bytes received from the drive.
-    This is allocated memory or NULL if no sense bytes are
-    available. Dispose non-NULL pointers by free() when
-                         no longer needed.
-                         See SPC-3 4.5.3 Fixed format sense data.
-                         SCSI error codes as of SPC-3 Annex D, MMC-5 Annex F:
-                         sense[2]&15 = Key , sense[12] = ASC , sense[13] = ASCQ
-      @return            number of valid bytes in sense,
-                         0 in case of no sense bytes available,
-                         <0 in case of internal error.
-*/
+   Obtain the SCSI sense reply of the most-recently-performed MMC command.
+   These bytes give an indication of possible problems which occured in
+   the drive while the command was performed. With some commands they tell
+   about the current state of the drive (e.g. 00h TEST UNIT READY).
+   @param p_cdio CD structure set by cdio_open().
+   
+   @param sense returns the sense bytes received from the drive.
+   This is allocated memory or NULL if no sense bytes are
+   available. Dispose non-NULL pointers by free() when no longer
+   needed.  See SPC-3 4.5.3 Fixed format sense data.  SCSI error
+   codes as of SPC-3 Annex D, MMC-5 Annex F: sense[2]&15 = Key ,
+   sense[12] = ASC , sense[13] = ASCQ
+   
+   @return number of valid bytes in sense, 0 in case of no sense
+   bytes available, <0 in case of internal error.
+  */
 int
 mmc_last_cmd_sense( const CdIo_t *p_cdio, mmc_request_sense_t **pp_sense)
 {
