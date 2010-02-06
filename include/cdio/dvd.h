@@ -1,7 +1,5 @@
 /*
-    $Id: dvd.h,v 1.5 2008/03/25 15:59:09 karl Exp $
-
-    Copyright (C) 2004 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2004, 2010 Rocky Bernstein <rocky@gnu.org>
     Modeled after GNU/Linux definitions in linux/cdrom.h
 
     This program is free software: you can redistribute it and/or modify
@@ -36,13 +34,20 @@
 #define CDIO_DVD_STRUCT_BCA		0x03
 #define CDIO_DVD_STRUCT_MANUFACT	0x04
 
-/*! Media definitions for "Book Type" */
-#define CDIO_DVD_BOOK_DVD_ROM 0
-#define CDIO_DVD_BOOK_DVD_RAM 1
-#define CDIO_DVD_BOOK_DVD_R   2 /**< DVD-R  */
-#define CDIO_DVD_BOOK_DVD_RW  3 /**< DVD-RW */
-#define CDIO_DVD_BOOK_DVD_PR  8 /**< DVD+R  */
-#define CDIO_DVD_BOOK_DVD_PRW 9 /**< DVD+RW */
+/**
+    Media definitions for "Book Type". From MMC-5 Table 400, page 419.
+*/
+#define CDIO_DVD_BOOK_DVD_ROM     0x0 /**< DVD-ROM */
+#define CDIO_DVD_BOOK_DVD_RAM     0x1 /**< DVD-RAM */
+#define CDIO_DVD_BOOK_DVD_R       0x2 /**< DVD-R */
+#define CDIO_DVD_BOOK_DVD_RW      0x3 /**< DVD-RW */
+#define CDIO_DVD_BOOK_HD_DVD_ROM  0x4 /**< HD DVD-ROM */
+#define CDIO_DVD_BOOK_HD_DVD_RAM  0x5 /**< HD DVD-RAM */
+#define CDIO_DVD_BOOK_HD_DVD_R    0x6 /**< HD DVD+RW */
+#define CDIO_DVD_BOOK_DVD_PRW     0x9 /**< DVD+RW */
+#define CDIO_DVD_BOOK_DVD_PR      0xa /**< DVD+R  */
+#define CDIO_DVD_BOOK_DVD_PRW_DL  0xd /**< DVD+RW DL  */
+#define CDIO_DVD_BOOK_DVD_PR_DL   0xe /**< DVD+R DL  */
 
 typedef struct cdio_dvd_layer {
   uint8_t book_version	: 4;

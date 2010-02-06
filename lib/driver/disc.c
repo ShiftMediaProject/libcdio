@@ -106,15 +106,15 @@ bool
 cdio_is_discmode_dvd(discmode_t discmode) 
 {
   switch (discmode) {
-  case CDIO_DISC_MODE_DVD_ROM:
-  case CDIO_DISC_MODE_DVD_RAM:
-  case CDIO_DISC_MODE_DVD_R:
-  case CDIO_DISC_MODE_DVD_RW:
-  case CDIO_DISC_MODE_DVD_PR:
-  case CDIO_DISC_MODE_DVD_PRW:
-  case CDIO_DISC_MODE_DVD_OTHER:
-    return true;
-  default:
-    return false;
+    case CDIO_DISC_MODE_DVD_ROM:
+    case CDIO_DISC_MODE_DVD_RAM:
+    case CDIO_DISC_MODE_DVD_R:
+    case CDIO_DISC_MODE_DVD_RW:
+    case CDIO_DISC_MODE_DVD_PR:
+    case CDIO_DISC_MODE_DVD_PRW:
+    case CDIO_DISC_MODE_DVD_OTHER:
+      return true;
+    default:
+      return false;
   }
 }
