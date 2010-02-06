@@ -112,6 +112,7 @@ cdio_is_discmode_dvd(discmode_t discmode)
   case CDIO_DISC_MODE_DVD_RW:
   case CDIO_DISC_MODE_DVD_PR:
   case CDIO_DISC_MODE_DVD_PRW:
+  case CDIO_DISC_MODE_DVD_OTHER:
     return true;
   default:
     return false;
