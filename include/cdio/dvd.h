@@ -19,6 +19,12 @@
 /**
    \file dvd.h 
    \brief Definitions for DVD access.
+
+   The documents we make use of are described Multi-Media Commands
+   (MMC). This document generally has a numeric level number
+   appended. For example MMC-5 refers to ``Multi-Media Commands - 5'
+   which is the current version in 2010.
+
 */
 
 #ifndef __CDIO_DVD_H__
@@ -45,7 +51,7 @@
 #define CDIO_DVD_BOOK_DVD_RW      0x3 /**< DVD-RW */
 #define CDIO_DVD_BOOK_HD_DVD_ROM  0x4 /**< HD DVD-ROM */
 #define CDIO_DVD_BOOK_HD_DVD_RAM  0x5 /**< HD DVD-RAM */
-#define CDIO_DVD_BOOK_HD_DVD_R    0x6 /**< HD DVD+RW */
+#define CDIO_DVD_BOOK_HD_DVD_R    0x6 /**< HD DVD-R */
 #define CDIO_DVD_BOOK_DVD_PRW     0x9 /**< DVD+RW */
 #define CDIO_DVD_BOOK_DVD_PR      0xa /**< DVD+R  */
 #define CDIO_DVD_BOOK_DVD_PRW_DL  0xd /**< DVD+RW DL  */
