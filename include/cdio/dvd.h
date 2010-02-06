@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*!
+/**
    \file dvd.h 
    \brief Definitions for DVD access.
 */
@@ -26,7 +26,9 @@
 
 #include <cdio/types.h>
 
-/*! Values used in a READ DVD STRUCTURE */
+/**
+   Values used in a READ DVD STRUCTURE
+ */
 
 #define CDIO_DVD_STRUCT_PHYSICAL	0x00
 #define CDIO_DVD_STRUCT_COPYRIGHT	0x01
@@ -35,7 +37,7 @@
 #define CDIO_DVD_STRUCT_MANUFACT	0x04
 
 /**
-    Media definitions for "Book Type". From MMC-5 Table 400, page 419.
+    Media definitions for "DVD Book" from MMC-5 Table 400, page 419.
 */
 #define CDIO_DVD_BOOK_DVD_ROM     0x0 /**< DVD-ROM */
 #define CDIO_DVD_BOOK_DVD_RAM     0x1 /**< DVD-RAM */
@@ -65,7 +67,9 @@ typedef struct cdio_dvd_layer {
   uint32_t end_sector_l0;
 } cdio_dvd_layer_t;
 
-/*! Maximum number of layers in a DVD.  */
+/**
+    Maximum number of layers in a DVD.  
+ */
 #define CDIO_DVD_MAX_LAYERS	4
 
 typedef struct cdio_dvd_physical {
@@ -114,4 +118,4 @@ typedef union {
   cdio_dvd_manufact_t	manufact;
 } cdio_dvd_struct_t;
 
-#endif /* __SCSI_MMC_H__ */
+#endif /* __CDIO_DVD_H__ */
