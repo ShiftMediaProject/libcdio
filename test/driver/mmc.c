@@ -25,6 +25,7 @@
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
 #include <cdio/mmc.h>
+#include <cdio/mmc_cmds.h>
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -173,7 +174,6 @@ tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
                 unsigned char sense_reply[18], int flag)
 {
   int i_status;
-  mmc_cdb_t cdb = {{0, }};
   bool b_eject = !!(flag & 4);
   bool b_immediate = !!(flag & 2);
 

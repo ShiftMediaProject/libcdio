@@ -1,6 +1,4 @@
 /*
-    $Id: cdio.hpp,v 1.13 2008/03/25 15:59:10 karl Exp $
-
     Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -30,6 +28,7 @@
 #include <cdio/audio.h>
 #include <cdio/dvd.h>
 #include <cdio/mmc.h>
+#include <cdio/mmc_cmds.h>
 
 // Make pre- and post-increment operators for enums in libcdio where it 
 // makes sense.

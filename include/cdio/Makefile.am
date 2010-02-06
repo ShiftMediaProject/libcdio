@@ -40,6 +40,7 @@ libcdioinclude_HEADERS = \
 	iso9660.h \
 	logging.h \
 	mmc.h \
+	mmc_cmds.h \
 	paranoia.h \
 	posix.h \
 	read.h \

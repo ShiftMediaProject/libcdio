@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2006, 2008, 2009, 2010 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 
 #include <cdio/cdio.h>
 #include <cdio/mmc.h>
+#include <cdio/mmc_cmds.h>
 
 static void 
 print_mode_sense (const char *psz_drive, const char *six_or_ten,

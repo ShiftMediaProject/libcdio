@@ -80,6 +80,7 @@ libcdio_sources = \
 	image/nrg.h \
 	logging.c \
 	mmc.c \
+	mmc_cmds.c \
 	mmc_private.h \
 	MSWindows/aspi32.c \
 	MSWindows/aspi32.h \

@@ -1,7 +1,5 @@
 /*
-  $Id: mmc-tool.c,v 1.12 2008/06/19 15:44:24 flameeyes Exp $
-
-  Copyright (C) 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2006, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -34,6 +32,7 @@
 #endif
 #include <cdio/cdio.h>
 #include <cdio/mmc.h>
+#include <cdio/mmc_cmds.h>
 #include "util.h"
 #include "getopt.h"
 

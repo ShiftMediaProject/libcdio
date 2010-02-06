@@ -27,6 +27,7 @@
 #include <cdio/cd_types.h>
 #include <cdio/logging.h>
 #include "cdio_private.h"
+#include <cdio/mmc_cmds.h>
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
