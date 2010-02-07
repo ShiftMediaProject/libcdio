@@ -1,7 +1,5 @@
 /*
-    $Id: mmc.hpp,v 1.3 2008/03/25 15:59:10 karl Exp $
-
-    Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2005, 2006, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,12 +15,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/** \file mmc.hpp
+/** 
+ * \file mmc.hpp
  *  \brief methods relating to  MMC (Multimedia Commands). This file
  *  should not be #included directly.
  */
 
-/*!
+/**
   Read Audio Subchannel information
   
   @param p_cdio the CD object to be acted upon.
@@ -37,10 +36,10 @@ mmcAudioReadSubchannel (/*out*/ cdio_subchannel_t *p_subchannel)
   possible_throw_device_exception(drc);
 }
 
-/*!
+/**
   Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.
   Command is not "immediate" -- we'll wait for the command to complete.
-  For a more general (and lower-level) routine, @see mmc_start_stop_media.
+  For a more general (and lower-level) routine, @see mmc_start_stop_unit.
 
   A DriverOpException is raised on error.
 */
@@ -50,7 +49,7 @@ void mmcEjectMedia()
   possible_throw_device_exception(drc);
 }
   
-/*!  
+/**
   Get the lsn of the end of the CD
   
   @return the lsn. On error return CDIO_INVALID_LSN.
@@ -60,7 +59,7 @@ lsn_t mmcGetDiscLastLsn()
   return mmc_get_disc_last_lsn( p_cdio );
 }
 
-/*! 
+/**
   Return the discmode as reported by the MMC Read (FULL) TOC
   command.
   
@@ -74,7 +73,7 @@ discmode_t mmcGetDiscmode()
   return mmc_get_discmode( p_cdio );
 }
 
-/*!
+/**
   Get drive capabilities for a device.
   @return the drive capabilities.
 */
@@ -85,7 +84,7 @@ void mmcGetDriveCap ( /*out*/ cdio_drive_read_cap_t  *p_read_cap,
   mmc_get_drive_cap ( p_cdio, p_read_cap, p_write_cap, p_misc_cap);
 }
 
-/*!
+/**
   Get the MMC level supported by the device.
 */
 cdio_mmc_level_t mmcGetDriveMmcCap() 
@@ -93,7 +92,7 @@ cdio_mmc_level_t mmcGetDriveMmcCap()
   return mmc_get_drive_mmc_cap(p_cdio);
 }
 
-/*! 
+/**
   Get the DVD type associated with cd object.
   
   @return the DVD discmode.
@@ -103,7 +102,7 @@ discmode_t mmcGetDvdStructPhysical (cdio_dvd_struct_t *s)
   return mmc_get_dvd_struct_physical (p_cdio, s);
 }
 
-/*! 
+/**
   Get the CD-ROM hardware info via an MMC INQUIRY command.
   
   @return true if we were able to get hardware info, false if we had
@@ -114,7 +113,7 @@ bool mmcGetHwinfo ( /* out*/ cdio_hwinfo_t *p_hw_info )
   return mmc_get_hwinfo ( p_cdio, p_hw_info );
 }
 
-/*! 
+/**
   Find out if media has changed since the last call.
   @param p_cdio the CD object to be acted upon.
   @return 1 if media has changed since last call, 0 if not. Error
@@ -125,7 +124,7 @@ int mmcGetMediaChanged()
   return mmc_get_media_changed(p_cdio);
 }
 
-/*!
+/**
   Get the media catalog number (MCN) from the CD via MMC.
   
   @return the media catalog number r NULL if there is none or we
@@ -140,7 +139,8 @@ char * mmcGetMcn ()
   return mmc_get_mcn ( p_cdio );
 }
 
-/** Get the output port volumes and port selections used on AUDIO PLAY
+/**
+   Get the output port volumes and port selections used on AUDIO PLAY
     commands via a MMC MODE SENSE command using the CD Audio Control
     Page.
 
@@ -152,7 +152,7 @@ void mmcAudioGetVolume (mmc_audio_volume_t *p_volume)
   possible_throw_device_exception(drc);
 }
 
-/*!
+/**
   Report if CD-ROM has a praticular kind of interface (ATAPI, SCSCI, ...)
   Is it possible for an interface to have serveral? If not this 
   routine could probably return the single mmc_feature_interface_t.
@@ -163,34 +163,38 @@ bool_3way_t mmcHaveInterface( cdio_mmc_feature_interface_t e_interface )
   return mmc_have_interface( p_cdio, e_interface );
 }
 
-/*! Run a MODE_SENSE command (6- or 10-byte version) 
-  and put the results in p_buf 
-  @return DRIVER_OP_SUCCESS if we ran the command ok.
+/**
+   Run a MODE_SENSE command (6- or 10-byte version) 
+   and put the results in p_buf 
+   @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
 int mmcModeSense( /*out*/ void *p_buf, int i_size, int page) 
 {
   return mmc_mode_sense( p_cdio, /*out*/ p_buf, i_size, page);
 }
 
-/*! Run a MODE_SENSE command (10-byte version) 
-  and put the results in p_buf 
-  @return DRIVER_OP_SUCCESS if we ran the command ok.
+/**
+    Run a MODE_SENSE command (10-byte version) 
+    and put the results in p_buf 
+    @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
 int mmcModeSense10( /*out*/ void *p_buf, int i_size, int page) 
 {
   return mmc_mode_sense_10( p_cdio, /*out*/ p_buf, i_size, page);
 }
 
-/*! Run a MODE_SENSE command (6-byte version) 
-  and put the results in p_buf 
-  @return DRIVER_OP_SUCCESS if we ran the command ok.
+/**
+    Run a MODE_SENSE command (6-byte version) 
+    and put the results in p_buf 
+    @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
 int mmcModeSense6( /*out*/ void *p_buf, int i_size, int page) 
 {
   return mmc_mode_sense_6( p_cdio, /*out*/ p_buf, i_size, page);
 }
 
-/*! Issue a MMC READ_CD command.
+/**
+    Issue a MMC READ_CD command.
   
 @param p_cdio  object to read from 
 
@@ -306,7 +310,9 @@ mmcReadCd ( void *p_buf, lsn_t i_lsn, int expected_sector_type,
   possible_throw_device_exception(drc);
 }
 
-/*! Read just the user data part of some sort of data sector (via 
+/**
+
+    Read just the user data part of some sort of data sector (via 
     mmc_read_cd). 
     
     @param p_cdio object to read from
@@ -333,7 +339,8 @@ void mmcReadDataSectors ( void *p_buf, lsn_t i_lsn, uint16_t i_blocksize,
 }
 
 
-/*! Read MMC read mode2 sectors
+/**
+    Read MMC read mode2 sectors
 
     A DriverOpException is raised on error.
  */
@@ -345,7 +352,7 @@ void mmcReadSectors ( void *p_buf, lsn_t i_lsn,  int read_sector_type,
   possible_throw_device_exception(drc);
 }
 
-/*!
+/**
     Run an MMC command. 
     
     @param p_cdio	 CD structure set by cdio_open().
@@ -367,7 +374,7 @@ int mmcRunCmd( unsigned int i_timeout_ms, const mmc_cdb_t *p_cdb,
   return mmc_run_cmd( p_cdio, i_timeout_ms, p_cdb, e_direction, i_buf, p_buf );
 }
 
-/*!
+/**
   Set the block size for subsequent read requests, via MMC.
 
   @param i_blocksize size to set for subsequent requests
@@ -381,7 +388,7 @@ void mmcSetBlocksize ( uint16_t i_blocksize)
 }
 
 
-/*!
+/**
   Set the drive speed via MMC. 
 
   @param i_speed speed to set drive to.
@@ -394,7 +401,7 @@ void mmcSetSpeed( int i_speed )
   possible_throw_device_exception(drc);
 }
 
-/*!
+/**
   Load or Unload media using a MMC START STOP command. 
   
   @param p_cdio  the CD object to be acted upon.
@@ -411,7 +418,7 @@ void mmcStartStopMedia(bool b_eject, bool b_immediate,
                        uint8_t power_condition) 
 {
   driver_return_code_t drc = 
-    mmc_start_stop_media(p_cdio, b_eject, b_immediate, power_condition);
+    mmc_start_stop_unit(p_cdio, b_eject, b_immediate, power_condition);
  possible_throw_device_exception(drc);
 }
 

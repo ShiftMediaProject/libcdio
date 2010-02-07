@@ -177,7 +177,7 @@ tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
   bool b_eject = !!(flag & 4);
   bool b_immediate = !!(flag & 2);
 
-  i_status = mmc_start_stop_media(p_cdio, b_eject, b_immediate, 0);
+  i_status = mmc_start_stop_unit(p_cdio, b_eject, b_immediate, 0);
 
   if (flag & 1)
     fprintf(stderr, "tmmc_load_eject(0x%X) ... ", (unsigned int) flag);

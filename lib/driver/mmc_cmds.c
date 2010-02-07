@@ -30,6 +30,50 @@
 #include <string.h>
 #endif
 
+/* Boilerplate initialization code to setup running MMC command.  We
+   assume variables 'p_cdio', 'p_buf', and 'i_size' are previously
+   defined.  It does the following:
+
+   1. Defines a cdb variable, 
+   2  Checks to see if we have a cdio object and can run an MMC command
+   3. zeros the buffer (p_buf) using i_size.
+   4. Sets up the command field of cdb to passed in value mmc_cmd.
+*/
+#define MMC_CMD_SETUP(mmc_cmd)						\
+    mmc_cdb_t cdb = {{0, }};						\
+									\
+    if ( ! p_cdio ) return DRIVER_OP_UNINIT;				\
+    if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;	\
+									\
+    memset (p_buf, 0, i_size);						\
+    CDIO_MMC_SET_COMMAND(cdb.field, mmc_cmd)				
+
+/* Boilerplate initialization code to setup running MMC read command
+   needs to set the cdb 16-bit length field. See above
+   comment for MMC_CMD_SETUP.
+*/
+#define MMC_CMD_SETUP_READ16(mmc_cmd)					\
+    MMC_CMD_SETUP(mmc_cmd);						\
+									\
+    /* Setup to read header, to get length of data */			\
+    CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_size)
+
+/* Boilerplate code to run a MMC command. 
+
+   We assume variables 'p_cdio', 'mmc_timeout_ms', 'cdb', 'i_size' and
+   'p_buf' are defined previously.
+
+   'direction' is the SCSI direction (read, write, none) of the
+   command.  
+*/
+#define MMC_RUN_CMD(direction) \
+    p_cdio->op.run_mmc_cmd(p_cdio->env,					\
+	mmc_timeout_ms,							\
+	mmc_get_cmd_len(cdb.field[0]),                                  \
+        &cdb,								\
+	direction, i_size, p_buf)
+
+
 /**
   Return results of media status
   @param p_cdio the CD object to be acted upon.
@@ -39,26 +83,18 @@
 driver_return_code_t 
 mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
 {
-  mmc_cdb_t cdb = {{0, }};
   uint8_t buf[8] = { 0, };
-  int i_status;
+  void   *p_buf  = &buf; 
+  const unsigned int i_size = sizeof(buf);
+  driver_return_code_t i_status;
 
-  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
-  if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_EVENT_STATUS);
-
-  /* Setup to read header, to get length of data */
-  CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(buf));
-
+  MMC_CMD_SETUP_READ16(CDIO_MMC_GPCMD_GET_EVENT_STATUS);
+  
   cdb.field[1] = 1;      /* We poll for info */
   cdb.field[4] = 1 << 4; /* We want Media events */
 
-  i_status = p_cdio->op.run_mmc_cmd(p_cdio->env, mmc_timeout_ms, 
-                                    mmc_get_cmd_len(cdb.field[0]), 
-                                    &cdb, SCSI_MMC_DATA_READ, 
-                                    sizeof(buf), buf);
-  if(i_status == DRIVER_OP_SUCCESS) {
+  i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ);
+  if (i_status == DRIVER_OP_SUCCESS) {
     out_buf[0] = buf[4];
     out_buf[1] = buf[5];
   }
@@ -74,7 +110,7 @@ mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
    @param page which "page" of the mode sense command we are interested in
    @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
-int 
+driver_return_code_t
 mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
                 int page)
 {
@@ -97,25 +133,12 @@ mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size,
    @param page which "page" of the mode sense command we are interested in
    @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
-int 
+driver_return_code_t
 mmc_mode_sense_10( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
 {
-  mmc_cdb_t cdb = {{0, }};
-
-  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
-  if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
-
-  memset (p_buf, 0, i_size);
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_10);
-  CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_size);
-
-  cdb.field[2] = CDIO_MMC_ALL_PAGES & page;
-  
-  return p_cdio->op.run_mmc_cmd (p_cdio->env, 
-                                 mmc_timeout_ms,
-                                 mmc_get_cmd_len(cdb.field[0]), &cdb, 
-                                 SCSI_MMC_DATA_READ, i_size, p_buf);
+    MMC_CMD_SETUP_READ16(CDIO_MMC_GPCMD_MODE_SENSE_10);
+    cdb.field[2] = CDIO_MMC_ALL_PAGES & page;
+    return MMC_RUN_CMD(SCSI_MMC_DATA_READ);
 }
 
 /**
@@ -127,25 +150,15 @@ mmc_mode_sense_10( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
    @param page which "page" of the mode sense command we are interested in
    @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
-int 
+driver_return_code_t
 mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
 {
-  mmc_cdb_t cdb = {{0, }};
+    MMC_CMD_SETUP(CDIO_MMC_GPCMD_MODE_SENSE_6);
+    cdb.field[4] = i_size;
+    
+    cdb.field[2] = CDIO_MMC_ALL_PAGES & page;
 
-  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
-  if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
-
-  memset (p_buf, 0, i_size);
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SENSE_6);
-
-  cdb.field[2] = CDIO_MMC_ALL_PAGES & page;
-  cdb.field[4] = i_size;
-  
-  return p_cdio->op.run_mmc_cmd (p_cdio->env, 
-                                 mmc_timeout_ms,
-                                 mmc_get_cmd_len(cdb.field[0]), &cdb, 
-                                 SCSI_MMC_DATA_READ, i_size, p_buf);
+    return MMC_RUN_CMD(SCSI_MMC_DATA_READ);
 }
 
 /* Maximum blocks to retrieve. Would be nice to customize this based on
@@ -159,8 +172,8 @@ mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
    
    @param p_cdio  object to read from 
    
-   @param p_buf   Place to store data. The caller should ensure that 
-   p_buf can hold at least i_blocksize * i_blocks  bytes.
+   @param p_buf1   Place to store data. The caller should ensure that 
+   p_buf1 can hold at least i_blocksize * i_blocks  bytes.
    
    @param i_lsn   sector to read 
    
@@ -254,24 +267,19 @@ mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
    @param i_blocks number of blocks expected to be returned.
 */
 driver_return_code_t
-mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
-              int read_sector_type, bool b_digital_audio_play,
-	      bool b_sync, uint8_t header_codes, bool b_user_data, 
-	      bool b_edc_ecc, uint8_t c2_error_information, 
-	      uint8_t subchannel_selection, uint16_t i_blocksize, 
-	      uint32_t i_blocks )
+mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn, 
+	    int read_sector_type, bool b_digital_audio_play,
+	    bool b_sync, uint8_t header_codes, bool b_user_data, 
+	    bool b_edc_ecc, uint8_t c2_error_information, 
+	    uint8_t subchannel_selection, uint16_t i_blocksize, 
+	    uint32_t i_blocks)
 {
-  mmc_cdb_t cdb = {{0, }};
-
-  mmc_run_cmd_fn_t run_mmc_cmd;
+  void *p_buf = p_buf1;
   uint8_t cdb9 = 0;
+  const unsigned int i_size = i_blocksize * i_blocks;
+  
+  MMC_CMD_SETUP(CDIO_MMC_GPCMD_READ_CD);
 
-  if (!p_cdio) return DRIVER_OP_UNINIT;
-  if (!p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
-
-  run_mmc_cmd = p_cdio->op.run_mmc_cmd;
-
-  CDIO_MMC_SET_COMMAND  (cdb.field, CDIO_MMC_GPCMD_READ_CD);
   CDIO_MMC_SET_READ_TYPE(cdb.field, read_sector_type);
   if (b_digital_audio_play) cdb.field[1] |= 0x2;
   
@@ -285,29 +293,26 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   
   {
     unsigned int j = 0;
-    int i_ret = DRIVER_OP_SUCCESS;
-    const uint8_t i_cdb = mmc_get_cmd_len(cdb.field[0]);
+    int i_status = DRIVER_OP_SUCCESS;
         
     while (i_blocks > 0) {
       const unsigned i_blocks2 = (i_blocks > MAX_CD_READ_BLOCKS) 
         ? MAX_CD_READ_BLOCKS : i_blocks;
-      void *p_buf2 = ((char *)p_buf ) + (j * i_blocksize);
       
+      const unsigned int i_size = i_blocksize * i_blocks2;
+      
+      p_buf = ((char *)p_buf1 ) + (j * i_blocksize);
       CDIO_MMC_SET_READ_LBA     (cdb.field, (i_lsn+j));
       CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks2);
 
-      i_ret = run_mmc_cmd (p_cdio->env, CD_READ_TIMEOUT_MS,
-                           i_cdb, &cdb, 
-                           SCSI_MMC_DATA_READ, 
-                           i_blocksize * i_blocks2,
-                           p_buf2);
+      i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ);
 
-      if (i_ret) return i_ret;
+      if (i_status) return i_status;
 
       i_blocks -= i_blocks2;
       j += i_blocks2;
     }
-    return i_ret;
+    return i_status;
   }
 }
 
@@ -323,16 +328,14 @@ mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
     @see mmc_eject_media or mmc_close_tray
 */
 driver_return_code_t
-mmc_start_stop_media(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
-                     uint8_t power_condition)
+mmc_start_stop_unit(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
+		    uint8_t power_condition)
 {
-  mmc_cdb_t cdb = {{0, }};
   uint8_t buf[1];
+  void * p_buf = &buf;
+  const unsigned int i_size = 0;
 
-  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
-  if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
+  MMC_CMD_SETUP_READ16(CDIO_MMC_GPCMD_START_STOP_UNIT);
 
   if (b_immediate) cdb.field[1] |= 1;
 
@@ -344,9 +347,7 @@ mmc_start_stop_media(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
     else 
       cdb.field[4] = 3; /* close tray for tray-type */
   }
-  
-  return p_cdio->op.run_mmc_cmd (p_cdio->env, mmc_timeout_ms,
-                                 mmc_get_cmd_len(cdb.field[0]), &cdb, 
-                                 SCSI_MMC_DATA_WRITE, 0, &buf);
+
+  return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE);
 }
 

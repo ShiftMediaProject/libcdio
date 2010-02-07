@@ -59,8 +59,8 @@ extern "C" {
      @param page which "page" of the mode sense command we are interested in
      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
-  int mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
-                      int page);
+  driver_return_code_t mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf,
+				       int i_size, int page);
   
   /**
      Run a MODE_SENSE command (10-byte version) 
@@ -71,8 +71,8 @@ extern "C" {
      @param page which "page" of the mode sense command we are interested in
      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
-  int  mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
-                          int page);
+  driver_return_code_t mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf,
+					  int i_size, int page);
   
   /**
       Run a MODE_SENSE command (6-byte version) 
@@ -83,8 +83,8 @@ extern "C" {
       @param page which "page" of the mode sense command we are interested in
       @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
-  int  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
-                         int page);
+  driver_return_code_t  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf, 
+					  int i_size, int page);
   
   /**
       Issue a MMC READ_CD command.
@@ -194,6 +194,25 @@ extern "C" {
                 uint8_t subchannel_selection, uint16_t i_blocksize, 
                 uint32_t i_blocks );
   
+  /**
+    Load or Unload media using a MMC START STOP UNIT command. 
+    
+    @param p_cdio  the CD object to be acted upon.
+    @param b_eject eject if true and close tray if false
+    @param b_immediate wait or don't wait for operation to complete
+    @param power_condition Set CD-ROM to idle/standby/sleep. If nonzero,
+           eject/load is ignored, so set to 0 if you want to eject or load.
+    
+    @see mmc_eject_media or mmc_close_tray
+  */
+  driver_return_code_t
+  mmc_start_stop_unit(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
+		      uint8_t power_condition);
+
+#ifndef DO_NOT_WANT_OLD_MMC_COMPATIBILITY
+#define mmc_start_stop_media  mmc_start_stop_unit
+#endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

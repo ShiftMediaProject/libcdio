@@ -171,7 +171,7 @@ extern "C" {
                                                  before MODE SELECT to get
                                                  mode support or save current
                                                  settings. (6 bytes). */
-  CDIO_MMC_GPCMD_START_STOP             = 0x1b, /**< Enable/disable Disc
+  CDIO_MMC_GPCMD_START_STOP_UNIT        = 0x1b, /**< Enable/disable Disc
                                                      operations. (6 bytes). */
   CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL   = 0x1e, /**< Enable/disable Disc 
                                                    removal. (6 bytes). */
@@ -617,7 +617,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   /**
     Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.
     Command is not "immediate" -- we'll wait for the command to complete.
-    For a more general (and lower-level) routine, @see mmc_start_stop_media.
+    For a more general (and lower-level) routine, @see mmc_start_stop_unit.
 
    @param p_cdio the CD object to be acted upon.
    @return DRIVER_OP_SUCCESS (0) if we got the status.
@@ -674,7 +674,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   lsn_t mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
   
   /**
-     Close tray using a MMC START STOP command.
+     Close tray using a MMC START STOP UNIT command.
      @param p_cdio the CD object to be acted upon.
      @return DRIVER_OP_SUCCESS (0) if we got the status.
      return codes are the same as driver_return_code_t
@@ -930,21 +930,6 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   driver_return_code_t mmc_set_speed( const CdIo_t *p_cdio, 
                                       int i_Kbs_speed );
   
-  /**
-    Load or Unload media using a MMC START STOP command. 
-    
-    @param p_cdio  the CD object to be acted upon.
-    @param b_eject eject if true and close tray if false
-    @param b_immediate wait or don't wait for operation to complete
-    @param power_condition Set CD-ROM to idle/standby/sleep. If nonzero,
-           eject/load is ignored, so set to 0 if you want to eject or load.
-    
-    @see mmc_eject_media or mmc_close_tray
-  */
-  driver_return_code_t
-  mmc_start_stop_media(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
-                       uint8_t power_condition);
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
@@ -965,6 +950,10 @@ extern cdio_mmc_read_cd_type_t      debug_cdio_mmc_read_cd_type;
 extern cdio_mmc_readtoc_t           debug_cdio_mmc_readtoc;
 extern cdio_mmc_mode_page_t         debug_cdio_mmc_mode_page;
   
+#ifndef DO_NOT_WANT_OLD_MMC_COMPATIBILITY
+#define CDIO_MMC_GPCMD_START_STOP CDIO_MMC_GPCMD_START_STOP_UNIT 
+#endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
+
 #endif /* __MMC_H__ */
 
 /* 

@@ -89,7 +89,7 @@ push_op(operation_t *p_op)
   }
 }
 
-/* Parse a options. */
+/* Parse command-line options. */
 static bool
 parse_options (int argc, char *argv[])
 {
@@ -488,7 +488,7 @@ main(int argc, char *argv[])
       if (p_op->arg.psz) free(p_op->arg.psz);
       break;
     case OP_IDLE:
-      rc = mmc_start_stop_media(p_cdio, false, false, true);
+      rc = mmc_start_stop_unit(p_cdio, false, false, true);
       report(stdout, "%s (mmc_start_stop_media - powerdown): %s\n", 
 	     program_name, cdio_driver_errmsg(rc));
       break;
@@ -519,7 +519,6 @@ main(int argc, char *argv[])
       ;
     }
   }
-  
 
   free(source_name);
   cdio_destroy(p_cdio);

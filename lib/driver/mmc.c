@@ -1045,7 +1045,7 @@ mmc_run_cmd_len( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 }
 
 /**
-   Close tray using a MMC START STOP command.
+   Close tray using a MMC START STOP UNIT command.
    @param p_cdio the CD object to be acted upon.
    @return DRIVER_OP_SUCCESS (0) if we got the status.
    return codes are the same as driver_return_code_t
@@ -1054,7 +1054,7 @@ driver_return_code_t
 mmc_close_tray( CdIo_t *p_cdio )
 {
   if (p_cdio) {
-    return mmc_start_stop_media(p_cdio, false, false, 0);
+    return mmc_start_stop_unit(p_cdio, false, false, 0);
   } else {
     return DRIVER_OP_ERROR;
   }
@@ -1086,7 +1086,7 @@ mmc_eject_media( const CdIo_t *p_cdio )
                                      SCSI_MMC_DATA_WRITE, 0, &buf);
   if (0 != i_status) return i_status;
 
-  return mmc_start_stop_media(p_cdio, true, false, 0);
+  return mmc_start_stop_unit(p_cdio, true, false, 0);
   
 }
 
