@@ -120,22 +120,22 @@ audio_read_subchannel_mmc ( void *p_user_data, cdio_subchannel_t *p_subchannel)
  */
 const char *mmc_audio_state2str( uint8_t i_audio_state )
 {
-  switch(i_audio_state) {
-  case CDIO_MMC_READ_SUB_ST_INVALID:
-    return "invalid";
-  case CDIO_MMC_READ_SUB_ST_PLAY:
-    return "playing";
-  case CDIO_MMC_READ_SUB_ST_PAUSED:
-    return "paused";
-  case CDIO_MMC_READ_SUB_ST_COMPLETED:
-    return "completed";
-  case CDIO_MMC_READ_SUB_ST_ERROR:
-    return "error";
-  case CDIO_MMC_READ_SUB_ST_NO_STATUS:
-    return "no status";
-  default:                     
-    return "unknown";
-  }
+    switch(i_audio_state) {
+      case CDIO_MMC_READ_SUB_ST_INVALID:
+        return "invalid";
+      case CDIO_MMC_READ_SUB_ST_PLAY:
+        return "playing";
+      case CDIO_MMC_READ_SUB_ST_PAUSED:
+        return "paused";
+      case CDIO_MMC_READ_SUB_ST_COMPLETED:
+        return "completed";
+      case CDIO_MMC_READ_SUB_ST_ERROR:
+        return "error";
+      case CDIO_MMC_READ_SUB_ST_NO_STATUS:
+        return "no status";
+      default:                     
+        return "unknown";
+    }
 }
 
 /**
@@ -145,9 +145,9 @@ const char *mmc_audio_state2str( uint8_t i_audio_state )
 int
 get_blocksize_mmc (void *p_user_data)
 {
-  generic_img_private_t *p_env = p_user_data;
-  if (!p_env) return DRIVER_OP_UNINIT;
-  return mmc_get_blocksize(p_env->cdio);
+    generic_img_private_t *p_env = p_user_data;
+    if (!p_env) return DRIVER_OP_UNINIT;
+    return mmc_get_blocksize(p_env->cdio);
 }
 
 /**
@@ -156,9 +156,9 @@ get_blocksize_mmc (void *p_user_data)
 lsn_t
 get_disc_last_lsn_mmc (void *p_user_data)
 {
-  generic_img_private_t *p_env = p_user_data;
-  if (!p_env) return CDIO_INVALID_LSN;
-  return mmc_get_disc_last_lsn(p_env->cdio);
+    generic_img_private_t *p_env = p_user_data;
+    if (!p_env) return CDIO_INVALID_LSN;
+    return mmc_get_disc_last_lsn(p_env->cdio);
 }
 
 void
@@ -195,8 +195,8 @@ get_mcn_mmc (const void *p_user_data)
 driver_return_code_t
 get_tray_status (const void *p_user_data)
 {
-  const generic_img_private_t *p_env = p_user_data;
-  return mmc_get_tray_status( p_env->cdio );
+    const generic_img_private_t *p_env = p_user_data;
+    return mmc_get_tray_status( p_env->cdio );
 }
 
 /*! Read sectors using SCSI-MMC GPCMD_READ_CD.
@@ -207,8 +207,8 @@ read_data_sectors_mmc ( void *p_user_data, void *p_buf,
                         lsn_t i_lsn,  uint16_t i_blocksize,
                         uint32_t i_blocks )
 {
-  const generic_img_private_t *p_env = p_user_data;
-  return mmc_read_data_sectors( p_env->cdio, p_buf, i_lsn, i_blocksize,
+    const generic_img_private_t *p_env = p_user_data;
+    return mmc_read_data_sectors( p_env->cdio, p_buf, i_lsn, i_blocksize,
                                 i_blocks );
 }
 
@@ -218,9 +218,9 @@ read_data_sectors_mmc ( void *p_user_data, void *p_buf,
 driver_return_code_t
 set_blocksize_mmc (void *p_user_data, uint16_t i_blocksize)
 {
-  generic_img_private_t *p_env = p_user_data;
-  if (!p_env) return DRIVER_OP_UNINIT;
-  return mmc_set_blocksize(p_env->cdio, i_blocksize);
+    generic_img_private_t *p_env = p_user_data;
+    if (!p_env) return DRIVER_OP_UNINIT;
+    return mmc_set_blocksize(p_env->cdio, i_blocksize);
 }
 
 /** Set the drive speed Set the drive speed in K bytes per second. (via
@@ -229,9 +229,9 @@ set_blocksize_mmc (void *p_user_data, uint16_t i_blocksize)
 driver_return_code_t
 set_speed_mmc (void *p_user_data, int i_speed)
 {
-  generic_img_private_t *p_env = p_user_data;
-  if (!p_env) return DRIVER_OP_UNINIT;
-  return mmc_set_speed( p_env->cdio, i_speed );
+    generic_img_private_t *p_env = p_user_data;
+    if (!p_env) return DRIVER_OP_UNINIT;
+    return mmc_set_speed( p_env->cdio, i_speed );
 }
 
 /**
@@ -630,9 +630,8 @@ mmc_get_cmd_len(uint8_t scsi_cmd)
   @return true if the disc is detected as erasable (rewritable), false
 otherwise.
  */
-bool
-    mmc_get_disc_erasable( const CdIo_t *p_cdio, 
-                           driver_return_code_t *opt_i_status ) {
+bool mmc_get_disc_erasable(const CdIo_t *p_cdio, 
+                           driver_return_code_t *opt_i_status) {
     mmc_cdb_t cdb = {{0, }};
     uint8_t buf[42] = { 0, };
     driver_return_code_t i_status;
@@ -640,8 +639,8 @@ bool
     CDIO_MMC_SET_COMMAND (cdb.field, CDIO_MMC_GPCMD_READ_DISC_INFO);
     CDIO_MMC_SET_READ_LENGTH8 (cdb.field, sizeof(buf));
     
-    i_status = mmc_run_cmd (p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, 
-                            sizeof(buf), &buf);
+    i_status = mmc_run_cmd(p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, 
+                           sizeof(buf), &buf);
     if (opt_i_status != NULL) *opt_i_status = i_status;
     return (DRIVER_OP_SUCCESS == i_status) ? 
         ((buf[2] & 0x10) ? true : false)
@@ -967,20 +966,20 @@ int mmc_get_tray_status(const CdIo_t *p_cdio)
    bytes available, <0 in case of internal error.
   */
 int
-mmc_last_cmd_sense( const CdIo_t *p_cdio, mmc_request_sense_t **pp_sense)
+mmc_last_cmd_sense(const CdIo_t *p_cdio, mmc_request_sense_t **pp_sense)
 {
-  generic_img_private_t *gen;
-
-  if (!p_cdio) return DRIVER_OP_UNINIT;
-  gen = p_cdio->env;
-  *pp_sense = NULL;
-  if (gen->scsi_mmc_sense_valid <= 0)
+    generic_img_private_t *gen;
+    
+    if (!p_cdio) return DRIVER_OP_UNINIT;
+    gen = p_cdio->env;
+    *pp_sense = NULL;
+    if (gen->scsi_mmc_sense_valid <= 0)
 	return 0;
-  *pp_sense = calloc(1, gen->scsi_mmc_sense_valid);
-  if (*pp_sense == NULL)
-    return DRIVER_OP_ERROR;
-  memcpy(*pp_sense, gen->scsi_mmc_sense, gen->scsi_mmc_sense_valid);
-  return gen->scsi_mmc_sense_valid;
+    *pp_sense = calloc(1, gen->scsi_mmc_sense_valid);
+    if (*pp_sense == NULL)
+        return DRIVER_OP_ERROR;
+    memcpy(*pp_sense, gen->scsi_mmc_sense, gen->scsi_mmc_sense_valid);
+    return gen->scsi_mmc_sense_valid;
 }
 
 /**
@@ -1006,8 +1005,8 @@ mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
     if (!p_cdio) return DRIVER_OP_UNINIT;
     if (!p_cdio->op.run_mmc_cmd) return DRIVER_OP_UNSUPPORTED;
     return p_cdio->op.run_mmc_cmd(p_cdio->env, i_timeout_ms,
-				     mmc_get_cmd_len(p_cdb->field[0]),
-				     p_cdb, e_direction, i_buf, p_buf);
+                                  mmc_get_cmd_len(p_cdb->field[0]),
+                                  p_cdb, e_direction, i_buf, p_buf);
 }
 
 /* Added by SukkoPera to allow CDB length to be specified manually */
@@ -1371,7 +1370,7 @@ mmc_set_blocksize ( const CdIo_t *p_cdio, uint16_t i_blocksize)
 }
 
 
-/*!
+/**
   Set the drive speed in CD-ROM speed units.
   
   @param p_cdio	   CD structure set by cdio_open().
@@ -1395,38 +1394,6 @@ mmc_set_drive_speed( const CdIo_t *p_cdio, int i_drive_speed )
 }
 
   
-/*!
-  Set the drive speed in K bytes per second. 
-  
-  @return the drive speed if greater than 0. -1 if we had an error. is -2
-  returned if this is not implemented for the current driver.
-*/
-int
-mmc_set_speed( const CdIo_t *p_cdio, int i_Kbs_speed )
-
-{
-  uint8_t buf[14] = { 0, };
-  mmc_cdb_t cdb;
-
-  /* If the requested speed is less than 1x 176 kb/s this command
-     will return an error - it's part of the ATAPI specs. Therefore, 
-     test and stop early. */
-
-  if ( i_Kbs_speed < 176 ) return -1;
-  
-  memset(&cdb, 0, sizeof(mmc_cdb_t));
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_SET_SPEED);
-  CDIO_MMC_SET_LEN16(cdb.field, 2, i_Kbs_speed);
-  /* Some drives like the Creative 24x CDRW require one to set a
-     nonzero write speed or else one gets an error back.  Some
-     specifications have setting the value 0xfffff indicate setting to
-     the maximum allowable speed.
-  */
-  CDIO_MMC_SET_LEN16(cdb.field, 4, 0xffff);
-  return mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_WRITE, 
-                     sizeof(buf), buf);
-}
-
 
 /* 
  * Local variables:

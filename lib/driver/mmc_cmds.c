@@ -83,22 +83,22 @@
 driver_return_code_t 
 mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
 {
-  uint8_t buf[8] = { 0, };
-  void   *p_buf  = &buf; 
-  const unsigned int i_size = sizeof(buf);
-  driver_return_code_t i_status;
-
-  MMC_CMD_SETUP_READ16(CDIO_MMC_GPCMD_GET_EVENT_STATUS);
-  
-  cdb.field[1] = 1;      /* We poll for info */
-  cdb.field[4] = 1 << 4; /* We want Media events */
-
-  i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ);
-  if (i_status == DRIVER_OP_SUCCESS) {
-    out_buf[0] = buf[4];
-    out_buf[1] = buf[5];
-  }
-  return i_status;
+    uint8_t buf[8] = { 0, };
+    void   *p_buf  = &buf; 
+    const unsigned int i_size = sizeof(buf);
+    driver_return_code_t i_status;
+    
+    MMC_CMD_SETUP_READ16(CDIO_MMC_GPCMD_GET_EVENT_STATUS);
+    
+    cdb.field[1] = 1;      /* We poll for info */
+    cdb.field[4] = 1 << 4; /* We want Media events */
+    
+    i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ);
+    if (i_status == DRIVER_OP_SUCCESS) {
+	out_buf[0] = buf[4];
+	out_buf[1] = buf[5];
+    }
+    return i_status;
 }
 
 /**
@@ -119,9 +119,9 @@ mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size,
      we had an infinite recursion. So we can't use cdio_have_atapi()
      (until we put in better capability checks.)
    */
-  if ( DRIVER_OP_SUCCESS == mmc_mode_sense_6(p_cdio, p_buf, i_size, page) )
-    return DRIVER_OP_SUCCESS;
-  return mmc_mode_sense_10(p_cdio, p_buf, i_size, page);
+    if ( DRIVER_OP_SUCCESS == mmc_mode_sense_6(p_cdio, p_buf, i_size, page) )
+	return DRIVER_OP_SUCCESS;
+    return mmc_mode_sense_10(p_cdio, p_buf, i_size, page);
 }
 
 /**
@@ -274,50 +274,99 @@ mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn,
 	    uint8_t subchannel_selection, uint16_t i_blocksize, 
 	    uint32_t i_blocks)
 {
-  void *p_buf = p_buf1;
-  uint8_t cdb9 = 0;
-  const unsigned int i_size = i_blocksize * i_blocks;
-  
-  MMC_CMD_SETUP(CDIO_MMC_GPCMD_READ_CD);
-
-  CDIO_MMC_SET_READ_TYPE(cdb.field, read_sector_type);
-  if (b_digital_audio_play) cdb.field[1] |= 0x2;
-  
-  if (b_sync)      cdb9 |= 128;
-  if (b_user_data) cdb9 |=  16;
-  if (b_edc_ecc)   cdb9 |=   8;
-  cdb9 |= (header_codes & 3)         << 5;
-  cdb9 |= (c2_error_information & 3) << 1;
-  cdb.field[9]  = cdb9;
-  cdb.field[10] = (subchannel_selection & 7);
-  
+    void *p_buf = p_buf1;
+    uint8_t cdb9 = 0;
+    const unsigned int i_size = i_blocksize * i_blocks;
+    
+    MMC_CMD_SETUP(CDIO_MMC_GPCMD_READ_CD);
+    
+    CDIO_MMC_SET_READ_TYPE(cdb.field, read_sector_type);
+    if (b_digital_audio_play) cdb.field[1] |= 0x2;
+    
+    if (b_sync)      cdb9 |= 128;
+    if (b_user_data) cdb9 |=  16;
+    if (b_edc_ecc)   cdb9 |=   8;
+    cdb9 |= (header_codes & 3)         << 5;
+    cdb9 |= (c2_error_information & 3) << 1;
+    cdb.field[9]  = cdb9;
+    cdb.field[10] = (subchannel_selection & 7);
+    
   {
-    unsigned int j = 0;
-    int i_status = DRIVER_OP_SUCCESS;
-        
-    while (i_blocks > 0) {
-      const unsigned i_blocks2 = (i_blocks > MAX_CD_READ_BLOCKS) 
-        ? MAX_CD_READ_BLOCKS : i_blocks;
+      unsigned int j = 0;
+      int i_status = DRIVER_OP_SUCCESS;
       
-      const unsigned int i_size = i_blocksize * i_blocks2;
-      
-      p_buf = ((char *)p_buf1 ) + (j * i_blocksize);
-      CDIO_MMC_SET_READ_LBA     (cdb.field, (i_lsn+j));
-      CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks2);
-
-      i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ);
-
-      if (i_status) return i_status;
-
-      i_blocks -= i_blocks2;
-      j += i_blocks2;
-    }
-    return i_status;
+      while (i_blocks > 0) {
+	  const unsigned i_blocks2 = (i_blocks > MAX_CD_READ_BLOCKS) 
+	      ? MAX_CD_READ_BLOCKS : i_blocks;
+	  
+	  const unsigned int i_size = i_blocksize * i_blocks2;
+	  
+	  p_buf = ((char *)p_buf1 ) + (j * i_blocksize);
+	  CDIO_MMC_SET_READ_LBA     (cdb.field, (i_lsn+j));
+	  CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks2);
+	  
+	  i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ);
+	  
+	  if (i_status) return i_status;
+	  
+	  i_blocks -= i_blocks2;
+	  j += i_blocks2;
+      }
+      return i_status;
   }
 }
 
 /**
-   Load or Unload media using a MMC START STOP command. 
+   Set the drive speed in K bytes per second using SCSI-MMC SET SPEED.
+   .
+   
+   @param p_cdio        CD structure set by cdio_open().
+   @param i_Kbs_speed   speed in K bytes per second. Note this is 
+                        not in standard CD-ROM speed units, e.g.
+                        1x, 4x, 16x as it is in cdio_set_speed.
+                        To convert CD-ROM speed units to Kbs,
+                        multiply the number by 176 (for raw data)
+                        and by 150 (for filesystem data). 
+                        Also note that ATAPI specs say that a value
+                        less than 176 will result in an error.
+                        On many CD-ROM drives,
+                        specifying a value too large will result in using
+                        the fastest speed.
+
+    @return the drive speed if greater than 0. -1 if we had an
+    error. is -2 returned if this is not implemented for the current
+    driver.
+
+    @see cdio_set_speed and mmc_set_drive_speed
+  */
+int
+mmc_set_speed(const CdIo_t *p_cdio, int i_Kbs_speed)
+
+{
+    uint8_t buf[14] = { 0, };
+    void * p_buf = &buf;
+    const unsigned int i_size = sizeof(buf);
+    
+    MMC_CMD_SETUP(CDIO_MMC_GPCMD_SET_SPEED);
+    
+    /* If the requested speed is less than 1x 176 kb/s this command
+       will return an error - it's part of the ATAPI specs. Therefore, 
+       test and stop early. */
+    
+    if ( i_Kbs_speed < 176 ) return -1;
+    
+    CDIO_MMC_SET_LEN16(cdb.field, 2, i_Kbs_speed);
+    /* Some drives like the Creative 24x CDRW require one to set a
+       nonzero write speed or else one gets an error back.  Some
+       specifications have setting the value 0xfffff indicate setting to
+       the maximum allowable speed.
+    */
+    CDIO_MMC_SET_LEN16(cdb.field, 4, 0xffff);
+    return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE);
+}
+
+/**
+   Load or Unload media using a MMC START/STOP UNIT command. 
    
    @param p_cdio  the CD object to be acted upon.
    @param b_eject eject if true and close tray if false
@@ -350,4 +399,3 @@ mmc_start_stop_unit(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
 
   return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE);
 }
-

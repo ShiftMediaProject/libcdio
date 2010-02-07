@@ -906,30 +906,6 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   driver_return_code_t mmc_set_drive_speed( const CdIo_t *p_cdio, 
                                             int i_drive_speed );
   
-  /**
-    Set the drive speed in K bytes per second.
-
-    @param p_cdio        CD structure set by cdio_open().
-    @param i_Kbs_speed   speed in K bytes per second. Note this is 
-                         not in standard CD-ROM speed units, e.g.
-                         1x, 4x, 16x as it is in cdio_set_speed.
-                         To convert CD-ROM speed units to Kbs,
-                         multiply the number by 176 (for raw data)
-                         and by 150 (for filesystem data). 
-                         Also note that ATAPI specs say that a value
-                         less than 176 will result in an error.
-                         On many CD-ROM drives,
-                         specifying a value too large will result in using
-                         the fastest speed.
-
-    @return the drive speed if greater than 0. -1 if we had an error. is -2
-    returned if this is not implemented for the current driver.
-
-    @see cdio_set_speed and mmc_set_drive_speed
-  */
-  driver_return_code_t mmc_set_speed( const CdIo_t *p_cdio, 
-                                      int i_Kbs_speed );
-  
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
