@@ -61,7 +61,7 @@ static int tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
 			   unsigned char sense_reply[18], int flag);
 static int tmmc_mode_select(CdIo_t *p_cdio,
 			    int *sense_avail, unsigned char sense_reply[18],
-			    unsigned char *buf, int buf_fill, int flag);
+			    unsigned char *p_buf, unsigned int i_size, int flag);
 
 static int tmmc_mode_sense(CdIo_t *p_cdio, int *sense_avail,
 			   unsigned char sense_reply[18],
@@ -148,15 +148,10 @@ tmmc_test_unit_ready(CdIo_t *p_cdio,
                      int *sense_avail, unsigned char sense_reply[18], int flag)
 {
   int i_status;
-  mmc_cdb_t cdb = {{0, }};
-  char buf[1]; /* just to have an address to pass to mmc_run_cmd() */
-
-  memset(cdb.field, 0, 6);
-  cdb.field[0] = CDIO_MMC_TEST_UNIT_READY;  /* SPC-3 6.33 */
 
   if (flag & 1)
     fprintf(stderr, "tmmc_test_unit_ready ... ");
-  i_status = mmc_run_cmd(p_cdio, 10000, &cdb, SCSI_MMC_DATA_NONE, 0, buf);
+  i_status = mmc_test_unit_ready(p_cdio);
 
   return tmmc_handle_outcome(p_cdio, i_status, sense_avail, sense_reply,
                              flag & 1);
@@ -213,17 +208,15 @@ tmmc_mode_sense(CdIo_t *p_cdio, int *sense_avail,unsigned char sense_reply[18],
                 unsigned char *buf, int *buf_fill, int flag)
 {
   driver_return_code_t i_status;
-  mmc_cdb_t cdb = {{0, }};
 
   if (alloc_len < 10)
     return DRIVER_OP_BAD_PARAMETER;
 
-  mmc_mode_sense_10(p_cdio, buf, alloc_len, page_code);
   if (flag & 1)
     fprintf(stderr, "tmmc_mode_sense(0x%X, %X, %d) ... ",
 	    (unsigned int) page_code, (unsigned int) subpage_code, alloc_len);
-  i_status = mmc_run_cmd(p_cdio, 10000, &cdb, SCSI_MMC_DATA_READ,
-                         alloc_len, buf);
+  
+  i_status = mmc_mode_sense_10(p_cdio, buf, alloc_len, page_code);
   tmmc_handle_outcome(p_cdio, i_status, sense_avail, sense_reply, flag & 1);
   if (DRIVER_OP_SUCCESS != i_status)
     return i_status;
@@ -251,37 +244,42 @@ tmmc_mode_sense(CdIo_t *p_cdio, int *sense_avail,unsigned char sense_reply[18],
 static int
 tmmc_mode_select(CdIo_t *p_cdio,
                  int *sense_avail, unsigned char sense_reply[18],
-                 unsigned char *buf, int buf_fill, int flag)
+                 unsigned char *p_buf, unsigned int i_size, int flag)
 {
-  int i_status, i;
-  mmc_cdb_t cdb = {{0, }};
+    int i_status, i;
+#ifndef MODE_SELECT_FIXED
+    mmc_cdb_t cdb = {{0, }};
+#endif
 
-  if (buf_fill < 10)
-    return DRIVER_OP_BAD_PARAMETER;
-
-  if (flag & 1) {
-    printf("tmmc_mode_select to drive: %d bytes\n", buf_fill);
-    for (i = 0; i < buf_fill; i++) {
-      printf("%2.2X ", (unsigned int) buf[i]);
-      if ((i % 20) == 19)
-        printf("\n");
+    if (i_size < 10)
+	return DRIVER_OP_BAD_PARAMETER;
+    
+    if (flag & 1) {
+	printf("tmmc_mode_select to drive: %d bytes\n", i_size);
+	for (i = 0; i < i_size; i++) {
+	    printf("%2.2X ", (unsigned int) p_buf[i]);
+	    if ((i % 20) == 19)
+		printf("\n");
+	}
+	if ((i % 20))
+	    printf("\n");
     }
-    if ((i % 20))
-      printf("\n");
-  }
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SELECT_10); /* SPC-3 6.8 */
-  cdb.field[1] = 0x10;                 /* PF = 1 : official SCSI mode page */
-  CDIO_MMC_SET_READ_LENGTH16(cdb.field, buf_fill);
-  if (flag & 1)
-    fprintf(stderr, "tmmc_mode_select(0x%X, %d, %d) ... ",
-	    (unsigned int) buf[8], (unsigned int) buf[9], buf_fill);
-  i_status = mmc_run_cmd(p_cdio, 10000, &cdb, SCSI_MMC_DATA_WRITE,
-                         buf_fill, buf);
-  return tmmc_handle_outcome(p_cdio, i_status, sense_avail, sense_reply,
+    
+    if (flag & 1)
+	fprintf(stderr, "tmmc_mode_select(0x%X, %d, %d) ... ",
+		(unsigned int) p_buf[8], (unsigned int) p_buf[9], i_size);
+#ifdef MODE_SELECT_FIXED
+    i_status = mmc_mode_select_10(p_cdio, p_buf, i_size, 0x10, 10000);
+#else
+    CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SELECT_10); /* SPC-3 6.8 */
+    cdb.field[1] = 0x10;                 /* PF = 1 : official SCSI mode page */
+    CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_size);
+    i_status = mmc_run_cmd(p_cdio, 10000, &cdb, SCSI_MMC_DATA_WRITE,
+			   i_size, p_buf);
+#endif
+    return tmmc_handle_outcome(p_cdio, i_status, sense_avail, sense_reply,
                              flag & 1);
 }
-
 
 /* --------------------------- Larger gestures ----------------------------- */
 

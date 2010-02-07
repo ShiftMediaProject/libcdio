@@ -41,29 +41,57 @@ extern "C" {
 
   /**
     Return results of media status
+
     @param p_cdio the CD object to be acted upon.
+
     @param out_buf media status code from operation
-    @return DRIVER_OP_SUCCESS (0) if we got the status.
-    return codes are the same as driver_return_code_t
+
+    @return DRIVER_OP_SUCCESS (0) if we got the status. Return codes
+    are the same as driver_return_code_t
    */
   driver_return_code_t mmc_get_event_status(const CdIo_t *p_cdio, 
                                             uint8_t out_buf[2]);
 
 
+   /**
+      Run a SCSI-MMC MODE SELECT (10-byte) command
+      and put the results in p_buf.
+
+      @param p_cdio the CD object to be acted upon.
+      
+      @param p_buf pointer to location to store mode sense information
+
+      @param i_size number of bytes allocated to p_buf
+
+      @param page which "page" of the mode sense command we are interested in
+
+      @param i_timeout value in milliseconds to use on timeout. Setting
+             to 0 uses the default time-out value stored in
+	     mmc_timeout_ms.
+
+      @return DRIVER_OP_SUCCESS if we ran the command ok.
+   */
+  driver_return_code_t mmc_mode_select_10(CdIo_t *p_cdio, /*out*/ void *p_buf,
+					  unsigned int i_size, int page, 
+					  unsigned int i_timeout);
   /**
-     Run a MODE_SENSE command (6- or 10-byte version) 
+     Run a SCSI-MMC MODE_SENSE command (6- or 10-byte version) 
      and put the results in p_buf 
      @param p_cdio the CD object to be acted upon.
+
      @param p_buf pointer to location to store mode sense information
+
      @param i_size number of bytes allocated to p_buf
+
      @param page which "page" of the mode sense command we are interested in
+
      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf,
-				       int i_size, int page);
+				       unsigned int i_size, int page);
   
   /**
-     Run a MODE_SENSE command (10-byte version) 
+     Run a SCSI-MMC MODE SENSE command (10-byte version) 
      and put the results in p_buf 
      @param p_cdio the CD object to be acted upon.
      @param p_buf pointer to location to store mode sense information
@@ -72,10 +100,10 @@ extern "C" {
      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf,
-					  int i_size, int page);
+					  unsigned int i_size, int page);
   
   /**
-      Run a MODE_SENSE command (6-byte version) 
+      Run a SCSI-MMC MODE SENSE command (6-byte version) 
       and put the results in p_buf 
       @param p_cdio the CD object to be acted upon.
       @param p_buf pointer to location to store mode sense information
@@ -84,7 +112,7 @@ extern "C" {
       @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf, 
-					  int i_size, int page);
+					  unsigned int i_size, int page);
   
   /**
       Issue a MMC READ_CD command.
@@ -185,6 +213,8 @@ extern "C" {
     @param i_blocksize size of the a block expected to be returned
      
     @param i_blocks number of blocks expected to be returned.
+
+    @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t
   mmc_read_cd ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
@@ -223,16 +253,30 @@ extern "C" {
     Load or Unload media using a MMC START STOP UNIT command. 
     
     @param p_cdio  the CD object to be acted upon.
+
     @param b_eject eject if true and close tray if false
+
     @param b_immediate wait or don't wait for operation to complete
+
     @param power_condition Set CD-ROM to idle/standby/sleep. If nonzero,
            eject/load is ignored, so set to 0 if you want to eject or load.
     
+    @return DRIVER_OP_SUCCESS if we ran the command ok.
+
     @see mmc_eject_media or mmc_close_tray
   */
-  driver_return_code_t
-  mmc_start_stop_unit(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
-		      uint8_t power_condition);
+  driver_return_code_t mmc_start_stop_unit(const CdIo_t *p_cdio, bool b_eject, 
+					   bool b_immediate, uint8_t power_condition);
+
+    /**
+     Check if drive is ready using SCSI-MMC TEST UNIT READY command. 
+     
+     @param p_cdio  the CD object to be acted upon.
+     
+     @return DRIVER_OP_SUCCESS if we ran the command ok.
+  */
+  driver_return_code_t mmc_test_unit_ready(const CdIo_t *p_cdio);
+
 
 #ifndef DO_NOT_WANT_OLD_MMC_COMPATIBILITY
 #define mmc_start_stop_media  mmc_start_stop_unit

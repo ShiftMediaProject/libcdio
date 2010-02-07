@@ -66,9 +66,9 @@
    'direction' is the SCSI direction (read, write, none) of the
    command.  
 */
-#define MMC_RUN_CMD(direction) \
+#define MMC_RUN_CMD(direction, i_timeout)				\
     p_cdio->op.run_mmc_cmd(p_cdio->env,					\
-	mmc_timeout_ms,							\
+	i_timeout,							\
 	mmc_get_cmd_len(cdb.field[0]),                                  \
         &cdb,								\
 	direction, i_size, p_buf)
@@ -93,7 +93,7 @@ mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
     cdb.field[1] = 1;      /* We poll for info */
     cdb.field[4] = 1 << 4; /* We want Media events */
     
-    i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ);
+    i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ, mmc_timeout_ms);
     if (i_status == DRIVER_OP_SUCCESS) {
 	out_buf[0] = buf[4];
 	out_buf[1] = buf[5];
@@ -102,7 +102,36 @@ mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
 }
 
 /**
-   Run a MODE_SENSE command (6- or 10-byte version) 
+   Run a SCSI-MMC MODE SELECT (10-byte) command
+   and put the results in p_buf.
+
+   @param p_cdio the CD object to be acted upon.
+   
+   @param p_buf pointer to location to store mode sense information
+   
+   @param i_size number of bytes allocated to p_buf
+   
+   @param page which "page" of the mode sense command we are interested in
+   
+   @param i_timeout value in milliseconds to use on timeout. Setting
+          to 0 uses the default time-out value stored in
+	  mmc_timeout_ms.
+
+   @return DRIVER_OP_SUCCESS if we ran the command ok.
+
+ */
+driver_return_code_t
+mmc_mode_select_10(CdIo_t *p_cdio, /*out*/ void *p_buf, unsigned int i_size, 
+		   int page, unsigned int i_timeout)
+{
+    if (0 == i_timeout) i_timeout = mmc_timeout_ms;
+    MMC_CMD_SETUP_READ16(CDIO_MMC_GPCMD_MODE_SELECT_10);
+    cdb.field[1] = page;
+    return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE, i_timeout);
+}
+
+/**
+   Run a SCSI-MMC MMC MODE SENSE command (6- or 10-byte version) 
    and put the results in p_buf 
    @param p_cdio the CD object to be acted upon.
    @param p_buf pointer to location to store mode sense information
@@ -111,8 +140,8 @@ mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
    @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
 driver_return_code_t
-mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size, 
-                int page)
+mmc_mode_sense(CdIo_t *p_cdio, /*out*/ void *p_buf, unsigned int i_size, 
+	       int page)
 {
   /* We used to make a choice as to which routine we'd use based
      cdio_have_atapi(). But since that calls this in its determination,
@@ -125,7 +154,7 @@ mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size,
 }
 
 /**
-   Run a MODE_SENSE command (10-byte version) 
+   Run a SCSI-MMC MODE SENSE command (10-byte version) 
    and put the results in p_buf 
    @param p_cdio the CD object to be acted upon.
    @param p_buf pointer to location to store mode sense information
@@ -134,15 +163,15 @@ mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf, int i_size,
    @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
 driver_return_code_t
-mmc_mode_sense_10( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
+mmc_mode_sense_10(CdIo_t *p_cdio, void *p_buf, unsigned int i_size, int page)
 {
     MMC_CMD_SETUP_READ16(CDIO_MMC_GPCMD_MODE_SENSE_10);
     cdb.field[2] = CDIO_MMC_ALL_PAGES & page;
-    return MMC_RUN_CMD(SCSI_MMC_DATA_READ);
+    return MMC_RUN_CMD(SCSI_MMC_DATA_READ, mmc_timeout_ms);
 }
 
 /**
-   Run a MODE_SENSE command (6-byte version) 
+   Run a SCSI-MMC MODE SENSE command (6-byte version) 
    and put the results in p_buf 
    @param p_cdio the CD object to be acted upon.
    @param p_buf pointer to location to store mode sense information
@@ -151,21 +180,20 @@ mmc_mode_sense_10( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
    @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
 driver_return_code_t
-mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
+mmc_mode_sense_6(CdIo_t *p_cdio, void *p_buf, unsigned int i_size, int page)
 {
     MMC_CMD_SETUP(CDIO_MMC_GPCMD_MODE_SENSE_6);
     cdb.field[4] = i_size;
     
     cdb.field[2] = CDIO_MMC_ALL_PAGES & page;
 
-    return MMC_RUN_CMD(SCSI_MMC_DATA_READ);
+    return MMC_RUN_CMD(SCSI_MMC_DATA_READ, mmc_timeout_ms);
 }
 
 /* Maximum blocks to retrieve. Would be nice to customize this based on
    drive capabilities.
 */
 #define MAX_CD_READ_BLOCKS 16
-#define CD_READ_TIMEOUT_MS mmc_timeout_ms * (MAX_CD_READ_BLOCKS/2)
 
 /**
    Issue a MMC READ_CD command.
@@ -265,6 +293,8 @@ mmc_mode_sense_6( CdIo_t *p_cdio, void *p_buf, int i_size, int page)
    @param i_blocksize size of the a block expected to be returned
    
    @param i_blocks number of blocks expected to be returned.
+
+   @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
 driver_return_code_t
 mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn, 
@@ -277,6 +307,7 @@ mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn,
     void *p_buf = p_buf1;
     uint8_t cdb9 = 0;
     const unsigned int i_size = i_blocksize * i_blocks;
+    const unsigned int i_timeout = mmc_timeout_ms * (MAX_CD_READ_BLOCKS/2);
     
     MMC_CMD_SETUP(CDIO_MMC_GPCMD_READ_CD);
     
@@ -305,7 +336,7 @@ mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn,
 	  CDIO_MMC_SET_READ_LBA     (cdb.field, (i_lsn+j));
 	  CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks2);
 	  
-	  i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ);
+	  i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ, i_timeout);
 	  
 	  if (i_status) return i_status;
 	  
@@ -338,6 +369,8 @@ mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn,
     driver.
 
     @see cdio_set_speed and mmc_set_drive_speed
+
+   @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
 int
 mmc_set_speed(const CdIo_t *p_cdio, int i_Kbs_speed)
@@ -362,11 +395,11 @@ mmc_set_speed(const CdIo_t *p_cdio, int i_Kbs_speed)
        the maximum allowable speed.
     */
     CDIO_MMC_SET_LEN16(cdb.field, 4, 0xffff);
-    return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE);
+    return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE, mmc_timeout_ms);
 }
 
 /**
-   Load or Unload media using a MMC START/STOP UNIT command. 
+   Load or Unload media using a SCSI-MMC START/STOP UNIT command. 
    
    @param p_cdio  the CD object to be acted upon.
    @param b_eject eject if true and close tray if false
@@ -397,5 +430,21 @@ mmc_start_stop_unit(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
       cdb.field[4] = 3; /* close tray for tray-type */
   }
 
-  return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE);
+  return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE, mmc_timeout_ms);
+}
+
+/**
+   Check if drive is ready using SCSI-MMC TEST UNIT READY command. 
+   
+   @param p_cdio  the CD object to be acted upon.
+    
+   @return DRIVER_OP_SUCCESS if we ran the command ok.
+ */
+driver_return_code_t
+mmc_test_unit_ready(const CdIo_t *p_cdio)
+{
+    const unsigned int i_size = 0;
+    void  * p_buf = NULL;
+    MMC_CMD_SETUP_READ16(CDIO_MMC_GPCMD_TEST_UNIT_READY);
+    return MMC_RUN_CMD(SCSI_MMC_DATA_NONE, mmc_timeout_ms);
 }
