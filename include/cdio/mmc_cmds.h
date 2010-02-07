@@ -65,7 +65,7 @@ extern "C" {
 
       @param page which "page" of the mode sense command we are interested in
 
-      @param i_timeout value in milliseconds to use on timeout. Setting
+      @param i_timeout_ms value in milliseconds to use on timeout. Setting
              to 0 uses the default time-out value stored in
 	     mmc_timeout_ms.
 
@@ -73,7 +73,7 @@ extern "C" {
    */
   driver_return_code_t mmc_mode_select_10(CdIo_t *p_cdio, /*out*/ void *p_buf,
 					  unsigned int i_size, int page, 
-					  unsigned int i_timeout);
+					  unsigned int i_timeout_ms);
   /**
      Run a SCSI-MMC MODE_SENSE command (6- or 10-byte version) 
      and put the results in p_buf 
@@ -266,20 +266,28 @@ extern "C" {
     @see mmc_eject_media or mmc_close_tray
   */
   driver_return_code_t mmc_start_stop_unit(const CdIo_t *p_cdio, bool b_eject, 
-					   bool b_immediate, uint8_t power_condition);
+					   bool b_immediate, 
+					   uint8_t power_condition,
+                                           unsigned int i_timeout_ms);
 
     /**
      Check if drive is ready using SCSI-MMC TEST UNIT READY command. 
      
      @param p_cdio  the CD object to be acted upon.
      
+     @param i_timeout_ms value in milliseconds to use on timeout. Setting
+            to 0 uses the default time-out value stored in
+	    mmc_timeout_ms.
+
      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
-  driver_return_code_t mmc_test_unit_ready(const CdIo_t *p_cdio);
+  driver_return_code_t mmc_test_unit_ready(const CdIo_t *p_cdio,
+					   unsigned int i_timeout_ms);
 
 
 #ifndef DO_NOT_WANT_OLD_MMC_COMPATIBILITY
-#define mmc_start_stop_media  mmc_start_stop_unit
+#define mmc_start_stop_media(c, e, i, p, t) \
+    mmc_start_stop_unit(c, e, i, p, t, 0)
 #endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
 
 #ifdef __cplusplus

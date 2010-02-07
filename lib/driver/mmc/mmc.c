@@ -1053,9 +1053,9 @@ driver_return_code_t
 mmc_close_tray( CdIo_t *p_cdio )
 {
   if (p_cdio) {
-    return mmc_start_stop_unit(p_cdio, false, false, 0);
+      return mmc_start_stop_unit(p_cdio, false, false, 0, 0);
   } else {
-    return DRIVER_OP_ERROR;
+      return DRIVER_OP_ERROR;
   }
 }
 
@@ -1085,7 +1085,7 @@ mmc_eject_media( const CdIo_t *p_cdio )
                                      SCSI_MMC_DATA_WRITE, 0, &buf);
   if (0 != i_status) return i_status;
 
-  return mmc_start_stop_unit(p_cdio, true, false, 0);
+  return mmc_start_stop_unit(p_cdio, true, false, 0, 0);
   
 }
 

@@ -418,8 +418,8 @@ void mmcStartStopMedia(bool b_eject, bool b_immediate,
                        uint8_t power_condition) 
 {
   driver_return_code_t drc = 
-    mmc_start_stop_unit(p_cdio, b_eject, b_immediate, power_condition);
- possible_throw_device_exception(drc);
+      mmc_start_stop_unit(p_cdio, b_eject, b_immediate, power_condition, 0);
+  possible_throw_device_exception(drc);
 }
 
 

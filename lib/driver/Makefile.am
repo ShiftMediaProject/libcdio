@@ -44,8 +44,10 @@ libcdio_la_CURRENT = 12
 libcdio_la_REVISION = 0
 libcdio_la_AGE = 0
 
-EXTRA_DIST = image/Makefile FreeBSD/Makefile MSWindows/Makefile \
-	     libcdio.sym
+EXTRA_DIST = image/Makefile \
+	mmc/Makefile \
+	FreeBSD/Makefile MSWindows/Makefile \
+	libcdio.sym
 
 noinst_HEADERS = cdio_assert.h cdio_private.h portable.h
 
@@ -79,9 +81,11 @@ libcdio_sources = \
 	image/nrg.c \
 	image/nrg.h \
 	logging.c \
-	mmc.c \
-	mmc_cmds.c \
-	mmc_private.h \
+	mmc/mmc.c \
+	mmc/mmc_cmd_helper.h \
+	mmc/mmc_ll_cmds.c \
+	mmc/mmc_hl_cmds.c \
+	mmc/mmc_private.h \
 	MSWindows/aspi32.c \
 	MSWindows/aspi32.h \
 	MSWindows/win32_ioctl.c \

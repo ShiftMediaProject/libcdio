@@ -488,7 +488,7 @@ main(int argc, char *argv[])
       if (p_op->arg.psz) free(p_op->arg.psz);
       break;
     case OP_IDLE:
-      rc = mmc_start_stop_unit(p_cdio, false, false, true);
+      rc = mmc_start_stop_unit(p_cdio, false, false, true, 0);
       report(stdout, "%s (mmc_start_stop_media - powerdown): %s\n", 
 	     program_name, cdio_driver_errmsg(rc));
       break;

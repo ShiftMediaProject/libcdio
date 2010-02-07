@@ -151,7 +151,7 @@ tmmc_test_unit_ready(CdIo_t *p_cdio,
 
   if (flag & 1)
     fprintf(stderr, "tmmc_test_unit_ready ... ");
-  i_status = mmc_test_unit_ready(p_cdio);
+  i_status = mmc_test_unit_ready(p_cdio, 0);
 
   return tmmc_handle_outcome(p_cdio, i_status, sense_avail, sense_reply,
                              flag & 1);
@@ -172,7 +172,7 @@ tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
   bool b_eject = !!(flag & 4);
   bool b_immediate = !!(flag & 2);
 
-  i_status = mmc_start_stop_unit(p_cdio, b_eject, b_immediate, 0);
+  i_status = mmc_start_stop_unit(p_cdio, b_eject, b_immediate, 0, 0);
 
   if (flag & 1)
     fprintf(stderr, "tmmc_load_eject(0x%X) ... ", (unsigned int) flag);

@@ -30,7 +30,7 @@
 #include <cdio/cdio.h>
 #include <cdio/audio.h>
 #include <cdio/cdtext.h>
-#include "mmc_private.h"
+#include "mmc/mmc_private.h"
 
 #ifdef __cplusplus
 extern "C" {
