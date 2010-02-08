@@ -272,9 +272,6 @@ test_mode_select(CdIo_t *p_cdio,
                  unsigned char *p_buf, unsigned int i_size, unsigned int i_flag)
 {
     int i_status, i;
-#ifndef MODE_SELECT_FIXED
-    mmc_cdb_t cdb = {{0, }};
-#endif
 
     if (i_size < 10)
 	return DRIVER_OP_BAD_PARAMETER;
@@ -293,15 +290,7 @@ test_mode_select(CdIo_t *p_cdio,
     if (i_flag & 1)
 	fprintf(stderr, "test_mode_select(0x%X, %d, %d) ... ",
 		(unsigned int) p_buf[8], (unsigned int) p_buf[9], i_size);
-#ifdef MODE_SELECT_FIXED
     i_status = mmc_mode_select_10(p_cdio, p_buf, i_size, 0x10, 10000);
-#else
-    CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_MODE_SELECT_10); /* SPC-3 6.8 */
-    cdb.field[1] = 0x10;                 /* PF = 1 : official SCSI mode page */
-    CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_size);
-    i_status = mmc_run_cmd(p_cdio, 10000, &cdb, SCSI_MMC_DATA_WRITE,
-			   i_size, p_buf);
-#endif
     return test_handle_outcome(p_cdio, i_status, sense_avail, sense_reply,
 			       i_flag & 1);
 }

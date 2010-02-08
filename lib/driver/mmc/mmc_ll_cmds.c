@@ -74,9 +74,9 @@ mmc_get_configuration(const CdIo_t *p_cdio, void *p_buf,
 
 {
     MMC_CMD_SETUP(CDIO_MMC_GPCMD_GET_CONFIGURATION);
+    CDIO_MMC_SET_READ_LENGTH8(cdb.field, i_size);
     if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
     cdb.field[1] = return_type & 0x3;
-
     CDIO_MMC_SET_LEN16(cdb.field, 2, i_starting_feature_number);
     return MMC_RUN_CMD(SCSI_MMC_DATA_READ, i_timeout_ms);
 }
@@ -289,7 +289,6 @@ mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn,
 {
     void *p_buf = p_buf1;
     uint8_t cdb9 = 0;
-    const unsigned int i_size = i_blocksize * i_blocks;
     const unsigned int i_timeout = mmc_timeout_ms * (MAX_CD_READ_BLOCKS/2);
     
     MMC_CMD_SETUP(CDIO_MMC_GPCMD_READ_CD);

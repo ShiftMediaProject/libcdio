@@ -83,7 +83,7 @@ mmc_get_disctype( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 	q = p+4;
 	*p_disctype = CDIO_MMC_DISCTYPE_NO_DISC;
 
-	while ((p_disctype == CDIO_MMC_DISCTYPE_NO_DISC) && 
+	while ((CDIO_MMC_DISCTYPE_NO_DISC == *p_disctype) && 
 	       (q < p + profiles_list_length)) {
 	    profile_number = CDIO_MMC_GET_LEN16(q);
 	    profile_active = q[2] & 0x01;

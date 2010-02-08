@@ -33,7 +33,6 @@
     if ( ! p_cdio ) return DRIVER_OP_UNINIT;				\
     if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;	\
 									\
-    memset (p_buf, 0, i_size);						\
     CDIO_MMC_SET_COMMAND(cdb.field, mmc_cmd)				
 
 /* Boilerplate initialization code to setup running MMC read command
