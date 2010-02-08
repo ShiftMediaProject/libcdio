@@ -55,7 +55,7 @@ static int tmmc_handle_outcome(CdIo_t *p_cdio, int i_status,
 			       unsigned char sense_reply[18], int flag);
 
 static void tmmc_print_status_sense(int i_status, int sense_valid,
-				    mmc_request_sense_t *, int flag);
+				    cdio_mmc_request_sense_t *, int flag);
 
 static int tmmc_load_eject(CdIo_t *p_cdio, int *sense_avail,
 			   unsigned char sense_reply[18], int flag);
@@ -98,7 +98,7 @@ tmmc_get_disc_erasable(const CdIo_t *p_cdio, const char *psz_source,
 */
 static void
 tmmc_print_status_sense(int i_status, int sense_valid,
-                        mmc_request_sense_t *p_sense, int flag)
+                        cdio_mmc_request_sense_t *p_sense, int flag)
 {
     if (!(flag & 1))
 	return;
@@ -119,7 +119,7 @@ static int
 tmmc_handle_outcome(CdIo_t *p_cdio, int i_status,
                     int *sense_avail, unsigned char sense_reply[18], int flag)
 {
-  mmc_request_sense_t *p_sense = NULL;
+  cdio_mmc_request_sense_t *p_sense = NULL;
 
   *sense_avail = mmc_last_cmd_sense(p_cdio, &p_sense);
   tmmc_print_status_sense(i_status, *sense_avail, p_sense, flag & 1);
@@ -295,7 +295,7 @@ tmmc_wait_for_drive(CdIo_t *p_cdio, int max_tries, int flag)
 {
   int ret, i, sense_avail;
   unsigned char sense_reply[18];
-  mmc_request_sense_t *p_sense_reply = (mmc_request_sense_t *) sense_reply;
+  cdio_mmc_request_sense_t *p_sense_reply = (cdio_mmc_request_sense_t *) sense_reply;
   
   for (i = 0; i < max_tries; i++) {
     ret = tmmc_test_unit_ready(p_cdio, &sense_avail, sense_reply, flag & 1);

@@ -34,7 +34,6 @@ static const char _rcsid[] = "$Id: gnu_linux.c,v 1.33 2008/06/25 07:46:21 rocky 
 #include <cdio/sector.h>
 #include <cdio/util.h>
 #include <cdio/types.h>
-#include <cdio/mmc.h>
 #include <cdio/mmc_cmds.h>
 #include <cdio/audio.h>
 #include <cdio/cdtext.h>
@@ -1251,7 +1250,7 @@ run_mmc_cmd_linux(void *p_user_data,
 {
   _img_private_t *p_env = p_user_data;
   struct cdrom_generic_command cgc;
-  mmc_request_sense_t sense;
+  cdio_mmc_request_sense_t sense;
   unsigned char *u_sense = (unsigned char *) &sense;
 
   p_env->gen.scsi_mmc_sense_valid = 0;

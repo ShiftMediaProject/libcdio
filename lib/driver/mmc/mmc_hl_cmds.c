@@ -44,6 +44,68 @@ mmc_eject_media( const CdIo_t *p_cdio )
   
 }
 
+/* From Frank Endres: */
+/**
+   Detects the disc type using the SCSI-MMC GET CONFIGURATION command.
+   
+   @param p_cdio the CD object to be acted upon.
+   
+   @param i_status, if not NULL, on return will be set indicate whether
+   the operation was a success (DRIVER_OP_SUCCESS) or if not to some
+   other value.
+   
+   @param p_disctype the disc type set on success.
+   @return DRIVER_OP_SUCCESS (0) if we got the status.
+   return codes are the same as driver_return_code_t
+ */
+driver_return_code_t
+mmc_get_disctype( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
+                  cdio_mmc_disctype_t *p_disctype)
+{
+    uint8_t buf[500] = { 0, };
+    driver_return_code_t i_status;
+
+    if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
+    i_status = mmc_get_configuration(p_cdio, &buf, sizeof(buf), 
+				     CDIO_MMC_GET_CONF_ALL_FEATURES,
+				     0, i_timeout_ms);
+
+    if (DRIVER_OP_SUCCESS == i_status) {
+	uint8_t *p, *q;
+	uint8_t profiles_list_length;
+	uint16_t profile_number;
+	bool profile_active;
+
+	/* there is always a profile list feature listed at the
+	   first place of the features list */
+	p = buf + 8; 
+	profiles_list_length = p[3];
+	q = p+4;
+	*p_disctype = CDIO_MMC_DISCTYPE_NO_DISC;
+
+	while ((p_disctype == CDIO_MMC_DISCTYPE_NO_DISC) && 
+	       (q < p + profiles_list_length)) {
+	    profile_number = CDIO_MMC_GET_LEN16(q);
+	    profile_active = q[2] & 0x01;
+
+	    if (profile_active) 
+		switch (profile_number) {
+		  case 0x08: case 0x09: case 0x0A: 
+		  case 0x10: case 0x11: case 0x12: 
+		  case 0x13: case 0x14: case 0x15: 
+		  case 0x16: case 0x1A: case 0x1B: 
+		  case 0x2A: case 0x2B: case 0x40: 
+		  case 0x41: case 0x42: case 0x43: 
+		  case 0x50: case 0x51: case 0x52: 
+		    *p_disctype = (cdio_mmc_disctype_t) profile_number;
+		    break;
+		}
+	    q += 4;
+	}
+    }
+    return i_status;
+}
+
 /**
    Run a SCSI-MMC MMC MODE SENSE command (6- or 10-byte version) 
    and put the results in p_buf 
@@ -87,5 +149,5 @@ mmc_mode_sense(CdIo_t *p_cdio, /*out*/ void *p_buf, unsigned int i_size,
 driver_return_code_t 
 mmc_set_drive_speed( const CdIo_t *p_cdio, int i_drive_speed )
 {
-  return mmc_set_speed(p_cdio, i_drive_speed * 176);
+    return mmc_set_speed(p_cdio, i_drive_speed * 176, 0);
 }

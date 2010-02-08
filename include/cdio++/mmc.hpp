@@ -397,7 +397,7 @@ void mmcSetBlocksize ( uint16_t i_blocksize)
 */
 void mmcSetSpeed( int i_speed )
 {
-  driver_return_code_t drc = mmc_set_speed( p_cdio, i_speed );
+  driver_return_code_t drc = mmc_set_speed( p_cdio, i_speed, 0);
   possible_throw_device_exception(drc);
 }
 

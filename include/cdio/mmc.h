@@ -65,7 +65,7 @@ extern "C" {
       include this for direct MMC access.
       See SCSI Primary Commands-2 (SPC-3) table 26 page 38.
     */
-    typedef struct mmc_request_sense {
+    typedef struct cdio_mmc_request_sense {
 #if defined(__MMC_BIG_ENDIAN_BITFIELD)
 	uint8_t valid		: 1;  /**< valid bit is 1 if info is valid */
 	uint8_t error_code	: 7;
@@ -101,27 +101,27 @@ extern "C" {
 	uint8_t fruc;                 /**< Field replaceable unit code */
 	uint8_t sks[3];               /**< Sense-key specific */
 	uint8_t asb[46];              /**< Additional sense bytes */
-    } mmc_request_sense_t;
+    } cdio_mmc_request_sense_t;
 
 
     /**
        Meanings of the values of mmc_request_sense.sense_key
      */
     typedef enum {
-        MMC_SENSE_KEY_NO_SENSE        =  0,
-        MMC_SENSE_KEY_RECOVERED_ERROR =  1,
-        MMC_SENSE_KEY_NOT_READY       =  2,
-        MMC_SENSE_KEY_MEDIUM_ERROR    =  3,
-        MMC_SENSE_KEY_HARDWARE_ERROR  =  4,
-        MMC_SENSE_KEY_ILLEGAL_REQUEST =  5,
-        MMC_SENSE_KEY_UNIT_ATTENTION  =  6,
-        MMC_SENSE_KEY_DATA_PROTECT    =  7,
-        MMC_SENSE_KEY_BLANK_CHECK     =  8,
-        MMC_SENSE_KEY_VENDOR_SPECIFIC =  9,
-        MMC_SENSE_KEY_COPY_ABORTED    = 10,
-        MMC_SENSE_KEY_ABORTED_COMMAND = 11,
-        MMC_SENSE_KEY_OBSOLTE         = 12,
-    } mmc_sense_key_t;
+        CDIO_MMC_SENSE_KEY_NO_SENSE        =  0,
+        CDIO_MMC_SENSE_KEY_RECOVERED_ERROR =  1,
+        CDIO_MMC_SENSE_KEY_NOT_READY       =  2,
+        CDIO_MMC_SENSE_KEY_MEDIUM_ERROR    =  3,
+        CDIO_MMC_SENSE_KEY_HARDWARE_ERROR  =  4,
+        CDIO_MMC_SENSE_KEY_ILLEGAL_REQUEST =  5,
+        CDIO_MMC_SENSE_KEY_UNIT_ATTENTION  =  6,
+        CDIO_MMC_SENSE_KEY_DATA_PROTECT    =  7,
+        CDIO_MMC_SENSE_KEY_BLANK_CHECK     =  8,
+        CDIO_MMC_SENSE_KEY_VENDOR_SPECIFIC =  9,
+        CDIO_MMC_SENSE_KEY_COPY_ABORTED    = 10,
+        CDIO_MMC_SENSE_KEY_ABORTED_COMMAND = 11,
+        CDIO_MMC_SENSE_KEY_OBSOLTE         = 12,
+    } cdio_mmc_sense_key_t;
 
    /**
       Maps a mmc_sense_key_t into a string name.
@@ -419,7 +419,7 @@ typedef enum {
 /**
     Profile profile codes used in GET_CONFIGURATION - PROFILE LIST. */
 typedef enum {
-  CDIO_MMC_FEATURE_PROF_NON_REMOVABLE = 0x0001, /**< Re-writable disk, capable
+  CDIO_MMC_FEATURE_PROF_NON_REMOVABLE = 0x0001, /**< Re-writable disc, capable
                                                    of changing behavior */
   CDIO_MMC_FEATURE_PROF_REMOVABLE     = 0x0002, /**< disk Re-writable; with 
                                                    removable  media */
@@ -482,6 +482,37 @@ typedef enum {
   CDIO_MMC_FEATURE_INTERFACE_FIBRE_CH    = 5
 } cdio_mmc_feature_interface_t;
   
+
+typedef enum {
+    CDIO_MMC_DISCTYPE_NO_DISC     = 0x00,
+    
+    CDIO_MMC_DISCTYPE_CD_ROM      = 0x08,
+    CDIO_MMC_DISCTYPE_CD_R        = 0x09,
+    CDIO_MMC_DISCTYPE_CD_RW       = 0x0A,
+    
+    CDIO_MMC_DISCTYPE_DVD_ROM     = 0x10,
+    CDIO_MMC_DISCTYPE_DVD_R       = 0x11,
+    CDIO_MMC_DISCTYPE_DVD_RAM     = 0x12,
+    CDIO_MMC_DISCTYPE_DVD_RW_RO   = 0x13, /**< DVD-RW Restricted Overwrite */
+    CDIO_MMC_DISCTYPE_DVD_RW_SR   = 0x14, /**< DVD-RW Sequential Recording */
+    CDIO_MMC_DISCTYPE_DVD_R_DL_SR = 0x15, /**< DVD-R Dual Layer Sequential 
+                                               Recording */
+    CDIO_MMC_DISCTYPE_DVD_R_DL_JR = 0x16,  /**< DVD-R Dual Layer Jump 
+                                               Recording */
+    CDIO_MMC_DISCTYPE_DVD_PRW     = 0x1A,  /**< DVD+RW */
+    CDIO_MMC_DISCTYPE_DVD_PR      = 0x1B,  /**< DVD+R  */
+    CDIO_MMC_DISCTYPE_DVD_PRW_DL  = 0x2A,  /**< DVD+RW Dual Layer */
+    CDIO_MMC_DISCTYPE_DVD_PR_DL   = 0x2B,  /**< DVD+R Dual Layer */
+    
+    CDIO_MMC_DISCTYPE_BD_ROM      = 0x40,
+    CDIO_MMC_DISCTYPE_BD_R_SR     = 0x41,  /**< Sequential Recording */
+    CDIO_MMC_DISCTYPE_BD_R_RR     = 0x42,  /**< Random Recording */
+    CDIO_MMC_DISCTYPE_BD_RE       = 0x43,
+    
+    CDIO_MMC_DISCTYPE_HD_DVD_ROM  = 0x50,
+    CDIO_MMC_DISCTYPE_HD_DVD_R    = 0x51,
+    CDIO_MMC_DISCTYPE_HD_DVD_RAM  = 0x52
+} cdio_mmc_disctype_t;
 
 /**
     The largest Command Descriptor Block (CDB) size.
@@ -760,7 +791,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     string when done with it.
     
   */
-  char * mmc_get_mcn ( const CdIo_t *p_cdio );
+  char * mmc_get_mcn(const CdIo_t *p_cdio);
   
   /**
     Report if CD-ROM has a praticular kind of interface (ATAPI, SCSCI, ...)
@@ -770,9 +801,17 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
     @param e_interface 
     @return true if we have the interface and false if not.
   */
-  bool_3way_t mmc_have_interface( CdIo_t *p_cdio, 
-                                  cdio_mmc_feature_interface_t e_interface );
+  bool_3way_t mmc_have_interface(CdIo_t *p_cdio, 
+                                 cdio_mmc_feature_interface_t e_interface );
   
+  bool mmc_is_disctype_bd(cdio_mmc_disctype_t disctype);
+  bool mmc_is_disctype_cdrom(cdio_mmc_disctype_t disctype);
+  bool mmc_is_disctype_dvd(cdio_mmc_disctype_t disctype);
+  bool mmc_is_disctype_hd_dvd (cdio_mmc_disctype_t disctype);
+  bool mmc_is_disctype_overwritable (cdio_mmc_disctype_t disctype);
+  bool mmc_is_disctype_rewritable(cdio_mmc_disctype_t disctype);
+    
+
   /**
       Read just the user data part of some sort of data sector (via 
       mmc_read_cd). 
@@ -867,33 +906,14 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
       @return number of valid bytes in sense, 0 in case of no sense
               bytes available, <0 in case of internal error.
   */
-  int mmc_last_cmd_sense ( const CdIo_t *p_cdio, mmc_request_sense_t **pp_sense);
+  int mmc_last_cmd_sense ( const CdIo_t *p_cdio, 
+                           cdio_mmc_request_sense_t **pp_sense);
 
   /**
     Set the block size for subsequest read requests, via MMC.
   */
   driver_return_code_t mmc_set_blocksize ( const CdIo_t *p_cdio, 
                                            uint16_t i_blocksize);
-  
-  /**
-    Set the drive speed in CD-ROM speed units.
-
-    @param p_cdio          CD structure set by cdio_open().
-    @param i_drive_speed   speed in CD-ROM speed units. Note this
-                           not Kbs as would be used in the MMC spec or
-                           in mmc_set_speed(). To convert CD-ROM speed units 
-                           to Kbs, multiply the number by 176 (for raw data)
-                           and by 150 (for filesystem data). On many CD-ROM 
-                           drives, specifying a value too large will result 
-                           in using the fastest speed.
-
-    @return the drive speed if greater than 0. -1 if we had an error. is -2
-    returned if this is not implemented for the current driver.
-
-     @see cdio_set_speed and mmc_set_speed
-  */
-  driver_return_code_t mmc_set_drive_speed( const CdIo_t *p_cdio, 
-                                            int i_drive_speed );
   
 #ifdef __cplusplus
 }

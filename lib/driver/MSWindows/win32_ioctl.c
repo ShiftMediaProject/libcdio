@@ -103,14 +103,14 @@ typedef struct _CDROM_TOC_FULL {
 typedef struct {
    SCSI_PASS_THROUGH_DIRECT sptd;
    ULONG Filler; /* Realign buffer to double-word boundary */
-   mmc_request_sense_t   SenseBuf;
+   cdio_mmc_request_sense_t   SenseBuf;
    UCHAR DataBuf[512];
 } SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER;
 
 typedef struct _SCSI_PASS_THROUGH_WITH_BUFFER {
     SCSI_PASS_THROUGH    Spt;
     ULONG                Filler;      /* realign buffer to double-word boundary */
-    mmc_request_sense_t  SenseBuf;
+    cdio_mmc_request_sense_t  SenseBuf;
     UCHAR                DataBuf[512];
 } SCSI_PASS_THROUGH_WITH_BUFFER;
 

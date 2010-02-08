@@ -231,7 +231,7 @@ set_speed_mmc (void *p_user_data, int i_speed)
 {
     generic_img_private_t *p_env = p_user_data;
     if (!p_env) return DRIVER_OP_UNINIT;
-    return mmc_set_speed( p_env->cdio, i_speed );
+    return mmc_set_speed( p_env->cdio, i_speed, 0);
 }
 
 /**
@@ -966,7 +966,7 @@ int mmc_get_tray_status(const CdIo_t *p_cdio)
    bytes available, <0 in case of internal error.
   */
 int
-mmc_last_cmd_sense(const CdIo_t *p_cdio, mmc_request_sense_t **pp_sense)
+mmc_last_cmd_sense(const CdIo_t *p_cdio, cdio_mmc_request_sense_t **pp_sense)
 {
     generic_img_private_t *gen;
     
@@ -1275,6 +1275,99 @@ mmc_have_interface( CdIo_t *p_cdio, cdio_mmc_feature_interface_t e_interface )
     return dunno;
 }
 
+bool
+mmc_is_disctype_bd (cdio_mmc_disctype_t disctype) {
+    switch (disctype) {
+      case CDIO_MMC_DISCTYPE_BD_ROM:
+      case CDIO_MMC_DISCTYPE_BD_R_SR:
+      case CDIO_MMC_DISCTYPE_BD_R_RR:
+      case CDIO_MMC_DISCTYPE_BD_RE:
+        return true;
+      default:
+        return false;
+    }
+}
+
+bool 
+mmc_is_disctype_cdrom (cdio_mmc_disctype_t disctype) {
+    switch (disctype) {
+      case CDIO_MMC_DISCTYPE_CD_ROM:
+      case CDIO_MMC_DISCTYPE_CD_R:
+      case CDIO_MMC_DISCTYPE_CD_RW:
+        return true;
+      default:
+        return false;
+    }
+}
+
+
+bool
+mmc_is_disctype_dvd (cdio_mmc_disctype_t disctype) {
+    switch (disctype) {
+      case CDIO_MMC_DISCTYPE_DVD_ROM:
+      case CDIO_MMC_DISCTYPE_DVD_RAM:
+      case CDIO_MMC_DISCTYPE_DVD_R:
+      case CDIO_MMC_DISCTYPE_DVD_RW_RO:
+      case CDIO_MMC_DISCTYPE_DVD_RW_SR:
+      case CDIO_MMC_DISCTYPE_DVD_R_DL_SR:
+      case CDIO_MMC_DISCTYPE_DVD_R_DL_JR:
+      case CDIO_MMC_DISCTYPE_DVD_PRW:
+      case CDIO_MMC_DISCTYPE_DVD_PR:
+      case CDIO_MMC_DISCTYPE_DVD_PRW_DL:
+      case CDIO_MMC_DISCTYPE_DVD_PR_DL:
+        return true;
+      default:
+        return false;
+    }
+}
+
+bool
+mmc_is_disctype_hd_dvd (cdio_mmc_disctype_t disctype) {
+    switch (disctype) {
+      case CDIO_MMC_DISCTYPE_HD_DVD_ROM:
+      case CDIO_MMC_DISCTYPE_HD_DVD_R:
+      case CDIO_MMC_DISCTYPE_HD_DVD_RAM:
+        return true;
+      default:
+        return false;
+    }
+}
+
+
+bool
+mmc_is_disctype_overwritable (cdio_mmc_disctype_t disctype) {
+    switch (disctype) {
+      case CDIO_MMC_DISCTYPE_DVD_RW_RO:
+      case CDIO_MMC_DISCTYPE_DVD_R_DL_JR:
+      case CDIO_MMC_DISCTYPE_DVD_PRW:
+      case CDIO_MMC_DISCTYPE_DVD_PRW_DL:
+      case CDIO_MMC_DISCTYPE_BD_R_RR: /* pseudo-overwritable */
+      case CDIO_MMC_DISCTYPE_BD_RE:
+      case CDIO_MMC_DISCTYPE_HD_DVD_RAM:
+        return true;
+      default:
+        return false;
+    }
+}
+
+
+bool
+mmc_is_disctype_rewritable (cdio_mmc_disctype_t disctype) { 
+    /* discs that need blanking before re-use */
+    if (mmc_is_disctype_overwritable (disctype))
+        return true;
+    
+    switch (disctype) {
+      case CDIO_MMC_DISCTYPE_CD_RW:
+      case CDIO_MMC_DISCTYPE_DVD_RW_SR:
+      case CDIO_MMC_DISCTYPE_BD_R_SR:
+        return true;
+      default:
+        return false;
+    }
+}
+
+
 /** 
     Read sectors using SCSI-MMC GPCMD_READ_CD.
 */
@@ -1338,6 +1431,8 @@ mmc_set_blocksize ( const CdIo_t *p_cdio, uint16_t i_blocksize)
     mmc_set_blocksize_private (p_cdio->env, p_cdio->op.run_mmc_cmd, 
                                i_blocksize);
 }
+
+
 
 
 

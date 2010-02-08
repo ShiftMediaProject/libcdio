@@ -437,7 +437,7 @@ main(int argc, char *argv[])
     const operation_t *p_op = &operation[i];
     switch (p_op->op) {
     case OP_SPEED:
-      rc = mmc_set_speed(p_cdio, p_op->arg.i_num);
+      rc = mmc_set_speed(p_cdio, p_op->arg.i_num, 0);
       report(stdout, "%s (mmc_set_speed): %s\n", program_name, 
 	     cdio_driver_errmsg(rc));
       break;

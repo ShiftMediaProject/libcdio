@@ -35,9 +35,41 @@
 #ifndef __CDIO_MMC_CMDS_H__
 #define __CDIO_MMC_CMDS_H__
 
+#include <cdio/mmc.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+  /**
+     Get drive capabilities vis SCSI-MMC GET CONFIGURATION
+     @param p_cdio the CD object to be acted upon.
+     @return DRIVER_OP_SUCCESS (0) if we got the status.
+     return codes are the same as driver_return_code_t
+  */
+    driver_return_code_t 
+    mmc_get_configuration(const CdIo_t *p_cdio, void *p_buf, 
+                          unsigned int i_size, 
+                          unsigned int return_type, 
+                          unsigned int i_starting_feature_number,
+                          unsigned int i_timeout_ms);
+
+  /**
+     Detects the disc type using the SCSI-MMC GET CONFIGURATION command.
+   
+     @param p_cdio the CD object to be acted upon.
+     
+     @param i_status, if not NULL, on return will be set indicate whether
+     the operation was a success (DRIVER_OP_SUCCESS) or if not to some
+     other value.
+     
+     @param p_disctype the disc type set on success.
+     @return DRIVER_OP_SUCCESS (0) if we got the status.
+     return codes are the same as driver_return_code_t
+  */
+    driver_return_code_t mmc_get_disctype( const CdIo_t *p_cdio, 
+                                           unsigned int i_timeout_ms,
+                                           cdio_mmc_disctype_t *p_disctype);
 
   /**
     Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.
@@ -252,6 +284,26 @@ extern "C" {
                 uint32_t i_blocks );
   
   /**
+    Set the drive speed in CD-ROM speed units.
+
+    @param p_cdio          CD structure set by cdio_open().
+    @param i_drive_speed   speed in CD-ROM speed units. Note this
+                           not Kbs as would be used in the MMC spec or
+                           in mmc_set_speed(). To convert CD-ROM speed units 
+                           to Kbs, multiply the number by 176 (for raw data)
+                           and by 150 (for filesystem data). On many CD-ROM 
+                           drives, specifying a value too large will result 
+                           in using the fastest speed.
+
+    @return the drive speed if greater than 0. -1 if we had an error. is -2
+    returned if this is not implemented for the current driver.
+
+     @see cdio_set_speed and mmc_set_speed
+  */
+  driver_return_code_t mmc_set_drive_speed( const CdIo_t *p_cdio, 
+                                            int i_drive_speed );
+  
+  /**
     Set the drive speed in K bytes per second using SCSI-MMC SET SPEED.
 .
 
@@ -268,13 +320,18 @@ extern "C" {
                          specifying a value too large will result in using
                          the fastest speed.
 
+    @param i_timeout_ms value in milliseconds to use on timeout. Setting
+           to 0 uses the default time-out value stored in
+	   mmc_timeout_ms.
+
     @return the drive speed if greater than 0. -1 if we had an error. is -2
     returned if this is not implemented for the current driver.
 
     @see cdio_set_speed and mmc_set_drive_speed
   */
   driver_return_code_t mmc_set_speed( const CdIo_t *p_cdio, 
-                                      int i_Kbs_speed );
+                                      int i_Kbs_speed,
+                                      unsigned int i_timeout_ms);
   
   /**
     Load or Unload media using a MMC START STOP UNIT command. 

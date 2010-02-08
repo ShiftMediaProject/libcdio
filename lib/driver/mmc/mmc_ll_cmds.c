@@ -50,7 +50,6 @@ mmc_prevent_allow_medium_removal(const CdIo_t *p_cdio,
     uint8_t buf[8] = { 0, };
     void   *p_buf  = &buf; 
     const unsigned int i_size = 0;
-    driver_return_code_t i_status;
     
     MMC_CMD_SETUP(CDIO_MMC_GPCMD_PREVENT_ALLOW_MEDIUM_REMOVAL);
     if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
@@ -58,6 +57,28 @@ mmc_prevent_allow_medium_removal(const CdIo_t *p_cdio,
     if (b_persistent)      cdb.field[4] |= 2;
     
     return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE, i_timeout_ms);
+}
+
+/**
+  Get drive capabilities vis SCSI-MMC GET CONFIGURATION
+  @param p_cdio the CD object to be acted upon.
+  @return DRIVER_OP_SUCCESS (0) if we got the status.
+  return codes are the same as driver_return_code_t
+*/
+driver_return_code_t 
+mmc_get_configuration(const CdIo_t *p_cdio, void *p_buf, 
+		      unsigned int i_size, 
+		      unsigned int return_type, 
+		      unsigned int i_starting_feature_number,
+		      unsigned int i_timeout_ms)
+
+{
+    MMC_CMD_SETUP(CDIO_MMC_GPCMD_GET_CONFIGURATION);
+    if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
+    cdb.field[1] = return_type & 0x3;
+
+    CDIO_MMC_SET_LEN16(cdb.field, 2, i_starting_feature_number);
+    return MMC_RUN_CMD(SCSI_MMC_DATA_READ, i_timeout_ms);
 }
 
 /**
@@ -335,12 +356,13 @@ mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn,
    @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
 int
-mmc_set_speed(const CdIo_t *p_cdio, int i_Kbs_speed)
+mmc_set_speed(const CdIo_t *p_cdio, int i_Kbs_speed, unsigned int i_timeout_ms)
 
 {
     uint8_t buf[14] = { 0, };
     void * p_buf = &buf;
     const unsigned int i_size = sizeof(buf);
+    if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
     
     MMC_CMD_SETUP(CDIO_MMC_GPCMD_SET_SPEED);
     
@@ -357,7 +379,7 @@ mmc_set_speed(const CdIo_t *p_cdio, int i_Kbs_speed)
        the maximum allowable speed.
     */
     CDIO_MMC_SET_LEN16(cdb.field, 4, 0xffff);
-    return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE, mmc_timeout_ms);
+    return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE, i_timeout_ms);
 }
 
 /**
