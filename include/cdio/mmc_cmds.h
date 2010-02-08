@@ -40,6 +40,17 @@ extern "C" {
 #endif /* __cplusplus */
 
   /**
+    Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.
+    Command is not "immediate" -- we'll wait for the command to complete.
+    For a more general (and lower-level) routine, @see mmc_start_stop_unit.
+
+   @param p_cdio the CD object to be acted upon.
+   @return DRIVER_OP_SUCCESS (0) if we got the status.
+   return codes are the same as driver_return_code_t  
+  */
+  driver_return_code_t mmc_eject_media( const CdIo_t *p_cdio );
+  
+  /**
     Return results of media status
 
     @param p_cdio the CD object to be acted upon.
@@ -114,6 +125,22 @@ extern "C" {
   driver_return_code_t  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf, 
 					  unsigned int i_size, int page);
   
+  /**
+     Request preventing/allowing medium removal on a drive via 
+     SCSI-MMC PREVENT/ALLOW MEDIUM REMOVAL.
+
+     @param p_cdio the CD object to be acted upon.
+     @param b_prevent true of drive locked and false if unlocked
+     @param b_persisent make b_prevent state persistent
+
+     @return DRIVER_OP_SUCCESS (0) if we got the status.
+     return codes are the same as driver_return_code_t
+  */
+    driver_return_code_t 
+    mmc_prevent_allow_medium_removal(const CdIo_t *p_cdio, 
+				     bool b_persistent, bool b_prevent,
+				     unsigned int i_timeout_ms);
+    
   /**
       Issue a MMC READ_CD command.
     

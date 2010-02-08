@@ -172,7 +172,8 @@ extern "C" {
                                                  settings. (6 bytes). */
   CDIO_MMC_GPCMD_START_STOP_UNIT        = 0x1b, /**< Enable/disable Disc
                                                      operations. (6 bytes). */
-  CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL   = 0x1e, /**< Enable/disable Disc 
+  CDIO_MMC_GPCMD_PREVENT_ALLOW_MEDIUM_REMOVAL 
+                                        = 0x1e, /**< Enable/disable Disc 
                                                    removal. (6 bytes). */
 
   /**
@@ -614,17 +615,6 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   const char *mmc_audio_state2str( uint8_t i_audio_state );
   
   /**
-    Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.
-    Command is not "immediate" -- we'll wait for the command to complete.
-    For a more general (and lower-level) routine, @see mmc_start_stop_unit.
-
-   @param p_cdio the CD object to be acted upon.
-   @return DRIVER_OP_SUCCESS (0) if we got the status.
-   return codes are the same as driver_return_code_t  
-  */
-  driver_return_code_t mmc_eject_media( const CdIo_t *p_cdio );
-  
-  /**
     Return a string containing the name of the given feature
   */
   const char *mmc_feature2str( int i_feature );
@@ -927,6 +917,8 @@ extern cdio_mmc_mode_page_t         debug_cdio_mmc_mode_page;
   
 #ifndef DO_NOT_WANT_OLD_MMC_COMPATIBILITY
 #define CDIO_MMC_GPCMD_START_STOP CDIO_MMC_GPCMD_START_STOP_UNIT 
+#define CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL  \
+    CDIO_MMC_GPCMD_PREVENT_ALLOW_MEDIUM_REMOVAL
 #endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
 
 #endif /* __MMC_H__ */

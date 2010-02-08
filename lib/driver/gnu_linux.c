@@ -35,6 +35,7 @@ static const char _rcsid[] = "$Id: gnu_linux.c,v 1.33 2008/06/25 07:46:21 rocky 
 #include <cdio/util.h>
 #include <cdio/types.h>
 #include <cdio/mmc.h>
+#include <cdio/mmc_cmds.h>
 #include <cdio/audio.h>
 #include <cdio/cdtext.h>
 #include "cdtext_private.h"

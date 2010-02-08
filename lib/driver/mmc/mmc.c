@@ -1060,36 +1060,6 @@ mmc_close_tray( CdIo_t *p_cdio )
 }
 
 /**
-   Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.
-   Command is not "immediate" -- we'll wait for the command to complete.
-   For a more general (and lower-level) routine, @see mmc_start_stop_media.
-
-   @param p_cdio the CD object to be acted upon.
-   @return DRIVER_OP_SUCCESS (0) if we got the status.
-   return codes are the same as driver_return_code_t
-*/
-driver_return_code_t
-mmc_eject_media( const CdIo_t *p_cdio )
-{
-  int i_status = 0;
-  mmc_cdb_t cdb = {{0, }};
-  uint8_t buf[1];
-
-  if ( ! p_cdio ) return DRIVER_OP_UNINIT;
-  if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
-
-  i_status = p_cdio->op.run_mmc_cmd (p_cdio->env, mmc_timeout_ms,
-                                     mmc_get_cmd_len(cdb.field[0]), &cdb, 
-                                     SCSI_MMC_DATA_WRITE, 0, &buf);
-  if (0 != i_status) return i_status;
-
-  return mmc_start_stop_unit(p_cdio, true, false, 0, 0);
-  
-}
-
-/**
    Return a string containing the name of the given feature
 */
 const char *mmc_feature2str( int i_feature )
@@ -1370,30 +1340,6 @@ mmc_set_blocksize ( const CdIo_t *p_cdio, uint16_t i_blocksize)
 }
 
 
-/**
-  Set the drive speed in CD-ROM speed units.
-  
-  @param p_cdio	   CD structure set by cdio_open().
-  @param i_drive_speed   speed in CD-ROM speed units. Note this
-                         not Kbytes/sec as would be used in the MMC spec or
-	                 in mmc_set_speed(). To convert CD-ROM speed units 
-		         to Kbs, multiply the number by 176 (for raw data)
-		         and by 150 (for filesystem data). On many CD-ROM 
-		         drives, specifying a value too large will result 
-		         in using the fastest speed.
-
-  @return the drive speed if greater than 0. -1 if we had an error. is -2
-  returned if this is not implemented for the current driver.
-
-   @see cdio_set_speed and mmc_set_speed
-*/
-driver_return_code_t 
-mmc_set_drive_speed( const CdIo_t *p_cdio, int i_drive_speed )
-{
-  return mmc_set_speed(p_cdio, i_drive_speed * 176);
-}
-
-  
 
 /* 
  * Local variables:
