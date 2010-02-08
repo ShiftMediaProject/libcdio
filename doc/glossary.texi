@@ -328,8 +328,10 @@ Special burn programs are needed for writing to them.
 @item DVD-R DL   0x15 (double layer)
 @item DVD-R DL   0x16 (double layer, jump recording)
 @item DVD+R      0x1a
-@item DVD+R DL   0x2a (double layer)
+@item DVD+RW DL  0x2a (double layer)
+@item DVD+R DL   0x2b (double layer)
 @item BD-R       0x41 (single or double layer, formatted or not)
+@item HD DVD-ROM 0x50
 @item HD DVD-R   0x51
 @item HD DVD-RAM 0x52
 @end table
