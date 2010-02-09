@@ -59,6 +59,7 @@ TESTS = $(check_PROGRAMS)
 EXTRA_DIST = \
 	bincue.c.in \
 	helper.c    \
+	helper.h    \
 	cdrdao.c.in \
 	nrg.c.in
 

@@ -230,8 +230,10 @@ mmc_read_sectors
 mmc_read_timeout_ms
 mmc_run_cmd
 mmc_run_cmd_len
+mmc_sense_key2str
 mmc_set_blocksize
 mmc_set_speed
 mmc_start_stop_unit
 mmc_timeout_ms
+mmc_test_unit_ready
 track_format2str
