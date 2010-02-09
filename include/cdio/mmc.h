@@ -210,6 +210,8 @@ extern "C" {
 
   CDIO_MMC_GPCMD_READ_DISC_INFO         = 0x51, /**< Get CD information.
                                                    (10 bytes). */
+  CDIO_MMC_GPCMD_READ_TRACK_INFORMATION = 0x52, /**< Information about a 
+                                                   logical track. */
   CDIO_MMC_GPCMD_MODE_SELECT_10         = 0x55, /**< Select medium 
                                                    (10-bytes). */
   CDIO_MMC_GPCMD_MODE_SENSE_10          = 0x5a, /**< Get medium or device
