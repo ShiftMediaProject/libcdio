@@ -126,7 +126,7 @@ test_print_status_sense(int i_status, int sense_valid,
 static int
 test_get_disctype(CdIo_t *p_cdio, bool b_verbose)
 {
-    cdio_mmc_disctype_t disctype;
+    cdio_mmc_feature_profile_t disctype;
     driver_return_code_t i_status = mmc_get_disctype(p_cdio, 0, &disctype);
     if (DRIVER_OP_SUCCESS == i_status) {
 	if (b_verbose)

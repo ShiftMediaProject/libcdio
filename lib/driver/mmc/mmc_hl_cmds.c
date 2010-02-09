@@ -60,7 +60,7 @@ mmc_eject_media( const CdIo_t *p_cdio )
  */
 driver_return_code_t
 mmc_get_disctype( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
-                  cdio_mmc_disctype_t *p_disctype)
+                  cdio_mmc_feature_profile_t *p_disctype)
 {
     uint8_t buf[500] = { 0, };
     driver_return_code_t i_status;
@@ -81,23 +81,37 @@ mmc_get_disctype( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 	p = buf + 8; 
 	profiles_list_length = p[3];
 	q = p+4;
-	*p_disctype = CDIO_MMC_DISCTYPE_NO_DISC;
+	*p_disctype = CDIO_MMC_FEATURE_PROF_NON_CONFORM;
 
-	while ((CDIO_MMC_DISCTYPE_NO_DISC == *p_disctype) && 
+	while ((CDIO_MMC_FEATURE_PROF_NON_CONFORM == *p_disctype) && 
 	       (q < p + profiles_list_length)) {
 	    profile_number = CDIO_MMC_GET_LEN16(q);
 	    profile_active = q[2] & 0x01;
 
 	    if (profile_active) 
 		switch (profile_number) {
-		  case 0x08: case 0x09: case 0x0A: 
-		  case 0x10: case 0x11: case 0x12: 
-		  case 0x13: case 0x14: case 0x15: 
-		  case 0x16: case 0x1A: case 0x1B: 
-		  case 0x2A: case 0x2B: case 0x40: 
-		  case 0x41: case 0x42: case 0x43: 
-		  case 0x50: case 0x51: case 0x52: 
-		    *p_disctype = (cdio_mmc_disctype_t) profile_number;
+		  case CDIO_MMC_FEATURE_PROF_CD_ROM: 
+		  case CDIO_MMC_FEATURE_PROF_CD_R: 
+		  case CDIO_MMC_FEATURE_PROF_CD_RW: 
+		  case CDIO_MMC_FEATURE_PROF_DVD_ROM: 
+		  case CDIO_MMC_FEATURE_PROF_DVD_R_SEQ: 
+		  case CDIO_MMC_FEATURE_PROF_DVD_RAM: 
+		  case CDIO_MMC_FEATURE_PROF_DVD_RW_RO: 
+		  case CDIO_MMC_FEATURE_PROF_DVD_RW_SEQ: 
+		  case CDIO_MMC_FEATURE_PROF_DVD_R_DL_SEQ: 
+		  case CDIO_MMC_FEATURE_PROF_DVD_R_DL_JR: 
+		  case CDIO_MMC_FEATURE_PROF_DVD_PRW: 
+		  case CDIO_MMC_FEATURE_PROF_DVD_PR: 
+		  case CDIO_MMC_FEATURE_PROF_DVD_PRW_DL:
+		  case CDIO_MMC_FEATURE_PROF_DVD_PR_DL: 
+		  case CDIO_MMC_FEATURE_PROF_BD_ROM: 
+		  case CDIO_MMC_FEATURE_PROF_BD_SEQ: 
+		  case CDIO_MMC_FEATURE_PROF_BD_R_RANDOM: 
+		  case CDIO_MMC_FEATURE_PROF_BD_RE: 
+		  case CDIO_MMC_FEATURE_PROF_HD_DVD_ROM: 
+		  case CDIO_MMC_FEATURE_PROF_HD_DVD_R: 
+		  case CDIO_MMC_FEATURE_PROF_HD_DVD_RAM: 
+		    *p_disctype = (cdio_mmc_feature_profile_t) profile_number;
 		    break;
 		}
 	    q += 4;

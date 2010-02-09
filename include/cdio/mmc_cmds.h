@@ -69,7 +69,7 @@ extern "C" {
   */
     driver_return_code_t mmc_get_disctype( const CdIo_t *p_cdio, 
                                            unsigned int i_timeout_ms,
-                                           cdio_mmc_disctype_t *p_disctype);
+                                           cdio_mmc_feature_profile_t *p_disctype);
 
   /**
     Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.

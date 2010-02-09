@@ -1199,9 +1199,9 @@ const char *mmc_feature_profile2str( int i_feature_profile )
     return "DDCD-R Write only DDCD";
   case CDIO_MMC_FEATURE_PROF_DDCD_RW:
     return "Re-Write only DDCD";
-  case CDIO_MMC_FEATURE_PROF_DVD_RW_DL:
+  case CDIO_MMC_FEATURE_PROF_DVD_PRW_DL:
     return "DVD+RW - Double Layer";
-  case CDIO_MMC_FEATURE_PROF_DVD_PR2:
+  case CDIO_MMC_FEATURE_PROF_DVD_PR_DL:
     return "DVD+R Double Layer - DVD Recordable Double Layer";
   case CDIO_MMC_FEATURE_PROF_BD_ROM:
     return "Blu Ray BD-ROM";
@@ -1276,12 +1276,12 @@ mmc_have_interface( CdIo_t *p_cdio, cdio_mmc_feature_interface_t e_interface )
 }
 
 bool
-mmc_is_disctype_bd (cdio_mmc_disctype_t disctype) {
+mmc_is_disctype_bd (cdio_mmc_feature_profile_t disctype) {
     switch (disctype) {
-      case CDIO_MMC_DISCTYPE_BD_ROM:
-      case CDIO_MMC_DISCTYPE_BD_R_SR:
-      case CDIO_MMC_DISCTYPE_BD_R_RR:
-      case CDIO_MMC_DISCTYPE_BD_RE:
+      case CDIO_MMC_FEATURE_PROF_BD_ROM:
+      case CDIO_MMC_FEATURE_PROF_BD_SEQ:
+      case CDIO_MMC_FEATURE_PROF_BD_R_RANDOM:
+      case CDIO_MMC_FEATURE_PROF_BD_RE:
         return true;
       default:
         return false;
@@ -1289,11 +1289,11 @@ mmc_is_disctype_bd (cdio_mmc_disctype_t disctype) {
 }
 
 bool 
-mmc_is_disctype_cdrom (cdio_mmc_disctype_t disctype) {
+mmc_is_disctype_cdrom (cdio_mmc_feature_profile_t disctype) {
     switch (disctype) {
-      case CDIO_MMC_DISCTYPE_CD_ROM:
-      case CDIO_MMC_DISCTYPE_CD_R:
-      case CDIO_MMC_DISCTYPE_CD_RW:
+      case CDIO_MMC_FEATURE_PROF_CD_ROM:
+      case CDIO_MMC_FEATURE_PROF_CD_R:
+      case CDIO_MMC_FEATURE_PROF_CD_RW:
         return true;
       default:
         return false;
@@ -1302,19 +1302,19 @@ mmc_is_disctype_cdrom (cdio_mmc_disctype_t disctype) {
 
 
 bool
-mmc_is_disctype_dvd (cdio_mmc_disctype_t disctype) {
+mmc_is_disctype_dvd (cdio_mmc_feature_profile_t disctype) {
     switch (disctype) {
-      case CDIO_MMC_DISCTYPE_DVD_ROM:
-      case CDIO_MMC_DISCTYPE_DVD_RAM:
-      case CDIO_MMC_DISCTYPE_DVD_R:
-      case CDIO_MMC_DISCTYPE_DVD_RW_RO:
-      case CDIO_MMC_DISCTYPE_DVD_RW_SR:
-      case CDIO_MMC_DISCTYPE_DVD_R_DL_SR:
-      case CDIO_MMC_DISCTYPE_DVD_R_DL_JR:
-      case CDIO_MMC_DISCTYPE_DVD_PRW:
-      case CDIO_MMC_DISCTYPE_DVD_PR:
-      case CDIO_MMC_DISCTYPE_DVD_PRW_DL:
-      case CDIO_MMC_DISCTYPE_DVD_PR_DL:
+      case CDIO_MMC_FEATURE_PROF_DVD_ROM:
+      case CDIO_MMC_FEATURE_PROF_DVD_RAM:
+      case CDIO_MMC_FEATURE_PROF_DVD_R_SEQ:
+      case CDIO_MMC_FEATURE_PROF_DVD_RW_RO:
+      case CDIO_MMC_FEATURE_PROF_DVD_RW_SEQ:
+      case CDIO_MMC_FEATURE_PROF_DVD_R_DL_SEQ:
+      case CDIO_MMC_FEATURE_PROF_DVD_R_DL_JR:
+      case CDIO_MMC_FEATURE_PROF_DVD_PRW:
+      case CDIO_MMC_FEATURE_PROF_DVD_PR:
+      case CDIO_MMC_FEATURE_PROF_DVD_PRW_DL:
+      case CDIO_MMC_FEATURE_PROF_DVD_PR_DL:
         return true;
       default:
         return false;
@@ -1322,28 +1322,11 @@ mmc_is_disctype_dvd (cdio_mmc_disctype_t disctype) {
 }
 
 bool
-mmc_is_disctype_hd_dvd (cdio_mmc_disctype_t disctype) {
+mmc_is_disctype_hd_dvd (cdio_mmc_feature_profile_t disctype) {
     switch (disctype) {
-      case CDIO_MMC_DISCTYPE_HD_DVD_ROM:
-      case CDIO_MMC_DISCTYPE_HD_DVD_R:
-      case CDIO_MMC_DISCTYPE_HD_DVD_RAM:
-        return true;
-      default:
-        return false;
-    }
-}
-
-
-bool
-mmc_is_disctype_overwritable (cdio_mmc_disctype_t disctype) {
-    switch (disctype) {
-      case CDIO_MMC_DISCTYPE_DVD_RW_RO:
-      case CDIO_MMC_DISCTYPE_DVD_R_DL_JR:
-      case CDIO_MMC_DISCTYPE_DVD_PRW:
-      case CDIO_MMC_DISCTYPE_DVD_PRW_DL:
-      case CDIO_MMC_DISCTYPE_BD_R_RR: /* pseudo-overwritable */
-      case CDIO_MMC_DISCTYPE_BD_RE:
-      case CDIO_MMC_DISCTYPE_HD_DVD_RAM:
+      case CDIO_MMC_FEATURE_PROF_HD_DVD_ROM:
+      case CDIO_MMC_FEATURE_PROF_HD_DVD_R:
+      case CDIO_MMC_FEATURE_PROF_HD_DVD_RAM:
         return true;
       default:
         return false;
@@ -1352,15 +1335,32 @@ mmc_is_disctype_overwritable (cdio_mmc_disctype_t disctype) {
 
 
 bool
-mmc_is_disctype_rewritable (cdio_mmc_disctype_t disctype) { 
+mmc_is_disctype_overwritable (cdio_mmc_feature_profile_t disctype) {
+    switch (disctype) {
+      case CDIO_MMC_FEATURE_PROF_DVD_RW_RO:
+      case CDIO_MMC_FEATURE_PROF_DVD_R_DL_JR:
+      case CDIO_MMC_FEATURE_PROF_DVD_PRW:
+      case CDIO_MMC_FEATURE_PROF_DVD_PRW_DL:
+      case CDIO_MMC_FEATURE_PROF_BD_R_RANDOM: /* pseudo-overwritable */
+      case CDIO_MMC_FEATURE_PROF_BD_RE:
+      case CDIO_MMC_FEATURE_PROF_HD_DVD_RAM:
+        return true;
+      default:
+        return false;
+    }
+}
+
+
+bool
+mmc_is_disctype_rewritable (cdio_mmc_feature_profile_t disctype) { 
     /* discs that need blanking before re-use */
     if (mmc_is_disctype_overwritable (disctype))
         return true;
     
     switch (disctype) {
-      case CDIO_MMC_DISCTYPE_CD_RW:
-      case CDIO_MMC_DISCTYPE_DVD_RW_SR:
-      case CDIO_MMC_DISCTYPE_BD_R_SR:
+      case CDIO_MMC_FEATURE_PROF_CD_RW:
+      case CDIO_MMC_FEATURE_PROF_DVD_RW_SEQ:
+      case CDIO_MMC_FEATURE_PROF_BD_SEQ:
         return true;
       default:
         return false;

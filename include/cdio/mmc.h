@@ -451,12 +451,11 @@ typedef enum {
                                                    recording */
   CDIO_MMC_FEATURE_PROF_DVD_PRW       = 0x001A, /**< DVD+RW - DVD ReWritable */
   CDIO_MMC_FEATURE_PROF_DVD_PR        = 0x001B, /**< DVD+R - DVD Recordable */
-
   CDIO_MMC_FEATURE_PROF_DDCD_ROM      = 0x0020, /**< Read only  DDCD */
   CDIO_MMC_FEATURE_PROF_DDCD_R        = 0x0021, /**< DDCD-R Write only DDCD */
   CDIO_MMC_FEATURE_PROF_DDCD_RW       = 0x0022, /**< Re-Write only DDCD */
-  CDIO_MMC_FEATURE_PROF_DVD_RW_DL     = 0x002A, /**< "DVD+RW/DL */
-  CDIO_MMC_FEATURE_PROF_DVD_PR2       = 0x002B, /**< DVD+R - DVD Recordable 
+  CDIO_MMC_FEATURE_PROF_DVD_PRW_DL    = 0x002A, /**< "DVD+RW/DL */
+  CDIO_MMC_FEATURE_PROF_DVD_PR_DL     = 0x002B, /**< DVD+R - DVD Recordable 
                                                      double layer */
 
   CDIO_MMC_FEATURE_PROF_BD_ROM        = 0x0040, /**< BD-ROM */
@@ -482,37 +481,6 @@ typedef enum {
   CDIO_MMC_FEATURE_INTERFACE_FIBRE_CH    = 5
 } cdio_mmc_feature_interface_t;
   
-
-typedef enum {
-    CDIO_MMC_DISCTYPE_NO_DISC     = 0x00,
-    
-    CDIO_MMC_DISCTYPE_CD_ROM      = 0x08,
-    CDIO_MMC_DISCTYPE_CD_R        = 0x09,
-    CDIO_MMC_DISCTYPE_CD_RW       = 0x0A,
-    
-    CDIO_MMC_DISCTYPE_DVD_ROM     = 0x10,
-    CDIO_MMC_DISCTYPE_DVD_R       = 0x11,
-    CDIO_MMC_DISCTYPE_DVD_RAM     = 0x12,
-    CDIO_MMC_DISCTYPE_DVD_RW_RO   = 0x13, /**< DVD-RW Restricted Overwrite */
-    CDIO_MMC_DISCTYPE_DVD_RW_SR   = 0x14, /**< DVD-RW Sequential Recording */
-    CDIO_MMC_DISCTYPE_DVD_R_DL_SR = 0x15, /**< DVD-R Dual Layer Sequential 
-                                               Recording */
-    CDIO_MMC_DISCTYPE_DVD_R_DL_JR = 0x16,  /**< DVD-R Dual Layer Jump 
-                                               Recording */
-    CDIO_MMC_DISCTYPE_DVD_PRW     = 0x1A,  /**< DVD+RW */
-    CDIO_MMC_DISCTYPE_DVD_PR      = 0x1B,  /**< DVD+R  */
-    CDIO_MMC_DISCTYPE_DVD_PRW_DL  = 0x2A,  /**< DVD+RW Dual Layer */
-    CDIO_MMC_DISCTYPE_DVD_PR_DL   = 0x2B,  /**< DVD+R Dual Layer */
-    
-    CDIO_MMC_DISCTYPE_BD_ROM      = 0x40,
-    CDIO_MMC_DISCTYPE_BD_R_SR     = 0x41,  /**< Sequential Recording */
-    CDIO_MMC_DISCTYPE_BD_R_RR     = 0x42,  /**< Random Recording */
-    CDIO_MMC_DISCTYPE_BD_RE       = 0x43,
-    
-    CDIO_MMC_DISCTYPE_HD_DVD_ROM  = 0x50,
-    CDIO_MMC_DISCTYPE_HD_DVD_R    = 0x51,
-    CDIO_MMC_DISCTYPE_HD_DVD_RAM  = 0x52
-} cdio_mmc_disctype_t;
 
 /**
     The largest Command Descriptor Block (CDB) size.
@@ -804,12 +772,12 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   bool_3way_t mmc_have_interface(CdIo_t *p_cdio, 
                                  cdio_mmc_feature_interface_t e_interface );
   
-  bool mmc_is_disctype_bd(cdio_mmc_disctype_t disctype);
-  bool mmc_is_disctype_cdrom(cdio_mmc_disctype_t disctype);
-  bool mmc_is_disctype_dvd(cdio_mmc_disctype_t disctype);
-  bool mmc_is_disctype_hd_dvd (cdio_mmc_disctype_t disctype);
-  bool mmc_is_disctype_overwritable (cdio_mmc_disctype_t disctype);
-  bool mmc_is_disctype_rewritable(cdio_mmc_disctype_t disctype);
+  bool mmc_is_disctype_bd(cdio_mmc_feature_profile_t disctype);
+  bool mmc_is_disctype_cdrom(cdio_mmc_feature_profile_t disctype);
+  bool mmc_is_disctype_dvd(cdio_mmc_feature_profile_t disctype);
+  bool mmc_is_disctype_hd_dvd (cdio_mmc_feature_profile_t disctype);
+  bool mmc_is_disctype_overwritable (cdio_mmc_feature_profile_t disctype);
+  bool mmc_is_disctype_rewritable(cdio_mmc_feature_profile_t disctype);
     
 
   /**
