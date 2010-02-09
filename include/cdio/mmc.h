@@ -762,8 +762,8 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   char * mmc_get_mcn(const CdIo_t *p_cdio);
   
   /**
-    Report if CD-ROM has a praticular kind of interface (ATAPI, SCSCI, ...)
-    Is it possible for an interface to have serveral? If not this 
+    Report if CD-ROM has a particular kind of interface (ATAPI, SCSCI, ...)
+    Is it possible for an interface to have several? If not this 
     routine could probably return the single mmc_feature_interface_t.
     @param p_cdio the CD object to be acted upon.
     @param e_interface 
