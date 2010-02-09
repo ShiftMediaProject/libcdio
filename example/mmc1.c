@@ -32,6 +32,7 @@
 #endif
 #include <cdio/cdio.h>
 #include <cdio/mmc.h>
+#include <cdio/mmc_cmds.h>
 
 /* Set how long to wait for MMC commands to complete */
 #define DEFAULT_TIMEOUT_MS 10000
@@ -81,12 +82,20 @@ main(int argc, const char *argv[])
     }
 
     {
-	driver_return_code_t drc;
-	bool b_erasable = mmc_get_disc_erasable(p_cdio, &drc);
-	if (DRIVER_OP_SUCCESS == drc)
+	driver_return_code_t i_status;
+	bool b_erasable = mmc_get_disc_erasable(p_cdio, &i_status);
+	cdio_mmc_feature_profile_t disctype;
+	if (DRIVER_OP_SUCCESS == i_status)
 	    printf("Disc is %serasable.\n", b_erasable ? "" : "not ");
 	else
 	    printf("Can't determine if disc is erasable.\n");
+
+	i_status = mmc_get_disctype(p_cdio, 0, &disctype);
+	if (DRIVER_OP_SUCCESS == i_status) {
+	    printf("disc type: profile is %s (0x%X)\n", 
+		   mmc_feature_profile2str(disctype), 
+		   disctype);
+	}
     }
 
   }

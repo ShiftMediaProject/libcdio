@@ -130,7 +130,9 @@ test_get_disctype(CdIo_t *p_cdio, bool b_verbose)
     driver_return_code_t i_status = mmc_get_disctype(p_cdio, 0, &disctype);
     if (DRIVER_OP_SUCCESS == i_status) {
 	if (b_verbose)
-	    fprintf(stderr, "test_disctype: type is 0x%X\n", disctype);
+	    fprintf(stderr, "test_disctype: profile is %s (0x%X)\n", 
+		    mmc_feature_profile2str(disctype), 
+		    disctype);
     }
     return DRIVER_OP_SUCCESS;
 }
