@@ -629,28 +629,6 @@ test_write(char *drive_path, unsigned int i_flag)
     printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
            drive_path, scsi_tuple);
 
-
-  /* Test availability of sense reply in case of unready drive.
-     E.g. if the tray is already ejected.
-  */
-  ret = test_test_unit_ready(p_cdio, &sense_avail, sense, !!verbose);
-  if (ret != 0 && sense_avail < 18) {
-    fprintf(stderr,
-            "Error: Drive not ready. Only %d sense bytes. Expected >= 18.\n",
-            sense_avail);
-    {ret = 2; goto ex;}
-  }
-
-  /* Cause sense reply failure by requesting inappropriate mode page 3Eh */
-  ret = test_mode_sense(p_cdio, &sense_avail, sense,
-                       0x3e, 0, alloc_len, buf, &i_size, !!verbose);
-  if (ret != 0 && sense_avail < 18) {
-    fprintf(stderr,
-            "Error: An illegal command yields only %d sense bytes. Expected >= 18.\n",
-            sense_avail);
-    {ret = 2; goto ex;}
-  } 
-
   /* Test availability of sense reply in case of unready drive.
      E.g. if the tray is already ejected.
   */
@@ -743,7 +721,6 @@ ex:;
 int
 main(int argc, const char *argv[])
 {
-  const char *scsi_tuple;
   CdIo_t *p_cdio;
   char **ppsz_drives=NULL;
   const char *psz_source = NULL;
@@ -787,13 +764,6 @@ main(int argc, const char *argv[])
 	
     if ( psz_have_mmc 
 	 && 0 == strncmp("true", psz_have_mmc, sizeof("true")) ) {
-	scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
-	if (scsi_tuple == NULL) {
-	    fprintf(stderr, "cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
-	    exit(3);
-	} else if (cdio_loglevel_default == CDIO_LOG_DEBUG)
-	    printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
-		   psz_source, scsi_tuple);
 
 	/* Test the MMC enhancements of version 0.83 in december 2009 */
 	ret = test_write(ppsz_drives[0], 

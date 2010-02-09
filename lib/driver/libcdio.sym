@@ -201,9 +201,9 @@ mmc_feature_profile2str
 mmc_get_blocksize
 mmc_get_cmd_len
 mmc_get_configuration
-mmc_get_disc_erasable
 mmc_get_discmode
 mmc_get_disctype
+mmc_get_disc_erasable
 mmc_get_drive_mmc_cap
 mmc_get_dvd_struct_physical
 mmc_get_event_status
@@ -234,6 +234,7 @@ mmc_sense_key2str
 mmc_set_blocksize
 mmc_set_speed
 mmc_start_stop_unit
+mmc_test_unit_ready
 mmc_timeout_ms
 mmc_test_unit_ready
 track_format2str
