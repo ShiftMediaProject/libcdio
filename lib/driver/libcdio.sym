@@ -201,7 +201,9 @@ mmc_feature_profile2str
 mmc_get_blocksize
 mmc_get_cmd_len
 mmc_get_configuration
+mmc_get_disc_erasable
 mmc_get_discmode
+mmc_get_disctype
 mmc_get_drive_mmc_cap
 mmc_get_dvd_struct_physical
 mmc_get_event_status
