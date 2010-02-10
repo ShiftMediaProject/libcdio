@@ -487,6 +487,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   swb.sptd.SenseInfoOffset   = offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER, 
 					SenseBuf);
 
+  p_env->gen.scsi_mmc_sense_valid = 0;
   memcpy(swb.sptd.Cdb, p_cdb, i_cdb);
 
   /* Send the command to drive */
