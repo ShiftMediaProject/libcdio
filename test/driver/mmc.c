@@ -106,17 +106,18 @@ test_get_disc_erasable(const CdIo_t *p_cdio, const char *psz_source,
 */
 static void
 test_print_status_sense(int i_status, int sense_valid,
-                        cdio_mmc_request_sense_t *p_sense, unsigned int i_flag)
+                        cdio_mmc_request_sense_t *p_sense_reply, 
+			unsigned int i_flag)
 {
     if (!(i_flag & 1))
 	return;
     fprintf(stderr, "return= %d , sense(%d)", i_status, sense_valid);
     if (sense_valid >= 14)
 	fprintf(stderr, ":  KEY=%s (%1.1X), ASC= %2.2X , ASCQ= %2.2X",
-		mmc_sense_key2str[p_sense->sense_key],
-		p_sense->sense_key,
-		p_sense->asc, 
-		p_sense->ascq);
+		mmc_sense_key2str[p_sense_reply->sense_key],
+		p_sense_reply->sense_key,
+		p_sense_reply->asc, 
+		p_sense_reply->ascq);
     fprintf(stderr, "\n");  
 }
 
@@ -230,12 +231,13 @@ test_load_eject(CdIo_t *p_cdio, int *sense_avail,
                      or other driver_return_code_t
 */
 static driver_return_code_t
-test_mode_sense(CdIo_t *p_cdio, int *sense_avail,unsigned char sense_reply[18],
+test_mode_sense(CdIo_t *p_cdio, int *sense_avail,
+		unsigned char sense_reply[18],
                 int page_code, int subpage_code, int alloc_len,
                 unsigned char *buf, int *i_size, unsigned int i_flag)
 {
   driver_return_code_t i_status;
-
+  
   if (alloc_len < 10)
     return DRIVER_OP_BAD_PARAMETER;
 
@@ -575,7 +577,7 @@ test_write(char *drive_path, unsigned int i_flag)
 {
   int sense_avail = 0, ret, sense_valid, i_size, alloc_len = 10, verbose;
   int old_log_level;
-  unsigned char sense[18], buf[10];
+  unsigned char sense_reply[18], buf[10];
   CdIo_t *p_cdio;
 
 
@@ -622,7 +624,7 @@ test_write(char *drive_path, unsigned int i_flag)
   if (scsi_tuple == NULL) {
     if (demand_scsi_tuple) {
       fprintf(stderr, "Error: cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
-      {ret = 6; goto ex;}
+      ret = 6; goto ex;
     } else if (i_flag & 1)
       fprintf(stderr, "cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
   } else if (i_flag & 1)
@@ -632,24 +634,43 @@ test_write(char *drive_path, unsigned int i_flag)
   /* Test availability of sense reply in case of unready drive.
      E.g. if the tray is already ejected.
   */
-  ret = test_test_unit_ready(p_cdio, &sense_avail, sense, !!verbose);
+  ret = test_test_unit_ready(p_cdio, &sense_avail, sense_reply, !!verbose);
   if (ret != 0 && sense_avail < 18) {
     fprintf(stderr,
 	    "Error: Drive not ready. Only %d sense bytes. Expected >= 18.\n",
 	    sense_avail);
-    {ret = 2; goto ex;}
+    ret = 2; goto ex;
   }
 
   /* Cause sense reply failure by requesting inappropriate mode page 3Eh */
-  ret = test_mode_sense(p_cdio, &sense_avail, sense,
+  ret = test_mode_sense(p_cdio, &sense_avail, sense_reply,
 			0x3e, 0, alloc_len, buf, &i_size, !!verbose);
   if (ret != 0 && sense_avail < 18) {
-    fprintf(stderr,
-	    "Error: Deliberately illegal command yields only %d sense bytes. Expected >= 18.\n",
-	    sense_avail);
-    {ret = 2; goto ex;}
+
+      fprintf(stderr,
+	      "Error: Deliberately illegal command yields only %d sense bytes. Expected >= 18.\n",
+	      sense_avail);
+      ret = 3; goto ex;
+  } else  {
+      cdio_mmc_request_sense_t *p_sense_reply = 
+	  (cdio_mmc_request_sense_t *) sense_reply;
+      if (p_sense_reply->sense_key != 5)  {
+	  fprintf(stderr,
+		  "Error: Sense key should be 5, got %d\n",
+		  p_sense_reply->sense_key);
+	  ret = 3; goto ex;
+      } else if (p_sense_reply->asc != 0x24)  {
+	  fprintf(stderr,
+		  "Error: Sense code should be 24, got %d\n",
+		  p_sense_reply->asc);
+	  ret = 4; goto ex;
+      } else if (p_sense_reply->ascq != 0)  {
+	  fprintf(stderr,
+		  "Error: Sense code should be 24, got %d\n",
+		  p_sense_reply->ascq);
+	  ret = 4; goto ex;
+      }
   }
-    
     
   if (emul_lack_of_wperm) { /* To check behavior with lack of w-permission */
     fprintf(stderr,
@@ -702,8 +723,9 @@ test_write(char *drive_path, unsigned int i_flag)
   }
   
   /* How are we, finally ? */
-  ret = test_test_unit_ready(p_cdio, &sense_valid, sense, !!verbose);
-  if ((i_flag & 1) && ret != 0 && sense[2] == 2 && sense[12] == 0x3a)
+  ret = test_test_unit_ready(p_cdio, &sense_valid, sense_reply, !!verbose);
+  if ((i_flag & 1) && ret != 0 && sense_reply[2] == 2 && 
+      sense_reply[12] == 0x3a)
     fprintf(stderr, "test_unit_ready: Note: No loaded media detected.\n");
   ret = 0;
   }
