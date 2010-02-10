@@ -83,7 +83,9 @@ main(int argc, const char *argv[])
 
     {
 	driver_return_code_t i_status;
-	bool b_erasable = mmc_get_disc_erasable(p_cdio, &i_status);
+	bool b_erasable;
+
+	i_status = mmc_get_disc_erasable(p_cdio, &b_erasable);
 	cdio_mmc_feature_profile_t disctype;
 	if (DRIVER_OP_SUCCESS == i_status)
 	    printf("Disc is %serasable.\n", b_erasable ? "" : "not ");

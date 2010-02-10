@@ -92,13 +92,13 @@ static driver_return_code_t
 test_get_disc_erasable(const CdIo_t *p_cdio, const char *psz_source,
 		       bool verbose) 
 {
-    driver_return_code_t drc;
-    bool b_erasable = mmc_get_disc_erasable(p_cdio, &drc);
-    if (verbose)
+    driver_return_code_t i_status;
+    bool b_erasable;
+
+    i_status = mmc_get_disc_erasable(p_cdio, &b_erasable);
+    if (verbose && DRIVER_OP_SUCCESS == i_status)
 	printf("Disc is %serasable.\n", b_erasable ? "" : "not ");
-    /* Try also with NULL. */
-    b_erasable = mmc_get_disc_erasable(p_cdio, NULL);
-    return drc;
+    return i_status;
 }
 
 

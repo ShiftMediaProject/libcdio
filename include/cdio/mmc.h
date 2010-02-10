@@ -307,17 +307,26 @@ extern "C" {
      Page codes for MODE SENSE and MODE SET. 
   */
   typedef enum {
-    CDIO_MMC_R_W_ERROR_PAGE     = 0x01,
-    CDIO_MMC_WRITE_PARMS_PAGE   = 0x05,
-    CDIO_MMC_CDR_PARMS_PAGE     = 0x0d,
-    CDIO_MMC_AUDIO_CTL_PAGE     = 0x0e,
-    CDIO_MMC_POWER_PAGE         = 0x1a,
-    CDIO_MMC_FAULT_FAIL_PAGE    = 0x1c,
-    CDIO_MMC_TO_PROTECT_PAGE    = 0x1d,
-    CDIO_MMC_CAPABILITIES_PAGE  = 0x2a,
-    CDIO_MMC_ALL_PAGES          = 0x3f,
+      CDIO_MMC_R_W_ERROR_PAGE     = 0x01,
+      CDIO_MMC_WRITE_PARMS_PAGE   = 0x05,
+      CDIO_MMC_CDR_PARMS_PAGE     = 0x0d,
+      CDIO_MMC_AUDIO_CTL_PAGE     = 0x0e,
+      CDIO_MMC_POWER_PAGE         = 0x1a,
+      CDIO_MMC_FAULT_FAIL_PAGE    = 0x1c,
+      CDIO_MMC_TO_PROTECT_PAGE    = 0x1d,
+      CDIO_MMC_CAPABILITIES_PAGE  = 0x2a,
+      CDIO_MMC_ALL_PAGES          = 0x3f,
   } cdio_mmc_mode_page_t;
-    
+
+ /**
+    READ DISC INFORMATION Data Types
+ */
+  typedef enum {
+      CDIO_MMC_READ_DISC_INFO_STANDARD   = 0x0,
+      CDIO_MMC_READ_DISC_INFO_TRACK      = 0x1,
+      CDIO_MMC_READ_DISC_INFO_POW        = 0x2,
+  } cdio_mmc_read_disc_info_datatype_t;
+        
 
 PRAGMA_BEGIN_PACKED
   struct mmc_audio_volume_entry_s 
@@ -640,21 +649,6 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   */
   uint8_t mmc_get_cmd_len(uint8_t mmc_cmd);
   
-  /**
-     Detects if a disc (CD or DVD) is erasable or not.
-     
-     @param p_user_data the CD object to be acted upon.
-  
-     @param i_status, if not NULL, on return will be set indicate
-     whether the operation was a success (DRIVER_OP_SUCCESS) or if not
-     to some other value.
-     
-     @return true if the disc is detected as erasable (rewritable),
-     false otherwise.
-  */
-  bool mmc_get_disc_erasable( const CdIo_t *p_cdio, 
-                              driver_return_code_t *i_status );
-
   /**
     Get the lsn of the end of the CD
     

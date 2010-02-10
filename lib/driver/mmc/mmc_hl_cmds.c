@@ -44,6 +44,33 @@ mmc_eject_media( const CdIo_t *p_cdio )
   
 }
 
+/**
+  Detects if a disc (CD or DVD) is erasable or not.
+
+  @param p_user_data the CD object to be acted upon.
+  
+  @param b_erasable, if not NULL, on return will be set indicate whether
+  the operation was a success (DRIVER_OP_SUCCESS) or if not to some
+  other value.
+
+  @return true if the disc is detected as erasable (rewritable), false
+otherwise.
+ */
+/* From Frank Endres: */
+driver_return_code_t mmc_get_disc_erasable(const CdIo_t *p_cdio, 
+					   bool *b_erasable) {
+    uint8_t buf[42] = { 0, };
+    driver_return_code_t i_status;
+
+    i_status = mmc_read_disc_information(p_cdio, buf, sizeof(buf),
+					 CDIO_MMC_READ_DISC_INFO_STANDARD, 0);
+					 
+    *b_erasable = (DRIVER_OP_SUCCESS == i_status) 
+	? (*b_erasable = ((buf[2] & 0x10) ? true : false))
+        : false;
+    return i_status;
+}
+
 /* From Frank Endres: */
 /**
    Detects the disc type using the SCSI-MMC GET CONFIGURATION command.

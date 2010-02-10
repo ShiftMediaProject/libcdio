@@ -41,6 +41,8 @@ libcdioinclude_HEADERS = \
 	logging.h \
 	mmc.h \
 	mmc_cmds.h \
+	mmc_hl_cmds.h \
+	mmc_ll_cmds.h \
 	paranoia.h \
 	posix.h \
 	read.h \

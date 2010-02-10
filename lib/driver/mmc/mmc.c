@@ -619,35 +619,6 @@ mmc_get_cmd_len(uint8_t scsi_cmd)
 }
 
 /**
-  Detects if a disc (CD or DVD) is erasable or not.
-
-  @param p_user_data the CD object to be acted upon.
-  
-  @param i_status, if not NULL, on return will be set indicate whether
-  the operation was a success (DRIVER_OP_SUCCESS) or if not to some
-  other value.
-
-  @return true if the disc is detected as erasable (rewritable), false
-otherwise.
- */
-bool mmc_get_disc_erasable(const CdIo_t *p_cdio, 
-                           driver_return_code_t *opt_i_status) {
-    mmc_cdb_t cdb = {{0, }};
-    uint8_t buf[42] = { 0, };
-    driver_return_code_t i_status;
-    
-    CDIO_MMC_SET_COMMAND (cdb.field, CDIO_MMC_GPCMD_READ_DISC_INFO);
-    CDIO_MMC_SET_READ_LENGTH8 (cdb.field, sizeof(buf));
-    
-    i_status = mmc_run_cmd(p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, 
-                           sizeof(buf), &buf);
-    if (opt_i_status != NULL) *opt_i_status = i_status;
-    return (DRIVER_OP_SUCCESS == i_status) ? 
-        ((buf[2] & 0x10) ? true : false)
-        : false;
-}
-
-/**
    Return the size of the CD in logical block address (LBA) units.
    @param p_cdio the CD object to be acted upon.
    @return the lsn. On error 0 or CDIO_INVALD_LSN.

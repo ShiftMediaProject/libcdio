@@ -23,41 +23,13 @@
 #endif
 
 #include <cdio/cdio.h>
-#include <cdio/mmc_cmds.h>
+#include <cdio/mmc_ll_cmds.h>
 #include "cdio_private.h"
 #include "mmc_cmd_helper.h"
 
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
-
-/**
-   Request preventing/allowing medium removal on a drive via 
-   SCSI-MMC PREVENT/ALLOW MEDIUM REMOVAL.
-   
-   @param p_cdio the CD object to be acted upon.
-   @param b_prevent true of drive locked and false if unlocked
-   @param b_persisent make b_prevent state persistent
-   
-   @return DRIVER_OP_SUCCESS (0) if we got the status.
-   return codes are the same as driver_return_code_t
-*/
-driver_return_code_t 
-mmc_prevent_allow_medium_removal(const CdIo_t *p_cdio, 
-				 bool b_persistent, bool b_prevent,
-				 unsigned int i_timeout_ms)
-{
-    uint8_t buf[8] = { 0, };
-    void   *p_buf  = &buf; 
-    const unsigned int i_size = 0;
-    
-    MMC_CMD_SETUP(CDIO_MMC_GPCMD_PREVENT_ALLOW_MEDIUM_REMOVAL);
-    if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
-    if (b_prevent)         cdb.field[4] |= 1;
-    if (b_persistent)      cdb.field[4] |= 2;
-    
-    return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE, i_timeout_ms);
-}
 
 /**
   Get drive capabilities vis SCSI-MMC GET CONFIGURATION
@@ -82,11 +54,15 @@ mmc_get_configuration(const CdIo_t *p_cdio, void *p_buf,
 }
 
 /**
-  Return results of media status
-  @param p_cdio the CD object to be acted upon.
-  @return DRIVER_OP_SUCCESS (0) if we got the status.
-  return codes are the same as driver_return_code_t
-*/
+   Return results of media event status via SCSI-MMC GET EVENT STATUS
+   
+   @param p_cdio the CD object to be acted upon.
+   
+   @param out_buf media status code from operation
+   
+   @return DRIVER_OP_SUCCESS (0) if we got the status. Return codes
+   are the same as driver_return_code_t
+ */
 driver_return_code_t 
 mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
 {
@@ -171,6 +147,34 @@ mmc_mode_sense_6(CdIo_t *p_cdio, void *p_buf, unsigned int i_size, int page)
     cdb.field[2] = CDIO_MMC_ALL_PAGES & page;
 
     return MMC_RUN_CMD(SCSI_MMC_DATA_READ, mmc_timeout_ms);
+}
+
+/**
+   Request preventing/allowing medium removal on a drive via 
+   SCSI-MMC PREVENT/ALLOW MEDIUM REMOVAL.
+   
+   @param p_cdio the CD object to be acted upon.
+   @param b_prevent true of drive locked and false if unlocked
+   @param b_persisent make b_prevent state persistent
+   
+   @return DRIVER_OP_SUCCESS (0) if we got the status.
+   return codes are the same as driver_return_code_t
+*/
+driver_return_code_t 
+mmc_prevent_allow_medium_removal(const CdIo_t *p_cdio, 
+				 bool b_persistent, bool b_prevent,
+				 unsigned int i_timeout_ms)
+{
+    uint8_t buf[8] = { 0, };
+    void   *p_buf  = &buf; 
+    const unsigned int i_size = 0;
+    
+    MMC_CMD_SETUP(CDIO_MMC_GPCMD_PREVENT_ALLOW_MEDIUM_REMOVAL);
+    if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
+    if (b_prevent)         cdb.field[4] |= 1;
+    if (b_persistent)      cdb.field[4] |= 2;
+    
+    return MMC_RUN_CMD(SCSI_MMC_DATA_WRITE, i_timeout_ms);
 }
 
 /* Maximum blocks to retrieve. Would be nice to customize this based on
@@ -327,6 +331,33 @@ mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn,
       }
       return i_status;
   }
+}
+
+/**
+  Request information about et drive capabilities vis SCSI-MMC READ
+  DISC INFORMATION
+  
+  @param p_cdio the CD object to be acted upon.
+
+  @param p_buf pointer to location to store mode sense information
+  
+  @param i_size number of bytes allocated to p_buf
+   
+  @param data_type kind of information to retrieve.
+
+  @return DRIVER_OP_SUCCESS (0) if we got the status.
+ */
+driver_return_code_t 
+mmc_read_disc_information(const CdIo_t *p_cdio, /*out*/ void *p_buf,
+			  unsigned int i_size, 
+			  cdio_mmc_read_disc_info_datatype_t data_type,
+			  unsigned int i_timeout_ms)
+{
+    MMC_CMD_SETUP(CDIO_MMC_GPCMD_READ_DISC_INFO);
+    CDIO_MMC_SET_READ_LENGTH8(cdb.field, i_size);
+    if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
+    cdb.field[1] = data_type & 0x7;
+    return MMC_RUN_CMD(SCSI_MMC_DATA_READ, i_timeout_ms);
 }
 
 /**
