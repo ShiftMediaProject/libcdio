@@ -25,6 +25,22 @@
 #include <cdio/mmc_cmds.h>
 
 /**
+   Close tray using a MMC START STOP UNIT command.
+   @param p_cdio the CD object to be acted upon.
+   @return DRIVER_OP_SUCCESS (0) if we got the status.
+   return codes are the same as driver_return_code_t
+*/
+driver_return_code_t 
+mmc_close_tray( CdIo_t *p_cdio )
+{
+  if (p_cdio) {
+      return mmc_start_stop_unit(p_cdio, false, false, 0, 0);
+  } else {
+      return DRIVER_OP_ERROR;
+  }
+}
+
+/**
    Eject using MMC commands. If CD-ROM is "locked" we'll unlock it.
    Command is not "immediate" -- we'll wait for the command to complete.
    For a more general (and lower-level) routine, @see mmc_start_stop_media.

@@ -199,9 +199,35 @@ get_tray_status (const void *p_user_data)
     return mmc_get_tray_status( p_env->cdio );
 }
 
-/*! Read sectors using SCSI-MMC GPCMD_READ_CD.
+/**
+    Read sectors using SCSI-MMC GPCMD_READ_CD.
+ */
+driver_return_code_t 
+mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf, 
+                        lsn_t i_lsn,  uint16_t i_blocksize,
+                        uint32_t i_blocks )
+{
+  return mmc_read_cd(p_cdio, 
+                     p_buf, /* place to store data */
+                     i_lsn, /* lsn */
+                     0, /* read_sector_type */
+                     false, /* digital audio play */
+                     false, /* return sync header */
+                     0,     /* header codes */
+                     true,  /* return user data */
+                     false, /* return EDC ECC */
+                     false, /* return C2 Error information */
+                     0,     /* subchannel selection bits */
+                     ISO_BLOCKSIZE, /* blocksize*/ 
+                     i_blocks       /* Number of blocks. */);
+
+}
+
+
+/**
+   Read sectors using SCSI-MMC GPCMD_READ_CD.
    Can read only up to 25 blocks.
-*/
+ */
 driver_return_code_t 
 read_data_sectors_mmc ( void *p_user_data, void *p_buf, 
                         lsn_t i_lsn,  uint16_t i_blocksize,
@@ -1015,22 +1041,6 @@ mmc_run_cmd_len( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 }
 
 /**
-   Close tray using a MMC START STOP UNIT command.
-   @param p_cdio the CD object to be acted upon.
-   @return DRIVER_OP_SUCCESS (0) if we got the status.
-   return codes are the same as driver_return_code_t
-*/
-driver_return_code_t 
-mmc_close_tray( CdIo_t *p_cdio )
-{
-  if (p_cdio) {
-      return mmc_start_stop_unit(p_cdio, false, false, 0, 0);
-  } else {
-      return DRIVER_OP_ERROR;
-  }
-}
-
-/**
    Return a string containing the name of the given feature
 */
 const char *mmc_feature2str( int i_feature )
@@ -1336,31 +1346,6 @@ mmc_is_disctype_rewritable (cdio_mmc_feature_profile_t disctype) {
       default:
         return false;
     }
-}
-
-
-/** 
-    Read sectors using SCSI-MMC GPCMD_READ_CD.
-*/
-driver_return_code_t 
-mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf, 
-                        lsn_t i_lsn,  uint16_t i_blocksize,
-                        uint32_t i_blocks )
-{
-  return mmc_read_cd(p_cdio, 
-                     p_buf, /* place to store data */
-                     i_lsn, /* lsn */
-                     0, /* read_sector_type */
-                     false, /* digital audio play */
-                     false, /* return sync header */
-                     0,     /* header codes */
-                     true,  /* return user data */
-                     false, /* return EDC ECC */
-                     false, /* return C2 Error information */
-                     0,     /* subchannel selection bits */
-                     ISO_BLOCKSIZE, /* blocksize*/ 
-                     i_blocks       /* Number of blocks. */);
-
 }
 
 /**

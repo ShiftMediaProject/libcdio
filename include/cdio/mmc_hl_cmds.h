@@ -32,6 +32,14 @@ extern "C" {
 #endif /* __cplusplus */
 
   /**
+     Close tray using a MMC START STOP UNIT command.
+     @param p_cdio the CD object to be acted upon.
+     @return DRIVER_OP_SUCCESS (0) if we got the status.
+     return codes are the same as driver_return_code_t
+  */
+  driver_return_code_t mmc_close_tray( CdIo_t *p_cdio );
+  
+  /**
      Detects if a disc (CD or DVD) is erasable or not.
      
      @param p_user_data the CD object to be acted upon.

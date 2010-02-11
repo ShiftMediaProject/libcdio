@@ -658,14 +658,6 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,
   lsn_t mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
   
   /**
-     Close tray using a MMC START STOP UNIT command.
-     @param p_cdio the CD object to be acted upon.
-     @return DRIVER_OP_SUCCESS (0) if we got the status.
-     return codes are the same as driver_return_code_t
-  */
-  driver_return_code_t mmc_close_tray( CdIo_t *p_cdio );
-  
-  /**
     Return the discmode as reported by the MMC Read (FULL) TOC
     command.
     
