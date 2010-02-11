@@ -29,15 +29,11 @@
    @param p_cdio the CD object to be acted upon.
    @return DRIVER_OP_SUCCESS (0) if we got the status.
    return codes are the same as driver_return_code_t
-*/
+ */
 driver_return_code_t 
-mmc_close_tray( CdIo_t *p_cdio )
+mmc_close_tray(CdIo_t *p_cdio)
 {
-  if (p_cdio) {
-      return mmc_start_stop_unit(p_cdio, false, false, 0, 0);
-  } else {
-      return DRIVER_OP_ERROR;
-  }
+    return mmc_start_stop_unit(p_cdio, false, false, 0, 0);
 }
 
 /**
@@ -73,8 +69,8 @@ mmc_eject_media( const CdIo_t *p_cdio )
 otherwise.
  */
 /* From Frank Endres: */
-driver_return_code_t mmc_get_disc_erasable(const CdIo_t *p_cdio, 
-					   bool *b_erasable) {
+driver_return_code_t 
+mmc_get_disc_erasable(const CdIo_t *p_cdio, bool *b_erasable) {
     uint8_t buf[42] = { 0, };
     driver_return_code_t i_status;
 
