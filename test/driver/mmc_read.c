@@ -76,13 +76,13 @@ static int wait_for_drive(CdIo_t *p_cdio, unsigned int max_tries, bool b_verbose
 
 static driver_return_code_t
 get_disc_erasable(const CdIo_t *p_cdio, const char *psz_source,
-		       bool verbose) 
+		       bool b_verbose) 
 {
     driver_return_code_t i_status;
     bool b_erasable;
 
     i_status = mmc_get_disc_erasable(p_cdio, &b_erasable);
-    if (verbose && DRIVER_OP_SUCCESS == i_status)
+    if (b_verbose && DRIVER_OP_SUCCESS == i_status)
 	printf("Disc is %serasable.\n", b_erasable ? "" : "not ");
     return i_status;
 }
@@ -309,8 +309,6 @@ test_read(char *psz_drive_path, unsigned int i_flag)
 	fprintf(stderr, "Error: cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
 	i_ret = 6; goto ex;
     } else if (i_flag & 1)
-	fprintf(stderr, "cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
-    else if (i_flag & 1)
 	printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
 	       psz_drive_path, scsi_tuple);
     
