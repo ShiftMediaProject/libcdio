@@ -69,8 +69,7 @@ static int test_mode_sense(CdIo_t *p_cdio, int *sense_avail,
 static int test_test_unit_ready(CdIo_t *p_cdio, int *sense_avail,
 				unsigned char sense_reply[18], 
 				unsigned int i_flag);
-static int test_wait_for_drive(CdIo_t *p_cdio, int max_tries, 
-			       unsigned int i_flag);
+static int wait_for_drive(CdIo_t *p_cdio, unsigned int max_tries, unsigned int i_flag);
 
 static int test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag);
 
@@ -270,18 +269,18 @@ test_mode_select(CdIo_t *p_cdio,
    @return     1= all seems well , 0= minor failure , -1= severe failure
 */
 static int
-test_wait_for_drive(CdIo_t *p_cdio, int max_tries, unsigned int i_flag)
+wait_for_drive(CdIo_t *p_cdio, unsigned int i_max_tries, unsigned int i_flag)
 {
-  int ret, i, sense_avail;
+  int i_ret, i, i_sense_avail;
   unsigned char sense_reply[18];
   cdio_mmc_request_sense_t *p_sense_reply = 
       (cdio_mmc_request_sense_t *) sense_reply;
   
-  for (i = 0; i < max_tries; i++) {
-    ret = test_test_unit_ready(p_cdio, &sense_avail, sense_reply, i_flag & 1);
-    if (ret == 0) /* Unit is ready */
+  for (i = 0; i < i_max_tries; i++) {
+    i_ret = test_test_unit_ready(p_cdio, &i_sense_avail, sense_reply, i_flag & 1);
+    if (i_ret == 0) /* Unit is ready */
       return 1;
-    if (sense_avail < 18)
+    if (i_sense_avail < 18)
       return -1;
     if (p_sense_reply->sense_key == 2 && sense_reply[12] == 0x04) {
 
@@ -312,8 +311,8 @@ test_wait_for_drive(CdIo_t *p_cdio, int max_tries, unsigned int i_flag)
     } 
     sleep(1);
   }
-  fprintf(stderr, "test_eject_load_cycle: Drive not ready after %d retries\n",
-          max_tries);
+  fprintf(stderr, "wait_for_drive: Drive not ready after %d retries\n",
+          i_max_tries);
   return -1;
 }
 
@@ -347,7 +346,7 @@ test_eject_load_cycle(CdIo_t *p_cdio, unsigned int i_flag)
   test_load_eject(p_cdio, &sense_avail, sense_reply, 4 | 2 | (i_flag & 1));
 
   /* Wait for drive attention */
-  ret = test_wait_for_drive(p_cdio, 30, i_flag & 3);
+  ret = wait_for_drive(p_cdio, 30, i_flag & 3);
   return ret;
 }
 
@@ -631,7 +630,7 @@ test_write(char *drive_path, unsigned int i_flag)
 		"Warning: test_eject_test_load() had minor failure.\n");
       }
       /* Wait for drive attention */
-      test_wait_for_drive(p_cdio, 15, 2 | !!verbose);
+      wait_for_drive(p_cdio, 15, 2 | !!verbose);
     }
   }
   
