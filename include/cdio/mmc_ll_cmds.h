@@ -95,11 +95,12 @@ extern "C" {
      @param p_cdio the CD object to be acted upon.
      @param p_buf pointer to location to store mode sense information
      @param i_size number of bytes allocated to p_buf
-     @param page which "page" of the mode sense command we are interested in
+     @param i_page which "page" of the mode sense command we are interested in
      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf,
-					  unsigned int i_size, int page);
+					  unsigned int i_size, 
+                                          unsigned int i_page_code);
   
   /**
       Run a SCSI-MMC MODE SENSE command (6-byte version) 

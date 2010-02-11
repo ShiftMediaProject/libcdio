@@ -17,14 +17,13 @@
 */
 
 /* 
-   Regression test for MMC commands.
+   Regression test for MMC commands involving read/write access.
 */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
-#include <cdio/mmc.h>
 #include <cdio/mmc_cmds.h>
 
 #ifdef HAVE_STDIO_H
@@ -45,13 +44,6 @@
 static int test_eject_load_cycle(CdIo_t *p_cdio, unsigned int i_flag);
 
 static int test_eject_test_load(CdIo_t *p_cdio, unsigned int i_flag);
-
-static driver_return_code_t test_get_disc_erasable(const CdIo_t *p_cdio, 
-						   const char *psz_source,
-						   bool verbose);
-
-static int test_get_disctype(CdIo_t *p_cdio, bool b_verbose);
-
 
 static int test_handle_outcome(CdIo_t *p_cdio, int i_status,
 			       int *sense_avail, 
@@ -88,20 +80,6 @@ static int test_write(char *drive_path, unsigned int i_flag);
 /* ------------------------- Helper functions ---------------------------- */
 
 
-static driver_return_code_t
-test_get_disc_erasable(const CdIo_t *p_cdio, const char *psz_source,
-		       bool verbose) 
-{
-    driver_return_code_t i_status;
-    bool b_erasable;
-
-    i_status = mmc_get_disc_erasable(p_cdio, &b_erasable);
-    if (verbose && DRIVER_OP_SUCCESS == i_status)
-	printf("Disc is %serasable.\n", b_erasable ? "" : "not ");
-    return i_status;
-}
-
-
 /* @param flag bit0= verbose
 */
 static void
@@ -119,23 +97,6 @@ test_print_status_sense(int i_status, int sense_valid,
 		p_sense_reply->asc, 
 		p_sense_reply->ascq);
     fprintf(stderr, "\n");  
-}
-
-
-/* @param flag         bit0= verbose
-*/
-static int
-test_get_disctype(CdIo_t *p_cdio, bool b_verbose)
-{
-    cdio_mmc_feature_profile_t disctype;
-    driver_return_code_t i_status = mmc_get_disctype(p_cdio, 0, &disctype);
-    if (DRIVER_OP_SUCCESS == i_status) {
-	if (b_verbose)
-	    fprintf(stderr, "test_disctype: profile is %s (0x%X)\n", 
-		    mmc_feature_profile2str(disctype), 
-		    disctype);
-    }
-    return DRIVER_OP_SUCCESS;
 }
 
 
@@ -575,9 +536,9 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
 static int
 test_write(char *drive_path, unsigned int i_flag)
 {
-  int sense_avail = 0, ret, sense_valid, i_size, alloc_len = 10, verbose;
+  int sense_avail = 0, ret, sense_valid, verbose;
   int old_log_level;
-  unsigned char sense_reply[18], buf[10];
+  unsigned char sense_reply[18];
   CdIo_t *p_cdio;
 
 
@@ -590,11 +551,6 @@ test_write(char *drive_path, unsigned int i_flag)
   /* If non-0 then a lack of w-permission will be emulated by using the
      insufficient access mode "IOCTL" */
   static int emul_lack_of_wperm = 0;
-
-  /* If non-0 then demand that cdio_get_arg(,"scsi-tuple") return non-NULL */
-  static int demand_scsi_tuple = 0;
-
-  const char *scsi_tuple;
 
   old_log_level = cdio_loglevel_default;
   verbose = i_flag & 1;
@@ -618,19 +574,6 @@ test_write(char *drive_path, unsigned int i_flag)
     */
     cdio_loglevel_default = CDIO_LOG_WARN;
 
-  /* Test availability of info for cdrecord style adresses .
-  */
-  scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
-  if (scsi_tuple == NULL) {
-    if (demand_scsi_tuple) {
-      fprintf(stderr, "Error: cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
-      ret = 6; goto ex;
-    } else if (i_flag & 1)
-      fprintf(stderr, "cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
-  } else if (i_flag & 1)
-    printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
-           drive_path, scsi_tuple);
-
   /* Test availability of sense reply in case of unready drive.
      E.g. if the tray is already ejected.
   */
@@ -642,36 +585,6 @@ test_write(char *drive_path, unsigned int i_flag)
     ret = 2; goto ex;
   }
 
-  /* Cause sense reply failure by requesting inappropriate mode page 3Eh */
-  ret = test_mode_sense(p_cdio, &sense_avail, sense_reply,
-			0x3e, 0, alloc_len, buf, &i_size, !!verbose);
-  if (ret != 0 && sense_avail < 18) {
-
-      fprintf(stderr,
-	      "Error: Deliberately illegal command yields only %d sense bytes. Expected >= 18.\n",
-	      sense_avail);
-      ret = 3; goto ex;
-  } else  {
-      cdio_mmc_request_sense_t *p_sense_reply = 
-	  (cdio_mmc_request_sense_t *) sense_reply;
-      if (p_sense_reply->sense_key != 5)  {
-	  fprintf(stderr,
-		  "Error: Sense key should be 5, got %d\n",
-		  p_sense_reply->sense_key);
-	  ret = 3; goto ex;
-      } else if (p_sense_reply->asc != 0x24)  {
-	  fprintf(stderr,
-		  "Error: Sense code should be 24, got %d\n",
-		  p_sense_reply->asc);
-	  ret = 4; goto ex;
-      } else if (p_sense_reply->ascq != 0)  {
-	  fprintf(stderr,
-		  "Error: Sense code should be 24, got %d\n",
-		  p_sense_reply->ascq);
-	  ret = 4; goto ex;
-      }
-  }
-    
   if (emul_lack_of_wperm) { /* To check behavior with lack of w-permission */
     fprintf(stderr,
 	    "test_test: SIMULATING LACK OF WRITE CAPABILITIES by access mode IOCTL\n");
@@ -749,14 +662,9 @@ main(int argc, const char *argv[])
   int ret;
   int exitrc = 0;
   bool b_verbose = (argc > 1);
-  driver_return_code_t drc;
-  
 
   cdio_loglevel_default = b_verbose ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
 
-  /* snprintf(psz_nrgfile, sizeof(psz_nrgfile)-1,
-	     "%s/%s", TEST_DIR, cue_file[i]);
-  */
   ppsz_drives = cdio_get_devices(DRIVER_DEVICE);
   if (!ppsz_drives) {
     printf("Can't find a CD-ROM drive. Skipping test.\n");
@@ -776,14 +684,6 @@ main(int argc, const char *argv[])
       exit(1);
     }
 
-    drc = test_get_disc_erasable(p_cdio, psz_source, b_verbose);
-    if (DRIVER_OP_SUCCESS != drc) {
-	printf("Got status %d back from get_disc_erasable(%s)\n",
-	       drc, psz_source);
-    }
-
-    drc = test_get_disctype(p_cdio, b_verbose);
-	
     if ( psz_have_mmc 
 	 && 0 == strncmp("true", psz_have_mmc, sizeof("true")) ) {
 

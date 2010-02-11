@@ -122,7 +122,8 @@ mmc_mode_select_10(CdIo_t *p_cdio, /*out*/ void *p_buf, unsigned int i_size,
    @return DRIVER_OP_SUCCESS if we ran the command ok.
 */
 driver_return_code_t
-mmc_mode_sense_10(CdIo_t *p_cdio, void *p_buf, unsigned int i_size, int page)
+mmc_mode_sense_10(CdIo_t *p_cdio, void *p_buf, unsigned int i_size, 
+		  unsigned int page)
 {
     MMC_CMD_SETUP_READ16(CDIO_MMC_GPCMD_MODE_SENSE_10);
     cdb.field[2] = CDIO_MMC_ALL_PAGES & page;

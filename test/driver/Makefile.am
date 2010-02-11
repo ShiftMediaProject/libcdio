@@ -34,8 +34,11 @@ gnu_linux_SOURCES= helper.c gnu_linux.c
 gnu_linux_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
 gnu_linux_CFLAGS = -DDATA_DIR=\"$(DATA_DIR)\"
 
-mmc_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
-mmc_CFLAGS       = -DDATA_DIR=\"$(DATA_DIR)\"
+mmc_read_LDADD   = $(LIBCDIO_LIBS) $(LTLIBICONV)
+mmc_read_CFLAGS  = -DDATA_DIR=\"$(DATA_DIR)\"
+
+mmc_write_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
+mmc_write_CFLAGS = -DDATA_DIR=\"$(DATA_DIR)\"
 
 nrg_SOURCES      = helper.c nrg.c 
 nrg_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
@@ -51,7 +54,8 @@ win32_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
 win32_CFLAGS     = -DDATA_DIR=\"$(DATA_DIR)\"
 
 check_PROGRAMS   = \
-	bincue cdrdao freebsd gnu_linux mmc nrg \
+	bincue cdrdao freebsd gnu_linux \
+	mmc_read mmc_write nrg \
 	osx realpath solaris win32
 
 TESTS = $(check_PROGRAMS)
