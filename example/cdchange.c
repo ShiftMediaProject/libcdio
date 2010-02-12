@@ -49,30 +49,21 @@
 # include <windows.h>
 #endif
 
-#ifndef HAVE_SLEEP
-static void
-sleep(unsigned int ms)
-{
-#if defined(_WIN32)
-    Sleep(ms);
-#else
-#error sleep() unimplemented
-#endif
-}
+#ifndef HAVE_USLEEP
+#error usleep() unimplemented
 #endif
 
 int
 main(int argc, const char *argv[])
 {
   CdIo_t *p_cdio;
-  unsigned long i_sleep=30;
-
+  unsigned long i_sleep_ms = (30 * 1000000);
   if (argc > 1) {
     p_cdio = cdio_open (argv[1], DRIVER_DEVICE);
     if (argc > 2) {
       errno = 0;
-      i_sleep = strtol(argv[2], (char **)NULL, 10);
-      if ( (LONG_MIN == i_sleep || LONG_MAX == i_sleep) && errno != 0 ) {
+      i_sleep_ms = strtol(argv[2], (char **)NULL, 10) * 1000000;
+      if ( (LONG_MIN == i_sleep_ms || LONG_MAX == i_sleep_ms) && errno != 0 ) {
 	printf("Invalid sleep parameter %s\n", argv[2]);
 	printf("Error reported back from strtol: %s\n", strerror(errno));
 	return 2;
@@ -92,9 +83,13 @@ main(int argc, const char *argv[])
   else 
     printf("Initial media status: not changed\n");
 
-  printf("Giving you %lu seconds to change CD if you want to do so.\n",
-	 i_sleep);
-  sleep(30);
+  printf("Giving you %g seconds to change CD if you want to do so.\n",
+	 i_sleep_ms / 1000000.0);
+  {
+      int i_ret = usleep(i_sleep_ms);
+      if (0 != i_ret) 
+	  fprintf(stderr, "Something went wrong with usleep\n");
+  }
   if (cdio_get_media_changed(p_cdio))
     printf("Media status: changed\n");
   else 
