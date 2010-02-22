@@ -83,9 +83,10 @@ libcdio_sources = \
 	logging.c \
 	mmc/mmc.c \
 	mmc/mmc_cmd_helper.h \
-	mmc/mmc_ll_cmds.c \
 	mmc/mmc_hl_cmds.c \
+	mmc/mmc_ll_cmds.c \
 	mmc/mmc_private.h \
+	mmc/mmc_util.c \
 	MSWindows/aspi32.c \
 	MSWindows/aspi32.h \
 	MSWindows/win32_ioctl.c \

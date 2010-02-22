@@ -30,6 +30,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#include <cdio/types.h>
+#include <cdio/cdio.h>
+
   /** The type of an drive capability bit mask. See below for values*/
   typedef uint32_t cdio_drive_read_cap_t;
   typedef uint32_t cdio_drive_write_cap_t;

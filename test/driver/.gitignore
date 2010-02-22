@@ -13,7 +13,8 @@
 /follow_symlink
 /freebsd
 /gnu_linux
-/mmc
+/mmc_read
+/mmc_write
 /nrg
 /nrg.c
 /osx
