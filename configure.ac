@@ -22,7 +22,7 @@ define(CDIO_VERSION_STR, 0.$1git)
 AC_PREREQ(2.52)
 AC_REVISION([$Id: configure.ac,v 1.238 2008/11/27 21:09:51 rocky Exp $])dnl
 
-AC_INIT([libcdio], [CDIO_VERSION_STR(RELEASE_NUM)])
+AC_INIT([libcdio], [CDIO_VERSION_STR(RELEASE_NUM)], [libcdio-help@gnu.org])
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE
 
@@ -40,41 +40,41 @@ AM_MAINTAINER_MODE
 AM_SANITY_CHECK
 
 AC_ARG_WITH(cd-drive,
-[  --without-cd-drive       don't build program cd-drive (default with)],
+	AC_HELP_STRING([--without-cd-drive], [don't build program cd-drive (default with)]),
 enable_cd_drive="${withval}", enable_cd_drive=yes)
 
 AC_ARG_WITH(cd-info,
-[  --without-cd-info        don't build program cd-info (default with)],
+	AC_HELP_STRING([--without-cd-info], [don't build program cd-info (default with)]),
 enable_cd_info="${withval}", enable_cd_info=yes)
 
 AC_ARG_WITH(cd-paranoia,
-[  --without-cd-paranoia    don't build program cd-paranoia and paranoia libraries (default with)],
+	AC_HELP_STRING([--without-cd-paranoia], [don't build program cd-paranoia and paranoia libraries (default with)]),
 enable_cd_paranoia="${withval}", enable_cd_paranoia=yes)
 
 AC_ARG_WITH(cdda-player,
-[  --without-cdda-player    don't build program cdda-player (default with)],
+	AC_HELP_STRING([--without-cdda-player], [don't build program cdda-player (default with)]),
 enable_cdda_player="${withval}", enable_cdda_player=yes)
 
 AC_ARG_WITH(cd-paranoia-name,
-[  --with-cd-paranoia-name  name to use as the cd-paranoia program name (default cd-paranoia)],
+	AC_HELP_STRING([--with-cd-paranoia-name], [name to use as the cd-paranoia program name (default cd-paranoia)]),
 cd_paranoia_name="${withval}", cd_paranoia_name="cd-paranoia")
 CDPARANOIA_NAME="$cd_paranoia_name"
 AC_SUBST(CDPARANOIA_NAME)
 
 AC_ARG_WITH(cd-read,
-[  --without-cd-read        don't build program cd-read (default with)],
+	AC_HELP_STRING([--without-cd-read], [don't build program cd-read (default with)]),
 enable_cd_read="${withval}", enable_cd_read=yes)
 
 AC_ARG_WITH(iso-info,
-[  --without-iso-info       don't build program iso-info (default with)],
+	AC_HELP_STRING([--without-iso-info], [don't build program iso-info (default with)]),
 enable_iso_info="${withval}", enable_iso_info=yes)
 
 AC_ARG_WITH(iso-read,
-[  --without-iso-read       don't build program iso-read (default with)],
+	AC_HELP_STRING([--without-iso-read], [don't build program iso-read (default with)]),
 enable_iso_read="${withval}", enable_iso_read=yes)
 
 AC_ARG_WITH(versioned-libs,
-[  --without-versioned-libs build versioned library symbols (default enabled if you have GNU ld)],
+	AC_HELP_STRING([--without-versioned-libs], [build versioned library symbols (default enabled if you have GNU ld)]),
 enable_versioned_libs="${withval}", enable_versioned_libs=yes)
 
 AC_ARG_ENABLE([cxx],
@@ -82,7 +82,7 @@ AC_ARG_ENABLE([cxx],
 AM_CONDITIONAL([ENABLE_CXX_BINDINGS], [test "x$enable_cxx" != "xno"])
 
 AC_ARG_ENABLE(cpp-progs,
-	[  --enable-cpp-progs      make C++ example programs (default enabled)])
+	AC_HELP_STRING([--enable-cpp-progs], [make C++ example programs (default enabled)]))
 AM_CONDITIONAL(ENABLE_CPP, test x"$enable_cpp_progs" = "xyes")
 
 AC_ARG_ENABLE(example-progs,
@@ -103,9 +103,10 @@ cd_drivers='cdrdao, BIN/CUE, NRG'
 
 if test "x$GCC" != "xyes" 
 then
-  echo "*** non GNU CC compiler detected."
-  echo "*** This package has not been tested very well with non GNU compilers"
-  echo "*** you should try to use 'gcc' for compiling this package."
+  AC_MSG_WARN([
+  *** non GNU CC compiler detected.
+  *** This package has not been tested very well with non GNU compilers
+  *** you should try to use 'gcc' for compiling this package.])
 else
   WARN_CFLAGS="-Wall -Wchar-subscripts -Wmissing-prototypes -Wmissing-declarations -Wunused -Wpointer-arith -Wwrite-strings -Wnested-externs -Wno-sign-compare"
 
@@ -539,13 +540,9 @@ if test "${enable_joliet}" != "no" ; then
 fi
 AC_SUBST(HAVE_JOLIET)
 
-if test x$enable_rock = x; then
-  enable_rock=yes
-  AC_ARG_ENABLE(rock,
-	[  --enable-rock           include Rock-Ridge extension support (default enabled)],
-	enable_rock=yes, enable_rock=no)
-fi
-
+AC_ARG_ENABLE(rock,
+	AC_HELP_STRING([--enable-rock], [include Rock-Ridge extension support (default enabled)]),
+	enable_rock=$enableval, enable_rock=no)
 if test "${enable_rock}" != "no" ; then
    AC_DEFINE(HAVE_ROCK, [1], 
    [Define 1 if you want ISO-9660 Rock-Ridge extension support.])
@@ -554,13 +551,10 @@ fi
 AC_SUBST(HAVE_ROCK)
 AM_CONDITIONAL(ENABLE_ROCK, test x"$enable_rock" = "xyes")
 
-if test x$enable_cddb = x; then
-  enable_cddb=yes
-  AC_ARG_ENABLE(cddb,
-	[  --enable-cddb           include CDDB lookups in cd_info (default enabled)],	
-	[], enable_cddb=check)
-fi
-if test x$enable_cddb != x"no" ; then
+AC_ARG_ENABLE(cddb,
+	AC_HELP_STRING([--enable-cddb], [include CDDB lookups in cd_info (default enabled)]),
+	enable_cddb=$enableval, enable_cddb=check)
+if test x"$enable_cddb" != x"no" ; then
    PKG_CHECK_MODULES(CDDB, libcddb >= 1.0.1, [
     HAVE_CDDB=yes 
     AC_DEFINE(HAVE_CDDB, [], [Define this if you have libcddb installed])
@@ -575,14 +569,14 @@ fi
 AC_SUBST(CDDB_LIBS)
 
 AC_DEFINE(HAVE_KEYPAD, [], [Define this if your libcurses has keypad])
-if test x$enable_cdda_player = xyes; then
+if test x"$enable_cdda_player" = xyes; then
     AC_CHECK_LIB(ncurses, mvprintw, 
       [LIBCURSES=ncurses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
       AC_CHECK_LIB(curses, mvprintw, 
       [LIBCURSES=curses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
       [AC_MSG_WARN([Will not build cdda-player - did not find libcurses or libncurses]) 
       enable_cdda_player=no]))
-    if test x$enable_cdda_player = xyes; then
+    if test x"$enable_cdda_player" = xyes; then
       AC_CHECK_LIB($LIBCURSES, keypad, [HAVE_KEYPAD=yes])
     fi   
 fi
@@ -590,13 +584,11 @@ fi
 AM_CONDITIONAL(BUILD_CDDA_PLAYER, test "x$enable_cdda_player" = "xyes")
 AC_SUBST(CDDA_PLAYER_LIBS)
 
-if test x$enable_vcd_info = x; then
 AC_ARG_ENABLE(vcd_info,
-	[  --enable-vcd-info      include Video CD Info from libvcd],
-		enable_vcd_info=yes,
+	AC_HELP_STRING([--enable-vcd-info], [include Video CD Info from libvcd]),
+		enable_vcd_info=${enableval},
 		enable_vcd_info=no)
-fi
-if test x$enable_vcd_info = xyes; then
+if test "x$enable_vcd_info" = xyes; then
   PKG_CHECK_MODULES(VCDINFO, libvcdinfo >= 0.7.21, 
   [AC_DEFINE([HAVE_VCDINFO],1, 
   [Define this if you have libvcdinfo installed])], 
@@ -688,11 +680,12 @@ head -n 254 config.h >> include/cdio/cdio_config.h
 
 AC_OUTPUT
 
-echo "Using CD-ROM drivers : $cd_drivers"
-echo "Building cd-paranoia : $(test "x$enable_cd_paranoia" = "xyes" && echo yes || echo no)"
-echo "Building cd-info     : $(test "x$enable_cd_info" = "xyes" && echo yes || echo no)"
-echo "Building cd-read     : $(test "x$enable_cd_read" = "xyes" && echo yes || echo no)"
-echo "Building cdda-player : $(test "x$enable_cdda_player" = "xyes" && echo yes || echo no)"
-echo "Building iso-info    : $(test "x$enable_iso_info" = "xyes" && echo yes || echo no)"
-echo "Building iso-read    : $(test "x$enable_iso_read" = "xyes" && echo yes || echo no)"
-echo "Building C++ programs: $(test "x$enable_cxx" != "xno" && echo yes || echo no)"
+AC_MSG_NOTICE([
+Using CD-ROM drivers : $cd_drivers
+Building cd-paranoia : $(test "x$enable_cd_paranoia" = "xyes" && echo yes || echo no)
+Building cd-info     : $(test "x$enable_cd_info" = "xyes" && echo yes || echo no)
+Building cd-read     : $(test "x$enable_cd_read" = "xyes" && echo yes || echo no)
+Building cdda-player : $(test "x$enable_cdda_player" = "xyes" && echo yes || echo no)
+Building iso-info    : $(test "x$enable_iso_info" = "xyes" && echo yes || echo no)
+Building iso-read    : $(test "x$enable_iso_read" = "xyes" && echo yes || echo no)
+Building C++ programs: $(test "x$enable_cxx" != "xno" && echo yes || echo no)])
