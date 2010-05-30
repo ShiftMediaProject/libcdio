@@ -58,16 +58,16 @@
 #define CDIO_DVD_BOOK_DVD_PR_DL   0xe /**< DVD+R DL  */
 
 typedef struct cdio_dvd_layer {
-  uint8_t book_version	: 4;
-  uint8_t book_type	: 4;
-  uint8_t min_rate	: 4;
-  uint8_t disc_size	: 4;
-  uint8_t layer_type	: 4;
-  uint8_t track_path	: 1;
-  uint8_t nlayers	: 2;
-  uint8_t track_density	: 4;
-  uint8_t linear_density: 4;
-  uint8_t bca		: 1;
+  unsigned int book_version	: 4;
+  unsigned int book_type	: 4;
+  unsigned int min_rate	        : 4;
+  unsigned int disc_size	: 4;
+  unsigned int layer_type	: 4;
+  unsigned int track_path	: 1;
+  unsigned int nlayers	        : 2;
+  unsigned int track_density	: 4;
+  unsigned int linear_density   : 4;
+  unsigned int bca		: 1;
   uint32_t start_sector;
   uint32_t end_sector;
   uint32_t end_sector_l0;

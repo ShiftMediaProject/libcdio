@@ -57,7 +57,7 @@ run_mmc_cmd_freebsd_cam( void *p_user_data, unsigned int i_timeout_ms,
 {
   _img_private_t *p_env = p_user_data;
   int   i_status, sense_size;
-  int direction = CAM_DEV_QFRZDIS;
+  int direction = CAM_DEV_QFRZDIS | CAM_PASS_ERR_RECOVER;
   union ccb ccb;
 
   p_env->gen.scsi_mmc_sense_valid = 0;

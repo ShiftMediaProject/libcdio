@@ -1,7 +1,7 @@
 /*
   $Id: cdda-player.c,v 1.50 2008/06/19 15:44:14 flameeyes Exp $
 
-  Copyright (C) 2005, 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2006, 2008, 2009, 2010 Rocky Bernstein <rocky@gnu.org>
 
   Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
   Copyright (C) 1997, 1998 
@@ -851,7 +851,7 @@ get_track_info(track_t i_track)
 }
 
 #define display_line(LINE_NO, COL_NO, format_str, field)   \
-  if (field && field[0])  {                                \
+  if (field != NULL && field[0])  {                                \
     mvprintw(LINE_NO, COL_NO, (char *) format_str " [%s]", \
 	     field,                                        \
 	     b_cdtext_ ## field ? "CD-Text": "CDDB");      \
