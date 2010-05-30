@@ -1,7 +1,5 @@
 /*
-  $Id: common_interface.c,v 1.17 2008/04/16 17:00:40 karl Exp $
-
-  Copyright (C) 2004, 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2007, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998, 2002 Monty monty@xiph.org
   
   This program is free software: you can redistribute it and/or modify
@@ -25,8 +23,10 @@
  *
  ******************************************************************/
 
-#include <math.h>
+/* common_interface.h has to come first else _FILE_OFFSET_BITS are
+   redefined in say opensolaris. */
 #include "common_interface.h"
+#include <math.h>
 #include "utils.h"
 #include "smallft.h"
 

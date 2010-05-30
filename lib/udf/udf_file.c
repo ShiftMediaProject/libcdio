@@ -18,8 +18,10 @@
 */
 /* Access routines */
 
-#include <cdio/bytesex.h>
+/* udf_private.h has to come first else _FILE_OFFSET_BITS are redefined in
+   say opensolaris. */
 #include "udf_private.h"
+#include <cdio/bytesex.h>
 #include "udf_fs.h"
 
 #ifdef HAVE_STRING_H
