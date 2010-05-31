@@ -18,13 +18,15 @@
 /* Simple program to show using libcdio's version of the CD-DA paranoia. 
    library. */
 
-#include <cdio/paranoia.h>
-#include <cdio/cd_types.h>
-#include <stdio.h>
-
+/* config.h has to come first else _FILE_OFFSET_BITS are redefined in
+   say opensolaris. */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+#include <cdio/paranoia.h>
+#include <cdio/cd_types.h>
+#include <stdio.h>
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
