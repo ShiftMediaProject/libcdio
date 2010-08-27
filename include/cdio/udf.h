@@ -1,7 +1,5 @@
 /*  
-    $Id: udf.h,v 1.22 2008/03/25 15:59:09 karl Exp $
-
-    Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2005, 2006, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -118,7 +116,7 @@ extern "C" {
 			   unsigned int i_volsetid);
   
   /*!
-    Return a file pointer matching pzz_name. 
+    Return a file pointer matching psz_name. 
   */
   udf_dirent_t *udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name);
   
