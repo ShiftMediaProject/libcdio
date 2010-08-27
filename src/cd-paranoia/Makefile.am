@@ -47,10 +47,10 @@ cd-paranoia.$(OBJEXT): usage.h
 
 if HAVE_PERL
 usage.h: usage.txt $(srcdir)/pod2c.pl
-	$(PERL) $(srcdir)/pod2c.pl $< >$@
+	$(PERL) $(srcdir)/pod2c.pl usage.txt >$@
 else
 usage.h: usage-copy.h
-	cp $< $@
+	cp usage-copy.h $@
 endif
 
 endif

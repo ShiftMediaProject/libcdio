@@ -1,7 +1,5 @@
 /*
-  $Id: common_interface.h,v 1.7 2008/04/16 17:00:40 karl Exp $
-
-  Copyright (C) 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2009, 2010 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software: you can redistribute it and/or modify

@@ -121,7 +121,7 @@ extern "C" {
         CDIO_MMC_SENSE_KEY_VENDOR_SPECIFIC =  9,
         CDIO_MMC_SENSE_KEY_COPY_ABORTED    = 10,
         CDIO_MMC_SENSE_KEY_ABORTED_COMMAND = 11,
-        CDIO_MMC_SENSE_KEY_OBSOLTE         = 12,
+        CDIO_MMC_SENSE_KEY_OBSOLETE        = 12,
     } cdio_mmc_sense_key_t;
 
     /**

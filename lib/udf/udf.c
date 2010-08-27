@@ -1,7 +1,5 @@
 /*
-  $Id: udf.c,v 1.13 2008/04/24 07:28:00 rocky Exp $
-
-  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,8 +16,10 @@
 */
 /* Access routines */
 
-#include <cdio/bytesex.h>
+/* udf_private.h has to come first else _FILE_OFFSET_BITS are redefined in
+   say opensolaris. */
 #include "udf_private.h"
+#include <cdio/bytesex.h>
 
 #ifdef HAVE_STRING_H
 # include <string.h>

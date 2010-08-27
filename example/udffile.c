@@ -22,6 +22,12 @@
    things on the C++ side.
  */
 
+/* config.h has to come first else _FILE_OFFSET_BITS are redefined in
+   say opensolaris. */
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 /* This is the UDF image. */
 #define UDF_IMAGE_PATH "../"
 #define UDF_IMAGE "../test/udf102.iso"
@@ -33,10 +39,6 @@
 #include <cdio/udf.h>
 
 #include <stdio.h>
-
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 
 #ifdef HAVE_ERRNO_H
 #include <errno.h>

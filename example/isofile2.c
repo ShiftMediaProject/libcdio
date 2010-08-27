@@ -35,10 +35,12 @@
 #define ISO9660_FILENAME "COPYING"
 #define LOCAL_FILENAME "copying"
 
+/* portable.h has to come first else _FILE_OFFSET_BITS are redefined in
+   say opensolaris. */
+#include "portable.h"
+
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
-
-#include "portable.h"
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>

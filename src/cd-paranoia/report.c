@@ -1,7 +1,5 @@
 /*
-  $Id: report.c,v 1.3 2008/04/11 15:44:00 karl Exp $
-
-  Copyright (C) 2004, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software: you can redistribute it and/or modify
@@ -24,8 +22,11 @@
  *
  ******************************************************************/
 
-#include <stdio.h>
+
+/* config.h has to come first else _FILE_OFFSET_BITS are redefined in
+   say opensolaris. */
 #include "config.h"
+#include <stdio.h>
 #include <cdio/cdda.h>
 #include "report.h"
 
