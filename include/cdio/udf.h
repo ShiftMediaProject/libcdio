@@ -1,7 +1,5 @@
 /*  
-    $Id: udf.h,v 1.22 2008/03/25 15:59:09 karl Exp $
-
-    Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2005, 2006, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,7 +35,25 @@ typedef uint16_t partition_num_t;
 /** Opaque structures. */
 typedef struct udf_s udf_t; 
 typedef struct udf_file_s udf_file_t;
-typedef struct udf_dirent_s udf_dirent_t;
+
+typedef struct udf_dirent_s {
+    char              *psz_name;
+    bool               b_dir;    /* true if this entry is a directory. */
+    bool               b_parent; /* True if has parent directory (e.g. not root
+                                    directory). If not set b_dir will probably
+                                    be true. */
+    udf_t             *p_udf;
+    uint32_t           i_part_start;
+    uint32_t           i_loc, i_loc_end;
+    uint64_t           dir_left;
+    uint8_t           *sector;
+    udf_fileid_desc_t *fid;
+    
+    /* This field has to come last because it is variable in length. */
+    udf_file_entry_t   fe;
+} udf_dirent_t;;
+
+
 
 /**
    Imagine the below a \#define'd value rather than distinct values of
@@ -69,7 +85,7 @@ extern "C" {
   */
 
   driver_return_code_t udf_read_sectors (const udf_t *p_udf, void *ptr, 
-					 lsn_t i_start,  long int i_blocks);
+                                         lsn_t i_start,  long int i_blocks);
 
   /*!
     Open an UDF for reading. Maybe in the future we will have
@@ -94,7 +110,7 @@ extern "C" {
     Caller must free result - use udf_file_free for that.
   */
   udf_dirent_t *udf_get_root (udf_t *p_udf, bool b_any_partition, 
-			      partition_num_t i_partition);
+                              partition_num_t i_partition);
   
   /**
    * Gets the Volume Identifier string, in 8bit unicode (latin-1)
@@ -103,7 +119,7 @@ extern "C" {
    * returns the size of buffer needed for all data
    */
   int udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,  
-			unsigned int i_volid);
+                        unsigned int i_volid);
   
   /**
    * Gets the Volume Set Identifier, as a 128-byte dstring (not decoded)
@@ -115,7 +131,7 @@ extern "C" {
    * or 0 on error
    */
   int udf_get_volumeset_id(udf_t *p_udf, /*out*/ uint8_t *volsetid,
-			   unsigned int i_volsetid);
+                           unsigned int i_volsetid);
   
   /*!
     Return a file pointer matching pzz_name. 
@@ -128,38 +144,41 @@ extern "C" {
     10 characters are stored in PSZ_STR; a terminating null byte is added.
     The characters stored in PSZ_STR are:
     
-    0	File type.  'd' for directory, 'c' for character
-	special, 'b' for block special, 'm' for multiplex,
-	'l' for symbolic link, 's' for socket, 'p' for fifo,
-	'-' for regular, '?' for any other file type
+    0   File type.  'd' for directory, 'c' for character
+        special, 'b' for block special, 'm' for multiplex,
+        'l' for symbolic link, 's' for socket, 'p' for fifo,
+        '-' for regular, '?' for any other file type
 
-    1	'r' if the owner may read, '-' otherwise.
+    1   'r' if the owner may read, '-' otherwise.
 
-    2	'w' if the owner may write, '-' otherwise.
+    2   'w' if the owner may write, '-' otherwise.
 
-    3	'x' if the owner may execute, 's' if the file is
-	set-user-id, '-' otherwise.
-	'S' if the file is set-user-id, but the execute
-	bit isn't set.
+    3   'x' if the owner may execute, 's' if the file is
+        set-user-id, '-' otherwise.
+        'S' if the file is set-user-id, but the execute
+        bit isn't set.
 
-    4	'r' if group members may read, '-' otherwise.
+    4   'r' if group members may read, '-' otherwise.
 
-    5	'w' if group members may write, '-' otherwise.
+    5   'w' if group members may write, '-' otherwise.
 
-    6	'x' if group members may execute, 's' if the file is
-	set-group-id, '-' otherwise.
-	'S' if it is set-group-id but not executable.
+    6   'x' if group members may execute, 's' if the file is
+        set-group-id, '-' otherwise.
+        'S' if it is set-group-id but not executable.
 
-    7	'r' if any user may read, '-' otherwise.
+    7   'r' if any user may read, '-' otherwise.
 
-    8	'w' if any user may write, '-' otherwise.
+    8   'w' if any user may write, '-' otherwise.
 
-    9	'x' if any user may execute, 't' if the file is "sticky"
-	(will be retained in swap space after execution), '-'
-	otherwise.
-	'T' if the file is sticky but not executable.  */
+    9   'x' if any user may execute, 't' if the file is "sticky"
+        (will be retained in swap space after execution), '-'
+        otherwise.
+        'T' if the file is sticky but not executable.  */
 
-  char *udf_mode_string (mode_t i_mode, char *psz_str);
+    char *udf_mode_string (mode_t i_mode, char *psz_str);
+
+    bool udf_get_lba(const udf_file_entry_t *p_udf_fe, 
+                     /*out*/ uint32_t *start, /*out*/ uint32_t *end);
 
 #ifdef __cplusplus
 }

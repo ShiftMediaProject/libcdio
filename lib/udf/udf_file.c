@@ -1,7 +1,5 @@
 /*
-  $Id: udf_file.c,v 1.14 2008/04/18 16:02:10 karl Exp $
-
-  Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2006, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -220,6 +218,9 @@ offset_to_lba(const udf_dirent_t *p_udf_dirent, off_t i_offset,
   If count is zero, read() returns zero and has no other results. If
   count is greater than SSIZE_MAX, the result is unspecified.
 
+  It is the caller's responsibility to ensure that count is less
+  than the number of blocks recorded via p_udf_dirent.
+
   If there is an error, cast the result to driver_return_code_t for 
   the specific error code.
 */
@@ -236,8 +237,10 @@ udf_read_block(const udf_dirent_t *p_udf_dirent, void * buf, size_t count)
     if (i_lba != CDIO_INVALID_LBA) {
       uint32_t i_max_blocks = CEILING(i_max_size, UDF_BLOCKSIZE);
       if ( i_max_blocks < count ) {
-	printf("Warning: don't know how to handle yet\n" );
-	count = i_max_blocks;
+	  fprintf(stderr, "Warning: read count %u is larger than %u size of entry\n",
+		  count, i_max_blocks);
+	  fprintf(stderr, "Warning: read count truncated to %u\n", count);
+	  count = i_max_blocks;
       }
       ret = udf_read_sectors(p_udf, buf, i_lba, count);
       if (DRIVER_OP_SUCCESS == ret) {

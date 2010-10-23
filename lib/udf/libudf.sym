@@ -21,6 +21,7 @@ udf_get_link_count
 udf_get_part_number
 udf_get_posix_filemode
 udf_opendir
+udf_read_block
 udf_readdir
 udf_is_dir
 udf_open

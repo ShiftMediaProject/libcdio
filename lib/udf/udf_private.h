@@ -45,27 +45,6 @@ struct udf_s {
   uint32_t              fsd_offset;   /* lba of fileset descriptor */
 };
 
-struct udf_dirent_s
-{
-  char	            *psz_name;
-  bool	             b_dir;    /* true if this entry is a directory. */
-  bool               b_parent; /* True if has parent directory (e.g. not root
-				  directory). If not set b_dir will probably
-				  be true. */
-  udf_t             *p_udf;
-  uint32_t           i_part_start;
-  uint32_t           i_loc, i_loc_end;
-  uint64_t           dir_left;
-  uint8_t           *sector;
-  udf_fileid_desc_t *fid;
-
- /* This field has to come last because it is variable in length. */
-  udf_file_entry_t   fe;
-};
-
-bool udf_get_lba(const udf_file_entry_t *p_udf_fe, 
-                 /*out*/ uint32_t *start, /*out*/ uint32_t *end);
-
 #endif /* __CDIO_UDF_PRIVATE_H__ */
 
 
