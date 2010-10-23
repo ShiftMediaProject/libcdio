@@ -134,7 +134,7 @@ extern "C" {
                            unsigned int i_volsetid);
   
   /*!
-    Return a file pointer matching pzz_name. 
+    Return a file pointer matching psz_name. 
   */
   udf_dirent_t *udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name);
   
