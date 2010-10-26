@@ -99,7 +99,7 @@ distdir-regression: $(DISTFILES_REGRESSION)
 	    fi; \
 	    cp -pR $$d/$$file $(distdir)$$dir || exit 1; \
 	  else \
-	    test -f $(distdir_regressoin)/$$file \
+	    test -f $(distdir_regression)/$$file \
 	    || cp -p $$d/$$file $(distdir)/$$file \
 	    || exit 1; \
 	  fi; \
