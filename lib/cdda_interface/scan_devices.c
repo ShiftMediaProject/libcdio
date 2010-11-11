@@ -110,6 +110,7 @@ cdio_cddap_find_a_cdrom(int messagedest, char **ppsz_messages){
 	if((d=cdda_identify(buffer, messagedest, ppsz_messages)))
 	  return(d);
 	idmessage(messagedest, ppsz_messages, "", NULL);
+	free(buffer);
       }
     }else{
       /* Name.  Go for it. */
