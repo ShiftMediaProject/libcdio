@@ -1,7 +1,5 @@
 /*
-  $Id: rock.c,v 1.18 2008/04/18 16:02:09 karl Exp $
- 
-  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
  
   This program is free software: you can redistribute it and/or modify
@@ -14,7 +12,7 @@
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
+n  You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* Rock Ridge Extensions to iso9660 */
@@ -34,6 +32,13 @@
 
 #ifdef HAVE_SYS_STAT_H
 # include <sys/stat.h>
+#endif
+
+#ifndef HAVE_S_ISLNK
+# define S_ISLNK(s) ((void)s,0)
+endif
+#ifndef HAVE_S_ISSOCK
+# define S_ISSOCK(s) ((void)s,0)
 #endif
 
 #include <cdio/iso9660.h>

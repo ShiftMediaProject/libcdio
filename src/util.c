@@ -1,7 +1,6 @@
 /*
-  $Id: util.c,v 1.54 2008/04/14 17:30:27 karl Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010
+  Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -25,6 +24,13 @@
 
 #ifdef HAVE_SYS_STAT_H
 # include <sys/stat.h>
+#endif
+
+#ifndef HAVE_S_ISLNK
+# define S_ISLNK(s) ((void)s,0)
+#endif
+#ifndef HAVE_S_ISSOCK
+# define S_ISSOCK(s) ((void)s,0)
 #endif
 
 cdio_log_handler_t gl_default_cdio_log_handler = NULL;
