@@ -35,6 +35,7 @@
 #include <string.h>
 #endif
 
+
 /*! Note: the order and number items (except CDTEXT_INVALID) should
   match the cdtext_field_t enumeration. */
 static const char cdtext_keywords[][16] = 
@@ -43,8 +44,8 @@ static const char cdtext_keywords[][16] =
     "COMPOSER",
     "DISC_ID",
     "GENRE",
-    "ISRC",
     "MESSAGE",
+    "ISRC",
     "PERFORMER",
     "SIZE_INFO",
     "SONGWRITER",
@@ -171,6 +172,7 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
   int           idx;
   int           i_track;
   bool          b_ret = false;
+  char		block = 0;
   
   memset( buffer, 0x00, sizeof(buffer) );
   idx = 0;
@@ -180,6 +182,9 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
   /* For reasons I don't understand - incorrect CDROM TOC reading?
      we are off sometimes by 4.
    */
+  /*
+   * Leon Lohse: can anybody confirm this problem?
+   *
   if( (p_data->type < 0x80) || (p_data->type > 0x85) 
       || (p_data->block == 0) ) {
     CDText_data_t *p_data_test = (CDText_data_t *) (&wdata[8]);
@@ -189,7 +194,8 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
       i_data -= 4;
     }
   }
-  
+  */
+
   for( ; i_data > 0; 
        i_data -= sizeof(CDText_data_t), p_data++ ) {
     
@@ -200,52 +206,66 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
     }
 #endif
     
-    if( (p_data->type >= 0x80) 
-	&& (p_data->type <= 0x85) && (p_data->block == 0) ) {
+    /* we should increment i here and not just when we get a char string */
+    if( p_data->seq != ++i || p_data->block != block ) break;
+
+    /* only handle character packs */
+    if( ((p_data->type >= 0x80) && (p_data->type <= 0x85)) || 
+        (p_data->type == 0x8E)) {
+
       i_track = p_data->i_track;
 
-      i++;
-      if( p_data->seq != i ) break;
+      /* can we somehow use p_data->characterPosition to make this simpler? */
+      for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; (p_data->bDBC ? j+=2 : j++) ) {
+	if( p_data->text[j] == 0x00 && (!p_data->bDBC || p_data->text[j+1] == 0x00)) {
+	  
+	  /* omit empty strings */
+	  if((buffer[0] != 0x00) && (!p_data->bDBC || buffer[1] != 0x00)) {
 
-      for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++ ) {
-	if( p_data->text[j] == 0x00 ) {
-	  bool b_field_set=true;
-	  switch( p_data->type) {
-	  case CDIO_CDTEXT_TITLE: 
-	    SET_CDTEXT_FIELD(CDTEXT_TITLE);
-	    break;
-	  case CDIO_CDTEXT_PERFORMER:  
-	    SET_CDTEXT_FIELD(CDTEXT_PERFORMER);
-	    break;
-	  case CDIO_CDTEXT_SONGWRITER:
-	    SET_CDTEXT_FIELD(CDTEXT_SONGWRITER);
-	    break;
-	  case CDIO_CDTEXT_COMPOSER:
-	    SET_CDTEXT_FIELD(CDTEXT_COMPOSER);
-	    break;
-	  case CDIO_CDTEXT_ARRANGER:
-	    SET_CDTEXT_FIELD(CDTEXT_ARRANGER);
-	    break;
-	  case CDIO_CDTEXT_MESSAGE:
-	    SET_CDTEXT_FIELD(CDTEXT_MESSAGE);
-	    break;
-	  case CDIO_CDTEXT_DISCID: 
-	    SET_CDTEXT_FIELD(CDTEXT_DISCID);
-	    break;
-	  case CDIO_CDTEXT_GENRE: 
-	    SET_CDTEXT_FIELD(CDTEXT_GENRE);
-	    break;
-	  default : b_field_set = false;
-	  }
-	  if (b_field_set) {
-	    b_ret = true;
-	    i_track++;
-	    idx = 0;
+		  bool b_field_set=true;
+		  switch( p_data->type) {
+		  case CDIO_CDTEXT_TITLE: 
+		    SET_CDTEXT_FIELD(CDTEXT_TITLE);
+		    break;
+		  case CDIO_CDTEXT_PERFORMER:  
+		    SET_CDTEXT_FIELD(CDTEXT_PERFORMER);
+		    break;
+		  case CDIO_CDTEXT_SONGWRITER:
+		    SET_CDTEXT_FIELD(CDTEXT_SONGWRITER);
+		    break;
+		  case CDIO_CDTEXT_COMPOSER:
+		    SET_CDTEXT_FIELD(CDTEXT_COMPOSER);
+		    break;
+		  case CDIO_CDTEXT_ARRANGER:
+		    SET_CDTEXT_FIELD(CDTEXT_ARRANGER);
+		    break;
+		  case CDIO_CDTEXT_MESSAGE:
+		    SET_CDTEXT_FIELD(CDTEXT_MESSAGE);
+		    break;
+		  case CDIO_CDTEXT_UPC:
+		    if(i_track == 0) {
+		      SET_CDTEXT_FIELD(CDTEXT_UPC_EAN);
+		    }
+		    else {
+		      SET_CDTEXT_FIELD(CDTEXT_ISRC);
+		    }
+		    break;
+		  default : b_field_set = false;
+		  }
+		  if (b_field_set) {
+		    b_ret = true;
+		    i_track++;
+		    idx = 0;
+		  }
 	  }
 	} else {
 	  buffer[idx++] = p_data->text[j];
+	  if(p_data->bDBC)
+	     buffer[idx++] = p_data->text[j+1];
 	}
-	buffer[idx] = 0x00;
+        buffer[idx] = 0x00;
+	if(p_data->bDBC)
+	   buffer[idx+1] = 0x00;
       }
     }
   }
