@@ -666,8 +666,8 @@ iso9660_set_pvd(void *pd,
   iso9660_set_ltime (&temp_tm, &(ipd.creation_date));
   gmtime_r(pvd_time, &temp_tm);
   iso9660_set_ltime (&temp_tm, &(ipd.modification_date));
-  iso9660_set_ltime (NULL,     &(ipd.expiration_date));
-  iso9660_set_ltime (NULL,     &(ipd.effective_date));
+  iso9660_set_ltime (&temp_tm,     &(ipd.expiration_date));
+  iso9660_set_ltime (&temp_tm,     &(ipd.effective_date));
 
   ipd.file_structure_version = to_711(1);
 
