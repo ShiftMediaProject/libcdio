@@ -1,7 +1,6 @@
 /*
-  $Id: cd-read.c,v 1.33 2008/06/19 15:44:13 flameeyes Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2011 Rocky Bernstein 
+  <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -434,7 +433,7 @@ parse_options (int argc, char *argv[])
     /* We were given an end lsn. */
     if (opts.end_lsn < opts.start_lsn) {
       report( stderr, 
-	      "%s: end LSN (%lu) needs to be less than start LSN (%lu)\n",
+	      "%s: end LSN (%lu) needs to be grater than start LSN (%lu)\n",
 	      program_name, (unsigned long) opts.start_lsn, 
 	      (unsigned long) opts.end_lsn );
       free(program_name);
