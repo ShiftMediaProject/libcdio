@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2004, 2005, 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2006, 2008, 2009, 2011
+ Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,7 +32,7 @@
 
 static void 
 print_cdtext_track_info(CdIo_t *p_cdio, track_t i_track, const char *psz_msg) {
-  const cdtext_t *cdtext = cdio_get_cdtext(p_cdio, 0);
+  const cdtext_t *cdtext = cdio_get_cdtext(p_cdio, i_track);
   if (NULL != cdtext) {
     cdtext_field_t i;
     

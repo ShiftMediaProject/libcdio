@@ -1,7 +1,5 @@
 /*
-  $Id: cdtext.c,v 1.7 2008/06/16 22:41:44 flameeyes Exp $
-
-  Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
   toc reading routine adapted from cuetools
   Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
@@ -35,6 +33,7 @@
 #include <string.h>
 #endif
 
+#include <stdio.h>
 
 /*! Note: the order and number items (except CDTEXT_INVALID) should
   match the cdtext_field_t enumeration. */
@@ -55,6 +54,37 @@ static const char cdtext_keywords[][16] =
     "UPC_EAN",
   };
 
+static const char cdtext_genre[][30] =
+{
+  "Not Used",
+  "Not Defined",
+  "Adult Contemporary",
+  "Alternative Rock",
+  "Childrens Music",
+  "Classical",
+  "Contemporary Christian",
+  "Country",
+  "Dance",
+  "Easy Listening",
+  "Erotic",
+  "Folk",
+  "Gospel",
+  "Hip Hop",
+  "Jazz",
+  "Latin",
+  "Musical",
+  "New Age",
+  "Opera",
+  "Operetta",
+  "Pop Music",
+  "Rap",
+  "Reggae",
+  "Rock Music",
+  "Rhythm & Blues",
+  "Sound Effects",
+  "Spoken Word",
+  "World Music"
+} ;
 
 /*! Return string representation of the enum values above */
 const char *
@@ -126,10 +156,10 @@ cdtext_is_keyword (const char *key)
   char *item;
   
   item = bsearch(key, 
-		 cdtext_keywords, 12,
-		 sizeof (char *), 
-		 (int (*)(const void *, const void *))
-		 strcmp);
+                 cdtext_keywords, 12,
+                 sizeof (char *), 
+                 (int (*)(const void *, const void *))
+                 strcmp);
   return (NULL != item) ? 0 : 1;
 #else 
   unsigned int i;
@@ -162,8 +192,8 @@ cdtext_set (cdtext_field_t key, const char *p_value, cdtext_t *p_cdtext)
 */       
 bool
 cdtext_data_init(void *p_user_data, track_t i_first_track, 
-		 unsigned char *wdata, int i_data,
-		 set_cdtext_field_fn_t set_cdtext_field_fn) 
+                 unsigned char *wdata, int i_data,
+                 set_cdtext_field_fn_t set_cdtext_field_fn) 
 {
   CDText_data_t *p_data;
   int           i = -1;
@@ -172,29 +202,17 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
   int           idx;
   int           i_track;
   bool          b_ret = false;
-  char		block = 0;
+  char          block = 0;
+  char    encoding[16];
+  CDText_blocksize_t p_blocksize;
   
   memset( buffer, 0x00, sizeof(buffer) );
   idx = 0;
   
-  p_data = (CDText_data_t *) (&wdata[4]);
+  bzero(encoding,16);
+  bzero(&p_blocksize, sizeof(CDText_blocksize_t));
 
-  /* For reasons I don't understand - incorrect CDROM TOC reading?
-     we are off sometimes by 4.
-   */
-  /*
-   * Leon Lohse: can anybody confirm this problem?
-   *
-  if( (p_data->type < 0x80) || (p_data->type > 0x85) 
-      || (p_data->block == 0) ) {
-    CDText_data_t *p_data_test = (CDText_data_t *) (&wdata[8]);
-    if( (p_data_test->type >= 0x80) 
-	&& (p_data_test->type <= 0x85) && (p_data_test->block == 0) ) {
-      p_data = p_data_test;
-      i_data -= 4;
-    }
-  }
-  */
+  p_data = (CDText_data_t *) (&wdata[4]);
 
   for( ; i_data > 0; 
        i_data -= sizeof(CDText_data_t), p_data++ ) {
@@ -206,69 +224,135 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
     }
 #endif
     
-    /* we should increment i here and not just when we get a char string */
-    if( p_data->seq != ++i || p_data->block != block ) break;
+    if ( p_data->seq != ++i || p_data->block != block ) break;
 
     /* only handle character packs */
-    if( ((p_data->type >= 0x80) && (p_data->type <= 0x85)) || 
+    if ( ((p_data->type >= 0x80) && (p_data->type <= 0x86)) || 
         (p_data->type == 0x8E)) {
 
       i_track = p_data->i_track;
 
-      /* can we somehow use p_data->characterPosition to make this simpler? */
       for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; (p_data->bDBC ? j+=2 : j++) ) {
-	if( p_data->text[j] == 0x00 && (!p_data->bDBC || p_data->text[j+1] == 0x00)) {
-	  
-	  /* omit empty strings */
-	  if((buffer[0] != 0x00) && (!p_data->bDBC || buffer[1] != 0x00)) {
+        if( p_data->text[j] == 0x00 && (!p_data->bDBC || p_data->text[j+1] == 0x00)) {
+          
+          /* omit empty strings */
+          if((buffer[0] != 0x00) && (!p_data->bDBC || buffer[1] != 0x00)) {
+            switch( p_data->type) {
+            case CDIO_CDTEXT_TITLE: 
+              SET_CDTEXT_FIELD(CDTEXT_TITLE);
+              break;
+            case CDIO_CDTEXT_PERFORMER:  
+              SET_CDTEXT_FIELD(CDTEXT_PERFORMER);
+              break;
+            case CDIO_CDTEXT_SONGWRITER:
+              SET_CDTEXT_FIELD(CDTEXT_SONGWRITER);
+              break;
+            case CDIO_CDTEXT_COMPOSER:
+              SET_CDTEXT_FIELD(CDTEXT_COMPOSER);
+              break;
+            case CDIO_CDTEXT_ARRANGER:
+              SET_CDTEXT_FIELD(CDTEXT_ARRANGER);
+              break;
+            case CDIO_CDTEXT_MESSAGE:
+              SET_CDTEXT_FIELD(CDTEXT_MESSAGE);
+              break;
+            case CDIO_CDTEXT_DISCID:
+              if(i_track == 0) {
+                SET_CDTEXT_FIELD(CDTEXT_DISCID);
+              }
+              break;
+            case CDIO_CDTEXT_UPC:
+              if(i_track == 0) {
+                SET_CDTEXT_FIELD(CDTEXT_UPC_EAN);
+              }
+              else {
+                SET_CDTEXT_FIELD(CDTEXT_ISRC);
+              }
+              break;
+            }
+            
+            b_ret = true;
+            i_track++;
+            idx = 0;
+          }
+        } else {
+          buffer[idx++] = p_data->text[j];
+          if(p_data->bDBC)
+             buffer[idx++] = p_data->text[j+1];
+        }
 
-		  bool b_field_set=true;
-		  switch( p_data->type) {
-		  case CDIO_CDTEXT_TITLE: 
-		    SET_CDTEXT_FIELD(CDTEXT_TITLE);
-		    break;
-		  case CDIO_CDTEXT_PERFORMER:  
-		    SET_CDTEXT_FIELD(CDTEXT_PERFORMER);
-		    break;
-		  case CDIO_CDTEXT_SONGWRITER:
-		    SET_CDTEXT_FIELD(CDTEXT_SONGWRITER);
-		    break;
-		  case CDIO_CDTEXT_COMPOSER:
-		    SET_CDTEXT_FIELD(CDTEXT_COMPOSER);
-		    break;
-		  case CDIO_CDTEXT_ARRANGER:
-		    SET_CDTEXT_FIELD(CDTEXT_ARRANGER);
-		    break;
-		  case CDIO_CDTEXT_MESSAGE:
-		    SET_CDTEXT_FIELD(CDTEXT_MESSAGE);
-		    break;
-		  case CDIO_CDTEXT_UPC:
-		    if(i_track == 0) {
-		      SET_CDTEXT_FIELD(CDTEXT_UPC_EAN);
-		    }
-		    else {
-		      SET_CDTEXT_FIELD(CDTEXT_ISRC);
-		    }
-		    break;
-		  default : b_field_set = false;
-		  }
-		  if (b_field_set) {
-		    b_ret = true;
-		    i_track++;
-		    idx = 0;
-		  }
-	  }
-	} else {
-	  buffer[idx++] = p_data->text[j];
-	  if(p_data->bDBC)
-	     buffer[idx++] = p_data->text[j+1];
-	}
         buffer[idx] = 0x00;
-	if(p_data->bDBC)
-	   buffer[idx+1] = 0x00;
+        if(p_data->bDBC)
+           buffer[idx+1] = 0x00;
+      }
+    } else {
+      /* not a character pack */
+      if (p_data->type == CDIO_CDTEXT_GENRE) {
+        i_track = p_data->i_track;
+        /* seems like it is a uint_16 in the first 2 bytes */
+        if((p_data->text[0] << 8) + p_data->text[1] != CDIO_CDTEXT_GENRE_UNUSED) {
+          sprintf(buffer,"%s",cdtext_genre[(p_data->text[0] << 8) + p_data->text[1]]);
+          SET_CDTEXT_FIELD(CDTEXT_GENRE);
+    }
+#ifdef _DEBUG_CDTEXT
+        printf("GENRE information present: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
+	       p_data->text[0],p_data->text[1],p_data->text[2],p_data->text[3],
+	       p_data->text[4],p_data->text[5],p_data->text[6],p_data->text[7], 
+	       p_data->text[8],p_data->text[9],p_data->text[10],p_data->text[11]);
+#endif
+      }
+
+      if(p_data->type == CDIO_CDTEXT_TOC) {
+#ifdef _DEBUG_CDTEXT
+        printf("TOC information present: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
+          p_data->text[0],p_data->text[1],p_data->text[2],p_data->text[3],
+          p_data->text[4],p_data->text[5],p_data->text[6],p_data->text[7], 
+          p_data->text[8],p_data->text[9],p_data->text[10],p_data->text[11]);
+#endif
+      }
+
+      if (p_data->type == CDIO_CDTEXT_TOC2) {
+#ifdef _DEBUG_CDTEXT
+        printf("TOC2 information present: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
+          p_data->text[0],p_data->text[1],p_data->text[2],p_data->text[3],
+          p_data->text[4],p_data->text[5],p_data->text[6],p_data->text[7], 
+          p_data->text[8],p_data->text[9],p_data->text[10],p_data->text[11]);
+#endif
+      }
+
+      /* i got this info from cdrtools' cdda2wav; all the tests i ran so far were successful */
+      if (p_data->type == CDIO_CDTEXT_BLOCKSIZE) {
+	/* i_track is the pack element number in this case */
+        switch(p_data->i_track){
+	case 0:
+	  memcpy((char*)&p_blocksize,p_data->text,0x0c);
+	  break;
+	case 1:
+	  memcpy(((char*)&p_blocksize)+0x0c,p_data->text,0x0c);
+	  break;
+	case 2:
+	  memcpy(((char*)&p_blocksize)+0x18,p_data->text,0x0c);
+	  break;
+        }
       }
     }
   }
+  
+  if (p_blocksize.packcount[15] >= 3) {
+    /* BLOCKSIZE packs present */
+    switch (p_blocksize.charcode){
+    case CDIO_CDTEXT_CHARCODE_ISO_8859_1:
+      sprintf(encoding,"ISO-8859-1");
+      break;
+    case CDIO_CDTEXT_CHARCODE_ASCII:
+      sprintf(encoding,"ASCII");
+      break;
+    case CDIO_CDTEXT_CHARCODE_KANJI:
+      sprintf(encoding,"Shift-JIS");
+      break;
+    }
+    
+  }
+  
   return b_ret;
 }
-
