@@ -78,5 +78,5 @@ Robert William Fuller
 
 Scot C. Bontrager
   mmc routine to get the ISRC information on a CD that is in the q subchannel 
-  but not showing up in the CDTEXT.
+  but not showing up in the CDTEXT. Addition of this information to cd-info.
 

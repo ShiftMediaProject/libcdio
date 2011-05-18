@@ -505,7 +505,7 @@ mmc_isrc_track_read_subchannel (CdIo_t *p_cdio,  /*in*/ const track_t track,
   i_rc = mmc_run_cmd(p_cdio, mmc_timeout_ms, &cdb, SCSI_MMC_DATA_READ,
                      sizeof(buf), buf);
   if (DRIVER_OP_SUCCESS == i_rc) {
-    strncpy(p_isrc,  &buf[9], sizeof(buf)-9);
+    strncpy(p_isrc,  &buf[9], CDIO_ISRC_SIZE+1);
   }
   return i_rc;
 }

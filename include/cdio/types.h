@@ -272,6 +272,7 @@ typedef uint8_t ubyte;
 
   /*! 
     Number of ASCII bytes in a media catalog number (MCN).
+    We include an extra 0 byte so these can be used as C strings.
   */
 #define CDIO_MCN_SIZE       13
 
@@ -288,7 +289,7 @@ typedef uint8_t ubyte;
 #define CDIO_ISRC_SIZE       12
 
   /*! 
-    Type to hold ASCII bytes in a media catalog number (MCN).
+    Type to hold ASCII bytes in a ISRC.
     We include an extra 0 byte so these can be used as C strings.
   */
   typedef char cdio_isrc_t[CDIO_ISRC_SIZE+1];

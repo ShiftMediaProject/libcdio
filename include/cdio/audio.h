@@ -1,6 +1,4 @@
 /* -*- c -*-
-    $Id: audio.h,v 1.12 2008/03/25 15:59:08 karl Exp $
-
     Copyright (C) 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify

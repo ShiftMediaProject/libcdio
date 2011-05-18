@@ -1,7 +1,6 @@
 /*
-  $Id: cd-info.c,v 1.156 2008/09/09 14:44:25 rocky Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2007, 2008, 2011 
+  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
          and Heiko Eiﬂfeldt <heiko@hexco.de>
 
@@ -129,9 +128,9 @@ parse_source(int opt)
 
   if (opts.source_image != INPUT_UNKNOWN) {
     report(stderr, "%s: another source type option given before.\n", 
-	   program_name);
+           program_name);
     report(stderr, "%s: give only one source type option.\n", 
-	   program_name);
+           program_name);
     return;
   } 
 
@@ -165,7 +164,6 @@ parse_source(int opt)
     break;
   }
 }
-
 
 /* Parse all options. */
 static bool
@@ -346,8 +344,8 @@ parse_options (int argc, char *argv[])
 
     if (source_name != NULL) {
       report(stderr, "%s: Source '%s' given as an argument of an option and as "
-	     "unnamed option '%s'\n", 
-	     program_name, source_name, remaining_arg);
+             "unnamed option '%s'\n", 
+             program_name, source_name, remaining_arg);
       free(program_name);
       exit (EXIT_FAILURE);
     }
@@ -359,7 +357,7 @@ parse_options (int argc, char *argv[])
 
     if (optind < argc) {
       report(stderr, "%s: Source specified in previously %s and %s\n", 
-	     program_name, source_name, remaining_arg);
+             program_name, source_name, remaining_arg);
       free(program_name);
       exit (EXIT_FAILURE);
     }
@@ -367,7 +365,6 @@ parse_options (int argc, char *argv[])
 
   return true;
 }
-
 
 /* CDIO logging routines */
 
@@ -419,7 +416,7 @@ print_cdtext_track_info(CdIo_t *p_cdio, track_t i_track, const char *psz_msg) {
     
     for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
       if (p_cdtext->field[i]) {
-	printf("\t%s: %s\n", cdtext_field2str(i), p_cdtext->field[i]);
+        printf("\t%s: %s\n", cdtext_field2str(i), p_cdtext->field[i]);
       }
     }
   }
@@ -433,7 +430,7 @@ print_cdtext_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
   print_cdtext_track_info(p_cdio, 0, "\nCD-TEXT for Disc:");
   for ( ; i_first_track < i_last_track; i_first_track++ ) {
     char msg[50];
-    sprintf(msg, "CD-TEXT for Track %d:", i_first_track);
+    sprintf(msg, "CD-TEXT for Track %2d:", i_first_track);
     print_cdtext_track_info(p_cdio, i_first_track, msg);
   }
 }
@@ -456,16 +453,16 @@ print_cddb_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track)
   cddb_disc_t *p_cddb_disc = NULL;
 
   if ( init_cddb(p_cdio, &p_conn, &p_cddb_disc, cddb_errmsg, i_first_track, 
-		 i_tracks, &i_cddb_matches) ) {
+                 i_tracks, &i_cddb_matches) ) {
 
     if (-1 == i_cddb_matches) 
       printf("%s: %s\n", program_name, cddb_error_str(cddb_errno(p_conn)));
     else {
       printf("%s: Found %d matches in CDDB\n", program_name, i_cddb_matches);
       for (i=1; i<=i_cddb_matches; i++) {
-	cddb_disc_print(p_cddb_disc);
-	cddb_query_next(p_conn, p_cddb_disc);
-	if (i != i_cddb_matches) cddb_read(p_conn, p_cddb_disc);
+        cddb_disc_print(p_cddb_disc);
+        cddb_query_next(p_conn, p_cddb_disc);
+        if (i != i_cddb_matches) cddb_read(p_conn, p_cddb_disc);
       }
     }
   
@@ -490,7 +487,7 @@ print_vcd_info(driver_id_t driver) {
       return;
     }
     report (stdout, "Format       : %s\n", 
-	    vcdinfo_get_format_version_str(p_vcd));
+            vcdinfo_get_format_version_str(p_vcd));
     report (stdout, "Album        : `%.16s'\n",  vcdinfo_get_album_id(p_vcd));
     report (stdout, "Volume count : %d\n",   vcdinfo_get_volume_count(p_vcd));
     report (stdout, "volume number: %d\n",   vcdinfo_get_volume_num(p_vcd));
@@ -501,7 +498,7 @@ print_vcd_info(driver_id_t driver) {
     break;
   case VCDINFO_OPEN_OTHER:
     report( stderr, "Even though we thought this was a Video CD, "
-	    " further inspection says it is not.\n" );
+            " further inspection says it is not.\n" );
     break;
   }
   if (p_vcd) vcdinfo_close(p_vcd);
@@ -511,7 +508,7 @@ print_vcd_info(driver_id_t driver) {
 
 static void
 print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[], 
-		       cdio_fs_anal_t fs)
+                       cdio_fs_anal_t fs)
 {
   CdioList_t *p_entlist;
   CdioList_t *p_dirlist =  _cdio_list_new ();
@@ -552,13 +549,13 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
        }
 
       if (yep != p_statbuf->rr.b3_rock || 1 == opts.no_rock_ridge) {
-	iso9660_name_translate_ext(psz_iso_name, translated_name, 
-				   i_joliet_level);
+        iso9660_name_translate_ext(psz_iso_name, translated_name, 
+                                   i_joliet_level);
       }
   
       
       snprintf (_fullname, sizeof (_fullname), "%s%s", pathname, 
-		psz_iso_name);
+                psz_iso_name);
   
       strncat (_fullname, "/", sizeof (_fullname));
 
@@ -568,10 +565,10 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
         _cdio_list_append (p_dirlist, strdup (_fullname));
 
       print_fs_attrs(p_statbuf, 0 == opts.no_rock_ridge, fs & CDIO_FS_ANAL_XA, 
-		     psz_iso_name, translated_name);
+                     psz_iso_name, translated_name);
       if (p_statbuf->rr.i_symlink) {
-	free(p_statbuf->rr.psz_symlink);
-	p_statbuf->rr.i_symlink = 0;
+        free(p_statbuf->rr.psz_symlink);
+        p_statbuf->rr.i_symlink = 0;
       }
     }
     free (translated_name);
@@ -594,7 +591,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
 
 static void
 print_iso9660_fs (CdIo_t *p_cdio, cdio_fs_anal_t fs, 
-		  track_format_t track_format)
+                  track_format_t track_format)
 {
   iso_extension_mask_t iso_extension_mask = ISO_EXTENSION_ALL;
 
@@ -611,19 +608,19 @@ print_iso9660_fs (CdIo_t *p_cdio, cdio_fs_anal_t fs,
   print_iso9660_recurse (p_cdio, "/", fs);
 }
 
-#define print_vd_info(title, fn)		\
-  psz_str = fn(&pvd);				\
-  if (psz_str) {				\
-    report(stdout, title ": %s\n", psz_str);	\
-    free(psz_str);				\
-    psz_str = NULL;				\
+#define print_vd_info(title, fn)                \
+  psz_str = fn(&pvd);                           \
+  if (psz_str) {                                \
+    report(stdout, title ": %s\n", psz_str);    \
+    free(psz_str);                              \
+    psz_str = NULL;                             \
   }
 
 static void
 print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis, 
-	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
-	       track_t i_tracks, track_t i_first_track, 
-	       track_format_t track_format, CdIo_t *p_cdio)
+               cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
+               track_t i_tracks, track_t i_first_track, 
+               track_format_t track_format, CdIo_t *p_cdio)
 {
   int need_lf;
   
@@ -632,9 +629,9 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
     if (num_audio > 0) {
 #ifdef HAVE_CDDB
       if (!opts.no_cddb) {
-	printf("Audio CD, CDDB disc ID is %08x\n", 
-	       cddb_discid(p_cdio, i_tracks));
-	print_cddb_info(p_cdio, i_tracks, i_first_track);
+        printf("Audio CD, CDDB disc ID is %08x\n", 
+               cddb_discid(p_cdio, i_tracks));
+        print_cddb_info(p_cdio, i_tracks, i_first_track);
       }
 #endif      
       print_cdtext_info(p_cdio, i_tracks, i_first_track);
@@ -669,7 +666,7 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
     break;
   case CDIO_FS_EXT2:
     printf("CD-ROM with GNU/Linux EXT2 (native) filesystem\n");
-	  break;
+          break;
   case CDIO_FS_3DO:
     printf("CD-ROM with Panasonic 3DO filesystem\n");
     break;
@@ -689,19 +686,19 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
   case CDIO_FS_ISO_HFS:
   case CDIO_FS_ISO_UDF:
     printf("ISO 9660: %i blocks, label `%.32s'\n",
-	   cdio_iso_analysis.isofs_size, cdio_iso_analysis.iso_label);
+           cdio_iso_analysis.isofs_size, cdio_iso_analysis.iso_label);
 
     {
       iso9660_pvd_t pvd;
 
       if ( iso9660_fs_read_pvd(p_cdio, &pvd) ) {
-	char *psz_str;
-	print_vd_info("Application", iso9660_get_application_id);
-	print_vd_info("Preparer   ", iso9660_get_preparer_id);
-	print_vd_info("Publisher  ", iso9660_get_publisher_id);
-	print_vd_info("System     ", iso9660_get_system_id);
-	print_vd_info("Volume     ", iso9660_get_volume_id);
-	print_vd_info("Volume Set ", iso9660_get_volumeset_id);
+        char *psz_str;
+        print_vd_info("Application", iso9660_get_application_id);
+        print_vd_info("Preparer   ", iso9660_get_preparer_id);
+        print_vd_info("Publisher  ", iso9660_get_publisher_id);
+        print_vd_info("System     ", iso9660_get_system_id);
+        print_vd_info("Volume     ", iso9660_get_volume_id);
+        print_vd_info("Volume Set ", iso9660_get_volumeset_id);
       }
     }
     
@@ -715,7 +712,7 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
   case CDIO_FS_UDF:
   case CDIO_FS_ISO_UDF:
     report(stdout, "UDF: version %x.%2.2x\n",
-	   cdio_iso_analysis.UDFVerMajor, cdio_iso_analysis.UDFVerMinor);
+           cdio_iso_analysis.UDFVerMajor, cdio_iso_analysis.UDFVerMinor);
     break;
   default: ;
   }
@@ -731,7 +728,7 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
     need_lf += printf("Hidden Track   ");
   if (fs & CDIO_FS_ANAL_PHOTO_CD)
     need_lf += printf("%sPhoto CD   ", 
-		      num_audio > 0 ? " Portfolio " : "");
+                      num_audio > 0 ? " Portfolio " : "");
   if (fs & CDIO_FS_ANAL_CDTV)
     need_lf += printf("Commodore CDTV   ");
   if (first_data > 1)
@@ -822,13 +819,14 @@ main(int argc, char *argv[])
   int                    first_data     = -1;  /* # of first data track */
   int                    first_audio    = -1;  /* # of first audio track */
   bool                   b_playing_audio = false; /* currently playing a 
-						     CD-DA */
+                                                     CD-DA */
   cdio_iso_analysis_t    cdio_iso_analysis; 
   char                  *media_catalog_number;  
   discmode_t             discmode = CDIO_DISC_MODE_NO_INFO;
   cdio_drive_read_cap_t  i_read_cap = 0;
   cdio_drive_write_cap_t i_write_cap;
   cdio_drive_misc_cap_t  i_misc_cap;
+  cdio_isrc_t            isrc;
       
   memset(&cdio_iso_analysis, 0, sizeof(cdio_iso_analysis));
   init();
@@ -856,10 +854,10 @@ main(int argc, char *argv[])
   if (p_cdio==NULL) {
     if (source_name) {
       err_exit("%s: Error in opening device driver for input %s.\n", 
-	       program_name, source_name);
+               program_name, source_name);
     } else {
       err_exit("%s: Error in opening device driver for unspecified input.\n", 
-	       program_name);
+               program_name);
     }
     
   } 
@@ -882,9 +880,9 @@ main(int argc, char *argv[])
     cdio_hwinfo_t          hwinfo;
     if (cdio_get_hwinfo(p_cdio, &hwinfo)) {
       printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
-	     "Vendor"  , hwinfo.psz_vendor, 
-	     "Model"   , hwinfo.psz_model, 
-	     "Revision", hwinfo.psz_revision);
+             "Vendor"  , hwinfo.psz_vendor, 
+             "Model"   , hwinfo.psz_model, 
+             "Revision", hwinfo.psz_revision);
     }
     print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
   }
@@ -897,16 +895,16 @@ main(int argc, char *argv[])
     printf("list of devices found:\n");
     if (NULL != d) {
       for ( ; *d != NULL ; d++ ) {
-	CdIo_t *p_cdio = cdio_open(source_name, driver_id); 
-	cdio_hwinfo_t hwinfo;
-	printf("Drive %s\n", *d);
-	if (mmc_get_hwinfo(p_cdio, &hwinfo)) {
-	  printf("%-8s: %s\n%-8s: %s\n%-8s: %s\n",
-		 "Vendor"  , hwinfo.psz_vendor, 
-		 "Model"   , hwinfo.psz_model, 
-		 "Revision", hwinfo.psz_revision);
-	}
-	if (p_cdio) cdio_destroy(p_cdio);
+        CdIo_t *p_cdio = cdio_open(source_name, driver_id); 
+        cdio_hwinfo_t hwinfo;
+        printf("Drive %s\n", *d);
+        if (mmc_get_hwinfo(p_cdio, &hwinfo)) {
+          printf("%-8s: %s\n%-8s: %s\n%-8s: %s\n",
+                 "Vendor"  , hwinfo.psz_vendor, 
+                 "Model"   , hwinfo.psz_model, 
+                 "Revision", hwinfo.psz_revision);
+        }
+        if (p_cdio) cdio_destroy(p_cdio);
       }
     }
     cdio_free_device_list(device_list);
@@ -918,7 +916,7 @@ main(int argc, char *argv[])
   discmode = cdio_get_discmode(p_cdio);
   if ( 0 == opts.no_disc_mode ) {
     printf("Disc mode is listed as: %s\n", 
-	   discmode2str[discmode]);
+           discmode2str[discmode]);
   }
 
   if (cdio_is_discmode_dvd(discmode) && !opts.show_dvd) {
@@ -941,11 +939,11 @@ main(int argc, char *argv[])
 
   if (!opts.no_tracks) {
     printf("CD-ROM Track List (%i - %i)\n" NORMAL, 
-	   i_first_track, i_tracks);
+           i_first_track, i_tracks);
 
     printf("  #: MSF       LSN    Type   Green? Copy?");
     if ( CDIO_DISC_MODE_CD_DA == discmode 
-	 || CDIO_DISC_MODE_CD_MIXED == discmode )
+         || CDIO_DISC_MODE_CD_MIXED == discmode )
       printf(" Channels Premphasis?");
     printf("\n");
   }
@@ -966,14 +964,14 @@ main(int argc, char *argv[])
     psz_msf = cdio_msf_to_str(&msf);
     if (i == CDIO_CDROM_LEADOUT_TRACK) {
       if (!opts.no_tracks) {
-	lsn_t lsn= cdio_msf_to_lsn(&msf);
+        lsn_t lsn= cdio_msf_to_lsn(&msf);
         long unsigned int i_bytes_raw = lsn * CDIO_CD_FRAMESIZE_RAW;
         long unsigned int i_bytes_formatted = lsn - start_track_lsn;
 
-	printf( "%3d: %8s  %06lu leadout ", (int) i, psz_msf,
-		(long unsigned int) lsn );
+        printf( "%3d: %8s  %06lu leadout ", (int) i, psz_msf,
+                (long unsigned int) lsn );
 
-	switch (discmode) {
+        switch (discmode) {
         case CDIO_DISC_MODE_DVD_ROM:
         case CDIO_DISC_MODE_DVD_RAM:
         case CDIO_DISC_MODE_DVD_R:
@@ -981,36 +979,36 @@ main(int argc, char *argv[])
         case CDIO_DISC_MODE_DVD_PR:
         case CDIO_DISC_MODE_DVD_PRW:
         case CDIO_DISC_MODE_DVD_OTHER:
-	case CDIO_DISC_MODE_CD_DATA:
-	  i_bytes_formatted *= CDIO_CD_FRAMESIZE;
-	  break;
-	case CDIO_DISC_MODE_CD_DA:
-	  i_bytes_formatted *= CDIO_CD_FRAMESIZE_RAW;
-	  break;
-	case CDIO_DISC_MODE_CD_XA:
-	case CDIO_DISC_MODE_CD_MIXED:
-	  i_bytes_formatted *= CDIO_CD_FRAMESIZE_RAW0;
-	  break;
-	default:
-	  i_bytes_formatted *= CDIO_CD_FRAMESIZE_RAW;
-	}
-	
-	if (i_bytes_raw < 1024) 
-	  printf( "(%lu bytes", i_bytes_raw );
-	if (i_bytes_raw < 1024 * 1024) 
-	  printf( "(%lu KB", i_bytes_raw / 1024 );
-	else 
-	  printf( "(%lu MB", i_bytes_raw / (1024 * 1024) );
+        case CDIO_DISC_MODE_CD_DATA:
+          i_bytes_formatted *= CDIO_CD_FRAMESIZE;
+          break;
+        case CDIO_DISC_MODE_CD_DA:
+          i_bytes_formatted *= CDIO_CD_FRAMESIZE_RAW;
+          break;
+        case CDIO_DISC_MODE_CD_XA:
+        case CDIO_DISC_MODE_CD_MIXED:
+          i_bytes_formatted *= CDIO_CD_FRAMESIZE_RAW0;
+          break;
+        default:
+          i_bytes_formatted *= CDIO_CD_FRAMESIZE_RAW;
+        }
+        
+        if (i_bytes_raw < 1024) 
+          printf( "(%lu bytes", i_bytes_raw );
+        if (i_bytes_raw < 1024 * 1024) 
+          printf( "(%lu KB", i_bytes_raw / 1024 );
+        else 
+          printf( "(%lu MB", i_bytes_raw / (1024 * 1024) );
 
-	printf(" raw, ");
-	if (i_bytes_formatted < 1024) 
-	  printf( "%lu bytes", i_bytes_formatted );
-	if (i_bytes_formatted < 1024 * 1024) 
-	  printf( "%lu KB", i_bytes_formatted / 1024 );
-	else 
-	  printf( "%lu MB", i_bytes_formatted / (1024 * 1024) );
+        printf(" raw, ");
+        if (i_bytes_formatted < 1024) 
+          printf( "%lu bytes", i_bytes_formatted );
+        if (i_bytes_formatted < 1024 * 1024) 
+          printf( "%lu KB", i_bytes_formatted / 1024 );
+        else 
+          printf( "%lu MB", i_bytes_formatted / (1024 * 1024) );
 
-	printf(" formatted)\n");
+        printf(" formatted)\n");
 
       }
       free(psz_msf);
@@ -1018,51 +1016,51 @@ main(int argc, char *argv[])
     } else if (!opts.no_tracks) {
       const char *psz;
       printf( "%3d: %8s  %06lu %-6s %-5s  ", (int) i, psz_msf,
-	      (long unsigned int) cdio_msf_to_lsn(&msf),
-	      track_format2str[track_format],
-	      cdio_get_track_green(p_cdio, i)? "true " : "false");
+              (long unsigned int) cdio_msf_to_lsn(&msf),
+              track_format2str[track_format],
+              cdio_get_track_green(p_cdio, i)? "true " : "false");
 
       switch (cdio_get_track_copy_permit(p_cdio, i)) {
       case CDIO_TRACK_FLAG_FALSE:
-	psz="no";
-	break;
+        psz="no";
+        break;
       case CDIO_TRACK_FLAG_TRUE:
-	psz="yes";
-	break;
+        psz="yes";
+        break;
       case CDIO_TRACK_FLAG_UNKNOWN:
-	psz="?";
-	break;
+        psz="?";
+        break;
       case CDIO_TRACK_FLAG_ERROR:
       default:
-	psz="error";
-	break;
+        psz="error";
+        break;
       }
       printf("%-5s", psz);
-	
+        
       if (TRACK_FORMAT_AUDIO == track_format) {
-	const int i_channels = cdio_get_track_channels(p_cdio, i);
-	switch (cdio_get_track_preemphasis(p_cdio, i)) {
-	case CDIO_TRACK_FLAG_FALSE:
-	  psz="no";
-	  break;
-	case CDIO_TRACK_FLAG_TRUE:
-	  psz="yes";
-	  break;
-	case CDIO_TRACK_FLAG_UNKNOWN:
-	  psz="?";
-	  break;
-	case CDIO_TRACK_FLAG_ERROR:
-	default:
-	  psz="error";
-	  break;
-	}
-	if (i_channels == -2) 
-	  printf(" %-8s", "unknown");
-	else if (i_channels == -1) 
-	  printf(" %-8s", "error");
-	else 
-	  printf(" %-8d", i_channels);
-	printf( " %s", psz);
+        const int i_channels = cdio_get_track_channels(p_cdio, i);
+        switch (cdio_get_track_preemphasis(p_cdio, i)) {
+        case CDIO_TRACK_FLAG_FALSE:
+          psz="no";
+          break;
+        case CDIO_TRACK_FLAG_TRUE:
+          psz="yes";
+          break;
+        case CDIO_TRACK_FLAG_UNKNOWN:
+          psz="?";
+          break;
+        case CDIO_TRACK_FLAG_ERROR:
+        default:
+          psz="error";
+          break;
+        }
+        if (i_channels == -2) 
+          printf(" %-8s", "unknown");
+        else if (i_channels == -1) 
+          printf(" %-8s", "error");
+        else 
+          printf(" %-8d", i_channels);
+        printf( " %s", psz);
       }
       
       printf( "\n" );
@@ -1087,15 +1085,26 @@ main(int argc, char *argv[])
     report(stdout, "Media Catalog Number (MCN): "); fflush(stdout);
 
     media_catalog_number = cdio_get_mcn(p_cdio);
-  
+
     if (NULL == media_catalog_number) {
       if (i_read_cap & CDIO_DRIVE_CAP_READ_MCN)
-	report(stdout, "not available\n");
+        report(stdout, "not available\n");
       else
-	report(stdout, "not supported by drive/driver\n");
+        report(stdout, "not supported by drive/driver\n");
     } else {
       report(stdout, "%s\n", media_catalog_number);
       free(media_catalog_number);
+    }
+
+    if (i_read_cap & CDIO_DRIVE_CAP_READ_ISRC) {
+      driver_return_code_t status;
+      for (i = 1; i <= i_tracks; i++) {
+        bzero(&isrc, sizeof(isrc));
+        status = mmc_isrc_track_read_subchannel (p_cdio, i, isrc);
+        if (status == DRIVER_OP_SUCCESS && isrc[0] != '\0') {
+          report(stdout, "TRACK %2d ISRC: %s\n", i, isrc); fflush(stdout);
+        }
+      }
     }
 
     /* List number of sessions */
@@ -1103,75 +1112,75 @@ main(int argc, char *argv[])
       lsn_t i_last_session;
       report(stdout, "Last CD Session LSN: "); fflush(stdout);
       if (DRIVER_OP_SUCCESS == cdio_get_last_session(p_cdio, &i_last_session)) 
-	{
-	  report(stdout, "%d\n", i_last_session);
-	} else {
-	  if (i_misc_cap & CDIO_DRIVE_CAP_MISC_MULTI_SESSION)
-	    report(stdout, "failed\n");
-	  else
-	    report(stdout, "not supported by drive/driver\n");
-	}
+        {
+          report(stdout, "%d\n", i_last_session);
+        } else {
+          if (i_misc_cap & CDIO_DRIVE_CAP_MISC_MULTI_SESSION)
+            report(stdout, "failed\n");
+          else
+            report(stdout, "not supported by drive/driver\n");
+        }
     }
       
     /* get audio status from subchannel */
     if  ( CDIO_DISC_MODE_CD_DA == discmode ||
-	  CDIO_DISC_MODE_CD_MIXED == discmode ) {
+          CDIO_DISC_MODE_CD_MIXED == discmode ) {
       cdio_subchannel_t subchannel;
       driver_return_code_t rc;
       
       memset(&subchannel, 0, sizeof(subchannel));
       report( stdout, "audio status: "); fflush(stdout);
-	
+        
       rc = cdio_audio_read_subchannel(p_cdio, &subchannel);
       
       if (DRIVER_OP_SUCCESS == rc) {
-	bool b_volume   = false;
-	bool b_position = false;
+        bool b_volume   = false;
+        bool b_position = false;
 
-	report ( stdout, "%s\n", 
-		 mmc_audio_state2str(subchannel.audio_status) );
+        report ( stdout, "%s\n", 
+                 mmc_audio_state2str(subchannel.audio_status) );
 
-	switch (subchannel.audio_status) {
-	case CDIO_MMC_READ_SUB_ST_PLAY:
-	  b_playing_audio = true;
-	  /* Fall through to next case. */
-	case CDIO_MMC_READ_SUB_ST_PAUSED:
-	  b_position      = true;
-	  /* Fall through to next case. */
-	case CDIO_MMC_READ_SUB_ST_NO_STATUS:
-	  b_volume        = true;
-	  break;
-	default:                     
-	  ;
-	}
+        switch (subchannel.audio_status) {
+        case CDIO_MMC_READ_SUB_ST_PLAY:
+          b_playing_audio = true;
+          /* Fall through to next case. */
+        case CDIO_MMC_READ_SUB_ST_PAUSED:
+          b_position      = true;
+          /* Fall through to next case. */
+        case CDIO_MMC_READ_SUB_ST_NO_STATUS:
+          b_volume        = true;
+          break;
+        default:                     
+          ;
+        }
 
-	if (b_position)
-	  report( stdout, " at: %02d:%02d abs / %02d:%02d track %d\n",
-		  subchannel.abs_addr.m,
-		  subchannel.abs_addr.s,
-		  subchannel.rel_addr.m,
-		  subchannel.rel_addr.s,
-		  subchannel.track );
-	
-	if (b_volume) {
-	  cdio_audio_volume_t volume;
+        if (b_position)
+          report( stdout, " at: %02d:%02d abs / %02d:%02d track %d\n",
+                  subchannel.abs_addr.m,
+                  subchannel.abs_addr.s,
+                  subchannel.rel_addr.m,
+                  subchannel.rel_addr.s,
+                  subchannel.track );
+        
+        if (b_volume) {
+          cdio_audio_volume_t volume;
 
-	  if (DRIVER_OP_SUCCESS == cdio_audio_get_volume (p_cdio, &volume)) {
-	    uint8_t i=0;
-	    for (i=0; i<4; i++) {
-	      uint8_t i_level     = volume.level[i];
-	      report( stdout, 
-		      "volume level port %d: %3d (0..255) %3d (0..100)\n",
-		      i, i_level, (i_level*100+128) / 256 );
-	    }
-	    
-	  } else 
-	    report( stdout, " can't get volume levels\n" );
-	}
+          if (DRIVER_OP_SUCCESS == cdio_audio_get_volume (p_cdio, &volume)) {
+            uint8_t i=0;
+            for (i=0; i<4; i++) {
+              uint8_t i_level     = volume.level[i];
+              report( stdout, 
+                      "volume level port %d: %3d (0..255) %3d (0..100)\n",
+                      i, i_level, (i_level*100+128) / 256 );
+            }
+            
+          } else 
+            report( stdout, " can't get volume levels\n" );
+        }
       } else if (DRIVER_OP_UNSUPPORTED == rc) {
-	report( stdout, "not implemented\n" );
+        report( stdout, "not implemented\n" );
       } else {
-	report( stdout, "FAILED\n" );
+        report( stdout, "FAILED\n" );
       }
     }
   }
@@ -1180,8 +1189,8 @@ main(int argc, char *argv[])
     if (b_playing_audio) {
       /* Running a CD Analysis would mess up audio playback.*/
       report(stdout, 
-	     "CD Analysis Report omitted because audio is currently "
-	     "playing.\n");
+             "CD Analysis Report omitted because audio is currently "
+             "playing.\n");
       myexit(p_cdio, EXIT_SUCCESS);
     }
 
@@ -1196,76 +1205,76 @@ main(int argc, char *argv[])
       
       /* CD-I/Ready says start_track_lsn <= 30*75 then CDDA */
       if (start_track_lsn > 100 /* 100 is just a guess */) {
-	fs = cdio_guess_cd_type(p_cdio, 0, 1, &cdio_iso_analysis);
-	if ((CDIO_FSTYPE(fs)) != CDIO_FS_UNKNOWN)
-	  fs |= CDIO_FS_ANAL_HIDDEN_TRACK;
-	else {
-	  fs &= ~CDIO_FS_MASK; /* del filesystem info */
-	  report( stdout, "Oops: %lu unused sectors at start, "
-		 "but hidden track check failed.\n",
-		 (long unsigned int) start_track_lsn);
-	}
+        fs = cdio_guess_cd_type(p_cdio, 0, 1, &cdio_iso_analysis);
+        if ((CDIO_FSTYPE(fs)) != CDIO_FS_UNKNOWN)
+          fs |= CDIO_FS_ANAL_HIDDEN_TRACK;
+        else {
+          fs &= ~CDIO_FS_MASK; /* del filesystem info */
+          report( stdout, "Oops: %lu unused sectors at start, "
+                 "but hidden track check failed.\n",
+                 (long unsigned int) start_track_lsn);
+        }
       }
       print_analysis(ms_offset, cdio_iso_analysis, fs, first_data, num_audio,
-		     i_tracks, i_first_track, 
-		     cdio_get_track_format(p_cdio, 1), p_cdio);
+                     i_tracks, i_first_track, 
+                     cdio_get_track_format(p_cdio, 1), p_cdio);
     } else {
       /* we have data track(s) */
       int j;
 
       for (j = 2, i = first_data; i <= i_tracks; i++) {
-	msf_t msf;
-	track_format_t track_format = cdio_get_track_format(p_cdio, i);
+        msf_t msf;
+        track_format_t track_format = cdio_get_track_format(p_cdio, i);
       
-	cdio_get_track_msf(p_cdio, i, &msf);
+        cdio_get_track_msf(p_cdio, i, &msf);
 
-	switch ( track_format ) {
-	case TRACK_FORMAT_AUDIO:
-	case TRACK_FORMAT_ERROR:
-	  break;
-	case TRACK_FORMAT_CDI:
-	case TRACK_FORMAT_XA:
-	case TRACK_FORMAT_DATA: 
-	case TRACK_FORMAT_PSX: 
-	  ;
-	}
-	
-	start_track_lsn = (i == 1) ? 0 : cdio_msf_to_lsn(&msf);
-	
-	/* save the start of the data area */
-	if (i == first_data) 
-	  data_start = start_track_lsn;
-	
-	/* skip tracks which belong to the current walked session */
-	if (start_track_lsn < data_start + cdio_iso_analysis.isofs_size)
-	  continue;
-	
-	fs = cdio_guess_cd_type(p_cdio, start_track_lsn, i, 
-				&cdio_iso_analysis);
+        switch ( track_format ) {
+        case TRACK_FORMAT_AUDIO:
+        case TRACK_FORMAT_ERROR:
+          break;
+        case TRACK_FORMAT_CDI:
+        case TRACK_FORMAT_XA:
+        case TRACK_FORMAT_DATA: 
+        case TRACK_FORMAT_PSX: 
+          ;
+        }
+        
+        start_track_lsn = (i == 1) ? 0 : cdio_msf_to_lsn(&msf);
+        
+        /* save the start of the data area */
+        if (i == first_data) 
+          data_start = start_track_lsn;
+        
+        /* skip tracks which belong to the current walked session */
+        if (start_track_lsn < data_start + cdio_iso_analysis.isofs_size)
+          continue;
+        
+        fs = cdio_guess_cd_type(p_cdio, start_track_lsn, i, 
+                                &cdio_iso_analysis);
 
-	if (i > 1) {
-	  /* track is beyond last session -> new session found */
-	  ms_offset = start_track_lsn;
-	  report( stdout, "session #%d starts at track %2i, LSN: %lu,"
-		  " ISO 9660 blocks: %6i\n",
-		  j++, i, (unsigned long int) start_track_lsn, 
-		  cdio_iso_analysis.isofs_size);
-	  report( stdout, "ISO 9660: %i blocks, label `%.32s'\n",
-		  cdio_iso_analysis.isofs_size, cdio_iso_analysis.iso_label);
-	  fs |= CDIO_FS_ANAL_MULTISESSION;
-	} else {
-	  print_analysis(ms_offset, cdio_iso_analysis, fs, first_data, 
-			 num_audio, i_tracks, i_first_track, 
-			 track_format, p_cdio);
-	}
+        if (i > 1) {
+          /* track is beyond last session -> new session found */
+          ms_offset = start_track_lsn;
+          report( stdout, "session #%d starts at track %2i, LSN: %lu,"
+                  " ISO 9660 blocks: %6i\n",
+                  j++, i, (unsigned long int) start_track_lsn, 
+                  cdio_iso_analysis.isofs_size);
+          report( stdout, "ISO 9660: %i blocks, label `%.32s'\n",
+                  cdio_iso_analysis.isofs_size, cdio_iso_analysis.iso_label);
+          fs |= CDIO_FS_ANAL_MULTISESSION;
+        } else {
+          print_analysis(ms_offset, cdio_iso_analysis, fs, first_data, 
+                         num_audio, i_tracks, i_first_track, 
+                         track_format, p_cdio);
+        }
 
-	if ( !(CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660 ||
-	       CDIO_FSTYPE(fs) == CDIO_FS_ISO_HFS  ||
-	       /* CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660_INTERACTIVE) 
-		  && (fs & XA))) */
-	       CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660_INTERACTIVE) )
-	  /* no method for non-ISO9660 multisessions */
-	  break;
+        if ( !(CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660 ||
+               CDIO_FSTYPE(fs) == CDIO_FS_ISO_HFS  ||
+               /* CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660_INTERACTIVE) 
+                  && (fs & XA))) */
+               CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660_INTERACTIVE) )
+          /* no method for non-ISO9660 multisessions */
+          break;
       }
     }
   }
