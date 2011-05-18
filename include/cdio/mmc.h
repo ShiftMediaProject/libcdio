@@ -528,15 +528,28 @@ typedef struct mmc_cdb_s {
 driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
                                            mmc_audio_volume_t *p_volume);
   
-/**
-  Read Audio Subchannel information
-  
-  @param p_cdio the CD object to be acted upon.
-  @param p_subchannel place for returned subchannel information
-*/
-driver_return_code_t
-mmc_audio_read_subchannel (CdIo_t *p_cdio, 
+  /**
+     Read Audio Subchannel information
+     
+     @param p_cdio the CD object to be acted upon.
+     @param p_subchannel place for returned subchannel information
+  */
+    driver_return_code_t
+    mmc_audio_read_subchannel (CdIo_t *p_cdio, 
                            /*out*/ cdio_subchannel_t *p_subchannel);
+  
+  /**
+     Read ISRC Subchannel information. Contributed by
+     Scot C. Bontrager (scot@indievisible.org) 
+     May 15, 2011 -
+     
+     @param p_cdio the CD object to be acted upon.
+     @param track the track you to get ISRC info
+     @param buf place to put ISRC info
+  */
+    driver_return_code_t
+    mmc_isrc_track_read_subchannel (CdIo_t *p_cdio,  /*in*/ const track_t track,
+                                    /*out*/ char *p_isrc);
   
   /**
     Return a string containing the name of the audio state as returned from

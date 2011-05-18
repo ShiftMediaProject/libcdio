@@ -476,6 +476,41 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
 }
 
 /**
+  Read ISRC Subchannel information. Contributed by
+  Scot C. Bontrager (scot@indievisible.org) 
+  May 15, 2011 -
+  
+  @param p_cdio the CD object to be acted upon.
+  @param track the track you to get ISRC info
+  @param buf place to put ISRC info
+*/
+driver_return_code_t
+mmc_isrc_track_read_subchannel (CdIo_t *p_cdio,  /*in*/ const track_t track,
+                                /*out*/ char *p_isrc)
+{
+  mmc_cdb_t cdb = {{0, }};
+  driver_return_code_t i_rc;
+  char buf[28] = { 0, };
+
+  if (!p_cdio) return DRIVER_OP_UNINIT;
+  
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
+  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
+
+  cdb.field[1] = 0x0;
+  cdb.field[2] = 1 << 6;
+  cdb.field[3] = CDIO_SUBCHANNEL_TRACK_ISRC; /* 0x03 */
+  cdb.field[6] = track;
+
+  i_rc = mmc_run_cmd(p_cdio, mmc_timeout_ms, &cdb, SCSI_MMC_DATA_READ,
+                     sizeof(buf), buf);
+  if (DRIVER_OP_SUCCESS == i_rc) {
+    strncpy(p_isrc,  &buf[9], sizeof(buf)-9);
+  }
+  return i_rc;
+}
+
+/**
    Get the block size used in read requests, via MMC (e.g. READ_10, 
    READ_MSF, ...)
 
@@ -1014,9 +1049,6 @@ mmc_set_blocksize ( const CdIo_t *p_cdio, uint16_t i_blocksize)
     mmc_set_blocksize_private (p_cdio->env, p_cdio->op.run_mmc_cmd, 
                                i_blocksize);
 }
-
-
-
 
 
 /* 
