@@ -1,7 +1,8 @@
 /*
   $Id: cdda-player.c,v 1.50 2008/06/19 15:44:14 flameeyes Exp $
 
-  Copyright (C) 2005, 2006, 2008, 2009, 2010 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2006, 2008, 2009, 2010, 2011
+  Rocky Bernstein <rocky@gnu.org>
 
   Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
   Copyright (C) 1997, 1998 
@@ -371,31 +372,46 @@ set_volume_level(CdIo_t *p_cdio, uint8_t i_level)
   
 }
 
-/* Add 1 to volume level. If we are at the max or min value wrap
-   around. If volume level is undefined, then this means we
-   could not get the current value and we'll' set it to 50 the midway
-   point.
-   Return status of setting the volume level.
-*/
+/* Add 1 to volume level. If we are at the min value, nothing is done.
+
+   We used to wrap at the boundaries but this is probably wrong because
+   is assumes someone:
+     * looks at the display while listening,
+     * knows that 99 is the maximum value.
+
+   See issue #33333
+
+   f volume level is undefined, then this means we could not get the
+   current value and we'll' set it to 50 the midway point.  Return
+   status of setting the volume level.  */
 static bool
 decrease_volume_level(CdIo_t *p_cdio)
 {
-  if (i_volume_level == -1) i_volume_level = 50;
-  if (i_volume_level == 0)  i_volume_level = 100;
+  if (i_volume_level == -1) i_volume_level = 51;
+  if (i_volume_level <= 0)  i_volume_level = 1;
   return set_volume_level(p_cdio, --i_volume_level);
 }
 
-/* Subtract 1 to volume level. If we are at the max or min value wrap
-   around. If volume level is undefined, then this means we
-   could not get the current value and we'll' set it to 50 the midway
-   point.
-   Return status of setting the volume level.
-*/
+/* Subtract 1 to volume level. If we are at the max or min value,
+   nothing is done. 
+
+   We used to wrap at the boundaries but this is probably wrong because
+   is assumes someone:
+     * looks at the display while listening,
+     * knows that 99 is the maximum value.
+
+   See issue #33333
+
+   If volume level is undefined, then this means we could not get the
+   current value and we'll' set it to 50 the midway point.  
+
+   Return status of setting the volume level.  */
 static bool
 increase_volume_level(CdIo_t *p_cdio)
 {
-  if (i_volume_level == -1) i_volume_level = 50;
-  if (i_volume_level == 100) i_volume_level = -1;
+  if (i_volume_level == -1) i_volume_level = 49;
+  if (i_volume_level <= 0) i_volume_level = 0;
+  if (i_volume_level >= 98) i_volume_level = 98;
   return set_volume_level(p_cdio, ++i_volume_level);
 }
 
