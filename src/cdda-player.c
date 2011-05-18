@@ -372,7 +372,8 @@ set_volume_level(CdIo_t *p_cdio, uint8_t i_level)
   
 }
 
-/* Add 1 to volume level. If we are at the min value, nothing is done.
+/* Subtract one from the volume level. If we are at the minimum value,
+ * nothing is done.
 
    We used to wrap at the boundaries but this is probably wrong because
    is assumes someone:
@@ -381,9 +382,10 @@ set_volume_level(CdIo_t *p_cdio, uint8_t i_level)
 
    See issue #33333
 
-   f volume level is undefined, then this means we could not get the
-   current value and we'll' set it to 50 the midway point.  Return
-   status of setting the volume level.  */
+   If the volume level is undefined, then this means we could not get
+   the current value and we'll' set it to 50 the midway point.  
+
+   Return the status of setting the volume level.  */
 static bool
 decrease_volume_level(CdIo_t *p_cdio)
 {
@@ -392,8 +394,8 @@ decrease_volume_level(CdIo_t *p_cdio)
   return set_volume_level(p_cdio, --i_volume_level);
 }
 
-/* Subtract 1 to volume level. If we are at the max or min value,
-   nothing is done. 
+/* Add 1 to the volume level. If we are at the maximum value, nothing
+   is done.
 
    We used to wrap at the boundaries but this is probably wrong because
    is assumes someone:
@@ -405,13 +407,13 @@ decrease_volume_level(CdIo_t *p_cdio)
    If volume level is undefined, then this means we could not get the
    current value and we'll' set it to 50 the midway point.  
 
-   Return status of setting the volume level.  */
+   Return the status of setting the volume level.  */
 static bool
 increase_volume_level(CdIo_t *p_cdio)
 {
   if (i_volume_level == -1) i_volume_level = 49;
   if (i_volume_level <= 0) i_volume_level = 0;
-  if (i_volume_level >= 98) i_volume_level = 98;
+  if (i_volume_level > 98) i_volume_level = 98;
   return set_volume_level(p_cdio, ++i_volume_level);
 }
 
