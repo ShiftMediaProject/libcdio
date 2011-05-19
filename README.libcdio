@@ -16,11 +16,11 @@ versions of GNU tar can do this in one step like this:
 
 3. If step 2 works, Now compile everything:
 
-  make
+  make  # or remake
 
 4. Run the regression tests if you want:
 
-  make check
+  make check  # or remake check
 
 5. Install. If the preceeding steps were successful:
 
@@ -118,3 +118,69 @@ seems to lag behind.
 
 Of late FreeBSD folks have been pretty good about testing new releases
 and reporting problems. 
+
+Specific libcdio configure options and environment variables
+---------------
+
+  --disable-cxx           Disable C++ bindings (default enabled)
+  --enable-cpp-progs      make C++ example programs (default enabled)
+  --disable-example-progs Don't build libcdio sample programs
+  --disable-dependency-tracking  speeds up one-time build
+  --enable-dependency-tracking   do not reject slow dependency extractors
+  --disable-largefile     omit support for large files
+  --enable-shared[=PKGS]  build shared libraries [default=yes]
+  --enable-static[=PKGS]  build static libraries [default=yes]
+  --enable-fast-install[=PKGS]
+                          optimize for fast installation [default=yes]
+  --disable-libtool-lock  avoid locking (might break parallel builds)
+  --disable-joliet        don't include Joliet extension support (default
+                          enabled)
+  --disable-rpath         do not hardcode runtime library paths
+  --enable-rock           include Rock-Ridge extension support (default
+                          enabled)
+  --enable-cddb           include CDDB lookups in cd_info (default enabled)
+  --enable-vcd-info       include Video CD Info from libvcd
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --without-cd-drive      don't build program cd-drive (default with)
+  --without-cd-info       don't build program cd-info (default with)
+  --without-cd-paranoia   don't build program cd-paranoia and paranoia
+                          libraries (default with)
+  --without-cdda-player   don't build program cdda-player (default with)
+  --with-cd-paranoia-name name to use as the cd-paranoia program name (default
+                          cd-paranoia)
+  --without-cd-read       don't build program cd-read (default with)
+  --without-iso-info      don't build program iso-info (default with)
+  --without-iso-read      don't build program iso-read (default with)
+  --without-versioned-libs
+                          build versioned library symbols (default enabled if
+                          you have GNU ld)
+  --with-pic              try to use only PIC/non-PIC objects [default=use
+                          both]
+  --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-gnu-ld           assume the C compiler uses GNU ld default=no
+  --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
+  --without-libiconv-prefix     don't search for libiconv in includedir and libdir
+
+Some influential environment variables:
+  CC          C compiler command
+  CFLAGS      C compiler flags
+  LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
+              nonstandard directory <lib dir>
+  LIBS        libraries to pass to the linker, e.g. -l<library>
+  CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I<include dir> if
+              you have headers in a nonstandard directory <include dir>
+  CXX         C++ compiler command
+  CXXFLAGS    C++ compiler flags
+  CPP         C preprocessor
+  CXXCPP      C++ preprocessor
+  PKG_CONFIG  path to pkg-config utility
+  CDDB_CFLAGS C compiler flags for CDDB, overriding pkg-config
+  CDDB_LIBS   linker flags for CDDB, overriding pkg-config
+  VCDINFO_CFLAGS
+              C compiler flags for VCDINFO, overriding pkg-config
+  VCDINFO_LIBS
+              linker flags for VCDINFO, overriding pkg-config
+

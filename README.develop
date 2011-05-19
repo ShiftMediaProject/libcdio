@@ -2,6 +2,7 @@ Software you'll need to build a development version libcdio
   - git
   - autoconf (which contains programs autoconf and autoreconf)
   - automake 
+  - libtool (for building shared libraries)
   - m4 (used by autoconf)
   - texinfo (for building documentation)
   - help2man (turns help for libcdio standalone programs into manual pages)
@@ -17,7 +18,7 @@ If you check out the source code, you'll need git installed. See the git
 tab of the libcdio project https://savannah.gnu.org/git/?group=libcdio
 which has an additional link for how to get "git".
 
-One you have git:
+Once you have git:
 
    git clone git://git.savannah.gnu.org/libcdio.git   
 
@@ -28,4 +29,3 @@ shell script
   sh ./autogen.sh 
 
 Please see README.libcdio and follow those instructions starting at step 3.
-Normally autogen doesn't 
