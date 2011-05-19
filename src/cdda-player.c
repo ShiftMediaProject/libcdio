@@ -943,7 +943,7 @@ usage(char *prog)
 	    "way on a spare console and forget about it...\n"
 	    "\n"
 	    "(c) 1997,98 Gerd Knorr <kraxel@goldbach.in-berlin.de>\n"
-	    "(c) 2005, 2006 Rocky Bernstein <rocky@panix.com>\n"
+	    "(c) 2005, 2006 Rocky Bernstein <rocky@gnu.org>\n"
 	    , prog, prog);
 }
 

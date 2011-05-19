@@ -120,16 +120,16 @@ rm -rf ${RPM_BUILD_ROOT}/%{_mandir}
 * Sun Feb 15 2004 Manfred Tremmel <Manfred.Tremmel@iiv.de>
 - some little changes
 
-* Sat Feb 14 2004 Rocky Bernstein <rocky@panix.com>
+* Sat Feb 14 2004 Rocky Bernstein <rocky@gnu.org>
 - require vcdimager 0.7.20, small rpm fixes
 
-* Tue Sep 9 2003 Rocky Bernstein <rocky@panix.com>
+* Tue Sep 9 2003 Rocky Bernstein <rocky@gnu.org>
 - small fixes really from Frantisek Dvorak <valtri@atlas.cz>
 
 * Sun Aug 30 2003 Frantisek Dvorak <valtri@atlas.cz>
 - two files added
 
-* Wed Aug 06 2003 Rocky Bernstein <rocky@panix.com>
+* Wed Aug 06 2003 Rocky Bernstein <rocky@gnu.org>
 - fixes really Manfred Tremmel <Manfred.Tremmel@iiv.de>
   at http://www.iiv.de/schwinde/buerger/tremmel/
 

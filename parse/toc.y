@@ -1,7 +1,5 @@
 /*
-    $Id: toc.y,v 1.3 2008/03/23 17:21:34 karl Exp $
-
-    Copyright (C) 2005, 2008 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

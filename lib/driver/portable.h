@@ -1,7 +1,5 @@
 /*
-  $Id: portable.h,v 1.4 2008/04/22 15:29:12 karl Exp $
-
-  Copyright (C) 2006, 2008 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by

@@ -1,7 +1,5 @@
 /*
-    $Id: scsi_mmc.h,v 1.46 2008/03/25 15:59:09 karl Exp $
-
-    Copyright (C) 2003, 2004, 2005, 2008 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2003, 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

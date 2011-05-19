@@ -1,7 +1,5 @@
 /*
-  $Id: header.c,v 1.2 2008/04/11 15:44:00 karl Exp $
-
-  Copyright (C) 2004 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2004 Rocky Bernstein <rocky@gnu.org
   Copyright (C) 1998 Monty xiphmont@mit.edu
   and Heiko Eissfeldt heiko@escape.colossus.de
   

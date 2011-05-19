@@ -57,5 +57,3 @@ players mplayerxp (http://mplayerxp.sourceforge.net/) and gmerlin
 extracting and editing ISO-9600 images (http://kiso.sourceforge.net),
 and a Samba vfs module that allows exporting a CD without mounting it
 (http://ontologistics.net/OpenSource/Samba/index.php).
-
-$Id: README,v 1.13 2006/03/28 14:48:44 rocky Exp $

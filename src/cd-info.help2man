@@ -7,5 +7,5 @@ Shows Information about a CD or CD-image.
 \&\f(CWcd-drive(1)\fR for CD-ROM characteristics;
 \&\f(CWiso-info(1)\fR for information about an ISO-9660 image.
 [AUTHOR] 
-Rocky Bernstein rocky@panix.com, based on the cdinfo program by 
+Rocky Bernstein rocky@gnu.org, based on the cdinfo program by 
 Gerd Knorr <kraxel@bytesex.org> and Heiko Eissfeldt <heiko@hexco.de>

@@ -1,0 +1,19 @@
+If you are building from the git repository, you will
+need the software listed in INSTALL. Additionally you will need:
+
+   - git (version control for checking out source code)
+   - autoconf (which contains programs autoconf and autoreconf)
+   - automake
+   - libtool  (for building shared libraries),
+   - m4 (used by autoconf)
+   - texinfo (for building documentation)
+   - help2man (turns help for libcdio standalone programs into manual pages)
+
+If you have this
+
+   cd <parent directory for source code>
+   git clone git://git.savannah.gnu.org/libcdio.git
+   cd libcdio 
+   sh ./autogen.sh 
+
+Then follow instructions in INSTALL.

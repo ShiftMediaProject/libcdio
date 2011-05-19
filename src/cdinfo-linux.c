@@ -218,7 +218,7 @@ char *devname = NULL;
 char *program_name;
 
 const char *argp_program_version     = PROGRAM_NAME CDINFO_VERSION;
-const char *argp_program_bug_address = "rocky@panix.com";
+const char *argp_program_bug_address = "rocky@gnu.org";
 
 /* Program documentation. */
 const char doc[] = 

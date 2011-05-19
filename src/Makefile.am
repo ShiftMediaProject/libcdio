@@ -94,4 +94,4 @@ if MAINTAINER_MODE
 $(man_MANS): %.1: %$(EXEEXT) %.help2man 
 	-$(HELP2MAN) --opt-include=$(srcdir)/$(<:.exe=).help2man --no-info --output=$@ ./$<
 endif
-MAINTAINERCLEANFILES = $(man_MANS)
+MAINTAINERCLEANFILES = $(man_MANS) *.rej *.orig

@@ -124,7 +124,7 @@ check_iso.sh: $(top_builddir)/config.status check_iso.sh.in
 make-executable:
 
 # cvs2cl
-MAINTAINERCLEANFILES = ChangeLog
+MAINTAINERCLEANFILES = ChangeLog *.rej *.orig
 
 if MAINTAINER_MODE
 

@@ -1,7 +1,5 @@
 /*
-    $Id: rock.h,v 1.15 2008/03/25 15:59:09 karl Exp $
-
-    Copyright (C) 2005, 2006 2008 Rocky Bernstein <rocky@panix.com>
+    Copyright (C) 2005, 2006 2008 Rocky Bernstein <rocky@gnu.org>
 
     See also rock.c by Eric Youngdale (1993) from GNU/Linux 
     This is Copyright 1993 Yggdrasil Computing, Incorporated

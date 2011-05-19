@@ -1,7 +1,5 @@
 /*
-  $Id: xa.c,v 1.8 2008/04/24 07:28:00 rocky Exp $
-
-  Copyright (C) 2003, 2005, 2008 Rocky Bernstein <rocky@panix.com>
+  Copyright (C) 2003, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify

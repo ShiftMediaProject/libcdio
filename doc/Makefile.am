@@ -1,5 +1,3 @@
-#   $Id: Makefile.am,v 1.9 2008/04/17 17:39:47 karl Exp $
-#
 #   Copyright (C) 2003, 2004, 2008 Rocky Bernstein <rocky@gnu.org>
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,13 +30,13 @@ html: libcdio.html
 %.ps.gz: %.ps
 	gzip -9c $< > $@
 
-.texi.pdf:
+.texi.pdf: stamp-vti
 	texi2pdf $<
 
-.texi.html:
+.texi.html: stamp-vti
 	texi2html $<
 
-.texi.txt:
+.texi.txt: 
 	makeinfo --no-headers $< > $@
 
 all-formats: pdf dvi txt ps html
