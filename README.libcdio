@@ -1,6 +1,6 @@
 See README.develop if you plan use the git or development version.
 
-0. To compile the source, you'll need a POSIX shell and utilites (sh,
+0. To compile the source, you'll need a POSIX shell and utilities (sh,
 sed, grep, cat), an ANSI C compiler like gcc, and a POSIX "make"
 program like GNU make. You may also want to have "libtool" installed
 for building portable shared libraries.
@@ -12,9 +12,9 @@ versions of GNU tar can do this in one step like this:
 2. Go into the directory, run "configure" followed by "make":
 
   cd libcdio-*
-  sh ./configure MAKE=gmake 
+  sh ./configure MAKE=make  # or gmake or remake
 
-3. If step 2 works, Now compile everything:
+3. If step 2 works, compile everything:
 
   make  # or remake
 
@@ -22,7 +22,7 @@ versions of GNU tar can do this in one step like this:
 
   make check  # or remake check
 
-5. Install. If the preceeding steps were successful:
+5. Install. If the preceding steps were successful:
 
   make install  # you may have to do this as root 
                 # or "sudo make install"
@@ -30,7 +30,7 @@ versions of GNU tar can do this in one step like this:
 
 If you have problems linking libcdio or libiso9660, see the BSD
 section.  You might also try the option --without-versioned-libs. However
-this option does help with the situtation described below so it is
+this option does help with the situation described below so it is
 preferred all other things being equal.
 
 If you are debugging libcdio, the libtool and the dynamic libraries
@@ -113,7 +113,7 @@ and ask others to test out.
 Steve Schultz has done a great job making BSDI CD support look like
 GNU/Linux and usually he let's me know where I've blown things on BSDI
 and Darwin. Usage on Darwin has been picking up although Darwin is in
-a world of its own so support for that (e.g. issuing MMC commnads)
+a world of its own so support for that (e.g. issuing MMC commands)
 seems to lag behind.
 
 Of late FreeBSD folks have been pretty good about testing new releases

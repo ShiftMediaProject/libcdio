@@ -453,7 +453,7 @@ esac
 AC_SUBST(LT_NO_UNDEFINED)
 
 AC_MSG_CHECKING(extern long timezone variable)
-AC_LINK_IFELSE([
+AC_LINK_IFELSE([AC_LANG_SOURCE([[
 #ifdef NEED_TIMEZONEVAR
 #define timezonevar 1
 #endif
@@ -464,6 +464,7 @@ int main(int argc, char **argv) {
   long test_timezone = timezone;
   return 0; 
 }
+]])
 ], [AC_MSG_RESULT(yes); 
    AC_DEFINE([HAVE_TIMEZONE_VAR], 1, 
 	[Define if you have an extern long timenzone variable.])],
