@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2009
+  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2009, 2011
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -277,9 +277,9 @@ init_solaris (_img_private_t *p_env)
  */
 static driver_return_code_t
 run_mmc_cmd_solaris(void *p_user_data, unsigned int i_timeout_ms,
-		    unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		    cdio_mmc_direction_t e_direction, 
-		    unsigned int i_buf, /*in/out*/ void *p_buf)
+                    unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
+                    cdio_mmc_direction_t e_direction, 
+                    unsigned int i_buf, /*in/out*/ void *p_buf)
 {
   const _img_private_t *p_env = p_user_data;
   struct uscsi_cmd cgc;
@@ -1038,7 +1038,7 @@ cdio_get_devices_solaris (void)
 
     /* Check if this is a directory, if so it's probably Solaris media */
     if(S_ISDIR(st.st_mode)) {
-      sprintf(volpath, "%s/s0", globbuf.gl_pathv[i]);
+      snprintf(volpath, sizeof(volpath), "%s/s0", globbuf.gl_pathv[i]);
       if(stat(volpath, &st) == 0)
         cdio_add_device_list(&drives, volpath, &i_files);
         }else
@@ -1049,7 +1049,7 @@ cdio_get_devices_solaris (void)
   if(stat(DEFAULT_CDIO_DEVICE, &st) == 0) {
     /* Check if this is a directory, if so it's probably Solaris media */
     if(S_ISDIR(st.st_mode)) {
-      sprintf(volpath, "%s/s0", DEFAULT_CDIO_DEVICE);
+      snprintf(volpath, sizeof(volpath), "%s/s0", DEFAULT_CDIO_DEVICE);
       if(stat(volpath, &st) == 0)
         cdio_add_device_list(&drives, volpath, &i_files);
     }else
