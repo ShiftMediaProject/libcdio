@@ -335,6 +335,7 @@ main(int argc, char *argv[])
 	i_volume_level = atoi(optarg);
 	todo = SET_VOLUME;
       }
+      break;
     case 't':
       if (NULL != (h = strchr(optarg,'-'))) {
 	*h = 0;

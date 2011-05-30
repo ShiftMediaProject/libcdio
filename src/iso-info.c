@@ -209,6 +209,8 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
   }
 
   if (NULL == entlist) {
+    free(translated_name);
+    free(dirlist);
     report( stderr, "Error getting above directory information\n" );
     free(translated_name);
     return;

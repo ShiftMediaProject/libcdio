@@ -198,11 +198,13 @@ check_mounts_linux(const char *mtab)
           }
         }
       }
-      if ( strcmp(mnt_type, "iso9660") == 0 ) {
-        if (is_cdrom_linux(mnt_dev, mnt_type) > 0) {
-          free(mnt_type);
-          endmntent(mntfp);
-          return mnt_dev;
+      if ( mnt_type && mnt_dev ) {
+	if ( strcmp(mnt_type, "iso9660") == 0 ) {
+	  if (is_cdrom_linux(mnt_dev, mnt_type) > 0) {
+	    free(mnt_type);
+	    endmntent(mntfp);
+	    return mnt_dev;
+	  }
         }
       }
       free(mnt_dev);

@@ -1048,7 +1048,7 @@ driver_return_code_t
 cdio_set_blocksize ( const CdIo_t *p_cdio, int i_blocksize )
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
-  if (p_cdio->op.set_blocksize) return DRIVER_OP_UNSUPPORTED;
+  if (!p_cdio->op.set_blocksize) return DRIVER_OP_UNSUPPORTED;
   return p_cdio->op.set_blocksize(p_cdio->env, i_blocksize);
 }
 

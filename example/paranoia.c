@@ -131,6 +131,10 @@ main(int argc, const char *argv[])
       track_t i_track    = cdda_sector_gettrack(d, i_first_lsn);
       lsn_t   i_last_lsn = cdda_track_lastsector(d, i_track);
       int     fd         = creat("track1s.wav", 0644);
+      if (-1 == fd) {
+        printf("Unable to create track1s.wav\n");
+        exit(1);
+      }
 
       /* For demo purposes we'll read only 300 frames (about 4
 	 seconds).  We don't want this to take too long. On the other

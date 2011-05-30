@@ -528,6 +528,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
   if (NULL == p_entlist) {
     report( stderr, "Error getting above directory information\n" );
     free(translated_name);
+    free(p_dirlist);
     return;
   }
 

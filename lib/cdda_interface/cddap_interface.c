@@ -281,6 +281,7 @@ verify_read_command(cdrom_drive_t *d)
 
   if(!audioflag){
     cdmessage(d,"\tCould not find any audio tracks on this disk.\n");
+    free(buff);
     return(-403);
   }
 

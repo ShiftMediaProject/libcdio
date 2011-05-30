@@ -192,11 +192,8 @@ iso9660_open_ext_private (const char *psz_path,
   return p_iso;
 
  error:
-  if (p_iso && p_iso->stream) {
-    cdio_stdio_destroy(p_iso->stream);
-
-    if (p_iso) free(p_iso);
-  }
+  if (p_iso && p_iso->stream) cdio_stdio_destroy(p_iso->stream);
+  free(p_iso);
   
   return NULL;
 }
@@ -1031,6 +1028,7 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 	  if (!trans_fname) {
 	    cdio_warn("can't allocate %lu bytes", 
 		      (long unsigned int) strlen(p_stat->filename));
+	    free(p_stat);
 	    return NULL;
 	  }
 	  trans_len = iso9660_name_translate_ext(p_stat->filename, trans_fname,
@@ -1137,6 +1135,7 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 	  if (!trans_fname) {
 	    cdio_warn("can't allocate %lu bytes", 
 		      (long unsigned int) strlen(p_stat->filename));
+	    free(p_stat);
 	    return NULL;
 	  }
 	  trans_len = iso9660_name_translate_ext(p_stat->filename, trans_fname, 

@@ -182,6 +182,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
   long unsigned int footer_start;
   long unsigned int size;
   char *footer_buf = NULL;
+  if (!p_env) return false;
   size = cdio_stream_stat (p_env->gen.data_source);
   if (-1 == size) return false;
 

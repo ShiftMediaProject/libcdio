@@ -176,7 +176,7 @@ cdio_read_mode1_sector (const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   if (p_cdio->op.read_mode1_sector) {
     return p_cdio->op.read_mode1_sector(p_cdio->env, p_buf, i_lsn, b_form2);
   } else if (p_cdio->op.lseek && p_cdio->op.read) {
-    char buf[CDIO_CD_FRAMESIZE] = { 0, };
+    char buf[M2RAW_SECTOR_SIZE] = { 0, };
     if (0 > cdio_lseek(p_cdio, CDIO_CD_FRAMESIZE*i_lsn, SEEK_SET))
       return -1;
     if (0 > cdio_read(p_cdio, buf, CDIO_CD_FRAMESIZE))

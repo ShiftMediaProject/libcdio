@@ -545,10 +545,13 @@ main(int argc, char *argv[])
 	  break;
 	case READ_M1F2:
 	  blocklen=M2RAW_SECTOR_SIZE;
+	  break;
 	case READ_M2F1:
 	  blocklen=CDIO_CD_FRAMESIZE;
+	  break;
 	case READ_M2F2:
 	  blocklen=M2F2_SECTOR_SIZE;
+	  break;
 	default: ;
 	}
       }

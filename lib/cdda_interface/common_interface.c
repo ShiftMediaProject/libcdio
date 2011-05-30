@@ -58,8 +58,8 @@ data_bigendianp(cdrom_drive_t *d)
   float *a=calloc(1024,sizeof(float));
   float *b=calloc(1024,sizeof(float));
   long readsectors=5;
-  int16_t *buff=malloc(readsectors*CDIO_CD_FRAMESIZE_RAW);
-  memset(buff, 0, readsectors*CDIO_CD_FRAMESIZE_RAW);
+  int16_t *buff=malloc(readsectors*CDIO_CD_FRAMESIZE_RAW*sizeof(int16_t));
+  memset(buff, 0, readsectors*CDIO_CD_FRAMESIZE_RAW*sizeof(int16_t));
 
   /* look at the starts of the audio tracks */
   /* if real silence, tool in until some static is found */

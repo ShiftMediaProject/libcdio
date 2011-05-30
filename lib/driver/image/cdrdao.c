@@ -621,18 +621,18 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  goto format_error;
 	}
       } else if (0 == strcmp ("COPY", psz_keyword)) {
-	if (NULL != cd)
+	if (NULL != cd && i >= 0)
 	  cd->tocent[i].flags |= CDIO_TRACK_FLAG_COPY_PERMITTED;
       } else if (0 == strcmp ("PRE_EMPHASIS", psz_keyword)) {
-	if (NULL != cd)
+	if (NULL != cd && i >= 0)
 	  cd->tocent[i].flags |= CDIO_TRACK_FLAG_PRE_EMPHASIS;
 	/* TWO_CHANNEL_AUDIO */
       } else if (0 == strcmp ("TWO_CHANNEL_AUDIO", psz_keyword)) {
-	if (NULL != cd)
+	if (NULL != cd && i >= 0)
 	  cd->tocent[i].flags &= ~CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO;
 	/* FOUR_CHANNEL_AUDIO */
       } else if (0 == strcmp ("FOUR_CHANNEL_AUDIO", psz_keyword)) {
-	if (NULL != cd)
+	if (NULL != cd && i >= 0)
 	  cd->tocent[i].flags |= CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO;
 	
 	/* ISRC "CCOOOYYSSSSS" */

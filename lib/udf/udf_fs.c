@@ -658,8 +658,9 @@ udf_readdir(udf_dirent_t *p_udf_dirent)
 	uint8_t data[UDF_BLOCKSIZE] = {0};
 	udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) &data;
 
-	udf_read_sectors(p_udf, p_udf_fe, p_udf->i_part_start 
-			 + p_udf_dirent->fid->icb.loc.lba, 1);
+	if (DRIVER_OP_SUCCESS != udf_read_sectors(p_udf, p_udf_fe, p_udf->i_part_start 
+			 + p_udf_dirent->fid->icb.loc.lba, 1))
+		return NULL;
       
 	memcpy(&(p_udf_dirent->fe), p_udf_fe, 
 	       sizeof(udf_file_entry_t) + p_udf_fe->i_alloc_descs 

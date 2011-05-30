@@ -40,7 +40,7 @@
 
 static void 
 print_mode_sense (const char *psz_drive, const char *six_or_ten,
-		  const uint8_t buf[22])
+		  const uint8_t buf[30])
 {
   printf("Mode sense %s information for %s:\n", six_or_ten, psz_drive);
   if (buf[2] & 0x01) {
@@ -210,7 +210,7 @@ main(int argc, const char *argv[])
     printf("Couldn't find CD\n");
     return 77;
   } else {
-    uint8_t buf[22] = { 0, };    /* Place to hold returned data */
+    uint8_t buf[30] = { 0, };    /* Place to hold returned data */
     char *psz_cd = cdio_get_default_device(p_cdio);
     if (DRIVER_OP_SUCCESS == mmc_mode_sense_6(p_cdio, buf, sizeof(buf),
 					      CDIO_MMC_CAPABILITIES_PAGE) ) {

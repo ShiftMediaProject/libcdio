@@ -325,7 +325,6 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
 	snprintf( d->drive_model, i_len, "%s %s %s %s", 
 		  hw_info.psz_vendor, hw_info.psz_model, hw_info.psz_revision,
 		  description );
-	free(description);
       } else {
 	d->drive_model=malloc( i_len );
 	snprintf( d->drive_model, i_len, "%s %s %s", 
@@ -337,5 +336,8 @@ cdda_identify_device_cdio(CdIo_t *p_cdio, const char *psz_device,
     }
   }
   
+  if (description)
+    free(description);
+
   return(d);
 }

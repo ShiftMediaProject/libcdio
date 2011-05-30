@@ -192,9 +192,10 @@ offset_to_lba(const udf_dirent_t *p_udf_dirent, off_t i_offset,
 	 */
 	*pi_max_size = 0;
 	printf("Don't know how to data in ICB handle yet\n");
-	
+	return CDIO_INVALID_LBA;
       case ICBTAG_FLAG_AD_EXTENDED:
 	printf("Don't know how to handle extended addresses yet\n");
+	return CDIO_INVALID_LBA;
       default:
 	printf("Unsupported allocation descriptor %d\n", addr_ilk);
 	return CDIO_INVALID_LBA;

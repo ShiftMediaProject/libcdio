@@ -413,6 +413,7 @@ mmc_set_blocksize_private ( void *p_env,
 
   memset (&mh, 0, sizeof (mh));
   mh.block_desc_length = 0x08;
+  /* while i_blocksize is uint16_t, this expression is always 0 */
   mh.block_length_hi   = (i_blocksize >> 16) & 0xff;
   mh.block_length_med  = (i_blocksize >>  8) & 0xff;
   mh.block_length_lo   = (i_blocksize >>  0) & 0xff;

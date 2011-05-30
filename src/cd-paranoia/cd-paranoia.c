@@ -342,7 +342,7 @@ callback(long int inpos, paranoia_cb_mode_t function)
   
   if (callscript)
     fprintf(stderr, "##: %d [%s] @ %ld\n",
-	    function, ((int) function >= -2 && (int) function <= 13 ?
+	    function, ((int) function >= -2 && (int) function < 13 ?
 		       callback_strings[function+2] : ""),
 	    inpos);
 
@@ -1138,6 +1138,11 @@ main(int argc,char *argv[])
 	if (optind+1<argc) {
 	  if (!strcmp(argv[optind+1],"-") ){
 	    out = dup(fileno(stdout));
+	    if(out==-1){
+	      report2("Cannot dupplicate stdout: %s",
+		      strerror(errno));
+	      exit(1);
+	    }
 	    if(batch)
 	      report("Are you sure you wanted 'batch' "
 		     "(-B) output with stdout?");
