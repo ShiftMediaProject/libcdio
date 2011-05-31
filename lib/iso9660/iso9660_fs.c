@@ -799,6 +799,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
           free(p_psz_out);
         }
         else {
+          free(p_stat);
           return NULL;
         }
       }
