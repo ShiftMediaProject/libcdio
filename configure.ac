@@ -676,7 +676,7 @@ cat > include/cdio/cdio_config.h << EOF
     version of config.h
 */
 EOF
-head -n 254 config.h >> include/cdio/cdio_config.h
+cp config.h include/cdio/cdio_config.h
 ]],[[]])
 
 AC_OUTPUT
