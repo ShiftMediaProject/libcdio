@@ -1,6 +1,4 @@
-#   $Id: Makefile.am,v 1.34 2008/03/20 19:02:37 karl Exp $
-#
-#   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2004, 2006, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -23,6 +21,9 @@
 if BUILD_CD_PARANOIA
 paranoiaheaders = cdda.h cdtext.h 
 endif
+
+cdio_config.h: $(top_srcdir)/config.h
+	cp  $(top_srcdir)/config.h cdio_config.h
 
 libcdioincludedir=$(includedir)/cdio
 libcdioinclude_HEADERS = \

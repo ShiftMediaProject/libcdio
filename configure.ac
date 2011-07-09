@@ -666,19 +666,6 @@ AC_CONFIG_FILES([test/check_cue.sh], [chmod +x test/check_cue.sh])
 AC_CONFIG_FILES([test/check_iso.sh], [chmod +x test/check_iso.sh])
 AC_CONFIG_FILES([test/check_nrg.sh], [chmod +x test/check_nrg.sh])
 AC_CONFIG_FILES([test/check_paranoia.sh], [chmod +x test/check_paranoia.sh])
-
-AC_CONFIG_COMMANDS([default],[[
-# Make sure scripts are executable
-# This is a big hack, but I don't know any other way around it.
-cat > include/cdio/cdio_config.h << EOF
-/** \file cdio_config.h 
- *  \brief  configuration-time settings useful in compilation; a run-time
-    version of config.h
-*/
-EOF
-cp config.h include/cdio/cdio_config.h
-]],[[]])
-
 AC_OUTPUT
 
 AC_MSG_NOTICE([
