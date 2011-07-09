@@ -1,7 +1,6 @@
 /*
-    $Id: paranoia.h,v 1.15 2008/03/25 15:59:09 karl Exp $
-
-    Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2011 
+    Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 1998 Monty xiphmont@mit.edu
   
     This program is free software: you can redistribute it and/or modify
@@ -126,7 +125,8 @@ extern "C" {
     @param whence  like corresponding parameter in libc's lseek, e.g. 
                    SEEK_SET or SEEK_END.
   */
-  extern lsn_t cdio_paranoia_seek(cdrom_paranoia_t *p, off_t seek, int whence);
+  extern lsn_t cdio_paranoia_seek(cdrom_paranoia_t *p, int32_t seek, 
+				  int whence);
 
   /*!
     Reads the next sector of audio data and returns a pointer to a full

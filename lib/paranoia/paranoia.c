@@ -1,7 +1,5 @@
 /*
-  $Id: paranoia.c,v 1.27 2008/04/17 17:39:48 karl Exp $
-
-  Copyright (C) 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2006, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software: you can redistribute it and/or modify
@@ -2472,7 +2470,7 @@ paranoia_modeset(cdrom_paranoia_t *p, int mode_flags)
   SEEK_SET or SEEK_END.
 */
 lsn_t
-paranoia_seek(cdrom_paranoia_t *p, off_t seek, int whence)
+paranoia_seek(cdrom_paranoia_t *p, int32_t seek, int whence)
 {
   long sector;
   long ret;
