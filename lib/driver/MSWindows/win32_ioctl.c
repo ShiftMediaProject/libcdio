@@ -405,7 +405,7 @@ set_scsi_tuple_win32ioctl(_img_private_t *env)
                       &bytesReturned,
                       FALSE
                       )) {
-    snprintf(tuple, sizeof(tuple) "%d,%d,%d,%d",
+    snprintf(tuple, sizeof(tuple), "%d,%d,%d,%d",
             scsiAddress->PortNumber,
             scsiAddress->PathId, 
             scsiAddress->TargetId, 
@@ -902,7 +902,7 @@ init_win32ioctl (_img_private_t *env)
     }
     env->h_device_handle = hDevice;
 #else
-    snprintf( psz_win32_drive, sizeof(psz_win32_drive, 
+    snprintf( psz_win32_drive, sizeof(psz_win32_drive), 
                                       "\\\\.\\%c:", 
                                       env->gen.source_name[len-2] );
 
