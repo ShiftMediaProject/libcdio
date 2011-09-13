@@ -1198,8 +1198,8 @@ main(int argc, char *argv[])
     report(stdout, STRONG "CD Analysis Report\n" NORMAL);
     
     /* try to find out what sort of CD we have */
-    if (0 == num_data) {
-      /* no data track, may be a "real" audio CD or hidden track CD */
+    if (num_audio > 0) {
+      /* may be a "real" audio CD or hidden track CD */
       
       msf_t msf;
       cdio_get_track_msf(p_cdio, i_first_track, &msf);
@@ -1219,7 +1219,8 @@ main(int argc, char *argv[])
       print_analysis(ms_offset, cdio_iso_analysis, fs, first_data, num_audio,
                      i_tracks, i_first_track, 
                      cdio_get_track_format(p_cdio, 1), p_cdio);
-    } else {
+    }
+    if (num_data > 0) {
       /* we have data track(s) */
       int j;
 
