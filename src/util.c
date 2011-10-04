@@ -51,15 +51,16 @@ print_version (char *program_name, const char *version,
 	       int no_header, bool version_only)
 {
   
-  if (no_header == 0)
+  if (no_header == 0) {
     report( stdout,  
 	    "%s version %s\nCopyright (c) 2003, 2004, 2005, 2007, 2008, 2011 R. Bernstein\n",
 	    program_name, version);
-  report( stdout,  
-	  _("This is free software; see the source for copying conditions.\n\
+    report( stdout,  
+            _("This is free software; see the source for copying conditions.\n\
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n\
 PARTICULAR PURPOSE.\n\
 "));
+  }
 
   if (version_only) {
     char *default_device;
