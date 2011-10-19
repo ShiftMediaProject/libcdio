@@ -11,6 +11,12 @@ version 0.83 (git)
   added iso9660_set_{d,l}time_with_timezone
 - Add mmc_get_disk_erasable
 - Update MMC Feature Profile list, DVD Book types
+- Reduce range of seek in paranoia_seek to be int32_t
+- Remove some potential flaws found by Coverty's static analysis tool
+- Add ISRC track info to cd-info output.
+- Don't wrap-around volume adjustment for cdda-player. 
+- Handle double-byte strings in CD-text
+- --no-header on cd-info omits copyright and warranty
 
 version 0.82
 2009-10-27
