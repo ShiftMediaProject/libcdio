@@ -61,6 +61,7 @@ static const char _rcsid[] = "$Id: solaris.c,v 1.12 2008/04/22 15:29:12 karl Exp
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <dirent.h>
 #include "cdtext_private.h"
 
 /* not defined in dkio.h yet */
@@ -71,7 +72,9 @@ static const char _rcsid[] = "$Id: solaris.c,v 1.12 2008/04/22 15:29:12 karl Exp
 typedef  enum {
     _AM_NONE,
     _AM_SUN_CTRL_ATAPI,
-    _AM_SUN_CTRL_SCSI
+    _AM_SUN_CTRL_SCSI,
+    _AM_MMC_RDWR,
+    _AM_MMC_RDWR_EXCL
 #if FINISHED
     _AM_READ_CD,
     _AM_READ_10
@@ -97,6 +100,8 @@ typedef struct {
 static track_format_t get_track_format_solaris(void *p_user_data, 
                                                track_t i_track);
 
+static char ** cdio_get_devices_solaris_cXtYdZs2(int flag);
+
 static access_mode_t 
 str_to_access_mode_solaris(const char *psz_access_mode) 
 {
@@ -108,6 +113,10 @@ str_to_access_mode_solaris(const char *psz_access_mode)
     return _AM_SUN_CTRL_SCSI; /* force ATAPI to be SCSI */
   else if (!strcmp(psz_access_mode, "SCSI"))
     return _AM_SUN_CTRL_SCSI;
+  else if (!strcmp(psz_access_mode, "MMC_RDWR"))
+    return _AM_MMC_RDWR;
+  else if (!strcmp(psz_access_mode, "MMC_RDWR_EXCL"))
+    return _AM_MMC_RDWR_EXCL;
   else {
     cdio_warn ("unknown access type: %s. Default SCSI used.", 
                psz_access_mode);
@@ -249,17 +258,86 @@ audio_stop_solaris (void *p_user_data)
   return ioctl(p_env->gen.fd, CDROMSTOP);
 }
 
+static int
+cdio_decode_btl_number(char **cpt, int stopper, int *no)
+{
+  *no = 0;
+  for ((*cpt)++; **cpt != stopper; (*cpt)++) {
+    if (**cpt < '0' || **cpt > '9')
+      return 0;
+    *no = *no * 10 + **cpt - '0';
+  }
+  return 1;
+}
+
+/* Read bus, target, lun from name "cXtYdZs2".
+   Return 0 if name is not of the desired form.
+*/
+static int
+cdio_decode_btl_solaris(char *name, int *busno, int *tgtno, int *lunno,
+                        int flag)
+{
+  char *cpt;
+  int ret;
+
+  *busno = *tgtno = *lunno = -1;
+  cpt = name;
+  if (*cpt != 'c')
+    return 0;
+  ret = cdio_decode_btl_number(&cpt, 't', busno);
+  if (ret <= 0)
+    return ret;
+  ret = cdio_decode_btl_number(&cpt, 'd', tgtno);
+  if (ret <= 0)
+    return ret;
+  ret = cdio_decode_btl_number(&cpt, 's', lunno);
+  if (ret <= 0)
+    return ret;
+  cpt++;
+  if (*cpt != '2' || *(cpt + 1) != 0)
+    return 0;
+  return 1;
+}
+
+static int
+set_scsi_tuple_solaris (_img_private_t *p_env)
+{
+  int bus_no = -1, host_no = -1, channel_no = -1, target_no = -1, lun_no = -1;
+  int ret;
+  char tuple[160], *cpt;
+
+  cpt = strrchr(p_env->gen.source_name, '/');
+  if (cpt == NULL)
+    cpt = p_env->gen.source_name;
+  else
+    cpt++;
+  ret = cdio_decode_btl_solaris(cpt, &bus_no, &target_no, &lun_no, 0);
+  if (ret <= 0)
+    return(ret);
+  host_no = bus_no;
+  channel_no = 0;
+  sprintf(tuple, "%d,%d,%d,%d,%d",
+          bus_no, host_no, channel_no, target_no, lun_no);
+  p_env->gen.scsi_tuple = strdup(tuple);
+  return 1;
+}
+
 /*!
   Initialize CD device.
  */
 static bool
 init_solaris (_img_private_t *p_env)
 {
+  int open_flags = O_RDONLY | O_NDELAY;
 
-  if (!cdio_generic_init(p_env, O_RDONLY)) return false;
-  
-  p_env->access_mode = _AM_SUN_CTRL_SCSI;    
+  if (_AM_MMC_RDWR != p_env->access_mode &&
+      _AM_MMC_RDWR_EXCL != p_env->access_mode)
+    /* (was once set to _AM_SUN_CTRL_SCSI unconditionally) */
+    p_env->access_mode = _AM_SUN_CTRL_SCSI;
 
+  if (!cdio_generic_init(p_env, open_flags))
+    return false;
+  set_scsi_tuple_solaris(p_env);
   return true;
 }
 
@@ -281,22 +359,51 @@ run_mmc_cmd_solaris(void *p_user_data, unsigned int i_timeout_ms,
                     cdio_mmc_direction_t e_direction, 
                     unsigned int i_buf, /*in/out*/ void *p_buf)
 {
-  const _img_private_t *p_env = p_user_data;
+  _img_private_t *p_env = p_user_data;
   struct uscsi_cmd cgc;
   int i_rc;
+  cdio_mmc_request_sense_t sense;
+  unsigned char *u_sense = (unsigned char *) &sense;
 
   memset (&cgc, 0, sizeof (struct uscsi_cmd));
   cgc.uscsi_cdb = (caddr_t) p_cdb;
 
-  cgc.uscsi_flags = SCSI_MMC_DATA_READ == e_direction ? 
-    USCSI_READ : USCSI_WRITE;
+  /* See: man uscsi
+          http://docs.sun.com/app/docs/doc/816-5177/uscsi-7i?a=view
+  */
+  p_env->gen.scsi_mmc_sense_valid = 0;
+  memset(u_sense, 0, sizeof(sense));
+  cgc.uscsi_rqbuf = (caddr_t) u_sense;
+  cgc.uscsi_rqlen = sizeof(sense); 
 
+  /* No error messages, no retries, do not execute with other commands, 
+     request sense data
+  */
+  cgc.uscsi_flags = USCSI_SILENT | USCSI_DIAGNOSE | USCSI_ISOLATE
+                    | USCSI_RQENABLE;
+
+  if (SCSI_MMC_DATA_READ == e_direction)
+    cgc.uscsi_flags |= USCSI_READ;
+  else if (SCSI_MMC_DATA_WRITE == e_direction)
+    cgc.uscsi_flags |= USCSI_WRITE;
   cgc.uscsi_timeout = msecs2secs(i_timeout_ms);
   cgc.uscsi_bufaddr = p_buf;   
   cgc.uscsi_buflen  = i_buf;
   cgc.uscsi_cdblen  = i_cdb;
   
   i_rc = ioctl(p_env->gen.fd, USCSICMD, &cgc);
+
+  /* Record SCSI sense reply for API call mmc_last_cmd_sense().
+  */
+  if (sense.additional_sense_len) { /* sense data available */
+    int sense_size = sense.additional_sense_len + 8;
+
+    if (sense_size > sizeof(sense))
+      sense_size = sizeof(sense);
+    memcpy((void *) p_env->gen.scsi_mmc_sense,  &sense, sense_size);
+    p_env->gen.scsi_mmc_sense_valid = sense_size;
+  } 
+
   if (0 == i_rc) return DRIVER_OP_SUCCESS;
   if (-1 == i_rc) {
     cdio_info ("ioctl USCSICMD failed: %s", strerror(errno));  
@@ -629,6 +736,13 @@ eject_media_solaris (void *p_user_data) {
   return DRIVER_OP_ERROR;
 }
 
+static bool
+is_mmc_supported(void *user_data)
+{
+    _img_private_t *env = user_data;
+    return (_AM_NONE == env->access_mode) ? false : true;
+}
+
 /*!
   Return the value associated with the key "arg".
 */
@@ -645,9 +759,17 @@ get_arg_solaris (void *p_user_data, const char key[])
       return "ATAPI";
     case _AM_SUN_CTRL_SCSI:
       return "SCSI";
+    case _AM_MMC_RDWR:
+      return "MMC_RDWR";
+    case _AM_MMC_RDWR_EXCL:
+      return "MMC_RDWR_EXCL";
     case _AM_NONE:
       return "no access method";
     }
+  } else if (!strcmp (key, "scsi-tuple")) {
+    return p_env->gen.scsi_tuple;
+  } else if (!strcmp (key, "mmc-supported?")) {
+    return is_mmc_supported(p_user_data) ? "true" : "false";
   } 
   return NULL;
 }
@@ -674,6 +796,27 @@ get_blocksize_solaris (void *p_user_data) {
 
 /*!
   Return a string containing the default CD device if none is specified.
+  This call does not assume a fixed default drive address but rather uses
+  the first drive that gets enumerated by cdio_get_devices_solaris_cXtYdZs2().
+ */
+static char *
+cdio_get_default_cXtYdZs2(void)
+{
+  char **devlist, *result = NULL;
+
+  devlist = cdio_get_devices_solaris_cXtYdZs2(1);
+  if(devlist != NULL) {
+    if(devlist[0] != NULL)
+      result = strdup(devlist[0]);
+    free(devlist);
+  }
+  if(result != NULL)
+    return result;
+  return strdup(DEFAULT_CDIO_DEVICE);
+}
+
+/*!
+  Return a string containing the default CD device if none is specified.
  */
 char *
 cdio_get_default_device_solaris(void)
@@ -683,6 +826,14 @@ cdio_get_default_device_solaris(void)
   char *volume_action;
   char *device;
   struct stat stb;
+
+  /* vold and its directory /vol have been replaced by "Tamarack" which
+     is based on hald. This happened in 2006.
+  */
+  if(stat("/vol", &stb) == -1)
+    return cdio_get_default_cXtYdZs2();
+  if((stb.st_mode & S_IFMT) != S_IFDIR)
+    return cdio_get_default_cXtYdZs2();
 
   if ((volume_device = getenv("VOLUME_DEVICE")) != NULL &&
       (volume_name   = getenv("VOLUME_NAME"))   != NULL &&
@@ -1015,6 +1166,117 @@ close_tray_solaris (const char *psz_device)
 
 /*!
   Return an array of strings giving possible CD devices.
+  New method after demise of vold in 2006. 
+ */
+/* flag bit0= need only the first drive
+*/
+static char **
+cdio_get_devices_solaris_cXtYdZs2(int flag)
+{
+#ifndef HAVE_SOLARIS_CDROM
+  return NULL;
+#else
+  int busno, tgtno, lunno, ret;
+  char volpath[160];
+  char **drives = NULL;
+  unsigned int i_files=0;
+  DIR *dir = NULL;
+  struct dirent *entry;
+
+#ifdef LIBCDIO_SOLARIS_WITH_CD_INQUIRY
+  CdIo_t *cdio = NULL;
+  mmc_cdb_t cdb = {{0, }};
+  int timeout_ms;
+  driver_return_code_t i_status;
+  char reply[36];
+  static unsigned char spc_inquiry[] = { 0x12, 0, 0, 0, 36, 0 };
+#else
+  struct dk_cinfo cinfo;
+  int fd = -1;
+#endif
+
+  static int recursion = 0;
+
+  if (recursion) {
+    fprintf(stderr, "Program error ! Recursion of cdio_get_devices_solaris_cXtYdZs2()\n");
+    return NULL;
+  }
+  recursion = 1;
+
+  dir = opendir("/dev/rdsk");
+  if (dir == NULL) {
+    cdio_warn ("opendir(\"/dev/rdsk\") failed: %s\n", strerror(errno));  
+    goto ex;
+  }
+  while (1) {
+    entry = readdir(dir);
+    if (entry == NULL) {
+      if (errno) {
+        cdio_warn ("readdir(/dev/rdsk) failed: %s\n", strerror(errno));  
+        goto ex;
+      }
+  break;
+    }
+    ret = cdio_decode_btl_solaris(entry->d_name, &busno, &tgtno, &lunno, 0);
+    if (ret < 0)
+      goto ex;
+    if (ret == 0)
+  continue; /* not cXtYdZs2 */
+ 
+    if (strlen(entry->d_name) > sizeof(volpath) - 11)
+  continue;
+    sprintf(volpath, "/dev/rdsk/%s", entry->d_name);
+
+#ifdef LIBCDIO_SOLARIS_WITH_CD_INQUIRY
+
+    cdio = cdio_open_am_solaris(volpath, "MMC_RDWR");
+    if(cdio == NULL)
+  continue;
+    memcpy(cdb.field, spc_inquiry, 6);
+    timeout_ms = 10000;
+    i_status = run_mmc_cmd_solaris(cdio->env, timeout_ms,
+                                   6, &cdb, SCSI_MMC_DATA_READ,
+                                   (unsigned int) spc_inquiry[4], reply);
+    cdio_destroy(cdio);
+    cdio = NULL;
+    if (i_status != 0)
+  continue;
+
+    /* SBC-3 , table 83 , PERIPHERAL DEVICE TYPE : 5 = CD/DVD device */
+    if((reply[0] & 0x1F) != 5)
+  continue;
+
+#else /* LIBCDIO_SOLARIS_WITH_CD_INQUIRY */
+
+    fd = open(volpath, O_RDONLY | O_NDELAY);
+    if (fd < 0)
+  continue;
+    /* See man dkio */
+    ret = ioctl(fd, DKIOCINFO, &cinfo);
+    close(fd);
+    fd = -1;
+    if (ret < 0)
+  continue;
+    if (cinfo.dki_ctype != DKC_CDROM)
+  continue;
+
+#endif /* ! LIBCDIO_SOLARIS_WITH_CD_INQUIRY */
+
+    cdio_add_device_list(&drives, volpath, &i_files);
+    if(flag & 1)
+      goto ex; /* Only the first drive is desired */
+  }
+ex:;
+  recursion = 0;
+  if(dir != NULL)
+    closedir(dir);
+  cdio_add_device_list(&drives, NULL, &i_files);
+  return drives;
+#endif /*HAVE_SOLARIS_CDROM*/
+}
+
+/*!
+  Return an array of strings giving possible CD devices.
  */
 char **
 cdio_get_devices_solaris (void)
@@ -1029,6 +1291,17 @@ cdio_get_devices_solaris (void)
 #ifdef HAVE_GLOB_H
   unsigned int i;
   glob_t globbuf;
+#endif
+
+  /* vold and its directory /vol have been replaced by "Tamarack" which
+     is based on hald. This happened in 2006.
+  */
+  if(stat("/vol", &st) == -1)
+    return cdio_get_devices_solaris_cXtYdZs2(0);
+  if((st.st_mode & S_IFMT) != S_IFDIR)
+    return cdio_get_devices_solaris_cXtYdZs2(0);
+
+#ifdef HAVE_GLOB_H
 
   globbuf.gl_offs = 0;
   glob("/vol/dev/aliases/cdrom*", GLOB_DOOFFS, NULL, &globbuf);
@@ -1144,7 +1417,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
 
   _data                         = calloc(1, sizeof (_img_private_t));
 
-  _data->access_mode    = _AM_SUN_CTRL_SCSI;
+  _data->access_mode    = str_to_access_mode_solaris(access_mode);
   _data->gen.init       = false;
   _data->gen.fd         = -1;
   _data->gen.toc_init   = false;
