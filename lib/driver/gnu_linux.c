@@ -1631,7 +1631,7 @@ no_tuple:;
     env->gen.scsi_tuple = strdup("");
     return 0;
   }
-  sprintf(tuple, "%d,%d,%d,%d,%d",
+  snprintf(tuple, sizeof(tuple)-1, "%d,%d,%d,%d,%d",
           bus_no, host_no, channel_no, target_no, lun_no);
   env->gen.scsi_tuple = strdup(tuple);
   return 1; 
