@@ -45,6 +45,7 @@ INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
 cd-paranoia.$(OBJEXT): usage.h
 
+#: create header file used in help text: the "usage" help.
 if HAVE_PERL
 usage.h: usage.txt $(srcdir)/pod2c.pl
 	$(PERL) $(srcdir)/pod2c.pl usage.txt >usage.h
