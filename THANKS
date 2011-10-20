@@ -7,6 +7,10 @@ Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
 Carlo Bramini 
   fixes for Mingw+MSYS and DLL support
 
+Dagobert Michelsen
+  Solaris compilation issues and the wonderful test Solaris
+  test platform opencsw.org
+
 Diego 'Flameeyes' Pettenò 
   patches to FreeBSD and making Gentoo-friendly
 
