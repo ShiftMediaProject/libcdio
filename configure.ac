@@ -1,4 +1,4 @@
-dnl Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2010
+dnl Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
 dnl Rocky Bernstein <rocky@gnu.org>
 dnl
 dnl This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@ define(RELEASE_NUM, 83)
 define(CDIO_VERSION_STR, 0.$1git)
 
 AC_PREREQ(2.52)
-AC_REVISION([$Id: configure.ac,v 1.238 2008/11/27 21:09:51 rocky Exp $])dnl
 
 AC_INIT([libcdio], [CDIO_VERSION_STR(RELEASE_NUM)], [libcdio-help@gnu.org])
 AC_CONFIG_SRCDIR(src/cd-info.c)
@@ -187,10 +186,16 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h fcntl.h glob.h limits.h pwd.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h \
 		 sys/time.h sys/timeb.h sys/utsname.h)
-AC_CHECK_HEADERS(ncurses.h curses.h, break, [enable_cdda_player='no'])
 
-dnl FreeBSD 4 has getopt in unistd.h. So we include that before
-dnl getopt.h 
+# We have to disable cdda_player unless we have either ncurses.h or
+# curses.h
+if test $enable_cdda_player = 'yes' ; then 
+  enable_cdda_player='no'
+  AC_CHECK_HEADERS(ncurses.h curses.h, enable_cdda_player='yes')
+fi
+
+# FreeBSD 4 has getopt in unistd.h. So we include that before
+# getopt.h 
 AC_CHECK_HEADERS(unistd.h getopt.h)
 
 AC_SUBST(SBPCD_H)

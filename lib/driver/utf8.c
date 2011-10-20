@@ -1,6 +1,4 @@
 /*
-  $Id: utf8.c,v 1.5 2008/04/22 15:29:12 karl Exp $
-
   Copyright (C) 2006, 2008 Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
 
   This program is free software: you can redistribute it and/or modify
@@ -128,7 +126,7 @@ do_convert(iconv_t cd, char * src, int src_len,
   while(1)
     {
     
-    if(iconv(cd, &inbuf, &inbytesleft,
+    if(iconv(cd, (ICONV_CONST char **)&inbuf, &inbytesleft,
              &outbuf, &outbytesleft) == (size_t)-1)
       {
       switch(errno)

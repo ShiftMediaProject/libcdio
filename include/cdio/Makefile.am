@@ -23,7 +23,10 @@ paranoiaheaders = cdda.h cdtext.h
 endif
 
 cdio_config.h: $(top_srcdir)/config.h
-	cp  $(top_srcdir)/config.h cdio_config.h
+	echo  '#ifndef CDIO_CONFIG_H' > cdio_config.h
+	echo  '#define CDIO_CONFIG_H' >> cdio_config.h
+	cat  $(top_srcdir)/config.h >>cdio_config.h
+	echo '#endif /* #ifndef CDIO_CONFIG_H */' >>cdio_config.h
 
 libcdioincludedir=$(includedir)/cdio
 libcdioinclude_HEADERS = \
