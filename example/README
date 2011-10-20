@@ -1,11 +1,9 @@
-$Id: README,v 1.28 2007/08/12 00:56:10 rocky Exp $
-
 This directory contains some simple examples of the use of the libcdio
 library.
 
 One might also possibly find useful C code among the regression tests
-(directory test), e.g. testbincue.c, testdefault.c, testiso9660.c, 
-testparanoia.c, or testtoc.c 
+(directory test), e.g. testbincue.c, testdefault.c, testiso9660.c,
+testparanoia.c, or testtoc.c
 
 Larger more-complicated examples are the cd-drive, cd-info, cd-read,
 cdda-player, iso-info and iso-read programs in the src directory. 
@@ -14,7 +12,12 @@ And going further there's the cd-paranoia program (in
 src/cd-paranoia), and "real-world' code in the xine VCD plugin, or the
 vlc CD-DA plugin which are part of those distributions.
 
-Descriptions of the programs in this example directory are as follows...
+In some cases you may have to make small changes to compile these
+programs. For example, compiling using Solaris's C compiler with
+largefile support on a 64-bit system, may require changing C headers.
+
+Descriptions of the programs in this example directory are as
+follows...
 
 audio.c:     Sample program to show audio controls.
 
