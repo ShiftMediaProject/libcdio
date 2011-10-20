@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2010, 2011 Rocky Bernstein <rocky@gnu.org>
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
  
   This program is free software: you can redistribute it and/or modify
@@ -12,7 +12,7 @@
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
-n  You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* Rock Ridge Extensions to iso9660 */
@@ -36,7 +36,7 @@ n  You should have received a copy of the GNU General Public License
 
 #ifndef HAVE_S_ISLNK
 # define S_ISLNK(s) ((void)s,0)
-endif
+#endif
 #ifndef HAVE_S_ISSOCK
 # define S_ISSOCK(s) ((void)s,0)
 #endif
