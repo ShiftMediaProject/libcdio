@@ -316,7 +316,7 @@ set_scsi_tuple_solaris (_img_private_t *p_env)
     return(ret);
   host_no = bus_no;
   channel_no = 0;
-  sprintf(tuple, "%d,%d,%d,%d,%d",
+  snprintf(tuple, sizeof(tuple)-1, "%d,%d,%d,%d,%d",
           bus_no, host_no, channel_no, target_no, lun_no);
   p_env->gen.scsi_tuple = strdup(tuple);
   return 1;
@@ -839,12 +839,11 @@ cdio_get_default_device_solaris(void)
       (volume_name   = getenv("VOLUME_NAME"))   != NULL &&
       (volume_action = getenv("VOLUME_ACTION")) != NULL &&
       strcmp(volume_action, "insert") == 0) {
-
-    device = calloc(1, strlen(volume_device) 
-                                  + strlen(volume_name) + 2);
+    uint len = strlen(volume_device) + strlen(volume_name) + 2;
+    device = calloc(1, len);
     if (device == NULL)
       return strdup(DEFAULT_CDIO_DEVICE);
-    sprintf(device, "%s/%s", volume_device, volume_name);
+    snprintf(device, len, "%s/%s", volume_device, volume_name);
     if (stat(device, &stb) != 0 || !S_ISCHR(stb.st_mode)) {
       free(device);
       return strdup(DEFAULT_CDIO_DEVICE);
@@ -853,8 +852,9 @@ cdio_get_default_device_solaris(void)
   }
   /* Check if it could be a Solaris media*/
   if((stat(DEFAULT_CDIO_DEVICE, &stb) == 0) && S_ISDIR(stb.st_mode)) {
-    device = calloc(1, strlen(DEFAULT_CDIO_DEVICE) + 4);
-    sprintf(device, "%s/s0", DEFAULT_CDIO_DEVICE);
+    uint len = strlen(DEFAULT_CDIO_DEVICE + 4);
+    device = calloc(1, len);
+    snprintf(device, len, "%s/s0", DEFAULT_CDIO_DEVICE);
     return device;
   }
   return strdup(DEFAULT_CDIO_DEVICE);
@@ -1225,7 +1225,7 @@ cdio_get_devices_solaris_cXtYdZs2(int flag)
  
     if (strlen(entry->d_name) > sizeof(volpath) - 11)
   continue;
-    sprintf(volpath, "/dev/rdsk/%s", entry->d_name);
+    snprintf(volpath, sizeof(volpath), "/dev/rdsk/%s", entry->d_name);
 
 #ifdef LIBCDIO_SOLARIS_WITH_CD_INQUIRY
 
