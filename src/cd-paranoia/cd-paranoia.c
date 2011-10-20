@@ -1,8 +1,7 @@
 /*
-  $Id: cd-paranoia.c,v 1.37 2008/06/19 15:44:30 flameeyes Exp $
-
-  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
-            (C) 1998 Monty <xiphmont@mit.edu>
+  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2011
+  Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 1998 Monty <xiphmont@mit.edu>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,6 +21,7 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_STDIO_H

@@ -1,7 +1,5 @@
 /*
-  $Id: bincue.c,v 1.23 2008/04/21 18:30:22 karl Exp $
-
-  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008
+  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008, 2011
     Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     cue parsing routine adapted from cuetools
@@ -26,8 +24,6 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: bincue.c,v 1.23 2008/04/21 18:30:22 karl Exp $";
-
 #include "image.h"
 #include "cdio_assert.h"
 #include "cdio_private.h"

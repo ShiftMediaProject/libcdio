@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2008, 2009, 2010
+  Copyright (C) 2003, 2004, 2005, 2008, 2009, 2010, 2011
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -19,6 +19,7 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 #include <ctype.h>

@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2009, 2010 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2009, 2010, 2011
+   Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,6 +23,7 @@
 */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 #include <stdio.h>
 #ifdef HAVE_SYS_TYPES_H

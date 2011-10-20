@@ -1,7 +1,6 @@
 /*
-  $Id: cdio.c,v 1.14 2008/04/22 15:29:11 karl Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2008, 2011
+  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -21,6 +20,7 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 #include <sys/types.h>

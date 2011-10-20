@@ -1,8 +1,7 @@
 /*
-  $Id: filemode.c,v 1.4 2008/04/18 16:02:10 karl Exp $
   filemode.c -- make a string describing file modes
 
-  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1985, 1990, 1993, 1998-2000 Free Software Foundation, Inc.
 
   This program is free software: you can redistribute it and/or modify
@@ -21,6 +20,7 @@
 
 #if HAVE_CONFIG_H
 # include <config.h>
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_SYS_STAT_H

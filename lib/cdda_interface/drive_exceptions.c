@@ -1,7 +1,5 @@
 /*
-  $Id: drive_exceptions.c,v 1.1 2008/06/14 10:36:49 flameeyes Exp $
-
-  Copyright (C) 2004, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software: you can redistribute it and/or modify

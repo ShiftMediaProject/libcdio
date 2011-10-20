@@ -20,8 +20,9 @@
 
 #ifndef UTIL_H
 #define UTIL_H
-#ifdef HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H) && !defined(__CDIO_CONFIG_H__)
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 #include <stdio.h>

@@ -24,6 +24,7 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 static const char _rcsid[] = "$Id: bsdi.c,v 1.15 2008/04/22 15:29:11 karl Exp $";

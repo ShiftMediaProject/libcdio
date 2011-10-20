@@ -1,5 +1,6 @@
 /*
   Copyright (C) 2006, 2008 Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
+  Copyright (C) 2011 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -17,6 +18,7 @@
 /* UTF-8 support */
 
 #ifdef HAVE_CONFIG_H
+# define __CDIO_CONFIG_H__ 1
 # include "config.h"
 #endif
 

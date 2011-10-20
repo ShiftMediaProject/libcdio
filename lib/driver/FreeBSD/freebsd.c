@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2008, 2009, 2010 
+  Copyright (C) 2003, 2004, 2005, 2008, 2009, 2010, 2011
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -23,9 +23,8 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
-
-static const char _rcsid[] = "$Id: freebsd.c,v 1.38 2009/10/22 18:30:20 rocky Exp $";
 
 #include "freebsd.h"
 

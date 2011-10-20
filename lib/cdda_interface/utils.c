@@ -1,7 +1,5 @@
 /*
-  $Id: utils.c,v 1.4 2008/04/16 17:00:41 karl Exp $
-
-  Copyright (C) 2004, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2008, 2010, 2011 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software: you can redistribute it and/or modify
@@ -20,6 +18,7 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 #include "common_interface.h"

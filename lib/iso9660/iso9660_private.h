@@ -1,7 +1,6 @@
 /*
-  $Id: iso9660_private.h,v 1.5 2008/04/18 16:02:09 karl Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2008, 2011
+  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
   See also iso9660.h by Eric Youngdale (1993).
@@ -26,8 +25,9 @@
 #ifndef __CDIO_ISO9660_PRIVATE_H__
 #define __CDIO_ISO9660_PRIVATE_H__
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
+#if defined(HAVE_CONFIG_H) && !defined(__CDIO_CONFIG_H__)
+# include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 #include <cdio/types.h>
