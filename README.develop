@@ -1,5 +1,6 @@
 Software you'll need to build a development version libcdio
   - git
+  - GNU make (or even better "remake")
   - autoconf (which contains programs autoconf and autoreconf)
   - automake 
   - libtool (for building shared libraries)
