@@ -79,7 +79,7 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
-	testpregap.c.in \
+	testpregap.c.in check_legal.regex \
 	testgetdevices.c.in check_iso.sh.in
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
