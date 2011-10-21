@@ -44,9 +44,10 @@ Also included in the libcdio package are a number of utility programs:
 * cd-paranoia - port of cdparanoia (CD-DA jitter and error correction)
                 using libcdio back-end CD-reading. 
 
-At present, there is no support for writing CD's, nor is there any
-support for reading or writing DVDs. For some of these, there are
-other libraries (e.g. libdi, libscg, or libdvdread) may be helpful.
+There is very limited low-level support for MMC commands on some
+platforms. Using MMC writing can be done. However there is currently
+little higher level-support for writing. Other libraries like libburn,
+libdi, libscg, or libdvdread may be helpful.
 
 Some of the projects using libcdio are the Video CD authoring and
 ripping tools VCDImager (http://vcdimager.org), a navigation-capable
