@@ -1,8 +1,9 @@
 Software you'll need to build a development version libcdio
   - git
   - GNU make (or even better "remake")
-  - autoconf (which contains programs autoconf and autoreconf)
-  - automake 
+  - autoconf version 2.67 or better
+   (which contains programs autoconf and autoreconf)
+  - automake version 1.11.1 or better
   - libtool (for building shared libraries)
   - m4 (used by autoconf)
   - texinfo (for building documentation)
@@ -11,13 +12,16 @@ Software you'll need to build a development version libcdio
 This is in addition to the software needed to build starting from a the 
 source tar. See README.libcdio for that additional software.
 
+Older versions of autoconf and automake might work, I've just not
+tested that.
+
 The source code lives the GNU software repository https://savannah.gnu.org/
 The main page Savannah page is 
   https://savannah.gnu.org/projects/libcdio/
 
-If you check out the source code, you'll need git installed. See the git
-tab of the libcdio project https://savannah.gnu.org/git/?group=libcdio
-which has an additional link for how to get "git".
+If you check out the source code, you'll need git installed. See the
+project https://savannah.gnu.org/git/?group=libcdio for details, and
+links for browsing the source or using git.
 
 Once you have git:
 
