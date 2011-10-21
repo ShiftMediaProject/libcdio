@@ -1,6 +1,4 @@
 /*
-  $Id: os2.c,v 1.30 2008/04/21 18:30:21 karl Exp $
-
   Copyright (C) 2009 KO Myung-Hun <komh@chollian.net>
 
   This program is free software: you can redistribute it and/or modify
@@ -23,6 +21,7 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 static const char _rcsid[] = "$Id: os2.c,v 1.30 2008/04/21 18:30:21 karl Exp $";

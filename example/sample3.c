@@ -1,7 +1,5 @@
 /*
-  $Id: sample3.c,v 1.10 2008/03/24 15:30:56 karl Exp $
-
-  Copyright (C) 2003, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2005, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,8 +27,7 @@
 
 static void
 print_analysis(cdio_iso_analysis_t cdio_iso_analysis, 
-	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
-	       track_t num_tracks, track_t first_track_num, CdIo_t *p_cdio)
+	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio)
 {
   switch(CDIO_FSTYPE(fs)) {
   case CDIO_FS_AUDIO:
@@ -182,8 +179,7 @@ main(int argc, const char *argv[])
       
       fs = cdio_guess_cd_type(p_cdio, start_track, i, &cdio_iso_analysis);
       
-      print_analysis(cdio_iso_analysis, fs, first_data, num_audio,
-		     num_tracks, first_track_num, p_cdio);
+      print_analysis(cdio_iso_analysis, fs, first_data, num_audio);
       
       if ( !(CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660 ||
 	     CDIO_FSTYPE(fs) == CDIO_FS_ISO_HFS  ||

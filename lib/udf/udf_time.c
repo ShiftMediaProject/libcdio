@@ -1,7 +1,5 @@
 /* 
-  $Id: udf_time.c,v 1.10 2008/04/24 07:28:00 rocky Exp $
-
-  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
   Modified From part of the GNU C Library.
@@ -42,6 +40,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef NEED_TIMEZONEVAR

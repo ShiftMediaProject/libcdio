@@ -6,12 +6,12 @@
 /.libs
 /Makefile
 /Makefile.in
-/cdda.bin
 /cdda-1.raw
 /cdda-2.raw
 /cdda-good.raw
 /cdda-jitter.raw
 /cdda-underrun.raw
+/cdda.bin
 /check_common_fn
 /check_cue.sh
 /check_iso.sh
@@ -40,3 +40,4 @@
 /testpregap.c
 /testsolaris
 /testtoc
+/testunconfig

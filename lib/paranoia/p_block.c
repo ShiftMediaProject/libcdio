@@ -1,6 +1,4 @@
 /*
-  $Id: p_block.c,v 1.13 2008/04/17 17:39:48 karl Exp $
-
   Copyright (C) 2004, 2005, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
 
@@ -19,7 +17,8 @@
 */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_STDLIB_H

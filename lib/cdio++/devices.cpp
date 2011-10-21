@@ -1,7 +1,5 @@
 /* -*- C++ -*-
-  $Id: devices.cpp,v 1.3 2008/04/20 13:44:31 karl Exp $
-
-  Copyright (C) 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2006, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,7 +14,12 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "config.h"
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+# define __CDIO_CONFIG_H__ 1
+#endif
+
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif

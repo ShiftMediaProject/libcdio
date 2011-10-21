@@ -19,12 +19,16 @@ libcdio_TEXINFOS = fdl.texi glossary.texi
 reference:
 	-( cd ${top_srcdir} && $(MAKE) doxygen )
 
+#: Create documentation in PDF format
 pdf: libcdio.pdf 
 
+#: Create documentation as a text file
 txt: libcdio.txt
 
+#: Create documentation in PostScript format
 ps: libcdio.ps
 
+#: Create documentation in HTML format
 html: libcdio.html
 
 %.ps.gz: %.ps
@@ -39,6 +43,7 @@ html: libcdio.html
 .texi.txt: 
 	makeinfo --no-headers $< > $@
 
+# Create documentation in all formats, e.g. PDF, DVI, plain text and HTML
 all-formats: pdf dvi txt ps html
 
 MOSTLYCLEANFILES = libcdio.html libcdio.pdf libcdio.ps.gz

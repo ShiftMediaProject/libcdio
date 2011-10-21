@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2006, 2008, 2009, 2011 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 #include <stdio.h>
 #include <sys/types.h>
@@ -61,7 +62,7 @@ main(int argc, const char *argv[])
   }
   
   ret = mmc_get_tray_status(p_cdio);
-  switch(ret) {
+  switch((int) ret) {
   case 0:
     printf("CD-ROM drive %s is closed.\n", psz_drive);
     do_eject = true;
@@ -77,7 +78,7 @@ main(int argc, const char *argv[])
   }
   
   ret = mmc_get_media_changed(p_cdio);
-  switch(ret) {
+  switch((int) ret) {
   case 0:
     printf("CD-ROM drive %s media not changed since last test.\n", psz_drive);
     break;
@@ -96,7 +97,7 @@ main(int argc, const char *argv[])
     ret = cdio_close_tray(psz_drive, &driver_id);
 
   ret = mmc_get_tray_status(p_cdio);
-  switch(ret) {
+  switch((int) ret) {
   case 0:
     printf("CD-ROM drive %s is closed.\n", psz_drive);
     break;
@@ -110,7 +111,7 @@ main(int argc, const char *argv[])
   }
   
   ret = mmc_get_media_changed(p_cdio);
-  switch(ret) {
+  switch((int) ret) {
   case 0:
     printf("CD-ROM drive %s media not changed since last test.\n", psz_drive);
     break;

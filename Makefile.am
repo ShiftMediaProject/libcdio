@@ -1,6 +1,5 @@
-#   $Id: Makefile.am,v 1.50 2008/10/25 13:56:15 rocky Exp $
-#
-#   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2004, 2006, 2008, 2011 
+#   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -72,8 +71,10 @@ REGRESSION_VERSION = 1.1
 
 distdir_regression = ../$(PACKAGE)-$(REGRESSION_VERSION)-tests
 
+#: run regression tests
 test: check
 
+#: Make documentation via Doxygen http://www.stack.nl/~dimitri/doxygen/
 doxygen:
 	-( cd ${top_srcdir}/doc/doxygen && /bin/sh ${srcdir}/run_doxygen )
 
@@ -121,14 +122,13 @@ check_iso.sh: $(top_builddir)/config.status check_iso.sh.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 	chmod +x config_iso.sh
 
-make-executable:
-
 # cvs2cl
 MAINTAINERCLEANFILES = ChangeLog *.rej *.orig
 
 if MAINTAINER_MODE
 
 .PHONY: ChangeLog
+#: Create ChangeLog from version control
 ChangeLog:
 	git log --pretty --numstat --summary | $(GIT2CL) >$@
 

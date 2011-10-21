@@ -1,6 +1,5 @@
 /*
-  $Id: cd-drive.c,v 1.29 2008/06/19 15:44:10 flameeyes Exp $
-
+  Copyright (C) 2011 Rocky Bernstein <rocky@gnu.org>
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +14,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Program to show drivers installed and capibilites of CD drives. */
+/* Program to show drivers installed and capabilities of CD drives. */
 
 #include "util.h"
 
@@ -95,7 +94,7 @@ parse_options (int argc, char *argv[])
       break;
 
     case 'i': 
-      if (opts.source_image != DRIVER_UNKNOWN) {
+      if (opts.source_image != (source_image_t) DRIVER_UNKNOWN) {
 	/* NOTE: The libpopt version already set source_name by this time.
 	   To restore this behavior, fall through to the else{} block.
 	*/
@@ -153,7 +152,7 @@ parse_options (int argc, char *argv[])
       exit (EXIT_FAILURE);
     }
       
-    if (opts.source_image == DRIVER_DEVICE)
+    if (opts.source_image == (source_image_t) DRIVER_DEVICE)
       source_name = fillout_device_name(remaining_arg);
     else 
       source_name = strdup(remaining_arg);

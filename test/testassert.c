@@ -1,6 +1,4 @@
 /*
-    $Id: testassert.c,v 1.2 2008/03/22 18:08:25 karl Exp $
-
     Copyright (C) 2001, 2008 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -19,6 +17,7 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 /* Private headers */

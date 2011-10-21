@@ -23,15 +23,18 @@ paranoiaheaders = cdda.h cdtext.h
 endif
 
 cdio_config.h: $(top_srcdir)/config.h
-	cp  $(top_srcdir)/config.h cdio_config.h
+	echo  '#ifndef __CDIO_CONFIG_H__' > cdio_config.h
+	echo  '#define __CDIO_CONFIG_H__' >> cdio_config.h
+	cat  $(top_builddir)/config.h >>cdio_config.h
+	echo '#endif /* #ifndef CDIO_CONFIG_H */' >>cdio_config.h
 
 libcdioincludedir=$(includedir)/cdio
-libcdioinclude_HEADERS = \
+dist_libcdioinclude_HEADERS = \
 	audio.h \
 	bytesex.h \
 	bytesex_asm.h \
 	cdio.h \
-	cdio_config.h \
+	cdio_unconfig.h \
 	cd_types.h \
 	device.h \
 	disc.h \
@@ -60,6 +63,8 @@ libcdioinclude_HEADERS = \
 	version.h \
 	xa.h \
 	$(paranoiaheaders)
+
+nodist_libcdioinclude_HEADERS = cdio_config.h
 
 EXTRA_DIST = version.h.in
 BUILT_SOURCES = version.h

@@ -134,7 +134,7 @@ test_legal_header() {
   opts="$2"
   outfile="$3"
 
-  if test "@GREP@" == no; then
+  if test "@GREP@" = no; then
     echo "$0: No grep(1) found - cannot test ${cmd}."
     echo "$0: Legal header test skipped."
     exit $SKIP_TEST_EXITCODE

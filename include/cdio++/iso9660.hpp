@@ -1,7 +1,5 @@
 /*
-    $Id: iso9660.hpp,v 1.13 2008/06/13 15:58:50 flameeyes Exp $
-
-    Copyright (C) 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2006, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -148,6 +146,9 @@ public:
     
   };
 
+#ifdef FS
+ #undef FS
+#endif  
   class FS : public CdioDevice // ISO 9660 Filesystem on a CD or CD-image
   {
   public:

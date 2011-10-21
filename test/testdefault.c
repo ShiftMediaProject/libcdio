@@ -1,6 +1,4 @@
 /*
-  $Id: testdefault.c,v 1.8 2008/03/22 18:08:25 karl Exp $
-
   Copyright (C) 2003, 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
@@ -23,6 +21,7 @@
 */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 #include <cdio/cdio.h>
 #include <cdio/cd_types.h>

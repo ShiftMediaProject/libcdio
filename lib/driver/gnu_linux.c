@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010
+  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010, 2011
     Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -23,9 +23,8 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
-
-static const char _rcsid[] = "$Id: gnu_linux.c,v 1.33 2008/06/25 07:46:21 rocky Exp $";
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -1631,7 +1630,7 @@ no_tuple:;
     env->gen.scsi_tuple = strdup("");
     return 0;
   }
-  sprintf(tuple, "%d,%d,%d,%d,%d",
+  snprintf(tuple, sizeof(tuple)-1, "%d,%d,%d,%d,%d",
           bus_no, host_no, channel_no, target_no, lun_no);
   env->gen.scsi_tuple = strdup(tuple);
   return 1; 

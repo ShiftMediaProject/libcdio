@@ -1,7 +1,5 @@
 /*
-  $Id: iso9660_fs.c,v 1.47 2008/04/18 16:02:09 karl Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 
+  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2011
     Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -20,8 +18,9 @@
 */
 /* iso9660 filesystem-based routines */
 
-#ifdef HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H) && !defined(__CDIO_CONFIG_H__)
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_STRING_H

@@ -1,7 +1,5 @@
 /*
-  $Id: udf_private.h,v 1.12 2008/04/18 16:02:10 karl Exp $
-
-  Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2006, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -20,8 +18,9 @@
 #ifndef __CDIO_UDF_PRIVATE_H__
 #define __CDIO_UDF_PRIVATE_H__
 
-#if defined(HAVE_CONFIG_H) && !defined(LIBCDIO_CONFIG_H)
-#include "config.h"
+#if defined(HAVE_CONFIG_H) && !defined(LIBCDIO_CONFIG_H) && !defined(__CDIO_CONFIG_H__)
+# include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 #include <cdio/types.h>

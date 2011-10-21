@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2009, 2010 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2009, 2010, 2011
+  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1998 Monty xiphmont@mit.edu
   
   This program is free software: you can redistribute it and/or modify
@@ -19,8 +20,9 @@
 #ifndef _CDDA_COMMON_INTERFACE_H_
 #define _CDDA_COMMON_INTERFACE_H_
 
-#ifdef HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H) && !defined(__CDIO_CONFIG_H__)
 # include "config.h"
+# define __CDIO_CONFIG_H__ 1
 #endif
 
 #include <cdio/types.h>

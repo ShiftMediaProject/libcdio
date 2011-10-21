@@ -26,6 +26,9 @@
 #include "getopt.h"
 #include <stdarg.h>
 
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
 #ifdef HAVE_CDDB
 #include <cddb/cddb.h>
 #include "cddb.h"
