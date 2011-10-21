@@ -1,6 +1,4 @@
 /*
-  $Id: isofile.c,v 1.2 2008/03/24 15:30:55 karl Exp $
-
   Copyright (C) 2004, 2005, 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
