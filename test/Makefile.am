@@ -30,7 +30,7 @@ endif
 
 hack = check_sizeof testassert testgetdevices testischar \
        testisocd testisocd2 testiso9660 test_lib_driver_util \
-       $(testparanoia) testpregap 
+       $(testparanoia) testpregap testunconfig
 
 EXTRA_PROGRAMS = testdefault 
 DATA_DIR       = @abs_top_srcdir@/test/data
@@ -45,8 +45,10 @@ testgetdevices_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testischar_LDADD      = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testiso9660_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
-testisocd_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
-testisocd2_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+testisocd_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+testisocd2_LDADD      = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+
+testunconfig_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 test_lib_driver_util_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 test_lib_driver_util_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"

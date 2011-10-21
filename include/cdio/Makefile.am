@@ -35,6 +35,7 @@ libcdioinclude_HEADERS = \
 	bytesex_asm.h \
 	cdio.h \
 	cdio_config.h \
+	cdio_unconfig.h \
 	cd_types.h \
 	device.h \
 	disc.h \
