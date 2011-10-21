@@ -19,7 +19,7 @@ dnl 02110-1301 USA.
 define(RELEASE_NUM, 83)
 define(CDIO_VERSION_STR, 0.$1git)
 
-AC_PREREQ(2.52)
+AC_PREREQ(2.67)
 
 AC_INIT([libcdio], [CDIO_VERSION_STR(RELEASE_NUM)], [libcdio-help@gnu.org])
 AC_CONFIG_SRCDIR(src/cd-info.c)

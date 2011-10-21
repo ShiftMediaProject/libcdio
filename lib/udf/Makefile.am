@@ -1,6 +1,5 @@
-#   $Id: Makefile.am,v 1.9 2008/06/25 08:01:54 rocky Exp $
-#   
-#   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2004, 2006, 2008, 2011
+#    Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -41,7 +40,7 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libudf_la_CURRENT = 0
+libudf_la_CURRENT = 1
 libudf_la_REVISION = 0
 libudf_la_AGE = 0
 

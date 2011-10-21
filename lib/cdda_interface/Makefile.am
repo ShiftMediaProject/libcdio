@@ -1,6 +1,5 @@
-#   $Id: Makefile.am,v 1.16 2008/10/20 01:25:10 rocky Exp $
-#
-#   Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2011
+#    Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -44,8 +43,8 @@
 
 EXTRA_DIST = libcdio_cdda.sym
 
-libcdio_cdda_la_CURRENT = 0
-libcdio_cdda_la_REVISION = 5
+libcdio_cdda_la_CURRENT = 1
+libcdio_cdda_la_REVISION = 0
 libcdio_cdda_la_AGE = 0
 
 noinst_HEADERS  = common_interface.h drive_exceptions.h low_interface.h \
