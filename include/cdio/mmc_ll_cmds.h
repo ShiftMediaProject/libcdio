@@ -44,6 +44,15 @@ extern "C" {
   /**
      Get drive capabilities vis SCSI-MMC GET CONFIGURATION
      @param p_cdio the CD object to be acted upon.
+
+     @param p_buf pointer to location to store mode sense information
+
+     @param i_size number of bytes allocated to p_buf
+      
+     @param i_timeout_ms value in milliseconds to use on timeout. Setting
+     to 0 uses the default time-out value stored in
+     mmc_timeout_ms.      
+
      @return DRIVER_OP_SUCCESS (0) if we got the status.
      return codes are the same as driver_return_code_t
   */
@@ -94,8 +103,12 @@ extern "C" {
      and put the results in p_buf 
      @param p_cdio the CD object to be acted upon.
      @param p_buf pointer to location to store mode sense information
+
      @param i_size number of bytes allocated to p_buf
-     @param i_page which "page" of the mode sense command we are interested in
+
+     @param i_page_code which "page" of the mode sense command we are
+     interested in
+
      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf,
@@ -119,8 +132,12 @@ extern "C" {
      SCSI-MMC PREVENT/ALLOW MEDIUM REMOVAL.
 
      @param p_cdio the CD object to be acted upon.
-     @param b_prevent true of drive locked and false if unlocked
      @param b_persisent make b_prevent state persistent
+     @param b_prevent true of drive locked and false if unlocked
+  
+     @param i_timeout_ms value in milliseconds to use on timeout. Setting
+            to 0 uses the default time-out value stored in
+   	    mmc_timeout_ms.
 
      @return DRIVER_OP_SUCCESS (0) if we got the status.
      return codes are the same as driver_return_code_t

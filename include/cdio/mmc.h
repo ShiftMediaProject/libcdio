@@ -545,7 +545,7 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
      
      @param p_cdio the CD object to be acted upon.
      @param track the track you to get ISRC info
-     @param buf place to put ISRC info
+     @param p_isrc place to put ISRC info
   */
     driver_return_code_t
     mmc_isrc_track_read_subchannel (CdIo_t *p_cdio,  /*in*/ const track_t track,
@@ -755,7 +755,7 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
       about the current state of the drive (e.g. 00h TEST UNIT READY).
       @param p_cdio CD structure set by cdio_open().
 
-      @param sense returns the sense bytes received from the drive.
+      @param pp_sense returns the sense bytes received from the drive.
       This is allocated memory or NULL if no sense bytes are
       available. Dispose non-NULL pointers by free() when no longer
       needed.  See SPC-3 4.5.3 Fixed format sense data.  SCSI error
