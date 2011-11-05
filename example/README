@@ -29,6 +29,12 @@ cdio-eject.c: a stripped-down "eject" command to open or close a CDROM
 
 cdtext.c:    A program to show CD-Text and CD disc mode info.
 
+discid.c:    http://sourceforge.net/projects/discid/ using libcdio:
+	     a small program to calculate the disc-ID for audio
+	     compact discs. The disc-ID can be used to query info
+	     (tracks, title, interpret) about compact audio discs from
+	     a CDDB-Server.
+
 drives.c:    A program to show drivers installed and what the default
 	     CD-ROM drive is and what CD drives are available.
 
