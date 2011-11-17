@@ -654,6 +654,7 @@ AC_CONFIG_FILES([
        src/cd-paranoia/doc/ja/cd-paranoia.1 \
        src/cd-paranoia/doc/ja/Makefile \
        src/Makefile \
+       test/check_common_fn \
        test/data/Makefile \
        test/driver/Makefile \
        test/driver/bincue.c \
@@ -662,7 +663,6 @@ AC_CONFIG_FILES([
        test/testgetdevices.c \
        test/testisocd2.c \
        test/testpregap.c \
-       test/check_common_fn \
        test/Makefile \
        ])
 

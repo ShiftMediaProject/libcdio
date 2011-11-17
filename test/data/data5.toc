@@ -5,9 +5,9 @@
 CD_ROM_XA
 
 TRACK MODE2_FORM2
-FILE "isofs-m1.bin" 00:00:00 00:13:57
+FILE "isofs-m1.bin" 00:00:00 00:01:57
 
 TRACK MODE2_FORM1
 PREGAP 0:2:0
-FILE "isofs-m1.bin" 00:20:71 00:00:00
+FILE "isofs-m1.bin" 00:20:71 00:00:10
 

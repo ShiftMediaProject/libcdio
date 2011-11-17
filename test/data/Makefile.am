@@ -37,6 +37,7 @@ check_DATA = \
 	t7.toc         \
 	t8.toc         \
 	t9.toc         \
+	t10.toc        \
 	vcd2.toc       \
 	videocd.nrg    \
         cdtext.toc     \

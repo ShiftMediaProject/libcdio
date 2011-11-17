@@ -1,6 +1,6 @@
 /* -*- c -*-
 
-    Copyright (C) 2005, 2006, 2008, 2009, 2010 Rocky Bernstein
+    Copyright (C) 2005, 2006, 2008, 2009, 2010, 2011 Rocky Bernstein
     <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -467,7 +467,7 @@ extern "C" {
 
   /** Like cdio_have_xxx but uses an enumeration instead. */
   bool cdio_have_driver (driver_id_t driver_id);
-  
+
   /**
      Free any resources associated with p_cdio. Call this when done
      using p_cdio and using CD reading/control operations.

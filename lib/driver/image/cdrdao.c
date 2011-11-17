@@ -1,6 +1,4 @@
 /*
-  $Id: cdrdao.c,v 1.27 2008/04/21 18:30:22 karl Exp $
-
   Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
     toc reading routine adapted from cuetools
   Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
@@ -612,7 +610,6 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  } else if (0 == strcmp ("PRE_EMPHASIS", psz_field))
 	    if (NULL != cd) {
 	      cd->tocent[i].flags &= ~CDIO_TRACK_FLAG_PRE_EMPHASIS;
-	      goto err_exit;
 	    }
 	} else {
 	  goto format_error;
