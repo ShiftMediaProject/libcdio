@@ -37,6 +37,9 @@ extern "C" {
 
 #define MAX_CDTEXT_FIELDS 13
 #define MIN_CDTEXT_FIELD  0
+#define MAX_CDTEXT_DATA_LENGTH 5000
+#define MAX_CDTEXT_GENRE_CODE 28
+
   
   /*! \brief structure for holding CD-Text information
 
@@ -44,6 +47,15 @@ extern "C" {
   */
   struct cdtext {
     char *field[MAX_CDTEXT_FIELDS];
+  };
+  typedef struct cdtext cdtext_track_t;
+
+  struct cdtext_s {
+    cdtext_track_t track[100];  /* cdtext for track 1..99. 0 represents cd-text of disc */
+    uint16_t genre_code;        /* genre code */
+    uint8_t  block;
+    char encoding[16];          /* encoding of character strings */
+    char language[3];           /* ISO 639-1 (2 letter) language code */
   };
   
   /*! \brief A list of all of the CD-Text fields. Because
@@ -68,12 +80,51 @@ extern "C" {
 
   /*! Return string representation of the enum values above */
   const char *cdtext_field2str (cdtext_field_t i);
+
+  /*! CD-Text genre codes */
+  typedef enum {
+    CDIO_CDTEXT_GENRE_UNUSED         =  0,        /**< not used  */
+    CDIO_CDTEXT_GENRE_UNDEFINED      =  1,        /**< not defined */
+    CDIO_CDTEXT_GENRE_ADULT_CONTEMP  =  2,        /**< Adult Contemporary       */
+    CDIO_CDTEXT_GENRE_ALT_ROCK       =  3,        /**< Alternative Rock         */
+    CDIO_CDTEXT_GENRE_CHILDRENS      =  4,        /**< Childrens Music          */
+    CDIO_CDTEXT_GENRE_CLASSIC        =  5,        /**< Classical                */
+    CDIO_CDTEXT_GENRE_CHRIST_CONTEMP =  6,        /**< Contemporary Christian   */
+    CDIO_CDTEXT_GENRE_COUNTRY        =  7,        /**< Country                  */
+    CDIO_CDTEXT_GENRE_DANCE          =  8,        /**< Dance                    */
+    CDIO_CDTEXT_GENRE_EASY_LISTENING =  9,        /**< Easy Listening           */
+    CDIO_CDTEXT_GENRE_EROTIC         = 10,        /**< Erotic                   */
+    CDIO_CDTEXT_GENRE_FOLK           = 11,        /**< Folk                     */
+    CDIO_CDTEXT_GENRE_GOSPEL         = 12,        /**< Gospel                   */
+    CDIO_CDTEXT_GENRE_HIPHOP         = 13,        /**< Hip Hop                  */
+    CDIO_CDTEXT_GENRE_JAZZ           = 14,        /**< Jazz                     */
+    CDIO_CDTEXT_GENRE_LATIN          = 15,        /**< Latin                    */
+    CDIO_CDTEXT_GENRE_MUSICAL        = 16,        /**< Musical                  */
+    CDIO_CDTEXT_GENRE_NEWAGE         = 17,        /**< New Age                  */
+    CDIO_CDTEXT_GENRE_OPERA          = 18,        /**< Opera                    */
+    CDIO_CDTEXT_GENRE_OPERETTA       = 19,        /**< Operetta                 */
+    CDIO_CDTEXT_GENRE_POP            = 20,        /**< Pop Music                */
+    CDIO_CDTEXT_GENRE_RAP            = 21,        /**< RAP                      */
+    CDIO_CDTEXT_GENRE_REGGAE         = 22,        /**< Reggae                   */
+    CDIO_CDTEXT_GENRE_ROCK           = 23,        /**< Rock Music               */
+    CDIO_CDTEXT_GENRE_RYTHMANDBLUES  = 24,        /**< Rhythm & Blues           */
+    CDIO_CDTEXT_GENRE_SOUNDEFFECTS   = 25,        /**< Sound Effects            */
+    CDIO_CDTEXT_GENRE_SOUNDTRACK     = 26,        /**< Soundtrack               */
+    CDIO_CDTEXT_GENRE_SPOKEN_WORD    = 27,        /**< Spoken Word              */
+    CDIO_CDTEXT_GENRE_WORLD_MUSIC    = 28         /**< World Music              */
+  } cdtext_genre_t;
+  
+  /*! Return string representation of the given genre code */
+  const char *cdtext_genre2str (cdtext_genre_t i);
   
   /*! Initialize a new cdtext structure.
     When the structure is no longer needed, release the 
     resources using cdtext_delete.
   */
   void cdtext_init (cdtext_t *cdtext);
+
+  /*! Parse raw CD-Text data into cdtext structure */ 
+  bool cdtext_data_init(cdtext_t *cdtext, uint8_t *wdata);
   
   /*! Free memory assocated with cdtext*/
   void cdtext_destroy (cdtext_t *cdtext);
@@ -86,7 +137,8 @@ extern "C" {
     @see cdio_get_const to retrieve a constant string that doesn't
     have to be freed.
   */
-  char *cdtext_get (cdtext_field_t key, const cdtext_t *cdtext);
+  char *cdtext_get (cdtext_field_t key, track_t track, const cdtext_t *cdtext);
+
 
   /*! returns a const string associated with the given field.  NULL is
     returned if key is CDTEXT_INVALID or the field is not set.
@@ -97,7 +149,7 @@ extern "C" {
     @see cdio_get to retrieve an allocated string that persists past
     the cdtext object.
   */
-  const char *cdtext_get_const (cdtext_field_t key, const cdtext_t *cdtext);
+  const char *cdtext_get_const (cdtext_field_t key, track_t track, const cdtext_t *cdtext);
   
   /*!
     returns enum of keyword if key is a CD-Text keyword, 
@@ -108,7 +160,7 @@ extern "C" {
   /*! 
     sets cdtext's keyword entry to field 
   */
-  void cdtext_set (cdtext_field_t key, const char *value, cdtext_t *cdtext);
+  void cdtext_set (cdtext_field_t key, track_t track, const char *value, cdtext_t *cdtext);
   
 #ifdef __cplusplus
 }

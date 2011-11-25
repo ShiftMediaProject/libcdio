@@ -324,16 +324,15 @@ mmc_get_mcn_private ( void *p_env,
   return true on success, false on error or CD-Text information does
   not exist.
 */
-bool
-mmc_init_cdtext_private ( void *p_user_data, 
-                          const mmc_run_cmd_fn_t run_mmc_cmd,
-                          set_cdtext_field_fn_t set_cdtext_field_fn 
+uint8_t *
+mmc_read_cdtext_private ( void *p_user_data, 
+                          const mmc_run_cmd_fn_t run_mmc_cmd
                           )
 {
 
   generic_img_private_t *p_env = p_user_data;
   mmc_cdb_t  cdb = {{0, }};
-  unsigned char   wdata[5000] = { 0, };
+  unsigned char * wdata;
   int             i_status, i_errno;
 
   if ( ! p_env || ! run_mmc_cmd || p_env->b_cdtext_error )
@@ -351,38 +350,45 @@ mmc_init_cdtext_private ( void *p_user_data,
 
   errno = 0;
 
+  wdata = calloc(MAX_CDTEXT_DATA_LENGTH, sizeof(unsigned char));
+
   /* We may need to give CD-Text a little more time to complete. */
   /* First off, just try and read the size */
   i_status = run_mmc_cmd (p_env, mmc_read_timeout_ms,
                           mmc_get_cmd_len(cdb.field[0]), 
                           &cdb, SCSI_MMC_DATA_READ, 
-                          4, &wdata);
+                          4, wdata);
 
   if (i_status != 0) {
     cdio_info ("CD-Text read failed for header: %s\n", strerror(errno));  
-	i_errno = errno;
+	  i_errno = errno;
     p_env->b_cdtext_error = true;
-    return false;
+    free(wdata);
+    return NULL;
   } else {
     /* Now read the CD-Text data */
     int	i_cdtext = CDIO_MMC_GET_LEN16(wdata);
 
-    if (i_cdtext > sizeof(wdata)) i_cdtext = sizeof(wdata);
+    if (i_cdtext+2 > 5000)
+      i_cdtext = MAX_CDTEXT_DATA_LENGTH-2;
+    else
+      wdata = realloc(wdata,i_cdtext+2);
+    /* the 2 bytes holding the size are not included in i_cdtext */
+
     
     CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_cdtext);
     i_status = run_mmc_cmd (p_env, mmc_read_timeout_ms,
                             mmc_get_cmd_len(cdb.field[0]), 
                             &cdb, SCSI_MMC_DATA_READ, 
-                            i_cdtext, &wdata);
+                            i_cdtext, wdata);
     if (i_status != 0) {
       cdio_info ("CD-Text read for text failed: %s\n", strerror(errno));  
       i_errno = errno;
       p_env->b_cdtext_error = true;
-      return false;
+      free(wdata);
+      return NULL;
     }
-    p_env->b_cdtext_init = true;
-    return cdtext_data_init(p_env, p_env->i_first_track, wdata, i_cdtext-2,
-			    set_cdtext_field_fn);
+    return wdata;
   }
 }
 

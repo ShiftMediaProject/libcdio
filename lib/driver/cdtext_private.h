@@ -21,6 +21,8 @@
 #include <cdio/cdio.h>
 #include <cdio/cdtext.h>
 
+#define CDTEXT_GET_LEN16(p) (p[0]<<8) + p[1]
+
 /*! An enumeration for some of the CDIO_CDTEXT_* #defines below. This isn't
     really an enumeration one would really use in a program it is here
     to be helpful in debuggers where wants just to refer to the
@@ -43,41 +45,6 @@ extern const enum cdtext_enum1_s {
   CDIO_CDTEXT_BLOCKSIZE     = 0x8F
 } cdtext_enums1;
 
-
-/*!
- * CD-Text Genre Codes
- */
-extern const enum cdtext_genre_enum_s {
-  CDIO_CDTEXT_GENRE_UNUSED         =  0,        /**< not used  */
-  CDIO_CDTEXT_GENRE_UNDEFINED      =  1,        /**< not defined */
-  CDIO_CDTEXT_GENRE_ADULT_CONTEMP  =  2,        /**< Adult Contemporary       */
-  CDIO_CDTEXT_GENRE_ALT_ROCK       =  3,        /**< Alternative Rock         */
-  CDIO_CDTEXT_GENRE_CHILDRENS      =  4,        /**< Childrens Music          */
-  CDIO_CDTEXT_GENRE_CLASSIC        =  5,        /**< Classical                */
-  CDIO_CDTEXT_GENRE_CHRIST_CONTEMP =  6,        /**< Contemporary Christian   */
-  CDIO_CDTEXT_GENRE_COUNTRY        =  7,        /**< Country                  */
-  CDIO_CDTEXT_GENRE_DANCE          =  8,        /**< Dance                    */
-  CDIO_CDTEXT_GENRE_EASY_LISTENING =  9,        /**< Easy Listening           */
-  CDIO_CDTEXT_GENRE_EROTIC         = 10,        /**< Erotic                   */
-  CDIO_CDTEXT_GENRE_FOLK           = 11,        /**< Folk                     */
-  CDIO_CDTEXT_GENRE_GOSPEL         = 12,        /**< Gospel                   */
-  CDIO_CDTEXT_GENRE_HIPHOP         = 13,        /**< Hip Hop                  */
-  CDIO_CDTEXT_GENRE_JAZZ           = 14,        /**< Jazz                     */
-  CDIO_CDTEXT_GENRE_LATIN          = 15,        /**< Latin                    */
-  CDIO_CDTEXT_GENRE_MUSICAL        = 16,        /**< Musical                  */
-  CDIO_CDTEXT_GENRE_NEWAGE         = 17,        /**< New Age                  */
-  CDIO_CDTEXT_GENRE_OPERA          = 18,        /**< Opera                    */
-  CDIO_CDTEXT_GENRE_OPERETTA       = 19,        /**< Operetta                 */
-  CDIO_CDTEXT_GENRE_POP            = 20,        /**< Pop Music                */
-  CDIO_CDTEXT_GENRE_RAP            = 21,        /**< RAP                      */
-  CDIO_CDTEXT_GENRE_REGGAE         = 22,        /**< Reggae                   */
-  CDIO_CDTEXT_GENRE_ROCK           = 23,        /**< Rock Music               */
-  CDIO_CDTEXT_GENRE_RYTHMANDBLUES  = 24,        /**< Rhythm & Blues           */
-  CDIO_CDTEXT_GENRE_SOUNDEFFECTS   = 25,        /**< Sound Effects            */
-  CDIO_CDTEXT_GENRE_SOUNDTRACK     = 26,        /**< Soundtrack               */
-  CDIO_CDTEXT_GENRE_SPOKEN_WORD    = 27,        /**< Spoken Word              */
-  CDIO_CDTEXT_GENRE_WORLD_MUSIC    = 28         /**< World Music              */
-} cdtext_genre_enum;
 
 /*!
  * CD-Text character codes 
@@ -192,35 +159,29 @@ PRAGMA_END_PACKED
 /*
  * content of BLOCKSIZE packs
  */
-typedef struct CDText_blocksize
+ 
+PRAGMA_BEGIN_PACKED
+
+struct CDText_blocksize
 {
   uint8_t charcode;     /* character code */
-  uint8_t i_firstTrack; /* first track number */
-  uint8_t i_lastTrack;  /* last track number */
+  uint8_t i_first_track; /* first track number */
+  uint8_t i_last_track;  /* last track number */
   uint8_t copyright;    /* cd-text information copyright byte */
-  uint8_t packcount[16];/* number of packs of each type 
+  uint8_t i_packs[16];/* number of packs of each type 
                          * 0 TITLE; 1 PERFORMER; 2 SONGWRITER; 3 COMPOSER; 
                          * 4 ARRANGER; 5 MESSAGE; 6 DISCID; 7 GENRE; 
                          * 8 TOC; 9 TOC2; 10-12 RESERVED; 13 CLOSED; 
                          * 14 UPC_ISRC; 15 BLOCKSIZE */
   uint8_t lastseq[8];   /* last sequence for block 0..7 */
   uint8_t langcode[8];  /* language code for block 0..7 */
-} CDText_blocksize_t;
+} GNUC_PACKED;
+
+PRAGMA_END_PACKED;
 
 
+typedef struct CDText_blocksize CDText_blocksize_t;
 typedef struct CDText_data CDText_data_t;
-
-typedef void (*set_cdtext_field_fn_t) (void *user_data, track_t i_track,
-                                       track_t i_first_track,
-                                       cdtext_field_t field, 
-                                       const char *buffer);
-
-/* 
-   Internal routine to parse all CD-TEXT data retrieved.
-*/       
-bool cdtext_data_init(void *user_data, track_t i_first_track, 
-                      unsigned char *wdata, int i_data,
-                      set_cdtext_field_fn_t set_cdtext_field_fn);
 
 
 #endif /* __CDIO_CDTEXT_PRIVATE_H__ */

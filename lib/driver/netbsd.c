@@ -558,6 +558,7 @@ static cdio_funcs_t _funcs = {
   .get_arg               = get_arg_netbsd,
   .get_blocksize         = get_blocksize_mmc,
   .get_cdtext            = get_cdtext_generic,
+  .get_cdtext_raw        = read_cdtext_generic,
   .get_default_device    = cdio_get_default_device_netbsd,
   .get_devices           = cdio_get_devices_netbsd,
   .get_disc_last_lsn     = get_disc_last_lsn_netbsd,
@@ -601,6 +602,7 @@ cdio_open_netbsd(const char *source_name)
 	_img_private_t *_data;
 
 	_data = calloc(1, sizeof(_img_private_t));
+  _data->gen.b_cdtext_error = false;
 	_data->gen.init = false;
 	_data->gen.fd = -1;
 	_data->toc_valid = false;

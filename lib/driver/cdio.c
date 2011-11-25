@@ -53,25 +53,6 @@ cdio_get_arg (const CdIo *obj, const char key[])
   }
 }
 
-/*! 
-  Get cdtext information for a CdIo object .
-  
-  @param obj the CD object that may contain CD-TEXT information.
-  @return the CD-TEXT object or NULL if obj is NULL
-  or CD-TEXT information does not exist.
-*/
-cdtext_t *
-cdio_get_cdtext (CdIo *obj, track_t i_track)
-{
-  if (obj == NULL) return NULL;
-  
-  if (obj->op.get_cdtext) {
-    return obj->op.get_cdtext (obj->env, i_track);
-  } else {
-    return NULL;
-  }
-}
-
 CdIo_t *
 cdio_new (generic_img_private_t *p_env, cdio_funcs_t *p_funcs)
 {

@@ -52,8 +52,7 @@ extern "C" {
   /** This is an opaque structure for the CD object. */
   typedef struct _CdIo CdIo_t; 
 
-  /** This is an opaque structure for the CD-Text object. */
-  typedef struct cdtext cdtext_t;
+  typedef struct cdtext_s cdtext_t;
 
 #ifdef __cplusplus
 }

@@ -63,7 +63,6 @@ typedef struct {
 				*/
   track_format_t track_format;
   bool           track_green;
-  cdtext_t       cdtext;	/**< CD-TEXT */
 
   trackmode_t    mode;
   uint16_t       datasize;      /**< How much is in the portion we return 

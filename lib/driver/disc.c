@@ -49,6 +49,45 @@ const char *discmode2str[] = {
   "CD-i" 
 };
 
+/*! 
+  Get cdtext information for a CdIo object .
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return the CD-TEXT object or NULL if obj is NULL
+  or CD-TEXT information does not exist.
+*/
+cdtext_t *
+cdio_get_cdtext (CdIo *obj)
+{
+  if (obj == NULL) return NULL;
+  
+  if (NULL != obj->op.get_cdtext) {
+    return obj->op.get_cdtext (obj->env);
+  } else {
+    return NULL;
+  }
+}
+
+/*! 
+  Get binary cdtext information for a CdIo object .
+  
+  @param obj the CD object that may contain CD-TEXT information.
+  @return pointer to allocated memory area holding the raw CD-TEXT
+  or NULL if obj is NULL or CD-TEXT does not exist.
+  free() when done.
+*/
+uint8_t *
+cdio_get_cdtext_raw (CdIo *obj)
+{
+  if (obj == NULL) return NULL;
+
+  if (NULL != obj->op.get_cdtext_raw) {
+    return obj->op.get_cdtext_raw (obj->env);
+  } else {
+    return NULL;
+  }
+}
+
 /*!
   Get the size of the CD in logical block address (LBA) units.
   

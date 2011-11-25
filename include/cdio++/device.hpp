@@ -82,14 +82,6 @@ CdIo_t *getCdIo()
   return p_cdio;
 }
 
-/*!  
-  Return an opaque CdIo_t pointer for the given track object.
-*/
-cdtext_t *getCdtext(track_t i_track)
-{
-  return cdio_get_cdtext (p_cdio, i_track);
-}
-
 /*!
   Get the CD device name for the object.
   

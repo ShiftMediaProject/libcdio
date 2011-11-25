@@ -43,7 +43,6 @@ extern "C" {
     char *source_name;      /**< Name used in open. */
     bool  init;             /**< True if structure has been initialized */
     bool  toc_init;         /**< True if TOC read in */
-    bool  b_cdtext_init;    /**< True if CD-Text read in */
     bool  b_cdtext_error;   /**< True if trouble reading CD-Text */
     
     int   ioctls_debugged;  /**< for debugging */
@@ -62,8 +61,7 @@ extern "C" {
     iso9660_pvd_t pvd;      
     iso9660_svd_t svd;      
     CdIo_t   *cdio;         /**< a way to call general cdio routines. */
-    cdtext_t  cdtext;       /**< CD-Text for disc. */
-    cdtext_t  cdtext_track[CDIO_CD_MAX_TRACKS+1]; /**< CD-TEXT for each track*/
+    cdtext_t *cdtext;       /**< CD-Text for disc. */
     track_flags_t track_flags[CDIO_CD_MAX_TRACKS+1];
 
     /* Memorized sense reply of the most recent SCSI command.
@@ -177,7 +175,7 @@ extern "C" {
     @return the CD-TEXT object or NULL if obj is NULL
     or CD-TEXT information does not exist.
   */
-  cdtext_t *get_cdtext_generic (void *p_user_data, track_t i_track);
+  cdtext_t *get_cdtext_generic (void *p_user_data);
 
   /*!
     Return the number of of the first track. 
@@ -220,16 +218,13 @@ extern "C" {
   track_flag_t get_track_preemphasis_generic(const void *p_user_data, 
 					     track_t i_track);
   
-  void set_cdtext_field_generic(void *user_data, track_t i_track, 
-				track_t i_first_track,
-				cdtext_field_t e_field, const char *psz_value);
   /*!
     Read cdtext information for a CdIo object .
   
     return true on success, false on error or CD-Text information does
     not exist.
   */
-  bool init_cdtext_generic (generic_img_private_t *p_env);
+  uint8_t * read_cdtext_generic (void *p_env);
   
   void set_track_flags(track_flags_t *p_track_flag, uint8_t flag);
   

@@ -75,10 +75,10 @@ main(int argc, const char *argv[])
   }
   {
     unsigned int i;
-    cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio, 0);
+    cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio);
     if (!p_cdtext) return(1);
     for (i=0; i<NUM_FIELDS; i++) {
-      const char *psz_field = p_cdtext->field[cdtext_fields[i]];
+      const char *psz_field = cdtext_get_const(cdtext_fields[i], 0, p_cdtext);
       if (!psz_field)
 	return(2);
       if (0 != strncmp(psz_field, cdtext_check[i], strlen(cdtext_check[i]))) {

@@ -31,34 +31,39 @@
 
 
 static void 
-print_cdtext_track_info(CdIo_t *p_cdio, track_t i_track, const char *psz_msg) {
-  const cdtext_t *cdtext = cdio_get_cdtext(p_cdio, i_track);
-  if (NULL != cdtext) {
-    cdtext_field_t i;
-    
-    printf("%s\n", psz_msg);
-    
-    for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
-      if (cdtext->field[i]) {
-	printf("\t%s: %s\n", cdtext_field2str(i), cdtext->field[i]);
-      }
+print_cdtext_track_info(cdtext_t *cdtext, track_t i_track, const char *psz_msg) {
+  cdtext_field_t i;
+  
+  printf("%s\n", psz_msg);
+  
+  for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
+    if (cdtext_get_const(i, i_track, cdtext)) {
+      printf("\t%s: %s\n", cdtext_field2str(i), cdtext_get_const(i, i_track, cdtext));
     }
   }
-  
+
 }
     
 static void 
 print_disc_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
   track_t i_last_track = i_first_track+i_tracks;
   discmode_t cd_discmode = cdio_get_discmode(p_cdio);
+  cdtext_t *cdtext = cdio_get_cdtext(p_cdio);
 
   printf("%s\n", discmode2str[cd_discmode]);
-  
-  print_cdtext_track_info(p_cdio, 0, "\nCD-Text for Disc:");
+
+  if (NULL == cdtext)
+  {
+    printf("\nNo CD-Text found on Disc.");
+    return;
+  }
+
+  printf("Encoding: %s; Language: %s\n", cdtext->encoding, cdtext->language);
+  print_cdtext_track_info(cdtext, 0, "\nCD-Text for Disc:");
   for ( ; i_first_track < i_last_track; i_first_track++ ) {
     char psz_msg[50];
     snprintf(psz_msg, sizeof(psz_msg), "CD-Text for Track %d:", i_first_track);
-    print_cdtext_track_info(p_cdio, i_first_track, psz_msg);
+    print_cdtext_track_info(cdtext, i_first_track, psz_msg);
   }
 }
 

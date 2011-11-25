@@ -43,6 +43,7 @@
 #include "cdio_assert.h"
 #include "_cdio_stdio.h"
 #include "nrg.h"
+#include "cdtext_private.h"
 
 static const char _rcsid[] = "$Id: nrg.c,v 1.31 2008/04/21 18:30:22 karl Exp $";
 
@@ -431,7 +432,6 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 	  }
 	  if (0 == disc_mode) {
 	    for (i=0; i<p_env->gen.i_tracks; i++) {
-	      cdtext_init (&(p_env->gen.cdtext_track[i]));
 	      p_env->tocent[i].track_format= track_format;
 	      p_env->tocent[i].datastart   = 0;
 	      p_env->tocent[i].track_green = false;
@@ -446,7 +446,6 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 	    }
 	  } else if (2 == disc_mode) {
 	    for (i=0; i<p_env->gen.i_tracks; i++) {
-	      cdtext_init (&(p_env->gen.cdtext_track[i]));
 	      p_env->tocent[i].track_green = true;
 	      p_env->tocent[i].track_format= track_format;
 	      p_env->tocent[i].datasize    = CDIO_CD_FRAMESIZE;
@@ -749,7 +748,15 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
         uint8_t *wdata = (uint8_t *) chunk->data;
         int len = UINT32_FROM_BE (chunk->len);
         cdio_assert (len % sizeof (CDText_data_t) == 0);
-        cdtext_data_init (&p_env->gen, p_env->gen.i_first_track, &wdata[-4], len, set_cdtext_field_generic);
+        p_env->gen.cdtext = malloc(sizeof(cdtext_t));
+        cdtext_init (p_env->gen.cdtext);
+        if(!cdtext_data_init (p_env->gen.cdtext, &wdata[-4]))
+        {
+          cdtext_destroy(p_env->gen.cdtext);
+          free(p_env->gen.cdtext);
+          p_env->gen.cdtext = NULL;
+        }
+
         break;
       }
 
@@ -777,7 +784,6 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
   p_env->tocent[p_env->gen.i_tracks-1].sec_count = 
     cdio_lsn_to_lba(p_env->size - p_env->tocent[p_env->gen.i_tracks-1].start_lba);
 
-  p_env->gen.b_cdtext_init  = true;
   p_env->gen.b_cdtext_error = false;
   p_env->gen.toc_init       = true;
   free(footer_buf);
@@ -803,8 +809,6 @@ _init_nrg (_img_private_t *p_env)
 
   p_env->psz_mcn       = NULL;
   p_env->disc_mode     = CDIO_DISC_MODE_NO_INFO;
-
-  cdtext_init (&(p_env->gen.cdtext));
 
   if ( !parse_nrg (p_env, p_env->gen.source_name, CDIO_LOG_WARN) ) {
     cdio_warn ("image file %s is not a Nero image", 
@@ -1276,7 +1280,8 @@ cdio_open_nrg (const char *psz_source)
   _funcs.eject_media           = _eject_media_nrg;
   _funcs.free                  = _free_nrg;
   _funcs.get_arg               = _get_arg_image;
-  _funcs.get_cdtext            = get_cdtext_generic;
+  _funcs.get_cdtext            = _get_cdtext_image;
+  _funcs.get_cdtext_raw        = NULL;
   _funcs.get_devices           = cdio_get_devices_nrg;
   _funcs.get_default_device    = cdio_get_default_device_nrg;
   _funcs.get_disc_last_lsn     = get_disc_last_lsn_nrg;

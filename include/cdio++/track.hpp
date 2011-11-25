@@ -30,17 +30,6 @@ CdIo_t *getCdIo()
   return p_cdio;
 }
 
-/*! 
-  Get CD-Text information for a CdIo_t object.
-  
-  @return the CD-Text object or NULL if obj is NULL
-  or CD-Text information does not exist.
-*/
-cdtext_t *getCdtext () 
-{
-  return cdio_get_cdtext (p_cdio, i_track);
-}
-
 /*! Return number of channels in track: 2 or 4; -2 if not
   implemented or -1 for error.
   Not meaningful if track is not an audio track.

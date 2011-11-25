@@ -171,4 +171,14 @@ bool isDiscmodeDvd (discmode_t discmode)
   return cdio_is_discmode_dvd (discmode) ;
 }
 
+/*! 
+ *   Get CD-Text information for a CdIo_t object.
+ *     
+ *       @return the CD-Text object or NULL if obj is NULL
+ *         or CD-Text information does not exist.
+ *         */
+cdtext_t *getCdtext () 
+{
+  return cdio_get_cdtext (p_cdio);
+}
 

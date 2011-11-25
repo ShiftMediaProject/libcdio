@@ -42,6 +42,7 @@ cdio_free_device_list
 cdio_from_bcd8
 cdio_get_arg
 cdio_get_cdtext
+cdio_get_cdtext_raw
 cdio_get_default_device
 cdio_get_default_device_bincue
 cdio_get_default_device_bsdi
@@ -179,6 +180,7 @@ cdio_version_string
 cdio_warn
 cdtext_destroy
 cdtext_field2str
+cdtext_genre2str
 cdtext_get
 cdtext_get_const
 cdtext_init

@@ -1111,6 +1111,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .get_arg                = get_arg_freebsd,
     .get_blocksize          = get_blocksize_mmc,
     .get_cdtext             = get_cdtext_generic,
+    .get_cdtext_raw         = read_cdtext_generic,
     .get_default_device     = cdio_get_default_device_freebsd,
     .get_devices            = cdio_get_devices_freebsd,
     .get_disc_last_lsn      = get_disc_last_lsn_freebsd,
@@ -1145,7 +1146,6 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
   _data->gen.init           = false;
   _data->gen.fd             = -1;
   _data->gen.toc_init       = false;
-  _data->gen.b_cdtext_init  = false;
   _data->gen.b_cdtext_error = false;
 
   if (NULL == psz_orig_source_name) {

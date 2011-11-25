@@ -150,11 +150,19 @@ extern "C" {
       @param obj the CD object that may contain CD-TEXT information.
       @return the CD-TEXT object or NULL if obj is NULL
       or CD-TEXT information does not exist.
-    
-      If i_track is 0 or CDIO_CDROM_LEADOUT_TRACK the track returned
-      is the information assocated with the CD. 
     */
-    cdtext_t * (*get_cdtext) ( void *p_env, track_t i_track );
+    cdtext_t * (*get_cdtext) ( void *p_env );
+
+    /*!
+      Get raw cdtext information as on the disc for a CdIo object
+
+      @param obj the CD object that may contain CD-TEXT information.
+      @return pointer to the raw CD-TEXT data or NULL if obj is NULL
+      or no CD-TEXT information present on the disc.
+
+      free when done and not NULL.
+    */
+    uint8_t * (*get_cdtext_raw) ( void *p_env );
     
     /*!
       Return an array of device names. if CdIo is NULL (we haven't

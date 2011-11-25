@@ -35,6 +35,9 @@ Justin F. Hallett <thesin at southofheaven.org>
 KO Myung-Hun <komh@chollian.net>
   OS2 Driver
 
+Leon Merten Lohse 
+  Redo CD-Text handling
+
 Kris Verbeeck <airborne at advalvas.be>:
   CDDB library support from libcddb http://libcddb.sourceforge.net
   Gentoo ebuild-file

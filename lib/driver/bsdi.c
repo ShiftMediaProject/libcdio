@@ -995,6 +995,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .free                  = cdio_generic_free,
     .get_arg               = _get_arg_bsdi,
     .get_cdtext            = get_cdtext_generic,
+    .get_cdtext_raw        = read_cdtext_generic,
     .get_default_device    = cdio_get_default_device_bsdi,
     .get_devices           = cdio_get_devices_bsdi,
     .get_drive_cap         = get_drive_cap_mmc,
@@ -1027,11 +1028,10 @@ cdio_open_bsdi (const char *psz_orig_source)
 
   _data                     = calloc (1, sizeof (_img_private_t));
   _data->access_mode        = _AM_IOCTL;
+  _data->gen.b_cdtext_error = false;
   _data->gen.init           = false;
   _data->gen.fd             = -1;
   _data->gen.toc_init       = false;
-  _data->gen.b_cdtext_init  = false;
-  _data->gen.b_cdtext_error = false;
 
   if (NULL == psz_orig_source) {
     psz_source=cdio_get_default_device_bsdi();

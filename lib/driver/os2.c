@@ -650,8 +650,6 @@ init_os2 (void *p_user_data)
 
   p_env->gen.init           = true;
   p_env->gen.toc_init       = false;
-  p_env->gen.b_cdtext_init  = false;
-  p_env->gen.b_cdtext_error = false;
   p_env->gen.fd             = p_env->h_cd;
 
   return true;
@@ -1447,6 +1445,7 @@ cdio_open_os2 (const char *psz_orig_source)
   _funcs.get_blocksize          = get_blocksize_os2;
 #endif
   _funcs.get_cdtext             = get_cdtext_generic;
+  _funcs.get_cdtext_raw         = read_cdtext_generic;
   _funcs.get_default_device     = cdio_get_default_device_os2;
   _funcs.get_devices            = cdio_get_devices_os2;
   _funcs.get_disc_last_lsn      = get_disc_last_lsn_os2;
@@ -1487,6 +1486,7 @@ cdio_open_os2 (const char *psz_orig_source)
 
   _data                 = calloc(1, sizeof (_img_private_t));
   _data->access_mode    = _AM_OS2;
+  _data->gen.b_cdtext_error = false;
   _data->gen.init       = false;
   _data->gen.fd         = -1;
 

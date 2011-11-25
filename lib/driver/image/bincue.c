@@ -87,8 +87,6 @@ _init_bincue (_img_private_t *p_env)
   p_env->psz_mcn       = NULL;
   p_env->disc_mode     = CDIO_DISC_MODE_NO_INFO;
 
-  cdtext_init (&(p_env->gen.cdtext));
-
   lead_lsn = get_disc_last_lsn_bincue( (_img_private_t *) p_env);
 
   if (-1 == lead_lsn) return false;
@@ -268,8 +266,6 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   if (cd) {
     cd->gen.i_tracks=0;
     cd->gen.i_first_track=1;
-    cd->gen.b_cdtext_init  = true;
-    cd->gen.b_cdtext_error = false;
     cd->psz_mcn=NULL;
   }
   
@@ -326,6 +322,52 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	} else {
 	  goto not_in_global_section;
 	}
+
+  /* CDTEXTFILE "<filename>" */
+  } else if (0 == strcmp ("CDTEXTFILE", psz_keyword)) {
+    if(NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
+      if (cd) {
+        uint8_t cdt_data[MAX_CDTEXT_DATA_LENGTH+4];
+        int size;
+        int i;
+        CdioDataSource_t *source;
+
+        if(NULL == (source = cdio_stdio_new(psz_field))) {
+          cdio_log (log_level, "%s line %d: can't open file `%s' for reading", psz_cue_name, i_line, psz_field);
+          goto err_exit;
+        }
+        size = cdio_stream_read(source, cdt_data, MAX_CDTEXT_DATA_LENGTH, 1);
+
+        if (size < 4) {
+          cdio_log (log_level, "%s line %d: file `%s' is too small to contain CD-TEXT", psz_cue_name, i_line, psz_field);
+          goto err_exit;
+        }
+
+        /* prepend data length if not yet present */
+        if (cdt_data[0] >= 0x80) {
+          for(i=size-1; i >=0; i--)
+              cdt_data[i+4] = cdt_data[i];
+
+          cdt_data[0] = (size+2) << 8;
+          cdt_data[1] = (size+2) & 0xff;
+          cdt_data[2] = 0x00;
+          cdt_data[3] = 0x00;
+        }
+
+        /* init cdtext */
+        if (NULL == cd->gen.cdtext) {
+          cd->gen.cdtext = malloc(sizeof(cdtext_t));
+          cdtext_init (cd->gen.cdtext);
+        }
+
+        if(!cdtext_data_init(cd->gen.cdtext, cdt_data))
+          cdio_log (log_level, "%s line %d: failed to parse CD-TEXT file `%s'", psz_cue_name, i_line, psz_field);
+
+        cdio_stdio_destroy (source);
+      }
+    } else {
+      goto format_error;
+    }
 	
 	/* FILE "<filename>" <BINARY|WAVE|other?> */
       } else if (0 == strcmp ("FILE", psz_keyword)) {
@@ -357,7 +399,6 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	    this_track->track_num   = cd->gen.i_tracks;
 	    this_track->num_indices = 0;
 	    b_first_index_for_track = false;
-	    cdtext_init (&(cd->gen.cdtext_track[cd->gen.i_tracks]));
 	    cd->gen.i_tracks++;
 	  }
 	  i++;
@@ -728,18 +769,15 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	/* CD-Text */
       } else if ( CDTEXT_INVALID != 
 		  (cdtext_key = cdtext_is_keyword (psz_keyword)) ) {
-	if (-1 == i) {
-	  if (cd) {
-	    cdtext_set (cdtext_key, 
-			strtok (NULL, "\"\t\n\r"), 
-			&(cd->gen.cdtext));
-	  }
-	} else {
-	  if (cd) {
-	    cdtext_set (cdtext_key, strtok (NULL, "\"\t\n\r"), 
-			&(cd->gen.cdtext_track[i]));
-	  }
-	}
+        if (cd) {
+          if (NULL == cd->gen.cdtext) {
+            cd->gen.cdtext = malloc(sizeof(cdtext_t));
+            cdtext_init (cd->gen.cdtext);
+          }
+          cdtext_set (cdtext_key, 
+                      (-1 == i ? 0 : cd->gen.i_first_track + i + 1),
+                      strtok (NULL, "\"\t\n\r"), cd->gen.cdtext);
+        } 
 	
 	/* unrecognized line */
       } else {
@@ -1138,7 +1176,8 @@ cdio_open_cue (const char *psz_cue_name)
   _funcs.eject_media           = _eject_media_image;
   _funcs.free                  = _free_image;
   _funcs.get_arg               = _get_arg_image;
-  _funcs.get_cdtext            = get_cdtext_generic;
+  _funcs.get_cdtext            = _get_cdtext_image;
+  _funcs.get_cdtext_raw        = NULL;
   _funcs.get_devices           = cdio_get_devices_bincue;
   _funcs.get_default_device    = cdio_get_default_device_bincue;
   _funcs.get_disc_last_lsn     = get_disc_last_lsn_bincue;

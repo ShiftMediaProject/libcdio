@@ -78,6 +78,11 @@ int _eject_media_image(void *p_user_data);
 */
 const char * _get_arg_image (void *user_data, const char key[]);
 
+/*!
+  Return CD-Text object or NULL
+ */
+cdtext_t * _get_cdtext_image(void *p_user_data);
+
 /*! 
   Get disc type associated with cd_obj.
 */

@@ -63,14 +63,13 @@ _free_image (void *p_user_data)
     track_info_t *p_tocent = &(p_env->tocent[i_track]);
     free_if_notnull(p_tocent->filename);
     free_if_notnull(p_tocent->isrc);
-    cdtext_destroy(&(p_tocent->cdtext));
     if (p_tocent->data_source) cdio_stdio_destroy(p_tocent->data_source);
   }
 
   free_if_notnull(p_env->psz_mcn);
   free_if_notnull(p_env->psz_cue_name);
   free_if_notnull(p_env->psz_access_mode);
-  cdtext_destroy(&(p_env->gen.cdtext));
+  cdtext_destroy(p_env->gen.cdtext);
   cdio_generic_stdio_free(p_env);
   free(p_env);
 }
@@ -93,6 +92,20 @@ _get_arg_image (void *user_data, const char key[])
     return "false";
   } 
   return NULL;
+}
+
+/*!
+  Return CD-Text object
+ */
+cdtext_t *
+_get_cdtext_image (void *user_data)
+{
+  generic_img_private_t *p_env = user_data;
+
+  if(!p_env)
+    return NULL;
+
+  return p_env->cdtext;
 }
 
 /*! 

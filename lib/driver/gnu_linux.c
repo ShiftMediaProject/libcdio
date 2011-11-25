@@ -1685,6 +1685,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .get_arg               = get_arg_linux,
     .get_blocksize         = get_blocksize_mmc,
     .get_cdtext            = get_cdtext_generic,
+    .get_cdtext_raw        = read_cdtext_generic,
     .get_default_device    = cdio_get_default_device_linux,
     .get_devices           = cdio_get_devices_linux,
     .get_disc_last_lsn     = get_disc_last_lsn_linux,
@@ -1736,7 +1737,6 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   _data->gen.init       = false;
   _data->gen.toc_init   = false;
   _data->gen.fd         = -1;
-  _data->gen.b_cdtext_init  = false;
   _data->gen.b_cdtext_error = false;
 
   if (NULL == psz_orig_source) {

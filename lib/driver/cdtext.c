@@ -37,26 +37,26 @@
 #include <strings.h>
 #endif
 
-#include <stdio.h>
+#define _CDTEXT_DBCC
 
 /*! Note: the order and number items (except CDTEXT_INVALID) should
   match the cdtext_field_t enumeration. */
 static const char cdtext_keywords[][16] = 
-  {
-    "ARRANGER",
-    "COMPOSER",
-    "DISC_ID",
-    "GENRE",
-    "MESSAGE",
-    "ISRC",
-    "PERFORMER",
-    "SIZE_INFO",
-    "SONGWRITER",
-    "TITLE",
-    "TOC_INFO",
-    "TOC_INFO2",
-    "UPC_EAN",
-  };
+{
+  "ARRANGER",
+  "COMPOSER",
+  "DISC_ID",
+  "GENRE",
+  "MESSAGE",
+  "ISRC",
+  "PERFORMER",
+  "SIZE_INFO",
+  "SONGWRITER",
+  "TITLE",
+  "TOC_INFO",
+  "TOC_INFO2",
+  "UPC_EAN",
+};
 
 static const char cdtext_genre[][30] =
 {
@@ -88,7 +88,7 @@ static const char cdtext_genre[][30] =
   "Sound Effects",
   "Spoken Word",
   "World Music"
-} ;
+};
 
 /*! Return string representation of the enum values above */
 const char *
@@ -100,19 +100,31 @@ cdtext_field2str (cdtext_field_t i)
     return cdtext_keywords[i];
 }
 
+/*! Return string representation of the given genre oode */
+const char *
+cdtext_genre2str (cdtext_genre_t i)
+{
+  if (i >= MAX_CDTEXT_GENRE_CODE)
+    return "Invalid genre code";
+  else
+    return cdtext_genre[i];
+}
+
 /*! Free memory assocated with cdtext*/
 void 
 cdtext_destroy (cdtext_t *p_cdtext)
 {
   cdtext_field_t i;
+  track_t i2;
 
   if (!p_cdtext) return; 
-  for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
-    if (p_cdtext->field[i]) {
-      free(p_cdtext->field[i]);
-      p_cdtext->field[i] = NULL;
+  for (i2=0; i2<=99; i2++) {
+    for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
+      if (p_cdtext->track[i2].field[i]) {
+        free(p_cdtext->track[i2].field[i]);
+        p_cdtext->track[i2].field[i] = NULL;
+      }
     }
-    
   }
 }
 
@@ -121,18 +133,25 @@ cdtext_destroy (cdtext_t *p_cdtext)
   if key is CDTEXT_INVALID or the field is not set.
  */
 char *
-cdtext_get (cdtext_field_t key, const cdtext_t *p_cdtext)
+cdtext_get (cdtext_field_t key, track_t track, const cdtext_t *p_cdtext)
 {
-  if ((key == CDTEXT_INVALID) || !p_cdtext 
-      || (!p_cdtext->field[key])) return NULL;
-  return strdup(p_cdtext->field[key]);
+  const char *ret = cdtext_get_const(key, track, p_cdtext);
+  if (NULL == ret)
+    return NULL;
+  else
+    return strdup(ret);
 }
 
 const char *
-cdtext_get_const (cdtext_field_t key, const cdtext_t *p_cdtext)
+cdtext_get_const (cdtext_field_t key, track_t track, const cdtext_t *p_cdtext)
 {
-  if (key == CDTEXT_INVALID) return NULL;
-  return p_cdtext->field[key];
+  if (CDTEXT_INVALID == key
+      || NULL == p_cdtext
+      || 0 > track
+      || 99 < track)
+    return NULL;
+
+  return p_cdtext->track[track].field[key];
 }
 
 
@@ -144,28 +163,26 @@ void
 cdtext_init (cdtext_t *p_cdtext)
 {
   cdtext_field_t i;
+  track_t i2;
 
-  for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
-    p_cdtext->field[i] = NULL;
+  for (i2=0; i2<=99; i2++) {
+    for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
+      p_cdtext->track[i2].field[i] = NULL;
+    }
   }
+
+  p_cdtext->genre_code = CDIO_CDTEXT_GENRE_UNUSED;
+  p_cdtext->language[0] = '\0';
+  p_cdtext->encoding[0] = '\0';
+  p_cdtext->block       = 0;
 }
 
 /*!
-  returns 0 if field is a CD-TEXT keyword, returns non-zero otherwise 
+  returns associated cdtext_field_t if field is a CD-TEXT keyword, returns non-zero otherwise 
 */
 cdtext_field_t
 cdtext_is_keyword (const char *key)
 {
-#if 0  
-  char *item;
-  
-  item = bsearch(key, 
-                 cdtext_keywords, 12,
-                 sizeof (char *), 
-                 (int (*)(const void *, const void *))
-                 strcmp);
-  return (NULL != item) ? 0 : 1;
-#else 
   unsigned int i;
   
   for (i = 0; i < 13 ; i++)
@@ -173,31 +190,29 @@ cdtext_is_keyword (const char *key)
       return i;
     }
   return CDTEXT_INVALID;
-#endif
 }
 
 /*! sets cdtext's keyword entry to field.
  */
 void 
-cdtext_set (cdtext_field_t key, const char *p_value, cdtext_t *p_cdtext)
+cdtext_set (cdtext_field_t key, track_t track, const char *p_value, cdtext_t *p_cdtext)
 {
-  if (NULL == p_value || key == CDTEXT_INVALID) return;
-  
-  if (p_cdtext->field[key]) free (p_cdtext->field[key]);
-  p_cdtext->field[key] = strdup (p_value);
+  if (NULL == p_value || key == CDTEXT_INVALID || 0 > track || 99 < track) return;
+
+  if (p_cdtext->track[track].field[key]) 
+    free (p_cdtext->track[track].field[key]);
+  p_cdtext->track[track].field[key] = strdup (p_value);
   
 }
 
 #define SET_CDTEXT_FIELD(FIELD) \
-  (*set_cdtext_field_fn)(p_user_data, i_track, i_first_track, FIELD, buffer);
+  cdtext_set(FIELD, i_track, buffer, p_cdtext);
 
 /* 
   parse all CD-TEXT data retrieved.
 */       
 bool
-cdtext_data_init(void *p_user_data, track_t i_first_track, 
-                 unsigned char *wdata, int i_data,
-                 set_cdtext_field_fn_t set_cdtext_field_fn) 
+cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata) 
 {
   CDText_data_t *p_data;
   int           i = -1;
@@ -206,14 +221,13 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
   int           idx;
   int           i_track;
   bool          b_ret = false;
-  char          block = 0;
-  char    encoding[16];
+  int           block = 0;
+  uint16_t      i_data = CDTEXT_GET_LEN16(wdata) - 2;
   CDText_blocksize_t p_blocksize;
   
   memset( buffer, 0x00, sizeof(buffer) );
   idx = 0;
   
-  bzero(encoding,16);
   bzero(&p_blocksize, sizeof(CDText_blocksize_t));
 
   p_data = (CDText_data_t *) (&wdata[4]);
@@ -221,26 +235,40 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
   for( ; i_data > 0; 
        i_data -= sizeof(CDText_data_t), p_data++ ) {
     
-#if TESTED
+#ifndef _CDTEXT_DBCC
     if ( p_data->bDBC ) {
       cdio_warn("Double-byte characters not supported");
       return false;
     }
 #endif
-    
+
     if ( p_data->seq != ++i || p_data->block != block ) break;
 
     /* only handle character packs */
-    if ( ((p_data->type >= 0x80) && (p_data->type <= 0x86)) || 
-        (p_data->type == 0x8E)) {
-
+    if ( ((p_data->type >= 0x80) && (p_data->type <= 0x87)) || 
+        (p_data->type == 0x8E)) 
+    {
       i_track = p_data->i_track;
 
-      for( j=0; j < CDIO_CDTEXT_MAX_TEXT_DATA; (p_data->bDBC ? j+=2 : j++) ) {
+      j = 0;
+      if (CDIO_CDTEXT_GENRE == p_data->type) {
+        j = 2;
+        if (CDIO_CDTEXT_GENRE_UNUSED == p_cdtext->genre_code) {
+          p_cdtext->genre_code = CDTEXT_GET_LEN16(p_data->text);
+        }
+      }
+
+#ifdef _CDTEXT_DBCC
+      for( ; j < CDIO_CDTEXT_MAX_TEXT_DATA; (p_data->bDBC ? j+=2 : j++) ) {
         if( p_data->text[j] == 0x00 && (!p_data->bDBC || p_data->text[j+1] == 0x00)) {
+          if((buffer[0] != 0x00) && (!p_data->bDBC || buffer[1] != 0x00)) {
+#else
+      for( ; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++) {
+        if( p_data->text[j] == 0x00) {
+          if(buffer[0] != 0x00) {
+#endif
           
           /* omit empty strings */
-          if((buffer[0] != 0x00) && (!p_data->bDBC || buffer[1] != 0x00)) {
             switch( p_data->type) {
             case CDIO_CDTEXT_TITLE: 
               SET_CDTEXT_FIELD(CDTEXT_TITLE);
@@ -273,6 +301,9 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
                 SET_CDTEXT_FIELD(CDTEXT_ISRC);
               }
               break;
+            case CDIO_CDTEXT_GENRE:
+              SET_CDTEXT_FIELD(CDTEXT_GENRE);
+              break;
             }
             
             b_ret = true;
@@ -281,82 +312,125 @@ cdtext_data_init(void *p_user_data, track_t i_first_track,
           }
         } else {
           buffer[idx++] = p_data->text[j];
+#ifdef _CDTEXT_DBCC
           if(p_data->bDBC)
              buffer[idx++] = p_data->text[j+1];
+#endif
         }
 
         buffer[idx] = 0x00;
+#ifdef _CDTEXT_DBCC
         if(p_data->bDBC)
            buffer[idx+1] = 0x00;
+#endif
       }
     } else {
       /* not a character pack */
-      if (p_data->type == CDIO_CDTEXT_GENRE) {
-        i_track = p_data->i_track;
-        /* seems like it is a uint_16 in the first 2 bytes */
-        if((p_data->text[0] << 8) + p_data->text[1] != CDIO_CDTEXT_GENRE_UNUSED) {
-          sprintf(buffer,"%s",cdtext_genre[(p_data->text[0] << 8) + p_data->text[1]]);
-          SET_CDTEXT_FIELD(CDTEXT_GENRE);
-    }
-#ifdef _DEBUG_CDTEXT
-        printf("GENRE information present: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
-	       p_data->text[0],p_data->text[1],p_data->text[2],p_data->text[3],
-	       p_data->text[4],p_data->text[5],p_data->text[6],p_data->text[7], 
-	       p_data->text[8],p_data->text[9],p_data->text[10],p_data->text[11]);
-#endif
-      }
 
       if(p_data->type == CDIO_CDTEXT_TOC) {
-#ifdef _DEBUG_CDTEXT
-        printf("TOC information present: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
-          p_data->text[0],p_data->text[1],p_data->text[2],p_data->text[3],
-          p_data->text[4],p_data->text[5],p_data->text[6],p_data->text[7], 
-          p_data->text[8],p_data->text[9],p_data->text[10],p_data->text[11]);
-#endif
+        /* no idea what this is */
       }
 
       if (p_data->type == CDIO_CDTEXT_TOC2) {
-#ifdef _DEBUG_CDTEXT
-        printf("TOC2 information present: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
-          p_data->text[0],p_data->text[1],p_data->text[2],p_data->text[3],
-          p_data->text[4],p_data->text[5],p_data->text[6],p_data->text[7], 
-          p_data->text[8],p_data->text[9],p_data->text[10],p_data->text[11]);
-#endif
+        /* no idea what this is */
       }
 
       /* i got this info from cdrtools' cdda2wav; all the tests i ran so far were successful */
       if (p_data->type == CDIO_CDTEXT_BLOCKSIZE) {
-	/* i_track is the pack element number in this case */
+	      /* i_track is the pack element number in this case */
         switch(p_data->i_track){
-	case 0:
-	  memcpy((char*)&p_blocksize,p_data->text,0x0c);
-	  break;
-	case 1:
-	  memcpy(((char*)&p_blocksize)+0x0c,p_data->text,0x0c);
-	  break;
-	case 2:
-	  memcpy(((char*)&p_blocksize)+0x18,p_data->text,0x0c);
-	  break;
+	        case 0:
+	          memcpy((char*)&p_blocksize,p_data->text,0x0c);
+	          break;
+	        case 1:
+	          memcpy(((char*)&p_blocksize)+0x0c,p_data->text,0x0c);
+	          break;
+	        case 2:
+	          memcpy(((char*)&p_blocksize)+0x18,p_data->text,0x0c);
+	          break;
         }
       }
     }
   }
   
-  if (p_blocksize.packcount[15] >= 3) {
-    /* BLOCKSIZE packs present */
+  if (p_blocksize.i_packs[15] >= 3) {
+    /* if there were more than 3 BLOCKSIZE packs */
     switch (p_blocksize.charcode){
-    case CDIO_CDTEXT_CHARCODE_ISO_8859_1:
-      sprintf(encoding,"ISO-8859-1");
-      break;
-    case CDIO_CDTEXT_CHARCODE_ASCII:
-      sprintf(encoding,"ASCII");
-      break;
-    case CDIO_CDTEXT_CHARCODE_KANJI:
-      sprintf(encoding,"Shift-JIS");
-      break;
+      case CDIO_CDTEXT_CHARCODE_ISO_8859_1:
+        strcpy(p_cdtext->encoding, "ISO-8859-1");
+        break;
+      case CDIO_CDTEXT_CHARCODE_ASCII:
+        strcpy(p_cdtext->encoding, "ASCII");
+        break;
+      case CDIO_CDTEXT_CHARCODE_KANJI:
+        strcpy(p_cdtext->encoding, "Shift-JIS");
+        break;
+    }
+ 
+    /* set ISO 639-1 code */
+    switch (p_blocksize.langcode[block]) {
+      case CDIO_CDTEXT_LANG_CZECH        :
+        strcpy(p_cdtext->language, "cs");
+        break;
+      case CDIO_CDTEXT_LANG_DANISH       :
+        strcpy(p_cdtext->language, "da");
+        break;
+      case CDIO_CDTEXT_LANG_GERMAN       :
+        strcpy(p_cdtext->language, "de");
+        break;
+      case CDIO_CDTEXT_LANG_ENGLISH      :
+        strcpy(p_cdtext->language, "en");
+        break;
+      case CDIO_CDTEXT_LANG_SPANISH      :
+        strcpy(p_cdtext->language, "es");
+        break;
+      case CDIO_CDTEXT_LANG_FRENCH       :
+        strcpy(p_cdtext->language, "fr");
+        break;
+      case CDIO_CDTEXT_LANG_ITALIAN      :
+        strcpy(p_cdtext->language, "it");
+        break;
+      case CDIO_CDTEXT_LANG_HUNGARIAN    :
+        strcpy(p_cdtext->language, "hu");
+        break;
+      case CDIO_CDTEXT_LANG_DUTCH        :
+        strcpy(p_cdtext->language, "nl");
+        break;
+      case CDIO_CDTEXT_LANG_NORWEGIAN    :
+        strcpy(p_cdtext->language, "no");
+        break;
+      case CDIO_CDTEXT_LANG_POLISH       :
+        strcpy(p_cdtext->language, "pl");
+        break;
+      case CDIO_CDTEXT_LANG_PORTUGUESE   :
+        strcpy(p_cdtext->language, "pt");
+        break;
+      case CDIO_CDTEXT_LANG_SLOVENE      :
+        strcpy(p_cdtext->language, "sl");
+        break;
+      case CDIO_CDTEXT_LANG_FINNISH      :
+        strcpy(p_cdtext->language, "fi");
+        break;
+      case CDIO_CDTEXT_LANG_SWEDISH      :
+        strcpy(p_cdtext->language, "sv");
+        break;
+      case CDIO_CDTEXT_LANG_RUSSIAN      :
+        strcpy(p_cdtext->language, "ru");
+        break;
+      case CDIO_CDTEXT_LANG_KOREAN       :
+        strcpy(p_cdtext->language, "ko");
+        break;
+      case CDIO_CDTEXT_LANG_JAPANESE     :
+        strcpy(p_cdtext->language, "ja");
+        break;
+      case CDIO_CDTEXT_LANG_GREEK        :
+        strcpy(p_cdtext->language, "el");
+        break;
+      case CDIO_CDTEXT_LANG_CHINESE      :
+        strcpy(p_cdtext->language, "zh");
+        break;
     }
     
   }
-  
   return b_ret;
 }

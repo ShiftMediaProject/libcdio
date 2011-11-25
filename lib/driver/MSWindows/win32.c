@@ -306,7 +306,6 @@ init_win32 (void *p_user_data)
   
   p_env->gen.init           = true;
   p_env->gen.toc_init       = false;
-  p_env->gen.b_cdtext_init  = false;
   p_env->gen.b_cdtext_error = false;
   p_env->gen.fd             = open (p_env->gen.source_name, O_RDONLY, 0);
 
@@ -962,6 +961,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.free                   = free_win32;
   _funcs.get_arg                = get_arg_win32;
   _funcs.get_cdtext             = get_cdtext_generic;
+  _funcs.get_cdtext_raw         = read_cdtext_generic;
   _funcs.get_default_device     = cdio_get_default_device_win32;
   _funcs.get_devices            = cdio_get_devices_win32;
   _funcs.get_disc_last_lsn      = get_disc_last_lsn_win32;

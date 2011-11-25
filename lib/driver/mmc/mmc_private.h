@@ -16,7 +16,6 @@
 */
 
 #include <cdio/mmc.h>
-#include "cdtext_private.h"
 
 /*! Convert milliseconds to seconds taking the ceiling value, i.e.
     1002 milliseconds gets rounded to 2 seconds.
@@ -131,9 +130,8 @@ char *mmc_get_mcn_private ( void *p_env,
 			    mmc_run_cmd_fn_t run_mmc_cmd
 			    );
 
-bool mmc_init_cdtext_private ( void *p_user_data, 
-			       mmc_run_cmd_fn_t run_mmc_cmd,
-			       set_cdtext_field_fn_t set_cdtext_field_fn
+uint8_t * mmc_read_cdtext_private ( void *p_user_data, 
+			       mmc_run_cmd_fn_t run_mmc_cmd
 			       );
 
 /*!

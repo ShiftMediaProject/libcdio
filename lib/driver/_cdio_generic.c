@@ -88,15 +88,14 @@ void
 cdio_generic_free (void *p_user_data)
 {
   generic_img_private_t *p_env = p_user_data;
-  track_t i_track;
 
   if (NULL == p_env) return;
   if (p_env->source_name) free (p_env->source_name);
 
-  if (p_env->b_cdtext_init) {
-    for (i_track=0; i_track < p_env->i_tracks; i_track++) {
-      cdtext_destroy(&(p_env->cdtext_track[i_track]));
-    }
+  if (NULL != p_env->cdtext) {
+      cdtext_destroy(p_env->cdtext);
+      free(p_env->cdtext);
+      p_env->cdtext = NULL;
   }
 
   if (p_env->fd >= 0)
@@ -130,7 +129,7 @@ cdio_generic_init (void *user_data, int open_flags)
 
   p_env->init = true;
   p_env->toc_init = false;
-  p_env->b_cdtext_init  = false;
+  p_env->cdtext  = NULL;
   p_env->b_cdtext_error = false;
   p_env->i_joliet_level = 0;  /* Assume no Joliet extensions initally */
   return true;
@@ -262,27 +261,31 @@ cdio_add_device_list(char **device_list[], const char *drive,
   not exist, or we don't know how to get this implemented.
 */
 cdtext_t *
-get_cdtext_generic (void *p_user_data, track_t i_track)
+get_cdtext_generic (void *p_user_data)
 {
   generic_img_private_t *p_env = p_user_data;
+  uint8_t *p_cdtext_data = NULL;
 
   if (!p_env) return NULL;
-  if (!p_env->toc_init) 
-    p_env->cdio->op.read_toc (p_user_data);
 
-  if ( (0 != i_track 
-        && i_track >= p_env->i_tracks+p_env->i_first_track ) )
-    return NULL;
+  if (NULL == p_env->cdtext) {
+    p_cdtext_data = read_cdtext_generic (p_env);
+    if (NULL != p_cdtext_data) {
+      p_env->cdtext = malloc (sizeof(cdtext_t));
+      cdtext_init(p_env->cdtext);
 
-  if (!p_env->b_cdtext_init)
-    init_cdtext_generic(p_env);
-  if (!p_env->b_cdtext_init) return NULL;
+      if(!cdtext_data_init (p_env->cdtext, p_cdtext_data)) {
+        p_env->b_cdtext_error = true;
+        cdtext_destroy (p_env->cdtext);
+        free(p_env->cdtext);
+        p_env->cdtext = NULL;
+      }
 
-  if (0 == i_track) 
-    return &(p_env->cdtext);
-  else 
-    return &(p_env->cdtext_track[i_track-p_env->i_first_track]);
+      free(p_cdtext_data);
+    }
+  }
 
+  return p_env->cdtext;
 }
 
 /*! 
@@ -422,36 +425,20 @@ get_num_tracks_generic(void *p_user_data)
   return p_env->toc_init ? p_env->i_tracks : CDIO_INVALID_TRACK;
 }
 
-void
-set_cdtext_field_generic(void *p_user_data, track_t i_track, 
-                       track_t i_first_track,
-                       cdtext_field_t e_field, const char *psz_value)
-{
-  char **pp_field;
-  generic_img_private_t *p_env = p_user_data;
-  
-  if( i_track == 0 )
-    pp_field = &(p_env->cdtext.field[e_field]);
-  
-  else
-    pp_field = &(p_env->cdtext_track[i_track-i_first_track].field[e_field]);
-
-  if (*pp_field) free(*pp_field);
-  *pp_field = (psz_value) ? strdup(psz_value) : NULL;
-}
 
 /*!
   Read CD-Text information for a CdIo_t object .
   
-  return true on success, false on error or CD-Text information does
-  not exist.
+  return pointer to raw cdtext on success,
+  NULL on failure
+  free when done and not NULL
 */
-bool
-init_cdtext_generic (generic_img_private_t *p_env)
+uint8_t *
+read_cdtext_generic(void *p_env)
 {
-  return mmc_init_cdtext_private( p_env,
-                                  p_env->cdio->op.run_mmc_cmd, 
-                                  set_cdtext_field_generic
+  generic_img_private_t *p_user_data = p_env;
+  return mmc_read_cdtext_private (p_user_data,
+                                  p_user_data->cdio->op.run_mmc_cmd
                                   );
 }
 

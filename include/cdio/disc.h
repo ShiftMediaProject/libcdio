@@ -56,7 +56,25 @@ extern "C" {
   } discmode_t;
 
   extern const char *discmode2str[];
-  
+  /**
+    Get binary CD-Text information for a CdIo_t object.
+
+    @param p_cdio the CD object that may contain CD-Text information.
+    @return malloc'd pointer to raw CD-Text data as stored on the disc 
+    or NULL if p_cdio is NULL or CD-Text information does not exist.
+    Return value should be freed when done with it and not NULL.
+  */
+  uint8_t * cdio_get_cdtext_raw (CdIo_t *p_cdio);
+
+  /** 
+    Get CD-Text information for a CdIo_t object.
+ 
+    @param p_cdio the CD object that may contain CD-Text information.
+    @return the CD-Text object or NULL if p_cdio is NULL
+    or CD-Text information does not exist.
+  */
+  cdtext_t *cdio_get_cdtext (CdIo_t *p_cdio);
+
   /** 
     Get disc mode - the kind of CD (CD-DA, CD-ROM mode 1, CD-MIXED, etc.
     that we've got. The notion of "CD" is extended a little to include

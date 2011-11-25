@@ -98,19 +98,6 @@ extern "C" {
     MODE2_RAW			/**< 2352 byte block length */
   } trackmode_t;
   
-  /*! 
-    Get CD-Text information for a CdIo_t object.
-
-    @param p_cdio the CD object that may contain CD-Text information.
-    @param i_track track for which we are requesting CD-Text information.
-    @return the CD-Text object or NULL if obj is NULL
-    or CD-Text information does not exist.
-
-    If i_track is 0 or CDIO_CDROM_LEADOUT_TRACK the track returned
-    is the information assocated with the CD. 
-  */
-  cdtext_t *cdio_get_cdtext (CdIo_t *p_cdio, track_t i_track);
-
   /*!
     Get the number of the first track. 
 

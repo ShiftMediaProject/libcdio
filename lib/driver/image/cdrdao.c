@@ -108,8 +108,6 @@ _init_cdrdao (_img_private_t *env)
   env->psz_mcn           = NULL;
   env->disc_mode         = CDIO_DISC_MODE_NO_INFO;
 
-  cdtext_init (&(env->gen.cdtext));
-
   /* Read in TOC sheet. */
   if ( !parse_tocfile(env, env->psz_cue_name) ) return false;
   
@@ -292,7 +290,6 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
   }
 
   if (cd) {
-    cd->gen.b_cdtext_init  = true;
     cd->gen.b_cdtext_error = false;
   }
 
@@ -375,7 +372,6 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	/* TRACK <track-mode> [<sub-channel-mode>] */
       } else if (0 == strcmp ("TRACK", psz_keyword)) {
 	i++;
-	if (NULL != cd) cdtext_init (&(cd->gen.cdtext_track[i]));
 	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	  if (0 == strcmp ("AUDIO", psz_field)) {
 	    if (NULL != cd) {
@@ -911,19 +907,16 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	if (i_cdtext_nest > 0) i_cdtext_nest--;
       } else if ( CDTEXT_INVALID != 
 		  (cdtext_key = cdtext_is_keyword (psz_keyword)) ) {
-	if (-1 == i) {
-	  if (NULL != cd) {
-	    cdtext_set (cdtext_key, 
-			strtok (NULL, "\"\t\n\r"), 
-			&(cd->gen.cdtext));
-	  }
-	} else {
-	  if (NULL != cd) {
-	    cdtext_set (cdtext_key, 
-			strtok (NULL, "\"\t\n\r"), 
-			&(cd->gen.cdtext_track[i]));
-	  }
-	}
+        if (NULL != cd) {
+          if (NULL == cd->gen.cdtext) {
+            cd->gen.cdtext = malloc(sizeof(cdtext_t));
+            cdtext_init (cd->gen.cdtext);
+          }
+          cdtext_set (cdtext_key, 
+                      (-1 == i ? 0 : cd->gen.i_first_track + i + 1),
+                      strtok (NULL, "\"\t\n\r"),
+                      cd->gen.cdtext);
+        }
 
 	/* unrecognized line */
       } else {
@@ -1261,7 +1254,8 @@ cdio_open_cdrdao (const char *psz_cue_name)
   _funcs.eject_media           = _eject_media_image;
   _funcs.free                  = _free_image;
   _funcs.get_arg               = _get_arg_image;
-  _funcs.get_cdtext            = get_cdtext_generic;
+  _funcs.get_cdtext            = _get_cdtext_image;
+  _funcs.get_cdtext_raw        = NULL;
   _funcs.get_devices           = cdio_get_devices_cdrdao;
   _funcs.get_default_device    = cdio_get_default_device_cdrdao;
   _funcs.get_disc_last_lsn     = get_disc_last_lsn_cdrdao;

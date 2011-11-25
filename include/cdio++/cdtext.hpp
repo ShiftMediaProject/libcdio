@@ -37,9 +37,9 @@ const char *field2str (cdtext_field_t i)
   have to be freed.
   
 */
-char *get (cdtext_field_t key) 
+char *get (cdtext_field_t key, track_t i_track) 
 {
-  return cdtext_get (key, p_cdtext);
+  return cdtext_get (key, i_track, p_cdtext);
 }
 
 /*! returns the C cdtext_t pointer associated with this object. */
@@ -58,9 +58,9 @@ cdtext_t *get ()
   cdtext object.
 
 */
-const char *getConst (cdtext_field_t key) 
+const char *getConst (cdtext_field_t key, track_t i_track) 
 {
-  return cdtext_get_const (key, p_cdtext);
+  return cdtext_get_const (key, i_track, p_cdtext);
 }
 
 /*!
@@ -75,9 +75,9 @@ cdtext_field_t isKeyword (const char *key)
 /*! 
   sets cdtext's keyword entry to field 
 */
-void set (cdtext_field_t key, const char *value) 
+void set (cdtext_field_t key, track_t i_track, const char *value) 
 {
-  cdtext_set (key, value, p_cdtext);
+  cdtext_set (key, i_track, value, p_cdtext);
 }
 
 

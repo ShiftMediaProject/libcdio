@@ -537,23 +537,22 @@ get_cddb_disc_info(CdIo_t *p_cdio)
   return;
 }
 
-#define add_cdtext_disc_info(format_str, info_field, FIELD) \
-  if (p_cdtext->field[FIELD] && !strlen(info_field)) {      \
-    snprintf(info_field, sizeof(info_field), format_str,    \
-             p_cdtext->field[FIELD]);                       \
-    b_cdtext_ ## info_field = true;                         \
+#define add_cdtext_disc_info(format_str, info_field, FIELD)     \
+  if (cdtext_get_const(FIELD, 0, p_cdtext) && !strlen(info_field)) { \
+    snprintf(info_field, sizeof(info_field), format_str,        \
+             cdtext_get_const(FIELD, 0, p_cdtext));                  \
+    b_cdtext_ ## info_field = true;                             \
   }
 
 static void 
 get_cdtext_disc_info(CdIo_t *p_cdio) 
 {
-  cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio, 0);
+  cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio);
 
   if (p_cdtext) {
     add_cdtext_disc_info("%s", title, CDTEXT_TITLE);
     add_cdtext_disc_info("%s", artist, CDTEXT_PERFORMER);
     add_cdtext_disc_info("%s", genre, CDTEXT_GENRE);
-    cdtext_destroy(p_cdtext);
   }
 }
 
@@ -835,10 +834,10 @@ get_cddb_track_info(track_t i_track)
 }
 
 #define add_cdtext_track_info(format_str, info_field, FIELD) \
-  if (p_cdtext->field[FIELD]) {                              \
-    snprintf(cd_info[i_track].info_field,                    \
-             sizeof(cd_info[i_track].info_field),            \
-             format_str, p_cdtext->field[FIELD]);            \
+  if (cdtext_get_const(FIELD, i_track, p_cdtext)) {                        \
+    snprintf(cd_info[i_track].info_field,                             \
+             sizeof(cd_info[i_track].info_field),                     \
+             format_str, cdtext_get_const(FIELD, i_track, p_cdtext));      \
     cd_info[i_track].b_cdtext = true; \
   }
 
@@ -847,12 +846,11 @@ static void
 get_cdtext_track_info(track_t i_track)
 {
 
-  cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio, i_track);
+  cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio);
 
   if (NULL != p_cdtext) {
     add_cdtext_track_info("%s", title, CDTEXT_TITLE);
     add_cdtext_track_info("%s", artist, CDTEXT_PERFORMER);
-    cdtext_destroy(p_cdtext);
   }
 }
 

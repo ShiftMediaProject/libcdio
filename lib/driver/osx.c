@@ -856,20 +856,6 @@ get_hwinfo_osx ( const CdIo_t *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
 }
 #endif
 
-/*
-  Get cdtext information in p_user_data for track i_track. 
-  For disc information i_track is 0.
-  
-  Return the CD-TEXT or NULL if obj is NULL,
-  CD-TEXT information does not exist, or (as is the case here)
-  we don't know how to get this implemented.
-*/
-static cdtext_t *
-get_cdtext_osx (void *p_user_data, track_t i_track) 
-{
-  return NULL;
-}
-
 static void 
 _free_osx (void *p_user_data) {
   _img_private_t *p_env = p_user_data;
@@ -1893,7 +1879,8 @@ cdio_open_osx (const char *psz_orig_source)
     .eject_media           = _eject_media_osx,
     .free                  = _free_osx,
     .get_arg               = _get_arg_osx,
-    .get_cdtext            = get_cdtext_osx,
+    .get_cdtext            = NULL,
+    .get_cdtext_raw        = NULL,
     .get_default_device    = cdio_get_default_device_osx,
     .get_devices           = cdio_get_devices_osx,
     .get_disc_last_lsn     = get_disc_last_lsn_osx,
@@ -1930,8 +1917,6 @@ cdio_open_osx (const char *psz_orig_source)
   _data->gen.init           = false;
   _data->gen.fd             = -1;
   _data->gen.toc_init       = false;
-  _data->gen.b_cdtext_init  = false;
-  _data->gen.b_cdtext_error = false;
 
   if (NULL == psz_orig_source) {
     psz_source=cdio_get_default_device_osx();

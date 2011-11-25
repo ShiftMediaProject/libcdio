@@ -110,7 +110,6 @@ typedef struct {
   lsn_t          start_lsn;
   uchar          Control : 4;
   uchar          Format;
-  cdtext_t       cdtext;	         /* CD-TEXT */
 } track_info_t;
 
 typedef struct {
@@ -172,8 +171,6 @@ init_aix (_img_private_t *p_env)
 
   p_env->gen.init = true;
   p_env->gen.toc_init = false;
-  p_env->gen.b_cdtext_init  = false;
-  p_env->gen.b_cdtext_error = false;
   p_env->gen.i_joliet_level = 0;  /* Assume no Joliet extensions initally */
   p_env->access_mode = _AM_CTRL_SCSI;    
 
@@ -946,6 +943,7 @@ cdio_open_am_aix (const char *psz_orig_source, const char *access_mode)
   _funcs.free               = cdio_generic_free;
   _funcs.get_arg            = get_arg_aix;
   _funcs.get_cdtext         = get_cdtext_generic;
+  _funcs.get_cdtext_raw     = read_cdtext_generic;
   _funcs.get_default_device = cdio_get_default_device_aix;
   _funcs.get_devices        = cdio_get_devices_aix;
   _funcs.get_disc_last_lsn  = get_disc_last_lsn_aix;
@@ -973,11 +971,10 @@ cdio_open_am_aix (const char *psz_orig_source, const char *access_mode)
   _data                 = calloc (1, sizeof (_img_private_t));
 
   _data->access_mode    = _AM_CTRL_SCSI;
+  _data->gen.b_cdtext_error = false;
   _data->gen.init       = false;
   _data->gen.fd         = -1;
   _data->gen.toc_init   = false;
-  _data->gen.b_cdtext_init  = false;
-  _data->gen.b_cdtext_error = false;
 
   if (NULL == psz_orig_source) {
     psz_source = cdio_get_default_device_aix();
