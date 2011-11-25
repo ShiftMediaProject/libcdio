@@ -17,6 +17,9 @@ check_DATA = \
 	cdda.bin       \
 	cdda.cue       \
 	cdda.toc       \
+	cdtext.bin     \
+	cdtext.cdt     \
+	cdda.bin       \
 	copying-rr.iso \
 	copying.iso    \
 	data1.toc      \

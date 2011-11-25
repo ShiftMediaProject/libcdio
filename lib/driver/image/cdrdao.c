@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2004, 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2011 
+  Rocky Bernstein <rocky@gnu.org>
     toc reading routine adapted from cuetools
   Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
@@ -22,7 +23,6 @@
    (*.cue).
 */
 
-static const char _rcsid[] = "$Id: cdrdao.c,v 1.27 2008/04/21 18:30:22 karl Exp $";
 
 #include "image.h"
 #include "cdio_assert.h"
@@ -242,7 +242,7 @@ get_disc_last_lsn_cdrdao (void *p_user_data)
     i_size = p_env->tocent[i_leadout-1].sec_count;
   } else {
     if (NULL == p_env->tocent[i_leadout-1].data_source) {
-      cdio_error ("Data source for image %s is null",
+      cdio_warn ("Data source for image %s is null",
 		  p_env->gen.source_name);
       return -1;
     }
