@@ -189,9 +189,13 @@ AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h \
 
 # We have to disable cdda_player unless we have either ncurses.h or
 # curses.h
+have_ncurses_h='no'
 if test $enable_cdda_player = 'yes' ; then 
   enable_cdda_player='no'
-  AC_CHECK_HEADERS(ncurses.h curses.h, enable_cdda_player='yes')
+  AC_CHECK_HEADERS(ncurses.h, 
+  		   [enable_cdda_player='yes'; have_ncurses_h='yes'],
+    		   [AC_CHECK_HEADERS(curses.h, 
+		                    enable_cdda_player='yes')])
 fi
 
 # FreeBSD 4 has getopt in unistd.h. So we include that before
@@ -576,12 +580,20 @@ AC_SUBST(CDDB_LIBS)
 
 AC_DEFINE(HAVE_KEYPAD, [], [Define this if your libcurses has keypad])
 if test x"$enable_cdda_player" = xyes; then
-    AC_CHECK_LIB(ncurses, mvprintw, 
-      [LIBCURSES=ncurses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
-      AC_CHECK_LIB(curses, mvprintw, 
-      [LIBCURSES=curses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
-      [AC_MSG_WARN([Will not build cdda-player - did not find libcurses or libncurses]) 
-      enable_cdda_player=no]))
+    if test x"$have_ncurses_h" = xyes; then
+      AC_CHECK_LIB(ncurses, mvprintw, 
+        [LIBCURSES=ncurses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
+        AC_CHECK_LIB(curses, mvprintw, 
+                     [LIBCURSES=curses; 
+                       CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
+                     [AC_MSG_WARN([Will not build cdda-player - did not find libncurses or libcurses])
+                     enable_cdda_player=no]))
+    else  
+        AC_CHECK_LIB(curses, mvprintw, 
+                     [LIBCURSES=curses; 
+                     CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
+                     [AC_MSG_WARN([Will not build cdda-player - did not find libcurses])])
+    fi
     if test x"$enable_cdda_player" = xyes; then
       AC_CHECK_LIB($LIBCURSES, keypad, [HAVE_KEYPAD=yes])
     fi   
