@@ -77,7 +77,8 @@ check_track_is_blocksize_multiple(const char *psz_fname,
 {
   if (i_size % i_blocksize) {
     cdio_info ("image %s track %d size (%ld) not a multiple"
-	       " of the blocksize (%ld)", psz_fname, i_track, i_size, 
+	       " of the blocksize (%ld)", 
+	       psz_fname ? psz_fname : "unknown??", i_track, i_size, 
 	       (long int) i_blocksize);
     if (i_size % M2RAW_SECTOR_SIZE == 0)
       cdio_info ("this may be a 2336-type disc image");
@@ -240,8 +241,18 @@ get_disc_last_lsn_cdrdao (void *p_user_data)
   if (p_env->tocent[i_leadout-1].sec_count) {
     i_size = p_env->tocent[i_leadout-1].sec_count;
   } else {
+    if (NULL == p_env->tocent[i_leadout-1].data_source) {
+      cdio_error ("Data source for image %s is null",
+		  p_env->gen.source_name);
+      return -1;
+    }
     i_size = cdio_stream_stat(p_env->tocent[i_leadout-1].data_source)
       - p_env->tocent[i_leadout-1].offset;
+    if (i_size < 0) {
+      cdio_error ("Can't get file information for data souce for image %s",
+		  p_env->gen.source_name);
+      return i_size;
+    }
     if (check_track_is_blocksize_multiple(p_env->tocent[i_leadout-1].filename, 
 					  i_leadout-1, i_size, i_blocksize)) {
       i_size /= i_blocksize;
