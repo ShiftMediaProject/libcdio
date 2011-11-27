@@ -229,6 +229,9 @@ _read_cdrdao (void *user_data, void *data, size_t size)
 
 /*!
    Return the size of the CD in logical block address (LBA) units.
+
+   FIXME: this assumes there is only one source for data or 
+   one track of silence.
  */
 static lsn_t
 get_disc_last_lsn_cdrdao (void *p_user_data)
@@ -241,15 +244,22 @@ get_disc_last_lsn_cdrdao (void *p_user_data)
   if (p_env->tocent[i_leadout-1].sec_count) {
     i_size = p_env->tocent[i_leadout-1].sec_count;
   } else {
-    if (NULL == p_env->tocent[i_leadout-1].data_source) {
-      cdio_warn ("Data source for image %s is null",
-		  p_env->gen.source_name);
-      return -1;
-    }
-    i_size = cdio_stream_stat(p_env->tocent[i_leadout-1].data_source)
-      - p_env->tocent[i_leadout-1].offset;
+      if (NULL == p_env->tocent[i_leadout-1].data_source) {
+	  if (!p_env->tocent[i_leadout-1].silence) {
+	      cdio_warn ("Data source for image %s is null",
+			 p_env->gen.source_name);
+	      return -1;
+	  }
+	  /* FIXME: this is only correct if there is one
+	     track of silence. */
+	  i_size = p_env->tocent[i_leadout-1].silence;
+      } else {
+	  /* FIXME: this is only correct if there is one data source. */
+	  i_size = cdio_stream_stat(p_env->tocent[i_leadout-1].data_source)
+	      - p_env->tocent[i_leadout-1].offset;
+      }
     if (i_size < 0) {
-      cdio_error ("Can't get file information for data souce for image %s",
+      cdio_error ("Disc data size too small for track specification in image %s",
 		  p_env->gen.source_name);
       return i_size;
     }
@@ -650,7 +660,14 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	
 	/* SILENCE <length> */
       } else if (0 == strcmp ("SILENCE", psz_keyword)) {
-	UNIMPLIMENTED_MSG;
+	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+	      if (NULL != cd) 
+		  cd->tocent[i].silence = cdio_mmssff_to_lba (psz_field);
+	  } else {
+	      goto format_error;
+	  }
+	  cdio_log(log_level, "%s line %d: SILENCE not fully implimented",
+		   psz_cue_name, i_line);
 	
 	/* ZERO <length> */
       } else if (0 == strcmp ("ZERO", psz_keyword)) {
@@ -847,7 +864,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
 	    if (NULL != cd) 
-	      cd->tocent[i].silence = cdio_mmssff_to_lba (psz_field);
+	      cd->tocent[i].pregap = cdio_mmssff_to_lba (psz_field);
 	  } else {
 	    goto format_error;
 	  }
