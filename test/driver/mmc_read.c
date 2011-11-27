@@ -1,6 +1,6 @@
 /* -*- C -*-
   Copyright (C) 2009 Thomas Schmitt <scdbackup@gmx.net>
-  Copyright (C) 2010 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2010, 2011 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 */
 
 /**
-   Regression test for MMC commands which don't involve read/write access.
+   Regression test for MMC commands which don't involve write access.
  */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -357,7 +357,22 @@ test_read(char *psz_drive_path, unsigned int i_flag)
     if ((i_flag & 1) && 0 != i_ret && 2 == sense_reply.sense_key && 
 	0x3a == sense_reply.asc)
 	fprintf(stderr, "test_unit_ready: Note: No loaded media detected.\n");
-    i_ret = 0;
+
+    /* Call mmc_read with a null pointer and check that we get
+       the right return code. */
+
+    if (DRIVER_OP_BAD_POINTER != 
+	(i_ret = mmc_read_cd(p_cdio,
+			     NULL, /* wrong! should be a buffer. */
+			     200,  CDIO_MMC_READ_TYPE_ANY,
+			     false, false, 0, true, false, false,
+			     1, 2448, 1))) {
+	fprintf(stderr, 
+		"mmc_read_cd: expecting bad pointer return, got %d\n",
+		i_ret);
+    } else {
+	    i_ret = 0;
+    }
     
   ex:;
     cdio_loglevel_default = old_log_level;

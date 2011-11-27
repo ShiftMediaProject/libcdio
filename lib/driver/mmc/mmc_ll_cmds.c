@@ -296,7 +296,10 @@ mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn,
     void *p_buf = p_buf1;
     uint8_t cdb9 = 0;
     const unsigned int i_timeout = mmc_timeout_ms * (MAX_CD_READ_BLOCKS/2);
-    
+
+    /* Catch what may be a common bug. */
+    if (NULL == p_buf) return DRIVER_OP_BAD_POINTER;
+
     MMC_CMD_SETUP(CDIO_MMC_GPCMD_READ_CD);
     
     CDIO_MMC_SET_READ_TYPE(cdb.field, read_sector_type);
