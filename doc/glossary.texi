@@ -100,7 +100,8 @@ CD Text is a technology developed by Sony Corporation and Philips
 Electronics in 1996 that allows storing in an audio CD and its tracks
 information such as artist name, title, songwriter, composer, or
 arranger. Commercially available audio CDs sometimes contain CD Text
-information.
+information. See @url{http://web.ncf.ca/aa571/cdtext.htm} or 
+@url{http://wyday.com/cuesharp/specification.php}
 
 @item @anchor{XA}CD XA
 @cindex CD XA
