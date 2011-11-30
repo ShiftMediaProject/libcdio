@@ -53,13 +53,17 @@
 #endif
 
 #ifdef HAVE_CURSES_H
-#include <curses.h>
+# include <curses.h>
 #else 
-#ifdef HAVE_NCURSES_H
+# ifdef HAVE_NCURSES_H
 #include <ncurses.h>
-#else
-#  error "You need <curses.h> or <ncurses.h to build cdda-player"
-#endif
+# else
+#   ifdef HAVE_NCURSES_NCURSES_H
+#     include <ncurses/ncurses.h>
+#   else 
+#     error "You need <curses.h> or <ncurses.h to build cdda-player"
+#   endif
+# endif
 #endif
 
 #include <cdio/cdio.h>

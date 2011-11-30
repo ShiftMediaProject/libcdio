@@ -12,13 +12,14 @@ without warranty of any kind.
 Basic Installation
 ==================
 
-   If you are compiling from git sources, see README.develop.
-
-   Briefly, the shell command:
-   ./configure && make && sudo make install
-
-should configure, build, and install this package. "sudo" may not be
-in situations where "root" access is not needed to install software.
+   Briefly, the shell commands `./configure; make; make install' should
+configure, build, and install this package.  The following
+more-detailed instructions are generic; see the `README' file for
+instructions specific to this package.  Some packages provide this
+`INSTALL' file but do not implement all of the features documented
+below.  The lack of an optional feature in a given package is not
+necessarily a bug.  More recommendations for GNU packages can be found
+in *note Makefile Conventions: (standards)Makefile Conventions.
 
    The `configure' shell script attempts to guess correct values for
 various system-dependent variables used during compilation.  It uses
@@ -29,13 +30,23 @@ you can run in the future to recreate the current configuration, and a
 file `config.log' containing compiler output (useful mainly for
 debugging `configure').
 
-   If you need to do unusual things to compile the package, please try
-to figure out how `configure' could check whether to do them, and send
-patches to https://savannah.gnu.org/patch/?group=libcdio
+   It can also use an optional file (typically called `config.cache'
+and enabled with `--cache-file=config.cache' or simply `-C') that saves
+the results of its tests to speed up reconfiguring.  Caching is
+disabled by default to prevent problems with accidental use of stale
+cache files.
 
-   The file `configure.ac' is used to create `configure' by a program
-called `autoconf'.  You need `configure.ac' if you want to change it
-or regenerate `configure' using a newer version of `autoconf'.
+   If you need to do unusual things to compile the package, please try
+to figure out how `configure' could check whether to do them, and mail
+diffs or instructions to the address given in the `README' so they can
+be considered for the next release.  If you are using the cache, and at
+some point `config.cache' contains results you don't want to keep, you
+may remove or edit it.
+
+   The file `configure.ac' (or `configure.in') is used to create
+`configure' by a program called `autoconf'.  You need `configure.ac' if
+you want to change it or regenerate `configure' using a newer version
+of `autoconf'.
 
    The simplest way to compile this package is:
 
@@ -45,8 +56,7 @@ or regenerate `configure' using a newer version of `autoconf'.
      Running `configure' might take a while.  While running, it prints
      some messages telling which features it is checking for.
 
-  2. Type `make' or `remake' (GNU make with better error reporting,
-     tracing and a debugger) to compile the package.
+  2. Type `make' to compile the package.
 
   3. Optionally, type `make check' to run any self-tests that come with
      the package, generally using the just-built uninstalled binaries.
@@ -66,23 +76,22 @@ or regenerate `configure' using a newer version of `autoconf'.
 
   6. You can remove the program binaries and object files from the
      source code directory by typing `make clean'.  To also remove the
-     files that `configure' created (so you can compile the package
-     for a different kind of computer), type `make distclean'.  There
-     is also a `make maintainer-clean' target, but that is intended
-     mainly for the package's developers.  If you use it, you may have
-     to get all sorts of other programs listed in README.develop in
-     order to regenerate files that came with the distribution.
+     files that `configure' created (so you can compile the package for
+     a different kind of computer), type `make distclean'.  There is
+     also a `make maintainer-clean' target, but that is intended mainly
+     for the package's developers.  If you use it, you may have to get
+     all sorts of other programs in order to regenerate files that came
+     with the distribution.
 
-  7. You can also type `make uninstall' to remove the installed
-     files again.  
+  7. Often, you can also type `make uninstall' to remove the installed
+     files again.  In practice, not all packages have tested that
+     uninstallation works correctly, even though it is required by the
+     GNU Coding Standards.
 
-  8. `make distcheck', which can by used by developers to test that
-     all other targets like `make install' and `make uninstall' work
-     correctly.  This target is generally not run by end users.
-
-  9. For a list of all targets if you have remake installed, `remake
-  --tasks' will give a list.
-     
+  8. Some packages, particularly those that use Automake, provide `make
+     distcheck', which can by used by developers to test that all other
+     targets like `make install' and `make uninstall' work correctly.
+     This target is generally not run by end users.
 
 Compilers and Options
 =====================
@@ -98,6 +107,36 @@ is an example:
      ./configure CC=c99 CFLAGS=-g LIBS=-lposix
 
    *Note Defining Variables::, for more details.
+
+Compiling For Multiple Architectures
+====================================
+
+   You can compile the package for more than one kind of computer at the
+same time, by placing the object files for each architecture in their
+own directory.  To do this, you can use GNU `make'.  `cd' to the
+directory where you want the object files and executables to go and run
+the `configure' script.  `configure' automatically checks for the
+source code in the directory that `configure' is in and in `..'.  This
+is known as a "VPATH" build.
+
+   With a non-GNU `make', it is safer to compile the package for one
+architecture at a time in the source code directory.  After you have
+installed the package for one architecture, use `make distclean' before
+reconfiguring for another architecture.
+
+   On MacOS X 10.5 and later systems, you can create libraries and
+executables that work on multiple system types--known as "fat" or
+"universal" binaries--by specifying multiple `-arch' options to the
+compiler but only a single `-arch' option to the preprocessor.  Like
+this:
+
+     ./configure CC="gcc -arch i386 -arch x86_64 -arch ppc -arch ppc64" \
+                 CXX="g++ -arch i386 -arch x86_64 -arch ppc -arch ppc64" \
+                 CPP="gcc -E" CXXCPP="g++ -E"
+
+   This is not guaranteed to produce working output in all cases, you
+may have to build one architecture at a time and combine the results
+using the `lipo' tool if you have problems.
 
 Installation Names
 ==================
@@ -157,12 +196,17 @@ Optional Features
 with an extra prefix or suffix on their names by giving `configure' the
 option `--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
 
-   Pay attention to `--enable-FEATURE' options to `configure', where
-FEATURE indicates an optional part of the package.  Also pay attention
-to `--with-PACKAGE' options, where PACKAGE is something like `cddb'
-(CDDB lookup support) or `vcd-info' (for enabling VCD support).  The
-botom of file `README.libcdio' has a list of `--enable-' and `--with-'
-options recognized.
+   Some packages pay attention to `--enable-FEATURE' options to
+`configure', where FEATURE indicates an optional part of the package.
+They may also pay attention to `--with-PACKAGE' options, where PACKAGE
+is something like `gnu-as' or `x' (for the X Window System).  The
+`README' should mention any `--enable-' and `--with-' options that the
+package recognizes.
+
+   For packages that use the X Window System, `configure' can usually
+find the X include and library files automatically, but if it doesn't,
+you can use the `configure' options `--x-includes=DIR' and
+`--x-libraries=DIR' to specify their locations.
 
    Some packages offer the ability to configure how verbose the
 execution of `make' will be.  For these packages, running `./configure

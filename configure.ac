@@ -195,7 +195,10 @@ if test $enable_cdda_player = 'yes' ; then
   AC_CHECK_HEADERS(ncurses.h, 
   		   [enable_cdda_player='yes'; have_ncurses_h='yes'],
     		   [AC_CHECK_HEADERS(curses.h, 
-		                    enable_cdda_player='yes')])
+		                    [enable_cdda_player='yes'],
+				    [AC_CHECK_HEADERS(ncurses/ncurses.h,
+				                      enable_cdda_player='yes')
+						      ])])
 fi
 
 # FreeBSD 4 has getopt in unistd.h. So we include that before
