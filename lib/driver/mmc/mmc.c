@@ -369,7 +369,7 @@ mmc_read_cdtext_private ( void *p_user_data,
     /* Now read the CD-Text data */
     int	i_cdtext = CDIO_MMC_GET_LEN16(wdata);
 
-    if (i_cdtext+2 > 5000)
+    if (i_cdtext+2 > MAX_CDTEXT_DATA_LENGTH)
       i_cdtext = MAX_CDTEXT_DATA_LENGTH-2;
     else
       wdata = realloc(wdata,i_cdtext+2);

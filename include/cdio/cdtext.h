@@ -124,7 +124,7 @@ extern "C" {
   void cdtext_init (cdtext_t *cdtext);
 
   /*! Parse raw CD-Text data into cdtext structure */ 
-  bool cdtext_data_init(cdtext_t *cdtext, uint8_t *wdata);
+  bool cdtext_data_init(cdtext_t *cdtext, uint8_t *wdata, size_t length);
   
   /*! Free memory assocated with cdtext*/
   void cdtext_destroy (cdtext_t *cdtext);

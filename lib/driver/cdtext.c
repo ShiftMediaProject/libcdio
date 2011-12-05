@@ -212,17 +212,16 @@ cdtext_set (cdtext_field_t key, track_t track, const char *p_value, cdtext_t *p_
   parse all CD-TEXT data retrieved.
 */       
 bool
-cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata) 
+cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data) 
 {
   CDText_data_t *p_data;
-  int           i = -1;
+  int           i;
   int           j;
   char          buffer[256];
   int           idx;
   int           i_track;
   bool          b_ret = false;
   int           block = 0;
-  uint16_t      i_data = CDTEXT_GET_LEN16(wdata) - 2;
   CDText_blocksize_t p_blocksize;
   
   memset( buffer, 0x00, sizeof(buffer) );
@@ -230,10 +229,13 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata)
   
   bzero(&p_blocksize, sizeof(CDText_blocksize_t));
 
-  p_data = (CDText_data_t *) (&wdata[4]);
+  p_data = (CDText_data_t *) wdata;
+  if (0 != i_data % sizeof(CDText_data_t)) {
+    cdio_warn("CD-Text size is not multiple of pack size");
+    return false;
+  }
 
-  for( ; i_data > 0; 
-       i_data -= sizeof(CDText_data_t), p_data++ ) {
+  for( i = -1; i_data > 0; i_data -= sizeof(CDText_data_t), p_data++ ) {
     
 #ifndef _CDTEXT_DBCC
     if ( p_data->bDBC ) {

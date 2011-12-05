@@ -750,7 +750,7 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
         cdio_assert (len % sizeof (CDText_data_t) == 0);
         p_env->gen.cdtext = malloc(sizeof(cdtext_t));
         cdtext_init (p_env->gen.cdtext);
-        if(!cdtext_data_init (p_env->gen.cdtext, &wdata[-4]))
+        if(!cdtext_data_init (p_env->gen.cdtext, wdata, len))
         {
           cdtext_destroy(p_env->gen.cdtext);
           free(p_env->gen.cdtext);

@@ -328,8 +328,8 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
     if(NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
       if (cd) {
         uint8_t cdt_data[MAX_CDTEXT_DATA_LENGTH+4];
+        uint8_t *ptr;
         int size;
-        int i;
         CdioDataSource_t *source;
 
         if(NULL == (source = cdio_stdio_new(psz_field))) {
@@ -338,21 +338,18 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         }
         size = cdio_stream_read(source, cdt_data, MAX_CDTEXT_DATA_LENGTH, 1);
 
-        if (size < 4) {
+        if (size < 5) {
           cdio_log (log_level, "%s line %d: file `%s' is too small to contain CD-TEXT", psz_cue_name, i_line, psz_field);
           goto err_exit;
         }
 
-        /* prepend data length if not yet present */
-        if (cdt_data[0] >= 0x80) {
-          for(i=size-1; i >=0; i--)
-              cdt_data[i+4] = cdt_data[i];
-
-          cdt_data[0] = (size+2) << 8;
-          cdt_data[1] = (size+2) & 0xff;
-          cdt_data[2] = 0x00;
-          cdt_data[3] = 0x00;
+        /* cut header */
+        if (cdt_data[0] > 0x80) {
+          ptr = &cdt_data[4];
+          size -= 4;
         }
+        else
+          ptr = cdt_data;
 
         /* init cdtext */
         if (NULL == cd->gen.cdtext) {
@@ -360,7 +357,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
           cdtext_init (cd->gen.cdtext);
         }
 
-        if(!cdtext_data_init(cd->gen.cdtext, cdt_data))
+        if(!cdtext_data_init(cd->gen.cdtext, cdt_data, size))
           cdio_log (log_level, "%s line %d: failed to parse CD-TEXT file `%s'", psz_cue_name, i_line, psz_field);
 
         cdio_stdio_destroy (source);

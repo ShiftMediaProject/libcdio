@@ -265,6 +265,7 @@ get_cdtext_generic (void *p_user_data)
 {
   generic_img_private_t *p_env = p_user_data;
   uint8_t *p_cdtext_data = NULL;
+  size_t  len;
 
   if (!p_env) return NULL;
 
@@ -273,8 +274,9 @@ get_cdtext_generic (void *p_user_data)
     if (NULL != p_cdtext_data) {
       p_env->cdtext = malloc (sizeof(cdtext_t));
       cdtext_init(p_env->cdtext);
+      len = CDIO_MMC_GET_LEN16(p_cdtext_data);
 
-      if(!cdtext_data_init (p_env->cdtext, p_cdtext_data)) {
+      if(!cdtext_data_init (p_env->cdtext, &p_cdtext_data[4], len-2)) {
         p_env->b_cdtext_error = true;
         cdtext_destroy (p_env->cdtext);
         free(p_env->cdtext);
