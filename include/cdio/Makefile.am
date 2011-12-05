@@ -22,7 +22,7 @@ if BUILD_CD_PARANOIA
 paranoiaheaders = cdda.h cdtext.h 
 endif
 
-cdio_config.h: $(top_srcdir)/config.h
+cdio_config.h: $(top_builddir)/config.h
 	echo  '#ifndef __CDIO_CONFIG_H__' > cdio_config.h
 	echo  '#define __CDIO_CONFIG_H__' >> cdio_config.h
 	cat  $(top_builddir)/config.h >>cdio_config.h

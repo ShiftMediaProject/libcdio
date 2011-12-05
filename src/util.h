@@ -56,7 +56,7 @@
 #endif
 
 #ifdef ENABLE_NLS
-#include <locale.h>
+#    include <locale.h>
 #    include <libintl.h>
 #    define _(String) dgettext ("cdinfo", String)
 #else
