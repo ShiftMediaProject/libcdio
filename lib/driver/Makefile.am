@@ -57,6 +57,7 @@ libcdio_sources = \
 	_cdio_stdio.h \
 	_cdio_stream.c \
 	_cdio_stream.h \
+	abs_path.c \
 	aix.c \
 	bsdi.c \
 	audio.c \

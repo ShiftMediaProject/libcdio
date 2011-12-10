@@ -14,6 +14,7 @@ _cdio_list_prepend
 _cdio_malloc
 _cdio_strfreev
 _cdio_strsplit
+cdio_abspath
 cdio_audio_get_msf_seconds
 cdio_audio_get_volume
 cdio_audio_pause
