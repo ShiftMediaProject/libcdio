@@ -5,6 +5,7 @@
 /.libs
 /Makefile
 /Makefile.in
+/abs_path
 /bincue
 /bincue
 /bincue.c

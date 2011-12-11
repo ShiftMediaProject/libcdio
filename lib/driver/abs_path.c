@@ -59,22 +59,6 @@
 #endif
 
 static char *
-chompdirsep(const char *path)
-{
-    while (*path) {
-	if (isdirsep(*path)) {
-	    const char *last = path++;
-	    while (isdirsep(*path)) path++;
-	    if (!*path) return (char *)last;
-	}
-	else {
-	    path = CharNext(path);
-	}
-    }
-    return (char *)path;
-}
-
-static char *
 strrdirsep(const char *path)
 {
     char *last = NULL;
@@ -92,57 +76,23 @@ strrdirsep(const char *path)
     return last;
 }
 
+const char * cdio_dirname(const char *fname);
+
 const char *
-cdio_basename(const char *name)
+cdio_dirname(const char *fname)
 {
     const char *p;
-#if defined DOSISH_DRIVE_LETTER || defined DOSISH_UNC
-    const char *root;
-#endif
-    long f, n = -1;
-
-    name = skipprefix(name);
-#if defined DOSISH_DRIVE_LETTER || defined DOSISH_UNC
-    root = name;
-#endif
-    while (isdirsep(*name))
-	name++;
-    if (!*name) {
-	p = name - 1;
-	f = 1;
-#if defined DOSISH_DRIVE_LETTER || defined DOSISH_UNC
-	if (name != root) {
-	    /* has slashes */
-	}
-#ifdef DOSISH_DRIVE_LETTER
-	else if (*p == ':') {
-	    p++;
-	    f = 0;
-	}
-#endif
-#ifdef DOSISH_UNC
-	else {
-	    p = CDIO_FILE_SEPARARATOR;
-	}
-#endif
-#endif
-    }
-    else {
-	if (!(p = strrdirsep(name))) {
-	    p = name;
-	}
-	else {
-	    while (isdirsep(*p)) p++; /* skip last / */
-	}
-	n = chompdirsep(p) - p;
-    }
-
-    return p;
+    p = strrdirsep(fname);
+    if (!p) return ".";
+    return strndup(fname, p - fname);
 }
 
+const char *cdio_abspath(const char *cwd, const char *fname);
+
+
 /* If fname isn't absolute, add cwd to it. */
-char *
-cdio_abspath(const char *cwd, char *fname)
+const char *
+cdio_abspath(const char *cwd, const char *fname)
 {
     if (isdirsep(*fname)) return fname;
     {
@@ -154,12 +104,11 @@ cdio_abspath(const char *cwd, char *fname)
     }
 }
 
-#define STANDALONE 1
 #ifdef STANDALONE
 int main(int argc, char **argv)
 {
-  char *dest;
-  char *basename;
+  const char *dest;
+  const char *dirname;
   if (argc != 3) {
     fprintf(stderr, "Usage: %s FILE REPLACE_BASENAME\n", argv[0]);
     fprintf(stderr,
@@ -167,8 +116,8 @@ int main(int argc, char **argv)
     exit(1);
   }
 
-  basename = cdio_basename(argv[1]);
-  dest = cdio_abspath (basename, argv[2]);
+  dirname = cdio_dirname(argv[1]);
+  dest = cdio_abspath (dirname, argv[2]);
   printf("%s -> %s\n", argv[1], dest);
   exit(0);
 }

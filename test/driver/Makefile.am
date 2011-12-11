@@ -16,6 +16,10 @@
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 DATA_DIR = $(abs_top_srcdir)/test/data
 
+abs_path_SOURCES   = abs_path.c
+abs_path_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
+abs_path_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
+
 bincue_SOURCES   = helper.c bincue.c
 bincue_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
 bincue_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
@@ -54,7 +58,7 @@ win32_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
 win32_CFLAGS     = -DDATA_DIR=\"$(DATA_DIR)\"
 
 check_PROGRAMS   = \
-	bincue cdrdao freebsd gnu_linux \
+	abs_path bincue cdrdao freebsd gnu_linux \
 	mmc_read mmc_write nrg \
 	osx realpath solaris win32
 

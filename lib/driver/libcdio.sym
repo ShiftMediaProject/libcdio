@@ -33,6 +33,7 @@ cdio_close_tray
 cdio_debug
 cdio_destroy
 cdio_device_drivers
+cdio_dirname
 cdio_driver_describe
 cdio_driver_errmsg
 cdio_drivers
