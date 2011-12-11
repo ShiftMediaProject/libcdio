@@ -159,17 +159,16 @@ cdio_abspath(const char *cwd, char *fname)
 int main(int argc, char **argv)
 {
   char *dest;
-  char cwd[PATH_MAX];
-
-  getcwd(cwd, sizeof(cwd));
-
-  if (argc != 2) {
-    fprintf(stderr, "Usage: %s PATH\n", argv[0]);
+  char *basename;
+  if (argc != 3) {
+    fprintf(stderr, "Usage: %s FILE REPLACE_BASENAME\n", argv[0]);
     fprintf(stderr,
      "       Make PATH absolute\n");
     exit(1);
   }
-  dest = cdio_abspath (cwd, argv[1]);
+
+  basename = cdio_basename(argv[1]);
+  dest = cdio_abspath (basename, argv[2]);
   printf("%s -> %s\n", argv[1], dest);
   exit(0);
 }
