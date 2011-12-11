@@ -1,7 +1,6 @@
 /*
-  $Id: cdio_private.h,v 1.37 2008/04/22 15:29:11 karl Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2008, 2009, 2011
+  Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -35,6 +34,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+  extern const char * cdio_dirname(const char *fname);
+  extern const char *cdio_abspath(const char *cwd, const char *fname);
 
   /* Opaque type */
   typedef struct _CdioDataSource CdioDataSource_t;

@@ -6,6 +6,7 @@
 # include "config.h"
 # define __CDIO_CONFIG_H__ 1
 #endif
+#include "cdio_private.h"
 
 #ifdef HAVE_STRING_H
 # include <string.h>

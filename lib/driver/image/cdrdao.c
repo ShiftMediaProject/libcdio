@@ -682,7 +682,9 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 
 	    /* Handle "<filename>" */
 	    if (cd) {
-	      cd->tocent[i].filename = strdup (psz_field);
+	      const char *dirname = cdio_dirname(psz_cue_name);
+	      const char *filename = cdio_abspath (dirname, psz_field);
+	      cd->tocent[i].filename = strdup (filename);
 	      /* To do: do something about reusing existing files. */
 	      if (!(cd->tocent[i].data_source = cdio_stdio_new (psz_field))) {
 		cdio_log (log_level, 
@@ -755,7 +757,9 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
 	    /* Handle <filename> */
 	    if (cd) {
-	      cd->tocent[i].filename = strdup (psz_field);
+	      const char *dirname = cdio_dirname(psz_cue_name);
+	      const char *filename = cdio_abspath (dirname, psz_field);
+	      cd->tocent[i].filename = (char *) filename;
 	      /* To do: do something about reusing existing files. */
 	      if (!(cd->tocent[i].data_source = cdio_stdio_new (psz_field))) {
 		cdio_log (log_level, 

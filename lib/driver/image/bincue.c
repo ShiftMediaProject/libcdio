@@ -369,7 +369,9 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 	/* FILE "<filename>" <BINARY|WAVE|other?> */
       } else if (0 == strcmp ("FILE", psz_keyword)) {
 	if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
-	  if (cd) cd->tocent[i + 1].filename = strdup (psz_field);
+	  const char *dirname = cdio_dirname(psz_cue_name);
+	  const char *filename = cdio_abspath (dirname, psz_field);
+	  if (cd) cd->tocent[i + 1].filename = (char *) filename;
 	} else {
 	  goto format_error;
 	}

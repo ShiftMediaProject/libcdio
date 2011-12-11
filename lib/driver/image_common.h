@@ -1,6 +1,4 @@
 /*
-  $Id: image_common.h,v 1.13 2008/04/22 15:29:12 karl Exp $
-
   Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify

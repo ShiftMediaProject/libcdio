@@ -53,7 +53,7 @@ typedef struct {
   int            num_indices;
   flag_t         flags;         /**< "[NO] COPY", "4CH", "[NO] PREMPAHSIS" */
   char          *isrc;		/**< IRSC Code (5.22.4) exactly 12 bytes */
-  char           *filename;
+  char          *filename;
   CdioDataSource_t *data_source;
   off_t          offset;        /**< byte offset into data_start of track
 				     beginning. In cdrdao for example, one
