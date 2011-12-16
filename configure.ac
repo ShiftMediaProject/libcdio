@@ -437,7 +437,7 @@ int has_timeout=sizeof(test.timeout);],
  	LT_NO_UNDEFINED="-no-undefined"
   	cd_drivers="${cd_drivers}, MinGW "
 	;;
-     freebsd4.*|freebsd5.*|freebsd6*|freebsd7*|freebsd8*|dragonfly*|kfreebsd*)
+     freebsd4.*|freebsd5.*|freebsd[6-9]*|dragonfly*|kfreebsd*)
      	AC_DEFINE([HAVE_FREEBSD_CDROM], [1], 
                   [Define 1 if you have FreeBSD CD-ROM support])
  	LIBS="$LIBS -lcam"
