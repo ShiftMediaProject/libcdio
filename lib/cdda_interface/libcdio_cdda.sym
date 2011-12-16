@@ -20,3 +20,4 @@ cdio_cddap_track_preemp
 cdio_cddap_disc_firstsector
 cdio_cddap_disc_lastsector
 data_bigendianp
+fft_forward
