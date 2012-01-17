@@ -145,12 +145,11 @@ main(int argc, const char *argv[])
     printf("Audio CD\n");
   } else {
     /* we have data track(s) */
-    int j;
     cdio_iso_analysis_t cdio_iso_analysis; 
 
     memset(&cdio_iso_analysis, 0, sizeof(cdio_iso_analysis));
     
-    for (j = 2, i = first_data; i <= num_tracks; i++) {
+    for (i = first_data; i <= num_tracks; i++) {
       lsn_t lsn;
       track_format_t track_format = cdio_get_track_format(p_cdio, i);
       
