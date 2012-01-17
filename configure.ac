@@ -1,4 +1,4 @@
-dnl Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
+dnl Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012
 dnl Rocky Bernstein <rocky@gnu.org>
 dnl
 dnl This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,11 @@ AM_INIT_AUTOMAKE
 AC_CANONICAL_HOST
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
+
+# Enable silent build rules by default (Automake v1.11 or later).
+# Disable by either passing --disable-silent-rules to configure or passing V=1 to make
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])],
+         [AC_SUBST([AM_DEFAULT_VERBOSITY], [1])])
 
 LIBCDIO_VERSION_NUM=`echo RELEASE_NUM | cut -d . -f 1 | tr -d a-z`
 AC_SUBST(LIBCDIO_VERSION_NUM)
