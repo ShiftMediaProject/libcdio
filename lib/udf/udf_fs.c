@@ -404,6 +404,7 @@ udf_open (const char *psz_path)
   return p_udf;
 
  error:
+  cdio_stdio_destroy(p_udf->stream);
   free(p_udf);
   return NULL;
 }
@@ -473,7 +474,7 @@ udf_get_volumeset_id(udf_t *p_udf, /*out*/ uint8_t *volsetid,
   NULL is returned if the partition is not found or a root is not found or
   there is on error.
 
-  Caller must free result - use udf_file_free for that.
+  Caller must free result - use udf_dirent_free for that.
 */
 udf_dirent_t *
 udf_get_root (udf_t *p_udf, bool b_any_partition, partition_num_t i_partition)
