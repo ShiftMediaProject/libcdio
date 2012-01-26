@@ -23,7 +23,7 @@ AC_PREREQ(2.67)
 
 AC_INIT([libcdio], [CDIO_VERSION_STR(RELEASE_NUM)], [libcdio-help@gnu.org])
 AC_CONFIG_SRCDIR(src/cd-info.c)
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign])
 
 AC_CANONICAL_HOST
 AM_CONFIG_HEADER(config.h)
