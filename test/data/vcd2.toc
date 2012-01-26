@@ -6,7 +6,7 @@ CD_ROM_XA
 // Track 1
 TRACK MODE2_FORM_MIX
 COPY
-DATAFILE "../cdda.bin" 00:00:00 // comment
+DATAFILE "../data/cdda.bin" 00:00:00 // comment
 
 
 // Track 2

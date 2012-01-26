@@ -756,10 +756,10 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
 	    /* Handle <filename> */
+	    const char *psz_dirname = cdio_dirname(psz_cue_name);
+	    const char *psz_filename = cdio_abspath (psz_dirname, psz_field);
 	    if (cd) {
-	      const char *dirname = cdio_dirname(psz_cue_name);
-	      const char *filename = cdio_abspath (dirname, psz_field);
-	      cd->tocent[i].filename = (char *) filename;
+	      cd->tocent[i].filename = (char *) psz_filename;
 	      /* To do: do something about reusing existing files. */
 	      if (!(cd->tocent[i].data_source = cdio_stdio_new (psz_field))) {
 		cdio_log (log_level, 
@@ -768,7 +768,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 		goto err_exit;
 	      }
 	    } else {
-	      CdioDataSource_t *s = cdio_stdio_new (psz_field);
+	      CdioDataSource_t *s = cdio_stdio_new (psz_filename);
 	      if (!s) {
 		cdio_log (log_level, 
 			  "%s line %d: can't open file `%s' for reading", 
