@@ -50,10 +50,8 @@ testnum="CD-Text binary parser"
 if test -f ${srcdir}/data/${fname}.bin ; then
   if test -f ${srcdir}/data/${fname}.cdt ; then
     opts="--quiet --no-device-info --cue-file ${srcdir}/data/${fname}.cue --no-cddb"
-    cp ${srcdir}/data/${fname}.cdt ${srcdir}/${fname}.cdt
     test_cdinfo "$opts" ${fname}.dump ${srcdir}/${fname}.right
     RC=$?
-    rm ${srcdir}/${fname}.cdt
     check_result $RC "cd-info CD-Text CUE test $testnum" "${CD_INFO} $opts"
   else
     echo "Don't see CD-Text file ${srcdir}/data/${fname}.cdt. Test $testnum skipped."

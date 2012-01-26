@@ -331,8 +331,10 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         uint8_t *ptr;
         int size;
         CdioDataSource_t *source;
+	const char *dirname = cdio_dirname(psz_cue_name);
+	const char *psz_filename = cdio_abspath (dirname, psz_field);
 
-        if(NULL == (source = cdio_stdio_new(psz_field))) {
+        if(NULL == (source = cdio_stdio_new(psz_filename))) {
           cdio_log (log_level, "%s line %d: can't open file `%s' for reading", psz_cue_name, i_line, psz_field);
           goto err_exit;
         }
