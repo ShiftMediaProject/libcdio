@@ -78,9 +78,10 @@ mmc_get_disc_erasable(const CdIo_t *p_cdio, bool *b_erasable) {
     i_status = mmc_read_disc_information(p_cdio, buf, sizeof(buf),
 					 CDIO_MMC_READ_DISC_INFO_STANDARD, 0);
 					 
-    *b_erasable = (DRIVER_OP_SUCCESS == i_status) 
-	? (*b_erasable = ((buf[2] & 0x10) ? true : false))
-        : false;
+    if (DRIVER_OP_SUCCESS == i_status) 
+	*b_erasable = ((buf[2] & 0x10) ? true : false);
+    else 
+	*b_erasable = false;
     return i_status;
 }
 

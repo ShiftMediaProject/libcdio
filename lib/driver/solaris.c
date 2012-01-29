@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2009, 2011
-  Rocky Bernstein <rocky@gnu.org>
+  2012 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -37,7 +37,7 @@
 
 #ifdef HAVE_SOLARIS_CDROM
 
-static const char _rcsid[] = "$Id: solaris.c,v 1.12 2008/04/22 15:29:12 karl Exp $";
+static char ** cdio_get_devices_solaris_cXtYdZs2(int flag);
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
@@ -100,8 +100,6 @@ typedef struct {
 
 static track_format_t get_track_format_solaris(void *p_user_data, 
                                                track_t i_track);
-
-static char ** cdio_get_devices_solaris_cXtYdZs2(int flag);
 
 static access_mode_t 
 str_to_access_mode_solaris(const char *psz_access_mode) 
@@ -795,6 +793,7 @@ get_blocksize_solaris (void *p_user_data) {
   }
 }
 
+#ifdef HAVE_SOLARIS_CDROM
 /*!
   Return a string containing the default CD device if none is specified.
   This call does not assume a fixed default drive address but rather uses
@@ -815,6 +814,7 @@ cdio_get_default_cXtYdZs2(void)
     return result;
   return strdup(DEFAULT_CDIO_DEVICE);
 }
+#endif
 
 /*!
   Return a string containing the default CD device if none is specified.
@@ -1165,6 +1165,7 @@ close_tray_solaris (const char *psz_device)
 #endif /*HAVE_SOLARIS_CDROM*/
 }
 
+#ifdef HAVE_SOLARIS_CDROM
 /*!
   Return an array of strings giving possible CD devices.
   New method after demise of vold in 2006. 
@@ -1174,9 +1175,6 @@ close_tray_solaris (const char *psz_device)
 static char **
 cdio_get_devices_solaris_cXtYdZs2(int flag)
 {
-#ifndef HAVE_SOLARIS_CDROM
-  return NULL;
-#else
   int busno, tgtno, lunno, ret;
   char volpath[160];
   char **drives = NULL;
@@ -1273,8 +1271,8 @@ ex:;
     closedir(dir);
   cdio_add_device_list(&drives, NULL, &i_files);
   return drives;
-#endif /*HAVE_SOLARIS_CDROM*/
 }
+#endif /*HAVE_SOLARIS_CDROM*/
 
 /*!
   Return an array of strings giving possible CD devices.
