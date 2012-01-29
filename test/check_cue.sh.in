@@ -10,17 +10,14 @@ if test "X$abs_top_srcdir" = "X" ; then
   abs_top_srcdir=@abs_top_srcdir@
 fi
 
-if test "X$top_srcdir" = "X" ; then
-  top_srcdir=`pwd`/..
-fi
-
 if test "X$top_builddir" = "X" ; then
-  top_builddir=`pwd`/..
+  top_builddir=@abs_top_builddir@
 fi
 
 . ${top_builddir}/test/check_common_fn
 
-if test ! -x $abs_top_srcdir/src/cd-info ; then
+CD_INFO=$abs_top_srcdir/src/cd-info 
+if test ! -x $CD_INFO ; then
   exit 77
 fi
 
