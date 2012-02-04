@@ -1,0 +1,809 @@
+\input texinfo @c -*-texinfo-*-
+
+@c @tex
+@c \globaldefs=1
+@c \def\baselinefactor{1.5}
+@c \setleading{\textleading}
+@c @end tex 
+
+@setfilename libcdio.info
+@settitle CD TEXT Description
+
+@copying
+@quotation
+Permission is granted to copy, modify, and distribute it, as long as the
+references to the original information sources are maintained.
+There is NO WARRANTY, to the extent permitted by law.
+
+Copyright @copyright{} 2011-2012 Thomas Schmitt @email{scdbackup@@gmx.net}.
+@end quotation
+@end copying
+
+@paragraphindent 0
+@exampleindent 0
+
+@titlepage
+@title CD Text Description
+@author Thomas Schmitt for libburnia-project.org 
+@vskip 2in plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top CD-Text Description
+
+@insertcopying
+
+@menu
+* CD-TEXT from the User Viewpoint::
+* Content Specification::
+* CD-TEXT Packet Format::
+* Sony Text File Format (Input Sheet Version 0.7T)::
+* CDRWIN Cue Sheet with CD Text::
+* References::
+@end menu
+@end ifnottex
+
+@node CD-TEXT from the User Viewpoint
+@chapter CD-TEXT from the User Viewpoint
+
+CD-TEXT records attributes of disc and tracks on audio CD.
+
+The attributes are grouped into blocks which represent particular languages.
+Up to 8 blocks are possible.
+
+There are 13 defined attribute categories, which are called Pack Types and are
+identified by a single-byte code:
+@table @kbd
+@item 0x80 
+Title
+
+@item 0x81
+Performers
+@item 0x82
+Songwriters
+@item 0x83
+Composers
+@item 0x84
+Arrangers 
+@item 0x85
+Message Area
+@item 0x86
+Disc Identification (text-and-binary)
+@item 0x87
+Genre Identification (text-and-binary)
+@item 0x88
+Table of Contents (binary)
+@item 0x89
+Second Table of Content information (binary; 0x8a to 0x8c are reserved.)
+@item 0x8d
+Closed Information
+@item 0x8e
+UPC/EAN code of the album and ISRC code of each track
+@item 0x8f
+binary: Size Information of the Block
+@end table
+
+Categories @kbd{0x86}, @kbd{0x87}, @kbd{0x88}, @kbd{0x89}, @kbd{0x8d}
+apply to the whole disc.
+
+Categories @kbd{0x80}, @kbd{0x81}, @kbd{0x82}, @kbd{0x83}, @kbd{0x84},
+@kbd{0x85}, and @kbd{0x8e} have to also be attributed to each
+track if they are present for the whole disc.
+
+Category @kbd{0x8f} describes the overall content of a block and in part of all
+other blocks.
+
+The total size of a block's attribute set is restricted by the fact that
+it has to be stored in at most 253 records with 12 bytes of
+payload. These records are called Text Packs.  A shortcut for repeated
+identical track texts is provided, so that a text that is identical to
+the one of the previous track occupies only 2 or 4 bytes.
+
+@node Content Specification
+@chapter Content Specificiation
+
+Pack types @kbd{0x80} to @kbd{0x85} and @kbd{0x8e} contain 0-terminated
+cleartext. If double-byte characters are used, then two 0-bytes
+terminate the cleartext.  The meaning of @kbd{0x80} to @kbd{0x85} should
+be clear by above list. They are encoded according to the Character Code
+of their block. Either as ISO-8859-1 single byte characters, or as 7-bit
+ASCII single byte characters, or as MS-JIS double byte characters.  More
+info on @kbd{0x8e} is given below.
+
+Pack type @kbd{0x86} (Disc Identification) is documented by Sony as
+"Catalog Number: (use ASCII Code) Catalog Number of the album". So it is
+not really binary but might be non-printable, and should contain only
+bytes with bit7 = 0.
+
+Pack type 0x87 contains 2 binary bytes, followed by 0-terminated cleartext.
+The two binary bytes form a big-endian index to the following list.
+
+
+@table @kbd
+@item 0x0000
+Not Used --- Sony prescribes to use this if no genre applies.
+@item 0x0001
+Not Defined
+@item 0x0002
+Adult Contemporary
+@item 0x0003
+Alternative Rock
+@item 0x0004
+Childrens Music
+@item 0x0005
+Classical
+@item 0x0006
+Contemporary Christian
+@item 0x0007
+Country
+@item 0x0008
+Dance
+@item 0x0009
+Easy Listening
+@item 0x000a
+Erotic
+@item 0x000b
+Folk
+@item 0x000c
+Gospel
+@item 0x000d
+Hip Hop
+@item 0x000e
+Jazz
+@item 0x000f
+Latin
+@item 0x0010
+Musical
+@item 0x0011
+New Age
+@item 0x0012
+Opera
+@item 0x0013
+Operetta
+@item 0x0014
+Pop Music
+@item 0x0015
+Rap
+@item 0x0016
+Reggae
+@item 0x0017
+Rock Music
+@item 0x0018
+Rhythm & Blues
+@item 0x0019
+Sound Effects
+@item 0x001a
+Spoken Word
+@item 0x001b
+World Music
+@end table
+
+Sony documents the cleartext part as "Genre information that would supplement
+the Genre Code, such as ``USA Rock music in the 60s\'''. Always ASCII encoded.
+
+Pack type @kbd{0x88} records information from the CD's Table of Content, as of
+READ PMA/TOC/ATIP Format 0010b (mmc5r03c.pdf, table 490 TOC Track Descriptor
+Format, Q Sub-channel).
+See below, Format of CD-TEXT packs, for more details about the content of
+pack type @kbd{0x88}.
+
+Pack type @kbd{0x89} is yet quite unclear. It might be a representation
+of Playback Skip Interval, Mode-5 Q sub-channel, POINT 01 to 40
+(mmc5r03.pdf 4.2.3.7.4).  If so, then this seems not to apply to write
+type SAO, because the CUE SHEET format offers no way to express Mode-5
+Q.  See below, Format of CD-TEXT packs, for an example of this pack
+type.
+
+Pack type @kbd{0x8d} is documented by Sony as "Closed Information: (use
+8859-1 Code) Any information can be recorded on disc as
+memorandum. Information in this field will not be read by CD TEXT
+players available to the public."  Always ISO-8859-1 encoded.
+
+Pack type 0x8e is documented by Sony as ``UPC/EAN Code'' (POS Code) of
+the album.  This field typically consists of 13 characters." Always
+ASCII encoded.  It applies to tracks as "ISRC code [which] typically
+consists of 12 characters" and is always ISO-8859-1 encoded.  MMC calls
+these information entities Media Catalog Number and ISRC.  The catalog
+number consists of 13 decimal digits.  ISRC consists of 12 characters: 2
+country code [0-9A-Z], 3 owner code [0-9A-Z], 2 year digits (00 to 99),
+5 serial number digits (00000 to 99999).
+
+Pack type 0x8f summarizes the whole list of text packs of a block.
+See the next section for details.
+
+@node CD-TEXT Packet Format
+@chapter CD-TEXT Packet Format
+
+The attributes are represented on CD as Text Packs in the sub-channel of
+the Lead-in of the disc. The file @file{doc/cookbook.txt} of the
+libburnia distribution ddescribe write the readily formatted CD-TEXT
+pack array to CD, and how to read CD-TEXT packs from CD.
+
+The format is explained in part in MMC-3 (mmc3r10g.pdf, Annex J)[2] and in
+part by the documentation in Sony's cdtext.zip[3].
+
+Each pack consists of a 4-byte header, 12 bytes of payload, and 2 bytes
+of CRC.
+
+The first byte of each pack tells the pack type. See above for a list of
+types.
+
+The second byte tells the track number to which the first text piece in
+a pack is associated. Number 0 means the whole album. Higher numbers are
+valid for types 0x80 to 0x85, and 0x8e. With these types, there should
+be one text for the disc and one for each track.  With types 0x88 and
+0x89, the second byte bears a track number, too.  With type 0x8f, the
+second byte counts the record parts from 0 to 2.
+
+The third byte is a sequential counter.
+
+The fourth byte is the Block Number and Character Position Indicator.
+It consists of three bit fields:
+
+@table @var
+@item bits 0-3
+Character position. Either the number of characters which the current
+text inherited from the previous pack, or 15 if the current
+text started before the previous pack.
+@item bits 4-6
+Block Number (groups text packs in language blocks)
+@item bit 7
+Double Bytes Character Code (0= single byte characters)
+@end table
+
+The 12 payload bytes contain pieces of 0-terminated texts or binary data.
+A text may span over several packs. Unused characters in a pack are used for
+the next text of the same pack type. If no text of the same type follows,
+then the remaining text bytes are set to 0.
+
+The CRC algorithm uses divisor @kbd{0x11021}. The resulting 16-bit
+residue of the polynomial division is zero extended in the upper bits
+(xor-ed with @kbd{0xffff}) and written as big-endian number in bytes 16
+and 17 of the pack.
+
+The text packs are grouped in up to 8 blocks of at most 256 packs. Each block
+is in charge for one language. Sequence numbers of each block are counted
+separately. All packs of block 0 come before the packs of block 1.
+
+The limitation of block number and sequence numbers imply that there are at
+most 2048 text packs possible. (READ TOC/PMS/ATIP could retrieve 3640 packs,
+as it is limited to 64 kB - 2.)
+
+If a text of a track (pack types @kbd{0x80} to @kbd{0x85} and
+@kbd{0x8e}) repeats identically for the next track, then it may be
+represented by a TAB character (ASCII 9) for single byte texts,
+resp. two TAB characters for double byte texts.  (This should be used
+because 256 * 12 bytes is few space for 99 tracks.)
+
+The two binary bytes of pack type @kbd{0x87} are written to the first
+@kbd{0x87} pack of a block. They may or may not be repeated at the start
+of the follow-up packs of type @kbd{0x87}.
+
+The first pack of type @kbd{0x88} in a block records in its payload bytes
+as follows:
+@table @var
+@item 0 
+PMIN of POINT A1 = First Track Number
+@item 1
+PMIN of POINT A2 = Last Track Number
+@item 2
+unknown, 0 in Sony example
+@item 3
+PMIN of POINT A2 = Start position of Lead-Out
+@item 4
+PSEC of POINT A2 = Start position of Lead-Out
+@item 5
+PFRAME of POINT A2 = Start position of Lead-Out
+@item 6 to 11
+unknown, 0 in Sony example
+@end table
+
+The following packs record PMIN, PSEC, PFRAME of the POINTs between the
+lowest track number (min 01h) and the highest track number (max 63h).
+The payload of the last pack is padded by 0s.
+
+The Sony .TOC example:
+@smallexample
+  A0 01
+  A1 14
+  A2 63:02:18
+  01 00:02:00
+  02 04:11:25
+  03 08:02:50
+  04 11:47:62
+  ...
+  13 53:24:25
+  14 57:03:25
+@end smallexample
+yields:
+@smallexample
+  88 00 23 00 01 0e 00 3f 02 12 00 00 00 00 00 00 12 00
+  88 01 24 00 00 02 00 04 0b 19 08 02 32 0b 2f 3e 67 2d
+  ...
+  88 0d 27 00 35 18 19 39 03 19 00 00 00 00 00 00 ea af
+@end smallexample
+
+Pack type @kbd{0x89} is yet quite unclear. Especially what the information shall
+mean to the user of the CD. The time points in the Sony example are in the
+time range of the tracks numbers that are given before the time points:
+
+@smallexample
+  01 02:41:48 01 02:52:58
+  06 23:14:25 06 23:29:60
+  07 28:30:39 07 28:42:30
+  13 55:13:26 13 55:31:50
+@end smallexample
+nyields:
+@smallexample
+  89 01 28 00 01 04 00 00 00 00 02 29 30 02 34 3a f3 0c
+  89 06 29 00 02 04 00 00 00 00 17 0e 19 17 1d 3c 73 92
+  89 07 2a 00 03 04 00 00 00 00 1c 1e 27 1c 2a 1e 72 20
+  89 0d 2b 00 04 04 00 00 00 00 37 0d 1a 37 1f 32 0b 62
+@end smallexample
+
+The track numbers are stored in the track number byte of the packs. The
+two time points are stored in byte 6 to 11 of the payload. Byte 0 of the
+payload seems to be a sequential counter. Byte 1 always 4? Byte 2 to 5
+always 0?
+
+Pack type @kbd{0x8f} summarizes the whole list of text packs of a block.
+So there is one group of three 0x8f packs per block.
+Nevertheless each 0x8f group tells the highest sequence number and the
+language code of all blocks.
+
+The payload bytes of three @kbd{0x8f} packs form a 36-byte record. 
+The track number bytes of the three packs have the values 0, 1, 2.
+
+@smallexample
+    Byte :
+       0 : Character code for pack types 0x80 to 0x85:
+           0x00 = ISO-8859-1
+           0x01 = 7 bit ASCII
+           0x80 = MS-JIS (japanese Kanji, double byte characters)
+       1 : Number of first track
+       2 : Number of last track
+       3 : libcdio source states: "cd-text information copyright byte"
+           Probably 3 means "copyrighted", 0 means "not copyrighted".
+  4 - 19 : Pack count of the various types 0x80 to 0x8f.
+           Byte number N tells the count of packs of type 0x80 + (N - 4).
+           I.e. the first byte in this field of 16 counts packs of type 0x80.
+ 20 - 27 : Highest sequence byte number of blocks 0 to 7.
+ 28 - 36 : Language code for blocks 0 to 7 (tech3264.pdf appendix 3)
+@end smallexample
+
+@table @kbd
+@item 0x00
+Unknown
+@item 0x01
+Albanian
+@item 0x02
+Breton
+@item 0x03
+Catalan
+@item 0x04
+Croatian
+@item 0x05
+Welsh
+@item 0x06
+Czech
+@item 0x07
+Danish
+@item 0x08
+German
+@item 0x09
+English
+@item 0x0a
+Spanish
+@item 0x0b
+Esperanto
+@item 0x0c
+Estonian
+@item 0x0d
+Basque
+@item 0x0e
+Faroese
+@item 0x0f
+French 
+@item 0x10
+Frisian
+@item 0x11
+Irish
+@item 0x12
+Gaelic
+@item 0x13
+Galician
+@item 0x14
+Icelandic
+@item 0x15
+Italian
+@item 0x16
+Lappish
+@item 0x17
+Latin
+@item 0x18
+Latvian
+@item 0x19
+Luxembourgian
+@item 0x1a
+Lithuanian
+@item 0x1b
+Hungarian
+@item 0x1c
+Maltese        
+@item 0x1d
+Dutch
+@item 0x1e
+Norwegian
+@item 0x1f
+Occitan
+@item 0x20
+Polish
+@item 0x21
+Portuguese
+@item 0x22
+Romanian
+@item 0x23
+Romansh
+@item 0x24
+Serbian
+@item 0x25
+Slovak
+@item 0x26
+Slovenian
+@item 0x27
+Finnish
+@item 0x28
+Swedish
+@item 0x29
+Turkish
+@item 0x2a
+Flemish
+@item 0x2b
+Wallon
+@item 0x45
+Zulu
+@item 0x46
+Vietnamese
+@item 0x47
+Uzbek
+@item 0x48
+Urdu
+@item 0x49
+Ukrainian
+@item 0x4a
+Thai
+@item 0x4b
+Telugu
+@item 0x4c
+Tatar
+@item 0x4d
+Tamil
+@item 0x4e
+Tadzhik
+@item 0x4f
+Swahili
+@item 0x50
+Sranan Tongo
+@item 0x51
+Somali
+@item 0x52
+Sinhalese
+@item 0x53
+Shona
+@item 0x54
+Serbo-croat
+@item 0x55
+Ruthenian
+@item 0x56
+Russian
+@item 0x57
+Quechua
+@item 0x58
+Pushtu
+@item 0x59
+Punjabi
+@item 0x5a
+Persian
+@item 0x5b
+Papamiento
+@item 0x5c
+Oriya
+@item 0x5d
+Nepali
+@item 0x5e
+Ndebele
+@item 0x5f
+Marathi
+@item 0x60
+Moldavian
+@item 0x61
+Malaysian
+@item 0x62
+Malagasay
+@item 0x63
+Macedonian
+@item 0x64
+Laotian
+@item 0x65
+Korean
+@item 0x66
+Khmer
+@item 0x67
+Kazakh
+@item 0x68
+Kannada
+@item 0x69
+Japanese
+@item 0x6a
+Indonesian
+@item 0x6b
+Hindi
+@item 0x6c
+Hebrew
+@item 0x6d
+Hausa
+@item 0x6e
+Gurani
+@item 0x6f
+Gujurati
+@item 0x70
+Greek
+@item 0x71
+Georgian
+@item 0x72
+Fulani
+@item 0x73
+Dari
+@item 0x74
+Churash
+@item 0x75
+Chinese
+@item 0x76
+Burmese
+@item 0x77
+Bulgarian
+@item 0x78
+Bengali
+@item 0x79
+Bielorussian
+@item 0x7a
+Bambora
+@item 0x7b
+Azerbaijani
+@item 0x7c
+Assamese
+@item 0x7d
+Armenian
+@item 0x7e
+Arabic
+@item 0x7f
+Amharic
+@end table
+Note: Not all of thes above codes have ever been seen with CD-TEXT.
+
+For example these three packs
+@smallexample
+  42 : 8f 00 2a 00 01 01 03 00 06 05 04 05 07 06 01 02 48 65
+  43 : 8f 01 2b 00 00 00 00 00 00 00 06 03 2c 00 00 00 c0 20
+  44 : 8f 02 2c 00 00 00 00 00 09 00 00 00 00 00 00 00 11 45
+@end smallexample
+
+decode to:
+
+@smallexample
+Byte :Value Meaning
+   0 : 01 = ASCII 7-bit
+   1 : 01 = first track is 1
+   2 : 03 = last track is 3
+   3 : 00 = copyright (0 = public domain, 3 = copyrighted ?)
+   4 : 06 = 6 packs of type 0x80
+   5 : 05 = 5 packs of type 0x81
+   6 : 04 = 4 packs of type 0x82
+   7 : 05 = 5 packs of type 0x83
+   8 : 07 = 7 packs of type 0x84
+   9 : 06 = 6 packs of type 0x85
+  10 : 01 = 1 pack  of type 0x86
+  11 : 02 = 2 packs of type 0x87
+  12 : 00 = 0 packs of type 0x88
+  13 : 00 = 0 packs of type 0x89
+  14 : 00 00 00 00 = 0 packs of types 0x8a to 0x8d
+  18 : 06 = 6 packs of type 0x8e
+  19 : 03 = 3 packs of type 0x8f
+  20 : 2c = last sequence for block 0
+            This matches the sequence number of the last text pack (0x2c = 44)
+  21 : 00 00 00 00 00 00 00 = last sequence numbers for block 1..7 (none)
+  28 : 09 = language code for block 0: English
+  29 : 00 00 00 00 00 00 00 = language codes for block 1..7 (none)
+@end smallexample
+
+@node Sony Text File Format (Input Sheet Version 0.7T)
+@chapter Sony Text File Format (Input Sheet Version 0.7T)
+
+This text file format provides comprehensive means to define the text
+attributes of session and tracks for a single block. More than one
+such file has to be read to form an attribute set with multiple blocks.
+
+The information is given by text lines of the following form:
+  purpose specifier [whitespace] = [whitespace] content text
+[whitespace] is zero or more ASCII 32 (space) or ASCII 9 (tab) characters.
+The purpose specifier tells the meaning of the content text.
+Empty content text does not cause a CD-TEXT attribute to be attached.
+
+The following purpose specifiers apply to the session as a whole:
+
+@smallexample
+  Specifier           =  Meaning
+
+  Text Code           =  Character code for pack type 0x8f
+                         "ASCII", "8859"
+  Language Code       =  One of the language names for pack type 0x8f
+  Album Title         =  Content of pack type 0x80
+  Artist Name         =  Content of pack type 0x81
+  Songwriter          =  Content of pack type 0x82
+  Composer            =  Content of pack type 0x83
+  Arranger            =  Content of pack type 0x84
+  Album Message       =  Content of pack type 0x85
+  Catalog Number      =  Content of pack type 0x86
+  Genre Code          =  One of the genre names for pack type 0x87
+  Genre Information   =  Cleartext part of pack type 0x87
+  Closed Information  =  Content of pack type 0x8d
+  UPC / EAN           =  Content of pack type 0x8e
+  Text Data Copy Protection = Copyright value for pack type 0x8f
+                              "ON" = 0x03, "OFF" = 0x00
+  First Track Number  =  The lowest track number used in the file
+  Last Track Number   =  The highest track number used in the file
+@end smallexample
+
+The following purpose specifiers apply to particular tracks:
+@smallexample
+  Track NN Title      =  Content of pack type 0x80
+  Track NN Artist     =  Content of pack type 0x81
+  Track NN Songwriter =  Content of pack type 0x82
+  Track NN Composer   =  Content of pack type 0x83
+  Track NN Arranger   =  Content of pack type 0x84
+  Track NN Message    =  Content of pack type 0x85
+  ISRC NN             =  Content of pack type 0x8e
+@end smallexample
+
+The following purpose specifiers have no effect on CD-TEXT:
+@smallexample
+  Remarks             =  Comments with no influence on CD-TEXT
+  Disc Information NN =  Supplementary information for use by record companies.
+                         ISO-8859-1 encoded. NN ranges from 01 to 04.
+  Input Sheet Version =  "0.7T"
+@end smallexample
+
+
+The following purpose specifiers accept byte values of the form 0xXY.
+  Text Code , Language Code , Genre Code , Text Data Copy Protection
+E.g. to indicate MS-JIS character code (of which the exact name is unknown):
+  Text Code           = 0x80
+Genre Code is settable by 0xXY or 0xXYZT or 0xXY 0xZT.
+  Genre Code          = 0x001b
+
+Purpose specifiers which have the meaning "Content of pack type 0xXY"
+may be replaced by the pack type codes.  E.g.:
+  0x80                =  Session content of pack type 0x80
+  Track 02 0x80       =  Track content of pack type 0x80 for track 2.
+Applicable are pack types 0x80 to 0x86, 0x8d, 0x8e.
+
+Text Code may be specified only once. It gets speficied to "ISO-8850-1"
+automatically as soon as content is defined which depends on the text
+encoding of the block. I.e with pack types 0x80 to 0x85.
+
+If a track attribute is set, but the corresponding session attribute is not
+defined or defined with empty text, then the session attribute gets attached
+as empty test. (Normally empty content is ignored.)
+
+Example cdrskin run with three tracks:
+
+@smallexample
+  $ cdrskin dev=/dev/sr0 -v input_sheet_v07t=NIGHTCATS.TXT \
+            -audio track_source_1 track_source_2 track_source_3
+@end smallexample
+
+The contexts of file @file{NIGHTCATS.TXT} used above is:
+@smallexample
+Input Sheet Version = 0.7T
+Text Code           = 8859
+Language Code       = English
+Album Title         = Joyful Nights
+Artist Name         = United Cat Orchestra
+Songwriter          = Various Songwriters
+Composer            = Various Composers
+Arranger            = Tom Cat
+Album Message       = For all our fans
+Catalog Number      = 1234567890
+Genre Code          = Classical
+Genre Information   = Feline classic music
+Closed Information  = This is not to be shown by CD players
+UPC / EAN           = 1234567890123
+Text Data Copy Protection = OFF
+First Track Number  = 1
+Last Track Number   = 3
+Track 01 Title      =  Song of Joy
+Track 01 Artist     =  Felix and The Purrs
+Track 01 Songwriter =  Friedrich Schiller
+Track 01 Composer   =  Ludwig van Beethoven
+Track 01 Arranger   =  Tom Cat
+Track 01 Message    =  Fritz and Louie once were punks
+ISRC 01             =  XYBLG1101234
+Track 02 Title      =  Humpty Dumpty
+Track 02 Artist     =  Catwalk Beauties
+Track 02 Songwriter =  Mother Goose
+Track 02 Composer   =  unknown
+Track 02 Arranger   =  Tom Cat
+Track 02 Message    =  Pluck the goose
+ISRC 02             =  XYBLG1100005
+Track 03 Title      =  Mee Owwww
+Track 03 Artist     =  Mia Kitten
+Track 03 Songwriter =  Mia Kitten
+Track 03 Composer   =  Mia Kitten
+Track 03 Arranger   =  Mia Kitten
+Track 03 Message    =  
+ISRC 03             =  XYBLG1100006
+@end smallexample
+
+@node CDRWIN Cue Sheet with CD Text
+@chapter CDRWIN Cue Sheet with CD Text
+
+A CDRWIN cue sheet file defines the track data source (@kbd{FILE}),
+various text attributes (@kbd{CATALOG}, @kbd{TITLE}, @kbd{PERFORMER},
+@kbd{SONGWRITER}, @kbd{ISRC}), track block types (@kbd{TRACK}), track
+start addresses (@kbd{INDEX}).  The rules for CDRWIN cue sheet files are
+described at @url{http://digitalx.org/cue-sheet/syntax/} [4].
+
+There are three more text attributes mentioned in the cdrecord manual
+page for defining the corresponding CD-TEXT attributes: @kbd{ARRANGER},
+@kbd{COMPOSER}, @kbd{MESSAGE}.
+
+An Example of a CDRWIN cue sheet file:
+@smallexample
+CATALOG 1234567890123
+FILE "cdtext.bin" BINARY
+TITLE "Joyful Nights"
+  TRACK 01 AUDIO
+    FLAGS DCP
+    TITLE "Song of Joy"
+    PERFORMER "Felix and The Purrs"
+    SONGWRITER "Friedrich Schiller"
+    ISRC XYBLG1101234
+    INDEX 01 00:00:00
+  TRACK 02 AUDIO
+    FLAGS DCP
+    TITLE "Humpty Dumpty"
+    PERFORMER "Catwalk Beauties"
+    SONGWRITER "Mother Goose"
+    ISRC XYBLG1100005
+    INDEX 01 08:20:12
+  TRACK 03 AUDIO
+    FLAGS DCP
+    TITLE "Mee Owwww"
+    PERFORMER "Mia Kitten"
+    SONGWRITER "Mia Kitten"
+    ISRC XYBLG1100006
+    INDEX 01 13:20:33
+@end smallexample
+
+@node References
+@chapter References
+
+@enumerate
+@item Correspondence with Leon Merten L\"ohse 
+in @email{libcdio-devel@@gnu.org} circa 2011
+@item @url{http://www.t10.org/cgi-bin/ac.pl?t=f&f=mmc3r10g.pdf}
+@item @url{http://www.sonydadc.com/file/}
+by docs and results of cdtext.zip from 
+@item http://digitalx.org/cue-sheet/syntax
+@item source code for libcdio @url{http://www.gnu.org/s/libcdio}
+@item source code fro cdrecord @url{ftp://ftp.berlios.de/pub/cdrecord/alpha}
+@item cdrecord manual page.1 @url{http://cdrecord.berlios.de/private/man/cdrecord/cdrecord.1.html}
+@item @url{http://tech.ebu.ch/docs/tech/tech3264.pdf} CD Text Language codes
+@item @url{http://helpdesk.audiofile-engineering.com/index.php?pg=kb.page&id=123} Genre codes
+@end enumerate
+
+@bye
