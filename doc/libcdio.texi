@@ -415,12 +415,16 @@ codes in the program area of the CD giving a data capacity of roughly
 Interactive Text Transmission System (ITTS) which is the same data
 transmission standard used by such things as Digital Audio
 Broadcasting (DAB), and virtually the same as the data standard for
-the MiniDisc. Traditionally the R-W sub codes have been used for text
-and graphics in applications such as CD+G (CD w/graphics) or in the
-case of most audio CDs, not at all. The methods for reading this data
-from a CD-ROM drive is covered by the programming specs from the
-individual drive manufacturers. In the case of ATAPI drives, the
-SFF8020 spec covers the reading of the RW subcodes.
+the MiniDisc. 
+
+Traditionally the R-W sub codes have been used for text and graphics
+in applications such as CD+G (CD w/graphics) or in the case of most
+audio CDs, not at all. 
+
+The methods for reading this data from a CD-ROM drive is covered by
+the programming specs from the individual drive manufacturers. In the
+case of ATAPI drives, the SFF8020 spec covers the reading of the RW
+subcodes.
 
 Not all drives support reading the RW subcodes from the program
 area. However for those that do, @value{libcdio} provides a way to get
