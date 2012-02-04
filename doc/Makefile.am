@@ -20,16 +20,16 @@ reference:
 	-( cd ${top_srcdir} && $(MAKE) doxygen )
 
 #: Create documentation in PDF format
-pdf: libcdio.pdf 
+pdf: libcdio.pdf cd-text.pdf
 
 #: Create documentation as a text file
 txt: libcdio.txt
 
 #: Create documentation in PostScript format
-ps: libcdio.ps
+ps: libcdio.ps cd-text.ps
 
 #: Create documentation in HTML format
-html: libcdio.html
+html: libcdio.html cd-text.html
 
 %.ps.gz: %.ps
 	gzip -9c $< > $@
@@ -46,4 +46,6 @@ html: libcdio.html
 # Create documentation in all formats, e.g. PDF, DVI, plain text and HTML
 all-formats: pdf dvi txt ps html
 
-MOSTLYCLEANFILES = libcdio.html libcdio.pdf libcdio.ps.gz
+MOSTLYCLEANFILES = \
+	libcdio.html libcdio.pdf libcdio.ps.gz \
+	cd-text.html cd-text.pdf cd-text.ps.gz

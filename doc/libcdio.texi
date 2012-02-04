@@ -401,13 +401,11 @@ normal operation of any CD players or CDROM drives. There are two
 different parts of the CD where the data can be stored.
 
 The first place the information can be recorded is in the R-W sub
-codes in the lead in area of the CD giving a data capacity of about
-5,000 ASCII characters (or 2,500 Kanji or Unicode characters).  This
-information is stored as a single block of data and is the format used
-in virtually all of the CD Text CDs shipping today. The method for
-reading this data from a CDROM drive is covered under the Sony
-proposal to the MMC specification. The format of the data is partially
-covered in the MMC specification.
+codes in the lead in area of the CD.  This information is stored as a
+single block of data and is the format. The method for reading this
+data from a CDROM drive is covered under the Sony proposal to the MMC
+specification. The format of the data is partially covered in the MMC
+specification.
 
 The second place the information can be recorded is in the R-W sub
 codes in the program area of the CD giving a data capacity of roughly
@@ -429,6 +427,9 @@ subcodes.
 Not all drives support reading the RW subcodes from the program
 area. However for those that do, @value{libcdio} provides a way to get
 at this information via @code{cdtext_get()} and its friends.
+
+There is a separate document in this distribution describing CD-Text
+information and how it is encoded.
 
 @node CDDB
 @subsection Internet CD Database (CDDB)
