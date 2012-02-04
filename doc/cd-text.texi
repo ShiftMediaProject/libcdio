@@ -60,7 +60,6 @@ identified by a single-byte code:
 @table @kbd
 @item 0x80 
 Title
-
 @item 0x81
 Performers
 @item 0x82
@@ -114,18 +113,17 @@ of their block. Either as ISO-8859-1 single byte characters, or as 7-bit
 ASCII single byte characters, or as MS-JIS double byte characters.  More
 info on @kbd{0x8e} is given below.
 
-Pack type @kbd{0x86} (Disc Identification) is documented by Sony as
-"Catalog Number: (use ASCII Code) Catalog Number of the album". So it is
+Pack type @kbd{0x86} (Disc Identification) Sony documents as
+``Catalog Number: (use ASCII Code) Catalog Number of the album''. So it is
 not really binary but might be non-printable, and should contain only
-bytes with bit7 = 0.
+bytes with bit 7 set to zero.
 
 Pack type 0x87 contains 2 binary bytes, followed by 0-terminated cleartext.
-The two binary bytes form a big-endian index to the following list.
-
+The two binary bytes form a Big-endian index to the following list.
 
 @table @kbd
 @item 0x0000
-Not Used --- Sony prescribes to use this if no genre applies.
+Not Used --- Sony prescribes this if no genre applies.
 @item 0x0001
 Not Defined
 @item 0x0002
@@ -198,21 +196,21 @@ type SAO, because the CUE SHEET format offers no way to express Mode-5
 Q.  See below, Format of CD-TEXT packs, for an example of this pack
 type.
 
-Pack type @kbd{0x8d} is documented by Sony as "Closed Information: (use
+Pack type @kbd{0x8d} Sony documentes as ``Closed Information: (use
 8859-1 Code) Any information can be recorded on disc as
 memorandum. Information in this field will not be read by CD TEXT
-players available to the public."  Always ISO-8859-1 encoded.
+players available to the public.''  It is always ISO-8859-1 encoded.
 
-Pack type 0x8e is documented by Sony as ``UPC/EAN Code'' (POS Code) of
-the album.  This field typically consists of 13 characters." Always
-ASCII encoded.  It applies to tracks as "ISRC code [which] typically
-consists of 12 characters" and is always ISO-8859-1 encoded.  MMC calls
+Pack type 0x8e is documented by Sony as ``UPC/EAN Code (POS Code) of the
+album.  This field typically consists of 13 characters.'' This is always
+ASCII encoded.  It applies to tracks as ``ISRC code [which] typically
+consists of 12 characters'' and is always ISO-8859-1 encoded.  MMC calls
 these information entities Media Catalog Number and ISRC.  The catalog
 number consists of 13 decimal digits.  ISRC consists of 12 characters: 2
 country code [0-9A-Z], 3 owner code [0-9A-Z], 2 year digits (00 to 99),
 5 serial number digits (00000 to 99999).
 
-Pack type 0x8f summarizes the whole list of text packs of a block.
+Pack type @kbd{0x8f} summarizes the whole list of text packs of a block.
 See the next section for details.
 
 @node CD-TEXT Packet Format
@@ -223,8 +221,9 @@ the Lead-in of the disc. The file @file{doc/cookbook.txt} of the
 libburnia distribution ddescribe write the readily formatted CD-TEXT
 pack array to CD, and how to read CD-TEXT packs from CD.
 
-The format is explained in part in MMC-3 (mmc3r10g.pdf, Annex J)[2] and in
-part by the documentation in Sony's cdtext.zip[3].
+The format is explained in part in MMC-3 @xref{mmc3r10g.pdf,,
+mmc3r10g.pdf Annex J}, and in part by the documentation in Sony's
+@xref{cdtext.zip,,cdtext.zip}.
 
 Each pack consists of a 4-byte header, 12 bytes of payload, and 2 bytes
 of CRC.
@@ -244,7 +243,7 @@ The third byte is a sequential counter.
 The fourth byte is the Block Number and Character Position Indicator.
 It consists of three bit fields:
 
-@table @var
+@table @dfn
 @item bits 0-3
 Character position. Either the number of characters which the current
 text inherited from the previous pack, or 15 if the current
@@ -252,26 +251,28 @@ text started before the previous pack.
 @item bits 4-6
 Block Number (groups text packs in language blocks)
 @item bit 7
-Double Bytes Character Code (0= single byte characters)
+Is Double Byte Character? Is 0 if single byte characters, 1 if double-byte
+characters.
 @end table
 
-The 12 payload bytes contain pieces of 0-terminated texts or binary data.
-A text may span over several packs. Unused characters in a pack are used for
-the next text of the same pack type. If no text of the same type follows,
-then the remaining text bytes are set to 0.
+The 12 payload bytes contain pieces of NULL- or @code{\0}-terminated texts or
+binary data.  A text may span over several packs. Unused characters in a
+pack are used for the next text of the same pack type. If no text of the
+same type follows, then the remaining text bytes are set to 0.
 
 The CRC algorithm uses divisor @kbd{0x11021}. The resulting 16-bit
 residue of the polynomial division is zero extended in the upper bits
-(xor-ed with @kbd{0xffff}) and written as big-endian number in bytes 16
+(xor-ed with @kbd{0xffff}) and written as Big-endian number in bytes 16
 and 17 of the pack.
 
-The text packs are grouped in up to 8 blocks of at most 256 packs. Each block
-is in charge for one language. Sequence numbers of each block are counted
-separately. All packs of block 0 come before the packs of block 1.
+The text packs are grouped in up to 8 blocks of at most 256 packs. Each
+block is in charge for one language. Sequence numbers of each block are
+counted separately. All packs of block 0 come before the packs of block
+1.
 
-The limitation of block number and sequence numbers imply that there are at
-most 2048 text packs possible. (READ TOC/PMS/ATIP could retrieve 3640 packs,
-as it is limited to 64 kB - 2.)
+The limitation of block number and sequence numbers imply that there are
+at most 2048 text packs possible. (READ TOC/PMS/ATIP could retrieve 3640
+packs, as it is limited to 64 KB - 2.)
 
 If a text of a track (pack types @kbd{0x80} to @kbd{0x85} and
 @kbd{0x8e}) repeats identically for the next track, then it may be
@@ -302,9 +303,10 @@ PFRAME of POINT A2 = Start position of Lead-Out
 unknown, 0 in Sony example
 @end table
 
-The following packs record PMIN, PSEC, PFRAME of the POINTs between the
-lowest track number (min 01h) and the highest track number (max 63h).
-The payload of the last pack is padded by 0s.
+The following packs record @kbd{PMIN}, @kbd{PSEC}, @kbd{PFRAME} of the
+POINTs between the lowest track number (1 or @code{01h}) and the highest
+track number (99 or @code{63h}).  The payload of the last pack is padded
+by 0s.
 
 The Sony .TOC example:
 @smallexample
@@ -327,9 +329,10 @@ yields:
   88 0d 27 00 35 18 19 39 03 19 00 00 00 00 00 00 ea af
 @end smallexample
 
-Pack type @kbd{0x89} is yet quite unclear. Especially what the information shall
-mean to the user of the CD. The time points in the Sony example are in the
-time range of the tracks numbers that are given before the time points:
+Pack type @kbd{0x89} is yet quite unclear. Especially what the
+information shall mean to the user of the CD. The time points in the
+Sony example are in the time range of the tracks numbers that are given
+before the time points:
 
 @smallexample
   01 02:41:48 01 02:52:58
@@ -793,17 +796,24 @@ TITLE "Joyful Nights"
 @chapter References
 
 @enumerate
-@item Correspondence with Leon Merten L\"ohse 
+@item Correspondence with Leon Merten L@"ohse 
 in @email{libcdio-devel@@gnu.org} circa 2011
-@item @url{http://www.t10.org/cgi-bin/ac.pl?t=f&f=mmc3r10g.pdf}
-@item @url{http://www.sonydadc.com/file/}
-by docs and results of cdtext.zip from 
-@item http://digitalx.org/cue-sheet/syntax
-@item source code for libcdio @url{http://www.gnu.org/s/libcdio}
-@item source code fro cdrecord @url{ftp://ftp.berlios.de/pub/cdrecord/alpha}
-@item cdrecord manual page.1 @url{http://cdrecord.berlios.de/private/man/cdrecord/cdrecord.1.html}
-@item @url{http://tech.ebu.ch/docs/tech/tech3264.pdf} CD Text Language codes
-@item @url{http://helpdesk.audiofile-engineering.com/index.php?pg=kb.page&id=123} Genre codes
+@anchor{mmc3r10g.pdf}
+@item MMC3 Revision 10 Reference
+@url{http://www.t10.org/cgi-bin/ac.pl?t=f&f=mmc3r10g.pdf}
+@anchor{cdtext.zip}
+@item Documents inside Sony's @file{cdtext.zip}
+@url{http://www.sonydadc.com/file/}
+@item CDRWIN Cue Sheet information
+@url{http://digitalx.org/cue-sheet/syntax}
+@item libcdio source code @url{http://www.gnu.org/s/libcdio}
+@item cdrecord source code @url{ftp://ftp.berlios.de/pub/cdrecord/alpha}
+@item cdrecord manual page. 
+@url{http://cdrecord.berlios.de/private/man/cdrecord/cdrecord.1.html}
+@item CD Text Language codes
+@url{http://tech.ebu.ch/docs/tech/tech3264.pdf}
+@item Genre codes
+@url{http://helpdesk.audiofile-engineering.com/index.php?pg=kb.page&id=123} 
 @end enumerate
 
 @bye
