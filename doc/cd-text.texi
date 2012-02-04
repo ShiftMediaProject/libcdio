@@ -796,7 +796,7 @@ TITLE "Joyful Nights"
 @chapter References
 
 @enumerate
-@item Correspondence with Leon Merten L@"ohse 
+@item Correspondence with Leon Merten Lohse 
 in @email{libcdio-devel@@gnu.org} circa 2011
 @anchor{mmc3r10g.pdf}
 @item MMC3 Revision 10 Reference
