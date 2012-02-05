@@ -118,13 +118,13 @@ Catalog Number: (use ASCII Code) Catalog Number of the album
 So it is not really binary but might be non-printable, and should contain only
 bytes with bit 7 set to zero.
 
-Pack type @kbd{0x87} (Genre Identification) contains 2 binary bytes,
-followed by an ASCII NUL.  For category associated with Big-endian 16-bit
-value is given see @ref{table:categories}.
+Pack type @kbd{0x87} (Genre Identification) contains 2 binary bytes
+followed by ASCII NUL-terminated text.  For the categories associated with
+Big-endian 16-bit value is given see @ref{table:categories}.
 
 @float Table,table:categories
 @smallexample
-  0x0000: Not Used. Sony prescribes to use this if no genre applies
+  0x0000: Not Used. Sony prescribes this when no genre applies
   0x0001: Not Defined
   0x0002: Adult Contemporary
   0x0003: Alternative Rock
@@ -168,7 +168,7 @@ Pack type @kbd{0x88} records information from the CD's Table of
 Contents, as of READ PMA/TOC/ATIP Format 0010b (mmc5r03c.pdf, table
 490 TOC Track Descriptor Format, Q Sub-channel).  
 
-Pack type @kbd{0x89} (Second Table of Contents) not yet clear. It
+Pack type @kbd{0x89} (Second Table of Contents) is not yet clear. It
 might be a representation of Playback Skip Interval, Mode-5 Q
 sub-channel, POINT 01 to 40 (mmc5r03.pdf 4.2.3.7.4).  If so, then this
 seems not to apply to write type SAO, because the CUE SHEET format
@@ -318,7 +318,7 @@ Encoding the above gives:
   88 0d 27 00 35 18 19 39 03 19 00 00 00 00 00 00 ea af
 @end smallexample
 
-It is not unclear what Pack type @kbd{0x89} is used for, and what the
+It is unclear what Pack type @kbd{0x89} is used for, and what the
 information shall mean to the user of the CD. 
 
 The time points in the Sony example are in the time range of the
