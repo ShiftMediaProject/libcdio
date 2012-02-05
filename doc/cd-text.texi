@@ -38,63 +38,53 @@ Copyright @copyright{} 2011-2012 Thomas Schmitt @email{scdbackup@@gmx.net}.
 @insertcopying
 
 @menu
-* CD-TEXT from the User Viewpoint::
-* Content Specification::
+* CD-TEXT Attribute Categories::
+* Text Pack Content Specification::
 * CD-TEXT Packet Format::
+* CD-TEXT Decoding Example::
 * Sony Text File Format (Input Sheet Version 0.7T)::
 * CDRWIN Cue Sheet with CD Text::
 * References::
 @end menu
 @end ifnottex
 
-@node CD-TEXT from the User Viewpoint
-@chapter CD-TEXT from the User Viewpoint
+@node CD-TEXT Attribute Categories
+@chapter CD-TEXT Attribute Categories
 
 CD-TEXT records attributes of disc and tracks on audio CD.
 
-The attributes are grouped into blocks which represent particular languages.
-Up to 8 blocks are possible.
+The attributes are grouped into blocks. Each block contains data for 
+a particular language. Up to 8 blocks (languages) are possible.
 
-There are 13 defined attribute categories, which are called Pack Types and are
-identified by a single-byte code:
-@table @kbd
-@item 0x80 
-Title
-@item 0x81
-Performers
-@item 0x82
-Songwriters
-@item 0x83
-Composers
-@item 0x84
-Arrangers 
-@item 0x85
-Message Area
-@item 0x86
-Disc Identification (text-and-binary)
-@item 0x87
-Genre Identification (text-and-binary)
-@item 0x88
-Table of Contents (binary)
-@item 0x89
-Second Table of Content information (binary; 0x8a to 0x8c are reserved.)
-@item 0x8d
-Closed Information
-@item 0x8e
-UPC/EAN code of the album and ISRC code of each track
-@item 0x8f
-binary: Size Information of the Block
-@end table
+There are 13 defined attribute categories, which are called Pack Types.
 
-Categories @kbd{0x86}, @kbd{0x87}, @kbd{0x88}, @kbd{0x89}, @kbd{0x8d}
-apply to the whole disc.
+The categories are identified by a single-byte code as follows:
+@smallexample
+  0x80: Title
+  0x81: Performers
+  0x82: Songwriters 
+  0x83: Composers
+  0x84: Arrangers 
+  0x85: Message Area
+  0x86: Disc Identification (in text and binary)
+  0x87: Genre Identification (in text and binary)
+  0x88: Table of Contents (in binary)
+  0x89: Second Table of Contents (in binary)
+  0x8d: Closed Information
+  0x8e: UPC/EAN code of the album and ISRC code of each track
+  0x8f: Block Size (binary)
+@end smallexample
 
-Categories @kbd{0x80}, @kbd{0x81}, @kbd{0x82}, @kbd{0x83}, @kbd{0x84},
+Some additional information regarding specific codes:
+@itemize
+@item Codes @kbd{0x8a} to @kbd{0x8c} are reserved.  
+@item Codes @kbd{0x86},@kbd{0x87}, @kbd{0x88}, @kbd{0x89}, @kbd{0x8d} apply to the whole
+disc.
+@item Codes @kbd{0x80}, @kbd{0x81}, @kbd{0x82}, @kbd{0x83}, @kbd{0x84},
 @kbd{0x85}, and @kbd{0x8e} have to also be attributed to each
 track if they are present for the whole disc.
-
-Category @kbd{0x8f} describes the overall content of a block and in part of all
-other blocks.
+@item Code @kbd{0x8f} describes the overall content of a block and in part of all other blocks.
+@end itemize
 
 The total size of a block's attribute set is restricted by the fact that
 it has to be stored in at most 253 records with 12 bytes of
@@ -102,92 +92,69 @@ payload. These records are called Text Packs.  A shortcut for repeated
 identical track texts is provided, so that a text that is identical to
 the one of the previous track occupies only 2 or 4 bytes.
 
-@node Content Specification
-@chapter Content Specificiation
+@node Text Pack Content Specification
+@chapter Text Pack Content Specificiation
 
-Pack types @kbd{0x80} to @kbd{0x85} and @kbd{0x8e} contain 0-terminated
-cleartext. If double-byte characters are used, then two 0-bytes
-terminate the cleartext.  The meaning of @kbd{0x80} to @kbd{0x85} should
-be clear by above list. They are encoded according to the Character Code
-of their block. Either as ISO-8859-1 single byte characters, or as 7-bit
-ASCII single byte characters, or as MS-JIS double byte characters.  More
-info on @kbd{0x8e} is given below.
+Pack types @kbd{0x80} to @kbd{0x85} and @kbd{0x8e} contain a 0-byte
+terminating its text. If double-byte characters are used, then two
+zero bytes terminate the text.  Pack types @kbd{0x80} (Title) and
+@kbd{0x85} (Message Area) and are encoded according to their block's
+Character Code.  This could be either as ISO-8859-1 single byte
+characters, as 7-bit ASCII single byte characters, or as MS-JIS double
+byte characters.  Pack type @kbd{0x8e} is given below.
 
-Pack type @kbd{0x86} (Disc Identification) Sony documents as
-``Catalog Number: (use ASCII Code) Catalog Number of the album''. So it is
-not really binary but might be non-printable, and should contain only
+Pack type @kbd{0x86} (Disc Identification) Sony documents this:
+@quotation
+Catalog Number: (use ASCII Code) Catalog Number of the album
+@end quotation
+So it is not really binary but might be non-printable, and should contain only
 bytes with bit 7 set to zero.
 
-Pack type 0x87 contains 2 binary bytes, followed by 0-terminated cleartext.
-The two binary bytes form a Big-endian index to the following list.
+Pack type @kbd{0x87} (Genre Identification) contains 2 binary bytes,
+followed by 0-terminated text.  The two bytes constitute a 16-bit
+Big-endian number are decoded as follows:
+@smallexample
+  0x0000: Not Used. Sony prescribes to use this if no genre applies
+  0x0001: Not Defined
+  0x0002: Adult Contemporary
+  0x0003: Alternative Rock
+  0x0004: Childrens Music
+  0x0005: Classical
+  0x0006: Contemporary Christian
+  0x0007: Country
+  0x0008: Dance
+  0x0009: Easy Listening
+  0x000a: Erotic
+  0x000b: Folk
+  0x000c: Gospel
+  0x000d: Hip Hop
+  0x000e: Jazz
+  0x000f: Latin
+  0x0010: Musical
+  0x0011: New Age
+  0x0012: Opera
+  0x0013: Operetta
+  0x0014: Pop Music
+  0x0015: Rap
+  0x0016: Reggae
+  0x0017: Rock Music
+  0x0018: Rhythm & Blues
+  0x0019: Sound Effects
+  0x001a: Spoken Word
+  0x001b: World Music
+@end smallexample
 
-@table @kbd
-@item 0x0000
-Not Used --- Sony prescribes this if no genre applies.
-@item 0x0001
-Not Defined
-@item 0x0002
-Adult Contemporary
-@item 0x0003
-Alternative Rock
-@item 0x0004
-Childrens Music
-@item 0x0005
-Classical
-@item 0x0006
-Contemporary Christian
-@item 0x0007
-Country
-@item 0x0008
-Dance
-@item 0x0009
-Easy Listening
-@item 0x000a
-Erotic
-@item 0x000b
-Folk
-@item 0x000c
-Gospel
-@item 0x000d
-Hip Hop
-@item 0x000e
-Jazz
-@item 0x000f
-Latin
-@item 0x0010
-Musical
-@item 0x0011
-New Age
-@item 0x0012
-Opera
-@item 0x0013
-Operetta
-@item 0x0014
-Pop Music
-@item 0x0015
-Rap
-@item 0x0016
-Reggae
-@item 0x0017
-Rock Music
-@item 0x0018
-Rhythm & Blues
-@item 0x0019
-Sound Effects
-@item 0x001a
-Spoken Word
-@item 0x001b
-World Music
-@end table
+Sony documents report that this field contains:
+@quotation
+Genre information that would supplement
+the Genre Code, such as ``USA Rock music in the 60's''. 
+@end quotation
 
-Sony documents the cleartext part as "Genre information that would supplement
-the Genre Code, such as ``USA Rock music in the 60s\'''. Always ASCII encoded.
+This information is always ASCII encoded.
 
-Pack type @kbd{0x88} records information from the CD's Table of Content, as of
-READ PMA/TOC/ATIP Format 0010b (mmc5r03c.pdf, table 490 TOC Track Descriptor
-Format, Q Sub-channel).
-See below, Format of CD-TEXT packs, for more details about the content of
-pack type @kbd{0x88}.
+Pack type @kbd{0x88} records information from the CD's Table of
+Contents, as of READ PMA/TOC/ATIP Format 0010b (mmc5r03c.pdf, table
+490 TOC Track Descriptor Format, Q Sub-channel).  See @pxref{CD-TEXT Packet Format} for more details about the content of this pack type.
 
 Pack type @kbd{0x89} is yet quite unclear. It might be a representation
 of Playback Skip Interval, Mode-5 Q sub-channel, POINT 01 to 40
@@ -196,19 +163,27 @@ type SAO, because the CUE SHEET format offers no way to express Mode-5
 Q.  See below, Format of CD-TEXT packs, for an example of this pack
 type.
 
-Pack type @kbd{0x8d} Sony documentes as ``Closed Information: (use
-8859-1 Code) Any information can be recorded on disc as
+Pack type @kbd{0x8d} Sony documents says:
+@quotation
+Closed Information: (use 8859-1 Code) Any information can be recorded on disc as
 memorandum. Information in this field will not be read by CD TEXT
-players available to the public.''  It is always ISO-8859-1 encoded.
+players available to the public.
+@end quotation
 
-Pack type 0x8e is documented by Sony as ``UPC/EAN Code (POS Code) of the
-album.  This field typically consists of 13 characters.'' This is always
-ASCII encoded.  It applies to tracks as ``ISRC code [which] typically
-consists of 12 characters'' and is always ISO-8859-1 encoded.  MMC calls
-these information entities Media Catalog Number and ISRC.  The catalog
-number consists of 13 decimal digits.  ISRC consists of 12 characters: 2
-country code [0-9A-Z], 3 owner code [0-9A-Z], 2 year digits (00 to 99),
-5 serial number digits (00000 to 99999).
+It is always ISO-8859-1 encoded.
+
+Pack type @kbd{0x8e} is documented by Sony as
+@quotation
+UPC/EAN Code (POS Code) of the
+album.  This field typically consists of 13 characters.
+@end quotation
+This is always ASCII encoded.  It applies to tracks as ``ISRC code
+[which] typically consists of 12 characters'' and is always ISO-8859-1
+encoded.  MMC calls these information entities Media Catalog Number
+and ISRC.  The catalog number consists of 13 decimal digits.  ISRC
+consists of 12 characters: 2 country code [0-9A-Z], 3 owner code
+[0-9A-Z], 2 year digits (00 to 99), 5 serial number digits (00000 to
+99999).
 
 Pack type @kbd{0x8f} summarizes the whole list of text packs of a block.
 See the next section for details.
@@ -218,7 +193,7 @@ See the next section for details.
 
 The attributes are represented on CD as Text Packs in the sub-channel of
 the Lead-in of the disc. The file @file{doc/cookbook.txt} of the
-libburnia distribution ddescribe write the readily formatted CD-TEXT
+libburnia distribution describe write the readily formatted CD-TEXT
 pack array to CD, and how to read CD-TEXT packs from CD.
 
 The format is explained in part in MMC-3 @xref{mmc3r10g.pdf,,
@@ -378,225 +353,79 @@ The track number bytes of the three packs have the values 0, 1, 2.
  28 - 36 : Language code for blocks 0 to 7 (tech3264.pdf appendix 3)
 @end smallexample
 
-@table @kbd
-@item 0x00
-Unknown
-@item 0x01
-Albanian
-@item 0x02
-Breton
-@item 0x03
-Catalan
-@item 0x04
-Croatian
-@item 0x05
-Welsh
-@item 0x06
-Czech
-@item 0x07
-Danish
-@item 0x08
-German
-@item 0x09
-English
-@item 0x0a
-Spanish
-@item 0x0b
-Esperanto
-@item 0x0c
-Estonian
-@item 0x0d
-Basque
-@item 0x0e
-Faroese
-@item 0x0f
-French 
-@item 0x10
-Frisian
-@item 0x11
-Irish
-@item 0x12
-Gaelic
-@item 0x13
-Galician
-@item 0x14
-Icelandic
-@item 0x15
-Italian
-@item 0x16
-Lappish
-@item 0x17
-Latin
-@item 0x18
-Latvian
-@item 0x19
-Luxembourgian
-@item 0x1a
-Lithuanian
-@item 0x1b
-Hungarian
-@item 0x1c
-Maltese        
-@item 0x1d
-Dutch
-@item 0x1e
-Norwegian
-@item 0x1f
-Occitan
-@item 0x20
-Polish
-@item 0x21
-Portuguese
-@item 0x22
-Romanian
-@item 0x23
-Romansh
-@item 0x24
-Serbian
-@item 0x25
-Slovak
-@item 0x26
-Slovenian
-@item 0x27
-Finnish
-@item 0x28
-Swedish
-@item 0x29
-Turkish
-@item 0x2a
-Flemish
-@item 0x2b
-Wallon
-@item 0x45
-Zulu
-@item 0x46
-Vietnamese
-@item 0x47
-Uzbek
-@item 0x48
-Urdu
-@item 0x49
-Ukrainian
-@item 0x4a
-Thai
-@item 0x4b
-Telugu
-@item 0x4c
-Tatar
-@item 0x4d
-Tamil
-@item 0x4e
-Tadzhik
-@item 0x4f
-Swahili
-@item 0x50
-Sranan Tongo
-@item 0x51
-Somali
-@item 0x52
-Sinhalese
-@item 0x53
-Shona
-@item 0x54
-Serbo-croat
-@item 0x55
-Ruthenian
-@item 0x56
-Russian
-@item 0x57
-Quechua
-@item 0x58
-Pushtu
-@item 0x59
-Punjabi
-@item 0x5a
-Persian
-@item 0x5b
-Papamiento
-@item 0x5c
-Oriya
-@item 0x5d
-Nepali
-@item 0x5e
-Ndebele
-@item 0x5f
-Marathi
-@item 0x60
-Moldavian
-@item 0x61
-Malaysian
-@item 0x62
-Malagasay
-@item 0x63
-Macedonian
-@item 0x64
-Laotian
-@item 0x65
-Korean
-@item 0x66
-Khmer
-@item 0x67
-Kazakh
-@item 0x68
-Kannada
-@item 0x69
-Japanese
-@item 0x6a
-Indonesian
-@item 0x6b
-Hindi
-@item 0x6c
-Hebrew
-@item 0x6d
-Hausa
-@item 0x6e
-Gurani
-@item 0x6f
-Gujurati
-@item 0x70
-Greek
-@item 0x71
-Georgian
-@item 0x72
-Fulani
-@item 0x73
-Dari
-@item 0x74
-Churash
-@item 0x75
-Chinese
-@item 0x76
-Burmese
-@item 0x77
-Bulgarian
-@item 0x78
-Bengali
-@item 0x79
-Bielorussian
-@item 0x7a
-Bambora
-@item 0x7b
-Azerbaijani
-@item 0x7c
-Assamese
-@item 0x7d
-Armenian
-@item 0x7e
-Arabic
-@item 0x7f
-Amharic
-@end table
+Codes for Languages are as follows:
+
+@smallexample
+0x00: Unknown                  0x50: Sranan Tongo
+0x01: Albanian                 0x51: Somali
+0x02: Breton                   0x52: Sinhalese
+0x03: Catalan                  0x53: Shona 
+0x04: Croatian                 0x54: Serbo-croat
+0x05: Welsh                    0x55: Ruthenian
+0x06: Czech                    0x56: Russian
+0x07: Danish                   0x57: Quechua
+0x08: German                   0x58: Pushtu
+0x09: English                  0x59: Punjabi
+0x0a: Spanish                  0x5a: Persian
+0x0b: Esperanto                0x5b: Papamiento
+0x0c: Estonian                 0x5c: Oriya
+0x0d: Basque                   0x5d: Nepali
+0x0e: Faroese                  0x5e: Ndebele
+0x0f: French                   0x5f: Marathi
+0x10: Frisian                  0x60: Moldavian
+0x11: Irish                    0x61: Malaysian
+0x12: Gaelic                   0x62: Malagasay
+0x13: Galician                 0x63: Macedonian     
+0x14: Iceland                  0x64: Laotian
+0x15: Italian                  0x65: Korean
+0x16: Lappish                  0x66: Khmer
+0x17: Latin                    0x67: Kazakh
+0x18: Latvian                  0x68: Kannada
+0x19: Luxembourgian            0x69: Japanese
+0x1a: Lithuanian               0x6a: Indonesian
+0x1b: Hungarian                0x6b: Hindi
+0x1c: Maltese                  0x6c: Hebrew
+0x1d: Dutch                    0x6d: Hausa
+0x1e: Norwegian                0x6e: Gurani
+0x1f: Occitan                  0x6f: Gujurati
+0x20: Polish                   0x70: Greek
+0x21: Portuguese               0x71: Georgian
+0x22: Romanian                 0x72: Fulani 
+0x23: Romansh                  0x73: Dari    
+0x24: Serbian                  0x74: Churash   
+0x25: Slovak                   0x75: Chinese        
+0x26: Slovenian                0x76: Burmese          
+0x27: Finnish                  0x77: Bulgarian      
+0x28: Swedish                  0x78: Bengali            
+0x29: Turkish                  0x79: Bielorussian             
+0x2a: Flemish                  0x7a: Bambora                 
+0x2b: Wallon                   0x7b: Azerbaijani                 
+0x45: Zulu                     0x7c: Assamese                    
+0x46: Vietnamese               0x7d: Armenian                    
+0x47: Uzbek                    0x7e: Arabic                    
+0x48: Urdu                     0x7f: Amharic              
+0x49: Ukrainian                                 
+0x4a: Thai                                   
+0x4b: Telugu                                        
+0x4c: Tatar                                    
+0x4d: Tamil                                         
+0x4e: Tadzhik                                          
+0x4f: Swahili                          
+@end smallexample
+
 Note: Not all of thes above codes have ever been seen with CD-TEXT.
 
-For example these three packs
+@node CD-TEXT Decoding Example
+@chapter CD-TEXT Decoding Example
+
+Using the preceding information, we can work out the following example.
 @smallexample
   42 : 8f 00 2a 00 01 01 03 00 06 05 04 05 07 06 01 02 48 65
   43 : 8f 01 2b 00 00 00 00 00 00 00 06 03 2c 00 00 00 c0 20
   44 : 8f 02 2c 00 00 00 00 00 09 00 00 00 00 00 00 00 11 45
 @end smallexample
 
-decode to:
-
+This decode tos
 @smallexample
 Byte :Value Meaning
    0 : 01 = ASCII 7-bit
