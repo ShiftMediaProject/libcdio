@@ -31,16 +31,10 @@ Copyright @copyright{} 2011-2012 Thomas Schmitt @email{scdbackup@@gmx.net}.
 
 @contents
 
+@ifnottex
 @node Top
-@ifnottex
 @top CD-Text Description
-@end ifnottex
 
-@node List of Tables
-@unnumbered List of Tables
-@listoffloats Table
-
-@ifnottex
 @insertcopying
 
 @menu
@@ -653,8 +647,12 @@ TITLE "Joyful Nights"
     INDEX 01 13:20:33
 @end smallexample
 
+@node List of Tables
+@unnumbered List of Tables
+@listoffloats Table
+
 @node References
-@chapter References
+@unnumbered References
 
 @enumerate
 @item Correspondence with Leon Merten Lohse 
