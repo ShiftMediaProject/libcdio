@@ -31,10 +31,16 @@ Copyright @copyright{} 2011-2012 Thomas Schmitt @email{scdbackup@@gmx.net}.
 
 @contents
 
-@ifnottex
 @node Top
+@ifnottex
 @top CD-Text Description
+@end ifnottex
 
+@node List of Tables
+@unnumbered List of Tables
+@listoffloats Table
+
+@ifnottex
 @insertcopying
 
 @menu
@@ -103,15 +109,16 @@ the one of the previous track occupies only 2 or 4 bytes.
 @node Text Pack Formats
 @chapter Text Pack Formats
 
-Pack types @kbd{0x80} to @kbd{0x85} and @kbd{0x8e} contain a ASCII NUL
-byte terminating its text. If double-byte characters are used, then
-two zero bytes terminate the text.  Pack types @kbd{0x80} (Title) to
+Pack types @kbd{0x80} to @kbd{0x85} and @kbd{0x8e} contain a
+NUL-termintated string. If double-byte characters are used, then two
+zero bytes terminate the text.  Pack types @kbd{0x80} (Title) to
 @kbd{0x85} (Message Area) are encoded according to their block's
 Character Code.  This could be either as ISO-8859-1 single byte
 characters, as 7-bit ASCII single byte characters, or as MS-JIS double
-byte characters.  Pack type @kbd{0x8e} is given below.
+byte characters.  Pack type @kbd{0x8e} (album/track code) is described
+below.
 
-Pack type @kbd{0x86} (Disc Identification) Sony documents this:
+For pack type @kbd{0x86} (Disc Identification) here is how Sony describes this:
 @quotation
 Catalog Number: (use ASCII Code) Catalog Number of the album
 @end quotation
@@ -119,8 +126,8 @@ So it is not really binary but might be non-printable, and should contain only
 bytes with bit 7 set to zero.
 
 Pack type @kbd{0x87} (Genre Identification) contains 2 binary bytes
-followed by ASCII NUL-terminated text.  For the categories associated with
-Big-endian 16-bit value is given see @ref{table:categories}.
+followed by NUL-byte terminated text.  Categories associated with
+their Big-endian 16-bit value are listed in @ref{table:categories}.
 
 @float Table,table:categories
 @smallexample
@@ -186,7 +193,7 @@ TEXT players available to the public.
 
 It is always ISO-8859-1 encoded.
 
-Pack type @kbd{0x8e} is documented by Sony as
+Pack type @kbd{0x8e} is documented by Sony as:
 @quotation
 UPC/EAN Code (POS Code) of the
 album.  This field typically consists of 13 characters.
@@ -645,10 +652,6 @@ TITLE "Joyful Nights"
     ISRC XYBLG1100006
     INDEX 01 13:20:33
 @end smallexample
-
-@node List of Tables
-@unnumbered List of Tables
-@listoffloats Table
 
 @node References
 @chapter References
