@@ -53,8 +53,9 @@ Copyright @copyright{} 2011-2012 Thomas Schmitt @email{scdbackup@@gmx.net}.
 
 CD-TEXT records attributes of disc and tracks on audio CD.
 
-The attributes are grouped into blocks. Each block contains data for 
-a particular language. Up to 8 blocks (languages) are possible.
+The attributes are grouped into blocks. Each block contains data for a
+particular language. Up to 8 blocks (or up to 8 languages) can be
+given. 
 
 There are 13 defined attribute categories, which are called Pack Types.
 
@@ -93,7 +94,7 @@ identical track texts is provided, so that a text that is identical to
 the one of the previous track occupies only 2 or 4 bytes.
 
 @node Text Pack Content Specification
-@chapter Text Pack Content Specificiation
+@chapter Text Pack Content Specification
 
 Pack types @kbd{0x80} to @kbd{0x85} and @kbd{0x8e} contain a 0-byte
 terminating its text. If double-byte characters are used, then two
@@ -118,7 +119,7 @@ Big-endian number are decoded as follows:
   0x0001: Not Defined
   0x0002: Adult Contemporary
   0x0003: Alternative Rock
-  0x0004: Childrens Music
+  0x0004: Childrens' Music
   0x0005: Classical
   0x0006: Contemporary Christian
   0x0007: Country
@@ -315,7 +316,7 @@ before the time points:
   07 28:30:39 07 28:42:30
   13 55:13:26 13 55:31:50
 @end smallexample
-nyields:
+yields:
 @smallexample
   89 01 28 00 01 04 00 00 00 00 02 29 30 02 34 3a f3 0c
   89 06 29 00 02 04 00 00 00 00 17 0e 19 17 1d 3c 73 92
@@ -425,7 +426,7 @@ Using the preceding information, we can work out the following example.
   44 : 8f 02 2c 00 00 00 00 00 09 00 00 00 00 00 00 00 11 45
 @end smallexample
 
-This decode tos
+This decodes to:
 @smallexample
 Byte :Value Meaning
    0 : 01 = ASCII 7-bit
@@ -523,15 +524,15 @@ may be replaced by the pack type codes.  E.g.:
   Track 02 0x80       =  Track content of pack type 0x80 for track 2.
 Applicable are pack types 0x80 to 0x86, 0x8d, 0x8e.
 
-Text Code may be specified only once. It gets speficied to "ISO-8850-1"
+Text Code may be specified only once. It gets specified ISO-8850-1
 automatically as soon as content is defined which depends on the text
-encoding of the block. I.e with pack types 0x80 to 0x85.
+encoding of the block, that is, with pack types @kbd{0x80} to @kbd{0x85}.
 
 If a track attribute is set, but the corresponding session attribute is not
 defined or defined with empty text, then the session attribute gets attached
-as empty test. (Normally empty content is ignored.)
+as empty test. Normally, empty content is ignored.
 
-Example cdrskin run with three tracks:
+An example @code{cdrskin} run with three tracks:
 
 @smallexample
   $ cdrskin dev=/dev/sr0 -v input_sheet_v07t=NIGHTCATS.TXT \
