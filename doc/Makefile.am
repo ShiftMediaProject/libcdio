@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2004, 2008 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2004, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
@@ -20,16 +20,16 @@ reference:
 	-( cd ${top_srcdir} && $(MAKE) doxygen )
 
 #: Create documentation in PDF format
-pdf: libcdio.pdf cd-text.pdf
+pdf: libcdio.pdf cd-text-foramt.pdf
 
 #: Create documentation as a text file
 txt: libcdio.txt
 
 #: Create documentation in PostScript format
-ps: libcdio.ps cd-text.ps
+ps: libcdio.ps cd-text-format.ps
 
 #: Create documentation in HTML format
-html: libcdio.html cd-text.html
+html: libcdio.html cd-text-format.html
 
 %.ps.gz: %.ps
 	gzip -9c $< > $@
@@ -48,4 +48,4 @@ all-formats: pdf dvi txt ps html
 
 MOSTLYCLEANFILES = \
 	libcdio.html libcdio.pdf libcdio.ps.gz \
-	cd-text.html cd-text.pdf cd-text.ps.gz
+	cd-text-foramt.html cd-text-format.pdf cd-text-foramt.ps.gz

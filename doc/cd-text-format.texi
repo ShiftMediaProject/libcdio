@@ -6,8 +6,8 @@
 @c \setleading{\textleading}
 @c @end tex 
 
-@setfilename cd-text.info
-@settitle CD TEXT Description
+@setfilename cd-text-format.info
+@settitle CD Text Description
 
 @copying
 @quotation
@@ -23,7 +23,7 @@ Copyright @copyright{} 2011-2012 Thomas Schmitt @email{scdbackup@@gmx.net}.
 @exampleindent 0
 
 @titlepage
-@title CD Text Description
+@title CD Text Format
 @author Thomas Schmitt for libburnia-project.org 
 @vskip 2in plus 1filll
 @insertcopying
@@ -33,16 +33,19 @@ Copyright @copyright{} 2011-2012 Thomas Schmitt @email{scdbackup@@gmx.net}.
 
 @ifnottex
 @node Top
-@top CD-Text Description
+@top CD Text Format
 
 @insertcopying
 
+This document describes the information available in CD Text and how
+it is encoded.
+
 @menu
-* Attribute Categories::
-* Text Pack Formats::
+* CD Text Categories (Pack Types)::
+* Text Packs::
 * Text Pack Contents::
-* TOC Pack Formats::
-* Block Pack Format::
+* TOC Pack Types::
+* Block Pack Type::
 * Sony Text File Format (Input Sheet Version 0.7T)::
 * CDRWIN Cue Sheet with CD Text::
 * List of Tables::
@@ -50,21 +53,23 @@ Copyright @copyright{} 2011-2012 Thomas Schmitt @email{scdbackup@@gmx.net}.
 @end menu
 @end ifnottex
 
-@node Attribute Categories
-@chapter Attribute Categories
+@node CD Text Categories (Pack Types)
+@chapter CD Text Categories (Pack Types)
 
-CD-TEXT records attributes of disc and tracks on audio CD.
+CD Text provides a way to give disk and track information in an audio
+CD. This information is used, for example, in CD players to
+provide information about the audio CD.
 
-The attributes are grouped into blocks. Each block contains data for a
-particular language. Up to 8 blocks (or up to 8 languages) can be
-given. 
+The information is grouped into blocks, each one in a particular
+language.  Up to 8 languages (or blocks) can be stored.
 
-There are 13 defined attribute categories, which are called Pack Types.
+Within a block, there are 13 categories of information, called @emph{Pack
+Types}.
 
-The attribute categories are identified by a single-byte code.
-@xref{table:attributes}.
+The CD Text categories are identified by a single-byte code.
+@xref{table:categories}.
 
-@float Table,table:attributes
+@float Table,table:categories
 @smallexample
   0x80: Title
   0x81: Performers
@@ -80,28 +85,28 @@ The attribute categories are identified by a single-byte code.
   0x8e: UPC/EAN code of the album and ISRC code of each track
   0x8f: Block Packet (binary)
 @end smallexample
-@caption{CD-Text Attributes}
+@caption{CD Text Categories}
 @end float
 
-Some additional information regarding specific codes:
+Some additional information regarding specific pack types:
 @itemize
-@item Codes @kbd{0x8a} to @kbd{0x8c} are reserved.  
-@item Codes @kbd{0x86},@kbd{0x87}, @kbd{0x88}, @kbd{0x89}, @kbd{0x8d} apply to the whole
+@item Pack Types @kbd{0x8a} to @kbd{0x8c} are reserved.  
+@item Pack Types @kbd{0x86},@kbd{0x87}, @kbd{0x88}, @kbd{0x89}, @kbd{0x8d} apply to the whole
 disc, and can not be attached to individual tracks.
-@item Codes @kbd{0x80}, @kbd{0x81}, @kbd{0x82}, @kbd{0x83}, @kbd{0x84},
+@item Pack Types @kbd{0x80}, @kbd{0x81}, @kbd{0x82}, @kbd{0x83}, @kbd{0x84},
 @kbd{0x85}, and @kbd{0x8e} have to be attributed to each
 track if they are present for the whole disc.
-@item Code @kbd{0x8f} describes the overall content of a block and in part of all other blocks.
+@item Pack Type @kbd{0x8f} describes the overall content of a block and in part of all other blocks.
 @end itemize
 
-The total size of a block's attribute set is restricted by the fact that
-it has to be stored in at most 253 records with 12 bytes of
-payload. These records are called Text Packs.  A shortcut for repeated
-identical track texts is provided, so that a text that is identical to
-the one of the previous track occupies only 2 or 4 bytes.
+The total size of a block's attribute set is restricted by the fact
+that it has to be stored in at most 253 records with 12 bytes of
+payload. These records are called @emph{Text Packs}.  A shortcut for
+repeated identical track texts is provided, so that a text that is
+identical to the one of the previous track occupies only 2 or 4 bytes.
 
-@node Text Pack Formats
-@chapter Text Pack Formats
+@node Text Packs
+@chapter Text Packs
 
 Pack types @kbd{0x80} to @kbd{0x85} and @kbd{0x8e} contain a
 NUL-termintated string. If double-byte characters are used, then two
@@ -121,9 +126,9 @@ bytes with bit 7 set to zero.
 
 Pack type @kbd{0x87} (Genre Identification) contains 2 binary bytes
 followed by NUL-byte terminated text.  Categories associated with
-their Big-endian 16-bit value are listed in @ref{table:categories}.
+their Big-endian 16-bit value are listed in @ref{table:genres}.
 
-@float Table,table:categories
+@float Table,table:genres
 @smallexample
   0x0000: Not Used. Sony prescribes this when no genre applies
   0x0001: Not Defined
@@ -175,7 +180,7 @@ sub-channel, POINT 01 to 40 (mmc5r03.pdf 4.2.3.7.4).  If so, then this
 seems not to apply to write type SAO, because the CUE SHEET format
 offers no way to express Mode-5 Q.  
 
-See @ref{TOC Pack Formats} for more details about the content of pack
+See @ref{TOC Pack Types} for more details about the content of pack
 types @kbd{0x88} and @kbd{0x89}.
 
 Pack type @kbd{0x8d} Sony documents says:
@@ -209,7 +214,7 @@ See the next section for details.
 The attributes are represented on CD as Text Packs in the sub-channel of
 the Lead-in of the disc. The file @file{doc/cookbook.txt} of the
 @url{http://libburnia-project.org/,libburnia} distribution describes how
-to write the CD-TEXT pack array to CD, and how to read CD-TEXT packs
+to write the CD Text pack array to CD, and how to read CD Text packs
 from CD.
 
 The format is explained in part in MMC-3 (@ref{mmc3r10g.pdf,,
@@ -277,8 +282,8 @@ The two binary bytes of pack type @kbd{0x87} are written to the first
 @kbd{0x87} pack of a block. They may or may not be repeated at the start
 of the follow-up packs of type @kbd{0x87}.
 
-@node TOC Pack Formats
-@chapter TOC Pack Formats
+@node TOC Pack Types
+@chapter TOC Pack Types
 The first pack of type @kbd{0x88} (Table of Contents) records in its
 payload bytes as follows:
 
@@ -345,8 +350,8 @@ two time points are stored in byte 6 to 11 of the payload. Byte 0 of the
 payload seems to be a sequential counter. Byte 1 always 4? Byte 2 to 5
 always 0?
 
-@node Block Pack Format
-@chapter Block Pack Format
+@node Block Pack Type
+@chapter Block Pack Type
 
 Pack type @kbd{0x8f} summarizes the whole list of text packs of a
 block.  So there is one group of three @kbd{0x8f} packs per block.
@@ -375,7 +380,7 @@ For the format of this pack type see @ref{table:block-pack}.
  20 - 27 : Highest sequence byte number of blocks 0 to 7.
  28 - 36 : Language code for blocks 0 to 7 (tech3264.pdf appendix 3)
 @end smallexample
-@caption{Block Pack Format}
+@caption{Block Pack Type}
 @end float
 
 Table @ref{table:languages} specifies the language codes that are
@@ -443,7 +448,7 @@ referred to in bytes 28-38 of @ref{table:block-pack}.
 @end float
 
 Note: Not all of the language codes in @ref{table:languages} have
-ever been seen with CD-TEXT.
+ever been seen with CD Text.
 
 Using the preceding information, we can work out the following example.
 @smallexample
@@ -489,7 +494,7 @@ The information is given by text lines of the following form:
   purpose specifier [whitespace] = [whitespace] content text
 [whitespace] is zero or more ASCII 32 (space) or ASCII 9 (tab) characters.
 The purpose specifier tells the meaning of the content text.
-Empty content text does not cause a CD-TEXT attribute to be attached.
+Empty content text does not cause a CD Text attribute to be attached.
 
 The following purpose specifiers apply to the session as a whole:
 
@@ -527,9 +532,9 @@ The following purpose specifiers apply to particular tracks:
   ISRC NN             =  Content of pack type 0x8e
 @end smallexample
 
-The following purpose specifiers have no effect on CD-TEXT:
+The following purpose specifiers have no effect on CD Text:
 @smallexample
-  Remarks             =  Comments with no influence on CD-TEXT
+  Remarks             =  Comments with no influence on CD Text
   Disc Information NN =  Supplementary information for use by record companies.
                          ISO-8859-1 encoded. NN ranges from 01 to 04.
   Input Sheet Version =  "0.7T"
@@ -616,7 +621,7 @@ start addresses (@kbd{INDEX}).  The rules for CDRWIN cue sheet files are
 described at @url{http://digitalx.org/cue-sheet/syntax/} [4].
 
 There are three more text attributes mentioned in the cdrecord manual
-page for defining the corresponding CD-TEXT attributes: @kbd{ARRANGER},
+page for defining the corresponding CD Text attributes: @kbd{ARRANGER},
 @kbd{COMPOSER}, @kbd{MESSAGE}.
 
 An Example of a CDRWIN cue sheet file:
