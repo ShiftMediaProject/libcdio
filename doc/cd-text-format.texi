@@ -7,7 +7,7 @@
 @c @end tex 
 
 @setfilename cd-text-format.info
-@settitle CD Text Description
+@settitle CD-TEXT Format
 
 @copying
 @quotation
@@ -23,7 +23,7 @@ Copyright @copyright{} 2011-2012 Thomas Schmitt @email{scdbackup@@gmx.net}.
 @exampleindent 0
 
 @titlepage
-@title CD Text Format
+@title CD-TEXT Format
 @author Thomas Schmitt for libburnia-project.org 
 @vskip 2in plus 1filll
 @insertcopying
@@ -33,40 +33,46 @@ Copyright @copyright{} 2011-2012 Thomas Schmitt @email{scdbackup@@gmx.net}.
 
 @ifnottex
 @node Top
-@top CD Text Format
+@top CD-TEXT Format
 
 @insertcopying
 
-This document describes the information available in CD Text and how
-it is encoded.
+CD-TEXT provides a way to give disk and track information in an audio
+CD. This information is used, for example, in CD players to
+provide information about the audio CD.
+
+This document describes the information available in CD Text, and how
+to decode and encode it.
 
 @menu
-* CD Text Categories (Pack Types)::
-* Text Packs::
-* Text Pack Contents::
-* TOC Pack Types::
-* Block Pack Type::
-* Sony Text File Format (Input Sheet Version 0.7T)::
-* CDRWIN Cue Sheet with CD Text::
+* Encoding and Decoding CD-TEXT::
+* Higher-Level Encoding::
 * List of Tables::
 * References::
 @end menu
 @end ifnottex
 
-@node CD Text Categories (Pack Types)
-@chapter CD Text Categories (Pack Types)
+@node Encoding and Decoding CD-TEXT
+@chapter Encoding and Decoding CD-TEXT
 
-CD Text provides a way to give disk and track information in an audio
-CD. This information is used, for example, in CD players to
-provide information about the audio CD.
+@menu
+* CD-TEXT Categories (Pack Types)::
+* Text Packs::
+* Text Pack Contents::
+* TOC Pack Types::
+* Block Pack Type::
+@end menu
 
-The information is grouped into blocks, each one in a particular
+@node CD-TEXT Categories (Pack Types)
+@section CD-TEXT Categories (Pack Types)
+
+CD-TEXT information is grouped into @emph{blocks}, each one in a particular
 language.  Up to 8 languages (or blocks) can be stored.
 
 Within a block, there are 13 categories of information, called @emph{Pack
 Types}.
 
-The CD Text categories are identified by a single-byte code.
+The CD-TEXT categories are identified by a single-byte code.
 @xref{table:categories}.
 
 @float Table,table:categories
@@ -85,13 +91,13 @@ The CD Text categories are identified by a single-byte code.
   0x8e: UPC/EAN code of the album and ISRC code of each track
   0x8f: Block Packet (binary)
 @end smallexample
-@caption{CD Text Categories}
+@caption{CD-TEXT Categories}
 @end float
 
 Some additional information regarding specific pack types:
 @itemize
 @item Pack Types @kbd{0x8a} to @kbd{0x8c} are reserved.  
-@item Pack Types @kbd{0x86},@kbd{0x87}, @kbd{0x88}, @kbd{0x89}, @kbd{0x8d} apply to the whole
+@item Pack Types @kbd{0x86}, @kbd{0x87}, @kbd{0x88}, @kbd{0x89}, @kbd{0x8d} apply to the whole
 disc, and can not be attached to individual tracks.
 @item Pack Types @kbd{0x80}, @kbd{0x81}, @kbd{0x82}, @kbd{0x83}, @kbd{0x84},
 @kbd{0x85}, and @kbd{0x8e} have to be attributed to each
@@ -106,7 +112,7 @@ repeated identical track texts is provided, so that a text that is
 identical to the one of the previous track occupies only 2 or 4 bytes.
 
 @node Text Packs
-@chapter Text Packs
+@section Text Packs
 
 Pack types @kbd{0x80} to @kbd{0x85} and @kbd{0x8e} contain a
 NUL-termintated string. If double-byte characters are used, then two
@@ -171,14 +177,14 @@ the Genre Code, such as ``USA Rock music in the 60's''.
 This information is always ASCII encoded.
 
 Pack type @kbd{0x88} records information from the CD's Table of
-Contents, as of READ PMA/TOC/ATIP Format 0010b (mmc5r03c.pdf, table
-490 TOC Track Descriptor Format, Q Sub-channel).  
+Contents, as of READ PMA/TOC/ATIP Format @kbd{0010b}. See Table 237 TOC
+Track Descriptor Format, Q Sub-channel of @ref{mmc3r10g.pdf,, MMC-3}.
 
 Pack type @kbd{0x89} (Second Table of Contents) is not yet clear. It
 might be a representation of Playback Skip Interval, Mode-5 Q
-sub-channel, POINT 01 to 40 (mmc5r03.pdf 4.2.3.7.4).  If so, then this
-seems not to apply to write type SAO, because the CUE SHEET format
-offers no way to express Mode-5 Q.  
+sub-channel, POINT 01 to 40 See Section 4.2.6.3 of @ref{mmc3r10g.pdf,, MMC-3}.
+If so, then this seems not to apply to write type SAO, because the CUE
+SHEET format offers no way to express Mode-5 Q.
 
 See @ref{TOC Pack Types} for more details about the content of pack
 types @kbd{0x88} and @kbd{0x89}.
@@ -209,16 +215,16 @@ Pack type @kbd{0x8f} summarizes the whole list of text packs of a block.
 See the next section for details.
 
 @node Text Pack Contents
-@chapter Text Pack Contents
+@section Text Pack Contents
 
 The attributes are represented on CD as Text Packs in the sub-channel of
 the Lead-in of the disc. The file @file{doc/cookbook.txt} of the
 @url{http://libburnia-project.org/,libburnia} distribution describes how
-to write the CD Text pack array to CD, and how to read CD Text packs
+to write the CD-TEXT pack array to CD, and how to read CD-TEXT packs
 from CD.
 
-The format is explained in part in MMC-3 (@ref{mmc3r10g.pdf,,
-mmc3r10g.pdf Annex J}), and in part by the documentation in Sony's
+The format is explained in part in Annex J of (@ref{mmc3r10g.pdf,,
+MMC-3}), and in part by Sony'sdocumentation
 @ref{cdtext.zip,,cdtext.zip}.
 
 Each pack consists of a 4-byte header, 12 bytes of payload, and 2 bytes
@@ -227,13 +233,13 @@ of CRC.
 The first byte of each pack tells the pack type. See above for a list of
 types.
 
-The second byte tells the track number to which the first text piece in
-a pack is associated. Number 0 means the whole album. Higher numbers are
-valid for types @kbd{0x80} to @kbd{0x85}, and @kbd{0x8e}. With these
-types, there should be one text for the disc and one for each track.
-With types @kbd{0x88} and @kbd{0x89}, the second byte bears a track
-number, too.  With type @kbd{0x8f}, the second byte counts the record
-parts from 0 to 2.
+The second byte tells the track number to which the first text piece
+in a pack is associated. Number 0 means the whole album. Higher
+numbers are valid for types @kbd{0x80} to @kbd{0x85}, and
+@kbd{0x8e}. With these types, there should be one text for the disc
+and one for each track.  With types @kbd{0x88} and @kbd{0x89}, the
+second byte bears a track number, too.  With type @kbd{0x8f}, the
+second byte counts the record parts from 0 to 2.
 
 The third byte is a sequential counter.
 
@@ -259,9 +265,9 @@ of the same pack type. If no text of the same type follows, then the
 remaining text bytes are set to 0.
 
 The CRC algorithm uses divisor @kbd{0x11021}. The resulting 16-bit
-residue of the polynomial division is zero extended in the upper bits
-(xor-ed with @kbd{0xffff}) and written as Big-endian number in bytes 16
-and 17 of the pack.
+residue of the polynomial division is inverted (xor-ed with
+@kbd{0xffff}) and written as Big-endian number in bytes 16 and 17 of
+the pack.
 
 The text packs are grouped in up to 8 blocks of at most 256 packs. Each
 block is in charge for one language. Sequence numbers of each block are
@@ -283,7 +289,7 @@ The two binary bytes of pack type @kbd{0x87} are written to the first
 of the follow-up packs of type @kbd{0x87}.
 
 @node TOC Pack Types
-@chapter TOC Pack Types
+@section TOC Pack Types
 The first pack of type @kbd{0x88} (Table of Contents) records in its
 payload bytes as follows:
 
@@ -351,7 +357,7 @@ payload seems to be a sequential counter. Byte 1 always 4? Byte 2 to 5
 always 0?
 
 @node Block Pack Type
-@chapter Block Pack Type
+@section Block Pack Type
 
 Pack type @kbd{0x8f} summarizes the whole list of text packs of a
 block.  So there is one group of three @kbd{0x8f} packs per block.
@@ -423,7 +429,7 @@ referred to in bytes 28-38 of @ref{table:block-pack}.
 0x20: Polish                   0x70: Greek
 0x21: Portuguese               0x71: Georgian
 0x22: Romanian                 0x72: Fulani 
-0x23: Romansh                  0x73: Dari    
+0x23: Romanish                 0x73: Dari    
 0x24: Serbian                  0x74: Churash   
 0x25: Slovak                   0x75: Chinese        
 0x26: Slovenian                0x76: Burmese          
@@ -448,7 +454,7 @@ referred to in bytes 28-38 of @ref{table:block-pack}.
 @end float
 
 Note: Not all of the language codes in @ref{table:languages} have
-ever been seen with CD Text.
+ever been seen with CD-TEXT.
 
 Using the preceding information, we can work out the following example.
 @smallexample
@@ -483,8 +489,18 @@ Byte :Value Meaning
   29 : 00 00 00 00 00 00 00 = language codes for block 1..7 (none)
 @end smallexample
 
+@node Higher-Level Encoding
+@chapter Higher-Level Encoding
+
+This part gives examples of two ways to input CD Text for burning.
+
+@menu
+* Sony Text File Format (Input Sheet Version 0.7T)::
+* CDRWIN Cue Sheet with CD-TEXT::
+@end menu
+
 @node Sony Text File Format (Input Sheet Version 0.7T)
-@chapter Sony Text File Format (Input Sheet Version 0.7T)
+@section Sony Text File Format (Input Sheet Version 0.7T)
 
 This text file format provides comprehensive means to define the text
 attributes of session and tracks for a single block. More than one
@@ -494,7 +510,7 @@ The information is given by text lines of the following form:
   purpose specifier [whitespace] = [whitespace] content text
 [whitespace] is zero or more ASCII 32 (space) or ASCII 9 (tab) characters.
 The purpose specifier tells the meaning of the content text.
-Empty content text does not cause a CD Text attribute to be attached.
+Empty content text does not cause a CD-TEXT attribute to be attached.
 
 The following purpose specifiers apply to the session as a whole:
 
@@ -532,9 +548,9 @@ The following purpose specifiers apply to particular tracks:
   ISRC NN             =  Content of pack type 0x8e
 @end smallexample
 
-The following purpose specifiers have no effect on CD Text:
+The following purpose specifiers have no effect on CD-TEXT:
 @smallexample
-  Remarks             =  Comments with no influence on CD Text
+  Remarks             =  Comments with no influence on CD-TEXT
   Disc Information NN =  Supplementary information for use by record companies.
                          ISO-8859-1 encoded. NN ranges from 01 to 04.
   Input Sheet Version =  "0.7T"
@@ -611,8 +627,8 @@ Track 03 Message    =
 ISRC 03             =  XYBLG1100006
 @end smallexample
 
-@node CDRWIN Cue Sheet with CD Text
-@chapter CDRWIN Cue Sheet with CD Text
+@node CDRWIN Cue Sheet with CD-TEXT
+@section CDRWIN Cue Sheet with CD-TEXT
 
 A CDRWIN cue sheet file defines the track data source (@kbd{FILE}),
 various text attributes (@kbd{CATALOG}, @kbd{TITLE}, @kbd{PERFORMER},
@@ -621,7 +637,7 @@ start addresses (@kbd{INDEX}).  The rules for CDRWIN cue sheet files are
 described at @url{http://digitalx.org/cue-sheet/syntax/} [4].
 
 There are three more text attributes mentioned in the cdrecord manual
-page for defining the corresponding CD Text attributes: @kbd{ARRANGER},
+page for defining the corresponding CD-TEXT attributes: @kbd{ARRANGER},
 @kbd{COMPOSER}, @kbd{MESSAGE}.
 
 An Example of a CDRWIN cue sheet file:
@@ -661,21 +677,33 @@ TITLE "Joyful Nights"
 
 @enumerate
 @item Correspondence with Leon Merten Lohse 
-in @email{libcdio-devel@@gnu.org} circa 2011
-@anchor{mmc3r10g.pdf}
-@item MMC3 Revision 10 Reference
-@url{http://www.t10.org/cgi-bin/ac.pl?t=f&f=mmc3r10g.pdf}
-@anchor{cdtext.zip}
-@item Documents inside Sony's @file{cdtext.zip}
+in @email{libcdio-devel@@gnu.org}, December 2011. @* Mail archives at
+@url{http://lists.gnu.org/archive/html/libcdio-devel/2011-12/index.html}
+
+@item @emph{SCSI Multimedia Commands --- 3 (MMC-3)},@anchor{mmc3r10g.pdf} @*
+Revision 10g, November 12. 2011
+@url{http://www.t10.org/cgi-bin/ac.pl?t=f&f=mmc3r10g.pdf} In
+particular, see Table 237 (TOC Track Descriptor Format, Q
+Sub-channel), Annex J (CD-TEXT format in the Lead-in Area) and
+Sections 4.2.5.3 (Mode-5 Q).
+
+@item Documents inside Sony's @file{cdtext.zip} @anchor{cdtext.zip}
 @url{http://www.sonydadc.com/file/}
-@item CDRWIN Cue Sheet information
+
+@item Cue-Sheet Syntax
 @url{http://digitalx.org/cue-sheet/syntax}
-@item libcdio source code @url{http://www.gnu.org/s/libcdio}
-@item cdrecord source code @url{ftp://ftp.berlios.de/pub/cdrecord/alpha}
-@item cdrecord manual page. 
+
+@item @emph{libcdio} source code @url{http://www.gnu.org/s/libcdio}
+
+@item @emph{cdrecord} source code @url{ftp://ftp.berlios.de/pub/cdrecord/alpha}
+@item @emph{cdrecord} manual page. 
 @url{http://cdrecord.berlios.de/private/man/cdrecord/cdrecord.1.html}
-@item CD Text Language codes
-@url{http://tech.ebu.ch/docs/tech/tech3264.pdf}
+
+@item @emph{Specification of the EBU Subtitling data exchange format},@*
+Appendix 3. February 1991
+@url{http://tech.ebu.ch/docs/tech/tech3264.pdf} @*
+Contains CD-TEXT Language codes shown in @ref{table:languages}.
+
 @item Genre codes
 @url{http://helpdesk.audiofile-engineering.com/index.php?pg=kb.page&id=123} 
 @end enumerate
