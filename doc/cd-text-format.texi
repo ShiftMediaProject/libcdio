@@ -136,16 +136,16 @@ MMC-3}), and in part by Sony's documentation
 Each pack consists of a 4-byte header, 12 bytes of payload, and 2 bytes
 of CRC.
 
-The first byte of each pack tells the pack type. See above for a list of
-types.
+The first byte of each pack contains the pack type. See
+@ref{table:categories} for a list of pack types.
 
-The second byte tells the track number to which the first text piece
-in a pack is associated. Number 0 means the whole album. Higher
-numbers are valid for types @kbd{0x80} to @kbd{0x85}, and
-@kbd{0x8e}. With these types, there should be one text for the disc
-and one for each track.  With types @kbd{0x88} and @kbd{0x89}, the
-second byte bears a track number, too.  With type @kbd{0x8f}, the
-second byte counts the record parts from 0 to 2.
+The second byte often gives the track number of the pack. However, a
+zero track value indicates that the information pertains to the whole
+album. Higher numbers are valid for types @kbd{0x80} to @kbd{0x85},
+and @kbd{0x8e}. In these pack types, there should be one text pack for
+the disc and one for each track.  With types @kbd{0x88} and
+@kbd{0x89}, the second byte is a track number too.  With type
+@kbd{0x8f}, the second byte counts the record parts from 0 to 2.
 
 The third byte is a sequential counter.
 
