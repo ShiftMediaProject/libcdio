@@ -120,7 +120,7 @@ track occupies only 2 or 4 bytes.
 @node Pack Contents
 @section Pack Contents
 
-Pack Types are stored in CD in the sub-channel of the Lead-in of the
+Packs are stored in CD in the sub-channel of the Lead-in of the
 disc. The file @file{doc/cookbook.txt} of the
 @url{http://libburnia-project.org/,libburnia} distribution describes
 how to write the CD Text pack array to CD, and how to read CD Text
