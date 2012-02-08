@@ -61,7 +61,7 @@ to decode and encode it.
 * Top-Level CD Text Categories (Pack Types)::
 * Pack Contents::
 * Text Pack Types::
-* Other Pack Types::
+* Misc Pack Types::
 * TOC Pack Types::
 * Block Pack Type (0x8f)::
 @end menu
@@ -219,8 +219,8 @@ consists of 12 characters: 2 country code [0-9A-Z], 3 owner code
 [0-9A-Z], 2 year digits (00 to 99), 5 serial number digits (00000 to
 99999).
 
-@node Other Pack Types
-@section Other Pack Types (@kbd{0x86}, @kbd{0x87}, @kbd{0x8d})
+@node Misc Pack Types
+@section Miscellaneous Pack Types (@kbd{0x86}, @kbd{0x87}, @kbd{0x8d})
 
 For pack type @kbd{0x86} (Disc Identification) here is how Sony describes this:
 @quotation
