@@ -58,16 +58,16 @@ to decode and encode it.
 @chapter Encoding and Decoding CD Text
 
 @menu
-* CD Text Categories (Pack Types)::
-* Text Pack Types:: Text Pack Types (0x80-0x85, 0x8e)
-* Other Pack Types:: Other Pack Types (0x86, 0x87, 0x8d)
-* TOC Pack Types:: TOC Pack Types (0x88, 0x89)
-* Block Pack Type (0x8f)::
+* Top-Level CD Text Categories (Pack Types)::
 * Pack Contents::
+* Text Pack Types::
+* Other Pack Types::
+* TOC Pack Types::
+* Block Pack Type (0x8f)::
 @end menu
 
-@node CD Text Categories (Pack Types)
-@section CD Text Categories (Pack Types)
+@node Top-Level CD Text Categories (Pack Types)
+@section Top-Level CD Text Categories (Pack Types)
 
 CD Text information is grouped into @emph{blocks}, each one in a particular
 language.  Up to 8 languages (or blocks) can be stored.
@@ -97,7 +97,7 @@ The CD Text categories are identified by a single-byte code.
 @caption{CD Text Categories}
 @end float
 
-Some additional information regarding specific pack types:
+Additional notes regarding Pack Types:
 @itemize
 @item Pack Types @kbd{0x8a} to @kbd{0x8c} although not specified are reserved for potential future use.
 
@@ -116,6 +116,83 @@ payload. These records are called @emph{Text Packs} described in the
 next section.  A shortcut for repeated identical track texts is
 provided, so that a text that is identical to the one of the previous
 track occupies only 2 or 4 bytes.
+
+@node Pack Contents
+@section Pack Contents
+
+Text Packs are stored in CD in the sub-channel of the Lead-in of the
+disc. The file @file{doc/cookbook.txt} of the
+@url{http://libburnia-project.org/,libburnia} distribution describes
+how to write the CD Text pack array to CD, and how to read CD Text
+packs from CD. If you are just interested in a more high-level access
+CD Text information without having to understand the internal
+structure, you can use libcdio's CD Text API for getting and setting
+fields.
+
+The format is explained in part in Annex J of (@ref{mmc3r10g.pdf,,
+MMC-3}), and in part by Sony's documentation
+@ref{cdtext.zip,,cdtext.zip}.
+
+Each pack consists of a 4-byte header, 12 bytes of payload, and 2 bytes
+of CRC.
+
+The first byte of each pack tells the pack type. See above for a list of
+types.
+
+The second byte tells the track number to which the first text piece
+in a pack is associated. Number 0 means the whole album. Higher
+numbers are valid for types @kbd{0x80} to @kbd{0x85}, and
+@kbd{0x8e}. With these types, there should be one text for the disc
+and one for each track.  With types @kbd{0x88} and @kbd{0x89}, the
+second byte bears a track number, too.  With type @kbd{0x8f}, the
+second byte counts the record parts from 0 to 2.
+
+The third byte is a sequential counter.
+
+The fourth byte is the Block Number and Character Position Indicator.
+It consists of three bit fields:
+
+@table @dfn
+@item bits 0-3
+Character position. Either the number of characters which the current
+text inherited from the previous pack, or 15 if the current
+text started before the previous pack.
+@item bits 4-6
+Block Number (groups text packs in language blocks)
+@item bit 7
+Is 0 if single byte characters, 1 if double-byte characters.
+@end table
+
+The 12 payload bytes contain pieces of zero terminated data. When
+double-byte text is used the zero is a double byte, otherwise it is a
+single ASCII NUL.
+
+A text may span over several packs. Unused characters in
+a pack are used for the next text of the same pack type. If no text of
+the same type follows, then the remaining text bytes are set to 0.
+
+The CRC algorithm uses divisor @kbd{0x11021}. The resulting 16-bit
+residue of the polynomial division is inverted (xor-ed with
+@kbd{0xffff}) and written as Big-endian number in bytes 16 and 17 of
+the pack.
+
+The text packs are grouped in up to 8 blocks of at most 256 packs. Each
+block pertains to one language. Sequence numbers of each block are
+counted separately. All packs of block 0 come before the packs of block
+1.
+
+The limitation of block number and sequence numbers imply that there are
+at most 2048 text packs possible.
+
+If a text of a track (pack types @kbd{0x80} to @kbd{0x85} and
+@kbd{0x8e}) repeats identically for the next track, then it may be
+represented by a TAB character (ASCII 9) for single byte texts,
+resp. two TAB characters for double byte texts.  (This should be used
+because 256 * 12 bytes is few space for 99 tracks.)
+
+The two binary bytes of pack type @kbd{0x87} are written to the first
+@kbd{0x87} pack of a block. They may or may not be repeated at the start
+of the follow-up packs of type @kbd{0x87}.
 
 @node Text Pack Types
 @section Text Packs (@kbd{0x80}--@kbd{0x85}, @kbd{0x8e})
@@ -198,20 +275,26 @@ the Genre Code, such as ``USA Rock music in the 60's''.}
 
 This information is always ASCII encoded.
 
-Pack type @kbd{0x8d} Sony documents says:
+Pack type @kbd{0x8d} Sony documents say:
 @quotation
 @emph{Closed Information: (use 8859-1 Code) Any information can
 be recorded on disc as memorandum. Information in this field will not
-be read by CD TEXT players available to the public.}
+be read by CD-TEXT players available to the public.}
 @end quotation
 
-It is always ISO-8859-1 encoded.
+One can however read this information with an MMC READ TOC/PMA/ATP
+command.  (See Section 5.23 of @ref{mmc3r10g.pdf}).
+
+This field is always ISO-8859-1 encoded.
 
 @node TOC Pack Types
 @section TOC Pack Types (@kbd{0x88}, @kbd{0x89})
 Pack type @kbd{0x88} records information from the CD's Table of
 Contents, as of READ PMA/TOC/ATIP Format @kbd{0010b}. See Table 237 TOC
 Track Descriptor Format, Q Sub-channel of @ref{mmc3r10g.pdf,, MMC-3}.
+
+This information duplicates information stored elsewhere and that can
+be obtained by an MMC READ TOC/PMA/ATP command.
 
 The first pack of type @kbd{0x88} (Table of Contents) records in its
 payload bytes as follows:
@@ -231,7 +314,7 @@ POINTs between the lowest track number (1 or @code{01h}) and the highest
 track number (99 or @code{63h}).  The payload of the last pack is padded
 by zeros.
 
-Using the @kbd{.TOC} example from Sony documents as an example:
+Using the @kbd{.TOC} from Sony documents as an example:
 @smallexample
   A0 01
   A1 14
@@ -256,8 +339,7 @@ Encoding the above gives:
 Pack type @kbd{0x89} (Second Table of Contents) is not yet clear. It
 might be a representation of Playback Skip Interval, Mode-5 Q
 sub-channel, POINT 01 to 40 See Section 4.2.6.3 of @ref{mmc3r10g.pdf,, MMC-3}.
-If so, then this seems not to apply to write type SAO, because the CUE
-SHEET format offers no way to express Mode-5 Q.
+
 
 The time points in the Sony example are in the time range of the
 tracks numbers that are given before the time points:
@@ -415,82 +497,6 @@ Byte :Value Meaning
   29 : 00 00 00 00 00 00 00 = language codes for block 1..7 (none)
 @end smallexample
 
-@node Pack Contents
-@section Pack Contents
-
-The attributes are represented on CD as Text Packs in the sub-channel
-of the Lead-in of the disc. The file @file{doc/cookbook.txt} of the
-@url{http://libburnia-project.org/,libburnia} distribution describes
-how to write the CD Text pack array to CD, and how to read CD Text
-packs from CD. If you are just interested in a more high-level access
-CD Text information without having to understand the internal
-structure can use libcdio's CD Text API for getting and setting
-fields.
-
-The format is explained in part in Annex J of (@ref{mmc3r10g.pdf,,
-MMC-3}), and in part by Sony's documentation
-@ref{cdtext.zip,,cdtext.zip}.
-
-Each pack consists of a 4-byte header, 12 bytes of payload, and 2 bytes
-of CRC.
-
-The first byte of each pack tells the pack type. See above for a list of
-types.
-
-The second byte tells the track number to which the first text piece
-in a pack is associated. Number 0 means the whole album. Higher
-numbers are valid for types @kbd{0x80} to @kbd{0x85}, and
-@kbd{0x8e}. With these types, there should be one text for the disc
-and one for each track.  With types @kbd{0x88} and @kbd{0x89}, the
-second byte bears a track number, too.  With type @kbd{0x8f}, the
-second byte counts the record parts from 0 to 2.
-
-The third byte is a sequential counter.
-
-The fourth byte is the Block Number and Character Position Indicator.
-It consists of three bit fields:
-
-@table @dfn
-@item bits 0-3
-Character position. Either the number of characters which the current
-text inherited from the previous pack, or 15 if the current
-text started before the previous pack.
-@item bits 4-6
-Block Number (groups text packs in language blocks)
-@item bit 7
-Is Double Byte Character? Is 0 if single byte characters, 1 if double-byte
-characters.
-@end table
-
-The 12 payload bytes contain pieces of ASCII NUL-terminated texts or
-binary data.  A text may span over several packs. Unused characters in
-a pack are used for the next text of the same pack type. If no text of
-the same type follows, then the remaining text bytes are set to 0.
-
-The CRC algorithm uses divisor @kbd{0x11021}. The resulting 16-bit
-residue of the polynomial division is inverted (xor-ed with
-@kbd{0xffff}) and written as Big-endian number in bytes 16 and 17 of
-the pack.
-
-The text packs are grouped in up to 8 blocks of at most 256 packs. Each
-block is in charge for one language. Sequence numbers of each block are
-counted separately. All packs of block 0 come before the packs of block
-1.
-
-The limitation of block number and sequence numbers imply that there are
-at most 2048 text packs possible. (READ TOC/PMS/ATIP could retrieve 3640
-packs, as it is limited to 64 KB - 2.)
-
-If a text of a track (pack types @kbd{0x80} to @kbd{0x85} and
-@kbd{0x8e}) repeats identically for the next track, then it may be
-represented by a TAB character (ASCII 9) for single byte texts,
-resp. two TAB characters for double byte texts.  (This should be used
-because 256 * 12 bytes is few space for 99 tracks.)
-
-The two binary bytes of pack type @kbd{0x87} are written to the first
-@kbd{0x87} pack of a block. They may or may not be repeated at the start
-of the follow-up packs of type @kbd{0x87}.
-
 @node Higher-Level Encoding
 @chapter Higher-Level Encoding
 
@@ -558,44 +564,6 @@ The following purpose specifiers have no effect on CD Text:
   Input Sheet Version =  "0.7T"
 @end smallexample
 
-
-Purposes specifiers Text Code, Language Code, Genre Code, and Text Data
-Copy Protection are two hexidecimal digits. 
-
-For example, to indicate MS-JIS character code (of which the exact
-name is unknown) enter:
-
-@smallexample
-  Text Code = 0x80
-@end smallexample
-
-Genre Code is settable by a 4-hexidecimal digit number, or by 2
-two-digit hexidecimal numbers. For example:
-
-@smallexample
-  Genre Code = 0x001b
-  Genre Code = 0x00 0x1b
-@end smallexample
-
-Purpose specifiers which have the meaning ``Content of pack type 0xXY''
-may be replaced by the pack type codes.  For example:
-
-@smallexample
-  0x80                =  Session content of pack type 0x80
-  Track 02 0x80       =  Track content of pack type 0x80 for track 2.
-@end smallexample
-
-Applicable are pack types @kbd{0x80} to @kbd{0x86}, @kbd{0x8d},
-@kbd{0x8e}.
-
-Text Code may be specified only once. It gets specified ISO-8850-1
-automatically as soon as content is defined which depends on the text
-encoding of the block, that is, with pack types @kbd{0x80} to @kbd{0x85}.
-
-If a track attribute is set, but the corresponding session attribute is not
-defined or defined with empty text, then the session attribute gets attached
-as empty test. Normally, empty content is ignored.
-
 An example @code{cdrskin} run with three tracks:
 
 @smallexample
@@ -661,7 +629,7 @@ page for defining the corresponding CD Text attributes: @kbd{ARRANGER},
 An Example of a CDRWIN cue sheet file:
 @smallexample
 CATALOG 1234567890123
-FILE "cdtext.bin" BINARY
+FILE "audiodata.bin" BINARY
 TITLE "Joyful Nights"
   TRACK 01 AUDIO
     FLAGS DCP
@@ -705,7 +673,8 @@ in @email{libcdio-devel@@gnu.org}, December 2011. @* Mail archives at
 @item @emph{SCSI Multimedia Commands --- 3 (MMC-3)},@anchor{mmc3r10g.pdf} @*
 Revision 10g, November 12. 2011
 @url{http://www.t10.org/cgi-bin/ac.pl?t=f&f=mmc3r10g.pdf} In
-particular, see Table 237 (TOC Track Descriptor Format, Q
+particular, Section 5.23 (READ TOC/PMA/ATIP Command),
+see Table 237 (TOC Track Descriptor Format, Q
 Sub-channel), Annex J (CD Text format in the Lead-in Area) and
 Sections 4.2.5.3 (Mode-5 Q).
 
@@ -714,6 +683,9 @@ Sections 4.2.5.3 (Mode-5 Q).
 
 @item Cue-Sheet Syntax
 @url{http://digitalx.org/cue-sheet/syntax}
+
+@item @emph{libburnia} project @url{http://libburnia-project.org}
+See @file{doc} directory in that project.
 
 @item @emph{libcdio} source code @url{http://www.gnu.org/s/libcdio}
 
