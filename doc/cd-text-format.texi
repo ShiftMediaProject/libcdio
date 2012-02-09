@@ -63,7 +63,7 @@ to decode and encode it.
 * Text Pack Types::
 * Misc Pack Types::
 * TOC Pack Types::
-* Block Pack Type (0x8f)::
+* Block Size Information Type (0x8f)::
 @end menu
 
 @node Top-Level CD Text Categories (Pack Types)
@@ -92,7 +92,7 @@ The CD Text categories are identified by a single-byte code.
   0x89: Second Table of Contents (in binary)
   0x8d: Closed Information
   0x8e: UPC/EAN code of the album and ISRC code of each track
-  0x8f: Block Packet (binary)
+  0x8f: Block Size Information (binary)
 @end smallexample
 @caption{CD Text Categories}
 @end float
@@ -107,7 +107,7 @@ disc, and can not be attached to individual tracks.
 @item Pack Types @kbd{0x80}, @kbd{0x81}, @kbd{0x82}, @kbd{0x83}, @kbd{0x84}, @kbd{0x85}, and @kbd{0x8e} (Performers, Songwriters, Composers,
 Arrangers, and Message Area respectively) have to be attributed to
 each track if they are present for the whole disc.
-@item Pack Type @kbd{0x8f} (Block Packet) describes the overall content of a block and in part of all other blocks. 
+@item Pack Type @kbd{0x8f} (Block Size Information) describes the overall content of a block and in part of all other blocks. 
 @end itemize
 
 The total size of a block's attribute set is restricted by the fact
@@ -230,7 +230,12 @@ So it is not really binary but might be non-printable, and should contain only
 bytes with bit 7 set to zero.
 
 Pack type @kbd{0x87} (Genre Identification) contains 2 binary bytes
-followed by NUL-byte terminated text.  Categories associated with
+followed by NUL-byte terminated text.  
+
+You can either specify a genre code or the supplementary genre
+information (without the code) or both. Neither is mandatory.
+
+Categories associated with
 their Big-endian 16-bit value are listed in @ref{table:genres}.
 
 @float Table,table:genres
@@ -364,8 +369,8 @@ two time points are stored in byte 6 to 11 of the payload. Byte 0 of the
 payload seems to be a sequential counter. Byte 1 always 4? Byte 2 to 5
 always 0?
 
-@node Block Pack Type (0x8f)
-@section Block Pack Type (@kbd{0x8f})
+@node Block Size Information Type (0x8f)
+@section Block Size Information Type (@kbd{0x8f})
 
 Pack type @kbd{0x8f} summarizes the whole list of text packs of a
 block.  So there is one group of three @kbd{0x8f} packs per block.
@@ -386,15 +391,15 @@ For the format of this pack type see @ref{table:block-pack}.
            0x80 = MS-JIS (japanese Kanji, double byte characters)
        1 : Number of first track
        2 : Number of last track
-       3 : libcdio source states: "cd-text information copyright byte"
-           Probably 3 means "copyrighted", 0 means "not copyrighted".
+       3 : value 3 means CD-TEXT is copyrighted,
+           value 0 means CD-TEXT is not copyrighted
   4 - 19 : Pack count of the various types 0x80 to 0x8f.
            Byte number N tells the count of packs of type 0x80 + (N - 4).
            I.e. the first byte in this field of 16 counts packs of type 0x80.
  20 - 27 : Highest sequence byte number of blocks 0 to 7.
  28 - 36 : Language code for blocks 0 to 7 (tech3264.pdf appendix 3)
 @end smallexample
-@caption{Block Pack Type}
+@caption{Block Size Information Type}
 @end float
 
 Table @ref{table:languages} specifies the language codes that are
@@ -670,16 +675,15 @@ Thanks to Leon Merten Lohse.
 in @email{libcdio-devel@@gnu.org}, December 2011. @* Mail archives at
 @url{http://lists.gnu.org/archive/html/libcdio-devel/2011-12/index.html}
 
-@item @emph{SCSI Multimedia Commands --- 3 (MMC-3)},@anchor{mmc3r10g.pdf} @*
-Revision 10g, November 12. 2011
-@url{http://www.t10.org/cgi-bin/ac.pl?t=f&f=mmc3r10g.pdf} In
-particular, Section 5.23 (READ TOC/PMA/ATIP Command),
+@item @emph{SCSI Multimedia Commands --- 3 (MMC-3)},@anchor{mmc3r10g.pdf} Revision 10g, November 12. 2011.@* 
+Google for @file{mmc3r10g.pdf} 
+See especially Section 5.23 (READ TOC/PMA/ATIP Command),
 see Table 237 (TOC Track Descriptor Format, Q
 Sub-channel), Annex J (CD Text format in the Lead-in Area) and
 Sections 4.2.5.3 (Mode-5 Q).
 
-@item Documents inside Sony's CD Text Authoring tool @file{cdtext.zip} @anchor{cdtext.zip}
-@url{http://www.sonydadc.com/file/cdtext.zip}
+@item ``Materials describing the procedure of the procedure of authoring and mastering for creating CD TEXT disks on equipments develooped by Sony HAV Company'',@anchor{cdtext.zip}@*
+@file{http://www.sonydadc.com/file/cdtext.zip} which was previously found on Sony's web site circa 2007. You may be able to get this from the ``Wayback Archive'', such as @url{http://web.archive.org/web/20070204035327/http://www.sonydadc.com/file/cdtext.zip}@*
 
 @item Cue-Sheet Syntax
 @url{http://digitalx.org/cue-sheet/syntax}
