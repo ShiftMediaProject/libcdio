@@ -25,19 +25,19 @@ BASE=`basename $0 .sh`
 
 fname=cdda
 testnum=CD-DA
-opts="--quiet --no-device-info --cue-file ${abs_top_srcdir}/data/${fname}.cue --no-cddb"
-test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/${fname}.right
+opts="--quiet --no-device-info --cue-file ${abs_top_srcdir}/test/data/${fname}.cue --no-cddb"
+test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
 RC=$?
 check_result $RC "cd-info CUE test $testnum" "${CD_INFO} $opts"
   
 
-opts="--quiet --no-device-info --bin-file ${abs_top_srcdir}/data/${fname}.bin --no-cddb"
-test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/${fname}.right
+opts="--quiet --no-device-info --bin-file ${abs_top_srcdir}/test/data/${fname}.bin --no-cddb"
+test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
 RC=$?
 check_result $RC "cd-info BIN test $testnum" "${CD_INFO} $opts"
 
-opts="--quiet --no-device-info --toc-file ${abs_top_srcdir}/data/${fname}.toc --no-cddb"
-test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/${fname}.right
+opts="--quiet --no-device-info --toc-file ${abs_top_srcdir}/test/data/${fname}.toc --no-cddb"
+test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
 RC=$?
 check_result $RC "cd-info TOC test $testnum" "${CD_INFO} $opts"
 
@@ -45,22 +45,22 @@ fname=cdtext
 testnum="CD-Text binary parser"
 if test -f ${abs_top_srcdir}/data/${fname}.bin ; then
   if test -f ${abs_top_srcdir}/data/${fname}.cdt ; then
-    opts="--quiet --no-device-info --cue-file ${abs_top_srcdir}/data/${fname}.cue --no-cddb"
+    opts="--quiet --no-device-info --cue-file ${abs_top_srcdir}/test/data/${fname}.cue --no-cddb"
     test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/${fname}.right
     RC=$?
     check_result $RC "cd-info CD-Text CUE test $testnum" "${CD_INFO} $opts"
   else
-    echo "Don't see CD-Text file ${abs_top_srcdir}/data/${fname}.cdt. Test $testnum skipped."
+    echo "Don't see CD-Text file ${abs_top_srcdir}/test/data/${fname}.cdt. Test $testnum skipped."
   fi
 else
-  echo "Don't see binary file ${abs_top_srcdir}/data/${fname}.bin. Test $testnum skipped."
+  echo "Don't see binary file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
 fi
 
 fname=isofs-m1
 testnum='ISO 9660 mode1 CUE'
 if test -f  ${abs_top_srcdir}/data/${fname}.bin ; then
   if test -n "@HAVE_ROCK@"; then 
-    opts="-q --no-device-info --no-disc-mode --cue-file ${abs_top_srcdir}/data/${fname}.cue --iso9660"
+    opts="-q --no-device-info --no-disc-mode --cue-file ${abs_top_srcdir}/test/data/${fname}.cue --iso9660"
     test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/${fname}.right
     RC=$?
     check_result $RC "cd-info Rock-Ridge CUE test $testnum" "${CD_INFO} $opts"
@@ -72,7 +72,7 @@ if test -f  ${abs_top_srcdir}/data/${fname}.bin ; then
   fi
 
 else 
-  echo "Don't see CUE file ${abs_top_srcdir}/data/${fname}.bin. Test $testnum skipped."
+  echo "Don't see CUE file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
 fi
 
 if test -n "@HAVE_ROCK@"; then 
@@ -83,7 +83,7 @@ if test -n "@HAVE_ROCK@"; then
     RC=$?
     check_result $RC "cd-info TOC test $testnum" "${CD_INFO} $opts"
   else 
-    echo "Don't see TOC file ${abs_top_srcdir}/data/${fname}.bin. Test $testnum skipped."
+    echo "Don't see TOC file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
   fi
 fi
 
@@ -105,27 +105,27 @@ if test -f ${abs_top_srcdir}/data/${fname}.bin ; then
   else
     right=${abs_top_srcdir}/${fname}_vcdinfo.right
   fi
-  opts="-q --no-device-info --no-disc-mode -t ${abs_top_srcdir}/data/${fname}.toc --iso9660"
+  opts="-q --no-device-info --no-disc-mode -t ${abs_top_srcdir}/test/data/${fname}.toc --iso9660"
   if test -f ${abs_top_srcdir}/${fname}.toc ; then
     test_cdinfo "$opts" ${fname}.dump $right
     RC=$?
     check_result $RC "cd-info TOC test $testnum" "${CD_INFO} $opts"
   else 
-    echo "Don't see TOC file ${abs_top_srcdir}/data/${fname}.toc. Test $testnum skipped."
+    echo "Don't see TOC file ${abs_top_srcdir}/test/data/${fname}.toc. Test $testnum skipped."
   fi
 else 
-  echo "Don't see BIN file ${abs_top_srcdir}/data/${fname}.bin. Test $testnum skipped."
+  echo "Don't see BIN file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
 fi
 
 fname=svcd_ogt_test_ntsc
 testnum='Super Video CD'
 if test -f ${abs_top_srcdir}/data/${fname}.bin ; then
-  opts="-q --no-device-info --no-disc-mode --cue-file ${abs_top_srcdir}/data/${fname}.cue $vcd_opt --iso9660"
+  opts="-q --no-device-info --no-disc-mode --cue-file ${abs_top_srcdir}/test/data/${fname}.cue $vcd_opt --iso9660"
   test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/${fname}.right
   RC=$?
   check_result $RC "cd-info CUE test $testnum" "${CD_INFO} $opts"
 else 
-  echo "Don't see CUE file ${abs_top_srcdir}/data/${fname}.bin. Test $testnum skipped."
+  echo "Don't see CUE file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
 fi
 
 exit $RC
