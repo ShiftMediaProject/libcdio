@@ -43,10 +43,10 @@ check_result $RC "cd-info TOC test $testnum" "${CD_INFO} $opts"
 
 fname=cdtext
 testnum="CD-Text binary parser"
-if test -f ${abs_top_srcdir}/data/${fname}.bin ; then
-  if test -f ${abs_top_srcdir}/data/${fname}.cdt ; then
+if test -f ${abs_top_srcdir}/test/data/${fname}.bin ; then
+  if test -f ${abs_top_srcdir}/test/data/${fname}.cdt ; then
     opts="--quiet --no-device-info --cue-file ${abs_top_srcdir}/test/data/${fname}.cue --no-cddb"
-    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/${fname}.right
+    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
     RC=$?
     check_result $RC "cd-info CD-Text CUE test $testnum" "${CD_INFO} $opts"
   else
@@ -58,15 +58,15 @@ fi
 
 fname=isofs-m1
 testnum='ISO 9660 mode1 CUE'
-if test -f  ${abs_top_srcdir}/data/${fname}.bin ; then
+if test -f  ${abs_top_srcdir}/test/data/${fname}.bin ; then
   if test -n "@HAVE_ROCK@"; then 
     opts="-q --no-device-info --no-disc-mode --cue-file ${abs_top_srcdir}/test/data/${fname}.cue --iso9660"
-    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/${fname}.right
+    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
     RC=$?
     check_result $RC "cd-info Rock-Ridge CUE test $testnum" "${CD_INFO} $opts"
 
-    opts="-q --no-device-info --no-disc-mode --no-rock-ridge --cue-file ${abs_top_srcdir}/data/${fname}.cue --iso9660"
-    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/${fname}-no-rr.right
+    opts="-q --no-device-info --no-disc-mode --no-rock-ridge --cue-file ${abs_top_srcdir}/test/data/${fname}.cue --iso9660"
+    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}-no-rr.right
     RC=$?
     check_result $RC "cd-info no Rock-Ridge CUE test $testnum" "${CD_INFO} $opts"
   fi
@@ -77,9 +77,9 @@ fi
 
 if test -n "@HAVE_ROCK@"; then 
   testnum='ISO 9660 mode1 TOC'
-  if test -f  ${abs_top_srcdir}/data/${fname}.bin ; then
-    opts="-q --no-device-info --no-disc-mode --toc-file ${abs_top_srcdir}/data/${fname}.toc --iso9660"
-    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/${fname}.right
+  if test -f  ${abs_top_srcdir}/test/data/${fname}.bin ; then
+    opts="-q --no-device-info --no-disc-mode --toc-file ${abs_top_srcdir}/test/data/${fname}.toc --iso9660"
+    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
     RC=$?
     check_result $RC "cd-info TOC test $testnum" "${CD_INFO} $opts"
   else 
@@ -89,24 +89,24 @@ fi
 
 fname=vcd_demo
 if test -z "@VCDINFO_LIBS@" ; then
-  right=${abs_top_srcdir}/${fname}.right
+  right=${abs_top_srcdir}/test/${fname}.right
 else
-  right=${abs_top_srcdir}/${fname}_vcdinfo.right
+  right=${abs_top_srcdir}/test/${fname}_vcdinfo.right
 fi
 testnum='Video CD'
-if test -f ${abs_top_srcdir}/data/${fname}.bin ; then
-  opts="-q --no-device-info --no-disc-mode -c ${abs_top_srcdir}/data/${fname}.cue --iso9660"
+if test -f ${abs_top_srcdir}/test/data/${fname}.bin ; then
+  opts="-q --no-device-info --no-disc-mode -c ${abs_top_srcdir}/test/data/${fname}.cue --iso9660"
   test_cdinfo "$opts" ${fname}.dump $right
   RC=$?
   check_result $RC "cd-info CUE test $testnum" "${CD_INFO} $opts"
 
   if test -z "@VCDINFO_LIBS@" ; then
-    right=${abs_top_srcdir}/${fname}.right
+    right=${abs_top_srcdir}/test/${fname}.right
   else
-    right=${abs_top_srcdir}/${fname}_vcdinfo.right
+    right=${abs_top_srcdir}/test/${fname}_vcdinfo.right
   fi
   opts="-q --no-device-info --no-disc-mode -t ${abs_top_srcdir}/test/data/${fname}.toc --iso9660"
-  if test -f ${abs_top_srcdir}/${fname}.toc ; then
+  if test -f ${abs_top_srcdir}/test/${fname}.toc ; then
     test_cdinfo "$opts" ${fname}.dump $right
     RC=$?
     check_result $RC "cd-info TOC test $testnum" "${CD_INFO} $opts"
@@ -119,9 +119,9 @@ fi
 
 fname=svcd_ogt_test_ntsc
 testnum='Super Video CD'
-if test -f ${abs_top_srcdir}/data/${fname}.bin ; then
+if test -f ${abs_top_srcdir}/test/data/${fname}.bin ; then
   opts="-q --no-device-info --no-disc-mode --cue-file ${abs_top_srcdir}/test/data/${fname}.cue $vcd_opt --iso9660"
-  test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/${fname}.right
+  test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
   RC=$?
   check_result $RC "cd-info CUE test $testnum" "${CD_INFO} $opts"
 else 
