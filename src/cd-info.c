@@ -179,7 +179,7 @@ parse_options (int argc, char *argv[])
     "  -a, --access-mode=STRING        Set CD access method\n"
     "  -d, --debug=INT                 Set debugging to LEVEL\n"
     "  -T, --no-tracks                 Don't show track information\n"
-    "  -A, --no-analyze                Don't filesystem analysis\n"
+    "  -A, --no-analyze                Don't show filesystem analysis\n"
 #ifdef HAVE_CDDB
     "  --no-cddb                       Don't look up audio CDDB information\n"
     "                                  or print it\n"
