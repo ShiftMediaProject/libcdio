@@ -1,4 +1,4 @@
-version 0.83 (git)
+version 0.83
 
 - Add retrieval SCSI sense reply from the most-recent MMC command.
 - Add exclusive read/write access for devices which is used for experimental

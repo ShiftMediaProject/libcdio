@@ -200,10 +200,10 @@ extern "C" {
      enumeration in driver_id_t. Since we have a bogus (but useful) 0th
      entry above we don't have to add one.
   */
-#define CDIO_MIN_DRIVER        DRIVER_AIX
-#define CDIO_MIN_DEVICE_DRIVER CDIO_MIN_DRIVER
-#define CDIO_MAX_DRIVER        DRIVER_NRG
-#define CDIO_MAX_DEVICE_DRIVER DRIVER_WIN32
+static const driver_id_t CDIO_MIN_DRIVER __attribute__ ((deprecated("please use cdio_drivers"))) = DRIVER_AIX;
+static const driver_id_t CDIO_MIN_DEVICE_DRIVER __attribute__ ((deprecated("please use cdio_device_drivers"))) = DRIVER_AIX;
+static const driver_id_t CDIO_MAX_DRIVER __attribute__ ((deprecated("please use cdio_drivers"))) = DRIVER_NRG;
+static const driver_id_t CDIO_MAX_DEVICE_DRIVER __attribute__ ((deprecated("please use cdio_device_drivers"))) = DRIVER_WIN32;
 
   /**
       The following are status codes for completion of a given cdio
