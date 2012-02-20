@@ -56,6 +56,10 @@
 
 #define MY_DIR_SEPARATOR '/'
 
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
 static char *
 get_temporary_name(const char *dirname, const char *errmsg)
 {
