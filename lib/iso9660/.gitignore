@@ -4,5 +4,6 @@
 /.libs
 /Makefile
 /Makefile.in
+/*~
 /libiso9660.la
 /libiso9660.la.ver

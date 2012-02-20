@@ -19,12 +19,9 @@
 #
 SUBDIRS = OO
 
-if BUILD_CD_PARANOIA
-paranoia_progs = paranoia paranoia2
-endif
 if BUILD_EXAMPLES
 noinst_PROGRAMS = device eject isofile isofile2 isolist \
-	          mmc1 mmc2 $(paranoia_progs)
+	          mmc1 mmc2
 endif
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
@@ -36,15 +33,6 @@ device_LDADD        = $(LIBCDIO_LIBS)
 eject_DEPENDENCIES  = $(LIBCDIO_DEPS)
 eject_SOURCES       = eject.cpp
 eject_LDADD         = $(LIBCDIO_LIBS)
-
-if BUILD_CD_PARANOIA
-paranoia_SOURCES  = paranoia.cpp
-paranoia_LDADD    = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) \
-	            $(LIBCDIO_LIBS)
-paranoia2_SOURCES = paranoia.cpp
-paranoia2_LDADD   = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) \
-	            $(LIBCDIO_LIBS)
-endif
 
 isofile_SOURCES   = isofile.cpp
 isofile_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)

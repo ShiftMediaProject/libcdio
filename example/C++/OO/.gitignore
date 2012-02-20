@@ -1,8 +1,10 @@
 /*.o
 /.deps
+/.libs
 /Makefile
 /Makefile.in
 /cdtext
+/copying
 /device
 /drives
 /eject

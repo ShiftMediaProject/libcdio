@@ -21,13 +21,10 @@
 if ENABLE_CPP
 SUBDIRS =  C++
 endif
-if BUILD_CD_PARANOIA
-paranoia_progs = paranoia paranoia2
-endif
 if BUILD_EXAMPLES
 noinst_PROGRAMS = audio cdchange cdtext device discid drives eject \
 	          isofile isofile2 isofuzzy isolist isolsn \
-	          mmc1 mmc2 mmc2a mmc3 $(paranoia_progs) tracks \
+	          mmc1 mmc2 mmc2a mmc3 tracks \
 	          sample3 sample4 udf1 udffile cdio-eject
 endif
 
@@ -56,11 +53,6 @@ eject_LDADD           = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 cdio_eject_DEPENDENCIES = $(LIBCDIO_DEPS)
 cdio_eject_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
-
-if BUILD_CD_PARANOIA
-paranoia_LDADD  = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
-paranoia2_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
-endif
 
 isofile_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 isofile2_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)

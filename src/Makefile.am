@@ -1,6 +1,4 @@
-#   $Id: Makefile.am,v 1.48 2008/08/31 13:38:22 flameeyes Exp $
-#
-#   Copyright (C) 2003, 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2004, 2006, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -22,10 +20,6 @@ noinst_HEADERS = cddb.h getopt.h util.h
 ####################################################
 # Things to make the utility/diagnostic programs
 ####################################################
-
-if BUILD_CD_PARANOIA
-SUBDIRS =  cd-paranoia
-endif
 
 CDDB_LIBS=@CDDB_LIBS@
 CDDA_PLAYER_LIBS=@CDDA_PLAYER_LIBS@

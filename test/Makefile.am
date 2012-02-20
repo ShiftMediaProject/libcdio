@@ -23,11 +23,6 @@
 
 SUBDIRS = data driver
 
-if BUILD_CD_PARANOIA
-testparanoia=testparanoia
-testparanoia_LDADD = $(LIBCDIO_PARANOIA_LIBS) $(LIBCDIO_CDDA_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
-endif
-
 hack = check_sizeof testassert testgetdevices testischar \
        testisocd testisocd2 testiso9660 test_lib_driver_util \
        $(testparanoia) testpregap testunconfig

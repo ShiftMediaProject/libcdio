@@ -1,8 +1,10 @@
 /*.o
 /*~
 /.deps
+/.libs
 /Makefile
 /Makefile.in
+/copying
 /device
 /eject
 /isofile

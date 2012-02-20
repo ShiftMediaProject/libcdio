@@ -51,19 +51,9 @@ AC_ARG_WITH(cd-info,
 	AC_HELP_STRING([--without-cd-info], [don't build program cd-info (default with)]),
 enable_cd_info="${withval}", enable_cd_info=yes)
 
-AC_ARG_WITH(cd-paranoia,
-	AC_HELP_STRING([--without-cd-paranoia], [don't build program cd-paranoia and paranoia libraries (default with)]),
-enable_cd_paranoia="${withval}", enable_cd_paranoia=yes)
-
 AC_ARG_WITH(cdda-player,
 	AC_HELP_STRING([--without-cdda-player], [don't build program cdda-player (default with)]),
 enable_cdda_player="${withval}", enable_cdda_player=yes)
-
-AC_ARG_WITH(cd-paranoia-name,
-	AC_HELP_STRING([--with-cd-paranoia-name], [name to use as the cd-paranoia program name (default cd-paranoia)]),
-cd_paranoia_name="${withval}", cd_paranoia_name="cd-paranoia")
-CDPARANOIA_NAME="$cd_paranoia_name"
-AC_SUBST(CDPARANOIA_NAME)
 
 AC_ARG_WITH(cd-read,
 	AC_HELP_STRING([--without-cd-read], [don't build program cd-read (default with)]),
@@ -174,13 +164,6 @@ if test "x$ac_cv_sys_largefiles" = "xyes"; then
     fi
     CPPFLAGS="$CPPFLAGS $LIBCDIO_LARGEFILE_FLAGS"
 fi
-
-# We use  cmp and cdparanoia in cd-paranoia regression testing
-AC_PATH_PROG(CMP, cmp, no)
-AC_SUBST(CMP)
-
-AC_PATH_PROG(OLD_CDPARANOIA, cdparanoia, no)
-AC_SUBST(OLD_CDPARANOIA)
 
 AC_DEFINE(LIBCDIO_CONFIG_H, 1, 
   [Is set when libcdio's config.h has been included. Applications wishing to sue their own config.h values (such as set by the application's configure script can define this before including any of libcdio's headers.])
@@ -322,7 +305,6 @@ AM_CONDITIONAL(CYGWIN, test "x$CYGWIN" = "xyes")
 AM_CONDITIONAL(BUILD_CD_DRIVE, test "x$enable_cd_drive" = "xyes")
 AM_CONDITIONAL(BUILD_CDINFO, test "x$enable_cd_info" = "xyes")
 AM_CONDITIONAL(BUILD_CD_READ, test "x$enable_cd_read" = "xyes")
-AM_CONDITIONAL(BUILD_CD_PARANOIA, test "x$enable_cd_paranoia" = "xyes")
 AM_CONDITIONAL(BUILD_ISO_INFO, test "x$enable_iso_info" = "xyes")
 AM_CONDITIONAL(BUILD_ISO_READ, test "x$enable_iso_read" = "xyes")
 AM_CONDITIONAL(BUILD_CDINFO_LINUX, test "x$enable_cd_info_linux" = "xyes")
@@ -338,7 +320,6 @@ LIBCDIO_LIBS='$(top_builddir)/lib/driver/libcdio.la'
 LIBCDIO_DEPS="$LIBCDIO_LIBS"
 LIBCDIOPP_LIBS='$(top_builddir)/lib/cdio++/libcdio++.la'
 LIBISO9660PP_LIBS='$(top_builddir)/lib/cdio++/libiso9660++.la'
-LIBCDIO_PARANOIA_LIBS='$(top_builddir)/lib/paranoia/libcdio_paranoia.la'
 LIBISO9660_CFLAGS='-I$(top_srcdir)/lib/iso9660/'
 LIBISO9660_LIBS='$(top_builddir)/lib/iso9660/libiso9660.la'
 LIBUDF_CFLAGS='-I$(top_srcdir)/lib/udf/'
@@ -350,7 +331,6 @@ AC_SUBST(LIBISO9660PP_LIBS)
 AC_SUBST(LIBCDIO_LIBS)
 AC_SUBST(LIBCDIOPP_LIBS)
 AC_SUBST(LIBCDIO_DEPS)
-AC_SUBST(LIBCDIO_PARANOIA_LIBS)
 AC_SUBST(LIBISO9660_LIBS)
 AC_SUBST(LIBUDF_LIBS)
 
@@ -652,27 +632,17 @@ AC_CONFIG_FILES([
        doc/doxygen/Doxyfile \
        doc/Makefile \
        lib/Makefile \
-       lib/cdda_interface/Makefile \
        lib/cdio++/Makefile \
        lib/driver/Makefile \
        lib/iso9660/Makefile \
-       lib/paranoia/Makefile \
        lib/udf/Makefile \
        libcdio.pc \
        libcdio++.pc \
        libcdio_cdda.pc \
-       libcdio_paranoia.pc \
        libiso9660.pc \
        libiso9660++.pc \
        libudf.pc \
        package/libcdio.spec \
-       src/cd-paranoia/Makefile \
-       src/cd-paranoia/usage.txt \
-       src/cd-paranoia/doc/Makefile \
-       src/cd-paranoia/doc/en/cd-paranoia.1 \
-       src/cd-paranoia/doc/en/Makefile \
-       src/cd-paranoia/doc/ja/cd-paranoia.1 \
-       src/cd-paranoia/doc/ja/Makefile \
        src/Makefile \
        test/check_common_fn \
        test/data/Makefile \
@@ -690,12 +660,10 @@ AC_CONFIG_FILES([
 AC_CONFIG_FILES([test/check_cue.sh], [chmod +x test/check_cue.sh])
 AC_CONFIG_FILES([test/check_iso.sh], [chmod +x test/check_iso.sh])
 AC_CONFIG_FILES([test/check_nrg.sh], [chmod +x test/check_nrg.sh])
-AC_CONFIG_FILES([test/check_paranoia.sh], [chmod +x test/check_paranoia.sh])
 AC_OUTPUT
 
 AC_MSG_NOTICE([
 Using CD-ROM drivers : $cd_drivers
-Building cd-paranoia : $(test "x$enable_cd_paranoia" = "xyes" && echo yes || echo no)
 Building cd-info     : $(test "x$enable_cd_info" = "xyes" && echo yes || echo no)
 Building cd-read     : $(test "x$enable_cd_read" = "xyes" && echo yes || echo no)
 Building cdda-player : $(test "x$enable_cdda_player" = "xyes" && echo yes || echo no)

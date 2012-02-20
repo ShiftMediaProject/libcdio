@@ -1,8 +1,0 @@
-/*.lo
-/*.o
-/.deps
-/.libs
-/Makefile
-/Makefile.in
-/libcdio_cdda.la
-/libcdio_cdda.la.ver

@@ -38,10 +38,6 @@ EXTRA_DIST = \
 
 SUBDIRS = doc include lib src test example
 
-if BUILD_CD_PARANOIA
-paranoiapcs = libcdio_paranoia.pc libcdio_cdda.pc
-endif
-
 # pkg-config(1) related rules
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libcdio.pc  \
