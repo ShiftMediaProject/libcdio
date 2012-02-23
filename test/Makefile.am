@@ -52,10 +52,7 @@ testpregap_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testpregap_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
-                check_iso.sh  check_fuzzyiso.sh check_paranoia.sh check_opts.sh
-# If we beefed this up so it checked to see if a CD-DA was loaded
-# it could be an automatic test. But for now, not so.
-#               check_paranoia.sh
+                check_iso.sh  check_fuzzyiso.sh check_opts.sh
 
 check_PROGRAMS = $(hack)
 
@@ -93,7 +90,7 @@ test: check-am
 # life the crappy automess system that I've really lost interest in
 # learning any more of this awful system than I need to.
 check-am:	make-executable
-make-executable: check_nrg.sh check_cue.sh check_paranoia.sh
+make-executable: check_nrg.sh check_cue.sh
 	chmod +x *.sh
 	if test ! -f cdda.bin ; then \
 		test -L cdda.bin && $(RM) cdda.bin ; \

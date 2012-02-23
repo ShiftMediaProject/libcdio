@@ -32,6 +32,7 @@ dist_libcdioinclude_HEADERS = \
 	cdio.h \
 	cdio_unconfig.h \
 	cd_types.h \
+	cdtext.h \
 	device.h \
 	disc.h \
 	ds.h \
