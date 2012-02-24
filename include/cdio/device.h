@@ -1,6 +1,6 @@
 /* -*- c -*-
 
-    Copyright (C) 2005, 2006, 2008, 2009, 2010, 2011 Rocky Bernstein
+    Copyright (C) 2005, 2006, 2008, 2009, 2010, 2011, 2012 Rocky Bernstein
     <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -200,10 +200,10 @@ extern "C" {
      enumeration in driver_id_t. Since we have a bogus (but useful) 0th
      entry above we don't have to add one.
   */
-static const driver_id_t CDIO_MIN_DRIVER __attribute__ ((deprecated("please use cdio_drivers"))) = DRIVER_AIX;
-static const driver_id_t CDIO_MIN_DEVICE_DRIVER __attribute__ ((deprecated("please use cdio_device_drivers"))) = DRIVER_AIX;
-static const driver_id_t CDIO_MAX_DRIVER __attribute__ ((deprecated("please use cdio_drivers"))) = DRIVER_NRG;
-static const driver_id_t CDIO_MAX_DEVICE_DRIVER __attribute__ ((deprecated("please use cdio_device_drivers"))) = DRIVER_WIN32;
+LIBCDIO_DEPRECATED(static const driver_id_t CDIO_MIN_DRIVER, "please use cdio_drivers") = DRIVER_AIX;
+LIBCDIO_DEPRECATED(static const driver_id_t CDIO_MIN_DEVICE_DRIVER, "please use cdio_device_drivers") = DRIVER_AIX;
+LIBCDIO_DEPRECATED(static const driver_id_t CDIO_MAX_DRIVER, "please use cdio_drivers") = DRIVER_NRG;
+LIBCDIO_DEPRECATED(static const driver_id_t CDIO_MAX_DEVICE_DRIVER, "please use cdio_device_drivers") = DRIVER_WIN32;
 
   /**
       The following are status codes for completion of a given cdio
