@@ -40,8 +40,21 @@ static const char _rcsid[] = "$Id: osx.c,v 1.14 2008/10/17 11:58:52 rocky Exp $"
 #include <cdio/util.h>
 
 /* For SCSI TR_* enumerations */
-#include <cdio/cdda.h>
-
+typedef enum {
+  TR_OK =            0,
+  TR_EWRITE =        1  /**< Error writing packet command (transport) */,
+  TR_EREAD =         2  /**< Error reading packet data (transport) */,
+  TR_UNDERRUN =      3  /**< Read underrun */,
+  TR_OVERRUN =       4  /**< Read overrun */,
+  TR_ILLEGAL =       5  /**< Illegal/rejected request */,
+  TR_MEDIUM =        6  /**< Medium error */,
+  TR_BUSY =          7  /**< Device busy */,
+  TR_NOTREADY =      8  /**< Device not ready */,
+  TR_FAULT =         9  /**< Device failure */,
+  TR_UNKNOWN =      10  /**< Unspecified error */,
+  TR_STREAMING =    11  /**< loss of streaming */,
+} transport_error_t;
+  
 #include "cdio_assert.h"
 #include "cdio_private.h"
 
