@@ -47,6 +47,14 @@
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
+#if defined(_WIN32) && !defined(__CYGWIN__)
+#include <windows.h>
+#include <direct.h> /* _mkdir */
+/* MinGW, MSVC do not have symlink */
+#define symlink(oldpath, newpath) CopyFileA(oldpath, newpath, FALSE)
+#else
+#define _mkdir(a) mkdir(a, S_IRWXU)
+#endif
 
 #ifdef HAVE_ERRNO_H
 # include <errno.h>
@@ -102,7 +110,7 @@ main(int argc, const char *argv[])
         exit(77);
     }
 
-    if (-1 == check_rc(mkdir(psz_tmp_subdir, 0700),
+    if (-1 == check_rc(_mkdir(psz_tmp_subdir),
                        "mkdir", psz_tmp_subdir))
         exit(77);
     

@@ -1,6 +1,6 @@
 /* -*- C -*-
   Copyright (C) 2009 Thomas Schmitt <scdbackup@gmx.net>
-  Copyright (C) 2010, 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2010, 2011, 2012 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,16 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#if !defined(HAVE_SLEEP) && defined(_WIN32)
+#include <windows.h>
+#define sleep(s) Sleep(1000*s)
+#endif
 
 #define SKIP_TEST 77
 
