@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2008, 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2008, 2011, 2012 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
