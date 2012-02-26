@@ -31,6 +31,7 @@ static const char _rcsid[] = "$Id: win32.c,v 1.37 2008/04/21 18:30:21 karl Exp $
 #include <cdio/sector.h>
 #include <cdio/util.h>
 #include <cdio/mmc.h>
+#include <cdio/logging.h>
 #include "cdio_assert.h"
 #include "cdio_private.h" /* protoype for cdio_is_device_win32 */
 

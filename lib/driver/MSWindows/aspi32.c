@@ -30,6 +30,7 @@
 #include <cdio/sector.h>
 #include <cdio/util.h>
 #include <cdio/mmc.h>
+#include <cdio/logging.h>
 #include "cdio_assert.h"
 
 #include <string.h>
