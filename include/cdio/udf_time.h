@@ -29,6 +29,14 @@
 
 #include <time.h>
 
+#ifndef HAVE_STRUCT_TIMESPEC
+#define HAVE_STRUCT_TIMESPEC
+struct timespec {
+  time_t  tv_sec;	/* Seconds */
+  long    tv_nsec;	/* Nanoseconds */
+};
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
