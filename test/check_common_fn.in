@@ -21,7 +21,8 @@ SKIP_TEST_EXITCODE=77
 # Some output changes depending on TZ and locale. Set this so we get known
 # results
 TZ=CUT
-LC_TIME=$(locale -a | grep 'en_US' &2>/dev/null)
+# both 'en_US' and 'en_US.utf8' might be defined on some platforms
+LC_TIME=$(locale -a | grep 'en_US' | grep -v 'utf8' &2>/dev/null)
 export TZ LC_TIME
 
 check_result() {
