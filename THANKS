@@ -56,7 +56,8 @@ Patrick Guimond
   CD-Extra audio data boundaries
 
 Pete Batard
-  UDF support
+  UDF, MinGW and Microsoft Visual C++ support. "offset" type fixes for 
+  Joliet and Rock Ridge. 
 
 Peter Hartley
   Cross-compiling to mingw32
