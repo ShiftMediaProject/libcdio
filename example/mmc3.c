@@ -19,17 +19,25 @@
    the libdio scsi_mmc_get_hwinfo() routine.
 */
 #ifdef HAVE_CONFIG_H
-# include "config.h"
-# define __CDIO_CONFIG_H__ 1
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
 #endif
+
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
 #include <cdio/cdio.h>
 #include <cdio/mmc.h>
-#include <string.h>
 
 /* Set how long to wait for MMC commands to complete */
 #define DEFAULT_TIMEOUT_MS 10000

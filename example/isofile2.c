@@ -39,9 +39,6 @@
    say opensolaris. */
 #include "portable.h"
 
-#include <cdio/cdio.h>
-#include <cdio/iso9660.h>
-
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -63,6 +60,9 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
+#include <cdio/cdio.h>
+#include <cdio/iso9660.h>
 
 #define CEILING(x, y) ((x+(y-1))/y)
 

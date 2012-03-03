@@ -32,15 +32,13 @@
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "copying.iso"
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
-# define __CDIO_CONFIG_H__ 1
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
 #endif
-#include <sys/types.h>
-#include <cdio/cdio.h>
-#include <cdio/iso9660.h>
 
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
-
+#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -53,6 +51,9 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
+#include <cdio/cdio.h>
+#include <cdio/iso9660.h>
 
 #define print_vd_info(title, fn)	  \
   if (fn(p_iso, &psz_str)) {		  \

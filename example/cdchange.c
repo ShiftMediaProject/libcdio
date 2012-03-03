@@ -16,16 +16,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* config.h has to come first else _FILE_OFFSET_BITS are redefined in
-   say opensolaris. */
+/* Test media changed */
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 # define __CDIO_CONFIG_H__ 1
 #endif
 
-#include <cdio/cdio.h>
-
-/* Test media changed */
 #ifdef HAVE_STDIO_H
 # include <stdio.h>
 #endif
@@ -57,6 +53,8 @@
 #include <windows.h>
 #define sleep(s) Sleep(1000*s)
 #endif
+
+#include <cdio/cdio.h>
 
 int
 main(int argc, const char *argv[])

@@ -18,17 +18,20 @@
 
 /* Simple program to list CD-Text info of a Compact Disc using
    libcdio.  See also corresponding C++ programs of similar names. */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
+#endif
 
-#include <cdio/cdio.h>
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
-
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#include <cdio/cdtext.h>
 
+#include <cdio/cdio.h>
+#include <cdio/cdtext.h>
 
 static void 
 print_cdtext_track_info(cdtext_t *cdtext, track_t i_track, const char *psz_msg) {

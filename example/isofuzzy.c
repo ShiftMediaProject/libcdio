@@ -30,12 +30,9 @@
    say opensolaris. */
 #include "portable.h"
 
-#include <sys/types.h>
-#include <cdio/cdio.h>
-#include <cdio/iso9660.h>
-
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
-
+#endif
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
@@ -51,6 +48,9 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
+#include <cdio/cdio.h>
+#include <cdio/iso9660.h>
 
 int
 main(int argc, const char *argv[])

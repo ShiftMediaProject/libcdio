@@ -18,11 +18,20 @@
 
 /* Simple program to list track numbers and logical sector numbers of
    a Compact Disc using libcdio. */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
+#endif
+
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
 #include <cdio/cdio.h>
+
 int
 main(int argc, const char *argv[])
 {

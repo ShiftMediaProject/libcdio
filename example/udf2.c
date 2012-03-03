@@ -27,12 +27,14 @@
 #define UDF_IMAGE "/src2/cd-images/udf/test2.iso"
 #define UDF_FILENAME "/parse/cue.L"
 
-#include <sys/types.h>
-#include <cdio/cdio.h>
-#include <cdio/udf.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
+#endif
 
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
-
+#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -45,6 +47,9 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
+#include <cdio/cdio.h>
+#include <cdio/udf.h>
 
 #define CEILING(x, y) ((x+(y-1))/y)
 

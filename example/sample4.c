@@ -19,9 +19,21 @@
    A slightly improved sample3 program: we handle cdio logging and
    take an optional CD-location.
 */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
+#endif
+
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+
 #include <cdio/cdio.h>
 #include <cdio/cd_types.h>
 #include <cdio/logging.h>

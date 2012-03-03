@@ -26,8 +26,8 @@
 /* config.h has to come first else _FILE_OFFSET_BITS are redefined in
    say opensolaris. */
 #ifdef HAVE_CONFIG_H
-# include "config.h"
-# define __CDIO_CONFIG_H__ 1
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
 #endif
 
 /* This is the UDF image. */
@@ -36,12 +36,9 @@
 #define UDF_FILENAME "/COPYING"
 #define LOCAL_FILENAME "copying"
 
-#include <sys/types.h>
-#include <cdio/cdio.h>
-#include <cdio/udf.h>
-
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
-
+#endif
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
@@ -57,6 +54,9 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
+#include <cdio/cdio.h>
+#include <cdio/udf.h>
 
 #define CEILING(x, y) ((x+(y-1))/y)
 

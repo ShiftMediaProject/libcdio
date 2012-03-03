@@ -22,36 +22,35 @@
    CDDA player program using curses display see cdda-player in this
    distribution.
 */
-#include <cdio/cdio.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
+#endif
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
-
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
-
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
-
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-
-#include <signal.h>
-
+#endif
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
-
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#include <signal.h>
 
+#include <cdio/cdio.h>
 #include <cdio/mmc.h>
 #include <cdio/util.h>
 #include <cdio/cd_types.h>

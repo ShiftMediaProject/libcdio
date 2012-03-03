@@ -22,11 +22,18 @@
    discs. The disc-ID can be used to query info (tracks, title,
    interpret) about compact audio discs from a CDDB-Server.
 */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
+#endif
 
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
 #include <cdio/cdio.h>
 
 static int cddb_sum(int n)

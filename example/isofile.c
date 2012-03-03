@@ -33,7 +33,6 @@
    say opensolaris. */
 #include "portable.h"
 
-#include <sys/types.h>
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
 
