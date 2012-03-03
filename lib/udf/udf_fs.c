@@ -46,6 +46,10 @@
 # define __CDIO_CONFIG_H__ 1
 #endif
 
+#ifdef HAVE_STDIO_H
+#include <stdio.h>
+#endif
+
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif
@@ -68,6 +72,7 @@ const char VSD_STD_ID_TEA01[] = {'T', 'E', 'A', '0', '1'};
 #include <cdio/bytesex.h>
 #include "udf_private.h"
 #include "udf_fs.h"
+#include "cdio_assert.h"
 
 /*
  * The UDF specs are pretty clear on how each data structure is made
@@ -236,7 +241,10 @@ udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name)
   if (p_udf_root) {
     char tokenline[udf_MAX_PATHLEN];
     char *psz_token;
-    
+
+    /* file position must be reset when accessing a new file */
+    p_udf_root->p_udf->i_position = 0;
+
     strncpy(tokenline, psz_name, udf_MAX_PATHLEN);
     psz_token = strtok(tokenline, udf_PATH_DELIMITERS);
     if (psz_token) {
@@ -284,11 +292,8 @@ static udf_dirent_t *
 udf_new_dirent(udf_file_entry_t *p_udf_fe, udf_t *p_udf,
 	       const char *psz_name, bool b_dir, bool b_parent) 
 {
-  const unsigned int i_alloc_size = p_udf_fe->i_alloc_descs
-    + p_udf_fe->i_extended_attr;
-  
   udf_dirent_t *p_udf_dirent = (udf_dirent_t *) 
-    calloc(1, sizeof(udf_dirent_t) + i_alloc_size);
+    calloc(1, sizeof(udf_dirent_t));
   if (!p_udf_dirent) return NULL;
   
   p_udf_dirent->psz_name     = strdup(psz_name);
@@ -299,7 +304,7 @@ udf_new_dirent(udf_file_entry_t *p_udf_fe, udf_t *p_udf,
   p_udf_dirent->dir_left     = uint64_from_le(p_udf_fe->info_len); 
 
   memcpy(&(p_udf_dirent->fe), p_udf_fe, 
-	 sizeof(udf_file_entry_t) + i_alloc_size);
+	 sizeof(udf_file_entry_t));
   udf_get_lba( p_udf_fe, &(p_udf_dirent->i_loc), 
 	       &(p_udf_dirent->i_loc_end) );
   return p_udf_dirent;
@@ -311,14 +316,21 @@ udf_new_dirent(udf_file_entry_t *p_udf_fe, udf_t *p_udf,
 */
 driver_return_code_t
 udf_read_sectors (const udf_t *p_udf, void *ptr, lsn_t i_start, 
-		 long int i_blocks) 
+		 long i_blocks) 
 {
   driver_return_code_t ret;
-  long int i_read;
-  long int i_byte_offset;
+  long i_read;
+  off_t i_byte_offset;
   
   if (!p_udf) return 0;
-  i_byte_offset = (i_start * UDF_BLOCKSIZE);
+  /* Without the cast, i_start * UDF_BLOCKSIZE may be evaluated as 32 bit */
+  i_byte_offset = ((off_t)i_start) * UDF_BLOCKSIZE;
+  /* Since we're using SEEK_SET, the value must be positive */
+  if (i_byte_offset < 0) {
+    if (sizeof(off_t) <= 4)	/* probably missing LFS */
+      cdio_warn("Large File Support is required to access streams of 2 GB or more");
+    return DRIVER_OP_BAD_PARAMETER;
+  }
 
   if (p_udf->b_stream) {
     ret = cdio_stream_seek (p_udf->stream, i_byte_offset, SEEK_SET);
@@ -345,6 +357,9 @@ udf_open (const char *psz_path)
   uint8_t data[UDF_BLOCKSIZE];
 
   if (!p_udf) return NULL;
+
+  /* Sanity check */
+  cdio_assert(sizeof(udf_file_entry_t) == UDF_BLOCKSIZE);
 
   p_udf->cdio = cdio_open(psz_path, DRIVER_UNKNOWN);
   if (!p_udf->cdio) {
@@ -495,9 +510,9 @@ udf_get_root (udf_t *p_udf, bool b_any_partition, partition_num_t i_partition)
      Directory File Entry.
   */
   for (i_lba = mvds_start; i_lba < mvds_end; i_lba++) {
-    uint8_t data[UDF_BLOCKSIZE];
+    uint8_t data2[UDF_BLOCKSIZE];
     
-    partition_desc_t *p_partition = (partition_desc_t *) &data;
+    partition_desc_t *p_partition = (partition_desc_t *) &data2;
     
     if (DRIVER_OP_SUCCESS != udf_read_sectors (p_udf, p_partition, i_lba, 1) ) 
       return NULL;
@@ -513,7 +528,7 @@ udf_get_root (udf_t *p_udf, bool b_any_partition, partition_num_t i_partition)
       }
     } else if (!udf_checktag(&p_partition->tag, TAGID_LOGVOL)) {
       /* Get fileset descriptor */
-      logical_vol_desc_t *p_logvol = (logical_vol_desc_t *) &data;
+      logical_vol_desc_t *p_logvol = (logical_vol_desc_t *) &data2;
       bool b_valid = 
 	UDF_BLOCKSIZE == uint32_from_le(p_logvol->logical_blocksize);
       
@@ -582,19 +597,18 @@ udf_opendir(const udf_dirent_t *p_udf_dirent)
 {
   if (p_udf_dirent->b_dir && !p_udf_dirent->b_parent && p_udf_dirent->fid) {
     udf_t *p_udf = p_udf_dirent->p_udf;
-    uint8_t data[UDF_BLOCKSIZE];
-    udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) &data;
+    udf_file_entry_t udf_fe;
     
     driver_return_code_t i_ret = 
-      udf_read_sectors(p_udf, p_udf_fe, p_udf->i_part_start 
+      udf_read_sectors(p_udf, &udf_fe, p_udf->i_part_start 
 		       + p_udf_dirent->fid->icb.loc.lba, 1);
 
     if (DRIVER_OP_SUCCESS == i_ret 
-	&& !udf_checktag(&p_udf_fe->tag, TAGID_FILE_ENTRY)) {
+	&& !udf_checktag(&udf_fe.tag, TAGID_FILE_ENTRY)) {
       
-      if (ICBTAG_FILE_TYPE_DIRECTORY == p_udf_fe->icb_tag.file_type) {
+      if (ICBTAG_FILE_TYPE_DIRECTORY == udf_fe.icb_tag.file_type) {
 	udf_dirent_t *p_udf_dirent_new = 
-	  udf_new_dirent(p_udf_fe, p_udf, p_udf_dirent->psz_name, true, true);
+	  udf_new_dirent(&udf_fe, p_udf, p_udf_dirent->psz_name, true, true);
 	return p_udf_dirent_new;
       }
     }
@@ -612,7 +626,10 @@ udf_readdir(udf_dirent_t *p_udf_dirent)
     return NULL;
   }
 
+  /* file position must be reset when accessing a new file */
   p_udf = p_udf_dirent->p_udf;
+  p_udf->i_position = 0;
+
   if (p_udf_dirent->fid) { 
     /* advance to next File Identifier Descriptor */
     /* FIXME: need to advance file entry (fe) as well.  */
@@ -655,16 +672,10 @@ udf_readdir(udf_dirent_t *p_udf_dirent)
 
       {
 	const unsigned int i_len = p_udf_dirent->fid->i_file_id;
-	uint8_t data[UDF_BLOCKSIZE] = {0};
-	udf_file_entry_t *p_udf_fe = (udf_file_entry_t *) &data;
 
-	if (DRIVER_OP_SUCCESS != udf_read_sectors(p_udf, p_udf_fe, p_udf->i_part_start 
+	if (DRIVER_OP_SUCCESS != udf_read_sectors(p_udf, &p_udf_dirent->fe, p_udf->i_part_start 
 			 + p_udf_dirent->fid->icb.loc.lba, 1))
 		return NULL;
-      
-	memcpy(&(p_udf_dirent->fe), p_udf_fe, 
-	       sizeof(udf_file_entry_t) + p_udf_fe->i_alloc_descs 
-	       + p_udf_fe->i_extended_attr );
 
 	if (strlen(p_udf_dirent->psz_name) < i_len) 
 	  p_udf_dirent->psz_name = (char *)

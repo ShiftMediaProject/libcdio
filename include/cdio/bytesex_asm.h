@@ -1,7 +1,5 @@
 /*
-    $Id: bytesex_asm.h,v 1.3 2008/03/25 15:59:08 karl Exp $
-
-    Copyright (C) 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2008, 2012 Rocky Bernstein <rocky@gnu.org>
                   2001, 2004, 2005 Herbert Valerio Riedel <hvr@gnu.org>
                   2001 Sven Ottemann <ac-logic@freenet.de>
 
@@ -32,9 +30,21 @@
 
 #include <cdio/types.h>
 
+#if !defined CDIO_INLINE
+#if defined(__cplusplus) || defined(inline)
+#define CDIO_INLINE inline
+#elif defined(__GNUC__)
+#define CDIO_INLINE __inline__
+#elif defined(_MSC_VER)
+#define CDIO_INLINE __inline
+#else
+#define CDIO_INLINE
+#endif
+#endif /* CDIO_INLINE */
+
 #if defined(__powerpc__) && defined(__GNUC__)
 
-inline static
+static CDIO_INLINE
 uint32_t uint32_swap_le_be_asm(const uint32_t a)
 {
   uint32_t b;
@@ -46,7 +56,7 @@ uint32_t uint32_swap_le_be_asm(const uint32_t a)
   return b;
 }
 
-inline static
+static CDIO_INLINE
 uint16_t uint16_swap_le_be_asm(const uint16_t a)
 {
   uint32_t b;
@@ -63,7 +73,7 @@ uint16_t uint16_swap_le_be_asm(const uint16_t a)
 
 #elif defined(__mc68000__) &&  defined(__STORMGCC__)
 
-inline static 
+static CDIO_INLINE
 uint32_t uint32_swap_le_be_asm(uint32_t a __asm__("d0"))
 {
   /* __asm__("rolw #8,%0; swap %0; rolw #8,%0" : "=d" (val) : "0" (val)); */
@@ -75,7 +85,7 @@ uint32_t uint32_swap_le_be_asm(uint32_t a __asm__("d0"))
   return(a);
 }
 
-inline static
+static CDIO_INLINE
 uint16_t uint16_swap_le_be_asm(uint16_t a __asm__("d0"))
 {
   __asm__("move.l %1,d0;rol.w #8,d0;move.l d0,%0"
@@ -90,7 +100,7 @@ uint16_t uint16_swap_le_be_asm(uint16_t a __asm__("d0"))
 
 #elif 0 && defined(__i386__) && defined(__GNUC__)
 
-inline static 
+static CDIO_INLINE
 uint32_t uint32_swap_le_be_asm(uint32_t a)
 {
   __asm__("xchgb %b0,%h0\n\t"     /* swap lower bytes     */
@@ -102,7 +112,7 @@ uint32_t uint32_swap_le_be_asm(uint32_t a)
   return(a);
 }
 
-inline static
+static CDIO_INLINE
 uint16_t uint16_swap_le_be_asm(uint16_t a)
 {
   __asm__("xchgb %b0,%h0"         /* swap bytes           */ 

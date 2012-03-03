@@ -29,17 +29,10 @@
 /** Application Interface or Protocol version number. If the public
  *  interface changes, we increase this number.
  */
-#define CDIO_API_VERSION 5
+#define CDIO_API_VERSION 6
 
 #include <cdio/version.h>
 #include <cdio/types.h>
-#ifdef  HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#ifdef  HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
 #include <cdio/sector.h>
 
 #ifdef __cplusplus

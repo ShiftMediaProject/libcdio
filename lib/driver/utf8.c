@@ -1,6 +1,7 @@
 /*
   Copyright (C) 2006, 2008 Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
   Copyright (C) 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2012 Pete Batard <pete@akeo.ie>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,19 +32,20 @@
 #include <stdlib.h>
 #endif
 
-#ifdef HAVE_ICONV
-# include <iconv.h>
-#endif
-
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
 
 #include <cdio/utf8.h>
+#include <cdio/logging.h>
 
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
 
-
+// TODO: also remove the need for iconv on MinGW
+#ifdef HAVE_ICONV
+#include <iconv.h>
 struct cdio_charset_coverter_s
   {
   iconv_t ic;
@@ -142,13 +144,13 @@ do_convert(iconv_t cd, char * src, int src_len,
           ret = realloc(ret, alloc_size);
           if (ret == NULL)
             {
-            fprintf(stderr, "Can't realloc(%d).\n", alloc_size);
+            cdio_warn("Can't realloc(%d).", alloc_size);
             return false;
             }
           outbuf = ret + output_pos;
           break;
         default:
-          fprintf(stderr, "Iconv failed: %s\n", strerror(errno));
+          cdio_warn("Iconv failed: %s", strerror(errno));
           if (ret != NULL)
             free(ret);
           return false;
@@ -207,4 +209,93 @@ bool cdio_charset_to_utf8(char *src, size_t src_len, cdio_utf8_t **dst,
   iconv_close(ic);
   return result;
   }
+#elif defined(_WIN32)
+#include <windows.h>
+
+#define wchar_to_utf8_no_alloc(wsrc, dest, dest_size) \
+	WideCharToMultiByte(CP_UTF8, 0, wsrc, -1, dest, dest_size, NULL, NULL)
+#define utf8_to_wchar_no_alloc(src, wdest, wdest_size) \
+	MultiByteToWideChar(CP_UTF8, 0, src, -1, wdest, wdest_size)
+
+/*
+ * Converts an UTF-16 string to UTF8 (allocate returned string)
+ * Returns NULL on error
+ */
+static __inline char* wchar_to_utf8(const wchar_t* wstr)
+{
+	int size = 0;
+	char* str = NULL;
+
+	/* Find out the size we need to allocate for our converted string */
+	size = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
+	if (size <= 1)	// An empty string would be size 1
+		return NULL;
+
+	if ((str = (char*)calloc(size, 1)) == NULL)
+		return NULL;
+
+	if (wchar_to_utf8_no_alloc(wstr, str, size) != size) {
+		free(str);
+		return NULL;
+	}
+
+	return str;
+}
+
+/*
+ * Converts an UTF8 string to UTF-16 (allocate returned string)
+ * Returns NULL on error
+ */
+static __inline wchar_t* utf8_to_wchar(const char* str)
+{
+	int size = 0;
+	wchar_t* wstr = NULL;
+
+	/* Find out the size we need to allocate for our converted string */
+	size = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
+	if (size <= 1)	// An empty string would be size 1
+		return NULL;
+
+	if ((wstr = (wchar_t*)calloc(size, sizeof(wchar_t))) == NULL)
+		return NULL;
+
+	if (utf8_to_wchar_no_alloc(str, wstr, size) != size) {
+		free(wstr);
+		return NULL;
+	}
+	return wstr;
+}
+
+bool cdio_charset_to_utf8(char *src, size_t src_len, cdio_utf8_t **dst,
+                          const char * src_charset)
+{
+	wchar_t* le_src;
+
+	if (src == NULL || dst == NULL || src_charset == NULL || strcmp(src_charset, "UCS-2BE") != 0)
+		return false;
+
+	if (src_len == (size_t)-1) {
+		for (src_len = 0; ((uint16_t*)src)[src_len] !=0; src_len++);
+		src_len <<=2;
+	}
+
+	/* zero lenght is a headache (LCMapString doesn't support it)
+	   => eliminate this case first */
+	if (src_len == 0) {
+		*dst = (cdio_utf8_t*)malloc(1);
+		*dst[0] = 0;
+		return true;
+	}
+
+	le_src = (wchar_t*)malloc(src_len+2);
+	/* WideCharToMultiByte only takes UCS-2LE, and we are fed UCS-2BE 
+	   => perform byte reversal */
+	LCMapStringW(0, LCMAP_BYTEREV, (LPCWSTR)src, src_len, le_src, src_len);
+	*dst = wchar_to_utf8(le_src);
+	free(le_src);
+
+	return (*dst != NULL);
+}
+#endif /* HAVE_ICONV */
+
 #endif /* HAVE_JOLIET */
