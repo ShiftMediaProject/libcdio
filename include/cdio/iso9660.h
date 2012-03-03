@@ -60,7 +60,7 @@ typedef uint64_t iso733_t; /*! See section 7.3.3 */
 typedef char     achar_t;  /*! See section 7.4.1 */
 typedef char     dchar_t;  /*! See section 7.4.1 */
 
-#ifndef  EMPTY_ARRAY_SIZE
+#ifndef EMPTY_ARRAY_SIZE
 #define EMPTY_ARRAY_SIZE 0
 #endif
 
@@ -273,8 +273,18 @@ struct iso9660_dir_s {
                                           the Extent described by this
                                           Directory Record is
                                           recorded. (9.1.9) */
-  iso711_t         filename_len;      /*! number of bytes in filename field */
-  char             filename[EMPTY_ARRAY_SIZE];
+/*! MSVC compilers cannot handle a zero sized array in the middle
+    of a struct, and iso9660_dir_s is reused within iso9660_pvd_s.
+    Therefore, instead of defining:
+       iso711_t filename_len;
+       char     filename[];
+    we leverage the fact that iso711_t and char are the same size
+    and use an union. The only gotcha is that the actual string
+    payload of filename.str[] starts at 1, not 0. */
+  union { 
+    iso711_t        len;
+    char            str[1];
+  } filename;
 } GNUC_PACKED;
 
 /*! 
@@ -976,7 +986,7 @@ uint8_t iso9660_ifs_get_joliet_level(iso9660_t *p_iso);
 
 uint8_t iso9660_get_dir_len(const iso9660_dir_t *p_idr);
 
-#if FIXME
+#ifdef FIXME
 uint8_t iso9660_get_dir_size(const iso9660_dir_t *p_idr);
 
 lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);

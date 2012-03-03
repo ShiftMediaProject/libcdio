@@ -107,12 +107,10 @@ adjust_fuzzy_pvd( iso9660_t *p_iso )
      frame and a header. 
    */
   if (CDIO_CD_FRAMESIZE_RAW == p_iso->i_framesize) {
-    const int pre_user_data=CDIO_CD_SYNC_SIZE +  CDIO_CD_HEADER_SIZE 
-      + CDIO_CD_SUBHEADER_SIZE;
-    char buf[pre_user_data];
-    
-    i_byte_offset -= pre_user_data;
-    
+    char buf[CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE + CDIO_CD_SUBHEADER_SIZE];
+
+    i_byte_offset -= CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE + CDIO_CD_SUBHEADER_SIZE;
+
     if ( DRIVER_OP_SUCCESS != cdio_stream_seek (p_iso->stream, i_byte_offset, 
 						SEEK_SET) )
       return;
@@ -739,7 +737,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 
   if (!dir_len) return NULL;
 
-  i_fname  = from_711(p_iso9660_dir->filename_len);
+  i_fname  = from_711(p_iso9660_dir->filename.len);
 
   /* .. string in statbuf is one longer than in p_iso9660_dir's listing '\1' */
   stat_len      = sizeof(iso9660_stat_t)+i_fname+2;
@@ -775,7 +773,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 	  calloc(1, sizeof(iso9660_stat_t)+i_rr_fname+2);
         if (!p_stat_new)
           {
-          cdio_warn("Couldn't calloc(1, %d)", sizeof(iso9660_stat_t)+i_rr_fname+2);
+          cdio_warn("Couldn't calloc(1, %d)", (int)(sizeof(iso9660_stat_t)+i_rr_fname+2));
           return NULL;
           }
 	memcpy(p_stat_new, p_stat, stat_len);
@@ -784,15 +782,15 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
       }
       strncpy(p_stat->filename, rr_fname, i_rr_fname+1);
     } else {
-      if ('\0' == p_iso9660_dir->filename[0] && 1 == i_fname)
+      if ('\0' == p_iso9660_dir->filename.str[1] && 1 == i_fname)
 	strncpy (p_stat->filename, ".", sizeof("."));
-      else if ('\1' == p_iso9660_dir->filename[0] && 1 == i_fname)
+      else if ('\1' == p_iso9660_dir->filename.str[1] && 1 == i_fname)
 	strncpy (p_stat->filename, "..", sizeof(".."));
 #ifdef HAVE_JOLIET
       else if (i_joliet_level) {
 	int i_inlen = i_fname;
 	cdio_utf8_t *p_psz_out = NULL;
-	if (cdio_charset_to_utf8(p_iso9660_dir->filename, i_inlen,
+	if (cdio_charset_to_utf8(&p_iso9660_dir->filename.str[1], i_inlen,
                              &p_psz_out, "UCS-2BE")) {
           strncpy(p_stat->filename, p_psz_out, i_fname);
           free(p_psz_out);
@@ -804,7 +802,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
       }
 #endif /*HAVE_JOLIET*/
       else {
-	strncpy (p_stat->filename, p_iso9660_dir->filename, i_fname);
+	strncpy (p_stat->filename, &p_iso9660_dir->filename.str[1], i_fname);
       }
     }
   }
@@ -878,12 +876,12 @@ iso9660_dir_to_name (const iso9660_dir_t *iso9660_dir)
 
   /* (iso9660_dir->file_flags & ISO_DIRECTORY) */
   
-  if (iso9660_dir->filename[0] == '\0')
+  if (iso9660_dir->filename.str[1] == '\0')
     return strdup(".");
-  else if (iso9660_dir->filename[0] == '\1')
+  else if (iso9660_dir->filename.str[1] == '\1')
     return strdup("..");
   else {
-    return strdup(iso9660_dir->filename);
+    return strdup(&iso9660_dir->filename.str[1]);
   }
 }
 
@@ -982,13 +980,6 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 
   cdio_assert (_root->type == _STAT_DIR);
 
-  if (_root->size != ISO_BLOCKSIZE * _root->secsize)
-    {
-      cdio_warn ("bad size for ISO9660 directory (%ud) should be (%lu)!",
-		 (unsigned) _root->size, 
-		 (unsigned long int) ISO_BLOCKSIZE * _root->secsize);
-    }
-  
   _dirbuf = calloc(1, _root->secsize * ISO_BLOCKSIZE);
   if (!_dirbuf)
     {
@@ -1003,7 +994,7 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
   while (offset < (_root->secsize * ISO_BLOCKSIZE))
     {
       iso9660_dir_t *p_iso9660_dir = (void *) &_dirbuf[offset];
-      iso9660_stat_t *p_stat;
+      iso9660_stat_t *p_iso9660_stat;
       int cmp;
 
       if (!iso9660_get_dir_len(p_iso9660_dir))
@@ -1012,27 +1003,26 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 	  continue;
 	}
       
-      p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, dunno, 
+      p_iso9660_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, dunno, 
 					p_env->i_joliet_level);
 
-      cmp = strcmp(splitpath[0], p_stat->filename);
+      cmp = strcmp(splitpath[0], p_iso9660_stat->filename);
 
       if ( 0 != cmp && 0 == p_env->i_joliet_level 
-	   && yep != p_stat->rr.b3_rock ) {
+	   && yep != p_iso9660_stat->rr.b3_rock ) {
 	char *trans_fname = NULL;
-	unsigned int i_trans_fname=strlen(p_stat->filename);
-	int trans_len;
+	unsigned int i_trans_fname=strlen(p_iso9660_stat->filename);
 	
 	if (i_trans_fname) {
 	  trans_fname = calloc(1, i_trans_fname+1);
 	  if (!trans_fname) {
 	    cdio_warn("can't allocate %lu bytes", 
-		      (long unsigned int) strlen(p_stat->filename));
-	    free(p_stat);
+		      (long unsigned int) strlen(p_iso9660_stat->filename));
+	    free(p_iso9660_stat);
 	    return NULL;
 	  }
-	  trans_len = iso9660_name_translate_ext(p_stat->filename, trans_fname,
-						 p_env->i_joliet_level);
+	  iso9660_name_translate_ext(p_iso9660_stat->filename, trans_fname,
+				     p_env->i_joliet_level);
 	  cmp = strcmp(splitpath[0], trans_fname);
 	  free(trans_fname);
 	}
@@ -1040,15 +1030,15 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
       
       if (!cmp) {
 	iso9660_stat_t *ret_stat 
-	  = _fs_stat_traverse (p_cdio, p_stat, &splitpath[1]);
-	free(p_stat->rr.psz_symlink);
-	free(p_stat);
+	  = _fs_stat_traverse (p_cdio, p_iso9660_stat, &splitpath[1]);
+	free(p_iso9660_stat->rr.psz_symlink);
+	free(p_iso9660_stat);
 	free (_dirbuf);
 	return ret_stat;
       }
 
-      free(p_stat->rr.psz_symlink);
-      free(p_stat);
+      free(p_iso9660_stat->rr.psz_symlink);
+      free(p_iso9660_stat);
 	  
       offset += iso9660_get_dir_len(p_iso9660_dir);
     }
@@ -1090,13 +1080,6 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 
   cdio_assert (_root->type == _STAT_DIR);
 
-  if (_root->size != ISO_BLOCKSIZE * _root->secsize)
-    {
-      cdio_warn ("bad size for ISO9660 directory (%ud) should be (%lu)!",
-		 (unsigned) _root->size, 
-		 (unsigned long int) ISO_BLOCKSIZE * _root->secsize);
-    }
-  
   _dirbuf = calloc(1, _root->secsize * ISO_BLOCKSIZE);
   if (!_dirbuf)
     {
@@ -1128,7 +1111,6 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 	   && yep != p_stat->rr.b3_rock ) {
 	char *trans_fname = NULL;
 	unsigned int i_trans_fname=strlen(p_stat->filename);
-	int trans_len;
 	
 	if (i_trans_fname) {
 	  trans_fname = calloc(1, i_trans_fname+1);
@@ -1138,8 +1120,8 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 	    free(p_stat);
 	    return NULL;
 	  }
-	  trans_len = iso9660_name_translate_ext(p_stat->filename, trans_fname, 
-						 p_iso->i_joliet_level);
+	  iso9660_name_translate_ext(p_stat->filename, trans_fname, 
+				     p_iso->i_joliet_level);
 	  cmp = strcmp(splitpath[0], trans_fname);
 	  free(trans_fname);
 	}
@@ -1304,13 +1286,6 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
     uint8_t *_dirbuf = NULL;
     CdioList_t *retval = _cdio_list_new ();
 
-    if (p_stat->size != ISO_BLOCKSIZE * p_stat->secsize)
-      {
-	cdio_warn ("bad size for ISO9660 directory (%ud) should be (%lu)!",
-		   (unsigned) p_stat->size, 
-		   (unsigned long int) ISO_BLOCKSIZE * p_stat->secsize);
-      }
-
     _dirbuf = calloc(1, p_stat->secsize * ISO_BLOCKSIZE);
     if (!_dirbuf)
       {
@@ -1374,13 +1349,6 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     unsigned offset = 0;
     uint8_t *_dirbuf = NULL;
     CdioList_t *retval = _cdio_list_new ();
-
-    if (p_stat->size != ISO_BLOCKSIZE * p_stat->secsize)
-      {
-	cdio_warn ("bad size for ISO9660 directory (%ud) should be (%lu)!",
-		   (unsigned int) p_stat->size, 
-		   (unsigned long int) ISO_BLOCKSIZE * p_stat->secsize);
-      }
 
     _dirbuf = calloc(1, p_stat->secsize * ISO_BLOCKSIZE);
     if (!_dirbuf)
@@ -1450,7 +1418,7 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
     {
       iso9660_stat_t *statbuf = _cdio_list_node_data (entnode);
       const char *psz_filename  = (char *) statbuf->filename;
-      const unsigned int len = strlen(psz_path) + strlen(psz_filename)+2;
+      unsigned int len = strlen(psz_path) + strlen(psz_filename)+2;
       
       if (*ppsz_full_filename != NULL) free(*ppsz_full_filename);
       *ppsz_full_filename = calloc(1, len);
@@ -1463,8 +1431,7 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
       }
 
       if (statbuf->lsn == lsn) {
-        const unsigned int len2 = 
-	    sizeof(iso9660_stat_t)+strlen(statbuf->filename)+1;
+	const unsigned int len2 = sizeof(iso9660_stat_t)+strlen(statbuf->filename)+1;
 	iso9660_stat_t *ret_stat = calloc(1, len2);
 	if (!ret_stat)
 	  {
