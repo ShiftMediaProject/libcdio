@@ -35,7 +35,7 @@ check_result() {
   shift
   msg=$1
   shift
-  cmdline=$*
+  cmdline="$cmd $*"
   if test $RC -ne 0 ; then 
     if test $RC -ne $SKIP_TEST_EXITCODE ; then
       echo "$0: $msg failed in comparing output."
