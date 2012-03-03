@@ -1,5 +1,5 @@
 /* 
-    Copyright (c) 2005, 2006, 2008 Rocky Bernstein <rocky@cpan.org>
+    Copyright (c) 2005, 2006, 2008, 2012 Rocky Bernstein <rocky@cpan.org>
     Copyright (c) 2001-2002  Ben Fennema <bfennema@falcon.csc.calpoly.edu>
 
     This program is free software: you can redistribute it and/or modify
@@ -499,9 +499,11 @@ struct logvol_integrity_desc_s
   udf_Uint8_t     logvol_contents_use[32];
   udf_Uint32_t    i_partitions;
   udf_Uint32_t    imp_use_len;
-  udf_Uint32_t    freespace_table[0];
-  udf_Uint32_t    size_table[0];
-  udf_Uint8_t     imp_use[0];
+  union { /* MSVC workaround for multiple zero sized arrays */
+    udf_Uint32_t  freespace_table[0];
+    udf_Uint32_t  size_table[0];
+    udf_Uint8_t   imp_use[0];
+  } u;
 } GNUC_PACKED;
 
 /** Integrity Type (ECMA 167r3 3/10.10.3) */
@@ -571,9 +573,11 @@ struct udf_fileid_desc_s
   udf_Uint8_t	i_file_id;
   udf_long_ad_t	icb;
   udf_Uint16_t	i_imp_use;
-  udf_Uint8_t	imp_use[0];
-  udf_Uint8_t	file_id[0];
-  udf_Uint8_t	padding[0];
+  union { /* MSVC workaround for multiple zero sized arrays */
+    udf_Uint8_t	imp_use[0];
+    udf_Uint8_t	file_id[0];
+    udf_Uint8_t	padding[0];
+  } u;
 } GNUC_PACKED;
 
 typedef struct udf_fileid_desc_s udf_fileid_desc_t;
@@ -727,8 +731,14 @@ struct udf_file_entry_s
   udf_Uint64_t	  unique_ID;
   udf_Uint32_t	  i_extended_attr;
   udf_Uint32_t	  i_alloc_descs;
-  udf_Uint8_t	  ext_attr[0];
-  udf_Uint8_t	  alloc_descs[0];
+  /* The following union allows file entry reuse without worrying
+     about overflows, by ensuring the struct is always the
+     maximum possible size allowed by the specs: one UDF block. */
+  union {
+    udf_Uint8_t	  ext_attr[0];
+    udf_Uint8_t	  alloc_descs[0];
+    udf_Uint8_t	  pad_to_one_block[2048-176];
+  } u;
 } GNUC_PACKED;
 
 typedef struct udf_file_entry_s udf_file_entry_t;
@@ -985,8 +995,10 @@ struct extended_file_entry
   udf_Uint64_t    unique_ID;
   udf_Uint32_t    length_extended_attr;
   udf_Uint32_t    length_alloc_descs;
-  udf_Uint8_t     ext_attr[0];
-  udf_Uint8_t     alloc_descs[0];
+  union { /* MSVC workaround for multiple zero sized arrays */
+    udf_Uint8_t   ext_attr[0];
+    udf_Uint8_t   alloc_descs[0];
+  } u;
 } GNUC_PACKED;
 
 PRAGMA_END_PACKED
