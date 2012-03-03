@@ -21,21 +21,49 @@
 # define __CDIO_CONFIG_H__ 1
 #endif
 
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
 #include <string.h>
-
+#endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h> 
-#endif /*HAVE_UNISTD_H*/
-
+#endif
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#endif
+#ifdef HAVE_ERRNO_H
 #include <errno.h>
+#endif
 
 #include <cdio/logging.h>
 #include <cdio/util.h>
 #include "_cdio_stream.h"
 #include "_cdio_stdio.h"
+
+/* On 32 bit platforms, fseek can only access streams of 2 GB or less.
+   Prefer fseeko/fseeko64, that take a 64 bit offset when LFS is enabled */
+#if defined(HAVE_FSEEKO64) && defined(_FILE_OFFSET_BITS) && (_FILE_OFFSET_BITS == 64)
+#define CDIO_FSEEK fseeko64
+#elif defined(HAVE_FSEEKO)
+#define CDIO_FSEEK fseeko
+#else
+#define CDIO_FSEEK fseek
+#endif
+
+/* Use _stati64 if needed, on platforms that don't have transparent LFS support */
+#if defined(HAVE__STATI64) && defined(_FILE_OFFSET_BITS) && (_FILE_OFFSET_BITS == 64)
+#define CDIO_STAT _stati64
+#else
+#define CDIO_STAT stat
+#endif
+
+#define _STRINGIFY(a) #a
+#define STRINGIFY(a) _STRINGIFY(a)
 
 static const char _rcsid[] = "$Id: _cdio_stdio.c,v 1.6 2008/04/22 15:29:11 karl Exp $";
 
@@ -93,7 +121,7 @@ _stdio_free(void *user_data)
 }
 
 /*! 
-  Like fseek(3) and in fact may be the same.
+  Like fseek/fseeko(3) and in fact may be the same.
   
   This  function sets the file position indicator for the stream
   pointed to by stream.  The new position, measured in bytes, is obtained
@@ -108,19 +136,28 @@ _stdio_free(void *user_data)
   DRIVER_OP_ERROR is returned and the global variable errno is set to
   indicate the error.
 */
-static driver_return_code_t 
-_stdio_seek(void *p_user_data, long i_offset, int whence)
+static int 
+_stdio_seek(void *p_user_data, off_t i_offset, int whence)
 {
   _UserData *const ud = p_user_data;
+  int ret;
+#if !defined(HAVE_FSEEKO) && !defined(HAVE_FSEEKO64)
+  /* Detect if off_t is lossy-truncated to long to avoid data corruption */
+  if ( (sizeof(off_t) > sizeof(long)) && (i_offset != (off_t)((long)i_offset)) ) {
+    cdio_error ( STRINGIFY(CDIO_FSEEK) " (): lossy truncation detected!");
+    errno = EFBIG;
+    return DRIVER_OP_ERROR;
+  }
+#endif
 
-  if ( (i_offset=fseek (ud->fd, i_offset, whence)) ) {
-    cdio_error ("fseek (): %s", strerror (errno));
+  if ( (ret=CDIO_FSEEK (ud->fd, i_offset, whence)) ) {
+    cdio_error ( STRINGIFY(CDIO_FSEEK) " (): %s", strerror (errno));
   }
 
-  return i_offset;
+  return ret;
 }
 
-static long int
+static off_t
 _stdio_stat(void *p_user_data)
 {
   const _UserData *const ud = p_user_data;
@@ -145,15 +182,15 @@ _stdio_stat(void *p_user_data)
   We do not distinguish between end-of-file and error, and callers
   must use feof(3) and ferror(3) to determine which occurred.
   */
-static long
-_stdio_read(void *user_data, void *buf, long int count)
+static ssize_t
+_stdio_read(void *user_data, void *buf, size_t count)
 {
   _UserData *const ud = user_data;
-  long read;
+  long read_count;
 
-  read = fread(buf, 1, count, ud->fd);
+  read_count = fread(buf, 1, count, ud->fd);
 
-  if (read != count)
+  if (read_count != count)
     { /* fixme -- ferror/feof */
       if (feof (ud->fd))
         {
@@ -169,7 +206,7 @@ _stdio_read(void *user_data, void *buf, long int count)
         cdio_debug ("fread (): short read and no EOF?!?");
     }
 
-  return read;
+  return read_count;
 }
 
 /*!
@@ -187,9 +224,9 @@ cdio_stdio_new(const char pathname[])
   CdioDataSource_t *new_obj = NULL;
   cdio_stream_io_functions funcs = { NULL, NULL, NULL, NULL, NULL, NULL };
   _UserData *ud = NULL;
-  struct stat statbuf;
+  struct CDIO_STAT statbuf;
   
-  if (stat (pathname, &statbuf) == -1) 
+  if (CDIO_STAT (pathname, &statbuf) == -1) 
     {
       cdio_warn ("could not retrieve file info for `%s': %s", 
                  pathname, strerror (errno));

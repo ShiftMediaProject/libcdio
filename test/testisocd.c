@@ -23,7 +23,7 @@
 # define __CDIO_CONFIG_H__ 1
 #endif
 
-#include "portable.h"
+#include "filemode.h"
 
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>

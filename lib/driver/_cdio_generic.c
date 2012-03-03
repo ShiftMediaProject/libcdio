@@ -30,14 +30,18 @@
 #include <errno.h>
 
 #ifdef HAVE_UNISTD_H
-#include <unistd.h> 
-#endif /*HAVE_UNISTD_H*/
+#include <unistd.h>
+#endif
 
 #include <fcntl.h>
 #include <limits.h>
 
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
@@ -45,10 +49,20 @@
 #include "cdio_assert.h"
 #include "cdio_private.h"
 #include "_cdio_stdio.h"
-#include "portable.h"
+#include "filemode.h"
 
 #ifndef PATH_MAX
 #define PATH_MAX 4096
+#endif
+
+/* If available and LFS is enabled, try to use lseek64 */
+#if defined(HAVE_LSEEK64) && defined(_FILE_OFFSET_BITS) && (_FILE_OFFSET_BITS == 64)
+#if defined(_MSC_VER)
+#include <io.h>
+#endif
+#define CDIO_LSEEK lseek64
+#else
+#define CDIO_LSEEK lseek
 #endif
 
 /*!
@@ -150,13 +164,13 @@ cdio_generic_read_form1_sector (void * user_data, void *data, lsn_t lsn)
 /*!
   Reads into buf the next size bytes.
   Returns -1 on error. 
-  Is in fact libc's lseek().
+  Is in fact libc's lseek()/lseek64().
 */
 off_t
 cdio_generic_lseek (void *user_data, off_t offset, int whence)
 {
   generic_img_private_t *p_env = user_data;
-  return lseek(p_env->fd, offset, whence);
+  return CDIO_LSEEK(p_env->fd, offset, whence);
 }
 
 /*!

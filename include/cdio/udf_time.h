@@ -27,11 +27,10 @@
 
 #include <time.h>
 
-#ifndef HAVE_STRUCT_TIMESPEC
-#define HAVE_STRUCT_TIMESPEC
+#if defined(__MINGW32__) && !defined(__MINGW64__)
 struct timespec {
-  time_t  tv_sec;	/* Seconds */
-  long    tv_nsec;	/* Nanoseconds */
+  time_t  tv_sec;   /* Seconds */
+  long    tv_nsec;  /* Nanoseconds */
 };
 #endif
 

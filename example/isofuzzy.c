@@ -28,7 +28,7 @@
 
 /* portable.h has to come first else _FILE_OFFSET_BITS are redefined in
    say opensolaris. */
-#include "portable.h"
+#include "filemode.h"
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>

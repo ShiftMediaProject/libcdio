@@ -49,7 +49,7 @@ EXTRA_DIST = image/Makefile \
 	FreeBSD/Makefile MSWindows/Makefile \
 	libcdio.sym
 
-noinst_HEADERS = cdio_assert.h cdio_private.h portable.h
+noinst_HEADERS = cdio_assert.h cdio_private.h filemode.h
 
 libcdio_sources = \
 	_cdio_generic.c \

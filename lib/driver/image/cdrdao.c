@@ -57,7 +57,7 @@
 
 #include <ctype.h>
 
-#include "portable.h"
+#include "filemode.h"
 
 /* reader */
 

@@ -27,7 +27,7 @@
 
 #include <cdio/logging.h>
 #include "cdio_assert.h"
-#include "portable.h"
+#include "filemode.h"
 
 static const char _rcsid[] = "$Id: logging.c,v 1.2 2008/04/22 15:29:12 karl Exp $";
 

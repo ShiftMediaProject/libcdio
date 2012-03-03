@@ -20,7 +20,7 @@
 /* Program to read ISO-9660 images. */
 
 #include "util.h"
-#include "portable.h"
+#include "filemode.h"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
