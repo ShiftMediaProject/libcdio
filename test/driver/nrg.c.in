@@ -18,13 +18,9 @@
 /* 
    Regression test for Nero image driver: lib/driver/image/nrg.c.
 */
-#include <cdio/cdio.h>
-#include <cdio/logging.h>
-#include <cdio/cdtext.h>
-
-#if defined(HAVE_CONFIG_H) && !defined(__CDIO_CONFIG_H__)
-# include "config.h"
-# define __CDIO_CONFIG_H__ 1
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_STDIO_H
@@ -40,6 +36,9 @@
 #include <string.h>
 #endif
 
+#include <cdio/cdio.h>
+#include <cdio/logging.h>
+#include <cdio/cdtext.h>
 #include "helper.h"
 
 #ifndef DATA_DIR
