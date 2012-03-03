@@ -50,10 +50,6 @@
 int
 main(int argc, const char *argv[])
 {
-#if defined(__MINGW32__)
-  printf("nrg test skipped until off_t issues worked out on MinGW\n");
-  return 77;
-#else
   char psz_nrgfile[500];
   CdIo_t *p_cdio;
   const char *cdtext_check[NUM_FIELDS] = {
@@ -100,5 +96,4 @@ main(int argc, const char *argv[])
   cdio_destroy(p_cdio);
 
   return 0;
-#endif
 }
