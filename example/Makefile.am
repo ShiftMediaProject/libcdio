@@ -22,10 +22,10 @@ if ENABLE_CPP
 SUBDIRS =  C++
 endif
 if BUILD_EXAMPLES
-noinst_PROGRAMS = audio cdchange cdtext device discid drives eject \
+noinst_PROGRAMS = audio cdchange cdio-eject cdtext device discid drives eject \
 	          extract isofile isofile2 isofuzzy isolist isolsn \
-	          mmc1 mmc2 mmc2a mmc3 tracks \
-	          sample3 sample4 udf1 udffile cdio-eject
+	          mmc1 mmc2 mmc2a mmc3 \
+	          sample3 sample4 tracks udf1 udffile
 endif
 
 INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
