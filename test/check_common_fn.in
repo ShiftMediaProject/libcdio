@@ -22,7 +22,8 @@ SKIP_TEST_EXITCODE=77
 TZ=CUT
 # both 'en_US' and 'en_US.utf8' might be defined on some platforms
 if locale -a >/dev/null 2>&1 ; then 
-  LC_TIME=$(locale -a | grep 'en_US' | grep -v 'utf8' &2>/dev/null)
+  # Note: Solaris 10's shell can't handle $(..) so we use `...`
+  LC_TIME=`locale -a | grep 'en_US' | grep -v 'utf8' &2>/dev/null`
 fi
 [[ -z $LC_TIME ]] && {
   LC_TIME=${LC_TIME:-en_US}
