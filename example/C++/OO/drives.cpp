@@ -17,9 +17,10 @@
 
 /* Simple program to show drivers installed and what the default 
    CD-ROM drive is and what CD drives are available. */
-#include <cdio++/cdio.hpp>
-#include <cdio/cd_types.h>
-#include <cdio/logging.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
+#endif
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -30,6 +31,10 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
+#include <cdio++/cdio.hpp>
+#include <cdio/cd_types.h>
+#include <cdio/logging.h>
 
 static void 
 log_handler (cdio_log_level_t level, const char message[])

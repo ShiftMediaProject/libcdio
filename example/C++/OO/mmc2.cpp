@@ -18,15 +18,20 @@
 /* A program to using the MMC interface to list CD and drive features
    from the MMC GET_CONFIGURATION command . */
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
 #endif
+
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
 #ifdef HAVE_SYS_TYPE_H
 #include <sys/types.h>
 #endif
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
+
 #include <cdio++/cdio.hpp>
 
 /* Set how long do wto wait for SCSI-MMC commands to complete */

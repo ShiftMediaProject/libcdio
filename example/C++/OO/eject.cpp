@@ -24,7 +24,10 @@
 
    See also corresponding C program of a similar name. 
 */
-#include <cdio++/cdio.hpp>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
+#endif
 
 #include <stdio.h>
 #ifdef HAVE_STDLIB_H
@@ -33,6 +36,8 @@
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
+
+#include <cdio++/cdio.hpp>
 
 int
 main(int argc, const char *argv[])

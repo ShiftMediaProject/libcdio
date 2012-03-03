@@ -21,20 +21,19 @@
    libcdio.  An optional drive name can be supplied as an argument.
    See also corresponding C program of a similar name.
  */
-
-#include <cdio++/cdio.hpp>
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
-
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 
+#include <cdio++/cdio.hpp>
 
 /* Set up a CD-DA image to test on which is in the libcdio distribution. */
 #define CDDA_IMAGE_PATH  "../../../test/"

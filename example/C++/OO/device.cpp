@@ -20,8 +20,10 @@
 /* Simple program to show drivers installed and what the default
    CD-ROM drive is. See also corresponding C program of a similar
    name. */
-
-#include <cdio++/cdio.hpp>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
+#endif
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -32,6 +34,8 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
+#include <cdio++/cdio.hpp>
 
 #define _(x) x
 

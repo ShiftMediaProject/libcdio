@@ -35,13 +35,8 @@
 #define ISO9660_FILENAME "COPYING"
 #define LOCAL_FILENAME "copying"
 
-#include <cdio++/cdio.hpp>
-#include <cdio++/iso9660.hpp>
 #include "portable.h"
 
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -60,6 +55,9 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
+#include <cdio++/cdio.hpp>
+#include <cdio++/iso9660.hpp>
 
 #define CEILING(x, y) ((x+(y-1))/y)
 

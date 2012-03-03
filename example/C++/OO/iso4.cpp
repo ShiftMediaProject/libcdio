@@ -32,11 +32,14 @@
 #define ISO9660_IMAGE_PATH "../../../"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/isofs-m1.cue"
 
-#include <sys/types.h>
-#include <cdio++/iso9660.hpp>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
+#endif
 
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
-
+#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -49,6 +52,8 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
+#include <cdio++/iso9660.hpp>
 
 #define print_vd_info(title, fn)	  \
   psz_str = p_pvd->fn();		  \

@@ -29,12 +29,11 @@
 
 #define LOCAL_FILENAME "copying"
 
-#include <sys/types.h>
-#include <cdio++/iso9660.hpp>
-
 #include "portable.h"
-#include <stdio.h>
 
+#ifdef HAVE_STDIO_H
+#include <stdio.h>
+#endif
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
@@ -50,6 +49,8 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
+#include <cdio++/iso9660.hpp>
 
 #define CEILING(x, y) ((x+(y-1))/y)
 

@@ -20,14 +20,22 @@
    This basically the libdio mmc_get_hwinfo() routine.
    See also corresponding C and non OO C++ program.
 */
-#include <cdio++/cdio.hpp>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
+#endif
+
+#ifdef HAVE_STDIO_H
 #include <stdio.h>
+#endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
+
+#include <cdio++/cdio.hpp>
 
 /* Set how long to wait for MMC commands to complete */
 #define DEFAULT_TIMEOUT_MS 10000
