@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2011
+  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2011, 2012
     Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -1463,14 +1463,15 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
       }
 
       if (statbuf->lsn == lsn) {
-	unsigned int len=sizeof(iso9660_stat_t)+strlen(statbuf->filename)+1;
-	iso9660_stat_t *ret_stat = calloc(1, len);
+        const unsigned int len2 = 
+	    sizeof(iso9660_stat_t)+strlen(statbuf->filename)+1;
+	iso9660_stat_t *ret_stat = calloc(1, len2);
 	if (!ret_stat)
 	  {
-          cdio_warn("Couldn't calloc(1, %d)", len);
+          cdio_warn("Couldn't calloc(1, %d)", len2);
           return NULL;
 	  }
-	memcpy(ret_stat, statbuf, len);
+	memcpy(ret_stat, statbuf, len2);
         _cdio_list_free (entlist, true);
         _cdio_list_free (dirlist, true);
         return ret_stat;
