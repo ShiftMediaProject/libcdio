@@ -1,4 +1,4 @@
-cd-info version.* [0-9]
+cd-info.* version [0-9]
 ^Copyright (c) 200
 Bernstein
 ^This is free software; see the source for copying conditions\.$
