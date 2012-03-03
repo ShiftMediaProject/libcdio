@@ -117,8 +117,8 @@ main(int argc, const char *argv[])
     }
 
     {
-      long unsigned int i_file_length = udf_get_file_length(p_udf_file);
-      const unsigned int i_blocks = CEILING(i_file_length, UDF_BLOCKSIZE);
+      uint64_t i_file_length = udf_get_file_length(p_udf_file);
+      const unsigned int i_blocks = (unsigned int) CEILING(i_file_length, UDF_BLOCKSIZE);
       unsigned int i;
       for (i = 0; i < i_blocks ; i++) {
 	char buf[UDF_BLOCKSIZE] = {'\0',};

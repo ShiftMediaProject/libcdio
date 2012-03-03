@@ -41,6 +41,8 @@ drives.c:    A program to show drivers installed and what the default
 eject.c:     A program eject a CD from a CD-ROM drive and then close the door
 	     again.
 
+extract.c:   Extract the full contents of either an UDF or ISO9660 image file.
+
 isofile.c:   A program to show using libiso9660 to extract a file from an
 	     ISO-9660 image.
 

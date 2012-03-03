@@ -23,7 +23,7 @@ SUBDIRS =  C++
 endif
 if BUILD_EXAMPLES
 noinst_PROGRAMS = audio cdchange cdtext device discid drives eject \
-	          isofile isofile2 isofuzzy isolist isolsn \
+	          extract isofile isofile2 isofuzzy isolist isolsn \
 	          mmc1 mmc2 mmc2a mmc3 tracks \
 	          sample3 sample4 udf1 udffile cdio-eject
 endif
@@ -50,6 +50,9 @@ drives_LDADD          = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 eject_DEPENDENCIES    = $(LIBCDIO_DEPS)
 eject_LDADD           = $(LIBCDIO_LIBS) $(LTLIBICONV)
+
+extract_DEPENDENCIES  = $(LIBISO9660_LIBS) $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
+extract_LDADD         = $(LIBISO9660_LIBS) $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 cdio_eject_DEPENDENCIES = $(LIBCDIO_DEPS)
 cdio_eject_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)

@@ -322,14 +322,14 @@ case $host_os in
        ## Don't use AIX driver until starts to really work
        ## cd_drivers="${cd_drivers}, AIX"
        ## AC_DEFINE([HAVE_AIX_CDROM], [1],
-       ##     [Define to 1 if you have AIX CD-ROM support])
+       ##     [Define 1 if you have AIX CD-ROM support])
        ;;
      darwin6*|darwin7*|darwin8*|darwin9*)
        AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h, 
                         [have_iokit_h="yes"])
        if test "x$have_iokit_h" = "xyes" ; then 
          AC_DEFINE([HAVE_DARWIN_CDROM], [1],
-	      [Define to 1 if you have Darwin OS X-type CD-ROM support])
+	      [Define 1 if you have Darwin OS X-type CD-ROM support])
 	 DARWIN_PKG_LIB_HACK="-Wl,-framework,CoreFoundation -Wl,-framework,IOKit"
 
 	 dnl Prior to Mac OS X 10.4 (Tiger), DiskArbitration was a private framework.
@@ -341,7 +341,7 @@ case $host_os in
 	 LIBS="$ac_save_LIBS"
 	 AC_MSG_RESULT([$have_diskarbitration_framework])
 	 if test "x$have_diskarbitration_framework" = "xyes"; then
-	     AC_DEFINE([HAVE_DISKARBITRATION], 1, [Define to 1 if you have the Apple DiskArbitration framework])
+	     AC_DEFINE([HAVE_DISKARBITRATION], 1, [Define 1 if you have the Apple DiskArbitration framework])
 	     DARWIN_PKG_LIB_HACK="$DARWIN_PKG_LIB_HACK -Wl,-framework,DiskArbitration"
 	 fi
 
@@ -359,9 +359,9 @@ case $host_os in
 struct cdrom_generic_command test;
 int has_timeout=sizeof(test.timeout);],
             [AC_DEFINE([HAVE_LINUX_CDROM_TIMEOUT], [1], 
-                   [Define to 1 if timeout is in cdrom_generic_command struct])])
+                   [Define 1 if timeout is in cdrom_generic_command struct])])
 	   AC_DEFINE([HAVE_LINUX_CDROM], [1], 
-                     [Define to 1 if you have Linux-type CD-ROM support])
+                     [Define 1 if you have Linux-type CD-ROM support])
 	   cd_drivers="${cd_drivers}, GNU/Linux"
 	fi
 	;;
@@ -369,7 +369,7 @@ int has_timeout=sizeof(test.timeout);],
         AC_CHECK_HEADERS(dvd.h, [have_bsdi_dvd_h="yes"])
 	if test "x$have_bsdi_dvd_h" = "xyes" ; then
      	  AC_DEFINE([HAVE_BSDI_CDROM], [1], 
-                    [Define to 1 if you have BSDI-type CD-ROM support])
+                    [Define 1 if you have BSDI-type CD-ROM support])
 	 LIBS="$LIBS -ldvd -lcdrom"
          LIBCDIO_LIBS="$LIBCDIO_LIBS  -lcdrom"
 	  cd_drivers="${cd_drivers}, BSDI"
@@ -377,27 +377,27 @@ int has_timeout=sizeof(test.timeout);],
 	;;
      sunos*|sun*|solaris*)
      	AC_DEFINE([HAVE_SOLARIS_CDROM], [1], 
-                  [Define to 1 if you have Solaris CD-ROM support])
+                  [Define 1 if you have Solaris CD-ROM support])
 	  cd_drivers="${cd_drivers}, Solaris"
 	;;
      cygwin*)
 	AC_DEFINE([CYGWIN], [1], 
-                  [Define to 1 if you are compiling using cygwin])
+                  [Define 1 if you are compiling using cygwin])
      	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
-                  [Define to 1 if you have MinGW CD-ROM support])
+                  [Define 1 if you have MinGW CD-ROM support])
  	LIBS="$LIBS -lwinmm"
  	LT_NO_UNDEFINED="-no-undefined"
   	cd_drivers="${cd_drivers}, MinGW"
      	AC_DEFINE([NEED_TIMEZONEVAR], [1], 
-                  [Define to 1 if you need timezone defined to get timzone
+                  [Define 1 if you need timezone defined to get timzone
 		   defined as a variable. In cygwin it is a function too])
 	;;
      mingw*)
 	AC_CHECK_HEADERS(windows.h)
 	AC_DEFINE([MINGW32], [1], 
-                  [Define to 1 if you are compiling using MinGW])
+                  [Define 1 if you are compiling using MinGW])
 	AC_DEFINE([HAVE_WIN32_CDROM], [1], 
-                  [Define to 1 if you have MinGW CD-ROM support])
+                  [Define 1 if you have MinGW CD-ROM support])
 	LIBS="$LIBS -lwinmm"
 	LT_NO_UNDEFINED="-no-undefined"
 	cd_drivers="${cd_drivers}, MinGW "
@@ -415,19 +415,19 @@ int has_timeout=sizeof(test.timeout);],
 	;;
      freebsd4.*|freebsd5.*|freebsd[6-9]*|dragonfly*|kfreebsd*)
      	AC_DEFINE([HAVE_FREEBSD_CDROM], [1], 
-                  [Define to 1 if you have FreeBSD CD-ROM support])
+                  [Define 1 if you have FreeBSD CD-ROM support])
  	LIBS="$LIBS -lcam"
   	cd_drivers="${cd_drivers}, FreeBSD "
 	;;
      netbsd*)
      	AC_DEFINE([HAVE_NETBSD_CDROM], [1], 
-                  [Define to 1 if you have NetBSD CD-ROM support])
+                  [Define 1 if you have NetBSD CD-ROM support])
  	# LIBS="$LIBS -lcam"
   	cd_drivers="${cd_drivers}, NetBSD "
 	;;
      os2*)
        AC_DEFINE([HAVE_OS2_CDROM], [1],
-                  [Define to 1 if you have OS/2 CD-ROM support])
+                  [Define 1 if you have OS/2 CD-ROM support])
        LT_NO_UNDEFINED="-no-undefined"
        LDFLAGS="$LDFLAGS -Zbin-files"
        cd_drivers="${cd_drivers}, OS2 "
@@ -483,7 +483,7 @@ AC_CHECK_FUNCS( [chdir drand48 fseeko fseeko64 ftruncate geteuid getgid \
 
 # check for timegm() support
 AC_CHECK_FUNC(timegm, AC_DEFINE(HAVE_TIMEGM,1,
-		      [Define to 1 if timegm is available]))
+		      [Define 1 if timegm is available]))
 
 AC_CHECK_MEMBER([struct tm.tm_gmtoff],
                 [AC_DEFINE(HAVE_TM_GMTOFF, 1,
@@ -525,7 +525,7 @@ if test "x${enable_joliet}" != "xno"; then
   fi
   if test "x$joliet_supported" = "xyes"; then 
      AC_DEFINE(HAVE_JOLIET, [1], 
-     [Define to 1 if you want ISO-9660 Joliet extension support. 
+     [Define 1 if you want ISO-9660 Joliet extension support. 
      On most platform, this requires libiconv to be installed.])
      HAVE_JOLIET=1
   else
@@ -539,7 +539,7 @@ AC_ARG_ENABLE(rock,
 	enable_rock=$enableval, enable_rock=no)
 if test "x${enable_rock}" != "xno"; then
    AC_DEFINE(HAVE_ROCK, [1], 
-   [Define to 1 if you want ISO-9660 Rock-Ridge extension support.])
+   [Define 1 if you want ISO-9660 Rock-Ridge extension support.])
    HAVE_ROCK=1
 fi
 AC_SUBST(HAVE_ROCK)
@@ -672,7 +672,7 @@ AC_CONFIG_FILES([test/check_iso.sh], [chmod +x test/check_iso.sh])
 AC_CONFIG_FILES([test/check_nrg.sh], [chmod +x test/check_nrg.sh])
 AC_OUTPUT
 
-AC_MSG_RESULT([
+AC_MSG_NOTICE([
 Using CD-ROM drivers : $cd_drivers
 Building cd-info     : $(test "x$enable_cd_info" = "xyes" && echo yes || echo no)
 Building cd-read     : $(test "x$enable_cd_read" = "xyes" && echo yes || echo no)

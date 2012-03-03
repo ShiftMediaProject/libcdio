@@ -1,6 +1,3 @@
-Geoff Bailey
-  FreeBSD debugging & testing
-
 Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
   some GNU/Linux and CD-Text patches
 
@@ -20,6 +17,9 @@ Frank Endres
 Frantisek Dvorak <valtri at atlas.cz>:
   bug reports and miscellaneous fixes
 
+Geoff Bailey
+  FreeBSD debugging & testing
+
 Heiner <h.eichmann at gmx.de>
   FreeBSD CAM support and FreeBSD debugging & testing
 
@@ -35,12 +35,12 @@ Justin F. Hallett <thesin at southofheaven.org>
 KO Myung-Hun <komh@chollian.net>
   OS2 Driver
 
-Leon Merten Lohse 
-  Redo CD-Text handling
-
 Kris Verbeeck <airborne at advalvas.be>:
   CDDB library support from libcddb http://libcddb.sourceforge.net
   Gentoo ebuild-file
+
+Leon Merten Lohse 
+  Redo CD-Text handling
 
 Manfred Tremmel <Manfred.Tremmel at iiv.de>:
   RPM spec file and inclusion of libcdio into
@@ -54,6 +54,9 @@ Nicolas Boullis <nboullis at debian.org>
 
 Patrick Guimond
   CD-Extra audio data boundaries
+
+Pete Batard
+  UDF support
 
 Peter Hartley
   Cross-compiling to mingw32
