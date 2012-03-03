@@ -1,7 +1,5 @@
 /*
-  $Id: cdtext.cpp,v 1.4 2008/03/24 15:30:57 karl Exp $
-
-  Copyright (C) 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2009, 2012 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -23,7 +21,6 @@
  */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_STDIO_H
@@ -41,16 +38,17 @@
 
 static void 
 print_cdtext_track_info(CdioDevice *device, track_t i_track, 
-			const char *psz_msg) {
-  cdtext_t *cdtext = device->getCdtext(0);
+                        const char *psz_msg) {
+  cdtext_t *cdtext = device->getCdtext();
   if (NULL != cdtext) {
     cdtext_field_t i;
     
     printf("%s\n", psz_msg);
     
     for (i= (cdtext_field_t) MIN_CDTEXT_FIELD; i < MAX_CDTEXT_FIELDS; i++) {
-      if (cdtext->field[i]) {
-	printf("\t%s: %s\n", cdtext_field2str(i), cdtext->field[i]);
+      if (cdtext_get_const(i, i_track, cdtext)) {
+        printf("\t%s: %s\n", cdtext_field2str(i), 
+               cdtext_get_const(i, i_track, cdtext));
       }
     }
   }

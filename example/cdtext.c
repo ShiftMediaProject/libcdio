@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2006, 2008, 2009, 2011
+  Copyright (C) 2004, 2005, 2006, 2008, 2009, 2011, 2012
  Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
@@ -35,70 +35,71 @@
 
 static void 
 print_cdtext_track_info(cdtext_t *cdtext, track_t i_track, const char *psz_msg) {
-  cdtext_field_t i;
-  
-  printf("%s\n", psz_msg);
-  
-  for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
-    if (cdtext_get_const(i, i_track, cdtext)) {
-      printf("\t%s: %s\n", cdtext_field2str(i), cdtext_get_const(i, i_track, cdtext));
-    }
-  }
-
-}
+    cdtext_field_t i;
     
+    printf("%s\n", psz_msg);
+    
+    for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
+        if (cdtext_get_const(i, i_track, cdtext)) {
+            printf("\t%s: %s\n", cdtext_field2str(i), cdtext_get_const(i, i_track, cdtext));
+        }
+    }
+    
+}
+
 static void 
 print_disc_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
-  track_t i_last_track = i_first_track+i_tracks;
-  discmode_t cd_discmode = cdio_get_discmode(p_cdio);
-  cdtext_t *cdtext = cdio_get_cdtext(p_cdio);
-
-  printf("%s\n", discmode2str[cd_discmode]);
-
-  if (NULL == cdtext)
-  {
-    printf("\nNo CD-Text found on Disc.");
-    return;
-  }
-
-  printf("Encoding: %s; Language: %s\n", cdtext->encoding, cdtext->language);
-  print_cdtext_track_info(cdtext, 0, "\nCD-Text for Disc:");
-  for ( ; i_first_track < i_last_track; i_first_track++ ) {
-    char psz_msg[50];
-    snprintf(psz_msg, sizeof(psz_msg), "CD-Text for Track %d:", i_first_track);
-    print_cdtext_track_info(cdtext, i_first_track, psz_msg);
-  }
+    track_t i_last_track = i_first_track+i_tracks;
+    discmode_t cd_discmode = cdio_get_discmode(p_cdio);
+    cdtext_t *cdtext = cdio_get_cdtext(p_cdio);
+    
+    printf("%s\n", discmode2str[cd_discmode]);
+    
+    if (NULL == cdtext)
+    {
+        printf("\nNo CD-Text found on Disc.");
+        return;
+    }
+    
+    printf("Encoding: %s; Language: %s\n", cdtext->encoding, cdtext->language);
+    print_cdtext_track_info(cdtext, 0, "\nCD-Text for Disc:");
+    for ( ; i_first_track < i_last_track; i_first_track++ ) {
+        char psz_msg[50];
+        snprintf(psz_msg, sizeof(psz_msg), "CD-Text for Track %d:", 
+                 i_first_track);
+        print_cdtext_track_info(cdtext, i_first_track, psz_msg);
+    }
 }
 
 int
 main(int argc, const char *argv[])
 {
-  track_t i_first_track;
-  track_t i_tracks;
-  CdIo_t *p_cdio       = cdio_open ("../test/cdda.cue", DRIVER_BINCUE);
-
-
-  if (NULL == p_cdio) {
-    printf("Couldn't open ../test/cdda.cue with BIN/CUE driver.\n");
-  } else {
+    track_t i_first_track;
+    track_t i_tracks;
+    CdIo_t *p_cdio       = cdio_open ("../test/cdda.cue", DRIVER_BINCUE);
+    
+    
+    if (NULL == p_cdio) {
+        printf("Couldn't open ../test/cdda.cue with BIN/CUE driver.\n");
+    } else {
+        i_first_track = cdio_get_first_track_num(p_cdio);
+        i_tracks      = cdio_get_num_tracks(p_cdio);
+        print_disc_info(p_cdio, i_tracks, i_first_track);
+        cdio_destroy(p_cdio);
+    }
+    
+    p_cdio = cdio_open (NULL, DRIVER_DEVICE);
     i_first_track = cdio_get_first_track_num(p_cdio);
     i_tracks      = cdio_get_num_tracks(p_cdio);
-    print_disc_info(p_cdio, i_tracks, i_first_track);
+    
+    if (NULL == p_cdio) {
+        printf("Couldn't find CD\n");
+        return 77;
+    } else {
+        print_disc_info(p_cdio, i_tracks, i_first_track);
+    }
+    
     cdio_destroy(p_cdio);
-  }
-
-  p_cdio = cdio_open (NULL, DRIVER_DEVICE);
-  i_first_track = cdio_get_first_track_num(p_cdio);
-  i_tracks      = cdio_get_num_tracks(p_cdio);
-
-  if (NULL == p_cdio) {
-    printf("Couldn't find CD\n");
-    return 77;
-  } else {
-    print_disc_info(p_cdio, i_tracks, i_first_track);
-  }
-
-  cdio_destroy(p_cdio);
-  
-  return 0;
+    
+    return 0;
 }
