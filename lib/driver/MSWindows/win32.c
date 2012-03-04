@@ -357,7 +357,7 @@ free_win32 (void *p_user_data)
   if( p_env->h_device_handle )
     CloseHandle( p_env->h_device_handle );
   if( p_env->hASPI )
-    FreeLibrary( p_env->hASPI );
+    FreeLibrary( (HMODULE)p_env->hASPI );
 
   free (p_env);
 }
