@@ -70,7 +70,7 @@ static const char _rcsid[] = "$Id: win32.c,v 1.37 2008/04/21 18:30:21 karl Exp $
 #include <sys/types.h>
 #endif
 
-#if defined (MSVC) || defined (_XBOX)
+#if defined (_MSC_VER) || defined (_XBOX)
 #undef IN
 #else
 #include "aspi32.h"
@@ -199,7 +199,7 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
 #else
   MCIERROR mci_error;
   
-  mci_error = mciSendCommand(id, msg, flags, (DWORD)arg);
+  mci_error = mciSendCommand(id, msg, flags, (DWORD_PTR)arg);
   if ( mci_error ) {
     char error[256];
     
@@ -357,7 +357,7 @@ free_win32 (void *p_user_data)
   if( p_env->h_device_handle )
     CloseHandle( p_env->h_device_handle );
   if( p_env->hASPI )
-    FreeLibrary( (HMODULE)p_env->hASPI );
+    FreeLibrary( p_env->hASPI );
 
   free (p_env);
 }
@@ -597,7 +597,6 @@ open_close_media_win32 (const char *psz_win32_drive, DWORD command_flags)
   return DRIVER_OP_UNSUPPORTED;
 #else
   MCI_OPEN_PARMS op;
-  MCI_STATUS_PARMS st;
   DWORD i_flags;
   int ret;
     
@@ -610,7 +609,6 @@ open_close_media_win32 (const char *psz_win32_drive, DWORD command_flags)
     MCI_OPEN_ELEMENT | MCI_OPEN_SHAREABLE;
   
   if( _cdio_mciSendCommand( 0, MCI_OPEN, i_flags, &op ) ) {
-    st.dwItem = MCI_STATUS_READY;
     /* Eject disc */
     ret = _cdio_mciSendCommand( op.wDeviceID, MCI_SET, command_flags, 0 ) == 0;
     /* Release access to the device */
