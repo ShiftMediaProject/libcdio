@@ -40,16 +40,10 @@
 # include <string.h>
 #endif
 #if !defined(HAVE_SLEEP) && defined(_WIN32)
-# include <windows.h>
+#include <windows.h>
+#define sleep(s) Sleep(1000*s)
 #endif
 
-#ifndef HAVE_USLEEP
-# error usleep() unimplemented
-# if !defined(HAVE_SLEEP) && defined(_WIN32)
-#  include <windows.h>
-#  define sleep(s) Sleep(1000*s)
-# endif
-#endif
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
 #include <cdio/mmc_cmds.h>
