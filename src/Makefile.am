@@ -86,6 +86,6 @@ EXTRA_DIST = cd-drive.help2man cd-info.help2man cd-read.help2man \
 
 if MAINTAINER_MODE
 $(man_MANS): %.1: %$(EXEEXT) %.help2man 
-	-$(HELP2MAN) --opt-include=$(srcdir)/$(<:.exe=).help2man --no-info ./$< | sed -re 's/[lL][tT]-//' >$@ 
+	-$(HELP2MAN) --opt-include=$(srcdir)/$(<:.exe=).help2man --no-info ./$< | @SED@ -re 's/[lL][tT]-//' >$@ 
 endif
 MAINTAINERCLEANFILES = $(man_MANS) *.rej *.orig

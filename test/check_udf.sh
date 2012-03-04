@@ -17,11 +17,11 @@
 # Tests to see that CD reading is correct (via cd-read). 
 
 if test "X$abs_top_srcdir" = "X" ; then
-  abs_top_srcdir=/src/external-vcs/libcdio
+  abs_top_srcdir=/home/rocky/src/external-vcs/libcdio
 fi
 
 if test "X$top_builddir" = "X" ; then
-  top_builddir=/src/external-vcs/libcdio
+  top_builddir=/home/rocky/src/external-vcs/libcdio
 fi
 
 if test ! -x $top_builddir/example/extract ; then
