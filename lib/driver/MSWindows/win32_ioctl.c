@@ -31,12 +31,19 @@
 # include "NtScsi.h"
 # include "undocumented.h"
 #else
+#if defined (__MINGW64__)
+# define _NTSRB_ /* Bad things happen if srb.h gets included */
+# include <windows.h>
+# include <ntddcdrm.h>
+# include <ntddscsi.h>
+#else
 # include <ddk/ntddcdrm.h>
 # include <ddk/ntddscsi.h>
+#endif
 # include <ddk/scsi.h>
 #endif
 
-#ifdef WIN32
+#if defined (_WIN32)
 #include <windows.h>
 #endif
 

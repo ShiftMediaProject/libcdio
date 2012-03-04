@@ -43,6 +43,7 @@ const char ISO_XA_MARKER_STRING[] = {'C', 'D', '-', 'X', 'A', '0', '0', '1'};
 
 /* Private headers */
 #include "cdio_assert.h"
+#include "filemode.h"
 
 /** The below variable is trickery to force enum symbol values to be
     recorded in debug symbol tables. It is used to allow one to refer

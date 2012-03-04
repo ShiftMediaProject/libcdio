@@ -46,7 +46,7 @@
 # include <string.h>
 #endif
 
-#ifdef HAVE_UNISTD_H // readlink
+#ifdef HAVE_UNISTD_H /* readlink */
 # include <unistd.h>
 #endif
 

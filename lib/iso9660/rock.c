@@ -34,16 +34,10 @@
 # include <sys/stat.h>
 #endif
 
-#ifndef HAVE_S_ISLNK
-# define S_ISLNK(s) ((void)s,0)
-#endif
-#ifndef HAVE_S_ISSOCK
-# define S_ISSOCK(s) ((void)s,0)
-#endif
-
 #include <cdio/iso9660.h>
 #include <cdio/logging.h>
 #include <cdio/bytesex.h>
+#include "filemode.h"
 
 #define CDIO_MKDEV(ma,mi)	((ma)<<16 | (mi))
 
@@ -112,7 +106,7 @@ realloc_symlink(/*in/out*/ iso9660_stat_t *p_stat, uint8_t i_grow)
 
 #define SETUP_ROCK_RIDGE(DE,CHR,LEN)	      		      	\
   {								\
-    LEN= sizeof(iso9660_dir_t) + DE->filename_len;		\
+    LEN= sizeof(iso9660_dir_t) + DE->filename.len;		\
     if(LEN & 1) LEN++;						\
     CHR = ((unsigned char *) DE) + LEN;				\
     LEN = *((unsigned char *) DE) - LEN;			\
@@ -185,10 +179,10 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
 	break;
       case SIG('C','E'): 
 	{
-	  iso711_t i_fname = from_711(p_iso9660_dir->filename_len);
-	  if ('\0' == p_iso9660_dir->filename[0] && 1 == i_fname)
+	  iso711_t i_fname = from_711(p_iso9660_dir->filename.len);
+	  if ('\0' == p_iso9660_dir->filename.str[1] && 1 == i_fname)
 	    break;
-	  if ('\1' == p_iso9660_dir->filename[0] && 1 == i_fname)
+	  if ('\1' == p_iso9660_dir->filename.str[1] && 1 == i_fname)
 	    break;
 	}
 	CHECK_CE;
@@ -465,7 +459,7 @@ parse_rock_ridge_stat_internal(iso9660_dir_t *p_iso9660_dir,
       case SIG('R','E'):
 	cdio_warn("Attempt to read p_stat for relocated directory");
 	goto out;
-#if FINISHED
+#ifdef FINISHED
       case SIG('C','L'): 
 	{
 	  iso9660_stat_t * reloc;
