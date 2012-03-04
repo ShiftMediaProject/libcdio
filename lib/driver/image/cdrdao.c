@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2011 
+  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2011, 2012
   Rocky Bernstein <rocky@gnu.org>
     toc reading routine adapted from cuetools
   Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
@@ -54,6 +54,11 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#else
+#define PRId64 "lld"
+#endif
 
 #include <ctype.h>
 
@@ -72,13 +77,13 @@ static bool parse_tocfile (_img_private_t *cd, const char *p_toc_name);
 
 static bool
 check_track_is_blocksize_multiple(const char *psz_fname, 
-				  track_t i_track, long i_size, 
+				  track_t i_track, off_t i_size, 
 				  uint16_t i_blocksize)
 {
   if (i_size % i_blocksize) {
-    cdio_info ("image %s track %d size (%ld) not a multiple"
+    cdio_info ("image %s track %d size (%" PRId64 ") not a multiple"
 	       " of the blocksize (%ld)", 
-	       psz_fname ? psz_fname : "unknown??", i_track, i_size, 
+	       psz_fname ? psz_fname : "unknown??", i_track, (int64_t)i_size, 
 	       (long int) i_blocksize);
     if (i_size % M2RAW_SECTOR_SIZE == 0)
       cdio_info ("this may be a 2336-type disc image");
@@ -150,12 +155,12 @@ _lseek_cdrdao (void *user_data, off_t offset, int whence)
     track_info_t  *this_track=&(env->tocent[i]);
     env->pos.index = i;
     if ( (this_track->sec_count*this_track->datasize) >= offset) {
-      int blocks            = offset / this_track->datasize;
-      int rem               = offset % this_track->datasize;
-      int block_offset      = blocks * this_track->blocksize;
+      int blocks            = (int) (offset / this_track->datasize);
+      int rem               = (int) (offset % this_track->datasize);
+      off_t block_offset    = blocks * this_track->blocksize;
       real_offset          += block_offset + rem;
       env->pos.buff_offset = rem;
-      env->pos.lba        += blocks;
+      env->pos.lba        += (lba_t)blocks;
       break;
     }
     real_offset   += this_track->sec_count*this_track->blocksize;
@@ -191,7 +196,7 @@ _read_cdrdao (void *user_data, void *data, size_t size)
   ssize_t skip_size = this_track->datastart + this_track->endsize;
 
   while (size > 0) {
-    int rem = this_track->datasize - env->pos.buff_offset;
+    int rem = (int) (this_track->datasize - env->pos.buff_offset);
     if (size <= rem) {
       this_size = cdio_stream_read(this_track->data_source, buf, size, 1);
       final_size += this_size;
@@ -239,7 +244,7 @@ get_disc_last_lsn_cdrdao (void *p_user_data)
   _img_private_t *p_env = p_user_data;
   track_t i_leadout = p_env->gen.i_tracks;
   uint16_t i_blocksize  = p_env->tocent[i_leadout-1].blocksize;
-  long i_size;
+  off_t i_size;
 
   if (p_env->tocent[i_leadout-1].sec_count) {
     i_size = p_env->tocent[i_leadout-1].sec_count;
@@ -261,7 +266,7 @@ get_disc_last_lsn_cdrdao (void *p_user_data)
     if (i_size < 0) {
       cdio_error ("Disc data size too small for track specification in image %s",
 		  p_env->gen.source_name);
-      return i_size;
+      return (lsn_t)i_size;
     }
     if (check_track_is_blocksize_multiple(p_env->tocent[i_leadout-1].filename, 
 					  i_leadout-1, i_size, i_blocksize)) {
@@ -275,7 +280,7 @@ get_disc_last_lsn_cdrdao (void *p_user_data)
   i_size += p_env->tocent[i_leadout-1].start_lba;
   i_size -= CDIO_PREGAP_SECTORS;
 
-  return i_size;
+  return (lsn_t)i_size;
 }
 
 #define MAXLINE 512
@@ -678,8 +683,6 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 		 || 0 == strcmp ("AUDIOFILE", psz_keyword)) {
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
-	    long i_size;
-
 	    /* Handle "<filename>" */
 	    if (cd) {
 	      const char *dirname = cdio_dirname(psz_cue_name);
@@ -692,7 +695,6 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 			   psz_cue_name, i_line, psz_field);
 		goto err_exit;
 	      }
-	      i_size = cdio_stream_stat(cd->tocent[i].data_source);
 	    } else {
 	      CdioDataSource_t *s = cdio_stdio_new (psz_field);
 	      if (!s) {
@@ -701,7 +703,6 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 			  psz_cue_name, i_line, psz_field);
 		goto err_exit;
 	      }
-	      i_size = cdio_stream_stat(s);
 	      cdio_stdio_destroy (s);
 	    }
 	  }
@@ -730,7 +731,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	      goto err_exit;
 	    }
 	    if (cd) {
-	      long i_size = cdio_stream_stat(cd->tocent[i].data_source);
+	      off_t i_size = cdio_stream_stat(cd->tocent[i].data_source);
 	      if (lba) {
 		if ( (lba * cd->tocent[i].datasize) > i_size) {
 		  cdio_log(log_level, 
@@ -739,7 +740,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 		  goto err_exit;
 		}
 	      } else {
-		lba = i_size / cd->tocent[i].blocksize;
+		lba = (lba_t) (i_size / cd->tocent[i].blocksize);
 	      }
 	      cd->tocent[i].sec_count = lba;
 	    }
@@ -819,14 +820,14 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	    if (cd) {
 	      if (i) {
 		uint16_t i_blocksize = cd->tocent[i-1].blocksize;
-		long i_size      = 
+		off_t i_size      = 
 		  cdio_stream_stat(cd->tocent[i-1].data_source);
 
 		  check_track_is_blocksize_multiple(cd->tocent[i-1].filename, 
 						    i-1, i_size, i_blocksize);
 		/* Append size of previous datafile. */
-		cd->tocent[i].start_lba = cd->tocent[i-1].start_lba + 
-		  (i_size / i_blocksize);
+		cd->tocent[i].start_lba = (lba_t) (cd->tocent[i-1].start_lba + 
+		  (i_size / i_blocksize));
 	      }
 	      cd->tocent[i].offset = 0;
 	      cd->tocent[i].start_lba += CDIO_PREGAP_SECTORS;

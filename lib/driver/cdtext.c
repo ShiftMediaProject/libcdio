@@ -227,7 +227,7 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
   memset( buffer, 0x00, sizeof(buffer) );
   idx = 0;
   
-  bzero(&p_blocksize, sizeof(CDText_blocksize_t));
+  memset( &p_blocksize, 0x00, sizeof(CDText_blocksize_t) );
 
   p_data = (CDText_data_t *) wdata;
   if (0 != i_data % sizeof(CDText_data_t)) {

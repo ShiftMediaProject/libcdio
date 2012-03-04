@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008, 2011
+  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008, 2011, 2012
     Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     cue parsing routine adapted from cuetools
@@ -51,6 +51,12 @@
 #ifdef HAVE_GLOB_H
 #include <glob.h>
 #endif
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#else
+#define PRId64 "lld"
+#endif
+
 #include <ctype.h>
 
 #include "filemode.h"
@@ -130,12 +136,12 @@ _lseek_bincue (void *p_user_data, off_t offset, int whence)
     track_info_t  *this_track=&(p_env->tocent[i]);
     p_env->pos.index = i;
     if ( (this_track->sec_count*this_track->datasize) >= offset) {
-      int blocks            = offset / this_track->datasize;
-      int rem               = offset % this_track->datasize;
-      int block_offset      = blocks * this_track->blocksize;
+      int blocks            = (int) (offset / this_track->datasize);
+      int rem               = (int) (offset % this_track->datasize);
+      off_t block_offset    = blocks * this_track->blocksize;
       real_offset          += block_offset + rem;
       p_env->pos.buff_offset = rem;
-      p_env->pos.lba        += blocks;
+      p_env->pos.lba       += (lba_t) blocks;
       break;
     }
     real_offset   += this_track->sec_count*this_track->blocksize;
@@ -171,7 +177,7 @@ _read_bincue (void *p_user_data, void *data, size_t size)
   ssize_t skip_size = this_track->datastart + this_track->endsize;
 
   while (size > 0) {
-    long int rem = this_track->datasize - p_env->pos.buff_offset;
+    long int rem = (long int) (this_track->datasize - p_env->pos.buff_offset);
     if ((long int) size <= rem) {
       this_size = cdio_stream_read(p_env->gen.data_source, buf, size, 1);
       final_size += this_size;
@@ -214,14 +220,14 @@ static lsn_t
 get_disc_last_lsn_bincue (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
-  long size;
+  off_t size;
 
   size = cdio_stream_stat (p_env->gen.data_source);
 
   if (size % CDIO_CD_FRAMESIZE_RAW)
     {
-      cdio_warn ("image %s size (%ld) not multiple of blocksize (%d)", 
-		 p_env->gen.source_name, size, CDIO_CD_FRAMESIZE_RAW);
+      cdio_warn ("image %s size (%" PRId64 ") not multiple of blocksize (%d)", 
+		 p_env->gen.source_name, (int64_t)size, CDIO_CD_FRAMESIZE_RAW);
       if (size % M2RAW_SECTOR_SIZE == 0)
 	cdio_warn ("this may be a 2336-type disc image");
       else if (size % CDIO_CD_FRAMESIZE_RAW == 0)
@@ -231,7 +237,7 @@ get_disc_last_lsn_bincue (void *p_user_data)
 
   size /= CDIO_CD_FRAMESIZE_RAW;
 
-  return size;
+  return (lsn_t)size;
 }
 
 #define MAXLINE 4096		/* maximum line length + 1 */
@@ -328,7 +334,6 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
     if(NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
       if (cd) {
         uint8_t cdt_data[MAX_CDTEXT_DATA_LENGTH+4];
-        uint8_t *ptr;
         int size;
         CdioDataSource_t *source;
 	const char *dirname = cdio_dirname(psz_cue_name);
@@ -347,11 +352,8 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 
         /* cut header */
         if (cdt_data[0] > 0x80) {
-          ptr = &cdt_data[4];
           size -= 4;
         }
-        else
-          ptr = cdt_data;
 
         /* init cdtext */
         if (NULL == cd->gen.cdtext) {

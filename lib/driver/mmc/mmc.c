@@ -333,7 +333,7 @@ mmc_read_cdtext_private ( void *p_user_data,
   generic_img_private_t *p_env = p_user_data;
   mmc_cdb_t  cdb = {{0, }};
   unsigned char * wdata;
-  int             i_status, i_errno;
+  int             i_status;
 
   if ( ! p_env || ! run_mmc_cmd || p_env->b_cdtext_error )
     return false;
@@ -361,7 +361,6 @@ mmc_read_cdtext_private ( void *p_user_data,
 
   if (i_status != 0) {
     cdio_info ("CD-Text read failed for header: %s\n", strerror(errno));  
-	  i_errno = errno;
     p_env->b_cdtext_error = true;
     free(wdata);
     return NULL;
@@ -383,7 +382,6 @@ mmc_read_cdtext_private ( void *p_user_data,
                             i_cdtext, wdata);
     if (i_status != 0) {
       cdio_info ("CD-Text read for text failed: %s\n", strerror(errno));  
-      i_errno = errno;
       p_env->b_cdtext_error = true;
       free(wdata);
       return NULL;
