@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010
+  Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2012
   Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
@@ -26,11 +26,14 @@
 # include <sys/stat.h>
 #endif
 
-#ifndef HAVE_S_ISLNK
-# define S_ISLNK(s) ((void)s,0)
+/* MSYS 1.0.10 with MinGW 3.4.2 (and perhaps others) don't have
+   S_ISSOCK() or S_ISLNK() macros, so we'll roll our own. */
+#if !defined(HAVE_S_ISSOCK) && !defined(S_ISSOCK)
+#define S_ISSOCK(st_mode) ((((st_mode)) & 0170000) == (0140000))
 #endif
-#ifndef HAVE_S_ISSOCK
-# define S_ISSOCK(s) ((void)s,0)
+
+#if !defined(HAVE_S_ISLNK) && !defined(S_ISLNK)
+#define S_ISLNK(st_mode) ((((st_mode)) & 0170000) == (0010000))
 #endif
 
 cdio_log_handler_t gl_default_cdio_log_handler = NULL;
