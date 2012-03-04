@@ -59,7 +59,7 @@
 
 #include <ctype.h>
 
-#include "filemode.h"
+#include "portable.h"
 /* reader */
 
 #define DEFAULT_CDIO_DEVICE "videocd.bin"

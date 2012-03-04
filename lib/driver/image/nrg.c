@@ -178,8 +178,8 @@ static bool
 parse_nrg (_img_private_t *p_env, const char *psz_nrg_name, 
 	   const cdio_log_level_t log_level)
 {
-  long unsigned int footer_start;
-  long unsigned int size;
+  off_t footer_start;
+  off_t size;
   char *footer_buf = NULL;
   if (!p_env) return false;
   size = cdio_stream_stat (p_env->gen.data_source);
@@ -209,11 +209,11 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 
     cdio_assert ((size - footer_start) <= 4096);
 
-    footer_buf = calloc(1, size - footer_start);
+    footer_buf = calloc(1, (size_t)(size - footer_start));
 
     cdio_stream_seek (p_env->gen.data_source, footer_start, SEEK_SET);
     cdio_stream_read (p_env->gen.data_source, footer_buf, 
-		      size - footer_start, 1);
+		      (size_t)(size - footer_start), 1);
   }
   {
     int pos = 0;
@@ -844,9 +844,9 @@ _lseek_nrg (void *p_user_data, off_t offset, int whence)
     track_info_t  *this_track=&(p_env->tocent[i]);
     p_env->pos.index = i;
     if ( (this_track->sec_count*this_track->datasize) >= offset) {
-      int blocks            = offset / this_track->datasize;
-      int rem               = offset % this_track->datasize;
-      int block_offset      = blocks * this_track->blocksize;
+      int blocks            = (int) (offset / this_track->datasize);
+      int rem               = (int) (offset % this_track->datasize);
+      off_t block_offset    = blocks * this_track->blocksize;
       real_offset          += block_offset + rem;
       p_env->pos.buff_offset = rem;
       p_env->pos.lba        += blocks;

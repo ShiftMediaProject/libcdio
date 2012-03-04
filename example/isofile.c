@@ -31,7 +31,7 @@
 
 /* portable.h has to come first else _FILE_OFFSET_BITS are redefined in
    say opensolaris. */
-#include "filemode.h"
+#include "portable.h"
 
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>

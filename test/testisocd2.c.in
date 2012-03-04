@@ -17,6 +17,7 @@
 */
 
 /* Tests reading ISO 9660 info from an ISO 9660 image.  */
+#include "portable.h"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

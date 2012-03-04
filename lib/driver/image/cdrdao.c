@@ -62,7 +62,7 @@
 
 #include <ctype.h>
 
-#include "filemode.h"
+#include "portable.h"
 
 /* reader */
 

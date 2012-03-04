@@ -26,6 +26,7 @@
 #include <cdio/util.h>
 #include <cdio/logging.h>
 #include "cdio_assert.h"
+#include "portable.h"
 
 #include <stdio.h>
 #ifdef HAVE_STRING_H

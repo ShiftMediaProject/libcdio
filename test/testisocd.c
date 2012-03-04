@@ -17,17 +17,7 @@
 */
 
 /* Tests reading ISO 9660 info from a CD.  */
-
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-# define __CDIO_CONFIG_H__ 1
-#endif
-
-#include "filemode.h"
-
-#include <cdio/cdio.h>
-#include <cdio/iso9660.h>
-#include <cdio/cd_types.h>
+#include "portable.h"
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -47,9 +37,10 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
+
+#include <cdio/cdio.h>
+#include <cdio/iso9660.h>
+#include <cdio/cd_types.h>
 
 #define SKIP_TEST_RC 77
 
