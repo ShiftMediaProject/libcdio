@@ -111,7 +111,7 @@ static int udf_extract_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const cha
     } else {
       fd = fopen(psz_fullpath, "wb");
       if (fd == NULL) {
-        fprintf(stderr, "  Unable to create file\n");
+        fprintf(stderr, "  Unable to create file %s\n", psz_fullpath);
         goto out;
       }
       i_file_length = udf_get_file_length(p_udf_dirent);
@@ -124,7 +124,8 @@ static int udf_extract_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const cha
         }
         fwrite(buf, (size_t)MIN(i_file_length, i_read), 1, fd);
         if (ferror(fd)) {
-          fprintf(stderr, "  Error writing file: %s\n", strerror(errno));
+          fprintf(stderr, "  Error writing file %s: %s\n", psz_fullpath, 
+                  strerror(errno));
           goto out;
         }
         i_file_length -= i_read;
@@ -198,7 +199,8 @@ static int iso_extract_files(iso9660_t* p_iso, const char *psz_path)
         }
         fwrite(buf, (size_t)MIN(i_file_length, ISO_BLOCKSIZE), 1, fd);
         if (ferror(fd)) {
-          fprintf(stderr, "  Error writing file: %s\n", strerror(errno));
+	  fprintf(stderr, "  Error writing file %s: %s\n", psz_iso_name,
+		  strerror(errno));
           goto out;
         }
         i_file_length -= ISO_BLOCKSIZE;
