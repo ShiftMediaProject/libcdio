@@ -670,6 +670,7 @@ AC_CONFIG_FILES([
 AC_CONFIG_FILES([test/check_cue.sh], [chmod +x test/check_cue.sh])
 AC_CONFIG_FILES([test/check_iso.sh], [chmod +x test/check_iso.sh])
 AC_CONFIG_FILES([test/check_nrg.sh], [chmod +x test/check_nrg.sh])
+AC_CONFIG_FILES([test/check_udf.sh], [chmod +x test/check_udf.sh])
 AC_OUTPUT
 
 AC_MSG_NOTICE([

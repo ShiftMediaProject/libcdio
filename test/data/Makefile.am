@@ -47,6 +47,7 @@ check_DATA = \
         cdtext.toc     \
         data5.toc      \
         data6.toc      \
-        data7.toc
+        data7.toc      \
+        test-udf1.iso
 
 EXTRA_DIST = $(check_DATA)
