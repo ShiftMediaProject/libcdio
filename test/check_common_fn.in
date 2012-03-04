@@ -149,7 +149,7 @@ test_legal_header() {
   "${cmd}" ${opts} > ${outfile} 2>&1
   while read line; do
     @GREP@ "${line}" ${outfile} >/dev/null 2>&1
-    if ! ; then
+    if [ "$?" -ne 0 ] ; then
       echo "$0: Legal header test failed due to missing expected line:"
       echo "  ${line}"
       echo "$0: Failed command:"
