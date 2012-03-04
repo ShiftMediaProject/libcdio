@@ -26,7 +26,7 @@ SUBDIRS = data driver
 
 hack = check_sizeof testassert testgetdevices testischar \
        testisocd testisocd2 testiso9660 test_lib_driver_util \
-       $(testparanoia) testpregap testunconfig
+       $(testparanoia) testpregap
 
 EXTRA_PROGRAMS = testdefault 
 DATA_DIR       = @abs_top_srcdir@/test/data
