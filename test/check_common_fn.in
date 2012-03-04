@@ -25,7 +25,7 @@ if locale -a >/dev/null 2>&1 ; then
   # Note: Solaris 10's shell can't handle $(..) so we use `...`
   LC_TIME=`locale -a | grep 'en_US' | grep -v 'utf8' &2>/dev/null`
 fi
-[[ -z $LC_TIME ]] && {
+[ -z "$LC_TIME" ] && {
   LC_TIME=${LC_TIME:-en_US}
 }>/dev/null 2>&1
 
@@ -148,7 +148,8 @@ test_legal_header() {
   fi
   "${cmd}" ${opts} > ${outfile} 2>&1
   while read line; do
-    if ! grep -q "${line}" ${outfile}; then
+    @GREP@ "${line}" ${outfile} >/dev/null 2>&1
+    if ! ; then
       echo "$0: Legal header test failed due to missing expected line:"
       echo "  ${line}"
       echo "$0: Failed command:"
