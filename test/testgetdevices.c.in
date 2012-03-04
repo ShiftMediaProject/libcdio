@@ -79,6 +79,10 @@ is_in(char **file_list, const char *file)
 int
 main(int argc, const char *argv[])
 {
+#if defined(__MINGW32__)
+  printf("testgetdevices test skipped until drive recording testing issues resolved\n");
+  return 77;
+#else
   char **nrg_images=NULL;
   char **bincue_images=NULL;
   char **imgs;
@@ -189,5 +193,5 @@ main(int argc, const char *argv[])
   cdio_free_device_list(nrg_images);
   cdio_free_device_list(bincue_images);
   return 0;
-  
+#endif
 }
