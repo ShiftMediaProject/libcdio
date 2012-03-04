@@ -297,11 +297,11 @@ mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn,
     uint8_t cdb9 = 0;
     const unsigned int i_timeout = mmc_timeout_ms * (MAX_CD_READ_BLOCKS/2);
 
+    MMC_CMD_SETUP(CDIO_MMC_GPCMD_READ_CD);
+
     /* Catch what may be a common bug. */
     if (NULL == p_buf) return DRIVER_OP_BAD_POINTER;
 
-    MMC_CMD_SETUP(CDIO_MMC_GPCMD_READ_CD);
-    
     CDIO_MMC_SET_READ_TYPE(cdb.field, read_sector_type);
     if (b_digital_audio_play) cdb.field[1] |= 0x2;
     
@@ -397,10 +397,10 @@ mmc_set_speed(const CdIo_t *p_cdio, int i_Kbs_speed, unsigned int i_timeout_ms)
     uint8_t buf[14] = { 0, };
     void * p_buf = &buf;
     const unsigned int i_size = sizeof(buf);
-    if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
-    
     MMC_CMD_SETUP(CDIO_MMC_GPCMD_SET_SPEED);
-    
+
+    if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
+
     /* If the requested speed is less than 1x 176 kb/s this command
        will return an error - it's part of the ATAPI specs. Therefore, 
        test and stop early. */
@@ -464,7 +464,8 @@ mmc_test_unit_ready(const CdIo_t *p_cdio, unsigned int i_timeout_ms)
 {
     const unsigned int i_size = 0;
     void  * p_buf = NULL;
-    if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
     MMC_CMD_SETUP_READ16(CDIO_MMC_GPCMD_TEST_UNIT_READY);
+
+    if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
     return MMC_RUN_CMD(SCSI_MMC_DATA_NONE, i_timeout_ms);
 }

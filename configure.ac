@@ -526,7 +526,7 @@ if test "x${enable_joliet}" != "xno"; then
   if test "x$joliet_supported" = "xyes"; then 
      AC_DEFINE(HAVE_JOLIET, [1], 
      [Define 1 if you want ISO-9660 Joliet extension support. 
-     On most platform, this requires libiconv to be installed.])
+     On most platforms, this requires libiconv to be installed.])
      HAVE_JOLIET=1
   else
      AC_MSG_ERROR([You must have iconv installed.])
