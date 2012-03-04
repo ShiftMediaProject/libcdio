@@ -39,7 +39,7 @@ check_result() {
   cmdline="$cmd $*"
   if test $RC -ne 0 ; then 
     if test $RC -ne $SKIP_TEST_EXITCODE ; then
-      echo "$0: $msg failed in comparing output."
+      echo "$0: $msg failed."
       if test -n "$cmdline" ; then 
         echo "$0: failed command:"
         echo "	$cmdline"

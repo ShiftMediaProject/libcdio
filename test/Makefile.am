@@ -1,4 +1,5 @@
-#   Copyright (C) 2003, 2004, 2006, 2008, 2009, 2010 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2004, 2006, 2008, 2009, 2010 
+#   2012 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -51,8 +52,10 @@ test_lib_driver_util_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 testpregap_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testpregap_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
-check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh \
+check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh check_udf.sh \
                 check_iso.sh  check_fuzzyiso.sh check_opts.sh
+
+check_udf.sh: @abs_top_builddir@/example/extract$(EXEEXT)
 
 check_PROGRAMS = $(hack)
 
@@ -67,7 +70,7 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 	     isofs-m1-read.right cdda-read.right cdtext.right \
 	     copying.right copying-rr.right \
 	     joliet.right joliet-nojoliet.right \
-	     udf102.iso copying.gpl copying-rr.gpl
+	     copying.gpl copying-rr.gpl
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
