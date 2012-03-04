@@ -863,17 +863,18 @@ cdio_get_default_device_win32(void)
 }
 
 /*!  
-  Return true if source_name could be a device containing a CD-ROM.
+  Return true if source_name could be a device containing a CD-ROM and
+  we are on a MS Windows platform.
 */
 bool
 cdio_is_device_win32(const char *source_name)
 {
+#ifdef HAVE_WIN32_CDROM
   unsigned int len;
 
   if (NULL == source_name) return false;
   len = strlen(source_name);
 
-#ifdef HAVE_WIN32_CDROM
   if ((len == 2) && isalpha(source_name[0]) 
 	    && (source_name[len-1] == ':'))
     return true;

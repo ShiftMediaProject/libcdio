@@ -441,16 +441,12 @@ static int
 _read_audio_sectors_solaris (void *p_user_data, void *data, lsn_t i_lsn, 
                              unsigned int i_blocks)
 {
-  struct cdrom_msf solaris_msf;
   msf_t _msf;
   struct cdrom_cdda cdda;
 
   _img_private_t *p_env = p_user_data;
 
   cdio_lba_to_msf (cdio_lsn_to_lba(i_lsn), &_msf);
-  solaris_msf.cdmsf_min0   = cdio_from_bcd8(_msf.m);
-  solaris_msf.cdmsf_sec0   = cdio_from_bcd8(_msf.s);
-  solaris_msf.cdmsf_frame0 = cdio_from_bcd8(_msf.f);
   
   if (p_env->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
