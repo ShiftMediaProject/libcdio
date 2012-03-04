@@ -1,5 +1,5 @@
 /* -*- C -*-
-  Copyright (C) 2010 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2010, 2012 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,19 +22,22 @@
 # include "config.h"
 # define __CDIO_CONFIG_H__ 1
 #endif
-#include <cdio/cdio.h>
-#include <cdio/logging.h>
 
 #ifdef HAVE_STDIO_H
-#include <stdio.h>
+# include <stdio.h>
 #endif
 #ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
+# include <sys/types.h>
 #endif
 #ifdef HAVE_STDLIB_H
-#include <stdlib.h>
+# include <stdlib.h>
 #endif
-#include <string.h>
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+
+#include <cdio/cdio.h>
+#include <cdio/logging.h>
 
 int
 main(int argc, const char *argv[])

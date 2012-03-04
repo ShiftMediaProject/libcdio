@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2008, 2011 
+  Copyright (C) 2003, 2004, 2005, 2008, 2011, 2012
   Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
@@ -25,11 +25,15 @@
 # define __CDIO_CONFIG_H__ 1
 #endif
 
-#include <stdio.h>
-#include <sys/types.h>
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
 #include <cdio/iso9660.h>
+#ifdef HAVE_STDIO_H
+#include <stdio.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
