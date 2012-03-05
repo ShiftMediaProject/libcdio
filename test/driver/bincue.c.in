@@ -118,7 +118,7 @@ main(int argc, const char *argv[])
       printf("Can't open cdda.cue\n");
     } else {
       /* Just test performing some operations. */
-      driver_return_code_t drc = cdio_set_blocksize(p_cdio, 2048);
+      cdio_set_blocksize(p_cdio, 2048);
       char *psz_device;
 
 #ifdef HAVE_CHDIR
@@ -139,7 +139,7 @@ main(int argc, const char *argv[])
                * error. */
               printf("Can't get default device\n");
           }
-          drc = cdio_set_speed(p_cdio, 5);
+          cdio_set_speed(p_cdio, 5);
       }
 
       cdio_destroy(p_cdio);
