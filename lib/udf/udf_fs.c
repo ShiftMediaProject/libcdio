@@ -634,7 +634,7 @@ udf_readdir(udf_dirent_t *p_udf_dirent)
     /* advance to next File Identifier Descriptor */
     /* FIXME: need to advance file entry (fe) as well.  */
     uint32_t ofs = 4 * 
-      ((sizeof(*(p_udf_dirent->fid)) + p_udf_dirent->fid->i_imp_use 
+      ((sizeof(*(p_udf_dirent->fid)) + p_udf_dirent->fid->u.i_imp_use 
 	+ p_udf_dirent->fid->i_file_id + 3) / 4);
     
     p_udf_dirent->fid = 
@@ -661,7 +661,7 @@ udf_readdir(udf_dirent_t *p_udf_dirent)
   if (p_udf_dirent->fid && !udf_checktag(&(p_udf_dirent->fid->tag), TAGID_FID))
     {
       uint32_t ofs = 
-	4 * ((sizeof(*p_udf_dirent->fid) + p_udf_dirent->fid->i_imp_use 
+	4 * ((sizeof(*p_udf_dirent->fid) + p_udf_dirent->fid->u.i_imp_use 
 	      + p_udf_dirent->fid->i_file_id + 3) / 4);
       
       p_udf_dirent->dir_left -= ofs;
@@ -674,19 +674,22 @@ udf_readdir(udf_dirent_t *p_udf_dirent)
 	const unsigned int i_len = p_udf_dirent->fid->i_file_id;
 
 	if (DRIVER_OP_SUCCESS != udf_read_sectors(p_udf, &p_udf_dirent->fe, p_udf->i_part_start 
-			 + p_udf_dirent->fid->icb.loc.lba, 1))
+			 + p_udf_dirent->fid->icb.loc.lba, 1)) {
+		udf_dirent_free(p_udf_dirent);
 		return NULL;
+	}
 
 	if (strlen(p_udf_dirent->psz_name) < i_len) 
 	  p_udf_dirent->psz_name = (char *)
 	    realloc(p_udf_dirent->psz_name, sizeof(char)*i_len+1);
 	
-	unicode16_decode(p_udf_dirent->fid->u.imp_use 
-			 + p_udf_dirent->fid->i_imp_use, 
+	unicode16_decode(p_udf_dirent->fid->u.imp_use.data 
+			 + p_udf_dirent->fid->u.i_imp_use, 
 			 i_len, p_udf_dirent->psz_name);
       }
       return p_udf_dirent;
     }
+  udf_dirent_free(p_udf_dirent);
   return NULL;
 }
 
