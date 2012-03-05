@@ -591,6 +591,7 @@ main(int argc, char *argv[])
     else if (opts.output_file) {
       ssize_t bytes_ret;
       bytes_ret = write(output_fd, buffer, blocklen);
+      (void)bytes_ret; /* Silence unused warnings */
     } else {
       unsigned int i;
       for (i=0; i<blocklen; i++) printf("%c", buffer[i]);

@@ -48,7 +48,7 @@ typedef struct {
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1];
 
   HANDLE h_device_handle; /* device descriptor */
-  long  hASPI;
+  HMODULE hASPI;
   short i_sid;
   short i_lun;
   long  (*lpSendCommand)( void* );

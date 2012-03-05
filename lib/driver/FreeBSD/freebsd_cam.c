@@ -317,7 +317,7 @@ static int sg_init_enumerator(burn_drive_enumerator_t *idx_)
     return -1;
   }
 
-  bzero(&(idx->ccb), sizeof(union ccb));
+  memset(&(idx->ccb), 0, sizeof(union ccb));
 
   idx->ccb.ccb_h.path_id = CAM_XPT_PATH_ID;
   idx->ccb.ccb_h.target_id = CAM_TARGET_WILDCARD;
