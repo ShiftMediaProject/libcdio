@@ -225,17 +225,27 @@ cdio_stdio_new(const char pathname[])
   cdio_stream_io_functions funcs = { NULL, NULL, NULL, NULL, NULL, NULL };
   _UserData *ud = NULL;
   struct CDIO_STAT statbuf;
-  
-  if (CDIO_STAT (pathname, &statbuf) == -1) 
+  char* pathdup;
+
+  if (pathname == NULL)
+    return NULL;
+
+  /* MinGW may require a translated path */
+  pathdup = _cdio_strdup_fixpath(pathname);
+  if (pathdup == NULL)
+    return NULL;
+
+  if (CDIO_STAT (pathdup, &statbuf) == -1) 
     {
       cdio_warn ("could not retrieve file info for `%s': %s", 
-                 pathname, strerror (errno));
+                 pathdup, strerror (errno));
+      free(pathdup);
       return NULL;
     }
 
   ud = calloc (1, sizeof (_UserData));
 
-  ud->pathname = strdup(pathname);
+  ud->pathname = pathdup;
   ud->st_size  = statbuf.st_size; /* let's hope it doesn't change... */
 
   funcs.open   = _stdio_open;

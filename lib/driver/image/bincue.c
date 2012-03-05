@@ -251,7 +251,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   unsigned int i_line=0;            /* line number in file of psz_line. */
   int          i = -1;              /* Position in tocent. Same as 
 				       cd->gen.i_tracks - 1 */
-  char *psz_keyword, *psz_field;
+  char *psz_keyword, *psz_field, *psz_cue_name_dup;
   cdio_log_level_t log_level = (NULL == cd) ? CDIO_LOG_INFO : CDIO_LOG_WARN;
   cdtext_field_t cdtext_key;
 
@@ -261,8 +261,13 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 
   if (NULL == psz_cue_name) 
     return false;
-  
-  fp = fopen (psz_cue_name, "r");
+
+  psz_cue_name_dup = _cdio_strdup_fixpath(psz_cue_name);
+  if (NULL == psz_cue_name_dup) 
+    return false;
+
+  fp = fopen (psz_cue_name_dup, "r");
+  free(psz_cue_name_dup);
   if (fp == NULL) {
     cdio_log(log_level, "error opening %s for reading: %s", 
 	     psz_cue_name, strerror(errno));
