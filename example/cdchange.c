@@ -23,31 +23,25 @@
 #endif
 
 #ifdef HAVE_STDIO_H
-# include <stdio.h>
+#include <stdio.h>
 #endif
-
 #ifdef HAVE_LIMITS_H
-# include <limits.h>
+#include <limits.h>
 #endif
-
 #ifdef HAVE_STDLIB_H
-# include <stdlib.h>
+#include <stdlib.h>
 #endif
-
 #ifdef HAVE_STRING_H
-# include <string.h>
+#include <string.h>
 #endif
-
 #ifdef HAVE_UNISTD_H
-# include <unistd.h>
+#include <unistd.h>
 #endif
-
 #ifdef HAVE_ERRNO_H
-# include <errno.h>
+#include <errno.h>
 #endif 
-
 #ifdef HAVE_WINDOWS_H
-# include <windows.h>
+#include <windows.h>
 #endif
 #if !defined(HAVE_SLEEP) && defined(_WIN32)
 #include <windows.h>

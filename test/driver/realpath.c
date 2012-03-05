@@ -19,33 +19,33 @@
    Unit test for lib/driver/gnu_linux.c
 */
 #ifdef HAVE_CONFIG_H
-# include "config.h"
-# define __CDIO_CONFIG_H__ 1
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_STDIO_H
-# include <stdio.h>
+#include <stdio.h>
 #endif
 #ifdef HAVE_STRING_H
-# include <string.h>
+#include <string.h>
 #endif
 #ifdef HAVE_LIMITS_H
-# include <limits.h>
+#include <limits.h>
 #endif
 #ifdef HAVE_STDLIB_H
-# include <stdlib.h>
+#include <stdlib.h>
 #endif
-
 #ifdef HAVE_SYS_STAT_H
-# include <sys/stat.h>
+#include <sys/stat.h>
 #endif
-
 #ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
+#include <sys/types.h>
 #endif
-
 #ifdef HAVE_UNISTD_H
-# include <unistd.h>
+#include <unistd.h>
+#endif
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
 #endif
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #include <windows.h>
@@ -54,10 +54,6 @@
 #define symlink(oldpath, newpath) CopyFileA(oldpath, newpath, FALSE)
 #else
 #define _mkdir(a) mkdir(a, S_IRWXU)
-#endif
-
-#ifdef HAVE_ERRNO_H
-# include <errno.h>
 #endif
 
 #include <cdio/util.h>

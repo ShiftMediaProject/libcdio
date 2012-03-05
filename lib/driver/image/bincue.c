@@ -23,16 +23,7 @@
    residing inside a disk file (*.bin) and its associated cue sheet.
    (*.cue).
 */
-
-#include "image.h"
-#include "cdio_assert.h"
-#include "cdio_private.h"
-#include "_cdio_stdio.h"
-
-#include <cdio/logging.h>
-#include <cdio/util.h>
-#include <cdio/utf8.h>
-#include <cdio/version.h>
+#include "portable.h"
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -60,7 +51,16 @@
 
 #include <ctype.h>
 
-#include "portable.h"
+#include <cdio/logging.h>
+#include <cdio/util.h>
+#include <cdio/utf8.h>
+#include <cdio/version.h>
+
+#include "image.h"
+#include "cdio_assert.h"
+#include "cdio_private.h"
+#include "_cdio_stdio.h"
+
 /* reader */
 
 #define DEFAULT_CDIO_DEVICE "videocd.bin"

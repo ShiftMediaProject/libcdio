@@ -16,10 +16,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* Tests ISO9660 library routines. */
-
 #ifdef HAVE_CONFIG_H
-# include "config.h"
-# define __CDIO_CONFIG_H__ 1
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
 #endif
 
 #include <ctype.h>
@@ -32,6 +31,7 @@
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
+
 #include <cdio/iso9660.h>
 
 static bool 

@@ -19,11 +19,9 @@
    Unit test for lib/driver/osx.c
 */
 #ifdef HAVE_CONFIG_H
-# include "config.h"
-# define __CDIO_CONFIG_H__ 1
+#include "config.h"
+#define __CDIO_CONFIG_H__ 1
 #endif
-#include <cdio/cdio.h>
-#include <cdio/logging.h>
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -34,7 +32,12 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#ifdef HAVE_STRING_H
 #include <string.h>
+#endif
+
+#include <cdio/cdio.h>
+#include <cdio/logging.h>
 
 int
 main(int argc, const char *argv[])

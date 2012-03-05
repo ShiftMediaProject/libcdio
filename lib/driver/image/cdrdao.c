@@ -22,17 +22,7 @@
    residing inside a disk file (*.bin) and its associated cue sheet.
    (*.cue).
 */
-
-
-#include "image.h"
-#include "cdio_assert.h"
-#include "_cdio_stdio.h"
-
-#include <cdio/logging.h>
-#include <cdio/sector.h>
-#include <cdio/util.h>
-#include <cdio/utf8.h>
-#include <cdio/version.h>
+#include "portable.h"
 
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
@@ -63,7 +53,16 @@
 
 #include <ctype.h>
 
-#include "portable.h"
+#include <cdio/logging.h>
+#include <cdio/sector.h>
+#include <cdio/util.h>
+#include <stdio.h>
+#include <cdio/utf8.h>
+#include <cdio/version.h>
+
+#include "image.h"
+#include "cdio_assert.h"
+#include "_cdio_stdio.h"
 
 /* reader */
 

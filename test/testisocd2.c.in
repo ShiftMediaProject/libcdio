@@ -23,11 +23,6 @@
 # include "config.h"
 #endif
 
-#include "filemode.h"
-#include <cdio/cdio.h>
-#include <cdio/iso9660.h>
-#include <cdio/cd_types.h>
-
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -46,9 +41,11 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
+
+#include <cdio/cdio.h>
+#include <cdio/iso9660.h>
+#include <cdio/cd_types.h>
+#include "filemode.h"
 
 /* Set up a CD-DA image to test on which is in the libcdio distribution. */
 #define ISO9660_IMAGE_PATH "@abs_top_srcdir@/test/data/"
