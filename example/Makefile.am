@@ -90,7 +90,7 @@ udffile_DEPENDENCIES = $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
 udffile_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 check_PROGRAMS      = cdtext device drives \
-                      mmc1 mmc2 mmc2a mmc3 $(paranoia_progs) sample4
+                      mmc1 mmc2 mmc2a mmc3 sample4
 
 TESTS               = $(check_PROGRAMS)
 

@@ -176,13 +176,13 @@ libcdio_la_LDFLAGS = $(libcdio_la_ldflags) -Wl,--version-script=libcdio.la.ver
 libcdio_la_DEPENDENCIES = libcdio.la.ver
 
 libcdio.la.ver: $(libcdio_la_OBJECTS) $(srcdir)/libcdio.sym
-	echo 'CDIO_$(libcdio_la_MAJOR) { ' > $@
-	objs=`for obj in $(libcdio_la_OBJECTS); do sed -ne "s/^pic_object='\(.*\)'$$/\1/p" $$obj; done`; \
+	@echo 'CDIO_$(libcdio_la_MAJOR) { ' > $@
+	@objs=`for obj in $(libcdio_la_OBJECTS); do sed -ne "s/^pic_object='\(.*\)'$$/\1/p" $$obj; done`; \
 	if test -n "$${objs}" ; then \
 	  nm $${objs} | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio.sym; then if test $$first = true; then echo "  global:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@; \
 	  nm $${objs} | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio.sym; then :; else if test $$first = true; then echo "  local:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@; \
 	fi
-	echo '};' >> $@
+	@echo '};' >> $@
 else 
 libcdio_la_LDFLAGS = $(libcdio_la_ldflags)
 endif 

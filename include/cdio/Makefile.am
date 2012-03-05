@@ -44,7 +44,6 @@ dist_libcdioinclude_HEADERS = \
 	mmc_hl_cmds.h \
 	mmc_ll_cmds.h \
 	mmc_util.h \
-	paranoia.h \
 	posix.h \
 	read.h \
 	rock.h \
@@ -57,8 +56,7 @@ dist_libcdioinclude_HEADERS = \
 	utf8.h \
 	util.h \
 	version.h \
-	xa.h \
-	$(paranoiaheaders)
+	xa.h
 
 nodist_libcdioinclude_HEADERS = cdio_config.h
 

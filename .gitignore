@@ -21,7 +21,6 @@
 /libcdio-*.sig
 /libcdio.pc
 /libcdio_cdda.pc
-/libcdio_paranoia.pc
 /libiso9660++.pc
 /libiso9660.pc
 /libtool

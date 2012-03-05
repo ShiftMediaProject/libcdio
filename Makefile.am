@@ -42,8 +42,7 @@ SUBDIRS = doc include lib src test example
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libcdio.pc  \
 	         libiso9660.pc \
-	         libudf.pc \
-		 $(paranoiapcs)
+	         libudf.pc
 
 if ENABLE_CXX_BINDINGS
 pkgconfig_DATA += \
