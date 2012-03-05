@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2012 Pete Batard <pete@akeo.ie>
   Based on samples copyright (c) 2003-2011 Rocky Bernstein <rocky@gnu.org>
-  
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -73,7 +73,19 @@
   free(psz_str);                     \
   psz_str = NULL;
 
-const char *psz_extract_dir;
+static const char *psz_extract_dir;
+static uint8_t i_joliet_level = 0;
+
+static void log_handler (cdio_log_level_t level, const char *message)
+{
+  switch(level) {
+  case CDIO_LOG_DEBUG:
+  case CDIO_LOG_INFO:
+    return;
+  default:
+    printf("cdio %d message: %s\n", level, message);
+  }
+}
 
 static int udf_extract_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const char *psz_path)
 {
@@ -167,8 +179,10 @@ static int iso_extract_files(iso9660_t* p_iso, const char *psz_path)
   psz_basename = &psz_fullpath[i_length];
 
   p_entlist = iso9660_ifs_readdir(p_iso, psz_path);
-  if (!p_entlist)
+  if (!p_entlist) {
+    printf("Could not access %s\n", psz_path);
     return 1;
+  }
 
   _CDIO_LIST_FOREACH (p_entnode, p_entlist) {
     p_statbuf = (iso9660_stat_t*) _cdio_list_node_data(p_entnode);
@@ -176,7 +190,7 @@ static int iso_extract_files(iso9660_t* p_iso, const char *psz_path)
     if ( (strcmp(p_statbuf->filename, ".") == 0)
       || (strcmp(p_statbuf->filename, "..") == 0) )
       continue;
-    iso9660_name_translate(p_statbuf->filename, psz_basename);
+    iso9660_name_translate_ext(p_statbuf->filename, psz_basename, i_joliet_level);
     if (p_statbuf->type == _STAT_DIR) {
       _mkdir(psz_fullpath);
       if (iso_extract_files(p_iso, psz_iso_name))
@@ -221,20 +235,20 @@ out:
 int main(int argc, char** argv)
 {
   iso9660_t* p_iso = NULL;
-  udf_t* p_udf = NULL; 
+  udf_t* p_udf = NULL;
   udf_dirent_t* p_udf_root;
   char *psz_str = NULL;
   char vol_id[UDF_VOLID_SIZE] = "";
   char volset_id[UDF_VOLSET_ID_SIZE+1] = "";
   int r = 0;
 
-  cdio_loglevel_default = CDIO_LOG_DEBUG;
-  
+  cdio_log_set_handler (log_handler);
+
   if (argc < 3) {
     fprintf(stderr, "Usage: extract <iso_image> <extraction_dir>\n");
     return 1;
   }
-  
+
   /* Warn if LFS doesn't appear to be enabled */
   if (sizeof(off_t) < 8) {
     fprintf(stderr, "INFO: Large File Support not detected (required for files >2GB)\n");
@@ -259,7 +273,7 @@ int main(int argc, char** argv)
     goto out;
   }
   vol_id[0] = 0; volset_id[0] = 0;
-  
+
   /* Show basic UDF Volume info */
   if (udf_get_volume_id(p_udf, vol_id, sizeof(vol_id)) > 0)
     fprintf(stderr, "Volume id: %s\n", vol_id);
@@ -275,12 +289,13 @@ int main(int argc, char** argv)
   goto out;
 
 try_iso:
-  p_iso = iso9660_open(argv[1]);
+  p_iso = iso9660_open_ext(argv[1], ISO_EXTENSION_ALL);
   if (p_iso == NULL) {
     fprintf(stderr, "Unable to open image '%s'.\n", argv[1]);
     r = 1;
     goto out;
   }
+  i_joliet_level = iso9660_ifs_get_joliet_level(p_iso);
 
   /* Show basic ISO9660 info from the Primary Volume Descriptor. */
   print_vd_info("Application", iso9660_ifs_get_application_id);
