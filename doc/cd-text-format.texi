@@ -102,7 +102,7 @@ Additional notes regarding Pack Types:
 @item Pack Types @kbd{0x8a} to @kbd{0x8c} although not specified are reserved for potential future use.
 
 @item Pack Types @kbd{0x86}, @kbd{0x87}, @kbd{0x88}, @kbd{0x89}, @kbd{0x8d} (Disc Identification, Genre Identification, Table of Contents, Second Table of Contents and Closed Information respectively) apply to the whole
-disc, and can not be attached to individual tracks.
+disc, and cannot be attached to individual tracks.
 
 @item Pack Types @kbd{0x80}, @kbd{0x81}, @kbd{0x82}, @kbd{0x83}, @kbd{0x84}, @kbd{0x85}, and @kbd{0x8e} (Performers, Songwriters, Composers,
 Arrangers, and Message Area respectively) have to be attributed to
@@ -113,9 +113,9 @@ each track if they are present for the whole disc.
 The total size of a block's attribute set is restricted by the fact
 that it has to be stored in at most 253 records with 12 bytes of
 payload. These records are called @emph{Text Packs} described in the
-next section.  A shortcut for repeated identical track texts is
-provided, so that a text that is identical to the one of the previous
-track occupies only 2 or 4 bytes.
+next section.  Since information such as the Disc and Genre
+Identification is often the same across mutiple tracks, a compact way
+to repeat identical information is provided.
 
 @node Pack Contents
 @section Pack Contents
@@ -141,11 +141,12 @@ The first byte of each pack contains the pack type. See
 
 The second byte often gives the track number of the pack. However, a
 zero track value indicates that the information pertains to the whole
-album. Higher numbers are valid for types @kbd{0x80} to @kbd{0x85},
-and @kbd{0x8e}. In these pack types, there should be one text pack for
-the disc and one for each track.  With types @kbd{0x88} and
-@kbd{0x89}, the second byte is a track number too.  With type
-@kbd{0x8f}, the second byte counts the record parts from 0 to 2.
+album. Higher numbers are valid for track-oriented packs (types
+@kbd{0x80} to @kbd{0x85}, and @kbd{0x8e}). In these pack types, there
+should be one text pack for the disc and one for each track.  With TOC
+packs (types @kbd{0x88} and @kbd{0x89}), the second byte is a track
+number too.  With type @kbd{0x8f}, the second byte counts the record
+parts from 0 to 2.
 
 The third byte is a sequential counter.
 
@@ -186,9 +187,10 @@ at most 2048 text packs possible.
 
 If a text of a track (pack types @kbd{0x80} to @kbd{0x85} and
 @kbd{0x8e}) repeats identically for the next track, then it may be
-represented by a TAB character (ASCII 9) for single byte texts,
-resp. two TAB characters for double byte texts.  (This should be used
-because 256 * 12 bytes is few space for 99 tracks.)
+represented by a TAB character (ASCII 9) for single byte texts, and
+two TAB characters for double byte texts.  This is desirable because
+there is a somewhat limited amount of space for CD Text --- 256 * 12
+bytes which may have to accomodate up to 99 tracks.
 
 The two binary bytes of pack type @kbd{0x87} are written to the first
 @kbd{0x87} pack of a block. They may or may not be repeated at the start
