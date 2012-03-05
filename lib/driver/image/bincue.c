@@ -48,6 +48,9 @@
 #else
 #define PRId64 "lld"
 #endif
+#ifdef HAVE_WINDOWS_H
+#include <windows.h>
+#endif
 
 #include <ctype.h>
 
@@ -961,6 +964,41 @@ _read_mode2_sectors_bincue (void *p_user_data, void *data, lsn_t lsn,
   return 0;
 }
 
+#if !defined(HAVE_GLOB_H) && defined(_WIN32)
+static inline void Win32Glob(const char* pattern, const char* szCurPath, char ***drives, unsigned int *num_files)
+{
+  char szPath[MAX_PATH];
+  WIN32_FIND_DATAA ffd;
+  HANDLE hFind;
+  BOOL bFound;
+
+  SetCurrentDirectoryA(szCurPath);
+
+  hFind = FindFirstFileA(pattern, &ffd);
+  bFound = (hFind != INVALID_HANDLE_VALUE);
+  while (bFound) {
+    cdio_add_device_list(drives, ffd.cFileName, num_files);
+    bFound = FindNextFileA(hFind, &ffd);
+  }
+  if (hFind != INVALID_HANDLE_VALUE)
+    FindClose(hFind);
+
+  hFind = FindFirstFileA("*", &ffd);
+  bFound = (hFind != INVALID_HANDLE_VALUE);
+  while (bFound) {
+    if ( (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
+         (strcmp(ffd.cFileName, ".") != 0) && (strcmp(ffd.cFileName, "..") != 0) ) {
+      GetFullPathNameA(ffd.cFileName, sizeof(szPath), szPath, NULL);
+      Win32Glob(pattern, szPath, drives, num_files);
+      SetCurrentDirectoryA(szCurPath);
+    }
+    bFound = FindNextFileA(hFind, &ffd);
+  }
+  if (hFind != INVALID_HANDLE_VALUE)
+    FindClose(hFind);
+}
+#endif
+
 /*!
   Return an array of strings giving possible BIN/CUE disk images.
  */
@@ -978,6 +1016,10 @@ cdio_get_devices_bincue (void)
     cdio_add_device_list(&drives, globbuf.gl_pathv[i], &num_files);
   }
   globfree(&globbuf);
+#elif defined(_WIN32)
+  char szStartDir[MAX_PATH];
+  GetCurrentDirectoryA(sizeof(szStartDir), szStartDir);
+  Win32Glob("*.cue", szStartDir, &drives, &num_files);
 #else
   cdio_add_device_list(&drives, DEFAULT_CDIO_DEVICE, &num_files);
 #endif /*HAVE_GLOB_H*/
