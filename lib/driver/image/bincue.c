@@ -31,6 +31,7 @@
 
 #include <cdio/logging.h>
 #include <cdio/util.h>
+#include <cdio/utf8.h>
 #include <cdio/version.h>
 
 #ifdef HAVE_STDIO_H
@@ -64,6 +65,12 @@
 
 #define DEFAULT_CDIO_DEVICE "videocd.bin"
 #define DEFAULT_CDIO_CUE    "videocd.cue"
+
+#ifdef _WIN32
+#define CDIO_FOPEN fopen_utf8
+#else
+#define CDIO_FOPEN fopen
+#endif
 
 static lsn_t get_disc_last_lsn_bincue (void *p_user_data);
 #include "image_common.h"
@@ -266,7 +273,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   if (NULL == psz_cue_name_dup) 
     return false;
 
-  fp = fopen (psz_cue_name_dup, "r");
+  fp = CDIO_FOPEN (psz_cue_name_dup, "r");
   free(psz_cue_name_dup);
   if (fp == NULL) {
     cdio_log(log_level, "error opening %s for reading: %s", 

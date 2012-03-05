@@ -39,6 +39,7 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#include <ctype.h>
 
 #include <cdio/logging.h>
 #include <cdio/util.h>
@@ -55,11 +56,33 @@
 #define CDIO_FSEEK fseek
 #endif
 
+/* Windows' fopen is not UTF-8 compliant, so we use our own */
+#if defined(_WIN32)
+#include <cdio/utf8.h>
+#define CDIO_FOPEN fopen_utf8
+#else
+#define CDIO_FOPEN fopen
+#endif
+
 /* Use _stati64 if needed, on platforms that don't have transparent LFS support */
 #if defined(HAVE__STATI64) && defined(_FILE_OFFSET_BITS) && (_FILE_OFFSET_BITS == 64)
-#define CDIO_STAT _stati64
+#define CDIO_STAT_STRUCT _stati64
+#if defined(_WIN32)
+/* Once again, use our own UTF-8 compliant version */
+static inline int _stati64_utf8(const char *path, struct _stati64 *buffer) {
+  int ret;
+  wchar_t* wpath = cdio_utf8_to_wchar(path);
+  ret = _wstati64(wpath, buffer);
+  free(wpath);
+  return ret;
+}
+#define CDIO_STAT_CALL _stati64_utf8
 #else
-#define CDIO_STAT stat
+#define CDIO_STAT_CALL _stati64
+#endif
+#else
+#define CDIO_STAT_STRUCT stat
+#define CDIO_STAT_CALL stat
 #endif
 
 #define _STRINGIFY(a) #a
@@ -80,8 +103,8 @@ static int
 _stdio_open (void *user_data) 
 {
   _UserData *const ud = user_data;
-  
-  if ((ud->fd = fopen (ud->pathname, "rb")))
+
+  if ((ud->fd = CDIO_FOPEN (ud->pathname, "rb")))
     {
       ud->fd_buf = calloc (1, CDIO_STDIO_BUFSIZE);
       setvbuf (ud->fd, ud->fd_buf, _IOFBF, CDIO_STDIO_BUFSIZE);
@@ -224,7 +247,7 @@ cdio_stdio_new(const char pathname[])
   CdioDataSource_t *new_obj = NULL;
   cdio_stream_io_functions funcs = { NULL, NULL, NULL, NULL, NULL, NULL };
   _UserData *ud = NULL;
-  struct CDIO_STAT statbuf;
+  struct CDIO_STAT_STRUCT statbuf;
   char* pathdup;
 
   if (pathname == NULL)
@@ -235,7 +258,7 @@ cdio_stdio_new(const char pathname[])
   if (pathdup == NULL)
     return NULL;
 
-  if (CDIO_STAT (pathdup, &statbuf) == -1) 
+  if (CDIO_STAT_CALL (pathdup, &statbuf) == -1) 
     {
       cdio_warn ("could not retrieve file info for `%s': %s", 
                  pathdup, strerror (errno));

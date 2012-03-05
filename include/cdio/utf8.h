@@ -90,3 +90,17 @@ bool cdio_charset_from_utf8(cdio_utf8_t * src, char ** dst,
 bool cdio_charset_to_utf8(char *src, size_t src_len, cdio_utf8_t **dst,
                           const char * src_charset);
 
+#ifdef _WIN32
+/** \brief Convert an UTF8 string to UTF-16 (allocate returned string)
+ *  \param str Source string
+ *  \returns NULL if the conversion was unsuccesful. Caller must free the
+ *  returned string.
+ *  This is a convenience function available on Windows platforms only.
+ */
+wchar_t* cdio_utf8_to_wchar(const char* str);
+
+/** \brief Provides an UTF-8 compliant version of fopen for Windows
+ *  The parameters and return value are the same as fopen().
+ */
+FILE* fopen_utf8(const char* filename, const char* mode);
+#endif
