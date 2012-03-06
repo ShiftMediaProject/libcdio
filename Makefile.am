@@ -30,7 +30,6 @@ EXTRA_DIST = \
 	example/README \
 	libcdio.pc.in \
 	libcdio++.pc.in \
-	libcdio_cdda.pc.in \
 	libiso9660.pc.in \
 	libiso9660++.pc.in \
 	libudf.pc.in \
