@@ -747,10 +747,9 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
       case CDTX_ID: { /* "CD TEXT" */
         uint8_t *wdata = (uint8_t *) chunk->data;
         int len = UINT32_FROM_BE (chunk->len);
-        cdio_assert (len % sizeof (CDText_data_t) == 0);
-        p_env->gen.cdtext = malloc(sizeof(cdtext_t));
-        cdtext_init (p_env->gen.cdtext);
-        if(!cdtext_data_init (p_env->gen.cdtext, wdata, len))
+        cdio_assert (len % CDTEXT_LEN_PACK == 0);
+        p_env->gen.cdtext = cdtext_init ();
+        if(0 !=cdtext_data_init (p_env->gen.cdtext, wdata, len))
         {
           cdtext_destroy(p_env->gen.cdtext);
           free(p_env->gen.cdtext);

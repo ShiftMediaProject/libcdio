@@ -56,7 +56,7 @@ main(int argc, const char *argv[])
     "Richard Stallman", 
     "Join us now we have the software"
   };
-  const int cdtext_fields[NUM_FIELDS] = {CDTEXT_PERFORMER, CDTEXT_TITLE};
+  const int cdtext_fields[NUM_FIELDS] = {CDTEXT_FIELD_PERFORMER, CDTEXT_FIELD_TITLE};
 
   cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
   /* snprintf(psz_nrgfile, sizeof(psz_nrgfile)-1,
@@ -77,7 +77,7 @@ main(int argc, const char *argv[])
     cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio);
     if (!p_cdtext) return(1);
     for (i=0; i<NUM_FIELDS; i++) {
-      const char *psz_field = cdtext_get_const(cdtext_fields[i], 0, p_cdtext);
+      const char *psz_field = cdtext_get_const(p_cdtext, cdtext_fields[i], 0);
       if (!psz_field)
 	return(2);
       if (0 != strncmp(psz_field, cdtext_check[i], strlen(cdtext_check[i]))) {

@@ -101,10 +101,9 @@ void possible_throw_device_exception(driver_return_code_t drc);
 class CdioCDText
 {
 public: 
-  CdioCDText(cdtext_t *p)
+  CdioCDText()
   { 
-    p_cdtext = p;
-    cdtext_init(p); // make sure we're initialized on the C side
+    p_cdtext = cdtext_init(); // make sure we're initialized on the C side
   }
 
   ~CdioCDText() 

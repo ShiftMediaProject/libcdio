@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2009, 2010 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2009, 2010, 2012
+  Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -317,7 +318,7 @@ static int sg_init_enumerator(burn_drive_enumerator_t *idx_)
     return -1;
   }
 
-  bzero(&(idx->ccb), sizeof(union ccb));
+  memset(&(idx->ccb), 0, sizeof(union ccb));
 
   idx->ccb.ccb_h.path_id = CAM_XPT_PATH_ID;
   idx->ccb.ccb_h.target_id = CAM_TARGET_WILDCARD;

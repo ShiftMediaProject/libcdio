@@ -189,14 +189,6 @@ track_format_t get_track_format_aspi(const _img_private_t *env,
  */
 bool init_aspi (_img_private_t *env);
 
-/*
-  Read cdtext information for a CdIo object .
-  
-  return true on success, false on error or CD-TEXT information does
-  not exist.
-*/
-bool init_cdtext_aspi (_img_private_t *env);
-
 const char *is_cdrom_aspi(const char drive_letter);
 
 /*!

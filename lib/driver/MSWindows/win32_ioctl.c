@@ -58,7 +58,6 @@
 #include <cdio/util.h>
 #include "cdio_assert.h"
 #include <cdio/mmc.h>
-#include "cdtext_private.h"
 #include "cdio/logging.h"
 
 #if defined (_XBOX)

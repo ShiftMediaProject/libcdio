@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2011, 2012 Rocky Bernstein <rocky@gnu.org>
   toc reading routine adapted from cuetools
   Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
@@ -25,6 +25,7 @@
 #include <cdio/cdtext.h>
 #include <cdio/logging.h>
 #include "cdtext_private.h"
+#include <cdio/utf8.h>
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -33,32 +34,26 @@
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
 
 #define _CDTEXT_DBCC
+#define MAX_CDTEXT_GENRE_CODE     28
+#define MAX_CDTEXT_LANGUAGE_CODE 127
 
-/*! Note: the order and number items (except CDTEXT_INVALID) should
-  match the cdtext_field_t enumeration. */
-static const char cdtext_keywords[][16] = 
+const char *cdtext_field[MAX_CDTEXT_FIELDS] = 
 {
-  "ARRANGER",
-  "COMPOSER",
-  "DISC_ID",
-  "GENRE",
-  "MESSAGE",
-  "ISRC",
-  "PERFORMER",
-  "SIZE_INFO",
-  "SONGWRITER",
   "TITLE",
-  "TOC_INFO",
-  "TOC_INFO2",
+  "PERFORMER",
+  "SONGWRITER",
+  "COMPOSER",
+  "MESSAGE",
+  "ARRANGER",
+  "ISRC",
   "UPC_EAN",
+  "GENRE",
+  "DISC_ID",
 };
 
-static const char cdtext_genre[][30] =
+const char *cdtext_genre[MAX_CDTEXT_GENRE_CODE] =
 {
   "Not Used",
   "Not Defined",
@@ -90,349 +85,655 @@ static const char cdtext_genre[][30] =
   "World Music"
 };
 
-/*! Return string representation of the enum values above */
+const char *cdtext_language[MAX_CDTEXT_LANGUAGE_CODE] =
+{
+  "Unknown",
+  "Albanian",
+  "Breton",
+  "Catalan",
+  "Croatian",
+  "Welsh",
+  "Czech",
+  "Danish",
+  "German",
+  "English",
+  "Spanish",
+  "Esperanto",
+  "Estonian",
+  "Basque",
+  "Faroese",
+  "French",
+  "Frisian",
+  "Irish",
+  "Gaelic",
+  "Galician",
+  "Icelandic",
+  "Italian",
+  "Lappish",
+  "Latin",
+  "Latvian",
+  "Luxembourgian",
+  "Lithuanian",
+  "Hungarian",
+  "Maltese",
+  "Dutch",
+  "Norwegian",
+  "Occitan",
+  "Polish",
+  "Portuguese",
+  "Romanian",
+  "Romansh",
+  "Serbian",
+  "Slovak",
+  "Slovenian",
+  "Finnish",
+  "Swedish",
+  "Turkish",
+  "Flemish",
+  "Wallon",
+  "Zulu",
+  "Vietnamese",
+  "Uzbek",
+  "Urdu",
+  "Ukrainian",
+  "Thai",
+  "Telugu",
+  "Tatar",
+  "Tamil",
+  "Tadzhik",
+  "Swahili",
+  "SrananTongo",
+  "Somali",
+  "Sinhalese",
+  "Shona",
+  "Serbo-croat",
+  "Ruthenian",
+  "Russian",
+  "Russian",
+  "Quechua",
+  "Pushtu",
+  "Punjabi",
+  "Persian",
+  "Papamiento",
+  "Oriya",
+  "Nepali",
+  "Ndebele",
+  "Marathi",
+  "Moldavian",
+  "Malaysian",
+  "Malagasay",
+  "Macedonian",
+  "Laotian",
+  "Korean",
+  "Khmer",
+  "Kazakh",
+  "Kannada",
+  "Japanese",
+  "Indonesian",
+  "Hindi",
+  "Hebrew",
+  "Hausa",
+  "Gurani",
+  "Gujurati",
+  "Greek",
+  "Georgian",
+  "Fulani",
+  "Dari",
+  "Churash",
+  "Chinese",
+  "Burmese",
+  "Bulgarian",
+  "Bengali",
+  "Bielorussian",
+  "Bambora",
+  "Azerbaijani",
+  "Assamese",
+  "Armenian",
+  "Arabic",
+  "Amharic"
+};
+
+/*!
+  Return string representation of given field type.
+*/
 const char *
 cdtext_field2str (cdtext_field_t i)
 {
   if (i >= MAX_CDTEXT_FIELDS)
-    return "Invalid CDTEXT field index";
+    return "INVALID";
   else 
-    return cdtext_keywords[i];
+    return cdtext_field[i];
 }
 
-/*! Return string representation of the given genre oode */
+/*!
+  Return string representation of the given genre code.
+*/
 const char *
 cdtext_genre2str (cdtext_genre_t i)
 {
   if (i >= MAX_CDTEXT_GENRE_CODE)
-    return "Invalid genre code";
+    return "INVALID";
   else
     return cdtext_genre[i];
 }
 
-/*! Free memory assocated with cdtext*/
+/*!
+  Return string representation of the given language code.
+*/
+const char *
+cdtext_lang2str (cdtext_lang_t i)
+{
+  if (i >= MAX_CDTEXT_LANGUAGE_CODE)
+    return "INVALID";
+  else
+    return cdtext_language[i];
+}
+
+/*!
+  Free memory associated with the given cdtext_t object.
+
+  @param p_cdtext the CD-TEXT object 
+*/
 void 
 cdtext_destroy (cdtext_t *p_cdtext)
 {
-  cdtext_field_t i;
-  track_t i2;
+  cdtext_field_t k;
+  track_t j;
+  int i;
 
   if (!p_cdtext) return; 
-  for (i2=0; i2<=99; i2++) {
-    for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
-      if (p_cdtext->track[i2].field[i]) {
-        free(p_cdtext->track[i2].field[i]);
-        p_cdtext->track[i2].field[i] = NULL;
+  for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++) {
+    for (j=0; j<CDTEXT_NUM_TRACKS_MAX; j++) {
+      for (k=0; k < MAX_CDTEXT_FIELDS; k++) {
+        if (p_cdtext->block[i].track[j].field[k]) {
+          free(p_cdtext->block[i].track[j].field[k]);
+          p_cdtext->block[i].track[j].field[k] = NULL;
+        }
       }
     }
   }
 }
 
-/*! 
-  returns the CDTEXT value associated with key. NULL is returned
-  if key is CDTEXT_INVALID or the field is not set.
- */
+/*!
+  Returns a copy of the return value of cdtext_get_const or NULL.
+
+  Should be freed when done.
+  @see cdtext_get_const
+*/
 char *
-cdtext_get (cdtext_field_t key, track_t track, const cdtext_t *p_cdtext)
+cdtext_get (const cdtext_t *p_cdtext, cdtext_field_t field, track_t track)
 {
-  const char *ret = cdtext_get_const(key, track, p_cdtext);
+  const char *ret = cdtext_get_const(p_cdtext, field, track);
   if (NULL == ret)
     return NULL;
   else
     return strdup(ret);
 }
 
+/*!
+  Returns value of the given field.
+
+  NULL is returned if key is CDTEXT_INVALID or the field is not set.
+  Strings are encoded in UTF-8.
+
+  @param p_cdtext the CD-TEXT object
+  @param field type of the field to return
+  @param track specifies the track, 0 stands for disc
+*/
 const char *
-cdtext_get_const (cdtext_field_t key, track_t track, const cdtext_t *p_cdtext)
+cdtext_get_const(const cdtext_t *p_cdtext, cdtext_field_t field, track_t track)
 {
-  if (CDTEXT_INVALID == key
+  if (CDTEXT_FIELD_INVALID == field
       || NULL == p_cdtext
       || 0 > track
       || 99 < track)
     return NULL;
 
-  return p_cdtext->track[track].field[key];
+  return p_cdtext->block[p_cdtext->block_i].track[track].field[field];
 }
 
 
-/*! Initialize a new cdtext structure.
+/*!
+  Returns the currently active language.
+
+  @param p_cdtext the CD-TEXT object
+*/
+cdtext_lang_t
+cdtext_get_language(const cdtext_t *p_cdtext)
+{
+  if (NULL == p_cdtext)
+    return CDTEXT_LANGUAGE_UNKNOWN;
+  return p_cdtext->block[p_cdtext->block_i].language_code;
+}
+
+/*
+  Returns a list of available languages or NULL.
+
+  Internally the list is stored in a static array.
+
+  @param p_cdtext the CD-TEXT object
+*/
+cdtext_lang_t
+*cdtext_languages_available (const cdtext_t *p_cdtext)
+{
+  static cdtext_lang_t avail[CDTEXT_NUM_BLOCKS_MAX];
+  int i, j=0;
+
+  if (NULL == p_cdtext)
+    return NULL;
+
+  for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++) 
+  {
+    avail[i] = CDTEXT_LANGUAGE_UNKNOWN;
+    if (CDTEXT_LANGUAGE_UNKNOWN != p_cdtext->block[i].language_code)
+      avail[j++] = p_cdtext->block[i].language_code;
+  }
+  return avail;
+}
+
+
+/*!
+  Try to select the given language.
+  Select default language if specified is not available or invalid and
+  return false.
+
+  @param p_cdtext the CD-TEXT object
+  @param language string representation of the language
+
+  @return true on success, false if language is not available
+*/
+bool
+cdtext_select_language(cdtext_t *p_cdtext, const char *language)
+{
+  cdtext_lang_t lang_id;
+  lang_id = cdtext_is_language(language);
+
+  if(NULL == p_cdtext)
+    return false;
+
+  if (CDTEXT_LANGUAGE_UNKNOWN != lang_id)
+  {
+    int i;
+    for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++) {
+      if (lang_id == p_cdtext->block[i].language_code) {
+        p_cdtext->block_i = i;
+        return true;
+      }
+    }
+  } else {
+    p_cdtext->block_i = 0;
+  }
+  return false;
+}
+
+/*! 
+  Initialize a new cdtext structure.
+
   When the structure is no longer needed, release the 
   resources using cdtext_delete.
 */
-void 
-cdtext_init (cdtext_t *p_cdtext)
+cdtext_t 
+*cdtext_init (void)
 {
-  cdtext_field_t i;
-  track_t i2;
+  cdtext_field_t k;
+  track_t j;
+  int i;
+  cdtext_t *p_cdtext;
 
-  for (i2=0; i2<=99; i2++) {
-    for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
-      p_cdtext->track[i2].field[i] = NULL;
+  p_cdtext = (cdtext_t *) malloc (sizeof (struct cdtext_s));
+
+  for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++) {
+    for (j=0; j<CDTEXT_NUM_TRACKS_MAX; j++) {
+      for (k=0; k < MAX_CDTEXT_FIELDS; k++) {
+        p_cdtext->block[i].track[j].field[k] = NULL;
+      }
     }
   }
 
-  p_cdtext->genre_code = CDIO_CDTEXT_GENRE_UNUSED;
-  p_cdtext->language[0] = '\0';
-  p_cdtext->encoding[0] = '\0';
-  p_cdtext->block       = 0;
+  p_cdtext->block_i = 0;
+
+  return p_cdtext;
 }
 
 /*!
-  returns associated cdtext_field_t if field is a CD-TEXT keyword, returns non-zero otherwise 
+  Returns associated cdtext_field_t if field is a CD-TEXT keyword.
+
+  Internal function.
+
+  @param key key to test
+  
+  @return CDTEXT_INVALID if the given keyword is invalid
 */
 cdtext_field_t
-cdtext_is_keyword (const char *key)
+cdtext_is_field(const char *key)
 {
   unsigned int i;
   
-  for (i = 0; i < 13 ; i++)
-    if (0 == strcmp (cdtext_keywords[i], key)) {
+  for (i = 0; i < MAX_CDTEXT_FIELDS ; i++)
+    if (0 == strcmp (cdtext_field[i], key)) {
       return i;
     }
-  return CDTEXT_INVALID;
+  return CDTEXT_FIELD_INVALID;
 }
 
-/*! sets cdtext's keyword entry to field.
+/*!
+  Returns associated cdtext_lang_t if argument is a supported language.
+
+  Internal function.
+
+  @param lang language to test
+  
+  @return CDTEXT_LANGUAGE_UNKNOWN if language is not supported
+*/
+cdtext_lang_t
+cdtext_is_language (const char *lang)
+{
+  unsigned int i;
+  
+  for (i = 0; i < MAX_CDTEXT_LANGUAGE_CODE; i++)
+    if (0 == strcmp (cdtext_language[i], lang)) {
+      return i;
+    }
+  return CDTEXT_LANGUAGE_UNKNOWN;
+}
+
+/*! 
+  Sets the given field at the given track to the given value.
+  
+  Recodes to UTF-8 if charset is not NULL.
+  
+  @param p_cdtext the CD-TEXT object
+  @param key field to set
+  @param value value to set
+  @param track track to work on
+  @param charset charset to convert from
  */
 void 
-cdtext_set (cdtext_field_t key, track_t track, const char *p_value, cdtext_t *p_cdtext)
+cdtext_set (cdtext_t *p_cdtext, cdtext_field_t key, const uint8_t *value, 
+	    track_t track, const char *charset)
 {
-  if (NULL == p_value || key == CDTEXT_INVALID || 0 > track || 99 < track) return;
+  if (NULL == value || key == CDTEXT_FIELD_INVALID || 0 > track || 99 < track) 
+      return;
 
-  if (p_cdtext->track[track].field[key]) 
-    free (p_cdtext->track[track].field[key]);
-  p_cdtext->track[track].field[key] = strdup (p_value);
-  
-}
+  /* free old memory */
+  if (p_cdtext->block[p_cdtext->block_i].track[track].field[key]) 
+    free (p_cdtext->block[p_cdtext->block_i].track[track].field[key]);
 
-#define SET_CDTEXT_FIELD(FIELD) \
-  cdtext_set(FIELD, i_track, buffer, p_cdtext);
+  /* recode to UTF-8 */
+  if (NULL != charset) {
+    cdio_utf8_t *utf8_str = NULL;
+    cdio_charset_to_utf8((const char*) value, strlen((const char*)value), 
+			 &utf8_str, charset);
+    p_cdtext->block[p_cdtext->block_i].track[track].field[key] = 
+	(char *)utf8_str;
+  } else
+    p_cdtext->block[p_cdtext->block_i].track[track].field[key] = strdup ((const char *)value);
+ }
 
-/* 
-  parse all CD-TEXT data retrieved.
+/*!
+  Read a binary CD-TEXT and fill a cdtext struct.
+
+  @param p_cdtext the CD-TEXT object
+  @param wdata the data
+  @param i_data size of wdata
+
+  @returns 0 on success, non-zero on failure
 */       
-bool
+int
 cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data) 
 {
-  CDText_data_t *p_data;
-  int           i;
-  int           j;
-  char          buffer[256];
-  int           idx;
-  int           i_track;
-  bool          b_ret = false;
-  int           block = 0;
-  CDText_blocksize_t p_blocksize;
-  
-  memset( buffer, 0x00, sizeof(buffer) );
-  idx = 0;
-  
-  memset( &p_blocksize, 0x00, sizeof(CDText_blocksize_t) );
+/*   uint8_t       *p_data; */
+/*   int           j; */
+/*   uint8_t       buffer[256]; */
+/*   int           i_buf = 0; */
+/*   int           i_block; */
+/*   int           i_seq = 0; */
+/*   int           i; */
+/*   cdtext_blocksize_t blocksize; */
+/*   char          *charset = NULL; */
 
-  p_data = (CDText_data_t *) wdata;
-  if (0 != i_data % sizeof(CDText_data_t)) {
-    cdio_warn("CD-Text size is not multiple of pack size");
-    return false;
-  }
+/*   p_data = wdata; */
+/*   if (i_data < CDTEXT_LEN_PACK || 0 != i_data % CDTEXT_LEN_PACK) { */
+/*     cdio_warn("CD-Text size is not multiple of pack size"); */
+/*     return -1; */
+/*   } */
 
-  for( i = -1; i_data > 0; i_data -= sizeof(CDText_data_t), p_data++ ) {
-    
-#ifndef _CDTEXT_DBCC
-    if ( p_data->bDBC ) {
-      cdio_warn("Double-byte characters not supported");
-      return false;
-    }
-#endif
+/* #if 0 */
+/*   for(i=0; i < i_data; i++) */
+/*     printf("%0x%c", wdata[i], ((i+1) % 18 == 0 ? '\n' : ' ')); */
+/* #endif */
 
-    if ( p_data->seq != ++i || p_data->block != block ) break;
 
-    /* only handle character packs */
-    if ( ((p_data->type >= 0x80) && (p_data->type <= 0x87)) || 
-        (p_data->type == 0x8E)) 
-    {
-      i_track = p_data->i_track;
+/*   /\* Iterate over blocks *\/ */
+/*   i_block = -1; */
+/*   while(i_data > 0) { */
+/*     cdtext_pack_t pack; */
+/*     cdtext_read_pack(&pack, p_data); */
 
-      j = 0;
-      if (CDIO_CDTEXT_GENRE == p_data->type) {
-        j = 2;
-        if (CDIO_CDTEXT_GENRE_UNUSED == p_cdtext->genre_code) {
-          p_cdtext->genre_code = CDTEXT_GET_LEN16(p_data->text);
-        }
-      }
+/*     if (i_block != pack.block || i_seq != pack.seq) { */
+/*       cdtext_pack_t tpack; */
+/*       i_block = pack.block;  */
+/*       if (i_block >= CDTEXT_NUM_BLOCKS_MAX) { */
+/*         cdio_warn("CD-TEXT: Invalid blocknumber %d.\n", i_block); */
+/*         return -1; */
+/*       } */
+/*       p_cdtext->block_i = i_block; */
+/*       i_seq = 0; */
+/*       memset( &blocksize, 0, CDTEXT_LEN_BLOCKSIZE); */
 
-#ifdef _CDTEXT_DBCC
-      for( ; j < CDIO_CDTEXT_MAX_TEXT_DATA; (p_data->bDBC ? j+=2 : j++) ) {
-        if( p_data->text[j] == 0x00 && (!p_data->bDBC || p_data->text[j+1] == 0x00)) {
-          if((buffer[0] != 0x00) && (!p_data->bDBC || buffer[1] != 0x00)) {
-#else
-      for( ; j < CDIO_CDTEXT_MAX_TEXT_DATA; j++) {
-        if( p_data->text[j] == 0x00) {
-          if(buffer[0] != 0x00) {
-#endif
-          
-          /* omit empty strings */
-            switch( p_data->type) {
-            case CDIO_CDTEXT_TITLE: 
-              SET_CDTEXT_FIELD(CDTEXT_TITLE);
-              break;
-            case CDIO_CDTEXT_PERFORMER:  
-              SET_CDTEXT_FIELD(CDTEXT_PERFORMER);
-              break;
-            case CDIO_CDTEXT_SONGWRITER:
-              SET_CDTEXT_FIELD(CDTEXT_SONGWRITER);
-              break;
-            case CDIO_CDTEXT_COMPOSER:
-              SET_CDTEXT_FIELD(CDTEXT_COMPOSER);
-              break;
-            case CDIO_CDTEXT_ARRANGER:
-              SET_CDTEXT_FIELD(CDTEXT_ARRANGER);
-              break;
-            case CDIO_CDTEXT_MESSAGE:
-              SET_CDTEXT_FIELD(CDTEXT_MESSAGE);
-              break;
-            case CDIO_CDTEXT_DISCID:
-              if(i_track == 0) {
-                SET_CDTEXT_FIELD(CDTEXT_DISCID);
-              }
-              break;
-            case CDIO_CDTEXT_UPC:
-              if(i_track == 0) {
-                SET_CDTEXT_FIELD(CDTEXT_UPC_EAN);
-              }
-              else {
-                SET_CDTEXT_FIELD(CDTEXT_ISRC);
-              }
-              break;
-            case CDIO_CDTEXT_GENRE:
-              SET_CDTEXT_FIELD(CDTEXT_GENRE);
-              break;
-            }
-            
-            b_ret = true;
-            i_track++;
-            idx = 0;
-          }
-        } else {
-          buffer[idx++] = p_data->text[j];
-#ifdef _CDTEXT_DBCC
-          if(p_data->bDBC)
-             buffer[idx++] = p_data->text[j+1];
-#endif
-        }
+/*       /\* first read block size information for sanity checks and encoding *\/ */
+/*       for(i=0; i <= i_data-CDTEXT_LEN_PACK; i+=CDTEXT_LEN_PACK) { */
 
-        buffer[idx] = 0x00;
-#ifdef _CDTEXT_DBCC
-        if(p_data->bDBC)
-           buffer[idx+1] = 0x00;
-#endif
-      }
-    } else {
-      /* not a character pack */
+/*         if (p_data[i+0] == CDTEXT_PACK_BLOCKSIZE) { */
+/*           cdtext_read_pack(&tpack, p_data+i); */
+/*           switch (tpack.i_track) { */
+/*             case 0: */
+/*               blocksize.charcode      = tpack.text[0]; */
+/*               blocksize.i_first_track = tpack.text[1]; */
+/*               blocksize.i_last_track  = tpack.text[2]; */
+/*               blocksize.copyright     = tpack.text[3]; */
+/*               blocksize.i_packs[0]    = tpack.text[4]; */
+/*               blocksize.i_packs[1]    = tpack.text[5]; */
+/*               blocksize.i_packs[2]    = tpack.text[6]; */
+/*               blocksize.i_packs[3]    = tpack.text[7]; */
+/*               blocksize.i_packs[4]    = tpack.text[8]; */
+/*               blocksize.i_packs[5]    = tpack.text[9]; */
+/*               blocksize.i_packs[6]    = tpack.text[10]; */
+/*               blocksize.i_packs[7]    = tpack.text[11]; */
+/*               break; */
+/*             case 1: */
+/*               blocksize.i_packs[8]    = tpack.text[0]; */
+/*               blocksize.i_packs[9]    = tpack.text[1];  */
+/*               blocksize.i_packs[10]   = tpack.text[2]; */
+/*               blocksize.i_packs[11]   = tpack.text[3]; */
+/*               blocksize.i_packs[12]   = tpack.text[4]; */
+/*               blocksize.i_packs[13]   = tpack.text[5]; */
+/*               blocksize.i_packs[14]   = tpack.text[6]; */
+/*               blocksize.i_packs[15]   = tpack.text[7]; */
+/*               blocksize.lastseq[0]    = tpack.text[8]; */
+/*               blocksize.lastseq[1]    = tpack.text[9]; */
+/*               blocksize.lastseq[2]    = tpack.text[10]; */
+/*               blocksize.lastseq[3]    = tpack.text[11]; */
+/*               break; */
+/*             case 2: */
+/*               blocksize.lastseq[4]    = tpack.text[0]; */
+/*               blocksize.lastseq[5]    = tpack.text[1]; */
+/*               blocksize.lastseq[6]    = tpack.text[2]; */
+/*               blocksize.lastseq[7]    = tpack.text[3]; */
+/*               blocksize.langcode[0]   = tpack.text[4]; */
+/*               blocksize.langcode[1]   = tpack.text[5]; */
+/*               blocksize.langcode[2]   = tpack.text[6]; */
+/*               blocksize.langcode[3]   = tpack.text[7]; */
+/*               blocksize.langcode[4]   = tpack.text[8]; */
+/*               blocksize.langcode[5]   = tpack.text[9]; */
+/*               blocksize.langcode[6]   = tpack.text[10]; */
+/*               blocksize.langcode[7]   = tpack.text[11]; */
+/*               break; */
+/*           } */
+/*       } */
 
-      if(p_data->type == CDIO_CDTEXT_TOC) {
-        /* no idea what this is */
-      }
+/*       if(blocksize.i_packs[15] == 3) { */
+/*         /\* if there were 3 BLOCKSIZE packs *\/ */
+/*         /\* set copyright *\/ */
+/*         p_cdtext->block[i_block].copyright = (0x03 == (blocksize.copyright & 0x03)); */
 
-      if (p_data->type == CDIO_CDTEXT_TOC2) {
-        /* no idea what this is */
-      }
+/*         /\* set Language *\/ */
+/*         if(blocksize.langcode[i_block] <= 0x7f) */
+/*           p_cdtext->block[i_block].language_code = blocksize.langcode[i_block]; */
 
-      /* i got this info from cdrtools' cdda2wav; all the tests i ran so far were successful */
-      if (p_data->type == CDIO_CDTEXT_BLOCKSIZE) {
-	      /* i_track is the pack element number in this case */
-        switch(p_data->i_track){
-	        case 0:
-	          memcpy((char*)&p_blocksize,p_data->text,0x0c);
-	          break;
-	        case 1:
-	          memcpy(((char*)&p_blocksize)+0x0c,p_data->text,0x0c);
-	          break;
-	        case 2:
-	          memcpy(((char*)&p_blocksize)+0x18,p_data->text,0x0c);
-	          break;
-        }
-      }
-    }
-  }
-  
-  if (p_blocksize.i_packs[15] >= 3) {
-    /* if there were more than 3 BLOCKSIZE packs */
-    switch (p_blocksize.charcode){
-      case CDIO_CDTEXT_CHARCODE_ISO_8859_1:
-        strcpy(p_cdtext->encoding, "ISO-8859-1");
-        break;
-      case CDIO_CDTEXT_CHARCODE_ASCII:
-        strcpy(p_cdtext->encoding, "ASCII");
-        break;
-      case CDIO_CDTEXT_CHARCODE_KANJI:
-        strcpy(p_cdtext->encoding, "Shift-JIS");
-        break;
-    }
- 
-    /* set ISO 639-1 code */
-    switch (p_blocksize.langcode[block]) {
-      case CDIO_CDTEXT_LANG_CZECH        :
-        strcpy(p_cdtext->language, "cs");
-        break;
-      case CDIO_CDTEXT_LANG_DANISH       :
-        strcpy(p_cdtext->language, "da");
-        break;
-      case CDIO_CDTEXT_LANG_GERMAN       :
-        strcpy(p_cdtext->language, "de");
-        break;
-      case CDIO_CDTEXT_LANG_ENGLISH      :
-        strcpy(p_cdtext->language, "en");
-        break;
-      case CDIO_CDTEXT_LANG_SPANISH      :
-        strcpy(p_cdtext->language, "es");
-        break;
-      case CDIO_CDTEXT_LANG_FRENCH       :
-        strcpy(p_cdtext->language, "fr");
-        break;
-      case CDIO_CDTEXT_LANG_ITALIAN      :
-        strcpy(p_cdtext->language, "it");
-        break;
-      case CDIO_CDTEXT_LANG_HUNGARIAN    :
-        strcpy(p_cdtext->language, "hu");
-        break;
-      case CDIO_CDTEXT_LANG_DUTCH        :
-        strcpy(p_cdtext->language, "nl");
-        break;
-      case CDIO_CDTEXT_LANG_NORWEGIAN    :
-        strcpy(p_cdtext->language, "no");
-        break;
-      case CDIO_CDTEXT_LANG_POLISH       :
-        strcpy(p_cdtext->language, "pl");
-        break;
-      case CDIO_CDTEXT_LANG_PORTUGUESE   :
-        strcpy(p_cdtext->language, "pt");
-        break;
-      case CDIO_CDTEXT_LANG_SLOVENE      :
-        strcpy(p_cdtext->language, "sl");
-        break;
-      case CDIO_CDTEXT_LANG_FINNISH      :
-        strcpy(p_cdtext->language, "fi");
-        break;
-      case CDIO_CDTEXT_LANG_SWEDISH      :
-        strcpy(p_cdtext->language, "sv");
-        break;
-      case CDIO_CDTEXT_LANG_RUSSIAN      :
-        strcpy(p_cdtext->language, "ru");
-        break;
-      case CDIO_CDTEXT_LANG_KOREAN       :
-        strcpy(p_cdtext->language, "ko");
-        break;
-      case CDIO_CDTEXT_LANG_JAPANESE     :
-        strcpy(p_cdtext->language, "ja");
-        break;
-      case CDIO_CDTEXT_LANG_GREEK        :
-        strcpy(p_cdtext->language, "el");
-        break;
-      case CDIO_CDTEXT_LANG_CHINESE      :
-        strcpy(p_cdtext->language, "zh");
-        break;
-    }
-    
-  }
-  return b_ret;
+/*         /\* determine encoding *\/ */
+/*         switch (blocksize.charcode){ */
+/*           case CDTEXT_CHARCODE_ISO_8859_1: */
+/*             /\* default *\/ */
+/*             charset = (char *) "ISO-8859-1"; */
+/*             break; */
+/*           case CDTEXT_CHARCODE_ASCII: */
+/*             charset = (char *) "ASCII"; */
+/*             break; */
+/*           case CDTEXT_CHARCODE_SHIFT_JIS: */
+/*             charset = (char *) "SHIFT_JIS"; */
+/*             break; */
+/*         } */
+/*       } else { */
+/*         cdio_warn("CD-TEXT: No blocksize information available for block %d.\n", i_block); */
+/*         return -1; */
+/*     } */
+
+/*   } */
+
+/*     cdtext_read_pack(&pack, p_data); */
+
+/* #ifndef _CDTEXT_DBCC */
+/*     if ( pack.db_chars ) { */
+/*       cdio_warn("CD-TEXT: Double-byte characters not supported"); */
+/*       return -1; */
+/*     } */
+/* #endif */
+
+/*     /\* read text packs first *\/ */
+/*     j = 0; */
+/*     switch (pack.type) { */
+/*       case CDTEXT_PACK_GENRE: */
+/*         /\* If pack.text starts with an unprintable character, it is likely to bethe genre_code. */
+/*          * While the specification requires the first GENRE pack to start with te 2 byte genre code, */
+/*          * it is not specific about the following ones. *\/ */
+/*         if (pack.text[0] <= 31) { */
+/*           j = 2; */
+/*           if (CDTEXT_GENRE_UNUSED == p_cdtext->block[i_block].genre_code) */
+/*             p_cdtext->block[i_block].genre_code = CDTEXT_GET_LEN16(pack.text); */
+/*         } */
+/*       case CDTEXT_PACK_TITLE: */
+/*       case CDTEXT_PACK_PERFORMER: */
+/*       case CDTEXT_PACK_SONGWRITER: */
+/*       case CDTEXT_PACK_COMPOSER: */
+/*       case CDTEXT_PACK_ARRANGER: */
+/*       case CDTEXT_PACK_MESSAGE: */
+/*       case CDTEXT_PACK_DISCID: */
+/*       case CDTEXT_PACK_UPC: */
+/*         while (j < CDTEXT_LEN_TEXTDATA) { */
+/*           /\* not terminated *\/ */
+/*           if (pack.text[j] != 0 || (pack.db_chars && pack.text[j+1] != 0)) { */
+/*             buffer[i_buf++] = pack.text[j]; */
+/*             if(pack.db_chars) */
+/*               buffer[i_buf++] = pack.text[j+1]; */
+/*           } else if(i_buf > 1) { */
+/*             buffer[i_buf++] = 0; */
+/*             if(pack.db_chars) */
+/*               buffer[i_buf++] = 0; */
+
+/*             switch (pack.type) { */
+/*               case CDTEXT_PACK_TITLE: */
+/*                 cdtext_set(p_cdtext, CDTEXT_FIELD_TITLE, buffer,  */
+/*                            pack.i_track, charset); */
+/*                 break; */
+/*               case CDTEXT_PACK_PERFORMER: */
+/*                 cdtext_set(p_cdtext, CDTEXT_FIELD_PERFORMER, buffer,  */
+/*                            pack.i_track, charset); */
+/*                 break; */
+/*               case CDTEXT_PACK_SONGWRITER: */
+/*                 cdtext_set(p_cdtext, CDTEXT_FIELD_SONGWRITER, buffer,  */
+/*                            pack.i_track, charset); */
+/*                 break; */
+/*               case CDTEXT_PACK_COMPOSER: */
+/*                 cdtext_set(p_cdtext, CDTEXT_FIELD_COMPOSER, buffer,  */
+/*                            pack.i_track, charset); */
+/*                 break; */
+/*               case CDTEXT_PACK_ARRANGER: */
+/*                 cdtext_set(p_cdtext, CDTEXT_FIELD_ARRANGER, buffer,  */
+/*                            pack.i_track, charset); */
+/*                 break; */
+/*               case CDTEXT_PACK_MESSAGE: */
+/*                 cdtext_set(p_cdtext, CDTEXT_FIELD_MESSAGE, buffer,  */
+/*                            pack.i_track,charset); */
+/*                 break; */
+/*               case CDTEXT_PACK_DISCID: */
+/*                 if (pack.i_track == 0) */
+/*                   cdtext_set(p_cdtext, CDTEXT_FIELD_DISCID, buffer,  */
+/*                              pack.i_track, NULL); */
+/*                 break; */
+/*               case CDTEXT_PACK_GENRE: */
+/*                 cdtext_set(p_cdtext, CDTEXT_FIELD_GENRE, buffer,  */
+/*                            pack.i_track, "ASCII"); */
+/*                 break; */
+/*               case CDTEXT_PACK_UPC: */
+/*                 if (pack.i_track == 0) */
+/*                   cdtext_set(p_cdtext, CDTEXT_FIELD_UPC_EAN, buffer,  */
+/*                              pack.i_track, "ASCII"); */
+/*                 else */
+/*                   cdtext_set(p_cdtext, CDTEXT_FIELD_ISRC, buffer,  */
+/*                              pack.i_track, "ISO-8859-1"); */
+/*                 break; */
+/*             } */
+/*             i_buf = 0; */
+
+/*           } */
+/*           if (pack.db_chars) */
+/*             j+=2; */
+/*           else */
+/*             j+=1; */
+/*         } */
+/*         break; */
+/*     } */
+/*     /\* This would be the right place to parse TOC and TOC2 fields. *\/ */
+
+/*     i_seq++; */
+/*     i_data-=CDTEXT_LEN_PACK; */
+/*     p_data+=CDTEXT_LEN_PACK; */
+/*   } /\* end of while loop *\/ */
+
+/*   p_cdtext->block_i = 0; */
+  return 0;
+}
+
+
+/*!
+  Fills cdtext_pack_t with information read from p_data
+
+  @param p_pack out
+  @param p_data in
+*/
+int
+cdtext_read_pack(cdtext_pack_t *p_pack, const uint8_t *p_data) {
+  p_pack->type     = p_data[0];
+  p_pack->i_track  = p_data[1];
+  p_pack->seq      = p_data[2];
+  p_pack->char_pos = p_data[3]        & 0x0F;
+  p_pack->block    = (p_data[3] >> 4) & 0x07;
+  p_pack->db_chars = (p_data[3] >> 7) & 0x01;
+  p_pack->text[0]  = p_data[4];
+  p_pack->text[1]  = p_data[5];
+  p_pack->text[2]  = p_data[6];
+  p_pack->text[3]  = p_data[7];
+  p_pack->text[4]  = p_data[8];
+  p_pack->text[5]  = p_data[9];
+  p_pack->text[6]  = p_data[10];
+  p_pack->text[7]  = p_data[11];
+  p_pack->text[8]  = p_data[12];
+  p_pack->text[9]  = p_data[13];
+  p_pack->text[10] = p_data[14];
+  p_pack->text[11] = p_data[15];
+  p_pack->crc[0]   = p_data[16];
+  p_pack->crc[2]   = p_data[17];
+
+  return 0;
 }

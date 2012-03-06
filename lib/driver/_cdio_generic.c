@@ -286,8 +286,7 @@ get_cdtext_generic (void *p_user_data)
   if (NULL == p_env->cdtext) {
     p_cdtext_data = read_cdtext_generic (p_env);
     if (NULL != p_cdtext_data) {
-      p_env->cdtext = malloc (sizeof(cdtext_t));
-      cdtext_init(p_env->cdtext);
+      p_env->cdtext = cdtext_init();
       len = CDIO_MMC_GET_LEN16(p_cdtext_data);
 
       if(!cdtext_data_init (p_env->cdtext, &p_cdtext_data[4], len-2)) {

@@ -45,8 +45,6 @@ extern "C" {
   /** This is an opaque structure for the CD object. */
   typedef struct _CdIo CdIo_t; 
 
-  typedef struct cdtext_s cdtext_t;
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
@@ -56,6 +54,9 @@ extern "C" {
 */
 #include <cdio/device.h>
 
+/* CD-Text-related functions. */
+#include <cdio/cdtext.h>
+
 /* Disc-related functions. */
 #include <cdio/disc.h>
 
@@ -63,9 +64,6 @@ extern "C" {
    from <cdio/device.h> so it should come after that. 
 */
 #include <cdio/read.h>
-
-/* CD-Text-related functions. */
-#include <cdio/cdtext.h>
 
 /* Track-related functions. */
 #include <cdio/track.h>

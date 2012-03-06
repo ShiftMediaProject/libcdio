@@ -97,7 +97,7 @@ void cdio_charset_converter_destroy(cdio_charset_coverter_t*cnv)
 #define BYTES_INCREMENT 16
 
 static bool
-do_convert(iconv_t cd, char * src, int src_len,
+do_convert(iconv_t cd, const char * src, int src_len,
            char ** dst, int *dst_len)
   {
   char * ret;
@@ -124,7 +124,7 @@ do_convert(iconv_t cd, char * src, int src_len,
 
   ret    = malloc(alloc_size);
 
-  inbuf  = src;
+  inbuf  = (char *)src;
   outbuf = ret;
   
   while(1)
@@ -199,7 +199,7 @@ bool cdio_charset_from_utf8(cdio_utf8_t * src, char ** dst,
 
 
 
-bool cdio_charset_to_utf8(char *src, size_t src_len, cdio_utf8_t **dst,
+bool cdio_charset_to_utf8(const char *src, size_t src_len, cdio_utf8_t **dst,
                           const char * src_charset)
   {
   iconv_t ic;

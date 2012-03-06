@@ -56,6 +56,7 @@ extern "C" {
   } discmode_t;
 
   extern const char *discmode2str[];
+
   /**
     Get binary CD-Text information for a CdIo_t object.
 

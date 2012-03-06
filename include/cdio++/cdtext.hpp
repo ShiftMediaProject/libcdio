@@ -28,6 +28,16 @@ const char *field2str (cdtext_field_t i)
   return cdtext_field2str (i);
 }
 
+const char *genre2str (cdtext_genre_t i) 
+{
+  return cdtext_genre2str (i);
+}
+
+const char *lang2str (cdtext_lang_t i) 
+{
+  return cdtext_lang2str (i);
+}
+
 /*! returns an allocated string associated with the given field.  NULL is
   returned if key is CDTEXT_INVALID or the field is not set.
   
@@ -39,7 +49,7 @@ const char *field2str (cdtext_field_t i)
 */
 char *get (cdtext_field_t key, track_t i_track) 
 {
-  return cdtext_get (key, i_track, p_cdtext);
+  return cdtext_get (p_cdtext, key, i_track);
 }
 
 /*! returns the C cdtext_t pointer associated with this object. */
@@ -60,24 +70,15 @@ cdtext_t *get ()
 */
 const char *getConst (cdtext_field_t key, track_t i_track) 
 {
-  return cdtext_get_const (key, i_track, p_cdtext);
-}
-
-/*!
-  returns enum of keyword if key is a CD-Text keyword, 
-  returns MAX_CDTEXT_FIELDS non-zero otherwise.
-*/
-cdtext_field_t isKeyword (const char *key) 
-{
-  return cdtext_is_keyword (key);
+  return cdtext_get_const (p_cdtext, key, i_track);
 }
 
 /*! 
   sets cdtext's keyword entry to field 
 */
-void set (cdtext_field_t key, track_t i_track, const char *value) 
+void set (cdtext_field_t key, track_t i_track, const uint8_t *value, const char *charset) 
 {
-  cdtext_set (key, i_track, value, p_cdtext);
+  cdtext_set (p_cdtext, key, value, i_track, charset);
 }
 
 

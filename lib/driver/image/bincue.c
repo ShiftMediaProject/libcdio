@@ -27,6 +27,7 @@
 #include "image.h"
 #include "cdio_assert.h"
 #include "cdio_private.h"
+#include "cdtext_private.h"
 #include "_cdio_stdio.h"
 
 #include <cdio/logging.h>
@@ -107,7 +108,7 @@ _init_bincue (_img_private_t *p_env)
   p_env->tocent[p_env->gen.i_tracks].start_lba = cdio_lsn_to_lba(lead_lsn);
   p_env->tocent[p_env->gen.i_tracks - p_env->gen.i_first_track].sec_count = 
     cdio_lsn_to_lba(lead_lsn - 
-		    p_env->tocent[p_env->gen.i_tracks - p_env->gen.i_first_track].start_lba);
+                    p_env->tocent[p_env->gen.i_tracks - p_env->gen.i_first_track].start_lba);
 
   return true;
 }
@@ -227,11 +228,11 @@ get_disc_last_lsn_bincue (void *p_user_data)
   if (size % CDIO_CD_FRAMESIZE_RAW)
     {
       cdio_warn ("image %s size (%" PRId64 ") not multiple of blocksize (%d)", 
-		 p_env->gen.source_name, (int64_t)size, CDIO_CD_FRAMESIZE_RAW);
+                 p_env->gen.source_name, (int64_t)size, CDIO_CD_FRAMESIZE_RAW);
       if (size % M2RAW_SECTOR_SIZE == 0)
-	cdio_warn ("this may be a 2336-type disc image");
+        cdio_warn ("this may be a 2336-type disc image");
       else if (size % CDIO_CD_FRAMESIZE_RAW == 0)
-	cdio_warn ("this may be a 2352-type disc image");
+        cdio_warn ("this may be a 2352-type disc image");
       /* exit (EXIT_FAILURE); */
     }
 
@@ -240,7 +241,7 @@ get_disc_last_lsn_bincue (void *p_user_data)
   return (lsn_t)size;
 }
 
-#define MAXLINE 4096		/* maximum line length + 1 */
+#define MAXLINE 4096            /* maximum line length + 1 */
 
 static bool
 parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
@@ -250,7 +251,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   char         psz_line[MAXLINE];   /* text of current line read in file fp. */
   unsigned int i_line=0;            /* line number in file of psz_line. */
   int          i = -1;              /* Position in tocent. Same as 
-				       cd->gen.i_tracks - 1 */
+                                       cd->gen.i_tracks - 1 */
   char *psz_keyword, *psz_field;
   cdio_log_level_t log_level = (NULL == cd) ? CDIO_LOG_INFO : CDIO_LOG_WARN;
   cdtext_field_t cdtext_key;
@@ -265,7 +266,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   fp = fopen (psz_cue_name, "r");
   if (fp == NULL) {
     cdio_log(log_level, "error opening %s for reading: %s", 
-	     psz_cue_name, strerror(errno));
+             psz_cue_name, strerror(errno));
     return false;
   }
 
@@ -282,71 +283,73 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
     if (NULL != (psz_keyword = strtok (psz_line, " \t\n\r"))) {
       /* REM remarks ... */
       if (0 == strcmp ("REM", psz_keyword)) {
-	;
-	
-	/* global section */
-	/* CATALOG ddddddddddddd */
+        ;
+        
+        /* global section */
+        /* CATALOG ddddddddddddd */
       } else if (0 == strcmp ("CATALOG", psz_keyword)) {
-	if (-1 == i) {
-	  if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
-	    cdio_log(log_level, 
-		     "%s line %d after word CATALOG: ",
-		     psz_cue_name, i_line);
-	    cdio_log(log_level, 
-		     "expecting 13-digit media catalog number, got nothing.");
-	    goto err_exit;
-	  }
-	  if (strlen(psz_field) != 13) {
-	    cdio_log(log_level, 
-		     "%s line %d after word CATALOG: ",
-		     psz_cue_name, i_line);
-	    cdio_log(log_level, 
-		       "Token %s has length %ld. Should be 13 digits.", 
-		     psz_field, (long int) strlen(psz_field));
-	    goto err_exit;
-	  } else {
-	    /* Check that we have all digits*/
-	    unsigned int i;
-	    for (i=0; i<13; i++) {
-	      if (!isdigit(psz_field[i])) {
-		cdio_log(log_level, 
-			 "%s line %d after word CATALOG:", 
-			 psz_cue_name, i_line);
-		cdio_log(log_level, 
-			 "Character \"%c\" at postition %i of token \"%s\" "
-			 "is not all digits.", 
-			 psz_field[i], i+1, psz_field);
-		goto err_exit;
-	      }
-	    }
-	  }
-	      
-	  if (cd) cd->psz_mcn = strdup (psz_field);
-	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
-	    goto format_error;
-	  }
-	} else {
-	  goto not_in_global_section;
-	}
+        if (-1 == i) {
+          if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
+            cdio_log(log_level, 
+                     "%s line %d after word CATALOG: ",
+                     psz_cue_name, i_line);
+            cdio_log(log_level, 
+                     "expecting 13-digit media catalog number, got nothing.");
+            goto err_exit;
+          }
+          if (strlen(psz_field) != 13) {
+            cdio_log(log_level, 
+                     "%s line %d after word CATALOG: ",
+                     psz_cue_name, i_line);
+            cdio_log(log_level, 
+                       "Token %s has length %ld. Should be 13 digits.", 
+                     psz_field, (long int) strlen(psz_field));
+            goto err_exit;
+          } else {
+            /* Check that we have all digits*/
+            unsigned int i;
+            for (i=0; i<13; i++) {
+              if (!isdigit(psz_field[i])) {
+                cdio_log(log_level, 
+                         "%s line %d after word CATALOG:", 
+                         psz_cue_name, i_line);
+                cdio_log(log_level, 
+                         "Character \"%c\" at postition %i of token \"%s\" "
+                         "is not all digits.", 
+                         psz_field[i], i+1, psz_field);
+                goto err_exit;
+              }
+            }
+          }
+              
+          if (cd) cd->psz_mcn = strdup (psz_field);
+          if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+            goto format_error;
+          }
+        } else {
+          goto not_in_global_section;
+        }
 
   /* CDTEXTFILE "<filename>" */
   } else if (0 == strcmp ("CDTEXTFILE", psz_keyword)) {
     if(NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
       if (cd) {
-        uint8_t cdt_data[MAX_CDTEXT_DATA_LENGTH+4];
+        uint8_t cdt_data[CDTEXT_LEN_BINARY_MAX+4];
         int size;
         CdioDataSource_t *source;
-	const char *dirname = cdio_dirname(psz_cue_name);
-	const char *psz_filename = cdio_abspath (dirname, psz_field);
+        const char *dirname = cdio_dirname(psz_cue_name);
+        const char *psz_filename = cdio_abspath (dirname, psz_field);
 
         if(NULL == (source = cdio_stdio_new(psz_filename))) {
           cdio_log (log_level, "%s line %d: can't open file `%s' for reading", psz_cue_name, i_line, psz_field);
           goto err_exit;
         }
-        size = cdio_stream_read(source, cdt_data, MAX_CDTEXT_DATA_LENGTH, 1);
+        size = cdio_stream_read(source, cdt_data, CDTEXT_LEN_BINARY_MAX, 1);
 
         if (size < 5) {
-          cdio_log (log_level, "%s line %d: file `%s' is too small to contain CD-TEXT", psz_cue_name, i_line, psz_field);
+          cdio_log (log_level, 
+                    "%s line %d: file `%s' is too small to contain CD-TEXT", 
+                    psz_cue_name, i_line, (char *) psz_filename);
           goto err_exit;
         }
 
@@ -355,438 +358,441 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
           size -= 4;
         }
 
+        /* ignore trailing 0 */
+        if (1 == size % 18)
+          size -= 1;
+
         /* init cdtext */
         if (NULL == cd->gen.cdtext) {
-          cd->gen.cdtext = malloc(sizeof(cdtext_t));
-          cdtext_init (cd->gen.cdtext);
+          cd->gen.cdtext = cdtext_init ();
         }
 
-        if(!cdtext_data_init(cd->gen.cdtext, cdt_data, size))
-          cdio_log (log_level, "%s line %d: failed to parse CD-TEXT file `%s'", psz_cue_name, i_line, psz_field);
+        if(0 != cdtext_data_init(cd->gen.cdtext, cdt_data, size))
+          cdio_log (log_level, "%s line %d: failed to parse CD-TEXT file `%s'", psz_cue_name, i_line, (char *) psz_filename);
 
         cdio_stdio_destroy (source);
       }
     } else {
       goto format_error;
     }
-	
-	/* FILE "<filename>" <BINARY|WAVE|other?> */
+        
+        /* FILE "<filename>" <BINARY|WAVE|other?> */
       } else if (0 == strcmp ("FILE", psz_keyword)) {
-	if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
-	  const char *dirname = cdio_dirname(psz_cue_name);
-	  const char *filename = cdio_abspath (dirname, psz_field);
-	  if (cd) cd->tocent[i + 1].filename = (char *) filename;
-	} else {
-	  goto format_error;
-	}
-	
-	/* TRACK N <mode> */
+        if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
+          const char *dirname = cdio_dirname(psz_cue_name);
+          const char *filename = cdio_abspath (dirname, psz_field);
+          if (cd) cd->tocent[i + 1].filename = (char *) filename;
+        } else {
+          goto format_error;
+        }
+        
+        /* TRACK N <mode> */
       } else if (0 == strcmp ("TRACK", psz_keyword)) {
-	int i_track;
+        int i_track;
 
-	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
-	  if (1!=sscanf(psz_field, "%d", &i_track)) {
-	    cdio_log(log_level, 
-		     "%s line %d after word TRACK:",
-		     psz_cue_name, i_line);
-	    cdio_log(log_level, 
-		     "Expecting a track number, got %s", psz_field);
-	    goto err_exit;
-	  }
-	}
-	if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
-	  track_info_t  *this_track=NULL;
+        if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+          if (1!=sscanf(psz_field, "%d", &i_track)) {
+            cdio_log(log_level, 
+                     "%s line %d after word TRACK:",
+                     psz_cue_name, i_line);
+            cdio_log(log_level, 
+                     "Expecting a track number, got %s", psz_field);
+            goto err_exit;
+          }
+        }
+        if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+          track_info_t  *this_track=NULL;
 
-	  if (cd) {
-	    this_track = &(cd->tocent[cd->gen.i_tracks]);
-	    this_track->track_num   = cd->gen.i_tracks;
-	    this_track->num_indices = 0;
-	    b_first_index_for_track = false;
-	    cd->gen.i_tracks++;
-	  }
-	  i++;
-	  
-	  if (0 == strcmp ("AUDIO", psz_field)) {
-	    if (cd) {
-	      this_track->mode           = AUDIO;
-	      this_track->blocksize      = CDIO_CD_FRAMESIZE_RAW;
-	      this_track->datasize       = CDIO_CD_FRAMESIZE_RAW;
-	      this_track->datastart      = 0;
-	      this_track->endsize        = 0;
-	      this_track->track_format   = TRACK_FORMAT_AUDIO;
-	      this_track->track_green    = false;
-	      switch(cd->disc_mode) {
-	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_DA;
-		break;
-	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_MIXED:
-	      case CDIO_DISC_MODE_ERROR:
-		/* Disc type stays the same. */
-		break;
-	      case CDIO_DISC_MODE_CD_DATA:
-	      case CDIO_DISC_MODE_CD_XA:
-		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
-		break;
-	      default:
-		cd->disc_mode = CDIO_DISC_MODE_ERROR;
-	      }
-	    }
-	  } else if (0 == strcmp ("MODE1/2048", psz_field)) {
-	    if (cd) {
-	      this_track->mode        = MODE1;
-	      this_track->blocksize   = 2048;
-	      this_track->track_format= TRACK_FORMAT_DATA;
-	      this_track->track_green = false;
-	      /* Is the below correct? */
-	      this_track->datastart   = 0;         
-	      this_track->datasize    = CDIO_CD_FRAMESIZE;
-	      this_track->endsize     = 0;  
-	      switch(cd->disc_mode) {
-	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_DATA;
-		break;
-	      case CDIO_DISC_MODE_CD_DATA:
-	      case CDIO_DISC_MODE_CD_MIXED:
-	      case CDIO_DISC_MODE_ERROR:
-		/* Disc type stays the same. */
-		break;
-	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_XA:
-		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
-		break;
-	      default:
-		cd->disc_mode = CDIO_DISC_MODE_ERROR;
-	      }
-	    }
-	  } else if (0 == strcmp ("MODE1/2352", psz_field)) {
-	    if (cd) {
-	      this_track->blocksize   = 2352;
-	      this_track->track_format= TRACK_FORMAT_DATA;
-	      this_track->track_green = false;
-	      this_track->datastart   = CDIO_CD_SYNC_SIZE 
-		+ CDIO_CD_HEADER_SIZE;
-	      this_track->datasize    = CDIO_CD_FRAMESIZE; 
-	      this_track->endsize     = CDIO_CD_EDC_SIZE 
-		+ CDIO_CD_M1F1_ZERO_SIZE + CDIO_CD_ECC_SIZE;
-	      this_track->mode        = MODE1_RAW; 
-	      switch(cd->disc_mode) {
-	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_DATA;
-		break;
-	      case CDIO_DISC_MODE_CD_DATA:
-	      case CDIO_DISC_MODE_CD_MIXED:
-	      case CDIO_DISC_MODE_ERROR:
-		/* Disc type stays the same. */
-		break;
-	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_XA:
-		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
-		break;
-	      default:
-		cd->disc_mode = CDIO_DISC_MODE_ERROR;
-	      }
-	    }
-	  } else if (0 == strcmp ("MODE2/2336", psz_field)) {
-	    if (cd) {
-	      this_track->blocksize   = 2336;
-	      this_track->track_format= TRACK_FORMAT_XA;
-	      this_track->track_green = true;
-	      this_track->mode        = MODE2;
-	      this_track->datastart   = CDIO_CD_SYNC_SIZE 
-		+ CDIO_CD_HEADER_SIZE;
-	      this_track->datasize    = M2RAW_SECTOR_SIZE;  
-	      this_track->endsize     = 0;
-	      switch(cd->disc_mode) {
-	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_DATA;
-		break;
-	      case CDIO_DISC_MODE_CD_DATA:
-	      case CDIO_DISC_MODE_CD_MIXED:
-	      case CDIO_DISC_MODE_ERROR:
-		/* Disc type stays the same. */
-		break;
-	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_XA:
-		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
-		break;
-	      default:
-		cd->disc_mode = CDIO_DISC_MODE_ERROR;
-	      }
-	    }
-	  } else if (0 == strcmp ("MODE2/2048", psz_field)) {
-	    if (cd) {
-	      this_track->blocksize   = 2048;
-	      this_track->track_format= TRACK_FORMAT_XA;
-	      this_track->track_green = true;
-	      this_track->mode        = MODE2_FORM1;
-	      switch(cd->disc_mode) {
-	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
-		break;
-	      case CDIO_DISC_MODE_CD_XA:
-	      case CDIO_DISC_MODE_CD_MIXED:
-	      case CDIO_DISC_MODE_ERROR:
-		/* Disc type stays the same. */
-		break;
-	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_DATA:
-		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
-		break;
-	      default:
-		cd->disc_mode = CDIO_DISC_MODE_ERROR;
-	      }
-	    }
-	  } else if (0 == strcmp ("MODE2/2324", psz_field)) {
-	    if (cd) {
-	      this_track->blocksize   = 2324;
-	      this_track->track_format= TRACK_FORMAT_XA;
-	      this_track->track_green = true;
-	      this_track->mode        = MODE2_FORM2;
-	      switch(cd->disc_mode) {
-	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
-		break;
-	      case CDIO_DISC_MODE_CD_XA:
-	      case CDIO_DISC_MODE_CD_MIXED:
-	      case CDIO_DISC_MODE_ERROR:
-		/* Disc type stays the same. */
-		break;
-	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_DATA:
-		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
-		break;
-	      default:
-		cd->disc_mode = CDIO_DISC_MODE_ERROR;
-	      }
-	    }
-	  } else if (0 == strcmp ("MODE2/2336", psz_field)) {
-	    if (cd) {
-	      this_track->blocksize   = 2336;
-	      this_track->track_format= TRACK_FORMAT_XA;
-	      this_track->track_green = true;
-	      this_track->mode        = MODE2_FORM_MIX;
-	      this_track->datastart   = CDIO_CD_SYNC_SIZE 
-		+ CDIO_CD_HEADER_SIZE;
-	      this_track->datasize    = M2RAW_SECTOR_SIZE;  
-	      this_track->endsize     = 0;
-	      switch(cd->disc_mode) {
-	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
-		break;
-	      case CDIO_DISC_MODE_CD_XA:
-	      case CDIO_DISC_MODE_CD_MIXED:
-	      case CDIO_DISC_MODE_ERROR:
-		/* Disc type stays the same. */
-		break;
-	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_DATA:
-		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
-		break;
-	      default:
-		cd->disc_mode = CDIO_DISC_MODE_ERROR;
-	      }
-	    }
-	  } else if (0 == strcmp ("MODE2/2352", psz_field)) {
-	    if (cd) {
-	      this_track->blocksize   = 2352;
-	      this_track->track_format= TRACK_FORMAT_XA;
-	      this_track->track_green = true;
-	      this_track->mode        = MODE2_RAW;
-	      this_track->datastart   = CDIO_CD_SYNC_SIZE 
-		+ CDIO_CD_HEADER_SIZE + CDIO_CD_SUBHEADER_SIZE;
-	      this_track->datasize    = CDIO_CD_FRAMESIZE;
-	      this_track->endsize     = CDIO_CD_SYNC_SIZE + CDIO_CD_ECC_SIZE;
-	      switch(cd->disc_mode) {
-	      case CDIO_DISC_MODE_NO_INFO:
-		cd->disc_mode = CDIO_DISC_MODE_CD_XA;
-		break;
-	      case CDIO_DISC_MODE_CD_XA:
-	      case CDIO_DISC_MODE_CD_MIXED:
-	      case CDIO_DISC_MODE_ERROR:
-		/* Disc type stays the same. */
-		break;
-	      case CDIO_DISC_MODE_CD_DA:
-	      case CDIO_DISC_MODE_CD_DATA:
-		cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
-		break;
-	      default:
-		cd->disc_mode = CDIO_DISC_MODE_ERROR;
-	      }
-	    }
-	  } else {
-	    cdio_log(log_level, 
-		     "%s line %d after word TRACK:",
-		     psz_cue_name, i_line);
-	    cdio_log(log_level, 
-		     "Unknown track mode %s", psz_field);
-	    goto err_exit;
-	  }
-	} else {
-	  goto format_error;
-	}
-	
-	/* FLAGS flag1 flag2 ... */
+          if (cd) {
+            this_track = &(cd->tocent[cd->gen.i_tracks]);
+            this_track->track_num   = cd->gen.i_tracks;
+            this_track->num_indices = 0;
+            b_first_index_for_track = false;
+            cd->gen.i_tracks++;
+          }
+          i++;
+          
+          if (0 == strcmp ("AUDIO", psz_field)) {
+            if (cd) {
+              this_track->mode           = AUDIO;
+              this_track->blocksize      = CDIO_CD_FRAMESIZE_RAW;
+              this_track->datasize       = CDIO_CD_FRAMESIZE_RAW;
+              this_track->datastart      = 0;
+              this_track->endsize        = 0;
+              this_track->track_format   = TRACK_FORMAT_AUDIO;
+              this_track->track_green    = false;
+              switch(cd->disc_mode) {
+              case CDIO_DISC_MODE_NO_INFO:
+                cd->disc_mode = CDIO_DISC_MODE_CD_DA;
+                break;
+              case CDIO_DISC_MODE_CD_DA:
+              case CDIO_DISC_MODE_CD_MIXED:
+              case CDIO_DISC_MODE_ERROR:
+                /* Disc type stays the same. */
+                break;
+              case CDIO_DISC_MODE_CD_DATA:
+              case CDIO_DISC_MODE_CD_XA:
+                cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+                break;
+              default:
+                cd->disc_mode = CDIO_DISC_MODE_ERROR;
+              }
+            }
+          } else if (0 == strcmp ("MODE1/2048", psz_field)) {
+            if (cd) {
+              this_track->mode        = MODE1;
+              this_track->blocksize   = 2048;
+              this_track->track_format= TRACK_FORMAT_DATA;
+              this_track->track_green = false;
+              /* Is the below correct? */
+              this_track->datastart   = 0;         
+              this_track->datasize    = CDIO_CD_FRAMESIZE;
+              this_track->endsize     = 0;  
+              switch(cd->disc_mode) {
+              case CDIO_DISC_MODE_NO_INFO:
+                cd->disc_mode = CDIO_DISC_MODE_CD_DATA;
+                break;
+              case CDIO_DISC_MODE_CD_DATA:
+              case CDIO_DISC_MODE_CD_MIXED:
+              case CDIO_DISC_MODE_ERROR:
+                /* Disc type stays the same. */
+                break;
+              case CDIO_DISC_MODE_CD_DA:
+              case CDIO_DISC_MODE_CD_XA:
+                cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+                break;
+              default:
+                cd->disc_mode = CDIO_DISC_MODE_ERROR;
+              }
+            }
+          } else if (0 == strcmp ("MODE1/2352", psz_field)) {
+            if (cd) {
+              this_track->blocksize   = 2352;
+              this_track->track_format= TRACK_FORMAT_DATA;
+              this_track->track_green = false;
+              this_track->datastart   = CDIO_CD_SYNC_SIZE 
+                + CDIO_CD_HEADER_SIZE;
+              this_track->datasize    = CDIO_CD_FRAMESIZE; 
+              this_track->endsize     = CDIO_CD_EDC_SIZE 
+                + CDIO_CD_M1F1_ZERO_SIZE + CDIO_CD_ECC_SIZE;
+              this_track->mode        = MODE1_RAW; 
+              switch(cd->disc_mode) {
+              case CDIO_DISC_MODE_NO_INFO:
+                cd->disc_mode = CDIO_DISC_MODE_CD_DATA;
+                break;
+              case CDIO_DISC_MODE_CD_DATA:
+              case CDIO_DISC_MODE_CD_MIXED:
+              case CDIO_DISC_MODE_ERROR:
+                /* Disc type stays the same. */
+                break;
+              case CDIO_DISC_MODE_CD_DA:
+              case CDIO_DISC_MODE_CD_XA:
+                cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+                break;
+              default:
+                cd->disc_mode = CDIO_DISC_MODE_ERROR;
+              }
+            }
+          } else if (0 == strcmp ("MODE2/2336", psz_field)) {
+            if (cd) {
+              this_track->blocksize   = 2336;
+              this_track->track_format= TRACK_FORMAT_XA;
+              this_track->track_green = true;
+              this_track->mode        = MODE2;
+              this_track->datastart   = CDIO_CD_SYNC_SIZE 
+                + CDIO_CD_HEADER_SIZE;
+              this_track->datasize    = M2RAW_SECTOR_SIZE;  
+              this_track->endsize     = 0;
+              switch(cd->disc_mode) {
+              case CDIO_DISC_MODE_NO_INFO:
+                cd->disc_mode = CDIO_DISC_MODE_CD_DATA;
+                break;
+              case CDIO_DISC_MODE_CD_DATA:
+              case CDIO_DISC_MODE_CD_MIXED:
+              case CDIO_DISC_MODE_ERROR:
+                /* Disc type stays the same. */
+                break;
+              case CDIO_DISC_MODE_CD_DA:
+              case CDIO_DISC_MODE_CD_XA:
+                cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+                break;
+              default:
+                cd->disc_mode = CDIO_DISC_MODE_ERROR;
+              }
+            }
+          } else if (0 == strcmp ("MODE2/2048", psz_field)) {
+            if (cd) {
+              this_track->blocksize   = 2048;
+              this_track->track_format= TRACK_FORMAT_XA;
+              this_track->track_green = true;
+              this_track->mode        = MODE2_FORM1;
+              switch(cd->disc_mode) {
+              case CDIO_DISC_MODE_NO_INFO:
+                cd->disc_mode = CDIO_DISC_MODE_CD_XA;
+                break;
+              case CDIO_DISC_MODE_CD_XA:
+              case CDIO_DISC_MODE_CD_MIXED:
+              case CDIO_DISC_MODE_ERROR:
+                /* Disc type stays the same. */
+                break;
+              case CDIO_DISC_MODE_CD_DA:
+              case CDIO_DISC_MODE_CD_DATA:
+                cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+                break;
+              default:
+                cd->disc_mode = CDIO_DISC_MODE_ERROR;
+              }
+            }
+          } else if (0 == strcmp ("MODE2/2324", psz_field)) {
+            if (cd) {
+              this_track->blocksize   = 2324;
+              this_track->track_format= TRACK_FORMAT_XA;
+              this_track->track_green = true;
+              this_track->mode        = MODE2_FORM2;
+              switch(cd->disc_mode) {
+              case CDIO_DISC_MODE_NO_INFO:
+                cd->disc_mode = CDIO_DISC_MODE_CD_XA;
+                break;
+              case CDIO_DISC_MODE_CD_XA:
+              case CDIO_DISC_MODE_CD_MIXED:
+              case CDIO_DISC_MODE_ERROR:
+                /* Disc type stays the same. */
+                break;
+              case CDIO_DISC_MODE_CD_DA:
+              case CDIO_DISC_MODE_CD_DATA:
+                cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+                break;
+              default:
+                cd->disc_mode = CDIO_DISC_MODE_ERROR;
+              }
+            }
+          } else if (0 == strcmp ("MODE2/2336", psz_field)) {
+            if (cd) {
+              this_track->blocksize   = 2336;
+              this_track->track_format= TRACK_FORMAT_XA;
+              this_track->track_green = true;
+              this_track->mode        = MODE2_FORM_MIX;
+              this_track->datastart   = CDIO_CD_SYNC_SIZE 
+                + CDIO_CD_HEADER_SIZE;
+              this_track->datasize    = M2RAW_SECTOR_SIZE;  
+              this_track->endsize     = 0;
+              switch(cd->disc_mode) {
+              case CDIO_DISC_MODE_NO_INFO:
+                cd->disc_mode = CDIO_DISC_MODE_CD_XA;
+                break;
+              case CDIO_DISC_MODE_CD_XA:
+              case CDIO_DISC_MODE_CD_MIXED:
+              case CDIO_DISC_MODE_ERROR:
+                /* Disc type stays the same. */
+                break;
+              case CDIO_DISC_MODE_CD_DA:
+              case CDIO_DISC_MODE_CD_DATA:
+                cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+                break;
+              default:
+                cd->disc_mode = CDIO_DISC_MODE_ERROR;
+              }
+            }
+          } else if (0 == strcmp ("MODE2/2352", psz_field)) {
+            if (cd) {
+              this_track->blocksize   = 2352;
+              this_track->track_format= TRACK_FORMAT_XA;
+              this_track->track_green = true;
+              this_track->mode        = MODE2_RAW;
+              this_track->datastart   = CDIO_CD_SYNC_SIZE 
+                + CDIO_CD_HEADER_SIZE + CDIO_CD_SUBHEADER_SIZE;
+              this_track->datasize    = CDIO_CD_FRAMESIZE;
+              this_track->endsize     = CDIO_CD_SYNC_SIZE + CDIO_CD_ECC_SIZE;
+              switch(cd->disc_mode) {
+              case CDIO_DISC_MODE_NO_INFO:
+                cd->disc_mode = CDIO_DISC_MODE_CD_XA;
+                break;
+              case CDIO_DISC_MODE_CD_XA:
+              case CDIO_DISC_MODE_CD_MIXED:
+              case CDIO_DISC_MODE_ERROR:
+                /* Disc type stays the same. */
+                break;
+              case CDIO_DISC_MODE_CD_DA:
+              case CDIO_DISC_MODE_CD_DATA:
+                cd->disc_mode = CDIO_DISC_MODE_CD_MIXED;
+                break;
+              default:
+                cd->disc_mode = CDIO_DISC_MODE_ERROR;
+              }
+            }
+          } else {
+            cdio_log(log_level, 
+                     "%s line %d after word TRACK:",
+                     psz_cue_name, i_line);
+            cdio_log(log_level, 
+                     "Unknown track mode %s", psz_field);
+            goto err_exit;
+          }
+        } else {
+          goto format_error;
+        }
+        
+        /* FLAGS flag1 flag2 ... */
       } else if (0 == strcmp ("FLAGS", psz_keyword)) {
-	if (0 <= i) {
-	  while (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
-	    if (0 == strcmp ("PRE", psz_field)) {
-	      if (cd) cd->tocent[i].flags |= PRE_EMPHASIS;
-	    } else if (0 == strcmp ("DCP", psz_field)) {
-	      if (cd) cd->tocent[i].flags |= COPY_PERMITTED;
-	    } else if (0 == strcmp ("4CH", psz_field)) {
-	      if (cd) cd->tocent[i].flags |= FOUR_CHANNEL_AUDIO;
-	    } else if (0 == strcmp ("SCMS", psz_field)) {
-	      if (cd) cd->tocent[i].flags |= SCMS;
-	    } else {
-	      goto format_error;
-	    }
-	  }
-	} else {
-	  goto format_error;
-	}
-	
-	/* ISRC CCOOOYYSSSSS */
+        if (0 <= i) {
+          while (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+            if (0 == strcmp ("PRE", psz_field)) {
+              if (cd) cd->tocent[i].flags |= PRE_EMPHASIS;
+            } else if (0 == strcmp ("DCP", psz_field)) {
+              if (cd) cd->tocent[i].flags |= COPY_PERMITTED;
+            } else if (0 == strcmp ("4CH", psz_field)) {
+              if (cd) cd->tocent[i].flags |= FOUR_CHANNEL_AUDIO;
+            } else if (0 == strcmp ("SCMS", psz_field)) {
+              if (cd) cd->tocent[i].flags |= SCMS;
+            } else {
+              goto format_error;
+            }
+          }
+        } else {
+          goto format_error;
+        }
+        
+        /* ISRC CCOOOYYSSSSS */
       } else if (0 == strcmp ("ISRC", psz_keyword)) {
-	if (0 <= i) {
-	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
-	    if (cd) cd->tocent[i].isrc = strdup (psz_field);
-	  } else {
-	    goto format_error;
-	  }
-	} else {
-	  goto in_global_section;
-	}
-	
-	/* PREGAP MM:SS:FF */
+        if (0 <= i) {
+          if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+            if (cd) cd->tocent[i].isrc = strdup (psz_field);
+          } else {
+            goto format_error;
+          }
+        } else {
+          goto in_global_section;
+        }
+        
+        /* PREGAP MM:SS:FF */
       } else if (0 == strcmp ("PREGAP", psz_keyword)) {
-	if (0 <= i) {
-	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
-	    lba_t lba = cdio_lsn_to_lba(cdio_mmssff_to_lba (psz_field));
-	    if (CDIO_INVALID_LBA == lba) {
-	      cdio_log(log_level, "%s line %d: after word PREGAP:", 
-		       psz_cue_name, i_line);
-	      cdio_log(log_level, "Invalid MSF string %s", 
-		       psz_field);
-	      goto err_exit;
-	    }
-	    if (cd) {
-	      cd->tocent[i].silence = lba;
-	    }
-	  } else {
-	    goto format_error;
-	  } if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
-	    goto format_error;
-	  }
-	} else {
-	  goto in_global_section;
-	}
-	
-	/* INDEX [##] MM:SS:FF */
+        if (0 <= i) {
+          if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+            lba_t lba = cdio_lsn_to_lba(cdio_mmssff_to_lba (psz_field));
+            if (CDIO_INVALID_LBA == lba) {
+              cdio_log(log_level, "%s line %d: after word PREGAP:", 
+                       psz_cue_name, i_line);
+              cdio_log(log_level, "Invalid MSF string %s", 
+                       psz_field);
+              goto err_exit;
+            }
+            if (cd) {
+              cd->tocent[i].silence = lba;
+            }
+          } else {
+            goto format_error;
+          } if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+            goto format_error;
+          }
+        } else {
+          goto in_global_section;
+        }
+        
+        /* INDEX [##] MM:SS:FF */
       } else if (0 == strcmp ("INDEX", psz_keyword)) {
-	if (0 <= i) {
-	  if (NULL != (psz_field = strtok (NULL, " \t\n\r")))
-	    if (1!=sscanf(psz_field, "%d", &start_index)) {
-	      cdio_log(log_level, 
-		       "%s line %d after word INDEX:",
-		       psz_cue_name, i_line);
-	      cdio_log(log_level, 
-		       "expecting an index number, got %s", 
-		       psz_field);
-	      goto err_exit;
-	    }
-	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
-	    lba_t lba = cdio_mmssff_to_lba (psz_field);
-	    if (CDIO_INVALID_LBA == lba) {
-	      cdio_log(log_level, "%s line %d: after word INDEX:", 
-		       psz_cue_name, i_line);
-	      cdio_log(log_level, "Invalid MSF string %s", 
-		       psz_field);
-	      goto err_exit;
-	    }
-	    if (cd) {
+        if (0 <= i) {
+          if (NULL != (psz_field = strtok (NULL, " \t\n\r")))
+            if (1!=sscanf(psz_field, "%d", &start_index)) {
+              cdio_log(log_level, 
+                       "%s line %d after word INDEX:",
+                       psz_cue_name, i_line);
+              cdio_log(log_level, 
+                       "expecting an index number, got %s", 
+                       psz_field);
+              goto err_exit;
+            }
+          if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+            lba_t lba = cdio_mmssff_to_lba (psz_field);
+            if (CDIO_INVALID_LBA == lba) {
+              cdio_log(log_level, "%s line %d: after word INDEX:", 
+                       psz_cue_name, i_line);
+              cdio_log(log_level, "Invalid MSF string %s", 
+                       psz_field);
+              goto err_exit;
+            }
+            if (cd) {
 #if FIXED_ME
-	      cd->tocent[i].indexes[cd->tocent[i].nindex++] = lba;
+              cd->tocent[i].indexes[cd->tocent[i].nindex++] = lba;
 #else     
-	      track_info_t  *this_track=
-		&(cd->tocent[cd->gen.i_tracks - cd->gen.i_first_track]);
+              track_info_t  *this_track=
+                &(cd->tocent[cd->gen.i_tracks - cd->gen.i_first_track]);
 
-	      switch (start_index) {
+              switch (start_index) {
 
-	      case 0:
-		lba += CDIO_PREGAP_SECTORS;
-		this_track->pregap = lba;
-		break;
+              case 0:
+                lba += CDIO_PREGAP_SECTORS;
+                this_track->pregap = lba;
+                break;
 
-	      case 1:
-		if (!b_first_index_for_track) {
-		  lba += CDIO_PREGAP_SECTORS;
-		  cdio_lba_to_msf(lba, &(this_track->start_msf));
-		  b_first_index_for_track = true;
-		  this_track->start_lba   = lba;
-		}
-		
-		if (cd->gen.i_tracks > 1) {
-		  /* Figure out number of sectors for previous track */
-		  track_info_t *prev_track=&(cd->tocent[cd->gen.i_tracks-2]);
-		  if ( this_track->start_lba < prev_track->start_lba ) {
-		    cdio_log (log_level,
-			      "track %d at LBA %lu starts before track %d at LBA %lu", 
-			      cd->gen.i_tracks,   
-			      (unsigned long int) this_track->start_lba, 
-			      cd->gen.i_tracks, 
-			      (unsigned long int) prev_track->start_lba);
-		    prev_track->sec_count = 0;
-		  } else if ( this_track->start_lba >= prev_track->start_lba 
-			      + CDIO_PREGAP_SECTORS ) {
-		    prev_track->sec_count = this_track->start_lba - 
-		      prev_track->start_lba - CDIO_PREGAP_SECTORS ;
-		  } else {
-		    cdio_log (log_level, 
-			      "%lu fewer than pregap (%d) sectors in track %d",
-			      (long unsigned int) 
-			      this_track->start_lba - prev_track->start_lba,
-			      CDIO_PREGAP_SECTORS,
-			      cd->gen.i_tracks);
-		    /* Include pregap portion in sec_count. Maybe the pregap
-		       was omitted. */
-		    prev_track->sec_count = this_track->start_lba - 
-		      prev_track->start_lba;
-		  }
-		}
-		this_track->num_indices++;
-		break;
+              case 1:
+                if (!b_first_index_for_track) {
+                  lba += CDIO_PREGAP_SECTORS;
+                  cdio_lba_to_msf(lba, &(this_track->start_msf));
+                  b_first_index_for_track = true;
+                  this_track->start_lba   = lba;
+                }
+                
+                if (cd->gen.i_tracks > 1) {
+                  /* Figure out number of sectors for previous track */
+                  track_info_t *prev_track=&(cd->tocent[cd->gen.i_tracks-2]);
+                  if ( this_track->start_lba < prev_track->start_lba ) {
+                    cdio_log (log_level,
+                              "track %d at LBA %lu starts before track %d at LBA %lu", 
+                              cd->gen.i_tracks,   
+                              (unsigned long int) this_track->start_lba, 
+                              cd->gen.i_tracks, 
+                              (unsigned long int) prev_track->start_lba);
+                    prev_track->sec_count = 0;
+                  } else if ( this_track->start_lba >= prev_track->start_lba 
+                              + CDIO_PREGAP_SECTORS ) {
+                    prev_track->sec_count = this_track->start_lba - 
+                      prev_track->start_lba - CDIO_PREGAP_SECTORS ;
+                  } else {
+                    cdio_log (log_level, 
+                              "%lu fewer than pregap (%d) sectors in track %d",
+                              (long unsigned int) 
+                              this_track->start_lba - prev_track->start_lba,
+                              CDIO_PREGAP_SECTORS,
+                              cd->gen.i_tracks);
+                    /* Include pregap portion in sec_count. Maybe the pregap
+                       was omitted. */
+                    prev_track->sec_count = this_track->start_lba - 
+                      prev_track->start_lba;
+                  }
+                }
+                this_track->num_indices++;
+                break;
 
-	      default:
-		break;
-	      }
-	    }
+              default:
+                break;
+              }
+            }
 #endif  
-	  } else {
-	    goto format_error;
-	  }
-	} else {
-	  goto in_global_section;
-	}
-	
-	/* CD-Text */
-      } else if ( CDTEXT_INVALID != 
-		  (cdtext_key = cdtext_is_keyword (psz_keyword)) ) {
+          } else {
+            goto format_error;
+          }
+        } else {
+          goto in_global_section;
+        }
+        
+        /* CD-Text */
+      } else if ( CDTEXT_FIELD_INVALID != 
+                  (cdtext_key = cdtext_is_field (psz_keyword)) ) {
         if (cd) {
           if (NULL == cd->gen.cdtext) {
-            cd->gen.cdtext = malloc(sizeof(cdtext_t));
-            cdtext_init (cd->gen.cdtext);
+            cd->gen.cdtext = cdtext_init ();
+            cd->gen.cdtext->block[cd->gen.cdtext->block_i].language_code = CDTEXT_LANGUAGE_ENGLISH;
           }
-          cdtext_set (cdtext_key, 
+          cdtext_set (cd->gen.cdtext, cdtext_key, (uint8_t*) strtok (NULL, "\"\t\n\r"), 
                       (-1 == i ? 0 : cd->gen.i_first_track + i + 1),
-                      strtok (NULL, "\"\t\n\r"), cd->gen.cdtext);
+                      "ISO-8859-1");
         } 
-	
-	/* unrecognized line */
+        
+        /* unrecognized line */
       } else {
-	cdio_log(log_level, "%s line %d: warning: unrecognized keyword: %s", 
-		 psz_cue_name, i_line, psz_keyword);
-	goto err_exit;
+        cdio_log(log_level, "%s line %d: warning: unrecognized keyword: %s", 
+                 psz_cue_name, i_line, psz_keyword);
+        goto err_exit;
       }
     }
   }
@@ -800,17 +806,17 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
 
  format_error:
   cdio_log(log_level, "%s line %d after word %s", 
-	   psz_cue_name, i_line, psz_keyword);
+           psz_cue_name, i_line, psz_keyword);
   goto err_exit;
 
  in_global_section:
   cdio_log(log_level, "%s line %d: word %s not allowed in global section", 
-	   psz_cue_name, i_line, psz_keyword);
+           psz_cue_name, i_line, psz_keyword);
   goto err_exit;
 
  not_in_global_section:
   cdio_log(log_level, "%s line %d: word %s only allowed in global section", 
-	   psz_cue_name, i_line, psz_keyword);
+           psz_cue_name, i_line, psz_keyword);
 
  err_exit: 
   fclose (fp);
@@ -824,7 +830,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
  */
 static driver_return_code_t
 _read_audio_sectors_bincue (void *p_user_data, void *data, lsn_t lsn, 
-			  unsigned int nblocks)
+                          unsigned int nblocks)
 {
   _img_private_t *p_env = p_user_data;
   int ret;
@@ -846,7 +852,7 @@ _read_audio_sectors_bincue (void *p_user_data, void *data, lsn_t lsn,
  */
 static driver_return_code_t
 _read_mode1_sector_bincue (void *p_user_data, void *data, lsn_t lsn, 
-			   bool b_form2)
+                           bool b_form2)
 {
   _img_private_t *p_env = p_user_data;
   int ret;
@@ -861,7 +867,7 @@ _read_mode1_sector_bincue (void *p_user_data, void *data, lsn_t lsn,
   if (ret==0) return ret;
 
   memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
-	  b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
+          b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
 
   return DRIVER_OP_SUCCESS;
 }
@@ -873,7 +879,7 @@ _read_mode1_sector_bincue (void *p_user_data, void *data, lsn_t lsn,
  */
 static driver_return_code_t
 _read_mode1_sectors_bincue (void *p_user_data, void *data, lsn_t lsn, 
-			    bool b_form2, unsigned int nblocks)
+                            bool b_form2, unsigned int nblocks)
 {
   _img_private_t *p_env = p_user_data;
   int i;
@@ -882,8 +888,8 @@ _read_mode1_sectors_bincue (void *p_user_data, void *data, lsn_t lsn,
 
   for (i = 0; i < nblocks; i++) {
     if ( (retval = _read_mode1_sector_bincue (p_env, 
-					    ((char *)data) + (blocksize * i),
-					    lsn + i, b_form2)) )
+                                            ((char *)data) + (blocksize * i),
+                                            lsn + i, b_form2)) )
       return retval;
   }
   return DRIVER_OP_SUCCESS;
@@ -895,7 +901,7 @@ _read_mode1_sectors_bincue (void *p_user_data, void *data, lsn_t lsn,
  */
 static driver_return_code_t
 _read_mode2_sector_bincue (void *p_user_data, void *data, lsn_t lsn, 
-			 bool b_form2)
+                         bool b_form2)
 {
   _img_private_t *p_env = p_user_data;
   int ret;
@@ -919,7 +925,7 @@ _read_mode2_sector_bincue (void *p_user_data, void *data, lsn_t lsn,
   /* See NOTE above. */
   if (b_form2)
     memcpy (data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
-	    M2RAW_SECTOR_SIZE);
+            M2RAW_SECTOR_SIZE);
   else
     memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, CDIO_CD_FRAMESIZE);
 
@@ -933,7 +939,7 @@ _read_mode2_sector_bincue (void *p_user_data, void *data, lsn_t lsn,
  */
 static driver_return_code_t
 _read_mode2_sectors_bincue (void *p_user_data, void *data, lsn_t lsn, 
-			    bool b_form2, unsigned int nblocks)
+                            bool b_form2, unsigned int nblocks)
 {
   _img_private_t *p_env = p_user_data;
   int i;
@@ -942,8 +948,8 @@ _read_mode2_sectors_bincue (void *p_user_data, void *data, lsn_t lsn,
 
   for (i = 0; i < nblocks; i++) {
     if ( (retval = _read_mode2_sector_bincue (p_env, 
-					    ((char *)data) + (blocksize * i),
-					    lsn + i, b_form2)) )
+                                            ((char *)data) + (blocksize * i),
+                                            lsn + i, b_form2)) )
       return retval;
   }
   return 0;
@@ -989,13 +995,13 @@ static bool
 get_hwinfo_bincue ( const CdIo_t *p_cdio, /*out*/ cdio_hwinfo_t *hw_info)
 {
   strncpy(hw_info->psz_vendor, "libcdio",
-	  sizeof(hw_info->psz_vendor)-1);
+          sizeof(hw_info->psz_vendor)-1);
   hw_info->psz_vendor[sizeof(hw_info->psz_vendor)-1] = '\0';
   strncpy(hw_info->psz_model, "CDRWIN",
-	 sizeof(hw_info->psz_model)-1);
+         sizeof(hw_info->psz_model)-1);
   hw_info->psz_model[sizeof(hw_info->psz_model)-1] = '\0';
   strncpy(hw_info->psz_revision, CDIO_VERSION, 
-	  sizeof(hw_info->psz_revision)-1);
+          sizeof(hw_info->psz_revision)-1);
   hw_info->psz_revision[sizeof(hw_info->psz_revision)-1] = '\0';
   return true;
   
@@ -1033,7 +1039,7 @@ _get_track_green_bincue(void *p_user_data, track_t i_track)
   
   if ( NULL == p_env || 
        ( i_track < p_env->gen.i_first_track
-	 || i_track >= p_env->gen.i_tracks + p_env->gen.i_first_track ) )
+         || i_track >= p_env->gen.i_tracks + p_env->gen.i_first_track ) )
     return false;
 
   return p_env->tocent[i_track-p_env->gen.i_first_track].track_green;
@@ -1084,16 +1090,16 @@ cdio_is_cuefile(const char *psz_cue_name)
     if (psz_cue_name[i]=='c' && psz_cue_name[i+1]=='u' && psz_cue_name[i+2]=='e') {
       psz_bin_name[i++]='b'; psz_bin_name[i++]='i'; psz_bin_name[i++]='n';
       if (parse_cuefile(NULL, psz_cue_name))
-	return psz_bin_name;
+        return psz_bin_name;
       else 
-	goto error;
+        goto error;
     } 
     else if (psz_cue_name[i]=='C' && psz_cue_name[i+1]=='U' && psz_cue_name[i+2]=='E') {
       psz_bin_name[i++]='B'; psz_bin_name[i++]='I'; psz_bin_name[i++]='N';
       if (parse_cuefile(NULL, psz_cue_name))
-	return psz_bin_name;
+        return psz_bin_name;
       else 
-	goto error;
+        goto error;
     }
   }
  error:
@@ -1140,7 +1146,7 @@ cdio_open_am_bincue (const char *psz_source_name, const char *psz_access_mode)
 {
   if (psz_access_mode != NULL)
     cdio_warn ("there is only one access mode for bincue. Arg %s ignored",
-	       psz_access_mode);
+               psz_access_mode);
   return cdio_open_bincue(psz_source_name);
 }
 
@@ -1231,7 +1237,7 @@ cdio_open_cue (const char *psz_cue_name)
   
   if (NULL == psz_bin_name) {
     cdio_error ("source name %s is not recognized as a CUE file", 
-		psz_cue_name);
+                psz_cue_name);
   }
   
   _set_arg_image (p_data, "cue", psz_cue_name);

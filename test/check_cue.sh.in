@@ -72,7 +72,7 @@ if test -f  ${abs_top_srcdir}/test/data/${fname}.bin ; then
   fi
 
 else 
-  echo "Don't see CUE file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
+  echo "Don't see binary file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
 fi
 
 if test -n "@HAVE_ROCK@"; then 

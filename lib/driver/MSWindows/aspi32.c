@@ -50,7 +50,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "aspi32.h"
-#include "cdtext_private.h"
 
 /* Amount of time we are willing to wait for an operation to complete.
    10 seconds? 
