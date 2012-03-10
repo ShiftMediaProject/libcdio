@@ -19,7 +19,7 @@
 /* Simple program to list CD-Text info of a Compact Disc using
    libcdio.  See also corresponding C++ programs of similar names. */
 
-#define EXAMPLE_CUE_FILE "../test/data/cat.cue"
+#define EXAMPLE_CUE_FILE "../test/data/cdtext.cue"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
