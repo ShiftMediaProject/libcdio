@@ -728,7 +728,7 @@ cdtext_read_pack(cdtext_pack_t *p_pack, const uint8_t *p_data) {
   p_pack->text[10] = p_data[14];
   p_pack->text[11] = p_data[15];
   p_pack->crc[0]   = p_data[16];
-  p_pack->crc[2]   = p_data[17];
+  p_pack->crc[1]   = p_data[17];
 
   return 0;
 }
