@@ -1,6 +1,4 @@
 /*
-    $Id: track.h,v 1.14 2008/03/25 15:59:09 karl Exp $
-
     Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify

@@ -66,15 +66,15 @@
 #define DEFAULT_CDIO_DEVICE "videocd.bin"
 #define DEFAULT_CDIO_CUE    "videocd.cue"
 
-static lsn_t get_disc_last_lsn_bincue (void *p_user_data);
+static lsn_t get_disc_last_lsn_bincue(void *p_user_data);
 #include "image_common.h"
-static bool     parse_cuefile (_img_private_t *cd, const char *toc_name);
+static bool parse_cuefile(_img_private_t *cd, const char *toc_name);
 
 /*!
   Initialize image structures.
  */
 static bool
-_init_bincue (_img_private_t *p_env)
+_init_bincue(_img_private_t *p_env)
 {
   lsn_t lead_lsn;
 
@@ -338,22 +338,24 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         uint8_t *ptr;
         int size;
         CdioDataSource_t *source;
-	      const char *dirname = cdio_dirname(psz_cue_name);
-	      const char *psz_filename = cdio_abspath (dirname, psz_field);
+        const char *dirname = cdio_dirname(psz_cue_name);
+        const char *psz_filename = cdio_abspath (dirname, psz_field);
 
         if(NULL == (source = cdio_stdio_new(psz_filename))) {
-          cdio_log (log_level, "%s line %d: can't open file `%s' for reading", psz_cue_name, i_line, psz_field);
+          cdio_log(log_level, "%s line %d: can't open file `%s' for reading", 
+		   psz_cue_name, i_line, psz_field);
           goto err_exit;
         }
         size = cdio_stream_read(source, cdt_data, CDTEXT_LEN_BINARY_MAX, 1);
 
         if (size < 5) {
-          cdio_log (log_level, "%s line %d: file `%s' is too small to contain CD-TEXT",
+          cdio_log(log_level, 
+		   "%s line %d: file `%s' is too small to contain CD-TEXT",
                    psz_cue_name, i_line, (char *) psz_filename);
           goto err_exit;
         }
 
-        /* cut header */
+        /* Truncate header when it is too large. */
         if (cdt_data[0] > 0x80) {
           ptr = &cdt_data[4];
           size -= 4;
@@ -390,10 +392,10 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         }
         
         /* TRACK N <mode> */
-      } else if (0 == strcmp ("TRACK", psz_keyword)) {
+      } else if (0 == strcmp("TRACK", psz_keyword)) {
         int i_track;
 
-        if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+        if (NULL != (psz_field = strtok(NULL, " \t\n\r"))) {
           if (1!=sscanf(psz_field, "%d", &i_track)) {
             cdio_log(log_level, 
                      "%s line %d after word TRACK:",
@@ -403,7 +405,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
             goto err_exit;
           }
         }
-        if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+        if (NULL != (psz_field = strtok(NULL, " \t\n\r"))) {
           track_info_t  *this_track=NULL;
 
           if (cd) {
@@ -415,7 +417,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
           }
           i++;
           
-          if (0 == strcmp ("AUDIO", psz_field)) {
+          if (0 == strcmp("AUDIO", psz_field)) {
             if (cd) {
               this_track->mode           = AUDIO;
               this_track->blocksize      = CDIO_CD_FRAMESIZE_RAW;
@@ -441,7 +443,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
                 cd->disc_mode = CDIO_DISC_MODE_ERROR;
               }
             }
-          } else if (0 == strcmp ("MODE1/2048", psz_field)) {
+          } else if (0 == strcmp("MODE1/2048", psz_field)) {
             if (cd) {
               this_track->mode        = MODE1;
               this_track->blocksize   = 2048;
@@ -468,7 +470,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
                 cd->disc_mode = CDIO_DISC_MODE_ERROR;
               }
             }
-          } else if (0 == strcmp ("MODE1/2352", psz_field)) {
+          } else if (0 == strcmp("MODE1/2352", psz_field)) {
             if (cd) {
               this_track->blocksize   = 2352;
               this_track->track_format= TRACK_FORMAT_DATA;
@@ -496,7 +498,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
                 cd->disc_mode = CDIO_DISC_MODE_ERROR;
               }
             }
-          } else if (0 == strcmp ("MODE2/2336", psz_field)) {
+          } else if (0 == strcmp("MODE2/2336", psz_field)) {
             if (cd) {
               this_track->blocksize   = 2336;
               this_track->track_format= TRACK_FORMAT_XA;
@@ -523,7 +525,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
                 cd->disc_mode = CDIO_DISC_MODE_ERROR;
               }
             }
-          } else if (0 == strcmp ("MODE2/2048", psz_field)) {
+          } else if (0 == strcmp("MODE2/2048", psz_field)) {
             if (cd) {
               this_track->blocksize   = 2048;
               this_track->track_format= TRACK_FORMAT_XA;
@@ -546,7 +548,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
                 cd->disc_mode = CDIO_DISC_MODE_ERROR;
               }
             }
-          } else if (0 == strcmp ("MODE2/2324", psz_field)) {
+          } else if (0 == strcmp("MODE2/2324", psz_field)) {
             if (cd) {
               this_track->blocksize   = 2324;
               this_track->track_format= TRACK_FORMAT_XA;
@@ -569,7 +571,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
                 cd->disc_mode = CDIO_DISC_MODE_ERROR;
               }
             }
-          } else if (0 == strcmp ("MODE2/2336", psz_field)) {
+          } else if (0 == strcmp("MODE2/2336", psz_field)) {
             if (cd) {
               this_track->blocksize   = 2336;
               this_track->track_format= TRACK_FORMAT_XA;
@@ -596,7 +598,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
                 cd->disc_mode = CDIO_DISC_MODE_ERROR;
               }
             }
-          } else if (0 == strcmp ("MODE2/2352", psz_field)) {
+          } else if (0 == strcmp("MODE2/2352", psz_field)) {
             if (cd) {
               this_track->blocksize   = 2352;
               this_track->track_format= TRACK_FORMAT_XA;
@@ -636,7 +638,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         }
         
         /* FLAGS flag1 flag2 ... */
-      } else if (0 == strcmp ("FLAGS", psz_keyword)) {
+      } else if (0 == strcmp("FLAGS", psz_keyword)) {
         if (0 <= i) {
           while (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
             if (0 == strcmp ("PRE", psz_field)) {
@@ -656,7 +658,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         }
         
         /* ISRC CCOOOYYSSSSS */
-      } else if (0 == strcmp ("ISRC", psz_keyword)) {
+      } else if (0 == strcmp("ISRC", psz_keyword)) {
         if (0 <= i) {
           if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
             if (cd) cd->tocent[i].isrc = strdup (psz_field);
@@ -668,9 +670,9 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         }
         
         /* PREGAP MM:SS:FF */
-      } else if (0 == strcmp ("PREGAP", psz_keyword)) {
+      } else if (0 == strcmp("PREGAP", psz_keyword)) {
         if (0 <= i) {
-          if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+          if (NULL != (psz_field = strtok(NULL, " \t\n\r"))) {
             lba_t lba = cdio_lsn_to_lba(cdio_mmssff_to_lba (psz_field));
             if (CDIO_INVALID_LBA == lba) {
               cdio_log(log_level, "%s line %d: after word PREGAP:", 
@@ -684,7 +686,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
             }
           } else {
             goto format_error;
-          } if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+          } if (NULL != (psz_field = strtok(NULL, " \t\n\r"))) {
             goto format_error;
           }
         } else {
@@ -694,7 +696,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         /* INDEX [##] MM:SS:FF */
       } else if (0 == strcmp ("INDEX", psz_keyword)) {
         if (0 <= i) {
-          if (NULL != (psz_field = strtok (NULL, " \t\n\r")))
+          if (NULL != (psz_field = strtok(NULL, " \t\n\r")))
             if (1!=sscanf(psz_field, "%d", &start_index)) {
               cdio_log(log_level, 
                        "%s line %d after word INDEX:",
@@ -704,7 +706,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
                        psz_field);
               goto err_exit;
             }
-          if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+          if (NULL != (psz_field = strtok(NULL, " \t\n\r"))) {
             lba_t lba = cdio_mmssff_to_lba (psz_field);
             if (CDIO_INVALID_LBA == lba) {
               cdio_log(log_level, "%s line %d: after word INDEX:", 
@@ -786,7 +788,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
             cd->gen.cdtext = cdtext_init ();
             cd->gen.cdtext->block[cd->gen.cdtext->block_i].language_code = CDTEXT_LANGUAGE_ENGLISH;
           }
-          cdtext_set (cd->gen.cdtext, cdtext_key, (uint8_t*) strtok (NULL, "\"\t\n\r"), 
+          cdtext_set (cd->gen.cdtext, cdtext_key, (uint8_t*) strtok(NULL, "\"\t\n\r"), 
                       (-1 == i ? 0 : cd->gen.i_first_track + i + 1),
                       "ISO-8859-1");
         } 

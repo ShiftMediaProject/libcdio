@@ -39,6 +39,10 @@
 #define MAX_CDTEXT_GENRE_CODE     28
 #define MAX_CDTEXT_LANGUAGE_CODE 127
 
+#ifndef CDIO_CD_MAX_TRACKS
+# define CDIO_CD_MAX_TRACKS 99 /* Largest CD track number */
+#endif
+
 const char *cdtext_field[MAX_CDTEXT_FIELDS] = 
 {
   "TITLE",
@@ -197,7 +201,7 @@ const char *cdtext_language[MAX_CDTEXT_LANGUAGE_CODE] =
   Return string representation of given field type.
 */
 const char *
-cdtext_field2str (cdtext_field_t i)
+cdtext_field2str(cdtext_field_t i)
 {
   if (i >= MAX_CDTEXT_FIELDS)
     return "INVALID";
@@ -209,7 +213,7 @@ cdtext_field2str (cdtext_field_t i)
   Return string representation of the given genre code.
 */
 const char *
-cdtext_genre2str (cdtext_genre_t i)
+cdtext_genre2str(cdtext_genre_t i)
 {
   if (i >= MAX_CDTEXT_GENRE_CODE)
     return "INVALID";
@@ -221,7 +225,7 @@ cdtext_genre2str (cdtext_genre_t i)
   Return string representation of the given language code.
 */
 const char *
-cdtext_lang2str (cdtext_lang_t i)
+cdtext_lang2str(cdtext_lang_t i)
 {
   if (i >= MAX_CDTEXT_LANGUAGE_CODE)
     return "INVALID";
@@ -235,7 +239,7 @@ cdtext_lang2str (cdtext_lang_t i)
   @param p_cdtext the CD-TEXT object 
 */
 void 
-cdtext_destroy (cdtext_t *p_cdtext)
+cdtext_destroy(cdtext_t *p_cdtext)
 {
   cdtext_field_t k;
   track_t j;
@@ -261,7 +265,7 @@ cdtext_destroy (cdtext_t *p_cdtext)
   @see cdtext_get_const
 */
 char *
-cdtext_get (const cdtext_t *p_cdtext, cdtext_field_t field, track_t track)
+cdtext_get(const cdtext_t *p_cdtext, cdtext_field_t field, track_t track)
 {
   const char *ret = cdtext_get_const(p_cdtext, field, track);
   if (NULL == ret)
@@ -281,12 +285,12 @@ cdtext_get (const cdtext_t *p_cdtext, cdtext_field_t field, track_t track)
   @param track specifies the track, 0 stands for disc
 */
 const char *
-cdtext_get_const (const cdtext_t *p_cdtext, cdtext_field_t field, track_t track)
+cdtext_get_const(const cdtext_t *p_cdtext, cdtext_field_t field, track_t track)
 {
   if (CDTEXT_FIELD_INVALID == field
       || NULL == p_cdtext
       || 0 > track
-      || 99 < track)
+      || CDIO_CD_MAX_TRACKS < track)
     return NULL;
 
   return p_cdtext->block[p_cdtext->block_i].track[track].field[field];
@@ -299,7 +303,7 @@ cdtext_get_const (const cdtext_t *p_cdtext, cdtext_field_t field, track_t track)
   @param p_cdtext the CD-TEXT object
 */
 cdtext_lang_t
-cdtext_get_language (const cdtext_t *p_cdtext)
+cdtext_get_language(const cdtext_t *p_cdtext)
 {
   if (NULL == p_cdtext)
     return CDTEXT_LANGUAGE_UNKNOWN;
@@ -314,7 +318,7 @@ cdtext_get_language (const cdtext_t *p_cdtext)
   @param p_cdtext the CD-TEXT object
 */
 cdtext_lang_t
-*cdtext_languages_available (const cdtext_t *p_cdtext)
+*cdtext_languages_available(const cdtext_t *p_cdtext)
 {
   static cdtext_lang_t avail[CDTEXT_NUM_BLOCKS_MAX];
   int i, j=0;
@@ -343,7 +347,7 @@ cdtext_lang_t
   @return true on success, false if language is not available
 */
 bool
-cdtext_select_language (cdtext_t *p_cdtext, const char *language)
+cdtext_select_language(cdtext_t *p_cdtext, const char *language)
 {
   cdtext_lang_t lang_id;
   lang_id = cdtext_is_language(language);
@@ -374,14 +378,14 @@ cdtext_select_language (cdtext_t *p_cdtext, const char *language)
 
 */
 cdtext_t 
-*cdtext_init (void)
+*cdtext_init(void)
 {
   cdtext_field_t k;
   track_t j;
   int i;
   cdtext_t *p_cdtext;
 
-  p_cdtext = (cdtext_t *) malloc (sizeof (struct cdtext_s));
+  p_cdtext = (cdtext_t *) malloc(sizeof(struct cdtext_s));
 
   for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++) {
     for (j=0; j<CDTEXT_NUM_TRACKS_MAX; j++) {
@@ -413,7 +417,7 @@ cdtext_is_field (const char *key)
   unsigned int i;
   
   for (i = 0; i < MAX_CDTEXT_FIELDS ; i++)
-    if (0 == strcmp (cdtext_field[i], key)) {
+    if (0 == strcmp(cdtext_field[i], key)) {
       return i;
     }
   return CDTEXT_FIELD_INVALID;
@@ -429,12 +433,12 @@ cdtext_is_field (const char *key)
   @return CDTEXT_LANGUAGE_UNKNOWN if language is not supported
 */
 cdtext_lang_t
-cdtext_is_language (const char *lang)
+cdtext_is_language(const char *lang)
 {
   unsigned int i;
   
   for (i = 0; i < MAX_CDTEXT_LANGUAGE_CODE; i++)
-    if (0 == strcmp (cdtext_language[i], lang)) {
+    if (0 == strcmp(cdtext_language[i], lang)) {
       return i;
     }
   return CDTEXT_LANGUAGE_UNKNOWN;
@@ -452,15 +456,16 @@ cdtext_is_language (const char *lang)
   @param charset charset to convert from
  */
 void 
-cdtext_set (cdtext_t *p_cdtext, cdtext_field_t key, const uint8_t *value, 
+cdtext_set(cdtext_t *p_cdtext, cdtext_field_t key, const uint8_t *value, 
            track_t track, const char *charset)
 {
-  if (NULL == value || key == CDTEXT_FIELD_INVALID || 0 > track || 99 < track)
+  if (NULL == value || key == CDTEXT_FIELD_INVALID || 0 > track 
+      || CDIO_CD_MAX_TRACKS < track)
     return;
 
   /* free old memory */
   if (p_cdtext->block[p_cdtext->block_i].track[track].field[key]) 
-    free (p_cdtext->block[p_cdtext->block_i].track[track].field[key]);
+    free(p_cdtext->block[p_cdtext->block_i].track[track].field[key]);
 
   /* recode to UTF-8 */
   if (NULL != charset) {
@@ -469,7 +474,7 @@ cdtext_set (cdtext_t *p_cdtext, cdtext_field_t key, const uint8_t *value,
                         &utf8_str, charset);
     p_cdtext->block[p_cdtext->block_i].track[track].field[key] = (char *)utf8_str;
   } else
-    p_cdtext->block[p_cdtext->block_i].track[track].field[key] = strdup ((const char *)value);
+    p_cdtext->block[p_cdtext->block_i].track[track].field[key] = strdup((const char *)value);
 }
 
 /*!
