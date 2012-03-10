@@ -423,8 +423,8 @@ print_cdtext_track_info(cdtext_t *p_cdtext, track_t i_track, const char *psz_msg
     printf("%s\n", psz_msg);
     
     for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
-      if (cdtext_get_const(i, i_track, p_cdtext)) {
-        printf("\t%s: %s\n", cdtext_field2str(i), cdtext_get_const(i, i_track, p_cdtext));
+      if (cdtext_get_const(p_cdtext, i, i_track)) {
+        printf("\t%s: %s\n", cdtext_field2str(i), cdtext_get_const(p_cdtext, i, i_track));
       }
     }
   }
@@ -434,18 +434,28 @@ static void
 print_cdtext_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
   track_t i_last_track = i_first_track+i_tracks;
   cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio);
+  cdtext_lang_t *languages;
+  int i, j;
 
   if(NULL == p_cdtext) {
     printf("No CD-TEXT on Disc.\n");
     return;
   }
   
-  print_cdtext_track_info(p_cdtext, 0, "\nCD-TEXT for Disc:");
-  for ( ; i_first_track < i_last_track; i_first_track++ ) {
-    char msg[50];
-    sprintf(msg, "CD-TEXT for Track %2d:", i_first_track);
-    print_cdtext_track_info(p_cdtext, i_first_track, msg);
-  }
+  languages = cdtext_languages_available(p_cdtext);
+  for(i=0; i<8; i++)
+    if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i]
+         && cdtext_select_language(p_cdtext, cdtext_lang2str(languages[i])))
+    {
+      printf("\nLanguage %d '%s':\n", i, cdtext_lang2str(languages[i]));
+
+      print_cdtext_track_info(p_cdtext, 0, "CD-TEXT for Disc:");
+      for ( j = i_first_track ; j < i_last_track; j++ ) {
+        char msg[50];
+        sprintf(msg, "CD-TEXT for Track %2d:", j);
+        print_cdtext_track_info(p_cdtext, j, msg);
+      }
+    }
 }
 
 #ifdef HAVE_CDDB

@@ -13,37 +13,69 @@ audio status: not implemented
 __________________________________
 CD Analysis Report
 
+Language 0 'English':
 CD-TEXT for Disc:
-	ARRANGER: The Gnu Community
-	COMPOSER: Another Gnu
-	DISC_ID: 0815 42
-	GENRE: Animal Soundz
-	MESSAGE: Gnu lives!
-	PERFORMER: A Gnu
-	SONGWRITER: A Gnu, too
-	TITLE: The Voice of the Gnu
-	UPC_EAN: 0123456789876
+	TITLE: Joyful Nights
+	PERFORMER: United Cat Orchestra
+	SONGWRITER: Various Songwriters
+	COMPOSER: Various Composers
+	MESSAGE: For all our fans
+	ARRANGER: Tom Cat
+	UPC_EAN: 1234567890123
+	GENRE: Feline classic music
+	DISC_ID: 1234567890
 CD-TEXT for Track  1:
-	ARRANGER: His Brother
-	COMPOSER: His Brother
-	MESSAGE: Free the Gnu!
-	ISRC: DE-GNU-11-00001
-	PERFORMER: Gnu2
-	SONGWRITER: Gnu2
-	TITLE: I Will Survive
+	TITLE: Song of Joy
+	PERFORMER: Felix and The Purrs
+	SONGWRITER: Friedrich Schiller
+	COMPOSER: unknown
+	MESSAGE: Fritz and Louie once were punks
+	ARRANGER: Tom Cat
+	ISRC: XYBLG1101234
 CD-TEXT for Track  2:
-	ARRANGER: The Guy With the Microphone
-	COMPOSER: The Alpha Gnu
-	MESSAGE: Isn't it beatiful?
-	ISRC: DE-GNU-11-00002
-	PERFORMER: Those Particular Gnus
-	SONGWRITER: None in Particular
-	TITLE: A Forest Full of Gnus
+	TITLE: Humpty Dumpty
+	PERFORMER: Catwalk Beauties
+	SONGWRITER: Mother Goose
+	MESSAGE: Pluck the goose
+	ISRC: XYBLG1100005
 CD-TEXT for Track  3:
-	ARRANGER: An Even Less Famous Gnu
-	COMPOSER: A Not So Famous Gnu
-	MESSAGE: Every Gnu Is Legal!
-	ISRC: DE-GNU-11-00003
-	PERFORMER: Whatwasitsname?
-	SONGWRITER: A Famous Gnu
-	TITLE: Gnu Opera
+	TITLE: Mee Owwww
+	PERFORMER: Mia Kitten
+	SONGWRITER: Mia Kitten
+	COMPOSER: Mia Kitten
+	ARRANGER: Mia Kitten
+	ISRC: XYBLG1100006
+
+Language 1 'German':
+CD-TEXT for Disc:
+	TITLE: Freudvolle Nächte
+	PERFORMER: Vereinigtes Katzenorchester
+	SONGWRITER: Verschiedene Liedschreiber
+	COMPOSER: Verschiedene Komponisten
+	MESSAGE: Für alle unsere Fans
+	ARRANGER: Tom Cat
+	UPC_EAN: 1234567890123
+	GENRE: Katzenhafte Klassik
+	DISC_ID: 1234567890
+CD-TEXT for Track  1:
+	TITLE: Lied der Freude
+	PERFORMER: Felix und Die Schnurrer
+	SONGWRITER: Friedrich Schiller
+	COMPOSER: Ludwig van Beethoven
+	MESSAGE: Fritz und Louie waren einmal Punks
+	ARRANGER: Tom Cat
+	ISRC: XYBLG1101234
+CD-TEXT for Track  2:
+	TITLE: Rubbeldiekatz
+	PERFORMER: Katzengang Schönheiten
+	SONGWRITER: Mutter Gans
+	COMPOSER: unbekannt
+	MESSAGE: Rupft die Gans
+	ISRC: XYBLG1100005
+CD-TEXT for Track  3:
+	TITLE: Mie auu
+	PERFORMER: Mia Kätzchen
+	SONGWRITER: Mia Kätzchen
+	COMPOSER: Mia Kätzchen
+	ARRANGER: Mia Kätzchen
+	ISRC: XYBLG1100006

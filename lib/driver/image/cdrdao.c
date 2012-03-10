@@ -76,6 +76,7 @@
 #endif
 
 #include "image_common.h"
+#include "cdtext_private.h"
 
 static lsn_t get_disc_last_lsn_cdrdao (void *p_user_data);
 static bool parse_tocfile (_img_private_t *cd, const char *p_toc_name);
@@ -918,48 +919,49 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  goto not_in_global_section;
 	}
 	  
-	  /* CD_TEXT { ... } */
-	  /* todo: opening { must be on same line as CD_TEXT */
+  /* CD_TEXT { ... } */
+  /* todo: opening { must be on same line as CD_TEXT */
       } else if (0 == strcmp ("CD_TEXT", psz_keyword)) {
-	  if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
-	    goto format_error;
-	  }
-	  if ( 0 == strcmp( "{", psz_field ) ) {
-	    i_cdtext_nest++;
-	  } else {
-	    cdio_log (log_level, 
-		      "%s line %d: expecting '{'", psz_cue_name, i_line);
-	    goto err_exit;
-	  }
-	       
+        if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
+          goto format_error;
+        }
+        if ( 0 == strcmp( "{", psz_field ) ) {
+          i_cdtext_nest++;
+        } else {
+          cdio_log (log_level, 
+              "%s line %d: expecting '{'", psz_cue_name, i_line);
+          goto err_exit;
+        }
+
+      // TODO: implement language mapping
       } else if (0 == strcmp ("LANGUAGE_MAP", psz_keyword)) {
-	/* LANGUAGE d { ... } */
+        /* LANGUAGE d { ... } */
       } else if (0 == strcmp ("LANGUAGE", psz_keyword)) {
-	  if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
-	    goto format_error;
-	  }
-	  /* Language number */
-	  if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
-	    goto format_error;
-	  }
-	  if ( 0 == strcmp( "{", psz_field ) ) {
-	    i_cdtext_nest++;
-	  }
+        if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
+          goto format_error;
+        }
+        /* Language number */
+        if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
+          goto format_error;
+        }
+        if ( 0 == strcmp( "{", psz_field ) ) {
+          i_cdtext_nest++;
+        }
       } else if (0 == strcmp ("{", psz_keyword)) {
-	i_cdtext_nest++;
+        i_cdtext_nest++;
       } else if (0 == strcmp ("}", psz_keyword)) {
-	if (i_cdtext_nest > 0) i_cdtext_nest--;
-      } else if ( CDTEXT_INVALID != 
-		  (cdtext_key = cdtext_is_keyword (psz_keyword)) ) {
+        if (i_cdtext_nest > 0) i_cdtext_nest--;
+      } else if ( CDTEXT_FIELD_INVALID != 
+          (cdtext_key = cdtext_is_field (psz_keyword)) ) {
         if (NULL != cd) {
           if (NULL == cd->gen.cdtext) {
-            cd->gen.cdtext = malloc(sizeof(cdtext_t));
-            cdtext_init (cd->gen.cdtext);
+            cd->gen.cdtext = cdtext_init ();
+            /* until language mapping is implemented ...*/
+            cd->gen.cdtext->block[cd->gen.cdtext->block_i].language_code = CDTEXT_LANGUAGE_ENGLISH;
           }
-          cdtext_set (cdtext_key, 
-                      (-1 == i ? 0 : cd->gen.i_first_track + i + 1),
-                      strtok (NULL, "\"\t\n\r"),
-                      cd->gen.cdtext);
+          cdtext_set (cd->gen.cdtext, cdtext_key, (uint8_t*) strtok (NULL, "\"\t\n\r"),
+              (-1 == i ? 0 : cd->gen.i_first_track + i + 1),
+              "ISO-8859-1");
         }
 
 	/* unrecognized line */

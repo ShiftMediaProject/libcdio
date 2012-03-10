@@ -27,6 +27,7 @@
 #include <cdio/mmc_cmds.h>
 #include <cdio/util.h>
 #include "cdio_private.h"
+#include "cdtext_private.h"
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -350,7 +351,7 @@ mmc_read_cdtext_private ( void *p_user_data,
 
   errno = 0;
 
-  wdata = calloc(MAX_CDTEXT_DATA_LENGTH, sizeof(unsigned char));
+  wdata = calloc(CDTEXT_LEN_BINARY_MAX, sizeof(unsigned char));
 
   /* We may need to give CD-Text a little more time to complete. */
   /* First off, just try and read the size */
@@ -368,8 +369,8 @@ mmc_read_cdtext_private ( void *p_user_data,
     /* Now read the CD-Text data */
     int	i_cdtext = CDIO_MMC_GET_LEN16(wdata);
 
-    if (i_cdtext+2 > MAX_CDTEXT_DATA_LENGTH)
-      i_cdtext = MAX_CDTEXT_DATA_LENGTH-2;
+    if (i_cdtext+2 > CDTEXT_LEN_BINARY_MAX)
+      i_cdtext = CDTEXT_LEN_BINARY_MAX-2;
     else
       wdata = realloc(wdata,i_cdtext+2);
     /* the 2 bytes holding the size are not included in i_cdtext */

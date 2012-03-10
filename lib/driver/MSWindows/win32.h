@@ -25,7 +25,6 @@ typedef struct {
   lsn_t          start_lsn;
   UCHAR          Control : 4;
   UCHAR          Format;
-  cdtext_t       cdtext;	         /* CD-TEXT */
 } track_info_t;
 
 typedef enum {
@@ -197,14 +196,6 @@ bool read_toc_win32ioctl (_img_private_t *p_env);
  */
 char *get_mcn_win32ioctl (const _img_private_t *p_env);
 
-/*
-  Read cdtext information for a CdIo object .
-  
-  return true on success, false on error or CD-TEXT information does
-  not exist.
-*/
-bool init_cdtext_win32ioctl (_img_private_t *p_env);
-
 /*!
   Return the the kind of drive capabilities of device.
 
@@ -234,8 +225,3 @@ void get_drive_cap_win32ioctl (const _img_private_t *p_env,
 */
 track_format_t get_track_format_win32ioctl(const _img_private_t *p_env, 
 					   track_t i_track); 
-
-void set_cdtext_field_win32(void *user_data, track_t i_track, 
-			    track_t i_first_track,
-			    cdtext_field_t e_field, const char *psz_value);
-

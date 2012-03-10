@@ -544,9 +544,9 @@ get_cddb_disc_info(CdIo_t *p_cdio)
 }
 
 #define add_cdtext_disc_info(format_str, info_field, FIELD)     \
-  if (cdtext_get_const(FIELD, 0, p_cdtext) && !strlen(info_field)) { \
+  if (cdtext_get_const(p_cdtext, FIELD, 0) && !strlen(info_field)) { \
     snprintf(info_field, sizeof(info_field), format_str,        \
-             cdtext_get_const(FIELD, 0, p_cdtext));                  \
+             cdtext_get_const(p_cdtext, FIELD, 0));                  \
     b_cdtext_ ## info_field = true;                             \
   }
 
@@ -556,9 +556,9 @@ get_cdtext_disc_info(CdIo_t *p_cdio)
   cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio);
 
   if (p_cdtext) {
-    add_cdtext_disc_info("%s", title, CDTEXT_TITLE);
-    add_cdtext_disc_info("%s", artist, CDTEXT_PERFORMER);
-    add_cdtext_disc_info("%s", genre, CDTEXT_GENRE);
+    add_cdtext_disc_info("%s", title, CDTEXT_FIELD_TITLE);
+    add_cdtext_disc_info("%s", artist, CDTEXT_FIELD_PERFORMER);
+    add_cdtext_disc_info("%s", genre, CDTEXT_FIELD_GENRE);
   }
 }
 
@@ -840,10 +840,10 @@ get_cddb_track_info(track_t i_track)
 }
 
 #define add_cdtext_track_info(format_str, info_field, FIELD) \
-  if (cdtext_get_const(FIELD, i_track, p_cdtext)) {                        \
+  if (cdtext_get_const(p_cdtext, FIELD, i_track)) {                        \
     snprintf(cd_info[i_track].info_field,                             \
              sizeof(cd_info[i_track].info_field),                     \
-             format_str, cdtext_get_const(FIELD, i_track, p_cdtext));      \
+             format_str, cdtext_get_const(p_cdtext, FIELD, i_track));      \
     cd_info[i_track].b_cdtext = true; \
   }
 
@@ -855,8 +855,8 @@ get_cdtext_track_info(track_t i_track)
   cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio);
 
   if (NULL != p_cdtext) {
-    add_cdtext_track_info("%s", title, CDTEXT_TITLE);
-    add_cdtext_track_info("%s", artist, CDTEXT_PERFORMER);
+    add_cdtext_track_info("%s", title, CDTEXT_FIELD_TITLE);
+    add_cdtext_track_info("%s", artist, CDTEXT_FIELD_PERFORMER);
   }
 }
 

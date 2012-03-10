@@ -87,7 +87,7 @@ bool cdio_charset_from_utf8(cdio_utf8_t * src, char ** dst,
  */
 
 
-bool cdio_charset_to_utf8(char *src, size_t src_len, cdio_utf8_t **dst,
+bool cdio_charset_to_utf8(const char *src, size_t src_len, cdio_utf8_t **dst,
                           const char * src_charset);
 
 #ifdef _WIN32

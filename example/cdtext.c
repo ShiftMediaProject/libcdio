@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2004, 2005, 2006, 2008, 2009, 2011, 2012
- Rocky Bernstein <rocky@gnu.org>
+  Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,9 @@
 
 /* Simple program to list CD-Text info of a Compact Disc using
    libcdio.  See also corresponding C++ programs of similar names. */
+
+#define EXAMPLE_CUE_FILE "../test/data/cat.cue"
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #define __CDIO_CONFIG_H__ 1
@@ -40,8 +43,9 @@ print_cdtext_track_info(cdtext_t *cdtext, track_t i_track, const char *psz_msg) 
     printf("%s\n", psz_msg);
     
     for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
-        if (cdtext_get_const(i, i_track, cdtext)) {
-            printf("\t%s: %s\n", cdtext_field2str(i), cdtext_get_const(i, i_track, cdtext));
+        if (cdtext_get_const(cdtext, i, i_track)) {
+            printf("\t%s: %s\n", cdtext_field2str(i), 
+                   cdtext_get_const(cdtext, i, i_track));
         }
     }
     
@@ -52,8 +56,9 @@ print_disc_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
     track_t i_last_track = i_first_track+i_tracks;
     discmode_t cd_discmode = cdio_get_discmode(p_cdio);
     cdtext_t *cdtext = cdio_get_cdtext(p_cdio);
+    int i;
     
-    printf("%s\n", discmode2str[cd_discmode]);
+    printf("Discmode: %s\n", discmode2str[cd_discmode]);
     
     if (NULL == cdtext)
     {
@@ -61,13 +66,33 @@ print_disc_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
         return;
     }
     
-    printf("Encoding: %s; Language: %s\n", cdtext->encoding, cdtext->language);
-    print_cdtext_track_info(cdtext, 0, "\nCD-Text for Disc:");
-    for ( ; i_first_track < i_last_track; i_first_track++ ) {
-        char psz_msg[50];
-        snprintf(psz_msg, sizeof(psz_msg), "CD-Text for Track %d:", 
-                 i_first_track);
-        print_cdtext_track_info(cdtext, i_first_track, psz_msg);
+  /* print available languages */
+  {
+    cdtext_lang_t *languages;
+
+    printf("\nCD-Text available in: ");
+
+    languages = cdtext_languages_available(cdtext);
+    for(i=0; i<8; i++)
+      if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i])
+        printf("%s ", cdtext_lang2str(languages[i]));
+    printf("\n");
+  }
+
+  /* select language */
+  if(cdtext_select_language(cdtext, "German")) {
+    printf("%s selected.\n", "German");
+  } else {
+    printf("'%s' is not available. Using '%s'\n", "German", 
+           cdtext_lang2str (cdtext_get_language (cdtext)));
+  }
+  
+  /* print cd-text */
+  print_cdtext_track_info(cdtext, 0, "CD-Text for Disc:");
+  for (i=i_first_track ; i < i_last_track; i++ ) {
+      char psz_msg[50];
+      snprintf(psz_msg, sizeof(psz_msg), "CD-Text for Track %d:", i);
+      print_cdtext_track_info(cdtext, i, psz_msg);
     }
 }
 
@@ -76,11 +101,13 @@ main(int argc, const char *argv[])
 {
     track_t i_first_track;
     track_t i_tracks;
-    CdIo_t *p_cdio       = cdio_open ("../test/cdda.cue", DRIVER_BINCUE);
+    CdIo_t *p_cdio;
     
-    
+    /* read CD-Text from a bin/cue (CDRWIN) image */
+    p_cdio = cdio_open(EXAMPLE_CUE_FILE, DRIVER_BINCUE);
     if (NULL == p_cdio) {
-        printf("Couldn't open ../test/cdda.cue with BIN/CUE driver.\n");
+        printf("Couldn't open %s with BIN/CUE driver.\n", 
+               EXAMPLE_CUE_FILE);
     } else {
         i_first_track = cdio_get_first_track_num(p_cdio);
         i_tracks      = cdio_get_num_tracks(p_cdio);
@@ -88,14 +115,14 @@ main(int argc, const char *argv[])
         cdio_destroy(p_cdio);
     }
     
+    /* read CD-Text from default device */
     p_cdio = cdio_open (NULL, DRIVER_DEVICE);
-    i_first_track = cdio_get_first_track_num(p_cdio);
-    i_tracks      = cdio_get_num_tracks(p_cdio);
-    
     if (NULL == p_cdio) {
         printf("Couldn't find CD\n");
         return 77;
     } else {
+        i_first_track = cdio_get_first_track_num(p_cdio);
+        i_tracks      = cdio_get_num_tracks(p_cdio);
         print_disc_info(p_cdio, i_tracks, i_first_track);
     }
     
