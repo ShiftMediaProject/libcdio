@@ -188,7 +188,7 @@ cdtext_get
 cdtext_get_const
 cdtext_get_language
 cdtext_init
-cdtext_languages_available
+cdtext_list_languages
 cdtext_set
 cdtext_select_language
 debug_cdio_mmc_feature

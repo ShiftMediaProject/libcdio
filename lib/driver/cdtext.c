@@ -318,7 +318,7 @@ cdtext_get_language(const cdtext_t *p_cdtext)
   @param p_cdtext the CD-TEXT object
 */
 cdtext_lang_t
-*cdtext_languages_available(const cdtext_t *p_cdtext)
+*cdtext_list_languages(const cdtext_t *p_cdtext)
 {
   static cdtext_lang_t avail[CDTEXT_NUM_BLOCKS_MAX];
   int i, j=0;

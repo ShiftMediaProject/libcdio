@@ -286,7 +286,7 @@ bool cdtext_select_language(cdtext_t *p_cdtext, const char *lang);
 
   @param p_cdtext the CD-TEXT object
 */
-cdtext_lang_t *cdtext_languages_available (const cdtext_t *p_cdtext);
+cdtext_lang_t *cdtext_list_languages (const cdtext_t *p_cdtext);
 
 /*! 
   Sets the given field at the given track to the given value.

@@ -20,6 +20,7 @@
    libcdio.  See also corresponding C++ programs of similar names. */
 
 #define EXAMPLE_CUE_FILE "../test/data/cdtext.cue"
+#define EXAMPLE_PREF_LANG "German"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -29,18 +30,12 @@
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
 
 #include <cdio/cdio.h>
-#include <cdio/cdtext.h>
 
 static void 
-print_cdtext_track_info(cdtext_t *cdtext, track_t i_track, const char *psz_msg) {
+print_cdtext_track_info(cdtext_t *cdtext, track_t i_track) {
     cdtext_field_t i;
-    
-    printf("%s\n", psz_msg);
     
     for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
         if (cdtext_get_const(cdtext, i, i_track)) {
@@ -52,55 +47,55 @@ print_cdtext_track_info(cdtext_t *cdtext, track_t i_track, const char *psz_msg) 
 }
 
 static void 
-print_disc_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
-    track_t i_last_track = i_first_track+i_tracks;
-    discmode_t cd_discmode = cdio_get_discmode(p_cdio);
-    cdtext_t *cdtext = cdio_get_cdtext(p_cdio);
+print_disc_info(CdIo_t *p_cdio) {
+    track_t i_first_track = cdio_get_first_track_num (p_cdio);
+    track_t i_tracks = cdio_get_num_tracks (p_cdio);
+    track_t i_last_track = i_first_track + i_tracks;
+    discmode_t cd_discmode = cdio_get_discmode (p_cdio);
+    cdtext_t *cdtext = cdio_get_cdtext (p_cdio);
     int i;
     
-    printf("Discmode: %s\n", discmode2str[cd_discmode]);
+    printf("Discmode: %s\n\n", discmode2str[cd_discmode]);
     
     if (NULL == cdtext)
     {
-        printf("\nNo CD-Text found on Disc.");
+        printf("No CD-Text found on Disc.\n");
         return;
     }
-    
-  /* print available languages */
-  {
-    cdtext_lang_t *languages;
 
-    printf("\nCD-Text available in: ");
+    /* print available languages */
+    {
+        cdtext_lang_t *languages;
 
-    languages = cdtext_languages_available(cdtext);
-    for(i=0; i<8; i++)
-      if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i])
-        printf("%s ", cdtext_lang2str(languages[i]));
-    printf("\n");
-  }
+        printf("CD-Text available in: ");
 
-  /* select language */
-  if(cdtext_select_language(cdtext, "German")) {
-    printf("%s selected.\n", "German");
-  } else {
-    printf("'%s' is not available. Using '%s'\n", "German", 
-           cdtext_lang2str (cdtext_get_language (cdtext)));
-  }
-  
-  /* print cd-text */
-  print_cdtext_track_info(cdtext, 0, "CD-Text for Disc:");
-  for (i=i_first_track ; i < i_last_track; i++ ) {
-      char psz_msg[50];
-      snprintf(psz_msg, sizeof(psz_msg), "CD-Text for Track %d:", i);
-      print_cdtext_track_info(cdtext, i, psz_msg);
+        languages = cdtext_list_languages(cdtext);
+        for(i=0; i<8; i++)
+            if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i])
+                printf("%s ", cdtext_lang2str(languages[i]));
+        printf("\n");
+    }
+
+    /* select language */
+    if(cdtext_select_language(cdtext, EXAMPLE_PREF_LANG)) {
+        printf("%s selected.\n", EXAMPLE_PREF_LANG);
+    } else {
+        printf("'%s' is not available. Using '%s'\n", EXAMPLE_PREF_LANG,
+               cdtext_lang2str (cdtext_get_language (cdtext)));
+    }
+
+    /* print cd-text */
+    printf("CD-Text for Disc:\n");
+    print_cdtext_track_info(cdtext, 0);
+    for (i=i_first_track ; i < i_last_track; i++ ) {
+        printf("CD-Text for Track %d\n:", i);
+        print_cdtext_track_info(cdtext, i);
     }
 }
 
 int
 main(int argc, const char *argv[])
 {
-    track_t i_first_track;
-    track_t i_tracks;
     CdIo_t *p_cdio;
     
     /* read CD-Text from a bin/cue (CDRWIN) image */
@@ -109,9 +104,7 @@ main(int argc, const char *argv[])
         printf("Couldn't open %s with BIN/CUE driver.\n", 
                EXAMPLE_CUE_FILE);
     } else {
-        i_first_track = cdio_get_first_track_num(p_cdio);
-        i_tracks      = cdio_get_num_tracks(p_cdio);
-        print_disc_info(p_cdio, i_tracks, i_first_track);
+        print_disc_info(p_cdio);
         cdio_destroy(p_cdio);
     }
     
@@ -121,12 +114,9 @@ main(int argc, const char *argv[])
         printf("Couldn't find CD\n");
         return 77;
     } else {
-        i_first_track = cdio_get_first_track_num(p_cdio);
-        i_tracks      = cdio_get_num_tracks(p_cdio);
-        print_disc_info(p_cdio, i_tracks, i_first_track);
+        print_disc_info(p_cdio);
+        cdio_destroy(p_cdio);
     }
-    
-    cdio_destroy(p_cdio);
     
     return 0;
 }

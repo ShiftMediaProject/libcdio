@@ -21,83 +21,93 @@
  */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
 
 #include <cdio++/cdio.hpp>
 
 /* Set up a CD-DA image to test on which is in the libcdio distribution. */
-#define CDDA_IMAGE_PATH  "../../../test/"
-#define CDDA_IMAGE CDDA_IMAGE_PATH "cdda.cue"
+#define CDDA_IMAGE "../../../test/data/cdtext.cue"
 
 static void 
-print_cdtext_track_info(CdioDevice *device, track_t i_track, 
-                        const char *psz_msg) {
-  cdtext_t *cdtext = device->getCdtext();
-  if (NULL != cdtext) {
-    cdtext_field_t i;
-    
-    printf("%s\n", psz_msg);
-    
-    for (i= (cdtext_field_t) MIN_CDTEXT_FIELD; i < MAX_CDTEXT_FIELDS; i++) {
-      if (cdtext_get_const(i, i_track, cdtext)) {
-        printf("\t%s: %s\n", cdtext_field2str(i), 
-               cdtext_get_const(i, i_track, cdtext));
-      }
+print_cdtext_track_info(CdioCDText *cdtext, track_t i_track) {
+  cdtext_field_t i;
+
+  for (i=(cdtext_field_t) 0; i < MAX_CDTEXT_FIELDS; i++) {
+    if (cdtext->getConst(i, i_track)) {
+      printf("\t%s: %s\n", cdtext->field2str(i),
+             cdtext->getConst(i, i_track));
     }
   }
 }
     
 static void 
-print_disc_info(CdioDevice *device, track_t i_tracks, track_t i_first_track) {
+print_disc_info(CdioDevice *device)
+{
+  track_t i_first_track = device->getFirstTrackNum();
+  track_t i_tracks = device->getNumTracks();
   track_t i_last_track = i_first_track+i_tracks;
   discmode_t cd_discmode = device->getDiscmode();
+  CdioCDText *cdtext = device->getCdtext();
+  int i;
 
-  printf("%s\n", discmode2str[cd_discmode]);
-  
-  print_cdtext_track_info(device, 0, "\nCD-Text for Disc:");
-  for ( ; i_first_track < i_last_track; i_first_track++ ) {
-    char psz_msg[50];
-    sprintf(psz_msg, "CD-Text for Track %d:", i_first_track);
-    print_cdtext_track_info(device, i_first_track, psz_msg);
+  printf("Discmode: %s\n\n", discmode2str[cd_discmode]);
+
+  if (NULL == cdtext)
+  {
+    printf("No CD-Text found on Disc.\n");
+    return;
   }
+
+  /* print available languages */
+  {
+    cdtext_lang_t *languages;
+
+    printf("CD-Text available in: ");
+
+    languages = cdtext->listLanguages();
+    for(i=0; i<8; i++)
+      if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i])
+          printf("%s ", cdtext->lang2str(languages[i]));
+    printf("\n");
+  }
+
+  printf("CD-Text for Disc:\n");
+  print_cdtext_track_info(cdtext, 0);
+  for (i = i_first_track ; i < i_last_track; i++ ) {
+    printf("CD-Text for Track %d:\n", i);
+    print_cdtext_track_info(cdtext, i);
+  }
+
+  delete cdtext;
 }
 
 int
 main(int argc, const char *argv[])
 {
-  track_t i_first_track;
-  track_t i_tracks;
   CdioDevice *device = new CdioDevice;
-  const char *psz_drive = NULL;
+  const char *psz_drive = (const char *) NULL;
 
   if (!device->open(CDDA_IMAGE, DRIVER_BINCUE)) {
     printf("Couldn't open " CDDA_IMAGE " with BIN/CUE driver.\n");
   } else {
-    i_first_track = device->getFirstTrackNum();
-    i_tracks      = device->getNumTracks();
-    print_disc_info(device, i_tracks, i_first_track);
+    print_disc_info(device);
   }
 
   if (argc > 1) psz_drive = argv[1];
 
   if (!device->open(psz_drive, DRIVER_DEVICE)) {
     printf("Couldn't find CD\n");
-    delete(device);
     return 1;
   } else {
-    i_first_track = device->getFirstTrackNum();
-    i_tracks      = device->getNumTracks();
-    print_disc_info(device, i_tracks, i_first_track);
+    print_disc_info(device);
   }
 
-  delete(device);
+  delete device;
 
   return 0;
 }

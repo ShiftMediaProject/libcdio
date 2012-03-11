@@ -52,12 +52,6 @@ char *get (cdtext_field_t key, track_t i_track)
   return cdtext_get (p_cdtext, key, i_track);
 }
 
-/*! returns the C cdtext_t pointer associated with this object. */
-cdtext_t *get () 
-{
-  return p_cdtext;
-}
-
 /*! returns a const string associated with the given field.  NULL is
   returned if key is CDTEXT_INVALID or the field is not set.
   
@@ -79,6 +73,30 @@ const char *getConst (cdtext_field_t key, track_t i_track)
 void set (cdtext_field_t key, track_t i_track, const uint8_t *value, const char *charset) 
 {
   cdtext_set (p_cdtext, key, value, i_track, charset);
+}
+
+/*!
+  returns the selected language
+*/
+cdtext_lang_t getLanguage()
+{
+  return cdtext_get_language(p_cdtext);
+}
+
+/*!
+  selects a language
+*/
+bool selectLanguage(const char *lang)
+{
+  return cdtext_select_language(p_cdtext, lang);
+}
+
+/*!
+ returns a list of available languages
+*/
+cdtext_lang_t *listLanguages()
+{
+  return cdtext_list_languages(p_cdtext);
 }
 
 

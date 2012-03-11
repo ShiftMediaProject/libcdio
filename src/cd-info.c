@@ -442,7 +442,7 @@ print_cdtext_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
     return;
   }
   
-  languages = cdtext_languages_available(p_cdtext);
+  languages = cdtext_list_languages(p_cdtext);
   for(i=0; i<8; i++)
     if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i]
          && cdtext_select_language(p_cdtext, cdtext_lang2str(languages[i])))
