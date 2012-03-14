@@ -21,4 +21,4 @@ if ENABLE_CXX_BINDINGS
 cxxdirs = cdio++
 endif
 
-SUBDIRS = driver iso9660 udf $(cxxdirs)
+SUBDIRS = driver cdtext iso9660 udf $(cxxdirs)
