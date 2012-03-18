@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2009, 2012 Rocky Bernstein <rocky@gnu.org>
 
   Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
   Copyright (C) 1997, 1998 
@@ -24,7 +24,6 @@
 */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_STDIO_H
