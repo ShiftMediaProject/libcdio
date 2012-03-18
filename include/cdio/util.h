@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CDIO_UTIL_H__
-#define __CDIO_UTIL_H__
+#ifndef CDIO_UTIL_H_
+#define CDIO_UTIL_H_
 
 /*!
    \file util.h 
@@ -129,7 +129,7 @@ char *cdio_realpath (const char *psz_src, char *psz_dst);
 }
 #endif
 
-#endif /* __CDIO_UTIL_H__ */
+#endif /* CDIO_UTIL_H_ */
 
 
 /* 

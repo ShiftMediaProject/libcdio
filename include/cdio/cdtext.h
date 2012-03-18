@@ -1,7 +1,5 @@
 /*
-    $Id: cdtext.h,v 1.14 2008/03/25 15:59:08 karl Exp $
-
-    Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2004, 2005, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
     adapted from cuetools
     Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
@@ -26,8 +24,8 @@
 */
 
 
-#ifndef __CDIO_CDTEXT_H__
-#define __CDIO_CDTEXT_H__
+#ifndef CDIO_CDTEXT_H_
+#define CDIO_CDTEXT_H_
 
 #include <cdio/types.h>
 
@@ -305,7 +303,7 @@ void cdtext_set (cdtext_t *p_cdtext, cdtext_field_t key, const uint8_t *value, t
 }
 #endif /* __cplusplus */
 
-#endif /* __CDIO_CDTEXT_H__ */
+#endif /* CDIO_CDTEXT_H_ */
 
 /* 
  * Local variables:

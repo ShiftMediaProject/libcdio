@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
   image.h
 */
 
-#ifndef __CDIO_IMAGE_COMMON_H__
-#define __CDIO_IMAGE_COMMON_H__
+#ifndef CDIO_DRIVER_IMAGE_COMMON_H_
+#define CDIO_DRIVER_IMAGE_COMMON_H_
 
 typedef struct {
   /* Things common to all drivers like this. 
@@ -35,20 +35,20 @@ typedef struct {
   
   char         *psz_cue_name;
   char         *psz_access_mode; /* Just the name of the driver.
-				    We add this for regularity with other
-				    real CD drivers which has an access mode.
-				  */
+                                    We add this for regularity with other
+                                    real CD drivers which has an access mode.
+                                  */
   char         *psz_mcn;        /* Media Catalog Number (5.22.3) 
-				   exactly 13 bytes */
+                                   exactly 13 bytes */
   track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
-					         add 1 for leadout. */
+                                                 add 1 for leadout. */
   discmode_t    disc_mode;
 
 #ifdef NEED_NERO_STRUCT
   /* Nero Specific stuff. Note: for the image_free to work, this *must*
      be last. */
   bool          is_dao;          /* True if some of disk at once. False
-				    if some sort of track at once. */
+                                    if some sort of track at once. */
   uint32_t      mtyp;            /* Value of MTYP (media type?) tag */
   uint8_t       dtyp;            /* Value of DAOX media type tag */
 
@@ -91,9 +91,9 @@ discmode_t _get_discmode_image (void *p_user_data);
 
  */
 void _get_drive_cap_image (const void *user_data,
-			   cdio_drive_read_cap_t  *p_read_cap,
-			   cdio_drive_write_cap_t *p_write_cap,
-			   cdio_drive_misc_cap_t  *p_misc_cap);
+                           cdio_drive_read_cap_t  *p_read_cap,
+                           cdio_drive_write_cap_t *p_write_cap,
+                           cdio_drive_misc_cap_t  *p_misc_cap);
 
 /*!
   Return the number of of the first track. 
@@ -151,7 +151,7 @@ track_flag_t get_track_copy_permit_image(void *p_user_data, track_t i_track);
   pre-emphasis is a non linear frequency response.
 */
 track_flag_t get_track_preemphasis_image(const void *p_user_data, 
-					 track_t i_track);
+                                         track_t i_track);
 
 /*! Return the starting LBA for the pregap for track number i_track.
   Track numbers start at 1.
@@ -190,8 +190,8 @@ char *get_track_isrc_image(const void *p_user_data, track_t i_track);
   */
 driver_return_code_t 
 read_data_sectors_image ( void *p_user_data, void *p_buf, 
-			  lsn_t i_lsn,  uint16_t i_blocksize,
-			  uint32_t i_blocks );
+                          lsn_t i_lsn,  uint16_t i_blocksize,
+                          uint32_t i_blocks );
 
 /*!
   Set the arg "key" with "value" in the source device.
@@ -202,4 +202,4 @@ read_data_sectors_image ( void *p_user_data, void *p_buf,
 */
 int _set_arg_image (void *user_data, const char key[], const char value[]);
 
-#endif /* __CDIO_IMAGE_COMMON_H__ */
+#endif /* CDIO_DRIVER_IMAGE_COMMON_H_ */

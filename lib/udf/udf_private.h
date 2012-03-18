@@ -15,8 +15,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CDIO_UDF_PRIVATE_H__
-#define __CDIO_UDF_PRIVATE_H__
+#ifndef CDIO_UDF_UDF_PRIVATE_H_
+#define CDIO_UDF_UDF_PRIVATE_H_
 
 #if defined(HAVE_CONFIG_H) && !defined(LIBCDIO_CONFIG_H) && !defined(__CDIO_CONFIG_H__)
 # include "config.h"
@@ -43,7 +43,7 @@ struct udf_s {
   uint32_t              fsd_offset;   /* lba of fileset descriptor */
 };
 
-#endif /* __CDIO_UDF_PRIVATE_H__ */
+#endif /* CDIO_UDF_UDF_PRIVATE_H_ */
 
 
 /* 

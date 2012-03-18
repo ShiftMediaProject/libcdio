@@ -1,7 +1,6 @@
 /*
-    $Id: sector.h,v 1.38 2008/03/25 15:59:09 karl Exp $
-
-    Copyright (C) 2003, 2004, 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2003, 2004, 2005, 2006, 2008, 2012
+     Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -57,8 +56,8 @@
 
 */
 
-#ifndef _CDIO_SECTOR_H_
-#define _CDIO_SECTOR_H_
+#ifndef CDIO_SECTOR_H_
+#define CDIO_SECTOR_H_
 
 #ifdef __cplusplus
     extern "C" {
@@ -69,21 +68,21 @@
       /*! Information that can be obtained through a Read Subchannel
         command.
       */
-#define CDIO_SUBCHANNEL_SUBQ_DATA		0
-#define CDIO_SUBCHANNEL_CURRENT_POSITION	1
-#define CDIO_SUBCHANNEL_MEDIA_CATALOG	        2
-#define CDIO_SUBCHANNEL_TRACK_ISRC		3
+#define CDIO_SUBCHANNEL_SUBQ_DATA               0
+#define CDIO_SUBCHANNEL_CURRENT_POSITION        1
+#define CDIO_SUBCHANNEL_MEDIA_CATALOG           2
+#define CDIO_SUBCHANNEL_TRACK_ISRC              3
       
       /*! track flags
        * Q Sub-channel Control Field (4.2.3.3)
        */
       typedef enum {
-	NONE = 			0x00,	/* no flags set */
-	PRE_EMPHASIS =		0x01,	/* audio track recorded with pre-emphasis */
-	COPY_PERMITTED =	0x02,	/* digital copy permitted */
-	DATA =			0x04,	/* data track */
-	FOUR_CHANNEL_AUDIO =	0x08,	/* 4 audio channels */
-	SCMS =			0x10	/* SCMS (5.29.2.7) */
+        NONE =                  0x00,   /* no flags set */
+        PRE_EMPHASIS =          0x01,   /* audio track recorded with pre-emphasis */
+        COPY_PERMITTED =        0x02,   /* digital copy permitted */
+        DATA =                  0x04,   /* data track */
+        FOUR_CHANNEL_AUDIO =    0x08,   /* 4 audio channels */
+        SCMS =                  0x10    /* SCMS (5.29.2.7) */
       } flag_t;
       
 #define CDIO_PREGAP_SECTORS  150
@@ -274,7 +273,7 @@
 #define CD_FRAMESIZE_RAW        CDIO_CD_FRAMESIZE_RAW
 #endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
 
-#endif /* _CDIO_SECTOR_H_ */
+#endif /* CDIO_SECTOR_H_ */
 
 
 /* 
