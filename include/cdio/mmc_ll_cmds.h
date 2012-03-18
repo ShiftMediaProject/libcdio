@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2010 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2010, 2012 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,8 +32,8 @@
 
 */
 
-#ifndef __CDIO_MMC_LL_CMDS_H__
-#define __CDIO_MMC_LL_CMDS_H__
+#ifndef CDIO_MMC_LL_CMDS_H_
+#define CDIO_MMC_LL_CMDS_H_
 
 #include <cdio/mmc.h>
 
@@ -91,13 +91,13 @@ extern "C" {
 
       @param i_timeout_ms value in milliseconds to use on timeout. Setting
              to 0 uses the default time-out value stored in
-	     mmc_timeout_ms.
+             mmc_timeout_ms.
 
       @return DRIVER_OP_SUCCESS if we ran the command ok.
    */
   driver_return_code_t mmc_mode_select_10(CdIo_t *p_cdio, /*out*/ void *p_buf,
-					  unsigned int i_size, int page, 
-					  unsigned int i_timeout_ms);
+                                          unsigned int i_size, int page, 
+                                          unsigned int i_timeout_ms);
   /**
      Run a SCSI-MMC MODE SENSE command (10-byte version) 
      and put the results in p_buf 
@@ -112,7 +112,7 @@ extern "C" {
      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf,
-					  unsigned int i_size, 
+                                          unsigned int i_size, 
                                           unsigned int i_page_code);
   
   /**
@@ -125,7 +125,7 @@ extern "C" {
       @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf, 
-					  unsigned int i_size, int page);
+                                          unsigned int i_size, int page);
   
   /**
      Request preventing/allowing medium removal on a drive via 
@@ -137,15 +137,15 @@ extern "C" {
   
      @param i_timeout_ms value in milliseconds to use on timeout. Setting
             to 0 uses the default time-out value stored in
-   	    mmc_timeout_ms.
+            mmc_timeout_ms.
 
      @return DRIVER_OP_SUCCESS (0) if we got the status.
      return codes are the same as driver_return_code_t
   */
     driver_return_code_t 
     mmc_prevent_allow_medium_removal(const CdIo_t *p_cdio, 
-				     bool b_persistent, bool b_prevent,
-				     unsigned int i_timeout_ms);
+                                     bool b_persistent, bool b_prevent,
+                                     unsigned int i_timeout_ms);
     
   /**
       Issue a MMC READ_CD command.
@@ -296,7 +296,7 @@ extern "C" {
 
     @param i_timeout_ms value in milliseconds to use on timeout. Setting
            to 0 uses the default time-out value stored in
-	   mmc_timeout_ms.
+           mmc_timeout_ms.
 
     @return the drive speed if greater than 0. -1 if we had an error. is -2
     returned if this is not implemented for the current driver.
@@ -324,8 +324,8 @@ extern "C" {
     @see mmc_eject_media or mmc_close_tray
   */
   driver_return_code_t mmc_start_stop_unit(const CdIo_t *p_cdio, bool b_eject, 
-					   bool b_immediate, 
-					   uint8_t power_condition,
+                                           bool b_immediate, 
+                                           uint8_t power_condition,
                                            unsigned int i_timeout_ms);
 
     /**
@@ -335,12 +335,12 @@ extern "C" {
      
      @param i_timeout_ms value in milliseconds to use on timeout. Setting
             to 0 uses the default time-out value stored in
-	    mmc_timeout_ms.
+            mmc_timeout_ms.
 
      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t mmc_test_unit_ready(const CdIo_t *p_cdio,
-					   unsigned int i_timeout_ms);
+                                           unsigned int i_timeout_ms);
 
 
 #ifndef DO_NOT_WANT_OLD_MMC_COMPATIBILITY
@@ -352,7 +352,7 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#endif /* __CDIO_MMC_HL_CMDS_H__ */
+#endif /* CDIO_MMC_HL_CMDS_H_ */
 
 /* 
  * Local variables:

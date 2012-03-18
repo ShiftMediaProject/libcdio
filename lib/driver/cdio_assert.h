@@ -16,8 +16,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CDIO_ASSERT_H__
-#define __CDIO_ASSERT_H__
+#ifndef CDIO_ASSERT_H_
+#define CDIO_ASSERT_H_
 
 #if defined(__GNUC__) && !defined(__MINGW32__)
 
@@ -55,4 +55,4 @@
 
 #endif
 
-#endif /* __CDIO_ASSERT_H__ */
+#endif /* CDIO_ASSERT_H_ */

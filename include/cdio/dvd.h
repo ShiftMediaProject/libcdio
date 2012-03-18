@@ -27,8 +27,8 @@
 
 */
 
-#ifndef __CDIO_DVD_H__
-#define __CDIO_DVD_H__
+#ifndef CDIO_DVD_H_
+#define CDIO_DVD_H_
 
 #include <cdio/types.h>
 
@@ -124,4 +124,4 @@ typedef union {
   cdio_dvd_manufact_t	manufact;
 } cdio_dvd_struct_t;
 
-#endif /* __CDIO_DVD_H__ */
+#endif /* CDIO_DVD_H_ */

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
                   Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -33,8 +33,8 @@
 
 */
 
-#ifndef __CDIO_MMC_H__
-#define __CDIO_MMC_H__
+#ifndef CDIO_MMC_H_
+#define CDIO_MMC_H_
 
 #include <cdio/cdio.h>
 #include <cdio/types.h>
@@ -68,40 +68,40 @@ extern "C" {
     */
     typedef struct cdio_mmc_request_sense {
 #if defined(__MMC_BIG_ENDIAN_BITFIELD)
-	uint8_t valid		: 1;  /**< valid bit is 1 if info is valid */
-	uint8_t error_code	: 7;
+        uint8_t valid           : 1;  /**< valid bit is 1 if info is valid */
+        uint8_t error_code      : 7;
 #else
-	uint8_t error_code	: 7;
-	uint8_t valid		: 1;  /**< valid bit is 1 if info is valid */
+        uint8_t error_code      : 7;
+        uint8_t valid           : 1;  /**< valid bit is 1 if info is valid */
 #endif
-	uint8_t segment_number;
+        uint8_t segment_number;
 #if defined(__MMC_BIG_ENDIAN_BITFIELD)
-	uint8_t filemark	: 1; /**< manditory in sequential
+        uint8_t filemark        : 1; /**< manditory in sequential
                                       * access devices */
-	uint8_t eom	        : 1; /**< end of medium. manditory in
+        uint8_t eom             : 1; /**< end of medium. manditory in
                                       * sequential access and
                                       * printer devices */
-	uint8_t ili		: 1; /**< incorrect length indicator */
-	uint8_t reserved1	: 1;
-	uint8_t sense_key	: 4;
+        uint8_t ili             : 1; /**< incorrect length indicator */
+        uint8_t reserved1       : 1;
+        uint8_t sense_key       : 4;
 #else
-	uint8_t sense_key	: 4;
-	uint8_t reserved1	: 1;
-	uint8_t ili		: 1; /**< incorrect length indicator */
-	uint8_t eom	        : 1; /**< end of medium. manditory in
+        uint8_t sense_key       : 4;
+        uint8_t reserved1       : 1;
+        uint8_t ili             : 1; /**< incorrect length indicator */
+        uint8_t eom             : 1; /**< end of medium. manditory in
                                       * sequential access and
                                       * printer devices */
-	uint8_t filemark	: 1; /**< manditory in sequential
+        uint8_t filemark        : 1; /**< manditory in sequential
                                       * access devices */
 #endif
-	uint8_t information[4];
-	uint8_t additional_sense_len; /**< Additional sense length (n-7) */
-	uint8_t command_info[4];      /**< Command-specific information */
-	uint8_t asc;                  /**< Additional sense code */
-	uint8_t ascq;                 /**< Additional sense code qualifier */
-	uint8_t fruc;                 /**< Field replaceable unit code */
-	uint8_t sks[3];               /**< Sense-key specific */
-	uint8_t asb[46];              /**< Additional sense bytes */
+        uint8_t information[4];
+        uint8_t additional_sense_len; /**< Additional sense length (n-7) */
+        uint8_t command_info[4];      /**< Command-specific information */
+        uint8_t asc;                  /**< Additional sense code */
+        uint8_t ascq;                 /**< Additional sense code qualifier */
+        uint8_t fruc;                 /**< Field replaceable unit code */
+        uint8_t sks[3];               /**< Sense-key specific */
+        uint8_t asb[46];              /**< Additional sense bytes */
     } cdio_mmc_request_sense_t;
 
 
@@ -800,7 +800,7 @@ extern cdio_mmc_mode_page_t         debug_cdio_mmc_mode_page;
     CDIO_MMC_GPCMD_PREVENT_ALLOW_MEDIUM_REMOVAL
 #endif /*DO_NOT_WANT_PARANOIA_COMPATIBILITY*/
 
-#endif /* __MMC_H__ */
+#endif /* CDIO_MMC_H_ */
 
 /* 
  * Local variables:

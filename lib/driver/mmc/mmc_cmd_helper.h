@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2010 Rocky Bernstein <rocky@gnu.org>
+   Copyright (C) 2010, 2012 Rocky Bernstein <rocky@gnu.org>
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CDIO_MMC_CMD_HELPER_H__
-#define __CDIO_MMC_CMD_HELPER_H__
+#ifndef CDIO_DRIVER_MMC_CMD_HELPER_H_
+#define CDIO_DRIVER_MMC_CMD_HELPER_H_
 
 /* Boilerplate initialization code to setup running MMC command.  We
    assume variables 'p_cdio', 'p_buf', and 'i_size' are previously
@@ -27,22 +27,22 @@
    3. zeros the buffer (p_buf) using i_size.
    4. Sets up the command field of cdb to passed in value mmc_cmd.
 */
-#define MMC_CMD_SETUP(mmc_cmd)						\
-    mmc_cdb_t cdb = {{0, }};						\
-									\
-    if ( ! p_cdio ) return DRIVER_OP_UNINIT;				\
-    if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;	\
-									\
-    CDIO_MMC_SET_COMMAND(cdb.field, mmc_cmd)				
+#define MMC_CMD_SETUP(mmc_cmd)                                          \
+    mmc_cdb_t cdb = {{0, }};                                            \
+                                                                        \
+    if ( ! p_cdio ) return DRIVER_OP_UNINIT;                            \
+    if ( ! p_cdio->op.run_mmc_cmd ) return DRIVER_OP_UNSUPPORTED;       \
+                                                                        \
+    CDIO_MMC_SET_COMMAND(cdb.field, mmc_cmd)                            
 
 /* Boilerplate initialization code to setup running MMC read command
    needs to set the cdb 16-bit length field. See above
    comment for MMC_CMD_SETUP.
 */
-#define MMC_CMD_SETUP_READ16(mmc_cmd)					\
-    MMC_CMD_SETUP(mmc_cmd);						\
-									\
-    /* Setup to read header, to get length of data */			\
+#define MMC_CMD_SETUP_READ16(mmc_cmd)                                   \
+    MMC_CMD_SETUP(mmc_cmd);                                             \
+                                                                        \
+    /* Setup to read header, to get length of data */                   \
     CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_size)
 
 /* Boilerplate code to run a MMC command. 
@@ -53,11 +53,11 @@
    'direction' is the SCSI direction (read, write, none) of the
    command.  
 */
-#define MMC_RUN_CMD(direction, i_timeout)				\
-    p_cdio->op.run_mmc_cmd(p_cdio->env,					\
-	i_timeout,							\
-	mmc_get_cmd_len(cdb.field[0]),                                  \
-        &cdb,								\
-	direction, i_size, p_buf)
+#define MMC_RUN_CMD(direction, i_timeout)                               \
+    p_cdio->op.run_mmc_cmd(p_cdio->env,                                 \
+        i_timeout,                                                      \
+        mmc_get_cmd_len(cdb.field[0]),                                  \
+        &cdb,                                                           \
+        direction, i_size, p_buf)
 
-#endif /* __CDIO_MMC_CMD_HELPER_H__ */
+#endif /* CDIO_DRIVER_MMC_CMD_HELPER_H_ */
