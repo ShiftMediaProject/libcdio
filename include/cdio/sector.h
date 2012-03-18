@@ -68,10 +68,13 @@
       /*! Information that can be obtained through a Read Subchannel
         command.
       */
-#define CDIO_SUBCHANNEL_SUBQ_DATA               0
-#define CDIO_SUBCHANNEL_CURRENT_POSITION        1
-#define CDIO_SUBCHANNEL_MEDIA_CATALOG           2
-#define CDIO_SUBCHANNEL_TRACK_ISRC              3
+      typedef enum cdio_subchannel
+        {
+          CDIO_SUBCHANNEL_SUBQ_DATA             = 0,
+          CDIO_SUBCHANNEL_CURRENT_POSITION      = 1,
+          CDIO_SUBCHANNEL_MEDIA_CATALOG         = 2,
+          CDIO_SUBCHANNEL_TRACK_ISRC            = 3
+        } cdio_subchannel;
       
       /*! track flags
        * Q Sub-channel Control Field (4.2.3.3)
@@ -198,12 +201,14 @@
 #define CDIO_CD_FRAMES_PER_MIN                          \
       (CDIO_CD_FRAMES_PER_SEC*CDIO_CD_SECS_PER_MIN)
       
-#define CDIO_CD_74MIN_SECTORS (UINT32_C(74)*CDIO_CD_FRAMES_PER_MIN)
-#define CDIO_CD_80MIN_SECTORS (UINT32_C(80)*CDIO_CD_FRAMES_PER_MIN)
-#define CDIO_CD_90MIN_SECTORS (UINT32_C(90)*CDIO_CD_FRAMES_PER_MIN)
+typedef enum cdio_cd_minutes_sectors
+{
+        CDIO_CD_74MIN_SECTORS = UINT32_C(74) * CDIO_CD_FRAMES_PER_MIN,
+        CDIO_CD_80MIN_SECTORS = UINT32_C(80) * CDIO_CD_FRAMES_PER_MIN,
+        CDIO_CD_90MIN_SECTORS = UINT32_C(90) * CDIO_CD_FRAMES_PER_MIN,
       
-#define CDIO_CD_MAX_SECTORS                                     \
-      (UINT32_C(100)*CDIO_CD_FRAMES_PER_MIN-CDIO_PREGAP_SECTORS)
+        CDIO_CD_MAX_SECTORS   = UINT32_C(100) * CDIO_CD_FRAMES_PER_MIN - CDIO_PREGAP_SECTORS
+} cdio_cd_minutes_sectors;
       
 #define msf_t_SIZEOF 3
       
