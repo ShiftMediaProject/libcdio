@@ -2,15 +2,15 @@
 # Tests to see that BIN/CUE and cdrdao TOC file iamge reading is correct
 # (via cd-info).
 
-if test "@VCDINFO_LIBS@X" != "X" ; then
+if test ! -d "@VCDINFO_LIBS@" ; then
   vcd_opt='--no-vcd'
 fi
 
-if test "X$abs_top_srcdir" = "X" ; then
+if test ! -d "$abs_top_srcdir" ; then
   abs_top_srcdir=@abs_top_srcdir@
 fi
 
-if test "X$top_builddir" = "X" ; then
+if test ! -d "$top_builddir" ; then
   top_builddir=@abs_top_builddir@
 fi
 
