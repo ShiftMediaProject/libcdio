@@ -99,6 +99,7 @@ bool cdio_charset_to_utf8(const char *src, size_t src_len, cdio_utf8_t **dst,
  */
 wchar_t* cdio_utf8_to_wchar(const char* str);
 
+#include <stdio.h> /* for FILE */
 /** \brief Provides an UTF-8 compliant version of fopen for Windows
  *  The parameters and return value are the same as fopen().
  */
