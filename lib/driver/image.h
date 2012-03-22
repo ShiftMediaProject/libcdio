@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2011, 2012
+  Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,8 +22,8 @@
   defined before it is included.
 */
 
-#ifndef __CDIO_IMAGE_H__
-#define __CDIO_IMAGE_H__
+#ifndef CDIO_DRIVER_IMAGE_H_
+#define CDIO_DRIVER_IMAGE_H_
 
 #if defined(HAVE_CONFIG_H) && !defined(__CDIO_CONFIG_H__)
 # include "config.h"
@@ -46,34 +47,34 @@ typedef struct {
   msf_t          start_msf;
   lba_t          start_lba;
   int            start_index;
-  lba_t          pregap;	/**< pre-gap */
-  lba_t          silence;	/**< pre-gap with zero audio data */
+  lba_t          pregap;        /**< pre-gap */
+  lba_t          silence;       /**< pre-gap with zero audio data */
   int            sec_count;     /**< Number of sectors in this track. Does not
-				     include pregap */
+                                     include pregap */
   int            num_indices;
   flag_t         flags;         /**< "[NO] COPY", "4CH", "[NO] PREMPAHSIS" */
-  char          *isrc;		/**< IRSC Code (5.22.4) exactly 12 bytes */
+  char          *isrc;          /**< IRSC Code (5.22.4) exactly 12 bytes */
   char          *filename;
   CdioDataSource_t *data_source;
   off_t          offset;        /**< byte offset into data_start of track
-				     beginning. In cdrdao for example, one
-				     filename may cover many tracks and
-				     each track would then have a different
-				     offset.
-				*/
+                                     beginning. In cdrdao for example, one
+                                     filename may cover many tracks and
+                                     each track would then have a different
+                                     offset.
+                                */
   track_format_t track_format;
   bool           track_green;
 
   trackmode_t    mode;
   uint16_t       datasize;      /**< How much is in the portion we return 
-				     back? */
+                                     back? */
   uint16_t       datastart;     /**<  Offset from begining of frame 
-				      that data starts */
+                                      that data starts */
   uint16_t       endsize;       /**< How much stuff at the end to skip over. 
-				     This stuff may have error correction 
-				     (EDC, or ECC).*/
+                                     This stuff may have error correction 
+                                     (EDC, or ECC).*/
   uint16_t       blocksize;     /**< total block size = start + size + end */
 } track_info_t;
 
 
-#endif /* __CDIO_IMAGE_H__ */
+#endif /* CDIO_DRIVER_IMAGE_H_ */

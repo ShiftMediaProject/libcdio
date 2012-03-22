@@ -1,7 +1,5 @@
 /*
-    $Id: cd_types.h,v 1.18 2008/03/25 15:59:08 karl Exp $
-
-    Copyright (C) 2003, 2006, 2008 Rocky Bernstein <rocky@cpan.org>
+    Copyright (C) 2003, 2006, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 1996,1997,1998  Gerd Knorr <kraxel@bytesex.org>
          and       Heiko Eiﬂfeldt <heiko@hexco.de>
 
@@ -25,8 +23,8 @@
  *         
  */
 
-#ifndef __CDIO_CD_TYPES_H__
-#define __CDIO_CD_TYPES_H__
+#ifndef CDIO_CD_TYPES_H_
+#define CDIO_CD_TYPES_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,13 +37,13 @@ extern "C" {
   typedef enum {
     CDIO_FS_AUDIO                = 1, /**< audio only - not really a 
                                          filesystem */
-    CDIO_FS_HIGH_SIERRA	         = 2, /**< High-Sierra Filesystem */
-    CDIO_FS_ISO_9660	         = 3, /**< ISO 9660 filesystem */
-    CDIO_FS_INTERACTIVE	         = 4,
-    CDIO_FS_HFS		         = 5, /**< file system used on the Macintosh 
+    CDIO_FS_HIGH_SIERRA          = 2, /**< High-Sierra Filesystem */
+    CDIO_FS_ISO_9660             = 3, /**< ISO 9660 filesystem */
+    CDIO_FS_INTERACTIVE          = 4,
+    CDIO_FS_HFS                  = 5, /**< file system used on the Macintosh 
                                          system in MacOS 6 through MacOS 9
                                          and deprecated in OSX. */
-    CDIO_FS_UFS		         = 6, /**< Generic Unix file system derived
+    CDIO_FS_UFS                  = 6, /**< Generic Unix file system derived
                                          from the Berkeley fast file 
                                          system. */
     
@@ -53,7 +51,7 @@ extern "C" {
      * EXT2 was the GNU/Linux native filesystem for early kernels. Newer
      * GNU/Linux OS's may use EXT3 which is EXT2 with a journal. 
      */
-    CDIO_FS_EXT2		 = 7,
+    CDIO_FS_EXT2                 = 7,
 
     CDIO_FS_ISO_HFS              = 8,  /**< both HFS & ISO-9660 filesystem */
     CDIO_FS_ISO_9660_INTERACTIVE = 9,  /**< both CD-RTOS and ISO filesystem */
@@ -65,15 +63,15 @@ extern "C" {
      * which uses a CD-player. Panasonic in the early 90's was the first
      * company to manufacture and market a 3DO player. 
      */
-    CDIO_FS_3DO		        = 10,
+    CDIO_FS_3DO                 = 10,
 
 
     /**<
        Microsoft X-BOX CD.
     */
-    CDIO_FS_XISO 		= 11,
-    CDIO_FS_UDFX 		= 12,
-    CDIO_FS_UDF 		= 13,
+    CDIO_FS_XISO                = 11,
+    CDIO_FS_UDFX                = 12,
+    CDIO_FS_UDF                 = 13,
     CDIO_FS_ISO_UDF             = 14
   } cdio_fs_t;
 
@@ -89,15 +87,15 @@ extern "C" {
  *  based of the fs type information. This 
  */
   typedef enum {
-    CDIO_FS_MASK	      =	  0x000f, /**< Note: this should be 2**n-1 and
+    CDIO_FS_MASK              =   0x000f, /**< Note: this should be 2**n-1 and
                                                and greater than the highest 
                                                CDIO_FS number above */
-    CDIO_FS_ANAL_XA           =	  0x00010, /**< eXtended Architecture format */
+    CDIO_FS_ANAL_XA           =   0x00010, /**< eXtended Architecture format */
     CDIO_FS_ANAL_MULTISESSION =   0x00020, /**< CD has multisesion */
-    CDIO_FS_ANAL_PHOTO_CD     =	  0x00040, /**< Is a Kodak Photo CD */
+    CDIO_FS_ANAL_PHOTO_CD     =   0x00040, /**< Is a Kodak Photo CD */
     CDIO_FS_ANAL_HIDDEN_TRACK =   0x00080, /**< Hidden track at the 
                                                beginning of the CD */
-    CDIO_FS_ANAL_CDTV         =	  0x00100,
+    CDIO_FS_ANAL_CDTV         =   0x00100,
     CDIO_FS_ANAL_BOOTABLE     =   0x00200, /**< CD is bootable */
     CDIO_FS_ANAL_VIDEOCD      =   0x00400, /**< VCD 1.1 */
     CDIO_FS_ANAL_ROCKRIDGE    =   0x00800, /**< Has Rock Ridge Extensions to
@@ -118,7 +116,7 @@ extern "C" {
   } cdio_fs_cap_t;
     
 
-#define CDIO_FS_UNKNOWN	            CDIO_FS_MASK
+#define CDIO_FS_UNKNOWN             CDIO_FS_MASK
 
 /**
  * 
@@ -137,7 +135,7 @@ typedef struct
   unsigned int  joliet_level;  /**< If has Joliet extensions, this is the
                                   associated level number (i.e. 1, 2, or 3). */
   char          iso_label[33]; /**< This is 32 + 1 for null byte at the end in 
-				    formatting the string */
+                                    formatting the string */
   unsigned int  isofs_size;
   uint8_t       UDFVerMinor;   /**< For UDF filesystems only */
   uint8_t       UDFVerMajor;   /**< For UDF filesystems only */
@@ -149,8 +147,8 @@ typedef struct
  *  is returned in iso_analysis and the return value.
  */
 cdio_fs_anal_t cdio_guess_cd_type(const CdIo_t *cdio, int start_session, 
-				  track_t track_num, 
-				  /*out*/ cdio_iso_analysis_t *iso_analysis);
+                                  track_t track_num, 
+                                  /*out*/ cdio_iso_analysis_t *iso_analysis);
 
 #ifdef __cplusplus
 }
@@ -164,7 +162,7 @@ cdio_fs_anal_t cdio_guess_cd_type(const CdIo_t *cdio, int start_session,
 extern cdio_fs_cap_t debug_cdio_fs_cap;
 extern cdio_fs_t     debug_cdio_fs;
 
-#endif /* __CDIO_CD_TYPES_H__ */
+#endif /* CDIO_CD_TYPES_H_ */
 
 /* 
  * Local variables:

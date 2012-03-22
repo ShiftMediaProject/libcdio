@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2011, 2012
+   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -15,8 +16,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CDIO_CDTEXT_PRIVATE_H__
-#define __CDIO_CDTEXT_PRIVATE_H__
+#ifndef CDIO_DRIVER_CDTEXT_PRIVATE_H_
+#define CDIO_DRIVER_CDTEXT_PRIVATE_H_
 
 #include <cdio/types.h>
 
@@ -136,7 +137,7 @@ cdtext_field_t cdtext_is_field (const char *field);
 cdtext_lang_t cdtext_is_language (const char *lang);
 
 
-#endif /* __CDIO_CDTEXT_PRIVATE_H__ */
+#endif /* CDIO_DRIVER_CDTEXT_PRIVATE_H_ */
 
 /* 
  * Local variables:

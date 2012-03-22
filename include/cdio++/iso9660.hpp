@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2006, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2006, 2008, 2011, 2012 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,12 +21,12 @@
  *  library. Applications use this for anything regarding libcdio.
  */
 
-#ifndef __ISO9660_HPP__
-#define __ISO9660_HPP__
+#ifndef CDIO_ISO9660_HPP_
+#define CDIO_ISO9660_HPP_
 
 #include <cdio/iso9660.h>
 #include <cdio++/cdio.hpp>
-#include <vector>		// vector class library
+#include <vector>               // vector class library
 #include <cstdlib>
 #include <cstring>
 using namespace std;
@@ -126,8 +126,8 @@ public:
     {
       free(p_stat);
       p_stat = (iso9660_stat_t *) 
-	calloc( 1, sizeof(iso9660_stat_t) 
-		+ strlen(copy_in.p_stat->filename)+1 );
+        calloc( 1, sizeof(iso9660_stat_t) 
+                + strlen(copy_in.p_stat->filename)+1 );
       p_stat = copy_in.p_stat;
     }
       
@@ -181,7 +181,7 @@ public:
       returned result.
     */
     bool readdir (const char psz_path[], stat_vector_t& stat_vector,
-		  bool b_mode2=false);
+                  bool b_mode2=false);
 
     /*!
       Return file status for path name psz_path. NULL is returned on
@@ -202,10 +202,10 @@ public:
     stat (const char psz_path[], bool b_translate=false, bool b_mode2=false)
     {
       if (b_translate) 
-	return new Stat(iso9660_fs_stat_translate (p_cdio, psz_path, 
-							    b_mode2));
+        return new Stat(iso9660_fs_stat_translate (p_cdio, psz_path, 
+                                                            b_mode2));
       else 
-	return new Stat(iso9660_fs_stat (p_cdio, psz_path));
+        return new Stat(iso9660_fs_stat (p_cdio, psz_path));
     }
   };
   
@@ -321,7 +321,7 @@ public:
       @see open_fuzzy
     */
     bool open(const char *psz_path, 
-	      iso_extension_mask_t iso_extension_mask=ISO_EXTENSION_NONE)
+              iso_extension_mask_t iso_extension_mask=ISO_EXTENSION_NONE)
     {
       if (p_iso9660) iso9660_close(p_iso9660);
       p_iso9660 = iso9660_open_ext(psz_path, iso_extension_mask);
@@ -340,9 +340,9 @@ public:
       @see open
     */
     bool open_fuzzy (const char *psz_path,
-		     iso_extension_mask_t iso_extension_mask
-		     =ISO_EXTENSION_NONE,
-		     uint16_t i_fuzz=20);
+                     iso_extension_mask_t iso_extension_mask
+                     =ISO_EXTENSION_NONE,
+                     uint16_t i_fuzz=20);
 
     /*! Read the Primary Volume Descriptor for an ISO 9660 image.  A
       PVD object is returned if read, and NULL if there was an error.
@@ -358,8 +358,8 @@ public:
       @see read_superblock
     */
     bool read_superblock (iso_extension_mask_t iso_extension_mask
-			  =ISO_EXTENSION_NONE,
-			  uint16_t i_fuzz=20);
+                          =ISO_EXTENSION_NONE,
+                          uint16_t i_fuzz=20);
 
     /*!
       Read the Super block of an ISO 9660 image but determine framesize
@@ -371,8 +371,8 @@ public:
     */
     bool 
     read_superblock_fuzzy (iso_extension_mask_t iso_extension_mask
-			   =ISO_EXTENSION_NONE,
-			   uint16_t i_fuzz=20);
+                           =ISO_EXTENSION_NONE,
+                           uint16_t i_fuzz=20);
 
     /*! Read psz_path (a directory) and return a list of iso9660_stat_t
       pointers for the files inside that directory. The caller must free
@@ -383,16 +383,16 @@ public:
       CdioList_t *p_stat_list = iso9660_ifs_readdir (p_iso9660, psz_path);
       
       if (p_stat_list) {
-	CdioListNode_t *p_entnode;
-	_CDIO_LIST_FOREACH (p_entnode, p_stat_list) {
-	  iso9660_stat_t *p_statbuf = 
-	    (iso9660_stat_t *) _cdio_list_node_data (p_entnode);
-	  stat_vector.push_back(new ISO9660::Stat(p_statbuf));
-	}
-	_cdio_list_free (p_stat_list, false);
-	return true;
+        CdioListNode_t *p_entnode;
+        _CDIO_LIST_FOREACH (p_entnode, p_stat_list) {
+          iso9660_stat_t *p_statbuf = 
+            (iso9660_stat_t *) _cdio_list_node_data (p_entnode);
+          stat_vector.push_back(new ISO9660::Stat(p_statbuf));
+        }
+        _cdio_list_free (p_stat_list, false);
+        return true;
       } else {
-	return false;
+        return false;
       }
     }
 
@@ -412,9 +412,9 @@ public:
     stat (const char psz_path[], bool b_translate=false) 
     {
       if (b_translate) 
-	return new Stat(iso9660_ifs_stat_translate (p_iso9660, psz_path));
+        return new Stat(iso9660_ifs_stat_translate (p_iso9660, psz_path));
       else 
-	return new Stat(iso9660_ifs_stat (p_iso9660, psz_path));
+        return new Stat(iso9660_ifs_stat (p_iso9660, psz_path));
     }
     
   private:
@@ -426,4 +426,4 @@ public:
 typedef vector< ISO9660::Stat *> stat_vector_t;
 typedef vector <ISO9660::Stat *>::iterator stat_vector_iterator_t;
 
-#endif /* __ISO9660_HPP__ */
+#endif /* CDIO_ISO9660_HPP_ */

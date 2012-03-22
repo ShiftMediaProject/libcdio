@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2010 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2010, 2012 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
    MMC commands.
  */
 
-#ifndef __CDIO_MMC_HL_CMDS_H__
-#define __CDIO_MMC_HL_CMDS_H__
+#ifndef CDIO_MMC_HL_CMDS_H_
+#define CDIO_MMC_HL_CMDS_H_
 
 #include <cdio/mmc.h>
 
@@ -94,7 +94,7 @@ extern "C" {
      @return DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t mmc_mode_sense( CdIo_t *p_cdio, /*out*/ void *p_buf,
-				       unsigned int i_size, int page);
+                                       unsigned int i_size, int page);
   
   /**
     Set the drive speed in CD-ROM speed units.
@@ -121,7 +121,7 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#endif /* __CDIO_MMC_HL_CMDS_H__ */
+#endif /* CDIO_MMC_HL_CMDS_H_ */
 
 /* 
  * Local variables:

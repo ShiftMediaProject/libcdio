@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2005, 2006, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
  *  library. Applications use this for anything regarding libcdio.
  */
 
-#ifndef __CDIO_HPP__
-#define __CDIO_HPP__
+#ifndef CDIO_CDIOPP_HPP_
+#define CDIO_CDIOPP_HPP_
 
 #include <cdio/cdio.h>
 #include <cdio/audio.h>
@@ -179,4 +179,4 @@ public:
 /* Things related to devices. No class or object is needed. */
 #include "devices.hpp"
 
-#endif /* __CDIO_HPP__ */
+#endif /* CDIO_CDIOPP_HPP_ */

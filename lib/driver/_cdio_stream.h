@@ -18,8 +18,8 @@
 */
 
 
-#ifndef __CDIO_STREAM_H__
-#define __CDIO_STREAM_H__
+#ifndef CDIO_STREAM_H_
+#define CDIO_STREAM_H_
 
 #include <cdio/types.h>
 #include "cdio_private.h"
@@ -126,7 +126,7 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
-#endif /* __CDIO_STREAM_H__ */
+#endif /* CDIO_STREAM_H_ */
 
 
 /* 

@@ -1,7 +1,5 @@
 /*
-    $Id: devices.hpp,v 1.5 2008/03/25 15:59:10 karl Exp $
-
-    Copyright (C) 2005, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2005, 2006, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,7 +30,7 @@
   it was DRIVER_UNKNOWN or DRIVER_DEVICE; If this is NULL, we won't
   report back the driver used.
 */
-void closeTray (const char *psz_drive, /*in/out*/ driver_id_t &driver_id);
+void closeTray(const char *psz_drive, /*in/out*/ driver_id_t &driver_id);
 
 /*!
   Close media tray in CD drive if there is a routine to do so. 
@@ -40,7 +38,7 @@ void closeTray (const char *psz_drive, /*in/out*/ driver_id_t &driver_id);
   @param psz_drive the name of CD-ROM to be closed. If omitted or 
   NULL, we'll scan for a suitable CD-ROM.
 */
-void closeTray (const char *psz_drive=(const char *)NULL);
+void closeTray(const char *psz_drive=(const char *)NULL);
 
 /*! 
   Get a string decribing driver_id. 
@@ -48,14 +46,14 @@ void closeTray (const char *psz_drive=(const char *)NULL);
   @param driver_id the driver you want the description for
   @return a sring of driver description
 */
-const char *driverDescribe (driver_id_t driver_id);
+const char *driverDescribe(driver_id_t driver_id);
 
 /*!
   Eject media in CD drive if there is a routine to do so. 
   
   If the CD is ejected, object is destroyed.
 */
-void ejectMedia (const char *psz_drive);
+void ejectMedia(const char *psz_drive);
 
 /*!
   Free device list returned by GetDevices
@@ -65,7 +63,7 @@ void ejectMedia (const char *psz_drive);
   @see GetDevices
   
 */
-void freeDeviceList (char * device_list[]);
+void freeDeviceList(char * device_list[]);
 
 /*!
   Return a string containing the default CD device if none is specified.
@@ -96,7 +94,7 @@ char ** getDevices(driver_id_t driver_id=DRIVER_DEVICE);
   things up for libcdio as well.
 */
 
-char **getDevices (driver_id_t &driver_id);
+char **getDevices(driver_id_t &driver_id);
 
 /*!
   Get an array of device names in search_devices that have at least
@@ -116,7 +114,7 @@ char **getDevices (driver_id_t &driver_id);
   was found.
 */
 char ** getDevices(/*in*/ char *ppsz_search_devices[],
-		   cdio_fs_anal_t capabilities, bool b_any=false);
+                   cdio_fs_anal_t capabilities, bool b_any=false);
 
 /*!
   Like GetDevices above but we return the driver we found
@@ -125,11 +123,11 @@ char ** getDevices(/*in*/ char *ppsz_search_devices[],
   and speeds things up for libcdio as well.
 */
 char ** getDevices(/*in*/ char* ppsz_search_devices[],
-		   cdio_fs_anal_t capabilities, /*out*/ driver_id_t &driver_id,
-		   bool b_any=false);
+                   cdio_fs_anal_t capabilities, /*out*/ driver_id_t &driver_id,
+                   bool b_any=false);
 
 /*! Return true if we Have driver for driver_id */
-bool haveDriver (driver_id_t driver_id);
+bool haveDriver(driver_id_t driver_id);
 
 /*! 
 
@@ -178,4 +176,3 @@ bool isNero(const char *psz_nrg);
   if not a TOC file.
 */
 bool isTocFile(const char *psz_toc);
-  

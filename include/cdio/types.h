@@ -22,8 +22,8 @@
  */
 
 
-#ifndef __CDIO_TYPES_H__
-#define __CDIO_TYPES_H__
+#ifndef CDIO_TYPES_H_
+#define CDIO_TYPES_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -265,10 +265,10 @@ typedef uint8_t ubyte;
   typedef int32_t lsn_t;
   
   /* Address in either MSF or logical format */
-  union cdio_cdrom_addr		
+  union cdio_cdrom_addr         
   {
-    msf_t	msf;
-    lba_t	lba;
+    msf_t       msf;
+    lba_t       lba;
   };
 
   /*! The type of a track number 0..99. */
@@ -325,20 +325,20 @@ typedef uint8_t ubyte;
     Q Sub-channel Control Field (4.2.3.3)
   */
   typedef enum {
-    CDIO_TRACK_FLAG_NONE = 		 0x00,	/**< no flags set */
-    CDIO_TRACK_FLAG_PRE_EMPHASIS =	 0x01,	/**< audio track recorded with
+    CDIO_TRACK_FLAG_NONE =               0x00,  /**< no flags set */
+    CDIO_TRACK_FLAG_PRE_EMPHASIS =       0x01,  /**< audio track recorded with
                                                    pre-emphasis */
-    CDIO_TRACK_FLAG_COPY_PERMITTED =	 0x02,	/**< digital copy permitted */
-    CDIO_TRACK_FLAG_DATA =		 0x04,	/**< data track */
+    CDIO_TRACK_FLAG_COPY_PERMITTED =     0x02,  /**< digital copy permitted */
+    CDIO_TRACK_FLAG_DATA =               0x04,  /**< data track */
     CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO = 0x08,  /**< 4 audio channels */
-  CDIO_TRACK_FLAG_SCMS =		 0x10	/**< SCMS (5.29.2.7) */
+  CDIO_TRACK_FLAG_SCMS =                 0x10   /**< SCMS (5.29.2.7) */
 } cdio_track_flag;
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* __CDIO_TYPES_H__ */
+#endif /* CDIO_TYPES_H_ */
 
 
 /* 
