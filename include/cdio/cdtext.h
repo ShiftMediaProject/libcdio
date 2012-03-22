@@ -277,7 +277,7 @@ cdtext_lang_t cdtext_get_language (const cdtext_t *p_cdtext);
 
   @return true on success, false if language is not available
 */
-bool cdtext_select_language(cdtext_t *p_cdtext, const char *lang);
+bool cdtext_select_language(cdtext_t *p_cdtext, cdtext_lang_t lang);
 
 /*
   Returns a list of available languages or NULL.

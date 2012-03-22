@@ -20,7 +20,7 @@
    libcdio.  See also corresponding C++ programs of similar names. */
 
 #define EXAMPLE_CUE_FILE "../test/data/cdtext.cue"
-#define EXAMPLE_PREF_LANG "German"
+#define EXAMPLE_PREF_LANG CDTEXT_LANGUAGE_GERMAN
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -78,7 +78,7 @@ print_disc_info(CdIo_t *p_cdio) {
 
     /* select language */
     if(cdtext_select_language(cdtext, EXAMPLE_PREF_LANG)) {
-        printf("%s selected.\n", EXAMPLE_PREF_LANG);
+        printf("%s selected.\n", cdtext_lang2str (EXAMPLE_PREF_LANG));
     } else {
         printf("'%s' is not available. Using '%s'\n", EXAMPLE_PREF_LANG,
                cdtext_lang2str (cdtext_get_language (cdtext)));

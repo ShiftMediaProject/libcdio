@@ -342,24 +342,21 @@ cdtext_lang_t
   return false.
 
   @param p_cdtext the CD-TEXT object
-  @param language string representation of the language
+  @param language language identifier
 
   @return true on success, false if language is not available
 */
 bool
-cdtext_select_language(cdtext_t *p_cdtext, const char *language)
+cdtext_select_language(cdtext_t *p_cdtext, cdtext_lang_t language)
 {
-  cdtext_lang_t lang_id;
-  lang_id = cdtext_is_language(language);
-
   if(NULL == p_cdtext)
     return false;
 
-  if (CDTEXT_LANGUAGE_UNKNOWN != lang_id)
+  if (CDTEXT_LANGUAGE_UNKNOWN != language)
   {
     int i;
     for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++) {
-      if (lang_id == p_cdtext->block[i].language_code) {
+      if (language == p_cdtext->block[i].language_code) {
         p_cdtext->block_i = i;
         return true;
       }
