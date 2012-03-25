@@ -153,7 +153,7 @@
 #define CDIO_CD_FRAMESIZE_RAW   2352   /**< bytes per frame, "raw" mode */
 #define CDIO_CD_FRAMESIZE_RAWER 2646   /**< The maximum possible returned 
                                           bytes */ 
-#define CDIO_CD_FRAMESIZE_RAW1 (CDIO_CD_CD_FRAMESIZE_RAW-CDIO_CD_SYNC_SIZE) /*2340*/
+#define CDIO_CD_FRAMESIZE_RAW1 (CDIO_CD_FRAMESIZE_RAW-CDIO_CD_SYNC_SIZE) /*2340*/
 #define CDIO_CD_FRAMESIZE_RAW0 (CDIO_CD_FRAMESIZE_RAW-CDIO_CD_SYNC_SIZE-CDIO_CD_HEADER_SIZE) /*2336*/
       
       /*! "before data" part of raw XA (green, mode2) frame */
