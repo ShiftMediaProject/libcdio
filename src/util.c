@@ -56,7 +56,9 @@ print_version (char *program_name, const char *version,
   
   if (no_header == 0) {
     report( stdout,  
-	    "%s version %s\nCopyright (c) 2003, 2004, 2005, 2007, 2008, 2011 R. Bernstein\n",
+	    "%s version %s\n"
+	    "Copyright (c) 2003, 2004, 2005, 2007, 2008, 2011, 2012 "
+	    "R. Bernstein\n",
 	    program_name, version);
     report( stdout,  
             _("This is free software; see the source for copying conditions.\n\
