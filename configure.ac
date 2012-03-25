@@ -643,7 +643,6 @@ AC_CONFIG_FILES([
        doc/Makefile \
        lib/Makefile \
        lib/cdio++/Makefile \
-       lib/cdtext/Makefile \
        lib/driver/Makefile \
        lib/iso9660/Makefile \
        lib/udf/Makefile \
