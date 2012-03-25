@@ -36,8 +36,6 @@
 #include <string.h>
 #endif
 
-#include <cdio/cdio.h>
-#include <cdio/logging.h>
 #include "helper.h"
 
 int
@@ -46,6 +44,7 @@ main(int argc, const char *argv[])
   CdIo_t *p_cdio;
   char **ppsz_drives=NULL;
   
+  cdio_log_set_handler(log_handler);
   cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
   /* snprintf(psz_nrgfile, sizeof(psz_nrgfile)-1,
              "%s/%s", TEST_DIR, cue_file[i]);
@@ -60,7 +59,14 @@ main(int argc, const char *argv[])
   p_cdio = cdio_open_linux(ppsz_drives[0]);
   if (p_cdio) {
       const char *psz_source = NULL, *psz_scsi_tuple;
-
+      lsn_t lsn;
+      
+      reset_counts();
+      lsn = cdio_get_track_lsn(p_cdio, CDIO_CD_MAX_TRACKS+1);
+      assert_equal_int(CDIO_INVALID_LSN, lsn, 
+		       "cdio_get_track_lsn with too large of a track number");
+      reset_counts();
+      
       check_get_arg_source(p_cdio, ppsz_drives[0]);
       check_mmc_supported(p_cdio, 3);
   
