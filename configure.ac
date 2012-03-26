@@ -648,7 +648,6 @@ AC_CONFIG_FILES([
        lib/udf/Makefile \
        libcdio.pc \
        libcdio++.pc \
-       libcdtext.pc \
        libiso9660.pc \
        libiso9660++.pc \
        libudf.pc \

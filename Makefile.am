@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2004, 2006, 2008, 2011 
+#   Copyright (C) 2003, 2004, 2006, 2008, 2011, 2012
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -116,7 +116,6 @@ check_iso.sh: $(top_builddir)/config.status check_iso.sh.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 	chmod +x config_iso.sh
 
-# cvs2cl
 MAINTAINERCLEANFILES = ChangeLog *.rej *.orig
 
 if MAINTAINER_MODE

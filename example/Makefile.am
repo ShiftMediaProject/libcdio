@@ -22,24 +22,44 @@ if ENABLE_CPP
 SUBDIRS =  C++
 endif
 
-if BUILD_EXAMPLES
-	audio cdchange cdio-eject cdtext device \
-	discid drives eject \
-	extract isofile isofile2 isofuzzy isolist isolsn \
-	mmc1 mmc2 mmc2a mmc3 \
-	sample3 sample4 tracks udf1 udffile
-endif
+noinst_PROGRAMS = \
+	audio \
+	cdchange \
+	cdio-eject \
+	cdtext \
+	device \
+	discid \
+	drives \
+	eject \
+	extract \
+	isofile \
+	isofile2 \
+	isofuzzy \
+	isolist \
+	isolsn \
+	mmc1 \
+	mmc2 \
+	mmc2a \
+	mmc3 \
+	sample3 \
+	sample4 \
+	tracks \
+	udf1 \
+	udffile
 
-# extract is used in tests so that has to be built regardless
-noinst_PROGRAMS = extract $(noinst_programs)
+check_PROGRAMS  = cdtext device drives \
+                   mmc1 mmc2 mmc2a mmc3 sample4
 
-INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
+INCLUDES = $(LIBCDIO_CFLAGS)
 
 audio_DEPENDENCIES    = $(LIBCDIO_DEPS)
 audio_LDADD           = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 cdchange_DEPENDENCIES = $(LIBCDIO_DEPS)
 cdchange_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
+
+cdio_eject_DEPENDENCIES = $(LIBCDIO_DEPS)
+cdio_eject_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 cdtext_DEPENDENCIES   = $(LIBCDIO_DEPS)
 cdtext_LDADD          = $(LIBCDIO_LIBS) $(LTLIBICONV)
@@ -58,9 +78,6 @@ eject_LDADD           = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 extract_DEPENDENCIES  = $(LIBISO9660_LIBS) $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
 extract_LDADD         = $(LIBISO9660_LIBS) $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
-
-cdio_eject_DEPENDENCIES = $(LIBCDIO_DEPS)
-cdio_eject_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 isofile_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 isofile2_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
@@ -93,9 +110,6 @@ udf1_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 udffile_DEPENDENCIES = $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
 udffile_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
-
-check_PROGRAMS      = cdtext device drives \
-                      mmc1 mmc2 mmc2a mmc3 sample4
 
 TESTS               = $(check_PROGRAMS)
 
