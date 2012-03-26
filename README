@@ -9,9 +9,11 @@ A library for working with ISO-9660 filesystems libiso9660 is
 included. A generic interface for issuing MMC (multimedia commands) is
 also part of the libcdio library.
 
-Also included is a library for working with ISO-9660 filesystems as is
-also the CD-DA error/jitter correction library from cdparanoia
-(http://www.xiph.org/paranoia).
+Also included is a library for working with ISO-9660 filesystems.
+
+The CD-DA error/jitter correction library from cdparanoia
+(http://www.xiph.org/paranoia) is included as a separate library
+licenced under GPL v2.
 
 Some support for disk image types like CDRWin's BIN/CUE format,
 cdrdao's TOC format, and Nero's NRG format are available. Therefore,
