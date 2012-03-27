@@ -62,16 +62,16 @@ an optional dependency on libcdio).
 Microsoft Windows
 -------
 
-The building under Microsoft Windows the thing to do is to install
-cygwin (http://www.cygwin.com). It has been reported that MinGW
-(http://www.mingw.org/) also works, but it is possible you may
-encounter more problems there. 
+Building under Microsoft Windows is supported for cygwin
+(http://www.cygwin.com). MinGW (http://www.mingw.org/) may also work,
+but it is possible you may encounter problems there.
 
-Folks may have used Microsoft compilers (e.g. Visual C), but you may
-find you need to make your own "project" files.  Don't undertake this
-unless you are willing to spend time hacking. xboxmediacenter team
-folks I believe go this route, so you may be able to use their project
-files as a starting point. 
+Support for Microsoft compilers (e.g. Visual C) is not officially
+supported.  You need to make your own "project" files.  Don't
+undertake this unless you are willing to spend time hacking. In the
+past xboxmediacenter team folks I believe have gone this route, as has
+Pete Batard in his rufus project. You may be able to use their project
+files as a starting point.
 
 XBOX
 -------

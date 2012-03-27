@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010, 2011
-    Rocky Bernstein <rocky@gnu.org>
+  2012 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -601,7 +601,9 @@ get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
 {
   _img_private_t *p_env = p_user_data;
 
-  if (NULL == msf) return false;
+  if (NULL == msf || 
+      (i_track > CDIO_CD_MAX_TRACKS && i_track != CDIO_CDROM_LEADOUT_TRACK))
+    return false;
 
   if (!p_env->gen.toc_init) read_toc_linux (p_user_data) ;
 
@@ -1178,6 +1180,13 @@ read_toc_linux (void *p_user_data)
 
   p_env->gen.i_first_track = p_env->tochdr.cdth_trk0;
   p_env->gen.i_tracks      = p_env->tochdr.cdth_trk1;
+
+  if (p_env->gen.i_tracks > CDIO_CD_MAX_TRACKS) {
+     cdio_log(CDIO_LOG_WARN, "Number of tracks exceeds maximum (%d vs. %d)\n",
+              p_env->gen.i_tracks, CDIO_CD_MAX_TRACKS);
+     p_env->gen.i_tracks = CDIO_CD_MAX_TRACKS;
+  }
+
 
   /* read individual tracks */
   for (i= p_env->gen.i_first_track; i<=p_env->gen.i_tracks; i++) {

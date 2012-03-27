@@ -16,7 +16,6 @@
 */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_STDIO_H
@@ -29,8 +28,50 @@
 #include <stdlib.h>
 #endif
 
-#include <cdio/cdio.h>
 #include "helper.h"
+
+unsigned int info_msg_count=0;
+unsigned int debug_msg_count=0;
+unsigned int warn_msg_count=0;
+unsigned int error_msg_count=0;
+const char *info_messages[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
+const char *debug_messages[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
+const char *warn_messages[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
+const char *error_messages[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
+
+void 
+assert_equal_int(int expect, int got, const char *msg)
+{
+  if (expect != got) {
+      fprintf(stderr, "ERROR: Expected %d, got %d\n", expect, got);
+      if (NULL != msg) fprintf(stderr, "%s\n", msg);
+      exit(1);
+  }
+}
+
+void 
+assert_no_warn(const char *msg)
+{
+  if (warn_msg_count != 0) {
+      unsigned int i;
+      fprintf(stderr, "ERROR: got unexpected warnings:\n");
+      for (i=0; i<warn_msg_count; i++) {
+	  fprintf(stderr, "%s\n", warn_messages[i]);
+      }
+      exit(1);
+  }
+}
+
+void 
+assert_warn(const char *msg)
+{
+  if (warn_msg_count == 0) {
+      fprintf(stderr, 
+	      "ERROR: should have gotten a warning message:\n%s\n",
+	      msg);
+      exit(1);
+  }
+}
 
 void check_access_mode(CdIo_t *p_cdio, const char *psz_expected_access_mode)
 {
@@ -77,4 +118,33 @@ void check_mmc_supported(CdIo_t *p_cdio, int i_expected)  {
 		"cdio_get_arg(\"mmc-supported?\") should not return \"true\"");
 	exit(32);
     }
+}
+
+void 
+log_handler(cdio_log_level_t level, const char message[])
+{
+  switch(level) {
+  case CDIO_LOG_DEBUG:
+    debug_messages[debug_msg_count] = message;
+    debug_msg_count++;
+    return;
+  case CDIO_LOG_INFO:
+    info_messages[info_msg_count] = message;
+    info_msg_count++;
+    return;
+  case CDIO_LOG_ERROR:
+    error_messages[info_msg_count] = message;
+    error_msg_count++;
+    return;
+  default:
+    warn_messages[warn_msg_count] = message;
+    warn_msg_count++;
+    return;
+  }
+}
+
+void 
+reset_counts(void)
+{
+  info_msg_count = debug_msg_count = warn_msg_count = 0;
 }

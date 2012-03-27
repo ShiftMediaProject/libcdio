@@ -16,9 +16,9 @@
 /depcomp
 /install-sh
 /libcdio++.pc
+/libcdio-*.sig
 /libcdio-*.tar.bz2
 /libcdio-*.tar.gz
-/libcdio-*.sig
 /libcdio.pc
 /libcdio_cdda.pc
 /libiso9660++.pc

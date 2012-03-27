@@ -31,7 +31,7 @@ hack = check_sizeof testassert testgetdevices testischar \
 EXTRA_PROGRAMS = testdefault 
 DATA_DIR       = @abs_top_srcdir@/test/data
 
-INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
+INCLUDES = $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 
 check_sizeof_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testassert_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
