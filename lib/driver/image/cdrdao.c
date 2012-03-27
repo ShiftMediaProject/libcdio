@@ -937,9 +937,6 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
       } else if (0 == strcmp ("LANGUAGE_MAP", psz_keyword)) {
         /* LANGUAGE d { ... } */
       } else if (0 == strcmp ("LANGUAGE", psz_keyword)) {
-        if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
-          goto format_error;
-        }
         /* Language number */
         if (NULL == (psz_field = strtok (NULL, " \t\n\r"))) {
           goto format_error;
@@ -960,7 +957,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
             cd->gen.cdtext->block[cd->gen.cdtext->block_i].language_code = CDTEXT_LANGUAGE_ENGLISH;
           }
           cdtext_set (cd->gen.cdtext, cdtext_key, (uint8_t*) strtok (NULL, "\"\t\n\r"),
-              (-1 == i ? 0 : cd->gen.i_first_track + i + 1),
+              (-1 == i ? 0 : cd->gen.i_first_track + i),
               "ISO-8859-1");
         }
 
