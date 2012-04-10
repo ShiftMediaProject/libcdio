@@ -84,7 +84,7 @@ cdtext_lang_t getLanguage()
 /*!
   selects a language
 */
-bool selectLanguage(const char *lang)
+bool selectLanguage(cdtext_lang_t lang)
 {
   return cdtext_select_language(p_cdtext, lang);
 }

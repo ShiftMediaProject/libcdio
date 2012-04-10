@@ -20,7 +20,7 @@
    libcdio.  See also corresponding C++ programs of similar names. */
 
 #define EXAMPLE_CUE_FILE "../test/data/cdtext.cue"
-#define EXAMPLE_PREF_LANG "German"
+#define EXAMPLE_PREF_LANG CDTEXT_LANGUAGE_GERMAN
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -39,7 +39,7 @@ print_cdtext_track_info(cdtext_t *cdtext, track_t i_track) {
     
     for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
         if (cdtext_get_const(cdtext, i, i_track)) {
-            printf("\t%s: %s\n", cdtext_field2str(i), 
+            printf("\t%s: %s\n", cdtext_field2str(i),
                    cdtext_get_const(cdtext, i, i_track));
         }
     }
@@ -78,9 +78,10 @@ print_disc_info(CdIo_t *p_cdio) {
 
     /* select language */
     if(cdtext_select_language(cdtext, EXAMPLE_PREF_LANG)) {
-        printf("%s selected.\n", EXAMPLE_PREF_LANG);
+        printf("%s selected.\n", cdtext_lang2str (EXAMPLE_PREF_LANG));
     } else {
-        printf("'%s' is not available. Using '%s'\n", EXAMPLE_PREF_LANG,
+        printf("'%s' is not available. Using '%s'\n",
+               cdtext_lang2str (EXAMPLE_PREF_LANG),
                cdtext_lang2str (cdtext_get_language (cdtext)));
     }
 
@@ -88,7 +89,7 @@ print_disc_info(CdIo_t *p_cdio) {
     printf("CD-Text for Disc:\n");
     print_cdtext_track_info(cdtext, 0);
     for (i=i_first_track ; i < i_last_track; i++ ) {
-        printf("CD-Text for Track %d\n:", i);
+        printf("CD-Text for Track %d:\n", i);
         print_cdtext_track_info(cdtext, i);
     }
 }
