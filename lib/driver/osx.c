@@ -69,7 +69,11 @@ typedef enum {
 
 #include <mach/mach.h>
 #include <Carbon/Carbon.h>
-#include <IOKit/scsi-commands/SCSITaskLib.h>
+#ifdef DARWIN_10_OR_GREATER
+# include <IOKit/scsi/SCSITaskLib.h>
+#else
+# include <IOKit/scsi-commands/SCSITaskLib.h>
+#endif
 #include <IOKit/IOCFPlugIn.h>
 #include <mach/mach_error.h>
 
@@ -83,12 +87,15 @@ typedef enum {
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-
 #include <paths.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/IOBSD.h>
-#include <IOKit/scsi-commands/IOSCSIMultimediaCommandsDevice.h>
+#ifdef DARWIN_10_OR_GREATER
+# include <IOKit/scsi/IOSCSIMultimediaCommandsDevice.h>
+#else
+# include <IOKit/scsi-commands/IOSCSIMultimediaCommandsDevice.h>
+#endif
 #include <IOKit/storage/IOCDTypes.h>
 #include <IOKit/storage/IODVDTypes.h>
 #include <IOKit/storage/IOMedia.h>
