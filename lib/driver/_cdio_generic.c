@@ -289,7 +289,7 @@ get_cdtext_generic (void *p_user_data)
       p_env->cdtext = cdtext_init();
       len = CDIO_MMC_GET_LEN16(p_cdtext_data);
 
-      if(!cdtext_data_init (p_env->cdtext, &p_cdtext_data[4], len-2)) {
+      if(0 != cdtext_data_init (p_env->cdtext, &p_cdtext_data[4], len-2)) {
         p_env->b_cdtext_error = true;
         cdtext_destroy (p_env->cdtext);
         free(p_env->cdtext);
