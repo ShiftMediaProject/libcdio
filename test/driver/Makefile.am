@@ -24,6 +24,10 @@ bincue_SOURCES   = helper.c bincue.c
 bincue_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
 bincue_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
 
+cdda_SOURCES     = helper.c cdda.c
+cdda_LDADD       = $(LIBCDIO_LIBS) $(LTLIBICONV)
+cdda_CFLAGS      = -DDATA_DIR=\"$(DATA_DIR)\"
+
 cdrdao_SOURCES   = helper.c cdrdao.c
 cdrdao_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
 cdrdao_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
@@ -58,7 +62,7 @@ win32_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
 win32_CFLAGS     = -DDATA_DIR=\"$(DATA_DIR)\"
 
 check_PROGRAMS   = \
-	abs_path bincue cdrdao freebsd gnu_linux \
+	abs_path bincue cdda cdrdao freebsd gnu_linux \
 	mmc_read mmc_write nrg \
 	osx realpath solaris win32
 
