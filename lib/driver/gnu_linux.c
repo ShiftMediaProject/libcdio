@@ -36,7 +36,6 @@
 #include <cdio/mmc_cmds.h>
 #include <cdio/audio.h>
 #include <cdio/cdtext.h>
-#include "cdtext_private.h"
 #include "cdio_assert.h"
 #include "cdio_private.h"
 
