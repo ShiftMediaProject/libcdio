@@ -33,6 +33,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define MIN_CDTEXT_FIELD          0
 #define MAX_CDTEXT_FIELDS         10
 
 /*! Enumeration of CD-TEXT text fields. */
