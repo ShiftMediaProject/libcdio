@@ -1,7 +1,6 @@
 /*
-  $Id: bsdi.c,v 1.15 2008/04/22 15:29:11 karl Exp $
-
-  Copyright (C) 2002, 2003, 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2002, 2003, 2004, 2005, 2008, 2012
+  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -26,8 +25,6 @@
 # include "config.h"
 # define __CDIO_CONFIG_H__ 1
 #endif
-
-static const char _rcsid[] = "$Id: bsdi.c,v 1.15 2008/04/22 15:29:11 karl Exp $";
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -57,7 +54,6 @@ static const char _rcsid[] = "$Id: bsdi.c,v 1.15 2008/04/22 15:29:11 karl Exp $"
 #include <sys/ioctl.h>
 #include </sys/dev/scsi/scsi.h>
 #include </sys/dev/scsi/scsi_ioctl.h>
-#include "cdtext_private.h"
 
 #include <cdrom.h>
 /* This function is in the man page but seems to be missing from the

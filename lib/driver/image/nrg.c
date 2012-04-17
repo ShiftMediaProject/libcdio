@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009, 2011
+  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009, 2011, 2012
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -47,8 +47,6 @@
 #include "_cdio_stdio.h"
 #include "nrg.h"
 #include "cdtext_private.h"
-
-static const char _rcsid[] = "$Id: nrg.c,v 1.31 2008/04/21 18:30:22 karl Exp $";
 
 nero_id_t    nero_id;
 nero_dtype_t nero_dtype;

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2010, 2011
+  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2010, 2011, 2012
    Rocky Bernstein <rocky@gnu.org> 
   from vcdimager code: 
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -30,7 +30,6 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
-# define __CDIO_CONFIG_H__ 1
 #endif
 
 static const char _rcsid[] = "$Id: osx.c,v 1.14 2008/10/17 11:58:52 rocky Exp $";

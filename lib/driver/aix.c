@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2004, 2005, 2006, 2008, 2010, 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2006, 2008, 2010, 2011, 2012
+  Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -17,7 +18,6 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
-# define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_STRING_H
@@ -34,8 +34,6 @@
 #define DEFAULT_CDIO_DEVICE "/dev/rcd0"
 
 #ifdef HAVE_AIX_CDROM
-
-static const char _rcsid[] = "$Id: aix.c,v 1.3 2008/04/22 15:29:11 karl Exp $";
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
