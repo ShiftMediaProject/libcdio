@@ -24,7 +24,7 @@
 #define CDTEXT_GET_LEN16(p) (p[0]<<8) + p[1]
 
 
-enum {
+typedef enum {
   CDTEXT_LEN_BINARY_MAX     = 9216,
   CDTEXT_LEN_TEXTDATA       = 12,
   CDTEXT_LEN_PACK           = 18,
@@ -32,13 +32,13 @@ enum {
   CDTEXT_NUM_BLOCKS_MAX     = 8,
   CDTEXT_NUM_TRACKS_MAX     = 100,
   CDTEXT_NUM_BLOCKPACKS_MAX = 255
-} cdtext_format_enum;
+} cdtext_format_enum_t;
 
 /**
  * From table J.2 - Pack Type Indicator Definitions from 
  * Working Draft NCITS XXX T10/1364-D Revision 10G. November 12, 2001.
  */
-enum {
+typedef enum {
   CDTEXT_PACK_TITLE         = 0x80,
   CDTEXT_PACK_PERFORMER     = 0x81,
   CDTEXT_PACK_SONGWRITER    = 0x82,
@@ -51,11 +51,11 @@ enum {
   CDTEXT_PACK_TOC2          = 0x89,
   CDTEXT_PACK_UPC           = 0x8E,
   CDTEXT_PACK_BLOCKSIZE     = 0x8F
-} cdtext_packtype_enum;
+} cdtext_packtype_enum_t;
 
 
 /** CD-Text character encodings */
-enum cdtext_charcode_enum_s {
+typedef enum cdtext_charcode_enum_s {
   CDTEXT_CHARCODE_ISO_8859_1 = 0x00, /**< ISO-8859-1 (8 bit), Latin-1 */
   CDTEXT_CHARCODE_ASCII      = 0x01, /**< ASCII (7 bit) */
   CDTEXT_CHARCODE_SHIFT_JIS  = 0x80  /**< Shift_JIS (double byte), JIS X 0208 Appendix 1 */
@@ -65,7 +65,8 @@ enum cdtext_charcode_enum_s {
 // *  CDTEXT_CHARCODE_CHINESE    = 0x82, /**< Mandarin Chinese */
 // *  CDTEXT_CHARCODE_UNDEFINED  = 0xFF, /**< everything else */
 // */
-} cdtext_charcode_enum;
+
+} cdtext_charcode_enum_t;
 
 /** Structure of CD-TEXT data Packs */
 struct cdtext_pack_s
