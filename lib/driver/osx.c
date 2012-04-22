@@ -32,7 +32,9 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: osx.c,v 1.14 2008/10/17 11:58:52 rocky Exp $";
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif 
 
 #include <cdio/logging.h>
 #include <cdio/sector.h>
@@ -1898,8 +1900,8 @@ cdio_open_osx (const char *psz_orig_source)
     .eject_media           = _eject_media_osx,
     .free                  = _free_osx,
     .get_arg               = _get_arg_osx,
-    .get_cdtext            = NULL,
-    .get_cdtext_raw        = NULL,
+    .get_cdtext            = get_cdtext_generic,
+    .get_cdtext_raw        = read_cdtext_generic,
     .get_default_device    = cdio_get_default_device_osx,
     .get_devices           = cdio_get_devices_osx,
     .get_disc_last_lsn     = get_disc_last_lsn_osx,

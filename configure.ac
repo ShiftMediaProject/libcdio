@@ -168,7 +168,7 @@ AC_DEFINE(LIBCDIO_CONFIG_H, 1,
 dnl headers
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(errno.h fcntl.h glob.h limits.h pwd.h)
+AC_CHECK_HEADERS(errno.h fcntl.h glob.h limits.h pwd.h stdbool.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h \
 		 sys/time.h sys/timeb.h sys/utsname.h)
 
@@ -324,7 +324,7 @@ case $host_os in
        ## AC_DEFINE([HAVE_AIX_CDROM], [1],
        ##     [Define 1 if you have AIX CD-ROM support])
        ;;
-     darwin6*|darwin7*|darwin8*|darwin9*|darwin10*)
+     darwin[6-9]|darwin1[0-2])
        AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h, 
                         [have_iokit_h="yes"])
        if test "x$have_iokit_h" = "xyes" ; then 
@@ -346,15 +346,11 @@ case $host_os in
 	 fi
 
 	 case $host_os in
-	   darwin10*)
-	   	darwin_10=1
-		;;
-	   *)
-	   	darwin_10=0
+	   darwin1[0-2])
+	      AC_DEFINE([DARWIN_10_OR_GREATER], 1,
+	      [Define 1 if you have Darwin OS X 10 or greater])
 		;;
 	 esac
-         AC_DEFINE([DARWIN_10_OR_GREATER], [$darwin_10],
-	      [Define 1 if you have Darwin OS X 10 or greater])
 	 AC_SUBST(DARWIN_PKG_LIB_HACK)
 	 LIBCDIO_LIBS="$LIBCDIO_LIBS $DARWIN_PKG_LIB_HACK"
          cd_drivers="${cd_drivers}, Darwin"
