@@ -1,3 +1,12 @@
+version 0.90
+- CD-Text overhaul and API change (Leon Merten Lohse)
+- Works again on MinGW; tolerence for Microsoft's C compiler (Pete Batard)
+- UDF, Joliet and Rock-Ridge fixes (Pete Batard)
+- OSX fixes
+- paranoia library removed as that is GPL 2-ish. This is now a separate project
+- file names in cue files are relative to the cue file rather than cwd.
+- bug fixes, more tests, update documentation
+
 version 0.83
 2011-10-27
 
