@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2003, 2004, 2008, 2010 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2008, 2010, 2012
+  Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -23,6 +24,10 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif 
 
 #include <cdio/sector.h>
 #include "cdio_assert.h"

@@ -1,5 +1,6 @@
 /*
   Copyright (C) 2009 KO Myung-Hun <komh@chollian.net>
+  Copyright (C) 2012 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,8 +22,11 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
-# define __CDIO_CONFIG_H__ 1
 #endif
+
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif 
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>

@@ -20,6 +20,10 @@
 # include "config.h"
 #endif
 
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif 
+
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif

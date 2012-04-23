@@ -1,6 +1,4 @@
 /*
-  $Id: win32.h,v 1.11 2008/04/21 18:30:21 karl Exp $
-
   Copyright (C) 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
