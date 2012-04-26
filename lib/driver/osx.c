@@ -1833,6 +1833,11 @@ cdio_get_default_device_osx(void)
       
       do
         {
+          /* Skip other removable media, like USB flash memory keys:  */
+          if (!IOObjectConformsTo(next_media, kIODVDMediaClass) &&
+              !IOObjectConformsTo(next_media, kIOCDMediaClass))
+            continue;
+
           str_bsd_path = IORegistryEntryCreateCFProperty( next_media,
                                                           CFSTR( kIOBSDNameKey ),
                                                           kCFAllocatorDefault,
@@ -1863,6 +1868,7 @@ cdio_get_default_device_osx(void)
         } while( ( next_media = IOIteratorNext( media_iterator ) ) != 0 );
     }
   IOObjectRelease( media_iterator );
+  cdio_warn ("cdio_get_default_device() - No CD/DVD media - returning NULL");
   return NULL;
 #endif /* HAVE_DARWIN_CDROM */
 }

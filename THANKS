@@ -52,6 +52,9 @@ Michael Kukat <michael at unixiron.org>,
 Nicolas Boullis <nboullis at debian.org>
   Build issues, library symbol versioning, Debian packaging and issues
 
+Nigel Pearson nigel at ind dot tansu dot com dot au
+  OSX 10 fixes
+
 Patrick Guimond
   CD-Extra audio data boundaries
 
