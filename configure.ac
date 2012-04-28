@@ -345,12 +345,6 @@ case $host_os in
 	     DARWIN_PKG_LIB_HACK="$DARWIN_PKG_LIB_HACK -Wl,-framework,DiskArbitration"
 	 fi
 
-	 case $host_os in
-	   darwin1[[0-2]].*)
-	      AC_DEFINE([DARWIN_10_OR_GREATER], 1,
-	      [Define 1 if you have Darwin OS X 10 or greater])
-		;;
-	 esac
 	 AC_SUBST(DARWIN_PKG_LIB_HACK)
 	 LIBCDIO_LIBS="$LIBCDIO_LIBS $DARWIN_PKG_LIB_HACK"
          cd_drivers="${cd_drivers}, Darwin"

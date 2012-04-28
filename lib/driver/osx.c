@@ -70,7 +70,7 @@ typedef enum {
 
 #include <mach/mach.h>
 #include <Carbon/Carbon.h>
-#ifdef DARWIN_10_OR_GREATER
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ > 1040
 # include <IOKit/scsi/SCSITaskLib.h>
 #else
 # include <IOKit/scsi-commands/SCSITaskLib.h>
@@ -92,7 +92,7 @@ typedef enum {
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/IOBSD.h>
-#ifdef DARWIN_10_OR_GREATER
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ > 1040
 # include <IOKit/scsi/IOSCSIMultimediaCommandsDevice.h>
 #else
 # include <IOKit/scsi-commands/IOSCSIMultimediaCommandsDevice.h>
