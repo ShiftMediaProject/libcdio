@@ -49,6 +49,9 @@ Manfred Tremmel <Manfred.Tremmel at iiv.de>:
 Michael Kukat <michael at unixiron.org>,
   for the hints in extractnrg.pl
 
+Natalia Portillo 
+  OSX BluRay support on OSX 10 and other OSX fixes
+
 Nicolas Boullis <nboullis at debian.org>
   Build issues, library symbol versioning, Debian packaging and issues
 
