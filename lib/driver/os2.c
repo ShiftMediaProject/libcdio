@@ -1520,6 +1520,7 @@ cdio_open_os2 (const char *psz_orig_source)
     return ret;
   else {
     free_os2 (_data);
+    free(ret);
     return NULL;
   }
 #else

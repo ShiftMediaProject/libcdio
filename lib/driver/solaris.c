@@ -1420,7 +1420,11 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
 
   if (NULL == psz_orig_source) {
     psz_source = cdio_get_default_device_solaris();
-    if (NULL == psz_source) return NULL;
+    if (NULL == psz_source) {
+      free(_data);
+      return NULL;
+    }
+
     _set_arg_solaris(_data, "source", psz_source);
     free(psz_source);
   } else {
@@ -1445,6 +1449,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
     return ret;
   else {
     cdio_generic_free (_data);
+    free(ret);
     return NULL;
   }
 

@@ -178,7 +178,7 @@ GetRegistryEntryProperties ( io_service_t service )
   CFMutableDictionaryRef        dict    = 0;
   
   err = IORegistryEntryCreateCFProperties (service, &dict, 
-					   kCFAllocatorDefault, 0); 
+                                           kCFAllocatorDefault, 0); 
   if ( err != kIOReturnSuccess )
     cdio_warn( "IORegistryEntryCreateCFProperties: 0x%08x", err );
 
@@ -295,7 +295,7 @@ init_osx(_img_private_t *p_env) {
   
   ret = IOServiceGetMatchingServices( kIOMasterPortDefault, 
                                       IOBSDNameMatching(kIOMasterPortDefault, 
-							0, psz_devname),
+                                                        0, psz_devname),
                                       &iterator );
   
   /* Get service iterator for the device. */
@@ -1400,20 +1400,20 @@ static void media_eject_callback(DADiskRef disk, DADissenterRef dissenter, void 
 
     if ( dissenter )
       {
-	CFStringRef status = DADissenterGetStatusString(dissenter);
-	if (status)
-	{ 
-		size_t cstr_size = CFStringGetLength(status);
-		char *cstr = malloc(cstr_size);
-		if ( CFStringGetCString( status,
-				 cstr, cstr_size,
-				 kCFStringEncodingASCII ) )
-	  	CFRelease( status );
+        CFStringRef status = DADissenterGetStatusString(dissenter);
+        if (status)
+        { 
+                size_t cstr_size = CFStringGetLength(status);
+                char *cstr = malloc(cstr_size);
+                if ( CFStringGetCString( status,
+                                 cstr, cstr_size,
+                                 kCFStringEncodingASCII ) )
+                CFRelease( status );
 
-		cdio_warn("%s", cstr);
+                cdio_warn("%s", cstr);
 
-		free(cstr);
-	}
+                free(cstr);
+        }
       }
 
     dacontext->result    = (dissenter ? DRIVER_OP_ERROR : DRIVER_OP_SUCCESS);
@@ -1477,27 +1477,27 @@ _eject_media_osx (void *user_data) {
   if ((disk = DADiskCreateFromBSDName(kCFAllocatorDefault, dacontext.session, psz_drive)) != NULL)
     {
       if ((description = DADiskCopyDescription(disk)) != NULL)
-	{
-	  /* Does the device need to be unmounted first? */
-	  DASessionScheduleWithRunLoop(dacontext.session, dacontext.runloop, kCFRunLoopDefaultMode);
-	  CFRunLoopAddSource(dacontext.runloop, dacontext.cancel, kCFRunLoopDefaultMode);
+        {
+          /* Does the device need to be unmounted first? */
+          DASessionScheduleWithRunLoop(dacontext.session, dacontext.runloop, kCFRunLoopDefaultMode);
+          CFRunLoopAddSource(dacontext.runloop, dacontext.cancel, kCFRunLoopDefaultMode);
 
-	  if (CFDictionaryGetValueIfPresent(description, kDADiskDescriptionVolumePathKey, NULL))
-	    {
-	      DADiskUnmount(disk, kDADiskUnmountOptionDefault, media_unmount_callback, &dacontext);
+          if (CFDictionaryGetValueIfPresent(description, kDADiskDescriptionVolumePathKey, NULL))
+            {
+              DADiskUnmount(disk, kDADiskUnmountOptionDefault, media_unmount_callback, &dacontext);
             }
-	  else
-	    {
-	      DADiskEject(disk, kDADiskEjectOptionDefault, media_eject_callback, &dacontext);
-	      dacontext.result = dacontext.result == DRIVER_OP_UNINIT ? DRIVER_OP_SUCCESS : dacontext.result;
+          else
+            {
+              DADiskEject(disk, kDADiskEjectOptionDefault, media_eject_callback, &dacontext);
+              dacontext.result = dacontext.result == DRIVER_OP_UNINIT ? DRIVER_OP_SUCCESS : dacontext.result;
             }
-	  if (!dacontext.completed)
-	    {
-	      CFRunLoopRunInMode(kCFRunLoopDefaultMode, 30.0, TRUE);  /* timeout after 30 seconds */
+          if (!dacontext.completed)
+            {
+              CFRunLoopRunInMode(kCFRunLoopDefaultMode, 30.0, TRUE);  /* timeout after 30 seconds */
             }
-	  CFRunLoopRemoveSource(dacontext.runloop, dacontext.cancel, kCFRunLoopDefaultMode);
-	  DASessionUnscheduleFromRunLoop(dacontext.session, dacontext.runloop, kCFRunLoopDefaultMode);
-	  CFRelease(description);
+          CFRunLoopRemoveSource(dacontext.runloop, dacontext.cancel, kCFRunLoopDefaultMode);
+          DASessionUnscheduleFromRunLoop(dacontext.session, dacontext.runloop, kCFRunLoopDefaultMode);
+          CFRelease(description);
         }
       CFRelease(disk);
     }
@@ -1944,13 +1944,15 @@ cdio_open_osx (const char *psz_orig_source)
   _data->gen.init           = false;
   _data->gen.fd             = -1;
   _data->gen.toc_init       = false;
+  _data->gen.b_cdtext_error = false;
 
   if (NULL == psz_orig_source) {
     psz_source=cdio_get_default_device_osx();
     if (NULL == psz_source) { 
- 	cdio_generic_free(_data); 
- 	return NULL; 
+        free(_data);
+        return NULL; 
     } 
+
     _set_arg_osx(_data, "source", psz_source);
     free(psz_source);
   } else {
@@ -1961,21 +1963,21 @@ cdio_open_osx (const char *psz_orig_source)
 #if 0
       cdio_info ("source %s is a not a device", psz_orig_source);
 #endif
-      cdio_generic_free(_data); 
+      free(_data);
       return NULL;
     }
   }
 
   ret = cdio_new ((void *)_data, &_funcs);
-  if (ret == NULL) {
-    cdio_generic_free(_data);
-    return NULL; 
-  } 
+  if (ret == NULL) return NULL;
+
   ret->driver_id = DRIVER_OSX;
+
   if (cdio_generic_init(_data, O_RDONLY | O_NONBLOCK) && init_osx(_data))
     return ret;
   else {
     cdio_generic_free (_data);
+    free(ret);
     return NULL;
   }
   
