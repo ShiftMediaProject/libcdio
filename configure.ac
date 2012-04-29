@@ -314,6 +314,7 @@ AC_SUBST(LIBCDIO_DEPS)
 AC_SUBST(LIBISO9660_LIBS)
 AC_SUBST(LIBUDF_LIBS)
 
+SED_EXTENDED_RE_FLAG='-r'
 dnl Libtool flag for strict linkage
 LT_NO_UNDEFINED=
 
@@ -325,6 +326,7 @@ case $host_os in
        ##     [Define 1 if you have AIX CD-ROM support])
        ;;
      darwin[[6-9]].*|darwin1[[0-2]].*)
+       SED_EXTENDED_RE_FLAG='-E'
        AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h, 
                         [have_iokit_h="yes"])
        if test "x$have_iokit_h" = "xyes" ; then 
@@ -414,12 +416,14 @@ int has_timeout=sizeof(test.timeout);],
 	enable_cdda_player="no"
 	;;
      freebsd4.*|freebsd5.*|freebsd[[6-9]].*|dragonfly*|kfreebsd*)
+       SED_EXTENDED_RE_FLAG='-E'
      	AC_DEFINE([HAVE_FREEBSD_CDROM], [1], 
                   [Define 1 if you have FreeBSD CD-ROM support])
  	LIBS="$LIBS -lcam"
   	cd_drivers="${cd_drivers}, FreeBSD "
 	;;
      netbsd*)
+        SED_EXTENDED_RE_FLAG='-E'
      	AC_DEFINE([HAVE_NETBSD_CDROM], [1], 
                   [Define 1 if you have NetBSD CD-ROM support])
  	# LIBS="$LIBS -lcam"
@@ -438,6 +442,7 @@ int has_timeout=sizeof(test.timeout);],
 	;;
 esac
 
+AC_SUBST(SED_EXTENDED_RE_FLAG)
 AC_SUBST(LIBCDIO_CFLAGS)
 AC_SUBST(LIBISO9660_CFLAGS)
 AC_SUBST(LT_NO_UNDEFINED)
