@@ -144,6 +144,7 @@ cdio_generic_init (void *user_data, int open_flags)
   p_env->init = true;
   p_env->toc_init = false;
   p_env->cdtext  = NULL;
+  p_env->scsi_tuple  = NULL;
   p_env->b_cdtext_error = false;
   p_env->i_joliet_level = 0;  /* Assume no Joliet extensions initally */
   return true;
