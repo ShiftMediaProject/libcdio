@@ -70,7 +70,7 @@ typedef enum {
 
 #include <mach/mach.h>
 #include <Carbon/Carbon.h>
-#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ > 1040
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1030
 # include <IOKit/scsi/SCSITaskLib.h>
 #else
 # include <IOKit/scsi-commands/SCSITaskLib.h>
@@ -92,7 +92,7 @@ typedef enum {
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/IOBSD.h>
-#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ > 1040
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1030
 # include <IOKit/scsi/IOSCSIMultimediaCommandsDevice.h>
 #else
 # include <IOKit/scsi-commands/IOSCSIMultimediaCommandsDevice.h>
@@ -105,6 +105,14 @@ typedef enum {
 #include <IOKit/storage/IOCDMediaBSDClient.h>
 #include <IOKit/storage/IODVDMediaBSDClient.h>
 #include <IOKit/storage/IOStorageDeviceCharacteristics.h>
+
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
+#include <IOKit/storage/IOBDTypes.h>
+#include <IOKit/storage/IOBDMedia.h>
+#include <IOKit/storage/IOBDMediaBSDClient.h>
+#else
+#define kIOBDMediaClass "IOBDMedia" // It does not hurt, simplyfies rest of code
+#endif
 
 #ifdef HAVE_DISKARBITRATION
 #include <DiskArbitration/DiskArbitration.h>
@@ -309,10 +317,11 @@ init_osx(_img_private_t *p_env) {
   p_env->MediaClass_service = IOIteratorNext( iterator );
   IOObjectRelease( iterator );
 
-  /* search for kIOCDMediaClass or kIOCDVDMediaClass */ 
+  /* search for kIOCDMediaClass or kIODVDMediaClass or kIOBDMediaClass */ 
   while( p_env->MediaClass_service && 
          (!IOObjectConformsTo(p_env->MediaClass_service, kIOCDMediaClass)) &&
-         (!IOObjectConformsTo(p_env->MediaClass_service, kIODVDMediaClass)) )
+         (!IOObjectConformsTo(p_env->MediaClass_service, kIODVDMediaClass)) &&
+         (!IOObjectConformsTo(p_env->MediaClass_service, kIOBDMediaClass)) )
     {
 
       ret = IORegistryEntryGetParentIterator( p_env->MediaClass_service, 
@@ -326,12 +335,13 @@ init_osx(_img_private_t *p_env) {
         }
       
       IOObjectRelease( p_env->MediaClass_service );
+
       p_env->MediaClass_service = IOIteratorNext( iterator );
       IOObjectRelease( iterator );
     }
   
   if ( 0 == p_env->MediaClass_service )     {
-    cdio_warn( "search for kIOCDMediaClass/kIODVDMediaClass came up empty" );
+    cdio_warn( "search for kIOCDMediaClass/kIODVDMediaClass/kIOBDMediaClass came up empty" );
     return false;
   }
 
@@ -1835,7 +1845,8 @@ cdio_get_default_device_osx(void)
         {
           /* Skip other removable media, like USB flash memory keys:  */
           if (!IOObjectConformsTo(next_media, kIODVDMediaClass) &&
-              !IOObjectConformsTo(next_media, kIOCDMediaClass))
+              !IOObjectConformsTo(next_media, kIOCDMediaClass) &&
+              !IOObjectConformsTo(next_media, kIOBDMediaClass))
             continue;
 
           str_bsd_path = IORegistryEntryCreateCFProperty( next_media,
@@ -1868,7 +1879,7 @@ cdio_get_default_device_osx(void)
         } while( ( next_media = IOIteratorNext( media_iterator ) ) != 0 );
     }
   IOObjectRelease( media_iterator );
-  cdio_warn ("cdio_get_default_device() - No CD/DVD media - returning NULL");
+  cdio_warn ("cdio_get_default_device() - No CD/DVD/BD media - returning NULL");
   return NULL;
 #endif /* HAVE_DARWIN_CDROM */
 }
