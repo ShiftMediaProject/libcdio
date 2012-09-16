@@ -39,9 +39,15 @@
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
-#if !defined(HAVE_SLEEP) && defined(_WIN32)
-#include <windows.h>
-#define sleep(s) Sleep(1000*s)
+#if !defined(HAVE_SLEEP) 
+#  if defined(HAVE_USLEEP)
+#     define sleep(s) usleep(1000000*s)
+#  elif defined(_WIN32)
+#     include <windows.h>
+#     define sleep(s) Sleep(1000*s)
+#  else 
+#     define sleep(s) { int i; for(i=0; i<=1000*s; i++); }
+#  endif     
 #endif
 
 #include <cdio/cdio.h>
