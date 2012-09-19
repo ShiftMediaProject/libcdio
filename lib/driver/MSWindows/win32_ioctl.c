@@ -121,7 +121,9 @@ typedef struct _SCSI_PASS_THROUGH_WITH_BUFFER {
     UCHAR                DataBuf[512];
 } SCSI_PASS_THROUGH_WITH_BUFFER;
 
-
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif 
 
 #include "win32.h"
 
