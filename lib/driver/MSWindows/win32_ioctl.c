@@ -110,14 +110,18 @@ typedef struct _CDROM_TOC_FULL {
 typedef struct {
    SCSI_PASS_THROUGH_DIRECT sptd;
    ULONG Filler; /* Realign buffer to double-word boundary */
+#if FIXED
    cdio_mmc_request_sense_t   SenseBuf;
+#else
+   char  SenseBuf[512];
+#endif
    UCHAR DataBuf[512];
 } SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER;
 
 typedef struct _SCSI_PASS_THROUGH_WITH_BUFFER {
     SCSI_PASS_THROUGH    Spt;
     ULONG                Filler;      /* realign buffer to double-word boundary */
-    cdio_mmc_request_sense_t  SenseBuf;
+    char                 SenseBuf[512];
     UCHAR                DataBuf[512];
 } SCSI_PASS_THROUGH_WITH_BUFFER;
 
@@ -523,19 +527,24 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
     }
   }
 
+#ifdef FIXED_ADDITIONAL_SENSE_BUF
   /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
    */
   if (swb.SenseBuf.additional_sense_len) {
     /* SCSI Primary Command standard 
        SPC 4.5.3, Table 26: 252 bytes legal, 263 bytes possible */
     int sense_size = swb.SenseBuf.additional_sense_len + 8; 
-    if (sense_size > sizeof(swb.SenseBuf))
+    if (sense_size > sizeof(swb.SenseBuf)) {
+      cdio_warn("Sense %d is greater buffer size is %d\n", 
+		sense_size, sizeof(swb.SenseBuf));
       sense_size = sizeof(swb.SenseBuf);
+    }
     memcpy((void *) p_env->gen.scsi_mmc_sense, &swb.SenseBuf, sense_size);
     p_env->gen.scsi_mmc_sense_valid = sense_size;
     if (DRIVER_OP_SUCCESS == rc) 
       rc = DRIVER_OP_MMC_SENSE_DATA;
   }
+#endif
   return rc;
 }
 #else
@@ -605,8 +614,11 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
     int sense_size = sptwb.SenseBuf[7] + 8; /* SPC 4.5.3, Table 26: 
                                                252 bytes legal, 263 bytes
                                                possible */
-    if (sense_size > sizeof(sptwb.SenseBuf))
+    if (sense_size > sizeof(sptwb.SenseBuf)) {
+      cdio_warn("Sense %d is greater buffer size is %d\n", 
+		sense_size, sizeof(sptwb.DataBuf));
       sense_size = sizeof(sptwb.SenseBuf);
+    }
     memcpy((void *) p_env->gen.scsi_mmc_sense, &sptwb.SenseBuf, sense_size);
     p_env->gen.scsi_mmc_sense_valid = sense_size;
   }
