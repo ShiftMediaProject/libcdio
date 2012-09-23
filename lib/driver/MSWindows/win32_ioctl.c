@@ -107,23 +107,22 @@ typedef struct _CDROM_TOC_FULL {
     TRACK_DATA_FULL TrackData[CDIO_CD_MAX_TRACKS+3];
 } CDROM_TOC_FULL, *PCDROM_TOC_FULL;
 
+#define SPT_CDB_LENGTH 32
+#define SPT_SENSE_LENGTH 32
+#define SPTWB_DATA_LENGTH 512
+
 typedef struct {
    SCSI_PASS_THROUGH_DIRECT sptd;
    ULONG Filler; /* Realign buffer to double-word boundary */
-#if FIXED
-   cdio_mmc_request_sense_t   SenseBuf;
-#else
-   char  SenseBuf[512];
-#endif
-   UCHAR DataBuf[512];
+   UCHAR SenseBuf[SPT_SENSE_LENGTH];
 } SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER;
 
-typedef struct _SCSI_PASS_THROUGH_WITH_BUFFER {
+typedef struct _SCSI_PASS_THROUGH_WITH_BUFFERS {
     SCSI_PASS_THROUGH    Spt;
     ULONG                Filler;      /* realign buffer to double-word boundary */
-    char                 SenseBuf[512];
-    UCHAR                DataBuf[512];
-} SCSI_PASS_THROUGH_WITH_BUFFER;
+    UCHAR                SenseBuf[SPT_SENSE_LENGTH];
+    UCHAR DataBuf[SPTWB_DATA_LENGTH];
+} SCSI_PASS_THROUGH_WITH_BUFFERS;
 
 #ifdef HAVE_STDBOOL_H
 # include <stdbool.h>
@@ -453,7 +452,7 @@ set_scsi_tuple_win32ioctl(_img_private_t *env)
 
   Return 0 if command completed successfully.
  */
-#if 1
+#if 0
 int
 run_mmc_cmd_win32ioctl( void *p_user_data, 
                         unsigned int i_timeout_ms,
@@ -556,7 +555,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
                         unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;
-  SCSI_PASS_THROUGH_WITH_BUFFER sptwb;
+  SCSI_PASS_THROUGH_WITH_BUFFERS sptwb;
   
   BOOL b_success;
   unsigned long length = 0;
@@ -582,13 +581,13 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   sptwb.Spt.TimeOutValue      = msecs2secs(i_timeout_ms);
 
   sptwb.Spt.DataBufferOffset =
-    offsetof(SCSI_PASS_THROUGH_WITH_BUFFER,DataBuf);
+    offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS, DataBuf);
   sptwb.Spt.SenseInfoOffset = 
-    offsetof(SCSI_PASS_THROUGH_WITH_BUFFER, SenseBuf);
+    offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS, SenseBuf);
 
   memcpy(sptwb.Spt.Cdb, p_cdb, i_cdb);
   sptwb.Spt.Cdb[4] = i_buf;
-  length = offsetof(SCSI_PASS_THROUGH_WITH_BUFFER,DataBuf) + 
+  length = offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS, DataBuf) + 
     sptwb.Spt.DataTransferLength;
 
   /* Send the command to drive */
@@ -610,17 +609,16 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 
   /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
    */
-  if (sptwb.SenseBuf[7]) {
-    int sense_size = sptwb.SenseBuf[7] + 8; /* SPC 4.5.3, Table 26: 
-                                               252 bytes legal, 263 bytes
-                                               possible */
-    if (sense_size > sizeof(sptwb.SenseBuf)) {
+  if (sptwb.Spt.ScsiStatus && sptwb.Spt.SenseInfoLength > 0) {
+    int sense_size = sptwb.Spt.DataTransferLength;
+    if (sense_size > sizeof(sptwb.Spt.SenseInfoLength)) {
       cdio_warn("Sense %d is greater buffer size is %d\n", 
 		sense_size, sizeof(sptwb.DataBuf));
-      sense_size = sizeof(sptwb.SenseBuf);
+      sense_size = sizeof(sptwb.Spt.SenseInfoLength);
     }
-    memcpy((void *) p_env->gen.scsi_mmc_sense, &sptwb.SenseBuf, sense_size);
-    p_env->gen.scsi_mmc_sense_valid = sense_size;
+    memcpy((void *) p_env->gen.scsi_mmc_sense, &sptwb.SenseBuf, 
+	   sptwb.Spt.SenseInfoLength);
+    p_env->gen.scsi_mmc_sense_valid = sptwb.Spt.SenseInfoLength;
   }
 
   return DRIVER_OP_SUCCESS;
