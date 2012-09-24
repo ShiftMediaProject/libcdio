@@ -20,6 +20,10 @@
 # include "config.h"
 #endif
 
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif 
+
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
 #include <cdio/mmc.h>
@@ -37,12 +41,13 @@
 #endif
 
 #ifdef HAVE_STDIO_H
-#include <stdio.h>
+# include <stdio.h>
 #endif
 
 #ifdef HAVE_ERRNO_H
-#include <errno.h>
+# include <errno.h>
 #endif
+
 
 /*************************************************************************
   MMC CdIo Operations which a driver may use. 

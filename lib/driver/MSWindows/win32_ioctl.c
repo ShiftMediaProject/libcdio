@@ -468,6 +468,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   char dummy_buf[2]; /* Used if we can't use p_buf. See below. */
   int rc = DRIVER_OP_SUCCESS;
 
+  p_env->gen.scsi_mmc_sense_valid = 0;
   memset(&swb, 0, sizeof(swb));
   
   swb.sptd.Length  = sizeof(SCSI_PASS_THROUGH_DIRECT);
@@ -561,6 +562,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   unsigned long length = 0;
   DWORD dw_bytes_returned;
 
+  p_env->gen.scsi_mmc_sense_valid = 0;
   memset(&sptwb, 0, sizeof(sptwb));
   
   sptwb.Spt.Length  = sizeof(sptwb.Spt);

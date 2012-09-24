@@ -30,6 +30,10 @@
 #include <cdio/cdtext.h>
 #include <cdio/iso9660.h>
 
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif 
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

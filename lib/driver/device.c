@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005, 2006, 2008, 2011
+  Copyright (C) 2005, 2006, 2008, 2011, 2012
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,10 @@
 # include "config.h"
 # define __CDIO_CONFIG_H__ 1
 #endif
+
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif 
 
 #include <cdio/cdio.h>
 #include <cdio/cd_types.h>

@@ -37,6 +37,9 @@
 #ifdef HAVE_WINDOWS_H
 #include <windows.h>
 #endif
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif 
 
 #include <cdio/bytesex.h>
 #include <cdio/ds.h>
