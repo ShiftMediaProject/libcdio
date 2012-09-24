@@ -30,6 +30,10 @@
 # define __CDIO_CONFIG_H__ 1
 #endif
 
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif 
+
 #include <cdio/types.h>
 
 #define ISO_VERSION             1

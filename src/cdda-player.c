@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005, 2006, 2008, 2009, 2010, 2011
+  Copyright (C) 2005, 2006, 2008, 2009, 2010, 2011, 2012
   Rocky Bernstein <rocky@gnu.org>
 
   Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
@@ -964,13 +964,12 @@ print_keys()
 static void 
 keypress_wait(CdIo_t *p_cdio)
   {
-    int key;
     action("press any key to continue");
     while (1 != select_wait(b_cd ? 1 : 5)) {
       read_subchannel(p_cdio);
       display_status(true);
     }
-    key = getch();
+    (void) getch();
     clrtobot();
     action(NULL);
     if (!b_all_tracks)

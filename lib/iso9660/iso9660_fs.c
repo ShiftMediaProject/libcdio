@@ -23,6 +23,10 @@
 #define __CDIO_CONFIG_H__ 1
 #endif
 
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif 
+
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
