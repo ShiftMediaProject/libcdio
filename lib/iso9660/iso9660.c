@@ -36,19 +36,19 @@ const char ISO_STANDARD_ID[] = {'C', 'D', '0', '0', '1'};
 #include <time.h>
 #include <ctype.h>
 #ifdef HAVE_STRING_H
-#include <string.h>
+# include <string.h>
 #endif
 #ifdef HAVE_STDIO_H
-#include <stdio.h>
+# include <stdio.h>
 #endif
 #ifdef HAVE_LIMITS_H
-#include <limits.h>
+# include <limits.h>
 #endif
 #ifdef HAVE_STDLIB_H
-#include <stdlib.h>
+# include <stdlib.h>
 #endif
 #ifdef HAVE_SYS_STAT_H
-#include <sys/stat.h>
+# include <sys/stat.h>
 #endif
 
 #ifdef HAVE_ERRNO_H

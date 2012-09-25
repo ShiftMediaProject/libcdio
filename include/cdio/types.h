@@ -116,7 +116,7 @@ typedef uint8_t ubyte;
 #ifdef _Bool
 #define bool _Bool
 #else
-#define bool int
+#define bool unsigned char
 #endif
 #define true 1
 #define false 0
