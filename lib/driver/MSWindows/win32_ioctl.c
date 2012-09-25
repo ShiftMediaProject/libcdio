@@ -535,7 +535,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
        SPC 4.5.3, Table 26: 252 bytes legal, 263 bytes possible */
     int sense_size = swb.SenseBuf.additional_sense_len + 8; 
     if (sense_size > sizeof(swb.SenseBuf)) {
-      cdio_warn("Sense %d is greater buffer size is %d\n", 
+      cdio_warn("Sense size retuned %d is greater buffer size %d\n", 
 		sense_size, sizeof(swb.SenseBuf));
       sense_size = sizeof(swb.SenseBuf);
     }
@@ -614,7 +614,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   if (sptwb.Spt.ScsiStatus && sptwb.Spt.SenseInfoLength > 0) {
     int sense_size = sptwb.Spt.DataTransferLength;
     if (sense_size > sizeof(sptwb.Spt.SenseInfoLength)) {
-      cdio_warn("Sense %d is greater buffer size is %d\n", 
+      cdio_warn("sense size returned %d is greater buffer size %d\n", 
 		sense_size, sizeof(sptwb.DataBuf));
       sense_size = sizeof(sptwb.Spt.SenseInfoLength);
     }
