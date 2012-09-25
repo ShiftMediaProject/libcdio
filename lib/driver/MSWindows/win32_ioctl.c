@@ -452,7 +452,7 @@ set_scsi_tuple_win32ioctl(_img_private_t *env)
 
   Return 0 if command completed successfully.
  */
-#if 0
+#if USE_PASSTHROUGH_DIRECT
 int
 run_mmc_cmd_win32ioctl( void *p_user_data, 
                         unsigned int i_timeout_ms,
