@@ -245,7 +245,7 @@ test_mode_select(CdIo_t *p_cdio,
 	return DRIVER_OP_BAD_PARAMETER;
     
     if (i_flag & 1) {
-	printf("test_mode_select to drive: %d bytes\n", i_size);
+	printf("-- test_mode_select to drive: %d bytes\n", i_size);
 	for (i = 0; i < i_size; i++) {
 	    printf("%2.2X ", (unsigned int) p_buf[i]);
 	    if ((i % 20) == 19)
@@ -256,7 +256,7 @@ test_mode_select(CdIo_t *p_cdio,
     }
     
     if (i_flag & 1)
-	printf("test_mode_select(0x%X, %d, %d) ... ",
+	printf("-- test_mode_select(0x%X, %d, %d) ... ",
 	       (unsigned int) p_buf[8], (unsigned int) p_buf[9], i_size);
     i_status = mmc_mode_select_10(p_cdio, p_buf, i_size, 0x10, 10000);
     return handle_outcome(p_cdio, i_status, pi_sense_avail, p_sense_reply,
@@ -280,7 +280,7 @@ test_unit_ready(CdIo_t *p_cdio,
   int i_status;
 
   if (i_flag & 1)
-    printf("test_unit_ready ... ");
+    printf("-- test_unit_ready ... ");
   i_status = mmc_test_unit_ready(p_cdio, 0);
 
   return handle_outcome(p_cdio, i_status, pi_sense_avail, p_sense_reply,
@@ -450,7 +450,8 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
 			    page_code, subpage_code, i_alloc_len,
 			    buf, &i_size, 2 | (i_flag & 1));
     if (i_ret != 0) {
-	fprintf(stderr, "test_rwr_mode_page: Cannot obtain mode page 05h.\n");
+	fprintf(stderr, 
+		"-- test_rwr_mode_page: Cannot obtain mode page 05h.\n");
 	return 0;
     }
     i_alloc_len = (i_size <= sizeof(buf)) ? i_size : sizeof(buf);
@@ -458,7 +459,8 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
 			    page_code, subpage_code, i_alloc_len,
 			    buf, &i_size, (i_flag & 1));
     if (i_ret != 0) {
-	fprintf(stderr, "test_rwr_mode_page: Cannot obtain mode page 05h.\n");
+	fprintf(stderr, 
+		"-- test_rwr_mode_page: Cannot obtain mode page 05h.\n");
 	return 0;
     }
     memcpy(old_buf, buf, sizeof(buf));
@@ -487,7 +489,8 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
     i_ret = test_mode_select(p_cdio, &i_sense_avail, &sense_reply,
 			     buf, i_size, i_flag & 1);
     if (i_ret != 0) {
-	fprintf(stderr, "test_rwr_mode_page: Cannot set mode page 05h.\n");
+	fprintf(stderr, 
+		"-- test_rwr_mode_page: Cannot set mode page 05h.\n");
 	if (DRIVER_OP_NOT_PERMITTED == i_ret) {
 	    fprintf(stderr,
 		    "test_rwr_mode_page: DRIVER_OP_NOT_PERMITTED with MODE SELECT.\n");
@@ -615,7 +618,7 @@ test_write(char *psz_drive_path, unsigned int i_flag)
 	}
 	
 	if (emul_lack_of_wperm) { /* To check behavior with lack of w-permission */
-	    printf("test_write: SIMULATING LACK OF WRITE CAPABILITIES by access mode IOCTL\n");
+	    printf("-- test_write: SIMULATING LACK OF WRITE CAPABILITIES by access mode IOCTL\n");
 	    cdio_destroy(p_cdio);
 	    p_cdio = cdio_open_am(psz_drive_path, DRIVER_DEVICE, "IOCTL");
 	}
@@ -628,7 +631,7 @@ test_write(char *psz_drive_path, unsigned int i_flag)
 		fprintf(stderr, "Error: test_rwr_mode_page() had severe failure.\n");
 		i_ret = 3; goto ex;
 	    }
-	    printf("Warning: test_rwr_mode_page() had minor failure.\n");
+	    printf("-- Warning: test_rwr_mode_page() had minor failure.\n");
 	}
 	
 	
