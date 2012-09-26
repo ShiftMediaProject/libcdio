@@ -121,7 +121,7 @@ print_mode_sense (const char *psz_drive, const char *six_or_ten,
     printf("-- \tReads de-interleaved R-W subchannel.\n");
   }
   if (buf[5] & 0x10) {
-    printf("\tSupports C2 error pointers.\n");
+    printf("-- \tSupports C2 error pointers.\n");
   }
   if (buf[5] & 0x20) {
     printf("-- \tReads ISRC information.\n");
@@ -136,7 +136,7 @@ print_mode_sense (const char *psz_drive, const char *six_or_ten,
     printf("-- \tReads bar codes.\n");
   }
   if (buf[6] & 0x01) {
-    printf("\tPREVENT/ALLOW may lock media.\n");
+    printf("-- \tPREVENT/ALLOW may lock media.\n");
   }
   printf("-- \tLock state is %slocked.\n", (buf[6] & 0x02) ? "" : "un");
   printf("-- \tPREVENT/ALLOW jumper is %spresent.\n", (buf[6] & 0x04) ? "": "not ");
