@@ -155,7 +155,7 @@ main(int argc, const char *argv[])
   p_cdio = cdio_open (cd_image_name, DRIVER_UNKNOWN);
 
   if (NULL == p_cdio) {
-    printf("Problem in trying to find a driver.\n\n");
+    printf("-- Problem in trying to find a driver.\n\n");
     return 77;
   }
 
@@ -175,7 +175,7 @@ main(int argc, const char *argv[])
 
   /* try to find out what sort of CD we have */
   if (0 == num_data) {
-    printf("Audio CD\n");
+    printf("-- Audio CD\n");
   } else {
     /* we have data track(s) */
     cdio_iso_analysis_t cdio_iso_analysis; 

@@ -112,7 +112,7 @@ static int udf_extract_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const cha
     if (i_length < 0) {
       goto out;
     }
-    printf("Extracting: %s\n", psz_fullpath);
+    printf("-- Extracting: %s\n", psz_fullpath);
     if (udf_is_dir(p_udf_dirent)) {
       _mkdir(psz_fullpath);
       p_udf_dirent2 = udf_opendir(p_udf_dirent);
@@ -256,7 +256,7 @@ int main(int argc, char** argv)
 
   psz_extract_dir = argv[2];
   if (_mkdir(psz_extract_dir) == 0) {
-    printf("Creating directory: %s\n", psz_extract_dir);
+    printf("-- Creating directory: %s\n", psz_extract_dir);
   } else if (errno != EEXIST) {
     fprintf(stderr, "Unable to create extraction directory %s\n", psz_extract_dir);
     return 1;

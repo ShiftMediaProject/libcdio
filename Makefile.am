@@ -33,6 +33,7 @@ EXTRA_DIST = \
 	libiso9660.pc.in \
 	libiso9660++.pc.in \
 	libudf.pc.in \
+	make-check-filter.rb \
 	package/libcdio.spec.in 
 
 SUBDIRS = doc include lib src test example
@@ -65,8 +66,12 @@ REGRESSION_VERSION = 1.1
 
 distdir_regression = ../$(PACKAGE)-$(REGRESSION_VERSION)-tests
 
-#: run regression tests
+#: run regression tests. "test" is the same thing as "check"
 test: check
+
+#: Run all tests without bloated output
+check-short:
+	$(MAKE) check 2>&1  | ruby @abs_top_srcdir@/make-check-filter.rb
 
 #: Make documentation via Doxygen http://www.stack.nl/~dimitri/doxygen/
 doxygen:

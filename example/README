@@ -29,6 +29,10 @@ cdio-eject.c: a stripped-down "eject" command to open or close a CDROM
 
 cdtext.c:    A program to show CD-Text and CD disc mode info.
 
+device.c:    A program to show drivers installed and what the default
+             CD-ROM drive is. See also corresponding C++ programs of similar
+             names.
+
 discid.c:    http://sourceforge.net/projects/discid/ using libcdio:
 	     a small program to calculate the disc-ID for audio
 	     compact discs. The disc-ID can be used to query info
@@ -66,6 +70,9 @@ mmc2.c:      A more involved MMC command to list features from
 mmc2a.c:     Show MODE_SENSE page 2A paramaters:
 	     CD/DVD Capabilities and Mechanical Status Page
 
+mmc3.c       Another simple program to show use of SCSI MMC interface. 
+             Is basically the the libdio scsi_mmc_get_hwinfo() routine.
+
 paranoia:    A program to show using CD-DA paranoia (a library for jitter
 	     detection and audio-read error correction). This program uses
 	     an interface compatible (mostly) with cdparanoia. It looks for
@@ -76,9 +83,6 @@ paranoia2:   Another program to show using CD-DA paranoia using a more
 	     libcdio-oriented initialization. Probably more suited to
 	     things that otherwise use libcdio such as media players 
 	     (e.g. for getting CDDB or CD-Text info)
-
-sample2.c:   A simple program to show drivers installed and what the
-	     default CD-ROM drive is.
 
 sample3.c:   A simple program to show the use of cdio_guess_cd_type().
              Figure out the kind of CD image we've got.
@@ -95,5 +99,11 @@ udf1.c:      A program to show using libudf to list files in a directory of
 udf2.c:      A program to show using libudf to extract a file from
 	     an UDF image.
 
+udffile.c    A program to show using libudf to extract a file.
+
 Many of the above programs can be compiled in C++. See that directory
 for C++ examples which include some of the above.
+
+Some of these programs are also used in testing. When this occurs,
+output is prepended with -- so it can be filtered out by Ruby program
+make-check-filter.rb when running "make check-short".

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004, 2005, 2008, 2009, 2012 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ main(int argc, const char *argv[])
   p_cdio = cdio_open (psz_drive, DRIVER_DEVICE);
 
   if (NULL == p_cdio) {
-    printf("Couldn't find CD\n");
+    printf("-- Couldn't find CD\n");
     return 77;
   } else {
     int i_status;              /* Result of MMC command */
@@ -76,7 +76,7 @@ main(int argc, const char *argv[])
 	{
 	  uint8_t *q;
 	  const char *feature_str = mmc_feature2str(i_feature);
-	  printf("%s Feature\n", feature_str);
+	  printf("-- %s Feature\n", feature_str);
 	  switch( i_feature )
 	    {
 	    case CDIO_MMC_FEATURE_PROFILE_LIST:
@@ -84,7 +84,7 @@ main(int argc, const char *argv[])
 		int i_profile=CDIO_MMC_GET_LEN16(q);
 		const char *feature_profile_str = 
 		  mmc_feature_profile2str(i_profile);
-		printf( "\t%s", feature_profile_str );
+		printf( "-- \t%s", feature_profile_str );
 		if (q[2] & 1) {
 		  printf(" - on");
 		}
@@ -99,22 +99,22 @@ main(int argc, const char *argv[])
 		uint32_t 	i_interface_standard = CDIO_MMC_GET_LEN32(q);
 		switch(i_interface_standard) {
 		case 0: 
-		  printf("\tunspecified interface.\n");
+		  printf("-- \tunspecified interface.\n");
 		  break;
 		case 1: 
-		  printf("\tSCSI interface.\n");
+		  printf("-- \tSCSI interface.\n");
 		  break;
 		case 2: 
-		  printf("\tATAPI interface.\n");
+		  printf("-- \tATAPI interface.\n");
 		  break;
 		case 3: 
-		  printf("\tIEEE 1394 interface.\n");
+		  printf("-- \tIEEE 1394 interface.\n");
 		  break;
 		case 4:
-		  printf("\tIEEE 1394A interface.\n");
+		  printf("-- \tIEEE 1394A interface.\n");
 		  break;
 		case 5:
-		  printf("\tFibre Channel interface.\n");
+		  printf("-- \tFibre Channel interface.\n");
 		}
 		printf("\n");
 		break;
@@ -122,36 +122,36 @@ main(int argc, const char *argv[])
 	    case CDIO_MMC_FEATURE_REMOVABLE_MEDIUM:
 	      switch(p[4] >> 5) {
 	      case 0:
-		printf("\tCaddy/Slot type loading mechanism,\n");
+		printf("-- \tCaddy/Slot type loading mechanism,\n");
 		break;
 	      case 1:
-		printf("\tTray type loading mechanism,\n");
+		printf("-- \tTray type loading mechanism,\n");
 		break;
 	      case 2:
-		printf("\tPop-up type loading mechanism,\n");
+		printf("-- \tPop-up type loading mechanism,\n");
 		break;
 	      case 4:
-		printf("\tEmbedded changer with individually changeable discs,\n");
+		printf("-- \tEmbedded changer with individually changeable discs,\n");
 		break;
 	      case 5:
-		printf("\tEmbedded changer using a magazine mechanism,\n");
+		printf("-- \tEmbedded changer using a magazine mechanism,\n");
 		break;
 	      default:
-		printf("\tUnknown changer mechanism,\n");
+		printf("-- \tUnknown changer mechanism,\n");
 	      }
 	      
-	      printf("\tcan%s eject the medium or magazine via the normal "
+	      printf("-- \tcan%s eject the medium or magazine via the normal "
 		     "START/STOP command,\n", 
 		     (p[4] & 8) ? "": "not");
-	      printf("\tcan%s be locked into the Logical Unit.\n", 
+	      printf("-- \tcan%s be locked into the Logical Unit.\n", 
 		     (p[4] & 1) ? "": "not");
 	      printf("\n");
 	      break;
 	    case CDIO_MMC_FEATURE_CD_READ:
-	      printf("CD Read Feature\n");
-	      printf("\tC2 Error pointers are %ssupported,\n", 
+	      printf("-- CD Read Feature\n");
+	      printf("-- \tC2 Error pointers are %ssupported,\n", 
 		     (p[4] & 2) ? "": "not ");
-	      printf("\tCD-Text is %ssupported.\n", 
+	      printf("-- \tCD-Text is %ssupported.\n", 
 		     (p[4] & 1) ? "": "not ");
 	      printf("\n");
 	      break;
@@ -184,14 +184,14 @@ main(int argc, const char *argv[])
 	}
       }
     } else {
-      printf("Didn't get all feature codes.\n");
+      printf("-- Didn't get all feature codes.\n");
     }
   }
   
   if (mmc_have_interface(p_cdio, CDIO_MMC_FEATURE_INTERFACE_ATAPI)) 
-    printf("CD-ROM is an ATAPI interface.\n");
+    printf("-- CD-ROM is an ATAPI interface.\n");
   else 
-    printf("CD-ROM is not an ATAPI interface.\n");
+    printf("-- CD-ROM is not an ATAPI interface.\n");
 
   cdio_destroy(p_cdio);
   

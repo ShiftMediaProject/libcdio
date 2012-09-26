@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2009, 2010, 2011
+  Copyright (C) 2004, 2005, 2008, 2009, 2010, 2011, 2012
    Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
@@ -53,7 +53,7 @@ main(int argc, const char *argv[])
   p_cdio = cdio_open (psz_drive, DRIVER_UNKNOWN);
 
   if (!p_cdio) {
-    printf("Couldn't find CD\n");
+    printf("-- Couldn't find CD\n");
     return 77;
   } else {
     int i_status;             /* Result of MMC command */
@@ -81,10 +81,10 @@ main(int argc, const char *argv[])
 	       sizeof(psz_rev)-1);
 	psz_rev[sizeof(psz_rev)-1] = '\0';
 	
-	printf("Vendor: %s\nModel: %s\nRevision: %s\n",
+	printf("-- Vendor: %s\n-- Model: %s\n-- Revision: %s\n",
 	       psz_vendor, psz_model, psz_rev);
     } else {
-      printf("Couldn't get INQUIRY data (vendor, model, and revision).\n");
+      printf("-- Couldn't get INQUIRY data (vendor, model, and revision).\n");
     }
 
     {
@@ -94,13 +94,13 @@ main(int argc, const char *argv[])
 	i_status = mmc_get_disc_erasable(p_cdio, &b_erasable);
 	cdio_mmc_feature_profile_t disctype;
 	if (DRIVER_OP_SUCCESS == i_status)
-	    printf("Disc is %serasable.\n", b_erasable ? "" : "not ");
+	    printf("-- Disc is %serasable.\n", b_erasable ? "" : "not ");
 	else
-	    printf("Can't determine if disc is erasable.\n");
+	    printf("-- Can't determine if disc is erasable.\n");
 
 	i_status = mmc_get_disctype(p_cdio, 0, &disctype);
 	if (DRIVER_OP_SUCCESS == i_status) {
-	    printf("disc type: profile is %s (0x%X)\n", 
+	    printf("-- disc type: profile is %s (0x%X)\n", 
 		   mmc_feature_profile2str(disctype), 
 		   disctype);
 	}

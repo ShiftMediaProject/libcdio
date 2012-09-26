@@ -39,7 +39,7 @@ if test -f  $nrg_file ; then
   RC=$?
   check_result $RC 'cd-info NRG test 2'
 else 
-  echo "Don't see NRG file ${nrg_file}. Test skipped."
+  echo "-- Don't see NRG file ${nrg_file}. Test skipped."
   exit 0
 fi
 
@@ -51,7 +51,7 @@ if test -f  $nrg_file ; then
   RC=$?
   check_result $RC "cd-info NRG $test_name" "${CD_INFO} $opts"
 else 
-  echo "Don't see NRG file ${nrg_file}. Test skipped."
+  echo "-- Don't see NRG file ${nrg_file}. Test skipped."
   exit $SKIP_TEST_EXITCODE
 fi
 
@@ -64,7 +64,7 @@ if test -f  $nrg_file ; then
   check_result $RC "cd-info NRG $test_name" "${CD_INFO} $opts"
   exit $RC
 else 
-  echo "Don't see NRG file ${nrg_file}. Test skipped."
+  echo "-- Don't see NRG file ${nrg_file}. Test skipped."
   exit $SKIP_TEST_EXITCODE
 fi
 

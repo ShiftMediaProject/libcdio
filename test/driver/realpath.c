@@ -122,7 +122,7 @@ main(int argc, const char *argv[])
     i_last_slash = psz_last_slash - tmp_subdir + 1;
     memcpy(tmp_dir, tmp_subdir, i_last_slash);
     tmp_dir[i_last_slash] = '\0';
-    printf("Temp directory is %s\n", tmp_dir);
+    printf("-- Temp directory is %s\n", tmp_dir);
 
     psz_orig_file = get_temporary_name(NULL, "file");
     if (NULL != psz_orig_file) {

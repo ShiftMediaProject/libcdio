@@ -46,10 +46,10 @@ check_result() {
       fi
       exit $RC
     else 
-      echo "$0: $msg skipped."
+      echo "-- $0: $msg skipped."
     fi
   else 
-    echo "$0: $msg ok."
+    echo "-- $0: $msg ok."
   fi
 }
 
@@ -62,7 +62,7 @@ test_common() {
   rightfile="$4"
 
   if [ ! -x "${cmd}" ]; then
-    echo "$0: No ${cmd}"
+    echo "-- $0: No ${cmd}"
     return 1
   fi
 
@@ -110,7 +110,7 @@ test_iso_read() {
   ISO_READ="../src/iso-read@EXEEXT@"
 
   if [ ! -x ${ISO_READ} ]; then
-    echo "$0: No ${ISO_READ}"
+    echo "-- $0: No ${ISO_READ}"
     return 1
   fi
 
@@ -158,7 +158,7 @@ test_legal_header() {
     fi
   done < ${srcdir}/check_legal.regex
   rm -f ${outfile}
-  echo "$0: Legal header of ${cmd} ${opts} ok."
+  echo "-- $0: Legal header of ${cmd} ${opts} ok."
 
 }
 

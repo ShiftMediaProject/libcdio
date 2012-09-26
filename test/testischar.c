@@ -1,6 +1,4 @@
 /*
-  $Id: testischar.c,v 1.3 2008/03/22 18:08:25 karl Exp $
-
   Copyright (C) 2001, 2008 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -33,7 +31,7 @@ main (int argc, const char *argv[])
 {
   int i, j;
 
-  printf ("  ");
+  printf ("--  ");
 
   for (j = 0; j < 0x10; j++)
     printf (" %1.1x", j);
@@ -43,7 +41,7 @@ main (int argc, const char *argv[])
   for (j = 0; j < 0x10; j++)
     printf (" %1.1x", j);
 
-  printf ("\n");
+  printf ("\n-- ");
 
   for (i = 0; i < 0x10; i++)
     {
@@ -66,8 +64,9 @@ main (int argc, const char *argv[])
 	  printf (" %c", iso9660_isachar (c) ? c : ' ');
 	}
       
-      printf ("\n");
+      printf ("\n-- ");
     }
+  printf ("\n");
 
   return 0;
 }

@@ -15,8 +15,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Simple program to show use of SCSI MMC interface. Is basically the
-   the libdio scsi_mmc_get_hwinfo() routine.
+/* Another simple program to show use of SCSI MMC interface. Is
+   basically the the libdio scsi_mmc_get_hwinfo() routine.
 */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -58,29 +58,29 @@ main(int argc, const char *argv[])
   if (!psz_drive) {
     psz_drive = cdio_get_default_device_driver(&driver_id);
     if (!psz_drive) {
-      printf("Can't find a CD-ROM\n");
+      printf("-- Can't find a CD-ROM\n");
      exit(77);
     }
   }
 
   p_cdio = cdio_open (psz_drive, driver_id);
   if (!p_cdio) {
-    printf("Can't open %s\n", psz_drive);
+    printf("-- Can't open %s\n", psz_drive);
     exit(77);
   }
   
   ret = mmc_get_tray_status(p_cdio);
   switch((int) ret) {
   case 0:
-    printf("CD-ROM drive %s is closed.\n", psz_drive);
+    printf("-- CD-ROM drive %s is closed.\n", psz_drive);
     do_eject = true;
     do_close = true;
     break;
   case 1:
-    printf("CD-ROM drive %s is open.\n", psz_drive);
+    printf("-- CD-ROM drive %s is open.\n", psz_drive);
     break;
   default:
-    printf("Error status for drive %s: %s.\n", psz_drive,
+    printf("-- Error status for drive %s: %s.\n", psz_drive,
 	   cdio_driver_errmsg(ret));
     return 77;
   }
@@ -88,13 +88,14 @@ main(int argc, const char *argv[])
   ret = mmc_get_media_changed(p_cdio);
   switch((int) ret) {
   case 0:
-    printf("CD-ROM drive %s media not changed since last test.\n", psz_drive);
+    printf("-- CD-ROM drive %s media not changed since last test.\n", 
+	   psz_drive);
     break;
   case 1:
-    printf("CD-ROM drive %s media changed since last test.\n", psz_drive);
+    printf("-- CD-ROM drive %s media changed since last test.\n", psz_drive);
     break;
   default:
-    printf("Error status for drive %s: %s.\n", psz_drive, 
+    printf("-- Error status for drive %s: %s.\n", psz_drive, 
 	   cdio_driver_errmsg(ret));
     return 77;
   }
@@ -107,10 +108,10 @@ main(int argc, const char *argv[])
   ret = mmc_get_tray_status(p_cdio);
   switch((int) ret) {
   case 0:
-    printf("CD-ROM drive %s is closed.\n", psz_drive);
+    printf("-- CD-ROM drive %s is closed.\n", psz_drive);
     break;
   case 1:
-    printf("CD-ROM drive %s is open.\n", psz_drive);
+    printf("-- CD-ROM drive %s is open.\n", psz_drive);
     break;
   default:
     printf("Error status for drive %s: %s.\n", psz_drive,
@@ -121,13 +122,14 @@ main(int argc, const char *argv[])
   ret = mmc_get_media_changed(p_cdio);
   switch((int) ret) {
   case 0:
-    printf("CD-ROM drive %s media not changed since last test.\n", psz_drive);
+    printf("-- CD-ROM drive %s media not changed since last test.\n", 
+	   psz_drive);
     break;
   case 1:
-    printf("CD-ROM drive %s media changed since last test.\n", psz_drive);
+    printf("-- CD-ROM drive %s media changed since last test.\n", psz_drive);
     break;
   default:
-    printf("Error status for drive %s: %s.\n", psz_drive,
+    printf("-- Error status for drive %s: %s.\n", psz_drive,
 	   cdio_driver_errmsg(ret));
     return 77;
   }

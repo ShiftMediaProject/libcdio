@@ -65,7 +65,7 @@ main(int argc, const char *argv[])
     /* Don't need a list of CD's with CD-DA's any more. */
     cdio_free_device_list(ppsz_cd_drives);
   } else {
-    printf("Unable find or access a CD-ROM drive with an ISO-9660 "
+    printf("-- Unable find or access a CD-ROM drive with an ISO-9660 "
 	   "filesystem.\n");
     exit(SKIP_TEST_RC);
   }

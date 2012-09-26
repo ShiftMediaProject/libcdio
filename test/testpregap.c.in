@@ -94,7 +94,7 @@ main(int argc, const char *argv[])
 
   if (! (cdio_have_driver(DRIVER_NRG) && cdio_have_driver(DRIVER_BINCUE)
    && cdio_have_driver(DRIVER_CDRDAO)) )  {
-    printf("You don't have enough drivers for this test\n");
+    printf("-- You don't have enough drivers for this test\n");
     exit(77);
   }
 
@@ -104,17 +104,17 @@ main(int argc, const char *argv[])
 
     cdObj = cdio_open(image, DRIVER_UNKNOWN);
     if (!cdObj) {
-      printf("unrecognized image: %s\n", image);
+      printf("-- unrecognized image: %s\n", image);
       return 50;
     }
 
     pregap = cdio_get_track_pregap_lsn(cdObj, pregapList[i].track);
     if (pregap != pregapList[i].pregap) {
-      printf("%s should have had pregap of lsn=%d instead of lsn=%d\n",
+      printf("-- %s should have had pregap of lsn=%d instead of lsn=%d\n",
        image, pregapList[i].pregap, pregap);
       rc = i + 1;
     } else {
-      printf("%s had expected pregap\n", image);
+      printf("-- %s had expected pregap\n", image);
     }
 
     cdio_destroy(cdObj);

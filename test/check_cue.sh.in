@@ -50,10 +50,10 @@ if test -f ${abs_top_srcdir}/test/data/${fname}.bin ; then
     RC=$?
     check_result $RC "cd-info CD-Text CUE test $testnum" "${CD_INFO} $opts"
   else
-    echo "Don't see CD-Text file ${abs_top_srcdir}/test/data/${fname}.cdt. Test $testnum skipped."
+    echo "-- Don't see CD-Text file ${abs_top_srcdir}/test/data/${fname}.cdt. Test $testnum skipped."
   fi
 else
-  echo "Don't see binary file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
+  echo "-- Don't see binary file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
 fi
 
 fname=isofs-m1
@@ -72,7 +72,7 @@ if test -f  ${abs_top_srcdir}/test/data/${fname}.bin ; then
   fi
 
 else 
-  echo "Don't see binary file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
+  echo "-- Don't see binary file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
 fi
 
 if test -n "@HAVE_ROCK@"; then 
@@ -83,7 +83,7 @@ if test -n "@HAVE_ROCK@"; then
     RC=$?
     check_result $RC "cd-info TOC test $testnum" "${CD_INFO} $opts"
   else 
-    echo "Don't see TOC file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
+    echo "-- Don't see TOC file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
   fi
 fi
 
@@ -111,10 +111,10 @@ if test -f ${abs_top_srcdir}/test/data/${fname}.bin ; then
     RC=$?
     check_result $RC "cd-info TOC test $testnum" "${CD_INFO} $opts"
   else 
-    echo "Don't see TOC file ${abs_top_srcdir}/test/data/${fname}.toc. Test $testnum skipped."
+    echo "-- Don't see TOC file ${abs_top_srcdir}/test/data/${fname}.toc. Test $testnum skipped."
   fi
 else 
-  echo "Don't see BIN file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
+  echo "-- Don't see BIN file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
 fi
 
 fname=svcd_ogt_test_ntsc
@@ -125,7 +125,7 @@ if test -f ${abs_top_srcdir}/test/data/${fname}.bin ; then
   RC=$?
   check_result $RC "cd-info CUE test $testnum" "${CD_INFO} $opts"
 else 
-  echo "Don't see CUE file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
+  echo "-- Don't see CUE file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
 fi
 
 exit $RC

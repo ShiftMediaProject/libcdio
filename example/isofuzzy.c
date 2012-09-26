@@ -68,7 +68,7 @@ main(int argc, const char *argv[])
   p_iso = iso9660_open_fuzzy (psz_fname, 5);
   
   if (NULL == p_iso) {
-    fprintf(stderr, "Sorry, could not find an ISO 9660 image from %s\n", 
+    fprintf(stderr, "-- Sorry, could not find an ISO 9660 image from %s\n", 
 	    psz_fname);
     return 1;
   }
@@ -84,7 +84,7 @@ main(int argc, const char *argv[])
       iso9660_stat_t *p_statbuf = 
 	(iso9660_stat_t *) _cdio_list_node_data (entnode);
       iso9660_name_translate(p_statbuf->filename, filename);
-      printf ("/%s\n", filename);
+      printf ("-- /%s\n", filename);
     }
 
     _cdio_list_free (entlist, true);

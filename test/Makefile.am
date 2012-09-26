@@ -79,7 +79,12 @@ XFAIL_TESTS = testassert
 
 MOSTLYCLEANFILES = core core.* *.dump cdda-orig.wav cdda-try.wav *.raw
 
+#: run regression tests. "test" is the same thing as "check"
 test: check-am
+
+#: Run all tests without bloated output
+check-short:
+	$(MAKE) check 2>&1  | ruby @abs_top_srcdir@/make-check-filter.rb
 
 # This is a really bad hack to make sure check_nrg and check_cue.sh
 # are executable. Automake will remake check_nrg.sh and check_cue.sh

@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2008, 2009, 2012
+  Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -46,25 +47,25 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
   if (CDIO_DRIVE_CAP_ERROR == i_misc_cap) {
     printf("Error in getting drive hardware properties\n");
   } else {
-    printf(_("Hardware                    : %s\n"), 
+    printf(_("-- Hardware                    : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_FILE  
 	   ? "Disk Image"  : "CD-ROM or DVD");
-    printf(_("Can eject                   : %s\n"), 
+    printf(_("-- Can eject                   : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_EJECT         ? "Yes" : "No");
-    printf(_("Can close tray              : %s\n"), 
+    printf(_("-- Can close tray              : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_CLOSE_TRAY    ? "Yes" : "No");
-    printf(_("Can disable manual eject    : %s\n"), 
+    printf(_("-- Can disable manual eject    : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_LOCK          ? "Yes" : "No");
-    printf(_("Can select juke-box disc    : %s\n\n"), 
+    printf(_("-- Can select juke-box disc    : %s\n\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_SELECT_DISC   ? "Yes" : "No");
 
-    printf(_("Can set drive speed         : %s\n"), 
+    printf(_("-- Can set drive speed         : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_SELECT_SPEED  ? "Yes" : "No");
-    printf(_("Can detect if CD changed    : %s\n"), 
+    printf(_("-- Can detect if CD changed    : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED ? "Yes" : "No");
-    printf(_("Can read multiple sessions  : %s\n"), 
+    printf(_("-- Can read multiple sessions  : %s\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_MULTI_SESSION ? "Yes" : "No");
-    printf(_("Can hard reset device       : %s\n\n"), 
+    printf(_("-- Can hard reset device       : %s\n\n"), 
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_RESET         ? "Yes" : "No");
   }
   
@@ -72,14 +73,14 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
   if (CDIO_DRIVE_CAP_ERROR == i_read_cap) {
       printf("Error in getting drive reading properties\n");
   } else {
-    printf("Reading....\n");
-    printf(_("  Can play audio            : %s\n"), 
+    printf("-- Reading....\n");
+    printf(_("--  Can play audio            : %s\n"), 
 	   i_read_cap & CDIO_DRIVE_CAP_READ_AUDIO      ? "Yes" : "No");
-    printf(_("  Can read  CD-R            : %s\n"), 
+    printf(_("--  Can read  CD-R            : %s\n"), 
 	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_R       ? "Yes" : "No");
-    printf(_("  Can read  CD-RW           : %s\n"), 
+    printf(_("--  Can read  CD-RW           : %s\n"), 
 	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_RW      ? "Yes" : "No");
-    printf(_("  Can read  DVD-ROM         : %s\n"), 
+    printf(_("--  Can read  DVD-ROM         : %s\n"), 
 	   i_read_cap & CDIO_DRIVE_CAP_READ_DVD_ROM    ? "Yes" : "No");
   }
   
@@ -87,12 +88,12 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
   if (CDIO_DRIVE_CAP_ERROR == i_write_cap) {
       printf("Error in getting drive writing properties\n");
   } else {
-    printf("\nWriting....\n");
-    printf(_("  Can write CD-RW           : %s\n"), 
+    printf("\n-- Writing....\n");
+    printf(_("--  Can write CD-RW           : %s\n"), 
 	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_RW     ? "Yes" : "No");
-    printf(_("  Can write DVD-R           : %s\n"), 
+    printf(_("--  Can write DVD-R           : %s\n"), 
 	   i_write_cap & CDIO_DRIVE_CAP_READ_DVD_R    ? "Yes" : "No");
-    printf(_("  Can write DVD-RAM         : %s\n"), 
+    printf(_("--  Can write DVD-RAM         : %s\n"), 
 	   i_write_cap & CDIO_DRIVE_CAP_READ_DVD_RAM  ? "Yes" : "No");
   }
 }
@@ -108,10 +109,10 @@ main(int argc, const char *argv[])
     cdio_drive_write_cap_t i_write_cap;
     cdio_drive_misc_cap_t  i_misc_cap;
     
-    printf("The driver selected is %s\n", cdio_get_driver_name(p_cdio));
+    printf("-- The driver selected is %s\n", cdio_get_driver_name(p_cdio));
 
     if (default_device)
-      printf("The default device for this driver is %s\n", default_device);
+      printf("-- The default device for this driver is %s\n", default_device);
 
     cdio_get_drive_cap(p_cdio, &i_read_cap, &i_write_cap, &i_misc_cap);
     print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
@@ -121,16 +122,16 @@ main(int argc, const char *argv[])
     printf("\n");
 
   } else {
-    printf("Problem in trying to find a driver.\n\n");
+    printf("-- Problem in trying to find a driver.\n\n");
   }
   
   {
     const driver_id_t *driver_id_p;
     for (driver_id_p=cdio_drivers; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++)
       if (cdio_have_driver(*driver_id_p))
-	printf("We have: %s\n", cdio_driver_describe(*driver_id_p));
+	printf("-- We have: %s\n", cdio_driver_describe(*driver_id_p));
       else
-	printf("We don't have: %s\n", cdio_driver_describe(*driver_id_p));
+	printf("-- We don't have: %s\n", cdio_driver_describe(*driver_id_p));
   }
   return 0;
 }

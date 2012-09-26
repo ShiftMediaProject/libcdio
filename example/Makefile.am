@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009
+#   Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009, 2012
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -49,6 +49,14 @@ noinst_PROGRAMS = \
 
 check_PROGRAMS  = cdtext device drives \
                    mmc1 mmc2 mmc2a mmc3 sample4
+
+#: run regression tests. "test" is the same thing as "check"
+test: check-am
+
+#: Run all tests without bloated output
+check-short:
+	$(MAKE) check 2>&1  | ruby @abs_top_srcdir@/make-check-filter.rb
+
 
 INCLUDES = $(LIBCDIO_CFLAGS)
 

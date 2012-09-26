@@ -70,11 +70,11 @@ is_in(char **file_list, const char *file)
   char **p;
   for (p = file_list; p != NULL && *p != NULL; p++) {
     if (strcmp(*p, file) == 0) {
-      printf("File %s found as expected\n", file);
+      printf("-- File %s found as expected\n", file);
       return true;
     }
   }
-  printf("Can't find file %s in list\n", file);
+  printf("-- Can't find file %s in list\n", file);
   return false;
 }
 #endif
@@ -116,7 +116,7 @@ main(int argc, const char *argv[])
 			"You should have been able to get GNU/Linux driver\n");
 		return 6;
 	      } else {
-		printf("Good! You have the GNU/Linux driver installed.\n");
+		printf("-- Good! You have the GNU/Linux driver installed.\n");
 	      }
 	    
 	  }
@@ -128,7 +128,7 @@ main(int argc, const char *argv[])
 			"You should have been able to get Win32 driver\n");
 		return 6;
 	      } else {
-		printf("Good! You have the Win32 driver installed.\n");
+		printf("-- Good! You have the Win32 driver installed.\n");
 	      }
 	  }
 	else if (0 == strncmp("Darwin", utsname.sysname, sizeof("Darwin")))
@@ -139,7 +139,7 @@ main(int argc, const char *argv[])
 			"You should have been able to get OS/X driver\n");
 		return 6;
 	      } else {
-		printf("Good! You have the OS/X driver installed.\n");
+		printf("-- Good! You have the OS/X driver installed.\n");
 	      }
 	  }
 	else if (0 == strncmp("NetBSD", utsname.sysname, sizeof("NetBSD")))
@@ -150,7 +150,7 @@ main(int argc, const char *argv[])
 			"You should have been able to get NetBSD driver\n");
 		return 6;
 	      } else {
-		printf("Good! You have the OS/X driver installed.\n");
+		printf("-- Good! You have the OS/X driver installed.\n");
 	      }
 	  }
       }
@@ -165,7 +165,7 @@ main(int argc, const char *argv[])
   bincue_images = cdio_get_devices(DRIVER_BINCUE);
   
   for (imgs=bincue_images; *imgs != NULL; imgs++) {
-    printf("bincue image %s\n", *imgs);
+    printf("-- bincue image %s\n", *imgs);
   }
   
   if (ret != 0) return ret;
@@ -174,7 +174,7 @@ main(int argc, const char *argv[])
      nrg_images = cdio_get_devices(DRIVER_NRG);
 	  
      for (imgs=nrg_images; *imgs != NULL; imgs++) {
-       printf("NRG image %s\n", *imgs);
+       printf("-- NRG image %s\n", *imgs);
      }
 	  
      if (!is_in(nrg_images, nrg_files[0])) {
@@ -184,9 +184,11 @@ main(int argc, const char *argv[])
 
      for (i=0; i<2; i++) {
        if (is_in(bincue_images, cue_files[i])) {
-	   printf("%s parses as a CDRWIN BIN/CUE csheet.\n", cue_files[i]);
+	   printf("-- %s parses as a CDRWIN BIN/CUE csheet.\n", 
+		  cue_files[i]);
        } else {
-         printf("%s doesn't parse as a CDRWIN BIN/CUE csheet.\n", cue_files[i]);
+         printf("-- %s doesn't parse as a CDRWIN BIN/CUE csheet.\n", 
+		cue_files[i]);
          ret = i+1;
        }
      }
