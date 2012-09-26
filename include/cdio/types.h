@@ -151,21 +151,21 @@ typedef uint8_t ubyte;
 #define GNUC_PACKED
 #endif  /* !__GNUC__ */
   
-#if defined(__GNUC__)
-  /* for GCC we try to use GNUC_PACKED */
-# define PRAGMA_BEGIN_PACKED
-# define PRAGMA_END_PACKED
+#if defined(__MINGW32__)
+#  define PRAGMA_BEGIN_PACKED _Pragma("pack(push)") \
+                              _Pragma("pack(1)")
+#  define PRAGMA_END_PACKED   _Pragma("pack(pop)")
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901)
-  /* should work with most EDG-frontend based compilers */
-# define PRAGMA_BEGIN_PACKED _Pragma("pack(1)")
-# define PRAGMA_END_PACKED   _Pragma("pack()")
+     /* should work with most EDG-frontend based compilers */
+#    define PRAGMA_BEGIN_PACKED _Pragma("pack(1)")
+#    define PRAGMA_END_PACKED   _Pragma("pack()")
 #elif defined(_MSC_VER)
-# define PRAGMA_BEGIN_PACKED __pragma(pack(push, 1))
-# define PRAGMA_END_PACKED   __pragma(pack(pop))
+#  define PRAGMA_BEGIN_PACKED __pragma(pack(push, 1))
+#  define PRAGMA_END_PACKED   __pragma(pack(pop))
 #else /* neither gcc nor _Pragma() available... */
-  /* ...so let's be naive and hope the regression testsuite is run... */
-# define PRAGMA_BEGIN_PACKED
-# define PRAGMA_END_PACKED
+   /* ...so let's be naive and hope the regression testsuite is run... */
+#  define PRAGMA_BEGIN_PACKED
+#  define PRAGMA_END_PACKED
 #endif
   
   /*
