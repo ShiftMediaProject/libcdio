@@ -408,6 +408,10 @@ int has_timeout=sizeof(test.timeout);],
 		   defined as a variable. In cygwin it is a function too])
 	;;
      mingw*)
+        # regression tests need native-style absolute paths.
+        # ac_pwd is used to build top_abs_srcdir.
+	ac_pwd=$(cd $srcdir; builtin pwd -W)
+
 	AC_CHECK_HEADERS(windows.h)
 	AC_DEFINE([MINGW32], [1], 
                   [Define 1 if you are compiling using MinGW])
