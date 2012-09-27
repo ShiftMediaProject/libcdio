@@ -333,9 +333,16 @@ dnl Libtool flag for strict linkage
 LT_NO_UNDEFINED=
 
 dnl regression tests need native-style absolute paths.
-dnl native_srcdir is used here.
-native_top_srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
-AC_SUBST(native_top_srcdir)
+dnl native_abs_top_srcdir is used here.
+case $srcdir in
+  .)  # We are building in place.
+   native_abs_top_srcdir=$ac_pwd ;;
+  [\\/]* | ?:[\\/]* )  # Absolute name.
+    native_abs_top_srcdir=$srcdir ;;
+  *) # Relative name.
+    native_abs_top_srcdir=$ac_pwd/$srcdir ;;
+esac
+AC_SUBST(native_abs_top_srcdir)
 
 case $host_os in
      aix*)
