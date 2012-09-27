@@ -422,7 +422,7 @@ int has_timeout=sizeof(test.timeout);],
      mingw*)
         # regression tests need native-style absolute paths.
         # $native_srcdir is used here.
-	native_top_srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
+	native_abs_top_srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
 
 	AC_CHECK_HEADERS(windows.h)
 	AC_DEFINE([MINGW32], [1], 
