@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003-2005, 2011-2012  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2008 Robert W. Fuller <hydrologiccycle@gmail.com>
   
   This program is free software: you can redistribute it and/or modify
@@ -67,14 +67,14 @@ typedef struct _pregap_list_t {
 
 static pregap_list_t pregapList[] =
 {
-    { "@abs_top_srcdir@/test/data/t2.toc", 1, 4425 },
-    { "@abs_top_srcdir@/test/data/t2.toc", 2, CDIO_INVALID_LSN },
-    { "@abs_top_srcdir@/test/data/p1.cue", 1, 0 },
-    { "@abs_top_srcdir@/test/data/p1.cue", 2, 150 },
-    { "@abs_top_srcdir@/test/data/p1.cue", 3, CDIO_INVALID_LSN },
+    { "@native_top_srcdir@/test/data/t2.toc", 1, 4425 },
+    { "@native_top_srcdir@/test/data/t2.toc", 2, CDIO_INVALID_LSN },
+    { "@native_top_srcdir@/test/data/p1.cue", 1, 0 },
+    { "@native_top_srcdir@/test/data/p1.cue", 2, 150 },
+    { "@native_top_srcdir@/test/data/p1.cue", 3, CDIO_INVALID_LSN },
 /*    { "p1.nrg", 1, 0 }, Nero did not create the proper pre-gap - bleh */
-    { "@abs_top_srcdir@/test/data/p1.nrg", 2, 225 },
-    { "@abs_top_srcdir@/test/data/p1.nrg", 3, CDIO_INVALID_LSN }
+    { "@native_top_srcdir@/test/data/p1.nrg", 2, 225 },
+    { "@native_top_srcdir@/test/data/p1.nrg", 3, CDIO_INVALID_LSN }
 };
 
 #define NELEMS(v) (sizeof(v) / sizeof(v[0]))

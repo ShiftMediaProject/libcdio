@@ -332,6 +332,11 @@ AC_SUBST(SED_EXTENDED_RE_FLAG)
 dnl Libtool flag for strict linkage
 LT_NO_UNDEFINED=
 
+dnl regression tests need native-style absolute paths.
+dnl native_srcdir is used here.
+native_top_srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
+AC_SUBST(native_top_srcdir)
+
 case $host_os in
      aix*)
        ## Don't use AIX driver until starts to really work
@@ -409,8 +414,8 @@ int has_timeout=sizeof(test.timeout);],
 	;;
      mingw*)
         # regression tests need native-style absolute paths.
-        # $srcdir is used to build top_abs_srcdir.
-	srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
+        # $native_srcdir is used here.
+	native_top_srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
 
 	AC_CHECK_HEADERS(windows.h)
 	AC_DEFINE([MINGW32], [1], 
