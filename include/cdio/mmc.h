@@ -137,6 +137,8 @@ extern "C" {
     */
     typedef enum {
   CDIO_MMC_GPCMD_TEST_UNIT_READY        = 0x00, /**< test if drive ready. */
+  CDIO_MMC_GPCMD_REQUEST_SENSE          = 0x03, 
+  CDIO_MMC_GPCMD_FORMAT_UNIT            = 0x04,
   CDIO_MMC_GPCMD_INQUIRY                = 0x12, /**< Request drive 
                                                    information. */
   CDIO_MMC_GPCMD_MODE_SELECT_6          = 0x15, /**< Select medium 
@@ -157,6 +159,13 @@ extern "C" {
   */
   CDIO_MMC_GPCMD_READ_10                = 0x28, /**< Read data from drive 
                                                    (10 bytes). */
+  CDIO_MMC_GPCMD_WRITE_10               = 0x2a, 
+  CDIO_MMC_GPCMD_SEEK_10                = 0x2b, 
+  CDIO_MMC_GPCMD_WRITE_AND_VERIFY_10    = 0x2e, 
+  CDIO_MMC_GPCMD_VERIFY_10              = 0x2f, 
+  CDIO_MMC_GPCMD_SYNCHRONIZE_CACHE      = 0x35, 
+  CDIO_MMC_GPCMD_WRITE_BUFFER           = 0x3b, 
+  CDIO_MMC_GPCMD_READ_BUFFER            = 0x3c, 
   CDIO_MMC_GPCMD_READ_SUBCHANNEL        = 0x42, /**< Read Sub-Channel data.
                                                    (10 bytes). */
   CDIO_MMC_GPCMD_READ_TOC               = 0x43, /**< READ TOC/PMA/ATIP. 
@@ -184,26 +193,38 @@ extern "C" {
                                                    playback. (10 bytes). 
                                                    Used with a PLAY command. */
 
-  CDIO_MMC_GPCMD_READ_DISC_INFO         = 0x51, /**< Get CD information.
+  CDIO_MMC_GPCMD_READ_DISC_INFORMATION  = 0x51, /**< Get CD information.
                                                    (10 bytes). */
   CDIO_MMC_GPCMD_READ_TRACK_INFORMATION = 0x52, /**< Information about a 
                                                    logical track. */
+  CDIO_MMC_GPCMD_RESERVE_TRACK          = 0x53,
+  CDIO_MMC_GPCMD_SEND_OPC_INFORMATION   = 0x54,
   CDIO_MMC_GPCMD_MODE_SELECT_10         = 0x55, /**< Select medium 
                                                    (10-bytes). */
+  CDIO_MMC_GPCMD_REPAIR_TRACK           = 0x58,
   CDIO_MMC_GPCMD_MODE_SENSE_10          = 0x5a, /**< Get medium or device
                                                  information. Should be issued
                                                  before MODE SELECT to get
                                                  mode support or save current
                                                  settings. (6 bytes). */
+  CDIO_MMC_GPCMD_CLOSE_TRACK_SESSION    = 0x5b,
+  CDIO_MMC_GPCMD_READ_BUFFER_CAPACITY   = 0x5c,
+  CDIO_MMC_GPCMD_SEND_CUE_SHEET         = 0x5d,
 
   /**
       Group 5 Commands (CDB's here are 12-bytes) 
   */
+  CDIO_MMC_GPCMD_REPORT_LUNS            = 0xa0, 
+  CDIO_MMC_GPCMD_BLANK                  = 0xa1, 
+  CDIO_MMC_GPCMD_SECURITY_PROTOCOL_IN   = 0xa2, 
+  CDIO_MMC_GPCMD_SEND_KEY               = 0xa3, 
+  CDIO_MMC_GPCMD_REPORT_KEY             = 0xa4, 
   CDIO_MMC_GPCMD_PLAY_AUDIO_12          = 0xa5, /**< Begin audio playing at
                                                    current position
                                                  (12 bytes) */
   CDIO_MMC_GPCMD_LOAD_UNLOAD            = 0xa6, /**< Load/unload a Disc
                                                  (12 bytes) */
+  CDIO_MMC_GPCMD_SET_READ_AHEAD         = 0xa7,
   CDIO_MMC_GPCMD_READ_12                = 0xa8, /**< Read data from drive 
                                                    (12 bytes). */
   CDIO_MMC_GPCMD_PLAY_TRACK_REL_12      = 0xa9, /**< Play audio at the track
@@ -212,8 +233,13 @@ extern "C" {
                                                    of MMC standards but is
                                                    handled by Plextor drives.
                                                 */
+  CDIO_MMC_GPCMD_WRITE_12               = 0xaa,
+  CDIO_MMC_GPCMD_READ_MEDIA_SERIAL_12   = 0xab,
+  CDIO_MMC_GPCMD_GET_PERFORMANCE        = 0xac,
   CDIO_MMC_GPCMD_READ_DVD_STRUCTURE     = 0xad, /**< Get DVD structure info
                                                    from media (12 bytes). */
+  CDIO_MMC_GPCMD_SECURITY_PROTOCOL_OUT  = 0xb5,
+  CDIO_MMC_GPCMD_SET_STREAMING          = 0xb6,
   CDIO_MMC_GPCMD_READ_MSF               = 0xb9, /**< Read almost any field 
                                                    of a CD sector at specified
                                                    MSF. (12 bytes). */
@@ -227,9 +253,11 @@ extern "C" {
                                                    MMC command for SCSI
                                                    devices though...  Most
                                                    ATAPI drives support it. */
+  CDIO_MMC_GPCMD_MECHANISM_STATUS       = 0xbd,
   CDIO_MMC_GPCMD_READ_CD                = 0xbe, /**< Read almost any field 
                                                    of a CD sector at current
                                                    location. (12 bytes). */
+  CDIO_MMC_GPCMD_SEND_DISC_STRUCTURE    = 0xbf,
   /**
       Vendor-unique Commands  
   */
@@ -303,6 +331,10 @@ extern "C" {
       CDIO_MMC_READ_DISC_INFO_POW        = 0x2,
   } cdio_mmc_read_disc_info_datatype_t;
         
+/* For backward compatibility. */
+#define CDIO_MMC_GPCMD_READ_DISC_INFO CDIO_MMC_GPCMD_READ_DISC_INFORMATION
+#define CDIO_MMC_GPCMD_READ_DISC_STRUCTURE CDIO_MMC_GPMD_READ_DVD_STRUCTURE
+
 
 PRAGMA_BEGIN_PACKED
   struct mmc_audio_volume_entry_s 

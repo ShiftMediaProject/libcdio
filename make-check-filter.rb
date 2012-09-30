@@ -5,6 +5,7 @@
 # See Makefile.am
 pats = '(' + 
   ["^  CC",
+   "^  CXX",
    '^(re)?make\[',
    "^(re)?make ",
    "Making check in",
