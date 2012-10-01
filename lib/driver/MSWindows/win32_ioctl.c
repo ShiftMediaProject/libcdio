@@ -603,7 +603,11 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
                               NULL);
 
   if ( 0 == b_success ) {
+    char buffer[100];
+    snprintf(buffer, sizeof(buffer), 
+	     "MMC opcode: 0x%x\n", sptwb.Spt.Cdb[0]);
     windows_error(CDIO_LOG_INFO, GetLastError());
+    cdio_log(CDIO_LOG_INFO, buffer);
     return DRIVER_OP_ERROR;
   }
 
