@@ -64,7 +64,8 @@ Microsoft Windows
 
 Building under Microsoft Windows is supported for cygwin
 (http://www.cygwin.com). MinGW (http://www.mingw.org/) may also work,
-but it is possible you may encounter problems there.
+but it is possible you may encounter problems there. For MinGW use gcc
+4.0 or greater.
 
 Support for Microsoft compilers (e.g. Visual C) is not officially
 supported.  You need to make your own "project" files.  Don't
