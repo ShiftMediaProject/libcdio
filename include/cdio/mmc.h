@@ -271,7 +271,6 @@ extern "C" {
   CDIO_MMC_GPCMD_READ_ALL_SUBCODES   = 0xdf /**< Vendor unique  = command */
   } cdio_mmc_gpcmd_t;
 
-
   /**
       Read Subchannel states 
   */
@@ -808,6 +807,17 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
   */
   driver_return_code_t mmc_set_blocksize ( const CdIo_t *p_cdio, 
                                            uint16_t i_blocksize);
+
+  /**
+    Get string name for MMC command
+    
+    @param command cdio_mmc_gpcmd_t command value
+    @return string name of command
+
+  */
+  const char *mmc_cmd2str(uint8_t command);
+        
+
   
 #ifdef __cplusplus
 }

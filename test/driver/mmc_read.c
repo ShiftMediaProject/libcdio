@@ -411,12 +411,20 @@ main(int argc, const char *argv[])
   
   cdio_loglevel_default = b_verbose ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
 
+  if (0 != 
+      strncmp("TEST UNIT READY", mmc_cmd2str(CDIO_MMC_GPCMD_TEST_UNIT_READY),
+	      sizeof("TEST UNIT READY"))) {
+      printf("Expecting mmc_cmd2str to give 'TEST UNIT READY' for code 0x%x\n",
+	     CDIO_MMC_GPCMD_TEST_UNIT_READY);
+      exit(1);
+  }
+  
   ppsz_drives = cdio_get_devices(DRIVER_DEVICE);
   if (!ppsz_drives) {
     printf("Can't find a CD-ROM drive. Skipping test.\n");
     exit(SKIP_TEST);
   }
-  
+
   p_cdio = cdio_open(ppsz_drives[0], DRIVER_DEVICE);
   if (p_cdio) {
     const char *psz_have_mmc = cdio_get_arg(p_cdio, "mmc-supported?");

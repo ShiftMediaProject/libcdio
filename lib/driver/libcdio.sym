@@ -202,6 +202,7 @@ libcdio_version_num
 mmc_audio_read_subchannel
 mmc_audio_state2str
 mmc_close_tray
+mmc_cmd2str
 mmc_eject_media
 mmc_feature2str
 mmc_feature_profile2str

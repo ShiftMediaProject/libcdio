@@ -1296,8 +1296,10 @@ run_mmc_cmd_linux(void *p_user_data,
 
     if (0 == i_rc) return DRIVER_OP_SUCCESS;
     if (-1 == i_rc) {
-      cdio_info ("ioctl CDROM_SEND_PACKET for command code 0x%x failed:\n\t%s", 
-                 p_cdb->field[0], strerror(errno));  
+      cdio_info("ioctl CDROM_SEND_PACKET for command %s (0x%0x) failed:\n\t%s", 
+                mmc_cmd2str((uint8_t) p_cdb->field[0]),
+                p_cdb->field[0], 
+                strerror(errno));  
       switch (errno) {
       case EPERM:
         return DRIVER_OP_NOT_PERMITTED;

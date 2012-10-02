@@ -48,6 +48,213 @@
 # include <errno.h>
 #endif
 
+const char 
+*mmc_cmd2str(uint8_t command)
+{
+  switch( command ) {
+  case CDIO_MMC_GPCMD_TEST_UNIT_READY: 
+    return "TEST UNIT READY";
+
+  case CDIO_MMC_GPCMD_REQUEST_SENSE: 
+    return "REQUEST SENSE";
+
+  case CDIO_MMC_GPCMD_FORMAT_UNIT: 
+    return "FORMAT UNIT";
+
+  case CDIO_MMC_GPCMD_INQUIRY: 
+    return "INQUIRY";
+
+  case CDIO_MMC_GPCMD_MODE_SELECT_6: 
+    return "MODE SELECT (6)";
+
+  case CDIO_MMC_GPCMD_MODE_SENSE_6: 
+    return "MODE SENSE (6)";
+
+  case CDIO_MMC_GPCMD_START_STOP_UNIT: 
+    return "START STOP UNIT";
+
+  case CDIO_MMC_GPCMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
+    return "PREVENT ALLOW MEDIUM REMOVAL";
+
+  case CDIO_MMC_GPCMD_READ_FORMAT_CAPACITIES: 
+    return "READ FORMAT CAPACITIES";
+
+  case CDIO_MMC_GPCMD_READ_CAPACITIY: 
+    return "READ_CAPACITIY";
+
+  case CDIO_MMC_GPCMD_READ_10: 
+    return "READ (10)";
+
+  case CDIO_MMC_GPCMD_WRITE_10: 
+    return "WRITE (10)";
+
+  case CDIO_MMC_GPCMD_SEEK_10: 
+    return "SEEK (10)";
+
+  case CDIO_MMC_GPCMD_ERASE_10: 
+    return "ERASE (10)";
+
+  case CDIO_MMC_GPCMD_WRITE_AND_VERIFY_10: 
+    return "WRITE AND VERIFY (10)";
+
+  case CDIO_MMC_GPCMD_VERIFY_10: 
+   return "VERIFY (10)";
+
+  case CDIO_MMC_GPCMD_SYNCHRONIZE_CACHE: 
+    return "SYNCHRONIZE CACHE";
+
+  case CDIO_MMC_GPCMD_WRITE_BUFFER: 
+    return "WRITE BUFFER";
+
+  case CDIO_MMC_GPCMD_READ_BUFFER: 
+    return "READ_BUFFER";
+
+  case CDIO_MMC_GPCMD_READ_SUBCHANNEL: 
+    return "READ_SUBCHANNEL";
+
+  case CDIO_MMC_GPCMD_READ_TOC: 
+    return "READ TOC";
+
+  case CDIO_MMC_GPCMD_READ_HEADER: 
+    return "READ_HEADER";
+
+  case CDIO_MMC_GPCMD_PLAY_AUDIO_10: 
+    return "PLAY AUDIO (10)";
+
+  case CDIO_MMC_GPCMD_GET_CONFIGURATION: 
+    return "GET_CONFIGURATION";
+
+  case CDIO_MMC_GPCMD_PLAY_AUDIO_MSF: 
+    return "PLAY AUDIO MSF";
+
+  case CDIO_MMC_GPCMD_PLAY_AUDIO_TI: 
+    return "PLAY_AUDIO TI";
+
+  case CDIO_MMC_GPCMD_PLAY_TRACK_REL_10: 
+    return "PLAY TRACK REL (10)";
+
+  case CDIO_MMC_GPCMD_GET_EVENT_STATUS: 
+    return "GET EVENT STATUS";
+    
+  case CDIO_MMC_GPCMD_PAUSE_RESUME: 
+    return "PAUSE RESUME";
+
+  case CDIO_MMC_GPCMD_READ_DISC_INFORMATION: 
+    return "READ DISC INFORMATION";
+
+  case CDIO_MMC_GPCMD_READ_TRACK_INFORMATION: 
+    return "READ TRACK INFORMATION";
+    
+  case CDIO_MMC_GPCMD_RESERVE_TRACK: 
+    return "RESERVE TRACK";
+    
+  case CDIO_MMC_GPCMD_SEND_OPC_INFORMATION: 
+    return "SEND OPC INFORMATION";
+    
+  case CDIO_MMC_GPCMD_MODE_SELECT_10: 
+    return "MODE SELECT (10)";
+
+  case CDIO_MMC_GPCMD_REPAIR_TRACK: 
+    return "REPAIR_TRACK";
+
+  case CDIO_MMC_GPCMD_MODE_SENSE_10: 
+    return "MODE SENSE (10)";
+
+  case CDIO_MMC_GPCMD_CLOSE_TRACK_SESSION: 
+    return "CLOSE TRACK SESSION";
+    
+  case CDIO_MMC_GPCMD_READ_BUFFER_CAPACITY: 
+    return "READ_BUFFER CAPACITY";
+    
+  case CDIO_MMC_GPCMD_SEND_CUE_SHEET: 
+    return "SEND_CUE SHEET";
+
+  case CDIO_MMC_GPCMD_REPORT_LUNS: 
+    return "REPORT LUNS";
+    
+  case CDIO_MMC_GPCMD_BLANK: 
+    return "BLANK";
+    
+  case CDIO_MMC_GPCMD_SECURITY_PROTOCOL_IN: 
+    return "SECURITY PROTOCOL IN";
+    
+  case CDIO_MMC_GPCMD_SEND_KEY: 
+    return "SEND KEY";
+    
+  case CDIO_MMC_GPCMD_REPORT_KEY: 
+    return "REPORT KEY";
+    
+  case CDIO_MMC_GPCMD_PLAY_AUDIO_12: 
+    return "PLAY_AUDIO (12)";
+
+  case CDIO_MMC_GPCMD_LOAD_UNLOAD: 
+    return "LOAD UNLOAD";
+
+  case CDIO_MMC_GPCMD_SET_READ_AHEAD: 
+    return "SET READ AHEAD";
+    
+  case CDIO_MMC_GPCMD_READ_12: 
+    return "READ (12)";
+
+  case CDIO_MMC_GPCMD_PLAY_TRACK_REL_12: 
+    return "PLAY_TRACK REL (12)";
+
+  case CDIO_MMC_GPCMD_WRITE_12: 
+    return "WRITE (12)";
+    
+  case CDIO_MMC_GPCMD_READ_MEDIA_SERIAL_12: 
+    return "READ MEDIA SERIAL (12)";
+    
+  case CDIO_MMC_GPCMD_GET_PERFORMANCE: 
+    return "GET PERFORMANCE";
+    
+  case CDIO_MMC_GPCMD_READ_DVD_STRUCTURE: 
+    return "READ DVD STRUCTURE";
+
+  case CDIO_MMC_GPCMD_SECURITY_PROTOCOL_OUT: 
+    return "SECURITY PROTOCOL_OUT";
+    
+  case CDIO_MMC_GPCMD_SET_STREAMING: 
+    return "SET STREAMING";
+    
+  case CDIO_MMC_GPCMD_READ_MSF: 
+    return "READ MSF";
+
+  case CDIO_MMC_GPCMD_SET_SPEED: 
+    return "SET SPEED";
+
+  case CDIO_MMC_GPCMD_MECHANISM_STATUS: 
+    return "MECHANISM STATUS";
+
+  case CDIO_MMC_GPCMD_READ_CD: 
+    return "READ CD";
+
+  case CDIO_MMC_GPCMD_SEND_DISC_STRUCTURE: 
+    return "SEND DISC STRUCTURE";
+    
+  case CDIO_MMC_GPCMD_CD_PLAYBACK_STATUS: 
+    return "CD PLAYBACK STATUS";
+    
+  case CDIO_MMC_GPCMD_PLAYBACK_CONTROL: 
+    return "PLAYBACK CONTROL";
+    
+  case CDIO_MMC_GPCMD_READ_CDDA: 
+    return "READ CDDA";
+    
+  case CDIO_MMC_GPCMD_READ_CDXA: 
+    return "READ CDXA";
+    
+  case CDIO_MMC_GPCMD_READ_ALL_SUBCODES: 
+    return "READ ALL SUBCODES";
+
+  default: 
+    {
+      char buf[30];
+      snprintf(buf, sizeof(buf), "Unknown 0x%x", command);
+      return strdup(buf);
+    }
+  }
+}
 
 /*************************************************************************
   MMC CdIo Operations which a driver may use. 
