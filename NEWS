@@ -5,6 +5,7 @@ version 0.90
 - OSX fixes
 - paranoia library removed as that is GPL 2-ish. This is now a separate project
 - file names in cue files are relative to the cue file rather than cwd.
+- Update mmc.h to include MMC-5 commands. (Or MMC-6 since it adds nothing new)
 - bug fixes, more tests, update documentation
 
 version 0.83
