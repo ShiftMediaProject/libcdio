@@ -296,7 +296,7 @@ is_cdrom_aspi(const char drive_letter)
     return NULL;
   }
   
-  c_drive = toupper(drive_letter) - 'A';
+  c_drive = toupper((unsigned char) drive_letter) - 'A';
   
   for( i_adapter = 0; i_adapter < i_hostadapters; i_adapter++ ) {
     struct SRB_GetDiskInfo srbDiskInfo;
@@ -363,14 +363,15 @@ init_aspi (_img_private_t *env)
   long (*lpSendCommand)( void* ) = NULL;
   DWORD dwSupportInfo;
   int i_adapter, i_hostadapters;
-  char c_drive;
+  unsigned char c_drive;
   int i_rc;
 
-  if (2 == strlen(env->gen.source_name) && isalpha(env->gen.source_name[0]) ) 
+  if (2 == strlen(env->gen.source_name) && 
+      isalpha((unsigned char) env->gen.source_name[0]) ) 
   {
     c_drive = env->gen.source_name[0];
   } else if ( 6 == strlen(env->gen.source_name) 
-              && isalpha(env->gen.source_name[4] )) {
+              && isalpha((unsigned char) env->gen.source_name[4] )) {
     c_drive = env->gen.source_name[4];
   } else {
     c_drive = 'C';

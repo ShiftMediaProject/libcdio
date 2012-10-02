@@ -876,7 +876,7 @@ cdio_is_device_win32(const char *source_name)
   if (NULL == source_name) return false;
   len = strlen(source_name);
 
-  if ((len == 2) && isalpha(source_name[0]) 
+  if ((len == 2) && isalpha((unsigned char) source_name[0]) 
 	    && (source_name[len-1] == ':'))
     return true;
 
@@ -886,7 +886,7 @@ cdio_is_device_win32(const char *source_name)
   return ( (len == 6) 
 	   && source_name[0] == '\\' && source_name[1] == '\\'
 	   && source_name[2] == '.'  && source_name[3] == '\\'
-	   && isalpha(source_name[len-2])
+	   && isalpha((unsigned char) source_name[len-2])
 	   && (source_name[len-1] == ':') );
 #else 
   return false;

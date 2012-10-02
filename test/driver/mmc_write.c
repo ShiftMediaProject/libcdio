@@ -508,7 +508,7 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
 	final_return = final_return > 0 ? 0 : final_return;
     } else if ((buf[10] & 0xf) != new_write_type) {
 	fprintf(stderr,
-		"test_rwr_mode_page: Mode page did not get into effect. (due %d , is %d)\n",
+		"test_rwr_mode_page: Mode page did not get into effect. (expected %d, got %d)\n",
 		new_write_type, buf[10] & 0xf);
 	/* One of my DVD burners does this if no media is loaded */
 	final_return = final_return > 0 ? 0 : final_return;

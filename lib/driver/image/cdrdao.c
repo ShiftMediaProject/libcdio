@@ -359,7 +359,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	      /* Check that we have all digits*/
 	      unsigned int i;
 	      for (i=0; i<13; i++) {
-		if (!isdigit(psz_field[i])) {
+		if (!isdigit((unsigned char) psz_field[i])) {
 		    cdio_log(log_level, 
 			     "%s line %d after word CATALOG:", 
 			     psz_cue_name, i_line);
