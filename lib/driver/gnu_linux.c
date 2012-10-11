@@ -654,8 +654,8 @@ static int is_mounted (const char * device, char * target) {
 
   while ( fscanf(fp, "%s %s %*s %*s %*d %*d\n", file_device, file_target) != EOF ) {
       if (NULL == cdio_realpath(file_device, real_device_2)) {
-          cdio_warn("Problems resolving device %s: %s\n", 
-                    file_device, strerror(errno));
+          cdio_debug("Problems resolving device %s: %s\n", 
+                     file_device, strerror(errno));
       }
     if(!strcmp(real_device_1, real_device_2)) {
       strcpy(target, file_target);
