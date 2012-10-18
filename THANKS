@@ -87,11 +87,13 @@ Thomas Schmitt
   MMC bug fixes
 
 Daniel Schwarz
- log-summary option in cd-paranoia.
+  log-summary option in cd-paranoia.
 
 Robert William Fuller
   get_track_pregap_lba, get_track_pregap_lsn. Section on "CD-DA pregap"
   in libcdio manual.
+
+  various fixes to Nero driver and cd-text for Nero
 
 Scot C. Bontrager
   mmc routine to get the ISRC information on a CD that is in the q subchannel 
