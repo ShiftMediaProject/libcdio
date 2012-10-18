@@ -808,7 +808,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
             cd->gen.cdtext->block[cd->gen.cdtext->block_i].language_code = CDTEXT_LANGUAGE_ENGLISH;
           }
           cdtext_set (cd->gen.cdtext, cdtext_key, (uint8_t*) strtok(NULL, "\"\t\n\r"), 
-                      (-1 == i ? 0 : cd->gen.i_first_track + i + 1),
+                      (-1 == i ? 0 : cd->gen.i_first_track + i),
                       "ISO-8859-1");
         } 
         
