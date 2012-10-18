@@ -435,6 +435,8 @@ print_cdtext_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
   track_t i_last_track = i_first_track+i_tracks;
   cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio);
   cdtext_lang_t *languages;
+  cdtext_genre_t genre;
+
   int i, j;
 
   if(NULL == p_cdtext) {
@@ -450,6 +452,10 @@ print_cdtext_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
       printf("\nLanguage %d '%s':\n", i, cdtext_lang2str(languages[i]));
 
       print_cdtext_track_info(p_cdtext, 0, "CD-TEXT for Disc:");
+      genre = cdtext_get_genre(p_cdtext);
+      if ( CDTEXT_GENRE_UNUSED != genre)
+        printf("\tGENRE_CODE: %d (%s)\n", genre, cdtext_genre2str(genre));
+
       for ( j = i_first_track ; j < i_last_track; j++ ) {
         char msg[50];
         sprintf(msg, "CD-TEXT for Track %2d:", j);

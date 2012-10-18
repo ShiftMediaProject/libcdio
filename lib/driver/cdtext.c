@@ -296,6 +296,18 @@ cdtext_get_const(const cdtext_t *p_cdtext, cdtext_field_t field, track_t track)
   return p_cdtext->block[p_cdtext->block_i].track[track].field[field];
 }
 
+/*!
+  Returns the discs genre code.
+
+  @param p_cdtext the CD-TEXT object
+*/
+cdtext_genre_t
+cdtext_get_genre(const cdtext_t *p_cdtext)
+{
+  if (NULL == p_cdtext)
+    return CDTEXT_GENRE_UNUSED;
+  return p_cdtext->block[p_cdtext->block_i].genre_code;
+}
 
 /*!
   Returns the currently active language.

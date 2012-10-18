@@ -24,6 +24,7 @@ CD-TEXT for Disc:
 	UPC_EAN: 1234567890123
 	GENRE: Feline classic music
 	DISC_ID: 1234567890
+	GENRE_CODE: 5 (Classical)
 CD-TEXT for Track  1:
 	TITLE: Song of Joy
 	PERFORMER: Felix and The Purrs
@@ -57,6 +58,7 @@ CD-TEXT for Disc:
 	UPC_EAN: 1234567890123
 	GENRE: Katzenhafte Klassik
 	DISC_ID: 1234567890
+	GENRE_CODE: 5 (Classical)
 CD-TEXT for Track  1:
 	TITLE: Lied der Freude
 	PERFORMER: Felix und Die Schnurrer

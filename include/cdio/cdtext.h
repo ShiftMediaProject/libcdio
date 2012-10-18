@@ -262,6 +262,13 @@ char *cdtext_get (const cdtext_t *p_cdtext, cdtext_field_t key, track_t track);
 const char *cdtext_get_const (const cdtext_t *p_cdtext, cdtext_field_t key, track_t track);
 
 /*!
+  Returns the discs genre code.
+
+  @param p_cdtext the CD-TEXT object
+*/
+cdtext_genre_t cdtext_get_genre (const cdtext_t *p_cdtext);
+
+/*!
   Returns the currently active language.
 
   @param p_cdtext the CD-TEXT object
