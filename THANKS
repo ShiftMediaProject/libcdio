@@ -4,6 +4,9 @@ Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
 Carlo Bramini 
   fixes for Mingw+MSYS and DLL support
 
+Christophe Fergeau 
+  Add UDF reading to iso-read
+
 Dagobert Michelsen
   Solaris compilation issues and the wonderful test Solaris
   test platform opencsw.org

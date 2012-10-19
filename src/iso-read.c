@@ -124,7 +124,7 @@ parse_options (int argc, char *argv[])
 
       case 'V':
         print_version(program_name, CDIO_VERSION, 0, true);
-	free(program_name);
+        free(program_name);
         exit (EXIT_SUCCESS);
         break;
 
@@ -141,14 +141,14 @@ parse_options (int argc, char *argv[])
         break;
 
       case OP_HANDLED:
-	break;
+        break;
       }
 
   if (optind < argc) {
     const char *remaining_arg = argv[optind++];
     if (opts.iso9660_image != NULL) {
       report( stderr, "%s: Source specified as --image %s and as %s\n", 
-	      program_name, opts.iso9660_image, remaining_arg );
+              program_name, opts.iso9660_image, remaining_arg );
       free(program_name);
       exit (EXIT_FAILURE);
     }
@@ -157,9 +157,9 @@ parse_options (int argc, char *argv[])
     
     if (optind < argc ) {
       report( stderr, 
-	      "%s: use only one unnamed argument for the ISO 9660 "
-	      "image name\n", 
-	      program_name );
+              "%s: use only one unnamed argument for the ISO 9660 "
+              "image name\n", 
+              program_name );
       free(program_name);
       exit (EXIT_FAILURE);
     }
@@ -167,26 +167,26 @@ parse_options (int argc, char *argv[])
 
   if (NULL == opts.iso9660_image) {
     report( stderr, "%s: you need to specify an ISO-9660 image name.\n", 
-	    program_name );
+            program_name );
     report( stderr, "%s: Use option --image or try --help.\n", 
-	    program_name );
+            program_name );
     exit (EXIT_FAILURE);
   }
 
   if (NULL == opts.file_name) {
     report( stderr, "%s: you need to specify a filename to extract.\n", 
-	    program_name );
+            program_name );
     report( stderr, "%s: Use option --extract or try --help.\n", 
-	    program_name );
+            program_name );
     exit (EXIT_FAILURE);
   }
 
   if (NULL == opts.output_file) {
     report( stderr, 
-	    "%s: you need to specify a place write filename extraction to.\n",
-	     program_name );
+            "%s: you need to specify a place write filename extraction to.\n",
+             program_name );
     report( stderr, "%s: Use option --output-file or try --help.\n",
-	    program_name );
+            program_name );
     exit (EXIT_FAILURE);
   }
 
@@ -214,8 +214,8 @@ static int read_iso_file(const char *iso_name, const char *src,
   
   if (NULL == iso) {
     report(stderr, 
-	   "%s: Sorry, couldn't open ISO-9660 image file '%s'.\n", 
-	   program_name, src);
+           "%s: Sorry, couldn't open ISO-9660 image file '%s'.\n", 
+           program_name, src);
     return 1;
   }
 
@@ -224,12 +224,12 @@ static int read_iso_file(const char *iso_name, const char *src,
   if (NULL == statbuf) 
     {
       report(stderr, 
-	     "%s: Could not get ISO-9660 file information out of %s"
-	     " for file %s.\n",
-	     program_name, iso_name, src);
+             "%s: Could not get ISO-9660 file information out of %s"
+             " for file %s.\n",
+             program_name, iso_name, src);
       report(stderr, 
-	     "%s: iso-info may be able to show the contents of %s.\n",
-	     program_name, iso_name);
+             "%s: iso-info may be able to show the contents of %s.\n",
+             program_name, iso_name);
       return 2;
     }
 
@@ -242,22 +242,22 @@ static int read_iso_file(const char *iso_name, const char *src,
       memset (buf, 0, ISO_BLOCKSIZE);
       
       if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (iso, buf, statbuf->lsn 
-						   + (i / ISO_BLOCKSIZE),
-						   1) )
+                                                   + (i / ISO_BLOCKSIZE),
+                                                   1) )
       {
-	report(stderr, "Error reading ISO 9660 file at lsn %lu\n",
-	       (long unsigned int) statbuf->lsn + (i / ISO_BLOCKSIZE));
-	if (!opts.ignore) return 4;
+        report(stderr, "Error reading ISO 9660 file at lsn %lu\n",
+               (long unsigned int) statbuf->lsn + (i / ISO_BLOCKSIZE));
+        if (!opts.ignore) return 4;
       }
       
       
       fwrite (buf, ISO_BLOCKSIZE, 1, outfd);
       
       if (ferror (outfd))
-	{
-	  perror ("fwrite()");
-	  return 5;
-	}
+        {
+          perror ("fwrite()");
+          return 5;
+        }
     }
   iso9660_close(iso);
 
@@ -274,21 +274,21 @@ static int read_udf_file(const char *iso_name, const char *src,
   
   if (NULL == p_udf) {
     fprintf(stderr, "Sorry, couldn't open %s as something using UDF\n", 
-	    iso_name);
+            iso_name);
     return 1;
   } else {
     udf_dirent_t *p_udf_root = udf_get_root(p_udf, true, 0);
     udf_dirent_t *p_udf_file = NULL;
     if (NULL == p_udf_root) {
       fprintf(stderr, "Sorry, couldn't find / in %s\n", 
-	      iso_name);
+              iso_name);
       return 1;
     }
     
     p_udf_file = udf_fopen(p_udf_root, src);
     if (!p_udf_file) {
       fprintf(stderr, "Sorry, couldn't find %s in %s\n", 
-	      src, iso_name);
+              src, iso_name);
       return 2;
       
     }
@@ -298,21 +298,21 @@ static int read_udf_file(const char *iso_name, const char *src,
       const unsigned int i_blocks = (unsigned int) CEILING(i_file_length, UDF_BLOCKSIZE);
       unsigned int i;
       for (i = 0; i < i_blocks ; i++) {
-	char buf[UDF_BLOCKSIZE] = {'\0',};
-	ssize_t i_read = udf_read_block(p_udf_file, buf, 1);
+        char buf[UDF_BLOCKSIZE] = {'\0',};
+        ssize_t i_read = udf_read_block(p_udf_file, buf, 1);
 
-	if ( i_read < 0 ) {
-	  fprintf(stderr, "Error reading UDF file %s at block %u\n",
-		  src, i);
-	  return 4;
-	}
+        if ( i_read < 0 ) {
+          fprintf(stderr, "Error reading UDF file %s at block %u\n",
+                  src, i);
+          return 4;
+        }
 
-	fwrite (buf, i_read, 1, outfd);
+        fwrite (buf, i_read, 1, outfd);
 
-	if (ferror (outfd)) {
-	  perror ("fwrite()");
-	  return 5;
-	}
+        if (ferror (outfd)) {
+          perror ("fwrite()");
+          return 5;
+        }
       }
 
       udf_dirent_free(p_udf_root);
@@ -336,15 +336,15 @@ main(int argc, char *argv[])
      be reflected in `arguments'. */
   if (!parse_options(argc, argv)) {
     report(stderr, 
-	   "error while parsing command line - try --help\n");
+           "error while parsing command line - try --help\n");
     return 2;
   }
      
   if (!(outfd = fopen (opts.output_file, "wb")))
     {
       report(stderr,
-	     "%s: Could not open %s for writing: %s\n", 
-	     program_name, opts.output_file, strerror(errno));
+             "%s: Could not open %s for writing: %s\n", 
+             program_name, opts.output_file, strerror(errno));
       return 3;
     }
 

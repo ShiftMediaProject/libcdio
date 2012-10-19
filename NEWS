@@ -8,6 +8,7 @@ version 0.90
 - Update mmc.h to include MMC-5 commands. (Or MMC-6 since it adds nothing new)
 - Add mmc_cmd2str() to show MMC command name. Show that in some errors
 - bug fixes, more tests, update documentation
+- Add UDF reading to iso-read
 
 version 0.83
 2011-10-27
