@@ -66,7 +66,7 @@ endif
 
 if BUILD_ISO_READ
 iso_read_SOURCES = iso-read.c util.c util.h $(GETOPT_C)
-iso_read_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+iso_read_LDADD   = $(LIBUDF_LIBS) $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 bin_iso_read     = iso-read
 man_iso_read     = iso-read.1
 endif

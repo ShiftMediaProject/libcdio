@@ -28,6 +28,7 @@
 #endif
 #include <cdio/cdio.h>
 #include <cdio/iso9660.h>
+#include <cdio/udf.h>
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -43,6 +44,8 @@
 #endif
 
 #include "getopt.h"
+
+#define CEILING(x, y) ((x+(y-1))/y)
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
@@ -200,54 +203,36 @@ init(void)
   opts.iso9660_image = NULL;
 }
 
-int
-main(int argc, char *argv[])
+static int read_iso_file(const char *iso_name, const char *src,
+                         FILE *outfd, size_t *bytes_written)
 {
   iso9660_stat_t *statbuf;
-  FILE *outfd;
   int i;
   iso9660_t *iso;
-  
-  init();
 
-  /* Parse our arguments; every option seen by `parse_opt' will
-     be reflected in `arguments'. */
-  if (!parse_options(argc, argv)) {
-    report(stderr, 
-	   "error while parsing command line - try --help\n");
-    return 2;
-  }
-     
-  iso = iso9660_open (opts.iso9660_image);
+  iso = iso9660_open (iso_name);
   
   if (NULL == iso) {
     report(stderr, 
 	   "%s: Sorry, couldn't open ISO-9660 image file '%s'.\n", 
-	   program_name, opts.iso9660_image);
+	   program_name, src);
     return 1;
   }
 
-  statbuf = iso9660_ifs_stat_translate (iso, opts.file_name);
+  statbuf = iso9660_ifs_stat_translate (iso, src);
 
   if (NULL == statbuf) 
     {
       report(stderr, 
 	     "%s: Could not get ISO-9660 file information out of %s"
 	     " for file %s.\n",
-	     program_name, opts.iso9660_image, opts.file_name);
+	     program_name, iso_name, src);
       report(stderr, 
 	     "%s: iso-info may be able to show the contents of %s.\n",
-	     program_name, opts.iso9660_image);
+	     program_name, iso_name);
       return 2;
     }
 
-  if (!(outfd = fopen (opts.output_file, "wb")))
-    {
-      report(stderr,
-	     "%s: Could not open %s for writing: %s\n", 
-	     program_name, opts.output_file, strerror(errno));
-      return 3;
-    }
 
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
   for (i = 0; i < statbuf->size; i += ISO_BLOCKSIZE)
@@ -274,16 +259,113 @@ main(int argc, char *argv[])
 	  return 5;
 	}
     }
+  iso9660_close(iso);
+
+  *bytes_written = statbuf->size;
+  return 0;
+}
+
+static int read_udf_file(const char *iso_name, const char *src,
+                         FILE *outfd, size_t *bytes_written)
+{
+  udf_t *p_udf;
+
+  p_udf = udf_open (iso_name);
+  
+  if (NULL == p_udf) {
+    fprintf(stderr, "Sorry, couldn't open %s as something using UDF\n", 
+	    iso_name);
+    return 1;
+  } else {
+    udf_dirent_t *p_udf_root = udf_get_root(p_udf, true, 0);
+    udf_dirent_t *p_udf_file = NULL;
+    if (NULL == p_udf_root) {
+      fprintf(stderr, "Sorry, couldn't find / in %s\n", 
+	      iso_name);
+      return 1;
+    }
+    
+    p_udf_file = udf_fopen(p_udf_root, src);
+    if (!p_udf_file) {
+      fprintf(stderr, "Sorry, couldn't find %s in %s\n", 
+	      src, iso_name);
+      return 2;
+      
+    }
+
+    {
+      uint64_t i_file_length = udf_get_file_length(p_udf_file);
+      const unsigned int i_blocks = (unsigned int) CEILING(i_file_length, UDF_BLOCKSIZE);
+      unsigned int i;
+      for (i = 0; i < i_blocks ; i++) {
+	char buf[UDF_BLOCKSIZE] = {'\0',};
+	ssize_t i_read = udf_read_block(p_udf_file, buf, 1);
+
+	if ( i_read < 0 ) {
+	  fprintf(stderr, "Error reading UDF file %s at block %u\n",
+		  src, i);
+	  return 4;
+	}
+
+	fwrite (buf, i_read, 1, outfd);
+
+	if (ferror (outfd)) {
+	  perror ("fwrite()");
+	  return 5;
+	}
+      }
+
+      udf_dirent_free(p_udf_root);
+      udf_close(p_udf);
+      *bytes_written = i_file_length;
+    }
+  }
+  return 0;
+}
+
+int
+main(int argc, char *argv[])
+{
+  FILE *outfd;
+  int ret;
+  size_t bytes_written;
+  
+  init();
+
+  /* Parse our arguments; every option seen by `parse_opt' will
+     be reflected in `arguments'. */
+  if (!parse_options(argc, argv)) {
+    report(stderr, 
+	   "error while parsing command line - try --help\n");
+    return 2;
+  }
+     
+  if (!(outfd = fopen (opts.output_file, "wb")))
+    {
+      report(stderr,
+	     "%s: Could not open %s for writing: %s\n", 
+	     program_name, opts.output_file, strerror(errno));
+      return 3;
+    }
+
+  ret = read_udf_file (opts.iso9660_image, opts.file_name,
+                       outfd, &bytes_written);
+  if (ret == 1)
+    {
+      ret = read_iso_file (opts.iso9660_image, opts.file_name,
+                           outfd, &bytes_written);
+    }
+  if (ret != 0)
+    return ret;
   
   fflush (outfd);
 
   /* Make sure the file size has the exact same byte size. Without the
      truncate below, the file will a multiple of ISO_BLOCKSIZE.
    */
-  if (ftruncate (fileno (outfd), statbuf->size))
+  if (ftruncate (fileno (outfd), bytes_written))
     perror ("ftruncate()");
 
   fclose (outfd);
-  iso9660_close(iso);
   return 0;
 }
