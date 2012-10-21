@@ -172,26 +172,31 @@ AC_CHECK_HEADERS(errno.h fcntl.h glob.h limits.h pwd.h stdbool.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h \
 		 sys/time.h sys/timeb.h sys/utsname.h)
 
-# FreeBSD 4 has getopt in unistd.h. So we include that before
-# getopt.h 
+## FreeBSD 4 has getopt in unistd.h. So we include that before
+## getopt.h 
 AC_CHECK_HEADERS(unistd.h getopt.h)
 
 AC_SUBST(SBPCD_H)
 AC_SUBST(UCDROM_H)
 AC_SUBST(TYPESIZES)
 
-dnl compiler
+## Check compiler-related things
 AC_C_BIGENDIAN
 AC_C_CONST
 AC_C_INLINE
 
-dnl ISOC99_PRAGMA
+## ISOC99_PRAGMA
 AC_MSG_CHECKING([whether $CC supports ISOC99 _Pragma()])
 AC_TRY_COMPILE([],[_Pragma("pack(1)")], [
   ISOC99_PRAGMA=yes 
   AC_DEFINE(HAVE_ISOC99_PRAGMA, [], [Supports ISO _Pragma() macro])
 ],ISOC99_PRAGMA=no)
 AC_MSG_RESULT($ISOC99_PRAGMA)
+
+## Check for Windows DDK header files
+AC_CHECK_HEADERS([ntdddisk.h ddk/ntdddisk.h], [], [], [AC_INCLUDES_DEFAULT
+#include <windows.h>
+])
 
 ##
 ## Check for S_ISSOCK() and S_ISLNK() macros
