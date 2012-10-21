@@ -59,7 +59,7 @@ endif
 
 if BUILD_ISO_INFO
 iso_info_SOURCES = iso-info.c util.c util.h $(GETOPT_C)
-iso_info_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+iso_info_LDADD   = $(LIBUDF_LIBS) $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 bin_iso_info     = iso-info
 man_iso_info     = iso-info.1
 endif

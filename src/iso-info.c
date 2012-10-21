@@ -21,10 +21,10 @@
 #include "util.h"
 #undef err_exit
 
-#define err_exit(fmt, args...)			    \
+#define err_exit(fmt, args...)                      \
   report (stderr, "%s: "fmt, program_name, ##args); \
-  iso9660_close(p_iso);				    \
-  free(program_name);				    \
+  iso9660_close(p_iso);                             \
+  free(program_name);                               \
   return(EXIT_FAILURE);
 
 #ifdef HAVE_CONFIG_H
@@ -37,6 +37,7 @@
 #include <cdio/cdio.h>
 #include <cdio/ds.h>
 #include <cdio/iso9660.h>
+#include <cdio/udf.h>
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
@@ -71,6 +72,7 @@ static struct arguments
   int            no_xa;
   int            no_rock_ridge;
   int            print_iso9660;
+  int            print_udf;
   int            print_iso9660_short;
 } opts;
      
@@ -96,7 +98,8 @@ parse_options (int argc, char *argv[])
     "  -d, --debug=INT        Set debugging to LEVEL\n"
     "  -i, --input[=FILE]     Filename to read ISO-9960 image from\n"
     "  -f                     Generate output similar to 'find . -print'\n"
-    "  -l, --iso9660          Generate output similar to 'ls -lR'\n"
+    "  -l, --iso9660          output similar to 'ls -lR' for an ISO 9660 fs\n"
+    "  -U, --udf              output similar to 'ls -lR for a UDF fs'\n"
     "  --no-header            Don't display header and copyright (for regression\n"
     "                         testing)\n"
 #ifdef HAVE_JOLIET    
@@ -118,9 +121,10 @@ parse_options (int argc, char *argv[])
 
   static const char optionsString[] = "d:i::flqV?";
   static const struct option optionsTable[] = {
-    {"debug", required_argument, NULL, 'd'},
-    {"input", optional_argument, NULL, 'i'},
-    {"iso9660", no_argument, NULL, 'l'},
+    {"debug",   required_argument, NULL, 'd'},
+    {"input",   optional_argument, NULL, 'i'},
+    {"iso9660", no_argument,       NULL, 'l'},
+    {"udf",     no_argument,       NULL, 'U'},
     {"no-header", no_argument, &opts.no_header, 1 },
 #ifdef HAVE_JOLIET    
     {"no-joliet", no_argument, &opts.no_joliet, 1 },
@@ -144,10 +148,11 @@ parse_options (int argc, char *argv[])
       case 'd': opts.debug_level = atoi(optarg); break;
       case 'i': if (optarg != NULL) source_name = strdup(optarg); break;
       case 'f': opts.print_iso9660_short = 1; break;
-      case 'l': opts.print_iso9660 = 1; break;
-      case 'q': opts.silent = 1; break;
-      case 'V': opts.version_only = 1; break;
-	
+      case 'l': opts.print_iso9660       = 1; break;
+      case 'U': opts.print_udf           = 1; break;
+      case 'q': opts.silent              = 1; break;
+      case 'V': opts.version_only        = 1; break;
+        
       case '?':
         fprintf(stdout, helpText, program_name);
         free(program_name);
@@ -161,7 +166,7 @@ parse_options (int argc, char *argv[])
         break;
 
       case OP_HANDLED:
-	break;
+        break;
       }
   }
 
@@ -169,7 +174,7 @@ parse_options (int argc, char *argv[])
     const char *remaining_arg = argv[optind++];
     if ( optind < argc ) {
       report( stderr, "%s: Source specified in previously %s and %s\n", 
-	      program_name, source_name, remaining_arg );
+              program_name, source_name, remaining_arg );
       free(program_name);
       exit (EXIT_FAILURE);
     }
@@ -236,13 +241,13 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
        }
 
       if (yep != p_statbuf->rr.b3_rock || 1 == opts.no_rock_ridge) {
-	iso9660_name_translate_ext(psz_iso_name, translated_name, 
-				   i_joliet_level);
-	snprintf (_fullname, sizeof (_fullname), "%s%s", psz_path, 
-		  translated_name);
+        iso9660_name_translate_ext(psz_iso_name, translated_name, 
+                                   i_joliet_level);
+        snprintf (_fullname, sizeof (_fullname), "%s%s", psz_path, 
+                  translated_name);
       } else {
-	snprintf (_fullname, sizeof (_fullname), "%s%s", psz_path, 
-		  psz_iso_name);
+        snprintf (_fullname, sizeof (_fullname), "%s%s", psz_path, 
+                  psz_iso_name);
       }
       
       strncat (_fullname, "/", sizeof (_fullname));
@@ -253,18 +258,18 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
         _cdio_list_append (dirlist, strdup (_fullname));
 
       if (opts.print_iso9660) {
-	print_fs_attrs(p_statbuf, 
-		       0 == opts.no_rock_ridge,
-		       iso9660_ifs_is_xa(p_iso) && 0 == opts.no_xa,
-		       psz_iso_name, translated_name);
+        print_fs_attrs(p_statbuf, 
+                       0 == opts.no_rock_ridge,
+                       iso9660_ifs_is_xa(p_iso) && 0 == opts.no_xa,
+                       psz_iso_name, translated_name);
       } else 
-	if ( strcmp (psz_iso_name, ".") && strcmp (psz_iso_name, ".."))
-	  printf("%9u %s%s\n", (unsigned int) p_statbuf->size, psz_path, 
-		 yep == p_statbuf->rr.b3_rock 
-		 ? psz_iso_name : translated_name);
+        if ( strcmp (psz_iso_name, ".") && strcmp (psz_iso_name, ".."))
+          printf("%9u %s%s\n", (unsigned int) p_statbuf->size, psz_path, 
+                 yep == p_statbuf->rr.b3_rock 
+                 ? psz_iso_name : translated_name);
       if (p_statbuf->rr.i_symlink) {
-	free(p_statbuf->rr.psz_symlink);
-	p_statbuf->rr.i_symlink = 0;
+        free(p_statbuf->rr.psz_symlink);
+        p_statbuf->rr.i_symlink = 0;
       }
     }
     free (translated_name);
@@ -293,6 +298,93 @@ print_iso9660_fs (iso9660_t *iso)
   print_iso9660_recurse (iso, "/");
 }
 
+static void 
+print_udf_file_info(const udf_dirent_t *p_udf_dirent,
+                    const char* psz_dirname,
+                    const char *psz_filename)
+{
+  time_t mod_time = udf_get_modification_time(p_udf_dirent);
+  char date_str[30];
+  char psz_mode[11]="invalid";
+  const char *psz_fname= psz_filename 
+    ? psz_filename : udf_get_filename(p_udf_dirent);
+
+  if (!opts.print_iso9660) {
+    if (strcmp(psz_dirname, ".") != 0) {
+      printf("%9lu ", (long unsigned int) udf_get_file_length(p_udf_dirent));
+      printf("/%s", psz_dirname);
+      printf("%s\n", *psz_fname ? psz_fname : "/");
+    }
+    return;
+  }
+  /* Print directory attributes*/
+  printf("%s ", udf_mode_string(udf_get_posix_filemode(p_udf_dirent),
+                                psz_mode));
+  /* fake uid/gid */
+  printf("0 0 ");
+  printf("%3d ", udf_get_link_count(p_udf_dirent));
+  printf("%9lu ", (long unsigned int) udf_get_file_length(p_udf_dirent));
+  strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M:%S ", localtime(&mod_time));
+  printf("%s %s", date_str, *psz_fname ? psz_fname : "/");
+  printf("\n");
+}
+
+static udf_dirent_t *
+list_udf_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const char *psz_path)
+{
+  if (!p_udf_dirent) return NULL;
+
+  if (opts.print_iso9660) {
+    printf ("\n/%s:\n", psz_path);
+  }
+  print_udf_file_info(p_udf_dirent, psz_path, ".");
+
+  while (udf_readdir(p_udf_dirent)) {
+      
+    if (udf_is_dir(p_udf_dirent)) {
+      
+      udf_dirent_t *p_udf_dirent2 = udf_opendir(p_udf_dirent);
+      if (p_udf_dirent2) {
+        const char *psz_dirname = udf_get_filename(p_udf_dirent);
+        const unsigned int i_newlen=2 + strlen(psz_path) + strlen(psz_dirname);
+        char *psz_newpath = calloc(1, sizeof(char)*i_newlen);
+        
+        snprintf(psz_newpath, i_newlen, "%s%s/", psz_path, psz_dirname);
+        list_udf_files(p_udf, p_udf_dirent2, psz_newpath);
+        free(psz_newpath);
+      }
+    } else {
+      print_udf_file_info(p_udf_dirent, psz_path, NULL);
+    }
+  }
+  return p_udf_dirent;
+}
+
+static int
+print_udf_fs (void)
+{
+  udf_t *p_udf;
+
+  p_udf = udf_open (source_name);
+
+  if (NULL == p_udf) {
+    fprintf(stderr, "Sorry, couldn't open %s as something using UDF\n", 
+            source_name);
+    return 1;
+  } else {
+    udf_dirent_t *p_udf_root = udf_get_root(p_udf, true, 0);
+    if (NULL == p_udf_root) {
+      fprintf(stderr, "Sorry, couldn't find / in %s\n", 
+              source_name);
+      return 1;
+    }
+    
+    list_udf_files(p_udf, p_udf_root, "");
+  }
+  udf_close(p_udf);
+  return 0;
+}
+
 
 /* Initialize global variables. */
 static void 
@@ -311,12 +403,12 @@ init(void)
   opts.print_iso9660_short = 0;
 }
 
-#define print_vd_info(title, fn)	  \
-  if (fn(p_iso, &psz_str)) {		  \
-    printf(title ": %s\n", psz_str);	  \
-  }					  \
-  free(psz_str);			  \
-  psz_str = NULL;			  
+#define print_vd_info(title, fn)          \
+  if (fn(p_iso, &psz_str)) {              \
+    printf(title ": %s\n", psz_str);      \
+  }                                       \
+  free(psz_str);                          \
+  psz_str = NULL;                         
 
 /* ------------------------------------------------------------------------ */
 
@@ -369,13 +461,16 @@ main(int argc, char *argv[])
   }
   
   if (opts.print_iso9660 || opts.print_iso9660_short) {
-    printf(STRONG "ISO-9660 Information\n" NORMAL);
-    if (opts.print_iso9660 && opts.print_iso9660_short) {
-      printf("Note: both -f and -l options given -- "
-	     "-l (long listing) takes precidence\n");
-    }
-    print_iso9660_fs(p_iso);
+      printf(STRONG "ISO-9660 Information\n" NORMAL);
+      if (opts.print_iso9660 && opts.print_iso9660_short) {
+          printf("Note: both -f and -l options given -- "
+                 "-l (long listing) takes precidence\n");
+      }
+      print_iso9660_fs(p_iso);
+  } else if (opts.print_udf) {
+      print_udf_fs();
   }
+
 
   free(source_name);
   iso9660_close(p_iso);

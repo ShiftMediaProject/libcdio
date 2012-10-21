@@ -57,6 +57,7 @@ static struct arguments
   int            debug_level;
   int            no_header;
   int            ignore;
+  int            udf;
 } opts;
 
 /* Parse a options. */
@@ -83,6 +84,7 @@ parse_options (int argc, char *argv[])
     "  --no-header                Don't display header and copyright (for\n"
     "                             regression testing)\n"
     "  -o, --output-file=FILE     Output file. This option is mandatory.\n"
+    "  -U  --udf                  Contents are in UDF format\n"
     "  -V, --version              display version and copyright information and exit\n"
     "\n"
     "Help options:\n"
@@ -97,13 +99,14 @@ parse_options (int argc, char *argv[])
   /* Command-line options */
   static const char* optionsString = "d:i:e:o:Vk?";
   static const struct option optionsTable[] = {
-    {"debug", required_argument, NULL, 'd' },
-    {"image", required_argument, NULL, 'i' },
-    {"extract", required_argument, NULL, 'e' },
-    {"no-header", no_argument, &opts.no_header, 1 }, 
-    {"ignore", no_argument, &opts.ignore, 'k' }, 
-    {"output-file", required_argument, NULL, 'o' },
-    {"version", no_argument, NULL, 'V' },
+    {"debug",       required_argument, NULL,   'd' },
+    {"image",       required_argument, NULL,   'i' },
+    {"extract",     required_argument, NULL,   'e' },
+    {"no-header",   no_argument, &opts.no_header, 1 }, 
+    {"ignore",      no_argument, &opts.ignore, 'k' }, 
+    {"output-file", required_argument, NULL,   'o' },
+    {"udf",         no_argument, &opts.udf,    'U' }, 
+    {"version",     no_argument, NULL,         'V' },
 
     {"help", no_argument, NULL, '?' },
     {"usage", no_argument, NULL, OP_USAGE },
@@ -348,15 +351,14 @@ main(int argc, char *argv[])
       return 3;
     }
 
-  ret = read_udf_file (opts.iso9660_image, opts.file_name,
-                       outfd, &bytes_written);
-  if (ret == 1)
-    {
+  if (opts.udf) {
+      ret = read_udf_file (opts.iso9660_image, opts.file_name,
+			   outfd, &bytes_written);
+  } else  {
       ret = read_iso_file (opts.iso9660_image, opts.file_name,
                            outfd, &bytes_written);
-    }
-  if (ret != 0)
-    return ret;
+  }
+  if (ret != 0) return ret;
   
   fflush (outfd);
 
