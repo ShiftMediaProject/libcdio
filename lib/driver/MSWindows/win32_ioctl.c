@@ -36,11 +36,12 @@
 #  include <windows.h>
 #  include <ntddcdrm.h>
 #  include <ntddscsi.h>
+#  include <ddk/scsi.h>
 # else
-#  include "ntddcdrm.h"
-#  include "ntddscsi.h"
+#  include <windows.h>
+#  include <ntddcdrm.h>
+#  include <ntddscsi.h>
 # endif
-# include <ddk/scsi.h>
 #endif
 
 #if defined (_WIN32)
