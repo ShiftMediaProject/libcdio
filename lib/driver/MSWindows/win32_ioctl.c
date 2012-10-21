@@ -33,14 +33,22 @@
 #else
 # if defined (__MINGW64__)
 #  define _NTSRB_ /* Bad things happen if srb.h gets included */
-#  include <windows.h>
-#  include <ntddcdrm.h>
-#  include <ntddscsi.h>
+# endif
+# include <windows.h>
+# ifdef HAVE_DDK_SCSI_H
 #  include <ddk/scsi.h>
-# else
-#  include <windows.h>
+# endif
+# ifdef HAVE_NTDDCDRM_H
 #  include <ntddcdrm.h>
+# endif
+# ifdef HAVE_DDK_NTDDCDRM_H
+#  include <ddk/ntddcdrm.h>
+# endif
+# ifdef HAVE_NTDDSCSI_H
 #  include <ntddscsi.h>
+# endif
+# ifdef HAVE_DDK_NTDDSCSI_H
+#  include <ddk/ntddscsi.h>
 # endif
 #endif
 

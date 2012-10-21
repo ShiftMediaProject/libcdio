@@ -193,8 +193,10 @@ AC_TRY_COMPILE([],[_Pragma("pack(1)")], [
 ],ISOC99_PRAGMA=no)
 AC_MSG_RESULT($ISOC99_PRAGMA)
 
-## Check for Windows DDK header files
-AC_CHECK_HEADERS([ntdddisk.h ddk/ntdddisk.h], [], [], [AC_INCLUDES_DEFAULT
+## Check for Windows header files
+AC_CHECK_HEADERS([ntddcdrm.h ddk/ntddcdrm.h \
+                  ntddscsi.h ddk/ntddscsi.h ddk/scsi.h], 
+[], [], [AC_INCLUDES_DEFAULT
 #include <windows.h>
 ])
 
