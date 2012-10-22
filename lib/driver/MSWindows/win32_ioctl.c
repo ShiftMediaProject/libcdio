@@ -625,14 +625,13 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
    */
   if (sptwb.Spt.ScsiStatus && sptwb.Spt.SenseInfoLength > 0) {
-    int sense_size = sptwb.Spt.DataTransferLength;
-    if (sense_size > sizeof(sptwb.Spt.SenseInfoLength)) {
+    int sense_size = sptwb.Spt.SenseInfoLength;
+    if (sense_size > sizeof(sptwb.SenseBuf)) {
       cdio_warn("sense size returned %d is greater buffer size %d\n", 
-		sense_size, sizeof(sptwb.DataBuf));
-      sense_size = sizeof(sptwb.Spt.SenseInfoLength);
+		sense_size, sizeof(sptwb.SenseBuf));
+      sense_size = sizeof(sptwb.SenseBuf);
     }
-    memcpy((void *) p_env->gen.scsi_mmc_sense, &sptwb.SenseBuf, 
-	   sptwb.Spt.SenseInfoLength);
+    memcpy((void *) p_env->gen.scsi_mmc_sense, &sptwb.SenseBuf, sense_size);
     p_env->gen.scsi_mmc_sense_valid = sptwb.Spt.SenseInfoLength;
   }
 
