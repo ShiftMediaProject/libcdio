@@ -93,11 +93,11 @@ parse_options (int argc, char *argv[])
 
   static const char usageText[] =
     "Usage: %s [-d|--debug INT] [-i|--image FILE] [-e|--extract FILE]\n"
-    "        [--no-header] [-o|--output-file FILE] [-V|--version] [-?|--help]\n"
-    "        [--usage]\n";
+    "        [--no-header] [-o|--output-file FILE]  [-U|--udf]\n"
+    "        [-V|--version] [-?|--help] [--usage]\n";
   
   /* Command-line options */
-  static const char* optionsString = "d:i:e:o:Vk?";
+  static const char* optionsString = "d:i:e:o:VUk?";
   static const struct option optionsTable[] = {
     {"debug",       required_argument, NULL,   'd' },
     {"image",       required_argument, NULL,   'i' },
@@ -105,7 +105,7 @@ parse_options (int argc, char *argv[])
     {"no-header",   no_argument, &opts.no_header, 1 }, 
     {"ignore",      no_argument, &opts.ignore, 'k' }, 
     {"output-file", required_argument, NULL,   'o' },
-    {"udf",         no_argument, &opts.udf,    'U' }, 
+    {"udf",         no_argument, &opts.udf,    'U' },
     {"version",     no_argument, NULL,         'V' },
 
     {"help", no_argument, NULL, '?' },
@@ -124,6 +124,7 @@ parse_options (int argc, char *argv[])
       case 'k': opts.ignore        = 1; break;
       case 'e': opts.file_name = strdup(optarg); break;
       case 'o': opts.output_file = strdup(optarg); break;
+      case 'U': opts.udf = 1; break;
 
       case 'V':
         print_version(program_name, CDIO_VERSION, 0, true);
