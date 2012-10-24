@@ -512,7 +512,7 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
 
   p_data = wdata;
   if (i_data < CDTEXT_LEN_PACK || 0 != i_data % CDTEXT_LEN_PACK) {
-    cdio_warn("CD-Text size is not multiple of pack size");
+    cdio_warn("CD-Text size is too small or not a multiple of pack size");
     return -1;
   }
 
