@@ -16,7 +16,6 @@ check_DATA = \
 	bad-msf-3.toc  \
 	cdda.bin       \
 	cdda.cue       \
-	cdda.toc       \
 	cdtext.bin     \
 	cdtext.cdt     \
 	cdtext.cue     \
@@ -31,7 +30,7 @@ check_DATA = \
 	joliet.iso     \
 	p1.bin         \
 	p1.cue         \
-	p1.nrg	       \
+	p1.nrg         \
 	t1.toc         \
 	t2.toc         \
 	t3.toc         \
@@ -44,10 +43,10 @@ check_DATA = \
 	t10.toc        \
 	vcd2.toc       \
 	videocd.nrg    \
-        cdtext.toc     \
-        data5.toc      \
-        data6.toc      \
-        data7.toc      \
-        test-udf1.iso
+	cdtext.toc     \
+	data5.toc      \
+	data6.toc      \
+	data7.toc      \
+	test-udf1.iso
 
 EXTRA_DIST = $(check_DATA)

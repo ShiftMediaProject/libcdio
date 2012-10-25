@@ -115,11 +115,11 @@ parse_options (int argc, char *argv[])
     "  --usage                Display brief usage message\n";
 
   static const char usageText[] =
-    "Usage: %s [-d|--debug INT] [-i|--input FILE] [-f] [-l|--iso9660]\n"
+    "Usage: %s [-i|--input FILE] [-f] [-l|--iso9660] [-U|--udf]\n"
     "        [--no-header] [--no-joliet] [--no-rock-ridge] [--no-xa] [-q|--quiet]\n"
-    "        [-V|--version] [-?|--help] [--usage]\n";
+    "        [-d|--debug INT] [-V|--version] [-?|--help] [--usage]\n";
 
-  static const char optionsString[] = "d:i::flqV?";
+  static const char optionsString[] = "d:i::flUqV?";
   static const struct option optionsTable[] = {
     {"debug",   required_argument, NULL, 'd'},
     {"input",   optional_argument, NULL, 'i'},

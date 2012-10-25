@@ -129,6 +129,7 @@ main(int argc, const char *argv[])
               }
           }
 
+          /*
           {
               CdIo_t *p_cdio;
               snprintf(psz_tocfile, sizeof(psz_tocfile)-1,
@@ -146,6 +147,7 @@ main(int argc, const char *argv[])
               check_get_arg_source(p_cdio, psz_tocfile);
               cdio_destroy(p_cdio);
           }
+          */
           
 
       }
