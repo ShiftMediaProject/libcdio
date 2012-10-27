@@ -1124,7 +1124,11 @@ read_toc_win32ioctl (_img_private_t *p_env)
     cdio_log(loglevel, "could not read TOC");
     windows_error(loglevel, GetLastError());
 
+#ifdef RUN_MMC_CMD_WIN32IOCTL_FULLY_FIXED
+    /* rocky: there is some brokenness in run_mmc_cmd_win32ioctl. So until that
+       is fixed, not running the below will mitigate that somewhat. */
     if ( !b_fulltoc_first && read_fulltoc_win32mmc(p_env) ) return true;
+#endif
     return false;
   }
   
