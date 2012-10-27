@@ -1,7 +1,5 @@
 /*
-    $Id: utf8.h,v 1.2 2008/03/25 15:59:09 karl Exp $
-    
-    Copyright (C) 2008 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2008, 2012 Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 2006 Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
 
     This program is free software: you can redistribute it and/or modify
@@ -17,7 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-/* UTF-8 support */
+/** \file utf8.h 
+ *
+ *  \brief UTF-8 support
+ */
 
 
 #include <cdio/types.h>

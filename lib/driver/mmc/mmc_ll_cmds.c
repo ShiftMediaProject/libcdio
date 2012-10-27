@@ -37,23 +37,40 @@
 #endif
 
 /**
-  Get drive capabilities vis SCSI-MMC GET CONFIGURATION
-  @param p_cdio the CD object to be acted upon.
-  @return DRIVER_OP_SUCCESS (0) if we got the status.
-  return codes are the same as driver_return_code_t
+   Get drive capabilities vis SCSI-MMC GET CONFIGURATION
+   @param p_cdio the CD object to be acted upon.
+   
+   @param p_buf pointer to location to store mode sense information
+   @param i_size number of bytes allocated to p_buf
+   @param i_return_type value in range 0..2 giving what kind of configuration
+   to return:
+   
+   : 0 Full Header and Full Descriptors; 
+   : 1 Feature Headers and those with their Current Bit. 
+   : 2 One Feature header and zero or one Feature Descriptors.
+   
+   @param i_starting_feature_number feature number from which to start
+   getting information.
+   
+   @param i_timeout_ms value in milliseconds to use on timeout. Setting
+   to 0 uses the default time-out value stored in
+   mmc_timeout_ms.      
+   
+   @return DRIVER_OP_SUCCESS (0) if we got the status.
+   return codes are the same as driver_return_code_t
 */
 driver_return_code_t 
 mmc_get_configuration(const CdIo_t *p_cdio, void *p_buf, 
-		      unsigned int i_size, 
-		      unsigned int return_type, 
-		      unsigned int i_starting_feature_number,
-		      unsigned int i_timeout_ms)
+                      unsigned int i_size, 
+                      unsigned int i_return_type, 
+                      unsigned int i_starting_feature_number,
+                      unsigned int i_timeout_ms)
 
 {
     MMC_CMD_SETUP(CDIO_MMC_GPCMD_GET_CONFIGURATION);
     CDIO_MMC_SET_READ_LENGTH8(cdb.field, i_size);
     if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
-    cdb.field[1] = return_type & 0x3;
+    cdb.field[1] = i_return_type & 0x3;
     CDIO_MMC_SET_LEN16(cdb.field, 2, i_starting_feature_number);
     return MMC_RUN_CMD(SCSI_MMC_DATA_READ, i_timeout_ms);
 }
@@ -83,8 +100,8 @@ mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
     
     i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ, mmc_timeout_ms);
     if (i_status == DRIVER_OP_SUCCESS) {
-	out_buf[0] = buf[4];
-	out_buf[1] = buf[5];
+        out_buf[0] = buf[4];
+        out_buf[1] = buf[5];
     }
     return i_status;
 }
@@ -102,14 +119,14 @@ mmc_get_event_status(const CdIo_t *p_cdio, uint8_t out_buf[2])
    
    @param i_timeout_ms value in milliseconds to use on timeout. Setting
           to 0 uses the default time-out value stored in
-	  mmc_timeout_ms.
+          mmc_timeout_ms.
 
    @return DRIVER_OP_SUCCESS if we ran the command ok.
 
  */
 driver_return_code_t
 mmc_mode_select_10(CdIo_t *p_cdio, /*out*/ void *p_buf, unsigned int i_size, 
-		   int page, unsigned int i_timeout_ms)
+                   int page, unsigned int i_timeout_ms)
 {
     MMC_CMD_SETUP_READ16(CDIO_MMC_GPCMD_MODE_SELECT_10);
     if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
@@ -128,7 +145,7 @@ mmc_mode_select_10(CdIo_t *p_cdio, /*out*/ void *p_buf, unsigned int i_size,
 */
 driver_return_code_t
 mmc_mode_sense_10(CdIo_t *p_cdio, void *p_buf, unsigned int i_size, 
-		  unsigned int page)
+                  unsigned int page)
 {
     MMC_CMD_SETUP_READ16(CDIO_MMC_GPCMD_MODE_SENSE_10);
     cdb.field[2] = CDIO_MMC_ALL_PAGES & page;
@@ -168,8 +185,8 @@ mmc_mode_sense_6(CdIo_t *p_cdio, void *p_buf, unsigned int i_size, int page)
 */
 driver_return_code_t 
 mmc_prevent_allow_medium_removal(const CdIo_t *p_cdio, 
-				 bool b_persistent, bool b_prevent,
-				 unsigned int i_timeout_ms)
+                                 bool b_persistent, bool b_prevent,
+                                 unsigned int i_timeout_ms)
 {
     uint8_t buf[8] = { 0, };
     void   *p_buf  = &buf; 
@@ -291,11 +308,11 @@ mmc_prevent_allow_medium_removal(const CdIo_t *p_cdio,
 */
 driver_return_code_t
 mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn, 
-	    int read_sector_type, bool b_digital_audio_play,
-	    bool b_sync, uint8_t header_codes, bool b_user_data, 
-	    bool b_edc_ecc, uint8_t c2_error_information, 
-	    uint8_t subchannel_selection, uint16_t i_blocksize, 
-	    uint32_t i_blocks)
+            int read_sector_type, bool b_digital_audio_play,
+            bool b_sync, uint8_t header_codes, bool b_user_data, 
+            bool b_edc_ecc, uint8_t c2_error_information, 
+            uint8_t subchannel_selection, uint16_t i_blocksize, 
+            uint32_t i_blocks)
 {
     void *p_buf = p_buf1;
     uint8_t cdb9 = 0;
@@ -322,21 +339,21 @@ mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn,
       int i_status = DRIVER_OP_SUCCESS;
       
       while (i_blocks > 0) {
-	  const unsigned i_blocks2 = (i_blocks > MAX_CD_READ_BLOCKS) 
-	      ? MAX_CD_READ_BLOCKS : i_blocks;
-	  
-	  const unsigned int i_size = i_blocksize * i_blocks2;
-	  
-	  p_buf = ((char *)p_buf1 ) + (j * i_blocksize);
-	  CDIO_MMC_SET_READ_LBA     (cdb.field, (i_lsn+j));
-	  CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks2);
-	  
-	  i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ, i_timeout);
-	  
-	  if (i_status) return i_status;
-	  
-	  i_blocks -= i_blocks2;
-	  j += i_blocks2;
+          const unsigned i_blocks2 = (i_blocks > MAX_CD_READ_BLOCKS) 
+              ? MAX_CD_READ_BLOCKS : i_blocks;
+          
+          const unsigned int i_size = i_blocksize * i_blocks2;
+          
+          p_buf = ((char *)p_buf1 ) + (j * i_blocksize);
+          CDIO_MMC_SET_READ_LBA     (cdb.field, (i_lsn+j));
+          CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks2);
+          
+          i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ, i_timeout);
+          
+          if (i_status) return i_status;
+          
+          i_blocks -= i_blocks2;
+          j += i_blocks2;
       }
       return i_status;
   }
@@ -358,9 +375,9 @@ mmc_read_cd(const CdIo_t *p_cdio, void *p_buf1, lsn_t i_lsn,
  */
 driver_return_code_t 
 mmc_read_disc_information(const CdIo_t *p_cdio, /*out*/ void *p_buf,
-			  unsigned int i_size, 
-			  cdio_mmc_read_disc_info_datatype_t data_type,
-			  unsigned int i_timeout_ms)
+                          unsigned int i_size, 
+                          cdio_mmc_read_disc_info_datatype_t data_type,
+                          unsigned int i_timeout_ms)
 {
     MMC_CMD_SETUP(CDIO_MMC_GPCMD_READ_DISC_INFO);
     CDIO_MMC_SET_READ_LENGTH8(cdb.field, i_size);
@@ -434,7 +451,7 @@ mmc_set_speed(const CdIo_t *p_cdio, int i_Kbs_speed, unsigned int i_timeout_ms)
 */
 driver_return_code_t
 mmc_start_stop_unit(const CdIo_t *p_cdio, bool b_eject, bool b_immediate,
-		    uint8_t power_condition, unsigned int i_timeout_ms)
+                    uint8_t power_condition, unsigned int i_timeout_ms)
 {
   uint8_t buf[1];
   void * p_buf = &buf;

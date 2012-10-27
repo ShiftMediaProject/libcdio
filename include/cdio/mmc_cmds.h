@@ -15,6 +15,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/** \file mmc_cmds.h 
+ *
+ *  \brief The top-level header for libcdio multi-media commands (MMC). 
+ */
+
 #ifndef CDIO_MMC_CMDS_H_
 #define CDIO_MMC_CMDS_H_
 

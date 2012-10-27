@@ -377,7 +377,6 @@ typedef enum {
 /**
     FEATURE codes used in GET CONFIGURATION. 
 */
-
 typedef enum {
   CDIO_MMC_FEATURE_PROFILE_LIST     = 0x000, /**< Profile List Feature */
   CDIO_MMC_FEATURE_CORE             = 0x001, 

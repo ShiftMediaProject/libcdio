@@ -44,7 +44,7 @@ extern "C" {
      
      @param p_cdio the CD object to be acted upon.
      
-     @param b_erasable, if not NULL, on return will be set indicate whether
+     @param b_erasable if not NULL, on return will be set indicate whether
      the operation was a success (DRIVER_OP_SUCCESS) or if not to some
      other value.
      
@@ -70,7 +70,7 @@ extern "C" {
      
      @param p_cdio the CD object to be acted upon.
    
-     @param i_timeout_ms, number of millisections to wait before timeout
+     @param i_timeout_ms number of millisections to wait before timeout
    
      @param p_disctype the disc type set on success.
      @return DRIVER_OP_SUCCESS (0) if we got the status.

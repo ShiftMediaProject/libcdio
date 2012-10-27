@@ -232,7 +232,7 @@ cdtext_t *cdtext_init (void);
 
   @returns 0 on success, non-zero on failure
 */       
-int cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t length);
+int cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data);
 
 /*!
   Free memory associated with the given cdtext_t object.
@@ -259,7 +259,8 @@ char *cdtext_get (const cdtext_t *p_cdtext, cdtext_field_t key, track_t track);
   @param field type of the field to return
   @param track specifies the track, 0 stands for disc
 */
-const char *cdtext_get_const (const cdtext_t *p_cdtext, cdtext_field_t key, track_t track);
+const char *cdtext_get_const (const cdtext_t *p_cdtext, cdtext_field_t field, 
+                              track_t track);
 
 /*!
   Returns the discs genre code.
@@ -283,7 +284,7 @@ cdtext_lang_t cdtext_get_language (const cdtext_t *p_cdtext);
 
   @return true on success, false if language is not available
 */
-bool cdtext_select_language(cdtext_t *p_cdtext, cdtext_lang_t lang);
+bool cdtext_select_language(cdtext_t *p_cdtext, cdtext_lang_t language);
 
 /*
   Returns a list of available languages or NULL.
