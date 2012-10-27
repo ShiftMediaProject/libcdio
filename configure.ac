@@ -17,7 +17,7 @@ dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 dnl 02110-1301 USA.
 
 define(RELEASE_NUM, 90)
-define(CDIO_VERSION_STR, 0.$1git)
+define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.61)
 
@@ -322,16 +322,17 @@ AC_SUBST(LIBISO9660_LIBS)
 AC_SUBST(LIBUDF_LIBS)
 
 AC_MSG_CHECKING([Checking what sed uses for extended regular expressions])
+test -n "$SED" || SED=$ac_path_SED
 SED_EXTENDED_RE_FLAG='-r'
-result=$(echo 'define' | $ac_path_SED -r -e 's/^define/foo/' 2>/dev/null)
+result=$(echo 'define' | $SED -r -e 's/^define/foo/' 2>/dev/null)
 if [[ $? -ne 0 ]] ; then
-   result=$(echo 'define' | $ac_path_SED -r -E 's/^define/foo/' 2>/dev/null)
-   if [[ $? -ne 0 ]] ; then
-     SED_EXTENDED_RE_FLAG='-E'
-   else 
-     AC_MSG_WARN([Don't have SED that understand extended RE's. Some minor compilation issues may fail.])
-     SED_EXTENDED_RE_FLAG=''
-   fi   
+    result=$(echo 'define' | $SED -E -e 's/^define/foo/' 2>/dev/null)
+    if [[ $? -eq 0 ]] ; then
+        SED_EXTENDED_RE_FLAG='-E'
+    else
+        AC_MSG_WARN([Don't have SED that understand extended RE's. Some minor compilation issues may fail.])
+        SED_EXTENDED_RE_FLAG=''
+    fi
 fi
 AC_MSG_RESULT($SED_EXTENDED_RE_FLAG)
 AC_SUBST(SED_EXTENDED_RE_FLAG)

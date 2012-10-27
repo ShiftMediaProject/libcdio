@@ -1,21 +1,22 @@
 version 0.90
+2012-10-27
 - CD-Text overhaul and API change (Leon Merten Lohse)
-- Works again on MinGW; tolerence for Microsoft's C compiler (Pete Batard)
+- Works again (somewhat) on MinGW; tolerence for Microsoft's C compiler (Pete Batard)
 - UDF, Joliet and Rock-Ridge fixes (Pete Batard)
-- OSX fixes
+- OSX fixes (Natalia Portillo and Robert William Fuller)
 - paranoia library removed as that is GPL 2-ish. This is now a separate project
 - file names in cue files are relative to the cue file rather than cwd.
 - Update mmc.h to include MMC-5 commands. (Or MMC-6 since it adds nothing new)
 - Add mmc_cmd2str() to show MMC command name. Show that in some errors
-- Add UDF reading to iso-read and iso-info via --udf or -U
+- Add UDF reading to iso-read and iso-info via --udf or -U (Christophe Fergeau)
 - bug fixes, more tests, update documentation
 
 version 0.83
 2011-10-27
 
-- Add retrieval SCSI sense reply from the most-recent MMC command.
+- Add retrieval SCSI sense reply from the most-recent MMC command. (Thomas Schmitt)
 - Add exclusive read/write access for devices which is used for experimental
-  writing/burning. Currently only on GNU/Linux and FreeBSD.
+  writing/burning. Currently only on GNU/Linux and FreeBSD.  (Thomas Schmitt)
 - MMC bug fixes
 - FreeBSD drive list now shows empty drives.
 - Add ability to retrieve SCSI tuple for a name and/or fake one up for
