@@ -15,7 +15,7 @@
 This manual documents @code{libcdio}, the GNU CD Input, Output, and Control
 Library.
 
-Copyright @copyright{} 2003, 2004, 2005, 2006, 2007, 2008, 2010 Rocky
+Copyright @copyright{} 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2012 Rocky
 Bernstein and Herbert Valerio Riedel.
 
 @quotation
@@ -960,15 +960,11 @@ only in a time-like fashion), is generally more cumbersome to use an
 MSF rather than a LBA or LSN described below, since subtraction of two
 MSF's has the awkwardness akin to subtraction using Roman Numerals.
 
-Probably the simplest way to address a block is to use its @term{LSN}
-or ``logical sector number.'' This just numbers the blocks usually
-from 0 on. @emph{fix me: LSNs can be negative up to the pregap size?}
-The Lead-in and Lead-out gaps described above have LSNs just like any
-other space on a CD. The last unit of address is a @term{LBA}. It is
-the same as a LSN but the 150 blocks associated with the initial
-lead-in is are not counted. So to convert a LBA into an LSN you just
-add 150. Why the distinction between LBA and LSN? I don't know,
-perhaps this has something to do with ``multisession'' CDs.
+A simpler way to address a block is to use a ``Logical Sector Number''
+(@term{LSN}) or a ``Logical Sector Number'' (@term{LBA}). In the MMC-5
+glossary these are synonymous terms. However historically it has been
+used differently. In libcdio, to convert a LBA into an LSN you just
+subtract 150. Both LBA's and LSN's can be negative.
 
 @node Pre-gaps
 @section track pre-gaps -- @acronym{CD-DA} discs and gaps
