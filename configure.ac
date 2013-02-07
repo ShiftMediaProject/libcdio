@@ -659,7 +659,7 @@ AC_SUBST(VCDINFO_CFLAGS)
 dnl
 dnl Newest automake workaround - needed for multi-language manual pages
 dnl
-AC_SUBST(mkdir_p)
+AC_SUBST(mkdir_p, "${MKDIR_P}")
 
 AC_CONFIG_COMMANDS([checks], 
 		   [chmod +x test/check_cue.sh; chmod +x test/check_nrg.sh
