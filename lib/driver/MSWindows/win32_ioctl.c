@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2010, 2011, 2012
+  Copyright (C) 2004-2005, 2008, 2010-2013
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -120,6 +120,11 @@ typedef struct _CDROM_TOC_FULL {
 #define SPT_SENSE_LENGTH 32
 #define SPTWB_DATA_LENGTH 512
 
+#ifndef EMPTY_ARRAY_SIZE
+#define EMPTY_ARRAY_SIZE 0
+#endif
+
+
 typedef struct {
    SCSI_PASS_THROUGH_DIRECT sptd;
    ULONG Filler; /* Realign buffer to double-word boundary */
@@ -130,7 +135,7 @@ typedef struct _SCSI_PASS_THROUGH_WITH_BUFFERS {
     SCSI_PASS_THROUGH    Spt;
     ULONG                Filler;      /* realign buffer to double-word boundary */
     UCHAR                SenseBuf[SPT_SENSE_LENGTH];
-    UCHAR DataBuf[SPTWB_DATA_LENGTH];
+    UCHAR DataBuf[EMPTY_ARRAY_SIZE];
 } SCSI_PASS_THROUGH_WITH_BUFFERS;
 
 #ifdef HAVE_STDBOOL_H
@@ -470,15 +475,19 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
                         unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;
-  SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER swb;
+  SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER *p_swb;
   
   BOOL b_success;
   DWORD dw_bytes_returned;
   char dummy_buf[2]; /* Used if we can't use p_buf. See below. */
   int rc = DRIVER_OP_SUCCESS;
+  unsigned int i_swb_len = 
+    sizeof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER) + i_buf;
+
+  p_swb = malloc(i_swb_len);
 
   p_env->gen.scsi_mmc_sense_valid = 0;
-  memset(&swb, 0, sizeof(swb));
+  memset(p_swb, 0, i_swb_len);
   
   swb.sptd.Length  = sizeof(SCSI_PASS_THROUGH_DIRECT);
   swb.sptd.PathId  = 0;      /* SCSI card ID will be filled in
@@ -498,27 +507,27 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
      So in those cases we will provide our own.
   */
   if (i_buf <= 1) {
-    swb.sptd.DataBuffer         = &dummy_buf;
-    swb.sptd.DataTransferLength = 2;
+    p_swb->sptd.DataBuffer         = &dummy_buf;
+    p_swb->sptd.DataTransferLength = 2;
   } else {
-    swb.sptd.DataBuffer         = p_buf;
-    swb.sptd.DataTransferLength = i_buf;
+    p_swb->sptd.DataBuffer         = p_buf;
+    p_swb->sptd.DataTransferLength = i_buf;
   }
 
-  swb.sptd.TimeOutValue      = msecs2secs(i_timeout_ms);
-  swb.sptd.SenseInfoOffset   = offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER, 
-                                        SenseBuf);
+  p_swb->sptd.TimeOutValue      = msecs2secs(i_timeout_ms);
+  p_swb->sptd.SenseInfoOffset   = 
+    offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER, SenseBuf);
 
   p_env->gen.scsi_mmc_sense_valid = 0;
-  memcpy(swb.sptd.Cdb, p_cdb, i_cdb);
+  memcpy(p_swb->sptd.Cdb, p_cdb, i_cdb);
 
   /* Send the command to drive */
   b_success = DeviceIoControl(p_env->h_device_handle,
                               IOCTL_SCSI_PASS_THROUGH_DIRECT, 
-                              (void *)&swb, 
-                              sizeof(swb),
-                              &swb, 
-                              sizeof(swb),
+                              (void *)p_swb, 
+                              i_swb_len,
+                              p_swb, 
+                              i_swb_len,
                               &dw_bytes_returned,
                               NULL);
 
@@ -542,18 +551,19 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   if (swb.SenseBuf.additional_sense_len) {
     /* SCSI Primary Command standard 
        SPC 4.5.3, Table 26: 252 bytes legal, 263 bytes possible */
-    int sense_size = swb.SenseBuf.additional_sense_len + 8; 
-    if (sense_size > sizeof(swb.SenseBuf)) {
+    int i_sense_size = swb.SenseBuf.additional_sense_len + 8; 
+    if (i_sense_size > sizeof(swb.SenseBuf)) {
       cdio_warn("Sense size retuned %d is greater buffer size %d\n", 
-		sense_size, sizeof(swb.SenseBuf));
-      sense_size = sizeof(swb.SenseBuf);
+		i_sense_size, sizeof(p_swb->SenseBuf));
+      sense_size = sizeof(p_swb->SenseBuf);
     }
-    memcpy((void *) p_env->gen.scsi_mmc_sense, &swb.SenseBuf, sense_size);
+    memcpy((void *) p_env->gen.scsi_mmc_sense, p_swb->SenseBuf, i_sense_size);
     p_env->gen.scsi_mmc_sense_valid = sense_size;
     if (DRIVER_OP_SUCCESS == rc) 
       rc = DRIVER_OP_MMC_SENSE_DATA;
   }
 #endif
+  free(p_swb);
   return rc;
 }
 #else
@@ -565,48 +575,53 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
                         unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;
-  SCSI_PASS_THROUGH_WITH_BUFFERS sptwb;
+  SCSI_PASS_THROUGH_WITH_BUFFERS *p_sptwb;
   
   BOOL b_success;
   unsigned long length = 0;
   DWORD dw_bytes_returned;
+  unsigned int i_swb_len = 
+    sizeof(SCSI_PASS_THROUGH_WITH_BUFFERS) + i_buf;
+
+  p_sptwb = malloc(i_swb_len);
 
   p_env->gen.scsi_mmc_sense_valid = 0;
-  memset(&sptwb, 0, sizeof(sptwb));
+  memset(p_sptwb, 0, i_swb_len);
   
-  sptwb.Spt.Length  = sizeof(sptwb.Spt);
-  sptwb.Spt.PathId  = 0;      /* SCSI card ID will be filled in
+  p_sptwb->Spt.Length  = i_swb_len;
+  p_sptwb->Spt.PathId  = 0;      /* SCSI card ID will be filled in
                                    automatically */
-  sptwb.Spt.TargetId= 0;      /* SCSI target ID will also be filled in */
-  sptwb.Spt.Lun     = 0;      /* SCSI lun ID will also be filled in */
-  sptwb.Spt.CdbLength         = i_cdb;
-  sptwb.Spt.SenseInfoLength   = sizeof(sptwb.SenseBuf);
-  sptwb.Spt.DataIn            = 
+  p_sptwb->Spt.TargetId= 0;      /* SCSI target ID will also be filled in */
+  p_sptwb->Spt.Lun     = 0;      /* SCSI lun ID will also be filled in */
+  p_sptwb->Spt.CdbLength         = i_cdb;
+  p_sptwb->Spt.SenseInfoLength   = sizeof(p_sptwb->SenseBuf);
+  p_sptwb->Spt.DataIn            = 
     (SCSI_MMC_DATA_READ  == e_direction) ? SCSI_IOCTL_DATA_IN :
     (SCSI_MMC_DATA_WRITE == e_direction) ? SCSI_IOCTL_DATA_OUT :
     SCSI_IOCTL_DATA_UNSPECIFIED;
 
-  if (SCSI_MMC_DATA_WRITE == e_direction) memcpy(&sptwb.DataBuf, p_buf, i_buf);
+  if (SCSI_MMC_DATA_WRITE == e_direction) memcpy(&(p_sptwb->DataBuf), 
+						   p_buf, i_buf);
 
-  sptwb.Spt.DataTransferLength= i_buf;
-  sptwb.Spt.TimeOutValue      = msecs2secs(i_timeout_ms);
+  p_sptwb->Spt.DataTransferLength= i_buf;
+  p_sptwb->Spt.TimeOutValue      = msecs2secs(i_timeout_ms);
 
-  sptwb.Spt.DataBufferOffset =
+  p_sptwb->Spt.DataBufferOffset =
     offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS, DataBuf);
-  sptwb.Spt.SenseInfoOffset = 
+  p_sptwb->Spt.SenseInfoOffset = 
     offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS, SenseBuf);
 
-  memcpy(sptwb.Spt.Cdb, p_cdb, i_cdb);
-  sptwb.Spt.Cdb[4] = i_buf;
+  memcpy(p_sptwb->Spt.Cdb, p_cdb, i_cdb);
+  p_sptwb->Spt.Cdb[4] = i_buf;
   length = offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS, DataBuf) + 
-    sptwb.Spt.DataTransferLength;
+    p_sptwb->Spt.DataTransferLength;
 
   /* Send the command to drive */
   b_success = DeviceIoControl(p_env->h_device_handle,
                               IOCTL_SCSI_PASS_THROUGH, 
-                              (void *)&sptwb, 
-                              sizeof(SCSI_PASS_THROUGH),
-                              &sptwb, 
+                              (void *)p_sptwb, 
+                              i_swb_len,
+                              p_sptwb, 
                               length,
                               &dw_bytes_returned,
                               NULL);
@@ -620,20 +635,22 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
     return DRIVER_OP_ERROR;
   }
 
-  memcpy(p_buf, &sptwb.DataBuf, i_buf);
+  memcpy(p_buf, &(p_sptwb->DataBuf), i_buf);
 
   /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
    */
-  if (sptwb.Spt.ScsiStatus && sptwb.Spt.SenseInfoLength > 0) {
-    int sense_size = sptwb.Spt.SenseInfoLength;
-    if (sense_size > sizeof(sptwb.SenseBuf)) {
+  if (p_sptwb->Spt.ScsiStatus && p_sptwb->Spt.SenseInfoLength > 0) {
+    int i_sense_size = p_sptwb->Spt.SenseInfoLength;
+    if (i_sense_size > sizeof(p_sptwb->SenseBuf)) {
       cdio_warn("sense size returned %d is greater buffer size %d\n", 
-		sense_size, sizeof(sptwb.SenseBuf));
-      sense_size = sizeof(sptwb.SenseBuf);
+		i_sense_size, sizeof(p_sptwb->SenseBuf));
+      i_sense_size = sizeof(p_sptwb->SenseBuf);
     }
-    memcpy((void *) p_env->gen.scsi_mmc_sense, &sptwb.SenseBuf, sense_size);
-    p_env->gen.scsi_mmc_sense_valid = sptwb.Spt.SenseInfoLength;
+    memcpy((void *) p_env->gen.scsi_mmc_sense, &(p_sptwb->SenseBuf), 
+	   i_sense_size);
+    p_env->gen.scsi_mmc_sense_valid = p_sptwb->Spt.SenseInfoLength;
   }
+  free(p_sptwb);
 
   return DRIVER_OP_SUCCESS;
 }
