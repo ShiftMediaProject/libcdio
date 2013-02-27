@@ -1,7 +1,6 @@
 /*
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-  Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010, 2011
-  2012 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2002-2006, 2008-2013 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1180,7 +1179,7 @@ read_toc_linux (void *p_user_data)
   p_env->gen.i_first_track = p_env->tochdr.cdth_trk0;
   p_env->gen.i_tracks      = p_env->tochdr.cdth_trk1;
 
-  if (p_env->gen.i_tracks > CDIO_CD_MAX_TRACKS) {
+  if (p_env->gen.i_tracks - p_env->gen.i_first_track > CDIO_CD_MAX_TRACKS) {
      cdio_log(CDIO_LOG_WARN, "Number of tracks exceeds maximum (%d vs. %d)\n",
               p_env->gen.i_tracks, CDIO_CD_MAX_TRACKS);
      p_env->gen.i_tracks = CDIO_CD_MAX_TRACKS;
