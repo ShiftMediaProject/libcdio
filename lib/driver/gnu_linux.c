@@ -1168,6 +1168,7 @@ read_toc_linux (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
   int i;
+  unsigned int u_tracks;
 
   /* read TOC header */
   if ( ioctl(p_env->gen.fd, CDROMREADTOCHDR, &p_env->tochdr) == -1 ) {
@@ -1179,9 +1180,11 @@ read_toc_linux (void *p_user_data)
   p_env->gen.i_first_track = p_env->tochdr.cdth_trk0;
   p_env->gen.i_tracks      = p_env->tochdr.cdth_trk1;
 
-  if (p_env->gen.i_tracks - p_env->gen.i_first_track > CDIO_CD_MAX_TRACKS) {
+  u_tracks = p_env->gen.i_tracks - p_env->gen.i_first_track;
+
+  if (u_tracks > CDIO_CD_MAX_TRACKS) {
      cdio_log(CDIO_LOG_WARN, "Number of tracks exceeds maximum (%d vs. %d)\n",
-              p_env->gen.i_tracks, CDIO_CD_MAX_TRACKS);
+              u_tracks, CDIO_CD_MAX_TRACKS);
      p_env->gen.i_tracks = CDIO_CD_MAX_TRACKS;
   }
 
