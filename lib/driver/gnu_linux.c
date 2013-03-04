@@ -1183,6 +1183,7 @@ read_toc_linux (void *p_user_data)
   u_tracks = p_env->gen.i_tracks - p_env->gen.i_first_track;
 
   if (u_tracks > CDIO_CD_MAX_TRACKS) {
+     printf("This code is patched....\n");
      cdio_log(CDIO_LOG_WARN, "Number of tracks exceeds maximum (%d vs. %d)\n",
               u_tracks, CDIO_CD_MAX_TRACKS);
      p_env->gen.i_tracks = CDIO_CD_MAX_TRACKS;

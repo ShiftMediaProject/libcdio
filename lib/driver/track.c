@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2008, 2011, 2012 
+  Copyright (C) 2003-2005, 2008, 2011-2013
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -74,9 +74,9 @@ cdio_get_last_track_num (const CdIo_t *p_cdio)
   {
     const track_t i_first_track = cdio_get_first_track_num(p_cdio);
     if ( CDIO_INVALID_TRACK != i_first_track ) {
-      const track_t i_tracks = cdio_get_num_tracks(p_cdio);
-      if ( CDIO_INVALID_TRACK != i_tracks ) 
-	return i_first_track + i_tracks - 1;
+      const track_t u_tracks = cdio_get_num_tracks(p_cdio);
+      if ( CDIO_INVALID_TRACK != u_tracks ) 
+	return i_first_track + u_tracks - 1;
     }
     return CDIO_INVALID_TRACK;
   }
@@ -87,19 +87,21 @@ cdio_get_last_track_num (const CdIo_t *p_cdio)
   Not meaningful if track is not an audio track.
 */
 int
-cdio_get_track_channels(const CdIo_t *p_cdio, track_t i_track)
+cdio_get_track_channels(const CdIo_t *p_cdio, track_t u_track)
 {
+  track_t u_last_track;
   if (NULL == p_cdio) {
     cdio_info("Null CdIo object passed\n");
     return -1;
   }
-  if (i_track > CDIO_CD_MAX_TRACKS) {
+  u_last_track = cdio_get_last_track_num(p_cdio);
+  if (u_track > u_last_track) {
      cdio_log(CDIO_LOG_WARN, "Number of tracks exceeds maximum (%d vs. %d)\n",
-              i_track, CDIO_CD_MAX_TRACKS);
+              u_track, u_last_track);
      return -1;
   }
   if (p_cdio->op.get_track_channels) {
-    return p_cdio->op.get_track_channels (p_cdio->env, i_track);
+    return p_cdio->op.get_track_channels (p_cdio->env, u_track);
   } else {
     return -2;
   }
@@ -109,10 +111,10 @@ cdio_get_track_channels(const CdIo_t *p_cdio, track_t i_track)
   if not an audio track?
 */
 track_flag_t
-cdio_get_track_copy_permit(const CdIo_t *p_cdio, track_t i_track)
+cdio_get_track_copy_permit(const CdIo_t *p_cdio, track_t u_track)
 {
   if (p_cdio->op.get_track_copy_permit) {
-    return p_cdio->op.get_track_copy_permit (p_cdio->env, i_track);
+    return p_cdio->op.get_track_copy_permit (p_cdio->env, u_track);
   } else {
     return CDIO_TRACK_FLAG_UNKNOWN;
   }
@@ -122,12 +124,12 @@ cdio_get_track_copy_permit(const CdIo_t *p_cdio, track_t i_track)
   Get format of track. 
 */
 track_format_t
-cdio_get_track_format(const CdIo_t *p_cdio, track_t i_track)
+cdio_get_track_format(const CdIo_t *p_cdio, track_t u_track)
 {
   if (!p_cdio) return TRACK_FORMAT_ERROR;
 
   if (p_cdio->op.get_track_format) {
-    return p_cdio->op.get_track_format (p_cdio->env, i_track);
+    return p_cdio->op.get_track_format (p_cdio->env, u_track);
   } else {
     return TRACK_FORMAT_ERROR;
   }
@@ -208,14 +210,14 @@ cdio_get_track(const CdIo_t *p_cdio, lsn_t lsn)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 bool
-cdio_get_track_green(const CdIo_t *p_cdio, track_t i_track)
+cdio_get_track_green(const CdIo_t *p_cdio, track_t u_track)
 {
   if (p_cdio == NULL) {
     return false;
   }
 
   if (p_cdio->op.get_track_green) {
-    return p_cdio->op.get_track_green (p_cdio->env, i_track);
+    return p_cdio->op.get_track_green (p_cdio->env, u_track);
   } else {
     return false;
   }
@@ -229,7 +231,7 @@ cdio_get_track_green(const CdIo_t *p_cdio, track_t i_track)
   CDIO_INVALID_LBA is returned on error.
 */
 lba_t
-cdio_get_track_lba(const CdIo_t *p_cdio, track_t i_track)
+cdio_get_track_lba(const CdIo_t *p_cdio, track_t u_track)
 {
   if (NULL == p_cdio) {
     cdio_info("Null CdIo object passed\n");
@@ -237,11 +239,11 @@ cdio_get_track_lba(const CdIo_t *p_cdio, track_t i_track)
   }
 
   if (p_cdio->op.get_track_lba) {
-    return p_cdio->op.get_track_lba (p_cdio->env, i_track);
+    return p_cdio->op.get_track_lba (p_cdio->env, u_track);
   } else {
     msf_t msf;
     if (p_cdio->op.get_track_msf) 
-      if (cdio_get_track_msf(p_cdio, i_track, &msf))
+      if (cdio_get_track_msf(p_cdio, u_track, &msf))
         return cdio_msf_to_lba(&msf);
     return CDIO_INVALID_LBA;
   }
@@ -249,30 +251,32 @@ cdio_get_track_lba(const CdIo_t *p_cdio, track_t i_track)
 
 /*!  
   Return the starting LSN for track number
-  i_track in cdio.  Tracks numbers start at 1.
+  u_track in cdio.  Tracks numbers start at 1.
   The "leadout" track is specified either by
-  using i_track LEADOUT_TRACK or the total tracks+1.
+  using u_track LEADOUT_TRACK or the total tracks+1.
   CDIO_INVALID_LSN is returned on error.
 */
 lsn_t
-cdio_get_track_lsn(const CdIo_t *p_cdio, track_t i_track)
+cdio_get_track_lsn(const CdIo_t *p_cdio, track_t u_track)
 {
+  track_t u_last_track;
   if (NULL == p_cdio) {
     cdio_info("Null CdIo object passed\n");
     return CDIO_INVALID_LSN;
   }
-  if (i_track > CDIO_CD_MAX_TRACKS && i_track != CDIO_CDROM_LEADOUT_TRACK) {
+  u_last_track = cdio_get_last_track_num(p_cdio);
+  if (u_track > u_last_track && u_track != CDIO_CDROM_LEADOUT_TRACK) {
      cdio_log(CDIO_LOG_WARN, "Number of tracks exceeds maximum (%d vs. %d)\n",
-              i_track, CDIO_CD_MAX_TRACKS);
+              u_track, u_last_track);
      return CDIO_INVALID_LSN;
   }
 
 
   if (p_cdio->op.get_track_lba) {
-    return cdio_lba_to_lsn(p_cdio->op.get_track_lba (p_cdio->env, i_track));
+    return cdio_lba_to_lsn(p_cdio->op.get_track_lba (p_cdio->env, u_track));
   } else {
     msf_t msf;
-    if (cdio_get_track_msf(p_cdio, i_track, &msf))
+    if (cdio_get_track_msf(p_cdio, u_track, &msf))
       return cdio_msf_to_lsn(&msf);
     return CDIO_INVALID_LSN;
   }
@@ -280,27 +284,29 @@ cdio_get_track_lsn(const CdIo_t *p_cdio, track_t i_track)
 
 /*!
   Return the International Standard Recording Code (ISRC) for track number
-  i_track in p_cdio.  Track numbers start at 1.
+  u_track in p_cdio.  Track numbers start at 1.
 
   Note: string is malloc'd so caller has to free() the returned
   string when done with it.
 */
 char *
-cdio_get_track_isrc (const CdIo_t *p_cdio, track_t i_track)
+cdio_get_track_isrc (const CdIo_t *p_cdio, track_t u_track)
 {
+  track_t u_last_track;
   if (NULL == p_cdio) {
     cdio_info("Null CdIo object passed\n");
     return NULL;
   }
 
-  if (i_track > CDIO_CD_MAX_TRACKS) {
+  u_last_track = cdio_get_last_track_num(p_cdio);
+  if (u_track > u_last_track) {
      cdio_log(CDIO_LOG_WARN, "Number of tracks exceeds maximum (%d vs. %d)\n",
-              i_track, CDIO_CD_MAX_TRACKS);
+              u_track, u_last_track);
      return NULL;
   }
 
   if (p_cdio->op.get_track_isrc) {
-    return p_cdio->op.get_track_isrc (p_cdio->env, i_track);
+    return p_cdio->op.get_track_isrc (p_cdio->env, u_track);
   } else {
     return NULL;
   }
@@ -308,11 +314,11 @@ cdio_get_track_isrc (const CdIo_t *p_cdio, track_t i_track)
 
 /*!  
   Return the starting LBA for the pregap for track number
-  i_track in cdio.  Track numbers start at 1.
+  u_track in cdio.  Track numbers start at 1.
   CDIO_INVALID_LBA is returned on error.
 */
 lba_t
-cdio_get_track_pregap_lba(const CdIo_t *p_cdio, track_t i_track)
+cdio_get_track_pregap_lba(const CdIo_t *p_cdio, track_t u_track)
 {
   if (NULL == p_cdio) {
     cdio_info("Null CdIo object passed\n");
@@ -320,7 +326,7 @@ cdio_get_track_pregap_lba(const CdIo_t *p_cdio, track_t i_track)
   }
 
   if (p_cdio->op.get_track_pregap_lba) {
-    return p_cdio->op.get_track_pregap_lba (p_cdio->env, i_track);
+    return p_cdio->op.get_track_pregap_lba (p_cdio->env, u_track);
   } else {
     return CDIO_INVALID_LBA;
   }
@@ -328,23 +334,23 @@ cdio_get_track_pregap_lba(const CdIo_t *p_cdio, track_t i_track)
 
 /*!  
   Return the starting LSN for the pregap for track number
-  i_track in cdio.  Track numbers start at 1.
+  u_track in cdio.  Track numbers start at 1.
   CDIO_INVALID_LSN is returned on error.
 */
 lsn_t
-cdio_get_track_pregap_lsn(const CdIo_t *p_cdio, track_t i_track)
+cdio_get_track_pregap_lsn(const CdIo_t *p_cdio, track_t u_track)
 {
-  return cdio_lba_to_lsn(cdio_get_track_pregap_lba(p_cdio, i_track));
+  return cdio_lba_to_lsn(cdio_get_track_pregap_lba(p_cdio, u_track));
 }
 
 /*!  
   Return the ending LSN for track number
-  i_track in cdio.  CDIO_INVALID_LSN is returned on error.
+  u_track in cdio.  CDIO_INVALID_LSN is returned on error.
 */
 lsn_t
-cdio_get_track_last_lsn(const CdIo_t *p_cdio, track_t i_track)
+cdio_get_track_last_lsn(const CdIo_t *p_cdio, track_t u_track)
 {
-  lsn_t lsn = cdio_get_track_lsn(p_cdio, i_track+1);
+  lsn_t lsn = cdio_get_track_lsn(p_cdio, u_track+1);
 
   if (CDIO_INVALID_LSN == lsn) return CDIO_INVALID_LSN;
   /* Safe, we've always the leadout. */
@@ -353,20 +359,20 @@ cdio_get_track_last_lsn(const CdIo_t *p_cdio, track_t i_track)
 
 /*!  
   Return the starting MSF (minutes/secs/frames) for track number
-  i_track in cdio.  Track numbers start at 1.
+  u_track in cdio.  Track numbers start at 1.
   The "leadout" track is specified either by
-  using i_track LEADOUT_TRACK or the total tracks+1.
+  using u_track LEADOUT_TRACK or the total tracks+1.
   False is returned if there is no track entry.
 */
 bool
-cdio_get_track_msf(const CdIo_t *p_cdio, track_t i_track, /*out*/ msf_t *msf)
+cdio_get_track_msf(const CdIo_t *p_cdio, track_t u_track, /*out*/ msf_t *msf)
 {
   if (!p_cdio) return false;
 
   if (p_cdio->op.get_track_msf) {
-    return p_cdio->op.get_track_msf (p_cdio->env, i_track, msf);
+    return p_cdio->op.get_track_msf (p_cdio->env, u_track, msf);
   } else if (p_cdio->op.get_track_lba) {
-    lba_t lba = p_cdio->op.get_track_lba (p_cdio->env, i_track);
+    lba_t lba = p_cdio->op.get_track_lba (p_cdio->env, u_track);
     if (lba  == CDIO_INVALID_LBA) return false;
     cdio_lba_to_msf(lba, msf);
     return true;
@@ -379,10 +385,10 @@ cdio_get_track_msf(const CdIo_t *p_cdio, track_t i_track, /*out*/ msf_t *msf)
   if not an audio track?
 */
 track_flag_t
-cdio_get_track_preemphasis(const CdIo *p_cdio, track_t i_track)
+cdio_get_track_preemphasis(const CdIo *p_cdio, track_t u_track)
 {
   if (p_cdio->op.get_track_preemphasis) {
-    return p_cdio->op.get_track_preemphasis (p_cdio->env, i_track);
+    return p_cdio->op.get_track_preemphasis (p_cdio->env, u_track);
   } else {
     return CDIO_TRACK_FLAG_UNKNOWN;
   }
@@ -395,12 +401,12 @@ cdio_get_track_preemphasis(const CdIo *p_cdio, track_t i_track)
   0 is returned if there is an error.
 */
 unsigned int
-cdio_get_track_sec_count(const CdIo_t *p_cdio, track_t i_track)
+cdio_get_track_sec_count(const CdIo_t *p_cdio, track_t u_track)
 {
-  const track_t i_tracks = cdio_get_num_tracks(p_cdio);
+  const track_t u_tracks = cdio_get_num_tracks(p_cdio);
 
-  if (i_track >=1 && i_track <= i_tracks) 
-    return ( cdio_get_track_lba(p_cdio, i_track+1) 
-             - cdio_get_track_lba(p_cdio, i_track) );
+  if (u_track >=1 && u_track <= u_tracks) 
+    return ( cdio_get_track_lba(p_cdio, u_track+1) 
+             - cdio_get_track_lba(p_cdio, u_track) );
   return 0;
 }
