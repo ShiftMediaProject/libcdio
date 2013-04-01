@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* This file contains Linux-specific code and implements low-level 
+/* This file contains Linux-specific code and implements low-level
    control of the CD drive.
 */
 
@@ -51,7 +51,7 @@
 # else
 #  error "You need a kernel greater than 2.2.16 to have CDROM support"
 # endif
-#else 
+#else
 #  error "You need <linux/version.h> to have CDROM support"
 #endif
 
@@ -86,15 +86,15 @@ typedef enum {
 } access_mode_t;
 
 typedef struct {
-  /* Things common to all drivers like this. 
+  /* Things common to all drivers like this.
      This must be first. */
-  generic_img_private_t gen; 
+  generic_img_private_t gen;
 
   access_mode_t access_mode;
 
   /* Some of the more OS specific things. */
   /* Entry info for each track, add 1 for leadout. */
-  struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1]; 
+  struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1];
 
   struct cdrom_tochdr    tochdr;
 
@@ -107,22 +107,22 @@ typedef struct {
 /**** prototypes for static functions ****/
 static bool is_cdrom_linux(const char *drive, char *mnttype);
 static bool read_toc_linux (void *p_user_data);
-static driver_return_code_t 
-run_mmc_cmd_linux( void *p_user_data, 
+static driver_return_code_t
+run_mmc_cmd_linux( void *p_user_data,
                    unsigned int i_timeout,
-                   unsigned int i_cdb, 
-                   const mmc_cdb_t *p_cdb, 
-                   cdio_mmc_direction_t e_direction, 
-                   unsigned int i_buf, 
+                   unsigned int i_cdb,
+                   const mmc_cdb_t *p_cdb,
+                   cdio_mmc_direction_t e_direction,
+                   unsigned int i_buf,
                    /*in/out*/ void *p_buf );
-static access_mode_t 
+static access_mode_t
 
-str_to_access_mode_linux(const char *psz_access_mode) 
+str_to_access_mode_linux(const char *psz_access_mode)
 {
   const access_mode_t default_access_mode = _AM_IOCTL;
 
   if (NULL==psz_access_mode) return default_access_mode;
-  
+
   if (!strcmp(psz_access_mode, "IOCTL"))
     return _AM_IOCTL;
   else if (!strcmp(psz_access_mode, "READ_CD"))
@@ -134,7 +134,7 @@ str_to_access_mode_linux(const char *psz_access_mode)
   else if (!strcmp(psz_access_mode, "MMC_RDWR_EXCL"))
     return _AM_MMC_RDWR_EXCL;
   else {
-    cdio_warn ("unknown access type: %s. Default IOCTL used.", 
+    cdio_warn ("unknown access type: %s. Default IOCTL used.",
                psz_access_mode);
     return default_access_mode;
   }
@@ -145,7 +145,7 @@ check_mounts_linux(const char *mtab)
 {
   FILE *mntfp;
   struct mntent *mntent;
-  
+
   mntfp = setmntent(mtab, "r");
   if ( mntfp != NULL ) {
     char *tmp;
@@ -153,23 +153,23 @@ check_mounts_linux(const char *mtab)
     char *mnt_dev;
     unsigned int i_mnt_type;
     unsigned int i_mnt_dev;
-    
+
     while ( (mntent=getmntent(mntfp)) != NULL ) {
       i_mnt_type = strlen(mntent->mnt_type) + 1;
       mnt_type = calloc(1, i_mnt_type);
       if (mnt_type == NULL)
         continue;  /* maybe you'll get lucky next time. */
-      
+
       i_mnt_dev = strlen(mntent->mnt_fsname) + 1;
       mnt_dev = calloc(1, i_mnt_dev);
       if (mnt_dev == NULL) {
         free(mnt_type);
         continue;
       }
-      
+
       strncpy(mnt_type, mntent->mnt_type, i_mnt_type);
       strncpy(mnt_dev, mntent->mnt_fsname, i_mnt_dev);
-      
+
       /* Handle "supermount" filesystem mounts */
       if ( strcmp(mnt_type, "supermount") == 0 ) {
         tmp = strstr(mntent->mnt_opts, "fs=");
@@ -228,7 +228,7 @@ audio_get_volume_linux (void *p_user_data,
 
 /*!
   Pause playing CD through analog output
-  
+
   @param p_cdio the CD object to be acted upon.
 */
 static driver_return_code_t
@@ -241,7 +241,7 @@ audio_pause_linux (void *p_user_data)
 
 /*!
   Playing starting at given MSF through analog output
-  
+
   @param p_cdio the CD object to be acted upon.
 */
 static driver_return_code_t
@@ -250,26 +250,26 @@ audio_play_msf_linux (void *p_user_data, msf_t *p_start_msf, msf_t *p_end_msf)
 
   const _img_private_t *p_env = p_user_data;
   struct cdrom_msf cdrom_msf;
-  
+
   cdrom_msf.cdmsf_min0   = cdio_from_bcd8(p_start_msf->m);
   cdrom_msf.cdmsf_sec0   = cdio_from_bcd8(p_start_msf->s);
   cdrom_msf.cdmsf_frame0 = cdio_from_bcd8(p_start_msf->f);
-  
+
   cdrom_msf.cdmsf_min1   = cdio_from_bcd8(p_end_msf->m);
   cdrom_msf.cdmsf_sec1   = cdio_from_bcd8(p_end_msf->s);
   cdrom_msf.cdmsf_frame1 = cdio_from_bcd8(p_end_msf->f);
-  
+
   return ioctl(p_env->gen.fd, CDROMPLAYMSF, &cdrom_msf);
 }
 
 /*!
   Playing CD through analog output at the desired track and index
-  
+
   @param p_cdio the CD object to be acted upon.
   @param p_track_index location to start/end.
 */
 static driver_return_code_t
-audio_play_track_index_linux (void *p_user_data, 
+audio_play_track_index_linux (void *p_user_data,
                               cdio_track_index_t *p_track_index)
 {
 
@@ -279,12 +279,12 @@ audio_play_track_index_linux (void *p_user_data,
 
 /*!
   Read Audio Subchannel information
-  
+
   @param p_user_data the CD object to be acted upon.
   @param p_subchannel returned information
 */
 static driver_return_code_t
-audio_read_subchannel_linux (void *p_user_data, 
+audio_read_subchannel_linux (void *p_user_data,
                              /*out*/ cdio_subchannel_t *p_subchannel)
 {
 
@@ -299,32 +299,32 @@ audio_read_subchannel_linux (void *p_user_data,
     p_subchannel->track        = subchannel.cdsc_trk;
     p_subchannel->index        = subchannel.cdsc_ind;
 
-    p_subchannel->abs_addr.m   = 
+    p_subchannel->abs_addr.m   =
       cdio_to_bcd8(subchannel.cdsc_absaddr.msf.minute);
-    p_subchannel->abs_addr.s   = 
+    p_subchannel->abs_addr.s   =
       cdio_to_bcd8(subchannel.cdsc_absaddr.msf.second);
-    p_subchannel->abs_addr.f   = 
+    p_subchannel->abs_addr.f   =
       cdio_to_bcd8(subchannel.cdsc_absaddr.msf.frame);
-    p_subchannel->rel_addr.m   = 
+    p_subchannel->rel_addr.m   =
       cdio_to_bcd8(subchannel.cdsc_reladdr.msf.minute);
-    p_subchannel->rel_addr.s   = 
+    p_subchannel->rel_addr.s   =
       cdio_to_bcd8(subchannel.cdsc_reladdr.msf.second);
-    p_subchannel->rel_addr.f   = 
+    p_subchannel->rel_addr.f   =
       cdio_to_bcd8(subchannel.cdsc_reladdr.msf.frame);
     p_subchannel->audio_status = subchannel.cdsc_audiostatus;
 
     return DRIVER_OP_SUCCESS;
   } else {
-    cdio_info ("ioctl CDROMSUBCHNL failed: %s\n", strerror(errno));  
+    cdio_info ("ioctl CDROMSUBCHNL failed: %s\n", strerror(errno));
     return DRIVER_OP_ERROR;
   }
 }
 
 /*!
   Resume playing an audio CD.
-  
+
   @param p_cdio the CD object to be acted upon.
-  
+
 */
 static driver_return_code_t
 audio_resume_linux (void *p_user_data)
@@ -335,9 +335,9 @@ audio_resume_linux (void *p_user_data)
 
 /*!
   Set the volume of an audio CD.
-  
+
   @param p_user_data the CD object to be acted upon.
-  
+
 */
 static driver_return_code_t
 audio_set_volume_linux (void *p_user_data, cdio_audio_volume_t *p_volume)
@@ -348,11 +348,11 @@ audio_set_volume_linux (void *p_user_data, cdio_audio_volume_t *p_volume)
 
 /*!
   Stop playing an audio CD.
-  
+
   @param p_user_data the CD object to be acted upon.
-  
+
 */
-static driver_return_code_t 
+static driver_return_code_t
 audio_stop_linux (void *p_user_data)
 {
   const _img_private_t *p_env = p_user_data;
@@ -395,7 +395,7 @@ get_arg_linux (void *env, const char key[])
     return _obj->gen.scsi_tuple;
   } else if (!strcmp (key, "mmc-supported?")) {
       return is_mmc_supported(env) ? "true" : "false";
-  } 
+  }
   return NULL;
 }
 
@@ -425,77 +425,77 @@ get_drive_cap_linux (const void *p_user_data,
     *p_misc_cap  = CDIO_DRIVE_CAP_ERROR;
     return;
   }
-  
+
   *p_read_cap  = 0;
   *p_write_cap = 0;
   *p_misc_cap  = 0;
 
   /* Reader */
-  if (i_drivetype & CDC_PLAY_AUDIO) 
+  if (i_drivetype & CDC_PLAY_AUDIO)
     *p_read_cap  |= CDIO_DRIVE_CAP_READ_AUDIO;
-  if (i_drivetype & CDC_CD_R) 
+  if (i_drivetype & CDC_CD_R)
     *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_R;
-  if (i_drivetype & CDC_CD_RW) 
+  if (i_drivetype & CDC_CD_RW)
     *p_read_cap  |= CDIO_DRIVE_CAP_READ_CD_RW;
-  if (i_drivetype & CDC_DVD) 
+  if (i_drivetype & CDC_DVD)
     *p_read_cap  |= CDIO_DRIVE_CAP_READ_DVD_ROM;
 
   /* Writer */
-  if (i_drivetype & CDC_CD_RW) 
+  if (i_drivetype & CDC_CD_RW)
     *p_read_cap  |= CDIO_DRIVE_CAP_WRITE_CD_RW;
-  if (i_drivetype & CDC_DVD_R) 
+  if (i_drivetype & CDC_DVD_R)
     *p_read_cap  |= CDIO_DRIVE_CAP_WRITE_DVD_R;
-  if (i_drivetype & CDC_DVD_RAM) 
+  if (i_drivetype & CDC_DVD_RAM)
     *p_read_cap  |= CDIO_DRIVE_CAP_WRITE_DVD_RAM;
 
   /* Misc */
-  if (i_drivetype & CDC_CLOSE_TRAY) 
+  if (i_drivetype & CDC_CLOSE_TRAY)
     *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_CLOSE_TRAY;
-  if (i_drivetype & CDC_OPEN_TRAY) 
+  if (i_drivetype & CDC_OPEN_TRAY)
     *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_EJECT;
-  if (i_drivetype & CDC_LOCK) 
+  if (i_drivetype & CDC_LOCK)
     *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_LOCK;
-  if (i_drivetype & CDC_SELECT_SPEED) 
+  if (i_drivetype & CDC_SELECT_SPEED)
     *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_SELECT_SPEED;
-  if (i_drivetype & CDC_SELECT_DISC) 
+  if (i_drivetype & CDC_SELECT_DISC)
     *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_SELECT_DISC;
-  if (i_drivetype & CDC_MULTI_SESSION) 
+  if (i_drivetype & CDC_MULTI_SESSION)
     *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_MULTI_SESSION;
-  if (i_drivetype & CDC_MEDIA_CHANGED) 
+  if (i_drivetype & CDC_MEDIA_CHANGED)
     *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED;
-  if (i_drivetype & CDC_RESET) 
+  if (i_drivetype & CDC_RESET)
     *p_misc_cap  |= CDIO_DRIVE_CAP_MISC_RESET;
 }
 #endif
 
 /*! Get the LSN of the first track of the last session of
   on the CD.
-  
+
   @param p_cdio the CD object to be acted upon.
   @param i_last_session pointer to the session number to be returned.
 */
-static driver_return_code_t 
-get_last_session_linux (void *p_user_data, 
+static driver_return_code_t
+get_last_session_linux (void *p_user_data,
                         /*out*/ lsn_t *i_last_session)
 {
   const _img_private_t *p_env = p_user_data;
   struct cdrom_multisession ms;
   int i_rc;
-  
+
   ms.addr_format = CDROM_LBA;
   i_rc = ioctl(p_env->gen.fd, CDROMMULTISESSION, &ms);
   if (0 == i_rc) {
     *i_last_session = ms.addr.lba;
     return DRIVER_OP_SUCCESS;
   } else {
-    cdio_warn ("ioctl CDROMMULTISESSION failed: %s\n", strerror(errno));  
+    cdio_warn ("ioctl CDROMMULTISESSION failed: %s\n", strerror(errno));
     return DRIVER_OP_ERROR;
   }
 }
 
 
 
-/*! 
+/*!
   Find out if media has changed since the last call.
   @param p_user_data the environment object to be acted upon.
   @return 1 if media has changed since last call, 0 if not. Error
@@ -525,19 +525,19 @@ get_mcn_linux (const void *p_user_data) {
   return strdup((char *)mcn.medium_catalog_number);
 }
 
-/*!  
-  Get format of track. 
+/*!
+  Get format of track.
 */
 static track_format_t
-get_track_format_linux(void *p_user_data, track_t i_track) 
+get_track_format_linux(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
-  
+
   if ( !p_env ) return TRACK_FORMAT_ERROR;
 
   if (!p_env->gen.toc_init) read_toc_linux (p_user_data) ;
 
-  if (i_track > (p_env->gen.i_tracks+p_env->gen.i_first_track) 
+  if (i_track > (p_env->gen.i_tracks+p_env->gen.i_first_track)
       || i_track < p_env->gen.i_first_track)
     return TRACK_FORMAT_ERROR;
 
@@ -555,7 +555,7 @@ get_track_format_linux(void *p_user_data, track_t i_track)
       return TRACK_FORMAT_DATA;
   } else
     return TRACK_FORMAT_AUDIO;
-  
+
 }
 
 /*!
@@ -567,27 +567,27 @@ get_track_format_linux(void *p_user_data, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-get_track_green_linux(void *p_user_data, track_t i_track) 
+get_track_green_linux(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
-  
+
   if (!p_env->gen.toc_init) read_toc_linux (p_user_data) ;
 
-  if (i_track >= (p_env->gen.i_tracks+p_env->gen.i_first_track) 
+  if (i_track >= (p_env->gen.i_tracks+p_env->gen.i_first_track)
       || i_track < p_env->gen.i_first_track)
     return false;
 
   i_track -= p_env->gen.i_first_track;
 
-  /* FIXME: Dunno if this is the right way, but it's what 
+  /* FIXME: Dunno if this is the right way, but it's what
      I was using in cd-info for a while.
    */
   return ((p_env->tocent[i_track].cdte_ctrl & 2) != 0);
 }
 
-/*!  
+/*!
   Return the starting MSF (minutes/secs/frames) for track number
-  track_num in obj.  Track numbers usually start at something 
+  track_num in obj.  Track numbers usually start at something
   greater than 0, usually 1.
 
   The "leadout" track is specified either by
@@ -599,20 +599,20 @@ get_track_msf_linux(void *p_user_data, track_t i_track, msf_t *msf)
 {
   _img_private_t *p_env = p_user_data;
 
-  if (NULL == msf || 
+  if (NULL == msf ||
       (i_track > CDIO_CD_MAX_TRACKS && i_track != CDIO_CDROM_LEADOUT_TRACK))
     return false;
 
   if (!p_env->gen.toc_init) read_toc_linux (p_user_data) ;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) 
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK)
     i_track = p_env->gen.i_tracks + p_env->gen.i_first_track;
 
-  if (i_track > (p_env->gen.i_tracks+p_env->gen.i_first_track) 
+  if (i_track > (p_env->gen.i_tracks+p_env->gen.i_first_track)
       || i_track < p_env->gen.i_first_track) {
     return false;
   } else {
-    struct cdrom_msf0  *msf0= 
+    struct cdrom_msf0  *msf0=
       &p_env->tocent[i_track-p_env->gen.i_first_track].cdte_addr.msf;
     msf->m = cdio_to_bcd8(msf0->minute);
     msf->s = cdio_to_bcd8(msf0->second);
@@ -634,7 +634,7 @@ static int is_mounted (const char * device, char * target) {
 
   char file_device[PATH_MAX];
   char file_target[PATH_MAX];
-  
+
   fp = fopen ( "/proc/mounts", "r");
   /* Older systems just have /etc/mtab */
   if(!fp)
@@ -647,13 +647,13 @@ static int is_mounted (const char * device, char * target) {
   if (NULL == cdio_realpath(device, real_device_1)) {
     cdio_warn("Problems resolving device %s: %s\n", device, strerror(errno));
   }
-    
-    
+
+
   /* Read entries */
 
   while ( fscanf(fp, "%s %s %*s %*s %*d %*d\n", file_device, file_target) != EOF ) {
       if (NULL == cdio_realpath(file_device, real_device_2)) {
-          cdio_debug("Problems resolving device %s: %s\n", 
+          cdio_debug("Problems resolving device %s: %s\n",
                      file_device, strerror(errno));
       }
     if(!strcmp(real_device_1, real_device_2)) {
@@ -661,7 +661,7 @@ static int is_mounted (const char * device, char * target) {
       fclose(fp);
       return 1;
     }
-      
+
   }
   fclose(fp);
   return 0;
@@ -670,8 +670,8 @@ static int is_mounted (const char * device, char * target) {
 /*!
   Umount a filesystem specified by it's mountpoint. We must do this
   by forking and calling the umount command, because the raw umount
-  (or umount2) system calls will *always* trigger an EPERM even if 
-  we are allowed to umount the filesystem. The umount command is 
+  (or umount2) system calls will *always* trigger an EPERM even if
+  we are allowed to umount the filesystem. The umount command is
   suid root.
 
   Code here is inspired by the standard linux eject command by
@@ -700,10 +700,10 @@ static int do_umount(char * target) {
   }
   return 0;
 }
-     
+
 
 /*!
-  Eject media in CD-ROM drive. Return DRIVER_OP_SUCCESS if successful, 
+  Eject media in CD-ROM drive. Return DRIVER_OP_SUCCESS if successful,
   DRIVER_OP_ERROR on error.
  */
 
@@ -715,14 +715,14 @@ eject_media_linux (void *p_user_data) {
   int status;
   bool was_open = false;
   char mount_target[PATH_MAX];
-  
+
   if ( p_env->gen.fd <= -1 ) {
     p_env->gen.fd = open (p_env->gen.source_name, O_RDONLY|O_NONBLOCK);
   }
   else {
     was_open = true;
   }
-  
+
   if ( p_env->gen.fd <= -1 ) return DRIVER_OP_ERROR;
 
   if ((status = ioctl(p_env->gen.fd, CDROM_DRIVE_STATUS, CDSL_CURRENT)) > 0) {
@@ -750,13 +750,13 @@ eject_media_linux (void *p_user_data) {
         close(p_env->gen.fd);
         p_env->gen.fd = open (p_env->gen.source_name, O_RDONLY|O_NONBLOCK);
       }
-      
+
       if((ret = ioctl(p_env->gen.fd, CDROMEJECT)) != 0) {
         int eject_error = errno;
         /* Try ejecting the MMC way... */
         ret = mmc_eject_media(p_env->gen.cdio);
         if (0 != ret) {
-          cdio_info("ioctl CDROMEJECT and MMC eject failed: %s", 
+          cdio_info("ioctl CDROMEJECT and MMC eject failed: %s",
                     strerror(eject_error));
           ret = DRIVER_OP_ERROR;
         }
@@ -778,7 +778,7 @@ eject_media_linux (void *p_user_data) {
   return ret;
 }
 
-/*! 
+/*!
   Get disc type associated with cd object.
 */
 static discmode_t
@@ -805,7 +805,7 @@ dvd_discmode_linux (_img_private_t *p_env)
   return discmode;
 }
 
-/*! 
+/*!
   Get disc type associated with the cd object.
 */
 static discmode_t
@@ -821,7 +821,7 @@ get_discmode_linux (void *p_user_data)
   discmode = dvd_discmode_linux(p_env);
 
   if (CDIO_DISC_MODE_NO_INFO != discmode) return discmode;
-  /* 
+  /*
      Justin B Ruggles <jruggle@earthlink.net> reports that the
      GNU/Linux ioctl(.., CDROM_DISC_STATUS) does not return "CD DATA
      Form 2" for SVCD's even though they are are form 2.  In
@@ -830,24 +830,24 @@ get_discmode_linux (void *p_user_data)
      to issue a FULL TOC on DVD media.
   */
   discmode = mmc_get_discmode(p_env->gen.cdio);
-  if (CDIO_DISC_MODE_NO_INFO != discmode) 
+  if (CDIO_DISC_MODE_NO_INFO != discmode)
     return discmode;
   else {
     int32_t i_discmode = ioctl (p_env->gen.fd, CDROM_DISC_STATUS);
 
     if (i_discmode < 0) return CDIO_DISC_MODE_ERROR;
-    
+
     switch(i_discmode) {
     case CDS_AUDIO:
       return CDIO_DISC_MODE_CD_DA;
     case CDS_DATA_1:
-    case CDS_DATA_2: /* Actually, recent GNU/Linux kernels don't return 
+    case CDS_DATA_2: /* Actually, recent GNU/Linux kernels don't return
                         CDS_DATA_2, but just in case. */
       return CDIO_DISC_MODE_CD_DATA;
     case CDS_MIXED:
       return CDIO_DISC_MODE_CD_MIXED;
     case CDS_XA_2_1:
-    case CDS_XA_2_2: 
+    case CDS_XA_2_2:
       return CDIO_DISC_MODE_CD_XA;
     case CDS_NO_INFO:
       return CDIO_DISC_MODE_NO_INFO;
@@ -857,7 +857,7 @@ get_discmode_linux (void *p_user_data)
   }
 }
 
-/* Check a drive to see if it is a CD-ROM 
+/* Check a drive to see if it is a CD-ROM
    Return 1 if a CD-ROM. 0 if it exists but isn't a CD-ROM drive
    and -1 if no device exists .
 */
@@ -866,12 +866,12 @@ is_cdrom_linux(const char *drive, char *mnttype)
 {
   bool is_cd=false;
   int cdfd;
-  
+
   /* If it doesn't exist, return -1 */
   if ( !cdio_is_device_quiet_generic(drive) ) {
     return(false);
   }
-  
+
   /* If it does exist, verify that it's an available CD-ROM */
   cdfd = open(drive, (O_RDONLY|O_NONBLOCK), 0);
   if ( cdfd >= 0 ) {
@@ -887,23 +887,23 @@ is_cdrom_linux(const char *drive, char *mnttype)
   return(is_cd);
 }
 
-/* MMC driver to read audio sectors. 
+/* MMC driver to read audio sectors.
    Can read only up to 25 blocks.
 */
 static driver_return_code_t
-read_audio_sectors_linux (void *p_user_data, void *p_buf, lsn_t i_lsn, 
+read_audio_sectors_linux (void *p_user_data, void *p_buf, lsn_t i_lsn,
                            uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
-  return mmc_read_sectors( p_env->gen.cdio, p_buf, i_lsn, 
+  return mmc_read_sectors( p_env->gen.cdio, p_buf, i_lsn,
                            CDIO_MMC_READ_TYPE_CDDA, i_blocks);
 }
 
-/* Packet driver to read mode2 sectors. 
+/* Packet driver to read mode2 sectors.
    Can read only up to 25 blocks.
 */
 static driver_return_code_t
-_read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba, 
+_read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
                          uint32_t i_blocks, bool b_read_10)
 {
   mmc_cdb_t cdb = {{0, }};
@@ -912,24 +912,24 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
 
   if (b_read_10) {
     int retval;
-    
+
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_10);
     CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_blocks);
 
     if ((retval = mmc_set_blocksize (p_env->gen.cdio, M2RAW_SECTOR_SIZE)))
       return retval;
-    
-    if ((retval = run_mmc_cmd_linux (p_env, 0, 
+
+    if ((retval = run_mmc_cmd_linux (p_env, 0,
                                      mmc_get_cmd_len(cdb.field[0]),
-                                     &cdb, 
+                                     &cdb,
                                      SCSI_MMC_DATA_READ,
-                                     M2RAW_SECTOR_SIZE * i_blocks, 
+                                     M2RAW_SECTOR_SIZE * i_blocks,
                                      p_buf)))
       {
         mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
         return retval;
       }
-    
+
     /* Restore blocksize. */
     retval = mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
     return retval;
@@ -941,15 +941,15 @@ _read_mode2_sectors_mmc (_img_private_t *p_env, void *p_buf, lba_t lba,
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
     CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks);
 
-    return run_mmc_cmd_linux (p_env, 0, 
-                              mmc_get_cmd_len(cdb.field[0]), &cdb, 
+    return run_mmc_cmd_linux (p_env, 0,
+                              mmc_get_cmd_len(cdb.field[0]), &cdb,
                               SCSI_MMC_DATA_READ,
                               M2RAW_SECTOR_SIZE * i_blocks, p_buf);
   }
 }
 
 static driver_return_code_t
-_read_mode2_sectors (_img_private_t *p_env, void *p_buf, lba_t lba, 
+_read_mode2_sectors (_img_private_t *p_env, void *p_buf, lba_t lba,
                      uint32_t i_blocks, bool b_read_10)
 {
   unsigned int l = 0;
@@ -959,8 +959,8 @@ _read_mode2_sectors (_img_private_t *p_env, void *p_buf, lba_t lba,
     {
       const unsigned i_blocks2 = (i_blocks > 25) ? 25 : i_blocks;
       void *p_buf2 = ((char *)p_buf ) + (l * M2RAW_SECTOR_SIZE);
-      
-      retval |= _read_mode2_sectors_mmc (p_env, p_buf2, lba + l, 
+
+      retval |= _read_mode2_sectors_mmc (p_env, p_buf2, lba + l,
                                          i_blocks2, b_read_10);
 
       if (retval)
@@ -975,10 +975,10 @@ _read_mode2_sectors (_img_private_t *p_env, void *p_buf, lba_t lba,
 
 /*!
    Reads a single mode1 sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
+   from lsn. Returns 0 if no error.
  */
 static driver_return_code_t
-_read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn, 
+_read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
                           bool b_form2)
 {
 
@@ -1001,7 +1001,7 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
       cdio_warn ("no way to read mode1");
       return 1;
       break;
-      
+
     case _AM_IOCTL:
       if (ioctl (p_env->gen.fd, CDROMREADMODE1, &buf) == -1)
         {
@@ -1010,10 +1010,10 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
           /* exit (EXIT_FAILURE); */
         }
       break;
-      
+
     case _AM_READ_CD:
     case _AM_READ_10:
-      if (_read_mode2_sectors (p_env, buf, lsn, 1, 
+      if (_read_mode2_sectors (p_env, buf, lsn, 1,
                                (p_env->access_mode == _AM_READ_10)))
         {
           perror ("ioctl()");
@@ -1034,9 +1034,9 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
       break;
     }
 
-  memcpy (p_data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE, 
+  memcpy (p_data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE,
           b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
-  
+
 #else
   return cdio_generic_read_form1_sector(p_user_data, p_data, lsn);
 #endif
@@ -1046,10 +1046,10 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
 /*!
    Reads i_blocks of mode2 sectors from cd device into data starting
    from lsn.
-   Returns 0 if no error. 
+   Returns 0 if no error.
  */
 static driver_return_code_t
-_read_mode1_sectors_linux (void *p_user_data, void *p_data, lsn_t lsn, 
+_read_mode1_sectors_linux (void *p_user_data, void *p_data, lsn_t lsn,
                            bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
@@ -1068,10 +1068,10 @@ _read_mode1_sectors_linux (void *p_user_data, void *p_data, lsn_t lsn,
 
 /*!
    Reads a single mode2 sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
+   from lsn. Returns 0 if no error.
  */
 static driver_return_code_t
-_read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn, 
+_read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
                           bool b_form2)
 {
   char buf[M2RAW_SECTOR_SIZE] = { 0, };
@@ -1092,7 +1092,7 @@ _read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
       cdio_warn ("no way to read mode2");
       return 1;
       break;
-      
+
     case _AM_IOCTL:
     case _AM_MMC_RDWR:
     case _AM_MMC_RDWR_EXCL:
@@ -1103,10 +1103,10 @@ _read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
           /* exit (EXIT_FAILURE); */
         }
       break;
-      
+
     case _AM_READ_CD:
     case _AM_READ_10:
-      if (_read_mode2_sectors (p_env, buf, lsn, 1, 
+      if (_read_mode2_sectors (p_env, buf, lsn, 1,
                                (p_env->access_mode == _AM_READ_10)))
         {
           perror ("ioctl()");
@@ -1131,17 +1131,17 @@ _read_mode2_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
     memcpy (p_data, buf, M2RAW_SECTOR_SIZE);
   else
     memcpy (((char *)p_data), buf + CDIO_CD_SUBHEADER_SIZE, CDIO_CD_FRAMESIZE);
-  
+
   return DRIVER_OP_SUCCESS;
 }
 
 /*!
    Reads i_blocks of mode2 sectors from cd device into data starting
    from lsn.
-   Returns 0 if no error. 
+   Returns 0 if no error.
  */
 static driver_return_code_t
-_read_mode2_sectors_linux (void *p_user_data, void *data, lsn_t lsn, 
+_read_mode2_sectors_linux (void *p_user_data, void *data, lsn_t lsn,
                            bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
@@ -1151,7 +1151,7 @@ _read_mode2_sectors_linux (void *p_user_data, void *data, lsn_t lsn,
   /* For each frame, pick out the data part we need */
   for (i = 0; i < i_blocks; i++) {
     int retval;
-    if ( (retval = _read_mode2_sector_linux (p_env, 
+    if ( (retval = _read_mode2_sector_linux (p_env,
                                             ((char *)data) + (i_blocksize*i),
                                             lsn + i, b_form2)) )
       return retval;
@@ -1159,12 +1159,12 @@ _read_mode2_sectors_linux (void *p_user_data, void *data, lsn_t lsn,
   return DRIVER_OP_SUCCESS;
 }
 
-/*! 
+/*!
   Read and cache the CD's Track Table of Contents and track info.
   Return false if successful or true if an error.
 */
 static bool
-read_toc_linux (void *p_user_data) 
+read_toc_linux (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
   int i;
@@ -1172,7 +1172,7 @@ read_toc_linux (void *p_user_data)
 
   /* read TOC header */
   if ( ioctl(p_env->gen.fd, CDROMREADTOCHDR, &p_env->tochdr) == -1 ) {
-    cdio_warn("%s: %s\n", 
+    cdio_warn("%s: %s\n",
             "error in ioctl CDROMREADTOCHDR", strerror(errno));
     return false;
   }
@@ -1180,7 +1180,7 @@ read_toc_linux (void *p_user_data)
   p_env->gen.i_first_track = p_env->tochdr.cdth_trk0;
   p_env->gen.i_tracks      = p_env->tochdr.cdth_trk1;
 
-  u_tracks = p_env->gen.i_tracks - p_env->gen.i_first_track;
+  u_tracks = p_env->gen.i_tracks - p_env->gen.i_first_track + 1;
 
   if (u_tracks > CDIO_CD_MAX_TRACKS) {
      cdio_log(CDIO_LOG_WARN, "Number of tracks exceeds maximum (%d vs. %d)\n",
@@ -1191,23 +1191,23 @@ read_toc_linux (void *p_user_data)
 
   /* read individual tracks */
   for (i= p_env->gen.i_first_track; i<=p_env->gen.i_tracks; i++) {
-    struct cdrom_tocentry *p_toc = 
+    struct cdrom_tocentry *p_toc =
       &(p_env->tocent[i-p_env->gen.i_first_track]);
-    
+
     p_toc->cdte_track = i;
     p_toc->cdte_format = CDROM_MSF;
     if ( ioctl(p_env->gen.fd, CDROMREADTOCENTRY, p_toc) == -1 ) {
       cdio_warn("%s %d: %s\n",
-              "error in ioctl CDROMREADTOCENTRY for track", 
+              "error in ioctl CDROMREADTOCENTRY for track",
               i, strerror(errno));
       return false;
     }
 
     set_track_flags(&(p_env->gen.track_flags[i]), p_toc->cdte_ctrl);
-    
+
     /****
     struct cdrom_msf0 *msf= &env->tocent[i-1].cdte_addr.msf;
-    
+
     fprintf (stdout, "--- track# %d (msf %2.2x:%2.2x:%2.2x)\n",
              i, msf->minute, msf->second, msf->frame);
     ****/
@@ -1218,9 +1218,9 @@ read_toc_linux (void *p_user_data)
   p_env->tocent[p_env->gen.i_tracks].cdte_track = CDIO_CDROM_LEADOUT_TRACK;
   p_env->tocent[p_env->gen.i_tracks].cdte_format = CDROM_MSF;
 
-  if (ioctl(p_env->gen.fd, CDROMREADTOCENTRY, 
+  if (ioctl(p_env->gen.fd, CDROMREADTOCENTRY,
             &p_env->tocent[p_env->gen.i_tracks]) == -1 ) {
-    cdio_warn("%s: %s\n", 
+    cdio_warn("%s: %s\n",
              "error in ioctl CDROMREADTOCENTRY for lead-out",
             strerror(errno));
     return false;
@@ -1238,25 +1238,25 @@ read_toc_linux (void *p_user_data)
 }
 
 /*!
-  Run a SCSI MMC command. 
- 
+  Run a SCSI MMC command.
+
   cdio          CD structure set by cdio_open().
   i_timeout     time in milliseconds we will wait for the command
-                to complete. If this value is -1, use the default 
+                to complete. If this value is -1, use the default
                 time-out value.
   p_buf         Buffer for data, both sending and receiving
   i_buf         Size of buffer
   e_direction   direction the transfer is to go.
-  cdb           CDB bytes. All values that are needed should be set on 
+  cdb           CDB bytes. All values that are needed should be set on
                 input. We'll figure out what the right CDB length should be.
 
   We return true if command completed successfully and false if not.
  */
 static driver_return_code_t
-run_mmc_cmd_linux(void *p_user_data, 
+run_mmc_cmd_linux(void *p_user_data,
                   unsigned int i_timeout_ms,
-                  unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-                  cdio_mmc_direction_t e_direction, 
+                  unsigned int i_cdb, const mmc_cdb_t *p_cdb,
+                  cdio_mmc_direction_t e_direction,
                   unsigned int i_buf, /*in/out*/ void *p_buf)
 {
   _img_private_t *p_env = p_user_data;
@@ -1280,16 +1280,16 @@ run_mmc_cmd_linux(void *p_user_data,
 #endif
 
   memset(u_sense, 0, sizeof(sense));
-  { 
+  {
     int i_rc = ioctl (p_env->gen.fd, CDROM_SEND_PACKET, &cgc);
 
-    /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
+    /* Record SCSI sense reply for API call mmc_last_cmd_sense().
     */
     if (sense.additional_sense_len) {
-        /* SCSI Primary Command standard 
+        /* SCSI Primary Command standard
            SPC 4.5.3, Table 26: 252 bytes legal, 263 bytes possible */
-        int sense_size = sense.additional_sense_len + 8; 
-    
+        int sense_size = sense.additional_sense_len + 8;
+
         if (sense_size > sizeof(sense))
             sense_size = sizeof(sense);
         memcpy((void *) p_env->gen.scsi_mmc_sense, &sense, sense_size);
@@ -1298,10 +1298,10 @@ run_mmc_cmd_linux(void *p_user_data,
 
     if (0 == i_rc) return DRIVER_OP_SUCCESS;
     if (-1 == i_rc) {
-      cdio_info("ioctl CDROM_SEND_PACKET for command %s (0x%0x) failed:\n\t%s", 
+      cdio_info("ioctl CDROM_SEND_PACKET for command %s (0x%0x) failed:\n\t%s",
                 mmc_cmd2str((uint8_t) p_cdb->field[0]),
-                p_cdb->field[0], 
-                strerror(errno));  
+                p_cdb->field[0],
+                strerror(errno));
       switch (errno) {
       case EPERM:
         return DRIVER_OP_NOT_PERMITTED;
@@ -1312,7 +1312,7 @@ run_mmc_cmd_linux(void *p_user_data,
       case EFAULT:
         return DRIVER_OP_BAD_POINTER;
         break;
-      case EIO: 
+      case EIO:
       default:
         return DRIVER_OP_ERROR;
         break;
@@ -1334,7 +1334,7 @@ run_mmc_cmd_linux(void *p_user_data,
 
 
    In some cases CDROMREADTOCHDR seems to fix this, but I haven't been
-   able to find anything that documents this requirement or behavior. It's 
+   able to find anything that documents this requirement or behavior. It's
    not the way CDROMREADTOCHDR works on other 'nixs.
 
    Also note that in one at least one test the corresponding MMC gives
@@ -1355,7 +1355,7 @@ get_disc_last_lsn_linux (void *p_user_data)
   tocent.cdte_format = CDROM_LBA;
   if (ioctl (p_env->gen.fd, CDROMREADTOCENTRY, &tocent) == -1)
     {
-      cdio_warn ("ioctl CDROMREADTOCENTRY failed: %s\n", strerror(errno));  
+      cdio_warn ("ioctl CDROMREADTOCENTRY failed: %s\n", strerror(errno));
       return CDIO_INVALID_LSN;
     }
 
@@ -1367,10 +1367,10 @@ get_disc_last_lsn_linux (void *p_user_data)
 /*!
   Set the arg "key" with "value" in the source device.
   Currently "source" and "access-mode" are valid keys.
-  "source" sets the source device in I/O operations 
-  "access-mode" sets the the method of CD access 
+  "source" sets the source device in I/O operations
+  "access-mode" sets the the method of CD access
 
-  DRIVER_OP_SUCCESS is returned if no error was found, 
+  DRIVER_OP_SUCCESS is returned if no error was found,
   and nonzero if there as an error.
 */
 static driver_return_code_t
@@ -1456,7 +1456,7 @@ cdio_get_devices_linux (void)
     cdio_add_device_list(&drives, ret_drive, &num_drives);
     free(ret_drive);
   }
-  
+
   /* Finally check possible mountable drives in /etc/fstab */
   if (NULL != (ret_drive = check_mounts_linux("/etc/fstab"))) {
     cdio_add_device_list(&drives, ret_drive, &num_drives);
@@ -1489,7 +1489,7 @@ cdio_get_default_device_linux(void)
 {
 #ifndef HAVE_LINUX_CDROM
   return NULL;
-  
+
 #else
   unsigned int i;
   char drive[40];
@@ -1508,7 +1508,7 @@ cdio_get_default_device_linux(void)
   /* Now check the currently mounted CD drives */
   if (NULL != (ret_drive = check_mounts_linux("/etc/mtab")))
     return ret_drive;
-  
+
   /* Finally check possible mountable drives in /etc/fstab */
   if (NULL != (ret_drive = check_mounts_linux("/etc/fstab")))
     return ret_drive;
@@ -1532,11 +1532,11 @@ cdio_get_default_device_linux(void)
 
 /*!
   Close tray on CD-ROM.
-  
+
   @param psz_device the CD-ROM drive to be closed.
-  
+
 */
-driver_return_code_t 
+driver_return_code_t
 close_tray_linux (const char *psz_device)
 {
 #ifdef HAVE_LINUX_CDROM
@@ -1559,20 +1559,20 @@ close_tray_linux (const char *psz_device)
         goto try_anyway;
       }
     } else {
-      cdio_info ("CDROM_DRIVE_STATUS failed: %s, trying anyway", 
+      cdio_info ("CDROM_DRIVE_STATUS failed: %s, trying anyway",
                  strerror(errno));
     try_anyway:
       i_rc = DRIVER_OP_SUCCESS;
       if((i_rc = ioctl(fd, CDROMCLOSETRAY)) != 0) {
-        cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));  
+        cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));
         i_rc = DRIVER_OP_ERROR;
       }
     }
     close(fd);
-  } else 
+  } else
     i_rc = DRIVER_OP_ERROR;
   return i_rc;
-#else 
+#else
   return DRIVER_OP_NO_DRIVER;
 #endif /*HAVE_LINUX_CDROM*/
 }
@@ -1590,7 +1590,7 @@ close_tray_linux (const char *psz_device)
 static int
 set_scsi_tuple_linux(_img_private_t *env)
 {
-  int bus_no = -1, host_no = -1, channel_no = -1, target_no = -1, lun_no = -1; 
+  int bus_no = -1, host_no = -1, channel_no = -1, target_no = -1, lun_no = -1;
   int ret, i;
   char tuple[160], hdx[10];
 #ifdef SCSI_IOCTL_GET_IDLUN
@@ -1646,7 +1646,7 @@ no_tuple:;
   snprintf(tuple, sizeof(tuple)-1, "%d,%d,%d,%d,%d",
           bus_no, host_no, channel_no, target_no, lun_no);
   env->gen.scsi_tuple = strdup(tuple);
-  return 1; 
+  return 1;
 }
 #endif
 
@@ -1660,7 +1660,7 @@ cdio_open_linux (const char *psz_source_name)
 {
 #ifdef HAVE_LINUX_CDROM
   return cdio_open_am_linux(psz_source_name, NULL);
-#else 
+#else
   return NULL;
 #endif /*HAVE_LINUX_CDROM*/
 }
@@ -1726,7 +1726,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .read_audio_sectors    = read_audio_sectors_linux,
 #if 1
     .read_data_sectors     = read_data_sectors_generic,
-#else 
+#else
     .read_data_sectors     = read_data_sectors_mmc,
 #endif
     .read_mode1_sector     = _read_mode1_sector_linux,
@@ -1758,7 +1758,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
       free(_data);
       return NULL;
     }
-    
+
     set_arg_linux(_data, "source", psz_source);
     free(psz_source);
   } else {
@@ -1794,8 +1794,8 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     free(ret);
     return NULL;
   }
-  
-#else 
+
+#else
   return NULL;
 #endif /* HAVE_LINUX_CDROM */
 
@@ -1806,13 +1806,13 @@ cdio_have_linux (void)
 {
 #ifdef HAVE_LINUX_CDROM
   return true;
-#else 
+#else
   return false;
 #endif /* HAVE_LINUX_CDROM */
 }
 
 
-/* 
+/*
  * Local variables:
  *  c-file-style: "gnu"
  *  tab-width: 8

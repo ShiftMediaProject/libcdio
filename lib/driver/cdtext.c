@@ -39,11 +39,7 @@
 #define MAX_CDTEXT_GENRE_CODE     28
 #define MAX_CDTEXT_LANGUAGE_CODE 127
 
-#ifndef CDIO_CD_MAX_TRACKS
-# define CDIO_CD_MAX_TRACKS 99 /* Largest CD track number */
-#endif
-
-const char *cdtext_field[MAX_CDTEXT_FIELDS] = 
+const char *cdtext_field[MAX_CDTEXT_FIELDS] =
 {
   "TITLE",
   "PERFORMER",
@@ -205,7 +201,7 @@ cdtext_field2str(cdtext_field_t i)
 {
   if (i >= MAX_CDTEXT_FIELDS)
     return "INVALID";
-  else 
+  else
     return cdtext_field[i];
 }
 
@@ -236,16 +232,16 @@ cdtext_lang2str(cdtext_lang_t i)
 /*!
   Free memory associated with the given cdtext_t object.
 
-  @param p_cdtext the CD-TEXT object 
+  @param p_cdtext the CD-TEXT object
 */
-void 
+void
 cdtext_destroy(cdtext_t *p_cdtext)
 {
   cdtext_field_t k;
   track_t j;
   int i;
 
-  if (!p_cdtext) return; 
+  if (!p_cdtext) return;
   for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++) {
     for (j=0; j<CDTEXT_NUM_TRACKS_MAX; j++) {
       for (k=0; k < MAX_CDTEXT_FIELDS; k++) {
@@ -338,7 +334,7 @@ cdtext_lang_t
   if (NULL == p_cdtext)
     return NULL;
 
-  for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++) 
+  for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++)
   {
     avail[i] = CDTEXT_LANGUAGE_UNKNOWN;
     if (CDTEXT_LANGUAGE_UNKNOWN != p_cdtext->block[i].language_code)
@@ -379,14 +375,14 @@ cdtext_select_language(cdtext_t *p_cdtext, cdtext_lang_t language)
   return false;
 }
 
-/*! 
+/*!
   Initialize a new cdtext structure.
 
-  When the structure is no longer needed, release the 
+  When the structure is no longer needed, release the
   resources using cdtext_delete.
 
 */
-cdtext_t 
+cdtext_t
 *cdtext_init(void)
 {
   cdtext_field_t k;
@@ -417,14 +413,14 @@ cdtext_t
   Internal function.
 
   @param key key to test
-  
+
   @return CDTEXT_INVALID if the given keyword is invalid
 */
 cdtext_field_t
 cdtext_is_field (const char *key)
 {
   unsigned int i;
-  
+
   for (i = 0; i < MAX_CDTEXT_FIELDS ; i++)
     if (0 == strcmp(cdtext_field[i], key)) {
       return i;
@@ -438,14 +434,14 @@ cdtext_is_field (const char *key)
   Internal function.
 
   @param lang language to test
-  
+
   @return CDTEXT_LANGUAGE_UNKNOWN if language is not supported
 */
 cdtext_lang_t
 cdtext_is_language(const char *lang)
 {
   unsigned int i;
-  
+
   for (i = 0; i < MAX_CDTEXT_LANGUAGE_CODE; i++)
     if (0 == strcmp(cdtext_language[i], lang)) {
       return i;
@@ -453,33 +449,33 @@ cdtext_is_language(const char *lang)
   return CDTEXT_LANGUAGE_UNKNOWN;
 }
 
-/*! 
+/*!
   Sets the given field at the given track to the given value.
-  
+
   Recodes to UTF-8 if charset is not NULL.
-  
+
   @param p_cdtext the CD-TEXT object
   @param key field to set
   @param value value to set
   @param track track to work on
   @param charset charset to convert from
  */
-void 
-cdtext_set(cdtext_t *p_cdtext, cdtext_field_t key, const uint8_t *value, 
+void
+cdtext_set(cdtext_t *p_cdtext, cdtext_field_t key, const uint8_t *value,
            track_t track, const char *charset)
 {
-  if (NULL == value || key == CDTEXT_FIELD_INVALID || 0 > track 
+  if (NULL == value || key == CDTEXT_FIELD_INVALID || 0 > track
       || CDIO_CD_MAX_TRACKS < track)
     return;
 
   /* free old memory */
-  if (p_cdtext->block[p_cdtext->block_i].track[track].field[key]) 
+  if (p_cdtext->block[p_cdtext->block_i].track[track].field[key])
     free(p_cdtext->block[p_cdtext->block_i].track[track].field[key]);
 
   /* recode to UTF-8 */
   if (NULL != charset) {
     cdio_utf8_t *utf8_str = NULL;
-    cdio_charset_to_utf8((const char*) value, strlen((const char*)value), 
+    cdio_charset_to_utf8((const char*) value, strlen((const char*)value),
                         &utf8_str, charset);
     p_cdtext->block[p_cdtext->block_i].track[track].field[key] = (char *)utf8_str;
   } else
@@ -494,9 +490,9 @@ cdtext_set(cdtext_t *p_cdtext, cdtext_field_t key, const uint8_t *value,
   @param i_data size of wdata
 
   @returns 0 on success, non-zero on failure
-*/       
+*/
 int
-cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data) 
+cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
 {
   uint8_t       *p_data;
   int           j;

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2011, 2012
+  Copyright (C) 2004-2005, 2008, 2011-2013
    Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -21,6 +21,10 @@
 
 #include <cdio/types.h>
 
+#ifndef CDIO_CD_MAX_TRACKS
+# define CDIO_CD_MAX_TRACKS 99 /* Largest CD track number */
+#endif
+
 #define CDTEXT_GET_LEN16(p) (p[0]<<8) + p[1]
 
 
@@ -30,12 +34,12 @@ typedef enum {
   CDTEXT_LEN_PACK           = 18,
   CDTEXT_LEN_BLOCKSIZE      = 36,
   CDTEXT_NUM_BLOCKS_MAX     = 8,
-  CDTEXT_NUM_TRACKS_MAX     = 100,
+  CDTEXT_NUM_TRACKS_MAX     = CDIO_CD_MAX_TRACKS+1, /* +1 for 0th disk track */
   CDTEXT_NUM_BLOCKPACKS_MAX = 255
 } cdtext_format_enum_t;
 
 /**
- * From table J.2 - Pack Type Indicator Definitions from 
+ * From table J.2 - Pack Type Indicator Definitions from
  * Working Draft NCITS XXX T10/1364-D Revision 10G. November 12, 2001.
  */
 typedef enum {
@@ -59,8 +63,8 @@ typedef enum cdtext_charcode_enum_s {
   CDTEXT_CHARCODE_ISO_8859_1 = 0x00, /**< ISO-8859-1 (8 bit), Latin-1 */
   CDTEXT_CHARCODE_ASCII      = 0x01, /**< ASCII (7 bit) */
   CDTEXT_CHARCODE_SHIFT_JIS  = 0x80  /**< Shift_JIS (double byte), JIS X 0208 Appendix 1 */
-///* The following were proposed but never implemented anywhere. 
-// * They are mentioned for completeness here 
+///* The following were proposed but never implemented anywhere.
+// * They are mentioned for completeness here
 // *  CDTEXT_CHARCODE_KOREAN     = 0x81, /**< Korean */
 // *  CDTEXT_CHARCODE_CHINESE    = 0x82, /**< Mandarin Chinese */
 // *  CDTEXT_CHARCODE_UNDEFINED  = 0xFF, /**< everything else */
@@ -82,17 +86,17 @@ struct cdtext_pack_s
 };
 
 
-/** Structure of of block size information packs */ 
+/** Structure of of block size information packs */
 struct cdtext_blocksize_s
 {
   uint8_t charcode;      /* character code */
   uint8_t i_first_track; /* first track number */
   uint8_t i_last_track;  /* last track number */
   uint8_t copyright;     /* 3 CD-TEXT is copyrighted, 0 no copyright on CD-TEXT */
-  uint8_t i_packs[16];   /* number of packs of each type 
-                          * 0 TITLE; 1 PERFORMER; 2 SONGWRITER; 3 COMPOSER; 
-                          * 4 ARRANGER; 5 MESSAGE; 6 DISCID; 7 GENRE; 
-                          * 8 TOC; 9 TOC2; 10-12 RESERVED; 13 CLOSED; 
+  uint8_t i_packs[16];   /* number of packs of each type
+                          * 0 TITLE; 1 PERFORMER; 2 SONGWRITER; 3 COMPOSER;
+                          * 4 ARRANGER; 5 MESSAGE; 6 DISCID; 7 GENRE;
+                          * 8 TOC; 9 TOC2; 10-12 RESERVED; 13 CLOSED;
                           * 14 UPC_ISRC; 15 BLOCKSIZE */
   uint8_t lastseq[8];    /* last sequence for block 0..7 */
   uint8_t langcode[8];   /* language code for block 0..7 */
@@ -115,23 +119,23 @@ struct cdtext_block_s {
 };
 
 /*! Structure for CD-TEXT of a disc.
- 
+
   @see cdtext_init, cdtext_destroy, cdtext_get, and cdtext_set.
  */
 struct cdtext_s {
   struct cdtext_block_s block[CDTEXT_NUM_BLOCKS_MAX]; /**< CD-TEXT for block 0..7 */
-  uint8_t  block_i;                                   /**< index of active block  */  
+  uint8_t  block_i;                                   /**< index of active block  */
 };
 
 int cdtext_read_pack (cdtext_pack_t *pack, const uint8_t *data);
 
 /*!
-  returns enum of field if key is a CD-Text keyword, 
+  returns enum of field if key is a CD-Text keyword,
   returns CDTEXT_FIELD_INVALID otherwise.
 */
 cdtext_field_t cdtext_is_field (const char *field);
 
-/*! 
+/*!
   returns enum of language if lang is a valid language,
   returns CDTEXT_LANGUAGE_UNKNOWN otherwise.
 */
@@ -140,7 +144,7 @@ cdtext_lang_t cdtext_is_language (const char *lang);
 
 #endif /* CDIO_DRIVER_CDTEXT_PRIVATE_H_ */
 
-/* 
+/*
  * Local variables:
  *  c-file-style: "gnu"
  *  tab-width: 8
