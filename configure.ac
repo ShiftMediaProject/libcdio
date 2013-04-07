@@ -26,7 +26,7 @@ AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE([foreign])
 
 AC_CANONICAL_HOST
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
 # Enable silent build rules by default (Automake v1.11 or later).
