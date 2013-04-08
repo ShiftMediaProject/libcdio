@@ -20,7 +20,7 @@
 noinst_PROGRAMS = cdtext device drives eject \
 	          isofile isofile2 isolist iso4 mmc1 mmc2 tracks
 
-INCLUDES = -I$(top_srcdir)/include $(LIBCDIO_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/include $(LIBCDIO_CFLAGS)
 
 cdtext_SOURCES      = cdtext.cpp
 cdtext_DEPENDENCIES = $(LIBCDIO_DEPS)

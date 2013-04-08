@@ -77,7 +77,7 @@ bin_mmc_tool     = mmc-tool
 
 bin_PROGRAMS = $(bin_cd_drive) $(bin_cd_info)  $(bin_cdinfo_linux) $(bin_cd_read) $(bin_iso_info) $(bin_iso_read) $(bin_cdda_player) $(bin_mmc_tool)
 
-INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(VCDINFO_CFLAGS) $(CDDB_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(VCDINFO_CFLAGS) $(CDDB_CFLAGS)
 
 man_MANS = $(man_cd_drive) $(man_cd_info) $(man_cd_read) $(man_iso_read) $(man_iso_info)
 EXTRA_DIST = cd-drive.help2man cd-info.help2man cd-read.help2man \

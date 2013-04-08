@@ -67,7 +67,7 @@ libiso9660_la_LIBADD = @LIBCDIO_LIBS@
 libiso9660_la_ldflags = -version-info $(libiso9660_la_CURRENT):$(libiso9660_la_REVISION):$(libiso9660_la_AGE) @LT_NO_UNDEFINED@
 libiso9660_la_dependencies = $(top_builddir)/lib/driver/libcdio.la
 
-INCLUDES = $(LIBCDIO_CFLAGS)
+AM_CPPFLAGS = $(LIBCDIO_CFLAGS)
 
 ########################################################
 # Things to version the symbols in the libraries

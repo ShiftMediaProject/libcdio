@@ -428,6 +428,18 @@ int has_timeout=sizeof(test.timeout);],
 		   defined as a variable. In cygwin it is a function too])
 	;;
      mingw*)
+        AC_MSG_CHECKING(for MinGW-w64 headers)
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
+#include <stdio.h>
+#if !defined(__MINGW64_VERSION_MAJOR)
+# error not mingw-w64 headers
+#endif])],
+          [ AC_MSG_RESULT(yes)
+            MINGW_W64_HEADERS=yes
+            AC_DEFINE(MINGW_W64_HEADERS, [], [Define this if mingw-w64 headers are used]) ],
+          [ AC_MSG_RESULT(no)
+            MINGW_W64_HEADERS=no
+          ])
         # regression tests need native-style absolute paths.
         # $native_srcdir is used here.
 	native_abs_top_srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
@@ -443,8 +455,14 @@ int has_timeout=sizeof(test.timeout);],
 	## Cross-platform LFS support in MinGW requires an override of off_t
 	if test "x$enable_largefile" != "xno"; then
 	  AC_MSG_RESULT([enabling support for large files (_FILE_OFFSET_BITS=64)])
-	  LIBCDIO_CFLAGS+=' -D_FILE_OFFSET_BITS=64 -D_OFF_T_DEFINED -D_OFF_T_ -D_off_t=off64_t -Doff_t=off64_t'
-	  LIBISO9660_CFLAGS+=' -D_FILE_OFFSET_BITS=64 -D_OFF_T_DEFINED -D_OFF_T_ -D_off_t=off64_t -Doff_t=off64_t'
+          if test "x$MINGW_W64_HEADERS" = "xyes"
+          then
+	    LIBCDIO_CFLAGS+=' -D_FILE_OFFSET_BITS=64 '
+	    LIBISO9660_CFLAGS+=' -D_FILE_OFFSET_BITS=64 '
+          else
+	    LIBCDIO_CFLAGS+=' -D_FILE_OFFSET_BITS=64 -D_OFF_T_DEFINED -D_OFF_T_ -D_off_t=off64_t -Doff_t=off64_t'
+	    LIBISO9660_CFLAGS+=' -D_FILE_OFFSET_BITS=64 -D_OFF_T_DEFINED -D_OFF_T_ -D_off_t=off64_t -Doff_t=off64_t'
+          fi
 	fi
 	joliet_supported="yes"
 	if test "x$enable_cdda_player" = "xyes"; then

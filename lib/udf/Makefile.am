@@ -54,4 +54,4 @@ libudf_la_SOURCES = udf.c udf_file.c udf_fs.c udf_time.c filemode.c
 
 libudf_la_LIBADD = @LIBCDIO_LIBS@ @LT_NO_UNDEFINED@
 
-INCLUDES = $(LIBCDIO_CFLAGS)
+AM_CPPFLAGS = $(LIBCDIO_CFLAGS)

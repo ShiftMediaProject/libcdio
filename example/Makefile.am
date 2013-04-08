@@ -58,7 +58,7 @@ check-short:
 	$(MAKE) check 2>&1  | ruby @abs_top_srcdir@/make-check-filter.rb
 
 
-INCLUDES = $(LIBCDIO_CFLAGS)
+AM_CPPFLAGS = $(LIBCDIO_CFLAGS)
 
 audio_DEPENDENCIES    = $(LIBCDIO_DEPS)
 audio_LDADD           = $(LIBCDIO_LIBS) $(LTLIBICONV)

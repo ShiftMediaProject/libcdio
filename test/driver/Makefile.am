@@ -13,7 +13,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-INCLUDES = $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
+AM_CPPFLAGS = $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 DATA_DIR = $(abs_top_srcdir)/test/data
 
 abs_path_SOURCES   = abs_path.c

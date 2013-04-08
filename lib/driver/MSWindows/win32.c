@@ -85,6 +85,11 @@
 #define WIN_NT               ( GetVersion() < 0x80000000 )
 #endif
 
+/* mingw-w64 defines this to lseek64 when LFS is enabled */
+#ifdef lseek
+# undef lseek
+#endif
+
 /*!
   Set the volume of an audio CD.
   

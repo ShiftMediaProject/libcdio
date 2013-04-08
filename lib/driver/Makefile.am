@@ -110,7 +110,7 @@ libcdio_la_LIBADD  = $(LTLIBICONV)
 libcdio_la_SOURCES = $(libcdio_sources)
 libcdio_la_ldflags = -version-info $(libcdio_la_CURRENT):$(libcdio_la_REVISION):$(libcdio_la_AGE) @LT_NO_UNDEFINED@
 
-INCLUDES = $(LIBCDIO_CFLAGS)
+AM_CPPFLAGS = $(LIBCDIO_CFLAGS)
 
 ########################################################
 # Things to version the symbols in the libraries

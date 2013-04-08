@@ -31,7 +31,7 @@ hack = check_sizeof testassert testgetdevices testischar \
 EXTRA_PROGRAMS = testdefault 
 DATA_DIR       = @abs_top_srcdir@/test/data
 
-INCLUDES = $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
+AM_CPPFLAGS = $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 
 check_sizeof_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testassert_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
@@ -97,11 +97,11 @@ check-short:
 check-am:	make-executable
 make-executable: check_nrg.sh check_cue.sh
 	@chmod +x *.sh
-	@if test ! -f cdda.bin ; then \
+	@if test ! -f cdda.bin -a ! -s cdda.bin ; then \
 		test -L cdda.bin && $(RM) cdda.bin ; \
 		$(LN_S) $(abs_top_srcdir)/test/data/cdda.bin cdda.bin ; \
 	fi
-	@if test ! -f isofs-m1.bin ; then \
+	@if test ! -f isofs-m1.bin -a ! -s isofs-m1.bin ; then \
 		test -L cdda.bin && $(RM) isofs-m1.bin ; \
 		$(LN_S) $(abs_top_srcdir)/test/data/isofs-m1.bin isofs-m1.bin ;  \
 	fi

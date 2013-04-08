@@ -24,7 +24,7 @@ noinst_PROGRAMS = device eject isofile isofile2 isolist \
 	          mmc1 mmc2
 endif
 
-INCLUDES = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) $(LIBCDIO_CFLAGS)
 
 device_DEPENDENCIES = $(LIBCDIO_DEPS)
 device_SOURCES      = device.cpp

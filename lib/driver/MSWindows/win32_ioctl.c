@@ -31,7 +31,7 @@
 # include "NtScsi.h"
 # include "undocumented.h"
 #else
-# if defined (__MINGW64__)
+# if defined (__MINGW64_VERSION_MAJOR)
 #  define _NTSRB_ /* Bad things happen if srb.h gets included */
 # endif
 # include <windows.h>
@@ -489,14 +489,14 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   p_env->gen.scsi_mmc_sense_valid = 0;
   memset(p_swb, 0, i_swb_len);
   
-  swb.sptd.Length  = sizeof(SCSI_PASS_THROUGH_DIRECT);
-  swb.sptd.PathId  = 0;      /* SCSI card ID will be filled in
+  p_swb->sptd.Length  = sizeof(SCSI_PASS_THROUGH_DIRECT);
+  p_swb->sptd.PathId  = 0;      /* SCSI card ID will be filled in
                                 automatically */
-  swb.sptd.TargetId= 0;      /* SCSI target ID will also be filled in */
-  swb.sptd.Lun     = 0;      /* SCSI lun ID will also be filled in */
-  swb.sptd.CdbLength         = i_cdb;
-  swb.sptd.SenseInfoLength   = sizeof(swb.SenseBuf);
-  swb.sptd.DataIn            = 
+  p_swb->sptd.TargetId= 0;      /* SCSI target ID will also be filled in */
+  p_swb->sptd.Lun     = 0;      /* SCSI lun ID will also be filled in */
+  p_swb->sptd.CdbLength         = i_cdb;
+  p_swb->sptd.SenseInfoLength   = sizeof(p_swb->SenseBuf);
+  p_swb->sptd.DataIn            = 
     (SCSI_MMC_DATA_READ  == e_direction) ? SCSI_IOCTL_DATA_IN :
     (SCSI_MMC_DATA_WRITE == e_direction) ? SCSI_IOCTL_DATA_OUT :
     SCSI_IOCTL_DATA_UNSPECIFIED;
@@ -548,11 +548,11 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 #ifdef FIXED_ADDITIONAL_SENSE_BUF
   /* Record SCSI sense reply for API call mmc_last_cmd_sense(). 
    */
-  if (swb.SenseBuf.additional_sense_len) {
+  if (p_swb->SenseBuf.additional_sense_len) {
     /* SCSI Primary Command standard 
        SPC 4.5.3, Table 26: 252 bytes legal, 263 bytes possible */
-    int i_sense_size = swb.SenseBuf.additional_sense_len + 8; 
-    if (i_sense_size > sizeof(swb.SenseBuf)) {
+    int i_sense_size = p_swb->SenseBuf.additional_sense_len + 8; 
+    if (i_sense_size > sizeof(p_swb->SenseBuf)) {
       cdio_warn("Sense size retuned %d is greater buffer size %d\n", 
 		i_sense_size, sizeof(p_swb->SenseBuf));
       sense_size = sizeof(p_swb->SenseBuf);
