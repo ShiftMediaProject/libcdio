@@ -19,7 +19,7 @@
 ####################################################
 #
 #
-# There's a problem with doing make distcheck for testdefault. 
+# There's a problem with doing make distcheck for testdefault.
 # A reminder of why I hate automake.
 
 SUBDIRS = data driver
@@ -28,7 +28,7 @@ hack = check_sizeof testassert testgetdevices testischar \
        testisocd testisocd2 testiso9660 test_lib_driver_util \
        testpregap
 
-EXTRA_PROGRAMS = testdefault 
+EXTRA_PROGRAMS = testdefault
 DATA_DIR       = @abs_top_srcdir@/test/data
 
 AM_CPPFLAGS = $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
@@ -74,7 +74,7 @@ EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	testpregap.c.in check_legal.regex \
 	testgetdevices.c.in check_iso.sh.in
 
-TESTS = $(check_PROGRAMS) $(check_SCRIPTS) 
+TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 XFAIL_TESTS = testassert
 
 MOSTLYCLEANFILES = core core.* *.dump cdda-orig.wav cdda-try.wav *.raw
@@ -102,6 +102,6 @@ make-executable: check_nrg.sh check_cue.sh
 		$(LN_S) $(abs_top_srcdir)/test/data/cdda.bin cdda.bin ; \
 	fi
 	@if test ! -f isofs-m1.bin -a ! -s isofs-m1.bin ; then \
-		test -L cdda.bin && $(RM) isofs-m1.bin ; \
+		test -L isofs-m1.bin && $(RM) isofs-m1.bin ; \
 		$(LN_S) $(abs_top_srcdir)/test/data/isofs-m1.bin isofs-m1.bin ;  \
 	fi

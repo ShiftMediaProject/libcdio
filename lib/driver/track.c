@@ -25,13 +25,13 @@
 
 #ifdef HAVE_STDBOOL_H
 # include <stdbool.h>
-#endif 
+#endif
 
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
 #include "cdio_private.h"
 
-const char *track_format2str[6] = 
+const char *track_format2str[6] =
   {
     "audio", "CD-i", "XA", "data", "PSX", "error"
   };
@@ -40,7 +40,7 @@ const char *track_format2str[6] =
 enum cdio_track_enums;
 
 /*!
-  Return the number of the first track. 
+  Return the number of the first track.
   CDIO_INVALID_TRACK is returned on error.
 */
 track_t
@@ -50,7 +50,7 @@ cdio_get_first_track_num(const CdIo_t *p_cdio)
     cdio_info("Null CdIo object passed\n");
     return CDIO_INVALID_TRACK;
   }
-  
+
 
   if (p_cdio->op.get_first_track_num) {
     return p_cdio->op.get_first_track_num (p_cdio->env);
@@ -75,7 +75,7 @@ cdio_get_last_track_num (const CdIo_t *p_cdio)
     const track_t i_first_track = cdio_get_first_track_num(p_cdio);
     if ( CDIO_INVALID_TRACK != i_first_track ) {
       const track_t u_tracks = cdio_get_num_tracks(p_cdio);
-      if ( CDIO_INVALID_TRACK != u_tracks ) 
+      if ( CDIO_INVALID_TRACK != u_tracks )
 	return i_first_track + u_tracks - 1;
     }
     return CDIO_INVALID_TRACK;
@@ -120,8 +120,8 @@ cdio_get_track_copy_permit(const CdIo_t *p_cdio, track_t u_track)
   }
 }
 
-/*!  
-  Get format of track. 
+/*!
+  Get format of track.
 */
 track_format_t
 cdio_get_track_format(const CdIo_t *p_cdio, track_t u_track)
@@ -134,21 +134,21 @@ cdio_get_track_format(const CdIo_t *p_cdio, track_t u_track)
     return TRACK_FORMAT_ERROR;
   }
 }
-/*!  
+/*!
   Return the Joliet level recognized for p_cdio.
 */
-uint8_t 
+uint8_t
 cdio_get_joliet_level(const CdIo_t *p_cdio)
 {
   if (!p_cdio) return 0;
   {
-    const generic_img_private_t *p_env 
+    const generic_img_private_t *p_env
       = (generic_img_private_t *) (p_cdio->env);
     return p_env->i_joliet_level;
   }
 }
 
-/*! 
+/*!
   Return the number of tracks in the current medium.
   CDIO_INVALID_TRACK is returned on error.
 */
@@ -166,8 +166,8 @@ cdio_get_num_tracks (const CdIo_t *p_cdio)
 
 /*! Find the track which contans lsn.
     CDIO_INVALID_TRACK is returned if the lsn outside of the CD or
-    if there was some error. 
-    
+    if there was some error.
+
     If the lsn is before the pregap of the first track 0 is returned.
     Otherwise we return the track that spans the lsn.
 */
@@ -175,14 +175,14 @@ track_t
 cdio_get_track(const CdIo_t *p_cdio, lsn_t lsn)
 {
   if (!p_cdio) return CDIO_INVALID_TRACK;
-  
+
   {
     track_t i_low_track   = cdio_get_first_track_num(p_cdio);
     track_t i_high_track  = cdio_get_last_track_num(p_cdio)+1; /* LEADOUT */
 
-    if (CDIO_INVALID_TRACK == i_low_track 
+    if (CDIO_INVALID_TRACK == i_low_track
 	|| CDIO_INVALID_TRACK == i_high_track ) return CDIO_INVALID_TRACK;
-    
+
     if (lsn < cdio_get_track_lsn(p_cdio, i_low_track))
       return 0; /* We're in the pre-gap of first track */
 
@@ -196,7 +196,7 @@ cdio_get_track(const CdIo_t *p_cdio, lsn_t lsn)
       if (lsn >= i_mid_lsn) i_low_track  = i_mid + 1;
     } while ( i_low_track <= i_high_track );
 
-    return (i_low_track > i_high_track + 1) 
+    return (i_low_track > i_high_track + 1)
       ? i_high_track + 1 : i_high_track;
   }
 }
@@ -206,7 +206,7 @@ cdio_get_track(const CdIo_t *p_cdio, lsn_t lsn)
   XA data (green, mode2 form2). That is track begins:
   sync - header - subheader
   12     4      -  8
-  
+
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 bool
@@ -223,7 +223,7 @@ cdio_get_track_green(const CdIo_t *p_cdio, track_t u_track)
   }
 }
 
-/*!  
+/*!
   Return the starting LBA for track number
   track_num in cdio.  Tracks numbers start at 1.
   The "leadout" track is specified either by
@@ -242,14 +242,14 @@ cdio_get_track_lba(const CdIo_t *p_cdio, track_t u_track)
     return p_cdio->op.get_track_lba (p_cdio->env, u_track);
   } else {
     msf_t msf;
-    if (p_cdio->op.get_track_msf) 
+    if (p_cdio->op.get_track_msf)
       if (cdio_get_track_msf(p_cdio, u_track, &msf))
         return cdio_msf_to_lba(&msf);
     return CDIO_INVALID_LBA;
   }
 }
 
-/*!  
+/*!
   Return the starting LSN for track number
   u_track in cdio.  Tracks numbers start at 1.
   The "leadout" track is specified either by
@@ -259,18 +259,19 @@ cdio_get_track_lba(const CdIo_t *p_cdio, track_t u_track)
 lsn_t
 cdio_get_track_lsn(const CdIo_t *p_cdio, track_t u_track)
 {
-  track_t u_last_track;
+  /*track_t u_last_track; */
   if (NULL == p_cdio) {
     cdio_info("Null CdIo object passed\n");
     return CDIO_INVALID_LSN;
   }
+  /*
   u_last_track = cdio_get_last_track_num(p_cdio);
   if (u_track > u_last_track && u_track != CDIO_CDROM_LEADOUT_TRACK) {
      cdio_log(CDIO_LOG_WARN, "Number of tracks exceeds maximum (%d vs. %d)\n",
               u_track, u_last_track);
      return CDIO_INVALID_LSN;
   }
-
+  */
 
   if (p_cdio->op.get_track_lba) {
     return cdio_lba_to_lsn(p_cdio->op.get_track_lba (p_cdio->env, u_track));
@@ -312,7 +313,7 @@ cdio_get_track_isrc (const CdIo_t *p_cdio, track_t u_track)
   }
 }
 
-/*!  
+/*!
   Return the starting LBA for the pregap for track number
   u_track in cdio.  Track numbers start at 1.
   CDIO_INVALID_LBA is returned on error.
@@ -332,7 +333,7 @@ cdio_get_track_pregap_lba(const CdIo_t *p_cdio, track_t u_track)
   }
 }
 
-/*!  
+/*!
   Return the starting LSN for the pregap for track number
   u_track in cdio.  Track numbers start at 1.
   CDIO_INVALID_LSN is returned on error.
@@ -343,7 +344,7 @@ cdio_get_track_pregap_lsn(const CdIo_t *p_cdio, track_t u_track)
   return cdio_lba_to_lsn(cdio_get_track_pregap_lba(p_cdio, u_track));
 }
 
-/*!  
+/*!
   Return the ending LSN for track number
   u_track in cdio.  CDIO_INVALID_LSN is returned on error.
 */
@@ -357,7 +358,7 @@ cdio_get_track_last_lsn(const CdIo_t *p_cdio, track_t u_track)
   return lsn - 1;
 }
 
-/*!  
+/*!
   Return the starting MSF (minutes/secs/frames) for track number
   u_track in cdio.  Track numbers start at 1.
   The "leadout" track is specified either by
@@ -394,7 +395,7 @@ cdio_get_track_preemphasis(const CdIo *p_cdio, track_t u_track)
   }
 }
 
-/*!  
+/*!
   Return the number of sectors between this track an the next.  This
   includes any pregap sectors before the start of the next track.
   Tracks start at 1.
@@ -405,8 +406,8 @@ cdio_get_track_sec_count(const CdIo_t *p_cdio, track_t u_track)
 {
   const track_t u_tracks = cdio_get_num_tracks(p_cdio);
 
-  if (u_track >=1 && u_track <= u_tracks) 
-    return ( cdio_get_track_lba(p_cdio, u_track+1) 
+  if (u_track >=1 && u_track <= u_tracks)
+    return ( cdio_get_track_lba(p_cdio, u_track+1)
              - cdio_get_track_lba(p_cdio, u_track) );
   return 0;
 }
