@@ -22,4 +22,6 @@
 /osx
 /realpath
 /solaris
+/track
+/track.c
 /win32

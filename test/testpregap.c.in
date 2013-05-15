@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2003-2005, 2011-2012  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2008 Robert W. Fuller <hydrologiccycle@gmail.com>
-  
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* 
+/*
    Regression test for cdio_get_pregap_lsn()
 */
 #ifdef HAVE_CONFIG_H
@@ -45,7 +45,7 @@
 #define DATA_DIR "@srcdir@/data"
 #endif
 
-static void 
+static void
 log_handler (cdio_log_level_t level, const char message[])
 {
   switch(level) {
@@ -79,7 +79,7 @@ static pregap_list_t pregapList[] =
 
 #define NELEMS(v) (sizeof(v) / sizeof(v[0]))
 
-/* gcc -Wall -I../include testpregap.c ../lib/driver/.libs/libcdio.a */
+/* gcc -g3 -Wall -I../include testpregap.c ../lib/driver/.libs/libcdio.a -o testpregap */
 
 int
 main(int argc, const char *argv[])
@@ -89,7 +89,7 @@ main(int argc, const char *argv[])
   lsn_t pregap;
   int i;
   int rc = 0;
-  
+
   cdio_log_set_handler (log_handler);
 
   if (! (cdio_have_driver(DRIVER_NRG) && cdio_have_driver(DRIVER_BINCUE)
@@ -110,8 +110,8 @@ main(int argc, const char *argv[])
 
     pregap = cdio_get_track_pregap_lsn(cdObj, pregapList[i].track);
     if (pregap != pregapList[i].pregap) {
-      printf("-- %s should have had pregap of lsn=%d instead of lsn=%d\n",
-       image, pregapList[i].pregap, pregap);
+      printf("%s should have had pregap of lsn=%d instead of lsn=%d\n",
+	     image, pregapList[i].pregap, pregap);
       rc = i + 1;
     } else {
       printf("-- %s had expected pregap\n", image);

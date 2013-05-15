@@ -178,7 +178,8 @@ cdio_get_track(const CdIo_t *p_cdio, lsn_t lsn)
 
   {
     track_t i_low_track   = cdio_get_first_track_num(p_cdio);
-    track_t i_high_track  = cdio_get_last_track_num(p_cdio)+1; /* LEADOUT */
+    track_t i_high_track  = cdio_get_last_track_num(p_cdio)+1;
+    track_t i_lead_track  = i_high_track;
 
     if (CDIO_INVALID_TRACK == i_low_track
 	|| CDIO_INVALID_TRACK == i_high_track ) return CDIO_INVALID_TRACK;
@@ -196,8 +197,14 @@ cdio_get_track(const CdIo_t *p_cdio, lsn_t lsn)
       if (lsn >= i_mid_lsn) i_low_track  = i_mid + 1;
     } while ( i_low_track <= i_high_track );
 
-    return (i_low_track > i_high_track + 1)
-      ? i_high_track + 1 : i_high_track;
+    if (i_low_track > i_high_track + 1) {
+	i_high_track++;
+    }
+    if (i_high_track == i_lead_track ) {
+	return CDIO_CDROM_LEADOUT_TRACK;
+    } else {
+	return i_high_track;
+    }
   }
 }
 
