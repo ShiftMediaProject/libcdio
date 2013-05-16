@@ -187,7 +187,7 @@ cdio_get_track(const CdIo_t *p_cdio, lsn_t lsn)
     if (lsn < cdio_get_track_lsn(p_cdio, i_low_track))
       return 0; /* We're in the pre-gap of first track */
 
-    if (lsn > cdio_get_track_lsn(p_cdio, i_high_track))
+    if (lsn > cdio_get_track_lsn(p_cdio, CDIO_CDROM_LEADOUT_TRACK))
       return CDIO_INVALID_TRACK; /* We're beyond the end. */
 
     do {
