@@ -17,9 +17,11 @@
 
 /*
    Regression test for lib/driver/track.c
+
+   To compile as standalone program:
+gcc -g3 -Wall -DHAVE_CONFIG_H -I../.. -I../../include track.c ../../lib/driver/.libs/libcdio.a -o track
 */
 
-#include <stdio.h>
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #define __CDIO_CONFIG_H__ 1
@@ -57,8 +59,6 @@ log_handler (cdio_log_level_t level, const char message[])
     printf("cdio %d message: %s\n", level, message);
   }
 }
-
-/* gcc -g3 -Wall -I../include track.c ../../lib/driver/.libs/libcdio.a -o track */
 
 int
 main(int argc, const char *argv[])
