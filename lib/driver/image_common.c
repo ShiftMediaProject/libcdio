@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2010, 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004-2005, 2008, 2010-2011, 2013 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*! Common image routines. 
-  
+/*! Common image routines.
+
   Because _img_private_t may vary over image formats, the routines are
   included into the image drivers after _img_private_t is defined.  In
   order for the below routines to work, there is a large part of
@@ -51,8 +51,8 @@ _eject_media_image(void *p_user_data)
   We don't need the image any more. Free all memory associated with
   it.
  */
-void 
-_free_image (void *p_user_data) 
+void
+_free_image (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
   track_t i_track;
@@ -90,7 +90,7 @@ _get_arg_image (void *user_data, const char key[])
     return "image";
   } else if (!strcmp (key, "mmc-supported?")) {
     return "false";
-  } 
+  }
   return NULL;
 }
 
@@ -108,7 +108,7 @@ _get_cdtext_image (void *user_data)
   return p_env->cdtext;
 }
 
-/*! 
+/*!
   Get disc type associated with cd_obj.
 */
 discmode_t
@@ -147,18 +147,21 @@ _get_drive_cap_image (const void *user_data,
 }
 
 /*!
-  Return the number of of the first track. 
+  Return the number of of the first track.
   CDIO_INVALID_TRACK is returned on error.
 */
 track_t
-_get_first_track_num_image(void *p_user_data) 
+_get_first_track_num_image(void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
-  
-  return p_env->gen.i_first_track;
+
+  if (!p_env->gen.toc_init)
+    p_env->gen.cdio->op.read_toc (p_user_data);
+
+  return p_env->gen.toc_init ? p_env->gen.i_first_track : CDIO_INVALID_TRACK;
 }
 
-/*! 
+/*!
   Find out if media has changed since the last call.
   @param p_user_data the CD object to be acted upon.
   @return 1 if media has changed since last call, 0 if not. Error
@@ -183,23 +186,23 @@ char *
 _get_mcn_image(const void *p_user_data)
 {
   const _img_private_t *p_env = p_user_data;
-  
+
   if (!p_env || !p_env->psz_mcn) return NULL;
   return strdup(p_env->psz_mcn);
 }
 
 /*!
-  Return the number of tracks. 
+  Return the number of tracks.
 */
 track_t
-_get_num_tracks_image(void *p_user_data) 
+_get_num_tracks_image(void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
 
   return p_env->gen.i_tracks;
 }
 
-/*!  
+/*!
   Return the starting MSF (minutes/secs/frames) for the track number
   track_num in obj.  Tracks numbers start at 1.
   The "leadout" track is specified either by
@@ -218,7 +221,7 @@ _get_track_msf_image(void *p_user_data, track_t i_track, msf_t *msf)
   if (i_track <= p_env->gen.i_tracks+1 && i_track != 0) {
     *msf = p_env->tocent[i_track-p_env->gen.i_first_track].start_msf;
     return true;
-  } else 
+  } else
     return false;
 }
 
@@ -226,35 +229,35 @@ _get_track_msf_image(void *p_user_data, track_t i_track, msf_t *msf)
   implemented or -1 for error.
   Not meaningful if track is not an audio track.
 */
-int 
+int
 get_track_channels_image(const void *p_user_data, track_t i_track)
 {
   const _img_private_t *p_env = p_user_data;
-  return ( p_env->tocent[i_track-p_env->gen.i_first_track].flags 
+  return ( p_env->tocent[i_track-p_env->gen.i_first_track].flags
 	  & FOUR_CHANNEL_AUDIO ) ? 4 : 2;
 }
 
 /*! Return 1 if copy is permitted on the track, 0 if not, or -1 for error.
   Is this meaningful if not an audio track?
 */
-track_flag_t 
+track_flag_t
 get_track_copy_permit_image(void *p_user_data, track_t i_track)
 {
   const _img_private_t *p_env = p_user_data;
-  return ( p_env->tocent[i_track-p_env->gen.i_first_track].flags 
+  return ( p_env->tocent[i_track-p_env->gen.i_first_track].flags
 	   & COPY_PERMITTED ) ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
 }
 
 /*! Return 1 if track has pre-emphasis, 0 if not, or -1 for error.
   Is this meaningful if not an audio track?
-  
+
   pre-emphasis is a non linear frequency response.
 */
 track_flag_t
 get_track_preemphasis_image(const void *p_user_data, track_t i_track)
 {
   const _img_private_t *p_env = p_user_data;
-  return ( p_env->tocent[i_track-p_env->gen.i_first_track].flags 
+  return ( p_env->tocent[i_track-p_env->gen.i_first_track].flags
 	   & PRE_EMPHASIS ) ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
 }
 
@@ -304,7 +307,7 @@ get_track_isrc_image(const void *p_user_data, track_t i_track)
 
 /*!
   Read a data sector
-  
+
   @param p_cdio object to read from
 
   @param p_buf place to read data into.  The caller should make sure
@@ -319,15 +322,15 @@ get_track_isrc_image(const void *p_user_data, track_t i_track)
   M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE. See comment above under
   p_buf.
   */
-driver_return_code_t 
-read_data_sectors_image ( void *p_user_data, void *p_buf, 
+driver_return_code_t
+read_data_sectors_image ( void *p_user_data, void *p_buf,
 			  lsn_t i_lsn,  uint16_t i_blocksize,
 			  uint32_t i_blocks )
 {
   const _img_private_t *p_env = p_user_data;
 
   if (!p_env || !p_env->gen.cdio) return DRIVER_OP_UNINIT;
-  
+
   {
     CdIo_t *p_cdio                = p_env->gen.cdio;
     track_t i_track               = cdio_get_track(p_cdio, i_lsn);
@@ -351,7 +354,7 @@ read_data_sectors_image ( void *p_user_data, void *p_buf,
 
 /*!
   Set the arg "key" with "value" in the source device.
-  Currently "source" to set the source device in I/O operations 
+  Currently "source" to set the source device in I/O operations
   is the only valid key.
 
 */
@@ -383,4 +386,3 @@ _set_arg_image (void *p_user_data, const char key[], const char value[])
 
   return DRIVER_OP_SUCCESS;
 }
-
