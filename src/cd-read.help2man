@@ -1,8 +1,5 @@
-[SYNOPSIS]
-.B cd-read
-\fIOPTION\fR...
-.TP
-Reads Information from a CD or CD-image.
+[NAME]
+cd-read \- reads Information from a CD or CD-image
 [SEE ALSO] 
 \&\f(CWcd-info(1)\fR for information about a CD;
 \&\f(CWcd-drive(1)\fR for CD-ROM characteristics;
