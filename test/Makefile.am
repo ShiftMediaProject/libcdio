@@ -1,5 +1,4 @@
-#   Copyright (C) 2003, 2004, 2006, 2008, 2009, 2010, 2012
-#   2012 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003-2006, 2008-2013 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -60,7 +59,7 @@ check_PROGRAMS = $(hack)
 check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 	     videocd.right \
 	     cdda.right \
-	     isofs-m1.right isofs-m1-no-rr.right \
+	     isofs-m1.right isofs-m1-no-rr.right isofs-m1-test2.right \
 	     check_opts0.right check_opts1.right check_opts2.right \
              check_opts3.right check_opts4.right check_opts5.right \
              check_opts6.right check_opts7.right \

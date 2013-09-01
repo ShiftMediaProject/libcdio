@@ -74,7 +74,7 @@ if test -f  ${abs_top_srcdir}/test/data/${fname}.bin ; then
   testnum='ISO 9660 mode1 TOC'
   if test -n "@HAVE_ROCK@"; then
     opts="-q --no-device-info --no-disc-mode --toc-file ${abs_top_srcdir}/test/data/${fname}.toc --iso9660"
-    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
+    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}-test2.right
     RC=$?
     check_result $RC "cd-info TOC test $testnum" "${CD_INFO} $opts"
   fi

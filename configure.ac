@@ -593,7 +593,7 @@ AC_SUBST(HAVE_JOLIET)
 
 AC_ARG_ENABLE(rock,
 	AC_HELP_STRING([--enable-rock], [include Rock-Ridge extension support (default enabled)]),
-	enable_rock=$enableval, enable_rock=no)
+	enable_rock=$enableval, enable_rock=yes)
 if test "x${enable_rock}" != "xno"; then
    AC_DEFINE(HAVE_ROCK, [1],
    [Define 1 if you want ISO-9660 Rock-Ridge extension support.])

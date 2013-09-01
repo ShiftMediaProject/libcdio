@@ -19,6 +19,8 @@
 /libcdio-*.sig
 /libcdio-*.tar.bz2
 /libcdio-*.tar.gz
+/libcdio-0.90.tar.gz.directive
+/libcdio-0.90.tar.gz.directive.asc
 /libcdio.pc
 /libcdio_cdda.pc
 /libiso9660++.pc
