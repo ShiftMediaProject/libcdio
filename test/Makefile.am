@@ -50,7 +50,8 @@ testpregap_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testpregap_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh check_udf.sh \
-                check_iso.sh  check_fuzzyiso.sh check_opts.sh
+                check_iso.sh  check_fuzzyiso.sh check_opts.sh \
+		check_iso_read.sh
 
 check_udf.sh: @abs_top_builddir@/example/extract$(EXEEXT)
 
@@ -71,7 +72,8 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
 	testpregap.c.in check_legal.regex \
-	testgetdevices.c.in check_iso.sh.in
+	testgetdevices.c.in check_iso.sh.in test \
+	check_iso_read.sh.in
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 XFAIL_TESTS = testassert

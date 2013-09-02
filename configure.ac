@@ -90,6 +90,9 @@ AM_PROG_CC_C_O
 dnl We also use C++ in example programs and for CXX bindings
 AC_PROG_CXX
 
+dnl For iso_read test
+AC_CHECK_PROGS(ISO_MAKING_COMMAND, genisoimage mkisofs)
+
 dnl Checks for programs.
 AC_AIX
 
@@ -143,6 +146,7 @@ else
 fi
 AC_SUBST(DIFF)
 AC_SUBST(DIFF_OPTS)
+AC_SUBST(RM)
 
 dnl check for large file support
 AC_SYS_LARGEFILE
@@ -728,6 +732,8 @@ AC_CONFIG_FILES([test/check_cue.sh], [chmod +x test/check_cue.sh])
 AC_CONFIG_FILES([test/check_iso.sh], [chmod +x test/check_iso.sh])
 AC_CONFIG_FILES([test/check_nrg.sh], [chmod +x test/check_nrg.sh])
 AC_CONFIG_FILES([test/check_udf.sh], [chmod +x test/check_udf.sh])
+AC_CONFIG_FILES([test/check_iso_read.sh],
+		[chmod +x test/check_iso_read.sh])
 AC_OUTPUT
 
 AC_MSG_NOTICE([

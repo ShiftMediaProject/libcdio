@@ -15,6 +15,7 @@
 /check_common_fn
 /check_cue.sh
 /check_iso.sh
+/check_iso_read.sh
 /check_nrg.sh
 /check_sizeof
 /check_udf.sh
