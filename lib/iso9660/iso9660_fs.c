@@ -53,8 +53,6 @@
 #include "_cdio_stdio.h"
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: iso9660_fs.c,v 1.47 2008/04/18 16:02:09 karl Exp $";
-
 /* Implementation of iso9660_t type */
 struct _iso9660_s {
   CdioDataSource_t *stream; /* Stream pointer */
