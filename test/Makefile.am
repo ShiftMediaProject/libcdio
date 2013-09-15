@@ -72,20 +72,37 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
 	testpregap.c.in check_legal.regex \
-	testgetdevices.c.in check_iso.sh.in test \
+	testgetdevices.c.in check_iso.sh.in \
 	check_iso_read.sh.in
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 XFAIL_TESTS = testassert
 
-MOSTLYCLEANFILES = core core.* *.dump cdda-orig.wav cdda-try.wav *.raw
+MOSTLYCLEANFILES = \
+	core core.* *.dump cdda-orig.wav cdda-try.wav *.raw \
+	*file?s-read.txt exampleIso*.iso*
 
 #: run regression tests. "test" is the same thing as "check"
 test: check-am
 
 #: Run all tests without bloated output
 check-short:
-	$(MAKE) check 2>&1  | ruby @abs_top_srcdir@/make-check-filter.rb
+	@$(MAKE) check 2>&1  | ruby @abs_top_srcdir@/make-check-filter.rb
+
+#: Run 5GB ISO 9660 read test
+# Stripped down greatly from automakes check-TESTS
+check-iso-read-large:
+	@if ./check_iso_read.sh 5000; then \
+	  echo test of 5M iso_read succeeded; \
+	elif test $? -ne 77; then \
+	  echo iso_read large file test failed; \
+	else \
+	  echo iso_read large file test skipped; \
+	fi
+
+#: Run 5GB ISO 9660 read test without some of the bloated output
+check-iso-read-large-terse:
+	@$(MAKE) check-iso-read-large 2>&1  | ruby @abs_top_srcdir@/make-check-filter.rb
 
 # This is a really bad hack to make sure check_nrg and check_cue.sh
 # are executable. Automake will remake check_nrg.sh and check_cue.sh
@@ -106,3 +123,8 @@ make-executable: check_nrg.sh check_cue.sh
 		test -L isofs-m1.bin && $(RM) isofs-m1.bin ; \
 		$(LN_S) $(abs_top_srcdir)/test/data/isofs-m1.bin isofs-m1.bin ;  \
 	fi
+
+clean-local: clean-local-check
+.PHONY: clean-local-check
+clean-local-check:
+	-rm -rf exampleIso*.iso.prep

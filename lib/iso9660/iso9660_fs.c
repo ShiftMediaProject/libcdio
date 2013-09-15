@@ -685,8 +685,8 @@ iso9660_seek_read_framesize (const iso9660_t *p_iso, void *ptr,
   int64_t i_byte_offset;
 
   if (!p_iso) return 0;
-  i_byte_offset =
-      (start * (int64_t)(p_iso->i_framesize)) + p_iso->i_fuzzy_offset;
+  i_byte_offset = (start * (int64_t)(p_iso->i_framesize))
+    + p_iso->i_fuzzy_offset + p_iso->i_datastart;
 
   ret = cdio_stream_seek (p_iso->stream, i_byte_offset, SEEK_SET);
   if (ret!=0) return 0;
