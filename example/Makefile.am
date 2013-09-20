@@ -37,6 +37,7 @@ noinst_PROGRAMS = \
 	isofuzzy \
 	isolist \
 	isolsn \
+	logging \
 	mmc1 \
 	mmc2 \
 	mmc2a \
@@ -92,6 +93,9 @@ isofile2_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 isofuzzy_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 isolist_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 isolsn_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+
+logging_DEPENDENCIES = $(LIBCDIO_DEPS)
+logging_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 mmc1_DEPENDENCIES = $(LIBCDIO_DEPS)
 mmc1_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)

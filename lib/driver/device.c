@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005, 2006, 2008, 2011, 2012
+  Copyright (C) 2005, 2006, 2008, 2011-2013
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 
 #ifdef HAVE_STDBOOL_H
 # include <stdbool.h>
-#endif 
+#endif
 
 #include <cdio/cdio.h>
 #include <cdio/cd_types.h>
@@ -49,8 +49,8 @@
 #include <sys/stat.h>
 #endif
 
-/* The last valid entry of Cdio_driver. 
-   -1 or (CDIO_DRIVER_UNINIT) means uninitialzed. 
+/* The last valid entry of Cdio_driver.
+   -1 or (CDIO_DRIVER_UNINIT) means uninitialzed.
    -2 means some sort of error.
 */
 
@@ -73,7 +73,7 @@ const driver_id_t cdio_os_driver = DRIVER_OS2;
 const driver_id_t cdio_os_driver = DRIVER_SOLARIS;
 #elif  HAVE_WIN32_CDROM
 const driver_id_t cdio_os_driver = DRIVER_WIN32;
-#else 
+#else
 const driver_id_t cdio_os_driver = DRIVER_UNKNOWN;
 #endif
 
@@ -88,7 +88,7 @@ cdio_drive_cap_write_t         debug_drive_cap_write_t;
 cdio_mmc_hw_len_t              debug_cdio_mmc_hw_len;
 cdio_src_category_mask_t       debug_cdio_src_category_mask;
 
-static bool 
+static bool
 cdio_have_false(void)
 {
   return false;
@@ -98,9 +98,9 @@ cdio_have_false(void)
    on a particular host. */
 
 CdIo_driver_t CdIo_all_drivers[] = {
-  {DRIVER_UNKNOWN, 
+  {DRIVER_UNKNOWN,
    0,
-   "Unknown", 
+   "Unknown",
    "No driver",
    &cdio_have_false,
    NULL,
@@ -111,7 +111,7 @@ CdIo_driver_t CdIo_all_drivers[] = {
    NULL
   },
 
-  {DRIVER_AIX, 
+  {DRIVER_AIX,
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
    "AIX",
    "AIX SCSI driver",
@@ -124,7 +124,7 @@ CdIo_driver_t CdIo_all_drivers[] = {
    NULL
   },
 
-  {DRIVER_BSDI, 
+  {DRIVER_BSDI,
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
    "BSDI",
    "BSDI ATAPI and SCSI driver",
@@ -137,7 +137,7 @@ CdIo_driver_t CdIo_all_drivers[] = {
    &close_tray_bsdi
   },
 
-  {DRIVER_FREEBSD, 
+  {DRIVER_FREEBSD,
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
    "FreeBSD",
    "FreeBSD driver",
@@ -150,7 +150,7 @@ CdIo_driver_t CdIo_all_drivers[] = {
    &close_tray_freebsd
   },
 
-  {DRIVER_NETBSD, 
+  {DRIVER_NETBSD,
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
    "NetBSD",
    "NetBSD driver",
@@ -163,9 +163,9 @@ CdIo_driver_t CdIo_all_drivers[] = {
    &close_tray_netbsd
   },
 
-  {DRIVER_LINUX, 
+  {DRIVER_LINUX,
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK,
-   "GNU/Linux", 
+   "GNU/Linux",
    "GNU/Linux ioctl and MMC driver",
    &cdio_have_linux,
    &cdio_open_linux,
@@ -176,7 +176,7 @@ CdIo_driver_t CdIo_all_drivers[] = {
    &close_tray_linux
   },
 
-  {DRIVER_SOLARIS, 
+  {DRIVER_SOLARIS,
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
    "Solaris",
    "Solaris ATAPI and SCSI driver",
@@ -202,7 +202,7 @@ CdIo_driver_t CdIo_all_drivers[] = {
    &close_tray_os2
   },
 
-  {DRIVER_OSX, 
+  {DRIVER_OSX,
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
    "OS X",
    "Apple Darwin OS X driver",
@@ -215,7 +215,7 @@ CdIo_driver_t CdIo_all_drivers[] = {
    &close_tray_osx
   },
 
-  {DRIVER_WIN32, 
+  {DRIVER_WIN32,
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
    "WIN32",
    "MS Windows ASPI and ioctl driver",
@@ -269,10 +269,10 @@ CdIo_driver_t CdIo_all_drivers[] = {
 
 };
 
-/* The below array gives of the drivers that are currently available for 
+/* The below array gives of the drivers that are currently available for
    on a particular host. */
 
-CdIo_driver_t CdIo_driver[sizeof(CdIo_all_drivers)/sizeof(CdIo_all_drivers[0])-1] = { 
+CdIo_driver_t CdIo_driver[sizeof(CdIo_all_drivers)/sizeof(CdIo_all_drivers[0])-1] = {
   {0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL} };
 
 const driver_id_t cdio_drivers[] = {
@@ -308,7 +308,7 @@ const char *
 cdio_driver_errmsg(driver_return_code_t drc)
 {
   switch(drc) {
-  case DRIVER_OP_SUCCESS: 
+  case DRIVER_OP_SUCCESS:
     return "driver operation was successful";
   case DRIVER_OP_ERROR:
     return "driver I/O error";
@@ -330,17 +330,19 @@ cdio_driver_errmsg(driver_return_code_t drc)
 }
 
 static CdIo *
-scan_for_driver(const driver_id_t drivers[], 
-                const char *psz_source, const char *access_mode) 
+scan_for_driver(const driver_id_t drivers[],
+                const char *psz_source, const char *access_mode)
 {
-  const driver_id_t *driver_id_p;
-  
-  for (driver_id_p=drivers; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
-    if ((*CdIo_all_drivers[*driver_id_p].have_driver)()) {
+  const driver_id_t *p_driver_id;
+
+  for (p_driver_id=drivers; *p_driver_id!=DRIVER_UNKNOWN; p_driver_id++) {
+    cdio_debug ("Trying driver %s", cdio_get_driver_name_from_id(*p_driver_id));
+    if ((*CdIo_all_drivers[*p_driver_id].have_driver)()) {
       CdIo *ret=
-        (*CdIo_all_drivers[*driver_id_p].driver_open_am)(psz_source, access_mode);
+        (*CdIo_all_drivers[*p_driver_id].driver_open_am)(psz_source, access_mode);
       if (ret != NULL) {
-        ret->driver_id = *driver_id_p;
+        ret->driver_id = *p_driver_id;
+        cdio_info ("found driver %s", cdio_get_driver_name_from_id(*p_driver_id));
         return ret;
       }
     }
@@ -361,19 +363,19 @@ cdio_driver_describe(driver_id_t driver_id)
 bool
 cdio_init(void)
 {
-  
+
   CdIo_driver_t *all_dp;
   CdIo_driver_t *dp = CdIo_driver;
-  const driver_id_t *driver_id_p;
+  const driver_id_t *p_driver_id;
 
   if (CdIo_last_driver != CDIO_DRIVER_UNINIT) {
     cdio_warn ("Init routine called more than once.");
     return false;
   }
 
-  for (driver_id_p=cdio_drivers; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
-    all_dp = &CdIo_all_drivers[*driver_id_p];
-    if ((*CdIo_all_drivers[*driver_id_p].have_driver)()) {
+  for (p_driver_id=cdio_drivers; *p_driver_id!=DRIVER_UNKNOWN; p_driver_id++) {
+    all_dp = &CdIo_all_drivers[*p_driver_id];
+    if ((*CdIo_all_drivers[*p_driver_id].have_driver)()) {
       *dp++ = *all_dp;
       CdIo_last_driver++;
     }
@@ -391,22 +393,22 @@ cdio_destroy (CdIo_t *p_cdio)
   CdIo_last_driver = CDIO_DRIVER_UNINIT;
   if (p_cdio == NULL) return;
 
-  if (p_cdio->op.free != NULL && p_cdio->env) 
+  if (p_cdio->op.free != NULL && p_cdio->env)
     p_cdio->op.free (p_cdio->env);
   p_cdio->env = NULL;
   free (p_cdio);
 }
 
 /*!
-  Close media tray in CD drive if there is a routine to do so. 
-  
+  Close media tray in CD drive if there is a routine to do so.
+
   @param psz_drive the name of CD-ROM to be closed. If NULL, we will
   use the default device.
   @param p_driver_id is the driver to be used or that got used if
   it was DRIVER_UNKNOWN or DRIVER_DEVICE; If this is NULL, we won't
   report back the driver used.
 */
-driver_return_code_t 
+driver_return_code_t
 cdio_close_tray (const char *psz_orig_drive, /*in/out*/ driver_id_t
                  *p_driver_id)
 {
@@ -415,29 +417,29 @@ cdio_close_tray (const char *psz_orig_drive, /*in/out*/ driver_id_t
   driver_return_code_t drc;
 
   if (!p_driver_id) p_driver_id = &temp_driver_id;
-  
+
   if (!psz_orig_drive || !*psz_orig_drive)
     psz_drive = cdio_get_default_device_driver(p_driver_id);
-  else 
+  else
     psz_drive = strdup(psz_orig_drive);
-  
+
   if (DRIVER_UNKNOWN == *p_driver_id || DRIVER_DEVICE == *p_driver_id) {
-    const driver_id_t *driver_id_p = (DRIVER_DEVICE == *p_driver_id)?cdio_device_drivers:cdio_drivers;
-    
+    const driver_id_t *p_driver_id =
+      (DRIVER_DEVICE == *p_driver_id)?cdio_device_drivers:cdio_drivers;
+
     /* Scan for driver */
-    for ( ; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
-      if ( (*CdIo_all_drivers[*driver_id_p].have_driver)() &&
-           *CdIo_all_drivers[*driver_id_p].close_tray ) {
-        drc = (*CdIo_all_drivers[*driver_id_p].close_tray)(psz_drive);
+    for ( ; *p_driver_id!=DRIVER_UNKNOWN; p_driver_id++) {
+      if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
+           *CdIo_all_drivers[*p_driver_id].close_tray ) {
+        drc = (*CdIo_all_drivers[*p_driver_id].close_tray)(psz_drive);
         free(psz_drive);
-        *p_driver_id = *driver_id_p;
         return drc;
       }
     }
     free(psz_drive);
     return DRIVER_OP_UNSUPPORTED;
   }
-  
+
   /* The driver id was specified. Use that. */
   if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
        *CdIo_all_drivers[*p_driver_id].close_tray ) {
@@ -445,14 +447,14 @@ cdio_close_tray (const char *psz_orig_drive, /*in/out*/ driver_id_t
     free(psz_drive);
     return drc;
   }
-  
+
   free(psz_drive);
   return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!
-  Eject media in CD drive if there is a routine to do so. 
-  
+  Eject media in CD drive if there is a routine to do so.
+
   @param p_cdio the CD object to be acted upon.
   If the CD is ejected *p_cdio is freed and p_cdio set to NULL.
 */
@@ -478,7 +480,7 @@ cdio_eject_media (CdIo_t **pp_cdio)
 /*!
   Eject media in CD drive if there is a routine to do so. If you want
   to scan for any CD-ROM and eject that, pass NULL for psz_drive.
-  
+
   @param psz_drive the CD object to be acted upon.
   If NULL is given as the drive, we'll use the default driver device.
 */
@@ -497,8 +499,8 @@ cdio_eject_media_drive (const char *psz_drive)
   Free device list returned by cdio_get_devices or
   cdio_get_devices_with_cap.
 */
-void 
-cdio_free_device_list (char * ppsz_device_list[]) 
+void
+cdio_free_device_list (char * ppsz_device_list[])
 {
   char **ppsz_device_list_save=ppsz_device_list;
   if (!ppsz_device_list) return;
@@ -512,7 +514,7 @@ cdio_free_device_list (char * ppsz_device_list[])
 
 /*!
   Return a string containing the default CD device if none is specified.
-  if p_cdio is NULL (we haven't initialized a specific device driver), 
+  if p_cdio is NULL (we haven't initialized a specific device driver),
   then find a suitable one and return the default device for that.
 
   NULL is returned if we couldn't get a default device.
@@ -521,17 +523,17 @@ char *
 cdio_get_default_device (const CdIo_t *p_cdio)
 {
   if (p_cdio == NULL) {
-    const driver_id_t *driver_id_p;
+    const driver_id_t *p_driver_id;
     /* Scan for driver */
-    for (driver_id_p=cdio_drivers; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
-      if ( (*CdIo_all_drivers[*driver_id_p].have_driver)() &&
-           *CdIo_all_drivers[*driver_id_p].get_default_device ) {
-        return (*CdIo_all_drivers[*driver_id_p].get_default_device)();
+    for (p_driver_id=cdio_drivers; *p_driver_id!=DRIVER_UNKNOWN; p_driver_id++) {
+      if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
+           *CdIo_all_drivers[*p_driver_id].get_default_device ) {
+        return (*CdIo_all_drivers[*p_driver_id].get_default_device)();
       }
     }
     return NULL;
   }
-  
+
   if (p_cdio->op.get_default_device) {
     return p_cdio->op.get_default_device ();
   } else {
@@ -550,19 +552,20 @@ char *
 cdio_get_default_device_driver (/*in/out*/ driver_id_t *p_driver_id)
 {
   if (DRIVER_UNKNOWN == *p_driver_id || DRIVER_DEVICE == *p_driver_id) {
-    const driver_id_t *driver_id_p = (DRIVER_DEVICE == *p_driver_id)?cdio_device_drivers:cdio_drivers;
+    const driver_id_t *p_driver_id_try =
+      (DRIVER_DEVICE == *p_driver_id)?cdio_device_drivers:cdio_drivers;
 
     /* Scan for driver */
-    for ( ; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
-      if ( (*CdIo_all_drivers[*driver_id_p].have_driver)() &&
-           *CdIo_all_drivers[*driver_id_p].get_default_device ) {
-        *p_driver_id = *driver_id_p;
-        return (*CdIo_all_drivers[*driver_id_p].get_default_device)();
+    for ( ; *p_driver_id_try!=DRIVER_UNKNOWN; p_driver_id_try++) {
+      if ( (*CdIo_all_drivers[*p_driver_id_try].have_driver)() &&
+           *CdIo_all_drivers[*p_driver_id_try].get_default_device ) {
+        *p_driver_id = *p_driver_id_try;
+        return (*CdIo_all_drivers[*p_driver_id].get_default_device)();
       }
     }
     return NULL;
   }
-  
+
   /* The driver id was specified. Use that. */
   if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
        *CdIo_all_drivers[*p_driver_id].get_default_device ) {
@@ -575,14 +578,14 @@ cdio_get_default_device_driver (/*in/out*/ driver_id_t *p_driver_id)
   devices, dor a driver give that device, if you want hardware
   devices, give DRIVER_DEVICE and if you want all possible devices,
   image drivers and hardware drivers give DRIVER_UNKNOWN.
-  
+
   NULL is returned if we couldn't return a list of devices.
 */
 char **
 cdio_get_devices (driver_id_t driver_id)
 {
   /* Probably could get away with &driver_id below. */
-  driver_id_t driver_id_temp = driver_id; 
+  driver_id_t driver_id_temp = driver_id;
   return cdio_get_devices_ret (&driver_id_temp);
 }
 
@@ -604,7 +607,7 @@ cdio_get_devices_ret (/*in/out*/ driver_id_t *p_driver_id)
   default:
     return (*CdIo_all_drivers[*p_driver_id].get_devices)();
   }
-  
+
   if (p_cdio == NULL) return NULL;
   if (p_cdio->op.get_devices) {
     char **devices = p_cdio->op.get_devices ();
@@ -618,21 +621,21 @@ cdio_get_devices_ret (/*in/out*/ driver_id_t *p_driver_id)
 /*!
   Return an array of device names in search_devices that have at
   least the capabilities listed by cap.  If search_devices is NULL,
-  then we'll search all possible CD drives.  
-  
+  then we'll search all possible CD drives.
+
   If "any" is set false then every capability listed in the extended
   portion of capabilities (i.e. not the basic filesystem) must be
   satisified. If "any" is set true, then if any of the capabilities
   matches, we call that a success.
-  
+
   To find a CD-drive of any type, use the mask CDIO_FS_MATCH_ALL.
-  
+
   NULL is returned if we couldn't get a default device.
-  It is also possible to return a non NULL but after dereferencing the 
+  It is also possible to return a non NULL but after dereferencing the
   the value is NULL. This also means nothing was found.
 */
 char **
-cdio_get_devices_with_cap (/*in*/ char* search_devices[], 
+cdio_get_devices_with_cap (/*in*/ char* search_devices[],
                            cdio_fs_anal_t capabilities, bool any)
 {
   driver_id_t p_driver_id;
@@ -641,7 +644,7 @@ cdio_get_devices_with_cap (/*in*/ char* search_devices[],
 }
 
 char **
-cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[], 
+cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[],
                                cdio_fs_anal_t need_cap, bool b_any,
                                /*out*/ driver_id_t *p_driver_id)
 {
@@ -656,29 +659,29 @@ cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[],
     ppsz_drives=cdio_get_devices_ret(p_driver_id);
     b_free_ppsz_drives = true;
   }
-  
+
   if (!ppsz_drives) return NULL;
 
   if (need_cap == CDIO_FS_MATCH_ALL) {
     /* Duplicate drives into drives_ret. */
     char **d = ppsz_drives;
-    
+
     for( ; *d != NULL; d++ ) {
       cdio_add_device_list(&ppsz_drives_ret, *d, &i_drives);
     }
   } else {
     const cdio_fs_anal_t need_fs = CDIO_FSTYPE(need_cap);
     char **d = ppsz_drives;
-      
+
     for( ;  *d != NULL; d++ ) {
       CdIo_t *p_cdio = cdio_open(*d, *p_driver_id);
-      
+
       if (NULL != p_cdio) {
         track_t i_first_track = cdio_get_first_track_num(p_cdio);
-        cdio_iso_analysis_t cdio_iso_analysis; 
+        cdio_iso_analysis_t cdio_iso_analysis;
 
         if (CDIO_INVALID_TRACK != i_first_track) {
-          const cdio_fs_anal_t got_cap = 
+          const cdio_fs_anal_t got_cap =
             cdio_guess_cd_type(p_cdio, 0, i_first_track, &cdio_iso_analysis);
 
           /* Match on filesystem. Here either we don't know what the
@@ -687,21 +690,21 @@ cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[],
              We refine the logic further after this initial test. */
           if ( CDIO_FS_UNKNOWN == need_fs || 0 == need_fs
                || (CDIO_FSTYPE(got_cap) == need_fs) ) {
-              /* Match on analysis type. If we haven't set any 
+              /* Match on analysis type. If we haven't set any
                  analysis type, then an automatic match. Otherwise
-                 a match is determined by whether we need all 
+                 a match is determined by whether we need all
                  analysis types or any of them. */
               const cdio_fs_anal_t need_anal = need_cap & ~CDIO_FS_MASK;
               const cdio_fs_anal_t got_anal  = got_cap  & ~CDIO_FS_MASK;
-              const bool b_match = !need_anal 
-                || (b_any  
+              const bool b_match = !need_anal
+                || (b_any
                     ? (got_anal & need_anal) != 0
                     : (got_anal & need_anal) == need_anal);
-              if (b_match) 
+              if (b_match)
                 cdio_add_device_list(&ppsz_drives_ret, *d, &i_drives);
             }
         }
-             
+
         cdio_destroy(p_cdio);
       }
     }
@@ -721,7 +724,7 @@ cdio_get_devices_with_cap_ret (/*in*/ char* search_devices[],
 
  */
 void
-cdio_get_drive_cap (const CdIo_t *p_cdio, 
+cdio_get_drive_cap (const CdIo_t *p_cdio,
                     cdio_drive_read_cap_t  *p_read_cap,
                     cdio_drive_write_cap_t *p_write_cap,
                     cdio_drive_misc_cap_t  *p_misc_cap)
@@ -730,7 +733,7 @@ cdio_get_drive_cap (const CdIo_t *p_cdio,
   *p_read_cap  = CDIO_DRIVE_CAP_UNKNOWN;
   *p_write_cap = CDIO_DRIVE_CAP_UNKNOWN;
   *p_misc_cap  = CDIO_DRIVE_CAP_UNKNOWN;
-  
+
   if (p_cdio && p_cdio->op.get_drive_cap) {
     p_cdio->op.get_drive_cap(p_cdio->env, p_read_cap, p_write_cap, p_misc_cap);
   }
@@ -764,23 +767,34 @@ cdio_get_drive_cap_dev (const char *device,
 
 /*!
   Return a string containing the name of the driver in use.
-  if CdIo is NULL (we haven't initialized a specific device driver), 
+  if CdIo is NULL (we haven't initialized a specific device driver),
   then return NULL.
 */
 const char *
-cdio_get_driver_name (const CdIo_t *p_cdio) 
+cdio_get_driver_name (const CdIo_t *p_cdio)
 {
   if (NULL==p_cdio) return NULL;
-  return CdIo_all_drivers[p_cdio->driver_id].name;
+  return cdio_get_driver_name_from_id(p_cdio->driver_id);
 }
 
 /*!
-  Return the driver id. 
-  if CdIo is NULL (we haven't initialized a specific device driver), 
+  Return a string containing the name of the driver in use from the driver_id.
+  if CdIo is NULL (we haven't initialized a specific device driver),
+  then return NULL.
+*/
+const char *
+cdio_get_driver_name_from_id (driver_id_t driver_id)
+{
+  return CdIo_all_drivers[driver_id].name;
+}
+
+/*!
+  Return the driver id.
+  if CdIo is NULL (we haven't initialized a specific device driver),
   then return DRIVER_UNKNOWN.
 */
 driver_id_t
-cdio_get_driver_id (const CdIo_t *p_cdio) 
+cdio_get_driver_id (const CdIo_t *p_cdio)
 {
   if (!p_cdio) return DRIVER_UNKNOWN;
   return p_cdio->driver_id;
@@ -788,11 +802,11 @@ cdio_get_driver_id (const CdIo_t *p_cdio)
 
 /*!
   Return a string containing the name of the driver in use.
-  if CdIo is NULL (we haven't initialized a specific device driver), 
+  if CdIo is NULL (we haven't initialized a specific device driver),
   then return NULL.
 */
 bool
-cdio_get_hwinfo (const CdIo_t *p_cdio, cdio_hwinfo_t *hw_info) 
+cdio_get_hwinfo (const CdIo_t *p_cdio, cdio_hwinfo_t *hw_info)
 {
   if (!p_cdio) return false;
   if (p_cdio->op.get_hwinfo) {
@@ -805,8 +819,8 @@ cdio_get_hwinfo (const CdIo_t *p_cdio, cdio_hwinfo_t *hw_info)
 }
 
 /*!
-  Return the session number of the last on the CD. 
-  
+  Return the session number of the last on the CD.
+
   @param p_cdio the CD object to be acted upon.
   @param i_last_session pointer to the session number to be returned.
 */
@@ -819,7 +833,7 @@ driver_return_code_t cdio_get_last_session (CdIo_t *p_cdio,
   return DRIVER_OP_UNSUPPORTED;
 }
 
-/*! 
+/*!
   Find out if media has changed since the last call.
   @param p_cdio the CD object to be acted upon.
   @return 1 if media has changed since last call, 0 if not. Error
@@ -858,7 +872,7 @@ cdio_have_atapi(CdIo_t *p_cdio)
       }
     }
   }
-  
+
   /* Put these in the various drivers? If we get more, yes!
    */
 #ifdef HAVE_LINUX_MAJOR_H
@@ -890,8 +904,8 @@ cdio_have_atapi(CdIo_t *p_cdio)
         case AZTECH_CDROM_MAJOR:
         case GOLDSTAR_CDROM_MAJOR:
         case CM206_CDROM_MAJOR:
-        case SCSI_CDROM_MAJOR:   
-        case SCSI_GENERIC_MAJOR: 
+        case SCSI_CDROM_MAJOR:
+        case SCSI_GENERIC_MAJOR:
           return nope;
 	break;
         default:
@@ -907,7 +921,7 @@ cdio_have_atapi(CdIo_t *p_cdio)
 bool
 cdio_have_driver(driver_id_t driver_id)
 {
-  if (driver_id < 0 || 
+  if (driver_id < 0 ||
       driver_id >= sizeof(CdIo_all_drivers)/sizeof(CdIo_all_drivers[0]))
     return false;
   return (*CdIo_all_drivers[driver_id].have_driver)();
@@ -917,13 +931,13 @@ bool
 cdio_is_device(const char *psz_source, driver_id_t driver_id)
 {
   if (DRIVER_UNKNOWN == driver_id || DRIVER_DEVICE == driver_id) {
-    const driver_id_t *driver_id_p = (DRIVER_DEVICE == driver_id)?cdio_device_drivers:cdio_drivers;
-    
+    const driver_id_t *p_driver_id = (DRIVER_DEVICE == driver_id)?cdio_device_drivers:cdio_drivers;
+
     /* Scan for driver */
-    for ( ; *driver_id_p!=DRIVER_UNKNOWN; driver_id_p++) {
-      if ( (*CdIo_all_drivers[*driver_id_p].have_driver)() &&
-           CdIo_all_drivers[*driver_id_p].is_device ) {
-        return (*CdIo_all_drivers[*driver_id_p].is_device)(psz_source);
+    for ( ; *p_driver_id!=DRIVER_UNKNOWN; p_driver_id++) {
+      if ( (*CdIo_all_drivers[*p_driver_id].have_driver)() &&
+           CdIo_all_drivers[*p_driver_id].is_device ) {
+        return (*CdIo_all_drivers[*p_driver_id].is_device)(psz_source);
       }
     }
   }
@@ -936,7 +950,7 @@ cdio_is_device(const char *psz_source, driver_id_t driver_id)
   driver_id. This should be called before using any other routine,
   except cdio_init. This will call cdio_init, if that hasn't been
   done previously.
-  
+
   NULL is returned on error.
 */
 CdIo_t *
@@ -949,7 +963,7 @@ cdio_open (const char *orig_source_name, driver_id_t driver_id)
   driver_id. This should be called before using any other routine,
   except cdio_init. This will call cdio_init, if that hasn't been
   done previously.
-  
+
   NULL is returned on error.
 */
 CdIo_t *
@@ -957,24 +971,24 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
               const char *psz_access_mode)
 {
   char *psz_source;
-  
+
   if (CdIo_last_driver == -1) cdio_init();
 
   if (!psz_orig_source || !*psz_orig_source)
     psz_source = cdio_get_default_device(NULL);
-  else 
+  else
     psz_source = strdup(psz_orig_source);
-  
+
   switch (driver_id) {
-  case DRIVER_UNKNOWN: 
+  case DRIVER_UNKNOWN:
     {
       CdIo_t *p_cdio=scan_for_driver(cdio_drivers,
                                      psz_source, psz_access_mode);
       free(psz_source);
       return p_cdio;
     }
-  case DRIVER_DEVICE: 
-    {  
+  case DRIVER_DEVICE:
+    {
       /* Scan for a driver. */
       CdIo_t *ret = cdio_open_am_cd(psz_source, psz_access_mode);
       free(psz_source);
@@ -994,8 +1008,8 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
   case DRIVER_BINCUE:
   case DRIVER_CDRDAO:
     if ((*CdIo_all_drivers[driver_id].have_driver)()) {
-      CdIo_t *ret = 
-        (*CdIo_all_drivers[driver_id].driver_open_am)(psz_source, 
+      CdIo_t *ret =
+        (*CdIo_all_drivers[driver_id].driver_open_am)(psz_source,
                                                       psz_access_mode);
       if (ret) ret->driver_id = driver_id;
       free(psz_source);
@@ -1008,11 +1022,11 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
 }
 
 
-/*! 
+/*!
   Set up CD-ROM for reading. The device_name is
   the some sort of device name.
-  
-  @return the cdio object for subsequent operations. 
+
+  @return the cdio object for subsequent operations.
   NULL on error or there is no driver for a some sort of hardware CD-ROM.
 */
 CdIo_t *
@@ -1021,18 +1035,18 @@ cdio_open_cd (const char *psz_source)
   return cdio_open_am_cd(psz_source, NULL);
 }
 
-/*! 
+/*!
   Set up CD-ROM for reading. The device_name is
   the some sort of device name.
-  
-  @return the cdio object for subsequent operations. 
+
+  @return the cdio object for subsequent operations.
   NULL on error or there is no driver for a some sort of hardware CD-ROM.
 */
 /* In the future we'll have more complicated code to allow selection
    of an I/O routine as well as code to find an appropriate default
    routine among the "registered" routines. Possibly classes too
    disk-based, SCSI-based, native-based, vendor (e.g. Sony, or
-   Plextor) based 
+   Plextor) based
 
    For now though, we'll start more simply...
 */
@@ -1046,9 +1060,9 @@ cdio_open_am_cd (const char *psz_source, const char *psz_access_mode)
 }
 
 /*!
-  Set the blocksize for subsequent reads. 
+  Set the blocksize for subsequent reads.
 */
-driver_return_code_t 
+driver_return_code_t
 cdio_set_blocksize ( const CdIo_t *p_cdio, int i_blocksize )
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
@@ -1057,21 +1071,21 @@ cdio_set_blocksize ( const CdIo_t *p_cdio, int i_blocksize )
 }
 
 /*!
-  Set the drive speed. 
-  
+  Set the drive speed.
+
   @param p_cdio          CD structure set by cdio_open().
   @param i_drive_speed   speed in CD-ROM speed units. Note this
                          not Kbs as would be used in the MMC spec or
-		         in mmc_set_speed(). To convert CD-ROM speed units 
+		         in mmc_set_speed(). To convert CD-ROM speed units
 			 to Kbs, multiply the number by 176 (for raw data)
-			 and by 150 (for filesystem data). On many CD-ROM 
-			 drives, specifying a value too large will result 
+			 and by 150 (for filesystem data). On many CD-ROM
+			 drives, specifying a value too large will result
 			 in using the fastest speed.
 
   @see mmc_set_speed and mmc_set_drive_speed
 */
 driver_return_code_t
-cdio_set_speed (const CdIo_t *p_cdio, int i_speed) 
+cdio_set_speed (const CdIo_t *p_cdio, int i_speed)
 {
   if (!p_cdio) return DRIVER_OP_UNINIT;
   if (!p_cdio->op.set_speed) return DRIVER_OP_UNSUPPORTED;
@@ -1079,7 +1093,7 @@ cdio_set_speed (const CdIo_t *p_cdio, int i_speed)
 }
 
 
-/* 
+/*
  * Local variables:
  *  c-file-style: "gnu"
  *  tab-width: 8

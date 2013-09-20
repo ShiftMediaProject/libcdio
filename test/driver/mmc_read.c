@@ -1,6 +1,6 @@
 /* -*- C -*-
   Copyright (C) 2009 Thomas Schmitt <scdbackup@gmx.net>
-  Copyright (C) 2010, 2011, 2012 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2010-2013 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -39,15 +39,15 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#if !defined(HAVE_SLEEP) 
+#if !defined(HAVE_SLEEP)
 #  if defined(HAVE_USLEEP)
 #     define sleep(s) usleep(1000000*s)
 #  elif defined(_WIN32)
 #     include <windows.h>
 #     define sleep(s) Sleep(1000*s)
-#  else 
+#  else
 #     define sleep(s) { int i; for(i=0; i<=1000*s; i++); }
-#  endif     
+#  endif
 #endif
 
 #include <cdio/cdio.h>
@@ -59,31 +59,31 @@
 /* gcc may warn if no prototypes are given before function definition */
 
 static int handle_outcome(CdIo_t *p_cdio, driver_return_code_t i_status,
-			  int *pi_sense_avail, 
-			  cdio_mmc_request_sense_t * p_sense_reply, 
+			  int *pi_sense_avail,
+			  cdio_mmc_request_sense_t * p_sense_reply,
 			  unsigned int i_flag);
 
 static int get_disctype(CdIo_t *p_cdio, bool b_verbose);
 
-static driver_return_code_t get_disc_erasable(const CdIo_t *p_cdio, 
+static driver_return_code_t get_disc_erasable(const CdIo_t *p_cdio,
 					      const char *psz_source,
 					      bool verbose);
 
 static int mode_sense(CdIo_t *p_cdio, int *pi_sense_avail,
 		      cdio_mmc_request_sense_t *p_sense_reply,
-		      unsigned int page_code, unsigned int subpage_code, 
+		      unsigned int page_code, unsigned int subpage_code,
 		      int i_alloc_len,
-		      unsigned char *p_buf, int *pi_size, 
+		      unsigned char *p_buf, int *pi_size,
 		      unsigned int i_flag);
 
 static void print_status_sense(int i_status, int i_sense_valid,
-			       cdio_mmc_request_sense_t *p_sense_reply, 
+			       cdio_mmc_request_sense_t *p_sense_reply,
 			       unsigned int i_flag);
 
 static int test_read(char *psz_drive_path, unsigned int i_flag);
 
 static int test_unit_ready(CdIo_t *p_cdio, int *pi_sense_avail,
-			   cdio_mmc_request_sense_t *p_sense_reply, 
+			   cdio_mmc_request_sense_t *p_sense_reply,
 			   unsigned int i_flag);
 
 static int wait_for_drive(CdIo_t *p_cdio, unsigned int max_tries, bool b_verbose);
@@ -93,7 +93,7 @@ static int wait_for_drive(CdIo_t *p_cdio, unsigned int max_tries, bool b_verbose
 
 static driver_return_code_t
 get_disc_erasable(const CdIo_t *p_cdio, const char *psz_source,
-		       bool b_verbose) 
+		       bool b_verbose)
 {
     driver_return_code_t i_status;
     bool b_erasable;
@@ -111,8 +111,8 @@ get_disctype(CdIo_t *p_cdio, bool b_verbose)
     driver_return_code_t i_status = mmc_get_disctype(p_cdio, 0, &disctype);
     if (DRIVER_OP_SUCCESS == i_status) {
 	if (b_verbose)
-	    fprintf(stderr, "test_disctype: profile is %s (0x%X)\n", 
-		    mmc_feature_profile2str(disctype), 
+	    fprintf(stderr, "test_disctype: profile is %s (0x%X)\n",
+		    mmc_feature_profile2str(disctype),
 		    disctype);
     }
     return DRIVER_OP_SUCCESS;
@@ -124,8 +124,8 @@ get_disctype(CdIo_t *p_cdio, bool b_verbose)
 */
 static int
 handle_outcome(CdIo_t *p_cdio, driver_return_code_t i_status,
-	       int *pi_sense_avail, 
-	       cdio_mmc_request_sense_t * p_sense_reply, 
+	       int *pi_sense_avail,
+	       cdio_mmc_request_sense_t * p_sense_reply,
 	       unsigned int i_flag)
 {
     cdio_mmc_request_sense_t *p_temp_sense_reply = NULL;
@@ -144,7 +144,7 @@ handle_outcome(CdIo_t *p_cdio, driver_return_code_t i_status,
 */
 static void
 print_status_sense(int i_status, int i_sense_valid,
-		   cdio_mmc_request_sense_t *p_sense_reply, 
+		   cdio_mmc_request_sense_t *p_sense_reply,
 		   unsigned int i_flag)
 {
     if (!(i_flag & 1))
@@ -154,9 +154,9 @@ print_status_sense(int i_status, int i_sense_valid,
 	printf(":  KEY=%s (%1.1X), ASC= %2.2X , ASCQ= %2.2X",
 		mmc_sense_key2str[p_sense_reply->sense_key],
 		p_sense_reply->sense_key,
-		p_sense_reply->asc, 
+		p_sense_reply->asc,
 		p_sense_reply->ascq);
-    printf("\n");  
+    printf("\n");
 }
 
 /* --------------------------- MMC commands ------------------------------ */
@@ -172,7 +172,7 @@ print_status_sense(int i_status, int i_sense_valid,
  */
 static int
 test_unit_ready(CdIo_t *p_cdio,
-		int *pi_sense_avail, 
+		int *pi_sense_avail,
 		cdio_mmc_request_sense_t *p_sense_reply,
 		unsigned int i_flag)
 {
@@ -183,7 +183,7 @@ test_unit_ready(CdIo_t *p_cdio,
 
   if (i_flag & 1)
     printf("test_unit_ready ... ");
-  
+
   i_status = mmc_test_unit_ready(p_cdio, 0);
   cdio_loglevel_default = old_log_level;
 
@@ -220,14 +220,14 @@ mode_sense(CdIo_t *p_cdio, int *pi_sense_avail,
                 unsigned char *p_buf, int *pi_size, unsigned int i_flag)
 {
   driver_return_code_t i_status;
-  
+
   if (i_alloc_len < 10)
     return DRIVER_OP_BAD_PARAMETER;
 
   if (i_flag & 1)
     printf("mode_sense(0x%X, %X, %d) ... ",
 	   i_page_code, subpage_code, i_alloc_len);
-  
+
   i_status = mmc_mode_sense_10(p_cdio, p_buf, i_alloc_len, i_page_code);
   handle_outcome(p_cdio, i_status, pi_sense_avail, p_sense_reply, i_flag & 1);
   if (DRIVER_OP_SUCCESS != i_status)
@@ -280,7 +280,7 @@ wait_for_drive(CdIo_t *p_cdio, unsigned int i_max_tries, bool b_verbose)
       /* Other error */;
 
       return 0;
-    } 
+    }
     sleep(1);
   }
   fprintf(stderr, "wait_for_drive: Drive not ready after %d retries\n",
@@ -311,14 +311,14 @@ test_read(char *psz_drive_path, unsigned int i_flag)
 
 
     p_cdio = cdio_open(psz_drive_path, DRIVER_DEVICE);
-    if (!p_cdio) 
+    if (!p_cdio)
 	i_ret = SKIP_TEST - 16;
-    
+
     /* The further code produces some intentional failures which should not be
        reported by mmc_run_cmd() as INFO messages.
     */
     cdio_loglevel_default = CDIO_LOG_WARN;
-    
+
     /* Test availability of info for cdrecord style adresses .
      */
     scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
@@ -328,7 +328,7 @@ test_read(char *psz_drive_path, unsigned int i_flag)
     } else if (i_flag & 1)
 	printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
 	       psz_drive_path, scsi_tuple);
-    
+
     /* Test availability of sense reply in case of unready drive.
        E.g. if the tray is already ejected.
     */
@@ -339,12 +339,12 @@ test_read(char *psz_drive_path, unsigned int i_flag)
 		sense_avail);
 	i_ret = 2; goto ex;
     }
-    
+
     /* Cause sense reply failure by requesting inappropriate mode page 3Eh */
     i_ret = mode_sense(p_cdio, &sense_avail, &sense_reply,
 			    0x3e, 0, alloc_len, buf, &i_size, b_verbose);
     if (i_ret != 0 && sense_avail < 18) {
-	
+
 	fprintf(stderr,
 		"Error: Deliberately illegal command yields only %d sense bytes. Expected >= 18.\n",
 		sense_avail);
@@ -367,29 +367,29 @@ test_read(char *psz_drive_path, unsigned int i_flag)
 	    i_ret = 4; goto ex;
 	}
     }
-    
+
     /* How are we, finally ? */
     i_ret = test_unit_ready(p_cdio, &i_sense_valid, &sense_reply, b_verbose);
-    if ((i_flag & 1) && 0 != i_ret && 2 == sense_reply.sense_key && 
+    if ((i_flag & 1) && 0 != i_ret && 2 == sense_reply.sense_key &&
 	0x3a == sense_reply.asc)
 	fprintf(stderr, "test_unit_ready: Note: No loaded media detected.\n");
 
     /* Call mmc_read with a null pointer and check that we get
        the right return code. */
 
-    if (DRIVER_OP_BAD_POINTER != 
+    if (DRIVER_OP_BAD_POINTER !=
 	(i_ret = mmc_read_cd(p_cdio,
 			     NULL, /* wrong! should be a buffer. */
 			     200,  CDIO_MMC_READ_TYPE_ANY,
 			     false, false, 0, true, false, false,
 			     1, 2448, 1))) {
-	fprintf(stderr, 
+	fprintf(stderr,
 		"mmc_read_cd: expecting bad pointer return, got %d\n",
 		i_ret);
     } else {
 	    i_ret = 0;
     }
-    
+
   ex:;
     cdio_loglevel_default = old_log_level;
     cdio_destroy(p_cdio);
@@ -408,17 +408,17 @@ main(int argc, const char *argv[])
   int exitrc = 0;
   bool b_verbose = (argc > 1);
   driver_return_code_t i_status;
-  
-  cdio_loglevel_default = b_verbose ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
 
-  if (0 != 
+  cdio_loglevel_default = b_verbose ? CDIO_LOG_DEBUG : CDIO_LOG_WARN;
+
+  if (0 !=
       strncmp("TEST UNIT READY", mmc_cmd2str(CDIO_MMC_GPCMD_TEST_UNIT_READY),
 	      sizeof("TEST UNIT READY"))) {
       printf("Expecting mmc_cmd2str to give 'TEST UNIT READY' for code 0x%x\n",
 	     CDIO_MMC_GPCMD_TEST_UNIT_READY);
       exit(1);
   }
-  
+
   ppsz_drives = cdio_get_devices(DRIVER_DEVICE);
   if (!ppsz_drives) {
     printf("Can't find a CD-ROM drive. Skipping test.\n");
@@ -428,11 +428,11 @@ main(int argc, const char *argv[])
   p_cdio = cdio_open(ppsz_drives[0], DRIVER_DEVICE);
   if (p_cdio) {
     const char *psz_have_mmc = cdio_get_arg(p_cdio, "mmc-supported?");
-    
+
     psz_source = cdio_get_arg(p_cdio, "source");
     if (0 != strncmp(psz_source, ppsz_drives[0],
                      strlen(ppsz_drives[0]))) {
-      fprintf(stderr, 
+      fprintf(stderr,
               "Got %s; should get back %s, the name we opened.\n",
               psz_source, ppsz_drives[0]);
       exit(1);
@@ -450,16 +450,16 @@ main(int argc, const char *argv[])
 		       i_status, psz_source);
 	    }
 	    i_status = get_disctype(p_cdio, b_verbose);
-	    
-	    if ( psz_have_mmc 
+
+	    if ( psz_have_mmc
 		 && 0 == strncmp("true", psz_have_mmc, sizeof("true")) ) {
 
 		/* Test the MMC enhancements of version 0.83 in december 2009 */
-		i_ret = test_read(ppsz_drives[0], 
+		i_ret = test_read(ppsz_drives[0],
 				  cdio_loglevel_default == CDIO_LOG_DEBUG);
 		if (0 != i_ret) exit(i_ret + 16);
 	    }
-	} else if (2 == i_ret && b_verbose) 
+	} else if (2 == i_ret && b_verbose)
 	    printf("Drive is empty... skipping remaining tests.\n");
     }
     cdio_destroy(p_cdio);
