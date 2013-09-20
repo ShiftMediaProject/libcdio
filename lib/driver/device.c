@@ -336,13 +336,14 @@ scan_for_driver(const driver_id_t drivers[],
   const driver_id_t *p_driver_id;
 
   for (p_driver_id=drivers; *p_driver_id!=DRIVER_UNKNOWN; p_driver_id++) {
-    cdio_debug ("Trying driver %s", cdio_get_driver_name_from_id(*p_driver_id));
+    cdio_debug("Trying driver %s",
+               cdio_get_driver_name_from_id(*p_driver_id));
     if ((*CdIo_all_drivers[*p_driver_id].have_driver)()) {
       CdIo *ret=
         (*CdIo_all_drivers[*p_driver_id].driver_open_am)(psz_source, access_mode);
       if (ret != NULL) {
         ret->driver_id = *p_driver_id;
-        cdio_info ("found driver %s", cdio_get_driver_name_from_id(*p_driver_id));
+        cdio_info("found driver %s", cdio_get_driver_name_from_id(*p_driver_id));
         return ret;
       }
     }

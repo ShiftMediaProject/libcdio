@@ -67,19 +67,19 @@
 
 /*!
   Eject media -- there's nothing to do here. We always return -2.
-  Should we also free resources? 
+  Should we also free resources?
  */
-int 
+int
 cdio_generic_unimplemented_eject_media (void *p_user_data) {
   /* Sort of a stub here. Perhaps log a message? */
   return DRIVER_OP_UNSUPPORTED;
 }
 
 /*!
-  Set the blocksize for subsequent reads. 
+  Set the blocksize for subsequent reads.
 */
-int 
-cdio_generic_unimplemented_set_blocksize (void *p_user_data, 
+int
+cdio_generic_unimplemented_set_blocksize (void *p_user_data,
                                           uint16_t i_blocksize) {
   /* Sort of a stub here. Perhaps log a message? */
   return DRIVER_OP_UNSUPPORTED;
@@ -88,7 +88,7 @@ cdio_generic_unimplemented_set_blocksize (void *p_user_data,
 /*!
   Set the drive speed.
 */
-int 
+int
 cdio_generic_unimplemented_set_speed (void *p_user_data, int i_speed) {
   /* Sort of a stub here. Perhaps log a message? */
   return DRIVER_OP_UNSUPPORTED;
@@ -96,7 +96,7 @@ cdio_generic_unimplemented_set_speed (void *p_user_data, int i_speed) {
 
 
 /*!
-  Release and free resources associated with cd. 
+  Release and free resources associated with cd.
  */
 void
 cdio_generic_free (void *p_user_data)
@@ -132,7 +132,7 @@ cdio_generic_init (void *user_data, int open_flags)
     cdio_warn ("init called more than once");
     return false;
   }
-  
+
   p_env->fd = open (p_env->source_name, open_flags, 0);
 
   if (p_env->fd < 0)
@@ -164,7 +164,7 @@ cdio_generic_read_form1_sector (void * user_data, void *data, lsn_t lsn)
 
 /*!
   Reads into buf the next size bytes.
-  Returns -1 on error. 
+  Returns -1 on error.
   Is in fact libc's lseek()/lseek64().
 */
 off_t
@@ -176,7 +176,7 @@ cdio_generic_lseek (void *user_data, off_t offset, int whence)
 
 /*!
   Reads into buf the next size bytes.
-  Returns -1 on error. 
+  Returns -1 on error.
   Is in fact libc's read().
 */
 ssize_t
@@ -195,7 +195,7 @@ cdio_generic_stdio_free (void *p_user_data)
   generic_img_private_t *p_env = p_user_data;
 
   if (NULL == p_env) return;
-  if (NULL != p_env->source_name) 
+  if (NULL != p_env->source_name)
     free (p_env->source_name);
 
   if (p_env->data_source)
@@ -203,7 +203,7 @@ cdio_generic_stdio_free (void *p_user_data)
 }
 
 
-/*!  
+/*!
   Return true if source_name could be a device containing a CD-ROM.
 */
 bool
@@ -211,14 +211,14 @@ cdio_is_device_generic(const char *source_name)
 {
   struct stat buf;
   if (0 != stat(source_name, &buf)) {
-    cdio_warn ("Can't get file status for %s:\n%s", source_name, 
+    cdio_warn ("Can't get file status for %s:\n%s", source_name,
                 strerror(errno));
     return false;
   }
   return (S_ISBLK(buf.st_mode) || S_ISCHR(buf.st_mode));
 }
 
-/*!  
+/*!
   Like above, but don't give a warning device doesn't exist.
 */
 bool
@@ -231,12 +231,12 @@ cdio_is_device_quiet_generic(const char *source_name)
   return (S_ISBLK(buf.st_mode) || S_ISCHR(buf.st_mode));
 }
 
-/*! 
-  Add/allocate a drive to the end of drives. 
+/*!
+  Add/allocate a drive to the end of drives.
   Use cdio_free_device_list() to free this device_list.
 */
-void 
-cdio_add_device_list(char **device_list[], const char *drive, 
+void
+cdio_add_device_list(char **device_list[], const char *drive,
                      unsigned int *num_drives)
 {
   if (NULL != drive) {
@@ -254,9 +254,10 @@ cdio_add_device_list(char **device_list[], const char *drive,
       /* Drive not in list. Add it. */
       (*num_drives)++;
       *device_list = realloc(*device_list, (*num_drives) * sizeof(char *));
+      cdio_debug("Adding drive %s to list of devices", drive);
       (*device_list)[*num_drives-1] = strdup(drive);
       }
-      
+
   } else {
     (*num_drives)++;
     if (*device_list) {
@@ -264,14 +265,15 @@ cdio_add_device_list(char **device_list[], const char *drive,
     } else {
       *device_list = malloc((*num_drives) * sizeof(char *));
     }
+    cdio_debug("Creating empty drive list");
     (*device_list)[*num_drives-1] = NULL;
   }
 }
 
 /*
-  Get cdtext information in p_user_data for track i_track. 
+  Get cdtext information in p_user_data for track i_track.
   For disc information i_track is 0.
-  
+
   Return the CD-TEXT or NULL if obj is NULL, CD-TEXT information does
   not exist, or we don't know how to get this implemented.
 */
@@ -305,7 +307,7 @@ get_cdtext_generic (void *p_user_data)
   return p_env->cdtext;
 }
 
-/*! 
+/*!
   Get disc type associated with cd object.
 */
 discmode_t
@@ -338,7 +340,7 @@ get_discmode_generic (void *p_user_data )
   return get_discmode_cd_generic(p_user_data);
 }
 
-/*! 
+/*!
   Get disc type associated with cd object.
 */
 discmode_t
@@ -348,14 +350,14 @@ get_discmode_cd_generic (void *p_user_data )
   track_t i_track;
   discmode_t discmode=CDIO_DISC_MODE_NO_INFO;
 
-  if (!p_env->toc_init) 
+  if (!p_env->toc_init)
     p_env->cdio->op.read_toc (p_user_data);
 
-  if (!p_env->toc_init) 
+  if (!p_env->toc_init)
     return CDIO_DISC_MODE_NO_INFO;
 
-  for (i_track = p_env->i_first_track; 
-       i_track < p_env->i_first_track + p_env->i_tracks ; 
+  for (i_track = p_env->i_first_track;
+       i_track < p_env->i_first_track + p_env->i_tracks ;
        i_track ++) {
     track_format_t track_fmt =
       p_env->cdio->op.get_track_format(p_env, i_track);
@@ -367,8 +369,8 @@ get_discmode_cd_generic (void *p_user_data )
           discmode = CDIO_DISC_MODE_CD_DA;
           break;
         case CDIO_DISC_MODE_CD_DA:
-        case CDIO_DISC_MODE_CD_MIXED: 
-        case CDIO_DISC_MODE_ERROR: 
+        case CDIO_DISC_MODE_CD_MIXED:
+        case CDIO_DISC_MODE_ERROR:
           /* No change*/
           break;
       default:
@@ -381,8 +383,8 @@ get_discmode_cd_generic (void *p_user_data )
           discmode = CDIO_DISC_MODE_CD_XA;
           break;
         case CDIO_DISC_MODE_CD_XA:
-        case CDIO_DISC_MODE_CD_MIXED: 
-        case CDIO_DISC_MODE_ERROR: 
+        case CDIO_DISC_MODE_CD_MIXED:
+        case CDIO_DISC_MODE_ERROR:
           /* No change*/
           break;
       default:
@@ -396,8 +398,8 @@ get_discmode_cd_generic (void *p_user_data )
           discmode = CDIO_DISC_MODE_CD_DATA;
           break;
         case CDIO_DISC_MODE_CD_DATA:
-        case CDIO_DISC_MODE_CD_MIXED: 
-        case CDIO_DISC_MODE_ERROR: 
+        case CDIO_DISC_MODE_CD_MIXED:
+        case CDIO_DISC_MODE_ERROR:
           /* No change*/
           break;
       default:
@@ -413,15 +415,15 @@ get_discmode_cd_generic (void *p_user_data )
 }
 
 /*!
-  Return the number of of the first track. 
+  Return the number of of the first track.
   CDIO_INVALID_TRACK is returned on error.
 */
 track_t
-get_first_track_num_generic(void *p_user_data) 
+get_first_track_num_generic(void *p_user_data)
 {
   const generic_img_private_t *p_env = p_user_data;
-  
-  if (!p_env->toc_init) 
+
+  if (!p_env->toc_init)
     p_env->cdio->op.read_toc (p_user_data);
 
   return p_env->toc_init ? p_env->i_first_track : CDIO_INVALID_TRACK;
@@ -435,8 +437,8 @@ track_t
 get_num_tracks_generic(void *p_user_data)
 {
   generic_img_private_t *p_env = p_user_data;
-  
-  if (!p_env->toc_init) 
+
+  if (!p_env->toc_init)
     p_env->cdio->op.read_toc (p_user_data);
 
   return p_env->toc_init ? p_env->i_tracks : CDIO_INVALID_TRACK;
@@ -445,7 +447,7 @@ get_num_tracks_generic(void *p_user_data)
 
 /*!
   Read CD-Text information for a CdIo_t object .
-  
+
   return pointer to raw cdtext on success,
   NULL on failure
   free when done and not NULL
@@ -463,7 +465,7 @@ read_cdtext_generic(void *p_env)
   implemented or -1 for error.
   Not meaningful if track is not an audio track.
 */
-int 
+int
 get_track_channels_generic(const void *p_user_data, track_t i_track)
 {
   const generic_img_private_t *p_env = p_user_data;
@@ -473,7 +475,7 @@ get_track_channels_generic(const void *p_user_data, track_t i_track)
 /*! Return 1 if copy is permitted on the track, 0 if not, or -1 for error.
   Is this meaningful if not an audio track?
 */
-track_flag_t 
+track_flag_t
 get_track_copy_permit_generic(void *p_user_data, track_t i_track)
 {
   const generic_img_private_t *p_env = p_user_data;
@@ -482,7 +484,7 @@ get_track_copy_permit_generic(void *p_user_data, track_t i_track)
 
 /*! Return 1 if track has pre-emphasis, 0 if not, or -1 for error.
   Is this meaningful if not an audio track?
-  
+
   pre-emphasis is a non linear frequency response.
 */
 track_flag_t
@@ -492,21 +494,21 @@ get_track_preemphasis_generic(const void *p_user_data, track_t i_track)
   return p_env->track_flags[i_track].preemphasis;
 }
 
-void 
-set_track_flags(track_flags_t *p_track_flag, uint8_t i_flag) 
+void
+set_track_flags(track_flags_t *p_track_flag, uint8_t i_flag)
 {
   p_track_flag->preemphasis = ( i_flag & CDIO_TRACK_FLAG_PRE_EMPHASIS )
     ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
 
   p_track_flag->copy_permit = ( i_flag & CDIO_TRACK_FLAG_COPY_PERMITTED )
     ? CDIO_TRACK_FLAG_TRUE : CDIO_TRACK_FLAG_FALSE;
-  
+
   p_track_flag->channels = ( i_flag & CDIO_TRACK_FLAG_FOUR_CHANNEL_AUDIO )
     ? 4 : 2;
 }
 
 driver_return_code_t
-read_data_sectors_generic (void *p_user_data, void *p_buf, lsn_t i_lsn, 
+read_data_sectors_generic (void *p_user_data, void *p_buf, lsn_t i_lsn,
                            uint16_t i_blocksize, uint32_t i_blocks)
 {
   int rc;
@@ -518,7 +520,7 @@ read_data_sectors_generic (void *p_user_data, void *p_buf, lsn_t i_lsn,
 }
 
 
-/* 
+/*
  * Local variables:
  *  c-file-style: "gnu"
  *  tab-width: 8

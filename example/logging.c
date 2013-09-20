@@ -35,14 +35,52 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
-
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
 #endif
 
 #include <cdio/cdio.h>
 #include <cdio/cd_types.h>
 #include <cdio/logging.h>
+
+static long
+parse_loglevel(const char *ps_loglevel) {
+    long loglevel;
+    if (strncmp(ps_loglevel, "debug", strlen("debug")) == 0) {
+	loglevel = CDIO_LOG_DEBUG;
+    } else if (strncmp(ps_loglevel, "info", strlen("info"))) {
+	loglevel = CDIO_LOG_INFO;
+    } else if (strncmp(ps_loglevel, "warn", strlen("warn")) == 0) {
+	loglevel = CDIO_LOG_WARN;
+    } else if (strncmp(ps_loglevel, "error", strlen("error")) == 0) {
+	loglevel = CDIO_LOG_ERROR;
+    } else if (strncmp(ps_loglevel, "assert", strlen("assert")) == 0) {
+	loglevel = CDIO_LOG_ASSERT;
+    } else {
+        char *endptr;
+	errno = 0;    /* To distinguish success/failure after call */
+	loglevel = strtol(ps_loglevel, &endptr, 10);
+
+	/* Check for various possible errors, in parsing the verbosity
+	 * level. */
+	if ((errno == ERANGE &&
+	     (loglevel == LONG_MAX || loglevel == LONG_MIN))
+		|| (errno != 0 && loglevel == 0)) {
+	    perror("strtol conversion error of loglevel");
+	    exit(EXIT_FAILURE);
+	}
+
+	if (endptr == ps_loglevel) {
+	    fprintf(stderr, "No digits were found\n");
+	    exit(EXIT_FAILURE);
+	}
+    }
+    return loglevel;
+}
+
 
 int
 main(int argc, const char *argv[])
@@ -53,31 +91,15 @@ main(int argc, const char *argv[])
 
     /* Parse command arguemnts */
     if (argc > 2) {
-	printf("Usage:\n%s <verbosity-level>\nShows cd drives with given verbosity level",
+	printf("Usage:\n%s <verbosity-level>\n"
+	       "Shows cd drives with given verbosity level",
 	       argv[0]);
 	exit(EXIT_FAILURE);
     }
 
     if (argc == 2) {
-        char *endptr;
-        long loglevel;
-
-        errno = 0;    /* To distinguish success/failure after call */
-        loglevel = strtol(argv[1], &endptr, 10);
-
-        /* Check for various possible errors, in parsing  the verbosity level. */
-	if ((errno == ERANGE && (loglevel == LONG_MAX || loglevel == LONG_MIN))
-	    || (errno != 0 && loglevel == 0)) {
-            perror("strtol conversion error of loglevel");
-	    exit(EXIT_FAILURE);
-	}
-
-        if (endptr == argv[1]) {
-            fprintf(stderr, "No digits were found\n");
-            exit(EXIT_FAILURE);
-        }
-	/* Finally! Set the verbosity level. */
-	cdio_loglevel_default = loglevel;
+	/* Set cdio's verbosity level. */
+        cdio_loglevel_default = parse_loglevel(argv[1]);
     }
 
     /* Print out a list of CD-drives with the above set log level. */
