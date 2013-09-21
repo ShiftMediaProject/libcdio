@@ -5,7 +5,7 @@
 @settitle GNU @code{libcdio}: Compact Disc Input, Output, and Control Library
 @c %**end of header
 
-@c Karl Berry informs me that this will add straight quotes in 
+@c Karl Berry informs me that this will add straight quotes in
 @c typewriter text.
 @c See the "Inserting Quote Characters" node in the Texinfo manual
 @set txicodequoteundirected
@@ -77,7 +77,7 @@ Texts.  A copy of the license is included in the section entitled
 
 Appendices
 * ISO-9660 Character Sets::
-* Glossary::          
+* Glossary::
 * GNU Free Documentation License::
 
 Indices
@@ -144,7 +144,7 @@ Audio CD's only and I don't believe this library has been used outside
 of xmcd.
 
 Another project, Simple DirectMedia Layer also encapsulates CD
-reading. 
+reading.
 
 @quotation
 SDL is a library that allows you portable low-level access to a video
@@ -253,7 +253,7 @@ information.
 
 Other utility programs in the libcdio package are:
 
-@table @code 
+@table @code
 
 @item @code{cdda-player}
 
@@ -274,7 +274,7 @@ in order to get this info.)  lists out drive capabilities
 @item cd-read
 performs low-level block reading of a CD or CD image,
 
-@item @code{iso-info} 
+@item @code{iso-info}
 
 displays ISO-9660 information from an ISO-9660 image. Below is some
 sample output
@@ -290,7 +290,7 @@ ISO 9660 image: ../test/joliet.iso
 Application: K3B THE CD KREATOR VERSION 0.11.12 (C) 2003 SEBASTIAN TRUEG AND...
 Preparer   : K3b - Version 0.11.12
 Publisher  : Rocky Bernstein
-System     : LINUX           
+System     : LINUX
 Volume     : K3b data project
 Volume Set :
 __________________________________
@@ -314,7 +314,7 @@ ISO-9660 Information
  Jul 25 2004 06:52  isofs-m1.cue
 @end smallexample
 
-@item @code{iso-read} 
+@item @code{iso-read}
 
 extracts files from an ISO-9660 image.
 
@@ -342,7 +342,7 @@ Disc formats that are handled by this library.
 
 The Sony and Philips Corporations invented and Compact Disc (CD) in
 the early 1980s. The specifications for the layout is often referred
-to by the color of the cover on the specification. 
+to by the color of the cover on the specification.
 
 @menu
 * Red Book::        Red Book (CD-DA) CD Text, CDDB
@@ -375,7 +375,7 @@ the fact that 75 sectors are used in a second of playing of
 sound. (And for almost every other CD format and application the MSF
 format doesn't make that much sense).
 
-In @value{libcdio} when you you want to read an audio sector, you call 
+In @value{libcdio} when you you want to read an audio sector, you call
 @code{cdio_read_audio_sector()} or @code{cdio_read_audio_sectors()}.
 
 @cindex subchannel
@@ -446,7 +446,7 @@ same information since they via programs play the same music.
 
 Obtaining CD meta information when none is encoded in an audio CD is
 useful in media players or making ones own compilations from audio
-CDs. 
+CDs.
 
 There are currently two popular CDDB services on the Internet. The
 original database has been renamed Gracenote and is a profit making
@@ -538,7 +538,7 @@ with the limited filename conventions found in Microsoft DOS OS. In
 particular, the Joliet specification allows for long filenames and
 allows for UCS-BE (BigEndian Unicode) encoding of filenames which
 include mixed case letter, accented characters spaces and various
-symbols. 
+symbols.
 
 The way all of this is encoded is by adding a second directory and
 filesystem structure in addition to or in parallels to original ISO
@@ -611,7 +611,7 @@ sector you call the @code{cdio_read_mode2_sector()} or
 This was a CD-ROM format developed by Philips for CD-i (an obsolete
 embedded CD-ROM application allowing limited user user interaction
 with films, games and educational applications). The format is ISO
-9660 compliant and introduced mode 2 form 2 addressing. It also 
+9660 compliant and introduced mode 2 form 2 addressing. It also
 contains XA (Extended Architecture) attributes.
 
 Although some Green Book discs contain CD-i applications which can
@@ -627,7 +627,7 @@ CD-ROM which draws on this specification.
 
 The White Book was released by Sony, Philips, Matsushita, and JVC in
 1993, defines the Video CD specification. The White Book is also known
-as Digital Video (DV). 
+as Digital Video (DV).
 
 A Video CD contains one data track recorded in CD-ROM XA Mode 2 Form
 2. It is always the first track on the disc (Track 1). The ISO-9660
@@ -635,19 +635,19 @@ file structure and a CD-i application program are recorded in this
 track, as well as the Video CD Information Area which gives general
 information about the Video Compact Disc. After the data track, video
 is written in one or more subsequent tracks within the same
-session. These tracks are also recorded in Mode 2 Form 2. 
+session. These tracks are also recorded in Mode 2 Form 2.
 
 In @value{libcdio} when you you want to read a mode2 format 2 audio
 sector you call the @code{cdio_read_mode2_sector()} or
 @code{cdio_read_mode2_sectors()} setting @code{b_form2} to @code{true}.
 
 @node CD Image Formats
-@chapter CD Image Formats 
+@chapter CD Image Formats
 
 @menu
-* CDRDAO TOC Format::           
-* CDRWIN BIN/CUE Format::              
-* NRG Format::              
+* CDRDAO TOC Format::
+* CDRWIN BIN/CUE Format::
+* NRG Format::
 @end menu
 
 In both the @command{cdrdao} and bin/cue formats there is one meta-file with
@@ -697,8 +697,8 @@ are the same.
 #token Eof		"@@"
 #token                  "[\t\r\ ]+"
 #token Comment          "//~[\n@@]*"
-#token                  "\n"       
-#token BeginString      "\""       
+#token                  "\n"
+#token BeginString      "\""
 #token Integer          "[0-9]+"
 #tokclass AudioFile     @{ "AUDIOFILE" "FILE" @}
 
@@ -713,43 +713,43 @@ are the same.
 
 @example
 
-<toc>  ::= ( "CATALOG" <string> | <tocType> )* @{ <cdTextGlobal> @} 
-           ( <track> )+ Eof 
+<toc>  ::= ( "CATALOG" <string> | <tocType> )* @{ <cdTextGlobal> @}
+           ( <track> )+ Eof
 
-<track> ::= "TRACK" <trackMode> 
+<track> ::= "TRACK" <trackMode>
     @{ <subChannelMode> @}
-    (  "ISRC" <string> | @{ "NO" @} "COPY" | @{ "NO" @} "PRE_EMPHASIS" 
+    (  "ISRC" <string> | @{ "NO" @} "COPY" | @{ "NO" @} "PRE_EMPHASIS"
     | "TWO_CHANNEL_AUDIO"  | "FOUR_CHANNEL_AUDIO" )*
     @{ <cdTextTrack>  @}
     @{ "PREGAP" <msf> @}
     ( <subTrack> | "START" @{ msf @} | "END" @{ msf @} )+
     ( "INDEX" <msf> )*
 
-<subTrack> ::= 
+<subTrack> ::=
      AudioFile <string> @{ "SWAP"  @} @{ "#" <sLong>  @}  <samples>
      | "DATAFILE" <string> @{ "#" <sLong> @{ <dataLength> @} @}
-     | "FIFO" <string> <dataLength> 
-     | "SILENCE" <samples> 
-     | "ZERO" @{ dataMode  @} @{ <subChannelMode>  @} <dataLength> 
-  
+     | "FIFO" <string> <dataLength>
+     | "SILENCE" <samples>
+     | "ZERO" @{ dataMode  @} @{ <subChannelMode>  @} <dataLength>
 
-<string> ::=  BeginString ( String | StringQuote | StringOctal )+ 
+
+<string> ::=  BeginString ( String | StringQuote | StringOctal )+
             EndString
 
 <stringEmpty> ::= BeginString ( String | StringQuote | StringOctal )*
                 EndString
 
-<uLong> ::= Integer 
+<uLong> ::= Integer
 
-<sLong> ::= Integer 
+<sLong> ::= Integer
 
-<msf> ::= Integer ":" Integer ":" Integer 
+<msf> ::= Integer ":" Integer ":" Integer
 
 <samples> ::= <msf> | <uLong>
 
 <dataLength> ::= <msf> | <uLong>
 
-<dataMode> ::=  "AUDIO" | "MODE0" | "MODE1" | "MODE1_RAW" | "MODE2" 
+<dataMode> ::=  "AUDIO" | "MODE0" | "MODE1" | "MODE1_RAW" | "MODE2"
      | "MODE2_RAW" | "MODE2_FORM1" | "MODE2_FORM2" | "MODE2_FORM_MIX"
 
 <trackMode> ::= "AUDIO" | "MODE1" | "MODE1_RAW" | "MODE2"
@@ -759,20 +759,20 @@ are the same.
 
 <tocType> ::= "CD_DA" | "CD_ROM" | "CD_ROM_XA" | "CD_I"
 
-<packType> ::= "TITLE" | "PERFORMER" | "SONGWRITER" | "COMPOSER" | "ARRANGER"  
-     | "MESSAGE" | "DISC_ID" | "GENRE" | "TOC_INFO1" | "TOC_INFO2"  
+<packType> ::= "TITLE" | "PERFORMER" | "SONGWRITER" | "COMPOSER" | "ARRANGER"
+     | "MESSAGE" | "DISC_ID" | "GENRE" | "TOC_INFO1" | "TOC_INFO2"
      | "RESERVED1" | "RESERVED2" | "RESERVED3" | "RESERVED4" | "UPC_EAN" |
      "ISRC" | "SIZE_INFO"
 
 <binaryData> ::=  "@{"
     @{ Integer ( "," Integer  )* @}
     "@}"
-         
+
 <cdTextItem> ::= <packType>  ( <stringEmpty> | <binaryData> )
- 
+
 <cdTextBlock> ::=  "LANGUAGE" Integer "@{" ( <cdTextItem> )* "@}"
 
-<cdTextLanguageMap> ::= 
+<cdTextLanguageMap> ::=
     "LANGUAGE_MAP" "@{"
     ( Integer  ":" (  Integer | "EN"  ) )+
     "@}"
@@ -814,10 +814,10 @@ notation:
 
 <file-line> ::= "FILE" <pathname-expr> <file-type> <EOL>
 
-<pathname-expr> ::= [ "\"" ] <pathname-str-without-spaces> [ "\"" ] 
-                  | "\"" <pathname-str> "\""  
+<pathname-expr> ::= [ "\"" ] <pathname-str-without-spaces> [ "\"" ]
+                  | "\"" <pathname-str> "\""
 
-<file-type> ::= "BINARY" 
+<file-type> ::= "BINARY"
 
 <track-expr> ::= <track-line> [ <flag-line> ]
                  [ <pregap-line> ] *<index-line> [ <postgap-line> ]
@@ -833,7 +833,7 @@ notation:
 
 <postgap-line> ::= "POSTGAP" <msf> <EOL>
 
-<track-type> ::= "AUDIO" | "MODE1/2048" | "MODE1/2352" 
+<track-type> ::= "AUDIO" | "MODE1/2048" | "MODE1/2352"
                | "MODE2/2336" | "MODE2/2352"
 
 <comment-line> ::= "REM" *<char> <EOL>
@@ -1118,12 +1118,13 @@ Other sources for examples would be the larger utility programs
 @menu
 * Include problem::  A note about including <cdio/cdio.h>
 * Example 1::        list out tracks and LSNs
-* Example 2::        list drivers available and default CD device 
+* Example 2::        list drivers available and default CD device
 * Example 3::        figure out what kind of CD (image) we've got
 * Example 4::        use libiso9660 to extract a file from an ISO-9660 image
 * Example 5::        list CD-Text and CD disc mode info
 * Example 6::        run a MMC INQUIRY command
 * Example 7::        using the CD Paranoia library for CD-DA reading
+* Example 8::        Setting output verbosity
 * All sample programs:: list of all programs in the example directory
 @end menu
 
@@ -1218,18 +1219,18 @@ distribution as @file{example/tracks.c}.
 12:  printf("CD-ROM Track List (%i - %i)\n", first_track_num, i_tracks);
 13
 14:  printf("  #:  LSN\n");
-15:  
+15:
 16:  for (j = 0; j < i_tracks; i++, j++) @{
 17:    lsn_t lsn = cdio_get_track_lsn(p_cdio, i);
 18:    if (CDIO_INVALID_LSN != lsn)
 19:      printf("%3d: %06d\n", (int) i, lsn);
 20:  @}
-21:  printf("%3X: %06d  leadout\n", CDIO_CDROM_LEADOUT_TRACK, 
+21:  printf("%3X: %06d  leadout\n", CDIO_CDROM_LEADOUT_TRACK,
 22:         cdio_get_track_lsn(p_cdio, CDIO_CDROM_LEADOUT_TRACK));
 23:  cdio_destroy(p_cdio);
 24:  return 0;
 25: @}
-@end smallexample 
+@end smallexample
 
 Already from the beginning on line 2 we see something odd. The
 @code{#include <sys/types.h>} is needed because @value{libcdio}
@@ -1238,7 +1239,7 @@ and so on.  Alternatively you change line 2 to:
 
 @smallexample
 #define HAVE_SYS_TYPES_H
-@end smallexample 
+@end smallexample
 
 and @code{<cdio/cdio.h>} will insert line 2. If you use GNU autoconf
 to configure your program, add @code{sys/types.h} to
@@ -1254,7 +1255,7 @@ straightforward: you need to include this to get cdio definitions. One
 of the types that is defined via line 3 is @code{CdIo_t} and a pointer
 that is used pretty much in all operations. Line 6 initializes the
 variable @code{cdio} which we will be using in all of the subsequent
-libcdio calls. It does this via a call to @code{cdio_open()}. 
+libcdio calls. It does this via a call to @code{cdio_open()}.
 
 The second parameter of @code{cdio_open} is DRIVER_UNKNOWN. For any
 given installation a number of Compact Disc device drivers may be
@@ -1263,7 +1264,7 @@ that can read CD disk-image formats as well as a driver that handles
 some CD-ROM piece of hardware. Using DRIVER_UNKNOWN as that second
 parameter we let the library select a driver amongst those that are
 available; generally the first hardware driver that is available is
-the one selected. 
+the one selected.
 
 If there is no CD in any of the CD-ROM drives or one does not have
 access to the CD-ROM, it is possible that @value{libcdio} will find a
@@ -1286,7 +1287,7 @@ information and we finally call @code{cdio_destroy()} in line 23 to
 indicate we're done with the CD.
 
 @node Example 2
-@section Example 2: list drivers available and default CD device 
+@section Example 2: list drivers available and default CD device
 
 One thing that's a bit hockey in Example 1 is hard-coding the name of
 the device used: @code{/dev/cdrom}. Although often this is the name of
@@ -1294,7 +1295,7 @@ a CD-ROM device on GNU/Linux and possibly some other Unix derivatives,
 there are many OSs for which use a different device name.
 
 In the next example, we'll let the driver give us the name of the CD-ROM
-device that is right for it. 
+device that is right for it.
 
 @smallexample
  1: #include <stdio.h>
@@ -1305,10 +1306,10 @@ device that is right for it.
  6: @{
  7:   CdIo_t *p_cdio = cdio_open (NULL, DRIVER_DEVICE);
  8:   const driver_id_t *driver_id_p;
- 9:  
+ 9:
 10:  if (NULL != p_cdio) @{
 11:    printf("The driver selected is %s\n", cdio_get_driver_name(p_cdio));
-12:    printf("The default device for this driver is %s\n\n", 
+12:    printf("The default device for this driver is %s\n\n",
 13:           cdio_get_default_device(p_cdio));
 14:    cdio_destroy(p_cdio);
 15:  @} else @{
@@ -1343,8 +1344,8 @@ we've got. This can be found in the distribution as @file{example/sample3.c}.
 #include <cdio/cd_types.h>
 
 static void
-print_analysis(cdio_iso_analysis_t cdio_iso_analysis, 
-	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio, 
+print_analysis(cdio_iso_analysis_t cdio_iso_analysis,
+	       cdio_fs_anal_t fs, int first_data, unsigned int num_audio,
 	       track_t i_tracks, track_t first_track_num, CdIo_t *cdio)
 @{
   switch(CDIO_FSTYPE(fs)) @{
@@ -1404,7 +1405,7 @@ print_analysis(cdio_iso_analysis_t cdio_iso_analysis,
   if (fs & CDIO_FS_ANAL_HIDDEN_TRACK)
     printf("Hidden Track   ");
   if (fs & CDIO_FS_ANAL_PHOTO_CD)
-    printf("%sPhoto CD   ", 
+    printf("%sPhoto CD   ",
 		      num_audio > 0 ? " Portfolio " : "");
   if (fs & CDIO_FS_ANAL_CDTV)
     printf("Commodore CDTV   ");
@@ -1427,7 +1428,7 @@ main(int argc, const char *argv[])
 @{
   CdIo_t *p_cdio = cdio_open (NULL, DRIVER_UNKNOWN);
   cdio_fs_anal_t fs=0;
-  
+
   track_t i_tracks;
   track_t first_track_num;
   lsn_t start_track;          /* first sector of track */
@@ -1464,47 +1465,47 @@ main(int argc, const char *argv[])
   @} else @{
     /* we have data track(s) */
     int j;
-    cdio_iso_analysis_t cdio_iso_analysis; 
+    cdio_iso_analysis_t cdio_iso_analysis;
 
     memset(&cdio_iso_analysis, 0, sizeof(cdio_iso_analysis));
-    
+
     for (j = 2, i = first_data; i <= i_tracks; i++) @{
       lsn_t lsn;
       track_format_t track_format = cdio_get_track_format(p_cdio, i);
-      
+
       lsn = cdio_get_track_lsn(p_cdio, i);
-      
+
       switch ( track_format ) @{
       case TRACK_FORMAT_AUDIO:
       case TRACK_FORMAT_ERROR:
 	break;
       case TRACK_FORMAT_CDI:
       case TRACK_FORMAT_XA:
-      case TRACK_FORMAT_DATA: 
-      case TRACK_FORMAT_PSX: 
+      case TRACK_FORMAT_DATA:
+      case TRACK_FORMAT_PSX:
 	;
       @}
-      
+
       start_track = (i == 1) ? 0 : lsn;
-      
+
       /* save the start of the data area */
-      if (i == first_data) 
+      if (i == first_data)
 	data_start = start_track;
-      
+
       /* skip tracks which belong to the current walked session */
       if (start_track < data_start + cdio_iso_analysis.isofs_size)
 	continue;
-      
+
       fs = cdio_guess_cd_type(p_cdio, start_track, i, &cdio_iso_analysis);
-      
+
       print_analysis(cdio_iso_analysis, fs, first_data, num_audio,
 		     i_tracks, first_track_num, p_cdio);
-      
+
       if ( !(CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660 ||
 	     CDIO_FSTYPE(fs) == CDIO_FS_ISO_HFS  ||
 	     CDIO_FSTYPE(fs) == CDIO_FS_ISO_9660_INTERACTIVE) )
 	/* no method for non-ISO9660 multisessions */
-	break;	
+	break;
     @}
   @}
   cdio_destroy(p_cdio);
@@ -1562,9 +1563,9 @@ main(int argc, const char *argv[])
   iso9660_stat_t *p_statbuf;
   FILE *p_outfd;
   int i;
-  
+
   iso9660_t *p_iso = iso9660_open (ISO9660_IMAGE);
-  
+
   if (NULL == p_iso) @{
     fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", ISO9660_IMAGE);
     return 1;
@@ -1572,9 +1573,9 @@ main(int argc, const char *argv[])
 
   p_statbuf = iso9660_ifs_stat_translate (p_iso, LOCAL_FILENAME);
 
-  if (NULL == p_statbuf) 
+  if (NULL == p_statbuf)
     @{
-      fprintf(stderr, 
+      fprintf(stderr,
 	      "Could not get ISO-9660 file information for file %s\n",
 	      LOCAL_FILENAME);
       iso9660_close(p_iso);
@@ -1595,8 +1596,8 @@ main(int argc, const char *argv[])
       char buf[ISO_BLOCKSIZE];
 
       memset (buf, 0, ISO_BLOCKSIZE);
-      
-      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (p_iso, buf, p_statbuf->lsn 
+
+      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (p_iso, buf, p_statbuf->lsn
 						   + (i / ISO_BLOCKSIZE),
 						   1) )
       @{
@@ -1604,17 +1605,17 @@ main(int argc, const char *argv[])
 		(long unsigned int) p_statbuf->lsn + (i / ISO_BLOCKSIZE));
 	my_exit(4);
       @}
-      
-      
+
+
      fwrite (buf, ISO_BLOCKSIZE, 1, p_outfd);
-      
+
      if (ferror (p_outfd))
         @{
           perror ("fwrite()");
           my_exit(5);
         @}
     @}
-  
+
   fflush (p_outfd);
 
   /* Make sure the file size has the exact same byte size. Without the
@@ -1644,30 +1645,30 @@ This can be found in the distribution as @file{example/cdtext.c}.
 #include <cdio/cdtext.h>
 
 
-static void 
+static void
 print_cdtext_track_info(CdIo_t *p_cdio, track_t i_track, const char *message) @{
   const cdtext_t *cdtext    = cdio_get_cdtext(p_cdio, 0);
   if (NULL != cdtext) @{
     cdtext_field_t i;
-    
+
     printf("%s\n", message);
-    
+
     for (i=0; i < MAX_CDTEXT_FIELDS; i++) @{
       if (cdtext->field[i]) @{
         printf("\t%s: %s\n", cdtext_field2str(i), cdtext->field[i]);
       @}
     @}
   @}
-  
+
 @}
-    
-static void 
+
+static void
 print_disc_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) @{
   track_t i_last_track = i_first_track+i_tracks;
   discmode_t cd_discmode = cdio_get_discmode(p_cdio);
 
   printf("%s\n", discmode2str[cd_discmode]);
-  
+
   print_cdtext_track_info(p_cdio, 0, "\nCD-Text for Disc:");
   for ( ; i_first_track < i_last_track; i_first_track++ ) @{
     char psz_msg[50];
@@ -1694,10 +1695,10 @@ main(int argc, const char *argv[])
   @}
 
   cdio_destroy(p_cdio);
-  
+
   return 0;
 @}
-@end smallexample 
+@end smallexample
 
 @node Example 6
 @section Example 6: Using MMC to run an @code{INQURY} command
@@ -1742,18 +1743,18 @@ main(int argc, const char *argv[])
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_INQUIRY);
     cdb.field[4] = sizeof(buf);
 
-    i_status = scsi_mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS, 
-				&cdb, SCSI_MMC_DATA_READ, 
+    i_status = scsi_mmc_run_cmd(p_cdio, DEFAULT_TIMEOUT_MS,
+				&cdb, SCSI_MMC_DATA_READ,
 				sizeof(buf), &buf);
     if (i_status == 0) @{
       char psz_vendor[CDIO_MMC_HW_VENDOR_LEN+1];
       char psz_model[CDIO_MMC_HW_MODEL_LEN+1];
       char psz_rev[CDIO_MMC_HW_REVISION_LEN+1];
-      
+
       memcpy(psz_vendor, buf + 8, sizeof(psz_vendor)-1);
       psz_vendor[sizeof(psz_vendor)-1] = '\0';
       memcpy(psz_model,
-	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN, 
+	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN,
 	     sizeof(psz_model)-1);
       psz_model[sizeof(psz_model)-1] = '\0';
       memcpy(psz_rev,
@@ -1767,12 +1768,12 @@ main(int argc, const char *argv[])
       printf("Couldn't get INQUIRY data (vendor, model, and revision\n");
     @}
   @}
-  
+
   cdio_destroy(p_cdio);
-  
+
   return 0;
 @}
-@end smallexample 
+@end smallexample
 
 Note the include of @code{#define} of @code{__CDIO_CONFIG_H__} towards
 the beginning.  This is useful if the prior @code{#include} of
@@ -1835,7 +1836,7 @@ main(int argc, const char *argv[])
 
   /* Okay now set up to read up to the first 300 frames of the first
      audio track of the Audio CD. */
-  @{ 
+  @{
     cdrom_paranoia_t *p = cdio_paranoia_init(d);
     lsn_t i_first_lsn = cdio_cddap_disc_firstsector(d);
 
@@ -1852,7 +1853,7 @@ main(int argc, const char *argv[])
        */
       if ( i_last_lsn - i_first_lsn > 300) i_last_lsn = i_first_lsn + 299;
 
-      printf("Reading track %d from LSN %ld to LSN %ld\n", i_track, 
+      printf("Reading track %d from LSN %ld to LSN %ld\n", i_track,
 	     (long int) i_first_lsn, (long int) i_last_lsn);
 
       /* Set reading mode for full paranoia, but allow skipping sectors. */
@@ -1881,10 +1882,9 @@ main(int argc, const char *argv[])
   @}
 
   cdio_cdda_close(d);
-
   exit(0);
 @}
-@end smallexample 
+@end smallexample
 
 Those who are die-hard cdparanoia programmers will notice that the
 @value{libcdio} paranoia names are similar but a little bit
@@ -1910,6 +1910,130 @@ preprocessor symbol @code{DO_NOT_WANT_PARANOIA_COMPATIBILITY} can be
 automatically. The may still be a problem with conflicting structure
 definitions like @code{cdrom_drive_t}.
 
+@node Example 8
+@section Example 8: Setting output verbosity
+
+Sometimes in tracking down a problem in your code or libcdio's you may
+want more information about what is going on inside the
+@command{libcdio} library.
+
+The setting global variable @code{cdio_loglevel_default} defined in
+header file @code{<cdio/logging.h>} controls the verbosity level. By
+default, only warnings, errors, and fatal errors are printed. However
+by setting this variable you can get either debug or informational
+messages, or cause the normal messages that appear to be suppressed.
+
+The verbosity levels defined in the library are from lowest number to
+highest are:
+
+@table @code
+
+@item @code{CDIO_LOG_DEBUG} (value 1)
+
+These are of a debugging nature and are give the most verbose output.
+
+@item @code{CDIO_LOG_INFO} (value 2)
+
+These are informational message.
+
+@item @code{CDIO_LOG_WARN} (value 3)
+
+These are warning message. Not an error, per se, but something that
+might be of concern.
+
+@item @code{CDIO_LOG_ERROR} (value 4)
+
+These are out-right error message that don't are serious but not
+serious enough to force program termination.
+
+@item @code{CDIO_LOG_ASSERT} (value 5)
+
+These are fatal error message that force program termination.
+
+@end table
+
+Setting a lower or more verbose log level will cause higher-level
+messages to appear, but not those that are less than the set verbosity
+level. The ``debug'' level is the lowest. So setting
+@code{cdio_loglevel_default} to level causes all other levels of
+messages to be displayed. However setting the verbosity level to
+``warn'' will cause debug and informational messages (lower
+level messages) to be ignored while still showing warning, error, and
+fatal error messages.
+
+Another thing that can be done is to write a custom log handler that
+will be used instead of @command{libcdio}'s default handlers. Using
+this, you have complete control of how you want logging to be handled.
+
+Here is an example adapted from example program @command{logging.c}.
+
+@smallexample
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <errno.h>
+#include <limits.h>
+#include <string.h>
+
+#include <cdio/cdio.h>
+#include <cdio/cd_types.h>
+#include <cdio/logging.h>
+
+/* Here is an example of a custom log handler. */
+static void
+custom_log_handler (cdio_log_level_t level, const char *message)
+@{
+  switch(level) @{
+  case CDIO_LOG_DEBUG:
+    printf("-- custom debug message: %s\n", message);
+    return;
+  case CDIO_LOG_INFO:
+    printf("-- custom info message: %s\n", message);
+    return;
+  case CDIO_LOG_WARN:
+    printf("-- custom warning message: %s\n", message);
+    return;
+  case CDIO_LOG_ERROR:
+    printf("-- custom error message: %s\n", message);
+    return;
+  case CDIO_LOG_ASSERT:
+    printf("-- custom fatal error message: %s\n", message);
+    return;
+  default:
+    printf("custom level %d message: %s\n", level, message);
+  @}
+@}
+
+static void
+print_drives()
+@{
+    char **ppsz_cd_drives=NULL, **c;
+    /* Print out a list of CD-drives with the above set log level. */
+    ppsz_cd_drives = cdio_get_devices(DRIVER_DEVICE);
+    if (NULL != ppsz_cd_drives)
+	for( c = ppsz_cd_drives; *c != NULL; c++ ) @{
+	    printf("-- Drive %s\n", *c);
+	@}
+    cdio_free_device_list(ppsz_cd_drives);
+@}
+
+int
+main(int argc, const char *argv[])
+@{
+    /* Set the log level to the warning verbosity. */
+    cdio_loglevel_default = CDIO_LOG_WARN;
+
+    print_drives();
+
+    /* Do the same thing again but with a custom log handler. */
+    cdio_log_set_handler (custom_log_handler);
+
+    print_drives();
+    return 0;
+
+@}
+@end smallexample
+
 @node All sample programs
 @section A list of all sample programs in the @code{example} directory
 
@@ -1922,7 +2046,7 @@ A larger more-complicated example are the @command{cd-drive},
 
 Descriptions of the sample are as follows...
 
-@table @code 
+@table @code
 
 @item @code{audio.c}
 
@@ -1982,6 +2106,11 @@ The same program as @code{isolist.c} written in C++.
 
 A program showing fuzzy ISO-9660 detection/reading.
 
+@item @code{logging.c}
+
+A program to show to to set log verbosity levels and how to write a
+custom log handler.
+
 @item @code{mmc1.c}
 
 A program to show issuing a simple MMC command (@code{INQUIRY}).
@@ -1997,7 +2126,7 @@ SCSI-MMC @code{GET_CONFIGURATION} command.
 
 @item @code{mmc2a.c}
 
-Prints MMC @command{MODE_SENSE} page 2A parameters. 
+Prints MMC @command{MODE_SENSE} page 2A parameters.
 Page 2a are the CD/DVD Capabilities and Mechanical Status.
 
 @item @code{C++/mmc2.cpp}
@@ -2006,7 +2135,7 @@ The same program as @code{mmc2.c} written in C++.
 
 @item @code{paranoia.c}
 
-A program to show using libcdio's version of the CD-DA paranoia. 
+A program to show using libcdio's version of the CD-DA paranoia.
 
 @item @code{paranoia2.c}
 
@@ -2014,7 +2143,7 @@ A program to show using libcdio's version of the CD-DA paranoia
 library. But in this version, we'll open a cdio object before calling
 paranoia's open. I imagine in many cases such as media players this
 may be what will be done since, one may want to get CDDB/CD-Text info
-beforehand. 
+beforehand.
 
 @item @code{tracks.c}
 
@@ -2084,7 +2213,7 @@ beginning and ending LSN and what mode format to use in the reading.
 @node iso-info
 @section @samp{iso-info}
 
-@samp{iso-info} can be used to print out the structure of an ISO 9660 
+@samp{iso-info} can be used to print out the structure of an ISO 9660
 image.
 
 @node iso-read
@@ -2149,11 +2278,11 @@ For clarity and precision we will use the term ``MMC'' rather than
 One of the problems with MMC is that there are so many different
 ``standards''. In particular:
 @itemize
-@item MMC --- @url{ftp://ftp.t10.org/t10/drafts/mmc/}, 
+@item MMC --- @url{ftp://ftp.t10.org/t10/drafts/mmc/},
 @item MMC 2 --- @url{ftp://ftp.t10.org/t10/drafts/mmc2/}
 @item MMC 3 --- @url{ftp://ftp.t10.org/t10/drafts/mmc3/}
 @item MMC 4 --- @url{ftp://ftp.t10.org/t10/drafts/mmc4/}
-@item MMC 5 --- @url{ftp://ftp.t10.org/t10/drafts/mmc5/} 
+@item MMC 5 --- @url{ftp://ftp.t10.org/t10/drafts/mmc5/}
 @end itemize
 along with the several ``drafts'' of these.
 
@@ -2197,7 +2326,7 @@ commands instead of other OS-specific mechanisms.
 There are serveral ways that you can open a CD-ROM drive for
 subsequent use.  Each way is called an @emph{access
 mode}. Historically libcdio only supported a reading kind of
-access. 
+access.
 
 Adding the abilty to writing to a drive for ``burning'' is being added
 by Thomas Schmitt, and this is accomplished by opening the drive in a
@@ -2210,7 +2339,7 @@ On various OS's often there are two kinds of read modes that are
 supported, one which uses MMC commands and one which uses some sort of
 OS-specific native command interface. For example on Unix, there is
 often a access mode associated with issuing an device-specific
-@code{ioctl}'s that the OS supports. 
+@code{ioctl}'s that the OS supports.
 
 To specify a particular kind of access mode, use @code{cdio_open_am}
 which is like @code{cdio_open} but it requires one to specify an
@@ -2224,13 +2353,13 @@ information about the driver. Each driver can have specific features
 that can be queried, but there are features that are common to all
 drivers. These are listed below:
 
-@table @code 
+@table @code
 
 @item @code{access-mode}
 This returns a string which is the name of the access mode in use.
 @item @code{mmc-supported?}
 This returns a string ``true'' or ``false'' depending whether the
-driver with this access mode support MMC commands. 
+driver with this access mode support MMC commands.
 @item @code{scsi-tuple}
 On drivers that support MMC commands, this returns the SCSI name or a
 faked-up SCSI name that ripping front ends typically use.
@@ -2254,7 +2383,7 @@ Writing/burning to a drive is supported via access modes
 @section Microsoft Windows ioctl and ASPI
 
 There are two CD drive access methods on Microsoft Windows platforms:
-ioctl and ASPI. 
+ioctl and ASPI.
 
 The ASPI interface specification was developed by Adaptec for sending
 commands to a SCSI host adapter (such as those controlling CD and DVD
@@ -2332,7 +2461,7 @@ Code for installed libraries. See below for further breakout
 @item @code{lib/driver}
 
 Code for various OS-specific CD-ROM drivers, image drivers, and
-common MMC routines. 
+common MMC routines.
 
 This code comprises @code{libcdio.a} (or the shared version of it).
 
@@ -2372,7 +2501,7 @@ Various stand-alone utility programs. See below.
 
 @value{libcdio}'s version of @code{cdparanoia}. Except for the fact
 that the back-end CD-reading code has been replaced by
-@value{libcdio}'s routines the code is pretty much identical. 
+@value{libcdio}'s routines the code is pretty much identical.
 
 @item @code{test}
 
@@ -2417,17 +2546,17 @@ then cast this pointer into something of the appropriate type.
 
 Because function pointers are used, there can be and is quite a bit
 of sharing of common routines. Some of the common routines are found
-in the file @file{lib/driver/_cdio_generic.c}. 
+in the file @file{lib/driver/_cdio_generic.c}.
 
 Another set of routines that one is likely to find shared amongst
 drivers are the MMC commands. These are located in
-@file{lib/driver/scsi_mmc.c}. 
+@file{lib/driver/scsi_mmc.c}.
 
 There is not only an attempt to share functions but we've tried to create
 a generic CD structure @code{generic_img_private_t} of file
 @file{lib/driver/generic.h}. By putting information into a common
 structure, we increase the likelihood of being able to have a common
-routine to perform some sort of function. 
+routine to perform some sort of function.
 
 The generic CD structure would also be useful in a utility to convert
 one CD-image format to another. Basically the first image format is
@@ -2483,7 +2612,7 @@ To be completed....
 
 In @value{libcdio} there are a number of conventions used. If you
 understand some of these conventions it may facilitate understanding
-the code a little. 
+the code a little.
 
 @node Namespace Conventions
 @subsection Namespace Conventions
@@ -2523,7 +2652,7 @@ A structure tag. Generally though the same name will appear with the
 
 @item @code{_t}
 
-A type suffix. 
+A type suffix.
 
 @end itemize
 
@@ -2588,32 +2717,32 @@ externally visible @code{#defines}.
 For a description of where are used see @xref{ISO 9660 Level 1}.
 
 @menu
-* ISO646 d-Characters::         
-* ISO646 a-Characters::         
+* ISO646 d-Characters::
+* ISO646 a-Characters::
 @end menu
 
 @node ISO646 d-Characters
 @appendixsec ISO646 d-Characters
 
 @example
-  | 0 1 2 3 4 5 6 7 
+  | 0 1 2 3 4 5 6 7
 --+-----------------
-0 |       0   P     
-1 |       1 A Q     
-2 |       2 B R     
-3 |       3 C S     
-4 |       4 D T     
-5 |       5 E U     
-6 |       6 F V     
-7 |       7 G W     
-8 |       8 H X     
-9 |       9 I Y     
-a |         J Z     
-b |         K       
-c |         L       
-d |         M       
-e |         N       
-f |         O _     
+0 |       0   P
+1 |       1 A Q
+2 |       2 B R
+3 |       3 C S
+4 |       4 D T
+5 |       5 E U
+6 |       6 F V
+7 |       7 G W
+8 |       8 H X
+9 |       9 I Y
+a |         J Z
+b |         K
+c |         L
+d |         M
+e |         N
+f |         O _
 @end example
 
 @node ISO646 a-Characters
@@ -2622,22 +2751,22 @@ f |         O _
 @example
   | 0 1 2 3 4 5 6 7
 --+-----------------
-0 |       0   P                    
-1 |     ! 1 A Q                    
-2 |     " 2 B R                    
-3 |       3 C S                    
-4 |       4 D T                    
-5 |     % 5 E U                    
-6 |     & 6 F V                    
-7 |     ' 7 G W                    
-8 |     ( 8 H X                    
-9 |     ) 9 I Y                    
-a |     * : J Z                    
-b |     + ; K                      
-c |     , < L                      
-d |     - = M                      
-e |     . > N                      
-f |     / ? O _                    
+0 |       0   P
+1 |     ! 1 A Q
+2 |     " 2 B R
+3 |       3 C S
+4 |       4 D T
+5 |     % 5 E U
+6 |     & 6 F V
+7 |     ' 7 G W
+8 |     ( 8 H X
+9 |     ) 9 I Y
+a |     * : J Z
+b |     + ; K
+c |     , < L
+d |     - = M
+e |     . > N
+f |     / ? O _
 @end example
 
 @node Glossary

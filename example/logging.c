@@ -129,7 +129,7 @@ print_drives()
 int
 main(int argc, const char *argv[])
 {
-    /* Set the log level to the least verbosity. */
+    /* Set the log level to the warning verbosity. */
     cdio_loglevel_default = CDIO_LOG_WARN;
 
     /* Parse command arguemnts */
