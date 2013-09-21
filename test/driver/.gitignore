@@ -15,6 +15,7 @@
 /follow_symlink
 /freebsd
 /gnu_linux
+/logger
 /mmc_read
 /mmc_write
 /nrg

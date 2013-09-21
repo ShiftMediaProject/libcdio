@@ -71,7 +71,7 @@ custom_log_handler (cdio_log_level_t level, const char *message)
     printf("-- custom error message: %s\n", message);
     return;
   case CDIO_LOG_ASSERT:
-    printf("-- custom fatal error message: %s\n", message);
+    printf("-- custom assertion message: %s\n", message);
     return;
   default:
     printf("custom level %d message: %s\n", level, message);

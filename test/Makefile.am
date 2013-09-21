@@ -121,7 +121,11 @@ make-executable: check_nrg.sh check_cue.sh
 	fi
 	@if test ! -f isofs-m1.bin -a ! -s isofs-m1.bin ; then \
 		test -L isofs-m1.bin && $(RM) isofs-m1.bin ; \
-		$(LN_S) $(abs_top_srcdir)/test/data/isofs-m1.bin isofs-m1.bin ;  \
+		$(LN_S) $(abs_top_srcdir)/test/data/isofs-m1.bin ../test/data/isofs-m1.bin ;  \
+	fi
+	@if test ! -f isofs-m1.cue -a ! -s isofs-m1.cue -a ! -f ../test/data/isofs-m1.cue; then \
+		test -L isofs-m1.bin && $(RM) isofs-m1.cue ; \
+		$(LN_S) $(abs_top_srcdir)/test/data/isofs-m1.cue ../test/data/isofs-m1.cue ;  \
 	fi
 
 clean-local: clean-local-check

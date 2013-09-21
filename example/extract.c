@@ -24,7 +24,6 @@
    defined in config.h. Comes first, as stdio.h depends on it. */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#define __CDIO_CONFIG_H__ 1
 #endif
 
 #ifdef HAVE_STDIO_H
@@ -136,7 +135,7 @@ static int udf_extract_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const cha
         }
         fwrite(buf, (size_t)MIN(i_file_length, i_read), 1, fd);
         if (ferror(fd)) {
-          fprintf(stderr, "  Error writing file %s: %s\n", psz_fullpath, 
+          fprintf(stderr, "  Error writing file %s: %s\n", psz_fullpath,
                   strerror(errno));
           goto out;
         }
@@ -276,12 +275,12 @@ int main(int argc, char** argv)
 
   /* Show basic UDF Volume info */
   if (udf_get_volume_id(p_udf, vol_id, sizeof(vol_id)) > 0)
-    fprintf(stderr, "Volume id: %s\n", vol_id);
+    printf("-- Volume id: %s\n", vol_id);
   if (udf_get_volume_id(p_udf, volset_id, sizeof(volset_id)) >0 ) {
     volset_id[UDF_VOLSET_ID_SIZE]='\0';
-    fprintf(stderr, "Volume set id: %s\n", volset_id);
+    printf("-- Volume set id: %s\n", volset_id);
   }
-  fprintf(stderr, "Partition number: %d\n", udf_get_part_number(p_udf));
+  printf("-- Partition number: %d\n", udf_get_part_number(p_udf));
 
   /* Recursively extract files */
   r = udf_extract_files(p_udf, p_udf_root, "");

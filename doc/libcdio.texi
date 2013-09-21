@@ -1943,12 +1943,13 @@ might be of concern.
 
 @item @code{CDIO_LOG_ERROR} (value 4)
 
-These are out-right error message that don't are serious but not
-serious enough to force program termination.
+These are error messages that force program termination.
 
 @item @code{CDIO_LOG_ASSERT} (value 5)
 
-These are fatal error message that force program termination.
+These are error messages that represent an internal inconsistency in
+the @command{libcdio} library. In the absence of @command{libcdio}
+bugs, these should never appear.
 
 @end table
 
