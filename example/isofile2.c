@@ -106,6 +106,8 @@ main(int argc, const char *argv[])
 
   strncat(untranslated_name, psz_fname, i_fname);
 
+  // cdio_loglevel_default = CDIO_LOG_DEBUG;
+
   p_cdio = cdio_open (psz_image, DRIVER_UNKNOWN);
   if (!p_cdio) {
     fprintf(stderr, "Sorry, couldn't open %s\n", psz_image);
@@ -125,8 +127,7 @@ main(int argc, const char *argv[])
 
   iso9660_name_translate(psz_fname, translated_name);
 
-  if (!(p_outfd = fopen (translated_name, "wb")))
-    {
+  if (!(p_outfd = fopen (translated_name, "wb"))) {
       perror ("fopen()");
       cdio_destroy(p_cdio);
       free(p_statbuf);
@@ -136,8 +137,7 @@ main(int argc, const char *argv[])
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
   {
     const unsigned int i_blocks = CEILING(p_statbuf->size, ISO_BLOCKSIZE);
-    for (i = 0; i < i_blocks; i ++)
-      {
+    for (i = 0; i < i_blocks; i ++) {
 	char buf[ISO_BLOCKSIZE];
 	const lsn_t lsn = p_statbuf->lsn + i;
 
@@ -150,14 +150,12 @@ main(int argc, const char *argv[])
 	    my_exit(4);
 	  }
 
-
 	fwrite (buf, ISO_BLOCKSIZE, 1, p_outfd);
 
-	if (ferror (p_outfd))
-	  {
+	if (ferror (p_outfd)) {
 	    perror ("fwrite()");
 	    my_exit(5);
-	  }
+	}
       }
   }
 
