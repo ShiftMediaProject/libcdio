@@ -15,7 +15,7 @@
 This manual documents @code{libcdio}, the GNU CD Input, Output, and Control
 Library.
 
-Copyright @copyright{} 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2012 Rocky
+Copyright @copyright{} 2003-2008, 2010, 2012-2013 Rocky
 Bernstein and Herbert Valerio Riedel.
 
 @quotation
