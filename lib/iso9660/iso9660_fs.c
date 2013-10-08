@@ -53,39 +53,41 @@
 #include "_cdio_stdio.h"
 #include "cdio_private.h"
 
-/* Implementation of iso9660_t type */
+/** Implementation of iso9660_t type */
 struct _iso9660_s {
-  CdioDataSource_t *stream; /* Stream pointer */
-  bool_3way_t b_xa;         /* true if has XA attributes. */
-  bool_3way_t b_mode2;      /* true if has mode 2, false for mode 1. */
-  uint8_t  i_joliet_level;  /* 0 = no Joliet extensions.
-			       1-3: Joliet level. */
+  CdioDataSource_t *stream; /**< Stream pointer */
+  bool_3way_t b_xa;         /**< true if has XA attributes. */
+  bool_3way_t b_mode2;      /**< true if has mode 2, false for mode 1. */
+  uint8_t  u_joliet_level;  /**< 0 = no Joliet extensions.
+			         1-3: Joliet level. */
   iso9660_pvd_t pvd;
   iso9660_svd_t svd;
-  iso_extension_mask_t iso_extension_mask; /* What extensions we
-					      tolerate. */
-  uint32_t i_datastart;     /* Usually 0 when i_framesize is ISO_BLOCKSIZE.
-			       This is the normal condition. But in a fuzzy
-			       read we may be reading a CD-image
-			       and not a true ISO 9660 image this might be
-			       CDIO_CD_SYNC_SIZE
+  iso_extension_mask_t iso_extension_mask; /**< What extensions we
+					        tolerate. */
+  uint32_t i_datastart;     /**< Usually 0 when i_framesize is ISO_BLOCKSIZE.
+			         This is the normal condition. But in a fuzzy
+			         read we may be reading a CD-image
+			         and not a true ISO 9660 image this might be
+			         CDIO_CD_SYNC_SIZE
                             */
-  uint32_t i_framesize;     /* Usually ISO_BLOCKSIZE (2048), but in a
-			      fuzzy read, we may be reading a CD-image
-			      and not a true ISO 9660 image this might
-			      be CDIO_CD_FRAMESIZE_RAW (2352) or
-			      M2RAW_SECTOR_SIZE (2336).
+  uint32_t i_framesize;     /**< Usually ISO_BLOCKSIZE (2048), but in a
+			        fuzzy read, we may be reading a CD-image
+			        and not a true ISO 9660 image this might
+			        be CDIO_CD_FRAMESIZE_RAW (2352) or
+			        M2RAW_SECTOR_SIZE (2336).
                             */
-  int i_fuzzy_offset;       /* Adjustment in bytes to make ISO_STANDARD_ID
-			       ("CD001") come out as ISO_PVD_SECTOR
-			       (frame 16).  Normally this should be 0
-			       for an ISO 9660 image, but if one is
-			       say reading a BIN/CUE or cdrdao BIN/TOC
-			       without having the CUE or TOC and
-			       trying to extract an ISO-9660
-			       filesystem inside that it may be
-			       different.
+  int i_fuzzy_offset;       /**< Adjustment in bytes to make ISO_STANDARD_ID
+			         ("CD001") come out as ISO_PVD_SECTOR
+			         (frame 16).  Normally this should be 0
+			         for an ISO 9660 image, but if one is
+			         say reading a BIN/CUE or cdrdao BIN/TOC
+			         without having the CUE or TOC and
+			         trying to extract an ISO-9660
+			         filesystem inside that it may be
+			         different.
 			     */
+    bool b_have_superblock; /**< Superblock has been read in? */
+
 };
 
 static long int iso9660_seek_read_framesize (const iso9660_t *p_iso,
@@ -165,7 +167,6 @@ iso9660_open_ext_private (const char *psz_path,
 			  uint16_t i_fuzz, bool b_fuzzy)
 {
   iso9660_t *p_iso = (iso9660_t *) calloc(1, sizeof(iso9660_t)) ;
-  bool b_have_superblock;
 
   if (!p_iso) return NULL;
 
@@ -175,11 +176,11 @@ iso9660_open_ext_private (const char *psz_path,
 
   p_iso->i_framesize = ISO_BLOCKSIZE;
 
-  b_have_superblock = (b_fuzzy)
+  p_iso->b_have_superblock = (b_fuzzy)
     ? iso9660_ifs_fuzzy_read_superblock(p_iso, iso_extension_mask, i_fuzz)
     : iso9660_ifs_read_superblock(p_iso, iso_extension_mask) ;
 
-  if ( ! b_have_superblock ) goto error;
+  if ( ! p_iso->b_have_superblock ) goto error;
 
   /* Determine if image has XA attributes. */
 
@@ -295,7 +296,7 @@ get_member_id(iso9660_t *p_iso, cdio_utf8_t **p_psz_member_id,
     return false;
   }
 #ifdef HAVE_JOLIET
-  if (p_iso->i_joliet_level) {
+  if (p_iso->u_joliet_level) {
     /* Translate USC-2 string from Secondary Volume Descriptor */
     if (cdio_charset_to_utf8(svd_member, max_size,
                             p_psz_member_id, "UCS-2BE")) {
@@ -361,7 +362,7 @@ iso9660_ifs_get_application_id(iso9660_t *p_iso,
 uint8_t iso9660_ifs_get_joliet_level(iso9660_t *p_iso)
 {
   if (!p_iso) return 0;
-  return p_iso->i_joliet_level;
+  return p_iso->u_joliet_level;
 }
 
 /*!
@@ -473,7 +474,7 @@ iso9660_ifs_read_superblock (iso9660_t *p_iso,
   if (!p_iso || !iso9660_ifs_read_pvd(p_iso, &(p_iso->pvd)))
     return false;
 
-  p_iso->i_joliet_level = 0;
+  p_iso->u_joliet_level = 0;
 
   /* There may be multiple Secondary Volume Descriptors (eg. El Torito + Joliet) */
   for (i=1; (0 != iso9660_iso_seek_read (p_iso, &p_svd, ISO_PVD_SECTOR+i, 1)); i++) {
@@ -481,28 +482,28 @@ iso9660_ifs_read_superblock (iso9660_t *p_iso,
       break;
     if ( ISO_VD_SUPPLEMENTARY == from_711(p_svd.type) ) {
       /* We're only interested in Joliet => make sure the SVD isn't overwritten */
-      if (p_iso->i_joliet_level == 0)
+      if (p_iso->u_joliet_level == 0)
         memcpy(&(p_iso->svd), &p_svd, sizeof(iso9660_svd_t));
       if (p_svd.escape_sequences[0] == 0x25
 	  && p_svd.escape_sequences[1] == 0x2f) {
 	switch (p_svd.escape_sequences[2]) {
 	case 0x40:
 	  if (iso_extension_mask & ISO_EXTENSION_JOLIET_LEVEL1)
-	    p_iso->i_joliet_level = 1;
+	    p_iso->u_joliet_level = 1;
 	  break;
 	case 0x43:
 	  if (iso_extension_mask & ISO_EXTENSION_JOLIET_LEVEL2)
-	    p_iso->i_joliet_level = 2;
+	    p_iso->u_joliet_level = 2;
 	  break;
 	case 0x45:
 	  if (iso_extension_mask & ISO_EXTENSION_JOLIET_LEVEL3)
-	    p_iso->i_joliet_level = 3;
+	    p_iso->u_joliet_level = 3;
 	  break;
 	default:
 	  cdio_info("Supplementary Volume Descriptor found, but not Joliet");
 	}
-	if (p_iso->i_joliet_level > 0) {
-	  cdio_info("Found Extension: Joliet Level %d", p_iso->i_joliet_level);
+	if (p_iso->u_joliet_level > 0) {
+	  cdio_info("Found Extension: Joliet Level %d", p_iso->u_joliet_level);
 	}
       }
     }
@@ -628,7 +629,7 @@ iso9660_fs_read_superblock (CdIo_t *p_cdio,
     if ( !iso9660_fs_read_pvd(p_cdio, p_pvd) )
       return false;
 
-    p_env->i_joliet_level = 0;
+    p_env->u_joliet_level = 0;
 
     driver_return =
       cdio_read_data_sectors ( p_cdio, buf, ISO_PVD_SECTOR+1, ISO_BLOCKSIZE,
@@ -648,22 +649,22 @@ iso9660_fs_read_superblock (CdIo_t *p_cdio,
 	  switch (p_svd->escape_sequences[2]) {
 	  case 0x40:
 	    if (iso_extension_mask & ISO_EXTENSION_JOLIET_LEVEL1)
-	      p_env->i_joliet_level = 1;
+	      p_env->u_joliet_level = 1;
 	    break;
 	  case 0x43:
 	    if (iso_extension_mask & ISO_EXTENSION_JOLIET_LEVEL2)
-	      p_env->i_joliet_level = 2;
+	      p_env->u_joliet_level = 2;
 	    break;
 	  case 0x45:
 	    if (iso_extension_mask & ISO_EXTENSION_JOLIET_LEVEL3)
-	      p_env->i_joliet_level = 3;
+	      p_env->u_joliet_level = 3;
 	    break;
 	  default:
 	    cdio_info("Supplementary Volume Descriptor found, but not Joliet");
 	  }
-	  if (p_env->i_joliet_level > 0) {
+	  if (p_env->u_joliet_level > 0) {
 	    cdio_info("Found Extension: Joliet Level %d",
-		      p_env->i_joliet_level);
+		      p_env->u_joliet_level);
 	  }
 	}
       }
@@ -707,7 +708,7 @@ iso9660_iso_seek_read (const iso9660_t *p_iso, void *ptr, lsn_t start,
 
 static iso9660_stat_t *
 _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
-			 uint8_t i_joliet_level)
+			 uint8_t u_joliet_level)
 {
   uint8_t dir_len= iso9660_get_dir_len(p_iso9660_dir);
   iso711_t i_fname;
@@ -766,7 +767,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
       else if ('\1' == p_iso9660_dir->filename.str[1] && 1 == i_fname)
 	strncpy (p_stat->filename, "..", sizeof(".."));
 #ifdef HAVE_JOLIET
-      else if (i_joliet_level) {
+      else if (u_joliet_level) {
 	int i_inlen = i_fname;
 	cdio_utf8_t *p_psz_out = NULL;
 	if (cdio_charset_to_utf8(&p_iso9660_dir->filename.str[1], i_inlen,
@@ -880,7 +881,7 @@ _fs_stat_root (CdIo_t *p_cdio)
     iso9660_stat_t *p_stat;
     bool_3way_t b_xa;
 
-    if (!p_env->i_joliet_level)
+    if (!p_env->u_joliet_level)
       iso_extension_mask &= ~ISO_EXTENSION_JOLIET;
 
     /* FIXME try also with Joliet.*/
@@ -901,7 +902,7 @@ _fs_stat_root (CdIo_t *p_cdio)
     }
 
 #ifdef HAVE_JOLIET
-    p_iso9660_dir = p_env->i_joliet_level
+    p_iso9660_dir = p_env->u_joliet_level
       ? &(p_env->svd.root_directory_record)
       : &(p_env->pvd.root_directory_record) ;
 #else
@@ -909,7 +910,7 @@ _fs_stat_root (CdIo_t *p_cdio)
 #endif
 
     p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, b_xa,
-				      p_env->i_joliet_level);
+				      p_env->u_joliet_level);
     return p_stat;
   }
 
@@ -922,7 +923,7 @@ _ifs_stat_root (iso9660_t *p_iso)
   iso9660_dir_t *p_iso9660_dir;
 
 #ifdef HAVE_JOLIET
-  p_iso9660_dir = p_iso->i_joliet_level
+  p_iso9660_dir = p_iso->u_joliet_level
     ? &(p_iso->svd.root_directory_record)
     : &(p_iso->pvd.root_directory_record) ;
 #else
@@ -930,7 +931,7 @@ _ifs_stat_root (iso9660_t *p_iso)
 #endif
 
   p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_xa,
-				    p_iso->i_joliet_level);
+				    p_iso->u_joliet_level);
   return p_stat;
 }
 
@@ -983,11 +984,11 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 	}
 
       p_iso9660_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, dunno,
-					p_env->i_joliet_level);
+					p_env->u_joliet_level);
 
       cmp = strcmp(splitpath[0], p_iso9660_stat->filename);
 
-      if ( 0 != cmp && 0 == p_env->i_joliet_level
+      if ( 0 != cmp && 0 == p_env->u_joliet_level
 	   && yep != p_iso9660_stat->rr.b3_rock ) {
 	char *trans_fname = NULL;
 	unsigned int i_trans_fname=strlen(p_iso9660_stat->filename);
@@ -1001,7 +1002,7 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 	    return NULL;
 	  }
 	  iso9660_name_translate_ext(p_iso9660_stat->filename, trans_fname,
-				     p_env->i_joliet_level);
+				     p_env->u_joliet_level);
 	  cmp = strcmp(splitpath[0], trans_fname);
 	  free(trans_fname);
 	}
@@ -1082,11 +1083,11 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 	}
 
       p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_xa,
-					p_iso->i_joliet_level);
+					p_iso->u_joliet_level);
 
       cmp = strcmp(splitpath[0], p_stat->filename);
 
-      if ( 0 != cmp && 0 == p_iso->i_joliet_level
+      if ( 0 != cmp && 0 == p_iso->u_joliet_level
 	   && yep != p_stat->rr.b3_rock ) {
 	char *trans_fname = NULL;
 	unsigned int i_trans_fname=strlen(p_stat->filename);
@@ -1100,7 +1101,7 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 	    return NULL;
 	  }
 	  iso9660_name_translate_ext(p_stat->filename, trans_fname,
-				     p_iso->i_joliet_level);
+				     p_iso->u_joliet_level);
 	  cmp = strcmp(splitpath[0], trans_fname);
 	  free(trans_fname);
 	}
@@ -1288,7 +1289,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
 	  }
 
 	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, dunno,
-						 p_env->i_joliet_level);
+						 p_env->u_joliet_level);
 	_cdio_list_append (retval, p_iso9660_stat);
 
 	offset += iso9660_get_dir_len(p_iso9660_dir);
@@ -1355,7 +1356,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
 	  }
 
 	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, p_iso->b_xa,
-						 p_iso->i_joliet_level);
+						 p_iso->u_joliet_level);
 
 	if (p_iso9660_stat)
 	  _cdio_list_append (retval, p_iso9660_stat);

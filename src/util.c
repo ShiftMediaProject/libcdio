@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2012
   Rocky Bernstein <rocky@gnu.org>
-  
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -40,8 +40,8 @@ cdio_log_handler_t gl_default_cdio_log_handler = NULL;
 char *source_name = NULL;
 char *program_name;
 
-void 
-myexit(CdIo_t *cdio, int rc) 
+void
+myexit(CdIo_t *cdio, int rc)
 {
   if (NULL != cdio) cdio_destroy(cdio);
   if (NULL != program_name) free(program_name);
@@ -50,17 +50,17 @@ myexit(CdIo_t *cdio, int rc)
 }
 
 void
-print_version (char *program_name, const char *version, 
+print_version (char *program_name, const char *version,
 	       int no_header, bool version_only)
 {
-  
+
   if (no_header == 0) {
-    report( stdout,  
+    report( stdout,
 	    "%s version %s\n"
-	    "Copyright (c) 2003, 2004, 2005, 2007, 2008, 2011, 2012 "
+	    "Copyright (c) 2003-2005, 2007-2008, 2011-2013 "
 	    "R. Bernstein\n",
 	    program_name, version);
-    report( stdout,  
+    report( stdout,
             _("This is free software; see the source for copying conditions.\n\
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n\
 PARTICULAR PURPOSE.\n\
@@ -83,7 +83,7 @@ PARTICULAR PURPOSE.\n\
     free(program_name);
     exit(EXIT_INFO);
   }
-  
+
 }
 
 /*! Device input routine. If successful we return an open CdIo_t
@@ -100,12 +100,12 @@ open_input(const char *psz_source, source_image_t source_image,
     p_cdio = cdio_open_am (psz_source, DRIVER_UNKNOWN, psz_access_mode);
     if (!p_cdio) {
       if (psz_source) {
-	err_exit("Error in automatically selecting driver for input %s.\n", 
+	err_exit("Error in automatically selecting driver for input %s.\n",
 		 psz_source);
       } else {
 	err_exit("%s", "Error in automatically selecting driver.\n");
       }
-    } 
+    }
     break;
   case INPUT_DEVICE:
     p_cdio = cdio_open_am (psz_source, DRIVER_DEVICE, psz_access_mode);
@@ -116,7 +116,7 @@ open_input(const char *psz_source, source_image_t source_image,
       } else {
 	err_exit("%s", "Cannot find a CD-ROM with a CD loaded.\n");
       }
-    } 
+    }
     break;
   case INPUT_BIN:
     p_cdio = cdio_open_am (psz_source, DRIVER_BINCUE, psz_access_mode);
@@ -127,7 +127,7 @@ open_input(const char *psz_source, source_image_t source_image,
       } else {
 	err_exit("%s", "Cannot find CDRWin BIN/CUE image.\n");
       }
-    } 
+    }
     break;
   case INPUT_CUE:
     p_cdio = cdio_open_cue(psz_source);
@@ -138,18 +138,18 @@ open_input(const char *psz_source, source_image_t source_image,
       } else {
 	err_exit("%s", "Cannot find CDRWin BIN/CUE image.\n");
       }
-    } 
+    }
     break;
   case INPUT_NRG:
     p_cdio = cdio_open_am (psz_source, DRIVER_NRG, psz_access_mode);
     if (p_cdio==NULL) {
       if (psz_source) {
-	err_exit("Error in opening Nero NRG image for input %s\n", 
+	err_exit("Error in opening Nero NRG image for input %s\n",
 		 psz_source);
       } else {
 	err_exit("%s", "Cannot find Nero NRG image.\n");
       }
-    } 
+    }
     break;
 
   case INPUT_CDRDAO:
@@ -169,7 +169,7 @@ open_input(const char *psz_source, source_image_t source_image,
 
 #define DEV_PREFIX "/dev/"
 char *
-fillout_device_name(const char *device_name) 
+fillout_device_name(const char *device_name)
 {
 #if defined(HAVE_WIN32_CDROM) || defined(HAVE_OS2_CDROM)
   return strdup(device_name);
@@ -187,26 +187,26 @@ fillout_device_name(const char *device_name)
 }
 
 /*! Prints out SCSI-MMC drive features  */
-void 
+void
 print_mmc_drive_features(CdIo_t *p_cdio)
 {
-  
+
   int i_status;                  /* Result of SCSI MMC command */
   uint8_t buf[500] = { 0, };     /* Place to hold returned data */
   mmc_cdb_t cdb = {{0, }};       /* Command Descriptor Block */
-  
+
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_CONFIGURATION);
   CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
   cdb.field[1] = CDIO_MMC_GET_CONF_ALL_FEATURES;
   cdb.field[3] = 0x0;
-  
-  i_status = mmc_run_cmd(p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), 
+
+  i_status = mmc_run_cmd(p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, sizeof(buf),
 			 &buf);
   if (i_status == 0) {
     uint8_t *p;
     uint32_t i_data;
     uint8_t *p_max = buf + 65530;
-    
+
     i_data  = (unsigned int) CDIO_MMC_GET_LEN32(buf);
 
     /* set to first sense feature code, and then walk through the masks */
@@ -214,7 +214,7 @@ print_mmc_drive_features(CdIo_t *p_cdio)
     while( (p < &(buf[i_data])) && (p < p_max) ) {
       uint16_t i_feature;
       uint8_t i_feature_additional = p[3];
-      
+
       i_feature = CDIO_MMC_GET_LEN16(p);
       {
 	uint8_t *q;
@@ -225,7 +225,7 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 	  case CDIO_MMC_FEATURE_PROFILE_LIST:
 	    for ( q = p+4 ; q < p + i_feature_additional ; q += 4 ) {
 	      int i_profile=CDIO_MMC_GET_LEN16(q);
-	      const char *feature_profile_str = 
+	      const char *feature_profile_str =
 		mmc_feature_profile2str(i_profile);
 	      report( stdout, "\t%s", feature_profile_str );
 	      if (q[2] & 1) {
@@ -234,99 +234,99 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 	      report( stdout, "\n");
 	    }
 	    report( stdout, "\n");
-	    
+
 	    break;
-	  case CDIO_MMC_FEATURE_CORE: 
+	  case CDIO_MMC_FEATURE_CORE:
 	    {
 	      uint8_t *q = p+4;
 	      uint32_t 	i_interface_standard = CDIO_MMC_GET_LEN32(q);
 	      switch(i_interface_standard) {
-	      case CDIO_MMC_FEATURE_INTERFACE_UNSPECIFIED: 
+	      case CDIO_MMC_FEATURE_INTERFACE_UNSPECIFIED:
 		report( stdout, "\tunspecified interface\n");
 		break;
 	      case CDIO_MMC_FEATURE_INTERFACE_SCSI:
 		report( stdout, "\tSCSI interface\n");
 		break;
-	      case CDIO_MMC_FEATURE_INTERFACE_ATAPI: 
+	      case CDIO_MMC_FEATURE_INTERFACE_ATAPI:
 		report( stdout, "\tATAPI interface\n");
 		break;
-	      case CDIO_MMC_FEATURE_INTERFACE_IEEE_1394: 
+	      case CDIO_MMC_FEATURE_INTERFACE_IEEE_1394:
 		report( stdout, "\tIEEE 1394 interface\n");
 		break;
-	      case CDIO_MMC_FEATURE_INTERFACE_IEEE_1394A: 
+	      case CDIO_MMC_FEATURE_INTERFACE_IEEE_1394A:
 		report( stdout, "\tIEEE 1394A interface\n");
 		break;
-	      case CDIO_MMC_FEATURE_INTERFACE_FIBRE_CH: 
+	      case CDIO_MMC_FEATURE_INTERFACE_FIBRE_CH:
 		report( stdout, "\tFibre Channel interface\n");
 	      }
 	      report( stdout, "\n");
 	      break;
 	    }
 	  case CDIO_MMC_FEATURE_MORPHING:
-	    report( stdout, 
+	    report( stdout,
 		    "\tOperational Change Request/Notification %ssupported\n",
 		    (p[4] & 2) ? "": "not " );
 	    report( stdout, "\t%synchronous GET EVENT/STATUS NOTIFICATION "
-		    "supported\n", 
+		    "supported\n",
 		    (p[4] & 1) ? "As": "S" );
 	    report( stdout, "\n");
 	    break;
 	    ;
-	    
+
 	  case CDIO_MMC_FEATURE_REMOVABLE_MEDIUM:
 	    switch(p[4] >> 5) {
 	    case 0:
-	      report( stdout, 
+	      report( stdout,
 		      "\tCaddy/Slot type loading mechanism\n" );
 	      break;
 	    case 1:
-	      report( stdout, 
+	      report( stdout,
 		      "\tTray type loading mechanism\n" );
 	      break;
 	    case 2:
 	      report( stdout, "\tPop-up type loading mechanism\n");
 	      break;
 	    case 4:
-	      report( stdout, 
+	      report( stdout,
 		      "\tEmbedded changer with individually changeable discs\n");
 	      break;
 	    case 5:
-	      report( stdout, 
+	      report( stdout,
 		      "\tEmbedded changer using a magazine mechanism\n" );
 	      break;
 	    default:
-	      report( stdout, 
+	      report( stdout,
 		      "\tUnknown changer mechanism\n" );
 	    }
-	    
-	    report( stdout, 
+
+	    report( stdout,
 		    "\tcan%s eject the medium or magazine via the normal "
-		    "START/STOP command\n", 
+		    "START/STOP command\n",
 		    (p[4] & 8) ? "": "not" );
-	    report( stdout, "\tcan%s be locked into the Logical Unit\n", 
+	    report( stdout, "\tcan%s be locked into the Logical Unit\n",
 		    (p[4] & 1) ? "": "not" );
 	    report( stdout, "\n" );
 	    break;
 	  case CDIO_MMC_FEATURE_CD_READ:
-	    report( stdout, "\tC2 Error pointers are %ssupported\n", 
+	    report( stdout, "\tC2 Error pointers are %ssupported\n",
 		    (p[4] & 2) ? "": "not " );
-	    report( stdout, "\tCD-Text is %ssupported\n", 
+	    report( stdout, "\tCD-Text is %ssupported\n",
 		    (p[4] & 1) ? "": "not " );
 	    report( stdout, "\n" );
 	    break;
 	  case CDIO_MMC_FEATURE_ENHANCED_DEFECT:
-	    report( stdout, "\t%s-DRM mode is supported\n", 
+	    report( stdout, "\t%s-DRM mode is supported\n",
 		    (p[4] & 1) ? "DRT": "Persistent" );
 	    report( stdout, "\n" );
 	    break;
 	  case CDIO_MMC_FEATURE_CDDA_EXT_PLAY:
-	    report( stdout, "\tSCAN command is %ssupported\n", 
+	    report( stdout, "\tSCAN command is %ssupported\n",
 		    (p[4] & 4) ? "": "not ");
-	    report( stdout, 
-		    "\taudio channels can %sbe muted separately\n", 
+	    report( stdout,
+		    "\taudio channels can %sbe muted separately\n",
 		    (p[4] & 2) ? "": "not ");
-	    report( stdout, 
-		    "\taudio channels can %shave separate volume levels\n", 
+	    report( stdout,
+		    "\taudio channels can %shave separate volume levels\n",
 		    (p[4] & 1) ? "": "not ");
 	    {
 	      uint8_t *q = p+6;
@@ -337,7 +337,7 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 	    break;
 	  case CDIO_MMC_FEATURE_DVD_CSS:
 #if 0
-	    report( stdout, "\tMedium does%s have Content Scrambling (CSS/CPPM)\n", 
+	    report( stdout, "\tMedium does%s have Content Scrambling (CSS/CPPM)\n",
 		    (p[2] & 1) ? "": "not " );
 #endif
 	    report( stdout, "\tCSS version %d\n", p[7] );
@@ -346,13 +346,13 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 	  case CDIO_MMC_FEATURE_LU_SN: {
 	    uint8_t i_serial = *(p+3);
 	    char serial[257] = { '\0', };
-	    
+
 	    memcpy(serial, p+4, i_serial );
 	    report( stdout, "\t%s\n\n", serial );
-	    
+
 	    break;
 	  }
-	  default: 
+	  default:
 	    report( stdout, "\n");
 	    break;
 	  }
@@ -366,7 +366,7 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 
 
 /* Prints out drive capabilities */
-void 
+void
 print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
 			 cdio_drive_write_cap_t i_write_cap,
 			 cdio_drive_misc_cap_t  i_misc_cap)
@@ -376,63 +376,63 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
   }  else if (CDIO_DRIVE_CAP_UNKNOWN == i_misc_cap) {
     report( stdout, "Uknown drive hardware properties\n");
   } else {
-    report( stdout, _("Hardware                                  : %s\n"), 
-	   i_misc_cap & CDIO_DRIVE_CAP_MISC_FILE  
+    report( stdout, _("Hardware                                  : %s\n"),
+	   i_misc_cap & CDIO_DRIVE_CAP_MISC_FILE
 	   ? "Disk Image"  : "CD-ROM or DVD");
-    report( stdout, _("Can eject                                 : %s\n"), 
+    report( stdout, _("Can eject                                 : %s\n"),
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_EJECT        ? "Yes" : "No" );
-    report( stdout, _("Can close tray                            : %s\n"), 
+    report( stdout, _("Can close tray                            : %s\n"),
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_CLOSE_TRAY   ? "Yes" : "No" );
-    report( stdout, _("Can disable manual eject                  : %s\n"), 
+    report( stdout, _("Can disable manual eject                  : %s\n"),
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_LOCK         ? "Yes" : "No" );
-    report( stdout, _("Can select juke-box disc                  : %s\n\n"), 
+    report( stdout, _("Can select juke-box disc                  : %s\n\n"),
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_SELECT_DISC  ? "Yes" : "No" );
 
-    report( stdout, _("Can set drive speed                       : %s\n"), 
+    report( stdout, _("Can set drive speed                       : %s\n"),
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_SELECT_SPEED ? "Yes" : "No" );
 #if FIXED
-    report( stdout, _("Can detect if CD changed                  : %s\n"), 
+    report( stdout, _("Can detect if CD changed                  : %s\n"),
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED ? "Yes" : "No" );
 #endif
-    report( stdout, _("Can read multiple sessions (e.g. PhotoCD) : %s\n"), 
+    report( stdout, _("Can read multiple sessions (e.g. PhotoCD) : %s\n"),
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_MULTI_SESSION ? "Yes" : "No" );
-    report( stdout, _("Can hard reset device                     : %s\n\n"), 
+    report( stdout, _("Can hard reset device                     : %s\n\n"),
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_RESET        ? "Yes" : "No" );
   }
-  
-    
+
+
   if (CDIO_DRIVE_CAP_ERROR == i_read_cap) {
       report( stdout, "Error in getting drive reading properties\n" );
   }  else if (CDIO_DRIVE_CAP_UNKNOWN == i_misc_cap) {
     report( stdout, "Uknown drive reading properties\n" );
   } else {
     report( stdout, "Reading....\n");
-    report( stdout, _("  Can read Mode 2 Form 1                  : %s\n"), 
+    report( stdout, _("  Can read Mode 2 Form 1                  : %s\n"),
 	   i_read_cap & CDIO_DRIVE_CAP_READ_MODE2_FORM1  ? "Yes" : "No" );
-    report( stdout, _("  Can read Mode 2 Form 2                  : %s\n"), 
+    report( stdout, _("  Can read Mode 2 Form 2                  : %s\n"),
 	   i_read_cap & CDIO_DRIVE_CAP_READ_MODE2_FORM2  ? "Yes" : "No" );
-    report( stdout, _("  Can read (S)VCD (i.e. Mode 2 Form 1/2)  : %s\n"), 
-	   i_read_cap & 
+    report( stdout, _("  Can read (S)VCD (i.e. Mode 2 Form 1/2)  : %s\n"),
+	   i_read_cap &
 	    (CDIO_DRIVE_CAP_READ_MODE2_FORM1|CDIO_DRIVE_CAP_READ_MODE2_FORM2)
 	    ? "Yes" : "No" );
-    report( stdout, _("  Can read C2 Errors                      : %s\n"), 
+    report( stdout, _("  Can read C2 Errors                      : %s\n"),
 	   i_read_cap & CDIO_DRIVE_CAP_READ_C2_ERRS      ? "Yes" : "No" );
-    report( stdout, _("  Can read IRSC                           : %s\n"), 
+    report( stdout, _("  Can read IRSC                           : %s\n"),
 	   i_read_cap & CDIO_DRIVE_CAP_READ_ISRC         ? "Yes" : "No" );
-    report( stdout, _("  Can read Media Channel Number (or UPC)  : %s\n"), 
+    report( stdout, _("  Can read Media Channel Number (or UPC)  : %s\n"),
 	   i_read_cap & CDIO_DRIVE_CAP_READ_MCN          ? "Yes" : "No" );
-    report( stdout, _("  Can play audio                          : %s\n"), 
+    report( stdout, _("  Can play audio                          : %s\n"),
 	   i_read_cap & CDIO_DRIVE_CAP_READ_AUDIO        ? "Yes" : "No" );
-    report( stdout, _("  Can read CD-DA                          : %s\n"), 
+    report( stdout, _("  Can read CD-DA                          : %s\n"),
 	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_DA        ? "Yes" : "No" );
-    report( stdout, _("  Can read CD-R                           : %s\n"), 
+    report( stdout, _("  Can read CD-R                           : %s\n"),
 	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_R         ? "Yes" : "No" );
-    report( stdout, _("  Can read CD-RW                          : %s\n"), 
+    report( stdout, _("  Can read CD-RW                          : %s\n"),
 	   i_read_cap & CDIO_DRIVE_CAP_READ_CD_RW        ? "Yes" : "No" );
-    report( stdout, _("  Can read DVD-ROM                        : %s\n"), 
+    report( stdout, _("  Can read DVD-ROM                        : %s\n"),
 	   i_read_cap & CDIO_DRIVE_CAP_READ_DVD_ROM      ? "Yes" : "No" );
   }
-  
+
 
   if (CDIO_DRIVE_CAP_ERROR == i_write_cap) {
       report( stdout, "Error in getting drive writing properties\n" );
@@ -441,25 +441,25 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
   } else {
     report( stdout, "\nWriting....\n");
 #if FIXED
-    report( stdout, _("  Can write using Burn Proof              : %s\n"), 
+    report( stdout, _("  Can write using Burn Proof              : %s\n"),
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_BURN_PROOF ? "Yes" : "No" );
 #endif
-    report( stdout, _("  Can write CD-RW                         : %s\n"), 
+    report( stdout, _("  Can write CD-RW                         : %s\n"),
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_CD_RW      ? "Yes" : "No" );
-    report( stdout, _("  Can write DVD-R                         : %s\n"), 
+    report( stdout, _("  Can write DVD-R                         : %s\n"),
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_DVD_R      ? "Yes" : "No" );
-    report( stdout, _("  Can write DVD-RAM                       : %s\n"), 
+    report( stdout, _("  Can write DVD-RAM                       : %s\n"),
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_DVD_RAM    ? "Yes" : "No" );
-    report( stdout, _("  Can write DVD-RW                        : %s\n"), 
+    report( stdout, _("  Can write DVD-RW                        : %s\n"),
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_DVD_RW     ? "Yes" : "No" );
-    report( stdout, _("  Can write DVD+RW                        : %s\n"), 
+    report( stdout, _("  Can write DVD+RW                        : %s\n"),
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_DVD_RPW    ? "Yes" : "No" );
   }
 }
 
 /*! Common place for output routine. In some environments, like XBOX,
   it may not be desireable to send output to stdout and stderr. */
-void 
+void
 report (FILE *stream, const char *psz_format,  ...)
 {
   va_list args;
@@ -473,9 +473,9 @@ report (FILE *stream, const char *psz_format,  ...)
 }
 
 /* Prints "ls"-like file attributes */
-void 
-print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa, 
-	       const char *psz_name_untranslated, 
+void
+print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
+	       const char *psz_name_untranslated,
 	       const char *psz_name_translated)
 {
   char date_str[30];
@@ -488,11 +488,11 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
 	     p_statbuf->rr.st_uid,
 	     p_statbuf->rr.st_gid,
 	     (long unsigned int) p_statbuf->lsn,
-	     S_ISLNK(p_statbuf->rr.st_mode) 
+	     S_ISLNK(p_statbuf->rr.st_mode)
 	     ? strlen(p_statbuf->rr.psz_symlink)
 	     : (unsigned int) p_statbuf->size );
 
-  } else 
+  } else
 #endif
   if (b_xa) {
     report ( stdout, "  %s %d %d [fn %.2d] [LSN %6lu] ",
@@ -501,15 +501,15 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
 	     uint16_from_be (p_statbuf->xa.group_id),
 	     p_statbuf->xa.filenum,
 	     (long unsigned int) p_statbuf->lsn );
-    
+
     if (uint16_from_be(p_statbuf->xa.attributes) & XA_ATTR_MODE2FORM2) {
       report ( stdout, "%9u (%9u)",
 	       (unsigned int) p_statbuf->secsize * M2F2_SECTOR_SIZE,
 	       (unsigned int) p_statbuf->size );
-    } else 
+    } else
       report (stdout, "%9u", (unsigned int) p_statbuf->size);
   } else {
-    report ( stdout,"  %c [LSN %6lu] %9u", 
+    report ( stdout,"  %c [LSN %6lu] %9u",
 	     (p_statbuf->type == _STAT_DIR) ? 'd' : '-',
 	     (long unsigned int) p_statbuf->lsn,
 	     (unsigned int) p_statbuf->size );
@@ -529,7 +529,7 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
       }
       strftime(date_str, sizeof(date_str), "%b %d %Y %H:%M:%S ", &tm);
     }
-    
+
     report (stdout," %s %s", date_str, psz_name_untranslated );
 
     if (S_ISLNK(p_statbuf->rr.st_mode)) {
