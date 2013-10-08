@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2006, 2008, 2010, 2011, 2012
+  Copyright (C) 2004-2006, 2008, 2010, 2011-2013
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 #ifdef HAVE_STDBOOL_H
 # include <stdbool.h>
-#endif 
+#endif
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -82,7 +82,7 @@ typedef struct _TRACK_DATA_FULL {
     uchar Control : 4;
     uchar Adr : 4;
     uchar TNO;
-    uchar POINT;  /* Tracknumber (of session?) or lead-out/in (0xA0, 0xA1, 0xA2)  */ 
+    uchar POINT;  /* Tracknumber (of session?) or lead-out/in (0xA0, 0xA1, 0xA2)  */
     uchar Min;  /* Only valid if disctype is CDDA ? */
     uchar Sec;  /* Only valid if disctype is CDDA ? */
     uchar Frame;  /* Only valid if disctype is CDDA ? */
@@ -115,32 +115,32 @@ typedef struct {
 } track_info_t;
 
 typedef struct {
-  /* Things common to all drivers like this. 
+  /* Things common to all drivers like this.
      This must be first. */
-  generic_img_private_t gen; 
-  
+  generic_img_private_t gen;
+
   access_mode_t access_mode;
 
   /* Some of the more OS specific things. */
   /* Entry info for each track, add 1 for leadout. */
-  track_info_t tocent[CDIO_CD_MAX_TRACKS+1]; 
+  track_info_t tocent[CDIO_CD_MAX_TRACKS+1];
 
 } _img_private_t;
 
-static track_format_t get_track_format_aix(void *p_user_data, 
+static track_format_t get_track_format_aix(void *p_user_data,
                                                track_t i_track);
 
-static access_mode_t 
-str_to_access_mode_aix(const char *psz_access_mode) 
+static access_mode_t
+str_to_access_mode_aix(const char *psz_access_mode)
 {
   const access_mode_t default_access_mode = _AM_CTRL_SCSI;
 
   if (NULL==psz_access_mode) return default_access_mode;
-  
+
   if (!strcmp(psz_access_mode, "SCSI"))
     return _AM_CTRL_SCSI;
   else {
-    cdio_warn ("unknown access type: %s. Default SCSI used.", 
+    cdio_warn ("unknown access type: %s. Default SCSI used.",
                psz_access_mode);
     return default_access_mode;
   }
@@ -158,11 +158,11 @@ init_aix (_img_private_t *p_env)
     cdio_warn ("init called more than once");
     return false;
   }
-  
-  p_env->gen.fd = openx (p_env->gen.source_name, O_RDONLY, NULL, 
+
+  p_env->gen.fd = openx (p_env->gen.source_name, O_RDONLY, NULL,
                          SC_DIAGNOSTIC);
 
-  /*p_env->gen.fd = openx (p_env->gen.source_name, O_RDONLY, NULL, 
+  /*p_env->gen.fd = openx (p_env->gen.source_name, O_RDONLY, NULL,
     IDE_SINGLE);*/
 
   if (p_env->gen.fd < 0)
@@ -173,28 +173,28 @@ init_aix (_img_private_t *p_env)
 
   p_env->gen.init = true;
   p_env->gen.toc_init = false;
-  p_env->gen.i_joliet_level = 0;  /* Assume no Joliet extensions initally */
-  p_env->access_mode = _AM_CTRL_SCSI;    
+  p_env->gen.u_joliet_level = 0;  /* Assume no Joliet extensions initally */
+  p_env->access_mode = _AM_CTRL_SCSI;
 
   return true;
 }
 
 /*!
-  Run a SCSI MMC command. 
- 
+  Run a SCSI MMC command.
+
   p_user_data   internal CD structure.
   i_timeout_ms   time in milliseconds we will wait for the command
-                to complete. 
+                to complete.
   i_cdb         Size of p_cdb
-  p_cdb         CDB bytes. 
+  p_cdb         CDB bytes.
   e_direction   direction the transfer is to go.
   i_buf         Size of buffer
   p_buf         Buffer for data, both sending and receiving
  */
 static driver_return_code_t
 run_mmc_cmd_aix( void *p_user_data, unsigned int i_timeout_ms,
-                 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-                 cdio_mmc_direction_t e_direction, 
+                 unsigned int i_cdb, const mmc_cdb_t *p_cdb,
+                 cdio_mmc_direction_t e_direction,
                  unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   const _img_private_t *p_env = p_user_data;
@@ -208,16 +208,16 @@ run_mmc_cmd_aix( void *p_user_data, unsigned int i_timeout_ms,
         /* This enables synchronous negotiation mode.  Some CD-ROM drives
          * don't handle this well.
          */
-  cgc.flags = 0; 
+  cgc.flags = 0;
 #else
-  cgc.flags = SC_ASYNC; 
+  cgc.flags = SC_ASYNC;
 #endif
 
-  if (0 != i_buf) 
+  if (0 != i_buf)
     cgc.flags     |= MMC_DATA_READ == e_direction ? B_READ : B_WRITE;
 
   cgc.timeout_value = msecs2secs(i_timeout_ms);
-  cgc.buffer        = p_buf;   
+  cgc.buffer        = p_buf;
   cgc.data_length   = i_buf;
   cgc.command_length= i_cdb;
 
@@ -230,14 +230,14 @@ run_mmc_cmd_aix( void *p_user_data, unsigned int i_timeout_ms,
 
 /*!
    Reads audio sectors from CD device into data starting from lsn.
-   Returns 0 if no error. 
+   Returns 0 if no error.
 
    May have to check size of nblocks. There may be a limit that
    can be read in one go, e.g. 25 blocks.
 */
 
 static driver_return_code_t
-_read_audio_sectors_aix (void *p_user_data, void *data, lsn_t lsn, 
+_read_audio_sectors_aix (void *p_user_data, void *data, lsn_t lsn,
                           unsigned int nblocks)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -253,21 +253,21 @@ _read_audio_sectors_aix (void *p_user_data, void *data, lsn_t lsn,
   msf->cdmsf_min0   = from_bcd8(_msf.m);
   msf->cdmsf_sec0   = from_bcd8(_msf.s);
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
-  
+
   if (env->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
-  
+
   if (env->gen.ioctls_debugged == 30 * 75)
     cdio_debug ("only displaying every 30*75th ioctl from now on");
-  
-  if (env->gen.ioctls_debugged < 75 
-      || (env->gen.ioctls_debugged < (30 * 75)  
+
+  if (env->gen.ioctls_debugged < 75
+      || (env->gen.ioctls_debugged < (30 * 75)
           && env->gen.ioctls_debugged % 75 == 0)
       || env->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %d", lsn);
-  
+
   env->gen.ioctls_debugged++;
-  
+
   cdda.cdda_addr   = lsn;
   cdda.cdda_length = nblocks;
   cdda.cdda_data   = (caddr_t) data;
@@ -278,21 +278,21 @@ _read_audio_sectors_aix (void *p_user_data, void *data, lsn_t lsn,
   }
 #endif
   memcpy (data, buf, CDIO_CD_FRAMESIZE_RAW);
-  
+
   return 0;
 }
 
 /*!
    Reads a single mode1 sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
+   from lsn. Returns 0 if no error.
  */
 static driver_return_code_t
-_read_mode1_sector_aix (void *env, void *data, lsn_t lsn, 
+_read_mode1_sector_aix (void *env, void *data, lsn_t lsn,
                             bool b_form2)
 {
 
 #if FIXED
-  do something here. 
+  do something here.
 #else
   return cdio_generic_read_form1_sector(env, data, lsn);
 #endif
@@ -301,10 +301,10 @@ _read_mode1_sector_aix (void *env, void *data, lsn_t lsn,
 /*!
    Reads nblocks of mode2 sectors from cd device into data starting
    from lsn.
-   Returns 0 if no error. 
+   Returns 0 if no error.
  */
 static driver_return_code_t
-_read_mode1_sectors_aix (void *p_user_data, void *p_data, lsn_t lsn, 
+_read_mode1_sectors_aix (void *p_user_data, void *p_data, lsn_t lsn,
                              bool b_form2, unsigned int nblocks)
 {
   _img_private_t *p_env = p_user_data;
@@ -313,7 +313,7 @@ _read_mode1_sectors_aix (void *p_user_data, void *p_data, lsn_t lsn,
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _read_mode1_sector_aix (p_env, 
+    if ( (retval = _read_mode1_sector_aix (p_env,
                                             ((char *)p_data) + (blocksize * i),
                                                lsn + i, b_form2)) )
       return retval;
@@ -323,10 +323,10 @@ _read_mode1_sectors_aix (void *p_user_data, void *p_data, lsn_t lsn,
 
 /*!
    Reads a single mode2 sector from cd device into data starting from lsn.
-   Returns 0 if no error. 
+   Returns 0 if no error.
  */
 static driver_return_code_t
-_read_mode2_sector_aix (void *p_user_data, void *p_data, lsn_t lsn, 
+_read_mode2_sector_aix (void *p_user_data, void *p_data, lsn_t lsn,
                             bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -342,25 +342,25 @@ _read_mode2_sector_aix (void *p_user_data, void *p_data, lsn_t lsn,
   msf->cdmsf_min0 = from_bcd8(_msf.m);
   msf->cdmsf_sec0 = from_bcd8(_msf.s);
   msf->cdmsf_frame0 = from_bcd8(_msf.f);
-  
+
   if (p_env->gen.ioctls_debugged == 75)
     cdio_debug ("only displaying every 75th ioctl from now on");
-  
+
   if (p_env->gen.ioctls_debugged == 30 * 75)
     cdio_debug ("only displaying every 30*75th ioctl from now on");
-  
-  if (p_env->gen.ioctls_debugged < 75 
-      || (p_env->gen.ioctls_debugged < (30 * 75)  
+
+  if (p_env->gen.ioctls_debugged < 75
+      || (p_env->gen.ioctls_debugged < (30 * 75)
           && p_env->gen.ioctls_debugged % 75 == 0)
       || p_env->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %2.2d:%2.2d:%2.2d",
                msf->cdmsf_min0, msf->cdmsf_sec0, msf->cdmsf_frame0);
-  
+
   p_env->gen.ioctls_debugged++;
-  
+
   /* Using CDROMXA ioctl will actually use the same uscsi command
    * as ATAPI, except we don't need to be root
-   */      
+   */
   offset = CDIO_CD_XA_SYNC_HEADER;
   cd_read.cdxa_addr = lsn;
   cd_read.cdxa_data = buf;
@@ -373,22 +373,22 @@ _read_mode2_sector_aix (void *p_user_data, void *p_data, lsn_t lsn,
     /* exit (EXIT_FAILURE); */
   }
 #endif
-  
+
   if (b_form2)
     memcpy (p_data, buf + (offset-CDIO_CD_SUBHEADER_SIZE), M2RAW_SECTOR_SIZE);
   else
     memcpy (((char *)p_data), buf + offset, CDIO_CD_FRAMESIZE);
-  
+
   return 0;
 }
 
 /*!
    Reads nblocks of mode2 sectors from cd device into data starting
    from lsn.
-   Returns 0 if no error. 
+   Returns 0 if no error.
  */
 static driver_return_code_t
-_read_mode2_sectors_aix (void *p_user_data, void *data, lsn_t lsn, 
+_read_mode2_sectors_aix (void *p_user_data, void *data, lsn_t lsn,
                              bool b_form2, unsigned int nblocks)
 {
   _img_private_t *env = p_user_data;
@@ -397,7 +397,7 @@ _read_mode2_sectors_aix (void *p_user_data, void *data, lsn_t lsn,
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < nblocks; i++) {
-    if ( (retval = _read_mode2_sector_aix (env, 
+    if ( (retval = _read_mode2_sector_aix (env,
                                             ((char *)data) + (blocksize * i),
                                                lsn + i, b_form2)) )
       return retval;
@@ -435,8 +435,8 @@ get_disc_last_lsn_aix (void *p_user_data)
 /*!
   Set the arg "key" with "value" in the source device.
   Currently "source" and "access-mode" are valid keys.
-  "source" sets the source device in I/O operations 
-  "access-mode" sets the the method of CD access 
+  "source" sets the source device in I/O operations
+  "access-mode" sets the the method of CD access
 
   0 is returned if no error was found, and nonzero if there as an error.
 */
@@ -463,7 +463,7 @@ _set_arg_aix (void *p_user_data, const char key[], const char value[])
 /*
  * aixioc_send
         Issue ioctl command.
- 
+
   Args:
     p_env - environment
     cmd - ioctl command
@@ -478,15 +478,15 @@ static bool
 aixioc_send(_img_private_t *p_env, int cmd, void *arg, bool b_print_err)
 {
   struct cd_audio_cmd   *ac;
-  
+
   if (p_env->gen.fd < 0)
     return false;
-  
+
   if (cmd == DKAUDIO) {
     ac = (struct cd_audio_cmd *) arg;
     ac->status = 0;     /* Nuke status for audio cmds */
   }
-  
+
   if (ioctl(p_env->gen.fd, cmd, arg) < 0) {
     if (b_print_err) {
       cdio_warn("errno=%d (%s)",  errno, strerror(errno));
@@ -496,13 +496,13 @@ aixioc_send(_img_private_t *p_env, int cmd, void *arg, bool b_print_err)
   return true;
 }
 
-/*!  
+/*!
   Read and cache the CD's Track Table of Contents and track info.
   via a SCSI MMC READ_TOC (FULTOC).  Return true if successful or
   false if an error.
 */
 static bool
-read_toc_ioctl_aix (void *p_user_data) 
+read_toc_ioctl_aix (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
   struct cd_audio_cmd   cmdbuf;
@@ -516,39 +516,39 @@ read_toc_ioctl_aix (void *p_user_data)
   p_env->gen.i_first_track = cmdbuf.indexing.track_index.first_track;
   p_env->gen.i_tracks      = ( cmdbuf.indexing.track_index.last_track
                                - p_env->gen.i_first_track ) + 1;
-  
+
   /* Do it again to get the last MSF data */
   cmdbuf.msf_flag = true;
   if (!aixioc_send(p_env, IDE_CDAUDIO, (void *) &cmdbuf, true))
-    return false;      
-  
+    return false;
+
   cmdbuf.audio_cmds = CD_GET_TRK_MSF;
-  
+
   for (i = 0; i <= p_env->gen.i_tracks; i++) {
     int i_track = i + p_env->gen.i_first_track;
-    
+
     /* Get the track info */
     cmdbuf.indexing.track_msf.track = i_track;
-    if (!aixioc_send(p_env, IDE_CDAUDIO, (void *) &cmdbuf, TRUE)) 
+    if (!aixioc_send(p_env, IDE_CDAUDIO, (void *) &cmdbuf, TRUE))
       return false;
-    
-    p_env->tocent[ i_track ].start_lsn = 
+
+    p_env->tocent[ i_track ].start_lsn =
       cdio_msf3_to_lba(
                        cmdbuf.indexing.track_msf.mins,
                        cmdbuf.indexing.track_msf.secs,
                        cmdbuf.indexing.track_msf.frames );
   }
-  
+
   return true;
 }
 
-/*!  
+/*!
   Read and cache the CD's Track Table of Contents and track info.
   via a SCSI MMC READ_TOC (FULTOC).  Return true if successful or
   false if an error.
 */
 static bool
-read_toc_aix (void *p_user_data) 
+read_toc_aix (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
   mmc_cdb_t  cdb = {{0, }};
@@ -570,75 +570,75 @@ read_toc_aix (void *p_user_data)
   CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(cdrom_toc_full));
 
   i_status = run_scsi_cmd_aix (p_env, 1000*60*3,
-                               mmc_get_cmd_len(cdb.field[0]), 
-                               &cdb, MMC_DATA_READ, 
+                               mmc_get_cmd_len(cdb.field[0]),
+                               &cdb, MMC_DATA_READ,
                                sizeof(cdrom_toc_full), &cdrom_toc_full);
 
   if ( 0 != i_status ) {
-    cdio_debug ("SCSI MMC READ_TOC failed\n");  
+    cdio_debug ("SCSI MMC READ_TOC failed\n");
     return read_toc_ioctl_aix(p_user_data);
-  } 
-    
+  }
+
   i_seen_flag=0;
   for( i = 0 ; i <= CDIO_CD_MAX_TRACKS+3; i++ ) {
-    
-    if ( 0xA0 == cdrom_toc_full.TrackData[i].POINT ) { 
+
+    if ( 0xA0 == cdrom_toc_full.TrackData[i].POINT ) {
       /* First track number */
       p_env->gen.i_first_track = cdrom_toc_full.TrackData[i].PMIN;
       i_track_format = cdrom_toc_full.TrackData[i].PSEC;
       i_seen_flag|=0x01;
     }
-    
-    if ( 0xA1 == cdrom_toc_full.TrackData[i].POINT ) { 
+
+    if ( 0xA1 == cdrom_toc_full.TrackData[i].POINT ) {
       /* Last track number */
-      p_env->gen.i_tracks = 
+      p_env->gen.i_tracks =
         cdrom_toc_full.TrackData[i].PMIN - p_env->gen.i_first_track + 1;
       i_seen_flag|=0x02;
     }
-    
-    if ( 0xA2 == cdrom_toc_full.TrackData[i].POINT ) { 
+
+    if ( 0xA2 == cdrom_toc_full.TrackData[i].POINT ) {
       /* Start position of the lead out */
-      p_env->tocent[ p_env->gen.i_tracks ].start_lsn = 
+      p_env->tocent[ p_env->gen.i_tracks ].start_lsn =
         cdio_msf3_to_lba(
                          cdrom_toc_full.TrackData[i].PMIN,
                          cdrom_toc_full.TrackData[i].PSEC,
                          cdrom_toc_full.TrackData[i].PFRAME );
-      p_env->tocent[ p_env->gen.i_tracks ].Control 
+      p_env->tocent[ p_env->gen.i_tracks ].Control
         = cdrom_toc_full.TrackData[i].Control;
       p_env->tocent[ p_env->gen.i_tracks ].Format  = i_track_format;
       i_seen_flag|=0x04;
     }
-    
-    if (cdrom_toc_full.TrackData[i].POINT > 0 
+
+    if (cdrom_toc_full.TrackData[i].POINT > 0
         && cdrom_toc_full.TrackData[i].POINT <= p_env->gen.i_tracks) {
-      p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].start_lsn = 
+      p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].start_lsn =
         cdio_msf3_to_lba(
                          cdrom_toc_full.TrackData[i].PMIN,
                          cdrom_toc_full.TrackData[i].PSEC,
                          cdrom_toc_full.TrackData[i].PFRAME );
-      p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].Control = 
+      p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].Control =
         cdrom_toc_full.TrackData[i].Control;
-      p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].Format  = 
+      p_env->tocent[ cdrom_toc_full.TrackData[i].POINT - 1 ].Format  =
         i_track_format;
-      
-      cdio_debug("p_sectors: %i, %lu", i, 
+
+      cdio_debug("p_sectors: %i, %lu", i,
                  (unsigned long int) (p_env->tocent[i].start_lsn));
-      
+
       if (cdrom_toc_full.TrackData[i].POINT == p_env->gen.i_tracks)
         i_seen_flag|=0x08;
     }
-    
+
     if ( 0x0F == i_seen_flag ) break;
   }
   if ( 0x0F == i_seen_flag ) {
-    p_env->gen.toc_init = true; 
+    p_env->gen.toc_init = true;
     return true;
   }
   return false;
 }
 
 /*!
-  Eject media in CD drive. If successful, as a side effect we 
+  Eject media in CD drive. If successful, as a side effect we
   also free obj.
  */
 static driver_return_code_t
@@ -666,7 +666,7 @@ _cdio_malloc_and_zero(size_t size) {
   void *ptr;
 
   if( !size ) size++;
-    
+
   if((ptr = malloc(size)) == NULL) {
     cdio_warn("malloc() failed: %s", strerror(errno));
     return NULL;
@@ -703,7 +703,7 @@ get_arg_aix (void *p_user_data, const char key[])
     }
   } else if (!strcmp (key, "mmc-supported?")) {
       return is_mmc_supported(env) ? "true" : "false";
-  } 
+  }
   return NULL;
 }
 
@@ -716,7 +716,7 @@ cdio_get_default_device_aix(void)
   return strdup(DEFAULT_CDIO_DEVICE);
 }
 
-/*! 
+/*!
   Get disc type associated with cd object.
 */
 
@@ -737,30 +737,30 @@ get_discmode_aix (void *p_user_data)
   switch(media.cd_mode_form) {
   case CD_DA:
     return CDIO_DISC_MODE_CD_DA;
-  case DVD_ROM: 
+  case DVD_ROM:
     return CDIO_DISC_MODE_DVD_ROM;
   case DVD_RAM:
     return CDIO_DISC_MODE_DVD_RAM;
   case DVD_RW:
     return CDIO_DISC_MODE_DVD_RW;
   default: /* no valid match */
-    return CDIO_DISC_MODE_NO_INFO; 
+    return CDIO_DISC_MODE_NO_INFO;
   }
 }
 
-/*!  
-  Get format of track. 
+/*!
+  Get format of track.
 */
 static track_format_t
-get_track_format_aix(void *p_user_data, track_t i_track) 
+get_track_format_aix(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
-  
+
   if ( !p_env ) return TRACK_FORMAT_ERROR;
   if (!p_env->gen.init) init_aix(p_env);
   if (!p_env->gen.toc_init) read_toc_aix (p_user_data) ;
 
-  if ( (i_track > p_env->gen.i_tracks+p_env->gen.i_first_track) 
+  if ( (i_track > p_env->gen.i_tracks+p_env->gen.i_first_track)
        || i_track < p_env->gen.i_first_track)
     return TRACK_FORMAT_ERROR;
 
@@ -773,16 +773,16 @@ get_track_format_aix(void *p_user_data, track_t i_track)
   if (p_env->tocent[i_track].cdte_ctrl & CDROM_DATA_TRACK) {
     if (p_env->tocent[i_track].cdte_format == CDIO_CDROM_CDI_TRACK)
       return TRACK_FORMAT_CDI;
-    else if (p_env->tocent[i_track].cdte_format == CDIO_CDROM_XA_TRACK) 
+    else if (p_env->tocent[i_track].cdte_format == CDIO_CDROM_XA_TRACK)
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;
   } else
     return TRACK_FORMAT_AUDIO;
-#else 
+#else
   return TRACK_FORMAT_ERROR;
 #endif
-  
+
 }
 
 /*!
@@ -794,34 +794,34 @@ get_track_format_aix(void *p_user_data, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *p_user_data, track_t i_track) 
+_cdio_get_track_green(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
-  
+
   if ( !p_env ) return false;
   if (!p_env->gen.init) init_aix(p_env);
   if (!p_env->gen.toc_init) read_toc_aix (p_env) ;
 
-  if (i_track >= p_env->gen.i_tracks+p_env->gen.i_first_track 
+  if (i_track >= p_env->gen.i_tracks+p_env->gen.i_first_track
       || i_track < p_env->gen.i_first_track)
     return false;
 
   i_track -= p_env->gen.i_first_track;
 
-  /* FIXME: Dunno if this is the right way, but it's what 
+  /* FIXME: Dunno if this is the right way, but it's what
      I was using in cd-info for a while.
    */
 
 #ifdef FINISHED
   return ((p_env->tocent[i_track].cdte_ctrl & 2) != 0);
-#else 
+#else
   return false;
 #endif
 }
 
-/*!  
+/*!
   Return the starting MSF (minutes/secs/frames) for track number
-  track_num in obj.  Track numbers usually start at something 
+  track_num in obj.  Track numbers usually start at something
   greater than 0, usually 1.
 
   The "leadout" track is specified either by
@@ -838,11 +838,11 @@ _cdio_get_track_msf(void *p_user_data, track_t i_track, msf_t *msf)
   if (!p_env->gen.init) init_aix(p_env);
   if (!p_env->gen.toc_init) read_toc_aix (p_env) ;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) 
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK)
     i_track = p_env->gen.i_tracks + p_env->gen.i_first_track;
 
 #ifdef FINISHED
-  if (i_track > (p_env->gen.i_tracks+p_env->gen.i_first_track) 
+  if (i_track > (p_env->gen.i_tracks+p_env->gen.i_first_track)
       || i_track < p_env->gen.i_first_track) {
     return false;
   } else {
@@ -852,12 +852,12 @@ _cdio_get_track_msf(void *p_user_data, track_t i_track, msf_t *msf)
     msf->f = to_bcd8(msf0->cdte_addr.msf.frame);
     return true;
   }
-#else 
+#else
     return FALSE;
 #endif
 }
 
-#else 
+#else
 /*!
   Return a string containing the default VCD device if none is specified.
  */
@@ -1011,7 +1011,7 @@ cdio_open_am_aix (const char *psz_orig_source, const char *access_mode)
     return NULL;
   }
 
-#else 
+#else
   return NULL;
 #endif /* HAVE_AIX_CDROM */
 
@@ -1022,13 +1022,13 @@ cdio_have_aix (void)
 {
 #ifdef HAVE_AIX_CDROM
   return true;
-#else 
+#else
   return false;
 #endif /* HAVE_AIX_CDROM */
 }
 
 
-/* 
+/*
  * Local variables:
  *  c-file-style: "gnu"
  *  tab-width: 8
