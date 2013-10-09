@@ -33,6 +33,8 @@
 /testisocd
 /testisocd2
 /testisocd2.c
+/testisocd_joliet
+/testisocd_joliet.c
 /testlinux
 /testnrg
 /testnrg.c

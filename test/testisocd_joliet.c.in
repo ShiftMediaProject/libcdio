@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003-2008, 2012-2013 Rocky Bernstein
+  Copyright (C) 2013 Rocky Bernstein
   <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -49,7 +49,7 @@
 
 /* Set up a CD-DA image to test on which is in the libcdio distribution. */
 #define ISO9660_IMAGE_PATH "@native_abs_top_srcdir@/test/data/"
-#define ISO9660_IMAGE ISO9660_IMAGE_PATH "copying.iso"
+#define ISO9660_IMAGE ISO9660_IMAGE_PATH "joliet.iso"
 
 #define SKIP_TEST_RC 77
 
@@ -65,19 +65,19 @@ main(int argc, const char *argv[])
     return 1;
   } else {
     uint8_t joliet_level = iso9660_ifs_get_joliet_level(p_iso);
-    if (joliet_level != 0) {
-      printf("Expecting joliet level to be 0, got %u\n", joliet_level);
+    if ( joliet_level != 0) {
+      printf("Expecting joliet level to be 0, got %d\n", joliet_level);
       exit(10);
     } else {
-      printf("-- No joliet, as expected.\n");
+      printf("-- joliet level 0, as expected.\n");
     }
     p_iso = iso9660_open_ext(ISO9660_IMAGE, ISO_EXTENSION_ALL);
     joliet_level = iso9660_ifs_get_joliet_level(p_iso);
-    if ( joliet_level != 0) {
-      printf("Expecting joliet level to still be 0, got %d\n", joliet_level);
+    if ( joliet_level != 3) {
+      printf("Expecting joliet level to be 3, got %d\n", joliet_level);
       exit(11);
     } else {
-      printf("-- joliet level 0 again, as expected.\n");
+      printf("-- joliet level 3, as expected.\n");
     }
 
     /* You make get different results looking up "/" versus "/." and the

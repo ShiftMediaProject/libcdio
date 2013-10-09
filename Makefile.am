@@ -16,7 +16,7 @@
 #
 ## Process this file with automake to produce Makefile.in
 ##   which configure then turns into a Makefile  ...
-##     which make can then use to produce stuff. Isn't configuration simple? 
+##     which make can then use to produce stuff. Isn't configuration simple?
 
 AUTOMAKE_OPTIONS = dist-bzip2
 
@@ -34,9 +34,11 @@ EXTRA_DIST = \
 	libiso9660++.pc.in \
 	libudf.pc.in \
 	make-check-filter.rb \
-	package/libcdio.spec.in 
+	package/libcdio.spec.in
 
 SUBDIRS = doc include lib src test example
+
+GIT2CL ?= git2cl
 
 # pkg-config(1) related rules
 pkgconfigdir = $(libdir)/pkgconfig
