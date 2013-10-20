@@ -449,6 +449,7 @@ int has_timeout=sizeof(test.timeout);],
 	AC_CHECK_HEADERS(windows.h)
 	AC_DEFINE([MINGW32], [1],
                   [Define 1 if you are compiling using MinGW])
+	MINGW32=1
 	AC_DEFINE([HAVE_WIN32_CDROM], [1],
                   [Define 1 if you have MinGW CD-ROM support])
 	LIBS="$LIBS -lwinmm"
@@ -602,6 +603,7 @@ if test "x${enable_rock}" != "xno"; then
    HAVE_ROCK=1
 fi
 AC_SUBST(HAVE_ROCK)
+AC_SUBST(MINGW32)
 AM_CONDITIONAL(ENABLE_ROCK, test "x$enable_rock" = "xyes")
 
 AC_ARG_ENABLE(cddb,
