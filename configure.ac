@@ -87,7 +87,13 @@ dnl We use C
 AC_PROG_CC
 AM_PROG_CC_C_O
 dnl We also use C++ in example programs and for CXX bindings
-AC_PROG_CXX
+if "x$enable_cxx" != "xno" ; then
+   AC_PROG_CXX
+else 
+  # autoconf flips out if these aren't set
+  am__fastdepCXX_TRUE=
+  am__fastdepCXX_FALSE='#'
+fi
 
 dnl For iso_read test
 AC_CHECK_PROGS(ISO_MAKING_COMMAND, genisoimage mkisofs)
@@ -692,8 +698,6 @@ dnl
 ## AC_CONFIG_FILES([  po/Makefile.in\
 AC_CONFIG_FILES([
        Makefile \
-       example/C++/Makefile \
-       example/C++/OO/Makefile \
        example/Makefile \
        include/Makefile \
        include/cdio/Makefile \
@@ -702,14 +706,11 @@ AC_CONFIG_FILES([
        doc/doxygen/Doxyfile \
        doc/Makefile \
        lib/Makefile \
-       lib/cdio++/Makefile \
        lib/driver/Makefile \
        lib/iso9660/Makefile \
        lib/udf/Makefile \
        libcdio.pc \
-       libcdio++.pc \
        libiso9660.pc \
-       libiso9660++.pc \
        libudf.pc \
        package/libcdio.spec \
        src/Makefile \
@@ -726,6 +727,16 @@ AC_CONFIG_FILES([
        test/testpregap.c \
        test/Makefile \
        ])
+
+if test "x$enable_cxx" != "xno" ; then
+   AC_CONFIG_FILES([
+      example/C++/Makefile \
+      example/C++/OO/Makefile \
+      lib/cdio++/Makefile \
+      libcdio++.pc \
+      libiso9660++.pc \
+   ])
+fi
 
 # AC_CONFIG_FILES([po/Makefile])
 AC_CONFIG_FILES([test/check_cue.sh], [chmod +x test/check_cue.sh])
