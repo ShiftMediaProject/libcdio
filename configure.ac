@@ -86,14 +86,7 @@ AM_CONDITIONAL(BUILD_EXAMPLES, test "x$enable_example_progs" != "xno")
 dnl We use C
 AC_PROG_CC
 AM_PROG_CC_C_O
-dnl We also use C++ in example programs and for CXX bindings
-if "x$enable_cxx" != "xno" ; then
-   AC_PROG_CXX
-else 
-  # autoconf flips out if these aren't set
-  am__fastdepCXX_TRUE=
-  am__fastdepCXX_FALSE='#'
-fi
+AC_PROG_CXX
 
 dnl For iso_read test
 AC_CHECK_PROGS(ISO_MAKING_COMMAND, genisoimage mkisofs)
