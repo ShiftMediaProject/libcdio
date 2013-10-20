@@ -52,16 +52,20 @@ switch(level) {
 int
 main(int argc, const char *argv[])
 {
-    cdio_log_handler_t old_log_handler = (cdio_log_handler_t) NULL;
     const char *test_msg = "test message";
+#ifndef HAVE_WIN32_CDROM
+    cdio_log_handler_t old_log_handler = (cdio_log_handler_t) NULL;
 
     old_log_handler = cdio_log_set_handler(test_log_handler);
     if (old_log_handler != cdio_default_log_handler) {
       fprintf(stderr, "Should have gotten old log handler back %x vs %x\n",
-	      (unsigned int) old_log_handler, 
+	      (unsigned int) old_log_handler,
 	      (unsigned int) cdio_default_log_handler);
 	exit(1);
     }
+#else
+    cdio_log_set_handler(test_log_handler);
+#endif
 
     /* Check that calling each of the logger routine appears in the right variable,
        based on the log level */
