@@ -18,9 +18,6 @@
 ####################################################
 #
 #
-# There's a problem with doing make distcheck for testdefault.
-# A reminder of why I hate automake.
-
 SUBDIRS = data driver
 
 hack = check_sizeof testassert testgetdevices testischar \
@@ -28,14 +25,12 @@ hack = check_sizeof testassert testgetdevices testischar \
        test_lib_driver_util \
        testpregap
 
-EXTRA_PROGRAMS = testdefault
 DATA_DIR       = @abs_top_srcdir@/test/data
 
 AM_CPPFLAGS = $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 
 check_sizeof_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testassert_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
-testdefault_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testgetdevices_CFLAGS = -DDATA_DIR=\"$(DATA_DIR)\"
 testgetdevices_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testischar_LDADD      = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)

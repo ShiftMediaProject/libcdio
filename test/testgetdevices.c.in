@@ -1,6 +1,6 @@
 /*
-  Copyright (C) 2008, 2009, 2011 Rocky Bernstein <rocky@gnu.org>
-  
+  Copyright (C) 2008-2009, 2011, 2013 Rocky Bernstein <rocky@gnu.org>
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +15,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* 
+/*
    Regression test for cdio_get_devices, cdio_get_devices_with_cap(),
    and cdio_free_device_list()
 */
@@ -51,7 +51,7 @@
 #define DATA_DIR "@abs_top_srcdir@/test/data/"
 #endif
 
-static void 
+static void
 log_handler (cdio_log_level_t level, const char message[])
 {
   switch(level) {
@@ -64,8 +64,8 @@ log_handler (cdio_log_level_t level, const char message[])
 }
 
 #ifndef __MINGW32__
-static bool 
-is_in(char **file_list, const char *file) 
+static bool
+is_in(char **file_list, const char *file)
 {
   char **p;
   for (p = file_list; p != NULL && *p != NULL; p++) {
@@ -95,36 +95,36 @@ main(int argc, const char *argv[])
 
   const char *cue_files[2] = {"cdda.cue", "isofs-m1.cue"};
   const char *nrg_files[1] = {"videocd.nrg"};
-  
 
-  if (cdio_have_driver(-1) != false) 
+
+  if (cdio_have_driver(-1) != false)
     {
-      fprintf(stderr, "Bogus driver number -1 should be regexted\n");
+      fprintf(stderr, "Bogus driver number -1 should be rejected\n");
       return 5;
     }
-  
+
 #ifdef HAVE_SYS_UTSNAME_H
   {
     struct utsname utsname;
-    if (0 == uname(&utsname)) 
+    if (0 == uname(&utsname))
       {
 	if (0 == strncmp("Linux", utsname.sysname, sizeof("Linux")))
 	  {
-	    if (!cdio_have_driver(DRIVER_LINUX)) 
+	    if (!cdio_have_driver(DRIVER_LINUX))
 	      {
-		fprintf(stderr, 
+		fprintf(stderr,
 			"You should have been able to get GNU/Linux driver\n");
 		return 6;
 	      } else {
 		printf("-- Good! You have the GNU/Linux driver installed.\n");
 	      }
-	    
+
 	  }
 	else if (0 == strncmp("CYGWIN", utsname.sysname, sizeof("CYGWIN")))
 	  {
-	    if (!cdio_have_driver(DRIVER_WIN32)) 
+	    if (!cdio_have_driver(DRIVER_WIN32))
 	      {
-		fprintf(stderr, 
+		fprintf(stderr,
 			"You should have been able to get Win32 driver\n");
 		return 6;
 	      } else {
@@ -133,9 +133,9 @@ main(int argc, const char *argv[])
 	  }
 	else if (0 == strncmp("Darwin", utsname.sysname, sizeof("Darwin")))
 	  {
-	    if (!cdio_have_driver(DRIVER_OSX)) 
+	    if (!cdio_have_driver(DRIVER_OSX))
 	      {
-		fprintf(stderr, 
+		fprintf(stderr,
 			"You should have been able to get OS/X driver\n");
 		return 6;
 	      } else {
@@ -146,7 +146,7 @@ main(int argc, const char *argv[])
 	  {
 	    if (!cdio_have_driver(DRIVER_NETBSD))
 	      {
-		fprintf(stderr, 
+		fprintf(stderr,
 			"You should have been able to get NetBSD driver\n");
 		return 6;
 	      } else {
@@ -163,20 +163,20 @@ main(int argc, const char *argv[])
   }
 
   bincue_images = cdio_get_devices(DRIVER_BINCUE);
-  
+
   for (imgs=bincue_images; *imgs != NULL; imgs++) {
     printf("-- bincue image %s\n", *imgs);
   }
-  
+
   if (ret != 0) return ret;
 
   if (0 == chdir(DATA_DIR)) {
      nrg_images = cdio_get_devices(DRIVER_NRG);
-	  
+
      for (imgs=nrg_images; *imgs != NULL; imgs++) {
        printf("-- NRG image %s\n", *imgs);
      }
-	  
+
      if (!is_in(nrg_images, nrg_files[0])) {
        cdio_free_device_list(nrg_images);
        return 10;
@@ -184,17 +184,17 @@ main(int argc, const char *argv[])
 
      for (i=0; i<2; i++) {
        if (is_in(bincue_images, cue_files[i])) {
-	   printf("-- %s parses as a CDRWIN BIN/CUE csheet.\n", 
+	   printf("-- %s parses as a CDRWIN BIN/CUE csheet.\n",
 		  cue_files[i]);
        } else {
-         printf("-- %s doesn't parse as a CDRWIN BIN/CUE csheet.\n", 
+         printf("-- %s doesn't parse as a CDRWIN BIN/CUE csheet.\n",
 		cue_files[i]);
          ret = i+1;
        }
      }
 
   }
-      
+
   cdio_free_device_list(nrg_images);
   cdio_free_device_list(bincue_images);
   return 0;
