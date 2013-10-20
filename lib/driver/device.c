@@ -425,8 +425,9 @@ cdio_close_tray (const char *psz_orig_drive, /*in/out*/ driver_id_t
     psz_drive = strdup(psz_orig_drive);
 
   if (DRIVER_UNKNOWN == *p_driver_id || DRIVER_DEVICE == *p_driver_id) {
-    const driver_id_t *p_driver_id =
+    const driver_id_t *_p_driver_id =
       (DRIVER_DEVICE == *p_driver_id)?cdio_device_drivers:cdio_drivers;
+    p_driver_id = (driver_id_t *)_p_driver_id;
 
     /* Scan for driver */
     for ( ; *p_driver_id!=DRIVER_UNKNOWN; p_driver_id++) {
