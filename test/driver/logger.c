@@ -58,7 +58,8 @@ main(int argc, const char *argv[])
     old_log_handler = cdio_log_set_handler(test_log_handler);
     if (old_log_handler != cdio_default_log_handler) {
       fprintf(stderr, "Should have gotten old log handler back %x vs %x\n",
-	      old_log_handler, cdio_default_log_handler);
+	      (unsigned int) old_log_handler, 
+	      (unsigned int) cdio_default_log_handler);
 	exit(1);
     }
 
