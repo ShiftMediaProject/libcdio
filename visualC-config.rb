@@ -52,7 +52,6 @@ def extract_from_configure_ac
     exit 3
   end
   SUBST[:PACKAGE] = $1
-  puts "Package is #{$1}"
 end
 
 # Write #{filename} from #{filename}.in and SUBST
