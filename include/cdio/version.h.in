@@ -1,8 +1,7 @@
-/* $Id: version.h.in,v 1.6 2005/01/29 20:54:20 rocky Exp $ */
-/** \file version.h 
+/** \file version.h
  *
  *  \brief A file containing the libcdio package version
- *  number (@LIBCDIO_VERSION_NUM@) and OS build name. 
+ *  number (@LIBCDIO_VERSION_NUM@) and OS build name.
  */
 
 /*! CDIO_VERSION is a C-Preprocessor macro of a string that shows what
