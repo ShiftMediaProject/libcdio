@@ -1,13 +1,15 @@
 #!/usr/bin/env ruby
 # Alternative configuration for Visual C written in Ruby.
 
-# Put in what you want for the build string.
 
 ABS_TOP_SRCDIR = File.dirname(__FILE__)
 
 # Text substitutions performed on files
 SUBS = {
+
+  # Put in what you want for the build string.
   :build => ARGV[0] || 'pc-windows-visualstudio',
+
   :abs_top_srcdir => ABS_TOP_SRCDIR.dup,
   :abs_top_builddir => ABS_TOP_SRCDIR.dup,
   :native_abs_top_srcdir => File.expand_path(ABS_TOP_SRCDIR)
@@ -31,7 +33,7 @@ def get_version_num
   SUBS[:VERSION] = "0.#{$1}"
 end
 
-# Write version.h file
+# Write #{filename} from #{filename}.in and SUBS
 def perform_substitutions(filename)
 
   builddir = SUBS[:abs_top_builddir]
