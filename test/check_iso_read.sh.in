@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # check_iso_read.sh
 #
@@ -23,12 +23,12 @@ RM='@RM@'
 
 rm_if_exists() {
     file=$1
-    [[ -e $file ]] && $RM $file
+    [ -e $file ] && $RM $file
 }
 
 rmdir_if_exists() {
     dir=$1
-    [[ -d $dir ]] && $RM -r $dir
+    [ -d $dir ] && $RM -r $dir
 }
 
 cleanup() {
@@ -42,27 +42,33 @@ cleanup() {
 }
 
 # in $1 or $2 accept integer number as total .iso size in megabytes
-if [[ $1 =~ ^[0-9]+$ ]]
-then
-    size="$1"
-elif [[ $2 =~ ^[0-9]+$ ]]
-then
-    size="$2"
-else
-    size="1" # default
-fi
+case "$1" in
+    [0-9]* )
+        size="$1" ;;
+    *)
+        case "$2" in
+            [0-9]* )
+               size="$2" ;;
+        *)
+          size="1" ;; # default
+        esac
+        ;;
+esac
 
 # in $1 or $2 accept a different location for iso-read,
 # e.g. ~/libcdio/src/iso-read
-if [[ $1 =~ iso-read ]]
-then
-    ISO_READ="$1"
-elif [[ $2 =~ iso-read ]]
-then
-    ISO_READ="$2"
-else
-    ISO_READ="../src/iso-read@EXEEXT@"
-fi
+case "$1" in
+    iso-read )
+        ISO_READ="$1" ;;
+    *)
+        case "$2" in
+        iso-read )
+            ISO_READ="$2" ;;
+	*)
+            ISO_READ="../src/iso-read" ;;
+        esac
+	;;
+esac
 
 if [ ! -x ${ISO_READ} ]; then
     echo "-- $0: No ${ISO_READ}. Skipping."
@@ -139,7 +145,7 @@ echo "
 -- Size $size megabyte .iso file read back:
 -- ----------------------------------------
 "
-for i in {0..9}
+for i in 0 1 2 3 4 5 6 7 8 9
 do
     echo "didn't read file #$i" > $size"Mfile"$i"s-read.txt"
 done
@@ -156,7 +162,7 @@ done
 "$ISO_READ" -i "$isoname" -e "mixed/file9s.txt" -o $size"Mfile9s-read.txt"
 #
 anybad=0
-for i in {0..9}
+for i in 0 1 2 3 4 5 6 7 8 9
 do
     readback=`cat $size"Mfile"$i"s-read.txt"`
     if [ "$readback" = "content of short text file #$i we are looking for" ]
