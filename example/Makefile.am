@@ -33,6 +33,7 @@ noinst_PROGRAMS = \
 	eject \
 	extract \
 	isofile \
+	isorr \
 	isofile2 \
 	isofuzzy \
 	isolist \
@@ -87,6 +88,8 @@ eject_LDADD           = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 extract_DEPENDENCIES  = $(LIBISO9660_LIBS) $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
 extract_LDADD         = $(LIBISO9660_LIBS) $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+
+isorr_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 isofile_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 isofile2_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)

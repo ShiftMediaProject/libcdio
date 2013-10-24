@@ -1519,3 +1519,90 @@ iso9660_ifs_is_xa (const iso9660_t * p_iso)
   if (!p_iso) return false;
   return yep == p_iso->b_xa;
 }
+
+static bool
+iso_have_rr_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
+		      char **splitpath)
+{
+  unsigned offset = 0;
+  uint8_t *_dirbuf = NULL;
+  int ret;
+  bool_3way_t have_rr = nope;
+
+  if (!splitpath[0]) return false;
+
+  if (_root->type == _STAT_FILE)
+    return false;
+
+  cdio_assert (_root->type == _STAT_DIR);
+
+  _dirbuf = calloc(1, _root->secsize * ISO_BLOCKSIZE);
+  if (!_dirbuf)
+    {
+    cdio_warn("Couldn't calloc(1, %d)", _root->secsize * ISO_BLOCKSIZE);
+    return false;
+    }
+
+  ret = iso9660_iso_seek_read (p_iso, _dirbuf, _root->lsn, _root->secsize);
+  if (ret!=ISO_BLOCKSIZE*_root->secsize) return false;
+
+  while (offset < (_root->secsize * ISO_BLOCKSIZE))
+    {
+      iso9660_dir_t *p_iso9660_dir = (void *) &_dirbuf[offset];
+      iso9660_stat_t *p_stat;
+
+      if (!iso9660_get_dir_len(p_iso9660_dir))
+	{
+	  offset++;
+	  continue;
+	}
+
+      p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_xa,
+					p_iso->u_joliet_level);
+
+      have_rr = p_stat->rr.b3_rock;
+      if ( have_rr != yep) {
+	have_rr = iso_have_rr_traverse (p_iso, p_stat, &splitpath[1]);
+      }
+      if (have_rr == yep) {
+	free(p_stat->rr.psz_symlink);
+	free(p_stat);
+	free (_dirbuf);
+	return true;
+      }
+      free(p_stat->rr.psz_symlink);
+      free(p_stat);
+
+      offset += iso9660_get_dir_len(p_iso9660_dir);
+    }
+
+  cdio_assert (offset == (_root->secsize * ISO_BLOCKSIZE));
+
+  /* not found */
+  free (_dirbuf);
+  return false;
+}
+
+/*!
+  Return true if any file has Rock-Ridge extensions. Warning: this can
+  be time consuming. On a ISO 9600 image with lots of files but no Rock-Ridge
+  extensions, the entire directory structure will be scanned.
+*/
+extern bool
+iso9660_have_rr (iso9660_t *p_iso)
+{
+  iso9660_stat_t *p_root;
+  char *p_psz_splitpath[2] = {strdup("/"), strdup("")};
+  bool_3way_t is_rr = nope;
+
+  if (!p_iso) return false;
+
+  p_root = _ifs_stat_root (p_iso);
+  if (!p_root) return false;
+
+  is_rr = iso_have_rr_traverse (p_iso, p_root, p_psz_splitpath);
+  free(p_root);
+  // _cdio_strfreev (p_psz_splitpath);
+
+  return is_rr == yep;
+}

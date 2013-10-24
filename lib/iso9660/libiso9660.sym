@@ -41,6 +41,7 @@ iso9660_get_system_id
 iso9660_get_volume_id
 iso9660_get_volumeset_id
 iso9660_get_xa_attr_str
+iso9660_have_rr
 iso9660_ifs_find_lsn
 iso9660_ifs_find_lsn_with_path
 iso9660_ifs_fuzzy_read_superblock

@@ -718,6 +718,7 @@ AC_CONFIG_FILES([
        test/driver/track.c \
        test/testgetdevices.c \
        test/testisocd_joliet.c \
+       test/testisorr.c \
        test/testisocd2.c \
        test/testpregap.c \
        test/Makefile \

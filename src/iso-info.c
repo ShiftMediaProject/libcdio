@@ -74,6 +74,7 @@ static struct arguments
   int            print_iso9660;
   int            print_udf;
   int            print_iso9660_short;
+  int            show_rock_ridge;
 } opts;
 
 /* Configuration option codes */
@@ -101,12 +102,12 @@ parse_options (int argc, char *argv[])
     "  -l, --iso9660          output similar to 'ls -lR' for an ISO 9660 fs\n"
     "  -U, --udf              output similar to 'ls -lR for a UDF fs'\n"
     "  --no-header            Don't display header and copyright (for regression\n"
-    "                         testing)\n"
 #ifdef HAVE_JOLIET
     "  --no-joliet            Don't use Joliet-extension information\n"
 #endif /*HAVE_JOLIET*/
     "  --no-rock-ridge        Don't use Rock-Ridge-extension information\n"
     "  --no-xa                Don't use XA-extension information\n"
+    "  -r --show-rock-ridge   Show if image uses Rock-Ridge extensions\n"
     "  -q, --quiet            Don't produce warning output\n"
     "  -V, --version          display version and copyright information and exit\n"
     "\n"
@@ -116,7 +117,7 @@ parse_options (int argc, char *argv[])
 
   static const char usageText[] =
     "Usage: %s [-i|--input FILE] [-f] [-l|--iso9660] [-U|--udf]\n"
-    "        [--no-header] [--no-joliet] [--no-rock-ridge] [--no-xa] [-q|--quiet]\n"
+    "        [--no-header] [--no-joliet] [--no-rock-ridge] [--show-rock-ridge] [--no-xa] [-q|--quiet]\n"
     "        [-d|--debug INT] [-V|--version] [-?|--help] [--usage]\n";
 
   static const char optionsString[] = "d:i::flUqV?";
@@ -132,6 +133,7 @@ parse_options (int argc, char *argv[])
     {"no-rock-ridge", no_argument, &opts.no_rock_ridge, 1 },
     {"no-xa", no_argument, &opts.no_xa, 1 },
     {"quiet", no_argument, NULL, 'q'},
+    {"show-rock-ridge", no_argument, &opts.show_rock_ridge, 'r' },
     {"version", no_argument, NULL, 'V'},
 
     {"help", no_argument, NULL, '?' },
@@ -151,6 +153,7 @@ parse_options (int argc, char *argv[])
       case 'l': opts.print_iso9660       = 1; break;
       case 'U': opts.print_udf           = 1; break;
       case 'q': opts.silent              = 1; break;
+      case 'r': opts.show_rock_ridge     = 1; break;
       case 'V': opts.version_only        = 1; break;
 
       case '?':
@@ -401,6 +404,7 @@ init(void)
   opts.debug_level         = 0;
   opts.print_iso9660       = 0;
   opts.print_iso9660_short = 0;
+  opts.show_rock_ridge     = false;
 }
 
 #define print_vd_info(title, fn)          \
@@ -464,6 +468,14 @@ main(int argc, char *argv[])
 	printf("No Joliet extensions\n");
     } else {
 	printf("Joliet Level: %u\n", u_joliet_level);
+    }
+
+    if (opts.show_rock_ridge) {
+      if (iso9660_have_rr(p_iso)) {
+	printf("Have Rock Ridge\n");
+      } else {
+	printf("Don't have Rock Ridge information\n");
+      }
     }
 
   }

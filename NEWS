@@ -1,7 +1,8 @@
 version 0.91
 
 - Add udf_get_logical_volume_id to retreive a UDF Logical Volume
-- Report Joliet level on iso-info
+- Report Joliet level on iso-info, and an option to show whether
+  Rock-Ridge extensions are present
 - More debug logging in reading lsn sectors
 - Document how logging works in libcdio
 - Fixes for reading large ISO 9660 images
