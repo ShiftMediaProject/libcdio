@@ -72,9 +72,9 @@ end
 extract_from_configure_ac
 %w(include/cdio/version.h
    test/testgetdevices.c test/testisocd2.c   		test/testisocd_joliet.c
-   test/driver/bincue.c  test/driver/track.c		test/test/testisocd_joliet.c
-   test/driver/cdrdao.c  test/test/testgetdevices.c	test/test/testpregap.c
-   test/driver/nrg.c	 test/test/testisocd2.c
+   test/driver/bincue.c  test/driver/track.c		test/testisocd_joliet.c
+   test/driver/cdrdao.c  test/testgetdevices.c	test/testpregap.c
+   test/driver/nrg.c	 test/testisocd2.c
    test/testpregap.c     doc/doxygen/Doxyfile
 ).each do |file|
   perform_substitutions(file)
