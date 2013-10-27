@@ -33,6 +33,7 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#include <cdio/types.h>
 #include <cdio/bytesex.h>
 #include <cdio/cdio.h>
 #include <cdio/ds.h>
@@ -74,7 +75,7 @@ static struct arguments
   int            print_iso9660;
   int            print_udf;
   int            print_iso9660_short;
-  int            show_rock_ridge;
+  int64_t        show_rock_ridge;
 } opts;
 
 /* Configuration option codes */
@@ -96,20 +97,22 @@ parse_options (int argc, char *argv[])
 
   static const char helpText[] =
     "Usage: %s [OPTION...]\n"
-    "  -d, --debug=INT        Set debugging to LEVEL\n"
-    "  -i, --input[=FILE]     Filename to read ISO-9960 image from\n"
-    "  -f                     Generate output similar to 'find . -print'\n"
-    "  -l, --iso9660          output similar to 'ls -lR' for an ISO 9660 fs\n"
-    "  -U, --udf              output similar to 'ls -lR for a UDF fs'\n"
-    "  --no-header            Don't display header and copyright (for regression\n"
+    "  -d, --debug=UINT          Set debugging to LEVEL\n"
+    "  -i, --input[=FILE]        Filename to read ISO-9960 image from\n"
+    "  -f                        Generate output similar to 'find . -print'\n"
+    "  -l, --iso9660             output similar to 'ls -lR' for an ISO 9660 fs\n"
+    "  -U, --udf                 output similar to 'ls -lR for a UDF fs'\n"
+    "  --no-header               Don't display header and copyright (for regression\n"
 #ifdef HAVE_JOLIET
-    "  --no-joliet            Don't use Joliet-extension information\n"
+    "  --no-joliet               Don't use Joliet-extension information\n"
 #endif /*HAVE_JOLIET*/
-    "  --no-rock-ridge        Don't use Rock-Ridge-extension information\n"
-    "  --no-xa                Don't use XA-extension information\n"
-    "  -r --show-rock-ridge   Show if image uses Rock-Ridge extensions\n"
-    "  -q, --quiet            Don't produce warning output\n"
-    "  -V, --version          display version and copyright information and exit\n"
+    "  --no-rock-ridge           Don't use Rock-Ridge-extension information\n"
+    "  --no-xa                   Don't use XA-extension information\n"
+    "  -r --show-rock-ridge UINT Show if image uses Rock-Ridge extensions\n"
+    "                            A maximum of UINT files will be considered.\n"
+    "                            Use 0 for all files.\n"
+    "  -q, --quiet               Don't produce warning output\n"
+    "  -V, --version            display version and copyright information and exit\n"
     "\n"
     "Help options:\n"
     "  -?, --help             Show this help message\n"
@@ -133,7 +136,7 @@ parse_options (int argc, char *argv[])
     {"no-rock-ridge", no_argument, &opts.no_rock_ridge, 1 },
     {"no-xa", no_argument, &opts.no_xa, 1 },
     {"quiet", no_argument, NULL, 'q'},
-    {"show-rock-ridge", no_argument, &opts.show_rock_ridge, 'r' },
+    {"show-rock-ridge", required_argument, NULL, 'r' },
     {"version", no_argument, NULL, 'V'},
 
     {"help", no_argument, NULL, '?' },
@@ -153,7 +156,7 @@ parse_options (int argc, char *argv[])
       case 'l': opts.print_iso9660       = 1; break;
       case 'U': opts.print_udf           = 1; break;
       case 'q': opts.silent              = 1; break;
-      case 'r': opts.show_rock_ridge     = 1; break;
+      case 'r': opts.show_rock_ridge = atoll(optarg); break;
       case 'V': opts.version_only        = 1; break;
 
       case '?':
@@ -404,7 +407,7 @@ init(void)
   opts.debug_level         = 0;
   opts.print_iso9660       = 0;
   opts.print_iso9660_short = 0;
-  opts.show_rock_ridge     = false;
+  opts.show_rock_ridge     = -1;
 }
 
 #define print_vd_info(title, fn)          \
@@ -464,11 +467,16 @@ main(int argc, char *argv[])
     print_vd_info("Volume      ", iso9660_ifs_get_volume_id);
     print_vd_info("Volume Set  ", iso9660_ifs_get_volumeset_id);
 
-    if (opts.show_rock_ridge) {
-      if (iso9660_have_rr(p_iso)) {
+    if (opts.show_rock_ridge >= 0) {
+      switch (iso9660_have_rr(p_iso, (uint64_t) opts.show_rock_ridge)) {
+      case yep:
 	printf("Rock Ridge  : yes\n");
-      } else {
+	break;
+      case nope:
 	printf("Rock Ridge  : no\n");
+	break;
+      case dunno:
+	printf("Rock Ridge  : possibly not\n");
       }
     }
 

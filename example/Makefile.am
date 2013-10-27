@@ -49,7 +49,7 @@ noinst_PROGRAMS = \
 	udf1 \
 	udffile
 
-check_PROGRAMS  = cdtext device drives isofile2 \
+check_PROGRAMS  = cdtext device drives isofile2 isorr \
                    mmc1 mmc2 mmc2a mmc3 sample4
 
 #: run regression tests. "test" is the same thing as "check"

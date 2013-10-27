@@ -23,7 +23,7 @@
 /* Set up an ISO-9660 image to test on which is in the libcdio
    distribution. */
 #define ISO9660_IMAGE_PATH "../"
-#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/data/copying_rr.iso"
+#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/data/copying-rr.iso"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -68,11 +68,17 @@ main(int argc, const char *argv[])
     return 1;
   }
 
-  if (iso9660_have_rr(p_iso)) {
-    printf("Have Rock Ridge\n");
-  } else {
-    printf("Don't have Rock Ridge\n");
-  }
+  switch (iso9660_have_rr(p_iso, 100)) {
+    case yep:
+      printf("-- Have Rock Ridge\n");
+      break;
+    case nope:
+      printf("-- Don't have Rock Ridge\n");
+      break;
+    case dunno:
+      printf("-- Possibly don't have Rock Ridge\n");
+      break;
+    }
 
   iso9660_close(p_iso);
   return 0;

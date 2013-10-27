@@ -64,11 +64,11 @@ main(int argc, const char *argv[])
     return 1;
   }
 
-  if (iso9660_have_rr(p_iso)) {
+  if (iso9660_have_rr(p_iso, 0) != nope) {
     fprintf(stderr, "-- Should not find Rock Ridge for %s\n", psz_fname);
     return 2;
   } else {
-    printf("-- Good did not find Rock Ridge in %s\n", psz_fname);
+    printf("-- Good! Did not find Rock Ridge in %s\n", psz_fname);
   }
 
   iso9660_close(p_iso);
@@ -82,11 +82,18 @@ main(int argc, const char *argv[])
     return 3;
   }
 
-  if (iso9660_have_rr(p_iso)) {
-      printf("-- Good found Rock Ridge in %s\n", psz_fname);
+  if (iso9660_have_rr(p_iso, 0) == yep) {
+      printf("-- Good! found Rock Ridge in %s\n", psz_fname);
   } else {
     fprintf(stderr, "-- Should have found Rock Ridge for %s\n", psz_fname);
     return 2;
+  }
+
+  if (iso9660_have_rr(p_iso, 3) == yep) {
+      printf("-- Good! Found Rock Ridge again in %s\n", psz_fname);
+  } else {
+    fprintf(stderr, "-- Should have found Rock Ridge for %s\n", psz_fname);
+    return 3;
   }
 
   iso9660_close(p_iso);

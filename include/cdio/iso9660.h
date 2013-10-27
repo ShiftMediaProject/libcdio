@@ -1049,11 +1049,20 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
   char *iso9660_get_system_id(const iso9660_pvd_t *p_pvd);
 
   /*!
-    Return true if any file has Rock-Ridge extensions. Warning: this can
-    be time consuming. On a ISO 9600 image with lots of files but no Rock-Ridge
-    extensions, the entire directory structure will be scanned.
+    Return "yup" if any file has Rock-Ridge extensions. Warning: this can
+    be time consuming. On an ISO 9600 image with lots of files but no Rock-Ridge
+    extensions, the entire directory structure will be scanned up to u_file_limit.
+
+    @param p_iso the ISO-9660 file image to get data from
+
+    @param u_file_limit the maximimum number of (non-rock-ridge) files
+    to consider before giving up and returning "dunno".
+
+    "dunno" can also be returned if there was some error encountered
+    such as not being able to allocate memory in processing.
+
   */
-  bool iso9660_have_rr(iso9660_t *p_iso);
+  bool_3way_t iso9660_have_rr(iso9660_t *p_iso, uint64_t u_file_limit);
 
   /*!
     Get the system ID.  psz_system_id is set to NULL if there
