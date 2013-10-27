@@ -464,18 +464,18 @@ main(int argc, char *argv[])
     print_vd_info("Volume      ", iso9660_ifs_get_volume_id);
     print_vd_info("Volume Set  ", iso9660_ifs_get_volumeset_id);
 
+    if (opts.show_rock_ridge) {
+      if (iso9660_have_rr(p_iso)) {
+	printf("Rock Ridge  : yes\n");
+      } else {
+	printf("Rock Ridge  : no\n");
+      }
+    }
+
     if (u_joliet_level == 0) {
 	printf("No Joliet extensions\n");
     } else {
 	printf("Joliet Level: %u\n", u_joliet_level);
-    }
-
-    if (opts.show_rock_ridge) {
-      if (iso9660_have_rr(p_iso)) {
-	printf("Have Rock Ridge\n");
-      } else {
-	printf("Don't have Rock Ridge information\n");
-      }
     }
 
   }
