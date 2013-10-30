@@ -1564,12 +1564,9 @@ iso_have_rr_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 	have_rr = iso_have_rr_traverse (p_iso, p_stat, &splitpath[1], pu_file_limit);
       }
       if (have_rr != nope) {
-	free(p_stat->rr.psz_symlink);
-	free(p_stat);
 	free (_dirbuf);
 	return have_rr;
       }
-      free(p_stat->rr.psz_symlink);
       free(p_stat);
 
       offset += iso9660_get_dir_len(p_iso9660_dir);
