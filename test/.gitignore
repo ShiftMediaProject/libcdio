@@ -45,3 +45,5 @@
 /testpregap.c
 /testsolaris
 /testtoc
+/testudf
+/testudf.c

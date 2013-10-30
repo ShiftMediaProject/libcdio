@@ -721,6 +721,7 @@ AC_CONFIG_FILES([
        test/testisorr.c \
        test/testisocd2.c \
        test/testpregap.c \
+       test/testudf.c \
        test/Makefile \
        ])
 

@@ -22,7 +22,7 @@ SUBDIRS = data driver
 
 hack = check_sizeof testassert testgetdevices testischar \
        testisocd testisocd2 testisocd_joliet testiso9660 \
-       testisorr test_lib_driver_util \
+       testisorr test_lib_driver_util testudf \
        testpregap
 
 DATA_DIR       = @abs_top_srcdir@/test/data
@@ -40,6 +40,8 @@ testisocd_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testisocd2_LDADD      = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testisocd_joliet_LDADD= $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testisorr_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+
+testudf_LDADD         = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 test_lib_driver_util_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 test_lib_driver_util_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
@@ -70,7 +72,7 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
 	testpregap.c.in testisorr.c.in check_legal.regex \
-	testgetdevices.c.in check_iso.sh.in \
+        testgetdevices.c.in check_iso.sh.in testudf.c.in \
 	check_iso_read.sh.in
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
