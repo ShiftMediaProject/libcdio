@@ -101,7 +101,7 @@ parse_options (int argc, char *argv[])
     "  -i, --input[=FILE]        Filename to read ISO-9960 image from\n"
     "  -f                        Generate output similar to 'find . -print'\n"
     "  -l, --iso9660             output similar to 'ls -lR' for an ISO 9660 fs\n"
-    "  -U, --udf                 output similar to 'ls -lR for a UDF fs'\n"
+    "  -U, --udf                 output similar to 'ls -lR' for a UDF fs\n"
     "  --no-header               Don't display header and copyright (for regression\n"
 #ifdef HAVE_JOLIET
     "  --no-joliet               Don't use Joliet-extension information\n"
