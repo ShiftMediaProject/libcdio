@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009, 2012
+#   Copyright (C) 2003-2006, 2008-2009, 2012-13
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -49,7 +49,7 @@ noinst_PROGRAMS = \
 	udf1 \
 	udffile
 
-check_PROGRAMS  = cdtext device drives isofile2 isorr \
+check_PROGRAMS  = cdtext device drives isofile2 \
                    mmc1 mmc2 mmc2a mmc3 sample4
 
 #: run regression tests. "test" is the same thing as "check"
