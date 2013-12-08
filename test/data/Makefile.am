@@ -47,6 +47,7 @@ check_DATA = \
 	data5.toc      \
 	data6.toc      \
 	data7.toc      \
-	test-udf1.iso
+	test-udf1.iso  \
+	udf102.iso
 
 EXTRA_DIST = $(check_DATA)
