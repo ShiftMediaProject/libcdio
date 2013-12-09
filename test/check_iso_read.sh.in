@@ -18,22 +18,28 @@
 # default is iso-read,
 # has to be named iso-read to be recognized,
 # could be for example src/iso-read
+#
+# Set environment variable VERBOSE=1 for more verbose output
 
 RM='@RM@'
-VERBOSE=0
+VERBOSE=${VERBOSE:-0}
 
+# Run $@ capturing output. Show output on an error or if VERBOSE is
+# set.
 run_cmd() {
     output=`$@ 2>&1`
-    if (( $? != 0  || $VERBOSE )) ; then
+    if [ $? -ne 0  -o $VERBOSE -ne 0 ]; then
 	echo >&2 -- $output
     fi
 }
 
+# Remove file $1 if that file exists
 rm_if_exists() {
     file=$1
-    [ -e $file ] && $RM $file
+    [ -f $file ] && $RM $file
 }
 
+# Remove driectory $1 if that directory exists
 rmdir_if_exists() {
     dir=$1
     [ -d $dir ] && $RM -r $dir
@@ -138,8 +144,10 @@ then
 
     # if you want to archive a test file, this compressed one is much smaller,
     # seen 4KB instead of 1MB, seen 5MB instead of 5GB
-    tar -cf "$isoname.tar" "$isoname"
-    gzip -9 "$isoname.tar"
+    v_opt=''
+    [ $VERBOSE -ne 0 ] && v_opt='-v'
+    tar $v_opt -cf "$isoname.tar" "$isoname"
+    gzip $v_opt -9 "$isoname.tar"
 
 else
     echo "-- Using existing $isoname ."
