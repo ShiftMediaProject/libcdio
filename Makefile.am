@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2004, 2006, 2008, 2011, 2012
+#   Copyright (C) 2003-2004, 2006, 2008, 2011-2013
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -33,6 +33,7 @@ EXTRA_DIST = \
 	libiso9660.pc.in \
 	libiso9660++.pc.in \
 	libudf.pc.in \
+	make-check-filter.pl \
 	make-check-filter.rb \
 	package/libcdio.spec.in
 
