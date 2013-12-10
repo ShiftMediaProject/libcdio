@@ -134,6 +134,10 @@ udf_checktag(const udf_tag_t *p_tag, udf_Uint16_t tag_id)
 
   itag = (uint8_t *)p_tag;
 
+#ifdef WORDS_BIGENDIAN
+  tag_id = UINT16_SWAP_LE_BE(tag_id);
+#endif
+
   if (p_tag->id != tag_id)
     return -1;
 
@@ -382,27 +386,6 @@ udf_open (const char *psz_path)
 
   memcpy(&(p_udf->anchor_vol_desc_ptr), &data, sizeof(anchor_vol_desc_ptr_t));
 
-#ifdef WORDS_BIGENDIAN
-  {
-    /* FIXME: add a macro for this. Put in routine? */
-    anchor_vol_desc_ptr_t *p_avdp = &p_udf->anchor_vol_desc_ptr;
-    p_avdp->tag.id = UINT16_SWAP_LE_BE(p_avdp->tag.id);
-    p_avdp->tag.desc_version = UINT16_SWAP_LE_BE(p_avdp->tag.desc_version);
-    p_avdp->tag.i_serial = UINT16_SWAP_LE_BE(p_avdp->tag.i_serial);
-    p_avdp->tag.desc_CRC = UINT16_SWAP_LE_BE(p_avdp->tag.desc_CRC);
-    p_avdp->tag.desc_CRC_len = UINT16_SWAP_LE_BE(p_avdp->tag.desc_CRC_len);
-    p_avdp->tag.loc = UINT32_SWAP_LE_BE(p_avdp->tag.loc);
-    p_avdp->main_vol_desc_seq_ext.len =
-      UINT32_SWAP_LE_BE(p_avdp->main_vol_desc_seq_ext.len);
-    p_avdp->main_vol_desc_seq_ext.loc =
-      UINT32_SWAP_LE_BE(p_avdp->main_vol_desc_seq_ext.loc);
-    p_avdp->reserve_vol_desc_seq_ext.len =
-      UINT32_SWAP_LE_BE(p_avdp->reserve_vol_desc_seq_ext.loc);
-    p_avdp->reserve_vol_desc_seq_ext.loc =
-      UINT32_SWAP_LE_BE(p_avdp->reserve_vol_desc_seq_ext.loc);
-  }
-#endif
-
   if (udf_checktag((udf_tag_t *)&(p_udf->anchor_vol_desc_ptr), TAGID_ANCHOR))
     goto error;
 
@@ -422,28 +405,9 @@ udf_open (const char *psz_path)
     for (i_lba = mvds_start; i_lba < mvds_end; i_lba++) {
       udf_pvd_t *p_pvd = (udf_pvd_t *) &data;
 
-#ifdef WORDS_BIGENDIAN
-      /* FIXME: add a macro for this. Put in routine? */
-      p_pvd->tag.id = UINT16_SWAP_LE_BE(p_pvd->tag.id);
-      p_pvd->tag.desc_version = UINT16_SWAP_LE_BE(p_pvd->tag.desc_version);
-      p_pvd->primary_vol_desc_num =
-	UINT32_SWAP_LE_BE(p_pvd->primary_vol_desc_num);
-      p_pvd->vol_seq_num = UINT16_SWAP_LE_BE(p_pvd->vol_seq_num);
-      p_pvd->max_vol_seqnum = UINT16_SWAP_LE_BE(p_pvd->max_vol_seqnum);
-      p_pvd->tag.i_serial = UINT16_SWAP_LE_BE(p_pvd->tag.i_serial);
-      p_pvd->tag.desc_CRC = UINT16_SWAP_LE_BE(p_pvd->tag.desc_CRC);
-      p_pvd->tag.desc_CRC_len = UINT16_SWAP_LE_BE(p_pvd->tag.desc_CRC_len);
-      p_pvd->tag.loc = UINT32_SWAP_LE_BE(p_pvd->tag.loc);
-      p_pvd->vol_desc_seq_num =
-	UINT32_SWAP_LE_BE(p_pvd->vol_desc_seq_num);
-#endif
-
       if (DRIVER_OP_SUCCESS != udf_read_sectors (p_udf, p_pvd, i_lba, 1) )
 	goto error;
 
-#ifdef WORDS_BIGENDIAN
-      udf_tag_bigendian(&p_pvd->tag);
-#endif
       if (!udf_checktag(&p_pvd->tag, TAGID_PRI_VOL)) {
 	p_udf->pvd_lba = i_lba;
 	break;
@@ -584,9 +548,6 @@ udf_get_root (udf_t *p_udf, bool b_any_partition, partition_num_t i_partition)
     if (DRIVER_OP_SUCCESS != udf_read_sectors (p_udf, p_partition, i_lba, 1) )
       return NULL;
 
-#ifdef WORDS_BIGENDIAN
-    udf_tag_bigendian(&p_partition->tag);
-#endif
     if (!udf_checktag(&p_partition->tag, TAGID_PARTITION)) {
       const partition_num_t i_partition_check
 	= uint16_from_le(p_partition->number);

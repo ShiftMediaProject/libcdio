@@ -9,6 +9,7 @@ version 0.91
 - Enable Rock-Ridge handling in configuration by default
 - Be able to read an audio CD with exactly 100 tracks
 - Microsoft Windows fixes (mingw, cygwin, Visual Studio)
+- Fix UDF library bug on BigEndian CPUs (POWER, SPARC, HP/UX)
 
 version 0.90
 2012-10-27
