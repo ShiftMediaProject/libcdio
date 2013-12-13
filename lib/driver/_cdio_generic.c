@@ -265,7 +265,7 @@ cdio_add_device_list(char **device_list[], const char *drive,
     } else {
       *device_list = malloc((*num_drives) * sizeof(char *));
     }
-    cdio_debug("Creating empty drive list");
+    cdio_debug("Adding NULL to end of drive list of size %d", (*num_drives)-1);
     (*device_list)[*num_drives-1] = NULL;
   }
 }
