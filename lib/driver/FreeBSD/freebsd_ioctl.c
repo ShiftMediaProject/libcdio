@@ -1,7 +1,5 @@
 /*
-  $Id: freebsd_ioctl.c,v 1.7 2008/04/21 18:30:20 karl Exp $
-
-  Copyright (C) 2003, 2004, 2005, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2008, 2013 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -221,7 +219,7 @@ get_mcn_freebsd_ioctl (const _img_private_t *p_env) {
      can't find in track 0.
    */
   if (subchannel_info.what.media_catalog.mc_valid)
-    return strdup(subchannel_info.what.media_catalog.mc_number);
+    return strdup((char *)subchannel_info.what.media_catalog.mc_number);
   else 
     return NULL;
 }
