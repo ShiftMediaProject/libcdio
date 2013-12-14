@@ -1,6 +1,5 @@
 version 0.91
 
-- Add udf_get_logical_volume_id to retreive a UDF Logical Volume
 - Report Joliet level on iso-info, and an option to show whether
   Rock-Ridge extensions are present
 - More debug logging in reading lsn sectors
@@ -10,6 +9,9 @@ version 0.91
 - Be able to read an audio CD with exactly 100 tracks
 - Microsoft Windows fixes (mingw, cygwin, Visual Studio)
 - Fix UDF library bug on BigEndian CPUs (POWER, SPARC, HP/UX)
+- libudf: Add udf_get_logical_volume_id() to retreive a UDF Logical Volume
+- libcdio: Add cdio_default_log_handler
+- libiso9660: Add iso9660_have_rr() to show if Rock-Ridge extensions are present
 
 version 0.90
 2012-10-27

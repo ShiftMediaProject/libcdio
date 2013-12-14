@@ -18,11 +18,11 @@
 # Things to make the libiso9660 library
 ########################################################
 #
-# From libtool documentation amended with guidance from N. Boullis: 
+# From libtool documentation amended with guidance from N. Boullis:
 #
 #  1. Start with version information of `0:0:0' for each libtool library.
 #
-#  2. It is probably not a good idea to update the version information 
+#  2. It is probably not a good idea to update the version information
 #     several times between public releases, but rather once per public
 #     release. (This seems to be more an aesthetic consideration than
 #     a hard technical one.)
@@ -42,7 +42,7 @@
 
 libiso9660_la_CURRENT = 8
 libiso9660_la_REVISION = 0
-libiso9660_la_AGE = 0
+libiso9660_la_AGE = 1
 
 EXTRA_DIST = libiso9660.sym
 
@@ -54,7 +54,7 @@ if ENABLE_ROCK
 rock_src = rock.c
 else
 rock_src =
-endif 
+endif
 
 libiso9660_la_SOURCES = \
 	iso9660.c \
@@ -75,7 +75,7 @@ AM_CPPFLAGS = $(LIBCDIO_CFLAGS)
 
 # An explanation of the versioning problem from Nicolas Boullis and
 # the versioned symbol solution he uses below...
-# 
+#
 # Currently, libvcdinfo uses the cdio_open function from libcdio.
 # Let's imagine a program foobar that uses both the vcdinfo_open
 # function from libvcdinfo and the cdio_open function from libcdio.
@@ -142,7 +142,7 @@ libiso9660.la.ver: $(libiso9660_la_OBJECTS) $(srcdir)/libiso9660.sym
 	@echo '};' >> $@
 
 MOSTLYCLEANFILES = libiso9660.la.ver
-else 
+else
 libiso9660_la_LDFLAGS = $(libiso9660_la_ldflags)
 libiso9660_la_DEPENDENCIES = $(libcdio9660_la_dependencies)
 endif
