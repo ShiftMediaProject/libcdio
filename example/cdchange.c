@@ -1,7 +1,7 @@
 /*
-  Copyright (C) 2005-2012
+  Copyright (C) 2005-2013
   Rocky Bernstein <rocky@gnu.org>
-  
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -39,7 +39,7 @@
 #endif
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
-#endif 
+#endif
 #ifdef HAVE_WINDOWS_H
 #include <windows.h>
 #endif
@@ -54,7 +54,7 @@ int
 main(int argc, const char *argv[])
 {
   CdIo_t *p_cdio;
-  unsigned int i_sleep = 30;
+  long int i_sleep = 30;
   if (argc > 1) {
     p_cdio = cdio_open (argv[1], DRIVER_DEVICE);
     if (argc > 2) {
@@ -77,15 +77,15 @@ main(int argc, const char *argv[])
 
   if (cdio_get_media_changed(p_cdio))
     printf("Initial media status: changed\n");
-  else 
+  else
     printf("Initial media status: not changed\n");
 
-  printf("Giving you %d seconds to change CD if you want to do so.\n",
+  printf("Giving you %ld seconds to change CD if you want to do so.\n",
 	 i_sleep);
   sleep(i_sleep);
   if (cdio_get_media_changed(p_cdio))
     printf("Media status: changed\n");
-  else 
+  else
     printf("Media status: not changed\n");
 
   cdio_destroy(p_cdio);

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2011, 2012 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004-2005, 2008, 2011, 2012, 2013 Rocky Bernstein <rocky@gnu.org>
   toc reading routine adapted from cuetools
   Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
