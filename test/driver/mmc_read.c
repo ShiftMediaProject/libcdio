@@ -425,13 +425,7 @@ main(int argc, const char *argv[])
     exit(SKIP_TEST);
   }
 
-#ifdef HAVE_FREEBSD_CDROM
-  p_cdio = cdio_open_am(ppsz_drives[0], DRIVER_FREEBSD, "CAM");
-  printf("Someone needs to fix up for FreeBSD. Skipping test.\n");
-  exit(SKIP_TEST);
-#else
   p_cdio = cdio_open(ppsz_drives[0], DRIVER_DEVICE);
-#endif
 
   if (p_cdio) {
     const char *psz_have_mmc = cdio_get_arg(p_cdio, "mmc-supported?");

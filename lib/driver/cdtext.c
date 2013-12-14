@@ -285,7 +285,6 @@ cdtext_get_const(const cdtext_t *p_cdtext, cdtext_field_t field, track_t track)
 {
   if (CDTEXT_FIELD_INVALID == field
       || NULL == p_cdtext
-      || 0 > track
       || CDIO_CD_MAX_TRACKS < track)
     return NULL;
 
@@ -464,7 +463,7 @@ void
 cdtext_set(cdtext_t *p_cdtext, cdtext_field_t key, const uint8_t *value,
            track_t track, const char *charset)
 {
-  if (NULL == value || key == CDTEXT_FIELD_INVALID || 0 > track
+  if (NULL == value || key == CDTEXT_FIELD_INVALID
       || CDIO_CD_MAX_TRACKS < track)
     return;
 
