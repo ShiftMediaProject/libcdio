@@ -40,9 +40,9 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libiso9660_la_CURRENT = 8
+libiso9660_la_CURRENT = 9
 libiso9660_la_REVISION = 0
-libiso9660_la_AGE = 1
+libiso9660_la_AGE = 0
 
 EXTRA_DIST = libiso9660.sym
 
