@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2004, 2005, 2011, 2012 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2004, 2005, 2011, 2012, 2014 Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software; you can redistribute it and/or modify
@@ -81,9 +81,9 @@ cdio_lsn_to_msf (lsn_t lsn, msf_t *msf)
     f    = lsn + CDIO_CD_MAX_LSN;
   }
 
-  if (m > 6) {
+  if (m > 99) {
     cdio_warn ("number of minutes (%d) truncated to 99.", m);
-    m = 6;
+    m = 99;
   }
 
   msf->m = cdio_to_bcd8 (m);
