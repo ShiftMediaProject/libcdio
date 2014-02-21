@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2006, 2008 Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
-  Copyright (C) 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2011, 2014 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2012 Pete Batard <pete@akeo.ie>
 
   This program is free software: you can redistribute it and/or modify
@@ -113,7 +113,6 @@ FILE* fopen_utf8(const char* filename, const char* mode)
 }
 #endif
 
-#ifdef HAVE_JOLIET
 #ifdef HAVE_ICONV
 #include <iconv.h>
 struct cdio_charset_coverter_s
@@ -137,7 +136,7 @@ static void bgav_hexdump(uint8_t * data, int len, int linebreak)
   int i;
   int bytes_written = 0;
   int imax;
-  
+
   while(bytes_written < len)
     {
     imax = (bytes_written + linebreak > len) ? len - bytes_written : linebreak;
@@ -184,11 +183,11 @@ do_convert(iconv_t cd, const char * src, int src_len,
 #if 0
   fprintf(stderr, "Converting:\n");
   bgav_hexdump(src, src_len, 16);
-#endif    
+#endif
   alloc_size = src_len + BYTES_INCREMENT;
 
   inbytesleft  = src_len;
-  
+
   /* We reserve space here to add a final '\0' */
   outbytesleft = alloc_size-1;
 
@@ -196,10 +195,10 @@ do_convert(iconv_t cd, const char * src, int src_len,
 
   inbuf  = (char *)src;
   outbuf = ret;
-  
+
   while(1)
     {
-    
+
     if(iconv(cd, (ICONV_CONST char **)&inbuf, &inbytesleft,
              &outbuf, &outbytesleft) == (size_t)-1)
       {
@@ -242,7 +241,7 @@ do_convert(iconv_t cd, const char * src, int src_len,
   bgav_hexdump(src, src_len, 16);
   fprintf(stderr, "dst:\n");
   bgav_hexdump((uint8_t*)(ret), (int)(outbuf - ret), 16);
-#endif  
+#endif
   return true;
   }
 
@@ -344,5 +343,3 @@ bool cdio_charset_to_utf8(const char *src, size_t src_len, cdio_utf8_t **dst,
   return (*dst != NULL);
 }
 #endif /* HAVE_ICONV */
-
-#endif /* HAVE_JOLIET */
