@@ -44,7 +44,7 @@
 #include <cdio/cdio.h>
 #include <cdio/udf.h>
 
-#define EXPECTED_NAME    "FÃ©Ð¶Î˜vrier"
+#define EXPECTED_NAME    "FéжΘvrier"
 #define EXPECTED_LENGTH  10
 
 int
