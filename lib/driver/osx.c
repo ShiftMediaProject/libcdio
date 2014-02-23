@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2010, 2011, 2012
+  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2010, 2011, 2012, 2014
    Rocky Bernstein <rocky@gnu.org> 
   from vcdimager code: 
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -1751,6 +1751,9 @@ cdio_get_devices_osx(void)
   CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaEjectableKey),
                         kCFBooleanTrue );
   
+  CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaWholeKey),
+                        kCFBooleanTrue );
+  
   kern_result = IOServiceGetMatchingServices( master_port, 
                                               classes_to_match,
                                               &media_iterator );
@@ -1824,6 +1827,9 @@ cdio_get_default_device_osx(void)
     }
   
   CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaEjectableKey),
+                        kCFBooleanTrue );
+  
+  CFDictionarySetValue( classes_to_match, CFSTR(kIOMediaWholeKey),
                         kCFBooleanTrue );
   
   kern_result = IOServiceGetMatchingServices( kIOMasterPortDefault, 

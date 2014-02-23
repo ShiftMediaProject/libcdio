@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
+#   Copyright (C) 2003-2010, 2012-2013
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -18,11 +18,11 @@
 # Things to make the libcdio library
 ########################################################
 #
-# From libtool documentation amended with guidance from N. Boullis: 
+# From libtool documentation amended with guidance from N. Boullis:
 #
 #  1. Start with version information of `0:0:0' for each libtool library.
 #
-#  2. It is probably not a good idea to update the version information 
+#  2. It is probably not a good idea to update the version information
 #     several times between public releases, but rather once per public
 #     release. (This seems to be more an aesthetic consideration than
 #     a hard technical one.)
@@ -40,7 +40,7 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libcdio_la_CURRENT = 14
+libcdio_la_CURRENT = 15
 libcdio_la_REVISION = 0
 libcdio_la_AGE = 0
 
@@ -118,7 +118,7 @@ AM_CPPFLAGS = $(LIBCDIO_CFLAGS)
 
 # An explanation of the versioning problem from Nicolas Boullis and
 # the versioned symbol solution he uses below...
-# 
+#
 # Currently, libvcdinfo uses the cdio_open function from libcdio.
 # Let's imagine a program foobar that uses both the vcdinfo_open
 # function from libvcdinfo and the cdio_open function from libcdio.
@@ -183,8 +183,8 @@ libcdio.la.ver: $(libcdio_la_OBJECTS) $(srcdir)/libcdio.sym
 	  nm $${objs} | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio.sym; then :; else if test $$first = true; then echo "  local:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@; \
 	fi
 	@echo '};' >> $@
-else 
+else
 libcdio_la_LDFLAGS = $(libcdio_la_ldflags)
-endif 
+endif
 
 MOSTLYCLEANFILES = libcdio.la.ver

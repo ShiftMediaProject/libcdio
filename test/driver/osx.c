@@ -1,5 +1,5 @@
 /* -*- C -*-
-  Copyright (C) 2009, 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2009, 2011, 2014 Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -44,7 +44,8 @@ main(int argc, const char *argv[])
 {
   CdIo_t *p_cdio;
   char **ppsz_drives=NULL;
-  
+  int n=0;
+
   cdio_loglevel_default = (argc > 1) ? CDIO_LOG_DEBUG : CDIO_LOG_INFO;
   /* snprintf(psz_nrgfile, sizeof(psz_nrgfile)-1,
 	     "%s/%s", TEST_DIR, cue_file[i]);
@@ -56,10 +57,12 @@ main(int argc, const char *argv[])
       exit(77);
   }
   
-  p_cdio = cdio_open_osx(ppsz_drives[0]);
-  if (p_cdio) {
+  do {
+    p_cdio = cdio_open_osx(ppsz_drives[n]);
+    if (p_cdio) {
       const char *psz_source = cdio_get_arg(p_cdio, "source");
       const char *psz_access_mode = cdio_get_arg(p_cdio, "access-mode");
+      discmode_t  discmode = cdio_get_discmode(p_cdio);
       if (0 != strncmp(psz_source, ppsz_drives[0],
 		       strlen(ppsz_drives[0]))) {
 	  fprintf(stderr, 
@@ -73,9 +76,18 @@ main(int argc, const char *argv[])
 		  psz_access_mode, "OS X");
 	  exit(2);
       }
-  }
+      if (CDIO_DISC_MODE_ERROR == discmode) {
+	  fprintf(stderr,
+		  "Error getting disc mode for device %s.\n",
+		  ppsz_drives[n]);
+	  exit(3);
+      }
+    }
 
-  cdio_destroy(p_cdio);
+    cdio_destroy(p_cdio);
+  }
+  while (ppsz_drives[++n] != NULL);
+
   cdio_free_device_list(ppsz_drives);
 
   return 0;
