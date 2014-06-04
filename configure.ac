@@ -485,7 +485,7 @@ int has_timeout=sizeof(test.timeout);],
  	LIBS="$LIBS -lcam"
   	cd_drivers="${cd_drivers}, FreeBSD "
 	;;
-     netbsd*)
+     netbsd*|openbsd*)
      	AC_DEFINE([HAVE_NETBSD_CDROM], [1],
                   [Define 1 if you have NetBSD CD-ROM support])
  	# LIBS="$LIBS -lcam"
