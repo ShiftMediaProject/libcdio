@@ -1,5 +1,7 @@
 *.exe
+*.log
 *.stackdump
+*.trs
 *~
 /ChangeLog
 /Makefile

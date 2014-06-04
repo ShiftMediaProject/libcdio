@@ -131,4 +131,4 @@ make-executable: check_nrg.sh check_cue.sh
 clean-local: clean-local-check
 .PHONY: clean-local-check
 clean-local-check:
-	-rm -rf exampleIso*.iso.prep
+	-rm -rf exampleIso*.iso.prep *.log *.trs *.orig *.rej

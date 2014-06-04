@@ -314,7 +314,7 @@ init_win32 (void *p_user_data)
   p_env->gen.init           = true;
   p_env->gen.toc_init       = false;
   p_env->gen.b_cdtext_error = false;
-  p_env->gen.fd             = open (p_env->gen.source_name, O_RDONLY, 0);
+  p_env->gen.fd             = open (p_env->gen.source_name, O_RDONLY|O_BINARY, 0);
 
   /* Initializations */
   p_env->h_device_handle = NULL;
