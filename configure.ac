@@ -479,7 +479,7 @@ int has_timeout=sizeof(test.timeout);],
 	fi
 	enable_cdda_player="no"
 	;;
-     freebsd4.*|freebsd5.*|freebsd[[6-9]].*|dragonfly*|kfreebsd*)
+     freebsd[[4-9]].*|freebsd10.*|dragonfly*|kfreebsd*)
      	AC_DEFINE([HAVE_FREEBSD_CDROM], [1],
                   [Define 1 if you have FreeBSD CD-ROM support])
  	LIBS="$LIBS -lcam"
