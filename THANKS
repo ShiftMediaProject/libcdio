@@ -1,17 +1,17 @@
 Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
   some GNU/Linux and CD-Text patches
 
-Carlo Bramini 
+Carlo Bramini
   fixes for Mingw+MSYS and DLL support
 
-Christophe Fergeau 
+Christophe Fergeau
   Add UDF reading to iso-read and iso-info
 
 Dagobert Michelsen
   Solaris compilation issues and the wonderful test Solaris
   test platform opencsw.org
 
-Diego 'Flameeyes' Pettenò 
+Diego 'Flameeyes' Pettenò
   patches to FreeBSD and making Gentoo-friendly
 
 Frank Endres
@@ -26,7 +26,7 @@ Geoff Bailey
 Heiner <h.eichmann at gmx.de>
   FreeBSD CAM support and FreeBSD debugging & testing
 
-Ian MacIntosh 
+Ian MacIntosh
   Sun-related things.
 
 Justin B. Ruggles <jruggle at earthlink.net>
@@ -42,7 +42,7 @@ Kris Verbeeck <airborne at advalvas.be>:
   CDDB library support from libcddb http://libcddb.sourceforge.net
   Gentoo ebuild-file
 
-Leon Merten Lohse 
+Leon Merten Lohse
   Redo CD-Text handling
 
 Manfred Tremmel <Manfred.Tremmel at iiv.de>:
@@ -52,7 +52,7 @@ Manfred Tremmel <Manfred.Tremmel at iiv.de>:
 Michael Kukat <michael at unixiron.org>,
   for the hints in extractnrg.pl
 
-Natalia Portillo 
+Natalia Portillo
   OSX BluRay support on OSX 10 and other OSX fixes
 
 Nicolas Boullis <nboullis at debian.org>
@@ -65,14 +65,14 @@ Patrick Guimond
   CD-Extra audio data boundaries
 
 Pete Batard
-  UDF, MinGW and Microsoft Visual C++ support. "offset" type fixes for 
-  Joliet and Rock Ridge. 
+  UDF, MinGW and Microsoft Visual C++ support. "offset" type fixes for
+  Joliet and Rock Ridge.
 
 Peter Hartley
   Cross-compiling to mingw32
 
 Peter J. Creath
-  removal of libpopt, paranoia documentation, some bug fixes to 
+  removal of libpopt, paranoia documentation, some bug fixes to
   cd-* programs and the paranoia lib
 
 Steven M. Schultz <sms at 2BSD.COM>
@@ -92,6 +92,9 @@ Thomas Schmitt
 Daniel Schwarz
   log-summary option in cd-paranoia.
 
+Robert Kausch
+  Portability fixes on Windows, and other OS's. Add mmc_get_track_isrc
+
 Robert William Fuller
   get_track_pregap_lba, get_track_pregap_lsn. Section on "CD-DA pregap"
   in libcdio manual.
@@ -99,6 +102,5 @@ Robert William Fuller
   various fixes to Nero driver and cd-text for Nero
 
 Scot C. Bontrager
-  mmc routine to get the ISRC information on a CD that is in the q subchannel 
+  mmc routine to get the ISRC information on a CD that is in the q subchannel
   but not showing up in the CDTEXT. Addition of this information to cd-info.
-
