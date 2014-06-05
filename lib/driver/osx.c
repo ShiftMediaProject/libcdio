@@ -104,6 +104,7 @@ typedef enum {
 #include <IOKit/storage/IODVDMedia.h>
 #include <IOKit/storage/IOCDMediaBSDClient.h>
 #include <IOKit/storage/IODVDMediaBSDClient.h>
+#include <IOKit/storage/IOBlockStorageDevice.h>
 #include <IOKit/storage/IOStorageDeviceCharacteristics.h>
 
 #if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
@@ -191,6 +192,53 @@ GetRegistryEntryProperties ( io_service_t service )
     cdio_warn( "IORegistryEntryCreateCFProperties: 0x%08x", err );
 
   return dict;
+}
+
+/**
+ * ProbeStorageDevices - Probe devices to detect changes.
+ */
+static bool
+ProbeStorageDevices()
+{
+  io_service_t  next_service;
+  mach_port_t   master_port;
+  kern_return_t kern_result;
+  io_iterator_t service_iterator;
+  CFMutableDictionaryRef classes_to_match;
+  
+  kern_result = IOMasterPort( MACH_PORT_NULL, &master_port );
+  if( kern_result != KERN_SUCCESS )
+    {
+      return false;
+    }
+  
+  classes_to_match = IOServiceMatching( kIOBlockStorageDeviceClass );
+  if( classes_to_match == NULL )
+    {
+      return false;
+    }
+  
+  kern_result = IOServiceGetMatchingServices( master_port, 
+                                              classes_to_match,
+                                              &service_iterator );
+  if( kern_result != KERN_SUCCESS )
+    {
+      return false;
+    }
+  
+  next_service = IOIteratorNext( service_iterator );
+  if( next_service != 0 )
+    {
+      do
+        {
+          IOServiceRequestProbe( next_service, 0 );
+
+          IOObjectRelease( next_service );
+          
+        } while( ( next_service = IOIteratorNext( service_iterator ) ) != 0 );
+    }
+  IOObjectRelease( service_iterator );
+  return true;
 }
 
 #ifdef GET_SCSI_FIXED
@@ -1567,6 +1615,25 @@ get_mcn_osx (const void *user_data) {
   return strdup((char*)cd_read.mcn);
 }
 
+/**
+  Return the international standard recording code ISRC.
+ */
+static char *
+get_track_isrc_osx (const void *user_data, track_t i_track) {
+  const _img_private_t *p_env = user_data;
+  dk_cd_read_isrc_t cd_read;
+
+  memset( &cd_read, 0, sizeof(cd_read) );
+
+  cd_read.track = i_track;
+
+  if( ioctl( p_env->gen.fd, DKIOCCDREADISRC, &cd_read ) < 0 )
+  {
+    cdio_debug( "could not read ISRC, %s", strerror(errno) );
+    return NULL;
+  }
+  return strdup((char*)cd_read.isrc);
+}
 
 /**
   Get format of track. 
@@ -1736,6 +1803,9 @@ cdio_get_devices_osx(void)
   char        **drives = NULL;
   unsigned int  num_drives=0;
   
+  /* Probe devices to get up to date information. */
+  ProbeStorageDevices();
+  
   kern_result = IOMasterPort( MACH_PORT_NULL, &master_port );
   if( kern_result != KERN_SUCCESS )
     {
@@ -1819,6 +1889,9 @@ cdio_get_default_device_osx(void)
   kern_return_t kern_result;
   io_iterator_t media_iterator;
   CFMutableDictionaryRef classes_to_match;
+  
+  /* Probe devices to get up to date information. */
+  ProbeStorageDevices();
   
   classes_to_match = IOServiceMatching( kIOMediaClass );
   if( classes_to_match == NULL )
@@ -1941,6 +2014,7 @@ cdio_open_osx (const char *psz_orig_source)
     .get_track_lba         = get_track_lba_osx,
     .get_track_msf         = NULL,
     .get_track_preemphasis = get_track_preemphasis_generic,
+    .get_track_isrc        = get_track_isrc_osx,
     .lseek                 = cdio_generic_lseek,
     .read                  = cdio_generic_read,
     .read_audio_sectors    = read_audio_sectors_osx,
