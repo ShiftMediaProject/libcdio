@@ -852,11 +852,11 @@ main(int argc, char *argv[])
                                                      CD-DA */
   cdio_iso_analysis_t    cdio_iso_analysis; 
   char                  *media_catalog_number;  
+  char                  *isrc;
   discmode_t             discmode = CDIO_DISC_MODE_NO_INFO;
   cdio_drive_read_cap_t  i_read_cap = 0;
   cdio_drive_write_cap_t i_write_cap;
   cdio_drive_misc_cap_t  i_misc_cap;
-  cdio_isrc_t            isrc;
       
   memset(&cdio_iso_analysis, 0, sizeof(cdio_iso_analysis));
   init();
@@ -1126,13 +1126,15 @@ main(int argc, char *argv[])
       free(media_catalog_number);
     }
 
+    /* get and print track ISRCs */
+
     if (i_read_cap & CDIO_DRIVE_CAP_READ_ISRC) {
-      driver_return_code_t status;
-      for (i = 1; i <= i_tracks; i++) {
-        memset (&isrc, 0, sizeof(isrc));
-        status = mmc_isrc_track_read_subchannel (p_cdio, i, isrc);
-        if (status == DRIVER_OP_SUCCESS && isrc[0] != '\0') {
+      for (i = first_audio; i < first_audio + num_audio; i++) {
+        isrc = cdio_get_track_isrc(p_cdio, i);
+
+        if (NULL != isrc) {
           report(stdout, "TRACK %2d ISRC: %s\n", i, isrc); fflush(stdout);
+          free(isrc);
         }
       }
     }

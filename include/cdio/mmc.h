@@ -580,9 +580,11 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
      @param track the track you to get ISRC info
      @param p_isrc place to put ISRC info
   */
-    driver_return_code_t
-    mmc_isrc_track_read_subchannel (CdIo_t *p_cdio,  /*in*/ const track_t track,
-                                    /*out*/ char *p_isrc);
+    LIBCDIO_DEPRECATED(driver_return_code_t
+                       mmc_isrc_track_read_subchannel (CdIo_t *p_cdio,
+                                    /*in*/ const track_t track,
+                                    /*out*/ char *p_isrc),
+      "please use mmc_get_track_isrc");
   
   /**
     Return a string containing the name of the audio state as returned from
