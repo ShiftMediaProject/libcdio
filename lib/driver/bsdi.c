@@ -1009,6 +1009,7 @@ cdio_open_bsdi (const char *psz_orig_source)
     .get_track_lba         = NULL, /* This could be implemented if need be. */
     .get_track_preemphasis = get_track_preemphasis_generic,
     .get_track_msf         = get_track_msf_bsdi,
+    .get_track_isrc        = get_track_isrc_mmc,
     .lseek                 = cdio_generic_lseek,
     .read                  = cdio_generic_read,
     .read_audio_sectors    = _read_audio_sectors_bsdi,
