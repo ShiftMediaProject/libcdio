@@ -693,6 +693,20 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
   char * mmc_get_mcn(const CdIo_t *p_cdio);
   
   /**
+    Get the international standard recording code (ISRC) of the track via MMC.
+    
+    @param p_cdio the CD object to be acted upon.
+    @param i_track the track to get the ISRC info for
+    @return international standard recording code or NULL if there is
+    none or we don't have the ability to get it.
+    
+    Note: string is malloc'd so caller has to free() the returned
+    string when done with it.
+    
+  */
+  char * mmc_get_track_isrc(const CdIo_t *p_cdio, track_t i_track);
+  
+  /**
     Report if CD-ROM has a particular kind of interface (ATAPI, SCSCI, ...)
     Is it possible for an interface to have several? If not this 
     routine could probably return the single mmc_feature_interface_t.

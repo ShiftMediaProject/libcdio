@@ -332,6 +332,13 @@ get_mcn_mmc (const void *p_user_data)
   return mmc_get_mcn( p_env->cdio );
 }
 
+char *
+get_track_isrc_mmc (const void *p_user_data, track_t i_track)
+{
+  const generic_img_private_t *p_env = p_user_data;
+  return mmc_get_track_isrc( p_env->cdio, i_track );
+}
+
 driver_return_code_t
 get_tray_status (const void *p_user_data)
 {
@@ -531,6 +538,44 @@ mmc_get_mcn_private ( void *p_env,
 }
 
 /**
+  Return the international standard recording code.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+*/
+char *
+mmc_get_track_isrc_private ( void *p_env,
+                             const mmc_run_cmd_fn_t run_mmc_cmd,
+                             track_t i_track
+                             )
+{
+  mmc_cdb_t cdb = {{0, }};
+  char buf[28] = { 0, };
+  int i_status;
+
+  if ( ! p_env || ! run_mmc_cmd )
+    return NULL;
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
+  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
+
+  cdb.field[1] = 0x0;  
+  cdb.field[2] = 0x40; 
+  cdb.field[3] = CDIO_SUBCHANNEL_TRACK_ISRC;
+  cdb.field[6] = i_track;
+
+  i_status = run_mmc_cmd(p_env, mmc_timeout_ms, 
+			      mmc_get_cmd_len(cdb.field[0]), 
+			      &cdb, SCSI_MMC_DATA_READ, 
+			      sizeof(buf), buf);
+  if(i_status == 0) {
+    return strdup(&buf[9]);
+  }
+  return NULL;
+}
+
+/**
   Read cdtext information for a CdIo_t object .
   
   return true on success, false on error or CD-Text information does
@@ -706,26 +751,20 @@ driver_return_code_t
 mmc_isrc_track_read_subchannel (CdIo_t *p_cdio,  /*in*/ const track_t track,
                                 /*out*/ char *p_isrc)
 {
-  mmc_cdb_t cdb = {{0, }};
-  driver_return_code_t i_rc;
-  char buf[28] = { 0, };
+  char *p_isrc_int = NULL;
 
   if (!p_cdio) return DRIVER_OP_UNINIT;
-  
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
-  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
 
-  cdb.field[1] = 0x0;
-  cdb.field[2] = 1 << 6;
-  cdb.field[3] = CDIO_SUBCHANNEL_TRACK_ISRC; /* 0x03 */
-  cdb.field[6] = track;
+  p_isrc_int = mmc_get_track_isrc_private(p_cdio->env, p_cdio->op.run_mmc_cmd, track);
 
-  i_rc = mmc_run_cmd(p_cdio, mmc_timeout_ms, &cdb, SCSI_MMC_DATA_READ,
-                     sizeof(buf), buf);
-  if (DRIVER_OP_SUCCESS == i_rc) {
-    strncpy(p_isrc,  &buf[9], CDIO_ISRC_SIZE+1);
+  if (p_isrc_int) {
+    strncpy(p_isrc, p_isrc_int, CDIO_ISRC_SIZE+1);
+    free(p_isrc_int);
+
+    return DRIVER_OP_SUCCESS;
   }
-  return i_rc;
+
+  return DRIVER_OP_ERROR;
 }
 
 /**
@@ -1067,6 +1106,25 @@ mmc_get_mcn ( const CdIo_t *p_cdio )
 {
   if ( ! p_cdio )  return NULL;
   return mmc_get_mcn_private (p_cdio->env, p_cdio->op.run_mmc_cmd );
+}
+
+/**
+   Get the international standard recording code (ISRC) of the track via MMC.
+   
+   @param p_cdio the CD object to be acted upon.
+   @param i_track the track to get the ISRC info for.
+   @return the international standard recording code or NULL if there is
+   none or we don't have the ability to get it.
+   
+   Note: string is malloc'd so caller has to free() the returned
+   string when done with it.
+    
+*/
+char *
+mmc_get_track_isrc ( const CdIo_t *p_cdio, track_t i_track )
+{
+  if ( ! p_cdio )  return NULL;
+  return mmc_get_track_isrc_private (p_cdio->env, p_cdio->op.run_mmc_cmd, i_track );
 }
 
 /**
