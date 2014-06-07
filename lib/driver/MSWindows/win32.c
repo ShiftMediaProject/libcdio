@@ -343,7 +343,7 @@ init_win32 (void *p_user_data)
      we call it here to clear that flag. We may have
      to rethink this if there's a problem doing this
      extra work down the line. */
-  get_media_changed_mmc(p_user_data);
+  if (b_ret) get_media_changed_mmc(p_user_data);
   return b_ret;
 }
 
