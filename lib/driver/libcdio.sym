@@ -221,6 +221,7 @@ mmc_get_hwinfo
 mmc_get_last_lsn
 mmc_get_mcn
 mmc_get_media_changed
+mmc_get_track_isrc
 mmc_get_tray_status
 mmc_have_interface
 mmc_is_disctype_bd
@@ -234,7 +235,7 @@ mmc_mode_select_10
 mmc_mode_sense
 mmc_mode_sense_10
 mmc_mode_sense_6
-mmc_prevent_allow_meduim_removal
+mmc_prevent_allow_medium_removal
 mmc_read_cd
 mmc_read_data_sectors
 mmc_read_disc_information

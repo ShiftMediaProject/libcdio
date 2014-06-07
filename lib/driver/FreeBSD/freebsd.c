@@ -616,6 +616,32 @@ get_mcn_freebsd (const void *p_user_data) {
   return NULL;
 }
 
+/*!
+  Return the international standard recording code ISRC.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static char *
+get_track_isrc_freebsd (const void *p_user_data,
+			track_t i_track) {
+  const _img_private_t *p_env = p_user_data;
+
+  switch (p_env->access_mode) {
+    case _AM_CAM:
+    case _AM_MMC_RDWR:
+    case _AM_MMC_RDWR_EXCL:
+      return mmc_get_track_isrc(p_env->gen.cdio, i_track);
+    case _AM_IOCTL:
+      return mmc_get_track_isrc(p_env->gen.cdio, i_track);
+    case _AM_NONE:
+      cdio_info ("access mode not set");
+      return NULL;
+  }
+  return NULL;
+}
+
 static void
 get_drive_cap_freebsd (const void *p_user_data,
 		       cdio_drive_read_cap_t  *p_read_cap,
@@ -1128,6 +1154,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .get_track_lba          = get_track_lba_freebsd,
     .get_track_preemphasis  = get_track_preemphasis_generic,
     .get_track_msf          = NULL,
+    .get_track_isrc         = get_track_isrc_freebsd,
     .lseek                  = cdio_generic_lseek,
     .read                   = cdio_generic_read,
     .read_audio_sectors     = read_audio_sectors_freebsd,

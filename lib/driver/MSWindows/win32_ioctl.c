@@ -1221,6 +1221,36 @@ get_mcn_win32ioctl (const _img_private_t *p_env) {
 }
 
 /**
+  Return the international standard recording code ISRC.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+char *
+get_track_isrc_win32ioctl (const _img_private_t *p_env, track_t i_track) {
+
+  DWORD dw_bytes_returned;
+  SUB_Q_TRACK_ISRC isrc;
+  CDROM_SUB_Q_DATA_FORMAT q_data_format;
+
+  memset( &isrc, 0, sizeof(isrc) );
+
+  q_data_format.Format = CDIO_SUBCHANNEL_TRACK_ISRC;
+  q_data_format.Track  = i_track;
+
+  if( ! DeviceIoControl( p_env->h_device_handle,
+                       IOCTL_CDROM_READ_Q_CHANNEL,
+                       &q_data_format, sizeof(q_data_format),
+                       &isrc, sizeof(isrc),
+                       &dw_bytes_returned, NULL ) ) {
+    cdio_warn( "could not read Q Channel at track %d", 1);
+  } else if (isrc.Tcval)
+    return strdup((const char *) isrc.TrackIsrc);
+  return NULL;
+}
+
+/**
   Get the format (XA, DATA, AUDIO) of a track.
 */
 track_format_t
