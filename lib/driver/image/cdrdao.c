@@ -697,14 +697,16 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
 	    /* Handle "<filename>" */
 	    if (cd) {
-	      const char *dirname = cdio_dirname(psz_cue_name);
-	      const char *filename = cdio_abspath (dirname, psz_field);
+	      char *dirname = cdio_dirname(psz_cue_name);
+	      char *filename = cdio_abspath(dirname, psz_field);
 	      cd->tocent[i].filename = strdup (filename);
 	      /* To do: do something about reusing existing files. */
 	      if (!(cd->tocent[i].data_source = cdio_stdio_new (psz_field))) {
 		cdio_log (log_level, 
 			  "%s line %d: can't open file `%s' for reading", 
 			   psz_cue_name, i_line, psz_field);
+		free(psz_filename);
+		free(psz_dirname);
 		goto err_exit;
 	      }
 	    } else {
@@ -713,10 +715,14 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 		cdio_log (log_level, 
 			  "%s line %d: can't open file `%s' for reading", 
 			  psz_cue_name, i_line, psz_field);
+		free(psz_filename);
+		free(psz_dirname);
 		goto err_exit;
 	      }
 	      cdio_stdio_destroy (s);
 	    }
+	    free(psz_filename);
+	    free(psz_dirname);
 	  }
 	  
 	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
@@ -769,15 +775,17 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	if (0 <= i) {
 	  if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
 	    /* Handle <filename> */
-	    const char *psz_dirname = cdio_dirname(psz_cue_name);
-	    const char *psz_filename = cdio_abspath (psz_dirname, psz_field);
+	    char *psz_dirname = cdio_dirname(psz_cue_name);
+	    char *psz_filename = cdio_abspath(psz_dirname, psz_field);
 	    if (cd) {
-	      cd->tocent[i].filename = (char *) psz_filename;
+	      cd->tocent[i].filename = strdup(psz_filename);
 	      /* To do: do something about reusing existing files. */
 	      if (!(cd->tocent[i].data_source = cdio_stdio_new (psz_field))) {
 		cdio_log (log_level, 
 			  "%s line %d: can't open file `%s' for reading", 
 			  psz_cue_name, i_line, psz_field);
+		free(psz_filename);
+		free(psz_dirname);
 		goto err_exit;
 	      }
 	    } else {
@@ -786,10 +794,14 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 		cdio_log (log_level, 
 			  "%s line %d: can't open file `%s' for reading", 
 			  psz_cue_name, i_line, psz_field);
+		free(psz_filename);
+		free(psz_dirname);
 		goto err_exit;
 	      }
 	      cdio_stdio_destroy (s);
 	    }
+	    free(psz_filename);
+	    free(psz_dirname);
 	  }
 	  
 	  psz_field = strtok (NULL, " \t\n\r");

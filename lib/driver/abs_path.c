@@ -95,39 +95,33 @@ strrdirsep(const char *path)
     return last;
 }
 
-const char * cdio_dirname(const char *fname);
-
-const char *
+char *
 cdio_dirname(const char *fname)
 {
     const char *p;
     p = strrdirsep(fname);
-    if (!p) return ".";
+    if (!p) return strdup(".");
     return strndup(fname, p - fname);
 }
 
-const char *cdio_abspath(const char *cwd, const char *fname);
-
-
 /* If fname isn't absolute, add cwd to it. */
-const char *
+char *
 cdio_abspath(const char *cwd, const char *fname)
 {
-    if (isdirsep(*fname)) return fname;
-    {
-	size_t len   = strlen(cwd) + strlen(fname) + 2;
-	char* result = calloc(sizeof(char), len);
-	snprintf(result, len, "%s%c%s", 
-		 cwd, CDIO_FILE_SEPARATOR, fname);
-	return result;
-    }
+    if (isdirsep(*fname)) return strdup(fname);
+
+    size_t len   = strlen(cwd) + strlen(fname) + 2;
+    char* result = calloc(sizeof(char), len);
+    snprintf(result, len, "%s%c%s", 
+	     cwd, CDIO_FILE_SEPARATOR, fname);
+    return result;
 }
 
 #ifdef STANDALONE
 int main(int argc, char **argv)
 {
-  const char *dest;
-  const char *dirname;
+  char *dest;
+  char *dirname;
   if (argc != 3) {
     fprintf(stderr, "Usage: %s FILE REPLACE_BASENAME\n", argv[0]);
     fprintf(stderr,
@@ -136,8 +130,10 @@ int main(int argc, char **argv)
   }
 
   dirname = cdio_dirname(argv[1]);
-  dest = cdio_abspath (dirname, argv[2]);
+  dest = cdio_abspath(dirname, argv[2]);
   printf("%s -> %s\n", argv[1], dest);
+  free(dirname);
+  free(dest);
   exit(0);
 }
 #endif

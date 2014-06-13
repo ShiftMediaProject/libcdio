@@ -360,12 +360,14 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         uint8_t cdt_data[CDTEXT_LEN_BINARY_MAX+4];
         int size;
         CdioDataSource_t *source;
-        const char *dirname = cdio_dirname(psz_cue_name);
-        const char *psz_filename = cdio_abspath (dirname, psz_field);
+        char *dirname = cdio_dirname(psz_cue_name);
+        char *psz_filename = cdio_abspath(dirname, psz_field);
 
         if(NULL == (source = cdio_stdio_new(psz_filename))) {
           cdio_log(log_level, "%s line %d: can't open file `%s' for reading", 
 		   psz_cue_name, i_line, psz_field);
+          free(psz_filename);
+          free(dirname);
           goto err_exit;
         }
         size = cdio_stream_read(source, cdt_data, CDTEXT_LEN_BINARY_MAX, 1);
@@ -373,7 +375,9 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         if (size < 5) {
           cdio_log(log_level, 
 		   "%s line %d: file `%s' is too small to contain CD-TEXT",
-                   psz_cue_name, i_line, (char *) psz_filename);
+                   psz_cue_name, i_line, psz_filename);
+          free(psz_filename);
+          free(dirname);
           goto err_exit;
         }
 
@@ -392,9 +396,11 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         }
 
         if(0 != cdtext_data_init(cd->gen.cdtext, cdt_data, size))
-          cdio_log (log_level, "%s line %d: failed to parse CD-TEXT file `%s'", psz_cue_name, i_line, (char *) psz_filename);
+          cdio_log (log_level, "%s line %d: failed to parse CD-TEXT file `%s'", psz_cue_name, i_line, psz_filename);
 
         cdio_stdio_destroy (source);
+        free(psz_filename);
+        free(dirname);
       }
     } else {
       goto format_error;
@@ -403,9 +409,11 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         /* FILE "<filename>" <BINARY|WAVE|other?> */
       } else if (0 == strcmp ("FILE", psz_keyword)) {
         if (NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
-          const char *dirname = cdio_dirname(psz_cue_name);
-          const char *filename = cdio_abspath (dirname, psz_field);
-          if (cd) cd->tocent[i + 1].filename = (char *) filename;
+          char *dirname = cdio_dirname(psz_cue_name);
+          char *filename = cdio_abspath(dirname, psz_field);
+          if (cd) cd->tocent[i + 1].filename = strdup(filename);
+          free(filename);
+          free(dirname);
         } else {
           goto format_error;
         }
