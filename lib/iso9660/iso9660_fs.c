@@ -754,6 +754,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
         if (!p_stat_new)
           {
           cdio_warn("Couldn't calloc(1, %d)", (int)(sizeof(iso9660_stat_t)+i_rr_fname+2));
+	  free(p_stat);
           return NULL;
           }
 	memcpy(p_stat_new, p_stat, stat_len);
@@ -1563,11 +1564,11 @@ iso_have_rr_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
       if ( have_rr != yep) {
 	have_rr = iso_have_rr_traverse (p_iso, p_stat, &splitpath[1], pu_file_limit);
       }
+      free(p_stat);
       if (have_rr != nope) {
 	free (_dirbuf);
 	return have_rr;
       }
-      free(p_stat);
 
       offset += iso9660_get_dir_len(p_iso9660_dir);
       *pu_file_limit = (*pu_file_limit)-1;
