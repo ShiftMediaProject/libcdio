@@ -343,7 +343,7 @@ init_win32 (void *p_user_data)
      we call it here to clear that flag. We may have
      to rethink this if there's a problem doing this
      extra work down the line. */
-  get_media_changed_mmc(p_user_data);
+  if (b_ret) get_media_changed_mmc(p_user_data);
   return b_ret;
 }
 
@@ -716,6 +716,24 @@ _cdio_get_mcn (const void *p_user_data) {
   }
 }
 
+/*!
+  Return the international standard recording code ISRC.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static char *
+_cdio_get_track_isrc (const void *p_user_data, track_t i_track) {
+  const _img_private_t *p_env = p_user_data;
+
+  if( p_env->hASPI ) {
+    return mmc_get_track_isrc( p_env->gen.cdio, i_track );
+  } else {
+    return get_track_isrc_win32ioctl(p_env, i_track);
+  }
+}
+
 /*!  
   Get format of track. 
 */
@@ -985,6 +1003,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.get_track_lba          = NULL; /* This could be done if need be. */
   _funcs.get_track_msf          = _cdio_get_track_msf;
   _funcs.get_track_preemphasis  = get_track_preemphasis_generic,
+  _funcs.get_track_isrc         = _cdio_get_track_isrc;
   _funcs.lseek                  = NULL;
   _funcs.read                   = NULL;
   _funcs.read_audio_sectors     = read_audio_sectors;

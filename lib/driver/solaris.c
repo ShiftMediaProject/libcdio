@@ -1392,6 +1392,7 @@ cdio_open_am_solaris (const char *psz_orig_source, const char *access_mode)
   _funcs.get_track_lba          = NULL; /* This could be done if need be. */
   _funcs.get_track_preemphasis  = get_track_preemphasis_generic,
   _funcs.get_track_msf          = get_track_msf_solaris;
+  _funcs.get_track_isrc         = get_track_isrc_mmc;
   _funcs.lseek                  = cdio_generic_lseek;
   _funcs.read                   = cdio_generic_read;
   _funcs.read_audio_sectors     = _read_audio_sectors_solaris;

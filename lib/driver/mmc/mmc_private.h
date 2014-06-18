@@ -63,6 +63,7 @@ void get_drive_cap_mmc (const void *p_user_data,
 int get_media_changed_mmc (const void *p_user_data);
 
 char *get_mcn_mmc (const void *p_user_data);
+char *get_track_isrc_mmc (const void *p_user_data, track_t i_track);
 
 driver_return_code_t get_tray_status (const void *p_user_data);
 
@@ -129,6 +130,11 @@ mmc_get_dvd_struct_physical_private ( void *p_env,
 char *mmc_get_mcn_private ( void *p_env,
 			    mmc_run_cmd_fn_t run_mmc_cmd
 			    );
+
+char *mmc_get_track_isrc_private ( void *p_env,
+				   mmc_run_cmd_fn_t run_mmc_cmd,
+				   track_t i_track
+				   );
 
 uint8_t * mmc_read_cdtext_private ( void *p_user_data, 
 			       mmc_run_cmd_fn_t run_mmc_cmd

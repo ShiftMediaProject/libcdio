@@ -195,6 +195,16 @@ bool read_toc_win32ioctl (_img_private_t *p_env);
 char *get_mcn_win32ioctl (const _img_private_t *p_env);
 
 /*!
+  Return the international standard recording code ISRC.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+char *get_track_isrc_win32ioctl (const _img_private_t *p_env,
+				 track_t i_track);
+
+/*!
   Return the the kind of drive capabilities of device.
 
   Note: string is malloc'd so caller should free() then returned

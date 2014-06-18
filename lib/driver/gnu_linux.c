@@ -526,6 +526,20 @@ get_mcn_linux (const void *p_user_data) {
 }
 
 /*!
+  Return the international standard recording code ISRC.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static char *
+get_track_isrc_linux (const void *p_user_data, track_t i_track) {
+
+  const _img_private_t *p_env = p_user_data;
+  return mmc_get_track_isrc( p_env->gen.cdio, i_track );
+}
+
+/*!
   Get format of track.
 */
 static track_format_t
@@ -1721,6 +1735,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .get_track_lba         = NULL, /* This could be implemented if need be. */
     .get_track_preemphasis = get_track_preemphasis_generic,
     .get_track_msf         = get_track_msf_linux,
+    .get_track_isrc        = get_track_isrc_linux,
     .lseek                 = cdio_generic_lseek,
     .read                  = cdio_generic_read,
     .read_audio_sectors    = read_audio_sectors_linux,
