@@ -1,6 +1,7 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2009, 2012 Rocky Bernstein <rocky@gnu.org>
-  
+  Copyright (C) 2004-2005, 2008-2009, 2012, 2014
+  Rocky Bernstein <rocky@gnu.org>
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -50,7 +51,7 @@ main(int argc, const char *argv[])
     return 77;
   } else {
     int i_status;              /* Result of MMC command */
-    uint8_t buf[500] = { 0, }; /* Place to hold returned data */
+    uint8_t buf[65530] = { 0, }; /* Place to hold returned data */
     mmc_cdb_t cdb = {{0, }};   /* Command Descriptor Buffer */
 
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_CONFIGURATION);
@@ -58,12 +59,12 @@ main(int argc, const char *argv[])
     cdb.field[1] = CDIO_MMC_GET_CONF_ALL_FEATURES;
     cdb.field[3] = 0x0;
 
-    i_status = mmc_run_cmd(p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), 
+    i_status = mmc_run_cmd(p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, sizeof(buf),
 			   &buf);
     if (i_status == 0) {
       uint8_t *p;
       uint32_t i_data;
-      uint8_t *p_max = buf + 65530;
+      uint8_t *p_max = buf + sizeof(buf);
 
       i_data = (unsigned int) CDIO_MMC_GET_LEN32(buf);
       /* set to first sense feature code, and then walk through the masks */
@@ -71,7 +72,7 @@ main(int argc, const char *argv[])
       while( (p < &(buf[i_data])) && (p < p_max) ) {
 	uint16_t i_feature;
 	uint8_t i_feature_additional = p[3];
-	
+
 	i_feature = CDIO_MMC_GET_LEN16(p);
 	{
 	  uint8_t *q;
@@ -82,7 +83,7 @@ main(int argc, const char *argv[])
 	    case CDIO_MMC_FEATURE_PROFILE_LIST:
 	      for ( q = p+4 ; q < p + i_feature_additional ; q += 4 ) {
 		int i_profile=CDIO_MMC_GET_LEN16(q);
-		const char *feature_profile_str = 
+		const char *feature_profile_str =
 		  mmc_feature_profile2str(i_profile);
 		printf( "-- \t%s", feature_profile_str );
 		if (q[2] & 1) {
@@ -91,23 +92,23 @@ main(int argc, const char *argv[])
 		printf("\n");
 	      }
 	      printf("\n");
-	    
+
 	      break;
-	    case CDIO_MMC_FEATURE_CORE: 
+	    case CDIO_MMC_FEATURE_CORE:
 	      {
 		uint8_t *q = p+4;
 		uint32_t 	i_interface_standard = CDIO_MMC_GET_LEN32(q);
 		switch(i_interface_standard) {
-		case 0: 
+		case 0:
 		  printf("-- \tunspecified interface.\n");
 		  break;
-		case 1: 
+		case 1:
 		  printf("-- \tSCSI interface.\n");
 		  break;
-		case 2: 
+		case 2:
 		  printf("-- \tATAPI interface.\n");
 		  break;
-		case 3: 
+		case 3:
 		  printf("-- \tIEEE 1394 interface.\n");
 		  break;
 		case 4:
@@ -139,28 +140,28 @@ main(int argc, const char *argv[])
 	      default:
 		printf("-- \tUnknown changer mechanism,\n");
 	      }
-	      
+
 	      printf("-- \tcan%s eject the medium or magazine via the normal "
-		     "START/STOP command,\n", 
+		     "START/STOP command,\n",
 		     (p[4] & 8) ? "": "not");
-	      printf("-- \tcan%s be locked into the Logical Unit.\n", 
+	      printf("-- \tcan%s be locked into the Logical Unit.\n",
 		     (p[4] & 1) ? "": "not");
 	      printf("\n");
 	      break;
 	    case CDIO_MMC_FEATURE_CD_READ:
 	      printf("-- CD Read Feature\n");
-	      printf("-- \tC2 Error pointers are %ssupported,\n", 
+	      printf("-- \tC2 Error pointers are %ssupported,\n",
 		     (p[4] & 2) ? "": "not ");
-	      printf("-- \tCD-Text is %ssupported.\n", 
+	      printf("-- \tCD-Text is %ssupported.\n",
 		     (p[4] & 1) ? "": "not ");
 	      printf("\n");
 	      break;
 	    case CDIO_MMC_FEATURE_CDDA_EXT_PLAY:
-	      printf("\tSCAN command is %ssupported,\n", 
+	      printf("\tSCAN command is %ssupported,\n",
 		     (p[4] & 4) ? "": "not ");
-	      printf("\taudio channels can %sbe muted separately,\n", 
+	      printf("\taudio channels can %sbe muted separately,\n",
 		     (p[4] & 2) ? "": "not ");
-	      printf("\taudio channels can %shave separate volume levels.\n", 
+	      printf("\taudio channels can %shave separate volume levels.\n",
 		     (p[4] & 1) ? "": "not ");
 	      {
 		uint8_t *q = p+6;
@@ -176,7 +177,7 @@ main(int argc, const char *argv[])
 	      printf("\t%s\n\n", serial);
 	      break;
 	    }
-	    default: 
+	    default:
 	      printf("\n");
 	      break;
 	    }
@@ -187,13 +188,13 @@ main(int argc, const char *argv[])
       printf("-- Didn't get all feature codes.\n");
     }
   }
-  
-  if (mmc_have_interface(p_cdio, CDIO_MMC_FEATURE_INTERFACE_ATAPI)) 
+
+  if (mmc_have_interface(p_cdio, CDIO_MMC_FEATURE_INTERFACE_ATAPI))
     printf("-- CD-ROM is an ATAPI interface.\n");
-  else 
+  else
     printf("-- CD-ROM is not an ATAPI interface.\n");
 
   cdio_destroy(p_cdio);
-  
+
   return 0;
 }
