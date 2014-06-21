@@ -1,5 +1,5 @@
 /* Common Multimedia Command (MMC) routines.
-  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012
+  Copyright (C) 2004-2008, 2010-2012, 2014
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 #ifdef HAVE_STDBOOL_H
 # include <stdbool.h>
-#endif 
+#endif
 
 #include <cdio/cdio.h>
 #include <cdio/logging.h>
@@ -48,206 +48,206 @@
 # include <errno.h>
 #endif
 
-const char 
+const char
 *mmc_cmd2str(uint8_t command)
 {
   switch( command ) {
-  case CDIO_MMC_GPCMD_TEST_UNIT_READY: 
+  case CDIO_MMC_GPCMD_TEST_UNIT_READY:
     return "TEST UNIT READY";
 
-  case CDIO_MMC_GPCMD_REQUEST_SENSE: 
+  case CDIO_MMC_GPCMD_REQUEST_SENSE:
     return "REQUEST SENSE";
 
-  case CDIO_MMC_GPCMD_FORMAT_UNIT: 
+  case CDIO_MMC_GPCMD_FORMAT_UNIT:
     return "FORMAT UNIT";
 
-  case CDIO_MMC_GPCMD_INQUIRY: 
+  case CDIO_MMC_GPCMD_INQUIRY:
     return "INQUIRY";
 
-  case CDIO_MMC_GPCMD_MODE_SELECT_6: 
+  case CDIO_MMC_GPCMD_MODE_SELECT_6:
     return "MODE SELECT (6)";
 
-  case CDIO_MMC_GPCMD_MODE_SENSE_6: 
+  case CDIO_MMC_GPCMD_MODE_SENSE_6:
     return "MODE SENSE (6)";
 
-  case CDIO_MMC_GPCMD_START_STOP_UNIT: 
+  case CDIO_MMC_GPCMD_START_STOP_UNIT:
     return "START STOP UNIT";
 
   case CDIO_MMC_GPCMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
     return "PREVENT ALLOW MEDIUM REMOVAL";
 
-  case CDIO_MMC_GPCMD_READ_FORMAT_CAPACITIES: 
+  case CDIO_MMC_GPCMD_READ_FORMAT_CAPACITIES:
     return "READ FORMAT CAPACITIES";
 
-  case CDIO_MMC_GPCMD_READ_CAPACITIY: 
+  case CDIO_MMC_GPCMD_READ_CAPACITIY:
     return "READ_CAPACITIY";
 
-  case CDIO_MMC_GPCMD_READ_10: 
+  case CDIO_MMC_GPCMD_READ_10:
     return "READ (10)";
 
-  case CDIO_MMC_GPCMD_WRITE_10: 
+  case CDIO_MMC_GPCMD_WRITE_10:
     return "WRITE (10)";
 
-  case CDIO_MMC_GPCMD_SEEK_10: 
+  case CDIO_MMC_GPCMD_SEEK_10:
     return "SEEK (10)";
 
-  case CDIO_MMC_GPCMD_ERASE_10: 
+  case CDIO_MMC_GPCMD_ERASE_10:
     return "ERASE (10)";
 
-  case CDIO_MMC_GPCMD_WRITE_AND_VERIFY_10: 
+  case CDIO_MMC_GPCMD_WRITE_AND_VERIFY_10:
     return "WRITE AND VERIFY (10)";
 
-  case CDIO_MMC_GPCMD_VERIFY_10: 
+  case CDIO_MMC_GPCMD_VERIFY_10:
    return "VERIFY (10)";
 
-  case CDIO_MMC_GPCMD_SYNCHRONIZE_CACHE: 
+  case CDIO_MMC_GPCMD_SYNCHRONIZE_CACHE:
     return "SYNCHRONIZE CACHE";
 
-  case CDIO_MMC_GPCMD_WRITE_BUFFER: 
+  case CDIO_MMC_GPCMD_WRITE_BUFFER:
     return "WRITE BUFFER";
 
-  case CDIO_MMC_GPCMD_READ_BUFFER: 
+  case CDIO_MMC_GPCMD_READ_BUFFER:
     return "READ_BUFFER";
 
-  case CDIO_MMC_GPCMD_READ_SUBCHANNEL: 
+  case CDIO_MMC_GPCMD_READ_SUBCHANNEL:
     return "READ_SUBCHANNEL";
 
-  case CDIO_MMC_GPCMD_READ_TOC: 
+  case CDIO_MMC_GPCMD_READ_TOC:
     return "READ TOC";
 
-  case CDIO_MMC_GPCMD_READ_HEADER: 
+  case CDIO_MMC_GPCMD_READ_HEADER:
     return "READ_HEADER";
 
-  case CDIO_MMC_GPCMD_PLAY_AUDIO_10: 
+  case CDIO_MMC_GPCMD_PLAY_AUDIO_10:
     return "PLAY AUDIO (10)";
 
-  case CDIO_MMC_GPCMD_GET_CONFIGURATION: 
+  case CDIO_MMC_GPCMD_GET_CONFIGURATION:
     return "GET_CONFIGURATION";
 
-  case CDIO_MMC_GPCMD_PLAY_AUDIO_MSF: 
+  case CDIO_MMC_GPCMD_PLAY_AUDIO_MSF:
     return "PLAY AUDIO MSF";
 
-  case CDIO_MMC_GPCMD_PLAY_AUDIO_TI: 
+  case CDIO_MMC_GPCMD_PLAY_AUDIO_TI:
     return "PLAY_AUDIO TI";
 
-  case CDIO_MMC_GPCMD_PLAY_TRACK_REL_10: 
+  case CDIO_MMC_GPCMD_PLAY_TRACK_REL_10:
     return "PLAY TRACK REL (10)";
 
-  case CDIO_MMC_GPCMD_GET_EVENT_STATUS: 
+  case CDIO_MMC_GPCMD_GET_EVENT_STATUS:
     return "GET EVENT STATUS";
-    
-  case CDIO_MMC_GPCMD_PAUSE_RESUME: 
+
+  case CDIO_MMC_GPCMD_PAUSE_RESUME:
     return "PAUSE RESUME";
 
-  case CDIO_MMC_GPCMD_READ_DISC_INFORMATION: 
+  case CDIO_MMC_GPCMD_READ_DISC_INFORMATION:
     return "READ DISC INFORMATION";
 
-  case CDIO_MMC_GPCMD_READ_TRACK_INFORMATION: 
+  case CDIO_MMC_GPCMD_READ_TRACK_INFORMATION:
     return "READ TRACK INFORMATION";
-    
-  case CDIO_MMC_GPCMD_RESERVE_TRACK: 
+
+  case CDIO_MMC_GPCMD_RESERVE_TRACK:
     return "RESERVE TRACK";
-    
-  case CDIO_MMC_GPCMD_SEND_OPC_INFORMATION: 
+
+  case CDIO_MMC_GPCMD_SEND_OPC_INFORMATION:
     return "SEND OPC INFORMATION";
-    
-  case CDIO_MMC_GPCMD_MODE_SELECT_10: 
+
+  case CDIO_MMC_GPCMD_MODE_SELECT_10:
     return "MODE SELECT (10)";
 
-  case CDIO_MMC_GPCMD_REPAIR_TRACK: 
+  case CDIO_MMC_GPCMD_REPAIR_TRACK:
     return "REPAIR_TRACK";
 
-  case CDIO_MMC_GPCMD_MODE_SENSE_10: 
+  case CDIO_MMC_GPCMD_MODE_SENSE_10:
     return "MODE SENSE (10)";
 
-  case CDIO_MMC_GPCMD_CLOSE_TRACK_SESSION: 
+  case CDIO_MMC_GPCMD_CLOSE_TRACK_SESSION:
     return "CLOSE TRACK SESSION";
-    
-  case CDIO_MMC_GPCMD_READ_BUFFER_CAPACITY: 
+
+  case CDIO_MMC_GPCMD_READ_BUFFER_CAPACITY:
     return "READ_BUFFER CAPACITY";
-    
-  case CDIO_MMC_GPCMD_SEND_CUE_SHEET: 
+
+  case CDIO_MMC_GPCMD_SEND_CUE_SHEET:
     return "SEND_CUE SHEET";
 
-  case CDIO_MMC_GPCMD_REPORT_LUNS: 
+  case CDIO_MMC_GPCMD_REPORT_LUNS:
     return "REPORT LUNS";
-    
-  case CDIO_MMC_GPCMD_BLANK: 
+
+  case CDIO_MMC_GPCMD_BLANK:
     return "BLANK";
-    
-  case CDIO_MMC_GPCMD_SECURITY_PROTOCOL_IN: 
+
+  case CDIO_MMC_GPCMD_SECURITY_PROTOCOL_IN:
     return "SECURITY PROTOCOL IN";
-    
-  case CDIO_MMC_GPCMD_SEND_KEY: 
+
+  case CDIO_MMC_GPCMD_SEND_KEY:
     return "SEND KEY";
-    
-  case CDIO_MMC_GPCMD_REPORT_KEY: 
+
+  case CDIO_MMC_GPCMD_REPORT_KEY:
     return "REPORT KEY";
-    
-  case CDIO_MMC_GPCMD_PLAY_AUDIO_12: 
+
+  case CDIO_MMC_GPCMD_PLAY_AUDIO_12:
     return "PLAY_AUDIO (12)";
 
-  case CDIO_MMC_GPCMD_LOAD_UNLOAD: 
+  case CDIO_MMC_GPCMD_LOAD_UNLOAD:
     return "LOAD UNLOAD";
 
-  case CDIO_MMC_GPCMD_SET_READ_AHEAD: 
+  case CDIO_MMC_GPCMD_SET_READ_AHEAD:
     return "SET READ AHEAD";
-    
-  case CDIO_MMC_GPCMD_READ_12: 
+
+  case CDIO_MMC_GPCMD_READ_12:
     return "READ (12)";
 
-  case CDIO_MMC_GPCMD_PLAY_TRACK_REL_12: 
+  case CDIO_MMC_GPCMD_PLAY_TRACK_REL_12:
     return "PLAY_TRACK REL (12)";
 
-  case CDIO_MMC_GPCMD_WRITE_12: 
+  case CDIO_MMC_GPCMD_WRITE_12:
     return "WRITE (12)";
-    
-  case CDIO_MMC_GPCMD_READ_MEDIA_SERIAL_12: 
+
+  case CDIO_MMC_GPCMD_READ_MEDIA_SERIAL_12:
     return "READ MEDIA SERIAL (12)";
-    
-  case CDIO_MMC_GPCMD_GET_PERFORMANCE: 
+
+  case CDIO_MMC_GPCMD_GET_PERFORMANCE:
     return "GET PERFORMANCE";
-    
-  case CDIO_MMC_GPCMD_READ_DVD_STRUCTURE: 
+
+  case CDIO_MMC_GPCMD_READ_DVD_STRUCTURE:
     return "READ DVD STRUCTURE";
 
-  case CDIO_MMC_GPCMD_SECURITY_PROTOCOL_OUT: 
+  case CDIO_MMC_GPCMD_SECURITY_PROTOCOL_OUT:
     return "SECURITY PROTOCOL_OUT";
-    
-  case CDIO_MMC_GPCMD_SET_STREAMING: 
+
+  case CDIO_MMC_GPCMD_SET_STREAMING:
     return "SET STREAMING";
-    
-  case CDIO_MMC_GPCMD_READ_MSF: 
+
+  case CDIO_MMC_GPCMD_READ_MSF:
     return "READ MSF";
 
-  case CDIO_MMC_GPCMD_SET_SPEED: 
+  case CDIO_MMC_GPCMD_SET_SPEED:
     return "SET SPEED";
 
-  case CDIO_MMC_GPCMD_MECHANISM_STATUS: 
+  case CDIO_MMC_GPCMD_MECHANISM_STATUS:
     return "MECHANISM STATUS";
 
-  case CDIO_MMC_GPCMD_READ_CD: 
+  case CDIO_MMC_GPCMD_READ_CD:
     return "READ CD";
 
-  case CDIO_MMC_GPCMD_SEND_DISC_STRUCTURE: 
+  case CDIO_MMC_GPCMD_SEND_DISC_STRUCTURE:
     return "SEND DISC STRUCTURE";
-    
-  case CDIO_MMC_GPCMD_CD_PLAYBACK_STATUS: 
+
+  case CDIO_MMC_GPCMD_CD_PLAYBACK_STATUS:
     return "CD PLAYBACK STATUS";
-    
-  case CDIO_MMC_GPCMD_PLAYBACK_CONTROL: 
+
+  case CDIO_MMC_GPCMD_PLAYBACK_CONTROL:
     return "PLAYBACK CONTROL";
-    
-  case CDIO_MMC_GPCMD_READ_CDDA: 
+
+  case CDIO_MMC_GPCMD_READ_CDDA:
     return "READ CDDA";
-    
-  case CDIO_MMC_GPCMD_READ_CDXA: 
+
+  case CDIO_MMC_GPCMD_READ_CDXA:
     return "READ CDXA";
-    
-  case CDIO_MMC_GPCMD_READ_ALL_SUBCODES: 
+
+  case CDIO_MMC_GPCMD_READ_ALL_SUBCODES:
     return "READ ALL SUBCODES";
 
-  default: 
+  default:
     {
       char buf[30];
       snprintf(buf, sizeof(buf), "Unknown 0x%x", command);
@@ -257,7 +257,7 @@ const char
 }
 
 /*************************************************************************
-  MMC CdIo Operations which a driver may use. 
+  MMC CdIo Operations which a driver may use.
   These are not accessible directly.
 
   Most of these routines just pick out the cdio pointer and call the
@@ -266,9 +266,9 @@ const char
 
 /**
   Read Audio Subchannel information
-  
+
   @param p_user_data the CD object to be acted upon.
-  
+
 */
 driver_return_code_t
 audio_read_subchannel_mmc ( void *p_user_data, cdio_subchannel_t *p_subchannel)
@@ -312,7 +312,7 @@ get_drive_cap_mmc (const void *p_user_data,
                      p_read_cap, p_write_cap, p_misc_cap );
 }
 
-/** 
+/**
     Find out if media has changed since the last call.  @param
     p_user_data the environment of the CD object to be acted upon.
     @return 1 if media has changed since last call, 0 if not. Error
@@ -349,12 +349,12 @@ get_tray_status (const void *p_user_data)
 /**
     Read sectors using SCSI-MMC GPCMD_READ_CD.
  */
-driver_return_code_t 
-mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf, 
+driver_return_code_t
+mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf,
                         lsn_t i_lsn,  uint16_t i_blocksize,
                         uint32_t i_blocks )
 {
-  return mmc_read_cd(p_cdio, 
+  return mmc_read_cd(p_cdio,
                      p_buf, /* place to store data */
                      i_lsn, /* lsn */
                      0, /* read_sector_type */
@@ -365,7 +365,7 @@ mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf,
                      false, /* return EDC ECC */
                      false, /* return C2 Error information */
                      0,     /* subchannel selection bits */
-                     ISO_BLOCKSIZE, /* blocksize*/ 
+                     ISO_BLOCKSIZE, /* blocksize*/
                      i_blocks       /* Number of blocks. */);
 
 }
@@ -375,8 +375,8 @@ mmc_read_data_sectors ( CdIo_t *p_cdio, void *p_buf,
    Read sectors using SCSI-MMC GPCMD_READ_CD.
    Can read only up to 25 blocks.
  */
-driver_return_code_t 
-read_data_sectors_mmc ( void *p_user_data, void *p_buf, 
+driver_return_code_t
+read_data_sectors_mmc ( void *p_user_data, void *p_buf,
                         lsn_t i_lsn,  uint16_t i_blocksize,
                         uint32_t i_blocks )
 {
@@ -385,8 +385,8 @@ read_data_sectors_mmc ( void *p_user_data, void *p_buf,
                                 i_blocks );
 }
 
-/** 
-    Set read blocksize (via MMC) 
+/**
+    Set read blocksize (via MMC)
 */
 driver_return_code_t
 set_blocksize_mmc (void *p_user_data, uint16_t i_blocksize)
@@ -397,7 +397,7 @@ set_blocksize_mmc (void *p_user_data, uint16_t i_blocksize)
 }
 
 /** Set the drive speed Set the drive speed in K bytes per second. (via
-   MMC). 
+   MMC).
 */
 driver_return_code_t
 set_speed_mmc (void *p_user_data, int i_speed)
@@ -408,7 +408,7 @@ set_speed_mmc (void *p_user_data, int i_speed)
 }
 
 /**
-   Set the drive speed in CD-ROM speed units (via MMC). 
+   Set the drive speed in CD-ROM speed units (via MMC).
 */
 driver_return_code_t
 set_drive_speed_mmc (void *p_user_data, int i_Kbs_speed)
@@ -418,7 +418,7 @@ set_drive_speed_mmc (void *p_user_data, int i_Kbs_speed)
   return mmc_set_drive_speed( p_env->cdio, i_Kbs_speed );
 }
 
-/** 
+/**
     Get the output port volumes and port selections used on AUDIO PLAY
     commands via a MMC MODE SENSE command using the CD Audio Control
     Page.
@@ -428,7 +428,7 @@ mmc_audio_get_volume( CdIo_t *p_cdio, /*out*/ mmc_audio_volume_t *p_volume )
 {
   uint8_t buf[16];
   int i_rc = mmc_mode_sense(p_cdio, buf, sizeof(buf), CDIO_MMC_AUDIO_CTL_PAGE);
-  
+
   if ( DRIVER_OP_SUCCESS == i_rc ) {
     p_volume->port[0].selection = 0xF & buf[8];
     p_volume->port[0].volume    = buf[9];
@@ -447,38 +447,38 @@ mmc_audio_get_volume( CdIo_t *p_cdio, /*out*/ mmc_audio_volume_t *p_volume )
   Get the DVD type associated with cd object.
 */
 discmode_t
-mmc_get_dvd_struct_physical_private ( void *p_env, 
-                                      mmc_run_cmd_fn_t run_mmc_cmd, 
+mmc_get_dvd_struct_physical_private ( void *p_env,
+                                      mmc_run_cmd_fn_t run_mmc_cmd,
                                       cdio_dvd_struct_t *s)
 {
   mmc_cdb_t cdb = {{0, }};
   unsigned char buf[4 + 4 * 20], *base;
   int i_status;
   uint8_t layer_num = s->physical.layer_num;
-  
+
   cdio_dvd_layer_t *layer;
-  
+
   if (!p_env) return DRIVER_OP_UNINIT;
   if (!run_mmc_cmd) return DRIVER_OP_UNSUPPORTED;
 
   if (layer_num >= CDIO_DVD_MAX_LAYERS)
     return -EINVAL;
-  
+
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_DVD_STRUCTURE);
   cdb.field[6] = layer_num;
   cdb.field[7] = CDIO_DVD_STRUCT_PHYSICAL;
   cdb.field[9] = sizeof(buf) & 0xff;
-  
-  i_status = run_mmc_cmd(p_env, mmc_timeout_ms, 
-			      mmc_get_cmd_len(cdb.field[0]), 
-			      &cdb, SCSI_MMC_DATA_READ, 
+
+  i_status = run_mmc_cmd(p_env, mmc_timeout_ms,
+			      mmc_get_cmd_len(cdb.field[0]),
+			      &cdb, SCSI_MMC_DATA_READ,
 			      sizeof(buf), &buf);
   if (0 != i_status)
     return CDIO_DISC_MODE_ERROR;
-  
+
   base = &buf[4];
   layer = &s->physical.layer[layer_num];
-  
+
   /*
    * place the data... really ugly, but at least we won't have to
    * worry about endianess in userspace.
@@ -523,13 +523,13 @@ mmc_get_mcn_private ( void *p_env,
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
   CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
 
-  cdb.field[1] = 0x0;  
-  cdb.field[2] = 0x40; 
+  cdb.field[1] = 0x0;
+  cdb.field[2] = 0x40;
   cdb.field[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
 
-  i_status = run_mmc_cmd(p_env, mmc_timeout_ms, 
-			      mmc_get_cmd_len(cdb.field[0]), 
-			      &cdb, SCSI_MMC_DATA_READ, 
+  i_status = run_mmc_cmd(p_env, mmc_timeout_ms,
+			      mmc_get_cmd_len(cdb.field[0]),
+			      &cdb, SCSI_MMC_DATA_READ,
 			      sizeof(buf), buf);
   if(i_status == 0) {
     return strdup(&buf[9]);
@@ -560,14 +560,14 @@ mmc_get_track_isrc_private ( void *p_env,
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
   CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
 
-  cdb.field[1] = 0x0;  
-  cdb.field[2] = 0x40; 
+  cdb.field[1] = 0x0;
+  cdb.field[2] = 0x40;
   cdb.field[3] = CDIO_SUBCHANNEL_TRACK_ISRC;
   cdb.field[6] = i_track;
 
-  i_status = run_mmc_cmd(p_env, mmc_timeout_ms, 
-			      mmc_get_cmd_len(cdb.field[0]), 
-			      &cdb, SCSI_MMC_DATA_READ, 
+  i_status = run_mmc_cmd(p_env, mmc_timeout_ms,
+			      mmc_get_cmd_len(cdb.field[0]),
+			      &cdb, SCSI_MMC_DATA_READ,
 			      sizeof(buf), buf);
   if(i_status == 0) {
     return strdup(&buf[9]);
@@ -577,12 +577,12 @@ mmc_get_track_isrc_private ( void *p_env,
 
 /**
   Read cdtext information for a CdIo_t object .
-  
+
   return true on success, false on error or CD-Text information does
   not exist.
 */
 uint8_t *
-mmc_read_cdtext_private ( void *p_user_data, 
+mmc_read_cdtext_private ( void *p_user_data,
                           const mmc_run_cmd_fn_t run_mmc_cmd
                           )
 {
@@ -612,12 +612,12 @@ mmc_read_cdtext_private ( void *p_user_data,
   /* We may need to give CD-Text a little more time to complete. */
   /* First off, just try and read the size */
   i_status = run_mmc_cmd (p_env, mmc_read_timeout_ms,
-                          mmc_get_cmd_len(cdb.field[0]), 
-                          &cdb, SCSI_MMC_DATA_READ, 
+                          mmc_get_cmd_len(cdb.field[0]),
+                          &cdb, SCSI_MMC_DATA_READ,
                           4, wdata);
 
   if (i_status != 0) {
-    cdio_info ("CD-Text read failed for header: %s\n", strerror(errno));  
+    cdio_info ("CD-Text read failed for header: %s\n", strerror(errno));
     p_env->b_cdtext_error = true;
     free(wdata);
     return NULL;
@@ -631,14 +631,14 @@ mmc_read_cdtext_private ( void *p_user_data,
       wdata = realloc(wdata,i_cdtext+2);
     /* the 2 bytes holding the size are not included in i_cdtext */
 
-    
+
     CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_cdtext);
     i_status = run_mmc_cmd (p_env, mmc_read_timeout_ms,
-                            mmc_get_cmd_len(cdb.field[0]), 
-                            &cdb, SCSI_MMC_DATA_READ, 
+                            mmc_get_cmd_len(cdb.field[0]),
+                            &cdb, SCSI_MMC_DATA_READ,
                             i_cdtext, wdata);
     if (i_status != 0) {
-      cdio_info ("CD-Text read for text failed: %s\n", strerror(errno));  
+      cdio_info ("CD-Text read for text failed: %s\n", strerror(errno));
       p_env->b_cdtext_error = true;
       free(wdata);
       return NULL;
@@ -648,8 +648,8 @@ mmc_read_cdtext_private ( void *p_user_data,
 }
 
 driver_return_code_t
-mmc_set_blocksize_private ( void *p_env, 
-                            const mmc_run_cmd_fn_t run_mmc_cmd, 
+mmc_set_blocksize_private ( void *p_env,
+                            const mmc_run_cmd_fn_t run_mmc_cmd,
                             uint16_t i_blocksize)
 {
   mmc_cdb_t cdb = {{0, }};
@@ -684,9 +684,9 @@ mmc_set_blocksize_private ( void *p_env,
 
   cdb.field[1] = 1 << 4;
   cdb.field[4] = 12;
-  
+
   return run_mmc_cmd (p_env, mmc_timeout_ms,
-			      mmc_get_cmd_len(cdb.field[0]), &cdb, 
+			      mmc_get_cmd_len(cdb.field[0]), &cdb,
 			      SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
 }
 
@@ -695,7 +695,7 @@ mmc_set_blocksize_private ( void *p_env,
 ************************************************************/
 /**
   Read Audio Subchannel information
-  
+
   @param p_cdio the CD object to be acted upon.
 */
 driver_return_code_t
@@ -706,7 +706,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
   cdio_mmc_subchannel_t mmc_subchannel;
 
   if (!p_cdio) return DRIVER_OP_UNINIT;
-  
+
   memset(&mmc_subchannel, 0, sizeof(mmc_subchannel));
   mmc_subchannel.format = CDIO_CDROM_MSF;
   memset(&cdb, 0, sizeof(mmc_cdb_t));
@@ -719,7 +719,7 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
   cdb.field[3] = CDIO_SUBCHANNEL_CURRENT_POSITION;
   cdb.field[6] = 0;    /* track number (only in isrc mode, ignored) */
 
-  i_rc = mmc_run_cmd(p_cdio, mmc_timeout_ms, &cdb, SCSI_MMC_DATA_READ, 
+  i_rc = mmc_run_cmd(p_cdio, mmc_timeout_ms, &cdb, SCSI_MMC_DATA_READ,
                      sizeof(cdio_mmc_subchannel_t), &mmc_subchannel);
   if (DRIVER_OP_SUCCESS == i_rc) {
     p_subchannel->format       = mmc_subchannel.format;
@@ -740,9 +740,9 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
 
 /**
   Read ISRC Subchannel information. Contributed by
-  Scot C. Bontrager (scot@indievisible.org) 
+  Scot C. Bontrager (scot@indievisible.org)
   May 15, 2011 -
-  
+
   @param p_cdio the CD object to be acted upon.
   @param track the track you to get ISRC info
   @param buf place to put ISRC info
@@ -768,13 +768,13 @@ mmc_isrc_track_read_subchannel (CdIo_t *p_cdio,  /*in*/ const track_t track,
 }
 
 /**
-   Get the block size used in read requests, via MMC (e.g. READ_10, 
+   Get the block size used in read requests, via MMC (e.g. READ_10,
    READ_MSF, ...)
 
    @param p_cdio the CD object to be acted upon.
    @return the blocksize if > 0; error if <= 0
 */
-int 
+int
 mmc_get_blocksize ( CdIo_t *p_cdio)
 {
   int i_status;
@@ -783,16 +783,16 @@ mmc_get_blocksize ( CdIo_t *p_cdio)
   uint8_t *p;
 
   /* First try using the 6-byte MODE SENSE command. */
-  i_status = mmc_mode_sense_6(p_cdio, buf, sizeof(buf), 
+  i_status = mmc_mode_sense_6(p_cdio, buf, sizeof(buf),
                               CDIO_MMC_R_W_ERROR_PAGE);
-  
+
   if (DRIVER_OP_SUCCESS == i_status && buf[3]>=8) {
     p = &buf[4+5];
     return CDIO_MMC_GET_LEN16(p);
   }
-  
+
   /* Next try using the 10-byte MODE SENSE command. */
-  i_status = mmc_mode_sense_10(p_cdio, buf, sizeof(buf), 
+  i_status = mmc_mode_sense_10(p_cdio, buf, sizeof(buf),
                                CDIO_MMC_R_W_ERROR_PAGE);
   p = &buf[6];
   if (DRIVER_OP_SUCCESS == i_status && CDIO_MMC_GET_LEN16(p)>=8) {
@@ -815,11 +815,11 @@ mmc_get_blocksize ( CdIo_t *p_cdio)
 
 /**
   Return the number of length in bytes of the Command Descriptor
-  buffer (CDB) for a given MMC command. The length will be 
-  either 6, 10, or 12. 
+  buffer (CDB) for a given MMC command. The length will be
+  either 6, 10, or 12.
 */
 uint8_t
-mmc_get_cmd_len(uint8_t scsi_cmd) 
+mmc_get_cmd_len(uint8_t scsi_cmd)
 {
   static const uint8_t scsi_cdblen[8] = {6, 10, 10, 12, 12, 12, 10, 10};
   return scsi_cdblen[((scsi_cmd >> 5) & 7)];
@@ -850,8 +850,8 @@ mmc_get_disc_last_lsn ( const CdIo_t *p_cdio )
   CDIO_MMC_SET_START_TRACK(cdb.field, CDIO_CDROM_LEADOUT_TRACK);
 
   CDIO_MMC_SET_READ_LENGTH16(cdb.field, sizeof(buf));
-  
-  i_status = mmc_run_cmd(p_cdio, mmc_timeout_ms, &cdb, SCSI_MMC_DATA_READ, 
+
+  i_status = mmc_run_cmd(p_cdio, mmc_timeout_ms, &cdb, SCSI_MMC_DATA_READ,
                          sizeof(buf), buf);
 
   if (i_status) return CDIO_INVALID_LSN;
@@ -894,14 +894,14 @@ mmc_get_discmode( const CdIo_t *p_cdio )
   mmc_run_cmd(p_cdio, 2000, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), buf);
   if (buf[7] == 0xA0) {
     if (buf[13] == 0x00) {
-      if (buf[5] & 0x04) 
+      if (buf[5] & 0x04)
 	return CDIO_DISC_MODE_CD_DATA;
-      else 
+      else
 	return CDIO_DISC_MODE_CD_DA;
     }
     else if (buf[13] == 0x10)
       return CDIO_DISC_MODE_CD_I;
-    else if (buf[13] == 0x20) 
+    else if (buf[13] == 0x20)
     return CDIO_DISC_MODE_CD_XA;
   }
   return CDIO_DISC_MODE_NO_INFO;
@@ -920,7 +920,7 @@ mmc_get_drive_cap (CdIo_t *p_cdio,
 {
   /* Largest buffer size we use. */
 #define BUF_MAX 2048
-  uint8_t buf[BUF_MAX] = { 0, };
+  uint8_t buf[BUF_MAX+2] = { 0, };
 
   int i_status;
   uint16_t i_data = BUF_MAX;
@@ -943,14 +943,14 @@ mmc_get_drive_cap (CdIo_t *p_cdio,
      length. */
   i_status = mmc_mode_sense_10(p_cdio, buf, i_data, CDIO_MMC_ALL_PAGES);
   if (0 != i_status && CDIO_MMC_CAPABILITIES_PAGE != page) {
-    page =  CDIO_MMC_CAPABILITIES_PAGE; 
+    page =  CDIO_MMC_CAPABILITIES_PAGE;
     goto retry;
   }
 
   if (DRIVER_OP_SUCCESS == i_status) {
     uint8_t *p;
     uint8_t *p_max = buf + 256;
-    
+
     *p_read_cap  = 0;
     *p_write_cap = 0;
     *p_misc_cap  = 0;
@@ -959,7 +959,7 @@ mmc_get_drive_cap (CdIo_t *p_cdio,
     p = buf + 8;
     while( (p < &(buf[2+i_data])) && (p < p_max) )       {
       uint8_t which_page;
-      
+
       which_page = p[0] & 0x3F;
       switch( which_page )
 	{
@@ -988,17 +988,17 @@ mmc_get_drive_cap (CdIo_t *p_cdio,
    Get the MMC level supported by the device.
 */
 cdio_mmc_level_t
-mmc_get_drive_mmc_cap(CdIo_t *p_cdio) 
+mmc_get_drive_mmc_cap(CdIo_t *p_cdio)
 {
   uint8_t buf[256] = { 0, };
   uint8_t len;
-  int rc = mmc_mode_sense(p_cdio, buf, sizeof(buf), 
+  int rc = mmc_mode_sense(p_cdio, buf, sizeof(buf),
 			  CDIO_MMC_CAPABILITIES_PAGE);
 
   if (DRIVER_OP_SUCCESS != rc) {
     return CDIO_MMC_LEVEL_NONE;
   }
-  
+
   len = buf[1];
   if (16 > len) {
     return CDIO_MMC_LEVEL_WEIRD;
@@ -1024,9 +1024,9 @@ discmode_t
 mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, cdio_dvd_struct_t *s)
 {
   if ( ! p_cdio )  return -2;
-  return 
-    mmc_get_dvd_struct_physical_private (p_cdio->env, 
-                                         p_cdio->op.run_mmc_cmd, 
+  return
+    mmc_get_dvd_struct_physical_private (p_cdio->env,
+                                         p_cdio->op.run_mmc_cmd,
                                          s);
 }
 
@@ -1038,33 +1038,33 @@ mmc_get_dvd_struct_physical ( const CdIo_t *p_cdio, cdio_dvd_struct_t *s)
   @return true if we were able to get hardware info, false if we had
   an error.
 */
-bool 
-mmc_get_hwinfo ( const CdIo_t *p_cdio, 
+bool
+mmc_get_hwinfo ( const CdIo_t *p_cdio,
 		      /*out*/ cdio_hwinfo_t *hw_info )
 {
   int i_status;                  /* Result of MMC command */
   char buf[36] = { 0, };         /* Place to hold returned data */
   mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Block */
-  
+
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_INQUIRY);
   cdb.field[4] = sizeof(buf);
 
   if (! p_cdio || ! hw_info ) return false;
-  
-  i_status = mmc_run_cmd(p_cdio, mmc_timeout_ms, 
-			      &cdb, SCSI_MMC_DATA_READ, 
+
+  i_status = mmc_run_cmd(p_cdio, mmc_timeout_ms,
+			      &cdb, SCSI_MMC_DATA_READ,
 			      sizeof(buf), &buf);
   if (i_status == 0) {
-      
-      memcpy(hw_info->psz_vendor, 
-	     buf + 8, 
+
+      memcpy(hw_info->psz_vendor,
+	     buf + 8,
 	     sizeof(hw_info->psz_vendor)-1);
       hw_info->psz_vendor[sizeof(hw_info->psz_vendor)-1] = '\0';
-      memcpy(hw_info->psz_model,  
-	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN, 
+      memcpy(hw_info->psz_model,
+	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN,
 	     sizeof(hw_info->psz_model)-1);
       hw_info->psz_model[sizeof(hw_info->psz_model)-1] = '\0';
-      memcpy(hw_info->psz_revision, 
+      memcpy(hw_info->psz_revision,
 	     buf + 8 + CDIO_MMC_HW_VENDOR_LEN + CDIO_MMC_HW_MODEL_LEN,
 	     sizeof(hw_info->psz_revision)-1);
       hw_info->psz_revision[sizeof(hw_info->psz_revision)-1] = '\0';
@@ -1092,14 +1092,14 @@ int mmc_get_media_changed(const CdIo_t *p_cdio)
 
 /**
    Get the media catalog number (MCN) from the CD via MMC.
-   
+
    @param p_cdio the CD object to be acted upon.
    @return the media catalog number r NULL if there is none or we
    don't have the ability to get it.
-   
+
    Note: string is malloc'd so caller has to free() the returned
    string when done with it.
-    
+
 */
 char *
 mmc_get_mcn ( const CdIo_t *p_cdio )
@@ -1110,15 +1110,15 @@ mmc_get_mcn ( const CdIo_t *p_cdio )
 
 /**
    Get the international standard recording code (ISRC) of the track via MMC.
-   
+
    @param p_cdio the CD object to be acted upon.
    @param i_track the track to get the ISRC info for.
    @return the international standard recording code or NULL if there is
    none or we don't have the ability to get it.
-   
+
    Note: string is malloc'd so caller has to free() the returned
    string when done with it.
-    
+
 */
 char *
 mmc_get_track_isrc ( const CdIo_t *p_cdio, track_t i_track )
@@ -1151,14 +1151,14 @@ int mmc_get_tray_status(const CdIo_t *p_cdio)
    the drive while the command was performed. With some commands they tell
    about the current state of the drive (e.g. 00h TEST UNIT READY).
    @param p_cdio CD structure set by cdio_open().
-   
+
    @param sense returns the sense bytes received from the drive.
    This is allocated memory or NULL if no sense bytes are
    available. Dispose non-NULL pointers by free() when no longer
    needed.  See SPC-3 4.5.3 Fixed format sense data.  SCSI error
    codes as of SPC-3 Annex D, MMC-5 Annex F: sense[2]&15 = Key ,
    sense[12] = ASC , sense[13] = ASCQ
-   
+
    @return number of valid bytes in sense, 0 in case of no sense
    bytes available, <0 in case of internal error.
   */
@@ -1166,7 +1166,7 @@ int
 mmc_last_cmd_sense(const CdIo_t *p_cdio, cdio_mmc_request_sense_t **pp_sense)
 {
     generic_img_private_t *gen;
-    
+
     if (!p_cdio) return DRIVER_OP_UNINIT;
     gen = p_cdio->env;
     *pp_sense = NULL;
@@ -1180,23 +1180,23 @@ mmc_last_cmd_sense(const CdIo_t *p_cdio, cdio_mmc_request_sense_t **pp_sense)
 }
 
 /**
-  Run a MMC command. 
- 
+  Run a MMC command.
+
   @param cdio	       CD structure set by cdio_open().
   @param i_timeout     time in milliseconds we will wait for the command
-                       to complete. If this value is -1, use the default 
+                       to complete. If this value is -1, use the default
                        time-out value.
   @param buf	       Buffer for data, both sending and receiving
   @param len	       Size of buffer
   @param e_direction   direction the transfer is to go
-  @param cdb	       CDB bytes. All values that are needed should be set on 
-                       input. We'll figure out what the right CDB length 
+  @param cdb	       CDB bytes. All values that are needed should be set on
+                       input. We'll figure out what the right CDB length
                        should be.
 */
 driver_return_code_t
-mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms, 
+mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
              const mmc_cdb_t *p_cdb,
-             cdio_mmc_direction_t e_direction, unsigned int i_buf, 
+             cdio_mmc_direction_t e_direction, unsigned int i_buf,
              /*in/out*/ void *p_buf )
 {
     if (!p_cdio) return DRIVER_OP_UNINIT;
@@ -1209,17 +1209,17 @@ mmc_run_cmd( const CdIo_t *p_cdio, unsigned int i_timeout_ms,
 /* Added by SukkoPera to allow CDB length to be specified manually */
 /**
    Run a Multimedia command (MMC) specifying the CDB length.
-   The motivation here is for example ot use in is an undocumented 
-   debug command for LG drives (namely E7), whose length is being 
-   miscalculated by mmc_get_cmd_len(); it doesn't follow the usual 
+   The motivation here is for example ot use in is an undocumented
+   debug command for LG drives (namely E7), whose length is being
+   miscalculated by mmc_get_cmd_len(); it doesn't follow the usual
    code number to length conventions. Patch supplied by SukkoPera.
 
    @param p_cdio        CD structure set by cdio_open().
    @param i_timeout_ms  time in milliseconds we will wait for the command
-                        to complete. 
-   @param p_cdb         CDB bytes. All values that are needed should be set 
-                         on input. 
-   @param i_cdb         number of CDB bytes. 
+                        to complete.
+   @param p_cdb         CDB bytes. All values that are needed should be set
+                         on input.
+   @param i_cdb         number of CDB bytes.
    @param e_direction   direction the transfer is to go.
    @param i_buf         Size of buffer
    @param p_buf         Buffer for data, both sending and receiving.
@@ -1248,24 +1248,24 @@ bool_3way_t
 mmc_have_interface( CdIo_t *p_cdio, cdio_mmc_feature_interface_t e_interface )
 {
   int i_status;                  /* Result of MMC command */
-  uint8_t buf[500] = { 0, };     /* Place to hold returned data */
+  uint8_t buf[65530] = { 0, };   /* Place to hold returned data */
   mmc_cdb_t cdb = {{0, }};  /* Command Descriptor Buffer */
 
   if (!p_cdio || !p_cdio->op.run_mmc_cmd) return nope;
-  
+
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_CONFIGURATION);
   CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
 
   cdb.field[1] = CDIO_MMC_GET_CONF_NAMED_FEATURE;
   cdb.field[3] = CDIO_MMC_FEATURE_CORE;
 
-  i_status = mmc_run_cmd(p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, sizeof(buf), 
+  i_status = mmc_run_cmd(p_cdio, 0, &cdb, SCSI_MMC_DATA_READ, sizeof(buf),
                          &buf);
   if (DRIVER_OP_SUCCESS == i_status) {
     uint8_t *p;
     uint32_t i_data;
     uint8_t *p_max = buf + 65530;
-    
+
     i_data = (unsigned int) CDIO_MMC_GET_LEN32(buf);
     /* set to first sense feature code, and then walk through the masks */
     p = buf + 8;
@@ -1282,7 +1282,7 @@ mmc_have_interface( CdIo_t *p_cdio, cdio_mmc_feature_interface_t e_interface )
       p += i_feature_additional + 4;
     }
     return nope;
-  } else 
+  } else
     return dunno;
 }
 
@@ -1291,7 +1291,7 @@ mmc_have_interface( CdIo_t *p_cdio, cdio_mmc_feature_interface_t e_interface )
     Can read only up to 25 blocks.
 */
 driver_return_code_t
-mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn, 
+mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
                    int sector_type, uint32_t i_blocks )
 {
   mmc_cdb_t cdb = {{0, }};
@@ -1307,12 +1307,12 @@ mmc_read_sectors ( const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
   CDIO_MMC_SET_READ_TYPE    (cdb.field, sector_type);
   CDIO_MMC_SET_READ_LBA     (cdb.field, i_lsn);
   CDIO_MMC_SET_READ_LENGTH24(cdb.field, i_blocks);
-  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb.field, 
+  CDIO_MMC_SET_MAIN_CHANNEL_SELECTION_BITS(cdb.field,
 					   CDIO_MMC_MCSB_ALL_HEADERS);
 
   return run_mmc_cmd (p_cdio->env, mmc_timeout_ms,
-                      mmc_get_cmd_len(cdb.field[0]), &cdb, 
-                      SCSI_MMC_DATA_READ, 
+                      mmc_get_cmd_len(cdb.field[0]), &cdb,
+                      SCSI_MMC_DATA_READ,
                       CDIO_CD_FRAMESIZE_RAW * i_blocks,
                       p_buf);
 }
@@ -1321,13 +1321,13 @@ driver_return_code_t
 mmc_set_blocksize ( const CdIo_t *p_cdio, uint16_t i_blocksize)
 {
   if ( ! p_cdio )  return DRIVER_OP_UNINIT;
-  return 
-    mmc_set_blocksize_private (p_cdio->env, p_cdio->op.run_mmc_cmd, 
+  return
+    mmc_set_blocksize_private (p_cdio->env, p_cdio->op.run_mmc_cmd,
                                i_blocksize);
 }
 
 
-/* 
+/*
  * Local variables:
  *  c-file-style: "gnu"
  *  tab-width: 8
