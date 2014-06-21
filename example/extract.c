@@ -113,11 +113,20 @@ static int udf_extract_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const cha
     }
     printf("-- Extracting: %s\n", psz_fullpath);
     if (udf_is_dir(p_udf_dirent)) {
-      _mkdir(psz_fullpath);
-      p_udf_dirent2 = udf_opendir(p_udf_dirent);
-      if (p_udf_dirent2 != NULL) {
-        if (udf_extract_files(p_udf, p_udf_dirent2, &psz_fullpath[strlen(psz_extract_dir)]))
-          goto out;
+      int rc = _mkdir(psz_fullpath);
+      if (0 == rc) {
+	p_udf_dirent2 = udf_opendir(p_udf_dirent);
+	if (p_udf_dirent2 != NULL) {
+	  if (udf_extract_files(p_udf, p_udf_dirent2,
+				&psz_fullpath[strlen(psz_extract_dir)]))
+	    goto out;
+	}
+      } else if (-1 == rc) {
+        fprintf(stderr, "  Unable to create make directory %s:\n%s\n",
+		psz_fullpath, strerror(errno));
+      } else {
+        fprintf(stderr, "  Unable to create make directory %s;(rc=%d)\n",
+		psz_fullpath, rc);
       }
     } else {
       fd = fopen(psz_fullpath, "wb");

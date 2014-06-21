@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004-2006, 2008, 2012-2013 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004-2006, 2008, 2012-2014 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -184,6 +184,7 @@ parse_options (int argc, char *argv[])
       free(program_name);
       exit (EXIT_FAILURE);
     }
+    if (NULL != source_name)  free(source_name);
     source_name = strdup(remaining_arg);
   }
 
