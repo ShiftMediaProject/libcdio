@@ -151,7 +151,11 @@ parse_options (int argc, char *argv[])
     switch (opt)
       {
       case 'd': opts.debug_level = atoi(optarg); break;
-      case 'i': if (optarg != NULL) source_name = strdup(optarg); break;
+      case 'i': if (optarg != NULL) {
+	  if (NULL != source_name)  free(source_name);
+	  source_name = strdup(optarg);
+	  break;
+	}
       case 'f': opts.print_iso9660_short = 1; break;
       case 'l': opts.print_iso9660       = 1; break;
       case 'U': opts.print_udf           = 1; break;
