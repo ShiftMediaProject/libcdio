@@ -255,7 +255,7 @@ udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name)
     p_udf_root->p_udf->i_position = 0;
 
     tokenline[udf_MAX_PATHLEN-1] = '\0';
-    strncpy(tokenline, psz_name, udf_MAX_PATHLEN);
+    strncpy(tokenline, psz_name, udf_MAX_PATHLEN-1);
     psz_token = strtok(tokenline, udf_PATH_DELIMITERS);
     if (psz_token) {
       udf_dirent_t *p_udf_dirent =
