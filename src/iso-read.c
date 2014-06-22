@@ -293,6 +293,7 @@ static int read_udf_file(const char *iso_name, const char *src,
     if (!p_udf_file) {
       fprintf(stderr, "Sorry, couldn't find %s in %s\n",
               src, iso_name);
+      udf_dirent_free(p_udf_root);
       return 2;
 
     }

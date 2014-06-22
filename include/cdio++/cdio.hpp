@@ -30,24 +30,26 @@
 #include <cdio/mmc.h>
 #include <cdio/mmc_cmds.h>
 
-// Make pre- and post-increment operators for enums in libcdio where it 
+// Make pre- and post-increment operators for enums in libcdio where it
 // makes sense.
 #include <cdio++/enum.hpp>
 
 /** Class for driver exceptions. **/
-class DriverOpException 
+class DriverOpException
 {
 public:
   driver_return_code_t driver_return_code;
-  DriverOpException( void ) { };
-  DriverOpException( driver_return_code_t drc ) { 
-    driver_return_code = drc; 
+  DriverOpException( void ) {
+    driver_return_code = DRIVER_OP_SUCCESS;
   };
-  driver_return_code_t get_code(void) { 
-    return driver_return_code; 
+  DriverOpException( driver_return_code_t drc ) {
+    driver_return_code = drc;
   };
-  const char *get_msg(void) { 
-    return cdio_driver_errmsg(driver_return_code); 
+  driver_return_code_t get_code(void) {
+    return driver_return_code;
+  };
+  const char *get_msg(void) {
+    return cdio_driver_errmsg(driver_return_code);
   };
 };
 
@@ -57,8 +59,8 @@ public:
   DriverOpError(void) { driver_return_code = DRIVER_OP_ERROR; }
 };
 
-class DriverOpUnsupported: public DriverOpException 
-{ 
+class DriverOpUnsupported: public DriverOpException
+{
 public:
   DriverOpUnsupported(void) { driver_return_code = DRIVER_OP_UNSUPPORTED; }
 };
@@ -100,16 +102,16 @@ void possible_throw_device_exception(driver_return_code_t drc);
 */
 class CdioCDText
 {
-public: 
+public:
   CdioCDText(cdtext_t *cdtext)
-  { 
+  {
     if (NULL == cdtext)
       cdtext = cdtext_init();
 
     p_cdtext = cdtext;
   }
 
-  ~CdioCDText() 
+  ~CdioCDText()
   {
     cdtext_destroy(p_cdtext);
     p_cdtext = (cdtext_t *) NULL;
@@ -121,7 +123,7 @@ public:
 private:
   cdtext_t *p_cdtext;
 };
-    
+
 /** A class relating to tracks. A track object basically saves device
     and track number information so that in track operations these
     don't have be specified.
@@ -129,9 +131,9 @@ private:
 class CdioTrack
 {
 
-public: 
+public:
   CdioTrack(CdIo_t *p, track_t t)
-  { 
+  {
     i_track = t;
     p_cdio = p;
   }
@@ -143,12 +145,12 @@ private:
   track_t i_track;
   CdIo_t *p_cdio;
 };
-    
+
 /** A class relating to a CD-ROM device or pseudo CD-ROM device with
     has a particular CD image. A device basically saves the libcdio
-    "object" (of type CdIo *). 
+    "object" (of type CdIo *).
 */
-class CdioDevice 
+class CdioDevice
 {
 
 protected:
@@ -158,17 +160,17 @@ protected:
 public:
 
   CdioDevice()
-  { 
-      p_cdio = (CdIo_t *) NULL; 
+  {
+      p_cdio = (CdIo_t *) NULL;
   };
 
-  ~CdioDevice() 
-  { 
-    cdio_destroy(p_cdio); 
+  ~CdioDevice()
+  {
+    cdio_destroy(p_cdio);
     p_cdio = (CdIo_t *) NULL;
   };
 
-  // Other member functions  
+  // Other member functions
 #include "device.hpp"
 #include "disc.hpp"
 #include "mmc.hpp"

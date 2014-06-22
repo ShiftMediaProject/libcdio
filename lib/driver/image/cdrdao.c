@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2011, 2012
+  Copyright (C) 2004-2008, 2011-2012, 2014
   Rocky Bernstein <rocky@gnu.org>
     toc reading routine adapted from cuetools
   Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
@@ -920,7 +920,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	  } else {
 	    goto format_error;
 	  }
-	  if (NULL != (psz_field = strtok (NULL, " \t\n\r"))) {
+	  if (NULL != strtok (NULL, " \t\n\r")) {
 	    goto format_error;
 	  }
 	}  else {

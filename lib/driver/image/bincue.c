@@ -714,7 +714,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
             }
           } else {
             goto format_error;
-          } if (NULL != (psz_field = strtok(NULL, " \t\n\r"))) {
+          } if (NULL != strtok(NULL, " \t\n\r")) {
             goto format_error;
           }
         } else {

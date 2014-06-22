@@ -622,12 +622,9 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
 }
 
 static void
-print_iso9660_fs (CdIo_t *p_cdio, cdio_fs_anal_t fs,
-                  track_format_t track_format)
+print_iso9660_fs (CdIo_t *p_cdio, cdio_fs_anal_t fs)
 {
   iso_extension_mask_t iso_extension_mask = ISO_EXTENSION_ALL;
-
-  if (fs & CDIO_FS_ANAL_XA) track_format = TRACK_FORMAT_XA;
 
   if (opts.no_joliet) {
     iso_extension_mask &= ~ISO_EXTENSION_JOLIET;
@@ -735,7 +732,7 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
     }
 
     if (opts.print_iso9660)
-      print_iso9660_fs(p_cdio, fs, track_format);
+      print_iso9660_fs(p_cdio, fs);
 
     break;
   }

@@ -675,8 +675,10 @@ mmc_set_blocksize_private ( void *p_env,
 
   memset (&mh, 0, sizeof (mh));
   mh.block_desc_length = 0x08;
+
   /* while i_blocksize is uint16_t, this expression is always 0 */
   mh.block_length_hi   = (i_blocksize >> 16) & 0xff;
+
   mh.block_length_med  = (i_blocksize >>  8) & 0xff;
   mh.block_length_lo   = (i_blocksize >>  0) & 0xff;
 
@@ -1006,7 +1008,6 @@ mmc_get_drive_mmc_cap(CdIo_t *p_cdio)
     return CDIO_MMC_LEVEL_3;
   } else if (24 <= len) {
     return CDIO_MMC_LEVEL_2;
-    printf("MMC 2");
   } else if (20 <= len) {
     return CDIO_MMC_LEVEL_1;
   } else {
