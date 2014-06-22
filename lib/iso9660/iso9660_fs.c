@@ -1271,6 +1271,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
     if (!_dirbuf)
       {
       cdio_warn("Couldn't calloc(1, %d)", p_stat->secsize * ISO_BLOCKSIZE);
+      _cdio_list_free (retval, true);
       return NULL;
       }
 
@@ -1337,6 +1338,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     if (!_dirbuf)
       {
         cdio_warn("Couldn't calloc(1, %d)", p_stat->secsize * ISO_BLOCKSIZE);
+      _cdio_list_free (retval, true);
         return NULL;
       }
 
