@@ -308,6 +308,7 @@ static int read_udf_file(const char *iso_name, const char *src,
         if ( i_read < 0 ) {
           fprintf(stderr, "Error reading UDF file %s at block %u\n",
                   src, i);
+	  free(p_udf_file);
           return 4;
         }
 
@@ -315,10 +316,12 @@ static int read_udf_file(const char *iso_name, const char *src,
 
         if (ferror (outfd)) {
           perror ("fwrite()");
+	  free(p_udf_file);
           return 5;
         }
       }
 
+      free(p_udf_file);
       udf_dirent_free(p_udf_root);
       udf_close(p_udf);
       *bytes_written = i_file_length;

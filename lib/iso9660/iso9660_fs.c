@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003-2008, 2011-2013 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003-2008, 2011-2014 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -1275,8 +1275,10 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
       }
 
     if (cdio_read_data_sectors (p_cdio, _dirbuf, p_stat->lsn,
-				ISO_BLOCKSIZE, p_stat->secsize))
-	return NULL;
+				ISO_BLOCKSIZE, p_stat->secsize)) {
+      _cdio_list_free (retval, true);
+      return NULL;
+    }
 
     while (offset < (p_stat->secsize * ISO_BLOCKSIZE))
       {
@@ -1341,6 +1343,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     ret = iso9660_iso_seek_read (p_iso, _dirbuf, p_stat->lsn, p_stat->secsize);
     if (ret != ISO_BLOCKSIZE*p_stat->secsize)
 	  {
+	    _cdio_list_free (retval, true);
 	    free (_dirbuf);
 	    return NULL;
 	  }
@@ -1416,8 +1419,9 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
 	iso9660_stat_t *ret_stat = calloc(1, len2);
 	if (!ret_stat)
 	  {
-          cdio_warn("Couldn't calloc(1, %d)", len2);
-          return NULL;
+	    _cdio_list_free (dirlist, true);
+	    cdio_warn("Couldn't calloc(1, %d)", len2);
+	    return NULL;
 	  }
 	memcpy(ret_stat, statbuf, len2);
         _cdio_list_free (entlist, true);
