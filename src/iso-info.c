@@ -340,10 +340,10 @@ print_udf_file_info(const udf_dirent_t *p_udf_dirent,
   printf("\n");
 }
 
-static udf_dirent_t *
+static void
 list_udf_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const char *psz_path)
 {
-  if (!p_udf_dirent) return NULL;
+  if (!p_udf_dirent) return;
 
   if (opts.print_iso9660) {
     printf ("\n/%s:\n", psz_path);
@@ -368,7 +368,6 @@ list_udf_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const char *psz_path)
       print_udf_file_info(p_udf_dirent, psz_path, NULL);
     }
   }
-  return p_udf_dirent;
 }
 
 static int

@@ -574,6 +574,8 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
          translated_name = (char *) malloc(translated_name_size);
          if (!translated_name) {
            report( stderr, "Error allocating memory\n" );
+	   _cdio_list_free (p_dirlist, true);
+	   _cdio_list_free (p_entlist, true);
            return;
          }
        }
