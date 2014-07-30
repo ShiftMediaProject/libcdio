@@ -48,6 +48,20 @@
 extern "C" {
 #endif
 
+#ifdef __KLIBC__
+/* OS/2 kLIBC has already getopt(). So to avoid name clash, rename
+   them here. */
+
+#define optarg	libcdio_optarg
+#define optind	libcdio_optind
+#define opterr	libcdio_opterr
+#define optopt	libcdio_optopt
+
+#define getopt				libcdio_getopt
+#define getopt_long			libcdio_getopt_long
+#define getopt_long_only	libcdio_getopt_long_only
+#endif
+
 /* For communication from `getopt' to the caller.
    When `getopt' finds an option that takes an argument,
    the argument value is returned here.

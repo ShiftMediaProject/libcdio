@@ -42,6 +42,7 @@
 
 #define INCL_DOS
 #define INCL_DOSDEVIOCTL
+#include <os2safe.h>
 #include <os2.h>
 
 #include <ctype.h>
@@ -87,6 +88,81 @@ run_mmc_cmd_os2( void *p_user_data, unsigned int i_timeout_ms,
                  unsigned int i_cdb, const mmc_cdb_t *p_cdb,
                  cdio_mmc_direction_t e_direction,
                  unsigned int i_buf, /*in/out*/ void *p_buf );
+
+/*!
+  High memory safe wrapper for DosDevIOCtl()
+*/
+static APIRET
+SafeDosDevIOCtl( HFILE hdevice, ULONG category, ULONG function,
+                 PVOID pParams, ULONG cbParamLenMax, PULONG pcbParamLen,
+                 PVOID pData, ULONG cbDataLenMax, PULONG pcbDataLen )
+{
+    PVOID  pParamsLow = NULL;
+    PVOID  pDataLow = NULL;
+    PULONG pcbParamLenLow = NULL;
+    PULONG pcbDataLenLow = NULL;
+    ULONG  cbParamLenLow;
+    ULONG  cbDataLenLow;
+
+    APIRET rc = 0;
+
+    if( pParams )
+        rc = DosAllocMem( &pParamsLow, cbParamLenMax, fALLOC );
+
+    if( rc )
+        goto exit_free;
+
+    if( pData )
+        rc = DosAllocMem( &pDataLow, cbDataLenMax, fALLOC );
+
+    if( rc )
+        goto exit_free;
+
+    if( pParams )
+        memcpy( pParamsLow, pParams, cbParamLenMax );
+
+    if( pData )
+        memcpy( pDataLow, pData, cbDataLenMax );
+
+    if( pcbParamLen )
+    {
+        pcbParamLenLow = &cbParamLenLow;
+        *pcbParamLenLow = *pcbParamLen;
+    }
+
+    if( pcbDataLen )
+    {
+        pcbDataLenLow = &cbDataLenLow;
+        *pcbDataLenLow = *pcbDataLen;
+    }
+
+    rc = DosDevIOCtl( hdevice, category, function,
+                      pParamsLow, cbParamLenMax, pcbParamLenLow,
+                      pDataLow, cbDataLenMax, pcbDataLenLow );
+
+    if( !rc )
+    {
+        if( pParams )
+            memcpy( pParams, pParamsLow, cbParamLenMax );
+
+        if( pData )
+            memcpy( pData, pDataLow, cbDataLenMax );
+
+        if( pcbParamLen )
+            *pcbParamLen = *pcbParamLenLow;
+
+        if( pcbDataLen )
+            *pcbDataLen  = *pcbDataLenLow;
+    }
+
+exit_free:
+    DosFreeMem( pParamsLow);
+    DosFreeMem( pDataLow);
+
+    return rc;
+}
+
+#define DosDevIOCtl SafeDosDevIOCtl
 
 /*!
   Set the volume of an audio CD.
