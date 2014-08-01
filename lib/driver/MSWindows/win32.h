@@ -223,3 +223,76 @@ void get_drive_cap_win32ioctl (const _img_private_t *p_env,
 */
 track_format_t get_track_format_win32ioctl(const _img_private_t *p_env, 
 					   track_t i_track); 
+
+/*!
+  Get disc type associated with cd object.
+*/
+discmode_t
+get_discmode_aspi( _img_private_t *p_env );
+
+const char *
+is_cdrom_aspi( const char drive_letter );
+
+/*!
+  Run a SCSI MMC command. 
+ 
+  env           private CD structure 
+  i_timeout_ms  time in milliseconds we will wait for the command
+                to complete. If this value is -1, use the default 
+                time-out value.
+  p_buf         Buffer for data, both sending and receiving
+  i_buf         Size of buffer
+  e_direction   direction the transfer is to go.
+  cdb           CDB bytes. All values that are needed should be set on 
+                input. We'll figure out what the right CDB length should be.
+
+  We return 0 if command completed successfully.
+ */
+int
+run_mmc_cmd_aspi( void *p_user_data, unsigned int i_timeout_ms,
+                  unsigned int i_cdb, const mmc_cdb_t * p_cdb,  
+                  cdio_mmc_direction_t e_direction, 
+                  unsigned int i_buf, /*in/out*/ void *p_buf );
+
+/*!
+  Initialize CD device.
+*/
+bool
+init_aspi( _img_private_t *env );
+
+/*!
+   Reads an audio device into data starting from lsn.
+   Returns 0 if no error. 
+ */
+int
+read_audio_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn, 
+                         unsigned int i_blocks);
+
+/*!
+   Reads a single mode2 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+int
+read_mode1_sector_aspi (_img_private_t *p_env, void *data, lsn_t lsn, 
+                         bool b_form2);
+
+/*!
+   Reads a single mode2 sector from cd device into data starting
+   from lsn. Returns 0 if no error. 
+ */
+int
+read_mode2_sector_aspi (_img_private_t *p_env, void *data, lsn_t lsn, 
+                         bool b_form2);
+
+/*! 
+  Read and cache the CD's Track Table of Contents and track info.
+  Return true if successful or false if an error.
+*/
+bool
+read_toc_aspi (_img_private_t *p_env);
+
+/*!  
+  Get format of track. 
+*/
+track_format_t
+get_track_format_aspi(const _img_private_t *p_env, track_t track_num);
