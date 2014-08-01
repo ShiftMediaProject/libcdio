@@ -33,3 +33,11 @@
 /m4
 /missing
 /stamp-h1
+
+*.obj
+*.log
+*.tlog
+*.pdb
+*.ildb
+*.suo
+*.sdf
