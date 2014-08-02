@@ -44,6 +44,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#undef IN
 #include <windows.h>
 #include "win32.h"
 

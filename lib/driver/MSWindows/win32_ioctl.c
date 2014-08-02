@@ -34,6 +34,7 @@
 # if defined (__MINGW64_VERSION_MAJOR)
 #  define _NTSRB_ /* Bad things happen if srb.h gets included */
 # endif
+# undef IN
 # include <windows.h>
 # ifdef HAVE_DDK_SCSI_H
 #  include <ddk/scsi.h>

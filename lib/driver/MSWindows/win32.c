@@ -59,6 +59,7 @@
 #include <fcntl.h>
 #endif
 
+#undef IN
 #include <windows.h>
 #include <winioctl.h>
 #include "win32.h"
