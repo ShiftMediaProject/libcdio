@@ -257,7 +257,7 @@ cdtext_destroy(cdtext_t *p_cdtext)
 /*!
   Returns a copy of the return value of cdtext_get_const or NULL.
 
-  Should be freed when done.
+  Must be freed using cdio_free() when done.
   @see cdtext_get_const
 */
 char *

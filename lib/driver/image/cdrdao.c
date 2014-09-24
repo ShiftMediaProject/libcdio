@@ -320,7 +320,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
     return false;
 
   fp = CDIO_FOPEN (psz_cue_name_dup, "r");
-  free(psz_cue_name_dup);
+  cdio_free(psz_cue_name_dup);
   if (fp == NULL) {
     cdio_log(log_level, "error opening %s for reading: %s", 
 	     psz_cue_name, strerror(errno));

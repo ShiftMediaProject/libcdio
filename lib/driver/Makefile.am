@@ -82,6 +82,7 @@ libcdio_sources = \
 	image/nrg.c \
 	image/nrg.h \
 	logging.c \
+	memory.c \
 	mmc/mmc.c \
 	mmc/mmc_cmd_helper.h \
 	mmc/mmc_hl_cmds.c \

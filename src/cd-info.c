@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2007, 2008, 2011, 2012
+  Copyright (C) 2003, 2004, 2005, 2007, 2008, 2011, 2012, 2014
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
          and Heiko Eiﬂfeldt <heiko@hexco.de>
@@ -1123,7 +1123,7 @@ main(int argc, char *argv[])
         report(stdout, "not supported by drive/driver\n");
     } else {
       report(stdout, "%s\n", media_catalog_number);
-      free(media_catalog_number);
+      cdio_free(media_catalog_number);
     }
 
     /* get and print track ISRCs */
@@ -1134,7 +1134,7 @@ main(int argc, char *argv[])
 
         if (NULL != isrc) {
           report(stdout, "TRACK %2d ISRC: %s\n", i, isrc); fflush(stdout);
-          free(isrc);
+          cdio_free(isrc);
         }
       }
     }

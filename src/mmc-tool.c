@@ -511,7 +511,7 @@ main(int argc, char *argv[])
 	char *psz_mcn = mmc_get_mcn(p_cdio);
 	if (psz_mcn) {
 	  report(stdout, "%s (mmc_get_mcn): %s\n", program_name, psz_mcn);
-	  free(psz_mcn);
+	  cdio_free(psz_mcn);
 	} else
 	  report(stdout, "%s (mmc_get_mcn): can't retrieve\n", program_name);
       }

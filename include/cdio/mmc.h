@@ -688,8 +688,8 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
     @return the media catalog number r NULL if there is none or we
     don't have the ability to get it.
     
-    Note: string is malloc'd so caller has to free() the returned
-    string when done with it.
+    Note: The caller must free the returned string with cdio_free()
+    when done with it.
     
   */
   char * mmc_get_mcn(const CdIo_t *p_cdio);
@@ -702,8 +702,8 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
     @return international standard recording code or NULL if there is
     none or we don't have the ability to get it.
     
-    Note: string is malloc'd so caller has to free() the returned
-    string when done with it.
+    Note: The caller must free the returned string with cdio_free()
+    when done with it.
     
   */
   char * mmc_get_track_isrc(const CdIo_t *p_cdio, track_t i_track);
@@ -806,7 +806,7 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
 
       @param pp_sense returns the sense bytes received from the drive.
       This is allocated memory or NULL if no sense bytes are
-      available. Dispose non-NULL pointers by free() when no longer
+      available. Dispose non-NULL pointers by cdio_free() when no longer
       needed.  See SPC-3 4.5.3 Fixed format sense data.  SCSI error
       codes as of SPC-3 Annex D, MMC-5 Annex F: sense[2]&15 = Key ,
       sense[12] = ASC , sense[13] = ASCQ

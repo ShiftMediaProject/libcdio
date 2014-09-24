@@ -39,7 +39,7 @@ const char *lang2str (cdtext_lang_t i)
 /*! returns an allocated string associated with the given field.  NULL is
   returned if key is CDTEXT_INVALID or the field is not set.
   
-  The user needs to free the string when done with it.
+  The user needs to free the string using cdio_free() when done with it.
 
   @see getConst to retrieve a constant string that doesn't
   have to be freed.

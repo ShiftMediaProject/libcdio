@@ -130,8 +130,8 @@ int mmcGetMediaChanged()
   @return the media catalog number r NULL if there is none or we
   don't have the ability to get it.
   
-  Note: string is malloc'd so caller has to free() the returned
-  string when done with it.
+  Note: The caller must free the returned string with cdio_free()
+  when done with it.
   
 */
 char * mmcGetMcn () 

@@ -107,8 +107,8 @@ FILE* fopen_utf8(const char* filename, const char* mode)
   wchar_t* wfilename = cdio_utf8_to_wchar(filename);
   wchar_t* wmode =  cdio_utf8_to_wchar(mode);
   ret = _wfopen(wfilename, wmode);
-  free(wfilename);
-  free(wmode);
+  cdio_free(wfilename);
+  cdio_free(wmode);
   return ret;
 }
 #endif
@@ -292,7 +292,7 @@ bool cdio_charset_from_utf8(cdio_utf8_t * src, char ** dst,
   /* Eliminate empty strings */
   le_dst = cdio_utf8_to_wchar(src);
   if ((le_dst == NULL) || (le_dst[0] == 0)) {
-    free(le_dst);
+    cdio_free(le_dst);
     return false;
   }
 
