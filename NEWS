@@ -1,3 +1,14 @@
+version 0.93
+
+Most of the changes except where noted are courtesy of Robert Kausch
+
+- Add cdio_free, iso9660_stat_free, and iso9660_xa_free functions.
+- Deprecate mmc_isrc_track_read_subchannel
+- Add mmc_get_track_isrc function.
+- Update OS versions we recognize
+- OSX, and MS Windows, ISO 9660 and other bug fixes
+- OS/2 driver performance update - KO Myung-Hun
+
 version 0.92 (late SF Release)
 
 - Fix the botched the library release numbers, Bump current, and
