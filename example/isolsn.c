@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2011
+  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2011, 2014
    Rocky Bernstein <rocky@gnu.org>
   
   This program is free software: you can redistribute it and/or modify
@@ -68,6 +68,7 @@ main(int argc, const char *argv[])
 {
   char const *psz_fname;
   iso9660_t *p_iso;
+  iso9660_stat_t *p_stat;
   lsn_t lsn = 24;
   char *psz_path = NULL;
   
@@ -87,11 +88,12 @@ main(int argc, const char *argv[])
     return 1;
   }
 
-  iso9660_ifs_find_lsn_with_path (p_iso, lsn, &psz_path);
+  p_stat = iso9660_ifs_find_lsn_with_path (p_iso, lsn, &psz_path);
   if (psz_path != NULL) {
     printf("File at LSN %u is %s\n", lsn, psz_path);
     free(psz_path);
   }
+  iso9660_stat_free(p_stat);
 
   iso9660_close(p_iso);
   return 0;

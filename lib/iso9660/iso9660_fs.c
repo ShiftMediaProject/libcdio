@@ -1512,6 +1512,16 @@ iso9660_ifs_find_lsn_with_path(iso9660_t *p_iso, lsn_t i_lsn,
 }
 
 /*!
+  Free the passed iso9660_stat_t structure.
+ */
+void
+iso9660_stat_free(iso9660_stat_t *p_stat)
+{
+  if (p_stat != NULL)
+    free(p_stat);
+}
+
+/*!
   Return true if ISO 9660 image has extended attrributes (XA).
 */
 bool

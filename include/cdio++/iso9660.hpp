@@ -140,7 +140,7 @@ public:
     
     ~Stat() 
     {
-      free(p_stat);
+      iso9660_stat_free(p_stat);
       p_stat = NULL;
     }
     
@@ -160,7 +160,7 @@ public:
       lsn and return information about it.
       
       @return Stat * of entry if we found lsn, or NULL otherwise.
-      Caller must free return value.
+      Caller must release returned object using delete when done.
     */
     Stat *find_lsn(lsn_t i_lsn);
 
@@ -196,7 +196,7 @@ public:
       reading, otherwise use mode 1 reading.
       
       @return file status object for psz_path. NULL is returned on
-      error.
+      error. Caller must release returned object using delete when done.
     */
     Stat *
     stat (const char psz_path[], bool b_translate=false, bool b_mode2=false)
@@ -240,6 +240,7 @@ public:
       lsn and return information about it.
       
       Returns Stat*  of entry if we found lsn, or NULL otherwise.
+      Caller must release returned object using delete when done.
     */
     Stat *find_lsn(lsn_t i_lsn);
 
@@ -407,6 +408,7 @@ public:
     
     /*!  
       Return file status for pathname. NULL is returned on error.
+      Caller must release returned object using delete when done.
     */
     Stat *
     stat (const char psz_path[], bool b_translate=false) 
