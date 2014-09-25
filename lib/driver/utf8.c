@@ -41,6 +41,7 @@
 
 #include <cdio/utf8.h>
 #include <cdio/logging.h>
+#include <cdio/memory.h>
 
 /* Windows requires some basic UTF-8 support outside of Joliet */
 #if defined(_WIN32)
