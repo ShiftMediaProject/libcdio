@@ -589,11 +589,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
       snprintf (_fullname, sizeof (_fullname), "%s%s", pathname,
                 psz_iso_name);
 
-<<<<<<< HEAD
       strncat (_fullname, "/", sizeof(_fullname) - strlen(_fullname) - 1);
-=======
-      strncat (_fullname, "/", sizeof (_fullname)-1);
->>>>>>> static-analysis
 
       if (p_statbuf->type == _STAT_DIR
           && strcmp (psz_iso_name, ".")
@@ -626,12 +622,8 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
 }
 
 static void
-<<<<<<< HEAD
 print_iso9660_fs (CdIo_t *p_cdio, cdio_fs_anal_t fs,
                   track_format_t track_format)
-=======
-print_iso9660_fs (CdIo_t *p_cdio, cdio_fs_anal_t fs)
->>>>>>> static-analysis
 {
   iso_extension_mask_t iso_extension_mask = ISO_EXTENSION_ALL;
 
@@ -741,11 +733,7 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
     }
 
     if (opts.print_iso9660)
-<<<<<<< HEAD
       print_iso9660_fs(p_cdio, fs, track_format);
-=======
-      print_iso9660_fs(p_cdio, fs);
->>>>>>> static-analysis
 
     break;
   }
@@ -1146,11 +1134,7 @@ main(int argc, char *argv[])
 
         if (NULL != isrc) {
           report(stdout, "TRACK %2d ISRC: %s\n", i, isrc); fflush(stdout);
-<<<<<<< HEAD
           cdio_free(isrc);
-=======
-          free(isrc);
->>>>>>> static-analysis
         }
       }
     }

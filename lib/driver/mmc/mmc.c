@@ -576,44 +576,6 @@ mmc_get_track_isrc_private ( void *p_env,
 }
 
 /**
-  Return the international standard recording code.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
-*/
-char *
-mmc_get_track_isrc_private ( void *p_env,
-                             const mmc_run_cmd_fn_t run_mmc_cmd,
-                             track_t i_track
-                             )
-{
-  mmc_cdb_t cdb = {{0, }};
-  char buf[28] = { 0, };
-  int i_status;
-
-  if ( ! p_env || ! run_mmc_cmd )
-    return NULL;
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
-  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
-
-  cdb.field[1] = 0x0;
-  cdb.field[2] = 0x40;
-  cdb.field[3] = CDIO_SUBCHANNEL_TRACK_ISRC;
-  cdb.field[6] = i_track;
-
-  i_status = run_mmc_cmd(p_env, mmc_timeout_ms,
-			      mmc_get_cmd_len(cdb.field[0]),
-			      &cdb, SCSI_MMC_DATA_READ,
-			      sizeof(buf), buf);
-  if(i_status == 0) {
-    return strdup(&buf[9]);
-  }
-  return NULL;
-}
-
-/**
   Read cdtext information for a CdIo_t object .
 
   return true on success, false on error or CD-Text information does

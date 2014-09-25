@@ -55,6 +55,9 @@ check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh check_udf.sh \
 
 check_udf.sh: @abs_top_builddir@/example/extract$(EXEEXT)
 
+@abs_top_builddir@/example/extract$(EXEEXT):
+	$(MAKE) -C @abs_top_builddir@/example extract$(EXEEXT)
+
 check_PROGRAMS = $(hack)
 
 check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
