@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2007, 2008, 2011, 2012, 2014
+  Copyright (C) 2003-2005, 2007-2008, 2011-2012, 2014
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
          and Heiko Eiﬂfeldt <heiko@hexco.de>
@@ -574,6 +574,8 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
          translated_name = (char *) malloc(translated_name_size);
          if (!translated_name) {
            report( stderr, "Error allocating memory\n" );
+	   _cdio_list_free (p_dirlist, true);
+	   _cdio_list_free (p_entlist, true);
            return;
          }
        }
@@ -587,7 +589,11 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
       snprintf (_fullname, sizeof (_fullname), "%s%s", pathname,
                 psz_iso_name);
 
+<<<<<<< HEAD
       strncat (_fullname, "/", sizeof(_fullname) - strlen(_fullname) - 1);
+=======
+      strncat (_fullname, "/", sizeof (_fullname)-1);
+>>>>>>> static-analysis
 
       if (p_statbuf->type == _STAT_DIR
           && strcmp (psz_iso_name, ".")
@@ -620,12 +626,14 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
 }
 
 static void
+<<<<<<< HEAD
 print_iso9660_fs (CdIo_t *p_cdio, cdio_fs_anal_t fs,
                   track_format_t track_format)
+=======
+print_iso9660_fs (CdIo_t *p_cdio, cdio_fs_anal_t fs)
+>>>>>>> static-analysis
 {
   iso_extension_mask_t iso_extension_mask = ISO_EXTENSION_ALL;
-
-  if (fs & CDIO_FS_ANAL_XA) track_format = TRACK_FORMAT_XA;
 
   if (opts.no_joliet) {
     iso_extension_mask &= ~ISO_EXTENSION_JOLIET;
@@ -733,7 +741,11 @@ print_analysis(int ms_offset, cdio_iso_analysis_t cdio_iso_analysis,
     }
 
     if (opts.print_iso9660)
+<<<<<<< HEAD
       print_iso9660_fs(p_cdio, fs, track_format);
+=======
+      print_iso9660_fs(p_cdio, fs);
+>>>>>>> static-analysis
 
     break;
   }
@@ -1134,7 +1146,11 @@ main(int argc, char *argv[])
 
         if (NULL != isrc) {
           report(stdout, "TRACK %2d ISRC: %s\n", i, isrc); fflush(stdout);
+<<<<<<< HEAD
           cdio_free(isrc);
+=======
+          free(isrc);
+>>>>>>> static-analysis
         }
       }
     }

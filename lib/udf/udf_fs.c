@@ -206,10 +206,9 @@ udf_get_lba(const udf_file_entry_t *p_udf_fe,
 
 #define udf_PATH_DELIMITERS "/\\"
 
-/* Searches p_udf_dirent a directory entry called psz_token.
-   Note p_udf_dirent is continuously updated. If the entry is
-   not found p_udf_dirent is useless and thus the caller should
-   not use it afterwards.
+/* Searches p_udf_dirent for a directory entry called psz_token.
+   Note that p_udf_dirent may be replaced or freed during this call
+   and only the returned udf_dirent_t must be used afterwards.
 */
 static
 udf_dirent_t *
@@ -222,20 +221,21 @@ udf_ff_traverse(udf_dirent_t *p_udf_dirent, char *psz_token)
       if (!next_tok)
 	return p_udf_dirent; /* found */
       else if (p_udf_dirent->b_dir) {
-	udf_dirent_t * p_udf_dirent2 = udf_opendir(p_udf_dirent);
+	udf_dirent_t * p_udf_dirent_next = udf_opendir(p_udf_dirent);
 
-	if (p_udf_dirent2) {
-	  udf_dirent_t * p_udf_dirent3 =
-	    udf_ff_traverse(p_udf_dirent2, next_tok);
+	if (p_udf_dirent_next) {
+	  /* free p_udf_dirent to avoid leaking memory. */
+	  udf_dirent_free(p_udf_dirent);
 
-	  /* if p_udf_dirent3 is null p_udf_dirent2 is free'd. */
-	  return p_udf_dirent3;
+	  /* previous p_udf_dirent_next is freed by udf_ff_traverse. */
+	  p_udf_dirent_next = udf_ff_traverse(p_udf_dirent_next, next_tok);
+
+	  return p_udf_dirent_next;
 	}
       }
     }
   }
-  if (p_udf_dirent)
-    free(p_udf_dirent->psz_name);
+
   return NULL;
 }
 
@@ -254,20 +254,15 @@ udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name)
     /* file position must be reset when accessing a new file */
     p_udf_root->p_udf->i_position = 0;
 
-    strncpy(tokenline, psz_name, udf_MAX_PATHLEN);
+    tokenline[udf_MAX_PATHLEN-1] = '\0';
+    strncpy(tokenline, psz_name, udf_MAX_PATHLEN-1);
     psz_token = strtok(tokenline, udf_PATH_DELIMITERS);
     if (psz_token) {
-      /*** FIXME??? udf_dirent can be variable size due to the
-	   extended attributes and descriptors. Given that, is this
-	   correct?
-       */
       udf_dirent_t *p_udf_dirent =
 	udf_new_dirent(&p_udf_root->fe, p_udf_root->p_udf,
 		       p_udf_root->psz_name, p_udf_root->b_dir,
 		       p_udf_root->b_parent);
       p_udf_file = udf_ff_traverse(p_udf_dirent, psz_token);
-      if (p_udf_file != p_udf_dirent)
-        udf_dirent_free(p_udf_dirent);
     }
     else if ( 0 == strncmp("/", psz_name, sizeof("/")) ) {
       return udf_new_dirent(&p_udf_root->fe, p_udf_root->p_udf,

@@ -151,7 +151,11 @@ parse_options (int argc, char *argv[])
     switch (opt)
       {
       case 'd': opts.debug_level = atoi(optarg); break;
-      case 'i': if (optarg != NULL) source_name = strdup(optarg); break;
+      case 'i': if (optarg != NULL) {
+	  if (NULL != source_name)  free(source_name);
+	  source_name = strdup(optarg);
+	  break;
+	}
       case 'f': opts.print_iso9660_short = 1; break;
       case 'l': opts.print_iso9660       = 1; break;
       case 'U': opts.print_udf           = 1; break;
@@ -184,6 +188,7 @@ parse_options (int argc, char *argv[])
       free(program_name);
       exit (EXIT_FAILURE);
     }
+    if (NULL != source_name)  free(source_name);
     source_name = strdup(remaining_arg);
   }
 
@@ -335,10 +340,10 @@ print_udf_file_info(const udf_dirent_t *p_udf_dirent,
   printf("\n");
 }
 
-static udf_dirent_t *
+static void
 list_udf_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const char *psz_path)
 {
-  if (!p_udf_dirent) return NULL;
+  if (!p_udf_dirent) return;
 
   if (opts.print_iso9660) {
     printf ("\n/%s:\n", psz_path);
@@ -363,7 +368,6 @@ list_udf_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const char *psz_path)
       print_udf_file_info(p_udf_dirent, psz_path, NULL);
     }
   }
-  return p_udf_dirent;
 }
 
 static int

@@ -17,6 +17,7 @@
 /config.status
 /config.sub
 /configure
+/cov-int
 /depcomp
 /install-sh
 /libcdio++.pc
@@ -35,3 +36,4 @@
 /m4
 /missing
 /stamp-h1
+/test-driver
