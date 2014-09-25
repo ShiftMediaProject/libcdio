@@ -498,7 +498,7 @@ mmc_get_dvd_struct_physical_private ( void *p_env,
   layer->end_sector_l0 = base[13] << 16 | base[14] << 8 | base[15];
   layer->bca = base[16] >> 7;
 
-  return DRIVER_OP_SUCCESS;
+  return (discmode_t) DRIVER_OP_SUCCESS;
 }
 
 /**

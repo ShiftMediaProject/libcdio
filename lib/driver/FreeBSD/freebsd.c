@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2008, 2009, 2010, 2011
+  Copyright (C) 2003, 2004-2005, 2008-2011, 2014
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -584,7 +584,7 @@ get_arg_freebsd (void *user_data, const char key[])
       set_scsi_tuple_freebsd(env);
     return env->gen.scsi_tuple;
   } else if (!strcmp (key, "mmc-supported?")) {
-      is_mmc_supported(user_data) ? "true" : "false";
+    return is_mmc_supported(user_data) ? "true" : "false";
   }
   return NULL;
 }

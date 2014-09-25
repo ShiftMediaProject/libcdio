@@ -116,7 +116,7 @@ _init_bincue(_img_private_t *p_env)
 
   if (-1 == lead_lsn) return false;
 
-  if ((p_env->psz_cue_name == NULL)) return false;
+  if (NULL == p_env->psz_cue_name) return false;
 
   /* Read in CUE sheet. */
   if ( !parse_cuefile(p_env, p_env->psz_cue_name) ) return false;
