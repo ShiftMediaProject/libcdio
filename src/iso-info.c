@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004-2006, 2008, 2012-2013 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004-2006, 2008, 2012-2014 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -256,7 +256,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
                   psz_iso_name);
       }
 
-      strncat (_fullname, "/", sizeof (_fullname));
+      strncat (_fullname, "/", sizeof(_fullname) - strlen(_fullname) - 1);
 
       if (p_statbuf->type == _STAT_DIR
           && strcmp (psz_iso_name, ".")
