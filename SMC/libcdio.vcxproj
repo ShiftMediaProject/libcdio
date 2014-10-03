@@ -72,6 +72,7 @@
     <ClInclude Include="..\include\cdio\ecma_167.h" />
     <ClInclude Include="..\include\cdio\iso9660.h" />
     <ClInclude Include="..\include\cdio\logging.h" />
+    <ClInclude Include="..\include\cdio\memory.h" />
     <ClInclude Include="..\include\cdio\mmc.h" />
     <ClInclude Include="..\include\cdio\mmc_cmds.h" />
     <ClInclude Include="..\include\cdio\mmc_hl_cmds.h" />
@@ -114,6 +115,7 @@
     <ClCompile Include="..\lib\driver\image\nrg.c" />
     <ClCompile Include="..\lib\driver\image_common.c" />
     <ClCompile Include="..\lib\driver\logging.c" />
+    <ClCompile Include="..\lib\driver\memory.c" />
     <ClCompile Include="..\lib\driver\mmc\mmc.c" />
     <ClCompile Include="..\lib\driver\mmc\mmc_hl_cmds.c" />
     <ClCompile Include="..\lib\driver\mmc\mmc_ll_cmds.c" />

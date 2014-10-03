@@ -37,3 +37,11 @@
 /missing
 /stamp-h1
 /test-driver
+
+*.obj
+*.log
+*.tlog
+*.pdb
+*.ildb
+*.suo
+*.sdf
