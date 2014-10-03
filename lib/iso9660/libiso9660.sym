@@ -79,6 +79,8 @@ iso9660_set_evd
 iso9660_set_ltime
 iso9660_set_ltime_with_timezone
 iso9660_set_pvd
+iso9660_stat_free
 iso9660_strncpy_pad
 iso9660_xa_init
+iso9660_xa_free
 ISO_STANDARD_ID

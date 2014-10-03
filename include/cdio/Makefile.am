@@ -40,6 +40,7 @@ dist_libcdioinclude_HEADERS = \
 	ecma_167.h \
 	iso9660.h \
 	logging.h \
+	memory.h \
 	mmc.h \
 	mmc_cmds.h \
 	mmc_hl_cmds.h \

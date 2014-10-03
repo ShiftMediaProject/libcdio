@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2008, 2009, 2010, 2011
+  Copyright (C) 2003, 2004-2005, 2008-2011, 2014
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -584,7 +584,7 @@ get_arg_freebsd (void *user_data, const char key[])
       set_scsi_tuple_freebsd(env);
     return env->gen.scsi_tuple;
   } else if (!strcmp (key, "mmc-supported?")) {
-      is_mmc_supported(user_data) ? "true" : "false";
+    return is_mmc_supported(user_data) ? "true" : "false";
   }
   return NULL;
 }
@@ -609,6 +609,32 @@ get_mcn_freebsd (const void *p_user_data) {
       return mmc_get_mcn(p_env->gen.cdio);
     case _AM_IOCTL:
       return mmc_get_mcn(p_env->gen.cdio);
+    case _AM_NONE:
+      cdio_info ("access mode not set");
+      return NULL;
+  }
+  return NULL;
+}
+
+/*!
+  Return the international standard recording code ISRC.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static char *
+get_track_isrc_freebsd (const void *p_user_data,
+			track_t i_track) {
+  const _img_private_t *p_env = p_user_data;
+
+  switch (p_env->access_mode) {
+    case _AM_CAM:
+    case _AM_MMC_RDWR:
+    case _AM_MMC_RDWR_EXCL:
+      return mmc_get_track_isrc(p_env->gen.cdio, i_track);
+    case _AM_IOCTL:
+      return mmc_get_track_isrc(p_env->gen.cdio, i_track);
     case _AM_NONE:
       cdio_info ("access mode not set");
       return NULL;
@@ -1128,6 +1154,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .get_track_lba          = get_track_lba_freebsd,
     .get_track_preemphasis  = get_track_preemphasis_generic,
     .get_track_msf          = NULL,
+    .get_track_isrc         = get_track_isrc_freebsd,
     .lseek                  = cdio_generic_lseek,
     .read                   = cdio_generic_read,
     .read_audio_sectors     = read_audio_sectors_freebsd,

@@ -31,7 +31,7 @@
   lsn and return information about it.
   
   @return Stat * of entry if we found lsn, or NULL otherwise.
-  Caller must free return value.
+  Caller must release returned object using delete when done.
 */
 ISO9660::Stat *
 ISO9660::FS::find_lsn(lsn_t i_lsn) 
@@ -109,6 +109,7 @@ ISO9660::IFS::close()
   lsn and return information about it.
   
   Returns Stat*  of entry if we found lsn, or NULL otherwise.
+  Caller must release returned object using delete when done.
 */
 ISO9660::Stat *
 ISO9660::IFS::find_lsn(lsn_t i_lsn) 

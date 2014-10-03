@@ -42,6 +42,7 @@
 
 #define INCL_DOS
 #define INCL_DOSDEVIOCTL
+#include <os2safe.h>
 #include <os2.h>
 
 #include <ctype.h>
@@ -87,6 +88,81 @@ run_mmc_cmd_os2( void *p_user_data, unsigned int i_timeout_ms,
                  unsigned int i_cdb, const mmc_cdb_t *p_cdb,
                  cdio_mmc_direction_t e_direction,
                  unsigned int i_buf, /*in/out*/ void *p_buf );
+
+/*!
+  High memory safe wrapper for DosDevIOCtl()
+*/
+static APIRET
+SafeDosDevIOCtl( HFILE hdevice, ULONG category, ULONG function,
+                 PVOID pParams, ULONG cbParamLenMax, PULONG pcbParamLen,
+                 PVOID pData, ULONG cbDataLenMax, PULONG pcbDataLen )
+{
+    PVOID  pParamsLow = NULL;
+    PVOID  pDataLow = NULL;
+    PULONG pcbParamLenLow = NULL;
+    PULONG pcbDataLenLow = NULL;
+    ULONG  cbParamLenLow;
+    ULONG  cbDataLenLow;
+
+    APIRET rc = 0;
+
+    if( pParams )
+        rc = DosAllocMem( &pParamsLow, cbParamLenMax, fALLOC );
+
+    if( rc )
+        goto exit_free;
+
+    if( pData )
+        rc = DosAllocMem( &pDataLow, cbDataLenMax, fALLOC );
+
+    if( rc )
+        goto exit_free;
+
+    if( pParams )
+        memcpy( pParamsLow, pParams, cbParamLenMax );
+
+    if( pData )
+        memcpy( pDataLow, pData, cbDataLenMax );
+
+    if( pcbParamLen )
+    {
+        pcbParamLenLow = &cbParamLenLow;
+        *pcbParamLenLow = *pcbParamLen;
+    }
+
+    if( pcbDataLen )
+    {
+        pcbDataLenLow = &cbDataLenLow;
+        *pcbDataLenLow = *pcbDataLen;
+    }
+
+    rc = DosDevIOCtl( hdevice, category, function,
+                      pParamsLow, cbParamLenMax, pcbParamLenLow,
+                      pDataLow, cbDataLenMax, pcbDataLenLow );
+
+    if( !rc )
+    {
+        if( pParams )
+            memcpy( pParams, pParamsLow, cbParamLenMax );
+
+        if( pData )
+            memcpy( pData, pDataLow, cbDataLenMax );
+
+        if( pcbParamLen )
+            *pcbParamLen = *pcbParamLenLow;
+
+        if( pcbDataLen )
+            *pcbDataLen  = *pcbDataLenLow;
+    }
+
+exit_free:
+    DosFreeMem( pParamsLow);
+    DosFreeMem( pDataLow);
+
+    return rc;
+}
+
+#define DosDevIOCtl SafeDosDevIOCtl
 
 /*!
   Set the volume of an audio CD.
@@ -1096,6 +1172,19 @@ _cdio_get_mcn (const void *p_user_data) {
 }
 
 /*!
+  Return the international standard recording code ISRC.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static char *
+_cdio_get_track_isrc (const void *p_user_data, track_t i_track) {
+  const _img_private_t *p_env = p_user_data;
+  return mmc_get_track_isrc( p_env->gen.cdio, i_track );
+}
+
+/*!
   Get the format (XA, DATA, AUDIO) of a track.
 */
 static track_format_t
@@ -1469,8 +1558,8 @@ cdio_open_os2 (const char *psz_orig_source)
   _funcs.get_track_lba          = NULL; /* This could be done if need be. */
 #if 0
   _funcs.get_track_pregap_lba   = get_track_pregap_lba_os2;
-  _funcs.get_track_isrc         = get_track_isrc_os2;
 #endif
+  _funcs.get_track_isrc         = _cdio_get_track_isrc;
   _funcs.get_track_msf          = _cdio_get_track_msf;
   _funcs.get_track_preemphasis  = get_track_preemphasis_generic;
   _funcs.lseek                  = cdio_generic_lseek;

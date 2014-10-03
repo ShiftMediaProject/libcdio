@@ -15,7 +15,7 @@
 This manual documents @code{libcdio}, the GNU CD Input, Output, and Control
 Library.
 
-Copyright @copyright{} 2003-2008, 2010, 2012-2013 Rocky
+Copyright @copyright{} 2003-2008, 2010, 2012-2014 Rocky
 Bernstein and Herbert Valerio Riedel.
 
 @quotation
@@ -88,13 +88,14 @@ Indices
 @node History
 @chapter History
 
-As a result of the repressive Digital Millennium Copyright Act (DMCA)
+As a result of the repressive Digital Millennium Copyright Act, DMCA,
 I became aware of Video CD's (VCD's). Video CD's are not subject to
 the DMCA and therefore enjoy the protection afforded by copyright but
 no more. But in order for VCD's to be competitive with DVD's, good
-tools (including GPL tools) are needed for authoring and playing
+tools -- including GPL tools -- are needed for authoring and playing
 them. And so through VCD's I became aware of the excellent Video CD
-tools by Herbert Valerio Riedel which form the @kbd{vcdimager} package.
+tools by Herbert Valerio Riedel which form the @kbd{vcdimager}
+package.
 
 Although vcdimager is great for authoring, examining and extracting
 parts of a Video CD, it is not a VCD player. And when I looked at the
@@ -138,7 +139,7 @@ independence.
 
 One early CD player, @kbd{xmcd} by Ti Kan, was I think a bit better
 than most in that it tried to @emph{encapsulate} the kinds of CD
-control mechanisms (SCSI, Linux ioctl, Toshiba, etc.) in a "CD Audio
+control mechanisms, e.g.\ SCSI, Linux ioctl, Toshiba, in a "CD Audio
 Device Interface Library" called @code{libdi}.  However this library is for
 Audio CD's only and I don't believe this library has been used outside
 of xmcd.
@@ -213,9 +214,7 @@ control. Applications wishing to be oblivious of the OS- and
 device-dependent properties of a CD-ROM can use this library.
 
 Also included is a library, @command{libiso9660}, for working with
-ISO-9660 filesystems, @command{libcdio_paranoia}, and
-@command{libcdio_cdda} libraries for applications which want to use
-cdparanoia's error-correction and jitter detection.
+ISO-9660 filesystems.
 
 Some support for disk-image types like cdrdao's TOC, CDRWIN's BIN/CUE
 and Ahead Nero's NRG format is available, so applications that use this
@@ -223,7 +222,7 @@ library also have the ability to read disc images as though they were
 CDs.
 
 @command{libcdio} also provides a way to issue SCSI ``MultiMedia
-Commands'' (MMC).  MMC is supported by many hardware CD-ROM
+Commands'', MMC.  MMC is supported by many hardware CD-ROM
 manufacturers; and in some cases where a CD-ROM doesn't understand MMC
 directly, some Operating Systems (such as GNU/Linux, Solaris, or
 FreeBSD or Microsoft Windows ASPI to name a few) provide the MMC
@@ -232,14 +231,19 @@ hardware command language is common for printers such as using
 ghostscript to private postscript emulation for a non-postscript
 printer.}
 
+As a separate package under a separate GPL2 license are
+@command{libcdio_paranoia}, and @command{libcdio_cdda} libraries for
+applications which want to use cdparanoia's error-correction and
+jitter detection.
+
 The first use of the library in this package are the Video CD
 authoring and ripping tools, VCDImager
 (@url{http://vcdimager.org}). See
 @url{http://www.gnu.org/software/libcdio/projects.html} for a list of
 projects using @command{libcdio}.
 
-A version of the CD-DA extraction tool cdparanoia
-(@url{http://www.xiph.org/paranoia} and its library which corrects
+A version of the CD-DA extraction tool cdparanoia,
+@url{http://www.xiph.org/paranoia}, and its library which corrects
 for CD-ROM jitter are part of the distribution.
 
 Also included in the libcdio package is a utility program
@@ -247,8 +251,8 @@ Also included in the libcdio package is a utility program
 CD-format and if possible basic information about the format.  If
 libcddb (@url{http://libcddb.sourceforge.net}) is available, the
 @command{cd-info} program will display CDDB matches on CD-DA
-discs. And if a new enough version of libvcdinfo is available (from
-the vcdimager project), then @command{cd-info} shows basic VCD
+discs. And if a new enough version of libvcdinfo is available from
+the vcdimager project, then @command{cd-info} shows basic VCD
 information.
 
 Other utility programs in the libcdio package are:
@@ -268,11 +272,11 @@ supports CD-Text, track/album information about the CD can be shown.
 @item @code{cd-drive}
 
 shows what drivers are available and some basic properties of
-cd-drives attached to the system. (But media may have to be inserted
-in order to get this info.)  lists out drive capabilities
+cd-drives attached to the system. Media may have to be inserted
+in order to get this info. The program also lists out drive capabilities
 
 @item cd-read
-performs low-level block reading of a CD or CD image,
+performs low-level block reading of a CD or CD image
 
 @item @code{iso-info}
 
@@ -317,6 +321,10 @@ ISO-9660 Information
 @item @code{iso-read}
 
 extracts files from an ISO-9660 image.
+
+@item @code{mmc-tool}
+
+a program for issuing some MMC commands
 
 @end table
 
@@ -1870,8 +1878,8 @@ main(int argc, const char *argv[])
 	if (psz_mes || psz_err)
 	  printf("%s%s\n", psz_mes ? psz_mes: "", psz_err ? psz_err: "");
 
-	if (psz_err) free(psz_err);
-	if (psz_mes) free(psz_mes);
+	if (psz_err) cdio_cddap_free_messages(psz_err);
+	if (psz_mes) cdio_cddap_free_messages(psz_mes);
 	if( !p_readbuf ) @{
 	  printf("paranoia read error. Stopping.\n");
 	  break;

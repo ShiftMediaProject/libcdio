@@ -1,5 +1,6 @@
 /*
   Copyright (C) 2008, 2010, 2011, 2012 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2014 Robert Kausch <robert.kausch@freac.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -54,7 +55,7 @@
 #include "cdio_assert.h"
 #include "cdio_private.h"
 
-#ifdef __i386__
+#if defined(__NetBSD__) && defined(__i386__)
 #define DEFAULT_CDIO_DEVICE "/dev/rcd0d"
 #else
 #define DEFAULT_CDIO_DEVICE "/dev/rcd0c"
@@ -578,6 +579,7 @@ static cdio_funcs_t _funcs = {
   .get_track_lba         = NULL, /* This could be implemented if need be. */
   .get_track_preemphasis = get_track_preemphasis_generic,
   .get_track_msf         = get_track_msf_netbsd,
+  .get_track_isrc        = get_track_isrc_mmc,
   .lseek                 = cdio_generic_lseek,
   .read                  = cdio_generic_read,
   .read_audio_sectors    = read_audio_sectors_netbsd,

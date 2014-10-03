@@ -119,7 +119,6 @@ typedef struct _CDROM_TOC_FULL {
 #define SPT_CDB_LENGTH 32
 #define SPT_SENSE_LENGTH 32
 #define SPTWB_DATA_LENGTH 512
-#define MAX_IBUF 1024
 
 #ifndef EMPTY_ARRAY_SIZE
 #define EMPTY_ARRAY_SIZE 0
@@ -138,7 +137,7 @@ typedef struct _SCSI_PASS_THROUGH_WITH_BUFFERS {
     SCSI_PASS_THROUGH    Spt;
     ULONG                Filler;   /* realign buffer to double-word boundary */
     UCHAR                ucSenseBuf[SPT_SENSE_LENGTH];
-    UCHAR ucDataBuf[MAX_IBUF];
+    UCHAR ucDataBuf[EMPTY_ARRAY_SIZE];
 } SCSI_PASS_THROUGH_WITH_BUFFERS;
 
 #ifdef HAVE_STDBOOL_H
@@ -457,49 +456,48 @@ set_scsi_tuple_win32ioctl(_img_private_t *env)
 /**
   Run a SCSI MMC command.
 
-  env           private CD structure
-  i_timeout     time in milliseconds we will wait for the command
+  p_user_data   private CD structure
+  u_timeout_ms  time in milliseconds we will wait for the command
                 to complete. If this value is -1, use the default
                 time-out value.
-  p_buf         Buffer for data, both sending and receiving
-  i_buf         Size of buffer
+  u_cdb         CDB length
+  p_cdb         CDB bytes. All values that are needed should be set on
+                input.
   e_direction   direction the transfer is to go.
-  cdb           CDB bytes. All values that are needed should be set on
-                input. We'll figure out what the right CDB length should be.
+  p_buf         Buffer for data, both sending and receiving
+  u_buf         Size of buffer
 
-  Return 0 if command completed successfully.
+  Return DRIVER_OP_SUCCESS if command completed successfully.
  */
 #if USE_PASSTHROUGH_DIRECT
 int
 run_mmc_cmd_win32ioctl( void *p_user_data,
-                        unsigned int i_timeout_ms,
-                        unsigned int i_cdb, const mmc_cdb_t * p_cdb,
+                        unsigned int u_timeout_ms,
+                        unsigned int u_cdb, const mmc_cdb_t * p_cdb,
                         cdio_mmc_direction_t e_direction,
-                        unsigned int i_buf, /*in/out*/ void *p_buf )
+                        unsigned int u_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;
-  SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER *p_swb;
+  SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER swb;
 
   BOOL b_success;
   DWORD dw_bytes_returned;
   char dummy_buf[2]; /* Used if we can't use p_buf. See below. */
   int rc = DRIVER_OP_SUCCESS;
-  unsigned int i_swb_len =
-    sizeof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER) + i_buf;
-
-  p_swb = malloc(i_swb_len);
+  unsigned int u_swb_len =
+    sizeof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER);
 
   p_env->gen.scsi_mmc_sense_valid = 0;
-  memset(p_swb, 0, i_swb_len);
+  memset(&swb, 0, u_swb_len);
 
-  p_swb->sptd.Length  = sizeof(SCSI_PASS_THROUGH_DIRECT);
-  p_swb->sptd.PathId  = 0;      /* SCSI card ID will be filled in
+  swb.sptd.Length  = sizeof(SCSI_PASS_THROUGH_DIRECT);
+  swb.sptd.PathId  = 0;      /* SCSI card ID will be filled in
                                 automatically */
-  p_swb->sptd.TargetId= 0;      /* SCSI target ID will also be filled in */
-  p_swb->sptd.Lun     = 0;      /* SCSI lun ID will also be filled in */
-  p_swb->sptd.CdbLength         = i_cdb;
-  p_swb->sptd.SenseInfoLength   = sizeof(p_swb->ucSenseBuf);
-  p_swb->sptd.DataIn            =
+  swb.sptd.TargetId= 0;      /* SCSI target ID will also be filled in */
+  swb.sptd.Lun     = 0;      /* SCSI lun ID will also be filled in */
+  swb.sptd.CdbLength         = u_cdb;
+  swb.sptd.SenseInfoLength   = sizeof(swb.ucSenseBuf);
+  swb.sptd.DataIn            =
     (SCSI_MMC_DATA_READ  == e_direction) ? SCSI_IOCTL_DATA_IN :
     (SCSI_MMC_DATA_WRITE == e_direction) ? SCSI_IOCTL_DATA_OUT :
     SCSI_IOCTL_DATA_UNSPECIFIED;
@@ -509,32 +507,32 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
      Invalid User Buffer Error http://support.microsoft.com/kb/259573
      So in those cases we will provide our own.
   */
-  if (i_buf <= 1) {
-    p_swb->sptd.DataBuffer         = &dummy_buf;
-    p_swb->sptd.DataTransferLength = 2;
+  if (u_buf <= 1) {
+    swb.sptd.DataBuffer         = &dummy_buf;
+    swb.sptd.DataTransferLength = 2;
   } else {
-    p_swb->sptd.DataBuffer         = p_buf;
-    p_swb->sptd.DataTransferLength = i_buf;
+    swb.sptd.DataBuffer         = p_buf;
+    swb.sptd.DataTransferLength = u_buf;
   }
 
-  p_swb->sptd.TimeOutValue      = msecs2secs(i_timeout_ms);
-  p_swb->sptd.SenseInfoOffset   =
+  swb.sptd.TimeOutValue      = msecs2secs(u_timeout_ms);
+  swb.sptd.SenseInfoOffset   =
     offsetof(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER, ucSenseBuf);
 
   p_env->gen.scsi_mmc_sense_valid = 0;
-  memcpy(p_swb->sptd.Cdb, p_cdb, i_cdb);
+  memcpy(swb.sptd.Cdb, p_cdb, u_cdb);
 
   /* Send the command to drive */
   b_success = DeviceIoControl(p_env->h_device_handle,
                               IOCTL_SCSI_PASS_THROUGH_DIRECT,
-                              (void *)p_swb,
-                              i_swb_len,
-                              p_swb,
-                              i_swb_len,
+                              (void *)&swb,
+                              u_swb_len,
+                              &swb,
+                              u_swb_len,
                               &dw_bytes_returned,
                               NULL);
 
-  if (i_buf == 1) memcpy(p_buf, &dummy_buf[0], 1);
+  if (u_buf == 1) memcpy(p_buf, &dummy_buf[0], 1);
 
   if ( 0 == b_success ) {
     long int last_error = GetLastError();
@@ -566,7 +564,6 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
       rc = DRIVER_OP_MMC_SENSE_DATA;
   }
 #endif
-  free(p_swb);
   return rc;
 }
 #else
@@ -581,24 +578,15 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   SCSI_PASS_THROUGH_WITH_BUFFERS *p_sptwb;
 
   BOOL b_success;
-  unsigned long length = 0;
   DWORD dw_bytes_returned;
+  int rc = DRIVER_OP_SUCCESS;
   unsigned int u_swb_len =
     sizeof(SCSI_PASS_THROUGH_WITH_BUFFERS) + u_buf;
 
-  if (u_buf > MAX_IBUF) {
-    char buffer[100];
-    snprintf(buffer, sizeof(buffer),
-	     "MMC command buffer length %u greater than max size %u\n",
-	     u_buf, MAX_IBUF);
-    cdio_log(CDIO_LOG_WARN, buffer);
-    return DRIVER_OP_ERROR;
-  }
-
-  p_sptwb = malloc(sizeof(SCSI_PASS_THROUGH_WITH_BUFFERS));
+  p_sptwb = malloc(u_swb_len);
 
   p_env->gen.scsi_mmc_sense_valid = 0;
-  memset(p_sptwb, 0, sizeof(SCSI_PASS_THROUGH_WITH_BUFFERS));
+  memset(p_sptwb, 0, u_swb_len);
 
   p_sptwb->Spt.Length  = sizeof(SCSI_PASS_THROUGH);
   p_sptwb->Spt.PathId  = 0;      /* SCSI card ID will be filled in
@@ -624,9 +612,6 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
     offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS, ucSenseBuf);
 
   memcpy(p_sptwb->Spt.Cdb, p_cdb, u_cdb);
-  p_sptwb->Spt.Cdb[4] = u_buf;
-  length = offsetof(SCSI_PASS_THROUGH_WITH_BUFFERS, ucDataBuf) +
-    p_sptwb->Spt.DataTransferLength;
 
   /*printf("Test 3 Sizeof SCSI_PASS_THROUGH_DIRECT %d\n", sizeof(*p_sptwb));*/
   /* Send the command to drive */
@@ -635,7 +620,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
                               (void *)p_sptwb,
                               u_swb_len,
                               p_sptwb,
-                              length,
+                              u_swb_len,
                               &dw_bytes_returned,
                               NULL);
 
@@ -643,9 +628,16 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
     char buffer[100];
     snprintf(buffer, sizeof(buffer),
 	     "MMC command code: 0x%x\n", p_cdb->field[0]);
-    windows_error(CDIO_LOG_INFO, GetLastError());
+    long int last_error = GetLastError();
+    windows_error(CDIO_LOG_INFO, last_error);
     cdio_log(CDIO_LOG_INFO, buffer);
-    return DRIVER_OP_ERROR;
+    switch (last_error) {
+    case 87:
+      rc = DRIVER_OP_BAD_PARAMETER;
+      break;
+    default:
+      rc = DRIVER_OP_ERROR;
+    }
   }
 
   memcpy(p_buf, &(p_sptwb->ucDataBuf), u_buf);
@@ -665,7 +657,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   }
   free(p_sptwb);
 
-  return DRIVER_OP_SUCCESS;
+  return rc;
 }
 #endif
 
@@ -1226,6 +1218,36 @@ get_mcn_win32ioctl (const _img_private_t *p_env) {
     cdio_warn( "could not read Q Channel at track %d", 1);
   } else if (mcn.Mcval)
     return strdup((const char *) mcn.MediaCatalog);
+  return NULL;
+}
+
+/**
+  Return the international standard recording code ISRC.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+char *
+get_track_isrc_win32ioctl (const _img_private_t *p_env, track_t i_track) {
+
+  DWORD dw_bytes_returned;
+  SUB_Q_TRACK_ISRC isrc;
+  CDROM_SUB_Q_DATA_FORMAT q_data_format;
+
+  memset( &isrc, 0, sizeof(isrc) );
+
+  q_data_format.Format = CDIO_SUBCHANNEL_TRACK_ISRC;
+  q_data_format.Track  = i_track;
+
+  if( ! DeviceIoControl( p_env->h_device_handle,
+                       IOCTL_CDROM_READ_Q_CHANNEL,
+                       &q_data_format, sizeof(q_data_format),
+                       &isrc, sizeof(isrc),
+                       &dw_bytes_returned, NULL ) ) {
+    cdio_warn( "could not read Q Channel at track %d", 1);
+  } else if (isrc.Tcval)
+    return strdup((const char *) isrc.TrackIsrc);
   return NULL;
 }
 

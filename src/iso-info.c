@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004-2006, 2008, 2012-2013 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004-2006, 2008, 2012-2014 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -151,7 +151,11 @@ parse_options (int argc, char *argv[])
     switch (opt)
       {
       case 'd': opts.debug_level = atoi(optarg); break;
-      case 'i': if (optarg != NULL) source_name = strdup(optarg); break;
+      case 'i': if (optarg != NULL) {
+	  if (NULL != source_name)  free(source_name);
+	  source_name = strdup(optarg);
+	  break;
+	}
       case 'f': opts.print_iso9660_short = 1; break;
       case 'l': opts.print_iso9660       = 1; break;
       case 'U': opts.print_udf           = 1; break;
@@ -184,6 +188,7 @@ parse_options (int argc, char *argv[])
       free(program_name);
       exit (EXIT_FAILURE);
     }
+    if (NULL != source_name)  free(source_name);
     source_name = strdup(remaining_arg);
   }
 
@@ -256,7 +261,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
                   psz_iso_name);
       }
 
-      strncat (_fullname, "/", sizeof (_fullname));
+      strncat (_fullname, "/", sizeof(_fullname) - strlen(_fullname) - 1);
 
       if (p_statbuf->type == _STAT_DIR
           && strcmp (psz_iso_name, ".")
@@ -335,10 +340,10 @@ print_udf_file_info(const udf_dirent_t *p_udf_dirent,
   printf("\n");
 }
 
-static udf_dirent_t *
+static void
 list_udf_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const char *psz_path)
 {
-  if (!p_udf_dirent) return NULL;
+  if (!p_udf_dirent) return;
 
   if (opts.print_iso9660) {
     printf ("\n/%s:\n", psz_path);
@@ -363,7 +368,6 @@ list_udf_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const char *psz_path)
       print_udf_file_info(p_udf_dirent, psz_path, NULL);
     }
   }
-  return p_udf_dirent;
 }
 
 static int

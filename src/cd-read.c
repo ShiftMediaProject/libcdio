@@ -33,6 +33,10 @@
 
 #include "getopt.h"
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 /* Configuration option codes */
 enum {
   OP_HANDLED = 0,
@@ -511,7 +515,7 @@ main(int argc, char *argv[])
      */
     if (opts.hexdump == 2) opts.hexdump = 0;
 
-    output_fd = open(opts.output_file, O_WRONLY|O_CREAT|O_TRUNC, 0644);
+    output_fd = open(opts.output_file, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY, 0644);
     if (-1 == output_fd) {
       err_exit("Error opening output file %s: %s\n",
 	       opts.output_file, strerror(errno));

@@ -1,6 +1,6 @@
 /*
-  Copyright (C) 2004, 2005, 2006, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
-  
+  Copyright (C) 2004-2006, 2008, 2012-2013 Rocky Bernstein <rocky@gnu.org>
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -51,9 +51,9 @@
  */
 static struct arguments
 {
-  char          *file_name; 
-  char          *output_file; 
-  char          *iso9660_image; 
+  char          *file_name;
+  char          *output_file;
+  char          *iso9660_image;
   int            debug_level;
   int            no_header;
   int            ignore;
@@ -95,15 +95,15 @@ parse_options (int argc, char *argv[])
     "Usage: %s [-d|--debug INT] [-i|--image FILE] [-e|--extract FILE]\n"
     "        [--no-header] [-o|--output-file FILE]  [-U|--udf]\n"
     "        [-V|--version] [-?|--help] [--usage]\n";
-  
+
   /* Command-line options */
   static const char* optionsString = "d:i:e:o:VUk?";
   static const struct option optionsTable[] = {
     {"debug",       required_argument, NULL,   'd' },
     {"image",       required_argument, NULL,   'i' },
     {"extract",     required_argument, NULL,   'e' },
-    {"no-header",   no_argument, &opts.no_header, 1 }, 
-    {"ignore",      no_argument, &opts.ignore, 'k' }, 
+    {"no-header",   no_argument, &opts.no_header, 1 },
+    {"ignore",      no_argument, &opts.ignore, 'k' },
     {"output-file", required_argument, NULL,   'o' },
     {"udf",         no_argument, &opts.udf,    'U' },
     {"version",     no_argument, NULL,         'V' },
@@ -112,7 +112,7 @@ parse_options (int argc, char *argv[])
     {"usage", no_argument, NULL, OP_USAGE },
     { NULL, 0, NULL, 0 }
   };
-  
+
   program_name = strrchr(argv[0],'/');
   program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
@@ -151,18 +151,18 @@ parse_options (int argc, char *argv[])
   if (optind < argc) {
     const char *remaining_arg = argv[optind++];
     if (opts.iso9660_image != NULL) {
-      report( stderr, "%s: Source specified as --image %s and as %s\n", 
+      report( stderr, "%s: Source specified as --image %s and as %s\n",
               program_name, opts.iso9660_image, remaining_arg );
       free(program_name);
       exit (EXIT_FAILURE);
     }
-    
+
     opts.iso9660_image = strdup(remaining_arg);
-    
+
     if (optind < argc ) {
-      report( stderr, 
+      report( stderr,
               "%s: use only one unnamed argument for the ISO 9660 "
-              "image name\n", 
+              "image name\n",
               program_name );
       free(program_name);
       exit (EXIT_FAILURE);
@@ -170,23 +170,23 @@ parse_options (int argc, char *argv[])
   }
 
   if (NULL == opts.iso9660_image) {
-    report( stderr, "%s: you need to specify an ISO-9660 image name.\n", 
+    report( stderr, "%s: you need to specify an ISO-9660 image name.\n",
             program_name );
-    report( stderr, "%s: Use option --image or try --help.\n", 
+    report( stderr, "%s: Use option --image or try --help.\n",
             program_name );
     exit (EXIT_FAILURE);
   }
 
   if (NULL == opts.file_name) {
-    report( stderr, "%s: you need to specify a filename to extract.\n", 
+    report( stderr, "%s: you need to specify a filename to extract.\n",
             program_name );
-    report( stderr, "%s: Use option --extract or try --help.\n", 
+    report( stderr, "%s: Use option --extract or try --help.\n",
             program_name );
     exit (EXIT_FAILURE);
   }
 
   if (NULL == opts.output_file) {
-    report( stderr, 
+    report( stderr,
             "%s: you need to specify a place write filename extraction to.\n",
              program_name );
     report( stderr, "%s: Use option --output-file or try --help.\n",
@@ -197,8 +197,8 @@ parse_options (int argc, char *argv[])
   return true;
 }
 
-static void 
-init(void) 
+static void
+init(void)
 {
   opts.debug_level   = 0;
   opts.ignore        = 0;
@@ -215,23 +215,23 @@ static int read_iso_file(const char *iso_name, const char *src,
   iso9660_t *iso;
 
   iso = iso9660_open (iso_name);
-  
+
   if (NULL == iso) {
-    report(stderr, 
-           "%s: Sorry, couldn't open ISO-9660 image file '%s'.\n", 
+    report(stderr,
+           "%s: Sorry, couldn't open ISO-9660 image file '%s'.\n",
            program_name, src);
     return 1;
   }
 
   statbuf = iso9660_ifs_stat_translate (iso, src);
 
-  if (NULL == statbuf) 
+  if (NULL == statbuf)
     {
-      report(stderr, 
+      report(stderr,
              "%s: Could not get ISO-9660 file information out of %s"
              " for file %s.\n",
              program_name, iso_name, src);
-      report(stderr, 
+      report(stderr,
              "%s: iso-info may be able to show the contents of %s.\n",
              program_name, iso_name);
       return 2;
@@ -244,8 +244,8 @@ static int read_iso_file(const char *iso_name, const char *src,
       char buf[ISO_BLOCKSIZE];
 
       memset (buf, 0, ISO_BLOCKSIZE);
-      
-      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (iso, buf, statbuf->lsn 
+
+      if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (iso, buf, statbuf->lsn
                                                    + (i / ISO_BLOCKSIZE),
                                                    1) )
       {
@@ -253,10 +253,10 @@ static int read_iso_file(const char *iso_name, const char *src,
                (long unsigned int) statbuf->lsn + (i / ISO_BLOCKSIZE));
         if (!opts.ignore) return 4;
       }
-      
-      
+
+
       fwrite (buf, ISO_BLOCKSIZE, 1, outfd);
-      
+
       if (ferror (outfd))
         {
           perror ("fwrite()");
@@ -275,26 +275,27 @@ static int read_udf_file(const char *iso_name, const char *src,
   udf_t *p_udf;
 
   p_udf = udf_open (iso_name);
-  
+
   if (NULL == p_udf) {
-    fprintf(stderr, "Sorry, couldn't open %s as something using UDF\n", 
+    fprintf(stderr, "Sorry, couldn't open %s as something using UDF\n",
             iso_name);
     return 1;
   } else {
     udf_dirent_t *p_udf_root = udf_get_root(p_udf, true, 0);
     udf_dirent_t *p_udf_file = NULL;
     if (NULL == p_udf_root) {
-      fprintf(stderr, "Sorry, couldn't find / in %s\n", 
+      fprintf(stderr, "Sorry, couldn't find / in %s\n",
               iso_name);
       return 1;
     }
-    
+
     p_udf_file = udf_fopen(p_udf_root, src);
     if (!p_udf_file) {
-      fprintf(stderr, "Sorry, couldn't find %s in %s\n", 
+      fprintf(stderr, "Sorry, couldn't find %s in %s\n",
               src, iso_name);
+      udf_dirent_free(p_udf_root);
       return 2;
-      
+
     }
 
     {
@@ -308,6 +309,8 @@ static int read_udf_file(const char *iso_name, const char *src,
         if ( i_read < 0 ) {
           fprintf(stderr, "Error reading UDF file %s at block %u\n",
                   src, i);
+	  free(p_udf_file);
+	  udf_dirent_free(p_udf_root);
           return 4;
         }
 
@@ -315,10 +318,13 @@ static int read_udf_file(const char *iso_name, const char *src,
 
         if (ferror (outfd)) {
           perror ("fwrite()");
+	  free(p_udf_file);
+	  udf_dirent_free(p_udf_root);
           return 5;
         }
       }
 
+      free(p_udf_file);
       udf_dirent_free(p_udf_root);
       udf_close(p_udf);
       *bytes_written = i_file_length;
@@ -332,22 +338,22 @@ main(int argc, char *argv[])
 {
   FILE *outfd;
   int ret;
-  size_t bytes_written;
-  
+  size_t bytes_written = 0;
+
   init();
 
   /* Parse our arguments; every option seen by `parse_opt' will
      be reflected in `arguments'. */
   if (!parse_options(argc, argv)) {
-    report(stderr, 
+    report(stderr,
            "error while parsing command line - try --help\n");
     return 2;
   }
-     
+
   if (!(outfd = fopen (opts.output_file, "wb")))
     {
       report(stderr,
-             "%s: Could not open %s for writing: %s\n", 
+             "%s: Could not open %s for writing: %s\n",
              program_name, opts.output_file, strerror(errno));
       return 3;
     }
@@ -360,7 +366,7 @@ main(int argc, char *argv[])
                            outfd, &bytes_written);
   }
   if (ret != 0) return ret;
-  
+
   fflush (outfd);
 
   /* Make sure the file size has the exact same byte size. Without the

@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2005-2006, 2008, 2011, 2013 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005-2006, 2008, 2011, 2013-2014
+  Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -70,6 +71,9 @@ const char VSD_STD_ID_NSR03[] = {'N', 'S', 'R', '0', '3'};
 const char VSD_STD_ID_TEA01[] = {'T', 'E', 'A', '0', '1'};
 
 #include <cdio/bytesex.h>
+#include <cdio/utf8.h>
+#include <cdio/util.h>
+
 #include "udf_private.h"
 #include "udf_fs.h"
 #include "cdio_assert.h"
@@ -202,10 +206,9 @@ udf_get_lba(const udf_file_entry_t *p_udf_fe,
 
 #define udf_PATH_DELIMITERS "/\\"
 
-/* Searches p_udf_dirent a directory entry called psz_token.
-   Note p_udf_dirent is continuously updated. If the entry is
-   not found p_udf_dirent is useless and thus the caller should
-   not use it afterwards.
+/* Searches p_udf_dirent for a directory entry called psz_token.
+   Note that p_udf_dirent may be replaced or freed during this call
+   and only the returned udf_dirent_t must be used afterwards.
 */
 static
 udf_dirent_t *
@@ -218,20 +221,21 @@ udf_ff_traverse(udf_dirent_t *p_udf_dirent, char *psz_token)
       if (!next_tok)
 	return p_udf_dirent; /* found */
       else if (p_udf_dirent->b_dir) {
-	udf_dirent_t * p_udf_dirent2 = udf_opendir(p_udf_dirent);
+	udf_dirent_t * p_udf_dirent_next = udf_opendir(p_udf_dirent);
 
-	if (p_udf_dirent2) {
-	  udf_dirent_t * p_udf_dirent3 =
-	    udf_ff_traverse(p_udf_dirent2, next_tok);
+	if (p_udf_dirent_next) {
+	  /* free p_udf_dirent to avoid leaking memory. */
+	  udf_dirent_free(p_udf_dirent);
 
-	  /* if p_udf_dirent3 is null p_udf_dirent2 is free'd. */
-	  return p_udf_dirent3;
+	  /* previous p_udf_dirent_next is freed by udf_ff_traverse. */
+	  p_udf_dirent_next = udf_ff_traverse(p_udf_dirent_next, next_tok);
+
+	  return p_udf_dirent_next;
 	}
       }
     }
   }
-  if (p_udf_dirent)
-    free(p_udf_dirent->psz_name);
+
   return NULL;
 }
 
@@ -250,20 +254,15 @@ udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name)
     /* file position must be reset when accessing a new file */
     p_udf_root->p_udf->i_position = 0;
 
-    strncpy(tokenline, psz_name, udf_MAX_PATHLEN);
+    tokenline[udf_MAX_PATHLEN-1] = '\0';
+    strncpy(tokenline, psz_name, udf_MAX_PATHLEN-1);
     psz_token = strtok(tokenline, udf_PATH_DELIMITERS);
     if (psz_token) {
-      /*** FIXME??? udf_dirent can be variable size due to the
-	   extended attributes and descriptors. Given that, is this
-	   correct?
-       */
       udf_dirent_t *p_udf_dirent =
 	udf_new_dirent(&p_udf_root->fe, p_udf_root->p_udf,
 		       p_udf_root->psz_name, p_udf_root->b_dir,
 		       p_udf_root->b_parent);
       p_udf_file = udf_ff_traverse(p_udf_dirent, psz_token);
-      if (p_udf_file != p_udf_dirent)
-        udf_dirent_free(p_udf_dirent);
     }
     else if ( 0 == strncmp("/", psz_name, sizeof("/")) ) {
       return udf_new_dirent(&p_udf_root->fe, p_udf_root->p_udf,
@@ -274,23 +273,32 @@ udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name)
   return p_udf_file;
 }
 
-/* Convert unicode16 to 8-bit char by dripping MSB.
-   Wonder if iconv can be used here
+/* Convert unicode16 to UTF-8.
+   The returned string is allocated and must be freed by the caller
 */
-static int
-unicode16_decode( const uint8_t *data, int i_len, char *target )
+static char*
+unicode16_decode(const uint8_t *data, int i_len)
 {
-  int p = 1, i = 0;
+  int i;
+  char* r = NULL;
 
-  if( ( data[ 0 ] == 8 ) || ( data[ 0 ] == 16 ) ) do {
-    if( data[ 0 ] == 16 ) p++;  /* Ignore MSB of unicode16 */
-    if( p < i_len ) {
-      target[ i++ ] = data[ p++ ];
-    }
-  } while( p < i_len );
-
-  target[ i ] = '\0';
-  return 0;
+  switch (data[0])
+  {
+  case 8:
+    r = (char*)calloc(i_len, 1);
+    if (r == NULL)
+      return r;
+    for (i=0; i<i_len-1; i++)
+      r[i] = data[i+1];
+    return r;
+  case 16:
+    cdio_charset_to_utf8((char*)&data[1], i_len-1, &r, "UCS-2BE");
+    return r;
+  default:
+    /* Empty string, as some existing sections can't take a NULL pointer */
+    r = (char*)calloc(1, 1);
+    return r;
+  }
 }
 
 
@@ -431,17 +439,23 @@ udf_open (const char *psz_path)
 }
 
 /**
- * Gets the Volume Identifier string, in 8bit unicode (latin-1)
+ * Gets the Volume Identifier, as an UTF-8 string
  * psz_volid, place to put the string
  * i_volid, size of the buffer psz_volid points to
  * returns the size of buffer needed for all data
+ * Note: this call accepts a NULL psz_volid, to retrieve the length required.
  */
 int
-udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,  unsigned int i_volid)
+udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid, unsigned int i_volid)
 {
   uint8_t data[UDF_BLOCKSIZE];
   const udf_pvd_t *p_pvd = (udf_pvd_t *) &data;
+  char* r;
   unsigned int volid_len;
+
+  /* clear the output to empty string */
+  if (psz_volid != NULL)
+    psz_volid[0] = 0;
 
   /* get primary volume descriptor */
   if ( DRIVER_OP_SUCCESS != udf_read_sectors(p_udf, &data, p_udf->pvd_lba, 1) )
@@ -452,10 +466,17 @@ udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid,  unsigned int i_volid)
     /* this field is only UDF_VOLID_SIZE bytes something is wrong */
     volid_len = UDF_VOLID_SIZE-1;
   }
-  if(i_volid > volid_len) {
-    i_volid = volid_len;
+
+  r = unicode16_decode((uint8_t *) p_pvd->vol_ident, volid_len);
+  if (r == NULL)
+    return 0;
+
+  volid_len = strlen(r)+1;     /* +1 for NUL terminator */
+  if (psz_volid != NULL) {
+    strncpy(psz_volid, r, MIN(volid_len, i_volid));
+    psz_volid[i_volid-1] = 0;  /* strncpy does not always terminate the dest */
   }
-  unicode16_decode((uint8_t *) p_pvd->vol_ident, i_volid, psz_volid);
+  free(r);
 
   return volid_len;
 }
@@ -490,27 +511,39 @@ udf_get_volumeset_id(udf_t *p_udf, /*out*/ uint8_t *volsetid,
 }
 
 /**
- * Gets the Logical Volume Identifier string, in 8bit unicode (latin-1)
+ * Gets the Logical Volume Identifier string, as an UTF-8 string
  * psz_logvolid, place to put the string (should be at least 64 bytes)
  * i_logvolid, size of the buffer psz_logvolid points to
- * returns the size of buffer needed for all data
+ * returns the size of buffer needed for all data, including NUL terminator
  * A call to udf_get_root() should have been issued before this call
+ * Note: this call accepts a NULL psz_volid, to retrieve the length required.
  */
 int
-udf_get_logical_volume_id(udf_t *p_udf, /*out*/ char *psz_logvolid,  unsigned int i_logvolid)
+udf_get_logical_volume_id(udf_t *p_udf, /*out*/ char *psz_logvolid, unsigned int i_logvolid)
 {
   uint8_t data[UDF_BLOCKSIZE];
   logical_vol_desc_t *p_logvol = (logical_vol_desc_t *) &data;
+  char* r;
   int logvolid_len;
+
+  /* clear the output to empty string */
+  if (psz_logvolid != NULL)
+    psz_logvolid[0] = 0;
 
   if (DRIVER_OP_SUCCESS != udf_read_sectors (p_udf, p_logvol, p_udf->lvd_lba, 1) )
     return 0;
 
-  logvolid_len = (p_logvol->logvol_id[127]+1)/2;
-  if (i_logvolid > logvolid_len)
-    i_logvolid = logvolid_len;
+  r = unicode16_decode((uint8_t *) p_logvol->logvol_id, p_logvol->logvol_id[127]);
+  if (r == NULL)
+    return 0;
 
-  unicode16_decode((uint8_t *) p_logvol->logvol_id, 2*i_logvolid, psz_logvolid);
+  logvolid_len = strlen(r)+1;  /* +1 for NUL terminator */
+  if (psz_logvolid != NULL) {
+    strncpy(psz_logvolid, r, MIN(logvolid_len, i_logvolid));
+    psz_logvolid[i_logvolid-1] = 0;    /* strncpy does not always terminate the dest */
+  }
+  free(r);
+
   return logvolid_len;
 }
 
@@ -651,6 +684,7 @@ udf_dirent_t *
 udf_readdir(udf_dirent_t *p_udf_dirent)
 {
   udf_t *p_udf;
+  uint8_t* p;
 
   if (p_udf_dirent->dir_left <= 0) {
     udf_dirent_free(p_udf_dirent);
@@ -710,13 +744,9 @@ udf_readdir(udf_dirent_t *p_udf_dirent)
 		return NULL;
 	}
 
-	if (strlen(p_udf_dirent->psz_name) < i_len)
-	  p_udf_dirent->psz_name = (char *)
-	    realloc(p_udf_dirent->psz_name, sizeof(char)*i_len+1);
-
-	unicode16_decode(p_udf_dirent->fid->u.imp_use.data
-			 + p_udf_dirent->fid->u.i_imp_use,
-			 i_len, p_udf_dirent->psz_name);
+       free_and_null(p_udf_dirent->psz_name);
+       p = (uint8_t*)p_udf_dirent->fid->u.imp_use.data + p_udf_dirent->fid->u.i_imp_use;
+       p_udf_dirent->psz_name = unicode16_decode(p, i_len);
       }
       return p_udf_dirent;
     }

@@ -13,8 +13,8 @@
 #include <string.h>
 #endif
 
-extern char * cdio_abspath(const char *cwd, const char *fname);
-const char * cdio_dirname(const char *fname);
+char *cdio_abspath(const char *cwd, const char *fname);
+char *cdio_dirname(const char *fname);
 
 int
 main(int argc, const char *argv[])
@@ -29,18 +29,19 @@ main(int argc, const char *argv[])
     };
 
   int rc=0;
-  char *dest;
   int i;
 
   for (i=0; i<2; i++) {
-      const char *dirname = cdio_dirname(cue_filename[i]);
-      dest = cdio_abspath (dirname, "baz");
+      char *dirname = cdio_dirname(cue_filename[i]);
+      char *dest = cdio_abspath(dirname, "baz");
       if (0 != strcmp(expect[i], dest)) {
 	  fprintf(stderr, 
 		  "Incorrect: expecting %s, got %s.\n",
 		  expect[i], dest);
 	  rc=i+1;
       }
+      free(dirname);
+      free(dest);
   }
   exit(rc);
 }

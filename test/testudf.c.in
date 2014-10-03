@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2013 Rocky Bernstein <rocky@gnu.org>
-  Copyright (C) 2013 Pete Batard <pete@akeo.ie>
+  Copyright (C) 2013-2014 Pete Batard <pete@akeo.ie>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -44,18 +44,22 @@
 #include <cdio/cdio.h>
 #include <cdio/udf.h>
 
+#define EXPECTED_NAME    "FéжΘvrier"
+#define EXPECTED_LENGTH  10
+
 int
 main(int argc, const char *argv[])
 {
   char const *psz_fname = UDF_IMAGE;
   char volume_id[192];         /* 3*64 to account for UTF-8 */
   udf_t* p_udf = NULL;
-  udf_dirent_t* p_udf_root;
+  udf_dirent_t *p_udf_root, *p_udf_file;
+  int64_t file_length;
 
   p_udf = udf_open(psz_fname);
 
   if (NULL == p_udf) {
-    fprintf(stderr, "Sorry, couldn't open %s as an UDF image\n",
+    fprintf(stderr, "Couldn't open %s as an UDF image\n",
       psz_fname);
     return 1;
   }
@@ -66,14 +70,26 @@ main(int argc, const char *argv[])
     return 2;
   }
 
-  if (udf_get_logical_volume_id(p_udf, volume_id, sizeof(volume_id)) <= 0) {
-    fprintf(stderr, "UDF image %s has no logical volume ID\n",
-      psz_fname);
+  if ( (udf_get_logical_volume_id(p_udf, volume_id, sizeof(volume_id)) <= 0)
+    || (strcmp(EXPECTED_NAME, volume_id) != 0) ) {
+    fprintf(stderr, "Unexpected UDF logical volume ID\n");
     return 3;
   }
-  printf("-- Volume id: %s\n", volume_id);
+  printf("-- Good! Volume id matches expected UTF-8 data\n");
 
-  udf_close(p_udf);
+  p_udf_file = udf_fopen(p_udf_root, EXPECTED_NAME);
+  if (!p_udf_file) {
+    fprintf(stderr, "Could not locate expected file in UDF image\n");
+    return 4;
+  }
+  printf("-- Good! File name matches expected UTF-8 data\n");
+
+  file_length = udf_get_file_length(p_udf_file);
+  if (file_length != EXPECTED_LENGTH) {
+    fprintf(stderr, "Unexpected UDF file length\n");
+    return 5;
+  }
+  printf("-- Good! File length matches expected length\n");
 
   return 0;
 }

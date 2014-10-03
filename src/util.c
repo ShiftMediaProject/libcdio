@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003-2010, 2012-2013 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003-2010, 2012-2014 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -191,7 +191,7 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 {
 
   int i_status;                  /* Result of SCSI MMC command */
-  uint8_t buf[500] = { 0, };     /* Place to hold returned data */
+  uint8_t buf[65530] = { 0, };     /* Place to hold returned data */
   mmc_cdb_t cdb = {{0, }};       /* Command Descriptor Block */
 
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_GET_CONFIGURATION);
@@ -204,7 +204,7 @@ print_mmc_drive_features(CdIo_t *p_cdio)
   if (i_status == 0) {
     uint8_t *p;
     uint32_t i_data;
-    uint8_t *p_max = buf + 65530;
+    uint8_t *p_max = buf + sizeof(buf);
 
     i_data  = (unsigned int) CDIO_MMC_GET_LEN32(buf);
 

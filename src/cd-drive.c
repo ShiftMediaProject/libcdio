@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2011, 2014 Rocky Bernstein <rocky@gnu.org>
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -37,7 +37,7 @@ static struct arguments
   int            silent;
   source_image_t source_image;
 } opts;
-     
+
 /* Configuration option codes */
 enum {
   OP_HANDLED,
@@ -47,8 +47,8 @@ enum {
   OP_USAGE,
 
   /* These are the remaining configuration options */
-  OP_VERSION,  
-  
+  OP_VERSION,
+
 };
 
 /* Parse all options. */
@@ -58,7 +58,7 @@ parse_options (int argc, char *argv[])
   int opt;
 
   static const char helpText[] =
-    "Usage: %s [OPTION...]\n" 
+    "Usage: %s [OPTION...]\n"
     "  -d, --debug=INT                 Set debugging to LEVEL\n"
     "  -i, --cdrom-device[=DEVICE]     show only info about CD-ROM device\n"
     "  -q, --quiet                     Don't produce warning output\n"
@@ -68,7 +68,7 @@ parse_options (int argc, char *argv[])
     "Help options:\n"
     "  -?, --help                      Show this help message\n"
     "  --usage                         Display brief usage message\n";
-  
+
   static const char usageText[] =
     "Usage: %s [-d|--debug INT] [-i|--cdrom-device DEVICE] [-q|--quiet]\n"
     "        [-V|--version] [-?|--help] [--usage]\n";
@@ -93,18 +93,18 @@ parse_options (int argc, char *argv[])
       opts.debug_level = atoi(optarg);
       break;
 
-    case 'i': 
+    case 'i':
       if (opts.source_image != (source_image_t) DRIVER_UNKNOWN) {
 	/* NOTE: The libpopt version already set source_name by this time.
 	   To restore this behavior, fall through to the else{} block.
 	*/
-	report( stderr, "%s: another source type option given before.\n", 
+	report( stderr, "%s: another source type option given before.\n",
 		program_name );
-	report( stderr, "%s: give only one source type option.\n", 
+	report( stderr, "%s: give only one source type option.\n",
 		program_name );
 	break;
       } else {
-	opts.source_image  = DRIVER_DEVICE;
+	opts.source_image  = (source_image_t) DRIVER_DEVICE;
 	if (optarg != NULL) {
 	  source_name = fillout_device_name(optarg);
 	}
@@ -146,31 +146,31 @@ parse_options (int argc, char *argv[])
        rendered the subsequent source_image test useless.
     */
     if (source_name != NULL) {
-      report( stderr, "%s: Source specified in option %s and as %s\n", 
+      report( stderr, "%s: Source specified in option %s and as %s\n",
 	      program_name, source_name, remaining_arg);
       free(program_name);
       exit (EXIT_FAILURE);
     }
-      
+
     if (opts.source_image == (source_image_t) DRIVER_DEVICE)
       source_name = fillout_device_name(remaining_arg);
-    else 
+    else
       source_name = strdup(remaining_arg);
 
     if (optind < argc) {
-      report( stderr, "%s: Source specified in previously %s and %s\n", 
+      report( stderr, "%s: Source specified in previously %s and %s\n",
 	      program_name, source_name, remaining_arg);
       free(program_name);
       exit (EXIT_FAILURE);
     }
   }
-  
+
   return true;
 }
 
 /* CDIO logging routines */
 
-static void 
+static void
 _log_handler (cdio_log_level_t level, const char message[])
 {
   if (level == CDIO_LOG_DEBUG && opts.debug_level < 2)
@@ -178,19 +178,19 @@ _log_handler (cdio_log_level_t level, const char message[])
 
   if (level == CDIO_LOG_INFO  && opts.debug_level < 1)
     return;
-  
+
   if (level == CDIO_LOG_WARN  && opts.silent)
     return;
-  
+
   gl_default_cdio_log_handler (level, message);
 }
 
 /*! Prints out SCSI-MMC drive features  */
-static void 
+static void
 print_mmc_drive_level(CdIo_t *p_cdio)
 {
   cdio_mmc_level_t mmc_level = mmc_get_drive_mmc_cap(p_cdio);
-    
+
   printf( "CD-ROM drive supports " );
 
   switch(mmc_level) {
@@ -214,28 +214,28 @@ print_mmc_drive_level(CdIo_t *p_cdio)
 }
 
 /* Initialize global variables. */
-static void 
-init(void) 
+static void
+init(void)
 {
   gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
 
   /* Default option values. */
   opts.silent        = false;
   opts.debug_level   = 0;
-  opts.source_image  = DRIVER_UNKNOWN;
+  opts.source_image  = (source_image_t) DRIVER_UNKNOWN;
 }
 
 int
 main(int argc, char *argv[])
 {
   CdIo_t *p_cdio=NULL;
-  
+
   init();
 
   /* Parse our arguments; every option seen by `parse_opt' will
      be reflected in `arguments'. */
   parse_options(argc, argv);
-     
+
   print_version(program_name, CDIO_VERSION, false, opts.version_only);
 
   if (opts.debug_level == 3) {
@@ -253,20 +253,20 @@ main(int argc, char *argv[])
       printf("No loaded CD-ROM device accessible.\n");
     }  else {
       default_device = cdio_get_default_device(p_cdio);
-      
+
       printf("The driver selected is %s\n", cdio_get_driver_name(p_cdio));
 
       if (default_device) {
 	printf("The default device for this driver is %s\n", default_device);
       }
-    
+
       free(default_device);
       cdio_destroy(p_cdio);
       p_cdio=NULL;
       printf("\n");
     }
   }
-  
+
   /* Print out a drivers available */
   {
     const driver_id_t *driver_id_p;
@@ -278,22 +278,22 @@ main(int argc, char *argv[])
       }
     printf("\n");
   }
-  
-    
+
+
   if (NULL == source_name) {
     /* Print out a list of CD-drives */
 
     char **ppsz_cdrives=NULL, **ppsz_cd;
     driver_id_t driver_id = DRIVER_DEVICE;
-    
+
     ppsz_cdrives = cdio_get_devices_ret(&driver_id);
-    if (NULL != ppsz_cdrives) 
+    if (NULL != ppsz_cdrives)
       for( ppsz_cd = ppsz_cdrives; *ppsz_cd != NULL; ppsz_cd++ ) {
 	cdio_drive_read_cap_t  i_read_cap;
 	cdio_drive_write_cap_t i_write_cap;
 	cdio_drive_misc_cap_t  i_misc_cap;
 	cdio_hwinfo_t          hwinfo;
-	CdIo_t *p_cdio = cdio_open(*ppsz_cd, driver_id); 
+	CdIo_t *p_cdio = cdio_open(*ppsz_cd, driver_id);
 
 	print_mmc_drive_level(p_cdio);
 
@@ -302,19 +302,19 @@ main(int argc, char *argv[])
 	if (p_cdio) {
 	  if (cdio_get_hwinfo(p_cdio, &hwinfo)) {
 	    printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
-		   "Vendor"  , hwinfo.psz_vendor, 
-		   "Model"   , hwinfo.psz_model, 
+		   "Vendor"  , hwinfo.psz_vendor,
+		   "Model"   , hwinfo.psz_model,
 		   "Revision", hwinfo.psz_revision);
 	  }
 	  print_mmc_drive_features(p_cdio);
-	  cdio_get_drive_cap(p_cdio, &i_read_cap, &i_write_cap, 
+	  cdio_get_drive_cap(p_cdio, &i_read_cap, &i_write_cap,
 			     &i_misc_cap);
 	  print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
 	}
 	printf("\n");
 	if (p_cdio) cdio_destroy(p_cdio);
       }
-    
+
     cdio_free_device_list(ppsz_cdrives);
     ppsz_cdrives = NULL;
   } else {
@@ -323,7 +323,7 @@ main(int argc, char *argv[])
     cdio_drive_write_cap_t i_write_cap;
     cdio_drive_misc_cap_t  i_misc_cap;
     cdio_hwinfo_t          hwinfo;
-    
+
     printf("Drive %s\n", source_name);
     p_cdio = cdio_open (source_name, DRIVER_UNKNOWN);
 
@@ -333,13 +333,13 @@ main(int argc, char *argv[])
 
       if (cdio_get_hwinfo(p_cdio, &hwinfo)) {
 	printf("%-28s: %s\n%-28s: %s\n%-28s: %s\n",
-	       "Vendor"  , hwinfo.psz_vendor, 
-	       "Model"   , hwinfo.psz_model, 
+	       "Vendor"  , hwinfo.psz_vendor,
+	       "Model"   , hwinfo.psz_model,
 	       "Revision", hwinfo.psz_revision);
       }
       print_mmc_drive_features(p_cdio);
     }
-    cdio_get_drive_cap_dev(source_name, &i_read_cap, &i_write_cap, 
+    cdio_get_drive_cap_dev(source_name, &i_read_cap, &i_write_cap,
 			   &i_misc_cap);
     print_drive_capabilities(i_read_cap, i_write_cap, i_misc_cap);
     printf("\n");

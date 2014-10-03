@@ -11,7 +11,6 @@ _cdio_list_node_data
 _cdio_list_node_free
 _cdio_list_node_next
 _cdio_list_prepend
-_cdio_malloc
 _cdio_strfreev
 _cdio_strsplit
 cdio_abspath
@@ -41,6 +40,7 @@ cdio_drivers
 cdio_eject_media
 cdio_eject_media_drive
 cdio_error
+cdio_free
 cdio_free_device_list
 cdio_from_bcd8
 cdio_get_arg
@@ -221,6 +221,7 @@ mmc_get_hwinfo
 mmc_get_last_lsn
 mmc_get_mcn
 mmc_get_media_changed
+mmc_get_track_isrc
 mmc_get_tray_status
 mmc_have_interface
 mmc_is_disctype_bd
@@ -234,7 +235,7 @@ mmc_mode_select_10
 mmc_mode_sense
 mmc_mode_sense_10
 mmc_mode_sense_6
-mmc_prevent_allow_meduim_removal
+mmc_prevent_allow_medium_removal
 mmc_read_cd
 mmc_read_data_sectors
 mmc_read_disc_information

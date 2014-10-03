@@ -1,10 +1,10 @@
-dnl Copyright (C) 2003-2008, 2010, 2011-2013
+dnl Copyright (C) 2003-2008, 2010, 2011-2014
 dnl Rocky Bernstein <rocky@gnu.org>
 dnl
-dnl This program is free software; you can redistribute it and/or modify
+dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
-dnl the Free Software Foundation; either version 2, or (at your option)
-dnl any later version.
+dnl the Free Software Foundation, either version 3 of the License, or
+dnl (at your option) any later version.
 dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,11 +12,9 @@ dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
 dnl
 dnl You should have received a copy of the GNU General Public License
-dnl along with this program; if not, write to the Free Software
-dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-dnl 02110-1301 USA.
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-define(RELEASE_NUM, 92)
+define(RELEASE_NUM, 93)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.61)
@@ -367,7 +365,7 @@ case $host_os in
        ## AC_DEFINE([HAVE_AIX_CDROM], [1],
        ##     [Define 1 if you have AIX CD-ROM support])
        ;;
-     darwin[[6-9]].*|darwin1[[0-2]].*)
+     darwin[[6-9]].*|darwin1[[0-4]].*)
        AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h,
                         [have_iokit_h="yes"])
        if test "x$have_iokit_h" = "xyes" ; then
@@ -479,13 +477,13 @@ int has_timeout=sizeof(test.timeout);],
 	fi
 	enable_cdda_player="no"
 	;;
-     freebsd4.*|freebsd5.*|freebsd[[6-9]].*|dragonfly*|kfreebsd*)
+     freebsd[[4-9]].*|freebsd10.*|dragonfly*|kfreebsd*)
      	AC_DEFINE([HAVE_FREEBSD_CDROM], [1],
                   [Define 1 if you have FreeBSD CD-ROM support])
  	LIBS="$LIBS -lcam"
   	cd_drivers="${cd_drivers}, FreeBSD "
 	;;
-     netbsd*)
+     netbsd*|openbsd*)
      	AC_DEFINE([HAVE_NETBSD_CDROM], [1],
                   [Define 1 if you have NetBSD CD-ROM support])
  	# LIBS="$LIBS -lcam"

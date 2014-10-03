@@ -135,6 +135,7 @@ handle_outcome(CdIo_t *p_cdio, driver_return_code_t i_status,
 	memcpy(p_sense_reply, p_temp_sense_reply, sizeof(cdio_mmc_request_sense_t));
     else
 	memset(p_sense_reply, 0, sizeof(cdio_mmc_request_sense_t));
+    cdio_free(p_temp_sense_reply);
     return i_status;
 }
 

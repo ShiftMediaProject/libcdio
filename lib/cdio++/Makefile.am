@@ -19,11 +19,11 @@
 # Things to make the libcdio++ library
 ########################################################
 #
-# From libtool documentation amended with guidance from N. Boullis: 
+# From libtool documentation amended with guidance from N. Boullis:
 #
 #  1. Start with version information of `0:0:0' for each libtool library.
 #
-#  2. It is probably not a good idea to update the version information 
+#  2. It is probably not a good idea to update the version information
 #     several times between public releases, but rather once per public
 #     release. (This seems to be more an aesthetic consideration than
 #     a hard technical one.)
@@ -41,7 +41,7 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-lib_LTLIBRARIES    = libiso9660++.la libcdio++.la 
+lib_LTLIBRARIES    = libiso9660++.la libcdio++.la
 
 libcdiopp_la_CURRENT = 0
 libcdiopp_la_REVISION = 2
@@ -60,7 +60,7 @@ libiso9660pp_la_AGE = 0
 libiso9660pp_sources = iso9660.cpp
 
 libiso9660___la_SOURCES = $(libiso9660pp_sources)
-libiso9660___la_LIBADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) 
+libiso9660___la_LIBADD  = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS)
 libiso9660___la_LDFLAGS = -version-info $(libiso9660pp_la_CURRENT):$(libiso9660pp_la_REVISION):$(libiso9660pp_la_AGE) @LT_NO_UNDEFINED@
 
-INCLUDES = -I$(top_srcdir)/include/ -I$(top_builddir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include/ -I$(top_builddir)/include

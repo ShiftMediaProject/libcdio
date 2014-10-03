@@ -40,7 +40,7 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libcdio_la_CURRENT = 15
+libcdio_la_CURRENT = 16
 libcdio_la_REVISION = 0
 libcdio_la_AGE = 0
 
@@ -82,6 +82,7 @@ libcdio_sources = \
 	image/nrg.c \
 	image/nrg.h \
 	logging.c \
+	memory.c \
 	mmc/mmc.c \
 	mmc/mmc_cmd_helper.h \
 	mmc/mmc_hl_cmds.c \
@@ -108,7 +109,7 @@ lib_LTLIBRARIES    = libcdio.la
 libcdio_la_LIBADD  = $(LTLIBICONV)
 
 libcdio_la_SOURCES = $(libcdio_sources)
-libcdio_la_ldflags = -version-info $(libcdio_la_CURRENT):$(libcdio_la_REVISION):$(libcdio_la_AGE) @LT_NO_UNDEFINED@
+libcdio_la_ldflags = -version-info $(libcdio_la_CURRENT):$(libcdio_la_REVISION):$(libcdio_la_AGE) @LT_NO_UNDEFINED@ $(DARWIN_PKG_LIB_HACK)
 
 AM_CPPFLAGS = $(LIBCDIO_CFLAGS)
 

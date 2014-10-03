@@ -1,5 +1,6 @@
 /* -*- c -*-
-    Copyright (C) 2003, 2004, 2005, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2003, 2004, 2005, 2008, 2009, 2014
+    Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -67,5 +68,8 @@ extern "C" {
 
 /* Track-related functions. */
 #include <cdio/track.h>
+
+/* Memory management functions. */
+#include <cdio/memory.h>
 
 #endif /* __CDIO_H__ */

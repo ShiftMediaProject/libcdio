@@ -1,8 +1,6 @@
 /*
-  $Id: udf1.c,v 1.19 2008/03/24 15:30:56 karl Exp $
+  Copyright (C) 2005, 2008, 2014 Rocky Bernstein <rocky@gnu.org>
 
-  Copyright (C) 2005, 2008 Rocky Bernstein <rocky@gnu.org>
-  
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -51,12 +49,12 @@
 
 #define udf_PATH_DELIMITERS "/\\"
 
-static void 
+static void
 print_file_info(const udf_dirent_t *p_udf_dirent, const char* psz_dirname)
 {
   time_t mod_time = udf_get_modification_time(p_udf_dirent);
   char psz_mode[11]="invalid";
-  const char *psz_fname= psz_dirname 
+  const char *psz_fname= psz_dirname
     ? psz_dirname : udf_get_filename(p_udf_dirent);
 
   /* Print directory attributes*/
@@ -67,23 +65,23 @@ print_file_info(const udf_dirent_t *p_udf_dirent, const char* psz_dirname)
   printf("%s %s",  *psz_fname ? psz_fname : "/", ctime(&mod_time));
 }
 
-static udf_dirent_t *
+static void
 list_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const char *psz_path)
 {
-  if (!p_udf_dirent) return NULL;
-  
+  if (!p_udf_dirent) return;
+
   print_file_info(p_udf_dirent, psz_path);
 
   while (udf_readdir(p_udf_dirent)) {
-      
+
     if (udf_is_dir(p_udf_dirent)) {
-      
+
       udf_dirent_t *p_udf_dirent2 = udf_opendir(p_udf_dirent);
       if (p_udf_dirent2) {
 	const char *psz_dirname = udf_get_filename(p_udf_dirent);
 	const unsigned int i_newlen=2 + strlen(psz_path) + strlen(psz_dirname);
 	char *psz_newpath = calloc(1, sizeof(char)*i_newlen);
-	
+
 	snprintf(psz_newpath, i_newlen, "%s%s/", psz_path, psz_dirname);
 	list_files(p_udf, p_udf_dirent2, psz_newpath);
 	free(psz_newpath);
@@ -92,7 +90,6 @@ list_files(udf_t *p_udf, udf_dirent_t *p_udf_dirent, const char *psz_path)
       print_file_info(p_udf_dirent, NULL);
     }
   }
-  return p_udf_dirent;
 }
 
 int
@@ -101,29 +98,29 @@ main(int argc, const char *argv[])
   udf_t *p_udf;
   char const *psz_udf_image;
 
-  if (argc > 1) 
+  if (argc > 1)
     psz_udf_image = argv[1];
-  else 
+  else
     psz_udf_image = UDF_IMAGE;
 
   p_udf = udf_open (psz_udf_image);
-  
+
   if (NULL == p_udf) {
-    fprintf(stderr, "Sorry, couldn't open %s as something using UDF\n", 
+    fprintf(stderr, "Sorry, couldn't open %s as something using UDF\n",
 	    psz_udf_image);
     return 1;
   } else {
     udf_dirent_t *p_udf_root = udf_get_root(p_udf, true, 0);
     if (NULL == p_udf_root) {
-      fprintf(stderr, "Sorry, couldn't find / in %s\n", 
+      fprintf(stderr, "Sorry, couldn't find / in %s\n",
 	      psz_udf_image);
       return 1;
     }
-    
+
     {
       char vol_id[UDF_VOLID_SIZE] = "";
       char volset_id[UDF_VOLSET_ID_SIZE+1] = "";
-      
+
       if (0 < udf_get_volume_id(p_udf, vol_id, sizeof(vol_id)) )
 	printf("volume id: %s\n", vol_id);
 
@@ -136,11 +133,10 @@ main(int argc, const char *argv[])
 
 
     }
-    
+
     list_files(p_udf, p_udf_root, "");
   }
-  
+
   udf_close(p_udf);
   return 0;
 }
-

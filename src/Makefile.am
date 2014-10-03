@@ -40,7 +40,7 @@ endif
 if BUILD_CDINFO
 cd_info_SOURCES = cd-info.c cddb.c cddb.h util.c util.h $(GETOPT_C)
 cd_info_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS) $(LTLIBICONV)
-bin_cd_info     = cd-info 
+bin_cd_info     = cd-info
 man_cd_info     = cd-info.1
 endif
 
@@ -53,7 +53,7 @@ endif
 if BUILD_CD_READ
 cd_read_SOURCES = cd-read.c util.c util.h $(GETOPT_C)
 cd_read_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
-bin_cd_read     = cd-read 
+bin_cd_read     = cd-read
 man_cd_read     = cd-read.1
 endif
 
@@ -81,11 +81,11 @@ AM_CPPFLAGS = -I$(top_srcdir) $(LIBCDIO_CFLAGS) $(VCDINFO_CFLAGS) $(CDDB_CFLAGS)
 
 man_MANS = $(man_cd_drive) $(man_cd_info) $(man_cd_read) $(man_iso_read) $(man_iso_info)
 EXTRA_DIST = cd-drive.help2man cd-info.help2man cd-read.help2man \
-             iso-info.help2man iso-read.help2man $(GETOPT_C) getopt.h \
+             iso-info.help2man iso-read.help2man $(GETOPT_C) getopt_int.h \
              $(man_MANS)
 
 if MAINTAINER_MODE
-$(man_MANS): %.1: %$(EXEEXT) %.help2man 
-	-$(HELP2MAN) --opt-include=$(srcdir)/$(<:.exe=).help2man --no-info --libtool -o $@ ./$< 
+$(man_MANS): %.1: %$(EXEEXT) %.help2man
+	-$(HELP2MAN) --opt-include=$(srcdir)/$(<:.exe=).help2man --no-info --libtool -o $@ ./$<
 endif
 MAINTAINERCLEANFILES = $(man_MANS) *.rej *.orig

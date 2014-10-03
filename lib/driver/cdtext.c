@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2011, 2012 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004-2005, 2008, 2011, 2012, 2013 Rocky Bernstein <rocky@gnu.org>
   toc reading routine adapted from cuetools
   Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
@@ -257,7 +257,7 @@ cdtext_destroy(cdtext_t *p_cdtext)
 /*!
   Returns a copy of the return value of cdtext_get_const or NULL.
 
-  Should be freed when done.
+  Must be freed using cdio_free() when done.
   @see cdtext_get_const
 */
 char *

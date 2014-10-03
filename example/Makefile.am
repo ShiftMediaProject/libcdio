@@ -129,4 +129,4 @@ udffile_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 TESTS               = $(check_PROGRAMS)
 
 # iso programs create file "copying"
-MOSTLYCLEANFILES = copying *.wav
+MOSTLYCLEANFILES = copying *.wav *.log *.trs *.orig *.rej

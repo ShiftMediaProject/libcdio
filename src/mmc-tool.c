@@ -1,6 +1,6 @@
 /*
-  Copyright (C) 2006, 2008, 2010, 2011 Rocky Bernstein <rocky@gnu.org>
-  
+  Copyright (C) 2006, 2008, 2010-2011, 2014 Rocky Bernstein <rocky@gnu.org>
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -38,7 +38,7 @@
 #include "getopt.h"
 
 static void
-init(const char *argv0) 
+init(const char *argv0)
 {
   program_name = strrchr(argv0,'/');
   program_name = program_name ? strdup(program_name+1) : strdup(argv0);
@@ -65,24 +65,24 @@ typedef enum {
   OP_SPEED,
 } operation_enum_t;
 
-typedef struct 
+typedef struct
 {
   operation_enum_t op;
-  union 
+  union
   {
     long int i_num;
     char * psz;
   } arg;
 } operation_t;
-  
+
 
 enum { MAX_OPS = 10 };
 
 static unsigned int last_op = 0;
 static operation_t operation[MAX_OPS] = { {OP_FINISHED, {0}} };
 
-static void 
-push_op(operation_t *p_op) 
+static void
+push_op(operation_t *p_op)
 {
   if (last_op < MAX_OPS) {
     memcpy(&operation[last_op], p_op, sizeof(operation_t));
@@ -126,16 +126,16 @@ parse_options (int argc, char *argv[])
     "Help options:\n"
     "  -?, --help                      Show this help message\n"
     "  --usage                         Display brief usage message\n";
-  
+
   static const char usageText[] =
     "Usage: %s [-b|--blocksize[=INT]] [-m|--mcn]\n"
     "        [-I|--idle] [-I|inquiry] [-m[-s|--speed-KB INT]\n"
     "        [-V|--version] [-?|--help] [--usage]\n";
-  
+
   /* Command-line options */
   static const char optionsString[] = "b::c:C::e::Iis:V?";
   const struct option optionsTable[] = {
-  
+
     {"blocksize", optional_argument, &i_blocksize, 'b' },
     {"close", required_argument, NULL, 'c'},
     {"drive-cap", optional_argument, NULL, 'C'},
@@ -151,16 +151,16 @@ parse_options (int argc, char *argv[])
     {"usage", no_argument, NULL, OPT_USAGE },
     { NULL, 0, NULL, 0 }
   };
-  
+
   while ((opt = getopt_long(argc, argv, optionsString, optionsTable, NULL)) >= 0)
     switch (opt)
       {
-      case 'b': 
+      case 'b':
 	op.op = OP_BLOCKSIZE;
 	op.arg.i_num = i_blocksize;
 	push_op(&op);
 	break;
-      case 'C': 
+      case 'C':
 	op.arg.i_num = optarg ? atoi(optarg) : 10;
 	switch (op.arg.i_num) {
 	case 10:
@@ -177,38 +177,38 @@ parse_options (int argc, char *argv[])
 	  report( stderr, "%s: Expecting 6 or 10 or nothing\n", program_name );
 	}
 	break;
-      case 'c': 
+      case 'c':
 	op.op = OP_CLOSETRAY;
 	op.arg.psz = strdup(optarg);
 	push_op(&op);
 	break;
-      case 'e': 
+      case 'e':
 	op.op = OP_EJECT;
 	op.arg.psz=NULL;
 	if (optarg) op.arg.psz = strdup(optarg);
 	push_op(&op);
 	break;
-      case 'i': 
+      case 'i':
 	op.op = OP_INQUIRY;
 	op.arg.psz=NULL;
 	push_op(&op);
 	break;
-      case 'I': 
+      case 'I':
 	op.op = OP_IDLE;
 	op.arg.psz=NULL;
 	push_op(&op);
 	break;
-      case 'm': 
+      case 'm':
 	op.op = OP_MCN;
 	op.arg.psz=NULL;
 	push_op(&op);
 	break;
-      case 's': 
+      case 's':
 	op.op = OP_SPEED;
 	op.arg.i_num=atoi(optarg);
 	push_op(&op);
 	break;
-      case 'S': 
+      case 'S':
 	op.op = OP_SPEED;
 	op.arg.i_num=176 * atoi(optarg);
 	push_op(&op);
@@ -224,7 +224,7 @@ parse_options (int argc, char *argv[])
 	free(program_name);
 	exit(EXIT_INFO);
 	break;
-	
+
       case OPT_USAGE:
 	fprintf(stderr, usageText, program_name);
 	free(program_name);
@@ -233,33 +233,32 @@ parse_options (int argc, char *argv[])
 
       case OPT_HANDLED:
 	break;
-      i_blocksize = 0;
       }
 
   if (optind < argc) {
     const char *remaining_arg = argv[optind++];
 
     if (source_name != NULL) {
-      report( stderr, "%s: Source specified in option %s and as %s\n", 
+      report( stderr, "%s: Source specified in option %s and as %s\n",
 	      program_name, source_name, remaining_arg );
       free(program_name);
       exit (EXIT_FAILURE);
     }
 
     source_name = strdup(remaining_arg);
-      
+
     if (optind < argc) {
-      report( stderr, "%s: Source specified in previously %s and %s\n", 
+      report( stderr, "%s: Source specified in previously %s and %s\n",
 	      program_name, source_name, remaining_arg );
       free(program_name);
       exit (EXIT_FAILURE);
     }
   }
-  
+
   return true;
 }
 
-static void 
+static void
 print_mode_sense (unsigned int i_mmc_size, const uint8_t buf[30])
 {
   printf("Mode sense %d information\n", i_mmc_size);
@@ -362,25 +361,25 @@ print_mode_sense (unsigned int i_mmc_size, const uint8_t buf[30])
     const unsigned int i_load_type = (buf[6]>>5 & 0x07);
     printf("\tLoading mechanism type  is %d: ", i_load_type);
     switch (buf[6]>>5 & 0x07) {
-    case 0: 
-      printf("caddy type loading mechanism.\n"); 
+    case 0:
+      printf("caddy type loading mechanism.\n");
       break;
-    case 1: 
-      printf("tray type loading mechanism.\n"); 
+    case 1:
+      printf("tray type loading mechanism.\n");
       break;
-    case 2: 
+    case 2:
       printf("popup type loading mechanism.\n");
       break;
-    case 3: 
+    case 3:
       printf("reserved\n");
       break;
-    case 4: 
+    case 4:
       printf("changer with individually changeable discs.\n");
       break;
-    case 5: 
+    case 5:
       printf("changer using Magazine mechanism.\n");
       break;
-    case 6: 
+    case 6:
       printf("changer using Magazine mechanism.\n");
       break;
     default:
@@ -388,7 +387,7 @@ print_mode_sense (unsigned int i_mmc_size, const uint8_t buf[30])
       break;
     }
   }
-  
+
   if (buf[7] & 0x01) {
     printf("\tVolume controls each channel separately.\n");
   }
@@ -406,7 +405,7 @@ print_mode_sense (unsigned int i_mmc_size, const uint8_t buf[30])
   }
   {
     const unsigned int i_speed_Kbs = CDIO_MMC_GETPOS_LEN16(buf,  8);
-    printf("\tMaximum read speed is %d K bytes/sec (about %dX)\n", 
+    printf("\tMaximum read speed is %d K bytes/sec (about %dX)\n",
 	   i_speed_Kbs, i_speed_Kbs / 176) ;
   }
   printf("\tNumber of Volume levels is %d\n",  CDIO_MMC_GETPOS_LEN16(buf, 10));
@@ -425,40 +424,40 @@ main(int argc, char *argv[])
   unsigned int i;
 
   init(argv[0]);
-  
+
   parse_options(argc, argv);
   p_cdio = cdio_open (source_name, DRIVER_DEVICE);
 
   if (NULL == p_cdio) {
     printf("Couldn't find CD\n");
     return 1;
-  } 
+  }
 
   for (i=0; i < last_op; i++) {
     const operation_t *p_op = &operation[i];
     switch (p_op->op) {
     case OP_SPEED:
       rc = mmc_set_speed(p_cdio, p_op->arg.i_num, 0);
-      report(stdout, "%s (mmc_set_speed): %s\n", program_name, 
+      report(stdout, "%s (mmc_set_speed): %s\n", program_name,
 	     cdio_driver_errmsg(rc));
       break;
     case OP_BLOCKSIZE:
       if (p_op->arg.i_num) {
 	driver_return_code_t rc = mmc_set_blocksize(p_cdio, p_op->arg.i_num);
-	report(stdout, "%s (mmc_set_blocksize): %s\n", program_name, 
+	report(stdout, "%s (mmc_set_blocksize): %s\n", program_name,
 	       cdio_driver_errmsg(rc));
       } else {
 	int i_blocksize = mmc_get_blocksize(p_cdio);
 	if (i_blocksize > 0) {
-	  report(stdout, "%s (mmc_get_blocksize): %d\n", program_name, 
+	  report(stdout, "%s (mmc_get_blocksize): %d\n", program_name,
 		 i_blocksize);
 	} else {
-	  report(stdout, "%s (mmc_get_blocksize): can't retrieve.\n", 
+	  report(stdout, "%s (mmc_get_blocksize): can't retrieve.\n",
 		 program_name);
 	}
       }
       break;
-    case OP_MODE_SENSE_2A: 
+    case OP_MODE_SENSE_2A:
       {
 	uint8_t buf[30] = { 0, };    /* Place to hold returned data */
 	if (p_op->arg.i_num == 10) {
@@ -471,47 +470,47 @@ main(int argc, char *argv[])
 	if (DRIVER_OP_SUCCESS == rc) {
 	  print_mode_sense(p_op->arg.i_num, buf);
 	} else {
-	  report(stdout, "%s (mmc_mode_sense 2a - drive_cap %d): %s\n", 
+	  report(stdout, "%s (mmc_mode_sense 2a - drive_cap %d): %s\n",
 		 program_name, p_op->arg.i_num, cdio_driver_errmsg(rc));
 	}
       }
       break;
     case OP_CLOSETRAY:
       rc = mmc_close_tray(p_cdio);
-      report(stdout, "%s (mmc_close_tray): %s\n", program_name, 
+      report(stdout, "%s (mmc_close_tray): %s\n", program_name,
 	     cdio_driver_errmsg(rc));
       free(p_op->arg.psz);
       break;
     case OP_EJECT:
       rc = mmc_eject_media(p_cdio);
-      report(stdout, "%s (mmc_eject_media): %s\n", program_name, 
+      report(stdout, "%s (mmc_eject_media): %s\n", program_name,
 	     cdio_driver_errmsg(rc));
       if (p_op->arg.psz) free(p_op->arg.psz);
       break;
     case OP_IDLE:
       rc = mmc_start_stop_unit(p_cdio, false, false, true, 0);
-      report(stdout, "%s (mmc_start_stop_media - powerdown): %s\n", 
+      report(stdout, "%s (mmc_start_stop_media - powerdown): %s\n",
 	     program_name, cdio_driver_errmsg(rc));
       break;
-    case OP_INQUIRY: 
+    case OP_INQUIRY:
       {
-	cdio_hwinfo_t hw_info = { "", "", ""}; 
+	cdio_hwinfo_t hw_info = { "", "", ""};
 	if (mmc_get_hwinfo(p_cdio, &hw_info)) {
 	  printf("%-8s: %s\n%-8s: %s\n%-8s: %s\n",
-		 "Vendor"  , hw_info.psz_vendor, 
-		 "Model"   , hw_info.psz_model, 
+		 "Vendor"  , hw_info.psz_vendor,
+		 "Model"   , hw_info.psz_model,
 		 "Revision", hw_info.psz_revision);
 	} else {
 	  report(stdout, "%s (mmc_gpcmd_inquiry error)\n", program_name);
 	}
       }
       break;
-    case OP_MCN: 
+    case OP_MCN:
       {
 	char *psz_mcn = mmc_get_mcn(p_cdio);
 	if (psz_mcn) {
 	  report(stdout, "%s (mmc_get_mcn): %s\n", program_name, psz_mcn);
-	  free(psz_mcn);
+	  cdio_free(psz_mcn);
 	} else
 	  report(stdout, "%s (mmc_get_mcn): can't retrieve\n", program_name);
       }
@@ -523,6 +522,6 @@ main(int argc, char *argv[])
 
   free(source_name);
   cdio_destroy(p_cdio);
-  
+
   return rc;
 }
