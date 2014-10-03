@@ -171,7 +171,6 @@ cdio_read_sectors
 cdio_realpath
 cdio_set_arg
 cdio_set_blocksize
-cdio_set_drive_speed
 cdio_set_speed
 cdio_stdio_destroy
 cdio_stdio_new
@@ -218,7 +217,7 @@ mmc_get_drive_mmc_cap
 mmc_get_dvd_struct_physical
 mmc_get_event_status
 mmc_get_hwinfo
-mmc_get_last_lsn
+mmc_get_disc_last_lsn
 mmc_get_mcn
 mmc_get_media_changed
 mmc_get_track_isrc
@@ -245,6 +244,7 @@ mmc_run_cmd
 mmc_run_cmd_len
 mmc_sense_key2str
 mmc_set_blocksize
+mmc_set_drive_speed
 mmc_set_speed
 mmc_start_stop_unit
 mmc_test_unit_ready
