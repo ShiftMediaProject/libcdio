@@ -483,6 +483,7 @@ cd $(ProjectDir)
       <ModuleDefinitionFile>libcdio.def</ModuleDefinitionFile>
       <AdditionalDependencies>winmm.lib;libiconvd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
       <Command>mkdir $(OutDir)\include
@@ -534,6 +535,7 @@ cd $(ProjectDir)
       <ModuleDefinitionFile>libcdio.def</ModuleDefinitionFile>
       <AdditionalDependencies>winmm.lib;libiconvd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
       <Command>mkdir $(OutDir)\include
@@ -948,6 +950,7 @@ cd $(ProjectDir)
       <ModuleDefinitionFile>libcdio.def</ModuleDefinitionFile>
       <AdditionalDependencies>winmm.lib;libiconv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
       <Command>mkdir $(OutDir)\include
@@ -1010,6 +1013,7 @@ cd $(ProjectDir)
       <ModuleDefinitionFile>libcdio.def</ModuleDefinitionFile>
       <AdditionalDependencies>winmm.lib;libiconv.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OutDir)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
       <Command>mkdir $(OutDir)\include
