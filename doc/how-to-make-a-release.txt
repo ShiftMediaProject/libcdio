@@ -36,7 +36,7 @@
 
    gnupload from the automake distribution.
    locate gnupload
-   /src/build/automake-1.10/lib/gnupload --to ftp.gnu.org:libcdio libcdio-#{LIBCDIO_VERSION}.tar.gz  (Use "is" password)
+   /src/build/automake-1.12.4/lib/gnupload --to ftp.gnu.org:libcdio libcdio-#{LIBCDIO_VERSION}.tar.gz  (Use "is" password)
 
 - Update/Announce on Freshmeat:
    http://freshmeat.net/add-release/36670/
