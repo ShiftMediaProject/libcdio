@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004-2005, 2008, 2010-2013
+  Copyright (C) 2004-2005, 2008, 2010-2014
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -1184,6 +1184,35 @@ read_toc_win32ioctl (_img_private_t *p_env)
   }
   p_env->gen.toc_init = true;
   return true;
+}
+
+/**
+  Get the LSN of the first track of the last session of
+  on the CD.
+ */
+driver_return_code_t
+get_last_session_win32ioctl (void *p_user_data,
+                             /*out*/ lsn_t *i_last_session)
+{
+  const _img_private_t *p_env = p_user_data;
+  DWORD dw_bytes_returned;
+  CDROM_TOC_SESSION_DATA session;
+
+  bool b_success =
+    DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_GET_LAST_SESSION,
+                    NULL, (DWORD) 0, &session, sizeof(session), &dw_bytes_returned, NULL);
+
+  if ( ! b_success ) {
+    windows_error(CDIO_LOG_INFO, GetLastError());
+    return DRIVER_OP_ERROR;
+  }
+
+  *i_last_session = (session.TrackData[0].Address[0] << 24) |
+    (session.TrackData[0].Address[1] << 16) |
+    (session.TrackData[0].Address[2] << 8) |
+    (session.TrackData[0].Address[3]);
+
+  return DRIVER_OP_SUCCESS;
 }
 
 /**
