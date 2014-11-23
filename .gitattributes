@@ -2,3 +2,6 @@
 *.ac            eol=lf
 *.am            eol=lf
 config.rpath    eol=lf
+*.sln              text=auto
+*.vcxproj          text=auto
+*.vcxproj.filters  text=auto
