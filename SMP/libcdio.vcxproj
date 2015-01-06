@@ -93,7 +93,6 @@
     <ClInclude Include="..\include\cdio\xa.h" />
     <ClInclude Include="cdio\version.h" />
     <ClInclude Include="config.h" />
-    <ClInclude Include="cdio_version.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\lib\driver\abs_path.c" />

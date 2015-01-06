@@ -135,9 +135,6 @@
     <ClInclude Include="cdio\version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cdio_version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\cdio\memory.h">
       <Filter>Header Files\cdio</Filter>
     </ClInclude>
