@@ -293,8 +293,8 @@ main(int argc, char *argv[])
 	cdio_drive_write_cap_t i_write_cap;
 	cdio_drive_misc_cap_t  i_misc_cap;
 	cdio_hwinfo_t          hwinfo;
-	CdIo_t *p_cdio = cdio_open(*ppsz_cd, driver_id);
 
+	p_cdio = cdio_open(*ppsz_cd, driver_id);
 	print_mmc_drive_level(p_cdio);
 
 	printf("%28s: %s\n", "Drive", *ppsz_cd);

@@ -357,16 +357,16 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 	      goto err_exit;
 	    } else {
 	      /* Check that we have all digits*/
-	      unsigned int i;
-	      for (i=0; i<13; i++) {
-		if (!isdigit((unsigned char) psz_field[i])) {
+	      unsigned int j;
+	      for (j=0; j<13; j++) {
+		if (!isdigit((unsigned char) psz_field[j])) {
 		    cdio_log(log_level,
 			     "%s line %d after word CATALOG:",
 			     psz_cue_name, i_line);
 		    cdio_log(log_level,
 			     "Character \"%c\" at postition %i of token \"%s\""
 			     " is not all digits.",
-			     psz_field[i], i+1, psz_field);
+			     psz_field[j], j+1, psz_field);
 		    goto err_exit;
 		}
 	      }

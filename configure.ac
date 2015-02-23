@@ -100,15 +100,16 @@ AC_AIX
 
 cd_drivers='cdrdao, BIN/CUE, NRG'
 
+WARN_CFLAGS=''
 if test "x$GCC" != "xyes"; then
   AC_MSG_WARN([
   *** non GNU CC compiler detected.
   *** This package has not been tested very well with non GNU compilers
   *** you should try to use 'gcc' for compiling this package.])
 else
-  WARN_CFLAGS=''
+  # FIXME: add in:
+  #   -W -Wshadow -Wundef
   CHECK_CFLAGS="
-	-W
 	-Wall
 	-Wcast-align
 	-Wchar-subscripts
@@ -120,9 +121,7 @@ else
 	-Wnested-externs
 	-Wno-sign-compare
 	-Wpointer-arith
-	-Wshadow
 	-Wstrict-prototypes
-	-Wundef
 	-Wunused
 	-Wwrite-strings
 "
@@ -140,6 +139,7 @@ else
     unset SAVE_CFLAGS
   done
 fi
+CFLAGS="$CFLAGS $WARN_CFLAGS"
 
 # We use Perl for documentation and regression tests
 AC_PATH_PROG(PERL, perl, false)
@@ -287,7 +287,6 @@ dnl system
 # I believe some OS's require -lm, but I don't recall for what function
 # When we find it, put it in below instead of "cos".
 AC_CHECK_LIB(m, cos, [LIBS="$LIBS -lm"; COS_LIB="-lm"])
-CFLAGS="$CFLAGS $WARN_CFLAGS"
 AC_SUBST(COS_LIB)
 
 # Do we have GNU ld? If we don't, we can't build versioned symbols.
