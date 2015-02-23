@@ -106,23 +106,39 @@ if test "x$GCC" != "xyes"; then
   *** This package has not been tested very well with non GNU compilers
   *** you should try to use 'gcc' for compiling this package.])
 else
-  WARN_CFLAGS="-Wall -Wchar-subscripts -Wmissing-prototypes -Wmissing-declarations -Wunused -Wpointer-arith -Wwrite-strings -Wnested-externs -Wno-sign-compare"
-
-  for WOPT in $WARN_CFLAGS; do
+  WARN_CFLAGS=''
+  CHECK_CFLAGS="
+	-W
+	-Wall
+	-Wcast-align
+	-Wchar-subscripts
+	-Wdisabled-optimization
+	-Wend-labels
+	-Winline
+	-Wmissing-declarations
+	-Wmissing-prototypes
+	-Wnested-externs
+	-Wno-sign-compare
+	-Wpointer-arith
+	-Wshadow
+	-Wstrict-prototypes
+	-Wundef
+	-Wunused
+	-Wwrite-strings
+"
+  for OPT in $CHECK_CFLAGS; do
     SAVE_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $WOPT"
-    AC_MSG_CHECKING([whether $CC understands $WOPT])
+    CFLAGS="$CFLAGS $OPT"
+    AC_MSG_CHECKING([whether $CC understands $OPT])
     AC_TRY_COMPILE([], [], has_option=yes, has_option=no,)
     CFLAGS="$SAVE_CFLAGS"
     AC_MSG_RESULT($has_option)
     if test "x$has_option" = "xyes"; then
-      warning_flags="$warning_flags $option"
+        WARN_CFLAGS="$WARN_CFLAGS $OPT"
     fi
     unset has_option
     unset SAVE_CFLAGS
   done
-  WARNING_FLAGS="$warning_flags"
-  unset warning_flags
 fi
 
 # We use Perl for documentation and regression tests
