@@ -1086,6 +1086,12 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
       p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_xa,
 					p_iso->u_joliet_level);
 
+      if (!p_stat) {
+	cdio_warn("Bad directory information for %s", splitpath[0]);
+	free(_dirbuf);
+	return NULL;
+      }
+
       cmp = strcmp(splitpath[0], p_stat->filename);
 
       if ( 0 != cmp && 0 == p_iso->u_joliet_level
@@ -1339,6 +1345,9 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     if (!dirbuf_len)
       {
         cdio_warn("Invalid directory buffer sector size %u", p_stat->secsize);
+	free(p_stat->rr.psz_symlink);
+	free(p_stat);
+	_cdio_list_free (retval, true);
         return NULL;
       }
 
@@ -1346,7 +1355,9 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     if (!_dirbuf)
       {
         cdio_warn("Couldn't calloc(1, %d)", p_stat->secsize * ISO_BLOCKSIZE);
-      _cdio_list_free (retval, true);
+	free(p_stat->rr.psz_symlink);
+	free(p_stat);
+	_cdio_list_free (retval, true);
         return NULL;
       }
 
@@ -1354,6 +1365,8 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     if (ret != ISO_BLOCKSIZE*p_stat->secsize)
 	  {
 	    _cdio_list_free (retval, true);
+	    free(p_stat->rr.psz_symlink);
+	    free(p_stat);
 	    free (_dirbuf);
 	    return NULL;
 	  }
