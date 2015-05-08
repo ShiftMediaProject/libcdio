@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003-2008, 2011-2014 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003-2008, 2011-2015 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -1333,6 +1333,14 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     unsigned offset = 0;
     uint8_t *_dirbuf = NULL;
     CdioList_t *retval = _cdio_list_new ();
+    size_t dirbuf_len = p_stat->secsize * ISO_BLOCKSIZE;
+
+
+    if (!dirbuf_len)
+      {
+        cdio_warn("Invalid directory buffer sector size %u", p_stat->secsize);
+        return NULL;
+      }
 
     _dirbuf = calloc(1, p_stat->secsize * ISO_BLOCKSIZE);
     if (!_dirbuf)

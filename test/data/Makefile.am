@@ -28,6 +28,7 @@ check_DATA = \
 	isofs-m1.cue   \
 	isofs-m1.toc   \
 	joliet.iso     \
+	malformed.iso  \
 	p1.bin         \
 	p1.cue         \
 	p1.nrg         \

@@ -70,6 +70,7 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 	     isofs-m1-read.right cdda-read.right cdtext.right \
 	     copying.right copying-rr.right \
 	     joliet.right joliet-nojoliet.right \
+	     malformed.right \
 	     copying.gpl copying-rr.gpl copying-rr-mingw.right
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
