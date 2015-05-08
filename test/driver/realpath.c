@@ -1,6 +1,6 @@
 /* -*- C -*-
-  Copyright (C) 2010, 2011, 2012 Rocky Bernstein <rocky@gnu.org>
-  
+  Copyright (C) 2010-2012, 2015 Rocky Bernstein <rocky@gnu.org>
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +15,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* 
+/*
    Unit test for lib/driver/gnu_linux.c
 */
 #ifdef HAVE_CONFIG_H
@@ -78,10 +78,10 @@ static int check_rc(int rc, const char *psz_operation,
     const char *psz_filename)
 {
     if (-1 == rc) {
-        printf("%s %s failed with error: %s\n", 
+        printf("%s %s failed with error: %s\n",
                psz_operation, psz_filename, strerror(errno));
     } else if (0 != rc) {
-        printf("%s %s gives weird return %d\n", 
+        printf("%s %s gives weird return %d\n",
                psz_operation, psz_filename, rc);
     }
     return rc;
@@ -109,7 +109,7 @@ main(int argc, const char *argv[])
     if (-1 == check_rc(_mkdir(psz_tmp_subdir),
                        "mkdir", psz_tmp_subdir))
         exit(77);
-    
+
     cdio_realpath(psz_tmp_subdir, tmp_subdir);
 
     if (0 == strlen(tmp_subdir)) {
@@ -154,7 +154,7 @@ main(int argc, const char *argv[])
             }
             check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
         }
-            
+
         /* Make sure we handle a cyclic symbolic name, e.g. xx -> xx */
         cdio_realpath(psz_symlink_file, symlink_file);
         rc = check_rc(symlink(psz_symlink_file, psz_symlink_file),
@@ -168,9 +168,9 @@ main(int argc, const char *argv[])
             }
             check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
         }
-            
+
     }
-    
+
     check_rc(unlink(psz_orig_file), "unlink", psz_orig_file);
     check_rc(rmdir(psz_tmp_subdir), "rmdir", psz_tmp_subdir);
 

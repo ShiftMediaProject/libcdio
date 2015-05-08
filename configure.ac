@@ -556,7 +556,7 @@ AC_DEFINE_UNQUOTED(LIBCDIO_SOURCE_PATH, "$LIBCDIO_SOURCE_PATH",
 AC_SUBST(LIBCDIO_SOURCE_PATH)
 
 AC_CHECK_FUNCS( [chdir drand48 fseeko fseeko64 ftruncate geteuid getgid \
-		 getuid getpwuid gettimeofday lseek64 lstat memcpy memset rand \
+		 getuid getpwuid gettimeofday lseek64 lstat memcpy memset mkstemp rand \
 		 seteuid setegid snprintf setenv strndup unsetenv tzset sleep \
 		 _stati64 usleep vsnprintf readlink realpath gmtime_r localtime_r] )
 

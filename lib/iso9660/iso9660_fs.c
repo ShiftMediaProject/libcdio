@@ -1339,7 +1339,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     unsigned offset = 0;
     uint8_t *_dirbuf = NULL;
     CdioList_t *retval = _cdio_list_new ();
-    size_t dirbuf_len = p_stat->secsize * ISO_BLOCKSIZE;
+    const size_t dirbuf_len = p_stat->secsize * ISO_BLOCKSIZE;
 
 
     if (!dirbuf_len)
@@ -1351,10 +1351,10 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
         return NULL;
       }
 
-    _dirbuf = calloc(1, p_stat->secsize * ISO_BLOCKSIZE);
+    _dirbuf = calloc(1, dirbuf_len);
     if (!_dirbuf)
       {
-        cdio_warn("Couldn't calloc(1, %d)", p_stat->secsize * ISO_BLOCKSIZE);
+        cdio_warn("Couldn't calloc(1, %lu)", dirbuf_len);
 	free(p_stat->rr.psz_symlink);
 	free(p_stat);
 	_cdio_list_free (retval, true);
@@ -1362,16 +1362,15 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
       }
 
     ret = iso9660_iso_seek_read (p_iso, _dirbuf, p_stat->lsn, p_stat->secsize);
-    if (ret != ISO_BLOCKSIZE*p_stat->secsize)
-	  {
-	    _cdio_list_free (retval, true);
-	    free(p_stat->rr.psz_symlink);
-	    free(p_stat);
-	    free (_dirbuf);
-	    return NULL;
-	  }
+    if (ret != dirbuf_len) 	  {
+      _cdio_list_free (retval, true);
+      free(p_stat->rr.psz_symlink);
+      free(p_stat);
+      free (_dirbuf);
+      return NULL;
+    }
 
-    while (offset < (p_stat->secsize * ISO_BLOCKSIZE))
+    while (offset < (dirbuf_len))
       {
 	iso9660_dir_t *p_iso9660_dir = (void *) &_dirbuf[offset];
 	iso9660_stat_t *p_iso9660_stat;
@@ -1392,15 +1391,14 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
       }
 
     free (_dirbuf);
+    free(p_stat->rr.psz_symlink);
+    free (p_stat);
 
-    if (offset != (p_stat->secsize * ISO_BLOCKSIZE)) {
-      free (p_stat);
+    if (offset != dirbuf_len) {
       _cdio_list_free (retval, true);
       return NULL;
     }
 
-    free (p_stat->rr.psz_symlink);
-    free (p_stat);
     return retval;
   }
 }
