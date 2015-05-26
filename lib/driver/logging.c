@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2008, 2011, 2012
+  Copyright (C) 2003, 2004, 2008, 2011, 2012, 2015
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -35,6 +35,7 @@
 #include <cdio/logging.h>
 #include "cdio_assert.h"
 #include "portable.h"
+#include <assert.h>
 
 cdio_log_level_t cdio_loglevel_default = CDIO_LOG_WARN;
 
@@ -98,8 +99,12 @@ cdio_logv(cdio_log_level_t level, const char format[], va_list args)
   char buf[1024] = { 0, };
   static int in_recursion = 0;
 
-  if (in_recursion)
-    cdio_assert_not_reached ();
+  if (level < cdio_loglevel_default) return;
+
+  if (in_recursion) {
+    /* Can't use cdio_assert_not_reached() as that may call cdio_logv */
+    assert(0);
+  }
 
   in_recursion = 1;
 
