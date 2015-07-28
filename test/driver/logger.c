@@ -72,8 +72,18 @@ main(int argc, const char *argv[])
 
     test_msg = "debug";
     cdio_debug("%s", test_msg);
-    if (strncmp(test_msg, last_debugmsg, strlen(test_msg)) != 0) {
-	fprintf(stderr, "debug message %s did not get handled\n", last_debugmsg);
+
+    if (last_debugmsg != NULL) {
+	fprintf(stderr, "debug message should have been ignored due to default log level\n");
+	exit(2);
+    }
+
+    cdio_loglevel_default = CDIO_LOG_DEBUG;
+    cdio_debug("%s", test_msg);
+    if (last_debugmsg == NULL ||
+	strncmp(test_msg, last_debugmsg, strlen(test_msg)) != 0) {
+	fprintf(stderr, "debug message %s did not get handled\n",
+		last_debugmsg);
 	exit(2);
     }
 

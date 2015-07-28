@@ -21,7 +21,7 @@ AC_PREREQ(2.61)
 
 AC_INIT([libcdio], [CDIO_VERSION_STR(RELEASE_NUM)], [https://savannah.gnu.org/bugs/?group=libcdio])
 AC_CONFIG_SRCDIR(src/cd-info.c)
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS(config.h)
