@@ -27,7 +27,7 @@
 
 #include <time.h>
 
-#if ( defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR) ) || defined(_MSC_VER)
+#if !defined(HAVE_STRUCT_TIMESPEC)
 struct timespec {
   time_t  tv_sec;   /* Seconds */
   long    tv_nsec;  /* Nanoseconds */
