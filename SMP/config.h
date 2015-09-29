@@ -3,7 +3,7 @@
 /* #undef CYGWIN */
 
 /* what to put between the brackets for empty arrays */
-#define EMPTY_ARRAY_SIZE 
+#define EMPTY_ARRAY_SIZE
 
 /* Define 1 if you have BSDI-type CD-ROM support */
 /* #undef HAVE_BSDI_CDROM */
@@ -229,7 +229,11 @@
 /* #undef HAVE_STRNDUP */
 
 /* Define this if you have struct timespec */
-#define HAVE_STRUCT_TIMESPEC /**/
+#if _MSC_VER >= 1900
+#define HAVE_STRUCT_TIMESPEC 1
+#else
+/* #undef HAVE_STRUCT_TIMESPEC */
+#endif
 
 /* Define to 1 if you have the <sys/cdio.h> header file. */
 /* #undef HAVE_SYS_CDIO_H */
@@ -262,7 +266,7 @@
 /* #undef HAVE_TIMEGM */
 
 /* Define if you have an extern long timenzone variable. */
-#define HAVE_TIMEZONE_VAR 1
+/* #undef HAVE_TIMEZONE_VAR */
 
 /* Define if struct tm has the tm_gmtoff member. */
 /* #undef HAVE_TM_GMTOFF */
@@ -298,7 +302,7 @@
 #define HAVE__STATI64 1
 
 /* Define as const if the declaration of iconv() needs const. */
-#define ICONV_CONST 
+#define ICONV_CONST
 
 /* Is set when libcdio's config.h has been included. Applications wishing to
    sue their own config.h values (such as set by the application's configure
