@@ -382,7 +382,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0502;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ExceptionHandling>false</ExceptionHandling>
@@ -433,7 +433,7 @@ cd $(ProjectDir)
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0600;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ExceptionHandling>false</ExceptionHandling>
@@ -484,7 +484,7 @@ cd $(ProjectDir)
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_USRDLL;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0502;_USRDLL;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -537,7 +537,7 @@ cd $(ProjectDir)
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_USRDLL;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0502;_USRDLL;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -590,7 +590,7 @@ cd $(ProjectDir)
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_USRDLL;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0600;_USRDLL;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ExceptionHandling>false</ExceptionHandling>
@@ -641,7 +641,7 @@ cd $(ProjectDir)
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_USRDLL;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0600;_USRDLL;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <ExceptionHandling>false</ExceptionHandling>
@@ -703,7 +703,7 @@ cd $(ProjectDir)
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0502;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <DisableSpecificWarnings>4996;4005;4018;4244;4133;4267;4091;4028;4333;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -767,7 +767,7 @@ cd $(ProjectDir)
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0502;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <DisableSpecificWarnings>4996;4005;4018;4244;4133;4267;4091;4028;4333;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -831,7 +831,7 @@ cd $(ProjectDir)
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0600;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <DisableSpecificWarnings>4996;4005;4018;4244;4133;4267;4091;4028;4333;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -895,7 +895,7 @@ cd $(ProjectDir)
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0600;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <DisableSpecificWarnings>4996;4005;4018;4244;4133;4267;4091;4028;4333;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -959,7 +959,7 @@ cd $(ProjectDir)
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_USRDLL;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0502;_USRDLL;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <DisableSpecificWarnings>4996;4005;4018;4244;4133;4267;4091;4028;4333;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -1022,7 +1022,7 @@ cd $(ProjectDir)
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_USRDLL;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0502;_USRDLL;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <DisableSpecificWarnings>4996;4005;4018;4244;4133;4267;4091;4028;4333;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -1085,7 +1085,7 @@ cd $(ProjectDir)
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_USRDLL;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0600;_USRDLL;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <DisableSpecificWarnings>4996;4005;4018;4244;4133;4267;4091;4028;4333;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -1147,7 +1147,7 @@ cd $(ProjectDir)
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_USRDLL;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;WIN32;__PRETTY_FUNCTION__=__FUNCTION__;_WIN32_WINNT=0x0600;_USRDLL;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;$(OutDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <DisableSpecificWarnings>4996;4005;4018;4244;4133;4267;4091;4028;4333;%(DisableSpecificWarnings)</DisableSpecificWarnings>
