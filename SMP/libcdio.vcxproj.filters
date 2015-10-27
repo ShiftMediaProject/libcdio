@@ -111,9 +111,6 @@
     <ClInclude Include="..\include\cdio\util.h">
       <Filter>Header Files\cdio</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\cdio\version.h">
-      <Filter>Header Files\cdio</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\cdio\xa.h">
       <Filter>Header Files\cdio</Filter>
     </ClInclude>

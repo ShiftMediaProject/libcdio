@@ -89,7 +89,6 @@
     <ClInclude Include="..\include\cdio\udf_time.h" />
     <ClInclude Include="..\include\cdio\utf8.h" />
     <ClInclude Include="..\include\cdio\util.h" />
-    <ClInclude Include="..\include\cdio\version.h" />
     <ClInclude Include="..\include\cdio\xa.h" />
     <ClInclude Include="cdio\version.h" />
     <ClInclude Include="config.h" />
