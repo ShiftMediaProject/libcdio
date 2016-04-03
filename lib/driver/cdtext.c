@@ -502,6 +502,7 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
   int           i;
   cdtext_blocksize_t blocksize;
   char          *charset = NULL;
+  uint8_t       cur_track;
 
   memset( buffer, 0, sizeof(buffer) );
 
@@ -624,6 +625,8 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
     }
 #endif
 
+    cur_track = pack.i_track;
+
     /* read text packs first */
     j = 0;
     switch (pack.type) {
@@ -657,38 +660,39 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
 
             switch (pack.type) {
               case CDTEXT_PACK_TITLE:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_TITLE, buffer, pack.i_track, charset);
+                cdtext_set(p_cdtext, CDTEXT_FIELD_TITLE, buffer, cur_track, charset);
                 break;
               case CDTEXT_PACK_PERFORMER:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_PERFORMER, buffer, pack.i_track, charset);
+                cdtext_set(p_cdtext, CDTEXT_FIELD_PERFORMER, buffer, cur_track, charset);
                 break;
               case CDTEXT_PACK_SONGWRITER:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_SONGWRITER, buffer, pack.i_track, charset);
+                cdtext_set(p_cdtext, CDTEXT_FIELD_SONGWRITER, buffer, cur_track, charset);
                 break;
               case CDTEXT_PACK_COMPOSER:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_COMPOSER, buffer, pack.i_track, charset);
+                cdtext_set(p_cdtext, CDTEXT_FIELD_COMPOSER, buffer, cur_track, charset);
                 break;
               case CDTEXT_PACK_ARRANGER:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_ARRANGER, buffer, pack.i_track, charset);
+                cdtext_set(p_cdtext, CDTEXT_FIELD_ARRANGER, buffer, cur_track, charset);
                 break;
               case CDTEXT_PACK_MESSAGE:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_MESSAGE, buffer, pack.i_track, charset);
+                cdtext_set(p_cdtext, CDTEXT_FIELD_MESSAGE, buffer, cur_track, charset);
                 break;
               case CDTEXT_PACK_DISCID:
-                if (pack.i_track == 0)
-                  cdtext_set(p_cdtext, CDTEXT_FIELD_DISCID, buffer, pack.i_track, NULL);
+                if (cur_track == 0)
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_DISCID, buffer, cur_track, NULL);
                 break;
               case CDTEXT_PACK_GENRE:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_GENRE, buffer, pack.i_track, "ASCII");
+                cdtext_set(p_cdtext, CDTEXT_FIELD_GENRE, buffer, cur_track, "ASCII");
                 break;
               case CDTEXT_PACK_UPC:
-                if (pack.i_track == 0)
-                  cdtext_set(p_cdtext, CDTEXT_FIELD_UPC_EAN, buffer, pack.i_track, "ASCII");
+                if (cur_track == 0)
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_UPC_EAN, buffer, cur_track, "ASCII");
                 else
-                  cdtext_set(p_cdtext, CDTEXT_FIELD_ISRC, buffer, pack.i_track, "ISO-8859-1");
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_ISRC, buffer, cur_track, "ISO-8859-1");
                 break;
             }
             i_buf = 0;
+            ++cur_track;
 
           }
           if (pack.db_chars)
