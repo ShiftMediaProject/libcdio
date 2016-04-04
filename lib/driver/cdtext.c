@@ -654,6 +654,11 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
         while (j < CDTEXT_LEN_TEXTDATA) {
           /* not terminated */
 
+          if ( i_buf+2 >= sizeof(buffer)) {
+            cdio_warn("CD-TEXT: Field too long.");
+            return -1;
+          }
+
           /* if the first character is a TAB, copy the buffer */
           if ( i_buf == 0 && CDTEXT_COMPARE_CHAR(&pack.text[j], '\t', pack.db_chars)) {
             memcpy(tab_buffer, buffer, sizeof(tab_buffer));
@@ -668,7 +673,7 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
 
             /* check if the buffer contains only the Tab Indicator */
             if ( CDTEXT_COMPARE_CHAR(buffer, '\t', pack.db_chars) ) {
-              if ( pack.i_track <= blocksize.i_first_track ) {
+              if ( cur_track <= blocksize.i_first_track ) {
                 cdio_warn("CD-TEXT: Invalid use of Tab Indicator.");
                 return -1;
               }
