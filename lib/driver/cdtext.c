@@ -317,6 +317,32 @@ cdtext_get_language(const cdtext_t *p_cdtext)
   return p_cdtext->block[p_cdtext->block_i].language_code;
 }
 
+/*!
+  Returns the first track number.
+
+  @param p_cdtext the CD-TEXT object
+*/
+track_t
+cdtext_get_first_track(const cdtext_t *p_cdtext)
+{
+  if (NULL == p_cdtext)
+    return 0;
+  return p_cdtext->block[p_cdtext->block_i].first_track;
+}
+
+/*!
+  Returns the last track number.
+
+  @param p_cdtext the CD-TEXT object
+*/
+track_t
+cdtext_get_last_track(const cdtext_t *p_cdtext)
+{
+  if (NULL == p_cdtext)
+    return 0;
+  return p_cdtext->block[p_cdtext->block_i].last_track;
+}
+
 /*
   Returns a list of available languages or NULL.
 
@@ -613,6 +639,11 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
             charset = (char *) "SHIFT_JIS";
             break;
         }
+
+        /* set track numbers */
+        p_cdtext->block[i_block].first_track = blocksize.i_first_track;
+        p_cdtext->block[i_block].last_track = blocksize.i_last_track;
+
       } else {
         cdio_warn("CD-TEXT: No blocksize information available for block %d.\n", i_block);
         return -1;
