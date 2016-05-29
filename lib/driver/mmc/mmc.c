@@ -615,15 +615,10 @@ mmc_read_cdtext_private (const CdIo_t *p_cdio)
   else
       i_cdtext += 2; /* data length does not include the data length field */
 
-
-  printf("%d\n", i_cdtext);
-
   wdata = malloc(i_cdtext); /* is zeroed in mmc_toc_read_cdtext */
 
   /* Read all of it */
   i_status = mmc_read_toc_cdtext(p_cdio, &i_cdtext, wdata, 0);
-  printf("%d %d\n", i_cdtext, i_cdtext % 18);
-
 
   if (i_status != DRIVER_OP_SUCCESS) {
       cdio_info ("CD-Text read for text failed: %s\n", strerror(errno));
