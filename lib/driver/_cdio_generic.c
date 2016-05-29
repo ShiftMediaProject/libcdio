@@ -456,9 +456,7 @@ uint8_t *
 read_cdtext_generic(void *p_env)
 {
   generic_img_private_t *p_user_data = p_env;
-  return mmc_read_cdtext_private (p_user_data,
-                                  p_user_data->cdio->op.run_mmc_cmd
-                                  );
+  return mmc_read_cdtext_private ( p_user_data->cdio );
 }
 
 /*! Return number of channels in track: 2 or 4; -2 if not

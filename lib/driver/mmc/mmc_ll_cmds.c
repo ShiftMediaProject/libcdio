@@ -490,3 +490,100 @@ mmc_test_unit_ready(const CdIo_t *p_cdio, unsigned int i_timeout_ms)
     if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
     return MMC_RUN_CMD(SCSI_MMC_DATA_NONE, i_timeout_ms);
 }
+
+/**
+   Issue a READ SUB-CHANNEL command to read current position, ISRC or
+   MCN from subchannel Q.
+   Note: READ SUB-CHANNEL is deprecated as of MMC-5
+         but the alternative requires manual parsing of the subchannel.
+
+   @param p_cdio  the CD object to be acted upon.
+   @param i_track track number (only for ISRC)
+   @param sub_chan_param 2 for MCN, 3 for ISRC
+   @param i_length pointer to number of bytes to request. 
+                   Will be overwritten by the number of bytes available.
+   @param p_buf  pointer to the location for the returned data
+
+   @return DRIVER_OP_SUCCESS on success
+ */
+driver_return_code_t
+mmc_read_subchannel ( const CdIo_t *p_cdio,
+                             track_t i_track,
+                             unsigned char sub_chan_param,
+                             unsigned int *i_length,
+                             char *p_buf,
+                             unsigned int i_timeout_ms
+                            )
+{
+  unsigned int i_size = *i_length;
+  mmc_cdb_t cdb = {{0, }};
+  driver_return_code_t i_status;
+
+  if (i_size < 4)
+    return DRIVER_OP_BAD_PARAMETER;
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
+  CDIO_MMC_SET_READ_LENGTH8(cdb.field, i_size);
+
+  if(CDIO_SUBCHANNEL_CURRENT_POSITION == sub_chan_param)
+    cdb.field[1] = CDIO_CDROM_MSF;
+  else
+    cdb.field[1] = 0x0;
+  cdb.field[2] = 0x40;
+  cdb.field[3] = sub_chan_param;
+  if(CDIO_SUBCHANNEL_TRACK_ISRC == sub_chan_param)
+   cdb.field[6] = i_track;
+  else
+   cdb.field[6] = 0;
+
+  memset(p_buf, 0, i_size);
+
+  if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
+
+  i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ, i_timeout_ms);
+
+  if(i_status == DRIVER_OP_SUCCESS) {
+    *i_length = CDIO_MMC_GET_LEN16((p_buf+2)) + 4;
+  }
+  return i_status;
+}
+
+/**
+   Issue a READ TOC/PMA/ATIP command to read the CD-TEXT from R-W sub-channel.
+
+   @param p_cdio  the CD object to be acted upon.
+   @param i_length pointer to number of bytes to request. 
+                   Will be overwritten by the number of bytes available.
+   @param p_buf  pointer to the location for the returned data
+
+   @return DRIVER_OP_SUCCESS on success
+ */
+driver_return_code_t
+mmc_read_toc_cdtext ( const CdIo_t *p_cdio, unsigned int *i_length,
+                      unsigned char *p_buf, unsigned int i_timeout_ms )
+{
+  unsigned int i_size = *i_length;
+  mmc_cdb_t  cdb = {{0, }};
+  driver_return_code_t i_status;
+
+  if (i_size < 4)
+    return DRIVER_OP_BAD_PARAMETER;
+
+  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
+  CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_size);
+
+  memset(p_buf, 0, i_size);
+
+  if (0 == i_timeout_ms) i_timeout_ms = mmc_timeout_ms;
+
+  cdb.field[1] = CDIO_CDROM_MSF;
+  cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
+
+  i_status = MMC_RUN_CMD(SCSI_MMC_DATA_READ, i_timeout_ms);
+
+  if(i_status == DRIVER_OP_SUCCESS) {
+    *i_length = CDIO_MMC_GET_LEN16(p_buf) + 4;
+  }
+
+  return i_status;
+}
