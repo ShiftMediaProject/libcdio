@@ -286,6 +286,8 @@ get_cdtext_generic (void *p_user_data)
 
   if (!p_env) return NULL;
 
+  if (p_env->b_cdtext_error) return NULL;
+
   if (NULL == p_env->cdtext) {
     p_cdtext_data = read_cdtext_generic (p_env);
 
@@ -456,7 +458,7 @@ uint8_t *
 read_cdtext_generic(void *p_env)
 {
   generic_img_private_t *p_user_data = p_env;
-  return mmc_read_cdtext_private ( p_user_data->cdio );
+  return mmc_read_cdtext ( p_user_data->cdio );
 }
 
 /*! Return number of channels in track: 2 or 4; -2 if not

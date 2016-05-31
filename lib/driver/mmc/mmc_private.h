@@ -126,8 +126,6 @@ mmc_get_dvd_struct_physical_private ( void *p_env,
 				      mmc_run_cmd_fn_t run_mmc_cmd, 
 				      cdio_dvd_struct_t *s );
 
-uint8_t * mmc_read_cdtext_private ( const CdIo_t *p_cdio );
-
 /*!
   On input a MODE_SENSE command was issued and we have the results
   in p. We interpret this and return a bit mask set according to the 

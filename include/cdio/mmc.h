@@ -709,6 +709,17 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
   char * mmc_get_track_isrc(const CdIo_t *p_cdio, track_t i_track);
 
   /**
+    Read cdtext information for a CdIo_t object .
+
+    @return pointer to data on success, NULL on error or CD-Text information does
+    not exist.
+
+    Note: the caller must free the returned memory
+
+  */
+  uint8_t * mmc_read_cdtext (const CdIo_t *p_cdio);
+
+  /**
     Report if CD-ROM has a particular kind of interface (ATAPI, SCSCI, ...)
     Is it possible for an interface to have several? If not this
     routine could probably return the single mmc_feature_interface_t.

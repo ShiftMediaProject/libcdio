@@ -225,6 +225,7 @@ mmc_get_last_lsn
 mmc_get_mcn
 mmc_get_media_changed
 mmc_get_track_isrc
+mmc_read_cdtext
 mmc_get_tray_status
 mmc_have_interface
 mmc_is_disctype_bd

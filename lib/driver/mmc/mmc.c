@@ -502,14 +502,6 @@ mmc_get_dvd_struct_physical_private ( void *p_env,
 }
 
 /**
-  Return the media catalog number MCN.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
-*/
-
-/**
   Get the media catalog number (MCN) or the ISRC
 
   Note: string is malloc'd so caller should free() then returned
@@ -535,10 +527,10 @@ mmc_get_mcn_isrc_private ( const CdIo_t *p_cdio,
 
   switch(sub_chan_param) {
     case CDIO_SUBCHANNEL_MEDIA_CATALOG: /* MCN */
-      length = CDIO_MCN_SIZE+1;
+      length = CDIO_MCN_SIZE;
       break;
     case CDIO_SUBCHANNEL_TRACK_ISRC: /* ISRC */
-      length = CDIO_ISRC_SIZE+1;
+      length = CDIO_ISRC_SIZE;
       break;
     default:
       return NULL;
@@ -574,61 +566,6 @@ mmc_get_mcn_isrc_private ( const CdIo_t *p_cdio,
 }
 
 
-/**
-  Read cdtext information for a CdIo_t object .
-
-  return true on success, false on error or CD-Text information does
-  not exist.
-*/
-uint8_t *
-mmc_read_cdtext_private (const CdIo_t *p_cdio)
-{
-
-  unsigned char buf[4];
-  unsigned char * wdata;
-  int           i_status;
-  unsigned int  i_cdtext;
-
-  if ( ! p_cdio )
-    return NULL;
-
-  generic_img_private_t *p_user_data = p_cdio->env;
-
-  if (p_user_data->b_cdtext_error)
-    return NULL;
-
-  errno = 0;
-
-  /* We may need to give CD-Text a little more time to complete. */
-  /* First off, just try and read the size */
-  i_cdtext = 4;
-  i_status = mmc_read_toc_cdtext(p_cdio, &i_cdtext, buf, 0);
-
-  if (i_status != DRIVER_OP_SUCCESS) {
-    cdio_info ("CD-Text read failed for header: %s\n", strerror(errno));
-    p_user_data->b_cdtext_error = true;
-    return NULL;
-  }
-
-  if (i_cdtext > CDTEXT_LEN_BINARY_MAX + 2)
-      i_cdtext = CDTEXT_LEN_BINARY_MAX + 4;
-  else
-      i_cdtext += 2; /* data length does not include the data length field */
-
-  wdata = malloc(i_cdtext); /* is zeroed in mmc_toc_read_cdtext */
-
-  /* Read all of it */
-  i_status = mmc_read_toc_cdtext(p_cdio, &i_cdtext, wdata, 0);
-
-  if (i_status != DRIVER_OP_SUCCESS) {
-      cdio_info ("CD-Text read for text failed: %s\n", strerror(errno));
-      p_user_data->b_cdtext_error = true;
-      free(wdata);
-      return NULL;
-  }
-
-  return wdata;
-}
 
 driver_return_code_t
 mmc_set_blocksize_private ( void *p_env,
@@ -1112,6 +1049,54 @@ mmc_get_track_isrc ( const CdIo_t *p_cdio, track_t i_track )
 {
   if ( ! p_cdio )  return NULL;
   return mmc_get_mcn_isrc_private (p_cdio, i_track, CDIO_SUBCHANNEL_TRACK_ISRC );
+}
+
+/**
+  Read cdtext information for a CdIo_t object .
+
+  @return pointer to data on success, NULL on error or CD-Text information does
+  not exist.
+
+  Note: the caller must free the returned memory
+
+*/
+uint8_t *
+mmc_read_cdtext (const CdIo_t *p_cdio)
+{
+
+  unsigned char buf[4];
+  unsigned char * wdata;
+  int           i_status;
+  unsigned int  i_cdtext;
+
+  if ( ! p_cdio )
+    return NULL;
+
+  /* We may need to give CD-Text a little more time to complete. */
+  /* First off, just try and read the size */
+  i_cdtext = 4;
+  i_status = mmc_read_toc_cdtext(p_cdio, &i_cdtext, buf, 0);
+
+  if (i_status != DRIVER_OP_SUCCESS) {
+    return NULL;
+  }
+
+  if (i_cdtext > CDTEXT_LEN_BINARY_MAX + 2)
+      i_cdtext = CDTEXT_LEN_BINARY_MAX + 4;
+  else
+      i_cdtext += 2; /* data length does not include the data length field */
+
+  wdata = malloc(i_cdtext); /* is zeroed in mmc_toc_read_cdtext */
+
+  /* Read all of it */
+  i_status = mmc_read_toc_cdtext(p_cdio, &i_cdtext, wdata, 0);
+
+  if (i_status != DRIVER_OP_SUCCESS) {
+      free(wdata);
+      return NULL;
+  }
+
+  return wdata;
 }
 
 /**
