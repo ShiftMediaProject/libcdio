@@ -45,7 +45,7 @@ gcc -g3 -Wall -DHAVE_CONFIG_H -I../.. -I../../include track.c ../../lib/driver/.
 #include <cdio/logging.h>
 
 #ifndef DATA_DIR
-#define DATA_DIR "@srcdir@/../data"
+#define DATA_DIR "../data"
 #endif
 
 static void
@@ -70,9 +70,9 @@ main(int argc, const char *argv[])
   cdio_log_set_handler (log_handler);
 
   if (cdio_have_driver(DRIVER_BINCUE)) {
-      cdObj = cdio_open("@native_abs_top_srcdir@/test/data/cdda.cue", DRIVER_UNKNOWN);
+      cdObj = cdio_open(DATA_DIR "/cdda.cue", DRIVER_UNKNOWN);
   } else if (cdio_have_driver(DRIVER_CDRDAO)) {
-      cdObj = cdio_open("@native_abs_top_srcdir@/test/data/cdda.toc", DRIVER_UNKNOWN);
+      cdObj = cdio_open(DATA_DIR "/cdda.toc", DRIVER_UNKNOWN);
   } else {
     printf("-- You don't have enough drivers for this test\n");
     return 77;

@@ -13,60 +13,45 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AM_CPPFLAGS = $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
 DATA_DIR = $(abs_top_srcdir)/test/data
+AM_CPPFLAGS = $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS) -DDATA_DIR=\"$(DATA_DIR)\"
 
 abs_path_SOURCES   = abs_path.c
 abs_path_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
-abs_path_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
 
 bincue_SOURCES   = helper.c bincue.c
 bincue_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
-bincue_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
 
 cdda_SOURCES     = helper.c cdda.c
 cdda_LDADD       = $(LIBCDIO_LIBS) $(LTLIBICONV)
-cdda_CFLAGS      = -DDATA_DIR=\"$(DATA_DIR)\"
 
 cdrdao_SOURCES   = helper.c cdrdao.c
 cdrdao_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
-cdrdao_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
 
 freebsd_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
-freebsd_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
 realpath_LDADD   = $(LIBCDIO_LIBS) $(LTLIBICONV)
-realpath_CFLAGS  = -DDATA_DIR=\"$(DATA_DIR)\"
 
 gnu_linux_SOURCES= helper.c gnu_linux.c
 gnu_linux_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
-gnu_linux_CFLAGS = -DDATA_DIR=\"$(DATA_DIR)\"
 
 logger_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
-logger_CFLAGS    = -DDATA_DIR=\"$(DATA_DIR)\"
 
 mmc_read_LDADD   = $(LIBCDIO_LIBS) $(LTLIBICONV)
-mmc_read_CFLAGS  = -DDATA_DIR=\"$(DATA_DIR)\"
 
 mmc_write_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
-mmc_write_CFLAGS = -DDATA_DIR=\"$(DATA_DIR)\"
 
 nrg_SOURCES      = helper.c nrg.c
 nrg_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
-nrg_CFLAGS       = -DDATA_DIR=\"$(DATA_DIR)\"
 
 osx_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
-osx_CFLAGS       = -DDATA_DIR=\"$(DATA_DIR)\"
 
 track_SOURCES      = track.c
 track_LDADD        = $(LIBCDIO_LIBS)
-track_CFLAGS       = -DDATA_DIR=\"$(DATA_DIR)\"
 
 solaris_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
-solaris_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
 win32_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
-win32_CFLAGS     = -DDATA_DIR=\"$(DATA_DIR)\"
 
 check_PROGRAMS   = \
 	abs_path bincue cdda cdrdao freebsd gnu_linux \
@@ -76,12 +61,12 @@ check_PROGRAMS   = \
 TESTS = $(check_PROGRAMS)
 
 EXTRA_DIST = \
-	bincue.c.in \
+	bincue.c \
 	helper.c    \
 	helper.h    \
-	cdrdao.c.in \
-	nrg.c.in    \
-	track.c.in
+	cdrdao.c \
+	nrg.c    \
+	track.c
 
 MOSTLYCLEANFILES = \
 	$(check_PROGRAMS) \

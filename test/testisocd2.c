@@ -47,8 +47,11 @@
 #include <cdio/cd_types.h>
 #include "filemode.h"
 
+#ifndef DATA_DIR
+#define DATA_DIR "./data"
+#endif
 /* Set up a CD image to test on which is in the libcdio distribution. */
-#define ISO9660_IMAGE_PATH "@native_abs_top_srcdir@/test/data/"
+#define ISO9660_IMAGE_PATH DATA_DIR "/"
 #define ISO9660_IMAGE ISO9660_IMAGE_PATH "copying.iso"
 
 #define SKIP_TEST_RC 77

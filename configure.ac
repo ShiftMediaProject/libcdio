@@ -731,16 +731,6 @@ AC_CONFIG_FILES([
        test/check_common_fn \
        test/data/Makefile \
        test/driver/Makefile \
-       test/driver/bincue.c \
-       test/driver/cdrdao.c \
-       test/driver/nrg.c \
-       test/driver/track.c \
-       test/testgetdevices.c \
-       test/testisocd_joliet.c \
-       test/testisorr.c \
-       test/testisocd2.c \
-       test/testpregap.c \
-       test/testudf.c \
        test/Makefile \
        ])
 
@@ -759,8 +749,7 @@ AC_CONFIG_FILES([test/check_cue.sh], [chmod +x test/check_cue.sh])
 AC_CONFIG_FILES([test/check_iso.sh], [chmod +x test/check_iso.sh])
 AC_CONFIG_FILES([test/check_nrg.sh], [chmod +x test/check_nrg.sh])
 AC_CONFIG_FILES([test/check_udf.sh], [chmod +x test/check_udf.sh])
-AC_CONFIG_FILES([test/check_iso_read.sh],
-		[chmod +x test/check_iso_read.sh])
+AC_CONFIG_FILES([test/check_iso_read.sh], [chmod +x test/check_iso_read.sh])
 AC_OUTPUT
 
 AC_MSG_NOTICE([

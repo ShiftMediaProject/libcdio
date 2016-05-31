@@ -31,6 +31,10 @@ fi
 
 export TZ LC_TIME
 
+DIFF="@DIFF@"
+DIFF_OPTS="@DIFF_OPTS@"
+RM="@RM@"
+
 check_result() {
   RC=$1
   shift

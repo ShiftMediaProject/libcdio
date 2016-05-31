@@ -8,10 +8,8 @@
 /abs_path
 /bincue
 /bincue
-/bincue.c
 /cdda
 /cdrdao
-/cdrdao.c
 /follow_symlink
 /freebsd
 /gnu_linux
@@ -19,10 +17,8 @@
 /mmc_read
 /mmc_write
 /nrg
-/nrg.c
 /osx
 /realpath
 /solaris
 /track
-/track.c
 /win32

@@ -27,11 +27,10 @@ hack = check_sizeof testassert testgetdevices testischar \
 
 DATA_DIR       = @abs_top_srcdir@/test/data
 
-AM_CPPFLAGS = $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS)
+AM_CPPFLAGS = $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS) -DDATA_DIR=\"$(DATA_DIR)\"
 
 check_sizeof_LDADD    = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testassert_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
-testgetdevices_CFLAGS = -DDATA_DIR=\"$(DATA_DIR)\"
 testgetdevices_LDADD  = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testischar_LDADD      = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testiso9660_LDADD     = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
@@ -44,14 +43,12 @@ testisorr_LDADD       = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 testudf_LDADD         = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 test_lib_driver_util_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
-test_lib_driver_util_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
 testpregap_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
-testpregap_CFLAGS   = -DDATA_DIR=\"$(DATA_DIR)\"
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh check_udf.sh \
                 check_iso.sh  check_fuzzyiso.sh check_opts.sh \
-		check_iso_read.sh
+                check_iso_read.sh
 
 check_udf.sh: @abs_top_builddir@/example/extract$(EXEEXT)
 
@@ -75,8 +72,8 @@ check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 
 EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
-	testpregap.c.in testisorr.c.in check_legal.regex \
-        testgetdevices.c.in check_iso.sh.in testudf.c.in \
+	check_legal.regex \
+	check_iso.sh.in \
 	check_iso_read.sh.in
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)

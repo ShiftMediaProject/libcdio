@@ -18,8 +18,11 @@
 
 /* Tests reading ISO 9660 info from an ISO 9660 image.  */
 
+#ifndef DATA_DIR
+#define DATA_DIR "./data"
+#endif
 /* Set up a CD-DA image to test on which is in the libcdio distribution. */
-#define ISO9660_IMAGE_PATH "@native_abs_top_srcdir@/test/data/"
+#define ISO9660_IMAGE_PATH DATA_DIR "/"
 #define ISO9660_IMAGE    ISO9660_IMAGE_PATH "copying.iso"
 #define ISO9660_IMAGE_RR ISO9660_IMAGE_PATH "copying-rr.iso"
 

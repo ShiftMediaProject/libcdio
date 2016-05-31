@@ -46,7 +46,7 @@
 #include <cdio/logging.h>
 
 #ifndef DATA_DIR
-#define DATA_DIR "@srcdir@/data"
+#define DATA_DIR "./data"
 #endif
 
 static void
@@ -71,14 +71,14 @@ typedef struct _pregap_list_t {
 
 static pregap_list_t pregapList[] =
 {
-    { "@native_abs_top_srcdir@/test/data/t2.toc", 1, 4425 },
-    { "@native_abs_top_srcdir@/test/data/t2.toc", 2, CDIO_INVALID_LSN },
-    { "@native_abs_top_srcdir@/test/data/p1.cue", 1, 0 },
-    { "@native_abs_top_srcdir@/test/data/p1.cue", 2, 150 },
-    { "@native_abs_top_srcdir@/test/data/p1.cue", 3, CDIO_INVALID_LSN },
+    { "/home/leon/Projects/libcdio-push/test/data/t2.toc", 1, 4425 },
+    { "/home/leon/Projects/libcdio-push/test/data/t2.toc", 2, CDIO_INVALID_LSN },
+    { "/home/leon/Projects/libcdio-push/test/data/p1.cue", 1, 0 },
+    { "/home/leon/Projects/libcdio-push/test/data/p1.cue", 2, 150 },
+    { "/home/leon/Projects/libcdio-push/test/data/p1.cue", 3, CDIO_INVALID_LSN },
 /*    { "p1.nrg", 1, 0 }, Nero did not create the proper pre-gap - bleh */
-    { "@native_abs_top_srcdir@/test/data/p1.nrg", 2, 225 },
-    { "@native_abs_top_srcdir@/test/data/p1.nrg", 3, CDIO_INVALID_LSN }
+    { "/home/leon/Projects/libcdio-push/test/data/p1.nrg", 2, 225 },
+    { "/home/leon/Projects/libcdio-push/test/data/p1.nrg", 3, CDIO_INVALID_LSN }
 };
 
 #define NELEMS(v) (sizeof(v) / sizeof(v[0]))

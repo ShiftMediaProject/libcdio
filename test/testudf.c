@@ -18,7 +18,10 @@
 
 /* Tests reading UDF info from an UDF image.  */
 
-#define UDF_IMAGE "@native_abs_top_srcdir@/test/data/udf102.iso"
+#ifndef DATA_DIR
+#define DATA_DIR "./data"
+#endif
+#define UDF_IMAGE DATA_DIR "/udf102.iso"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
