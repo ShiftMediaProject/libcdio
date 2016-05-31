@@ -611,7 +611,7 @@ mmc_read_cdtext_private (const CdIo_t *p_cdio)
   }
 
   if (i_cdtext > CDTEXT_LEN_BINARY_MAX + 2)
-      i_cdtext = CDTEXT_LEN_BINARY_MAX + 2;
+      i_cdtext = CDTEXT_LEN_BINARY_MAX + 4;
   else
       i_cdtext += 2; /* data length does not include the data length field */
 
