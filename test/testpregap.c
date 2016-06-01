@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003-2005, 2011-2013  Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003-2005, 2011-2013, 2016  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2008 Robert W. Fuller <hydrologiccycle@gmail.com>
 
   This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,10 @@
    To compile as a standalone program:
    gcc -g3 -Wall -DHAVE_CONFIG_H -I.. -I../include testpregap.c ../lib/driver/.libs/libcdio.a -o testpregap
 */
+
+#ifndef DATA_DIR
+#define DATA_DIR "./data"
+#endif
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -71,14 +75,14 @@ typedef struct _pregap_list_t {
 
 static pregap_list_t pregapList[] =
 {
-    { "/home/leon/Projects/libcdio-push/test/data/t2.toc", 1, 4425 },
-    { "/home/leon/Projects/libcdio-push/test/data/t2.toc", 2, CDIO_INVALID_LSN },
-    { "/home/leon/Projects/libcdio-push/test/data/p1.cue", 1, 0 },
-    { "/home/leon/Projects/libcdio-push/test/data/p1.cue", 2, 150 },
-    { "/home/leon/Projects/libcdio-push/test/data/p1.cue", 3, CDIO_INVALID_LSN },
+    { DATA_DIR "/t2.toc", 1, 4425 },
+    { DATA_DIR "/t2.toc", 2, CDIO_INVALID_LSN },
+    { DATA_DIR "/p1.cue", 1, 0 },
+    { DATA_DIR "/p1.cue", 2, 150 },
+    { DATA_DIR "/p1.cue", 3, CDIO_INVALID_LSN },
 /*    { "p1.nrg", 1, 0 }, Nero did not create the proper pre-gap - bleh */
-    { "/home/leon/Projects/libcdio-push/test/data/p1.nrg", 2, 225 },
-    { "/home/leon/Projects/libcdio-push/test/data/p1.nrg", 3, CDIO_INVALID_LSN }
+    { DATA_DIR "/p1.nrg", 2, 225 },
+    { DATA_DIR "/p1.nrg", 3, CDIO_INVALID_LSN }
 };
 
 #define NELEMS(v) (sizeof(v) / sizeof(v[0]))
