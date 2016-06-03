@@ -16,9 +16,6 @@ check_DATA = \
 	bad-msf-3.toc  \
 	cdda.bin       \
 	cdda.cue       \
-	cdtext.bin     \
-	cdtext.cdt     \
-	cdtext.cue     \
 	cdda.bin       \
 	copying-rr.iso \
 	copying.iso    \
@@ -50,6 +47,8 @@ check_DATA = \
 	data6.toc      \
 	data7.toc      \
 	test-udf1.iso  \
-	udf102.iso
+	udf102.iso     \
+	cdtext.cdt     \
+	cdtext-libburnia.cdt
 
 EXTRA_DIST = $(check_DATA)
