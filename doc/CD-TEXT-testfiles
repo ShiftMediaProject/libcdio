@@ -1,0 +1,137 @@
+Author: Thomas Schmitt
+Title:  Test files for CD-TEXT parsers
+
+The CD-TEXT test set nightcats_ii consists of two original input files
+
+  nightcats_ii.v07t ..... Human readable definition for 3 tracks in english.
+                          Sony Text File Format Version 0.7T
+  katzenmusik_ii.v07t ... Human readable definition for 3 tracks in german.
+
+From these files were derived via libburnia and cd-info
+
+  cdtext-libburnia.cdt .. CD-TEXT packs file suitable for e.g. cdrecord
+                          option textfile=nightcats_ii_en_de.cdt
+
+  cdtext-libburnia.right  expected output of cd-info
+
+It demonstrates:
+- Multiple language blocks
+- Short track names
+- Abbreviated repetition of texts by single TAB
+
+--------------------------------------------------------------------------
+
+The .cdt file was created by writing the .v07t files to a CD-RW with
+3 arbitrary tracks
+
+  cdrskin dev=/dev/sr0 -v blank=as_needed -eject \
+          input_sheet_v07t=nightcats_ii.v07t \
+          input_sheet_v07t=katzenmusik_ii.v07t \
+          -sao -audio -swab track1 track2 track3
+
+and by then reading its text packs and truncating the header
+
+  cdrskin dev=/dev/sr0 -v cdtext_to_textfile=nightcats_ii_en_de.cdt
+  dd skip=4 ibs=1 if=nightcats_ii_en_de.cdt of=cdtext-libburnia.cdt
+
+Although the CD-RW written by the first cdrskin run already may serve for
+generating the file nightcats_ii.right, the CD-RW was overwritten by
+
+  cdrskin dev=/dev/sr0 -v blank=as_needed -eject \
+          textfile=nightcats_ii_en_de.cdt \
+          -sao -audio -swab track1 track2 track3
+
+and then read by and truncating the header
+
+  cd-info --no-header /dev/sr0 | tail -n+15 > cdtext-libburnia.right
+
+The resulting file nightcats_ii.right was then checkread to verify that
+it matches the original .v07t input.
+The only detected deviation was that cd-info does not represent these
+information fields from .v07t:
+  Closed Information  = This is not to be shown by CD players
+  Text Data Copy Protection = OFF
+  Closed Information  = Dies sollten CD-Spieler nicht anzeigen.
+  Text Data Copy Protection = OFF
+--------------------------------------------------------------------------
+Contents of nightcats_ii.v07t:
+==============================
+Input Sheet Version = 0.7T
+Text Code           = ASCII
+Language Code       = English
+Album Title         = Night Cats II
+Artist Name         = United Cat Orchestra
+Songwriter          = Various Songwriters
+Composer            = Various Composers
+Arranger            = Tom Cat
+Album Message       = For all our fans
+Catalog Number      = 1234567890
+Genre Code          = Classical
+Genre Information   = Feline classic music
+Closed Information  = This is not to be shown by CD players
+UPC / EAN           = 1234567890123
+Text Data Copy Protection = OFF
+First Track Number  = 1
+Last Track Number   = 3
+Track 01 Title      = Song of Joy
+Track 01 Artist     = Felix and The Purrs
+Track 01 Songwriter = Friedrich Schiller
+Track 01 Composer   = Ludwig van Beethoven
+Track 01 Arranger   = Tom Cat
+Track 01 Message    = Fritz and Louie once were punks
+ISRC 01             = XYBLG1101234
+Track 02 Title      = The Hunt
+Track 02 Artist     = Catwalk Beauties
+Track 02 Songwriter = Mother Nature
+Track 02 Composer   = unknown
+Track 02 Arranger   = Tom Cat
+Track 02 Message    = 
+ISRC 02             = XYBLG1100005
+Track 03 Title      = Mee Owwww
+Track 03 Artist     = Mia Kitten
+Track 03 Songwriter = Mia Kitten
+Track 03 Composer   = Mia Kitten
+Track 03 Arranger   = Mia Kitten
+Track 03 Message    = 
+ISRC 03             = XYBLG1100006
+--------------------------------------------------------------------------
+Contents of katzenmusik_ii.v07t:
+================================
+Input Sheet Version = 0.7T
+Text Code           = 8859
+Language Code       = German
+Album Title         = Nachtkratz II
+Artist Name         = Vereinigtes Katzenorchester
+Songwriter          = Verschiedene Liedschreiber
+Composer            = Verschiedene Komponisten
+Arranger            = Tom Cat
+Album Message       = Für alle unsere Fans
+Catalog Number      = 1234567890
+Genre Code          = Classical
+Genre Information   = Klassische Katzenmusik
+Closed Information  = Dies sollten CD-Spieler nicht anzeigen.
+UPC / EAN           = 1234567890123
+Text Data Copy Protection = OFF
+First Track Number  = 1
+Last Track Number   = 3
+Track 01 Title      = Freudenlied
+Track 01 Artist     = Felix und Die Schnurrer
+Track 01 Songwriter = Friedrich Schiller
+Track 01 Composer   = Ludwig van Beethoven
+Track 01 Arranger   = Tom Cat
+Track 01 Message    = Fritz und Louie waren einmal Punks
+ISRC 01             = XYBLG1101234
+Track 02 Title      = Die Jagd
+Track 02 Artist     = Laufsteg Miezen
+Track 02 Songwriter = Mutter Natur
+Track 02 Composer   = unbekannt
+Track 02 Arranger   = Tom Cat
+Track 02 Message    = 
+ISRC 02             = XYBLG1100005
+Track 03 Title      = Mie auu
+Track 03 Artist     = Mia Kätzchen
+Track 03 Songwriter = Mia Kätzchen
+Track 03 Composer   = Mia Kätzchen
+Track 03 Arranger   = Mia Kätzchen
+Track 03 Message    = 
+ISRC 03             = XYBLG1100006
