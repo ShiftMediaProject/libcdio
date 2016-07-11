@@ -1,4 +1,4 @@
-#   Copyright (C) 2003-2004, 2006, 2008, 2011-2013
+#   Copyright (C) 2003-2004, 2006, 2008, 2011-2013, 2016
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -38,8 +38,6 @@ EXTRA_DIST = \
 	package/libcdio.spec.in
 
 SUBDIRS = doc include lib src test example
-
-GIT2CL ?= git2cl
 
 # pkg-config(1) related rules
 pkgconfigdir = $(libdir)/pkgconfig
@@ -130,6 +128,9 @@ if MAINTAINER_MODE
 
 .PHONY: ChangeLog
 #: Create ChangeLog from version control
+
+GIT2CL ?= git2cl
+
 ChangeLog:
 	git log --pretty --numstat --summary | $(GIT2CL) >$@
 
