@@ -1,3 +1,36 @@
+version 0.94
+2016-10-27
+
+- CD-TEXT fixes and improvements
+  * Expose mmc_read_cdtext as a publicly accessable function
+    Removes some redundant error reporting in mmc_read_cdtext
+    Also fixes some incorrect lengths for isrc and mcn.
+  * Fix inconsistent maximal length in CD-Text extraction
+  * Added new low level functions for READ SUB-CHANNEL and
+    READ TOC/PMA/ATIP for CD-TEXT extraction.
+  * Add cdtext binary parser and track number to public api
+  *  Increase track # for short CD-Text fields
+
+- Eject fixes:
+  * Fix disc eject for Cocoa apps and support ejecting CD-Extra discs
+    on OS X.
+  * Make sure device is opend in read/write ode when trying to eject.
+
+Bugs
+  * Add error eporting from_733_with_err. Bug #45014
+  * Guard against malformed rockridge iso. Bug #45015
+  * Malformed so crashes iso-info Bug #45013:
+  *  Guard against 0-size calloc bug #45016
+  * Fix testudf segfaults/fails on big endian arches. Bug #43995.
+  * add get_last_session to the win32 driver.
+    Also fixes cd-paranoia behavior. Savannah bug #43446.
+  * GNU/Linux ioctl treats <= 0 as max speed, so. Bug #43428
+  * Fixed cdio_free leaking
+  * Recursion checking in cdio_logv()
+  * g++ greater than 4.0 handles "pack" Bug #48759
+  * configure fixes
+
+
 version 0.93
 2014-09-29
 
