@@ -380,7 +380,7 @@ case $host_os in
        ## AC_DEFINE([HAVE_AIX_CDROM], [1],
        ##     [Define 1 if you have AIX CD-ROM support])
        ;;
-     darwin[[6-9]].*|darwin1[[0-4]].*)
+     darwin[[6-9]].*|darwin1[[0-6]].*)
        AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h,
                         [have_iokit_h="yes"])
        if test "x$have_iokit_h" = "xyes" ; then
