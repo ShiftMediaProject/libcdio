@@ -20,15 +20,19 @@ Bugs
   * Add error eporting from_733_with_err. Bug #45014
   * Guard against malformed rockridge iso. Bug #45015
   * Malformed so crashes iso-info Bug #45013:
-  *  Guard against 0-size calloc bug #45016
+  * Guard against 0-size calloc bug #45016
   * Fix testudf segfaults/fails on big endian arches. Bug #43995.
   * add get_last_session to the win32 driver.
     Also fixes cd-paranoia behavior. Savannah bug #43446.
-  * GNU/Linux ioctl treats <= 0 as max speed, so. Bug #43428
+  * GNU/Linux ioctl treats <= 0 as max speed. Bug #43428
   * Fixed cdio_free leaking
   * Recursion checking in cdio_logv()
   * g++ greater than 4.0 handles "pack" Bug #48759
   * configure fixes
+
+Updates
+  * Add newer OSX's
+  * Squelch some clang error messages
 
 
 version 0.93
